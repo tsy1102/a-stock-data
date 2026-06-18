@@ -2076,11 +2076,12 @@ def analyze_stock(code: str, parallel: bool = True) -> Tuple[str, str]:
     print(f"  完成分析，耗时 {elapsed:.1f}秒", flush=True)
 
     # V7.5 新增：保存评分快照
+    # 在 analyze_stock 作用域内重新计算评分（format_report 内部的 scores 不可用）
     try:
+        scores_local = _scoring(ordered_layers, _cfg_sc=_sc.get("scoring"))
+        price_local = q.get("price", 0) if isinstance(q, dict) else 0
         from stock_common import save_score_snapshot
-        total_score = scores.get("total", 0)
-        price = q.get("price", 0) if isinstance(q, dict) else 0
-        save_score_snapshot("ful", code, stock_name, total_score, price)
+        save_score_snapshot("ful", code, stock_name, scores_local.get("total", 0), price_local)
     except Exception:
         pass
 

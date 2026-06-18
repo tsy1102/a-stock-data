@@ -634,7 +634,7 @@ def generate_report(code, output_path, ind_comp=None, idx_q=None, hsgt=None):
 
         _recent = ff["data"][-10:]
 
-        L(f"  {'日期':<12} {'主力净流入(万)':>12} {'超大单(万)':>10} {'大单(万)':>10} {'中单(万)':>10} {'小单(万)':>10}")
+        L(f"  {'日期':<12} {'主力净流入(亿)':>12} {'超大单(亿)':>10} {'大单(亿)':>10} {'中单(亿)':>10} {'小单(亿)':>10}")
 
         L(f"  {'-'*70}")
 
@@ -648,7 +648,7 @@ def generate_report(code, output_path, ind_comp=None, idx_q=None, hsgt=None):
 
         r20 = ff["data"][-20:]; tmain = sum(d["main_net"] for d in r20); tdays = sum(1 for d in r20 if d["main_net"]>0)
 
-        L(f"\n  近20日统计:\n    主力累计净流入: {tmain/1e4:.0f}万元 ({tmain/1e8:.2f}亿)\n    主力净流入天数: {tdays}/20天")
+        L(f"\n  近20日统计:\n    主力累计净流入: {tmain/1e8:.2f}亿元\n    主力净流入天数: {tdays}/20天")
 
         L(f"  信号: {'主力资金近期净流入 → 偏多' if tmain>0 else '主力资金近期净流出 → 偏空'}")
 
@@ -684,7 +684,7 @@ def generate_report(code, output_path, ind_comp=None, idx_q=None, hsgt=None):
 
                 _ratio = _shares / info.get('total_shares',1) if info.get('total_shares',0) > 0 else 0
 
-            L(f"  {d['date']:<12} {_shares/1e4:>12.0f} {_mcap/1e4:>12.0f} {_ratio*100:>9.4f}% {d['change_shares']/1e4:>+12.0f}")
+            L(f"  {d['date']:<12} {_shares/1e4:>12.0f} {_mcap/1e4:>12.0f} {_ratio:>9.4f}% {d['change_shares']/1e4:>+12.0f}")
 
     else: L("  该股暂无北向资金持仓数据（可能非陆股通标的或数据延迟）")
 
@@ -896,7 +896,12 @@ def generate_report(code, output_path, ind_comp=None, idx_q=None, hsgt=None):
 
         L(f"  {'截止日期':<14} {'股东户数':>7} {'环比变化':>10} {'环比%':>8}"); L(f"  {'-'*50}")
 
-        for h in holders[:5]: L(f"  {h['date']:<14} {h['holder_num']:>10,} {h['change_num']:>+14,} {h['change_ratio']:>+9.2f}%")
+        for h in holders[:5]:
+            _cr = h.get('change_ratio', 0)
+            # 边界检查：变化率超过±500%视为异常数据，不显示
+            _cr_disp = _cr if abs(_cr) <= 500 else (999.99 if _cr > 500 else -999.99)
+            _cr_flag = " ⚠️" if abs(_cr) > 500 else ""
+            L(f"  {h['date']:<14} {h['holder_num']:>10,} {h['change_num']:>+14,} {_cr_disp:>+9.2f}%{_cr_flag}")
 
         if len(holders)>=2:
 
@@ -1272,14 +1277,20 @@ def generate_report(code, output_path, ind_comp=None, idx_q=None, hsgt=None):
     _ps -= _warn_cnt * 10
     _ps = max(0, min(100, _ps))
 
+    # 涨停封单预警检测：封单弱时仓位降级
+    _seal_warn = any("封单预警" in s or "弱势烂板" in s for s in signals)
+
     L(f"  评分明细: {' | '.join(_details[:8])}" if _details else None)
 
-    if _ps>=50: L(f"  短线评分: {_ps:.0f}/100 → 强烈参与，仓位40%，止损-5%")
-
+    if _seal_warn:
+        # 封单弱时仓位降级：原仓位建议减半
+        if _ps >= 50: L(f"  短线评分: {_ps:.0f}/100 → 封单偏弱，仓位降至20%，止损-5% ⚠️")
+        elif _ps >= 30: L(f"  短线评分: {_ps:.0f}/100 → 封单偏弱，仓位降至12%，止损-5% ⚠️")
+        elif _ps >= 15: L(f"  短线评分: {_ps:.0f}/100 → 封单偏弱，仓位降至5%，止损-3% ⚠️")
+        else: L(f"  短线评分: {_ps:.0f}/100 → 封单偏弱，观望为主，仓位2% ⚠️")
+    elif _ps>=50: L(f"  短线评分: {_ps:.0f}/100 → 强烈参与，仓位40%，止损-5%")
     elif _ps>=30: L(f"  短线评分: {_ps:.0f}/100 → 可参与，仓位25%，止损-5%")
-
     elif _ps>=15: L(f"  短线评分: {_ps:.0f}/100 → 轻仓试探，仓位10%，止损-3%")
-
     else: L(f"  短线评分: {_ps:.0f}/100 → 观望，仓位5%试水")
 
     # 保存评分快照
@@ -1707,7 +1718,7 @@ async def generate_report_async(session, code, output_path, ind_comp=None, idx_q
 
         _recent = ff["data"][-10:]
 
-        L(f"  {'日期':<12} {'主力净流入(万)':>12} {'超大单(万)':>10} {'大单(万)':>10} {'中单(万)':>10} {'小单(万)':>10}")
+        L(f"  {'日期':<12} {'主力净流入(亿)':>12} {'超大单(亿)':>10} {'大单(亿)':>10} {'中单(亿)':>10} {'小单(亿)':>10}")
 
         L(f"  {'-'*70}")
 
@@ -1721,7 +1732,7 @@ async def generate_report_async(session, code, output_path, ind_comp=None, idx_q
 
         r20 = ff["data"][-20:]; tmain = sum(d["main_net"] for d in r20); tdays = sum(1 for d in r20 if d["main_net"]>0)
 
-        L(f"\n  近20日统计:\n    主力累计净流入: {tmain/1e4:.0f}万元 ({tmain/1e8:.2f}亿)\n    主力净流入天数: {tdays}/20天")
+        L(f"\n  近20日统计:\n    主力累计净流入: {tmain/1e8:.2f}亿元\n    主力净流入天数: {tdays}/20天")
 
         L(f"  信号: {'主力资金近期净流入 → 偏多' if tmain>0 else '主力资金近期净流出 → 偏空'}")
 
@@ -1751,7 +1762,7 @@ async def generate_report_async(session, code, output_path, ind_comp=None, idx_q
 
                 _ratio = _shares / info.get('total_shares',1) if info.get('total_shares',0) > 0 else 0
 
-            L(f"  {d['date']:<12} {_shares/1e4:>12.0f} {_mcap/1e4:>12.0f} {_ratio*100:>9.4f}% {d['change_shares']/1e4:>+12.0f}")
+            L(f"  {d['date']:<12} {_shares/1e4:>12.0f} {_mcap/1e4:>12.0f} {_ratio:>9.4f}% {d['change_shares']/1e4:>+12.0f}")
 
     else: L("  该股暂无北向资金持仓数据（可能非陆股通标的或数据延迟）")
 
@@ -1965,7 +1976,12 @@ async def generate_report_async(session, code, output_path, ind_comp=None, idx_q
 
         L(f"  {'截止日期':<14} {'股东户数':>7} {'环比变化':>10} {'环比%':>8}"); L(f"  {'-'*50}")
 
-        for h in holders[:5]: L(f"  {h['date']:<14} {h['holder_num']:>10,} {h['change_num']:>+14,} {h['change_ratio']:>+9.2f}%")
+        for h in holders[:5]:
+            _cr = h.get('change_ratio', 0)
+            # 边界检查：变化率超过±500%视为异常数据，不显示
+            _cr_disp = _cr if abs(_cr) <= 500 else (999.99 if _cr > 500 else -999.99)
+            _cr_flag = " ⚠️" if abs(_cr) > 500 else ""
+            L(f"  {h['date']:<14} {h['holder_num']:>10,} {h['change_num']:>+14,} {_cr_disp:>+9.2f}%{_cr_flag}")
 
         if len(holders)>=2:
 
@@ -2302,14 +2318,20 @@ async def generate_report_async(session, code, output_path, ind_comp=None, idx_q
     _ps -= _warn_cnt * 10
     _ps = max(0, min(100, _ps))
 
+    # 涨停封单预警检测：封单弱时仓位降级
+    _seal_warn = any("封单预警" in s or "弱势烂板" in s for s in signals)
+
     L(f"  评分明细: {' | '.join(_details[:8])}" if _details else None)
 
-    if _ps>=50: L(f"  短线评分: {_ps:.0f}/100 → 强烈参与，仓位40%，止损-5%")
-
+    if _seal_warn:
+        # 封单弱时仓位降级：原仓位建议减半
+        if _ps >= 50: L(f"  短线评分: {_ps:.0f}/100 → 封单偏弱，仓位降至20%，止损-5% ⚠️")
+        elif _ps >= 30: L(f"  短线评分: {_ps:.0f}/100 → 封单偏弱，仓位降至12%，止损-5% ⚠️")
+        elif _ps >= 15: L(f"  短线评分: {_ps:.0f}/100 → 封单偏弱，仓位降至5%，止损-3% ⚠️")
+        else: L(f"  短线评分: {_ps:.0f}/100 → 封单偏弱，观望为主，仓位2% ⚠️")
+    elif _ps>=50: L(f"  短线评分: {_ps:.0f}/100 → 强烈参与，仓位40%，止损-5%")
     elif _ps>=30: L(f"  短线评分: {_ps:.0f}/100 → 可参与，仓位25%，止损-5%")
-
     elif _ps>=15: L(f"  短线评分: {_ps:.0f}/100 → 轻仓试探，仓位10%，止损-3%")
-
     else: L(f"  短线评分: {_ps:.0f}/100 → 观望，仓位5%试水")
 
     # 保存评分快照

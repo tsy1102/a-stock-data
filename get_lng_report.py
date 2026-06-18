@@ -624,51 +624,72 @@ def generate_report(code, output_path, ind_comp=None):
         L("  暂无任何研报覆盖数据。")
 
     L("\n"+"━"*72); L("【仓位管理建议】"); L("━"*72)
-    _ps = 0; _details = []
-    # 1. ROE (25分)
+    
+    # V8.2: 使用统一评分接口
+    from stock_common import ScoreData, calculate_score, save_score_snapshot
+    
+    # 构建评分数据
+    score_data = ScoreData(
+        code=code,
+        name=info.get('name', ''),
+        price=price_today,
+    )
+    
+    # ROE数据
     if ext_roe_data:
-        _lr = ext_roe_data[0].get("roe") if ext_roe_data else None
-        if _lr and _lr>=20: _ps+=25; _details.append(f"ROE={_lr:.1f}%优秀")
-        elif _lr and _lr>=15: _ps+=15; _details.append(f"ROE={_lr:.1f}%良好")
-        elif _lr and _lr>=10: _ps+=8; _details.append(f"ROE={_lr:.1f}%中等")
-    # 2. PE分位 (20分)
-    if eps_has_data and eps_cur and eps_cur>0 and price_today>0:
-        _pe_fwd = price_today/eps_cur
-        if _pe_fwd>0 and _pe_fwd<15: _ps+=20; _details.append(f"前向PE={_pe_fwd:.1f}x低估")
-        elif _pe_fwd>0 and _pe_fwd<25: _ps+=10; _details.append(f"前向PE={_pe_fwd:.1f}x合理")
-    # 3. 历史回撤 (15分)
-    if ext_high_price and price_today>0 and ext_high_price>0:
-        _dd = (price_today/ext_high_price-1)*100
-        if _dd<=-40: _ps+=15; _details.append(f"距高点回撤{abs(_dd):.0f}%（黄金坑）")
-        elif _dd<=-20: _ps+=8; _details.append(f"距高点回撤{abs(_dd):.0f}%")
-    # 4. 分红 (15分)
-    if div and len(div)>0:
-        _bonus = div[0].get("bonus_rmb",0)
-        _yield = _bonus/price_today*100 if price_today>0 else 0
-        if _yield>=3: _ps+=10; _details.append(f"股息率{_yield:.1f}%")
-        if len([d for d in div if d.get("bonus_rmb",0)>0])>=5: _ps+=5; _details.append("持续分红5年+")
-    # 5. 现金流 (15分) — V7.5: 统一用 TDX
-    if _tdx_ocf != 0:
-        _np = float(financials[0].get("净利润",1)) if financials else 1
-        if _np>0 and _tdx_ocf/_np>=0.8: _ps+=10; _details.append("现金流充裕")
+        score_data.roe = ext_roe_data[0].get("roe", 0) or 0
+    
+    # 前向PE
+    if eps_has_data and eps_cur and eps_cur > 0 and price_today > 0:
+        score_data.forward_pe = price_today / eps_cur
+    
+    # 回撤幅度
+    if ext_high_price and price_today > 0 and ext_high_price > 0:
+        score_data.drawdown_from_high = (price_today / ext_high_price - 1) * 100
+    
+    # 分红数据
+    if div and len(div) > 0:
+        _bonus = div[0].get("bonus_rmb", 0)
+        if price_today > 0:
+            score_data.dividend_yield = _bonus / price_today * 100
+        score_data.consecutive_dividend_years = len([d for d in div if d.get("bonus_rmb", 0) > 0])
+    
+    # 现金流和负债
+    if _tdx_ocf != 0 and financials:
+        _np = float(financials[0].get("净利润", 1)) if financials else 1
+        if _np > 0:
+            score_data.ocf_ratio = _tdx_ocf / _np
         if bs_data:
-            _st = _safe_float(bs_data[0].get("短期借款","0"))/1e8
-            _lt = _safe_float(bs_data[0].get("长期借款","0"))/1e8
-            _ta = _safe_float(bs_data[0].get("资产总计","1"))/1e8
-            if (_st+_lt)/max(_ta,1)<0.3: _ps+=5; _details.append("低负债")
-    # 6. 机构背书 (10分)
-    _inst = get_holder_structure(code)  # 复用缓存，不额外调 API
+            _st = _safe_float(bs_data[0].get("短期借款", "0")) / 1e8
+            _lt = _safe_float(bs_data[0].get("长期借款", "0")) / 1e8
+            _ta = _safe_float(bs_data[0].get("资产总计", "1")) / 1e8
+            if _ta > 0:
+                score_data.asset_liability_ratio = (_st + _lt) / _ta
+    
+    # 机构持仓
+    _inst = get_holder_structure(code)
     if _inst:
-        _latest = _inst[0].get("domestic", 0) + _inst[0].get("northbound", 0)
-        if _latest > 0: _ps += 10; _details.append(f"机构持仓{_latest:.1f}%")
+        score_data.institution_holding_pct = _inst[0].get("domestic", 0) + _inst[0].get("northbound", 0)
+    
+    # 计算评分
+    result = calculate_score("lng", score_data)
+    _ps = result.total_score
+    _details = result.details
+    
     L(f"  评分明细: {' | '.join(_details[:6])}" if _details else None)
-    if _ps>=70: L(f"  长线评分: {_ps}/100 → 优质长线标的，仓位50%")
-    elif _ps>=45: L(f"  长线评分: {_ps}/100 → 可配置，仓位30%")
-    elif _ps>=20: L(f"  长线评分: {_ps}/100 → 观察仓，仓位15%")
-    else: L(f"  长线评分: {_ps}/100 → 暂不建议，等待更好的安全边际")
+    if _ps>=70: L(f"  长线评分: {_ps:.0f}/100 → 优质长线标的，仓位50%")
+    elif _ps>=45: L(f"  长线评分: {_ps:.0f}/100 → 可配置，仓位30%")
+    elif _ps>=20: L(f"  长线评分: {_ps:.0f}/100 → 观察仓，仓位15%")
+    else: L(f"  长线评分: {_ps:.0f}/100 → 暂不建议，等待更好的安全边际")
     L("\n" + "=" * 72)
     L(f"  长线基石: 强劲自由现金流 / 持续高 ROE / 合理估值 / 高股息防御")
     L("=" * 72)
+
+    # 保存评分快照
+    try:
+        save_score_snapshot("lng", code, info.get('name', ''), _ps, price_today)
+    except Exception:
+        pass
 
     output = "\n".join(lines)
     with open(output_path, "w", encoding="utf-8") as f:
@@ -1162,47 +1183,74 @@ async def generate_report_async(session, code, output_path, ind_comp=None):
         L("  暂无任何研报覆盖数据。")
 
     L("\n"+"━"*72); L("【仓位管理建议】"); L("━"*72)
-    _ps = 0; _details = []
+    
+    # V8.2: 使用统一评分接口
+    from stock_common import ScoreData, calculate_score, save_score_snapshot
+    
+    # 构建评分数据
+    score_data = ScoreData(
+        code=code,
+        name=info.get('name', ''),
+        price=price_today,
+    )
+    
+    # ROE数据
     if ext_roe_data:
-        _lr = ext_roe_data[0].get("roe") if ext_roe_data else None
-        if _lr and _lr>=20: _ps+=25; _details.append(f"ROE={_lr:.1f}%优秀")
-        elif _lr and _lr>=15: _ps+=15; _details.append(f"ROE={_lr:.1f}%良好")
-        elif _lr and _lr>=10: _ps+=8; _details.append(f"ROE={_lr:.1f}%中等")
-    if eps_has_data and eps_cur and eps_cur>0 and price_today>0:
-        _pe_fwd = price_today/eps_cur
-        if _pe_fwd>0 and _pe_fwd<15: _ps+=20; _details.append(f"前向PE={_pe_fwd:.1f}x低估")
-        elif _pe_fwd>0 and _pe_fwd<25: _ps+=10; _details.append(f"前向PE={_pe_fwd:.1f}x合理")
-    if ext_high_price and price_today>0 and ext_high_price>0:
-        _dd = (price_today/ext_high_price-1)*100
-        if _dd<=-40: _ps+=15; _details.append(f"距高点回撤{abs(_dd):.0f}%（黄金坑）")
-        elif _dd<=-20: _ps+=8; _details.append(f"距高点回撤{abs(_dd):.0f}%")
-    if div and len(div)>0:
-        _bonus = div[0].get("bonus_rmb",0)
-        _yield = _bonus/price_today*100 if price_today>0 else 0
-        if _yield>=3: _ps+=10; _details.append(f"股息率{_yield:.1f}%")
-        if len([d for d in div if d.get("bonus_rmb",0)>0])>=5: _ps+=5; _details.append("持续分红5年+")
-    if _tdx_ocf != 0:
-        _np = float(financials[0].get("净利润",1)) if financials else 1
-        if _np>0 and _tdx_ocf/_np>=0.8: _ps+=10; _details.append("现金流充裕")
+        score_data.roe = ext_roe_data[0].get("roe", 0) or 0
+    
+    # 前向PE
+    if eps_has_data and eps_cur and eps_cur > 0 and price_today > 0:
+        score_data.forward_pe = price_today / eps_cur
+    
+    # 回撤幅度
+    if ext_high_price and price_today > 0 and ext_high_price > 0:
+        score_data.drawdown_from_high = (price_today / ext_high_price - 1) * 100
+    
+    # 分红数据
+    if div and len(div) > 0:
+        _bonus = div[0].get("bonus_rmb", 0)
+        if price_today > 0:
+            score_data.dividend_yield = _bonus / price_today * 100
+        score_data.consecutive_dividend_years = len([d for d in div if d.get("bonus_rmb", 0) > 0])
+    
+    # 现金流和负债
+    if _tdx_ocf != 0 and financials:
+        _np = float(financials[0].get("净利润", 1)) if financials else 1
+        if _np > 0:
+            score_data.ocf_ratio = _tdx_ocf / _np
         if bs_data:
-            _st = _safe_float(bs_data[0].get("短期借款","0"))/1e8
-            _lt = _safe_float(bs_data[0].get("长期借款","0"))/1e8
-            _ta = _safe_float(bs_data[0].get("资产总计","1"))/1e8
-            if (_st+_lt)/max(_ta,1)<0.3: _ps+=5; _details.append("低负债")
+            _st = _safe_float(bs_data[0].get("短期借款", "0")) / 1e8
+            _lt = _safe_float(bs_data[0].get("长期借款", "0")) / 1e8
+            _ta = _safe_float(bs_data[0].get("资产总计", "1")) / 1e8
+            if _ta > 0:
+                score_data.asset_liability_ratio = (_st + _lt) / _ta
+    
+    # 机构持仓
     _inst = get_holder_structure(code)
     if _inst:
-        _latest = _inst[0].get("domestic", 0) + _inst[0].get("northbound", 0)
-        if _latest > 0: _ps += 10; _details.append(f"机构持仓{_latest:.1f}%")
+        score_data.institution_holding_pct = _inst[0].get("domestic", 0) + _inst[0].get("northbound", 0)
+    
+    # 计算评分
+    result = calculate_score("lng", score_data)
+    _ps = result.total_score
+    _details = result.details
+    
     L(f"  评分明细: {' | '.join(_details[:6])}" if _details else None)
-    if _ps>=70: L(f"  长线评分: {_ps}/100 → 优质长线标的，仓位50%")
-    elif _ps>=45: L(f"  长线评分: {_ps}/100 → 可配置，仓位30%")
-    elif _ps>=20: L(f"  长线评分: {_ps}/100 → 观察仓，仓位15%")
-    else: L(f"  长线评分: {_ps}/100 → 暂不建议，等待更好的安全边际")
+    if _ps>=70: L(f"  长线评分: {_ps:.0f}/100 → 优质长线标的，仓位50%")
+    elif _ps>=45: L(f"  长线评分: {_ps:.0f}/100 → 可配置，仓位30%")
+    elif _ps>=20: L(f"  长线评分: {_ps:.0f}/100 → 观察仓，仓位15%")
+    else: L(f"  长线评分: {_ps:.0f}/100 → 暂不建议，等待更好的安全边际")
     L("\n" + "=" * 72)
     L(f"  长线基石: 强劲自由现金流 / 持续高 ROE / 合理估值 / 高股息防御")
     L("=" * 72)
 
-    output = "\n".join(lines)
+    # 保存评分快照
+    try:
+        save_score_snapshot("lng", code, info.get('name', ''), _ps, price_today)
+    except Exception:
+        pass
+
+    output = "\n".join(filter(None, lines))
     with open(output_path, "w", encoding="utf-8") as f:
         f.write(output)
     return output

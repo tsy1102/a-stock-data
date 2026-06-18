@@ -716,7 +716,7 @@ def generate_sector_report(output_path):
     else:
         L(f"  暂无数据（需交易所收盘后更新）")
     L(f"\n{'='*90}")
-    output = "\n".join(lines)
+    output = "\n".join(filter(None, lines))
     with open(output_path,"w",encoding="utf-8") as f: f.write(output)
     return output
 

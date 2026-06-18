@@ -1214,103 +1214,81 @@ def generate_report(code, output_path, ind_comp=None, idx_q=None, hsgt=None):
 
         L(f"\n  股价: {price_today:.2f}元")
 
-    # ── V4 仓位管理建议（8维度100分）──
+    # ── V8.2 仓位管理建议（统一评分接口）──
 
     L("\n"+"━"*72); L("【仓位管理建议】"); L("━"*72)
 
-    _ps = 0; _details = []
-
-    # 1. 涨跌幅 (+0.5/百分点，上限15)
-
-    _chg = q.get('change_pct',0) if q else 0
-
-    _ps += min(int(_chg*0.5), 15) if _chg>0 else max(int(_chg*0.5), -10) if _chg<-3 else 0
-
-    _details.append(f"涨跌{'+' if _chg>=0 else ''}{_chg:.1f}%")
-
-    # 2. 主力资金 (20分)
-
-    if ff["data"] and len(ff["data"])>=20:
-
-        _tmain = sum(d["main_net"] for d in ff["data"][-20:])
-
-        _tdays = sum(1 for d in ff["data"][-20:] if d["main_net"]>0)
-
-        if _tmain>0: _ps+=10; _details.append(f"主力净流入{_tmain/1e8:.1f}亿")
-
-        if _tdays>=12: _ps+=10; _details.append(f"连续{_tdays}日流入")
-
-    # 3. 筹码集中 (15分)
-
-    if holders and len(holders)>=2:
-
-        if holders[0]["change_ratio"]<0 and holders[1]["change_ratio"]<0:
-
-            _ps+=15; _details.append("筹码持续集中")
-
-        elif holders[0]["change_ratio"]<0:
-
-            _ps+=8; _details.append("筹码趋于集中")
-
-    # 4. 技术形态 (15分)
-
-    if ma_data and 'ma5avgprice' in ma_data and price_today>0:
-
-        _ma5 = _safe_float(ma_data.get('ma5avgprice',0))
-
-        if price_today>=_ma5: _ps+=5
-
-        if 'ma10avgprice' in ma_data and _ma5>_safe_float(ma_data.get('ma10avgprice',0)):
-
-            _ps+=10; _details.append("均线金叉")
-
-    if q and q.get('change_pct',0)>=9.5 and price_today>=q.get('limit_up',0)*0.99:
-
-        _ps+=15; _details.append("涨停封板")
-
-    # 5. 北向态度 (10分)
-
-    if nb and len(nb)>=2:
-
-        _nb_chg = nb[0]["hold_shares"]-nb[-1]["hold_shares"]
-
-        if _nb_chg>0: _ps+=5
-
-        if len(nb)>=5 and all(nb[i]["hold_shares"]>=nb[i+1]["hold_shares"] for i in range(4)):
-
-            _ps+=5; _details.append("北向连续增持")
-
-    # 6. 龙虎榜 (10分)
-
-    if dtb["institution"].get("net_amt",0)>0: _ps+=10; _details.append("机构净买入")
-
-    # 7. 两融 (5分)
-
-    if margin and len(margin)>=3:
-
-        if all(margin[i]["rqye"]<=margin[i+1]["rqye"] for i in range(2)):
-
-            _ps+=5; _details.append("融券持续下降")
-
-    # 8. 风险扣分（含拉萨天团、减持预警等）
-
+    from stock_common import ScoreData, calculate_score, save_score_snapshot
+    
+    # 构建评分数据
+    score_data = ScoreData(
+        code=code,
+        name=info.get('name', ''),
+        price=price_today,
+        change_pct=q.get('change_pct', 0) if q else 0,
+    )
+    
+    # 均线数据
+    if ma_data and 'ma5avgprice' in ma_data:
+        score_data.ma5 = _safe_float(ma_data.get('ma5avgprice', 0))
+        score_data.ma10 = _safe_float(ma_data.get('ma10avgprice', 0))
+        score_data.ma20 = _safe_float(ma_data.get('ma20avgprice', 0))
+    
+    # 涨停判断
+    if q and q.get('change_pct', 0) >= 9.5 and price_today >= q.get("limit_up", 0) * 0.99:
+        score_data.is_limit_up = True
+    
+    # 资金流向
+    if ff["data"] and len(ff["data"]) >= 20:
+        score_data.main_net_inflow = sum(d["main_net"] for d in ff["data"][-20:])
+        score_data.consecutive_inflow_days = sum(1 for d in ff["data"][-20:] if d["main_net"] > 0)
+    
+    # 筹码数据
+    if holders and len(holders) >= 2:
+        score_data.holder_change_ratio = holders[0]["change_ratio"]
+        if holders[0]["change_ratio"] < 0 and holders[1]["change_ratio"] < 0:
+            score_data.holder_consecutive_decrease = True
+    
+    # 北向数据
+    if nb and len(nb) >= 2:
+        score_data.northbound_change = nb[0]["hold_shares"] - nb[-1]["hold_shares"]
+    
+    # 机构净买入
+    if dtb["institution"].get("net_amt", 0) > 0:
+        score_data.institution_net_buy = dtb["institution"].get("net_amt", 0)
+    
+    # 融券下降
+    if margin and len(margin) >= 3:
+        if all(margin[i]["rqye"] <= margin[i+1]["rqye"] for i in range(2)):
+            score_data.margin_short_decline = True
+    
+    # 计算评分
+    result = calculate_score("sht", score_data)
+    _ps = result.total_score
+    _details = result.details
+    
+    # 风险信号扣分
     _warn_cnt = sum(1 for s in signals if "⚠️" in s or "❌" in s)
-
-    _ps -= _warn_cnt*10
+    _ps -= _warn_cnt * 10
+    _ps = max(0, min(100, _ps))
 
     L(f"  评分明细: {' | '.join(_details[:8])}" if _details else None)
 
-    if _ps>=50: L(f"  短线评分: {_ps}/100 → 强烈参与，仓位40%，止损-5%")
+    if _ps>=50: L(f"  短线评分: {_ps:.0f}/100 → 强烈参与，仓位40%，止损-5%")
 
-    elif _ps>=30: L(f"  短线评分: {_ps}/100 → 可参与，仓位25%，止损-5%")
+    elif _ps>=30: L(f"  短线评分: {_ps:.0f}/100 → 可参与，仓位25%，止损-5%")
 
-    elif _ps>=15: L(f"  短线评分: {_ps}/100 → 轻仓试探，仓位10%，止损-3%")
+    elif _ps>=15: L(f"  短线评分: {_ps:.0f}/100 → 轻仓试探，仓位10%，止损-3%")
 
-    else: L(f"  短线评分: {_ps}/100 → 观望，仓位5%试水")
+    else: L(f"  短线评分: {_ps:.0f}/100 → 观望，仓位5%试水")
 
+    # 保存评分快照
+    try:
+        save_score_snapshot("sht", code, info.get('name', ''), _ps, price_today)
+    except Exception:
+        pass
 
-
-    output = "\n".join(lines)
+    output = "\n".join(filter(None, lines))
 
     with open(output_path,"w",encoding="utf-8") as f: f.write(output)
 
@@ -2269,79 +2247,76 @@ async def generate_report_async(session, code, output_path, ind_comp=None, idx_q
 
     L("\n"+"━"*72); L("【仓位管理建议】"); L("━"*72)
 
-    _ps = 0; _details = []
-
-    _chg = q.get('change_pct',0) if q else 0
-
-    _ps += min(int(_chg*0.5), 15) if _chg>0 else max(int(_chg*0.5), -10) if _chg<-3 else 0
-
-    _details.append(f"涨跌{'+' if _chg>=0 else ''}{_chg:.1f}%")
-
-    if ff["data"] and len(ff["data"])>=20:
-
-        _tmain = sum(d["main_net"] for d in ff["data"][-20:])
-
-        _tdays = sum(1 for d in ff["data"][-20:] if d["main_net"]>0)
-
-        if _tmain>0: _ps+=10; _details.append(f"主力净流入{_tmain/1e8:.1f}亿")
-
-        if _tdays>=12: _ps+=10; _details.append(f"连续{_tdays}日流入")
-
-    if holders and len(holders)>=2:
-
-        if holders[0]["change_ratio"]<0 and holders[1]["change_ratio"]<0:
-
-            _ps+=15; _details.append("筹码持续集中")
-
-        elif holders[0]["change_ratio"]<0:
-
-            _ps+=8; _details.append("筹码趋于集中")
-
-    if ma_data and 'ma5avgprice' in ma_data and price_today>0:
-
-        _ma5 = _safe_float(ma_data.get('ma5avgprice',0))
-
-        if price_today>=_ma5: _ps+=5
-
-        if 'ma10avgprice' in ma_data and _ma5>_safe_float(ma_data.get('ma10avgprice',0)):
-
-            _ps+=10; _details.append("均线金叉")
-
-    if q and q.get('change_pct',0)>=9.5 and price_today>=q.get("limit_up",0)*0.99:
-
-        _ps+=15; _details.append("涨停封板")
-
-    if nb and len(nb)>=2:
-
-        _nb_chg = nb[0]["hold_shares"]-nb[-1]["hold_shares"]
-
-        if _nb_chg>0: _ps+=5
-
-        if len(nb)>=5 and all(nb[i]["hold_shares"]>=nb[i+1]["hold_shares"] for i in range(4)):
-
-            _ps+=5; _details.append("北向连续增持")
-
-    if dtb["institution"].get("net_amt",0)>0: _ps+=10; _details.append("机构净买入")
-
-    if margin and len(margin)>=3:
-
-        if all(margin[i]["rqye"]<=margin[i+1]["rqye"] for i in range(2)):
-
-            _ps+=5; _details.append("融券持续下降")
-
+    # V8.2: 使用统一评分接口
+    from stock_common import ScoreData, calculate_score, save_score_snapshot
+    
+    # 构建评分数据
+    score_data = ScoreData(
+        code=code,
+        name=info.get('name', ''),
+        price=price_today,
+        change_pct=q.get('change_pct', 0) if q else 0,
+    )
+    
+    # 均线数据
+    if ma_data and 'ma5avgprice' in ma_data:
+        score_data.ma5 = _safe_float(ma_data.get('ma5avgprice', 0))
+        score_data.ma10 = _safe_float(ma_data.get('ma10avgprice', 0))
+        score_data.ma20 = _safe_float(ma_data.get('ma20avgprice', 0))
+    
+    # 涨停判断
+    if q and q.get('change_pct', 0) >= 9.5 and price_today >= q.get("limit_up", 0) * 0.99:
+        score_data.is_limit_up = True
+    
+    # 资金流向
+    if ff["data"] and len(ff["data"]) >= 20:
+        score_data.main_net_inflow = sum(d["main_net"] for d in ff["data"][-20:])
+        score_data.consecutive_inflow_days = sum(1 for d in ff["data"][-20:] if d["main_net"] > 0)
+    
+    # 筹码数据
+    if holders and len(holders) >= 2:
+        score_data.holder_change_ratio = holders[0]["change_ratio"]
+        if holders[0]["change_ratio"] < 0 and holders[1]["change_ratio"] < 0:
+            score_data.holder_consecutive_decrease = True
+    
+    # 北向数据
+    if nb and len(nb) >= 2:
+        score_data.northbound_change = nb[0]["hold_shares"] - nb[-1]["hold_shares"]
+    
+    # 机构净买入
+    if dtb["institution"].get("net_amt", 0) > 0:
+        score_data.institution_net_buy = dtb["institution"].get("net_amt", 0)
+    
+    # 融券下降
+    if margin and len(margin) >= 3:
+        if all(margin[i]["rqye"] <= margin[i+1]["rqye"] for i in range(2)):
+            score_data.margin_short_decline = True
+    
+    # 计算评分
+    result = calculate_score("sht", score_data)
+    _ps = result.total_score
+    _details = result.details
+    
+    # 风险信号扣分
     _warn_cnt = sum(1 for s in signals if "⚠️" in s or "❌" in s)
-
-    _ps -= _warn_cnt*10
+    _ps -= _warn_cnt * 10
+    _ps = max(0, min(100, _ps))
 
     L(f"  评分明细: {' | '.join(_details[:8])}" if _details else None)
 
-    if _ps>=50: L(f"  短线评分: {_ps}/100 → 强烈参与，仓位40%，止损-5%")
+    if _ps>=50: L(f"  短线评分: {_ps:.0f}/100 → 强烈参与，仓位40%，止损-5%")
 
-    elif _ps>=30: L(f"  短线评分: {_ps}/100 → 可参与，仓位25%，止损-5%")
+    elif _ps>=30: L(f"  短线评分: {_ps:.0f}/100 → 可参与，仓位25%，止损-5%")
 
-    elif _ps>=15: L(f"  短线评分: {_ps}/100 → 轻仓试探，仓位10%，止损-3%")
+    elif _ps>=15: L(f"  短线评分: {_ps:.0f}/100 → 轻仓试探，仓位10%，止损-3%")
 
-    else: L(f"  短线评分: {_ps}/100 → 观望，仓位5%试水")
+    else: L(f"  短线评分: {_ps:.0f}/100 → 观望，仓位5%试水")
+
+    # 保存评分快照
+    try:
+        save_score_snapshot("sht", code, info.get('name', ''), _ps, price_today)
+    except Exception:
+        pass
 
     output = "\n".join(lines)
 

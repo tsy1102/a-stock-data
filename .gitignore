@@ -1,0 +1,5 @@
+# Google Drive OAuth 客户端凭据（从 Google Cloud Console 下载，请勿提交）
+client_secrets.json
+
+# Google Drive 授权令牌（首次认证后自动生成，请勿提交）
+credentials.json

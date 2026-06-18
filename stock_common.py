@@ -279,13 +279,14 @@ def _do_request(url: str, params: Optional[Dict[str, Any]],
     return None
 
 
-def get_dragon_tiger_board(code: str, today_str: str, days: int = 30) -> Dict[str, Any]:
+def get_dragon_tiger_board(code: str, today_str: str, days: int = 30, include_seats: bool = True) -> Dict[str, Any]:
     """V7.5: 统一龙虎榜查询（单只股票）。
 
     Args:
         code: 6位股票代码
         today_str: 今日日期 YYYY-MM-DD
         days: 回溯天数（sht默认30，med默认180）
+        include_seats: 是否查询席位详情（默认True，设为False可减少2次API请求）
 
     Returns:
         {
@@ -316,9 +317,9 @@ def get_dragon_tiger_board(code: str, today_str: str, days: int = 30) -> Dict[st
     seats = {"buy": [], "sell": []}
     institution = {"buy_amt": 0, "sell_amt": 0, "net_amt": 0}
 
-    if records:
+    if records and include_seats:
         latest_date = records[0]["date"]
-        # 买入/卖出席位：用最新上榜日期 + SECURITY_CODE 过滤（单引号日期）
+        # 买入/卖出席席：用最新上榜日期 + SECURITY_CODE 过滤（单引号日期）
         buy_data = eastmoney_datacenter(code, "RPT_BILLBOARD_DAILYDETAILSBUY",
                                         filter_str=f"(SECURITY_CODE=\"{code}\")(TRADE_DATE>='{latest_date}')(TRADE_DATE<='{latest_date}')",
                                         page_size=50, sort_columns="BUY", sort_types="-1")
@@ -609,7 +610,7 @@ async def eastmoney_datacenter_async(session, code: str, report_name: str,
 
 
 async def get_dragon_tiger_board_async(session, code: str, today_str: str,
-                                       days: int = 30) -> Dict[str, Any]:
+                                       days: int = 30, include_seats: bool = True) -> Dict[str, Any]:
     """异步版: 单只股票龙虎榜查询。返回结构与同步版一致。
 
     注意 (2026-06-16): 东财 datacenter API 日期字段过滤必须用单引号
@@ -635,7 +636,7 @@ async def get_dragon_tiger_board_async(session, code: str, today_str: str,
     seats = {"buy": [], "sell": []}
     institution = {"buy_amt": 0, "sell_amt": 0, "net_amt": 0}
 
-    if records:
+    if records and include_seats:
         latest_date = records[0]["date"]
         buy_data = await eastmoney_datacenter_async(
             session, code, "RPT_BILLBOARD_DAILYDETAILSBUY",
@@ -2583,3 +2584,388 @@ async def get_gross_margin_and_roe_async(session, code, fin_report=None, bs_data
         return {"gross_margin": gross_margin, "roe": roe}
     except Exception:
         return None
+
+
+# ═══════════════════════════════════════════════════════════
+# V8.2: 统一评分接口
+# ═══════════════════════════════════════════════════════════
+
+from dataclasses import dataclass, field
+
+
+@dataclass
+class ScoreData:
+    """评分输入数据结构"""
+    # 基本信息
+    code: str = ""
+    name: str = ""
+    price: float = 0.0
+    change_pct: float = 0.0
+    
+    # 技术面数据
+    ma5: float = 0.0
+    ma10: float = 0.0
+    ma20: float = 0.0
+    macd_dif: float = 0.0
+    macd_dea: float = 0.0
+    rsi14: float = 50.0
+    kdj_k: float = 50.0
+    kdj_d: float = 50.0
+    kdj_j: float = 50.0
+    boll_pos: float = 50.0
+    volume_ratio: float = 1.0
+    ret_20d: float = 0.0
+    high_120d: float = 0.0
+    is_limit_up: bool = False
+    
+    # 基本面数据
+    roe: float = 0.0
+    gross_margin: float = 0.0
+    net_profit_margin: float = 0.0
+    debt_ratio: float = 0.0
+    asset_liability_ratio: float = 0.0
+    ocf_ratio: float = 0.0  # 经营现金流/净利润
+    
+    # 估值数据
+    pe_ttm: float = 0.0
+    pb: float = 0.0
+    forward_pe: float = 0.0
+    industry_pe: float = 0.0
+    drawdown_from_high: float = 0.0
+    
+    # 资金面数据
+    main_net_inflow: float = 0.0
+    consecutive_inflow_days: int = 0
+    northbound_change: float = 0.0
+    institution_net_buy: float = 0.0
+    margin_short_decline: bool = False
+    
+    # 筹码数据
+    holder_change_ratio: float = 0.0
+    holder_consecutive_decrease: bool = False
+    institution_holding_pct: float = 0.0
+    
+    # 分红数据
+    dividend_yield: float = 0.0
+    consecutive_dividend_years: int = 0
+
+
+@dataclass
+class ScoreResult:
+    """评分结果数据结构"""
+    total_score: float = 0.0
+    dimensions: Dict[str, float] = field(default_factory=dict)
+    details: List[str] = field(default_factory=list)
+    report_source: str = ""
+
+
+def _score_technical(data: ScoreData, cfg: Dict = None) -> tuple:
+    """技术面评分（0-100基准，加减分）"""
+    score = 50.0
+    details = []
+    tc = cfg or {}
+    
+    # 均线系统
+    if data.ma5 > 0 and data.ma10 > 0 and data.ma20 > 0:
+        if data.ma5 > data.ma10 > data.ma20:
+            score += tc.get("ma_golden_cross", 10)
+            details.append("均线多头排列")
+        elif data.ma5 < data.ma10 < data.ma20:
+            score += tc.get("ma_death_cross", -10)
+        else:
+            score += 3
+    
+    # 涨跌幅
+    if data.change_pct > 0:
+        add_score = min(int(data.change_pct * 0.5), 15)
+        score += add_score
+        details.append(f"涨跌+{data.change_pct:.1f}%")
+    elif data.change_pct < -3:
+        score += max(int(data.change_pct * 0.5), -10)
+        details.append(f"涨跌{data.change_pct:.1f}%")
+    
+    # 涨停封板
+    if data.is_limit_up:
+        score += tc.get("limit_up", 15)
+        details.append("涨停封板")
+    
+    # MACD
+    if data.macd_dif > data.macd_dea > 0:
+        score += tc.get("macd_bull", 8)
+        details.append("MACD金叉")
+    elif data.macd_dif < data.macd_dea < 0:
+        score += tc.get("macd_bear", -8)
+    
+    # RSI
+    if 40 <= data.rsi14 <= 70:
+        score += tc.get("rsi_optimal", 5)
+    elif data.rsi14 < 30:
+        score += tc.get("rsi_oversold", 3)
+        details.append("RSI超卖")
+    elif data.rsi14 > 80:
+        score += tc.get("rsi_overbought", -4)
+    
+    # KDJ
+    if data.kdj_k > data.kdj_d and data.kdj_k < 80:
+        score += tc.get("kdj_golden", 3)
+    elif data.kdj_j > 110:
+        score += tc.get("kdj_overbought", -3)
+    
+    # 20日涨跌幅
+    if data.ret_20d < -30:
+        score += tc.get("ret_20d_drop", -6)
+    elif data.ret_20d > 15:
+        score += tc.get("ret_20d_rally", 5)
+    
+    # 距高点回撤
+    if data.high_120d > 0 and data.price > 0:
+        ratio = (data.price / data.high_120d - 1) * 100
+        if ratio < -30:
+            score += tc.get("depth_pullback", 4)
+            details.append(f"距高点回撤{abs(ratio):.0f}%")
+    
+    return max(0, min(100, score)), details
+
+
+def _score_fundamental(data: ScoreData, cfg: Dict = None) -> tuple:
+    """基本面评分（0-100基准，加减分）"""
+    score = 50.0
+    details = []
+    fc = cfg or {}
+    
+    # ROE
+    if data.roe >= 20:
+        score += fc.get("roe_excellent", 25)
+        details.append(f"ROE={data.roe:.1f}%优秀")
+    elif data.roe >= 15:
+        score += fc.get("roe_good", 15)
+        details.append(f"ROE={data.roe:.1f}%良好")
+    elif data.roe >= 10:
+        score += fc.get("roe_medium", 8)
+        details.append(f"ROE={data.roe:.1f}%中等")
+    
+    # 毛利率
+    if data.gross_margin >= 40:
+        score += fc.get("gross_margin_high", 10)
+        details.append(f"毛利率{data.gross_margin:.1f}%")
+    
+    # 净利率
+    if data.net_profit_margin >= 15:
+        score += fc.get("net_margin_high", 10)
+        details.append(f"净利率{data.net_profit_margin:.1f}%")
+    
+    # 资产负债率（越低越好）
+    if data.asset_liability_ratio > 0:
+        equity_ratio = 1 - data.asset_liability_ratio
+        if equity_ratio > 0.6:
+            score += fc.get("low_debt", 15)
+            details.append("资产负债率低")
+    
+    # 现金流
+    if data.ocf_ratio >= 0.8:
+        score += fc.get("cash_flow_good", 10)
+        details.append("现金流充裕")
+    
+    return max(0, min(100, score)), details
+
+
+def _score_valuation(data: ScoreData, cfg: Dict = None) -> tuple:
+    """估值面评分（0-100基准，加减分）"""
+    score = 50.0
+    details = []
+    vc = cfg or {}
+    
+    # PE相对行业
+    if data.pe_ttm > 0 and data.industry_pe > 0:
+        if data.pe_ttm < data.industry_pe:
+            score += vc.get("pe_below_industry", 15)
+            details.append("PE低于行业均值")
+    
+    # 前向PE
+    if data.forward_pe > 0:
+        if data.forward_pe < 15:
+            score += vc.get("forward_pe_low", 20)
+            details.append(f"前向PE={data.forward_pe:.1f}x低估")
+        elif data.forward_pe < 25:
+            score += vc.get("forward_pe_medium", 10)
+            details.append(f"前向PE={data.forward_pe:.1f}x合理")
+    
+    # PB
+    if data.pb > 0 and data.pb < 2:
+        score += vc.get("pb_low", 5)
+    
+    # 回撤幅度（长线视角）
+    if data.drawdown_from_high <= -40:
+        score += vc.get("golden_drawdown", 15)
+        details.append(f"距高点回撤{abs(data.drawdown_from_high):.0f}%（黄金坑）")
+    elif data.drawdown_from_high <= -20:
+        score += vc.get("normal_drawdown", 8)
+        details.append(f"距高点回撤{abs(data.drawdown_from_high):.0f}%")
+    
+    return max(0, min(100, score)), details
+
+
+def _score_flow(data: ScoreData, cfg: Dict = None) -> tuple:
+    """资金面评分（0-100基准，加减分）"""
+    score = 50.0
+    details = []
+    flc = cfg or {}
+    
+    # 主力净流入
+    if data.main_net_inflow > 0:
+        score += flc.get("main_inflow", 10)
+        details.append(f"主力净流入{data.main_net_inflow/1e8:.1f}亿")
+    
+    # 连续流入天数
+    if data.consecutive_inflow_days >= 12:
+        score += flc.get("consecutive_inflow", 10)
+        details.append(f"连续{data.consecutive_inflow_days}日流入")
+    
+    # 北向增持
+    if data.northbound_change > 0:
+        score += flc.get("northbound_increase", 8)
+        details.append("北向增持")
+    
+    # 机构净买入
+    if data.institution_net_buy > 0:
+        score += flc.get("institution_buy", 10)
+        details.append("机构净买入")
+    
+    # 融券下降
+    if data.margin_short_decline:
+        score += flc.get("margin_decline", 5)
+        details.append("融券持续下降")
+    
+    return max(0, min(100, score)), details
+
+
+def _score_holder(data: ScoreData, cfg: Dict = None) -> tuple:
+    """筹码面评分（0-100基准，加减分）"""
+    score = 50.0
+    details = []
+    hc = cfg or {}
+    
+    # 筹码集中
+    if data.holder_change_ratio < 0:
+        if data.holder_consecutive_decrease:
+            score += hc.get("holder_concentrate", 15)
+            details.append("筹码持续集中")
+        else:
+            score += hc.get("holder_trend", 8)
+            details.append("筹码趋于集中")
+    
+    # 机构持仓
+    if data.institution_holding_pct > 0:
+        score += hc.get("institution_hold", 10)
+        details.append(f"机构持仓{data.institution_holding_pct:.1f}%")
+    
+    return max(0, min(100, score)), details
+
+
+def _score_dividend(data: ScoreData, cfg: Dict = None) -> tuple:
+    """分红面评分（0-100基准，加减分）"""
+    score = 50.0
+    details = []
+    dc = cfg or {}
+    
+    # 股息率
+    if data.dividend_yield >= 3:
+        score += dc.get("dividend_high", 10)
+        details.append(f"股息率{data.dividend_yield:.1f}%")
+    
+    # 持续分红
+    if data.consecutive_dividend_years >= 5:
+        score += dc.get("dividend_continuous", 5)
+        details.append("持续分红5年+")
+    
+    return max(0, min(100, score)), details
+
+
+def calculate_score(score_type: str, data: ScoreData, cfg: Dict = None) -> ScoreResult:
+    """
+    统一评分接口
+    
+    Args:
+        score_type: 评分类型 "sht"/"med"/"lng"/"ful"
+        data: ScoreData 输入数据
+        cfg: 评分配置（可选）
+    
+    Returns:
+        ScoreResult 评分结果
+    """
+    result = ScoreResult(report_source=score_type)
+    sc = cfg or {}
+    
+    # 计算各维度评分
+    tech_score, tech_details = _score_technical(data, sc.get("technical", {}))
+    fund_score, fund_details = _score_fundamental(data, sc.get("fundamental", {}))
+    val_score, val_details = _score_valuation(data, sc.get("valuation", {}))
+    flow_score, flow_details = _score_flow(data, sc.get("flow", {}))
+    holder_score, holder_details = _score_holder(data, sc.get("holder", {}))
+    div_score, div_details = _score_dividend(data, sc.get("dividend", {}))
+    
+    result.dimensions = {
+        "technical": tech_score,
+        "fundamental": fund_score,
+        "valuation": val_score,
+        "flow": flow_score,
+        "holder": holder_score,
+        "dividend": div_score
+    }
+    
+    # 根据评分类型组合
+    if score_type == "sht":
+        # 短线：技术面 + 资金面 + 筹码面
+        result.total_score = (
+            tech_score * 0.4 +
+            flow_score * 0.35 +
+            holder_score * 0.25
+        )
+        result.details = tech_details + flow_details + holder_details
+        
+    elif score_type == "med":
+        # 中线：基本面 + 估值面 + 资金面 + 筹码面
+        result.total_score = (
+            fund_score * 0.35 +
+            val_score * 0.25 +
+            flow_score * 0.2 +
+            holder_score * 0.2
+        )
+        result.details = fund_details + val_details + flow_details + holder_details
+        
+    elif score_type == "lng":
+        # 长线：基本面 + 估值面 + 分红面 + 筹码面
+        result.total_score = (
+            fund_score * 0.3 +
+            val_score * 0.3 +
+            div_score * 0.2 +
+            holder_score * 0.2
+        )
+        result.details = fund_details + val_details + div_details + holder_details
+        
+    elif score_type == "ful":
+        # 完整：五维综合
+        # 注意：配置文件中权重为百分比形式（如25），需除以100转为小数
+        _cfg_weights = sc.get("weights", {}) if sc else {}
+        weights = {
+            "technical": (_cfg_weights.get("technical", 25) / 100),
+            "valuation": (_cfg_weights.get("valuation", 20) / 100),
+            "fundamental": (_cfg_weights.get("fundamental", 20) / 100),
+            "flow": (_cfg_weights.get("flow", 15) / 100),
+            "holder": (_cfg_weights.get("holder", 10) / 100),
+            "dividend": (_cfg_weights.get("dividend", 10) / 100),
+        }
+        result.total_score = (
+            tech_score * weights.get("technical", 0.25) +
+            val_score * weights.get("valuation", 0.20) +
+            fund_score * weights.get("fundamental", 0.20) +
+            flow_score * weights.get("flow", 0.15) +
+            holder_score * weights.get("holder", 0.10) +
+            div_score * weights.get("dividend", 0.10)
+        )
+        result.details = tech_details + fund_details + val_details + flow_details + holder_details + div_details
+    
+    else:
+        result.total_score = 50.0
+    
+    return result

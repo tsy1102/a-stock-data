@@ -5,7 +5,7 @@
 仅读取本地快照，不发起网络请求。
 
 目录结构：
-Warning/
+snapshots/
 ├── snapshot_YYYYMMDD_script.json  # 评分快照（保留4天）
 └── analyze_YYYYMMDD.txt           # 分析报告（保留2天）
 
@@ -28,7 +28,7 @@ from datetime import datetime, timedelta
 from typing import Dict, List, Any, Optional
 
 # 配置
-WARNING_DIR = "Warning"
+SNAPSHOT_DIR = "snapshots"
 SNAPSHOT_RETENTION_DAYS = 4  # JSON快照保留4天
 REPORT_RETENTION_DAYS = 2     # TXT报告保留2天
 MAX_LOOKBACK_DAYS = 30        # 最多往前找30天
@@ -39,17 +39,17 @@ MIN_PRICE_CHANGE = 2.0        # 股价变化阈值（%）
 SCRIPT_PRIORITY = {"full": 6, "val": 5, "mak": 4, "med": 3, "lng": 2, "sht": 1}
 
 
-def ensure_warning_dir():
-    """确保 Warning/ 目录存在"""
-    os.makedirs(WARNING_DIR, exist_ok=True)
+def ensure_snapshot_dir():
+    """确保 snapshots/ 目录存在"""
+    os.makedirs(SNAPSHOT_DIR, exist_ok=True)
 
 
 def cleanup_old_files():
     """清理过期文件"""
     now = datetime.now()
     
-    for f in os.listdir(WARNING_DIR):
-        filepath = os.path.join(WARNING_DIR, f)
+    for f in os.listdir(SNAPSHOT_DIR):
+        filepath = os.path.join(SNAPSHOT_DIR, f)
         if not os.path.isfile(filepath):
             continue
         
@@ -75,24 +75,42 @@ def cleanup_old_files():
                 pass
 
 
-def load_snapshot(date_str: str) -> Dict[str, Any]:
-    """加载某一天的合并快照"""
-    merged = {}
+def load_snapshot(date_str: str, script_type: str = None) -> Dict[str, Any]:
+    """加载某一天的快照
     
+    Args:
+        date_str: 日期字符串 YYYYMMDD
+        script_type: 脚本类型（ful/val/mak/med/lng/sht），None表示加载所有并按优先级合并
+    
+    Returns:
+        股票评分数据 {"code": {"name": "...", "total_score": 85.2, "price": 1680.5, "report_source": "ful"}}
+    """
+    if script_type:
+        # 加载指定类型的快照
+        filepath = os.path.join(SNAPSHOT_DIR, f"snapshot_{date_str}_{script_type}.json")
+        if os.path.exists(filepath):
+            try:
+                with open(filepath, 'r', encoding='utf-8') as f:
+                    data = json.load(f)
+                    return data.get("stocks", {})
+            except Exception:
+                pass
+        return {}
+    
+    # 原始逻辑：按优先级合并所有类型
+    merged = {}
     for script, _ in SCRIPT_PRIORITY.items():
-        filepath = os.path.join(WARNING_DIR, f"snapshot_{date_str}_{script}.json")
+        filepath = os.path.join(SNAPSHOT_DIR, f"snapshot_{date_str}_{script}.json")
         if os.path.exists(filepath):
             try:
                 with open(filepath, 'r', encoding='utf-8') as f:
                     data = json.load(f)
                     stocks = data.get("stocks", {})
                     for code, info in stocks.items():
-                        # 按优先级覆盖：高优先级脚本的数据覆盖低优先级
                         if code not in merged or SCRIPT_PRIORITY.get(info.get("report_source", ""), 0) > SCRIPT_PRIORITY.get(merged[code].get("report_source", ""), 0):
                             merged[code] = info
             except Exception:
                 pass
-    
     return merged
 
 
@@ -107,7 +125,7 @@ def find_recent_snapshots(today_date: datetime) -> List[str]:
         # 检查是否有快照文件
         has_snapshot = False
         for script in SCRIPT_PRIORITY.keys():
-            if os.path.exists(os.path.join(WARNING_DIR, f"snapshot_{date_str}_{script}.json")):
+            if os.path.exists(os.path.join(SNAPSHOT_DIR, f"snapshot_{date_str}_{script}.json")):
                 has_snapshot = True
                 break
         
@@ -197,10 +215,10 @@ def generate_report(signals: List[Dict], today_str: str, recent_dates: List[str]
     
     if not recent_dates:
         lines.append("  ⚠️ 警告：未找到历史快照数据")
-        lines.append("  请先运行 main.py 抓取数据，快照会自动保存到 Warning/ 目录")
+        lines.append("  请先运行 main.py 抓取数据，快照会自动保存到 snapshots/ 目录")
         lines.append("")
         lines.append("═" * 70)
-        return "\n".join(lines)
+        return "\n".join(filter(None, lines))
     
     lines.append(f"  📊 分析周期: {recent_dates[-1]} → {recent_dates[0]}")
     lines.append(f"  📈 对比天数: {len(recent_dates)} 天")
@@ -210,7 +228,7 @@ def generate_report(signals: List[Dict], today_str: str, recent_dates: List[str]
         lines.append("  ✅ 未检测到明显背离信号")
         lines.append("")
         lines.append("═" * 70)
-        return "\n".join(lines)
+        return "\n".join(filter(None, lines))
     
     # 按类型分组
     bullish = [s for s in signals if s["type"] == "bullish_divergence"]
@@ -243,12 +261,12 @@ def generate_report(signals: List[Dict], today_str: str, recent_dates: List[str]
     lines.append("═" * 70)
     lines.append(f"  注：报告保留 {REPORT_RETENTION_DAYS} 天，快照保留 {SNAPSHOT_RETENTION_DAYS} 天")
     
-    return "\n".join(lines)
+    return "\n".join(filter(None, lines))
 
 
 def analyze_history(force_run: bool = False) -> str:
     """核心分析函数（可被 main.py 调用）"""
-    ensure_warning_dir()
+    ensure_snapshot_dir()
     cleanup_old_files()
     
     today = datetime.now()
@@ -281,7 +299,7 @@ def analyze_history(force_run: bool = False) -> str:
     report = generate_report(signals, today_str, recent_dates)
     
     # 保存报告
-    report_file = os.path.join(WARNING_DIR, f"analyze_{today.strftime('%Y%m%d')}.txt")
+    report_file = os.path.join(SNAPSHOT_DIR, f"analyze_{today.strftime('%Y%m%d')}.txt")
     with open(report_file, 'w', encoding='utf-8') as f:
         f.write(report)
     
@@ -295,11 +313,11 @@ def save_snapshot(script_type: str, stocks_data: Dict[str, Any]):
         script_type: 脚本类型（ful/val/mak/med/lng/sht）
         stocks_data: 股票评分数据 {"code": {"name": "...", "total_score": 85.2, "price": 1680.5}}
     """
-    ensure_warning_dir()
+    ensure_snapshot_dir()
     
     today = datetime.now()
     date_str = today.strftime("%Y%m%d")
-    snapshot_file = os.path.join(WARNING_DIR, f"snapshot_{date_str}_{script_type}.json")
+    snapshot_file = os.path.join(SNAPSHOT_DIR, f"snapshot_{date_str}_{script_type}.json")
     
     # 加载现有数据（如果存在）
     existing = {}

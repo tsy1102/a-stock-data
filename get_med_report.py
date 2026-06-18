@@ -836,49 +836,73 @@ def generate_report(code, output_path, ind_comp=None, hsgt=None):
             L(f"  📊 {_bi}")
 
     L("\n"+"━"*72); L("【仓位管理建议】"); L("━"*72)
-    _ps = 0; _details = []
-    # 1. ROE质量 (25分)
+    
+    # V8.2: 使用统一评分接口
+    from stock_common import ScoreData, calculate_score, save_score_snapshot
+    
+    # 构建评分数据
+    score_data = ScoreData(
+        code=code,
+        name=info.get('name', ''),
+        price=price_today,
+    )
+    
+    # 基本面数据
     if fin_metrics:
-        _last_roe = fin_metrics.get("roe")
-        if _last_roe and _last_roe>=20: _ps+=25; _details.append(f"ROE={_last_roe:.1f}%优秀")
-        elif _last_roe and _last_roe>=15: _ps+=15; _details.append(f"ROE={_last_roe:.1f}%良好")
-        elif _last_roe and _last_roe>=10: _ps+=8; _details.append(f"ROE={_last_roe:.1f}%中等")
-    # 2. 盈利趋势 (20分) — 从 fin_metrics + financials
-    if fin_metrics:
-        _gm = fin_metrics.get("gross_margin")
-        if _gm and _gm>=40: _ps+=10; _details.append(f"毛利率{_gm:.1f}%")
-    if financials and len(financials)>0:
+        score_data.roe = fin_metrics.get("roe", 0) or 0
+        score_data.gross_margin = fin_metrics.get("gross_margin", 0) or 0
+    
+    # 净利率
+    if financials and len(financials) > 0:
         _rev = _safe_float(financials[0].get("营业总收入", 0))
         _np = _safe_float(financials[0].get("净利润", 0))
-        if _rev>0:
-            _npm = _np/_rev*100
-            if _npm>=15: _ps+=10; _details.append(f"净利率{_npm:.1f}%")
-    # 3. 资产质量 (15分)
-    if bs_data and len(bs_data)>0:
+        if _rev > 0:
+            score_data.net_profit_margin = _np / _rev * 100
+    
+    # 资产负债率
+    if bs_data and len(bs_data) > 0:
         _eq = _safe_float(bs_data[0].get("归属于母公司股东权益合计", 0))
         _ta = _safe_float(bs_data[0].get("资产总计", 1))
-        if _ta>0 and _eq/_ta>0.4: _ps+=15; _details.append("资产负债率低")
-    # 4. 估值 (15分)
+        if _ta > 0:
+            score_data.asset_liability_ratio = 1 - (_eq / _ta)
+    
+    # 估值数据
+    if q:
+        score_data.pe_ttm = q.get("pe_ttm", 0) or 0
     if peer_data and peer_data.get("peers"):
-        _my_pe = q.get("pe_ttm",0) if q else 0
-        _avg_pe = sum(p.get("pe",0) for p in peer_data["peers"])/max(len(peer_data["peers"]),1)
-        if _my_pe>0 and _avg_pe>0 and _my_pe<_avg_pe: _ps+=15; _details.append(f"PE低于行业均值")
-    # 5. 北向/机构 (15分)
-    if nb and len(nb)>=2 and nb[0]["hold_shares"]>nb[-1]["hold_shares"]:
-        _ps+=8; _details.append("北向增持")
-    # V7.5: 用 get_holder_structure 替代旧版 get_top10_shareholders
+        score_data.industry_pe = sum(p.get("pe", 0) for p in peer_data["peers"]) / max(len(peer_data["peers"]), 1)
+    
+    # 北向数据
+    if nb and len(nb) >= 2:
+        score_data.northbound_change = nb[0]["hold_shares"] - nb[-1]["hold_shares"]
+    
+    # 机构持仓
     _st = get_holder_structure(code)
-    if _st and _st[0].get("domestic", 0) > 0: _ps += 7; _details.append("机构持仓")
-    # 6. 筹码 (10分)
-    if holders and len(holders)>=2 and holders[0]["change_ratio"]<0:
-        _ps+=10; _details.append("筹码集中")
+    if _st:
+        score_data.institution_holding_pct = _st[0].get("domestic", 0)
+    
+    # 筹码数据
+    if holders and len(holders) >= 2:
+        score_data.holder_change_ratio = holders[0]["change_ratio"]
+    
+    # 计算评分
+    result = calculate_score("med", score_data)
+    _ps = result.total_score
+    _details = result.details
+    
     L(f"  评分明细: {' | '.join(_details[:6])}" if _details else None)
-    if _ps>=70: L(f"  中线评分: {_ps}/100 → 强烈推荐，仓位40%")
-    elif _ps>=45: L(f"  中线评分: {_ps}/100 → 建议配置，仓位25%")
-    elif _ps>=20: L(f"  中线评分: {_ps}/100 → 观察仓，仓位10%")
-    else: L(f"  中线评分: {_ps}/100 → 暂不建议，等待基本面拐点")
+    if _ps>=70: L(f"  中线评分: {_ps:.0f}/100 → 强烈推荐，仓位40%")
+    elif _ps>=45: L(f"  中线评分: {_ps:.0f}/100 → 建议配置，仓位25%")
+    elif _ps>=20: L(f"  中线评分: {_ps:.0f}/100 → 观察仓，仓位10%")
+    else: L(f"  中线评分: {_ps:.0f}/100 → 暂不建议，等待基本面拐点")
     L(f"  核心驱动: 基本面拐点 / 估值 PEG / 筹码结构 / 重大事件")
     L("=" * 72)
+
+    # 保存评分快照
+    try:
+        save_score_snapshot("med", code, info.get('name', ''), _ps, price_today)
+    except Exception:
+        pass
 
     output = "\n".join(lines)
     with open(output_path, "w", encoding="utf-8") as f:
@@ -1493,44 +1517,75 @@ async def generate_report_async(session, code, output_path, ind_comp=None, hsgt=
         for _bi in _bt_items: L(f"  📊 {_bi}")
 
     L("\n"+"━"*72); L("【仓位管理建议】"); L("━"*72)
-    _ps = 0; _details = []
+    
+    # V8.2: 使用统一评分接口
+    from stock_common import ScoreData, calculate_score, save_score_snapshot
+    
+    # 构建评分数据
+    score_data = ScoreData(
+        code=code,
+        name=info.get('name', ''),
+        price=price_today,
+    )
+    
+    # 基本面数据
     if fin_metrics:
-        _last_roe = fin_metrics.get("roe")
-        if _last_roe and _last_roe >= 20: _ps += 25; _details.append(f"ROE={_last_roe:.1f}%优秀")
-        elif _last_roe and _last_roe >= 15: _ps += 15; _details.append(f"ROE={_last_roe:.1f}%良好")
-        elif _last_roe and _last_roe >= 10: _ps += 8; _details.append(f"ROE={_last_roe:.1f}%中等")
-    if fin_metrics:
-        _gm = fin_metrics.get("gross_margin")
-        if _gm and _gm >= 40: _ps += 10; _details.append(f"毛利率{_gm:.1f}%")
+        score_data.roe = fin_metrics.get("roe", 0) or 0
+        score_data.gross_margin = fin_metrics.get("gross_margin", 0) or 0
+    
+    # 净利率
     if financials and len(financials) > 0:
         _rev = _safe_float(financials[0].get("营业总收入", 0))
         _np = _safe_float(financials[0].get("净利润", 0))
         if _rev > 0:
-            _npm = _np/_rev*100
-            if _npm >= 15: _ps += 10; _details.append(f"净利率{_npm:.1f}%")
+            score_data.net_profit_margin = _np / _rev * 100
+    
+    # 资产负债率
     if bs_data and len(bs_data) > 0:
         _eq = _safe_float(bs_data[0].get("归属于母公司股东权益合计", 0))
         _ta = _safe_float(bs_data[0].get("资产总计", 1))
-        if _ta > 0 and _eq/_ta > 0.4: _ps += 15; _details.append("资产负债率低")
+        if _ta > 0:
+            score_data.asset_liability_ratio = 1 - (_eq / _ta)
+    
+    # 估值数据
+    if q:
+        score_data.pe_ttm = q.get("pe_ttm", 0) or 0
     if peer_data and peer_data.get("peers"):
-        _my_pe = q.get("pe_ttm", 0) if q else 0
-        _avg_pe = sum(p.get("pe", 0) for p in peer_data["peers"])/max(len(peer_data["peers"]), 1)
-        if _my_pe > 0 and _avg_pe > 0 and _my_pe < _avg_pe: _ps += 15; _details.append(f"PE低于行业均值")
-    if nb and len(nb) >= 2 and nb[0]["hold_shares"] > nb[-1]["hold_shares"]:
-        _ps += 8; _details.append("北向增持")
+        score_data.industry_pe = sum(p.get("pe", 0) for p in peer_data["peers"]) / max(len(peer_data["peers"]), 1)
+    
+    # 北向数据
+    if nb and len(nb) >= 2:
+        score_data.northbound_change = nb[0]["hold_shares"] - nb[-1]["hold_shares"]
+    
+    # 机构持仓
     _st = get_holder_structure(code)
-    if _st and _st[0].get("domestic", 0) > 0: _ps += 7; _details.append("机构持仓")
-    if holders and len(holders) >= 2 and holders[0]["change_ratio"] < 0:
-        _ps += 10; _details.append("筹码集中")
+    if _st:
+        score_data.institution_holding_pct = _st[0].get("domestic", 0)
+    
+    # 筹码数据
+    if holders and len(holders) >= 2:
+        score_data.holder_change_ratio = holders[0]["change_ratio"]
+    
+    # 计算评分
+    result = calculate_score("med", score_data)
+    _ps = result.total_score
+    _details = result.details
+    
     L(f"  评分明细: {' | '.join(_details[:6])}" if _details else None)
-    if _ps >= 70: L(f"  中线评分: {_ps}/100 → 强烈推荐，仓位40%")
-    elif _ps >= 45: L(f"  中线评分: {_ps}/100 → 建议配置，仓位25%")
-    elif _ps >= 20: L(f"  中线评分: {_ps}/100 → 观察仓，仓位10%")
-    else: L(f"  中线评分: {_ps}/100 → 暂不建议，等待基本面拐点")
+    if _ps >= 70: L(f"  中线评分: {_ps:.0f}/100 → 强烈推荐，仓位40%")
+    elif _ps >= 45: L(f"  中线评分: {_ps:.0f}/100 → 建议配置，仓位25%")
+    elif _ps >= 20: L(f"  中线评分: {_ps:.0f}/100 → 观察仓，仓位10%")
+    else: L(f"  中线评分: {_ps:.0f}/100 → 暂不建议，等待基本面拐点")
     L(f"  核心驱动: 基本面拐点 / 估值 PEG / 筹码结构 / 重大事件")
     L("=" * 72)
 
-    output = "\n".join(lines)
+    # 保存评分快照
+    try:
+        save_score_snapshot("med", code, info.get('name', ''), _ps, price_today)
+    except Exception:
+        pass
+
+    output = "\n".join(filter(None, lines))
     with open(output_path, "w", encoding="utf-8") as f:
         f.write(output)
     return output

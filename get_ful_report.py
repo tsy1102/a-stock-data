@@ -1513,268 +1513,85 @@ def layer7_announcements(code: str, stock_name: str = "") -> Dict[str, Any]:
 
 def _scoring(layers: Dict[str, Any], _cfg_sc: Dict = None) -> Dict[str, float]:
     """
+    V8.2: 使用统一评分接口计算五维评分
     基于各层数据计算五个维度的评分（0~100）：
     技术面/估值面/基本面/资金面/题材面 五维加权综合评分
-    权重和阈值从 strategy_config.yaml 的 scoring 配置中读取
     """
-    # 加载评分配置（带默认值，兼容无配置情况）
-    sc = _cfg_sc or {}
-    weights = sc.get("weights", {
-        "technical": 25, "valuation": 20, "fundamental": 20, "flow": 15, "theme": 15
-    }) if sc else {
-        "technical": 25, "valuation": 20, "fundamental": 20, "flow": 15, "theme": 15
-    }
-    tc = sc.get("technical", {}) if sc else {}
-    vc = sc.get("valuation", {}) if sc else {}
-    fc = sc.get("fundamental", {}) if sc else {}
-    flc = sc.get("flow", {}) if sc else {}
-
-    technical = 50.0
-    valuation = 50.0
-    fundamental = 50.0
-    flow = 50.0
-    theme = 50.0
-
-    # ── 技术面（Layer1）
+    from stock_common import ScoreData, calculate_score as _calc_score
+    
+    # 从 layers 中提取数据构建 ScoreData
     l1 = layers.get("layer1") or {}
+    l2 = layers.get("layer2") or {}
+    l3 = layers.get("layer3") or {}
+    l4 = layers.get("layer4") or {}
+    l5 = layers.get("layer5") or {}
+    l6 = layers.get("layer6") or {}
+    li = layers.get("layer_ind") or {}
+    
     kline = l1.get("kline") or {}
     tech = l1.get("tech") or {}
-    if isinstance(kline, dict):
-        # 均线
-        if kline.get("ma5") and kline.get("ma10") and kline.get("ma20"):
-            if kline["ma5"] > kline["ma10"] > kline["ma20"]:
-                technical += tc.get("ma_golden_cross", 10)
-            elif kline["ma5"] < kline["ma10"] < kline["ma20"]:
-                technical += tc.get("ma_death_cross", -10)
-            else:
-                technical += 3
-        # 涨跌幅
-        if kline.get("ret_20d") and kline["ret_20d"] < -30:
-            technical += tc.get("ret_20d_drop", -6)
-        elif kline.get("ret_20d") and kline["ret_20d"] > 15:
-            technical += tc.get("ret_20d_rally", 5)
-        # 距历史高点
-        if kline.get("high_120d") and kline.get("price"):
-            ratio_from_high = (kline["price"] / kline["high_120d"] - 1) * 100
-            if ratio_from_high < -30:
-                technical += tc.get("depth_pullback", 4)
-            elif ratio_from_high > 0:
-                technical += tc.get("near_high", 2)
-    # MACD信号
-    if tech.get("macd"):
-        m = tech["macd"]
-        if isinstance(m, dict):
-            if m.get("dif", 0) > m.get("dea", 0) > 0:
-                technical += tc.get("macd_bull", 8)
-            elif m.get("dif", 0) < m.get("dea", 0) < 0:
-                technical += tc.get("macd_bear", -8)
-            else:
-                technical += 2
-    # RSI
-    if tech.get("rsi"):
-        r = tech["rsi"]
-        if isinstance(r, dict):
-            val = r.get("rsi14", 50)
-            if 40 <= val <= 70:
-                technical += tc.get("rsi_optimal", 5)
-            elif val < 30:
-                technical += tc.get("rsi_oversold", 3)
-            elif val > 80:
-                technical += tc.get("rsi_overbought", -4)
-    # 布林带位置
-    if tech.get("boll"):
-        b = tech["boll"]
-        if isinstance(b, dict):
-            pos = b.get("pos_pct", 50)
-            if 20 <= pos <= 75:
-                technical += tc.get("boll_optimal", 3)
-            elif pos > 90:
-                technical += tc.get("boll_overshoot", -2)
-    # KDJ
-    if tech.get("kdj"):
-        k = tech["kdj"]
-        if isinstance(k, dict):
-            if k.get("k", 50) > k.get("d", 50) and k.get("k", 0) < 80:
-                technical += tc.get("kdj_golden", 3)
-            elif k.get("j", 0) > 110:
-                technical += tc.get("kdj_overbought", -3)
-    # 量能
-    if tech.get("volume"):
-        v = tech["volume"]
-        if isinstance(v, dict):
-            if v.get("ratio", 1) > 2:
-                technical += tc.get("volume_surge", 2)
-
-    # ── 估值面（Layer2）
-    l2 = layers.get("layer2") or {}
     val = l2.get("valuation") or {}
-    if val and isinstance(val, dict):
-        pe = val.get("pe_ttm") or val.get("forward_pe") or 0
-        pb = val.get("pb") or 0
-        peg = val.get("peg") or 0
-        if pe > 0:
-            if pe < 15:
-                valuation += vc.get("pe_low", 10)
-            elif pe < 25:
-                valuation += vc.get("pe_fair", 6)
-            elif pe < 40:
-                valuation += 2
-            else:
-                valuation += vc.get("pe_high", -8)
-        if pb > 0:
-            if pb < 1.2:
-                valuation += 6
-            elif pb < 3:
-                valuation += 3
-            elif pb > 8:
-                valuation -= 4
-        if peg and 0 < peg < 1.2:
-            valuation += 6
-        elif peg and peg > 2:
-            valuation -= 4
-    # 行业对比（Layer_IND）
-    li = layers.get("layer_ind") or {}
-    ps = li.get("peer_summary") or {}
-    if ps and isinstance(ps, dict):
-        if ps.get("pe_vs_industry") and ps["pe_vs_industry"] < 0.8:
-            valuation += 8
-        elif ps.get("pe_vs_industry") and ps["pe_vs_industry"] > 1.5:
-            valuation -= 6
-
-    # ── 基本面（Layer6）
-    l6 = layers.get("layer6") or {}
-    ratios6 = l6.get("ratios") or {}
-    if ratios6.get("roe_annualized"):
-        r = ratios6["roe_annualized"]
-        if r >= 20:
-            fundamental += fc.get("roe_excellent", 12)
-        elif r >= 10:
-            fundamental += fc.get("roe_good", 8)
-        elif r >= 3:
-            fundamental += fc.get("roe_normal", 2)
-        else:
-            fundamental += fc.get("roe_weak", -8)
-    if ratios6.get("profit_yoy"):
-        p = ratios6["profit_yoy"]
-        if p > 30:
-            fundamental += fc.get("profit_yoy_high", 8)
-        elif p > 10:
-            fundamental += fc.get("profit_yoy_good", 4)
-        elif p < -20:
-            fundamental += fc.get("profit_yoy_decline", -10)
-    if ratios6.get("revenue_yoy"):
-        r = ratios6["revenue_yoy"]
-        if r > 20:
-            fundamental += fc.get("revenue_yoy_high", 4)
-        elif r < -10:
-            fundamental += fc.get("revenue_yoy_decline", -3)
-    if ratios6.get("dividend_yield"):
-        if ratios6["dividend_yield"] > 4:
-            fundamental += fc.get("dividend_yield_high", 5)
-        elif ratios6["dividend_yield"] > 2:
-            fundamental += fc.get("dividend_yield_good", 3)
-    # 债务结构（来自balance sheet）
-    bs = (l6.get("balance_sheet") or [{}])[0]
-    if bs and isinstance(bs, dict):
-        if bs.get("debt_ratio", 0) < 40:
-            fundamental += fc.get("debt_ratio_low", 6)
-        elif bs.get("debt_ratio", 0) > 65:
-            fundamental += fc.get("debt_ratio_high", -8)
-        if bs.get("gw_ratio", 0) > 20:
-            fundamental += fc.get("gw_ratio_high", -5)
-        if bs.get("cash_debt_ratio", 0) > 2:
-            fundamental += fc.get("cash_debt_ratio_good", 4)
-
-    # ── 资金面（Layer3 + Layer4）
-    l3 = layers.get("layer3") or {}
     ff = l3.get("fund_flow") or {}
-    if ff and isinstance(ff, dict):
-        today = ff.get("today") or {}
-        if today and isinstance(today, dict):
-            main_net = today.get("main_net_wan", 0) or 0
-            if main_net > 5000:
-                flow += 10
-            elif main_net > 1000:
-                flow += 5
-            elif main_net < -5000:
-                flow -= 8
-            elif main_net < -1000:
-                flow -= 4
-        recent = ff.get("recent_20d") or {}
-        if recent and isinstance(recent, dict):
-            if recent.get("positive_days", 0) >= 15:
-                flow += 5
-            elif recent.get("positive_days", 0) <= 5:
-                flow -= 5
-
-    l4 = layers.get("layer4") or {}
     hs = (l4.get("holder_structure") or [{}])[0] if l4.get("holder_structure") else {}
-    if hs and isinstance(hs, dict):
-        if hs.get("northbound", 0) > 8:
-            flow += 8
-        elif hs.get("northbound", 0) > 3:
-            flow += 3
-        dm = hs.get("domestic", 0)
-        if dm > 5 or hs.get("domestic_count", 0) >= 8:
-            flow += 4
-    # 股东户数变化
     ht = l4.get("holder_trend") or []
-    if ht and isinstance(ht, list) and len(ht) >= 1:
-        change = ht[0].get("change_ratio", 0)
-        if change < 0:
-            flow += 5  # 户数减少，筹码集中
-        elif change > 10:
-            flow -= 4
-
-    # ── 题材/舆情面（Layer3 + Layer5 + Layer_IND）
-    concepts_count = 0
-    if l3.get("boards") and isinstance(l3["boards"], dict):
-        concepts = l3["boards"].get("concept") or []
-        concepts_count = len(concepts)
-    if concepts_count >= 5:
-        theme += 3
-    # 龙虎榜上榜
-    if l3.get("dragon_tiger") and isinstance(l3["dragon_tiger"], list) and len(l3["dragon_tiger"]) > 0:
-        theme += 3
-        # 如果净买为正，加更多分
-        for dt in l3["dragon_tiger"][:3]:
-            if dt.get("net_buy_wan", 0) > 0:
-                theme += 2
-                break
-    # 行业对比中的超额收益
-    if li.get("peer_summary") and isinstance(li["peer_summary"], dict):
-        if li["peer_summary"].get("chg_vs_industry", 0) > 2:
-            theme += 5
-        elif li["peer_summary"].get("chg_vs_industry", 0) < -2:
-            theme -= 3
-    # 新闻舆情
-    l5 = layers.get("layer5") or {}
-    cls_n = len(l5.get("cls_related") or []) if isinstance(l5, dict) else 0
-    global_n = len(l5.get("global_related") or []) if isinstance(l5, dict) else 0
-    if cls_n + global_n >= 8:
-        theme -= 4  # 舆情太热，短期风险
-    elif cls_n + global_n >= 3:
-        theme += 3
-
-    # 限制在 0~100
-    def _clamp(v):
-        return max(5.0, min(95.0, float(v)))
-
-    technical = _clamp(technical)
-    valuation = _clamp(valuation)
-    fundamental = _clamp(fundamental)
-    flow = _clamp(flow)
-    theme = _clamp(theme)
-
-    total = technical * 0.25 + valuation * 0.20 + fundamental * 0.20 + flow * 0.15 + theme * 0.15
-
+    ratios6 = l6.get("ratios") or {}
+    bs = (l6.get("balance_sheet") or [{}])[0]
+    ps = li.get("peer_summary") or {}
+    
+    # 构建 ScoreData 对象
+    data = ScoreData(
+        code=layers.get("code", ""),
+        name=layers.get("name", ""),
+        price=kline.get("price", 0),
+        change_pct=kline.get("change_pct", 0),
+        # 技术面
+        ma5=kline.get("ma5", 0),
+        ma10=kline.get("ma10", 0),
+        ma20=kline.get("ma20", 0),
+        ret_20d=kline.get("ret_20d", 0),
+        high_120d=kline.get("high_120d", 0),
+        # MACD/RSI/KDJ
+        macd_dif=tech.get("macd", {}).get("dif", 0) if isinstance(tech.get("macd"), dict) else 0,
+        macd_dea=tech.get("macd", {}).get("dea", 0) if isinstance(tech.get("macd"), dict) else 0,
+        rsi14=tech.get("rsi", {}).get("rsi14", 50) if isinstance(tech.get("rsi"), dict) else 50,
+        kdj_k=tech.get("kdj", {}).get("k", 50) if isinstance(tech.get("kdj"), dict) else 50,
+        kdj_d=tech.get("kdj", {}).get("d", 50) if isinstance(tech.get("kdj"), dict) else 50,
+        kdj_j=tech.get("kdj", {}).get("j", 50) if isinstance(tech.get("kdj"), dict) else 50,
+        boll_pos=tech.get("boll", {}).get("pos_pct", 50) if isinstance(tech.get("boll"), dict) else 50,
+        volume_ratio=tech.get("volume", {}).get("ratio", 1) if isinstance(tech.get("volume"), dict) else 1,
+        # 基本面
+        roe=ratios6.get("roe_annualized", 0),
+        gross_margin=ratios6.get("gross_margin", 0),
+        net_profit_margin=ratios6.get("net_margin", 0),
+        asset_liability_ratio=(bs.get("debt_ratio", 0) / 100) if isinstance(bs, dict) else 0,
+        # 估值
+        pe_ttm=val.get("pe_ttm", 0),
+        pb=val.get("pb", 0),
+        forward_pe=val.get("forward_pe", 0),
+        industry_pe=ps.get("industry_pe", 0) if isinstance(ps, dict) else 0,
+        # 资金面
+        main_net_inflow=(ff.get("today") or {}).get("main_net_wan", 0) * 10000 if isinstance(ff.get("today"), dict) else 0,
+        consecutive_inflow_days=(ff.get("recent_20d") or {}).get("positive_days", 0) if isinstance(ff.get("recent_20d"), dict) else 0,
+        northbound_change=hs.get("northbound", 0) if isinstance(hs, dict) else 0,
+        institution_holding_pct=hs.get("domestic", 0) if isinstance(hs, dict) else 0,
+        # 筹码
+        holder_change_ratio=ht[0].get("change_ratio", 0) if ht and isinstance(ht, list) else 0,
+        # 分红
+        dividend_yield=ratios6.get("dividend_yield", 0),
+    )
+    
+    # 调用统一评分接口
+    result = _calc_score("ful", data, _cfg_sc)
+    
+    # 返回五维评分（保持原有格式）
+    dims = result.dimensions
     return {
-        "technical": round(technical, 1),
-        "valuation": round(valuation, 1),
-        "fundamental": round(fundamental, 1),
-        "flow": round(flow, 1),
-        "theme": round(theme, 1),
-        "total": round(total, 1),
+        "technical": round(dims.get("technical", 50), 1),
+        "valuation": round(dims.get("valuation", 50), 1),
+        "fundamental": round(dims.get("fundamental", 50), 1),
+        "flow": round(dims.get("flow", 50), 1),
+        "theme": round(dims.get("holder", 50), 1),  # 用 holder 替代 theme
+        "total": round(result.total_score, 1),
     }
 
 
@@ -2178,7 +1995,7 @@ def format_report(code: str, layers: Dict[str, Any]) -> str:
     L("  免责声明: 本报告由自动数据采集生成，仅用于数据参考，不构成投资建议。")
     L("  数据来源: 东方财富 / 腾讯财经 / 百度股市通 / 同花顺 / 新浪财经 / 财联社 / 巨潮资讯")
     L("═" * 78)
-    return "\n".join(lines)
+    return "\n".join(filter(None, lines))
 
 
 # =====================================================================
@@ -2329,24 +2146,6 @@ def main():
             fp.write(report)
         generated_files.append(fpath)
         print(f"\n✅ 报告已生成: {fpath}", flush=True)
-
-        # 终端输出报告（简化版，只打印前几行+评分部分）
-        try:
-            report_lines = report.split("\n")
-            # 打印头部 15 行
-            for line in report_lines[:15]:
-                print(line, flush=True)
-            # 找到评分区并打印
-            in_score = False
-            for line in report_lines:
-                if "综合五维评分" in line or "综合投资建议" in line:
-                    in_score = True
-                if in_score:
-                    print(line, flush=True)
-                if "综合投资建议" in line and "【" in line:
-                    break
-        except Exception:
-            pass
 
     # 刷新缓存（股东数据）
     try:

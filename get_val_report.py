@@ -1442,7 +1442,7 @@ def run_discovery(output_path):
     L(f"  免责声明: 本报告仅为方法论驱动的量化筛选结果，不构成投资建议。")
     L(f"  数据来源: 腾讯财经 + 东财数据中心 + 同花顺 + 百度金融 + 新浪财经 + 财联社")
     L("=" * 85)
-    output = "\n".join(lines)
+    output = "\n".join(filter(None, lines))
     with open(output_path, "w", encoding="utf-8") as f:
         f.write(output)
     return output
@@ -1468,7 +1468,7 @@ async def run_discovery_async(output_path):
     all_stocks = tdx_get_all_stocks()
     if not all_stocks:
         L("  ❌ 无法获取全市场股票数据")
-        return "\n".join(lines)
+        return "\n".join(filter(None, lines))
 
     # V7.5 恢复: hot_pool 使用同花顺强势股池（~100只），而非 turnover>=2% 的大池（1000-2000只）
     # 扫描范围从 1000-2000只 降至 ~100只，提速 10-20×
@@ -1590,7 +1590,7 @@ async def run_discovery_async(output_path):
     L(f"  免责声明: 本报告仅为方法论驱动的量化筛选结果，不构成投资建议。")
     L(f"  数据来源: 腾讯财经 + 东财数据中心 + 同花顺 + 百度金融 + 新浪财经 + 财联社")
     L("=" * 85)
-    output = "\n".join(lines)
+    output = "\n".join(filter(None, lines))
     with open(output_path, "w", encoding="utf-8") as f:
         f.write(output)
     return output

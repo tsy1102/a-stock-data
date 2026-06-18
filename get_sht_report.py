@@ -2318,7 +2318,7 @@ async def generate_report_async(session, code, output_path, ind_comp=None, idx_q
     except Exception:
         pass
 
-    output = "\n".join(lines)
+    output = "\n".join(filter(None, lines))
 
     with open(output_path,"w",encoding="utf-8") as f: f.write(output)
 

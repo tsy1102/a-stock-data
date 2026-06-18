@@ -1934,14 +1934,6 @@ def save_score_snapshot(script_type: str, code: str, name: str, total_score: flo
         pass  # analyze_history.py 不存在时静默跳过
     except Exception:
         pass  # 保存失败时静默跳过
-    if fd:
-        print(f"\n  ❌ 数据获取失败的股票:")
-        for r in fd:
-            print(f"    {r['code']} — {r.get('error', '')[:80]}")
-    if fg:
-        print(f"\n  ⚠️ GD上传失败的股票:")
-        for r in fg:
-            print(f"    {r['code']} — {r.get('error', '')[:80]}")
 
 
 # ═══════════════════════════════════════════════════════════

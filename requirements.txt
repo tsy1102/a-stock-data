@@ -1,0 +1,36 @@
+# ══════════════════════════════════════════════════════════
+# V7.5: A股全栈数据工具 - 完整依赖清单
+# 安装: pip install -r requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple
+# ══════════════════════════════════════════════════════════
+
+# ── HTTP & 网络 ───────────────────────────────────────────
+requests>=2.25,<3.0
+urllib3>=1.26,<3.0
+
+# ── 异步 HTTP（V7.5 新增）──────────────────────────────────
+aiohttp>=3.8,<4.0
+
+# ── 数据处理 ─────────────────────────────────────────────
+pandas>=1.0,<3.0
+numpy>=1.20,<2.0
+
+# ── 配置解析 ─────────────────────────────────────────────
+PyYAML>=5.4
+
+# ── 行情数据源（核心依赖，必须安装）───────────────────────────
+easy-tdx>=1.0,<2.0
+
+# ── Google Drive（V7 已切换至 google-auth + google-api-python-client）
+# ⚠️ pydrive2 / oauth2client 已废弃，保留兼容运行但不再主动安装
+# ⚠️ 如升级，参考 gd_uploader.py 头部说明：
+#   pip install google-auth google-auth-oauthlib google-api-python-client
+google-auth>=2.0
+google-auth-oauthlib>=1.0
+google-api-python-client>=2.0
+# pydrive2>=1.10    # ← V4 旧版，如需兼容可手动安装
+
+# ── A股日历与交易日判断（V8 新增）──────────────────────────────
+chinese-calendar>=1.11
+
+# ── 单元测试（可选，仅开发环境使用）───────────────────────────
+# pytest>=7.0

@@ -202,16 +202,24 @@ reports/
 
 ## 版本历史
 
-详见 [CHANGELOG.md](CHANGELOG.md)
+完整版本历史详见 [CHANGELOG.md](CHANGELOG.md)
+
+### v8.2.0 (2026-06-18)
+
+- ✅ **bug 修复**: 股票代码 300274 等因 lines 列表中存在 None 值导致 `join()` 报错
+- ✅ **bug 修复**: `ful` 脚本综合评分显示 4211.0（百分比权重未除以100）
+- ✅ **统一显示**: 删除 `ful` 脚本的额外打印逻辑，与其他脚本保持一致
+- ⚡ **优化**: `get_dragon_tiger_board()` 增加 `include_seats` 参数，减少不必要的 API 请求
 
 ### v8.1.0 (2026-06-18)
 
-- 新增交易日历判断功能
-- 新增市场状态判断（含午休时段）
-- 新增股票代码清洗功能
-- 修复银行股财报字段映射问题
-- 添加财务分析除零保护
-- 修复空字符串转换异常
+- **新增统一评分接口**: `ScoreData` / `ScoreResult` / `calculate_score()`，统一管理 4 种报告类型的评分逻辑
+- **新增快照功能**: `save_score_snapshot()` 保存评分结果，支持 `analyze_history.py` 进行历史对比与背离检测
+- **新增配置文件**: `strategy_config.yaml` 统一配置评分权重和参数
+- **新增交易日历**: `is_trading_day()` / `get_market_status()` 判断 A 股交易日和市场状态
+- **新增代码清洗**: `clean_codes()` 处理股票代码格式
+- **目录重命名**: `WARNING_DIR` → `SNAPSHOT_DIR`
+- **bug 修复**: 银行股财报字段映射 / 财务分析除零保护 / 空字符串转换异常 / 龙虎榜日期字段过滤格式
 
 ---
 

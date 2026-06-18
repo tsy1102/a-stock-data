@@ -614,22 +614,24 @@ def layer2_research(code: str) -> Dict[str, Any]:
             for row in result["eps_forecast"]:
                 try:
                     eps_val = float(row[3]) if row[3] else 0
-                    if eps_val > 0:
-                        forward_pe = round(price / eps_val, 2)
-                        # 注意：PEG计算需要机构一致预期增速，本脚本无此数据来源，不计算PEG
-                        result["valuation"] = {
-                            "year_label": row[0], "eps": eps_val,
-                            "forward_pe": forward_pe,
-                            "peg": None,  # 无机构一致预期，不计算PEG
-                            "current_pe_ttm": q.get("pe_ttm", 0),
-                            "pb": q.get("pb", 0),
-                        }
-                        if forward_pe < 15:
-                            result["signals"].append(f"前向PE {forward_pe}，低估区")
-                        elif forward_pe > 50:
-                            result["signals"].append(f"前向PE {forward_pe}，估值偏高")
-                        # PEG需机构一致预期增速，本脚本无此数据来源
-                        break
+                    # EPS合理性检查：必须为正数才能计算前向PE
+                    if eps_val <= 0:
+                        continue
+                    forward_pe = round(price / eps_val, 2)
+                    # 注意：PEG计算需要机构一致预期增速，本脚本无此数据来源，不计算PEG
+                    result["valuation"] = {
+                        "year_label": row[0], "eps": eps_val,
+                        "forward_pe": forward_pe,
+                        "peg": None,  # 无机构一致预期，不计算PEG
+                        "current_pe_ttm": q.get("pe_ttm", 0),
+                        "pb": q.get("pb", 0),
+                    }
+                    if forward_pe < 15:
+                        result["signals"].append(f"前向PE {forward_pe}，低估区")
+                    elif forward_pe > 50:
+                        result["signals"].append(f"前向PE {forward_pe}，估值偏高")
+                    # PEG需机构一致预期增速，本脚本无此数据来源
+                    break
                 except (ValueError, TypeError):
                     continue
     except Exception:
@@ -890,13 +892,13 @@ def layer3_signals(code: str) -> Dict[str, Any]:
                 "small_in": ff.get("small_in", 0),
             }
             if main_net > 5000:
-                result["signals"].append(f"主力净流入 {main_net/10000:.2f} 亿元，资金显著关注")
+                result["signals"].append(f"主力净流入 {main_net/1e4:.2f} 亿元，资金显著关注")
             elif main_net > 1000:
-                result["signals"].append(f"主力净流入 {main_net/10000:.1f} 万元，资金关注")
+                result["signals"].append(f"主力净流入 {main_net/1e4:.2f} 亿元，资金关注")
             elif main_net < -5000:
-                result["signals"].append(f"⚠️ 主力净流出 {main_net/10000:.2f} 亿元，资金大幅离场")
+                result["signals"].append(f"⚠️ 主力净流出 {abs(main_net)/1e4:.2f} 亿元，资金大幅离场")
             elif main_net < -1000:
-                result["signals"].append(f"⚠️ 主力净流出 {main_net/10000:.1f} 万元，资金离场")
+                result["signals"].append(f"⚠️ 主力净流出 {abs(main_net)/1e4:.2f} 亿元，资金离场")
 
         hff = tdx_get_history_fund_flow(code, 30)
         if hff:
@@ -1781,8 +1783,12 @@ def format_report(code: str, layers: Dict[str, Any]) -> str:
             L(f"  股东户数变化（最近在前）:")
             L(f"    {'日期':<12} {'户数':>14} {'环比变化':>12} {'变化率':>10}")
             for h in l4["holder_trend"][:5]:
+                _cr = h.get('change_ratio', 0)
+                # 边界检查：变化率超过±500%视为异常数据，不显示
+                _cr_disp = _cr if abs(_cr) <= 500 else (999.99 if _cr > 500 else -999.99)
+                _cr_flag = " ⚠️" if abs(_cr) > 500 else ""
                 L(f"    {h.get('date', ''):<12} {h.get('holder_num', 0):>14,} "
-                  f"{h.get('change_num', 0):>+12,.0f} {h.get('change_ratio', 0):>+9.2f}%")
+                  f"{h.get('change_num', 0):>+12,.0f} {_cr_disp:>+9.2f}%{_cr_flag}")
         if l4.get("margin") and isinstance(l4["margin"], list) and l4["margin"]:
             L(f"  融资融券余额（近5日）:")
             L(f"    {'日期':<12} {'融资余额(亿)':>14} {'融资买入(万)':>14} {'融券余额(万)':>14}")

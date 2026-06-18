@@ -2735,6 +2735,10 @@ def _score_fundamental(data: ScoreData, cfg: Dict = None) -> tuple:
     elif data.roe >= 10:
         score += fc.get("roe_medium", 8)
         details.append(f"ROE={data.roe:.1f}%中等")
+    elif data.roe < 0:
+        # 亏损股：强制评分下限为20分
+        details.append(f"⚠️ ROE={data.roe:.1f}%亏损，基本面严重恶化")
+        score = min(score, 20.0)  # 强制下限20分
     
     # 毛利率
     if data.gross_margin >= 40:

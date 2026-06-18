@@ -586,7 +586,11 @@ def generate_report(code, output_path, ind_comp=None, hsgt=None):
     if holders:
         L(f"  ➤ 股东户数变化趋势:")
         for h in holders[:5]:
-            L(f"    截止 {h['date']}: 股东数 {h['holder_num']:,} 户 | 环比变化 {h['change_ratio']:+.2f}%")
+            _cr = h['change_ratio']
+            # 边界检查：变化率超过±500%视为异常数据，不显示
+            _cr_disp = _cr if abs(_cr) <= 500 else (999.99 if _cr > 500 else -999.99)
+            _cr_flag = " ⚠️" if abs(_cr) > 500 else ""
+            L(f"    截止 {h['date']}: 股东数 {h['holder_num']:,} 户 | 环比变化 {_cr_disp:+.2f}%{_cr_flag}")
         latest = holders[0]
         if latest["change_ratio"] <= -3:
             L("    ✅ 结论: 筹码正在集中，利好中线。")
@@ -629,7 +633,7 @@ def generate_report(code, output_path, ind_comp=None, hsgt=None):
             if _mcap == 0 and _shares > 0 and price_today > 0:
                 _mcap = _shares * price_today
                 _ratio = _shares / info.get('total_shares', 1) if info.get('total_shares', 0) > 0 else 0
-            L(f"  {d['date']:<12} {_shares/1e4:>12.0f} {_mcap/1e4:>12.0f} {_ratio*100:>9.4f}% {d['change_shares']/1e4:>+12.0f}")
+            L(f"  {d['date']:<12} {_shares/1e4:>12.0f} {_mcap/1e4:>12.0f} {_ratio:>9.4f}% {d['change_shares']/1e4:>+12.0f}")
         if len(nb) >= 2:
             ratio_change = nb[0]["hold_ratio"] - nb[-1]["hold_ratio"]
             if ratio_change > 0:
@@ -1283,7 +1287,11 @@ async def generate_report_async(session, code, output_path, ind_comp=None, hsgt=
     if holders:
         L(f"  ➤ 股东户数变化趋势:")
         for h in holders[:5]:
-            L(f"    截止 {h['date']}: 股东数 {h['holder_num']:,} 户 | 环比变化 {h['change_ratio']:+.2f}%")
+            _cr = h['change_ratio']
+            # 边界检查：变化率超过±500%视为异常数据，不显示
+            _cr_disp = _cr if abs(_cr) <= 500 else (999.99 if _cr > 500 else -999.99)
+            _cr_flag = " ⚠️" if abs(_cr) > 500 else ""
+            L(f"    截止 {h['date']}: 股东数 {h['holder_num']:,} 户 | 环比变化 {_cr_disp:+.2f}%{_cr_flag}")
         latest = holders[0]
         if latest["change_ratio"] <= -3:
             L("    ✅ 结论: 筹码正在集中，利好中线。")
@@ -1322,7 +1330,7 @@ async def generate_report_async(session, code, output_path, ind_comp=None, hsgt=
             if _mcap == 0 and _shares > 0 and price_today > 0:
                 _mcap = _shares * price_today
                 _ratio = _shares / info.get('total_shares', 1) if info.get('total_shares', 0) > 0 else 0
-            L(f"  {d['date']:<12} {_shares/1e4:>12.0f} {_mcap/1e4:>12.0f} {_ratio*100:>9.4f}% {d['change_shares']/1e4:>+12.0f}")
+            L(f"  {d['date']:<12} {_shares/1e4:>12.0f} {_mcap/1e4:>12.0f} {_ratio:>9.4f}% {d['change_shares']/1e4:>+12.0f}")
         if len(nb) >= 2:
             ratio_change = nb[0]["hold_ratio"] - nb[-1]["hold_ratio"]
             if ratio_change > 0:

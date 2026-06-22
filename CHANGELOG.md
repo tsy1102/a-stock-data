@@ -1,0 +1,106 @@
+# Changelog
+
+All notable changes to this project will be documented in this file.
+
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
+and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## [Unreleased]
+
+## [8.4.0] - 2026-06-22
+
+### Added
+
+- 新增 `stock_cache.py` 统一缓存层（SQLite + TTL 自动过期 + LRU 清理）
+- 新增 8 个异步函数：`get_tencent_quote_async`、`get_dividend_history_async`、`get_concept_blocks_async`、`get_holder_structure_async`、`get_industry_peers_async`、`get_stock_sector_rank_async`、`get_industry_comparison_async`、`get_stock_info_async`
+- 新增 `pyproject.toml` 集中管理 pytest/mypy/black 配置
+- 新增测试文件：`tests/test_cache.py`、`tests/test_scoring.py`、`tests/test_strategy.py`
+
+### Changed
+
+- 所有 `get_*` 函数添加 `@cached` 装饰器，降低 API 请求频率
+- 类型注解完整覆盖核心模块（stock_common.py、tdx_client.py、get_val_report.py 等）
+- mypy 静态检查配置（python_version=3.10）
+
+### Technical
+
+- mypy 检查通过（6 个核心文件零错误）
+- pytest 测试框架配置完成
+
+## [8.3.0] - 2026-06-18
+
+### Fixed
+
+- 修复北向资金持股占比显示超100%问题（`get_sht_report.py`/`get_med_report.py`中`_ratio*100`改为`_ratio`，东方财富API返回的`hold_ratio`已是百分比形式）
+- 修复股东户数变化率异常问题（当变化率超过±500%时显示为±999.99%并标记⚠️，防止极端值干扰判断）
+- 修复EPS预测合理性检查（当eps_val<=0时不计算前向PE）
+- 修复涨停封单弱时仓位建议降级（检测到"封单预警"或"弱势烂板"信号时，仓位建议减半）
+- 修复主力净流入单位不统一问题（统一使用"亿元"为单位）
+
+### Changed
+
+- 亏损股评分强制下限：当ROE<0时，评分强制下限为20分并添加警告标识
+- 涨停封单弱时仓位建议降级：检测到封单预警信号时，仓位建议从40%/25%/10%/5%分别降为20%/12%/5%/2%
+- 板块排名标题明确区分市值排名：改为"[市值排名]"并标注"(按总市值)"
+- 章节分隔符风格统一：sht/med/lng/val/mak全部统一为`─`风格
+- 数字正负号格式统一：资金流向表格单位统一为亿元，精度调整为2位小数
+- 评分图形条按加权分数显示：各维度图形长度=原始分数×权重比例
+- W底形态成交量确认统一：使用5日均量对比判断放量（vol[-1] > avg_vol_5 * 1.2），替代原来的单日对比（vol[-1] > vol[-3] * 1.2）
+
+## [8.2.0] - 2026-06-18
+
+### Fixed
+
+- 修复 `300274` 等股票因 lines 列表中存在 None 值导致 `join()` 报错的问题（在所有脚本的 `join()` 调用前添加 `filter(None, lines)` 防护）
+- 修复 `ful` 脚本综合评分显示 4211.0 的异常（`strategy_config.yaml` 中权重为百分比形式，`calculate_score()` 未除以100导致数值被放大100倍）
+- 统一 `ful` 脚本的终端显示逻辑（删除额外的报告头部和评分区打印，与其他脚本保持一致，仅输出文件生成路径）
+
+### Changed
+
+- `get_dragon_tiger_board()` 和 `get_dragon_tiger_board_async()` 增加 `include_seats` 参数（默认 True），当设为 False 时跳过席位详情查询，可减少2次不必要的API请求
+
+## [8.1.0] - 2026-06-18
+
+### Added
+
+- 新增统一评分接口：`ScoreData` 数据结构、`ScoreResult` 结果结构、`calculate_score()` 主函数，统一管理 sht/med/lng/ful 四种评分类型的计算逻辑
+- 新增 6 个维度评分函数：`_score_technical`（技术面）、`_score_fundamental`（基本面）、`_score_valuation`（估值面）、`_score_flow`（资金面）、`_score_holder`（筹码面）、`_score_dividend`（分红面）
+- 新增快照功能：`save_score_snapshot()` 将评分结果保存到 `snapshots/` 目录用于历史对比
+- 新增 `analyze_history.py` 实现评分快照历史分析与背离检测
+- 新增 `is_trading_day()` 函数判断A股交易日（含节假日+调休）
+- 新增 `get_market_status()` 函数返回市场状态（盘前/上午/午休/下午/盘后/休市）
+- 新增 `clean_codes()` 函数清洗股票代码（提取6位数字、去重、过滤无效项）
+- 新增 `_try_upgrade_calendar()` 函数实现 chinese-calendar 库自动升级
+- 新增 `_safe_float()` 函数处理空字符串转换问题
+- 新增 `strategy_config.yaml` 配置评分权重和参数
+
+### Changed
+
+- 统一评分接口重构（MINOR）：`get_sht_report.py`、`get_med_report.py`、`get_lng_report.py`、`get_ful_report.py` 4个报告脚本全部改用 `calculate_score()` 统一接口，消除重复评分逻辑
+- 目录重命名：`WARNING_DIR` → `SNAPSHOT_DIR`，`ensure_warning_dir()` → `ensure_snapshot_dir()`
+- 统一 `get_lockup_expiry` 接口：`days=90` 作为默认值，支持 `include_history` 参数
+- 银行股财报字段映射优化：支持多种字段名（归属于母公司股东权益合计/归属于母公司股东的权益/股东权益）
+- 财务分析添加除零保护：资产总计为0时跳过占比计算，净资产为0时提示商誉风险
+- `get_worth_analysis_async` 统一重命名为 `get_eps_forecast_async`
+- 所有分散函数统一抽象到 `stock_common.py`
+
+### Fixed
+
+- 修复 `000981` 数据生成失败问题（空字符串转换异常）
+- 修复股票代码格式问题（中文后缀、空格分裂、重复代码）
+- 修复 `ImportError: cannot import name 'timegm' from 'calendar'`（改名为 `stock_calendar.py`）
+- 修复龙虎榜查询中日期字段过滤格式（东财API需使用单引号：`TRADE_DATE>='YYYY-MM-DD'`）
+
+### Security
+
+- 支持静默自动升级 chinese-calendar 库
+- 降级方案：当升级失败时自动使用 weekday < 5 简单判断
+
+## [8.0.0] - 2026-06-17
+
+### Added
+
+- 初始版本，包含6个报告脚本（sht/med/lng/ful/val/mak）
+- 支持A股个股分析报告生成
+- 集成新浪财经、东方财富、同花顺等数据源
+- 支持Google Drive云端上传

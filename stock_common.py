@@ -21,6 +21,9 @@ from typing import Any, Dict, List, Optional, Tuple, Union, cast
 import requests
 import urllib3
 from datetime import datetime, timedelta
+
+# 统一缓存层（v8.4 新增，注意：在 typing/stdlib 之后、requests 之后导入以避免循环依赖警告）
+from stock_cache import cached, TTL
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 # ═══════════════════════════════════════
@@ -279,6 +282,7 @@ def _do_request(url: str, params: Optional[Dict[str, Any]],
     return None
 
 
+@cached(category="dragon_tiger", ttl_seconds=TTL["dragon_tiger"])
 def get_dragon_tiger_board(code: str, today_str: str, days: int = 30, include_seats: bool = True) -> Dict[str, Any]:
     """V7.5: 统一龙虎榜查询（单只股票）。
 
@@ -366,6 +370,7 @@ def get_dragon_tiger_board(code: str, today_str: str, days: int = 30, include_se
     }
 
 
+@cached(category="dragon_tiger", ttl_seconds=TTL["dragon_tiger"])
 def get_recent_dragon_tiger(days: int = 5) -> Dict[str, Any]:
     """V7.5: 全市场龙虎榜上榜记录（用于异动扫描和席位活跃度策略）。
 
@@ -1035,6 +1040,7 @@ def holder_cache_flush() -> None:
 # 巨潮公告统一查询（短中长线共用）
 # ═══════════════════════════════════════
 
+@cached(category="announcements", ttl_seconds=TTL["announcements"])
 def get_strategic_announcements(code: str, page_size: int = 50, days: Optional[int] = None,
                                 importance_filter: bool = False) -> List[Dict[str, Any]]:
     """巨潮公告查询 → orgId → searchkey → TDX F10 三层兜底。
@@ -1335,6 +1341,7 @@ def get_script_dir() -> str:
     return os.path.dirname(os.path.abspath(__file__))
 
 
+@cached(category="board_type", ttl_seconds=TTL["board_type"])
 def get_board_type(code: str, name: str = "") -> str:
     """V7.5: 统一板块判断。返回: 主板 / 创业板 / 科创板 / ST。"""
     if "ST" in name or "*ST" in name:
@@ -1542,7 +1549,8 @@ def baidu_kline_full(code, is_index=False):
     return tdx_get_security_bars(code)
 
 
-def get_reports(code, max_pages=3):
+@cached(category="reports", ttl_seconds=TTL["reports"])
+def get_reports(code: str, max_pages: int = 3) -> List[Dict[str, Any]]:
     """东财研报列表查询。
 
     Args:
@@ -1571,7 +1579,8 @@ def get_reports(code, max_pages=3):
     return all_records
 
 
-def get_eps_forecast(code):
+@cached(category="eps_forecast", ttl_seconds=TTL["eps_forecast"])
+def get_eps_forecast(code: str) -> Dict[str, Any]:
     """V7.5: 机构一致预期EPS — 同花顺正则提取 + 东财研报兜底。
 
     Returns:
@@ -1617,7 +1626,8 @@ def get_eps_forecast(code):
     return _pd.DataFrame()
 
 
-def get_northbound_hold(code, days=20):
+@cached(category="northbound", ttl_seconds=TTL["northbound"])
+def get_northbound_hold(code: str, days: int = 20) -> List[Dict[str, Any]]:
     """北向资金持仓动态。
 
     Args:
@@ -1644,7 +1654,8 @@ def get_northbound_hold(code, days=20):
     return rows
 
 
-def get_margin_trading(code):
+@cached(category="margin_trading", ttl_seconds=TTL["margin_trading"])
+def get_margin_trading(code: str) -> List[Dict[str, Any]]:
     """融资融券数据。
 
     Returns:
@@ -1668,7 +1679,8 @@ def get_margin_trading(code):
     return rows
 
 
-def get_block_trade(code):
+@cached(category="block_trade", ttl_seconds=TTL["block_trade"])
+def get_block_trade(code: str) -> List[Dict[str, Any]]:
     """大宗交易数据。
 
     Returns:
@@ -1694,13 +1706,15 @@ def get_block_trade(code):
     return rows
 
 
+@cached(category="dividend", ttl_seconds=TTL["dividend"])
 def get_dividend_history(code):
     """V7.5: 分红历史 → TDX xdxr_info（东财 fallback 已删除）"""
     from tdx_client import tdx_get_dividend_history
     return tdx_get_dividend_history(code)
 
 
-def get_concept_blocks(code):
+@cached(category="concept_blocks", ttl_seconds=TTL["concept_blocks"])
+def get_concept_blocks(code: str) -> Dict[str, Any]:
     """V7.5: 概念板块 — 纯 TDX belong_board（短线脚本抽取统一）。
 
     返回: {"industry": [...], "concept": [...], "region": [...], "concept_tags": [...]}
@@ -1718,7 +1732,7 @@ def get_concept_blocks(code):
     return result
 
 
-def get_ths_hot_reason(code, date_str):
+def get_ths_hot_reason(code: str, date_str: str) -> Optional[Dict[str, Any]]:
     """V7.5: 同花顺热点题材归因（短线脚本抽取统一）。
 
     返回: {"reason": str} 或 None。
@@ -1739,7 +1753,7 @@ def get_ths_hot_reason(code, date_str):
     return None
 
 
-async def get_ths_hot_reason_async(session, code, date_str):
+async def get_ths_hot_reason_async(session: Any, code: str, date_str: str) -> Optional[Dict[str, Any]]:
     """V7.5: 同花顺热点题材归因（async版）。"""
     url = f"http://zx.10jqka.com.cn/event/api/getharden/date/{date_str}/orderby/date/orderway/desc/charset/GBK/"
     try:
@@ -1760,7 +1774,8 @@ async def get_ths_hot_reason_async(session, code, date_str):
     return None
 
 
-def get_industry_peers(code, top_n=3, info=None):
+@cached(category="industry_peers", ttl_seconds=TTL["industry_peers"])
+def get_industry_peers(code: str, top_n: int = 3, info: Optional[Dict[str, Any]] = None) -> Optional[Dict[str, Any]]:
     """V7.5: 同业对比 — TDX 三级兜底（belong_board → board_members → board_by_name）。
 
     返回: {
@@ -1845,7 +1860,8 @@ def get_industry_peers(code, top_n=3, info=None):
     return {"industry": "", "my_mcap": 0, "my_rank": 0, "industry_count": 0, "peers": []}
 
 
-def get_stock_sector_rank(code, info=None, q=None):
+@cached(category="industry_peers", ttl_seconds=TTL["industry_peers"])
+def get_stock_sector_rank(code: str, info: Optional[Dict[str, Any]] = None, q: Optional[Dict[str, Any]] = None) -> Optional[Dict[str, Any]]:
     """V7.5: 板块内排名 — TDX 优先。
 
     返回: {"rank": int, "total": int, "change_pct": float} 或 None。
@@ -1880,7 +1896,8 @@ def get_stock_sector_rank(code, info=None, q=None):
     return None
 
 
-def get_industry_comparison(top_n=20):
+@cached(category="industry_compare", ttl_seconds=TTL["industry_compare"])
+def get_industry_comparison(top_n: int = 20) -> Dict[str, Any]:
     """V4.2: 全行业排名 → TDX board_list。
 
     Args:
@@ -1941,7 +1958,8 @@ def save_score_snapshot(script_type: str, code: str, name: str, total_score: flo
 # ═══════════════════════════════════════════════════════════
 
 
-def get_stock_info(code):
+@cached(category="basic_info", ttl_seconds=TTL["basic_info"])
+def get_stock_info(code: str) -> Dict[str, Any]:
     """V7.5: 个股基本信息 → 腾讯行情 + TDX"""
     name = industry = list_date = ""
     total_shares = float_shares = mcap = float_mcap = price = 0
@@ -2039,7 +2057,8 @@ async def get_stock_info_async(session: Any, code: str) -> Dict[str, Any]:
     return await asyncio.to_thread(get_stock_info, code)
 
 
-def get_sina_financial_report(code, num_periods=12):
+@cached(category="financial", ttl_seconds=TTL["financial"])
+def get_sina_financial_report(code: str, num_periods: int = 12) -> Dict[str, Any]:
     """新浪利润表 — 支持多期数（默认12期 ≈ 3年）"""
     prefix = "sh" if code.startswith("6") else "sz"
     paper_code = f"{prefix}{code}"
@@ -2066,7 +2085,8 @@ def get_sina_financial_report(code, num_periods=12):
         return []
 
 
-def get_sina_balance_sheet(code):
+@cached(category="balance_sheet", ttl_seconds=TTL["balance_sheet"])
+def get_sina_balance_sheet(code: str) -> List[Dict[str, Any]]:
     """获取新浪资产负债表（fzb）最近5期数据"""
     try:
         prefix = "sh" if code.startswith("6") else "sz"
@@ -2104,7 +2124,8 @@ def get_sina_balance_sheet(code):
         return None
 
 
-def get_hsgt_macro_flow():
+@cached(category="hsgt_flow", ttl_seconds=TTL["hsgt_flow"], use_args=False)
+def get_hsgt_macro_flow() -> Optional[Dict[str, Any]]:
     """同花顺北向资金大盘净流入（宏观风向标）"""
     url = "https://data.hexin.cn/market/hsgtApi/method/dayChart/"
     headers = {"User-Agent": UA, "Host": "data.hexin.cn", "Referer": "https://data.hexin.cn/"}
@@ -2124,7 +2145,7 @@ def get_hsgt_macro_flow():
         return None
 
 
-async def get_hsgt_macro_flow_async(session):
+async def get_hsgt_macro_flow_async(session: Any) -> Optional[Dict[str, Any]]:
     """async 版: 同花顺北向资金大盘净流入"""
     url = "https://data.hexin.cn/market/hsgtApi/method/dayChart/"
     headers = {"User-Agent": UA, "Host": "data.hexin.cn", "Referer": "https://data.hexin.cn/"}
@@ -2144,7 +2165,8 @@ async def get_hsgt_macro_flow_async(session):
         return None
 
 
-def get_lockup_expiry(code, today_str, days=90, include_history=False):
+@cached(category="lockup_expiry", ttl_seconds=TTL["lockup_expiry"])
+def get_lockup_expiry(code: str, today_str: str, days: int = 90, include_history: bool = False) -> Any:
     """限售解禁日历。
 
     Args:
@@ -2187,7 +2209,8 @@ def get_lockup_expiry(code, today_str, days=90, include_history=False):
     return upcoming
 
 
-def get_gross_margin_and_roe(code, fin_report=None, bs_data=None):
+@cached(category="gross_margin_roe", ttl_seconds=TTL["gross_margin_roe"])
+def get_gross_margin_and_roe(code: str, fin_report: Any = None, bs_data: Any = None) -> Dict[str, Any]:
     """获取最新年度的毛利率和ROE"""
     try:
         if fin_report is None:
@@ -2266,6 +2289,25 @@ def _try_upgrade_calendar():
     except Exception as e:
         print(f"⚠️ 自动更新异常: {e}", flush=True)
         return False
+
+
+def get_valuation_pe_center(industry_name: str = "") -> float:
+    """按行业返回估值PE中枢（用于报告参考，若未命中行业则返回全局默认）。
+
+    Args:
+        industry_name: 行业名（可为空字符串，默认返回全局默认）
+
+    Returns:
+        float: 行业PE中枢，默认 30.0
+    """
+    sc = _load_strategy_config()
+    pe_map = sc.get("valuation_pe_centers", {})
+    if pe_map:
+        if industry_name in pe_map:
+            return float(pe_map[industry_name])
+    # 回退：使用 valuation.pe_mid
+    val = sc.get("valuation", {}).get("pe_mid", 30.0)
+    return float(val)
 
 
 def is_trading_day(d=None):
@@ -2360,7 +2402,7 @@ def get_market_status(now=None):
 # ═══════════════════════════════════════════════════════════
 
 
-async def get_eps_forecast_async(session, code):
+async def get_eps_forecast_async(session: Any, code: str) -> Dict[str, Any]:
     """async 版: 机构一致预期EPS — 同花顺正则提取 + TDX兜底"""
     try:
         import re as _re2
@@ -2403,7 +2445,7 @@ async def get_eps_forecast_async(session, code):
     return _pd.DataFrame()
 
 
-async def get_sina_financial_report_async(session, code, num_periods=12):
+async def get_sina_financial_report_async(session: Any, code: str, num_periods: int = 12) -> Dict[str, Any]:
     """async 版: 新浪利润表"""
     prefix = "sh" if code.startswith("6") else "sz"
     paper_code = f"{prefix}{code}"
@@ -2430,7 +2472,7 @@ async def get_sina_financial_report_async(session, code, num_periods=12):
         return []
 
 
-async def get_sina_balance_sheet_async(session, code):
+async def get_sina_balance_sheet_async(session: Any, code: str) -> List[Dict[str, Any]]:
     """async 版: 新浪资产负债表"""
     try:
         prefix = "sh" if code.startswith("6") else "sz"
@@ -2468,7 +2510,7 @@ async def get_sina_balance_sheet_async(session, code):
         return None
 
 
-async def get_reports_async(session, code, max_pages=3):
+async def get_reports_async(session: Any, code: str, max_pages: int = 3) -> List[Dict[str, Any]]:
     """async 版: 东财研报列表"""
     api_url = "https://reportapi.eastmoney.com/report/list"
     all_records = []
@@ -2491,7 +2533,7 @@ async def get_reports_async(session, code, max_pages=3):
     return all_records
 
 
-async def get_northbound_hold_async(session, code, days=20):
+async def get_northbound_hold_async(session: Any, code: str, days: int = 20) -> List[Dict[str, Any]]:
     """async 版: 北向资金持仓动态"""
     data = await eastmoney_datacenter_async(session, code, "RPT_MUTUAL_HOLDSTOCKNORTH_STA",
                                             filter_str=f'(SECURITY_CODE="{code}")',
@@ -2510,7 +2552,7 @@ async def get_northbound_hold_async(session, code, days=20):
     return rows
 
 
-async def get_margin_trading_async(session, code):
+async def get_margin_trading_async(session: Any, code: str) -> List[Dict[str, Any]]:
     """async 版: 融资融券数据"""
     data = await eastmoney_datacenter_async(session, code, "RPTA_WEB_RZRQ_GGMX",
                                             filter_str=f'(SCODE="{code}")',
@@ -2530,7 +2572,7 @@ async def get_margin_trading_async(session, code):
     return rows
 
 
-async def get_block_trade_async(session, code):
+async def get_block_trade_async(session: Any, code: str) -> List[Dict[str, Any]]:
     """async 版: 大宗交易数据"""
     data = await _em_filter_async(session, code, "RPT_DATA_BLOCKTRADE",
                                   page_size=15, sort_columns="TRADE_DATE", sort_types="-1")
@@ -2552,7 +2594,7 @@ async def get_block_trade_async(session, code):
     return rows
 
 
-async def get_lockup_expiry_async(session, code, today_str, days=90, include_history=False):
+async def get_lockup_expiry_async(session: Any, code: str, today_str: str, days: int = 90, include_history: bool = False) -> Any:
     """async 版: 限售解禁日历"""
     end_str = (datetime.strptime(today_str, "%Y-%m-%d") + timedelta(days=days)).strftime("%Y-%m-%d")
 
@@ -2585,7 +2627,7 @@ async def get_lockup_expiry_async(session, code, today_str, days=90, include_his
     return upcoming
 
 
-async def get_gross_margin_and_roe_async(session, code, fin_report=None, bs_data=None):
+async def get_gross_margin_and_roe_async(session: Any, code: str, fin_report: Any = None, bs_data: Any = None) -> Dict[str, Any]:
     """async 版: 获取最新年度的毛利率和ROE"""
     try:
         if fin_report is None:

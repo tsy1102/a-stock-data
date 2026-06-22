@@ -39,11 +39,63 @@
    何时需要：修改了 gd_uploader.py 或上传逻辑后，运行一次确认无回归。
 
 
+4. test_cache.py（V8.4 新增）
+   作用：测试 stock_cache.py 缓存层核心功能。
+   覆盖：
+   - set_cache / get_cache：基本读写与 key 构建；
+   - TTL 过期：不同 category 的过期行为；
+   - invalidate_category / invalidate_prefix：按分类/前缀清理；
+   - print_cache_stats：命中率与占用统计；
+   - @cached 装饰器：同步函数缓存效果验证；
+   - STOCK_NOCACHE=1 环境变量禁用缓存；
+   - 空值写入：确保 {} / [] / "" 等空值不写入缓存。
+   何时需要：修改了 stock_cache.py 或缓存策略后。
+
+
+5. test_calendar.py（V8.4 新增）
+   作用：测试 stock_common.py 交易日历判断函数。
+   覆盖：
+   - is_trading_day()：普通工作日（周一~五）、周末、节假日、调休日；
+   - get_market_status()：盘前/上午/午休/下午/盘后/休市各状态；
+   - 已知节假日验证：元旦、春节、劳动节、国庆节、端午、中秋；
+   - 调休日验证：节假日前后补班日；
+   - 边界情况：None / 超范围日期 / datetime 输入。
+   何时需要：修改了交易日历逻辑或 chinese-calendar 更新后。
+
+
+6. test_scoring.py（V8.4 新增）
+   作用：测试统一评分接口 calculate_score() 及各维度评分函数。
+   覆盖：
+   - _score_technical：技术面 bullish/bearish、涨停加分、边界限制；
+   - _score_fundamental：ROE 三档（高/中/亏损）、边界限制；
+   - _score_valuation：PE 低估、PE 高估、PE 中性、PE 无数据；
+   - _score_flow：净流入加分、无数据兜底；
+   - _score_holder：筹码集中度三档；
+   - _score_dividend：股息率高低档；
+   - calculate_score：full/dict/med_lng 三种输出模式；
+   - 空数据兜底：返回有效评分的边界处理。
+   何时需要：修改了评分维度或权重配置后。
+
+
+7. test_strategy.py（V8.4 新增）
+   作用：测试选股策略配置加载与策略函数基本行为。
+   覆盖：
+   - strategy_config.yaml / keywords_config.yaml 存在性；
+   - _load_strategy_config / _load_settings 返回 dict；
+   - get_valuation_pe_center：默认返回正浮点数；
+   - get_val_report 策略函数可导入且处理空股票池；
+   - top5 函数返回有序列表；
+   - kline_indices 返回 dict 结构；
+   - get_val_report 接受 parse_args；
+   - keywords_config 包含行业名清理或别名配置。
+   何时需要：修改了策略参数或关键词配置后。
+
+
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 【第二类】独立诊断脚本  (手动运行:  python tests\xxx.py)
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-4. diag_dragon_tiger.py
+8. diag_dragon_tiger.py
    作用：龙虎榜数据接口连通性与可用性诊断。
    运行：python tests\diag_dragon_tiger.py [股票代码1] [股票代码2] ...
           （不传参数默认跑 600519 / 000001 / 300750）
@@ -63,7 +115,7 @@
      - 怀疑东财接口变化时，作为基准测试。
 
 
-5. diagnose_tdx.py
+9. diagnose_tdx.py
    作用：通达信（TDX）数据接口连通性与稳定性诊断。
    运行：python tests\diagnose_tdx.py
    输出包含 5 个部分：
@@ -122,6 +174,18 @@
       cd 到项目根目录
       pytest tests/ -v
 
+  想只跑缓存层测试（V8.4 新增）：
+      pytest tests/test_cache.py -v
+
+  想只跑交易日历测试（V8.4 新增）：
+      pytest tests/test_calendar.py -v
+
+  想只跑评分逻辑测试（V8.4 新增）：
+      pytest tests/test_scoring.py -v
+
+  想只跑策略配置测试（V8.4 新增）：
+      pytest tests/test_strategy.py -v
+
   短线脚本龙虎榜全是 0 / 想判断数据接口是否正常：
       python tests\diag_dragon_tiger.py
       python tests\diag_dragon_tiger.py 301217 600036
@@ -133,4 +197,4 @@
       pytest tests\test_gd_uploader.py -v
 
 
-更新时间：2026-06-17
+更新时间：2026-06-22（V8.4）

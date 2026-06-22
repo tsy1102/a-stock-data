@@ -1,0 +1,160 @@
+# ═══════════════════════════════════════════════════════════
+# V7.5: 策略阈值集中配置
+# 作用：所有报告脚本的数值阈值（涨停/PE/PB/ROE/异动等）统一在此管理
+# 读取方式：stock_common._load_strategy_config() -> 返回 dict
+# 版本: 1.0.0 (2026-06-15)
+# ═══════════════════════════════════════════════════════════
+
+# ── 行情 & 板块 ───────────────────────────────────────────
+# 使用者: get_sht_report.py / get_med_report.py
+market:
+  # 涨停判断阈值（%）→ sht 第1466行
+  limit_chg_pct: 9.5           # 涨幅超过此值=强势涨停
+  near_limit_pct: 7.0          # 涨幅超过此值=逼近涨停
+  # 封单强度（流通市值占比 %）→ sht 第1460-1462行
+  limit_order_strong: 5.0      # >5%=强势封板
+  limit_order_mid: 2.0          # >2%=良好
+  # 封单/成交额比值（<此值=弱势烂板）→ sht 第1480行
+  seal_amount_ratio_warn: 0.1  # 封单资金占成交额比例 <10% 预警
+  # V7.5新增：涨停价格容差（相对于涨停价的比例）
+  limit_price_tolerance: 0.005  # abs(price-limit_up)/limit_up < 此值 = 涨停有效
+  # V7.5新增：封单量检测阈值
+  seal_bid_min_ratio: 0.1      # 封单量/流通股本 > 此值 = 有封单
+  # V7.5新增：快速涨幅阈值（%）
+  fast_rise_threshold: 10.0     # 涨幅 > 此值 = 快速拉升
+  # 同业股票市值相似度范围（用于找可比公司）→ med 第379/403行
+  peers_mcap_low: 0.3          # 下限：0.3倍本股市值
+  peers_mcap_high: 3.0         # 上限：3.0倍本股市值
+
+# ── 技术指标 ─────────────────────────────────────────────
+# 使用者: get_val_report.py
+technical:
+  # 均线乖离率（%）→ val 第428行，用于MA10偏离过滤
+  ma_deviation_mid: 3.0        # 偏离此值=偏离均值明显，作为过滤门槛
+
+# ── 估值 ─────────────────────────────────────────────────
+# 使用者: get_val_report.py / get_med_report.py
+valuation:
+  # PE 合理区间
+  pe_mid: 30.0                 # med 第870行：PE>30 & CAGR>0 时给予估值偏高警告
+  pe_high: 50.0                # val 第537行：PE>50 直接跳过（极端值过滤）
+  # PB 安全边际
+  pb_high: 8.0                 # val 第539行：PB>8 不可能是折价标的
+  # PEG
+  peg_good: 0.8                # med 第840行：PEG<0.8=低估优质
+  peg_rational: 1.5            # med 第842行：PEG<=1.5=合理区间
+
+# ── 财务健康 ─────────────────────────────────────────────
+# 使用者: get_med_report.py / get_val_report.py
+fundamental:
+  # ROE 分层（%）
+  roe_good: 15.0               # val 第787行：ROE<15% 不进入白马候选
+  # 资产负债率安全线
+  debt_ratio_warn: 60.0        # med 第769行：>60% 杠杆偏高预警
+  # 应收账款/总资产 警示线
+  ar_ratio_warn: 20.0          # med 第762行：>20% 回款风险预警
+  # 货币资金覆盖短期债务倍数
+  cash_debt_ratio_warn: 1.0    # med 第(未显式写入，保留为储备)
+  # 商誉占净资产比例警示线
+  gw_ratio_warn: 30.0          # med 第767行：>30% 减值风险预警
+  # 营收水分预警（应收增幅/营收降幅）
+  ar_rev_warn_ratio: 30.0      # med 第(未显式写入，保留为储备)
+
+# ── 龙虎榜 & 席位 ───────────────────────────────────────
+# 使用者: get_sht_report.py
+trader:
+  recent_days: 90              # sht 第1240行：近90日龙虎榜回溯窗口
+
+# ── 解禁与股东 ──────────────────────────────────────────
+# 使用者: get_sht_report.py
+holder:
+  unlock_warn_days: 90         # sht 第1302行：未来90天内解禁预警窗口
+  unlock_ratio_warn: 5.0       # sht 第1294/1304行：解禁占比>5% 标记红色
+
+# ── 策略选股（get_val_report 使用）────────────────
+# 使用者: get_val_report.py
+strategy:
+  liquidity_top_pct: 5         # val 第1166行：Top5% 成交额作为核心流动性池
+  turnover_cap_pct: 8.0        # val 第431行：龙回头策略中，换手率>8% 过滤
+  wbottom_depth_pct: 5.0       # val 第585行：W底形态中，两低点差异>5%才有效
+
+# ── 市场异动扫描（get_mak_report 使用）─────────────
+# 使用者: get_mak_report.py
+abnormal:
+  ret_10d_warn: 70.0           # mak 第200行：10日涨幅≥70% 触发严重异动
+  ret_10d_severe_down: -50.0   # mak 第203行：10日跌幅≤-50% 触发严重异动
+  volume_locked_pct: 3.0       # mak 第186行：换手率<3% 标记极度锁仓
+  volume_overload_pct: 25.0    # mak 第187行：换手率>25% 标记爆量滞涨
+
+# ── 全维度评分权重（get_ful_report 使用）────────────
+# 使用者: get_ful_report.py 五维加权综合评分
+scoring:
+  # 五维权重（总和需=100%）
+  weights:
+    technical: 25     # 技术面权重（%）
+    valuation: 20     # 估值面权重（%）
+    fundamental: 20    # 基本面权重（%）
+    flow: 15          # 资金面权重（%）
+    theme: 15         # 题材面权重（%）
+  # 技术面阈值
+  technical:
+    ma_golden_cross: 10       # 均线多头排列加分
+    ma_death_cross: -10       # 均线空头排列减分
+    macd_bull: 8              # MACD多头信号加分
+    macd_bear: -8             # MACD空头信号减分
+    rsi_optimal: 5           # RSI适中(40-70)加分
+    rsi_oversold: 3          # RSI超卖(<30)加分
+    rsi_overbought: -4        # RSI超买(>80)减分
+    boll_optimal: 3           # 布林带位置适中加分
+    boll_overshoot: -2        # 布林带上轨以上减分
+    kdj_golden: 3            # KDJ金叉且未超买加分
+    kdj_overbought: -3       # KDJ J值>110超买减分
+    volume_surge: 2           # 量比>2放量加分
+    ret_20d_drop: -6          # 20日跌幅<-30%减分
+    ret_20d_rally: 5          # 20日涨幅>15%加分
+    depth_pullback: 4         # 距历史高点<-30%深度回调加分
+    near_high: 2              # 距历史高点>0接近高点加分
+  # 估值面阈值
+  valuation:
+    pe_low: 15               # PE<15 低估加分
+    pe_fair: 25               # PE<25 合理加分
+    pe_normal: 40             # PE<40 正常
+    pe_high: -8               # PE>40 高估减分
+    pb_very_low: 1.2         # PB<1.2 破净加分
+    pb_low: 3                # PB<3 低PB加分
+    pb_high: 8               # PB>8 高PB减分
+    peg_low: 1.2             # PEG<1.2且>0成长合理加分
+    peg_high: 2              # PEG>2 成长透支减分
+    pe_vs_industry_low: 0.8   # PE相对行业<0.8低估加分
+    pe_vs_industry_high: 1.5 # PE相对行业>1.5高估减分
+  # 基本面阈值
+  fundamental:
+    roe_excellent: 20        # ROE≥20% 优质加分
+    roe_good: 10             # ROE≥10% 良好加分
+    roe_normal: 3            # ROE≥3% 一般加分
+    roe_weak: -8            # ROE<3% 偏弱减分
+    profit_yoy_high: 30      # 利润增速>30% 高成长加分
+    profit_yoy_good: 10      # 利润增速>10% 成长加分
+    profit_yoy_decline: -20  # 利润增速<-20% 大幅下滑减分
+    revenue_yoy_high: 20     # 营收增速>20% 高成长加分
+    revenue_yoy_decline: -10 # 营收增速<-10% 下滑减分
+    dividend_yield_high: 4   # 分红率>4% 高分红加分
+    dividend_yield_good: 2   # 分红率>2% 较好加分
+    debt_ratio_low: 40       # 资产负债率<40% 低杠杆加分
+    debt_ratio_high: 65      # 资产负债率>65% 高杠杆减分
+    gw_ratio_high: 20        # 商誉/净资产>20% 高商誉减分
+    cash_debt_ratio_good: 2  # 现金/短债>2 偿债能力强加分
+  # 资金面阈值
+  flow:
+    main_net_large: 5000     # 主力净流入>5000万 大幅流入加分
+    main_net_mid: 1000       # 主力净流入>1000万 流入加分
+    main_out_large: -5000    # 主力净流出<-5000万 大幅流出减分
+    main_out_mid: -1000      # 主力净流出<-1000万 流出减分
+    positive_days_high: 15    # 近20日净买入天数≥15 持续流入加分
+    positive_days_low: 5     # 近20日净买入天数≤5 持续流出减分
+    northbound_high: 8       # 北向占比>8% 高占比加分
+    northbound_mid: 3        # 北向占比>3% 中占比加分
+    domestic_high: 5         # 内资占比>5% 散户/主力活跃加分
+    holder_count_high: 8     # 股东户数增加≥8 高筹码分散加分
+    margin_high: 10          # 融资余额增长>10% 杠杆资金看多加
+    margin_low: -10         # 融资余额增长<-10% 杠杆资金看减

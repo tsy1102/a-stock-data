@@ -1,0 +1,33 @@
+# Google Drive OAuth 客户端凭据（从 Google Cloud Console 下载，请勿提交）
+client_secrets.json
+
+# Google Drive 授权令牌（首次认证后自动生成，请勿提交）
+credentials.json
+
+# 测试输出
+_test_out/
+
+# 生成的报告
+reports/
+
+# 日志
+logs/
+
+# Python缓存
+__pycache__/
+*.pyc
+*.pyo
+
+# 缓存文件
+holder_cache.json
+*.cache
+*.tmp
+
+# macOS
+.DS_Store
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo

@@ -1,0 +1,95 @@
+# ======================================================================
+# A股个股分析报告生成系统 —— 工具配置中心 (PEP 621)
+# 作用：集中管理 pytest / mypy / black 等工具的配置
+# 说明：此文件放在项目根目录，所有工具会自动从当前目录向上查找
+# 注意：mypy/black 暂不加入 requirements.txt，阶段3（类型注解）再启用
+# ======================================================================
+
+
+# ──────────────────────────────────────────────────────────────────────
+# [1] pytest 配置
+#      - testpaths: 只在 tests/ 目录下查找测试文件，避免误扫描 reports/ / snapshots/
+#      - python_files: 测试文件命名规则
+#      - python_functions: 测试函数命名规则
+#      - addopts: 默认命令行参数（-v = 详细模式）
+# ──────────────────────────────────────────────────────────────────────
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = "test_*.py"
+python_functions = "test_*"
+python_classes = "Test*"
+addopts = "-v --tb=short"
+norecursedirs = [
+    "__pycache__",
+    "reports",
+    "snapshots",
+    "logs",
+    ".git",
+    ".pytest_cache",
+]
+
+
+# ──────────────────────────────────────────────────────────────────────
+# [2] mypy 配置（静态类型检查器）
+#      - python_version: 最低支持 Python 3.9
+#      - strict = false: 宽松模式（阶段3逐步收紧）
+#      - ignore_missing_imports = true: 忽略未注解的第三方库
+#      - no_implicit_optional = true: 禁止隐式 Optional
+#      - warn_redundant_casts = true: 警告冗余 cast
+#      - warn_return_any = true: 函数返回 Any 类型时给出警告
+#      - 核心模块 (stock_common / stock_cache) 使用更严格规则
+#      注意：mypy 依赖需在阶段3手动安装：pip install mypy
+# ──────────────────────────────────────────────────────────────────────
+[tool.mypy]
+python_version = "3.10"
+strict = false
+ignore_missing_imports = true
+no_implicit_optional = true
+warn_redundant_casts = true
+warn_return_any = true
+warn_unused_ignores = true
+show_error_codes = true
+files = "*.py"
+exclude = [
+    "__pycache__",
+    "reports",
+    "snapshots",
+    "logs",
+    ".pytest_cache",
+]
+
+# 核心模块更严格（渐进式）
+[[tool.mypy.overrides]]
+module = ["stock_cache", "stock_common"]
+strict = false
+disallow_untyped_defs = true
+
+# tests 目录较宽松
+[[tool.mypy.overrides]]
+module = ["tests.*"]
+disallow_untyped_defs = false
+warn_return_any = false
+
+
+# ──────────────────────────────────────────────────────────────────────
+# [3] black 配置（代码格式化工具）
+#      - line-length: 100 字符（兼顾 readability 与宽屏显示器）
+#      - target-version: 目标 Python 版本 >= 3.9
+#      - string-normalization: false（保留原引号风格，避免大面积改动）
+#      注意：black 依赖需在阶段3手动安装：pip install black
+# ──────────────────────────────────────────────────────────────────────
+[tool.black]
+line-length = 100
+target-version = ["py310"]
+skip-string-normalization = true
+include = '\.pyi?$'
+exclude = '''
+(
+  /(
+      __pycache__
+    | \.pytest_cache
+    | reports
+    | snapshots
+    | logs
+  )/
+)'''

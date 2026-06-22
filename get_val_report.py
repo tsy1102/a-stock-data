@@ -396,12 +396,13 @@ def strategy_01_longhuitou(hot_pool, today_str):
     _sc = _load_strategy_config()
     _ma_dev_mid = _sc.get("technical", {}).get("ma_deviation_mid", 3.0)
     _turnover_cap = _sc.get("strategy", {}).get("turnover_cap_pct", 8.0)
+    _zhangfu_min = _sc.get("strategy", {}).get("zhangfu_min", 5.0)
     result = []
     for stock in hot_pool:
         code = stock.get("code", "")
         name = stock.get("name", "")
         zhangfu = _safe_float(stock.get("zhangfu", stock.get("涨幅%", 0)))
-        if zhangfu < 5:
+        if zhangfu < _zhangfu_min:
             continue
         kline = baidu_kline_last(code)
         if not kline: continue
@@ -428,7 +429,11 @@ def strategy_01_longhuitou(hot_pool, today_str):
 
 # ─── 策略02: 周线级别多均线多头排列 ───
 
-def strategy_02_weekly_ma(stocks, top_n=200):
+def strategy_02_weekly_ma(stocks, top_n=None):
+    _sc = _load_strategy_config()
+    if top_n is None:
+        top_n = _sc.get("strategy", {}).get("top_n_cap", 200)
+    _cluster_cap = _sc.get("strategy", {}).get("cluster_spread_cap", 5.0)
     candidates = sorted(stocks, key=lambda x: x.get("mcap_yi", 0), reverse=True)[:top_n]
     result = []
     for s in candidates:
@@ -437,7 +442,7 @@ def strategy_02_weekly_ma(stocks, top_n=200):
         if not w or w.get("week_count", 0) < 25: continue
         if any(v is None or v <= 0 for v in [w["ma5"], w["ma10"], w["ma20"], w["ma30"]]): continue
         if not (w["ma5"] > w["ma10"] > w["ma20"] > w["ma30"]): continue
-        if w["cluster_spread"] is None or w["cluster_spread"] >= 5: continue
+        if w["cluster_spread"] is None or w["cluster_spread"] >= _cluster_cap: continue
         if w["last_close"] < w["ma5"]: continue
         reason = (
             f"周线MA5/10/20/30在{w['last_close']:.2f}元附近极度聚合"
@@ -464,6 +469,9 @@ def _kline_indices(keys):
 # ─── 策略03: 量价齐升 ───
 
 def strategy_03_volume_breakout(hot_pool):
+    _sc = _load_strategy_config()
+    _box_factor = _sc.get("strategy", {}).get("box_break_factor", 1.01)
+    _vol_ratio_cap = _sc.get("strategy", {}).get("vol_ratio_cap", 2.5)
     result = []
     for stock in hot_pool:
         code = stock.get("code", "")
@@ -489,12 +497,12 @@ def strategy_03_volume_breakout(hot_pool):
         recent_60 = closes[-60:]
         box_top = max(recent_60)
         current_price = closes[-1]
-        if current_price < box_top * 1.01: continue
+        if current_price < box_top * _box_factor: continue
         if len(volumes) >= 11:
             avg_vol_10 = sum(volumes[-11:-1]) / 10
             today_vol = volumes[-1]
             vol_ratio = today_vol / avg_vol_10 if avg_vol_10 > 0 else 0
-            if vol_ratio < 2.5: continue
+            if vol_ratio < _vol_ratio_cap: continue
         else:
             continue
         reason = (
@@ -514,10 +522,12 @@ def strategy_04_core_discount(stocks):
     _sc = _load_strategy_config()
     _pe_high = _sc.get("valuation", {}).get("pe_high", 50.0)
     _pb_high = _sc.get("valuation", {}).get("pb_high", 8.0)
-    _pe_percentile_warn = 15.0
-    big_caps = [s for s in stocks if s.get("mcap_yi", 0) >= 100]
+    _pe_percentile_warn = _sc.get("strategy", {}).get("pe_percentile_warn", 15.0)
+    _mcap_min = _sc.get("strategy", {}).get("mcap_big_cap_min", 100.0)
+    _top_n = _sc.get("strategy", {}).get("top_n_cap", 200)
+    big_caps = [s for s in stocks if s.get("mcap_yi", 0) >= _mcap_min]
     if not big_caps: return []
-    big_caps = sorted(big_caps, key=lambda x: x.get("mcap_yi", 0), reverse=True)[:200]
+    big_caps = sorted(big_caps, key=lambda x: x.get("mcap_yi", 0), reverse=True)[:_top_n]
     result = []
     for s in big_caps:
         code = s["code"]
@@ -549,9 +559,13 @@ def strategy_04_core_discount(stocks):
 
 # ─── 策略05: W底形态 ───
 
-def strategy_05_double_bottom(stocks, top_n=500):
+def strategy_05_double_bottom(stocks, top_n=None):
     _sc = _load_strategy_config()
-    _wbottom_depth = _sc.get("strategy", {}).get("wbottom_depth_pct", 5.0)
+    _wbottom_depth = _sc.get("strategy", {}).get("wbottom_depth_cap", 5.0)
+    if top_n is None:
+        top_n = _sc.get("strategy", {}).get("top_n_cap", 200)
+    _box_factor = _sc.get("strategy", {}).get("box_break_factor", 1.01)
+    _vol_inc_factor = _sc.get("strategy", {}).get("volume_increase_factor", 1.2)
     candidates = sorted(stocks, key=lambda x: x.get("mcap_yi", 0), reverse=True)[:top_n]
     result = []
     for s in candidates:
@@ -579,13 +593,13 @@ def strategy_05_double_bottom(stocks, top_n=500):
         neck_end = max(second_idx, min_idx)
         neckline = max(recent_60[neck_start:neck_end+1])
         current_price = closes[-1]
-        if current_price < neckline * 1.01: continue
+        if current_price < neckline * _box_factor: continue
         if idx_vol >= 0:
             vols = [_safe_float(r[idx_vol]) for r in rows[-10:] if len(r) > idx_vol]
             if len(vols) >= 5:
-                # 成交量确认：使用5日均量对比，突破需放量20%以上
+                # 成交量确认：使用5日均量对比，突破需放量
                 avg_vol_5 = sum(vols[-5:]) / min(5, len(vols))
-                vol_increasing = vols[-1] > avg_vol_5 * 1.2
+                vol_increasing = vols[-1] > avg_vol_5 * _vol_inc_factor
             else:
                 vol_increasing = True
         else:

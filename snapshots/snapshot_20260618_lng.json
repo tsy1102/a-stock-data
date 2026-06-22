@@ -1,0 +1,32 @@
+{
+  "date": "20260618",
+  "script_type": "lng",
+  "last_updated": "2026-06-18 17:10:45",
+  "stock_count": 4,
+  "stocks": {
+    "601208": {
+      "name": "东材科技",
+      "total_score": 57.5,
+      "price": 74.83,
+      "report_source": "lng"
+    },
+    "688820": {
+      "name": "盛合晶微",
+      "total_score": 59.5,
+      "price": 185.6,
+      "report_source": "lng"
+    },
+    "601138": {
+      "name": "工业富联",
+      "total_score": 60.5,
+      "price": 78.08,
+      "report_source": "lng"
+    },
+    "002456": {
+      "name": "欧菲光",
+      "total_score": 57.5,
+      "price": 9.3,
+      "report_source": "lng"
+    }
+  }
+}

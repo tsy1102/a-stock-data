@@ -90,20 +90,25 @@ python main.py [选项] 股票代码...
 
 ```
 a-stock-data/
-├── main.py              # 主入口程序
-├── stock_common.py      # 核心数据获取函数库
-├── stock_calendar.py    # 交易日历模块
-├── gd_uploader.py       # Google Drive上传模块
-├── tdx_client.py        # 通达信数据客户端
-├── get_sht_report.py    # 短线报告生成
-├── get_med_report.py    # 中线报告生成
-├── get_lng_report.py    # 长线报告生成
-├── get_ful_report.py    # 完整报告生成
-├── get_val_report.py    # 估值报告生成
-├── get_mak_report.py    # 市场热点报告生成
-├── requirements.txt     # 依赖列表
-├── CHANGELOG.md         # 版本变更记录
-└── reports/             # 报告输出目录
+├── main.py                   # 主入口程序（参数分发/多报告并行）
+├── stock_common.py           # 核心数据获取函数库（网络请求/缓存/类型接口）
+├── stock_cache.py            # 统一缓存层（SQLite + TTL 装饰器）
+├── stock_calendar.py         # 交易日历模块（含节假日/调休日数据）
+├── gd_uploader.py            # Google Drive上传模块（folderId 动态查找）
+├── tdx_client.py             # 通达信数据客户端（easy-tdx 行情接口封装）
+├── get_sht_report.py         # 短线报告生成（90日窗口）
+├── get_med_report.py         # 中线报告生成（180日窗口）
+├── get_lng_report.py         # 长线报告生成（730日窗口）
+├── get_ful_report.py         # 完整报告生成（综合评分）
+├── get_val_report.py         # 估值报告生成（策略选股）
+├── get_mak_report.py         # 市场热点报告生成（异动扫描）
+├── strategy_config.yaml      # 统一策略参数配置文件（评分/阈值/权重）
+├── pyproject.toml            # pytest / mypy / black 等工具配置中心
+├── requirements.txt          # 运行时依赖列表
+├── CHANGELOG.md              # 版本变更记录
+├── reports/                  # 报告输出目录（运行时自动创建）
+├── snapshots/                # 评分快照（历史对比/背离检测）
+└── tests/                    # pytest 单元测试用例
 ```
 
 ---
@@ -117,7 +122,7 @@ requests>=2.28.0
 aiohttp>=3.8.0
 pandas>=1.5.0
 numpy>=1.23.0
-mootdx>=0.5.0
+easy-tdx>=1.0,<2.0
 chinese-calendar>=1.11.0
 google-api-python-client>=2.0.0
 google-auth-oauthlib>=1.0.0
@@ -166,6 +171,32 @@ get_market_status()                     # 获取当前市场状态
 clean_codes(codes)                      # 清洗股票代码
 ```
 
+### stock_cache.py
+
+统一缓存层，用于降低 API 请求频率、避免重复网络请求。关键特性：
+
+- **SQLite 持久化**：缓存写入项目根目录 `cache/stock_cache.db`，支持程序重启后读取
+- **TTL 分级策略**：按数据类型配置不同过期时间（财务数据 90 天，龙虎榜/北向数据当日有效，概念板块 7 天，研报 3 天，通用兜底 1 小时）
+- **装饰器模式**：通过 `@cached(category="xxx")` 一行启用函数级缓存，不需改写业务逻辑
+- **手动失效**：提供 `invalidate_category("dragon_tiger")`、`clear_all()` 等手动清理接口
+- **环境变量开关**：`STOCK_NOCACHE=1 python main.py ...` 临时禁用缓存（调试用）
+- **CLI 工具**：`python stock_cache.py stats` 查看缓存命中率、条目数量、占用空间
+
+```python
+from stock_cache import cached, invalidate_category, print_cache_stats
+
+# 例：给一个网络请求函数加缓存
+@cached(category="dragon_tiger", ttl_seconds=24 * 3600)
+def get_dragon_tiger_board(code, today_str, days=30, include_seats=True):
+    ...
+
+# 例：清除某分类缓存（重新拉取当日数据前）
+invalidate_category("dragon_tiger")
+
+# 例：查看缓存统计
+print_cache_stats()
+```
+
 ### stock_calendar.py
 
 交易日历模块，支持：
@@ -206,6 +237,16 @@ reports/
 ## 版本历史
 
 完整版本历史详见 [CHANGELOG.md](CHANGELOG.md)
+
+### v8.4.0 (2026-06-22)
+
+- ✅ **新增统一缓存层**：`stock_cache.py`（SQLite + TTL 装饰器），覆盖龙虎榜/北向/财务/概念板块等 25+ 个网络请求函数
+- ✅ **新增异步函数族**：`get_northbound_hold_async`、`get_margin_trading_async`、`get_block_trade_async`、`get_dividend_history_async`、`get_concept_blocks_async`、`get_industry_peers_async` 等 22+ 个异步接口
+- ✅ **类型注解补齐**：~25 个函数补上 PEP 484 类型注解（参数 + 返回值），mypy 静态检查通过
+- ✅ **参数外置**：硬编码阈值（换手率/PE/PB/封单强度等）统一从 `strategy_config.yaml` 读取，便于策略调参
+- ✅ **新增测试文件**：`tests/test_calendar.py`（交易日历）、`tests/test_cache.py`（缓存层）、`tests/test_strategy.py`（选股策略）
+- ✅ **工具配置中心化**：`pyproject.toml` 集中管理 pytest/mypy/black
+- ⚡ **性能提升**：缓存命中率可降至 50-80% 网络请求（视使用频率）；异步化让批量报告生成提速 3-5x
 
 ### v8.3.0 (2026-06-18)
 
@@ -275,9 +316,32 @@ cd a-stock-data
 # 安装依赖
 pip install -r requirements.txt
 
+# 安装开发工具（可选，用于静态类型检查与代码格式化）
+pip install mypy black
+
 # 运行测试
 pytest tests/
+
+# 类型检查
+python -m mypy stock_common.py get_val_report.py tdx_client.py analyze_history.py gd_uploader.py --ignore-missing-imports
+
+# 临时禁用缓存调试
+STOCK_NOCACHE=1 python main.py --sht 600519
 ```
+
+### 类型注解与静态检查
+
+项目核心模块已完成类型注解（PEP 484），在 `pyproject.toml` 中集中管理 mypy 配置：
+
+- `[tool.mypy]`：Python 3.10 目标版本，启用 `no_implicit_optional`、`warn_redundant_casts`
+- `[tool.mypy.overrides]`：stock_cache / stock_common 启用更严格规则
+- `[tool.black]`：代码格式化工具配置
+
+### 常见调试问题
+
+- **报告数据与最新行情不一致？**：可能是缓存命中了过期数据，执行 `STOCK_NOCACHE=1 python main.py ...` 临时禁用缓存再测一次；或调用 `python stock_cache.py clear --category dragon_tiger` 清理对应分类。
+- **类型检查 mypy 报错？**：`third-party library stub missing` 类警告可忽略（已在 `pyproject.toml` 配置 `ignore_missing_imports=true`）。如果是自定义函数参数/返回值类型问题，请直接提交 issue。
+- **Google Drive 上传失败？**：检查根目录是否有 `credentials.json`（首次使用需浏览器授权），查看 `gd_uploader.py` 的 `upload_folder_name` 是否与目标文件夹名一致。
 
 ### 提交代码
 

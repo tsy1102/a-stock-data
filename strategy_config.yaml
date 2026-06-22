@@ -74,9 +74,17 @@ holder:
 # ── 策略选股（get_val_report 使用）────────────────
 # 使用者: get_val_report.py
 strategy:
-  liquidity_top_pct: 5         # val 第1166行：Top5% 成交额作为核心流动性池
-  turnover_cap_pct: 8.0        # val 第431行：龙回头策略中，换手率>8% 过滤
-  wbottom_depth_pct: 5.0       # val 第585行：W底形态中，两低点差异>5%才有效
+  zhangfu_min: 5.0          # val L404: 策略01中涨幅最小阈值（%）
+  turnover_cap_pct: 8.0      # val L431: 龙回头策略中换手率上限
+  top_n_cap: 200             # val L431: 策略02市值排序后取前N的筛选阈值
+  cluster_spread_cap: 5.0    # val L440: 周线离散度过滤（%，越小越聚集）
+  vol_ratio_cap: 2.5         # val L497: 量比上限过滤（越大越放量确认）
+  volume_increase_factor: 1.2  # val L588: 放量突破倍数阈值
+  box_break_factor: 1.01     # val L492: 突破箱体倍数阈值
+  pe_percentile_warn: 15.0   # val L517: PE分位数告警阈值（%，越低越折价）
+  mcap_big_cap_min: 100.0    # val L518: 大盘股定义阈值（亿元）
+  wbottom_depth_cap: 5.0     # val L585: W底形态低点差异阈值
+  liquidity_top_pct: 5       # val L1166: Top5% 成交额作为核心流动性池
 
 # ── 市场异动扫描（get_mak_report 使用）─────────────
 # 使用者: get_mak_report.py

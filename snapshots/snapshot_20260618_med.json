@@ -1,0 +1,44 @@
+{
+  "date": "20260618",
+  "script_type": "med",
+  "last_updated": "2026-06-18 17:09:41",
+  "stock_count": 6,
+  "stocks": {
+    "002241": {
+      "name": "歌尔股份",
+      "total_score": 55.75,
+      "price": 23.92,
+      "report_source": "med"
+    },
+    "600276": {
+      "name": "恒瑞医药",
+      "total_score": 64.25,
+      "price": 48.42,
+      "report_source": "med"
+    },
+    "000981": {
+      "name": "山子高科",
+      "total_score": 57.1,
+      "price": 3.24,
+      "report_source": "med"
+    },
+    "600143": {
+      "name": "金发科技",
+      "total_score": 53.6,
+      "price": 16.79,
+      "report_source": "med"
+    },
+    "601012": {
+      "name": "隆基绿能",
+      "total_score": 52.0,
+      "price": 12.84,
+      "report_source": "med"
+    },
+    "002202": {
+      "name": "金风科技",
+      "total_score": 55.75,
+      "price": 22.49,
+      "report_source": "med"
+    }
+  }
+}

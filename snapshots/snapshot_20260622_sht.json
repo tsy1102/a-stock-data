@@ -1,0 +1,14 @@
+{
+  "date": "20260622",
+  "script_type": "sht",
+  "last_updated": "2026-06-22 15:23:21",
+  "stock_count": 1,
+  "stocks": {
+    "600206": {
+      "name": "有研新材",
+      "total_score": 59.5,
+      "price": 46.76,
+      "report_source": "sht"
+    }
+  }
+}

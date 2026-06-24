@@ -1,0 +1,20 @@
+{
+  "date": "20260623",
+  "script_type": "ful",
+  "last_updated": "2026-06-23 09:24:53",
+  "stock_count": 2,
+  "stocks": {
+    "688313": {
+      "name": "仕佳光子",
+      "total_score": 65.7,
+      "price": 179.99,
+      "report_source": "ful"
+    },
+    "688550": {
+      "name": "瑞联新材",
+      "total_score": 60.8,
+      "price": 48.24,
+      "report_source": "ful"
+    }
+  }
+}

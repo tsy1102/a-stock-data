@@ -1,10 +1,21 @@
 #!/usr/bin/env python3
 
-"""get_sht_report.py — A股短线个股深度数据报告 (V8)"""
+"""get_sht_report.py — A股短线个股深度数据报告 (V8.5.1)
+
+版本信息:
+    V8.5.1 2026-06-24 - 限流安全优化
+    V8.5 2026-06-22 - 新增多档分析深度(--depth lite/medium/deep)、席位增强分析
+    V8.4 2026-06-22 - 统一缓存层+异步函数族
+    V8.3 2026-06-18 - 细节修复
+    V8.2 2026-06-18 - 席位参数优化
+    V8.1 2026-06-18 - 统一评分接口+快照功能
+    V8.0 2026-06-17 - 初始版本
+"""
 
 
 
 import argparse, requests, math, time, pandas as pd, json, os, sys, re as _re
+from typing import List
 
 import asyncio
 
@@ -53,7 +64,8 @@ from stock_common import (clean_codes, _safe_float, _request_with_retry, _quick_
                            get_eps_forecast_async, get_margin_trading_async,
                            get_block_trade_async, get_northbound_hold_async,
                            get_lockup_expiry_async,
-                           is_trading_day, get_market_status)
+                           is_trading_day, get_market_status,
+                           calculate_multi_school_scores, ScoreData)
 
 
 
@@ -79,30 +91,77 @@ def _get_index_quote(idx_code):
 
 
 def get_fund_flow_realtime(code):
-
-    """V7.5: 今日主力净流入 → TDX TCP（push2 fallback 已删除）"""
-
+    """V7.5: 今日主力净流入 → TDX TCP，失败则尝试历史数据回退"""
     ff = tdx_get_fund_flow(code)
-
     if ff and ff.get("main_net_wan", 0) != 0:
-
         return {"data": [ff["main_net_wan"]], "detail": ff, "source": "tdx"}
-
+    
+    ff_120d = get_fund_flow_120d(code)
+    if ff_120d and ff_120d.get("data") and len(ff_120d["data"]) > 0:
+        recent_data = ff_120d["data"][-5:]
+        avg_flow = sum(recent_data) / len(recent_data) if recent_data else 0
+        if avg_flow != 0:
+            return {"data": [avg_flow], "detail": {}, "source": "history_avg", "note": "使用近5日平均"}
     return None
 
 
 
 def get_fund_flow_120d(code):
-
-    """V7.5: 60日资金流 → TDX TCP（同花顺 fallback 已删除）"""
-
+    """V7.5: 60日资金流 → TDX TCP（SKILL.md V3.2 增强：东财push2 fallback）"""
     tdx_data = tdx_get_history_fund_flow(code, 60)
-
+    
     if tdx_data:
-
         return {"data": tdx_data, "error": "", "source": "tdx"}
+    
+    # TDX获取失败，尝试东财push2 fallback
+    em_data = _get_eastmoney_fund_flow_120d(code)
+    if em_data:
+        return {"data": em_data, "error": "", "source": "eastmoney_push2"}
+    
+    return {"data": [], "error": "资金流数据获取失败"}
 
-    return {"data":[],"error":"资金流数据获取失败"}
+
+def _get_eastmoney_fund_flow_120d(code: str) -> List[float]:
+    """获取东财push2资金流120日数据（SKILL.md V3.2 推荐）。
+    
+    Args:
+        code: 股票代码
+    
+    Returns:
+        list: 主力净流入数据列表（单位：万元）
+    """
+    from stock_common import em_get, UA
+    
+    try:
+        secid = f"1.{code}" if code.startswith("6") else f"0.{code}"
+        url = "https://push2his.eastmoney.com/api/qt/stock/fflow/daykline/get"
+        params = {
+            "secid": secid,
+            "klt": 101,  # 日K线
+            "fields1": "f1,f2,f3,f7",
+            "fields2": "f51,f52,f53,f54,f55,f56,f57",
+        }
+        headers = {"User-Agent": UA, "Referer": "https://quote.eastmoney.com/"}
+        
+        r = em_get(url, params=params, headers=headers, timeout=15)
+        if r is None:
+            return []
+        
+        d = r.json()
+        klines = d.get("data", {}).get("klines", [])
+        if not klines:
+            return []
+        
+        result = []
+        for line in klines[-120:]:  # 取最近120天
+            parts = line.split(",")
+            if len(parts) >= 6:
+                main_net = float(parts[1]) / 10000  # 元转万元
+                result.append(main_net)
+        
+        return result
+    except Exception:
+        return []
 
 
 
@@ -186,9 +245,44 @@ async def get_hsgt_macro_flow_async(session):
 
 
 
-def generate_report(code, output_path, ind_comp=None, idx_q=None, hsgt=None):
-
-    """V7.5: 支持 ind_comp/idx_q/hsgt 外部缓存，批量模式下避免重复查询"""
+def generate_report(code, output_path, ind_comp=None, idx_q=None, hsgt=None, depth="deep"):
+    """V7.5: 支持 ind_comp/idx_q/hsgt 外部缓存，批量模式下避免重复查询
+    V8.5: 新增 depth 参数，支持 lite/medium/deep 三档分析深度
+    """
+    # 分析深度说明
+    DEPTH_CONFIG = {
+        "lite": {
+            "skip_fund_flow_120d": True,
+            "skip_lhb_detail": True,
+            "skip_holder_history": True,
+            "skip_margin_detail": True,
+            "skip_block_trade_detail": True,
+            "skip_announcement_detail": True,
+            "skip_industry_peers": True,
+            "desc": "快速模式"
+        },
+        "medium": {
+            "skip_fund_flow_120d": True,
+            "skip_lhb_detail": False,
+            "skip_holder_history": True,
+            "skip_margin_detail": False,
+            "skip_block_trade_detail": True,
+            "skip_announcement_detail": False,
+            "skip_industry_peers": False,
+            "desc": "标准模式"
+        },
+        "deep": {
+            "skip_fund_flow_120d": False,
+            "skip_lhb_detail": False,
+            "skip_holder_history": False,
+            "skip_margin_detail": False,
+            "skip_block_trade_detail": False,
+            "skip_announcement_detail": False,
+            "skip_industry_peers": False,
+            "desc": "深度模式"
+        }
+    }
+    _dc = DEPTH_CONFIG.get(depth, DEPTH_CONFIG["deep"])
 
     today_str = date.today().strftime("%Y-%m-%d")
 
@@ -196,7 +290,7 @@ def generate_report(code, output_path, ind_comp=None, idx_q=None, hsgt=None):
 
     def L(s=""): lines.append(s)
 
-    L("="*72); L(f"  {code} 个股深度数据报告V8 — {today_str} {datetime.now().strftime('%H:%M:%S')}"); L("="*72); L("")
+    L("="*72); L(f"  {code} 个股深度数据报告V8.5.1 [{_dc['desc']}] — {today_str} {datetime.now().strftime('%H:%M:%S')}"); L("="*72); L("")
 
     _30d_str = (datetime.now()-timedelta(days=30)).strftime("%Y-%m-%d")
 
@@ -357,14 +451,17 @@ def generate_report(code, output_path, ind_comp=None, idx_q=None, hsgt=None):
     rf = get_fund_flow_realtime(code)
 
     if rf and rf.get("data") and len(rf["data"]) > 0:
-
         _fd = rf["data"]
-
         L(f"  💰 今日主力净流入: {_fd[0]:.0f}万元 ({_fd[0]/1e4:.2f}亿)")
-
     else:
-
-        L(f"\n  [资金流向] 今日主力净流入(实时): 暂无数据")
+        if ff and len(ff) > 0:
+            last_day_flow = ff.iloc[0].get('net_main', 0) if hasattr(ff, 'iloc') else 0
+            if last_day_flow != 0:
+                L(f"  💰 昨日主力净流入: {last_day_flow:.0f}万元 ({last_day_flow/1e4:.2f}亿)")
+            else:
+                L(f"\n  [资金流向] 今日主力净流入(实时): 暂无数据")
+        else:
+            L(f"\n  [资金流向] 今日主力净流入(实时): 暂无数据")
 
 
 
@@ -634,21 +731,16 @@ def generate_report(code, output_path, ind_comp=None, idx_q=None, hsgt=None):
 
         _recent = ff["data"][-10:]
 
-        L(f"  {'日期':<12} {'主力净流入(亿)':>12} {'超大单(亿)':>10} {'大单(亿)':>10} {'中单(亿)':>10} {'小单(亿)':>10}")
+        L(f"  {'日期':<12} {'主力净流入(万)':>12} {'超大单(万)':>10} {'大单(万)':>10} {'中单(万)':>10} {'小单(万)':>10}")
 
         L(f"  {'-'*70}")
 
         for d in reversed(_recent):
-
-            if d['main_net'] == 0 and d['super_net'] == 0 and d['large_net'] == 0:
-
-                continue
-
-            L(f"  {d['date']:<12} {d['main_net']/1e8:>+12.2f} {d['super_net']/1e8:>+10.2f} {d['large_net']/1e8:>+10.2f} {d['mid_net']/1e8:>+10.2f} {d['small_net']/1e8:>+10.2f}")
+            L(f"  {d['date']:<12} {d['main_net']/1e4:>+12.0f} {d['super_net']/1e4:>+10.0f} {d['large_net']/1e4:>+10.0f} {d['mid_net']/1e4:>+10.0f} {d['small_net']/1e4:>+10.0f}")
 
         r20 = ff["data"][-20:]; tmain = sum(d["main_net"] for d in r20); tdays = sum(1 for d in r20 if d["main_net"]>0)
 
-        L(f"\n  近20日统计:\n    主力累计净流入: {tmain/1e8:.2f}亿元\n    主力净流入天数: {tdays}/20天")
+        L(f"\n  近20日统计:\n    主力累计净流入: {tmain/1e4:.0f}万元\n    主力净流入天数: {tdays}/20天")
 
         L(f"  信号: {'主力资金近期净流入 → 偏多' if tmain>0 else '主力资金近期净流出 → 偏空'}")
 
@@ -789,6 +881,26 @@ def generate_report(code, output_path, ind_comp=None, idx_q=None, hsgt=None):
             L("  ⚠️ 综合判断: 机构大额卖出 + 游资炒作，需谨慎")
         elif _lhasa_count + _lhasa_sell > 3:
             L("  ⚠️ 综合判断: 散户席位占主导，短期波动较大")
+        
+        # V8.5新增：席位增强分析
+        if dtb.get("seat_analysis"):
+            sa = dtb["seat_analysis"]
+            L("\n  ── 席位增强分析（V8.5） ──")
+            if sa.get("seat_quality_score"):
+                L(f"  席位质量评分: {sa['seat_quality_score']}分")
+            if sa.get("premium_signal"):
+                L(f"  溢价信号: {sa['premium_signal']}")
+            if sa.get("legend_count"):
+                L(f"  顶级游资席位: {sa['legend_count']}家")
+            if sa.get("buy_seats_analysis"):
+                notable_buyers = [s for s in sa["buy_seats_analysis"] if s.get("short_name")]
+                if notable_buyers:
+                    L(f"  买方知名席位: {'、'.join([s['short_name'] for s in notable_buyers])}")
+            if sa.get("sell_seats_analysis"):
+                notable_sellers = [s for s in sa["sell_seats_analysis"] if s.get("short_name")]
+                if notable_sellers:
+                    L(f"  卖方知名席位: {'、'.join([s['short_name'] for s in notable_sellers])}")
+                L(f"  知名席位: {'、'.join(sa['notable_seats'])}")
 
     else: L(f"  近{_recent_days}日无龙虎榜记录（白马蓝筹或近期未触发异动标准的个股，无龙虎榜属正常现象）")
 
@@ -923,7 +1035,27 @@ def generate_report(code, output_path, ind_comp=None, idx_q=None, hsgt=None):
 
     L("\n"+"─"*72); L("【十四、短线情绪与事件催化】"); L("─"*36)
 
-    L("  ➤ 即时新闻: (已关闭全球快讯源，仅依赖巨潮公告)")
+    # V8.5新增：社交热榜（默认开启，可通过配置关闭）
+    _cfg = _load_settings()
+    _enable_social = _cfg.get("enable_social_sentiment", True)
+    if _enable_social:
+        L("  ➤ 社交热榜舆情:")
+        try:
+            from social_sentiment import get_social_sentiment
+            stock_name = info.get('name', '') if info else ''
+            sentiment = get_social_sentiment(code, stock_name)
+            if sentiment and sentiment.platform_data:
+                for platform, data in sentiment.platform_data.items():
+                    if data.hot_score > 0:
+                        L(f"    [{platform}] 热度:{data.hot_score} 情绪:{data.sentiment:.2f}")
+                    elif data.error:
+                        L(f"    [{platform}] {data.error}")
+            else:
+                L("    各平台暂无可用数据")
+        except ImportError as e:
+            L(f"    社交热榜模块导入失败: {e}")
+        except Exception as e:
+            L(f"    社交热榜获取失败: {e}")
 
     L(f"\n  ➤ 近7日巨潮实质性重大公告:")
 
@@ -1165,6 +1297,66 @@ def generate_report(code, output_path, ind_comp=None, idx_q=None, hsgt=None):
 
     else: L("  (数据不足，暂无法生成综合信号)")
 
+    # V8.5新增：短线投机派评分（精简版）
+    L("\n  ★ 短线投机派评分（V8.5精简版）")
+    L("  ─────────────────────────────────────────────────────────────────────")
+    try:
+        # 计算投机派核心指标
+        speculator_score = 50
+        
+        # 1. 涨停/连板加分
+        if q and q.get("change_pct", 0) >= 9.5:
+            speculator_score += 15
+        elif q and q.get("change_pct", 0) >= 5:
+            speculator_score += 8
+        
+        # 2. 龙虎榜游资加分
+        if dtb and dtb.get("seat_analysis"):
+            sa = dtb["seat_analysis"]
+            if sa.get("buyer_quality", 0) >= 70:
+                speculator_score += 10
+            if sa.get("notable_seats"):
+                speculator_score += 5
+        
+        # 3. 资金流入加分
+        if ff["data"] and len(ff["data"]) >= 5:
+            recent_flow = sum(d["main_net"] for d in ff["data"][-5:])
+            if recent_flow > 0:
+                speculator_score += 8
+        
+        # 4. 封单质量加分
+        if is_lu2 and b1v2 > 0:
+            speculator_score += 5
+        
+        # 5. 两融多头加分
+        if margin and len(margin) >= 5:
+            _rzye_trend = sum(1 for i in range(4) if margin[i]["rzye"] > margin[i+1]["rzye"])
+            if _rzye_trend >= 3:
+                speculator_score += 5
+        
+        # 限制最高100分
+        speculator_score = min(speculator_score, 100)
+        
+        # 评级
+        if speculator_score >= 75:
+            rating = "🔥 强势投机标的"
+            comment = "短线动能充沛，资金/情绪/技术共振，适合激进短线操作"
+        elif speculator_score >= 60:
+            rating = "✅ 活跃投机标的"
+            comment = "短线关注度较高，存在操作空间，注意节奏把控"
+        elif speculator_score >= 45:
+            rating = "⚠️ 中性投机标的"
+            comment = "短线信号混杂，需谨慎评估，建议小仓位试探"
+        else:
+            rating = "❌ 冷门投机标的"
+            comment = "短线动能不足，资金关注度低，建议观望"
+        
+        L(f"    投机派评分: {speculator_score:.0f}分")
+        L(f"    评级: {rating}")
+        L(f"    建议: {comment}")
+    except Exception as e:
+        L(f"    投机派评分计算异常: {str(e)}")
+
     
 
     # 连板高度追踪
@@ -1307,9 +1499,45 @@ def generate_report(code, output_path, ind_comp=None, idx_q=None, hsgt=None):
 
 
 
-async def generate_report_async(session, code, output_path, ind_comp=None, idx_q=None, hsgt=None):
+async def generate_report_async(session, code, output_path, ind_comp=None, idx_q=None, hsgt=None, depth="deep"):
 
-    """V7.5 async 版: 支持 ind_comp/idx_q/hsgt 外部缓存，批量模式下避免重复查询"""
+    """V7.5 async 版: 支持 ind_comp/idx_q/hsgt 外部缓存，批量模式下避免重复查询
+    V8.5: 新增 depth 参数，支持 lite/medium/deep 三档分析深度
+    """
+    # 分析深度说明
+    DEPTH_CONFIG = {
+        "lite": {
+            "skip_fund_flow_120d": True,
+            "skip_lhb_detail": True,
+            "skip_holder_history": True,
+            "skip_margin_detail": True,
+            "skip_block_trade_detail": True,
+            "skip_announcement_detail": True,
+            "skip_industry_peers": True,
+            "desc": "快速模式"
+        },
+        "medium": {
+            "skip_fund_flow_120d": True,
+            "skip_lhb_detail": False,
+            "skip_holder_history": True,
+            "skip_margin_detail": False,
+            "skip_block_trade_detail": True,
+            "skip_announcement_detail": False,
+            "skip_industry_peers": False,
+            "desc": "标准模式"
+        },
+        "deep": {
+            "skip_fund_flow_120d": False,
+            "skip_lhb_detail": False,
+            "skip_holder_history": False,
+            "skip_margin_detail": False,
+            "skip_block_trade_detail": False,
+            "skip_announcement_detail": False,
+            "skip_industry_peers": False,
+            "desc": "深度模式"
+        }
+    }
+    _dc = DEPTH_CONFIG.get(depth, DEPTH_CONFIG["deep"])
 
     today_str = date.today().strftime("%Y-%m-%d")
 
@@ -1317,7 +1545,7 @@ async def generate_report_async(session, code, output_path, ind_comp=None, idx_q
 
     def L(s=""): lines.append(s)
 
-    L("="*72); L(f"  {code} 个股深度数据报告V8 — {today_str} {datetime.now().strftime('%H:%M:%S')}"); L("="*72); L("")
+    L("="*72); L(f"  {code} 个股深度数据报告V8.5.1 [{_dc['desc']}] — {today_str} {datetime.now().strftime('%H:%M:%S')}"); L("="*72); L("")
 
     _30d_str = (datetime.now()-timedelta(days=30)).strftime("%Y-%m-%d")
 
@@ -1469,14 +1697,17 @@ async def generate_report_async(session, code, output_path, ind_comp=None, idx_q
     rf = get_fund_flow_realtime(code)
 
     if rf and rf.get("data") and len(rf["data"]) > 0:
-
         _fd = rf["data"]
-
         L(f"  💰 今日主力净流入: {_fd[0]:.0f}万元 ({_fd[0]/1e4:.2f}亿)")
-
     else:
-
-        L(f"\n  [资金流向] 今日主力净流入(实时): 暂无数据")
+        if ff and len(ff) > 0:
+            last_day_flow = ff.iloc[0].get('net_main', 0) if hasattr(ff, 'iloc') else 0
+            if last_day_flow != 0:
+                L(f"  💰 昨日主力净流入: {last_day_flow:.0f}万元 ({last_day_flow/1e4:.2f}亿)")
+            else:
+                L(f"\n  [资金流向] 今日主力净流入(实时): 暂无数据")
+        else:
+            L(f"\n  [资金流向] 今日主力净流入(实时): 暂无数据")
 
     L("\n"+"─"*72); L("【三、机构一致预期与估值】"); L("─"*36)
 
@@ -1718,21 +1949,16 @@ async def generate_report_async(session, code, output_path, ind_comp=None, idx_q
 
         _recent = ff["data"][-10:]
 
-        L(f"  {'日期':<12} {'主力净流入(亿)':>12} {'超大单(亿)':>10} {'大单(亿)':>10} {'中单(亿)':>10} {'小单(亿)':>10}")
+        L(f"  {'日期':<12} {'主力净流入(万)':>12} {'超大单(万)':>10} {'大单(万)':>10} {'中单(万)':>10} {'小单(万)':>10}")
 
         L(f"  {'-'*70}")
 
         for d in reversed(_recent):
-
-            if d['main_net'] == 0 and d['super_net'] == 0 and d['large_net'] == 0:
-
-                continue
-
-            L(f"  {d['date']:<12} {d['main_net']/1e8:>+12.2f} {d['super_net']/1e8:>+10.2f} {d['large_net']/1e8:>+10.2f} {d['mid_net']/1e8:>+10.2f} {d['small_net']/1e8:>+10.2f}")
+            L(f"  {d['date']:<12} {d['main_net']/1e4:>+12.0f} {d['super_net']/1e4:>+10.0f} {d['large_net']/1e4:>+10.0f} {d['mid_net']/1e4:>+10.0f} {d['small_net']/1e4:>+10.0f}")
 
         r20 = ff["data"][-20:]; tmain = sum(d["main_net"] for d in r20); tdays = sum(1 for d in r20 if d["main_net"]>0)
 
-        L(f"\n  近20日统计:\n    主力累计净流入: {tmain/1e8:.2f}亿元\n    主力净流入天数: {tdays}/20天")
+        L(f"\n  近20日统计:\n    主力累计净流入: {tmain/1e4:.0f}万元\n    主力净流入天数: {tdays}/20天")
 
         L(f"  信号: {'主力资金近期净流入 → 偏多' if tmain>0 else '主力资金近期净流出 → 偏空'}")
 
@@ -1772,7 +1998,9 @@ async def generate_report_async(session, code, output_path, ind_comp=None, idx_q
 
         L("  ⚠️ 龙虎榜数据约16:30后更新，当前时段显示的是最近一期已发布数据")
 
-    dtb = await get_dragon_tiger_board_async(session, code, today_str)
+    # V8.5: lite模式跳过席位详情
+    dtb = await get_dragon_tiger_board_async(session, code, today_str,
+                                             enhance_seats=not _dc.get("skip_lhb_detail", False))
 
     if dtb["records"]:
 
@@ -1889,6 +2117,26 @@ async def generate_report_async(session, code, output_path, ind_comp=None, idx_q
         elif _lhasa_count + _lhasa_sell > 3:
 
             L("  ⚠️ 综合判断: 散户席位占主导，短期波动较大")
+        
+        # V8.5新增：席位增强分析
+        if dtb.get("seat_analysis"):
+            sa = dtb["seat_analysis"]
+            L("\n  ── 席位增强分析（V8.5） ──")
+            if sa.get("seat_quality_score"):
+                L(f"  席位质量评分: {sa['seat_quality_score']}分")
+            if sa.get("premium_signal"):
+                L(f"  溢价信号: {sa['premium_signal']}")
+            if sa.get("legend_count"):
+                L(f"  顶级游资席位: {sa['legend_count']}家")
+            if sa.get("buy_seats_analysis"):
+                notable_buyers = [s for s in sa["buy_seats_analysis"] if s.get("short_name")]
+                if notable_buyers:
+                    L(f"  买方知名席位: {'、'.join([s['short_name'] for s in notable_buyers])}")
+            if sa.get("sell_seats_analysis"):
+                notable_sellers = [s for s in sa["sell_seats_analysis"] if s.get("short_name")]
+                if notable_sellers:
+                    L(f"  卖方知名席位: {'、'.join([s['short_name'] for s in notable_sellers])}")
+                L(f"  知名席位: {'、'.join(sa['notable_seats'])}")
 
     else: L(f"  近{_recent_days}日无龙虎榜记录（白马蓝筹或近期未触发异动标准的个股，无龙虎榜属正常现象）")
 
@@ -1918,7 +2166,11 @@ async def generate_report_async(session, code, output_path, ind_comp=None, idx_q
 
     L("\n"+"─"*72); L("【十一、融资融券（两融数据）】"); L("─"*36)
 
-    margin = await get_margin_trading_async(session, code)
+    if _dc.get("skip_margin_detail"):
+        L("  [lite模式] 跳过详细数据")
+        margin = []
+    else:
+        margin = await get_margin_trading_async(session, code)
 
     if margin:
 
@@ -1948,7 +2200,11 @@ async def generate_report_async(session, code, output_path, ind_comp=None, idx_q
 
     L("\n"+"─"*72); L("【十二、大宗交易】"); L("─"*36)
 
-    bt = await get_block_trade_async(session, code); rbt = [d for d in bt if d["date"]>=_30d_str]
+    if _dc.get("skip_block_trade_detail"):
+        L("  [lite模式] 跳过详细数据")
+        bt = []; rbt = []
+    else:
+        bt = await get_block_trade_async(session, code); rbt = [d for d in bt if d["date"]>=_30d_str]
 
     if rbt:
 
@@ -1962,7 +2218,11 @@ async def generate_report_async(session, code, output_path, ind_comp=None, idx_q
 
     L("\n"+"─"*72); L("【十三、股东户数变化】"); L("─"*36)
 
-    holders = await holder_change_async(session, code)
+    if _dc.get("skip_holder_history"):
+        L("  [lite/medium模式] 跳过详细历史")
+        holders = []
+    else:
+        holders = await holder_change_async(session, code)
 
     if holders:
 
@@ -2003,7 +2263,11 @@ async def generate_report_async(session, code, output_path, ind_comp=None, idx_q
 
     L(f"\n  ➤ 近7日巨潮实质性重大公告:")
 
-    anns = await get_strategic_announcements_async(session, code, days=7)
+    if _dc.get("skip_announcement_detail"):
+        L("  [lite模式] 跳过详细公告")
+        anns = []
+    else:
+        anns = await get_strategic_announcements_async(session, code, days=7)
 
     if anns:
 
@@ -2221,6 +2485,66 @@ async def generate_report_async(session, code, output_path, ind_comp=None, idx_q
 
     else: L("  (数据不足，暂无法生成综合信号)")
 
+    # V8.5新增：短线投机派评分（精简版）
+    L("\n  ★ 短线投机派评分（V8.5精简版）")
+    L("  ─────────────────────────────────────────────────────────────────────")
+    try:
+        # 计算投机派核心指标
+        speculator_score = 50
+        
+        # 1. 涨停/连板加分
+        if q and q.get("change_pct", 0) >= 9.5:
+            speculator_score += 15
+        elif q and q.get("change_pct", 0) >= 5:
+            speculator_score += 8
+        
+        # 2. 龙虎榜游资加分
+        if dtb and dtb.get("seat_analysis"):
+            sa = dtb["seat_analysis"]
+            if sa.get("buyer_quality", 0) >= 70:
+                speculator_score += 10
+            if sa.get("notable_seats"):
+                speculator_score += 5
+        
+        # 3. 资金流入加分
+        if ff["data"] and len(ff["data"]) >= 5:
+            recent_flow = sum(d["main_net"] for d in ff["data"][-5:])
+            if recent_flow > 0:
+                speculator_score += 8
+        
+        # 4. 封单质量加分
+        if is_lu2 and b1v2 > 0:
+            speculator_score += 5
+        
+        # 5. 两融多头加分
+        if margin and len(margin) >= 5:
+            _rzye_trend = sum(1 for i in range(4) if margin[i]["rzye"] > margin[i+1]["rzye"])
+            if _rzye_trend >= 3:
+                speculator_score += 5
+        
+        # 限制最高100分
+        speculator_score = min(speculator_score, 100)
+        
+        # 评级
+        if speculator_score >= 75:
+            rating = "🔥 强势投机标的"
+            comment = "短线动能充沛，资金/情绪/技术共振，适合激进短线操作"
+        elif speculator_score >= 60:
+            rating = "✅ 活跃投机标的"
+            comment = "短线关注度较高，存在操作空间，注意节奏把控"
+        elif speculator_score >= 45:
+            rating = "⚠️ 中性投机标的"
+            comment = "短线信号混杂，需谨慎评估，建议小仓位试探"
+        else:
+            rating = "❌ 冷门投机标的"
+            comment = "短线动能不足，资金关注度低，建议观望"
+        
+        L(f"    投机派评分: {speculator_score:.0f}分")
+        L(f"    评级: {rating}")
+        L(f"    建议: {comment}")
+    except Exception as e:
+        L(f"    投机派评分计算异常: {str(e)}")
+
     if q and price_today>0 and q.get("change_pct",0)>=(19.5 if code.startswith(("300","301","688")) else 9.5):
 
         try:
@@ -2374,6 +2698,7 @@ if __name__ == "__main__":
 
         report_type = "sht"
 
+    print(f"  📊 分析深度: {args.depth} (lite=快速/medium=标准/deep=深度)", flush=True)
 
 
     # ─── GD 认证（可跳过）────────────────────────────────────────
@@ -2415,7 +2740,9 @@ if __name__ == "__main__":
 
             await generate_report_async(_session, code, result_path,
 
-                                          ind_comp=_ind_comp, idx_q=_idx_q, hsgt=_hsgt_async)
+                                          ind_comp=_ind_comp, idx_q=_idx_q, hsgt=_hsgt_async,
+
+                                          depth=args.depth)
 
             print(f"  ✅ 已保存: {result_path}", flush=True)
 

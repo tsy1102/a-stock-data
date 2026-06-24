@@ -7,6 +7,70 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [8.6.0] - 2026-06-24
+
+### Security
+
+- stock_common.py：新增 _DOMAIN_LAST_TIME 线程锁保护，彻底消除多线程竞态条件
+- 新增 HTTP 429 状态码检测 + Retry-After 响应头处理
+- 失败重试改为指数退避（1s → 2s → 4s）
+- 新增限流统计计数器 + rate_limit.log 日志
+- 新增 print_rate_limit_stats() 统计打印函数
+- tdx_client.py：新增 TDX 请求频率限制（20ms 最小间隔）
+- tdx_client.py：重连机制改为指数退避（0.5s, 1s, 2s）
+
+### Changed
+
+- 所有报告脚本 ThreadPoolExecutor 并发数统一调整为 3
+- get_val_report.py 策略18龙虎榜：初筛Top20再查席位（东财请求减少75%）
+- 测试脚本新增 TDX TCP 接口测试
+
+## [8.5.0] - 2026-06-22
+
+### Added
+
+- 新增龙虎榜席位增强模块 `seat_db.py`：
+  - 22位游资席位数据库 `seats-2026.json`（legend/new_gen/regional/new_2025分级）
+  - 席位等级识别 `identify_seat_tier()`、席位详情查询 `get_seat_info()`
+  - 席位风格标签、溢价判断、席位质量评分
+  - 龙虎榜数据自动增强（`get_dragon_tiger_board()`新增`enhance_seats`参数）
+- 新增杀猪盘8信号检测 `trap_detector.py`：
+  - 8维检测框架：低质量账号推荐/话术模板化/付费社群引流/基本面热度脱节/K线异常/老师人设推广/跨平台联动/虚假研报
+  - `detect_trap_signals()` 返回trap_score(1-10)和level(安全/注意/警惕/高度可疑)
+  - `stock_common.py`新增`get_trap_detection()`便捷函数
+- 新增数据质量HARD-GATE `data_quality_gate.py`：
+  - 13条数据质量检查清单（K线完整性/财务数据缺失/研报时间戳/席位不一致/北向背离/主力连续流出/融资不连贯/股东突变/公告为空/换手率异常/成交额异常/股价背离/数据源空值）
+  - `run_data_quality_gate()` 返回passed/blocked状态和错误详情
+  - critical级别错误自动阻断报告生成
+- 新增多档分析深度：
+  - `get_sht_report.py`新增`--depth lite/medium/deep`参数
+  - lite模式跳过120日资金流/席位详情/股东历史/两融详细/大宗详细/公告详细/行业对比
+  - medium模式跳过120日资金流/机构调研/研报详细
+- 新增多评委评审团（`stock_common.py`）：
+  - 价值派（权重：基本面40%/估值30%/分红20%/筹码10%）
+  - 成长派（权重：技术面35%/资金面30%/筹码20%/基本面15%）
+  - 游资派（权重：技术面40%/资金面35%/情绪面25%）
+  - 综合派（均衡权重）
+  - `calculate_multi_school_scores()`计算多派别评分和分歧度
+- 新增社交热榜聚合 `social_sentiment.py`：
+  - 6平台支持：微博/知乎/抖音/今日头条/百度/B站
+  - `get_social_sentiment()`返回total_hot/sentiment/active_platforms
+  - `stock_common.py`新增`get_social_sentiment()`和`get_social_sentiment_async()`便捷函数
+- 新增机构估值方法库 `valuation_methods.py`：
+  - DCF现金流折现、DDM股息折现、PEG估值、LBO杠杆收购
+  - PB-ROE矩阵、行业PE比较、股价/自由现金流
+  - `get_intrinsic_value()`综合多种方法给出内在价值判断
+  - `stock_common.py`新增`get_valuation()`便捷函数
+- 新增AI产业链卡位分析 `ai_chain_analyzer.py`：
+  - 卡脖子环节：GPU/AI芯片、HBM存储、CoWoS封装、光模块、PCB、电源管理、交换机、液冷散热
+  - `analyze_ai_chain_position()`判断个股是否在AI产业链、卡位等级、上游暴露度
+  - `stock_common.py`新增`analyze_ai_chain_position()`便捷函数
+
+### Changed
+
+- `get_sht_report.py` 和 `get_sht_report_async()` 新增 `depth` 参数
+- `stock_common.py` 新增多个V8.5版本便捷函数（席位/杀猪盘/多评委/社交/估值/AI产业链）
+
 ## [8.4.0] - 2026-06-22
 
 ### Added

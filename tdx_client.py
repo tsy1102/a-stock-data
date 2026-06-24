@@ -1,8 +1,14 @@
 #!/usr/bin/env python3
-"""tdx_client.py — V8 通达信共享行情模块。
+"""tdx_client.py — V8.6 通达信共享行情模块。
 
 提供统一的 easy-tdx 数据访问接口，所有适配器函数返回格式与 V3 完全兼容。
 当 TDX 服务器不可达时自动回退到原始 HTTP 源（百度K线/腾讯行情）。
+
+版本信息:
+    V8.6 2026-06-24 - 限流安全加固：请求频率限制(20ms)/重连指数退避/线程锁保护
+    V8.5 2026-06-22 - TDX请求最小间隔 + 指数退避重连
+    V8.0 2026-06-17 - 初始版本
+    V7.5 - Monkey-patch心跳线程/全局调用锁/进程内缓存
 """
 from __future__ import annotations
 
@@ -81,9 +87,25 @@ _TDX_MAC_CLIENT: Optional[Any] = None
 _last_request_time: float = 0.0
 _TDX_RECONNECT_ATTEMPTS: int = 3
 _TDX_RECONNECT_DELAY: float = 0.5
+# V8.5: TDX请求最小间隔（秒），防止过快请求被服务器断开
+# 20ms = 约50次/秒，实测安全
+_TDX_MIN_INTERVAL: float = 0.02
 # V7.5: 全局调用锁 — `_TDX_CLIENT` / `_TDX_MAC_CLIENT` 是单例，多线程并发
 # 调用时读写同一个 socket 会导致协议错乱卡死。用 RLock 让同一线程可重入。
 _TDX_CALL_LOCK = _tdx_th.RLock()
+
+
+def _tdx_throttle():
+    """V8.5: TDX请求节流：确保两次请求间隔 >= _TDX_MIN_INTERVAL
+    
+    必须在 _TDX_CALL_LOCK 内调用。
+    """
+    global _last_request_time
+    now = time.time()
+    elapsed = now - _last_request_time
+    if _last_request_time > 0 and elapsed < _TDX_MIN_INTERVAL:
+        time.sleep(_TDX_MIN_INTERVAL - elapsed)
+    _last_request_time = time.time()
 
 # ── V7.5: 进程内缓存 ─────────────────────────────────────────────
 # 策略并发阶段只做纯 CPU 计算，不再触发网络 IO。
@@ -157,11 +179,16 @@ _DOMAIN_LIMITS: Dict[str, Dict[str, Any]] = {
 }
 # 每个域名独立的最后请求时间
 _DOMAIN_LAST_TIME: Dict[str, float] = {}
+# 限流字典的线程锁
+_DOMAIN_LAST_TIME_LOCK = _tdx_th.Lock()
 
 
 def _http_get(url: str, params: Optional[Dict[str, Any]] = None,
               headers: Optional[Dict[str, str]] = None, timeout: int = 15) -> Optional[requests.Response]:
-    """按域名独立限流的 HTTP GET 请求（基于诊断脚本实测参数）。"""
+    """按域名独立限流的 HTTP GET 请求（基于诊断脚本实测参数）。
+
+    V9.0 新增：线程锁保护 _DOMAIN_LAST_TIME。
+    """
     import random as _rand
 
     # 解析域名
@@ -173,13 +200,17 @@ def _http_get(url: str, params: Optional[Dict[str, Any]] = None,
     limit = _DOMAIN_LIMITS.get(domain, {"sleep_ms": 100})
     sleep_ms = limit["sleep_ms"]
 
-    # 按域名独立 sleep
-    last_time = _DOMAIN_LAST_TIME.get(domain, 0.0)
-    now = time.time()
-    elapsed_ms = (now - last_time) * 1000
-    if sleep_ms > 0 and last_time > 0 and elapsed_ms < sleep_ms:
-        time.sleep((sleep_ms - elapsed_ms) / 1000.0)
-    _DOMAIN_LAST_TIME[domain] = time.time()
+    # 按域名独立 sleep（加线程锁保护）
+    wait_ms = 0.0
+    with _DOMAIN_LAST_TIME_LOCK:
+        last_time = _DOMAIN_LAST_TIME.get(domain, 0.0)
+        now = time.time()
+        elapsed_ms = (now - last_time) * 1000
+        if sleep_ms > 0 and last_time > 0 and elapsed_ms < sleep_ms:
+            wait_ms = sleep_ms - elapsed_ms
+        _DOMAIN_LAST_TIME[domain] = now + wait_ms / 1000.0
+    if wait_ms > 0:
+        time.sleep(wait_ms / 1000.0)
 
     try:
         return requests.get(url, params=params, headers=headers or {"User-Agent": UA}, timeout=timeout)
@@ -208,7 +239,10 @@ def _check_tdx() -> bool:
     return _TDX_AVAILABLE
 
 def _get_tdx_client() -> Optional[Any]:
-    """V7.5: 获取 TdxClient（加锁，线程安全），连接异常时自动重连。"""
+    """V7.5: 获取 TdxClient（加锁，线程安全），连接异常时自动重连。
+    
+    V8.5: 重连改为指数退避（0.5s, 1s, 2s），防止频繁重连被封禁。
+    """
     with _TDX_CALL_LOCK:
         global _TDX_CLIENT
         for attempt in range(_TDX_RECONNECT_ATTEMPTS):
@@ -218,7 +252,8 @@ def _get_tdx_client() -> Optional[Any]:
                     return _TDX_CLIENT
                 except Exception:
                     _TDX_CLIENT = None
-                    time.sleep(_TDX_RECONNECT_DELAY)
+                    if attempt < _TDX_RECONNECT_ATTEMPTS - 1:
+                        time.sleep(_TDX_RECONNECT_DELAY * (2 ** attempt))
                     continue
             if not _check_tdx():
                 return None
@@ -230,11 +265,14 @@ def _get_tdx_client() -> Optional[Any]:
             except Exception:
                 _TDX_CLIENT = None
                 if attempt < _TDX_RECONNECT_ATTEMPTS - 1:
-                    time.sleep(_TDX_RECONNECT_DELAY * (attempt + 1))
+                    time.sleep(_TDX_RECONNECT_DELAY * (2 ** attempt))
         return None
 
 def _get_mac_client() -> Optional[Any]:
-    """V7.5: 获取 MacClient（加锁，线程安全），连接异常时自动重连。"""
+    """V7.5: 获取 MacClient（加锁，线程安全），连接异常时自动重连。
+    
+    V8.5: 重连改为指数退避（0.5s, 1s, 2s），防止频繁重连被封禁。
+    """
     with _TDX_CALL_LOCK:
         global _TDX_MAC_CLIENT
         for attempt in range(_TDX_RECONNECT_ATTEMPTS):
@@ -244,7 +282,8 @@ def _get_mac_client() -> Optional[Any]:
                     return _TDX_MAC_CLIENT
                 except Exception:
                     _TDX_MAC_CLIENT = None
-                    time.sleep(_TDX_RECONNECT_DELAY)
+                    if attempt < _TDX_RECONNECT_ATTEMPTS - 1:
+                        time.sleep(_TDX_RECONNECT_DELAY * (2 ** attempt))
                     continue
             try:
                 from easy_tdx import MacClient
@@ -254,7 +293,7 @@ def _get_mac_client() -> Optional[Any]:
             except Exception:
                 _TDX_MAC_CLIENT = None
                 if attempt < _TDX_RECONNECT_ATTEMPTS - 1:
-                    time.sleep(_TDX_RECONNECT_DELAY * (attempt + 1))
+                    time.sleep(_TDX_RECONNECT_DELAY * (2 ** attempt))
         return None
 
 def _reset_tdx_connections() -> None:
@@ -384,6 +423,7 @@ def tdx_get_security_bars(code: str, count: int = 800) -> Tuple[List[str], List[
                 _TDX_KLINE_CACHE[cache_key] = result
                 return result
             try:
+                _tdx_throttle()  # V8.5: TDX请求节流
                 from easy_tdx import KlineCategory
                 bars = client.get_security_bars(_market_from_code(code), code, KlineCategory.DAY, 0, count)
                 if bars is None: 
@@ -460,6 +500,7 @@ def tdx_get_quote_full(code: str) -> Dict[str, Any]:
         client = _get_tdx_client()
         if client is not None:
             try:
+                _tdx_throttle()  # V8.5: TDX请求节流
                 quotes = client.get_security_quotes([(_market_from_code(code), code)])
                 if quotes and len(quotes) > 0:
                     q = quotes[0]
@@ -488,6 +529,7 @@ def tdx_get_quotes_batch(codes: List[str]) -> Dict[str, Dict[str, Any]]:
         client = _get_tdx_client()
         if client is not None:
             try:
+                _tdx_throttle()  # V8.5: TDX请求节流
                 stocks = [(_market_from_code(c), c) for c in codes]
                 quotes = client.get_security_quotes(stocks)
                 if quotes:
@@ -505,6 +547,7 @@ def tdx_get_index_quote(idx_code: str) -> Dict[str, Any]:
         client = _get_tdx_client()
         if client is not None:
             try:
+                _tdx_throttle()  # V8.5: TDX请求节流
                 from easy_tdx import KlineCategory
                 market, code = _index_to_market_code(idx_code)
                 bars = client.get_index_bars(market, code, KlineCategory.DAY, 0, 2)

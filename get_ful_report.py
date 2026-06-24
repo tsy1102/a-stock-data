@@ -1,6 +1,9 @@
 #!/usr/bin/env python3
 """
-get_ful_report.py — A股七层全维度分析引擎 V8（含行业对比/风险扫描/五维加权评分）
+get_ful_report.py — A股七层全维度分析引擎 V8.5.1（含行业对比/风险扫描/五维加权评分）
+
+版本信息:
+    V8.5.1 2026-06-24 - 限流安全优化：并发数调整为3
 
 架构:
   Layer 1  行情与技术指标（MA/成交量/MACD/RSI/布林带/KDJ）
@@ -45,6 +48,7 @@ from stock_common import (
     _load_settings, _load_strategy_config, ensure_output_dir, get_script_dir,
     get_board_type, is_limit_up, is_limit_down,
     is_trading_day, get_market_status,
+    calculate_multi_school_scores, ScoreData,
 )
 
 from gd_uploader import init_gd, upload_type_reports, cleanup_gd_proxy
@@ -302,7 +306,7 @@ def _calc_volume_analysis(volumes: List[float]) -> Dict[str, float]:
 # ── ASCII 图表（用于评分雷达图/价格趋势）──
 
 def _ascii_radar_chart(scores: Dict[str, float]) -> str:
-    """五维评分雷达图（用ASCII条形图横向展示）"""
+    """五维评分（数据展示，无图表）"""
     rows: List[str] = []
     dims = [
         ("技术面", scores.get("technical", 50)),
@@ -312,41 +316,17 @@ def _ascii_radar_chart(scores: Dict[str, float]) -> str:
         ("题材面", scores.get("theme", 50)),
     ]
 
-    max_len = max(len(d[0]) for d in dims)
-
-    # 标题行
-    rows.append(f"  {'维度':<{max_len+2}} {'评分':>8} {'图表':<55}")
-
     for name, score in dims:
-        bar_len = 50
-        filled = int(score / 100 * bar_len)
-        bar = "█" * filled + "░" * (bar_len - filled)
+        rows.append(f"  {name}: {score:.1f}分")
 
-        # 彩色标记
-        if score >= 75:
-            marker = "●"
-        elif score >= 60:
-            marker = "●"
-        elif score >= 40:
-            marker = "○"
-        elif score >= 25:
-            marker = "△"
-        else:
-            marker = "▲"
-
-        rows.append(f"  {name:<{max_len+2}} {score:>6.0f}/100 {marker} {bar}")
-
-    # 综合评分
     total = scores.get("total", sum(s[1] for s in dims) / 5)
-    filled = int(total / 100 * 50)
-    bar = "█" * filled + "░" * (50 - filled)
     rows.append("")
-    rows.append(f"  {'综合':<{max_len+2}} {total:>6.0f}/100 {'★'} {bar}")
+    rows.append(f"  综合评分: {total:.1f}分")
     return "\n".join(rows)
 
 
-def _ascii_price_trend(closes: List[float], bars: int = 30, width: int = 36) -> str:
-    """ASCII 价格趋势图（横向迷你蜡烛图）"""
+def _ascii_price_trend(closes: List[float], bars: int = 15, width: int = 36) -> str:
+    """价格趋势（数据展示，无图表）"""
     if not closes or len(closes) < 5:
         return "  数据不足"
 
@@ -356,15 +336,15 @@ def _ascii_price_trend(closes: List[float], bars: int = 30, width: int = 36) -> 
 
     rows: List[str] = []
     for i, price in enumerate(tail):
-        pos = (price - lo) / rng  # 0~1
-        filled = int(pos * width)
-        bar = "█" * max(filled, 1)
         # 标记涨跌
         prev_p = tail[i - 1] if i > 0 else price
-        marker = "▲" if price > prev_p else ("▼" if price < prev_p else "▬")
-        rows.append(f"  Day-{len(tail)-i:>2d} {marker} ¥{price:>8.2f} {bar}")
+        change = price - prev_p
+        change_pct = change / prev_p * 100 if prev_p > 0 else 0
+        marker = "↑" if price > prev_p else ("↓" if price < prev_p else "-")
+        rows.append(f"  Day-{len(tail)-i:>2d}  ¥{price:>7.2f}  {marker} {change_pct:+.1f}%")
 
-    rows.append(f"  {'':14} 区间: ¥{lo:.2f} ~ ¥{hi:.2f} (振幅 {rng/lo*100:.1f}%)")
+    rows.append(f"  区间: ¥{lo:.2f} ~ ¥{hi:.2f} (振幅 {rng/lo*100:.1f}%)")
+    rows.append(f"  近{len(tail)}日涨跌幅: {(tail[-1]-tail[0])/tail[0]*100:.1f}%")
     return "\n".join(rows)
 
 
@@ -754,7 +734,7 @@ def layer_ind_industry(code: str, stock_mcap: float = 0) -> Dict[str, Any]:
             return p
 
         if len(all_peers) > 3:
-            with ThreadPoolExecutor(max_workers=4) as executor:
+            with ThreadPoolExecutor(max_workers=3) as executor:
                 all_peers = list(executor.map(_ensure_full, all_peers))
         else:
             all_peers = [_ensure_full(p) for p in all_peers]
@@ -1604,7 +1584,7 @@ def format_report(code: str, layers: Dict[str, Any]) -> str:
     now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
     L("═" * 78)
-    L(f"  个股七层全维度分析报告 V8")
+    L(f"  个股七层全维度分析报告 V8.5.1")
     L(f"  股票代码: {code}")
     L(f"  生成时间: {now}")
     L("═" * 78)
@@ -1652,14 +1632,11 @@ def format_report(code: str, layers: Dict[str, Any]) -> str:
             closes_series = kl.get("closes") or []
             if closes_series and isinstance(closes_series, list) and len(closes_series) >= 10:
                 L(f"  近{len(closes_series)}日价格走势:")
+                for i, price in enumerate(closes_series[-15:]):
+                    L(f"    Day-{len(closes_series[-15:])-i:>2d}  ¥{price:>8.2f}")
                 lo = min(closes_series)
                 hi = max(closes_series)
                 rng = hi - lo if hi > lo else 1
-                for i, price in enumerate(closes_series[-15:]):
-                    pos = (price - lo) / rng
-                    bar_len = int(pos * 40) + 1
-                    bar = "█" * bar_len
-                    L(f"    Day-{len(closes_series[-15:])-i:>2d}  ¥{price:>8.2f}  {bar}")
                 L(f"    区间: ¥{lo:.2f} ~ ¥{hi:.2f}   振幅: {rng/lo*100:.1f}%")
 
         # 技术指标摘要
@@ -1945,8 +1922,6 @@ def format_report(code: str, layers: Dict[str, Any]) -> str:
         # 图形长度按加权分数计算：原始分数 * 权重比例 / 100 * 50
         w = float(weight.rstrip('%')) / 100
         weighted_score = score * w
-        filled = int(weighted_score / 100 * 50)
-        bar = "█" * filled + "░" * (50 - filled)
         if score >= 70:
             marker = "●"
         elif score >= 50:
@@ -1955,11 +1930,33 @@ def format_report(code: str, layers: Dict[str, Any]) -> str:
             marker = "△"
         else:
             marker = "▲"
-        L(f"    {name:<10} {score:>6.1f}  {weight:>8}  {marker} {bar}")
+        L(f"    {name:<10} {score:>6.1f}  {weight:>8}  {marker}")
     L("")
-    filled_total = int(scores.get("total", 0) / 100 * 50)
-    bar_total = "█" * filled_total + "░" * (50 - filled_total)
-    L(f"    {'综合':<10} {scores.get('total', 0):>6.1f}  {'100%':>8}  {'★'} {bar_total}")
+    L(f"    {'综合':<10} {scores.get('total', 0):>6.1f}  {'100%':>8}  ★")
+
+    # V8.5新增：多评委评审团评分
+    L("\n  ★ 多评委评审团评分（V8.5）")
+    L("  ─────────────────────────────────────────────────────────────────────")
+    try:
+        score_data = ScoreData(
+            code=code,
+            name=layers.get('layer1', {}).get('name', ''),
+            price=price,
+            pe_ttm=layers.get('layer6', {}).get('pe_ttm', 0),
+            pb=layers.get('layer6', {}).get('pb', 0),
+            roe=layers.get('layer6', {}).get('roe', 0),
+            debt_ratio=layers.get('layer6', {}).get('debt_ratio', 0),
+            change_pct=layers.get('layer1', {}).get('change_pct', 0),
+            volume_ratio=layers.get('layer1', {}).get('volume_ratio', 1.0),
+            rsi14=layers.get('layer1', {}).get('rsi', {}).get('rsi14', 50),
+        )
+        multi_scores = calculate_multi_school_scores(score_data)
+        L(f"    价值派评分: {multi_scores['value'].total_score:.1f}分")
+        L(f"    成长派评分: {multi_scores['growth'].total_score:.1f}分")
+        L(f"    投机派评分: {multi_scores['speculator'].total_score:.1f}分")
+        L(f"    综合共识: {multi_scores['consensus'].total_score:.1f}分")
+    except Exception as e:
+        L(f"    多评委评分计算异常: {str(e)}")
 
     # 投资建议
     total = scores.get("total", 50)
@@ -1991,7 +1988,7 @@ def format_report(code: str, layers: Dict[str, Any]) -> str:
                 "layer3": "交易信号", "layer4": "筹码", "layer5": "新闻",
                 "layer6": "基本面", "layer_risk": "风险", "layer7": "公告",
             }.get(ln, ln)
-            L(f"    [{display:<6}] {s}")
+            L(f"    [{display}] {s}")
 
     # 失败层提示
     failed = [k for k, v in layers.items() if isinstance(v, dict) and not v.get("ok", True)]
@@ -2049,7 +2046,7 @@ def analyze_stock(code: str, parallel: bool = True) -> Tuple[str, str]:
     layers: Dict[str, Any] = {}
 
     if parallel:
-        with ThreadPoolExecutor(max_workers=5) as executor:
+        with ThreadPoolExecutor(max_workers=3) as executor:
             future_map = {executor.submit(fn): name for name, fn in first_round_tasks}
             for future in as_completed(future_map):
                 name = future_map[future]

@@ -29,7 +29,8 @@ from stock_common import (clean_codes, _safe_float, _request_with_retry, _quick_
                            get_eps_forecast_async, get_reports_async,
                            get_lockup_expiry_async, get_industry_peers,
                            get_sina_financial_report_async, get_sina_balance_sheet_async,
-                           is_trading_day, get_market_status)
+                           is_trading_day, get_market_status,
+                           calculate_multi_school_scores)
 
 _SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 
@@ -118,7 +119,7 @@ def generate_report(code, output_path, ind_comp=None):
     def L(s=""): lines.append(s)
 
     L("=" * 72)
-    L(f"  {code} 长线价投专属深度体检报告V8 — {today_str} {datetime.now().strftime('%H:%M:%S')}")
+    L(f"  {code} 长线价投专属深度体检报告V8.5.1 — {today_str} {datetime.now().strftime('%H:%M:%S')}")
     L("=" * 72)
     L("")
 
@@ -507,9 +508,9 @@ def generate_report(code, output_path, ind_comp=None):
         L(f"  {'-'*60}")
         for p in st:
             _cols = f"  {p['date']:<12} {p['northbound']:>5.1f}%"
-            _cols += f"  {p['foreign']:>5.1f}%({p['foreign_count']})" if p['foreign_count'] else f"  {'-':>8}"
-            _cols += f"  {p['domestic']:>5.1f}%({p['domestic_count']})" if p['domestic_count'] else f"  {'-':>8}"
-            _cols += f"  {p['individual']:>5.1f}%({p['individual_count']})" if p['individual_count'] else f"  {'-':>6}"
+            _cols += f"  {p['foreign']:>5.1f}%({p['foreign_count']})" if p['foreign_count'] else f"  {'N/A':>8}"
+            _cols += f"  {p['domestic']:>5.1f}%({p['domestic_count']})" if p['domestic_count'] else f"  {'N/A':>8}"
+            _cols += f"  {p['individual']:>5.1f}%({p['individual_count']})" if p['individual_count'] else f"  {'N/A':>6}"
             _cols += f"  {p['total']:>5.1f}%"
             L(_cols)
         L("")
@@ -611,10 +612,12 @@ def generate_report(code, output_path, ind_comp=None):
         L(f"  {'-'*70}")
         _rp = [r for r in reports if str(r.get("publishDate",""))[:10] >= (date.today() - timedelta(days=730)).strftime("%Y-%m-%d")]
         for r in _rp[:10]:
-            pub_date = str(r.get("publishDate", ""))[:10]
-            org = r.get("orgSName", "")
-            rating = r.get("emRatingName", "")
-            title = r.get("title", "")[:50]
+            pub_date = str(r.get("publishDate", r.get("reportDate", "")))[:10]
+            org = r.get("orgSName", r.get("orgName", ""))
+            rating = r.get("emRatingName", r.get("rating", ""))
+            title = r.get("title", r.get("reportTitle", r.get("infoContent", "")))[:50]
+            if not title:
+                title = r.get("summary", "")[:50] if r.get("summary") else "无标题"
             L(f"  {pub_date:<12} {org:<16} {str(rating):<10} {title}")
         if len(org_set) > 10:
             L(f"\n  ✅ 结论：该股受到主流外脑机构的广泛覆盖，基本面透明度高，财务造假阻力大。")
@@ -681,6 +684,108 @@ def generate_report(code, output_path, ind_comp=None):
     elif _ps>=45: L(f"  长线评分: {_ps:.0f}/100 → 可配置，仓位30%")
     elif _ps>=20: L(f"  长线评分: {_ps:.0f}/100 → 观察仓，仓位15%")
     else: L(f"  长线评分: {_ps:.0f}/100 → 暂不建议，等待更好的安全边际")
+    
+    # V8.5新增：价值派评分（长线核心）
+    L("\n  ★ 长线价值派评分（V8.5）")
+    L("  ─────────────────────────────────────────────────────────────────────")
+    try:
+        # 价值派核心评分（估值+护城河+财务健康+分红）
+        value_score = 50
+        value_items = []
+        
+        # 1. 估值安全边际（PE/PB）
+        pe = q.get("pe_ttm", 0) if q else 0
+        pb = q.get("pb", 0) if q else 0
+        if pe > 0 and pe < 12:
+            value_score += 15
+            value_items.append("低PE安全边际")
+        elif pe > 0 and pe < 20:
+            value_score += 8
+            value_items.append("PE合理")
+        elif pe > 0 and pe < 35:
+            value_items.append("PE偏高")
+        else:
+            value_score -= 5
+            value_items.append("高PE风险")
+        
+        if pb > 0 and pb < 2:
+            value_score += 8
+            value_items.append("低PB")
+        
+        # 2. ROE护城河
+        if ext_roe_data and ext_roe_data[0].get("roe"):
+            roe_val = ext_roe_data[0]["roe"]
+            if roe_val > 20:
+                value_score += 15
+                value_items.append(f"ROE {roe_val:.1f}%（优秀护城河）")
+            elif roe_val > 15:
+                value_score += 10
+                value_items.append(f"ROE {roe_val:.1f}%（良好）")
+            elif roe_val > 10:
+                value_score += 5
+                value_items.append(f"ROE {roe_val:.1f}%（合格）")
+        
+        # 3. 财务健康度
+        if fina and fina.get("asset_liability_ratio"):
+            debt_ratio = fina["asset_liability_ratio"]
+            if debt_ratio < 30:
+                value_score += 10
+                value_items.append("低负债率")
+            elif debt_ratio < 50:
+                value_score += 5
+                value_items.append("负债率适中")
+            elif debt_ratio > 70:
+                value_score -= 10
+                value_items.append("高负债风险")
+        
+        # 4. 分红能力
+        if dividend and len(dividend) >= 3:
+            # 计算近3年分红总额
+            total_div = sum(d.get("amount", 0) for d in dividend[:3])
+            if total_div > 0:
+                value_score += 8
+                value_items.append("持续分红")
+        
+        # 5. 研报覆盖度
+        if reports and len(reports) >= 10:
+            value_score += 5
+            value_items.append("机构广泛覆盖")
+        
+        # 6. 机构持仓稳定性
+        st = get_holder_structure(code)
+        if st and len(st) >= 2:
+            latest_inst = st[0].get("domestic", 0)
+            prev_inst = st[1].get("domestic", 0)
+            if latest_inst > prev_inst:
+                value_score += 5
+                value_items.append("机构增持")
+            elif latest_inst > 30:
+                value_items.append("机构持仓稳定")
+        
+        # 限制分数范围
+        value_score = max(0, min(100, value_score))
+        
+        # 评级与建议
+        if value_score >= 80:
+            rating = "🌟 优质价值标的"
+            comment = "估值安全边际+护城河+财务健康三优，适合长线重仓"
+        elif value_score >= 65:
+            rating = "✅ 良好价值标的"
+            comment = "价值派核心指标良好，适合长线稳健配置"
+        elif value_score >= 50:
+            rating = "⚠️ 中性价值标的"
+            comment = "价值派指标中规中矩，建议分批建仓或观望"
+        else:
+            rating = "❌ 弱价值标的"
+            comment = "价值派指标不佳，长线风险较高，建议回避"
+        
+        L(f"    价值派评分: {value_score:.0f}分")
+        L(f"    评级: {rating}")
+        L(f"    关键指标: {' | '.join(value_items[:5])}")
+        L(f"    建议: {comment}")
+    except Exception as e:
+        L(f"    价值派评分计算异常: {str(e)}")
+    
     L("\n" + "=" * 72)
     L(f"  长线基石: 强劲自由现金流 / 持续高 ROE / 合理估值 / 高股息防御")
     L("=" * 72)
@@ -705,7 +810,7 @@ async def generate_report_async(session, code, output_path, ind_comp=None):
     def L(s=""): lines.append(s)
 
     L("=" * 72)
-    L(f"  {code} 长线价投专属深度体检报告V8 — {today_str} {datetime.now().strftime('%H:%M:%S')}")
+    L(f"  {code} 长线价投专属深度体检报告V8.5.1 — {today_str} {datetime.now().strftime('%H:%M:%S')}")
     L("=" * 72)
     L("")
 
@@ -1075,9 +1180,9 @@ async def generate_report_async(session, code, output_path, ind_comp=None):
         L(f"  {'-'*60}")
         for p in st:
             _cols = f"  {p['date']:<12} {p['northbound']:>5.1f}%"
-            _cols += f"  {p['foreign']:>5.1f}%({p['foreign_count']})" if p['foreign_count'] else f"  {'-':>8}"
-            _cols += f"  {p['domestic']:>5.1f}%({p['domestic_count']})" if p['domestic_count'] else f"  {'-':>8}"
-            _cols += f"  {p['individual']:>5.1f}%({p['individual_count']})" if p['individual_count'] else f"  {'-':>6}"
+            _cols += f"  {p['foreign']:>5.1f}%({p['foreign_count']})" if p['foreign_count'] else f"  {'N/A':>8}"
+            _cols += f"  {p['domestic']:>5.1f}%({p['domestic_count']})" if p['domestic_count'] else f"  {'N/A':>8}"
+            _cols += f"  {p['individual']:>5.1f}%({p['individual_count']})" if p['individual_count'] else f"  {'N/A':>6}"
             _cols += f"  {p['total']:>5.1f}%"
             L(_cols)
         L("")
@@ -1170,10 +1275,12 @@ async def generate_report_async(session, code, output_path, ind_comp=None):
         L(f"  {'-'*70}")
         _rp = [r for r in reports if str(r.get("publishDate",""))[:10] >= (date.today() - timedelta(days=730)).strftime("%Y-%m-%d")]
         for r in _rp[:10]:
-            pub_date = str(r.get("publishDate", ""))[:10]
-            org = r.get("orgSName", "")
-            rating = r.get("emRatingName", "")
-            title = r.get("title", "")[:50]
+            pub_date = str(r.get("publishDate", r.get("reportDate", "")))[:10]
+            org = r.get("orgSName", r.get("orgName", ""))
+            rating = r.get("emRatingName", r.get("rating", ""))
+            title = r.get("title", r.get("reportTitle", r.get("infoContent", "")))[:50]
+            if not title:
+                title = r.get("summary", "")[:50] if r.get("summary") else "无标题"
             L(f"  {pub_date:<12} {org:<16} {str(rating):<10} {title}")
         if len(org_set) > 10:
             L(f"\n  ✅ 结论：该股受到主流外脑机构的广泛覆盖，基本面透明度高，财务造假阻力大。")
@@ -1240,6 +1347,108 @@ async def generate_report_async(session, code, output_path, ind_comp=None):
     elif _ps>=45: L(f"  长线评分: {_ps:.0f}/100 → 可配置，仓位30%")
     elif _ps>=20: L(f"  长线评分: {_ps:.0f}/100 → 观察仓，仓位15%")
     else: L(f"  长线评分: {_ps:.0f}/100 → 暂不建议，等待更好的安全边际")
+    
+    # V8.5新增：价值派评分（长线核心）
+    L("\n  ★ 长线价值派评分（V8.5）")
+    L("  ─────────────────────────────────────────────────────────────────────")
+    try:
+        # 价值派核心评分（估值+护城河+财务健康+分红）
+        value_score = 50
+        value_items = []
+        
+        # 1. 估值安全边际（PE/PB）
+        pe = q.get("pe_ttm", 0) if q else 0
+        pb = q.get("pb", 0) if q else 0
+        if pe > 0 and pe < 12:
+            value_score += 15
+            value_items.append("低PE安全边际")
+        elif pe > 0 and pe < 20:
+            value_score += 8
+            value_items.append("PE合理")
+        elif pe > 0 and pe < 35:
+            value_items.append("PE偏高")
+        else:
+            value_score -= 5
+            value_items.append("高PE风险")
+        
+        if pb > 0 and pb < 2:
+            value_score += 8
+            value_items.append("低PB")
+        
+        # 2. ROE护城河
+        if ext_roe_data and ext_roe_data[0].get("roe"):
+            roe_val = ext_roe_data[0]["roe"]
+            if roe_val > 20:
+                value_score += 15
+                value_items.append(f"ROE {roe_val:.1f}%（优秀护城河）")
+            elif roe_val > 15:
+                value_score += 10
+                value_items.append(f"ROE {roe_val:.1f}%（良好）")
+            elif roe_val > 10:
+                value_score += 5
+                value_items.append(f"ROE {roe_val:.1f}%（合格）")
+        
+        # 3. 财务健康度
+        if fina and fina.get("asset_liability_ratio"):
+            debt_ratio = fina["asset_liability_ratio"]
+            if debt_ratio < 30:
+                value_score += 10
+                value_items.append("低负债率")
+            elif debt_ratio < 50:
+                value_score += 5
+                value_items.append("负债率适中")
+            elif debt_ratio > 70:
+                value_score -= 10
+                value_items.append("高负债风险")
+        
+        # 4. 分红能力
+        if dividend and len(dividend) >= 3:
+            # 计算近3年分红总额
+            total_div = sum(d.get("amount", 0) for d in dividend[:3])
+            if total_div > 0:
+                value_score += 8
+                value_items.append("持续分红")
+        
+        # 5. 研报覆盖度
+        if reports and len(reports) >= 10:
+            value_score += 5
+            value_items.append("机构广泛覆盖")
+        
+        # 6. 机构持仓稳定性
+        st = get_holder_structure(code)
+        if st and len(st) >= 2:
+            latest_inst = st[0].get("domestic", 0)
+            prev_inst = st[1].get("domestic", 0)
+            if latest_inst > prev_inst:
+                value_score += 5
+                value_items.append("机构增持")
+            elif latest_inst > 30:
+                value_items.append("机构持仓稳定")
+        
+        # 限制分数范围
+        value_score = max(0, min(100, value_score))
+        
+        # 评级与建议
+        if value_score >= 80:
+            rating = "🌟 优质价值标的"
+            comment = "估值安全边际+护城河+财务健康三优，适合长线重仓"
+        elif value_score >= 65:
+            rating = "✅ 良好价值标的"
+            comment = "价值派核心指标良好，适合长线稳健配置"
+        elif value_score >= 50:
+            rating = "⚠️ 中性价值标的"
+            comment = "价值派指标中规中矩，建议分批建仓或观望"
+        else:
+            rating = "❌ 弱价值标的"
+            comment = "价值派指标不佳，长线风险较高，建议回避"
+        
+        L(f"    价值派评分: {value_score:.0f}分")
+        L(f"    评级: {rating}")
+        L(f"    关键指标: {' | '.join(value_items[:5])}")
+        L(f"    建议: {comment}")
+    except Exception as e:
+        L(f"    价值派评分计算异常: {str(e)}")
+    
     L("\n" + "=" * 72)
     L(f"  长线基石: 强劲自由现金流 / 持续高 ROE / 合理估值 / 高股息防御")
     L("=" * 72)

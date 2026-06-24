@@ -1,7 +1,10 @@
 #!/usr/bin/env python3
 """
-get_mak_report.py — A股异动及行业轮动扫描报告 (V8)
+get_mak_report.py — A股异动及行业轮动扫描报告 (V8.5.1)
 融合全市场异动扫描与行业轮动强度扫描
+
+版本信息:
+    V8.5.1 2026-06-24 - 限流安全优化
 """
 import argparse, requests, json, time, math, os, warnings
 from datetime import date, datetime, timedelta
@@ -285,27 +288,46 @@ def get_ths_hot_pool(date_str):
     url = f"http://zx.10jqka.com.cn/event/api/getharden/date/{date_str}/orderby/date/orderway/desc/charset/GBK/"
     try:
         r = _quick_request(url, headers={"User-Agent": UA}, timeout=10)
-        if r is None: return []
-        d = r.json()
-        if str(d.get("errocode",0)) != "0": return []
-        items = d.get("data",[])
+        if r is None:
+            return []
+        try:
+            d = r.json()
+        except Exception:
+            try:
+                r.encoding = "GBK"
+                d = r.json()
+            except Exception:
+                return []
+        if str(d.get("errocode", 0)) != "0" and str(d.get("errorcode", 0)) != "0":
+            return []
+        items = d.get("data", [])
+        if not items:
+            return []
         rows = []
         codes = []
         for item in items:
-            code = str(item.get("code",""))
+            code = str(item.get("code", ""))
+            if not code:
+                continue
             codes.append(code)
             rows.append({
-                "code":code,"name":item.get("name",""),
-                "reason":item.get("reason",""),"zhangfu":0,
+                "code": code,
+                "name": item.get("name", ""),
+                "reason": item.get("reason", ""),
+                "zhangfu": _safe_float(item.get("zhangfu", item.get("change", 0))),
             })
-        # V4 fix: 同花顺不返回涨幅，从 TDX 行情补全
         quotes = tdx_get_quotes_batch(codes)
         for row in rows:
             q = quotes.get(row["code"], {})
-            row["zhangfu"] = q.get("change_pct", 0)
+            tdx_change = q.get("change_pct", 0)
+            if tdx_change != 0:
+                row["zhangfu"] = tdx_change
+        rows = [r for r in rows if r["zhangfu"] != 0]
         rows.sort(key=lambda x: x["zhangfu"], reverse=True)
         return rows
-    except Exception: return []
+    except Exception as e:
+        print(f"get_ths_hot_pool error: {e}", flush=True)
+        return []
 
 def compute_rotation_scores(sectors):
     if not sectors: return {}
@@ -387,7 +409,7 @@ def generate_sector_report(output_path):
     lines = []
     def L(s=""): lines.append(s)
     L("="*90)
-    L(f"  📊 A股异动及行业轮动扫描报告V8 — {today_str} {now.strftime('%H:%M:%S')}（{_mkt_note}）")
+    L(f"  📊 A股异动及行业轮动扫描报告V8.5.1 — {today_str} {now.strftime('%H:%M:%S')}（{_mkt_note}）")
     L("="*90)
     print("[数据装载] 获取全市场多日数据与指数基准...", flush=True)
     all_stocks = get_market_abnormal_data()
@@ -567,27 +589,32 @@ def generate_sector_report(output_path):
                     _recent_high.append((_c, _dt.get("name",""), _r3, _r10, _r20))
     _recent_high.sort(key=lambda x: abs(x[3]), reverse=True)
     if _recent_high:
-        _recent_top = _recent_high
+        _recent_top = _recent_high[:50]
         _recent_ann = {}
-        for _r in _recent_top:
+        _ann_t0 = time.time()
+        for _r in _recent_top[:15]:
             try:
                 _a, _s = get_abnormal_announcements(_r[0])
-                if _a > 0: _recent_ann[_r[0]] = (_a, _s)
-            except Exception: pass
-            time.sleep(0.02)
+                if _a > 0:
+                    _recent_ann[_r[0]] = (_a, _s)
+            except Exception:
+                pass
+            time.sleep(0.1)
+        _ann_dt = time.time() - _ann_t0
+        print(f"  公告查询耗时: {_ann_dt:.2f}s", flush=True)
         L(f"\n{'='*90}")
         L("【近3日异动回溯（高偏离值个股，可能近日触发过异动）】")
         L(f"{'─'*90}")
         L(f"  {'代码':<8} {'名称':<12} {'3日偏离':>9} {'10日偏离':>9} {'20日偏离':>9} {'公告':<12}")
         L(f"  {'-'*75}")
         _shown = 0
-        for _r in _recent_top:
+        for _r in _recent_top[:30]:
             _a_info = ""
             if _r[0] in _recent_ann:
                 _a_cnt, _s_cnt = _recent_ann[_r[0]]
                 _a_info = f"已发{_a_cnt}份(严重{_s_cnt}份)" if _s_cnt > 0 else f"已发{_a_cnt}份"
             else:
-                continue  # 无公告的股票不显示
+                continue
             L(f"  {_r[0]:<8} {_r[1]:<12} {_r[2]:>+9.2f}% {_r[3]:>+9.2f}% {_r[4]:>+9.2f}% {_a_info:<12}")
             _shown += 1
         if _shown == 0:

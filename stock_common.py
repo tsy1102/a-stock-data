@@ -1,8 +1,17 @@
 #!/usr/bin/env python3
-"""stock_common.py — V8.4 统一基础工具模块
+"""stock_common.py — V8.6 统一基础工具模块
 
 所有报告脚本和 tdx_client 共享的基础函数、常量、全局状态。
-V7.5 新增：线程安全限速锁 / 统一GD上传流程 / 统一板块判断 / 统一输出目录处理 / 日志记录 / 业务错误检查 / 主力净额连续性。
+
+版本信息:
+    V8.6 2026-06-24 - 限流安全加固版：线程锁保护/429智能重试/限流统计/TDX请求节流
+    V8.5 2026-06-22 - 新增席位增强/杀猪盘检测/多评委评分/社交热榜/估值方法/AI产业链分析
+    V8.4 2026-06-22 - 新增统一缓存层+异步函数族
+    V8.3 2026-06-18 - 细节修复
+    V8.2 2026-06-18 - 席位参数优化
+    V8.1 2026-06-18 - 统一评分接口+快照功能
+    V8.0 2026-06-17 - 初始版本
+    V7.5 - 线程安全限速锁/统一GD上传/板块判断/输出目录/日志/错误检查/主力净额连续性
 """
 
 from __future__ import annotations
@@ -62,26 +71,41 @@ DATACENTER_URL: str = "https://datacenter-web.eastmoney.com/api/data/v1/get"
 JP_URL: str = "http://83.push2.eastmoney.com/api/qt/clist/get"
 
 # ═══════════════════════════════════════
+# 东财统一Session管理（SKILL.md V3.2 推荐）
+# ═══════════════════════════════════════
+# 所有东财接口共用同一个Session，实现Keep-Alive复用连接
+EM_SESSION = requests.Session()
+EM_SESSION.headers.update({"User-Agent": UA})
+EM_MIN_INTERVAL = 1.0          # 东财请求最小间隔(秒)
+_EM_LAST_CALL = [0.0]          # 模块级上次请求时间戳（列表实现可变）
+
+# ═══════════════════════════════════════
 # 按域名独立限流配置（基于诊断脚本实测）
 # ═══════════════════════════════════════
-# 腾讯行情 qt.gtimg.cn:      并发10, sleep=0ms → 100% 成功
-# 新浪财报 quotes.sina.cn:    并发10, sleep=0ms → 100% 成功
-# 同花顺强势 zx.10jqka.com.cn: 并发10, sleep=0ms → 100% 成功
-# 东财 datacenter-web.eastmoney.com: 并发3, sleep=100ms → 100% 成功
+# 注意: 增加 sleep_ms 防止被服务器限流/封禁
 # ═══════════════════════════════════════
 _DOMAIN_LIMITS: Dict[str, Dict[str, Any]] = {
-    "qt.gtimg.cn": {"sleep_ms": 0, "semaphore": None},
-    "quotes.sina.cn": {"sleep_ms": 0, "semaphore": None},
-    "finance.pae.baidu.com": {"sleep_ms": 0, "semaphore": None},
-    "zx.10jqka.com.cn": {"sleep_ms": 100, "semaphore": None},
-    "datacenter-web.eastmoney.com": {"sleep_ms": 100, "semaphore": None},
-    "push2.eastmoney.com": {"sleep_ms": 100, "semaphore": None},
-    "reportapi.eastmoney.com": {"sleep_ms": 100, "semaphore": None},
-    "www.cninfo.com.cn": {"sleep_ms": 100, "semaphore": None},
-    "basic.10jqka.com.cn": {"sleep_ms": 100, "semaphore": None},
+    "qt.gtimg.cn": {"sleep_ms": 150, "semaphore": None},
+    "quotes.sina.cn": {"sleep_ms": 150, "semaphore": None},
+    "finance.pae.baidu.com": {"sleep_ms": 150, "semaphore": None},
+    "zx.10jqka.com.cn": {"sleep_ms": 150, "semaphore": None},
+    "datacenter-web.eastmoney.com": {"sleep_ms": 1000, "semaphore": None},
+    "push2.eastmoney.com": {"sleep_ms": 1000, "semaphore": None},
+    "reportapi.eastmoney.com": {"sleep_ms": 1000, "semaphore": None},
+    "www.cninfo.com.cn": {"sleep_ms": 200, "semaphore": None},
+    "basic.10jqka.com.cn": {"sleep_ms": 150, "semaphore": None},
 }
 # 每个域名独立的最后请求时间
 _DOMAIN_LAST_TIME: Dict[str, float] = {}
+# 限流字典的线程锁（方案1：线程安全修复）
+_DOMAIN_LAST_TIME_LOCK = threading.Lock()
+# 限流统计计数器（方案5：限流监控统计）
+_RL_STATS = {
+    "em_request_count": 0,
+    "em_rate_limit_count": 0,
+    "em_429_count": 0,
+    "start_time": time.time(),
+}
 
 # Semaphore: 按域名并发限制
 _DOMAIN_SEMAPHORES: Dict[str, threading.Semaphore] = {}
@@ -136,6 +160,41 @@ def _file_lock_release(lock_path: str) -> None:
             os.remove(_unique_path)
     except Exception:
         pass
+
+
+def em_get(url: str, params: dict | None = None, headers: dict | None = None,
+           timeout: int = 15, **kwargs):
+    """东财统一请求入口（SKILL.md V3.2 推荐）：自动节流 + 复用session + 默认UA。
+    
+    所有 eastmoney.com 接口都应通过它请求，避免高频被封IP。
+    
+    Args:
+        url: 请求URL
+        params: 请求参数
+        headers: 请求头（会与Session默认头合并）
+        timeout: 超时时间
+        **kwargs: 其他requests参数
+    
+    Returns:
+        requests.Response 对象
+    """
+    import random as _rand
+    
+    # 进程内节流（最小间隔 + 100-500ms随机抖动）
+    wait = EM_MIN_INTERVAL - (time.time() - _EM_LAST_CALL[0])
+    if wait > 0:
+        time.sleep(wait + _rand.uniform(0.10, 0.50))  # 增强抖动：100-500ms
+    
+    try:
+        # 合并headers：Session默认头 + 用户传入头
+        session_headers = EM_SESSION.headers.copy()
+        if headers:
+            session_headers.update(headers)
+        
+        return EM_SESSION.get(url, params=params, headers=session_headers, 
+                             timeout=timeout, **kwargs)
+    finally:
+        _EM_LAST_CALL[0] = time.time()
 
 
 def _em_wait_process_interval() -> float:
@@ -202,6 +261,8 @@ def _request_with_retry(url: str, params: Optional[Dict[str, Any]] = None,
     """带并发限流的 HTTP 请求（按域名独立限流）。
 
     V7.5 优化版：按域名独立控制并发和 sleep，不再使用全局 Semaphore。
+    V8.5 新增：添加随机抖动防止被限流。
+    V9.0 新增：线程锁保护 + 限流统计。
     """
     from urllib.parse import urlparse
     import random as _rand
@@ -214,13 +275,27 @@ def _request_with_retry(url: str, params: Optional[Dict[str, Any]] = None,
     limit = _DOMAIN_LIMITS.get(domain, {"sleep_ms": 100})
     sleep_ms = limit["sleep_ms"]
 
-    # 按域名独立 sleep
-    last_time = _DOMAIN_LAST_TIME.get(domain, 0.0)
-    now = time.time()
-    elapsed_ms = (now - last_time) * 1000
-    if sleep_ms > 0 and last_time > 0 and elapsed_ms < sleep_ms:
-        time.sleep((sleep_ms - elapsed_ms) / 1000.0)
-    _DOMAIN_LAST_TIME[domain] = time.time()
+    # 按域名独立 sleep，添加 10-30ms 随机抖动
+    # 方案1：加线程锁保护 _DOMAIN_LAST_TIME
+    # 方案5：限流统计
+    is_em = "eastmoney.com" in domain
+    wait_ms = 0.0
+    with _DOMAIN_LAST_TIME_LOCK:
+        last_time = _DOMAIN_LAST_TIME.get(domain, 0.0)
+        now = time.time()
+        elapsed_ms = (now - last_time) * 1000
+        jitter_ms = _rand.uniform(10, 30)
+        total_sleep_ms = sleep_ms + jitter_ms
+        if total_sleep_ms > 0 and last_time > 0 and elapsed_ms < total_sleep_ms:
+            wait_ms = total_sleep_ms - elapsed_ms
+        _DOMAIN_LAST_TIME[domain] = now + wait_ms / 1000.0
+    if wait_ms > 0:
+        time.sleep(wait_ms / 1000.0)
+        if is_em:
+            _RL_STATS["em_rate_limit_count"] += 1
+            _log_rate_limit(domain, wait_ms)
+    if is_em:
+        _RL_STATS["em_request_count"] += 1
 
     return _do_request(url, params, headers, timeout, max_retries, data, method, verify)
 
@@ -232,6 +307,8 @@ def _quick_request(url: str, params: Optional[Dict[str, Any]] = None,
     """通用 HTTP 请求（按域名独立限流）。
 
     V7.5 优化版：按域名独立控制并发和 sleep，不再使用全局 Semaphore。
+    V8.5 新增：添加随机抖动防止被限流。
+    V9.0 新增：线程锁保护 + 限流统计。
     """
     from urllib.parse import urlparse
     import random as _rand
@@ -244,13 +321,27 @@ def _quick_request(url: str, params: Optional[Dict[str, Any]] = None,
     limit = _DOMAIN_LIMITS.get(domain, {"sleep_ms": 100})
     sleep_ms = limit["sleep_ms"]
 
-    # 按域名独立 sleep
-    last_time = _DOMAIN_LAST_TIME.get(domain, 0.0)
-    now = time.time()
-    elapsed_ms = (now - last_time) * 1000
-    if sleep_ms > 0 and last_time > 0 and elapsed_ms < sleep_ms:
-        time.sleep((sleep_ms - elapsed_ms) / 1000.0)
-    _DOMAIN_LAST_TIME[domain] = time.time()
+    # 按域名独立 sleep，添加 10-30ms 随机抖动
+    # 方案1：加线程锁保护 _DOMAIN_LAST_TIME
+    # 方案5：限流统计
+    is_em = "eastmoney.com" in domain
+    wait_ms = 0.0
+    with _DOMAIN_LAST_TIME_LOCK:
+        last_time = _DOMAIN_LAST_TIME.get(domain, 0.0)
+        now = time.time()
+        elapsed_ms = (now - last_time) * 1000
+        jitter_ms = _rand.uniform(10, 30)
+        total_sleep_ms = sleep_ms + jitter_ms
+        if total_sleep_ms > 0 and last_time > 0 and elapsed_ms < total_sleep_ms:
+            wait_ms = total_sleep_ms - elapsed_ms
+        _DOMAIN_LAST_TIME[domain] = now + wait_ms / 1000.0
+    if wait_ms > 0:
+        time.sleep(wait_ms / 1000.0)
+        if is_em:
+            _RL_STATS["em_rate_limit_count"] += 1
+            _log_rate_limit(domain, wait_ms)
+    if is_em:
+        _RL_STATS["em_request_count"] += 1
 
     return _do_request(url, params, headers, timeout, max_retries, data, method, verify)
 
@@ -258,7 +349,12 @@ def _quick_request(url: str, params: Optional[Dict[str, Any]] = None,
 def _do_request(url: str, params: Optional[Dict[str, Any]],
                 headers: Optional[Dict[str, str]], timeout: int, max_retries: int,
                 data: Optional[Dict[str, Any]], method: str, verify: bool) -> Optional[requests.Response]:
-    """内部：执行 HTTP 请求 + 重试（由 _request_with_retry / _quick_request 调用）。"""
+    """内部：执行 HTTP 请求 + 重试（由 _request_with_retry / _quick_request 调用）。
+
+    V9.0 新增：429状态码检测 + 指数退避重试。
+    """
+    from urllib.parse import urlparse
+    is_em = "eastmoney.com" in urlparse(url).netloc
     for attempt in range(max_retries):
         try:
             if method == "POST":
@@ -271,26 +367,73 @@ def _do_request(url: str, params: Optional[Dict[str, Any]],
                                  timeout=timeout, verify=verify)
             else:
                 return None
+            # 方案2：检测429状态码
+            if r.status_code == 429:
+                if is_em:
+                    _RL_STATS["em_429_count"] += 1
+                if attempt < max_retries - 1:
+                    retry_after = r.headers.get("Retry-After")
+                    if retry_after:
+                        wait_s = float(retry_after)
+                    else:
+                        wait_s = 1.0 * (2 ** attempt)
+                    time.sleep(wait_s)
+                    continue
+                return None
             return r
         except (requests.exceptions.ConnectionError,
                 requests.exceptions.ReadTimeout,
                 requests.exceptions.ConnectTimeout):
             if attempt < max_retries - 1:
-                time.sleep(2 * (attempt + 1))
+                time.sleep(1.0 * (2 ** attempt))
                 continue
             return None
     return None
 
 
+def _log_rate_limit(domain: str, wait_ms: float) -> None:
+    """记录限流等待日志到 rate_limit.log（方案5：限流监控统计）。"""
+    try:
+        log_path = os.path.join(_LOG_DIR, "rate_limit.log")
+        now_str = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
+        line = f"{now_str} | {domain} | 等待 {wait_ms:.0f}ms | 总请求={_RL_STATS['em_request_count']} | 限流等待={_RL_STATS['em_rate_limit_count']}次 | 429={_RL_STATS['em_429_count']}次\n"
+        with open(log_path, "a", encoding="utf-8") as f:
+            f.write(line)
+    except Exception:
+        pass
+
+
+def print_rate_limit_stats() -> None:
+    """打印东财限流统计信息（方案5：限流监控统计）。"""
+    total_s = time.time() - _RL_STATS["start_time"]
+    total_req = _RL_STATS["em_request_count"]
+    rl_count = _RL_STATS["em_rate_limit_count"]
+    qps = total_req / total_s if total_s > 0 else 0
+    rl_pct = (rl_count / total_req * 100) if total_req > 0 else 0
+    print("=" * 50)
+    print("  东财限流统计")
+    print("=" * 50)
+    print(f"  总请求数: {total_req}")
+    print(f"  限流等待: {rl_count}次 ({rl_pct:.1f}%)")
+    print(f"  429错误: {_RL_STATS['em_429_count']}次")
+    print(f"  平均QPS: {qps:.2f}")
+    print(f"  运行时长: {total_s:.0f}秒")
+    print("=" * 50)
+
+
 @cached(category="dragon_tiger", ttl_seconds=TTL["dragon_tiger"])
-def get_dragon_tiger_board(code: str, today_str: str, days: int = 30, include_seats: bool = True) -> Dict[str, Any]:
+def get_dragon_tiger_board(code: str, today_str: str, days: int = 30, include_seats: bool = True,
+                           enhance_seats: bool = True) -> Dict[str, Any]:
     """V7.5: 统一龙虎榜查询（单只股票）。
+
+    V8.5新增：enhance_seats参数，启用后自动调用seat_db增强席位分析。
 
     Args:
         code: 6位股票代码
         today_str: 今日日期 YYYY-MM-DD
         days: 回溯天数（sht默认30，med默认180）
         include_seats: 是否查询席位详情（默认True，设为False可减少2次API请求）
+        enhance_seats: V8.5新增，是否增强席位分析（默认True，添加席位等级/风格/溢价信号）
 
     Returns:
         {
@@ -300,6 +443,7 @@ def get_dragon_tiger_board(code: str, today_str: str, days: int = 30, include_se
           "net_sum_5d": float,        # V7.5新增：近5日净额累加
           "net_sum_30d": float,       # V7.5新增：近30日（或days）净额累加
           "consecutive_net_buy_days": int,  # V7.5新增：连续净买入天数
+          "seat_analysis": {...},     # V8.5新增：enhance_seats=True时返回
         }
 
     注意 (2026-06-16): 东财 datacenter API 日期字段过滤必须用单引号
@@ -362,12 +506,22 @@ def get_dragon_tiger_board(code: str, today_str: str, days: int = 30, include_se
     net_sum_30d_or_days = round(sum(r["net_buy"] for r in records), 1)
     consecutive_net_buy_days = sum(1 for r in records if r["net_buy"] > 0)
 
-    return {
+    result = {
         "records": records, "seats": seats, "institution": institution,
         "net_sum_5d": net_sum_5d,
         "net_sum_30d": net_sum_30d_or_days,
         "consecutive_net_buy_days": consecutive_net_buy_days,
     }
+
+    # V8.5新增：席位增强分析
+    if enhance_seats and (seats.get("buy") or seats.get("sell")):
+        try:
+            from seat_db import enhance_lhb_seats
+            result["seat_analysis"] = enhance_lhb_seats({"seats": seats})
+        except ImportError:
+            pass
+
+    return result
 
 
 @cached(category="dragon_tiger", ttl_seconds=TTL["dragon_tiger"])
@@ -615,11 +769,11 @@ async def eastmoney_datacenter_async(session, code: str, report_name: str,
 
 
 async def get_dragon_tiger_board_async(session, code: str, today_str: str,
-                                       days: int = 30, include_seats: bool = True) -> Dict[str, Any]:
+                                       days: int = 30, include_seats: bool = True,
+                                       enhance_seats: bool = True) -> Dict[str, Any]:
     """异步版: 单只股票龙虎榜查询。返回结构与同步版一致。
 
-    注意 (2026-06-16): 东财 datacenter API 日期字段过滤必须用单引号
-    (`TRADE_DATE>='YYYY-MM-DD'`），双引号会报 code=9501。
+    V8.5新增：enhance_seats参数，启用后自动调用seat_db增强席位分析。
     """
     from datetime import datetime, timedelta
     start_str = (datetime.strptime(today_str, "%Y-%m-%d") -
@@ -679,7 +833,17 @@ async def get_dragon_tiger_board_async(session, code: str, today_str: str,
         institution["sell_amt"] = round(institution["sell_amt"] / 10000, 1)
         institution["net_amt"] = round(institution["buy_amt"] - institution["sell_amt"], 1)
 
-    return {"records": records, "seats": seats, "institution": institution}
+    result = {"records": records, "seats": seats, "institution": institution}
+
+    # V8.5新增：席位增强分析（异步版使用同步增强，避免async兼容问题）
+    if enhance_seats and (seats.get("buy") or seats.get("sell")):
+        try:
+            from seat_db import enhance_lhb_seats
+            result["seat_analysis"] = enhance_lhb_seats({"seats": seats})
+        except ImportError:
+            pass
+
+    return result
 
 
 async def get_recent_dragon_tiger_async(session, days: int = 5) -> Dict[str, Any]:
@@ -1040,10 +1204,56 @@ def holder_cache_flush() -> None:
 # 巨潮公告统一查询（短中长线共用）
 # ═══════════════════════════════════════
 
+# 巨潮 orgId 缓存（模块级）
+_CNINFO_ORGID_CACHE = {}
+
+def _cninfo_get_orgid(code: str) -> str:
+    """动态查询巨潮公告的 orgId（SKILL.md V3.2.2 推荐）。
+    
+    优先从缓存获取，缓存未命中时先尝试动态查询官方映射表，
+    失败则使用硬编码fallback。
+    
+    Args:
+        code: 股票代码
+    
+    Returns:
+        orgId 字符串
+    """
+    # 先查缓存
+    if code in _CNINFO_ORGID_CACHE:
+        return _CNINFO_ORGID_CACHE[code]
+    
+    # 硬编码 fallback（用于动态查询失败时）
+    if code.startswith("6"):
+        fallback = f"gssh0{code}"
+    elif code.startswith("8") or code.startswith("4"):
+        fallback = f"gsbj0{code}"
+    else:
+        fallback = f"gssz0{code}"
+    
+    # 尝试动态查询（SKILL.md V3.2.2 推荐方案）
+    try:
+        url = f"https://www.cninfo.com.cn/new/data/szse_stock.json"
+        r = _quick_request(url, timeout=10)
+        if r is not None:
+            data = r.json()
+            for item in data:
+                if item.get("code") == code:
+                    orgid = item.get("orgId", fallback)
+                    _CNINFO_ORGID_CACHE[code] = orgid
+                    return orgid
+    except Exception:
+        pass
+    
+    # 动态查询失败，返回硬编码 fallback
+    _CNINFO_ORGID_CACHE[code] = fallback
+    return fallback
+
+
 @cached(category="announcements", ttl_seconds=TTL["announcements"])
 def get_strategic_announcements(code: str, page_size: int = 50, days: Optional[int] = None,
                                 importance_filter: bool = False) -> List[Dict[str, Any]]:
-    """巨潮公告查询 → orgId → searchkey → TDX F10 三层兜底。
+    """巨潮公告查询 → orgId → searchkey → TDX F10 三层兜底（SKILL.md V3.2.2 增强：动态orgId查询）。
 
     Args:
         code: 股票代码
@@ -1062,12 +1272,10 @@ def get_strategic_announcements(code: str, page_size: int = 50, days: Optional[i
         se_date = ""
 
     url = "https://www.cninfo.com.cn/new/hisAnnouncement/query"
-    if code.startswith("6"):
-        ext_org_id = f"gssh0{code}"
-    elif code.startswith("8") or code.startswith("4"):
-        ext_org_id = f"gsbj0{code}"
-    else:
-        ext_org_id = f"gssz0{code}"
+    
+    # SKILL.md V3.2.2 推荐：先尝试动态查询orgId，失败则用硬编码fallback
+    ext_org_id = _cninfo_get_orgid(code)
+    
     payload = {
         "orgId": ext_org_id, "stock": f"{code},{ext_org_id}",
         "tabName": "fulltext", "pageSize": str(page_size), "pageNum": "1",
@@ -1522,8 +1730,11 @@ def clean_codes(raw_list, verbose=False):
 def parse_args(report_type="unknown"):
     """命令行参数解析（参数化版本，兼容6个报告脚本）。
 
+    V8.5新增：--depth参数，支持lite/medium/deep三档分析深度。
+
     - codes: 可选（默认空列表），个股分析脚本（sht/med/lng/ful）会用到；
              全市场扫描脚本（val/mak）不需要此参数，传空即可。
+    - --depth: 分析深度 (lite=快速30秒/medium=标准5分钟/deep=深度15分钟，默认deep)
     """
     parser = argparse.ArgumentParser(description=report_type)
     parser.add_argument("codes", nargs="*", default=[],
@@ -1532,6 +1743,8 @@ def parse_args(report_type="unknown"):
                         default=os.path.join(os.path.dirname(os.path.abspath(__file__)), "reports"),
                         help="报告输出目录（默认: 脚本目录下的 reports/）")
     parser.add_argument("--no-upload", action="store_true", help="跳过 Google Drive 上传")
+    parser.add_argument("--depth", choices=["lite", "medium", "deep"], default="deep",
+                        help="分析深度: lite=快速(30秒)/medium=标准(5分钟)/deep=深度(15分钟，默认)")
     return parser.parse_args()
 
 
@@ -1551,7 +1764,7 @@ def baidu_kline_full(code, is_index=False):
 
 @cached(category="reports", ttl_seconds=TTL["reports"])
 def get_reports(code: str, max_pages: int = 3) -> List[Dict[str, Any]]:
-    """东财研报列表查询。
+    """东财研报列表查询（个股研报，qType=0）。
 
     Args:
         code: 股票代码。
@@ -1574,6 +1787,66 @@ def get_reports(code: str, max_pages: int = 3) -> List[Dict[str, Any]]:
             if not rows:
                 break
             all_records.extend(rows)
+        except Exception:
+            break
+    return all_records
+
+
+@cached(category="industry_reports", ttl_seconds=TTL["reports"])
+def get_industry_reports(industry_code: str = "*", max_pages: int = 3,
+                         begin_time: str = "2024-01-01") -> List[Dict[str, Any]]:
+    """东财行业研报列表查询（SKILL.md V3.2.3 新增，qType=1）。
+
+    与个股研报同一端点，仅 qType 参数不同：
+    - qType=0: 个股研报（get_reports）
+    - qType=1: 行业研报（本函数）
+
+    Args:
+        industry_code: 东财行业代码，"*"表示全行业
+        max_pages: 最大页数（每页100条）
+        begin_time: 起始日期（格式：YYYY-MM-DD）
+
+    Returns:
+        list: 行业研报记录列表，包含行业名称、评级、报告类型等字段
+
+    行业研报特有字段：
+        - industryName: 行业名称（如 IT服务Ⅱ、风电设备、光伏设备）
+        - industryCode: 东财行业代码（用于精确过滤）
+        - emRatingName: 行业评级（买入/增持/中性/...）
+        - reportType: 报告类型
+        - infoCode: 用于拼接PDF下载URL
+    """
+    api_url = "https://reportapi.eastmoney.com/report/list"
+    all_records = []
+    for page in range(1, max_pages + 1):
+        params = {
+            "industryCode": industry_code,
+            "pageSize": "100",
+            "industry": "*",
+            "rating": "*",
+            "beginTime": begin_time,
+            "endTime": "2030-01-01",
+            "pageNo": str(page),
+            "fields": "",
+            "qType": "1",
+            "orgCode": "",
+            "code": "",
+            "rcode": "",
+            "p": str(page),
+            "pageNum": str(page),
+            "pageNumber": str(page),
+        }
+        try:
+            r = em_get(api_url, params=params, headers={"Referer": "https://data.eastmoney.com/"}, timeout=30)
+            if r is None:
+                break
+            d = r.json()
+            rows = d.get("data") or []
+            if not rows:
+                break
+            all_records.extend(rows)
+            if page >= (d.get("TotalPage", 1) or 1):
+                break
         except Exception:
             break
     return all_records
@@ -1628,7 +1901,9 @@ def get_eps_forecast(code: str) -> Dict[str, Any]:
 
 @cached(category="northbound", ttl_seconds=TTL["northbound"])
 def get_northbound_hold(code: str, days: int = 20) -> List[Dict[str, Any]]:
-    """北向资金持仓动态。
+    """北向资金持仓动态（SKILL.md V3.2 增强：本地CSV缓存回退）。
+
+    注意：东财北向资金数据自2024-08后部分字段可能返回NaN，本函数已添加本地CSV缓存回退。
 
     Args:
         code: 股票代码。
@@ -1640,18 +1915,77 @@ def get_northbound_hold(code: str, days: int = 20) -> List[Dict[str, Any]]:
     data = eastmoney_datacenter(code, "RPT_MUTUAL_HOLDSTOCKNORTH_STA",
                                 filter_str=f'(SECURITY_CODE="{code}")',
                                 page_size=days, sort_columns="TRADE_DATE", sort_types="-1")
+    
     rows = []
+    has_valid_data = False
     for row in data:
+        hold_shares = float(row.get("HOLD_SHARES") or 0)
+        hold_ratio = float(row.get("FREE_SHARES_RATIO") or row.get("A_SHARES_RATIO")
+                          or row.get("TOTAL_SHARES_RATIO") or row.get("HOLD_RATIO") or 0)
+        if hold_shares > 0 or hold_ratio > 0:
+            has_valid_data = True
+        
         rows.append({
             "date": str(row.get("TRADE_DATE", "") or "")[:10],
-            "hold_shares": float(row.get("HOLD_SHARES") or 0),
+            "hold_shares": hold_shares,
             "market_cap": float(row.get("HOLD_MARKET_CAP") or row.get("MARKET_CAP") or 0),
-            "hold_ratio": float(row.get("FREE_SHARES_RATIO") or row.get("A_SHARES_RATIO")
-                          or row.get("TOTAL_SHARES_RATIO") or row.get("HOLD_RATIO") or 0),
+            "hold_ratio": hold_ratio,
             "change_shares": float(row.get("CHANGE_SHARES") or 0),
             "change_ratio": float(row.get("CHANGE_RATE") or 0),
         })
+    
+    if not has_valid_data and len(rows) == 0:
+        return _load_northbound_cache(code, days)
+    
     return rows
+
+
+# ── 北向资金本地CSV缓存辅助函数 ──
+def _northbound_cache_path(code: str) -> str:
+    """北向资金本地CSV缓存路径"""
+    cache_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "cache")
+    os.makedirs(cache_dir, exist_ok=True)
+    return os.path.join(cache_dir, f"northbound_{code}.csv")
+
+
+def _save_northbound_cache(code: str, data: List[Dict[str, Any]]):
+    """保存北向资金数据到本地CSV缓存"""
+    path = _northbound_cache_path(code)
+    try:
+        with open(path, "w", encoding="utf-8") as f:
+            f.write("date,hold_shares,market_cap,hold_ratio,change_shares,change_ratio\n")
+            for row in data:
+                f.write(f"{row['date']},{row['hold_shares']},{row['market_cap']},"
+                        f"{row['hold_ratio']},{row['change_shares']},{row['change_ratio']}\n")
+    except Exception:
+        pass
+
+
+def _load_northbound_cache(code: str, days: int) -> List[Dict[str, Any]]:
+    """从本地CSV缓存加载北向资金数据"""
+    path = _northbound_cache_path(code)
+    rows = []
+    if not os.path.exists(path):
+        return rows
+    
+    try:
+        with open(path, "r", encoding="utf-8") as f:
+            lines = f.readlines()
+            for line in lines[1:]:  # 跳过表头
+                parts = line.strip().split(",")
+                if len(parts) >= 6:
+                    rows.append({
+                        "date": parts[0],
+                        "hold_shares": float(parts[1]),
+                        "market_cap": float(parts[2]),
+                        "hold_ratio": float(parts[3]),
+                        "change_shares": float(parts[4]),
+                        "change_ratio": float(parts[5]),
+                    })
+    except Exception:
+        pass
+    
+    return rows[-days:] if rows else rows
 
 
 @cached(category="margin_trading", ttl_seconds=TTL["margin_trading"])
@@ -1898,17 +2232,199 @@ def get_stock_sector_rank(code: str, info: Optional[Dict[str, Any]] = None, q: O
 
 @cached(category="industry_compare", ttl_seconds=TTL["industry_compare"])
 def get_industry_comparison(top_n: int = 20) -> Dict[str, Any]:
-    """V4.2: 全行业排名 → TDX board_list。
+    """V4.2: 全行业排名 → TDX board_list（SKILL.md V3.2 增强：东财push2 fallback）。
 
     Args:
         top_n: 返回行业数量上限（当前未使用，保留参数兼容性）。
 
     Returns:
-        dict: {"all": sectors}。
+        dict: {"top": 涨幅TOP, "bottom": 跌幅TOP, "all": 全部行业, "total": 行业总数}。
     """
     from tdx_client import tdx_get_board_list
     sectors = tdx_get_board_list(0)  # BoardType.HY = 0 行业一级
-    return {"all": sectors} if sectors else {"all": []}
+    
+    if sectors:
+        # TDX数据可能缺少实时涨跌幅，尝试用东财push2补充
+        em_sectors = _get_eastmoney_industry_sectors()
+        if em_sectors:
+            # 合并TDX和东财数据
+            sector_map = {s.get("code", ""): s for s in sectors}
+            for em in em_sectors:
+                em_code = em.get("code", "")
+                if em_code in sector_map:
+                    sector_map[em_code]["change_pct"] = em.get("change_pct", 0)
+                    sector_map[em_code]["up_count"] = em.get("up_count", 0)
+                    sector_map[em_code]["down_count"] = em.get("down_count", 0)
+                    sector_map[em_code]["leader"] = em.get("leader", "")
+                    sector_map[em_code]["leader_change"] = em.get("leader_change", 0)
+            sectors = list(sector_map.values())
+    
+    # 按涨跌幅排序
+    sectors.sort(key=lambda x: x.get("change_pct", 0), reverse=True)
+    
+    return {
+        "top": sectors[:top_n],
+        "bottom": sectors[-top_n:],
+        "all": sectors,
+        "total": len(sectors),
+    }
+
+
+def _get_eastmoney_industry_sectors() -> List[Dict[str, Any]]:
+    """获取东财行业板块实时涨跌幅数据（SKILL.md V3.2 推荐）。
+
+    使用东财push2接口获取行业板块的实时涨跌幅、上涨下跌家数、领涨股等信息。
+
+    Returns:
+        list: 行业板块列表，包含涨跌幅、上涨家数、下跌家数、领涨股等字段
+    """
+    url = "https://push2.eastmoney.com/api/qt/clist/get"
+    params = {
+        "pn": "1",
+        "pz": "100",
+        "po": "1",
+        "np": "1",
+        "fltt": "2",
+        "invt": "2",
+        "fs": "m:90+t:2",  # 行业板块
+        "fields": "f2,f3,f4,f12,f13,f14,f104,f105,f128,f136,f140,f141,f207",
+    }
+    headers = {"User-Agent": UA}
+    
+    try:
+        r = em_get(url, params=params, headers=headers, timeout=15)
+        if r is None:
+            return []
+        
+        d = r.json()
+        items = d.get("data", {}).get("diff", [])
+        if not items:
+            return []
+        
+        sectors = []
+        for item in items:
+            sectors.append({
+                "name": item.get("f14", ""),
+                "code": item.get("f12", ""),
+                "change_pct": item.get("f3", 0),
+                "up_count": item.get("f104", 0),
+                "down_count": item.get("f105", 0),
+                "leader": item.get("f140", ""),
+                "leader_change": item.get("f136", 0),
+            })
+        
+        return sectors
+    except Exception:
+        return []
+
+
+@cached(category="stock_news", ttl_seconds=TTL["stock_news"])
+def get_eastmoney_stock_news(code: str, page_size: int = 20) -> List[Dict[str, Any]]:
+    """获取东财个股新闻（SKILL.md V3.2 推荐）。
+
+    使用东财search-api-web接口获取个股相关新闻，作为社交舆情的补充数据源。
+
+    Args:
+        code: 股票代码
+        page_size: 返回数量上限
+
+    Returns:
+        list: 新闻列表，包含标题、发布时间、来源、摘要等字段
+    """
+    url = "https://search-api-web.eastmoney.com/search/jsonp"
+    
+    # 根据代码确定市场
+    market = "sh" if code.startswith("6") else "sz"
+    
+    params = {
+        "keyword": code,
+        "type": "news",
+        "pageSize": str(page_size),
+        "pageNo": "1",
+        "client": "web",
+        "market": market,
+        "code": code,
+    }
+    
+    headers = {
+        "User-Agent": UA,
+        "Referer": "https://so.eastmoney.com/",
+        "Origin": "https://so.eastmoney.com",
+    }
+    
+    try:
+        r = em_get(url, params=params, headers=headers, timeout=15)
+        if r is None:
+            return []
+        
+        # 处理JSONP格式响应
+        text = r.text
+        if text.startswith("jQuery(") and text.endswith(")"):
+            text = text[7:-1]
+        
+        d = json.loads(text)
+        result = d.get("result", {})
+        news_list = result.get("list", [])
+        
+        news_items = []
+        for news in news_list[:page_size]:
+            news_items.append({
+                "title": news.get("title", ""),
+                "publish_time": news.get("publishTime", ""),
+                "source": news.get("source", ""),
+                "summary": news.get("summary", ""),
+                "url": news.get("url", ""),
+            })
+        
+        return news_items
+    except Exception:
+        return []
+
+
+@cached(category="global_news", ttl_seconds=TTL["global_news"])
+def get_eastmoney_global_news(page_size: int = 50) -> List[Dict[str, Any]]:
+    """获取东财全球资讯（SKILL.md V3.2 推荐，财联社替代）。
+
+    使用东财np-weblist接口获取7×24财经快讯，作为财联社下线后的替代方案。
+
+    Args:
+        page_size: 返回数量上限
+
+    Returns:
+        list: 资讯列表，包含标题、发布时间、内容等字段
+    """
+    url = "https://np-listapi.eastmoney.com/comm/ws/build/list"
+    
+    params = {
+        "type": "flsh",  # 快讯类型
+        "pageIndex": "1",
+        "pageSize": str(page_size),
+        "callback": "",
+    }
+    
+    headers = {"User-Agent": UA}
+    
+    try:
+        r = em_get(url, params=params, headers=headers, timeout=15)
+        if r is None:
+            return []
+        
+        d = r.json()
+        data = d.get("data", {})
+        items = data.get("items", [])
+        
+        news_items = []
+        for item in items[:page_size]:
+            news_items.append({
+                "title": item.get("title", ""),
+                "publish_time": item.get("publishTime", ""),
+                "content": item.get("content", ""),
+                "type": item.get("type", ""),
+            })
+        
+        return news_items
+    except Exception:
+        return []
 
 
 def print_batch_summary(results, total):
@@ -3056,5 +3572,620 @@ def calculate_score(score_type: str, data: ScoreData, cfg: Optional[Dict] = None
     
     else:
         result.total_score = 50.0
-    
+
     return result
+
+
+# ═══════════════════════════════════════════════════════════
+# V8.5: 多评委评审团评分接口
+# ═══════════════════════════════════════════════════════════
+
+# 评委派别定义
+SCHOOL_CONFIGS = {
+    "value": {
+        "name": "价值派",
+        "persona": "巴菲特式价值投资者",
+        "weights": {
+            "fundamental": 0.40,
+            "valuation": 0.30,
+            "dividend": 0.20,
+            "holder": 0.10,
+            "technical": 0.00,
+            "flow": 0.00,
+        },
+        "focus": "低估值、高ROE、稳定分红",
+        "keywords": ["价值投资", "低估", "高ROE", "稳定分红", "长期持有"]
+    },
+    "growth": {
+        "name": "成长派",
+        "persona": "林奇式成长投资者",
+        "weights": {
+            "technical": 0.35,
+            "flow": 0.30,
+            "holder": 0.20,
+            "fundamental": 0.15,
+            "valuation": 0.00,
+            "dividend": 0.00,
+        },
+        "focus": "技术突破、资金流入、筹码集中",
+        "keywords": ["成长股", "技术突破", "资金流入", "赛道股", "高增长"]
+    },
+    "speculator": {
+        "name": "游资派",
+        "persona": "赵老哥式游资操盘手",
+        "weights": {
+            "technical": 0.40,
+            "flow": 0.35,
+            "holder": 0.25,
+            "fundamental": 0.00,
+            "valuation": 0.00,
+            "dividend": 0.00,
+        },
+        "focus": "涨停板、游资席位、情绪热度",
+        "keywords": ["涨停", "游资", "龙头", "情绪", "打板", "题材"]
+    },
+    "consensus": {
+        "name": "综合派",
+        "persona": "均衡型投资者",
+        "weights": {
+            "technical": 0.20,
+            "fundamental": 0.25,
+            "valuation": 0.20,
+            "flow": 0.15,
+            "holder": 0.10,
+            "dividend": 0.10,
+        },
+        "focus": "五维均衡",
+        "keywords": ["综合", "均衡", "全面"]
+    }
+}
+
+
+def calculate_score_by_school(school: str, data: ScoreData, cfg: Optional[Dict] = None, 
+                              precomputed_dimensions: Optional[Dict[str, Tuple[float, List[str]]]] = None) -> ScoreResult:
+    """按指定派别计算评分
+
+    Args:
+        school: 派别名称 ("value"/"growth"/"speculator"/"consensus")
+        data: ScoreData 评分数据
+        cfg: 评分配置（可选）
+        precomputed_dimensions: 预计算的维度评分（可选），用于避免重复计算
+
+    Returns:
+        ScoreResult 评分结果
+    """
+    school_cfg = SCHOOL_CONFIGS.get(school, SCHOOL_CONFIGS["consensus"])
+    weights = school_cfg["weights"]
+
+    result = ScoreResult(report_source=f"{school}_{school_cfg['name']}")
+    sc = cfg or {}
+
+    # 使用预计算的维度评分或重新计算
+    if precomputed_dimensions:
+        tech_score, tech_details = precomputed_dimensions.get("technical", (0, []))
+        fund_score, fund_details = precomputed_dimensions.get("fundamental", (0, []))
+        val_score, val_details = precomputed_dimensions.get("valuation", (0, []))
+        flow_score, flow_details = precomputed_dimensions.get("flow", (0, []))
+        holder_score, holder_details = precomputed_dimensions.get("holder", (0, []))
+        div_score, div_details = precomputed_dimensions.get("dividend", (0, []))
+    else:
+        # 计算各维度评分
+        tech_score, tech_details = _score_technical(data, sc.get("technical", {}))
+        fund_score, fund_details = _score_fundamental(data, sc.get("fundamental", {}))
+        val_score, val_details = _score_valuation(data, sc.get("valuation", {}))
+        flow_score, flow_details = _score_flow(data, sc.get("flow", {}))
+        holder_score, holder_details = _score_holder(data, sc.get("holder", {}))
+        div_score, div_details = _score_dividend(data, sc.get("dividend", {}))
+
+    result.dimensions = {
+        "technical": tech_score,
+        "fundamental": fund_score,
+        "valuation": val_score,
+        "flow": flow_score,
+        "holder": holder_score,
+        "dividend": div_score
+    }
+
+    # 计算加权总分
+    result.total_score = (
+        tech_score * weights.get("technical", 0) +
+        fund_score * weights.get("fundamental", 0) +
+        val_score * weights.get("valuation", 0) +
+        flow_score * weights.get("flow", 0) +
+        holder_score * weights.get("holder", 0) +
+        div_score * weights.get("dividend", 0)
+    )
+
+    # 收集有意义的细节
+    all_details = []
+    if weights.get("technical", 0) > 0:
+        all_details.extend(tech_details)
+    if weights.get("fundamental", 0) > 0:
+        all_details.extend(fund_details)
+    if weights.get("valuation", 0) > 0:
+        all_details.extend(val_details)
+    if weights.get("flow", 0) > 0:
+        all_details.extend(flow_details)
+    if weights.get("holder", 0) > 0:
+        all_details.extend(holder_details)
+    if weights.get("dividend", 0) > 0:
+        all_details.extend(div_details)
+
+    result.details = all_details[:10]  # 最多保留10条
+    return result
+
+
+def calculate_multi_school_scores(data: ScoreData, cfg: Optional[Dict] = None) -> Dict[str, Any]:
+    """计算多派别评分（多评委评审团）
+
+    Args:
+        data: ScoreData 评分数据
+        cfg: 评分配置（可选）
+
+    Returns:
+        dict: {
+            "value": ScoreResult,    # 价值派评分
+            "growth": ScoreResult,  # 成长派评分
+            "speculator": ScoreResult,  # 游资派评分
+            "consensus": ScoreResult,  # 综合派评分
+            "consensus_score": float,  # 三派均值（不含综合派）
+            "dispersion": float,  # 派别分歧度（标准差）
+            "dominant_school": str,  # 主导派别
+            "school_labels": dict  # 各派别标签信息
+        }
+    """
+    results = {}
+    scores = []
+    sc = cfg or {}
+
+    # 预计算所有维度评分（只计算一次，各派别共享）
+    precomputed_dimensions = {
+        "technical": _score_technical(data, sc.get("technical", {})),
+        "fundamental": _score_fundamental(data, sc.get("fundamental", {})),
+        "valuation": _score_valuation(data, sc.get("valuation", {})),
+        "flow": _score_flow(data, sc.get("flow", {})),
+        "holder": _score_holder(data, sc.get("holder", {})),
+        "dividend": _score_dividend(data, sc.get("dividend", {})),
+    }
+
+    # 使用预计算的维度评分计算各派别评分
+    for school in ["value", "growth", "speculator", "consensus"]:
+        result = calculate_score_by_school(school, data, cfg, precomputed_dimensions)
+        results[school] = result
+        scores.append(result.total_score)
+
+    # 计算三派均值（不含综合派）
+    consensus_score = sum(scores[:3]) / 3
+
+    # 计算分歧度（标准差）
+    if len(scores) > 1:
+        mean = consensus_score
+        variance = sum((s - mean) ** 2 for s in scores) / len(scores)
+        dispersion = variance ** 0.5
+    else:
+        dispersion = 0
+
+    # 确定主导派别
+    dominant = max(results.items(), key=lambda x: x[1].total_score)
+    dominant_school = dominant[0]
+
+    # 派别标签
+    school_labels = {
+        school: {
+            "name": SCHOOL_CONFIGS[school]["name"],
+            "persona": SCHOOL_CONFIGS[school]["persona"],
+            "focus": SCHOOL_CONFIGS[school]["focus"],
+            "score": results[school].total_score,
+            "dimensions": results[school].dimensions
+        }
+        for school in SCHOOL_CONFIGS
+    }
+
+    return {
+        "value": results["value"],
+        "growth": results["growth"],
+        "speculator": results["speculator"],
+        "consensus": results["consensus"],
+        "consensus_score": round(consensus_score, 1),
+        "dispersion": round(dispersion, 1),
+        "dominant_school": dominant_school,
+        "school_labels": school_labels
+    }
+
+
+def format_multi_school_report(scores_result: Dict[str, Any], code: str = "", name: str = "") -> str:
+    """格式化多评委评审团报告
+
+    Args:
+        scores_result: calculate_multi_school_scores 返回的结果
+        code: 股票代码
+        name: 股票名称
+
+    Returns:
+        str: 格式化的报告字符串
+    """
+    lines = []
+    header = f"【多评委评审团】{code} {name}"
+    lines.append("=" * 50)
+    lines.append(header)
+    lines.append("=" * 50)
+
+    # 派别评分
+    lines.append("\n📊 各派评委评分:")
+    lines.append("-" * 40)
+
+    school_emojis = {
+        "value": "💰",
+        "growth": "📈",
+        "speculator": "🔥",
+        "consensus": "⚖️"
+    }
+
+    for school, label in scores_result["school_labels"].items():
+        emoji = school_emojis.get(school, "📊")
+        score = label["score"]
+        # 评分转星级
+        stars = "★" * int(score / 20) + "☆" * (5 - int(score / 20))
+        lines.append(f"  {emoji} {label['name']:<8} {score:>5.1f}分 {stars} ({label['persona']})")
+        lines.append(f"      关注点: {label['focus']}")
+
+    # 综合评分
+    lines.append("-" * 40)
+    lines.append(f"\n🎯 综合评分(三派均值): {scores_result['consensus_score']}分")
+    lines.append(f"   分歧度: {scores_result['dispersion']:.1f} (越小表示派别分歧越小)")
+    lines.append(f"   主导派别: {school_emojis.get(scores_result['dominant_school'], '')} {scores_result['school_labels'][scores_result['dominant_school']]['name']}")
+
+    # 投资建议
+    dominant = scores_result["dominant_school"]
+    dominant_score = scores_result["school_labels"][dominant]["score"]
+
+    lines.append("\n💡 投资建议:")
+    if dominant == "value":
+        lines.append("  价值派主导：适合长期持有，关注基本面和分红")
+    elif dominant == "growth":
+        lines.append("  成长派主导：适合中期持有，关注技术突破和资金流向")
+    elif dominant == "speculator":
+        lines.append("  游资派主导：适合短线操作，关注情绪和涨停板机会")
+    else:
+        lines.append("  各派别分歧较小，适合均衡配置")
+
+    # 风险提示
+    if scores_result["dispersion"] > 15:
+        lines.append("\n⚠️ 警告：派别分歧度较大，投资决策需谨慎！")
+        lines.append("   价值派和游资派可能出现完全相反的判断")
+
+    lines.append("")
+    return "\n".join(lines)
+
+
+# ═══════════════════════════════════════════════════════════
+# V8.5: 杀猪盘检测便捷函数
+# ═══════════════════════════════════════════════════════════
+
+def get_trap_detection(code: str, name: str,
+                      info: Optional[Dict[str, Any]] = None,
+                      kline_data: Optional[Dict[str, Any]] = None,
+                      sentiment_data: Optional[Dict[str, Any]] = None,
+                      social_data: Optional[Dict[str, Any]] = None,
+                      reports: Optional[List[Dict]] = None,
+                      announcements: Optional[List[Dict]] = None,
+                      news_titles: Optional[List[str]] = None,
+                      price_change_pct: float = 0,
+                      user_keywords: Optional[List[str]] = None) -> Dict[str, Any]:
+    """V8.5: 杀猪盘检测便捷函数
+
+    对外统一的杀猪盘检测接口，封装trap_detector.py的8维检测逻辑。
+
+    Args:
+        code: 股票代码
+        name: 股票名称
+        info: 基本面信息 {"roe": float, "net_profit": float, "industry": str}
+        kline_data: K线数据 {"prices": [float], "volumes": [float], "ma5": float, "ma20": float}
+        sentiment_data: 情绪数据 {"hot_score": int, "hot_trend": str}
+        social_data: 社交平台数据 {"active_platforms": [str]}
+        reports: 研报列表 [{"title": str, "broker": str, "analyst": str}]
+        announcements: 公告列表 [{"title": str, "date": str}]
+        news_titles: 新闻/帖子标题列表
+        price_change_pct: 近期涨跌幅
+        user_keywords: 用户输入的关键词 ["朋友推荐", "群里", "老师", ...]
+
+    Returns:
+        dict: {
+            "trap_score": int,  # 1-10, 10=最安全
+            "level": str,       # 安全/注意/警惕/高度可疑
+            "summary": str,     # 检测结论
+            "recommendations": [str],  # 建议列表
+            "signals": dict     # 各信号检测结果
+        }
+    """
+    try:
+        from trap_detector import detect_trap_signals
+        result = detect_trap_signals(
+            code=code,
+            name=name,
+            info=info,
+            kline_data=kline_data,
+            sentiment_data=sentiment_data,
+            social_data=social_data,
+            reports=reports,
+            announcements=announcements,
+            news_titles=news_titles,
+            price_change_pct=price_change_pct,
+            user_keywords=user_keywords
+        )
+        return {
+            "trap_score": result.trap_score,
+            "level": result.level,
+            "summary": result.summary,
+            "recommendations": result.recommendations,
+            "signals": {
+                k: {"hit": v.hit, "evidence": v.evidence, "description": v.description}
+                for k, v in result.signals.items()
+            },
+            "is_trap_suspected": result.is_trap_suspected(),
+            "warning_level": result.get_warning_level()
+        }
+    except ImportError:
+        return {
+            "trap_score": 10,
+            "level": "未知",
+            "summary": "杀猪盘检测模块未安装",
+            "recommendations": [],
+            "signals": {},
+            "is_trap_suspected": False,
+            "warning_level": 0,
+            "error": "trap_detector模块未找到"
+        }
+    except Exception as e:
+        return {
+            "trap_score": 10,
+            "level": "错误",
+            "summary": f"杀猪盘检测执行异常: {str(e)}",
+            "recommendations": ["检测执行异常，建议人工复核"],
+            "signals": {},
+            "is_trap_suspected": False,
+            "warning_level": 0,
+            "error": str(e)
+        }
+
+
+# ═══════════════════════════════════════════════════════════
+# V8.5: 社交热榜聚合便捷函数
+# ═══════════════════════════════════════════════════════════
+
+def get_social_sentiment(code: str, name: str, platforms: List[str] = None) -> Dict[str, Any]:
+    """V8.5: 社交热榜聚合便捷函数
+
+    对外统一的社交情绪获取接口，封装social_sentiment.py的6平台聚合逻辑。
+
+    Args:
+        code: 股票代码
+        name: 股票名称
+        platforms: 要查询的平台列表，None表示全部 ["weibo", "zhihu", "douyin", "toutiao", "baidu", "bilibili"]
+
+    Returns:
+        dict: {
+            "total_hot": int,  # 总热度
+            "sentiment": float,  # 情绪倾向 -1到1
+            "active_platforms": [str],  # 有数据的平台列表
+            "platform_data": dict,  # 各平台详细数据
+            "summary": str,  # 摘要
+            "trending_signals": [str],  # 热门信号
+            "error": str  # 错误信息（如果有）
+        }
+    """
+    try:
+        from social_sentiment import get_social_sentiment as _get_social
+        result = _get_social(code, name, platforms)
+        return {
+            "total_hot": result.total_hot,
+            "sentiment": result.sentiment,
+            "active_platforms": result.active_platforms,
+            "platform_data": {
+                k: {"hot_score": v.hot_score, "sentiment": v.sentiment,
+                    "trending": v.trending, "posts_count": v.posts_count, "error": v.error}
+                for k, v in result.platform_data.items()
+            },
+            "summary": result.summary,
+            "trending_signals": result.trending_signals,
+            "error": ""
+        }
+    except ImportError:
+        return {
+            "total_hot": 0,
+            "sentiment": 0.0,
+            "active_platforms": [],
+            "platform_data": {},
+            "summary": "社交热榜模块未安装",
+            "trending_signals": [],
+            "error": "social_sentiment模块未找到"
+        }
+    except Exception as e:
+        return {
+            "total_hot": 0,
+            "sentiment": 0.0,
+            "active_platforms": [],
+            "platform_data": {},
+            "summary": f"社交热榜获取异常: {str(e)}",
+            "trending_signals": [],
+            "error": str(e)
+        }
+
+
+async def get_social_sentiment_async(session, code: str, name: str,
+                                    platforms: List[str] = None) -> Dict[str, Any]:
+    """V8.5: 社交热榜聚合便捷函数（异步版本）"""
+    import asyncio
+    return await asyncio.to_thread(get_social_sentiment, code, name, platforms)
+
+
+# ═══════════════════════════════════════════════════════════
+# V8.5: 机构估值方法便捷函数
+# ═══════════════════════════════════════════════════════════
+
+def get_valuation(code: str, current_price: float,
+                  pe_ttm: float, eps_ttm: float, eps_growth_rate: float,
+                  roe: float, pb: float, industry_pe: float,
+                  dividend_yield: float = 0.0,
+                  shares_outstanding: float = 1.0,
+                  fcf_forecast: List[float] = None) -> Dict[str, Any]:
+    """V8.5: 机构估值便捷函数
+
+    对外统一的估值接口，封装valuation_methods.py的多种估值方法。
+
+    Args:
+        code: 股票代码
+        current_price: 当前股价
+        pe_ttm: 市盈率(TTM)
+        eps_ttm: EPS(TTM)
+        eps_growth_rate: EPS增长率 (如0.20表示20%)
+        roe: 净资产收益率 (如0.15表示15%)
+        pb: 市净率
+        industry_pe: 行业平均PE
+        dividend_yield: 股息率 (如0.03表示3%)
+        shares_outstanding: 流通股数(亿股)
+        fcf_forecast: 自由现金流预测 [year1, year2, year3, ...] (可选)
+
+    Returns:
+        dict: {
+            "verdict": str,  # 综合判断
+            "upside_avg": float,  # 平均上涨空间
+            "dominant_verdict": str,  # 多数方法判断
+            "confidence": str,  # 置信度
+            "methods": [dict],  # 各方法结果列表
+            "summary": str  # 摘要
+        }
+    """
+    try:
+        from valuation_methods import get_intrinsic_value, format_valuation_report, ValuationResult
+
+        result = get_intrinsic_value(
+            code=code,
+            current_price=current_price,
+            pe_ttm=pe_ttm,
+            eps_ttm=eps_ttm,
+            eps_growth_rate=eps_growth_rate,
+            roe=roe,
+            pb=pb,
+            industry_pe=industry_pe,
+            dividend_yield=dividend_yield,
+            shares_outstanding=shares_outstanding,
+            fcf_forecast=fcf_forecast
+        )
+
+        # 格式化方法结果
+        methods_formatted = []
+        for m in result.get("methods", []):
+            if isinstance(m, ValuationResult):
+                methods_formatted.append({
+                    "method": m.method,
+                    "intrinsic_value": m.intrinsic_value,
+                    "current_price": m.current_price,
+                    "upside": m.upside,
+                    "downside": m.downside,
+                    "verdict": m.verdict,
+                    "confidence": m.confidence,
+                    "notes": m.notes
+                })
+
+        summary = f"{result['verdict']}，平均上涨空间{result['upside_avg']}%，{result['confidence']}置信度"
+
+        return {
+            "verdict": result["verdict"],
+            "upside_avg": result["upside_avg"],
+            "dominant_verdict": result["dominant_verdict"],
+            "confidence": result["confidence"],
+            "methods": methods_formatted,
+            "summary": summary,
+            "error": ""
+        }
+    except ImportError:
+        return {
+            "verdict": "无法估值",
+            "upside_avg": 0,
+            "dominant_verdict": "无法估值",
+            "confidence": "低",
+            "methods": [],
+            "summary": "估值模块未安装",
+            "error": "valuation_methods模块未找到"
+        }
+    except Exception as e:
+        return {
+            "verdict": "估值异常",
+            "upside_avg": 0,
+            "dominant_verdict": "估值异常",
+            "confidence": "低",
+            "methods": [],
+            "summary": f"估值执行异常: {str(e)}",
+            "error": str(e)
+        }
+
+
+# ═══════════════════════════════════════════════════════════
+# V8.5: AI产业链卡位分析便捷函数
+# ═══════════════════════════════════════════════════════════
+
+def analyze_ai_chain_position(code: str, name: str,
+                             concept_blocks: List[str] = None,
+                             industry: str = "") -> Dict[str, Any]:
+    """V8.5: AI产业链卡位分析便捷函数
+
+    对外统一的AI产业链分析接口，封装ai_chain_analyzer.py的分析逻辑。
+
+    Args:
+        code: 股票代码
+        name: 股票名称
+        concept_blocks: 概念板块列表
+        industry: 所属行业
+
+    Returns:
+        dict: {
+            "in_ai_chain": bool,  # 是否在AI产业链
+            "bottleneck_level": str,  # critical/important/normal
+            "upstream_exposure": float,  # 上游暴露度 0-1
+            "bottleneck_segments": [str],  # 卡脖子环节列表
+            "position_score": int,  # 位置评分 1-100
+            "ai_relevance": float,  # AI相关度 0-1
+            "summary": str,  # 摘要
+            "details": dict  # 详细信息
+        }
+    """
+    try:
+        from ai_chain_analyzer import analyze_ai_chain_position as _analyze
+
+        position = _analyze(code, name, concept_blocks, industry)
+
+        return {
+            "in_ai_chain": position.in_ai_chain,
+            "bottleneck_level": position.bottleneck_level,
+            "upstream_exposure": position.upstream_exposure,
+            "bottleneck_segments": position.bottleneck_segments,
+            "position_score": position.position_score,
+            "ai_relevance": position.ai_relevance,
+            "details": position.details,
+            "summary": f"{'在' if position.in_ai_chain else '不在'}AI产业链，卡位{'🔴'+position.bottleneck_level if position.in_ai_chain else '无'}"
+        }
+    except ImportError:
+        return {
+            "in_ai_chain": False,
+            "bottleneck_level": "unknown",
+            "upstream_exposure": 0.0,
+            "bottleneck_segments": [],
+            "position_score": 0,
+            "ai_relevance": 0.0,
+            "details": {},
+            "summary": "AI产业链分析模块未安装",
+            "error": "ai_chain_analyzer模块未找到"
+        }
+    except Exception as e:
+        return {
+            "in_ai_chain": False,
+            "bottleneck_level": "error",
+            "upstream_exposure": 0.0,
+            "bottleneck_segments": [],
+            "position_score": 0,
+            "ai_relevance": 0.0,
+            "details": {},
+            "summary": f"AI产业链分析异常: {str(e)}",
+            "error": str(e)
+        }

@@ -1,8 +1,12 @@
 #!/usr/bin/env python3
 """
-get_val_report.py — 18 策略全市场发现引擎 (V8.4)
+get_val_report.py — 18 策略全市场发现引擎 (V8.5.1)
 方法论驱动的 A 股选股脚本，从全市场发现可操作标的。
 每策略精选 TOP 5，生成含具体数值推理的报告。
+
+版本信息:
+    V8.5.1 2026-06-24 - 限流安全优化：并发数调整为3/策略18初筛Top20
+    V8.5 2026-06-22 - 初始V8.5版本
 
 V7.5 新增:
   - ThreadPoolExecutor 并行执行策略（目标: 7min -> 4-5min）
@@ -1137,9 +1141,30 @@ def strategy_18_longhu_activity(all_stocks, today_str=None, top_n=200):
     _cfg = _load_settings()
     _trader_tags = _cfg.get("trader_tags", {}) if _cfg else {}
 
+    # 方案4：先全市场初筛，再对Top20查席位明细
+    # 初筛评分：净买额 + 换手率 + 日期新鲜度
+    def _preliminary_score(code, info):
+        net_buy = abs(_safe_float(info.get("net_buy", 0)))
+        turnover = _safe_float(info.get("turnover", 0))
+        # 日期新鲜度：越近得分越高（最近=7分，7天前=0分）
+        try:
+            from datetime import datetime, date
+            d = datetime.strptime(info.get("date", ""), "%Y-%m-%d").date()
+            days_ago = (date.today() - d).days
+            date_score = max(0, 7 - days_ago)
+        except Exception:
+            date_score = 0
+        # 综合评分
+        return net_buy * 0.05 + turnover * 2.0 + date_score * 3.0
+
+    pre_ranked = sorted(
+        dt_data.items(),
+        key=lambda x: _preliminary_score(x[0], x[1]),
+        reverse=True
+    )
+    codes_to_check = [code for code, _ in pre_ranked[:20]]
+
     results = []
-    # 限制扫描范围，避免 API 压力过大
-    codes_to_check = list(dt_data.keys())[:80]
     for code in codes_to_check:
         try:
             # 取该股最近7天的席位明细
@@ -1240,8 +1265,27 @@ async def strategy_18_longhu_activity_async(session, all_stocks, today_str):
     _cfg = _load_settings()
     _trader_tags = _cfg.get("trader_tags", {}) if _cfg else {}
 
+    # 方案4：先全市场初筛，再对Top20查席位明细
+    def _preliminary_score_async(code, info):
+        net_buy = abs(_safe_float(info.get("net_buy", 0)))
+        turnover = _safe_float(info.get("turnover", 0))
+        try:
+            from datetime import datetime, date as _date
+            d = datetime.strptime(info.get("date", ""), "%Y-%m-%d").date()
+            days_ago = (_date.today() - d).days
+            date_score = max(0, 7 - days_ago)
+        except Exception:
+            date_score = 0
+        return net_buy * 0.05 + turnover * 2.0 + date_score * 3.0
+
+    pre_ranked = sorted(
+        dt_data.items(),
+        key=lambda x: _preliminary_score_async(x[0], x[1]),
+        reverse=True
+    )
+    codes_to_check = [code for code, _ in pre_ranked[:20]]
+
     results = []
-    codes_to_check = list(dt_data.keys())[:80]
     for code in codes_to_check:
         try:
             dtb = await get_dragon_tiger_board_async(session, code, today_str, days=7)
@@ -1302,7 +1346,7 @@ def run_discovery(output_path):
     _mkt_status, _mkt_note = get_market_status(_t_now)
 
     L("─" * 85)
-    L(f"  🔍 全市场18策略发现引擎V8.4 — {today_str} {_t_now.strftime('%H:%M:%S')}（{_mkt_note}）" )
+    L(f"  🔍 全市场18策略发现引擎V8.5.1 — {today_str} {_t_now.strftime('%H:%M:%S')}（{_mkt_note}）" )
     L("─" * 85)
     L(f"  扫描模式: 方法论驱动的多因子全市场筛选（含Top5%流动性池）")
     # 加载策略阈值配置
@@ -1406,7 +1450,7 @@ def run_discovery(output_path):
             _dt = time.time() - _t0
             return (_name, [], _dt, str(_e))
 
-    _num_workers = 4
+    _num_workers = 3
     _sfmt = {"策略01":"01 龙回头战法","策略02":"02 周线多头","策略03":"03 量价齐升","策略04":"04 核心打折","策略05":"05 W底形态","策略06":"06 红三兵","策略07":"07 均线金叉","策略08":"08 政策驱动","策略09":"09 日历效应","策略10":"10 逆向白马","策略11":"11 筹码集中","策略12":"12 量价信号","策略13":"13 红利低波","策略14":"14 股债平衡","策略15":"15 头部风向标","策略16":"16 政策热度","策略17":"17 北向Top","策略18":"18 龙虎榜活跃度"}
     with ThreadPoolExecutor(max_workers=_num_workers) as _executor:
         # V7.5: 按注册顺序提交并按注册顺序返回，保证策略按01→17序号打印
@@ -1456,9 +1500,6 @@ def run_discovery(output_path):
     for _b in ["01 龙回头: 震荡市胜率55-65%","02 周线多头: 趋势市胜率60-70%","03 量价齐升: 趋势启动胜率50-60%","04 核心打折: 价值回归胜率55-65%","10 逆向白马: 中线最佳胜率60-70%","13 红利低波: 熊市优选胜率65-75%","16 政策热度: 主题轮动胜率55-65%","17 北向Top: 聪明钱方向胜率60-70%"]:
         L(f"  策略回测: {_b}")
     L(f"\n{'='*85}")
-    L(f"  免责声明: 本报告仅为方法论驱动的量化筛选结果，不构成投资建议。")
-    L(f"  数据来源: 腾讯财经 + 东财数据中心 + 同花顺 + 百度金融 + 新浪财经 + 财联社")
-    L("─" * 85)
     output = "\n".join(filter(None, lines))
     with open(output_path, "w", encoding="utf-8") as f:
         f.write(output)
@@ -1473,7 +1514,7 @@ async def run_discovery_async(output_path):
     def L(s=""): lines.append(s)
 
     L("─" * 85)
-    L(f"  A 股策略发现报告 V8.4  [{today_str} {_t_now.strftime('%H:%M:%S')}]")
+    L(f"  A 股策略发现报告 V8.5.1  [{today_str} {_t_now.strftime('%H:%M:%S')}]")
     L("─" * 85)
     L(f"  市场: A 股 | 策略: 18 | 引擎: asyncio | 并发: 3")
     L("-" * 85)
@@ -1550,6 +1591,7 @@ async def run_discovery_async(output_path):
     finally:
         await session.close()
 
+    _scan_total_time = time.time() - _scan_t0
     _names_full = _names + ["策略18【龙虎榜】"]
 
     for _name, _raw in zip(_names_full, _results):
@@ -1559,9 +1601,10 @@ async def run_discovery_async(output_path):
         elif isinstance(_raw, list):
             _r = _raw
         all_selections[_name] = _r
-        _dt = time.time() - _scan_t0
         _status = f"异常({_err})" if _err else f"完成({len(_r)}只)"
-        print(f"  {_name}... {_status} [{_dt:.1f}s]", flush=True)
+        print(f"  {_name}... {_status}", flush=True)
+    
+    print(f"  扫描完成（共 {_scan_total_time:.1f}s）", flush=True)
 
     L("\n" + "=" * 85)
     L("  扫描结果汇总: 18个策略共产出 " + str(sum(len(v) for v in all_selections.values())) + " 次选择")
@@ -1604,9 +1647,6 @@ async def run_discovery_async(output_path):
     for _b in ["01 龙回头: 震荡市胜率55-65%","02 周线多头: 趋势市胜率60-70%","03 量价齐升: 趋势启动胜率50-60%","04 核心打折: 价值回归胜率55-65%","10 逆向白马: 中线最佳胜率60-70%","13 红利低波: 熊市优选胜率65-75%","16 政策热度: 主题轮动胜率55-65%","17 北向Top: 聪明钱方向胜率60-70%"]:
         L(f"  策略回测: {_b}")
     L(f"\n{'='*85}")
-    L(f"  免责声明: 本报告仅为方法论驱动的量化筛选结果，不构成投资建议。")
-    L(f"  数据来源: 腾讯财经 + 东财数据中心 + 同花顺 + 百度金融 + 新浪财经 + 财联社")
-    L("─" * 85)
     output = "\n".join(filter(None, lines))
     with open(output_path, "w", encoding="utf-8") as f:
         f.write(output)
@@ -1614,11 +1654,11 @@ async def run_discovery_async(output_path):
 
 
 if __name__ == "__main__":
-    args = common_parse_args("18 策略全市场发现引擎V8.4")
+    args = common_parse_args("18 策略全市场发现引擎V8.5.1")
     base_dir = os.path.dirname(os.path.abspath(__file__))
     ts = datetime.now().strftime("%Y%m%d_%H%M")
     op = os.path.join(args.output, f"get_val_report_{ts}.txt")
-    print(f"🚀 全市场18策略发现引擎V8.4启动 — {date.today()}", flush=True)
+    print(f"🚀 全市场18策略发现引擎V8.5.1启动 — {date.today()}", flush=True)
     print("  ⏱ 预计运行 3-7 分钟（asyncio 异步模式）", flush=True)
 
     os.makedirs(args.output, exist_ok=True)

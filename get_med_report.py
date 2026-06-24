@@ -35,7 +35,8 @@ from stock_common import (clean_codes, _safe_float, _request_with_retry, _quick_
                            get_gross_margin_and_roe_async, get_industry_peers,
                            get_sina_financial_report_async, get_sina_balance_sheet_async,
                            get_hsgt_macro_flow_async,
-                           is_trading_day, get_market_status)
+                           is_trading_day, get_market_status,
+                           calculate_multi_school_scores)
 
 _SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 
@@ -187,7 +188,7 @@ def generate_report(code, output_path, ind_comp=None, hsgt=None):
     def L(s=""): lines.append(s)
 
     L("=" * 72)
-    L(f"  {code} 中线深度投研报告V8 — {today_str} {datetime.now().strftime('%H:%M:%S')}")
+    L(f"  {code} 中线深度投研报告V8.5.1 — {today_str} {datetime.now().strftime('%H:%M:%S')}")
     L("=" * 72)
     L("")
     # 加载策略阈值配置
@@ -800,9 +801,9 @@ def generate_report(code, output_path, ind_comp=None, hsgt=None):
         L(f"  {'-'*60}")
         for p in st:
             _cols = f"  {p['date']:<12} {p['northbound']:>5.1f}%"
-            _cols += f"  {p['foreign']:>5.1f}%({p['foreign_count']})" if p['foreign_count'] else f"  {'-':>8}"
-            _cols += f"  {p['domestic']:>5.1f}%({p['domestic_count']})" if p['domestic_count'] else f"  {'-':>8}"
-            _cols += f"  {p['individual']:>5.1f}%({p['individual_count']})" if p['individual_count'] else f"  {'-':>6}"
+            _cols += f"  {p['foreign']:>5.1f}%({p['foreign_count']})" if p['foreign_count'] else f"  {'N/A':>8}"
+            _cols += f"  {p['domestic']:>5.1f}%({p['domestic_count']})" if p['domestic_count'] else f"  {'N/A':>8}"
+            _cols += f"  {p['individual']:>5.1f}%({p['individual_count']})" if p['individual_count'] else f"  {'N/A':>6}"
             _cols += f"  {p['total']:>5.1f}%"
             L(_cols)
         # 境内细分类
@@ -899,6 +900,113 @@ def generate_report(code, output_path, ind_comp=None, hsgt=None):
     elif _ps>=45: L(f"  中线评分: {_ps:.0f}/100 → 建议配置，仓位25%")
     elif _ps>=20: L(f"  中线评分: {_ps:.0f}/100 → 观察仓，仓位10%")
     else: L(f"  中线评分: {_ps:.0f}/100 → 暂不建议，等待基本面拐点")
+    
+    # V8.5新增：价值派+成长派双评分
+    L("\n  ★ 中线双派评分（V8.5）")
+    L("  ─────────────────────────────────────────────────────────────────────")
+    try:
+        # 价值派评分（估值安全边际+财务健康）
+        value_score = 50
+        value_comment = ""
+        
+        # 估值加分
+        pe = q.get("pe_ttm", 0) if q else 0
+        if pe > 0 and pe < 15:
+            value_score += 15
+            value_comment = "低估值安全边际"
+        elif pe > 0 and pe < 25:
+            value_score += 8
+            value_comment = "估值合理"
+        elif pe > 0 and pe < 40:
+            value_score += 0
+            value_comment = "估值偏高"
+        else:
+            value_score -= 5
+            value_comment = "高估值风险"
+        
+        # ROE加分
+        if gross_roe and gross_roe.get("roe"):
+            roe_val = gross_roe["roe"]
+            if roe_val > 15:
+                value_score += 12
+            elif roe_val > 10:
+                value_score += 6
+        
+        # 负债率加分
+        if fina and fina.get("asset_liability_ratio"):
+            debt_ratio = fina["asset_liability_ratio"]
+            if debt_ratio < 40:
+                value_score += 8
+            elif debt_ratio < 60:
+                value_score += 4
+            elif debt_ratio > 80:
+                value_score -= 10
+        
+        # 机构持仓加分
+        if _st and _st[0].get("domestic", 0) > 30:
+            value_score += 8
+        
+        # 成长派评分（业绩增速+行业景气）
+        growth_score = 50
+        growth_comment = ""
+        
+        # EPS增速加分
+        if eps_fc and eps_fc.get("data"):
+            try:
+                # 计算EPS增长趋势
+                eps_data = eps_fc["data"]
+                if len(eps_data) >= 2:
+                    cur_eps = float(eps_data[-1].get("均值", 0) or 0)
+                    prev_eps = float(eps_data[-2].get("均值", 0) or 0)
+                    if prev_eps > 0 and cur_eps > prev_eps:
+                        growth_rate = (cur_eps - prev_eps) / prev_eps * 100
+                        if growth_rate > 30:
+                            growth_score += 15
+                            growth_comment = "高增长赛道"
+                        elif growth_rate > 15:
+                            growth_score += 10
+                            growth_comment = "稳健增长"
+                        elif growth_rate > 5:
+                            growth_score += 5
+                            growth_comment = "温和增长"
+            except:
+                pass
+        
+        # 北向增持加分
+        if nb and len(nb) >= 2:
+            nb_chg = nb[0]["hold_shares"] - nb[-1]["hold_shares"]
+            if nb_chg > 0:
+                growth_score += 8
+        
+        # 行业对比加分
+        if peer_data and peer_data.get("my_rank"):
+            my_rank = peer_data["my_rank"]
+            total_peers = len(peer_data.get("peers", []))
+            if my_rank <= total_peers * 0.3:
+                growth_score += 5
+        
+        # 限制分数范围
+        value_score = max(0, min(100, value_score))
+        growth_score = max(0, min(100, growth_score))
+        
+        # 综合建议
+        if value_score >= 70 and growth_score >= 70:
+            suggestion = "价值+成长双优，中线重点配置"
+        elif value_score >= 60 and growth_score >= 60:
+            suggestion = "价值成长均衡，中线稳健配置"
+        elif value_score >= 60:
+            suggestion = "价值派主导，适合稳健型中线配置"
+        elif growth_score >= 60:
+            suggestion = "成长派主导，适合进取型中线配置"
+        else:
+            suggestion = "价值成长双弱，中线观望"
+        
+        L(f"    价值派评分: {value_score:.0f}分 ({value_comment})")
+        L(f"    成长派评分: {growth_score:.0f}分 ({growth_comment})")
+        L(f"    综合建议: {suggestion}")
+    except Exception as e:
+        L(f"    双派评分计算异常: {str(e)}")
+    
     L(f"  核心驱动: 基本面拐点 / 估值 PEG / 筹码结构 / 重大事件")
     L("=" * 72)
 
@@ -921,7 +1029,7 @@ async def generate_report_async(session, code, output_path, ind_comp=None, hsgt=
     def L(s=""): lines.append(s)
 
     L("=" * 72)
-    L(f"  {code} 中线深度投研报告V8 — {today_str} {datetime.now().strftime('%H:%M:%S')}")
+    L(f"  {code} 中线深度投研报告V8.5.1 — {today_str} {datetime.now().strftime('%H:%M:%S')}")
     L("=" * 72)
     L("")
     _sc = _load_strategy_config()
@@ -1489,9 +1597,9 @@ async def generate_report_async(session, code, output_path, ind_comp=None, hsgt=
         L(f"  {'-'*60}")
         for p in st:
             _cols = f"  {p['date']:<12} {p['northbound']:>5.1f}%"
-            _cols += f"  {p['foreign']:>5.1f}%({p['foreign_count']})" if p['foreign_count'] else f"  {'-':>8}"
-            _cols += f"  {p['domestic']:>5.1f}%({p['domestic_count']})" if p['domestic_count'] else f"  {'-':>8}"
-            _cols += f"  {p['individual']:>5.1f}%({p['individual_count']})" if p['individual_count'] else f"  {'-':>6}"
+            _cols += f"  {p['foreign']:>5.1f}%({p['foreign_count']})" if p['foreign_count'] else f"  {'N/A':>8}"
+            _cols += f"  {p['domestic']:>5.1f}%({p['domestic_count']})" if p['domestic_count'] else f"  {'N/A':>8}"
+            _cols += f"  {p['individual']:>5.1f}%({p['individual_count']})" if p['individual_count'] else f"  {'N/A':>6}"
             _cols += f"  {p['total']:>5.1f}%"
             L(_cols)
         _dd = st[0].get("dm_detail", {})

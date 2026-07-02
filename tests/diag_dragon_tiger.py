@@ -24,7 +24,7 @@
 import sys, os, json, time
 from datetime import datetime, date, timedelta
 
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from stock_common import (
     DATACENTER_URL, UA, _request_with_retry, _safe_float,

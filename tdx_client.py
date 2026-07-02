@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""tdx_client.py — V8.6 通达信共享行情模块。
+"""tdx_client.py — V9.0 通达信共享行情模块。
 
 提供统一的 easy-tdx 数据访问接口，所有适配器函数返回格式与 V3 完全兼容。
 当 TDX 服务器不可达时自动回退到原始 HTTP 源（百度K线/腾讯行情）。
@@ -87,6 +87,9 @@ _TDX_MAC_CLIENT: Optional[Any] = None
 _last_request_time: float = 0.0
 _TDX_RECONNECT_ATTEMPTS: int = 3
 _TDX_RECONNECT_DELAY: float = 0.5
+
+# V8.9: MacClient 失败缓存（避免重复重试退避）
+_MAC_AVAILABLE: Optional[bool] = None
 # V8.5: TDX请求最小间隔（秒），防止过快请求被服务器断开
 # 20ms = 约50次/秒，实测安全
 _TDX_MIN_INTERVAL: float = 0.02
@@ -268,11 +271,33 @@ def _get_tdx_client() -> Optional[Any]:
                     time.sleep(_TDX_RECONNECT_DELAY * (2 ** attempt))
         return None
 
+def _check_mac() -> bool:
+    """检测 MacClient 是否可用（缓存失败状态，避免重复重试退避）。"""
+    global _MAC_AVAILABLE
+    if _MAC_AVAILABLE is not None:
+        return _MAC_AVAILABLE
+    with _TDX_CALL_LOCK:
+        if _MAC_AVAILABLE is not None:
+            return _MAC_AVAILABLE
+        try:
+            from easy_tdx import MacClient
+            c = MacClient.from_best_host()
+            c.connect()
+            c.close()
+            _MAC_AVAILABLE = True
+        except Exception:
+            _MAC_AVAILABLE = False
+    return _MAC_AVAILABLE
+
+
 def _get_mac_client() -> Optional[Any]:
     """V7.5: 获取 MacClient（加锁，线程安全），连接异常时自动重连。
     
     V8.5: 重连改为指数退避（0.5s, 1s, 2s），防止频繁重连被封禁。
+    V8.9: 添加 _check_mac() 失败缓存，快速返回。
     """
+    if not _check_mac():
+        return None
     with _TDX_CALL_LOCK:
         global _TDX_MAC_CLIENT
         for attempt in range(_TDX_RECONNECT_ATTEMPTS):
@@ -518,6 +543,9 @@ def tdx_get_quote_full(code: str) -> Dict[str, Any]:
                     result['ask1'] = q.ask1; result['ask2'] = q.ask2; result['ask3'] = q.ask3
                     result['ask4'] = q.ask4; result['ask5'] = q.ask5
             except Exception: pass
+    # V8.9: 腾讯超时时 TDX 补充不完整 → 返回空字典（让 if q: 保护生效）
+    if result and "pe_ttm" not in result:
+        result = {}
     _TDX_QUOTE_CACHE[cache_key] = result
     return result
 

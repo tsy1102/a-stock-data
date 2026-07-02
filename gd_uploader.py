@@ -1,4 +1,4 @@
-"""gd_uploader.py — V8 Google Drive 上传模块（统一API入口）
+"""gd_uploader.py — V9.0 Google Drive 上传模块（统一API入口）
 
 迁移：
   - V4: oauth2client + pydrive2（均已 deprecated / 不再活跃维护）
@@ -13,21 +13,26 @@ API 映射：
 
 统一 API（两种上传模式，所有脚本统一调用）：
 
-  模式A —— 多股票逐个上传（sht/med/lng 等批量脚本使用）：
-    每个股票创建独立子文件夹「代码-名称」，逐个上传
+  模式A —— 多股票逐个上传（ful/sht/med/lng 等批量脚本使用）：
+    每个股票创建独立子文件夹「代码-2个中文」，逐个上传
+    文件夹命名规则：跳过ST前缀，取前2个中文字符，无中文时显示「代码-」
     from gd_uploader import init_gd, upload_stock_report_by_code, cleanup_gd_proxy
     drive, proxy_set, parent_id, skip = init_gd(base_dir)
     if drive and not skip:
-        upload_stock_report_by_code(drive, parent_id, "600519", "./out/600519_sht_xxx.txt")
+        upload_stock_report_by_code(drive, parent_id, "600519", "贵州茅台", "./out/600519_ful_xxx.txt")
     cleanup_gd_proxy(proxy_set)
 
-  模式B —— 统一类型文件夹上传（val/mak/ful 等单类型脚本使用）：
-    所有文件放入统一子文件夹「val」/「mak」/「ful」
+  模式B —— 统一类型文件夹上传（val/mak 等单类型脚本使用）：
+    所有文件放入统一子文件夹「val」/「mak」
     from gd_uploader import init_gd, upload_type_reports, cleanup_gd_proxy
     drive, proxy_set, parent_id, skip = init_gd(base_dir)
     if drive and not skip:
-        upload_type_reports(drive, parent_id, "ful", ["./out/ful_report_xxx.txt"])
+        upload_type_reports(drive, parent_id, "mak", ["./out/mak_report_xxx.txt"])
     cleanup_gd_proxy(proxy_set)
+
+  特殊功能 —— 快照文件上传：
+    快照文件自动上传到 a-stock-data/snapshot/ 文件夹
+    文件格式：snapshot_YYYYMMDD_HHmm.txt
 
 首次授权流程：
   1. 脚本在浏览器打开 Google OAuth 页面 → 选择账号 → 授权
@@ -324,6 +329,32 @@ def upload_report_to_drive(service, local_path: str, parent_id: str, file_name: 
     if file_name is None:
         file_name = os.path.basename(local_path)
     return upload_or_update_to_drive(service, local_path, parent_id, file_name)
+
+
+# ────────────────────────────────────────────────────────────────
+# 4. 股票文件夹名称处理工具函数
+# ────────────────────────────────────────────────────────────────
+def _make_stock_folder_name(code: str, full_name: str) -> str:
+    """构建股票文件夹名称：股票代码-2个中文，跳过ST，无中文则留横线
+    
+    :param code: 股票代码，例如 "002193"
+    :param full_name: 完整股票名称，例如 "ST如意股份" 或 "贵州茅台"
+    :return: 文件夹名称，例如 "002193-如意" 或 "600519-" 或 "000001-"
+    """
+    import re
+    
+    # 跳过ST前缀
+    name_without_st = re.sub(r'^ST', '', full_name)
+    
+    # 提取中文字符，只取前2个
+    chinese_chars = re.findall(r'[\u4e00-\u9fff]', name_without_st)
+    chinese_part = ''.join(chinese_chars[:2])
+    
+    # 如果没有中文字符，保留横线表示问题
+    if not chinese_part:
+        return f"{code}-"
+    else:
+        return f"{code}-{chinese_part}"
 
 
 # ────────────────────────────────────────────────────────────────

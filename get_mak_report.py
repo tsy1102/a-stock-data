@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
 """
-get_mak_report.py — A股异动及行业轮动扫描报告 (V8.5.1)
+get_mak_report.py — A股异动及行业轮动扫描报告 (V9.0)
 融合全市场异动扫描与行业轮动强度扫描
 
 版本信息:
-    V8.5.1 2026-06-24 - 限流安全优化
+    V8.9 2026-06-29 - 修复模块导入；清理冗余空行输出；模块版本统一
+    V8.7 2026-06-25 - 死代码清理：同步版替换为薄包装
 """
 import argparse, requests, json, time, math, os, warnings
 from datetime import date, datetime, timedelta
@@ -15,7 +16,10 @@ from tdx_client import (tdx_get_security_bars, tdx_get_index_bars,
                          tdx_get_board_list, tdx_get_board_members,
                          tdx_get_quotes_batch, tdx_get_market_abnormal_data,
                          cleanup_tdx)
-from stock_common import _safe_float, _request_with_retry, _quick_request, UA, holder_cache_flush, _load_strategy_config, get_recent_dragon_tiger, parse_args as common_parse_args, is_trading_day, get_market_status
+from stock_common import (_safe_float, _request_with_retry, _quick_request, UA,
+                          _load_strategy_config, get_recent_dragon_tiger,
+                          parse_args as common_parse_args,
+                          is_trading_day, get_market_status)
 
 _SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 # 加载策略阈值配置（模块级缓存，check_stock 函数中使用）
@@ -409,7 +413,7 @@ def generate_sector_report(output_path):
     lines = []
     def L(s=""): lines.append(s)
     L("="*90)
-    L(f"  📊 A股异动及行业轮动扫描报告V8.5.1 — {today_str} {now.strftime('%H:%M:%S')}（{_mkt_note}）")
+    L(f"  📊 A股异动及行业轮动扫描报告V8.9 — {today_str} {now.strftime('%H:%M:%S')}（{_mkt_note}）")
     L("="*90)
     print("[数据装载] 获取全市场多日数据与指数基准...", flush=True)
     all_stocks = get_market_abnormal_data()
@@ -425,7 +429,7 @@ def generate_sector_report(output_path):
         for r in rules:
             results[r["level"]].append({**r, "code":s["code"], "name":s["name"]})
     total_abnormal = len(results["已触发"]) + len(results["严重"])
-    _zt_count = sum(1 for s in all_stocks if s.get("change_pct", 0) >= 9.5)
+    _zt_count = sum(1 for s in all_stocks if s.get("change_pct", 0) >= (19.5 if s["code"].startswith(("300","301","688")) else 9.5))
     _zt_float = sum(1 for s in all_stocks if 5 <= s.get("change_pct", 0) < 9.5); _zb_rate = _zt_float / max(_zt_count + _zt_float, 1) * 100
     _dt_count = sum(1 for s in all_stocks if s.get("change_pct", 0) <= -9.5)
     _lbp = _zt_count
@@ -646,7 +650,7 @@ def generate_sector_report(output_path):
 
         L(f"     ├─ 成分股总数: {ta.get('total_stocks',0)} 只")
         if ta['limit_up_count'] > 0:
-            _zt_names = ' '.join(st['name']+st['code'] for st in ta['limit_up_stocks'] if st.get('change_pct',0)>=9.5)
+            _zt_names = ' '.join(st['name']+st['code'] for st in ta['limit_up_stocks'])
             L(f"     ├─ 涨停家数: {ta['limit_up_count']} 只 → {_zt_names}")
         else:
             L(f"     ├─ 涨停家数: 0 只")
@@ -657,7 +661,12 @@ def generate_sector_report(output_path):
                 _t5_chg = _t5.get('change_pct', 0)
                 _t5_icon = '🚀' if _t5_chg >= 10 else ('📈' if _t5_chg >= 5 else '  ')
                 L(f"       {_t5_icon} {_t5['name']}({_t5['code']})  {_t5_chg:>+8.2f}%")
-        L(f"    龙头: {' | '.join(st['name']+'('+st['code']+', '+('涨停' if st.get('change_pct',0)>=(19.5 if st['code'].startswith(('300','301','688')) else 9.5) else f"{st.get('change_pct',0):+.1f}%")+')' for st in ta['limit_up_stocks'])}")
+        _items = []
+        for _st in ta['limit_up_stocks']:
+            _limit = 19.5 if _st['code'].startswith(('300','301','688')) else 9.5
+            _label = '涨停' if _st.get('change_pct',0) >= _limit else f"{_st.get('change_pct',0):+.1f}%"
+            _items.append(f"{_st['name']}({_st['code']}, {_label})")
+        L(f"    龙头: {' | '.join(_items)}")
     L(f"\n{'='*90}")
     L("【E. 资金流验证：真金白银 vs 虚涨】")
     L(f"{'─'*90}")
@@ -762,7 +771,7 @@ if __name__ == "__main__":
         print(f"  ✅ 已保存: {op}", flush=True)
     except Exception as e:
         print(f"❌ 报告生成失败: {e}", flush=True)
-        holder_cache_flush()
+    # 缓存现在使用统一的SQLite管理，无需手动刷新
         cleanup_tdx()
         exit(1)
 
@@ -774,6 +783,6 @@ if __name__ == "__main__":
             if upload_type_reports(drive, gd_parent_folder_id, "mak", [op]) <= 0:
                 print("  ⚠️ GD 上传失败", flush=True)
     cleanup_gd_proxy(gps)
-    holder_cache_flush()
+    # 缓存现在使用统一的SQLite管理，无需手动刷新
     cleanup_tdx()
     print(f"\n📋 扫描结束: {op}")

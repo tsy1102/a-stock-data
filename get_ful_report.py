@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 """
-get_ful_report.py — A股七层全维度分析引擎 V8.5.1（含行业对比/风险扫描/五维加权评分）
+get_ful_report.py — A股七层全维度分析引擎 V9.0（含行业对比/风险扫描/五维加权评分）
 
 版本信息:
-    V8.5.1 2026-06-24 - 限流安全优化：并发数调整为3
+    V8.8 2026-06-25 - GD上传逻辑统一化 & 快照格式升级（TXT+自动上传）
+    V8.7 2026-06-25 - 死代码清理：同步版替换为薄包装
 
 架构:
   Layer 1  行情与技术指标（MA/成交量/MACD/RSI/布林带/KDJ）
@@ -11,7 +12,7 @@ get_ful_report.py — A股七层全维度分析引擎 V8.5.1（含行业对比/�
   Layer_IND 行业对比（同行横向估值/走势对比）
   Layer 3  交易信号与题材（龙虎榜/概念板块/资金流/限售解禁）
   Layer 4  筹码与资金结构（股东户数/融资融券/大宗交易/机构持仓）
-  Layer 5  新闻与舆情（财联社/东财7×24关键词匹配）
+  Layer 5  新闻与舆情（东财个股新闻/互动易问答/同花顺热榜）
   Layer 6  基本面与财务健康（利润表/资产负债表/ROE/分红）
   Layer_RISK 风险扫描（8项：商誉/杠杆/回款/连续亏损/减持/质押/解禁/现金流）
   Layer 7  公告与重大事项（巨潮公告关键词过滤）
@@ -43,15 +44,17 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from stock_common import (
     clean_codes, _safe_float, _request_with_retry, _quick_request, UA, _market_code,
-    eastmoney_datacenter, _em_filter, holder_change, holder_cache_flush,
+    eastmoney_datacenter, _em_filter, holder_change,
     get_strategic_announcements, get_holder_structure,
     _load_settings, _load_strategy_config, ensure_output_dir, get_script_dir,
     get_board_type, is_limit_up, is_limit_down,
     is_trading_day, get_market_status,
     calculate_multi_school_scores, ScoreData,
+    get_eastmoney_stock_news,
+    cninfo_irm, ths_hot_list,
 )
 
-from gd_uploader import init_gd, upload_type_reports, cleanup_gd_proxy
+from gd_uploader import init_gd, upload_type_reports, upload_stock_report_by_code, cleanup_gd_proxy
 
 from tdx_client import (
     tdx_get_security_bars, tdx_get_quote_full, tdx_get_index_quote,
@@ -62,6 +65,12 @@ from tdx_client import (
 
 _SCRIPT_DIR = get_script_dir()
 _sc = _load_strategy_config()
+
+# 并行分析线程数（与 header 显示保持一致）
+_MAX_WORKERS = 3
+
+# 快照数据累积器（批量结束后一次性写入）
+_SNAPSHOT_DATA: dict = {}
 
 
 # =====================================================================
@@ -734,7 +743,7 @@ def layer_ind_industry(code: str, stock_mcap: float = 0) -> Dict[str, Any]:
             return p
 
         if len(all_peers) > 3:
-            with ThreadPoolExecutor(max_workers=3) as executor:
+            with ThreadPoolExecutor(max_workers=_MAX_WORKERS) as executor:
                 all_peers = list(executor.map(_ensure_full, all_peers))
         else:
             all_peers = [_ensure_full(p) for p in all_peers]
@@ -1022,70 +1031,56 @@ def layer4_chips(code: str) -> Dict[str, Any]:
 # =====================================================================
 
 def layer5_news(code: str, stock_name: str = "") -> Dict[str, Any]:
+    """Layer 5: 新闻与舆情 — 东财个股新闻 + 互动易问答 + 同花顺热榜"""
     result: Dict[str, Any] = {
-        "ok": True, "cls_related": [], "global_related": [],
-        "signals": [],
+        "ok": True, "global_related": [], "irm_qa": [],
+        "hot_list": [], "signals": [],
     }
 
-    keywords = [k for k in [code, stock_name] if k]
-
+    # 东财个股新闻（已按股票代码过滤，直接显示）
     try:
-        url = "https://www.cls.cn/nodeapi/telegraphList"
-        r = _quick_request(url,
-            params={"rn": "50", "page": "1"},
-            headers={"User-Agent": UA, "Referer": "https://www.cls.cn/"},
-            timeout=10)
-        if r is not None:
-            d = r.json()
-            items = d.get("data", {}).get("roll_data", []) or []
-            for item in items:
-                title = (item.get("title", "") or item.get("brief", "")).strip()
-                content = (item.get("content", "") or item.get("brief", "")).strip()
-                combined = f"{title} {content}"
-                matched = [kw for kw in keywords if kw and kw in combined]
-                if matched:
-                    ts = item.get("ctime", 0)
-                    try:
-                        date_str = datetime.fromtimestamp(int(ts)).strftime("%Y-%m-%d %H:%M")
-                    except (ValueError, TypeError, OSError):
-                        date_str = str(ts)[:16]
-                    result["cls_related"].append({
-                        "time": date_str, "title": title[:80],
-                        "content": content[:120], "matched_keywords": matched,
-                    })
+        stock_news = get_eastmoney_stock_news(code, page_size=10)
+        for item in stock_news:
+            title = str(item.get("title", "")).strip()
+            summary = str(item.get("summary", "")).strip()
+            if title:
+                result["global_related"].append({
+                    "time": str(item.get("publish_time", ""))[:16],
+                    "title": title[:80],
+                    "summary": summary[:120],
+                })
     except Exception:
         pass
 
+    # 互动易问答（有回复的优先展示）
     try:
-        import uuid
-        url = "https://np-weblist.eastmoney.com/comm/web/getFastNewsList"
-        r = _request_with_retry(url, params={
-            "client": "web", "biz": "web_724", "fastColumn": "102",
-            "sortEnd": "", "pageSize": "40", "req_trace": str(uuid.uuid4()),
-        }, headers={"User-Agent": UA, "Referer": "https://kuaixun.eastmoney.com/"},
-           timeout=10)
-        if r is not None:
-            d = r.json()
-            items = d.get("data", {}).get("fastNewsList", []) or []
-            for item in items:
-                title = str(item.get("title", "")).strip()
-                summary = str(item.get("summary", "")).strip()
-                combined = f"{title} {summary}"
-                matched = [kw for kw in keywords if kw and kw in combined]
-                if matched:
-                    result["global_related"].append({
-                        "time": str(item.get("showTime", ""))[:16],
-                        "title": title[:80], "summary": summary[:120],
-                        "matched_keywords": matched,
-                    })
+        qa_list = cninfo_irm(code, page_size=8)
+        if qa_list:
+            # 有回复的排在前面，最多取 3 条
+            qa_sorted = sorted(qa_list, key=lambda q: (0 if q.get("answer") and q["answer"].strip() else 1))
+            result["irm_qa"] = [{
+                "question": q.get("question", "")[:60],
+                "answer": (q.get("answer") or "")[:100] if q.get("answer") and q["answer"].strip() else "(未回复)",
+                "time": q.get("ask_time", ""),
+            } for q in qa_sorted[:3]]
     except Exception:
         pass
 
-    total_related = len(result["cls_related"]) + len(result["global_related"])
-    if total_related > 8:
-        result["signals"].append(f"⚠️ 近24小时相关新闻/快讯 {total_related} 条，市场高度关注")
-    elif total_related > 3:
-        result["signals"].append(f"近24小时相关新闻/快讯 {total_related} 条")
+    # 同花顺热榜（取当前热度前5，看该股是否在榜）
+    try:
+        hot_all = ths_hot_list("hour")
+        for h in hot_all[:5]:
+            if h.get("code") == code or h.get("name") in stock_name:
+                result["hot_list"].append(h)
+                break
+    except Exception:
+        pass
+
+    total_related = len(result["global_related"]) + len(result["irm_qa"])
+    if total_related > 5:
+        result["signals"].append(f"📢 近期相关新闻/互动 {total_related} 条，市场关注度较高")
+    if result["hot_list"]:
+        result["signals"].append(f"🔥 该股当前在同花顺热榜 #{result['hot_list'][0]['rank']}，热度 {result['hot_list'][0]['heat']}")
 
     return result
 
@@ -1582,11 +1577,14 @@ def format_report(code: str, layers: Dict[str, Any]) -> str:
     lines: List[str] = []
     L = lines.append
     now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    _mkt_status, _mkt_note = get_market_status()
 
     L("═" * 78)
-    L(f"  个股七层全维度分析报告 V8.5.1")
+    L(f"  个股七层全维度分析报告 V8.9")
     L(f"  股票代码: {code}")
     L(f"  生成时间: {now}")
+    if _mkt_status in ("lunch", "closed", "post_market", "pre_market"):
+        L(f"  ⚠️ {_mkt_note}，部分实时行情为最近交易日快照")
     L("═" * 78)
 
     # 基本信息
@@ -1793,21 +1791,24 @@ def format_report(code: str, layers: Dict[str, Any]) -> str:
     if l5.get("ok"):
         L("")
         L(f"{'─'*36}  6. 新闻与舆情  {'─'*30}")
-        total_cls = len(l5.get("cls_related") or []) if isinstance(l5, dict) else 0
-        total_g = len(l5.get("global_related") or []) if isinstance(l5, dict) else 0
-        if total_cls == 0 and total_g == 0:
+        total_g = len(l5.get("global_related") or [])
+        qa = l5.get("irm_qa") or []
+        hl = l5.get("hot_list") or []
+        if total_g == 0 and not qa and not hl:
             L(f"  近24小时未检测到与该标的直接相关的重大新闻")
         else:
-            if total_cls > 0:
-                L(f"  财联社快讯（{total_cls} 条）:")
-                for n in (l5.get("cls_related") or [])[:5]:
-                    if isinstance(n, dict):
-                        L(f"    · [{n.get('time', '')}] {n.get('title', '') or n.get('content', '')}")
             if total_g > 0:
-                L(f"  东财7x24资讯（{total_g} 条）:")
-                for n in (l5.get("global_related") or [])[:5]:
+                L(f"  东财个股新闻（{total_g} 条）:")
+                for n in l5["global_related"][:5]:
                     if isinstance(n, dict):
                         L(f"    · [{n.get('time', '')}] {n.get('title', '')}")
+            if qa:
+                L(f"  互动易问答（{len(qa)} 条）:")
+                for q in qa[:3]:
+                    L(f"    · Q: {q['question']}")
+                    L(f"      A: {q['answer']}")
+            if hl:
+                L(f"  同花顺热榜: #{hl[0]['rank']} {hl[0]['name']} 热度{hl[0]['heat']}")
         if l5.get("signals"):
             for s in l5["signals"]:
                 L(f"    · {s}")
@@ -1998,9 +1999,6 @@ def format_report(code: str, layers: Dict[str, Any]) -> str:
 
     L("")
     L("═" * 78)
-    L("  免责声明: 本报告由自动数据采集生成，仅用于数据参考，不构成投资建议。")
-    L("  数据来源: 东方财富 / 腾讯财经 / 百度股市通 / 同花顺 / 新浪财经 / 财联社 / 巨潮资讯")
-    L("═" * 78)
     return "\n".join(filter(None, lines))
 
 
@@ -2017,7 +2015,7 @@ def analyze_stock(code: str, parallel: bool = True) -> Tuple[str, str]:
     if not code or not code.isdigit() or len(code) != 6:
         return code, f"【错误】股票代码 {code} 格式不正确（需要6位数字）"
 
-    print(f"\n▶ 开始分析 {code} ...", flush=True)
+    print(f"▶ 开始分析 {code} ...", flush=True)
     t0 = time.time()
 
     # 预热（获取股票名称和市值，用于行业对比过滤）
@@ -2046,7 +2044,7 @@ def analyze_stock(code: str, parallel: bool = True) -> Tuple[str, str]:
     layers: Dict[str, Any] = {}
 
     if parallel:
-        with ThreadPoolExecutor(max_workers=3) as executor:
+        with ThreadPoolExecutor(max_workers=_MAX_WORKERS) as executor:
             future_map = {executor.submit(fn): name for name, fn in first_round_tasks}
             for future in as_completed(future_map):
                 name = future_map[future]
@@ -2086,8 +2084,12 @@ def analyze_stock(code: str, parallel: bool = True) -> Tuple[str, str]:
     try:
         scores_local = _scoring(ordered_layers, _cfg_sc=_sc.get("scoring"))
         price_local = q.get("price", 0) if isinstance(q, dict) else 0
-        from stock_common import save_score_snapshot
-        save_score_snapshot("ful", code, stock_name, scores_local.get("total", 0), price_local)
+        _SNAPSHOT_DATA[code] = {
+            "name": stock_name,
+            "total_score": scores_local.get("total", 0),
+            "price": price_local,
+            "report_source": "ful"
+        }
     except Exception:
         pass
 
@@ -2135,7 +2137,7 @@ def main():
     header_lines.append("  A股九层全维度分析引擎 V2.0")
     header_lines.append(f"  启动时间: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}（{_mkt_note}）")
     header_lines.append(f"  分析标的: {', '.join(codes)}")
-    header_lines.append(f"  并行模式: {'OFF(顺序)' if args.no_parallel else 'ON(5线程)'}  |  GD上传: {'SKIP' if args.no_upload else '启用'}")
+    header_lines.append(f"  并行模式: {'OFF(顺序)' if args.no_parallel else f'ON({_MAX_WORKERS}线程)'}  |  GD上传: {'SKIP' if args.no_upload else '启用'}")
     header_lines.append(f"  输出目录: {output_dir}")
     header_lines.append("=" * 78)
     print("\n".join(header_lines), flush=True)
@@ -2152,28 +2154,57 @@ def main():
         with open(fpath, "w", encoding="utf-8") as fp:
             fp.write(report)
         generated_files.append(fpath)
-        print(f"\n✅ 报告已生成: {fpath}", flush=True)
+        print(f"✅ 报告已生成: {fpath}", flush=True)
 
-    # 刷新缓存（股东数据）
-    try:
-        holder_cache_flush()
-    except Exception:
-        pass
+    # 缓存现在使用统一的SQLite管理，无需手动刷新
 
     elapsed_total = time.time() - t_total
-    print(f"\n{'=' * 78}", flush=True)
+    print(f"{'=' * 78}", flush=True)
     print(f"全部完成！共分析 {len(codes)} 只股票，总耗时 {elapsed_total:.1f} 秒", flush=True)
     for f in generated_files:
         print(f"  → {f}", flush=True)
 
     # Google Drive 上传（可选）
-    if not args.no_upload and generated_files:
+    drive, gd_proxy_set, gd_parent_folder_id, skip_upload = None, False, None, False
+    if not args.no_upload:
         base_dir = _SCRIPT_DIR
         drive, gd_proxy_set, gd_parent_folder_id, skip_upload = init_gd(base_dir)
-        if drive and not skip_upload:
-            if upload_type_reports(drive, gd_parent_folder_id, "ful", generated_files) <= 0:
-                print("  ⚠️ GD 上传失败", flush=True)
-        cleanup_gd_proxy(gd_proxy_set)
+    
+    # 逐个文件上传以支持详细状态跟踪
+    _upload_results = []
+    if drive and not skip_upload and generated_files:
+        for file_path in generated_files:
+            code = os.path.basename(file_path).split('_')[0]
+            try:
+                q_name = tdx_get_quote_full(code).get("name", "")
+                if upload_stock_report_by_code(drive, gd_parent_folder_id, code, q_name, file_path):
+                    _upload_results.append({"code": code, "status": "成功", "error": "", "path": file_path})
+                else:
+                    _upload_results.append({"code": code, "status": "GD上传失败", "error": "上传失败", "path": file_path})
+            except Exception as gd_e:
+                print(f"  ⚠️ GD 上传异常: {gd_e}", flush=True)
+                _upload_results.append({"code": code, "status": "GD上传异常", "error": str(gd_e), "path": file_path})
+    
+    cleanup_gd_proxy(gd_proxy_set)
+    
+    # 汇总上传结果
+    total = len(generated_files)
+    ok = [r for r in _upload_results if r["status"] == "成功"]
+    fd = [r for r in _upload_results if r["status"] == "数据失败"]
+    fg = [r for r in _upload_results if r["status"] in ("GD上传失败", "GD上传异常", "GD未连接")]
+    
+    if total > 0:
+        print(f"\n{'=' * 60}\n  批量执行完成 — 共处理 {total} 只股票\n{'=' * 60}")
+        print(f"  ✅ 全部成功: {len(ok)}  |  ❌ 数据失败: {len(fd)}  |  ⚠️ GD上传失败: {len(fg)}")
+        for r in fd:
+            print(f"    ❌ {r['code']} — {r['error'][:80]}")
+        for r in fg:
+            print(f"    ⚠️ {r['code']}")
+
+    # 批量写入快照（一次性，不重复写）
+    if _SNAPSHOT_DATA:
+        from stock_common.analyze_history import save_snapshot
+        save_snapshot("ful", _SNAPSHOT_DATA)
 
 
 if __name__ == "__main__":

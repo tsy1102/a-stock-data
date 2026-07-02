@@ -7,6 +7,126 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [9.0.0] - 2026-07-02
+
+### Added
+
+- **舆情互动层（Layer 10）**：新增 `cninfo_irm()`（互动易问答）、`ths_hot_list()`（同花顺热榜）、`em_hot_rank()`（东财人气榜）、`em_hot_concept()`（个股概念命中）四个舆情接口，全部零鉴权
+- **上市日期东财 push2 fallback**：`get_stock_info()` 在 TDX 无法获取 `ipo_date` 时自动降级到东财 push2 (`f189`)，不再返回空白
+- **`@cached` 读取时 valid_if 校验**：缓存命中但数据不通过 `valid_if` 校验时视为未命中，自动重新获取
+- **`_has_zero_price` 坏数据拦截**：`set_cache` 中检测到 `price=0` / `close=0` 的特征时禁止写入缓存
+- **sht 脚本新闻/舆情段**：替换硬编码文字为东财个股新闻 + 互动易 + 同花顺热榜三层数据
+
+### Fixed
+
+- **TDX MacClient 失败缓存**：新增 `_check_mac()` 缓存 MacClient 不可用状态，避免每次调用重试 3 次（1.5s→0.000s）
+- **`get_tencent_quote` 不完整返回保护**：腾讯超时时 TDX 补充不完整 → 返回空字典，避免 KeyError（`change_pct` / `pe_ttm`）
+- **`get_industry_peers` 腾讯 fallback 防限流**：同行价格补全循环加 `time.sleep(0.3)` 间隔
+- **`get_industry_peers` valid_if 强化**：从 `any` 改为 `all`，要求所有同行价格有效才缓存
+- **已下线财联社快讯清除**：`get_ful_report.py` 删除 `cls.cn` 404 接口调用
+- **各脚本 `q['xxx']` 改为 `q.get('xxx',0)`**：消除腾讯 API 偶发缺字段导致的 KeyError
+- **删除 sht 重复的股价/PE/PB 显示段**：综合信号后的重复信息行
+- **各脚本多评委评分位置统一**：sht/med/lng 统一在原始评分后输出多评委评分 + 综合投资建议
+
+### Changed
+
+- **快照架构重构**：`save_snapshot()` 只写 JSON 不做分析；`analyze_history()` 统一做跨日期检测，有异常才生成 TXT + 上传 GD
+- **缓存淘汰改写入时**：删除 `_startup_cleanup()` 启动清理，改为 `_enforce_size_limit()` 写入时顺带清理过期条目
+- **TTL 优化**：`northbound` 1d→7d, `margin_trading` 1d→3d, `lockup_expiry` 1d→7d, 等 6 项调整
+- **7 个数据函数加 `@cached`**：`baidu_kline_full`, `get_holder_structure`, `ths_hot_list`, `em_hot_rank`, `em_hot_concept`, `cninfo_irm`, `eastmoney_stock_info_push2`
+- **文件重组**：`stock_calendar.py` / `seat_db.py` / `trap_detector.py` / `analyze_history.py` / `valuation_methods.py` 等 8 个文件移入 `stock_common/`
+- **修复 `trap_detector.py` 中文引号语法错误**（2 处）
+- **修复 `get_mak_report.py` 嵌套 f-string 语法错误**
+- **版本号统一升级 V9.0**
+
+## [8.9.0] - 2026-06-29
+
+### Added
+
+- **版本号统一升级**：所有脚本版本从 V8.8/V8.7 统一升级到 V8.9
+- **CHANGELOG/README 更新**：记录 V8.9 全部变更
+
+### Changed
+
+- **快照架构改进**：
+  - 移除逐只股票的 `save_score_snapshot()` 调用
+  - 改用模块级 `_SNAPSHOT_DATA` 字典累积所有股票的评分
+  - 脚本末尾一次性调用 `save_snapshot()` 写入 JSON
+  - 删除 `save_score_snapshot` 函数及其在两个子模块中的重复定义
+  - 删除所有报告脚本末尾的 `_stocks`/`generate_daily_snapshot` 冗余快照块
+
+### Fixed
+
+- **get_sht_report.py**：修复 `int+dict` 类型错误（`sum(recent_data)` → `sum(d.get("main_net",0) for d in recent_data)`）
+- **get_val_report.py**：修复 V8.9 模块化后缺失 `_load_settings`、`holder_change` 导入导致的 NameError
+- **get_ful_report.py**：修复线程数硬编码（`ON(5线程)` → 引用 `_MAX_WORKERS=3` 变量）
+- **stock_cache.py**：关闭遗留 `holder_cache.json` 迁移逻辑（`_MIGRATE_HOLDER_CACHE = False`）
+- **多文件**：移除 11 处 `print(f"\n..."` 的前置换行，减少多余空行输出
+
+### Removed
+
+- `stock_common/sc_utils.py`、`stock_common/sc_datasource.py`：删除 `save_score_snapshot()` 函数
+- 删除 6 个 V8.8 存档文档：`CHANGELOG_V8.8.md`、`CHANGELOG_V8.8_DETAILED.md`、`FILES_CHANGE_LOG_V8.8.md`、`PROJECT_STATUS_V8.8.md`、`VERSION_SUMMARY_V8.8.md`
+- 删除 `stock_common.py.bak_v86`（V8.6 备份文件）
+
+## [8.8.0] - 2026-06-25
+
+### Added
+
+- **GD上传逻辑统一化**：
+  - 统一 `ful/sht/med/lng` 四个脚本的GD上传格式为：`股票代码-2个中文`（如 `002193-如意`）
+  - 新增股票名称处理函数 `_make_stock_folder_name()`：跳过ST前缀，取前2个中文字符
+  - 无中文字符时显示 `股票代码-`，便于识别问题
+  - `val` 和 `mak` 脚本保持原有的按类型文件夹上传逻辑
+
+- **快照文件格式升级**：
+  - 快照文件从 `snapshot_YYYYMMDD_type.json` 改为 `snapshot_YYYYMMDD_HHmm.txt` 文本格式
+  - 新增快照文件自动上传功能：每次生成后自动上传到 `a-stock-data/snapshot/` 文件夹
+  - 快照文件内容优化：增加元数据注释，提升可读性
+  - 更新快照加载逻辑以支持TXT格式
+
+- **系统功能增强**：
+  - `analyze_history.py` 新增GD自动上传功能，确保快照数据云端同步
+  - `gd_uploader.py` 新增股票文件夹名称处理工具函数
+  - 优化快照文件生成和保存流程，支持格式兼容性
+
+### Changed
+
+- **版本号升级**：所有主要脚本版本号从 V8.7 升级到 V8.8
+- **快照处理**：快照文件生成逻辑重写，从JSON格式改为更易读的TXT格式
+- **上传策略**：优化了GD上传的错误处理和重试机制
+
+### Fixed
+
+- **GD上传逻辑**：修复了ful脚本GD上传后可能出现的目录结构不一致问题
+- **快照文件**：解决了快照文件格式兼容性问题，支持新旧格式平滑过渡
+
+## [8.7.0] - 2026-06-25
+
+### Removed
+
+- 删除 `social_sentiment.py`（6 平台社交热榜聚合，全为桩实现返回空数据）
+- 删除 `stock_common.py` 中的 `get_social_sentiment()` 和 `get_social_sentiment_async()` 便捷函数（~70 行）
+- 删除 `tests/test_issues.py` 中的 `test_social_sentiment()` 和 `test_gross_roe_scope()` 测试（社交相关功能已移除）
+
+### Refactored
+
+- `get_lng_report.py`：同步 `generate_report()` 替换为薄包装（`asyncio.run()` 调用异步版），删除 `_get_eps_from_em_reports()` 死代码辅助函数（~545 行删除）
+- `get_med_report.py`：同步 `generate_report()` 替换为薄包装，删除 `get_cninfo_announcements()`、`_get_eps_from_em_reports()`、`get_holder_change()` 死代码辅助函数（~828 行删除）
+- `get_sht_report.py`：同步 `generate_report()` 替换为薄包装，删除社交热榜段落（~1175 行删除）
+
+### Added
+
+- 新增 `analyze_history.py` 历史分析模块：
+  - `save_snapshot(script_type, stocks)`：智能合并快照到 `snapshots/snapshot_<YYYYMMDD>_<type>.json`
+  - `analyze_history()`：跨日期趋势背离检测（单日突变 |Δ|≥15分 / 连续≥3天同向且总变化≥15分）
+  - 检测结果：评分突变背离（按变化幅度降序）+ 连续趋势信号（持续上涨📈/持续下跌📉）
+
+### Fixed
+
+- 修复 `analyze_history.py` 趋势检测判定条件（`run_len + 1 >= TREND_MIN_DAYS` 确保连续天数正确计算）
+- 修正趋势检测语义：删除 `TREND_STEP_THRESHOLD`，改用 `DIVERGENCE_THRESHOLD` 作为总变化幅度显著性门槛
+
 ## [8.6.0] - 2026-06-24
 
 ### Security

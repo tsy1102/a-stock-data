@@ -307,6 +307,10 @@ def enhance_lhb_seats(lhb_data: Dict[str, Any]) -> Dict[str, Any]:
     result["positive_seats"] = positive_count
     result["negative_seats"] = negative_count
 
+    # 知名席位列表（有 short_name 的席位）
+    notable_seats = [s["short_name"] for s in buy_analysis + sell_analysis if s.get("short_name")]
+    result["notable_seats"] = notable_seats
+
     return result
 
 

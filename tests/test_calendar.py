@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""tests/test_calendar.py — A股交易日历模块单元测试
+"""tests/test_calendar.py — A股交易日历模块单元测试（V8.7）
 
 覆盖：
 1. 已知节假日、调休日、周末交易日验证

@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 """数据源诊断脚本 - 测试各接口是否正常响应
 
+V2.2 2026-06-25 - V8.7 版本同步（删除社交热榜测试）
+
 V2.1 2026-06-24 - 新增TDX TCP测试/修复东财reportName
 
 V2.0 修复：
@@ -155,7 +157,7 @@ def test_baidu_finance():
         
         data = r.json()
         if data.get("ResultCode") == "0":
-            return {"status": "success", "data": "百度行情正常"}
+            return {"status": "success", "data": "百度行情正常（已deprecated）"}
         return {"status": "failed", "error": f"ResultCode={data.get('ResultCode')}"}
     except json.JSONDecodeError:
         return {"status": "warning", "data": "JSON解析失败（接口可能已变更）", "note": "deprecated"}

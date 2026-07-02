@@ -6,7 +6,9 @@ import os
 
 from stock_common import (
     _safe_float,
-    holder_cache_flush,
+    get_board_type,
+    is_limit_up,
+    clean_codes,
 )
 
 
@@ -31,14 +33,28 @@ def test_safe_float_various_inputs():
     assert _safe_float("1e5") == 100000.0
 
 
-def test_holder_cache_flush_handles_missing_dir(tmp_path, monkeypatch):
-    # 把 HOLDER_CACHE_FILE 指向临时目录
-    fake_cache = tmp_path / "holder_cache.json"
-    # 模块内通过绝对路径写，这里仅验证函数不抛异常
-    monkeypatch.chdir(tmp_path)
-    try:
-        holder_cache_flush()
-    except Exception as e:
-        raise AssertionError(f"holder_cache_flush 不应抛异常：{e}")
-    # 如果当前工作目录没有数据文件，也不会出错
-    assert True
+def test_get_board_type():
+    """V8.9新增：板块判断函数测试（替代已移除的 holder_cache_flush 测试）"""
+    assert get_board_type("688981") == "科创板"
+    assert get_board_type("300750") == "创业板"
+    assert get_board_type("600519") == "主板"
+    assert get_board_type("000001") == "主板"
+    assert get_board_type("600519", "ST股票") == "ST"
+
+
+def test_is_limit_up():
+    """涨停判断测试"""
+    # 创业板 20% 涨停
+    assert is_limit_up("300750", "", 20.0) is True
+    assert is_limit_up("300750", "", 15.0) is False
+    # 主板 10% 涨停
+    assert is_limit_up("600519", "", 10.0) is True
+
+
+def test_clean_codes():
+    """代码清洗测试"""
+    assert clean_codes(["600519", "002193如意", "abc"]) == ["600519", "002193"]
+    assert clean_codes([]) == []
+    # 去重测试
+    result = clean_codes(["600519", "600519", "000001"])
+    assert result == ["600519", "000001"]

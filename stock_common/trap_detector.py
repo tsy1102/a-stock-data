@@ -290,7 +290,7 @@ def _detect_signal_6_teacher_marketing(code: str, name: str, news_titles: List[s
     signal = TrapSignal(
         hit=False,
         weight=2,
-        description=""老师/股神"人设推广"
+        description='\u201c老师/股神\u201d人设推广'
     )
 
     teacher_keywords = [
@@ -515,7 +515,7 @@ def detect_trap_signals(code: str, name: str,
             "⚠️ 高度警惕：疑似杀猪盘，建议立即远离",
             "不要轻信任何荐股信息",
             "不要加入任何收费群或直播间",
-            "不要跟随所谓的"老师"操作"
+            '不要跟随所谓的"老师"操作'
         ]
     elif result.level == "警惕":
         result.recommendations = [

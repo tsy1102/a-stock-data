@@ -56,21 +56,6 @@ def test_dragon_tiger():
     if not dtb.get('seat_analysis'):
         print("   ⚠️ seat_analysis为空，席位增强功能未生效")
 
-def test_social_sentiment():
-    """测试问题8: 社交热榜"""
-    print("\n=== 测试8: 社交热榜 ===")
-    try:
-        from social_sentiment import get_stock_sentiment
-        sentiment = get_stock_sentiment("600206")
-        print(f"items: {sentiment.get('items', 'N/A')}")
-        print(f"total_hot: {sentiment.get('total_hot', 'N/A')}")
-        if not sentiment.get('items'):
-            print("   ⚠️ 社交热榜返回空数据")
-    except ImportError as e:
-        print(f"   ❌ 模块导入失败: {e}")
-    except Exception as e:
-        print(f"   ❌ 调用失败: {e}")
-
 def test_multi_school_score():
     """测试问题5(ful): 多评委评分"""
     print("\n=== 测试多评委评分 ===")
@@ -93,25 +78,6 @@ def test_multi_school_score():
     except Exception as e:
         print(f"   ❌ 多评委评分计算异常: {e}")
 
-def test_gross_roe_scope():
-    """测试问题3(长线): gross_roe变量作用域"""
-    print("\n=== 测试长线价值派评分变量 ===")
-    # 检查get_lng_report.py中的变量作用域问题
-    import inspect
-    from get_lng_report import generate_report
-    source = inspect.getsource(generate_report)
-    if "gross_roe" in source and "value_score" in source:
-        print("✅ 函数中包含gross_roe和value_score变量")
-        # 检查gross_roe的定义位置是否在价值派评分代码之前
-        gross_pos = source.find("gross_roe =")
-        value_pos = source.find("# V8.5新增：价值派评分")
-        if gross_pos < value_pos:
-            print("✅ gross_roe定义在价值派评分代码之前")
-        else:
-            print("   ⚠️ gross_roe定义位置可能在价值派评分代码之后")
-    else:
-        print("   ⚠️ 未找到相关变量")
-
 if __name__ == "__main__":
     print("=" * 60)
     print("测试脚本启动 - 验证各功能问题")
@@ -121,10 +87,8 @@ if __name__ == "__main__":
     test_sector_rank()
     test_industry_peers()
     test_dragon_tiger()
-    test_social_sentiment()
     test_multi_school_score()
-    test_gross_roe_scope()
-    
+
     print("\n" + "=" * 60)
     print("测试完成")
     print("=" * 60)

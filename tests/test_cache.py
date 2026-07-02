@@ -1,4 +1,4 @@
-"""test_cache.py — 统一缓存层 (stock_cache) 单元测试。
+"""test_cache.py — 统一缓存层 (stock_cache) 单元测试（V8.7）。
 
 重点测试：
   - set_cache / get_cache 基本读写

@@ -1,4 +1,4 @@
-"""test_scoring.py — 评分系统 (ScoreData / calculate_score) 单元测试。
+"""test_scoring.py — 评分系统 (ScoreData / calculate_score) 单元测试（V8.7）。
 
 重点测试：
   - _score_technical: 均线系统、涨跌幅、涨停、MACD、RSI 等

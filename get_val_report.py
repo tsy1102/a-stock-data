@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
 """
-get_val_report.py — 18 策略全市场发现引擎 (V8.5.1)
+get_val_report.py — 18 策略全市场发现引擎 (V9.0)
 方法论驱动的 A 股选股脚本，从全市场发现可操作标的。
 每策略精选 TOP 5，生成含具体数值推理的报告。
 
 版本信息:
-    V8.5.1 2026-06-24 - 限流安全优化：并发数调整为3/策略18初筛Top20
+    V8.9 2026-06-29 - 修复缺失导入(_load_settings/holder_change)；清理冗余快照逻辑；模块版本统一
+    V8.7 2026-06-25 - 死代码清理：同步版替换为薄包装：并发数调整为3/策略18初筛Top20
     V8.5 2026-06-22 - 初始V8.5版本
 
 V7.5 新增:
@@ -34,9 +35,8 @@ from tdx_client import (tdx_get_security_bars, tdx_get_quote_full,
                          tdx_get_finance_roe, cleanup_tdx)
 from stock_common import (_safe_float, _request_with_retry, _quick_request, UA,
                            eastmoney_datacenter, _em_filter, JP_URL,
-                           holder_change, holder_cache_flush, _load_settings,
-                           _load_strategy_config, get_holder_structure,
-                           is_limit_up, is_limit_down,
+                           _load_settings, _load_strategy_config, get_holder_structure,
+                           holder_change, is_limit_up, is_limit_down,
                            get_recent_dragon_tiger, get_dragon_tiger_board,
                            create_async_session, eastmoney_datacenter_async,
                            get_recent_dragon_tiger_async,
@@ -1346,7 +1346,7 @@ def run_discovery(output_path):
     _mkt_status, _mkt_note = get_market_status(_t_now)
 
     L("─" * 85)
-    L(f"  🔍 全市场18策略发现引擎V8.5.1 — {today_str} {_t_now.strftime('%H:%M:%S')}（{_mkt_note}）" )
+    L(f"  🔍 全市场18策略发现引擎V8.9 — {today_str} {_t_now.strftime('%H:%M:%S')}（{_mkt_note}）" )
     L("─" * 85)
     L(f"  扫描模式: 方法论驱动的多因子全市场筛选（含Top5%流动性池）")
     # 加载策略阈值配置
@@ -1514,7 +1514,7 @@ async def run_discovery_async(output_path):
     def L(s=""): lines.append(s)
 
     L("─" * 85)
-    L(f"  A 股策略发现报告 V8.5.1  [{today_str} {_t_now.strftime('%H:%M:%S')}]")
+    L(f"  A 股策略发现报告 V8.9  [{today_str} {_t_now.strftime('%H:%M:%S')}]")
     L("─" * 85)
     L(f"  市场: A 股 | 策略: 18 | 引擎: asyncio | 并发: 3")
     L("-" * 85)
@@ -1654,11 +1654,11 @@ async def run_discovery_async(output_path):
 
 
 if __name__ == "__main__":
-    args = common_parse_args("18 策略全市场发现引擎V8.5.1")
+    args = common_parse_args("18 策略全市场发现引擎V8.9")
     base_dir = os.path.dirname(os.path.abspath(__file__))
     ts = datetime.now().strftime("%Y%m%d_%H%M")
     op = os.path.join(args.output, f"get_val_report_{ts}.txt")
-    print(f"🚀 全市场18策略发现引擎V8.5.1启动 — {date.today()}", flush=True)
+    print(f"🚀 全市场18策略发现引擎V8.9启动 — {date.today()}", flush=True)
     print("  ⏱ 预计运行 3-7 分钟（asyncio 异步模式）", flush=True)
 
     os.makedirs(args.output, exist_ok=True)
@@ -1672,7 +1672,7 @@ if __name__ == "__main__":
             print(f"  ✅ 已保存: {op}", flush=True)
         except Exception as e2:
             print(f"❌ 报告生成失败: {e2}", flush=True)
-            holder_cache_flush()
+    # 缓存现在使用统一的SQLite管理，无需手动刷新
             cleanup_tdx()
             exit(1)
 
@@ -1684,6 +1684,6 @@ if __name__ == "__main__":
             if upload_type_reports(drive, gd_parent_folder_id or "", "val", [op]) <= 0:
                 print("  ⚠️ GD 上传失败", flush=True)
     cleanup_gd_proxy(gd_proxy_set)
-    holder_cache_flush()
+    # 缓存现在使用统一的SQLite管理，无需手动刷新
     cleanup_tdx()
 

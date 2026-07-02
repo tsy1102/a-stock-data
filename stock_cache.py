@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""stock_cache.py — V8 统一缓存层 (SQLite + 装饰器模式)
+"""stock_cache.py — V9.0 统一缓存层 (SQLite + 装饰器模式)
 
 设计目标：
   - 所有 get_* 网络请求函数统一走本层，避免重复请求 + 降低 API 被封概率
@@ -48,7 +48,8 @@ _MAX_CACHE_SIZE_MB = 500
 _MAX_CACHE_SIZE_BYTES = _MAX_CACHE_SIZE_MB * 1024 * 1024
 
 # 初始化时是否检查 holder_cache.json 并迁移（决策点5）
-_MIGRATE_HOLDER_CACHE = True
+# V8.9: 已全部迁移到 SQLite，关闭旧 JSON 迁移逻辑
+_MIGRATE_HOLDER_CACHE = False
 
 # 环境变量开关：STOCK_NOCACHE=1 临时禁用缓存
 _DISABLE_CACHE = os.environ.get("STOCK_NOCACHE", "") == "1"
@@ -68,14 +69,20 @@ TTL: Dict[str, int] = {
     "gross_margin_roe": 90 * 86400,   # 毛利率 + ROE（可复用财务数据）
     "eps_forecast":     30 * 86400,   # EPS 预测
 
-    # 日频数据（收盘后固定）
+    # 日频数据（收盘后固定，历史数据不变可延长TTL）
     "dragon_tiger":     1 * 86400,   # 龙虎榜（按日过期）
-    "northbound":       1 * 86400,   # 北向资金持股
-    "margin_trading":   1 * 86400,   # 融资融券
-    "block_trade":      1 * 86400,   # 大宗交易
-    "lockup_expiry":    1 * 86400,   # 限售股解禁
-    "announcements":     1 * 86400,   # 巨潮战略公告
-    "hsgt_flow":        1 * 86400,   # 沪深港通资金流
+    "northbound":       7 * 86400,   # 北向资金持股（历史数据不变）
+    "margin_trading":   3 * 86400,   # 融资融券（历史数据不变）
+    "block_trade":      3 * 86400,   # 大宗交易（历史数据不变）
+    "lockup_expiry":    7 * 86400,   # 限售解禁（日期固定）
+    "announcements":     7 * 86400,   # 巨潮公告（发布后不变）
+    "hsgt_flow":        3 * 86400,   # 沪深港通资金流（历史数据不变）
+    "kline":            1 * 86400,   # K线行情（每日收盘后固定）
+
+    # 舆情互动（V8.9 新增）
+    "hot_rank":         1 * 3600,    # 东财人气榜（小时级变化）
+    "hot_concept":      1 * 3600,    # 概念命中（小时级变化）
+    "irm":              1 * 86400,   # 互动易问答（按日更新）
 
     # 研报（更新不频繁）
     "reports":          3 * 86400,   # 东财研报列表
@@ -147,6 +154,11 @@ def _try_migrate_holder_cache() -> None:
         conn = _get_db()
         cursor = conn.cursor()
         migrated = 0
+        
+        # 批量插入优化：准备批量插入语句
+        batch_size = 100  # 每批插入100条记录
+        batch_data = []
+        
         for code, entry in data.items():
             if not isinstance(entry, dict):
                 continue
@@ -157,25 +169,48 @@ def _try_migrate_holder_cache() -> None:
             value = json.dumps({"records": records, "source": "json_migration"}).encode("utf-8")
             # 使用 60 天 TTL（与原 _HOLDER_CACHE_TTL 一致）
             expires_at = now + 60 * 86400
-            cursor.execute(
+            batch_data.append((key, value, now, expires_at, now))
+            
+            # 批量插入优化
+            if len(batch_data) >= batch_size:
+                cursor.executemany(
+                    "INSERT OR REPLACE INTO cache_entries (key, value, created_at, expires_at, hit_count, last_accessed) "
+                    "VALUES (?, ?, ?, ?, 0, ?)",
+                    batch_data
+                )
+                conn.commit()
+                migrated += len(batch_data)
+                batch_data = []  # 清空批次
+        
+        # 插入剩余的数据
+        if batch_data:
+            cursor.executemany(
                 "INSERT OR REPLACE INTO cache_entries (key, value, created_at, expires_at, hit_count, last_accessed) "
                 "VALUES (?, ?, ?, ?, 0, ?)",
-                (key, value, now, expires_at, now)
+                batch_data
             )
-            migrated += 1
-        conn.commit()
+            conn.commit()
+            migrated += len(batch_data)
+        
         # 迁移成功后重命名旧文件（保留备份）
         backup_path = json_path + ".migrated"
         if not os.path.exists(backup_path):
             os.rename(json_path, backup_path)
-        print(f"[stock_cache] 已从 holder_cache.json 迁移 {migrated} 只股票的股东数据到 SQLite", flush=True)
+        print(f"[stock_cache] 已从 holder_cache.json 迁移 {migrated} 只股票的股东数据到 SQLite (批量优化)", flush=True)
     except Exception as e:
         print(f"[stock_cache] holder_cache.json 迁移失败: {e}", flush=True)
 
 
 def _enforce_size_limit() -> None:
-    """缓存文件超过上限时，清理最久未访问的 20% 条目。"""
+    """写入时维护：先清理过期条目，再检查是否超限。"""
     db = _get_db()
+    # 先清理过期条目（替代 _startup_cleanup 的功能）
+    try:
+        db.execute("DELETE FROM cache_entries WHERE expires_at<?", (time.time(),))
+        db.commit()
+    except Exception:
+        pass
+    # 再检查 DB 大小是否超限
     db_path = os.path.getsize(_CACHE_DB)
     if db_path < _MAX_CACHE_SIZE_BYTES:
         return
@@ -242,13 +277,31 @@ def get_cache(category: str, func_name: str, *args: Any, **kwargs: Any) -> Optio
         return None
 
 
+def _has_zero_price(value: Any) -> bool:
+    """检查 dict/list 中是否包含 price=0 或 close=0（TDX 坏数据特征）。"""
+    if isinstance(value, dict):
+        if value.get("price") == 0 or value.get("close") == 0:
+            return True
+        for v in value.values():
+            if _has_zero_price(v):
+                return True
+    elif isinstance(value, (list, tuple)):
+        for item in value:
+            if _has_zero_price(item):
+                return True
+    return False
+
+
 def set_cache(category: str, func_name: str, value: Any, ttl: int, *args: Any, **kwargs: Any) -> None:
-    """写入缓存（None/空值不写入）。"""
+    """写入缓存（None/空值/价格为零不写入）。"""
     if _DISABLE_CACHE:
         return
     if value is None:
         return
     if isinstance(value, (list, dict)) and len(value) == 0:
+        return
+    # V8.9: 检测 price=0 / close=0 — TDX 坏数据特征，不缓存
+    if _has_zero_price(value):
         return
     key = _build_key(category, func_name, *args, **kwargs)
     now = time.time()
@@ -351,8 +404,10 @@ def cache_stats() -> Dict[str, Any]:
         # 文件大小
         db_file_size = os.path.getsize(_CACHE_DB) if os.path.exists(_CACHE_DB) else 0
 
+        valid = max(0, (count or 0) - expired)
         return {
             "total_entries": count or 0,
+            "valid_entries": valid,
             "total_hits": hits or 0,
             "expired_entries": expired,
             "db_size_bytes": db_file_size,
@@ -372,13 +427,16 @@ def print_cache_stats() -> None:
     print("\n" + "=" * 50, flush=True)
     print("  📦 缓存统计", flush=True)
     print("=" * 50, flush=True)
+    expired = stats['expired_entries']
+    valid = stats['valid_entries']
     print(f"  总条目数   : {stats['total_entries']}", flush=True)
+    print(f"  ├─ 有效   : {valid} (查询时自动命中)", flush=True)
+    print(f"  └─ 待清理 : {expired} (过期数据，查询时自动跳过)", flush=True)
     print(f"  总命中次数 : {stats['total_hits']}", flush=True)
-    print(f"  已过期条目 : {stats['expired_entries']}", flush=True)
     print(f"  数据库大小 : {stats['db_size_mb']} MB / {_MAX_CACHE_SIZE_MB} MB", flush=True)
     print(f"  使用率     : {stats['db_size_mb'] / _MAX_CACHE_SIZE_MB * 100:.1f}%", flush=True)
     print("-" * 50, flush=True)
-    print("  各分类统计：", flush=True)
+    print("  各分类统计（有效条目）：", flush=True)
     for cat, info in sorted(stats.get("by_category", {}).items()):
         print(f"    {cat:<20} 条目: {info['count']:>5}  命中: {info['hits']:>6}", flush=True)
     print("=" * 50 + "\n", flush=True)
@@ -390,7 +448,9 @@ def print_cache_stats() -> None:
 F = TypeVar("F", bound=Callable[..., Any])
 
 
-def cached(category: str, ttl_seconds: Optional[int] = None, use_args: bool = True) -> Callable[[F], F]:
+def cached(category: str, ttl_seconds: Optional[int] = None,
+           use_args: bool = True,
+           valid_if: Optional[Callable[[Any], bool]] = None) -> Callable[[F], F]:
     """同步函数缓存装饰器。
 
     用法：
@@ -402,6 +462,7 @@ def cached(category: str, ttl_seconds: Optional[int] = None, use_args: bool = Tr
         category: 缓存分类（决定 TTL 查表 key）
         ttl_seconds: 覆盖 TTL，None 则用 TTL[category]
         use_args: True=缓存 key 包含函数参数（区分不同股票代码），False=仅函数名
+        valid_if: 可选校验函数，接收函数返回值，True=写入缓存，False=跳过
     """
     _ttl = ttl_seconds if ttl_seconds is not None else TTL.get(category, TTL["default"])
 
@@ -416,12 +477,18 @@ def cached(category: str, ttl_seconds: Optional[int] = None, use_args: bool = Tr
             else:
                 cache_value = get_cache(category, func.__name__)
             if cache_value is not None:
-                return cache_value
-            result = func(*args, **kwargs)
-            if use_args:
-                set_cache(category, func.__name__, result, _ttl, *args, **kwargs)
+                # V8.9: 读取时也校验 — 命中但校验不通过视为未命中
+                if valid_if is None or valid_if(cache_value):
+                    return cache_value
             else:
-                set_cache(category, func.__name__, result, _ttl)
+                cache_value = None  # 确保下面重新获取
+            result = func(*args, **kwargs)
+            # valid_if 校验：不通过则不缓存
+            if valid_if is None or valid_if(result):
+                if use_args:
+                    set_cache(category, func.__name__, result, _ttl, *args, **kwargs)
+                else:
+                    set_cache(category, func.__name__, result, _ttl)
             return result
 
         return wrapper  # type: ignore
@@ -554,21 +621,7 @@ async def _async_enforce_size_limit_bg() -> None:
         pass
 
 
-# ═══════════════════════════════════════
-# 启动时自动清理过期条目
-# ═══════════════════════════════════════
-def _startup_cleanup() -> None:
-    """程序启动时调用：清理过期条目。"""
-    try:
-        n = clear_expired()
-        if n > 0:
-            print(f"[stock_cache] 启动时清理了 {n} 条过期缓存", flush=True)
-    except Exception:
-        pass
-
-
-# 注册启动清理
-_startup_cleanup()
+# 启动清理已移除（V8.9）：改为写入时通过 _enforce_size_limit 处理过期条目
 
 
 # ═══════════════════════════════════════

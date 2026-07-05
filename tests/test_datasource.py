@@ -111,7 +111,7 @@ def test_ths_hot_pool():
         r = requests.get(url, headers={"User-Agent": UA}, timeout=10)
         try:
             data = r.json()
-        except:
+        except (json.JSONDecodeError, ValueError):
             r.encoding = "GBK"
             data = r.json()
         if str(data.get("errocode", 0)) == "0" and data.get("data"):

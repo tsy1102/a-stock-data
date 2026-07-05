@@ -1,10 +1,14 @@
 #!/usr/bin/env python3
 """
-get_val_report.py — 18 策略全市场发现引擎 (V9.0)
+get_val_report.py — 18 策略全市场发现引擎 (V9.2)
 方法论驱动的 A 股选股脚本，从全市场发现可操作标的。
 每策略精选 TOP 5，生成含具体数值推理的报告。
 
 版本信息:
+    V9.2   2026-07-05 - 异常处理规范化；缓存交叉验证机制启用
+    V9.1.1 2026-07-04 - 移除 deprecated F10 章节追加函数；F10 死代码精简
+    V9.1 2026-07-04 - 版本号统一升级（F10 章节/附录集成在 ful/med/lng 报告中）
+    V9.0 2026-07-02 - 舆情互动层（Layer 10）；上市日期 push2 fallback；valid_if 校验；_has_zero_price 拦截
     V8.9 2026-06-29 - 修复缺失导入(_load_settings/holder_change)；清理冗余快照逻辑；模块版本统一
     V8.7 2026-06-25 - 死代码清理：同步版替换为薄包装：并发数调整为3/策略18初筛Top20
     V8.5 2026-06-22 - 初始V8.5版本
@@ -25,7 +29,7 @@ Usage:
 import argparse, requests, time, json, os
 from datetime import date, datetime, timedelta
 from typing import Any, Dict, List, Tuple
-from concurrent.futures import ThreadPoolExecutor, as_completed
+from concurrent.futures import ThreadPoolExecutor
 
 from gd_uploader import init_gd, upload_type_reports, cleanup_gd_proxy
 from tdx_client import (tdx_get_security_bars, tdx_get_quote_full,
@@ -180,7 +184,8 @@ def ths_hot_reason(date_str=None):
         data = r.json()
         if str(data.get("errocode", 0)) != "0": return []
         return data.get("data") or []
-    except Exception:
+    except Exception as _e:
+        _debug_log(f"val eastmoney_stock_news: {_e}")
         return []
 
 
@@ -213,7 +218,8 @@ def cls_telegraph(page_size=50):
                 "time": item.get("ctime", ""),
             })
         return rows
-    except Exception:
+    except Exception as _e:
+        _debug_log(f"val eastmoney_global_news: {_e}")
         return []
 
 def eastmoney_global_news(page_size=50):
@@ -239,7 +245,8 @@ def eastmoney_global_news(page_size=50):
                 "time": item.get("showTime", ""),
             })
         return rows
-    except Exception:
+    except Exception as _e:
+        _debug_log(f"val sina_financial: {_e}")
         return []
 
 
@@ -267,7 +274,8 @@ def sina_financial_report(code, num_periods=12):
                 "净利润": item_map.get("归属于母公司所有者的净利润") or item_map.get("净利润") or "0",
             })
         return rows
-    except Exception:
+    except Exception as _e:
+        _debug_log(f"val financial_parse: {_e}")
         return []
 
 
@@ -292,7 +300,7 @@ def estimate_pe_percentile(code, price, total_shares):
     profits = []
     for f in fin:
         try: p = float(f["净利润"])
-        except: p = 0
+        except (ValueError, TypeError, KeyError): p = 0
         profits.append(p)
 
     if total_shares <= 0 or all(p == 0 for p in profits):
@@ -782,7 +790,8 @@ def strategy_09_calendar_rotation():
                         "reason": f"{month}月日历效应板块'{ind['name']}'成分股，行业排名第{ind['rank']}位",
                         "score": _safe_float(item.get("f3", 0)),
                     })
-            except Exception:
+            except Exception as _e:
+                _debug_log(f"val calendar_effect_item: {_e}")
                 continue
     return _top5_sorted(result, lambda x: x["score"])
 
@@ -790,6 +799,8 @@ def strategy_09_calendar_rotation():
 # ─── 策略10: 逆向白马流 ───
 
 def strategy_10_contrarian_value(stocks, top_n=300):
+    _sc = _load_strategy_config()
+    _roe_good = _sc.get("fundamental", {}).get("roe_good", 15.0)
     candidates = [s for s in stocks if s.get("mcap_yi", 0) >= 50][:top_n]
     result = []
     for s in candidates:
@@ -1068,7 +1079,8 @@ def strategy_17_northbound_top(all_stocks, top_n=200):
         code = s["code"]
         try:
             holders = get_holder_structure(code)
-        except Exception:
+        except Exception as _e:
+            _debug_log(f"val holder_structure: {_e}")
             holders = []
         if not holders:
             continue
@@ -1152,7 +1164,8 @@ def strategy_18_longhu_activity(all_stocks, today_str=None, top_n=200):
             d = datetime.strptime(info.get("date", ""), "%Y-%m-%d").date()
             days_ago = (date.today() - d).days
             date_score = max(0, 7 - days_ago)
-        except Exception:
+        except Exception as _e:
+            _debug_log(f"val northbound_date_parse: {_e}")
             date_score = 0
         # 综合评分
         return net_buy * 0.05 + turnover * 2.0 + date_score * 3.0
@@ -1243,7 +1256,8 @@ def strategy_18_longhu_activity(all_stocks, today_str=None, top_n=200):
             })
             if len(results) >= 30:
                 break
-        except Exception:
+        except Exception as _e:
+            _debug_log(f"val strategy_item: {_e}")
             continue
 
     return _top5_sorted(results, lambda x: x["score"])
@@ -1274,7 +1288,8 @@ async def strategy_18_longhu_activity_async(session, all_stocks, today_str):
             d = datetime.strptime(info.get("date", ""), "%Y-%m-%d").date()
             days_ago = (_date.today() - d).days
             date_score = max(0, 7 - days_ago)
-        except Exception:
+        except Exception as _e:
+            _debug_log(f"val block_date_parse: {_e}")
             date_score = 0
         return net_buy * 0.05 + turnover * 2.0 + date_score * 3.0
 
@@ -1326,7 +1341,8 @@ async def strategy_18_longhu_activity_async(session, all_stocks, today_str):
             results.append({"code": code, "name": stock_name, "reason": reason, "score": round(score, 2)})
             if len(results) >= 30:
                 break
-        except Exception:
+        except Exception as _e:
+            _debug_log(f"val valuation_item: {_e}")
             continue
 
     return _top5_sorted(results, lambda x: x["score"])

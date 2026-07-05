@@ -1,7 +1,16 @@
 # -*- coding: utf-8 -*-
-# A股交易日历数据模块
+# A股交易日历数据模块 (V9.2)
 # 基于 chinese-calendar 库的数据，数据范围 2004-2026
 # 由 chinese_calendar.constants 和 chinese_calendar.utils 提取优化
+#
+# V9.2 新增：
+#   - CLI 入口支持 --check / --update / --get-last / --get-next
+#   - scripts/update_calendar.py 脚本支持从 chinese-calendar 库自动更新数据
+#
+# V9.1 新增：
+#   - get_last_trading_day(date=None): 最近一个交易日（休市时返回上一个交易日）
+#   - get_next_trading_day(date=None): 下一个交易日
+#   用于 F10 缓存的 trading_day 过期策略（方案B）
 
 from __future__ import absolute_import, unicode_literals
 import datetime
@@ -835,3 +844,109 @@ def is_workday(date):
     except NotImplementedError:
         # 年份超出范围，抛出异常供上层处理
         raise
+
+
+def get_last_trading_day(date=None):
+    """获取给定日期之前（含）最近的交易日
+
+    Args:
+        date: datetime.date 或 datetime.datetime，默认今天
+
+    Returns:
+        datetime.date: 最近的交易日
+
+    Raises:
+        NotImplementedError: 年份超出支持范围
+    """
+    if date is None:
+        date = datetime.date.today()
+    date = _wrap_date(date)
+    # 向前回溯直到找到交易日（最多回溯 30 天）
+    for _ in range(30):
+        if is_workday(date):
+            return date
+        date -= datetime.timedelta(days=1)
+    # 极端情况：30 天内无交易日（不应该发生）
+    raise NotImplementedError("no trading day found in the last 30 days")
+
+
+def get_next_trading_day(date=None):
+    """获取给定日期之后（不含）最近的交易日
+
+    Args:
+        date: datetime.date 或 datetime.datetime，默认今天
+
+    Returns:
+        datetime.date: 下一个交易日
+
+    Raises:
+        NotImplementedError: 年份超出支持范围
+    """
+    if date is None:
+        date = datetime.date.today()
+    date = _wrap_date(date)
+    date += datetime.timedelta(days=1)
+    # 向后查找直到找到交易日（最多查找 30 天）
+    for _ in range(30):
+        try:
+            if is_workday(date):
+                return date
+        except NotImplementedError:
+            # 年份超出范围，无法判断
+            raise
+        date += datetime.timedelta(days=1)
+    raise NotImplementedError("no trading day found in the next 30 days")
+
+
+def data_years() -> tuple:
+    """返回当前数据支持的年份范围 (min_year, max_year)"""
+    all_dates = list(holidays.keys()) + list(workdays.keys())
+    return min(d.year for d in all_dates), max(d.year for d in all_dates)
+
+
+def _cli_update(backup: bool = False, dry_run: bool = False) -> None:
+    """调用 scripts/update_calendar.py 更新日历数据。"""
+    import subprocess
+    import sys
+    import os
+
+    script_path = os.path.join(
+        os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+        "scripts", "update_calendar.py"
+    )
+    if not os.path.isfile(script_path):
+        print(f"错误：找不到更新脚本 {script_path}", file=sys.stderr)
+        sys.exit(1)
+
+    cmd = [sys.executable, script_path]
+    if backup:
+        cmd.append("--backup")
+    if dry_run:
+        cmd.append("--dry-run")
+    raise SystemExit(subprocess.call(cmd))
+
+
+if __name__ == "__main__":
+    import argparse
+    import sys
+
+    parser = argparse.ArgumentParser(description="A股交易日历（stock_calendar.py）")
+    parser.add_argument("--check", action="store_true",
+                        help="检查当前数据支持的年份范围")
+    parser.add_argument("--update", action="store_true",
+                        help="从 chinese-calendar 库更新数据")
+    parser.add_argument("--backup", action="store_true",
+                        help="更新前自动备份旧文件（配合 --update 使用）")
+    parser.add_argument("--dry-run", action="store_true",
+                        help="仅预览更新内容，不写入文件（配合 --update 使用）")
+    args = parser.parse_args()
+
+    if args.check:
+        min_y, max_y = data_years()
+        print(f"当前日历数据范围: {min_y}-{max_y}")
+        print(f"节假日条目数: {len(holidays)}")
+        print(f"调休工作日条目数: {len(workdays)}")
+    elif args.update:
+        _cli_update(backup=args.backup, dry_run=args.dry_run)
+    else:
+        parser.print_help()

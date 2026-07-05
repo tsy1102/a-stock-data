@@ -57,11 +57,14 @@ def test_cache_ttl_expiry(tmp_path, monkeypatch):
     monkeypatch.setattr(sc, "_db", None)
     monkeypatch.setattr(sc, "_DISABLE_CACHE", False)
 
-    sc.set_cache("ttl_test", "short_lived", {"data": "expired"}, 1)  # 1 秒
+    _fake_time = [1000.0]
+    monkeypatch.setattr(time, "time", lambda: _fake_time[0])
+
+    sc.set_cache("ttl_test", "short_lived", {"data": "expired"}, 10)  # 10 秒 TTL
     assert sc.get_cache("ttl_test", "short_lived") == {"data": "expired"}
 
-    # 等待过期
-    time.sleep(1.5)
+    # 模拟时间流逝到过期后
+    _fake_time[0] = 1011.0  # 11 秒后，已过期
     assert sc.get_cache("ttl_test", "short_lived") is None
 
 

@@ -52,7 +52,19 @@
    何时需要：修改了 stock_cache.py 或缓存策略后。
 
 
-5. test_calendar.py（V8.4 新增）
+5. test_cache_verify.py（V9.2 新增）
+   作用：测试 stock_cache.py 交叉验证（cross_verify）机制。
+   覆盖：
+   - 首次写入未验证（verified=0），get_cache 返回 None；
+   - 第二次写入相同数据，标记为已验证（verified=1），可正常读取；
+   - 第二次写入不同数据，重置验证状态（verified=0，prev_value=NULL）；
+   - 已验证数据不被覆盖，仅刷新过期时间；
+   - 普通模式（cross_verify=False）不受影响；
+   - @cached 装饰器集成测试：模拟连续两次调用验证通过。
+   何时需要：修改了交叉验证逻辑或缓存表结构后。
+
+
+6. test_calendar.py（V8.4 新增）
    作用：测试 stock_common.py 交易日历判断函数。
    覆盖：
    - is_trading_day()：普通工作日（周一~五）、周末、节假日、调休日；
@@ -95,6 +107,7 @@
 【第二类】独立诊断脚本  (手动运行:  python tests\xxx.py)
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
+
 8. diag_dragon_tiger.py
    作用：龙虎榜数据接口连通性与可用性诊断。
    运行：python tests\diag_dragon_tiger.py [股票代码1] [股票代码2] ...
@@ -132,7 +145,7 @@
      - 怀疑本地 IP 被通达信服务器临时封禁。
 
 
-10. test_datasource.py（V8.5 新增，V8.6 更新为 V2.1）
+11. test_datasource.py（V8.5 新增，V8.6 更新为 V2.1）
     作用：多数据源接口连通性诊断，一次性测试所有主要数据接口。
     运行：python tests\test_datasource.py
     输出包含：
@@ -151,7 +164,7 @@
       - 换网络环境后，首次验证数据接口连通性。
 
 
-11. test_em_rate_limit.py（V8.6 新增）
+12. test_em_rate_limit.py（V8.6 新增）
     作用：东财限流阈值压力测试，验证东财风控是按域名独立限流还是按IP总请求限流。
     运行：python tests\test_em_rate_limit.py
     测试三组对照实验：
@@ -168,7 +181,7 @@
       - 评估性能优化空间时。
 
 
-12. test_issues.py（V8.5 新增，V8.7 更新）
+13. test_issues.py（V8.5 新增，V8.7 更新）
    作用：专项问题验证脚本，用于复现和验证特定 bug 修复。
    运行：python tests\test_issues.py
    覆盖：
@@ -180,6 +193,29 @@
    何时需要：
      - 开发期间验证特定 bug 修复是否生效；
      - 回归测试时确认已知问题没有复发。
+
+
+14. test_f10_chapters_integration.py（V9.1 新增）
+   作用：F10 章节集成测试，验证 3 个报告脚本（med/lng/ful）中的 F10 新章节是否正确渲染。
+   运行：python tests\test_f10_chapters_integration.py
+        （必须在项目根目录运行，脚本会自动将根目录加入 sys.path）
+   覆盖：
+     - med 报告：财务深度/股东行为/主营构成 3 章节；
+     - lng 报告：财务深度/股东行为/治理结构/研发创新/主营构成 5 章节；
+     - ful 报告：全部 6 个 F10 章节（含异动/治理）。
+   测试机制：
+     - 实际生成 3 份报告（med/lng/ful，使用 600519 茅台）；
+     - 断言报告中包含章节标题关键字（如「财务深度分析」）。
+   何时需要：
+     - 修改 render_f10_chapter 后；
+     - 修改报告脚本的 F10 章节集成位置后；
+     - 升级 tdx_client.py 中 F10 函数后做回归验证。
+   注意：
+     - 测试需要联网（TDX + HTTP），单次运行约 5-10 分钟；
+     - 测试期间会写入临时 .txt 报告文件（tempfile 自动生成）；
+     - 若 TDX 服务器不可达，章节会渲染为「(数据获取失败)」但不会断言失败。
+   V9.1 变更：已移除数据质量核查附录的断言（数据质量稳定，附录功能已下线）；
+              已移除 sht 报告测试（sht 移除了 risk_warning 章节）。
 
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -215,6 +251,12 @@
     接口中 TRADE_DATE 字段不同写法（带引号/不带/单引号/横杠格式）
     的响应。问题已解决，调试完成后无需保留，删除。
 
+  - compare_f10_vs_http.py（V9.1.1 清理）：F10 vs HTTP 对比测试脚本，
+    F10 优先级策略调整后已无保留价值，删除。
+
+  - test_f10_p1_all.py（V9.1.1 清理）：F10 阶段一全量测试脚本，
+    功能已被 test_f10_chapters_integration.py 集成测试覆盖，删除。
+
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 【速查：日常使用指南】
@@ -226,6 +268,9 @@
 
   想只跑缓存层测试（V8.4 新增）：
       pytest tests/test_cache.py -v
+
+  想只跑缓存交叉验证测试（V9.2 新增）：
+      pytest tests/test_cache_verify.py -v
 
   想只跑交易日历测试（V8.4 新增）：
       pytest tests/test_calendar.py -v
@@ -255,5 +300,8 @@
   想验证特定 bug 修复是否生效：
       python tests\test_issues.py
 
+  想验证 F10 章节和附录在报告中的集成（V9.1 新增，需联网，约 5-10 分钟）：
+      python tests\test_f10_chapters_integration.py
 
-更新时间：2026-06-25（V8.7）
+
+更新时间：2026-07-05（V9.2）

@@ -47,8 +47,8 @@ def _no_real_network(monkeypatch):
     try:
         monkeypatch.setattr("requests.get", fake_get)
         monkeypatch.setattr("requests.post", fake_post)
-    except Exception:
-        pass
+    except Exception as _e:
+        print(f"[conftest] monkeypatch requests failed: {_e}", flush=True)
 
     # 2) 拦截 urllib.request.urlopen（代理探测会走到这里）
     def fake_urlopen(*args, **kwargs):
@@ -56,8 +56,8 @@ def _no_real_network(monkeypatch):
 
     try:
         monkeypatch.setattr("urllib.request.urlopen", fake_urlopen)
-    except Exception:
-        pass
+    except Exception as _e:
+        print(f"[conftest] monkeypatch urlopen failed: {_e}", flush=True)
 
 
 # ── 临时工作目录：避免污染真实项目根 ───────────────────────────

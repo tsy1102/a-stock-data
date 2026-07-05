@@ -1,8 +1,11 @@
 #!/usr/bin/env python3
 """
-get_med_report.py — A股中线深度投研报告 (V9.0)
+get_med_report.py — A股中线深度投研报告 (V9.2)
 
 版本信息:
+    V9.2 2026-07-05 - 异常处理规范化；缓存交叉验证机制启用
+    V9.1 2026-07-04 - F10 全覆盖：新增【财务深度/股东行为/主营构成】3章节+数据质量附录
+    V9.0 2026-07-02 - 舆情互动层（Layer 10）；上市日期 push2 fallback；valid_if 校验；_has_zero_price 拦截
     V8.9 2026-06-29 - 快照架构改进（批量结束统一写入）；清理冗余快照逻辑；模块版本统一
     V8.8 2026-06-25 - GD上传逻辑统一化 & 快照格式升级（TXT+自动上传）
     V8.7 2026-06-25 - 死代码清理：同步版替换为薄包装
@@ -31,8 +34,8 @@ from tdx_client import (tdx_get_security_bars, tdx_get_quote_full,
                          tdx_get_board_members, tdx_get_board_by_name,
                          tdx_get_latest_announcements, tdx_get_dividend_history, cleanup_tdx)
 
-from stock_common import (clean_codes, _safe_float, _request_with_retry, _quick_request, UA,
-                           _market_code, eastmoney_datacenter, _em_filter,
+from stock_common import (clean_codes, _safe_float, _request_with_retry, _quick_request, UA, _debug_log,
+                           eastmoney_datacenter, _em_filter,
                            get_strategic_announcements, get_holder_structure,
                            _load_strategy_config, get_dragon_tiger_board,
                            create_async_session, eastmoney_datacenter_async,
@@ -219,8 +222,8 @@ async def generate_report_async(session, code, output_path, ind_comp=None, hsgt=
                     _rank_info = get_stock_sector_rank(code, info=info)
                     if _rank_info:
                         L(f"  本股今日{_rank_info['change_pct']:+.2f}%，板块内排名第{_rank_info['rank']}/{_rank_info['total']}名")
-                except Exception:
-                    pass
+                except Exception as _e:
+                    _debug_log(f"med sector_rank error: {_e}")
                 if row['rank'] <= 10:
                     L(f"  🔥 板块共振: 该板块处于全市场 TOP 10 热门赛道，板块共振溢价效应显著")
                 if row.get("leader"):
@@ -229,8 +232,8 @@ async def generate_report_async(session, code, output_path, ind_comp=None, hsgt=
                     try:
                         li = get_stock_info(leader_code)
                         leader_name = li.get("name", "")
-                    except Exception:
-                        pass
+                    except Exception as _e:
+                        _debug_log(f"med leader_info error: {_e}")
                     if leader_name:
                         L(f"  板块龙头: {leader_code} {leader_name}")
                     else:
@@ -255,7 +258,7 @@ async def generate_report_async(session, code, output_path, ind_comp=None, hsgt=
     if financials:
         L(f"  {'报告期':<12} {'营业总收入':>11} {'净利润':>13} {'净利率':>8}")
         L(f"  {'-'*60}")
-        for item in financials:
+        for item in financials[:5]:
             date_val = item.get("报告日", "")
             rev = item.get("营业总收入", "0")
             profit = item.get("净利润", "0")
@@ -265,7 +268,7 @@ async def generate_report_async(session, code, output_path, ind_comp=None, hsgt=
                 rev_yi = f"{rv/1e8:.2f} 亿" if rv else "N/A"
                 profit_yi = f"{pf/1e8:.2f} 亿" if pf else "N/A"
                 npm = f"{pf/rv*100:.2f}%" if rv > 0 else "N/A"
-            except:
+            except (ValueError, TypeError, ZeroDivisionError):
                 rev_yi, profit_yi, npm = "N/A", "N/A", "N/A"
             L(f"  {date_val:<12} {rev_yi:>15} {profit_yi:>15} {npm:>8}")
         L("\n  💡 中线逻辑核实：观察收入与净利润是否保持同步增长。")
@@ -292,7 +295,7 @@ async def generate_report_async(session, code, output_path, ind_comp=None, hsgt=
 
         def to_yi(v):
             try: return float(v) / 1e8
-            except: return 0.0
+            except (ValueError, TypeError): return 0.0
 
         ar_yi = to_yi(ar); inv_yi = to_yi(inv); gw_yi = to_yi(gw)
         cash_yi = to_yi(cash); st_debt_yi = to_yi(st_debt); due_debt_yi = to_yi(due_debt)
@@ -348,7 +351,7 @@ async def generate_report_async(session, code, output_path, ind_comp=None, hsgt=
                     flags.append(f"⚠️ 营收下滑但应收账款逆势增长{_ar_incr:.2f}亿，回款风险加剧")
                 elif _ar_incr / max(_rev_decr, 1) > 0.3:
                     flags.append(f"⚠️ 应收账款增量占营收增量{_ar_incr/max(_rev_decr,1)*100:.0f}%，营收含金量偏低")
-            except: pass
+            except (ValueError, TypeError, ZeroDivisionError, IndexError): pass
         if flags:
             L("")
             for flag in flags: L(f"  {flag}")
@@ -374,7 +377,7 @@ async def generate_report_async(session, code, output_path, ind_comp=None, hsgt=
                 L(f"  {year:<10} {cnt:<10} {mean_v:<12.3f}")
                 if i == 0: eps_cur = mean_v; eps_has_data = True
                 elif i == 1: eps_next = mean_v
-            except: pass
+            except (ValueError, TypeError, IndexError): pass
     if not eps_has_data:
         reports_em = await get_reports_async(session, code, max_pages=1)
         em_eps = None
@@ -441,7 +444,8 @@ async def generate_report_async(session, code, output_path, ind_comp=None, hsgt=
                         if _hpe:
                             _pc = sum(1 for p in _hpe if p < pe_fwd)/len(_hpe)*100
                             L(f"  PE历史分位: {_pc:.0f}%（低于{_pc:.0f}%的历史时间）")
-            except: pass
+            except Exception as _e:
+                _debug_log(f"med pe_percentile error: {_e}")
     else:
         has_black_horse = False
         _st_name = info.get("name", "")
@@ -452,7 +456,7 @@ async def generate_report_async(session, code, output_path, ind_comp=None, hsgt=
                 p1, p2 = _safe_float(financials[-1]["净利润"]), _safe_float(financials[-2]["净利润"])
                 r1, r2 = _safe_float(financials[-1]["营业总收入"]), _safe_float(financials[-2]["营业总收入"])
                 if p1 > p2 and r1 > r2: has_black_horse = True
-            except Exception: pass
+            except (IndexError, KeyError, TypeError): pass
         if has_black_horse:
             L("  ⚡ 无机构覆盖，但近两季度净利润+营收连续环比改善，具备黑马潜质预警！")
         else:
@@ -824,8 +828,8 @@ async def generate_report_async(session, code, output_path, ind_comp=None, hsgt=
         else:
             _rating = "【中性偏谨慎】多项评分偏低，需注意风险控制"
         L(f"  综合投资建议: {_rating}")
-    except Exception:
-        pass
+    except Exception as _e:
+        _debug_log(f"med multi_school_score error: {_e}")
 
     L("=" * 72)
 
@@ -838,6 +842,7 @@ async def generate_report_async(session, code, output_path, ind_comp=None, hsgt=
     }
 
     output = "\n".join(filter(None, lines))
+
     with open(output_path, "w", encoding="utf-8") as f:
         f.write(output)
     return output
@@ -850,7 +855,8 @@ if __name__ == "__main__":
     time_str = datetime.now().strftime("%Y%m%d_%H%M")
     try:
         report_type = sn.split("_")[1]
-    except Exception:
+    except Exception as _e:
+        _debug_log(f"med scoring: {_e}")
         report_type = "med"
 
     # ─── GD 认证 ───────────────────────────────────────────────

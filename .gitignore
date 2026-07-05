@@ -5,7 +5,7 @@ client_secrets.json
 credentials.json
 
 # 测试输出
-_test_out/
+scripts/
 
 # 生成的报告
 reports/
@@ -27,6 +27,9 @@ stock_cache.db
 
 # 评分快照（运行时生成，无需提交）
 snapshots/
+
+#文档目录
+docs/
 
 # macOS
 .DS_Store

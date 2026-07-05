@@ -379,8 +379,8 @@ def gd_auth_and_get_parent(base_dir: str, root_folder_name: str = "a-stock-data"
             service, proxy_was_set = init_google_drive(base_dir)
             if service:
                 break
-        except Exception:
-            pass
+        except Exception as e:
+            print(f"  ⚠️ GD 连接异常: {e}", flush=True)
         print("  ⚠️ GD 连接失败，10 秒后重试…", flush=True)
         time.sleep(10)
 
@@ -465,8 +465,8 @@ def init_gd(base_dir: str) -> Tuple[Optional[Any], bool, Optional[str], bool]:
             if drive:
                 print("  ✅ GD 连接成功", flush=True)
                 break
-        except Exception:
-            pass
+        except Exception as e:
+            print(f"  ⚠️ GD 连接异常: {e}", flush=True)
 
         # 连接失败 → 交互模式
         print("  ⚠️ GD 连接失败", flush=True)
@@ -498,14 +498,6 @@ def init_gd(base_dir: str) -> Tuple[Optional[Any], bool, Optional[str], bool]:
         return drive, proxy_set, None, True
 
     return drive, proxy_set, root_id, False
-
-
-def _make_stock_folder_name(code: str, stock_name: str) -> str:
-    """根据股票代码和名称构建 GD 子文件夹名：「代码-名称前两字」。"""
-    import re as _re
-    _ch = _re.findall(r"[\u4e00-\u9fff]", stock_name)
-    short = _ch[0] + _ch[1] if len(_ch) >= 2 else stock_name[:2]
-    return f"{code}-{short}"
 
 
 def upload_stock_report_by_code(drive, parent_folder_id: str,

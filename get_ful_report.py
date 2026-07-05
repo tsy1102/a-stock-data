@@ -1,8 +1,12 @@
 #!/usr/bin/env python3
 """
-get_ful_report.py — A股七层全维度分析引擎 V9.0（含行业对比/风险扫描/五维加权评分）
+get_ful_report.py — A股七层全维度分析引擎 V9.2（含行业对比/风险扫描/六维加权评分）
 
 版本信息:
+    V9.2   2026-07-05 - 异常处理规范化；缓存交叉验证机制启用
+    V9.1.1 2026-07-04 - 六维评分透明化（补全分红面）；修复 theme→holder 映射bug；F10死代码精简
+    V9.1 2026-07-04 - F10 全覆盖：新增全部6个F10章节（异动/财务深度/股东行为/治理/研发/主营）+数据质量附录
+    V9.0 2026-07-02 - 舆情互动层（Layer 10）；上市日期 push2 fallback；valid_if 校验；_has_zero_price 拦截
     V8.8 2026-06-25 - GD上传逻辑统一化 & 快照格式升级（TXT+自动上传）
     V8.7 2026-06-25 - 死代码清理：同步版替换为薄包装
 
@@ -16,7 +20,7 @@ get_ful_report.py — A股七层全维度分析引擎 V9.0（含行业对比/风
   Layer 6  基本面与财务健康（利润表/资产负债表/ROE/分红）
   Layer_RISK 风险扫描（8项：商誉/杠杆/回款/连续亏损/减持/质押/解禁/现金流）
   Layer 7  公告与重大事项（巨潮公告关键词过滤）
-  综合评分: 技术面25% + 估值面20% + 基本面20% + 资金面15% + 题材面15%
+  综合评分: 技术面25% + 估值面20% + 基本面20% + 资金面15% + 筹码面10% + 分红面10%
 
 特点:
   - 每层独立分析，单层失败不影响其他层（优雅降级）
@@ -43,11 +47,11 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from typing import Any, Dict, List, Optional, Tuple
 
 from stock_common import (
-    clean_codes, _safe_float, _request_with_retry, _quick_request, UA, _market_code,
+    clean_codes, _safe_float, _request_with_retry, _quick_request, UA, _debug_log,
     eastmoney_datacenter, _em_filter, holder_change,
     get_strategic_announcements, get_holder_structure,
-    _load_settings, _load_strategy_config, ensure_output_dir, get_script_dir,
-    get_board_type, is_limit_up, is_limit_down,
+    _load_strategy_config, ensure_output_dir, get_script_dir,
+    is_limit_up, is_limit_down,
     is_trading_day, get_market_status,
     calculate_multi_school_scores, ScoreData,
     get_eastmoney_stock_news,
@@ -315,20 +319,21 @@ def _calc_volume_analysis(volumes: List[float]) -> Dict[str, float]:
 # ── ASCII 图表（用于评分雷达图/价格趋势）──
 
 def _ascii_radar_chart(scores: Dict[str, float]) -> str:
-    """五维评分（数据展示，无图表）"""
+    """六维评分（数据展示，无图表）"""
     rows: List[str] = []
     dims = [
         ("技术面", scores.get("technical", 50)),
         ("估值面", scores.get("valuation", 50)),
         ("基本面", scores.get("fundamental", 50)),
         ("资金面", scores.get("flow", 50)),
-        ("题材面", scores.get("theme", 50)),
+        ("筹码面", scores.get("holder", 50)),
+        ("分红面", scores.get("dividend", 50)),
     ]
 
     for name, score in dims:
         rows.append(f"  {name}: {score:.1f}分")
 
-    total = scores.get("total", sum(s[1] for s in dims) / 5)
+    total = scores.get("total", sum(s[1] for s in dims) / 6)
     rows.append("")
     rows.append(f"  综合评分: {total:.1f}分")
     return "\n".join(rows)
@@ -563,8 +568,8 @@ def layer2_research(code: str) -> Dict[str, Any]:
                     "org": org, "rating": rating,
                 })
             result["rating_dist"] = rating_count
-    except Exception:
-        pass
+    except Exception as _e:
+        _debug_log(f"ful layer2 research reports error: {_e}")
 
     try:
         r = _quick_request(
@@ -585,8 +590,8 @@ def layer2_research(code: str) -> Dict[str, Any]:
                         eps_rows.append(cleaned[:6])
                 if eps_rows:
                     result["eps_forecast"] = eps_rows
-    except Exception:
-        pass
+    except Exception as _e:
+        _debug_log(f"ful layer2 eps forecast error: {_e}")
 
     if not result["eps_forecast"]:
         em_eps = tdx_get_eps_from_reports(code)
@@ -623,8 +628,8 @@ def layer2_research(code: str) -> Dict[str, Any]:
                     break
                 except (ValueError, TypeError):
                     continue
-    except Exception:
-        pass
+    except Exception as _e:
+        _debug_log(f"ful layer2 valuation error: {_e}")
 
     return result
 
@@ -679,8 +684,8 @@ def layer_ind_industry(code: str, stock_mcap: float = 0) -> Dict[str, Any]:
                         "mcap_yi": m.get("mcap_yi", 0) or 0,
                         "chg_pct": m.get("change_pct", 0) or 0,
                     })
-        except Exception:
-            pass
+        except Exception as _e:
+            _debug_log(f"ful layer_ind board members error: {_e}")
 
         # 回退：东财 datacenter（当 tdx_get_board_members 失败时）
         if not all_peers:
@@ -699,8 +704,8 @@ def layer_ind_industry(code: str, stock_mcap: float = 0) -> Dict[str, Any]:
                             "name": mr.get("SECNAME", ""),
                             "pe_ttm": 0, "pb": 0, "mcap_yi": 0, "chg_pct": 0,
                         })
-            except Exception:
-                pass
+            except Exception as _e:
+                _debug_log(f"ful layer_ind eastmoney peers error: {_e}")
 
         # 去除自身
         all_peers = [p for p in all_peers if p["code"] != code]
@@ -738,8 +743,8 @@ def layer_ind_industry(code: str, stock_mcap: float = 0) -> Dict[str, Any]:
                         p["pe_ttm"] = q.get("pe_ttm", p.get("pe_ttm", 0))
                         p["pb"] = q.get("pb", p.get("pb", 0))
                         p["mcap_yi"] = q.get("mcap_yi", p.get("mcap_yi", 0))
-            except Exception:
-                pass
+            except Exception as _e:
+                _debug_log(f"ful layer_ind ensure_full quote error: {_e}")
             return p
 
         if len(all_peers) > 3:
@@ -791,8 +796,8 @@ def layer_ind_industry(code: str, stock_mcap: float = 0) -> Dict[str, Any]:
                 stock_pe = q.get("pe_ttm", 0) or 0
                 stock_pb = q.get("pb", 0) or 0
                 stock_chg = q.get("change_pct", 0) or 0
-        except Exception:
-            pass
+        except Exception as _e:
+            _debug_log(f"ful layer_ind stock quote error: {_e}")
 
         ps = result["peer_summary"]
         if stock_pe > 0 and ps["pe_median"] > 0:
@@ -852,8 +857,8 @@ def layer3_signals(code: str) -> Dict[str, Any]:
             })
         if result["dragon_tiger"]:
             result["signals"].append(f"近30日龙虎榜上榜 {len(result['dragon_tiger'])} 次")
-    except Exception:
-        pass
+    except Exception as _e:
+        _debug_log(f"ful layer3 dragon tiger error: {_e}")
 
     try:
         boards = tdx_get_belong_boards(code)
@@ -866,8 +871,8 @@ def layer3_signals(code: str) -> Dict[str, Any]:
                 "concept": [x.get("name", "") for x in concepts[:10]],
                 "area": [x.get("name", "") for x in areas[:2]],
             }
-    except Exception:
-        pass
+    except Exception as _e:
+        _debug_log(f"ful layer3 boards error: {_e}")
 
     try:
         ff = tdx_get_fund_flow(code)
@@ -904,8 +909,8 @@ def layer3_signals(code: str) -> Dict[str, Any]:
                     result["signals"].append(f"近20日主力净买入 {pos_days} 天，持续资金流入")
                 elif pos_days <= 5:
                     result["signals"].append(f"⚠️ 近20日主力净买入仅 {pos_days} 天，资金持续流出")
-    except Exception:
-        pass
+    except Exception as _e:
+        _debug_log(f"ful layer3 fund flow error: {_e}")
 
     try:
         end = (date.today() + timedelta(days=90)).strftime("%Y-%m-%d")
@@ -929,8 +934,8 @@ def layer3_signals(code: str) -> Dict[str, Any]:
             elif next_lk.get("ratio", 0) > 3:
                 result["signals"].append(
                     f"⚠️ {next_lk['date']} 有解禁 {next_lk.get('ratio', 0):.1f}%")
-    except Exception:
-        pass
+    except Exception as _e:
+        _debug_log(f"ful layer3 lockup error: {_e}")
 
     return result
 
@@ -959,8 +964,8 @@ def layer4_chips(code: str) -> Dict[str, Any]:
                 elif latest_chg > 10:
                     result["signals"].append(
                         f"⚠️ 股东户数环比 +{latest_chg:.1f}%，筹码显著分散")
-    except Exception:
-        pass
+    except Exception as _e:
+        _debug_log(f"ful layer4 holder trend error: {_e}")
 
     try:
         md = eastmoney_datacenter(code, "RPTA_WEB_RZRQ_GGMX",
@@ -981,8 +986,8 @@ def layer4_chips(code: str) -> Dict[str, Any]:
                 if abs(chg) > 15:
                     result["signals"].append(
                         f"融资余额较近5日均 {'上升' if chg > 0 else '下降'} {abs(chg):.1f}%")
-    except Exception:
-        pass
+    except Exception as _e:
+        _debug_log(f"ful layer4 margin error: {_e}")
 
     try:
         bt = _em_filter(code, "RPT_DATA_BLOCKTRADE", page_size=15,
@@ -1002,8 +1007,8 @@ def layer4_chips(code: str) -> Dict[str, Any]:
         if result["block_trade"] and result["block_trade"][0].get("premium_pct", 0) < -8:
             result["signals"].append(
                 f"⚠️ 最近大宗交易折价 {result['block_trade'][0]['premium_pct']:.1f}%")
-    except Exception:
-        pass
+    except Exception as _e:
+        _debug_log(f"ful layer4 block trade error: {_e}")
 
     try:
         hs = get_holder_structure(code)
@@ -1020,8 +1025,8 @@ def layer4_chips(code: str) -> Dict[str, Any]:
                 result["signals"].append(f"十大流通股东中机构席位 {dm_count} 家，机构高度集中")
             elif dm_count >= 5:
                 result["signals"].append(f"十大流通股东中机构 {dm_count} 家")
-    except Exception:
-        pass
+    except Exception as _e:
+        _debug_log(f"ful layer4 holder structure error: {_e}")
 
     return result
 
@@ -1049,8 +1054,8 @@ def layer5_news(code: str, stock_name: str = "") -> Dict[str, Any]:
                     "title": title[:80],
                     "summary": summary[:120],
                 })
-    except Exception:
-        pass
+    except Exception as _e:
+        _debug_log(f"ful layer5 stock news error: {_e}")
 
     # 互动易问答（有回复的优先展示）
     try:
@@ -1063,8 +1068,8 @@ def layer5_news(code: str, stock_name: str = "") -> Dict[str, Any]:
                 "answer": (q.get("answer") or "")[:100] if q.get("answer") and q["answer"].strip() else "(未回复)",
                 "time": q.get("ask_time", ""),
             } for q in qa_sorted[:3]]
-    except Exception:
-        pass
+    except Exception as _e:
+        _debug_log(f"ful layer5 irm qa error: {_e}")
 
     # 同花顺热榜（取当前热度前5，看该股是否在榜）
     try:
@@ -1073,8 +1078,8 @@ def layer5_news(code: str, stock_name: str = "") -> Dict[str, Any]:
             if h.get("code") == code or h.get("name") in stock_name:
                 result["hot_list"].append(h)
                 break
-    except Exception:
-        pass
+    except Exception as _e:
+        _debug_log(f"ful layer5 hot list error: {_e}")
 
     total_related = len(result["global_related"]) + len(result["irm_qa"])
     if total_related > 5:
@@ -1146,8 +1151,8 @@ def layer6_fundamental(code: str) -> Dict[str, Any]:
                 if len(latest_4) >= 2:
                     if all(r.get("profit_yi", 0) < 0 for r in latest_4[:2]):
                         result["signals"].append("⚠️ 最近两期连续亏损，警惕退市风险")
-    except Exception:
-        pass
+    except Exception as _e:
+        _debug_log(f"ful layer6 financials error: {_e}")
 
     try:
         prefix = "sh" if code.startswith("6") else "sz"
@@ -1204,8 +1209,8 @@ def layer6_fundamental(code: str) -> Dict[str, Any]:
                 if short_loan and cash_debt_ratio < 0.5:
                     result["signals"].append(f"⚠️ 现金/短债 {cash_debt_ratio:.2f}，短期偿债承压")
                 break
-    except Exception:
-        pass
+    except Exception as _e:
+        _debug_log(f"ful layer6 balance sheet error: {_e}")
 
     # ROE 年化
     if result["financials"] and result["balance_sheet"]:
@@ -1247,8 +1252,8 @@ def layer6_fundamental(code: str) -> Dict[str, Any]:
                     result["signals"].append(f"股息率 {yield_rate:.2f}%，高股息标的")
                 elif yield_rate > 3:
                     result["signals"].append(f"股息率 {yield_rate:.2f}%，可作中长线配置")
-    except Exception:
-        pass
+    except Exception as _e:
+        _debug_log(f"ful layer6 dividends error: {_e}")
 
     # 历史高位
     try:
@@ -1264,8 +1269,8 @@ def layer6_fundamental(code: str) -> Dict[str, Any]:
                     result["signals"].append(f"距历史高点 {pct_from_high:.1f}%，深度回撤")
                 elif pct_from_high < -30:
                     result["signals"].append(f"距历史高点 {pct_from_high:.1f}%，已明显回撤")
-    except Exception:
-        pass
+    except Exception as _e:
+        _debug_log(f"ful layer6 historical high error: {_e}")
 
     return result
 
@@ -1307,8 +1312,8 @@ def layer_risk(code: str, layers_ref: Optional[Dict] = None) -> Dict[str, Any]:
             if q:
                 extra_l6["pe_ttm"] = q.get("pe_ttm", 0)
                 extra_l6["pb"] = q.get("pb", 0)
-        except Exception:
-            pass
+        except Exception as _e:
+            _debug_log(f"ful layer_risk quote error: {_e}")
 
     # 1) 资产负债健康
     dr = extra_l6.get("debt_ratio", 0)
@@ -1383,7 +1388,8 @@ def layer_risk(code: str, layers_ref: Optional[Dict] = None) -> Dict[str, Any]:
             result["items"].append({"name": "股权质押", "level": "低", "score": 3, "text": "有质押相关资讯 1 条"})
         else:
             result["items"].append({"name": "股权质押", "level": "低", "score": 1, "text": "近期无明显质押相关资讯"})
-    except Exception:
+    except Exception as _e:
+        _debug_log(f"ful risk_pledge: {_e}")
         result["items"].append({"name": "股权质押", "level": "低", "score": 3, "text": "查询异常，默认无数据"})
 
     # 6) 股东减持（通过公告关键词）
@@ -1404,7 +1410,8 @@ def layer_risk(code: str, layers_ref: Optional[Dict] = None) -> Dict[str, Any]:
                 result["items"].append({"name": "股东增减持", "level": "低", "score": 1, "text": "近90日无增减持公告"})
         else:
             result["items"].append({"name": "股东增减持", "level": "低", "score": 1, "text": "近90日无相关公告"})
-    except Exception:
+    except Exception as _e:
+        _debug_log(f"ful risk_holder_change: {_e}")
         result["items"].append({"name": "股东增减持", "level": "低", "score": 1, "text": "查询异常"})
 
     # 7) 解禁压力（如已在layer3计算，直接复用）
@@ -1478,23 +1485,23 @@ def layer7_announcements(code: str, stock_name: str = "") -> Dict[str, Any]:
                 result["signals"].append("🎯 有股权激励计划")
             if "严重异动" in titles:
                 result["signals"].append("⚠️ 严重异动公告")
-    except Exception:
-        pass
+    except Exception as _e:
+        _debug_log(f"ful layer7 announcements error: {_e}")
 
     return result
 
 
 # =====================================================================
-# 报告格式化 & 五维加权综合评分（方案5）
+# 报告格式化 & 六维加权综合评分
 # =====================================================================
 
 def _scoring(layers: Dict[str, Any], _cfg_sc: Dict = None) -> Dict[str, float]:
     """
-    V8.2: 使用统一评分接口计算五维评分
-    基于各层数据计算五个维度的评分（0~100）：
-    技术面/估值面/基本面/资金面/题材面 五维加权综合评分
+    V8.2: 使用统一评分接口计算六维评分
+    基于各层数据计算六个维度的评分（0~100）：
+    技术面/估值面/基本面/资金面/筹码面/分红面 六维加权综合评分
     """
-    from stock_common import ScoreData, calculate_score as _calc_score
+    from stock_common import calculate_score as _calc_score
     
     # 从 layers 中提取数据构建 ScoreData
     l1 = layers.get("layer1") or {}
@@ -1560,14 +1567,15 @@ def _scoring(layers: Dict[str, Any], _cfg_sc: Dict = None) -> Dict[str, float]:
     # 调用统一评分接口
     result = _calc_score("ful", data, _cfg_sc)
     
-    # 返回五维评分（保持原有格式）
+    # 返回六维评分
     dims = result.dimensions
     return {
         "technical": round(dims.get("technical", 50), 1),
         "valuation": round(dims.get("valuation", 50), 1),
         "fundamental": round(dims.get("fundamental", 50), 1),
         "flow": round(dims.get("flow", 50), 1),
-        "theme": round(dims.get("holder", 50), 1),  # 用 holder 替代 theme
+        "holder": round(dims.get("holder", 50), 1),
+        "dividend": round(dims.get("dividend", 50), 1),
         "total": round(result.total_score, 1),
     }
 
@@ -1898,11 +1906,11 @@ def format_report(code: str, layers: Dict[str, Any]) -> str:
             for s in l7["signals"]:
                 L(f"    · {s}")
 
-    # ── 综合评分（五维雷达图 ASCII）
+    # ── 综合评分（六维雷达图 ASCII）
     L("")
     L("═" * 78)
     scores = _scoring(layers, _cfg_sc=_sc.get("scoring"))
-    L(f"  ★ 综合五维评分（总分: {scores.get('total', 0):.1f}/100）")
+    L(f"  ★ 综合六维评分（总分: {scores.get('total', 0):.1f}/100）")
     L("")
     # 从配置读取权重，无配置则用默认值
     _weights = (_sc.get("scoring") or {}).get("weights", {}) if _sc else {}
@@ -1910,13 +1918,15 @@ def format_report(code: str, layers: Dict[str, Any]) -> str:
     wv = f"{_weights.get('valuation', 20)}%"
     wf = f"{_weights.get('fundamental', 20)}%"
     wfl = f"{_weights.get('flow', 15)}%"
-    wth = f"{_weights.get('theme', 15)}%"
+    wth = f"{_weights.get('holder', 10)}%"
+    wd = f"{_weights.get('dividend', 10)}%"
     dims = [
         ("技术面", scores.get("technical", 50), wt),
         ("估值面", scores.get("valuation", 50), wv),
         ("基本面", scores.get("fundamental", 50), wf),
         ("资金面", scores.get("flow", 50), wfl),
-        ("题材面", scores.get("theme", 50), wth),
+        ("筹码面", scores.get("holder", 50), wth),
+        ("分红面", scores.get("dividend", 50), wd),
     ]
     L(f"    {'维度':<10} {'评分':>8} {'权重':>8}  {'图表':<55}")
     for name, score, weight in dims:
@@ -1999,7 +2009,10 @@ def format_report(code: str, layers: Dict[str, Any]) -> str:
 
     L("")
     L("═" * 78)
-    return "\n".join(filter(None, lines))
+
+    output = "\n".join(filter(None, lines))
+
+    return output
 
 
 # =====================================================================
@@ -2026,8 +2039,8 @@ def analyze_stock(code: str, parallel: bool = True) -> Tuple[str, str]:
         if q:
             stock_name = q.get("name", "")
             stock_mcap = q.get("mcap_yi", 0) or 0
-    except Exception:
-        pass
+    except Exception as _e:
+        _debug_log(f"ful analyze_stock preheat quote error: {_e}")
 
     # 第1轮：7个独立层并行
     first_round_tasks = [
@@ -2090,8 +2103,8 @@ def analyze_stock(code: str, parallel: bool = True) -> Tuple[str, str]:
             "price": price_local,
             "report_source": "ful"
         }
-    except Exception:
-        pass
+    except Exception as _e:
+        _debug_log(f"ful analyze_stock snapshot error: {_e}")
 
     return stock_name or code, report
 
@@ -2143,18 +2156,24 @@ def main():
     print("\n".join(header_lines), flush=True)
 
     generated_files: List[str] = []
+    _data_results: List[Dict[str, str]] = []
     t_total = time.time()
 
     for code in codes:
-        name, report = analyze_stock(code, parallel=not args.no_parallel)
+        try:
+            name, report = analyze_stock(code, parallel=not args.no_parallel)
 
-        # 文件命名: code_ful_YYYYMMDD_HHMM.txt
-        fname = f"{code}_ful_{now_str}.txt"
-        fpath = os.path.join(output_dir, fname)
-        with open(fpath, "w", encoding="utf-8") as fp:
-            fp.write(report)
-        generated_files.append(fpath)
-        print(f"✅ 报告已生成: {fpath}", flush=True)
+            # 文件命名: code_ful_YYYYMMDD_HHMM.txt
+            fname = f"{code}_ful_{now_str}.txt"
+            fpath = os.path.join(output_dir, fname)
+            with open(fpath, "w", encoding="utf-8") as fp:
+                fp.write(report)
+            generated_files.append(fpath)
+            _data_results.append({"code": code, "status": "成功", "error": "", "name": name})
+            print(f"✅ 报告已生成: {fpath}", flush=True)
+        except Exception as e:
+            _data_results.append({"code": code, "status": "数据失败", "error": str(e), "name": ""})
+            print(f"❌ {code} 数据生成失败: {e}", flush=True)
 
     # 缓存现在使用统一的SQLite管理，无需手动刷新
 
@@ -2186,16 +2205,16 @@ def main():
                 _upload_results.append({"code": code, "status": "GD上传异常", "error": str(gd_e), "path": file_path})
     
     cleanup_gd_proxy(gd_proxy_set)
-    
-    # 汇总上传结果
-    total = len(generated_files)
-    ok = [r for r in _upload_results if r["status"] == "成功"]
-    fd = [r for r in _upload_results if r["status"] == "数据失败"]
+
+    # 汇总结果：数据生成 + 上传分开统计
+    total = len(_data_results)
+    ok = [r for r in _data_results if r["status"] == "成功"]
+    fd = [r for r in _data_results if r["status"] == "数据失败"]
     fg = [r for r in _upload_results if r["status"] in ("GD上传失败", "GD上传异常", "GD未连接")]
-    
+
     if total > 0:
         print(f"\n{'=' * 60}\n  批量执行完成 — 共处理 {total} 只股票\n{'=' * 60}")
-        print(f"  ✅ 全部成功: {len(ok)}  |  ❌ 数据失败: {len(fd)}  |  ⚠️ GD上传失败: {len(fg)}")
+        print(f"  ✅ 数据成功: {len(ok)}  |  ❌ 数据失败: {len(fd)}  |  ⚠️ GD上传失败: {len(fg)}")
         for r in fd:
             print(f"    ❌ {r['code']} — {r['error'][:80]}")
         for r in fg:

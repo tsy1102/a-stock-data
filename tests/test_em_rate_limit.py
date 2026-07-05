@@ -104,7 +104,7 @@ def test_single_endpoint(endpoint: dict) -> tuple:
 
         try:
             data = r.json()
-        except:
+        except (json.JSONDecodeError, ValueError):
             return False, r.status_code, elapsed, "JSON解析失败"
 
         # 业务校验

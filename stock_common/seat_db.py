@@ -11,7 +11,7 @@ import json
 from typing import Optional, Dict, Any, List, Tuple
 
 # 席位数据库路径
-_SEAT_DB_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "seats-2026.json")
+_SEAT_DB_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "seats.json")
 
 # 全局缓存
 _seat_db_cache: Optional[Dict[str, Any]] = None

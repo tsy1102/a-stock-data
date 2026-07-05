@@ -21,6 +21,7 @@ from __future__ import annotations
 import os
 import sys
 import math
+import time
 import argparse
 from typing import Any, Dict, List, Optional
 
@@ -51,6 +52,11 @@ __all__ = [
 def _safe_float(val: Any, default: float = 0.0) -> float:
     """安全转换为 float，异常或非有限值返回 default"""
     try:
+        # pandas Series 单元素直接 float() 会触发 FutureWarning
+        if hasattr(val, 'iloc') and hasattr(val, '__len__'):
+            if len(val) == 0:
+                return default
+            val = val.iloc[0]
         v = float(val)
         return v if math.isfinite(v) else default
     except (TypeError, ValueError):
@@ -128,8 +134,8 @@ def _safe_cleanup_tdx() -> None:
     try:
         from tdx_client import cleanup_tdx
         cleanup_tdx()
-    except Exception:
-        pass
+    except Exception as _e:
+        _debug_log(f"sc_utils safe_cleanup_tdx: {_e}")
 
 
 # ═══════════════════════════════════════
@@ -238,8 +244,8 @@ def gd_upload_flow(base_dir: str, local_files: List[str],
             drive, gd_proxy_set = init_google_drive(base_dir)
             if drive:
                 break
-        except Exception:
-            pass
+        except Exception as _e:
+            _debug_log(f"sc_utils gd_connect retry: {_e}")
         if _gd_try < 2:
             print(f"  GD 连接失败，{_gd_try + 2}/3 重试…", flush=True)
             time.sleep(5)
@@ -262,8 +268,8 @@ def gd_upload_flow(base_dir: str, local_files: List[str],
             gd_folder_id = get_or_create_drive_folder(drive, "a-stock-data")
             if gd_folder_id:
                 break
-        except Exception:
-            pass
+        except Exception as _e:
+            _debug_log(f"sc_utils gd_folder retry: {_e}")
         if _gf_try < 2:
             print(f"  GD 文件夹探测失败，{_gf_try + 2}/3 重试…", flush=True)
             time.sleep(3)
@@ -360,5 +366,6 @@ def _load_strategy_config() -> Dict[str, Any]:
 
 
 
-# 需要导入 time 供 gd_upload_flow 使用
-import time
+def print_batch_summary(*args: Any, **kwargs: Any) -> None:
+    """占位符，兼容旧导入。"""
+    pass

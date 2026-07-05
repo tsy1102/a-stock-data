@@ -178,6 +178,7 @@ def _score_fundamental(data: ScoreData, cfg: Optional[Dict] = None) -> tuple:
     score = 50.0
     details = []
     fc = cfg or {}
+    is_loss_making = False
 
     # ROE
     if data.roe >= 20:
@@ -190,9 +191,8 @@ def _score_fundamental(data: ScoreData, cfg: Optional[Dict] = None) -> tuple:
         score += fc.get("roe_medium", 8)
         details.append(f"ROE={data.roe:.1f}%中等")
     elif data.roe < 0:
-        # 亏损股：强制评分下限为20分
+        is_loss_making = True
         details.append(f"⚠️ ROE={data.roe:.1f}%亏损，基本面严重恶化")
-        score = min(score, 20.0)  # 强制下限20分
 
     # 毛利率
     if data.gross_margin >= 40:
@@ -215,6 +215,9 @@ def _score_fundamental(data: ScoreData, cfg: Optional[Dict] = None) -> tuple:
     if data.ocf_ratio >= 0.8:
         score += fc.get("cash_flow_good", 10)
         details.append("现金流充裕")
+
+    if is_loss_making:
+        score = min(score, 20.0)
 
     return max(0, min(100, score)), details
 

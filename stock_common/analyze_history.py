@@ -41,6 +41,8 @@ import glob
 from datetime import datetime
 from typing import Any, Dict, List, Optional, Tuple
 
+from stock_common.sc_network import _debug_log
+
 # 导入GD上传相关模块
 try:
     from gd_uploader import init_gd, upload_type_reports, cleanup_gd_proxy, retry_get_folder_interactive, upload_report_to_drive
@@ -79,13 +81,15 @@ def save_snapshot(script_type: str, stocks: Dict[str, Any]) -> None:
     generate_daily_snapshot(script_type, stocks)
 
 
-def _upload_snapshot_to_gd(snapshot_path: str) -> None:
+def _upload_snapshot_to_gd(snapshot_path: str, skip_upload: bool = False) -> None:
     """上传快照文件到Google Drive的snapshot文件夹"""
+    if skip_upload:
+        return
     try:
         # 初始化GD连接
-        drive, proxy_set, parent_id, skip_upload = init_gd(os.path.dirname(SNAPSHOT_DIR))
-        
-        if not drive or skip_upload:
+        drive, proxy_set, parent_id, _skip = init_gd(os.path.dirname(SNAPSHOT_DIR))
+
+        if not drive or _skip:
             print("  ⚠️ GD连接失败或用户选择跳过上传", flush=True)
             return
             
@@ -240,10 +244,11 @@ def _fmt_score(s: float) -> str:
     return f"{round(s, 1):.1f}"
 
 
-def analyze_history() -> str:
+def analyze_history(skip_upload: bool = False) -> str:
     """扫描 snapshots/ 目录，做跨日期趋势背离检测，返回文本报告。
 
-    无参数，返回可直接 print 的字符串。
+    Args:
+        skip_upload: True 时跳过异常报告的GD上传
     """
     lines: List[str] = []
     L = lines.append
@@ -348,9 +353,9 @@ def analyze_history() -> str:
         try:
             txt_path = _save_analysis_report(result)
             if GD_AVAILABLE:
-                _upload_snapshot_to_gd(txt_path)
-        except Exception:
-            pass
+                _upload_snapshot_to_gd(txt_path, skip_upload=skip_upload)
+        except Exception as _e:
+            _debug_log(f"analyze_history save/upload: {_e}")
     return result
 
 

@@ -1,9 +1,12 @@
 #!/usr/bin/env python3
 """
-get_mak_report.py — A股异动及行业轮动扫描报告 (V9.0)
+get_mak_report.py — A股异动及行业轮动扫描报告 (V9.2)
 融合全市场异动扫描与行业轮动强度扫描
 
 版本信息:
+    V9.2 2026-07-05 - 异常处理规范化；缓存交叉验证机制启用
+    V9.1 2026-07-04 - 版本号统一升级（无功能变更，F10 公告兜底已在 V9.0 实现）
+    V9.0 2026-07-02 - 舆情互动层（Layer 10）；上市日期 push2 fallback；valid_if 校验；_has_zero_price 拦截
     V8.9 2026-06-29 - 修复模块导入；清理冗余空行输出；模块版本统一
     V8.7 2026-06-25 - 死代码清理：同步版替换为薄包装
 """
@@ -16,7 +19,7 @@ from tdx_client import (tdx_get_security_bars, tdx_get_index_bars,
                          tdx_get_board_list, tdx_get_board_members,
                          tdx_get_quotes_batch, tdx_get_market_abnormal_data,
                          cleanup_tdx)
-from stock_common import (_safe_float, _request_with_retry, _quick_request, UA,
+from stock_common import (_safe_float, _request_with_retry, _quick_request, UA, _debug_log,
                           _load_strategy_config, get_recent_dragon_tiger,
                           parse_args as common_parse_args,
                           is_trading_day, get_market_status)
@@ -102,8 +105,9 @@ def get_index_returns():
                 close = _safe_float(v[3])
                 pre_close = _safe_float(v[4])
                 return [pre_close, close] if close > 0 else []
-        except Exception: pass
-        return []
+        except Exception as _e:
+            _debug_log(f"mak index_kline error: {_e}")
+            return []
     result = {}; closes_pool = {}
     for ic in INDEX_MAP:
         closes = _get_kline(ic)
@@ -130,7 +134,9 @@ def get_abnormal_announcements(code):
         abnormal = [a for a in anns if "异常波动" in (a.get("announcementTitle","") or "")]
         severe = [a for a in abnormal if "严重" in (a.get("announcementTitle","") or "")]
         return len(abnormal), len(severe)
-    except Exception: return 0,0
+    except Exception as _e:
+        _debug_log(f"mak get_abnormal_announcements: {_e}")
+        return 0,0
 
 def count_history_deviations(code, index_code, index_closes_pool, days_lookback=10):
     closes, _ = get_baidu_kline(code, days_lookback+5)
@@ -175,7 +181,9 @@ def check_stock(s, idx_rets, index_closes_pool):
         if abs(dev) >= th:
             hist_cnt = 0
             try: hist_cnt, _ = count_history_deviations(code, idx_code, index_closes_pool, 10)
-            except Exception: pass
+            except Exception as _e:
+                _debug_log(f"mak hist_deviation error: {_e}")
+                hist_cnt = 0
             cnt_warn = ""
             if board == "主板" and hist_cnt >= 3:
                 cnt_warn = f" ⚠️ 近10日已触发{hist_cnt}次同向异动！再触发1次停牌核查！"
@@ -296,11 +304,13 @@ def get_ths_hot_pool(date_str):
             return []
         try:
             d = r.json()
-        except Exception:
+        except Exception as _e:
+            _debug_log(f"mak sector_item: {_e}")
             try:
                 r.encoding = "GBK"
                 d = r.json()
-            except Exception:
+            except Exception as _e:
+                _debug_log(f"mak sector_inner: {_e}")
                 return []
         if str(d.get("errocode", 0)) != "0" and str(d.get("errorcode", 0)) != "0":
             return []
@@ -399,7 +409,7 @@ def annotate_technical_pattern(code):
             tags.append("突破MA10")
         if ma5 > ma10 > ma20: tags.append("均线多头")
         return " | ".join(tags) if tags else ""
-    except: return ""
+    except (ValueError, TypeError, IndexError): return ""
 
 def generate_sector_report(output_path):
     _td = date.today()
@@ -589,7 +599,8 @@ def generate_sector_report(output_path):
                                     _r3 = (_cls[-1]/_cls[-4]-1)*100 if _cls[-4]>0 else 0
                                     _r10 = (_cls[-1]/_cls[-11]-1)*100 if _cls[-11]>0 else 0
                                     _r20 = (_cls[-1]/_cls[-21]-1)*100 if _cls[-21]>0 else 0
-                    except Exception: pass
+                    except Exception as _e:
+                        _debug_log(f"mak recent_high_kline error: {_e}")
                     _recent_high.append((_c, _dt.get("name",""), _r3, _r10, _r20))
     _recent_high.sort(key=lambda x: abs(x[3]), reverse=True)
     if _recent_high:
@@ -601,9 +612,8 @@ def generate_sector_report(output_path):
                 _a, _s = get_abnormal_announcements(_r[0])
                 if _a > 0:
                     _recent_ann[_r[0]] = (_a, _s)
-            except Exception:
-                pass
-            time.sleep(0.1)
+            except Exception as _e:
+                _debug_log(f"mak abnormal_announcements error: {_e}")
         _ann_dt = time.time() - _ann_t0
         print(f"  公告查询耗时: {_ann_dt:.2f}s", flush=True)
         L(f"\n{'='*90}")

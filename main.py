@@ -1,10 +1,19 @@
 #!/usr/bin/env python3
-"""main.py — V9.0 统一 CLI 入口（脚本内 asyncio 并发 + 进程级串行防封）
+"""main.py — V9.2 统一 CLI 入口（脚本内 asyncio 并发 + 进程级串行防封）
 
 并发策略（两层次序，确保东财接口不被封）：
   1) 进程级：asyncio.create_subprocess_exec 串行运行脚本（concurrency=1）
   2) 脚本级：每个脚本内部用 Semaphore(3) 并发 3 只股票
              (stock_common.py 的 Semaphore(3) + 1.1s 间隔统一控制)
+
+V9.2 更新：
+  - 缓存交叉验证机制（多天 TTL 分类启用 cross_verify）
+  - 全量异常处理规范化（无裸 pass，静默异常均加日志）
+  - 交易日历数据可通过脚本更新
+
+V9.1 更新：
+  - 配合 F10 全覆盖升级：所有报告脚本集成 F10 章节+数据质量附录
+  - 缓存层支持 trading_day 过期策略（F10 高频分类按交易日过期）
 
 使用方式与旧版兼容，新增混合模式：
   python main.py --sht 600519 --med 002310 --lng 688088 --ful 600519
@@ -73,7 +82,6 @@ def check_dependencies():
 
 
 # 程序启动前检查依赖
-check_dependencies()
 _MAX_CONCURRENCY = 1  # 关键：脚本内部已用 Semaphore(3) 并发 3 只股票，进程级串行脚本避免叠加
 
 
@@ -291,7 +299,7 @@ async def main_async():
         from stock_common.analyze_history import analyze_history
         print(f"{'=' * 60}", flush=True)
         print("[分析] 正在运行历史快照对比分析...", flush=True)
-        report = analyze_history()
+        report = analyze_history(skip_upload=args.no_upload)
         print(report, flush=True)
     except ImportError as e:
         print(f"  ⚠️ 历史分析模块未找到: {e}", flush=True)
@@ -311,4 +319,5 @@ def main():
 
 
 if __name__ == "__main__":
+    check_dependencies()
     main()

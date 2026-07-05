@@ -42,8 +42,7 @@ __all__ = [
     'EM_SESSION', 'EM_MIN_INTERVAL', '_EM_LAST_CALL',
     # 限流
     '_DOMAIN_LIMITS', '_DOMAIN_LAST_TIME', '_DOMAIN_LAST_TIME_LOCK', '_RL_STATS',
-    '_DOMAIN_SEMAPHORES', '_em_last_request_time', '_gen_last_request_time',
-    '_em_request_lock', '_gen_request_lock',
+    '_em_last_request_time', '_gen_last_request_time',
     # 进程间锁
     '_em_lock_dir', '_em_lock_file', '_gen_lock_file',
     '_file_lock_acquire', '_file_lock_release',
@@ -54,7 +53,8 @@ __all__ = [
     # 异步请求
     '_em_async_lock', '_gen_async_lock', '_em_async_last_request',
     '_gen_async_last_request', '_HAS_ASYNCIO', '_HAS_AIOHTTP',
-    '_ensure_async_locks', '_em_wait_process_interval_async', 'create_async_session',
+    '_ensure_async_locks', '_em_wait_process_interval_async',
+    '_gen_wait_process_interval_async', 'create_async_session',
     '_async_request_with_retry', '_async_quick_request',
 ]
 
@@ -130,25 +130,19 @@ _RL_STATS = {
     "start_time": time.time(),
 }
 
-# Semaphore: 按域名并发限制
-_DOMAIN_SEMAPHORES: Dict[str, threading.Semaphore] = {}
-
 # ═══════════════════════════════════════
 # 全局状态（进程内限速 + 进程间协调，V7.5 防封版）
 # ═══════════════════════════════════════
 # 保留原变量名以兼容旧代码，但实际已改用按域名限流
 _em_last_request_time: float = 0.0   # 东财限速器（1.0s 基准，进程内）
 _gen_last_request_time: float = 0.0  # 通用限速器（0.2s 基准，进程内）
-# Semaphore(3): 统一并发限制（测试验证 45 请求 0 次 429）
-_em_request_lock = threading.Semaphore(3)   # 东财：最多 3 并发请求
-_gen_request_lock = threading.Semaphore(3)  # 通用：最多 3 并发请求（与东财统一，简洁）
 
 # ── 进程间协调: 通过文件 mtime 实现跨进程请求间隔 ──
 _em_lock_dir = os.path.join(_gettempdir(), "a_stock_data_v7")
 try:
     os.makedirs(_em_lock_dir, exist_ok=True)
-except Exception:
-    pass
+except Exception as _e:
+    _debug_log(f"sc_network makedirs lock_dir: {_e}")
 _em_lock_file = os.path.join(_em_lock_dir, "em_rate_limit")
 _gen_lock_file = os.path.join(_em_lock_dir, "gen_rate_limit")
 
@@ -177,8 +171,8 @@ def _file_lock_release(lock_path: str) -> None:
     try:
         if os.path.exists(_unique_path):
             os.remove(_unique_path)
-    except Exception:
-        pass
+    except Exception as _e:
+        _debug_log(f"sc_network file_lock_release: {_e}")
 
 
 def em_get(url: str, params: dict | None = None, headers: dict | None = None,
@@ -204,6 +198,12 @@ def em_get(url: str, params: dict | None = None, headers: dict | None = None,
     if wait > 0:
         time.sleep(wait + _rand.uniform(0.10, 0.50))  # 增强抖动：100-500ms
 
+    # V9.2: 同步更新 per-domain 限流器状态，避免与 _quick_request 交替调用时碰撞
+    from urllib.parse import urlparse
+    _domain = urlparse(url).netloc
+    with _DOMAIN_LAST_TIME_LOCK:
+        _DOMAIN_LAST_TIME[_domain] = time.time()
+
     try:
         # 合并headers：Session默认头 + 用户传入头
         session_headers = EM_SESSION.headers.copy()
@@ -214,6 +214,10 @@ def em_get(url: str, params: dict | None = None, headers: dict | None = None,
                              timeout=timeout, **kwargs)
     finally:
         _EM_LAST_CALL[0] = time.time()
+        # V9.2: 双向同步 per-domain 限流器
+        with _DOMAIN_LAST_TIME_LOCK:
+            _DOMAIN_LAST_TIME[_domain] = time.time()
+        _RL_STATS["em_request_count"] += 1
 
 
 def _em_wait_process_interval() -> float:
@@ -236,8 +240,8 @@ def _em_wait_process_interval() -> float:
         # 无论是否等待，都 touch 文件标记本次请求
         with open(_em_lock_file, "w") as _f:
             _f.write(str(time.time()))
-    except Exception:
-        pass
+    except Exception as _e:
+        _debug_log(f"sc_network em_wait_process_interval: {_e}")
     return 0.0
 
 
@@ -256,8 +260,8 @@ def _gen_wait_process_interval() -> float:
                 return _wait
         with open(_gen_lock_file, "w") as _f:
             _f.write(str(time.time()))
-    except Exception:
-        pass
+    except Exception as _e:
+        _debug_log(f"sc_network em_wait_process_interval: {_e}")
     return 0.0
 
 
@@ -399,8 +403,8 @@ def _log_rate_limit(domain: str, wait_ms: float) -> None:
         line = f"{now_str} | {domain} | 等待 {wait_ms:.0f}ms | 总请求={_RL_STATS['em_request_count']} | 限流等待={_RL_STATS['em_rate_limit_count']}次 | 429={_RL_STATS['em_429_count']}次\n"
         with open(log_path, "a", encoding="utf-8") as f:
             f.write(line)
-    except Exception:
-        pass
+    except Exception as _e:
+        _debug_log(f"sc_network log_rate_limit: {_e}")
 
 
 def print_rate_limit_stats() -> None:
@@ -473,8 +477,28 @@ async def _em_wait_process_interval_async() -> float:
                 return _wait
         with open(_em_lock_file, "w") as _f:
             _f.write(str(time.time()))
-    except Exception:
-        pass
+    except Exception as _e:
+        _debug_log(f"sc_network em_wait_process_interval: {_e}")
+    return 0.0
+
+
+async def _gen_wait_process_interval_async() -> float:
+    """async 版通用进程间协调：与同步版共用同一文件。"""
+    import random as _rand
+    _target_interval = 0.2 + _rand.uniform(0.01, 0.05)
+    try:
+        if os.path.exists(_gen_lock_file):
+            _elapsed = time.time() - os.path.getmtime(_gen_lock_file)
+            if _elapsed < _target_interval:
+                _wait = _target_interval - _elapsed
+                await asyncio.sleep(_wait)
+                with open(_gen_lock_file, "w") as _f:
+                    _f.write(str(time.time()))
+                return _wait
+        with open(_gen_lock_file, "w") as _f:
+            _f.write(str(time.time()))
+    except Exception as _e:
+        _debug_log(f"sc_network gen_wait_process_interval_async: {_e}")
     return 0.0
 
 
@@ -508,6 +532,8 @@ async def _async_request_with_retry(session, url: str, params=None,
         if _em_async_last_request > 0 and elapsed < interval:
             await asyncio.sleep(interval - elapsed)
         _em_async_last_request = time.time()
+
+        await _em_wait_process_interval_async()
 
         # 2. 在 Semaphore 内发出请求并在块内解析 — 避免response在块外失效
         for attempt in range(max_retries):
@@ -559,6 +585,8 @@ async def _async_quick_request(session, url: str, params=None,
         if _gen_async_last_request > 0 and elapsed < interval:
             await asyncio.sleep(interval - elapsed)
         _gen_async_last_request = time.time()
+
+        await _gen_wait_process_interval_async()
 
         # 在 Semaphore 内发出请求并在块内读取数据 — 避免 response 在块外失效
         for attempt in range(max_retries):

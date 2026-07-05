@@ -7,6 +7,140 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [9.2.0] - 2026-07-05
+
+### Added
+
+- **缓存交叉验证机制**（`stock_cache.py`）：11 个多天 TTL 分类启用 `cross_verify=True`，两次获取数据一致才标记为已验证，防止意外错误数据被缓存
+  - 新增 `prev_value` 和 `verified` 字段，支持自动表结构迁移
+  - `get_cache` 未验证数据视为未命中，触发重新获取
+  - `set_cache` 两次一致则标记 verified=1，不一致则重置继续验证
+- **缓存并发安全加固**：`set_cache` cross_verify 分支的 SELECT-then-UPDATE 用 `_db_lock` 包裹，防止竞态丢失更新
+- **异步连接复用**：新增 `_get_async_db()` 模块级单例，`_async_get_cache` / `_async_set_cache` / `_async_enforce_size_limit_bg` 复用同一 aiosqlite 连接
+- **日历更新脚本**（`scripts/update_calendar.py`）：从 chinese-calendar 库提取数据，自动更新 `stock_calendar.py`
+  - 支持 `--check` / `--update` / `--backup` / `--dry-run` 四种模式
+  - `stock_calendar.py` 新增 CLI 入口：`python -m stock_common.stock_calendar --update`
+- **交易日历降级警告**：`sc_datasource.py:is_trading_day()` 降级到 `weekday < 5` 时打印首次警告日志，避免静默误判
+
+### Fixed
+
+- **13 处裸 `except:` 全部改为 `except Exception:`**：允许 KeyboardInterrupt / SystemExit 穿透，Ctrl+C 可正常终止脚本
+- **约 70 处 `except Exception: pass` 静默吞异常修复**：全部加 `_debug_log` / `_cache_logger.debug` 记录异常来源和信息，含跨行模式
+  - 涉及文件：`get_ful_report.py`(26处)、`sc_datasource.py`(24处)、`tdx_client.py`(6处)、`stock_cache.py`(6处)、`sc_network.py`(4处)、`sc_utils.py`(3处)、`get_med_report.py`(4处)、`get_lng_report.py`(7处)、`get_mak_report.py`(4处) 等
+- **tdx_client.py 重连泄漏**：`_get_tdx_client` / `_get_mac_client` 异常重连前先 `close()` 旧连接，防止 socket fd / 心跳线程泄漏
+- **main.py 模块级副作用**：`check_dependencies()` 从模块级移到 `if __name__ == "__main__":` 内，`import main` 不再触发 `sys.exit`
+
+### Changed
+
+- **seat_db.py 席位数据文件去年份化**：`seats-2026.json` → `seats.json`，跨年后无需手动修改
+- **gd_uploader.py 函数去重**：删除第二版重复定义的 `_make_stock_folder_name`，保留含 ST 处理的第一版
+- **sc_scoring.py 亏损股评分封顶**：`min(score, 20.0)` 从 ROE 分支内移到函数末尾 return 前，确保所有维度加完后统一裁剪
+- **tests 9 个文件硬编码路径修复**：统一改为 `os.path.dirname(os.path.dirname(os.path.abspath(__file__)))`，换机器/CI 可正常运行
+- **test_cache.py TTL 脆性测试优化**：用 `monkeypatch time.time` 模拟时间流逝，消除 1.5s 真实等待
+- **sc_utils.py `import time` 移到顶部**：从文件末尾移到标准 import 区
+- **__init__.py 清理 legacy 死代码**：删除 `_legacy` / `_legacy_available` / `_legacy_missing` 及相关迁移状态
+- **stock_cache.py 移除 `# type: ignore`**：用 `cast(F, wrapper)` / `cast(AF, wrapper)` 替代
+- **sc_network.py 删除 `_DOMAIN_SEMAPHORES` 死代码**：V7.5 起不再使用，从 `__all__` 和 `__init__.py` 中彻底移除（同步删除 `_em_request_lock` / `_gen_request_lock`）
+- **限流体系完善**（`sc_network.py`）：
+  - 新增 `_gen_wait_process_interval_async()` 异步版通用进程间协调函数，`_async_quick_request()` 和 `_async_request_with_retry()` 中补齐调用
+  - `em_get()` 与 per-domain 限流器（`_DOMAIN_LAST_TIME`）双向状态同步，避免与 `_quick_request` 交替调用时碰撞
+  - 删除 `get_industry_peers()` 中冗余的 `_time.sleep(0.3)` 硬编码 sleep（TDX 内部已有 `_tdx_throttle` 限流）
+  - 删除 `get_mak_report.py` 中冗余的 `time.sleep(0.1)` 硬编码 sleep（`_quick_request` 内部已有按域名限流）
+- **报告脚本异常处理补全**：20 处 `except Exception:` 无变量绑定的全部改为 `except Exception as _e:` 并添加 `_debug_log` 日志
+  - 涉及文件：`get_val_report.py`(10处)、`get_sht_report.py`(3处)、`get_ful_report.py`(2处)、`get_med_report.py`(1处)、`get_lng_report.py`(2处)、`get_mak_report.py`(2处)
+
+### Removed
+
+- `tests/compare_f10_vs_http.py`（V9.1.1 已清理）：F10 vs HTTP 对比测试脚本
+- `tests/test_f10_p1_all.py`（V9.1.1 已清理）：F10 阶段一全量测试脚本
+
+## [9.1.1] - 2026-07-04
+
+### Fixed
+
+- **ful 评分 theme→holder 映射 bug**：`get_ful_report.py` 中 `_scoring()` 返回值用 `"theme"` 作为键名，但实际取自 `dims.get("holder", 50)`，导致键名与数据来源不一致；同时权重读取用 `_weights.get('theme', 15)` 与评分系统默认值 10% 不一致。统一为 `holder` 键名 + 10% 默认权重，显示名称从"题材面"改为"筹码面"（与实际数据含义一致）。
+- **F10 交易日缓存策略缺失**：`tdx_get_fund_flow` 和 `tdx_get_latest_announcements` 两个高频 F10 函数未添加 `@cached(trading_day=True)` 装饰器，导致每次调用都重复请求 TDX。现已补全，与 `f10_reminders` / `f10_news` / `f10_reports` 保持一致，5 个高频分类全部按交易日 15:00 过期。
+
+### Changed
+
+- **ful 报告从五维升级为六维**：`get_ful_report.py` 中 `_scoring()` 原计算了 6 个维度（技术/估值/基本/资金/筹码/分红）但只显示 5 个（隐藏了分红面），造成总分与显示维度不匹配。现补全分红面显示，标题从"综合五维评分"改为"综合六维评分"，权重：技术面25% + 估值面20% + 基本面20% + 资金面15% + 筹码面10% + 分红面10% = 100%。
+- **F10 死代码精简**：移除 V9.1 中新增但未在生产代码中独立调用的 6 个 F10 函数（`tdx_get_research_reports` / `tdx_get_company_overview` / `tdx_get_operation_analysis` / `tdx_get_capital_operation` / `tdx_get_governance` / `tdx_get_themes`），以及 `render_f10_chapter()` 渲染函数（~213行）和 `_val_append_f10_themes_deprecated()`，合计精简约 700 行代码。
+
+### Removed
+
+- `tests/compare_f10_vs_http.py`：F10 vs HTTP 对比测试脚本，F10 优先级调整后已无保留价值
+- `tests/test_f10_p1_all.py`：F10 阶段一全量测试脚本，功能已被集成测试覆盖
+
+## [9.1.0] - 2026-07-04
+
+### Added
+
+- **F10 全覆盖工程**：用通达信 F10 协议替代/补充现有 HTTP 接口，降低东财限流风险，详见 `docs/TDX_F10_ROADMAP.md`
+- **阶段一：12 个 F10 核心函数**（`tdx_client.py`）：
+  - `tdx_get_latest_reminders`（最新异动与风险提示）
+  - `tdx_get_financial_analysis`（财务分析：偿债/成长/现金流）
+  - `tdx_get_shareholder_research`（股东研究：控股/增减持计划/持股变动）
+  - `tdx_get_share_capital`（股本结构：限售解禁/分红送转）
+  - `tdx_get_company_news_f10`（公司报道）
+  - `tdx_get_research_reports`（研报评级）
+  - `tdx_get_industry_analysis`（行业分析）
+  - `tdx_get_company_overview`（公司概况/核心竞争力）
+  - `tdx_get_operation_analysis`（经营分析：主营构成/行业地位）
+  - `tdx_get_capital_operation`（资本运作：并购重组）
+  - `tdx_get_governance`（高管治理：高管/薪酬）
+  - `tdx_get_themes`（所属板块/事件驱动）
+- **阶段二：F10 新增 6 种章节**（`render_f10_chapter`）：
+  - `risk_warning`：异动与风险提示（sht/ful）
+  - `rnd_innovation`：研发与创新（lng/val）
+  - `financial_depth`：财务深度分析（med/lng/ful）
+  - `shareholder_behavior`：股东行为分析（med/lng/ful）
+  - `governance`：治理结构（lng/ful）
+  - `business_composition`：主营构成分析（med/lng/val/ful）
+- **阶段三：数据质量核查附录**（`render_data_quality_appendix`）：
+  - 6 个验证函数：财务/股东/研报/资金流/股本/分红一致性
+  - 差异 > 20% 时标记警告，5 个报告脚本均集成附录
+- **缓存层交易日过期策略（方案B）**（`stock_cache.py`）：
+  - `@cached` / `@cached_async` / `set_cache` 新增 `trading_day: bool = False` 参数
+  - 新增 `_calc_trading_day_expiry()` 按最近交易日计算过期时间
+  - 5 个 F10 高频分类用交易日过期，11 个低频分类用固定 TTL
+  - `stock_calendar.py` 新增 `get_last_trading_day` / `get_next_trading_day`
+- **F10 解析器增强**（`f10_parser.py`）：
+  - `_normalize_pipes`：全角/半角竖线归一化（｜→│）
+  - `find_subsection` / `parse_tables` / `merge_continuation_lines`
+  - `transpose_table` / `parse_text_table`
+- **集成测试**：`tests/test_f10_chapters_integration.py` 验证 F10 章节和附录在 5 个报告脚本中的集成
+- **roadmap 文档**：`docs/TDX_F10_ROADMAP.md` V2 实施版，4 阶段实施对焦参照
+
+### Changed
+
+- **11 个 HTTP 函数添加 F10 优先逻辑**（F10 优先 + HTTP 兜底）：
+  `get_block_trade` / `get_margin_trading` / `get_eastmoney_stock_news` /
+  `get_sina_financial_report` / `get_sina_balance_sheet` /
+  `get_gross_margin_and_roe` / `get_reports` / `get_lockup_expiry` /
+  `holder_change` / `get_holder_structure` / `get_industry_peers`
+- **7 个异步函数委托到同步版**（自动获得 F10 优先逻辑）：
+  `get_reports_async` / `get_sina_financial_report_async` /
+  `get_sina_balance_sheet_async` / `get_lockup_expiry_async` /
+  `holder_change_async` / `get_industry_peers_async` 等
+- **5 个报告脚本集成 F10 章节 + 附录**：
+  - `get_sht_report.py`：仓位管理前插入 risk_warning 章节
+  - `get_med_report.py`：仓位管理前插入 3 章节
+  - `get_lng_report.py`：仓位管理前插入 5 章节
+  - `get_ful_report.py`：返回前插入全部 6 章节 + 附录
+  - `get_val_report.py`：共振金股追加 `_val_append_f10_themes`
+- **TDX 服务器扩容**：新增 2 个官方 IP（123.60.164.122 / 82.156.214.79），共 53 节点
+- **版本号统一升级 V9.1**
+
+### Fixed
+
+- **sht 报告资金流渲染 TypeError**：东财 push2 回退返回 `List[float]`，但渲染代码期望 dict，导致 `TypeError: 'float' object is not subscriptable`。改为用 `isinstance(_recent[0], dict)` 检测格式后分支处理
+- **F10 字段名带后缀不匹配**："股东人数(户)" vs "股东人数" → `_holder_fetch_f10` 改用 `startswith` 匹配
+- **TDX 连接失败导致空数据被缓存 7 天**：12 个 F10 函数全部添加 `valid_if=lambda r: bool(r)`
+- **全角竖线 ｜ 导致 000001 表格解析失败**：新增 `_normalize_pipes()` 归一化
+- **F10 section 名称不匹配**（如 "1.基本资料" 而非 "公司概况"）：改为遍历 `sections.items()` 用 `in` 匹配
+- **risk_warnings 是 dict 而非 list**：`render_f10_chapter` 用 `isinstance(risks, dict)` 分支处理
+- **测试脚本 ModuleNotFoundError**：`tests/test_f10_chapters_integration.py` 添加 `sys.path.insert(0, ...)` 将项目根目录加入路径
+
 ## [9.0.0] - 2026-07-02
 
 ### Added

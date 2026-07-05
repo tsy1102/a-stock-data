@@ -1,13 +1,17 @@
 #!/usr/bin/env python3
-"""tdx_client.py — V9.0 通达信共享行情模块。
+"""tdx_client.py — V9.2 通达信共享行情模块。
 
 提供统一的 easy-tdx 数据访问接口，所有适配器函数返回格式与 V3 完全兼容。
 当 TDX 服务器不可达时自动回退到原始 HTTP 源（百度K线/腾讯行情）。
 
 版本信息:
-    V8.6 2026-06-24 - 限流安全加固：请求频率限制(20ms)/重连指数退避/线程锁保护
-    V8.5 2026-06-22 - TDX请求最小间隔 + 指数退避重连
-    V8.0 2026-06-17 - 初始版本
+    V9.2   2026-07-05 - 异常处理规范化；重连前关闭旧连接防止泄漏
+    V9.1.1 2026-07-04 - 补全 F10 交易日缓存策略；精简 6 个未使用的 F10 函数
+    V9.1   2026-07-04 - F10 全覆盖：新增12个F10函数（公司概况/财务/股东/股本/新闻/研报/行业/经营/治理/资本运作/主题/异动）
+    V9.0   2026-07-02 - 全量 TDX 服务器探测（53个节点）；F10 公告兜底（filename+start+length）
+    V8.6   2026-06-24 - 限流安全加固：请求频率限制(20ms)/重连指数退避/线程锁保护
+    V8.5   2026-06-22 - TDX请求最小间隔 + 指数退避重连
+    V8.0   2026-06-17 - 初始版本
     V7.5 - Monkey-patch心跳线程/全局调用锁/进程内缓存
 """
 from __future__ import annotations
@@ -18,7 +22,8 @@ from typing import Any, Dict, List, Optional, Tuple, cast
 
 import requests
 
-from stock_common import _safe_float, UA, _request_with_retry, _quick_request
+from stock_common import _safe_float, UA, _request_with_retry, _quick_request, _debug_log
+from stock_cache import cached
 
 # ═══════════════════════════════════════
 # V7.5: Monkey-patch easy_tdx 心跳线程 + 全局调用锁
@@ -47,18 +52,18 @@ def _patch_easy_tdx_heartbeat() -> None:
             if isinstance(se, _tdx_th.Event):
                 try:
                     se.set()
-                except Exception:
-                    pass
+                except Exception as _e:
+                    _debug_log(f"tdx stop_heartbeat set event: {_e}")
             hb = getattr(self, "_heartbeat_thread", None)
             if isinstance(hb, _tdx_th.Thread) and hb.is_alive():
                 try:
                     hb.join(timeout=0.5)
-                except Exception:
-                    pass
+                except Exception as _e:
+                    _debug_log(f"tdx stop_heartbeat join thread: {_e}")
             try:
                 setattr(self, "_heartbeat_thread", None)
-            except Exception:
-                pass
+            except Exception as _e:
+                _debug_log(f"tdx stop_heartbeat setattr: {_e}")
 
         _orig_heartbeat_loop = getattr(_TdxConnection, "_heartbeat_loop", None)
 
@@ -76,8 +81,8 @@ def _patch_easy_tdx_heartbeat() -> None:
         _TdxConnection.stop_heartbeat = _safe_stop_heartbeat
         if _orig_heartbeat_loop is not None:
             _TdxConnection._heartbeat_loop = _safe_heartbeat_loop
-    except Exception:
-        pass
+    except Exception as _e:
+        _debug_log(f"tdx monkey-patch heartbeat error: {_e}")
 
 _patch_easy_tdx_heartbeat()
 
@@ -176,9 +181,9 @@ _DOMAIN_LIMITS: Dict[str, Dict[str, Any]] = {
     "quotes.sina.cn": {"sleep_ms": 0, "semaphore": None},
     "finance.pae.baidu.com": {"sleep_ms": 0, "semaphore": None},
     "zx.10jqka.com.cn": {"sleep_ms": 100, "semaphore": None},
-    "datacenter-web.eastmoney.com": {"sleep_ms": 100, "semaphore": None},
+    "datacenter-web.eastmoney.com": {"sleep_ms": 1000, "semaphore": None},
     "push2.eastmoney.com": {"sleep_ms": 100, "semaphore": None},
-    "reportapi.eastmoney.com": {"sleep_ms": 100, "semaphore": None},
+    "reportapi.eastmoney.com": {"sleep_ms": 1000, "semaphore": None},
 }
 # 每个域名独立的最后请求时间
 _DOMAIN_LAST_TIME: Dict[str, float] = {}
@@ -227,24 +232,62 @@ def _check_tdx() -> bool:
     global _TDX_AVAILABLE
     if _TDX_AVAILABLE is not None:
         return _TDX_AVAILABLE
+    # V9.0: 全量 TDX 服务器探测（来源: injoyai/tdx 2025-05-21 验证 + connect.ini）
+    import socket as _sock
+    _TDX_HOSTS = [
+        # 上海 (17) - 含通达信官方主站 123.60.164.122
+        '124.71.187.122', '122.51.120.217', '111.229.247.189', '122.51.232.182',
+        '118.25.98.114', '124.70.199.56', '121.36.225.169', '123.60.70.228',
+        '123.60.73.44', '124.70.133.119', '124.71.187.72', '123.60.84.66', '123.60.164.122',
+        '124.223.163.242', '150.158.160.2', '101.35.121.35', '111.231.113.208',
+        # 北京 (15) - 含通达信官方主站 82.156.214.79 + injoyai/tdx 新增 7 个
+        '121.36.54.217', '121.36.81.195', '123.249.15.60', '124.70.75.113',
+        '120.46.186.223', '124.70.22.210', '139.9.133.247',
+        '62.234.50.143', '81.70.151.186', '82.156.214.79', '101.42.240.54', '101.43.159.194',
+        '120.53.8.251', '152.136.191.169', '49.232.15.141', '82.156.174.84',
+        '101.42.164.241',
+        # 广州/深圳 (15)
+        '124.71.85.110', '139.9.51.18', '139.159.239.163',
+        '124.71.9.153', '116.205.163.254', '116.205.171.132', '116.205.183.150',
+        '111.230.186.52', '110.41.2.72', '110.41.147.114', '101.33.225.16',
+        '175.178.112.197', '175.178.128.227', '43.139.95.83', '159.75.29.111',
+        '43.139.18.171', '81.71.32.47', '129.204.230.128',
+        # 武汉 (1)
+        '119.97.185.59',
+        # V9.0: 删除 3 个失效 IP（119.147.212.81 / 60.191.114.122 / 106.15.77.157 超时）
+    ]
+    for _ip in _TDX_HOSTS[:8]:  # 只试前 8 个（上海4+北京2+广州2），最多 16s
+        try:
+            _s = _sock.socket(_sock.AF_INET, _sock.SOCK_STREAM)
+            _s.settimeout(2)
+            _s.connect((_ip, 7709))
+            _s.close()
+            break
+        except Exception:
+            continue
+    else:
+        _TDX_AVAILABLE = False
+        return False
     with _TDX_CALL_LOCK:
         if _TDX_AVAILABLE is not None:
             return _TDX_AVAILABLE
         try:
             from easy_tdx import TdxClient
-            c = TdxClient()
-            c.connect()
-            quotes = c.get_security_quotes(cast(List[Tuple[Any, str]], [(1, "600519")]))
-            _TDX_AVAILABLE = quotes is not None and len(quotes) > 0
-            c.close()
+            _c = TdxClient(host=_ip, port=7709)
+            _c.connect()
+            _q = _c.get_security_quotes([(1, "600519")])
+            # V9.0: get_security_quotes 返回 DataFrame，不能用 if _q 判断
+            _TDX_AVAILABLE = _q is not None and not _q.empty
+            _c.close()
         except Exception:
             _TDX_AVAILABLE = False
     return _TDX_AVAILABLE
 
 def _get_tdx_client() -> Optional[Any]:
     """V7.5: 获取 TdxClient（加锁，线程安全），连接异常时自动重连。
-    
+
     V8.5: 重连改为指数退避（0.5s, 1s, 2s），防止频繁重连被封禁。
+    V9.0: 使用 from_best_host() 自动选择最快主机，不再依赖 _check_tdx 的 _ip 变量。
     """
     with _TDX_CALL_LOCK:
         global _TDX_CLIENT
@@ -254,6 +297,10 @@ def _get_tdx_client() -> Optional[Any]:
                     _TDX_CLIENT.ensure_connected()
                     return _TDX_CLIENT
                 except Exception:
+                    try:
+                        _TDX_CLIENT.close()
+                    except Exception as _e:
+                        _debug_log(f"tdx close old client: {_e}")
                     _TDX_CLIENT = None
                     if attempt < _TDX_RECONNECT_ATTEMPTS - 1:
                         time.sleep(_TDX_RECONNECT_DELAY * (2 ** attempt))
@@ -262,7 +309,8 @@ def _get_tdx_client() -> Optional[Any]:
                 return None
             try:
                 from easy_tdx import TdxClient
-                _TDX_CLIENT = TdxClient()
+                # V9.0: from_best_host() 自动 ping 所有主机选最快的
+                _TDX_CLIENT = TdxClient.from_best_host()
                 _TDX_CLIENT.connect()
                 return _TDX_CLIENT
             except Exception:
@@ -306,6 +354,10 @@ def _get_mac_client() -> Optional[Any]:
                     _TDX_MAC_CLIENT.ensure_connected()
                     return _TDX_MAC_CLIENT
                 except Exception:
+                    try:
+                        _TDX_MAC_CLIENT.close()
+                    except Exception as _e:
+                        _debug_log(f"tdx close old mac client: {_e}")
                     _TDX_MAC_CLIENT = None
                     if attempt < _TDX_RECONNECT_ATTEMPTS - 1:
                         time.sleep(_TDX_RECONNECT_DELAY * (2 ** attempt))
@@ -339,16 +391,16 @@ def cleanup_tdx() -> None:
                 if _stop_ev is not None:
                     _stop_ev.set()
                 time.sleep(0.05)
-        except Exception:
-            pass
+        except Exception as _e:
+            _debug_log(f"tdx cleanup client heartbeat: {_e}")
         try:
             if _TDX_MAC_CLIENT is not None:
                 _stop_ev = getattr(_TDX_MAC_CLIENT, '_stop_event', None)
                 if _stop_ev is not None:
                     _stop_ev.set()
                 time.sleep(0.05)
-        except Exception:
-            pass
+        except Exception as _e:
+            _debug_log(f"tdx cleanup mac_client heartbeat: {_e}")
         _TDX_CLIENT = None
         _TDX_MAC_CLIENT = None
         _TDX_AVAILABLE = None
@@ -425,7 +477,8 @@ def _tencent_batch_fallback(codes: List[str]) -> Dict[str, Dict[str, Any]]:
                     "turnover_pct": float(vals[38]) if vals[38] else 0,
                 }
             except (ValueError, TypeError): pass
-    except Exception: pass
+    except Exception as _e:
+        _debug_log(f"tdx tencent_quote_batch parse error: {_e}")
     return result
 
 # ═══════════════════════════════════════
@@ -527,22 +580,24 @@ def tdx_get_quote_full(code: str) -> Dict[str, Any]:
             try:
                 _tdx_throttle()  # V8.5: TDX请求节流
                 quotes = client.get_security_quotes([(_market_from_code(code), code)])
-                if quotes and len(quotes) > 0:
-                    q = quotes[0]
-                    if q.price: result['price'] = q.price
-                    if q.pre_close: result['last_close'] = q.pre_close
-                    if q.open: result['open'] = q.open
-                    if q.high: result['high'] = q.high
-                    if q.low: result['low'] = q.low
-                    if q.amount: result['amount_wan'] = q.amount / 10000.0
-                    if q.pre_close and q.pre_close > 0:
-                        result['change_pct'] = (q.price - q.pre_close) / q.pre_close * 100
-                        result['change_amt'] = q.price - q.pre_close
-                    result['bid1'] = q.bid1; result['bid2'] = q.bid2; result['bid3'] = q.bid3
-                    result['bid4'] = q.bid4; result['bid5'] = q.bid5
-                    result['ask1'] = q.ask1; result['ask2'] = q.ask2; result['ask3'] = q.ask3
-                    result['ask4'] = q.ask4; result['ask5'] = q.ask5
-            except Exception: pass
+                # V9.0: get_security_quotes 返回 DataFrame，需用 .empty/iloc[0]
+                if quotes is not None and not quotes.empty:
+                    q = quotes.iloc[0]
+                    if q['price']: result['price'] = q['price']
+                    if q['pre_close']: result['last_close'] = q['pre_close']
+                    if q['open']: result['open'] = q['open']
+                    if q['high']: result['high'] = q['high']
+                    if q['low']: result['low'] = q['low']
+                    if q['amount']: result['amount_wan'] = q['amount'] / 10000.0
+                    if q['pre_close'] and q['pre_close'] > 0:
+                        result['change_pct'] = (q['price'] - q['pre_close']) / q['pre_close'] * 100
+                        result['change_amt'] = q['price'] - q['pre_close']
+                    result['bid1'] = q['bid1']; result['bid2'] = q['bid2']; result['bid3'] = q['bid3']
+                    result['bid4'] = q['bid4']; result['bid5'] = q['bid5']
+                    result['ask1'] = q['ask1']; result['ask2'] = q['ask2']; result['ask3'] = q['ask3']
+                    result['ask4'] = q['ask4']; result['ask5'] = q['ask5']
+            except Exception as _e:
+                _debug_log(f"tdx quote supplement error: {_e}")
     # V8.9: 腾讯超时时 TDX 补充不完整 → 返回空字典（让 if q: 保护生效）
     if result and "pe_ttm" not in result:
         result = {}
@@ -560,13 +615,16 @@ def tdx_get_quotes_batch(codes: List[str]) -> Dict[str, Dict[str, Any]]:
                 _tdx_throttle()  # V8.5: TDX请求节流
                 stocks = [(_market_from_code(c), c) for c in codes]
                 quotes = client.get_security_quotes(stocks)
-                if quotes:
-                    for q in quotes:
-                        if q.code in result and q.price:
-                            result[q.code]['price'] = q.price
-                            if q.pre_close and q.pre_close > 0:
-                                result[q.code]['change_pct'] = round((q.price - q.pre_close) / q.pre_close * 100, 2)
-            except Exception: pass
+                # V9.0: get_security_quotes 返回 DataFrame，需用 iterrows 遍历
+                if quotes is not None and not quotes.empty:
+                    for _, q in quotes.iterrows():
+                        q_code = str(q['code'])
+                        if q_code in result and q['price']:
+                            result[q_code]['price'] = q['price']
+                            if q['pre_close'] and q['pre_close'] > 0:
+                                result[q_code]['change_pct'] = round((q['price'] - q['pre_close']) / q['pre_close'] * 100, 2)
+            except Exception as _e:
+                _debug_log(f"tdx batch_quote supplement error: {_e}")
     return result
 
 def tdx_get_index_quote(idx_code: str) -> Dict[str, Any]:
@@ -590,7 +648,8 @@ def tdx_get_index_quote(idx_code: str) -> Dict[str, Any]:
                         last = bars[-1]; prev = bars[-2]
                         chg = (last.close - prev.close) / prev.close * 100 if prev.close > 0 else 0
                         return {"price": round(last.close, 2), "open": round(last.open, 2), "change_pct": round(chg, 2)}
-            except Exception: pass
+            except Exception as _e:
+                _debug_log(f"tdx index_quote error: {_e}")
     try:
         url = f"https://qt.gtimg.cn/q={idx_code}"
         r = _quick_request(url, headers={"User-Agent": UA}, timeout=10)
@@ -697,6 +756,7 @@ def tdx_get_weekly_bars(code: str, count: int = 100):
 # ═══════════════════════════════════════
 # 资金流适配器
 # ═══════════════════════════════════════
+@cached(category="f10_fund_flow", trading_day=True, valid_if=lambda r: bool(r))
 def tdx_get_fund_flow(code: str):
     with _TDX_CALL_LOCK:
         client = _get_tdx_client()
@@ -826,133 +886,995 @@ def tdx_get_eps_from_reports(code: str):
         return None
     except Exception: return None
 
+@cached(category="f10_announcements", trading_day=True, valid_if=lambda r: bool(r))
 def tdx_get_latest_announcements(code: str, days: int = 7):
+    """从 TDX F10 公司公告中获取最新公告列表。
+
+    V9.0 修复：正确使用 get_company_info_category + get_company_info_content，
+    用 filename/start/length 参数读取「公司公告」分类，解析表格格式的公告列表。
+
+    Args:
+        code: 股票代码
+        days: 仅返回最近 N 天的公告，None=不限制
+
+    Returns:
+        list[dict]: 公告列表，每项含 title/date/category
+    """
     with _TDX_CALL_LOCK:
         client = _get_tdx_client()
-        if client is None: return []
+        if client is None:
+            return []
         try:
-            from easy_tdx import CompanyInfoCategory
             cats = client.get_company_info_category(_market_from_code(code), code)
-            if not cats: return []
+            if cats is None or cats.empty:
+                return []
+            # 找到「公司公告」分类
+            ann_cat = cats[cats['name'] == '公司公告']
+            if ann_cat.empty:
+                return []
+            row = ann_cat.iloc[0]
+            _tdx_throttle()
+            content = client.get_company_info_content(
+                _market_from_code(code), code,
+                row['filename'], int(row['start']), int(row['length'])
+            )
+            if not content:
+                return []
+            # 解析 F10 公告表格格式（GBK 文本，┌┬┐├┼┤└┴┘ 等分隔符）
+            import re as _re
+            lines = content.split('\n')
             anns = []
-            for cat in cats:
-                content = client.get_company_info_content(_market_from_code(code), code, cat.name, 0, 100)
-                if content:
-                    for item in content:
-                        title = getattr(item, 'title', '') or str(item)
-                        dt = getattr(item, 'date', '') or ''
-                        anns.append({"title": str(title)[:120], "date": str(dt)[:10], "category": str(cat.name) if hasattr(cat, 'name') else ''})
-                if len(anns) >= 10: break
+            current_date = ''
+            from datetime import datetime, timedelta
+            cutoff = (datetime.now() - timedelta(days=days)).strftime('%Y-%m-%d') if days else ''
+            for line in lines:
+                line = line.strip()
+                if not line:
+                    continue
+                # 匹配日期: YYYY-MM-DD HH:MM 格式
+                m = _re.match(r'(\d{4}-\d{2}-\d{2})\s+(\d{2}:\d{2})', line)
+                if m:
+                    current_date = m.group(1)
+                    # 按日期过滤
+                    if cutoff and current_date < cutoff:
+                        continue
+                    # 提取标题（去掉日期时间后的剩余内容）
+                    title = line[m.end():].strip()
+                    # 去掉左侧表格竖线分隔符
+                    title = title.lstrip('│').strip()
+                    # 去掉右侧表格竖线
+                    title = title.rstrip('│').strip()
+                    if title and len(title) > 3:
+                        anns.append({
+                            "title": title[:120],
+                            "date": current_date,
+                            "category": "公司公告"
+                        })
+                elif current_date and not cutoff or (cutoff and current_date >= cutoff):
+                    # 续行（上一行的公告标题可能换行）
+                    if line.startswith('│') or '│' in line:
+                        # 跳过纯表格装饰线
+                        if _re.match(r'^[┌┬┐├┼┤└┴┘─│\s]+$', line):
+                            continue
+                        # 提取标题内容
+                        parts = line.split('│')
+                        for p in parts:
+                            p = p.strip()
+                            if p and len(p) > 3 and not _re.match(r'^[\d:\-\s]+$', p):
+                                anns.append({
+                                    "title": p[:120],
+                                    "date": current_date,
+                                    "category": "公司公告"
+                                })
+                                break
             return anns[:10]
-        except Exception: return []
+        except Exception:
+            return []
+
 
 # ═══════════════════════════════════════
-# 行业板块适配器
+# F10 分类数据获取（V9.0 新增）
 # ═══════════════════════════════════════
+
+def _f10_get_content(code: str, category_name: str) -> str:
+    """获取 F10 指定分类的原始文本内容。
+
+    Args:
+        code: 股票代码
+        category_name: 分类名称（如 '最新提示'、'公司报道'）
+
+    Returns:
+        str: 原始文本内容，失败返回空字符串
+    """
+    client = _get_tdx_client()
+    if client is None:
+        return ''
+    try:
+        cats = client.get_company_info_category(_market_from_code(code), code)
+        if cats is None or cats.empty:
+            return ''
+        target = cats[cats['name'] == category_name]
+        if target.empty:
+            return ''
+        row = target.iloc[0]
+        _tdx_throttle()
+        content = client.get_company_info_content(
+            _market_from_code(code), code,
+            row['filename'], int(row['start']), int(row['length'])
+        )
+        return content or ''
+    except Exception:
+        return ''
+
+
+@cached(category="f10_reminders", trading_day=True, valid_if=lambda r: bool(r))
+def tdx_get_latest_reminders(code: str) -> dict:
+    """从 TDX F10「最新提示」分类获取综合信息（8 个子栏目一次拿全）。
+
+    替代 4 个 HTTP 接口：
+    - cninfo_irm（互动问答）
+    - get_eastmoney_stock_news（最新报道）
+    - get_block_trade（大宗交易）
+    - get_margin_trading（融资融券）
+
+    Returns:
+        dict: {
+            "latest_indicators": {eps, net_asset, roe, ...},
+            "interaction_qa": [{date, question, answer}, ...],
+            "latest_announcements": [{date, title, summary, url}, ...],
+            "latest_news": [{date, title, summary, url}, ...],
+            "abnormal_movements": [...],
+            "block_trades": [{date, price, volume, amount, buyer, seller}, ...],
+            "margin_trading": [{date, finance_balance, finance_buy, ...}, ...],
+            "risk_warnings": {...}
+        }
+    """
+    from stock_common.f10_parser import split_sections, parse_table, parse_paragraph_blocks, parse_key_value_table, extract_field
+    import re as _re
+
+    with _TDX_CALL_LOCK:
+        content = _f10_get_content(code, '最新提示')
+        if not content:
+            return {}
+
+        sections = split_sections(content)
+        result: dict = {}
+
+        # 1. 最新提示子栏目 — 提取关键指标
+        s1 = sections.get('最新提示', '')
+        if s1:
+            indicators: dict = {}
+
+            def _extract_indicator(text: str, label: str) -> Optional[float]:
+                """从表格行提取第一个有效数值（跳过 ---）。"""
+                m = _re.search(label + r'\s*│(.+)', text)
+                if m:
+                    # 用 │ 分割值列，找第一个有效数字
+                    vals = [v.strip() for v in m.group(1).split('│')]
+                    for v in vals:
+                        if v and v != '---':
+                            return _safe_float(v)
+                return None
+
+            indicators['eps'] = _extract_indicator(s1, r'每股收益\(元\)')
+            indicators['net_asset'] = _extract_indicator(s1, r'每股净资产\(元\)')
+            indicators['roe'] = _extract_indicator(s1, r'加权净资产收益率\(%?\)')
+            indicators['total_capital'] = _extract_indicator(s1, r'总股本\(万股\)')
+            indicators['float_capital'] = _extract_indicator(s1, r'实际流通A股\(万股\)')
+            # 提取最新指标变动原因
+            m = _re.search(r'最新指标变动原因\s*│\s*(.+?)│', s1)
+            if m:
+                indicators['change_reason'] = m.group(1).strip()
+            # 提取股东人数
+            m = _re.search(r'股东人数:截止([\d-]+),公司股东户数([\d]+),([减少增加]+)([\d.]+)%', s1)
+            if m:
+                indicators['holder_count'] = {
+                    'date': m.group(1),
+                    'count': int(m.group(2)),
+                    'change': m.group(3),
+                    'change_pct': _safe_float(m.group(4))
+                }
+            # 提取财务同比
+            m = _re.search(r'财务同比:([\d-]+)\s*营业收入\(万元\):([\d.]+)\s*同比增\(%\):([\d.-]+)\s*净利润\(万元\):([\d.]+)\s*同比增\(%\):([\d.-]+)', s1)
+            if m:
+                indicators['financial_yoy'] = {
+                    'date': m.group(1),
+                    'revenue': _safe_float(m.group(2)),
+                    'revenue_yoy': _safe_float(m.group(3)),
+                    'net_profit': _safe_float(m.group(4)),
+                    'net_profit_yoy': _safe_float(m.group(5))
+                }
+            result['latest_indicators'] = indicators
+
+        # 2. 互动问答
+        s2 = sections.get('互动问答', '')
+        if s2 and '暂无数据' not in s2:
+            qa_list: list = []
+            lines = s2.split('\n')
+            i = 0
+            while i < len(lines):
+                line = lines[i].strip().lstrip('│').strip()
+                # 匹配日期行（MM-DD 或 YYYY-MM-DD）
+                m = _re.match(r'(\d{2}-\d{2}|\d{4}-\d{2}-\d{2})', line)
+                if m and '问：' in line:
+                    date = m.group(1)
+                    # 提取问题
+                    question = ''
+                    qm = _re.search(r'问：(.+)', line)
+                    if qm:
+                        question = qm.group(1).strip().rstrip('│').strip()
+                    # 向后搜索答案
+                    answer = ''
+                    for j in range(i + 1, min(i + 15, len(lines))):
+                        ans_line = lines[j].strip().lstrip('│').strip()
+                        if ans_line.startswith('答：'):
+                            answer = ans_line[2:].strip().rstrip('│').strip()
+                            break
+                        elif _re.match(r'\d{2}-\d{2}', ans_line):
+                            break
+                    if question:
+                        qa_list.append({'date': date, 'question': question[:200], 'answer': answer[:500]})
+                    i = j + 1 if answer else i + 1
+                else:
+                    i += 1
+            result['interaction_qa'] = qa_list[:5]
+        else:
+            result['interaction_qa'] = []
+
+        # 3. 最新公告
+        s3 = sections.get('最新公告', '')
+        if s3 and '暂无数据' not in s3:
+            result['latest_announcements'] = parse_paragraph_blocks(s3)[:5]
+        else:
+            result['latest_announcements'] = []
+
+        # 4. 最新报道
+        s4 = sections.get('最新报道', '')
+        if s4 and '暂无数据' not in s4:
+            result['latest_news'] = parse_paragraph_blocks(s4)[:5]
+        else:
+            result['latest_news'] = []
+
+        # 5. 最新异动
+        s5 = sections.get('最新异动', '')
+        result['abnormal_movements'] = [] if '暂无数据' in s5 else [s5.strip()[:200]] if s5.strip() else []
+
+        # 6. 大宗交易
+        s6 = sections.get('大宗交易', '')
+        if s6 and '暂无数据' not in s6:
+            rows = parse_table(s6)
+            block_trades: list = []
+            for r in rows:
+                block_trades.append({
+                    'date': r.get('交易日期', ''),
+                    'price': _safe_float(r.get('成交价格(元)', 0)),
+                    'volume': _safe_float(r.get('成交数量(万股)', 0)),
+                    'amount': _safe_float(r.get('成交金额(万元)', 0)),
+                    'buyer': r.get('买方营业部', ''),
+                    'seller': r.get('卖方营业部', '')
+                })
+            result['block_trades'] = block_trades
+        else:
+            result['block_trades'] = []
+
+        # 7. 融资融券
+        s7 = sections.get('融资融券', '')
+        if s7 and '暂无数据' not in s7:
+            rows = parse_table(s7)
+            margin_data: list = []
+            for r in rows:
+                margin_data.append({
+                    'date': r.get('交易日期', ''),
+                    'finance_balance': _safe_float(r.get('融资余额(万元)', 0)),
+                    'finance_buy': _safe_float(r.get('融资买入额(万元)', 0)),
+                    'securities_balance': _safe_float(r.get('融券余额(万元)', 0)),
+                    'securities_sell': _safe_float(r.get('融券卖出量(万股)', 0)),
+                    'total_balance': _safe_float(r.get('融资融券余额(万元)', 0))
+                })
+            result['margin_trading'] = margin_data
+        else:
+            result['margin_trading'] = []
+
+        # 8. 风险提示
+        s8 = sections.get('风险提示', '')
+        risk: dict = {}
+        if s8:
+            # 违规稽查 — 检查是否有实际数据（非"暂无数据"）
+            if '违规稽查' in s8:
+                vi_idx = s8.find('违规稽查')
+                # 取违规稽查到下一个子标题之间的文本
+                next_sub = s8.find('【', vi_idx + 4)
+                violation_text = s8[vi_idx:next_sub] if next_sub > 0 else s8[vi_idx:]
+                if '暂无数据' not in violation_text:
+                    risk['violation'] = parse_key_value_table(violation_text[:800])
+                else:
+                    risk['violation'] = {}
+            # 交易所问询
+            if '交易所问询' in s8:
+                inquiry_text = s8[s8.find('交易所问询'):]
+                next_sub = s8.find('【', s8.find('交易所问询') + 4)
+                inquiry_text = inquiry_text[:next_sub - s8.find('交易所问询')] if next_sub > 0 else inquiry_text
+                risk['inquiry'] = '暂无数据' not in inquiry_text
+            # 交易所监管
+            if '交易所监管' in s8:
+                sup_text = s8[s8.find('交易所监管'):]
+                next_sub = s8.find('【', s8.find('交易所监管') + 4)
+                sup_text = sup_text[:next_sub - s8.find('交易所监管')] if next_sub > 0 else sup_text
+                risk['supervision'] = '暂无数据' not in sup_text
+            # 特别处理
+            if '特别处理' in s8:
+                st_text = s8[s8.find('特别处理'):]
+                risk['special_treatment'] = '暂无数据' not in st_text[:100]
+        result['risk_warnings'] = risk
+
+        return result
+
+
+@cached(category="f10_financial", valid_if=lambda r: bool(r), cross_verify=True)
+def tdx_get_financial_analysis(code: str) -> dict:
+    """从 TDX F10「财务分析」分类获取综合财务信息（10 个子栏目一次拿全）。
+
+    替代 3 个新浪 HTTP 接口：
+    - get_sina_financial_report（利润表 lrb）
+    - get_sina_balance_sheet（资产负债表 fzb）
+    - get_gross_margin_and_roe（毛利率+ROE）
+
+    Returns:
+        dict: {
+            "main_indicators": [{period, 审计意见, 归母净利(未调整:万), ...}, ...],
+            "solvency": [{period, 流动比率, 速动比率, ...}, ...],
+            "operation": [{period, 应收账款周转率, ...}, ...],
+            "profitability": [{period, 净资产收益率, 销售毛利率, ...}, ...],
+            "growth": [{period, 营业收入增长率, ...}, ...],
+            "indicator_changes": [{period, items: [{subject, reason, ...}]}],
+            "balance_sheet": [{period, 货币资金, 存货, ...}, ...],
+            "income_statement": [...],
+            "cash_flow": [...],
+            "qoq_analysis": [...]
+        }
+    """
+    from stock_common.f10_parser import (
+        split_sections, find_subsection, parse_tables, parse_table, transpose_table, merge_continuation_lines
+    )
+    import re as _re
+
+    with _TDX_CALL_LOCK:
+        content = _f10_get_content(code, '财务分析')
+        if not content:
+            return {}
+
+        sections = split_sections(content)
+        result: dict = {}
+
+        # 1. 主要财务指标（可能含多个表格：年报对比 + 近5期）
+        # 银行股嵌套结构：find_subsection 在 '财务指标' 顶层 section 内查找 【主要财务指标】
+        s1 = find_subsection(sections, '主要财务指标')
+        if s1:
+            tables = parse_tables(s1)
+            merged: dict = {}
+            for tbl in tables:
+                if not tbl:
+                    continue
+                # 找 key_col（第一个列名，通常是"财务指标"）
+                key_col = next(iter(tbl[0].keys())) if tbl[0] else ''
+                transposed = transpose_table(tbl, key_col)
+                for entry in transposed:
+                    period = entry.get('period', '')
+                    if period and period not in merged:
+                        merged[period] = entry
+            result['main_indicators'] = list(merged.values())
+        else:
+            result['main_indicators'] = []
+
+        # 2-5. 偿债/营运/盈利/成长能力指标
+        # 银行股的"成长能力指标"叫"发展能力指标"，通过 aliases 兼容
+        section_specs = [
+            ('solvency', '偿债能力指标', None),
+            ('operation', '营运能力指标', None),
+            ('profitability', '盈利能力指标', None),
+            ('growth', '成长能力指标', ['发展能力指标']),  # 银行股别名
+        ]
+        for result_key, section_name, aliases in section_specs:
+            s = find_subsection(sections, section_name, aliases)
+            if s:
+                tables = parse_tables(s)
+                merged: dict = {}
+                for tbl in tables:
+                    if not tbl:
+                        continue
+                    actual_key = next(iter(tbl[0].keys())) if tbl[0] else section_name
+                    transposed = transpose_table(tbl, actual_key)
+                    for entry in transposed:
+                        period = entry.get('period', '')
+                        if period and period not in merged:
+                            merged[period] = entry
+                result[result_key] = list(merged.values())
+            else:
+                result[result_key] = []
+
+        # 6. 指标变动说明（多块表格，每块前有"截止日期:YYYY-MM-DD"）
+        # 银行股的指标变动叫"异动科目"，find_subsection 会通过顶层 '异动科目' section 查找
+        s6 = find_subsection(sections, '指标变动说明', ['异动科目'])
+        if s6 and '暂无数据' not in s6:
+            # 按"截止日期:YYYY-MM-DD"分割
+            parts = _re.split(r'截止日期[:：]\s*(\d{4}-\d{2}-\d{2})', s6)
+            changes: list = []
+            # parts[0] = preamble, then alternating (date, content)
+            for i in range(1, len(parts), 2):
+                period = parts[i]
+                block_text = parts[i + 1] if i + 1 < len(parts) else ''
+                # 预处理：合并跨行文本单元格（前2列为文本）
+                merged_text = merge_continuation_lines(block_text, num_text_cols=2)
+                rows = parse_table(merged_text)
+                items: list = []
+                for r in rows:
+                    items.append({
+                        'subject': r.get('变动科目', '').strip(),
+                        'reason': r.get('变动原因', '').strip(),
+                        'current_value': _safe_float(r.get('本期数值(万)', 0) or 0),
+                        'previous_value': _safe_float(r.get('上期/期初数(万)', 0) or 0),
+                        'change_pct': _safe_float(r.get('变动幅度(%)', 0) or 0)
+                    })
+                if items:
+                    changes.append({'period': period, 'items': items})
+            result['indicator_changes'] = changes
+        else:
+            result['indicator_changes'] = []
+
+        # 7. 资产负债表摘要（银行股嵌套在 '报表摘要' 顶层 section 下）
+        s7 = find_subsection(sections, '资产负债表摘要')
+        if s7:
+            tables = parse_tables(s7)
+            merged: dict = {}
+            for tbl in tables:
+                if not tbl:
+                    continue
+                actual_key = next(iter(tbl[0].keys())) if tbl[0] else '资产负债指标(万元)'
+                transposed = transpose_table(tbl, actual_key)
+                for entry in transposed:
+                    period = entry.get('period', '')
+                    if period and period not in merged:
+                        merged[period] = entry
+            result['balance_sheet'] = list(merged.values())
+        else:
+            result['balance_sheet'] = []
+
+        # 8-10. 利润表摘要 / 现金流量表摘要 / 环比分析（部分股票可能无数据）
+        for result_key, section_name in [
+            ('income_statement', '利润表摘要'),
+            ('cash_flow', '现金流量表摘要'),
+            ('qoq_analysis', '环比分析'),
+        ]:
+            s = find_subsection(sections, section_name)
+            if s and '暂无数据' not in s:
+                tables = parse_tables(s)
+                merged: dict = {}
+                for tbl in tables:
+                    if not tbl:
+                        continue
+                    actual_key = next(iter(tbl[0].keys())) if tbl[0] else ''
+                    transposed = transpose_table(tbl, actual_key)
+                    for entry in transposed:
+                        period = entry.get('period', '')
+                        if period and period not in merged:
+                            merged[period] = entry
+                result[result_key] = list(merged.values())
+            else:
+                result[result_key] = []
+
+        return result
+
+
+@cached(category="f10_shareholder", valid_if=lambda r: bool(r), cross_verify=True)
+def tdx_get_shareholder_research(code: str) -> dict:
+    """从 TDX F10「股东研究」分类获取股东信息（7 个子栏目）。
+
+    替代 2 个东财 HTTP 接口：
+    - get_eastmoney_shareholders（十大股东）
+    - get_eastmoney_holder_changes（股东人数变化）
+
+    Returns:
+        dict: {
+            "controlling_shareholder": {...},   # 控股股东/实际控制人
+            "planned_changes": [...],           # 股东增减持计划
+            "major_holder_changes": [...],      # 重要股东持股变动
+            "shareholder_changes": [...],       # 十大股东列表（按期）
+            "holder_count": [...],              # 股东人数变化
+            "same_controller_stocks": [...],    # 同大股东个股
+            "fund_holdings": [...]              # 基金持股
+        }
+    """
+    from stock_common.f10_parser import (
+        split_sections, parse_table, parse_tables, parse_key_value_table, parse_text_table
+    )
+    import re as _re
+
+    with _TDX_CALL_LOCK:
+        content = _f10_get_content(code, '股东研究')
+        if not content:
+            return {}
+        sections = split_sections(content)
+        result: dict = {}
+
+        # 1. 控股股东与实际控制人（键值对表格）
+        s1 = sections.get('控股股东与实际控股人', '')
+        if s1 and '暂无数据' not in s1:
+            result['controlling_shareholder'] = parse_key_value_table(s1)
+        else:
+            result['controlling_shareholder'] = {}
+
+        # 2. 股东增减持计划
+        s2 = sections.get('股东增减持计划', '')
+        if s2 and '暂无数据' not in s2:
+            # 提取摘要信息
+            plan_info: dict = {}
+            m = _re.search(r'最新公告日期[：:]\s*([\d-]+)', s2)
+            if m:
+                plan_info['latest_date'] = m.group(1)
+            m = _re.search(r'变动方向[：:]\s*([^，,]+)', s2)
+            if m:
+                plan_info['direction'] = m.group(1).strip()
+            m = _re.search(r'进度[：:]\s*([^，,\s]+)', s2)
+            if m:
+                plan_info['progress'] = m.group(1).strip()
+            rows = parse_table(s2)
+            plan_info['details'] = rows
+            result['planned_changes'] = plan_info
+        else:
+            result['planned_changes'] = {}
+
+        # 3. 重要股东持股变动（标准表格）
+        s3 = sections.get('重要股东持股变动', '')
+        if s3 and '暂无数据' not in s3:
+            result['major_holder_changes'] = parse_table(s3)
+        else:
+            result['major_holder_changes'] = []
+
+        # 4. 股东变化（十大股东 — 空格分隔文本格式）
+        s4 = sections.get('股东变化', '')
+        if s4 and '暂无数据' not in s4:
+            # 按"●十大股东"和"●十大流通股东"分割
+            shareholder_periods: list = []
+            blocks = _re.split(r'●(十大股东|十大流通股东)\s*', s4)
+            # blocks: [preamble, label1, content1, label2, content2, ...]
+            for i in range(1, len(blocks), 2):
+                label = blocks[i]
+                content_block = blocks[i + 1] if i + 1 < len(blocks) else ''
+                # 提取截止日期
+                m = _re.search(r'截止日期[：:]\s*([\d-]+)', content_block)
+                period = m.group(1) if m else ''
+                # 提取摘要
+                m = _re.search(r'前十大[^\n]*累计持有[：:]?([^\n]+)', content_block)
+                summary = m.group(1).strip() if m else ''
+                # 解析十大股东明细（空格分隔，可能跨行）
+                lines = content_block.split('\n')
+                # 找到表头行（含"股东名称"）
+                header_idx = -1
+                for j, line in enumerate(lines):
+                    if '股东名称' in line:
+                        header_idx = j
+                        break
+                holders: list = []
+                if header_idx >= 0:
+                    # 跳过分隔线，解析数据行
+                    for j in range(header_idx + 1, len(lines)):
+                        line = lines[j].strip()
+                        if not line or '──' in line:
+                            continue
+                        if line.startswith('●') or '截止日期' in line:
+                            break
+                        # 用 2+ 空格分割
+                        parts = [p.strip() for p in _re.split(r'\s{2,}', line) if p.strip()]
+                        # 十大股东格式：名称 股份性质 持股数 占比 增减 一致行动人
+                        if len(parts) >= 5:
+                            holders.append({
+                                'name': parts[0],
+                                'share_type': parts[1],
+                                'shares': parts[2],
+                                'ratio': parts[3],
+                                'change': parts[4],
+                                'group': parts[5] if len(parts) > 5 else ''
+                            })
+                shareholder_periods.append({
+                    'type': label,
+                    'period': period,
+                    'summary': summary,
+                    'holders': holders[:10]
+                })
+            result['shareholder_changes'] = shareholder_periods
+        else:
+            result['shareholder_changes'] = []
+
+        # 5. 股东人数变化（表格，每行一期，截止日期为第一列）
+        s5 = sections.get('股东人数变化', '')
+        if s5 and '暂无数据' not in s5:
+            tables = parse_tables(s5)
+            holder_list: list = []
+            seen_periods: set = set()
+            for tbl in tables:
+                if not tbl:
+                    continue
+                for row in tbl:
+                    period = (row.get('截止日期', '') or row.get('日期', '') or '').strip()
+                    if period and period not in seen_periods:
+                        seen_periods.add(period)
+                        entry = {'period': period}
+                        for k, v in row.items():
+                            if k not in ('截止日期', '日期'):
+                                entry[k] = v.strip() if isinstance(v, str) else v
+                        holder_list.append(entry)
+            result['holder_count'] = holder_list
+        else:
+            result['holder_count'] = []
+
+        # 6-7. 同大股东个股 / 基金持股（常为空）
+        s6 = sections.get('同大股东个股', '')
+        result['same_controller_stocks'] = [] if (not s6 or '暂无数据' in s6) else parse_table(s6)
+        s7 = sections.get('基金持股', '')
+        result['fund_holdings'] = [] if (not s7 or '暂无数据' in s7) else parse_table(s7)
+
+        return result
+
+
+@cached(category="f10_share_capital", valid_if=lambda r: bool(r), cross_verify=True)
+def tdx_get_share_capital(code: str) -> dict:
+    """从 TDX F10「股本结构」分类获取股本信息（4 个子栏目）。
+
+    替代 1 个东财 HTTP 接口：
+    - get_eastmoney_lockup_expiry（限售解禁）
+
+    Returns:
+        dict: {
+            "structure": [...],      # 股本结构（按期）
+            "changes": [...],        # 股本变化历史
+            "lockup_expiry": [...],  # 限售解禁时间表
+            "buyback": [...]         # 股票回购记录
+        }
+    """
+    from stock_common.f10_parser import (
+        split_sections, parse_table, parse_tables, transpose_table
+    )
+
+    with _TDX_CALL_LOCK:
+        content = _f10_get_content(code, '股本结构')
+        if not content:
+            return {}
+        sections = split_sections(content)
+        result: dict = {}
+
+        # 1. 股本结构（表格，转置为按期）
+        s1 = sections.get('股本结构', '')
+        if s1 and '暂无数据' not in s1:
+            tables = parse_tables(s1)
+            merged: dict = {}
+            for tbl in tables:
+                if not tbl:
+                    continue
+                key_col = next(iter(tbl[0].keys())) if tbl[0] else ''
+                transposed = transpose_table(tbl, key_col)
+                for entry in transposed:
+                    period = entry.get('period', '')
+                    if period and period not in merged:
+                        merged[period] = entry
+            result['structure'] = list(merged.values())
+        else:
+            result['structure'] = []
+
+        # 2. 股本变化（标准表格，每行一条变更记录）
+        s2 = sections.get('股本变化', '')
+        if s2 and '暂无数据' not in s2:
+            result['changes'] = parse_table(s2)
+        else:
+            result['changes'] = []
+
+        # 3. 限售解禁
+        s3 = sections.get('限售解禁', '')
+        if s3 and '暂无数据' not in s3:
+            result['lockup_expiry'] = parse_table(s3)
+        else:
+            result['lockup_expiry'] = []
+
+        # 4. 股票回购（键值对表格，按公告日组织）
+        s4 = sections.get('股票回购', '')
+        if s4 and '暂无数据' not in s4:
+            tables = parse_tables(s4)
+            buyback_list: list = []
+            for tbl in tables:
+                if not tbl:
+                    continue
+                # 回购表格是键值对格式：每行一个指标，列是不同公告日
+                key_col = next(iter(tbl[0].keys())) if tbl[0] else ''
+                date_cols = [c for c in tbl[0].keys() if c != key_col]
+                for date_col in date_cols:
+                    entry: dict = {'announce_date': date_col.strip()}
+                    for row in tbl:
+                        indicator = (row.get(key_col) or '').strip()
+                        if indicator:
+                            entry[indicator] = (row.get(date_col) or '').strip()
+                    buyback_list.append(entry)
+            result['buyback'] = buyback_list
+        else:
+            result['buyback'] = []
+
+        return result
+
+
+@cached(category="f10_news", trading_day=True, valid_if=lambda r: bool(r))
+def tdx_get_company_news_f10(code: str, count: int = 10) -> list:
+    """从 TDX F10「公司报道」分类获取新闻列表。
+
+    替代 1 个东财 HTTP 接口：
+    - get_eastmoney_stock_news
+
+    Args:
+        code: 股票代码
+        count: 返回条数上限
+
+    Returns:
+        list: [{date, title, summary, url}, ...]
+    """
+    from stock_common.f10_parser import parse_paragraph_blocks
+
+    with _TDX_CALL_LOCK:
+        content = _f10_get_content(code, '公司报道')
+        if not content:
+            return []
+        # F13 公司报道无 【N.】 section，直接是段落块格式
+        # 去掉前2行 header（标题行 + 空行）
+        lines = content.split('\n')
+        # 找到第一个 ──── 分隔线作为内容起点
+        start_idx = 0
+        for i, line in enumerate(lines):
+            if '──' in line and '┬' in line:
+                start_idx = i
+                break
+        if start_idx > 0:
+            content = '\n'.join(lines[start_idx:])
+        news = parse_paragraph_blocks(content)
+        return news[:count]
+
+
+def tdx_get_industry_analysis(code: str) -> dict:
+    """从 TDX F10「行业分析」分类获取行业地位信息（5 个子栏目）。
+
+    替代 1 个东财 HTTP 接口：
+    - get_eastmoney_industry_board
+
+    Returns:
+        dict: {
+            "industry": {...},              # 所属行业
+            "market_performance": [...],    # 市场表现排名
+            "company_scale": [...],         # 公司规模排名
+            "valuation_level": [...],       # 估值水平排名
+            "financial_status": [...]       # 财务状况排名
+        }
+    """
+    from stock_common.f10_parser import split_sections, parse_text_table
+    import re as _re
+
+    with _TDX_CALL_LOCK:
+        content = _f10_get_content(code, '行业分析')
+        if not content:
+            return {}
+        sections = split_sections(content)
+        result: dict = {}
+
+        # 1. 所属行业（文本，如"所属研究行业:酿酒(共36家)"）
+        s1 = sections.get('所属行业', '')
+        if s1 and '暂无数据' not in s1:
+            industry: dict = {}
+            m = _re.search(r'所属研究行业[：:]\s*(\S+?)\s*\(共(\d+)家\)', s1)
+            if m:
+                industry['name'] = m.group(1)
+                industry['total_count'] = int(m.group(2))
+            else:
+                # 兜底：取第一行非空文本
+                for line in s1.split('\n'):
+                    line = line.strip()
+                    if line and '暂无数据' not in line:
+                        industry['raw'] = line
+                        break
+            result['industry'] = industry
+        else:
+            result['industry'] = {}
+
+        # 2-5. 四个排名表（空格分隔文本表格）
+        for result_key, section_name in [
+            ('market_performance', '市场表现排名'),
+            ('company_scale', '公司规模排名'),
+            ('valuation_level', '估值水平排名'),
+            ('financial_status', '财务状况排名'),
+        ]:
+            s = sections.get(section_name, '')
+            if s and '暂无数据' not in s:
+                # 提取截止日期
+                m = _re.search(r'截止日期[：:]\s*([\d-]+)', s)
+                cutoff_date = m.group(1) if m else ''
+                rows = parse_text_table(s)
+                # 找本股票在排名中的位置
+                my_rank: dict = {}
+                for r in rows:
+                    if code in str(r.values()) or '贵州茅台' in str(r.values()):
+                        my_rank = r
+                        break
+                result[result_key] = {
+                    'cutoff_date': cutoff_date,
+                    'my_rank': my_rank,
+                    'top_rankings': rows[:10]  # 前10名
+                }
+            else:
+                result[result_key] = {'cutoff_date': '', 'my_rank': {}, 'top_rankings': []}
+
+        return result
+
+
+# ═══════════════════════════════════════════════════════════════
+# MacClient 板块/全市场函数（V9.2 恢复：误删的薄包装函数）
+# ═══════════════════════════════════════════════════════════════
+
 def tdx_get_belong_boards(code: str):
+    """获取股票所属板块（行业/概念/地域/风格）。
+
+    Returns:
+        dict: {"industry": [...], "concept": [...], "area": [...], "style": [...]}
+              每项为 [{"code": str, "name": str}, ...]
+    """
     with _TDX_CALL_LOCK:
         client = _get_mac_client()
-        if client is None: return {}
+        if client is None:
+            return {}
         try:
             df = client.get_belong_board(_market_from_code(code), code)
-            if df is None or df.empty: return {}
+            if df is None or df.empty:
+                return {}
             result: Dict[str, List[Any]] = {"industry": [], "concept": [], "area": [], "style": []}
             type_map = {0: "industry", 1: "industry", 12: "industry", 3: "area", 4: "concept", 5: "style"}
             for _, row in df.iterrows():
                 bt = int(row.get('board_type', -1))
                 cat = type_map.get(bt, None)
-                if cat is None: continue
-                result[cat].append({"code": str(row.get('board_code', '')), "name": str(row.get('board_name', ''))})
+                if cat is None:
+                    continue
+                result[cat].append({
+                    "code": str(row.get('board_code', '')),
+                    "name": str(row.get('board_name', ''))
+                })
             return result
-        except Exception: return {}
+        except Exception as _e:
+            _debug_log(f"tdx_get_belong_boards {code}: {_e}")
+            return {}
 
-def tdx_get_board_list(board_type=0):
+
+def tdx_get_board_list(board_type: int = 0):
+    """获取板块列表（行业/概念/地域等）。
+
+    Args:
+        board_type: 0=行业一级, 1=行业二级, 4=概念, 3=地域 (easy_tdx BoardType)
+
+    Returns:
+        list: [{"rank": int, "code": str, "name": str, "price": float,
+                "change_pct": float, "leader_name": str, "leader_change": float,
+                "up_count": int, "down_count": int}, ...]
+    """
     with _TDX_CALL_LOCK:
         client = _get_mac_client()
-        if client is None: return []
+        if client is None:
+            return []
         try:
             from easy_tdx.mac.enums import BoardType
             df = client.get_board_list(BoardType(board_type))
-            if df is None or df.empty: return []
+            if df is None or df.empty:
+                return []
             sectors = []
             for i, (_, row) in enumerate(df.iterrows()):
                 price = _safe_float(row.get('price', 0))
                 pre_close = _safe_float(row.get('pre_close', 0))
                 chg_pct = round((price - pre_close) / pre_close * 100, 2) if pre_close > 0 else 0.0
                 sectors.append({
-                    "rank": i + 1, "code": str(row.get('code', '')), "name": str(row.get('name', '')),
-                    "price": price, "change_pct": chg_pct,
+                    "rank": i + 1,
+                    "code": str(row.get('code', '')),
+                    "name": str(row.get('name', '')),
+                    "price": price,
+                    "change_pct": chg_pct,
                     "leader_name": str(row.get('symbol_name', '')),
                     "leader_change": _safe_float(row.get('symbol_rise_speed', 0)),
-                    "up_count": 0, "down_count": 0,
+                    "up_count": 0,
+                    "down_count": 0,
                 })
             return sectors
-        except Exception: return []
+        except Exception as _e:
+            _debug_log(f"tdx_get_board_list type={board_type}: {_e}")
+            return []
+
 
 def tdx_get_board_members(board_code: str, sort_by_change: bool = True):
+    """获取板块成员列表。
+
+    Returns:
+        list: [{"code": str, "name": str, "price": float, "change_pct": float,
+                "mcap_yi": float, "turnover": float, "pe": float,
+                "main_net_amount": float}, ...]
+    """
     with _TDX_CALL_LOCK:
         client = _get_mac_client()
-        if client is None: return []
+        if client is None:
+            return []
         try:
             df = client.get_board_members(board_code)
-            if df is None or df.empty: return []
+            if df is None or df.empty:
+                return []
             members = []
             for _, row in df.iterrows():
                 close = _safe_float(row.get('close', 0))
                 pre_close = _safe_float(row.get('pre_close', 0))
                 chg = round((close - pre_close) / pre_close * 100, 2) if pre_close > 0 else _safe_float(row.get('speed_pct', 0))
                 members.append({
-                    "code": str(row.get('code', '')), "name": str(row.get('name', '')),
-                    "price": close, "change_pct": chg,
+                    "code": str(row.get('code', '')),
+                    "name": str(row.get('name', '')),
+                    "price": close,
+                    "change_pct": chg,
                     "mcap_yi": _safe_float(row.get('total_market_cap_ab', 0)) / 1e8,
                     "turnover": _safe_float(row.get('turnover', 0)),
                     "pe": _safe_float(row.get('pe_dynamic', row.get('pe_ttm', 0))),
                     "main_net_amount": _safe_float(row.get('main_net_amount', 0)),
                 })
             return members
-        except Exception: return []
+        except Exception as _e:
+            _debug_log(f"tdx_get_board_members {board_code}: {_e}")
+            return []
+
 
 def tdx_get_board_by_name(board_name: str, board_type: int = 0):
-    with _TDX_CALL_LOCK:
-        client = _get_mac_client()
-        if client is None: return []
-        try:
-            from easy_tdx.mac.enums import BoardType
-            bt = BoardType(board_type)
-        except Exception: return []
-        try:
-            board_df = client.get_board_list(bt)
-            if board_df is None or board_df.empty: return []
-        except Exception: return []
-        _name_clean = board_name.replace("行业","").replace("板块","").replace("Ⅱ","").replace("Ⅲ","")
-        matched_code = None
-        for _, row in board_df.iterrows():
-            row_name = str(row.get('name', ''))
-            row_clean = row_name.replace("行业","").replace("板块","").replace("Ⅱ","").replace("Ⅲ","")
-            if board_name in row_name or row_name in board_name or _name_clean in row_clean or row_clean in _name_clean:
-                matched_code = str(row.get('code', ''))
-                break
-        if matched_code is None: return []
-        return tdx_get_board_members(matched_code)
+    """按名称查找板块并返回成员列表。
 
-# ═══════════════════════════════════════
-# 全市场股票列表
-# ═══════════════════════════════════════
+    Args:
+        board_name: 板块名称（支持模糊匹配）
+        board_type: 板块类型 (BoardType)
 
-def tdx_get_market_abnormal_data():
-    """
-    TDX 全市场A股+多周期涨幅 → 替换 push2 get_market_abnormal_data
-
-    返回:
-        [{code, name, price, change_pct, turnover, mcap_yi,
-          ret_3d, ret_5d, ret_10d, ret_20d, ret_60d}]
-    或 [] 当 MacClient 不可用时
+    Returns:
+        list: 同 tdx_get_board_members 返回格式
     """
     with _TDX_CALL_LOCK:
         client = _get_mac_client()
         if client is None:
             return []
+        try:
+            from easy_tdx.mac.enums import BoardType
+            bt = BoardType(board_type)
+        except Exception:
+            return []
+        try:
+            board_df = client.get_board_list(bt)
+            if board_df is None or board_df.empty:
+                return []
+        except Exception:
+            return []
+        _name_clean = board_name.replace("行业", "").replace("板块", "").replace("Ⅱ", "").replace("Ⅲ", "")
+        matched_code = None
+        for _, row in board_df.iterrows():
+            row_name = str(row.get('name', ''))
+            row_clean = row_name.replace("行业", "").replace("板块", "").replace("Ⅱ", "").replace("Ⅲ", "")
+            if board_name in row_name or row_name in board_name or _name_clean in row_clean or row_clean in _name_clean:
+                matched_code = str(row.get('code', ''))
+                break
+        if matched_code is None:
+            return []
+        return tdx_get_board_members(matched_code)
 
+
+def tdx_get_market_abnormal_data():
+    """全市场A股 + 多周期涨幅（用于异动扫描）。
+
+    Returns:
+        list: [{"code": str, "name": str, "price": float, "change_pct": float,
+                "turnover": float, "mcap_yi": float,
+                "ret_3d": float, "ret_5d": float, "ret_10d": float,
+                "ret_20d": float, "ret_60d": float,
+                "main_net_amount": float}, ...]
+    """
+    with _TDX_CALL_LOCK:
+        client = _get_mac_client()
+        if client is None:
+            return []
         try:
             from easy_tdx.mac.enums import Category
             from easy_tdx.codec.bitmap import FieldBit
@@ -984,8 +1906,10 @@ def tdx_get_market_abnormal_data():
                     pre_close = _safe_float(row.get('pre_close', 0))
                     chg = round((close - pre_close) / pre_close * 100, 2) if pre_close > 0 else 0
                     all_stocks.append({
-                        'code': code, 'name': name,
-                        'price': close, 'change_pct': chg,
+                        'code': code,
+                        'name': name,
+                        'price': close,
+                        'change_pct': chg,
                         'turnover': _safe_float(row.get('turnover', 0)),
                         'mcap_yi': _safe_float(row.get('amount', 0)) / 1e8 * 50,
                         'ret_3d': _safe_float(row.get('change_3d_pct', 0)),
@@ -999,16 +1923,23 @@ def tdx_get_market_abnormal_data():
                 if len(df) < page_size:
                     break
             return all_stocks
-        except Exception:
+        except Exception as _e:
+            _debug_log(f"tdx_get_market_abnormal_data: {_e}")
             return []
 
 
 def tdx_get_all_stocks():
-    """V7.5: 全市场A股列表（MacClient，连接中断自动重置并重试）。"""
+    """全市场A股列表（MacClient，连接中断自动重置并重试）。
+
+    Returns:
+        list: [{"code": str, "name": str, "price": float, "change_pct": float,
+                "mcap_yi": float, "turnover_pct": float, "amount_yi": float}, ...]
+    """
     for _retry in range(2):
         with _TDX_CALL_LOCK:
             client = _get_mac_client()
-            if client is None: return []
+            if client is None:
+                return []
             try:
                 from easy_tdx.mac.enums import Category
                 all_stocks = []
@@ -1016,12 +1947,15 @@ def tdx_get_all_stocks():
                 page_size = 80
                 for _ in range(100):
                     df = client.get_stock_quotes_list(Category.A, start, page_size)
-                    if df is None or df.empty: break
+                    if df is None or df.empty:
+                        break
                     for _, row in df.iterrows():
                         code = str(row.get('code', ''))
                         name = str(row.get('name', ''))
-                        if not code or not name: continue
-                        if 'ST' in name or '退' in name: continue
+                        if not code or not name:
+                            continue
+                        if 'ST' in name or '退' in name:
+                            continue
                         close = _safe_float(row.get('close', 0))
                         pre_close = _safe_float(row.get('pre_close', 0))
                         chg = round((close - pre_close) / pre_close * 100, 2) if pre_close > 0 else 0
@@ -1029,15 +1963,20 @@ def tdx_get_all_stocks():
                         amount = _safe_float(row.get('amount', 0)) / 1e8
                         mcap_est = amount * 50 if turnover > 0 else 0
                         all_stocks.append({
-                            'code': code, 'name': name, 'price': close,
-                            'change_pct': chg, 'mcap_yi': mcap_est,
+                            'code': code,
+                            'name': name,
+                            'price': close,
+                            'change_pct': chg,
+                            'mcap_yi': mcap_est,
                             'turnover_pct': turnover,
                             'amount_yi': amount,
                         })
                     start += page_size
-                    if len(df) < page_size: break
+                    if len(df) < page_size:
+                        break
                 return all_stocks
             except Exception:
                 _reset_tdx_connections()
                 continue
     return []
+

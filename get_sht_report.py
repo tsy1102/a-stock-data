@@ -1,8 +1,11 @@
 #!/usr/bin/env python3
 
-"""get_sht_report.py — A股短线个股深度数据报告 (V9.0)
+"""get_sht_report.py — A股短线个股深度数据报告 (V9.2)
 
 版本信息:
+    V9.2 2026-07-05 - 异常处理规范化；缓存交叉验证机制启用
+    V9.1 2026-07-04 - F10 全覆盖：新增【异动与风险提示】章节+数据质量附录；修复资金流渲染 float/dict 兼容
+    V9.0 2026-07-02 - 舆情互动层（Layer 10）；上市日期 push2 fallback；valid_if 校验；_has_zero_price 拦截
     V8.8 2026-06-25 - GD上传逻辑统一化 & 快照格式升级（TXT+自动上传）
     V8.7 2026-06-25 - 死代码清理：同步版替换为薄包装
     V8.5 2026-06-22 - 新增多档分析深度(--depth lite/medium/deep)、席位增强分析
@@ -47,8 +50,8 @@ from tdx_client import (tdx_get_security_bars, tdx_get_latest_bar_with_ma,
 
 
 
-from stock_common import (clean_codes, _safe_float, _request_with_retry, _quick_request, UA,
-                           _market_code, eastmoney_datacenter, _em_filter,
+from stock_common import (clean_codes, _safe_float, _request_with_retry, _quick_request, UA, _debug_log,
+                           eastmoney_datacenter, _em_filter,
                            _load_settings, _load_strategy_config, holder_change,
                            get_strategic_announcements, get_dragon_tiger_board,
                            create_async_session, eastmoney_datacenter_async,
@@ -104,7 +107,13 @@ def get_fund_flow_realtime(code):
     ff_120d = get_fund_flow_120d(code)
     if ff_120d and ff_120d.get("data") and len(ff_120d["data"]) > 0:
         recent_data = ff_120d["data"][-5:]
-        avg_flow = sum(d.get("main_net", 0) for d in recent_data) / len(recent_data) if recent_data else 0
+        if recent_data:
+            if isinstance(recent_data[0], dict):
+                avg_flow = sum(d.get("main_net", 0) for d in recent_data) / len(recent_data)
+            else:
+                avg_flow = sum(recent_data) / len(recent_data)
+        else:
+            avg_flow = 0
         if avg_flow != 0:
             return {"data": [avg_flow], "detail": {}, "source": "history_avg", "note": "使用近5日平均"}
     return None
@@ -135,7 +144,7 @@ def _get_eastmoney_fund_flow_120d(code: str) -> List[float]:
     Returns:
         list: 主力净流入数据列表（单位：万元）
     """
-    from stock_common import em_get, UA
+    from stock_common import em_get
     
     try:
         secid = f"1.{code}" if code.startswith("6") else f"0.{code}"
@@ -165,7 +174,8 @@ def _get_eastmoney_fund_flow_120d(code: str) -> List[float]:
                 result.append(main_net)
         
         return result
-    except Exception:
+    except Exception as _e:
+        _debug_log(f"sht fund_flow_parse: {_e}")
         return []
 
 
@@ -627,9 +637,8 @@ async def generate_report_async(session, code, output_path, ind_comp=None, idx_q
 
             if _sr: _rank_parts.append(f"本股今日{_sr['change_pct']:+.2f}%，板块内排名第{_sr['rank']}/{_sr['total']}名")
 
-        except Exception:
-
-            pass
+        except Exception as _e:
+            _debug_log(f"sector_rank error: {_e}")
 
         if _rank_parts: L(f"     {'  '.join(_rank_parts)}")
 
@@ -691,16 +700,27 @@ async def generate_report_async(session, code, output_path, ind_comp=None, idx_q
 
         _recent = ff["data"][-10:]
 
-        L(f"  {'日期':<12} {'主力净流入(万)':>12} {'超大单(万)':>10} {'大单(万)':>10} {'中单(万)':>10} {'小单(万)':>10}")
+        # 兼容 float 列表（东财回退，单位万元）和 dict 列表（TDX，单位元）两种格式
+        _is_dict = bool(_recent) and isinstance(_recent[0], dict)
 
-        L(f"  {'-'*70}")
+        if _is_dict:
+            L(f"  {'日期':<12} {'主力净流入(万)':>12} {'超大单(万)':>10} {'大单(万)':>10} {'中单(万)':>10} {'小单(万)':>10}")
+            L(f"  {'-'*70}")
+            for d in reversed(_recent):
+                L(f"  {d['date']:<12} {d['main_net']/1e4:>+12.0f} {d['super_net']/1e4:>+10.0f} {d['large_net']/1e4:>+10.0f} {d['mid_net']/1e4:>+10.0f} {d['small_net']/1e4:>+10.0f}")
+        else:
+            L(f"  {'主力净流入(万)':>12}")
+            L(f"  {'-'*30}")
+            for d in reversed(_recent):
+                L(f"  {d:>+12.0f}")
 
-        for d in reversed(_recent):
-            L(f"  {d['date']:<12} {d['main_net']/1e4:>+12.0f} {d['super_net']/1e4:>+10.0f} {d['large_net']/1e4:>+10.0f} {d['mid_net']/1e4:>+10.0f} {d['small_net']/1e4:>+10.0f}")
-
-        r20 = ff["data"][-20:]; tmain = sum(d["main_net"] for d in r20); tdays = sum(1 for d in r20 if d["main_net"]>0)
-
-        L(f"\n  近20日统计:\n    主力累计净流入: {tmain/1e4:.0f}万元\n    主力净流入天数: {tdays}/20天")
+        r20 = ff["data"][-20:]
+        if _is_dict:
+            tmain = sum(d["main_net"] for d in r20); tdays = sum(1 for d in r20 if d["main_net"]>0)
+            L(f"\n  近20日统计:\n    主力累计净流入: {tmain/1e4:.0f}万元\n    主力净流入天数: {tdays}/20天")
+        else:
+            tmain = sum(r20); tdays = sum(1 for d in r20 if d>0)
+            L(f"\n  近20日统计:\n    主力累计净流入: {tmain:.0f}万元\n    主力净流入天数: {tdays}/20天")
 
         L(f"  信号: {'主力资金近期净流入 → 偏多' if tmain>0 else '主力资金近期净流出 → 偏空'}")
 
@@ -950,7 +970,7 @@ async def generate_report_async(session, code, output_path, ind_comp=None, idx_q
 
         if len(margin)>=3:
 
-            _rq_up = sum(1 for i in range(3) if margin[i]["rqye"]>margin[i+1]["rqye"] if i+1<len(margin))
+            _rq_up = sum(1 for i in range(3) if i+1<len(margin) and margin[i]["rqye"]>margin[i+1]["rqye"])
 
             if _rq_up>=2:
 
@@ -1032,40 +1052,41 @@ async def generate_report_async(session, code, output_path, ind_comp=None, idx_q
                     pub_date = _dt.strptime(pub_time, "%Y-%m-%d")
                     if (_dt.now() - pub_date).days > 7:
                         continue
-                except Exception:
+                except (ValueError, TypeError):
                     pass
                 L(f"    · [{pub_time}] {title[:80]}")
                 _news_shown += 1
-                if _news_shown >= 3:
+                if _news_shown >= 7:
                     break
         if _news_shown == 0:
             L("    近7日暂无相关个股新闻")
-    except Exception:
+    except Exception as _e:
+        _debug_log(f"sht news_fetch: {_e}")
         L("    (新闻获取失败)")
 
     # 互动易问答（近7日有回复的优先）
     try:
-        qa_list = cninfo_irm(code, page_size=8)
-        qa_sorted = sorted(qa_list, key=lambda q: (0 if q.get("answer") and q["answer"].strip() else 1))
+        qa_list = cninfo_irm(code, page_size=10)
+        qa_sorted = sorted(qa_list, key=lambda x: (0 if x.get("answer") and x["answer"].strip() else 1))
         _qa_shown = 0
-        for q in qa_sorted:
-            q_time = q.get("ask_time", "")[:10]
-            if q_time:
+        for qa in qa_sorted:
+            qa_time = qa.get("ask_time", "")[:10]
+            if qa_time:
                 try:
-                    q_date = _dt.strptime(q_time, "%Y-%m-%d")
-                    if (_dt.now() - q_date).days > 7:
+                    qa_date = _dt.strptime(qa_time, "%Y-%m-%d")
+                    if (_dt.now() - qa_date).days > 7:
                         continue
-                except Exception:
+                except (ValueError, TypeError):
                     pass
-            answer = (q.get("answer") or "")[:60] if q.get("answer") and q["answer"].strip() else "(未回复)"
-            L(f"    · Q: {q.get('question','')[:40]} → A: {answer}")
+            answer = (qa.get("answer") or "")[:60] if qa.get("answer") and qa["answer"].strip() else "(未回复)"
+            L(f"    · Q: {qa.get('question','')[:40]} → A: {answer}")
             _qa_shown += 1
-            if _qa_shown >= 2:
+            if _qa_shown >= 7:
                 break
         if _qa_shown > 0:
             L(f"    (互动易 {_qa_shown} 条)")
-    except Exception:
-        pass
+    except Exception as _e:
+        _debug_log(f"eastmoney_news/irm error: {_e}")
 
     # 同花顺热榜
     try:
@@ -1073,8 +1094,8 @@ async def generate_report_async(session, code, output_path, ind_comp=None, idx_q
         in_hot = next((h for h in hot_all if h.get("code") == code), None)
         if in_hot:
             L(f"    🔥 同花顺热榜 #{in_hot['rank']} 热度{in_hot['heat']}")
-    except Exception:
-        pass
+    except Exception as _e:
+        _debug_log(f"ths_hot_list error: {_e}")
 
     L(f"\n  ➤ 近7日巨潮实质性重大公告:")
 
@@ -1288,9 +1309,8 @@ async def generate_report_async(session, code, output_path, ind_comp=None, idx_q
 
                             elif dv>=tl*0.9: signals.append(f"异动雷达：3日偏离值{dv:+.2f}%，距红线仅差{tl-dv:.2f}%，卡异动")
 
-    except:
-
-        pass
+    except Exception as _e:
+        _debug_log(f"sht deviation radar error: {_e}")
 
     L(f"  综合分析条目:")
 
@@ -1333,7 +1353,7 @@ async def generate_report_async(session, code, output_path, ind_comp=None, idx_q
     L("\n"+"─"*72); L("【仓位管理建议】"); L("─"*36)
 
     # V8.2: 使用统一评分接口
-    from stock_common import ScoreData, calculate_score
+    from stock_common import calculate_score
     
     # 构建评分数据
     score_data = ScoreData(
@@ -1427,8 +1447,8 @@ async def generate_report_async(session, code, output_path, ind_comp=None, idx_q
         else:
             _rating = "【中性偏谨慎】多项评分偏低，需注意风险控制"
         L(f"  综合投资建议: {_rating}")
-    except Exception:
-        pass
+    except Exception as _e:
+        _debug_log(f"multi_school_score error: {_e}")
 
     # 市场热度参考（同花顺热榜 + 概念命中）
     try:
@@ -1445,8 +1465,8 @@ async def generate_report_async(session, code, output_path, ind_comp=None, idx_q
         concepts = em_hot_concept(code)
         if concepts:
             L(f"     热门概念: {', '.join([c['concept'] for c in concepts[:3]])}")
-    except Exception:
-        pass
+    except Exception as _e:
+        _debug_log(f"em_hot_concept error: {_e}")
 
     # 累积快照数据（批量结束后统一写入）
     _SNAPSHOT_DATA[code] = {
@@ -1486,8 +1506,9 @@ if __name__ == "__main__":
 
         report_type = sn.split("_")[1]
 
-    except Exception:
+    except Exception as _e:
 
+        _debug_log(f"sht report_type_parse: {_e}")
         report_type = "sht"
 
     print(f"  📊 分析深度: {args.depth} (lite=快速/medium=标准/deep=深度)", flush=True)

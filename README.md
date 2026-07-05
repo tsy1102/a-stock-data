@@ -2,22 +2,27 @@
 
 一套自动化生成A股个股分析报告的Python工具集，支持短线、中线、长线、完整、估值、市场热点等多种报告类型，数据来源于新浪财经、东方财富、同花顺等主流平台。
 
+> **V9.2**：缓存交叉验证机制 + 全量异常处理规范化 + 日历数据可更新 + 稳定性加固
+
 ---
 
 ## 功能特性
 
 - **6种报告类型**：短线(sht)、中线(med)、长线(lng)、完整(ful)、估值(val)、市场热点(mak)
 - **多数据源整合**：新浪财经、东方财富、同花顺、通达信等
-- **交易日历判断**：自动识别中国A股交易日、节假日、调休日、午休时段
+- **F10 全覆盖**（V9.1）：12 个 F10 函数 + 11 个 HTTP 函数 F10 优先逻辑 + 6 种新章节 + 数据质量核查附录
+- **缓存交叉验证**（V9.2）：11 个多天 TTL 分类启用两次获取对比，一致才标记为已验证，防止错误数据被缓存
+- **交易日历判断**：自动识别中国A股交易日、节假日、调休日、午休时段；支持脚本更新数据（`python -m stock_common.stock_calendar --update`）
 - **云端同步**：支持Google Drive自动上传报告，快照文件自动云端备份
 - **智能快照管理**：自动生成评分快照，支持跨日期趋势分析和背离检测
 - **统一GD上传策略**：支持按股票代码和按类型的双模式上传，智能文件命名
 - **批量处理**：支持多股票、多报告类型并行生成
 - **代码清洗**：自动处理股票代码格式问题
-- **统一缓存层**：SQLite + TTL 自动过期，降低 API 请求频率
+- **统一缓存层**：SQLite + TTL 自动过期，支持交易日过期策略 + 交叉验证 + 异步连接复用
 - **异步并发**：30+ 异步函数支持高效并发请求
 - **类型安全**：mypy 静态检查通过，类型注解完整覆盖
 - **限流安全加固**：线程锁保护、429智能重试、TDX请求节流、限流统计监控
+- **异常处理规范**（V9.2）：无裸 `except:`，所有静默异常均加日志，Ctrl+C 可正常终止
 
 ---
 
@@ -59,7 +64,7 @@ python main.py --sht 600519 000858 03606 --med 600519 000858
 | `--sht` | 短线报告 | 90日内解禁、近期资金流向、短线技术指标 |
 | `--med` | 中线报告 | 180日内解禁、财务分析、行业对比、机构持仓 |
 | `--lng` | 长线报告 | 730日内解禁、深度财务分析、股东变化、估值分析 |
-| `--ful` | 完整报告 | 综合报告，包含所有分析维度 |
+| `--ful` | 完整报告 | 综合报告，六维评分，包含所有分析维度 |
 | `--val` | 估值报告 | PE/PB估值、行业估值对比、估值历史分位 |
 | `--mak` | 市场热点 | 行业热点、概念题材、资金流向 |
 
@@ -78,7 +83,7 @@ python main.py [选项] 股票代码...
   --val    生成估值报告
   --mak    生成市场热点报告
   --all    生成所有报告类型
-  --no-gd  禁用Google Drive上传
+  --no-upload  禁用Google Drive上传
   --help   显示帮助信息
 
 股票代码格式:
@@ -240,6 +245,37 @@ reports/
 ## 版本历史
 
 完整版本历史详见 [CHANGELOG.md](CHANGELOG.md)
+
+### v9.2.0 (2026-07-05)
+
+- 🔒 **缓存交叉验证机制**：11 个多天 TTL 分类（financial/balance_sheet/gross_margin_roe/basic_info/concept_blocks/lockup_expiry/eps_forecast/dividend/f10_financial/f10_shareholder/f10_share_capital）启用 `cross_verify=True`，两次获取数据一致才标记为已验证，防止错误数据被缓存
+- 🔒 **缓存并发安全加固**：`set_cache` 交叉验证分支的 SELECT-then-UPDATE 用 `_db_lock` 包裹，防止竞态丢失更新
+- ⚡ **异步连接复用**：新增 `_get_async_db()` 模块级单例，复用同一 aiosqlite 连接提升异步缓存性能
+- 📅 **日历更新脚本**：`scripts/update_calendar.py` 从 chinese-calendar 库提取数据自动更新 `stock_calendar.py`；支持 `python -m stock_common.stock_calendar --update` CLI 入口
+- 🐛 **异常处理规范化**：13 处裸 `except:` 全部改为 `except Exception:`（Ctrl+C 可正常终止）；约 70 处 `except Exception: pass` 静默吞异常全部加 `_debug_log` 日志
+- 🐛 **TDX 重连泄漏修复**：`_get_tdx_client` / `_get_mac_client` 异常重连前先 `close()` 旧连接，防止 socket fd 泄漏
+- 🐛 **main.py 模块级副作用修复**：`check_dependencies()` 从模块级移到 `if __name__ == "__main__":` 内
+- 🧹 **限流体系完善**：删除 `_em_request_lock`/`_gen_request_lock`/`_DOMAIN_SEMAPHORES` 死代码；异步请求补齐进程间协调 `_gen_wait_process_interval_async()`；`em_get()` 与 per-domain 限流器双向状态同步；删除 `get_industry_peers` / `get_mak_report` 中冗余硬编码 sleep
+- 🧹 **席位数据去年份化**：`seats-2026.json` → `seats.json`，跨年后无需手动修改
+- 🧹 **tests 9 个文件硬编码路径修复**：统一改为相对路径，换机器/CI 可正常运行
+
+### v9.1.1 (2026-07-04)
+
+- 🐛 **修复 ful 评分 theme→holder 映射 bug**：评分维度键名与数据来源不一致，统一为 `holder`（筹码面），权重默认值修正为 10%
+- 🐛 **补全 F10 交易日缓存策略**：`tdx_get_fund_flow` 和 `tdx_get_latest_announcements` 添加 `trading_day=True`，5 个高频分类全部按交易日过期
+- ✨ **ful 报告从五维升级为六维**：补全分红面显示，总分与显示维度一致（技术25%+估值20%+基本20%+资金15%+筹码10%+分红10%）
+- 🧹 **F10 死代码精简**：移除 6 个未使用的 F10 函数 + `render_f10_chapter` 渲染函数 + 2 个测试文件，精简约 700 行
+
+### v9.1.0 (2026-07-04)
+
+- 🔧 **F10 全覆盖工程**：用通达信 F10 协议替代/补充现有 HTTP 接口，降低东财限流风险，详见 `docs/TDX_F10_ROADMAP.md`
+- ➕ **12 个 F10 核心函数**（`tdx_client.py`）：异动/财务/股东/股本/新闻/研报/行业/经营/治理/资本运作/主题/概况
+- ➕ **6 种 F10 新章节**：异动风险/研发创新/财务深度/股东行为/治理结构/主营构成，按报告类型差异化集成
+- ➕ **数据质量核查附录**：6 项一致性验证（财务/股东/研报/资金流/股本/分红），差异 > 20% 标记警告
+- 🔁 **11 个 HTTP 函数 F10 优先逻辑**：F10 优先 + HTTP 兜底，7 个异步函数委托到同步版
+- 📅 **缓存层交易日过期策略**：`@cached(trading_day=True)` 按最近交易日过期，休市期间自动复用缓存
+- 🐛 **修复 sht 资金流渲染 TypeError**：东财回退返回 `List[float]`，原渲染代码期望 dict 导致崩溃
+- 📦 **版本号统一升级 V9.1**
 
 ### v9.0.0 (2026-07-02)
 

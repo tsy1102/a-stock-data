@@ -1,4 +1,4 @@
-"""stock_common — 统一基础工具包 (V8.9 模块化重构)
+"""stock_common — 统一基础工具包 (V9.2 稳定性加固)
 
 将原 stock_common.py (4300+行) 拆分为 4 个职责清晰的子模块：
   - sc_network:   网络层 / 限流 / Session 管理
@@ -37,8 +37,7 @@ from stock_common.sc_network import (
     EM_SESSION, EM_MIN_INTERVAL, _EM_LAST_CALL,
     # 限流
     _DOMAIN_LIMITS, _DOMAIN_LAST_TIME, _DOMAIN_LAST_TIME_LOCK, _RL_STATS,
-    _DOMAIN_SEMAPHORES, _em_last_request_time, _gen_last_request_time,
-    _em_request_lock, _gen_request_lock,
+    _em_last_request_time, _gen_last_request_time,
     # 进程间锁
     _em_lock_dir, _em_lock_file, _gen_lock_file,
     _file_lock_acquire, _file_lock_release,
@@ -49,7 +48,8 @@ from stock_common.sc_network import (
     # 异步请求
     _em_async_lock, _gen_async_lock, _em_async_last_request,
     _gen_async_last_request, _HAS_ASYNCIO, _HAS_AIOHTTP,
-    _ensure_async_locks, _em_wait_process_interval_async, create_async_session,
+    _ensure_async_locks, _em_wait_process_interval_async,
+    _gen_wait_process_interval_async, create_async_session,
     _async_request_with_retry, _async_quick_request,
 )
 
@@ -146,17 +146,6 @@ from stock_common.sc_datasource import (
 
 
 # ═══════════════════════════════════════════════════════════════
-# 第三部分：迁移完成，无需 legacy 加载
-# ═══════════════════════════════════════════════════════════════
-# 所有函数已迁移至 sc_network / sc_utils / sc_scoring / sc_datasource。
-# 原 stock_common.py 不再需要作为 fallback。
-
-_legacy = None
-_legacy_available = []
-_legacy_missing = []
-
-
-# ═══════════════════════════════════════════════════════════════
 # 注册 atexit（TDX 清理）
 # ═══════════════════════════════════════════════════════════════
 import atexit
@@ -167,12 +156,8 @@ atexit.register(_safe_cleanup_tdx)
 # 模块状态信息（用于调试）
 # ═══════════════════════════════════════════════════════════════
 _MIGRATION_STATUS = {
-    "sc_network": "migrated",      # 已迁移
-    "sc_scoring": "migrated",      # 已迁移
-    "sc_utils": "migrated",        # 已迁移
-    "sc_datasource": "migrated",   # 已迁移
-    "legacy_loaded": _legacy is not None,
-    "legacy_available_count": len(_legacy_available),
-    "legacy_missing_count": len(_legacy_missing),
-    "legacy_missing": _legacy_missing,
+    "sc_network": "migrated",
+    "sc_scoring": "migrated",
+    "sc_utils": "migrated",
+    "sc_datasource": "migrated",
 }

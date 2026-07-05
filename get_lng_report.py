@@ -1,8 +1,11 @@
 #!/usr/bin/env python3
 """
-get_lng_report.py — A股长线价投专属深度体检报告 (V9.0)
+get_lng_report.py — A股长线价投专属深度体检报告 (V9.2)
 
 版本信息:
+    V9.2 2026-07-05 - 异常处理规范化；缓存交叉验证机制启用
+    V9.1 2026-07-04 - F10 全覆盖：新增【财务深度/股东行为/治理结构/研发创新/主营构成】5章节+数据质量附录
+    V9.0 2026-07-02 - 舆情互动层（Layer 10）；上市日期 push2 fallback；valid_if 校验；_has_zero_price 拦截
     V8.9 2026-06-29 - 快照架构改进（批量结束统一写入）；清理冗余快照逻辑；模块版本统一
     V8.8 2026-06-25 - GD上传逻辑统一化 & 快照格式升级（TXT+自动上传）
     V8.7 2026-06-25 - 死代码清理：同步版替换为薄包装
@@ -28,9 +31,9 @@ from tdx_client import (tdx_get_security_bars, tdx_get_quote_full,
                          tdx_get_historical_high, tdx_get_dividend_history,
                          tdx_get_belong_boards, tdx_get_board_list,
                          tdx_get_latest_announcements, cleanup_tdx)
-from stock_common import (clean_codes, _safe_float, _request_with_retry, _quick_request, UA,
+from stock_common import (clean_codes, _safe_float, _request_with_retry, _quick_request, UA, _debug_log,
                            _market_code, eastmoney_datacenter, _em_filter,
-                           _load_settings, _load_strategy_config, holder_change,
+                           _load_strategy_config, holder_change,
                            get_strategic_announcements, get_holder_structure,
                            get_dragon_tiger_board,
                            create_async_session, eastmoney_datacenter_async,
@@ -103,7 +106,8 @@ async def _get_eps_from_em_reports_async(session, code):
             if this_year is not None:
                 return {"eps_cur": this_year, "eps_next": next_year, "analyst_count": 1, "source": "东财研报"}
         return None
-    except Exception:
+    except Exception as _e:
+        _debug_log(f"lng industry_comp: {_e}")
         return None
 
 
@@ -167,7 +171,8 @@ async def generate_report_async(session, code, output_path, ind_comp=None):
                         _ind_down = _id.get("down_count", 0)
                     L(f"  📊 行业周期定位: 全市场排名#{_ind_rank} | 涨幅{_ind_chg:+.2f}% | 上涨{_ind_up}家/下跌{_ind_down}家")
                     break
-    except Exception: pass
+    except Exception as _e:
+        _debug_log(f"lng industry_cycle error: {_e}")
     
     ext_list_date_raw = info.get("list_date", "")
     if ext_list_date_raw and len(ext_list_date_raw) >= 8:
@@ -208,7 +213,8 @@ async def generate_report_async(session, code, output_path, ind_comp=None):
                     if _profit > 0 and _shares > 0 and price_today > 0:
                         _eps = _profit / _shares
                         _ey = f"{_eps / price_today * 100:.2f}%"
-        except Exception: pass
+        except Exception as _e:
+            _debug_log(f"lng tdx_finance_info error: {_e}")
     L(f"    市盈率 PE(TTM): {_pe:.2f}x (盈利收益率粗估: {_ey})")
     _pe_static = q.get('pe_static', 0)
     L(f"    市盈率 PE(静态): {_pe_static:.2f}x" if _pe > 0 and _pe_static > 0 else f"    市盈率 PE(静态): N/A（亏损）")
@@ -225,7 +231,8 @@ async def generate_report_async(session, code, output_path, ind_comp=None):
                 if _ind.get("name") == _our_ind or _our_ind in _ind.get("name", ""):
                     L(f"  📊 板块横向对比: 本股PE={q.get('pe_ttm',0):.1f}x | 板块涨跌{_ind.get('change_pct',0):+.2f}%")
                     break
-    except Exception: pass
+    except Exception as _e:
+        _debug_log(f"lng industry_compare error: {_e}")
 
     L("\n【二、跨期财务纵深与长效业绩验证 (近8个报告期)】")
     L("─" * 72)
@@ -240,7 +247,7 @@ async def generate_report_async(session, code, output_path, ind_comp=None):
             try:
                 rev_yi = f"{float(rev)/1e8:.2f}" if rev and rev != "0" else "N/A"
                 profit_yi = f"{float(profit)/1e8:.2f}" if profit and profit != "0" else "N/A"
-            except:
+            except (ValueError, TypeError):
                 rev_yi, profit_yi = "N/A", "N/A"
             L(f"  {date_val:<12} {rev_yi:>14} {profit_yi:>14}")
         L("\n  💡 长线逻辑：观察其是否具备持续、平稳的造血能力，警惕大起大落的强周期股。")
@@ -288,7 +295,7 @@ async def generate_report_async(session, code, output_path, ind_comp=None):
                         gm = (rev - cost) / rev * 100
                     npm = profit / rev * 100
                     gm_rows.append({"date": item.get("报告日", ""), "gm": gm, "npm": npm})
-            except:
+            except (ValueError, TypeError, ZeroDivisionError):
                 pass
         if gm_rows:
             L(f"\n  ➤ 盈利能力与护城河追踪:")
@@ -312,7 +319,8 @@ async def generate_report_async(session, code, output_path, ind_comp=None):
                 _rev_cagr = (pow(_rev3[0]/_rev3[-1], 1/3)-1)*100
                 _prf_cagr_str = f"{(pow(_prf3[0]/_prf3[-1], 1/3)-1)*100:.1f}%" if _prf3[0] > 0 and _prf3[-1] > 0 else "N/A (亏损)"
                 L(f"  📊 近3年营收CAGR: {_rev_cagr:.1f}% | 净利润CAGR: {_prf_cagr_str}")
-        except Exception: pass
+        except Exception as _e:
+            _debug_log(f"lng cagr_calc error: {_e}")
 
     L("\n【三、财务健康度排雷（现金流验证与商誉预警）】")
     L("─" * 72)
@@ -325,7 +333,8 @@ async def generate_report_async(session, code, output_path, ind_comp=None):
             if fi is not None and not fi.empty:
                 _tdx_ocf = _safe_float(fi.iloc[0].get('jingying_xianjinliu', 0))
                 _tdx_np = _safe_float(fi.iloc[0].get('jing_lirun', 0))
-    except Exception: pass
+    except Exception as _e:
+        _debug_log(f"lng tdx_ocf error: {_e}")
 
     if bs_data:
         latest_bs = bs_data[0]
@@ -398,7 +407,8 @@ async def generate_report_async(session, code, output_path, ind_comp=None):
                 ocf = _safe_float(tdx_fi.iloc[0].get('jingying_xianjinliu', 0)) / 1e8
                 if ocf != 0:
                     parts.append(f"经营现金流 {ocf:.2f}亿")
-    except Exception: pass
+    except Exception as _e:
+        _debug_log(f"lng tdx_fi_ocf error: {_e}")
     if parts:
         L("\n  ➤ 当期核心财务指标一览:")
         for p in parts:
@@ -424,7 +434,7 @@ async def generate_report_async(session, code, output_path, ind_comp=None):
                     eps_has_data = True
                 elif i == 1:
                     eps_next = mean_v
-            except:
+            except (ValueError, TypeError, IndexError):
                 pass
     if not eps_has_data:
         em_eps = await _get_eps_from_em_reports_async(session, code)
@@ -464,7 +474,8 @@ async def generate_report_async(session, code, output_path, ind_comp=None):
                             if _hpe:
                                 _pc = sum(1 for p in _hpe if p < pe_fwd)/len(_hpe)*100
                                 L(f"  PE历史分位: {_pc:.0f}%（当前PE高于{_pc:.0f}%的历史时间，数值越高越贵）")
-                except Exception: pass
+                except Exception as _e:
+                    _debug_log(f"lng pe_percentile error: {_e}")
                 if digest_25 > 0:
                     L(f"    模型测算：当前估值消化至 25 倍合理市盈率约需 {digest_25:.1f} 年")
                 else:
@@ -697,9 +708,9 @@ async def generate_report_async(session, code, output_path, ind_comp=None):
         else:
             _rating = "【中性偏谨慎】多项评分偏低，需注意风险控制"
         L(f"  综合投资建议: {_rating}")
-    except Exception:
-        pass
-    
+    except Exception as _e:
+        _debug_log(f"lng multi_school_score error: {_e}")
+
     L("\n" + "=" * 72)
     L(f"  长线基石: 强劲自由现金流 / 持续高 ROE / 合理估值 / 高股息防御")
     L("=" * 72)
@@ -713,6 +724,7 @@ async def generate_report_async(session, code, output_path, ind_comp=None):
     }
 
     output = "\n".join(filter(None, lines))
+
     with open(output_path, "w", encoding="utf-8") as f:
         f.write(output)
     return output
@@ -724,7 +736,8 @@ if __name__ == "__main__":
     time_str = datetime.now().strftime("%Y%m%d_%H%M")
     try:
         report_type = sn.split("_")[1]
-    except Exception:
+    except Exception as _e:
+        _debug_log(f"lng scoring: {_e}")
         report_type = "lng"
 
     # ─── GD 认证 ───────────────────────────────────────────────

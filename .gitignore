@@ -17,6 +17,10 @@ logs/
 __pycache__/
 *.pyc
 *.pyo
+.pytest_cache/
+
+# TRAE IDE
+.reasonix/
 
 # 缓存文件
 holder_cache.json

@@ -1,4 +1,4 @@
-"""stock_common — 统一基础工具包 (V9.2 稳定性加固)
+"""stock_common — 统一基础工具包 (V9.3 盘前行情智能切换)
 
 将原 stock_common.py (4300+行) 拆分为 4 个职责清晰的子模块：
   - sc_network:   网络层 / 限流 / Session 管理

@@ -1,4 +1,7 @@
-"""stock_common/sc_datasource.py - 数据源查询模块 (V9.2)
+"""stock_common/sc_datasource.py - 数据源查询模块 (V9.3)
+
+V9.3 更新：
+  - 融资融券数据清洗（get_margin_trading）：日期截断到 10 位，过滤金额全为 0 的无效行
 
 V9.2 更新：
   - 约 24 处 except Exception: pass 加 _debug_log 日志

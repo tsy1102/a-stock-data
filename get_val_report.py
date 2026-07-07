@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
 """
-get_val_report.py — 18 策略全市场发现引擎 (V9.2)
+get_val_report.py — 18 策略全市场发现引擎 (V9.3)
 方法论驱动的 A 股选股脚本，从全市场发现可操作标的。
 每策略精选 TOP 5，生成含具体数值推理的报告。
 
 版本信息:
+    V9.3   2026-07-07 - 盘前行情模式：9:30前使用上一交易日日K线数据；修复 _safe_float 对 pandas Series 的处理；删除报告标题硬编码版本号
     V9.2   2026-07-05 - 异常处理规范化；缓存交叉验证机制启用
     V9.1.1 2026-07-04 - 移除 deprecated F10 章节追加函数；F10 死代码精简
     V9.1 2026-07-04 - 版本号统一升级（F10 章节/附录集成在 ful/med/lng 报告中）
@@ -1362,7 +1363,7 @@ def run_discovery(output_path):
     _mkt_status, _mkt_note = get_market_status(_t_now)
 
     L("─" * 85)
-    L(f"  🔍 全市场18策略发现引擎V8.9 — {today_str} {_t_now.strftime('%H:%M:%S')}（{_mkt_note}）" )
+    L(f"  🔍 全市场18策略发现引擎 — {today_str} {_t_now.strftime('%H:%M:%S')}（{_mkt_note}）")
     L("─" * 85)
     L(f"  扫描模式: 方法论驱动的多因子全市场筛选（含Top5%流动性池）")
     # 加载策略阈值配置
@@ -1530,7 +1531,7 @@ async def run_discovery_async(output_path):
     def L(s=""): lines.append(s)
 
     L("─" * 85)
-    L(f"  A 股策略发现报告 V8.9  [{today_str} {_t_now.strftime('%H:%M:%S')}]")
+    L(f"  A 股策略发现报告  [{today_str} {_t_now.strftime('%H:%M:%S')}]")
     L("─" * 85)
     L(f"  市场: A 股 | 策略: 18 | 引擎: asyncio | 并发: 3")
     L("-" * 85)
@@ -1670,11 +1671,11 @@ async def run_discovery_async(output_path):
 
 
 if __name__ == "__main__":
-    args = common_parse_args("18 策略全市场发现引擎V8.9")
+    args = common_parse_args("18 策略全市场发现引擎")
     base_dir = os.path.dirname(os.path.abspath(__file__))
     ts = datetime.now().strftime("%Y%m%d_%H%M")
     op = os.path.join(args.output, f"get_val_report_{ts}.txt")
-    print(f"🚀 全市场18策略发现引擎V8.9启动 — {date.today()}", flush=True)
+    print(f"🚀 全市场18策略发现引擎启动 — {date.today()}", flush=True)
     print("  ⏱ 预计运行 3-7 分钟（asyncio 异步模式）", flush=True)
 
     os.makedirs(args.output, exist_ok=True)

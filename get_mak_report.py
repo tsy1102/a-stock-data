@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 """
-get_mak_report.py — A股异动及行业轮动扫描报告 (V9.2)
+get_mak_report.py — A股异动及行业轮动扫描报告 (V9.3)
 融合全市场异动扫描与行业轮动强度扫描
 
 版本信息:
+    V9.3 2026-07-07 - 盘前行情模式：9:30前使用上一交易日日K线数据；删除报告标题硬编码版本号
     V9.2 2026-07-05 - 异常处理规范化；缓存交叉验证机制启用
     V9.1 2026-07-04 - 版本号统一升级（无功能变更，F10 公告兜底已在 V9.0 实现）
     V9.0 2026-07-02 - 舆情互动层（Layer 10）；上市日期 push2 fallback；valid_if 校验；_has_zero_price 拦截
@@ -423,7 +424,7 @@ def generate_sector_report(output_path):
     lines = []
     def L(s=""): lines.append(s)
     L("="*90)
-    L(f"  📊 A股异动及行业轮动扫描报告V8.9 — {today_str} {now.strftime('%H:%M:%S')}（{_mkt_note}）")
+    L(f"  📊 A股异动及行业轮动扫描报告 — {today_str} {now.strftime('%H:%M:%S')}（{_mkt_note}）")
     L("="*90)
     print("[数据装载] 获取全市场多日数据与指数基准...", flush=True)
     all_stocks = get_market_abnormal_data()

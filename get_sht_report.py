@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 
-"""get_sht_report.py — A股短线个股深度数据报告 (V9.2)
+"""get_sht_report.py — A股短线个股深度数据报告 (V9.3)
 
 版本信息:
+    V9.3 2026-07-07 - 盘前行情模式：9:30前使用上一交易日日K线数据；盘前提示文本；删除报告标题硬编码版本号
     V9.2 2026-07-05 - 异常处理规范化；缓存交叉验证机制启用
     V9.1 2026-07-04 - F10 全覆盖：新增【异动与风险提示】章节+数据质量附录；修复资金流渲染 float/dict 兼容
     V9.0 2026-07-02 - 舆情互动层（Layer 10）；上市日期 push2 fallback；valid_if 校验；_has_zero_price 拦截
@@ -291,7 +292,7 @@ async def generate_report_async(session, code, output_path, ind_comp=None, idx_q
 
     def L(s=""): lines.append(s)
 
-    L("="*72); L(f"  {code} 个股深度数据报告V8.9 [{_dc['desc']}] — {today_str} {datetime.now().strftime('%H:%M:%S')}"); L("="*72); L("")
+    L("="*72); L(f"  {code} 个股深度数据报告 [{_dc['desc']}] — {today_str} {datetime.now().strftime('%H:%M:%S')}"); L("="*72); L("")
 
     _30d_str = (datetime.now()-timedelta(days=30)).strftime("%Y-%m-%d")
 
@@ -355,7 +356,9 @@ async def generate_report_async(session, code, output_path, ind_comp=None, idx_q
     q = get_tencent_quote(code); price_today = q.get("price",0) if q else 0
 
     if q:
-
+        if q.get("_is_pre_market"):
+            L(f"  ⚠️ 盘前模式（9:30前），以下行情数据基于上一交易日收盘数据")
+        
         L(f"  当前价:   {price_today:.2f}元")
 
         L(f"  涨跌额:   {q.get('change_amt',0):.2f}元  涨跌幅: {q.get('change_pct',0):.2f}%")

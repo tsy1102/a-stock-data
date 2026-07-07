@@ -7,6 +7,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [9.3.0] - 2026-07-07
+
+### Added
+
+- **盘前行情模式**（`tdx_client.py`）：9:30前自动使用上一交易日日K线数据，避免实时接口返回 0 导致涨跌幅计算为 -100%
+  - 新增 `_is_before_market_open()` 判断函数
+  - 新增 `_get_trading_date_for_quote()` 生成带交易日期的缓存 Key
+  - 新增 `_pre_market_quote_from_kline()` 从日K线构建盘前行情
+- **缓存 Key 交易日期隔离**：行情缓存 Key 格式改为 `Q:{code}:{trading_date}`，盘前/盘中数据独立保留，避免相互覆盖
+- **报告盘前提示**：sht/med/lng 等报告在盘前模式时显示“⚠️ 盘前模式（9:30前），以下行情数据基于上一交易日收盘数据”
+
+### Changed
+
+- **版本号统一清理**：所有报告脚本和终端输出中的硬编码版本号（如 V8.9）全部删除，避免版本更新时遗漏
+- **融资融券数据清洗**（`sc_datasource.py`）：F10 数据增加日期截断（`[:10]`）和全 0 行过滤，解决 688305 数据拼接问题
+
+### Fixed
+
+- **sht 脚本 688305 list index out of range**：增加 `_fd` / `holders` 等多处列表索引边界检查
+- **med 脚本历史财务业绩显示旧数据**：限制 `get_sina_financial_report` 返回近 5 季度数据
+- **ful 脚本成功/失败统计显示 0**：统计逻辑改为基于数据生成结果，不再依赖上传结果
+- **get_val_report.py FutureWarning 无限循环**：修正 `_safe_float` 对 pandas Series 的处理方式
+- **--no-upload 对快照异常上传不生效**：`main.py` 传递 `skip_upload` 参数到快照上传逻辑
+
 ## [9.2.0] - 2026-07-05
 
 ### Added

@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
-"""tdx_client.py — V9.2 通达信共享行情模块。
+"""tdx_client.py — V9.3 通达信共享行情模块。
 
 提供统一的 easy-tdx 数据访问接口，所有适配器函数返回格式与 V3 完全兼容。
 当 TDX 服务器不可达时自动回退到原始 HTTP 源（百度K线/腾讯行情）。
 
 版本信息:
+    V9.3   2026-07-07 - 盘前行情模式：9:30前使用日K线上一交易日数据，避免实时接口返回0导致涨跌幅-100%；行情缓存Key增加交易日期，盘前/盘中数据独立保留
     V9.2   2026-07-05 - 异常处理规范化；重连前关闭旧连接防止泄漏
     V9.1.1 2026-07-04 - 补全 F10 交易日缓存策略；精简 6 个未使用的 F10 函数
     V9.1   2026-07-04 - F10 全覆盖：新增12个F10函数（公司概况/财务/股东/股本/新闻/研报/行业/经营/治理/资本运作/主题/异动）
@@ -428,8 +429,14 @@ def _baidu_kline_full_fallback(code: str, is_index: bool = False) -> Tuple[List[
     except Exception:
         return [], []
 
-def _tencent_quote_full_fallback(code: str) -> Dict[str, Any]:
-    """腾讯行情兜底 → dict(含 name, price, change_pct, pe, pb 等)。"""
+def _tencent_quote_full_fallback(code: str, is_pre_market: bool = False) -> Dict[str, Any]:
+    """腾讯行情兜底 → dict(含 name, price, change_pct, pe, pb 等)。
+    
+    V9.3: 盘前模式（is_pre_market=True）使用上一交易日日K线数据，避免实时接口返回0值
+    """
+    if is_pre_market:
+        return _pre_market_quote_from_kline(code)
+    
     try:
         url = f"https://qt.gtimg.cn/q={_market_prefix(code)}{code}"
         r = _quick_request(url, headers={"User-Agent": UA}, timeout=10)
@@ -450,6 +457,66 @@ def _tencent_quote_full_fallback(code: str) -> Dict[str, Any]:
             "bid1_vol": _safe_float(vals[10]) * 100,
         }
     except Exception:
+        return {}
+
+
+def _pre_market_quote_from_kline(code: str) -> Dict[str, Any]:
+    """盘前模式：从日K线数据构建行情字典。
+    
+    使用上一交易日的收盘价作为当前价，上上个交易日收盘价作为昨收，
+    重新计算涨跌幅。
+    """
+    try:
+        keys, rows = tdx_get_security_bars(code, count=3)
+        if not keys or len(rows) < 2:
+            return {}
+        
+        idx_close = keys.index('close') if 'close' in keys else 2
+        idx_open = keys.index('open') if 'open' in keys else 1
+        idx_high = keys.index('high') if 'high' in keys else 3
+        idx_low = keys.index('low') if 'low' in keys else 4
+        idx_amount = keys.index('amount') if 'amount' in keys else 6
+        
+        last_row = rows[0]
+        prev_row = rows[1]
+        
+        close = _safe_float(last_row[idx_close], 0)
+        prev_close = _safe_float(prev_row[idx_close], 0)
+        open_val = _safe_float(last_row[idx_open], 0)
+        high = _safe_float(last_row[idx_high], 0)
+        low = _safe_float(last_row[idx_low], 0)
+        amount_wan = _safe_float(last_row[idx_amount], 0) / 10000
+        
+        change_amt = 0.0
+        change_pct = 0.0
+        if prev_close > 0:
+            change_amt = close - prev_close
+            change_pct = change_amt / prev_close * 100
+        
+        return {
+            "name": "", 
+            "price": close,
+            "last_close": prev_close,
+            "open": open_val,
+            "change_amt": change_amt,
+            "change_pct": change_pct,
+            "high": high,
+            "low": low,
+            "amount_wan": amount_wan,
+            "turnover_pct": 0.0,
+            "pe_ttm": 0.0,
+            "amplitude_pct": 0.0,
+            "float_mcap_yi": 0.0,
+            "mcap_yi": 0.0,
+            "pb": 0.0,
+            "limit_up": 0.0,
+            "limit_down_price": 0.0,
+            "vol_ratio": 0.0,
+            "pe_static": 0.0,
+            "_is_pre_market": True,
+        }
+    except Exception as _e:
+        _debug_log(f"pre-market quote from kline error: {_e}")
         return {}
 
 def _tencent_batch_fallback(codes: List[str]) -> Dict[str, Dict[str, Any]]:
@@ -564,13 +631,35 @@ def tdx_get_latest_bar_with_ma(code: str):
     result['ma20avgprice'] = f"{_sma(closes, 20):.2f}"
     return result
 
+def _is_before_market_open() -> bool:
+    """判断当前是否为盘前时段（9:30之前）。"""
+    now = datetime.now()
+    return now.hour < 9 or (now.hour == 9 and now.minute < 30)
+
+
+def _get_trading_date_for_quote() -> str:
+    """获取当前行情数据对应的交易日期。
+    
+    盘前（<9:30）：使用上一交易日日期
+    盘中（>=9:30）：使用今日日期
+    """
+    if _is_before_market_open():
+        from stock_common.stock_calendar import get_last_trading_day
+        return get_last_trading_day().strftime("%Y-%m-%d")
+    return datetime.now().strftime("%Y-%m-%d")
+
+
 def tdx_get_quote_full(code: str) -> Dict[str, Any]:
-    """获取个股完整行情（腾讯兜底，TDX 补强，V7.5 加锁 + 缓存）。"""
-    cache_key = f"Q:{code}"
+    """获取个股完整行情（腾讯兜底，TDX 补强，V7.5 加锁 + 缓存）。
+    
+    V9.3: 盘前模式（9:30前）使用上一交易日日K线数据，缓存Key包含交易日期
+    """
+    trading_date = _get_trading_date_for_quote()
+    cache_key = f"Q:{code}:{trading_date}"
     cached = _TDX_QUOTE_CACHE.get(cache_key)
     if cached is not None:
         return cached
-    result = _tencent_quote_full_fallback(code)
+    result = _tencent_quote_full_fallback(code, is_pre_market=_is_before_market_open())
     with _TDX_CALL_LOCK:
         cached = _TDX_QUOTE_CACHE.get(cache_key)
         if cached is not None:

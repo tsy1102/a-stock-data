@@ -1,10 +1,14 @@
 #!/usr/bin/env python3
-"""main.py — V9.2 统一 CLI 入口（脚本内 asyncio 并发 + 进程级串行防封）
+"""main.py — V9.3 统一 CLI 入口（脚本内 asyncio 并发 + 进程级串行防封）
 
 并发策略（两层次序，确保东财接口不被封）：
   1) 进程级：asyncio.create_subprocess_exec 串行运行脚本（concurrency=1）
   2) 脚本级：每个脚本内部用 Semaphore(3) 并发 3 只股票
              (stock_common.py 的 Semaphore(3) + 1.1s 间隔统一控制)
+
+V9.3 更新：
+  - 修复 --no-upload 参数对快照异常上传未生效的问题（传递 skip_upload 参数）
+  - 删除终端输出中的硬编码版本号（如 V8.9）
 
 V9.2 更新：
   - 缓存交叉验证机制（多天 TTL 分类启用 cross_verify）
@@ -87,7 +91,7 @@ _MAX_CONCURRENCY = 1  # 关键：脚本内部已用 Semaphore(3) 并发 3 只股
 
 def parse_args():
     parser = argparse.ArgumentParser(
-        description="V8.9: A股数据工具 — 统一入口（并发版，防封限流）",
+        description="A股数据工具 — 统一入口（并发版，防封限流）",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 示例:
@@ -219,7 +223,7 @@ async def main_async():
     output_dir = ensure_output_dir(args.output)
     ts = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     conc = min(max(args.concurrency, 1), 5)
-    print(f"[{ts}] V8.9 批量报告启动 | 并发度: {conc} | 输出目录: {output_dir}", flush=True)
+    print(f"[{ts}] 批量报告启动 | 并发度: {conc} | 输出目录: {output_dir}", flush=True)
     print(f"  GD上传: {'跳过' if args.no_upload else '启用'} | 防封限流: 文件协调 + 1.0s+ 间隔", flush=True)
     print("-" * 60, flush=True)
 
@@ -284,7 +288,7 @@ async def main_async():
 
     # 汇总
     print(f"{'=' * 60}", flush=True)
-    print(f"[完成] V8.9 批量报告总耗时: {total_time:.1f} 秒 " +
+    print(f"[完成] 批量报告总耗时: {total_time:.1f} 秒 " +
           f"(每批 {conc} 并发，已做三层防封保护：线程锁 + 进程间文件协调 + 时间戳)",
           flush=True)
     for name, (rc, dt, label, _) in results.items():

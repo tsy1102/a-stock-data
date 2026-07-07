@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 """
-get_ful_report.py — A股七层全维度分析引擎 V9.2（含行业对比/风险扫描/六维加权评分）
+get_ful_report.py — A股七层全维度分析引擎 V9.3（含行业对比/风险扫描/六维加权评分）
 
 版本信息:
+    V9.3   2026-07-07 - 盘前行情模式：9:30前使用上一交易日日K线数据；修复成功/失败统计为0问题；删除报告标题硬编码版本号
     V9.2   2026-07-05 - 异常处理规范化；缓存交叉验证机制启用
     V9.1.1 2026-07-04 - 六维评分透明化（补全分红面）；修复 theme→holder 映射bug；F10死代码精简
     V9.1 2026-07-04 - F10 全覆盖：新增全部6个F10章节（异动/财务深度/股东行为/治理/研发/主营）+数据质量附录
@@ -1588,7 +1589,7 @@ def format_report(code: str, layers: Dict[str, Any]) -> str:
     _mkt_status, _mkt_note = get_market_status()
 
     L("═" * 78)
-    L(f"  个股七层全维度分析报告 V8.9")
+    L(f"  个股七层全维度分析报告")
     L(f"  股票代码: {code}")
     L(f"  生成时间: {now}")
     if _mkt_status in ("lunch", "closed", "post_market", "pre_market"):
@@ -2147,7 +2148,7 @@ def main():
 
     header_lines = []
     header_lines.append("=" * 78)
-    header_lines.append("  A股九层全维度分析引擎 V2.0")
+    header_lines.append("  A股九层全维度分析引擎")
     header_lines.append(f"  启动时间: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}（{_mkt_note}）")
     header_lines.append(f"  分析标的: {', '.join(codes)}")
     header_lines.append(f"  并行模式: {'OFF(顺序)' if args.no_parallel else f'ON({_MAX_WORKERS}线程)'}  |  GD上传: {'SKIP' if args.no_upload else '启用'}")

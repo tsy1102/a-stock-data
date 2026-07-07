@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 """
-get_med_report.py — A股中线深度投研报告 (V9.2)
+get_med_report.py — A股中线深度投研报告 (V9.3)
 
 版本信息:
+    V9.3 2026-07-07 - 盘前行情模式：9:30前使用上一交易日日K线数据；财务数据限制近5季度；盘前提示文本；删除报告标题硬编码版本号
     V9.2 2026-07-05 - 异常处理规范化；缓存交叉验证机制启用
     V9.1 2026-07-04 - F10 全覆盖：新增【财务深度/股东行为/主营构成】3章节+数据质量附录
     V9.0 2026-07-02 - 舆情互动层（Layer 10）；上市日期 push2 fallback；valid_if 校验；_has_zero_price 拦截
@@ -137,7 +138,7 @@ async def generate_report_async(session, code, output_path, ind_comp=None, hsgt=
     def L(s=""): lines.append(s)
 
     L("=" * 72)
-    L(f"  {code} 中线深度投研报告V8.9 — {today_str} {datetime.now().strftime('%H:%M:%S')}")
+    L(f"  {code} 中线深度投研报告 — {today_str} {datetime.now().strftime('%H:%M:%S')}")
     L("=" * 72)
     L("")
     _sc = _load_strategy_config()
@@ -246,6 +247,8 @@ async def generate_report_async(session, code, output_path, ind_comp=None, hsgt=
         L(f"  板块内排名: 按总市值排序, 该股排名第 {peer_data['my_rank']}/{peer_data['industry_count']} 位")
 
     L(f"  总市值:   {q.get('mcap_yi', 0):.2f}亿元 (流通股本 {info.get('float_shares', 0)/1e8:.2f}亿股)")
+    if q.get("_is_pre_market"):
+        L(f"  ⚠️ 盘前模式（9:30前），以下行情数据基于上一交易日收盘数据")
     L(f"  当前价:   {price_today:.2f}元  (今日涨跌: {q.get('change_pct', 0):.2f}%)")
     _pe_ttm = q.get('pe_ttm', 0); _pe_static = q.get('pe_static', 0)
     _pe_s = f"{_pe_static:.2f}x" if _pe_ttm > 0 and _pe_static > 0 else "N/A（亏损）"

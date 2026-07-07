@@ -1,10 +1,14 @@
 #!/usr/bin/env python3
-"""stock_cache.py — V9.2 统一缓存层 (SQLite + 装饰器模式)
+"""stock_cache.py — V9.3 统一缓存层 (SQLite + 装饰器模式)
 
 设计目标：
   - 所有 get_* 网络请求函数统一走本层，避免重复请求 + 降低 API 被封概率
   - 基于 SQLite 的持久化缓存，支持 TTL 自动过期 + LRU 清理
   - 装饰器模式：@cached / @cached_async，不破坏原函数签名
+
+V9.3 更新：
+  - 行情缓存 Key 增加交易日期隔离：格式改为 Q:{code}:{trading_date}，盘前/盘中数据独立保留
+  - 异步缓存字段迁移补全：_get_async_db() 自动迁移 prev_value / verified 列
 
 V9.2 更新：
   - 新增交叉验证机制（cross_verify）：11 个多天 TTL 分类启用两次获取对比

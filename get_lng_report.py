@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 """
-get_lng_report.py — A股长线价投专属深度体检报告 (V9.2)
+get_lng_report.py — A股长线价投专属深度体检报告 (V9.3)
 
 版本信息:
+    V9.3 2026-07-07 - 盘前行情模式：9:30前使用上一交易日日K线数据；删除报告标题硬编码版本号
     V9.2 2026-07-05 - 异常处理规范化；缓存交叉验证机制启用
     V9.1 2026-07-04 - F10 全覆盖：新增【财务深度/股东行为/治理结构/研发创新/主营构成】5章节+数据质量附录
     V9.0 2026-07-02 - 舆情互动层（Layer 10）；上市日期 push2 fallback；valid_if 校验；_has_zero_price 拦截
@@ -137,7 +138,7 @@ async def generate_report_async(session, code, output_path, ind_comp=None):
     def L(s=""): lines.append(s)
 
     L("=" * 72)
-    L(f"  {code} 长线价投专属深度体检报告V8.9 — {today_str} {datetime.now().strftime('%H:%M:%S')}")
+    L(f"  {code} 长线价投专属深度体检报告 — {today_str} {datetime.now().strftime('%H:%M:%S')}")
     L("=" * 72)
     L("")
 

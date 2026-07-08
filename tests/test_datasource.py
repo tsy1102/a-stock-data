@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 """数据源诊断脚本 - 测试各接口是否正常响应
 
+V2.3 2026-07-08 - V9.3.1 新增 MacClient 三项测试（连接/所属板块/板块成员）
+
 V2.2 2026-06-25 - V8.7 版本同步（删除社交热榜测试）
 
 V2.1 2026-06-24 - 新增TDX TCP测试/修复东财reportName
@@ -222,21 +224,17 @@ def test_tdx_tcp():
     try:
         import sys
         import os
-        # 添加项目根目录到路径
         sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
         
         from tdx_client import _check_tdx, tdx_get_security_bars
         
-        # 第一步：检查TDX连接
         if not _check_tdx():
             return {"status": "failed", "error": "TDX连接失败（easy_tdx可能未安装或服务器不可达）"}
         
-        # 第二步：获取K线数据验证
         bars = tdx_get_security_bars("600519", 5)
         if bars and len(bars) == 2 and len(bars[1]) > 0:
             return {"status": "success", "data": f"TDX正常，返回{len(bars[1])}根K线"}
         
-        # 第三步：尝试获取行情
         from tdx_client import tdx_get_quote_full
         quote = tdx_get_quote_full("600519")
         if quote and quote.get("price"):
@@ -245,6 +243,173 @@ def test_tdx_tcp():
         return {"status": "failed", "error": "TDX连接成功但数据异常"}
     except ImportError as e:
         return {"status": "failed", "error": f"依赖未安装: {e}"}
+    except Exception as e:
+        return {"status": "failed", "error": str(e)}
+
+
+def test_tdx_finance_info():
+    """测试TDX财务信息接口（get_finance_info）
+    
+    该接口用于获取上市日期、总股本、流通股本等信息。
+    """
+    try:
+        import sys
+        import os
+        sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+        
+        from tdx_client import _check_tdx, _get_tdx_client
+        
+        if not _check_tdx():
+            return {"status": "failed", "error": "TDX连接失败"}
+        
+        client = _get_tdx_client()
+        if client is None:
+            return {"status": "failed", "error": "获取TDX客户端失败"}
+        
+        info = client.get_finance_info(1, "600519")
+        if info is not None and not info.empty:
+            ipo_date = info.iloc[0].get('ipo_date', 0)
+            if ipo_date:
+                return {"status": "success", "data": f"获取成功，上市日期={ipo_date}"}
+            return {"status": "success", "data": f"获取成功，返回{len(info.columns)}个字段"}
+        return {"status": "failed", "error": "get_finance_info返回空数据"}
+    except Exception as e:
+        return {"status": "failed", "error": str(e)}
+
+
+def test_tdx_fund_flow():
+    """测试TDX资金流接口（get_fund_flow）
+    
+    该接口用于获取个股资金流向数据。
+    """
+    try:
+        import sys
+        import os
+        sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+        
+        from tdx_client import _check_tdx, _get_tdx_client
+        
+        if not _check_tdx():
+            return {"status": "failed", "error": "TDX连接失败"}
+        
+        client = _get_tdx_client()
+        if client is None:
+            return {"status": "failed", "error": "获取TDX客户端失败"}
+        
+        flow = client.get_fund_flow(1, "600519")
+        if flow is not None and not flow.empty:
+            return {"status": "success", "data": f"获取成功，返回{len(flow)}条资金流数据"}
+        return {"status": "warning", "data": "get_fund_flow返回空数据（可能非交易时段）", "note": "资金流"}
+    except Exception as e:
+        return {"status": "failed", "error": str(e)}
+
+
+def test_tdx_xdxr_info():
+    """测试TDX分红除权接口（get_xdxr_info）
+    
+    该接口用于获取分红、送股、配股等信息。
+    """
+    try:
+        import sys
+        import os
+        sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+        
+        from tdx_client import _check_tdx, _get_tdx_client
+        
+        if not _check_tdx():
+            return {"status": "failed", "error": "TDX连接失败"}
+        
+        client = _get_tdx_client()
+        if client is None:
+            return {"status": "failed", "error": "获取TDX客户端失败"}
+        
+        xdxr = client.get_xdxr_info(1, "600519")
+        if xdxr is not None and not xdxr.empty:
+            return {"status": "success", "data": f"获取成功，返回{len(xdxr)}条分红除权数据"}
+        return {"status": "warning", "data": "get_xdxr_info返回空数据", "note": "分红除权"}
+    except Exception as e:
+        return {"status": "failed", "error": str(e)}
+
+
+def test_tdx_mac_client():
+    """测试TDX MacClient（行情中心接口）连接
+    
+    MacClient 用于获取板块数据、所属板块等，与 TdxClient 是独立连接。
+    """
+    try:
+        import sys
+        import os
+        sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+        
+        from tdx_client import _check_mac, _get_mac_client
+        
+        if not _check_mac():
+            return {"status": "failed", "error": "MacClient连接失败"}
+        
+        client = _get_mac_client()
+        if client is None:
+            return {"status": "failed", "error": "获取MacClient失败"}
+        
+        return {"status": "success", "data": "MacClient连接正常"}
+    except Exception as e:
+        return {"status": "failed", "error": str(e)}
+
+
+def test_tdx_belong_boards():
+    """测试TDX获取股票所属板块（MacClient接口）
+    
+    测试上交所和深交所股票的板块获取。
+    """
+    try:
+        import sys
+        import os
+        sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+        
+        from tdx_client import tdx_get_belong_boards
+        
+        # 测试上交所股票
+        sh_result = tdx_get_belong_boards("601718")
+        if sh_result:
+            sh_industry = sh_result.get("industry", [])
+            sh_info = f"上交所601718: {len(sh_industry)}个行业板块"
+        else:
+            sh_info = "上交所601718: 获取失败"
+        
+        # 测试深交所股票
+        sz_result = tdx_get_belong_boards("000100")
+        if sz_result:
+            sz_industry = sz_result.get("industry", [])
+            sz_info = f"深交所000100: {len(sz_industry)}个行业板块"
+        else:
+            sz_info = "深交所000100: 获取失败"
+        
+        if sh_result or sz_result:
+            return {"status": "success", "data": f"{sh_info}, {sz_info}"}
+        return {"status": "failed", "error": "上交所和深交所股票板块获取均失败"}
+    except Exception as e:
+        return {"status": "failed", "error": str(e)}
+
+
+def test_tdx_board_members():
+    """测试TDX获取板块成员列表（MacClient接口）"""
+    try:
+        import sys
+        import os
+        sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+        
+        from tdx_client import tdx_get_belong_boards, tdx_get_board_members
+        
+        # 先获取板块代码，再获取成员
+        result = tdx_get_belong_boards("600519")
+        if not result or not result.get("industry"):
+            return {"status": "failed", "error": "无法获取600519所属板块"}
+        
+        board_code = result["industry"][0]["code"]
+        members = tdx_get_board_members(board_code)
+        
+        if members:
+            return {"status": "success", "data": f"板块{board_code}获取成功，共{len(members)}只股票"}
+        return {"status": "warning", "data": "板块成员列表为空", "note": "板块成员"}
     except Exception as e:
         return {"status": "failed", "error": str(e)}
 
@@ -297,6 +462,12 @@ def main():
         ("百度股市通", test_baidu_finance),
         ("巨潮资讯", test_cninfo),
         ("通达信TCP", test_tdx_tcp),
+        ("TDX财务信息", test_tdx_finance_info),
+        ("TDX资金流", test_tdx_fund_flow),
+        ("TDX分红除权", test_tdx_xdxr_info),
+        ("TDX MacClient", test_tdx_mac_client),
+        ("TDX所属板块", test_tdx_belong_boards),
+        ("TDX板块成员", test_tdx_board_members),
     ]
     
     results = []

@@ -7,6 +7,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [9.3.1] - 2026-07-08
+
+### Fixed
+
+- **sht 脚本 `'float' object is not subscriptable` 崩溃**：`ff["data"]` 存在多态（TDX 返回 `List[dict]`、东财 fallback 返回 `List[float]`），第1181行信号生成和第1381-1382行评分数据处直接访问 `d["main_net"]`，当 TDX 资金流历史为空走东财 fallback 时崩溃。已在两处增加 `isinstance(_ff_data[0], dict)` 类型检查，与第706-725行的渲染逻辑保持一致。
+- **`--all` 批量运行子进程永久挂起**：`main.py` 的 `_run_script_async` 中 `await proc.wait()` 没有超时，若某个报告脚本因网络/接口问题永不返回，整个 `--all` 链会无限阻塞。已改为 `await asyncio.wait_for(proc.wait(), timeout=600)`，10分钟超时后自动 `kill()` 子进程。
+
+### Changed
+
+- **TDX 请求间隔从 20ms 增大到 100ms**：`_TDX_MIN_INTERVAL` 从 0.02 调整为 0.1，批量运行时降低 TDX 服务器压力，减少接口间歇性失败和数据缺失（上市日期空白、资金流获取失败等）。
+
+### Added
+
+- **TDX 健康检查增强**（`tdx_client.py`）：
+  - `_tdx_health_check` 新增 `get_finance_info`、`get_fund_flow`、`get_xdxr_info` 三个关键接口连通性检测，便于快速定位是哪个 TDX 接口出问题
+  - 新增 `_mac_health_check` 函数，MacClient 连接成功后自动检查 `get_belong_board` 和 `get_board_list` 接口可用性
+- **测试脚本增强**（`tests/test_datasource.py`）：
+  - 新增 `test_tdx_mac_client`：MacClient 连接检测
+  - 新增 `test_tdx_belong_boards`：上交所/深交所股票所属板块获取（覆盖 601718 和 000100）
+  - 新增 `test_tdx_board_members`：板块成员列表获取
+  - 测试脚本版本从 V2.2 升级为 V2.3
+
 ## [9.3.0] - 2026-07-07
 
 ### Added

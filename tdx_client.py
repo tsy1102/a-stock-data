@@ -97,8 +97,8 @@ _TDX_RECONNECT_DELAY: float = 0.5
 # V8.9: MacClient 失败缓存（避免重复重试退避）
 _MAC_AVAILABLE: Optional[bool] = None
 # V8.5: TDX请求最小间隔（秒），防止过快请求被服务器断开
-# 20ms = 约50次/秒，实测安全
-_TDX_MIN_INTERVAL: float = 0.02
+# 100ms = 约10次/秒，批量运行时更稳定
+_TDX_MIN_INTERVAL: float = 0.1
 # V7.5: 全局调用锁 — `_TDX_CLIENT` / `_TDX_MAC_CLIENT` 是单例，多线程并发
 # 调用时读写同一个 socket 会导致协议错乱卡死。用 RLock 让同一线程可重入。
 _TDX_CALL_LOCK = _tdx_th.RLock()
@@ -313,12 +313,60 @@ def _get_tdx_client() -> Optional[Any]:
                 # V9.0: from_best_host() 自动 ping 所有主机选最快的
                 _TDX_CLIENT = TdxClient.from_best_host()
                 _TDX_CLIENT.connect()
+                _tdx_health_check(_TDX_CLIENT)
                 return _TDX_CLIENT
             except Exception:
                 _TDX_CLIENT = None
                 if attempt < _TDX_RECONNECT_ATTEMPTS - 1:
                     time.sleep(_TDX_RECONNECT_DELAY * (2 ** attempt))
         return None
+
+def _tdx_health_check(client) -> None:
+    """检查 TDX 关键接口是否可用，便于调试。"""
+    import pandas as pd
+    try:
+        _finance_info = client.get_finance_info(1, "600519")
+        if _finance_info is None or _finance_info.empty:
+            _debug_log("TDX health check: get_finance_info 不可用")
+        else:
+            _debug_log("TDX health check: get_finance_info 正常")
+    except Exception as _e:
+        _debug_log(f"TDX health check: get_finance_info 异常: {_e}")
+    try:
+        _fund_flow = client.get_fund_flow(1, "600519")
+        if _fund_flow is None or _fund_flow.empty:
+            _debug_log("TDX health check: get_fund_flow 不可用")
+        else:
+            _debug_log("TDX health check: get_fund_flow 正常")
+    except Exception as _e:
+        _debug_log(f"TDX health check: get_fund_flow 异常: {_e}")
+    try:
+        _xdxr = client.get_xdxr_info(1, "600519")
+        if _xdxr is None or _xdxr.empty:
+            _debug_log("TDX health check: get_xdxr_info 不可用")
+        else:
+            _debug_log("TDX health check: get_xdxr_info 正常")
+    except Exception as _e:
+        _debug_log(f"TDX health check: get_xdxr_info 异常: {_e}")
+
+def _mac_health_check(client) -> None:
+    """检查 MacClient 关键接口是否可用，便于调试。"""
+    try:
+        _belong = client.get_belong_board(1, "600519")
+        if _belong is None or _belong.empty:
+            _debug_log("MacClient health check: get_belong_board 不可用")
+        else:
+            _debug_log("MacClient health check: get_belong_board 正常")
+    except Exception as _e:
+        _debug_log(f"MacClient health check: get_belong_board 异常: {_e}")
+    try:
+        _board_list = client.get_board_list(0)
+        if _board_list is None or _board_list.empty:
+            _debug_log("MacClient health check: get_board_list 不可用")
+        else:
+            _debug_log("MacClient health check: get_board_list 正常")
+    except Exception as _e:
+        _debug_log(f"MacClient health check: get_board_list 异常: {_e}")
 
 def _check_mac() -> bool:
     """检测 MacClient 是否可用（缓存失败状态，避免重复重试退避）。"""
@@ -367,6 +415,7 @@ def _get_mac_client() -> Optional[Any]:
                 from easy_tdx import MacClient
                 _TDX_MAC_CLIENT = MacClient.from_best_host()
                 _TDX_MAC_CLIENT.connect()
+                _mac_health_check(_TDX_MAC_CLIENT)
                 return _TDX_MAC_CLIENT
             except Exception:
                 _TDX_MAC_CLIENT = None

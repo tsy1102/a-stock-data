@@ -1177,11 +1177,12 @@ async def generate_report_async(session, code, output_path, ind_comp=None, idx_q
         if chg>0: signals.append(f"北向资金近{len(nb)}日净增持，外资看多信号")
 
     if ff["data"] and len(ff["data"])>=20:
-
-        tmain2 = sum(d["main_net"] for d in ff["data"][-20:])
-
+        _ff_data = ff["data"][-20:]
+        if _ff_data and isinstance(_ff_data[0], dict):
+            tmain2 = sum(d.get("main_net", 0) for d in _ff_data)
+        else:
+            tmain2 = sum(_ff_data) if _ff_data else 0
         if tmain2>0: signals.append(f"近20日主力累计净流入 {tmain2/1e8:.2f}亿，中线资金面偏多")
-
         else: signals.append(f"近20日主力净流出 {abs(tmain2)/1e8:.2f}亿，中线资金面偏空")
 
     if margin and len(margin)>=5:
@@ -1378,8 +1379,13 @@ async def generate_report_async(session, code, output_path, ind_comp=None, idx_q
     
     # 资金流向
     if ff["data"] and len(ff["data"]) >= 20:
-        score_data.main_net_inflow = sum(d["main_net"] for d in ff["data"][-20:])
-        score_data.consecutive_inflow_days = sum(1 for d in ff["data"][-20:] if d["main_net"] > 0)
+        _ff_data = ff["data"][-20:]
+        if _ff_data and isinstance(_ff_data[0], dict):
+            score_data.main_net_inflow = sum(d.get("main_net", 0) for d in _ff_data)
+            score_data.consecutive_inflow_days = sum(1 for d in _ff_data if d.get("main_net", 0) > 0)
+        else:
+            score_data.main_net_inflow = sum(_ff_data) if _ff_data else 0
+            score_data.consecutive_inflow_days = sum(1 for d in _ff_data if d > 0) if _ff_data else 0
     
     # 筹码数据
     if holders and len(holders) >= 2:

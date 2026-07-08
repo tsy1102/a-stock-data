@@ -183,10 +183,16 @@ async def _run_script_async(script: str, stock_codes: list, output_dir: str,
         proc = await asyncio.create_subprocess_exec(
             *cmd,
             cwd=_SCRIPT_DIR,
-            stdout=None,   # 继承父进程 stdout，让每个脚本的输出实时可见
+            stdout=None,
             stderr=None,
         )
-        rc = await proc.wait()
+        try:
+            rc = await asyncio.wait_for(proc.wait(), timeout=600)
+        except asyncio.TimeoutError:
+            print(f"⚠ [{label}] {script} 运行超时，强制终止", flush=True)
+            proc.kill()
+            await proc.wait()
+            return script, -1, time.time() - t0, label
         dt = time.time() - t0
         status = "完成" if rc == 0 else f"失败({rc})"
         print(f"✔ [{label}] {script} {status} ({dt:.1f}s)", flush=True)

@@ -145,7 +145,7 @@
      - 怀疑本地 IP 被通达信服务器临时封禁。
 
 
-11. test_datasource.py（V8.5 新增，V8.6 更新为 V2.1）
+11. test_datasource.py（V8.5 新增，V9.3.1 更新为 V2.3）
     作用：多数据源接口连通性诊断，一次性测试所有主要数据接口。
     运行：python tests\test_datasource.py
     输出包含：
@@ -157,7 +157,13 @@
       ⑥ 新浪财报接口（quotes.sina.cn）；
       ⑦ 百度股市通接口（finance.pae.baidu.com，已标记deprecated）；
       ⑧ 巨潮资讯接口（www.cninfo.com.cn）；
-      ⑨ 通达信TCP行情接口（tdx_client）。
+      ⑨ 通达信TCP行情接口（tdx_client）；
+      ⑩ TDX 财务信息接口（get_finance_info，V9.3.1 新增）；
+      ⑪ TDX 资金流接口（get_fund_flow，V9.3.1 新增）；
+      ⑫ TDX 分红除权接口（get_xdxr_info，V9.3.1 新增）；
+      ⑬ TDX MacClient 连接检测（V9.3.1 新增）；
+      ⑭ TDX 所属板块获取（上交所+深交所，V9.3.1 新增）；
+      ⑮ TDX 板块成员列表（V9.3.1 新增）。
     何时需要：
       - 多个脚本同时报告数据为空，想快速判断是哪个接口出问题；
       - 怀疑 IP 被限流或封禁时，一次性验证所有数据源；
@@ -294,6 +300,14 @@
   想一次性验证所有数据源接口：
       python tests\test_datasource.py
 
+  想只跑 TDX 财务/资金流/分红接口测试（V9.3.1 新增）：
+      python tests\test_datasource.py  # 在完整测试中包含
+      （测试TDX财务信息、TDX资金流、TDX分红除权三项）
+
+  想只跑 TDX MacClient 测试（V9.3.1 新增）：
+      python tests\test_datasource.py  # 在完整测试中包含
+      （测试MacClient连接、所属板块、板块成员三项）
+
   想验证东财限流阈值（谨慎使用，有封禁风险）：
       python tests\test_em_rate_limit.py
 
@@ -304,4 +318,4 @@
       python tests\test_f10_chapters_integration.py
 
 
-更新时间：2026-07-05（V9.2）
+更新时间：2026-07-08（V9.3.1）

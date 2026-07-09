@@ -7,12 +7,37 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [9.3.2] - 2026-07-09
+
+### Fixed
+
+- **TDX K线假数据导致指数涨幅全N/A和异动检测全为0**：约50%的 easy_tdx 内置TDX服务器K线接口返回假数据（响应头 `ret_count=800` 但 body 为 0 字节），导致 `TdxDecodeError: day datetime: 数据不足`。`from_best_host()` 只测延迟不测数据正确性，会选中这些坏服务器。K线失败后走百度fallback也返回空，导致指数 `ret_3d`/`ret_10d` 全部 None，异动检测前置条件全部不满足。
+  - `_tdx_health_check` 新增 `get_security_bars` K线接口校验，检测到假数据时标记主机为坏主机并抛出异常触发重连
+  - `_get_tdx_client` 调用 `from_best_host` 时过滤掉 `_TDX_BAD_HOSTS` 黑名单中的IP，所有IP都被标记时重置黑名单重试
+  - `tdx_get_security_bars`、`tdx_get_index_bars`、`tdx_get_weekly_bars` 捕获 `TdxDecodeError` 时自动标记坏主机并换IP重连
+  - `tdx_get_index_bars` 新增重试机制（原先异常直接走百度fallback，现在先重试换IP）
+- **SQLite WAL模式多进程并发死锁**：`--all` 命令通过 `asyncio.create_subprocess_exec` 启动4个独立Python进程，每个进程独立写SQLite，WAL模式下产生 `-wal`/`-shm` 文件锁导致死锁。`stock_cache.py` 的 `journal_mode` 从 `WAL` 改为 `DELETE`，`cache_size` 从 `-64000`(64MB) 降到 `-8000`(8MB)。
+- **代理环境下东财接口永久阻塞**：系统代理自动拦截 `requests` 请求，`np-weblist.eastmoney.com` 等接口超时失效。`_do_request` 增加 `proxies={"http": None, "https": None}` 禁用系统代理，增加 `ProxyError` 和兜底 `Exception` 捕获。
+
+### Changed
+
+- **TDX IP列表精简**：删除38个失效IP，保留13个可用IP，减少 `from_best_host()` 扫描时间
+
+### Added
+
+- **TDX坏主机黑名单机制**（`tdx_client.py`）：新增 `_TDX_BAD_HOSTS` 全局集合，记录返回假K线数据的服务器IP，`from_best_host` 自动跳过黑名单中的IP
+- **诊断脚本**（`tests/`）：
+  - `diag_tdx_hosts_test.py`：逐个测试52个TDX服务器的K线可用性，区分正常/假数据/连不上三种状态
+  - `diag_tdx_final.py`：捕获TDX K线请求的原始TCP响应（header + body），深度诊断TdxDecodeError根因
+
 ## [9.3.1] - 2026-07-08
 
 ### Fixed
 
 - **sht 脚本 `'float' object is not subscriptable` 崩溃**：`ff["data"]` 存在多态（TDX 返回 `List[dict]`、东财 fallback 返回 `List[float]`），第1181行信号生成和第1381-1382行评分数据处直接访问 `d["main_net"]`，当 TDX 资金流历史为空走东财 fallback 时崩溃。已在两处增加 `isinstance(_ff_data[0], dict)` 类型检查，与第706-725行的渲染逻辑保持一致。
 - **`--all` 批量运行子进程永久挂起**：`main.py` 的 `_run_script_async` 中 `await proc.wait()` 没有超时，若某个报告脚本因网络/接口问题永不返回，整个 `--all` 链会无限阻塞。已改为 `await asyncio.wait_for(proc.wait(), timeout=600)`，10分钟超时后自动 `kill()` 子进程。
+- **sht 脚本处理大量股票时超时**：TDX 请求间隔增大到 100ms 后，35 只股票的处理时间超过 10 分钟超时阈值，导致部分股票被跳过且无 GD 上传。已将超时时间从 600 秒增大到 1800 秒（30 分钟）。
+- **策略08【政策驱动】异常 `_debug_log is not defined`**：`get_val_report.py` 中的 `cls_telegraph` 和 `eastmoney_global_news` 函数在异常处理中使用了 `_debug_log`，但文件未导入该函数。已在导入列表中添加 `_debug_log`。
 
 ### Changed
 

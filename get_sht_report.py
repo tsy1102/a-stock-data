@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 
-"""get_sht_report.py — A股短线个股深度数据报告 (V9.3)
+"""get_sht_report.py — A股短线个股深度数据报告 (V9.3.2)
 
 版本信息:
+    V9.3.2 2026-07-09 - 基础设施修复：TDX K线假数据防护、SQLite WAL死锁修复、代理环境兼容（脚本本身无改动，受益于底层修复）
     V9.3 2026-07-07 - 盘前行情模式：9:30前使用上一交易日日K线数据；盘前提示文本；删除报告标题硬编码版本号
     V9.2 2026-07-05 - 异常处理规范化；缓存交叉验证机制启用
     V9.1 2026-07-04 - F10 全覆盖：新增【异动与风险提示】章节+数据质量附录；修复资金流渲染 float/dict 兼容
@@ -74,7 +75,7 @@ from stock_common import (clean_codes, _safe_float, _request_with_retry, _quick_
                            is_trading_day, get_market_status,
                            calculate_multi_school_scores, ScoreData,
                            ths_hot_list, em_hot_concept,
-                           cninfo_irm, get_eastmoney_stock_news)
+                           get_eastmoney_stock_news)
 
 
 
@@ -1067,30 +1068,6 @@ async def generate_report_async(session, code, output_path, ind_comp=None, idx_q
         _debug_log(f"sht news_fetch: {_e}")
         L("    (新闻获取失败)")
 
-    # 互动易问答（近7日有回复的优先）
-    try:
-        qa_list = cninfo_irm(code, page_size=10)
-        qa_sorted = sorted(qa_list, key=lambda x: (0 if x.get("answer") and x["answer"].strip() else 1))
-        _qa_shown = 0
-        for qa in qa_sorted:
-            qa_time = qa.get("ask_time", "")[:10]
-            if qa_time:
-                try:
-                    qa_date = _dt.strptime(qa_time, "%Y-%m-%d")
-                    if (_dt.now() - qa_date).days > 7:
-                        continue
-                except (ValueError, TypeError):
-                    pass
-            answer = (qa.get("answer") or "")[:60] if qa.get("answer") and qa["answer"].strip() else "(未回复)"
-            L(f"    · Q: {qa.get('question','')[:40]} → A: {answer}")
-            _qa_shown += 1
-            if _qa_shown >= 7:
-                break
-        if _qa_shown > 0:
-            L(f"    (互动易 {_qa_shown} 条)")
-    except Exception as _e:
-        _debug_log(f"eastmoney_news/irm error: {_e}")
-
     # 同花顺热榜
     try:
         hot_all = ths_hot_list("hour")
@@ -1592,13 +1569,11 @@ if __name__ == "__main__":
             print(f"  📋 加入队列: {code}", flush=True)
 
 
-
         _session = await create_async_session()
 
         try:
 
             _cached_hsgt_async = await get_hsgt_macro_flow_async(_session)
-
 
 
             sem = asyncio.Semaphore(3)

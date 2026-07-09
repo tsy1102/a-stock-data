@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 """
-get_ful_report.py — A股七层全维度分析引擎 V9.3（含行业对比/风险扫描/六维加权评分）
+get_ful_report.py — A股七层全维度分析引擎 V9.3.2（含行业对比/风险扫描/六维加权评分）
 
 版本信息:
+    V9.3.2 2026-07-09 - 基础设施修复：TDX K线假数据防护、SQLite WAL死锁修复、代理环境兼容（脚本本身无改动，受益于底层修复）
     V9.3   2026-07-07 - 盘前行情模式：9:30前使用上一交易日日K线数据；修复成功/失败统计为0问题；删除报告标题硬编码版本号
     V9.2   2026-07-05 - 异常处理规范化；缓存交叉验证机制启用
     V9.1.1 2026-07-04 - 六维评分透明化（补全分红面）；修复 theme→holder 映射bug；F10死代码精简
@@ -17,7 +18,7 @@ get_ful_report.py — A股七层全维度分析引擎 V9.3（含行业对比/风
   Layer_IND 行业对比（同行横向估值/走势对比）
   Layer 3  交易信号与题材（龙虎榜/概念板块/资金流/限售解禁）
   Layer 4  筹码与资金结构（股东户数/融资融券/大宗交易/机构持仓）
-  Layer 5  新闻与舆情（东财个股新闻/互动易问答/同花顺热榜）
+  Layer 5  新闻与舆情（东财个股新闻/同花顺热榜）
   Layer 6  基本面与财务健康（利润表/资产负债表/ROE/分红）
   Layer_RISK 风险扫描（8项：商誉/杠杆/回款/连续亏损/减持/质押/解禁/现金流）
   Layer 7  公告与重大事项（巨潮公告关键词过滤）
@@ -56,7 +57,7 @@ from stock_common import (
     is_trading_day, get_market_status,
     calculate_multi_school_scores, ScoreData,
     get_eastmoney_stock_news,
-    cninfo_irm, ths_hot_list,
+    ths_hot_list,
 )
 
 from gd_uploader import init_gd, upload_type_reports, upload_stock_report_by_code, cleanup_gd_proxy
@@ -1037,9 +1038,9 @@ def layer4_chips(code: str) -> Dict[str, Any]:
 # =====================================================================
 
 def layer5_news(code: str, stock_name: str = "") -> Dict[str, Any]:
-    """Layer 5: 新闻与舆情 — 东财个股新闻 + 互动易问答 + 同花顺热榜"""
+    """Layer 5: 新闻与舆情 — 东财个股新闻 + 同花顺热榜"""
     result: Dict[str, Any] = {
-        "ok": True, "global_related": [], "irm_qa": [],
+        "ok": True, "global_related": [],
         "hot_list": [], "signals": [],
     }
 
@@ -1058,20 +1059,6 @@ def layer5_news(code: str, stock_name: str = "") -> Dict[str, Any]:
     except Exception as _e:
         _debug_log(f"ful layer5 stock news error: {_e}")
 
-    # 互动易问答（有回复的优先展示）
-    try:
-        qa_list = cninfo_irm(code, page_size=8)
-        if qa_list:
-            # 有回复的排在前面，最多取 3 条
-            qa_sorted = sorted(qa_list, key=lambda q: (0 if q.get("answer") and q["answer"].strip() else 1))
-            result["irm_qa"] = [{
-                "question": q.get("question", "")[:60],
-                "answer": (q.get("answer") or "")[:100] if q.get("answer") and q["answer"].strip() else "(未回复)",
-                "time": q.get("ask_time", ""),
-            } for q in qa_sorted[:3]]
-    except Exception as _e:
-        _debug_log(f"ful layer5 irm qa error: {_e}")
-
     # 同花顺热榜（取当前热度前5，看该股是否在榜）
     try:
         hot_all = ths_hot_list("hour")
@@ -1082,9 +1069,9 @@ def layer5_news(code: str, stock_name: str = "") -> Dict[str, Any]:
     except Exception as _e:
         _debug_log(f"ful layer5 hot list error: {_e}")
 
-    total_related = len(result["global_related"]) + len(result["irm_qa"])
+    total_related = len(result["global_related"])
     if total_related > 5:
-        result["signals"].append(f"📢 近期相关新闻/互动 {total_related} 条，市场关注度较高")
+        result["signals"].append(f"📢 近期相关新闻 {total_related} 条，市场关注度较高")
     if result["hot_list"]:
         result["signals"].append(f"🔥 该股当前在同花顺热榜 #{result['hot_list'][0]['rank']}，热度 {result['hot_list'][0]['heat']}")
 
@@ -1801,9 +1788,8 @@ def format_report(code: str, layers: Dict[str, Any]) -> str:
         L("")
         L(f"{'─'*36}  6. 新闻与舆情  {'─'*30}")
         total_g = len(l5.get("global_related") or [])
-        qa = l5.get("irm_qa") or []
         hl = l5.get("hot_list") or []
-        if total_g == 0 and not qa and not hl:
+        if total_g == 0 and not hl:
             L(f"  近24小时未检测到与该标的直接相关的重大新闻")
         else:
             if total_g > 0:
@@ -1811,11 +1797,6 @@ def format_report(code: str, layers: Dict[str, Any]) -> str:
                 for n in l5["global_related"][:5]:
                     if isinstance(n, dict):
                         L(f"    · [{n.get('time', '')}] {n.get('title', '')}")
-            if qa:
-                L(f"  互动易问答（{len(qa)} 条）:")
-                for q in qa[:3]:
-                    L(f"    · Q: {q['question']}")
-                    L(f"      A: {q['answer']}")
             if hl:
                 L(f"  同花顺热榜: #{hl[0]['rank']} {hl[0]['name']} 热度{hl[0]['heat']}")
         if l5.get("signals"):

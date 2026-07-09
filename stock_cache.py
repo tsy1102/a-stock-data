@@ -1,10 +1,14 @@
 #!/usr/bin/env python3
-"""stock_cache.py — V9.3 统一缓存层 (SQLite + 装饰器模式)
+"""stock_cache.py — V9.3.2 统一缓存层 (SQLite + 装饰器模式)
 
 设计目标：
   - 所有 get_* 网络请求函数统一走本层，避免重复请求 + 降低 API 被封概率
   - 基于 SQLite 的持久化缓存，支持 TTL 自动过期 + LRU 清理
   - 装饰器模式：@cached / @cached_async，不破坏原函数签名
+
+V9.3.2 更新：
+  - journal_mode 从 WAL 改为 DELETE，避免多进程并发写产生 -wal/-shm 文件锁死锁
+  - cache_size 从 -64000(64MB) 降到 -8000(8MB)，减少多进程内存占用
 
 V9.3 更新：
   - 行情缓存 Key 增加交易日期隔离：格式改为 Q:{code}:{trading_date}，盘前/盘中数据独立保留
@@ -102,7 +106,6 @@ TTL: Dict[str, int] = {
     # 舆情互动（V8.9 新增）
     "hot_rank":         1 * 3600,    # 东财人气榜（小时级变化）
     "hot_concept":      1 * 3600,    # 概念命中（小时级变化）
-    "irm":              1 * 86400,   # 互动易问答（按日更新）
 
     # 研报（更新不频繁）
     "reports":          3 * 86400,   # 东财研报列表
@@ -203,9 +206,9 @@ def _get_db() -> sqlite3.Connection:
         if _db is not None:
             return _db
         _db = sqlite3.connect(_CACHE_DB, check_same_thread=False, timeout=30.0)
-        _db.execute("PRAGMA journal_mode=WAL")       # WAL 模式，提升并发读性能
+        _db.execute("PRAGMA journal_mode=DELETE")    # DELETE 模式，多进程安全（WAL 在多进程写时会死锁）
         _db.execute("PRAGMA synchronous=NORMAL")     # 平衡性能与安全
-        _db.execute("PRAGMA cache_size=-64000")      # 64MB 缓存
+        _db.execute("PRAGMA cache_size=-8000")       # 8MB 缓存（多进程各占一份，避免 MemoryError）
         _db.execute("CREATE TABLE IF NOT EXISTS cache_entries ("
                     "  key TEXT PRIMARY KEY,"
                     "  value BLOB NOT NULL,"
@@ -240,9 +243,9 @@ async def _get_async_db() -> Optional[Any]:
     if _async_db_lock is None:
         import asyncio
         _async_db_lock = asyncio.Lock()
-    await _async_db.execute("PRAGMA journal_mode=WAL")
+    await _async_db.execute("PRAGMA journal_mode=DELETE")
     await _async_db.execute("PRAGMA synchronous=NORMAL")
-    await _async_db.execute("PRAGMA cache_size=-64000")
+    await _async_db.execute("PRAGMA cache_size=-8000")
     await _async_db.execute(
         "CREATE TABLE IF NOT EXISTS cache_entries ("
         "  key TEXT PRIMARY KEY,"

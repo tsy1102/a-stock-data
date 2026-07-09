@@ -141,7 +141,7 @@ from stock_common.sc_datasource import (
     get_trap_detection, get_valuation, analyze_ai_chain_position,
     # 舆情互动层（V8.9）
     eastmoney_stock_info_push2,
-    cninfo_irm, ths_hot_list, em_hot_rank, em_hot_concept,
+    ths_hot_list, em_hot_rank, em_hot_concept,
 )
 
 

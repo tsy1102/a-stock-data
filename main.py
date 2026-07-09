@@ -1,10 +1,15 @@
 #!/usr/bin/env python3
-"""main.py — V9.3 统一 CLI 入口（脚本内 asyncio 并发 + 进程级串行防封）
+"""main.py — V9.3.2 统一 CLI 入口（脚本内 asyncio 并发 + 进程级串行防封）
 
 并发策略（两层次序，确保东财接口不被封）：
   1) 进程级：asyncio.create_subprocess_exec 串行运行脚本（concurrency=1）
   2) 脚本级：每个脚本内部用 Semaphore(3) 并发 3 只股票
              (stock_common.py 的 Semaphore(3) + 1.1s 间隔统一控制)
+
+V9.3.2 更新：
+  - TDX K线假数据防护：健康检查增加K线校验，坏主机自动换IP重连
+  - SQLite WAL死锁修复：journal_mode 改为 DELETE，支持多进程并发
+  - 代理环境兼容：HTTP请求禁用系统代理，增加异常捕获
 
 V9.3 更新：
   - 修复 --no-upload 参数对快照异常上传未生效的问题（传递 skip_upload 参数）
@@ -187,7 +192,7 @@ async def _run_script_async(script: str, stock_codes: list, output_dir: str,
             stderr=None,
         )
         try:
-            rc = await asyncio.wait_for(proc.wait(), timeout=600)
+            rc = await asyncio.wait_for(proc.wait(), timeout=1800)
         except asyncio.TimeoutError:
             print(f"⚠ [{label}] {script} 运行超时，强制终止", flush=True)
             proc.kill()

@@ -1,0 +1,94 @@
+▶ 开始分析 000100 ...
+  ✓ layer2 完成
+  ✓ layer1 完成
+  ✓ layer4 完成
+  ✓ layer3 完成
+Timeout (0:00:50)!
+Thread 0x000071c0 (most recent call first):
+  File "D:\GitHub\test\tdx_client.py", line 711 in tdx_get_quote_full
+  File "D:\GitHub\test\get_ful_report.py", line 740 in _ensure_full
+  File "C:\Users\tsy11\AppData\Local\Python\pythoncore-3.12-64\Lib\concurrent\futures\thread.py", line 59 in run
+  File "C:\Users\tsy11\AppData\Local\Python\pythoncore-3.12-64\Lib\concurrent\futures\thread.py", line 93 in _worker
+  File "C:\Users\tsy11\AppData\Local\Python\pythoncore-3.12-64\Lib\threading.py", line 1012 in run
+  File "C:\Users\tsy11\AppData\Local\Python\pythoncore-3.12-64\Lib\threading.py", line 1075 in _bootstrap_inner
+  File "C:\Users\tsy11\AppData\Local\Python\pythoncore-3.12-64\Lib\threading.py", line 1032 in _bootstrap
+
+Thread 0x0000468c (most recent call first):
+  File "D:\GitHub\test\tdx_client.py", line 711 in tdx_get_quote_full
+  File "D:\GitHub\test\get_ful_report.py", line 740 in _ensure_full
+  File "C:\Users\tsy11\AppData\Local\Python\pythoncore-3.12-64\Lib\concurrent\futures\thread.py", line 59 in run
+  File "C:\Users\tsy11\AppData\Local\Python\pythoncore-3.12-64\Lib\concurrent\futures\thread.py", line 93 in _worker
+  File "C:\Users\tsy11\AppData\Local\Python\pythoncore-3.12-64\Lib\threading.py", line 1012 in run
+  File "C:\Users\tsy11\AppData\Local\Python\pythoncore-3.12-64\Lib\threading.py", line 1075 in _bootstrap_inner
+  File "C:\Users\tsy11\AppData\Local\Python\pythoncore-3.12-64\Lib\threading.py", line 1032 in _bootstrap
+
+Thread 0x00001fbc (most recent call first):
+  File "D:\GitHub\test\tdx_client.py", line 711 in tdx_get_quote_full
+  File "D:\GitHub\test\get_ful_report.py", line 740 in _ensure_full
+  File "C:\Users\tsy11\AppData\Local\Python\pythoncore-3.12-64\Lib\concurrent\futures\thread.py", line 59 in run
+  File "C:\Users\tsy11\AppData\Local\Python\pythoncore-3.12-64\Lib\concurrent\futures\thread.py", line 93 in _worker
+  File "C:\Users\tsy11\AppData\Local\Python\pythoncore-3.12-64\Lib\threading.py", line 1012 in run
+  File "C:\Users\tsy11\AppData\Local\Python\pythoncore-3.12-64\Lib\threading.py", line 1075 in _bootstrap_inner
+  File "C:\Users\tsy11\AppData\Local\Python\pythoncore-3.12-64\Lib\threading.py", line 1032 in _bootstrap
+
+Thread 0x00006afc (most recent call first):
+  File "C:\Users\tsy11\AppData\Local\Python\pythoncore-3.12-64\Lib\threading.py", line 359 in wait
+  File "C:\Users\tsy11\AppData\Local\Python\pythoncore-3.12-64\Lib\threading.py", line 655 in wait
+  File "C:\Users\tsy11\AppData\Local\Python\pythoncore-3.12-64\Lib\site-packages\easy_tdx\transport\sync.py", line 246 in _heartbeat_loop
+  File "D:\GitHub\test\tdx_client.py", line 78 in _safe_heartbeat_loop
+  File "C:\Users\tsy11\AppData\Local\Python\pythoncore-3.12-64\Lib\threading.py", line 1012 in run
+  File "C:\Users\tsy11\AppData\Local\Python\pythoncore-3.12-64\Lib\threading.py", line 1075 in _bootstrap_inner
+  File "C:\Users\tsy11\AppData\Local\Python\pythoncore-3.12-64\Lib\threading.py", line 1032 in _bootstrap
+
+Thread 0x00001888 (most recent call first):
+  File "C:\Users\tsy11\AppData\Local\Python\pythoncore-3.12-64\Lib\threading.py", line 355 in wait
+  File "C:\Users\tsy11\AppData\Local\Python\pythoncore-3.12-64\Lib\concurrent\futures\_base.py", line 451 in result
+  File "C:\Users\tsy11\AppData\Local\Python\pythoncore-3.12-64\Lib\concurrent\futures\_base.py", line 317 in _result_or_cancel
+  File "C:\Users\tsy11\AppData\Local\Python\pythoncore-3.12-64\Lib\concurrent\futures\_base.py", line 619 in result_iterator
+  File "D:\GitHub\test\get_ful_report.py", line 753 in layer_ind_industry
+  File "D:\GitHub\test\get_ful_report.py", line 2030 in <lambda>
+  File "C:\Users\tsy11\AppData\Local\Python\pythoncore-3.12-64\Lib\concurrent\futures\thread.py", line 59 in run
+  File "C:\Users\tsy11\AppData\Local\Python\pythoncore-3.12-64\Lib\concurrent\futures\thread.py", line 93 in _worker
+  File "C:\Users\tsy11\AppData\Local\Python\pythoncore-3.12-64\Lib\threading.py", line 1012 in run
+  File "C:\Users\tsy11\AppData\Local\Python\pythoncore-3.12-64\Lib\threading.py", line 1075 in _bootstrap_inner
+  File "C:\Users\tsy11\AppData\Local\Python\pythoncore-3.12-64\Lib\threading.py", line 1032 in _bootstrap
+
+Thread 0x00006820 (most recent call first):
+  File "D:\GitHub\test\tdx_client.py", line 988 in tdx_get_dividend_history
+  File "D:\GitHub\test\get_ful_report.py", line 1229 in layer6_fundamental
+  File "D:\GitHub\test\get_ful_report.py", line 2034 in <lambda>
+  File "C:\Users\tsy11\AppData\Local\Python\pythoncore-3.12-64\Lib\concurrent\futures\thread.py", line 59 in run
+  File "C:\Users\tsy11\AppData\Local\Python\pythoncore-3.12-64\Lib\concurrent\futures\thread.py", line 93 in _worker
+  File "C:\Users\tsy11\AppData\Local\Python\pythoncore-3.12-64\Lib\threading.py", line 1012 in run
+  File "C:\Users\tsy11\AppData\Local\Python\pythoncore-3.12-64\Lib\threading.py", line 1075 in _bootstrap_inner
+  File "C:\Users\tsy11\AppData\Local\Python\pythoncore-3.12-64\Lib\threading.py", line 1032 in _bootstrap
+
+Thread 0x000068b4 (most recent call first):
+  File "D:\GitHub\test\stock_common\f10_parser.py", line 249 in parse_paragraph_blocks
+  File "D:\GitHub\test\tdx_client.py", line 1774 in tdx_get_company_news_f10
+  File "D:\GitHub\test\stock_cache.py", line 742 in wrapper
+  File "D:\GitHub\test\stock_common\sc_datasource.py", line 1649 in get_eastmoney_stock_news
+  File "D:\GitHub\test\stock_cache.py", line 742 in wrapper
+  File "D:\GitHub\test\get_ful_report.py", line 1048 in layer5_news
+  File "D:\GitHub\test\get_ful_report.py", line 2033 in <lambda>
+  File "C:\Users\tsy11\AppData\Local\Python\pythoncore-3.12-64\Lib\concurrent\futures\thread.py", line 59 in run
+  File "C:\Users\tsy11\AppData\Local\Python\pythoncore-3.12-64\Lib\concurrent\futures\thread.py", line 93 in _worker
+  File "C:\Users\tsy11\AppData\Local\Python\pythoncore-3.12-64\Lib\threading.py", line 1012 in run
+  File "C:\Users\tsy11\AppData\Local\Python\pythoncore-3.12-64\Lib\threading.py", line 1075 in _bootstrap_inner
+  File "C:\Users\tsy11\AppData\Local\Python\pythoncore-3.12-64\Lib\threading.py", line 1032 in _bootstrap
+
+Thread 0x00006ab0 (most recent call first):
+  File "C:\Users\tsy11\AppData\Local\Python\pythoncore-3.12-64\Lib\threading.py", line 359 in wait
+  File "C:\Users\tsy11\AppData\Local\Python\pythoncore-3.12-64\Lib\threading.py", line 655 in wait
+  File "C:\Users\tsy11\AppData\Local\Python\pythoncore-3.12-64\Lib\site-packages\easy_tdx\transport\sync.py", line 246 in _heartbeat_loop
+  File "D:\GitHub\test\tdx_client.py", line 78 in _safe_heartbeat_loop
+  File "C:\Users\tsy11\AppData\Local\Python\pythoncore-3.12-64\Lib\threading.py", line 1012 in run
+  File "C:\Users\tsy11\AppData\Local\Python\pythoncore-3.12-64\Lib\threading.py", line 1075 in _bootstrap_inner
+  File "C:\Users\tsy11\AppData\Local\Python\pythoncore-3.12-64\Lib\threading.py", line 1032 in _bootstrap
+
+Thread 0x00006e38 (most recent call first):
+  File "C:\Users\tsy11\AppData\Local\Python\pythoncore-3.12-64\Lib\threading.py", line 355 in wait
+  File "C:\Users\tsy11\AppData\Local\Python\pythoncore-3.12-64\Lib\threading.py", line 655 in wait
+  File "C:\Users\tsy11\AppData\Local\Python\pythoncore-3.12-64\Lib\concurrent\futures\_base.py", line 243 in as_completed
+  File "D:\GitHub\test\get_ful_report.py", line 2043 in analyze_stock
+  File "D:\GitHub\test\_ful_with_timer.py", line 5 in <module>

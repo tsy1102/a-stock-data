@@ -217,6 +217,8 @@ def parse_table(text: str) -> List[Dict[str, str]]:
     return rows
 
 
+MAX_PARSE_LINES = 2000  # 防御性截断：最多处理前 2000 行，防止 F10 异常大文本卡死
+
 def parse_paragraph_blocks(text: str) -> List[Dict[str, str]]:
     """解析用 ───── 分隔的段落块（公告/报道格式）。
 
@@ -237,7 +239,8 @@ def parse_paragraph_blocks(text: str) -> List[Dict[str, str]]:
         return []
 
     results: List[Dict[str, str]] = []
-    lines = text.split('\n')
+    # 限制输入大小：防止 F10 异常大文本卡死事件循环
+    lines = text.split('\n')[:MAX_PARSE_LINES]
 
     i = 0
     while i < len(lines):

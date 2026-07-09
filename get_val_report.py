@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
 """
-get_val_report.py — 18 策略全市场发现引擎 (V9.3)
+get_val_report.py — 18 策略全市场发现引擎 (V9.3.2)
 方法论驱动的 A 股选股脚本，从全市场发现可操作标的。
 每策略精选 TOP 5，生成含具体数值推理的报告。
 
 版本信息:
+    V9.3.2 2026-07-09 - 基础设施修复：TDX K线假数据防护、SQLite WAL死锁修复、代理环境兼容（脚本本身无改动，受益于底层修复）
     V9.3   2026-07-07 - 盘前行情模式：9:30前使用上一交易日日K线数据；修复 _safe_float 对 pandas Series 的处理；删除报告标题硬编码版本号
     V9.2   2026-07-05 - 异常处理规范化；缓存交叉验证机制启用
     V9.1.1 2026-07-04 - 移除 deprecated F10 章节追加函数；F10 死代码精简
@@ -50,7 +51,8 @@ from stock_common import (_safe_float, _request_with_retry, _quick_request, UA,
                            get_tencent_quote,
                            baidu_kline_full as common_baidu_kline_full,
                            get_dividend_history as common_get_dividend_history,
-                           is_trading_day, get_market_status)
+                           is_trading_day, get_market_status,
+                           _debug_log)
 import asyncio
 
 _SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -1698,7 +1700,7 @@ if __name__ == "__main__":
     if not args.no_upload:
         drive, gd_proxy_set, gd_parent_folder_id, skip_upload = init_gd(base_dir)
         if drive and not skip_upload:
-            if upload_type_reports(drive, gd_parent_folder_id or "", "val", [op]) <= 0:
+            if upload_type_reports(drive, gd_parent_folder_id, "val", [op]) <= 0:
                 print("  ⚠️ GD 上传失败", flush=True)
     cleanup_gd_proxy(gd_proxy_set)
     # 缓存现在使用统一的SQLite管理，无需手动刷新

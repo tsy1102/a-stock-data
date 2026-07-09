@@ -1,2 +1,0 @@
-MAX_PARSE_LINES=2000
-small -> 2 in 0.000s

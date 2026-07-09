@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
-"""tdx_client.py — V9.3 通达信共享行情模块。
+"""tdx_client.py — V9.3.2 通达信共享行情模块。
 
 提供统一的 easy-tdx 数据访问接口，所有适配器函数返回格式与 V3 完全兼容。
 当 TDX 服务器不可达时自动回退到原始 HTTP 源（百度K线/腾讯行情）。
 
 版本信息:
+    V9.3.2 2026-07-09 - K线假数据防护：健康检查增加K线校验，TdxDecodeError时标记坏主机并强制换IP重连
     V9.3   2026-07-07 - 盘前行情模式：9:30前使用日K线上一交易日数据，避免实时接口返回0导致涨跌幅-100%；行情缓存Key增加交易日期，盘前/盘中数据独立保留
     V9.2   2026-07-05 - 异常处理规范化；重连前关闭旧连接防止泄漏
     V9.1.1 2026-07-04 - 补全 F10 交易日缓存策略；精简 6 个未使用的 F10 函数
@@ -102,6 +103,11 @@ _TDX_MIN_INTERVAL: float = 0.1
 # V7.5: 全局调用锁 — `_TDX_CLIENT` / `_TDX_MAC_CLIENT` 是单例，多线程并发
 # 调用时读写同一个 socket 会导致协议错乱卡死。用 RLock 让同一线程可重入。
 _TDX_CALL_LOCK = _tdx_th.RLock()
+
+# V9.3.2: 返回假数据的TDX服务器黑名单
+# 部分服务器K线接口返回 ret_count=800 但 body 为 0 字节，导致 TdxDecodeError
+# 标记后 from_best_host 会跳过这些 IP，防止反复选中坏服务器
+_TDX_BAD_HOSTS: set[str] = set()
 
 
 def _tdx_throttle():
@@ -222,7 +228,9 @@ def _http_get(url: str, params: Optional[Dict[str, Any]] = None,
         time.sleep(wait_ms / 1000.0)
 
     try:
-        return requests.get(url, params=params, headers=headers or {"User-Agent": UA}, timeout=timeout)
+        # V9.3.1: 数据获取全部直连，不使用系统代理（代理仅用于GD上传）
+        return requests.get(url, params=params, headers=headers or {"User-Agent": UA},
+                            timeout=timeout, proxies={"http": None, "https": None})
     except Exception:
         return None
 
@@ -236,26 +244,15 @@ def _check_tdx() -> bool:
     # V9.0: 全量 TDX 服务器探测（来源: injoyai/tdx 2025-05-21 验证 + connect.ini）
     import socket as _sock
     _TDX_HOSTS = [
-        # 上海 (17) - 含通达信官方主站 123.60.164.122
-        '124.71.187.122', '122.51.120.217', '111.229.247.189', '122.51.232.182',
-        '118.25.98.114', '124.70.199.56', '121.36.225.169', '123.60.70.228',
-        '123.60.73.44', '124.70.133.119', '124.71.187.72', '123.60.84.66', '123.60.164.122',
-        '124.223.163.242', '150.158.160.2', '101.35.121.35', '111.231.113.208',
-        # 北京 (15) - 含通达信官方主站 82.156.214.79 + injoyai/tdx 新增 7 个
-        '121.36.54.217', '121.36.81.195', '123.249.15.60', '124.70.75.113',
-        '120.46.186.223', '124.70.22.210', '139.9.133.247',
-        '62.234.50.143', '81.70.151.186', '82.156.214.79', '101.42.240.54', '101.43.159.194',
-        '120.53.8.251', '152.136.191.169', '49.232.15.141', '82.156.174.84',
-        '101.42.164.241',
-        # 广州/深圳 (15)
-        '124.71.85.110', '139.9.51.18', '139.159.239.163',
-        '124.71.9.153', '116.205.163.254', '116.205.171.132', '116.205.183.150',
-        '111.230.186.52', '110.41.2.72', '110.41.147.114', '101.33.225.16',
-        '175.178.112.197', '175.178.128.227', '43.139.95.83', '159.75.29.111',
-        '43.139.18.171', '81.71.32.47', '129.204.230.128',
+        # V9.3.1: 仅保留经 get_history_fund_flow 实测可用的 13 个 IP
+        # 上海 (7)
+        '124.71.187.122', '123.60.73.44', '124.70.133.119', '124.71.187.72',
+        '123.60.84.66', '101.35.121.35', '111.231.113.208',
+        # 广州/深圳 (5)
+        '111.230.186.52', '175.178.112.197', '175.178.128.227', '43.139.95.83',
+        '129.204.230.128',
         # 武汉 (1)
         '119.97.185.59',
-        # V9.0: 删除 3 个失效 IP（119.147.212.81 / 60.191.114.122 / 106.15.77.157 超时）
     ]
     for _ip in _TDX_HOSTS[:8]:  # 只试前 8 个（上海4+北京2+广州2），最多 16s
         try:
@@ -310,8 +307,16 @@ def _get_tdx_client() -> Optional[Any]:
                 return None
             try:
                 from easy_tdx import TdxClient
-                # V9.0: from_best_host() 自动 ping 所有主机选最快的
-                _TDX_CLIENT = TdxClient.from_best_host()
+                from easy_tdx.config import get_known_hosts
+                # V9.3.2: 过滤掉返回假K线数据的坏主机
+                _all_hosts = get_known_hosts()
+                _good_hosts = [h for h in _all_hosts if h not in _TDX_BAD_HOSTS]
+                if not _good_hosts:
+                    # 所有主机都被标记为坏，重置黑名单给一次机会
+                    _debug_log(f"tdx 所有 {len(_TDX_BAD_HOSTS)} 个主机都在黑名单，重置重试")
+                    _TDX_BAD_HOSTS.clear()
+                    _good_hosts = _all_hosts
+                _TDX_CLIENT = TdxClient.from_best_host(hosts=_good_hosts)
                 _TDX_CLIENT.connect()
                 _tdx_health_check(_TDX_CLIENT)
                 return _TDX_CLIENT
@@ -322,7 +327,12 @@ def _get_tdx_client() -> Optional[Any]:
         return None
 
 def _tdx_health_check(client) -> None:
-    """检查 TDX 关键接口是否可用，便于调试。"""
+    """检查 TDX 关键接口是否可用，便于调试。
+
+    V9.3.2: 新增 K线接口校验。部分 TDX 服务器返回假数据
+   （ret_count=800 但 body 为 0 字节），导致 TdxDecodeError。
+    检测到此类服务器时标记为坏主机并抛出异常，触发 _get_tdx_client 换IP重连。
+    """
     import pandas as pd
     try:
         _finance_info = client.get_finance_info(1, "600519")
@@ -348,6 +358,37 @@ def _tdx_health_check(client) -> None:
             _debug_log("TDX health check: get_xdxr_info 正常")
     except Exception as _e:
         _debug_log(f"TDX health check: get_xdxr_info 异常: {_e}")
+    try:
+        _history_fund_flow = client.get_history_fund_flow(1, "600519", 0, 10)
+        if _history_fund_flow is None or _history_fund_flow.empty:
+            _debug_log("TDX health check: get_history_fund_flow 不可用")
+        else:
+            _debug_log("TDX health check: get_history_fund_flow 正常")
+    except Exception as _e:
+        _debug_log(f"TDX health check: get_history_fund_flow 异常: {_e}")
+    # V9.3.2: K线接口校验 — 部分服务器返回假数据（ret_count=800但0字节body）
+    # 这类服务器行情/财务接口正常，但K线接口返回畸形数据导致 TdxDecodeError
+    try:
+        from easy_tdx import KlineCategory, Market
+        _bars = client.get_security_bars(Market.SH, "600519", KlineCategory.DAY, 0, 1)
+        if _bars is None or (hasattr(_bars, 'empty') and _bars.empty):
+            _host = getattr(client, '_host', '')
+            if _host:
+                _TDX_BAD_HOSTS.add(_host)
+            _debug_log(f"TDX health check: get_security_bars 返回空，标记 {_host} 为坏主机")
+            raise RuntimeError(f"TDX host {_host} returns empty K-line data")
+        _debug_log("TDX health check: get_security_bars 正常")
+    except RuntimeError:
+        raise  # 抛出给 _get_tdx_client 触发换IP重连
+    except Exception as _e:
+        _host = getattr(client, '_host', '')
+        _err_name = type(_e).__name__
+        if 'Decode' in _err_name or '数据不足' in str(_e):
+            if _host:
+                _TDX_BAD_HOSTS.add(_host)
+            _debug_log(f"TDX health check: get_security_bars 解码失败，标记 {_host} 为坏主机: {_e}")
+            raise RuntimeError(f"TDX host {_host} returns corrupted K-line data: {_e}") from _e
+        _debug_log(f"TDX health check: get_security_bars 异常: {_e}")
 
 def _mac_health_check(client) -> None:
     """检查 MacClient 关键接口是否可用，便于调试。"""
@@ -653,7 +694,14 @@ def tdx_get_security_bars(code: str, count: int = 800) -> Tuple[List[str], List[
                 result = (keys, rows)
                 _TDX_KLINE_CACHE[cache_key] = result
                 return result
-            except Exception:
+            except Exception as _e:
+                # V9.3.2: TdxDecodeError 说明服务器返回假数据，标记坏主机
+                _host = getattr(client, '_host', '')
+                _err_name = type(_e).__name__
+                if 'Decode' in _err_name or '数据不足' in str(_e):
+                    if _host:
+                        _TDX_BAD_HOSTS.add(_host)
+                        _debug_log(f"tdx K线解码失败，标记 {_host} 为坏主机: {_e}")
                 _reset_tdx_connections()
                 continue
         result = _baidu_kline_full_fallback(code)
@@ -815,32 +863,43 @@ def tdx_get_historical_high(code: str) -> Optional[float]:
         except Exception: return None
 
 def tdx_get_index_bars(idx_code: str, count: int = 250):
-    with _TDX_CALL_LOCK:
-        client = _get_tdx_client()
-        if client is None:
-            return _baidu_kline_full_fallback(idx_code, is_index=True)
-        try:
-            from easy_tdx import KlineCategory
-            market, code = _index_to_market_code(idx_code)
-            bars = client.get_index_bars(market, code, KlineCategory.DAY, 0, count)
-            if bars is None: return _baidu_kline_full_fallback(idx_code, is_index=True)
-            keys = ['time', 'open', 'close', 'high', 'low', 'volume', 'amount']
-            rows = []
-            if hasattr(bars, 'columns'):
-                if bars.empty: return _baidu_kline_full_fallback(idx_code, is_index=True)
-                for _, row in bars.iterrows():
-                    rows.append([str(row.get('date',''))[:10], str(row.get('open','')), str(row.get('close','')),
-                                 str(row.get('high','')), str(row.get('low','')), str(row.get('vol','')),
-                                 str(row.get('amount',''))])
-            else:
-                if not bars: return _baidu_kline_full_fallback(idx_code, is_index=True)
-                for bar in bars:
-                    time_str = f"{bar.year:04d}-{bar.month:02d}-{bar.day:02d}"
-                    rows.append([time_str, f"{bar.open:.2f}", f"{bar.close:.2f}", f"{bar.high:.2f}",
-                                 f"{bar.low:.2f}", f"{bar.vol:.0f}", f"{bar.amount:.2f}"])
-            return keys, rows
-        except Exception:
-            return _baidu_kline_full_fallback(idx_code, is_index=True)
+    # V9.3.2: 增加重试机制，TdxDecodeError时标记坏主机并换IP重连
+    for _retry in range(2):
+        with _TDX_CALL_LOCK:
+            client = _get_tdx_client()
+            if client is None:
+                return _baidu_kline_full_fallback(idx_code, is_index=True)
+            try:
+                from easy_tdx import KlineCategory
+                market, code = _index_to_market_code(idx_code)
+                bars = client.get_index_bars(market, code, KlineCategory.DAY, 0, count)
+                if bars is None: return _baidu_kline_full_fallback(idx_code, is_index=True)
+                keys = ['time', 'open', 'close', 'high', 'low', 'volume', 'amount']
+                rows = []
+                if hasattr(bars, 'columns'):
+                    if bars.empty: return _baidu_kline_full_fallback(idx_code, is_index=True)
+                    for _, row in bars.iterrows():
+                        rows.append([str(row.get('date',''))[:10], str(row.get('open','')), str(row.get('close','')),
+                                     str(row.get('high','')), str(row.get('low','')), str(row.get('vol','')),
+                                     str(row.get('amount',''))])
+                else:
+                    if not bars: return _baidu_kline_full_fallback(idx_code, is_index=True)
+                    for bar in bars:
+                        time_str = f"{bar.year:04d}-{bar.month:02d}-{bar.day:02d}"
+                        rows.append([time_str, f"{bar.open:.2f}", f"{bar.close:.2f}", f"{bar.high:.2f}",
+                                     f"{bar.low:.2f}", f"{bar.vol:.0f}", f"{bar.amount:.2f}"])
+                return keys, rows
+            except Exception as _e:
+                # V9.3.2: TdxDecodeError 说明服务器返回假数据，标记坏主机并重试
+                _host = getattr(client, '_host', '')
+                _err_name = type(_e).__name__
+                if 'Decode' in _err_name or '数据不足' in str(_e):
+                    if _host:
+                        _TDX_BAD_HOSTS.add(_host)
+                        _debug_log(f"tdx 指数K线解码失败，标记 {_host} 为坏主机: {_e}")
+                _reset_tdx_connections()
+                continue
+    return _baidu_kline_full_fallback(idx_code, is_index=True)
 
 def tdx_get_weekly_bars(code: str, count: int = 100):
     cache_key = f"W:{code}:{count}"
@@ -886,7 +945,13 @@ def tdx_get_weekly_bars(code: str, count: int = 100):
             result = (keys, rows)
             _TDX_WKLINE_CACHE[cache_key] = result
             return result
-        except Exception:
+        except Exception as _e:
+            # V9.3.2: TdxDecodeError 说明服务器返回假数据，标记坏主机
+            _host = getattr(client, '_host', '')
+            if 'Decode' in type(_e).__name__ or '数据不足' in str(_e):
+                if _host:
+                    _TDX_BAD_HOSTS.add(_host)
+                    _debug_log(f"tdx 周K线解码失败，标记 {_host} 为坏主机: {_e}")
             result = ([], [])
             _TDX_WKLINE_CACHE[cache_key] = result
             return result
@@ -955,7 +1020,12 @@ def tdx_get_history_fund_flow(code: str, days: int = 120):
                     "mid_net": mid_net, "small_net": small_net,
                 })
             return rows
-        except Exception: return []
+        except Exception as _e:
+            # V9.3.1: 区分"无数据"和"解码失败"，解码失败时记录日志便于排查
+            _err_msg = str(_e)
+            if "数据不足" in _err_msg or "TdxDecodeError" in type(_e).__name__:
+                _debug_log(f"tdx_get_history_fund_flow decode error ({code}): {_e}")
+            return []
 
 # ═══════════════════════════════════════
 # 除权除息 + 公告适配器
@@ -1149,8 +1219,7 @@ def _f10_get_content(code: str, category_name: str) -> str:
 def tdx_get_latest_reminders(code: str) -> dict:
     """从 TDX F10「最新提示」分类获取综合信息（8 个子栏目一次拿全）。
 
-    替代 4 个 HTTP 接口：
-    - cninfo_irm（互动问答）
+    替代 3 个 HTTP 接口：
     - get_eastmoney_stock_news（最新报道）
     - get_block_trade（大宗交易）
     - get_margin_trading（融资融券）

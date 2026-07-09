@@ -196,25 +196,51 @@ def init_google_drive(base_dir: str) -> Tuple[Optional[Any], bool]:
 # 4. 文件夹与文件操作
 # ────────────────────────────────────────────────────────────────
 def get_or_create_drive_folder(service, name: str, parent_id: Optional[str] = None) -> Optional[str]:
-    """查找或创建文件夹，返回其 Drive ID。失败返回 None。"""
+    """查找或创建文件夹，返回其 Drive ID。失败返回 None。
+    
+    关键规则：
+    - parent_id 为 None 时表示在根目录下查找/创建，搜索时强制 'root' in parents
+    - parent_id 为空字符串时拒绝操作（禁止在根目录之外的模糊位置操作）
+    - parent_id 为有效 ID 时，始终限制在该父文件夹下查找/创建
+    """
     if not service:
         return None
     try:
         q = f"name='{name}' and mimeType='application/vnd.google-apps.folder' and trashed=false"
-        if parent_id:
+        
+        if parent_id is None:
+            # parent_id 为 None 表示根目录，强制限制在根目录搜索
+            q += " and 'root' in parents"
+        elif not parent_id:
+            # parent_id 为空字符串，拒绝操作
+            print(f"  ❌ 父文件夹ID无效，拒绝操作文件夹「{name}」", flush=True)
+            return None
+        else:
+            # parent_id 为有效 ID，限制在指定父文件夹下搜索
             q += f" and '{parent_id}' in parents"
+            
         resp = service.files().list(q=q, spaces="drive", fields="files(id, name)", pageSize=5).execute()
         items = resp.get("files", [])
         if items:
             print(f"  🔍 云盘文件夹已存在：{name}", flush=True)
             return cast(str, items[0]["id"])
-        # 创建
+            
+        # 创建文件夹
         body: Dict[str, Any] = {
             "name": name,
             "mimeType": "application/vnd.google-apps.folder",
         }
-        if parent_id:
+        if parent_id is None:
+            # parent_id 为 None 表示根目录，不设置 parents（默认创建在根目录）
+            pass
+        elif parent_id:
+            # parent_id 为有效 ID，在指定父文件夹下创建
             body["parents"] = [parent_id]
+        else:
+            # parent_id 为空字符串，拒绝创建
+            print(f"  ❌ 父文件夹ID无效，拒绝创建文件夹「{name}」", flush=True)
+            return None
+            
         created = service.files().create(body=body, fields="id").execute()
         print(f"  ➕ 已创建云盘文件夹：{name}", flush=True)
         return cast(Optional[str], created.get("id"))
@@ -492,11 +518,24 @@ def init_gd(base_dir: str) -> Tuple[Optional[Any], bool, Optional[str], bool]:
         elif choice != "2":
             print("  无效选择，默认立即重试…", flush=True)
 
-    # 获取根文件夹「a-stock-data」
+    # 获取根文件夹「a-stock-data」（parent_id=None 表示在根目录下查找/创建）
     root_id = retry_get_folder_interactive(drive, "a-stock-data", None, max_auto_retry=0)
     if not root_id:
         return drive, proxy_set, None, True
-
+    
+    # 验证：确保 a-stock-data 确实在根目录下
+    try:
+        q = f"name='a-stock-data' and mimeType='application/vnd.google-apps.folder' and trashed=false and 'root' in parents"
+        resp = drive.files().list(q=q, spaces="drive", fields="files(id)", pageSize=1).execute()
+        items = resp.get("files", [])
+        if not items or items[0]["id"] != root_id:
+            print("  ⚠️ a-stock-data 不在根目录下，重新获取", flush=True)
+            root_id = retry_get_folder_interactive(drive, "a-stock-data", None, max_auto_retry=0)
+            if not root_id:
+                return drive, proxy_set, None, True
+    except Exception as e:
+        print(f"  ⚠️ 验证 a-stock-data 位置失败：{e}", flush=True)
+    
     return drive, proxy_set, root_id, False
 
 
@@ -508,13 +547,17 @@ def upload_stock_report_by_code(drive, parent_folder_id: str,
     适用于 sht/med/lng 等批量分析脚本，每只股票一个独立子文件夹。
 
     :param drive: init_gd 返回的 Google Drive service
-    :param parent_folder_id: 根文件夹 ID
+    :param parent_folder_id: 根文件夹 ID（必须是 a-stock-data 的 ID）
     :param code: 股票代码，例如 "600519"
     :param stock_name: 股票名称，例如 "贵州茅台"（调用方通过 tdx_get_quote_full 获取）
     :param file_path: 本地报告文件路径
     :return: True 表示上传成功
     """
-    if not drive or not parent_folder_id:
+    if not drive:
+        print(f"  ❌ GD上传失败：drive 未初始化，股票代码：{code}", flush=True)
+        return False
+    if not parent_folder_id:
+        print(f"  ❌ GD上传失败：parent_folder_id 为空，拒绝上传到根目录，股票代码：{code}", flush=True)
         return False
     if not os.path.exists(file_path):
         print(f"  ❌ 本地报告不存在：{file_path}", flush=True)

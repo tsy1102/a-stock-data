@@ -1,4 +1,8 @@
-"""stock_common/sc_datasource.py - 数据源查询模块 (V9.3)
+"""stock_common/sc_datasource.py - 数据源查询模块 (V9.3.2)
+
+V9.3.2 更新：
+  - _do_request 禁用系统代理（proxies={"http": None, "https": None}），避免代理环境拦截请求
+  - 增加 ProxyError 和通用 Exception 异常捕获，防止代理异常导致脚本卡死
 
 V9.3 更新：
   - 融资融券数据清洗（get_margin_trading）：日期截断到 10 位，过滤金额全为 0 的无效行
@@ -2786,7 +2790,7 @@ def analyze_ai_chain_position(code: str, name: str,
 
 
 # ═══════════════════════════════════════════════════════════
-# V8.9: 舆情互动层 — 互动易问答 / 同花顺热榜 / 东财人气榜 / 个股概念命中
+# V8.9: 舆情互动层 — 同花顺热榜 / 东财人气榜 / 个股概念命中
 # 接口来源：a-stock-data V3.3.0 Layer 10，全部零鉴权
 # ═══════════════════════════════════════════════════════════
 
@@ -2823,58 +2827,6 @@ def eastmoney_stock_info_push2(code: str) -> Dict[str, Any]:
         }
     except Exception:
         return {}
-
-
-@cached(category="irm", ttl_seconds=TTL["irm"])
-def cninfo_irm(code: str, page_size: int = 30) -> List[Dict[str, Any]]:
-    """互动易问答（深沪统一走巨潮）。
-    
-    返回每条: code/company/question(投资者提问)/answer(公司回复,None=未回复)/
-    answerer(回答方)/ask_time。
-    """
-    try:
-        r1 = _quick_request(
-            "https://irm.cninfo.com.cn/newircs/index/queryKeyboardInfo",
-            method="POST",
-            data={"keyWord": code},
-            headers={"User-Agent": UA},
-            timeout=10
-        )
-        if r1 is None:
-            return []
-        d1 = r1.json().get("data") or []
-        if not d1:
-            return []
-        org_id = d1[0].get("secid")
-        # 第二步参数放 query string（POST 但 body 空），否则 HTTP 400
-        params = {"_t": 1, "stockcode": code, "orgId": org_id,
-                  "pageSize": page_size, "pageNum": 1,
-                  "keyWord": "", "startDay": "", "endDay": ""}
-        r2 = _quick_request(
-            "https://irm.cninfo.com.cn/newircs/company/question",
-            method="POST",
-            params=params,
-            headers={"User-Agent": UA},
-            timeout=10
-        )
-        if r2 is None:
-            return []
-        rows = r2.json().get("rows") or []
-    except Exception:
-        return []
-
-    out = []
-    for it in rows:
-        pd = it.get("pubDate")
-        out.append({
-            "code": it.get("stockCode"),
-            "company": it.get("companyShortName"),
-            "question": it.get("mainContent"),
-            "answer": it.get("attachedContent"),
-            "answerer": it.get("attachedAuthor"),
-            "ask_time": datetime.fromtimestamp(pd / 1000).strftime("%Y-%m-%d %H:%M") if pd else ""
-        })
-    return out
 
 
 @cached(category="ths_hot_reason", ttl_seconds=TTL["ths_hot_reason"])

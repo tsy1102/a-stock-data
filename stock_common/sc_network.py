@@ -98,8 +98,10 @@ JP_URL: str = "http://83.push2.eastmoney.com/api/qt/clist/get"
 # 东财统一Session管理（SKILL.md V3.2 推荐）
 # ═══════════════════════════════════════
 # 所有东财接口共用同一个Session，实现Keep-Alive复用连接
+# V9.3.1: 禁用系统代理，数据获取全部直连（代理仅用于GD上传）
 EM_SESSION = requests.Session()
 EM_SESSION.headers.update({"User-Agent": UA})
+EM_SESSION.trust_env = False  # 不读取系统代理环境变量
 EM_MIN_INTERVAL = 1.0          # 东财请求最小间隔(秒)
 _EM_LAST_CALL = [0.0]          # 模块级上次请求时间戳（列表实现可变）
 
@@ -357,18 +359,21 @@ def _do_request(url: str, params: Optional[Dict[str, Any]],
     """内部：执行 HTTP 请求 + 重试（由 _request_with_retry / _quick_request 调用）。
 
     V9.0 新增：429状态码检测 + 指数退避重试。
+    V9.3.2 新增：禁用系统代理（数据获取全部直连）+ 捕获 ProxyError 和兜底 Exception。
     """
     is_em = "eastmoney.com" in urlparse(url).netloc
+    # V9.3.2: 数据获取全部直连，不使用系统代理（代理仅用于GD上传）
+    _no_proxy = {"http": None, "https": None}
     for attempt in range(max_retries):
         try:
             if method == "POST":
                 r = requests.post(url, data=data, params=params,
                                   headers=headers or {"User-Agent": UA},
-                                  timeout=timeout, verify=verify)
+                                  timeout=timeout, verify=verify, proxies=_no_proxy)
             elif method == "GET":
                 r = requests.get(url, params=params,
                                  headers=headers or {"User-Agent": UA},
-                                 timeout=timeout, verify=verify)
+                                 timeout=timeout, verify=verify, proxies=_no_proxy)
             else:
                 return None
             # 方案2：检测429状态码
@@ -387,10 +392,14 @@ def _do_request(url: str, params: Optional[Dict[str, Any]],
             return r
         except (requests.exceptions.ConnectionError,
                 requests.exceptions.ReadTimeout,
-                requests.exceptions.ConnectTimeout):
+                requests.exceptions.ConnectTimeout,
+                requests.exceptions.ProxyError):
             if attempt < max_retries - 1:
                 time.sleep(1.0 * (2 ** attempt))
                 continue
+            return None
+        except Exception as _e:
+            _debug_log(f"sc_network _do_request unexpected error ({url}): {_e}")
             return None
     return None
 
@@ -503,10 +512,14 @@ async def _gen_wait_process_interval_async() -> float:
 
 
 async def create_async_session():
-    """创建一个 aiohttp ClientSession（调用方负责关闭）。"""
+    """创建一个 aiohttp ClientSession（调用方负责关闭）。
+
+    V9.3.2: 禁用系统代理，数据获取全部直连。
+    """
     if not _HAS_AIOHTTP:
         raise RuntimeError("aiohttp 未安装，请先运行: pip install aiohttp")
-    return aiohttp.ClientSession(headers={"User-Agent": UA})
+    # V9.3.2: trust_env=False → 不读取系统代理环境变量，数据获取全部直连
+    return aiohttp.ClientSession(headers={"User-Agent": UA}, trust_env=False)
 
 
 async def _async_request_with_retry(session, url: str, params=None,

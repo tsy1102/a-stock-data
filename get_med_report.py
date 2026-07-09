@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 """
-get_med_report.py — A股中线深度投研报告 (V9.3)
+get_med_report.py — A股中线深度投研报告 (V9.3.2)
 
 版本信息:
+    V9.3.2 2026-07-09 - 基础设施修复：TDX K线假数据防护、SQLite WAL死锁修复、代理环境兼容（脚本本身无改动，受益于底层修复）
     V9.3 2026-07-07 - 盘前行情模式：9:30前使用上一交易日日K线数据；财务数据限制近5季度；盘前提示文本；删除报告标题硬编码版本号
     V9.2 2026-07-05 - 异常处理规范化；缓存交叉验证机制启用
     V9.1 2026-07-04 - F10 全覆盖：新增【财务深度/股东行为/主营构成】3章节+数据质量附录
@@ -72,10 +73,18 @@ _peers_high = _mkt_cfg.get("peers_mcap_high", 3.0)
 # ==================== 核心数据抓取模块 ====================
 
 def get_fund_flow_120d(code):
-    """V7.5: 60日资金流 → TDX TCP（同花顺 fallback 已删除）"""
+    """V7.5: 60日资金流 → TDX TCP（东财push2 fallback）"""
     tdx_data = tdx_get_history_fund_flow(code, 60)
     if tdx_data:
         return {"data": tdx_data, "error": "", "source": "tdx"}
+    # V9.3.1: 增加东财push2his fallback（与sht报告一致）
+    try:
+        from get_sht_report import _get_eastmoney_fund_flow_120d
+        em_data = _get_eastmoney_fund_flow_120d(code)
+        if em_data:
+            return {"data": em_data, "error": "", "source": "eastmoney_push2"}
+    except Exception:
+        pass
     return {"data": [], "error": "资金流数据获取失败"}
 
 # V7.5: get_dragon_tiger_board 由 stock_common 统一提供

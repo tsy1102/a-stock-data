@@ -106,38 +106,20 @@ def _em_filter(code: str, report_name: str, extra_filter: str = "", page_size: i
 async def _em_filter_async(session, code: str, report_name: str, extra_filter: str = "",
                             page_size: int = 50, sort_columns: str = "",
                             sort_types: str = "-1") -> List[Dict[str, Any]]:
-    """async 版：东财数据中心查询便捷包装。"""
-    return await eastmoney_datacenter_async(
-        session, code, report_name,
-        filter_str=f'(SECURITY_CODE="{code}"){extra_filter}' if extra_filter else "",
-        page_size=page_size, sort_columns=sort_columns, sort_types=sort_types
+    """async 版：东财数据中心查询便捷包装（代理到同步版）。"""
+    return await asyncio.to_thread(
+        _em_filter, code, report_name, extra_filter, page_size, sort_columns, sort_types
     )
 
 
 async def eastmoney_datacenter_async(session, code: str, report_name: str, columns: str = "ALL",
                                      filter_str: str = "", page_size: int = 50,
                                      sort_columns: str = "", sort_types: str = "-1") -> List[Dict[str, Any]]:
-    """async 版：东财数据中心统一查询。"""
-    try:
-        full_filter = filter_str if filter_str else f'(SECURITY_CODE="{code}")'
-        d = await _async_request_with_retry(session, DATACENTER_URL, params={
-            "reportName": report_name, "columns": columns,
-            "filter": full_filter, "pageNumber": "1", "pageSize": str(page_size),
-            "sortColumns": sort_columns, "sortTypes": sort_types,
-            "source": "WEB", "client": "WEB",
-        }, headers={"User-Agent": UA}, timeout=15)
-        if d is None:
-            return []
-        # 业务错误码检查
-        if isinstance(d, dict) and d.get("status") == -1:
-            _biz_logger.error(f"status=-1 | {report_name} | {code} | {d.get('message', '')}")
-            return []
-        if d.get("result") and d["result"].get("data"):
-            return d["result"]["data"]
-        return []
-    except Exception as _e:
-        _debug_log(f"eastmoney_datacenter_async({code}, {report_name}): {_e}")
-        return []
+    """async 版：东财数据中心统一查询（代理到同步版）。"""
+    return await asyncio.to_thread(
+        eastmoney_datacenter, code, report_name, columns,
+        filter_str, page_size, sort_columns, sort_types
+    )
 
 
 # ═══════════════════════════════════════════════════════════
@@ -346,30 +328,8 @@ def _holder_fetch_f10(code: str) -> List[Dict[str, Any]]:
 
 
 async def holder_change_async(session, code: str) -> List[Dict[str, Any]]:
-    """async 版：股东户数多期变化（优化版：直接使用 SQLite）。
-
-    复用同步版缓存逻辑，但使用异步的东财 API 调用。
-    """
-    # 同步版本已经优化为使用SQLite，这里可以直接调用同步版本
-    # 因为缓存存储在SQLite中，是线程安全的
-    return holder_change(code)
-
-
-async def _holder_fetch_em_async(session, code: str, page_size: int) -> List[Dict[str, Any]]:
-    """async 版：从东财获取股东户数。"""
-    data = await _em_filter_async(session, code, "RPT_F10_EH_HOLDERNUM",
-                                    page_size=page_size, sort_columns="END_DATE", sort_types="-1")
-    if not data:
-        return []
-    records = []
-    for r in data:
-        records.append({
-            "date": str(r.get("END_DATE", ""))[:10],
-            "holder_num": int(r.get("HOLDER_TOTAL_NUM") or 0),
-            "avg_shares": _safe_float(r.get("AVG_FREE_SHARES")),
-        })
-    records.sort(key=lambda x: x["date"])
-    return records
+    """async 版：股东户数多期变化（代理到同步版）。"""
+    return await asyncio.to_thread(holder_change, code)
 
 
 def _compute_holder_changes(records: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
@@ -554,87 +514,10 @@ def get_strategic_announcements(code: str, page_size: int = 50, days: Optional[i
 
 async def get_strategic_announcements_async(session, code: str, page_size: int = 50,
                                              days: Optional[int] = None) -> List[Dict[str, Any]]:
-    """async 版：巨潮公告查询 → orgId → searchkey → TDX F10 三层兜底。"""
-    sd_str = ""
-    if days:
-        sd_str = (datetime.now() - timedelta(days=days)).strftime("%Y-%m-%d")
-        td_str = datetime.now().strftime("%Y-%m-%d")
-        se_date = f"{sd_str}~{td_str}"
-    else:
-        se_date = ""
-
-    url = "https://www.cninfo.com.cn/new/hisAnnouncement/query"
-    if code.startswith("6"):
-        ext_org_id = f"gssh0{code}"
-    elif code.startswith("8") or code.startswith("4"):
-        ext_org_id = f"gsbj0{code}"
-    else:
-        ext_org_id = f"gssz0{code}"
-    payload = {
-        "orgId": ext_org_id, "stock": f"{code},{ext_org_id}",
-        "tabName": "fulltext", "pageSize": str(page_size), "pageNum": "1",
-        "column": "", "category": "", "plate": "",
-        "seDate": se_date,
-        "searchkey": "", "secid": "", "sortName": "", "sortType": "",
-        "isHLtitle": "true",
-    }
-    headers = {"User-Agent": UA, "Content-Type": "application/x-www-form-urlencoded",
-               "Referer": "https://www.cninfo.com.cn/new/disclosure"}
-    _cfg = _load_settings()
-    keywords = _cfg.get("announcement_keywords",
-                        ["回购", "增持", "减持", "年报", "分红", "派息", "激励", "员工持股",
-                         "战略合作", "业绩预告", "中标", "立案", "合同", "收购", "股权转让",
-                         "异动", "严重异动"])
-    _noise = _cfg.get("announcement_noise", ["摘要", "提示性", "英文版"])
-    try:
-        r = await _async_quick_request(session, url, data=payload, headers=headers, method="POST", timeout=15)
-        anns = []
-        if r is not None:
-            # r 已经是解析后的 dict（_async_quick_request 内部已调用 json）
-            anns = r.get("announcements", []) or []
-        if not anns:
-            payload2 = {"orgId": "", "stock": "", "tabName": "fulltext",
-                        "pageSize": str(page_size), "pageNum": "1",
-                        "column": "", "category": "", "plate": "",
-                        "seDate": se_date,
-                        "searchkey": str(code), "secid": "",
-                        "sortName": "", "sortType": "", "isHLtitle": "true"}
-            r2 = await _async_quick_request(session, url, data=payload2, headers=headers, method="POST", timeout=15)
-            if r2 is not None:
-                anns2 = r2.get("announcements", []) or []
-                if anns2:
-                    anns = anns2
-        if not anns:
-            try:
-                from tdx_client import tdx_get_latest_announcements
-                tdx_anns = tdx_get_latest_announcements(code, days=7)
-                if tdx_anns:
-                    anns = [{"announcementTitle": a["title"],
-                             "announcementTime": int(datetime.strptime(a["date"], "%Y-%m-%d").timestamp() * 1000) if a.get("date") else 0}
-                            for a in tdx_anns]
-            except Exception as _e:
-                _debug_log(f"datasource tdx announcements async fallback error: {_e}")
-        rows = []
-        for item in anns:
-            _sc = str(item.get("secCode", ""))
-            if _sc and _sc != str(code):
-                continue
-            title = item.get("announcementTitle", "")
-            title = re.sub(r'<[^>]+>', '', title)
-            if any(k in title for k in keywords) and not any(noise in title for noise in _noise):
-                ts = item.get("announcementTime", 0)
-                if isinstance(ts, (int, float)) and ts > 1000000000000:
-                    date_str = datetime.fromtimestamp(ts / 1000).strftime("%Y-%m-%d")
-                else:
-                    date_str = str(ts)[:10]
-                rows.append({
-                    "title": title,
-                    "date": date_str,
-                    "type": item.get("announcementTypeName", "") or "",
-                })
-        return rows
-    except Exception:
-        return []
+    """async 版：巨潮公告查询（代理到同步版）。"""
+    return await asyncio.to_thread(
+        get_strategic_announcements, code, page_size, days
+    )
 
 
 # 机构持股结构分析（替代 get_institutional_holder_ratio）
@@ -847,6 +730,8 @@ def get_reports(code: str, max_pages: int = 3) -> List[Dict[str, Any]]:
         }
         try:
             r = _request_with_retry(api_url, params=params, timeout=30)
+            if r is None:
+                break
             rows = r.json().get("data") or []
             if not rows:
                 break
@@ -1067,20 +952,6 @@ def _northbound_cache_path(code: str) -> str:
     return os.path.join(cache_dir, f"northbound_{code}.csv")
 
 
-def _save_northbound_cache(code: str, data: List[Dict[str, Any]]):
-    """保存北向资金数据到本地CSV缓存"""
-    import os
-    path = _northbound_cache_path(code)
-    try:
-        with open(path, "w", encoding="utf-8") as f:
-            f.write("date,hold_shares,market_cap,hold_ratio,change_shares,change_ratio\n")
-            for row in data:
-                f.write(f"{row['date']},{row['hold_shares']},{row['market_cap']},"
-                        f"{row['hold_ratio']},{row['change_shares']},{row['change_ratio']}\n")
-    except Exception as _e:
-        _debug_log(f"datasource northbound cache save error: {_e}")
-
-
 def _load_northbound_cache(code: str, days: int) -> List[Dict[str, Any]]:
     """从本地CSV缓存加载北向资金数据"""
     import os
@@ -1110,22 +981,8 @@ def _load_northbound_cache(code: str, days: int) -> List[Dict[str, Any]]:
 
 
 async def get_northbound_hold_async(session: Any, code: str, days: int = 20) -> List[Dict[str, Any]]:
-    """async 版: 北向资金持仓动态"""
-    data = await eastmoney_datacenter_async(session, code, "RPT_MUTUAL_HOLDSTOCKNORTH_STA",
-                                            filter_str=f'(SECURITY_CODE="{code}")',
-                                            page_size=days, sort_columns="TRADE_DATE", sort_types="-1")
-    rows = []
-    for row in data:
-        rows.append({
-            "date": str(row.get("TRADE_DATE", "") or "")[:10],
-            "hold_shares": float(row.get("HOLD_SHARES") or 0),
-            "market_cap": float(row.get("HOLD_MARKET_CAP") or row.get("MARKET_CAP") or 0),
-            "hold_ratio": float(row.get("FREE_SHARES_RATIO") or row.get("A_SHARES_RATIO") or
-                               row.get("TOTAL_SHARES_RATIO") or row.get("HOLD_RATIO") or 0),
-            "change_shares": float(row.get("CHANGE_SHARES") or 0),
-            "change_ratio": float(row.get("CHANGE_RATE") or 0),
-        })
-    return rows
+    """async 版: 北向资金持仓动态（代理到同步版）。"""
+    return await asyncio.to_thread(get_northbound_hold, code, days)
 
 
 # ═══════════════════════════════════════════════════════════
@@ -1321,24 +1178,8 @@ def get_ths_hot_reason(code: str, date_str: str) -> Optional[Dict[str, Any]]:
 
 
 async def get_ths_hot_reason_async(session: Any, code: str, date_str: str) -> Optional[Dict[str, Any]]:
-    """V7.5: 同花顺热点题材归因（async版）。"""
-    url = f"http://zx.10jqka.com.cn/event/api/getharden/date/{date_str}/orderby/date/orderway/desc/charset/GBK/"
-    try:
-        r = await _async_quick_request(session, url,
-                                       headers={"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/117.0.0.0"},
-                                       timeout=10)
-        if r is None:
-            return None
-        # r 已经是解析后的 dict（_async_quick_request 内部已调用 json）
-        d = r
-        if str(d.get("errocode", 0)) != "0":
-            return None
-        for row in (d.get("data") or []):
-            if str(row.get("code")) == str(code):
-                return {"reason": row.get("reason", "")}
-    except Exception as _e:
-        _debug_log(f"datasource ths hot reason async error: {_e}")
-    return None
+    """V7.5: 同花顺热点题材归因（代理到同步版）。"""
+    return await asyncio.to_thread(get_ths_hot_reason, code, date_str)
 
 
 # 行业对比
@@ -1627,10 +1468,10 @@ def _get_eastmoney_industry_sectors() -> List[Dict[str, Any]]:
         return []
 
 
-async def get_industry_comparison_async(session: Any, industry: str) -> Dict[str, Any]:
+async def get_industry_comparison_async(session: Any, top_n: int = 20) -> Dict[str, Any]:
     """异步版 get_industry_comparison"""
     import asyncio
-    return await asyncio.to_thread(get_industry_comparison, industry)
+    return await asyncio.to_thread(get_industry_comparison, top_n)
 
 
 # 新闻
@@ -1884,23 +1725,8 @@ def get_hsgt_macro_flow() -> Optional[Dict[str, Any]]:
 
 
 async def get_hsgt_macro_flow_async(session: Any) -> Optional[Dict[str, Any]]:
-    """async 版: 同花顺北向资金大盘净流入"""
-    url = "https://data.hexin.cn/market/hsgtApi/method/dayChart/"
-    headers = {"User-Agent": UA, "Host": "data.hexin.cn", "Referer": "https://data.hexin.cn/"}
-    try:
-        r = await _async_quick_request(session, url, headers=headers, timeout=10)
-        if r is None:
-            return None
-        d = r
-        hgt = d.get("hgt", [])
-        sgt = d.get("sgt", [])
-        if not hgt or not sgt:
-            return None
-        hgt_val = float(hgt[-1]) if hgt[-1] else 0
-        sgt_val = float(sgt[-1]) if sgt[-1] else 0
-        return {"hgt": hgt_val, "sgt": sgt_val, "total": hgt_val + sgt_val}
-    except Exception:
-        return None
+    """async 版: 同花顺北向资金大盘净流入（代理到同步版）。"""
+    return await asyncio.to_thread(get_hsgt_macro_flow)
 
 
 @cached(category="lockup_expiry", ttl_seconds=TTL["lockup_expiry"], cross_verify=True)
@@ -2411,117 +2237,15 @@ def get_recent_dragon_tiger(days: int = 5) -> Dict[str, Any]:
 async def get_dragon_tiger_board_async(session, code: str, today_str: str,
                                        days: int = 30, include_seats: bool = True,
                                        enhance_seats: bool = True) -> Dict[str, Any]:
-    """异步版: 单只股票龙虎榜查询。返回结构与同步版一致。
-
-    V8.5新增：enhance_seats参数，启用后自动调用seat_db增强席位分析。
-    """
-    start_str = (datetime.strptime(today_str, "%Y-%m-%d") -
-                 timedelta(days=days)).strftime("%Y-%m-%d")
-    records = []
-    data = await eastmoney_datacenter_async(
-        session, code, "RPT_DAILYBILLBOARD_DETAILSNEW",
-        filter_str=f"(SECURITY_CODE=\"{code}\")(TRADE_DATE>='{start_str}')(TRADE_DATE<='{today_str}')",
-        page_size=50, sort_columns="TRADE_DATE", sort_types="-1"
+    """异步版: 单只股票龙虎榜查询（代理到同步版）。"""
+    return await asyncio.to_thread(
+        get_dragon_tiger_board, code, today_str, days, include_seats, enhance_seats
     )
-    for row in data:
-        records.append({
-            "date": str(row.get("TRADE_DATE", ""))[:10],
-            "reason": row.get("EXPLANATION", ""),
-            "net_buy": round((row.get("BILLBOARD_NET_AMT") or 0) / 10000, 1),
-            "turnover": round(_safe_float(row.get("TURNOVERRATE")), 2),
-        })
-
-    seats: Dict[str, List[Any]] = {"buy": [], "sell": []}
-    institution: Dict[str, float] = {"buy_amt": 0.0, "sell_amt": 0.0, "net_amt": 0.0}
-
-    if records and include_seats:
-        latest_date = records[0]["date"]
-        buy_data = await eastmoney_datacenter_async(
-            session, code, "RPT_BILLBOARD_DAILYDETAILSBUY",
-            filter_str=f"(SECURITY_CODE=\"{code}\")(TRADE_DATE>='{latest_date}')(TRADE_DATE<='{latest_date}')",
-            page_size=50, sort_columns="BUY", sort_types="-1"
-        )
-        for row in buy_data[:5]:
-            seats["buy"].append({
-                "name": row.get("OPERATEDEPT_NAME", ""),
-                "code": str(row.get("OPERATEDEPT_CODE", "")),
-                "buy_amt": round((row.get("BUY") or 0) / 10000, 1),
-                "sell_amt": round((row.get("SELL") or 0) / 10000, 1),
-                "net": round((row.get("NET") or 0) / 10000, 1),
-            })
-        sell_data = await eastmoney_datacenter_async(
-            session, code, "RPT_BILLBOARD_DAILYDETAILSSELL",
-            filter_str=f"(SECURITY_CODE=\"{code}\")(TRADE_DATE>='{latest_date}')(TRADE_DATE<='{latest_date}')",
-            page_size=50, sort_columns="SELL", sort_types="-1"
-        )
-        for row in sell_data[:5]:
-            seats["sell"].append({
-                "name": row.get("OPERATEDEPT_NAME", ""),
-                "code": str(row.get("OPERATEDEPT_CODE", "")),
-                "buy_amt": round((row.get("BUY") or 0) / 10000, 1),
-                "sell_amt": round((row.get("SELL") or 0) / 10000, 1),
-                "net": round((row.get("NET") or 0) / 10000, 1),
-            })
-        for row in buy_data:
-            if str(row.get("OPERATEDEPT_CODE", "")) == "0":
-                institution["buy_amt"] += (row.get("BUY") or 0)
-        for row in sell_data:
-            if str(row.get("OPERATEDEPT_CODE", "")) == "0":
-                institution["sell_amt"] += (row.get("SELL") or 0)
-        institution["buy_amt"] = round(institution["buy_amt"] / 10000, 1)
-        institution["sell_amt"] = round(institution["sell_amt"] / 10000, 1)
-        institution["net_amt"] = round(institution["buy_amt"] - institution["sell_amt"], 1)
-
-    result = {"records": records, "seats": seats, "institution": institution}
-
-    # V8.5新增：席位增强分析（异步版使用同步增强，避免async兼容问题）
-    if enhance_seats and (seats.get("buy") or seats.get("sell")):
-        try:
-            from stock_common.seat_db import enhance_lhb_seats
-            result["seat_analysis"] = enhance_lhb_seats({"seats": seats})
-        except ImportError:
-            pass
-
-    return result
 
 
 async def get_recent_dragon_tiger_async(session, days: int = 5) -> Dict[str, Any]:
-    """异步版: 全市场龙虎榜上榜记录。
-
-    注意 (2026-06-16): 东财 datacenter API 日期字段过滤必须用单引号
-    (`TRADE_DATE>='YYYY-MM-DD'`），双引号会报 code=9501。
-    """
-    try:
-        td = datetime.now().strftime("%Y-%m-%d")
-        sd = (datetime.now() - timedelta(days=days)).strftime("%Y-%m-%d")
-        params = {
-            "reportName": "RPT_DAILYBILLBOARD_DETAILSNEW",
-            "columns": "SECURITY_CODE,SECURITY_NAME_ABBR,TRADE_DATE,EXPLANATION,BILLBOARD_NET_AMT,TURNOVERRATE",
-            "filter": f"(TRADE_DATE>='{sd}')(TRADE_DATE<='{td}')",
-            "pageNumber": "1", "pageSize": "200",
-            "sortColumns": "TRADE_DATE", "sortTypes": "-1",
-            "source": "WEB", "client": "WEB",
-        }
-        resp = await _async_request_with_retry(session, DATACENTER_URL,
-                                               params=params, headers={"User-Agent": UA}, timeout=15)
-        if resp is None:
-            return {}
-        data = resp  # _async_request_with_retry 已返回解析后的 dict
-        rows = data.get("result", {}).get("data", []) or []
-        result = {}
-        for row in rows:
-            code = str(row.get("SECURITY_CODE", ""))
-            if code not in result:
-                result[code] = {
-                    "name": row.get("SECURITY_NAME_ABBR", ""),
-                    "reason": row.get("EXPLANATION", ""),
-                    "net_buy": round((row.get("BILLBOARD_NET_AMT") or 0) / 10000, 1),
-                    "turnover": round(_safe_float(row.get("TURNOVERRATE")), 2),
-                    "date": str(row.get("TRADE_DATE", ""))[:10],
-                }
-        return result
-    except Exception:
-        return {}
+    """异步版: 全市场龙虎榜上榜记录（代理到同步版）。"""
+    return await asyncio.to_thread(get_recent_dragon_tiger, days)
 
 
 # ═══════════════════════════════════════════════════════════
@@ -2728,6 +2452,7 @@ def analyze_ai_chain_position(code: str, name: str,
                              industry: str = "") -> Dict[str, Any]:
     """V8.5: AI产业链卡位分析便捷函数
 
+    注意：ai_chain_analyzer.py 模块尚未实现，此函数始终返回 ImportError 兜底结果。
     对外统一的AI产业链分析接口，封装ai_chain_analyzer.py的分析逻辑。
 
     Args:

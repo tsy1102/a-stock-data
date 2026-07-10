@@ -28,27 +28,17 @@ from gd_uploader import init_gd, upload_stock_report_by_code, cleanup_gd_proxy
 # 快照数据累积器（批量结束后一次性写入）
 _SNAPSHOT_DATA: dict = {}
 
-from tdx_client import (tdx_get_security_bars, tdx_get_quote_full,
-                         tdx_get_index_bars,
-                         tdx_get_historical_high, tdx_get_dividend_history,
-                         tdx_get_belong_boards, tdx_get_board_list,
-                         tdx_get_latest_announcements, cleanup_tdx)
-from stock_common import (clean_codes, _safe_float, _request_with_retry, _quick_request, UA, _debug_log,
-                           _market_code, eastmoney_datacenter, _em_filter,
-                           _load_strategy_config, holder_change,
-                           get_strategic_announcements, get_holder_structure,
-                           get_dragon_tiger_board,
-                           create_async_session, eastmoney_datacenter_async,
-                           _em_filter_async, _async_request_with_retry,
-                           _async_quick_request, get_dragon_tiger_board_async,
-                           holder_change_async, get_strategic_announcements_async,
+from tdx_client import (tdx_get_quote_full,
+                         tdx_get_historical_high, tdx_get_board_list,
+                         cleanup_tdx)
+from stock_common import (clean_codes, _safe_float, _debug_log,
+                           _market_code,
+                           get_holder_structure,
+                           create_async_session,
+                           get_strategic_announcements_async,
                            parse_args, get_tencent_quote, baidu_kline_full,
-                           get_reports, get_eps_forecast, get_northbound_hold,
-                           get_margin_trading, get_block_trade,
-                           get_dividend_history, get_industry_comparison,
-                           print_batch_summary,
-                           get_stock_info, get_sina_financial_report,
-                           get_sina_balance_sheet, get_lockup_expiry,
+                           get_dividend_history,
+                           get_stock_info,
                            get_eps_forecast_async, get_reports_async,
                            get_lockup_expiry_async, get_industry_peers,
                            get_sina_financial_report_async, get_sina_balance_sheet_async,
@@ -149,7 +139,6 @@ async def generate_report_async(session, code, output_path, ind_comp=None):
     q = get_tencent_quote(code)
     price_today = q.get("price", 0) if q else 0
     
-    _is_td = is_trading_day()
     _mkt_status, _mkt_note = get_market_status()
     if _mkt_status in ("lunch", "closed", "post_market", "pre_market"):
         L(f"  ⚠️ {_mkt_note}，长线基本面数据不受影响")
@@ -390,7 +379,7 @@ async def generate_report_async(session, code, output_path, ind_comp=None):
     else:
         L("  (经营现金流数据获取失败)")
     parts = []
-    if gm_rows and 'gm_rows' in dir():
+    if gm_rows:
         pass
     _gm_rows_ref = locals().get('gm_rows', [])
     if _gm_rows_ref:
@@ -422,7 +411,7 @@ async def generate_report_async(session, code, output_path, ind_comp=None):
     df_eps = await get_eps_forecast_async(session, code)
     eps_cur = eps_next = None
     eps_has_data = False
-    if not df_eps.empty and len(df_eps.columns) >= 3:
+    if not df_eps.empty and len(df_eps.columns) >= 4:
         L(f"  {'年度':<10} {'覆盖机构数':>7} {'预测EPS均值':<9}")
         L(f"  {'-'*40}")
         for i, row in df_eps.iterrows():

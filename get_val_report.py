@@ -28,25 +28,22 @@ Usage:
     python get_val_report.py --no-upload      # 跳过 GD 上传
 """
 
-import argparse, requests, time, json, os
-from datetime import date, datetime, timedelta
-from typing import Any, Dict, List, Tuple
+import time, os
+from datetime import date, datetime
+from typing import Any, Dict, List
 from concurrent.futures import ThreadPoolExecutor
 
 from gd_uploader import init_gd, upload_type_reports, cleanup_gd_proxy
-from tdx_client import (tdx_get_security_bars, tdx_get_quote_full,
-                         tdx_get_quotes_batch, tdx_get_weekly_bars,
-                         tdx_get_dividend_history, tdx_get_board_list,
+from tdx_client import (tdx_get_security_bars, tdx_get_quotes_batch,
+                         tdx_get_weekly_bars,
+                         tdx_get_board_list,
                          tdx_get_all_stocks,
                          tdx_get_finance_roe, cleanup_tdx)
 from stock_common import (_safe_float, _request_with_retry, _quick_request, UA,
-                           eastmoney_datacenter, _em_filter, JP_URL,
+                           JP_URL,
                            _load_settings, _load_strategy_config, get_holder_structure,
                            holder_change, is_limit_up, is_limit_down,
                            get_recent_dragon_tiger, get_dragon_tiger_board,
-                           create_async_session, eastmoney_datacenter_async,
-                           get_recent_dragon_tiger_async,
-                           get_dragon_tiger_board_async,
                            parse_args as common_parse_args,
                            get_tencent_quote,
                            baidu_kline_full as common_baidu_kline_full,
@@ -1266,263 +1263,13 @@ def strategy_18_longhu_activity(all_stocks, today_str=None, top_n=200):
     return _top5_sorted(results, lambda x: x["score"])
 
 
-# ─── 策略18【异步版】: 龙虎榜席位活跃度 ───
-
-async def strategy_18_longhu_activity_async(session, all_stocks, today_str):
-    """异步版: 龙虎榜席位活跃度筛选（使用 aiohttp，约 2-3x 提速）。"""
-    if today_str is None:
-        from datetime import date as _date
-        today_str = _date.today().strftime("%Y-%m-%d")
-
-    _stock_map = {s["code"]: s for s in (all_stocks or [])}
-    dt_data = await get_recent_dragon_tiger_async(session, 7)
-    if not dt_data:
-        return []
-
-    _cfg = _load_settings()
-    _trader_tags = _cfg.get("trader_tags", {}) if _cfg else {}
-
-    # 方案4：先全市场初筛，再对Top20查席位明细
-    def _preliminary_score_async(code, info):
-        net_buy = abs(_safe_float(info.get("net_buy", 0)))
-        turnover = _safe_float(info.get("turnover", 0))
-        try:
-            from datetime import datetime, date as _date
-            d = datetime.strptime(info.get("date", ""), "%Y-%m-%d").date()
-            days_ago = (_date.today() - d).days
-            date_score = max(0, 7 - days_ago)
-        except Exception as _e:
-            _debug_log(f"val block_date_parse: {_e}")
-            date_score = 0
-        return net_buy * 0.05 + turnover * 2.0 + date_score * 3.0
-
-    pre_ranked = sorted(
-        dt_data.items(),
-        key=lambda x: _preliminary_score_async(x[0], x[1]),
-        reverse=True
-    )
-    codes_to_check = [code for code, _ in pre_ranked[:20]]
-
-    results = []
-    for code in codes_to_check:
-        try:
-            dtb = await get_dragon_tiger_board_async(session, code, today_str, days=7)
-            if not dtb or not dtb.get("records"):
-                continue
-
-            inst = dtb.get("institution", {})
-            inst_net = _safe_float(inst.get("net_amt", 0))
-            inst_buy = _safe_float(inst.get("buy_amt", 0))
-            inst_sell = _safe_float(inst.get("sell_amt", 0))
-            list_days = len(dtb["records"])
-            recent_net_sum = sum(_safe_float(r.get("net_buy", 0)) for r in dtb["records"])
-
-            hot_dept_score = 0.0
-            for side_key in ["buy", "sell"]:
-                for s in dtb.get("seats", {}).get(side_key, []):
-                    sname = str(s.get("name", ""))
-                    for kw in _trader_tags.keys():
-                        if kw in sname:
-                            hot_dept_score += 3.0 if side_key == "buy" else 1.0
-                            break
-
-            avg_turnover = sum(_safe_float(r.get("turnover", 0)) for r in dtb["records"]) / max(list_days, 1)
-            turnover_bonus = 2.0 if 3.0 <= avg_turnover <= 15.0 else (1.0 if 15.0 < avg_turnover <= 25.0 else 0.0)
-
-            score = (inst_net * 0.05 + list_days * 1.5 + hot_dept_score +
-                     abs(recent_net_sum) * 0.01 + turnover_bonus +
-                     inst_buy * 0.03 - inst_sell * 0.03)
-
-            if score <= 0:
-                continue
-
-            stock_info = _stock_map.get(code, {})
-            stock_name = stock_info.get("name", "") or dt_data.get(code, {}).get("name", code)
-
-            reason = (f"近{list_days}天上榜，机构净买 {inst_net:+.1f}万，"
-                      f"期间净买 {recent_net_sum:+.1f}万，换手率 {avg_turnover:.1f}%，市值 {stock_info.get('mcap_yi',0):.0f}亿")
-            results.append({"code": code, "name": stock_name, "reason": reason, "score": round(score, 2)})
-            if len(results) >= 30:
-                break
-        except Exception as _e:
-            _debug_log(f"val valuation_item: {_e}")
-            continue
-
-    return _top5_sorted(results, lambda x: x["score"])
-
-
 # ═══════════════════════════════════════════════
-# 报告生成（V7.5 异步版 + 同步版双模式）
+# 报告生成（V7.5 异步版为主，同步版为 asyncio.run 包装）
 # ═══════════════════════════════════════════════
 
 def run_discovery(output_path):
-    """全流程：建池 → 跑18策略 → 输出报告（同步版，向后兼容）"""
-    _t_now = datetime.now()
-    today_str = _t_now.strftime("%Y-%m-%d")
-    lines = []
-    def L(s=""): lines.append(s)
-    _is_td = is_trading_day(_t_now.date())
-    _mkt_status, _mkt_note = get_market_status(_t_now)
-
-    L("─" * 85)
-    L(f"  🔍 全市场18策略发现引擎 — {today_str} {_t_now.strftime('%H:%M:%S')}（{_mkt_note}）")
-    L("─" * 85)
-    L(f"  扫描模式: 方法论驱动的多因子全市场筛选（含Top5%流动性池）")
-    # 加载策略阈值配置
-    _sc = _load_strategy_config()
-    _val = _sc.get("valuation", {})
-    _tech = _sc.get("technical", {})
-    _strat = _sc.get("strategy", {})
-    _pe_high = _val.get("pe_high", 50.0)
-    _pb_high = _val.get("pb_high", 8.0)
-    _pe_percentile_warn = 15.0
-    _ma_dev_mid = _tech.get("ma_deviation_mid", 3.0)
-    _roe_good = _sc.get("fundamental", {}).get("roe_good", 15.0)
-    _liq_pct = _strat.get("liquidity_top_pct", 5) / 100.0
-    _turnover_cap = _strat.get("turnover_cap_pct", 8.0)
-    _wbottom_depth = _strat.get("wbottom_depth_pct", 5.0)
-
-    # ─── 时段判断 ───
-    t = _t_now.hour * 100 + _t_now.minute
-    if not _is_td:
-        L(f"  （休市日，以下分析基于最近交易日收盘数据）")
-        L("")
-    elif 930 <= t < 1500:
-        warn_lines = [
-            "\033[93m⚠️ 盘中运行警告（以下策略可能不准确）:",
-            "  - 策略03【量价齐升】- 日成交量未走完，可能漏判放量",
-            "  - 策略05【W底形态】- 当日K线未闭合，颈线突破可能误判",
-            "  - 策略06【红三兵】 - 当日K线未闭合，第三根阳线可能不满足",
-            "  - 策略12【量价背离】- 价格/成交量实时变动中",
-            "  以下策略不受影响（仍可使用）:",
-            "  - 策略05【核心资产打折】- 基于季报财务数据",
-            "  - 策略11【逆向白马流】- 基于ROE+52周高点",
-            "  - 策略12【筹码集中】- 基于季度股东户数",
-            "  - 策略14【红利低波】- 基于分红历史\033[0m",
-        ]
-        for w in warn_lines:
-            print(w, flush=True)
-        L(f"  ⚠️ 当前为盘中时段（{_t_now.strftime('%H:%M')}），部分策略结果可能不准确——见终端提示")
-    L("-" * 85)
-
-    # ─── Phase 1: 构建全市场股票池 ───
-    print("[Phase 1/4] 构建全市场股票池...", flush=True)
-    all_stocks = get_all_stocks()
-    L(f"📊 全市场共捕获 {len(all_stocks)} 只上市A股")
-
-    # 流动性池
-    top_liquidity_pool, actual_ratio = filter_top_liquidity_pool(all_stocks, percentage=_liq_pct)
-    L(f"💎 核心流动性池 (Top 5% 成交额): {len(top_liquidity_pool)} 只（占全市场成交额 {actual_ratio:.1f}%）")
-
-    print("[Phase 2/4] 获取同花顺热点池...", flush=True)
-    hot_pool_raw = ths_hot_reason(today_str)
-    L(f"🔥 同花顺强势股池: {len(hot_pool_raw)} 只")
-
-    _stock_map = {s["code"]: s for s in all_stocks}
-    hot_pool = []
-    for s in hot_pool_raw[:300]:
-        # 从 all_stocks 补全涨跌幅
-        _s_info = _stock_map.get(s["code"], {})
-        hot_pool.append({
-            "code": s["code"],
-            "name": s["name"],
-            "zhangfu": _s_info.get("change_pct", s.get("zhangfu", 0)),
-            "reason_tag": s.get("reason", ""),
-        })
-
-    # _stock_map for lookups
-    # ─── 策略执行 ───
-    print("[Phase 3/4] 执行策略扫描（V7.5: ThreadPoolExecutor 并行）...", flush=True)
-    all_selections = {}
-    # 策略函数注册（保持与 V7.5 一致的函数调用方式，后面用线程池并行）
-    _strategy_list = [
-        ("策略01【龙回头】", lambda: strategy_01_longhuitou(hot_pool, today_str)),
-        ("策略02【周线多头】", lambda: strategy_02_weekly_ma(all_stocks, 200)),
-        ("策略03【量价齐升】", lambda: strategy_03_volume_breakout(hot_pool)),
-        ("策略04【核心打折】", lambda: strategy_04_core_discount(all_stocks)),
-        ("策略05【W底形态】", lambda: strategy_05_double_bottom(sorted(all_stocks, key=lambda x: x.get("amount_yi",0), reverse=True)[:300], 300)),
-        ("策略06【红三兵】", lambda: strategy_06_three_soldiers(sorted(all_stocks, key=lambda x: x.get("turnover_pct",0), reverse=True)[:300], 300)),
-        ("策略07【金叉共振】", lambda: strategy_07_golden_cross(hot_pool)),
-        ("策略08【政策驱动】", lambda: strategy_08_policy_driven(all_stocks, hot_pool)),
-        ("策略09【日历效应】", lambda: strategy_09_calendar_rotation()),
-        ("策略10【逆向白马】", lambda: strategy_10_contrarian_value(sorted(all_stocks, key=lambda x: x.get("mcap_yi",999999), reverse=True)[:200], 200)),
-        ("策略11【筹码集中】", lambda: strategy_11_holder_concentration(all_stocks, 300)),
-        ("策略12【量价信号】", lambda: strategy_12_divergence_warning(all_stocks, 300)),
-        ("策略13【高股息】", lambda: strategy_13_dividend_yield(all_stocks)),
-        ("策略14【股债平衡】", lambda: strategy_14_asset_rebalance()),
-        ("策略15【流动性王】", lambda: strategy_15_liquidity_king(top_liquidity_pool)),
-        ("策略16【政策热度】", lambda: strategy_16_policy_heatmap(all_stocks, hot_pool)),
-        ("策略17【北向Top】", lambda: strategy_17_northbound_top(all_stocks, 200)),
-        ("策略18【龙虎榜】", lambda: strategy_18_longhu_activity(all_stocks, today_str)),
-    ]
-
-    # V7.5: ThreadPoolExecutor 并行执行（4线程平衡速度和东财API限流）
-    # 注：stock_common 的 _request_with_retry / _quick_request 已加 threading.Lock
-    def _run_one(item):
-        _name, _fn = item
-        _t0 = time.time()
-        try:
-            _r = _fn()
-            _dt = time.time() - _t0
-            return (_name, _r if _r else [], _dt, None)
-        except Exception as _e:
-            _dt = time.time() - _t0
-            return (_name, [], _dt, str(_e))
-
-    _num_workers = 3
-    _sfmt = {"策略01":"01 龙回头战法","策略02":"02 周线多头","策略03":"03 量价齐升","策略04":"04 核心打折","策略05":"05 W底形态","策略06":"06 红三兵","策略07":"07 均线金叉","策略08":"08 政策驱动","策略09":"09 日历效应","策略10":"10 逆向白马","策略11":"11 筹码集中","策略12":"12 量价信号","策略13":"13 红利低波","策略14":"14 股债平衡","策略15":"15 头部风向标","策略16":"16 政策热度","策略17":"17 北向Top","策略18":"18 龙虎榜活跃度"}
-    with ThreadPoolExecutor(max_workers=_num_workers) as _executor:
-        # V7.5: 按注册顺序提交并按注册顺序返回，保证策略按01→17序号打印
-        _ordered = [(item[0], _executor.submit(_run_one, item)) for item in _strategy_list]
-        for _name, _fut in _ordered:
-            _res_name, _r, _dt, _err = _fut.result()
-            if _err:
-                print(f"  {_name}... 异常({_err[:40]}) [{_dt:.1f}s]", flush=True)
-            else:
-                print(f"  {_name}... 完成({len(_r)}只) [{_dt:.1f}s]", flush=True)
-            all_selections[_name] = _r
-
-    L("\n" + "=" * 85)
-    L("  扫描结果汇总: 18个策略共产出 " + str(sum(len(v) for v in all_selections.values())) + " 次选择")
-    L("─" * 85)
-    # V7.5: 按序号顺序输出每个策略的结果
-    for _st_name, _ in _strategy_list:
-        items = all_selections.get(_st_name, [])
-        _k = _st_name[:4] if len(_st_name) >= 4 else _st_name
-        _title = _sfmt.get(_k, _st_name)
-        L(f"\n" + "-"*85)
-        L(f"[{_title}]")
-        if items:
-            for idx2, item in enumerate(items[:5], 1):
-                L(f"  #{idx2}  {item['name']} ({item['code']})")
-                L(f"     {item.get('reason','')}")
-        else:
-            L(f"  (今日无符合该策略阈值的标的)")
-    _cf = {}
-    for name, items in all_selections.items():
-        for item in items:
-            _c = item["code"]; _cf[_c] = _cf.get(_c, 0) + 1
-    _res = [(c, n) for c, n in sorted(_cf.items(), key=lambda x: x[1], reverse=True) if n >= 2]
-    L(f"\n{'='*85}")
-    L("[多策略共振金股推荐]")
-    if _res:
-        for code, cnt in _res[:10]:
-            _nm = _stock_map.get(code, {}).get("name", code)
-            L(f"  {_nm}({code}): {cnt}个策略")
-    else:
-        L(f"  今日暂无共振股票")
-    _zt = sum(1 for s in all_stocks if is_limit_up(s["code"], s.get("name", ""), _safe_float(s.get("change_pct", 0))))
-    _dt = sum(1 for s in all_stocks if is_limit_down(s["code"], s.get("name", ""), _safe_float(s.get("change_pct", 0))))
-    L(f"\n{'='*85}")
-    L("[风控仪表盘 & 仓位管理]")
-    L(f"  涨停{_zt} | 跌停{_dt}")
-    for _b in ["01 龙回头: 震荡市胜率55-65%","02 周线多头: 趋势市胜率60-70%","03 量价齐升: 趋势启动胜率50-60%","04 核心打折: 价值回归胜率55-65%","10 逆向白马: 中线最佳胜率60-70%","13 红利低波: 熊市优选胜率65-75%","16 政策热度: 主题轮动胜率55-65%","17 北向Top: 聪明钱方向胜率60-70%"]:
-        L(f"  策略回测: {_b}")
-    L(f"\n{'='*85}")
-    output = "\n".join(filter(None, lines))
-    with open(output_path, "w", encoding="utf-8") as f:
-        f.write(output)
-    return output
+    """同步版包装：委托给异步版执行（保留向后兼容）。"""
+    return asyncio.run(run_discovery_async(output_path))
 
 
 async def run_discovery_async(output_path):
@@ -1598,20 +1345,17 @@ async def run_discovery_async(output_path):
     print(f"  ▶ 18 策略并行扫描（asyncio 模式，并发 3）…", flush=True)
     _scan_t0 = time.time()
 
-    # 收集 1-17 策略 + 18 异步版（策略 18 使用原生 async HTTP）
-    session = await create_async_session()
-    try:
-        # 1-17: to_thread 跑同步函数（受 Semaphore 限流）；18: 原生 async
-        _results = await asyncio.gather(
-            *_tasks,
-            strategy_18_longhu_activity_async(session, all_stocks, today_str),
-            return_exceptions=True,
-        )
-    finally:
-        await session.close()
+    # 策略18 也用 to_thread 跑同步版（统一模式，消除重复代码）
+    _strategy_defs.append(
+        ("策略18【龙虎榜】", strategy_18_longhu_activity, (all_stocks, today_str))
+    )
+    _names = [item[0] for item in _strategy_defs]
+    _tasks = [_run_sync_strategy(name, func, *args) for name, func, args in _strategy_defs]
+
+    _results = await asyncio.gather(*_tasks, return_exceptions=True)
 
     _scan_total_time = time.time() - _scan_t0
-    _names_full = _names + ["策略18【龙虎榜】"]
+    _names_full = _names
 
     for _name, _raw in zip(_names_full, _results):
         _r, _err = [], None
@@ -1691,7 +1435,6 @@ if __name__ == "__main__":
             print(f"  ✅ 已保存: {op}", flush=True)
         except Exception as e2:
             print(f"❌ 报告生成失败: {e2}", flush=True)
-    # 缓存现在使用统一的SQLite管理，无需手动刷新
             cleanup_tdx()
             exit(1)
 

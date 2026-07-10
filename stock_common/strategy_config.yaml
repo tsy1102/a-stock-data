@@ -8,13 +8,13 @@
 # ── 行情 & 板块 ───────────────────────────────────────────
 # 使用者: get_sht_report.py / get_med_report.py
 market:
-  # 涨停判断阈值（%）→ sht 第1466行
+  # 涨停判断阈值（%）
   limit_chg_pct: 9.5           # 涨幅超过此值=强势涨停
   near_limit_pct: 7.0          # 涨幅超过此值=逼近涨停
-  # 封单强度（流通市值占比 %）→ sht 第1460-1462行
+  # 封单强度（流通市值占比 %）
   limit_order_strong: 5.0      # >5%=强势封板
   limit_order_mid: 2.0          # >2%=良好
-  # 封单/成交额比值（<此值=弱势烂板）→ sht 第1480行
+  # 封单/成交额比值（<此值=弱势烂板）
   seal_amount_ratio_warn: 0.1  # 封单资金占成交额比例 <10% 预警
   # V7.5新增：涨停价格容差（相对于涨停价的比例）
   limit_price_tolerance: 0.005  # abs(price-limit_up)/limit_up < 此值 = 涨停有效
@@ -22,88 +22,85 @@ market:
   seal_bid_min_ratio: 0.1      # 封单量/流通股本 > 此值 = 有封单
   # V7.5新增：快速涨幅阈值（%）
   fast_rise_threshold: 10.0     # 涨幅 > 此值 = 快速拉升
-  # 同业股票市值相似度范围（用于找可比公司）→ med 第379/403行
+  # 同业股票市值相似度范围（用于找可比公司）
   peers_mcap_low: 0.3          # 下限：0.3倍本股市值
   peers_mcap_high: 3.0         # 上限：3.0倍本股市值
 
 # ── 技术指标 ─────────────────────────────────────────────
 # 使用者: get_val_report.py
 technical:
-  # 均线乖离率（%）→ val 第428行，用于MA10偏离过滤
+  # 均线乖离率（%），用于MA10偏离过滤
   ma_deviation_mid: 3.0        # 偏离此值=偏离均值明显，作为过滤门槛
 
 # ── 估值 ─────────────────────────────────────────────────
 # 使用者: get_val_report.py / get_med_report.py
 valuation:
   # PE 合理区间
-  pe_mid: 30.0                 # med 第870行：PE>30 & CAGR>0 时给予估值偏高警告
-  pe_high: 50.0                # val 第537行：PE>50 直接跳过（极端值过滤）
+  pe_mid: 30.0                 # PE>30 & CAGR>0 时给予估值偏高警告
+  pe_high: 50.0                # PE>50 直接跳过（极端值过滤）
   # PB 安全边际
-  pb_high: 8.0                 # val 第539行：PB>8 不可能是折价标的
+  pb_high: 8.0                 # PB>8 不可能是折价标的
   # PEG
-  peg_good: 0.8                # med 第840行：PEG<0.8=低估优质
-  peg_rational: 1.5            # med 第842行：PEG<=1.5=合理区间
+  peg_good: 0.8                # PEG<0.8=低估优质
+  peg_rational: 1.5            # PEG<=1.5=合理区间
 
 # ── 财务健康 ─────────────────────────────────────────────
 # 使用者: get_med_report.py / get_val_report.py
 fundamental:
   # ROE 分层（%）
-  roe_good: 15.0               # val 第787行：ROE<15% 不进入白马候选
+  roe_good: 15.0               # ROE<15% 不进入白马候选
   # 资产负债率安全线
-  debt_ratio_warn: 60.0        # med 第769行：>60% 杠杆偏高预警
+  debt_ratio_warn: 60.0        # >60% 杠杆偏高预警
   # 应收账款/总资产 警示线
-  ar_ratio_warn: 20.0          # med 第762行：>20% 回款风险预警
-  # 货币资金覆盖短期债务倍数
-  cash_debt_ratio_warn: 1.0    # med 第(未显式写入，保留为储备)
+  ar_ratio_warn: 20.0          # >20% 回款风险预警
   # 商誉占净资产比例警示线
-  gw_ratio_warn: 30.0          # med 第767行：>30% 减值风险预警
-  # 营收水分预警（应收增幅/营收降幅）
-  ar_rev_warn_ratio: 30.0      # med 第(未显式写入，保留为储备)
+  gw_ratio_warn: 30.0          # >30% 减值风险预警
 
 # ── 龙虎榜 & 席位 ───────────────────────────────────────
 # 使用者: get_sht_report.py
 trader:
-  recent_days: 90              # sht 第1240行：近90日龙虎榜回溯窗口
+  recent_days: 90              # 近90日龙虎榜回溯窗口
 
 # ── 解禁与股东 ──────────────────────────────────────────
 # 使用者: get_sht_report.py
 holder:
-  unlock_warn_days: 90         # sht 第1302行：未来90天内解禁预警窗口
-  unlock_ratio_warn: 5.0       # sht 第1294/1304行：解禁占比>5% 标记红色
+  unlock_warn_days: 90         # 未来90天内解禁预警窗口
+  unlock_ratio_warn: 5.0       # 解禁占比>5% 标记红色
 
 # ── 策略选股（get_val_report 使用）────────────────
 # 使用者: get_val_report.py
 strategy:
-  zhangfu_min: 5.0          # val L404: 策略01中涨幅最小阈值（%）
-  turnover_cap_pct: 8.0      # val L431: 龙回头策略中换手率上限
-  top_n_cap: 200             # val L431: 策略02市值排序后取前N的筛选阈值
-  cluster_spread_cap: 5.0    # val L440: 周线离散度过滤（%，越小越聚集）
-  vol_ratio_cap: 2.5         # val L497: 量比上限过滤（越大越放量确认）
-  volume_increase_factor: 1.2  # val L588: 放量突破倍数阈值
-  box_break_factor: 1.01     # val L492: 突破箱体倍数阈值
-  pe_percentile_warn: 15.0   # val L517: PE分位数告警阈值（%，越低越折价）
-  mcap_big_cap_min: 100.0    # val L518: 大盘股定义阈值（亿元）
-  wbottom_depth_cap: 5.0     # val L585: W底形态低点差异阈值
-  liquidity_top_pct: 5       # val L1166: Top5% 成交额作为核心流动性池
+  zhangfu_min: 5.0          # 策略01中涨幅最小阈值（%）
+  turnover_cap_pct: 8.0      # 龙回头策略中换手率上限
+  top_n_cap: 200             # 策略02市值排序后取前N的筛选阈值
+  cluster_spread_cap: 5.0    # 周线离散度过滤（%，越小越聚集）
+  vol_ratio_cap: 2.5         # 量比上限过滤（越大越放量确认）
+  volume_increase_factor: 1.2  # 放量突破倍数阈值
+  box_break_factor: 1.01     # 突破箱体倍数阈值
+  pe_percentile_warn: 15.0   # PE分位数告警阈值（%，越低越折价）
+  mcap_big_cap_min: 100.0    # 大盘股定义阈值（亿元）
+  wbottom_depth_cap: 5.0     # W底形态低点差异阈值
+  liquidity_top_pct: 5       # Top5% 成交额作为核心流动性池
 
 # ── 市场异动扫描（get_mak_report 使用）─────────────
 # 使用者: get_mak_report.py
 abnormal:
-  ret_10d_warn: 70.0           # mak 第200行：10日涨幅≥70% 触发严重异动
-  ret_10d_severe_down: -50.0   # mak 第203行：10日跌幅≤-50% 触发严重异动
-  volume_locked_pct: 3.0       # mak 第186行：换手率<3% 标记极度锁仓
-  volume_overload_pct: 25.0    # mak 第187行：换手率>25% 标记爆量滞涨
+  ret_10d_warn: 70.0           # 10日涨幅≥70% 触发严重异动
+  ret_10d_severe_down: -50.0   # 10日跌幅≤-50% 触发严重异动
+  volume_locked_pct: 3.0       # 换手率<3% 标记极度锁仓
+  volume_overload_pct: 25.0    # 换手率>25% 标记爆量滞涨
 
 # ── 全维度评分权重（get_ful_report 使用）────────────
-# 使用者: get_ful_report.py 五维加权综合评分
+# 使用者: get_ful_report.py 六维加权综合评分
 scoring:
-  # 五维权重（总和需=100%）
+  # 六维权重（总和需=100%）
   weights:
     technical: 25     # 技术面权重（%）
     valuation: 20     # 估值面权重（%）
     fundamental: 20    # 基本面权重（%）
     flow: 15          # 资金面权重（%）
-    theme: 15         # 题材面权重（%）
+    holder: 10        # 筹码面权重（%）
+    dividend: 10      # 分红面权重（%）
   # 技术面阈值
   technical:
     ma_golden_cross: 10       # 均线多头排列加分

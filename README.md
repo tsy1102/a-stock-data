@@ -110,24 +110,36 @@ python main.py [选项] 股票代码...
 ```
 a-stock-data/
 ├── main.py                   # 主入口程序（参数分发/多报告并行）
-├── stock_common.py           # 核心数据获取函数库（网络请求/缓存/类型接口）
-├── stock_cache.py            # 统一缓存层（SQLite + TTL 装饰器）
-├── stock_calendar.py         # 交易日历模块（含节假日/调休日数据）
-├── gd_uploader.py            # Google Drive上传模块（folderId 动态查找）
+├── stock_common/             # 核心模块包
+│   ├── __init__.py           # 包入口，统一导出接口
+│   ├── sc_datasource.py      # 数据源查询模块（76+ 函数）
+│   ├── sc_network.py         # 网络请求层（限流/重试/代理）
+│   ├── sc_utils.py           # 工具函数（_safe_float/_load_settings 等）
+│   ├── sc_scoring.py         # 统一评分接口（ScoreData/ScoreResult）
+│   ├── stock_calendar.py     # 交易日历模块（含节假日/调休日数据）
+│   ├── strategy_config.yaml  # 统一策略参数配置文件
+│   ├── analyze_history.py    # 评分快照分析与趋势背离检测
+│   ├── f10_parser.py         # F10 数据解析模块
+│   ├── trap_detector.py      # 杀猪盘8信号检测
+│   ├── valuation_methods.py  # 机构估值方法库
+│   ├── seat_db.py            # 龙虎榜席位数据库
+│   ├── seats.json            # 席位数据文件
+│   └── keywords_config.yaml  # 公告关键词配置
 ├── tdx_client.py             # 通达信数据客户端（easy-tdx 行情接口封装）
+├── stock_cache.py            # 统一缓存层（SQLite + TTL 装饰器）
+├── gd_uploader.py            # Google Drive上传模块
 ├── get_sht_report.py         # 短线报告生成（90日窗口）
 ├── get_med_report.py         # 中线报告生成（180日窗口）
 ├── get_lng_report.py         # 长线报告生成（730日窗口）
 ├── get_ful_report.py         # 完整报告生成（综合评分）
 ├── get_val_report.py         # 估值报告生成（策略选股）
 ├── get_mak_report.py         # 市场热点报告生成（异动扫描）
-├── strategy_config.yaml      # 统一策略参数配置文件（评分/阈值/权重）
 ├── pyproject.toml            # pytest / mypy / black 等工具配置中心
 ├── requirements.txt          # 运行时依赖列表
 ├── CHANGELOG.md              # 版本变更记录
 ├── reports/                  # 报告输出目录（运行时自动创建）
 ├── snapshots/                # 评分快照（历史对比/背离检测）
-└── tests/                    # pytest 单元测试用例
+└── tests/                    # 诊断脚本和 pytest 测试用例
 ```
 
 ---
@@ -137,15 +149,35 @@ a-stock-data/
 ### requirements.txt
 
 ```
-requests>=2.28.0
-aiohttp>=3.8.0
-pandas>=1.5.0
-numpy>=1.23.0
+# ── HTTP & 网络 ─────────────────────────────────────────────
+requests>=2.25,<3.0
+urllib3>=1.26,<3.0
+
+# ── 异步 HTTP（V7.5 新增）────────────────────────────────────
+aiohttp>=3.8,<4.0
+aiosqlite>=0.20,<1.0
+
+# ── 数据处理 ─────────────────────────────────────────────────
+pandas>=1.0,<3.0
+numpy>=1.20,<2.0
+
+# ── 配置解析 ─────────────────────────────────────────────────
+PyYAML>=5.4
+
+# ── 行情数据源（核心依赖，必须安装）─────────────────────────────
 easy-tdx>=1.0,<2.0
-chinese-calendar>=1.11.0
-google-api-python-client>=2.0.0
-google-auth-oauthlib>=1.0.0
-pyyaml>=6.0
+
+# ── Google Drive（V7 已切换至 google-auth + google-api-python-client）
+google-auth>=2.0
+google-auth-oauthlib>=1.0
+google-api-python-client>=2.0
+httplib2==0.22.0       # ← 固定版本，0.32.0 有代理解析 bug
+
+# ── A股日历与交易日判断（V8 新增）────────────────────────────────
+chinese-calendar>=1.11
+
+# ── 单元测试（可选，仅开发环境使用）─────────────────────────────
+pytest>=7.0
 ```
 
 ### Google Drive 配置（可选）
@@ -364,7 +396,7 @@ reports/
 - ✅ **新增多评委评审团**：价值派/成长派/游资派/综合派四套评分体系，支持分歧度检测
 - ✅ **新增社交热榜聚合**：`social_sentiment.py`支持微博/知乎/抖音/头条/百度/B站6平台情绪聚合（需API认证）
 - ✅ **新增机构估值方法库**：`valuation_methods.py`实现DCF/DDM/PEG/LBO/PB-ROE/行业PE比较等多种估值方法
-- ✅ **新增AI产业链卡位分析**：`ai_chain_analyzer.py`分析GPU/光模块/HBM/封装/电源管理等卡脖子环节
+- ⏳ **AI产业链卡位分析（规划中）**：`ai_chain_analyzer.py` 模块尚未实现，功能暂不可用
 
 ### v8.4.0 (2026-06-22)
 
@@ -451,7 +483,7 @@ pip install mypy black
 pytest tests/
 
 # 类型检查
-python -m mypy stock_common.py get_val_report.py tdx_client.py analyze_history.py gd_uploader.py --ignore-missing-imports
+python -m mypy stock_common/sc_datasource.py get_val_report.py tdx_client.py analyze_history.py gd_uploader.py --ignore-missing-imports
 
 # 临时禁用缓存调试
 STOCK_NOCACHE=1 python main.py --sht 600519

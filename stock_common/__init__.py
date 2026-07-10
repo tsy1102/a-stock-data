@@ -20,8 +20,6 @@
 from __future__ import annotations
 
 import os
-import sys
-import importlib.util
 
 # ═══════════════════════════════════════════════════════════════
 # 第一部分：从已拆分的子模块导入（sc_network / sc_scoring / sc_utils）
@@ -86,7 +84,7 @@ from stock_common.sc_datasource import (
     holder_change, holder_change_async,
     _holder_fetch_from_sqlite, _holder_update_sqlite,
     _holder_fetch_em, _holder_fetch_tdx,
-    _holder_fetch_tdx_optimized, _holder_fetch_em_async,
+    _holder_fetch_tdx_optimized,
     _compute_holder_changes,
     _HOLDER_CACHE_TTL, _HOLDER_CACHE_REFRESH,
     # 公告和股东结构
@@ -102,7 +100,7 @@ from stock_common.sc_datasource import (
     get_industry_reports, get_eps_forecast, get_eps_forecast_async,
     # 北向资金
     get_northbound_hold, get_northbound_hold_async,
-    _northbound_cache_path, _save_northbound_cache, _load_northbound_cache,
+    _northbound_cache_path, _load_northbound_cache,
     # 融资融券
     get_margin_trading, get_margin_trading_async,
     # 大宗交易

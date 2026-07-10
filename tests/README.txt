@@ -75,7 +75,7 @@
    何时需要：修改了交易日历逻辑或 chinese-calendar 更新后。
 
 
-6. test_scoring.py（V8.4 新增）
+7. test_scoring.py（V8.4 新增）
    作用：测试统一评分接口 calculate_score() 及各维度评分函数。
    覆盖：
    - _score_technical：技术面 bullish/bearish、涨停加分、边界限制；
@@ -89,7 +89,7 @@
    何时需要：修改了评分维度或权重配置后。
 
 
-7. test_strategy.py（V8.4 新增）
+8. test_strategy.py（V8.4 新增）
    作用：测试选股策略配置加载与策略函数基本行为。
    覆盖：
    - strategy_config.yaml / keywords_config.yaml 存在性；
@@ -108,7 +108,7 @@
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 
-8. diag_dragon_tiger.py
+9. diag_dragon_tiger.py
    作用：龙虎榜数据接口连通性与可用性诊断。
    运行：python tests\diag_dragon_tiger.py [股票代码1] [股票代码2] ...
           （不传参数默认跑 600519 / 000001 / 300750）
@@ -128,7 +128,7 @@
      - 怀疑东财接口变化时，作为基准测试。
 
 
-9. diagnose_tdx.py
+10. diagnose_tdx.py
    作用：通达信（TDX）数据接口连通性与稳定性诊断。
    运行：python tests\diagnose_tdx.py
    输出包含 5 个部分：
@@ -145,7 +145,7 @@
      - 怀疑本地 IP 被通达信服务器临时封禁。
 
 
-10. diag_tdx_hosts_test.py（V9.3.2 新增）
+11. diag_tdx_hosts_test.py（V9.3.2 新增）
     作用：测试 easy_tdx 内置的全部 TDX 服务器K线可用性。
     运行：python tests\diag_tdx_hosts_test.py
     输出：逐个测试 52 个内置 TDX 服务器的 get_security_bars 接口，
@@ -159,7 +159,7 @@
       - 验证 V9.3.2 坏主机黑名单机制是否生效。
 
 
-11. diag_tdx_final.py（V9.3.2 新增）
+12. diag_tdx_final.py（V9.3.2 新增）
     作用：捕获 TDX K线请求的原始 TCP 响应（header + body），深度诊断
       TdxDecodeError 根因。
     运行：python tests\diag_tdx_final.py
@@ -174,9 +174,9 @@
       - diagnose_tdx.py 显示 K线失败但需要更详细的原始数据分析。
 
 
-11. test_datasource.py（V8.5 新增，V9.3.1 更新为 V2.3）
+13. diag_datasource.py（V8.5 新增，V9.3.1 更新为 V2.3）
     作用：多数据源接口连通性诊断，一次性测试所有主要数据接口。
-    运行：python tests\test_datasource.py
+    运行：python tests\diag_datasource.py
     输出包含：
       ① 腾讯行情接口（qt.gtimg.cn）；
       ② 东财数据中心（datacenter-web.eastmoney.com）；
@@ -199,9 +199,9 @@
       - 换网络环境后，首次验证数据接口连通性。
 
 
-12. test_tdx_basic.py（V9.3.1 新增，按数据源重组）
+14. diag_tdx_basic.py（V9.3.1 新增，按数据源重组）
     作用：TDX基础接口诊断，测试通达信行情/K线/资金流/财务基础接口。
-    运行：python tests\test_tdx_basic.py
+    运行：python tests\diag_tdx_basic.py
     覆盖接口（共8个）：
       - tdx_get_security_bars（K线行情）
       - tdx_get_quote_full（实时行情）
@@ -216,9 +216,9 @@
       - 验证TDX基础数据接口连通性。
 
 
-13. test_tdx_f10.py（V9.3.1 新增，按数据源重组）
+15. diag_tdx_f10.py（V9.3.1 新增，按数据源重组）
     作用：TDX F10接口诊断，测试通达信F10各分类接口。
-    运行：python tests\test_tdx_f10.py
+    运行：python tests\diag_tdx_f10.py
     覆盖接口（共6个）：
       - tdx_get_financial_analysis（财务分析）
       - tdx_get_shareholder_research（股东研究）
@@ -231,9 +231,9 @@
       - 验证TDX F10各分类接口连通性。
 
 
-14. test_tdx_board.py（V9.3.1 新增，按数据源重组）
+16. diag_tdx_board.py（V9.3.1 新增，按数据源重组）
     作用：TDX板块接口诊断，测试通达信板块/全市场接口。
-    运行：python tests\test_tdx_board.py
+    运行：python tests\diag_tdx_board.py
     覆盖接口（共4个）：
       - tdx_get_belong_boards（所属板块）
       - tdx_get_board_list（板块列表）
@@ -244,9 +244,9 @@
       - 验证TDX MacClient板块接口连通性（同时测试上交所和深交所）。
 
 
-15. test_eastmoney.py（V9.3.1 新增，按数据源重组）
+17. diag_eastmoney.py（V9.3.1 新增，按数据源重组）
     作用：东财接口诊断，测试东方财富HTTP接口。
-    运行：python tests\test_eastmoney.py
+    运行：python tests\diag_eastmoney.py
     覆盖接口（共14个）：
       - eastmoney_datacenter（数据中心）
       - get_reports（研报列表）
@@ -267,9 +267,9 @@
       - 验证资金面/基本面/行业对比等东财接口连通性。
 
 
-16. test_ths.py（V9.3.1 新增，按数据源重组）
+18. diag_ths.py（V9.3.1 新增，按数据源重组）
     作用：同花顺接口诊断，测试同花顺HTTP接口。
-    运行：python tests\test_ths.py
+    运行：python tests\diag_ths.py
     覆盖接口（共2个）：
       - get_ths_hot_reason（热点原因）
       - ths_hot_list（热榜）
@@ -277,9 +277,9 @@
       - 同花顺热榜/热点原因数据异常时定位问题。
 
 
-17. test_other.py（V9.3.1 新增，按数据源重组）
+19. diag_other.py（V9.3.1 新增，按数据源重组）
     作用：其他接口诊断，测试腾讯/新浪/百度/巨潮等接口。
-    运行：python tests\test_other.py
+    运行：python tests\diag_other.py
     覆盖接口（共5个）：
       - get_tencent_quote（腾讯行情）
       - get_sina_financial_report（新浪财报）
@@ -290,7 +290,7 @@
       - 验证腾讯/新浪/百度/巨潮等第三方数据源连通性。
 
 
-18. test_em_rate_limit.py（V8.6 新增）
+20. test_em_rate_limit.py（V8.6 新增）
     作用：东财限流阈值压力测试，验证东财风控是按域名独立限流还是按IP总请求限流。
     运行：python tests\test_em_rate_limit.py
     测试三组对照实验：
@@ -307,9 +307,9 @@
       - 评估性能优化空间时。
 
 
-17. test_issues.py（V8.5 新增，V8.7 更新）
+21. diag_issues.py（V8.5 新增，V8.7 更新）
    作用：专项问题验证脚本，用于复现和验证特定 bug 修复。
-   运行：python tests\test_issues.py
+   运行：python tests\diag_issues.py
    覆盖：
      - 指数涨跌幅数据验证（上证指数、深证成指、创业板指、科创50）；
      - 板块排名验证（get_stock_sector_rank 返回数据结构）；
@@ -321,7 +321,7 @@
      - 回归测试时确认已知问题没有复发。
 
 
-18. test_f10_chapters_integration.py（V9.1 新增）
+22. test_f10_chapters_integration.py（V9.1 新增）
    作用：F10 章节集成测试，验证 3 个报告脚本（med/lng/ful）中的 F10 新章节是否正确渲染。
    运行：python tests\test_f10_chapters_integration.py
         （必须在项目根目录运行，脚本会自动将根目录加入 sys.path）
@@ -342,113 +342,6 @@
      - 若 TDX 服务器不可达，章节会渲染为「(数据获取失败)」但不会断言失败。
    V9.1 变更：已移除数据质量核查附录的断言（数据质量稳定，附录功能已下线）；
               已移除 sht 报告测试（sht 移除了 risk_warning 章节）。
-
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-【已清理的文件】
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-以下文件在本次整理中已被清理，仅供参考：
-
-V9.3.2 TDX K线假数据问题定位时清理（2026-07-09）：
-
-  - diag_tdx_kline.py：K线解码错误初步诊断，定位到 from_best_host 选的
-    IP K线失败，已被 diag_tdx_final.py 覆盖，删除。
-  - diag_tdx_best_host.py：对比默认连接 vs from_best_host，确认两者都
-    返回假数据，结论已固化到代码注释中，删除。
-  - diag_tdx_decode.py：检查 easy_tdx 源码和解码逻辑，确认错误出在
-    get_datetime_day 的 unpack_from，结论已固化，删除。
-  - diag_tdx_raw_response.py：尝试捕获 TCP 原始响应，因 TdxConnection
-    API 不兼容未能完成，被 diag_tdx_final.py 替代，删除。
-  - diag_tdx_capture.py：monkey-patch TdxConnection.execute 捕获响应，
-    方法正确但实现有 bug，被 diag_tdx_final.py 替代，删除。
-  - diag_tdx_multi_host.py：测试多个 TDX 服务器，因 connect() 签名
-    不兼容未能完成，被 diag_tdx_hosts_test.py 替代，删除。
-
-  清理原因：这 6 个脚本是定位 TdxDecodeError 根因过程中的中间产物，
-  保留的 diag_tdx_hosts_test.py（全量IP测试）和 diag_tdx_final.py
- （原始响应捕获）已覆盖所有诊断需求。
-
-
-V9.3.2 多进程卡死问题定位时清理（2026-07-09）：
-
-  - diag_ful_hang.py：ful卡死诊断（faulthandler dump堆栈），卡死根因
-    已定位为 SQLite WAL 死锁 + TDX config.tmp 冲突，修复后删除。
-  - diag_ful_concurrent_hang.py：ful并发卡死诊断（threading.Timer超时），
-    结论已固化，删除。
-  - diag_ful_multiprocess_hang.py：ful多进程并发卡死诊断，结论已固化，删除。
-  - diag_ful_all_hang.py：ful多进程并发卡死诊断2（4脚本并发模拟--all），
-    结论已固化，删除。
-  - diag_sht_hang.py 系列（diag_sht_debug / diag_sht_main_async /
-    diag_sht_multiprocess / diag_sht_single / diag_sht_sync_hang）：
-    sht卡死诊断系列脚本，卡死根因已定位并修复，删除。
-  - diag_proxy_blocking.py：_do_request 代理改造验证脚本，代理禁用修复
-    已固化到 sc_network.py，删除。
-  - diag_hsgt_concurrent.py：北向资金接口并发稳定性诊断，结论已固化，删除。
-  - diag_file_lock_race.py：文件锁竞态条件诊断，结论已固化，删除。
-
-  清理原因：这 12 个脚本是定位多进程卡死根因过程中的中间产物，
-  卡死问题已通过以下修复解决：
-    ① SQLite journal_mode 从 WAL 改为 DELETE（stock_cache.py）
-    ② HTTP请求禁用系统代理（sc_network.py）
-    ③ TDX K线假数据防护（tdx_client.py）
-  保留的 diagnose_tdx.py（TDX连通性诊断）和 diag_dragon_tiger.py
- （龙虎榜诊断）已覆盖日常诊断需求。
-
-
-V9.3.1 按数据源重组时清理（2026-07-09）：
-
-  - test_datasource_fund.py：资金筹码类接口测试，已按数据源拆分，
-    股东结构/北向/融资融券等合并到 test_eastmoney.py。
-
-  - test_datasource_valuation.py：估值基本面类接口测试，已按数据源拆分，
-    一致预期/毛利率ROE等合并到 test_eastmoney.py。
-
-  - test_datasource_concept.py：题材概念类接口测试，已按数据源拆分，
-    概念板块/新闻等合并到 test_eastmoney.py 和 test_ths.py。
-
-  - test_datasource_f10.py：TDX F10类接口测试，已按数据源拆分，
-    合并到 test_tdx_f10.py。
-
-  重组原因：原按功能分类导致同一数据源接口分散在多个脚本，
-  定位问题时需运行多个脚本，效率低。现改为按数据源分类，
-  一个脚本即可定位某一数据源的所有接口问题。
-
-
-之前版本清理的文件：
-
-  - _probe_date_format.py：一次性调试，对比 TRADE_DATE 字段的引号
-    写法（单引号 vs 双引号）。问题已在 stock_common.py 中统一为
-    单引号后，此文件无需保留。
-
-  - _probe_free_date.py：一次性调试，对比限售解禁 FREE_DATE 字段
-    的引号写法。同上，问题已修复，删除。
-
-  - test_dragon_tiger_diagnose.py：龙虎榜问题定位过程中的脚本，
-    与 diag_dragon_tiger.py 功能重复，删除。
-
-  - test_dragon_tiger_final.py：龙虎榜修复后的验证脚本，验证完成即
-    无保留价值，删除。
-
-  - test_asyncio.py：v7.5 开发期间评估 asyncio 可行性的 POC 脚本，
-    不测试任何当前代码，删除。
-
-  - diagnose_throttle_and_pools.py：开发期间测试东财 datacenter
-    并发参数 / 同花顺强势股池大小的脚本。结论（并发上限、合理池
-    大小）已经固化到各业务脚本的代码中，不再需要反复运行，删除。
-
-  - test_report_formatters.py：测试已被重构掉的 report_formatters
-    模块，运行会报 ImportError，删除。
-
-  - _probe_dt.py：位于项目根目录的一次性调试脚本，反复对比龙虎榜
-    接口中 TRADE_DATE 字段不同写法（带引号/不带/单引号/横杠格式）
-    的响应。问题已解决，调试完成后无需保留，删除。
-
-  - compare_f10_vs_http.py（V9.1.1 清理）：F10 vs HTTP 对比测试脚本，
-    F10 优先级策略调整后已无保留价值，删除。
-
-  - test_f10_p1_all.py（V9.1.1 清理）：F10 阶段一全量测试脚本，
-    功能已被 test_f10_chapters_integration.py 集成测试覆盖，删除。
 
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -493,35 +386,35 @@ V9.3.1 按数据源重组时清理（2026-07-09）：
       pytest tests\test_gd_uploader.py -v
 
   想一次性验证所有数据源接口：
-      python tests\test_datasource.py
+      python tests\diag_datasource.py
 
   想按数据源分类测试（V9.3.1 新增）：
       # TDX基础接口（行情/K线/资金流/财务）
-      python tests\test_tdx_basic.py
+      python tests\diag_tdx_basic.py
       # TDX F10接口（财务分析/股东研究/股本结构等）
-      python tests\test_tdx_f10.py
+      python tests\diag_tdx_f10.py
       # TDX板块接口（所属板块/板块列表/板块成员）
-      python tests\test_tdx_board.py
+      python tests\diag_tdx_board.py
       # 东财接口（研报/新闻/股东/北向/融资融券等14个）
-      python tests\test_eastmoney.py
+      python tests\diag_eastmoney.py
       # 同花顺接口（热点原因/热榜）
-      python tests\test_ths.py
+      python tests\diag_ths.py
       # 其他接口（腾讯/新浪/百度/巨潮）
-      python tests\test_other.py
+      python tests\diag_other.py
 
-  想只跑 TDX 财务/资金流/分红接口测试（在 test_datasource.py 中包含）：
-      python tests\test_datasource.py
+  想只跑 TDX 财务/资金流/分红接口测试（在 diag_datasource.py 中包含）：
+      python tests\diag_datasource.py
       （测试TDX财务信息、TDX资金流、TDX分红除权三项）
 
-  想只跑 TDX MacClient 测试（在 test_tdx_board.py 中包含）：
-      python tests\test_tdx_board.py
+  想只跑 TDX MacClient 测试（在 diag_tdx_board.py 中包含）：
+      python tests\diag_tdx_board.py
       （测试MacClient连接、所属板块、板块成员三项）
 
   想验证东财限流阈值（谨慎使用，有封禁风险）：
       python tests\test_em_rate_limit.py
 
   想验证特定 bug 修复是否生效：
-      python tests\test_issues.py
+      python tests\diag_issues.py
 
   想验证 F10 章节和附录在报告中的集成（V9.1 新增，需联网，约 5-10 分钟）：
       python tests\test_f10_chapters_integration.py

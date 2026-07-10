@@ -328,8 +328,8 @@ holidays = {
     datetime.date(2015, 5, 1): Holiday.labour_day,
     datetime.date(2015, 6, 20): Holiday.dragon_boat_festival,
     datetime.date(2015, 6, 22): Holiday.dragon_boat_festival,
-    datetime.date(2015, 9, 3): "Anti-Fascist 70th Day",
-    datetime.date(2015, 9, 4): "Anti-Fascist 70th Day",
+    datetime.date(2015, 9, 3): Holiday.national_day,
+    datetime.date(2015, 9, 4): Holiday.national_day,
     datetime.date(2015, 9, 27): Holiday.mid_autumn_festival,
     datetime.date(2015, 10, 1): Holiday.national_day,
     datetime.date(2015, 10, 2): Holiday.national_day,
@@ -863,8 +863,14 @@ def get_last_trading_day(date=None):
     date = _wrap_date(date)
     # 向前回溯直到找到交易日（最多回溯 30 天）
     for _ in range(30):
-        if is_workday(date):
-            return date
+        try:
+            if is_workday(date):
+                return date
+        except NotImplementedError:
+            # 跨年度时年份超出范围，回退到 weekday 判断
+            weekday = date.weekday()
+            if weekday <= 4:
+                return date
         date -= datetime.timedelta(days=1)
     # 极端情况：30 天内无交易日（不应该发生）
     raise NotImplementedError("no trading day found in the last 30 days")

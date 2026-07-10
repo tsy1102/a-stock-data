@@ -5,8 +5,6 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
-
 ## [9.3.2] - 2026-07-09
 
 ### Fixed
@@ -386,10 +384,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - PB-ROE矩阵、行业PE比较、股价/自由现金流
   - `get_intrinsic_value()`综合多种方法给出内在价值判断
   - `stock_common.py`新增`get_valuation()`便捷函数
-- 新增AI产业链卡位分析 `ai_chain_analyzer.py`：
+- AI产业链卡位分析 `ai_chain_analyzer.py`（规划中，模块尚未实现）：
   - 卡脖子环节：GPU/AI芯片、HBM存储、CoWoS封装、光模块、PCB、电源管理、交换机、液冷散热
   - `analyze_ai_chain_position()`判断个股是否在AI产业链、卡位等级、上游暴露度
-  - `stock_common.py`新增`analyze_ai_chain_position()`便捷函数
+  - `stock_common.py`新增`analyze_ai_chain_position()`便捷函数（当前返回空结果）
 
 ### Changed
 

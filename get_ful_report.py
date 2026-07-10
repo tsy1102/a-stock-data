@@ -54,13 +54,13 @@ from stock_common import (
     get_strategic_announcements, get_holder_structure,
     _load_strategy_config, ensure_output_dir, get_script_dir,
     is_limit_up, is_limit_down,
-    is_trading_day, get_market_status,
+    get_market_status,
     calculate_multi_school_scores, ScoreData,
     get_eastmoney_stock_news,
     ths_hot_list,
 )
 
-from gd_uploader import init_gd, upload_type_reports, upload_stock_report_by_code, cleanup_gd_proxy
+from gd_uploader import init_gd, upload_stock_report_by_code, cleanup_gd_proxy
 
 from tdx_client import (
     tdx_get_security_bars, tdx_get_quote_full, tdx_get_index_quote,
@@ -109,24 +109,6 @@ def _section(title: str) -> str:
 
 
 # ── 纯 Python 技术指标实现（方案1）──
-
-def _calc_ma(values: List[float], period: int) -> Optional[float]:
-    """简单移动平均线（最后一天值）"""
-    if len(values) < period:
-        return None
-    return sum(values[-period:]) / period
-
-
-def _calc_ema(values: List[float], period: int) -> Optional[float]:
-    """指数移动平均线（最后一天值）"""
-    if len(values) < period:
-        return None
-    k = 2 / (period + 1)
-    ema = sum(values[:period]) / period
-    for i in range(period, len(values)):
-        ema = values[i] * k + ema * (1 - k)
-    return ema
-
 
 def _calc_macd(closes: List[float]) -> Dict[str, float]:
     """MACD (12, 26, 9) — 返回 {dif, dea, macd, hist}"""
@@ -316,52 +298,6 @@ def _calc_volume_analysis(volumes: List[float]) -> Dict[str, float]:
         "ratio": round(ratio, 2),
         "trend_pct": round(trend, 2),
     }
-
-
-# ── ASCII 图表（用于评分雷达图/价格趋势）──
-
-def _ascii_radar_chart(scores: Dict[str, float]) -> str:
-    """六维评分（数据展示，无图表）"""
-    rows: List[str] = []
-    dims = [
-        ("技术面", scores.get("technical", 50)),
-        ("估值面", scores.get("valuation", 50)),
-        ("基本面", scores.get("fundamental", 50)),
-        ("资金面", scores.get("flow", 50)),
-        ("筹码面", scores.get("holder", 50)),
-        ("分红面", scores.get("dividend", 50)),
-    ]
-
-    for name, score in dims:
-        rows.append(f"  {name}: {score:.1f}分")
-
-    total = scores.get("total", sum(s[1] for s in dims) / 6)
-    rows.append("")
-    rows.append(f"  综合评分: {total:.1f}分")
-    return "\n".join(rows)
-
-
-def _ascii_price_trend(closes: List[float], bars: int = 15, width: int = 36) -> str:
-    """价格趋势（数据展示，无图表）"""
-    if not closes or len(closes) < 5:
-        return "  数据不足"
-
-    tail = closes[-bars:]
-    lo, hi = min(tail), max(tail)
-    rng = hi - lo if hi > lo else 1
-
-    rows: List[str] = []
-    for i, price in enumerate(tail):
-        # 标记涨跌
-        prev_p = tail[i - 1] if i > 0 else price
-        change = price - prev_p
-        change_pct = change / prev_p * 100 if prev_p > 0 else 0
-        marker = "↑" if price > prev_p else ("↓" if price < prev_p else "-")
-        rows.append(f"  Day-{len(tail)-i:>2d}  ¥{price:>7.2f}  {marker} {change_pct:+.1f}%")
-
-    rows.append(f"  区间: ¥{lo:.2f} ~ ¥{hi:.2f} (振幅 {rng/lo*100:.1f}%)")
-    rows.append(f"  近{len(tail)}日涨跌幅: {(tail[-1]-tail[0])/tail[0]*100:.1f}%")
-    return "\n".join(rows)
 
 
 # =====================================================================
@@ -1931,17 +1867,22 @@ def format_report(code: str, layers: Dict[str, Any]) -> str:
     L("\n  ★ 多评委评审团评分（V8.5）")
     L("  ─────────────────────────────────────────────────────────────────────")
     try:
+        # 复用 _scoring 中的数据提取逻辑，路径与 _scoring() 一致
+        _l1 = layers.get("layer1") or {}
+        _l6 = layers.get("layer6") or {}
+        _l6_ratios = _l6.get("ratios") or {}
+        _l6_bs = (_l6.get("balance_sheet") or [{}])[0]
         score_data = ScoreData(
             code=code,
-            name=layers.get('layer1', {}).get('name', ''),
-            price=price,
-            pe_ttm=layers.get('layer6', {}).get('pe_ttm', 0),
-            pb=layers.get('layer6', {}).get('pb', 0),
-            roe=layers.get('layer6', {}).get('roe', 0),
-            debt_ratio=layers.get('layer6', {}).get('debt_ratio', 0),
-            change_pct=layers.get('layer1', {}).get('change_pct', 0),
-            volume_ratio=layers.get('layer1', {}).get('volume_ratio', 1.0),
-            rsi14=layers.get('layer1', {}).get('rsi', {}).get('rsi14', 50),
+            name=basic.get('name', ''),
+            price=basic.get('price', 0),
+            pe_ttm=_l6_ratios.get('pe_ttm', 0),
+            pb=_l6_ratios.get('pb', 0),
+            roe=_l6_ratios.get('roe_annualized', 0),
+            debt_ratio=(_l6_bs.get('debt_ratio', 0) / 100) if isinstance(_l6_bs, dict) else 0,
+            change_pct=basic.get('change_pct', 0),
+            volume_ratio=(_l1.get("tech") or {}).get("volume", {}).get("ratio", 1.0),
+            rsi14=(_l1.get("tech") or {}).get("rsi", {}).get("rsi14", 50),
         )
         multi_scores = calculate_multi_school_scores(score_data)
         L(f"    价值派评分: {multi_scores['value'].total_score:.1f}分")

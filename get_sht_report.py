@@ -104,9 +104,12 @@ def get_fund_flow_120d(code):
         return {"data": tdx_data, "error": "", "source": "tdx"}
     
     # TDX获取失败，尝试东财push2 fallback
-    em_data = _get_eastmoney_fund_flow_120d(code)
-    if em_data:
-        return {"data": em_data, "error": "", "source": "eastmoney_push2"}
+    try:
+        em_data = _get_eastmoney_fund_flow_120d(code)
+        if em_data:
+            return {"data": em_data, "error": "", "source": "eastmoney_push2"}
+    except Exception as _e:
+        _debug_log(f"get_fund_flow_120d eastmoney fallback ({code}): {_e}")
     
     return {"data": [], "error": "资金流数据获取失败"}
 
@@ -1577,8 +1580,6 @@ if __name__ == "__main__":
     # ─── 汇总报告 ────────────────────────────────────────────────
 
     cleanup_gd_proxy(gd_proxy_set)
-
-    # 缓存现在使用统一的SQLite管理，无需手动刷新
 
     cleanup_tdx()
 

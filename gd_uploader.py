@@ -197,34 +197,42 @@ def init_google_drive(base_dir: str) -> Tuple[Optional[Any], bool]:
 # ────────────────────────────────────────────────────────────────
 def get_or_create_drive_folder(service, name: str, parent_id: Optional[str] = None) -> Optional[str]:
     """查找或创建文件夹，返回其 Drive ID。失败返回 None。
-    
+
     关键规则：
     - parent_id 为 None 时表示在根目录下查找/创建，搜索时强制 'root' in parents
     - parent_id 为空字符串时拒绝操作（禁止在根目录之外的模糊位置操作）
-    - parent_id 为有效 ID 时，始终限制在该父文件夹下查找/创建
+    - parent_id 为有效 ID 时，先验证 ID 存在性，再限制在该父文件夹下查找/创建
     """
     if not service:
         return None
     try:
+        # 验证 parent_id 有效性：非 None 的 parent_id 必须对应一个存在的文件夹
+        if parent_id is not None:
+            if not parent_id:
+                # parent_id 为空字符串，拒绝操作
+                print(f"  ❌ 父文件夹ID无效，拒绝操作文件夹「{name}」", flush=True)
+                return None
+            try:
+                service.files().get(fileId=parent_id, fields="id").execute()
+            except Exception:
+                print(f"  ❌ 父文件夹ID不存在或已失效，拒绝操作文件夹「{name}」", flush=True)
+                return None
+
         q = f"name='{name}' and mimeType='application/vnd.google-apps.folder' and trashed=false"
-        
+
         if parent_id is None:
             # parent_id 为 None 表示根目录，强制限制在根目录搜索
             q += " and 'root' in parents"
-        elif not parent_id:
-            # parent_id 为空字符串，拒绝操作
-            print(f"  ❌ 父文件夹ID无效，拒绝操作文件夹「{name}」", flush=True)
-            return None
         else:
             # parent_id 为有效 ID，限制在指定父文件夹下搜索
             q += f" and '{parent_id}' in parents"
-            
+
         resp = service.files().list(q=q, spaces="drive", fields="files(id, name)", pageSize=5).execute()
         items = resp.get("files", [])
         if items:
             print(f"  🔍 云盘文件夹已存在：{name}", flush=True)
             return cast(str, items[0]["id"])
-            
+
         # 创建文件夹
         body: Dict[str, Any] = {
             "name": name,
@@ -234,7 +242,7 @@ def get_or_create_drive_folder(service, name: str, parent_id: Optional[str] = No
             # parent_id 为有效 ID，在指定父文件夹下创建
             body["parents"] = [parent_id]
         # parent_id 为 None 表示根目录，不设置 parents（默认创建在根目录）
-            
+
         created = service.files().create(body=body, fields="id").execute()
         print(f"  ➕ 已创建云盘文件夹：{name}", flush=True)
         return cast(Optional[str], created.get("id"))

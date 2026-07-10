@@ -402,6 +402,13 @@ def layer1_market(code: str) -> Dict[str, Any]:
         if ma20 and latest > ma20 * 1.08:
             result["signals"].append("当前价高于MA20超过8%，短期超买")
 
+    else:
+        # K线数据不足，用实时行情价格填充基本字段
+        _price = result["basic"].get("price", 0)
+        if _price:
+            result["kline"] = {"price": round(_price, 2)}
+            result["signals"].append("K线数据获取不足，仅显示实时行情")
+
     # ── 技术指标计算 ──
     tech = {}
     if closes_list and len(closes_list) >= 30:

@@ -1446,6 +1446,5 @@ if __name__ == "__main__":
             if upload_type_reports(drive, gd_parent_folder_id, "val", [op]) <= 0:
                 print("  ⚠️ GD 上传失败", flush=True)
     cleanup_gd_proxy(gd_proxy_set)
-    # 缓存现在使用统一的SQLite管理，无需手动刷新
     cleanup_tdx()
 

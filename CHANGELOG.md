@@ -17,6 +17,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **cleanup_tdx()/exit(1) 缩进错误**（Bug 5/Bug 7）：`get_val_report.py` 和 `get_mak_report.py` 中异常处理缩进修正
 - **stock_calendar.py 非枚举值**（Bug 10）：`"Anti-Fascist 70th Day"` 改为 `Holiday.national_day`
 - **get_reports None 检查**：`sc_datasource.py` 中增加 `r is None` 检查防止后续操作崩溃
+- **sht资金流获取崩溃**：`get_sht_report.py` 中 `_get_eastmoney_fund_flow_120d()` fallback 调用无 try-except，东财接口异常时直接崩溃导致【七、资金走向分析】显示"资金流数据获取失败"。已增加 try-except 保护
+- **ful技术分析内容缺失**：`get_ful_report.py` 中 `layer1_market()` 当 K线数据不足导致 `closes_list` 为空时，`kline["price"]` 未设置，渲染时跳过整个技术分析详情。已增加实时行情价格 fallback
+- **GD根目录出现旧股票文件夹**：`gd_uploader.py` 中 `get_or_create_drive_folder()` 创建文件夹前未验证 `parent_id` 有效性，无效/已删除的 `parent_id` 导致 Google Drive API 回退到根目录创建。已增加 `service.files().get()` 存在性验证
 
 ### Changed
 

@@ -230,16 +230,10 @@ def get_or_create_drive_folder(service, name: str, parent_id: Optional[str] = No
             "name": name,
             "mimeType": "application/vnd.google-apps.folder",
         }
-        if parent_id is None:
-            # parent_id 为 None 表示根目录，不设置 parents（默认创建在根目录）
-            pass
-        elif parent_id:
+        if parent_id:
             # parent_id 为有效 ID，在指定父文件夹下创建
             body["parents"] = [parent_id]
-        else:
-            # parent_id 为空字符串，拒绝创建
-            print(f"  ❌ 父文件夹ID无效，拒绝创建文件夹「{name}」", flush=True)
-            return None
+        # parent_id 为 None 表示根目录，不设置 parents（默认创建在根目录）
             
         created = service.files().create(body=body, fields="id").execute()
         print(f"  ➕ 已创建云盘文件夹：{name}", flush=True)

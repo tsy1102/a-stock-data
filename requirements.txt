@@ -28,11 +28,12 @@ easy-tdx>=1.0,<2.0
 google-auth>=2.0
 google-auth-oauthlib>=1.0
 google-api-python-client>=2.0
-httplib2==0.22.0       # ← 固定版本，0.32.0 有代理解析 bug
+httplib2>=0.22,<0.31   # ← 避开 0.32.0 代理解析 bug
 # pydrive2>=1.10    # ← V4 旧版，如需兼容可手动安装
 
 # ── A股日历与交易日判断（V8 新增）──────────────────────────────
 chinese-calendar>=1.11
 
 # ── 单元测试（可选，仅开发环境使用）───────────────────────────
-pytest>=7.0
+# 开发环境安装: pip install -r requirements-dev.txt
+# pytest>=7.0

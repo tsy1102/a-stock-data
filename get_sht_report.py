@@ -20,12 +20,10 @@
 
 
 
-import argparse, requests, math, time, pandas as pd, json, os, sys, re as _re
+import time, os
 from typing import List
 
 import asyncio
-
-import random
 
 from datetime import date, datetime, timedelta
 
@@ -38,13 +36,11 @@ from tdx_client import (tdx_get_security_bars, tdx_get_latest_bar_with_ma,
 
                          tdx_get_quote_full,
 
-                         tdx_get_index_quote, tdx_get_index_bars,
+                         tdx_get_index_quote,
 
                          tdx_get_fund_flow, tdx_get_history_fund_flow,
 
                          tdx_get_eps_from_reports, tdx_get_latest_announcements,
-
-                         tdx_get_belong_boards, tdx_get_board_list,
 
                          tdx_get_board_members, tdx_get_board_by_name,
 
@@ -56,8 +52,7 @@ from stock_common import (clean_codes, _safe_float, _request_with_retry, _quick_
                            eastmoney_datacenter, _em_filter,
                            _load_settings, _load_strategy_config, holder_change,
                            get_strategic_announcements, get_dragon_tiger_board,
-                           create_async_session, eastmoney_datacenter_async,
-                           _em_filter_async, _async_request_with_retry,
+                           create_async_session, _async_request_with_retry,
                            _async_quick_request, get_dragon_tiger_board_async,
                            holder_change_async, get_strategic_announcements_async,
                            parse_args, get_tencent_quote, baidu_kline_full,
@@ -78,10 +73,6 @@ from stock_common import (clean_codes, _safe_float, _request_with_retry, _quick_
                            get_eastmoney_stock_news)
 
 
-
-# 脚本所在目录（用于确定默认输出目录）
-
-_SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 
 
 
@@ -229,24 +220,6 @@ def get_baidu_kline_with_ma(code):
 
 
 
-def generate_report(code, output_path, ind_comp=None, idx_q=None, hsgt=None, depth="deep"):
-    """已废弃同步入口，内部转发异步版（V8.7 删除同步实现）。
-
-    历史上 sht/med/lng 的同步 generate_report 与异步 generate_report_async
-    是两套几乎相同的实现，同步版零调用，故删除同步实现、保留薄包装转发。
-    """
-    async def _run():
-        session = await create_async_session()
-        try:
-            return await generate_report_async(session, code, output_path,
-                                               ind_comp=ind_comp, idx_q=idx_q,
-                                               hsgt=hsgt, depth=depth)
-        finally:
-            await session.close()
-    return asyncio.run(_run())
-
-
-
 async def generate_report_async(session, code, output_path, ind_comp=None, idx_q=None, hsgt=None, depth="deep"):
 
     """V7.5 async 版: 支持 ind_comp/idx_q/hsgt 外部缓存，批量模式下避免重复查询
@@ -325,7 +298,6 @@ async def generate_report_async(session, code, output_path, ind_comp=None, idx_q
 
     _seal_ratio_warn = _mkt.get("seal_amount_ratio_warn", 0.1)
 
-    _is_td = is_trading_day()
     _mkt_status, _mkt_note = get_market_status()
 
     if _mkt_status in ("lunch", "closed", "post_market", "pre_market"):
@@ -1109,7 +1081,7 @@ async def generate_report_async(session, code, output_path, ind_comp=None, idx_q
 
     is_lu2 = lu2>0 and abs(np3-lu2)/lu2<0.005
 
-    _lu = q.get("limit_up",0) if q else 0; _ld = q.get("limit_down",0) if q else 0
+    _lu = q.get("limit_up",0) if q else 0; _ld = q.get("limit_down_price",0) if q else 0
 
     _hi = q.get("high",0) if q else 0; _lo = q.get("low",0) if q else 0; _chg = q.get("change_pct",0) if q else 0
 
@@ -1510,8 +1482,6 @@ if __name__ == "__main__":
     # ─── 批量生成（缓存行业排名等）────────────────────────────────
 
     os.makedirs(args.output, exist_ok=True)
-
-    _results = []
 
     _cached_ind_comp = get_industry_comparison()
 

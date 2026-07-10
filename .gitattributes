@@ -1,0 +1,19 @@
+# 行尾规范化：文本文件统一 LF，Windows 用户 checkout 时自动转 CRLF
+* text=auto
+*.py text eol=lf
+*.yaml text eol=lf
+*.yml text eol=lf
+*.txt text eol=lf
+*.md text eol=lf
+*.json text eol=lf
+*.toml text eol=lf
+*.cfg text eol=lf
+*.csv text eol=lf
+
+# 二进制文件不做转换
+*.pyc binary
+*.db binary
+*.xlsx binary
+*.png binary
+*.jpg binary
+*.gif binary

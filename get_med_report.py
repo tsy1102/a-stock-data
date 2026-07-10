@@ -28,30 +28,21 @@ from gd_uploader import init_gd, upload_stock_report_by_code, cleanup_gd_proxy
 # 快照数据累积器（批量结束后一次性写入）
 _SNAPSHOT_DATA: dict = {}
 
-from tdx_client import (tdx_get_security_bars, tdx_get_quote_full,
-                         tdx_get_quotes_batch, tdx_get_index_bars,
-                         tdx_get_fund_flow, tdx_get_history_fund_flow,
-                         tdx_get_eps_from_reports,
-                         tdx_get_belong_boards, tdx_get_board_list,
-                         tdx_get_board_members, tdx_get_board_by_name,
-                         tdx_get_latest_announcements, tdx_get_dividend_history, cleanup_tdx)
+from tdx_client import (tdx_get_quote_full,
+                         tdx_get_history_fund_flow,
+                         tdx_get_belong_boards, tdx_get_board_members,
+                         tdx_get_board_by_name,
+                         cleanup_tdx)
 
-from stock_common import (clean_codes, _safe_float, _request_with_retry, _quick_request, UA, _debug_log,
-                           eastmoney_datacenter, _em_filter,
-                           get_strategic_announcements, get_holder_structure,
-                           _load_strategy_config, get_dragon_tiger_board,
-                           create_async_session, eastmoney_datacenter_async,
-                           _em_filter_async, _async_request_with_retry,
-                           _async_quick_request, get_dragon_tiger_board_async,
+from stock_common import (clean_codes, _safe_float, _debug_log,
+                           get_holder_structure,
+                           _load_strategy_config,
+                           create_async_session,
+                           get_dragon_tiger_board_async,
                            holder_change_async, get_strategic_announcements_async,
                            parse_args, get_tencent_quote, baidu_kline_full,
-                           get_reports, get_eps_forecast, get_northbound_hold,
-                           get_margin_trading, get_block_trade,
                            get_dividend_history, get_industry_comparison,
-                           print_batch_summary,
-                           get_stock_info, get_sina_financial_report,
-                           get_sina_balance_sheet, get_hsgt_macro_flow,
-                           get_lockup_expiry, get_gross_margin_and_roe,
+                           get_stock_info,
                            get_eps_forecast_async, get_reports_async,
                            get_northbound_hold_async, get_margin_trading_async,
                            get_block_trade_async, get_lockup_expiry_async,
@@ -158,9 +149,7 @@ async def generate_report_async(session, code, output_path, ind_comp=None, hsgt=
     _peg_rational = _val.get("peg_rational", 1.5)
     _debt_ratio_warn = _fund.get("debt_ratio_warn", 60.0)
     _ar_ratio_warn = _fund.get("ar_ratio_warn", 20.0)
-    _cash_debt_ratio = _fund.get("cash_debt_ratio_warn", 1.0)
     _gw_ratio = _fund.get("gw_ratio_warn", 30.0)
-    _ar_rev_ratio = _fund.get("ar_rev_warn_ratio", 30.0)
 
     _now = datetime.now()
     _is_td = is_trading_day(_now.date())
@@ -223,11 +212,6 @@ async def generate_report_async(session, code, output_path, ind_comp=None, hsgt=
         for row in _ind_all:
             if stock_ind in row["name"] or row["name"] in stock_ind:
                 L(f"  板块排名: 当日全市场第 {row['rank']} 名 (涨跌幅 {row['change_pct']}%)")
-                _all_m = peer_data.get("all_members", [])
-                if _all_m:
-                    _up = sum(1 for m in _all_m if m.get("change_pct", 0) > 0)
-                    _down = sum(1 for m in _all_m if m.get("change_pct", 0) < 0)
-                    L(f"  板块涨跌: 上涨 {_up} 家 / 下跌 {_down} 家")
                 try:
                     _rank_info = get_stock_sector_rank(code, info=info)
                     if _rank_info:
@@ -378,7 +362,7 @@ async def generate_report_async(session, code, output_path, ind_comp=None, hsgt=
     df_eps = await get_eps_forecast_async(session, code)
     eps_cur = eps_next = None
     eps_has_data = False
-    if not df_eps.empty and len(df_eps.columns) >= 3:
+    if not df_eps.empty and len(df_eps.columns) >= 4:
         L(f"  {'年度':<10} {'覆盖机构数':<10} {'预测EPS均值':<12}")
         L(f"  {'-'*40}")
         for i, row in df_eps.iterrows():
@@ -436,7 +420,15 @@ async def generate_report_async(session, code, output_path, ind_comp=None, hsgt=
                         return e[-1]
                     _ema12 = _ema(_cls_m[-25:], 12)
                     _ema26 = _ema(_cls_m[-45:], 26)
-                    _dif = _ema12 - _ema26; _dea = _dif*2/9 + _dif*7/9
+                    _dif = _ema12 - _ema26
+                    # DEA = EMA(DIF, 9)，需要 DIF 序列
+                    _dif_series = []
+                    _e12 = _cls_m[0]; _e26 = _cls_m[0]
+                    for _c in _cls_m:
+                        _e12 = _c * 2/13 + _e12 * 11/13
+                        _e26 = _c * 2/27 + _e26 * 25/27
+                        _dif_series.append(_e12 - _e26)
+                    _dea = _ema(_dif_series[-9:] or [0], 9)
                     _macd_sig = "金叉" if _dif > _dea else "死叉" if _dif < _dea else "粘合"
                     L(f"  [MACD] DIF={_dif:.3f} DEA={_dea:.3f}（{_macd_sig}）")
                     _ma20 = sum(_cls_m[-20:])/20

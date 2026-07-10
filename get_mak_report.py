@@ -783,7 +783,6 @@ if __name__ == "__main__":
         print(f"  ✅ 已保存: {op}", flush=True)
     except Exception as e:
         print(f"❌ 报告生成失败: {e}", flush=True)
-    # 缓存现在使用统一的SQLite管理，无需手动刷新
         cleanup_tdx()
         exit(1)
 
@@ -795,6 +794,5 @@ if __name__ == "__main__":
             if upload_type_reports(drive, gd_parent_folder_id, "mak", [op]) <= 0:
                 print("  ⚠️ GD 上传失败", flush=True)
     cleanup_gd_proxy(gps)
-    # 缓存现在使用统一的SQLite管理，无需手动刷新
     cleanup_tdx()
     print(f"\n📋 扫描结束: {op}")

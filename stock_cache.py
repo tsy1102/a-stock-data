@@ -71,10 +71,6 @@ os.makedirs(_CACHE_DIR, exist_ok=True)
 _MAX_CACHE_SIZE_MB = 500
 _MAX_CACHE_SIZE_BYTES = _MAX_CACHE_SIZE_MB * 1024 * 1024
 
-# 初始化时是否检查 holder_cache.json 并迁移（决策点5）
-# V8.9: 已全部迁移到 SQLite，关闭旧 JSON 迁移逻辑
-_MIGRATE_HOLDER_CACHE = False
-
 # 环境变量开关：STOCK_NOCACHE=1 临时禁用缓存
 _DISABLE_CACHE = os.environ.get("STOCK_NOCACHE", "") == "1"
 
@@ -133,7 +129,6 @@ TTL: Dict[str, int] = {
     # 低频分类（固定 TTL）
     "f10_shareholder":      7 * 86400,  # F5 股东研究（季度更新）
     "f10_share_capital":    7 * 86400,  # F4 股本结构（偶尔更新）
-    "f10_capital_op":       7 * 86400,  # F9 资本运作（不定期）
     "f10_industry":         7 * 86400,  # F15 行业分析（每周更新）
     "f10_themes":           3 * 86400,  # F11 热点题材（不定期）
     "f10_financial":       90 * 86400,  # F3 财务分析（季报周期）
@@ -188,6 +183,31 @@ def _calc_trading_day_expiry() -> float:
     return ts
 
 # ═══════════════════════════════════════
+# SQLite Schema 常量（单点维护）
+# ═══════════════════════════════════════
+_CACHE_TABLE_SQL = (
+    "CREATE TABLE IF NOT EXISTS cache_entries ("
+    "  key TEXT PRIMARY KEY,"
+    "  value BLOB NOT NULL,"
+    "  created_at REAL NOT NULL,"
+    "  expires_at REAL NOT NULL,"
+    "  hit_count INTEGER DEFAULT 0,"
+    "  last_accessed REAL NOT NULL,"
+    "  prev_value BLOB,"
+    "  verified INTEGER DEFAULT 0"
+    ")"
+)
+_CACHE_INDEX_SQLS = [
+    "CREATE INDEX IF NOT EXISTS idx_expires ON cache_entries(expires_at)",
+    "CREATE INDEX IF NOT EXISTS idx_last_accessed ON cache_entries(last_accessed)",
+]
+_CACHE_PRAGMAS = [
+    ("PRAGMA journal_mode=DELETE",),    # DELETE 模式，多进程安全
+    ("PRAGMA synchronous=NORMAL",),     # 平衡性能与安全
+    ("PRAGMA cache_size=-8000",),       # 8MB 缓存
+]
+
+# ═══════════════════════════════════════
 # SQLite 数据库初始化
 # ═══════════════════════════════════════
 _db_lock = threading.RLock()  # 多线程安全锁
@@ -206,25 +226,12 @@ def _get_db() -> sqlite3.Connection:
         if _db is not None:
             return _db
         _db = sqlite3.connect(_CACHE_DB, check_same_thread=False, timeout=30.0)
-        _db.execute("PRAGMA journal_mode=DELETE")    # DELETE 模式，多进程安全（WAL 在多进程写时会死锁）
-        _db.execute("PRAGMA synchronous=NORMAL")     # 平衡性能与安全
-        _db.execute("PRAGMA cache_size=-8000")       # 8MB 缓存（多进程各占一份，避免 MemoryError）
-        _db.execute("CREATE TABLE IF NOT EXISTS cache_entries ("
-                    "  key TEXT PRIMARY KEY,"
-                    "  value BLOB NOT NULL,"
-                    "  created_at REAL NOT NULL,"
-                    "  expires_at REAL NOT NULL,"
-                    "  hit_count INTEGER DEFAULT 0,"
-                    "  last_accessed REAL NOT NULL"
-                    ")")
-        _db.execute("CREATE INDEX IF NOT EXISTS idx_expires ON cache_entries(expires_at)")
-        _db.execute("CREATE INDEX IF NOT EXISTS idx_last_accessed ON cache_entries(last_accessed)")
-        # V9.2: 交叉验证字段迁移（prev_value + verified）
-        _migrate_verify_columns(_db)
+        for _pragma in _CACHE_PRAGMAS:
+            _db.execute(_pragma[0])
+        _db.execute(_CACHE_TABLE_SQL)
+        for _idx in _CACHE_INDEX_SQLS:
+            _db.execute(_idx)
         _db.commit()
-        # 启动时迁移旧的 holder_cache.json（仅执行一次）
-        if _MIGRATE_HOLDER_CACHE:
-            _try_migrate_holder_cache()
         return _db
 
 
@@ -243,113 +250,13 @@ async def _get_async_db() -> Optional[Any]:
     if _async_db_lock is None:
         import asyncio
         _async_db_lock = asyncio.Lock()
-    await _async_db.execute("PRAGMA journal_mode=DELETE")
-    await _async_db.execute("PRAGMA synchronous=NORMAL")
-    await _async_db.execute("PRAGMA cache_size=-8000")
-    await _async_db.execute(
-        "CREATE TABLE IF NOT EXISTS cache_entries ("
-        "  key TEXT PRIMARY KEY,"
-        "  value BLOB NOT NULL,"
-        "  created_at REAL NOT NULL,"
-        "  expires_at REAL NOT NULL,"
-        "  hit_count INTEGER DEFAULT 0,"
-        "  last_accessed REAL NOT NULL"
-        ")"
-    )
-    await _async_db.execute("CREATE INDEX IF NOT EXISTS idx_expires ON cache_entries(expires_at)")
-    await _async_db.execute("CREATE INDEX IF NOT EXISTS idx_last_accessed ON cache_entries(last_accessed)")
-    # V9.2: 异步版交叉验证字段迁移（prev_value + verified）
-    try:
-        async with _async_db.execute("PRAGMA table_info(cache_entries)") as _cur:
-            _cols = {row[1] for row in await _cur.fetchall()}
-        if "prev_value" not in _cols:
-            await _async_db.execute("ALTER TABLE cache_entries ADD COLUMN prev_value BLOB")
-        if "verified" not in _cols:
-            await _async_db.execute("ALTER TABLE cache_entries ADD COLUMN verified INTEGER DEFAULT 0")
-    except Exception as _e:
-        _cache_logger.debug(f"_get_async_db migrate verify columns: {_e}")
+    for _pragma in _CACHE_PRAGMAS:
+        await _async_db.execute(_pragma[0])
+    await _async_db.execute(_CACHE_TABLE_SQL)
+    for _idx in _CACHE_INDEX_SQLS:
+        await _async_db.execute(_idx)
     await _async_db.commit()
     return _async_db
-
-
-def _migrate_verify_columns(db: sqlite3.Connection) -> None:
-    """V9.2 迁移：为缓存表新增交叉验证字段（幂等，可重复执行）。
-
-    新增字段:
-      - prev_value BLOB: 第二次获取的数据，用于对比验证
-      - verified INTEGER: 0=未验证, 1=已验证（两次获取一致）
-    """
-    try:
-        cursor = db.cursor()
-        cursor.execute("PRAGMA table_info(cache_entries)")
-        columns = {row[1] for row in cursor.fetchall()}
-        if "prev_value" not in columns:
-            db.execute("ALTER TABLE cache_entries ADD COLUMN prev_value BLOB")
-        if "verified" not in columns:
-            db.execute("ALTER TABLE cache_entries ADD COLUMN verified INTEGER DEFAULT 0")
-    except Exception as _e:
-        _cache_logger.debug(f"migrate_verify_columns: {_e}")
-
-
-def _try_migrate_holder_cache() -> None:
-    """将旧的 holder_cache.json 迁移到 SQLite（仅执行一次）。"""
-    json_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "holder_cache.json")
-    if not os.path.exists(json_path):
-        return
-    try:
-        with open(json_path, 'r', encoding='utf-8') as f:
-            data = json.load(f)
-        if not data:
-            return
-        now = time.time()
-        conn = _get_db()
-        cursor = conn.cursor()
-        migrated = 0
-        
-        # 批量插入优化：准备批量插入语句
-        batch_size = 100  # 每批插入100条记录
-        batch_data = []
-        
-        for code, entry in data.items():
-            if not isinstance(entry, dict):
-                continue
-            records = entry.get("records", [])
-            if not records:
-                continue
-            key = f"holder:{code}"
-            value = json.dumps({"records": records, "source": "json_migration"}).encode("utf-8")
-            # 使用 60 天 TTL（与原 _HOLDER_CACHE_TTL 一致）
-            expires_at = now + 60 * 86400
-            batch_data.append((key, value, now, expires_at, now))
-            
-            # 批量插入优化
-            if len(batch_data) >= batch_size:
-                cursor.executemany(
-                    "INSERT OR REPLACE INTO cache_entries (key, value, created_at, expires_at, hit_count, last_accessed) "
-                    "VALUES (?, ?, ?, ?, 0, ?)",
-                    batch_data
-                )
-                conn.commit()
-                migrated += len(batch_data)
-                batch_data = []  # 清空批次
-        
-        # 插入剩余的数据
-        if batch_data:
-            cursor.executemany(
-                "INSERT OR REPLACE INTO cache_entries (key, value, created_at, expires_at, hit_count, last_accessed) "
-                "VALUES (?, ?, ?, ?, 0, ?)",
-                batch_data
-            )
-            conn.commit()
-            migrated += len(batch_data)
-        
-        # 迁移成功后重命名旧文件（保留备份）
-        backup_path = json_path + ".migrated"
-        if not os.path.exists(backup_path):
-            os.rename(json_path, backup_path)
-        print(f"[stock_cache] 已从 holder_cache.json 迁移 {migrated} 只股票的股东数据到 SQLite (批量优化)", flush=True)
-    except Exception as e:
-        print(f"[stock_cache] holder_cache.json 迁移失败: {e}", flush=True)
 
 
 def _enforce_size_limit() -> None:

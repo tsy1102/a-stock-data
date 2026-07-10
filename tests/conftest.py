@@ -49,6 +49,9 @@ def _no_real_network(monkeypatch):
         monkeypatch.setattr("requests.post", fake_post)
     except Exception as _e:
         print(f"[conftest] monkeypatch requests failed: {_e}", flush=True)
+        # monkeypatch 失败意味着真实网络调用可能泄漏，标记警告
+        import warnings
+        warnings.warn(f"conftest: failed to mock requests, real network calls may leak: {_e}")
 
     # 2) 拦截 urllib.request.urlopen（代理探测会走到这里）
     def fake_urlopen(*args, **kwargs):
@@ -58,6 +61,8 @@ def _no_real_network(monkeypatch):
         monkeypatch.setattr("urllib.request.urlopen", fake_urlopen)
     except Exception as _e:
         print(f"[conftest] monkeypatch urlopen failed: {_e}", flush=True)
+        import warnings
+        warnings.warn(f"conftest: failed to mock urlopen, real network calls may leak: {_e}")
 
 
 # ── 临时工作目录：避免污染真实项目根 ───────────────────────────

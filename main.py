@@ -154,7 +154,7 @@ def parse_args():
     )
     parser.add_argument(
         "--concurrency", type=int, default=_MAX_CONCURRENCY,
-        help="最大并发脚本数（默认 2，不推荐超过 3）"
+        help="最大并发脚本数（默认 1，不推荐超过 3）"
     )
     return parser.parse_args()
 

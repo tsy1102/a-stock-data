@@ -1338,21 +1338,14 @@ async def run_discovery_async(output_path):
         ("策略15【流动性王】", strategy_15_liquidity_king, (top_liquidity_pool,)),
         ("策略16【政策热度】", strategy_16_policy_heatmap, (all_stocks, hot_pool)),
         ("策略17【北向Top】", strategy_17_northbound_top, (all_stocks, 200)),
+        ("策略18【龙虎榜】", strategy_18_longhu_activity, (all_stocks, today_str)),
     ]
-
-    _names = [item[0] for item in _strategy_defs]
-    _tasks = [_run_sync_strategy(name, func, *args) for name, func, args in _strategy_defs]
 
     print(f"  ▶ 18 策略并行扫描（asyncio 模式，并发 3）…", flush=True)
     _scan_t0 = time.time()
 
-    # 策略18 也用 to_thread 跑同步版（统一模式，消除重复代码）
-    _strategy_defs.append(
-        ("策略18【龙虎榜】", strategy_18_longhu_activity, (all_stocks, today_str))
-    )
     _names = [item[0] for item in _strategy_defs]
     _tasks = [_run_sync_strategy(name, func, *args) for name, func, args in _strategy_defs]
-
     _results = await asyncio.gather(*_tasks, return_exceptions=True)
 
     _scan_total_time = time.time() - _scan_t0

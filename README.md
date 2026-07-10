@@ -297,6 +297,9 @@ reports/
 - 🐛 **修复 MACD DEA 计算错误**：`get_med_report.py` 中修正为正确的 EMA(DIF, 9)
 - 🐛 **修复 iloc[3] IndexError**：`get_med_report.py` 和 `get_lng_report.py` 中 `>= 3` 改为 `>= 4`
 - 🐛 **修复 cleanup_tdx()/exit(1) 缩进错误**：`get_val_report.py` 和 `get_mak_report.py` 异常处理修正
+- 🐛 **修复 sht资金流获取崩溃**：东财 fallback 调用无 try-except 导致【七、资金走向分析】显示失败
+- 🐛 **修复 ful技术分析内容缺失**：K线数据不足时 `closes_list` 为空，增加实时行情价格 fallback
+- 🐛 **修复 GD根目录出现旧股票文件夹**：`get_or_create_drive_folder()` 增加 `parent_id` 存在性验证，防止无效 ID 回退到根目录
 - 🔧 **sync/async 重复代码重构**：`sc_datasource.py` 中 9 个 async 函数改为 `asyncio.to_thread()` 代理，消除重复逻辑
 - 🔧 **stock_cache.py schema 单点维护**：提取公共 SQL 常量，删除迁移逻辑
 - 🧹 **大量死代码清理**：删除各脚本中未用导入、死函数、死配置等冗余代码

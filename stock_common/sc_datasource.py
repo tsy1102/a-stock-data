@@ -1802,7 +1802,7 @@ def get_lockup_expiry(code: str, today_str: str, days: int = 90, include_history
                                  filter_str=f"(SECURITY_CODE=\"{code}\")(FREE_DATE>='{today_str}')(FREE_DATE<='{end_str}')",
                                  page_size=20, sort_columns="FREE_DATE", sort_types="1")
     upcoming = [
-        {"date": str(r.get("FREE_DATE", "")[:10]),
+        {"date": str(r.get("FREE_DATE", "") or "")[:10],
          "type": r.get("FREE_SHARES_TYPE", ""),
          "shares": float(r.get("FREE_SHARES") or 0),
          "ratio": float(r.get("FREE_RATIO") or 0)}

@@ -20,6 +20,8 @@
 from __future__ import annotations
 
 import time
+import os
+import json
 from datetime import datetime, date
 from typing import Any, Dict, List, Optional, Tuple, cast
 
@@ -238,24 +240,101 @@ def _http_get(url: str, params: Optional[Dict[str, Any]] = None,
 # ═══════════════════════════════════════
 # TDX 连接管理
 # ═══════════════════════════════════════
+
+def _pre_scan_tdx_hosts() -> list[str]:
+    """预扫描所有 TDX 服务器，返回通过全部健康检查的主机列表。
+    
+    扫描结果缓存到文件（24小时有效），避免每次启动都扫描。
+    测试项：TCP连通性、K线接口、历史资金流接口。
+    """
+    cache_dir = os.path.join(os.path.dirname(__file__), "cache")
+    cache_file = os.path.join(cache_dir, "tdx_hosts_cache.json")
+    
+    if os.path.exists(cache_file):
+        try:
+            with open(cache_file, 'r', encoding='utf-8') as f:
+                data = json.load(f)
+                if time.time() - data.get('timestamp', 0) < 86400:
+                    _good_hosts = data.get('good_hosts', [])
+                    if _good_hosts:
+                        _debug_log(f"TDX 主机缓存有效，跳过扫描，白名单 {len(_good_hosts)} 台")
+                        return _good_hosts
+        except Exception as _e:
+            _debug_log(f"读取 TDX 主机缓存失败: {_e}")
+    
+    from easy_tdx.config import get_known_hosts
+    all_hosts = get_known_hosts()
+    _debug_log(f"开始预扫描 TDX 服务器，共 {len(all_hosts)} 台")
+    
+    good_hosts = []
+    
+    def _test_single_host(_host):
+        try:
+            from easy_tdx import TdxClient, Market, KlineCategory
+            _client = TdxClient(host=_host, port=7709)
+            _client.connect()
+            
+            _bars = _client.get_security_bars(Market.SH, "600519", KlineCategory.DAY, 0, 3)
+            if _bars is None or (hasattr(_bars, 'empty') and _bars.empty) or len(_bars) < 2:
+                _client.close()
+                return None
+            
+            _df = _client.get_history_fund_flow(1, "600519", 0, 10)
+            if _df is None or (hasattr(_df, 'empty') and _df.empty) or len(_df) < 5:
+                _client.close()
+                return None
+            
+            _client.close()
+            return _host
+        except Exception:
+            return None
+    
+    try:
+        import concurrent.futures
+        with concurrent.futures.ThreadPoolExecutor(max_workers=10) as _executor:
+            _results = list(_executor.map(_test_single_host, all_hosts))
+        good_hosts = [_h for _h in _results if _h is not None]
+    except Exception as _e:
+        _debug_log(f"TDX 预扫描并发执行失败，降级为串行: {_e}")
+        for _host in all_hosts[:20]:
+            _result = _test_single_host(_host)
+            if _result:
+                good_hosts.append(_result)
+    
+    if good_hosts:
+        _debug_log(f"TDX 预扫描完成，找到 {len(good_hosts)} 台可用服务器")
+    else:
+        _debug_log(f"TDX 预扫描完成，未找到可用服务器")
+    
+    try:
+        os.makedirs(cache_dir, exist_ok=True)
+        with open(cache_file, 'w', encoding='utf-8') as f:
+            json.dump({'timestamp': time.time(), 'good_hosts': good_hosts}, f)
+    except Exception as _e:
+        _debug_log(f"保存 TDX 主机缓存失败: {_e}")
+    
+    return good_hosts
+
+
 def _check_tdx() -> bool:
     global _TDX_AVAILABLE
     if _TDX_AVAILABLE is not None:
         return _TDX_AVAILABLE
-    # V9.0: 全量 TDX 服务器探测（来源: injoyai/tdx 2025-05-21 验证 + connect.ini）
+    
+    _pre_scanned = _pre_scan_tdx_hosts()
+    if _pre_scanned:
+        _TDX_AVAILABLE = True
+        _debug_log(f"TDX 预扫描找到 {len(_pre_scanned)} 台可用服务器")
+        return True
+    
     import socket as _sock
     _TDX_HOSTS = [
-        # V9.3.1: 仅保留经 get_history_fund_flow 实测可用的 13 个 IP
-        # 上海 (7)
         '124.71.187.122', '123.60.73.44', '124.70.133.119', '124.71.187.72',
         '123.60.84.66', '101.35.121.35', '111.231.113.208',
-        # 广州/深圳 (5)
         '111.230.186.52', '175.178.112.197', '175.178.128.227', '43.139.95.83',
-        '129.204.230.128',
-        # 武汉 (1)
-        '119.97.185.59',
+        '129.204.230.128', '119.97.185.59',
     ]
-    for _ip in _TDX_HOSTS[:8]:  # 只试前 8 个（上海4+北京2+广州2），最多 16s
+    for _ip in _TDX_HOSTS[:8]:
         try:
             _s = _sock.socket(_sock.AF_INET, _sock.SOCK_STREAM)
             _s.settimeout(2)
@@ -275,7 +354,6 @@ def _check_tdx() -> bool:
             _c = TdxClient(host=_ip, port=7709)
             _c.connect()
             _q = _c.get_security_quotes([(1, "600519")])
-            # V9.0: get_security_quotes 返回 DataFrame，不能用 if _q 判断
             _TDX_AVAILABLE = _q is not None and not _q.empty
             _c.close()
         except Exception:
@@ -287,6 +365,7 @@ def _get_tdx_client() -> Optional[Any]:
 
     V8.5: 重连改为指数退避（0.5s, 1s, 2s），防止频繁重连被封禁。
     V9.0: 使用 from_best_host() 自动选择最快主机，不再依赖 _check_tdx 的 _ip 变量。
+    V9.4: 使用预扫描白名单，只从通过 K线和资金流测试的服务器中选择。
     """
     with _TDX_CALL_LOCK:
         global _TDX_CLIENT
@@ -309,14 +388,23 @@ def _get_tdx_client() -> Optional[Any]:
             try:
                 from easy_tdx import TdxClient
                 from easy_tdx.config import get_known_hosts
-                # V9.3.2: 过滤掉返回假K线数据的坏主机
-                _all_hosts = get_known_hosts()
-                _good_hosts = [h for h in _all_hosts if h not in _TDX_BAD_HOSTS]
+                
+                _pre_scanned = _pre_scan_tdx_hosts()
+                if _pre_scanned:
+                    _debug_log(f"使用预扫描白名单，{len(_pre_scanned)} 台可用服务器")
+                    _good_hosts = [h for h in _pre_scanned if h not in _TDX_BAD_HOSTS]
+                else:
+                    _all_hosts = get_known_hosts()
+                    _good_hosts = [h for h in _all_hosts if h not in _TDX_BAD_HOSTS]
+                
                 if not _good_hosts:
-                    # 所有主机都被标记为坏，重置黑名单给一次机会
-                    _debug_log(f"tdx 所有 {len(_TDX_BAD_HOSTS)} 个主机都在黑名单，重置重试")
+                    _debug_log(f"tdx 所有主机都被标记为坏，重置黑名单给一次机会")
                     _TDX_BAD_HOSTS.clear()
-                    _good_hosts = _all_hosts
+                    if _pre_scanned:
+                        _good_hosts = _pre_scanned
+                    else:
+                        _good_hosts = get_known_hosts()
+                
                 _TDX_CLIENT = TdxClient.from_best_host(hosts=_good_hosts)
                 _TDX_CLIENT.connect()
                 _tdx_health_check(_TDX_CLIENT)
@@ -362,10 +450,22 @@ def _tdx_health_check(client) -> None:
     try:
         _history_fund_flow = client.get_history_fund_flow(1, "600519", 0, 10)
         if _history_fund_flow is None or _history_fund_flow.empty:
-            _debug_log("TDX health check: get_history_fund_flow 不可用")
-        else:
-            _debug_log("TDX health check: get_history_fund_flow 正常")
+            _host = getattr(client, '_host', '')
+            if _host:
+                _TDX_BAD_HOSTS.add(_host)
+            _debug_log(f"TDX health check: get_history_fund_flow 返回空，标记 {_host} 为坏主机")
+            raise RuntimeError(f"TDX host {_host} returns empty history fund flow data")
+        _debug_log("TDX health check: get_history_fund_flow 正常")
+    except RuntimeError:
+        raise
     except Exception as _e:
+        _host = getattr(client, '_host', '')
+        _err_name = type(_e).__name__
+        if 'Decode' in _err_name or '数据不足' in str(_e):
+            if _host:
+                _TDX_BAD_HOSTS.add(_host)
+            _debug_log(f"TDX health check: get_history_fund_flow 解码失败，标记 {_host} 为坏主机: {_e}")
+            raise RuntimeError(f"TDX host {_host} returns corrupted fund flow data: {_e}") from _e
         _debug_log(f"TDX health check: get_history_fund_flow 异常: {_e}")
     # V9.3.2: K线接口校验 — 部分服务器返回假数据（ret_count=800但0字节body）
     # 这类服务器行情/财务接口正常，但K线接口返回畸形数据导致 TdxDecodeError
@@ -992,6 +1092,7 @@ def tdx_get_fund_flow(code: str):
             }
         except Exception: return {}
 
+@cached(category="f10_fund_flow", trading_day=True, valid_if=lambda r: bool(r))
 def tdx_get_history_fund_flow(code: str, days: int = 120):
     with _TDX_CALL_LOCK:
         client = _get_tdx_client()

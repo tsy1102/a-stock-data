@@ -5,6 +5,40 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [9.3.3] - 2026-07-10
+
+### Fixed
+
+- **GD上传路径混乱**：`get_or_create_drive_folder` 增加 `'{parent_id}' in parents` 严格约束，`get_val_report.py` 移除 `gd_parent_folder_id or ""` 防止空字符串导致根目录上传，所有 txt 文件统一上传到 `a-stock-data/[股票代码-名称]/` 子文件夹
+- **ScoreData 构造路径错误**（Bug 2）：`get_ful_report.py` 中 `price=price` 改为 `price=basic.get('price',0)`，`name=layers.get('layer1',{}).get('name','')` 改为 `name=basic.get('name','')`
+- **地天板预警键名错误**（Bug 3）：`get_sht_report.py` 中 `limit_down` 改为 `limit_down_price`
+- **MACD DEA 计算错误**（Bug 11）：`get_med_report.py` 中 DEA 计算从 `_dif*2/9 + _dif*7/9` 修正为正确的 EMA(DIF, 9)
+- **iloc[3] IndexError**（Bug 6）：`get_med_report.py` 和 `get_lng_report.py` 中 `>= 3` 改为 `>= 4`
+- **cleanup_tdx()/exit(1) 缩进错误**（Bug 5/Bug 7）：`get_val_report.py` 和 `get_mak_report.py` 中异常处理缩进修正
+- **stock_calendar.py 非枚举值**（Bug 10）：`"Anti-Fascist 70th Day"` 改为 `Holiday.national_day`
+- **get_reports None 检查**：`sc_datasource.py` 中增加 `r is None` 检查防止后续操作崩溃
+
+### Changed
+
+- **sync/async 重复代码重构**：`sc_datasource.py` 中 9 个独立实现的 async 函数改为 `asyncio.to_thread()` 代理；`get_val_report.py` 删除 `strategy_18_longhu_activity_async` 重复代码，`run_discovery` 简化为 `asyncio.run()` 包装
+- **stock_cache.py schema 单点维护**：定义 `_CACHE_TABLE_SQL`、`_CACHE_INDEX_SQLS`、`_CACHE_PRAGMAS` 常量，`_get_db()` 和 `_get_async_db()` 复用；删除 `_migrate_verify_columns`，`prev_value`/`verified` 字段直接定义在主表 SQL 中
+- **httplib2 版本放宽**：`requirements.txt` 中 `httplib2==0.22.0` 改为 `>=0.22,<0.31`
+- **删除大量死代码和未用导入**：
+  - `get_sht_report.py`：删除 20+ 个未用导入、死函数 `generate_report()`、`_SCRIPT_DIR`、`_is_td`、`_results=[]`
+  - `get_ful_report.py`：删除死函数 `_calc_ma`、`_calc_ema`、`_ascii_radar_chart`、`_ascii_price_trend`、未用导入
+  - `get_med_report.py`：删除死代码 `peer_data["all_members"]`、`_cash_debt_ratio`、`_ar_rev_ratio`、30+ 个未用导入
+  - `get_lng_report.py`：删除 `_is_td`、30+ 个未用导入、修复 `'gm_rows' in dir()` 判断
+  - `sc_datasource.py`：删除 22+ 个未用导入、死函数 `_save_northbound_cache`、`_holder_fetch_em_async`
+  - `analyze_history.py`：删除死键 `TYPE_LABELS` 中的 `val`、`mak`
+  - `strategy_config.yaml`：删除死配置 `cash_debt_ratio_warn`、`ar_rev_warn_ratio`、26 处失效行号注释
+  - `gd_uploader.py`：删除不可达 else 分支
+
+### Documentation
+
+- **README.md**：项目结构图更新（`stock_common.py`→`stock_common/` 目录），内嵌 requirements.txt 与真实文件同步，AI 产业链标注为"规划中，模块尚未实现"
+- **CHANGELOG.md**：删除 `[Unreleased]` 空章节
+- **tests/README.txt**：编号重复修复，8 个诊断脚本文件名更新（`test_`→`diag_`）
+
 ## [9.3.2] - 2026-07-09
 
 ### Fixed

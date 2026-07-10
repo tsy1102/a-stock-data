@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
 """
-get_val_report.py — 18 策略全市场发现引擎 (V9.3.2)
+get_val_report.py — 18 策略全市场发现引擎 (V9.3.3)
 方法论驱动的 A 股选股脚本，从全市场发现可操作标的。
 每策略精选 TOP 5，生成含具体数值推理的报告。
 
 版本信息:
+    V9.3.3 2026-07-10 - 代码质量提升：删除 strategy_18_longhu_activity_async 重复代码，run_discovery 简化为 asyncio.run() 包装
     V9.3.2 2026-07-09 - 基础设施修复：TDX K线假数据防护、SQLite WAL死锁修复、代理环境兼容（脚本本身无改动，受益于底层修复）
     V9.3   2026-07-07 - 盘前行情模式：9:30前使用上一交易日日K线数据；修复 _safe_float 对 pandas Series 的处理；删除报告标题硬编码版本号
     V9.2   2026-07-05 - 异常处理规范化；缓存交叉验证机制启用

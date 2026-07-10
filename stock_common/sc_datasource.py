@@ -1,4 +1,8 @@
-"""stock_common/sc_datasource.py - 数据源查询模块 (V9.3.2)
+"""stock_common/sc_datasource.py - 数据源查询模块 (V9.3.3)
+
+V9.3.3 更新：
+  - sync/async 重复代码重构：9个独立实现的 async 函数改为 asyncio.to_thread() 代理，消除同步逻辑重复
+  - 删除未使用的 _holder_fetch_em_async 函数
 
 V9.3.2 更新：
   - _do_request 禁用系统代理（proxies={"http": None, "https": None}），避免代理环境拦截请求

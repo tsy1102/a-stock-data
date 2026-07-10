@@ -289,6 +289,19 @@ reports/
 
 完整版本历史详见 [CHANGELOG.md](CHANGELOG.md)
 
+### v9.3.3 (2026-07-10)
+
+- 🐛 **修复 GD上传路径混乱**：所有 txt 文件统一上传到 `a-stock-data/[股票代码-名称]/` 子文件夹，禁止根目录上传
+- 🐛 **修复 ScoreData 构造路径错误**：`get_ful_report.py` 中 `price` 和 `name` 参数修正
+- 🐛 **修复地天板预警键名错误**：`get_sht_report.py` 中 `limit_down` 改为 `limit_down_price`
+- 🐛 **修复 MACD DEA 计算错误**：`get_med_report.py` 中修正为正确的 EMA(DIF, 9)
+- 🐛 **修复 iloc[3] IndexError**：`get_med_report.py` 和 `get_lng_report.py` 中 `>= 3` 改为 `>= 4`
+- 🐛 **修复 cleanup_tdx()/exit(1) 缩进错误**：`get_val_report.py` 和 `get_mak_report.py` 异常处理修正
+- 🔧 **sync/async 重复代码重构**：`sc_datasource.py` 中 9 个 async 函数改为 `asyncio.to_thread()` 代理，消除重复逻辑
+- 🔧 **stock_cache.py schema 单点维护**：提取公共 SQL 常量，删除迁移逻辑
+- 🧹 **大量死代码清理**：删除各脚本中未用导入、死函数、死配置等冗余代码
+- 📄 **README/CHANGELOG 更新**：项目结构图更新，内嵌 requirements.txt 同步，AI产业链标注为"规划中"
+
 ### v9.3.2 (2026-07-09)
 
 - 🐛 **修复 TDX K线假数据导致指数涨幅全N/A和异动检测全为0**：约50%的 easy_tdx 内置TDX服务器K线接口返回假数据（响应头 `ret_count=800` 但 body 为 0 字节），导致 `TdxDecodeError`。`from_best_host()` 只测延迟不测数据正确性，会选中这些坏服务器。

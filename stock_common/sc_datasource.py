@@ -42,6 +42,7 @@ from datetime import datetime, timedelta
 import time
 import re
 import json
+import asyncio
 
 # 导入网络层
 from stock_common.sc_network import (

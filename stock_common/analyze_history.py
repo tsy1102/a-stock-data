@@ -64,7 +64,7 @@ TREND_MIN_DAYS = 3
 TREND_SIGNIFICANCE = DIVERGENCE_THRESHOLD
 
 # 报告类型中文名
-TYPE_LABELS = {"sht": "短线", "med": "中线", "lng": "长线", "ful": "全维度", "val": "估值", "mak": "热点"}
+TYPE_LABELS = {"sht": "短线", "med": "中线", "lng": "长线", "ful": "全维度"}
 
 
 # ═══════════════════════════════════════════════════════════

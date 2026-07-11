@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 """TDX基础接口诊断脚本 - 测试通达信行情/K线/资金流/财务基础接口
 
-V1.0 2026-07-09 - V9.3.1 新增（按数据源重组）
 覆盖接口：
 - tdx_get_security_bars        K线行情
 - tdx_get_quote_full           实时行情

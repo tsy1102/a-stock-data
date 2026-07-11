@@ -1,21 +1,24 @@
 #!/usr/bin/env python3
 """
-get_mak_report.py — A股异动及行业轮动扫描报告 (V9.3.3)
+get_mak_report.py — A股异动及行业轮动扫描报告
 融合全市场异动扫描与行业轮动强度扫描
 
 版本信息:
-    V9.3.3 2026-07-10 - 代码质量提升：删除过时注释，精简代码
+    V9.5   2026-07-11 - 基础设施修复：aiohttp原生异步迁移、静默异常日志化（脚本本身无改动，受益于底层修复）
+    V9.4   2026-07-11 - 死代码清理+性能优化：全市场异动扫描引入 ThreadPoolExecutor 并行（max_workers=3）；修复连板/涨停表格显示bug；休市提示文案统一
+    V9.3.3 2026-07-11 - 死代码清理 + 性能优化：全市场异动扫描引入 ThreadPoolExecutor 并行（max_workers=3）
     V9.3.2 2026-07-09 - 基础设施修复：TDX K线假数据防护、SQLite WAL死锁修复、代理环境兼容（脚本本身无改动，受益于底层修复）
-    V9.3 2026-07-07 - 盘前行情模式：9:30前使用上一交易日日K线数据；删除报告标题硬编码版本号
-    V9.2 2026-07-05 - 异常处理规范化；缓存交叉验证机制启用
-    V9.1 2026-07-04 - 版本号统一升级（无功能变更，F10 公告兜底已在 V9.0 实现）
-    V9.0 2026-07-02 - 舆情互动层（Layer 10）；上市日期 push2 fallback；valid_if 校验；_has_zero_price 拦截
-    V8.9 2026-06-29 - 修复模块导入；清理冗余空行输出；模块版本统一
-    V8.7 2026-06-25 - 死代码清理：同步版替换为薄包装
+    V9.3   2026-07-07 - 盘前行情模式：9:30前使用上一交易日日K线数据；删除报告标题硬编码版本号
+    V9.2   2026-07-05 - 异常处理规范化；缓存交叉验证机制启用
+    V9.1   2026-07-04 - 版本号统一升级（无功能变更，F10 公告兜底已在 V9.0 实现）
+    V9.0   2026-07-02 - 舆情互动层（Layer 10）；上市日期 push2 fallback；valid_if 校验；_has_zero_price 拦截
+    V8.9   2026-06-29 - 修复模块导入；清理冗余空行输出；模块版本统一
+    V8.7   2026-06-25 - 死代码清理：同步版替换为薄包装
 """
 import argparse, requests, json, time, math, os, warnings
 from datetime import date, datetime, timedelta
 from collections import Counter
+from concurrent.futures import ThreadPoolExecutor, as_completed
 warnings.filterwarnings('ignore')
 from gd_uploader import init_gd, upload_type_reports, cleanup_gd_proxy
 from tdx_client import (tdx_get_security_bars, tdx_get_index_bars,
@@ -436,11 +439,27 @@ def generate_sector_report(output_path):
         L(f"  📈 {nm}: 3日{_fmt_ret(r.get('ret_3d'))}%  10日{_fmt_ret(r.get('ret_10d'))}%")
     print("[异动引擎] 扫描全市场异动信号...", flush=True)
     results = {"卡异动":[],"已触发":[],"严重":[],"严重预警":[]}
-    for i, s in enumerate(all_stocks):
-        if i % 1000 == 0: print(f"  已扫描 {i}/{len(all_stocks)}", flush=True)
-        rules = check_stock(s, idx_rets, index_closes_pool)
-        for r in rules:
-            results[r["level"]].append({**r, "code":s["code"], "name":s["name"]})
+    
+    # V9.3.3: 并行扫描（ThreadPoolExecutor，max_workers=3）
+    def _check_one(s):
+        """单股票检测，返回 (code, name, rules)"""
+        try:
+            rules = check_stock(s, idx_rets, index_closes_pool)
+            return (s["code"], s["name"], rules)
+        except Exception as _e:
+            _debug_log(f"mak check_stock error {s['code']}: {_e}")
+            return (s["code"], s["name"], [])
+    
+    with ThreadPoolExecutor(max_workers=3) as executor:
+        futures = {executor.submit(_check_one, s): s for s in all_stocks}
+        for i, future in enumerate(as_completed(futures)):
+            if i % 1000 == 0: print(f"  已扫描 {i}/{len(all_stocks)}", flush=True)
+            try:
+                code, name, rules = future.result()
+                for r in rules:
+                    results[r["level"]].append({**r, "code": code, "name": name})
+            except Exception as _e:
+                _debug_log(f"mak future.result error: {_e}")
     total_abnormal = len(results["已触发"]) + len(results["严重"])
     _zt_count = sum(1 for s in all_stocks if s.get("change_pct", 0) >= (19.5 if s["code"].startswith(("300","301","688")) else 9.5))
     _zt_float = sum(1 for s in all_stocks if 5 <= s.get("change_pct", 0) < 9.5); _zb_rate = _zt_float / max(_zt_count + _zt_float, 1) * 100

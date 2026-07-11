@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""f10_parser.py — F10 文本表格解析器 (V9.1)
+"""f10_parser.py — F10 文本表格解析器
 
 解析通达信 F10 的纯文本表格格式（GBK 编码，ASCII 制表符绘制表格）。
 支持：

@@ -1,17 +1,5 @@
 #!/usr/bin/env python3
 """数据源诊断脚本 - 测试各接口是否正常响应
-
-V2.3 2026-07-08 - V9.3.1 新增 MacClient 三项测试（连接/所属板块/板块成员）
-
-V2.2 2026-06-25 - V8.7 版本同步（删除社交热榜测试）
-
-V2.1 2026-06-24 - 新增TDX TCP测试/修复东财reportName
-
-V2.0 修复：
-- 东财数据中心改为HTTPS（与实际脚本一致）
-- 巨潮资讯使用正确的orgId
-- 增加请求间隔防止触发限流
-- 百度股市通标记为deprecated
 """
 import requests
 import time

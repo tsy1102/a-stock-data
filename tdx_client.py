@@ -1,10 +1,12 @@
 #!/usr/bin/env python3
-"""tdx_client.py — V9.3.3 通达信共享行情模块。
+"""tdx_client.py — 通达信共享行情模块。
 
 提供统一的 easy-tdx 数据访问接口，所有适配器函数返回格式与 V3 完全兼容。
 当 TDX 服务器不可达时自动回退到原始 HTTP 源（百度K线/腾讯行情）。
 
 版本信息:
+    V9.5   2026-07-11 - 静默异常日志化（23处 except Exception 添加 _debug_log）
+    V9.4   2026-07-11 - VERSION文件单一来源版本号管理
     V9.3.3 2026-07-10 - 代码质量提升：GD上传路径修复、GLM报告Bug修复、死代码清理、sync/async重构、schema统一
     V9.3.2 2026-07-09 - K线假数据防护：健康检查增加K线校验，TdxDecodeError时标记坏主机并强制换IP重连
     V9.3   2026-07-07 - 盘前行情模式：9:30前使用日K线上一交易日数据，避免实时接口返回0导致涨跌幅-100%；行情缓存Key增加交易日期，盘前/盘中数据独立保留
@@ -80,7 +82,8 @@ def _patch_easy_tdx_heartbeat() -> None:
                     return
                 if _orig_heartbeat_loop is not None:
                     _orig_heartbeat_loop(self, *args, **kwargs)
-            except Exception:
+            except Exception as _e:
+                _debug_log(f"tdx stop_heartbeat inner: {_e}")
                 return
 
         _TdxConnection.stop_heartbeat = _safe_stop_heartbeat
@@ -234,7 +237,8 @@ def _http_get(url: str, params: Optional[Dict[str, Any]] = None,
         # V9.3.1: 数据获取全部直连，不使用系统代理（代理仅用于GD上传）
         return requests.get(url, params=params, headers=headers or {"User-Agent": UA},
                             timeout=timeout, proxies={"http": None, "https": None})
-    except Exception:
+    except Exception as _e:
+        _debug_log(f"tdx _tdx_http_get error ({url}): {_e}")
         return None
 
 # ═══════════════════════════════════════
@@ -286,7 +290,8 @@ def _pre_scan_tdx_hosts() -> list[str]:
             
             _client.close()
             return _host
-        except Exception:
+        except Exception as _e:
+            _debug_log(f"tdx _test_single_host ({_host}): {_e}")
             return None
     
     try:
@@ -341,7 +346,8 @@ def _check_tdx() -> bool:
             _s.connect((_ip, 7709))
             _s.close()
             break
-        except Exception:
+        except Exception as _e:
+            _debug_log(f"tdx _check_tdx socket connect ({_ip}): {_e}")
             continue
     else:
         _TDX_AVAILABLE = False
@@ -356,7 +362,8 @@ def _check_tdx() -> bool:
             _q = _c.get_security_quotes([(1, "600519")])
             _TDX_AVAILABLE = _q is not None and not _q.empty
             _c.close()
-        except Exception:
+        except Exception as _e:
+            _debug_log(f"tdx _check_tdx error ({_ip}): {_e}")
             _TDX_AVAILABLE = False
     return _TDX_AVAILABLE
 
@@ -374,7 +381,8 @@ def _get_tdx_client() -> Optional[Any]:
                 try:
                     _TDX_CLIENT.ensure_connected()
                     return _TDX_CLIENT
-                except Exception:
+                except Exception as _e:
+                    _debug_log(f"tdx ensure_connected error: {_e}")
                     try:
                         _TDX_CLIENT.close()
                     except Exception as _e:
@@ -409,7 +417,8 @@ def _get_tdx_client() -> Optional[Any]:
                 _TDX_CLIENT.connect()
                 _tdx_health_check(_TDX_CLIENT)
                 return _TDX_CLIENT
-            except Exception:
+            except Exception as _e:
+                _debug_log(f"tdx _get_tdx_client new client error: {_e}")
                 _TDX_CLIENT = None
                 if attempt < _TDX_RECONNECT_ATTEMPTS - 1:
                     time.sleep(_TDX_RECONNECT_DELAY * (2 ** attempt))
@@ -524,7 +533,8 @@ def _check_mac() -> bool:
             c.connect()
             c.close()
             _MAC_AVAILABLE = True
-        except Exception:
+        except Exception as _e:
+            _debug_log(f"tdx _check_mac error: {_e}")
             _MAC_AVAILABLE = False
     return _MAC_AVAILABLE
 
@@ -544,7 +554,8 @@ def _get_mac_client() -> Optional[Any]:
                 try:
                     _TDX_MAC_CLIENT.ensure_connected()
                     return _TDX_MAC_CLIENT
-                except Exception:
+                except Exception as _e:
+                    _debug_log(f"tdx _get_mac_client ensure_connected: {_e}")
                     try:
                         _TDX_MAC_CLIENT.close()
                     except Exception as _e:
@@ -559,7 +570,8 @@ def _get_mac_client() -> Optional[Any]:
                 _TDX_MAC_CLIENT.connect()
                 _mac_health_check(_TDX_MAC_CLIENT)
                 return _TDX_MAC_CLIENT
-            except Exception:
+            except Exception as _e:
+                _debug_log(f"tdx _get_mac_client new client error: {_e}")
                 _TDX_MAC_CLIENT = None
                 if attempt < _TDX_RECONNECT_ATTEMPTS - 1:
                     time.sleep(_TDX_RECONNECT_DELAY * (2 ** attempt))
@@ -617,7 +629,8 @@ def _baidu_kline_full_fallback(code: str, is_index: bool = False) -> Tuple[List[
             if not row: continue
             rows.append(row.split(","))
         return ks, rows
-    except Exception:
+    except Exception as _e:
+        _debug_log(f"tdx _parse_tencent_market_data error: {_e}")
         return [], []
 
 def _tencent_quote_full_fallback(code: str, is_pre_market: bool = False) -> Dict[str, Any]:
@@ -647,7 +660,8 @@ def _tencent_quote_full_fallback(code: str, is_pre_market: bool = False) -> Dict
             "vol_ratio": _safe_float(vals[49]), "pe_static": _safe_float(vals[52]),
             "bid1_vol": _safe_float(vals[10]) * 100,
         }
-    except Exception:
+    except Exception as _e:
+        _debug_log(f"tdx _tencent_quote_full_fallback error ({code}): {_e}")
         return {}
 
 
@@ -944,7 +958,9 @@ def tdx_get_index_quote(idx_code: str) -> Dict[str, Any]:
         r.encoding = "gbk"
         v = r.text.split('"')[1].split("~")
         return {"price": _safe_float(v[3]), "open": _safe_float(v[5]), "change_pct": _safe_float(v[32])}
-    except Exception: return {}
+    except Exception as _e:
+        _debug_log(f"tdx tdx_get_index_quote error ({idx_code}): {_e}")
+        return {}
 
 def tdx_get_historical_high(code: str) -> Optional[float]:
     """历史最高价（800 根日 K 线内）。"""
@@ -961,7 +977,9 @@ def tdx_get_historical_high(code: str) -> Optional[float]:
             if not bars: return None
             values = [b.high for b in bars if b.high > 0]
             return max(values) if values else None
-        except Exception: return None
+        except Exception as _e:
+            _debug_log(f"tdx tdx_get_historical_high error ({code}): {_e}")
+            return None
 
 def tdx_get_index_bars(idx_code: str, count: int = 250):
     # V9.3.2: 增加重试机制，TdxDecodeError时标记坏主机并换IP重连
@@ -1090,7 +1108,9 @@ def tdx_get_fund_flow(code: str):
                 "medium_in": medium_in, "medium_out": medium_out,
                 "small_in": small_in, "small_out": small_out,
             }
-        except Exception: return {}
+        except Exception as _e:
+            _debug_log(f"tdx tdx_get_fund_flow error ({code}): {_e}")
+            return {}
 
 @cached(category="f10_fund_flow", trading_day=True, valid_if=lambda r: bool(r))
 def tdx_get_history_fund_flow(code: str, days: int = 120):
@@ -1148,7 +1168,8 @@ def tdx_get_finance_roe(code: str):
             equity = _safe_float(getattr(info, 'jing_zichan', 0))
             if equity <= 0: return None
             return round(profit / equity * 100, 2)
-        except Exception:
+        except Exception as _e:
+            _debug_log(f"tdx tdx_get_roe_from_finance_info error ({code}): {_e}")
             return None
 
 
@@ -1174,7 +1195,9 @@ def tdx_get_dividend_history(code: str):
                 })
             rows.sort(key=lambda x: x["date"], reverse=True)
             return rows
-        except Exception: return []
+        except Exception as _e:
+            _debug_log(f"tdx tdx_get_dividend_history error ({code}): {_e}")
+            return []
 
 def tdx_get_eps_from_reports(code: str):
     try:
@@ -1194,7 +1217,9 @@ def tdx_get_eps_from_reports(code: str):
                 if this_year is not None:
                     return {"eps_cur": this_year, "eps_next": next_year, "analyst_count": 1, "source": "东财研报"}
         return None
-    except Exception: return None
+    except Exception as _e:
+        _debug_log(f"tdx tdx_get_eps_from_reports error ({code}): {_e}")
+        return None
 
 @cached(category="f10_announcements", trading_day=True, valid_if=lambda r: bool(r))
 def tdx_get_latest_announcements(code: str, days: int = 7):
@@ -1278,7 +1303,8 @@ def tdx_get_latest_announcements(code: str, days: int = 7):
                                 })
                                 break
             return anns[:10]
-        except Exception:
+        except Exception as _e:
+            _debug_log(f"tdx tdx_get_latest_announcements error ({code}): {_e}")
             return []
 
 
@@ -1313,7 +1339,8 @@ def _f10_get_content(code: str, category_name: str) -> str:
             row['filename'], int(row['start']), int(row['length'])
         )
         return content or ''
-    except Exception:
+    except Exception as _e:
+        _debug_log(f"tdx tdx_get_company_info_content error ({code}): {_e}")
         return ''
 
 
@@ -2149,13 +2176,15 @@ def tdx_get_board_by_name(board_name: str, board_type: int = 0):
         try:
             from easy_tdx.mac.enums import BoardType
             bt = BoardType(board_type)
-        except Exception:
+        except Exception as _e:
+            _debug_log(f"tdx tdx_get_board_by_name BoardType error ({board_type}): {_e}")
             return []
         try:
             board_df = client.get_board_list(bt)
             if board_df is None or board_df.empty:
                 return []
-        except Exception:
+        except Exception as _e:
+            _debug_log(f"tdx tdx_get_board_by_name get_board_list error: {_e}")
             return []
         _name_clean = board_name.replace("行业", "").replace("板块", "").replace("Ⅱ", "").replace("Ⅲ", "")
         matched_code = None
@@ -2284,7 +2313,8 @@ def tdx_get_all_stocks():
                     if len(df) < page_size:
                         break
                 return all_stocks
-            except Exception:
+            except Exception as _e:
+                _debug_log(f"tdx tdx_get_all_stocks error: {_e}")
                 _reset_tdx_connections()
                 continue
     return []

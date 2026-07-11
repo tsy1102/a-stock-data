@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""sc_scoring.py — 评分系统 / 多评委评审团 (V9.0 模块化重构)
+"""sc_scoring.py — 评分系统 / 多评委评审团
 
 从原 stock_common.py 提取的统一评分系统：
   - ScoreData / ScoreResult 数据结构

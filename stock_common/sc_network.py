@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""sc_network.py — 网络层 / 限流 / Session 管理 (V9.0 模块化重构)
+"""sc_network.py — 网络层 / 限流 / Session 管理
 
 从原 stock_common.py 提取的底层网络基础设施：
   - 日志配置 (http_errors / biz_errors)
@@ -42,7 +42,6 @@ __all__ = [
     'EM_SESSION', 'EM_MIN_INTERVAL', '_EM_LAST_CALL',
     # 限流
     '_DOMAIN_LIMITS', '_DOMAIN_LAST_TIME', '_DOMAIN_LAST_TIME_LOCK', '_RL_STATS',
-    '_em_last_request_time', '_gen_last_request_time',
     # 进程间锁
     '_em_lock_dir', '_em_lock_file', '_gen_lock_file',
     '_file_lock_acquire', '_file_lock_release',
@@ -133,11 +132,10 @@ _RL_STATS = {
 }
 
 # ═══════════════════════════════════════
-# 全局状态（进程内限速 + 进程间协调，V7.5 防封版）
+# 全局状态（进程内限流 + 进程间协调，V7.5 防封版）
 # ═══════════════════════════════════════
-# 保留原变量名以兼容旧代码，但实际已改用按域名限流
-_em_last_request_time: float = 0.0   # 东财限速器（1.0s 基准，进程内）
-_gen_last_request_time: float = 0.0  # 通用限速器（0.2s 基准，进程内）
+# V9.3.3: 废弃 _em_last_request_time / _gen_last_request_time
+# 改用 _DOMAIN_LAST_TIME + _DOMAIN_LAST_TIME_LOCK（线程安全）
 
 # ── 进程间协调: 通过文件 mtime 实现跨进程请求间隔 ──
 _em_lock_dir = os.path.join(_gettempdir(), "a_stock_data_v7")
@@ -162,7 +160,8 @@ def _file_lock_acquire(lock_path: str, timeout: float = 10.0) -> bool:
         except FileExistsError:
             # 已被其他进程持有，短暂让出
             time.sleep(0.05)
-        except Exception:
+        except Exception as _e:
+            _debug_log(f"file_lock_acquire error ({lock_path}): {_e}")
             return False
     return False
 
@@ -563,7 +562,8 @@ async def _async_request_with_retry(session, url: str, params=None,
                     await asyncio.sleep(2.0 * (attempt + 1))
                     continue
                 return None
-            except Exception:
+            except Exception as _e:
+                _debug_log(f"async_request_with_retry unexpected error ({url}): {_e}")
                 return None
         return None
 

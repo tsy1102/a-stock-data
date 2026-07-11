@@ -1,10 +1,22 @@
 #!/usr/bin/env python3
-"""main.py — V9.3.3 统一 CLI 入口（脚本内 asyncio 并发 + 进程级串行防封）
+"""main.py — 统一 CLI 入口（脚本内 asyncio 并发 + 进程级串行防封）
 
 并发策略（两层次序，确保东财接口不被封）：
   1) 进程级：asyncio.create_subprocess_exec 串行运行脚本（concurrency=1）
   2) 脚本级：每个脚本内部用 Semaphore(3) 并发 3 只股票
              (stock_common.py 的 Semaphore(3) + 1.1s 间隔统一控制)
+
+V9.5 更新：
+  - 静默异常日志化：tdx_client.py/gd_uploader.py/get_med_report.py 共28处 except Exception 添加 _debug_log
+  - aiohttp原生异步迁移：sc_datasource.py 10个HTTP异步函数从 asyncio.to_thread 改为原生 aiohttp
+  - ful脚本显示修复：价格走势改为近15日倒序；新闻舆情文案从"近24小时"改为"近期"
+  - 修复 get_strategic_announcements_async 中 _load_config 未定义错误
+
+V9.4 更新：
+  - VERSION文件单一来源版本号管理
+  - mak报告全市场异动扫描并行化（ThreadPoolExecutor, max_workers=3）
+  - 死代码清理：删除 trap_detector.py、valuation_methods.py、gd_upload_flow 等
+  - 报告格式统一：两融数据、流通股东显示、休市提示文案
 
 V9.3.3 更新：
   - TDX K线假数据防护：健康检查增加K线校验，坏主机自动换IP重连

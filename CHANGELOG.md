@@ -5,6 +5,49 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [9.5] - 2026-07-11
+
+### Changed
+
+- **静默异常日志化**（28处）：`tdx_client.py`（23处）、`gd_uploader.py`（4处）、`get_med_report.py`（1处）共28处 `except Exception:` 静默吞异常改为 `except Exception as _e: _debug_log(f"...: {_e}")`，提升调试可观测性。覆盖心跳线程、连接管理、行情获取、板块查询、代理测试、凭证加载、健康检查等函数
+- **aiohttp原生异步迁移**：`sc_datasource.py` 中10个纯HTTP异步函数从 `asyncio.to_thread(sync_func)` 包装的"假异步"改写为使用 `_async_request_with_retry` / `_async_quick_request` 的原生 `aiohttp` 实现。迁移函数包括：`eastmoney_datacenter_async`、`_em_filter_async`、`get_reports_async`、`get_northbound_hold_async`、`get_block_trade_async`、`get_ths_hot_reason_async`、`get_hsgt_macro_flow_async`、`get_sina_financial_report_async`、`get_sina_balance_sheet_async`、`get_strategic_announcements_async`。剩余10个依赖TDX协议的 `asyncio.to_thread` 调用保留（TDX客户端为同步socket协议，无法直接异步化）。异步限流比同步版更保守（东财 Semaphore(3)+1.0s / 非东财 Semaphore(5)+0.2s），不会突破限流阈值
+- **ful脚本价格走势显示优化**：`get_ful_report.py` 中价格走势从"近60日"改为"近15日倒序显示"（Day-1为最近日期放在第一条），提升可读性
+- **ful脚本新闻舆情文案修正**：`get_ful_report.py` 中"近24小时未检测到..."改为"近期未检测到..."，避免休市日文案与实际数据时间范围不符
+
+### Fixed
+
+- **get_strategic_announcements_async 中 _load_config 未定义错误**：`sc_datasource.py` 迁移过程中误将同步版的 `_load_settings()` 写成不存在的 `_load_config()`，导致 sht/med/lng 三个脚本运行时报 `name '_load_config' is not defined`。修正为 `_load_settings()`
+
+## [9.4] - 2026-07-11
+
+### Added
+
+- **VERSION文件单一来源版本号管理**：项目根目录新增 `VERSION` 文件（内容为 `9.4`），`stock_common/sc_utils.py` 新增 `get_version()` 函数读取版本号。所有Python脚本docstring去除硬编码版本号，改为引用 VERSION 文件。升级版本时只需修改 VERSION 文件，无需遍历所有脚本
+
+### Changed
+
+- **mak报告全市场异动扫描并行化**：`get_mak_report.py` 中 `check_stock` 循环改为 `ThreadPoolExecutor(max_workers=3)` 并行，扫描速度提升2-3x。并发数3与TDX/东财限流配额匹配，不突破限流阈值
+- **med脚本两融数据添加融券余额列**：`get_med_report.py` 两融表格从3列（融资余额/融资买入/融资偿还）扩展为4列，增加"融券余额(万)"，与sht脚本格式统一
+- **med/lng流通股东显示统一为0%**：`get_med_report.py` 和 `get_lng_report.py` 中十大流通股东表格删除 `if foreign_count` 条件判断，外资/境内机构/个人均统一显示百分比数值（0%表示无持股），不再显示N/A
+- **lng脚本休市提示移至标题下方**：`get_lng_report.py` 将市场状态提示从【一、企业基本盘】章节内部移至报告标题下方，与sht/med脚本格式统一
+- **ful脚本新闻page_size从10增至30**：`get_ful_report.py` 中 `layer5_news` 的 `get_eastmoney_stock_news(code, page_size=10)` 改为 `page_size=30`，覆盖近30天重要新闻
+- **四脚本休市提示文案统一简化**：sht/med/lng/ful四个脚本的休市提示统一为 `⚠️ 休市日：数据为最近交易日快照，[脚本特定说明]` 格式，消除括号内外意思重复的混乱
+- **med脚本休市提示文案丰富**：各时段（盘前/盘中/午休/盘后/休市）提示文案统一格式，去掉冗余的"当前为"前缀
+
+### Removed
+
+- **trap_detector.py**（22KB/12函数）：杀猪盘8信号检测模块，API定义但上层报告脚本未调用。依赖web search API（未实现），现有风险扫描已覆盖财务风险
+- **valuation_methods.py**（21KB/9函数）：机构多方法估值模块，API定义但上层报告脚本未调用。依赖EPS增长率（机构一致预期，未接入），现有简单PE/PB对比可用
+- **sc_datasource.py 中3个外部分析模块代理函数**：`get_trap_detection`、`get_valuation`、`analyze_ai_chain_position`（~260行），对应的外部模块已删除或未实现
+- **gd_upload_flow 函数**（~100行）：`sc_utils.py` 中定义但零调用，各报告脚本使用 `gd_uploader.py` 的直接接口
+- **sc_utils.py 中的 print_batch_summary 占位符**：被 `sc_datasource.py` 同名函数覆盖，从未实际使用
+- **sc_network.py 中 _em_last_request_time / _gen_last_request_time 变量**：无锁保护的裸float变量，多线程场景下限流可能失效。实际限流已使用 `_DOMAIN_LAST_TIME` + `_DOMAIN_LAST_TIME_LOCK`（线程安全），这两个遗留变量已废弃
+- **10个临时诊断脚本**：`tests/diag_fund_flow_{deep,final,quick,round3,round4,round5,stability,supplement}.py`、`tests/test_fix_bugs.py`、`tests/test_fix_verify.py`，均为临时诊断遗留，未登记在 tests/README.txt
+
+### Fixed
+
+- **sht资金流重复调用**：`get_sht_report.py` 中 `get_fund_flow_realtime` 内部 fallback 调用了 `get_fund_flow_120d`，外层第405行又调了一次。`get_fund_flow_realtime` 增加 `ff_120d` 参数，外层复用已获取的数据
+
 ## [9.3.3] - 2026-07-10
 
 ### Fixed

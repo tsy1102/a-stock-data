@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# A股交易日历数据模块 (V9.2)
+# A股交易日历数据模块
 # 基于 chinese-calendar 库的数据，数据范围 2004-2026
 # 由 chinese_calendar.constants 和 chinese_calendar.utils 提取优化
 #

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""stock_cache.py — V9.3.3 统一缓存层 (SQLite + 装饰器模式)
+"""stock_cache.py — 统一缓存层 (SQLite + 装饰器模式)
 
 设计目标：
   - 所有 get_* 网络请求函数统一走本层，避免重复请求 + 降低 API 被封概率
@@ -162,7 +162,8 @@ def _calc_trading_day_expiry() -> float:
     """
     try:
         from stock_common.stock_calendar import is_workday, get_next_trading_day
-    except Exception:
+    except Exception as _e:
+        _cache_logger.debug(f"calc_trading_day_expiry import error: {_e}")
         return time.time() + 24 * 3600
 
     now = datetime.now()
@@ -176,7 +177,8 @@ def _calc_trading_day_expiry() -> float:
             # 盘后或非交易日：找下一个交易日 15:00
             next_td = get_next_trading_day(today)
             target = datetime.combine(next_td, dtime(15, 0))
-    except Exception:
+    except Exception as _e:
+        _cache_logger.debug(f"calc_trading_day_expiry calc error: {_e}")
         # 交易日历年份超出范围或其他异常，fallback 到 24h
         return time.time() + 24 * 3600
 
@@ -353,7 +355,8 @@ def get_cache(category: str, func_name: str, *args: Any,
         )
         db.commit()
         return json.loads(value_blob.decode("utf-8"))
-    except Exception:
+    except Exception as _e:
+        _cache_logger.debug(f"get_cache error ({key}): {_e}")
         return None
 
 
@@ -483,7 +486,8 @@ def invalidate_category(category: str, pattern: str = "") -> int:
             )
         db.commit()
         return cursor.rowcount
-    except Exception:
+    except Exception as _e:
+        _cache_logger.debug(f"invalidate_category error ({category}): {_e}")
         return 0
 
 
@@ -495,7 +499,8 @@ def invalidate_prefix(prefix: str) -> int:
         cursor.execute("DELETE FROM cache_entries WHERE key LIKE ?", (f"{prefix}%",))
         db.commit()
         return cursor.rowcount
-    except Exception:
+    except Exception as _e:
+        _cache_logger.debug(f"invalidate_prefix error ({prefix}): {_e}")
         return 0
 
 
@@ -507,7 +512,8 @@ def clear_expired() -> int:
         cursor.execute("DELETE FROM cache_entries WHERE expires_at<?", (time.time(),))
         db.commit()
         return cursor.rowcount
-    except Exception:
+    except Exception as _e:
+        _cache_logger.debug(f"clear_expired error: {_e}")
         return 0
 
 

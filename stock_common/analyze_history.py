@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""analyze_history.py — 评分快照历史分析与背离检测 (V9.0)
+"""analyze_history.py — 评分快照历史分析与背离检测
 
 功能：
   - save_snapshot(): 保存单只股票评分快照（智能合并模式）

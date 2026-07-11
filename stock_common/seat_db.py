@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""seat_db.py — 龙虎榜席位识别工具 V1.0 (V8.5内置模块)
+"""seat_db.py — 龙虎榜席位识别工具
 
 版本信息:
     V1.0 2026-06-22 - 初始版本，支持22位游资席位识别
@@ -9,6 +9,8 @@
 import os
 import json
 from typing import Optional, Dict, Any, List, Tuple
+
+from stock_common.sc_network import _debug_log
 
 # 席位数据库路径
 _SEAT_DB_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "seats.json")
@@ -25,7 +27,8 @@ def _load_seat_db() -> Dict[str, Any]:
     try:
         with open(_SEAT_DB_PATH, 'r', encoding='utf-8') as f:
             _seat_db_cache = json.load(f)
-    except Exception:
+    except Exception as _e:
+        _debug_log(f"seat_db load error: {_e}")
         _seat_db_cache = {"tiers": {}, "seat_details": {}, "seat_aliases": {}}
     return _seat_db_cache
 

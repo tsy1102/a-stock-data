@@ -1,4 +1,4 @@
-"""gd_uploader.py — V9.0 Google Drive 上传模块（统一API入口）
+"""gd_uploader.py — Google Drive 上传模块（统一API入口）
 
 迁移：
   - V4: oauth2client + pydrive2（均已 deprecated / 不再活跃维护）
@@ -49,6 +49,8 @@ import urllib.request
 from pathlib import Path
 from typing import Any, Dict, Optional, Tuple, cast
 
+from stock_common import _debug_log
+
 # ── Google API SCOPES ───────────────────────────────────────────
 _SCOPES = ["https://www.googleapis.com/auth/drive.file"]
 _TOKEN_FILENAME = "credentials.json"
@@ -68,7 +70,8 @@ def _find_working_proxy() -> Optional[str]:
         try:
             opener.open("https://accounts.google.com/.well-known/openid-configuration", timeout=2)
             return test
-        except Exception:
+        except Exception as _e:
+            _debug_log(f"gd_proxy_test error ({test}): {_e}")
             continue
     return None
 
@@ -101,7 +104,8 @@ def _load_saved_credentials(token_path: str):
             return creds
         # 刷新失败 → 视作 invalid
         return None
-    except Exception:
+    except Exception as _e:
+        _debug_log(f"gd _load_saved_credentials error ({token_path}): {_e}")
         return None
 
 
@@ -176,7 +180,8 @@ def init_google_drive(base_dir: str) -> Tuple[Optional[Any], bool]:
         try:
             service.about().get(fields="user").execute()
             print("  ✅ Google Drive 认证成功", flush=True)
-        except Exception:
+        except Exception as _e:
+            _debug_log(f"gd auth health check error: {_e}")
             print("  ✅ Google Drive 认证成功（API 可访问）", flush=True)
         return service, proxy_was_set
     except Exception as e:
@@ -214,7 +219,8 @@ def get_or_create_drive_folder(service, name: str, parent_id: Optional[str] = No
                 return None
             try:
                 service.files().get(fileId=parent_id, fields="id").execute()
-            except Exception:
+            except Exception as _e:
+                _debug_log(f"gd validate_parent_id error ({parent_id}): {_e}")
                 print(f"  ❌ 父文件夹ID不存在或已失效，拒绝操作文件夹「{name}」", flush=True)
                 return None
 

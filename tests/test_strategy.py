@@ -1,4 +1,4 @@
-"""test_strategy.py — 策略配置 (strategy_config.yaml / keywords_config.yaml) 与策略函数基本测试（V8.7）。
+"""test_strategy.py — 策略配置 (strategy_config.yaml / keywords_config.yaml) 与策略函数基本测试。
 
 重点测试：
   - _load_strategy_config 能读取 yaml 并返回 dict

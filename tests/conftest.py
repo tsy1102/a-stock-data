@@ -4,6 +4,8 @@
   - mock_requests: 全局拦截 urllib.request + requests，避免测试触发真实网络
   - tmp_text: 临时文件写入器
   - fake_strategy_config: 伪造的 strategy_config.yaml（如测试需要）
+
+使用 pytest.mark.real_network 标记的测试不会被网络 mock 拦截。
 """
 from __future__ import annotations
 
@@ -14,11 +16,18 @@ from unittest import mock
 
 import pytest
 
+pytest_plugins = ["pytest_asyncio"]
+
 
 # ── 网络 mock：在所有测试里自动生效（scope="session"）──────────
 @pytest.fixture(autouse=True)
-def _no_real_network(monkeypatch):
-    """禁止测试期间任何真实的 HTTP/TCP 调用。"""
+def _no_real_network(monkeypatch, request):
+    """禁止测试期间任何真实的 HTTP/TCP 调用。
+    
+    使用 @pytest.mark.real_network 标记的测试会跳过此 mock。
+    """
+    if request.node.get_closest_marker("real_network"):
+        return
 
     class _FakeResp:
         def __init__(self, text_body="", status_code=200):
@@ -89,3 +98,54 @@ def tmp_project(tmp_path):
         "report:\n  default_formats: [txt, md]\n", encoding="utf-8"
     )
     return str(tmp_path)
+
+
+# ── test_em_rate_limit.py 的 endpoint fixture ──────────────────────
+@pytest.fixture(params=[
+    {
+        "name": "datacenter",
+        "url": "https://datacenter-web.eastmoney.com/api/data/v1/get",
+        "params": {
+            "reportName": "RPT_DAILYBILLBOARD_DETAILSNEW",
+            "columns": "SECURITY_CODE,SECURITY_NAME_ABBR",
+            "pageNumber": "1",
+            "pageSize": "1",
+            "sortColumns": "TRADE_DATE",
+            "sortTypes": "-1",
+        },
+        "check": lambda r: r.get("success", False) is not False and r.get("result", {}).get("data") is not None,
+    },
+    {
+        "name": "push2",
+        "url": "http://83.push2.eastmoney.com/api/qt/clist/get",
+        "params": {
+            "pn": "1",
+            "pz": "1",
+            "po": "1",
+            "np": "1",
+            "fltt": "2",
+            "invt": "2",
+            "fs": "m:0 t:6,m:0 t:80",
+            "fields": "f12,f14,f2,f3",
+        },
+        "check": lambda r: r.get("data", {}).get("diff") is not None and len(r["data"]["diff"]) > 0,
+    },
+    {
+        "name": "reportapi",
+        "url": "https://reportapi.eastmoney.com/report/list",
+        "params": {
+            "pageSize": "1",
+            "industry": "*",
+            "rating": "*",
+            "beginTime": "2024-01-01",
+            "endTime": "2030-01-01",
+            "pageNo": "1",
+            "code": "600519",
+            "qType": "0",
+        },
+        "check": lambda r: r.get("data") is not None and isinstance(r.get("data"), list),
+    },
+])
+def endpoint(request):
+    """test_em_rate_limit.py 使用的 endpoint fixture，遍历三个东财域名。"""
+    return request.param

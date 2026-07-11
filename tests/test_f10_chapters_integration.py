@@ -1,4 +1,9 @@
-"""测试 F10 章节在报告中的集成（阶段二验证）。"""
+"""测试 F10 章节在报告中的集成（阶段二验证）。
+
+运行方式：
+  - pytest 运行（需要真实网络）：pytest tests/test_f10_chapters_integration.py -v
+  - 直接运行：python -m tests.test_f10_chapters_integration
+"""
 import os
 import sys
 os.environ['STOCK_NOCACHE'] = '1'
@@ -10,7 +15,10 @@ import asyncio
 import tempfile
 import aiohttp
 
+import pytest
 
+
+@pytest.mark.real_network
 async def test_med_report():
     """测试中线报告中的 F10 财务深度/股东行为/主营构成章节。"""
     from get_med_report import generate_report_async
@@ -25,6 +33,7 @@ async def test_med_report():
     print("✅ med: 主营构成分析章节存在")
 
 
+@pytest.mark.real_network
 async def test_lng_report():
     """测试长线报告中的全部5个F10章节。"""
     from get_lng_report import generate_report_async
@@ -36,6 +45,7 @@ async def test_lng_report():
         print(f"✅ lng: {ch}章节存在")
 
 
+@pytest.mark.real_network
 def test_ful_report():
     """测试全维度报告中的全部6个F10章节。"""
     from get_ful_report import analyze_stock

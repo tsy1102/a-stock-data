@@ -22,12 +22,12 @@ if str(project_root) not in sys.path:
 # ── 配置文件测试 ────────────────────────────────────────
 
 def test_strategy_config_file_exists():
-    cfg_path = project_root / "strategy_config.yaml"
+    cfg_path = project_root / "stock_common" / "strategy_config.yaml"
     assert cfg_path.exists(), f"缺少 {cfg_path}"
 
 
 def test_keywords_config_file_exists():
-    cfg_path = project_root / "keywords_config.yaml"
+    cfg_path = project_root / "stock_common" / "keywords_config.yaml"
     assert cfg_path.exists(), f"缺少 {cfg_path}"
 
 
@@ -168,7 +168,7 @@ def test_get_val_report_has_parse_args():
 
 def test_keywords_config_has_suffixes():
     import yaml  # type: ignore
-    kw_path = project_root / "keywords_config.yaml"
+    kw_path = project_root / "stock_common" / "keywords_config.yaml"
     with open(kw_path, "r", encoding="utf-8") as f:
         kw = yaml.safe_load(f) or {}
 

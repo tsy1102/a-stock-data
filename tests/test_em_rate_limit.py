@@ -19,6 +19,7 @@ import time
 import json
 import os
 from datetime import datetime
+from pathlib import Path
 
 UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/117.0.0.0 Safari/537.36"
 
@@ -69,10 +70,11 @@ TEST_ENDPOINTS = [
     },
 ]
 
-# 日志目录
-LOG_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "logs")
-os.makedirs(LOG_DIR, exist_ok=True)
-LOG_FILE = os.path.join(LOG_DIR, "em_rate_limit_test.log")
+# 日志目录（基于项目根目录的相对路径）
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
+LOG_DIR = PROJECT_ROOT / "logs"
+LOG_DIR.mkdir(exist_ok=True)
+LOG_FILE = LOG_DIR / "em_rate_limit_test.log"
 
 
 def log(msg: str):
@@ -84,7 +86,7 @@ def log(msg: str):
         f.write(line + "\n")
 
 
-def test_single_endpoint(endpoint: dict) -> tuple:
+def _test_single_endpoint(endpoint: dict) -> tuple:
     """测试单个接口，返回 (success: bool, status_code: int, elapsed: float, error: str)"""
     try:
         headers = {
@@ -153,7 +155,7 @@ def run_test_phase(name: str, endpoints: list, interval: float, duration: int,
         endpoint = endpoints[idx % len(endpoints)]
         idx += 1
 
-        success, status_code, elapsed, error = test_single_endpoint(endpoint)
+        success, status_code, elapsed, error = _test_single_endpoint(endpoint)
 
         if success:
             total_success += 1
@@ -227,7 +229,7 @@ def main():
     log("\n[热身] 确认三个接口都正常...")
     all_ok = True
     for ep in TEST_ENDPOINTS:
-        success, sc, elapsed, error = test_single_endpoint(ep)
+        success, sc, elapsed, error = _test_single_endpoint(ep)
         if success:
             log(f"  ✅ {ep['name']}: 正常 ({elapsed:.2f}s)")
         else:

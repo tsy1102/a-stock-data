@@ -300,6 +300,11 @@ reports/
 - 🐛 **修复 sht资金流获取崩溃**：东财 fallback 调用无 try-except 导致【七、资金走向分析】显示失败
 - 🐛 **修复 ful技术分析内容缺失**：K线数据不足时 `closes_list` 为空，增加实时行情价格 fallback
 - 🐛 **修复 GD根目录出现旧股票文件夹**：`get_or_create_drive_folder()` 增加 `parent_id` 存在性验证，防止无效 ID 回退到根目录
+- 🐛 **修复 FREE_DATE None 切片崩溃**：`sc_datasource.py:1805` 中 `r.get("FREE_DATE", "")` 当值存在但为 None 时返回 None，改为 `r.get("FREE_DATE", "") or ""`（如 600563 法拉电子）
+- 🐛 **修复 val 脚本 coroutine 未 await 警告**：`get_val_report.py` 中 `_tasks` 被赋值两次，第一次创建的 17 个 coroutine 从未 await 导致阻塞。将策略 18 移入 `_strategy_defs` 列表
+- 🐛 **修复 mak 报告标题双括号**：`get_mak_report.py:429` 标题 `（{_mkt_note}）` 与 note 本身已含的 `（）` 叠加，去掉外层括号
+- 🐛 **修复 mak 连板表格漏显连板股**：连板表格遍历 `ths[:50]` 导致排名50之后的连板股（如亚联机械 001395）不在表格中。改为遍历 `_lb_list` + 查表
+- 🐛 **修复 mak 涨停列表少1只**：先取 `ths[:50]` 再排除连板导致 `50-1=49` 只。改为遍历 `_zt_list[:50]`（先排除连板再取 top N）
 - 🔧 **sync/async 重复代码重构**：`sc_datasource.py` 中 9 个 async 函数改为 `asyncio.to_thread()` 代理，消除重复逻辑
 - 🔧 **stock_cache.py schema 单点维护**：提取公共 SQL 常量，删除迁移逻辑
 - 🧹 **大量死代码清理**：删除各脚本中未用导入、死函数、死配置等冗余代码

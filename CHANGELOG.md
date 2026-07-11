@@ -20,6 +20,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **sht资金流获取崩溃**：`get_sht_report.py` 中 `_get_eastmoney_fund_flow_120d()` fallback 调用无 try-except，东财接口异常时直接崩溃导致【七、资金走向分析】显示"资金流数据获取失败"。已增加 try-except 保护
 - **ful技术分析内容缺失**：`get_ful_report.py` 中 `layer1_market()` 当 K线数据不足导致 `closes_list` 为空时，`kline["price"]` 未设置，渲染时跳过整个技术分析详情。已增加实时行情价格 fallback
 - **GD根目录出现旧股票文件夹**：`gd_uploader.py` 中 `get_or_create_drive_folder()` 创建文件夹前未验证 `parent_id` 有效性，无效/已删除的 `parent_id` 导致 Google Drive API 回退到根目录创建。已增加 `service.files().get()` 存在性验证
+- **FREE_DATE None 切片崩溃**：`sc_datasource.py:1805` 中 `str(r.get("FREE_DATE", "")[:10])` 当 key 存在但值为 None 时返回 None 而非默认值，导致 `slice(None, 10, None)` 报错（如 600563 法拉电子）。改为 `str(r.get("FREE_DATE", "") or "")[:10]`，与第 1792 行写法一致
+- **val 脚本 coroutine 未 await 警告**：`get_val_report.py` 中 `_tasks` 被赋值两次，第一次创建的 17 个 coroutine 被覆盖后从未 await，触发 `RuntimeWarning: coroutine was never awaited` 并阻塞运行。将策略 18 移入 `_strategy_defs` 列表，删除冗余的第一次 `_names`/`_tasks` 赋值
+- **mak 报告标题双括号**：`get_mak_report.py:429` 标题中 `（{_mkt_note}）` 与 `_mkt_note` 本身已含的 `（）` 叠加，输出 `（（休市日，数据为最近交易日快照））`。去掉外层 `（）`
+- **mak 连板表格漏显连板股**：`get_mak_report.py` 连板表格遍历 `ths[:50]`（涨幅前50名），排名50之后的连板股（如亚联机械 001395）虽在连板明细摘要中出现，却不在表格中显示。改为遍历 `_lb_list` 并通过 `_ths_map` 查表，确保全部连板股都进入表格
+- **mak 涨停列表少1只**：`get_mak_report.py` 涨停表格先取 `ths[:50]` 再排除连板股，导致 `50 - 1(贵绳股份) = 49` 只。改为遍历 `_zt_list[:50]`（已排除连板股），先排除连板再取 top N，确保显示完整 50 只
 
 ### Changed
 

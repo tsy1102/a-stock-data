@@ -426,7 +426,7 @@ def generate_sector_report(output_path):
     lines = []
     def L(s=""): lines.append(s)
     L("="*90)
-    L(f"  📊 A股异动及行业轮动扫描报告 — {today_str} {now.strftime('%H:%M:%S')}（{_mkt_note}）")
+    L(f"  📊 A股异动及行业轮动扫描报告 — {today_str} {now.strftime('%H:%M:%S')} {_mkt_note}")
     L("="*90)
     print("[数据装载] 获取全市场多日数据与指数基准...", flush=True)
     all_stocks = get_market_abnormal_data()
@@ -740,6 +740,8 @@ def generate_sector_report(output_path):
             else:
                 _zt_list.append(h)
         L(f"  今日强势股: {len(ths)} 只（按涨幅取前{_ths_limit}名）")
+        # 构建code→ths映射，便于连板股查表（连板股可能不在涨幅前50名内）
+        _ths_map = {h["code"]: h for h in ths}
         if _lb_list:
             # 有连板：先展示连板表格，再展示涨停表格
             L(f"\n  连板: {len(_lb_list)} 只")
@@ -747,15 +749,17 @@ def generate_sector_report(output_path):
             L(f"    连板明细: {_lb_detail}")
             L(f"  {'代码':<8} {'名称':<12} {'涨幅%':>7} {'题材':<30}")
             L(f"  {'-'*65}")
-            for h in ths[:_ths_limit]:
-                if h["code"] in [lb[0] for lb in _lb_list]:
+            # 连板表格：遍历_lb_list（已含全部连板股），从_ths_map取详情
+            for code, name, lv in _lb_list:
+                h = _ths_map.get(code)
+                if h:
                     L(f"  {h['code']:<8} {h['name']:<12} {h['zhangfu']:>+7.2f}% {h.get('reason','')[:30]:<30}")
             L(f"\n  涨停: {len(_zt_list)} 只")
             L(f"  {'代码':<8} {'名称':<12} {'涨幅%':>7} {'题材':<30}")
             L(f"  {'-'*65}")
-            for h in ths[:_ths_limit]:
-                if h["code"] not in [lb[0] for lb in _lb_list]:
-                    L(f"  {h['code']:<8} {h['name']:<12} {h['zhangfu']:>+7.2f}% {h.get('reason','')[:30]:<30}")
+            # 涨停表格：_zt_list已排除连板股，取前_ths_limit只（先排除连板再取top N）
+            for h in _zt_list[:_ths_limit]:
+                L(f"  {h['code']:<8} {h['name']:<12} {h['zhangfu']:>+7.2f}% {h.get('reason','')[:30]:<30}")
         else:
             # 无连板：全量表
             L(f"  {'代码':<8} {'名称':<12} {'涨幅%':>7} {'题材':<30}")

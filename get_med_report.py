@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 """
-get_med_report.py — A股中线深度投研报告 (V9.3.3)
+get_med_report.py — A股中线深度投研报告
 
 版本信息:
-    V9.3.3 2026-07-10 - 代码质量提升：MACD DEA计算修复、删除死函数和未用导入
+    V9.5   2026-07-11 - 东财资金流120天fallback静默异常添加 _debug_log 日志
+    V9.3.3 2026-07-11 - 两融数据添加融券余额列；流通股东显示统一为0%；休市提示文案丰富统一
     V9.3.2 2026-07-09 - 基础设施修复：TDX K线假数据防护、SQLite WAL死锁修复、代理环境兼容（脚本本身无改动，受益于底层修复）
     V9.3 2026-07-07 - 盘前行情模式：9:30前使用上一交易日日K线数据；财务数据限制近5季度；盘前提示文本；删除报告标题硬编码版本号
     V9.2 2026-07-05 - 异常处理规范化；缓存交叉验证机制启用
@@ -75,7 +76,8 @@ def get_fund_flow_120d(code):
         em_data = _get_eastmoney_fund_flow_120d(code)
         if em_data:
             return {"data": em_data, "error": "", "source": "eastmoney_push2"}
-    except Exception:
+    except Exception as _e:
+        _debug_log(f"med _get_eastmoney_fund_flow_120d error ({code}): {_e}")
         pass
     return {"data": [], "error": "资金流数据获取失败"}
 
@@ -158,16 +160,15 @@ async def generate_report_async(session, code, output_path, ind_comp=None, hsgt=
 
     # 生成详细提示
     if _mkt_status == "closed":
-        note = f"（休市日，数据为最近交易日快照）"
+        note = "⚠️ 休市日：数据为最近交易日快照，龙虎榜/融资融券为最近一期已发布"
     elif _mkt_status == "pre_market":
-        note = "⚠️ 当前为盘前时段，行情数据/北向资金为上交易日值，龙虎榜/融资融券为最近一期已发布数据"
+        note = "⚠️ 盘前时段：行情数据/北向资金为上交易日值，龙虎榜/融资融券为最近一期已发布数据"
     elif _mkt_status in ("morning", "afternoon"):
-        note = ("⚠️ 当前为盘中时段，行情数据实时跳动，龙虎榜/融资融券/大宗交易需收盘后更新，"
-                "其余基本面数据（财报/ROE/股东/分红等）为最新报告期数据不受影响")
+        note = "⚠️ 盘中时段：行情数据实时跳动，龙虎榜/融资融券/大宗交易需收盘后更新，基本面数据（财报/ROE/股东/分红等）为最新报告期数据不受影响"
     elif _mkt_status == "lunch":
-        note = "⚠️ 当前为午休时段（11:30-13:00），行情暂停但基本面数据正常"
+        note = "⚠️ 午休时段（11:30-13:00）：行情暂停但基本面数据正常"
     elif _mkt_status == "post_market":
-        note = "⚠️ 当前为盘后结算时段，部分数据（龙虎榜约16:30后）尚在更新中"
+        note = "⚠️ 盘后结算时段：部分数据（龙虎榜约16:30后）尚在更新中"
     else:
         note = ""
     if note:
@@ -627,10 +628,10 @@ async def generate_report_async(session, code, output_path, ind_comp=None, hsgt=
     L("─" * 72)
     margin = await get_margin_trading_async(session, code)
     if margin:
-        L(f"  {'日期':<12} {'融资余额(万)':>10} {'融资买入(万)':>10} {'融资偿还(万)':>10}")
-        L(f"  {'-'*55}")
+        L(f"  {'日期':<12} {'融资余额(万)':>10} {'融资买入(万)':>10} {'融资偿还(万)':>10} {'融券余额(万)':>10}")
+        L(f"  {'-'*70}")
         for d in margin[:10]:
-            L(f"  {d['date']:<12} {d['rzye']/1e4:>14.0f} {d['rzmre']/1e4:>14.0f} {d['rzche']/1e4:>14.0f}")
+            L(f"  {d['date']:<12} {d['rzye']/1e4:>14.0f} {d['rzmre']/1e4:>14.0f} {d['rzche']/1e4:>14.0f} {d['rqye']/1e4:>14.0f}")
     else:
         L("  该股无融资融券数据（可能不是两融标的）。")
 
@@ -712,9 +713,9 @@ async def generate_report_async(session, code, output_path, ind_comp=None, hsgt=
         L(f"  {'-'*60}")
         for p in st:
             _cols = f"  {p['date']:<12} {p['northbound']:>5.1f}%"
-            _cols += f"  {p['foreign']:>5.1f}%({p['foreign_count']})" if p['foreign_count'] else f"  {'N/A':>8}"
-            _cols += f"  {p['domestic']:>5.1f}%({p['domestic_count']})" if p['domestic_count'] else f"  {'N/A':>8}"
-            _cols += f"  {p['individual']:>5.1f}%({p['individual_count']})" if p['individual_count'] else f"  {'N/A':>6}"
+            _cols += f"  {p['foreign']:>5.1f}%"
+            _cols += f"  {p['domestic']:>5.1f}%"
+            _cols += f"  {p['individual']:>5.1f}%"
             _cols += f"  {p['total']:>5.1f}%"
             L(_cols)
         _dd = st[0].get("dm_detail", {})

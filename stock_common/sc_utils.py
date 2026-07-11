@@ -1,14 +1,13 @@
 #!/usr/bin/env python3
-"""sc_utils.py — 工具函数 / 常量 / 配置加载 (V9.0 模块化重构)
+"""sc_utils.py — 工具函数 / 常量 / 配置加载
 
 从原 stock_common.py 提取的通用工具函数：
+  - get_version: 从 VERSION 文件读取项目版本号
   - _safe_float: 安全浮点转换
   - ensure_output_dir / get_script_dir: 目录工具
   - get_board_type / is_limit_up / is_limit_down: 板块判断
   - clean_codes / parse_args: 命令行工具
-  - gd_upload_flow: Google Drive 上传流程
   - _load_settings / _load_strategy_config: YAML 配置加载
-  - print_batch_summary / save_score_snapshot: 报告工具
   - _safe_cleanup_tdx: TDX 连接清理
 
 依赖关系：
@@ -23,7 +22,21 @@ import sys
 import math
 import time
 import argparse
+from pathlib import Path
 from typing import Any, Dict, List, Optional
+
+
+def get_version() -> str:
+    """从项目根目录的 VERSION 文件读取版本号（单一来源）。
+
+    Returns:
+        版本号字符串，如 "9.4"
+    """
+    _version_path = Path(__file__).resolve().parent.parent / "VERSION"
+    try:
+        return _version_path.read_text(encoding="utf-8").strip()
+    except (FileNotFoundError, OSError):
+        return "unknown"
 
 # 从 sc_network 复用日志和调试工具
 from stock_common.sc_network import _debug_log
@@ -39,10 +52,9 @@ __all__ = [
     'ensure_output_dir', 'get_script_dir',
     'get_board_type', 'is_limit_up', 'is_limit_down',
     'clean_codes', 'parse_args',
-    'gd_upload_flow', '_safe_cleanup_tdx',
+    '_safe_cleanup_tdx',
     '_load_settings', '_load_strategy_config',
     '_settings_cache', '_strategy_config_cache',
-    'print_batch_summary',
 ]
 
 # ═══════════════════════════════════════
@@ -207,105 +219,6 @@ def parse_args(report_type="unknown"):
 
 
 # ═══════════════════════════════════════
-# Google Drive 上传流程
-# ═══════════════════════════════════════
-
-def gd_upload_flow(base_dir: str, local_files: List[str],
-                   report_type: str = "generic", no_upload: bool = False) -> bool:
-    """V7.5: 统一的 Google Drive 上传流程。
-
-    逻辑（与5个脚本的原有流程一致）：
-      1. 如 no_upload=True，直接返回不操作
-      2. 3 次尝试 init_google_drive
-      3. 失败则询问是否跳过（脚本运行环境下需交互输入）
-      4. 成功则创建/获取 a-stock-data/<report_type> 文件夹
-      5. 逐个上传 local_files
-      6. 最后 cleanup_gd_proxy
-
-    Args:
-        base_dir: 项目根目录（client_secrets.json / credentials.json 所在目录）
-        local_files: 本地文件绝对路径列表（待上传）
-        report_type: 子文件夹名（sht / med / lng / val / mak），默认 generic
-        no_upload: 是否跳过上传（来自命令行 --no-upload）
-
-    Returns:
-        True=全部上传成功，False=失败或被跳过
-    """
-    if no_upload:
-        return False
-
-    from gd_uploader import init_google_drive, cleanup_gd_proxy, get_or_create_drive_folder, upload_report_to_drive
-
-    drive = None
-    gd_proxy_set = False
-
-    for _gd_try in range(3):
-        try:
-            drive, gd_proxy_set = init_google_drive(base_dir)
-            if drive:
-                break
-        except Exception as _e:
-            _debug_log(f"sc_utils gd_connect retry: {_e}")
-        if _gd_try < 2:
-            print(f"  GD 连接失败，{_gd_try + 2}/3 重试…", flush=True)
-            time.sleep(5)
-
-    if not drive:
-        print("  GD 连接 3 次均失败", flush=True)
-        try:
-            _choice = input("  是否继续（跳过云端上传）？[y/N]: ")
-            if _choice.lower() != "y":
-                print("  用户取消，终止上传", flush=True)
-                cleanup_gd_proxy(gd_proxy_set)
-                return False
-        except (EOFError, OSError):
-            cleanup_gd_proxy(gd_proxy_set)
-            return False
-
-    gd_folder_id = None
-    for _gf_try in range(3):
-        try:
-            gd_folder_id = get_or_create_drive_folder(drive, "a-stock-data")
-            if gd_folder_id:
-                break
-        except Exception as _e:
-            _debug_log(f"sc_utils gd_folder retry: {_e}")
-        if _gf_try < 2:
-            print(f"  GD 文件夹探测失败，{_gf_try + 2}/3 重试…", flush=True)
-            time.sleep(3)
-
-    if not gd_folder_id:
-        print("  GD 文件夹探测 3 次均失败", flush=True)
-        cleanup_gd_proxy(gd_proxy_set)
-        return False
-
-    sub_folder_id = get_or_create_drive_folder(drive, report_type, gd_folder_id)
-    if not sub_folder_id:
-        print(f"  无法创建/获取 GD 子文件夹: {report_type}", flush=True)
-        cleanup_gd_proxy(gd_proxy_set)
-        return False
-
-    all_ok = True
-    for _fp in local_files:
-        if not os.path.isfile(_fp):
-            continue
-        fn = os.path.basename(_fp)
-        print(f"  上传: {fn}…", flush=True)
-        try:
-            if upload_report_to_drive(drive, _fp, sub_folder_id, fn):
-                print(f"    {fn} 上传成功", flush=True)
-            else:
-                print(f"    {fn} 上传失败", flush=True)
-                all_ok = False
-        except Exception as _e:
-            print(f"    {fn} 上传异常: {_e}", flush=True)
-            all_ok = False
-
-    cleanup_gd_proxy(gd_proxy_set)
-    return all_ok
-
-
-# ═══════════════════════════════════════
 # 配置文件加载（游资标签 / 公告关键词等）
 # ═══════════════════════════════════════
 
@@ -360,12 +273,5 @@ def _load_strategy_config() -> Dict[str, Any]:
 
 
 # ═══════════════════════════════════════
-# 报告工具
+# 报告工具（已迁移到 sc_datasource.py）
 # ═══════════════════════════════════════
-
-
-
-
-def print_batch_summary(*args: Any, **kwargs: Any) -> None:
-    """占位符，兼容旧导入。"""
-    pass

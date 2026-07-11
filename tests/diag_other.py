@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 """其他接口诊断脚本 - 测试腾讯/新浪/百度/巨潮等接口
 
-V1.0 2026-07-09 - V9.3.1 新增（按数据源重组）
 覆盖接口：
 - get_tencent_quote           腾讯行情
 - get_sina_financial_report   新浪财报

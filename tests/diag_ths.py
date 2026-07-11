@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 """同花顺接口诊断脚本 - 测试同花顺HTTP接口
 
-V1.0 2026-07-09 - V9.3.1 新增（按数据源重组）
 覆盖接口：
 - get_ths_hot_reason    热点原因
 - ths_hot_list          热榜

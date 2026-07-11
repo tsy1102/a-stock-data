@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 """TDX板块接口诊断脚本 - 测试通达信板块/全市场接口
 
-V1.0 2026-07-09 - V9.3.1 新增（按数据源重组）
 覆盖接口：
 - tdx_get_belong_boards    所属板块
 - tdx_get_board_list       板块列表

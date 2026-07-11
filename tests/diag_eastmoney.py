@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 """东财接口诊断脚本 - 测试东方财富HTTP接口
 
-V1.0 2026-07-09 - V9.3.1 新增（按数据源重组）
 覆盖接口：
 - eastmoney_datacenter          数据中心
 - get_reports                    研报列表

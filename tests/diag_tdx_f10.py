@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 """TDX F10接口诊断脚本 - 测试通达信F10各分类接口
 
-V1.0 2026-07-09 - V9.3.1 新增（按数据源重组）
 覆盖接口：
 - tdx_get_financial_analysis      财务分析
 - tdx_get_shareholder_research    股东研究

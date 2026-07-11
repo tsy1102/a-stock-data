@@ -2,7 +2,7 @@
 
 一套自动化生成A股个股分析报告的Python工具集，支持短线、中线、长线、完整、估值、市场热点等多种报告类型，数据来源于新浪财经、东方财富、同花顺等主流平台。
 
-> **V9.3.2**：TDX K线假数据防护 + SQLite WAL死锁修复 + 代理环境兼容
+> **V9.5**：静默异常日志化 + aiohttp原生异步迁移 + ful脚本显示修复
 
 ---
 
@@ -110,18 +110,17 @@ python main.py [选项] 股票代码...
 ```
 a-stock-data/
 ├── main.py                   # 主入口程序（参数分发/多报告并行）
+├── VERSION                   # 项目版本号（单一来源，脚本通过 get_version() 读取）
 ├── stock_common/             # 核心模块包
 │   ├── __init__.py           # 包入口，统一导出接口
-│   ├── sc_datasource.py      # 数据源查询模块（76+ 函数）
+│   ├── sc_datasource.py      # 数据源查询模块（68+ 函数）
 │   ├── sc_network.py         # 网络请求层（限流/重试/代理）
-│   ├── sc_utils.py           # 工具函数（_safe_float/_load_settings 等）
+│   ├── sc_utils.py           # 工具函数（get_version/_safe_float/_load_settings 等）
 │   ├── sc_scoring.py         # 统一评分接口（ScoreData/ScoreResult）
 │   ├── stock_calendar.py     # 交易日历模块（含节假日/调休日数据）
 │   ├── strategy_config.yaml  # 统一策略参数配置文件
 │   ├── analyze_history.py    # 评分快照分析与趋势背离检测
 │   ├── f10_parser.py         # F10 数据解析模块
-│   ├── trap_detector.py      # 杀猪盘8信号检测
-│   ├── valuation_methods.py  # 机构估值方法库
 │   ├── seat_db.py            # 龙虎榜席位数据库
 │   ├── seats.json            # 席位数据文件
 │   └── keywords_config.yaml  # 公告关键词配置
@@ -289,6 +288,27 @@ reports/
 
 完整版本历史详见 [CHANGELOG.md](CHANGELOG.md)
 
+### v9.5 (2026-07-11)
+
+- 🔧 **静默异常日志化**（28处）：`tdx_client.py`（23处）、`gd_uploader.py`（4处）、`get_med_report.py`（1处）中 `except Exception:` 静默吞异常全部添加 `_debug_log` 日志，提升调试可观测性
+- ⚡ **aiohttp原生异步迁移**：`sc_datasource.py` 中10个HTTP异步函数从 `asyncio.to_thread` "假异步"包装改为原生 `aiohttp` 实现（`_async_request_with_retry` / `_async_quick_request`），剩余10个TDX依赖函数保留
+- 🐛 **修复 _load_config 未定义错误**：`sc_datasource.py` 异步迁移过程中误写的不存在函数名，导致 sht/med/lng 脚本运行崩溃
+- 🐛 **ful脚本显示修复**：价格走势改为近15日倒序显示（Day-1为最近日期）；新闻舆情文案从"近24小时"改为"近期"
+
+### v9.4 (2026-07-11)
+
+- 📦 **VERSION文件单一来源版本号管理**：项目根目录新增 `VERSION` 文件，所有脚本通过 `get_version()` 函数读取版本号，告别"升级版本需遍历所有文件"的旧模式
+- 🧹 **大规模死代码清理**（~70KB）：删除 `trap_detector.py`（杀猪盘检测，22KB/12函数）、`valuation_methods.py`（机构估值，21KB/9函数）、`gd_upload_flow` 函数、`sc_utils.py` 中被覆盖的 `print_batch_summary`、10个临时诊断脚本
+- ⚡ **mak报告并行化**：全市场异动扫描引入 `ThreadPoolExecutor(max_workers=3)`，扫描速度提升2-3x
+- 🔧 **线程安全修复**：删除 `sc_network.py` 中无锁保护的 `_em_last_request_time` / `_gen_last_request_time` 变量，统一使用 `_DOMAIN_LAST_TIME_LOCK` 保护
+- 🔧 **sht资金流重复调用修复**：`get_fund_flow_realtime` 增加 `ff_120d` 参数，外层调用复用已获取的历史数据
+- 🐛 **报告格式统一**：
+  - med脚本两融数据添加"融券余额"列（与sht一致）
+  - med/lng流通股东显示统一为0%（删除N/A判断）
+  - lng脚本休市提示移至标题下方（与sht/med一致）
+  - ful脚本新闻 page_size 从10增至30（覆盖近30天）
+  - sht/med/lng/ful四个脚本休市提示文案统一简化
+
 ### v9.3.3 (2026-07-10)
 
 - 🐛 **修复 GD上传路径混乱**：所有 txt 文件统一上传到 `a-stock-data/[股票代码-名称]/` 子文件夹，禁止根目录上传
@@ -411,13 +431,13 @@ reports/
 ### v8.5.0 (2026-06-22)
 
 - ✅ **新增龙虎榜席位增强**：22位游资席位数据库（legend/new_gen/regional/new_2025分级），席位风格标签、溢价判断、席位质量评分
-- ✅ **新增杀猪盘8信号检测**：`trap_detector.py`实现8维检测框架（低质量账号/话术模板/付费引流/基本面脱节/K线异常/老师营销/跨平台联动/虚假研报）
+- ✅ **新增杀猪盘8信号检测**：`trap_detector.py`实现8维检测框架（低质量账号/话术模板/付费引流/基本面脱节/K线异常/老师营销/跨平台联动/虚假研报） *(V9.4已删除：API未接入上层报告)*
 - ✅ **新增数据质量HARD-GATE**：13条数据质量检查清单，critical级别错误自动阻断报告生成
 - ✅ **新增多档分析深度**：支持`--depth lite/medium/deep`三档（快速30秒/标准5分钟/深度15分钟）
 - ✅ **新增多评委评审团**：价值派/成长派/游资派/综合派四套评分体系，支持分歧度检测
 - ✅ **新增社交热榜聚合**：`social_sentiment.py`支持微博/知乎/抖音/头条/百度/B站6平台情绪聚合（需API认证）
-- ✅ **新增机构估值方法库**：`valuation_methods.py`实现DCF/DDM/PEG/LBO/PB-ROE/行业PE比较等多种估值方法
-- ⏳ **AI产业链卡位分析（规划中）**：`ai_chain_analyzer.py` 模块尚未实现，功能暂不可用
+- ✅ **新增机构估值方法库**：`valuation_methods.py`实现DCF/DDM/PEG/LBO/PB-ROE/行业PE比较等多种估值方法 *(V9.4已删除：API未接入上层报告)*
+- ⏳ **AI产业链卡位分析（规划中）**：`ai_chain_analyzer.py` 模块尚未实现，功能暂不可用 *(V9.4已删除代理函数)*
 
 ### v8.4.0 (2026-06-22)
 

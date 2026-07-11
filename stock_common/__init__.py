@@ -1,4 +1,4 @@
-"""stock_common — 统一基础工具包 (V9.3 盘前行情智能切换)
+"""stock_common — 统一基础工具包
 
 将原 stock_common.py (4300+行) 拆分为 4 个职责清晰的子模块：
   - sc_network:   网络层 / 限流 / Session 管理
@@ -21,6 +21,81 @@ from __future__ import annotations
 
 import os
 
+__all__ = [
+    # sc_network
+    "_LOG_DIR", "_http_logger", "_biz_logger", "_DEBUG", "_debug_log",
+    "UA", "DATACENTER_URL", "JP_URL",
+    "EM_SESSION", "EM_MIN_INTERVAL", "_EM_LAST_CALL",
+    "_DOMAIN_LIMITS", "_DOMAIN_LAST_TIME", "_DOMAIN_LAST_TIME_LOCK", "_RL_STATS",
+    "_em_lock_dir", "_em_lock_file", "_gen_lock_file",
+    "_file_lock_acquire", "_file_lock_release",
+    "em_get", "_em_wait_process_interval", "_gen_wait_process_interval",
+    "_request_with_retry", "_quick_request", "_do_request",
+    "_log_rate_limit", "print_rate_limit_stats", "_market_code",
+    "_em_async_lock", "_gen_async_lock", "_em_async_last_request",
+    "_gen_async_last_request", "_HAS_ASYNCIO", "_HAS_AIOHTTP",
+    "_ensure_async_locks", "_em_wait_process_interval_async",
+    "_gen_wait_process_interval_async", "create_async_session",
+    "_async_request_with_retry", "_async_quick_request",
+    # sc_scoring
+    "ScoreData", "ScoreResult",
+    "_score_technical", "_score_fundamental", "_score_valuation",
+    "_score_flow", "_score_holder", "_score_dividend",
+    "calculate_score", "calculate_score_by_school",
+    "calculate_multi_school_scores", "format_multi_school_report",
+    "SCHOOL_CONFIGS",
+    # sc_utils
+    "get_version",
+    "_safe_float",
+    "ensure_output_dir", "get_script_dir",
+    "get_board_type", "is_limit_up", "is_limit_down",
+    "clean_codes", "parse_args",
+    "_safe_cleanup_tdx",
+    "_load_settings", "_load_strategy_config",
+    "_settings_cache", "_strategy_config_cache",
+    # sc_datasource
+    "eastmoney_datacenter", "_em_filter",
+    "eastmoney_datacenter_async", "_em_filter_async",
+    "holder_change", "holder_change_async",
+    "_holder_fetch_from_sqlite", "_holder_update_sqlite",
+    "_holder_fetch_em", "_holder_fetch_tdx",
+    "_holder_fetch_tdx_optimized",
+    "_compute_holder_changes",
+    "_HOLDER_CACHE_TTL", "_HOLDER_CACHE_REFRESH",
+    "get_strategic_announcements", "get_strategic_announcements_async",
+    "_cninfo_get_orgid", "_CNINFO_ORGID_CACHE",
+    "_holder_structure_cache",
+    "get_holder_structure", "get_holder_structure_async",
+    "get_tencent_quote", "get_tencent_quote_async",
+    "baidu_kline_full", "get_stock_info", "get_stock_info_async",
+    "get_reports", "get_reports_async",
+    "get_industry_reports", "get_eps_forecast", "get_eps_forecast_async",
+    "get_northbound_hold", "get_northbound_hold_async",
+    "_northbound_cache_path", "_load_northbound_cache",
+    "get_margin_trading", "get_margin_trading_async",
+    "get_block_trade", "get_block_trade_async",
+    "get_dividend_history", "get_dividend_history_async",
+    "get_concept_blocks", "get_concept_blocks_async",
+    "get_ths_hot_reason", "get_ths_hot_reason_async",
+    "get_industry_peers", "get_industry_peers_async",
+    "get_stock_sector_rank", "get_stock_sector_rank_async",
+    "get_industry_comparison", "get_industry_comparison_async",
+    "_get_eastmoney_industry_sectors",
+    "get_eastmoney_stock_news", "get_eastmoney_global_news",
+    "get_sina_financial_report", "get_sina_financial_report_async",
+    "get_sina_balance_sheet", "get_sina_balance_sheet_async",
+    "get_hsgt_macro_flow", "get_hsgt_macro_flow_async",
+    "get_lockup_expiry", "get_lockup_expiry_async",
+    "get_gross_margin_and_roe", "get_gross_margin_and_roe_async",
+    "_try_upgrade_calendar",
+    "get_valuation_pe_center", "is_trading_day", "get_market_status",
+    "print_batch_summary",
+    "get_dragon_tiger_board", "get_dragon_tiger_board_async",
+    "get_recent_dragon_tiger", "get_recent_dragon_tiger_async",
+    "eastmoney_stock_info_push2",
+    "ths_hot_list", "em_hot_rank", "em_hot_concept",
+]
+
 # ═══════════════════════════════════════════════════════════════
 # 第一部分：从已拆分的子模块导入（sc_network / sc_scoring / sc_utils）
 # ═══════════════════════════════════════════════════════════════
@@ -35,7 +110,6 @@ from stock_common.sc_network import (
     EM_SESSION, EM_MIN_INTERVAL, _EM_LAST_CALL,
     # 限流
     _DOMAIN_LIMITS, _DOMAIN_LAST_TIME, _DOMAIN_LAST_TIME_LOCK, _RL_STATS,
-    _em_last_request_time, _gen_last_request_time,
     # 进程间锁
     _em_lock_dir, _em_lock_file, _gen_lock_file,
     _file_lock_acquire, _file_lock_release,
@@ -63,11 +137,12 @@ from stock_common.sc_scoring import (
 
 # --- 工具函数 ---
 from stock_common.sc_utils import (
+    get_version,
     _safe_float,
     ensure_output_dir, get_script_dir,
     get_board_type, is_limit_up, is_limit_down,
     clean_codes, parse_args,
-    gd_upload_flow, _safe_cleanup_tdx,
+    _safe_cleanup_tdx,
     _load_settings, _load_strategy_config,
     _settings_cache, _strategy_config_cache,
 )
@@ -135,8 +210,6 @@ from stock_common.sc_datasource import (
     # 龙虎榜
     get_dragon_tiger_board, get_dragon_tiger_board_async,
     get_recent_dragon_tiger, get_recent_dragon_tiger_async,
-    # 外部分析模块代理
-    get_trap_detection, get_valuation, analyze_ai_chain_position,
     # 舆情互动层（V8.9）
     eastmoney_stock_info_push2,
     ths_hot_list, em_hot_rank, em_hot_concept,

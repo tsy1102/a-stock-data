@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 """
-get_lng_report.py — A股长线价投专属深度体检报告 (V9.3.3)
+get_lng_report.py — A股长线价投专属深度体检报告
 
 版本信息:
-    V9.3.3 2026-07-10 - 代码质量提升：删除死代码和未用导入
+    V9.5   2026-07-11 - 基础设施修复：aiohttp原生异步迁移、静默异常日志化（脚本本身无改动，受益于底层修复）
+    V9.3.3 2026-07-11 - 流通股东显示统一为0%；休市提示移至标题下方；休市提示文案统一
     V9.3.2 2026-07-09 - 基础设施修复：TDX K线假数据防护、SQLite WAL死锁修复、代理环境兼容（脚本本身无改动，受益于底层修复）
     V9.3 2026-07-07 - 盘前行情模式：9:30前使用上一交易日日K线数据；删除报告标题硬编码版本号
     V9.2 2026-07-05 - 异常处理规范化；缓存交叉验证机制启用
@@ -134,15 +135,17 @@ async def generate_report_async(session, code, output_path, ind_comp=None):
     L("=" * 72)
     L("")
 
+    _mkt_status, _mkt_note = get_market_status()
+    if _mkt_status in ("lunch", "closed", "post_market", "pre_market"):
+        L(f"  ⚠️ 休市日：数据为最近交易日快照，基本面数据不受影响")
+    L("")
+
     L("\n【一、企业基本盘与绝对估值锚点】")
     L("─" * 72)
     info = get_stock_info(code)
     q = get_tencent_quote(code)
     price_today = q.get("price", 0) if q else 0
     
-    _mkt_status, _mkt_note = get_market_status()
-    if _mkt_status in ("lunch", "closed", "post_market", "pre_market"):
-        L(f"  ⚠️ {_mkt_note}，长线基本面数据不受影响")
     L(f"  企业名称: {info.get('name', 'N/A')} ({info.get('code', code)})")
     L(f"  所属板块: {info.get('industry', 'N/A')}")
     peer_data_lng = get_industry_peers(code, 3, info=info)
@@ -508,9 +511,9 @@ async def generate_report_async(session, code, output_path, ind_comp=None):
         L(f"  {'-'*60}")
         for p in st:
             _cols = f"  {p['date']:<12} {p['northbound']:>5.1f}%"
-            _cols += f"  {p['foreign']:>5.1f}%({p['foreign_count']})" if p['foreign_count'] else f"  {'N/A':>8}"
-            _cols += f"  {p['domestic']:>5.1f}%({p['domestic_count']})" if p['domestic_count'] else f"  {'N/A':>8}"
-            _cols += f"  {p['individual']:>5.1f}%({p['individual_count']})" if p['individual_count'] else f"  {'N/A':>6}"
+            _cols += f"  {p['foreign']:>5.1f}%"
+            _cols += f"  {p['domestic']:>5.1f}%"
+            _cols += f"  {p['individual']:>5.1f}%"
             _cols += f"  {p['total']:>5.1f}%"
             L(_cols)
         L("")

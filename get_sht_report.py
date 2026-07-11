@@ -1,22 +1,23 @@
 #!/usr/bin/env python3
 
-"""get_sht_report.py — A股短线个股深度数据报告 (V9.3.3)
+"""get_sht_report.py — A股短线个股深度数据报告
 
 版本信息:
-    V9.3.3 2026-07-10 - 代码质量提升：删除20个未用导入，精简代码
+    V9.5   2026-07-11 - 基础设施修复：aiohttp原生异步迁移、静默异常日志化（脚本本身无改动，受益于底层修复）
+    V9.3.3 2026-07-11 - 资金流函数复用 ff_120d 参数避免重复调用；休市提示文案统一
     V9.3.2 2026-07-09 - 基础设施修复：TDX K线假数据防护、SQLite WAL死锁修复、代理环境兼容（脚本本身无改动，受益于底层修复）
-    V9.3 2026-07-07 - 盘前行情模式：9:30前使用上一交易日日K线数据；盘前提示文本；删除报告标题硬编码版本号
-    V9.2 2026-07-05 - 异常处理规范化；缓存交叉验证机制启用
-    V9.1 2026-07-04 - F10 全覆盖：新增【异动与风险提示】章节+数据质量附录；修复资金流渲染 float/dict 兼容
-    V9.0 2026-07-02 - 舆情互动层（Layer 10）；上市日期 push2 fallback；valid_if 校验；_has_zero_price 拦截
-    V8.8 2026-06-25 - GD上传逻辑统一化 & 快照格式升级（TXT+自动上传）
-    V8.7 2026-06-25 - 死代码清理：同步版替换为薄包装
-    V8.5 2026-06-22 - 新增多档分析深度(--depth lite/medium/deep)、席位增强分析
-    V8.4 2026-06-22 - 统一缓存层+异步函数族
-    V8.3 2026-06-18 - 细节修复
-    V8.2 2026-06-18 - 席位参数优化
-    V8.1 2026-06-18 - 统一评分接口+快照功能
-    V8.0 2026-06-17 - 初始版本
+    V9.3   2026-07-07 - 盘前行情模式：9:30前使用上一交易日日K线数据；盘前提示文本；删除报告标题硬编码版本号
+    V9.2   2026-07-05 - 异常处理规范化；缓存交叉验证机制启用
+    V9.1   2026-07-04 - F10 全覆盖：新增【异动与风险提示】章节+数据质量附录；修复资金流渲染 float/dict 兼容
+    V9.0   2026-07-02 - 舆情互动层（Layer 10）；上市日期 push2 fallback；valid_if 校验；_has_zero_price 拦截
+    V8.8   2026-06-25 - GD上传逻辑统一化 & 快照格式升级（TXT+自动上传）
+    V8.7   2026-06-25 - 死代码清理：同步版替换为薄包装
+    V8.5   2026-06-22 - 新增多档分析深度(--depth lite/medium/deep)、席位增强分析
+    V8.4   2026-06-22 - 统一缓存层+异步函数族
+    V8.3   2026-06-18 - 细节修复
+    V8.2   2026-06-18 - 席位参数优化
+    V8.1   2026-06-18 - 统一评分接口+快照功能
+    V8.0   2026-06-17 - 初始版本
 """
 
 
@@ -74,13 +75,24 @@ def _get_index_quote(idx_code):
 
 
 
-def get_fund_flow_realtime(code):
-    """V7.5: 今日主力净流入 → TDX TCP，失败则尝试历史数据回退"""
+def get_fund_flow_realtime(code, ff_120d=None):
+    """V7.5: 今日主力净流入 → TDX TCP，失败则尝试历史数据回退
+    
+    Args:
+        code: 股票代码
+        ff_120d: 可选的历史资金流数据（避免重复调用 get_fund_flow_120d）
+    
+    Returns:
+        dict or None
+    """
     ff = tdx_get_fund_flow(code)
     if ff and ff.get("main_net_wan", 0) != 0:
         return {"data": [ff["main_net_wan"]], "detail": ff, "source": "tdx"}
     
-    ff_120d = get_fund_flow_120d(code)
+    # V9.3.3: 使用传入的 ff_120d 避免重复调用
+    if ff_120d is None:
+        ff_120d = get_fund_flow_120d(code)
+    
     if ff_120d and ff_120d.get("data") and len(ff_120d["data"]) > 0:
         recent_data = ff_120d["data"][-5:]
         if recent_data:
@@ -287,7 +299,7 @@ async def generate_report_async(session, code, output_path, ind_comp=None, idx_q
     _mkt_status, _mkt_note = get_market_status()
 
     if _mkt_status in ("lunch", "closed", "post_market", "pre_market"):
-        L(f"  ⚠️ {_mkt_note}，短线技术指标基于最近交易日快照")
+        L(f"  ⚠️ 休市日：数据为最近交易日快照，短线技术指标已标注")
     L("\n"+"─"*72); L("【一、个股基本信息】"); L("─"*36)
 
     info = get_stock_info(code)
@@ -404,7 +416,7 @@ async def generate_report_async(session, code, output_path, ind_comp=None, idx_q
 
     ff = get_fund_flow_120d(code)
 
-    rf = get_fund_flow_realtime(code)
+    rf = get_fund_flow_realtime(code, ff_120d=ff)  # V9.3.3: 复用 ff_120d 避免重复调用
 
     if rf and rf.get("data") and len(rf["data"]) > 0:
         _fd = rf["data"]
@@ -729,7 +741,7 @@ async def generate_report_async(session, code, output_path, ind_comp=None, idx_q
     elif _mkt_status == "post_market":
         L("  ⚠️ 当前为盘后结算时段，龙虎榜数据正在更新中，部分信息可能延迟")
     else:  # closed
-        L("  ⚠️ 当前为休市日，数据为最近交易日快照，龙虎榜数据为最近一期已发布")
+        L("  ⚠️ 休市日：数据为最近交易日快照，龙虎榜数据为最近一期已发布")
 
     # V8.5: lite模式跳过席位详情
     dtb = await get_dragon_tiger_board_async(session, code, today_str, days=180,

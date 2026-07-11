@@ -420,4 +420,4 @@
       python tests\test_f10_chapters_integration.py
 
 
-更新时间：2026-07-09（V9.3.2 TDX K线假数据防护）
+更新时间：2026-07-11（V9.4 VERSION文件单一来源版本号管理 + 死代码清理）

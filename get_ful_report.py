@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 """
-get_ful_report.py — A股七层全维度分析引擎 V9.3.3（含行业对比/风险扫描/六维加权评分）
+get_ful_report.py — A股七层全维度分析引擎（含行业对比/风险扫描/六维加权评分）
 
 版本信息:
-    V9.3.3 2026-07-10 - 代码质量提升：ScoreData构造路径修复、删除死函数和未用导入
+    V9.5   2026-07-11 - 价格走势改为近15日倒序显示；新闻舆情文案从"近24小时"改为"近期"
+    V9.3.3 2026-07-11 - 新闻与舆情 page_size 从10增加到30；休市提示文案统一
     V9.3.2 2026-07-09 - 基础设施修复：TDX K线假数据防护、SQLite WAL死锁修复、代理环境兼容（脚本本身无改动，受益于底层修复）
     V9.3   2026-07-07 - 盘前行情模式：9:30前使用上一交易日日K线数据；修复成功/失败统计为0问题；删除报告标题硬编码版本号
     V9.2   2026-07-05 - 异常处理规范化；缓存交叉验证机制启用
@@ -990,7 +991,7 @@ def layer5_news(code: str, stock_name: str = "") -> Dict[str, Any]:
 
     # 东财个股新闻（已按股票代码过滤，直接显示）
     try:
-        stock_news = get_eastmoney_stock_news(code, page_size=10)
+        stock_news = get_eastmoney_stock_news(code, page_size=30)
         for item in stock_news:
             title = str(item.get("title", "")).strip()
             summary = str(item.get("summary", "")).strip()
@@ -1524,7 +1525,7 @@ def format_report(code: str, layers: Dict[str, Any]) -> str:
     L(f"  股票代码: {code}")
     L(f"  生成时间: {now}")
     if _mkt_status in ("lunch", "closed", "post_market", "pre_market"):
-        L(f"  ⚠️ {_mkt_note}，部分实时行情为最近交易日快照")
+        L(f"  ⚠️ 休市日：数据为最近交易日快照，实时行情已标注")
     L("═" * 78)
 
     # 基本信息
@@ -1569,9 +1570,10 @@ def format_report(code: str, layers: Dict[str, Any]) -> str:
             # ASCII价格趋势
             closes_series = kl.get("closes") or []
             if closes_series and isinstance(closes_series, list) and len(closes_series) >= 10:
-                L(f"  近{len(closes_series)}日价格走势:")
-                for i, price in enumerate(closes_series[-15:]):
-                    L(f"    Day-{len(closes_series[-15:])-i:>2d}  ¥{price:>8.2f}")
+                last_15 = closes_series[-15:]
+                L(f"  近{len(last_15)}日价格走势:")
+                for i, price in enumerate(reversed(last_15)):
+                    L(f"    Day-{i+1:>2d}  ¥{price:>8.2f}")
                 lo = min(closes_series)
                 hi = max(closes_series)
                 rng = hi - lo if hi > lo else 1
@@ -1734,7 +1736,7 @@ def format_report(code: str, layers: Dict[str, Any]) -> str:
         total_g = len(l5.get("global_related") or [])
         hl = l5.get("hot_list") or []
         if total_g == 0 and not hl:
-            L(f"  近24小时未检测到与该标的直接相关的重大新闻")
+            L(f"  近期未检测到与该标的直接相关的重大新闻")
         else:
             if total_g > 0:
                 L(f"  东财个股新闻（{total_g} 条）:")
@@ -2079,7 +2081,9 @@ def main():
     header_lines = []
     header_lines.append("=" * 78)
     header_lines.append("  A股九层全维度分析引擎")
-    header_lines.append(f"  启动时间: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}（{_mkt_note}）")
+    header_lines.append(f"  启动时间: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+    if _mkt_status in ("lunch", "closed", "post_market", "pre_market"):
+        header_lines.append(f"  ⚠️ 休市日：数据为最近交易日快照，实时行情已标注")
     header_lines.append(f"  分析标的: {', '.join(codes)}")
     header_lines.append(f"  并行模式: {'OFF(顺序)' if args.no_parallel else f'ON({_MAX_WORKERS}线程)'}  |  GD上传: {'SKIP' if args.no_upload else '启用'}")
     header_lines.append(f"  输出目录: {output_dir}")

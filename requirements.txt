@@ -20,6 +20,7 @@ PyYAML>=5.4
 
 # ── 行情数据源（核心依赖，必须安装）───────────────────────────
 easy-tdx>=1.0,<2.0
+mootdx>=0.11,<1.0
 
 # ── Google Drive（V7 已切换至 google-auth + google-api-python-client）
 # ⚠️ pydrive2 / oauth2client 已废弃，保留兼容运行但不再主动安装

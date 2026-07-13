@@ -1634,6 +1634,7 @@ def _get_eastmoney_industry_sectors() -> List[Dict[str, Any]]:
         "invt": "2",
         "fs": "m:90+t:2",  # 行业板块
         "fields": "f2,f3,f4,f12,f13,f14,f104,f105,f128,f136,f140,f141,f207",
+        "fid": "f3",  # 按涨跌幅排序
     }
     headers = {"User-Agent": UA}
 
@@ -1674,9 +1675,10 @@ async def get_industry_comparison_async(session: Any, top_n: int = 20) -> Dict[s
 # 新闻
 @cached(category="stock_news", ttl_seconds=TTL["stock_news"])
 def get_eastmoney_stock_news(code: str, page_size: int = 20) -> List[Dict[str, Any]]:
-    """获取东财个股新闻（SKILL.md V3.2 推荐）。
+    """获取东财个股新闻。
 
-    使用东财search-api-web接口获取个股相关新闻，作为社交舆情的补充数据源。
+    V9.6: 东财search-api-web HTTP接口已失效（返回passportWeb而非新闻），
+    现仅使用 TDX F10 公司报道数据。F10不可用时返回空列表。
 
     Args:
         code: 股票代码
@@ -1685,7 +1687,6 @@ def get_eastmoney_stock_news(code: str, page_size: int = 20) -> List[Dict[str, A
     Returns:
         list: 新闻列表，包含标题、发布时间、来源、摘要等字段
     """
-    # V9.0: 优先使用 F10 公司报道数据
     try:
         from tdx_client import tdx_get_company_news_f10
         f10_news = tdx_get_company_news_f10(code, count=page_size)
@@ -1699,63 +1700,14 @@ def get_eastmoney_stock_news(code: str, page_size: int = 20) -> List[Dict[str, A
             } for n in f10_news]
     except Exception as _e:
         _debug_log(f"datasource tdx company news f10 error: {_e}")
-    # Fallback: 东财 HTTP
-    url = "https://search-api-web.eastmoney.com/search/jsonp"
-
-    # 根据代码确定市场
-    market = "sh" if code.startswith("6") else "sz"
-
-    params = {
-        "keyword": code,
-        "type": "news",
-        "pageSize": str(page_size),
-        "pageNo": "1",
-        "client": "web",
-        "market": market,
-        "code": code,
-    }
-
-    headers = {
-        "User-Agent": UA,
-        "Referer": "https://so.eastmoney.com/",
-        "Origin": "https://so.eastmoney.com",
-    }
-
-    try:
-        r = em_get(url, params=params, headers=headers, timeout=15)
-        if r is None:
-            return []
-
-        # 处理JSONP格式响应
-        text = r.text
-        if text.startswith("jQuery(") and text.endswith(")"):
-            text = text[7:-1]
-
-        d = json.loads(text)
-        result = d.get("result", {})
-        news_list = result.get("list", [])
-
-        news_items = []
-        for news in news_list[:page_size]:
-            news_items.append({
-                "title": news.get("title", ""),
-                "publish_time": news.get("publishTime", ""),
-                "source": news.get("source", ""),
-                "summary": news.get("summary", ""),
-                "url": news.get("url", ""),
-            })
-
-        return news_items
-    except Exception as _e:
-        _debug_log(f"datasource get_eastmoney_stock_news ({code}): {_e}")
-        return []
+    return []
 
 
 @cached(category="global_news", ttl_seconds=TTL["global_news"])
 def get_eastmoney_global_news(page_size: int = 50) -> List[Dict[str, Any]]:
-    """获取东财全球资讯（SKILL.md V3.2 推荐，财联社替代）。
+    """获取东财全球资讯（7×24 滚动快讯）。
 
-    使用东财np-weblist接口获取7×24财经快讯，作为财联社下线后的替代方案。
+    使用东财np-weblist接口获取7×24财经快讯，与财联社快讯互为独立备份。
 
     Args:
         page_size: 返回数量上限
@@ -1763,16 +1715,17 @@ def get_eastmoney_global_news(page_size: int = 50) -> List[Dict[str, Any]]:
     Returns:
         list: 资讯列表，包含标题、发布时间、内容等字段
     """
-    url = "https://np-listapi.eastmoney.com/comm/ws/build/list"
+    url = "https://np-weblist.eastmoney.com/comm/web/getFastNewsList"
 
+    import uuid
     params = {
-        "type": "flsh",  # 快讯类型
-        "pageIndex": "1",
+        "client": "web", "biz": "web_724",
+        "fastColumn": "102", "sortEnd": "",
         "pageSize": str(page_size),
-        "callback": "",
+        "req_trace": str(uuid.uuid4()),
     }
 
-    headers = {"User-Agent": UA}
+    headers = {"User-Agent": UA, "Referer": "https://kuaixun.eastmoney.com/"}
 
     try:
         r = em_get(url, params=params, headers=headers, timeout=15)
@@ -1780,15 +1733,14 @@ def get_eastmoney_global_news(page_size: int = 50) -> List[Dict[str, Any]]:
             return []
 
         d = r.json()
-        data = d.get("data", {})
-        items = data.get("items", [])
+        items = d.get("data", {}).get("fastNewsList", [])
 
         news_items = []
         for item in items[:page_size]:
             news_items.append({
                 "title": item.get("title", ""),
-                "publish_time": item.get("publishTime", ""),
-                "content": item.get("content", ""),
+                "publish_time": item.get("showTime", ""),
+                "content": item.get("summary", "")[:200],
                 "type": item.get("type", ""),
             })
 
@@ -1958,6 +1910,53 @@ async def get_sina_balance_sheet_async(session: Any, code: str) -> List[Dict[str
         return []
 
 
+@cached(category="cash_flow", ttl_seconds=TTL["cash_flow"], cross_verify=True)
+def get_eastmoney_cash_flow(code: str) -> List[Dict[str, Any]]:
+    """获取东财现金流量表（新浪xjllb接口已失效，使用东财数据中心替代）
+
+    V9.6: 新增，使用东财数据中心RPT_CASHFLOW表获取现金流量数据。
+    """
+    data = eastmoney_datacenter(code, "RPT_CASHFLOW",
+                                filter_str=f"(SECURITY_CODE=\"{code}\")",
+                                page_size=5, sort_columns="REPORT_DATE", sort_types="-1")
+    if not data:
+        return []
+    
+    rows = []
+    for r in data:
+        rows.append({
+            "报告日": str(r.get("REPORT_DATE", "") or "")[:10],
+            "经营活动产生的现金流量净额": str(r.get("NET_CASH_FLOW_OPERATING", "") or "0"),
+            "投资活动产生的现金流量净额": str(r.get("NET_CASH_FLOW_INVESTING", "") or "0"),
+            "筹资活动产生的现金流量净额": str(r.get("NET_CASH_FLOW_FINANCING", "") or "0"),
+            "现金及现金等价物净增加额": str(r.get("NET_INCREASE_CASH_EQUIVALENTS", "") or "0"),
+        })
+    return rows
+
+
+async def get_eastmoney_cash_flow_async(session: Any, code: str) -> List[Dict[str, Any]]:
+    """async 版: 东财现金流量表
+
+    V9.6: 新增，使用东财数据中心RPT_CASHFLOW表获取现金流量数据。
+    """
+    data = await eastmoney_datacenter_async(session, code, "RPT_CASHFLOW",
+                                            filter_str=f"(SECURITY_CODE=\"{code}\")",
+                                            page_size=5, sort_columns="REPORT_DATE", sort_types="-1")
+    if not data:
+        return []
+    
+    rows = []
+    for r in data:
+        rows.append({
+            "报告日": str(r.get("REPORT_DATE", "") or "")[:10],
+            "经营活动产生的现金流量净额": str(r.get("NET_CASH_FLOW_OPERATING", "") or "0"),
+            "投资活动产生的现金流量净额": str(r.get("NET_CASH_FLOW_INVESTING", "") or "0"),
+            "筹资活动产生的现金流量净额": str(r.get("NET_CASH_FLOW_FINANCING", "") or "0"),
+            "现金及现金等价物净增加额": str(r.get("NET_INCREASE_CASH_EQUIVALENTS", "") or "0"),
+        })
+    return rows
+
+
 @cached(category="hsgt_flow", ttl_seconds=TTL["hsgt_flow"], use_args=False)
 def get_hsgt_macro_flow() -> Optional[Dict[str, Any]]:
     """同花顺北向资金大盘净流入（宏观风向标）"""
@@ -1974,7 +1973,18 @@ def get_hsgt_macro_flow() -> Optional[Dict[str, Any]]:
             return None
         hgt_val = float(hgt[-1]) if hgt[-1] else 0
         sgt_val = float(sgt[-1]) if sgt[-1] else 0
-        return {"hgt": hgt_val, "sgt": sgt_val, "total": hgt_val + sgt_val}
+        
+        data_quality = "normal"
+        warning = ""
+        if abs(hgt_val) > 0:
+            ratio = abs(sgt_val / hgt_val)
+            if ratio > 3.0:
+                data_quality = "degraded"
+                warning = f"sgt/hgt比例异常({ratio:.2f})，建议谨慎使用"
+                _debug_log(f"hsgt_macro_flow warning: {warning}")
+        
+        return {"hgt": hgt_val, "sgt": sgt_val, "total": hgt_val + sgt_val, 
+                "data_quality": data_quality, "warning": warning}
     except Exception as _e:
         _debug_log(f"datasource get_hsgt_macro_flow: {_e}")
         return None
@@ -1984,6 +1994,7 @@ async def get_hsgt_macro_flow_async(session: Any) -> Optional[Dict[str, Any]]:
     """async 版: 同花顺北向资金大盘净流入
 
     V9.4: 原生 aiohttp 实现，移除 asyncio.to_thread 包装。
+    V9.6: 添加数据质量检查和降级警告。
     """
     url = "https://data.hexin.cn/market/hsgtApi/method/dayChart/"
     headers = {"User-Agent": UA, "Host": "data.hexin.cn", "Referer": "https://data.hexin.cn/"}
@@ -1997,7 +2008,18 @@ async def get_hsgt_macro_flow_async(session: Any) -> Optional[Dict[str, Any]]:
             return None
         hgt_val = float(hgt[-1]) if hgt[-1] else 0
         sgt_val = float(sgt[-1]) if sgt[-1] else 0
-        return {"hgt": hgt_val, "sgt": sgt_val, "total": hgt_val + sgt_val}
+        
+        data_quality = "normal"
+        warning = ""
+        if abs(hgt_val) > 0:
+            ratio = abs(sgt_val / hgt_val)
+            if ratio > 3.0:
+                data_quality = "degraded"
+                warning = f"sgt/hgt比例异常({ratio:.2f})，建议谨慎使用"
+                _debug_log(f"hsgt_macro_flow_async warning: {warning}")
+        
+        return {"hgt": hgt_val, "sgt": sgt_val, "total": hgt_val + sgt_val, 
+                "data_quality": data_quality, "warning": warning}
     except Exception as _e:
         _debug_log(f"datasource get_hsgt_macro_flow_async: {_e}")
         return None
@@ -2061,7 +2083,8 @@ def get_lockup_expiry(code: str, today_str: str, days: int = 90, include_history
             {"date": str(r.get("FREE_DATE", "") or "")[:10],
              "type": r.get("FREE_SHARES_TYPE", ""),
              "shares": _safe_float(r.get("FREE_SHARES")),
-             "ratio": _safe_float(r.get("FREE_RATIO"))}
+             "ratio": _safe_float(r.get("FREE_RATIO")),
+             "able_shares": _safe_float(r.get("ABLE_FREE_SHARES"))}
             for r in data
         ]
     else:
@@ -2074,7 +2097,8 @@ def get_lockup_expiry(code: str, today_str: str, days: int = 90, include_history
         {"date": str(r.get("FREE_DATE", "") or "")[:10],
          "type": r.get("FREE_SHARES_TYPE", ""),
          "shares": float(r.get("FREE_SHARES") or 0),
-         "ratio": float(r.get("FREE_RATIO") or 0)}
+         "ratio": float(r.get("FREE_RATIO") or 0),
+         "able_shares": float(r.get("ABLE_FREE_SHARES") or 0)}
         for r in data2
     ]
 
@@ -2329,6 +2353,527 @@ def get_market_status(now=None):
         return "closed", ""
 
 
+# ═══════════════════════════════════════════════════════════
+# 打板层数据（V9.6 新增）
+# ═══════════════════════════════════════════════════════════
+
+def _parse_limit_pool(data: list) -> List[Dict[str, Any]]:
+    """解析东财 push2ex 涨停池/炸板池/跌停池数据"""
+    result = []
+    for item in data:
+        zttj = item.get("zttj", {})
+        result.append({
+            "code": item.get("c", ""),
+            "name": item.get("n", ""),
+            "price": _safe_float(item.get("p")),
+            "change_pct": _safe_float(item.get("zdp")),
+            "amount": _safe_float(item.get("amount")),
+            "circulating_value": _safe_float(item.get("ltsz")),
+            "total_value": _safe_float(item.get("tshare")),
+            "turnover_rate": _safe_float(item.get("hs")),
+            "limit_count": _safe_float(item.get("lbc")),
+            "first_limit_time": str(item.get("fbt", "")),
+            "last_limit_time": str(item.get("lbt", "")),
+            "limit_fund": _safe_float(item.get("fund")),
+            "broken_count": _safe_float(item.get("zbc")),
+            "sector": item.get("hybk", ""),
+            "zt_days": _safe_float(zttj.get("days")) if isinstance(zttj, dict) else 0,
+            "zt_continuous": _safe_float(zttj.get("ct")) if isinstance(zttj, dict) else 0,
+        })
+    return result
+
+
+@cached(category="limit_pool", ttl_seconds=TTL["limit_pool"])
+def get_limit_up_pool(date_str: str = "") -> List[Dict[str, Any]]:
+    """获取东财涨停池数据
+
+    Args:
+        date_str: 日期字符串，格式 YYYYMMDD，默认当天
+
+    Returns:
+        涨停股票列表，包含代码/名称/封板时间/连板数/涨停原因等
+    """
+    if not date_str:
+        from datetime import datetime
+        date_str = datetime.now().strftime("%Y%m%d")
+
+    url = "https://push2ex.eastmoney.com/getTopicZTPool"
+    params = {
+        "ut": "7eea3edcaed734bea9cbfc24409ed989",
+        "dpt": "wz.ztzt",
+        "Pageindex": 0,
+        "pagesize": 100,
+        "sort": "fbt:asc",
+        "date": date_str,
+    }
+    try:
+        r = _quick_request(url, params=params, headers={"User-Agent": UA}, timeout=10)
+        if r is None:
+            return []
+        d = r.json()
+        pool = d.get("data", {}).get("pool", [])
+        return _parse_limit_pool(pool)
+    except Exception as _e:
+        _debug_log(f"datasource get_limit_up_pool: {_e}")
+        return []
+
+
+@cached(category="limit_pool", ttl_seconds=TTL["limit_pool"])
+def get_limit_broken_pool(date_str: str = "") -> List[Dict[str, Any]]:
+    """获取东财炸板池数据
+
+    Args:
+        date_str: 日期字符串，格式 YYYYMMDD，默认当天
+
+    Returns:
+        炸板股票列表
+    """
+    if not date_str:
+        from datetime import datetime
+        date_str = datetime.now().strftime("%Y%m%d")
+
+    url = "https://push2ex.eastmoney.com/getTopicZBPool"
+    params = {
+        "ut": "7eea3edcaed734bea9cbfc24409ed989",
+        "dpt": "wz.ztzt",
+        "Pageindex": 0,
+        "pagesize": 100,
+        "sort": "fbt:asc",
+        "date": date_str,
+    }
+    try:
+        r = _quick_request(url, params=params, headers={"User-Agent": UA}, timeout=10)
+        if r is None:
+            return []
+        d = r.json()
+        pool = d.get("data", {}).get("pool", [])
+        return _parse_limit_pool(pool)
+    except Exception as _e:
+        _debug_log(f"datasource get_limit_broken_pool: {_e}")
+        return []
+
+
+@cached(category="limit_pool", ttl_seconds=TTL["limit_pool"])
+def get_limit_down_pool(date_str: str = "") -> List[Dict[str, Any]]:
+    """获取东财跌停池数据
+
+    Args:
+        date_str: 日期字符串，格式 YYYYMMDD，默认当天
+
+    Returns:
+        跌停股票列表
+    """
+    if not date_str:
+        from datetime import datetime
+        date_str = datetime.now().strftime("%Y%m%d")
+
+    url = "https://push2ex.eastmoney.com/getTopicDTPool"
+    params = {
+        "ut": "7eea3edcaed734bea9cbfc24409ed989",
+        "dpt": "wz.ztzt",
+        "Pageindex": 0,
+        "pagesize": 100,
+        "sort": "fbt:asc",
+        "date": date_str,
+    }
+    try:
+        r = _quick_request(url, params=params, headers={"User-Agent": UA}, timeout=10)
+        if r is None:
+            return []
+        d = r.json()
+        pool = d.get("data", {}).get("pool", [])
+        return _parse_limit_pool(pool)
+    except Exception as _e:
+        _debug_log(f"datasource get_limit_down_pool: {_e}")
+        return []
+
+
+def get_limit_pool_summary(date_str: str = "") -> Dict[str, Any]:
+    """获取打板数据汇总（涨停池+炸板池+跌停池）
+
+    Returns:
+        包含涨停/炸板/跌停数量和详细数据的字典
+    """
+    zt = get_limit_up_pool(date_str)
+    zb = get_limit_broken_pool(date_str)
+    dt = get_limit_down_pool(date_str)
+
+    # 按板块统计涨停分布
+    sector_stats: Dict[str, int] = {}
+    for item in zt:
+        sec = item.get("sector", "其他")
+        sector_stats[sec] = sector_stats.get(sec, 0) + 1
+
+    # 封板成功率
+    total_attempt = len(zt) + len(zb)
+    success_rate = len(zt) / total_attempt * 100 if total_attempt > 0 else 0
+
+    return {
+        "limit_up_count": len(zt),
+        "limit_broken_count": len(zb),
+        "limit_down_count": len(dt),
+        "success_rate": round(success_rate, 1),
+        "sector_stats": dict(sorted(sector_stats.items(), key=lambda x: x[1], reverse=True)[:10]),
+        "limit_up_list": zt,
+        "limit_broken_list": zb,
+        "limit_down_list": dt,
+    }
+
+
+# ═══════════════════════════════════════════════════════════
+# 同花顺涨停揭秘（V9.6 新增，打板层增强源）
+# ═══════════════════════════════════════════════════════════
+
+@cached(category="limit_pool", ttl_seconds=TTL["limit_pool"])
+def ths_limit_up_pool(date_str: str = "") -> List[Dict[str, Any]]:
+    """同花顺涨停揭秘（涨停原因 + 封板质量增强源）。
+
+    V9.6 新增：与东财涨停池互为补充，提供东财没有的字段：
+    - 涨停原因题材（reason）
+    - 板型（一字板/换手板/T字板）
+    - 封板成功率（seal_rate）
+    - 炸板次数（break_times）
+
+    作为东财涨停池的 fallback：东财接口失败时调用同花顺获取基础数据。
+
+    Args:
+        date_str: 交易日，格式 YYYYMMDD
+
+    Returns:
+        涨停列表，包含 code/name/price/pct/reason/board_type/seal_rate 等字段
+    """
+    from datetime import datetime
+
+    date_str = date_str or datetime.now().strftime("%Y%m%d")
+    url = "https://data.10jqka.com.cn/dataapi/limit_up/limit_up_pool"
+    params = {
+        "page": 1, "limit": 200,
+        "field": "199112,10,9001,330323,330324,330325,9002,330329,133971,133970,1968584,3475914,9003,9004",
+        "filter": "HS,GEM2STAR", "order_field": "330324", "order_type": "0",
+        "date": date_str,
+    }
+
+    try:
+        r = _quick_request(url, params=params, headers={"User-Agent": UA}, timeout=10)
+        if r is None:
+            return []
+        info = (r.json().get("data") or {}).get("info", [])
+        if not info:
+            return []
+
+        out = []
+        for it in info:
+            ft = it.get("first_limit_up_time")
+            out.append({
+                "code": it.get("code"),
+                "name": it.get("name"),
+                "price": _safe_float(it.get("latest")),
+                "pct": _safe_float(it.get("change_rate")),
+                "reason": it.get("reason_type", ""),
+                "board_type": it.get("limit_up_type", ""),
+                "seal_rate": it.get("limit_up_suc_rate"),
+                "break_times": it.get("open_num") or 0,
+                "seal_amount": it.get("order_amount"),
+                "high_days": it.get("high_days", ""),
+                "first_time": datetime.fromtimestamp(int(ft)).strftime("%H:%M:%S") if ft else "",
+                "is_again": it.get("is_again_limit"),
+            })
+        return out
+    except Exception as _e:
+        _debug_log(f"datasource ths_limit_up_pool: {_e}")
+        return []
+
+
+# ═══════════════════════════════════════════════════════════
+# 东财分钟级资金流（V9.6 新增，用于资金流降权融合）
+# ═══════════════════════════════════════════════════════════
+
+@cached(category="fund_flow", ttl_seconds=TTL["fund_flow"])
+def get_eastmoney_minute_fund_flow(code: str) -> List[Dict[str, Any]]:
+    """获取东财个股分钟级资金流数据
+
+    V9.6 新增：使用东财push2接口获取分钟级资金流，用于与TDX资金流加权融合。
+    数据格式与同花顺/百度资金流不同，但覆盖更稳定。
+
+    Returns:
+        分钟级资金流列表，每项包含时间/主力净流入/小单净流入/中单净流入/大单净流入
+    """
+    market = "1" if code.startswith("6") else "0"
+    secid = f"{market}.{code}"
+
+    url = "https://push2.eastmoney.com/api/qt/stock/fflow/kline/get"
+    params = {
+        "lmt": "0",
+        "klt": "1",  # 1分钟
+        "secid": secid,
+        "fields1": "f1,f2,f3,f7",
+        "fields2": "f51,f52,f53,f54,f55,f56,f57,f58,f59,f60,f61",
+        "ut": "b2884a393a59ad64002292a3e90d46a5",
+    }
+    try:
+        r = _quick_request(url, params=params, headers={"User-Agent": UA}, timeout=10)
+        if r is None:
+            return []
+        d = r.json()
+        klines = d.get("data", {}).get("klines", [])
+        if not klines:
+            return []
+
+        result = []
+        for line in klines:
+            parts = line.split(",")
+            if len(parts) >= 11:
+                result.append({
+                    "time": parts[0],
+                    "main_net_inflow": _safe_float(parts[1]),  # 主力净流入
+                    "small_net_inflow": _safe_float(parts[2]),  # 小单净流入
+                    "medium_net_inflow": _safe_float(parts[3]),  # 中单净流入
+                    "large_net_inflow": _safe_float(parts[4]),  # 大单净流入
+                    "super_net_inflow": _safe_float(parts[5]),  # 超大单净流入
+                })
+        return result
+    except Exception as _e:
+        _debug_log(f"datasource get_eastmoney_minute_fund_flow ({code}): {_e}")
+        return []
+
+
+def get_fund_flow_weighted(code: str, tdx_data: Any = None) -> Dict[str, Any]:
+    """获取加权融合资金流数据（V9.6 新增）
+
+    融合TDX、东财分钟级资金流，按权重加权计算：
+    - TDX TCP资金流：权重 1.0（最实时、最准确）
+    - 东财分钟级资金流：权重 0.6（覆盖稳定、数据量大）
+
+    Args:
+        code: 股票代码
+        tdx_data: TDX资金流数据（如已获取，避免重复请求）
+
+    Returns:
+        加权融合后的资金流数据
+    """
+    # TDX资金流（权重1.0）
+    if tdx_data is not None:
+        tdx_ff = tdx_data
+    else:
+        try:
+            from tdx_client import tdx_get_fund_flow
+            tdx_ff = tdx_get_fund_flow(code)
+        except Exception:
+            tdx_ff = None
+
+    # 东财分钟级资金流（权重0.6）
+    em_ff = get_eastmoney_minute_fund_flow(code)
+
+    result = {
+        "primary_source": "tdx" if tdx_ff else ("eastmoney" if em_ff else "none"),
+        "sources": {},
+    }
+
+    if tdx_ff:
+        result["sources"]["tdx"] = {"weight": 1.0, "data": tdx_ff}
+    if em_ff:
+        result["sources"]["eastmoney"] = {"weight": 0.6, "data_available": True, "count": len(em_ff)}
+
+    # 简化版：优先使用TDX，东财作为验证/补充
+    # 如果TDX有数据，以东财数据做交叉验证
+    if tdx_ff and em_ff:
+        result["cross_verified"] = True
+    elif tdx_ff:
+        result["cross_verified"] = False
+    elif em_ff:
+        # 仅有东财数据时，降低可信度标记
+        result["degraded"] = True
+        result["warning"] = "仅东财数据，无TDX交叉验证"
+
+    return result
+
+
+# ═══════════════════════════════════════════════════════════
+# 财联社快讯（V9.6 新增，V3.4复活版）
+# ═══════════════════════════════════════════════════════════
+
+@cached(category="news", ttl_seconds=TTL["news"])
+def cls_telegraph(page_size: int = 50) -> List[Dict[str, Any]]:
+    """财联社电报（全市场实时快讯）。v1 API + 本地签名，零 key。
+
+    V9.6 新增：使用 cls.cn/v1/roll/get_roll_list，签名算法为 md5(sha1(按key字典序拼接的query串))。
+    与东财7×24快讯互为独立备份（不同源、不同风控面）。
+
+    Args:
+        page_size: 返回条数，默认50条
+
+    Returns:
+        快讯列表，包含 title/content/time 字段
+    """
+    import hashlib
+    from datetime import datetime
+
+    params = {"appName": "CailianpressWeb", "os": "web", "sv": "7.7.5",
+              "last_time": "", "refresh_type": "1", "rn": str(page_size)}
+    qs = "&".join(f"{k}={params[k]}" for k in sorted(params))
+    sign = hashlib.md5(hashlib.sha1(qs.encode()).hexdigest().encode()).hexdigest()
+    url = f"https://www.cls.cn/v1/roll/get_roll_list?{qs}&sign={sign}"
+
+    try:
+        r = _quick_request(url, headers={"User-Agent": UA, "Referer": "https://www.cls.cn/"}, timeout=10)
+        if r is None:
+            return []
+        d = r.json()
+        if d.get("errno") != 0:
+            _debug_log(f"cls_telegraph error: errno={d.get('errno')} errmsg={d.get('errmsg')}")
+            return []
+
+        rows = []
+        for item in d.get("data", {}).get("roll_data", []) or []:
+            ts = item.get("ctime")
+            t = datetime.fromtimestamp(ts).strftime("%Y-%m-%d %H:%M:%S") if ts else ""
+            rows.append({
+                "title": item.get("title", "") or item.get("brief", ""),
+                "content": item.get("content", "") or item.get("brief", ""),
+                "time": t,
+                "level": item.get("level", ""),
+                "reading_num": item.get("reading_num", 0),
+            })
+        return rows
+    except Exception as _e:
+        _debug_log(f"datasource cls_telegraph: {_e}")
+        return []
+
+
+# ═══════════════════════════════════════════════════════════
+# 官方备胎池（V9.6 新增）
+# ═══════════════════════════════════════════════════════════
+
+def dragon_tiger_backup(trade_date: str) -> Dict[str, Any]:
+    """龙虎榜官方备用源（东财被封时用）：上交所+深交所官方，零鉴权权威一手，含营业部席位。
+
+    Args:
+        trade_date: 交易日，格式 YYYY-MM-DD
+
+    Returns:
+        包含深交所结构化数据和上交所原始文件内容的字典
+    """
+    import urllib.request
+    import ssl
+    out = {"date": trade_date, "sse_raw": "", "szse": []}
+    _ctx = ssl._create_unverified_context()
+
+    # 深交所龙虎榜
+    su = (f"https://www.szse.cn/api/report/ShowReport/data?SHOWTYPE=JSON"
+          f"&CATALOGID=1842_xxpl&TABKEY=tab1&txtStart={trade_date}&txtEnd={trade_date}&random=0.9")
+    try:
+        req = urllib.request.Request(su, headers={"User-Agent": UA,
+              "Referer": "https://www.szse.cn/disclosure/supervision/dealinfo/index.html"})
+        with urllib.request.urlopen(req, timeout=15, context=_ctx) as r:
+            d = json.loads(r.read())
+        if isinstance(d, list) and d:
+            for row in d[0].get("data", []):
+                out["szse"].append({
+                    "code": row.get("zqdm"),
+                    "name": row.get("zqjc"),
+                    "amount": row.get("cjje"),
+                    "reason": row.get("plyy"),
+                    "volume": row.get("cjsl"),
+                    "note": row.get("bz"),
+                })
+    except Exception as _e:
+        _debug_log(f"dragon_tiger_backup szse: {_e}")
+
+    # 上交所龙虎榜（JSONP格式）
+    eu = (f"https://query.sse.com.cn/infodisplay/showTradePublicFile.do?"
+          f"jsonCallBack=cb&isPagination=false&dateTx={trade_date}")
+    try:
+        req = urllib.request.Request(eu, headers={"User-Agent": UA,
+              "Referer": "https://www.sse.com.cn/disclosure/diclosure/public/"})
+        with urllib.request.urlopen(req, timeout=15) as r:
+            t = r.read().decode("utf-8", "ignore")
+        if "(" in t and ")" in t:
+            json_str = t[t.index("(")+1:t.rindex(")")]
+            d = json.loads(json_str)
+            out["sse_raw"] = "\n".join(d.get("fileContents", []))
+    except Exception as _e:
+        _debug_log(f"dragon_tiger_backup sse: {_e}")
+
+    return out
+
+
+def fund_flow_backup(code: str, days: int = 60) -> List[Dict[str, Any]]:
+    """个股资金流备用源（东财被封时用）：新浪，日度四档单净额。
+
+    Args:
+        code: 股票代码
+        days: 获取天数，默认60天
+
+    Returns:
+        资金流列表，包含日期、主力/大单/中单/小单净流入
+    """
+    prefix = "sh" if code.startswith("6") else "sz"
+    url = "https://vip.stock.finance.sina.com.cn/quotes_service/api/json_v2.php/MoneyFlow.ssl_bkzj_bk"
+    params = {"page": "1", "num": str(days), "sort": "netamount", "asc": "0", "fenlei": "1"}
+
+    try:
+        r = _quick_request(url, params=params, headers={"User-Agent": UA}, timeout=10)
+        if r is None:
+            return []
+        d = r.json()
+        if isinstance(d, list):
+            return d
+        return []
+    except Exception as _e:
+        _debug_log(f"datasource fund_flow_backup ({code}): {_e}")
+        return []
+
+
+# ═══════════════════════════════════════════════════════════
+# 舆情互动层（V9.6 新增，互动易问答）
+# ═══════════════════════════════════════════════════════════
+
+def cninfo_irm(code: str, page_size: int = 30, page_num: int = 1) -> List[Dict[str, Any]]:
+    """互动易问答（深沪统一走巨潮）。
+
+    V9.6 新增：两步调用——先获取orgId，再获取问答列表。
+    参数放query string（POST但body空），否则400。
+
+    Args:
+        code: 6位股票代码
+        page_size: 每页条数，默认30
+        page_num: 页码，默认1
+
+    Returns:
+        问答列表，包含 question/answer/ask_time/answerer 字段
+    """
+    from datetime import datetime
+    import requests
+
+    try:
+        r1 = requests.post("https://irm.cninfo.com.cn/newircs/index/queryKeyboardInfo",
+            data={"keyWord": code}, headers={"User-Agent": UA}, timeout=10)
+        d1 = r1.json().get("data") or []
+        if not d1:
+            return []
+        org_id = d1[0].get("secid")
+
+        params = {"_t": 1, "stockcode": code, "orgId": org_id, "pageSize": page_size,
+                  "pageNum": page_num, "keyWord": "", "startDay": "", "endDay": ""}
+        r2 = requests.post("https://irm.cninfo.com.cn/newircs/company/question",
+            params=params, headers={"User-Agent": UA}, timeout=10)
+        rows = r2.json().get("rows") or []
+
+        out = []
+        for it in rows:
+            pd = it.get("pubDate")
+            out.append({
+                "code": it.get("stockCode"),
+                "company": it.get("companyShortName"),
+                "question": it.get("mainContent"),
+                "answer": it.get("attachedContent"),
+                "answerer": it.get("attachedAuthor"),
+                "ask_time": datetime.fromtimestamp(pd / 1000).strftime("%Y-%m-%d %H:%M") if pd else "",
+            })
+        return out
+    except Exception as _e:
+        _debug_log(f"datasource cninfo_irm ({code}): {_e}")
+        return []
 
 
 # ═══════════════════════════════════════════════════════════

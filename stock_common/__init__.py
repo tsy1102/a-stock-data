@@ -84,6 +84,7 @@ __all__ = [
     "get_eastmoney_stock_news", "get_eastmoney_global_news",
     "get_sina_financial_report", "get_sina_financial_report_async",
     "get_sina_balance_sheet", "get_sina_balance_sheet_async",
+    "get_eastmoney_cash_flow", "get_eastmoney_cash_flow_async",
     "get_hsgt_macro_flow", "get_hsgt_macro_flow_async",
     "get_lockup_expiry", "get_lockup_expiry_async",
     "get_gross_margin_and_roe", "get_gross_margin_and_roe_async",
@@ -94,6 +95,10 @@ __all__ = [
     "get_recent_dragon_tiger", "get_recent_dragon_tiger_async",
     "eastmoney_stock_info_push2",
     "ths_hot_list", "em_hot_rank", "em_hot_concept",
+    "get_limit_up_pool", "get_limit_broken_pool", "get_limit_down_pool", "get_limit_pool_summary",
+    "ths_limit_up_pool",
+    "get_eastmoney_minute_fund_flow", "get_fund_flow_weighted",
+    "cls_telegraph", "dragon_tiger_backup", "fund_flow_backup", "cninfo_irm",
 ]
 
 # ═══════════════════════════════════════════════════════════════
@@ -196,6 +201,8 @@ from stock_common.sc_datasource import (
     # 新浪财报
     get_sina_financial_report, get_sina_financial_report_async,
     get_sina_balance_sheet, get_sina_balance_sheet_async,
+    # 东财现金流量表（V9.6新增）
+    get_eastmoney_cash_flow, get_eastmoney_cash_flow_async,
     # 北向资金大盘
     get_hsgt_macro_flow, get_hsgt_macro_flow_async,
     # 限售解禁
@@ -213,6 +220,13 @@ from stock_common.sc_datasource import (
     # 舆情互动层（V8.9）
     eastmoney_stock_info_push2,
     ths_hot_list, em_hot_rank, em_hot_concept,
+    # 打板层（V9.6）
+    get_limit_up_pool, get_limit_broken_pool, get_limit_down_pool, get_limit_pool_summary,
+    ths_limit_up_pool,
+    # 东财分钟级资金流（V9.6）
+    get_eastmoney_minute_fund_flow, get_fund_flow_weighted,
+    # 财联社快讯/官方备胎池/舆情互动层（V9.6）
+    cls_telegraph, dragon_tiger_backup, fund_flow_backup, cninfo_irm,
 )
 
 

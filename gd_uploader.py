@@ -530,20 +530,7 @@ def init_gd(base_dir: str) -> Tuple[Optional[Any], bool, Optional[str], bool]:
     root_id = retry_get_folder_interactive(drive, "a-stock-data", None, max_auto_retry=0)
     if not root_id:
         return drive, proxy_set, None, True
-    
-    # 验证：确保 a-stock-data 确实在根目录下
-    try:
-        q = f"name='a-stock-data' and mimeType='application/vnd.google-apps.folder' and trashed=false and 'root' in parents"
-        resp = drive.files().list(q=q, spaces="drive", fields="files(id)", pageSize=1).execute()
-        items = resp.get("files", [])
-        if not items or items[0]["id"] != root_id:
-            print("  ⚠️ a-stock-data 不在根目录下，重新获取", flush=True)
-            root_id = retry_get_folder_interactive(drive, "a-stock-data", None, max_auto_retry=0)
-            if not root_id:
-                return drive, proxy_set, None, True
-    except Exception as e:
-        print(f"  ⚠️ 验证 a-stock-data 位置失败：{e}", flush=True)
-    
+
     return drive, proxy_set, root_id, False
 
 

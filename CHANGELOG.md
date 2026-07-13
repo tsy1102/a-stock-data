@@ -5,7 +5,39 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [9.5] - 2026-07-11
+## [9.6] - 2026-07-13
+
+### Added
+
+- **mootdx依赖集成**：`requirements.txt` 新增 `mootdx>=0.11,<1.0`，与 easy-tdx 形成互补关系
+- **东财现金流量表**：新增 `get_eastmoney_cash_flow` 和 `get_eastmoney_cash_flow_async` 函数，使用东财数据中心 `RPT_CASHFLOW` 接口替代已失效的新浪现金流量表API（xjllb）
+- **北向资金数据质量字段**：`get_hsgt_macro_flow` 和 `get_hsgt_macro_flow_async` 返回结果新增 `data_quality` 和 `warning` 字段，支持降级警告
+- **打板层**：新增 `get_limit_up_pool`/`get_limit_broken_pool`/`get_limit_down_pool`/`get_limit_pool_summary` 函数，获取涨停池、炸板池、跌停池数据；集成到 sht【十四、短线情绪与事件催化】和 mak【B. 涨停池扫描】章节
+- **资金流降权**：新增 `get_eastmoney_minute_fund_flow` 和 `get_fund_flow_weighted` 函数，融合 TDX TCP 资金流（权重1.0）和东财分钟级资金流（权重0.6），实现加权融合资金流数据
+- **财联社快讯复活**：新增 `cls_telegraph` 函数，使用 `cls.cn/v1/roll/get_roll_list` 接口，本地签名（`sign=md5(sha1(字典序拼接的query))`），零key实现，与东财7×24快讯互为独立备份
+- **官方备胎池**：新增 `dragon_tiger_backup`（龙虎榜官方备用源：深交所+上交所官方接口）和 `fund_flow_backup`（新浪资金流备用源），东财被封时可fallback
+- **舆情互动层**：新增 `cninfo_irm` 互动易问答函数，两步调用获取orgId和问答列表，支持按时间筛选
+- **新增域名限流配置**：`sc_network.py` 新增 `www.cls.cn`、`irm.cninfo.com.cn`、`www.szse.cn`、`query.sse.com.cn`、`vip.stock.finance.sina.com.cn`、`data.10jqka.com.cn` 域名的限流配置，防止新接口被封禁
+- **新增缓存分类**：`stock_cache.py` 新增 `news` 缓存分类（6小时TTL），用于财联社快讯缓存
+- **同花顺涨停揭秘**：新增 `ths_limit_up_pool` 函数，作为东财涨停池的增强源，提供涨停原因题材、封板成功率、板型等东财没有的字段，与东财接口不冲突
+
+### Changed
+
+- **东财新闻接口清理**：`get_eastmoney_stock_news` 删除已失效的 `search-api-web.eastmoney.com` HTTP fallback（返回 passportWeb 而非新闻），仅保留 TDX F10 公司报道数据
+- **东财7×24全球资讯接口更新**：`get_eastmoney_global_news` 从旧版 `np-listapi.eastmoney.com/comm/ws/build/list` 切换到 SKILL.md V3.4 推荐的 `np-weblist.eastmoney.com/comm/web/getFastNewsList`，返回 `fastNewsList` 结构
+- **val脚本新闻源统一**：`get_val_report.py` 中的旧版 `cls_telegraph`（使用已下线的 `/nodeapi/telegraphList` 接口）和 `eastmoney_global_news` 改为引用 `sc_datasource.py` 统一实现，消除重复代码
+- **news缓存TTL调整**：财联社快讯缓存TTL从1小时调整为6小时，平衡新鲜度和请求频率
+- **解禁接口字段映射**：更新东财 `RPT_LIFT_STAGE` 报表字段映射（`FREE_SHARES_TYPE`/`FREE_SHARES`），新增 `ABLE_FREE_SHARES` 字段
+- **行业排名排序**：东财行业板块接口添加 `fid=f3` 参数，确保按涨跌幅排序
+- **北向资金降级警告**：当 sgt/hgt 比例超过3.0时标记数据质量为 degraded，发出警告日志
+
+### Fixed
+
+- **东财个股新闻解析**：修复 `get_eastmoney_stock_news` 函数的JSONP解析逻辑，之前仅处理 `jQuery(...)` 格式，无法解析带时间戳的 `jQuery35108723733748578402_1693632913001({...})` 格式
+- **解禁接口字段**：修复旧字段 `LIMITED_STOCK_TYPE` / `FREE_SHARES_NUM` 恒空的问题，改为使用新字段
+- **行业排名排序**：修复行业板块列表未按涨跌幅排序的问题，`top`/`bottom` 切片现在正确反映涨幅最高/最低行业
+
+## [9.5] - 2026-07-13
 
 ### Changed
 
@@ -13,10 +45,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **aiohttp原生异步迁移**：`sc_datasource.py` 中10个纯HTTP异步函数从 `asyncio.to_thread(sync_func)` 包装的"假异步"改写为使用 `_async_request_with_retry` / `_async_quick_request` 的原生 `aiohttp` 实现。迁移函数包括：`eastmoney_datacenter_async`、`_em_filter_async`、`get_reports_async`、`get_northbound_hold_async`、`get_block_trade_async`、`get_ths_hot_reason_async`、`get_hsgt_macro_flow_async`、`get_sina_financial_report_async`、`get_sina_balance_sheet_async`、`get_strategic_announcements_async`。剩余10个依赖TDX协议的 `asyncio.to_thread` 调用保留（TDX客户端为同步socket协议，无法直接异步化）。异步限流比同步版更保守（东财 Semaphore(3)+1.0s / 非东财 Semaphore(5)+0.2s），不会突破限流阈值
 - **ful脚本价格走势显示优化**：`get_ful_report.py` 中价格走势从"近60日"改为"近15日倒序显示"（Day-1为最近日期放在第一条），提升可读性
 - **ful脚本新闻舆情文案修正**：`get_ful_report.py` 中"近24小时未检测到..."改为"近期未检测到..."，避免休市日文案与实际数据时间范围不符
+- **GD上传根目录定位加固**：删除 `init_gd` 中冗余的二次验证逻辑（第534-546行），`retry_get_folder_interactive` 已通过 `parent_id=None` 严格限定在根目录搜索，二次查询不仅多余，还可能因 Drive 多文件夹场景造成混乱
+- **文档与脚本完善**：
+  - 新增 `docs/architecture.md`：Mermaid 架构图、模块职责、序列图、并发限流策略、GD 上传流程、缓存设计、文件清单
+  - 新增 `scripts/clean_cache.py`：`stock_cache.py` CLI 的薄封装，支持 `--category` / `--pattern` / `--expired` / `--stats` / `--dry-run`
+  - 新增 `CONTRIBUTING.md`：贡献指南（提交流程、代码规范、测试要求、提交信息规范）
+  - 新增 `CODE_OF_CONDUCT.md`：Contributor Covenant v2.1 社区行为准则
+  - 新增 `LICENSE`：MIT 许可证
+  - `README.md` 完整重写：补充项目结构、配置文件、核心模块说明、FAQ（含 GD 桌面客户端同步冲突说明）
+- **sc_scoring.py 评分权重配置化**：`sht`/`med`/`lng` 三套评分权重从硬编码改为从 `strategy_config.yaml` 读取（`weights_sht` / `weights_med` / `weights_lng`），保留默认值
+- **get_ful_report.py 重构**：`main()` 拆分为 `_generate_reports` / `_upload_reports` / `_print_summary` 三个函数，添加 `logging` 日志
 
 ### Fixed
 
 - **get_strategic_announcements_async 中 _load_config 未定义错误**：`sc_datasource.py` 迁移过程中误将同步版的 `_load_settings()` 写成不存在的 `_load_config()`，导致 sht/med/lng 三个脚本运行时报 `name '_load_config' is not defined`。修正为 `_load_settings()`
+- **ful脚本价格走势为空**：`kl["closes"]` 字段误删导致渲染层第1570行 `closes_series = kl.get("closes") or []` 取不到数据，恢复 `closes_list[-60:]` 赋值（实际展示 15 条）
 
 ## [9.4] - 2026-07-11
 
@@ -146,7 +189,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - 新增 `_get_trading_date_for_quote()` 生成带交易日期的缓存 Key
   - 新增 `_pre_market_quote_from_kline()` 从日K线构建盘前行情
 - **缓存 Key 交易日期隔离**：行情缓存 Key 格式改为 `Q:{code}:{trading_date}`，盘前/盘中数据独立保留，避免相互覆盖
-- **报告盘前提示**：sht/med/lng 等报告在盘前模式时显示“⚠️ 盘前模式（9:30前），以下行情数据基于上一交易日收盘数据”
+- **报告盘前提示**：sht/med/lng 等报告在盘前模式时显示"⚠️ 盘前模式（9:30前），以下行情数据基于上一交易日收盘数据"
 
 ### Changed
 

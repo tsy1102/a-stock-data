@@ -2,7 +2,7 @@
 
 一套自动化生成A股个股分析报告的Python工具集，支持短线、中线、长线、完整、估值、市场热点等多种报告类型，数据来源于新浪财经、东方财富、同花顺等主流平台。
 
-> **V9.5**：静默异常日志化 + aiohttp原生异步迁移 + ful脚本显示修复
+> **V9.6**：接口修复（东财新闻JSONP、解禁字段、行业排名排序、北向资金降级警告）+ 新增东财现金流量表 + mootdx依赖集成 + 打板层 + 资金流降权 + 财联社快讯复活 + 官方备胎池 + 舆情互动层
 
 ---
 
@@ -34,6 +34,21 @@
 - **TDX K线假数据防护**（V9.3.2）：健康检查增加 K线接口校验，检测到返回假数据（ret_count=800但body为空）的服务器时自动标记为坏主机并换IP重连，解决指数涨幅全N/A和异动检测全为0的问题
 - **SQLite WAL死锁修复**（V9.3.2）：缓存数据库 journal_mode 从 WAL 改为 DELETE，避免多进程并发写时产生 `-wal`/`-shm` 文件锁导致 `--all` 命令卡死
 - **代理环境兼容**（V9.3.2）：HTTP 请求显式禁用系统代理（`proxies=None`），增加 ProxyError 和兜底异常捕获，解决代理环境下东财接口永久阻塞
+- **GD上传根目录文件夹定位加固**（V9.5）：删除 `init_gd` 中冗余的二次验证逻辑，`retry_get_folder_interactive` 严格限定父文件夹搜索，避免同名文件夹重复创建
+- **打板层**（V9.6）：新增 `get_limit_up_pool`/`get_limit_broken_pool`/`get_limit_down_pool` 函数，获取涨停池、炸板池、跌停池数据；集成到 sht 和 mak 报告
+- **资金流降权**（V9.6）：融合 TDX TCP 资金流（权重1.0）和东财分钟级资金流（权重0.6），实现加权融合资金流数据
+- **财联社快讯复活**（V9.6）：使用 `cls.cn/v1/roll/get_roll_list` 接口，本地签名（`sign=md5(sha1(字典序拼接的query))`），零key实现，与东财7×24快讯互为独立备份
+- **官方备胎池**（V9.6）：新增龙虎榜官方备用源（深交所+上交所官方接口）、新浪资金流备用源，东财被封时自动fallback
+- **舆情互动层**（V9.6）：新增 `cninfo_irm` 互动易问答函数，两步调用获取orgId和问答列表，支持按时间筛选
+- **东财新闻JSONP解析修复**（V9.6）：东财search-api-web HTTP接口已失效（返回passportWeb而非新闻），删除HTTP fallback代码，仅保留 TDX F10 公司报道数据
+- **东财7×24全球资讯接口更新**（V9.6）：从旧版 `np-listapi.eastmoney.com/comm/ws/build/list` 切换到 SKILL.md V3.4 推荐的 `np-weblist.eastmoney.com/comm/web/getFastNewsList`，返回 `fastNewsList` 结构
+- **同花顺涨停揭秘**（V9.6）：新增 `ths_limit_up_pool` 函数，作为东财涨停池的增强源，提供涨停原因题材、封板成功率、板型等东财没有的字段，与东财接口不冲突
+- **解禁接口字段修复**（V9.6）：更新东财 `RPT_LIFT_STAGE` 报表字段映射（`FREE_SHARES_TYPE`/`FREE_SHARES`），新增 `ABLE_FREE_SHARES` 字段，提高解禁数据准确性
+- **行业排名排序修复**（V9.6）：东财行业板块接口添加 `fid=f3` 参数，确保按涨跌幅排序，`top`/`bottom` 切片正确反映涨幅最高/最低行业
+- **北向资金降级警告**（V9.6）：当 sgt/hgt 比例超过3.0时标记数据质量为 degraded，发出警告日志，帮助用户识别异常数据
+- **东财现金流量表**（V9.6）：新浪现金流量表API（xjllb）已失效，新增东财数据中心 `RPT_CASHFLOW` 接口替代，支持经营/投资/筹资活动现金流和现金等价物净增加额
+- **mootdx依赖集成**（V9.6）：新增 `mootdx>=0.11` 依赖，与 easy-tdx 形成互补关系（easy-tdx负责资金流/板块/MacClient，mootdx负责复权数据/F10/分笔成交）
+- **easy-tdx与mootdx互补方案**（V9.6）：两库为互补关系，非替代关系；easy-tdx擅长资金流、板块（MacClient）、实时行情；mootdx擅长复权数据（xdxr）、F10、分笔成交、连接更稳定
 
 ---
 
@@ -133,9 +148,18 @@ a-stock-data/
 ├── get_ful_report.py         # 完整报告生成（综合评分）
 ├── get_val_report.py         # 估值报告生成（策略选股）
 ├── get_mak_report.py         # 市场热点报告生成（异动扫描）
+├── scripts/                  # 辅助脚本
+│   ├── update_calendar.py    # 交易日历数据更新（chinese-calendar 库同步）
+│   └── clean_cache.py        # 缓存清理快捷脚本（封装 stock_cache.py CLI）
+├── docs/                     # 技术文档
+│   └── architecture.md       # 项目架构与数据流图（Mermaid）
 ├── pyproject.toml            # pytest / mypy / black 等工具配置中心
 ├── requirements.txt          # 运行时依赖列表
+├── requirements-dev.txt      # 开发依赖列表（pytest / mypy / black）
 ├── CHANGELOG.md              # 版本变更记录
+├── CONTRIBUTING.md           # 贡献指南
+├── CODE_OF_CONDUCT.md        # 社区行为准则
+├── LICENSE                   # MIT 许可证
 ├── reports/                  # 报告输出目录（运行时自动创建）
 ├── snapshots/                # 评分快照（历史对比/背离检测）
 └── tests/                    # 诊断脚本和 pytest 测试用例
@@ -184,8 +208,12 @@ pytest>=7.0
 如需启用云端上传功能：
 
 1. 在 Google Cloud Console 创建项目并启用 Drive API
-2. 下载 OAuth 2.0 凭证文件，保存为 `credentials.json`
-3. 首次运行时会弹出浏览器进行授权
+2. 下载 OAuth 2.0 凭证文件，保存为 `client_secrets.json`（项目根目录）
+3. 首次运行时会弹出浏览器进行授权，授权后自动生成 `credentials.json`
+
+> **注意**：
+> - OAuth scope 为 `drive.file`，脚本只能看到由该脚本自身创建或打开过的文件/文件夹
+> - 若 Google Drive 根目录无故出现个股文件夹，通常是桌面客户端同步冲突导致（详见 FAQ），脚本本身不会移动或删除已有文件夹
 
 ---
 
@@ -288,12 +316,14 @@ reports/
 
 完整版本历史详见 [CHANGELOG.md](CHANGELOG.md)
 
-### v9.5 (2026-07-11)
+### v9.5 (2026-07-13)
 
 - 🔧 **静默异常日志化**（28处）：`tdx_client.py`（23处）、`gd_uploader.py`（4处）、`get_med_report.py`（1处）中 `except Exception:` 静默吞异常全部添加 `_debug_log` 日志，提升调试可观测性
 - ⚡ **aiohttp原生异步迁移**：`sc_datasource.py` 中10个HTTP异步函数从 `asyncio.to_thread` "假异步"包装改为原生 `aiohttp` 实现（`_async_request_with_retry` / `_async_quick_request`），剩余10个TDX依赖函数保留
 - 🐛 **修复 _load_config 未定义错误**：`sc_datasource.py` 异步迁移过程中误写的不存在函数名，导致 sht/med/lng 脚本运行崩溃
 - 🐛 **ful脚本显示修复**：价格走势改为近15日倒序显示（Day-1为最近日期）；新闻舆情文案从"近24小时"改为"近期"
+- 🔧 **GD上传加固**：删除 `init_gd` 中冗余的二次验证逻辑，避免重复查询和潜在的根目录误匹配
+- 📄 **文档与脚本完善**：补充 `docs/architecture.md` 架构文档、`scripts/clean_cache.py` 缓存清理脚本、`CONTRIBUTING.md` / `CODE_OF_CONDUCT.md` / `LICENSE` 等开源规范文件
 
 ### v9.4 (2026-07-11)
 
@@ -356,7 +386,7 @@ reports/
 
 - 📈 **盘前行情智能切换**（`tdx_client.py`）：9:30前自动使用上一交易日日K线数据，避免实时接口返回 0 导致涨跌幅计算为 -100%
 - 🔑 **缓存 Key 交易日期隔离**：行情缓存 Key 格式改为 `Q:{code}:{trading_date}`，盘前/盘中数据独立保留，避免相互覆盖
-- ⚠️ **报告盘前提示**：sht/med/lng 等报告在盘前模式时显示“⚠️ 盘前模式（9:30前），以下行情数据基于上一交易日收盘数据”
+- ⚠️ **报告盘前提示**：sht/med/lng 等报告在盘前模式时显示"⚠️ 盘前模式（9:30前），以下行情数据基于上一交易日收盘数据"
 - 🧹 **版本号统一清理**：删除所有报告脚本和终端输出中的硬编码版本号（如 V8.9），避免版本推进时频繁修改
 - 🐛 **修复 sht 脚本 688305 list index out of range**：增加多处列表索引边界检查
 - 🐛 **修复 med 脚本历史财务业绩显示旧数据**：限制财务数据显示为近 5 季度
@@ -424,19 +454,19 @@ reports/
 ### v8.7.0 (2026-06-25)
 
 - 🗑️ **删除社交热榜聚合**：移除 `social_sentiment.py`（6 平台桩实现返回空数据）及 `stock_common.py` 中的便捷封装
-- 🧹 **死代码清理**：同步 `generate_report()` 替换为薄包装（`asyncio.run()` 调用异步版），删除 `get_lng_report.py`（~545行）、`get_med_report.py`（~828行）、`get_sht_report.py`（~1175行）中的死代码辅助函数
+- 🧹 **死代码清理**：同步 `generate_report()` 替换为薄包装（`asyncio.run()` 调用异步版），删除 `get_lng_report.py`、`get_med_report.py`、`get_sht_report.py` 中的死代码辅助函数
 - ✅ **新增历史分析模块**：`analyze_history.py` 实现 `save_snapshot()` 智能合并快照和 `analyze_history()` 跨日期趋势背离检测（单日突变 |Δ|≥15分 / 连续≥3天同向且总变化≥15分）
 - 🐛 **修复趋势检测逻辑**：修正连续趋势判定条件（`run_len + 1 >= TREND_MIN_DAYS`），删除 `TREND_STEP_THRESHOLD` 避免小步累加噪音
 
 ### v8.5.0 (2026-06-22)
 
 - ✅ **新增龙虎榜席位增强**：22位游资席位数据库（legend/new_gen/regional/new_2025分级），席位风格标签、溢价判断、席位质量评分
-- ✅ **新增杀猪盘8信号检测**：`trap_detector.py`实现8维检测框架（低质量账号/话术模板/付费引流/基本面脱节/K线异常/老师营销/跨平台联动/虚假研报） *(V9.4已删除：API未接入上层报告)*
+- ✅ **新增杀猪盘8信号检测**：`trap_detector.py`实现8维检测框架 *(V9.4已删除：API未接入上层报告)*
 - ✅ **新增数据质量HARD-GATE**：13条数据质量检查清单，critical级别错误自动阻断报告生成
 - ✅ **新增多档分析深度**：支持`--depth lite/medium/deep`三档（快速30秒/标准5分钟/深度15分钟）
 - ✅ **新增多评委评审团**：价值派/成长派/游资派/综合派四套评分体系，支持分歧度检测
-- ✅ **新增社交热榜聚合**：`social_sentiment.py`支持微博/知乎/抖音/头条/百度/B站6平台情绪聚合（需API认证）
-- ✅ **新增机构估值方法库**：`valuation_methods.py`实现DCF/DDM/PEG/LBO/PB-ROE/行业PE比较等多种估值方法 *(V9.4已删除：API未接入上层报告)*
+- ✅ **新增社交热榜聚合**：`social_sentiment.py`支持6平台情绪聚合（需API认证） *(V9.4已删除)*
+- ✅ **新增机构估值方法库**：`valuation_methods.py`实现DCF/DDM/PEG等多种估值方法 *(V9.4已删除：API未接入上层报告)*
 - ⏳ **AI产业链卡位分析（规划中）**：`ai_chain_analyzer.py` 模块尚未实现，功能暂不可用 *(V9.4已删除代理函数)*
 
 ### v8.4.0 (2026-06-22)
@@ -494,7 +524,7 @@ A: 使用 `is_trading_day()` 函数，系统会自动识别中国节假日和调
 
 ### Q: Google Drive 上传失败？
 
-A: 检查 `credentials.json` 文件是否存在，首次使用需要浏览器授权。
+A: 检查 `client_secrets.json` 文件是否存在，首次使用需要浏览器授权。授权成功后自动生成 `credentials.json`。
 
 ### Q: 股票代码格式不正确？
 
@@ -502,6 +532,29 @@ A: 系统会自动清洗代码格式，支持多种输入方式：
 - `600519`
 - `600519茅台`
 - `600519 茅台`
+
+### Q: GD根目录为什么会出现个股文件夹？
+
+A: 这是 Google Drive **桌面客户端的同步冲突**导致的，不是脚本本身的 bug。
+
+**原因**：
+- 当 `a-stock-data` 文件夹被共享后，协作者的操作会触发 Drive 的 changes feed
+- 桌面客户端在解决云端与本地缓存的冲突时，可能将**长时间未被脚本操作的旧文件夹**从 `a-stock-data` 移动到根目录
+- 脚本代码只会查找/创建文件夹、上传/覆盖文件，**绝不会移动或删除已有文件夹**
+
+**解决办法**：
+1. 在 Drive **网页版**中把这些文件夹手动移回 `a-stock-data`（不要用桌面客户端操作）
+2. **退出 Google Drive 桌面客户端**后再运行脚本
+3. 脚本运行完成后再启动桌面客户端
+
+**预防**：定期运行脚本更新所有关注的股票，保持本地缓存与云端同步，可减少冲突概率。
+
+### Q: 缓存怎么清理？
+
+A: 两种方式：
+- 快捷脚本：`python scripts/clean_cache.py`（清空全部）/ `python scripts/clean_cache.py --category dragon_tiger`（按分类）
+- 原生 CLI：`python stock_cache.py clear-all` / `python stock_cache.py clear --category dragon_tiger`
+- 临时禁用：`STOCK_NOCACHE=1 python main.py --sht 600519`
 
 ---
 
@@ -518,13 +571,13 @@ cd a-stock-data
 pip install -r requirements.txt
 
 # 安装开发工具（可选，用于静态类型检查与代码格式化）
-pip install mypy black
+pip install -r requirements-dev.txt
 
 # 运行测试
 pytest tests/
 
 # 类型检查
-python -m mypy stock_common/sc_datasource.py get_val_report.py tdx_client.py analyze_history.py gd_uploader.py --ignore-missing-imports
+python -m mypy stock_common/sc_datasource.py get_val_report.py tdx_client.py stock_common/analyze_history.py gd_uploader.py --ignore-missing-imports
 
 # 临时禁用缓存调试
 STOCK_NOCACHE=1 python main.py --sht 600519
@@ -542,7 +595,8 @@ STOCK_NOCACHE=1 python main.py --sht 600519
 
 - **报告数据与最新行情不一致？**：可能是缓存命中了过期数据，执行 `STOCK_NOCACHE=1 python main.py ...` 临时禁用缓存再测一次；或调用 `python stock_cache.py clear --category dragon_tiger` 清理对应分类。
 - **类型检查 mypy 报错？**：`third-party library stub missing` 类警告可忽略（已在 `pyproject.toml` 配置 `ignore_missing_imports=true`）。如果是自定义函数参数/返回值类型问题，请直接提交 issue。
-- **Google Drive 上传失败？**：检查根目录是否有 `credentials.json`（首次使用需浏览器授权），查看 `gd_uploader.py` 的 `upload_folder_name` 是否与目标文件夹名一致。
+- **Google Drive 上传失败？**：检查根目录是否有 `client_secrets.json`（首次使用需浏览器授权），确认授权账号有 `a-stock_data` 文件夹的访问权限。
+- **架构不熟悉？**：详见 [`docs/architecture.md`](docs/architecture.md)，包含 Mermaid 架构图、序列图、GD 上传流程图、缓存设计等。
 
 ### 提交代码
 

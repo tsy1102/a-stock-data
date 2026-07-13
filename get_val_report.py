@@ -51,7 +51,9 @@ from stock_common import (_safe_float, _request_with_retry, _quick_request, UA,
                            baidu_kline_full as common_baidu_kline_full,
                            get_dividend_history as common_get_dividend_history,
                            is_trading_day, get_market_status,
-                           _debug_log)
+                           _debug_log,
+                           cls_telegraph as _cls_telegraph,
+                           get_eastmoney_global_news as _eastmoney_global_news)
 import asyncio
 
 _SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -204,52 +206,12 @@ def industry_comparison(top_n=20):
 # ─── 新闻源 ───
 
 def cls_telegraph(page_size=50):
-    """财联社电报（全市场实时快讯）"""
-    url = "https://www.cls.cn/nodeapi/telegraphList"
-    params = {"rn": str(page_size), "page": "1"}
-    headers = {"User-Agent": UA, "Referer": "https://www.cls.cn/"}
-    try:
-        r = _quick_request(url, params=params, headers=headers, timeout=10)
-        if r is None: return []
-        d = r.json()
-        rows = []
-        for item in d.get("data", {}).get("roll_data", []):
-            rows.append({
-                "title": item.get("title", "") or item.get("brief", ""),
-                "content": item.get("content", "") or item.get("brief", ""),
-                "time": item.get("ctime", ""),
-            })
-        return rows
-    except Exception as _e:
-        _debug_log(f"val eastmoney_global_news: {_e}")
-        return []
+    """财联社电报（全市场实时快讯）— 引用 sc_datasource 统一实现"""
+    return _cls_telegraph(page_size)
 
 def eastmoney_global_news(page_size=50):
-    """东财全球财经资讯（7x24 滚动）"""
-    import uuid
-    url = "https://np-weblist.eastmoney.com/comm/web/getFastNewsList"
-    params = {
-        "client": "web", "biz": "web_724",
-        "fastColumn": "102", "sortEnd": "",
-        "pageSize": str(page_size),
-        "req_trace": str(uuid.uuid4()),
-    }
-    headers = {"User-Agent": UA, "Referer": "https://kuaixun.eastmoney.com/"}
-    try:
-        r = _request_with_retry(url, params=params, headers=headers, timeout=10)
-        if r is None: return []
-        d = r.json()
-        rows = []
-        for item in d.get("data", {}).get("fastNewsList", []):
-            rows.append({
-                "title": item.get("title", ""),
-                "summary": item.get("summary", "")[:200],
-                "time": item.get("showTime", ""),
-            })
-        return rows
-    except Exception as _e:
-        _debug_log(f"val sina_financial: {_e}")
-        return []
+    """东财全球财经资讯（7x24 滚动）— 引用 sc_datasource 统一实现"""
+    return _eastmoney_global_news(page_size)
 
 
 # ─── 新浪财报（多期） ───

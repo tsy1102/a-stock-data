@@ -1071,6 +1071,36 @@ async def generate_report_async(session, code, output_path, ind_comp=None, idx_q
 
     else: L("  近7日暂无触及关键词的重大公告")
 
+    # ── 打板分析 ──
+    L(f"\n  ➤ 打板与涨停分析:")
+    try:
+        from stock_common import get_limit_pool_summary
+        pool = get_limit_pool_summary()
+        zt_count = pool.get("limit_up_count", 0)
+        zb_count = pool.get("limit_broken_count", 0)
+        dt_count = pool.get("limit_down_count", 0)
+        success_rate = pool.get("success_rate", 0)
+        L(f"    今日涨停 {zt_count} 只 | 炸板 {zb_count} 只 | 跌停 {dt_count} 只 | 封板率 {success_rate:.0f}%")
+
+        # 检查当前股票是否在涨停池/炸板池中
+        for item in pool.get("limit_up_list", []):
+            if item.get("code") == code:
+                L(f"    ✅ 当前股票在涨停池中！连板数:{item.get('limit_count',0)} 板块:{item.get('sector','')} 封板资金:{item.get('limit_fund',0)/1e8:.2f}亿")
+                break
+        for item in pool.get("limit_broken_list", []):
+            if item.get("code") == code:
+                L(f"    ⚠️ 当前股票炸板！炸板次数:{item.get('broken_count',0)} 板块:{item.get('sector','')}")
+                break
+
+        # 涨停板块分布（前5）
+        sector_stats = pool.get("sector_stats", {})
+        if sector_stats:
+            top_sectors = list(sector_stats.items())[:5]
+            L(f"    涨停板块分布: {' | '.join(f'{k}({v})' for k,v in top_sectors)}")
+    except Exception as _e:
+        _debug_log(f"sht limit_pool: {_e}")
+        L("    (打板数据获取失败)")
+
     L("\n"+"─"*72); L("【十五、综合信号汇总】"); L("─"*36)
 
     signals = []

@@ -1613,7 +1613,9 @@ def format_report(code: str, layers: Dict[str, Any]) -> str:
     if l2.get("ok"):
         L("")
         L(f"{'─'*36}  2. 机构研报与估值  {'─'*26}")
+        has_data = False
         if l2.get("recent_reports") and isinstance(l2["recent_reports"], list):
+            has_data = True
             L(f"  近30日相关研报摘要（显示最近5条）:")
             for r in l2["recent_reports"][:5]:
                 rating = f"[{r.get('rating', '')}]" if r.get("rating") else ""
@@ -1623,17 +1625,27 @@ def format_report(code: str, layers: Dict[str, Any]) -> str:
                 parts = [f"{k}:{v}" for k, v in sorted(l2["rating_dist"].items(), key=lambda x: -x[1])[:5]]
                 L(f"  评级分布: {', '.join(parts)}")
         if l2.get("eps_forecast") and isinstance(l2["eps_forecast"], list):
+            has_data = True
             L(f"  EPS预测:")
             for row in l2["eps_forecast"][:4]:
                 if isinstance(row, list) and len(row) >= 4:
                     L(f"    · {row[0]}: EPS {row[3]} 元 (机构数: {row[1]})")
         if l2.get("valuation") and isinstance(l2["valuation"], dict):
+            has_data = True
             v = l2["valuation"]
             L(f"  估值判断: 前向PE {_fmt_num(v.get('forward_pe'))}  | PEG {_fmt_num(v.get('peg'))}  "
               f"| PB {_fmt_num(v.get('pb'))}")
         if l2.get("signals"):
+            has_data = True
             for s in l2["signals"]:
                 L(f"    · {s}")
+        if not has_data:
+            reports_count = len(l2.get("recent_reports", []))
+            if reports_count > 0:
+                L(f"  近30日内无新研报（共 {reports_count} 篇历史研报）")
+            else:
+                L("  无机构覆盖数据")
+                L("  无研报数据（该股可能无机构覆盖）")
 
     # ── Layer_IND 行业对比
     li = layers.get("layer_ind") or {}

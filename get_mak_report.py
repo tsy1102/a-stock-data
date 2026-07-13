@@ -546,7 +546,48 @@ def generate_sector_report(output_path):
             L(f"    💥 {r['name']}({r['code']})  {r['desc']}")
     # 板块-异动交叉分析
     L(f"\n{'='*90}")
-    L("【B. 板块-异动集中度分析】")
+    L("【B. 涨停池扫描（打板情绪看板）】")
+    L(f"{'─'*90}")
+    try:
+        from stock_common import get_limit_pool_summary
+        pool = get_limit_pool_summary()
+        zt_count = pool.get("limit_up_count", 0)
+        zb_count = pool.get("limit_broken_count", 0)
+        dt_count = pool.get("limit_down_count", 0)
+        success_rate = pool.get("success_rate", 0)
+        L(f"  涨停 {zt_count} 只 | 炸板 {zb_count} 只 | 跌停 {dt_count} 只 | 封板率 {success_rate:.0f}%")
+
+        # 涨停板块分布
+        sector_stats = pool.get("sector_stats", {})
+        if sector_stats:
+            L(f"\n  涨停板块分布（TOP10）:")
+            for sec, cnt in list(sector_stats.items())[:10]:
+                L(f"    {sec}: {cnt} 只")
+
+        # 涨停明细
+        zt_list = pool.get("limit_up_list", [])
+        if zt_list:
+            L(f"\n  涨停明细（按封板时间排序）:")
+            L(f"  {'代码':<8} {'名称':<10} {'涨跌幅':>8} {'连板':>4} {'封板时间':>8} {'封板资金(亿)':>10} {'板块':<12}")
+            L(f"  {'-'*70}")
+            for item in zt_list[:30]:
+                fund_yi = item.get('limit_fund', 0) / 1e8 if item.get('limit_fund', 0) else 0
+                fbt = str(item.get('first_limit_time', ''))
+                fbt_fmt = f"{fbt[:2]}:{fbt[2:4]}" if len(fbt) >= 4 else fbt
+                L(f"  {item.get('code',''):<8} {item.get('name',''):<10} {item.get('change_pct',0):>+8.2f}% {item.get('limit_count',0):>4.0f} {fbt_fmt:>8} {fund_yi:>+10.2f} {item.get('sector',''):<12}")
+
+        # 炸板明细
+        zb_list = pool.get("limit_broken_list", [])
+        if zb_list:
+            L(f"\n  炸板明细:")
+            for item in zb_list[:15]:
+                L(f"    {item.get('code','')} {item.get('name','')} 涨幅{item.get('change_pct',0):+.2f}% 炸板{item.get('broken_count',0):.0f}次 板块:{item.get('sector','')}")
+    except Exception as _e:
+        _debug_log(f"mak limit_pool: {_e}")
+        L("  (打板数据获取失败)")
+
+    L(f"\n{'='*90}")
+    L("【C. 板块-异动集中度分析】")
     L(f"{'─'*90}")
     sectors = get_all_sectors()
     scored = compute_rotation_scores(sectors)
@@ -658,7 +699,7 @@ def generate_sector_report(output_path):
         L(f"  \n  💡 注: 回溯基于当日快照的10日/20日偏离值反推，非精确历史回放")
 
     L(f"\n{'='*90}")
-    L("【C. 行业轮动强度扫描】")
+    L("【D. 行业轮动强度扫描】")
     L(f"{'─'*90}")
     top10 = sorted_sectors[:10]
     L(f"  行业总数: {len(sectors)}个")
@@ -673,7 +714,7 @@ def generate_sector_report(output_path):
     else:
         L(f"\n  ⚠️ 无法获取行业板块数据")
     L(f"\n{'='*90}")
-    L("【D. TOP10 板块深度分析（涨停梯队 + 龙头股）】")
+    L("【E. TOP10 板块深度分析（涨停梯队 + 龙头股）】")
     L(f"{'─'*90}")
     top_analysis = analyze_top_stocks(top10)
     for ta in top_analysis:
@@ -700,7 +741,7 @@ def generate_sector_report(output_path):
             _items.append(f"{_st['name']}({_st['code']}, {_label})")
         L(f"    龙头: {' | '.join(_items)}")
     L(f"\n{'='*90}")
-    L("【E. 资金流验证：真金白银 vs 虚涨】")
+    L("【F. 资金流验证：真金白银 vs 虚涨】")
     L(f"{'─'*90}")
     with_money = [s for s in sectors[:50] if s.get("main_inflow",0) > 0]
     without_money = [s for s in sectors[:50] if s.get("main_inflow",0) <= 0]
@@ -724,7 +765,7 @@ def generate_sector_report(output_path):
             _lfi = round(_l["main_inflow"]/1e8, 2)
             L(f"    {_lnm}: 涨幅{_l['change_pct']:+.2f}% 主力净流入{_lfi:+.2f}亿")
     L(f"\n{'='*90}")
-    L("【F. 同花顺强势股情绪池验证】")
+    L("【G. 同花顺强势股情绪池验证】")
     L(f"{'─'*90}")
     _ths_limit = 50
     ths = get_ths_hot_pool(today_str)

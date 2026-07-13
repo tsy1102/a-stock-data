@@ -118,6 +118,13 @@ _DOMAIN_LIMITS: Dict[str, Dict[str, Any]] = {
     "reportapi.eastmoney.com": {"sleep_ms": 1000, "semaphore": None},
     "www.cninfo.com.cn": {"sleep_ms": 200, "semaphore": None},
     "basic.10jqka.com.cn": {"sleep_ms": 150, "semaphore": None},
+    # V9.6 新增：财联社、互动易、官方龙虎榜、新浪资金流备用源
+    "www.cls.cn": {"sleep_ms": 200, "semaphore": None},
+    "irm.cninfo.com.cn": {"sleep_ms": 200, "semaphore": None},
+    "www.szse.cn": {"sleep_ms": 200, "semaphore": None},
+    "query.sse.com.cn": {"sleep_ms": 200, "semaphore": None},
+    "vip.stock.finance.sina.com.cn": {"sleep_ms": 150, "semaphore": None},
+    "data.10jqka.com.cn": {"sleep_ms": 150, "semaphore": None},
 }
 # 每个域名独立的最后请求时间
 _DOMAIN_LAST_TIME: Dict[str, float] = {}

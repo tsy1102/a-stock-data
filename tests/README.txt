@@ -323,25 +323,73 @@
 
 22. test_f10_chapters_integration.py（V9.1 新增）
    作用：F10 章节集成测试，验证 3 个报告脚本（med/lng/ful）中的 F10 新章节是否正确渲染。
-   运行：python tests\test_f10_chapters_integration.py
-        （必须在项目根目录运行，脚本会自动将根目录加入 sys.path）
+
+23. diag_tdx_compare.py（V9.6 新增）
+   作用：easy-tdx 与 mootdx 接口对比测试，验证两库的关键接口差异。
+   运行：python tests\diag_tdx_compare.py
    覆盖：
-     - med 报告：财务深度/股东行为/主营构成 3 章节；
-     - lng 报告：财务深度/股东行为/治理结构/研发创新/主营构成 5 章节；
-     - ful 报告：全部 6 个 F10 章节（含异动/治理）。
-   测试机制：
-     - 实际生成 3 份报告（med/lng/ful，使用 600519 茅台）；
-     - 断言报告中包含章节标题关键字（如「财务深度分析」）。
+     - K线数据获取（日K/分钟K）；
+     - 实时行情；
+     - 资金流数据；
+     - 板块数据；
+     - 复权数据（xdxr）；
+     - F10数据；
+     - 连接稳定性对比（3次连续请求）；
+     - 独有功能对比。
    何时需要：
-     - 修改 render_f10_chapter 后；
-     - 修改报告脚本的 F10 章节集成位置后；
-     - 升级 tdx_client.py 中 F10 函数后做回归验证。
-   注意：
-     - 测试需要联网（TDX + HTTP），单次运行约 5-10 分钟；
-     - 测试期间会写入临时 .txt 报告文件（tempfile 自动生成）；
-     - 若 TDX 服务器不可达，章节会渲染为「(数据获取失败)」但不会断言失败。
-   V9.1 变更：已移除数据质量核查附录的断言（数据质量稳定，附录功能已下线）；
-              已移除 sht 报告测试（sht 移除了 risk_warning 章节）。
+     - 确认 easy-tdx 与 mootdx 的功能差异；
+     - 决定是否引入 mootdx 作为补充库；
+     - 验证两库的数据一致性。
+
+24. diag_mootdx.py（V9.6 新增）
+   作用：mootdx 库单独测试，验证 K线参数和复权数据。
+   运行：python tests\diag_mootdx.py
+   覆盖：
+     - mootdx版本信息；
+     - Quotes类方法签名；
+     - bars方法frequency参数映射；
+     - xdxr复权数据获取；
+     - 实际K线数据获取测试。
+   何时需要：
+     - 验证 mootdx 安装和基本功能；
+     - 确认分钟K线参数是否正确；
+     - 测试复权数据接口。
+
+25. diag_news_and_finance.py（V9.6 新增）
+   作用：东财新闻和新浪财报接口测试，验证接口修复效果。
+   运行：python tests\diag_news_and_finance.py
+   覆盖：
+     - 东财新闻API（多种接口尝试）；
+     - 新浪现金流量表API（验证是否已失效）；
+     - 利润表和资产负债表验证。
+   何时需要：
+     - 验证东财新闻解析修复是否生效；
+     - 确认新浪现金流量表接口状态。
+
+26. diag_v34_verify.py（V9.6 新增）
+   作用：源仓库V3.4.0关键接口验证，测试解禁字段、行业排序、北向资金、新闻解析、财报解析。
+   运行：python tests\diag_v34_verify.py
+   覆盖：
+     - test_lockup_expiry_fields：解禁接口字段验证；
+     - test_industry_ranking_sort：行业排名排序验证；
+     - test_northbound_data：北向资金数据可靠性验证；
+     - test_eastmoney_stock_news：东财新闻解析验证；
+     - test_sina_financial_reports：新浪财报三表解析验证。
+   何时需要：
+     - 验证 V9.6 修复的接口问题是否已解决；
+     - 回归测试确保接口修复没有引入新问题。
+
+27. diag_v96_skill_verify.py（V9.6 新增）
+   作用：SKILL.md V3.4复活版接口验证，测试财联社快讯、互动易问答、龙虎榜官方备胎、新浪资金流备胎。
+   运行：python tests\diag_v96_skill_verify.py
+   覆盖：
+     - cls_telegraph：财联社快讯（v1/roll/get_roll_list + 本地签名）；
+     - cninfo_irm：互动易问答（两步调用获取orgId和问答列表）；
+     - dragon_tiger_backup：深交所+上交所龙虎榜官方备胎；
+     - fund_flow_backup：新浪资金流备用源。
+   何时需要：
+     - 验证 V9.6 新增的备用数据源接口是否正常；
+     - 确认财联社/互动易/官方龙虎榜接口可用性。
 
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -420,4 +468,4 @@
       python tests\test_f10_chapters_integration.py
 
 
-更新时间：2026-07-11（V9.4 VERSION文件单一来源版本号管理 + 死代码清理）
+更新时间：2026-07-13（V9.6 接口修复 + 东财现金流量表 + mootdx集成 + 测试脚本扩展）

@@ -316,6 +316,22 @@ reports/
 
 完整版本历史详见 [CHANGELOG.md](CHANGELOG.md)
 
+### v9.6 (2026-07-13)
+
+- 🔌 **mootdx依赖集成**：`requirements.txt` 新增 `mootdx>=0.11`，与 easy-tdx 形成互补关系（easy-tdx负责资金流/板块/MacClient，mootdx负责复权数据/F10/分笔成交）
+- 🚀 **打板层**：新增 `get_limit_up_pool`/`get_limit_broken_pool`/`get_limit_down_pool`/`get_limit_pool_summary` 函数，获取涨停池、炸板池、跌停池数据；集成到 sht 和 mak 报告
+- 💰 **资金流降权**：新增 `get_fund_flow_weighted` 函数，融合 TDX TCP 资金流（权重1.0）和东财分钟级资金流（权重0.6），实现加权融合资金流数据
+- 📰 **财联社快讯复活**：新增 `cls_telegraph` 函数，使用 `cls.cn/v1/roll/get_roll_list` 接口，本地签名（`sign=md5(sha1(字典序拼接的query))`），零key实现，与东财7×24快讯互为独立备份
+- 🛡️ **官方备胎池**：新增龙虎榜官方备用源（深交所+上交所官方接口）、新浪资金流备用源，东财被封时自动fallback
+- 💬 **舆情互动层**：新增 `cninfo_irm` 互动易问答函数，两步调用获取orgId和问答列表，支持按时间筛选
+- 📊 **东财现金流量表**：新浪现金流量表API（xjllb）已失效，新增东财数据中心 `RPT_CASHFLOW` 接口替代，支持经营/投资/筹资活动现金流和现金等价物净增加额
+- 🔝 **同花顺涨停揭秘**：新增 `ths_limit_up_pool` 函数，作为东财涨停池的增强源，提供涨停原因题材、封板成功率、板型等东财没有的字段
+- ⚠️ **北向资金降级警告**：当 sgt/hgt 比例超过3.0时标记数据质量为 degraded，发出警告日志，帮助用户识别异常数据
+- 🔧 **东财新闻JSONP解析修复**：删除已失效的 `search-api-web.eastmoney.com` HTTP fallback，仅保留 TDX F10 公司报道数据
+- 🔧 **东财7×24全球资讯接口更新**：切换到 `np-weblist.eastmoney.com/comm/web/getFastNewsList`，返回 `fastNewsList` 结构
+- 🔧 **解禁接口字段修复**：更新东财 `RPT_LIFT_STAGE` 报表字段映射（`FREE_SHARES_TYPE`/`FREE_SHARES`），新增 `ABLE_FREE_SHARES` 字段
+- 🔧 **行业排名排序修复**：东财行业板块接口添加 `fid=f3` 参数，确保按涨跌幅排序
+
 ### v9.5 (2026-07-13)
 
 - 🔧 **静默异常日志化**（28处）：`tdx_client.py`（23处）、`gd_uploader.py`（4处）、`get_med_report.py`（1处）中 `except Exception:` 静默吞异常全部添加 `_debug_log` 日志，提升调试可观测性

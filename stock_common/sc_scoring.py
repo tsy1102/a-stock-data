@@ -373,30 +373,33 @@ def calculate_score(score_type: str, data: ScoreData, cfg: Optional[Dict] = None
     # 根据评分类型组合
     if score_type == "sht":
         # 短线：技术面 + 资金面 + 筹码面
+        _w = sc.get("weights_sht", {}) if sc else {}
         result.total_score = (
-            tech_score * 0.4 +
-            flow_score * 0.35 +
-            holder_score * 0.25
+            tech_score * _w.get("technical", 0.4) +
+            flow_score * _w.get("flow", 0.35) +
+            holder_score * _w.get("holder", 0.25)
         )
         result.details = tech_details + flow_details + holder_details
 
     elif score_type == "med":
         # 中线：基本面 + 估值面 + 资金面 + 筹码面
+        _w = sc.get("weights_med", {}) if sc else {}
         result.total_score = (
-            fund_score * 0.35 +
-            val_score * 0.25 +
-            flow_score * 0.2 +
-            holder_score * 0.2
+            fund_score * _w.get("fundamental", 0.35) +
+            val_score * _w.get("valuation", 0.25) +
+            flow_score * _w.get("flow", 0.2) +
+            holder_score * _w.get("holder", 0.2)
         )
         result.details = fund_details + val_details + flow_details + holder_details
 
     elif score_type == "lng":
         # 长线：基本面 + 估值面 + 分红面 + 筹码面
+        _w = sc.get("weights_lng", {}) if sc else {}
         result.total_score = (
-            fund_score * 0.3 +
-            val_score * 0.3 +
-            div_score * 0.2 +
-            holder_score * 0.2
+            fund_score * _w.get("fundamental", 0.3) +
+            val_score * _w.get("valuation", 0.3) +
+            div_score * _w.get("dividend", 0.2) +
+            holder_score * _w.get("holder", 0.2)
         )
         result.details = fund_details + val_details + div_details + holder_details
 

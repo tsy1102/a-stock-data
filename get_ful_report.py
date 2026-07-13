@@ -41,6 +41,7 @@ get_ful_report.py — A股七层全维度分析引擎（含行业对比/风险�
 """
 
 import argparse
+import logging
 import os
 import sys
 import time
@@ -49,6 +50,8 @@ import re
 from datetime import datetime, date, timedelta
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from typing import Any, Dict, List, Optional, Tuple
+
+logger = logging.getLogger(__name__)
 
 from stock_common import (
     clean_codes, _safe_float, _request_with_retry, _quick_request, UA, _debug_log,
@@ -2065,6 +2068,96 @@ def parse_args():
     return parser.parse_args()
 
 
+def _generate_reports(codes: List[str], output_dir: str, now_str: str,
+                      parallel: bool = True) -> Tuple[List[str], List[Dict[str, str]]]:
+    """执行分析并生成报告文件。
+
+    Args:
+        codes: 股票代码列表
+        output_dir: 输出目录
+        now_str: 时间戳字符串（用于文件命名）
+        parallel: 是否并行执行
+
+    Returns:
+        (generated_files, data_results) - 生成的文件路径列表和结果状态列表
+    """
+    generated_files: List[str] = []
+    data_results: List[Dict[str, str]] = []
+
+    for code in codes:
+        try:
+            name, report = analyze_stock(code, parallel=parallel)
+            fname = f"{code}_ful_{now_str}.txt"
+            fpath = os.path.join(output_dir, fname)
+            with open(fpath, "w", encoding="utf-8") as fp:
+                fp.write(report)
+            generated_files.append(fpath)
+            data_results.append({"code": code, "status": "成功", "error": "", "name": name})
+            print(f"✅ 报告已生成: {fpath}", flush=True)
+        except Exception as e:
+            data_results.append({"code": code, "status": "数据失败", "error": str(e), "name": ""})
+            print(f"❌ {code} 数据生成失败: {e}", flush=True)
+            logger.error(f"报告生成失败 {code}: {e}", exc_info=True)
+
+    return generated_files, data_results
+
+
+def _upload_reports(generated_files: List[str], no_upload: bool) -> List[Dict[str, str]]:
+    """上传报告到 Google Drive。
+
+    Args:
+        generated_files: 待上传的文件路径列表
+        no_upload: 是否跳过上传
+
+    Returns:
+        上传结果状态列表
+    """
+    upload_results: List[Dict[str, str]] = []
+
+    drive, gd_proxy_set, gd_parent_folder_id, skip_upload = None, False, None, False
+    if not no_upload:
+        drive, gd_proxy_set, gd_parent_folder_id, skip_upload = init_gd(_SCRIPT_DIR)
+
+    if drive and not skip_upload and generated_files:
+        for file_path in generated_files:
+            code = os.path.basename(file_path).split('_')[0]
+            try:
+                q_name = tdx_get_quote_full(code).get("name", "")
+                if upload_stock_report_by_code(drive, gd_parent_folder_id, code, q_name, file_path):
+                    upload_results.append({"code": code, "status": "成功", "error": "", "path": file_path})
+                else:
+                    upload_results.append({"code": code, "status": "GD上传失败", "error": "上传失败", "path": file_path})
+            except Exception as gd_e:
+                print(f"  ⚠️ GD 上传异常: {gd_e}", flush=True)
+                logger.error(f"GD上传异常 {code}: {gd_e}", exc_info=True)
+                upload_results.append({"code": code, "status": "GD上传异常", "error": str(gd_e), "path": file_path})
+
+    cleanup_gd_proxy(gd_proxy_set)
+    return upload_results
+
+
+def _print_summary(data_results: List[Dict[str, str]], upload_results: List[Dict[str, str]],
+                   generated_files: List[str], elapsed: float) -> None:
+    """打印批量执行汇总信息。"""
+    print(f"{'=' * 78}", flush=True)
+    print(f"全部完成！共分析 {len(data_results)} 只股票，总耗时 {elapsed:.1f} 秒", flush=True)
+    for f in generated_files:
+        print(f"  → {f}", flush=True)
+
+    total = len(data_results)
+    ok = [r for r in data_results if r["status"] == "成功"]
+    fd = [r for r in data_results if r["status"] == "数据失败"]
+    fg = [r for r in upload_results if r["status"] in ("GD上传失败", "GD上传异常", "GD未连接")]
+
+    if total > 0:
+        print(f"\n{'=' * 60}\n  批量执行完成 — 共处理 {total} 只股票\n{'=' * 60}")
+        print(f"  ✅ 数据成功: {len(ok)}  |  ❌ 数据失败: {len(fd)}  |  ⚠️ GD上传失败: {len(fg)}")
+        for r in fd:
+            print(f"    ❌ {r['code']} — {r['error'][:80]}")
+        for r in fg:
+            print(f"    ⚠️ {r['code']}")
+
+
 def main():
     args = parse_args()
 
@@ -2090,70 +2183,14 @@ def main():
     header_lines.append("=" * 78)
     print("\n".join(header_lines), flush=True)
 
-    generated_files: List[str] = []
-    _data_results: List[Dict[str, str]] = []
     t_total = time.time()
-
-    for code in codes:
-        try:
-            name, report = analyze_stock(code, parallel=not args.no_parallel)
-
-            # 文件命名: code_ful_YYYYMMDD_HHMM.txt
-            fname = f"{code}_ful_{now_str}.txt"
-            fpath = os.path.join(output_dir, fname)
-            with open(fpath, "w", encoding="utf-8") as fp:
-                fp.write(report)
-            generated_files.append(fpath)
-            _data_results.append({"code": code, "status": "成功", "error": "", "name": name})
-            print(f"✅ 报告已生成: {fpath}", flush=True)
-        except Exception as e:
-            _data_results.append({"code": code, "status": "数据失败", "error": str(e), "name": ""})
-            print(f"❌ {code} 数据生成失败: {e}", flush=True)
-
-    # 缓存现在使用统一的SQLite管理，无需手动刷新
-
+    generated_files, data_results = _generate_reports(
+        codes, output_dir, now_str, parallel=not args.no_parallel
+    )
     elapsed_total = time.time() - t_total
-    print(f"{'=' * 78}", flush=True)
-    print(f"全部完成！共分析 {len(codes)} 只股票，总耗时 {elapsed_total:.1f} 秒", flush=True)
-    for f in generated_files:
-        print(f"  → {f}", flush=True)
 
-    # Google Drive 上传（可选）
-    drive, gd_proxy_set, gd_parent_folder_id, skip_upload = None, False, None, False
-    if not args.no_upload:
-        base_dir = _SCRIPT_DIR
-        drive, gd_proxy_set, gd_parent_folder_id, skip_upload = init_gd(base_dir)
-    
-    # 逐个文件上传以支持详细状态跟踪
-    _upload_results = []
-    if drive and not skip_upload and generated_files:
-        for file_path in generated_files:
-            code = os.path.basename(file_path).split('_')[0]
-            try:
-                q_name = tdx_get_quote_full(code).get("name", "")
-                if upload_stock_report_by_code(drive, gd_parent_folder_id, code, q_name, file_path):
-                    _upload_results.append({"code": code, "status": "成功", "error": "", "path": file_path})
-                else:
-                    _upload_results.append({"code": code, "status": "GD上传失败", "error": "上传失败", "path": file_path})
-            except Exception as gd_e:
-                print(f"  ⚠️ GD 上传异常: {gd_e}", flush=True)
-                _upload_results.append({"code": code, "status": "GD上传异常", "error": str(gd_e), "path": file_path})
-    
-    cleanup_gd_proxy(gd_proxy_set)
-
-    # 汇总结果：数据生成 + 上传分开统计
-    total = len(_data_results)
-    ok = [r for r in _data_results if r["status"] == "成功"]
-    fd = [r for r in _data_results if r["status"] == "数据失败"]
-    fg = [r for r in _upload_results if r["status"] in ("GD上传失败", "GD上传异常", "GD未连接")]
-
-    if total > 0:
-        print(f"\n{'=' * 60}\n  批量执行完成 — 共处理 {total} 只股票\n{'=' * 60}")
-        print(f"  ✅ 数据成功: {len(ok)}  |  ❌ 数据失败: {len(fd)}  |  ⚠️ GD上传失败: {len(fg)}")
-        for r in fd:
-            print(f"    ❌ {r['code']} — {r['error'][:80]}")
-        for r in fg:
-            print(f"    ⚠️ {r['code']}")
+    upload_results = _upload_reports(generated_files, args.no_upload)
+    _print_summary(data_results, upload_results, generated_files, elapsed_total)
 
     # 批量写入快照（一次性，不重复写）
     if _SNAPSHOT_DATA:

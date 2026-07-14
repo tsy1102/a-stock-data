@@ -10,8 +10,8 @@
 
 用法：
   cd 到项目根目录后运行：
-    python tests\diag_dragon_tiger.py                # 默认测试 3 只典型股票 + 全市场龙虎榜
-    python tests\diag_dragon_tiger.py 600519            # 指定股票代码测试
+    python tests\\diag_dragon_tiger.py                # 默认测试 3 只典型股票 + 全市场龙虎榜
+    python tests\\diag_dragon_tiger.py 600519            # 指定股票代码测试
 
 运行时间：约 30-60 秒
 
@@ -144,7 +144,7 @@ def main():
     hour = now.hour
     is_weekend = now.weekday() >= 5
     if is_weekend:
-        print(f"\n⚠️  当前为周末，交易所休市 → 东财不会更新当日龙虎榜")
+        print("\n⚠️  当前为周末，交易所休市 → 东财不会更新当日龙虎榜")
         print("    测试将默认使用『上一个交易日』作为查询日期，查看历史数据是否可访问")
     elif hour < 16:
         print(f"\n⚠️  当前为盘前/盘中时段（{hour:02d}:00 前），当日龙虎榜约 16:30 后才会更新")
@@ -217,7 +217,7 @@ def main():
         if recs:
             print(f"     最近1条: date={recs[0]['date']}, reason={recs[0]['reason'][:20]}, net_buy={recs[0]['net_buy']}万, turnover={recs[0]['turnover']}%")
         else:
-            print(f"     （无上榜记录 —— 白马蓝筹 / 最近30日无异动达标属于正常现象）")
+            print("     （无上榜记录 —— 白马蓝筹 / 最近30日无异动达标属于正常现象）")
         if dtb.get("seats") and (dtb["seats"]["buy"] or dtb["seats"]["sell"]):
             buy_top = dtb["seats"]["buy"][0] if dtb["seats"]["buy"] else None
             sell_top = dtb["seats"]["sell"][0] if dtb["seats"]["sell"] else None

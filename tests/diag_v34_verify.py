@@ -59,7 +59,7 @@ def test_lockup_expiry_fields():
             if has_able:
                 print(f"  ABLE_FREE_SHARES 值: {first['ABLE_FREE_SHARES']}")
                 if first.get("ABLE_FREE_SHARES") != first.get("FREE_SHARES"):
-                    print(f"  ⚠️ 注意: ABLE_FREE_SHARES != FREE_SHARES，说明存在限售承诺")
+                    print("  ⚠️ 注意: ABLE_FREE_SHARES != FREE_SHARES，说明存在限售承诺")
         
     except Exception as e:
         print(f"测试失败: {e}")
@@ -105,10 +105,10 @@ def test_industry_ranking_sort():
         r_old = _quick_request(url, params=params_old, headers=headers, timeout=15)
         if r_old:
             d_old = r_old.json()
-            items_old = d_old.get("data", {}).get("diff", [])
+            items_old = d_old.get("data", {}).get("dif", [])
             print(f"  返回条数: {len(items_old)}")
             if items_old:
-                print(f"  TOP5 涨跌幅:")
+                print("  TOP5 涨跌幅:")
                 for i, item in enumerate(items_old[:5]):
                     print(f"    {i+1}. {item.get('f14','')}: {item.get('f3',0)}%")
         
@@ -116,10 +116,10 @@ def test_industry_ranking_sort():
         r_new = _quick_request(url, params=params_new, headers=headers, timeout=15)
         if r_new:
             d_new = r_new.json()
-            items_new = d_new.get("data", {}).get("diff", [])
+            items_new = d_new.get("data", {}).get("dif", [])
             print(f"  返回条数: {len(items_new)}")
             if items_new:
-                print(f"  TOP5 涨跌幅:")
+                print("  TOP5 涨跌幅:")
                 for i, item in enumerate(items_new[:5]):
                     print(f"    {i+1}. {item.get('f14','')}: {item.get('f3',0)}%")
                 
@@ -177,7 +177,7 @@ def test_northbound_data():
                     ratio = sgt_last / hgt_last
                     print(f"\n  sgt/hgt 末值比例: {ratio:.2f}")
                     if ratio > 3 or ratio < 0.3:
-                        print(f"  ⚠️ sgt末值与hgt差异较大，建议谨慎使用")
+                        print("  ⚠️ sgt末值与hgt差异较大，建议谨慎使用")
     
     except Exception as e:
         print(f"测试失败: {e}")

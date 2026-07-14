@@ -423,7 +423,7 @@ def _cninfo_get_orgid(code: str) -> str:
 
     # 尝试动态查询（SKILL.md V3.2.2 推荐方案）
     try:
-        url = f"https://www.cninfo.com.cn/new/data/szse_stock.json"
+        url = "https://www.cninfo.com.cn/new/data/szse_stock.json"
         r = _quick_request(url, timeout=10)
         if r is not None:
             data = r.json()
@@ -554,7 +554,7 @@ async def get_strategic_announcements_async(session, code: str, page_size: int =
     from datetime import datetime, timedelta
 
     _cfg = _load_settings()
-    keywords = _cfg.get("strategy_keywords", [])
+    keywords = _cfg.get("announcement_keywords", [])
     _noise = _cfg.get("announcement_noise", ["摘要", "提示性", "英文版"])
     _importance_kw = _cfg.get("announcement_importance_keywords", [])
 
@@ -753,6 +753,7 @@ def baidu_kline_full(code, is_index=False):
 async def get_tencent_quote_async(session: Any, code: str) -> Dict[str, Any]:
     """异步版 get_tencent_quote（复用 TDX 同步函数）"""
     import asyncio
+    from tdx_client import tdx_get_quote_full
     return await asyncio.to_thread(tdx_get_quote_full, code)
 
 
@@ -1644,7 +1645,7 @@ def _get_eastmoney_industry_sectors() -> List[Dict[str, Any]]:
             return []
 
         d = r.json()
-        items = d.get("data", {}).get("diff", [])
+        items = d.get("data", {}).get("dif", [])
         if not items:
             return []
 
@@ -2263,7 +2264,6 @@ def is_trading_day(d=None):
     Returns:
         bool: True=交易日, False=休市日
     """
-    global _calendar_fallback_warned
     from datetime import date as _date, datetime as _datetime
 
     if d is None:
@@ -2277,7 +2277,7 @@ def is_trading_day(d=None):
             _calendar_fallback_warned = True
             import sys
             print(f"[警告] 交易日历降级为 weekday 判断（{reason}），节假日可能误判。"
-                  f"请运行 python scripts/update_calendar.py 更新数据。",
+                  "请运行 python scripts/update_calendar.py 更新数据。",
                   file=sys.stderr, flush=True)
 
     # 优先使用本地 stock_calendar.py（项目目录下，用户可控）
@@ -2728,8 +2728,8 @@ def cls_telegraph(page_size: int = 50) -> List[Dict[str, Any]]:
             ts = item.get("ctime")
             t = datetime.fromtimestamp(ts).strftime("%Y-%m-%d %H:%M:%S") if ts else ""
             rows.append({
-                "title": item.get("title", "") or item.get("brief", ""),
-                "content": item.get("content", "") or item.get("brief", ""),
+                "title": item.get("title", "") or item.get("brie", ""),
+                "content": item.get("content", "") or item.get("brie", ""),
                 "time": t,
                 "level": item.get("level", ""),
                 "reading_num": item.get("reading_num", 0),
@@ -2759,7 +2759,7 @@ def dragon_tiger_backup(trade_date: str) -> Dict[str, Any]:
     _ctx = ssl._create_unverified_context()
 
     # 深交所龙虎榜
-    su = (f"https://www.szse.cn/api/report/ShowReport/data?SHOWTYPE=JSON"
+    su = ("https://www.szse.cn/api/report/ShowReport/data?SHOWTYPE=JSON"
           f"&CATALOGID=1842_xxpl&TABKEY=tab1&txtStart={trade_date}&txtEnd={trade_date}&random=0.9")
     try:
         req = urllib.request.Request(su, headers={"User-Agent": UA,
@@ -2780,7 +2780,7 @@ def dragon_tiger_backup(trade_date: str) -> Dict[str, Any]:
         _debug_log(f"dragon_tiger_backup szse: {_e}")
 
     # 上交所龙虎榜（JSONP格式）
-    eu = (f"https://query.sse.com.cn/infodisplay/showTradePublicFile.do?"
+    eu = ("https://query.sse.com.cn/infodisplay/showTradePublicFile.do?"
           f"jsonCallBack=cb&isPagination=false&dateTx={trade_date}")
     try:
         req = urllib.request.Request(eu, headers={"User-Agent": UA,
@@ -2877,6 +2877,296 @@ def cninfo_irm(code: str, page_size: int = 30, page_num: int = 1) -> List[Dict[s
 
 
 # ═══════════════════════════════════════════════════════════
+# zhb 全局配置总包（V9.6 新增，基于通达信 0x06B9 协议）
+# ═══════════════════════════════════════════════════════════
+
+def get_zhb_sp_block(name: str) -> List[str]:
+    """V9.6: 获取大板块成分股（基于 zhb.zip 的 spblock.dat）。
+
+    支持的板块：融资融券/沪深港通/中证500/中证1000/中证2000/国证2000/
+                 深证成指/专精特新/含可转债/转融券/金融类企业 等35个大板块。
+    突破 mootdx block_zs.dat 的 400 只限制。
+
+    Args:
+        name: 板块名称（支持模糊匹配，如"中证2000"、"融资融券"）
+
+    Returns:
+        股票代码列表，如 ["000001", "000002", ...]
+    """
+    try:
+        from zhb_client import get_sp_block
+        return get_sp_block(name)
+    except Exception as _e:
+        _debug_log(f"datasource zhb sp_block ({name}): {_e}")
+        return []
+
+
+def get_zhb_sp_block_list() -> List[tuple]:
+    """V9.6: 列出所有大板块 (名称, 成分股数)。"""
+    try:
+        from zhb_client import list_sp_blocks
+        return list_sp_blocks()
+    except Exception as _e:
+        _debug_log(f"datasource zhb sp_block_list: {_e}")
+        return []
+
+
+def get_zhb_sw_industries() -> Dict[str, str]:
+    """V9.6: 获取申万行业分类 {板块代码: 板块名称}。
+
+    包含 467 个四级分类（门类→大类→中类→小类），
+    是公募基金的通用行业标准。
+    """
+    try:
+        from zhb_client import get_sw_industries
+        return get_sw_industries()
+    except Exception as _e:
+        _debug_log(f"datasource zhb sw_industries: {_e}")
+        return {}
+
+
+def get_zhb_industry_map() -> Dict[str, str]:
+    """V9.6: 获取行业代码→名称映射（全类型，1000+条）。"""
+    try:
+        from zhb_client import get_industry_map
+        return get_industry_map()
+    except Exception as _e:
+        _debug_log(f"datasource zhb industry_map: {_e}")
+        return {}
+
+
+def get_zhb_data_date() -> str:
+    """V9.6: 获取 zhb 数据的日期（YYYYMMDD），用于报告中标注数据时效性。"""
+    try:
+        from zhb_client import get_zhb
+        zhb = get_zhb()
+        return zhb.date if zhb else ""
+    except Exception as _e:
+        _debug_log(f"datasource zhb data_date: {_e}")
+        return ""
+
+
+# ═══════════════════════════════════════════════════════════
+# zhb B级数据集成（阶段二）
+# ═══════════════════════════════════════════════════════════
+
+def get_zhb_stock_stat(code: str) -> Optional[Dict[str, Any]]:
+    """V9.6: 获取个股统计快照（涨跌幅/PE/5-60日涨跌幅等）。
+
+    基于 zhb.zip 的 tdxstat.cfg，数据可能有1-2天延迟。
+    用于盘后初筛和辅助参考，不适合实时交易决策。
+    """
+    try:
+        from zhb_client import get_stock_stat
+        return get_stock_stat(code)
+    except Exception as _e:
+        _debug_log(f"datasource zhb stock_stat ({code}): {_e}")
+        return None
+
+
+def get_zhb_stock_stat2(code: str) -> Optional[Dict[str, Any]]:
+    """V9.6: 获取个股资金流向和板块归属。
+
+    基于 zhb.zip 的 tdxstat2.cfg，包含行业代码、52周高低价等。
+    """
+    try:
+        from zhb_client import get_stock_stat2
+        return get_stock_stat2(code)
+    except Exception as _e:
+        _debug_log(f"datasource zhb stock_stat2 ({code}): {_e}")
+        return None
+
+
+def get_zhb_market_snapshot(codes: Optional[List[str]] = None) -> Dict[str, Dict[str, Any]]:
+    """V9.6: 全市场（或指定股票）统计快照。
+
+    一次调用拿到全市场7938只股票的统计快照，用于val脚本初筛。
+    数据可能有1-2天延迟，仅用于盘后初筛。
+    """
+    try:
+        from zhb_client import market_stat_snapshot
+        return market_stat_snapshot(codes)
+    except Exception as _e:
+        _debug_log(f"datasource zhb market_snapshot: {_e}")
+        return {}
+
+
+def get_zhb_52w_range(code: str) -> tuple:
+    """V9.6: 获取52周最高价和最低价。
+
+    Returns:
+        (high_52w, low_52w) 元组，获取失败返回 (None, None)
+    """
+    try:
+        from zhb_client import get_high_52w, get_low_52w
+        return (get_high_52w(code), get_low_52w(code))
+    except Exception as _e:
+        _debug_log(f"datasource zhb 52w_range ({code}): {_e}")
+        return (None, None)
+
+
+def get_zhb_industry_code(code: str) -> str:
+    """V9.6: 获取股票的行业板块代码（如880679）。"""
+    try:
+        from zhb_client import get_industry_code
+        return get_industry_code(code)
+    except Exception as _e:
+        _debug_log(f"datasource zhb industry_code ({code}): {_e}")
+        return ""
+
+
+def is_zhb_data_fresh(max_delay_days: int = 3) -> bool:
+    """V9.6: 检查zhb数据是否新鲜（延迟在指定天数内）。
+
+    数据过旧时调用方应降级到原有HTTP/TCP接口。
+    """
+    try:
+        from zhb_client import is_data_fresh
+        return is_data_fresh(max_delay_days)
+    except Exception as _e:
+        _debug_log(f"datasource zhb is_fresh: {_e}")
+        return False
+
+
+# ═══════════════════════════════════════════════════════════
+# zhb 辅助数据集成（阶段三）
+# ═══════════════════════════════════════════════════════════
+
+def get_zhb_tip_info(code: str) -> Optional[Dict[str, Any]]:
+    """V9.6: 获取个股财报日历信息（财报期/EPS/披露日/除权日/分红日）。"""
+    try:
+        from zhb_client import get_tip_info
+        return get_tip_info(code)
+    except Exception as _e:
+        _debug_log(f"datasource zhb tip_info ({code}): {_e}")
+        return None
+
+
+def get_zhb_ipo_list() -> List[Dict[str, Any]]:
+    """V9.6: 获取新股申购日历列表。"""
+    try:
+        from zhb_client import get_ipo_list
+        return get_ipo_list()
+    except Exception as _e:
+        _debug_log(f"datasource zhb ipo_list: {_e}")
+        return []
+
+
+def get_zhb_ah_stocks() -> List[Dict[str, str]]:
+    """V9.6: 获取A+H股列表。"""
+    try:
+        from zhb_client import get_ah_stocks
+        return get_ah_stocks()
+    except Exception as _e:
+        _debug_log(f"datasource zhb ah_stocks: {_e}")
+        return []
+
+
+def get_zhb_broker_name(broker_id: str) -> str:
+    """V9.6: 获取券商简称（基于brkcomp.dat，842家券商）。"""
+    try:
+        from zhb_client import get_broker_name
+        return get_broker_name(broker_id)
+    except Exception as _e:
+        _debug_log(f"datasource zhb broker_name ({broker_id}): {_e}")
+        return broker_id
+
+
+# ═══════════════════════════════════════════════════════════
+# V10.0 新增接口
+# ═══════════════════════════════════════════════════════════
+
+def get_zhb_holidays() -> List[str]:
+    """V10.0: 获取节假日列表（1991-2030）。
+
+    返回格式为 YYYYMMDD 字符串列表。
+    注意：仅作参考，主用 stock_calendar 模块。
+    """
+    try:
+        from zhb_client import get_holidays
+        return get_holidays()
+    except Exception as _e:
+        _debug_log(f"datasource zhb holidays: {_e}")
+        return []
+
+
+def get_zhb_csrc_industries() -> Dict[str, str]:
+    """V10.0: 获取证监会行业分类 {代码: 名称}。
+
+    共3703个行业分类，涵盖A-S门类。
+    """
+    try:
+        from zhb_client import get_csrc_industries
+        return get_csrc_industries()
+    except Exception as _e:
+        _debug_log(f"datasource zhb csrc_industries: {_e}")
+        return {}
+
+
+def get_zhb_adr_stocks() -> List[Dict[str, str]]:
+    """V10.0: 获取中概股ADR列表。
+
+    返回: [{'a_code': A股代码, 'a_name': A股名称, 'adr_code': ADR代码, 'adr_name': ADR名称}, ...]
+    """
+    try:
+        from zhb_client import get_adr_stocks
+        return get_adr_stocks()
+    except Exception as _e:
+        _debug_log(f"datasource zhb adr_stocks: {_e}")
+        return []
+
+
+def get_zhb_convertible_bonds() -> List[Dict[str, Any]]:
+    """V10.0: 获取可转债列表。"""
+    try:
+        from zhb_client import get_convertible_bonds
+        return get_convertible_bonds()
+    except Exception as _e:
+        _debug_log(f"datasource zhb convertible_bonds: {_e}")
+        return []
+
+
+def get_zhb_delisted_stocks() -> Dict[str, str]:
+    """V10.0: 获取退市股票代码→名称映射。"""
+    try:
+        from zhb_client import get_delisted_stocks
+        return get_delisted_stocks()
+    except Exception as _e:
+        _debug_log(f"datasource zhb delisted_stocks: {_e}")
+        return {}
+
+
+def should_use_zhb_data() -> tuple[bool, str]:
+    """V10.0: 根据当前时机判断是否应使用zhb数据。
+
+    Returns:
+        (should_use, expected_date): 是否使用zhb，期望的数据日期(YYYYMMDD)
+
+    时间逻辑：
+        - 收盘后(15:00后): 使用当日数据
+        - 开盘前(9:30前): 使用上一交易日数据
+        - 休市日: 使用上一交易日数据
+        - 盘中(9:30-15:00): 必须实时获取，返回(False, "")
+    """
+    try:
+        from zhb_client import should_use_zhb_data
+        return should_use_zhb_data()
+    except Exception as _e:
+        _debug_log(f"datasource zhb should_use_zhb_data: {_e}")
+        return (False, "")
+
+
+def is_zhb_date_matching() -> bool:
+    """V10.0: 判断当前zhb数据日期是否符合预期。"""
+    try:
+        from zhb_client import is_zhb_date_matching
+        return is_zhb_date_matching()
+    except Exception as _e:
+        _debug_log(f"datasource zhb is_zhb_date_matching: {_e}")
+        return False
+
+
+# ═══════════════════════════════════════════════════════════
 # 辅助函数
 # ═══════════════════════════════════════════════════════════
 
@@ -2943,7 +3233,7 @@ def get_dragon_tiger_board(code: str, today_str: str, days: int = 30, include_se
                                 page_size=50, sort_columns="TRADE_DATE", sort_types="-1")
     for row in data:
         records.append({
-            "date": str(row.get("TRADE_DATE", ""))[:10],
+            "date": str(row.get("TRADE_DATE", "") or "")[:10],
             "reason": row.get("EXPLANATION", ""),
             "net_buy": round((row.get("BILLBOARD_NET_AMT") or 0) / 10000, 1),
             "turnover": round(_safe_float(row.get("TURNOVERRATE")), 2),
@@ -3047,7 +3337,7 @@ def get_recent_dragon_tiger(days: int = 5) -> Dict[str, Any]:
                     "reason": row.get("EXPLANATION", ""),
                     "net_buy": round((row.get("BILLBOARD_NET_AMT") or 0) / 10000, 1),
                     "turnover": round(_safe_float(row.get("TURNOVERRATE")), 2),
-                    "date": str(row.get("TRADE_DATE", ""))[:10],
+                    "date": str(row.get("TRADE_DATE", "") or "")[:10],
                 }
         return result
     except Exception as _e:

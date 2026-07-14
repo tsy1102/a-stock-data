@@ -53,7 +53,10 @@ from stock_common import (_safe_float, _request_with_retry, _quick_request, UA,
                            is_trading_day, get_market_status,
                            _debug_log,
                            cls_telegraph as _cls_telegraph,
-                           get_eastmoney_global_news as _eastmoney_global_news)
+                           get_eastmoney_global_news as _eastmoney_global_news,
+                           get_zhb_market_snapshot, is_zhb_data_fresh,
+                           get_zhb_data_date, get_zhb_stock_stat,
+                           get_zhb_52w_range)
 import asyncio
 
 _SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -339,21 +342,72 @@ def estimate_pe_percentile(code, price, total_shares):
 # 全市场股票池构建 + 流动性筛选
 # ═══════════════════════════════════════════════════
 
-def get_all_stocks():
-    """V7.5: 全市场A股 → TDX MacClient（push2 fallback 已删除）"""
-    return tdx_get_all_stocks()
+# ─── V9.6 阶段二-2.4: tdxstat 批量初筛 ───
 
+def _tdxstat_prescreen(stocks):
+    """V9.6: 使用 zhb.tdxstat 对全市场批量初筛，标注数据并过滤停牌股。
 
-def filter_top_liquidity_pool(stocks, percentage=0.05):
-    """筛选成交额前 percentage（默认5%）的头部股票"""
-    if not stocks: return [], 0.0
-    sorted_stocks = sorted(stocks, key=lambda x: x.get("amount_yi", 0), reverse=True)
-    total_market_amount = sum(s.get("amount_yi", 0) for s in sorted_stocks)
-    top_n_count = max(1, int(len(sorted_stocks) * percentage))
-    top_pool = sorted_stocks[:top_n_count]
-    top_pool_amount = sum(s.get("amount_yi", 0) for s in top_pool)
-    actual_ratio = (top_pool_amount / total_market_amount * 100) if total_market_amount > 0 else 0.0
-    return top_pool, actual_ratio
+    作用：
+        1. 从 zhb.zip 的 tdxstat.cfg 一次性拿到全市场统计快照（零 HTTP）
+        2. 为每只股票标注 pe_ttm/change_5d..60d/high_52w/low_52w 等字段
+        3. 过滤掉 tdxstat 中 volume=0 的停牌股，减少后续策略的无效扫描
+
+    Args:
+        stocks: tdx_get_all_stocks() 返回的全市场列表
+
+    Returns:
+        tuple (screened_stocks, zhb_date_str, is_fresh)
+        - zhb 不可用时，返回原列表 + 空日期 + False，保持向后兼容
+    """
+    if not stocks:
+        return stocks, "", False
+
+    try:
+        snapshot = get_zhb_market_snapshot()
+    except Exception as _e:
+        _debug_log(f"val tdxstat_prescreen: snapshot error: {_e}")
+        return stocks, "", False
+
+    if not snapshot:
+        _debug_log("val tdxstat_prescreen: zhb snapshot empty, skip")
+        return stocks, "", False
+
+    zhb_date = ""
+    try:
+        zhb_date = get_zhb_data_date() or ""
+    except Exception:
+        pass
+
+    fresh = is_zhb_data_fresh(max_delay_days=3)
+
+    # 标注 + 过滤
+    screened = []
+    excluded = 0
+    for s in stocks:
+        code = s.get("code", "")
+        stat = snapshot.get(code)
+        if stat is None:
+            # tdxstat 中没有的股票（如新股），保留但不标注
+            screened.append(s)
+            continue
+        # 过滤停牌股（volume=0）
+        vol = stat.get("volume")
+        if vol is not None and _safe_float(vol) == 0:
+            excluded += 1
+            continue
+        # 标注字段（不覆盖已有字段）
+        for k, v in stat.items():
+            if k not in ("market", "code", "date"):
+                if k not in s:
+                    s[k] = v
+        screened.append(s)
+
+    if excluded > 0:
+        print(f"  ⚡ tdxstat初筛: 过滤{excluded}只停牌股，{len(screened)}/{len(stocks)}只进入策略扫描", flush=True)
+    else:
+        print(f"  ⚡ tdxstat初筛: {len(screened)}/{len(stocks)}只（zhb日期:{zhb_date or '未知'}）", flush=True)
+
+    return screened, zhb_date, fresh
 
 
 # ═══════════════════════════════════════════════════
@@ -416,18 +470,18 @@ def strategy_02_weekly_ma(stocks, top_n=None):
         code = s["code"]
         w = compute_weekly_ma(code)
         if not w or w.get("week_count", 0) < 25: continue
-        if any(v is None or v <= 0 for v in [w["ma5"], w["ma10"], w["ma20"], w["ma30"]]): continue
-        if not (w["ma5"] > w["ma10"] > w["ma20"] > w["ma30"]): continue
-        if w["cluster_spread"] is None or w["cluster_spread"] >= _cluster_cap: continue
-        if w["last_close"] < w["ma5"]: continue
+        if any(v is None or v <= 0 for v in [w.get("ma5"), w.get("ma10"), w.get("ma20"), w.get("ma30")]): continue
+        if not (w.get("ma5", 0) > w.get("ma10", 0) > w.get("ma20", 0) > w.get("ma30", 0)): continue
+        if w.get("cluster_spread") is None or w.get("cluster_spread") >= _cluster_cap: continue
+        if w.get("last_close", 0) < w.get("ma5", 0): continue
         reason = (
-            f"周线MA5/10/20/30在{w['last_close']:.2f}元附近极度聚合"
-            f"(离散度{w['cluster_spread']:.2f}%)，"
-            f"本周{w['last_week_date']}放量突破MA5，"
-            f"确认大级别趋势反转信号"
+            f"周线MA5/10/20/30在{w.get('last_close', 0):.2f}元附近极度聚合"
+            f"(离散度{w.get('cluster_spread', 0):.2f}%)，"
+            f"本周{w.get('last_week_date', '')}放量突破MA5，"
+            "确认大级别趋势反转信号"
         )
-        result.append({"code": code, "name": s["name"], "reason": reason,
-                       "score": -w["cluster_spread"]})
+        result.append({"code": code, "name": s.get("name", ""), "reason": reason,
+                       "score": -w.get("cluster_spread", 0)})
     return _top5_sorted(result, lambda x: x["score"])
 
 
@@ -485,7 +539,7 @@ def strategy_03_volume_breakout(hot_pool):
             f"突破60日箱体上沿({box_top:.2f}元)，"
             f"当前价{current_price:.2f}元，"
             f"成交量放大至{vol_ratio:.1f}倍于10日均量，"
-            f"阻力位已扫清，上行空间打开"
+            "阻力位已扫清，上行空间打开"
         )
         result.append({"code": code, "name": name, "reason": reason,
                        "score": vol_ratio})
@@ -517,17 +571,18 @@ def strategy_04_core_discount(stocks):
         price = q.get("price", 0)
         if mcap <= 0 or price <= 0: continue
         total_shares = int(mcap * 1e8 / price)
-        pe_data = estimate_pe_percentile(code, s["price"], total_shares)
+        pe_data = estimate_pe_percentile(code, s.get("price", 0), total_shares)
         if pe_data is None: continue
-        if pe_data["percentile"] > _pe_percentile_warn: continue
+        pe_percentile = _safe_float(pe_data.get("percentile", 100))
+        if pe_percentile > _pe_percentile_warn: continue
         reason = (
-            f"当前PE({pe_data['pe_current']:.1f}x)处于近3年模拟PE区间低位"
-            f"(最低{pe_data['pe_min']:.1f}x~最高{pe_data['pe_max']:.1f}x)，"
-            f"约{pe_data['percentile']:.0f}%分位（基于{pe_data['quarters']}期TTM数据估算），"
-            f"属于非理性折价区间"
+            f"当前PE({_safe_float(pe_data.get('pe_current', 0)):.1f}x)处于近3年模拟PE区间低位"
+            f"(最低{_safe_float(pe_data.get('pe_min', 0)):.1f}x~最高{_safe_float(pe_data.get('pe_max', 0)):.1f}x)，"
+            f"约{pe_percentile:.0f}%分位（基于{pe_data.get('quarters', 0)}期TTM数据估算），"
+            "属于非理性折价区间"
         )
-        result.append({"code": code, "name": s["name"], "reason": reason,
-                       "score": -pe_data["percentile"]})
+        result.append({"code": code, "name": s.get("name", ""), "reason": reason,
+                       "score": -pe_percentile})
         if len(result) >= 5:
             break
     return _top5_sorted(result, lambda x: x["score"])
@@ -584,9 +639,9 @@ def strategy_05_double_bottom(stocks, top_n=None):
             f"W底形态确认：两个低点分别{second_low:.2f}和{recent_60[min_idx]:.2f}元"
             f"（偏离{low_diff:.1f}%），"
             f"突破颈线{neckline:.2f}元至{current_price:.2f}元"
-            + (f"，成交量放大确认突破有效" if vol_increasing else "")
+            + ("，成交量放大确认突破有效" if vol_increasing else "")
         )
-        result.append({"code": code, "name": s["name"], "reason": reason,
+        result.append({"code": code, "name": s.get("name", ""), "reason": reason,
                        "score": current_price / neckline if neckline > 0 else 0})
     return _top5_sorted(result, lambda x: x["score"])
 
@@ -617,9 +672,9 @@ def strategy_06_three_soldiers(stocks, top_n=500):
             if not (vols[0] < vols[1] < vols[2]): continue
         reason = (
             f"底部红三兵形态确认：连续三天收阳（{closes[0]:.2f}→{closes[1]:.2f}→{closes[2]:.2f}元），"
-            f"成交量阶梯放大，低位建仓信号明确"
+            "成交量阶梯放大，低位建仓信号明确"
         )
-        result.append({"code": code, "name": s["name"], "reason": reason,
+        result.append({"code": code, "name": s.get("name", ""), "reason": reason,
                        "score": closes[2] / closes[0]})
     return _top5_sorted(result, lambda x: x["score"])
 
@@ -665,13 +720,14 @@ def strategy_08_policy_driven(stocks, hot_pool=None):
         _ths_result = []
         for h in hot_pool:
             tag = h.get("reason_tag", "")
+            h_code = h.get("code", "")
             if any(kw in tag for kw in policy_keywords):
-                _s = next((s for s in (stocks or []) if s["code"] == h["code"]), None)
+                _s = next((s for s in (stocks or []) if s.get("code", "") == h_code), None)
                 if _s and 5 <= _s.get("mcap_yi", 0) <= 50:
-                    q = get_tencent_quote(h["code"])
+                    q = get_tencent_quote(h_code)
                     if q.get("pe_ttm", 0) > 0:
                         _ths_result.append({
-                            "code": h["code"], "name": h.get("name", ""),
+                            "code": h_code, "name": h.get("name", ""),
                             "reason": f"同花顺题材归因: {tag[:80]}，市值{_s.get('mcap_yi',0):.1f}亿",
                             "score": h.get("zhangfu", 0),
                         })
@@ -699,7 +755,7 @@ def strategy_08_policy_driven(stocks, hot_pool=None):
             f"市值{q.get('mcap_yi', 0):.1f}亿（中小盘弹性标的），"
             f"PE={q.get('pe_ttm', 0):.1f}x，攻守兼备"
         )
-        result.append({"code": code, "name": s["name"], "reason": reason,
+        result.append({"code": code, "name": s.get("name", ""), "reason": reason,
                        "score": -q.get("pe_ttm", 0)})
     return _top5_sorted(result, lambda x: x["score"])
 
@@ -716,7 +772,7 @@ def strategy_09_calendar_rotation():
     if not ind_data: return []
     matched = []
     for ind in ind_data:
-        if any(t in ind["name"] for t in target_industries):
+        if any(t in ind.get("name", "") for t in target_industries):
             matched.append(ind)
     if not matched: return []
     result = []
@@ -728,10 +784,10 @@ def strategy_09_calendar_rotation():
         q = get_tencent_quote(leader_code)
         reason = (
             f"当前{month}月，日历效应指向{', '.join(target_industries)}板块，"
-            f"行业'{ind['name']}'涨幅{ind['change_pct']}%，为板块领涨股"
+            f"行业'{ind.get('name', '')}'涨幅{ind.get('change_pct', 0)}%，为板块领涨股"
         )
         result.append({"code": leader_code, "name": q.get("name", ""),
-                       "reason": reason, "score": _safe_float(ind["change_pct"])})
+                       "reason": reason, "score": _safe_float(ind.get("change_pct", 0))})
     if len(result) < 5:
         for ind in matched:
             if len(result) >= 5: break
@@ -743,7 +799,7 @@ def strategy_09_calendar_rotation():
                           "fields": "f12,f14,f2,f3,f20"}
                 r = _request_with_retry(JP_URL, params=params, headers={"User-Agent": UA}, timeout=10)
                 if r is None: continue
-                items = (r.json().get("data") or {}).get("diff", [])
+                items = (r.json().get("data") or {}).get("dif", [])
                 for item in items:
                     if len(result) >= 5: break
                     c = str(item.get("f12", ""))
@@ -751,7 +807,7 @@ def strategy_09_calendar_rotation():
                     seen_codes.add(c)
                     result.append({
                         "code": c, "name": item.get("f14", ""),
-                        "reason": f"{month}月日历效应板块'{ind['name']}'成分股，行业排名第{ind['rank']}位",
+                        "reason": f"{month}月日历效应板块'{ind.get('name', '')}'成分股，行业排名第{ind.get('rank', 0)}位",
                         "score": _safe_float(item.get("f3", 0)),
                     })
             except Exception as _e:
@@ -788,7 +844,7 @@ def strategy_10_contrarian_value(stocks, top_n=300):
             f"距52周最高价{high_52w:.2f}元已下跌{abs(drawdown):.0f}%，"
             f"当前PE={q.get('pe_ttm', 0):.1f}x，非基本面因素导致的错杀"
         )
-        result.append({"code": code, "name": s["name"], "reason": reason,
+        result.append({"code": code, "name": s.get("name", ""), "reason": reason,
                        "score": -drawdown})
     return _top5_sorted(result, lambda x: x["score"])
 
@@ -803,16 +859,16 @@ def strategy_11_holder_concentration(stocks, top_n=300):
         code = s["code"]
         holders = holder_num_change(code, 3)
         if len(holders) < 2: continue
-        if holders[0]["change_ratio"] >= -3: continue
-        if holders[1]["change_ratio"] >= -3: continue
-        avg_shrink = (abs(holders[0]["change_ratio"]) + abs(holders[1]["change_ratio"])) / 2
+        if _safe_float(holders[0].get("change_ratio", 0)) >= -3: continue
+        if _safe_float(holders[1].get("change_ratio", 0)) >= -3: continue
+        avg_shrink = (abs(_safe_float(holders[0].get("change_ratio", 0))) + abs(_safe_float(holders[1].get("change_ratio", 0)))) / 2
         reason = (
-            f"股东户数连续两季缩减（{holders[1]['date']}: "
-            f"{holders[1]['change_ratio']:.1f}%, "
-            f"{holders[0]['date']}: {holders[0]['change_ratio']:.1f}%），"
+            f"股东户数连续两季缩减（{holders[1].get('date', '')}: "
+            f"{_safe_float(holders[1].get('change_ratio', 0)):.1f}%, "
+            f"{holders[0].get('date', '')}: {_safe_float(holders[0].get('change_ratio', 0)):.1f}%），"
             f"平均每季缩减{avg_shrink:.1f}%，筹码集中度持续提升"
         )
-        result.append({"code": code, "name": s["name"], "reason": reason,
+        result.append({"code": code, "name": s.get("name", ""), "reason": reason,
                        "score": avg_shrink})
         if len(result) >= 5:
             break
@@ -843,9 +899,9 @@ def strategy_12_divergence_warning(stocks, top_n=300):
         reason = (
             f"⚠️ 危险信号：价格创20日新高{closes[-1]:.2f}元，"
             f"但成交量连续3日萎缩{vol_decline_pct:.0f}%，"
-            f"【多头陷阱警告】——量价背离，警惕结构性顶部"
+            "【多头陷阱警告】——量价背离，警惕结构性顶部"
         )
-        result.append({"code": code, "name": s["name"], "reason": reason,
+        result.append({"code": code, "name": s.get("name", ""), "reason": reason,
                        "score": vol_decline_pct})
     return _top5_sorted(result, lambda x: x["score"])
 
@@ -857,20 +913,20 @@ def strategy_13_dividend_yield(stocks):
     result = []
     for s in candidates:
         code = s["code"]
-        price = s["price"]
+        price = s.get("price", 0)
         if price <= 0: continue
         divs = common_get_dividend_history(code)
         if len(divs) < 3: continue
-        recent_bonus = divs[0]["bonus_rmb"]
+        recent_bonus = _safe_float(divs[0].get("bonus_rmb", 0))
         if recent_bonus <= 0: continue
         yield_pct = recent_bonus / price * 100
         if yield_pct < 4.0: continue
-        years_with_div = len([d for d in divs if d["bonus_rmb"] > 0])
+        years_with_div = len([d for d in divs if _safe_float(d.get("bonus_rmb", 0)) > 0])
         reason = (
             f"当前股息率{yield_pct:.2f}%（每股派息{recent_bonus:.4f}元/现价{price:.2f}元），"
             f"近{years_with_div}个报告期持续分红，稳定的现金奶牛资产"
         )
-        result.append({"code": code, "name": s["name"], "reason": reason,
+        result.append({"code": code, "name": s.get("name", ""), "reason": reason,
                        "score": yield_pct})
         if len(result) >= 5:
             break
@@ -932,13 +988,13 @@ def strategy_15_liquidity_king(top_liquidity_pool):
         if avg_vol_5d > 0 and today_vol > avg_vol_5d * 1.5 and closes[-1] >= closes[-2]:
             vol_ratio = today_vol / avg_vol_5d
             reason = (
-                f"位列全市场前5%核心流动性池，今日成交额{s['amount_yi']:.2f}亿！"
+                f"位列全市场前5%核心流动性池，今日成交额{_safe_float(s.get('amount', 0) or s.get('amount_yi', 0))/10000:.2f}亿！"
                 f"成交量异常放大至5日均量的{vol_ratio:.1f}倍，"
-                f"主力资金高位接盘或强力破局，流动性溢价显著"
+                "主力资金高位接盘或强力破局，流动性溢价显著"
             )
             result.append({
-                "code": code, "name": s["name"], "reason": reason,
-                "score": s["amount_yi"] * vol_ratio,
+                "code": code, "name": s.get("name", ""), "reason": reason,
+                "score": _safe_float(s.get('amount', 0) or s.get('amount_yi', 0)) * vol_ratio / 10000,
             })
     return _top5_sorted(result, lambda x: x["score"])
 
@@ -999,25 +1055,25 @@ def strategy_16_policy_heatmap(all_stocks, hot_pool):
 
     # 3) 市值过滤（10-300亿）+ 计算三维热度分
     results = []
-    all_amounts = [c["amount_yi"] for c in candidates.values() if c["amount_yi"] > 0]
+    all_amounts = [_safe_float(c.get("amount_yi", 0)) for c in candidates.values() if _safe_float(c.get("amount_yi", 0)) > 0]
     max_amount = max(all_amounts) if all_amounts else 1.0
     for code, c in candidates.items():
-        if not (10.0 <= c["mcap_yi"] <= 300.0):
+        if not (10.0 <= _safe_float(c.get("mcap_yi", 0)) <= 300.0):
             continue
         # 涨幅贡献（-5%到+10%线性映射 0-1）
-        change_contrib = max(0.0, min(1.0, (c["change_pct"] + 5.0) / 15.0))
+        change_contrib = max(0.0, min(1.0, (_safe_float(c.get("change_pct", 0)) + 5.0) / 15.0))
         # 关键词命中数（1-N，映射 0-1）
-        kw_contrib = min(1.0, len(c["matched_kw"]) / 4.0)
+        kw_contrib = min(1.0, len(c.get("matched_kw", [])) / 4.0)
         # 成交额分位（相对本池最高）
-        amount_contrib = (c["amount_yi"] / max_amount) if max_amount > 0 else 0
+        amount_contrib = (_safe_float(c.get("amount_yi", 0)) / max_amount) if max_amount > 0 else 0
         # 综合分
         score = (change_contrib * 0.5 + kw_contrib * 0.3 + amount_contrib * 0.2) * 100
         reason = (
-            f"政策关键词命中: {', '.join(c['matched_kw'][:3])}，"
-            f"今日涨幅 {c['change_pct']:+.1f}%，成交额 {c['amount_yi']:.1f}亿，"
-            f"市值 {c['mcap_yi']:.0f}亿，热度评分 {score:.1f}"
+            f"政策关键词命中: {', '.join(c.get('matched_kw', [])[:3])}，"
+            f"今日涨幅 {_safe_float(c.get('change_pct', 0)):+.1f}%，成交额 {_safe_float(c.get('amount_yi', 0)):.1f}亿，"
+            f"市值 {_safe_float(c.get('mcap_yi', 0)):.0f}亿，热度评分 {score:.1f}"
         )
-        results.append({"code": code, "name": c["name"], "reason": reason, "score": score})
+        results.append({"code": code, "name": c.get("name", ""), "reason": reason, "score": score})
 
     return _top5_sorted(results, lambda x: x["score"])
 
@@ -1156,10 +1212,11 @@ def strategy_18_longhu_activity(all_stocks, today_str=None, top_n=200):
             inst_sell = _safe_float(inst.get("sell_amt", 0))
 
             # 上榜次数
-            list_days = len(dtb["records"])
-            first_date = dtb["records"][-1]["date"] if dtb["records"] else today_str
-            last_date = dtb["records"][0]["date"] if dtb["records"] else today_str
-            recent_net_sum = sum(_safe_float(r.get("net_buy", 0)) for r in dtb["records"])
+            _records = dtb.get("records", [])
+            list_days = len(_records)
+            first_date = _records[-1].get("date", today_str) if _records else today_str
+            last_date = _records[0].get("date", today_str) if _records else today_str
+            recent_net_sum = sum(_safe_float(r.get("net_buy", 0)) for r in _records)
 
             # 游资席位识别：在买一/买二/买三出现著名游资名称则加分
             hot_dept_score = 0.0
@@ -1178,7 +1235,7 @@ def strategy_18_longhu_activity(all_stocks, today_str=None, top_n=200):
                             break
 
             # 换手率加分：3-15% 为活跃合理区间
-            avg_turnover = sum(_safe_float(r.get("turnover", 0)) for r in dtb["records"]) / max(list_days, 1)
+            avg_turnover = sum(_safe_float(r.get("turnover", 0)) for r in _records) / max(list_days, 1)
             turnover_bonus = 0.0
             if 3.0 <= avg_turnover <= 15.0:
                 turnover_bonus = 2.0
@@ -1246,28 +1303,60 @@ async def run_discovery_async(output_path):
     L("─" * 85)
     L(f"  A 股策略发现报告  [{today_str} {_t_now.strftime('%H:%M:%S')}]")
     L("─" * 85)
-    L(f"  市场: A 股 | 策略: 18 | 引擎: asyncio | 并发: 3")
+    L("  市场: A 股 | 策略: 18 | 引擎: asyncio | 并发: 3")
     L("-" * 85)
-    L(f"  预热: 加载市场数据 & 策略配置…")
+    L("  预热: 加载市场数据 & 策略配置…")
 
     cfg = _load_settings()
     _cfg = cfg or {}
 
-    all_stocks = tdx_get_all_stocks()
-    if not all_stocks:
-        L("  ❌ 无法获取全市场股票数据")
-        return "\n".join(filter(None, lines))
+    # V10.0: 使用 zhb.stock_stats 替代 tdx_get_all_stocks（零HTTP，更快）
+    # zhb包含7938只股票，35个字段，本地解析<0.1秒
+    _zhb_date, _zhb_fresh = "", False
+    all_stocks = []
+    try:
+        _snapshot = get_zhb_market_snapshot()
+        if _snapshot:
+            _zhb_date = get_zhb_data_date() or ""
+            _zhb_fresh = is_zhb_data_fresh(max_delay_days=3)
+            # 转换为列表格式，过滤停牌股（volume=0）
+            all_stocks = []
+            _excluded = 0
+            for _code, _stat in _snapshot.items():
+                _vol = _stat.get("volume")
+                if _vol is not None and _safe_float(_vol) == 0:
+                    _excluded += 1
+                    continue
+                _stock = {"code": _code}
+                for _k, _v in _stat.items():
+                    if _k not in ("market", "date"):
+                        _stock[_k] = _v
+                all_stocks.append(_stock)
+            _fresh_tag = "✅新鲜" if _zhb_fresh else "⚠️延迟"
+            L(f"  ✅ zhb全市场: {len(all_stocks)}只（过滤{_excluded}只停牌股）[{_fresh_tag}]")
+            if _zhb_date:
+                L(f"  📊 zhb数据日期: {_zhb_date}")
+        else:
+            raise ValueError("zhb snapshot empty")
+    except Exception as _e:
+        _debug_log(f"val zhb_load: {_e}, fallback to tdx_get_all_stocks")
+        all_stocks = tdx_get_all_stocks()
+        if not all_stocks:
+            L("  ❌ 无法获取全市场股票数据")
+            return "\n".join(filter(None, lines))
+        # fallback时仍做初筛
+        all_stocks, _zhb_date, _zhb_fresh = _tdxstat_prescreen(all_stocks)
 
-    # V7.5 恢复: hot_pool 使用同花顺强势股池（~100只），而非 turnover>=2% 的大池（1000-2000只）
-    # 扫描范围从 1000-2000只 降至 ~100只，提速 10-20×
+    # V10.0: 扩大扫描范围，利用zhb零成本数据
+    # 热点池: ~100只→~300只；流动性池: 300只→500只
     _stock_map = {s["code"]: s for s in all_stocks}
     ths_hot_list = ths_hot_reason(today_str)
     ths_hot_codes = {item.get("code", "") for item in ths_hot_list if item.get("code")}
     hot_pool = [s for s in all_stocks if s.get("code", "") in ths_hot_codes]
 
-    top_liquidity_pool = sorted(all_stocks, key=lambda x: _safe_float(x.get("amount_yi", 0)), reverse=True)[:300]
+    top_liquidity_pool = sorted(all_stocks, key=lambda x: _safe_float(x.get("amount", 0) or x.get("amount_yi", 0)), reverse=True)[:500]
 
-    L(f"  ✅ 全市场: {len(all_stocks)} | 热点池(同花顺强势): {len(hot_pool)} | 流动性Top300: {len(top_liquidity_pool)}")
+    L(f"  ✅ 全市场: {len(all_stocks)} | 热点池(同花顺强势): {len(hot_pool)} | 流动性Top500: {len(top_liquidity_pool)}")
     L(f"  ⏱ 全市场数据加载完成 @ {datetime.now().strftime('%H:%M:%S')}")
 
     all_selections = {}
@@ -1279,32 +1368,38 @@ async def run_discovery_async(output_path):
         async with _strategy_sem:
             return await asyncio.to_thread(func, *args)
 
+    # V10.0: 扩大策略扫描范围，利用zhb零成本数据
+    # top_n: 200-300 → 500-1000，发现更多优质标的
+    _top_n_large = 1000  # 周线/形态类策略（需K线，耗时较长）
+    _top_n_medium = 500  # 财务/筹码类策略（需HTTP，中等耗时）
+    _top_n_small = 300   # 北向/流动性类策略（快速）
+
     # 策略注册（1-17 为同步函数，用 Semaphore 控制并发）
     _strategy_defs = [
         ("策略01【龙回头】", strategy_01_longhuitou, (hot_pool, today_str)),
-        ("策略02【周线多头】", strategy_02_weekly_ma, (all_stocks, 200)),
+        ("策略02【周线多头】", strategy_02_weekly_ma, (all_stocks, _top_n_medium)),
         ("策略03【量价齐升】", strategy_03_volume_breakout, (hot_pool,)),
         ("策略04【核心打折】", strategy_04_core_discount, (all_stocks,)),
         ("策略05【W底形态】", strategy_05_double_bottom,
-         (sorted(all_stocks, key=lambda x: x.get("amount_yi", 0), reverse=True)[:300], 300)),
+         (sorted(all_stocks, key=lambda x: _safe_float(x.get("amount", 0) or x.get("amount_yi", 0)), reverse=True)[:_top_n_large], _top_n_large)),
         ("策略06【红三兵】", strategy_06_three_soldiers,
-         (sorted(all_stocks, key=lambda x: x.get("turnover_pct", 0), reverse=True)[:300], 300)),
+         (sorted(all_stocks, key=lambda x: _safe_float(x.get("amount", 0) or x.get("amount_yi", 0)), reverse=True)[:_top_n_large], _top_n_large)),
         ("策略07【金叉共振】", strategy_07_golden_cross, (hot_pool,)),
         ("策略08【政策驱动】", strategy_08_policy_driven, (all_stocks, hot_pool)),
         ("策略09【日历效应】", strategy_09_calendar_rotation, ()),
         ("策略10【逆向白马】", strategy_10_contrarian_value,
-         (sorted(all_stocks, key=lambda x: x.get("mcap_yi", 999999), reverse=True)[:200], 200)),
-        ("策略11【筹码集中】", strategy_11_holder_concentration, (all_stocks, 300)),
-        ("策略12【量价信号】", strategy_12_divergence_warning, (all_stocks, 300)),
+         (sorted(all_stocks, key=lambda x: x.get("mcap_yi", 999999), reverse=True)[:_top_n_medium], _top_n_medium)),
+        ("策略11【筹码集中】", strategy_11_holder_concentration, (all_stocks, _top_n_medium)),
+        ("策略12【量价信号】", strategy_12_divergence_warning, (all_stocks, _top_n_medium)),
         ("策略13【高股息】", strategy_13_dividend_yield, (all_stocks,)),
         ("策略14【股债平衡】", strategy_14_asset_rebalance, ()),
         ("策略15【流动性王】", strategy_15_liquidity_king, (top_liquidity_pool,)),
         ("策略16【政策热度】", strategy_16_policy_heatmap, (all_stocks, hot_pool)),
-        ("策略17【北向Top】", strategy_17_northbound_top, (all_stocks, 200)),
+        ("策略17【北向Top】", strategy_17_northbound_top, (all_stocks, _top_n_small)),
         ("策略18【龙虎榜】", strategy_18_longhu_activity, (all_stocks, today_str)),
     ]
 
-    print(f"  ▶ 18 策略并行扫描（asyncio 模式，并发 3）…", flush=True)
+    print("  ▶ 18 策略并行扫描（asyncio 模式，并发 3）…", flush=True)
     _scan_t0 = time.time()
 
     _names = [item[0] for item in _strategy_defs]
@@ -1326,6 +1421,21 @@ async def run_discovery_async(output_path):
     
     print(f"  扫描完成（共 {_scan_total_time:.1f}s）", flush=True)
 
+    # V10.0: 补充缺失的股票名称（zhb数据源无name字段）
+    _all_codes = set()
+    for _items in all_selections.values():
+        for _item in _items:
+            _name = _item.get("name", "")
+            if not _name or _name == _item["code"]:
+                _all_codes.add(_item["code"])
+    if _all_codes:
+        _name_map = tencent_quote_batch(list(_all_codes))
+        for _items in all_selections.values():
+            for _item in _items:
+                _name = _item.get("name", "")
+                if not _name or _name == _item["code"]:
+                    _item["name"] = _name_map.get(_item["code"], {}).get("name", _item["code"])
+
     L("\n" + "=" * 85)
     L("  扫描结果汇总: 18个策略共产出 " + str(sum(len(v) for v in all_selections.values())) + " 次选择")
     L("─" * 85)
@@ -1336,19 +1446,19 @@ async def run_discovery_async(output_path):
         items = all_selections.get(_st_name, [])
         _k = _st_name[:4] if len(_st_name) >= 4 else _st_name
         _title = _sfmt.get(_k, _st_name)
-        L(f"\n" + "-"*85)
+        L("\n" + "-"*85)
         L(f"[{_title}]")
         if items:
             for idx2, item in enumerate(items[:5], 1):
-                L(f"  #{idx2}  {item['name']} ({item['code']})")
+                L(f"  #{idx2}  {item.get('name', '')} ({item.get('code', '')})")
                 L(f"     {item.get('reason','')}")
         else:
-            L(f"  (今日无符合该策略阈值的标的)")
+            L("  (今日无符合该策略阈值的标的)")
 
     _cf = {}
     for name, items in all_selections.items():
         for item in items:
-            _c = item["code"]; _cf[_c] = _cf.get(_c, 0) + 1
+            _c = item.get("code", ""); _cf[_c] = _cf.get(_c, 0) + 1
     _res = [(c, n) for c, n in sorted(_cf.items(), key=lambda x: x[1], reverse=True) if n >= 2]
     L(f"\n{'='*85}")
     L("[多策略共振金股推荐]")
@@ -1357,10 +1467,10 @@ async def run_discovery_async(output_path):
             _nm = _stock_map.get(code, {}).get("name", code)
             L(f"  {_nm}({code}): {cnt}个策略")
     else:
-        L(f"  今日暂无共振股票")
+        L("  今日暂无共振股票")
 
-    _zt = sum(1 for s in all_stocks if is_limit_up(s["code"], s.get("name", ""), _safe_float(s.get("change_pct", 0))))
-    _dt_total = sum(1 for s in all_stocks if is_limit_down(s["code"], s.get("name", ""), _safe_float(s.get("change_pct", 0))))
+    _zt = sum(1 for s in all_stocks if is_limit_up(s.get("code", ""), s.get("name", ""), _safe_float(s.get("change_pct", 0))))
+    _dt_total = sum(1 for s in all_stocks if is_limit_down(s.get("code", ""), s.get("name", ""), _safe_float(s.get("change_pct", 0))))
     L(f"\n{'='*85}")
     L("[风控仪表盘 & 仓位管理]")
     L(f"  涨停{_zt} | 跌停{_dt_total}")

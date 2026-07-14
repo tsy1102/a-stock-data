@@ -116,7 +116,7 @@ def _section(title: str) -> str:
 # ── 纯 Python 技术指标实现（方案1）──
 
 def _calc_macd(closes: List[float]) -> Dict[str, float]:
-    """MACD (12, 26, 9) — 返回 {dif, dea, macd, hist}"""
+    """MACD (12, 26, 9) — 返回 dif, dea, macd, hist"""
     if len(closes) < 30:
         return {}
 
@@ -762,9 +762,9 @@ def layer_ind_industry(code: str, stock_mcap: float = 0) -> Dict[str, Any]:
             pb_ratio = stock_pb / ps["pb_median"]
             ps["pb_vs_industry"] = round(pb_ratio, 2)
             if pb_ratio < 0.7:
-                result["signals"].append(f"PB相对行业偏低，具备防御价值")
+                result["signals"].append("PB相对行业偏低，具备防御价值")
             elif pb_ratio > 1.8:
-                result["signals"].append(f"PB相对行业偏高，估值偏贵")
+                result["signals"].append("PB相对行业偏高，估值偏贵")
 
         if ps["chg_avg"] != 0:
             diff = stock_chg - ps["chg_avg"]
@@ -1524,11 +1524,15 @@ def format_report(code: str, layers: Dict[str, Any]) -> str:
     _mkt_status, _mkt_note = get_market_status()
 
     L("═" * 78)
-    L(f"  个股七层全维度分析报告")
+    L("  个股七层全维度分析报告")
     L(f"  股票代码: {code}")
     L(f"  生成时间: {now}")
-    if _mkt_status in ("lunch", "closed", "post_market", "pre_market"):
-        L(f"  ⚠️ 休市日：数据为最近交易日快照，实时行情已标注")
+    if _mkt_status == "closed":
+        L("  ⚠️ 休市日：数据为最近交易日快照，实时行情已标注")
+    elif _mkt_status == "lunch":
+        L("  ⚠️ 午休时段（11:30-13:00）：行情暂停但基本面数据正常")
+    elif _mkt_status in ("post_market", "pre_market"):
+        L("  ⚠️ 非交易时段：数据为最近交易日快照，实时行情已标注")
     L("═" * 78)
 
     # 基本信息
@@ -1616,7 +1620,7 @@ def format_report(code: str, layers: Dict[str, Any]) -> str:
         has_data = False
         if l2.get("recent_reports") and isinstance(l2["recent_reports"], list):
             has_data = True
-            L(f"  近30日相关研报摘要（显示最近5条）:")
+            L("  近30日相关研报摘要（显示最近5条）:")
             for r in l2["recent_reports"][:5]:
                 rating = f"[{r.get('rating', '')}]" if r.get("rating") else ""
                 org = f"({r.get('org', '')})" if r.get("org") else ""
@@ -1626,7 +1630,7 @@ def format_report(code: str, layers: Dict[str, Any]) -> str:
                 L(f"  评级分布: {', '.join(parts)}")
         if l2.get("eps_forecast") and isinstance(l2["eps_forecast"], list):
             has_data = True
-            L(f"  EPS预测:")
+            L("  EPS预测:")
             for row in l2["eps_forecast"][:4]:
                 if isinstance(row, list) and len(row) >= 4:
                     L(f"    · {row[0]}: EPS {row[3]} 元 (机构数: {row[1]})")
@@ -1660,8 +1664,10 @@ def format_report(code: str, layers: Dict[str, Any]) -> str:
                 L(f"  行业样本: {ps.get('count', 0)}只同行 | "
                   f"行业PE中位: {_fmt_num(ps.get('pe_median'))} | "
                   f"行业PB中位: {_fmt_num(ps.get('pb_median'))}")
-                L(f"  本股相对行业: PE {_fmt_num(ps.get('pe_vs_industry'))}x | "
-                  f"PB {_fmt_num(ps.get('pb_vs_industry'))}x | "
+                pe_vs = ps.get('pe_vs_industry')
+                pb_vs = ps.get('pb_vs_industry')
+                L(f"  本股相对行业: PE {_fmt_num(pe_vs) + 'x' if pe_vs is not None else 'N/A'} | "
+                  f"PB {_fmt_num(pb_vs) + 'x' if pb_vs is not None else 'N/A'} | "
                   f"超额收益 {_fmt_pct(ps.get('chg_vs_industry'))}")
             L(f"  可比同行（Top{min(6, len(li['peers']))}）:")
             for p in li["peers"][:6]:
@@ -1694,12 +1700,12 @@ def format_report(code: str, layers: Dict[str, Any]) -> str:
                 r = ff["recent_20d"]
                 L(f"  近20日: 净 {r.get('total_net_wan', 0):+.0f}万, 净流入 {r.get('positive_days', 0)}/{r.get('total_days', 0)}日")
         if l3.get("dragon_tiger") and isinstance(l3["dragon_tiger"], list) and l3["dragon_tiger"]:
-            L(f"  龙虎榜（近30日, 最近5条）:")
+            L("  龙虎榜（近30日, 最近5条）:")
             for dt in l3["dragon_tiger"][:5]:
                 L(f"    · [{dt.get('date', '')}] {dt.get('reason', '')} | "
                   f"收盘价 {_fmt_num(dt.get('close'))} | 净买 {dt.get('net_buy_wan', 0):+.0f}万")
         if l3.get("lockup") and isinstance(l3["lockup"], list) and l3["lockup"]:
-            L(f"  限售解禁（未来90日）:")
+            L("  限售解禁（未来90日）:")
             for lk in l3["lockup"][:5]:
                 L(f"    · {lk.get('date', '')}: {lk.get('type', '')} {_fmt_num(lk.get('ratio'))}%")
         if l3.get("signals"):
@@ -1712,7 +1718,7 @@ def format_report(code: str, layers: Dict[str, Any]) -> str:
         L("")
         L(f"{'─'*36}  5. 筹码与资金结构  {'─'*26}")
         if l4.get("holder_trend") and isinstance(l4["holder_trend"], list) and l4["holder_trend"]:
-            L(f"  股东户数变化（最近在前）:")
+            L("  股东户数变化（最近在前）:")
             L(f"    {'日期':<12} {'户数':>14} {'环比变化':>12} {'变化率':>10}")
             for h in l4["holder_trend"][:5]:
                 _cr = h.get('change_ratio', 0)
@@ -1722,18 +1728,18 @@ def format_report(code: str, layers: Dict[str, Any]) -> str:
                 L(f"    {h.get('date', ''):<12} {h.get('holder_num', 0):>14,} "
                   f"{h.get('change_num', 0):>+12,.0f} {_cr_disp:>+9.2f}%{_cr_flag}")
         if l4.get("margin") and isinstance(l4["margin"], list) and l4["margin"]:
-            L(f"  融资融券余额（近5日）:")
+            L("  融资融券余额（近5日）:")
             L(f"    {'日期':<12} {'融资余额(亿)':>14} {'融资买入(万)':>14} {'融券余额(万)':>14}")
             for m in l4["margin"][:5]:
                 L(f"    {m.get('date', ''):<12} {m.get('rzye_wan', 0)/10000:>14.2f} "
                   f"{m.get('rzmre_wan', 0):>14,.0f} {m.get('rqye_wan', 0):>14,.0f}")
         if l4.get("block_trade") and isinstance(l4["block_trade"], list) and l4["block_trade"]:
-            L(f"  大宗交易（近15条）:")
+            L("  大宗交易（近15条）:")
             for bt in l4["block_trade"][:5]:
                 L(f"    · [{bt.get('date', '')}] {bt.get('amount_wan', 0):>8,.0f}万 @¥{_fmt_num(bt.get('deal_price'))} "
                   f"溢价 {_fmt_pct(bt.get('premium_pct'))} | 买方:{str(bt.get('buyer', ''))[:15]} → 卖方:{str(bt.get('seller', ''))[:15]}")
         if l4.get("holder_structure") and isinstance(l4["holder_structure"], list) and l4["holder_structure"]:
-            L(f"  十大流通股东结构（最近3季度）:")
+            L("  十大流通股东结构（最近3季度）:")
             for hs in l4["holder_structure"][:3]:
                 L(f"    · [{hs.get('date', '')}] 总占比{_fmt_num(hs.get('total'))}% | "
                   f"北向 {_fmt_num(hs.get('northbound'))}% | "
@@ -1751,7 +1757,7 @@ def format_report(code: str, layers: Dict[str, Any]) -> str:
         total_g = len(l5.get("global_related") or [])
         hl = l5.get("hot_list") or []
         if total_g == 0 and not hl:
-            L(f"  近期未检测到与该标的直接相关的重大新闻")
+            L("  近期未检测到与该标的直接相关的重大新闻")
         else:
             if total_g > 0:
                 L(f"  东财个股新闻（{total_g} 条）:")
@@ -1770,7 +1776,7 @@ def format_report(code: str, layers: Dict[str, Any]) -> str:
         L("")
         L(f"{'─'*36}  7. 基本面与财务健康  {'─'*26}")
         if l6.get("financials") and isinstance(l6["financials"], list) and l6["financials"]:
-            L(f"  利润表（最近4期）:")
+            L("  利润表（最近4期）:")
             L(f"    {'日期':<12} {'营收(亿)':>12} {'净利润(亿)':>12}")
             for f in l6["financials"][:4]:
                 L(f"    {f.get('date', ''):<12} {f.get('revenue_yi', 0):>12,.2f} {f.get('profit_yi', 0):>12,.2f}")
@@ -1788,7 +1794,7 @@ def format_report(code: str, layers: Dict[str, Any]) -> str:
             if "pct_from_high" in ratios6:
                 items.append(f"距历史高点: {ratios6['pct_from_high']:.1f}%")
             if items:
-                L(f"  关键指标: " + " | ".join(items))
+                L("  关键指标: " + " | ".join(items))
         if l6.get("balance_sheet") and isinstance(l6["balance_sheet"], list) and l6["balance_sheet"]:
             bs = l6["balance_sheet"][0]
             if isinstance(bs, dict):
@@ -1799,7 +1805,7 @@ def format_report(code: str, layers: Dict[str, Any]) -> str:
                   f"应收账款/总资产 {_fmt_num(bs.get('ar_ratio'))}% | "
                   f"现金/短债 {_fmt_num(bs.get('cash_debt_ratio'))}x")
         if l6.get("dividends") and isinstance(l6["dividends"], list) and l6["dividends"]:
-            L(f"  最近分红记录:")
+            L("  最近分红记录:")
             for d in l6["dividends"][:5]:
                 if isinstance(d, dict):
                     L(f"    · [{d.get('date', '')}] 每股派息 ¥{_fmt_num(d.get('bonus_rmb'))}")
@@ -1838,9 +1844,9 @@ def format_report(code: str, layers: Dict[str, Any]) -> str:
         L(f"{'─'*36}  9. 公告与重大事项  {'─'*28}")
         anns = l7.get("announcements") or []
         if not anns:
-            L(f"  近90日无匹配关键词的公告")
+            L("  近90日无匹配关键词的公告")
         else:
-            L(f"  近90日公告摘要（显示最近10条）:")
+            L("  近90日公告摘要（显示最近10条）:")
             for a in anns[:10]:
                 if isinstance(a, dict):
                     tag = f"[{a.get('type', '')}]" if a.get("type") else ""
@@ -1889,7 +1895,7 @@ def format_report(code: str, layers: Dict[str, Any]) -> str:
     L(f"    {'综合':<10} {scores.get('total', 0):>6.1f}  {'100%':>8}  ★")
 
     # V8.5新增：多评委评审团评分
-    L("\n  ★ 多评委评审团评分（V8.5）")
+    L("\n  ★ 多评委评审团评分")
     L("  ─────────────────────────────────────────────────────────────────────")
     try:
         # 复用 _scoring 中的数据提取逻辑，路径与 _scoring() 一致
@@ -1929,7 +1935,7 @@ def format_report(code: str, layers: Dict[str, Any]) -> str:
         advice = "【中性偏谨慎】存在多项短板或风险，需谨慎评估后决定"
     else:
         advice = "【偏谨慎】多项指标不佳或风险较高，短期建议回避"
-    L(f"")
+    L("")
     L(f"  综合投资建议: {advice}")
 
     # 总结所有各层信号
@@ -1939,7 +1945,7 @@ def format_report(code: str, layers: Dict[str, Any]) -> str:
             for s in ld["signals"]:
                 all_signals_flat.append((layer_name, s))
     if all_signals_flat:
-        L(f"")
+        L("")
         L(f"  ★ 全部关键信号汇总（共 {len(all_signals_flat)} 条）:")
         for ln, s in all_signals_flat:
             display = {
@@ -1952,7 +1958,7 @@ def format_report(code: str, layers: Dict[str, Any]) -> str:
     # 失败层提示
     failed = [k for k, v in layers.items() if isinstance(v, dict) and not v.get("ok", True)]
     if failed:
-        L(f"")
+        L("")
         L(f"  ⚠️ 以下层数据获取异常: {', '.join(failed)}")
 
     L("")
@@ -2025,7 +2031,7 @@ def analyze_stock(code: str, parallel: bool = True) -> Tuple[str, str]:
     # 第2轮：Layer_RISK（依赖L3/L4/L6已有数据）
     try:
         layers["layer_risk"] = layer_risk(code, layers_ref=layers)
-        print(f"  ✓ layer_risk 完成", flush=True)
+        print("  ✓ layer_risk 完成", flush=True)
     except Exception as e:
         layers["layer_risk"] = {"ok": False, "signals": [f"异常: {e}"]}
 
@@ -2187,8 +2193,12 @@ def main():
     header_lines.append("=" * 78)
     header_lines.append("  A股九层全维度分析引擎")
     header_lines.append(f"  启动时间: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
-    if _mkt_status in ("lunch", "closed", "post_market", "pre_market"):
-        header_lines.append(f"  ⚠️ 休市日：数据为最近交易日快照，实时行情已标注")
+    if _mkt_status == "closed":
+        header_lines.append("  ⚠️ 休市日：数据为最近交易日快照，实时行情已标注")
+    elif _mkt_status == "lunch":
+        header_lines.append("  ⚠️ 午休时段（11:30-13:00）：行情暂停但基本面数据正常")
+    elif _mkt_status in ("post_market", "pre_market"):
+        header_lines.append("  ⚠️ 非交易时段：数据为最近交易日快照，实时行情已标注")
     header_lines.append(f"  分析标的: {', '.join(codes)}")
     header_lines.append(f"  并行模式: {'OFF(顺序)' if args.no_parallel else f'ON({_MAX_WORKERS}线程)'}  |  GD上传: {'SKIP' if args.no_upload else '启用'}")
     header_lines.append(f"  输出目录: {output_dir}")

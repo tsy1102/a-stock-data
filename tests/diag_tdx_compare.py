@@ -37,14 +37,14 @@ print("\n--- easy-tdx ---")
 try:
     from easy_tdx import TdxClient, Market, KlineCategory
     import easy_tdx
-    print(f"  包名: easy_tdx")
+    print("  包名: easy_tdx")
     try:
         import importlib.metadata
         ver = importlib.metadata.version("easy-tdx")
         print(f"  版本: {ver}")
     except:
-        print(f"  版本: 未知")
-    print(f"  核心类: TdxClient, Market, KlineCategory, MacClient")
+        print("  版本: 未知")
+    print("  核心类: TdxClient, Market, KlineCategory, MacClient")
     print(f"  TdxClient方法: {[m for m in dir(TdxClient) if not m.startswith('_')]}")
     print(f"  KlineCategory属性: {[m for m in dir(KlineCategory) if not m.startswith('_')]}")
     print(f"  Market属性: {[m for m in dir(Market) if not m.startswith('_')]}")
@@ -56,7 +56,7 @@ print("\n--- mootdx ---")
 try:
     import mootdx
     from mootdx.quotes import Quotes
-    print(f"  包名: mootdx")
+    print("  包名: mootdx")
     print(f"  版本: {mootdx.__version__}")
     q = Quotes.factory(market='std')
     inst_methods = [m for m in dir(q) if not m.startswith('_')]
@@ -79,7 +79,6 @@ print("\n--- easy-tdx 日K线 ---")
 easy_bars = None
 t0 = time.time()
 try:
-    from easy_tdx import TdxClient, Market, KlineCategory
     client = TdxClient.from_best_host()
     client.connect()
     easy_bars = client.get_security_bars(Market.SH, TEST_CODE, KlineCategory.DAY, 0, 10)
@@ -125,7 +124,7 @@ if easy_bars is not None and mootdx_bars is not None:
     print(f"  easy-tdx 收盘价: {easy_close}")
     print(f"  mootdx  收盘价: {mootdx_close}")
     if easy_close == mootdx_close:
-        print(f"  ✅ 收盘价完全一致")
+        print("  ✅ 收盘价完全一致")
     else:
         diff = [abs(a-b) for a, b in zip(easy_close, mootdx_close)]
         print(f"  ⚠️ 收盘价有差异: {diff}")
@@ -230,7 +229,7 @@ try:
         print(f"  列名: {list(easy_ff.columns)}")
         print(f"  前3行: {easy_ff.head(3).to_dict('records')}")
     else:
-        print(f"  返回空数据")
+        print("  返回空数据")
     client.close()
 except Exception as e:
     print(f"  ❌ 失败: {e}")
@@ -241,7 +240,7 @@ try:
     if hasattr(q, 'finance'):
         print(f"  finance方法签名: {inspect.signature(q.finance)}")
     # mootdx 没有直接的资金流接口
-    print(f"  mootdx 无直接资金流接口（需通过其他方式获取）")
+    print("  mootdx 无直接资金流接口（需通过其他方式获取）")
     # 检查是否有相关方法
     ff_methods = [m for m in dir(q) if 'flow' in m.lower() or 'fund' in m.lower() or 'finance' in m.lower()]
     print(f"  资金流相关方法: {ff_methods}")
@@ -287,7 +286,7 @@ try:
             print(f"  列名: {list(block_data.columns)}")
             print(f"  前3行: {block_data.head(3).to_dict('records')}")
     else:
-        print(f"  mootdx 无block方法")
+        print("  mootdx 无block方法")
     # 检查板块相关方法
     block_methods = [m for m in dir(q) if 'block' in m.lower()]
     print(f"  板块相关方法: {block_methods}")
@@ -309,7 +308,7 @@ try:
     xdxr_methods = [m for m in client_methods if 'xdxr' in m.lower() or 'adjust' in m.lower() or 'right' in m.lower()]
     print(f"  TdxClient复权相关方法: {xdxr_methods}")
     if not xdxr_methods:
-        print(f"  easy-tdx 无内置复权方法")
+        print("  easy-tdx 无内置复权方法")
 except Exception as e:
     print(f"  ❌ 失败: {e}")
 

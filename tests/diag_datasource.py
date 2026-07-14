@@ -86,7 +86,7 @@ def test_push2_eastmoney():
         }
         r = requests.get(url, params=params, headers={"User-Agent": UA}, timeout=15)
         data = r.json()
-        if data.get("data") and data["data"].get("diff"):
+        if data.get("data") and data["data"].get("dif"):
             return {"status": "success", "data": f"返回 {len(data['data']['diff'])} 条股票"}
         return {"status": "failed", "error": "返回数据为空"}
     except Exception as e:

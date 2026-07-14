@@ -20,7 +20,7 @@ get_lng_report.py — A股长线价投专属深度体检报告
     V8.0 2026-06-17 - 初始版本
 """
 
-import argparse, requests, math, time, pandas as pd, re
+import argparse, math, pandas as pd
 import asyncio
 from datetime import date, datetime, timedelta
 import os, sys
@@ -107,22 +107,6 @@ async def _get_eps_from_em_reports_async(session, code):
 
 # ==================== 报告生成引擎 ====================
 
-def generate_report(code, output_path, ind_comp=None):
-    """已废弃同步入口，内部转发异步版（V8.7 删除同步实现）。
-
-    历史上 sht/med/lng 的同步 generate_report 与异步 generate_report_async
-    是两套几乎相同的实现，同步版零调用，故删除同步实现、保留薄包装转发。
-    """
-    async def _run():
-        session = await create_async_session()
-        try:
-            return await generate_report_async(session, code, output_path, ind_comp=ind_comp)
-        finally:
-            await session.close()
-    return asyncio.run(_run())
-
-
-
 async def generate_report_async(session, code, output_path, ind_comp=None):
     """async 版: 长线价值体检报告生成引擎"""
     today_str = date.today().strftime("%Y-%m-%d")
@@ -136,8 +120,12 @@ async def generate_report_async(session, code, output_path, ind_comp=None):
     L("")
 
     _mkt_status, _mkt_note = get_market_status()
-    if _mkt_status in ("lunch", "closed", "post_market", "pre_market"):
-        L(f"  ⚠️ 休市日：数据为最近交易日快照，基本面数据不受影响")
+    if _mkt_status == "closed":
+        L("  ⚠️ 休市日：数据为最近交易日快照，基本面数据不受影响")
+    elif _mkt_status == "lunch":
+        L("  ⚠️ 午休时段（11:30-13:00）：行情暂停但基本面数据正常")
+    elif _mkt_status in ("post_market", "pre_market"):
+        L("  ⚠️ 非交易时段：数据为最近交易日快照，基本面数据不受影响")
     L("")
 
     L("\n【一、企业基本盘与绝对估值锚点】")
@@ -191,7 +179,7 @@ async def generate_report_async(session, code, output_path, ind_comp=None):
     L(f"  总股本:   {info.get('total_shares', 0)/1e8:.2f}亿股 | 总市值: {q.get('mcap_yi', 0):.2f}亿元")
     L(f"  当前股价: {price_today:.2f}元")
     
-    L(f"\n  ➤ 长线估值安全边际指标:")
+    L("\n  ➤ 长线估值安全边际指标:")
     _pe = q.get('pe_ttm', 0)
     if _pe > 0:
         _ey = f"{100/_pe:.2f}%"
@@ -212,7 +200,7 @@ async def generate_report_async(session, code, output_path, ind_comp=None):
             _debug_log(f"lng tdx_finance_info error: {_e}")
     L(f"    市盈率 PE(TTM): {_pe:.2f}x (盈利收益率粗估: {_ey})")
     _pe_static = q.get('pe_static', 0)
-    L(f"    市盈率 PE(静态): {_pe_static:.2f}x" if _pe > 0 and _pe_static > 0 else f"    市盈率 PE(静态): N/A（亏损）")
+    L(f"    市盈率 PE(静态): {_pe_static:.2f}x" if _pe > 0 and _pe_static > 0 else "    市盈率 PE(静态): N/A（亏损）")
     L(f"    市净率 PB:      {q.get('pb', 0):.2f}x")
     
     if peer_data_lng.get("my_rank", 0) > 0 and peer_data_lng.get("industry_count", 0) > 0:
@@ -250,7 +238,7 @@ async def generate_report_async(session, code, output_path, ind_comp=None):
         L("  (新浪财报数据获取失败)")
 
     bs_data = await get_sina_balance_sheet_async(session, code)
-    L(f"\n  ➤ 核心复利引擎（ROE净资产收益率追踪）:")
+    L("\n  ➤ 核心复利引擎（ROE净资产收益率追踪）:")
     ext_roe_data = get_roe_trend(code, 8, financials=financials, bs_data=bs_data,
                                   total_shares=info.get("total_shares", 0))
     if ext_roe_data:
@@ -293,7 +281,7 @@ async def generate_report_async(session, code, output_path, ind_comp=None):
             except (ValueError, TypeError, ZeroDivisionError):
                 pass
         if gm_rows:
-            L(f"\n  ➤ 盈利能力与护城河追踪:")
+            L("\n  ➤ 盈利能力与护城河追踪:")
             L(f"  {'报告期':<12} {'毛利率%':>10} {'净利率%':>10}")
             L(f"  {'-'*35}")
             for g in gm_rows:
@@ -345,7 +333,7 @@ async def generate_report_async(session, code, output_path, ind_comp=None):
             if gw_ratio > 20:
                 L(f"  ⚠️ 爆雷预警：商誉占净资产 {gw_ratio:.1f}% > 20%，注意行业周期下行时的商誉减值黑天鹅！")
             else:
-                L(f"  ✅ 商誉占比在安全范围内 (< 20%)。")
+                L("  ✅ 商誉占比在安全范围内 (< 20%)。")
         L(f"  资产负债率: {100 - equity_yi/asset_yi*100:.1f}%（截至 {bs_data[0].get('报告日','')}）" if asset_yi > 0 else "")
         _st_loan = _safe_float(bs_data[0].get("短期借款", "0")) / 1e8
         _lt_loan = _safe_float(bs_data[0].get("长期借款", "0")) / 1e8
@@ -373,7 +361,7 @@ async def generate_report_async(session, code, output_path, ind_comp=None):
             if cash_ratio < 80:
                 L(f"  ⚠️ 警惕：经营现金流仅为净利润的 {cash_ratio:.1f}%，存在利润造假或严重压货风险，现金含量不足！")
             else:
-                L(f"  ✅ 经营现金流覆盖净利润充足 (> 80%)，利润含金量高。")
+                L("  ✅ 经营现金流覆盖净利润充足 (> 80%)，利润含金量高。")
         elif _tdx_np < 0 and _tdx_ocf < 0:
             L(f"\n  经营现金流: {ocf_yi:.2f}亿元 | 净利润: {np_yi:.2f}亿元 (均为负值，持续失血状态)")
         else:
@@ -438,7 +426,7 @@ async def generate_report_async(session, code, output_path, ind_comp=None):
             eps_next = em_eps["eps_next"]
             eps_has_data = True
             this_year = date.today().year
-            L(f"  东财研报一致预期EPS (同花顺兜底):")
+            L("  东财研报一致预期EPS (同花顺兜底):")
             L(f"  {'年度':<14} {'预测EPS'}")
             L(f"  {'-'*30}")
             if eps_cur:
@@ -447,12 +435,12 @@ async def generate_report_async(session, code, output_path, ind_comp=None):
                 L(f"  {this_year + 1:<14} {eps_next:.3f}")
     if eps_has_data and price_today and eps_cur and eps_cur > 0:
         pe_fwd = price_today / eps_cur
-        L(f"\n  ➤ 基于机构预期的远期估值消化推演:")
+        L("\n  ➤ 基于机构预期的远期估值消化推演:")
         L(f"    前向市盈率 (本年度): {pe_fwd:.2f}x")
         if eps_next and eps_cur > 0:
             cagr = (eps_next / eps_cur) - 1
             L(f"    未来一年预期净利增速: {cagr*100:.1f}%")
-            peg = pe_fwd / (cagr * 100) if cagr > 0 else float("inf")
+            peg = pe_fwd / (cagr * 100) if cagr > 0 else float("in")
             if peg > 5:
                 L(f"    PEG: >5.0（增速过低或PE过高导致极端值，不具参考意义）")
             else:
@@ -474,7 +462,7 @@ async def generate_report_async(session, code, output_path, ind_comp=None):
                 if digest_25 > 0:
                     L(f"    模型测算：当前估值消化至 25 倍合理市盈率约需 {digest_25:.1f} 年")
                 else:
-                    L(f"    模型测算：当前估值已低于/等于 25 倍合理水位线，具备长线配置的安全垫。")
+                    L("    模型测算：当前估值已低于/等于 25 倍合理水位线，具备长线配置的安全垫。")
     else:
         L("  无足够机构覆盖（冷门标的，长线投研需完全依赖自主财务尽调）。")
 
@@ -482,7 +470,7 @@ async def generate_report_async(session, code, output_path, ind_comp=None):
     L("─" * 72)
     div = get_dividend_history(code)
     if div:
-        L(f"  近5次分红除息记录:")
+        L("  近5次分红除息记录:")
         L(f"  {'除权除息日':<14} {'每股派息(元)':>8} {'折算对应股价股息率参考'}")
         L(f"  {'-'*55}")
         total_div_12m = 0.0
@@ -548,9 +536,9 @@ async def generate_report_async(session, code, output_path, ind_comp=None):
                 _dir = "↑" if chg > 0 else "↓"
                 L(f"\n  持股集中度变化: {prv['total']:.1f}% → {latest['total']:.1f}% ({_dir}{abs(chg):.1f}个百分点)")
                 if chg > 1:
-                    L(f"    ✅ 筹码趋于集中，主力资金持续吸筹")
+                    L("    ✅ 筹码趋于集中，主力资金持续吸筹")
                 elif chg < -1:
-                    L(f"    ⚠️ 筹码趋于分散，主力可能在出货")
+                    L("    ⚠️ 筹码趋于分散，主力可能在出货")
     else:
         L("  机构持股数据获取失败。")
 
@@ -601,7 +589,7 @@ async def generate_report_async(session, code, output_path, ind_comp=None):
         L(f"  统计样本: 近 {len(reports)} 篇研报 | 参与覆盖的独立券商/机构: {len(org_set)} 家")
         L(f"  ➤ 【买入】评级: {buy_count} 篇 | 【增持】评级: {add_count} 篇")
         
-        L(f"\n  最新 10 篇核心研报观点:")
+        L("\n  最新 10 篇核心研报观点:")
         L(f"  {'日期':<12} {'机构':<16} {'评级':<10} {'标题'}")
         L(f"  {'-'*70}")
         _rp = [r for r in reports if str(r.get("publishDate",""))[:10] >= (date.today() - timedelta(days=730)).strftime("%Y-%m-%d")]
@@ -614,9 +602,9 @@ async def generate_report_async(session, code, output_path, ind_comp=None):
                 title = r.get("summary", "")[:50] if r.get("summary") else "无标题"
             L(f"  {pub_date:<12} {org:<16} {str(rating):<10} {title}")
         if len(org_set) > 10:
-            L(f"\n  ✅ 结论：该股受到主流外脑机构的广泛覆盖，基本面透明度高，财务造假阻力大。")
+            L("\n  ✅ 结论：该股受到主流外脑机构的广泛覆盖，基本面透明度高，财务造假阻力大。")
         elif len(org_set) == 0:
-            L(f"  ⚠️ 结论：机构荒漠，散户主导的冷门股，长线重仓需谨慎。")
+            L("  ⚠️ 结论：机构荒漠，散户主导的冷门股，长线重仓需谨慎。")
     else:
         L("  暂无任何研报覆盖数据。")
 
@@ -707,7 +695,7 @@ async def generate_report_async(session, code, output_path, ind_comp=None):
         _debug_log(f"lng multi_school_score error: {_e}")
 
     L("\n" + "=" * 72)
-    L(f"  长线基石: 强劲自由现金流 / 持续高 ROE / 合理估值 / 高股息防御")
+    L("  长线基石: 强劲自由现金流 / 持续高 ROE / 合理估值 / 高股息防御")
     L("=" * 72)
 
     # 累积快照数据（批量结束后统一写入）

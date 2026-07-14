@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """使用SKILL.md中的正确接口重新测试4、5、6"""
 
-import sys, os, json, hashlib, urllib.request, ssl
+import sys, os, json, hashlib, urllib.request, ssl, datetime
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from stock_common import _quick_request, UA
@@ -33,12 +33,11 @@ try:
         roll_data = data.get("roll_data", [])
         print(f"快讯数量: {len(roll_data)}")
         if roll_data:
-            print(f"\n前5条快讯:")
+            print("\n前5条快讯:")
             for item in roll_data[:5]:
                 ts = item.get("ctime")
-                import datetime
                 t = datetime.datetime.fromtimestamp(ts).strftime("%Y-%m-%d %H:%M:%S") if ts else ""
-                title = item.get("title", "") or item.get("brief", "")
+                title = item.get("title", "") or item.get("brie", "")
                 print(f"  {t} | {title[:60]}")
             print(f"\n字段示例: {list(roll_data[0].keys())[:10]}...")
         else:
@@ -81,10 +80,9 @@ try:
             rows = d2.get("rows", [])
             print(f"第二步返回: {len(rows)}条问答")
             if rows:
-                print(f"\n前5条问答:")
+                print("\n前5条问答:")
                 for item in rows[:5]:
                     pd = item.get("pubDate")
-                    import datetime
                     t = datetime.datetime.fromtimestamp(pd / 1000).strftime("%Y-%m-%d %H:%M") if pd else ""
                     q = item.get("mainContent", "")[:50]
                     a = item.get("attachedContent", "")[:50] if item.get("attachedContent") else "(未回复)"
@@ -112,7 +110,7 @@ _ctx = ssl._create_unverified_context()
 # 深交所龙虎榜
 print("\n--- 深交所龙虎榜 ---")
 try:
-    su = (f"https://www.szse.cn/api/report/ShowReport/data?SHOWTYPE=JSON"
+    su = ("https://www.szse.cn/api/report/ShowReport/data?SHOWTYPE=JSON"
           f"&CATALOGID=1842_xxpl&TABKEY=tab1&txtStart={today}&txtEnd={today}&random=0.9")
     req = urllib.request.Request(su, headers={"User-Agent": UA,
           "Referer": "https://www.szse.cn/disclosure/supervision/dealinfo/index.html"})
@@ -132,7 +130,7 @@ except Exception as e:
 # 上交所龙虎榜
 print("\n--- 上交所龙虎榜 ---")
 try:
-    eu = (f"https://query.sse.com.cn/infodisplay/showTradePublicFile.do?"
+    eu = ("https://query.sse.com.cn/infodisplay/showTradePublicFile.do?"
           f"jsonCallBack=cb&isPagination=false&dateTx={today}")
     req = urllib.request.Request(eu, headers={"User-Agent": UA,
           "Referer": "https://www.sse.com.cn/disclosure/diclosure/public/"})

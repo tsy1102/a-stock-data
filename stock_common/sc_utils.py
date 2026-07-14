@@ -114,24 +114,20 @@ def get_board_type(code: str, name: str = "") -> str:
 
 
 def is_limit_up(code: str, name: str, change_pct: float) -> bool:
-    """V7.5: 统一涨停判断。区分板块阈值。"""
+    """V7.5: 统一涨停判断。区分板块阈值。V10.0: ST涨跌幅放宽至10%。"""
     if not change_pct:
         return False
     board = get_board_type(code, name)
-    if board == "ST":
-        return change_pct >= 4.8
     if board in ("创业板", "科创板"):
         return change_pct >= 19.5
     return change_pct >= 9.5
 
 
 def is_limit_down(code: str, name: str, change_pct: float) -> bool:
-    """V7.5: 统一跌停判断。区分板块阈值。"""
+    """V7.5: 统一跌停判断。区分板块阈值。V10.0: ST涨跌幅放宽至10%。"""
     if not change_pct:
         return False
     board = get_board_type(code, name)
-    if board == "ST":
-        return change_pct <= -4.8
     if board in ("创业板", "科创板"):
         return change_pct <= -19.5
     return change_pct <= -9.5

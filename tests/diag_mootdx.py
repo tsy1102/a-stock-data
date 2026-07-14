@@ -9,11 +9,11 @@ from mootdx.quotes import Quotes
 import inspect
 
 print(f"mootdx版本: {mootdx.__version__}")
-print(f"\nQuotes类属性:")
+print("\nQuotes类属性:")
 attrs = [a for a in dir(Quotes) if not a.startswith('_')]
 print(f"  {attrs}")
 
-print(f"\nQuotes类方法签名:")
+print("\nQuotes类方法签名:")
 for name in attrs:
     try:
         obj = getattr(Quotes, name)
@@ -26,7 +26,7 @@ for name in attrs:
 print("\n--- 测试获取分钟线 ---")
 try:
     q = Quotes.factory(market='std')
-    print(f"\nQuotes实例方法:")
+    print("\nQuotes实例方法:")
     inst_attrs = [a for a in dir(q) if not a.startswith('_')]
     print(f"  {inst_attrs}")
     

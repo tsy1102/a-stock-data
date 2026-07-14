@@ -116,7 +116,7 @@ def _run_oauth_flow(base_dir: str):
         secrets_path = os.path.join(base_dir, _CLIENT_SECRETS_FILENAME)
         if not os.path.exists(secrets_path):
             print(f"  ❌ 缺少 {_CLIENT_SECRETS_FILENAME}，请从 Google Cloud Console 下载：", flush=True)
-            print(f"     https://console.cloud.google.com/apis/credentials", flush=True)
+            print("     https://console.cloud.google.com/apis/credentials", flush=True)
             return None
         flow = InstalledAppFlow.from_client_secrets_file(secrets_path, _SCOPES)
         creds = flow.run_local_server(port=0)
@@ -334,7 +334,7 @@ def upload_or_update_to_drive(service, local_path: str, parent_id: str, file_nam
         try:
             # 1) 查同名文件
             q = (f"name='{file_name}' and '{parent_id}' in parents "
-                 f"and mimeType!='application/vnd.google-apps.folder' and trashed=false")
+                 "and mimeType!='application/vnd.google-apps.folder' and trashed=false")
             resp = service.files().list(q=q, spaces="drive", fields="files(id)", pageSize=5).execute()
             existing = resp.get("files", [])
 
@@ -392,81 +392,6 @@ def _make_stock_folder_name(code: str, full_name: str) -> str:
 
 
 # ────────────────────────────────────────────────────────────────
-# 5. 统一编排：供 5 个报告脚本 __main__ 复用
-# ────────────────────────────────────────────────────────────────
-def gd_auth_and_get_parent(base_dir: str, root_folder_name: str = "a-stock-data",
-                          interactive: bool = True) -> Tuple[Optional[Any], Optional[str], bool]:
-    """统一编排：授权 → 获取/创建根文件夹。
-
-    参数:
-        base_dir: 项目根目录
-        root_folder_name: 根文件夹名称
-        interactive: True=使用交互式重试，False=自动重试3次后退出
-
-    返回: (service, parent_folder_id, proxy_was_set)
-    """
-    service, proxy_was_set = None, False
-
-    # 3 次重试（网络不稳定时）
-    for _ in range(3):
-        try:
-            service, proxy_was_set = init_google_drive(base_dir)
-            if service:
-                break
-        except Exception as e:
-            print(f"  ⚠️ GD 连接异常: {e}", flush=True)
-        print("  ⚠️ GD 连接失败，10 秒后重试…", flush=True)
-        time.sleep(10)
-
-    if not service:
-        print("  ❌ Google Drive 连接失败（Token 可能过期或代理不可用）", flush=True)
-        return None, None, proxy_was_set
-
-    # 获取/创建根目录
-    if interactive:
-        parent_id = retry_get_folder_interactive(service, root_folder_name, None, max_auto_retry=0)
-    else:
-        parent_id = None
-        for _ in range(3):
-            parent_id = get_or_create_drive_folder(service, root_folder_name)
-            if parent_id:
-                break
-            print("  ⚠️ GD 文件夹探测失败，3 秒后重试…", flush=True)
-            time.sleep(3)
-        if not parent_id:
-            print("  ❌ GD 根文件夹创建失败", flush=True)
-
-    return service, parent_id, proxy_was_set
-
-
-def run_report_to_gd(base_dir: str, local_txt_path: str, code_subfolder: str,
-                     root_folder_name: str = "a-stock-data") -> bool:
-    """一步式：授权 → 创建子文件夹 → 上传文件。
-
-    :param base_dir: 项目根目录（存放 client_secrets.json / credentials.json）
-    :param local_txt_path: 本地报告文件路径
-    :param code_subfolder: 子文件夹名，例 "600519-茅台" 或 "mak" / "val"
-    :param root_folder_name: 根文件夹名（默认 "a-stock-data"）
-    :return: True 表示上传成功
-    """
-    if not os.path.exists(local_txt_path):
-        print(f"  ❌ 本地报告不存在：{local_txt_path}", flush=True)
-        return False
-
-    service, parent_id, proxy_set = gd_auth_and_get_parent(base_dir, root_folder_name)
-    try:
-        if not service or not parent_id:
-            return False
-        # 创建代码子文件夹
-        code_folder_id = get_or_create_drive_folder(service, code_subfolder, parent_id)
-        if not code_folder_id:
-            return False
-        file_name = os.path.basename(local_txt_path)
-        return upload_or_update_to_drive(service, local_txt_path, code_folder_id, file_name)
-    finally:
-        cleanup_gd_proxy(proxy_set)
-
-
 # ────────────────────────────────────────────────────────────────
 # 6. 统一高层 API —— init_gd / upload_stock_report_by_code / upload_type_reports
 #    供 sht/med/lng/val/mak/full 等所有脚本统一复用
@@ -600,7 +525,7 @@ def upload_type_reports(drive, parent_folder_id: str, type_name: str,
     # 过滤存在的文件
     valid_paths = [p for p in file_paths if os.path.exists(p)]
     if not valid_paths:
-        print(f"  ⚠️ 没有可上传的本地报告", flush=True)
+        print("  ⚠️ 没有可上传的本地报告", flush=True)
         return 0
 
     # 1) 获取/创建类型子文件夹（交互式重试）

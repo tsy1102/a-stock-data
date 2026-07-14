@@ -14,7 +14,7 @@ if __name__ == "__main__":
     print(" easy_tdx 内置服务器 K线可用性测试")
     print("=" * 70)
     print(f"  共 {len(_FALLBACK_HOSTS)} 个内置服务器，端口 {port}")
-    print(f"  测试内容: get_security_bars(SH, 600519, DAY, 0, 3)")
+    print("  测试内容: get_security_bars(SH, 600519, DAY, 0, 3)")
     print("-" * 70)
     print(f"  {'#':<3} {'IP':<18} {'状态':<10} {'详情'}")
     print("-" * 70)

@@ -99,6 +99,19 @@ __all__ = [
     "ths_limit_up_pool",
     "get_eastmoney_minute_fund_flow", "get_fund_flow_weighted",
     "cls_telegraph", "dragon_tiger_backup", "fund_flow_backup", "cninfo_irm",
+    # zhb A级数据（V9.6）
+    "get_zhb_sp_block", "get_zhb_sp_block_list", "get_zhb_sw_industries",
+    "get_zhb_industry_map", "get_zhb_data_date",
+    # zhb B级数据（V9.6 阶段二）
+    "get_zhb_stock_stat", "get_zhb_stock_stat2", "get_zhb_market_snapshot",
+    "get_zhb_52w_range", "get_zhb_industry_code", "is_zhb_data_fresh",
+    # zhb 辅助数据（V9.6 阶段三）
+    "get_zhb_tip_info", "get_zhb_ipo_list", "get_zhb_ah_stocks", "get_zhb_broker_name",
+    # zhb V10.0 新增
+    "get_zhb_holidays", "get_zhb_csrc_industries", "get_zhb_adr_stocks",
+    "get_zhb_convertible_bonds", "get_zhb_delisted_stocks",
+    # zhb V10.0 智能日期筛选
+    "should_use_zhb_data", "is_zhb_date_matching",
 ]
 
 # ═══════════════════════════════════════════════════════════════
@@ -227,6 +240,19 @@ from stock_common.sc_datasource import (
     get_eastmoney_minute_fund_flow, get_fund_flow_weighted,
     # 财联社快讯/官方备胎池/舆情互动层（V9.6）
     cls_telegraph, dragon_tiger_backup, fund_flow_backup, cninfo_irm,
+    # zhb A级数据（V9.6）
+    get_zhb_sp_block, get_zhb_sp_block_list, get_zhb_sw_industries,
+    get_zhb_industry_map, get_zhb_data_date,
+    # zhb B级数据（V9.6 阶段二）
+    get_zhb_stock_stat, get_zhb_stock_stat2, get_zhb_market_snapshot,
+    get_zhb_52w_range, get_zhb_industry_code, is_zhb_data_fresh,
+    # zhb 辅助数据（V9.6 阶段三）
+    get_zhb_tip_info, get_zhb_ipo_list, get_zhb_ah_stocks, get_zhb_broker_name,
+    # zhb V10.0 新增
+    get_zhb_holidays, get_zhb_csrc_industries, get_zhb_adr_stocks,
+    get_zhb_convertible_bonds, get_zhb_delisted_stocks,
+    # zhb V10.0 智能日期筛选
+    should_use_zhb_data, is_zhb_date_matching,
 )
 
 

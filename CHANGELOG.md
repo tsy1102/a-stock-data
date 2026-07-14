@@ -5,6 +5,88 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [10.0] - 2026-07-14
+
+### Added
+
+- **zhb全局配置总包全面升级**：
+  - **进程安全文件锁**：`zhb_client.py` 新增 `_acquire_file_lock`/`_release_file_lock` 函数，多进程并发下载时自动加锁，避免重复下载和文件损坏
+  - **磁盘空间保护**：新增 `_check_disk_space` 函数，空间不足（<100MB）时自动清理旧缓存，保留最新文件
+  - **智能日期筛选**：新增 `should_use_zhb_data()`/`is_zhb_date_matching()` 函数，根据当前时机（收盘后/开盘前/休市日/盘中）智能判断是否使用zhb数据，盘中强制实时获取
+  - **节假日数据导出**：新增 `get_zhb_holidays` 函数，导出 needini.dat 中的节假日列表（1991-2030），返回 YYYYMMDD 字符串列表
+  - **证监会行业分类**：新增 `get_zhb_csrc_industries` 函数，解析 incon.dat（3703个行业分类），涵盖A-S门类
+  - **中概股ADR**：新增 `get_zhb_adr_stocks` 函数，解析 tdxadr.cfg（30只中概股ADR对应表）
+  - **可转债数据**：新增 `get_zhb_convertible_bonds` 函数，解析 othersg.cfg（可转债信息）
+  - **退市股对照表**：新增 `get_zhb_delisted_stocks` 函数，解析 pttab.dat（股票代码对照表，含退市股）
+- **行业分类统一为申万标准**：zhb.tdxzs3 提供完整的申万行业分类（467个四级分类），对标公募基金标准，通达信行业作为降级方案
+- **pytdx依赖**：`requirements.txt` 新增 `pytdx>=1.0`，用于 zhb.zip 协议下载
+- **缓存命中率统计**：`stock_cache.py` 新增 `_CACHE_STATS` 全局计数器和 `print_cache_stats()` 函数，通过 `atexit` 在进程退出时自动打印总命中率和分类命中率（按未命中数降序显示前10个低命中率分类）
+- **main.py任务顺序优化**：调整脚本执行顺序为 `val → mak → sht → med → lng → ful`，全市场扫描产生的缓存被后续单股分析脚本复用
+
+### Changed
+
+- **死代码清理**：
+  - `gd_uploader.py`：删除 `run_report_to_gd`、`gd_auth_and_get_parent`
+  - `get_lng_report.py`/`get_med_report.py`：删除 `generate_report` 同步包装函数
+  - `get_val_report.py`：删除 `get_all_stocks`、`filter_top_liquidity_pool`
+  - `stock_cache.py`：删除 `cached_async`、`_async_get_cache`、`_async_set_cache`、`_async_enforce_size_limit_bg`、`_get_async_db` 及相关全局变量
+  - `tdx_client.py`：删除 `tdx_cache_clear`、`tdx_get_security_bars_qfq`
+  - `zhb_client.py`：删除 `_load_from_cache` 和 `import struct`
+  - `stock_common/seat_db.py`：删除 `get_seat_style_tags`、`get_premium_label`、`is_in_seat_range`、`format_seat_summary`
+- **冗余导入清理**：`get_mak_report.py`、`get_lng_report.py`、`get_med_report.py` 移除未使用的 `requests`, `json`, `math`, `time`, `re`；`stock_cache.py` 删除重复的 `import asyncio`；`tests/diag_tdx_compare.py` 删除重复的 `TdxClient` 导入
+- **无效 f-string 批量清理**：自动清理 27 个文件中的 364 处无效 f-string（`f"..."` 中无 `{}` 占位符），消除 F541 警告
+- **文件锁竞态条件修复**：`zhb_client.py` 的 `_release_file_lock()` 读取锁文件中的 PID，仅当匹配当前进程时才删除锁文件
+- **\u9fff Unicode 转义修复**：`stock_common/sc_datasource.py` 第684行 `\u9ff` 补全为 `\u9fff`
+- **datetime 导入修复**：`tests/diag_v96_skill_verify.py` 将循环内重复导入移到顶部
+- **正则转义警告修复**：`tests/diag_dragon_tiger.py` 文档字符串路径反斜杠改为双反斜杠
+- **stock_common/__init__.py 导出更新**：`__all__` 列表和 `from sc_datasource import` 块新增7个 V10.0 函数导出
+- **节假日数据整合**：`stock_calendar.py` 的 `is_workday()` 优先使用 zhb.needini.dat 节假日数据，本地数据仅作为 fallback
+- **删除百度K线fallback**：移除 `_baidu_kline_full_fallback()` 函数及所有调用点，TDX失败时返回空数据
+- **缓存TTL优化**：根据数据特性延长TTL，减少重复网络请求
+  - `kline`/`fund_flow`/`limit_pool`/`dragon_tiger`：1天→7天（历史数据收盘后不变）
+  - `northbound`：7天→30天 | `margin_trading`/`block_trade`/`hsgt_flow`：3天→14天
+  - `lockup_expiry`：7天→90天（解禁日期固定） | `announcements`：7天→30天
+  - `basic_info`/`concept_blocks`：7天→30天（低频变动）
+- **get_val_report.py优化**：
+  - 使用 `zhb.stock_stats` 替代 `tdx_get_all_stocks`，全市场数据加载从7.7秒降至<0.1秒，零HTTP请求
+  - 扩大策略扫描范围：周线/形态类策略 top_n 200-300→1000，财务/筹码类策略 200-300→500，北向/流动性类策略 200→300
+  - 流动性池从Top300扩大到Top500
+
+### Fixed
+
+- **运行时崩溃隐患修复**：
+  - `sc_datasource.py:756`：添加缺失的 `tdx_get_quote_full` 导入
+  - `tdx_client.py:781`：`_baidu_kline_full_fallback` 函数已删除，替换为返回空数据并记录日志
+  - `sc_datasource.py:2266`：删除无意义的 `global _calendar_fallback_warned` 声明
+- **f-string docstring 误伤修复**（6处）：
+  - `get_ful_report.py`：`_calc_macd` 文档字符串被误加 f 前缀导致 UnboundLocalError，ful第一章节消失
+  - `zhb_client.py`（5处）：`stock_stats`、`stock_stats2`、`tip_info`、`csrc_industries` 属性及 `get_sw_industries` 函数文档字符串被误加 f 前缀，导致 zhb初筛静默失效
+  - `tdx_client.py`：`_tencent_batch_fallback` 文档字符串被误加 f 前缀
+- **MACD键名不匹配**：`_calc_macd` 返回键名 `"di"` 改为 `"dif"`，修复信号判断和评分中的 KeyError
+- **异步公告配置键名错误**：`get_strategic_announcements_async` 中 `strategy_keywords` 改为 `announcement_keywords`，修复 sht/med/lng 公告全部丢失问题
+- **版本号违规**：移除 ful/sht 输出中的 "V8.5" 版本号
+- **市场状态文案不准确**：sht/lng/ful 的午休时段从"休市日"改为"午休时段（11:30-13:00）"
+- **mak封板时间格式错误**：`first_limit_time` 整数时间戳按 HHMMSS 正确解析，修复"93:70"等无效时间显示
+- **mak跌停阈值未区分板块**：创业板/科创板跌停阈值从 -9.5% 改为 -19.5%
+- **ful PE -x 格式问题**：PE 为负时显示 "N/A" 而非 "-x"
+- **needini.dat解析修复**：正确解析 `Y{n}=YYYY,MMDD,MMDD,...` 格式，仅提取当前年份和前一年数据
+- **cross_verify多进程失效修复**：原逻辑要求两次获取数据完全相同才标记 verified=1，但多进程并发 + 数据源含实时字段（如 price/timestamp）导致 11 个分类的交叉验证永远无法通过，每次调用都走网络请求。新逻辑：首次写入通过 `valid_if` 校验即标记 verified=1，数据变化时用新数据替换并保持 verified=1
+- **val脚本字段访问安全加固**：全策略统一使用 `.get()` 安全访问外部数据字段，避免 KeyError 导致策略中断
+  - 策略04：`pe_data["percentile"]` → `pe_data.get("percentile", 100)`，兼容缺失字段
+  - 策略08：`s["code"] == h["code"]` → `s.get("code", "") == h.get("code", "")`，兼容 hot_pool 数据结构变化
+  - 策略09：`ind["name"]`/`ind["rank"]` → `ind.get("name", "")`/`ind.get("rank", 0)`，兼容行业数据缺失
+  - 策略11：`holders[0]["change_ratio"]` → `holders[0].get("change_ratio", 0)`，兼容股东数据缺失
+  - 策略13：`divs[0]["bonus_rmb"]` → `divs[0].get("bonus_rmb", 0)`，兼容分红数据缺失
+  - 策略16：`c["amount_yi"]`/`c["mcap_yi"]`/`c["matched_kw"]` → `.get()` + `_safe_float()`，兼容zhb数据源字段差异
+  - 策略18：`dtb["records"]` → `dtb.get("records", [])`，兼容龙虎榜数据结构变化
+  - 打印输出和涨停统计：`item["name"]`/`item["code"]` → `.get()`，防止输出阶段崩溃
+- **ST股票涨跌幅新规适配**（5%→10%）：根据最新A股交易规则，ST/*ST股票日涨跌幅限制从5%放宽至10%
+  - `sc_utils.py`：`is_limit_up`/`is_limit_down` 删除ST分支，ST股票与主板统一使用±9.5%阈值
+  - `get_mak_report.py`：`get_threshold` 删除ST 12%阈值，ST股票异动阈值与主板统一为20%
+  - `get_mak_report.py`：近5日异动回溯删除ST特殊判断，与主板统一为20%
+  - `get_sht_report.py`：异动雷达3日偏离值删除ST 12%阈值，与主板统一为20%
+  - `get_sht_report.py`：连板阶梯计算删除ST 5%基准，与主板统一为10%
+
 ## [9.6] - 2026-07-13
 
 ### Added

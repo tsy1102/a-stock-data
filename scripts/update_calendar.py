@@ -73,7 +73,7 @@ def generate_calendar_file(holidays: dict, workdays: dict,
     hl = "\n".join(_dict_lines(holidays))
     wl = "\n".join(_dict_lines(workdays))
 
-    return f'''# -*- coding: utf-8 -*-
+    return '''# -*- coding: utf-8 -*-
 # A股交易日历数据模块 (V9.2)
 # 基于 chinese-calendar 库的数据，数据范围 {min_year}-{max_year}
 # 由 chinese_calendar.constants 提取，通过 scripts/update_calendar.py 自动生成
@@ -124,12 +124,12 @@ def _validate_date(date):
     """检查日期是否在支持范围内"""
     date = _wrap_date(date)
     if not isinstance(date, datetime.date):
-        raise TypeError(f"unsupported type {{type(date)}}, expected datetime.date")
+        raise TypeError("unsupported type {{type(date)}}, expected datetime.date")
     min_year = min(holidays.keys()).year
     max_year = max(holidays.keys()).year
     if not (min_year <= date.year <= max_year):
         raise NotImplementedError(
-            f"no available data for year {{date.year}}, only year between [{{min_year}}, {{max_year}}] supported"
+            "no available data for year {{date.year}}, only year between [{{min_year}}, {{max_year}}] supported"
         )
     return date
 

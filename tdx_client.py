@@ -135,33 +135,6 @@ _TDX_KLINE_CACHE: Dict[str, Tuple[List[str], List[List[str]]]] = {}
 _TDX_WKLINE_CACHE: Dict[str, Tuple[List[str], List[List[str]]]] = {}
 _TDX_QUOTE_CACHE: Dict[str, Dict[str, Any]] = {}
 
-def tdx_cache_preload_ks(code: str, count: int = 800) -> None:
-    """预热单只股票的日线 K线（调用者负责外部循环/并发控制）。"""
-    tdx_get_security_bars(code, count)
-
-def tdx_cache_preload_wk(code: str, count: int = 100) -> None:
-    """预热单只股票的周线 K线。"""
-    tdx_get_weekly_bars(code, count)
-
-def tdx_cache_preload_q(code: str) -> None:
-    """预热单只股票的行情快照。"""
-    tdx_get_quote_full(code)
-
-def tdx_cache_clear() -> None:
-    """清空缓存（跨日期/跨报告需要时调用）。"""
-    with _TDX_CALL_LOCK:
-        _TDX_KLINE_CACHE.clear()
-        _TDX_WKLINE_CACHE.clear()
-        _TDX_QUOTE_CACHE.clear()
-
-_BAIDU_PAE_HEADERS: Dict[str, str] = {
-    "Host": "finance.pae.baidu.com",
-    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/117.0.0.0",
-    "Accept": "application/vnd.finance-web.v1+json",
-    "Origin": "https://gushitong.baidu.com",
-    "Referer": "https://gushitong.baidu.com/",
-}
-
 # ═══════════════════════════════════════
 # 基础工具
 # ═══════════════════════════════════════
@@ -309,7 +282,7 @@ def _pre_scan_tdx_hosts() -> list[str]:
     if good_hosts:
         _debug_log(f"TDX 预扫描完成，找到 {len(good_hosts)} 台可用服务器")
     else:
-        _debug_log(f"TDX 预扫描完成，未找到可用服务器")
+        _debug_log("TDX 预扫描完成，未找到可用服务器")
     
     try:
         os.makedirs(cache_dir, exist_ok=True)
@@ -406,7 +379,7 @@ def _get_tdx_client() -> Optional[Any]:
                     _good_hosts = [h for h in _all_hosts if h not in _TDX_BAD_HOSTS]
                 
                 if not _good_hosts:
-                    _debug_log(f"tdx 所有主机都被标记为坏，重置黑名单给一次机会")
+                    _debug_log("tdx 所有主机都被标记为坏，重置黑名单给一次机会")
                     _TDX_BAD_HOSTS.clear()
                     if _pre_scanned:
                         _good_hosts = _pre_scanned
@@ -612,27 +585,6 @@ def cleanup_tdx() -> None:
 # ═══════════════════════════════════════
 # Fallback: 原始 V3 HTTP 源
 # ═══════════════════════════════════════
-def _baidu_kline_full_fallback(code: str, is_index: bool = False) -> Tuple[List[str], List[List[str]]]:
-    """百度 K 线兜底 → (keys, rows)。"""
-    url = "https://finance.pae.baidu.com/selfselect/getstockquotation"
-    p = {"all":"1","isIndex":"true" if is_index else "false","isBk":"false","isBlock":"false",
-         "isFutures":"false","isStock":"true","newFormat":"1","group":"quotation_kline_ab",
-         "finClientType":"pc","code":code,"start_time":"","ktype":"1"}
-    try:
-        r = _http_get(url, params=p, headers=_BAIDU_PAE_HEADERS, timeout=10)
-        if r is None: return [], []
-        d = r.json()
-        md = d.get("Result", {}).get("newMarketData", {})
-        ks = md.get("keys", [])
-        rows = []
-        for row in md.get("marketData", "").split(";"):
-            if not row: continue
-            rows.append(row.split(","))
-        return ks, rows
-    except Exception as _e:
-        _debug_log(f"tdx _parse_tencent_market_data error: {_e}")
-        return [], []
-
 def _tencent_quote_full_fallback(code: str, is_pre_market: bool = False) -> Dict[str, Any]:
     """腾讯行情兜底 → dict(含 name, price, change_pct, pe, pb 等)。
     
@@ -769,7 +721,7 @@ def tdx_get_security_bars(code: str, count: int = 800) -> Tuple[List[str], List[
         for _retry in range(2):
             client = _get_tdx_client()
             if client is None:
-                result = _baidu_kline_full_fallback(code)
+                result = [], []
                 _TDX_KLINE_CACHE[cache_key] = result
                 return result
             try:
@@ -777,14 +729,14 @@ def tdx_get_security_bars(code: str, count: int = 800) -> Tuple[List[str], List[
                 from easy_tdx import KlineCategory
                 bars = client.get_security_bars(_market_from_code(code), code, KlineCategory.DAY, 0, count)
                 if bars is None: 
-                    result = _baidu_kline_full_fallback(code)
+                    result = [], []
                     _TDX_KLINE_CACHE[cache_key] = result
                     return result
                 keys = ['time', 'open', 'close', 'high', 'low', 'volume', 'amount']
                 rows = []
                 if hasattr(bars, 'columns'):
                     if bars.empty:
-                        result = _baidu_kline_full_fallback(code)
+                        result = [], []
                         _TDX_KLINE_CACHE[cache_key] = result
                         return result
                     for _, row in bars.iterrows():
@@ -799,7 +751,7 @@ def tdx_get_security_bars(code: str, count: int = 800) -> Tuple[List[str], List[
                         ])
                 else:
                     if not bars:
-                        result = _baidu_kline_full_fallback(code)
+                        result = [], []
                         _TDX_KLINE_CACHE[cache_key] = result
                         return result
                     for bar in bars:
@@ -819,162 +771,10 @@ def tdx_get_security_bars(code: str, count: int = 800) -> Tuple[List[str], List[
                         _debug_log(f"tdx K线解码失败，标记 {_host} 为坏主机: {_e}")
                 _reset_tdx_connections()
                 continue
-        result = _baidu_kline_full_fallback(code)
+        result = [], []
+        _debug_log(f"tdx K线获取失败，百度fallback已删除，返回空数据 ({code})")
         _TDX_KLINE_CACHE[cache_key] = result
         return result
-
-
-def tdx_get_security_bars_qfq(code: str, count: int = 800) -> Tuple[List[str], List[List[str]]]:
-    """获取前复权日K线（V9.6 新增）
-
-    使用 easy-tdx 获取不复权K线 + xdxr除权除息数据，计算前复权价格。
-    前复权逻辑：以最新价格为基准，历史价格向下调整除权除息影响。
-
-    Args:
-        code: 股票代码
-        count: K线条数
-
-    Returns:
-        (keys, rows) 与 tdx_get_security_bars 格式一致
-    """
-    # 获取不复权K线
-    keys, rows = tdx_get_security_bars(code, count)
-    if not keys or not rows:
-        return keys, rows
-
-    # 获取除权除息数据
-    with _TDX_CALL_LOCK:
-        client = _get_tdx_client()
-        if client is None:
-            _debug_log(f"tdx qfq: 无可用TDX连接，返回不复权数据 ({code})")
-            return keys, rows
-        try:
-            xdxr_df = client.get_xdxr_info(_market_from_code(code), code)
-        except Exception as _e:
-            _debug_log(f"tdx qfq: get_xdxr_info 失败 ({code}): {_e}")
-            return keys, rows
-
-    if xdxr_df is None or xdxr_df.empty:
-        return keys, rows
-
-    # 构建除权除息因子列表：每条记录计算复权因子
-    # 前复权：从最新日往回累乘复权因子
-    idx_map = {k: i for i, k in enumerate(keys)}
-    ci_close = idx_map.get('close', -1)
-    ci_open = idx_map.get('open', -1)
-    ci_high = idx_map.get('high', -1)
-    ci_low = idx_map.get('low', -1)
-    if ci_close < 0:
-        return keys, rows
-
-    # 解析除权除息记录
-    xdxr_list = []
-    for _, row in xdxr_df.iterrows():
-        cat = int(row.get('category', 0))
-        if cat != 1:  # 仅处理除权除息(category=1)
-            continue
-        date_str = str(row.get('date', ''))[:10]
-        if not date_str:
-            continue
-        fh = _safe_float(row.get('fenhong', 0)) / 10  # 每10股派息 -> 每股
-        szg = _safe_float(row.get('songzhuangu', 0)) / 10  # 每10股送转 -> 每股
-        pg = _safe_float(row.get('peigu', 0)) / 10  # 每10股配股 -> 每股
-        pgj = _safe_float(row.get('peigujia', 0))  # 配股价
-        xdxr_list.append({
-            "date": date_str,
-            "bonus": fh,  # 每股派息(元)
-            "transfer": szg,  # 每股送转(股)
-            "allot": pg,  # 每股配股(股)
-            "allot_price": pgj,  # 配股价(元)
-        })
-
-    if not xdxr_list:
-        return keys, rows
-
-    # 按日期倒序排列
-    xdxr_list.sort(key=lambda x: x["date"], reverse=True)
-
-    # 计算前复权因子
-    # 前复权公式：复权因子 = (收盘价 - 派息 + 配股价*配股数) / (1 + 送转 + 配股) / 收盘价
-    # 实际做法：从最新日往回累乘
-    # 对于每个除权日D，D日及之前的价格需要乘以调整因子：
-    #   factor = (前收盘 - 派息 + 配股价*配股数) / (前收盘 * (1 + 送转 + 配股))
-    #   简化为: factor = 1 / (1 + 送转 + 配股) * (1 - 派息/前收盘 + 配股价*配股数/前收盘)
-    # 但我们不知道"前收盘"，所以用另一种方式：
-    #   前复权价 = 原价 * 累计复权因子
-    #   累计复权因子从1开始，遇到除权日时：
-    #   新因子 = 旧因子 * (1 / (1 + 送转 + 配股))
-    #   然后所有价格还需要减去派息的影响
-
-    # 更简单的方式：直接按除权调整
-    # 前复权逻辑：
-    # 1. 将除权记录按日期排序
-    # 2. 对每条K线，累乘其日期之后所有除权日的复权因子
-    # 3. 每个除权日的因子 = 送转配导致的稀释因子 + 派息调整
-    
-    # 构建除权记录列表（按日期正序）
-    adj_list = []
-    for xdxr in xdxr_list:
-        date = xdxr["date"]
-        transfer = xdxr["transfer"]
-        allot = xdxr["allot"]
-        bonus = xdxr["bonus"]
-        allot_price = xdxr["allot_price"]
-
-        # 送转配导致的股本扩张因子
-        dilution = 1.0 + transfer + allot
-        if dilution <= 0:
-            dilution = 1.0
-
-        adj_list.append({
-            "date": date,
-            "dilution_factor": 1.0 / dilution,  # 送转配稀释
-            "bonus_per_share": bonus,  # 每股派息(元)
-            "allot_cost_per_share": allot * allot_price,  # 每股配股成本(元)
-        })
-
-    # 按日期正序
-    adj_list.sort(key=lambda x: x["date"])
-
-    if not adj_list:
-        return keys, rows
-
-    # 对每条K线，计算前复权价格
-    # 前复权公式：对除权日D，D之前的所有K线价格需要调整：
-    #   新价 = (原价 - 每股派息 + 每股配股成本) / (1 + 每股送转 + 每股配股)
-    # 多次除权需要从最近到最远逐步调整
-
-    # 重要：深拷贝rows避免修改缓存
-    import copy
-    rows = copy.deepcopy(rows)
-
-    adjusted_count = 0
-    for row in rows:
-        row_date = row[0] if len(row) > 0 else ""
-        if not row_date:
-            continue
-
-        # 从最近的除权日开始往回调整（倒序遍历在K线日期之后的除权记录）
-        for adj in reversed(adj_list):
-            if row_date >= adj["date"]:
-                continue  # K线日期在除权日之后，不受影响
-
-            # K线在该除权日之前，需要调整
-            dilution = adj["dilution_factor"]
-            bonus = adj["bonus_per_share"]
-            allot_cost = adj["allot_cost_per_share"]
-
-            for ci in [ci_open, ci_high, ci_low, ci_close]:
-                if ci >= 0 and ci < len(row):
-                    orig = _safe_float(row[ci])
-                    if orig > 0:
-                        # 前复权: (原价 - 派息 + 配股成本) * 稀释因子
-                        adjusted = (orig - bonus + allot_cost) * dilution
-                        row[ci] = f"{adjusted:.2f}"
-                        adjusted_count += 1
-
-    _debug_log(f"tdx qfq: {code} adjusted {adjusted_count} price points across {len(adj_list)} ex-dividend dates")
-    return keys, rows
 
 
 def tdx_get_latest_bar_with_ma(code: str):
@@ -1141,22 +941,22 @@ def tdx_get_index_bars(idx_code: str, count: int = 250):
         with _TDX_CALL_LOCK:
             client = _get_tdx_client()
             if client is None:
-                return _baidu_kline_full_fallback(idx_code, is_index=True)
+                return [], []
             try:
                 from easy_tdx import KlineCategory
                 market, code = _index_to_market_code(idx_code)
                 bars = client.get_index_bars(market, code, KlineCategory.DAY, 0, count)
-                if bars is None: return _baidu_kline_full_fallback(idx_code, is_index=True)
+                if bars is None: return [], []
                 keys = ['time', 'open', 'close', 'high', 'low', 'volume', 'amount']
                 rows = []
                 if hasattr(bars, 'columns'):
-                    if bars.empty: return _baidu_kline_full_fallback(idx_code, is_index=True)
+                    if bars.empty: return [], []
                     for _, row in bars.iterrows():
                         rows.append([str(row.get('date',''))[:10], str(row.get('open','')), str(row.get('close','')),
                                      str(row.get('high','')), str(row.get('low','')), str(row.get('vol','')),
                                      str(row.get('amount',''))])
                 else:
-                    if not bars: return _baidu_kline_full_fallback(idx_code, is_index=True)
+                    if not bars: return [], []
                     for bar in bars:
                         time_str = f"{bar.year:04d}-{bar.month:02d}-{bar.day:02d}"
                         rows.append([time_str, f"{bar.open:.2f}", f"{bar.close:.2f}", f"{bar.high:.2f}",
@@ -1172,7 +972,7 @@ def tdx_get_index_bars(idx_code: str, count: int = 250):
                         _debug_log(f"tdx 指数K线解码失败，标记 {_host} 为坏主机: {_e}")
                 _reset_tdx_connections()
                 continue
-    return _baidu_kline_full_fallback(idx_code, is_index=True)
+    return [], []
 
 def tdx_get_weekly_bars(code: str, count: int = 100):
     cache_key = f"W:{code}:{count}"

@@ -172,46 +172,6 @@ def get_seat_info(seat_name: str) -> Dict[str, Any]:
     }
 
 
-def get_seat_style_tags(seat_name: str) -> List[str]:
-    """获取席位风格标签
-
-    Args:
-        seat_name: 席位名称
-
-    Returns:
-        风格标签列表
-    """
-    info = get_seat_info(seat_name)
-    return info.get("traits", [])
-
-
-def get_premium_label(seat_name: str) -> str:
-    """获取席位溢价标签
-
-    Args:
-        seat_name: 席位名称
-
-    Returns:
-        溢价标签: 正面/中性/反向指标/高风险/待观察/未知
-    """
-    info = get_seat_info(seat_name)
-    return info.get("premium", "未知")
-
-
-def is_in_seat_range(seat_name: str, tier: str = "legend") -> bool:
-    """判断席位是否在特定范围内
-
-    Args:
-        seat_name: 席位名称
-        tier: 目标等级，如 "legend"/"new_gen"/"regional"/"new_2025"
-
-    Returns:
-        True if seat is in the specified tier
-    """
-    seat_tier, _ = identify_seat_tier(seat_name)
-    return seat_tier == tier
-
-
 def enhance_lhb_seats(lhb_data: Dict[str, Any]) -> Dict[str, Any]:
     """增强龙虎榜数据，添加席位分析
 
@@ -327,52 +287,6 @@ def get_tier_label(tier: str) -> str:
         "unknown": "未知"
     }
     return labels.get(tier, "未知")
-
-
-def format_seat_summary(lhb_data: Dict[str, Any]) -> str:
-    """格式化席位摘要为可读字符串
-
-    Args:
-        lhb_data: 增强后的龙虎榜数据
-
-    Returns:
-        格式化的席位摘要字符串
-    """
-    if "buy_seats_analysis" not in lhb_data:
-        # 如果没有增强，先增强
-        lhb_data = enhance_lhb_seats(lhb_data)
-
-    lines = []
-    lines.append("【席位分析】")
-
-    # 买方席位
-    if lhb_data.get("buy_seats_analysis"):
-        lines.append("买方席位:")
-        for seat in lhb_data["buy_seats_analysis"][:5]:
-            tier_label = get_tier_label(seat.get("tier", "unknown"))
-            premium = seat.get("premium", "")
-            lines.append(f"  {seat.get('name', '')} [{tier_label}]{seat.get('short_name', '')} 净额{seat.get('net', 0)}万 {premium}")
-
-    # 卖方席位
-    if lhb_data.get("sell_seats_analysis"):
-        lines.append("卖方席位:")
-        for seat in lhb_data["sell_seats_analysis"][:5]:
-            tier_label = get_tier_label(seat.get("tier", "unknown"))
-            premium = seat.get("premium", "")
-            lines.append(f"  {seat.get('name', '')} [{tier_label}]{seat.get('short_name', '')} 净额{seat.get('net', 0)}万 {premium}")
-
-    # 综合信号
-    signal = lhb_data.get("premium_signal", "neutral")
-    score = lhb_data.get("seat_quality_score", 0)
-    signal_map = {
-        "buy_high": f"✅ 强势买入信号 (席位评分:{score})",
-        "sell_high": f"⚠️ 强势卖出信号 (席位评分:{score})",
-        "sell_caution": f"⚠️ 卖出警示 (席位评分:{score})",
-        "neutral": f"➖ 中性 (席位评分:{score})"
-    }
-    lines.append(signal_map.get(signal, signal))
-
-    return "\n".join(lines)
 
 
 # 测试

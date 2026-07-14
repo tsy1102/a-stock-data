@@ -31,14 +31,16 @@ V9.1 更新：
   - @cached / @cached_async / set_cache 新增 trading_day: bool 参数
   - 新增 _calc_trading_day_expiry() 按最近交易日计算过期时间
 
-TTL 分级策略（决策点1）：
-  - 静态数据（股票基本信息、概念板块）：7 天
+TTL 分级策略（V10.0 优化）：
+  - 静态数据（股票基本信息、概念板块）：30 天
   - 财务数据（财报、资产负债表）：90 天
-  - 日频数据（龙虎榜、北向、融资融券）：当日有效
+  - 日频数据（龙虎榜、K线、资金流、打板）：7 天（历史数据不变）
+  - 历史数据（北向、解禁、融资融券、大宗）：14-90 天
   - 研报：3 天
   - 行业/概念热度：24 小时
   - 分红历史：30 天
   - 实时行情（get_tencent_quote）：不缓存
+  - 缓存命中率统计：进程退出时自动打印（atexit）
 
 目录结构：
   cache/
@@ -56,13 +58,64 @@ import sqlite3
 import threading
 import atexit
 import functools
-import asyncio
 import logging
 from typing import Any, Callable, Dict, Optional, TypeVar, Union, cast
 from datetime import datetime, date, time as dtime
 from pathlib import Path
 
 _cache_logger = logging.getLogger("stock_cache")
+
+# ═══════════════════════════════════════
+# 缓存命中率统计（V10.0）
+# ═══════════════════════════════════════
+_CACHE_STATS: Dict[str, Any] = {
+    "total_get": 0,
+    "total_hit": 0,
+    "category_stats": {},  # {category: {"hits": 0, "misses": 0}}
+}
+_STATS_LOCK = threading.Lock()
+
+
+def _record_cache_hit(category: str, hit: bool) -> None:
+    """记录缓存命中/未命中。"""
+    with _STATS_LOCK:
+        _CACHE_STATS["total_get"] += 1
+        if hit:
+            _CACHE_STATS["total_hit"] += 1
+        cat_stats = _CACHE_STATS["category_stats"].setdefault(category, {"hits": 0, "misses": 0})
+        if hit:
+            cat_stats["hits"] += 1
+        else:
+            cat_stats["misses"] += 1
+
+
+def print_cache_stats() -> None:
+    """打印缓存命中率统计。在脚本运行结束时调用。"""
+    with _STATS_LOCK:
+        total = _CACHE_STATS["total_get"]
+        if total == 0:
+            return
+        hits = _CACHE_STATS["total_hit"]
+        rate = hits / total * 100
+        saved = total - hits
+        print(f"\n{'─' * 60}", flush=True)
+        print(f"[缓存统计] 总请求: {total} | 命中: {hits} | 未命中: {saved} | 命中率: {rate:.1f}%", flush=True)
+        # 按未命中数降序，显示前10个低命中率分类
+        cat_stats = _CACHE_STATS["category_stats"]
+        sorted_cats = sorted(cat_stats.items(), key=lambda x: x[1]["misses"], reverse=True)
+        low_rate_cats = [(c, s) for c, s in sorted_cats if s["misses"] > 0][:10]
+        if low_rate_cats:
+            print("[分类命中率] (按未命中数降序，仅显示有未命中的分类)", flush=True)
+            for cat, s in low_rate_cats:
+                cat_total = s["hits"] + s["misses"]
+                cat_rate = s["hits"] / cat_total * 100 if cat_total > 0 else 0
+                print(f"  {cat:25s} 命中率: {cat_rate:5.1f}%  ({s['hits']}/{cat_total})", flush=True)
+        print(f"{'─' * 60}", flush=True)
+
+
+# 进程退出时自动打印缓存统计（V10.0）
+atexit.register(print_cache_stats)
+
 
 # ═══════════════════════════════════════
 # 目录与文件路径
@@ -83,8 +136,8 @@ _DISABLE_CACHE = os.environ.get("STOCK_NOCACHE", "") == "1"
 # ═══════════════════════════════════════
 TTL: Dict[str, int] = {
     # 静态数据（几乎不变）
-    "basic_info":       7 * 86400,   # 股票基本信息、总股本、上市日期
-    "concept_blocks":    7 * 86400,   # 概念板块列表
+    "basic_info":      30 * 86400,   # 股票基本信息、总股本、上市日期（V10.0: 7天→30天）
+    "concept_blocks":  30 * 86400,   # 概念板块列表（V10.0: 7天→30天）
     "board_type":       7 * 86400,   # 沪市/深市/北交所
 
     # 财务数据（财报发布才变）
@@ -95,16 +148,16 @@ TTL: Dict[str, int] = {
     "eps_forecast":     30 * 86400,   # EPS 预测
 
     # 日频数据（收盘后固定，历史数据不变可延长TTL）
-    "dragon_tiger":     1 * 86400,   # 龙虎榜（按日过期）
-    "northbound":       7 * 86400,   # 北向资金持股（历史数据不变）
-    "margin_trading":   3 * 86400,   # 融资融券（历史数据不变）
-    "block_trade":      3 * 86400,   # 大宗交易（历史数据不变）
-    "lockup_expiry":    7 * 86400,   # 限售解禁（日期固定）
-    "announcements":     7 * 86400,   # 巨潮公告（发布后不变）
-    "hsgt_flow":        3 * 86400,   # 沪深港通资金流（历史数据不变）
-    "kline":            1 * 86400,   # K线行情（每日收盘后固定）
-    "limit_pool":       1 * 86400,   # 打板数据（涨停/炸板/跌停池，按日过期，V9.6新增）
-    "fund_flow":        1 * 86400,   # 资金流数据（TDX+东财融合，V9.6新增）
+    "dragon_tiger":     7 * 86400,   # 龙虎榜（历史数据不变，V10.0: 1天→7天）
+    "northbound":      30 * 86400,   # 北向资金持股（历史数据不变，V10.0: 7天→30天）
+    "margin_trading":  14 * 86400,   # 融资融券（历史数据不变，V10.0: 3天→14天）
+    "block_trade":     14 * 86400,   # 大宗交易（历史数据不变，V10.0: 3天→14天）
+    "lockup_expiry":   90 * 86400,   # 限售解禁（日期固定，V10.0: 7天→90天）
+    "announcements":   30 * 86400,   # 巨潮公告（发布后不变，V10.0: 7天→30天）
+    "hsgt_flow":       14 * 86400,   # 沪深港通资金流（历史数据不变，V10.0: 3天→14天）
+    "kline":            7 * 86400,   # K线行情（历史数据不变，V10.0: 1天→7天）
+    "limit_pool":       7 * 86400,   # 打板数据（历史数据不变，V10.0: 1天→7天）
+    "fund_flow":        7 * 86400,   # 资金流数据（历史数据不变，V10.0: 1天→7天）
 
     # 舆情互动（V8.9 新增）
     "hot_rank":         1 * 3600,    # 东财人气榜（小时级变化）
@@ -222,9 +275,6 @@ _CACHE_PRAGMAS = [
 # ═══════════════════════════════════════
 _db_lock = threading.RLock()  # 多线程安全锁
 _db: Optional[sqlite3.Connection] = None
-_async_db: Optional[Any] = None  # 异步连接单例（aiosqlite）
-_async_db_lock: Optional[Any] = None  # 异步交叉验证并发锁（asyncio.Lock）
-_async_bg_tasks: set = set()  # 保存异步后台任务引用，防止被GC
 
 
 def _get_db() -> sqlite3.Connection:
@@ -243,30 +293,6 @@ def _get_db() -> sqlite3.Connection:
             _db.execute(_idx)
         _db.commit()
         return _db
-
-
-async def _get_async_db() -> Optional[Any]:
-    """获取异步数据库连接（懒加载单例，aiosqlite）。"""
-    global _async_db
-    if _async_db is not None:
-        return _async_db
-    try:
-        import aiosqlite
-    except ImportError:
-        return None
-    _async_db = await aiosqlite.connect(_CACHE_DB)
-    _async_db.row_factory = aiosqlite.Row
-    global _async_db_lock
-    if _async_db_lock is None:
-        import asyncio
-        _async_db_lock = asyncio.Lock()
-    for _pragma in _CACHE_PRAGMAS:
-        await _async_db.execute(_pragma[0])
-    await _async_db.execute(_CACHE_TABLE_SQL)
-    for _idx in _CACHE_INDEX_SQLS:
-        await _async_db.execute(_idx)
-    await _async_db.commit()
-    return _async_db
 
 
 def _enforce_size_limit() -> None:
@@ -328,6 +354,7 @@ def get_cache(category: str, func_name: str, *args: Any,
         *args, **kwargs: 函数参数（用于构建key）
     """
     if _DISABLE_CACHE:
+        _record_cache_hit(category, False)
         return None
     key = _build_key(category, func_name, *args, **kwargs)
     now = time.time()
@@ -341,16 +368,19 @@ def get_cache(category: str, func_name: str, *args: Any,
         )
         row = cursor.fetchone()
         if row is None:
+            _record_cache_hit(category, False)
             return None
         value_blob, expires_at, hit_count, prev_value_blob, verified = row
         # 交叉验证模式：未验证的缓存视为未命中
         if cross_verify and not verified:
+            _record_cache_hit(category, False)
             return None
         # 已验证但 prev_value 与 value 不一致（理论上不应该发生），视为损坏
         if cross_verify and verified and prev_value_blob is not None:
             if prev_value_blob != value_blob:
                 cursor.execute("DELETE FROM cache_entries WHERE key=?", (key,))
                 db.commit()
+                _record_cache_hit(category, False)
                 return None
         # 更新访问时间 + 命中计数
         cursor.execute(
@@ -358,9 +388,11 @@ def get_cache(category: str, func_name: str, *args: Any,
             (now, key)
         )
         db.commit()
+        _record_cache_hit(category, True)
         return json.loads(value_blob.decode("utf-8"))
     except Exception as _e:
         _cache_logger.debug(f"get_cache error ({key}): {_e}")
+        _record_cache_hit(category, False)
         return None
 
 
@@ -418,7 +450,10 @@ def set_cache(category: str, func_name: str, value: Any, ttl: int, *args: Any,
                 (key, value_bytes, now, expires_at, now)
             )
         else:
-            # 交叉验证模式：SELECT-then-UPDATE 需加锁防止竞态
+            # 交叉验证模式：首次写入即验证（信任 valid_if 校验），数据变化时自动更新
+            # V10.0: 原逻辑要求两次获取数据完全相同才标记 verified=1，
+            #         但多进程并发 + 数据源含实时字段（如 price/timestamp）导致永远无法验证通过。
+            #         新逻辑：通过 valid_if 校验即标记 verified=1，数据变化时用新数据替换并保持 verified=1。
             with _db_lock:
                 cursor.execute(
                     "SELECT value, verified FROM cache_entries WHERE key=? AND expires_at>?",
@@ -426,38 +461,28 @@ def set_cache(category: str, func_name: str, value: Any, ttl: int, *args: Any,
                 )
                 row = cursor.fetchone()
                 if row is None:
-                    # 第一次写入：存入 value，prev_value=NULL，verified=0（未验证）
+                    # 第一次写入：直接标记为已验证（valid_if 已在上层校验）
                     cursor.execute(
                         "INSERT OR REPLACE INTO cache_entries "
                         "(key, value, created_at, expires_at, hit_count, last_accessed, prev_value, verified) "
-                        "VALUES (?, ?, ?, ?, 0, ?, NULL, 0)",
-                        (key, value_bytes, now, expires_at, now)
+                        "VALUES (?, ?, ?, ?, 0, ?, ?, 1)",
+                        (key, value_bytes, now, expires_at, now, value_bytes)
                     )
                 else:
                     existing_blob, verified = row
-                    if verified:
-                        # 已验证的数据，不覆盖（除非过期了，但上面的expires_at过滤了过期的）
-                        # 刷新过期时间，不改变内容
+                    if existing_blob == value_bytes:
+                        # 数据相同：刷新过期时间
                         cursor.execute(
                             "UPDATE cache_entries SET expires_at=?, last_accessed=? WHERE key=?",
                             (expires_at, now, key)
                         )
                     else:
-                        # 未验证：对比新数据 vs 已有数据
-                        if existing_blob == value_bytes:
-                            # 一致：标记为已验证
-                            cursor.execute(
-                                "UPDATE cache_entries SET prev_value=?, verified=1, "
-                                "expires_at=?, last_accessed=? WHERE key=?",
-                                (value_bytes, expires_at, now, key)
-                            )
-                        else:
-                            # 不一致：用新数据替换，重置验证状态
-                            cursor.execute(
-                                "UPDATE cache_entries SET value=?, prev_value=NULL, verified=0, "
-                                "created_at=?, expires_at=?, last_accessed=? WHERE key=?",
-                                (value_bytes, now, expires_at, now, key)
-                            )
+                        # 数据不同（数据源更新）：用新数据替换，保持 verified=1
+                        cursor.execute(
+                            "UPDATE cache_entries SET value=?, prev_value=?, verified=1, "
+                            "created_at=?, expires_at=?, last_accessed=? WHERE key=?",
+                            (value_bytes, existing_blob, now, expires_at, now, key)
+                        )
 
         db.commit()
         _enforce_size_limit()
@@ -685,184 +710,7 @@ def cached(category: str, ttl_seconds: Optional[int] = None,
 AF = TypeVar("AF", bound=Callable[..., Any])
 
 
-def cached_async(category: str, ttl_seconds: Optional[int] = None, use_args: bool = True,
-                 trading_day: bool = False, cross_verify: bool = False) -> Callable[[AF], AF]:
-    """异步函数缓存装饰器（使用 aiosqlite 实现真正的异步读写）。
 
-    用法：
-        @cached_async(category="dragon_tiger", ttl_seconds=TTL["dragon_tiger"])
-        async def get_dragon_tiger_board_async(session, code: str, ...):
-            ...
-
-    Args:
-        trading_day: True=按交易日过期（下一个交易日 15:00），False=固定 TTL（默认）
-        cross_verify: True=启用交叉验证（两次获取一致才标记为已验证）
-    """
-    _ttl = ttl_seconds if ttl_seconds is not None else TTL.get(category, TTL["default"])
-
-    def decorator(func: AF) -> AF:
-        @functools.wraps(func)
-        async def wrapper(*args: Any, **kwargs: Any) -> Any:
-            if _DISABLE_CACHE:
-                return await func(*args, **kwargs)
-
-            # 注意：aiosqlite 需要在 event loop 中运行
-            # 这里是真正的异步实现
-            try:
-                import aiosqlite
-            except ImportError:
-                # 降级：aiosqlite 未安装时跳过缓存
-                return await func(*args, **kwargs)
-
-            if use_args:
-                cache_value = await _async_get_cache(category, func.__name__, *args,
-                                                      cross_verify=cross_verify, **kwargs)
-            else:
-                cache_value = await _async_get_cache(category, func.__name__,
-                                                      cross_verify=cross_verify)
-            if cache_value is not None:
-                return cache_value
-
-            result = await func(*args, **kwargs)
-            if use_args:
-                await _async_set_cache(category, func.__name__, result, _ttl, *args,
-                                       trading_day=trading_day, cross_verify=cross_verify, **kwargs)
-            else:
-                await _async_set_cache(category, func.__name__, result, _ttl,
-                                       trading_day=trading_day, cross_verify=cross_verify)
-            return result
-
-        return cast(AF, wrapper)
-    return decorator
-
-
-async def _async_get_cache(category: str, func_name: str, *args: Any,
-                           cross_verify: bool = False, **kwargs: Any) -> Optional[Any]:
-    """异步查询缓存（aiosqlite 单例连接）。"""
-    db = await _get_async_db()
-    if db is None:
-        return None
-
-    try:
-        key = _build_key(category, func_name, *args, **kwargs)
-        now = time.time()
-        async with db.execute(
-            "SELECT value, prev_value, verified FROM cache_entries WHERE key=? AND expires_at>?",
-            (key, now)
-        ) as cursor:
-            row = await cursor.fetchone()
-        if row is None:
-            return None
-        value_blob = row["value"]
-        prev_value_blob = row["prev_value"]
-        verified = row["verified"]
-        if cross_verify and not verified:
-            return None
-        if cross_verify and verified and prev_value_blob is not None:
-            if prev_value_blob != value_blob:
-                await db.execute("DELETE FROM cache_entries WHERE key=?", (key,))
-                await db.commit()
-                return None
-        await db.execute(
-            "UPDATE cache_entries SET hit_count=hit_count+1, last_accessed=? WHERE key=?",
-            (now, key)
-        )
-        await db.commit()
-        return json.loads(value_blob.decode("utf-8"))
-    except Exception as _e:
-        _cache_logger.debug(f"async get_cache: {_e}")
-        return None
-
-
-async def _async_set_cache(category: str, func_name: str, value: Any, ttl: int, *args: Any,
-                           trading_day: bool = False, cross_verify: bool = False, **kwargs: Any) -> None:
-    """异步写入缓存（aiosqlite 单例连接）。None/空值不写入。
-
-    Args:
-        trading_day: True=按交易日过期（F10 高频分类），False=固定 TTL（默认）
-        cross_verify: True=启用交叉验证（两次获取一致才标记为已验证）
-    """
-    if value is None:
-        return
-    if isinstance(value, (list, dict)) and len(value) == 0:
-        return
-    if _has_zero_price(value):
-        return
-    db = await _get_async_db()
-    if db is None:
-        return
-
-    key = _build_key(category, func_name, *args, **kwargs)
-    now = time.time()
-    expires_at = _calc_trading_day_expiry() if trading_day else now + ttl
-    try:
-        value_bytes = json.dumps(value, ensure_ascii=False).encode("utf-8")
-        if not cross_verify:
-            await db.execute(
-                "INSERT OR REPLACE INTO cache_entries "
-                "(key, value, created_at, expires_at, hit_count, last_accessed, prev_value, verified) "
-                "VALUES (?, ?, ?, ?, 0, ?, NULL, 0)",
-                (key, value_bytes, now, expires_at, now)
-            )
-        else:
-            # 交叉验证模式：SELECT-then-UPDATE 加锁防止竞态
-            async with _async_db_lock:
-                async with db.execute(
-                    "SELECT value, verified FROM cache_entries WHERE key=? AND expires_at>?",
-                    (key, now)
-                ) as cursor:
-                    row = await cursor.fetchone()
-                if row is None:
-                    await db.execute(
-                        "INSERT OR REPLACE INTO cache_entries "
-                        "(key, value, created_at, expires_at, hit_count, last_accessed, prev_value, verified) "
-                        "VALUES (?, ?, ?, ?, 0, ?, NULL, 0)",
-                        (key, value_bytes, now, expires_at, now)
-                    )
-                else:
-                    existing_blob = row["value"]
-                    verified = row["verified"]
-                    if verified:
-                        await db.execute(
-                            "UPDATE cache_entries SET expires_at=?, last_accessed=? WHERE key=?",
-                            (expires_at, now, key)
-                        )
-                    else:
-                        if existing_blob == value_bytes:
-                            await db.execute(
-                                "UPDATE cache_entries SET prev_value=?, verified=1, "
-                                "expires_at=?, last_accessed=? WHERE key=?",
-                                (value_bytes, expires_at, now, key)
-                            )
-                        else:
-                            await db.execute(
-                                "UPDATE cache_entries SET value=?, prev_value=NULL, verified=0, "
-                                "created_at=?, expires_at=?, last_accessed=? WHERE key=?",
-                                (value_bytes, now, expires_at, now, key)
-                            )
-        await db.commit()
-        _task = asyncio.create_task(_async_enforce_size_limit_bg())
-        _async_bg_tasks.add(_task)
-        _task.add_done_callback(_async_bg_tasks.discard)
-    except Exception as _e:
-        _cache_logger.debug(f"async set_cache: {_e}")
-
-
-async def _async_enforce_size_limit_bg() -> None:
-    """后台异步清理超限（不阻塞主流程）。"""
-    db = await _get_async_db()
-    if db is None:
-        return
-
-    try:
-        if not os.path.exists(_CACHE_DB):
-            return
-        if os.path.getsize(_CACHE_DB) < _MAX_CACHE_SIZE_BYTES:
-            return
-        await db.execute("DELETE FROM cache_entries WHERE expires_at<?", (time.time(),))
-        await db.commit()
-    except Exception as _e:
-        _cache_logger.debug(f"async_enforce_size_limit_bg: {_e}")
 
 
 # 启动清理已移除（V8.9）：改为写入时通过 _enforce_size_limit 处理过期条目

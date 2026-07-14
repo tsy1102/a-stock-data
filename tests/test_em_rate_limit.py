@@ -51,7 +51,7 @@ TEST_ENDPOINTS = [
             "fs": "m:0 t:6,m:0 t:80",
             "fields": "f12,f14,f2,f3",
         },
-        "check": lambda r: r.get("data", {}).get("diff") is not None and len(r["data"]["diff"]) > 0,
+        "check": lambda r: r.get("data", {}).get("dif") is not None and len(r["data"]["dif"]) > 0,
     },
     {
         "name": "reportapi",
@@ -168,7 +168,7 @@ def run_test_phase(name: str, endpoints: list, interval: float, duration: int,
 
             # 熔断：检测到429立即停止
             if status_code == 429:
-                log(f"  🔥 检测到429限流！立即停止测试")
+                log("  🔥 检测到429限流！立即停止测试")
                 break
 
             # 熔断：连续失败超过阈值
@@ -199,7 +199,7 @@ def run_test_phase(name: str, endpoints: list, interval: float, duration: int,
     log(f"  实际耗时: {time.time() - t_start:.1f}秒")
 
     if total_fail > 0:
-        log(f"  失败详情:")
+        log("  失败详情:")
         fail_types = {}
         for r in results:
             if not r["success"]:
@@ -297,7 +297,7 @@ def main():
         log(f"\n{r['name']}:")
         log(f"  成功率: {r['success_rate']:.1f}% ({r['success']}/{r['total']})")
         if r["triggered_fuse"]:
-            log(f"  ⚠️  触发熔断")
+            log("  ⚠️  触发熔断")
 
     # 判定
     log("\n" + "=" * 70)

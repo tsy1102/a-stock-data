@@ -831,6 +831,9 @@ def _validate_date(date):
 def is_workday(date):
     """判断是否为工作日（A股交易日）
 
+    V10.0 优化：优先使用 zhb.needini.dat 节假日数据（1991-2030），
+    保留调休工作日数据作为补充，本地节假日数据仅作为 fallback。
+
     Args:
         date: datetime.date 或 datetime.datetime
 
@@ -840,6 +843,19 @@ def is_workday(date):
     try:
         date = _validate_date(date)
         weekday = date.weekday()
+
+        date_str = date.strftime("%Y%m%d")
+
+        try:
+            from zhb_client import get_holidays
+            zhb_holidays = get_holidays()
+            if zhb_holidays and date_str in zhb_holidays:
+                if date in workdays:
+                    return True
+                return weekday <= 4
+        except Exception:
+            pass
+
         return bool(date in workdays or (weekday <= 4 and date not in holidays))
     except NotImplementedError:
         # 年份超出范围，抛出异常供上层处理

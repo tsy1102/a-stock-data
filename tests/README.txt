@@ -12,460 +12,286 @@
 【第一类】pytest 单元测试  (运行:  pytest tests/)
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-1. conftest.py
-   作用：pytest 共享 fixtures 配置。
-   - 全局拦截所有 HTTP 请求，阻止测试期间真实联网；
-   - 提供临时项目目录（含模拟的 strategy_config.yaml）。
-   何时需要：运行 pytest 时自动生效，不需手动调用。
+按模块分类：
 
+├── sc_utils (工具函数)
+│   └── test_stock_common.py
+│       覆盖：
+│       - _safe_float：各种输入类型（字符串、int、float、None、NaN、inf）
+│       - get_board_type：板块判断（科创板/创业板/主板/ST）
+│       - is_limit_up / is_limit_down：涨跌停判断（V10.0: ST涨跌幅放宽至10%）
+│       - clean_codes：代码清洗与去重
+│       何时需要：修改了 sc_utils.py 中的工具函数后
 
-2. test_stock_common.py
-   作用：测试 stock_common.py 中的工具函数。
-   覆盖：
-   - _safe_float：各种输入类型（字符串、int、float、None、NaN、inf）；
-   - holder_cache_flush：缓存刷新在缺省目录下是否抛异常。
-   何时需要：修改了 stock_common.py 中的工具函数后，运行一次确保无回归。
+├── sc_scoring (评分系统)
+│   └── test_scoring.py
+│       覆盖：
+│       - _score_technical：技术面 bullish/bearish、涨停加分、边界限制
+│       - _score_fundamental：ROE 三档（高/中/亏损）、边界限制
+│       - _score_valuation：PE 低估、PE 高估、PE 中性、PE 无数据
+│       - _score_flow：净流入加分、无数据兜底
+│       - _score_holder：筹码集中度三档
+│       - _score_dividend：股息率高低档
+│       - calculate_score：full/dict/med_lng 三种输出模式
+│       - ScoreData / ScoreResult 数据结构
+│       何时需要：修改了评分维度或权重配置后
 
+├── stock_cache (缓存层)
+│   ├── test_cache.py
+│   │   覆盖：
+│   │   - set_cache / get_cache：基本读写与 key 构建
+│   │   - TTL 过期：不同 category 的过期行为
+│   │   - invalidate_category / invalidate_prefix：按分类/前缀清理
+│   │   - print_cache_stats：命中率与占用统计
+│   │   - @cached 装饰器：同步函数缓存效果验证
+│   │   - STOCK_NOCACHE=1 环境变量禁用缓存
+│   │   - 空值写入：确保 {} / [] / "" 等空值不写入缓存
+│   │   何时需要：修改了 stock_cache.py 或缓存策略后
+│   │
+│   └── test_cache_verify.py
+│       覆盖：
+│       - 首次写入未验证（verified=0），get_cache 返回 None
+│       - 第二次写入相同数据，标记为已验证（verified=1），可正常读取
+│       - 第二次写入不同数据，重置验证状态（verified=0，prev_value=NULL）
+│       - 已验证数据不被覆盖，仅刷新过期时间
+│       - 普通模式（cross_verify=False）不受影响
+│       - @cached 装饰器集成测试：模拟连续两次调用验证通过
+│       何时需要：修改了交叉验证逻辑或缓存表结构后
 
-3. test_gd_uploader.py
-   作用：测试 gd_uploader.py（Google Drive 上传模块）。
-   覆盖：
-   - _find_working_proxy：代理发现函数在无网络时返回 None；
-   - cleanup_gd_proxy：环境变量清理是否正常；
-   - get_or_create_drive_folder(None, ...)：传入 None 时是否返回 None；
-   - upload_or_update_to_drive(None, ...)：service 为 None 时返回 False；
-   - upload_or_update_to_drive(... fake_service)：service 正常时走完整路径；
-     包括 media body 构造，mock 成功场景。
-   何时需要：修改了 gd_uploader.py 或上传逻辑后，运行一次确认无回归。
+├── stock_calendar (交易日历)
+│   └── test_calendar.py
+│       覆盖：
+│       - is_workday：已知节假日、调休日、周末交易日验证
+│       - _wrap_date：datetime → date 转换
+│       - _validate_date：日期范围验证与错误输入处理
+│       何时需要：修改了交易日历逻辑或 chinese-calendar 更新后
 
+├── strategy_config (策略配置)
+│   └── test_strategy.py
+│       覆盖：
+│       - strategy_config.yaml / keywords_config.yaml 存在性
+│       - _load_strategy_config / _load_settings 返回 dict
+│       - get_valuation_pe_center：默认返回正浮点数
+│       - get_val_report 策略函数可导入且处理空股票池
+│       - top5 函数返回有序列表
+│       - kline_indices 返回 dict 结构
+│       - keywords_config 包含行业名清理或别名配置
+│       何时需要：修改了策略参数或关键词配置后
 
-4. test_cache.py（V8.4 新增）
-   作用：测试 stock_cache.py 缓存层核心功能。
-   覆盖：
-   - set_cache / get_cache：基本读写与 key 构建；
-   - TTL 过期：不同 category 的过期行为；
-   - invalidate_category / invalidate_prefix：按分类/前缀清理；
-   - print_cache_stats：命中率与占用统计；
-   - @cached 装饰器：同步函数缓存效果验证；
-   - STOCK_NOCACHE=1 环境变量禁用缓存；
-   - 空值写入：确保 {} / [] / "" 等空值不写入缓存。
-   何时需要：修改了 stock_cache.py 或缓存策略后。
+├── gd_uploader (GD上传模块)
+│   └── test_gd_uploader.py
+│       覆盖：
+│       - _find_working_proxy：代理发现函数在无网络时返回 None
+│       - cleanup_gd_proxy：环境变量清理是否正常
+│       - get_or_create_drive_folder(None, ...)：传入 None 时是否返回 None
+│       - upload_or_update_to_drive(None, ...)：service 为 None 时返回 False
+│       - upload_or_update_to_drive(... fake_service)：service 正常时走完整路径
+│       何时需要：修改了 gd_uploader.py 或上传逻辑后
 
+├── em_rate_limit (东财限流测试)
+│   └── test_em_rate_limit.py
+│       覆盖：
+│       - 基准测试：单域名 push2，1秒间隔，验证安全基线
+│       - 交叉测试：三域名轮询，总QPS≈3，验证是否触发限流
+│       - 串行测试：三域名串行，总QPS≈1，作为对照组
+│       何时需要：想验证东财限流阈值，调整限流参数前（谨慎使用）
 
-5. test_cache_verify.py（V9.2 新增）
-   作用：测试 stock_cache.py 交叉验证（cross_verify）机制。
-   覆盖：
-   - 首次写入未验证（verified=0），get_cache 返回 None；
-   - 第二次写入相同数据，标记为已验证（verified=1），可正常读取；
-   - 第二次写入不同数据，重置验证状态（verified=0，prev_value=NULL）；
-   - 已验证数据不被覆盖，仅刷新过期时间；
-   - 普通模式（cross_verify=False）不受影响；
-   - @cached 装饰器集成测试：模拟连续两次调用验证通过。
-   何时需要：修改了交叉验证逻辑或缓存表结构后。
+├── f10_integration (F10集成测试)
+│   └── test_f10_chapters_integration.py
+│       覆盖：
+│       - 验证 3 个报告脚本（med/lng/ful）中的 F10 新章节是否正确渲染
+│       何时需要：修改了 F10 章节逻辑后（需联网，约 5-10 分钟）
 
-
-6. test_calendar.py（V8.4 新增）
-   作用：测试 stock_common.py 交易日历判断函数。
-   覆盖：
-   - is_trading_day()：普通工作日（周一~五）、周末、节假日、调休日；
-   - get_market_status()：盘前/上午/午休/下午/盘后/休市各状态；
-   - 已知节假日验证：元旦、春节、劳动节、国庆节、端午、中秋；
-   - 调休日验证：节假日前后补班日；
-   - 边界情况：None / 超范围日期 / datetime 输入。
-   何时需要：修改了交易日历逻辑或 chinese-calendar 更新后。
-
-
-7. test_scoring.py（V8.4 新增）
-   作用：测试统一评分接口 calculate_score() 及各维度评分函数。
-   覆盖：
-   - _score_technical：技术面 bullish/bearish、涨停加分、边界限制；
-   - _score_fundamental：ROE 三档（高/中/亏损）、边界限制；
-   - _score_valuation：PE 低估、PE 高估、PE 中性、PE 无数据；
-   - _score_flow：净流入加分、无数据兜底；
-   - _score_holder：筹码集中度三档；
-   - _score_dividend：股息率高低档；
-   - calculate_score：full/dict/med_lng 三种输出模式；
-   - 空数据兜底：返回有效评分的边界处理。
-   何时需要：修改了评分维度或权重配置后。
-
-
-8. test_strategy.py（V8.4 新增）
-   作用：测试选股策略配置加载与策略函数基本行为。
-   覆盖：
-   - strategy_config.yaml / keywords_config.yaml 存在性；
-   - _load_strategy_config / _load_settings 返回 dict；
-   - get_valuation_pe_center：默认返回正浮点数；
-   - get_val_report 策略函数可导入且处理空股票池；
-   - top5 函数返回有序列表；
-   - kline_indices 返回 dict 结构；
-   - get_val_report 接受 parse_args；
-   - keywords_config 包含行业名清理或别名配置。
-   何时需要：修改了策略参数或关键词配置后。
+└── conftest.py
+    作用：pytest 共享 fixtures 配置
+    - 全局拦截所有 HTTP 请求，阻止测试期间真实联网
+    - 提供临时项目目录（含模拟的 strategy_config.yaml）
+    - 使用 @pytest.mark.real_network 标记的测试不会被网络 mock 拦截
 
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 【第二类】独立诊断脚本  (手动运行:  python tests\xxx.py)
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
+按数据源分类：
 
-9. diag_dragon_tiger.py
-   作用：龙虎榜数据接口连通性与可用性诊断。
-   运行：python tests\diag_dragon_tiger.py [股票代码1] [股票代码2] ...
-          （不传参数默认跑 600519 / 000001 / 300750）
-   输出包含 4 个部分：
-     ① 直接调用东财 datacenter 3 个龙虎榜接口（上榜明细/买入席位/
-        卖出席位），返回 HTTP 状态码、响应结构、数据条数；
-     ② 全市场龙虎榜接口（最近 10 日所有上榜股票）；
-     ③ 通过 stock_common.get_dragon_tiger_board() 调用（与短线/中线
-        脚本实际使用的代码路径完全一致）；
-     ④ 通过 stock_common.get_recent_dragon_tiger(3) 调用（与全市场
-        选股/异动扫描脚本实际使用的代码路径一致）；
-     ⑤ 自动判断时段（周末/盘中/盘后/稳定时段）并给出解释。
-   何时需要：
-     - 短线/中线脚本跑出来龙虎榜字段全是 0 或空，想判断是接口问题
-       还是脚本逻辑问题；
-     - 换电脑 / 换网络环境后，首次验证数据接口连通性；
-     - 怀疑东财接口变化时，作为基准测试。
+├── TDX 数据源
+│   ├── diagnose_tdx.py
+│   │   作用：通达信（TDX）数据接口连通性与稳定性诊断
+│   │   覆盖：easy_tdx 安装检查、TdxClient连接、MacClient全市场列表、
+│   │         tdx_client.py封装函数、连续20次请求压力测试
+│   │   何时需要：脚本报TdxClient连接失败/K线返回空/怀疑IP被封禁
+│   │
+│   ├── diag_tdx_basic.py
+│   │   作用：TDX基础接口诊断（行情/K线/资金流/财务）
+│   │   覆盖：tdx_get_security_bars、tdx_get_quote_full、tdx_get_index_quote、
+│   │         tdx_get_fund_flow、tdx_get_history_fund_flow、tdx_get_finance_info、
+│   │         tdx_get_dividend_history、tdx_get_eps_from_reports
+│   │   何时需要：TDX行情/K线返回空时定位问题
+│   │
+│   ├── diag_tdx_f10.py
+│   │   作用：TDX F10接口诊断（财务分析/股东研究/股本结构等）
+│   │   覆盖：tdx_get_financial_analysis、tdx_get_shareholder_research、
+│   │         tdx_get_share_capital、tdx_get_latest_reminders、
+│   │         tdx_get_company_news_f10、tdx_get_latest_announcements
+│   │   何时需要：F10章节数据异常时定位具体哪个分类出问题
+│   │
+│   ├── diag_tdx_board.py
+│   │   作用：TDX板块接口诊断（所属板块/板块列表/板块成员/全市场）
+│   │   覆盖：tdx_get_belong_boards、tdx_get_board_list、tdx_get_board_members、
+│   │         tdx_get_all_stocks
+│   │   何时需要：概念板块/行业板块数据异常时定位问题
+│   │
+│   ├── diag_tdx_hosts_test.py
+│   │   作用：测试 easy_tdx 内置的全部 TDX 服务器 K线可用性
+│   │   覆盖：逐个测试52个内置TDX服务器的get_security_bars接口
+│   │   何时需要：K线数据全部N/A或返回空，怀疑选到了假数据服务器
+│   │
+│   ├── diag_tdx_final.py
+│   │   作用：捕获 TDX K线请求的原始 TCP 响应（header + body）
+│   │   覆盖：monkey-patch TdxConnection.execute，打印FrameHeader、raw_body、
+│   │         解压后body、ret_count与实际数据对比
+│   │   何时需要：需要确认TDX服务器是否返回假数据、怀疑协议变更或解码bug
+│   │
+│   ├── diag_tdx_compare.py
+│   │   作用：easy-tdx 与 mootdx 接口对比测试
+│   │   覆盖：K线数据、实时行情、资金流、板块数据、复权数据、连接稳定性
+│   │   何时需要：确认两库的功能差异、决定是否引入mootdx作为补充库
+│   │
+│   ├── diag_mootdx.py
+│   │   作用：mootdx 库单独测试，验证 K线参数和复权数据
+│   │   覆盖：mootdx版本信息、Quotes类方法签名、bars方法frequency参数映射、
+│   │         xdxr复权数据获取、实际K线数据获取测试
+│   │   何时需要：验证mootdx安装和基本功能
+│   │
+│   └── diag_qfq_debug.py
+│       作用：前复权算法调试，手动检查除权除息数据处理逻辑
+│       何时需要：复权数据异常时进行深度调试
 
+├── 东财数据源
+│   ├── diag_eastmoney.py
+│   │   作用：东财接口诊断，测试东方财富HTTP接口
+│   │   覆盖：eastmoney_datacenter、get_reports、get_eastmoney_stock_news、
+│   │         get_holder_structure、get_northbound_hold、get_margin_trading、
+│   │         get_block_trade、get_lockup_expiry、get_industry_comparison、
+│   │         get_industry_peers、get_stock_sector_rank、get_gross_margin_and_roe、
+│   │         em_hot_concept、eastmoney_stock_info_push2
+│   │   何时需要：东财数据源异常时统一定位问题
+│   │
+│   └── diag_dragon_tiger.py
+│       作用：龙虎榜数据接口连通性与可用性诊断
+│       覆盖：东财datacenter 3个龙虎榜接口、全市场龙虎榜接口、
+│             stock_common.get_dragon_tiger_board()、
+│             stock_common.get_recent_dragon_tiger()、时段自动判断
+│       何时需要：短线/中线脚本龙虎榜字段全是0或空、怀疑接口变化
 
-10. diagnose_tdx.py
-   作用：通达信（TDX）数据接口连通性与稳定性诊断。
-   运行：python tests\diagnose_tdx.py
-   输出包含 5 个部分：
-     ① easy_tdx 模块是否已安装；
-     ② TdxClient 首次连接测试（TCP 连接 + 行情查询）；
-     ③ MacClient 全市场列表查询测试；
-     ④ 调用 tdx_client.py 中封装的公共函数（_check_tdx、
-        _get_tdx_client、tdx_get_security_bars、tdx_get_all_stocks 等）；
-     ⑤ 连续 20 次请求的压力测试，看是否被服务器限流或 IP 被拉黑。
-   何时需要：
-     - 脚本运行时报 TdxClient 连接失败 / Connection refused /
-       timeout 等网络错误；
-     - K 线数据返回空列表，想确认是 TDX 服务端问题还是业务脚本问题；
-     - 怀疑本地 IP 被通达信服务器临时封禁。
+├── 同花顺数据源
+│   └── diag_ths.py
+│       作用：同花顺接口诊断，测试同花顺HTTP接口
+│       覆盖：get_ths_hot_reason、ths_hot_list
+│       何时需要：同花顺热榜/热点原因数据异常时定位问题
 
+├── 其他数据源
+│   ├── diag_other.py
+│   │   作用：其他接口诊断（腾讯/新浪/百度/巨潮）
+│   │   覆盖：get_tencent_quote、get_sina_financial_report、
+│             baidu_kline_full(deprecated)、get_strategic_announcements、
+│             get_hsgt_macro_flow
+│   │   何时需要：验证腾讯/新浪/百度/巨潮等第三方数据源连通性
+│   │
+│   ├── diag_datasource.py
+│   │   作用：多数据源接口连通性诊断，一次性测试所有主要数据接口
+│   │   覆盖：腾讯行情、东财数据中心、东财push2、东财研报、同花顺强势股、
+│             新浪财报、百度股市通(deprecated)、巨潮资讯、通达信TCP行情、
+│             TDX财务信息/资金流/分红除权/MacClient/所属板块/板块成员
+│   │   何时需要：多个脚本同时报告数据为空、怀疑IP被限流或封禁
+│   │
+│   └── diag_news_and_finance.py
+│       作用：东财新闻和新浪财报接口测试，验证接口修复效果
+│       覆盖：东财新闻API、新浪现金流量表API、利润表和资产负债表验证
+│       何时需要：验证东财新闻解析修复是否生效
 
-11. diag_tdx_hosts_test.py（V9.3.2 新增）
-    作用：测试 easy_tdx 内置的全部 TDX 服务器K线可用性。
-    运行：python tests\diag_tdx_hosts_test.py
-    输出：逐个测试 52 个内置 TDX 服务器的 get_security_bars 接口，
-      区分三种状态：
-      ✅正常 — K线返回正确数据；
-      ❌假数据 — ret_count=800 但 body 为 0 字节（TdxDecodeError）；
-      ❌连不上 — TCP 连接超时或被拒绝。
-    何时需要：
-      - K线数据全部 N/A 或返回空，怀疑选到了假数据服务器；
-      - from_best_host() 选的 IP K线接口不可用；
-      - 验证 V9.3.2 坏主机黑名单机制是否生效。
+├── zhb全局配置总包
+│   └── diag_zhb.py
+│       作用：zhb全局配置总包功能验证，测试所有zhb解析功能
+│       覆盖（共16个测试用例）：
+│       ① zhb_client下载与解析 ② spblock大板块成分 ③ 申万行业分类
+│       ④ 行业代码映射 ⑤ 缓存机制 ⑥ sc_datasource集成接口
+│       ⑦ tdxstat全市场统计快照 ⑧ tdxstat2资金流向+板块归属
+│       ⑨ 数据新鲜度检查 ⑩ tipinfo财报日历 ⑪ 新股申购日历
+│       ⑫ A+H股+券商名称表 ⑬ 节假日数据(V10.0) ⑭ 证监会行业分类(V10.0)
+│       ⑮ 中概股ADR/可转债/退市股(V10.0) ⑯ V10.0 sc_datasource导出接口验证
+│       何时需要：验证zhb下载和解析功能、确认全市场统计快照/行业分类等数据
 
-
-12. diag_tdx_final.py（V9.3.2 新增）
-    作用：捕获 TDX K线请求的原始 TCP 响应（header + body），深度诊断
-      TdxDecodeError 根因。
-    运行：python tests\diag_tdx_final.py
-    输出：monkey-patch TdxConnection.execute，打印每次 K线请求的：
-      - FrameHeader（magic/seq_id/method/zipsize/unzipsize）
-      - raw_body 长度和 hex 内容
-      - 解压后 body 长度和 hex 内容
-      - ret_count 与实际数据字节数的对比
-    何时需要：
-      - 需要确认 TDX 服务器是否返回假数据（ret_count > 0 但 body 为空）；
-      - 怀疑 TDX 协议变更或 easy_tdx 解码逻辑有 bug；
-      - diagnose_tdx.py 显示 K线失败但需要更详细的原始数据分析。
-
-
-13. diag_datasource.py（V8.5 新增，V9.3.1 更新为 V2.3）
-    作用：多数据源接口连通性诊断，一次性测试所有主要数据接口。
-    运行：python tests\diag_datasource.py
-    输出包含：
-      ① 腾讯行情接口（qt.gtimg.cn）；
-      ② 东财数据中心（datacenter-web.eastmoney.com）；
-      ③ 东财 push2 接口（push2.eastmoney.com）；
-      ④ 东财研报接口（reportapi.eastmoney.com）；
-      ⑤ 同花顺强势股接口（zx.10jqka.com.cn）；
-      ⑥ 新浪财报接口（quotes.sina.cn）；
-      ⑦ 百度股市通接口（finance.pae.baidu.com，已标记deprecated）；
-      ⑧ 巨潮资讯接口（www.cninfo.com.cn）；
-      ⑨ 通达信TCP行情接口（tdx_client）；
-      ⑩ TDX 财务信息接口（get_finance_info，V9.3.1 新增）；
-      ⑪ TDX 资金流接口（get_fund_flow，V9.3.1 新增）；
-      ⑫ TDX 分红除权接口（get_xdxr_info，V9.3.1 新增）；
-      ⑬ TDX MacClient 连接检测（V9.3.1 新增）；
-      ⑭ TDX 所属板块获取（上交所+深交所，V9.3.1 新增）；
-      ⑮ TDX 板块成员列表（V9.3.1 新增）。
-    何时需要：
-      - 多个脚本同时报告数据为空，想快速判断是哪个接口出问题；
-      - 怀疑 IP 被限流或封禁时，一次性验证所有数据源；
-      - 换网络环境后，首次验证数据接口连通性。
-
-
-14. diag_tdx_basic.py（V9.3.1 新增，按数据源重组）
-    作用：TDX基础接口诊断，测试通达信行情/K线/资金流/财务基础接口。
-    运行：python tests\diag_tdx_basic.py
-    覆盖接口（共8个）：
-      - tdx_get_security_bars（K线行情）
-      - tdx_get_quote_full（实时行情）
-      - tdx_get_index_quote（指数行情）
-      - tdx_get_fund_flow（资金流）
-      - tdx_get_history_fund_flow（历史资金流）
-      - tdx_get_finance_info（财务信息）
-      - tdx_get_dividend_history（分红历史）
-      - tdx_get_eps_from_reports（研报EPS）
-    何时需要：
-      - TDX行情/K线返回空时定位问题；
-      - 验证TDX基础数据接口连通性。
-
-
-15. diag_tdx_f10.py（V9.3.1 新增，按数据源重组）
-    作用：TDX F10接口诊断，测试通达信F10各分类接口。
-    运行：python tests\diag_tdx_f10.py
-    覆盖接口（共6个）：
-      - tdx_get_financial_analysis（财务分析）
-      - tdx_get_shareholder_research（股东研究）
-      - tdx_get_share_capital（股本结构）
-      - tdx_get_latest_reminders（最新提示）
-      - tdx_get_company_news_f10（公司新闻）
-      - tdx_get_latest_announcements（最新公告）
-    何时需要：
-      - F10章节数据异常时定位具体哪个分类出问题；
-      - 验证TDX F10各分类接口连通性。
-
-
-16. diag_tdx_board.py（V9.3.1 新增，按数据源重组）
-    作用：TDX板块接口诊断，测试通达信板块/全市场接口。
-    运行：python tests\diag_tdx_board.py
-    覆盖接口（共4个）：
-      - tdx_get_belong_boards（所属板块）
-      - tdx_get_board_list（板块列表）
-      - tdx_get_board_members（板块成员）
-      - tdx_get_all_stocks（全市场股票）
-    何时需要：
-      - 概念板块/行业板块数据异常时定位问题；
-      - 验证TDX MacClient板块接口连通性（同时测试上交所和深交所）。
-
-
-17. diag_eastmoney.py（V9.3.1 新增，按数据源重组）
-    作用：东财接口诊断，测试东方财富HTTP接口。
-    运行：python tests\diag_eastmoney.py
-    覆盖接口（共14个）：
-      - eastmoney_datacenter（数据中心）
-      - get_reports（研报列表）
-      - get_eastmoney_stock_news（个股新闻）
-      - get_holder_structure（股东结构）
-      - get_northbound_hold（北向持仓）
-      - get_margin_trading（融资融券）
-      - get_block_trade（大宗交易）
-      - get_lockup_expiry（限售解禁）
-      - get_industry_comparison（行业对比）
-      - get_industry_peers（行业同行）
-      - get_stock_sector_rank（板块排名）
-      - get_gross_margin_and_roe（毛利率/ROE）
-      - em_hot_concept（概念命中）
-      - eastmoney_stock_info_push2（push2基本面）
-    何时需要：
-      - 东财数据源异常时统一定位问题；
-      - 验证资金面/基本面/行业对比等东财接口连通性。
-
-
-18. diag_ths.py（V9.3.1 新增，按数据源重组）
-    作用：同花顺接口诊断，测试同花顺HTTP接口。
-    运行：python tests\diag_ths.py
-    覆盖接口（共2个）：
-      - get_ths_hot_reason（热点原因）
-      - ths_hot_list（热榜）
-    何时需要：
-      - 同花顺热榜/热点原因数据异常时定位问题。
-
-
-19. diag_other.py（V9.3.1 新增，按数据源重组）
-    作用：其他接口诊断，测试腾讯/新浪/百度/巨潮等接口。
-    运行：python tests\diag_other.py
-    覆盖接口（共5个）：
-      - get_tencent_quote（腾讯行情）
-      - get_sina_financial_report（新浪财报）
-      - baidu_kline_full（百度K线，deprecated）
-      - get_strategic_announcements（巨潮公告）
-      - get_hsgt_macro_flow（沪深港通宏观资金流）
-    何时需要：
-      - 验证腾讯/新浪/百度/巨潮等第三方数据源连通性。
-
-
-20. test_em_rate_limit.py（V8.6 新增）
-    作用：东财限流阈值压力测试，验证东财风控是按域名独立限流还是按IP总请求限流。
-    运行：python tests\test_em_rate_limit.py
-    测试三组对照实验：
-      ① 基准测试：单域名 push2，1秒间隔，验证安全基线；
-      ② 交叉测试：三域名轮询，总QPS≈3，验证是否触发限流；
-      ③ 串行测试：三域名串行，总QPS≈1，作为对照组。
-    安全机制：
-      - 渐进式启动（从低频率到目标频率）；
-      - 熔断机制（检测到429立即停止）；
-      - 每组测试后5分钟冷却。
-    何时需要：
-      - 想验证东财限流阈值，调整限流参数前；
-      - 怀疑风控策略变化时；
-      - 评估性能优化空间时。
-
-
-21. diag_issues.py（V8.5 新增，V8.7 更新）
-   作用：专项问题验证脚本，用于复现和验证特定 bug 修复。
-   运行：python tests\diag_issues.py
-   覆盖：
-     - 指数涨跌幅数据验证（上证指数、深证成指、创业板指、科创50）；
-     - 板块排名验证（get_stock_sector_rank 返回数据结构）；
-     - 行业对标验证（get_industry_peers 同行股票列表）；
-     - 龙虎榜数据验证（席位分析、机构资金）；
-     - 多评委评分验证（calculate_multi_school_scores 返回数据结构）。
-   何时需要：
-     - 开发期间验证特定 bug 修复是否生效；
-     - 回归测试时确认已知问题没有复发。
-
-
-22. test_f10_chapters_integration.py（V9.1 新增）
-   作用：F10 章节集成测试，验证 3 个报告脚本（med/lng/ful）中的 F10 新章节是否正确渲染。
-
-23. diag_tdx_compare.py（V9.6 新增）
-   作用：easy-tdx 与 mootdx 接口对比测试，验证两库的关键接口差异。
-   运行：python tests\diag_tdx_compare.py
-   覆盖：
-     - K线数据获取（日K/分钟K）；
-     - 实时行情；
-     - 资金流数据；
-     - 板块数据；
-     - 复权数据（xdxr）；
-     - F10数据；
-     - 连接稳定性对比（3次连续请求）；
-     - 独有功能对比。
-   何时需要：
-     - 确认 easy-tdx 与 mootdx 的功能差异；
-     - 决定是否引入 mootdx 作为补充库；
-     - 验证两库的数据一致性。
-
-24. diag_mootdx.py（V9.6 新增）
-   作用：mootdx 库单独测试，验证 K线参数和复权数据。
-   运行：python tests\diag_mootdx.py
-   覆盖：
-     - mootdx版本信息；
-     - Quotes类方法签名；
-     - bars方法frequency参数映射；
-     - xdxr复权数据获取；
-     - 实际K线数据获取测试。
-   何时需要：
-     - 验证 mootdx 安装和基本功能；
-     - 确认分钟K线参数是否正确；
-     - 测试复权数据接口。
-
-25. diag_news_and_finance.py（V9.6 新增）
-   作用：东财新闻和新浪财报接口测试，验证接口修复效果。
-   运行：python tests\diag_news_and_finance.py
-   覆盖：
-     - 东财新闻API（多种接口尝试）；
-     - 新浪现金流量表API（验证是否已失效）；
-     - 利润表和资产负债表验证。
-   何时需要：
-     - 验证东财新闻解析修复是否生效；
-     - 确认新浪现金流量表接口状态。
-
-26. diag_v34_verify.py（V9.6 新增）
-   作用：源仓库V3.4.0关键接口验证，测试解禁字段、行业排序、北向资金、新闻解析、财报解析。
-   运行：python tests\diag_v34_verify.py
-   覆盖：
-     - test_lockup_expiry_fields：解禁接口字段验证；
-     - test_industry_ranking_sort：行业排名排序验证；
-     - test_northbound_data：北向资金数据可靠性验证；
-     - test_eastmoney_stock_news：东财新闻解析验证；
-     - test_sina_financial_reports：新浪财报三表解析验证。
-   何时需要：
-     - 验证 V9.6 修复的接口问题是否已解决；
-     - 回归测试确保接口修复没有引入新问题。
-
-27. diag_v96_skill_verify.py（V9.6 新增）
-   作用：SKILL.md V3.4复活版接口验证，测试财联社快讯、互动易问答、龙虎榜官方备胎、新浪资金流备胎。
-   运行：python tests\diag_v96_skill_verify.py
-   覆盖：
-     - cls_telegraph：财联社快讯（v1/roll/get_roll_list + 本地签名）；
-     - cninfo_irm：互动易问答（两步调用获取orgId和问答列表）；
-     - dragon_tiger_backup：深交所+上交所龙虎榜官方备胎；
-     - fund_flow_backup：新浪资金流备用源。
-   何时需要：
-     - 验证 V9.6 新增的备用数据源接口是否正常；
-     - 确认财联社/互动易/官方龙虎榜接口可用性。
+└── 专项验证
+    ├── diag_issues.py
+    │   作用：专项问题验证脚本，用于复现和验证特定bug修复
+    │   覆盖：指数涨跌幅数据验证、板块排名验证、行业对标验证、
+    │         龙虎榜数据验证、多评委评分验证
+    │   何时需要：开发期间验证特定bug修复是否生效、回归测试
+    │
+    ├── diag_v34_verify.py
+    │   作用：源仓库V3.4.0关键接口验证
+    │   覆盖：解禁接口字段验证、行业排名排序验证、北向资金数据可靠性验证、
+    │         东财新闻解析验证、新浪财报三表解析验证
+    │   何时需要：验证V9.6修复的接口问题是否已解决
+    │
+    └── diag_v96_skill_verify.py
+        作用：SKILL.md V3.4复活版接口验证
+        覆盖：财联社快讯、互动易问答、龙虎榜官方备胎、新浪资金流备胎
+        何时需要：验证V9.6新增的备用数据源接口是否正常
 
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 【速查：日常使用指南】
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-  想跑单元测试，确认近期修改没有引入回归：
-      cd 到项目根目录
-      pytest tests/ -v
+想跑全部单元测试，确认近期修改没有引入回归：
+    cd 到项目根目录
+    pytest tests/ -v
 
-  想只跑缓存层测试（V8.4 新增）：
-      pytest tests/test_cache.py -v
+想只跑特定模块的单元测试：
+    pytest tests/test_stock_common.py -v   # sc_utils 工具函数
+    pytest tests/test_scoring.py -v        # 评分系统
+    pytest tests/test_cache.py -v          # 缓存层
+    pytest tests/test_cache_verify.py -v   # 缓存交叉验证
+    pytest tests/test_calendar.py -v       # 交易日历
+    pytest tests/test_strategy.py -v       # 策略配置
 
-  想只跑缓存交叉验证测试（V9.2 新增）：
-      pytest tests/test_cache_verify.py -v
+短线脚本龙虎榜全是0 / 想判断数据接口是否正常：
+    python tests\diag_dragon_tiger.py
+    python tests\diag_dragon_tiger.py 301217 600036
 
-  想只跑交易日历测试（V8.4 新增）：
-      pytest tests/test_calendar.py -v
+脚本报TdxClient连接失败 / K线返回空：
+    python tests\diagnose_tdx.py
 
-  想只跑评分逻辑测试（V8.4 新增）：
-      pytest tests/test_scoring.py -v
+K线全部N/A或返回空，怀疑选到了假数据服务器：
+    python tests\diag_tdx_hosts_test.py
 
-  想只跑策略配置测试（V8.4 新增）：
-      pytest tests/test_strategy.py -v
+需要查看TDX原始TCP响应，确认服务器是否返回假数据：
+    python tests\diag_tdx_final.py
 
-  短线脚本龙虎榜全是 0 / 想判断数据接口是否正常：
-      python tests\diag_dragon_tiger.py
-      python tests\diag_dragon_tiger.py 301217 600036
+想一次性验证所有数据源接口：
+    python tests\diag_datasource.py
 
-  脚本报 TdxClient 连接失败 / K 线返回空：
-      python tests\diagnose_tdx.py
+想按数据源分类测试：
+    # TDX基础接口（行情/K线/资金流/财务）
+    python tests\diag_tdx_basic.py
+    # TDX F10接口（财务分析/股东研究/股本结构等）
+    python tests\diag_tdx_f10.py
+    # TDX板块接口（所属板块/板块列表/板块成员）
+    python tests\diag_tdx_board.py
+    # 东财接口（研报/新闻/股东/北向/融资融券等）
+    python tests\diag_eastmoney.py
+    # 同花顺接口（热点原因/热榜）
+    python tests\diag_ths.py
+    # 其他接口（腾讯/新浪/百度/巨潮）
+    python tests\diag_other.py
 
-  K线全部N/A或返回空，怀疑选到了假数据服务器（V9.3.2 新增）：
-      python tests\diag_tdx_hosts_test.py
-      # 逐个测试52个TDX服务器的K线可用性
+想验证zhb全局配置总包功能：
+    python tests\diag_zhb.py
 
-  需要查看TDX原始TCP响应，确认服务器是否返回假数据（V9.3.2 新增）：
-      python tests\diag_tdx_final.py
-      # 捕获 header + body，对比 ret_count 与实际数据量
+想验证特定bug修复是否生效：
+    python tests\diag_issues.py
 
-  想确认 GD 上传逻辑没被改坏：
-      pytest tests\test_gd_uploader.py -v
-
-  想一次性验证所有数据源接口：
-      python tests\diag_datasource.py
-
-  想按数据源分类测试（V9.3.1 新增）：
-      # TDX基础接口（行情/K线/资金流/财务）
-      python tests\diag_tdx_basic.py
-      # TDX F10接口（财务分析/股东研究/股本结构等）
-      python tests\diag_tdx_f10.py
-      # TDX板块接口（所属板块/板块列表/板块成员）
-      python tests\diag_tdx_board.py
-      # 东财接口（研报/新闻/股东/北向/融资融券等14个）
-      python tests\diag_eastmoney.py
-      # 同花顺接口（热点原因/热榜）
-      python tests\diag_ths.py
-      # 其他接口（腾讯/新浪/百度/巨潮）
-      python tests\diag_other.py
-
-  想只跑 TDX 财务/资金流/分红接口测试（在 diag_datasource.py 中包含）：
-      python tests\diag_datasource.py
-      （测试TDX财务信息、TDX资金流、TDX分红除权三项）
-
-  想只跑 TDX MacClient 测试（在 diag_tdx_board.py 中包含）：
-      python tests\diag_tdx_board.py
-      （测试MacClient连接、所属板块、板块成员三项）
-
-  想验证东财限流阈值（谨慎使用，有封禁风险）：
-      python tests\test_em_rate_limit.py
-
-  想验证特定 bug 修复是否生效：
-      python tests\diag_issues.py
-
-  想验证 F10 章节和附录在报告中的集成（V9.1 新增，需联网，约 5-10 分钟）：
-      python tests\test_f10_chapters_integration.py
-
-
-更新时间：2026-07-13（V9.6 接口修复 + 东财现金流量表 + mootdx集成 + 测试脚本扩展）
+更新时间：2026-07-14（V10.0 按模块/数据源分类重新组织测试文档）

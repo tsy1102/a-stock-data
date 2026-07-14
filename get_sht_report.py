@@ -298,8 +298,12 @@ async def generate_report_async(session, code, output_path, ind_comp=None, idx_q
 
     _mkt_status, _mkt_note = get_market_status()
 
-    if _mkt_status in ("lunch", "closed", "post_market", "pre_market"):
-        L(f"  ⚠️ 休市日：数据为最近交易日快照，短线技术指标已标注")
+    if _mkt_status == "closed":
+        L("  ⚠️ 休市日：数据为最近交易日快照，短线技术指标已标注")
+    elif _mkt_status == "lunch":
+        L("  ⚠️ 午休时段（11:30-13:00）：行情暂停，技术指标基于盘中快照")
+    elif _mkt_status in ("post_market", "pre_market"):
+        L("  ⚠️ 非交易时段：数据为最近交易日快照，短线技术指标已标注")
     L("\n"+"─"*72); L("【一、个股基本信息】"); L("─"*36)
 
     info = get_stock_info(code)
@@ -328,7 +332,7 @@ async def generate_report_async(session, code, output_path, ind_comp=None, idx_q
 
     if q:
         if q.get("_is_pre_market"):
-            L(f"  ⚠️ 盘前模式（9:30前），以下行情数据基于上一交易日收盘数据")
+            L("  ⚠️ 盘前模式（9:30前），以下行情数据基于上一交易日收盘数据")
         
         L(f"  当前价:   {price_today:.2f}元")
 
@@ -427,9 +431,9 @@ async def generate_report_async(session, code, output_path, ind_comp=None, idx_q
             if last_day_flow != 0:
                 L(f"  💰 昨日主力净流入: {last_day_flow:.0f}万元 ({last_day_flow/1e4:.2f}亿)")
             else:
-                L(f"\n  [资金流向] 今日主力净流入(实时): 暂无数据")
+                L("\n  [资金流向] 今日主力净流入(实时): 暂无数据")
         else:
-            L(f"\n  [资金流向] 今日主力净流入(实时): 暂无数据")
+            L("\n  [资金流向] 今日主力净流入(实时): 暂无数据")
 
     L("\n"+"─"*72); L("【三、机构一致预期与估值】"); L("─"*36)
 
@@ -628,7 +632,7 @@ async def generate_report_async(session, code, output_path, ind_comp=None, idx_q
 
         L(f"\n  概念板块: {', '.join(b['name'] for b in blocks['concept'])}")
 
-    L(f"\n  ➤ 同花顺热点题材归因 (基于当日强势股/涨停榜):")
+    L("\n  ➤ 同花顺热点题材归因 (基于当日强势股/涨停榜):")
 
     # 优化同花顺热点题材时段显示逻辑
     if _mkt_status in ("pre_market", "morning", "lunch"):
@@ -656,7 +660,7 @@ async def generate_report_async(session, code, output_path, ind_comp=None, idx_q
 
             L(f"  所属板块: {peer_data['industry']}"); L(f"  本股市值: {_my_mcap_show:.1f}亿元")
 
-            L(f"  同业龙头对比:"); L(f"  {'代码':<8} {'名称':<12} {'股价':>8} {'涨跌幅%':>8} {'市值(亿)':>10} {'PE':>8} {'换手率%':>8}"); L(f"  {'-'*70}")
+            L("  同业龙头对比:"); L(f"  {'代码':<8} {'名称':<12} {'股价':>8} {'涨跌幅%':>8} {'市值(亿)':>10} {'PE':>8} {'换手率%':>8}"); L(f"  {'-'*70}")
 
             _my_mcap = peer_data['my_mcap'] if peer_data['my_mcap'] > 0 else q.get('mcap_yi', 0)
 
@@ -698,7 +702,7 @@ async def generate_report_async(session, code, output_path, ind_comp=None, idx_q
 
         L(f"  信号: {'主力资金近期净流入 → 偏多' if tmain>0 else '主力资金近期净流出 → 偏空'}")
 
-    else: L(f"  (资金流数据获取失败)")
+    else: L("  (资金流数据获取失败)")
 
     L("\n"+"─"*72); L("【八、北向资金持仓动态】"); L("─"*36)
 
@@ -769,13 +773,13 @@ async def generate_report_async(session, code, output_path, ind_comp=None, idx_q
 
         if seats["buy"]:
 
-            L(f"\n  最近买入席位 TOP5:"); L(f"  {'营业部名称':<30} {'买入(万)':>9} {'卖出(万)':>9} {'净额(万)':>9}"); L(f"  {'-'*70}")
+            L("\n  最近买入席位 TOP5:"); L(f"  {'营业部名称':<30} {'买入(万)':>9} {'卖出(万)':>9} {'净额(万)':>9}"); L(f"  {'-'*70}")
 
             for s in seats["buy"]: L(f"  {_tag(s['name'])} {s['name']:<28} {s['buy_amt']:>12.1f} {s['sell_amt']:>12.1f} {s['net']:>12.1f}")
 
         if seats["sell"]:
 
-            L(f"\n  最近卖出席位 TOP5:"); L(f"  {'营业部名称':<30} {'买入(万)':>9} {'卖出(万)':>9} {'净额(万)':>9}"); L(f"  {'-'*70}")
+            L("\n  最近卖出席位 TOP5:"); L(f"  {'营业部名称':<30} {'买入(万)':>9} {'卖出(万)':>9} {'净额(万)':>9}"); L(f"  {'-'*70}")
 
             for s in seats["sell"]: L(f"  {_tag(s['name'])} {s['name']:<28} {s['buy_amt']:>12.1f} {s['sell_amt']:>12.1f} {s['net']:>12.1f}")
 
@@ -829,7 +833,7 @@ async def generate_report_async(session, code, output_path, ind_comp=None, idx_q
 
                 L(f"  🔴 著名游资卖出: {'、'.join(_unique_sell)}")
 
-            L(f"  📊 席位明细:")
+            L("  📊 席位明细:")
 
             for _tg, _nm, _sd, _nt in _all_depts[:5]:
 
@@ -866,7 +870,7 @@ async def generate_report_async(session, code, output_path, ind_comp=None, idx_q
         # V8.5新增：席位增强分析
         if dtb.get("seat_analysis"):
             sa = dtb["seat_analysis"]
-            L("\n  ── 席位增强分析（V8.5） ──")
+            L("\n  ── 席位增强分析 ──")
             if sa.get("seat_quality_score"):
                 L(f"  席位质量评分: {sa['seat_quality_score']}分")
             if sa.get("premium_signal"):
@@ -948,7 +952,7 @@ async def generate_report_async(session, code, output_path, ind_comp=None, idx_q
 
             if _rq_up>=2:
 
-                L(f"  ⚠️ 融券余额连续上升，做空筹码在暗中积累，警惕高位融券砸盘")
+                L("  ⚠️ 融券余额连续上升，做空筹码在暗中积累，警惕高位融券砸盘")
 
     else: L("  该股无融资融券数据（可能不是两融标的）")
 
@@ -1047,7 +1051,7 @@ async def generate_report_async(session, code, output_path, ind_comp=None, idx_q
     except Exception as _e:
         _debug_log(f"ths_hot_list error: {_e}")
 
-    L(f"\n  ➤ 近7日巨潮实质性重大公告:")
+    L("\n  ➤ 近7日巨潮实质性重大公告:")
 
     if _dc.get("skip_announcement_detail"):
         L("  [lite模式] 跳过详细公告")
@@ -1072,7 +1076,7 @@ async def generate_report_async(session, code, output_path, ind_comp=None, idx_q
     else: L("  近7日暂无触及关键词的重大公告")
 
     # ── 打板分析 ──
-    L(f"\n  ➤ 打板与涨停分析:")
+    L("\n  ➤ 打板与涨停分析:")
     try:
         from stock_common import get_limit_pool_summary
         pool = get_limit_pool_summary()
@@ -1170,11 +1174,11 @@ async def generate_report_async(session, code, output_path, ind_comp=None, idx_q
 
         if _rzye_trend>=3 and _rqye_trend<=1:
 
-            signals.append(f"🔥 两融多头共振：融资余额持续飙升而融券受压，杠杆资金锁仓强推，多头逼空动能强劲")
+            signals.append("🔥 两融多头共振：融资余额持续飙升而融券受压，杠杆资金锁仓强推，多头逼空动能强劲")
 
         if q and abs(q.get("change_pct",0))<3 and _rzye_trend>=3:
 
-            signals.append(f"⚠️ 两融风险预警：股价滞涨而融资余额创新高，散户杠杆接盘筹码松动")
+            signals.append("⚠️ 两融风险预警：股价滞涨而融资余额创新高，散户杠杆接盘筹码松动")
 
     if rr and len(rr)>=3 and q and abs(q.get("change_pct",0))>5:
 
@@ -1282,9 +1286,7 @@ async def generate_report_async(session, code, output_path, ind_comp=None, idx_q
 
                             dv = round(stk3-idx3,2)
 
-                            tl = 20 if (code.startswith("6") and "ST" not in info.get("name","")) else 30
-
-                            if "ST" in info.get("name",""): tl=12
+                            tl = 30 if code.startswith(("300","301","688")) else 20
 
                             if dv>=tl: signals.append(f"异动雷达：3日偏离值{dv:+.2f}%>={tl}%，触发短期异动")
 
@@ -1293,7 +1295,7 @@ async def generate_report_async(session, code, output_path, ind_comp=None, idx_q
     except Exception as _e:
         _debug_log(f"sht deviation radar error: {_e}")
 
-    L(f"  综合分析条目:")
+    L("  综合分析条目:")
 
     if signals:
 
@@ -1317,7 +1319,7 @@ async def generate_report_async(session, code, output_path, ind_comp=None, idx_q
 
                     _3d = (_c3[-1]/_c3[0]-1)*100
 
-                    _lb_pct = 20 if code.startswith(("300","301","688")) else (5 if "ST" in info.get("name","") else 10)
+                    _lb_pct = 20 if code.startswith(("300","301","688")) else 10
 
                     _lb2 = _lb_pct * 1.9
 
@@ -1649,7 +1651,7 @@ if __name__ == "__main__":
 
     if fd:
 
-        print(f"  ❌ 数据获取失败的股票:")
+        print("  ❌ 数据获取失败的股票:")
 
         for r in fd:
 
@@ -1657,7 +1659,7 @@ if __name__ == "__main__":
 
     if fg:
 
-        print(f"  ⚠️ GD上传失败的股票:")
+        print("  ⚠️ GD上传失败的股票:")
 
         for r in fg:
 

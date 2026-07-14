@@ -15,7 +15,7 @@ get_mak_report.py — A股异动及行业轮动扫描报告
     V8.9   2026-06-29 - 修复模块导入；清理冗余空行输出；模块版本统一
     V8.7   2026-06-25 - 死代码清理：同步版替换为薄包装
 """
-import argparse, requests, json, time, math, os, warnings
+import argparse, time, os, warnings
 from datetime import date, datetime, timedelta
 from collections import Counter
 from concurrent.futures import ThreadPoolExecutor, as_completed
@@ -54,7 +54,6 @@ def get_stock_index(code):
     else: return "sz399001"
 
 def get_threshold(code, name):
-    if "ST" in name or "*ST" in name: return 12
     if code.startswith(("300","301","688")): return 30
     return 20
 
@@ -463,7 +462,7 @@ def generate_sector_report(output_path):
     total_abnormal = len(results["已触发"]) + len(results["严重"])
     _zt_count = sum(1 for s in all_stocks if s.get("change_pct", 0) >= (19.5 if s["code"].startswith(("300","301","688")) else 9.5))
     _zt_float = sum(1 for s in all_stocks if 5 <= s.get("change_pct", 0) < 9.5); _zb_rate = _zt_float / max(_zt_count + _zt_float, 1) * 100
-    _dt_count = sum(1 for s in all_stocks if s.get("change_pct", 0) <= -9.5)
+    _dt_count = sum(1 for s in all_stocks if s.get("change_pct", 0) <= (-19.5 if s["code"].startswith(("300","301","688")) else -9.5))
     _lbp = _zt_count
     L(f"\n{'='*90}")
     L("【A. 全市场情绪监测看板】")
@@ -476,7 +475,7 @@ def generate_sector_report(output_path):
     if _lbp > 80:
         L(f"    🔥 涨停{_lbp}家 > 80，情绪极度亢奋，警惕分化回落")
     if total_abnormal > 40 and _lbp > 60:
-        L(f"    ⚠️ 异动+涨停双高，情绪高潮临界点，谨防次日退潮")
+        L("    ⚠️ 异动+涨停双高，情绪高潮临界点，谨防次日退潮")
     if _dt_count > 20:
         L(f"    💥 跌停{_dt_count}家 > 20，亏钱效应扩散，防御优先")
     _zt_3d = [s for s in all_stocks if s.get("change_pct", 0) >= (19.5 if s["code"].startswith(("300","301","688")) else 9.5)]
@@ -497,7 +496,7 @@ def generate_sector_report(output_path):
         if _max_board >= 4:
             L(f"    🔥 高标{_max_board}板打开空间，可积极做多")
         elif _max_board <= 1 and _zt_count > 30:
-            L(f"    ⚠️ 涨停多但无高度板，首板跟风为主，持续性存疑")
+            L("    ⚠️ 涨停多但无高度板，首板跟风为主，持续性存疑")
     _up_abn = [r for r in results["已触发"] if r.get("tag")=="🔥"]
     if _up_abn:
         _pos_5d = 0
@@ -517,19 +516,19 @@ def generate_sector_report(output_path):
         return _tech_cache[code]
     items = sorted(results["卡异动"], key=lambda x:x["score"], reverse=True)
     if items:
-        L(f"\n  💎 黄金控盘区 —— 精准卡异动标的（距红线不足2%）:")
+        L("\n  💎 黄金控盘区 —— 精准卡异动标的（距红线不足2%）:")
         for r in items[:10]:
             _tt = _tech(r["code"]); _tt_str = f" [{_tt}]" if _tt else ""
             L(f"    {r['tag']} {r['name']}({r['code']}){_tt_str}  {r['desc']}")
     items = sorted(results["严重预警"], key=lambda x:x["score"], reverse=True)
     if items:
-        L(f"\n  🚨 雷区风控 —— 濒临严重异动/停牌:")
+        L("\n  🚨 雷区风控 —— 濒临严重异动/停牌:")
         for r in items[:8]:
             _tt = _tech(r["code"]); _tt_str = f" [{_tt}]" if _tt else ""
             L(f"    🚨 {r['name']}({r['code']})  {r['desc']}")
     items = sorted(results["严重"], key=lambda x:x["score"], reverse=True)
     if items:
-        L(f"\n  🔥🔥 严重异动 —— 已触发:")
+        L("\n  🔥🔥 严重异动 —— 已触发:")
         for r in items[:8]:
             ann_info = ""
             _tt = _tech(r["code"]); _tt_str = f" [{_tt}]" if _tt else ""
@@ -537,11 +536,11 @@ def generate_sector_report(output_path):
     _up = sorted([r for r in results["已触发"] if r.get("tag")=="🔥"], key=lambda x:x["score"], reverse=True)
     _down = sorted([r for r in results["已触发"] if r.get("tag")=="💥"], key=lambda x:x["score"], reverse=True)
     if _up:
-        L(f"\n  🔺 多头控盘 —— 新晋正向偏离异动:")
+        L("\n  🔺 多头控盘 —— 新晋正向偏离异动:")
         for r in _up[:10]:
             L(f"    🔥 {r['name']}({r['code']})  {r['desc']}")
     if _down:
-        L(f"\n  🔻 空头崩盘 —— 新晋负向偏离异动:")
+        L("\n  🔻 空头崩盘 —— 新晋负向偏离异动:")
         for r in _down[:5]:
             L(f"    💥 {r['name']}({r['code']})  {r['desc']}")
     # 板块-异动交叉分析
@@ -560,26 +559,32 @@ def generate_sector_report(output_path):
         # 涨停板块分布
         sector_stats = pool.get("sector_stats", {})
         if sector_stats:
-            L(f"\n  涨停板块分布（TOP10）:")
+            L("\n  涨停板块分布（TOP10）:")
             for sec, cnt in list(sector_stats.items())[:10]:
                 L(f"    {sec}: {cnt} 只")
 
         # 涨停明细
         zt_list = pool.get("limit_up_list", [])
         if zt_list:
-            L(f"\n  涨停明细（按封板时间排序）:")
+            L("\n  涨停明细（按封板时间排序）:")
             L(f"  {'代码':<8} {'名称':<10} {'涨跌幅':>8} {'连板':>4} {'封板时间':>8} {'封板资金(亿)':>10} {'板块':<12}")
             L(f"  {'-'*70}")
             for item in zt_list[:30]:
                 fund_yi = item.get('limit_fund', 0) / 1e8 if item.get('limit_fund', 0) else 0
-                fbt = str(item.get('first_limit_time', ''))
-                fbt_fmt = f"{fbt[:2]}:{fbt[2:4]}" if len(fbt) >= 4 else fbt
+                fbt_raw = item.get('first_limit_time', '')
+                if isinstance(fbt_raw, int) and fbt_raw > 0:
+                    fbt_h = fbt_raw // 10000
+                    fbt_m = (fbt_raw % 10000) // 100
+                    fbt_fmt = f"{fbt_h:02d}:{fbt_m:02d}"
+                else:
+                    fbt = str(fbt_raw)
+                    fbt_fmt = f"{fbt[:2]}:{fbt[2:4]}" if len(fbt) >= 4 else fbt
                 L(f"  {item.get('code',''):<8} {item.get('name',''):<10} {item.get('change_pct',0):>+8.2f}% {item.get('limit_count',0):>4.0f} {fbt_fmt:>8} {fund_yi:>+10.2f} {item.get('sector',''):<12}")
 
         # 炸板明细
         zb_list = pool.get("limit_broken_list", [])
         if zb_list:
-            L(f"\n  炸板明细:")
+            L("\n  炸板明细:")
             for item in zb_list[:15]:
                 L(f"    {item.get('code','')} {item.get('name','')} 涨幅{item.get('change_pct',0):+.2f}% 炸板{item.get('broken_count',0):.0f}次 板块:{item.get('sector','')}")
     except Exception as _e:
@@ -609,7 +614,7 @@ def generate_sector_report(output_path):
     else:
         _extra_dt_codes = set()
     if _sector_density or _dt_map:
-        L(f"  异动集聚板块TOP5（异动股数/密度，含龙虎榜补全）:")
+        L("  异动集聚板块TOP5（异动股数/密度，含龙虎榜补全）:")
         for _nm, _cnt, _den in _sector_density[:5]:
             L(f"    {normalize_industry(_nm)}: {_cnt}只异动（板块内密度{_den:.1f}%）")
             _s = next((s for s in sorted_sectors if s["name"] == _nm), None)
@@ -625,14 +630,16 @@ def generate_sector_report(output_path):
                         _dtn = _dt.get("name", ""); _dt_display = f"{_c} {_dtn}" if _dtn else _c
                         L(f"      {_dt_display} (龙虎榜) - {_dt['reason'][:40]} | 净买{_dt['net_buy']:.0f}万")
     else:
-        L(f"  今日异动股较少，未形成明显板块集聚")
+        L("  今日异动股较少，未形成明显板块集聚")
     # 近5日异动回溯（基于10日/20日/60日偏离值反推）
     _recent_high = []
     for s in all_stocks:
         _r3 = s.get("ret_3d", 0); _r10 = s.get("ret_10d", 0)
         _r20 = s.get("ret_20d", 0); _r60 = s.get("ret_60d", 0)
-        _th = 20 if s["code"].startswith("6") else 30
-        if "ST" in s["name"]: _th = 12
+        if s["code"].startswith(("300","301","688")):
+            _th = 30
+        else:
+            _th = 20
         _matched = False
         # 10日严重：近日可能触发过
         if abs(_r10) >= 80: _matched = True
@@ -695,8 +702,8 @@ def generate_sector_report(output_path):
             L(f"  {_r[0]:<8} {_r[1]:<12} {_r[2]:>+9.2f}% {_r[3]:>+9.2f}% {_r[4]:>+9.2f}% {_a_info:<12}")
             _shown += 1
         if _shown == 0:
-            L(f"  (近3日无股票触发异常波动公告)")
-        L(f"  \n  💡 注: 回溯基于当日快照的10日/20日偏离值反推，非精确历史回放")
+            L("  (近3日无股票触发异常波动公告)")
+        L("  \n  💡 注: 回溯基于当日快照的10日/20日偏离值反推，非精确历史回放")
 
     L(f"\n{'='*90}")
     L("【D. 行业轮动强度扫描】")
@@ -712,7 +719,7 @@ def generate_sector_report(output_path):
     if top10:
         L(f"\n  🏆 轮动冠军: {normalize_industry(top10[0]['name'])} 评分 {top10[0].get('score',0):.1f}")
     else:
-        L(f"\n  ⚠️ 无法获取行业板块数据")
+        L("\n  ⚠️ 无法获取行业板块数据")
     L(f"\n{'='*90}")
     L("【E. TOP10 板块深度分析（涨停梯队 + 龙头股）】")
     L(f"{'─'*90}")
@@ -726,10 +733,10 @@ def generate_sector_report(output_path):
             _zt_names = ' '.join(st['name']+st['code'] for st in ta['limit_up_stocks'])
             L(f"     ├─ 涨停家数: {ta['limit_up_count']} 只 → {_zt_names}")
         else:
-            L(f"     ├─ 涨停家数: 0 只")
+            L("     ├─ 涨停家数: 0 只")
         _top5 = ta.get('top5_stocks', [])
         if _top5:
-            L(f"     └─ 涨幅 TOP5:")
+            L("     └─ 涨幅 TOP5:")
             for _t5 in _top5:
                 _t5_chg = _t5.get('change_pct', 0)
                 _t5_icon = '🚀' if _t5_chg >= 10 else ('📈' if _t5_chg >= 5 else '  ')
@@ -747,18 +754,18 @@ def generate_sector_report(output_path):
     without_money = [s for s in sectors[:50] if s.get("main_inflow",0) <= 0]
     if with_money:
         _sorted_in = sorted(with_money, key=lambda x: x.get('main_inflow',0), reverse=True)
-        L(f"  ✅ 真金白银: 高评分且主力净流入:")
+        L("  ✅ 真金白银: 高评分且主力净流入:")
         for s in _sorted_in[:10]:
             L(f"    {normalize_industry(s['name'])}: 评分{s.get('score',0):.1f} 涨幅{s['change_pct']:+.2f}% 净流入{round(s['main_inflow']/1e8,2):+.2f}亿")
     if without_money:
         _sorted_out = sorted(without_money, key=lambda x: x.get('main_inflow',0), reverse=True)
-        L(f"  ⚠️ 虚涨（主力净流出）:")
+        L("  ⚠️ 虚涨（主力净流出）:")
         for s in _sorted_out[:10]:
             L(f"    {normalize_industry(s['name'])}: 评分{s.get('score',0):.1f} 涨幅{s['change_pct']:+.2f}% 主力净流出{round(abs(s['main_inflow'])/1e8,2):.2f}亿")
     _lurking = [s for s in sectors if s.get("main_inflow",0) > 3e8 and 1 <= s.get("change_pct",0) <= 5]
     _lurking.sort(key=lambda x: x.get("main_inflow",0), reverse=True)
     if _lurking:
-        L(f"\n  🕵️ 潜伏信号（主力大幅流入但涨幅不大，可能正在建仓）:")
+        L("\n  🕵️ 潜伏信号（主力大幅流入但涨幅不大，可能正在建仓）:")
         L(f"  {'-'*60}")
         for _l in _lurking[:5]:
             _lnm = normalize_industry(_l["name"])
@@ -827,7 +834,7 @@ def generate_sector_report(output_path):
             for h in ths[:_ths_limit]:
                 L(f"  {h['code']:<8} {h['name']:<12} {h['zhangfu']:>+7.2f}% {h.get('reason','')[:30]:<30}")
     else:
-        L(f"  暂无数据（需交易所收盘后更新）")
+        L("  暂无数据（需交易所收盘后更新）")
     L(f"\n{'='*90}")
     output = "\n".join(filter(None, lines))
     with open(output_path,"w",encoding="utf-8") as f: f.write(output)

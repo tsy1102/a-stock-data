@@ -20,7 +20,7 @@ def test_index_data():
         data = get_tencent_quote(idx)
         print(f"{idx}: price={data.get('price', 'N/A')}, change_pct={data.get('change_pct', 'N/A')}")
         if data.get('change_pct') == 0:
-            print(f"   ⚠️ 涨跌幅为0，可能存在问题")
+            print("   ⚠️ 涨跌幅为0，可能存在问题")
 
 def test_sector_rank():
     """测试问题3: 板块涨跌排名"""

@@ -260,21 +260,25 @@ async def main_async():
     full_codes = list(set(args.ful + args.all)) if args.all else args.ful
 
     # 构造所有待运行的任务
+    # V10.0: 调整顺序为 val → mak → sht → med → lng → ful，
+    #        让全市场扫描产生的缓存被后续单股分析脚本复用
     tasks_info = []
+    
+    # 第一阶段：全市场扫描（产生大量缓存）
+    if args.val:
+        tasks_info.append(("get_val_report.py", [], output_dir, args.no_upload, "全市场选股"))
+    if args.mak:
+        tasks_info.append(("get_mak_report.py", [], output_dir, args.no_upload, "异动扫描"))
+    
+    # 第二阶段：单股分析（复用前面产生的缓存）
     for script, codes, label in [
         ("get_sht_report.py", sht_codes, "短线"),
         ("get_med_report.py", med_codes, "中线"),
         ("get_lng_report.py", lng_codes, "长线"),
         ("get_ful_report.py", full_codes, "全维度"),
     ]:
-        # 在混合模式下，每个脚本都使用自己的股票代码列表
         if codes:
             tasks_info.append((script, codes, output_dir, args.no_upload, label))
-
-    if args.val:
-        tasks_info.append(("get_val_report.py", [], output_dir, args.no_upload, "全市场选股"))
-    if args.mak:
-        tasks_info.append(("get_mak_report.py", [], output_dir, args.no_upload, "异动扫描"))
 
     if not tasks_info:
         print("  没有可运行的脚本，请检查参数。", flush=True)

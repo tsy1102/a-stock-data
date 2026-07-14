@@ -33,7 +33,7 @@ try:
             q = quotes[0]
             print(f"  ✅ 行情查询成功: 600519 价格={q.price}")
         else:
-            print(f"  ⚠️  行情查询返回空")
+            print("  ⚠️  行情查询返回空")
     except Exception as e:
         print(f"  ❌ 行情查询失败: {type(e).__name__}: {e}")
 
@@ -55,13 +55,13 @@ except Exception as e:
     print(f"  ❌ 连接失败: {type(e).__name__}: {e}")
     print(f"     异常详情: {traceback.format_exc().strip().split(chr(10))[0]}")
     if "10061" in str(e) or "WSAECONNREFUSED" in str(e) or "refused" in str(e).lower():
-        print(f"  👉 诊断: 连接被拒绝 — 可能是 IP 被拉黑或服务器暂时不可用")
+        print("  👉 诊断: 连接被拒绝 — 可能是 IP 被拉黑或服务器暂时不可用")
     elif "10060" in str(e) or "timed out" in str(e).lower():
-        print(f"  👉 诊断: 连接超时 — 网络问题或服务器无响应")
+        print("  👉 诊断: 连接超时 — 网络问题或服务器无响应")
     elif "10053" in str(e) or "Software caused connection abort" in str(e):
-        print(f"  👉 诊断: 软件导致连接中止 — 对端主动关闭，可能是频率限制")
+        print("  👉 诊断: 软件导致连接中止 — 对端主动关闭，可能是频率限制")
     else:
-        print(f"  👉 诊断: 未知错误，请查看上方异常")
+        print("  👉 诊断: 未知错误，请查看上方异常")
 
 # 测试 3: MacClient 连接（全市场行情用这个）
 print("\n[3/5] MacClient 连接测试...")
@@ -82,7 +82,7 @@ try:
             for _, row in df.head(3).iterrows():
                 print(f"     - {row.get('code', '')} {row.get('name', '')} 价格={row.get('close', '')}")
         else:
-            print(f"  ⚠️  全市场列表查询返回空")
+            print("  ⚠️  全市场列表查询返回空")
     except Exception as e:
         print(f"  ❌ 全市场列表查询失败: {type(e).__name__}: {e}")
 
@@ -115,7 +115,7 @@ try:
     if q and q.get('price'):
         print(f"  ✅ tdx_get_quote_full('600519'): 价格={q.get('price')}, 涨跌={q.get('change_pct')}%")
     else:
-        print(f"  ⚠️  tdx_get_quote_full('600519'): 返回空")
+        print("  ⚠️  tdx_get_quote_full('600519'): 返回空")
 except Exception as e:
     print(f"  ❌ tdx_get_quote_full 失败: {e}")
 
@@ -135,7 +135,7 @@ if all_stocks:
     print(f"  ✅ tdx_get_all_stocks(): {len(all_stocks)} 只股票 (耗时 {dt:.1f}s)")
     print(f"     样例: {all_stocks[0]}")
 else:
-    print(f"  ❌ tdx_get_all_stocks(): 空列表！")
+    print("  ❌ tdx_get_all_stocks(): 空列表！")
 
 cleanup_tdx()
 

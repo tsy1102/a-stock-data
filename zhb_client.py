@@ -337,38 +337,38 @@ class ZhbData:
     def _parse_tdxstat(self) -> Dict[str, Dict[str, Any]]:
         """解析 tdxstat.cfg（35字段，7938只股票）。
 
-        字段映射（通过对比实时行情验证）：
+        字段映射（基于injoyai/tdx开源仓库源码验证 + 实盘比对）：
             [0]  market          市场代码 (0=SZ, 1=SH)
             [1]  code            股票代码
-            [2]  change_pct      涨跌幅(%)
+            [2]  unknown_2       未知(可能是资金净流入强度)
             [3]  pe_dynamic      市盈率(动态)
             [4]  date            数据日期
-            [5]  unknown_5       未知(小整数)
-            [6]  unknown_6       未知
-            [7]  unknown_7       未知
-            [8]  unknown_8       未知
+            [5]  streak_days     连涨连跌天数(正=连涨,负=连跌)
+            [6]  change_pct      今日涨跌幅(%)
+            [7]  change_pct_1d   昨日涨跌幅(%)
+            [8]  change_pct_2d   前日涨跌幅(%)
             [9]  pe_ttm          市盈率TTM
-            [10] unknown_10      未知(可能是股息率/ROE)
+            [10] dividend_yield  股息率(%)
             [11] unknown_11      未知(大数值)
             [12] unknown_12      未知(部分为日期)
             [13] unknown_13      未知(小整数)
             [14] unknown_14      未知(大数值)
-            [15] unknown_15      未知(可能是股东人数)
+            [15] employee_count  员工人数
             [16] unknown_16      未知
-            [17] change_5d       5日涨跌幅(%)
-            [18] change_10d      10日涨跌幅(%)
-            [19] change_20d      20日涨跌幅(%)
-            [20] change_30d      30日涨跌幅(%)
-            [21] change_60d      60日涨跌幅(%)
+            [17] change_20d      20日涨跌幅(%)
+            [18] change_30d      30日涨跌幅(%)
+            [19] change_60d      60日涨跌幅(%)
+            [20] unknown_20      未知
+            [21] change_ytd      年初至今涨跌幅(%)
             [22] unknown_22      未知
             [23] unknown_23      未知
             [24] volume          成交量(股)
-            [25] amount          成交额(万元)
+            [25] unknown_25      未知(部分为空)
             [26] unknown_26      未知
-            [27] unknown_27      未知
-            [28] unknown_28      未知
-            [29] unknown_29      未知
-            [30] unknown_30      未知
+            [27] change_5k_bar   近5根K线涨跌幅(交易日口径,%)
+            [28] change_5d       近5日涨跌幅(日历日口径,%)
+            [29] change_10k_bar  近10根K线涨跌幅(交易日口径,%)
+            [30] change_10d      近10日涨跌幅(日历日口径,%)
             [31-33]              通常为空
             [34] unknown_34      未知
         """
@@ -400,17 +400,24 @@ class ZhbData:
             result[code] = {
                 "market": _f(0, int),
                 "code": code,
-                "change_pct": _f(2, float),
                 "pe_dynamic": _f(3, float),
                 "date": parts[4].strip() if len(parts) > 4 else "",
+                "streak_days": _f(5, int),
+                "change_pct": _f(6, float),
+                "change_pct_1d": _f(7, float),
+                "change_pct_2d": _f(8, float),
                 "pe_ttm": _f(9, float),
-                "change_5d": _f(17, float),
-                "change_10d": _f(18, float),
-                "change_20d": _f(19, float),
-                "change_30d": _f(20, float),
-                "change_60d": _f(21, float),
+                "dividend_yield": _f(10, float),
+                "employee_count": _f(15, int),
+                "change_20d": _f(17, float),
+                "change_30d": _f(18, float),
+                "change_60d": _f(19, float),
+                "change_ytd": _f(21, float),
                 "volume": _f(24, float),
-                "amount": _f(25, float),
+                "change_5k_bar": _f(27, float),
+                "change_5d": _f(28, float),
+                "change_10k_bar": _f(29, float),
+                "change_10d": _f(30, float),
             }
         return result
 
@@ -430,25 +437,31 @@ class ZhbData:
     def _parse_tdxstat2(self) -> Dict[str, Dict[str, Any]]:
         """解析 tdxstat2.cfg（21字段，7938只股票）。
 
-        字段映射（通过对比实时行情验证）：
-            [0]  market          市场代码
-            [1]  code            股票代码
-            [2]  date            数据日期
-            [3]  main_inflow     主力净流入(万) - 推测
-            [5]  total_amount    总成交额(万) - 推测
-            [7]  retail_inflow   散户净流入(万) - 推测
-            [9]  big_order_cnt   大单笔数 - 推测
-            [10] small_order_cnt 小单笔数 - 推测
-            [11] change_pct_alt  涨跌幅(与tdxstat[29]相同)
-            [12] change_long     长期涨跌幅(%)
-            [13] industry_code   行业板块代码
-            [14] unknown_14      未知
-            [15] unknown_15      未知
-            [16] unknown_16      未知(可能是换手率)
-            [17] high_52w        52周最高价 (已验证)
-            [18] low_52w         52周最低价 (已验证)
-            [19] unknown_19      未知
-            [20] unknown_20      未知
+        字段映射（基于injoyai/tdx开源仓库源码验证 + 实盘比对 + 双日Delta验证）：
+            [0]  market              市场代码
+            [1]  code                股票代码
+            [2]  date                数据日期
+            [3]  amount              今日总成交额(万元)
+            [4]  unknown_4           未知(占位)
+            [5]  amount_1d           昨日总成交额(万元)
+            [6]  unknown_6           未知(占位)
+            [7]  amount_2d           前日总成交额(万元)
+            [8]  unknown_8           未知(占位)
+            [9]  main_net_buy_hands  T日主力净买入量(手) — V10.3新增（双日Delta+公式验证）
+            [10] main_net_buy_hands_1d T-1日主力净买入量(手) — V10.3新增
+            [11] unknown_11          未知
+            [12] unknown_12          未知
+            [13] industry_code       行业板块代码
+            [14] main_net_buy_amount T日主力净流入额(万元) — V10.3新增（双日Delta+公式验证）
+            [15] main_net_buy_amount_1d T-1日主力净流入额(万元) — V10.3新增
+            [16] ipo_price           IPO发行价(元)
+            [17] high_52w            52周最高价
+            [18] low_52w             52周最低价
+            [19] unknown_19          未知
+            [20] unknown_20          未知
+
+        V10.3 更新：通过双日Delta验证和公式验算([9]*100*收盘价/10000≈[14])，
+                   确认[9]/[14]为T日主力净买入量/额，[10]/[15]为T-1日滚动值。
         """
         data = self.raw_files.get("tdxstat2.cfg", b"")
         if not data:
@@ -478,12 +491,15 @@ class ZhbData:
                 "market": _f(0, int),
                 "code": code,
                 "date": parts[2].strip() if len(parts) > 2 else "",
-                "main_inflow": _f(3, float),
-                "total_amount": _f(5, float),
-                "retail_inflow": _f(7, float),
-                "big_order_cnt": _f(9, int),
-                "small_order_cnt": _f(10, int),
+                "amount": _f(3, float),
+                "amount_1d": _f(5, float),
+                "amount_2d": _f(7, float),
+                "main_net_buy_hands": _f(9, float),
+                "main_net_buy_hands_1d": _f(10, float),
                 "industry_code": parts[13].strip() if len(parts) > 13 else "",
+                "main_net_buy_amount": _f(14, float),
+                "main_net_buy_amount_1d": _f(15, float),
+                "ipo_price": _f(16, float),
                 "high_52w": _f(17, float),
                 "low_52w": _f(18, float),
             }
@@ -1070,13 +1086,15 @@ def get_industry_map() -> Dict[str, str]:
 # ═══════════════════════════════════════
 
 def market_stat_snapshot(codes: Optional[List[str]] = None) -> Dict[str, Dict[str, Any]]:
-    """全市场（或指定股票）统计快照。
+    """全市场（或指定股票）统计快照（tdxstat）。
 
     Args:
         codes: 股票代码列表，None 表示全市场
 
     Returns:
-        {code: {change_pct, pe_dynamic, pe_ttm, change_5d..60d, volume, amount, ...}}
+        {code: {change_pct, streak_days, pe_dynamic, pe_ttm, dividend_yield,
+                change_pct_1d, change_pct_2d, change_5d, change_10d, change_20d,
+                change_30d, change_60d, change_ytd, volume, employee_count, ...}}
     """
     zhb = get_zhb()
     if zhb is None:
@@ -1084,6 +1102,47 @@ def market_stat_snapshot(codes: Optional[List[str]] = None) -> Dict[str, Dict[st
     if codes is None:
         return zhb.stock_stats
     return {c: zhb.stock_stats[c] for c in codes if c in zhb.stock_stats}
+
+
+def market_stat2_snapshot(codes: Optional[List[str]] = None) -> Dict[str, Dict[str, Any]]:
+    """全市场（或指定股票）资金流向+板块归属快照（tdxstat2）。
+
+    Args:
+        codes: 股票代码列表，None 表示全市场
+
+    Returns:
+        {code: {amount, amount_1d, amount_2d, industry_code, ipo_price,
+                high_52w, low_52w, ...}}
+    """
+    zhb = get_zhb()
+    if zhb is None:
+        return {}
+    if codes is None:
+        return zhb.stock_stats2
+    return {c: zhb.stock_stats2[c] for c in codes if c in zhb.stock_stats2}
+
+
+def full_market_snapshot(codes: Optional[List[str]] = None) -> Dict[str, Dict[str, Any]]:
+    """全市场合并快照（tdxstat + tdxstat2 合并）。
+
+    Args:
+        codes: 股票代码列表，None 表示全市场
+
+    Returns:
+        {code: {change_pct, pe_dynamic, amount, industry_code, high_52w, ...}}
+    """
+    s1 = market_stat_snapshot(codes)
+    s2 = market_stat2_snapshot(codes)
+    result: Dict[str, Dict[str, Any]] = {}
+    for code, stat1 in s1.items():
+        merged = dict(stat1)
+        if code in s2:
+            merged.update(s2[code])
+        result[code] = merged
+    for code, stat2 in s2.items():
+        if code not in result:
+            result[code] = dict(stat2)
+    return result
 
 
 def get_stock_stat(code: str) -> Optional[Dict[str, Any]]:
@@ -1095,7 +1154,7 @@ def get_stock_stat(code: str) -> Optional[Dict[str, Any]]:
 
 
 def get_stock_stat2(code: str) -> Optional[Dict[str, Any]]:
-    """获取指定股票的资金流向和板块归属（便捷函数）。"""
+    """获取指定股票的成交额、行业归属、52周高低价等数据（便捷函数）。"""
     zhb = get_zhb()
     if zhb is None:
         return None
@@ -1126,6 +1185,107 @@ def get_low_52w(code: str) -> Optional[float]:
         return None
     s2 = zhb.get_stock_stat2(code)
     return s2.get("low_52w") if s2 else None
+
+
+def get_dividend_yield(code: str) -> Optional[float]:
+    """获取股息率(%)。"""
+    zhb = get_zhb()
+    if zhb is None:
+        return None
+    s = zhb.get_stock_stat(code)
+    return s.get("dividend_yield") if s else None
+
+
+def get_streak_days(code: str) -> Optional[int]:
+    """获取连涨连跌天数（正=连涨，负=连跌）。"""
+    zhb = get_zhb()
+    if zhb is None:
+        return None
+    s = zhb.get_stock_stat(code)
+    return s.get("streak_days") if s else None
+
+
+def get_change_ytd(code: str) -> Optional[float]:
+    """获取年初至今涨跌幅(%)。"""
+    zhb = get_zhb()
+    if zhb is None:
+        return None
+    s = zhb.get_stock_stat(code)
+    return s.get("change_ytd") if s else None
+
+
+def get_ipo_price(code: str) -> Optional[float]:
+    """获取IPO发行价(元)。"""
+    zhb = get_zhb()
+    if zhb is None:
+        return None
+    s2 = zhb.get_stock_stat2(code)
+    return s2.get("ipo_price") if s2 else None
+
+
+def get_amount_wan(code: str) -> Optional[float]:
+    """获取今日成交额(万元)。"""
+    zhb = get_zhb()
+    if zhb is None:
+        return None
+    s2 = zhb.get_stock_stat2(code)
+    return s2.get("amount") if s2 else None
+
+
+def get_amount_1d(code: str) -> Optional[float]:
+    """获取昨日成交额(万元)。"""
+    zhb = get_zhb()
+    if zhb is None:
+        return None
+    s2 = zhb.get_stock_stat2(code)
+    return s2.get("amount_1d") if s2 else None
+
+
+def get_main_net_buy(code: str) -> Optional[Dict[str, Any]]:
+    """V10.3: 获取主力资金流向数据。
+
+    Args:
+        code: 股票代码
+
+    Returns:
+        {
+            "main_net_buy_hands": float,       # T日主力净买入量(手)
+            "main_net_buy_hands_1d": float,    # T-1日主力净买入量(手)
+            "main_net_buy_amount": float,      # T日主力净流入额(万元)
+            "main_net_buy_amount_1d": float,   # T-1日主力净流入额(万元)
+        }
+        None if zhb不可用
+    """
+    zhb = get_zhb()
+    if zhb is None:
+        return None
+    s2 = zhb.get_stock_stat2(code)
+    if s2 is None:
+        return None
+    return {
+        "main_net_buy_hands": s2.get("main_net_buy_hands"),
+        "main_net_buy_hands_1d": s2.get("main_net_buy_hands_1d"),
+        "main_net_buy_amount": s2.get("main_net_buy_amount"),
+        "main_net_buy_amount_1d": s2.get("main_net_buy_amount_1d"),
+    }
+
+
+def get_main_net_buy_amount(code: str) -> Optional[float]:
+    """V10.3: 获取T日主力净流入额(万元)。"""
+    zhb = get_zhb()
+    if zhb is None:
+        return None
+    s2 = zhb.get_stock_stat2(code)
+    return s2.get("main_net_buy_amount") if s2 else None
+
+
+def get_main_net_buy_amount_1d(code: str) -> Optional[float]:
+    """V10.3: 获取T-1日主力净流入额(万元)。"""
+    zhb = get_zhb()
+    if zhb is None:
+        return None
+    s2 = zhb.get_stock_stat2(code)
+    return s2.get("main_net_buy_amount_1d") if s2 else None
 
 
 def is_data_fresh(max_delay_days: int = 3) -> bool:

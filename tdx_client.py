@@ -5,6 +5,7 @@
 当 TDX 服务器不可达时自动回退到原始 HTTP 源（百度K线/腾讯行情）。
 
 版本信息:
+    V10.2  2026-07-16 - F10系列valid_if放宽：bool(r)改为r is not None，避免空dict/list拒写缓存
     V9.5   2026-07-11 - 静默异常日志化（23处 except Exception 添加 _debug_log）
     V9.4   2026-07-11 - VERSION文件单一来源版本号管理
     V9.3.3 2026-07-10 - 代码质量提升：GD上传路径修复、GLM报告Bug修复、死代码清理、sync/async重构、schema统一
@@ -699,6 +700,7 @@ def _tencent_batch_fallback(codes: List[str]) -> Dict[str, Dict[str, Any]]:
                     "mcap_yi": float(vals[45]) if vals[45] else 0,
                     "pe_ttm": float(vals[39]) if vals[39] else 0,
                     "turnover_pct": float(vals[38]) if vals[38] else 0,
+                    "amount_wan": float(vals[37]) if vals[37] else 0,
                 }
             except (ValueError, TypeError): pass
     except Exception as _e:
@@ -1032,7 +1034,7 @@ def tdx_get_weekly_bars(code: str, count: int = 100):
 # ═══════════════════════════════════════
 # 资金流适配器
 # ═══════════════════════════════════════
-@cached(category="f10_fund_flow", trading_day=True, valid_if=lambda r: bool(r))
+@cached(category="f10_fund_flow", trading_day=True, valid_if=lambda r: r is not None)
 def tdx_get_fund_flow(code: str):
     with _TDX_CALL_LOCK:
         client = _get_tdx_client()
@@ -1066,7 +1068,7 @@ def tdx_get_fund_flow(code: str):
             _debug_log(f"tdx tdx_get_fund_flow error ({code}): {_e}")
             return {}
 
-@cached(category="f10_fund_flow", trading_day=True, valid_if=lambda r: bool(r))
+@cached(category="f10_fund_flow", trading_day=True, valid_if=lambda r: r is not None)
 def tdx_get_history_fund_flow(code: str, days: int = 120):
     with _TDX_CALL_LOCK:
         client = _get_tdx_client()
@@ -1175,7 +1177,7 @@ def tdx_get_eps_from_reports(code: str):
         _debug_log(f"tdx tdx_get_eps_from_reports error ({code}): {_e}")
         return None
 
-@cached(category="f10_announcements", trading_day=True, valid_if=lambda r: bool(r))
+@cached(category="f10_announcements", trading_day=True, valid_if=lambda r: r is not None)
 def tdx_get_latest_announcements(code: str, days: int = 7):
     """从 TDX F10 公司公告中获取最新公告列表。
 
@@ -1298,7 +1300,7 @@ def _f10_get_content(code: str, category_name: str) -> str:
         return ''
 
 
-@cached(category="f10_reminders", trading_day=True, valid_if=lambda r: bool(r))
+@cached(category="f10_reminders", trading_day=True, valid_if=lambda r: r is not None)
 def tdx_get_latest_reminders(code: str) -> dict:
     """从 TDX F10「最新提示」分类获取综合信息（8 个子栏目一次拿全）。
 
@@ -1500,7 +1502,7 @@ def tdx_get_latest_reminders(code: str) -> dict:
         return result
 
 
-@cached(category="f10_financial", valid_if=lambda r: bool(r), cross_verify=True)
+@cached(category="f10_financial", valid_if=lambda r: r is not None, cross_verify=True)
 def tdx_get_financial_analysis(code: str) -> dict:
     """从 TDX F10「财务分析」分类获取综合财务信息（10 个子栏目一次拿全）。
 
@@ -1655,7 +1657,7 @@ def tdx_get_financial_analysis(code: str) -> dict:
         return result
 
 
-@cached(category="f10_shareholder", valid_if=lambda r: bool(r), cross_verify=True)
+@cached(category="f10_shareholder", valid_if=lambda r: r is not None, cross_verify=True)
 def tdx_get_shareholder_research(code: str) -> dict:
     """从 TDX F10「股东研究」分类获取股东信息（7 个子栏目）。
 
@@ -1806,7 +1808,7 @@ def tdx_get_shareholder_research(code: str) -> dict:
         return result
 
 
-@cached(category="f10_share_capital", valid_if=lambda r: bool(r), cross_verify=True)
+@cached(category="f10_share_capital", valid_if=lambda r: r is not None, cross_verify=True)
 def tdx_get_share_capital(code: str) -> dict:
     """从 TDX F10「股本结构」分类获取股本信息（4 个子栏目）。
 
@@ -1889,7 +1891,7 @@ def tdx_get_share_capital(code: str) -> dict:
         return result
 
 
-@cached(category="f10_news", trading_day=True, valid_if=lambda r: bool(r))
+@cached(category="f10_news", trading_day=True, valid_if=lambda r: r is not None)
 def tdx_get_company_news_f10(code: str, count: int = 10) -> list:
     """从 TDX F10「公司报道」分类获取新闻列表。
 

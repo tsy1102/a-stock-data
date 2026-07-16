@@ -1,5 +1,11 @@
 """stock_common/sc_datasource.py - 数据源查询模块
 
+V10.2 更新：
+  - 修复 get_lockup_expiry/get_dragon_tiger_board 的 today_str 参数污染缓存key（移除参数改为内部自动计算）
+  - 放宽 industry_peers/basic_info 的 valid_if 校验（避免空值拒写缓存）
+  - 新增 zhb_field_safe(field_name) 函数：按字段时效性分级判断zhb数据是否安全可用
+  - get_market_status() 交易日16:30后从 closed 改为 post_close（避免盘后误显示"休市日"）
+
 V9.5 更新：
   - aiohttp原生异步迁移：10个HTTP异步函数从 asyncio.to_thread() 改为 _async_request_with_retry/_async_quick_request
   - 修复 get_strategic_announcements_async 中 _load_config 未定义错误（改为 _load_settings）
@@ -758,7 +764,7 @@ async def get_tencent_quote_async(session: Any, code: str) -> Dict[str, Any]:
 
 
 @cached(category="basic_info", ttl_seconds=TTL["basic_info"],
-        valid_if=lambda r: bool(r.get("list_date")), cross_verify=True)
+        valid_if=lambda r: isinstance(r, dict) and bool(r.get("code")), cross_verify=True)
 def get_stock_info(code: str) -> Dict[str, Any]:
     """V7.5: 个股基本信息 → 腾讯行情 + TDX"""
     from tdx_client import _get_tdx_client, tdx_get_belong_boards
@@ -1380,10 +1386,10 @@ async def get_ths_hot_reason_async(session: Any, code: str, date_str: str) -> Op
 
 
 # 行业对比
-@cached(category="industry_peers", ttl_seconds=TTL["industry_peers"],
-        valid_if=lambda r: r is not None and bool(r.get("peers")) and all(
+@cached(category="industry_peers", ttl_seconds=TTL["industry_peers"], trading_day=True,
+        valid_if=lambda r: isinstance(r, dict) and bool(r.get("peers")) and any(
             p.get("price", 0) > 0 for p in r["peers"] if isinstance(p, dict)
-        ) if isinstance(r, dict) else False)
+        ))
 def get_industry_peers(code: str, top_n: int = 3, info: Optional[Dict[str, Any]] = None) -> Optional[Dict[str, Any]]:
     """V7.5: 同业对比 — TDX 三级兜底（belong_board → board_members → board_by_name）。
 
@@ -1535,7 +1541,7 @@ async def get_industry_peers_async(session: Any, code: str) -> List[Dict[str, An
     return await asyncio.to_thread(get_industry_peers, code)
 
 
-@cached(category="industry_peers", ttl_seconds=TTL["industry_peers"])
+@cached(category="industry_peers", ttl_seconds=TTL["industry_peers"], trading_day=True)
 def get_stock_sector_rank(code: str, info: Optional[Dict[str, Any]] = None, q: Optional[Dict[str, Any]] = None) -> Optional[Dict[str, Any]]:
     """V7.5: 板块内排名 — TDX 优先。
 
@@ -1577,7 +1583,7 @@ async def get_stock_sector_rank_async(session: Any, code: str) -> Dict[str, Any]
     return await asyncio.to_thread(get_stock_sector_rank, code)
 
 
-@cached(category="industry_compare", ttl_seconds=TTL["industry_compare"])
+@cached(category="industry_compare", ttl_seconds=TTL["industry_compare"], trading_day=True)
 def get_industry_comparison(top_n: int = 20) -> Dict[str, Any]:
     """V4.2: 全行业排名 → TDX board_list（SKILL.md V3.2 增强：东财push2 fallback）。
 
@@ -1958,7 +1964,7 @@ async def get_eastmoney_cash_flow_async(session: Any, code: str) -> List[Dict[st
     return rows
 
 
-@cached(category="hsgt_flow", ttl_seconds=TTL["hsgt_flow"], use_args=False)
+@cached(category="hsgt_macro_flow", ttl_seconds=TTL["hsgt_macro_flow"], trading_day=True, use_args=False)
 def get_hsgt_macro_flow() -> Optional[Dict[str, Any]]:
     """同花顺北向资金大盘净流入（宏观风向标）"""
     url = "https://data.hexin.cn/market/hsgtApi/method/dayChart/"
@@ -1994,45 +2000,21 @@ def get_hsgt_macro_flow() -> Optional[Dict[str, Any]]:
 async def get_hsgt_macro_flow_async(session: Any) -> Optional[Dict[str, Any]]:
     """async 版: 同花顺北向资金大盘净流入
 
-    V9.4: 原生 aiohttp 实现，移除 asyncio.to_thread 包装。
-    V9.6: 添加数据质量检查和降级警告。
+    V11.2: 委托到同步缓存版本（trading_day=True），避免批量模式下所有股票共享同一份T-1数据。
+    第一只股票触发API调用并写入缓存，后续股票直接读缓存。
     """
-    url = "https://data.hexin.cn/market/hsgtApi/method/dayChart/"
-    headers = {"User-Agent": UA, "Host": "data.hexin.cn", "Referer": "https://data.hexin.cn/"}
-    try:
-        d = await _async_quick_request(session, url, headers=headers, timeout=10)
-        if d is None:
-            return None
-        hgt = d.get("hgt", [])
-        sgt = d.get("sgt", [])
-        if not hgt or not sgt:
-            return None
-        hgt_val = float(hgt[-1]) if hgt[-1] else 0
-        sgt_val = float(sgt[-1]) if sgt[-1] else 0
-        
-        data_quality = "normal"
-        warning = ""
-        if abs(hgt_val) > 0:
-            ratio = abs(sgt_val / hgt_val)
-            if ratio > 3.0:
-                data_quality = "degraded"
-                warning = f"sgt/hgt比例异常({ratio:.2f})，建议谨慎使用"
-                _debug_log(f"hsgt_macro_flow_async warning: {warning}")
-        
-        return {"hgt": hgt_val, "sgt": sgt_val, "total": hgt_val + sgt_val, 
-                "data_quality": data_quality, "warning": warning}
-    except Exception as _e:
-        _debug_log(f"datasource get_hsgt_macro_flow_async: {_e}")
-        return None
+    import asyncio
+    return await asyncio.to_thread(get_hsgt_macro_flow)
 
 
 @cached(category="lockup_expiry", ttl_seconds=TTL["lockup_expiry"], cross_verify=True)
-def get_lockup_expiry(code: str, today_str: str, days: int = 90, include_history: bool = False) -> Any:
+def get_lockup_expiry(code: str, days: int = 90, include_history: bool = False) -> Any:
     """限售解禁日历。
+
+    V10.2修复：移除 today_str 参数（改为内部自动计算），避免跨日缓存 key 污染。
 
     Args:
         code: 股票代码
-        today_str: 当前日期 YYYY-MM-DD
         days: 未来展望窗口天数（默认90天）
         include_history: 是否返回历史记录（True=返回dict, False=返回list）
 
@@ -2040,6 +2022,8 @@ def get_lockup_expiry(code: str, today_str: str, days: int = 90, include_history
         include_history=True: {"history": [...], "upcoming": [...]}
         include_history=False: [{"date", "type", "shares", "ratio"}, ...]
     """
+    # V10.2: today_str 内部自动计算，不作为函数参数（避免污染缓存 key）
+    today_str = datetime.now().strftime("%Y-%m-%d")
     end_str = (datetime.strptime(today_str, "%Y-%m-%d") + timedelta(days=days)).strftime("%Y-%m-%d")
 
     # V9.0: 优先使用 F10 股本结构中的限售解禁数据
@@ -2108,13 +2092,14 @@ def get_lockup_expiry(code: str, today_str: str, days: int = 90, include_history
     return upcoming
 
 
-async def get_lockup_expiry_async(session: Any, code: str, today_str: str, days: int = 90, include_history: bool = False) -> Any:
+async def get_lockup_expiry_async(session: Any, code: str, days: int = 90, include_history: bool = False) -> Any:
     """async 版: 限售解禁日历
 
     V9.0: 委托到同步版（已内置 F10 优先逻辑），保留 session 参数向后兼容。
+    V10.2: 移除 today_str 参数（同步版已内部自动计算）。
     """
     import asyncio
-    return await asyncio.to_thread(get_lockup_expiry, code, today_str, days, include_history)
+    return await asyncio.to_thread(get_lockup_expiry, code, days, include_history)
 
 
 @cached(category="gross_margin_roe", ttl_seconds=TTL["gross_margin_roe"], cross_verify=True)
@@ -2327,8 +2312,11 @@ def get_market_status(now=None):
 
     Returns:
         tuple: (status_str, note_str)
-            status_str: 'closed' | 'pre_market' | 'morning' | 'lunch' | 'afternoon' | 'post_market'
+            status_str: 'closed' | 'pre_market' | 'morning' | 'lunch' | 'afternoon' | 'post_market' | 'post_close'
             note_str: 给用户看的中文提示
+
+    V10.2 修复：交易日16:30后从 'closed' 改为 'post_close'，避免盘后运行脚本时
+              错误显示"休市日"。'closed' 仅用于非交易日（真正的休市日）。
     """
     from datetime import datetime as _datetime
 
@@ -2350,7 +2338,8 @@ def get_market_status(now=None):
     elif t < 1630:
         return "post_market", "当前为盘后结算时段，龙虎榜/融资融券约16:30后更新"
     else:
-        return "closed", ""
+        # V10.2: 交易日16:30后为盘后收盘，不再是"closed"（避免误显示"休市日"）
+        return "post_close", "当前为盘后收盘时段，数据为今日收盘快照"
 
 
 # ═══════════════════════════════════════════════════════════
@@ -3028,6 +3017,49 @@ def is_zhb_data_fresh(max_delay_days: int = 3) -> bool:
         return False
 
 
+# V10.2 新增：zhb 字段时效性分级
+# V10.3 更新：新增准实时字段分类（主力资金流向等，1天延迟可接受）
+# 实时字段：zhb 日期必须是今天（max_delay_days=0），否则 fallback 原接口
+# 准实时字段：1天延迟可接受（max_delay_days=1），如主力资金流向
+# 阶段/静态字段：3天延迟可接受（max_delay_days=3）
+_ZHB_REALTIME_FIELDS = frozenset({
+    "change_pct", "change_pct_1d", "change_pct_2d",
+    "amount", "amount_1d", "amount_2d",
+    "price", "open", "high", "low", "prev_close",
+})
+
+_ZHB_NEAR_REALTIME_FIELDS = frozenset({
+    # V10.3: 主力资金流向字段 — 日频准实时，1天延迟可接受
+    "main_net_buy_hands", "main_net_buy_hands_1d",
+    "main_net_buy_amount", "main_net_buy_amount_1d",
+})
+
+
+def zhb_field_safe(field_name: str) -> bool:
+    """V10.2: 判断 zhb 指定字段在当前数据滞后状态下是否安全可用。
+    V10.3: 新增准实时字段分类（max_delay_days=1）。
+
+    按字段时效性需求分级：
+    - 实时字段（change_pct/amount/price 等）：zhb 日期必须是今天，否则不安全
+    - 准实时字段（main_net_buy 等）：1天延迟可接受
+    - 阶段/静态字段（pe_ttm/high_52w/dividend_yield 等）：3天延迟可接受
+
+    Args:
+        field_name: zhb 字段名（如 "change_pct", "pe_ttm", "high_52w"）
+
+    Returns:
+        True=该字段当前可安全使用 zhb 数据，False=应 fallback 原接口
+    """
+    if field_name in _ZHB_REALTIME_FIELDS:
+        # 实时字段：zhb 日期必须是今天（max_delay_days=0）
+        return is_zhb_data_fresh(max_delay_days=0)
+    if field_name in _ZHB_NEAR_REALTIME_FIELDS:
+        # 准实时字段：1天延迟可接受（max_delay_days=1）
+        return is_zhb_data_fresh(max_delay_days=1)
+    # 阶段/静态字段：3天延迟可接受
+    return is_zhb_data_fresh(max_delay_days=3)
+
+
 # ═══════════════════════════════════════════════════════════
 # zhb 辅助数据集成（阶段三）
 # ═══════════════════════════════════════════════════════════
@@ -3167,6 +3199,212 @@ def is_zhb_date_matching() -> bool:
 
 
 # ═══════════════════════════════════════════════════════════
+# zhb V10.1 新增：全量字段 + 衍生指标
+# ═══════════════════════════════════════════════════════════
+
+def get_zhb_full_market_snapshot(codes: Optional[List[str]] = None) -> Dict[str, Dict[str, Any]]:
+    """V10.1: 全市场合并快照（tdxstat + tdxstat2 合并）。
+
+    一次调用拿到全市场7938只股票的完整统计+资金流向数据，
+    包含涨跌幅、PE、股息率、52周高低价、成交额、行业代码等。
+    """
+    try:
+        from zhb_client import full_market_snapshot
+        return full_market_snapshot(codes)
+    except Exception as _e:
+        _debug_log(f"datasource zhb full_market_snapshot: {_e}")
+        return {}
+
+
+def get_zhb_market_stat2_snapshot(codes: Optional[List[str]] = None) -> Dict[str, Dict[str, Any]]:
+    """V10.1: 全市场资金流向+板块归属快照（tdxstat2）。"""
+    try:
+        from zhb_client import market_stat2_snapshot
+        return market_stat2_snapshot(codes)
+    except Exception as _e:
+        _debug_log(f"datasource zhb market_stat2_snapshot: {_e}")
+        return {}
+
+
+def get_zhb_dividend_yield(code: str) -> Optional[float]:
+    """V10.1: 获取股息率(%)。"""
+    try:
+        from zhb_client import get_dividend_yield
+        return get_dividend_yield(code)
+    except Exception as _e:
+        _debug_log(f"datasource zhb dividend_yield ({code}): {_e}")
+        return None
+
+
+def get_zhb_streak_days(code: str) -> Optional[int]:
+    """V10.1: 获取连涨连跌天数（正=连涨，负=连跌）。"""
+    try:
+        from zhb_client import get_streak_days
+        return get_streak_days(code)
+    except Exception as _e:
+        _debug_log(f"datasource zhb streak_days ({code}): {_e}")
+        return None
+
+
+def get_zhb_change_ytd(code: str) -> Optional[float]:
+    """V10.1: 获取年初至今涨跌幅(%)。"""
+    try:
+        from zhb_client import get_change_ytd
+        return get_change_ytd(code)
+    except Exception as _e:
+        _debug_log(f"datasource zhb change_ytd ({code}): {_e}")
+        return None
+
+
+def get_zhb_ipo_price(code: str) -> Optional[float]:
+    """V10.1: 获取IPO发行价(元)。"""
+    try:
+        from zhb_client import get_ipo_price
+        return get_ipo_price(code)
+    except Exception as _e:
+        _debug_log(f"datasource zhb ipo_price ({code}): {_e}")
+        return None
+
+
+def get_zhb_amount_wan(code: str) -> Optional[float]:
+    """V10.1: 获取今日成交额(万元)。"""
+    try:
+        from zhb_client import get_amount_wan
+        return get_amount_wan(code)
+    except Exception as _e:
+        _debug_log(f"datasource zhb amount_wan ({code}): {_e}")
+        return None
+
+
+def get_zhb_amount_1d(code: str) -> Optional[float]:
+    """V10.1: 获取昨日成交额(万元)。"""
+    try:
+        from zhb_client import get_amount_1d
+        return get_amount_1d(code)
+    except Exception as _e:
+        _debug_log(f"datasource zhb amount_1d ({code}): {_e}")
+        return None
+
+
+def get_zhb_main_net_buy(code: str) -> Optional[Dict[str, Any]]:
+    """V10.3: 获取主力资金流向数据。
+
+    Returns:
+        {
+            "main_net_buy_hands": float,       # T日主力净买入量(手)
+            "main_net_buy_hands_1d": float,    # T-1日主力净买入量(手)
+            "main_net_buy_amount": float,      # T日主力净流入额(万元)
+            "main_net_buy_amount_1d": float,   # T-1日主力净流入额(万元)
+        }
+        None if zhb不可用
+    """
+    try:
+        from zhb_client import get_main_net_buy
+        return get_main_net_buy(code)
+    except Exception as _e:
+        _debug_log(f"datasource zhb main_net_buy ({code}): {_e}")
+        return None
+
+
+def get_zhb_main_net_buy_amount(code: str) -> Optional[float]:
+    """V10.3: 获取T日主力净流入额(万元)。"""
+    try:
+        from zhb_client import get_main_net_buy_amount
+        return get_main_net_buy_amount(code)
+    except Exception as _e:
+        _debug_log(f"datasource zhb main_net_buy_amount ({code}): {_e}")
+        return None
+
+
+def get_zhb_main_net_buy_amount_1d(code: str) -> Optional[float]:
+    """V10.3: 获取T-1日主力净流入额(万元)。"""
+    try:
+        from zhb_client import get_main_net_buy_amount_1d
+        return get_main_net_buy_amount_1d(code)
+    except Exception as _e:
+        _debug_log(f"datasource zhb main_net_buy_amount_1d ({code}): {_e}")
+        return None
+
+
+def get_zhb_single_stock_data(code: str) -> Optional[Dict[str, Any]]:
+    """V10.1: 获取单只股票的完整zhb数据（tdxstat + tdxstat2合并）。
+
+    Returns:
+        合并后的股票数据字典，包含涨跌幅、PE、阶段涨幅、52周高低、
+        股息率、行业代码、成交额、IPO发行价等字段。
+        获取失败返回 None。
+    """
+    try:
+        from zhb_client import get_stock_stat, get_stock_stat2
+        stat1 = get_stock_stat(code)
+        stat2 = get_stock_stat2(code)
+        if not stat1 and not stat2:
+            return None
+        result = dict(stat1) if stat1 else {}
+        if stat2:
+            result.update(stat2)
+        return result
+    except Exception as _e:
+        _debug_log(f"datasource zhb single_stock_data ({code}): {_e}")
+        return None
+
+
+# ═══════════════════════════════════════════════════════════
+# V10.1: 全局股本缓存 + 市值计算
+# ═══════════════════════════════════════════════════════════
+
+def get_share_capital(code: str) -> Dict[str, Any]:
+    """V10.1: 获取单只股票的股本数据（总股本、流通股）。
+
+    Returns:
+        {"total_shares": float, "float_shares": float, "updated_at": str}
+        单位：万股
+    """
+    try:
+        from stock_common.sc_capital_cache import get_share_capital as _get_cap
+        return _get_cap(code)
+    except Exception as _e:
+        _debug_log(f"datasource share_capital ({code}): {_e}")
+        return {"total_shares": 0, "float_shares": 0, "updated_at": ""}
+
+
+def calc_mcap_yi(code: str, price: float) -> float:
+    """V10.1: 计算总市值（亿元）。
+
+    Args:
+        code: 股票代码
+        price: 当前价格（元）
+
+    Returns:
+        总市值（亿元），失败返回0
+    """
+    try:
+        from stock_common.sc_capital_cache import calc_mcap_yi as _calc
+        return _calc(code, price)
+    except Exception as _e:
+        _debug_log(f"datasource calc_mcap_yi ({code}): {_e}")
+        return 0.0
+
+
+def calc_float_mcap_yi(code: str, price: float) -> float:
+    """V10.1: 计算流通市值（亿元）。
+
+    Args:
+        code: 股票代码
+        price: 当前价格（元）
+
+    Returns:
+        流通市值（亿元），失败返回0
+    """
+    try:
+        from stock_common.sc_capital_cache import calc_float_mcap_yi as _calc
+        return _calc(code, price)
+    except Exception as _e:
+        _debug_log(f"datasource calc_float_mcap_yi ({code}): {_e}")
+        return 0.0
+
+
+# ═══════════════════════════════════════════════════════════
 # 辅助函数
 # ═══════════════════════════════════════════════════════════
 
@@ -3199,15 +3437,15 @@ def print_batch_summary(results, total):
 # ═══════════════════════════════════════════════════════════
 
 @cached(category="dragon_tiger", ttl_seconds=TTL["dragon_tiger"])
-def get_dragon_tiger_board(code: str, today_str: str, days: int = 30, include_seats: bool = True,
+def get_dragon_tiger_board(code: str, days: int = 30, include_seats: bool = True,
                            enhance_seats: bool = True) -> Dict[str, Any]:
     """V7.5: 统一龙虎榜查询（单只股票）。
 
     V8.5新增：enhance_seats参数，启用后自动调用seat_db增强席位分析。
+    V10.2修复：移除 today_str 参数（改为内部自动计算），避免跨日缓存 key 污染。
 
     Args:
         code: 6位股票代码
-        today_str: 今日日期 YYYY-MM-DD
         days: 回溯天数（sht默认30，med默认180）
         include_seats: 是否查询席位详情（默认True，设为False可减少2次API请求）
         enhance_seats: V8.5新增，是否增强席位分析（默认True，添加席位等级/风格/溢价信号）
@@ -3226,6 +3464,8 @@ def get_dragon_tiger_board(code: str, today_str: str, days: int = 30, include_se
     注意 (2026-06-16): 东财 datacenter API 日期字段过滤必须用单引号
     (`TRADE_DATE>='YYYY-MM-DD'`），双引号会报 code=9501。
     """
+    # V10.2: today_str 内部自动计算，不作为函数参数（避免污染缓存 key）
+    today_str = datetime.now().strftime("%Y-%m-%d")
     start_str = (datetime.strptime(today_str, "%Y-%m-%d") - timedelta(days=days)).strftime("%Y-%m-%d")
     records = []
     data = eastmoney_datacenter(code, "RPT_DAILYBILLBOARD_DETAILSNEW",
@@ -3345,12 +3585,15 @@ def get_recent_dragon_tiger(days: int = 5) -> Dict[str, Any]:
         return {}
 
 
-async def get_dragon_tiger_board_async(session, code: str, today_str: str,
+async def get_dragon_tiger_board_async(session, code: str,
                                        days: int = 30, include_seats: bool = True,
                                        enhance_seats: bool = True) -> Dict[str, Any]:
-    """异步版: 单只股票龙虎榜查询（代理到同步版）。"""
+    """异步版: 单只股票龙虎榜查询（代理到同步版）。
+
+    V10.2: 移除 today_str 参数（同步版已内部自动计算）。
+    """
     return await asyncio.to_thread(
-        get_dragon_tiger_board, code, today_str, days, include_seats, enhance_seats
+        get_dragon_tiger_board, code, days, include_seats, enhance_seats
     )
 
 
@@ -3404,7 +3647,7 @@ def eastmoney_stock_info_push2(code: str) -> Dict[str, Any]:
         return {}
 
 
-@cached(category="ths_hot_reason", ttl_seconds=TTL["ths_hot_reason"])
+@cached(category="ths_hot_reason", ttl_seconds=TTL["ths_hot_reason"], trading_day=True)
 def ths_hot_list(period: str = "hour") -> List[Dict[str, Any]]:
     """同花顺热榜。period: hour/day。
     返回每只: rank/code/name/heat(人气值)/pct/rank_chg(排名变化)/concepts(概念标签)/tag。

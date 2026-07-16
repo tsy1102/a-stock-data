@@ -47,11 +47,26 @@ import sys
 import time
 import math
 import re
+import asyncio
 from datetime import datetime, date, timedelta
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from typing import Any, Dict, List, Optional, Tuple
 
 logger = logging.getLogger(__name__)
+
+from data_provider import (
+    get_stock_composite_async,
+    get_main_net_buy_async,
+    get_stock_price_async,
+    get_pe_ttm_async,
+    get_pb_async,
+    get_change_pct_async,
+    get_amount_wan_async,
+    get_turnover_pct_async,
+    get_dividend_yield_async,
+    get_52w_range_async,
+    get_change_ytd_async,
+)
 
 from stock_common import (
     clean_codes, _safe_float, _request_with_retry, _quick_request, UA, _debug_log,
@@ -62,8 +77,13 @@ from stock_common import (
     get_market_status,
     calculate_multi_school_scores, ScoreData,
     get_eastmoney_stock_news,
+    cls_telegraph, cninfo_irm,
     ths_hot_list,
-)
+    get_zhb_single_stock_data, is_zhb_data_fresh,
+    get_zhb_industry_map, get_zhb_dividend_yield,
+    get_zhb_change_ytd, get_zhb_amount_wan,
+    get_zhb_ipo_price,
+    get_zhb_main_net_buy, get_zhb_streak_days, get_zhb_tip_info)  # V10.3
 
 from gd_uploader import init_gd, upload_stock_report_by_code, cleanup_gd_proxy
 
@@ -72,6 +92,13 @@ from tdx_client import (
     tdx_get_fund_flow, tdx_get_history_fund_flow, tdx_get_eps_from_reports,
     tdx_get_latest_announcements, tdx_get_belong_boards, tdx_get_board_members,
     tdx_get_dividend_history, tdx_get_historical_high,
+)
+
+from data_provider import (
+    get_stock_price_async,
+    get_pe_ttm_async,
+    get_pb_async,
+    get_stock_composite_async,
 )
 
 _SCRIPT_DIR = get_script_dir()
@@ -312,35 +339,92 @@ def _calc_volume_analysis(volumes: List[float]) -> Dict[str, float]:
 #   - 相对指数收益
 # =====================================================================
 
-def layer1_market(code: str) -> Dict[str, Any]:
+async def layer1_market(code: str) -> Dict[str, Any]:
     result: Dict[str, Any] = {
         "ok": True, "basic": {}, "kline": {},
         "tech": {}, "index_compare": {}, "signals": [],
     }
 
-    # 实时行情
-    q = tdx_get_quote_full(code)
-    if not q:
+    # 实时行情：优先使用 data_provider 统一入口
+    dp_data = None
+    try:
+        dp_data = await get_stock_composite_async(code)
+    except Exception as _e:
+        _debug_log(f"ful layer1 get_stock_composite_async error: {_e}")
+
+    # tdx行情作为 fallback，补充 name/open/high/low/振幅/涨跌停价等字段
+    q = None
+    try:
+        q = await asyncio.to_thread(tdx_get_quote_full, code)
+    except Exception as _e:
+        _debug_log(f"ful layer1 tdx_get_quote_full error: {_e}")
+
+    if not dp_data and not q:
         result["ok"] = False
         result["signals"].append("实时行情获取失败")
         return result
 
+    # 基础字段：优先用 data_provider，缺失字段用 tdx 补充
+    _dp_price = dp_data.get("price", 0) if dp_data else 0
+    _dp_change = dp_data.get("change_pct", 0) if dp_data else 0
+    _dp_pe = dp_data.get("pe_ttm", 0) if dp_data else 0
+    _dp_pb = dp_data.get("pb", 0) if dp_data else 0
+    _dp_mcap = dp_data.get("mcap_yi", 0) if dp_data else 0
+    _dp_float_mcap = dp_data.get("float_mcap_yi", 0) if dp_data else 0
+    _dp_turnover = dp_data.get("turnover_pct", 0) if dp_data else 0
+
     result["basic"] = {
-        "name": q.get("name", ""),
-        "price": q.get("price", 0),
-        "change_pct": q.get("change_pct", 0),
-        "open": q.get("open", 0),
-        "high": q.get("high", 0),
-        "low": q.get("low", 0),
-        "pe_ttm": q.get("pe_ttm", 0),
-        "pb": q.get("pb", 0),
-        "mcap_yi": q.get("mcap_yi", 0),
-        "float_mcap_yi": q.get("float_mcap_yi", 0) or q.get("mcap_yi", 0),
-        "turnover_pct": q.get("turnover_pct", 0),
-        "amplitude": q.get("amplitude_pct", 0),
-        "limit_up_price": q.get("limit_up", 0),
-        "limit_down_price": q.get("limit_down_price", 0),
+        "name": q.get("name", "") if q else "",
+        "price": _dp_price if _dp_price else (q.get("price", 0) if q else 0),
+        "change_pct": _dp_change if _dp_change or _dp_change == 0 else (q.get("change_pct", 0) if q else 0),
+        "open": q.get("open", 0) if q else 0,
+        "high": q.get("high", 0) if q else 0,
+        "low": q.get("low", 0) if q else 0,
+        "pe_ttm": _dp_pe if _dp_pe and _dp_pe > 0 else (q.get("pe_ttm", 0) if q else 0),
+        "pb": _dp_pb if _dp_pb and _dp_pb > 0 else (q.get("pb", 0) if q else 0),
+        "mcap_yi": _dp_mcap if _dp_mcap else (q.get("mcap_yi", 0) if q else 0),
+        "float_mcap_yi": (_dp_float_mcap if _dp_float_mcap else 0) or (q.get("float_mcap_yi", 0) if q else 0) or (q.get("mcap_yi", 0) if q else 0),
+        "turnover_pct": _dp_turnover if _dp_turnover else (q.get("turnover_pct", 0) if q else 0),
+        "amplitude": q.get("amplitude_pct", 0) if q else 0,
+        "limit_up_price": q.get("limit_up", 0) if q else 0,
+        "limit_down_price": q.get("limit_down_price", 0) if q else 0,
     }
+
+    # data_provider 综合数据中的 zhb 字段（原有路径无此数据，直接写入）
+    if dp_data:
+        _main_net = dp_data.get("main_net_buy", {}) or {}
+        result["basic"]["zhb"] = {
+            "pe_dynamic": 0,
+            "dividend_yield": dp_data.get("dividend_yield", 0),
+            "change_ytd": dp_data.get("change_ytd", 0),
+            "change_5d": 0,
+            "change_10d": 0,
+            "change_20d": 0,
+            "change_30d": 0,
+            "change_60d": 0,
+            "high_52w": dp_data.get("high_52w", 0),
+            "low_52w": dp_data.get("low_52w", 0),
+            "amount_wan": dp_data.get("amount_wan", 0) * 10000 if dp_data.get("amount_wan", 0) else 0,
+            "employee_count": 0,
+            "ipo_price": 0,
+            "industry_code": dp_data.get("industry", ""),
+            # V10.3: 主力资金流向字段
+            "main_net_buy_hands": _main_net.get("main_net_buy_hands", 0),
+            "main_net_buy_hands_1d": _main_net.get("main_net_buy_hands_1d", 0),
+            "main_net_buy_amount": _main_net.get("main_net_buy_amount", 0),
+            "main_net_buy_amount_1d": _main_net.get("main_net_buy_amount_1d", 0),
+        }
+    elif q:
+        # 无 data_provider 数据时，仍保留 zhb 子结构（空值）以保持结构一致
+        result["basic"]["zhb"] = {
+            "pe_dynamic": 0, "dividend_yield": 0, "change_ytd": 0,
+            "change_5d": 0, "change_10d": 0, "change_20d": 0,
+            "change_30d": 0, "change_60d": 0,
+            "high_52w": 0, "low_52w": 0, "amount_wan": 0,
+            "employee_count": 0, "ipo_price": 0, "industry_code": "",
+            "main_net_buy_hands": 0, "main_net_buy_hands_1d": 0,
+            "main_net_buy_amount": 0, "main_net_buy_amount_1d": 0,
+        }
 
     # 涨停/跌停
     name = result["basic"].get("name", "")
@@ -351,7 +435,7 @@ def layer1_market(code: str) -> Dict[str, Any]:
         result["signals"].append(f"今日跌停 ({chg:.2f}%)")
 
     # 800根日K线（足够计算所有长周期指标）
-    kk, rows = tdx_get_security_bars(code, count=800)
+    kk, rows = await asyncio.to_thread(tdx_get_security_bars, code, count=800)
     closes_list, highs_list, lows_list, volumes_list = [], [], [], []
     if rows and len(rows) >= 20:
         idx_map = {k: i for i, k in enumerate(kk)}
@@ -382,15 +466,22 @@ def layer1_market(code: str) -> Dict[str, Any]:
         ma60 = sum(closes_list[-60:]) / 60 if len(closes_list) >= 60 else 0
         ma120 = sum(closes_list[-120:]) / 120 if len(closes_list) >= 120 else 0
 
+        # V10.1: 52周高低、阶段涨跌幅优先用zhb，无zhb时fallback到K线计算
+        _zhb_sub = result["basic"].get("zhb", {})
+        _high_52w = _zhb_sub.get("high_52w", 0)
+        _low_52w = _zhb_sub.get("low_52w", 0)
+        _change_20d = _zhb_sub.get("change_20d", 0)
+        _change_60d = _zhb_sub.get("change_60d", 0)
+
         result["kline"] = {
             "price": round(latest, 2),
             "ma5": round(ma5, 2), "ma10": round(ma10, 2),
             "ma20": round(ma20, 2), "ma60": round(ma60, 2),
             "ma120": round(ma120, 2) if ma120 else 0,
-            "high_120d": max(closes_list[-120:]) if len(closes_list) >= 120 else max(closes_list),
-            "low_120d": min(closes_list[-120:]) if len(closes_list) >= 120 else min(closes_list),
-            "ret_20d": round((latest / closes_list[-20] - 1) * 100, 2) if len(closes_list) >= 20 else 0,
-            "ret_60d": round((latest / closes_list[-60] - 1) * 100, 2) if len(closes_list) >= 60 else 0,
+            "high_120d": _high_52w if _high_52w > 0 else (max(closes_list[-120:]) if len(closes_list) >= 120 else max(closes_list)),
+            "low_120d": _low_52w if _low_52w > 0 else (min(closes_list[-120:]) if len(closes_list) >= 120 else min(closes_list)),
+            "ret_20d": _change_20d if _change_20d else (round((latest / closes_list[-20] - 1) * 100, 2) if len(closes_list) >= 20 else 0),
+            "ret_60d": _change_60d if _change_60d else (round((latest / closes_list[-60] - 1) * 100, 2) if len(closes_list) >= 60 else 0),
             "ret_250d": round((latest / closes_list[-250] - 1) * 100, 2) if len(closes_list) >= 250 else 0,
             "closes": closes_list[-60:],  # 保留近60日收盘价画ASCII图
         }
@@ -473,7 +564,7 @@ def layer1_market(code: str) -> Dict[str, Any]:
     result["tech"] = tech
 
     # 相对指数收益
-    idx_q = tdx_get_index_quote("sh000300")
+    idx_q = await asyncio.to_thread(tdx_get_index_quote, "sh000300")
     if idx_q:
         result["index_compare"] = {
             "index_name": "沪深300",
@@ -488,7 +579,7 @@ def layer1_market(code: str) -> Dict[str, Any]:
 # Layer 2: 研报层（保留原实现）
 # =====================================================================
 
-def layer2_research(code: str) -> Dict[str, Any]:
+async def layer2_research(code: str) -> Dict[str, Any]:
     result: Dict[str, Any] = {
         "ok": True, "recent_reports": [],
         "rating_dist": {}, "eps_forecast": None,
@@ -496,7 +587,7 @@ def layer2_research(code: str) -> Dict[str, Any]:
     }
 
     try:
-        r = _request_with_retry(
+        r = await asyncio.to_thread(_request_with_retry,
             "https://reportapi.eastmoney.com/report/list",
             params={"pageSize": "20", "industry": "*", "rating": "*",
                     "beginTime": "2000-01-01", "endTime": "2030-01-01",
@@ -522,7 +613,7 @@ def layer2_research(code: str) -> Dict[str, Any]:
         _debug_log(f"ful layer2 research reports error: {_e}")
 
     try:
-        r = _quick_request(
+        r = await asyncio.to_thread(_quick_request,
             f"https://basic.10jqka.com.cn/new/{code}/worth.html",
             headers={"User-Agent": UA, "Referer": "https://basic.10jqka.com.cn/"},
             timeout=15,
@@ -544,7 +635,7 @@ def layer2_research(code: str) -> Dict[str, Any]:
         _debug_log(f"ful layer2 eps forecast error: {_e}")
 
     if not result["eps_forecast"]:
-        em_eps = tdx_get_eps_from_reports(code)
+        em_eps = await asyncio.to_thread(tdx_get_eps_from_reports, code)
         if em_eps and em_eps.get("eps_cur"):
             result["eps_forecast"] = [
                 ["预测今年", "1", "-", str(em_eps["eps_cur"]), "-", "-"],
@@ -552,9 +643,24 @@ def layer2_research(code: str) -> Dict[str, Any]:
             ]
 
     try:
-        q = tdx_get_quote_full(code)
-        if q and result["eps_forecast"]:
-            price = float(q.get("price", 0))
+        # 优先使用 data_provider 获取价格、PE、PB
+        dp_price = await get_stock_price_async(code) or 0
+        dp_pe_ttm = await get_pe_ttm_async(code) or 0
+        dp_pb = await get_pb_async(code) or 0
+
+        # fallback 到 tdx
+        q = None
+        if not dp_price or not dp_pe_ttm or not dp_pb:
+            try:
+                q = await asyncio.to_thread(tdx_get_quote_full, code)
+            except Exception:
+                q = None
+
+        price = dp_price if dp_price else (q.get("price", 0) if q else 0)
+        pe_ttm = dp_pe_ttm if dp_pe_ttm and dp_pe_ttm > 0 else (q.get("pe_ttm", 0) if q else 0)
+        pb = dp_pb if dp_pb and dp_pb > 0 else (q.get("pb", 0) if q else 0)
+
+        if price > 0 and result["eps_forecast"]:
             for row in result["eps_forecast"]:
                 try:
                     eps_val = float(row[3]) if row[3] else 0
@@ -567,8 +673,8 @@ def layer2_research(code: str) -> Dict[str, Any]:
                         "year_label": row[0], "eps": eps_val,
                         "forward_pe": forward_pe,
                         "peg": None,  # 无机构一致预期，不计算PEG
-                        "current_pe_ttm": q.get("pe_ttm", 0),
-                        "pb": q.get("pb", 0),
+                        "current_pe_ttm": pe_ttm,
+                        "pb": pb,
                     }
                     if forward_pe < 15:
                         result["signals"].append(f"前向PE {forward_pe}，低估区")
@@ -588,7 +694,7 @@ def layer2_research(code: str) -> Dict[str, Any]:
 # Layer_IND: 行业对比（方案2新增）
 # =====================================================================
 
-def layer_ind_industry(code: str, stock_mcap: float = 0) -> Dict[str, Any]:
+async def layer_ind_industry(code: str, stock_mcap: float = 0) -> Dict[str, Any]:
     """
     行业对比分析（方案2增强）：
     1) 通过 tdx_get_belong_boards 获取行业板块代码
@@ -603,7 +709,7 @@ def layer_ind_industry(code: str, stock_mcap: float = 0) -> Dict[str, Any]:
 
     try:
         # 1. 获取行业板块归属
-        boards = tdx_get_belong_boards(code)
+        boards = await asyncio.to_thread(tdx_get_belong_boards, code)
         industries = (boards or {}).get("industry", []) or []
         if not industries:
             result["signals"].append("无明确行业归属")
@@ -620,7 +726,7 @@ def layer_ind_industry(code: str, stock_mcap: float = 0) -> Dict[str, Any]:
         # 2. 获取板块成员（优先用 tdx_get_board_members）
         all_peers = []
         try:
-            bm = tdx_get_board_members(ind_code)
+            bm = await asyncio.to_thread(tdx_get_board_members, ind_code)
             if bm:
                 for m in bm:
                     mc = m.get("code", "")
@@ -640,7 +746,7 @@ def layer_ind_industry(code: str, stock_mcap: float = 0) -> Dict[str, Any]:
         # 回退：东财 datacenter（当 tdx_get_board_members 失败时）
         if not all_peers:
             try:
-                member_rows = eastmoney_datacenter(
+                member_rows = await asyncio.to_thread(eastmoney_datacenter,
                     code, "LC_INDEX_ELT",
                     filter_str='',
                     sort_columns="MARKET_CAP", sort_types="-1",
@@ -683,25 +789,50 @@ def layer_ind_industry(code: str, stock_mcap: float = 0) -> Dict[str, Any]:
             return result
 
         # 3. 补全缺失行情信息（若没有 PE/PB）
-        def _ensure_full(p: Dict) -> Dict:
+        async def _ensure_full(p: Dict) -> Dict:
             try:
                 if not p.get("pe_ttm") or not p.get("pb") or not p.get("price", 0):
-                    q = tdx_get_quote_full(p["code"])
-                    if q:
-                        p["price"] = q.get("price", p.get("price", 0))
-                        p["chg_pct"] = q.get("change_pct", p.get("chg_pct", 0))
-                        p["pe_ttm"] = q.get("pe_ttm", p.get("pe_ttm", 0))
-                        p["pb"] = q.get("pb", p.get("pb", 0))
-                        p["mcap_yi"] = q.get("mcap_yi", p.get("mcap_yi", 0))
+                    # 优先使用 data_provider
+                    _dp_comp = None
+                    try:
+                        _dp_comp = await get_stock_composite_async(p["code"])
+                    except Exception:
+                        _dp_comp = None
+
+                    if _dp_comp:
+                        if not p.get("price", 0):
+                            p["price"] = _dp_comp.get("price", p.get("price", 0))
+                        if not p.get("chg_pct"):
+                            p["chg_pct"] = _dp_comp.get("change_pct", p.get("chg_pct", 0))
+                        if not p.get("pe_ttm"):
+                            p["pe_ttm"] = _dp_comp.get("pe_ttm", p.get("pe_ttm", 0))
+                        if not p.get("pb"):
+                            p["pb"] = _dp_comp.get("pb", p.get("pb", 0))
+                        if not p.get("mcap_yi"):
+                            p["mcap_yi"] = _dp_comp.get("mcap_yi", p.get("mcap_yi", 0))
+
+                    # fallback 到 tdx
+                    if not p.get("pe_ttm") or not p.get("pb") or not p.get("price", 0):
+                        try:
+                            q = await asyncio.to_thread(tdx_get_quote_full, p["code"])
+                            if q:
+                                if not p.get("price", 0):
+                                    p["price"] = q.get("price", p.get("price", 0))
+                                if not p.get("chg_pct"):
+                                    p["chg_pct"] = q.get("change_pct", p.get("chg_pct", 0))
+                                if not p.get("pe_ttm"):
+                                    p["pe_ttm"] = q.get("pe_ttm", p.get("pe_ttm", 0))
+                                if not p.get("pb"):
+                                    p["pb"] = q.get("pb", p.get("pb", 0))
+                                if not p.get("mcap_yi"):
+                                    p["mcap_yi"] = q.get("mcap_yi", p.get("mcap_yi", 0))
+                        except Exception:
+                            pass
             except Exception as _e:
                 _debug_log(f"ful layer_ind ensure_full quote error: {_e}")
             return p
 
-        if len(all_peers) > 3:
-            with ThreadPoolExecutor(max_workers=_MAX_WORKERS) as executor:
-                all_peers = list(executor.map(_ensure_full, all_peers))
-        else:
-            all_peers = [_ensure_full(p) for p in all_peers]
+        all_peers = await asyncio.gather(*[_ensure_full(p) for p in all_peers])
 
         # 筛选有效同行
         peer_data = [p for p in all_peers if p.get("pe_ttm", 0) > 0 or p.get("mcap_yi", 0) > 0]
@@ -736,16 +867,30 @@ def layer_ind_industry(code: str, stock_mcap: float = 0) -> Dict[str, Any]:
                                   key=lambda p: -p.get("pe_ttm", 0))[:2],
         }
 
-        # 5. 获取当前股票的PE/PB做对比
+        # 5. 获取当前股票的PE/PB做对比（优先使用 data_provider）
         stock_pe = 0
         stock_pb = 0
         stock_chg = 0
         try:
-            q = tdx_get_quote_full(code)
-            if q:
-                stock_pe = q.get("pe_ttm", 0) or 0
-                stock_pb = q.get("pb", 0) or 0
-                stock_chg = q.get("change_pct", 0) or 0
+            _dp_comp = await get_stock_composite_async(code)
+            if _dp_comp:
+                stock_pe = _dp_comp.get("pe_ttm", 0) or 0
+                stock_pb = _dp_comp.get("pb", 0) or 0
+                stock_chg = _dp_comp.get("change_pct", 0) or 0
+
+            # fallback 到 tdx
+            if not stock_pe or not stock_pb:
+                try:
+                    q = await asyncio.to_thread(tdx_get_quote_full, code)
+                    if q:
+                        if not stock_pe:
+                            stock_pe = q.get("pe_ttm", 0) or 0
+                        if not stock_pb:
+                            stock_pb = q.get("pb", 0) or 0
+                        if not stock_chg and stock_chg == 0:
+                            stock_chg = q.get("change_pct", 0) or 0
+                except Exception:
+                    pass
         except Exception as _e:
             _debug_log(f"ful layer_ind stock quote error: {_e}")
 
@@ -986,9 +1131,10 @@ def layer4_chips(code: str) -> Dict[str, Any]:
 # =====================================================================
 
 def layer5_news(code: str, stock_name: str = "") -> Dict[str, Any]:
-    """Layer 5: 新闻与舆情 — 东财个股新闻 + 同花顺热榜"""
+    """Layer 5: 新闻与舆情 — 东财个股新闻 + 财联社快讯 + 互动易 + 同花顺热榜"""
     result: Dict[str, Any] = {
         "ok": True, "global_related": [],
+        "cls_news": [], "irm_qa": [],
         "hot_list": [], "signals": [],
     }
 
@@ -1006,6 +1152,54 @@ def layer5_news(code: str, stock_name: str = "") -> Dict[str, Any]:
                 })
     except Exception as _e:
         _debug_log(f"ful layer5 stock news error: {_e}")
+
+    # 财联社快讯（近3天）
+    try:
+        cls_data = cls_telegraph(page_size=50)
+        _cls_cutoff = datetime.now() - timedelta(days=3)
+        for item in cls_data:
+            t_str = str(item.get("time", ""))
+            if t_str:
+                try:
+                    pub_dt = datetime.strptime(t_str, "%Y-%m-%d %H:%M:%S")
+                    if pub_dt < _cls_cutoff:
+                        continue
+                except (ValueError, TypeError):
+                    pass
+            title = str(item.get("title", "")).strip()
+            if title:
+                result["cls_news"].append({
+                    "time": t_str[:16],
+                    "title": title[:80],
+                })
+                if len(result["cls_news"]) >= 15:
+                    break
+    except Exception as _e:
+        _debug_log(f"ful layer5 cls_telegraph error: {_e}")
+
+    # 互动易问答（近15天）
+    try:
+        irm_data = cninfo_irm(code, page_size=30)
+        _irm_cutoff = datetime.now() - timedelta(days=15)
+        for item in irm_data:
+            t_str = str(item.get("ask_time", ""))
+            if t_str:
+                try:
+                    pub_dt = datetime.strptime(t_str, "%Y-%m-%d %H:%M")
+                    if pub_dt < _irm_cutoff:
+                        continue
+                except (ValueError, TypeError):
+                    pass
+            q = str(item.get("question", "")).strip()[:80]
+            if q:
+                result["irm_qa"].append({
+                    "time": t_str[:16],
+                    "question": q,
+                })
+                if len(result["irm_qa"]) >= 10:
+                    break
+    except Exception as _e:
+        _debug_log(f"ful layer5 cninfo_irm error: {_e}")
 
     # 同花顺热榜（取当前热度前5，看该股是否在榜）
     try:
@@ -1030,7 +1224,7 @@ def layer5_news(code: str, stock_name: str = "") -> Dict[str, Any]:
 # Layer 6: 基本面（保留原实现 + 增强ROE/分红字段）
 # =====================================================================
 
-def layer6_fundamental(code: str) -> Dict[str, Any]:
+async def layer6_fundamental(code: str) -> Dict[str, Any]:
     result: Dict[str, Any] = {
         "ok": True, "financials": [], "balance_sheet": [],
         "ratios": {}, "dividends": [], "historical_high": None,
@@ -1175,19 +1369,33 @@ def layer6_fundamental(code: str) -> Dict[str, Any]:
 
     # 分红历史
     try:
+        # V10.1: 股息率优先用zhb数据，无zhb时fallback到tdx_get_dividend_history计算
+        _zhb_div_yield = 0
+        if _zhb_data:
+            _zhb_div_yield = _zhb_data.get("dividend_yield", 0)
+        if _zhb_div_yield and _zhb_div_yield > 0:
+            result["ratios"]["dividend_yield"] = _zhb_div_yield
+            if _zhb_div_yield > 5:
+                result["signals"].append(f"股息率 {_zhb_div_yield:.2f}%，高股息标的")
+            elif _zhb_div_yield > 3:
+                result["signals"].append(f"股息率 {_zhb_div_yield:.2f}%，可作中长线配置")
+        # 仍获取分红明细记录用于展示
         divs = tdx_get_dividend_history(code)
         if divs:
             result["dividends"] = divs[:5]
-            q = tdx_get_quote_full(code)
-            price = q.get("price", 0) if q else 0
-            latest_div = divs[0].get("bonus_rmb", 0) if divs else 0
-            if price > 0 and latest_div > 0:
-                yield_rate = round(latest_div / price * 100, 2)
-                result["ratios"]["dividend_yield"] = yield_rate
-                if yield_rate > 5:
-                    result["signals"].append(f"股息率 {yield_rate:.2f}%，高股息标的")
-                elif yield_rate > 3:
-                    result["signals"].append(f"股息率 {yield_rate:.2f}%，可作中长线配置")
+            if not _zhb_div_yield or _zhb_div_yield <= 0:
+                try:
+                    price = await get_stock_price_async(code) or 0
+                except Exception:
+                    price = 0
+                latest_div = divs[0].get("bonus_rmb", 0) if divs else 0
+                if price > 0 and latest_div > 0:
+                    yield_rate = round(latest_div / price * 100, 2)
+                    result["ratios"]["dividend_yield"] = yield_rate
+                    if yield_rate > 5:
+                        result["signals"].append(f"股息率 {yield_rate:.2f}%，高股息标的")
+                    elif yield_rate > 3:
+                        result["signals"].append(f"股息率 {yield_rate:.2f}%，可作中长线配置")
     except Exception as _e:
         _debug_log(f"ful layer6 dividends error: {_e}")
 
@@ -1196,8 +1404,10 @@ def layer6_fundamental(code: str) -> Dict[str, Any]:
         hh = tdx_get_historical_high(code)
         if hh:
             result["historical_high"] = hh
-            q = tdx_get_quote_full(code)
-            price = q.get("price", 0) if q else 0
+            try:
+                price = await get_stock_price_async(code) or 0
+            except Exception:
+                price = 0
             if hh > 0 and price > 0:
                 pct_from_high = round((price / hh - 1) * 100, 2)
                 result["ratios"]["pct_from_high"] = pct_from_high
@@ -1215,7 +1425,7 @@ def layer6_fundamental(code: str) -> Dict[str, Any]:
 # Layer_RISK: 风险扫描（方案3新增）
 # =====================================================================
 
-def layer_risk(code: str, layers_ref: Optional[Dict] = None) -> Dict[str, Any]:
+async def layer_risk(code: str, layers_ref: Optional[Dict] = None) -> Dict[str, Any]:
     """
     综合风险扫描：汇总层6的资产健康度 + 公告关键词风险 + 解禁风险 +
     质押风险 + 股东减持风险。
@@ -1242,12 +1452,14 @@ def layer_risk(code: str, layers_ref: Optional[Dict] = None) -> Dict[str, Any]:
             "pct_from_high": (l6.get("ratios") or {}).get("pct_from_high", 0),
         }
     else:
-        # 若未传入，则直接调用快速查询一次东财基本估值
+        # 若未传入，则直接调用 data_provider 获取基本估值
         try:
-            q = tdx_get_quote_full(code)
-            if q:
-                extra_l6["pe_ttm"] = q.get("pe_ttm", 0)
-                extra_l6["pb"] = q.get("pb", 0)
+            pe_ttm_val = await get_pe_ttm_async(code)
+            pb_val = await get_pb_async(code)
+            if pe_ttm_val:
+                extra_l6["pe_ttm"] = pe_ttm_val
+            if pb_val:
+                extra_l6["pb"] = pb_val
         except Exception as _e:
             _debug_log(f"ful layer_risk quote error: {_e}")
 
@@ -1533,6 +1745,8 @@ def format_report(code: str, layers: Dict[str, Any]) -> str:
         L("  ⚠️ 午休时段（11:30-13:00）：行情暂停但基本面数据正常")
     elif _mkt_status in ("post_market", "pre_market"):
         L("  ⚠️ 非交易时段：数据为最近交易日快照，实时行情已标注")
+    elif _mkt_status == "post_close":
+        L("  ℹ️ 盘后收盘：数据为今日收盘快照，实时行情已标注")
     L("═" * 78)
 
     # 基本信息
@@ -1766,6 +1980,20 @@ def format_report(code: str, layers: Dict[str, Any]) -> str:
                         L(f"    · [{n.get('time', '')}] {n.get('title', '')}")
             if hl:
                 L(f"  同花顺热榜: #{hl[0]['rank']} {hl[0]['name']} 热度{hl[0]['heat']}")
+        # 财联社快讯（近3天）
+        cls_list = l5.get("cls_news") or []
+        if cls_list:
+            L(f"  财联社快讯（近3天，{len(cls_list)} 条）:")
+            for n in cls_list[:10]:
+                if isinstance(n, dict):
+                    L(f"    · [{n.get('time', '')}] {n.get('title', '')}")
+        # 互动易问答（近15天）
+        irm_list = l5.get("irm_qa") or []
+        if irm_list:
+            L(f"  互动易问答（近15天，{len(irm_list)} 条）:")
+            for n in irm_list[:5]:
+                if isinstance(n, dict):
+                    L(f"    · [{n.get('time', '')}] {n.get('question', '')}")
         if l5.get("signals"):
             for s in l5["signals"]:
                 L(f"    · {s}")
@@ -1973,7 +2201,7 @@ def format_report(code: str, layers: Dict[str, Any]) -> str:
 # 主流程: 9层并行分析（顺序版/并行版）
 # =====================================================================
 
-def analyze_stock(code: str, parallel: bool = True) -> Tuple[str, str]:
+async def analyze_stock(code: str, parallel: bool = True) -> Tuple[str, str]:
     """
     执行9层分析并返回(股票名称, 报告文本)。
     策略: 先算L1/L2/L3/L4/L5/L6/L7（并行），再用已有结果驱动Layer_RISK（依赖L3/L4/L6）。
@@ -1988,49 +2216,65 @@ def analyze_stock(code: str, parallel: bool = True) -> Tuple[str, str]:
     # 预热（获取股票名称和市值，用于行业对比过滤）
     stock_name = ""
     stock_mcap = 0
+    price_local = 0
     try:
+        # 股票名称：data_provider 暂无对应异步函数，保留原路径
         q = tdx_get_quote_full(code)
         if q:
             stock_name = q.get("name", "")
             stock_mcap = q.get("mcap_yi", 0) or 0
+        # 价格：从 data_provider 获取
+        try:
+            price_local = await get_stock_price_async(code) or 0
+        except Exception:
+            price_local = q.get("price", 0) if q else 0
+        # 市值：优先从 data_provider 综合数据获取
+        try:
+            composite = await get_stock_composite_async(code)
+            if composite and composite.get("mcap_yi", 0) > 0:
+                stock_mcap = composite["mcap_yi"]
+        except Exception:
+            pass
     except Exception as _e:
         _debug_log(f"ful analyze_stock preheat quote error: {_e}")
 
     # 第1轮：7个独立层并行
-    first_round_tasks = [
-        ("layer1", lambda c=code: layer1_market(c)),
-        ("layer2", lambda c=code: layer2_research(c)),
-        ("layer_ind", lambda c=code, m=stock_mcap: layer_ind_industry(c, m)),
-        ("layer3", lambda c=code: layer3_signals(c)),
-        ("layer4", lambda c=code: layer4_chips(c)),
-        ("layer5", lambda c=code: layer5_news(c, stock_name)),
-        ("layer6", lambda c=code: layer6_fundamental(c)),
-        ("layer7", lambda c=code: layer7_announcements(c, stock_name)),
-    ]
+    # 同步层用 asyncio.to_thread 包装，异步层直接调用
+    async def _run_layer(name: str, fn) -> Any:
+        try:
+            result = await fn
+            print(f"  ✓ {name} 完成", flush=True)
+            return name, result
+        except Exception as e:
+            print(f"  ✓ {name} 完成", flush=True)
+            return name, {"ok": False, "signals": [f"异常: {e}"]}
+
+    first_round_coros = []
+    # 异步层：直接调用
+    first_round_coros.append(_run_layer("layer1", layer1_market(code)))
+    first_round_coros.append(_run_layer("layer2", layer2_research(code)))
+    first_round_coros.append(_run_layer("layer_ind", layer_ind_industry(code, stock_mcap)))
+    first_round_coros.append(_run_layer("layer6", layer6_fundamental(code)))
+    # 同步层：使用 asyncio.to_thread 包装
+    first_round_coros.append(_run_layer("layer3", asyncio.to_thread(layer3_signals, code)))
+    first_round_coros.append(_run_layer("layer4", asyncio.to_thread(layer4_chips, code)))
+    first_round_coros.append(_run_layer("layer5", asyncio.to_thread(layer5_news, code, stock_name)))
+    first_round_coros.append(_run_layer("layer7", asyncio.to_thread(layer7_announcements, code, stock_name)))
 
     layers: Dict[str, Any] = {}
 
     if parallel:
-        with ThreadPoolExecutor(max_workers=_MAX_WORKERS) as executor:
-            future_map = {executor.submit(fn): name for name, fn in first_round_tasks}
-            for future in as_completed(future_map):
-                name = future_map[future]
-                try:
-                    layers[name] = future.result()
-                except Exception as e:
-                    layers[name] = {"ok": False, "signals": [f"异常: {e}"]}
-                print(f"  ✓ {name} 完成", flush=True)
+        results = await asyncio.gather(*first_round_coros)
+        for name, result in results:
+            layers[name] = result
     else:
-        for name, fn in first_round_tasks:
-            try:
-                layers[name] = fn()
-            except Exception as e:
-                layers[name] = {"ok": False, "signals": [f"异常: {e}"]}
-            print(f"  ✓ {name} 完成", flush=True)
+        for coro in first_round_coros:
+            name, result = await coro
+            layers[name] = result
 
     # 第2轮：Layer_RISK（依赖L3/L4/L6已有数据）
     try:
-        layers["layer_risk"] = layer_risk(code, layers_ref=layers)
+        layers["layer_risk"] = await layer_risk(code, layers_ref=layers)
         print("  ✓ layer_risk 完成", flush=True)
     except Exception as e:
         layers["layer_risk"] = {"ok": False, "signals": [f"异常: {e}"]}
@@ -2050,7 +2294,6 @@ def analyze_stock(code: str, parallel: bool = True) -> Tuple[str, str]:
     # 在 analyze_stock 作用域内重新计算评分（format_report 内部的 scores 不可用）
     try:
         scores_local = _scoring(ordered_layers, _cfg_sc=_sc.get("scoring"))
-        price_local = q.get("price", 0) if isinstance(q, dict) else 0
         _SNAPSHOT_DATA[code] = {
             "name": stock_name,
             "total_score": scores_local.get("total", 0),
@@ -2086,7 +2329,7 @@ def parse_args():
     return parser.parse_args()
 
 
-def _generate_reports(codes: List[str], output_dir: str, now_str: str,
+async def _generate_reports(codes: List[str], output_dir: str, now_str: str,
                       parallel: bool = True) -> Tuple[List[str], List[Dict[str, str]]]:
     """执行分析并生成报告文件。
 
@@ -2104,7 +2347,7 @@ def _generate_reports(codes: List[str], output_dir: str, now_str: str,
 
     for code in codes:
         try:
-            name, report = analyze_stock(code, parallel=parallel)
+            name, report = await analyze_stock(code, parallel=parallel)
             fname = f"{code}_ful_{now_str}.txt"
             fpath = os.path.join(output_dir, fname)
             with open(fpath, "w", encoding="utf-8") as fp:
@@ -2120,17 +2363,25 @@ def _generate_reports(codes: List[str], output_dir: str, now_str: str,
     return generated_files, data_results
 
 
-def _upload_reports(generated_files: List[str], no_upload: bool) -> List[Dict[str, str]]:
+async def _upload_reports(generated_files: List[str], no_upload: bool, data_results: List[Dict[str, str]] = None) -> List[Dict[str, str]]:
     """上传报告到 Google Drive。
 
     Args:
         generated_files: 待上传的文件路径列表
         no_upload: 是否跳过上传
+        data_results: 分析结果数据（包含股票名称，优先从此获取）
 
     Returns:
         上传结果状态列表
     """
     upload_results: List[Dict[str, str]] = []
+
+    # 构建 code -> name 映射，优先使用已获取的名称
+    name_map: Dict[str, str] = {}
+    if data_results:
+        for r in data_results:
+            if r.get("code") and r.get("name"):
+                name_map[r["code"]] = r["name"]
 
     drive, gd_proxy_set, gd_parent_folder_id, skip_upload = None, False, None, False
     if not no_upload:
@@ -2140,7 +2391,11 @@ def _upload_reports(generated_files: List[str], no_upload: bool) -> List[Dict[st
         for file_path in generated_files:
             code = os.path.basename(file_path).split('_')[0]
             try:
-                q_name = tdx_get_quote_full(code).get("name", "")
+                # 优先从已有的分析结果中获取名称，避免重复调用
+                q_name = name_map.get(code, "")
+                if not q_name:
+                    # data_provider 暂无名称接口，fallback 到原方式
+                    q_name = tdx_get_quote_full(code).get("name", "")
                 if upload_stock_report_by_code(drive, gd_parent_folder_id, code, q_name, file_path):
                     upload_results.append({"code": code, "status": "成功", "error": "", "path": file_path})
                 else:
@@ -2176,7 +2431,8 @@ def _print_summary(data_results: List[Dict[str, str]], upload_results: List[Dict
             print(f"    ⚠️ {r['code']}")
 
 
-def main():
+async def _async_main():
+    """异步主函数，执行实际的分析流程。"""
     args = parse_args()
 
     # 清洗股票代码：提取6位数字、去重、过滤无效项
@@ -2199,25 +2455,32 @@ def main():
         header_lines.append("  ⚠️ 午休时段（11:30-13:00）：行情暂停但基本面数据正常")
     elif _mkt_status in ("post_market", "pre_market"):
         header_lines.append("  ⚠️ 非交易时段：数据为最近交易日快照，实时行情已标注")
+    elif _mkt_status == "post_close":
+        header_lines.append("  ℹ️ 盘后收盘：数据为今日收盘快照，实时行情已标注")
     header_lines.append(f"  分析标的: {', '.join(codes)}")
-    header_lines.append(f"  并行模式: {'OFF(顺序)' if args.no_parallel else f'ON({_MAX_WORKERS}线程)'}  |  GD上传: {'SKIP' if args.no_upload else '启用'}")
+    header_lines.append(f"  并行模式: {'OFF(顺序)' if args.no_parallel else f'ON({_MAX_WORKERS}并发)'}  |  GD上传: {'SKIP' if args.no_upload else '启用'}")
     header_lines.append(f"  输出目录: {output_dir}")
     header_lines.append("=" * 78)
     print("\n".join(header_lines), flush=True)
 
     t_total = time.time()
-    generated_files, data_results = _generate_reports(
+    generated_files, data_results = await _generate_reports(
         codes, output_dir, now_str, parallel=not args.no_parallel
     )
     elapsed_total = time.time() - t_total
 
-    upload_results = _upload_reports(generated_files, args.no_upload)
+    upload_results = await _upload_reports(generated_files, args.no_upload, data_results)
     _print_summary(data_results, upload_results, generated_files, elapsed_total)
 
     # 批量写入快照（一次性，不重复写）
     if _SNAPSHOT_DATA:
         from stock_common.analyze_history import save_snapshot
         save_snapshot("ful", _SNAPSHOT_DATA)
+
+
+def main():
+    """同步入口函数，通过 asyncio.run 调用异步主函数。"""
+    asyncio.run(_async_main())
 
 
 if __name__ == "__main__":

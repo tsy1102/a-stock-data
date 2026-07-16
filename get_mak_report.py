@@ -15,11 +15,12 @@ get_mak_report.py — A股异动及行业轮动扫描报告
     V8.9   2026-06-29 - 修复模块导入；清理冗余空行输出；模块版本统一
     V8.7   2026-06-25 - 死代码清理：同步版替换为薄包装
 """
-import argparse, time, os, warnings
+import argparse, time, os, warnings, asyncio
 from datetime import date, datetime, timedelta
 from collections import Counter
 from concurrent.futures import ThreadPoolExecutor, as_completed
 warnings.filterwarnings('ignore')
+from data_provider import get_market_snapshot_async
 from gd_uploader import init_gd, upload_type_reports, cleanup_gd_proxy
 from tdx_client import (tdx_get_security_bars, tdx_get_index_bars,
                          tdx_get_board_list, tdx_get_board_members,
@@ -28,7 +29,12 @@ from tdx_client import (tdx_get_security_bars, tdx_get_index_bars,
 from stock_common import (_safe_float, _request_with_retry, _quick_request, UA, _debug_log,
                           _load_strategy_config, get_recent_dragon_tiger,
                           parse_args as common_parse_args,
-                          is_trading_day, get_market_status)
+                          is_trading_day, get_market_status,
+                          get_zhb_full_market_snapshot, is_zhb_data_fresh,
+                          zhb_field_safe,
+                          get_zhb_data_date, get_zhb_industry_map,
+                          calc_mcap_yi as _calc_mcap_yi,
+                          get_zhb_market_stat2_snapshot)  # V10.3
 
 _SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 # 加载策略阈值配置（模块级缓存，check_stock 函数中使用）
@@ -70,9 +76,96 @@ def calc_official_deviation(stock_ret, index_ret):
     if i_val <= 0: return 0.0
     return round((s_val / i_val - 1) * 100, 2)
 
-def get_market_abnormal_data():
-    """V7: 全市场 + 多周期涨幅 → TDX MAC 协议（push2 fallback 已删除）"""
-    return tdx_get_market_abnormal_data()
+async def get_market_abnormal_data():
+    """V7: 全市场 + 多周期涨幅 → TDX MAC 协议（push2 fallback 已删除）
+    V10.1: 优先使用zhb全市场快照，零网络请求，失败时回退到TDX
+    V10.2: zhb优先级分级——mak脚本依赖change_pct判断涨停/跌停，属于实时字段，
+           zhb日期非今日时必须fallback到TDX获取当日实时涨跌幅
+    V11.5: 使用data_provider异步接口
+    """
+    # V10.2: change_pct是实时字段，zhb日期必须是今天才能用
+    if zhb_field_safe("change_pct"):
+        data = await _get_zhb_market_data()
+        if data:
+            return data
+    return await asyncio.to_thread(tdx_get_market_abnormal_data)
+
+
+async def _get_zhb_market_data():
+    """V10.1: 从zhb全市场快照构建异动扫描数据。
+
+    返回格式与tdx_get_market_abnormal_data一致，便于无缝替换。
+    V11.5: 使用data_provider的get_market_snapshot_async统一获取数据
+    """
+    try:
+        snapshot = await get_market_snapshot_async()
+        if not snapshot:
+            return []
+
+        all_codes = list(snapshot.keys())
+        price_map = await get_market_snapshot_async(all_codes)
+        industry_map = get_zhb_industry_map()
+
+        result = []
+        for code, stat in snapshot.items():
+            name = price_map.get(code, {}).get("name", "")
+            if not name:
+                continue
+            if 'ST' in name or '退' in name:
+                continue
+
+            price = _safe_float(price_map.get(code, {}).get("price", 0))
+            change_pct = _safe_float(stat.get("change_pct", 0))
+            amount_wan = _safe_float(stat.get("amount", 0))
+            turnover = _safe_float(price_map.get(code, {}).get("turnover_pct", 0))
+
+            mcap_yi = _calc_mcap_yi(code, price)
+
+            ret_5d = _safe_float(stat.get("change_5d", 0))
+            ret_10d = _safe_float(stat.get("change_10d", 0))
+            ret_20d = _safe_float(stat.get("change_20d", 0))
+            ret_60d = _safe_float(stat.get("change_60d", 0))
+
+            ret_3d = _calc_3d_from_daily(stat)
+
+            result.append({
+                "code": code,
+                "name": name,
+                "price": price,
+                "change_pct": change_pct,
+                "turnover": turnover,
+                "mcap_yi": mcap_yi,
+                "amount_yi": amount_wan / 10000.0 if amount_wan > 0 else 0,
+                "ret_3d": ret_3d,
+                "ret_5d": ret_5d,
+                "ret_10d": ret_10d,
+                "ret_20d": ret_20d,
+                "ret_60d": ret_60d,
+                "main_net_amount": 0,
+                "industry_code": stat.get("industry_code", ""),
+            })
+
+        return result
+    except Exception as _e:
+        _debug_log(f"mak zhb_market_data: {_e}")
+        return []
+
+
+def _calc_3d_from_daily(stat):
+    """V10.1: 从T/T-1/T-2日涨跌幅推算3日累计涨跌幅。
+
+    使用复利计算：(1+r1)*(1+r2)*(1+r3) - 1
+    """
+    r0 = _safe_float(stat.get("change_pct", 0)) / 100.0
+    r1 = _safe_float(stat.get("change_pct_1d", 0)) / 100.0
+    r2 = _safe_float(stat.get("change_pct_2d", 0)) / 100.0
+
+    if r0 == 0 and r1 == 0 and r2 == 0:
+        return _safe_float(stat.get("change_5d", 0)) * 0.6
+
+    ret_3d = ((1 + r0) * (1 + r1) * (1 + r2) - 1) * 100.0
+    return round(ret_3d, 2)
+
 
 def get_baidu_kline(code, days=20):
     """V4: K线数据 → tdx_client 适配器（TDX日K线，自动fallback百度）"""
@@ -301,7 +394,7 @@ def get_sector_stocks(sector_code):
 
 # V7: get_recent_dragon_tiger 由 stock_common 统一提供
 
-def get_ths_hot_pool(date_str):
+async def get_ths_hot_pool(date_str):
     url = f"http://zx.10jqka.com.cn/event/api/getharden/date/{date_str}/orderby/date/orderway/desc/charset/GBK/"
     try:
         r = _quick_request(url, headers={"User-Agent": UA}, timeout=10)
@@ -335,7 +428,7 @@ def get_ths_hot_pool(date_str):
                 "reason": item.get("reason", ""),
                 "zhangfu": _safe_float(item.get("zhangfu", item.get("change", 0))),
             })
-        quotes = tdx_get_quotes_batch(codes)
+        quotes = await get_market_snapshot_async(codes)
         for row in rows:
             q = quotes.get(row["code"], {})
             tdx_change = q.get("change_pct", 0)
@@ -416,7 +509,7 @@ def annotate_technical_pattern(code):
         return " | ".join(tags) if tags else ""
     except (ValueError, TypeError, IndexError): return ""
 
-def generate_sector_report(output_path):
+async def generate_sector_report(output_path):
     _td = date.today()
     if not is_trading_day(_td):
         for _ in range(7):
@@ -431,7 +524,13 @@ def generate_sector_report(output_path):
     L(f"  📊 A股异动及行业轮动扫描报告 — {today_str} {now.strftime('%H:%M:%S')} {_mkt_note}")
     L("="*90)
     print("[数据装载] 获取全市场多日数据与指数基准...", flush=True)
-    all_stocks = get_market_abnormal_data()
+    _t0 = time.time()
+    all_stocks = await get_market_abnormal_data()
+    _zhb_date = get_zhb_data_date()
+    _zhb_fresh = is_zhb_data_fresh(max_delay_days=3)
+    if _zhb_date:
+        _fresh_tag = "✅新鲜" if _zhb_fresh else "⚠️延迟"
+        print(f"  ⚡ zhb全市场: {len(all_stocks)}只（{_zhb_date} {_fresh_tag}），耗时{time.time()-_t0:.2f}s", flush=True)
     idx_rets, index_closes_pool = get_index_returns()
     for ic, nm in INDEX_MAP.items():
         r = idx_rets.get(ic, {})
@@ -472,6 +571,24 @@ def generate_sector_report(output_path):
     _ud_ratio = _up_cnt / max(_down_cnt, 1)
     L(f"  🌡️ 短线情绪: 涨停{_zt_count} | 跌停{_dt_count} | 异动触发{total_abnormal}只")
     L(f"  📊 市场广度: 上涨{_up_cnt}/下跌{_down_cnt} | 涨跌比{_ud_ratio:.2f} | {'偏多' if _ud_ratio>1.5 else '偏空' if _ud_ratio<0.7 else '均衡'}")
+    
+    # V10.3: 全市场主力净买入总量
+    _total_main_net_buy = 0
+    _main_net_buy_count = 0
+    _stat2_snapshot = get_zhb_market_stat2_snapshot()
+    if _stat2_snapshot:
+        for _code, _stat in _stat2_snapshot.items():
+            _mna = _safe_float(_stat.get("main_net_buy_amount", 0))
+            if _mna:
+                _total_main_net_buy += _mna
+                if _mna > 0:
+                    _main_net_buy_count += 1
+        _total_main_net_buy_yi = _total_main_net_buy / 10000.0
+        L(f"  💰 主力资金: 全市场主力净流入{_total_main_net_buy_yi:+.2f}亿元（{_main_net_buy_count}只个股净流入）")
+        if _total_main_net_buy_yi > 50:
+            L(f"    🟢 主力资金大幅净流入，市场资金面偏多")
+        elif _total_main_net_buy_yi < -50:
+            L(f"    🔴 主力资金大幅净流出，市场资金面偏空")
     if _lbp > 80:
         L(f"    🔥 涨停{_lbp}家 > 80，情绪极度亢奋，警惕分化回落")
     if total_abnormal > 40 and _lbp > 60:
@@ -775,7 +892,7 @@ def generate_sector_report(output_path):
     L("【G. 同花顺强势股情绪池验证】")
     L(f"{'─'*90}")
     _ths_limit = 50
-    ths = get_ths_hot_pool(today_str)
+    ths = await get_ths_hot_pool(today_str)
     if ths:
         # 连板检测：按板块涨跌停线 + ret_3d判断
         def _get_limit_pct(code):
@@ -851,7 +968,7 @@ if __name__ == "__main__":
 
     os.makedirs(args.output, exist_ok=True)
     try:
-        generate_sector_report(op)
+        asyncio.run(generate_sector_report(op))
         print(f"  ✅ 已保存: {op}", flush=True)
     except Exception as e:
         print(f"❌ 报告生成失败: {e}", flush=True)

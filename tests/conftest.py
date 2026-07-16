@@ -128,7 +128,7 @@ def tmp_project(tmp_path):
             "fs": "m:0 t:6,m:0 t:80",
             "fields": "f12,f14,f2,f3",
         },
-        "check": lambda r: r.get("data", {}).get("dif") is not None and len(r["data"]["dif"]) > 0,
+        "check": lambda r: r.get("data", {}).get("diff") is not None and len(r["data"]["diff"]) > 0,
     },
     {
         "name": "reportapi",

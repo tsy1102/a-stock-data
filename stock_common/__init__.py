@@ -105,6 +105,7 @@ __all__ = [
     # zhb B级数据（V9.6 阶段二）
     "get_zhb_stock_stat", "get_zhb_stock_stat2", "get_zhb_market_snapshot",
     "get_zhb_52w_range", "get_zhb_industry_code", "is_zhb_data_fresh",
+    "zhb_field_safe",
     # zhb 辅助数据（V9.6 阶段三）
     "get_zhb_tip_info", "get_zhb_ipo_list", "get_zhb_ah_stocks", "get_zhb_broker_name",
     # zhb V10.0 新增
@@ -112,6 +113,16 @@ __all__ = [
     "get_zhb_convertible_bonds", "get_zhb_delisted_stocks",
     # zhb V10.0 智能日期筛选
     "should_use_zhb_data", "is_zhb_date_matching",
+    # zhb V10.1 新增：全量字段 + 衍生指标
+    "get_zhb_full_market_snapshot", "get_zhb_market_stat2_snapshot",
+    "get_zhb_dividend_yield", "get_zhb_streak_days", "get_zhb_change_ytd",
+    "get_zhb_ipo_price", "get_zhb_amount_wan", "get_zhb_amount_1d",
+    "get_zhb_single_stock_data",
+    # zhb V10.3 新增：主力资金流向
+    "get_zhb_main_net_buy", "get_zhb_main_net_buy_amount",
+    "get_zhb_main_net_buy_amount_1d",
+    # V10.1: 全局股本缓存 + 市值计算
+    "get_share_capital", "calc_mcap_yi", "calc_float_mcap_yi",
 ]
 
 # ═══════════════════════════════════════════════════════════════
@@ -246,6 +257,7 @@ from stock_common.sc_datasource import (
     # zhb B级数据（V9.6 阶段二）
     get_zhb_stock_stat, get_zhb_stock_stat2, get_zhb_market_snapshot,
     get_zhb_52w_range, get_zhb_industry_code, is_zhb_data_fresh,
+    zhb_field_safe,
     # zhb 辅助数据（V9.6 阶段三）
     get_zhb_tip_info, get_zhb_ipo_list, get_zhb_ah_stocks, get_zhb_broker_name,
     # zhb V10.0 新增
@@ -253,6 +265,16 @@ from stock_common.sc_datasource import (
     get_zhb_convertible_bonds, get_zhb_delisted_stocks,
     # zhb V10.0 智能日期筛选
     should_use_zhb_data, is_zhb_date_matching,
+    # zhb V10.1 新增：全量字段 + 衍生指标
+    get_zhb_full_market_snapshot, get_zhb_market_stat2_snapshot,
+    get_zhb_dividend_yield, get_zhb_streak_days, get_zhb_change_ytd,
+    get_zhb_ipo_price, get_zhb_amount_wan, get_zhb_amount_1d,
+    get_zhb_single_stock_data,
+    # zhb V10.3 新增：主力资金流向
+    get_zhb_main_net_buy, get_zhb_main_net_buy_amount,
+    get_zhb_main_net_buy_amount_1d,
+    # V10.1: 全局股本缓存 + 市值计算
+    get_share_capital, calc_mcap_yi, calc_float_mcap_yi,
 )
 
 

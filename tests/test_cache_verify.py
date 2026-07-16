@@ -1,12 +1,14 @@
 #!/usr/bin/env python3
 """test_cache_verify.py - 缓存交叉验证单元测试。
 
-测试场景：
-1. 首次写入 → 未验证 → get_cache 返回 None
-2. 第二次写入（数据一致）→ 已验证 → get_cache 返回数据
-3. 第二次写入（数据不一致）→ 重置为未验证 → get_cache 返回 None
-4. 已验证后第三次写入 → 不覆盖已验证数据
-5. @cached 装饰器集成测试
+测试场景（V10.0 新逻辑：首次写入即验证，数据变化时自动更新并保持已验证）：
+1. 首次写入 → 立即已验证 → get_cache 返回数据
+2. 第二次写入（数据一致）→ 刷新过期时间 → get_cache 返回数据
+3. 第二次写入（数据不一致）→ 用新数据替换并保持已验证 → get_cache 返回新数据
+4. 已验证后写入不同数据 → 已验证数据被替换为新数据
+5. @cached 装饰器集成测试（首次调用即写入已验证，二次调用走缓存）
+6. 列表数据的交叉验证
+7. 普通模式（cross_verify=False）不受影响
 """
 
 import os
@@ -49,28 +51,29 @@ class TestCacheVerify(unittest.TestCase):
         except Exception as _e:
             print(f"[tearDown] cleanup failed: {_e}", flush=True)
 
-    def test_first_write_unverified(self):
-        """测试1：首次写入后，cross_verify 模式下读取返回 None。"""
+    def test_first_write_verified(self):
+        """测试1：首次写入后立即标记为已验证，cross_verify 模式下读取返回数据。"""
         data = {"code": "600519", "name": "贵州茅台"}
         self.cache_mod.set_cache("basic_info", "test_func", data, 3600,
                                  cross_verify=True)
-        # 未验证，读取应返回 None
+        # V10.0 新逻辑：首次写入即已验证，读取应返回数据
         result = self.cache_mod.get_cache("basic_info", "test_func",
                                           cross_verify=True)
-        self.assertIsNone(result)
-        # 普通模式（不验证）应能读取到
+        self.assertIsNotNone(result)
+        self.assertEqual(result["code"], "600519")
+        # 普通模式（不验证）也应能读取到
         result_normal = self.cache_mod.get_cache("basic_info", "test_func",
                                                   cross_verify=False)
         self.assertIsNotNone(result_normal)
         self.assertEqual(result_normal["code"], "600519")
 
-    def test_second_write_same_verified(self):
-        """测试2：第二次写入相同数据 → 标记为已验证 → 读取返回数据。"""
+    def test_second_write_same_refresh(self):
+        """测试2：第二次写入相同数据 → 刷新过期时间 → 读取返回数据。"""
         data = {"code": "600519", "name": "贵州茅台"}
-        # 第一次写入
+        # 第一次写入（立即已验证）
         self.cache_mod.set_cache("basic_info", "test_func", data, 3600,
                                  cross_verify=True)
-        # 第二次写入相同数据
+        # 第二次写入相同数据（刷新过期时间）
         self.cache_mod.set_cache("basic_info", "test_func", data, 3600,
                                  cross_verify=True)
         # 已验证，读取应返回数据
@@ -80,48 +83,40 @@ class TestCacheVerify(unittest.TestCase):
         self.assertEqual(result["code"], "600519")
         self.assertEqual(result["name"], "贵州茅台")
 
-    def test_second_write_diff_reset(self):
-        """测试3：第二次写入不同数据 → 重置为未验证 → 读取返回 None。"""
+    def test_second_write_diff_updates(self):
+        """测试3：第二次写入不同数据 → 用新数据替换并保持已验证 → 读取返回新数据。"""
         data1 = {"code": "600519", "name": "贵州茅台"}
         data2 = {"code": "600519", "name": "贵州茅台2"}
         # 第一次写入
         self.cache_mod.set_cache("basic_info", "test_func", data1, 3600,
                                  cross_verify=True)
-        # 第二次写入不同数据 → 重置
+        # 第二次写入不同数据 → 用新数据替换，保持 verified=1
         self.cache_mod.set_cache("basic_info", "test_func", data2, 3600,
                                  cross_verify=True)
-        # 仍然是未验证状态，读取返回 None
-        result = self.cache_mod.get_cache("basic_info", "test_func",
-                                          cross_verify=True)
-        self.assertIsNone(result)
-        # 第三次写入相同数据（data2）→ 验证通过
-        self.cache_mod.set_cache("basic_info", "test_func", data2, 3600,
-                                 cross_verify=True)
+        # 读取应返回新数据 data2
         result = self.cache_mod.get_cache("basic_info", "test_func",
                                           cross_verify=True)
         self.assertIsNotNone(result)
         self.assertEqual(result["name"], "贵州茅台2")
 
-    def test_verified_no_overwrite(self):
-        """测试4：已验证的数据不被新写入覆盖。"""
+    def test_verified_allows_overwrite(self):
+        """测试4：已验证的数据会被新写入的不同数据替换。"""
         data1 = {"code": "600519", "name": "贵州茅台"}
-        data2 = {"code": "600519", "name": "错误数据"}
+        data2 = {"code": "600519", "name": "新数据"}
         # 验证通过
         self.cache_mod.set_cache("basic_info", "test_func", data1, 3600,
                                  cross_verify=True)
-        self.cache_mod.set_cache("basic_info", "test_func", data1, 3600,
-                                 cross_verify=True)
-        # 尝试写入不同数据
+        # 写入不同数据 → 替换为新数据
         self.cache_mod.set_cache("basic_info", "test_func", data2, 3600,
                                  cross_verify=True)
-        # 读取的还是已验证的 data1
+        # 读取的是新数据 data2
         result = self.cache_mod.get_cache("basic_info", "test_func",
                                           cross_verify=True)
         self.assertIsNotNone(result)
-        self.assertEqual(result["name"], "贵州茅台")
+        self.assertEqual(result["name"], "新数据")
 
     def test_cached_decorator_integration(self):
-        """测试5：@cached 装饰器集成测试。"""
+        """测试5：@cached 装饰器集成测试（首次调用即写入已验证，二次调用走缓存）。"""
         call_count = [0]
         data = {"code": "600519", "name": "贵州茅台"}
 
@@ -131,30 +126,30 @@ class TestCacheVerify(unittest.TestCase):
             call_count[0] += 1
             return data
 
-        # 第一次调用：未命中缓存，执行函数，写入未验证
+        # 第一次调用：未命中缓存，执行函数，写入已验证
         call_count[0] = 0
         result1 = my_func("600519")
         self.assertEqual(call_count[0], 1)
         self.assertEqual(result1["code"], "600519")
 
-        # 第二次调用：未验证，视为未命中，重新执行函数
+        # 第二次调用：已验证，直接返回缓存，不执行函数
         result2 = my_func("600519")
-        self.assertEqual(call_count[0], 2)
+        self.assertEqual(call_count[0], 1)
         self.assertEqual(result2["code"], "600519")
 
-        # 第三次调用：已验证，直接返回缓存，不执行函数
+        # 第三次调用：仍走缓存，不执行函数
         result3 = my_func("600519")
-        self.assertEqual(call_count[0], 2)
+        self.assertEqual(call_count[0], 1)
         self.assertEqual(result3["code"], "600519")
 
     def test_list_data_verify(self):
         """测试6：列表数据的交叉验证。"""
         data = [{"date": "2024-01-01", "value": 100},
                 {"date": "2024-01-02", "value": 200}]
-        # 第一次写入
+        # 第一次写入（立即已验证）
         self.cache_mod.set_cache("financial", "test_list", data, 3600,
                                  cross_verify=True)
-        # 第二次写入相同数据
+        # 第二次写入相同数据（刷新过期时间）
         self.cache_mod.set_cache("financial", "test_list", data, 3600,
                                  cross_verify=True)
         # 验证通过

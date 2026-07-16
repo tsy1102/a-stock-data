@@ -20,7 +20,7 @@ import pytest
 
 @pytest.mark.real_network
 async def test_med_report():
-    """测试中线报告中的 F10 财务深度/股东行为/主营构成章节。"""
+    """测试中线报告中的 F10 财务深度/股东行为/主营构成章节，以及舆情与互动章节。"""
     from get_med_report import generate_report_async
     tmp = tempfile.NamedTemporaryFile(suffix='.txt', delete=False).name
     async with aiohttp.ClientSession() as s:
@@ -31,11 +31,14 @@ async def test_med_report():
     print("✅ med: 股东行为分析章节存在")
     assert '主营构成分析' in r, "缺少【主营构成分析】章节"
     print("✅ med: 主营构成分析章节存在")
+    # V10.3 新增的舆情与互动章节（十七）
+    assert '十七、舆情与互动' in r, "缺少【十七、舆情与互动】章节"
+    print("✅ med: 舆情与互动章节存在")
 
 
 @pytest.mark.real_network
 async def test_lng_report():
-    """测试长线报告中的全部5个F10章节。"""
+    """测试长线报告中的全部5个F10章节，以及舆情与互动章节。"""
     from get_lng_report import generate_report_async
     tmp = tempfile.NamedTemporaryFile(suffix='.txt', delete=False).name
     async with aiohttp.ClientSession() as s:
@@ -43,6 +46,9 @@ async def test_lng_report():
     for ch in ['财务深度分析', '股东行为分析', '治理结构', '研发与创新', '主营构成分析']:
         assert ch in r, f"缺少【{ch}】章节"
         print(f"✅ lng: {ch}章节存在")
+    # V10.3 新增的舆情与互动章节（十）
+    assert '十、舆情与互动' in r, "缺少【十、舆情与互动】章节"
+    print("✅ lng: 舆情与互动章节存在")
 
 
 @pytest.mark.real_network

@@ -84,6 +84,9 @@ def test_invalidate_category(tmp_path, monkeypatch):
     deleted = sc.invalidate_category("cat_A")
     assert deleted >= 2  # 删除数应至少 2
 
+    # 清除 L1 内存缓存（invalidate_category 仅清理 SQLite，L1 需手动清除）
+    sc._L1_CACHE.clear()
+
     # A 类应读不到
     assert sc.get_cache("cat_A", "f1", "code-1") is None
     assert sc.get_cache("cat_A", "f2", "code-2") is None
@@ -108,6 +111,10 @@ def test_invalidate_prefix(tmp_path, monkeypatch):
     # key 格式为 "category:func_name:..."
     deleted = sc.invalidate_prefix("prefix_a:")
     assert deleted >= 2
+
+    # 清除 L1 内存缓存（invalidate_prefix 仅清理 SQLite，L1 需手动清除）
+    sc._L1_CACHE.clear()
+
     assert sc.get_cache("prefix_a", "f1") is None
     assert sc.get_cache("other", "f3") == {"v": 3}
 

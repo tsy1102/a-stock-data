@@ -173,9 +173,13 @@ def clean_codes(raw_list, verbose=False):
     seen = set()
     clean = []
     skipped = []
+    flag_warnings = []
     for raw in raw_list:
         if not raw or not isinstance(raw, str):
             continue
+        # V11.2: 检测命令行参数粘连（如 "601718际华--all"）
+        if "--" in raw and not raw.strip().startswith("--"):
+            flag_warnings.append(raw)
         code = "".join(c for c in raw if c.isdigit())[:6]
         if len(code) < 6:
             skipped.append(raw)
@@ -185,6 +189,10 @@ def clean_codes(raw_list, verbose=False):
             continue
         seen.add(code)
         clean.append(code)
+
+    if verbose and flag_warnings:
+        print(f"  ⚠️ 警告: 以下参数可能含命令行flag粘连（请检查空格）: "
+              f"{', '.join(flag_warnings[:5])}", flush=True)
 
     if verbose and skipped:
         print(f"  🧹 代码清洗: 保留 {len(clean)} 个, 跳过 {len(skipped)} 个 "

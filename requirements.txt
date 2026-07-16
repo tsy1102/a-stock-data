@@ -38,4 +38,5 @@ chinese-calendar>=1.11
 
 # ── 单元测试（可选，仅开发环境使用）───────────────────────────
 # 开发环境安装: pip install -r requirements-dev.txt
-# pytest>=7.0
+pytest>=7.0
+pytest-asyncio>=0.20

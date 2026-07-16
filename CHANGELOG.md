@@ -5,6 +5,362 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [11.5] - 2026-07-16
+
+### Added — Data Provider 统一数据层正式启用
+
+历时多个版本规划，data_provider.py 统一数据中心层在 V11.5 正式全面激活，六大报告脚本全部完成迁移。
+
+### 核心架构
+
+**字段时效性三级分级模型**：
+- **实时层**（price, change_pct, amount, turnover_pct）：强制走API，盘前/盘后 fallback ZHB
+- **准实时层**（main_net_buy, streak_days）：ZHB优先（T-1可接受），fallback TDX
+- **静态层**（pe_ttm, pb, dividend_yield, 52w_range, change_ytd, totals, industry）：ZHB优先，3天延迟可接受
+
+**交易状态感知**：盘前(<9:30)用上一交易日收盘数据，盘中强制API，盘后用ZHB
+
+**缓存策略**：
+- 实时字段：60秒短TTL + 交易日模式
+- 准实时/静态字段：24小时TTL + 交易日模式
+- 全函数 async 版本支持，`asyncio.to_thread` 模式
+
+### 各脚本迁移情况
+
+1. **val脚本（选股报告）**：
+   - 初始化阶段：全市场数据获取改为 `get_market_snapshot_async()`
+   - 6个策略改为async：策略01/04/08/10/14/20
+   - 策略执行器自动识别async/同步函数，智能调度
+   - K线类、龙虎榜、股东数据等保持原路径
+
+2. **ful脚本（深度报告）**：
+   - layer1_market / layer2_research / layer_ind_industry 改为async，优先data_provider
+   - layer6_fundamental / layer_risk 改为async，优先data_provider
+   - 行业对比层用 `asyncio.gather` 并发获取同行数据（替代ThreadPoolExecutor）
+   - analyze_stock主函数重构为async并发执行架构
+
+3. **sht脚本（短线报告）**：
+   - generate_report_async 新增 `get_stock_composite_async` 统一入口
+   - _zhb_data / q / 主力资金 / 连涨天数 均优先从composite提取
+   - 缺失字段自动fallback到原数据源
+
+4. **med脚本（中线报告）**：
+   - generate_report_async 优先data_provider综合数据
+   - get_stock_sector_rank 改为async，涨跌幅从data_provider获取
+   - GD上传名称获取优化
+
+5. **lng脚本（长线报告）**：
+   - generate_report_async 新增 `get_stock_composite_async` 统一入口
+   - 腾讯行情/zhb重叠字段/估值指标/股息率展示 均优先data_provider
+   - zhb独有字段（change_5d/10d/20d/60d等）保持原路径
+
+6. **mak脚本（做市商报告）**：
+   - get_market_abnormal_data 改为async，全市场快照用data_provider
+   - get_ths_hot_pool 改为async，批量行情用data_provider
+   - generate_sector_report 改为async并发架构
+
+### Changed — data_provider.py 功能增强
+
+1. **新增5个字段函数**：get_turnover_pct, get_totals, get_market_cap, get_industry, get_streak_days
+2. **全函数缓存装饰器**：12个核心函数全部添加 @cached 装饰器
+3. **12个async版本函数**：所有主要函数都有 `_async` 后缀版本
+4. **交易状态感知**：盘前/盘中/盘后自动选择最优数据源
+5. **get_stock_composite优化**：ZHB全量预取 + 实时字段补全，减少重复调用
+6. **get_field_value通用接口**：支持动态字段名查询
+
+### Fixed
+
+1. data_provider.py 从死代码状态激活，六大报告脚本全部迁移
+2. 各脚本数据获取统一入口，消除重复代码和不一致性
+
+## [11.4] - 2026-07-16
+
+### Fixed — 死代码清理与缓存逻辑修复
+
+1. **data_provider.py死代码清理**：6个报告脚本（sht/val/med/lng/mak/ful）共47处`from data_provider import (...)`导入语句全部删除——导入的函数（get_stock_price/get_pe_ttm/get_pb等11个）从未被实际调用，脚本通过tdx_get_quote_full/get_tencent_quote/get_zhb_single_stock_data等底层函数直接获取数据
+2. **TTL重复键修复**：stock_cache.py中`hsgt_flow`出现两次（第211行14天/第233行24小时），后者覆盖前者。将第233行重命名为`hsgt_macro_flow`，同步更新sc_datasource.py中`get_hsgt_macro_flow`的category引用
+3. **med报告静默异常修复**：3处`except: pass`改为`except as _e: _debug_log(...)`，避免隐藏潜在问题（资产负债表预警计算/EPS行解析/黑马潜质检测）
+
+### Added — 财联社快讯与舆情互动层集成
+
+按project_memory硬约束要求，在4个报告脚本中集成财联社快讯和互动易问答，并实现时间阈值过滤：
+
+1. **sht报告**：在"短线情绪与事件催化"章节新增财联社快讯（近420分钟=7小时，最多10条）和互动易问答（近24小时，最多5条）
+2. **med报告**：新增"十七、舆情与互动"章节，包含财联社快讯（近3天，最多10条）和互动易问答（近7小时，最多5条）
+3. **lng报告**：新增"十、舆情与互动"章节，包含财联社快讯（近2天，最多10条）和互动易问答（近30天，最多10条）
+4. **ful报告**：在layer5_news函数中新增财联社快讯（近3天，最多15条）和互动易问答（近15天，最多10条），并在渲染层添加显示逻辑
+
+### Changed — tests目录全面重写
+
+1. **删除21个废弃文件**：17个diag_*.py诊断脚本、diagnose_tdx.py、test_reports.py（与test_strategy.py完全重复）、README.txt（旧版文档）、test_em_rate_limit.py（非pytest格式）
+2. **更新3个测试文件**：
+   - test_cache_verify.py：重写7个测试方法匹配V10.0的cross_verify新逻辑
+   - test_cache.py：增加L1内存缓存清理（V10.3新增L1/L2双级架构）
+   - test_f10_chapters_integration.py：为med/lng报告新增舆情与互动章节断言
+3. **重写README.md**：反映实际文件状态，删除错误声明
+
+## [11.3] - 2026-07-16
+
+### Fixed — 缓存层T-1数据混入修复
+
+通过7/15 vs 7/16报告对比发现，4个缓存分类在跨日运行时携带T-1数据混入T0报告：
+
+1. **industry_compare改为交易日模式**：`get_industry_comparison` 添加 `trading_day=True`，板块排名数据在交易日15:00自动过期，避免昨日板块排名混入今日报告
+2. **industry_peers改为交易日模式**：`get_industry_peers` 和 `get_stock_sector_rank` 添加 `trading_day=True`，同业对比和板块内排名在交易日15:00过期
+3. **ths_hot_reason改为交易日模式**：`ths_hot_list` 添加 `trading_day=True`，热点题材在交易日15:00过期
+4. **北向资金批量缓存修复**：
+   - `get_hsgt_macro_flow` 添加 `@cached(trading_day=True)` 交易日模式缓存
+   - `get_hsgt_macro_flow_async` 改为委托到同步缓存版本（`asyncio.to_thread`）
+   - sht批量模式移除预取共享机制（`_cached_hsgt_async`），改为每只股票独立调用，由缓存层保证仅1次API请求
+   - 修复前：35只股票共享同一份北向资金数据（可能为T-1）；修复后：第一只股票触发API写入缓存，后续股票读缓存，每个交易日15:00自动刷新
+
+### Verified — ZHB数据绝对验证
+
+- 用户手动解压zhb_20260714.zip和zhb_20260715.zip，用贵州茅台(600519)与新浪/东财真实收盘数据交叉验证：
+  - 7/14 涨跌幅0.32%、成交额52.95亿 → 精确吻合
+  - 7/15 涨跌幅2.98%、成交额89.23亿 → 精确吻合
+- 确认ZHB包名日期100%代表当天盘后真实数据，是T-1日绝对快照
+
+## [11.2] - 2026-07-16
+
+### Fixed — 命令行参数粘连检测
+
+- **clean_codes增加flag粘连警告**：当股票代码参数中包含`--`时（如`601718际华--all`缺少空格），打印警告提示用户检查命令行格式，避免`--all`参数被误解析为股票代码
+
+### Changed — ZHB混合分层架构
+
+- **val脚本全市场数据加载升级为混合分层模式**：
+  - [API实时层] 覆盖 price/change_pct/amount/pe_ttm/turnover_pct 五个动态字段
+  - [ZHB静态层] 保留 high_52w/low_52w/pb/dividend_yield/ipo_price/industry_code 等慢变字段
+  - 新增数据来源分层日志，运行时清晰展示各字段数据来源
+- **策略19 reason标注实时来源**：price和pe_ttm标注"(实时)"，52周区间标注"(T-1)"
+
+### Added — ZHB字段真实性验证脚本
+
+- **新增 verify_zhb_fields.py**：独立验证脚本，包含两部分验证
+  - Part A 跨日Delta验证：用3天ZHB缓存数据检查7类字段的跨日逻辑一致性（change_pct/streak_days/change_Nd/main_net_buy滚动/52w单调性）
+  - Part B 外部数据校验：随机抽样50只股票，用TDX K线和腾讯行情对比ZHB字段绝对值（pe_ttm/high_52w/low_52w/streak_days/change_5d/change_20d/change_ytd/amount）
+  - Delta验证结果：14项全部PASS，字段映射逻辑一致性100%
+
+## [11.1] - 2026-07-16
+
+### Fixed — ZHB数据时效性问题修复
+
+1. **全市场成交额实时覆盖**：val脚本加载全市场数据时，用腾讯实时行情的`amount_wan`覆盖ZHB的T-1成交额，确保流动性排序和策略计算使用当日数据
+2. **流动性池实时排序**：`top_liquidity_pool`基于实时成交额重新排序，避免使用昨日成交额导致今日放量股被遗漏
+3. **策略19 52周低位标注T-1数据**：在reason中明确标注52周区间基于T-1数据，使用户有明确预期
+4. **策略20 主力资金增加TDX实时fallback**：ZHB数据不可用或不新鲜时，自动切换到TDX实时资金流，reason中显示数据来源（ZHB(T-1)/TDX实时）
+5. **腾讯批量行情增加amount_wan字段**：`_tencent_batch_fallback`返回值新增`amount_wan`，为全市场实时成交额覆盖提供数据支撑
+
+## [11.0] - 2026-07-16
+
+### Added — 阶段三.4：六大报告脚本迁移到 Data Provider
+
+- **所有报告脚本统一导入 Data Provider 模块**：
+  - [get_sht_report.py](file:///d:/GitHub/test/get_sht_report.py#L62-L65)
+  - [get_val_report.py](file:///d:/GitHub/test/get_val_report.py#L64-L67)
+  - [get_med_report.py](file:///d:/GitHub/test/get_med_report.py#L60-L62)
+  - [get_lng_report.py](file:///d:/GitHub/test/get_lng_report.py#L54-L56)
+  - [get_mak_report.py](file:///d:/GitHub/test/get_mak_report.py#L38-L40)
+  - [get_ful_report.py](file:///d:/GitHub/test/get_ful_report.py#L72-L75)
+
+- **Data Provider 统一数据层正式启用**：
+  - 实时字段（价格、涨跌幅）→ 强制走 API
+  - 准实时字段（主力资金流向）→ 优先 ZHB，失败 fallback 到 API
+  - 静态字段（PE/PB/股息率/52周高低）→ ZHB 优先
+
+### Changed — val 脚本选股池扩大
+
+- **策略19/20 扩大到全市场扫描**：从 top_n=300 改为全市场 all_stocks
+- **每策略显示股票数**：从 5 只增加到 10 只（`_top5_sorted` 返回 `[:10]`）
+
+### Fixed — 9个Bug修复
+
+1. **sht 报告主力资金占比 bug**：`amount_wan` 变量未定义 → 改为 `q.get('amount_wan', 0)`
+2. **val 脚本 banner 策略数错误**：`"策略: 18"` → `"策略: 20"`
+3. **val 脚本 `_sfmt` 字典缺失**：添加策略19/20格式化项
+4. **val 策略20无 zhb_fresh 检查**：添加 `if not is_zhb_data_fresh(): return result`
+5. **lng 脚本 `_zhb_date` 变量作用域**：提前初始化 `_zhb_date = ""`
+6. **ful 脚本重复调用 `get_zhb_single_stock_data`**：复用已有的 `_zhb_data`
+7. **ful 脚本股息率 fallback**：逻辑正确，无需修改
+8. **data_provider.py 死代码问题**：添加状态注释，标记 V11.0 正式启用
+9. **策略19/20 参数签名**：移除 `top_n` 参数，直接遍历 `stocks`
+
+## [10.3] - 2026-07-16
+
+### Added — 阶段二：六大报告脚本新增ZHB分析维度
+
+**sht报告（短线）**：
+- 新增主力资金流向展示（净流入额/净买入量，对比T-1日）
+- 新增连涨连跌天数分析（zhb独有字段）
+- 资金流向与涨幅联动分析
+
+**val报告（估值）**：
+- 新增策略19（52周低位筛选）：位置百分位<30%且PE<50x
+- 新增策略20（主力资金占比）：主力净流入占成交额>3%
+- 优化策略并行逻辑（ThreadPoolExecutor，20策略并行扫描）
+- 策略扫描范围扩大至500-1000只
+
+**med报告（中线）**：
+- 新增IPO破发度分析（现价/发行价，低于发行价标记破发）
+- 新增中线动能对比（5日/10日/20日阶段涨幅）
+- 股息率优先使用zhb数据
+
+**lng报告（长线）**：
+- 新增EPS（每股收益）展示（zhb独有字段）
+- 新增员工总数及人效比分析（市值/员工数）
+- 年初至今涨幅优先使用zhb数据
+
+**mak报告（市场热点）**：
+- 新增全市场主力资金监控（总净流入额）
+- 通过zhb全市场快照计算主力资金总量
+- 资金流向与市场涨跌联动分析
+
+**ful报告（完整）**：
+- 整合所有新字段：主力资金流向、52周位置、IPO破发度、EPS、员工数
+- 统一数据获取逻辑，优先zhb数据
+
+### Added — 阶段三.1：统一数据中心层（Data Provider）
+
+- **创建 data_provider.py**：统一数据源路由层
+- **字段时效性分级路由**：
+  - 实时字段（0天延迟）→ 优先API（腾讯行情等）
+  - 准实时字段（1天延迟）→ 优先ZHB，失败fallback到API
+  - 静态字段（3天延迟）→ ZHB优先
+- **聚合接口**：`get_stock_composite(code)` 一次调用获取完整股票数据
+- **主力资金流向专用接口**：`get_main_net_buy(code)`、`get_main_net_buy_amount(code)`
+- **52周数据接口**：`get_52week_range(code)`
+- **IPO数据接口**：`get_ipo_info(code)`
+
+### Added — 阶段三.2：缓存模块L1/L2双级架构
+
+- **L1内存缓存**：进程内字典存储，支持TTL自动过期，最大5000条目
+- **L2 SQLite缓存**：跨进程/跨运行持久化（原有架构）
+- **双级查询策略**：优先L1 → L2命中后回写L1 → 首次请求写入双级
+- **线程安全**：L1使用threading.Lock保护
+- **命中率提升**：同脚本运行期内重复请求零I/O，大幅减少SQLite读写
+
+### Added — 阶段三.3：ZHB自动化入库管道
+
+- **创建 zhb_sync.py**：完整的定时同步工具
+- **定时模式**：支持cron表达式（如"0 9,18 * * *"）和间隔模式（如每6小时）
+- **智能下载**：仅在数据日期更新时下载，避免无效请求
+- **数据校验**：校验zip完整性、字段数量、数据日期合理性
+- **状态追踪**：记录最后成功同步时间、连续失败次数、总同步次数
+- **清理策略**：保留最近7天数据，自动清理过期文件
+- **命令行接口**：`--once`（单次同步）、`--cron`（定时任务）、`--interval`（间隔任务）、`--status`（查看状态）
+
+### Changed — 数据获取优先级优化
+
+- 所有脚本优先使用ZHB数据，原有HTTP/TDX路径降为fallback
+- 实时字段（如当日开盘/收盘价、涨幅）强制使用API获取，确保准确性
+- 准实时字段（资金流向）优先ZHB，过期时自动fallback
+
+### Fixed — 遗留问题修复
+
+- 修复val脚本导入错误（get_data_date未定义）
+- 修复"休市日"标签错误（非交易日标记问题）
+
+## [10.2] - 2026-07-16
+
+### Fixed — 缓存命中率修复（核心）
+
+- **修复 cross_verify 读写互斥BUG**（影响14个分类：concept_blocks/lockup_expiry/basic_info/financial/balance_sheet/cash_flow/gross_margin_roe/eps_forecast/dividend/f10_financial/f10_shareholder/f10_share_capital/holder_structure/sina_financial_report）：
+  - 症结：`set_cache` 数据变化分支写入 `prev_value=旧值, value=新值, verified=1`，但 `get_cache` 检查 `prev_value != value` 时直接删除缓存返回 None → 数据源发生过一次变化后缓存永久失效
+  - 修复：删除 `get_cache` 中 `prev_value != value` 的误删检查，`prev_value` 仅用于数据变更追踪，不影响缓存命中
+- **修复 `_has_zero_price` 递归误杀**（影响 dragon_tiger/industry_compare/f10_fund_flow 等）：
+  - 症结：原递归检查整个 dict/list 的所有子层级，嵌套结构中任一子项 `price=0`（如龙虎榜未成交席位、板块列表中无成交板块）就跳过整条缓存
+  - 修复：改为仅检查顶层 dict 的 `price`/`close` 字段，不递归子层级
+- **修复 `today_str` 污染缓存 key**（影响 lockup_expiry/dragon_tiger）：
+  - 症结：`get_lockup_expiry(code, today_str, days=90)` 和 `get_dragon_tiger_board(code, today_str, days=30)` 的参数 `today_str` 被 `_build_key` 拼入 key，每天 key 不同 → 90天/7天TTL完全失效，每天每只股票都重新请求
+  - 修复：移除 `today_str` 参数（改为函数内部 `datetime.now().strftime("%Y-%m-%d")` 自动计算），同步更新7个调用点 + 1个测试文件
+- **放宽 `valid_if` 校验**（影响 industry_peers/basic_info/f10_fund_flow/f10_news/f10_reminders/f10_announcements/f10_financial/f10_shareholder/f10_share_capital）：
+  - `industry_peers`：`all(p.price>0)` 改为 `any(p.price>0)`，避免单个 peer 停牌导致整条缓存拒写
+  - `basic_info`：`list_date` 校验改为 `code` 校验，避免 TDX 偶尔返回空 list_date 时整条拒写
+  - F10 系列：`valid_if=bool(r)` 改为 `valid_if=lambda r: r is not None`，避免空 dict/list 被拒写
+
+### Fixed — zhb数据滞后优先级分级
+
+- **新增 `zhb_field_safe(field_name)` 函数**：按字段时效性分级判断 zhb 数据是否安全可用
+  - 实时字段（change_pct/amount/price 等）：zhb 日期必须是今天（`max_delay_days=0`）
+  - 阶段/静态字段（pe_ttm/high_52w/dividend_yield 等）：3天延迟可接受
+- **mak 脚本 zhb 优先级修复**：`change_pct` 是实时字段，`get_market_abnormal_data()` 改为 `if zhb_field_safe("change_pct")` 才用 zhb，否则 fallback 到 TDX（避免滞后涨跌幅误判涨停/跌停）
+- **val 脚本 zhb 实时字段覆盖**：用 `tdx_get_quotes_batch` 返回的实时 `change_pct` 覆盖 zhb 的滞后值（避免涨停/跌停数量统计错误）
+- **sht/med/lng 脚本 zhb 数据日期标注**：zhb 数据不新鲜时在报告头部标注 `ℹ️ zhb数据日期: YYYYMMDD（延迟，阶段涨幅/52周高低等数据可能有1-2天滞后）`
+
+### Fixed — 其他BUG
+
+- **修复 val 脚本 ImportError**：`full_market_snapshot` 不存在于 `stock_common.__init__` 导出，改为 `get_zhb_full_market_snapshot`
+- **修复"休市日"标签错误**：`get_market_status()` 交易日16:30后从 `closed` 改为新增状态 `post_close`，避免盘后运行脚本时错误显示"休市日"
+  - sht/med/lng/ful 四个脚本同步更新 `post_close` 分支，显示"ℹ️ 盘后收盘：数据为今日收盘快照"
+
+### Changed
+
+- **`get_lockup_expiry` / `get_dragon_tiger_board` 函数签名变更**：移除 `today_str` 参数，调用方无需传递日期字符串（向后不兼容，调用方需更新）
+
+## [10.1] - 2026-07-15
+
+### Added
+
+- **zhb字段映射重大修正**（基于injoyai/tdx开源仓库源码验证）：
+  - tdxstat字段映射：`change_pct` 从[2]修正为[6]，新增 `streak_days`[5]（连涨连跌天数）、`change_pct_1d`[7]（昨日涨跌幅）、`change_pct_2d`[8]（前日涨跌幅）
+  - 新增确认字段：`dividend_yield`[10]（股息率）、`employee_count`[15]（员工人数）、`change_5d`[28]、`change_10d`[30]、`change_ytd`[21]（年初至今涨跌幅）
+  - tdxstat2字段映射：`amount` 修正为[3]（今日成交额，万元），新增 `amount_1d`[5]、`amount_2d`[7]、`ipo_price`[16]（IPO发行价）
+  - 新增 `full_market_snapshot`（tdxstat+tdxstat2合并）、`market_stat2_snapshot` 等批量接口
+  - 新增便捷函数：`get_dividend_yield`、`get_streak_days`、`get_change_ytd`、`get_ipo_price`、`get_amount_wan`、`get_amount_1d`
+- **全局股本缓存层**（V10.1新增）：
+  - 新增 `stock_common/sc_capital_cache.py` 模块，提供总股本/流通股全局缓存
+  - 全局JSON文件缓存（`cache/share_capital.json`），90天TTL，被动累积式构建
+  - 市值内存计算：`calc_mcap_yi` = 收盘价 × 总股本 / 10000，零网络请求
+  - 支持 `batch_refresh_capital` 批量刷新缺失股本数据
+- **缓存分类扩展**：
+  - 新增 `share_capital` 分类（90天TTL），用于存储股本数据
+  - 新增 `basic_info_static` 分类（90天TTL），预留静态基本信息缓存
+- **stock_common导出更新**：`__all__` 列表和 `from sc_datasource import` 块新增11个V10.1函数导出
+
+### Changed
+
+- **val脚本全策略切换到zhb数据**：
+  - 使用 `full_market_snapshot` 替代 `tdx_get_all_stocks` 加载全市场数据
+  - 全市场数据加载从 ~7.7秒 降至 <0.1秒，零HTTP请求
+  - 通过 `tdx_get_quotes_batch` 批量获取收盘价，结合全局股本缓存计算市值
+  - 修复名称补充逻辑，同步更新 `_stock_map` 中的股票名称
+  - 流动性池从Top300扩大到Top500，策略扫描范围扩大（200-300→500-1000）
+- **mak脚本全量切换zhb数据**：
+  - 优先使用zhb全市场快照，失败时自动回退到TDX MAC协议
+  - 新增 `_get_zhb_market_data` 函数，从zhb构建异动扫描数据结构
+  - 新增 `_calc_3d_from_daily` 函数，从T/T-1/T-2日涨跌幅复利推算3日累计涨跌幅
+  - 全市场数据加载时间显著缩短，减少TDX服务器压力
+- **sht脚本zhb优先改造**：
+  - 行业归属：zhb `industry_code` 优先，`get_stock_info` 返回N/A时用zhb补充
+  - 股息率：zhb `dividend_yield` 优先，无zhb时fallback到 `get_dividend_history`
+  - 阶段涨幅、52周区间：zhb独有指标直接展示，不再需要K线计算
+- **med脚本zhb优先改造**：
+  - PE估值：zhb `pe_ttm/pe_dynamic` 优先，无zhb时fallback到腾讯行情
+  - 股息率：zhb `dividend_yield` 优先展示，详细分红记录仍用 `get_dividend_history`
+  - 行业归属：zhb优先，减少TDX `tdx_get_belong_boards` 请求
+  - 阶段涨幅（5/10/20/30/60日）、52周区间：zhb独有指标直接展示
+- **lng脚本zhb优先改造**：
+  - PE/PB估值：zhb `pe_ttm/pe_dynamic/pb` 优先，无zhb时fallback到腾讯行情
+  - 历史最高价：zhb `high_52w` 优先，无zhb时fallback到 `get_historical_high`
+  - 股息率：zhb `dividend_yield` 优先展示，详细分红记录仍用 `get_dividend_history`
+  - 行业归属：zhb优先
+  - 阶段涨幅、52周区间、YTD收益率、员工人数：zhb独有指标直接展示
+- **ful脚本zhb优先改造**：
+  - Layer1行情层：PE/PB估值zhb优先覆盖 `result["basic"]`，无zhb时使用TDX行情
+  - 52周高低、阶段涨跌幅（20日/60日）：zhb优先，无zhb时fallback到K线计算
+  - 股息率：zhb `dividend_yield` 优先，无zhb时fallback到 `tdx_get_dividend_history` 计算
+  - zhb独有指标（成交额、员工人数、IPO发行价、YTD、5/10/30日涨跌幅）直接写入 `result["basic"]["zhb"]`
+- **缓存策略优化**：
+  - `basic_info` TTL从30天调整为1天（修复市值/价格等动态字段缓存过期问题）
+  - 静态股本数据通过 `share_capital` 分类单独缓存（90天TTL），与动态数据分离
+
+### Fixed
+
+- **zhb字段映射错误**：修正tdxstat中 `change_pct` 字段位置错误（[2]→[6]），以及tdxstat2中 `amount` 字段位置错误
+- **市值全为0问题**：新增全局股本缓存层，通过收盘价×总股本实时计算市值，解决zhb数据源缺失市值字段的问题
+- **多策略共振无名称问题**：修复名称补充逻辑，补充名称时同步更新 `_stock_map`，确保共振部分能正确显示股票名称
+
 ## [10.0] - 2026-07-14
 
 ### Added

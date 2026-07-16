@@ -36,23 +36,29 @@ from tdx_client import (tdx_get_quote_full,
                          tdx_get_board_by_name,
                          cleanup_tdx)
 
+import data_provider
+
 from stock_common import (clean_codes, _safe_float, _debug_log,
-                           get_holder_structure,
-                           _load_strategy_config,
-                           create_async_session,
-                           get_dragon_tiger_board_async,
-                           holder_change_async, get_strategic_announcements_async,
-                           parse_args, get_tencent_quote, baidu_kline_full,
-                           get_dividend_history, get_industry_comparison,
-                           get_stock_info,
-                           get_eps_forecast_async, get_reports_async,
-                           get_northbound_hold_async, get_margin_trading_async,
-                           get_block_trade_async, get_lockup_expiry_async,
-                           get_gross_margin_and_roe_async, get_industry_peers,
-                           get_sina_financial_report_async, get_sina_balance_sheet_async,
-                           get_hsgt_macro_flow_async,
-                           is_trading_day, get_market_status,
-                           calculate_multi_school_scores)
+                          get_holder_structure,
+                          _load_strategy_config,
+                          create_async_session,
+                          get_dragon_tiger_board_async,
+                          holder_change_async, get_strategic_announcements_async,
+                          parse_args, get_tencent_quote, baidu_kline_full,
+                          get_dividend_history, get_industry_comparison,
+                          get_stock_info,
+                          get_eps_forecast_async, get_reports_async,
+                          get_northbound_hold_async, get_margin_trading_async,
+                          get_block_trade_async, get_lockup_expiry_async,
+                          get_gross_margin_and_roe_async, get_industry_peers,
+                          get_sina_financial_report_async, get_sina_balance_sheet_async,
+                          get_hsgt_macro_flow_async,
+                          is_trading_day, get_market_status,
+                          calculate_multi_school_scores,
+                          get_zhb_single_stock_data, is_zhb_data_fresh,
+                          get_zhb_industry_map, get_zhb_dividend_yield,
+                          get_zhb_data_date, get_zhb_ipo_price,
+                          cls_telegraph, cninfo_irm)  # V10.3
 
 _SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 
@@ -88,8 +94,10 @@ async def get_holder_change_async(session, code):
     return await holder_change_async(session, code)
 
 
-def get_stock_sector_rank(code, info=None):
-    """V4: 板块内排名 — TDX 优先，不可用时回退 board_by_name"""
+async def get_stock_sector_rank_async(code, info=None):
+    """V4: 板块内排名 — TDX 优先，不可用时回退 board_by_name
+    V11.5: 涨跌幅数据优先使用 data_provider
+    """
     boards = tdx_get_belong_boards(code)
     industry_boards = boards.get("industry", []) if boards else []
     if industry_boards:
@@ -99,8 +107,13 @@ def get_stock_sector_rank(code, info=None):
             members_by_chg = sorted(members, key=lambda x: x.get("change_pct", 0), reverse=True)
             for i, m in enumerate(members_by_chg, 1):
                 if m["code"] == code:
-                    q = tdx_get_quote_full(code)
-                    my_chg = q.get("change_pct", m["change_pct"])
+                    my_chg = m["change_pct"]
+                    try:
+                        _dp_chg = await data_provider.get_change_pct_async(code)
+                        if _dp_chg is not None:
+                            my_chg = _dp_chg
+                    except Exception as _e:
+                        _debug_log(f"med sector_rank get_change_pct_async error: {_e}")
                     return {"rank": i, "total": len(members), "change_pct": my_chg}
     ind_name = (industry_boards[0].get("name","") if industry_boards else "") or (info.get("industry","") if info else "")
     if ind_name:
@@ -109,8 +122,13 @@ def get_stock_sector_rank(code, info=None):
             st_sorted = sorted(st, key=lambda x: x["change_pct"], reverse=True)
             for i, s in enumerate(st_sorted, 1):
                 if s["code"] == code:
-                    q = tdx_get_quote_full(code)
-                    my_chg = q.get("change_pct", s["change_pct"])
+                    my_chg = s["change_pct"]
+                    try:
+                        _dp_chg = await data_provider.get_change_pct_async(code)
+                        if _dp_chg is not None:
+                            my_chg = _dp_chg
+                    except Exception as _e:
+                        _debug_log(f"med sector_rank get_change_pct_async error: {_e}")
                     return {"rank": i, "total": len(st), "change_pct": my_chg}
     return None
 
@@ -152,6 +170,8 @@ async def generate_report_async(session, code, output_path, ind_comp=None, hsgt=
         note = "⚠️ 午休时段（11:30-13:00）：行情暂停但基本面数据正常"
     elif _mkt_status == "post_market":
         note = "⚠️ 盘后结算时段：部分数据（龙虎榜约16:30后）尚在更新中"
+    elif _mkt_status == "post_close":
+        note = "ℹ️ 盘后收盘：数据为今日收盘快照，龙虎榜/融资融券为今日已发布数据"
     else:
         note = ""
     if note:
@@ -174,18 +194,112 @@ async def generate_report_async(session, code, output_path, ind_comp=None, hsgt=
     # ─── 1. 基本信息与实时估值 ───
     L("\n【二、个股基本信息与估值锚点】")
     L("─" * 72)
+    # V10.1: zhb优先获取估值、阶段涨幅、52周高低、股息率，原有路径降为fallback
+    # V10.2: zhb数据日期标注（延迟时提示用户）
+    # V11.5: 优先使用 data_provider.get_stock_composite_async 统一入口
+    _zhb_data = None
+    if is_zhb_data_fresh():
+        _zhb_data = get_zhb_single_stock_data(code)
+    else:
+        _zhb_date = get_zhb_data_date() or ""
+        if _zhb_date:
+            L(f"  ℹ️ zhb数据日期: {_zhb_date}（延迟，阶段涨幅/52周高低等数据可能有1-2天滞后）")
+
     info = get_stock_info(code)
-    q = get_tencent_quote(code)
+    
+    # 使用 data_provider 统一获取行情数据（优先ZHB，失败fallback到腾讯/通达信）
+    _composite = None
+    try:
+        _composite = await data_provider.get_stock_composite_async(code)
+    except Exception as _e:
+        _debug_log(f"med get_stock_composite_async error ({code}): {_e}")
+    
+    # 构建兼容的 q 对象，保持下游代码不变
+    q = {}
+    _tencent_q = None
+    if _composite:
+        q["price"] = _composite.get("price", 0) or 0
+        q["change_pct"] = _composite.get("change_pct", 0) or 0
+        q["pe_ttm"] = _composite.get("pe_ttm", 0) or 0
+        q["pb"] = _composite.get("pb", 0) or 0
+        q["mcap_yi"] = _composite.get("mcap_yi", 0) or 0
+        q["turnover_pct"] = _composite.get("turnover_pct", 0) or 0
+        q["amount"] = (_composite.get("amount_wan", 0) or 0) * 10000
+    else:
+        _tencent_q = get_tencent_quote(code)
+        if _tencent_q:
+            q = _tencent_q
+    
     price_today = q.get("price", 0) if q else 0
+    
+    # 盘前标记仍从腾讯行情获取（composite未提供此字段）
+    if not q.get("_is_pre_market") and _tencent_q:
+        q["_is_pre_market"] = _tencent_q.get("_is_pre_market", False)
+    elif not q.get("_is_pre_market"):
+        try:
+            _tencent_q2 = get_tencent_quote(code)
+            if _tencent_q2:
+                q["_is_pre_market"] = _tencent_q2.get("_is_pre_market", False)
+                q["pe_static"] = _tencent_q2.get("pe_static", 0)
+        except Exception as _e:
+            _debug_log(f"med tencent_fallback error ({code}): {_e}")
 
     L(f"  股票名称: {info.get('name', 'N/A')} ({info.get('code', code)})")
-    L(f"  所属板块: {info.get('industry', 'N/A')}")
+
+    # 行业归属：zhb优先，info返回N/A时用zhb补充
+    _industry = info.get('industry', 'N/A')
+    if _industry == 'N/A' and _zhb_data:
+        _zhb_ind_code = _zhb_data.get("industry_code", "")
+        if _zhb_ind_code:
+            _zhb_industry_map = get_zhb_industry_map()
+            _zhb_ind_name = _zhb_industry_map.get(_zhb_ind_code, "")
+            if _zhb_ind_name:
+                _industry = _zhb_ind_name
+                info["industry"] = _zhb_ind_name
+    L(f"  所属板块: {_industry}")
+
     list_date_raw = info.get("list_date", "")
     if list_date_raw and len(list_date_raw) >= 8:
         list_date_fmt = f"{list_date_raw[:4]}-{list_date_raw[4:6]}-{list_date_raw[6:8]}"
     else:
         list_date_fmt = list_date_raw
     L(f"  上市日期: {list_date_fmt}")
+
+    # 阶段涨幅、52周区间（zhb独有，直接展示）
+    if _zhb_data:
+        _zhb_change_5d = _zhb_data.get("change_5d", 0)
+        _zhb_change_10d = _zhb_data.get("change_10d", 0)
+        _zhb_change_20d = _zhb_data.get("change_20d", 0)
+        _zhb_change_30d = _zhb_data.get("change_30d", 0)
+        _zhb_change_60d = _zhb_data.get("change_60d", 0)
+        if _zhb_change_5d or _zhb_change_10d or _zhb_change_20d or _zhb_change_30d or _zhb_change_60d:
+            L(f"  [阶段涨幅] 近5日: {_zhb_change_5d:+.2f}% | 近10日: {_zhb_change_10d:+.2f}% | 近20日: {_zhb_change_20d:+.2f}% | 近30日: {_zhb_change_30d:+.2f}% | 近60日: {_zhb_change_60d:+.2f}%")
+
+        _zhb_high_52w = _zhb_data.get("high_52w", 0)
+        _zhb_low_52w = _zhb_data.get("low_52w", 0)
+        if _zhb_high_52w > 0 and _zhb_low_52w > 0 and price_today > 0:
+            _zhb_52w_pos = (price_today - _zhb_low_52w) / (_zhb_high_52w - _zhb_low_52w) * 100 if _zhb_high_52w != _zhb_low_52w else 50
+            L(f"  [52周区间] 最高: {_zhb_high_52w:.2f}元 | 最低: {_zhb_low_52w:.2f}元 | 当前位置: {_zhb_52w_pos:.0f}%")
+
+        # V10.3: IPO破发度分析
+        _ipo_price = _zhb_data.get("ipo_price", 0) or get_zhb_ipo_price(code)
+        if _ipo_price and _ipo_price > 0 and price_today > 0:
+            _ipo_pct = (price_today - _ipo_price) / _ipo_price * 100
+            if _ipo_pct < 0:
+                L(f"  [IPO破发度] 发行价: {_ipo_price:.2f}元 | 当前价: {price_today:.2f}元 | 破发幅度: {_ipo_pct:.2f}%")
+                if _ipo_pct < -30:
+                    L(f"  📉 深度破发: 破发幅度超30%，安全边际较高")
+                elif _ipo_pct < -10:
+                    L(f"  ⚠️ 轻度破发: 破发幅度10-30%，关注基本面支撑")
+
+        # V10.3: 中线动能对比（20日 vs 60日）
+        if _zhb_change_20d and _zhb_change_60d:
+            _momentum_diff = _zhb_change_20d - _zhb_change_60d
+            L(f"  [中线动能] 20日涨幅: {_zhb_change_20d:+.2f}% | 60日涨幅: {_zhb_change_60d:+.2f}% | 差值: {_momentum_diff:+.2f}%")
+            if _zhb_change_20d > 0 and _momentum_diff > 5:
+                L(f"  🚀 加速上涨: 短期涨幅显著高于中期，动能增强")
+            elif _zhb_change_20d < 0 and _momentum_diff < -5:
+                L(f"  🛑 减速下跌: 短期跌幅大于中期，动能衰竭")
 
     if ind_comp is None:
         ind_comp = get_industry_comparison()
@@ -198,7 +312,7 @@ async def generate_report_async(session, code, output_path, ind_comp=None, hsgt=
             if stock_ind in row["name"] or row["name"] in stock_ind:
                 L(f"  板块排名: 当日全市场第 {row['rank']} 名 (涨跌幅 {row['change_pct']}%)")
                 try:
-                    _rank_info = get_stock_sector_rank(code, info=info)
+                    _rank_info = await get_stock_sector_rank_async(code, info=info)
                     if _rank_info:
                         L(f"  本股今日{_rank_info['change_pct']:+.2f}%，板块内排名第{_rank_info['rank']}/{_rank_info['total']}名")
                 except Exception as _e:
@@ -228,9 +342,20 @@ async def generate_report_async(session, code, output_path, ind_comp=None, hsgt=
     if q.get("_is_pre_market"):
         L("  ⚠️ 盘前模式（9:30前），以下行情数据基于上一交易日收盘数据")
     L(f"  当前价:   {price_today:.2f}元  (今日涨跌: {q.get('change_pct', 0):.2f}%)")
-    _pe_ttm = q.get('pe_ttm', 0); _pe_static = q.get('pe_static', 0)
-    _pe_s = f"{_pe_static:.2f}x" if _pe_ttm > 0 and _pe_static > 0 else "N/A（亏损）"
+    # PE估值：zhb优先，无zhb时fallback到腾讯行情
+    _zhb_pe_dynamic = _zhb_data.get("pe_dynamic", 0) if _zhb_data else 0
+    _zhb_pe_ttm = _zhb_data.get("pe_ttm", 0) if _zhb_data else 0
+    if _zhb_pe_ttm and _zhb_pe_ttm > 0:
+        _pe_ttm = _zhb_pe_ttm
+        _pe_s = f"{_zhb_pe_dynamic:.2f}x" if _zhb_pe_dynamic > 0 else "N/A（亏损）"
+    else:
+        _pe_ttm = q.get('pe_ttm', 0); _pe_static = q.get('pe_static', 0)
+        _pe_s = f"{_pe_static:.2f}x" if _pe_ttm > 0 and _pe_static > 0 else "N/A（亏损）"
+    # 股息率：zhb优先
+    _zhb_div_yield = _zhb_data.get("dividend_yield", 0) if _zhb_data else 0
+    _div_str = f"  股息率: {_zhb_div_yield:.2f}%" if _zhb_div_yield > 0 else ""
     L(f"  动态市盈率 PE(TTM): {_pe_ttm:.2f}x | 静态PE: {_pe_s} | 市净率 PB: {q.get('pb', 0):.2f}")
+    if _div_str: L(_div_str)
 
     # ─── 2. 财务业绩兑现追踪 ───
     L("\n【三、历史财务业绩兑现追踪 (近5季度)】")
@@ -332,7 +457,7 @@ async def generate_report_async(session, code, output_path, ind_comp=None, hsgt=
                     flags.append(f"⚠️ 营收下滑但应收账款逆势增长{_ar_incr:.2f}亿，回款风险加剧")
                 elif _ar_incr / max(_rev_decr, 1) > 0.3:
                     flags.append(f"⚠️ 应收账款增量占营收增量{_ar_incr/max(_rev_decr,1)*100:.0f}%，营收含金量偏低")
-            except (ValueError, TypeError, ZeroDivisionError, IndexError): pass
+            except (ValueError, TypeError, ZeroDivisionError, IndexError) as _e: _debug_log(f"med bs_flag_calc: {_e}")
         if flags:
             L("")
             for flag in flags: L(f"  {flag}")
@@ -358,7 +483,7 @@ async def generate_report_async(session, code, output_path, ind_comp=None, hsgt=
                 L(f"  {year:<10} {cnt:<10} {mean_v:<12.3f}")
                 if i == 0: eps_cur = mean_v; eps_has_data = True
                 elif i == 1: eps_next = mean_v
-            except (ValueError, TypeError, IndexError): pass
+            except (ValueError, TypeError, IndexError) as _e: _debug_log(f"med eps_row_parse: {_e}")
     if not eps_has_data:
         reports_em = await get_reports_async(session, code, max_pages=1)
         em_eps = None
@@ -445,7 +570,7 @@ async def generate_report_async(session, code, output_path, ind_comp=None, hsgt=
                 p1, p2 = _safe_float(financials[-1]["净利润"]), _safe_float(financials[-2]["净利润"])
                 r1, r2 = _safe_float(financials[-1]["营业总收入"]), _safe_float(financials[-2]["营业总收入"])
                 if p1 > p2 and r1 > r2: has_black_horse = True
-            except (IndexError, KeyError, TypeError): pass
+            except (IndexError, KeyError, TypeError) as _e: _debug_log(f"med black_horse_check: {_e}")
         if has_black_horse:
             L("  ⚡ 无机构覆盖，但近两季度净利润+营收连续环比改善，具备黑马潜质预警！")
         else:
@@ -504,7 +629,7 @@ async def generate_report_async(session, code, output_path, ind_comp=None, hsgt=
         elif latest["change_ratio"] >= 3:
             L("    ⚠️ 结论: 筹码趋于分散，散户增多，注意风险。")
 
-    lockup = await get_lockup_expiry_async(session, code, today_str, days=180)
+    lockup = await get_lockup_expiry_async(session, code, days=180)
     if lockup:
         _cal_evts = [f"{_h['date']} 解禁{_h['ratio']:.1f}%" for _h in lockup if _h.get('ratio', 0) > 0]
         L("\n  ➤ 未来可预期事件:")
@@ -634,7 +759,7 @@ async def generate_report_async(session, code, output_path, ind_comp=None, hsgt=
 
     L("\n【十四、龙虎榜机构动向】")
     L("─" * 72)
-    dtb = await get_dragon_tiger_board_async(session, code, today_str, days=180)
+    dtb = await get_dragon_tiger_board_async(session, code, days=180)
     if dtb and dtb.get("records"):
         L(f"  近180日上榜 {len(dtb['records'])} 次:")
         L(f"  {'日期':<12} {'上榜原因':<50} {'净买入(万)':>9} {'换手率':>6}")
@@ -668,6 +793,10 @@ async def generate_report_async(session, code, output_path, ind_comp=None, hsgt=
     # ─── 9. 高股息防御属性 (分红历史) ───
     L("\n【十五、高股息防御属性 (近十次分红)】")
     L("─" * 72)
+    # 股息率：zhb优先展示
+    _zhb_div_yield = _zhb_data.get("dividend_yield", 0) if _zhb_data else 0
+    if _zhb_div_yield > 0:
+        L(f"  当前股息率: {_zhb_div_yield:.2f}%（zhb数据）")
     div = get_dividend_history(code)
     if div and len(div) >= 3:
         _dy = len(set(d["date"][:4] for d in div if d.get("bonus_rmb", 0) > 0))
@@ -730,6 +859,59 @@ async def generate_report_async(session, code, output_path, ind_comp=None, hsgt=
     if _bt_items:
         L("【回测参考】")
         for _bi in _bt_items: L(f"  📊 {_bi}")
+
+    # ─── 十七、舆情与互动 ───
+    L("\n【十七、舆情与互动】")
+
+    # 财联社快讯（近3天）
+    try:
+        cls_news = cls_telegraph(page_size=50)
+        _cls_shown = 0
+        _cls_cutoff = datetime.now() - timedelta(days=3)
+        for item in cls_news:
+            t_str = str(item.get("time", ""))
+            if t_str:
+                try:
+                    pub_dt = datetime.strptime(t_str, "%Y-%m-%d %H:%M:%S")
+                    if pub_dt < _cls_cutoff:
+                        continue
+                except (ValueError, TypeError):
+                    pass
+            title = str(item.get("title", "")).strip()
+            if title:
+                L(f"  · [{t_str[:16]}] {title[:80]}")
+                _cls_shown += 1
+                if _cls_shown >= 10:
+                    break
+        if _cls_shown == 0:
+            L("  近3天暂无财联社快讯")
+    except Exception as _e:
+        _debug_log(f"med cls_telegraph: {_e}")
+
+    # 互动易问答（近7小时）
+    try:
+        irm = cninfo_irm(code, page_size=20)
+        _irm_shown = 0
+        _irm_cutoff = datetime.now() - timedelta(hours=7)
+        for item in irm:
+            t_str = str(item.get("ask_time", ""))
+            if t_str:
+                try:
+                    pub_dt = datetime.strptime(t_str, "%Y-%m-%d %H:%M")
+                    if pub_dt < _irm_cutoff:
+                        continue
+                except (ValueError, TypeError):
+                    pass
+            q = str(item.get("question", "")).strip()[:80]
+            if q:
+                L(f"  · [{t_str[:16]}] 互动: {q}")
+                _irm_shown += 1
+                if _irm_shown >= 5:
+                    break
+        if _irm_shown == 0:
+            L("  近7小时暂无互动易问答")
+    except Exception as _e:
+        _debug_log(f"med cninfo_irm: {_e}")
 
     L("\n"+"─"*72); L("【仓位管理建议】"); L("─"*72)
     
@@ -899,7 +1081,8 @@ if __name__ == "__main__":
             result_path = _r.get("path", os.path.join(args.output, f"{code}_{report_type}_{time_str}.txt"))
             gd_ok = False
             try:
-                q_name = tdx_get_quote_full(code).get("name", "")
+                _stock_info = get_stock_info(code)
+                q_name = _stock_info.get("name", "") if _stock_info else ""
                 if upload_stock_report_by_code(drive, gd_parent_folder_id, code, q_name, result_path):
                     gd_ok = True
             except Exception as gd_e:

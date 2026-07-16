@@ -6,6 +6,11 @@
   - 基于 SQLite 的持久化缓存，支持 TTL 自动过期 + LRU 清理
   - 装饰器模式：@cached / @cached_async，不破坏原函数签名
 
+V10.2 更新：
+  - 修复 cross_verify 读写互斥BUG：get_cache 的 prev_value != value 检查与 set_cache 数据变化分支冲突，导致14个分类缓存永久失效
+  - 修复 _has_zero_price 递归误杀：原递归检查嵌套结构导致龙虎榜/行业对比等含0值子项的有效缓存被跳过，改为仅检查顶层
+  - 修复 today_str 污染缓存key：lockup_expiry/dragon_tiger 函数参数含 today_str 导致跨日key不同，移除该参数改为内部自动计算
+
 V9.3.3 更新：
   - schema 单点维护：定义 _CACHE_TABLE_SQL/_CACHE_INDEX_SQLS/_CACHE_PRAGMAS 常量，消除 _get_db() 和 _get_async_db() 的重复代码
   - 删除 _migrate_verify_columns，prev_value/verified 字段直接定义在主表 SQL 中
@@ -64,6 +69,53 @@ from datetime import datetime, date, time as dtime
 from pathlib import Path
 
 _cache_logger = logging.getLogger("stock_cache")
+
+# ═══════════════════════════════════════
+# L1 内存缓存（V10.3 新增）
+# ═══════════════════════════════════════
+# L1: Memory Cache — 同脚本运行期内零I/O，大幅提升命中率
+# L2: SQLite Cache — 跨进程/跨运行持久化
+#
+# L1 缓存策略：
+#   - 使用字典存储，key为完整cache_key，value为(value, expiry_time)元组
+#   - 支持TTL自动过期，get时检查expiry_time
+#   - 最大条目数限制（防止内存无限增长）
+#   - 线程安全（使用锁）
+#
+
+_L1_CACHE: Dict[str, tuple] = {}  # {cache_key: (value, expiry_timestamp)}
+_L1_CACHE_LOCK = threading.Lock()
+_L1_MAX_ENTRIES = 5000  # L1最大条目数
+
+
+def _l1_get(key: str) -> Optional[Any]:
+    """L1内存缓存读取。"""
+    with _L1_CACHE_LOCK:
+        entry = _L1_CACHE.get(key)
+        if entry is None:
+            return None
+        value, expiry = entry
+        if expiry > time.time():
+            return value
+        del _L1_CACHE[key]
+    return None
+
+
+def _l1_set(key: str, value: Any, ttl_seconds: int) -> None:
+    """L1内存缓存写入。"""
+    with _L1_CACHE_LOCK:
+        if len(_L1_CACHE) >= _L1_MAX_ENTRIES:
+            oldest = min(_L1_CACHE.items(), key=lambda x: x[1][1])
+            del _L1_CACHE[oldest[0]]
+        expiry = time.time() + ttl_seconds
+        _L1_CACHE[key] = (value, expiry)
+
+
+def _l1_clear() -> None:
+    """清空L1内存缓存。"""
+    with _L1_CACHE_LOCK:
+        _L1_CACHE.clear()
+
 
 # ═══════════════════════════════════════
 # 缓存命中率统计（V10.0）
@@ -136,7 +188,9 @@ _DISABLE_CACHE = os.environ.get("STOCK_NOCACHE", "") == "1"
 # ═══════════════════════════════════════
 TTL: Dict[str, int] = {
     # 静态数据（几乎不变）
-    "basic_info":      30 * 86400,   # 股票基本信息、总股本、上市日期（V10.0: 7天→30天）
+    "basic_info":       1 * 86400,   # 股票基本信息（含市值/价格等动态字段，V10.1: 30天→1天）
+    "basic_info_static": 90 * 86400, # 股票静态信息（总股本/上市日期等，V10.1新增）
+    "share_capital":   90 * 86400,   # 股本数据（总股本、流通股，V10.1新增）
     "concept_blocks":  30 * 86400,   # 概念板块列表（V10.0: 7天→30天）
     "board_type":       7 * 86400,   # 沪市/深市/北交所
 
@@ -172,10 +226,11 @@ TTL: Dict[str, int] = {
     "global_news":      1 * 3600,    # 全球资讯（1小时）
     "news":             6 * 3600,    # 财联社快讯（V9.6新增，6小时）
 
-    # 行业/概念热度（每日变化）
-    "industry_peers":   24 * 3600,   # 行业可比公司
-    "industry_compare":  24 * 3600,   # 行业板块排名
-    "ths_hot_reason":   24 * 3600,   # 同花顺热点题材
+    # 行业/概念热度（每日变化，V11.2: 改为交易日模式）
+    "industry_peers":   24 * 3600,   # 行业可比公司（trading_day=True覆盖）
+    "industry_compare":  24 * 3600,   # 行业板块排名（trading_day=True覆盖）
+    "ths_hot_reason":   24 * 3600,   # 同花顺热点题材（trading_day=True覆盖）
+    "hsgt_macro_flow":  24 * 3600,   # 北向资金大盘流向（trading_day=True覆盖）
 
     # 分红历史（公告不频繁）
     "dividend":         30 * 86400,   # 分红历史
@@ -346,6 +401,7 @@ def _build_key(category: str, func_name: str, *args: Any, **kwargs: Any) -> str:
 def get_cache(category: str, func_name: str, *args: Any,
               cross_verify: bool = False, **kwargs: Any) -> Optional[Any]:
     """查询缓存，返回解析后的数据或 None。
+    V10.3: L1/L2双级缓存架构 — 优先L1内存缓存，失败fallback到L2 SQLite。
 
     Args:
         category: 缓存分类
@@ -357,6 +413,13 @@ def get_cache(category: str, func_name: str, *args: Any,
         _record_cache_hit(category, False)
         return None
     key = _build_key(category, func_name, *args, **kwargs)
+    
+    # V10.3: 优先 L1 内存缓存
+    l1_result = _l1_get(key)
+    if l1_result is not None:
+        _record_cache_hit(category, True)
+        return l1_result
+    
     now = time.time()
     try:
         db = _get_db()
@@ -372,24 +435,26 @@ def get_cache(category: str, func_name: str, *args: Any,
             return None
         value_blob, expires_at, hit_count, prev_value_blob, verified = row
         # 交叉验证模式：未验证的缓存视为未命中
+        # V10.2 修复：删除 prev_value != value 的误删检查
+        #   原逻辑：set_cache 数据变化分支会写入 prev_value=旧值, value=新值, verified=1
+        #   get_cache 检查 prev_value != value 时会删除缓存 → 永久失效
+        #   prev_value 仅用于数据变更追踪，不影响缓存命中
         if cross_verify and not verified:
             _record_cache_hit(category, False)
             return None
-        # 已验证但 prev_value 与 value 不一致（理论上不应该发生），视为损坏
-        if cross_verify and verified and prev_value_blob is not None:
-            if prev_value_blob != value_blob:
-                cursor.execute("DELETE FROM cache_entries WHERE key=?", (key,))
-                db.commit()
-                _record_cache_hit(category, False)
-                return None
         # 更新访问时间 + 命中计数
         cursor.execute(
             "UPDATE cache_entries SET hit_count=hit_count+1, last_accessed=? WHERE key=?",
             (now, key)
         )
         db.commit()
+        # V10.3: 将L2结果写入L1，加速后续访问
+        value = json.loads(value_blob.decode("utf-8"))
+        ttl = expires_at - now
+        if ttl > 0:
+            _l1_set(key, value, ttl)
         _record_cache_hit(category, True)
-        return json.loads(value_blob.decode("utf-8"))
+        return value
     except Exception as _e:
         _cache_logger.debug(f"get_cache error ({key}): {_e}")
         _record_cache_hit(category, False)
@@ -397,23 +462,25 @@ def get_cache(category: str, func_name: str, *args: Any,
 
 
 def _has_zero_price(value: Any) -> bool:
-    """检查 dict/list 中是否包含 price=0 或 close=0（TDX 坏数据特征）。"""
+    """检查顶层 dict 是否包含 price=0 或 close=0（TDX 坏数据特征）。
+
+    V10.2 修复：原实现递归检查所有子层级，导致嵌套结构中任一子项 price=0
+    （如龙虎榜未成交席位、板块列表中无成交板块）就误杀整条缓存。
+    现改为仅检查顶层 dict 的 price/close 字段，避免误杀。
+    """
     if isinstance(value, dict):
+        # 仅检查顶层 price/close，不递归子层级
         if value.get("price") == 0 or value.get("close") == 0:
             return True
-        for v in value.values():
-            if _has_zero_price(v):
-                return True
-    elif isinstance(value, (list, tuple)):
-        for item in value:
-            if _has_zero_price(item):
-                return True
+        return False
+    # list/tuple 不再递归检查（避免误杀含 0 值子项的有效列表）
     return False
 
 
 def set_cache(category: str, func_name: str, value: Any, ttl: int, *args: Any,
               trading_day: bool = False, cross_verify: bool = False, **kwargs: Any) -> None:
     """写入缓存（None/空值/价格为零不写入）。
+    V10.3: L1/L2双级缓存架构 — 同时写入L1内存缓存和L2 SQLite。
 
     Args:
         category: 缓存分类
@@ -486,6 +553,11 @@ def set_cache(category: str, func_name: str, value: Any, ttl: int, *args: Any,
 
         db.commit()
         _enforce_size_limit()
+        
+        # V10.3: 同时写入 L1 内存缓存
+        l1_ttl = expires_at - now
+        if l1_ttl > 0:
+            _l1_set(key, value, l1_ttl)
     except Exception as _e:
         _cache_logger.debug(f"set_cache: {_e}")
 

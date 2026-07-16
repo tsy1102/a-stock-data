@@ -2,6 +2,24 @@
 
 一套自动化生成A股个股分析报告的Python工具集，支持短线、中线、长线、完整、估值、市场热点等多种报告类型，数据来源于新浪财经、东方财富、同花顺等主流平台。
 
+> **V11.5**：Data Provider统一数据层正式启用 - 历时多版本规划，data_provider.py统一数据中心层全面激活，六大报告脚本全部完成迁移；核心架构为字段时效性三级分级模型（实时层/准实时层/静态层），自动按字段业务属性选择最优数据源；全函数支持缓存、交易状态感知、async异步版本；val脚本6个策略改为async+智能调度器，ful脚本9层架构async并发重构，sht/med/lng/mak四脚本统一数据入口
+
+> **V11.4**：死代码清理与财联社/舆情互动层集成 - 删除6个报告脚本共47处data_provider.py死导入；修复TTL重复键（hsgt_flow→hsgt_macro_flow）；修复med报告3处静默异常；按硬约束在sht/med/lng/ful四报告中集成财联社快讯（sht=420min/med=3d/lng=2d/ful=3d）和互动易问答（sht=24h/med=7h/lng=30d/ful=15d）并实现时间阈值过滤；tests目录全面重写（删除21个废弃文件，更新3个测试文件，重写README.md）
+
+> **V11.3**：缓存层T-1数据混入修复 - 通过7/15 vs 7/16报告对比发现4个缓存分类跨日携带T-1数据（industry_compare/industry_peers/ths_hot_reason/hsgt_flow），全部改为交易日模式（trading_day=True，交易日15:00自动过期）；北向资金批量缓存重构（移除预取共享，改为每只股票独立调用+缓存层保证仅1次API请求）；ZHB数据经用户手动交叉验证100%可信（贵州茅台7/14+7/15涨跌幅/成交额精确吻合）
+
+> **V11.2**：ZHB混合分层架构 + 字段真实性验证 - val脚本全市场数据加载升级为混合分层模式（API实时层覆盖price/change_pct/amount/pe_ttm/turnover_pct，ZHB静态层保留52w/pb/dividend/ipo_price等慢变字段）；clean_codes增加命令行flag粘连检测警告；新增verify_zhb_fields.py字段验证脚本（跨日Delta验证14项全部PASS + 外部数据校验）
+
+> **V11.1**：ZHB数据时效性修复 - val脚本全市场成交额实时覆盖（腾讯行情覆盖ZHB T-1数据），流动性池基于实时成交额排序；策略19标注T-1数据来源；策略20增加TDX实时资金流fallback，数据来源在reason中明确标注
+
+> **V11.0**：架构重构完成 - val 脚本选股池扩大（策略19/20全市场扫描，每策略显示10只股票）；修复 sht 报告主力资金占比 bug、val 脚本 banner 错误、lng/ful 变量作用域等 9 个问题
+
+> **V10.3**：阶段二+阶段三完整实施 - 六大报告脚本新增ZHB分析维度（主力资金流向、52周位置百分位、IPO破发度、EPS/员工数、全市场资金监控）；创建统一数据中心层（Data Provider），根据字段时效性自动路由数据源；缓存模块引入L1/L2双级架构，同脚本运行期内零I/O；新增zhb_sync.py自动化入库管道，支持定时检测/智能下载/数据校验/自动入库/清理策略
+
+> **V10.2**：缓存命中率重大修复 - 修复cross_verify读写互斥BUG（14个分类缓存永久失效）、修复_has_zero_price递归误杀（龙虎榜/行业对比等有效缓存被跳过）、修复today_str污染缓存key（lockup_expiry/dragon_tiger TTL失效）；修复val脚本导入错误（get_data_date未定义）；修复"休市日"标签错误
+
+> **V10.1**：zhb字段映射重大修正（基于injoyai/tdx开源仓库源码验证）- tdxstat/tdxstat2字段全部确认，新增连涨天数/股息率/52周高低价/IPO发行价等关键字段；全局股本缓存层（share_capital.json，90天TTL），市值内存计算（收盘价×总股本），零网络请求；val脚本全策略切换zhb数据（7.7秒→<0.1秒），策略扫描范围扩大至500-1000只；mak脚本优先使用zhb全市场快照，失败自动回退TDX；缓存策略优化 - basic_info TTL从30天降至1天（修复市值过期问题），新增share_capital/basic_info_static分类
+
 > **V10.0**：zhb全局配置总包全面升级 - 进程安全文件锁、磁盘空间保护、智能日期筛选、节假日/证监会行业/中概股ADR/可转债/退市股数据导出、行业分类统一为申万标准、删除百度K线fallback；缓存系统优化 - cross_verify多进程失效修复、TTL分级策略延长、命中率统计自动输出；val脚本优化 - zhb零成本全市场数据、策略扫描范围扩大、字段访问安全加固（全策略统一使用.get()安全访问）；main.py任务顺序优化；ST股票涨跌幅新规适配（5%→10%）；修复f-string docstring误伤导致的ful第一章节消失、MACD键名不匹配、异步公告配置键名错误等关键问题
 
 ---
@@ -23,6 +41,20 @@
 - **缓存命中率统计**（V10.0）：进程退出时通过atexit自动打印总命中率和分类命中率，为缓存优化提供数据支撑
 - **val脚本全市场扫描优化**（V10.0）：使用zhb.stock_stats替代tdx_get_all_stocks，全市场数据加载从7.7秒降至<0.1秒；策略扫描范围扩大（200-300→500-1000），发现更多优质标的
 - **main.py任务顺序优化**（V10.0）：调整执行顺序为val→mak→sht→med→lng→ful，全市场扫描产生的缓存被后续单股分析脚本复用
+- **zhb字段映射重大修正**（V10.1，基于injoyai/tdx开源仓库源码验证）：
+  - tdxstat字段：change_pct[6]、streak_days[5]（连涨连跌天数）、dividend_yield[10]（股息率）、change_5d[28]、change_10d[30]、change_ytd[21]（年初至今）、employee_count[15]（员工人数）
+  - tdxstat2字段：amount[3]（今日成交额，万元）、amount_1d[5]、amount_2d[7]、ipo_price[16]（IPO发行价）、high_52w[17]、low_52w[18]、industry_code[13]
+  - 新增full_market_snapshot（tdxstat+tdxstat2合并），一次调用获取全市场完整数据
+- **全局股本缓存层**（V10.1）：新增sc_capital_cache.py模块，全局JSON文件缓存（cache/share_capital.json，90天TTL），市值=收盘价×总股本纯内存计算，零网络请求
+- **val/mak脚本深度zhb化**（V10.1）：
+  - val脚本：使用full_market_snapshot替代tdx_get_all_stocks，全市场数据加载从~7.7秒降至<0.1秒，策略扫描范围扩大至500-1000只
+  - mak脚本：优先使用zhb全市场快照，失败自动回退TDX，全市场数据加载时间显著缩短
+- **sht/med/lng/ful脚本zhb优先改造**（V10.1）：zhb数据作为主数据源，原有HTTP/TDX路径降为fallback
+  - sht脚本：行业归属、股息率优先用zhb，阶段涨幅/52周区间zhb独有直接展示
+  - med脚本：PE估值、股息率、行业归属优先用zhb，腾讯行情/东财HTTP降为fallback
+  - lng脚本：PE/PB估值、历史最高价、股息率、行业归属优先用zhb，YTD/员工人数zhb独有
+  - ful脚本：PE/PB估值、52周高低、阶段涨跌幅、股息率优先用zhb，K线计算/TDX行情降为fallback
+- **缓存策略优化**（V10.1）：basic_info TTL从30天降至1天（修复市值/价格等动态字段缓存过期问题），新增share_capital/basic_info_static分类（90天TTL）
 - **F10 全覆盖**（V9.1）：12 个 F10 函数 + 11 个 HTTP 函数 F10 优先逻辑 + 6 种新章节 + 数据质量核查附录
 - **缓存交叉验证**（V9.2/V10.0修复）：11 个多天 TTL 分类启用交叉验证；V10.0修复多进程并发下因数据源含实时字段导致验证永远无法通过的问题，改为首次写入通过 valid_if 校验即标记已验证
 - **交易日历判断**：自动识别中国A股交易日、节假日、调休日、午休时段；支持脚本更新数据（`python -m stock_common.stock_calendar --update`）
@@ -278,7 +310,7 @@ from stock_cache import cached, invalidate_category, print_cache_stats
 
 # 例：给一个网络请求函数加缓存
 @cached(category="dragon_tiger", ttl_seconds=24 * 3600)
-def get_dragon_tiger_board(code, today_str, days=30, include_seats=True):
+def get_dragon_tiger_board(code, days=30, include_seats=True):
     ...
 
 # 例：清除某分类缓存（重新拉取当日数据前）
@@ -328,6 +360,51 @@ reports/
 ## 版本历史
 
 完整版本历史详见 [CHANGELOG.md](CHANGELOG.md)
+
+### V10.3 (2026-07-16)
+
+- 🔧 **zhb资金流向字段解锁**（基于zhb_analysis深度分析 + 双日Delta验证 + 公式验算）：
+  - tdxstat2[9] → `main_net_buy_hands`（T日主力净买入量，手）
+  - tdxstat2[10] → `main_net_buy_hands_1d`（T-1日主力净买入量，手）
+  - tdxstat2[14] → `main_net_buy_amount`（T日主力净流入额，万元）
+  - tdxstat2[15] → `main_net_buy_amount_1d`（T-1日主力净流入额，万元）
+  - 验证方法：双日Delta滚动匹配（10/10通过）+ 公式验算（[9]×100×收盘价÷10000≈[14]，误差<1%）
+- 📦 **新增便捷函数**：`get_main_net_buy`、`get_main_net_buy_amount`、`get_main_net_buy_amount_1d`
+- 📊 **zhb字段时效性分级增强**：新增"准实时"字段分类（max_delay_days=1），资金流向字段归入此类
+- 📋 **docs/roadmap.md**：新增实施路线图，覆盖阶段一（核心字段补全、阶段二（脚本增强）、阶段三（架构重构）
+
+### V10.2 (2026-07-16)
+
+- 🐛 **缓存命中率核心修复**（3个症结导致14+个分类0%命中率）：
+  - cross_verify 读写互斥BUG：`get_cache` 的 `prev_value != value` 误删检查与 `set_cache` 数据变化分支冲突 → 14个cross_verify分类永久失效，删除误删检查
+  - `_has_zero_price` 递归误杀：嵌套结构中任一子项 price=0 就跳过整条缓存 → 改为仅检查顶层
+  - `today_str` 污染 key：`lockup_expiry`/`dragon_tiger` 参数含 `today_str` 导致跨日key不同 → 移除参数改为内部自动计算
+  - `valid_if` 过严：`industry_peers`/`basic_info`/F10系列校验放宽，避免空值拒写
+- 🐛 **zhb数据滞后优先级分级**：新增 `zhb_field_safe(field_name)` 函数，按字段时效性分级
+  - 实时字段（change_pct/amount/price）：zhb日期必须是今天，否则fallback原接口
+  - 阶段/静态字段（pe_ttm/high_52w/dividend_yield）：3天延迟可接受
+  - mak脚本 `change_pct` 改为 `zhb_field_safe("change_pct")` 校验，val脚本用实时行情覆盖zhb的滞后change_pct
+  - sht/med/lng 脚本 zhb 不新鲜时标注数据日期
+- 🐛 **val脚本ImportError修复**：`full_market_snapshot` → `get_zhb_full_market_snapshot`
+- 🐛 **"休市日"标签修复**：`get_market_status()` 交易日16:30后从 `closed` 改为 `post_close`，避免盘后运行脚本误显示"休市日"
+- ⚠️ **函数签名变更**（向后不兼容）：`get_lockup_expiry` / `get_dragon_tiger_board` 移除 `today_str` 参数
+
+### V10.1 (2026-07-15)
+
+- 🔧 **zhb字段映射重大修正**（基于injoyai/tdx开源仓库源码验证）：
+  - tdxstat：`change_pct` 从[2]修正为[6]，新增 `streak_days`[5]、`change_pct_1d`[7]、`change_pct_2d`[8]、`dividend_yield`[10]、`employee_count`[15]、`change_5d`[28]、`change_10d`[30]、`change_ytd`[21]
+  - tdxstat2：`amount` 修正为[3]，新增 `amount_1d`[5]、`amount_2d`[7]、`ipo_price`[16]
+  - 新增 `full_market_snapshot`（tdxstat+tdxstat2合并）、`market_stat2_snapshot` 等批量接口
+- 📦 **全局股本缓存层**：新增 `stock_common/sc_capital_cache.py`，90天TTL，被动累积式构建，市值内存计算（收盘价×总股本/10000），零网络请求
+- ⚡ **val脚本全策略切换zhb**：`full_market_snapshot` 替代 `tdx_get_all_stocks`，全市场加载从~7.7秒降至<0.1秒；结合全局股本缓存计算市值；流动性池从Top300扩大到Top500
+- ⚡ **mak脚本全量切换zhb**：优先zhb全市场快照，失败时自动回退TDX MAC协议
+- ⚡ **sht脚本zhb优先改造**：行业归属、股息率优先用zhb，阶段涨幅/52周区间zhb独有直接展示，原有HTTP/TDX路径降为fallback
+- ⚡ **med脚本zhb优先改造**：PE估值、股息率、行业归属优先用zhb，阶段涨幅/52周区间zhb独有直接展示，腾讯行情/东财HTTP降为fallback
+- ⚡ **lng脚本zhb优先改造**：PE/PB估值、历史最高价、股息率、行业归属优先用zhb，YTD/员工人数zhb独有直接展示，腾讯行情/`get_historical_high`降为fallback
+- ⚡ **ful脚本zhb优先改造**：PE/PB估值zhb优先覆盖basic，52周高低/阶段涨跌幅zhb优先（K线计算降为fallback），股息率zhb优先（`tdx_get_dividend_history`降为fallback）
+- 💾 **缓存策略优化**：`basic_info` TTL从30天调整为1天（修复动态字段缓存过期），新增 `share_capital` 分类（90天TTL）
+- 🐛 **市值全为0修复**：新增全局股本缓存层，通过收盘价×总股本实时计算市值
+- 🐛 **多策略共振无名称修复**：补充名称时同步更新 `_stock_map`
 
 ### V10.0 (2026-07-14)
 

@@ -477,20 +477,20 @@ def get_canonical_stock_data(code: str, force_realtime: bool = False) -> Any:
     vol_ratio = _safe_float(rt_quote.get('vol_ratio') or 0)
     field_sources["vol_ratio"] = field_sources.get("vol_ratio", "missing")
 
-    # 资金流类
+    # 资金流类（V16.1.7 标签修正: tdx_get_fund_flow 实际委托东财 HTTP，标签应为 eastmoney 非 tdx）
     main_net_buy_wan = _safe_float(
         rt_fund.get('main_net_wan')
         if need_realtime_quote and rt_fund.get('main_net_wan') is not None
         else zhb_dict.get('main_net_buy_amount')
     )
     field_sources["main_net_buy_wan"] = (
-        "realtime:tdx" if rt_fund.get('main_net_wan') is not None else "zhb:t-1"
+        "realtime:eastmoney" if rt_fund.get('main_net_wan') is not None else "zhb:t-1"
     )
     main_net_buy_hands = _safe_float(
         rt_fund.get('main_net_hands') if need_realtime_quote else zhb_dict.get('main_net_buy_hands')
     )
     field_sources["main_net_buy_hands"] = (
-        "realtime:tdx" if rt_fund.get('main_net_hands') is not None else "zhb:t-1"
+        "realtime:eastmoney" if rt_fund.get('main_net_hands') is not None else "zhb:t-1"
     )
     main_net_buy_wan_1d = _safe_float(zhb_dict.get('main_net_buy_amount_1d'))
     field_sources["main_net_buy_wan_1d"] = "zhb:t-1"
@@ -600,13 +600,16 @@ def get_canonical_stock_data(code: str, force_realtime: bool = False) -> Any:
     employee_count = int(zhb_dict.get('employee_count') or 0)
     field_sources["employee_count"] = "zhb:static" if employee_count else "missing"
 
-    # V15.4 方案 C: industry 4 级 fallback 链
-    # 优先级: push2 f127 (L1) > 腾讯 (L2) > TDX boards (L3) > ZHB static (L4)
-    # 关键: push2 f127 行业归属准确（"光学光电"），TDX boards 错（"光学光电子"，带"子"）
+    # V15.4 方案 C: industry fallback 链（V16.1.7 调整）
+    # 优先级: push2 f127 (免费副产品, 行情 L3 已调 get_em_quote_full 零额外请求)
+    #        > TDX boards (TCP 不易封禁, 行情走 TDX/腾讯时行业走此级)
+    #        > ZHB static (盘前/静态兜底)
+    # 注: 行情链正常(TDX/腾讯成功)时 em_quote_raw 为空 → 行业自动走 TDX TCP, 不碰东财;
+    #     仅行情 fallback 到 push2 时行业才用 push2 f127 (此时零额外请求)。腾讯级已删(无 industry 字段, 死级)
     industry = ''
     board = ''
     industry_code = str(zhb_dict.get('industry_code') or '')
-    # L1: push2 (em_quote_raw 已在 L3 push2 fallback 中填充)
+    # L1: push2 (em_quote_raw 已在 L3 push2 fallback 中填充, 免费副产品)
     # V16.0: get_em_quote_full 返回规范名 — f127→industry, f128→board(地域)
     if em_quote_raw.get('industry') and em_quote_raw['industry'] not in (None, '', 'None'):
         industry = str(em_quote_raw['industry']).strip()
@@ -615,11 +618,7 @@ def get_canonical_stock_data(code: str, force_realtime: bool = False) -> Any:
     if em_quote_raw.get('board') and em_quote_raw['board'] not in (None, '', 'None'):
         board = str(em_quote_raw['board']).strip()
         field_sources["board"] = "realtime:push2"
-    # L2: 腾讯
-    if not industry and rt_quote.get('industry') and rt_quote['industry'] not in (None, '', 'None'):
-        industry = str(rt_quote['industry']).strip()
-        field_sources["industry"] = field_sources.get("industry", "realtime:tencent")
-    # L3: TDX boards
+    # L2: TDX boards（TCP 不易封禁）
     if not industry:
         try:
             from tdx_client import tdx_get_belong_boards
@@ -633,7 +632,7 @@ def get_canonical_stock_data(code: str, force_realtime: bool = False) -> Any:
                 field_sources["board"] = "tdx:boards"
         except Exception as _e:
             _debug_log(f"get_canonical_stock_data tdx boards error: {_e}")
-    # L4: ZHB 静态（profile.dat）—— 最后的兜底
+    # L3: ZHB 静态（profile.dat）—— 最后的兜底
     if not industry:
         if basic_info and isinstance(basic_info, dict) and basic_info.get('industry'):
             industry = basic_info['industry']
@@ -650,7 +649,7 @@ def get_canonical_stock_data(code: str, force_realtime: bool = False) -> Any:
         field_sources["industry_code"] = field_sources.get("industry", "missing")
     if not field_sources.get("board"):
         field_sources["board"] = "missing"
-    # concepts: 优先 TDX concept, 否则 ZHB concept_chain
+    # concepts: 优先 TDX concept (TCP), 其次 push2 f129 (免费副产品), 最后 ZHB concept_chain
     concepts_list = []
     try:
         from tdx_client import tdx_get_belong_boards
@@ -660,12 +659,19 @@ def get_canonical_stock_data(code: str, force_realtime: bool = False) -> Any:
             concepts_list = [c.get("name", "") for c in boards["concept"] if c.get("name")]
     except Exception as _e:
         _debug_log(f"get_canonical_stock_data tdx concepts error: {_e}")
+    # V16.1.7: push2 f129 概念列表兜底（get_em_quote_full 已解析 f129→concepts）
+    if not concepts_list and em_quote_raw.get('concepts'):
+        try:
+            concepts_list = [str(c).strip() for c in em_quote_raw['concepts'] if str(c).strip()]
+            field_sources["concepts"] = "realtime:push2"
+        except Exception:
+            pass
     # ZHB concept_chain 仅作补充（V15.1 后已重写为板块代码→名称映射，不再支持成分股）
     if not concepts_list:
         concepts_list = get_concept_from_zhb(code_str)
         field_sources["concepts"] = "zhb:concept_chain"
     else:
-        field_sources["concepts"] = "tdx:boards"
+        field_sources["concepts"] = field_sources.get("concepts", "tdx:boards")
 
     # V16.0: 上市日期（list_date）— 从 push2 f189 / rt_quote / em_quote_raw 提取
     list_date = str(

@@ -2293,6 +2293,40 @@ return result
 **实测总结**：腾讯 5/6 + 财联社 8/10 + 开盘红 4/4 + 东财 8/8 + 巨潮 4/6 + 交易所 3/3 + 新浪 7/8 = **39 个接口确认可用**。
 **项目高价值补充**：东财盘口异动（change_type 中文名）、开盘红历史涨停复盘（seal_money/one_word）、新浪限售解禁（万股/百万元口径）、巨潮公告 download_url（PDF 直链）、财联社涨停池 up_reason（涨停原因）。
 
+
+### 12.15 数据源优先级矩阵（V16.1.7 统一数据层重构）
+
+> **原则**：ZHB 一次性获取优先（零网络）→ TCP/easy_tdx 不易封禁优先 → 腾讯 HTTP（不封 IP）→ 东财 HTTP（限流最严，最后手段）
+> **实测验证**（2026-08-05，600519）：price/industry/concepts = realtime:tdx/tdx:boards（TCP 优先），pe_ttm/main_net_buy = zhb（ZHB 优先）
+
+#### 12.15.1 逐股链路优先级
+
+| 数据 | L1 | L2 | L3 | L4 | 说明 |
+|:---|:---|:---|:---|:---|:---|
+| **行情** | ZHB（盘前/静态）| TDX/easy_tdx（TCP 实时）| 腾讯 qt.gtimg.cn | 东财 push2（最后）| push2 风控最严仅兜底 |
+| **资金流** | ZHB tdxstat2 | 东财 push2 f137-146 | - | - | 资金流仅东财有；**标签已修正 realtime:eastmoney**（原误标 tdx）|
+| **行业** | push2 f127（免费副产品*）| TDX boards（TCP）| ZHB profile.dat | - | *行情 fallback 到 push2 时 f127 零额外请求；行情正常走 TDX 时行业自动走 TCP |
+| **概念** | TDX boards（TCP）| push2 f129（免费副产品）| ZHB concept_chain | - | V16.1.7 新增 f129 兜底 |
+| **财务** | ZHB（roe/gross_margin/eps）| TDX 0x0010（股本级）| - | - | ZHB 失效时财务缺失（低优先待补）|
+| **估值** | ZHB（pe_ttm/pb/dividend_yield）| TDX/腾讯 rt_quote | 计算（price/bvps）| - | ZHB 优先 |
+| **股本** | rt_quote（实时合并）| ZHB | sc_capital_cache | - | - |
+| **52周/涨跌幅** | ZHB | TDX K线计算 | - | - | - |
+
+#### 12.15.2 批量链路优先级（mak/val）
+
+| 数据 | L1 | L2 | L3 | 说明 |
+|:---|:---|:---|:---|:---|
+| **全市场快照** | ZHB 一次性 | 腾讯批量 `_tencent_batch_fallback`（60只/批）| 东财 push2 批量（仅 ZHB+腾讯全失败）| V15.5.9 后腾讯批量替代逐股 push2（防连接级风控）|
+| **行业板块** | ZHB 聚合 | TDX boards | 东财 clist | - |
+| **涨停池** | push2ex（4 池）| levistock/AxData 补充（字典 §12.10-12.12）| - | - |
+
+#### 12.15.3 V16.1.7 代码变更
+
+1. `tdx_get_quote_full` pe_ttm 守卫修正：缺 pe_ttm 不再整体置空（保 price/change_pct，防丢 TCP 实时价导致链跳到腾讯/东财）
+2. 资金流标签 `realtime:tdx` → `realtime:eastmoney`（名实相符）
+3. 行业链删腾讯虚位级（get_tencent_quote 无 industry 字段，死级）
+4. 概念链新增 push2 f129 兜底（get_em_quote_full 请求包 + 解析）
+
 ### 12.13 eltdx 完整方法字典（2026-08-05 文档确认，未实测）
 
 > **来源**：https://github.com/electkismet/eltdx（303⭐，Research-Only 许可，2026-08-04 活跃）+ docs/METHOD_REFERENCE.md

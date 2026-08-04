@@ -124,15 +124,16 @@ class TestIsLimitUp:
         assert is_limit_up("600519", "", 9.5) is True   # 边界
         assert is_limit_up("600519", "", 9.4) is False  # 略低
 
-    def test_st_5_percent(self):
-        """ST 股票 5% 涨停阈值（V16.1.7 按字典 §12.12.3 limit_rule 官方 st_5pct 修正）
+    def test_st_10_percent(self):
+        """ST 股票 10% 涨停阈值（V16.1.8 修正: ST 涨跌幅已放宽至 10%，与主板一致）
 
-        原实现 ST 走主板 9.5% 阈值（漏判 ST 5% 涨停）；V16.1.7 修正为官方规则 4.5% 判定。
+        V16.1.7 曾误按旧规则改为 5%（st_5pct）；用户确认最新规则 ST=10%，
+        故 ST 与主板同走 9.5 判定阈值。
         """
-        assert is_limit_up("600519", "ST股票", 5.0) is True
-        assert is_limit_up("600519", "ST股票", 4.5) is True    # 边界
-        assert is_limit_up("600519", "ST股票", 4.4) is False   # 略低
-        assert is_limit_up("600519", "*ST", 10.0) is True      # 高涨幅仍判定涨停
+        assert is_limit_up("600519", "ST股票", 9.5) is True    # 边界
+        assert is_limit_up("600519", "ST股票", 10.0) is True
+        assert is_limit_up("600519", "ST股票", 9.4) is False   # 略低
+        assert is_limit_up("600519", "*ST", 9.5) is True
 
     def test_bse_30_percent(self):
         """北交所 30% 涨停阈值（V16.1.7 按字典 §12.12.3 limit_rule 官方 bse_30pct 新增）"""

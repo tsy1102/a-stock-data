@@ -9,7 +9,7 @@
     V15.1  2026-07-26 - tdx_get_fund_flow 改名为 em_get_fund_flow（新增别名，保留旧函数）；tdx_get_history_fund_flow 同理
     V14.0  2026-07-22 - 文档同步：docstring 版本信息更新到 V14.0
     V12.6  2026-07-22 - 受益于字段路由简化
-    V12.0  2026-07-22 - 完全移除 easy_tdx 依赖，统一用 mootdx
+    V12.0  2026-07-22 - 移除 easy_tdx（历史）；V15.5 通过 _EasyTdxAdapter 重新集成（首选）
     V10.2  2026-07-16 - F10系列valid_if放宽：bool(r)改为r is not None，避免空dict/list拒写缓存
     V9.5   2026-07-11 - 静默异常日志化（23处 except Exception 添加 _debug_log）
     V9.4   2026-07-11 - VERSION文件单一来源版本号管理

@@ -20,7 +20,7 @@
   - **A级数据**：大板块成分、申万行业分类、节假日日历、证监会行业、券商名称表
   - **B级数据**：全市场统计快照（tdxstat）、资金流向快照（tdxstat2），含主力资金流向字段（tdxstat2[9/10/14/15]，双日 Delta 验证 10/10 + 公式验算误差<1%）
   - **辅助数据**：财报日历、新股申购、A+H股比价、中概股ADR、可转债、退市股对照表
-- **mootdx 统一层**（V12.0）：完全移除 easy_tdx 依赖，统一用 mootdx + 自封装 TCP 客户端（K线/F10/资金流/分笔/复权）
+- **TDX 双通道**（V12.0 + V15.5）：mootdx 统一 TCP 层；easy_tdx 1.20.4 适配层首选（服务器健康分引擎 + K线空数据故障转移 + 52 候选服务器 + MacClient 板块源）
 - **ReportRunner 通用框架**（V12.4-V12.5）：6 大报告脚本共享 `BaseReportRunner` 基类（CLI 解析/Banner/Summary/GD 上传模板/TDX 资源清理），样板代码减少 ~700 行
 - **sc_fault_tolerance 容错层**（V12.1）：`TokenBucket` / `CircuitBreaker` / `RandomUAPool` 三大防御机制
 - **统一缓存层**（V8.4+）：SQLite + TTL 自动过期 + 交叉验证（`cross_verify`）+ L1 内存缓存 + 异步连接复用

@@ -73,7 +73,7 @@ V12.1 更新：
   - 死代码清理
 
 V12.0 更新：
-  - 完全移除 easy_tdx 依赖，统一用 mootdx + 自封装 TCP
+  - mootdx 统一 TCP 层（V12.0）；V15.5 起 easy_tdx 1.20.4 适配层首选（健康分+故障转移）
 
 V9.5 更新：
   - 静默异常日志化：tdx_client.py/gd_uploader.py/get_med_report.py 共28处 except Exception 添加 _debug_log

@@ -4,7 +4,24 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
-## [16.1.8] - 2026-08-05
+## [16.1.9] - 2026-08-05
+
+**ST 涨跌幅规则修正（5%→10%）**。V16.1.7 曾误按 AxData 文档旧快照 `st_5pct` 将 ST 阈值改为 5%；
+用户确认**最新规则 ST 涨跌幅已放宽至 10%**（与主板一致）。
+
+### 🔧 修正内容
+
+1. **`is_limit_up`/`is_limit_down`**（[sc_utils.py](file:///d:/GitHub/test/stock_common/sc_utils.py)）：删除 ST 4.5% 分支，ST 与主板同走 9.5/-9.5 判定（V10.0 注释"ST涨跌幅放宽至10%"本就是正确口径）
+2. **mak 注释**：3 处"ST 5%"表述 → "ST 10% 与主板一致"
+3. **测试**：`test_st_10_percent` 恢复 9.5 判定断言（原 test_st_5_percent 移除）
+4. **字典 §12.12.3**：标注 `st_5pct` 为旧快照不再采用；项目已按 ST=10% 调整
+
+### ✅ 验证
+
+- ST 9.5% 涨停 True / 9.4% False / -9.5% 跌停 True；北交所 29.5%、创业板 19.5% 不受影响
+- 262 测试全过
+
+
 
 **字典接口全面落地（levistock/AxData/财联社/开盘红 接入脚本）**。按用户原则"字典确认的接口要综合判断哪个更适合"，
 将已实测可用的新数据源接入 mak/sht 报告。

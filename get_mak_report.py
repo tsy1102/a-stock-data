@@ -986,7 +986,7 @@ def analyze_top_stocks(top_sectors):
             stocks = get_sector_stocks(s["code"])
             _sec_cache[s["code"]] = stocks
         _sec_code = s["code"]
-        # V16.0: 用统一 is_limit_up 判断涨停（含 ST 5%），替代硬编码 19.5/9.5
+        # V16.0: 用统一 is_limit_up 判断涨停（ST 10% 与主板一致），替代硬编码 19.5/9.5
         _is_chuang = _sec_code.startswith(("300", "301", "688"))
         _limit_thr = 19.5 if _is_chuang else 9.5
         limit_up = [
@@ -1110,7 +1110,7 @@ async def generate_sector_report(output_path):
                 _debug_log(f"mak future.result error: {_e}")
     total_abnormal = len(results["已触发"]) + len(results["严重"])
     # V16.0: 复用统一 is_limit_up/is_limit_down（自动识别 ST 与板块阈值），
-    # 消除硬编码 9.5/19.5 导致 ST 涨停漏判的问题
+    # 消除硬编码 9.5/19.5 导致 ST 涨停漏判的问题（ST 10% 与主板一致）
     _zt_count = sum(
         1 for s in all_stocks if is_limit_up(s["code"], s.get("name", ""), s.get("change_pct", 0))
     )
@@ -1538,7 +1538,7 @@ async def generate_sector_report(output_path):
                 L(f"       {_t5_icon} {_t5['name']}({_t5['code']})  {_t5_chg:>+8.2f}%")
         _items = []
         for _st in ta['limit_up_stocks']:
-            # V16.0: 统一 is_limit_up 判断（含 ST 5%）
+            # V16.0: 统一 is_limit_up 判断（ST 10% 与主板一致）
             _label = (
                 '涨停'
                 if is_limit_up(_st['code'], _st.get('name', ''), _st.get('change_pct', 0))

@@ -2156,7 +2156,9 @@ return result
 | pre_close_source | tdx_realtime_snapshot 或 tdx_daily_kline |
 | name_flag | 名称标记（N/C/ST/*ST）|
 
-> **对项目价值**：V16.1 阶段 3.1 的"ST/20cm 正确识别"可直接采用此官方规则枚举——补齐 `is_limit_up` 的北交所 30% / IPO 首日规则
+> **⚠️ 2026-08-05 规则修正（V16.1.8）**：AxData 文档枚举 `st_5pct` 为**旧快照**——用户确认**最新规则 ST 涨跌幅已放宽至 10%**（与主板一致，判定阈值 9.5）。
+> 项目 `is_limit_up/is_limit_down` 已按最新规则调整：ST 与主板同走 9.5/-9.5；北交所 30%（29.5 判定）、创业板·科创板 20%（19.5 判定）。
+> **对项目价值**：limit_rule 枚举的 `bse_30pct`（北交所）与 `ipo_first_day`（IPO 首日）仍可参考；`st_5pct` 不再采用
 
 #### 12.12.4 综合评分 15 字段（stock_score_summary_tdx）🆕
 

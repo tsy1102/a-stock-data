@@ -4,7 +4,27 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
-## [16.1.2] - 2026-08-05
+## [16.1.3] - 2026-08-05
+
+**字典扩充：AxData 接口全景（257 接口）**。调研 electkismet/AxData 完整接口文档（https://electkismet.github.io/AxData/interfaces/），录入关键字段。
+
+### 🆕 字典（field_dict.md §12.12）
+
+1. **§12.12.1 短线指标 34 字段**（最重磅）：开盘量比/开盘换手Z/竞价昨比/开盘昨封比/封成比/封流比/封昨比/几天几板/连板天数/年涨停天数/流通股本Z——**`stats_root` 参数可直接传 tdxstat.cfg/zhb.zip（与项目 ZHB 数据同源）**
+2. **§12.12.2 实时快照 41 字段**：回头波/攻击波/内外比/封单额/涨速/短换手/近2分钟成交额/开盘抢筹/量涨速/委比/活跃度
+3. **§12.12.3 涨跌停价格 15 字段**：**limit_rule 官方规则枚举（main_10pct/st_5pct/chinext_20pct/star_20pct/bse_30pct/ipo_first_day/ipo_first_5_days）**——可补齐 is_limit_up 的北交所 30%/IPO 首日规则
+4. **§12.12.4 综合评分 15 字段**：四维评分（资金/基本面/消息/主题）+ 市场/行业排名
+5. **§12.12.5 筹码分布 8 字段**：获利比例/90%成本集中度/70%成本集中度（项目空白维度）
+6. **§12.12.6 每日股本 10 字段**：free_float_share_z 与 ZHB Col[11] 同语义可交叉校准
+7. **§12.12.7 高字段密度接口**：配股 59/期权T型 55/股本变动 46/实时榜单 42/题材资金走势/ESG×5
+
+### 🔑 关键发现
+
+- AxData 短线指标消费 **tdxstat.cfg/tdxstat2.cfg（即项目 ZHB 数据）**——零额外下载即可用 AxData 计算 34 个短线指标
+- free_float_share_z（流通股本Z）与 ZHB Col[11]=FreeLtgb（2026-08-04 官方 TdxQuant 确认）同语义——多源校准闭环
+- 涨跌停 limit_rule 枚举补齐项目 is_limit_up 的板块规则盲区（北交所 30%/IPO 首日）
+
+
 
 **字典扩充：levistock 新数据源 + akshare 校准基准**。调研 AxData 依赖三源（pytdx/akshare/levistock），实测 levistock 4 类接口全部可用。
 

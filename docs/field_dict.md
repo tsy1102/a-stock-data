@@ -2086,5 +2086,116 @@ return result
 ---
 
 > 📌 **重要提示**：本文件是项目的**关键字典**，所有数据接口与字段调整前必查。优先采用字典中已确定的内容，可大幅减少重复反向工程工作。
+
+### 12.12 AxData 接口全景与关键字段（2026-08-05 调研录入）
+
+> **来源**：https://electkismet.github.io/AxData/interfaces/（eltdx 作者新框架，257 个接口，Apache-2.0）
+> **数据源**：通达信 91 / 通达信扩展行情 31 / 交易所 3 / 东方财富 13 / 巨潮 32 / 腾讯 6 / 新浪 60 / 财联社 12 / 开盘红 9
+> **核心价值**：① 短线指标与项目 **ZHB 数据同源**（stats_root 可直接传 tdxstat.cfg/zhb.zip）② 涨跌停官方规则枚举 ③ 筹码分布/ESG 等空白维度
+> **注意**：接口为 AxData HTTP/SDK 封装（POST），非直连协议；字段名以 AxData 文档为准
+
+#### 12.12.1 短线指标 34 字段（stock_shortline_indicators_tdx）🆕 最重磅
+
+> **关键**：`stats_root` 参数可传 tdxstat.cfg/tdxstat2.cfg 目录或 zhb.zip——与项目 ZHB 数据**完全同源**，
+> 可直接用项目 cache/zhb/zhb_*.zip 喂给 AxData 计算（零额外下载）
+
+| 字段 | 含义 | 计算公式 |
+|:---|:---|:---|
+| open_volume_ratio | 开盘量比 | 开盘量 / 近5日平均每分钟成交量 |
+| open_turnover_z | 开盘换手Z | 开盘量 / 流通股本Z × 100 |
+| open_prev_amount_ratio | 开盘昨比 | 开盘金额 / 昨成交额 × 100 |
+| auction_prev_volume_ratio | 竞价昨比 | 今开盘量 / 昨开盘量 |
+| opening_rush | 开盘抢筹 | 实时快照携带 |
+| open_prev_seal_ratio | 开盘昨封比 | 开盘金额 / 昨封单额 × 100 |
+| seal_amount | 封单额 | 元 |
+| seal_to_amount_ratio | 封成比 | 封单额 / 当前成交额 |
+| seal_to_float_ratio | 封流比 | 封单额 / 流通市值Z × 100 |
+| seal_prev_ratio | 封昨比 | 当前封单额 / 昨封单额 |
+| limit_stat_days / limit_up_count_in_stat_days | 几天几板统计 | - |
+| limit_board_text | 几天几板文本 | 如 "7天5板" |
+| limit_up_streak_days | 连板天数 | - |
+| year_limit_up_days | 年涨停天数 | - |
+| free_float_shares / free_float_market_value | 流通股本Z / 流通市值Z | 自由流通口径 |
+| prev_amount / prev_seal_amount / prev2_seal_amount | 昨成交额 / 昨封单额 / 前封单额 | 负值=昨收盘跌停封单 |
+
+> **与 ZHB 对照**：`free_float_shares`（流通股本Z）与 ZHB Col[11]=FreeLtgb（自由流通股本，2026-08-04 官方确认）**同语义**——可交叉校准
+
+#### 12.12.2 实时快照 41 字段（stock_realtime_snapshot_tdx）🆕
+
+> 通达信实时快照，含 push2 没有的**派生指标**：
+
+| 字段 | 含义 |
+|:---|:---|
+| drawdown_pct | 回头波（最高价-最新价）/昨收 |
+| attack_pct | 攻击波（最新价-最低价）/昨收 |
+| inside_volume / outside_volume / inside_outside_ratio | 内盘 / 外盘 / 内外比 |
+| open_amount / open_amount_ratio_pct | 开盘金额 / 开盘占比 |
+| locked_amount | 封单额（买一价×买一量×100）|
+| bid1_ask1_volume_diff / bid1_ask1_balance_pct | 买一卖一量差 / 占比 |
+| rise_speed | 涨速 |
+| short_turnover | 短换手 |
+| min2_amount | 近2分钟成交额 |
+| vol_rise_speed | 量涨速 |
+| entrust_ratio | 委比 |
+| activity | 活跃度 |
+
+#### 12.12.3 涨跌停价格 15 字段（stock_daily_price_limit_tdx）🆕 官方规则枚举
+
+| 字段 | 含义 |
+|:---|:---|
+| limit_ratio_pct | 涨跌停比例 |
+| **limit_rule** | **计算规则枚举：`main_10pct` / `st_5pct` / `chinext_20pct` / `star_20pct` / `bse_30pct` / `ipo_first_day` / `ipo_first_5_days`** |
+| limit_status | normal / no_price_limit / missing_pre_close |
+| pre_close_source | tdx_realtime_snapshot 或 tdx_daily_kline |
+| name_flag | 名称标记（N/C/ST/*ST）|
+
+> **对项目价值**：V16.1 阶段 3.1 的"ST/20cm 正确识别"可直接采用此官方规则枚举——补齐 `is_limit_up` 的北交所 30% / IPO 首日规则
+
+#### 12.12.4 综合评分 15 字段（stock_score_summary_tdx）🆕
+
+| 字段 | 含义 |
+|:---|:---|
+| score | 源端综合评分 |
+| industry_rank / industry_rank_total | 行业排名 / 总数 |
+| market_rank / market_rank_total / market_win_pct | 市场排名 / 总数 / 打败A股百分比 |
+| capital_score / fundamental_score / news_score / theme_score | 资金 / 基本面 / 消息 / 主题 四维评分 |
+
+#### 12.12.5 筹码分布 8 字段（stock_chip_distribution_tdx）🆕
+
+| 字段 | 含义 |
+|:---|:---|
+| profit_ratio_pct | 获利比例（%）|
+| cost90_concentration / cost90_range | 90% 成本集中度 / 区间 |
+| cost70_concentration / cost70_range | 70% 成本集中度 / 区间 |
+
+> 项目完全空白维度（lng/med 筹码分析可补）
+
+#### 12.12.6 每日股本盘前 10 字段（stock_daily_share_tdx）🆕
+
+| 字段 | 含义 |
+|:---|:---|
+| total_share / float_share | 总股本 / 流通股本（财务快照，股）|
+| **free_float_share_z** | **流通股本Z（自由流通口径）——与 ZHB Col[11] 同语义** |
+| finance_updated_date | 财务快照更新日期 |
+
+#### 12.12.7 其他高价值接口（字段密度排行）
+
+| 接口 | 字段数 | 价值 |
+|:---|:---:|:---|
+| stock_allotment_cninfo（配股）| 59 | 巨潮配股全字段 |
+| option_chain_tdx（期权T型）| 55 | 期权层（项目⏸️）|
+| stock_share_change_cninfo（股本变动）| 46 | 巨潮股本 |
+| stock_realtime_rank_tdx（实时榜单）| 42 | 全市场榜单 |
+| concept_capital_flow_tdx（题材资金走势）| 6 | **题材级资金流**（项目只有板块级）|
+| stock_theme_strength_rank_tdx（题材强度排行）| 18 | 题材强度 |
+| stock_financial_diagnosis_tdx（财务诊断）| 11 | F10 诊断 |
+| stock_forecast_consensus_tdx（盈利预测）| 14 | 一致预期 |
+| 新浪 ESG ×5（MSCI/华证/秩鼎/路孚特）| 6-13 | **ESG 评分**（项目空白）|
+| 新浪期权 ×21 | 6-29 | 期权层 |
+| 开盘红复盘 ×3（天梯/事件流/涨停复盘）| 9-19 | 与 levistock §12.10.4 同源 |
+
+---
+
+> 📌 **重要提示**：本文件是项目的**关键字典**，所有数据接口与字段调整前必查。优先采用字典中已确定的内容，可大幅减少重复反向工程工作。
 > 📌 **重要提示**：本文件是项目的**关键字典**，所有数据接口与字段调整前必查。优先采用字典中已确定的内容，可大幅减少重复反向工程工作。
 

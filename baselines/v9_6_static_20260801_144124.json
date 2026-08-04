@@ -1,0 +1,3017 @@
+{
+  "meta": {
+    "version": "v9.6",
+    "mode": "static",
+    "captured_at": "2026-08-01T14:41:24",
+    "stocks": [
+      "000100"
+    ],
+    "reports": [
+      "sht",
+      "med"
+    ],
+    "elapsed_sec": 0.0
+  },
+  "reports": {
+    "sht": {
+      "sections": [
+        "【一、个股基本信息】",
+        "【二、实时行情、估值与短线趋势】",
+        "【三、机构一致预期与估值】",
+        "【四、个股研报（东财）】",
+        "【五、概念板块、热点归因与板块共振】",
+        "【六、同业龙头横向对比】",
+        "【七、资金走向分析】",
+        "【八、北向资金持仓动态】",
+        "【九、龙虎榜席位】",
+        "【十、限售解禁日历】",
+        "【十一、融资融券（两融数据）】",
+        "【十二、大宗交易】",
+        "【十三、股东户数变化】",
+        "【十四、短线情绪与事件催化】",
+        "【十五、综合信号汇总】"
+      ],
+      "data_calls": [
+        "tdx_get_index_quote",
+        "get_fund_flow_realtime",
+        "tdx_get_fund_flow",
+        "get_fund_flow_120d",
+        "tdx_get_history_fund_flow",
+        "em_get",
+        "get_baidu_kline_with_ma",
+        "tdx_get_latest_bar_with_ma",
+        "get_market_status",
+        "get_stock_info",
+        "get_tencent_quote",
+        "get_hsgt_macro_flow_async",
+        "get_eps_forecast_async",
+        "get_reports",
+        "get_concept_blocks",
+        "get_industry_comparison",
+        "get_industry_peers",
+        "get_stock_sector_rank",
+        "get_dividend_history",
+        "get_ths_hot_reason_async",
+        "get_northbound_hold_async",
+        "get_dragon_tiger_board_async",
+        "get_lockup_expiry_async",
+        "get_margin_trading_async",
+        "get_block_trade_async",
+        "get_eastmoney_stock_news",
+        "ths_hot_list",
+        "get_strategic_announcements_async",
+        "get_limit_pool_summary",
+        "tdx_get_security_bars",
+        "em_hot_concept",
+        "get_hsgt_macro_flow",
+        "tdx_get_quote_full"
+      ],
+      "fields": {
+        "code": {
+          "output_lines": [
+            "  {code} 个股深度数据报告 [{_dc['desc']}] — {today_str} {datetime.no",
+            "  股票代码: {info.get('code',code)}",
+            "  {code:<8} {info.get('name','N/A'):<12} {price_today:>8.2f}",
+            "  {p['code']:<8} {p['name']:<12} {p['price']:>8.2f} {p['chan"
+          ],
+          "exprs": [
+            "code",
+            "info.get('code',code)",
+            "p['code']"
+          ]
+        },
+        "desc": {
+          "output_lines": [
+            "  {code} 个股深度数据报告 [{_dc['desc']}] — {today_str} {datetime.no"
+          ],
+          "exprs": [
+            "_dc['desc']"
+          ]
+        },
+        "today_str": {
+          "output_lines": [
+            "  {code} 个股深度数据报告 [{_dc['desc']}] — {today_str} {datetime.no"
+          ],
+          "exprs": [
+            "today_str"
+          ]
+        },
+        "name": {
+          "output_lines": [
+            "  股票名称: {info.get('name','N/A')}",
+            "  所属板块: {', '.join(b['name'] for b in blocks['industry'])}",
+            "\\n  概念板块: {', '.join(b['name'] for b in blocks['concept'])}",
+            "  {code:<8} {info.get('name','N/A'):<12} {price_today:>8.2f}",
+            "  {p['code']:<8} {p['name']:<12} {p['price']:>8.2f} {p['chan",
+            "  {_tag(s['name'])} {s['name']:<28} {s['buy_amt']:>12.1f} {s"
+          ],
+          "exprs": [
+            "info.get('name','N/A')",
+            "', '.join(b['name'] for b in blocks['industry'])",
+            "', '.join(b['name'] for b in blocks['concept'])",
+            "p['name']",
+            "_tag(s['name'])",
+            "s['name']"
+          ]
+        },
+        "industry": {
+          "output_lines": [
+            "  所属板块: {info.get('industry','N/A')}",
+            "  ➤ [市值排名] {peer_data.get('industry',stock_ind)}: 该股排名第 {pee",
+            "  所属板块: {peer_data['industry']}",
+            "  无法获取同业数据（板块: {peer_data.get('industry','未知')}）"
+          ],
+          "exprs": [
+            "info.get('industry','N/A')",
+            "peer_data.get('industry',stock_ind)",
+            "peer_data['industry']",
+            "peer_data.get('industry','未知')"
+          ]
+        },
+        "total_shares": {
+          "output_lines": [
+            "  总股本:   {info.get('total_shares',0)/1e8:.2f}亿股"
+          ],
+          "exprs": [
+            "info.get('total_shares',0)/1e8"
+          ]
+        },
+        "float_shares": {
+          "output_lines": [
+            "  流通股本: {info.get('float_shares',0)/1e8:.2f}亿股"
+          ],
+          "exprs": [
+            "info.get('float_shares',0)/1e8"
+          ]
+        },
+        "ldf": {
+          "output_lines": [
+            "  上市日期: {ldf}"
+          ],
+          "exprs": [
+            "ldf"
+          ]
+        },
+        "price_today": {
+          "output_lines": [
+            "  当前价:   {price_today:.2f}元",
+            "  {code:<8} {info.get('name','N/A'):<12} {price_today:>8.2f}"
+          ],
+          "exprs": [
+            "price_today"
+          ]
+        },
+        "change_amt": {
+          "output_lines": [
+            "  涨跌额:   {q.get('change_amt',0):.2f}元  涨跌幅: {q.get('change_p"
+          ],
+          "exprs": [
+            "q.get('change_amt',0)"
+          ]
+        },
+        "change_pct": {
+          "output_lines": [
+            "  涨跌额:   {q.get('change_amt',0):.2f}元  涨跌幅: {q.get('change_p",
+            "  [{inm}] 开盘 {_iq_val.get('open',0):.2f} | 当前 {_iq_val.get('",
+            "  {code:<8} {info.get('name','N/A'):<12} {price_today:>8.2f}",
+            "  {p['code']:<8} {p['name']:<12} {p['price']:>8.2f} {p['chan"
+          ],
+          "exprs": [
+            "q.get('change_pct',0)",
+            "_iq_val.get('change_pct',0)",
+            "p['change_pct']"
+          ]
+        },
+        "open": {
+          "output_lines": [
+            "  今开:     {q.get('open',0):.2f}元  昨收: {q.get('last_close',0)",
+            "  [{inm}] 开盘 {_iq_val.get('open',0):.2f} | 当前 {_iq_val.get('"
+          ],
+          "exprs": [
+            "q.get('open',0)",
+            "_iq_val.get('open',0)"
+          ]
+        },
+        "last_close": {
+          "output_lines": [
+            "  今开:     {q.get('open',0):.2f}元  昨收: {q.get('last_close',0)"
+          ],
+          "exprs": [
+            "q.get('last_close',0)"
+          ]
+        },
+        "high": {
+          "output_lines": [
+            "  最高:     {q.get('high',0):.2f}元  最低: {q.get('low',0):.2f}元"
+          ],
+          "exprs": [
+            "q.get('high',0)"
+          ]
+        },
+        "low": {
+          "output_lines": [
+            "  最高:     {q.get('high',0):.2f}元  最低: {q.get('low',0):.2f}元"
+          ],
+          "exprs": [
+            "q.get('low',0)"
+          ]
+        },
+        "amount_wan": {
+          "output_lines": [
+            "  成交额:   {q.get('amount_wan',0)/10000:.2f}亿元  换手率: {q.get('t"
+          ],
+          "exprs": [
+            "q.get('amount_wan',0)/10000"
+          ]
+        },
+        "turnover_pct": {
+          "output_lines": [
+            "  成交额:   {q.get('amount_wan',0)/10000:.2f}亿元  换手率: {q.get('t",
+            "  {code:<8} {info.get('name','N/A'):<12} {price_today:>8.2f}"
+          ],
+          "exprs": [
+            "q.get('turnover_pct',0)"
+          ]
+        },
+        "vol_ratio": {
+          "output_lines": [
+            "  量比:     {q.get('vol_ratio',0):.2f}  振幅: {q.get('amplitude_"
+          ],
+          "exprs": [
+            "q.get('vol_ratio',0)"
+          ]
+        },
+        "amplitude_pct": {
+          "output_lines": [
+            "  量比:     {q.get('vol_ratio',0):.2f}  振幅: {q.get('amplitude_"
+          ],
+          "exprs": [
+            "q.get('amplitude_pct',0)"
+          ]
+        },
+        "mcap_yi": {
+          "output_lines": [
+            "  总市值:   {q.get('mcap_yi',0):.2f}亿元  流通市值: {q.get('float_mca",
+            "  {p['code']:<8} {p['name']:<12} {p['price']:>8.2f} {p['chan"
+          ],
+          "exprs": [
+            "q.get('mcap_yi',0)",
+            "p['mcap_yi']"
+          ]
+        },
+        "float_mcap_yi": {
+          "output_lines": [
+            "  总市值:   {q.get('mcap_yi',0):.2f}亿元  流通市值: {q.get('float_mca"
+          ],
+          "exprs": [
+            "q.get('float_mcap_yi',0)"
+          ]
+        },
+        "_pe_t": {
+          "output_lines": [
+            "  PE(TTM):  {_pe_t:.2f}  PE(静): {_pe_s_str}  PB: {q.get('pb'"
+          ],
+          "exprs": [
+            "_pe_t"
+          ]
+        },
+        "_pe_s_str": {
+          "output_lines": [
+            "  PE(TTM):  {_pe_t:.2f}  PE(静): {_pe_s_str}  PB: {q.get('pb'"
+          ],
+          "exprs": [
+            "_pe_s_str"
+          ]
+        },
+        "pb": {
+          "output_lines": [
+            "  PE(TTM):  {_pe_t:.2f}  PE(静): {_pe_s_str}  PB: {q.get('pb'"
+          ],
+          "exprs": [
+            "q.get('pb',0)"
+          ]
+        },
+        "limit_up": {
+          "output_lines": [
+            "  涨停价:   {q.get('limit_up',0):.2f}元  跌停价: {q.get('limit_down"
+          ],
+          "exprs": [
+            "q.get('limit_up',0)"
+          ]
+        },
+        "limit_down_price": {
+          "output_lines": [
+            "  涨停价:   {q.get('limit_up',0):.2f}元  跌停价: {q.get('limit_down"
+          ],
+          "exprs": [
+            "q.get('limit_down_price',0)"
+          ]
+        },
+        "ma5": {
+          "output_lines": [
+            "\\n  [技术支撑] MA5={ma5:.2f}元 | MA10={ma10:.2f}元"
+          ],
+          "exprs": [
+            "ma5"
+          ]
+        },
+        "ma10": {
+          "output_lines": [
+            "\\n  [技术支撑] MA5={ma5:.2f}元 | MA10={ma10:.2f}元"
+          ],
+          "exprs": [
+            "ma10"
+          ]
+        },
+        "bias": {
+          "output_lines": [
+            "  [短线趋势] 当前价相对 MA5 乖离率: {bias:+.2f}% ({'站上 MA5, 趋势偏强' if pri"
+          ],
+          "exprs": [
+            "bias"
+          ]
+        },
+        "inm": {
+          "output_lines": [
+            "  [{inm}] 开盘 {_iq_val.get('open',0):.2f} | 当前 {_iq_val.get('"
+          ],
+          "exprs": [
+            "inm"
+          ]
+        },
+        "price": {
+          "output_lines": [
+            "  [{inm}] 开盘 {_iq_val.get('open',0):.2f} | 当前 {_iq_val.get('",
+            "  {p['code']:<8} {p['name']:<12} {p['price']:>8.2f} {p['chan",
+            "  {d['date']:<12} {d['price']:>8.2f} {d['close']:>8.2f} {d['"
+          ],
+          "exprs": [
+            "_iq_val.get('price',0)",
+            "p['price']",
+            "d['price']"
+          ]
+        },
+        "hgt": {
+          "output_lines": [
+            "  💰 今日北向资金: 沪股通 {hsgt['hgt']:+.2f}亿 | 深股通 {hsgt['sgt']:+.2f}"
+          ],
+          "exprs": [
+            "hsgt['hgt']"
+          ]
+        },
+        "sgt": {
+          "output_lines": [
+            "  💰 今日北向资金: 沪股通 {hsgt['hgt']:+.2f}亿 | 深股通 {hsgt['sgt']:+.2f}"
+          ],
+          "exprs": [
+            "hsgt['sgt']"
+          ]
+        },
+        "total": {
+          "output_lines": [
+            "  💰 今日北向资金: 沪股通 {hsgt['hgt']:+.2f}亿 | 深股通 {hsgt['sgt']:+.2f}"
+          ],
+          "exprs": [
+            "hsgt['total']"
+          ]
+        },
+        "_sig": {
+          "output_lines": [
+            "  💰 今日北向资金: 沪股通 {hsgt['hgt']:+.2f}亿 | 深股通 {hsgt['sgt']:+.2f}"
+          ],
+          "exprs": [
+            "_sig"
+          ]
+        },
+        "last_day_flow": {
+          "output_lines": [
+            "  💰 昨日主力净流入: {last_day_flow:.0f}万元 ({last_day_flow/1e4:.2f}亿"
+          ],
+          "exprs": [
+            "last_day_flow"
+          ]
+        },
+        "_n_analysts": {
+          "output_lines": [
+            "  {_n_analysts} 家机构覆盖"
+          ],
+          "exprs": [
+            "_n_analysts"
+          ]
+        },
+        "_this_year": {
+          "output_lines": [
+            "  {_this_year}E EPS 均值: {eps_cur:.2f} 元{_range_str}{_ind_str",
+            "  前向PE ({_this_year}E): {pe_fwd:.2f}x"
+          ],
+          "exprs": [
+            "_this_year"
+          ]
+        },
+        "eps_cur": {
+          "output_lines": [
+            "  {_this_year}E EPS 均值: {eps_cur:.2f} 元{_range_str}{_ind_str"
+          ],
+          "exprs": [
+            "eps_cur"
+          ]
+        },
+        "_range_str": {
+          "output_lines": [
+            "  {_this_year}E EPS 均值: {eps_cur:.2f} 元{_range_str}{_ind_str"
+          ],
+          "exprs": [
+            "_range_str"
+          ]
+        },
+        "_ind_str": {
+          "output_lines": [
+            "  {_this_year}E EPS 均值: {eps_cur:.2f} 元{_range_str}{_ind_str"
+          ],
+          "exprs": [
+            "_ind_str"
+          ]
+        },
+        "eps_next": {
+          "output_lines": [
+            "  {int(_this_year)+1}E EPS 均值: {eps_next:.2f} 元"
+          ],
+          "exprs": [
+            "eps_next"
+          ]
+        },
+        "cagr": {
+          "output_lines": [
+            "  预期增速: {cagr:+.1f}% | PEG: {pe_fwd/cagr:.2f}"
+          ],
+          "exprs": [
+            "cagr"
+          ]
+        },
+        "pe_fwd": {
+          "output_lines": [
+            "  前向PE ({_this_year}E): {pe_fwd:.2f}x"
+          ],
+          "exprs": [
+            "pe_fwd"
+          ]
+        },
+        "publishDate": {
+          "output_lines": [
+            "  {str(r.get('publishDate',''))[:10]:<12} {r.get('orgSName',"
+          ],
+          "exprs": [
+            "str(r.get('publishDate',''))["
+          ]
+        },
+        "orgSName": {
+          "output_lines": [
+            "  {str(r.get('publishDate',''))[:10]:<12} {r.get('orgSName',"
+          ],
+          "exprs": [
+            "r.get('orgSName','')"
+          ]
+        },
+        "emRatingName": {
+          "output_lines": [
+            "  {str(r.get('publishDate',''))[:10]:<12} {r.get('orgSName',"
+          ],
+          "exprs": [
+            "str(r.get('emRatingName',''))"
+          ]
+        },
+        "title": {
+          "output_lines": [
+            "  {str(r.get('publishDate',''))[:10]:<12} {r.get('orgSName',",
+            "  {i}. [{a['date']}]{tt} {a['title']}{fl}"
+          ],
+          "exprs": [
+            "r.get('title','')[",
+            "a['title']"
+          ]
+        },
+        "rank_str": {
+          "output_lines": [
+            "  ➤ [板块共振监测] 该板块今日全市场排名: {rank_str}"
+          ],
+          "exprs": [
+            "rank_str"
+          ]
+        },
+        "my_rank": {
+          "output_lines": [
+            "  ➤ [市值排名] {peer_data.get('industry',stock_ind)}: 该股排名第 {pee"
+          ],
+          "exprs": [
+            "peer_data['my_rank']"
+          ]
+        },
+        "industry_count": {
+          "output_lines": [
+            "  ➤ [市值排名] {peer_data.get('industry',stock_ind)}: 该股排名第 {pee"
+          ],
+          "exprs": [
+            "peer_data['industry_count']"
+          ]
+        },
+        "date": {
+          "output_lines": [
+            "  最近分红: {ld2['date']} 每股{ld2['bonus_rmb']:.4f}元 (约{ye}股息率)",
+            "  {d['date']:<12} {d['main_net']/1e4:>+12.0f} {d['super_net'",
+            "  {d['date']:<12} {_shares/1e4:>12.0f} {_mcap/1e4:>12.0f} {_",
+            "  {r['date']:<12} {r.get('reason','')[:48]:<50} {r['net_buy'",
+            "  {h['date']:<12} {str(h['type'])[:30]:<30} {h['shares']/1e4",
+            "    {h['date']}: {str(h['type'])} 数量={h['shares']/1e4 if h['",
+            "  {d['date']:<12} {d['rzye']/1e4:>14.0f} {d['rzmre']/1e4:>14",
+            "  {d['date']:<12} {d['price']:>8.2f} {d['close']:>8.2f} {d['",
+            "  {h['date']:<14} {h['holder_num']:>10,} {h['change_num']:>+",
+            "  {i}. [{a['date']}]{tt} {a['title']}{fl}"
+          ],
+          "exprs": [
+            "ld2['date']",
+            "d['date']",
+            "r['date']",
+            "h['date']",
+            "a['date']"
+          ]
+        },
+        "bonus_rmb": {
+          "output_lines": [
+            "  最近分红: {ld2['date']} 每股{ld2['bonus_rmb']:.4f}元 (约{ye}股息率)"
+          ],
+          "exprs": [
+            "ld2['bonus_rmb']"
+          ]
+        },
+        "ye": {
+          "output_lines": [
+            "  最近分红: {ld2['date']} 每股{ld2['bonus_rmb']:.4f}元 (约{ye}股息率)"
+          ],
+          "exprs": [
+            "ye"
+          ]
+        },
+        "reason": {
+          "output_lines": [
+            "  [强势归因] {ths_hot.get('reason','')}",
+            "  {r['date']:<12} {r.get('reason','')[:48]:<50} {r['net_buy'"
+          ],
+          "exprs": [
+            "ths_hot.get('reason','')",
+            "r.get('reason','')["
+          ]
+        },
+        "peers": {
+          "output_lines": [
+            "  ⚠️ {peer_data['peers'][0]['note']}"
+          ],
+          "exprs": [
+            "peer_data['peers'][0]['note']"
+          ]
+        },
+        "_my_mcap_show": {
+          "output_lines": [
+            "  本股市值: {_my_mcap_show:.1f}亿元"
+          ],
+          "exprs": [
+            "_my_mcap_show"
+          ]
+        },
+        "_my_mcap": {
+          "output_lines": [
+            "  {code:<8} {info.get('name','N/A'):<12} {price_today:>8.2f}"
+          ],
+          "exprs": [
+            "_my_mcap"
+          ]
+        },
+        "pe_ttm": {
+          "output_lines": [
+            "  {code:<8} {info.get('name','N/A'):<12} {price_today:>8.2f}"
+          ],
+          "exprs": [
+            "q.get('pe_ttm',0)"
+          ]
+        },
+        "pe": {
+          "output_lines": [
+            "  {p['code']:<8} {p['name']:<12} {p['price']:>8.2f} {p['chan"
+          ],
+          "exprs": [
+            "p['pe']"
+          ]
+        },
+        "turnover": {
+          "output_lines": [
+            "  {p['code']:<8} {p['name']:<12} {p['price']:>8.2f} {p['chan",
+            "  {r['date']:<12} {r.get('reason','')[:48]:<50} {r['net_buy'"
+          ],
+          "exprs": [
+            "p['turnover']",
+            "r['turnover']"
+          ]
+        },
+        "main_net": {
+          "output_lines": [
+            "  {d['date']:<12} {d['main_net']/1e4:>+12.0f} {d['super_net'"
+          ],
+          "exprs": [
+            "d['main_net']/1e4"
+          ]
+        },
+        "super_net": {
+          "output_lines": [
+            "  {d['date']:<12} {d['main_net']/1e4:>+12.0f} {d['super_net'"
+          ],
+          "exprs": [
+            "d['super_net']/1e4"
+          ]
+        },
+        "large_net": {
+          "output_lines": [
+            "  {d['date']:<12} {d['main_net']/1e4:>+12.0f} {d['super_net'"
+          ],
+          "exprs": [
+            "d['large_net']/1e4"
+          ]
+        },
+        "mid_net": {
+          "output_lines": [
+            "  {d['date']:<12} {d['main_net']/1e4:>+12.0f} {d['super_net'"
+          ],
+          "exprs": [
+            "d['mid_net']/1e4"
+          ]
+        },
+        "small_net": {
+          "output_lines": [
+            "  {d['date']:<12} {d['main_net']/1e4:>+12.0f} {d['super_net'"
+          ],
+          "exprs": [
+            "d['small_net']/1e4"
+          ]
+        },
+        "d": {
+          "output_lines": [
+            "  {d:>+12.0f}"
+          ],
+          "exprs": [
+            "d"
+          ]
+        },
+        "tdays": {
+          "output_lines": [
+            "\\n  近20日统计:\\n    主力累计净流入: {tmain/1e4:.0f}万元\\n    主力净流入天数: {t",
+            "\\n  近20日统计:\\n    主力累计净流入: {tmain:.0f}万元\\n    主力净流入天数: {tdays"
+          ],
+          "exprs": [
+            "tdays"
+          ]
+        },
+        "tmain": {
+          "output_lines": [
+            "\\n  近20日统计:\\n    主力累计净流入: {tmain:.0f}万元\\n    主力净流入天数: {tdays"
+          ],
+          "exprs": [
+            "tmain"
+          ]
+        },
+        "_ratio": {
+          "output_lines": [
+            "  {d['date']:<12} {_shares/1e4:>12.0f} {_mcap/1e4:>12.0f} {_"
+          ],
+          "exprs": [
+            "_ratio"
+          ]
+        },
+        "change_shares": {
+          "output_lines": [
+            "  {d['date']:<12} {_shares/1e4:>12.0f} {_mcap/1e4:>12.0f} {_"
+          ],
+          "exprs": [
+            "d['change_shares']/1e4"
+          ]
+        },
+        "_recent_days": {
+          "output_lines": [
+            "  近{_recent_days}日上榜 {len(dtb['records'])} 次:",
+            "  近{_recent_days}日无龙虎榜记录（白马蓝筹或近期未触发异动标准的个股，无龙虎榜属正常现象）"
+          ],
+          "exprs": [
+            "_recent_days"
+          ]
+        },
+        "records": {
+          "output_lines": [
+            "  近{_recent_days}日上榜 {len(dtb['records'])} 次:"
+          ],
+          "exprs": [
+            "len(dtb['records'])"
+          ]
+        },
+        "net_buy": {
+          "output_lines": [
+            "  {r['date']:<12} {r.get('reason','')[:48]:<50} {r['net_buy'"
+          ],
+          "exprs": [
+            "r['net_buy']"
+          ]
+        },
+        "buy_amt": {
+          "output_lines": [
+            "  {_tag(s['name'])} {s['name']:<28} {s['buy_amt']:>12.1f} {s",
+            "\\n  机构买卖统计:\\n    机构买入金额: {inst['buy_amt']}万元\\n    机构卖出金额: {i"
+          ],
+          "exprs": [
+            "s['buy_amt']",
+            "inst['buy_amt']"
+          ]
+        },
+        "sell_amt": {
+          "output_lines": [
+            "  {_tag(s['name'])} {s['name']:<28} {s['buy_amt']:>12.1f} {s",
+            "\\n  机构买卖统计:\\n    机构买入金额: {inst['buy_amt']}万元\\n    机构卖出金额: {i"
+          ],
+          "exprs": [
+            "s['sell_amt']",
+            "inst['sell_amt']"
+          ]
+        },
+        "net": {
+          "output_lines": [
+            "  {_tag(s['name'])} {s['name']:<28} {s['buy_amt']:>12.1f} {s"
+          ],
+          "exprs": [
+            "s['net']"
+          ]
+        },
+        "net_amt": {
+          "output_lines": [
+            "\\n  机构买卖统计:\\n    机构买入金额: {inst['buy_amt']}万元\\n    机构卖出金额: {i"
+          ],
+          "exprs": [
+            "inst['net_amt']"
+          ]
+        },
+        "_sd_txt": {
+          "output_lines": [
+            "     {_sd_txt}五 {_tg} {_nm[:20]} 净{_nt:+.1f}万"
+          ],
+          "exprs": [
+            "_sd_txt"
+          ]
+        },
+        "_tg": {
+          "output_lines": [
+            "     {_sd_txt}五 {_tg} {_nm[:20]} 净{_nt:+.1f}万"
+          ],
+          "exprs": [
+            "_tg"
+          ]
+        },
+        "_nt": {
+          "output_lines": [
+            "     {_sd_txt}五 {_tg} {_nm[:20]} 净{_nt:+.1f}万"
+          ],
+          "exprs": [
+            "_nt"
+          ]
+        },
+        "_lhasa_count": {
+          "output_lines": [
+            "  ⚠️  拉萨散户席位: 买{_lhasa_count}家 / 卖{_lhasa_sell}家（散户聚集，注意追高风险"
+          ],
+          "exprs": [
+            "_lhasa_count"
+          ]
+        },
+        "_lhasa_sell": {
+          "output_lines": [
+            "  ⚠️  拉萨散户席位: 买{_lhasa_count}家 / 卖{_lhasa_sell}家（散户聚集，注意追高风险"
+          ],
+          "exprs": [
+            "_lhasa_sell"
+          ]
+        },
+        "seat_quality_score": {
+          "output_lines": [
+            "  席位质量评分: {sa['seat_quality_score']}分"
+          ],
+          "exprs": [
+            "sa['seat_quality_score']"
+          ]
+        },
+        "_signal_text": {
+          "output_lines": [
+            "  溢价信号: {_signal_text}"
+          ],
+          "exprs": [
+            "_signal_text"
+          ]
+        },
+        "legend_count": {
+          "output_lines": [
+            "  顶级游资席位: {sa['legend_count']}家"
+          ],
+          "exprs": [
+            "sa['legend_count']"
+          ]
+        },
+        "short_name": {
+          "output_lines": [
+            "  买方知名席位: {'、'.join([s['short_name'] for s in notable_buyers",
+            "  卖方知名席位: {'、'.join([s['short_name'] for s in notable_seller"
+          ],
+          "exprs": [
+            "'、'.join([s['short_name'] for s in notable_buyers])",
+            "'、'.join([s['short_name'] for s in notable_sellers])"
+          ]
+        },
+        "type": {
+          "output_lines": [
+            "  {h['date']:<12} {str(h['type'])[:30]:<30} {h['shares']/1e4",
+            "    {h['date']}: {str(h['type'])} 数量={h['shares']/1e4 if h['"
+          ],
+          "exprs": [
+            "str(h['type'])[",
+            "str(h['type'])"
+          ]
+        },
+        "shares": {
+          "output_lines": [
+            "  {h['date']:<12} {str(h['type'])[:30]:<30} {h['shares']/1e4",
+            "    {h['date']}: {str(h['type'])} 数量={h['shares']/1e4 if h['"
+          ],
+          "exprs": [
+            "h['shares']/1e4 if h['shares'] else 0"
+          ]
+        },
+        "ratio": {
+          "output_lines": [
+            "  {h['date']:<12} {str(h['type'])[:30]:<30} {h['shares']/1e4",
+            "    {h['date']}: {str(h['type'])} 数量={h['shares']/1e4 if h['"
+          ],
+          "exprs": [
+            "h['ratio']",
+            "'🔴' if h['ratio']>_unlock_ratio_warn else ('🟡' if h['ratio']",
+            "'高' if h['ratio']>_unlock_ratio_warn else ('中' if h['ratio']",
+            "'🔴高' if h['ratio']>_unlock_ratio_warn else ('🟡中' if h['ratio"
+          ]
+        },
+        "history": {
+          "output_lines": [
+            "  近30天内无解禁（共 {len(lockup['history'])} 批历史记录，已省略）"
+          ],
+          "exprs": [
+            "len(lockup['history'])"
+          ]
+        },
+        "_unlock_warn": {
+          "output_lines": [
+            "\\n  未来{_unlock_warn}天待解禁 {len(lockup['upcoming'])} 批: ⚠️",
+            "\\n  未来{_unlock_warn}天无待解禁"
+          ],
+          "exprs": [
+            "_unlock_warn"
+          ]
+        },
+        "upcoming": {
+          "output_lines": [
+            "\\n  未来{_unlock_warn}天待解禁 {len(lockup['upcoming'])} 批: ⚠️"
+          ],
+          "exprs": [
+            "len(lockup['upcoming'])"
+          ]
+        },
+        "rzye": {
+          "output_lines": [
+            "  {d['date']:<12} {d['rzye']/1e4:>14.0f} {d['rzmre']/1e4:>14"
+          ],
+          "exprs": [
+            "d['rzye']/1e4"
+          ]
+        },
+        "rzmre": {
+          "output_lines": [
+            "  {d['date']:<12} {d['rzye']/1e4:>14.0f} {d['rzmre']/1e4:>14"
+          ],
+          "exprs": [
+            "d['rzmre']/1e4"
+          ]
+        },
+        "rzche": {
+          "output_lines": [
+            "  {d['date']:<12} {d['rzye']/1e4:>14.0f} {d['rzmre']/1e4:>14"
+          ],
+          "exprs": [
+            "d['rzche']/1e4"
+          ]
+        },
+        "rqye": {
+          "output_lines": [
+            "  {d['date']:<12} {d['rzye']/1e4:>14.0f} {d['rzmre']/1e4:>14"
+          ],
+          "exprs": [
+            "d['rqye']/1e4"
+          ]
+        },
+        "_rz_ratio": {
+          "output_lines": [
+            "  🔥 融资买入占当日成交额 {_rz_ratio:.1f}%（>{20}%），杠杆资金疯狂涌入！"
+          ],
+          "exprs": [
+            "_rz_ratio"
+          ]
+        },
+        "close": {
+          "output_lines": [
+            "  {d['date']:<12} {d['price']:>8.2f} {d['close']:>8.2f} {d['"
+          ],
+          "exprs": [
+            "d['close']"
+          ]
+        },
+        "premium_pct": {
+          "output_lines": [
+            "  {d['date']:<12} {d['price']:>8.2f} {d['close']:>8.2f} {d['"
+          ],
+          "exprs": [
+            "d['premium_pct']"
+          ]
+        },
+        "vol": {
+          "output_lines": [
+            "  {d['date']:<12} {d['price']:>8.2f} {d['close']:>8.2f} {d['"
+          ],
+          "exprs": [
+            "d['vol']/1e4 if d['vol'] else 0"
+          ]
+        },
+        "buyer": {
+          "output_lines": [
+            "  {d['date']:<12} {d['price']:>8.2f} {d['close']:>8.2f} {d['"
+          ],
+          "exprs": [
+            "d['buyer']"
+          ]
+        },
+        "seller": {
+          "output_lines": [
+            "  {d['date']:<12} {d['price']:>8.2f} {d['close']:>8.2f} {d['"
+          ],
+          "exprs": [
+            "d['seller']"
+          ]
+        },
+        "do": {
+          "output_lines": [
+            "  ⚠️ 数据距今已 {do} 天，尚未更新至最新报告期"
+          ],
+          "exprs": [
+            "do"
+          ]
+        },
+        "holder_num": {
+          "output_lines": [
+            "  {h['date']:<14} {h['holder_num']:>10,} {h['change_num']:>+"
+          ],
+          "exprs": [
+            "h['holder_num']"
+          ]
+        },
+        "change_num": {
+          "output_lines": [
+            "  {h['date']:<14} {h['holder_num']:>10,} {h['change_num']:>+"
+          ],
+          "exprs": [
+            "h['change_num']"
+          ]
+        },
+        "_cr_disp": {
+          "output_lines": [
+            "  {h['date']:<14} {h['holder_num']:>10,} {h['change_num']:>+"
+          ],
+          "exprs": [
+            "_cr_disp"
+          ]
+        },
+        "_cr_flag": {
+          "output_lines": [
+            "  {h['date']:<14} {h['holder_num']:>10,} {h['change_num']:>+"
+          ],
+          "exprs": [
+            "_cr_flag"
+          ]
+        },
+        "sig": {
+          "output_lines": [
+            "\\n  ➤ 信号: {sig}"
+          ],
+          "exprs": [
+            "sig"
+          ]
+        },
+        "pub_time": {
+          "output_lines": [
+            "    · [{pub_time}] {title[:80]}"
+          ],
+          "exprs": [
+            "pub_time"
+          ]
+        },
+        "rank": {
+          "output_lines": [
+            "    🔥 同花顺热榜 #{in_hot['rank']} 热度{in_hot['heat']}",
+            "\\n  📊 市场热度: 该股当前在同花顺热榜 #{in_hot['rank']}，热度{in_hot['heat']}"
+          ],
+          "exprs": [
+            "in_hot['rank']"
+          ]
+        },
+        "heat": {
+          "output_lines": [
+            "    🔥 同花顺热榜 #{in_hot['rank']} 热度{in_hot['heat']}",
+            "\\n  📊 市场热度: 该股当前在同花顺热榜 #{in_hot['rank']}，热度{in_hot['heat']}"
+          ],
+          "exprs": [
+            "in_hot['heat']"
+          ]
+        },
+        "i": {
+          "output_lines": [
+            "  {i}. [{a['date']}]{tt} {a['title']}{fl}",
+            "  {i}. {s}"
+          ],
+          "exprs": [
+            "i"
+          ]
+        },
+        "tt": {
+          "output_lines": [
+            "  {i}. [{a['date']}]{tt} {a['title']}{fl}"
+          ],
+          "exprs": [
+            "tt"
+          ]
+        },
+        "fl": {
+          "output_lines": [
+            "  {i}. [{a['date']}]{tt} {a['title']}{fl}"
+          ],
+          "exprs": [
+            "fl"
+          ]
+        },
+        "rc": {
+          "output_lines": [
+            "    ⚠️ 减持预警：近7日有 {rc} 条减持相关公告，请注意风险。"
+          ],
+          "exprs": [
+            "rc"
+          ]
+        },
+        "zt_count": {
+          "output_lines": [
+            "    今日涨停 {zt_count} 只 | 炸板 {zb_count} 只 | 跌停 {dt_count} 只 | "
+          ],
+          "exprs": [
+            "zt_count"
+          ]
+        },
+        "zb_count": {
+          "output_lines": [
+            "    今日涨停 {zt_count} 只 | 炸板 {zb_count} 只 | 跌停 {dt_count} 只 | "
+          ],
+          "exprs": [
+            "zb_count"
+          ]
+        },
+        "dt_count": {
+          "output_lines": [
+            "    今日涨停 {zt_count} 只 | 炸板 {zb_count} 只 | 跌停 {dt_count} 只 | "
+          ],
+          "exprs": [
+            "dt_count"
+          ]
+        },
+        "success_rate": {
+          "output_lines": [
+            "    今日涨停 {zt_count} 只 | 炸板 {zb_count} 只 | 跌停 {dt_count} 只 | "
+          ],
+          "exprs": [
+            "success_rate"
+          ]
+        },
+        "limit_count": {
+          "output_lines": [
+            "    ✅ 当前股票在涨停池中！连板数:{item.get('limit_count',0)} 板块:{item.get"
+          ],
+          "exprs": [
+            "item.get('limit_count',0)"
+          ]
+        },
+        "sector": {
+          "output_lines": [
+            "    ✅ 当前股票在涨停池中！连板数:{item.get('limit_count',0)} 板块:{item.get",
+            "    ⚠️ 当前股票炸板！炸板次数:{item.get('broken_count',0)} 板块:{item.get"
+          ],
+          "exprs": [
+            "item.get('sector','')"
+          ]
+        },
+        "limit_fund": {
+          "output_lines": [
+            "    ✅ 当前股票在涨停池中！连板数:{item.get('limit_count',0)} 板块:{item.get"
+          ],
+          "exprs": [
+            "item.get('limit_fund',0)/1e8"
+          ]
+        },
+        "broken_count": {
+          "output_lines": [
+            "    ⚠️ 当前股票炸板！炸板次数:{item.get('broken_count',0)} 板块:{item.get"
+          ],
+          "exprs": [
+            "item.get('broken_count',0)"
+          ]
+        },
+        "k": {
+          "output_lines": [
+            "    涨停板块分布: {' | '.join(f'{k}({v})' for k,v in top_sectors)}"
+          ],
+          "exprs": [
+            "k"
+          ]
+        },
+        "v": {
+          "output_lines": [
+            "    涨停板块分布: {' | '.join(f'{k}({v})' for k,v in top_sectors)}"
+          ],
+          "exprs": [
+            "v"
+          ]
+        },
+        "s": {
+          "output_lines": [
+            "  {i}. {s}"
+          ],
+          "exprs": [
+            "s"
+          ]
+        },
+        "_lb_t": {
+          "output_lines": [
+            "  📊 连板追踪: 今日涨停，判定为{_lb_t}(3日累计{_3d:.1f}%)"
+          ],
+          "exprs": [
+            "_lb_t"
+          ]
+        },
+        "_3d": {
+          "output_lines": [
+            "  📊 连板追踪: 今日涨停，判定为{_lb_t}(3日累计{_3d:.1f}%)"
+          ],
+          "exprs": [
+            "_3d"
+          ]
+        },
+        "_ps": {
+          "output_lines": [
+            "  短线评分: {_ps:.0f}/100 → 封单偏弱，仓位降至20%，止损-5% ⚠️",
+            "  短线评分: {_ps:.0f}/100 → 封单偏弱，仓位降至12%，止损-5% ⚠️",
+            "  短线评分: {_ps:.0f}/100 → 封单偏弱，仓位降至5%，止损-3% ⚠️",
+            "  短线评分: {_ps:.0f}/100 → 封单偏弱，观望为主，仓位2% ⚠️",
+            "  短线评分: {_ps:.0f}/100 → 强烈参与，仓位40%，止损-5%",
+            "  短线评分: {_ps:.0f}/100 → 可参与，仓位25%，止损-5%",
+            "  短线评分: {_ps:.0f}/100 → 轻仓试探，仓位10%，止损-3%",
+            "  短线评分: {_ps:.0f}/100 → 观望，仓位5%试水"
+          ],
+          "exprs": [
+            "_ps"
+          ]
+        },
+        "value": {
+          "output_lines": [
+            "    价值派评分: {multi_scores['value'].total_score:.1f}分"
+          ],
+          "exprs": [
+            "multi_scores['value'].total_score"
+          ]
+        },
+        "growth": {
+          "output_lines": [
+            "    成长派评分: {multi_scores['growth'].total_score:.1f}分"
+          ],
+          "exprs": [
+            "multi_scores['growth'].total_score"
+          ]
+        },
+        "speculator": {
+          "output_lines": [
+            "    投机派评分: {multi_scores['speculator'].total_score:.1f}分"
+          ],
+          "exprs": [
+            "multi_scores['speculator'].total_score"
+          ]
+        },
+        "consensus": {
+          "output_lines": [
+            "    综合共识: {multi_scores['consensus'].total_score:.1f}分"
+          ],
+          "exprs": [
+            "multi_scores['consensus'].total_score"
+          ]
+        },
+        "dispersion": {
+          "output_lines": [
+            "    ⚠️ 派别分歧度较大({multi_scores['dispersion']:.1f})，投资需谨慎"
+          ],
+          "exprs": [
+            "multi_scores['dispersion']"
+          ]
+        },
+        "e": {
+          "output_lines": [
+            "    多评委评分异常: {e}"
+          ],
+          "exprs": [
+            "e"
+          ]
+        },
+        "_rating": {
+          "output_lines": [
+            "  综合投资建议: {_rating}"
+          ],
+          "exprs": [
+            "_rating"
+          ]
+        },
+        "concepts": {
+          "output_lines": [
+            "     关联概念: {', '.join(in_hot['concepts'][:3])}"
+          ],
+          "exprs": [
+            "', '.join(in_hot['concepts']["
+          ]
+        },
+        "tag": {
+          "output_lines": [
+            "     标签: {in_hot['tag']}"
+          ],
+          "exprs": [
+            "in_hot['tag']"
+          ]
+        },
+        "concept": {
+          "output_lines": [
+            "     热门概念: {', '.join([c['concept'] for c in concepts[:3]])}"
+          ],
+          "exprs": [
+            "', '.join([c['concept'] for c in concepts["
+          ]
+        }
+      },
+      "labels": {
+        "⚠️ 休市日": {
+          "output_lines": [
+            "  ⚠️ 休市日：数据为最近交易日快照，短线技术指标已标注",
+            "  ⚠️ 休市日：数据为最近交易日快照，龙虎榜数据为最近一期已发布"
+          ]
+        },
+        "股票名称": {
+          "output_lines": [
+            "  股票名称: {info.get('name','N/A')}"
+          ]
+        },
+        "股票代码": {
+          "output_lines": [
+            "  股票代码: {info.get('code',code)}"
+          ]
+        },
+        "所属板块": {
+          "output_lines": [
+            "  所属板块: {info.get('industry','N/A')}",
+            "  所属板块: {', '.join(b['name'] for b in blocks['industry'])}",
+            "  所属板块: {peer_data['industry']}"
+          ]
+        },
+        "总股本": {
+          "output_lines": [
+            "  总股本:   {info.get('total_shares',0)/1e8:.2f}亿股"
+          ]
+        },
+        "流通股本": {
+          "output_lines": [
+            "  流通股本: {info.get('float_shares',0)/1e8:.2f}亿股"
+          ]
+        },
+        "上市日期": {
+          "output_lines": [
+            "  上市日期: {ldf}"
+          ]
+        },
+        "⚠️ 盘前模式（9": {
+          "output_lines": [
+            "  ⚠️ 盘前模式（9:30前），以下行情数据基于上一交易日收盘数据"
+          ]
+        },
+        "当前价": {
+          "output_lines": [
+            "  当前价:   {price_today:.2f}元"
+          ]
+        },
+        "涨跌额": {
+          "output_lines": [
+            "  涨跌额:   {q.get('change_amt',0):.2f}元  涨跌幅: {q.get('change_p"
+          ]
+        },
+        "今开": {
+          "output_lines": [
+            "  今开:     {q.get('open',0):.2f}元  昨收: {q.get('last_close',0)"
+          ]
+        },
+        "最高": {
+          "output_lines": [
+            "  最高:     {q.get('high',0):.2f}元  最低: {q.get('low',0):.2f}元"
+          ]
+        },
+        "成交额": {
+          "output_lines": [
+            "  成交额:   {q.get('amount_wan',0)/10000:.2f}亿元  换手率: {q.get('t"
+          ]
+        },
+        "量比": {
+          "output_lines": [
+            "  量比:     {q.get('vol_ratio',0):.2f}  振幅: {q.get('amplitude_"
+          ]
+        },
+        "总市值": {
+          "output_lines": [
+            "  总市值:   {q.get('mcap_yi',0):.2f}亿元  流通市值: {q.get('float_mca"
+          ]
+        },
+        "涨停价": {
+          "output_lines": [
+            "  涨停价:   {q.get('limit_up',0):.2f}元  跌停价: {q.get('limit_down"
+          ]
+        },
+        "[短线趋势] 当前价相对 MA5 乖离率": {
+          "output_lines": [
+            "  [短线趋势] 当前价相对 MA5 乖离率: {bias:+.2f}% ({'站上 MA5, 趋势偏强' if pri"
+          ]
+        },
+        "💰 今日北向资金": {
+          "output_lines": [
+            "  💰 今日北向资金: 沪股通 {hsgt['hgt']:+.2f}亿 | 深股通 {hsgt['sgt']:+.2f}"
+          ]
+        },
+        "💰 今日主力净流入": {
+          "output_lines": [
+            "  💰 今日主力净流入: {_fd[0]:.0f}万元 ({_fd[0]/1e4:.2f}亿)"
+          ]
+        },
+        "💰 昨日主力净流入": {
+          "output_lines": [
+            "  💰 昨日主力净流入: {last_day_flow:.0f}万元 ({last_day_flow/1e4:.2f}亿"
+          ]
+        },
+        "\\n  [资金流向] 今日主力净流入(实时)": {
+          "output_lines": [
+            "\\n  [资金流向] 今日主力净流入(实时): 暂无数据"
+          ]
+        },
+        "预期增速": {
+          "output_lines": [
+            "  预期增速: {cagr:+.1f}% | PEG: {pe_fwd/cagr:.2f}"
+          ]
+        },
+        "➤ [板块共振监测] 该板块今日全市场排名": {
+          "output_lines": [
+            "  ➤ [板块共振监测] 该板块今日全市场排名: {rank_str}"
+          ]
+        },
+        "🔥 提醒": {
+          "output_lines": [
+            "     🔥 提醒: 所在板块处于全市场 TOP10，具备较强板块共振溢价效应！"
+          ]
+        },
+        "最近分红": {
+          "output_lines": [
+            "  最近分红: {ld2['date']} 每股{ld2['bonus_rmb']:.4f}元 (约{ye}股息率)"
+          ]
+        },
+        "\\n  概念板块": {
+          "output_lines": [
+            "\\n  概念板块: {', '.join(b['name'] for b in blocks['concept'])}"
+          ]
+        },
+        "⚠️ 同花顺热点池需16": {
+          "output_lines": [
+            "  ⚠️ 同花顺热点池需16:00后更新，当前为盘中时段数据可能为空"
+          ]
+        },
+        "本股市值": {
+          "output_lines": [
+            "  本股市值: {_my_mcap_show:.1f}亿元"
+          ]
+        },
+        "同业龙头对比": {
+          "output_lines": [
+            "  同业龙头对比:"
+          ]
+        },
+        "无法获取同业数据（板块": {
+          "output_lines": [
+            "  无法获取同业数据（板块: {peer_data.get('industry','未知')}）"
+          ]
+        },
+        "\\n  ➤ 60日资金流监控 (最近 10 日)": {
+          "output_lines": [
+            "\\n  ➤ 60日资金流监控 (最近 10 日):"
+          ]
+        },
+        "\\n  近20日统计": {
+          "output_lines": [
+            "\\n  近20日统计:\\n    主力累计净流入: {tmain/1e4:.0f}万元\\n    主力净流入天数: {t",
+            "\\n  近20日统计:\\n    主力累计净流入: {tmain:.0f}万元\\n    主力净流入天数: {tdays"
+          ]
+        },
+        "信号": {
+          "output_lines": [
+            "  信号: {'主力资金近期净流入 → 偏多' if tmain>0 else '主力资金近期净流出 → 偏空'}"
+          ]
+        },
+        "⚠️ 当前为下午盘，龙虎榜数据约16": {
+          "output_lines": [
+            "  ⚠️ 当前为下午盘，龙虎榜数据约16:30后更新，当前显示的是最近一期已发布数据"
+          ]
+        },
+        "\\n  最近买入席位 TOP5": {
+          "output_lines": [
+            "\\n  最近买入席位 TOP5:"
+          ]
+        },
+        "\\n  最近卖出席位 TOP5": {
+          "output_lines": [
+            "\\n  最近卖出席位 TOP5:"
+          ]
+        },
+        "\\n  机构买卖统计": {
+          "output_lines": [
+            "\\n  机构买卖统计:\\n    机构买入金额: {inst['buy_amt']}万元\\n    机构卖出金额: {i"
+          ]
+        },
+        "🟢 著名游资买入": {
+          "output_lines": [
+            "  🟢 著名游资买入: {'、'.join(_unique_buy)}"
+          ]
+        },
+        "🔴 著名游资卖出": {
+          "output_lines": [
+            "  🔴 著名游资卖出: {'、'.join(_unique_sell)}"
+          ]
+        },
+        "📊 席位明细": {
+          "output_lines": [
+            "  📊 席位明细:"
+          ]
+        },
+        "⚠️  拉萨散户席位": {
+          "output_lines": [
+            "  ⚠️  拉萨散户席位: 买{_lhasa_count}家 / 卖{_lhasa_sell}家（散户聚集，注意追高风险"
+          ]
+        },
+        "✅ 综合判断": {
+          "output_lines": [
+            "  ✅ 综合判断: 机构资金+游资同步关注，资金面积极",
+            "  ✅ 综合判断: 机构净买入，机构资金关注"
+          ]
+        },
+        "⚠️ 综合判断": {
+          "output_lines": [
+            "  ⚠️ 综合判断: 机构大额卖出 + 游资炒作，需谨慎",
+            "  ⚠️ 综合判断: 散户席位占主导，短期波动较大"
+          ]
+        },
+        "席位质量评分": {
+          "output_lines": [
+            "  席位质量评分: {sa['seat_quality_score']}分"
+          ]
+        },
+        "溢价信号": {
+          "output_lines": [
+            "  溢价信号: {_signal_text}"
+          ]
+        },
+        "顶级游资席位": {
+          "output_lines": [
+            "  顶级游资席位: {sa['legend_count']}家"
+          ]
+        },
+        "买方知名席位": {
+          "output_lines": [
+            "  买方知名席位: {'、'.join([s['short_name'] for s in notable_buyers"
+          ]
+        },
+        "卖方知名席位": {
+          "output_lines": [
+            "  卖方知名席位: {'、'.join([s['short_name'] for s in notable_seller"
+          ]
+        },
+        "知名席位": {
+          "output_lines": [
+            "  知名席位: {'、'.join(_notable)}"
+          ]
+        },
+        "\\n  ➤ 信号": {
+          "output_lines": [
+            "\\n  ➤ 信号: {sig}"
+          ]
+        },
+        "\\n  ➤ 近7日巨潮实质性重大公告": {
+          "output_lines": [
+            "\\n  ➤ 近7日巨潮实质性重大公告:"
+          ]
+        },
+        "⚠️ 减持预警": {
+          "output_lines": [
+            "    ⚠️ 减持预警：近7日有 {rc} 条减持相关公告，请注意风险。"
+          ]
+        },
+        "\\n  ➤ 打板与涨停分析": {
+          "output_lines": [
+            "\\n  ➤ 打板与涨停分析:"
+          ]
+        },
+        "✅ 当前股票在涨停池中！连板数": {
+          "output_lines": [
+            "    ✅ 当前股票在涨停池中！连板数:{item.get('limit_count',0)} 板块:{item.get"
+          ]
+        },
+        "⚠️ 当前股票炸板！炸板次数": {
+          "output_lines": [
+            "    ⚠️ 当前股票炸板！炸板次数:{item.get('broken_count',0)} 板块:{item.get"
+          ]
+        },
+        "涨停板块分布": {
+          "output_lines": [
+            "    涨停板块分布: {' | '.join(f'{k}({v})' for k,v in top_sectors)}"
+          ]
+        },
+        "综合分析条目": {
+          "output_lines": [
+            "  综合分析条目:"
+          ]
+        },
+        "📊 连板追踪": {
+          "output_lines": [
+            "  📊 连板追踪: 今日涨停，判定为{_lb_t}(3日累计{_3d:.1f}%)"
+          ]
+        },
+        "评分明细": {
+          "output_lines": [
+            "  评分明细: {' | '.join(_details[:8])}"
+          ]
+        },
+        "短线评分": {
+          "output_lines": [
+            "  短线评分: {_ps:.0f}/100 → 封单偏弱，仓位降至20%，止损-5% ⚠️",
+            "  短线评分: {_ps:.0f}/100 → 封单偏弱，仓位降至12%，止损-5% ⚠️",
+            "  短线评分: {_ps:.0f}/100 → 封单偏弱，仓位降至5%，止损-3% ⚠️",
+            "  短线评分: {_ps:.0f}/100 → 封单偏弱，观望为主，仓位2% ⚠️",
+            "  短线评分: {_ps:.0f}/100 → 强烈参与，仓位40%，止损-5%",
+            "  短线评分: {_ps:.0f}/100 → 可参与，仓位25%，止损-5%",
+            "  短线评分: {_ps:.0f}/100 → 轻仓试探，仓位10%，止损-3%",
+            "  短线评分: {_ps:.0f}/100 → 观望，仓位5%试水"
+          ]
+        },
+        "价值派评分": {
+          "output_lines": [
+            "    价值派评分: {multi_scores['value'].total_score:.1f}分"
+          ]
+        },
+        "成长派评分": {
+          "output_lines": [
+            "    成长派评分: {multi_scores['growth'].total_score:.1f}分"
+          ]
+        },
+        "投机派评分": {
+          "output_lines": [
+            "    投机派评分: {multi_scores['speculator'].total_score:.1f}分"
+          ]
+        },
+        "综合共识": {
+          "output_lines": [
+            "    综合共识: {multi_scores['consensus'].total_score:.1f}分"
+          ]
+        },
+        "多评委评分异常": {
+          "output_lines": [
+            "    多评委评分异常: {e}"
+          ]
+        },
+        "综合投资建议": {
+          "output_lines": [
+            "  综合投资建议: {_rating}"
+          ]
+        },
+        "\\n  📊 市场热度": {
+          "output_lines": [
+            "\\n  📊 市场热度: 该股当前在同花顺热榜 #{in_hot['rank']}，热度{in_hot['heat']}"
+          ]
+        },
+        "关联概念": {
+          "output_lines": [
+            "     关联概念: {', '.join(in_hot['concepts'][:3])}"
+          ]
+        },
+        "标签": {
+          "output_lines": [
+            "     标签: {in_hot['tag']}"
+          ]
+        },
+        "热门概念": {
+          "output_lines": [
+            "     热门概念: {', '.join([c['concept'] for c in concepts[:3]])}"
+          ]
+        }
+      },
+      "script": "D:\\GitHub\\test\\a-stock-data-v9.6\\get_sht_report.py",
+      "script_size": 63076
+    },
+    "med": {
+      "sections": [
+        "【一、宏观资金面背景】",
+        "【二、个股基本信息与估值锚点】",
+        "【三、历史财务业绩兑现追踪 (近5季度)】",
+        "【四、资产负债表财务健康度（排雷）】",
+        "【五、机构一致预期与前向 PEG】",
+        "【六、研报评级统计与风向变动 (近3个月)】",
+        "【七、重大实质性公告追踪 (避雷与催化)】",
+        "【八、筹码稳定性与抛压评估】",
+        "【九、北向资金持仓动态】",
+        "【十、同业龙头横向对比（赛道身位监测）】",
+        "【十一、中线主力资金流向 (60日基准)】",
+        "【十二、融资融券（两融数据，近15日）】",
+        "【十三、大宗交易（机构建仓痕迹）】",
+        "【十四、龙虎榜机构动向】",
+        "【十五、高股息防御属性 (近十次分红)】",
+        "【十六、十大流通股东机构动向】"
+      ],
+      "data_calls": [
+        "get_fund_flow_120d",
+        "tdx_get_history_fund_flow",
+        "get_holder_change_async",
+        "get_stock_sector_rank",
+        "tdx_get_belong_boards",
+        "tdx_get_board_members",
+        "tdx_get_quote_full",
+        "tdx_get_board_by_name",
+        "get_market_status",
+        "get_hsgt_macro_flow_async",
+        "get_stock_info",
+        "get_tencent_quote",
+        "get_industry_comparison",
+        "get_industry_peers",
+        "get_sina_financial_report_async",
+        "get_sina_balance_sheet_async",
+        "get_eps_forecast_async",
+        "get_reports_async",
+        "get_strategic_announcements_async",
+        "get_lockup_expiry_async",
+        "get_northbound_hold_async",
+        "get_gross_margin_and_roe_async",
+        "get_margin_trading_async",
+        "get_block_trade_async",
+        "get_dragon_tiger_board_async",
+        "get_dividend_history",
+        "get_holder_structure"
+      ],
+      "fields": {
+        "code": {
+          "output_lines": [
+            "  {code} 中线深度投研报告 — {today_str} {datetime.now().strftime('%H",
+            "  股票名称: {info.get('name', 'N/A')} ({info.get('code', code)})",
+            "  {code:<8} {info.get('name','N/A'):<12} {price_today:>8.2f}",
+            "  {p['code']:<8} {p['name']:<12} {p['price']:>8.2f} {p['chan"
+          ],
+          "exprs": [
+            "code",
+            "info.get('code', code)",
+            "p['code']"
+          ]
+        },
+        "today_str": {
+          "output_lines": [
+            "  {code} 中线深度投研报告 — {today_str} {datetime.now().strftime('%H"
+          ],
+          "exprs": [
+            "today_str"
+          ]
+        },
+        "note": {
+          "output_lines": [
+            "  {note}"
+          ],
+          "exprs": [
+            "note"
+          ]
+        },
+        "total": {
+          "output_lines": [
+            "  今日北向资金总净流入: {hsgt['total']:.2f} 亿元 (沪股通 {hsgt['hgt']:.2f}亿",
+            "  本股今日{_rank_info['change_pct']:+.2f}%，板块内排名第{_rank_info['ra"
+          ],
+          "exprs": [
+            "hsgt['total']",
+            "_rank_info['total']"
+          ]
+        },
+        "hgt": {
+          "output_lines": [
+            "  今日北向资金总净流入: {hsgt['total']:.2f} 亿元 (沪股通 {hsgt['hgt']:.2f}亿"
+          ],
+          "exprs": [
+            "hsgt['hgt']"
+          ]
+        },
+        "sgt": {
+          "output_lines": [
+            "  今日北向资金总净流入: {hsgt['total']:.2f} 亿元 (沪股通 {hsgt['hgt']:.2f}亿"
+          ],
+          "exprs": [
+            "hsgt['sgt']"
+          ]
+        },
+        "signal": {
+          "output_lines": [
+            "  大盘外资情绪: {signal} （中线仓位参考点）"
+          ],
+          "exprs": [
+            "signal"
+          ]
+        },
+        "name": {
+          "output_lines": [
+            "  股票名称: {info.get('name', 'N/A')} ({info.get('code', code)})",
+            "  {code:<8} {info.get('name','N/A'):<12} {price_today:>8.2f}",
+            "  {p['code']:<8} {p['name']:<12} {p['price']:>8.2f} {p['chan",
+            "  {s['name']:<30} {s['buy_amt']:>12.1f} {s['sell_amt']:>12.1"
+          ],
+          "exprs": [
+            "info.get('name', 'N/A')",
+            "info.get('name','N/A')",
+            "p['name']",
+            "s['name']"
+          ]
+        },
+        "industry": {
+          "output_lines": [
+            "  所属板块: {info.get('industry', 'N/A')}",
+            "  所属板块: {peer_data['industry']}",
+            "  无法获取同业数据（板块: {peer_data.get('industry', '未知')}）"
+          ],
+          "exprs": [
+            "info.get('industry', 'N/A')",
+            "peer_data['industry']",
+            "peer_data.get('industry', '未知')"
+          ]
+        },
+        "list_date_fmt": {
+          "output_lines": [
+            "  上市日期: {list_date_fmt}"
+          ],
+          "exprs": [
+            "list_date_fmt"
+          ]
+        },
+        "rank": {
+          "output_lines": [
+            "  板块排名: 当日全市场第 {row['rank']} 名 (涨跌幅 {row['change_pct']}%)",
+            "  本股今日{_rank_info['change_pct']:+.2f}%，板块内排名第{_rank_info['ra"
+          ],
+          "exprs": [
+            "row['rank']",
+            "_rank_info['rank']"
+          ]
+        },
+        "change_pct": {
+          "output_lines": [
+            "  板块排名: 当日全市场第 {row['rank']} 名 (涨跌幅 {row['change_pct']}%)",
+            "  本股今日{_rank_info['change_pct']:+.2f}%，板块内排名第{_rank_info['ra",
+            "  当前价:   {price_today:.2f}元  (今日涨跌: {q.get('change_pct', 0):",
+            "  {code:<8} {info.get('name','N/A'):<12} {price_today:>8.2f}",
+            "  {p['code']:<8} {p['name']:<12} {p['price']:>8.2f} {p['chan"
+          ],
+          "exprs": [
+            "row['change_pct']",
+            "_rank_info['change_pct']",
+            "q.get('change_pct', 0)",
+            "q.get('change_pct',0)",
+            "p['change_pct']"
+          ]
+        },
+        "leader_code": {
+          "output_lines": [
+            "  板块龙头: {leader_code} {leader_name}",
+            "  板块龙头: {leader_code}"
+          ],
+          "exprs": [
+            "leader_code"
+          ]
+        },
+        "leader_name": {
+          "output_lines": [
+            "  板块龙头: {leader_code} {leader_name}"
+          ],
+          "exprs": [
+            "leader_name"
+          ]
+        },
+        "my_rank": {
+          "output_lines": [
+            "  板块内排名: 按总市值排序, 该股排名第 {peer_data['my_rank']}/{peer_data['in",
+            "  业内排名: 第 {peer_data['my_rank']}/{peer_data['industry_count'"
+          ],
+          "exprs": [
+            "peer_data['my_rank']"
+          ]
+        },
+        "industry_count": {
+          "output_lines": [
+            "  板块内排名: 按总市值排序, 该股排名第 {peer_data['my_rank']}/{peer_data['in",
+            "  业内排名: 第 {peer_data['my_rank']}/{peer_data['industry_count'"
+          ],
+          "exprs": [
+            "peer_data['industry_count']"
+          ]
+        },
+        "mcap_yi": {
+          "output_lines": [
+            "  总市值:   {q.get('mcap_yi', 0):.2f}亿元 (流通股本 {info.get('float_",
+            "  {p['code']:<8} {p['name']:<12} {p['price']:>8.2f} {p['chan"
+          ],
+          "exprs": [
+            "q.get('mcap_yi', 0)",
+            "p['mcap_yi']"
+          ]
+        },
+        "float_shares": {
+          "output_lines": [
+            "  总市值:   {q.get('mcap_yi', 0):.2f}亿元 (流通股本 {info.get('float_"
+          ],
+          "exprs": [
+            "info.get('float_shares', 0)/1e8"
+          ]
+        },
+        "price_today": {
+          "output_lines": [
+            "  当前价:   {price_today:.2f}元  (今日涨跌: {q.get('change_pct', 0):",
+            "  {code:<8} {info.get('name','N/A'):<12} {price_today:>8.2f}"
+          ],
+          "exprs": [
+            "price_today"
+          ]
+        },
+        "_pe_ttm": {
+          "output_lines": [
+            "  动态市盈率 PE(TTM): {_pe_ttm:.2f}x | 静态PE: {_pe_s} | 市净率 PB: {q"
+          ],
+          "exprs": [
+            "_pe_ttm"
+          ]
+        },
+        "_pe_s": {
+          "output_lines": [
+            "  动态市盈率 PE(TTM): {_pe_ttm:.2f}x | 静态PE: {_pe_s} | 市净率 PB: {q"
+          ],
+          "exprs": [
+            "_pe_s"
+          ]
+        },
+        "pb": {
+          "output_lines": [
+            "  动态市盈率 PE(TTM): {_pe_ttm:.2f}x | 静态PE: {_pe_s} | 市净率 PB: {q"
+          ],
+          "exprs": [
+            "q.get('pb', 0)"
+          ]
+        },
+        "date_val": {
+          "output_lines": [
+            "  {date_val:<12} {rev_yi:>15} {profit_yi:>15} {npm:>8}"
+          ],
+          "exprs": [
+            "date_val"
+          ]
+        },
+        "rev_yi": {
+          "output_lines": [
+            "  {date_val:<12} {rev_yi:>15} {profit_yi:>15} {npm:>8}"
+          ],
+          "exprs": [
+            "rev_yi"
+          ]
+        },
+        "profit_yi": {
+          "output_lines": [
+            "  {date_val:<12} {rev_yi:>15} {profit_yi:>15} {npm:>8}"
+          ],
+          "exprs": [
+            "profit_yi"
+          ]
+        },
+        "npm": {
+          "output_lines": [
+            "  {date_val:<12} {rev_yi:>15} {profit_yi:>15} {npm:>8}"
+          ],
+          "exprs": [
+            "npm"
+          ]
+        },
+        "报告日": {
+          "output_lines": [
+            "  📊 最新报告期: {latest.get('报告日', 'N/A')}"
+          ],
+          "exprs": [
+            "latest.get('报告日', 'N/A')"
+          ]
+        },
+        "asset_yi": {
+          "output_lines": [
+            "  {'资产总计':<26} {asset_yi:>12.2f} {100.0:>9.1f}%"
+          ],
+          "exprs": [
+            "asset_yi"
+          ]
+        },
+        "liab_yi": {
+          "output_lines": [
+            "  {'负债合计':<26} {liab_yi:>12.2f} {liab_yi/asset_yi*100:>9.1f}"
+          ],
+          "exprs": [
+            "liab_yi"
+          ]
+        },
+        "equity_yi": {
+          "output_lines": [
+            "  {'归属于母公司股东权益':<26} {equity_yi:>12.2f} {equity_yi/asset_yi*"
+          ],
+          "exprs": [
+            "equity_yi"
+          ]
+        },
+        "ar_yi": {
+          "output_lines": [
+            "  {'应收账款':<26} {ar_yi:>12.2f} {ar_yi/asset_yi*100:>9.1f}%",
+            "    - 应收账款: {ar_yi:.2f}亿 (环比 {pct_chg(ar_yi, ar_prev):+.1f}%"
+          ],
+          "exprs": [
+            "ar_yi"
+          ]
+        },
+        "inv_yi": {
+          "output_lines": [
+            "  {'存货':<26} {inv_yi:>12.2f} {inv_yi/asset_yi*100:>9.1f}%",
+            "    - 存货: {inv_yi:.2f}亿 (环比 {pct_chg(inv_yi, inv_prev):+.1f}"
+          ],
+          "exprs": [
+            "inv_yi"
+          ]
+        },
+        "cash_yi": {
+          "output_lines": [
+            "  {'货币资金':<26} {cash_yi:>12.2f} {cash_yi/asset_yi*100:>9.1f}"
+          ],
+          "exprs": [
+            "cash_yi"
+          ]
+        },
+        "st_debt_yi": {
+          "output_lines": [
+            "  {'短期借款':<26} {st_debt_yi:>12.2f} {st_debt_yi/asset_yi*100:"
+          ],
+          "exprs": [
+            "st_debt_yi"
+          ]
+        },
+        "due_debt_yi": {
+          "output_lines": [
+            "  {'一年内到期负债':<26} {due_debt_yi:>12.2f} {due_debt_yi/asset_yi"
+          ],
+          "exprs": [
+            "due_debt_yi"
+          ]
+        },
+        "gw_yi": {
+          "output_lines": [
+            "  {'商誉':<26} {gw_yi:>12.2f} {gw_yi/asset_yi*100:>9.1f}%",
+            "    - 商誉: {gw_yi:.2f}亿 (环比 {pct_chg(gw_yi, gw_prev):+.1f}%)"
+          ],
+          "exprs": [
+            "gw_yi"
+          ]
+        },
+        "flag": {
+          "output_lines": [
+            "  {flag}"
+          ],
+          "exprs": [
+            "flag"
+          ]
+        },
+        "year": {
+          "output_lines": [
+            "  {year:<10} {cnt:<10} {mean_v:<12.3f}"
+          ],
+          "exprs": [
+            "year"
+          ]
+        },
+        "cnt": {
+          "output_lines": [
+            "  {year:<10} {cnt:<10} {mean_v:<12.3f}"
+          ],
+          "exprs": [
+            "cnt"
+          ]
+        },
+        "mean_v": {
+          "output_lines": [
+            "  {year:<10} {cnt:<10} {mean_v:<12.3f}"
+          ],
+          "exprs": [
+            "mean_v"
+          ]
+        },
+        "label_cur": {
+          "output_lines": [
+            "  {label_cur:<14} {eps_cur:.3f}"
+          ],
+          "exprs": [
+            "label_cur"
+          ]
+        },
+        "eps_cur": {
+          "output_lines": [
+            "  {label_cur:<14} {eps_cur:.3f}"
+          ],
+          "exprs": [
+            "eps_cur"
+          ]
+        },
+        "label_next": {
+          "output_lines": [
+            "  {label_next:<14} {eps_next:.3f}"
+          ],
+          "exprs": [
+            "label_next"
+          ]
+        },
+        "eps_next": {
+          "output_lines": [
+            "  {label_next:<14} {eps_next:.3f}"
+          ],
+          "exprs": [
+            "eps_next"
+          ]
+        },
+        "pe_fwd": {
+          "output_lines": [
+            "\\n  ➤ 前向市盈率 (预测今年): {pe_fwd:.2f}x"
+          ],
+          "exprs": [
+            "pe_fwd"
+          ]
+        },
+        "peg": {
+          "output_lines": [
+            "  ➤ 核心 PEG 指标: {peg:.2f} → {eval_str}"
+          ],
+          "exprs": [
+            "peg"
+          ]
+        },
+        "eval_str": {
+          "output_lines": [
+            "  ➤ 核心 PEG 指标: {peg:.2f} → {eval_str}"
+          ],
+          "exprs": [
+            "eval_str"
+          ]
+        },
+        "_dif": {
+          "output_lines": [
+            "  [MACD] DIF={_dif:.3f} DEA={_dea:.3f}（{_macd_sig}）"
+          ],
+          "exprs": [
+            "_dif"
+          ]
+        },
+        "_dea": {
+          "output_lines": [
+            "  [MACD] DIF={_dif:.3f} DEA={_dea:.3f}（{_macd_sig}）"
+          ],
+          "exprs": [
+            "_dea"
+          ]
+        },
+        "_macd_sig": {
+          "output_lines": [
+            "  [MACD] DIF={_dif:.3f} DEA={_dea:.3f}（{_macd_sig}）"
+          ],
+          "exprs": [
+            "_macd_sig"
+          ]
+        },
+        "_ma20": {
+          "output_lines": [
+            "  [均线] MA20={_ma20:.2f} | {_ma_st}"
+          ],
+          "exprs": [
+            "_ma20"
+          ]
+        },
+        "_ma_st": {
+          "output_lines": [
+            "  [均线] MA20={_ma20:.2f} | {_ma_st}"
+          ],
+          "exprs": [
+            "_ma_st"
+          ]
+        },
+        "digest": {
+          "output_lines": [
+            "  ➤ 估值消化到30x需: {digest:.1f} 年"
+          ],
+          "exprs": [
+            "digest"
+          ]
+        },
+        "_pc": {
+          "output_lines": [
+            "  PE历史分位: {_pc:.0f}%（低于{_pc:.0f}%的历史时间）"
+          ],
+          "exprs": [
+            "_pc"
+          ]
+        },
+        "buy_count": {
+          "output_lines": [
+            "  ➤ 【买入】评级: {buy_count} 篇 | 【增持】评级: {add_count} 篇"
+          ],
+          "exprs": [
+            "buy_count"
+          ]
+        },
+        "add_count": {
+          "output_lines": [
+            "  ➤ 【买入】评级: {buy_count} 篇 | 【增持】评级: {add_count} 篇"
+          ],
+          "exprs": [
+            "add_count"
+          ]
+        },
+        "pub_date": {
+          "output_lines": [
+            "    - [{pub_date}] {org} ({rating}): {title}"
+          ],
+          "exprs": [
+            "pub_date"
+          ]
+        },
+        "org": {
+          "output_lines": [
+            "    - [{pub_date}] {org} ({rating}): {title}"
+          ],
+          "exprs": [
+            "org"
+          ]
+        },
+        "rating": {
+          "output_lines": [
+            "    - [{pub_date}] {org} ({rating}): {title}"
+          ],
+          "exprs": [
+            "rating"
+          ]
+        },
+        "title": {
+          "output_lines": [
+            "    - [{pub_date}] {org} ({rating}): {title}",
+            "  {i}. [{a['date']}] {a['title']}"
+          ],
+          "exprs": [
+            "title",
+            "a['title']"
+          ]
+        },
+        "i": {
+          "output_lines": [
+            "  {i}. [{a['date']}] {a['title']}"
+          ],
+          "exprs": [
+            "i"
+          ]
+        },
+        "date": {
+          "output_lines": [
+            "  {i}. [{a['date']}] {a['title']}",
+            "    截止 {h['date']}: 股东数 {h['holder_num']:,} 户 | 环比变化 {_cr_di",
+            "    - {h['date']}: {h['type']} ({h['shares']/1e4:.0f}万股, 占 {",
+            "  {d['date']:<12} {_shares/1e4:>12.0f} {_mcap/1e4:>12.0f} {_",
+            "  {d['date']:<12} {d['rzye']/1e4:>14.0f} {d['rzmre']/1e4:>14",
+            "  {d['date']:<12} {d['price']:>8.2f} {d['premium_pct']:>7.2f",
+            "  {r['date']:<12} {reason:<50} {r['net_buy']:>12.1f} {r['tur",
+            "  {d['date']:<14} {d['bonus_rmb']:>12.4f}  约 {yield_str} (按现"
+          ],
+          "exprs": [
+            "a['date']",
+            "h['date']",
+            "d['date']",
+            "r['date']"
+          ]
+        },
+        "rc": {
+          "output_lines": [
+            "\\n  ⚠️ 减持预警：近期有 {rc} 条减持相关公告，请仔细甄别。"
+          ],
+          "exprs": [
+            "rc"
+          ]
+        },
+        "holder_num": {
+          "output_lines": [
+            "    截止 {h['date']}: 股东数 {h['holder_num']:,} 户 | 环比变化 {_cr_di"
+          ],
+          "exprs": [
+            "h['holder_num']"
+          ]
+        },
+        "_cr_disp": {
+          "output_lines": [
+            "    截止 {h['date']}: 股东数 {h['holder_num']:,} 户 | 环比变化 {_cr_di"
+          ],
+          "exprs": [
+            "_cr_disp"
+          ]
+        },
+        "_cr_flag": {
+          "output_lines": [
+            "    截止 {h['date']}: 股东数 {h['holder_num']:,} 户 | 环比变化 {_cr_di"
+          ],
+          "exprs": [
+            "_cr_flag"
+          ]
+        },
+        "_ev": {
+          "output_lines": [
+            "    📅 {_ev}"
+          ],
+          "exprs": [
+            "_ev"
+          ]
+        },
+        "type": {
+          "output_lines": [
+            "    - {h['date']}: {h['type']} ({h['shares']/1e4:.0f}万股, 占 {"
+          ],
+          "exprs": [
+            "h['type']"
+          ]
+        },
+        "shares": {
+          "output_lines": [
+            "    - {h['date']}: {h['type']} ({h['shares']/1e4:.0f}万股, 占 {"
+          ],
+          "exprs": [
+            "h['shares']/1e4"
+          ]
+        },
+        "ratio": {
+          "output_lines": [
+            "    - {h['date']}: {h['type']} ({h['shares']/1e4:.0f}万股, 占 {"
+          ],
+          "exprs": [
+            "h['ratio']"
+          ]
+        },
+        "_label": {
+          "output_lines": [
+            "  近 {len(nb)} {_label}北向持仓数据:",
+            "  ➤ 信号: 近{len(nb)}{_label}北向持股比例 +{ratio_change:.4f}%，外资增持",
+            "  ➤ 信号: 近{len(nb)}{_label}北向持股比例 {ratio_change:.4f}%，外资减持"
+          ],
+          "exprs": [
+            "_label"
+          ]
+        },
+        "_ratio": {
+          "output_lines": [
+            "  {d['date']:<12} {_shares/1e4:>12.0f} {_mcap/1e4:>12.0f} {_"
+          ],
+          "exprs": [
+            "_ratio"
+          ]
+        },
+        "change_shares": {
+          "output_lines": [
+            "  {d['date']:<12} {_shares/1e4:>12.0f} {_mcap/1e4:>12.0f} {_"
+          ],
+          "exprs": [
+            "d['change_shares']/1e4"
+          ]
+        },
+        "ratio_change": {
+          "output_lines": [
+            "  ➤ 信号: 近{len(nb)}{_label}北向持股比例 +{ratio_change:.4f}%，外资增持",
+            "  ➤ 信号: 近{len(nb)}{_label}北向持股比例 {ratio_change:.4f}%，外资减持"
+          ],
+          "exprs": [
+            "ratio_change"
+          ]
+        },
+        "peers": {
+          "output_lines": [
+            "  ⚠️ {peer_data['peers'][0]['note']}"
+          ],
+          "exprs": [
+            "peer_data['peers'][0]['note']"
+          ]
+        },
+        "my_mcap": {
+          "output_lines": [
+            "  本股市值: {peer_data['my_mcap']:.1f}亿元",
+            "  {code:<8} {info.get('name','N/A'):<12} {price_today:>8.2f}"
+          ],
+          "exprs": [
+            "peer_data['my_mcap']"
+          ]
+        },
+        "pe_ttm": {
+          "output_lines": [
+            "  {code:<8} {info.get('name','N/A'):<12} {price_today:>8.2f}"
+          ],
+          "exprs": [
+            "q.get('pe_ttm',0)"
+          ]
+        },
+        "turnover_pct": {
+          "output_lines": [
+            "  {code:<8} {info.get('name','N/A'):<12} {price_today:>8.2f}"
+          ],
+          "exprs": [
+            "q.get('turnover_pct',0)"
+          ]
+        },
+        "price": {
+          "output_lines": [
+            "  {p['code']:<8} {p['name']:<12} {p['price']:>8.2f} {p['chan",
+            "  {d['date']:<12} {d['price']:>8.2f} {d['premium_pct']:>7.2f"
+          ],
+          "exprs": [
+            "p['price']",
+            "d['price']"
+          ]
+        },
+        "pe": {
+          "output_lines": [
+            "  {p['code']:<8} {p['name']:<12} {p['price']:>8.2f} {p['chan"
+          ],
+          "exprs": [
+            "p['pe']"
+          ]
+        },
+        "turnover": {
+          "output_lines": [
+            "  {p['code']:<8} {p['name']:<12} {p['price']:>8.2f} {p['chan",
+            "  {r['date']:<12} {reason:<50} {r['net_buy']:>12.1f} {r['tur"
+          ],
+          "exprs": [
+            "p['turnover']",
+            "r['turnover']"
+          ]
+        },
+        "days_bullish_20": {
+          "output_lines": [
+            "    主力净流入天数: {days_bullish_20} 天 / 20 天"
+          ],
+          "exprs": [
+            "days_bullish_20"
+          ]
+        },
+        "error": {
+          "output_lines": [
+            "  {fund_flow['error']}"
+          ],
+          "exprs": [
+            "fund_flow['error']"
+          ]
+        },
+        "_pc_chg": {
+          "output_lines": [
+            "  ⚠️ 量价背离：近20日主力净流出{abs(_cum_f)/1e8:.2f}亿，股价涨{_pc_chg:.1f}%缺"
+          ],
+          "exprs": [
+            "_pc_chg"
+          ]
+        },
+        "rzye": {
+          "output_lines": [
+            "  {d['date']:<12} {d['rzye']/1e4:>14.0f} {d['rzmre']/1e4:>14"
+          ],
+          "exprs": [
+            "d['rzye']/1e4"
+          ]
+        },
+        "rzmre": {
+          "output_lines": [
+            "  {d['date']:<12} {d['rzye']/1e4:>14.0f} {d['rzmre']/1e4:>14"
+          ],
+          "exprs": [
+            "d['rzmre']/1e4"
+          ]
+        },
+        "rzche": {
+          "output_lines": [
+            "  {d['date']:<12} {d['rzye']/1e4:>14.0f} {d['rzmre']/1e4:>14"
+          ],
+          "exprs": [
+            "d['rzche']/1e4"
+          ]
+        },
+        "rqye": {
+          "output_lines": [
+            "  {d['date']:<12} {d['rzye']/1e4:>14.0f} {d['rzmre']/1e4:>14"
+          ],
+          "exprs": [
+            "d['rqye']/1e4"
+          ]
+        },
+        "premium_pct": {
+          "output_lines": [
+            "  {d['date']:<12} {d['price']:>8.2f} {d['premium_pct']:>7.2f"
+          ],
+          "exprs": [
+            "d['premium_pct']"
+          ]
+        },
+        "vol": {
+          "output_lines": [
+            "  {d['date']:<12} {d['price']:>8.2f} {d['premium_pct']:>7.2f"
+          ],
+          "exprs": [
+            "d['vol']/1e4"
+          ]
+        },
+        "buyer": {
+          "output_lines": [
+            "  {d['date']:<12} {d['price']:>8.2f} {d['premium_pct']:>7.2f"
+          ],
+          "exprs": [
+            "d['buyer']"
+          ]
+        },
+        "records": {
+          "output_lines": [
+            "  近180日上榜 {len(dtb['records'])} 次:"
+          ],
+          "exprs": [
+            "len(dtb['records'])"
+          ]
+        },
+        "reason": {
+          "output_lines": [
+            "  {r['date']:<12} {reason:<50} {r['net_buy']:>12.1f} {r['tur"
+          ],
+          "exprs": [
+            "reason"
+          ]
+        },
+        "net_buy": {
+          "output_lines": [
+            "  {r['date']:<12} {reason:<50} {r['net_buy']:>12.1f} {r['tur"
+          ],
+          "exprs": [
+            "r['net_buy']"
+          ]
+        },
+        "buy_amt": {
+          "output_lines": [
+            "  {s['name']:<30} {s['buy_amt']:>12.1f} {s['sell_amt']:>12.1",
+            "    机构买入金额: {inst['buy_amt']}万元"
+          ],
+          "exprs": [
+            "s['buy_amt']",
+            "inst['buy_amt']"
+          ]
+        },
+        "sell_amt": {
+          "output_lines": [
+            "  {s['name']:<30} {s['buy_amt']:>12.1f} {s['sell_amt']:>12.1",
+            "    机构卖出金额: {inst['sell_amt']}万元"
+          ],
+          "exprs": [
+            "s['sell_amt']",
+            "inst['sell_amt']"
+          ]
+        },
+        "net": {
+          "output_lines": [
+            "  {s['name']:<30} {s['buy_amt']:>12.1f} {s['sell_amt']:>12.1"
+          ],
+          "exprs": [
+            "s['net']"
+          ]
+        },
+        "net_amt": {
+          "output_lines": [
+            "    机构净买入: {inst['net_amt']}万元"
+          ],
+          "exprs": [
+            "inst['net_amt']"
+          ]
+        },
+        "_dy": {
+          "output_lines": [
+            "  📊 分红持续性: 连续{_dy}年分红"
+          ],
+          "exprs": [
+            "_dy"
+          ]
+        },
+        "bonus_rmb": {
+          "output_lines": [
+            "  {d['date']:<14} {d['bonus_rmb']:>12.4f}  约 {yield_str} (按现"
+          ],
+          "exprs": [
+            "d['bonus_rmb']"
+          ]
+        },
+        "yield_str": {
+          "output_lines": [
+            "  {d['date']:<14} {d['bonus_rmb']:>12.4f}  约 {yield_str} (按现"
+          ],
+          "exprs": [
+            "yield_str"
+          ]
+        },
+        "foreign": {
+          "output_lines": [
+            "  🔍 外资机构合计持股 {latest['foreign']:.1f}%，话语权极强"
+          ],
+          "exprs": [
+            "latest['foreign']"
+          ]
+        },
+        "northbound": {
+          "output_lines": [
+            "  🔍 北向资金持股 {latest['northbound']:.1f}% > 10%，重要边际定价力量"
+          ],
+          "exprs": [
+            "latest['northbound']"
+          ]
+        },
+        "individual": {
+          "output_lines": [
+            "  🔍 个人大股东合计持股 {latest['individual']:.1f}%，利益深度绑定"
+          ],
+          "exprs": [
+            "latest['individual']"
+          ]
+        },
+        "_bi": {
+          "output_lines": [
+            "  📊 {_bi}"
+          ],
+          "exprs": [
+            "_bi"
+          ]
+        },
+        "_ps": {
+          "output_lines": [
+            "  中线评分: {_ps:.0f}/100 → 强烈推荐，仓位40%",
+            "  中线评分: {_ps:.0f}/100 → 建议配置，仓位25%",
+            "  中线评分: {_ps:.0f}/100 → 观察仓，仓位10%",
+            "  中线评分: {_ps:.0f}/100 → 暂不建议，等待基本面拐点"
+          ],
+          "exprs": [
+            "_ps"
+          ]
+        },
+        "value": {
+          "output_lines": [
+            "    价值派评分: {multi_scores['value'].total_score:.1f}分"
+          ],
+          "exprs": [
+            "multi_scores['value'].total_score"
+          ]
+        },
+        "growth": {
+          "output_lines": [
+            "    成长派评分: {multi_scores['growth'].total_score:.1f}分"
+          ],
+          "exprs": [
+            "multi_scores['growth'].total_score"
+          ]
+        },
+        "speculator": {
+          "output_lines": [
+            "    投机派评分: {multi_scores['speculator'].total_score:.1f}分"
+          ],
+          "exprs": [
+            "multi_scores['speculator'].total_score"
+          ]
+        },
+        "consensus": {
+          "output_lines": [
+            "    综合共识: {multi_scores['consensus'].total_score:.1f}分"
+          ],
+          "exprs": [
+            "multi_scores['consensus'].total_score"
+          ]
+        },
+        "dispersion": {
+          "output_lines": [
+            "    ⚠️ 派别分歧度较大({multi_scores['dispersion']:.1f})，投资需谨慎"
+          ],
+          "exprs": [
+            "multi_scores['dispersion']"
+          ]
+        },
+        "e": {
+          "output_lines": [
+            "    多评委评分异常: {e}"
+          ],
+          "exprs": [
+            "e"
+          ]
+        },
+        "_rating": {
+          "output_lines": [
+            "  综合投资建议: {_rating}"
+          ],
+          "exprs": [
+            "_rating"
+          ]
+        }
+      },
+      "labels": {
+        "今日北向资金总净流入": {
+          "output_lines": [
+            "  今日北向资金总净流入: {hsgt['total']:.2f} 亿元 (沪股通 {hsgt['hgt']:.2f}亿"
+          ]
+        },
+        "大盘外资情绪": {
+          "output_lines": [
+            "  大盘外资情绪: {signal} （中线仓位参考点）"
+          ]
+        },
+        "股票名称": {
+          "output_lines": [
+            "  股票名称: {info.get('name', 'N/A')} ({info.get('code', code)})"
+          ]
+        },
+        "所属板块": {
+          "output_lines": [
+            "  所属板块: {info.get('industry', 'N/A')}",
+            "  所属板块: {peer_data['industry']}"
+          ]
+        },
+        "上市日期": {
+          "output_lines": [
+            "  上市日期: {list_date_fmt}"
+          ]
+        },
+        "板块排名": {
+          "output_lines": [
+            "  板块排名: 当日全市场第 {row['rank']} 名 (涨跌幅 {row['change_pct']}%)"
+          ]
+        },
+        "🔥 板块共振": {
+          "output_lines": [
+            "  🔥 板块共振: 该板块处于全市场 TOP 10 热门赛道，板块共振溢价效应显著"
+          ]
+        },
+        "板块龙头": {
+          "output_lines": [
+            "  板块龙头: {leader_code} {leader_name}",
+            "  板块龙头: {leader_code}"
+          ]
+        },
+        "板块内排名": {
+          "output_lines": [
+            "  板块内排名: 按总市值排序, 该股排名第 {peer_data['my_rank']}/{peer_data['in"
+          ]
+        },
+        "总市值": {
+          "output_lines": [
+            "  总市值:   {q.get('mcap_yi', 0):.2f}亿元 (流通股本 {info.get('float_"
+          ]
+        },
+        "⚠️ 盘前模式（9": {
+          "output_lines": [
+            "  ⚠️ 盘前模式（9:30前），以下行情数据基于上一交易日收盘数据"
+          ]
+        },
+        "当前价": {
+          "output_lines": [
+            "  当前价:   {price_today:.2f}元  (今日涨跌: {q.get('change_pct', 0):"
+          ]
+        },
+        "动态市盈率 PE(TTM)": {
+          "output_lines": [
+            "  动态市盈率 PE(TTM): {_pe_ttm:.2f}x | 静态PE: {_pe_s} | 市净率 PB: {q"
+          ]
+        },
+        "\\n  💡 中线逻辑核实": {
+          "output_lines": [
+            "\\n  💡 中线逻辑核实：观察收入与净利润是否保持同步增长。"
+          ]
+        },
+        "📊 最新报告期": {
+          "output_lines": [
+            "  📊 最新报告期: {latest.get('报告日', 'N/A')}"
+          ]
+        },
+        "\\n  📈 环比变动（本期 vs 上期）": {
+          "output_lines": [
+            "\\n  📈 环比变动（本期 vs 上期）:"
+          ]
+        },
+        "- 应收账款": {
+          "output_lines": [
+            "    - 应收账款: {ar_yi:.2f}亿 (环比 {pct_chg(ar_yi, ar_prev):+.1f}%"
+          ]
+        },
+        "- 存货": {
+          "output_lines": [
+            "    - 存货: {inv_yi:.2f}亿 (环比 {pct_chg(inv_yi, inv_prev):+.1f}"
+          ]
+        },
+        "- 商誉": {
+          "output_lines": [
+            "    - 商誉: {gw_yi:.2f}亿 (环比 {pct_chg(gw_yi, gw_prev):+.1f}%)"
+          ]
+        },
+        "东财研报一致预期EPS (同花顺兜底)": {
+          "output_lines": [
+            "  东财研报一致预期EPS (同花顺兜底):"
+          ]
+        },
+        "\\n  ➤ 前向市盈率 (预测今年)": {
+          "output_lines": [
+            "\\n  ➤ 前向市盈率 (预测今年): {pe_fwd:.2f}x"
+          ]
+        },
+        "➤ 预期净利增速": {
+          "output_lines": [
+            "  ➤ 预期净利增速: {cagr*100:.1f}%"
+          ]
+        },
+        "➤ 核心 PEG 指标": {
+          "output_lines": [
+            "  ➤ 核心 PEG 指标: {peg:.2f} → {eval_str}"
+          ]
+        },
+        "➤ 估值消化到30x需": {
+          "output_lines": [
+            "  ➤ 估值消化到30x需: {digest:.1f} 年"
+          ]
+        },
+        "PE历史分位": {
+          "output_lines": [
+            "  PE历史分位: {_pc:.0f}%（低于{_pc:.0f}%的历史时间）"
+          ]
+        },
+        "统计样本": {
+          "output_lines": [
+            "  统计样本：近 {len(reports)} 篇研报"
+          ]
+        },
+        "➤ 【买入】评级": {
+          "output_lines": [
+            "  ➤ 【买入】评级: {buy_count} 篇 | 【增持】评级: {add_count} 篇"
+          ]
+        },
+        "\\n  最新 5 篇核心研报观点": {
+          "output_lines": [
+            "\\n  最新 5 篇核心研报观点:"
+          ]
+        },
+        "\\n  ⚠️ 减持预警": {
+          "output_lines": [
+            "\\n  ⚠️ 减持预警：近期有 {rc} 条减持相关公告，请仔细甄别。"
+          ]
+        },
+        "\\n  💡 中线提醒": {
+          "output_lines": [
+            "\\n  💡 中线提醒：重点关注定增、股权激励、减持计划及大额中标公告。"
+          ]
+        },
+        "➤ 股东户数变化趋势": {
+          "output_lines": [
+            "  ➤ 股东户数变化趋势:"
+          ]
+        },
+        "✅ 结论": {
+          "output_lines": [
+            "    ✅ 结论: 筹码正在集中，利好中线。"
+          ]
+        },
+        "⚠️ 结论": {
+          "output_lines": [
+            "    ⚠️ 结论: 筹码趋于分散，散户增多，注意风险。"
+          ]
+        },
+        "\\n  ➤ 未来可预期事件": {
+          "output_lines": [
+            "\\n  ➤ 未来可预期事件:"
+          ]
+        },
+        "\\n  ➤ 解禁抛压预警 (未来180天)": {
+          "output_lines": [
+            "\\n  ➤ 解禁抛压预警 (未来180天):"
+          ]
+        },
+        "⚠️ 待解禁总计": {
+          "output_lines": [
+            "    ⚠️ 待解禁总计: {total_upcoming/1e4:.0f}万股"
+          ]
+        },
+        "\\n  ➤ 解禁抛压预警": {
+          "output_lines": [
+            "\\n  ➤ 解禁抛压预警: 未来半年内无解禁压力 ✅"
+          ]
+        },
+        "➤ 信号": {
+          "output_lines": [
+            "  ➤ 信号: 近{len(nb)}{_label}北向持股比例 +{ratio_change:.4f}%，外资增持",
+            "  ➤ 信号: 近{len(nb)}{_label}北向持股比例 {ratio_change:.4f}%，外资减持"
+          ]
+        },
+        "本股市值": {
+          "output_lines": [
+            "  本股市值: {peer_data['my_mcap']:.1f}亿元"
+          ]
+        },
+        "业内排名": {
+          "output_lines": [
+            "  业内排名: 第 {peer_data['my_rank']}/{peer_data['industry_count'"
+          ]
+        },
+        "\\n  📊 本股财务质量": {
+          "output_lines": [
+            "\\n  📊 本股财务质量: {' | '.join(parts)}"
+          ]
+        },
+        "无法获取同业数据（板块": {
+          "output_lines": [
+            "  无法获取同业数据（板块: {peer_data.get('industry', '未知')}）"
+          ]
+        },
+        "➤ 近 20 个交易日": {
+          "output_lines": [
+            "  ➤ 近 20 个交易日："
+          ]
+        },
+        "主力净流入天数": {
+          "output_lines": [
+            "    主力净流入天数: {days_bullish_20} 天 / 20 天"
+          ]
+        },
+        "累计主力净流入": {
+          "output_lines": [
+            "    累计主力净流入: {total_main_20/1e8:.2f} 亿元",
+            "    累计主力净流入: {total_main_60/1e8:.2f} 亿元"
+          ]
+        },
+        "➤ 近 60 个交易日（中期视角）": {
+          "output_lines": [
+            "  ➤ 近 60 个交易日（中期视角）："
+          ]
+        },
+        "✅ 资金面结论": {
+          "output_lines": [
+            "    ✅ 资金面结论: 中线资金呈吸筹/护盘状态。"
+          ]
+        },
+        "⚠️ 资金面结论": {
+          "output_lines": [
+            "    ⚠️ 资金面结论: 中线资金呈流出状态，需结合估值谨慎判断。"
+          ]
+        },
+        "⚠️ 量价背离": {
+          "output_lines": [
+            "  ⚠️ 量价背离：近20日主力净流出{abs(_cum_f)/1e8:.2f}亿，股价涨{_pc_chg:.1f}%缺"
+          ]
+        },
+        "💎 资金背离": {
+          "output_lines": [
+            "  💎 资金背离：股价下跌但主力净流入{_cum_f/1e8:.2f}亿，资金暗中介入"
+          ]
+        },
+        "\\n  最近买入席位 TOP5": {
+          "output_lines": [
+            "\\n  最近买入席位 TOP5:"
+          ]
+        },
+        "\\n  最近卖出席位 TOP5": {
+          "output_lines": [
+            "\\n  最近卖出席位 TOP5:"
+          ]
+        },
+        "\\n  机构买卖统计": {
+          "output_lines": [
+            "\\n  机构买卖统计:"
+          ]
+        },
+        "机构买入金额": {
+          "output_lines": [
+            "    机构买入金额: {inst['buy_amt']}万元"
+          ]
+        },
+        "机构卖出金额": {
+          "output_lines": [
+            "    机构卖出金额: {inst['sell_amt']}万元"
+          ]
+        },
+        "机构净买入": {
+          "output_lines": [
+            "    机构净买入: {inst['net_amt']}万元"
+          ]
+        },
+        "📊 分红持续性": {
+          "output_lines": [
+            "  📊 分红持续性: 连续{_dy}年分红"
+          ]
+        },
+        "近5次分红除息记录": {
+          "output_lines": [
+            "  近5次分红除息记录:"
+          ]
+        },
+        "数据来源": {
+          "output_lines": [
+            "  数据来源: 十大流通股东季报（最近 {len(st)} 期）"
+          ]
+        },
+        "\\n  境内机构细分": {
+          "output_lines": [
+            "\\n  境内机构细分: {' | '.join(_parts)}"
+          ]
+        },
+        "评分明细": {
+          "output_lines": [
+            "  评分明细: {' | '.join(_details[:6])}"
+          ]
+        },
+        "中线评分": {
+          "output_lines": [
+            "  中线评分: {_ps:.0f}/100 → 强烈推荐，仓位40%",
+            "  中线评分: {_ps:.0f}/100 → 建议配置，仓位25%",
+            "  中线评分: {_ps:.0f}/100 → 观察仓，仓位10%",
+            "  中线评分: {_ps:.0f}/100 → 暂不建议，等待基本面拐点"
+          ]
+        },
+        "核心驱动": {
+          "output_lines": [
+            "  核心驱动: 基本面拐点 / 估值 PEG / 筹码结构 / 重大事件"
+          ]
+        },
+        "价值派评分": {
+          "output_lines": [
+            "    价值派评分: {multi_scores['value'].total_score:.1f}分"
+          ]
+        },
+        "成长派评分": {
+          "output_lines": [
+            "    成长派评分: {multi_scores['growth'].total_score:.1f}分"
+          ]
+        },
+        "投机派评分": {
+          "output_lines": [
+            "    投机派评分: {multi_scores['speculator'].total_score:.1f}分"
+          ]
+        },
+        "综合共识": {
+          "output_lines": [
+            "    综合共识: {multi_scores['consensus'].total_score:.1f}分"
+          ]
+        },
+        "多评委评分异常": {
+          "output_lines": [
+            "    多评委评分异常: {e}"
+          ]
+        },
+        "综合投资建议": {
+          "output_lines": [
+            "  综合投资建议: {_rating}"
+          ]
+        }
+      },
+      "script": "D:\\GitHub\\test\\a-stock-data-v9.6\\get_med_report.py",
+      "script_size": 48177
+    }
+  }
+}

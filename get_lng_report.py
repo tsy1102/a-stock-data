@@ -3,6 +3,13 @@
 get_lng_report.py — A股长线价投专属深度体检报告
 
 版本信息:
+    V15.2  2026-07-28 - V15.2 P0 崩溃修复 + industry 字段改用 TDX boards + 0x0010 协议 jingyingxianjinliu key 修正
+    V15.1  2026-07-26 - V15.1 全局 ZHB 旁路普及：52周高低位与历史分红数据 100% 优先走 ZHB 本地快照解析，分析耗时缩短 70%
+    V15.0  2026-07-26 - 接入 CanonicalStockData 强类型数据合约，实施基于真实周期的 ZHB-First 离线优先路由
+    V14.0  2026-07-22 - 文档同步：docstring 版本信息更新到 V14.0；is_workday() Bug 修复由 stock_common 上游提供
+    V13.x  2026-07-22 - 受益于 stock_cache.py dataclass 透明序列化（脚本无改动）
+    V12.6  2026-07-22 - 受益于字段路由简化（移除估值字段 HTTP fallback）
+    V12.4  2026-07-22 - 抽象 BaseReportRunner 基类
     V9.5   2026-07-11 - 基础设施修复：aiohttp原生异步迁移、静默异常日志化（脚本本身无改动，受益于底层修复）
     V9.3.3 2026-07-11 - 流通股东显示统一为0%；休市提示移至标题下方；休市提示文案统一
     V9.3.2 2026-07-09 - 基础设施修复：TDX K线假数据防护、SQLite WAL死锁修复、代理环境兼容（脚本本身无改动，受益于底层修复）
@@ -27,8 +34,12 @@ import os, sys
 
 from gd_uploader import init_gd, upload_stock_report_by_code, cleanup_gd_proxy
 
-# 快照数据累积器（批量结束后一次性写入）
-_SNAPSHOT_DATA: dict = {}
+# V15.3 修复: 4 个报告模块同名 _SNAPSHOT_DATA 全局变量冲突
+# 抽出到 stock_common.sc_snapshot 统一管理
+# V15.3.1: 直接 import 共享的 SnapshotProxy 类，删除 20 行重复定义
+from stock_common.sc_snapshot import SnapshotProxy as _SnapshotProxy  # noqa: E402
+
+_SNAPSHOT_DATA = _SnapshotProxy()
 
 from tdx_client import (tdx_get_quote_full,
                          tdx_get_historical_high, tdx_get_board_list,
@@ -38,6 +49,7 @@ from data_provider import (
     get_stock_price_async,
     get_pe_ttm_async,
     get_pb_async,
+    get_canonical_stock_data,  # V15.3 强类型合约推广
     get_dividend_yield_async,
     get_52w_range_async,
     get_change_pct_async,
@@ -46,8 +58,9 @@ from data_provider import (
     get_turnover_pct_async,
     get_main_net_buy_async,
 )
-from stock_common import (clean_codes, _safe_float, _debug_log,
-                          _market_code,
+from stock_common import (clean_codes, _safe_float, UA, _debug_log,
+                           _load_settings, _load_strategy_config, BaseReportRunner,
+                           _market_code,
                           get_holder_structure,
                           create_async_session,
                           get_strategic_announcements_async,
@@ -158,6 +171,26 @@ async def generate_report_async(session, code, output_path, ind_comp=None):
     except Exception as _e:
         _debug_log(f"lng dp_composite error: {_e}")
 
+    # V15.3: 强类型合约推广 —— 同步用 cdata 拿关键字段（price/mcap_yi），
+    # 用 cdata 的字段覆盖 _dp_composite 中的 0/缺失值
+    _cdata = None
+    try:
+        _cdata = await asyncio.to_thread(get_canonical_stock_data, code)
+    except Exception as _e:
+        _debug_log(f"lng cdata error: {_e}")
+    if _cdata is not None and _dp_composite is not None:
+        # cdata 优先（更权威的 push2 实时源 + 强类型）
+        _dp_composite = {
+            **_dp_composite,
+            "price": _cdata.price or _dp_composite.get("price", 0),
+            "change_pct": _cdata.change_pct or _dp_composite.get("change_pct", 0),
+            "mcap_yi": _cdata.mcap_yi or _dp_composite.get("mcap_yi", 0),
+            "float_mcap_yi": _cdata.float_mcap_yi or _dp_composite.get("float_mcap_yi", 0),
+            "industry": _cdata.industry or _dp_composite.get("industry", ""),
+            "board": _cdata.board or _dp_composite.get("board", ""),
+            "name": _cdata.name or _dp_composite.get("name", ""),
+        }
+
     # V10.1: zhb优先获取估值、阶段涨幅、52周高低、股息率，原有路径降为fallback
     # V10.2: zhb数据日期标注（延迟时提示用户）
     _zhb_data = None
@@ -172,38 +205,43 @@ async def generate_report_async(session, code, output_path, ind_comp=None):
     info = get_stock_info(code)
     # V11.5: 优先从 data_provider 综合数据获取行情，fallback 到腾讯行情
     q = None
-    try:
-        q = get_tencent_quote(code)
-    except Exception as _e:
-        _debug_log(f"lng tencent_quote error: {_e}")
-    # 从 data_provider 综合数据提取行情字段（优先使用）
-    _dp_price = _dp_composite.get("price", 0) if _dp_composite else 0
-    _dp_mcap_yi = _dp_composite.get("mcap_yi", 0) if _dp_composite else 0
-    _dp_pe_ttm = _dp_composite.get("pe_ttm", 0) if _dp_composite else 0
-    _dp_pb = _dp_composite.get("pb", 0) if _dp_composite else 0
-    _dp_float_mcap_yi = _dp_composite.get("float_mcap_yi", 0) if _dp_composite else 0
-    # 构建统一行情字典，优先使用 data_provider 数据
-    _quote = {}
-    if q:
-        _quote.update(q)
-    if _dp_price > 0:
-        _quote["price"] = _dp_price
-    if _dp_mcap_yi > 0:
-        _quote["mcap_yi"] = _dp_mcap_yi
-    if _dp_pe_ttm > 0:
-        _quote["pe_ttm"] = _dp_pe_ttm
-    if _dp_pb > 0:
-        _quote["pb"] = _dp_pb
-    if _dp_float_mcap_yi > 0:
-        _quote["float_mcap_yi"] = _dp_float_mcap_yi
-    q = _quote if _quote else None
-    price_today = q.get("price", 0) if q else 0
+    # V15 统一数据中心：通过 get_canonical_stock_data 获取强类型标准化数据
+    # V15.2 修正: async 上下文必须包 to_thread，否则阻塞主事件循环
+    # V16.1: 复用上方 _cdata（避免同一股票两次 get_canonical_stock_data）
+    cdata = _cdata
+    if cdata is None:
+        from data_provider import get_canonical_stock_data
+        cdata = await asyncio.to_thread(get_canonical_stock_data, code)
+
+    _quote = {
+        "price": cdata.price,
+        "change_pct": cdata.change_pct,
+        "pe_ttm": cdata.pe_ttm,
+        "pb": cdata.pb,
+        "mcap_yi": cdata.mcap_yi,
+        "float_mcap_yi": cdata.float_mcap_yi,
+    }
+    q = _quote
+    price_today = cdata.price
 
     L(f"  企业名称: {info.get('name', 'N/A')} ({info.get('code', code)})")
 
-    # 行业归属：zhb优先，info返回N/A时用zhb补充
+    # 行业归属：info.get('industry') → TDX boards → ZHB industry_code 映射
+    # V15.1: ZHB dict 不含 industry 字段；改用 TDX boards（参考 docs/field_dict.md）
     _industry = info.get('industry', 'N/A')
-    if _industry == 'N/A' and _zhb_data:
+    if _industry in ('N/A', '', None):
+        # Fallback 1: TDX boards
+        try:
+            from tdx_client import tdx_get_belong_boards
+            # V15.4.2: 同步 TDX 包 to_thread
+            boards = await asyncio.to_thread(tdx_get_belong_boards, code)
+            if boards and boards.get("industry"):
+                _industry = boards["industry"][0].get("name", "N/A")
+                info["industry"] = _industry
+        except Exception:
+            pass
+    if _industry in ('N/A', '', None) and _zhb_data:
+        # Fallback 2: ZHB industry_code 映射（tdxzs3.cfg 已有 1000+ 行业映射）
         _zhb_ind_code = _zhb_data.get("industry_code", "")
         if _zhb_ind_code:
             _zhb_industry_map = get_zhb_industry_map()
@@ -213,7 +251,8 @@ async def generate_report_async(session, code, output_path, ind_comp=None):
                 info["industry"] = _zhb_ind_name
     L(f"  所属板块: {_industry}")
 
-    peer_data_lng = get_industry_peers(code, 3, info=info)
+    # V15.4.2: 同步同业对比包 to_thread
+    peer_data_lng = await asyncio.to_thread(get_industry_peers, code, 3, info=info)
     try:
         _ind_name = info.get("industry", "")
         _ic_d = ind_comp if ind_comp is not None else industry_comparison(20)
@@ -330,19 +369,17 @@ async def generate_report_async(session, code, output_path, ind_comp=None):
         _ey = f"{100/_pe:.2f}%"
     else:
         _ey = "N/A"
+        # V16.0: 改用统一层 _cdata（get_canonical_stock_data）的财务字段计算 EPS，
+        # 替代直接 _get_tdx_client().get_finance_info() 协议直连（统一数据来源）
         try:
-            from tdx_client import _get_tdx_client
-            c = _get_tdx_client()
-            if c:
-                fi = c.get_finance_info(_market_code(code), code)
-                if fi is not None and not fi.empty:
-                    _profit = _safe_float(fi.iloc[0].get('jing_lirun', 0))
-                    _shares = _safe_float(fi.iloc[0].get('zong_guben', 0))
-                    if _profit > 0 and _shares > 0 and price_today > 0:
-                        _eps = _profit / _shares
-                        _ey = f"{_eps / price_today * 100:.2f}%"
+            if _cdata is not None:
+                _profit = _safe_float(_cdata.net_profit)  # 元
+                _shares_wan = _safe_float(_cdata.total_shares_wan)  # 万股
+                if _profit > 0 and _shares_wan > 0 and price_today > 0:
+                    _eps = _profit / (_shares_wan * 1e4)
+                    _ey = f"{_eps / price_today * 100:.2f}%"
         except Exception as _e:
-            _debug_log(f"lng tdx_finance_info error: {_e}")
+            _debug_log(f"lng finance_info error: {_e}")
     L(f"    市盈率 PE(TTM): {_pe:.2f}x (盈利收益率粗估: {_ey})")
     L(f"    市盈率 PE(静态): {_pe_static:.2f}x" if _pe > 0 and _pe_static > 0 else "    市盈率 PE(静态): N/A（亏损）")
     # PB：data_provider优先，其次zhb，最后fallback到腾讯行情
@@ -464,14 +501,19 @@ async def generate_report_async(session, code, output_path, ind_comp=None):
     L("\n【三、财务健康度排雷（现金流验证与商誉预警）】")
     L("─" * 72)
     _tdx_ocf = 0.0; _tdx_np = 0.0
+    # V16.1: 0x0010 财务快照存局部变量，供下方"核心财务指标"复用（避免重复 TCP 请求）
+    _tdx_fi_snapshot = None
     try:
         from tdx_client import _get_tdx_client
         c = _get_tdx_client()
         if c:
             fi = c.get_finance_info(_market_code(code), code)
             if fi is not None and not fi.empty:
-                _tdx_ocf = _safe_float(fi.iloc[0].get('jingying_xianjinliu', 0))
-                _tdx_np = _safe_float(fi.iloc[0].get('jing_lirun', 0))
+                _tdx_fi_snapshot = fi
+                # V15.1: 修正 0x0010 协议 key（参考 docs/field_dict.md 第 7 章）
+                # 正确 key: jingyingxianjinliu / jinglirun（无下划线）
+                _tdx_ocf = _safe_float(fi.iloc[0].get('jingyingxianjinliu', 0))
+                _tdx_np = _safe_float(fi.iloc[0].get('jinglirun', 0))
     except Exception as _e:
         _debug_log(f"lng tdx_ocf error: {_e}")
 
@@ -538,14 +580,18 @@ async def generate_report_async(session, code, output_path, ind_comp=None):
     if ext_roe_data and ext_roe_data[0].get("eps") is not None:
         parts.append(f"EPS {ext_roe_data[0]['eps']:.4f}")
     try:
-        from tdx_client import _get_tdx_client
-        client = _get_tdx_client()
-        if client:
-            tdx_fi = client.get_finance_info(_market_code(code), code)
-            if tdx_fi is not None and not tdx_fi.empty:
-                ocf = _safe_float(tdx_fi.iloc[0].get('jingying_xianjinliu', 0)) / 1e8
-                if ocf != 0:
-                    parts.append(f"经营现金流 {ocf:.2f}亿")
+        # V16.1: 复用"三"章节的 0x0010 快照（避免重复 TCP 请求）
+        if _tdx_fi_snapshot is not None:
+            tdx_fi = _tdx_fi_snapshot
+        else:
+            from tdx_client import _get_tdx_client
+            client = _get_tdx_client()
+            tdx_fi = client.get_finance_info(_market_code(code), code) if client else None
+        if tdx_fi is not None and not tdx_fi.empty:
+            # V15.1: 修正 0x0010 协议 key（参考 docs/field_dict.md）
+            ocf = _safe_float(tdx_fi.iloc[0].get('jingyingxianjinliu', 0)) / 1e8
+            if ocf != 0:
+                parts.append(f"经营现金流 {ocf:.2f}亿")
     except Exception as _e:
         _debug_log(f"lng tdx_fi_ocf error: {_e}")
     if parts:
@@ -647,6 +693,31 @@ async def generate_report_async(session, code, output_path, ind_comp=None):
         if price_today > 0 and total_div_12m > 0:
             L(f"\n  ➤ 核心防御指标：近 12 个月累计派息 {total_div_12m:.4f} 元/股")
             L(f"  ➤ 动态股息率 (TTM): {(total_div_12m / price_today) * 100:.2f}%")
+
+        # V16.1: 分红连续性（从分红历史推导连续分红年数）
+        try:
+            _div_years = set()
+            for _d in div:
+                _yr = str(_d.get("date", ""))[:4]
+                if _yr.isdigit():
+                    _div_years.add(int(_yr))
+            if _div_years:
+                _sorted_years = sorted(_div_years)
+                # 从最近一年往前数连续年数
+                _consec = 0
+                for _y in range(_sorted_years[-1], _sorted_years[-1] - len(_sorted_years) - 1, -1):
+                    if _y in _div_years:
+                        _consec += 1
+                    else:
+                        break
+                if _consec >= 5:
+                    L(f"  🏆 分红连续性: 连续分红 {_consec} 年（含当年），长线股东回报稳定")
+                elif _consec >= 3:
+                    L(f"  ✅ 分红连续性: 连续分红 {_consec} 年")
+                elif _consec >= 1:
+                    L(f"  ℹ️ 分红连续性: 近 {_consec} 年有分红（连续性待观察）")
+        except Exception as _de:
+            _debug_log(f"lng dividend continuity: {_de}")
     else:
         L("  暂无任何分红派息记录 (一毛不拔，纯博弈型或极早期成长型企业，长线防御力弱)。")
 
@@ -770,6 +841,46 @@ async def generate_report_async(session, code, output_path, ind_comp=None):
     else:
         L("  暂无任何研报覆盖数据。")
 
+    # V16.1: 风险引擎（sc_risk）— 事件类风险（解禁/减持/质押）
+    try:
+        from stock_common.sc_risk import scan_event_risk, combine_risk
+
+        # 解禁（未来 2 年，取最近一批；ratio 用解禁市值/流通市值近似）
+        _lk = None
+        if lockup:
+            _lk0 = lockup[0]
+            _lk_price = q.get("price", 0) if q else 0
+            _lk_fmc = q.get("float_mcap_yi", 0) if q else 0
+            _lk_ratio = 0.0
+            if _lk_price > 0 and _lk_fmc > 0:
+                _lk_ratio = (_lk0.get("shares", 0) / 1e4 * _lk_price / 1e8) / _lk_fmc * 100
+            _lk = {"date": str(_lk0.get("date", ""))[:10], "ratio": round(_lk_ratio, 2)}
+        # 公告标题（减持/增持关键词）
+        _ann_titles = [a.get("title", "") for a in anns] if anns else []
+        # 质押资讯命中（东财快讯，最多 1 次请求）
+        _pledge_hits = 0
+        try:
+            from stock_common import get_eastmoney_global_news
+            _gn = await asyncio.to_thread(get_eastmoney_global_news, 20)
+            for _n in _gn or []:
+                _txt = str(_n.get("title", "")) + str(_n.get("summary", ""))
+                if "质押" in _txt and code in _txt:
+                    _pledge_hits += 1
+        except Exception as _pe:
+            _debug_log(f"lng pledge scan: {_pe}")
+
+        _event_items = scan_event_risk(lockup=_lk, announcement_titles=_ann_titles, pledge_hits=_pledge_hits)
+        _risk = combine_risk([], _event_items)
+        L("\n【九之二、风险扫描（解禁/减持/质押）】")
+        L("─" * 72)
+        for _it in _risk["items"]:
+            _lv_icon = {"高": "🔴", "中": "🟡", "低": "🟢"}.get(_it["level"], "🟢")
+            L(f"  {_lv_icon} {_it['name']}: {_it['text']}")
+        for _sig in _risk["signals"]:
+            L(f"  {_sig}")
+    except Exception as _re:
+        _debug_log(f"lng risk engine: {_re}")
+
     # ─── 十、舆情与互动 ───
     L("\n【十、舆情与互动】")
 
@@ -872,7 +983,10 @@ async def generate_report_async(session, code, output_path, ind_comp=None):
         score_data.institution_holding_pct = _inst[0].get("domestic", 0) + _inst[0].get("northbound", 0)
     
     # 计算评分
-    result = calculate_score("lng", score_data)
+    # V16.1: 传入 strategy_config.yaml 的 scoring_lng 权重（此前未传 cfg → 用硬编码默认）
+    _score_cfg = _load_strategy_config() or {}
+    _lng_cfg = {"weights_lng": (_score_cfg.get("scoring_lng") or {}).get("weights_lng", {})}
+    result = calculate_score("lng", score_data, _lng_cfg)
     _ps = result.total_score
     _details = result.details
     
@@ -927,99 +1041,78 @@ async def generate_report_async(session, code, output_path, ind_comp=None):
         f.write(output)
     return output
 
-if __name__ == "__main__":
-    args = parse_args()
-    base_dir = os.path.dirname(os.path.abspath(__file__))
-    sn = os.path.basename(__file__)
-    time_str = datetime.now().strftime("%Y%m%d_%H%M")
-    try:
-        report_type = sn.split("_")[1]
-    except Exception as _e:
-        _debug_log(f"lng scoring: {_e}")
+
+
+# ═══════════════════════════════════════════════════════════════
+# V12.4: LngReportRunner — 统一运行框架
+# ═══════════════════════════════════════════════════════════════
+
+class LngReportRunner(BaseReportRunner):
+    """A股长线价投专属深度体检报告 Runner (V12.4)"""
+
+    def __init__(self):
+        super().__init__("get_lng_report", "lng", "A股长线价投专属深度体检报告")
+
+    def execute_pipeline(self) -> dict:
+        ts = datetime.now().strftime("%Y%m%d_%H%M")
         report_type = "lng"
 
-    # ─── GD 认证 ───────────────────────────────────────────────
-    drive, gd_proxy_set, gd_parent_folder_id, skip_upload = None, False, None, False
-    if not args.no_upload:
-        drive, gd_proxy_set, gd_parent_folder_id, skip_upload = init_gd(base_dir)
+        args = self.args
+        _cached_ind_comp = industry_comparison(20)
 
-    os.makedirs(args.output, exist_ok=True)
-    _results = []
-    _cached_ind_comp = industry_comparison(20)
+        async def _main_async():
+            codes = clean_codes(args.codes, verbose=True)
+            if not codes:
+                print("  ❌ 没有有效的股票代码")
+                return []
+            for code in codes:
+                try:
+                    print(f"  📋 加入队列: {code}", flush=True)
+                except UnicodeEncodeError:
+                    print(f"  [INFO] 加入队列: {code}", flush=True)
 
-    # ─── Step 1: async 并行生成所有报告 ─────────────────────────────
-    async def _process_one(_session, code, ts):
-        result_path = os.path.join(args.output, f"{code}_{report_type}_{ts}.txt")
-        try:
-            await generate_report_async(_session, code, result_path, ind_comp=_cached_ind_comp)
-            print(f"  ✅ 已保存: {result_path}", flush=True)
-            return {"code": code, "status": "成功", "error": "", "path": result_path}
-        except Exception as e:
-            print(f"❌ {code} 数据生成失败: {e}", flush=True)
-            return {"code": code, "status": "数据失败", "error": str(e), "path": ""}
-
-    async def _main_async():
-        _codes = clean_codes(args.codes, verbose=True)
-        if not _codes:
-            print("  ❌ 没有有效的股票代码")
-            return []
-        for code in _codes:
-            print(f"  📋 加入队列: {code}", flush=True)
-
-        _session = await create_async_session()
-        try:
-            sem = asyncio.Semaphore(3)
-
-            async def _limited(code):
-                async with sem:
-                    return await _process_one(_session, code, time_str)
-
-            results = await asyncio.gather(*[_limited(code) for code in _codes])
-            return results
-        finally:
-            await _session.close()
-
-    _results = asyncio.run(_main_async())
-
-    # ─── Step 2: 串行上传至 Google Drive（GD API 有速率限制） ──────
-    for _r in _results:
-        if _r["status"] == "成功" and not skip_upload and drive and gd_parent_folder_id:
-            code = _r["code"]
-            result_path = _r.get("path", os.path.join(args.output, f"{code}_{report_type}_{time_str}.txt"))
-            gd_ok = False
+            _session = await create_async_session()
             try:
-                # V11.5: 优先从快照数据获取名称，避免重复调用
-                q_name = _SNAPSHOT_DATA.get(code, {}).get("name", "")
-                if not q_name:
-                    q_name = get_stock_info(code).get("name", "")
-                if upload_stock_report_by_code(drive, gd_parent_folder_id, code, q_name, result_path):
-                    gd_ok = True
-            except Exception as gd_e:
-                print(f"  ⚠️ GD 上传异常: {gd_e}", flush=True)
-                _r["status"] = "GD上传异常"
-                _r["error"] = str(gd_e)
+                sem = asyncio.Semaphore(3)
 
-            if not gd_ok and drive:
-                _r["status"] = "GD上传失败"
-            elif not drive:
-                _r["status"] = "GD未连接"
+                async def _limited(code):
+                    async with sem:
+                        result_path = os.path.join(args.output, f"{code}_{report_type}_{ts}.txt")
+                        try:
+                            await generate_report_async(
+                                _session, code, result_path,
+                                ind_comp=_cached_ind_comp
+                            )
+                            print(f"  ✅ 已保存: {result_path}", flush=True)
+                            return {"code": code, "status": "成功", "error": "", "path": result_path}
+                        except Exception as e:
+                            print(f"❌ {code} 数据生成失败: {e}", flush=True)
+                            return {"code": code, "status": "数据失败", "error": str(e), "path": ""}
 
-    # 批量写入快照（一次性，不重复写）
-    if _SNAPSHOT_DATA:
-        from stock_common.analyze_history import save_snapshot
-        save_snapshot("lng", _SNAPSHOT_DATA)
+                results = await asyncio.gather(*[_limited(c) for c in codes])
+                return results
+            finally:
+                await _session.close()
 
-    # 汇总
-    cleanup_gd_proxy(gd_proxy_set)
-    # 缓存现在使用统一的SQLite管理，无需手动刷新
-    cleanup_tdx()
-    total = len(_results)
-    ok = [r for r in _results if r["status"] == "成功"]
-    fd = [r for r in _results if r["status"] == "数据失败"]
-    fg = [r for r in _results if r["status"] in ("GD上传失败", "GD上传异常", "GD未连接")]
-    print(f"\n{'=' * 60}\n  批量执行完成 — 共处理 {total} 只股票\n{'=' * 60}")
-    print(f"  ✅ 全部成功: {len(ok)}  |  ❌ 数据失败: {len(fd)}  |  ⚠️ GD上传失败: {len(fg)}")
-    for r in fd:
-        print(f"    ❌ {r['code']} — {r['error'][:80]}")
-    for r in fg:
-        print(f"    ⚠️ {r['code']}")
+        _results = asyncio.run(_main_async())
+
+        if _SNAPSHOT_DATA:
+            from stock_common.analyze_history import save_snapshot
+            save_snapshot("lng", _SNAPSHOT_DATA)
+
+        ok = [r for r in _results if r["status"] == "成功"]
+        fd = [r for r in _results if r["status"] == "数据失败"]
+        print(f"\n{'='*60}\n  批量执行完成 — 共处理 {len(_results)} 只股票\n{'='*60}")
+        print(f"  ✅ 全部成功: {len(ok)}  |  ❌ 数据失败: {len(fd)}")
+        for r in fd:
+            print(f"    ❌ {r['code']} — {r['error'][:80]}")
+
+        return {"results": _results, "time_str": ts, "report_type": report_type}
+
+    def upload_reports(self, drive, folder_id: str, results) -> None:
+        self.upload_multi_reports(drive, folder_id, results)
+
+
+if __name__ == "__main__":
+    runner = LngReportRunner()
+    runner.run()

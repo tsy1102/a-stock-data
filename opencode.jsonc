@@ -1,0 +1,95 @@
+{
+  // ============================================================================
+  // opencode 配置 —— 适用于 A股个股分析报告生成系统 (纯 Python + Windows PowerShell)
+  // 来源: 从 ECC (github.com/affaan-m/ECC) 提炼, 去掉 JS/TS 专属部分与 Node 依赖
+  // 目的: 提升代码修改流畅性(权限自动放行) + 正确性(python-reviewer 审查)
+  // ============================================================================
+
+  "$schema": "https://opencode.ai/config.json",
+
+  // ────────────────────────────────────────────────────────────────────────────
+  // [1] 权限配置 (替代 ecc-hooks 的 permission.ask)
+  //     只读工具一律放行; 编辑/写入保持人工确认; 测试/格式化/类型检查自动放行
+  // ────────────────────────────────────────────────────────────────────────────
+  "permission": {
+    "read": "allow",
+    "glob": "allow",
+    "grep": "allow",
+    "list": "allow",
+    "edit": "ask",
+    "write": "ask",
+    "bash": {
+      // 测试统一入口(项目 shell 层强制)
+      ".\\scripts\\run_tests.ps1": "allow",
+      // 代码格式化 / 导入排序
+      "black": "allow",
+      "isort": "allow",
+      // 静态检查 / 类型检查 / 语法检查
+      "ruff": "allow",
+      "mypy": "allow",
+      "python.exe -m py_compile": "allow",
+      // git 只读操作
+      "git.exe status": "allow",
+      "git.exe diff": "allow",
+      "git.exe log": "allow"
+    }
+  },
+
+  // ────────────────────────────────────────────────────────────────────────────
+  // [2] 自定义 agent: python-reviewer (Python 代码审查专家)
+  //     用法: /review 或手动调用 python-reviewer agent
+  //     只读 + bash(诊断命令), 不写文件, 输出结构化审查报告
+  // ────────────────────────────────────────────────────────────────────────────
+  "agent": {
+    "python-reviewer": {
+      "description": "Python 代码审查专家。审查修改的 .py 文件: PEP8/类型/安全/并发/错误处理。任何代码改动后应立即调用。",
+      "mode": "subagent",
+      "prompt": "{file:.opencode/prompts/agents/python-reviewer.txt}",
+      "tools": {
+        "read": true,
+        "bash": true,
+        "write": false,
+        "edit": false
+      }
+    }
+  },
+
+  // ────────────────────────────────────────────────────────────────────────────
+  // [3] 命令: 审查入口
+  //     /review [路径]  对指定文件或最近改动做 Python 审查
+  // ────────────────────────────────────────────────────────────────────────────
+  "command": {
+    "review": {
+      "description": "Python 代码审查: 质量/安全/可维护性",
+      "agent": "python-reviewer",
+      "subtask": true,
+      "template": "审查以下代码: $ARGUMENTS\n\n1. 用 git diff --name-only HEAD 找出改动文件\n2. 逐个文件运行诊断(ruff/mypy/black --check)\n3. 输出结构化审查报告(CRITICAL/HIGH/MEDIUM/LOW)\n4. 给出可操作修复建议"
+    }
+  },
+
+  // ────────────────────────────────────────────────────────────────────────────
+  // [4] MCP 浏览器服务器 (V16.0.2 新增)
+  //     用途: 登录通达信官网查询个股真实数据, 与 ZHB 缓存核对字段真实性,
+  //           补充/验证未知字段 (Col[11]/Col[22]/Col[24]/Col[34] 等)
+  //     实现: Playwright MCP (微软官方, 支持登录/截图/表单/持久化会话)
+  //     首次使用需: npx playwright install chromium (下载浏览器)
+  //     浏览器操作有副作用 → 权限设为 ask (每次确认)
+  // ────────────────────────────────────────────────────────────────────────────
+  "mcp": {
+    "playwright": {
+      "type": "local",
+      "command": ["npx", "@playwright/mcp@latest"],
+      "enabled": true
+    }
+  },
+
+  "permission": {
+    "mcp__playwright__browser_navigate": "ask",
+    "mcp__playwright__browser_click": "ask",
+    "mcp__playwright__browser_fill": "ask",
+    "mcp__playwright__browser_snapshot": "allow",
+    "mcp__playwright__browser_screenshot": "allow",
+    "mcp__playwright__browser_console": "allow",
+    "mcp__playwright__browser_network": "allow"
+  }
+}

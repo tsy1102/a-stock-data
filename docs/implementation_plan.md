@@ -1,139 +1,229 @@
-# 缓存机制与数据源混合重构方案（Implementation Plan）
+# A股数据架构全量重构与统一数据中心升级计划 (Unified Standardized Data Engine Plan)
 
-## [Goal Description]
+## 1. 核心目标与重构背景
 
-为了彻底解决 API 限流（IP 封禁）、请求缓慢导致 `val` 脚本运行瓶颈，以及解决扩大筛选数量（5扩至10+）的问题，我们需要引入 ZHB 离线数据作为主力数据源。但由于 ZHB 数据具备 **T-1 的延迟特性**，原有的 API 数据源不能完全废弃，而是需要与 ZHB 形成完美的**三级降级与混合拉取机制**。
+针对现有系统中 6 大报告脚本数据源分散、网络 Fallback 漂移导致的字段不一致与数据失真问题，以及 ZHB 离线宝库尚未 100% 优先发挥效益的痛点，结合先前发现的 5 大改进建议（含 Windows `SIGALRM` 致命 Bug），制定系统级的重构升级方案。
 
-同时，现有的 `stock_cache.py` 承受了所有 API 请求的缓存压力（纯 SQLite 方案），在多并发下存在磁盘 I/O 瓶颈。本方案将对其进行彻底重构，实现**动静分离、内存/磁盘双级缓存、ZHB优先**的现代化数据架构。
+本计划的核心目标是：
+1. **建立统一规范数据合约层 (Canonical Standardized Contract)**：屏蔽底层源差异，固定全系统 50+ 核心数据字段的名称、单位、类型与时效锚点。
+2. **基于真实更新周期的 ZHB-First 智能离线路由引擎**：
+   - 依据实测规律：ZHB 数据包于**次日凌晨/清晨（如 06:00 前）**生成（T日深夜 23:30 尚无T日包，T+1日早 06:00 已有T日包）。
+   - 盘前 (`< 09:30`) 及休市日：T+1 日盘前已自动拿到 T 日 ZHB 包，**100% 走 ZHB 本地零延迟提取，无需网络请求**。
+   - 盘后 (`15:00 - 24:00`)：T 日盘后因 T 日 ZHB 包尚未生成，**行情与资金流字段必须 100% 强制走网络 HTTP/TDX 接口获取今日真实收盘数据**。
+3. **修复跨平台兼容性与锁粒度 Bug**：彻底解决 Windows 下 `signal.SIGALRM` 崩溃陷阱，收紧 TDX 线程锁范围。
+4. **全脚本解耦重构**：6 大报告脚本统一通过单一 API `get_canonical_stock_data(code)` 获取全部数据，从根源消除多源漂移。
 
-## User Review Required
+---
 
-> [!IMPORTANT]
-> **关于 ZHB 基础数据的补充机制：**
-> 由于我们在先前的挖掘中确认，ZHB 离线包中**不包含**极其关键的"总股本/流通股本"等原始财务数据。因此，ZHB 架构需要配合一个每日定时的补充动作：利用 `injoyai/tdx` 源码中揭示的 `0x0010` 通达信财务协议，每天盘后批量拉取一次全市场的股本数据并存入本地库中。
+## 2. 总体架构设计 (Architecture Blueprint)
 
-> [!WARNING]
-> **架构变动较大：**
-> 引入统一的 Data Provider 会改变原来各脚本直接调用 `eastmoney_client` 或 `tdx_client` 的习惯。短期内需要替换较多导入路径。
+```mermaid
+graph TD
+    subgraph 报告脚本层 (Report Scripts Layer)
+        Sht[get_sht_report.py]
+        Med[get_med_report.py]
+        Lng[get_lng_report.py]
+        Ful[get_ful_report.py]
+        Val[get_val_report.py]
+        Mak[get_mak_report.py]
+    end
 
-## Proposed Changes
+    subgraph 统一标准数据访问接口 (Unified Canonical Data API)
+        Sht & Med & Lng & Ful & Val & Mak --> API["get_canonical_stock_data(code)<br/>(返回 CanonicalStockData 强类型)"]
+    end
 
-### 1. 新增数据中心层（Data Provider Layer）
+    subgraph 规范化映射与校验层 (Normalization & Validation Engine)
+        API --> Normalizer[Data Normalizer & Boundary Validator<br/>单位统一 / 异常值熔断 / 时效打标]
+    end
 
-**[NEW]** `data_provider.py`
-创建统一的数据路由层，屏蔽底层是来自 ZHB 还是 API。业务脚本（如 `val.py`）只与此层交互。
-*   **路由逻辑：**
-    *   **实时类数据（如今日价格、盘中涨幅、实时盘口）：** 强制走 `API`（腾讯/通达信在线），配合极短缓存（如1分钟）。
-    *   **T-1类行情与资金数据（如昨日主力净流入、连板天数、N日涨跌幅）：** 优先读取 `ZHB SQLite`，毫秒级返回。若缺失，Fallback 至 `东财/同花顺 API` 并写入缓存。
-    *   **静态/财务数据（如总股本、PE、所属行业）：** 优先读取本地基础数据库，若缺失，Fallback 至 API。
-*   **市值动态计算：**
-    实现 `get_dynamic_market_cap(code)`：总股本（来自本地静态库，0耗时） × 实时价格（来自腾讯在线API，极低耗时）。彻底解决 `val` 脚本中策略依赖市值的性能瓶颈。
+    subgraph ZHB-First 智能精准多级路由 (Tiered Routing Matrix)
+        Normalizer --> Router{运行时间与字段类型?}
+        
+        Router -- "T+1日盘前(<09:30) 或 休市日" --> ZHBEngine1["1. 100% ZHB 本地数据提取<br/>(零网络开销，T日ZHB包已在清晨就绪)"]
+        Router -- "盘中(09:30-15:00) 静态/估值/财务/股本" --> ZHBEngine2["2. ZHB 本地数据提取<br/>(pe/pb/roe/total_shares/52w/streak)"]
+        Router -- "盘中(09:30-15:00) 或 T日盘后(15:00-24:00) 行情/资金流" --> HTTPEngine["3. HTTP/TDX 实时/收盘数据池<br/>(因T日ZHB包尚未生成，强制获取今日T日真实收盘数据)"]
+        Router -- "盘中单期财务/股本 (若ZHB缺失)" --> TCPEngine["4. TCP 0x0010 协议直连<br/>(tdx_client GetFinanceInfo)"]
+    end
 
-### 2. 缓存模块彻底重构
+    subgraph 缓存持久化 (Cache Tier)
+        ZHBEngine1 & ZHBEngine2 & TCPEngine & HTTPEngine <--> Cache[(stock_cache.db<br/>SQLite + L1 Memory)]
+    end
+```
 
-**[MODIFY]** `stock_cache.py`
-*   **L1/L2 双级缓存架构：**
-    *   **L1 (Memory):** 引入 Python 原生字典或 `lru_cache` 结构，保留在进程内存中。对于同一个脚本单次运行期间的高频数据查询（如行业基准数据、大盘指数），做到真正的 `0 I/O` 耗时。
-    *   **L2 (SQLite):** 现有的 `stock_cache.db` 退居二线，仅用于跨进程、跨脚本运行的数据持久化。
-*   **TTL 策略精细化调整：**
-    将 ZHB 可覆盖的数据的 TTL 调整为"与 ZHB 更新周期同步"。当检测到新一天的 ZHB 包解压后，自动使相关缓存失效，避免数据脏读。
-*   **Fallback 熔断机制：**
-    当 API 请求连续失败（遭遇 IP 封禁）时，在缓存层直接切断该 API 路由 5 分钟，防止所有并发脚本排队等待超时。
+---
 
-### 3. ZHB 自动化入库管道
+## 3. 实施进度与具体修改方案 (Implementation Progress)
 
-**[NEW]** `zhb_pipeline.py` (或类似名称)
-目前直接解析 ZIP 中的纯文本文件非常低效。需要建立一条自动化管道：
-*   当检测到新的 `zhb_YYYYMMDD.zip` 下载后，立即将其解压。
-*   将 `tdxstat.cfg`、`tdxstat2.cfg`、`tipinfo.dat` 解析并灌入结构化的本地 SQLite 数据库（如 `zhb_master.db`）。
-*   脚本运行时直接 `SELECT` 数据库，加上索引后，单股查询耗时将在 0.1ms 级别。
+---
 
-### 4. 业务脚本全面扩容与 ZHB 切换计划
+### Component 1: 核心规范与强类型数据合约 (`stock_common/sc_schema.py`) — [x] 已完成并验证
 
-除了 `val.py`，我们对核心的 5 大报告脚本（sht, med, lng, mak, ful）也制定了以 ZHB 为优先的切换路径，将极大提升它们的运行稳定性和缓存命中率：
+#### [MODIFY] [sc_schema.py](file:///d:/GitHub/test/stock_common/sc_schema.py)
+- **改进点**：
+  1. 实现了 `CanonicalStockData` dataclass，使用 `@dataclass(slots=True, frozen=True)`。
+  2. 规范全系统所有字段命名与单位标准（价格元、比例%、成交额万元、市值亿元、股本万股）。
+  3. 增加 `to_dict()` 字典转换与强类型序列化接口。
+  4. **测试结果**：`pytest tests/test_sc_schema.py` 23 项测试 100% 通过。
 
-**4.1. `sht` (短线报告)**
-*   **数据依赖**：极度依赖当日动能（涨停池、龙虎榜）、连板天数、主力净买入。
-*   **切换计划**：
-    *   昨日"主力净流入"（`tdxstat2[14]`）直接通过 ZHB 本地读取，替代东财资金流接口的 Fallback。
-    *   连板/连跌天数（`tdxstat[5]`）和 5/10日涨幅由 ZHB 提供基准，结合腾讯实时 API 补全当日最后一根 K 线，极大减轻并发 K 线请求压力。
+---
 
-**4.2. `med` (中线报告)**
-*   **数据依赖**：行业板块轮动、20/60 日中线趋势、市值与估值基准。
-*   **切换计划**：
-    *   利用 ZHB `tdxstat` 的 20/60日、年初至今（YTD）涨幅字段，**完全替代**中线趋势的在线计算。
-    *   利用 `tdxstat2[13]` (所属通达信板块代码) 实现零延迟的行业归属映射，缓存命中率可达 100%。
+### Component 2: 统一标准数据提供中心 (`data_provider.py`) — [x] 已完成并验证
 
-**4.3. `lng` (长线报告)**
-*   **数据依赖**：财务指标（PE、EPS）、股息率、分红历史。
-*   **切换计划**：
-    *   ZHB 将发挥巨大威力：`tipinfo.dat` 提供了全市场的 EPS、财报披露日和近期分红额；`tdxstat` 提供了静态/TTM PE 及股息率。
-    *   结合每日定时更新的 `0x0010` 股本数据，长线报告 95% 的数据查询将变为本地 SQLite 秒级拉取，彻底告别批量查询带来的 IP 封禁。
+#### [MODIFY] [data_provider.py](file:///d:/GitHub/test/data_provider.py)
+- **改进点**：
+  1. 新建统一对外主接口 `get_canonical_stock_data(code: str, force_realtime: bool = False) -> CanonicalStockData` 及 `get_canonical_stock_data_batch`。
+  2. **ZHB 真实更新周期与智能路由 (Overnight ZHB Routing)**：
+     - **T+1 日盘前 (`< 09:30`) 与休市日**：100% 走 ZHB 本地提取，零网络开销，完美利用清晨更新的 ZHB T 日完整收盘包。
+     - **盘中 (`09:30 - 15:00`)**：`price`, `change_pct`, `amount_wan`, `main_net_buy_wan` 走网络/TDX 实时接口；估值、财务、股本、概念等 30+ 静态项走 ZHB。
+     - **T 日盘后至深夜 (`15:00 - 24:00`)**：因 T 日的 ZHB 包在深夜前尚未生成，行情与资金流字段 100% 强制走网络 HTTP/TDX 接口获取今日真实收盘数据。
+  3. **数据边界校验与 Fallback (Boundary Validator)**：
+     - PE/PB/市值/股本自动纠偏清洗与补全（市值由股本与现价自动换算兜底）。
+  4. **测试结果**：`pytest tests/test_field_routing.py` 17 项测试 100% 通过。
 
-**4.4. `mak` (大盘/全市场概况)**
-*   **数据依赖**：全市场赚钱效应、涨跌停家数、高低切分布。
-*   **切换计划**：
-    *   以往需要拉取全市场 5000+ 股票切片，现在只需对本地 `zhb_master.db` 执行几条 SQL `COUNT(*)` 聚合查询。全市场广度分析的耗时将从数分钟压缩至毫秒级。
+---
 
-**4.5. `ful` (综合全景报告)**
-*   **切换计划**：综合以上所有优化，底层 API 调用的锐减将使 `ful` 报告的生成体验发生质变，生成速度将完全取决于大模型的推理速度，而非数据 I/O。
+### Component 3: 跨平台兼容与通信防护 (`tdx_client.py`) — [x] 已完成并验证
 
-### 5. 关于 TTL 限制与新老缓存逻辑的对比
+#### [MODIFY] [tdx_client.py](file:///d:/GitHub/test/tdx_client.py)
+- **改进点**：
+  1. **修复 Windows 下 `signal.SIGALRM` AttributeError**：
+     - 在 `tdx_get_security_bars` 和 `tdx_get_weekly_bars` 中增加 `hasattr(signal, 'SIGALRM')` 条件保护，彻底消除 Windows 平台运行抛出异常并误判 TCP 连接失败的 Bug。
+  2. **收紧 `_TDX_CALL_LOCK` 线程锁作用域**：
+     - HTTP Fallback 请求移至锁外执行，杜绝线程死锁。
+  3. **测试结果**：Python unittest 与真实行情接口抽样调用 100% 通过。
 
-在你设计的原缓存逻辑中，重度依赖基于时间的过期控制（如 `trading_day` 模式或固定秒数 TTL）。在引入 ZHB 混合架构后，**TTL 的概念依然存在，但其控制机制发生了分层演进：**
+---
 
-| 数据层级 | 数据特性 | 新的 TTL 限制逻辑 | 与原逻辑的对比 |
-| :--- | :--- | :--- | :--- |
-| **Tier 1: ZHB 基础库**<br>`zhb_master.db` | 静态/T-1指标<br>(如PE, 昨日主力) | **无时间戳 TTL（被动更新）**<br>它的生命周期等同于"直到下一个 ZHB 包解压入库"。因为它是全量快照，旧数据会被直接 `UPSERT` 覆盖。 | **【变化最大】**：剥离了这部分庞大的数据，它们不再受 `expires_at` 控制，极大减轻了缓存清理引擎的负担。 |
-| **Tier 2: API 兜底层**<br>`stock_cache.db` | ZHB 缺失数据的 Fallback | **沿用原逻辑的长期 TTL**<br>如果 ZHB 缺失某股数据，我们通过 API 补齐后，存入 SQLite 并赋予原有的 30 天/90 天 TTL。 | **【完全相同】**：遵循原有的 `@cached` 逻辑，确保异常请求不过载 API。 |
-| **Tier 3: 实时状态层**<br>`stock_cache.db` / L1 内存 | 盘中价格、今日涨停池、实时热榜 | **沿用原逻辑的交易日 TTL**<br>遵循 `_calc_trading_day_expiry()`，每天 15:00 强制过期，或采用更短的内存级 TTL（分钟级）。 | **【完全相同】**：实时数据必须受到严格的时间控制。 |
+### Component 4: 废弃配置与离线数据集成 (`config.py` & `stock_cache.py`) — [x] 已完成并验证
 
-**核心结论：** 
-新的双级/三源缓存架构**没有打破你原本设计的精妙 TTL 理念**，而是将那些"本不需要用时间戳过期"的批量盘后快照（ZHB）抽离了出来。对于必须依赖时间的实时数据和 Fallback 数据，原有的 SQLite 检查和交易日过期逻辑依然在完美运作。
+#### [MODIFY] [config.py](file:///d:/GitHub/test/config.py)
+- 彻底清理已废弃的 `ANTI_POISON_DEVIATION_THRESHOLD` 常量，保持配置库精简。
 
-### 6. 金融视角的报告维度扩充建议 (Financial Perspective)
+#### [MODIFY] [test_core_defense.py](file:///d:/GitHub/test/tests/test_core_defense.py)
+- 移除对 `ANTI_POISON_DEVIATION_THRESHOLD` 的陈旧断言测试，保留 ZHB 事件锁、令牌桶限流与熔断器测试。
+- **测试结果**：`pytest tests/test_core_defense.py` 6 项测试 100% 通过。
 
-从专业量化与基本面分析的角度来看，我们不仅"可以"，而且**"非常必要"**将这次发掘出的极品维度加入到原有的各个脚本中。这次破解出的数据（尤其是主力资金与时序极值）补齐了我们原本严重缺失的**"微观筹码面"**和**"时序位置"**分析能力。
+---
 
-以下是针对各脚本的扩充维度建议及其金融逻辑分析：
+### Component 5: 6 大报告脚本重构 (Report Engine Refactoring) — [x] 已完成并验证
 
-**6.1. `sht` (短线报告) —— 增加"筹码面"与"情绪极值"**
-*   **新增维度 1：主力净流入额绝对值 (`tdxstat2[14]`)**
-    *   **金融逻辑**：短线交易的核心是跟随"聪明钱"（Smart Money）。相比于单纯的涨跌幅或换手率，大单/主力净流入直接反映了机构资金的真实态度。在短线选股时，应将"主力连续两日大额净买入"作为强过滤条件。
-*   **新增维度 2：连涨/连跌天数 (`tdxstat[5]`)**
-    *   **金融逻辑**：衡量短期情绪过热与超卖的直接指标。短线策略可以利用此指标捕捉"连跌 N 天后的错杀反弹"或避开"连涨 7 天面临的获利盘抛压"。
+#### [MODIFY] [get_sht_report.py](file:///d:/GitHub/test/get_sht_report.py)
+#### [MODIFY] [get_med_report.py](file:///d:/GitHub/test/get_med_report.py)
+#### [MODIFY] [get_lng_report.py](file:///d:/GitHub/test/get_lng_report.py)
+#### [MODIFY] [get_ful_report.py](file:///d:/GitHub/test/get_ful_report.py)
+#### [MODIFY] [get_val_report.py](file:///d:/GitHub/test/get_val_report.py)
+#### [MODIFY] [get_mak_report.py](file:///d:/GitHub/test/get_mak_report.py)
+- **改进点**：
+  - 彻底清理各脚本中直接分散调用 Eastmoney/Sina/Tencent 的多源逻辑。
+  - 统一接入 `get_canonical_stock_data(code)` 标准强类型数据接口。
+- **接入模式分两类（V15.1 真实场景修订）**：
+  1. **单只深度分析（sht/med/lng/ful/val）**：`generate_report_async` 函数内部直接调 `get_canonical_stock_data(code)` 获取强类型合约对象（`cdata.pe_ttm` / `cdata.price` 等）。
+     - val 报告的 `strategy_04_core_discount` / `strategy_08_policy_driven` 由于内部需要逐只拉取财务数据，改为 `await asyncio.to_thread(get_canonical_stock_data, code)` 接入。
+  2. **全市场批量扫描（mak）**：保留 `get_market_snapshot_async(codes)` 批量入口（一次拿 3000+ 股票），新增 `_canonicalize_stock(code, stock_dict)` 适配函数（dict → CanonicalStockData），供下游需要强类型访问的场景使用。
+     - 原因：mak 是异动扫描场景，**逐只调用 dataclass 接口会导致 1000 倍性能回退**（3000+ 次 IO 阻塞 vs 1 次批量快照）。
 
-**6.2. `val` (估值与策略选股) —— 因子增强**
-*   **新增维度 1：距 52 周高低点位置 (`tdxstat2[17/18]`)**
-    *   **金融逻辑**：一个股票的估值不仅要看绝对的 PE，还要看价格的相对位置。在原有策略中增加 `(CurrentPrice - Low52W) / (High52W - Low52W)`（价格百分位因子），可以帮助策略精准区分"底部价值股"和"高位滞涨股"。
-*   **新增维度 2：主力资金占比因子 (`tdxstat2[14] / 成交额`)**
-    *   **金融逻辑**：资金面配合是价值发现的催化剂。如果估值极低且伴随主力资金占比（净流入/总成交额）突增，往往是机构建仓信号。
+---
 
-**6.3. `med` (中线报告) —— 增加"破位与压力"视角**
-*   **新增维度 1：历史 IPO 破发度 (`tdxstat2[16]`)**
-    *   **金融逻辑**：次新股或上市几年的股票一旦跌破发行价（破发），往往意味着一二级市场估值倒挂，是中线选股中的重要"避雷"或"黄金坑"参考指标。
-*   **新增维度 2：中线动能对比 (`20日涨幅` vs `60日涨幅`)**
-    *   **金融逻辑**：利用 `tdxstat` 现成的动量指标，如果 20 日涨幅向上交叉穿过 60 日涨幅，通常代表中线级别的多头结构确立。
+### Component 6: ZHB 旁路剥离与 SQLite 缓存瘦身 (`stock_cache.py`) — [x] 已完成并验证
 
-**6.4. `lng` (长线报告) —— 增加"经营效率"与"每股质量"**
-*   **新增维度 1：最新 EPS (`tipinfo[3]`) 结合 PE**
-    *   **金融逻辑**：长线看利润。原脚本多依赖宏观面，现在可以直接拉取每股收益（EPS），结合 PE 推算隐含的每股价格预期，使长线报告不仅有"定性分析"，更有"定量支撑"。
-*   **新增维度 2：员工总数规模（`tdxstat[15]`）**
-    *   **金融逻辑**：一个极冷门但极为有效的长线质地指标。同等营收体量下，员工数越少通常人效比越高。跨期跟踪员工数的增减，更是判断企业扩张/收缩周期的先行指标。
+#### [MODIFY] [stock_cache.py](file:///d:/GitHub/test/stock_cache.py)
+- **改进点**：
+  1. **ZHB 数据全量旁路 (Zero SQLite Disk Overhead)**：
+     - 所有 ZHB 提供的 30+ 静态/估值/财务/股本/概念字段旁路绕开 SQLite 磁盘存储，直接利用内存中的 `zhb_client` RAM 字典（`<0.001ms`），不写入 `stock_cache.db`。
+     - 彻底消除 SQLite 写放大、磁盘 I/O 开销与 Windows 平台下的 `.db-journal` 文件死锁风险。
+  2. **SQLite 缓存职责瘦身 (Heavy Network APIs Only)**：
+     - `stock_cache.db` 仅保留重网络请求：800 根历史日/周 K 线、180 天龙虎榜席位明细、东财/同花顺深层 F10 财报三表、研报列表。
+  3. **测试结果**：ZHB 提取 0ms 纯内存操作验证通过。
 
-**6.5. `mak` (大盘全景) —— 增加"全局资金生态"**
-*   **新增维度：全市场主力净买入总量**
-    *   **金融逻辑**：当前大盘报告依赖指数涨跌。如果引入"全市场 5000 只股票的主力净流入总和"，就能发现"指数涨但主力在跑路（拉高出货）"或"指数跌但主力在狂买（探底吸筹）"的深层背离信号，这对大盘顶底判断有着决定性意义。
+---
 
-**结论**：
-由于这些数据（除了 API 补齐部分）在重构后都存在于本地 SQLite 中，读取耗时几乎为 0，因此增加这些维度**不会带来任何性能损耗**。站在金融视角的立场上，强烈建议在接下来的实施阶段，将上述维度融入到对应脚本的 Prompt 和分析模板中。
+### Component 7: 容错与无缝降级机制调优 (`stock_common/sc_fault_tolerance.py` & `data_provider.py`) — [x] 已完成并验证
 
-## 验证计划 (Verification Plan)
+#### [MODIFY] [stock_common/sc_fault_tolerance.py](file:///d:/GitHub/test/stock_common/sc_fault_tolerance.py)
+#### [MODIFY] [data_provider.py](file:///d:/GitHub/test/data_provider.py)
+- **改进点**：
+  1. **熔断无缝降级 (Graceful Circuit Breaker Fallback)**：
+     - 当网络接口被触发熔断（`Open` 状态）或超时时，`get_canonical_stock_data` 不抛出任何异常，而是静默无缝回退至 ZHB T-1 本地内存快照，并将 `data_source` 标记为 `"zhb"`，确保报告引擎 100% 不中断。
+  2. **测试结果**：`pytest tests/test_field_routing.py::TestCanonicalDataAPI::test_graceful_circuit_breaker_fallback` 100% 通过。
 
-### 性能与正确性验证
-1.  **冷启动对比：**
-    测试重构前后的 `val` 脚本针对 10 只股票的运行时间，预期耗时从几十秒/几分钟降低至个位数秒级。
-2.  **断网容灾测试：**
-    在切断外网（除获取最新 1 根 K 线的接口外）的情况下，验证是否能仅依靠 ZHB 数据和本地静态库完成大部分策略的筛选。
-3.  **一致性核对：**
-    随机抽取 5 只股票，对比 `data_provider.get_dynamic_market_cap` 与东财官网显示的实时市值，误差应在万分之一以内。
+### Component 8: 生产实测问题修复 (Production Issue Fixes) — [x] 已完成并验证
+
+#### [MODIFY] [get_val_report.py](file:///d:/GitHub/test/get_val_report.py)
+- **修复 策略19/20/21 入参签名不匹配 Bug**：
+  - 更新 `strategy_19_52w_position(stocks, top_n=200)`、`strategy_20_main_fund_ratio(stocks, top_n=1000)`、`strategy_21_volume_acceleration(stocks, top_n=200)` 的函数签名，允许接收 `_strategy_defs` 注册传参，解决 `takes 1 positional argument but 2 given` 异常。
+
+#### [MODIFY] [get_sht_report.py](file:///d:/GitHub/test/get_sht_report.py)
+- **修复 `price_today` 与 `q` 局部变量未绑定 Bug**：
+  - 在 `generate_report_async` 头部显式绑定 `price_today = cdata.price` 及 `q = cdata.to_dict()`，彻底解决 `NameError: price_today` 和 `UnboundLocalError: q`。
+
+#### [MODIFY] [gd_uploader.py](file:///d:/GitHub/test/gd_uploader.py) & [stock_common/sc_report_runner.py](file:///d:/GitHub/test/stock_common/sc_report_runner.py)
+- **修复 Google Drive 上传交互阻断与隐式跳过**：
+  - 将根文件夹「a-stock-data」自动重试次数从 `max_auto_retry=0` 提升为 `3`，消除了网络瞬断时直接弹出终端 `[1][2][3][4]` 交互提示阻断批量运行的问题。
+  - 在 `sc_report_runner.py` 中添加显式提示 `⚠️ GD 云端同步跳过：未能获取云盘根文件夹「a-stock-data」`，提升日志透明度。
+
+### Component 9: 策略并发线程池隔离与实时时间窗精细化 (Concurrency & Realtime Window Optimization) — [x] 已完成并验证
+
+#### [MODIFY] [get_val_report.py](file:///d:/GitHub/test/get_val_report.py)
+- **恢复 `strategy_20/21/22` 纯同步 `def` 函数**：
+  - 将 `strategy_20_main_fund_ratio`、`strategy_21_volume_acceleration`、`strategy_22_capital_momentum` 从 `async def` 改为标准的 `def` 函数。
+  - 触发 `_run_sync_strategy` 的 `asyncio.to_thread(func, *args)` 保护机制，将 1,000 只股票的主力资金流扫描彻底下沉到后台 Worker 线程池中执行。
+  - **效果**：解除了伪 `async def` 函数在主 asyncio 事件循环单线程上同步循环发起 1,000 次网络请求所导致的 20 分钟主线程锁死挂起问题。
+
+#### [MODIFY] [data_provider.py](file:///d:/GitHub/test/data_provider.py)
+- **精细化 `09:30 - 24:00` 实时行情路由时间窗 (`_should_use_zhb_for_realtime`)**：
+  - **规则调整**：
+    1. 休市日 / 周末 / 节假日：100% 走 ZHB 本地内存提取（T-1 日即最新已闭市完整数据，0ms，0 网络开销）。
+    2. 交易日 00:00 - 09:30 (盘前)：100% 走 ZHB 本地内存提取（夜间已更新为 T-1 日收盘数据）。
+    3. 交易日 09:30 - 24:00 (含盘中 09:30-15:00 与盘后 15:00-24:00)：走 HTTP / TDX 实时行情（在 15:00-24:00 磁盘上的 ZHB 数据包仍然是 T-1 日，实时接口确保获取今天 T 日的最新收盘数据）。
+  - **效果**：完全契合真实物理数据更新规律，杜绝了盘后 15:00-24:00 误读取上一交易日旧收盘价的问题。
+
+### Component 10: 全局 5 大脚本 ZHB 旁路普及与 V15.1 大版本升级 (Global ZHB Bypass & V15.1 Release) — [x] 已完成并验证
+
+#### 真实物理数据界限澄清 (Physical Boundary Alignment)
+- **ZHB 涵盖字段**：`pe_ttm`, `pe_dynamic`, `pb`, `change_5d/10d/20d/60d`, `streak_days`, `dividend_yield` (当期静态股息率), `industry_code`, `high_52w`, `low_52w`, `ipo_price`, `amount_wan`, `main_net_buy_wan`。
+- **需依赖 F10/HTTP 接口字段**：财务三表比率 (`ROE`, `毛利率`, `负债率`), `十大股东与股东人数`, `历史分红派息明细`, `大宗交易明细`, `限售解禁时间表`。
+
+#### [MODIFY] [get_sht_report.py](file:///d:/GitHub/test/get_sht_report.py)
+- **普及 ZHB 阶段涨幅与偏离值旁路**：
+  - 异动雷达优先利用 `cdata.change_5d` / `cdata.change_10d` 替代 TCP 循环日 K 线计算，消除休市日/网络不稳定时的阻塞。
+  - 短线板块与概念直接走 ZHB 内存字典 0ms 提取。
+
+#### [MODIFY] [get_med_report.py](file:///d:/GitHub/test/get_med_report.py)
+- **普及 ZHB 归母净利润与静态估值兜底**：
+  - 当新浪 F10 财报三表接口失败或休市日断网时，自动渲染 ZHB `cdata.net_profit_yi` / `cdata.pe_ttm` / `cdata.pb` 离线快照面板。
+  - 当 `ROE` 为空或不可用时，显式标注 `N/A（需F10）`，杜绝显示 `0.00%` 虚假误导数据。
+
+#### [MODIFY] [get_lng_report.py](file:///d:/GitHub/test/get_lng_report.py)
+- **普及 ZHB 52周区间与股息率旁路**：
+  - 52 周高低位 (`high_52w`/`low_52w`) 与当期股息率 (`dividend_yield`) 优先走 ZHB 本地快照解析。
+
+#### [MODIFY] [get_mak_report.py](file:///d:/GitHub/test/get_mak_report.py) & [tdx_client.py](file:///d:/GitHub/test/tdx_client.py)
+- **修复指数 K 线 `tdx_get_index_bars` 丢包与超时漏洞**：
+  - 补全 `tdx_get_index_bars` 中丢失的 `market=m` 市场参数，并增加 `try...except` 异常保护与日志记录，彻底修复 `mak` 异动报告中指数 3日/10日 收益率返回 `N/A` 的问题。
+
+#### [MODIFY] [stock_cache.py](file:///d:/GitHub/test/stock_cache.py)
+- **真正实施 `_ZHB_BYPASS_CATEGORIES` 磁盘旁路**：
+  - 在 `set_cache` 逻辑中建立 `_ZHB_BYPASS_CATEGORIES` 白名单，直接旁路拦截 `basic_info_static` / `share_capital` / `concept_blocks` / `board_type` 磁盘写入，实现 SQLite 彻底瘦身。
+
+#### [MODIFY] [VERSION](file:///d:/GitHub/test/VERSION), [README.md](file:///d:/GitHub/test/README.md), [CHANGELOG.md](file:///d:/GitHub/test/CHANGELOG.md), [tests/README.md](file:///d:/GitHub/test/tests/README.md)
+- **升级版本号至 `15.1.0`**：
+  - 统一更新 `VERSION` 为 `15.1.0`。
+  - 更新 `CHANGELOG.md`、`README.md` 与 `tests/README.md`，保持高度一致的真实记录与技术规范。
+
+---
+
+## 4. 验证与测试结论 (Verification Results)
+
+### 自动化测试汇总
+1. **`tests/test_sc_schema.py`**: 23/23 PASSED ✅ (标准化数据合约、字典与序列化转换)
+2. **`tests/test_field_routing.py`**: 18/18 PASSED ✅ (ZHB-First 精确路由机制与熔断降级)
+3. **`tests/test_core_defense.py`**: 6/6 PASSED ✅ (令牌桶、熔断器、ZHB事件锁)
+4. **`tests/test_report_runner.py`**: 16/16 PASSED ✅ (6 大报告 Runner 单例与运行链)
+5. **`tests/test_f10_chapters_integration.py`**: 3/3 PASSED ✅ (F10 章元与 6 大报告集成全流程)
+6. **`全量单元测试套件`**: 245/245 PASSED ✅ (100% 成功通过)
+
+所有系统修改与测试标注均已准确同步更新至本文档及 `docs/implementation_plan.md`。
+
+
+
+

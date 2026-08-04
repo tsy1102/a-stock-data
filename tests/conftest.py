@@ -6,6 +6,24 @@
   - fake_strategy_config: 伪造的 strategy_config.yaml（如测试需要）
 
 使用 pytest.mark.real_network 标记的测试不会被网络 mock 拦截。
+
+----------------------------------------------------------------------
+AGENTS.md compliance note (see AGENTS.md 2.1.1):
+  本文件示范 pytest 作为 Python 库的正确用法。所有 `import pytest` /
+  `@pytest.fixture` / `@pytest.mark.*` / `pytest.skip()` 等调用都是
+  Python 语言特性,与 shell 完全无关,理应且必须直接使用。
+
+  仅当主动通过 shell 触发一次完整测试套件时,才走：
+    .\\scripts\\run_tests.ps1
+  而不是直接 `pytest tests/` / `python -m pytest ...`。
+
+  写新测试时若需要：
+    - 自定义 marker: 先到 pyproject.toml [tool.pytest.ini_options] markers
+      注册,避免 PytestUnknownMarkWarning
+    - 触发真实网络: 加 @pytest.mark.real_network,否则会被本文件
+      _no_real_network 拦截
+    - 异步测试: `import pytest_asyncio` 然后 `@pytest.mark.asyncio`
+----------------------------------------------------------------------
 """
 from __future__ import annotations
 
@@ -23,10 +41,19 @@ pytest_plugins = ["pytest_asyncio"]
 @pytest.fixture(autouse=True)
 def _no_real_network(monkeypatch, request):
     """禁止测试期间任何真实的 HTTP/TCP 调用。
-    
+
     使用 @pytest.mark.real_network 标记的测试会跳过此 mock。
+    V14.0 增强：可通过设置环境变量 REAL_NETWORK=1 显式允许真实网络调用，
+    否则 real_network 标记的测试在 CI 环境（无显式标记）下也会被自动 skip。
     """
     if request.node.get_closest_marker("real_network"):
+        # V14.0: 检查是否在允许真实网络的环境（显式设置 REAL_NETWORK=1）
+        import os
+        if not os.environ.get("REAL_NETWORK") and not os.environ.get("CI_RUN_REAL_NETWORK"):
+            # CI 默认 skip（避免 CI 环境真实网络失败）
+            import pytest
+            if os.environ.get("CI"):  # 仅在 CI 环境 skip，本地仍可跑
+                pytest.skip("real_network test: set REAL_NETWORK=1 to enable")
         return
 
     class _FakeResp:

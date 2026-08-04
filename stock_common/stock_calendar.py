@@ -831,8 +831,17 @@ def _validate_date(date):
 def is_workday(date):
     """判断是否为工作日（A股交易日）
 
-    V10.0 优化：优先使用 zhb.needini.dat 节假日数据（1991-2030），
-    保留调休工作日数据作为补充，本地节假日数据仅作为 fallback。
+    V14.0 修复：本地 holidays/workdays 字典作为权威数据，ZHB 仅作为辅助校验。
+      之前的 V10.0 实现有 Bug：当 ZHB 残缺（仅 37 条数据）且某个日期在 ZHB 中
+      找不到时，会错误返回 weekday <= 4，导致 2025-1-1/2026-1-1 等节假日
+      被误判为工作日。
+
+    决策顺序（V14.0 修正）：
+      1. 本地 holidays 字典（621 条，2004-2026+ 完整覆盖）→ False
+      2. 本地 workdays 字典（调休工作日）→ True
+      3. ZHB 数据（1991-2030，但实际只有 37 条）作为补充校验 → 命中即 False
+      4. 周末判断（weekday > 4）→ False
+      5. 兜底：weekday <= 4 → True
 
     Args:
         date: datetime.date 或 datetime.datetime
@@ -844,22 +853,175 @@ def is_workday(date):
         date = _validate_date(date)
         weekday = date.weekday()
 
-        date_str = date.strftime("%Y%m%d")
+        # 1. 权威数据：本地 holidays（先检查本地，避免 ZHB 残缺导致误判）
+        if date in holidays:
+            return False
 
+        # 2. 权威数据：本地 workdays（调休工作日）
+        if date in workdays:
+            return True
+
+        # 3. 辅助校验：ZHB 数据（残缺时不影响本地判断）
         try:
             from zhb_client import get_holidays
             zhb_holidays = get_holidays()
-            if zhb_holidays and date_str in zhb_holidays:
-                if date in workdays:
-                    return True
-                return weekday <= 4
+            if zhb_holidays:
+                date_str = date.strftime("%Y%m%d")
+                if date_str in zhb_holidays:
+                    return False  # ZHB 命中节假日
         except Exception:
             pass
 
-        return bool(date in workdays or (weekday <= 4 and date not in holidays))
+        # 4 & 5. 兜底：周末 vs 工作日
+        return weekday <= 4
     except NotImplementedError:
         # 年份超出范围，抛出异常供上层处理
         raise
+
+
+# ═══════════════════════════════════════════════════════════════
+# V14.2 新增：ZHB neednote.dat 官方日历补充
+# ═══════════════════════════════════════════════════════════════
+
+def _load_zhb_neednote_supplement():
+    """V14.2：加载 ZHB neednote.dat 官方休市日+调休补班日作为本地字典的补充。
+
+    V14.2.1 改进：预过滤空元素 + 全角空格，避免异常开销。
+
+    Returns:
+        (supplement_holidays: set, supplement_workdays: set)
+        加载失败时返回 (set(), set())
+    """
+    try:
+        from zhb_client import get_zhb_official_holidays, get_zhb_official_jyweek
+        supplement_holidays = set()
+        # V14.2.1: 预过滤空元素和空白字符串
+        for d_str in (s for s in get_zhb_official_holidays() if s and s.strip()):
+            d_str = d_str.strip()
+            try:
+                year = int(d_str[:4])
+                month = int(d_str[4:6])
+                day = int(d_str[6:8])
+                supplement_holidays.add(date(year, month, day))
+            except (ValueError, TypeError, IndexError):
+                continue
+        supplement_workdays = set()
+        for d_str in (s for s in get_zhb_official_jyweek() if s and s.strip()):
+            d_str = d_str.strip()
+            try:
+                year = int(d_str[:4])
+                month = int(d_str[4:6])
+                day = int(d_str[6:8])
+                supplement_workdays.add(date(year, month, day))
+            except (ValueError, TypeError, IndexError):
+                continue
+        return supplement_holidays, supplement_workdays
+    except Exception:
+        return set(), set()
+
+
+# V14.2 模块级缓存（一次性加载）
+_zhb_holidays_supplement: set = set()
+_zhb_workdays_supplement: set = set()
+_zhb_supplement_loaded: bool = False
+# V14.2.1: 记录上次加载时的 ZHB 数据日期，检测到变更时自动重载
+_last_zhb_supplement_date: str = ""
+
+
+def _ensure_zhb_supplement_loaded():
+    """确保 ZHB 补充数据已加载（V14.2 + V14.2.1 自动重载）。
+
+    V14.2.1 改进：当 ZHB 数据日期变更时（如盘后守护进程下载了新 zhb.zip），
+    自动重新加载补充日历，避免缓存陈旧。
+    """
+    global _zhb_holidays_supplement, _zhb_workdays_supplement, _zhb_supplement_loaded, _last_zhb_supplement_date
+    try:
+        from zhb_client import get_zhb
+        zhb = get_zhb()
+        current_date = zhb.date if zhb is not None else ""
+        # 已加载且日期未变：直接返回
+        if _zhb_supplement_loaded and current_date == _last_zhb_supplement_date:
+            return
+        # 数据日期更新或首次加载：重新读取
+        _zhb_holidays_supplement, _zhb_workdays_supplement = _load_zhb_neednote_supplement()
+        _last_zhb_supplement_date = current_date
+        _zhb_supplement_loaded = True
+    except Exception:
+        # 加载失败时仍标记为已加载（避免每次调用都重试）
+        if not _zhb_supplement_loaded:
+            _zhb_holidays_supplement, _zhb_workdays_supplement = set(), set()
+            _zhb_supplement_loaded = True
+
+
+def invalidate_zhb_supplement_cache() -> None:
+    """强制清空 ZHB 补充日历缓存（V14.2.1 新增）。
+
+    用法：zhb_sync.py 下载完新 zhb.zip 后可调用此函数触发 reload。
+    """
+    global _zhb_holidays_supplement, _zhb_workdays_supplement, _zhb_supplement_loaded, _last_zhb_supplement_date
+    _zhb_holidays_supplement = set()
+    _zhb_workdays_supplement = set()
+    _zhb_supplement_loaded = False
+    _last_zhb_supplement_date = ""
+
+
+def is_workday_with_zhb_supplement(date):
+    """V14.2：在 is_workday() 基础上叠加 ZHB neednote.dat 补充日历。
+
+    优先级：
+      1. 本地 holidays 字典（621 条）→ False
+      2. 本地 workdays 字典（调休工作日）→ True
+      3. ZHB neednote.dat 官方休市日（补充未来日期）→ False
+      4. ZHB neednote.dat 官方调休补班日 → True
+      5. ZHB holidays（残缺数据，仅辅助校验）→ 命中即 False
+      6. 周末判断 → False
+      7. 兜底：weekday <= 4 → True
+
+    本地字典不可用时（如年内日期），ZHB 补充数据可作为兜底。
+    """
+    date = _validate_date(date)
+    weekday = date.weekday()
+
+    # 1 & 2. 本地字典（V14.0 权威数据）
+    if date in holidays:
+        return False
+    if date in workdays:
+        return True
+
+    # 3 & 4. V14.2 新增：ZHB neednote.dat 补充
+    _ensure_zhb_supplement_loaded()
+    if date in _zhb_holidays_supplement:
+        return False
+    if date in _zhb_workdays_supplement:
+        return True
+
+    # 5. V14.0 ZHB 残缺数据辅助校验
+    try:
+        from zhb_client import get_holidays
+        zhb_holidays = get_holidays()
+        if zhb_holidays:
+            date_str = date.strftime("%Y%m%d")
+            if date_str in zhb_holidays:
+                return False
+    except Exception:
+        pass
+
+    # 6 & 7. 周末 vs 工作日
+    return weekday <= 4
+
+
+def get_zhb_supplement_count() -> dict:
+    """V14.2：返回 ZHB 补充日历的统计信息。
+
+    Returns:
+        {"holidays": N, "workdays": M, "loaded": bool}
+    """
+    _ensure_zhb_supplement_loaded()
+    return {
+        "holidays": len(_zhb_holidays_supplement),
+        "workdays": len(_zhb_workdays_supplement),
+        "loaded": _zhb_supplement_loaded,
+    }
 
 
 def get_last_trading_day(date=None):

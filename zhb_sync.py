@@ -17,7 +17,10 @@
     2. 定时任务：python zhb_sync.py --cron "0 9,18 * * *"  # 每天9点和18点
     3. 后台守护：python zhb_sync.py --interval 6  # 每6小时同步一次
 
-版本: V10.3
+版本: V14.0（2026-07-22，文档同步）
+    V13.x：受益于 stock_cache.py dataclass 透明序列化
+    V12.6：受益于字段路由简化（REQUIRES_REALTIME_HTTP）
+    V10.3：初始版本
 """
 
 from __future__ import annotations

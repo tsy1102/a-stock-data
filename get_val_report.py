@@ -5,6 +5,13 @@ get_val_report.py — 18 策略全市场发现引擎
 每策略精选 TOP 5，生成含具体数值推理的报告。
 
 版本信息:
+    V15.2  2026-07-28 - V15.2 性能优化：22 策略去重循环 get_pe_ttm_async，从 _snapshot dict O(1) 读；ths_hot_reason 失败降级；L1 缓存上限 5000→10000
+    V15.1  2026-07-26 - V15.1 策略并发 100% 线程池 Worker 隔离：策略 20/21/22 恢复纯同步 def，解除主事件循环 20 分钟死锁挂起问题
+    V15.0  2026-07-26 - 接入 CanonicalStockData 强类型数据合约，实施基于真实周期的 ZHB-First 离线优先路由
+    V14.0  2026-07-22 - 文档同步：docstring 版本信息更新到 V14.0；is_workday() Bug 修复由 stock_common 上游提供
+    V13.x  2026-07-22 - 受益于 stock_cache.py dataclass 透明序列化（脚本无改动）
+    V12.6  2026-07-22 - 受益于字段路由简化（移除估值字段 HTTP fallback）
+    V12.4  2026-07-22 - 抽象 BaseReportRunner 基类
     V9.5   2026-07-11 - 基础设施修复：aiohttp原生异步迁移、静默异常日志化（脚本本身无改动，受益于底层修复）
     V9.3.3 2026-07-11 - VERSION文件单一来源版本号管理
     V9.3.2 2026-07-09 - 基础设施修复：TDX K线假数据防护、SQLite WAL死锁修复、代理环境兼容（脚本本身无改动，受益于底层修复）
@@ -31,41 +38,38 @@ Usage:
 """
 
 import time, os
-from datetime import date, datetime
+from datetime import date, datetime, timedelta  # V16.1: 策略13 TTM 股息率需 timedelta
 from typing import Any, Dict, List
 from concurrent.futures import ThreadPoolExecutor
 
 from gd_uploader import init_gd, upload_type_reports, cleanup_gd_proxy
-from tdx_client import (tdx_get_security_bars, tdx_get_quotes_batch,
+from tdx_client import (tdx_get_security_bars,
                          tdx_get_weekly_bars,
                          tdx_get_board_list,
                          tdx_get_all_stocks,
-                         tdx_get_finance_roe, tdx_get_fund_flow, cleanup_tdx)
+                         tdx_get_finance_roe, cleanup_tdx)  # V16.0: 移除 tdx_get_fund_flow（改统一层）
 from stock_common import (_safe_float, _request_with_retry, _quick_request, UA,
                            JP_URL,
                            _load_settings, _load_strategy_config, get_holder_structure,
                            holder_change, is_limit_up, is_limit_down,
                            get_recent_dragon_tiger, get_dragon_tiger_board,
-                           parse_args as common_parse_args,
+                           parse_args as common_parse_args, BaseReportRunner,
                            get_tencent_quote,
                            baidu_kline_full as common_baidu_kline_full,
                            get_dividend_history as common_get_dividend_history,
-                           is_trading_day, get_market_status,
+                           get_market_status,
                            _debug_log,
                            cls_telegraph as _cls_telegraph,
                            get_eastmoney_global_news as _eastmoney_global_news,
                            get_zhb_market_snapshot, is_zhb_data_fresh,
-                           get_zhb_data_date, get_zhb_stock_stat,
-                           get_zhb_52w_range,
-                           get_zhb_full_market_snapshot as get_zhb_full_snapshot,
+                           get_zhb_data_date,
                            calc_mcap_yi as _calc_mcap_yi,
-                           get_zhb_main_net_buy)  # V10.3
-from data_provider import (get_stock_composite_async, get_market_snapshot_async,
-                           get_stock_price_async, get_pe_ttm_async, get_pb_async,
-                           get_dividend_yield_async, get_52w_range_async,
-                           get_main_net_buy_async, get_change_pct_async,
-                           get_change_ytd_async, get_amount_wan_async,
-                           get_turnover_pct_async)
+                           get_sina_financial_report,
+                           get_em_batch_quotes)  # V11.5
+from data_provider import (get_market_snapshot_async,
+                           get_turnover_pct_async,
+                           get_main_net_buy_async,
+                           get_main_net_buy)  # V16.1: 策略20 用同步版（原缺失导入）
 import asyncio
 import inspect
 
@@ -75,11 +79,6 @@ _SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 # ═══════════════════════════════════════════════════
 # 数据获取层
 # ═══════════════════════════════════════════════════
-
-def tencent_quote_batch(codes: List[str]) -> Dict[str, Dict[str, Any]]:
-    """V4: 批量行情 → tdx_client 适配器（TDX+腾讯合并，自动fallback）"""
-    return tdx_get_quotes_batch(codes)
-
 
 # ─── 百度股市通 K线（返回全量行） ───
 
@@ -226,36 +225,6 @@ def eastmoney_global_news(page_size=50):
     """东财全球财经资讯（7x24 滚动）— 引用 sc_datasource 统一实现"""
     return _eastmoney_global_news(page_size)
 
-
-# ─── 新浪财报（多期） ───
-
-def sina_financial_report(code, num_periods=12):
-    """新浪利润表 — 支持多期数（默认12期 ≈ 3年）"""
-    prefix = "sh" if code.startswith("6") else "sz"
-    paper_code = f"{prefix}{code}"
-    url = "https://quotes.sina.cn/cn/api/openapi.php/CompanyFinanceService.getFinanceReport2022"
-    params = {"paperCode": paper_code, "source": "lrb", "type": "0", "page": "1", "num": str(num_periods)}
-    try:
-        r = _quick_request(url, params=params, headers={"User-Agent": UA}, timeout=15)
-        if r is None: return []
-        rl = (r.json().get("result") or {}).get("data", {}).get("report_list", {})
-        rows = []
-        for date_key, period in rl.items():
-            item_map = {}
-            for entry in period.get("data", []):
-                item_map[entry.get("item_title", "")] = entry.get("item_value")
-            rows.append({
-                "报告日": f"{date_key[:4]}-{date_key[4:6]}-{date_key[6:8]}",
-                "营业总收入": item_map.get("营业总收入") or "0",
-                "营业成本": item_map.get("营业成本") or "0",
-                "净利润": item_map.get("归属于母公司所有者的净利润") or item_map.get("净利润") or "0",
-            })
-        return rows
-    except Exception as _e:
-        _debug_log(f"val financial_parse: {_e}")
-        return []
-
-
 # ─── 股东户数变化 ───
 
 def holder_num_change(code, page_size=5):
@@ -269,13 +238,27 @@ def estimate_pe_percentile(code, price, total_shares):
     """
     基于新浪12期财报 + 历史日K线，估算近3年模拟PE百分位。
     返回: {percentile, pe_min, pe_max, pe_current, quarters}
+
+    V16.1 修复：
+      1. 财报按报告日排序（旧→新）后再拆季度——原逻辑假设 profits 旧→新，
+         但新浪返回最新在前，直接相减会把所有季度归零
+      2. 亏损季度不再截断为 0（保留负值，真实反映 TTM 利润）
+      3. K线锚点用"报告期+60天"近似披露日（原直接用报告期 → 轻微前视）
     """
-    fin = sina_financial_report(code, num_periods=12)
+    fin = get_sina_financial_report(code, num_periods=12)
     if len(fin) < 4:
         return None
 
+    # 按报告日升序排序（旧→新），确保季度拆解方向正确
+    fin_sorted = sorted(
+        [f for f in fin if f.get("报告日")],
+        key=lambda x: x["报告日"],
+    )
+    if len(fin_sorted) < 4:
+        return None
+
     profits = []
-    for f in fin:
+    for f in fin_sorted:
         try: p = float(f["净利润"])
         except (ValueError, TypeError, KeyError): p = 0
         profits.append(p)
@@ -283,27 +266,27 @@ def estimate_pe_percentile(code, price, total_shares):
     if total_shares <= 0 or all(p == 0 for p in profits):
         return None
 
-    # 还原为单季度后计算TTM
-    # TTM按季度反推(新浪财报是累计值,需Q1/Q2/Q3/Q4逐季拆解)
+    # 还原为单季度（新浪财报是累计值，逐季拆解；亏损季度保留负值）
     sq_profits = []
-    for i in range(len(profits)-1, 0, -1):
-        sq_profits.append(max(profits[i] - profits[i-1], 0))
-    sq_profits.append(profits[0])  # 最新一期本身是单季度
-    sq_profits = sq_profits[::-1]  # 倒序回到最新在前
+    for i in range(len(profits)):
+        if i == 0:
+            sq_profits.append(profits[i])
+        else:
+            sq_profits.append(profits[i] - profits[i - 1])
 
     ttm_eps_list = []
     ttm_dates = []
     for i in range(len(sq_profits) - 3):
-        ttm_profit = sum(sq_profits[i:i+4])
+        ttm_profit = sum(sq_profits[i:i + 4])
         eps = ttm_profit / total_shares
         if eps > 0:
             ttm_eps_list.append(eps)
-            ttm_dates.append(fin[i+3]["报告日"])
+            ttm_dates.append(fin_sorted[i + 3]["报告日"])
 
     if not ttm_eps_list:
         return None
 
-    keys, rows = common_baidu_kline_full(code)
+    keys, rows = _fast_kline(code)
     if not rows:
         return None
 
@@ -316,10 +299,15 @@ def estimate_pe_percentile(code, price, total_shares):
 
     historical_pes = []
     for i, (eps, dt_str) in enumerate(zip(ttm_eps_list, ttm_dates)):
+        # V16.1: 披露日近似 = 报告期 + 60 天（A股年报/季报披露窗口）
+        try:
+            _anchor = (datetime.strptime(dt_str, "%Y-%m-%d") + timedelta(days=60)).strftime("%Y-%m-%d")
+        except (ValueError, TypeError):
+            _anchor = dt_str
         for row in reversed(rows):
             if len(row) <= idx_close: continue
             row_date = row[0] if len(row) > 0 else ""
-            if row_date[:10] <= dt_str:
+            if row_date[:10] <= _anchor:
                 close_price = _safe_float(row[idx_close])
                 if close_price > 0:
                     historical_pes.append(close_price / eps)
@@ -400,11 +388,8 @@ def _tdxstat_prescreen(stocks):
             # tdxstat 中没有的股票（如新股），保留但不标注
             screened.append(s)
             continue
-        # 过滤停牌股（volume=0）
-        vol = stat.get("volume")
-        if vol is not None and _safe_float(vol) == 0:
-            excluded += 1
-            continue
+        # V16.0: ZHB 不再提供 volume 字段（Col[24] 误映射已移除）。
+        # 原"volume=0 过滤停牌股"逻辑失效（恒 None），停牌股由后续策略行情获取自然排除。
         # 标注字段（不覆盖已有字段）
         for k, v in stat.items():
             if k not in ("market", "code", "date"):
@@ -424,10 +409,109 @@ def _tdxstat_prescreen(stocks):
 # 15 个策略引擎
 # ═══════════════════════════════════════════════════
 
+# V15.1: A 股代码前缀白名单（沪深主板/创业板/科创板/北交所），其余（ETF/LOF/可转债）过滤掉
+_A_STOCK_PREFIXES = (
+    "00",  # 深市主板/中小板
+    "30",  # 深市创业板
+    "60",  # 沪市主板
+    "68",  # 沪市科创板
+    "92",  # 北交所（920xxx 段 334 只 4.2%）
+)
+
+
+def _is_a_stock(code: str) -> bool:
+    """V15.1: 判断是否为 A 股（沪深主板/创业板/科创板/北交所）。
+
+    过滤掉的非 A 股：ETF（15/51/56/58 等）、LOF（50）、可转债（11/12/18）、
+    国债/债券 ETF、封闭式基金等。
+    """
+    if not code or len(code) != 6 or not code.isdigit():
+        return False
+    return code[:2] in _A_STOCK_PREFIXES
+
+def _zhb_weekly_eligible(stock: dict) -> bool:
+    """V14.3 P1: 周线多头策略的 ZHB 前置过滤。
+
+    过滤逻辑：
+      1) 基础过滤：必须有 amount（市值活跃）+ mcap_yi（市值 >= 50 亿）
+      2) 趋势过滤：change_20d > 0 或 streak_days >= 1（至少有短期上行动量）
+      3) 估值过滤：pe_ttm > 0（非亏损股）
+    ZHB 数据缺失时放行（保证不漏选）。
+    """
+    if not stock:
+        return True
+    # 1. 基础过滤
+    if _safe_float(stock.get("mcap_yi", 0)) < 50:
+        return False
+    if _safe_float(stock.get("amount", 0)) <= 0:
+        return False
+    # 2. 趋势过滤（任一满足即可）
+    change_20d = _safe_float(stock.get("change_20d", 0))
+    change_60d = _safe_float(stock.get("change_60d", 0))
+    streak = _safe_int(stock.get("streak_days", 0))
+    if change_20d <= -10 and change_60d <= -20 and streak < 1:
+        return False  # 趋势太弱，不值得查 K 线
+    # 3. 估值过滤
+    pe = _safe_float(stock.get("pe_ttm", 0))
+    if pe != 0 and pe < 0:
+        return False  # 亏损股跳过
+    return True
+
+
+def _zhb_pattern_eligible(stock: dict, pattern: str = "double_bottom") -> bool:
+    """V14.3 P1: 形态类策略的 ZHB 前置过滤（double_bottom / three_soldiers）。
+
+    形态策略对趋势敏感，前置过滤更严格：
+      1) W底（double_bottom）：需要 60 日内大跌后反弹，要求 change_60d < -5 且 change_20d > 0
+      2) 红三兵（three_soldiers）：需要连涨态势，要求 streak_days >= 2 或 change_5d > 3
+    ZHB 数据缺失时放行。
+    """
+    if not stock:
+        return True
+    if _safe_float(stock.get("mcap_yi", 0)) < 50:
+        return False
+    if _safe_float(stock.get("amount", 0)) <= 0:
+        return False
+    change_5d = _safe_float(stock.get("change_5d", 0))
+    change_20d = _safe_float(stock.get("change_20d", 0))
+    change_60d = _safe_float(stock.get("change_60d", 0))
+    streak = _safe_int(stock.get("streak_days", 0))
+    if pattern == "double_bottom":
+        # W底：60 日大跌 + 20 日反弹
+        if change_60d > 5:
+            return False
+        if change_20d < -5:
+            return False
+    elif pattern == "three_soldiers":
+        # 红三兵：连涨
+        if streak < 2 and change_5d < 2:
+            return False
+    return True
+
+
 def _top5_sorted(candidates, key_func, reverse=True):
     """从候选列表中取 TOP10，按 key_func 排序"""
     candidates.sort(key=key_func, reverse=reverse)
     return candidates[:10]
+
+
+# ─── V15.5.8: 快速 K 线（TDX 优先，百度 fallback）───
+
+def _fast_kline(code: str, count: int = 800):
+    """V15.5.8: K 线获取 — 优先 TDX（easy_tdx 适配器+磁盘缓存，快），失败 fallback 百度。
+
+    val 全市场扫描 strategy_05/06/12/15 对 1300 只候选逐股取 K 线，
+    原 common_baidu_kline_full（HTTP 0.9s/次）冷缓存 700-1200 秒。
+    TDX 适配器实测 0.0s/次（磁盘缓存命中）。
+    """
+    try:
+        from tdx_client import tdx_get_security_bars
+        _k, _r = tdx_get_security_bars(code, count=count)
+        if _r and len(_r) >= 65:
+            return _k, _r
+    except Exception as _e:
+        _debug_log(f"val _fast_kline tdx fallback ({code}): {_e}")
+    return common_baidu_kline_full(code)
 
 
 # ─── 策略01: 龙回头战法 ───
@@ -480,6 +564,10 @@ def strategy_02_weekly_ma(stocks, top_n=None):
     result = []
     for s in candidates:
         code = s["code"]
+        # V14.3 P1: ZHB 前置过滤（避免无意义 K 线网络请求）
+        # ZHB 有完整周线/形态信息时直接命中，否则跳过网络请求
+        if not _zhb_weekly_eligible(s):
+            continue
         w = compute_weekly_ma(code)
         if not w or w.get("week_count", 0) < 25: continue
         if any(v is None or v <= 0 for v in [w.get("ma5"), w.get("ma10"), w.get("ma20"), w.get("ma30")]): continue
@@ -536,7 +624,9 @@ def strategy_03_volume_breakout(hot_pool):
                 v = _safe_float(row[idx_vol])
                 volumes.append(v)
         if len(closes) < 65: continue
-        recent_60 = closes[-60:]
+        # V16.1: 箱体上沿用"前60根"（排除当前价）— 原 max(closes[-60:]) 含当前价，
+        # 导致 current_price < box_top*1.01 恒真，策略永不命中
+        recent_60 = closes[-61:-1]
         box_top = max(recent_60)
         current_price = closes[-1]
         if current_price < box_top * _box_factor: continue
@@ -571,19 +661,21 @@ async def strategy_04_core_discount(stocks):
     if not big_caps: return []
     big_caps = sorted(big_caps, key=lambda x: x.get("mcap_yi", 0), reverse=True)[:_top_n]
     result = []
+    # V15.1: 统一接入 get_canonical_stock_data 强类型合约（替代旧的 get_stock_composite_async）
+    from data_provider import get_canonical_stock_data
     for s in big_caps:
         code = s["code"]
         try:
-            composite = await get_stock_composite_async(code)
+            # 同步函数走 to_thread，避免阻塞 asyncio 事件循环
+            cdata = await asyncio.to_thread(get_canonical_stock_data, code)
         except Exception:
-            composite = {}
-        if not composite: continue
-        pe = _safe_float(composite.get("pe_ttm", 0))
+            continue
+        pe = _safe_float(cdata.pe_ttm)
         if pe <= 0 or pe > _pe_high: continue
-        pb = _safe_float(composite.get("pb", 0))
+        pb = _safe_float(cdata.pb)
         if pb > _pb_high: continue
-        mcap = _safe_float(composite.get("mcap_yi", 0))
-        price = _safe_float(composite.get("price", 0))
+        mcap = _safe_float(cdata.mcap_yi)
+        price = _safe_float(cdata.price)
         if mcap <= 0 or price <= 0: continue
         total_shares = int(mcap * 1e8 / price)
         pe_data = estimate_pe_percentile(code, s.get("price", 0), total_shares)
@@ -596,7 +688,7 @@ async def strategy_04_core_discount(stocks):
             f"约{pe_percentile:.0f}%分位（基于{pe_data.get('quarters', 0)}期TTM数据估算），"
             "属于非理性折价区间"
         )
-        result.append({"code": code, "name": s.get("name", ""), "reason": reason,
+        result.append({"code": code, "name": s.get("name", "") or cdata.name, "reason": reason,
                        "score": -pe_percentile})
         if len(result) >= 5:
             break
@@ -616,7 +708,10 @@ def strategy_05_double_bottom(stocks, top_n=None):
     result = []
     for s in candidates:
         code = s["code"]
-        keys, rows = common_baidu_kline_full(code)
+        # V14.3 P1: ZHB 前置过滤（避免 W底形态 K 线网络请求）
+        if not _zhb_pattern_eligible(s, pattern="double_bottom"):
+            continue
+        keys, rows = _fast_kline(code)
         if len(rows) < 100: continue
         idx_close = -1
         idx_vol = -1
@@ -668,7 +763,10 @@ def strategy_06_three_soldiers(stocks, top_n=500):
     result = []
     for s in candidates:
         code = s["code"]
-        keys, rows = common_baidu_kline_full(code)
+        # V14.3 P1: ZHB 前置过滤（避免红三兵 K 线网络请求）
+        if not _zhb_pattern_eligible(s, pattern="three_soldiers"):
+            continue
+        keys, rows = _fast_kline(code)
         if len(rows) < 10: continue
         idx_open = -1; idx_close = -1; idx_vol = -1
         for i, k in enumerate(keys):
@@ -739,10 +837,8 @@ async def strategy_08_policy_driven(stocks, hot_pool=None):
             if any(kw in tag for kw in policy_keywords):
                 _s = next((s for s in (stocks or []) if s.get("code", "") == h_code), None)
                 if _s and 5 <= _s.get("mcap_yi", 0) <= 50:
-                    try:
-                        pe_ttm = await get_pe_ttm_async(h_code) or 0
-                    except Exception:
-                        pe_ttm = 0
+                    # V15.2: 从 _snapshot dict O(1) 读 pe_ttm，避免循环 get_pe_ttm_async 触发 5743 次 zhb_data 缓存
+                    pe_ttm = _safe_float(_s.get("pe_ttm", 0))
                     if pe_ttm > 0:
                         _ths_result.append({
                             "code": h_code, "name": h.get("name", ""),
@@ -764,21 +860,24 @@ async def strategy_08_policy_driven(stocks, hot_pool=None):
     candidates = [s for s in (stocks or []) if 5 <= s.get("mcap_yi", 0) <= 50]
     if not candidates: return []
     result = []
+    # V15.1: 统一接入 get_canonical_stock_data 强类型合约（替代旧的 get_stock_composite_async）
+    from data_provider import get_canonical_stock_data
     for s in candidates[:200]:
         code = s["code"]
         try:
-            composite = await get_stock_composite_async(code)
+            # 同步函数走 to_thread，避免阻塞 asyncio 事件循环
+            cdata = await asyncio.to_thread(get_canonical_stock_data, code)
         except Exception:
-            composite = {}
-        pe_ttm = _safe_float(composite.get("pe_ttm", 0))
+            continue
+        pe_ttm = _safe_float(cdata.pe_ttm)
         if not pe_ttm > 0: continue
-        mcap_yi = _safe_float(composite.get("mcap_yi", 0))
+        mcap_yi = _safe_float(cdata.mcap_yi)
         reason = (
             f"今日新闻出现政策关键词: {', '.join(found_policy[:3])}，"
             f"市值{mcap_yi:.1f}亿（中小盘弹性标的），"
             f"PE={pe_ttm:.1f}x，攻守兼备"
         )
-        result.append({"code": code, "name": s.get("name", ""), "reason": reason,
+        result.append({"code": code, "name": s.get("name", "") or cdata.name, "reason": reason,
                        "score": -pe_ttm})
     return _top5_sorted(result, lambda x: x["score"])
 
@@ -851,7 +950,7 @@ async def strategy_10_contrarian_value(stocks, top_n=300):
         # V4: TDX get_finance_info 替代 push2 MAINFINADATA（单期ROE ≥ 15%）
         roe = tdx_get_finance_roe(code)
         if roe is None or roe < _roe_good: continue
-        keys, rows = common_baidu_kline_full(code)
+        keys, rows = _fast_kline(code)
         if len(rows) < 250: continue
         _ki = _kline_indices(keys); idx_c = _ki.get("close", -1); idx_v = _ki.get("vol", -1); idx_close = _ki.get("close", -1)
         if idx_close < 0: continue
@@ -861,10 +960,8 @@ async def strategy_10_contrarian_value(stocks, top_n=300):
         current_price = closes[-1]
         drawdown = (current_price - high_52w) / high_52w * 100
         if drawdown > -40: continue
-        try:
-            pe_ttm = await get_pe_ttm_async(code) or 0
-        except Exception:
-            pe_ttm = 0
+        # V15.2: 从 s dict O(1) 读 pe_ttm（避免循环 get_pe_ttm_async 触发大量 zhb_data 缓存）
+        pe_ttm = _safe_float(s.get("pe_ttm", 0))
         reason = (
             f"最新ROE={roe:.1f}%≥15%（优质白马），"
             f"距52周最高价{high_52w:.2f}元已下跌{abs(drawdown):.0f}%，"
@@ -908,7 +1005,7 @@ def strategy_12_divergence_warning(stocks, top_n=300):
     result = []
     for s in candidates:
         code = s["code"]
-        keys, rows = common_baidu_kline_full(code)
+        keys, rows = _fast_kline(code)
         if len(rows) < 25: continue
         idx_close = -1; idx_vol = -1
         for i, k in enumerate(keys):
@@ -935,7 +1032,8 @@ def strategy_12_divergence_warning(stocks, top_n=300):
 # ─── 策略13: 红利低波 ───
 
 def strategy_13_dividend_yield(stocks):
-    candidates = [s for s in stocks if s.get("mcap_yi", 0) >= 50][:300]
+    # V14.3.2: 4 天回测推荐 100（100 稳定性 0.57 > 300 稳定性 0.43）
+    candidates = [s for s in stocks if s.get("mcap_yi", 0) >= 50][:100]
     result = []
     for s in candidates:
         code = s["code"]
@@ -943,13 +1041,20 @@ def strategy_13_dividend_yield(stocks):
         if price <= 0: continue
         divs = common_get_dividend_history(code)
         if len(divs) < 3: continue
-        recent_bonus = _safe_float(divs[0].get("bonus_rmb", 0))
-        if recent_bonus <= 0: continue
-        yield_pct = recent_bonus / price * 100
+        # V16.1: TTM 股息率 = 近 12 个月累计派息 / 现价（原只用最近一次分红，低估半年报/季报分红公司）
+        one_year_ago = (date.today() - timedelta(days=365)).strftime("%Y-%m-%d")
+        ttm_bonus = sum(
+            _safe_float(d.get("bonus_rmb", 0))
+            for d in divs if str(d.get("date", "")) >= one_year_ago
+        )
+        if ttm_bonus <= 0:
+            ttm_bonus = _safe_float(divs[0].get("bonus_rmb", 0))
+        if ttm_bonus <= 0: continue
+        yield_pct = ttm_bonus / price * 100
         if yield_pct < 4.0: continue
         years_with_div = len([d for d in divs if _safe_float(d.get("bonus_rmb", 0)) > 0])
         reason = (
-            f"当前股息率{yield_pct:.2f}%（每股派息{recent_bonus:.4f}元/现价{price:.2f}元），"
+            f"TTM股息率{yield_pct:.2f}%（近12月累计派息{ttm_bonus:.4f}元/现价{price:.2f}元），"
             f"近{years_with_div}个报告期持续分红，稳定的现金奶牛资产"
         )
         result.append({"code": code, "name": s.get("name", ""), "reason": reason,
@@ -957,41 +1062,6 @@ def strategy_13_dividend_yield(stocks):
         if len(result) >= 5:
             break
     return _top5_sorted(result, lambda x: x["score"])
-
-
-# ─── 策略14: 股债平衡 ───
-
-async def strategy_14_asset_rebalance():
-    codes = ["510300", "511010"]
-    try:
-        quotes = await get_market_snapshot_async(codes)
-    except Exception as _e:
-        _debug_log(f"val strategy14 market_snapshot: {_e}")
-        return []
-    if len(quotes) < 2: return []
-    equity = quotes.get("510300", {})
-    bond = quotes.get("511010", {})
-    equity_name = equity.get("name", "沪深300ETF")
-    bond_name = bond.get("name", "国债ETF")
-    equity_change = equity.get("change_pct", 0)
-    bond_change = bond.get("change_pct", 0)
-    diff = abs(equity_change - bond_change)
-    if diff < 3:
-        return [{"code": "510300", "name": equity_name,
-                 "reason": f"当前股债走势趋于均衡（偏离度{diff:.1f}%），无需再平衡", "score": 0}]
-    result = []
-    if equity_change > bond_change:
-        result.append({"code": "510300", "name": equity_name,
-                       "reason": f"【再平衡信号】权益类近期走强(+{equity_change:.1f}%) >> 债券(+{bond_change:.1f}%)，偏离度{diff:.1f}%，建议减仓权益、加仓债券回归50:50",
-                       "score": diff})
-    else:
-        result.append({"code": "511010", "name": bond_name,
-                       "reason": f"【再平衡信号】债券类近期走强(+{bond_change:.1f}%) >> 权益(+{equity_change:.1f}%)，偏离度{diff:.1f}%，建议减仓债券、加仓权益回归50:50",
-                       "score": diff})
-    result.append({"code": "511010", "name": bond_name,
-                   "reason": f"资产配置对冲标的，当前与{equity_name}形成互补",
-                   "score": diff * 0.8})
-    return result[:5]
 
 
 # ─── 策略15: 头部资金风向标 ───
@@ -1003,7 +1073,7 @@ def strategy_15_liquidity_king(top_liquidity_pool):
     result = []
     for s in top_liquidity_pool:
         code = s["code"]
-        keys, rows = common_baidu_kline_full(code)
+        keys, rows = _fast_kline(code)
         if len(rows) < 10: continue
         idx_vol = -1; idx_close = -1
         for i, k in enumerate(keys):
@@ -1315,7 +1385,7 @@ def strategy_18_longhu_activity(all_stocks, today_str=None, top_n=200):
 
 # ─── 策略19: 52周位置百分位（V10.3新增）──
 
-def strategy_19_52w_position(stocks):
+def strategy_19_52w_position(stocks, top_n=200):
     """V10.3: 52周位置百分位策略。
     利用zhb的high_52w/low_52w，筛选处于52周低位的优质标的。
     
@@ -1352,7 +1422,7 @@ def strategy_19_52w_position(stocks):
 
 # ─── 策略20: 主力资金占比因子（V10.3新增）──
 
-async def strategy_20_main_fund_ratio(stocks):
+def strategy_20_main_fund_ratio(stocks, top_n=1000):
     """V10.3: 主力资金占比因子策略。
     利用zhb的主力净流入额（T-1），TDX实时资金流作为fallback。
     
@@ -1362,7 +1432,16 @@ async def strategy_20_main_fund_ratio(stocks):
       3) 评分: 主力资金占比越高越好
     """
     result = []
-    use_zhb = is_zhb_data_fresh()
+    # V15.5.14: 放宽到 3 天（原默认 2 天，ZHB 延迟 3 天 → 1000 只逐股 TDX 卡死）
+    use_zhb = is_zhb_data_fresh(max_delay_days=3)
+    # V15.5.14: 预加载 tdxstat2 全市场资金流（O(1) 读，替代逐股 get_main_net_buy）
+    _zhb_stat2: Dict[str, Dict[str, Any]] = {}
+    if use_zhb:
+        try:
+            from stock_common import get_zhb_market_stat2_snapshot
+            _zhb_stat2 = get_zhb_market_stat2_snapshot() or {}
+        except Exception as _e:
+            _debug_log(f"val strategy20 stat2 load: {_e}")
     for s in stocks:
         code = s["code"]
         amount_wan = _safe_float(s.get("amount", 0))
@@ -1371,22 +1450,30 @@ async def strategy_20_main_fund_ratio(stocks):
         main_amount = 0.0
         data_source = ""
         if use_zhb:
-            try:
-                zhb_main = await get_main_net_buy_async(code)
-            except Exception as _e:
-                _debug_log(f"val strategy20 main_net_buy_async {code}: {_e}")
-                zhb_main = None
-            if zhb_main:
-                main_amount = _safe_float(zhb_main.get("main_net_buy_amount", 0))
+            # V15.5.14: tdxstat2 全市场快照 O(1) 读（main_net_buy_amount）
+            _s2 = _zhb_stat2.get(code, {})
+            main_amount = _safe_float(_s2.get("main_net_buy_amount", 0))
+            if main_amount:
                 data_source = "ZHB(T-1)"
+            else:
+                try:
+                    zhb_main = get_main_net_buy(code)
+                except Exception as _e:
+                    _debug_log(f"val strategy20 get_main_net_buy {code}: {_e}")
+                    zhb_main = None
+                if zhb_main:
+                    main_amount = _safe_float(zhb_main.get("main_net_buy_amount", 0))
+                    data_source = "ZHB(T-1)"
         if not main_amount or main_amount <= 0:
+            # V16.0: 统一走 data_provider.get_main_net_buy（内部 ZHB→HTTP 优先级），
+            # 替代直连 tdx_get_fund_flow（函数名误导，实为东财 HTTP）
             try:
-                ff = tdx_get_fund_flow(code)
-                if ff:
-                    main_amount = _safe_float(ff.get("main_net_wan", 0))
-                    data_source = "TDX实时"
+                mnb = get_main_net_buy(code)
+                if mnb and mnb.get("main_net_buy_amount"):
+                    main_amount = _safe_float(mnb["main_net_buy_amount"])
+                    data_source = "HTTP/统一层"
             except Exception as _e:
-                _debug_log(f"val strategy20 tdx_fund_flow {code}: {_e}")
+                _debug_log(f"val strategy20 get_main_net_buy http {code}: {_e}")
                 continue
         if not main_amount or main_amount <= 0:
             continue
@@ -1403,6 +1490,87 @@ async def strategy_20_main_fund_ratio(stocks):
     return _top5_sorted(result, lambda x: x["score"])
 
 
+# ═══════════════════════════════════════════════════════════════
+# V11.5 新增：策略21（量能三连击）+ 策略22（资金动量）
+# 基于 data_provider.get_volume_acceleration / get_capital_momentum
+# 纯 ZHB 数据，无 HTTP fallback
+# ═══════════════════════════════════════════════════════════════
+
+def strategy_21_volume_acceleration(stocks, top_n=200):
+    """V11.5: 量能三连击策略（纯 ZHB 数据）。
+
+    V16.1: 字段契约对齐 get_volume_acceleration 真实返回
+    （amount_t_1/amount_t_2/amount_t_3/is_accelerating/acceleration_ratio）。
+    原 vol_ratio_5d/turnover_5d 字段不存在 → 策略恒空。
+    """
+    from data_provider import get_volume_acceleration
+    result = []
+    for s in stocks:
+        code = s["code"]
+        try:
+            va = get_volume_acceleration(code)
+        except Exception as _e:
+            _debug_log(f"val strategy21 get_volume_acceleration {code}: {_e}")
+            continue
+        if not va or not isinstance(va, dict):
+            continue
+        accel_ratio = _safe_float(va.get("acceleration_ratio", 0))
+        is_accel = bool(va.get("is_accelerating", False))
+        # 加速比率>1（放量递增）即候选；is_accelerating 为强条件
+        if not is_accel or accel_ratio <= 1.05:
+            continue
+        amt1 = _safe_float(va.get("amount_t_1", 0))
+        amt2 = _safe_float(va.get("amount_t_2", 0))
+        amt3 = _safe_float(va.get("amount_t_3", 0))
+        score = accel_ratio * 10
+        reason = (
+            f"量能三连击: 成交额 {amt3:.0f}→{amt2:.0f}→{amt1:.0f}万 递增，"
+            f"加速比 {accel_ratio:.2f}（放量加速）"
+        )
+        result.append({"code": code, "name": s.get("name", ""), "reason": reason, "score": score})
+    return _top5_sorted(result, lambda x: x["score"])
+
+
+def strategy_22_capital_momentum(stocks):
+    """V11.5: 资金动量策略（纯 ZHB 数据）。
+
+    V16.1: 字段契约对齐 get_capital_momentum 真实返回
+    （net_buy_t_1/net_buy_t_2/momentum/momentum_ratio/signal）。
+    原 main_net_ratio/streak_days 字段不存在 → 策略恒空。
+    """
+    from data_provider import get_capital_momentum
+    result = []
+    for s in stocks:
+        code = s["code"]
+        try:
+            cm = get_capital_momentum(code)
+        except Exception as _e:
+            _debug_log(f"val strategy22 get_capital_momentum {code}: {_e}")
+            continue
+        if not cm or not isinstance(cm, dict):
+            continue
+        momentum_ratio = _safe_float(cm.get("momentum_ratio", 0))
+        momentum = _safe_float(cm.get("momentum", 0))
+        signal = str(cm.get("signal", ""))
+        # 动量比率>0 且信号为看多
+        if momentum_ratio <= 0.05:
+            continue
+        score = momentum_ratio * 100
+        reason = (
+            f"资金动量: 主力净流入动量比={momentum_ratio:.2f}，"
+            f"动量值={momentum:.0f}（信号: {signal or '看多'}）"
+        )
+        result.append({"code": code, "name": s.get("name", ""), "reason": reason, "score": score})
+    return _top5_sorted(result, lambda x: x["score"])
+
+
+def _safe_int(v) -> int:
+    try:
+        return int(float(v))
+    except (ValueError, TypeError):
+        return 0
+
+
 # ═══════════════════════════════════════════════
 # 报告生成（V7.5 异步版为主，同步版为 asyncio.run 包装）
 # ═══════════════════════════════════════════════
@@ -1413,7 +1581,12 @@ def run_discovery(output_path):
 
 
 async def run_discovery_async(output_path):
-    """V7.5 异步版: 使用 asyncio.gather 并行跑 20 策略（约 2-3x 提速）"""
+    """V7.5 异步版: 使用 asyncio.gather 并行跑 20 策略（约 2-3x 提速）
+
+    V14.3.1: 移除入口处 _TDX_KLINE_CACHE.clear()（冗余操作）。
+    理由：进程级缓存本就只活在本进程内，新进程必空；同进程内 22 策略
+    共享同一份 L1 缓存是性能优化（22 次复用 vs 22 次从 L2 重读）。
+    """
     _t_now = datetime.now()
     today_str = _t_now.strftime("%Y-%m-%d")
     lines = []
@@ -1422,7 +1595,7 @@ async def run_discovery_async(output_path):
     L("─" * 85)
     L(f"  A 股策略发现报告  [{today_str} {_t_now.strftime('%H:%M:%S')}]")
     L("─" * 85)
-    L("  市场: A 股 | 策略: 20 | 引擎: asyncio | 并发: 3")
+    L("  市场: A 股 | 策略: 21 | 引擎: asyncio | 并发: 3")
     L("-" * 85)
     L("  预热: 加载市场数据 & 策略配置…")
 
@@ -1439,28 +1612,84 @@ async def run_discovery_async(output_path):
             _zhb_date = get_zhb_data_date() or ""
             _zhb_fresh = is_zhb_data_fresh(max_delay_days=3)
             all_codes = list(_snapshot.keys())
-            L(f"  ✅ data_provider全市场: {len(all_codes)}只，正在获取收盘价…")
-            _price_map = tdx_get_quotes_batch(all_codes)
+
+            # V15.5.9: 全市场腾讯批量预加载（不封 IP，含 mcap_yi/pe_ttm/turnover_pct）
+            # 替代原逐股 get_em_quote_full（push2 连接级风控 + 1.5s 限流 → 7957 次卡死数小时）
+            _tencent_map: Dict[str, Dict[str, Any]] = {}
+            try:
+                from tdx_client import _tencent_batch_fallback
+                _tencent_map = _tencent_batch_fallback(all_codes)
+                if _tencent_map:
+                    _debug_log(f"val tencent batch: {len(_tencent_map)}/{len(all_codes)} 只")
+            except Exception as _e:
+                _debug_log(f"val tencent batch error: {_e}")
+
+            # V12.1 休市期旁路优化：仅在非交易日和盘前（9:15前）旁路，其余时段获取T日数据
+            from stock_common import get_market_status
+            m_status, _ = get_market_status()
+            is_bypass = m_status in ("closed", "pre_market")
+            if is_bypass:
+                L(f"  ⚡ 探测到非盘中时段 ({m_status})，自动旁路实时行情，直接复用 ZHB 昨收快照基准！")
+                _price_map = {}
+            else:
+                # V15.5.12: 复用腾讯批量（不封 IP）替代 push2 批量（连接级风控+1.5s限流→卡死）
+                L(f"  ✅ data_provider全市场: {len(all_codes)}只，腾讯批量行情 {len(_tencent_map)}只…")
+                _price_map = _tencent_map
+                
             # 转换为列表格式，过滤停牌股（volume=0），补充市值
+            # V16.0: ZHB 不再提供 volume 字段（Col[24] 误映射已移除），此过滤自然失效
             all_stocks = []
-            _excluded = 0
+            _excluded = 0  # V16.0: ZHB 无 volume 后停牌过滤失效，恒 0（保留统计位）
             _mcap_count = 0
             for _code, _stat in _snapshot.items():
-                _vol = _stat.get("volume")
-                if _vol is not None and _safe_float(_vol) == 0:
-                    _excluded += 1
-                    continue
+                # V16.0: ZHB 不再提供 volume 字段，原"volume=0 过滤停牌"失效，移除
                 _stock = {"code": _code}
                 for _k, _v in _stat.items():
                     if _k not in ("market", "date"):
                         _stock[_k] = _v
+                
+                # ZHB自带市值预统计
+                if "mcap_yi" in _stock and _stock["mcap_yi"] > 0:
+                    _mcap_count += 1
+                    
                 _price = _safe_float(_price_map.get(_code, {}).get("price", 0))
+                # V15.2 P0 修复: price_map 中 price 可能为 0（push2 部分股票未返回），
+                # 此时从 _price_map 其它字段（amount_wan/change_pct）判断是否有任何 push2 数据
+                _rt_data = _price_map.get(_code, {})
+                if not _price and _rt_data.get("amount_wan"):
+                    # price 缺失但 amount_wan 存在 → 实际有 push2 数据
+                    _price = 0  # 保持 0，mcap 后续用 push2 fallback 算
                 if _price and _price > 0:
                     _stock["price"] = _price
                     _mcap = _calc_mcap_yi(_code, _price)
                     if _mcap > 0:
+                        if "mcap_yi" not in _stock or not _stock["mcap_yi"] > 0:
+                            _mcap_count += 1
                         _stock["mcap_yi"] = _mcap
+                # V15.2 P0 修复: 当 _price=0 但 _rt_data 有 mcap_yi（push2 直接给）时，
+                # 优先用 _rt_data["mcap_yi"]（避免 0 价格导致 mcap 算不出来）
+                if not _stock.get("mcap_yi") and _rt_data.get("mcap_yi"):
+                    _stock["mcap_yi"] = _safe_float(_rt_data["mcap_yi"])
+                    if _stock["mcap_yi"] > 0:
+                        if "mcap_yi" not in _stock or not _stock["mcap_yi"] > 0:
+                            _mcap_count += 1
+                # V15.2 P0 兜底: 上面都没拿到 mcap_yi（_price=0 且 push2 批量无 mcap），
+                # 改用 get_em_quote_full 单只拉（已有 push2 fallback，可拿到 mcap）
+                if not _stock.get("mcap_yi") or _stock["mcap_yi"] <= 0:
+                    # V15.5.9: 腾讯批量兜底（不封 IP）— 优先于逐股 push2
+                    _tq = _tencent_map.get(_code, {})
+                    _tq_mcap = _safe_float(_tq.get("mcap_yi", 0))
+                    if _tq_mcap > 0:
+                        _stock["mcap_yi"] = _tq_mcap
+                        if not _stock.get("price") and _tq.get("price"):
+                            _stock["price"] = _safe_float(_tq["price"])
+                        if not _stock.get("pe_ttm") and _tq.get("pe_ttm"):
+                            _stock["pe_ttm"] = _safe_float(_tq["pe_ttm"])
+                        if not _stock.get("turnover_pct") and _tq.get("turnover_pct"):
+                            _stock["turnover_pct"] = _safe_float(_tq["turnover_pct"])
                         _mcap_count += 1
+                    # V15.5.13: 腾讯缺失不再逐股 push2（连接级风控 → 全市场卡死）
+                    # mcap=0 由策略的 mcap>=50 过滤自然排除，可接受
                     # V11.5: 实时字段统一覆盖（混合分层：API动态层覆盖静态层）
                     _rt = _price_map.get(_code, {})
                     _real_chg = _safe_float(_rt.get("change_pct", 0))
@@ -1485,7 +1714,10 @@ async def run_discovery_async(output_path):
             L(f"  ✅ data_provider全市场: {len(all_stocks)}只（过滤{_excluded}只停牌股，市值覆盖率{_mcap_count}/{len(all_stocks)}）[{_fresh_tag}]")
             if _zhb_date:
                 L(f"  📊 数据日期: {_zhb_date}")
-            L(f"  📊 数据分层: [API实时] price/change_pct/amount/pe_ttm/turnover_pct | [静态层] high_52w/low_52w/pb/dividend_yield/ipo_price/industry_code")
+            if is_bypass:
+                L(f"  📊 数据分层: [纯ZHB横截面] 已完全复用 ZHB 历史数据，无任何实时网络开销")
+            else:
+                L(f"  📊 数据分层: [API实时] price/change_pct/amount/pe_ttm/turnover_pct | [静态层] high_52w/low_52w/pb/dividend_yield/ipo_price/industry_code")
         else:
             raise ValueError("market snapshot empty")
     except Exception as _e:
@@ -1500,9 +1732,31 @@ async def run_discovery_async(output_path):
     # V10.0: 扩大扫描范围，利用zhb零成本数据
     # 热点池: ~100只→~300只；流动性池: 300只→500只
     _stock_map = {s["code"]: s for s in all_stocks}
+    # V15.1: 过滤 ETF/LOF/可转债（仅保留 A 股）
+    _before = len(all_stocks)
+    all_stocks = [s for s in all_stocks if _is_a_stock(s.get("code", ""))]
+    _filtered = _before - len(all_stocks)
+    if _filtered > 0:
+        L(f"  📋 V15.1 A 股过滤: 移除 {_filtered} 只 ETF/LOF/可转债（{_before} → {len(all_stocks)}）")
+        _stock_map = {s["code"]: s for s in all_stocks}
     ths_hot_list = ths_hot_reason(today_str)
     ths_hot_codes = {item.get("code", "") for item in ths_hot_list if item.get("code")}
-    hot_pool = [s for s in all_stocks if s.get("code", "") in ths_hot_codes]
+    # V16.1: 热点池合并同花顺原始字段（zhangfu/reason）→ 快照记录，
+    # 修复策略01 读 zhangfu、策略16 读 reason_tag 字段契约断裂问题
+    _ths_by_code = {item.get("code", ""): item for item in ths_hot_list if item.get("code")}
+    hot_pool = []
+    for s in all_stocks:
+        if s.get("code", "") not in ths_hot_codes:
+            continue
+        _merged = dict(s)
+        _th = _ths_by_code.get(s.get("code", ""), {})
+        if _th.get("zhangfu") is not None:
+            _merged["zhangfu"] = _th["zhangfu"]
+        if _th.get("reason"):
+            _merged["reason_tag"] = _th["reason"]
+        if _th.get("huanshou") is not None:
+            _merged["turnover_pct"] = _th["huanshou"]
+        hot_pool.append(_merged)
 
     top_liquidity_pool = sorted(all_stocks, key=lambda x: _safe_float(x.get("amount", 0) or x.get("amount_yi", 0)), reverse=True)[:500]
 
@@ -1515,24 +1769,40 @@ async def run_discovery_async(output_path):
     _strategy_sem = asyncio.Semaphore(3)
 
     async def _run_sync_strategy(name, func, *args):
+        # V15.5.11: 完成即打印耗时（运行时 profiling，替代逐策略单测）
+        _st = time.time()
         async with _strategy_sem:
             if inspect.iscoroutinefunction(func):
-                return await func(*args)
+                _r = await func(*args)
             else:
-                return await asyncio.to_thread(func, *args)
+                _r = await asyncio.to_thread(func, *args)
+        _dt = time.time() - _st
+        _cnt = len(_r) if isinstance(_r, list) else "?"
+        try:
+            print(f"  {name}... 完成({_cnt}只, {_dt:.0f}s)", flush=True)
+        except UnicodeEncodeError:
+            print(f"  [OK] {name}... done({_cnt}, {_dt:.0f}s)", flush=True)
+        return _r
 
     # V10.0: 扩大策略扫描范围，利用zhb零成本数据
-    # top_n: 200-300 → 500-1000，发现更多优质标的
-    _top_n_large = 1000  # 周线/形态类策略（需K线，耗时较长）
-    _top_n_medium = 500  # 财务/筹码类策略（需HTTP，中等耗时）
-    _top_n_small = 300   # 北向/流动性类策略（快速）
+    # V14.3 P1: _top_n_large 1000 → 300（避免周日休市日 1000 次 TDX TCP 请求卡死 15 分钟）
+    # V14.3.2: 4 天 ZHB 回测验证（cache/zhb/zhb_202607{21,22,23,24}）
+    #   - 选中数曲线：100→1000 多数策略 100 就饱和
+    #   - 稳定性曲线（Jaccard）：11/12/17 在 200-300 提升最大
+    #   - 推荐差异化：02/04/06/13/22→100, 11/12/17/19→200, 05→300, 20→1000
+    _top_n_large = 300   # 形态类（05 W底/06 红三兵）— 回测推荐 300
+    _top_n_medium = 200  # 财务/筹码类（11/12/17）— 回测推荐 200（稳定性提升 26%）
+    _top_n_small = 100   # 周线/核心（02/04）— 回测推荐 100（已经饱和）
+    _top_n_pure = 200    # 纯 ZHB 类（19/22）— 回测推荐 200
+    _top_n_fund = 1000   # 主力资金（20）— 条件严苛，需 1000 才饱和
 
     # 策略注册（1-20 为同步函数，用 Semaphore 控制并发）
+    # V14.3.2: 基于 4 天 ZHB 回测（docs/backtest_v1432/）差异化 top_n
     _strategy_defs = [
         ("策略01【龙回头】", strategy_01_longhuitou, (hot_pool, today_str)),
-        ("策略02【周线多头】", strategy_02_weekly_ma, (all_stocks, _top_n_medium)),
+        ("策略02【周线多头】", strategy_02_weekly_ma, (all_stocks, _top_n_small)),  # V14.3.2: 200→100
         ("策略03【量价齐升】", strategy_03_volume_breakout, (hot_pool,)),
-        ("策略04【核心打折】", strategy_04_core_discount, (all_stocks,)),
+        ("策略04【核心打折】", strategy_04_core_discount, (all_stocks,)),  # 内部 200
         ("策略05【W底形态】", strategy_05_double_bottom,
          (sorted(all_stocks, key=lambda x: _safe_float(x.get("amount", 0) or x.get("amount_yi", 0)), reverse=True)[:_top_n_large], _top_n_large)),
         ("策略06【红三兵】", strategy_06_three_soldiers,
@@ -1542,19 +1812,26 @@ async def run_discovery_async(output_path):
         ("策略09【日历效应】", strategy_09_calendar_rotation, ()),
         ("策略10【逆向白马】", strategy_10_contrarian_value,
          (sorted(all_stocks, key=lambda x: x.get("mcap_yi", 999999), reverse=True)[:_top_n_medium], _top_n_medium)),
-        ("策略11【筹码集中】", strategy_11_holder_concentration, (all_stocks, _top_n_medium)),
-        ("策略12【量价信号】", strategy_12_divergence_warning, (all_stocks, _top_n_medium)),
-        ("策略13【高股息】", strategy_13_dividend_yield, (all_stocks,)),
-        ("策略14【股债平衡】", strategy_14_asset_rebalance, ()),
+        ("策略11【筹码集中】", strategy_11_holder_concentration, (all_stocks, _top_n_medium)),  # 200（稳定性提升 26%）
+        ("策略12【量价信号】", strategy_12_divergence_warning, (all_stocks, _top_n_medium)),  # 200
+        ("策略13【高股息】", strategy_13_dividend_yield, (all_stocks,)),  # 内部 300→100
         ("策略15【流动性王】", strategy_15_liquidity_king, (top_liquidity_pool,)),
         ("策略16【政策热度】", strategy_16_policy_heatmap, (all_stocks, hot_pool)),
-        ("策略17【北向Top】", strategy_17_northbound_top, (all_stocks, _top_n_small)),
+        ("策略17【北向Top】", strategy_17_northbound_top, (all_stocks, _top_n_medium)),  # V14.3.2: 150→200
         ("策略18【龙虎榜】", strategy_18_longhu_activity, (all_stocks, today_str)),
-        ("策略19【52周低位】", strategy_19_52w_position, (all_stocks,)),  # V10.3: 全市场扫描
-        ("策略20【主力资金】", strategy_20_main_fund_ratio, (all_stocks,)),  # V10.3: 全市场扫描
+        ("策略19【52周低位】", strategy_19_52w_position,
+         (sorted(all_stocks, key=lambda x: _safe_float(x.get("amount", 0) or x.get("amount_yi", 0)), reverse=True)[:_top_n_pure], _top_n_pure)),  # V14.3.2: 收缩到 200
+        ("策略20【主力资金】", strategy_20_main_fund_ratio,
+         (sorted(all_stocks, key=lambda x: _safe_float(x.get("amount", 0) or x.get("amount_yi", 0)), reverse=True)[:_top_n_fund], _top_n_fund)),  # V14.3.2: 1000
+        ("策略21【量能三连击】", strategy_21_volume_acceleration,
+         (sorted(all_stocks, key=lambda x: _safe_float(x.get("amount", 0) or x.get("amount_yi", 0)), reverse=True)[:_top_n_pure], _top_n_pure)),  # V14.3.2: 200
+        ("策略22【资金动量】", strategy_22_capital_momentum, (all_stocks,)),  # V11.5: 纯ZHB数据
     ]
 
-    print("  ▶ 20 策略并行扫描（asyncio 模式，并发 3）…", flush=True)
+    try:
+        print("  ▶ 21 策略并行扫描（asyncio 模式，并发 3）…", flush=True)
+    except UnicodeEncodeError:
+        print("  >> 21 策略并行扫描（asyncio 模式，并发 3）…", flush=True)
     _scan_t0 = time.time()
 
     _names = [item[0] for item in _strategy_defs]
@@ -1572,11 +1849,19 @@ async def run_discovery_async(output_path):
             _r = _raw
         all_selections[_name] = _r
         _status = f"异常({_err})" if _err else f"完成({len(_r)}只)"
-        print(f"  {_name}... {_status}", flush=True)
+        try:
+            print(f"  {_name}... {_status}", flush=True)
+        except UnicodeEncodeError:
+            print(f"  {_name}... {_status}".encode('ascii', errors='replace').decode('ascii'), flush=True)
     
-    print(f"  扫描完成（共 {_scan_total_time:.1f}s）", flush=True)
+    try:
+        print(f"  扫描完成（共 {_scan_total_time:.1f}s）", flush=True)
+    except UnicodeEncodeError:
+        print(f"  [OK] 扫描完成（共 {_scan_total_time:.1f}s）", flush=True)
 
-    # V10.0: 补充缺失的股票名称（zhb数据源无name字段）
+    # V15.1: 补充缺失的股票名称（zhb数据源无name字段）
+    # 优先用 ZHB unified_name_map（profile.dat + relation.dat + tdxpkmore + pttab，
+    # 覆盖 ~30%），缺失的再从东财批量拉取补充。
     _all_codes = set()
     for _items in all_selections.values():
         for _item in _items:
@@ -1584,12 +1869,29 @@ async def run_discovery_async(output_path):
             if not _name or _name == _item["code"]:
                 _all_codes.add(_item["code"])
     if _all_codes:
-        _name_map = tencent_quote_batch(list(_all_codes))
+        # V15.1: ZHB 字典优先（零网络请求）
+        _zhb_name_map: Dict[str, str] = {}
+        try:
+            from zhb_client import get_zhb
+            _zhb_name_map = get_zhb().unified_name_map
+        except Exception as _e:
+            _debug_log(f"val zhb name map: {_e}")
+        # V15.1: 仅对 ZHB 字典未命中的股票走东财拉取（避免 27 批 × 15s 超时拖垮整体性能）
+        _unmatched = [_c for _c in _all_codes if not _zhb_name_map.get(_c)]
+        if _unmatched and len(_unmatched) <= 200:  # 数量 ≤200 才走东财，否则纯 ZHB 兜底
+            try:
+                _name_map = get_em_batch_quotes(_unmatched)
+            except Exception as _e:
+                _debug_log(f"val name em_batch_quotes: {_e}")
+                _name_map = {}
+        else:
+            _name_map = {}
         for _items in all_selections.values():
             for _item in _items:
                 _name = _item.get("name", "")
                 if not _name or _name == _item["code"]:
-                    _nm = _name_map.get(_item["code"], {}).get("name", _item["code"])
+                    # 优先用 ZHB 字典
+                    _nm = _zhb_name_map.get(_item["code"], "") or _name_map.get(_item["code"], {}).get("name", _item["code"])
                     _item["name"] = _nm
                     if _item["code"] in _stock_map:
                         _stock_map[_item["code"]]["name"] = _nm
@@ -1632,8 +1934,8 @@ async def run_discovery_async(output_path):
     L(f"\n{'='*85}")
     L("[风控仪表盘 & 仓位管理]")
     L(f"  涨停{_zt} | 跌停{_dt_total}")
-    for _b in ["01 龙回头: 震荡市胜率55-65%","02 周线多头: 趋势市胜率60-70%","03 量价齐升: 趋势启动胜率50-60%","04 核心打折: 价值回归胜率55-65%","10 逆向白马: 中线最佳胜率60-70%","13 红利低波: 熊市优选胜率65-75%","16 政策热度: 主题轮动胜率55-65%","17 北向Top: 聪明钱方向胜率60-70%"]:
-        L(f"  策略回测: {_b}")
+    # V16.1: 删除硬编码策略胜率（"55-65%"等非当前运行计算结果，误导投资决策）
+    L("  ℹ️ 策略胜率需前瞻回测验证（当前版本不做历史回测声明）")
     L(f"\n{'='*85}")
     output = "\n".join(filter(None, lines))
     with open(output_path, "w", encoding="utf-8") as f:
@@ -1641,35 +1943,50 @@ async def run_discovery_async(output_path):
     return output
 
 
-if __name__ == "__main__":
-    args = common_parse_args("18 策略全市场发现引擎")
-    base_dir = os.path.dirname(os.path.abspath(__file__))
-    ts = datetime.now().strftime("%Y%m%d_%H%M")
-    op = os.path.join(args.output, f"get_val_report_{ts}.txt")
-    print(f"🚀 全市场18策略发现引擎启动 — {date.today()}", flush=True)
-    print("  ⏱ 预计运行 3-7 分钟（asyncio 异步模式）", flush=True)
+class ValReportRunner(BaseReportRunner):
+    """18 策略全市场发现引擎 Runner"""
 
-    os.makedirs(args.output, exist_ok=True)
-    try:
-        asyncio.run(run_discovery_async(op))
-        print(f"  ✅ 已保存: {op}", flush=True)
-    except Exception as e:
-        print(f"  ⚠ asyncio 失败，退回同步模式: {e}", flush=True)
+    def __init__(self):
+        super().__init__("get_val_report", "val", "18 策略全市场发现引擎")
+
+    def execute_pipeline(self) -> str:
+        ts = datetime.now().strftime("%Y%m%d_%H%M")
+        op = os.path.join(self.args.output, f"get_val_report_{ts}.txt")
         try:
-            run_discovery(op)
-            print(f"  ✅ 已保存: {op}", flush=True)
-        except Exception as e2:
-            print(f"❌ 报告生成失败: {e2}", flush=True)
-            cleanup_tdx()
-            exit(1)
+            print("  ⏱ 预计运行 3-7 分钟（asyncio 异步模式）", flush=True)
+        except UnicodeEncodeError:
+            print("  [INFO] 预计运行 3-7 分钟（asyncio 异步模式）", flush=True)
 
-    # GD 上传
-    drive, gd_proxy_set, gd_parent_folder_id, skip_upload = None, False, None, False
-    if not args.no_upload:
-        drive, gd_proxy_set, gd_parent_folder_id, skip_upload = init_gd(base_dir)
-        if drive and not skip_upload:
-            if upload_type_reports(drive, gd_parent_folder_id, "val", [op]) <= 0:
-                print("  ⚠️ GD 上传失败", flush=True)
-    cleanup_gd_proxy(gd_proxy_set)
-    cleanup_tdx()
+        try:
+            asyncio.run(run_discovery_async(op))
+            try:
+                print(f"  ✅ 已保存: {op}", flush=True)
+            except UnicodeEncodeError:
+                print(f"  [OK] 已保存: {op}", flush=True)
+        except Exception as e:
+            try:
+                print(f"  ⚠️ asyncio 失败，退回同步模式: {e}", flush=True)
+            except UnicodeEncodeError:
+                print(f"  [WARN] asyncio 失败，退回同步模式: {e}", flush=True)
+            try:
+                run_discovery(op)
+                try:
+                    print(f"  ✅ 已保存: {op}", flush=True)
+                except UnicodeEncodeError:
+                    print(f"  [OK] 已保存: {op}", flush=True)
+            except Exception as e2:
+                try:
+                    print(f"❌ 报告生成失败: {e2}", flush=True)
+                except UnicodeEncodeError:
+                    print(f"[FAIL] 报告生成失败: {e2}", flush=True)
+                raise e2
+        return op
+
+    def upload_reports(self, drive: Any, folder_id: str, output_file: str) -> None:
+        self.upload_single_report(drive, folder_id, output_file)
+
+
+if __name__ == "__main__":
+    runner = ValReportRunner()
+    runner.run()
 

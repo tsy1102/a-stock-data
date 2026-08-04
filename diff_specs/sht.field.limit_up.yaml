@@ -1,0 +1,12 @@
+id: sht.field.limit_up
+report: sht
+kind: field
+name: limit_up
+priority: P2
+status: pending
+v9_present: true
+v15_present: false
+
+detail: |
+  v9.6 报告 sht 有表达式字段 limit_up
+  v15 报告 sht 无此字段

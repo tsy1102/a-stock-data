@@ -1,0 +1,12 @@
+id: sht.field.vol_ratio
+report: sht
+kind: field
+name: vol_ratio
+priority: P2
+status: pending
+v9_present: true
+v15_present: false
+
+detail: |
+  v9.6 报告 sht 有表达式字段 vol_ratio
+  v15 报告 sht 无此字段

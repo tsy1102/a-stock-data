@@ -1,10 +1,17 @@
 """stock_common — 统一基础工具包
 
-将原 stock_common.py (4300+行) 拆分为 4 个职责清晰的子模块：
+将原 stock_common.py (4300+行) 拆分为 5 个职责清晰的子模块：
   - sc_network:   网络层 / 限流 / Session 管理
   - sc_datasource: 数据源获取函数
-  - sc_scoring:  评分系统（含统一多评委输出）
-  - sc_utils:    工具函数 / 常量 / 配置
+  - sc_scoring:   评分系统（含统一多评委输出）
+  - sc_utils:     工具函数 / 常量 / 配置
+  - sc_schema:    V13.0 字段元数据层（FieldSpec + TimeAnchor/DataSource/Unit Enum + NormalizedQuote）
+
+V13.0 新增 sc_schema.py 作为第 5 个子模块，提供：
+  - 34 个核心字段的元数据表（FIELD_SPECS）
+  - dataclass(slots=True, frozen=True) FieldSpec
+  - 归一化边界函数 normalize_at_boundary() 骨架
+  - test_sc_schema.py 23 个单元测试
 
 向后兼容：所有原来通过 `from stock_common import xxx` 的接口
 仍然可以正常工作，本包会自动 re-export 所有公共接口。
@@ -44,6 +51,11 @@ __all__ = [
     "calculate_score", "calculate_score_by_school",
     "calculate_multi_school_scores", "format_multi_school_report",
     "SCHOOL_CONFIGS",
+    # sc_technical (V16.1: 技术指标引擎，从 ful Layer1 迁移)
+    "calc_macd", "calc_rsi", "calc_bollinger", "calc_kdj",
+    "calc_volume_analysis", "calc_ma", "analyze_technical",
+    # sc_risk (V16.1: 风险扫描引擎，从 ful layer_risk 迁移)
+    "scan_financial_risk", "scan_event_risk", "combine_risk",
     # sc_utils
     "get_version",
     "_safe_float",
@@ -84,6 +96,10 @@ __all__ = [
     "get_eastmoney_stock_news", "get_eastmoney_global_news",
     "get_sina_financial_report", "get_sina_financial_report_async",
     "get_sina_balance_sheet", "get_sina_balance_sheet_async",
+    "get_em_batch_quotes",
+    # V12.0: 东财HTTP替代接口（完全移除easy_tdx）
+    "get_em_board_list", "get_em_board_members", "get_em_belong_boards",
+    "get_em_fund_flow", "get_em_history_fund_flow",
     "get_eastmoney_cash_flow", "get_eastmoney_cash_flow_async",
     "get_hsgt_macro_flow", "get_hsgt_macro_flow_async",
     "get_lockup_expiry", "get_lockup_expiry_async",
@@ -96,6 +112,10 @@ __all__ = [
     "eastmoney_stock_info_push2",
     "ths_hot_list", "em_hot_rank", "em_hot_concept",
     "get_limit_up_pool", "get_limit_broken_pool", "get_limit_down_pool", "get_limit_pool_summary",
+    "get_yesterday_limit_pool",  # V16.1: 昨日涨停池（晋级率）
+    "extract_report_valuation",  # V16.1: 研报估值提取
+    "em_stock_monitor",  # V16.0: 重点监控池
+    "get_board_fund_flow",  # V16.0: 板块资金流向
     "ths_limit_up_pool",
     "get_eastmoney_minute_fund_flow", "get_fund_flow_weighted",
     "cls_telegraph", "dragon_tiger_backup", "fund_flow_backup", "cninfo_irm",
@@ -117,12 +137,19 @@ __all__ = [
     "get_zhb_full_market_snapshot", "get_zhb_market_stat2_snapshot",
     "get_zhb_dividend_yield", "get_zhb_streak_days", "get_zhb_change_ytd",
     "get_zhb_ipo_price", "get_zhb_amount_wan", "get_zhb_amount_1d",
+    "get_zhb_net_profit_kcf",  # V16.0: 扣非净利润(万元, Col[14]联网确认)
     "get_zhb_single_stock_data",
     # zhb V10.3 新增：主力资金流向
     "get_zhb_main_net_buy", "get_zhb_main_net_buy_amount",
     "get_zhb_main_net_buy_amount_1d",
     # V10.1: 全局股本缓存 + 市值计算
     "get_share_capital", "calc_mcap_yi", "calc_float_mcap_yi",
+    # V16: 连续 ZHB 回溯补充字段
+    "sc_zhb",
+    "backtrack_field", "backtrack_stats", "backtrack_with_extractor",
+    "list_zhb_archives", "zhb_archive_summary",
+    # V12.4: 策略报告通用运行框架
+    "BaseReportRunner",
 ]
 
 # ═══════════════════════════════════════════════════════════════
@@ -176,6 +203,22 @@ from stock_common.sc_utils import (
     _settings_cache, _strategy_config_cache,
 )
 
+from stock_common.sc_technical import (  # V16.1: 技术指标引擎
+    calc_macd,
+    calc_rsi,
+    calc_bollinger,
+    calc_kdj,
+    calc_volume_analysis,
+    calc_ma,
+    analyze_technical,
+)
+
+from stock_common.sc_risk import (  # V16.1: 风险扫描引擎
+    scan_financial_risk,
+    scan_event_risk,
+    combine_risk,
+)
+
 
 # ═══════════════════════════════════════════════════════════════
 # 第二部分：数据源函数 - 从新模块导入
@@ -225,6 +268,11 @@ from stock_common.sc_datasource import (
     # 新浪财报
     get_sina_financial_report, get_sina_financial_report_async,
     get_sina_balance_sheet, get_sina_balance_sheet_async,
+    # 东财批量行情（V11.5新增，替代TDX）
+    get_em_batch_quotes,
+    # V12.0: 东财HTTP替代接口（完全移除easy_tdx）
+    get_em_board_list, get_em_board_members, get_em_belong_boards,
+    get_em_fund_flow, get_em_history_fund_flow,
     # 东财现金流量表（V9.6新增）
     get_eastmoney_cash_flow, get_eastmoney_cash_flow_async,
     # 北向资金大盘
@@ -246,6 +294,10 @@ from stock_common.sc_datasource import (
     ths_hot_list, em_hot_rank, em_hot_concept,
     # 打板层（V9.6）
     get_limit_up_pool, get_limit_broken_pool, get_limit_down_pool, get_limit_pool_summary,
+    get_yesterday_limit_pool,  # V16.1: 昨日涨停池（晋级率）
+    extract_report_valuation,  # V16.1: 研报估值提取
+    em_stock_monitor,  # V16.0: 重点监控池
+    get_board_fund_flow,  # V16.0: 板块资金流向
     ths_limit_up_pool,
     # 东财分钟级资金流（V9.6）
     get_eastmoney_minute_fund_flow, get_fund_flow_weighted,
@@ -269,6 +321,7 @@ from stock_common.sc_datasource import (
     get_zhb_full_market_snapshot, get_zhb_market_stat2_snapshot,
     get_zhb_dividend_yield, get_zhb_streak_days, get_zhb_change_ytd,
     get_zhb_ipo_price, get_zhb_amount_wan, get_zhb_amount_1d,
+    get_zhb_net_profit_kcf,  # V16.0: 扣非净利润(万元)
     get_zhb_single_stock_data,
     # zhb V10.3 新增：主力资金流向
     get_zhb_main_net_buy, get_zhb_main_net_buy_amount,
@@ -276,6 +329,22 @@ from stock_common.sc_datasource import (
     # V10.1: 全局股本缓存 + 市值计算
     get_share_capital, calc_mcap_yi, calc_float_mcap_yi,
 )
+
+
+# ═══════════════════════════════════════════════════════════════
+# V16: 连续 ZHB 回溯补充字段（sc_zhb）
+# ═══════════════════════════════════════════════════════════════
+from stock_common.sc_zhb import (
+    backtrack_field, backtrack_stats, backtrack_with_extractor,
+    list_archives as list_zhb_archives,
+    archive_summary as zhb_archive_summary,
+)
+
+
+# ═══════════════════════════════════════════════════════════════
+# V12.4: 策略报告通用运行框架
+# ═══════════════════════════════════════════════════════════════
+from stock_common.sc_report_runner import BaseReportRunner
 
 
 # ═══════════════════════════════════════════════════════════════

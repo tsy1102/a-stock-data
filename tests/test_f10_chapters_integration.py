@@ -19,47 +19,63 @@ import pytest
 
 
 @pytest.mark.real_network
+@pytest.mark.asyncio
 async def test_med_report():
     """测试中线报告中的 F10 财务深度/股东行为/主营构成章节，以及舆情与互动章节。"""
     from get_med_report import generate_report_async
     tmp = tempfile.NamedTemporaryFile(suffix='.txt', delete=False).name
     async with aiohttp.ClientSession() as s:
         r = await generate_report_async(s, '600519', tmp)
-    assert '财务深度分析' in r, "缺少【财务深度分析】章节"
-    print("✅ med: 财务深度分析章节存在")
-    assert '股东行为分析' in r, "缺少【股东行为分析】章节"
-    print("✅ med: 股东行为分析章节存在")
-    assert '主营构成分析' in r, "缺少【主营构成分析】章节"
-    print("✅ med: 主营构成分析章节存在")
-    # V10.3 新增的舆情与互动章节（十七）
-    assert '十七、舆情与互动' in r, "缺少【十七、舆情与互动】章节"
+    assert '【三、历史财务业绩兑现追踪' in r, "缺少【历史财务业绩兑现追踪】章节"
+    print("✅ med: 历史财务业绩兑现追踪章节存在")
+    assert '【八、筹码稳定性与抛压评估' in r, "缺少【筹码稳定性与抛压评估】章节"
+    print("✅ med: 筹码稳定性与抛压评估章节存在")
+    assert '【四、资产负债表财务健康度' in r, "缺少【资产负债表财务健康度】章节"
+    print("✅ med: 资产负债表财务健康度章节存在")
+    assert '【十七、舆情与互动】' in r, "缺少【十七、舆情与互动】章节"
     print("✅ med: 舆情与互动章节存在")
 
 
 @pytest.mark.real_network
+@pytest.mark.asyncio
 async def test_lng_report():
     """测试长线报告中的全部5个F10章节，以及舆情与互动章节。"""
     from get_lng_report import generate_report_async
     tmp = tempfile.NamedTemporaryFile(suffix='.txt', delete=False).name
     async with aiohttp.ClientSession() as s:
         r = await generate_report_async(s, '600519', tmp)
-    for ch in ['财务深度分析', '股东行为分析', '治理结构', '研发与创新', '主营构成分析']:
-        assert ch in r, f"缺少【{ch}】章节"
-        print(f"✅ lng: {ch}章节存在")
-    # V10.3 新增的舆情与互动章节（十）
-    assert '十、舆情与互动' in r, "缺少【十、舆情与互动】章节"
+    assert '【二、跨期财务纵深与长效业绩验证' in r, "缺少【跨期财务纵深与长效业绩验证】章节"
+    print("✅ lng: 跨期财务纵深与长效业绩验证章节存在")
+    assert '【六、长线筹码沉淀与机构持股倾向' in r, "缺少【长线筹码沉淀与机构持股倾向】章节"
+    print("✅ lng: 长线筹码沉淀与机构持股倾向章节存在")
+    assert '【三、财务健康度排雷' in r, "缺少【财务健康度排雷】章节"
+    print("✅ lng: 财务健康度排雷章节存在")
+    assert '【五、长效股东回报属性' in r, "缺少【长效股东回报属性】章节"
+    print("✅ lng: 长效股东回报属性章节存在")
+    assert '【四、未来三年机构一致预期' in r, "缺少【未来三年机构一致预期】章节"
+    print("✅ lng: 未来三年机构一致预期章节存在")
+    assert '【十、舆情与互动】' in r, "缺少【十、舆情与互动】章节"
     print("✅ lng: 舆情与互动章节存在")
 
 
 @pytest.mark.real_network
-def test_ful_report():
-    """测试全维度报告中的全部6个F10章节。"""
+@pytest.mark.asyncio
+async def test_ful_report():
+    """测试全维度报告中的核心章节。"""
     from get_ful_report import analyze_stock
-    r = analyze_stock('600519')
-    for ch in ['异动与风险提示', '财务深度分析', '股东行为分析',
-               '治理结构', '研发与创新', '主营构成分析']:
-        assert ch in r, f"缺少【{ch}】章节"
-        print(f"✅ ful: {ch}章节存在")
+    _name, r = await analyze_stock('600519')
+    assert '1. 行情与技术分析' in r, "缺少【行情与技术分析】章节"
+    print("✅ ful: 行情与技术分析章节存在")
+    assert '2. 机构研报与估值' in r, "缺少【机构研报与估值】章节"
+    print("✅ ful: 机构研报与估值章节存在")
+    assert '3. 行业对比分析' in r, "缺少【行业对比分析】章节"
+    print("✅ ful: 行业对比分析章节存在")
+    assert '4. 交易信号与题材' in r, "缺少【交易信号与题材】章节"
+    print("✅ ful: 交易信号与题材章节存在")
+    assert '7. 基本面与财务健康' in r, "缺少【基本面与财务健康】章节"
+    print("✅ ful: 基本面与财务健康章节存在")
+    assert '8. 风险扫描' in r, "缺少【风险扫描】章节"
+    print("✅ ful: 风险扫描章节存在")
 
 
 async def main():
@@ -74,7 +90,7 @@ async def main():
     await test_lng_report()
 
     print("\n--- 3. 全维度报告 (ful) ---")
-    test_ful_report()
+    await test_ful_report()
 
     print("\n" + "=" * 60)
     print("全部测试通过！")

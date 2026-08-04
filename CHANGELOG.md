@@ -4,7 +4,29 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
-## [16.1.5] - 2026-08-05
+## [16.1.6] - 2026-08-05
+
+**AxData 跨源接口实测确认（39 个可用）**。按用户原则（测试确认真实有效即入字典），
+逐一实测 AxData 257 接口中腾讯/新浪/财联社/开盘红/东财/巨潮/交易所 7 源的代表接口。
+
+### ✅ 实测结果（axdata 0.1.3 local 模式，串行+2s 间隔）
+
+| 数据源 | 可用 | 高价值发现 |
+|:---|:---:|:---|
+| 东财 | 8/8 | 盘口异动 2792 条（change_type_name 中文"火箭发射"）、昨涨停 75 条 22 字段、龙虎榜净买额、两融 margin_net_buy_amount |
+| 财联社 | 8/10 | 涨停池 139 条含 up_reason（涨停原因）、板块热度 rank_change、板块轮动 40 条、主线机会 |
+| 开盘红 | 4/4 | 历史涨停复盘 50 条（seal_money/one_word 大单一字/themes）、涨停天梯 137 条、ST 涨停统计 |
+| 腾讯 | 5/6 | 逐笔 trade_side（买卖方向）、历史日线/指数日线 120 根 |
+| 新浪 | 7/8 | 限售解禁（万股/百万元口径）、ESG 评级、龙虎榜 56 条、指数成份 80 条 23 字段、ETF 100 条 |
+| 巨潮 | 4/6 | 公告 30 条含 download_url（PDF 直链）、分红 31 条、公司概况 29 字段 |
+| 交易所 | 3/3 | 股票基础信息 27 字段、历史列表 119 万条（含退市股）|
+
+### 📖 字典更新
+
+1. **field_dict.md §12.12.8**：39 接口实测确认全字段表（含参数名差异提示 symbol↔code/date↔trade_date、失败项及原因）
+2. **script_data_dict.md**：新增"AxData 跨源接口实测确认"表（按数据源+高价值字段，供脚本扩展）
+
+
 
 **双字典体系修正（field_dict 全量录入 + script_data_dict V16.1 同步）**。
 

@@ -4,7 +4,32 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
-## [16.1.1] - 2026-08-04
+## [16.1.2] - 2026-08-05
+
+**字典扩充：levistock 新数据源 + akshare 校准基准**。调研 AxData 依赖三源（pytdx/akshare/levistock），实测 levistock 4 类接口全部可用。
+
+### 🆕 字典（field_dict.md §12.10/12.11）
+
+1. **§12.10 levistock 字段字典**（5 类独家数据）：
+   - 东财盘口异动（change_type 枚举：8201 火箭发射/8193 大笔买入/8205 封涨停板/64 有大买盘）
+   - 财联社市场情绪（market_degree/封板率/高开率/获利率/涨跌分布/连板梯队）
+   - 开盘红复盘（涨停天梯/盘面梳理事件流/历史涨停原因+封单量额）
+   - 板块轮动/热度（rank_change/is_new/催化剂）
+   - i问财自然语言查询（免 Key）
+2. **§12.11 akshare 校准基准表**：10 项字段多源交叉（乐咕历史 PE/股息率序列校准 val 模拟算法等）
+
+### ✅ 实测结论（levistock 0.1.7）
+
+| 接口 | 结果 |
+|:---|:---|
+| stock_changes_em(8201) | ✅ 2782 条（火箭发射）|
+| market_emotion_cls | ✅ 13 字段（热度57/封板率85%/炸板23/高开率88%）|
+| stock_zt_pool_em | ✅ 129 条（含 circ_share/main_inflow/zt_days 等 push2ex 无的字段）|
+| stock_strategy_wencai | ✅ 免 Key，"连板3板以上"→8 条（传智教育 7 连板）|
+
+**关键差异**：levistock 涨停池多 circ_share（流通股本）/main_inflow（主力净流入）/zt_days（近期涨停天数）——项目 `get_limit_up_pool` 无；盘口异动是项目完全空白维度。
+
+
 
 **zhb 下载迁移 easy_tdx + 依赖体系收敛**。实测 easy_tdx 1.20.4 完全覆盖 mootdx/pytdx 能力（K线/行情/财务/除权/逐笔/资金流/板块 + 健康分/故障转移/52 服务器）。
 

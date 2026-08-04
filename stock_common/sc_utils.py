@@ -103,33 +103,44 @@ def get_script_dir() -> str:
 
 @cached(category="board_type", ttl_seconds=TTL["board_type"])
 def get_board_type(code: str, name: str = "") -> str:
-    """V7.5: 统一板块判断。返回: 主板 / 创业板 / 科创板 / ST。"""
+    """V7.5: 统一板块判断。返回: 主板 / 创业板 / 科创板 / 北交所 / ST。"""
     if "ST" in name or "*ST" in name:
         return "ST"
     if code.startswith("688"):
         return "科创板"
     if code.startswith(("300", "301")):
         return "创业板"
+    if code.startswith(("8", "4", "92")):  # V16.1.7: 北交所（43/83/87 老号段+920 新号段）
+        return "北交所"
     return "主板"
 
 
 def is_limit_up(code: str, name: str, change_pct: float) -> bool:
-    """V7.5: 统一涨停判断。区分板块阈值。V10.0: ST涨跌幅放宽至10%。"""
+    """V7.5: 统一涨停判断。区分板块阈值（V16.1.7 按字典 §12.12.3 limit_rule 补齐）。
+    规则: 主板 10% / ST 5% / 创业板·科创板 20% / 北交所 30%。"""
     if not change_pct:
         return False
     board = get_board_type(code, name)
+    if board == "北交所":
+        return change_pct >= 29.5
     if board in ("创业板", "科创板"):
         return change_pct >= 19.5
+    if board == "ST":
+        return change_pct >= 4.5
     return change_pct >= 9.5
 
 
 def is_limit_down(code: str, name: str, change_pct: float) -> bool:
-    """V7.5: 统一跌停判断。区分板块阈值。V10.0: ST涨跌幅放宽至10%。"""
+    """V7.5: 统一跌停判断。区分板块阈值（V16.1.7 按字典 §12.12.3 limit_rule 补齐）。"""
     if not change_pct:
         return False
     board = get_board_type(code, name)
+    if board == "北交所":
+        return change_pct <= -29.5
     if board in ("创业板", "科创板"):
         return change_pct <= -19.5
+    if board == "ST":
+        return change_pct <= -4.5
     return change_pct <= -9.5
 
 

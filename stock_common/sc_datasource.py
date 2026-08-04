@@ -5505,5 +5505,126 @@ def get_em_history_fund_flow(code: str, days: int = 120) -> List[Dict[str, Any]]
 
 
 # ═══════════════════════════════════════════════════════════
-# 数据源模块总计：81个函数（含同步+异步+外部代理版本，V12.0 新增5个东财HTTP替代接口）
+# V16.1.7: 新数据源封装（字典 §12.10/12.12 已实测确认，带缓存+限流）
+# ═══════════════════════════════════════════════════════════
+
+
+@cached(category="market_emotion", ttl_seconds=TTL["limit_pool"], trading_day=True)
+def get_cls_market_emotion() -> Dict[str, Any]:
+    """V16.1.7: 财联社市场情绪（字典 §12.10.2，实测可用）。
+
+    返回: market_degree(热度0-100)/shsz_balance(两市成交额)/up_ratio(封板率)/
+          up_open_num(炸板)/performance(昨涨停今表现)/up_open_ratio(高开率)/
+          profit_ratio(获利率)/up_down_dis(涨跌分布)/limit_up_board(连板梯队)
+    """
+    try:
+        import levistock as lk
+        d = lk.market_emotion_cls()
+        if isinstance(d, dict) and d:
+            return d
+    except Exception as _e:
+        _debug_log(f"datasource get_cls_market_emotion: {_e}")
+    return {}
+
+
+@cached(category="limit_pool", ttl_seconds=TTL["limit_pool"], trading_day=True)
+def get_kph_limit_ladder(date_str: str = "") -> List[Dict[str, Any]]:
+    """V16.1.7: 开盘红涨停天梯（字典 §12.10.4，实测 137 条）。
+
+    返回: [{code/name/limit_count(连板)/limit_time/plate_name/
+           one_word(大单一字)/popular(人气)/plate_limit_up_count/amount/plate_amount}]
+    """
+    try:
+        import levistock as lk
+        from datetime import date, timedelta
+        if not date_str:
+            # 默认最近交易日（开盘红复盘接口要求历史日期：昨天或更早）
+            date_str = (date.today() - timedelta(days=1)).strftime("%Y-%m-%d")
+        data = lk.get_zttt(date=date_str)
+        # levistock get_zttt 返回 dict: {"StockList": [...], "ZhuShuList": [...]}
+        if isinstance(data, dict):
+            data = data.get("StockList") or []
+        if isinstance(data, list):
+            rows = []
+            for item in data:
+                if isinstance(item, dict):
+                    rows.append(item)
+                elif isinstance(item, (list, tuple)) and len(item) >= 11:
+                    # 开盘红 zttt 返回 list 索引: [0]code [1]name [2]连板 [3]时间戳 [4]板块码 [5]板块名 [6]大单一字 [7]人气 [8]板块涨停数 [9]个股额 [10]板块额
+                    rows.append({
+                        "code": item[0], "name": item[1], "limit_count": item[2],
+                        "limit_time": item[3], "plate_code": item[4], "plate_name": item[5],
+                        "one_word": item[6], "popular": item[7],
+                        "plate_limit_up_count": item[8], "amount": item[9], "plate_amount": item[10],
+                    })
+            return rows
+    except Exception as _e:
+        _debug_log(f"datasource get_kph_limit_ladder: {_e}")
+    return []
+
+
+@cached(category="market_emotion", ttl_seconds=TTL["limit_pool"], trading_day=True)
+def get_stock_changes(change_type: str = "8201") -> List[Dict[str, Any]]:
+    """V16.1.7: 东财盘口异动（字典 §12.10.1，levistock 实测 2782 条）。
+
+    change_type: 8201 火箭发射 / 8193 大笔买入 / 8205 封涨停板 / 64 有大买盘 / 8202 快速反弹
+    返回: [{code/name/market/time/change_pct/change_type(中文)}]
+    """
+    try:
+        import levistock as lk
+        data = lk.stock_changes_em(change_type=change_type)
+        if isinstance(data, list):
+            rows = []
+            for item in data:
+                if isinstance(item, dict):
+                    rows.append({
+                        "code": item.get("stock_code", ""),
+                        "name": item.get("stock_name", ""),
+                        "market": item.get("market", ""),
+                        "time": str(item.get("time", "")),
+                        "change_pct": _safe_float(item.get("change_pct", 0)),
+                        "change_type": item.get("change_type", ""),
+                    })
+            return rows
+    except Exception as _e:
+        _debug_log(f"datasource get_stock_changes: {_e}")
+    return []
+
+
+@cached(category="basic_info", ttl_seconds=TTL["basic_info"], trading_day=True)
+def get_shortline_indicators(code: str) -> Dict[str, Any]:
+    """V16.1.7: AxData 短线指标 34 字段（字典 §12.12.1，实测 stats_root 消费项目 zhb.zip）。
+
+    stats_root 用项目 cache/zhb 最新包（零额外下载）。
+    返回: open_volume_ratio(开盘量比)/auction_prev_volume_ratio(竞价昨比)/
+          seal_to_amount_ratio(封成比)/seal_to_float_ratio(封流比)/
+          limit_board_text(几天几板)/limit_up_streak_days(连板)/
+          free_float_shares(自由流通股本Z)/year_limit_up_days 等 34 字段
+    """
+    import glob
+    import os
+
+    try:
+        from axdata_core import request_interface
+        # 找最新 zhb 包
+        zhb_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "cache", "zhb")
+        zips = sorted(glob.glob(os.path.join(zhb_dir, "zhb_*.zip")))
+        if not zips:
+            return {}
+        stats_root = zips[-1]
+        r = request_interface(
+            "stock_shortline_indicators_tdx",
+            params={"code": code, "stats_root": stats_root},
+            fields=None, persist=False, data_root=None,
+        )
+        records = getattr(r, "records", None)
+        if records and isinstance(records[0], dict):
+            return records[0]
+    except Exception as _e:
+        _debug_log(f"datasource get_shortline_indicators ({code}): {_e}")
+    return {}
+
+
+# ═══════════════════════════════════════════════════════════
+# 数据源模块总计：85个函数（V16.1.7 新增 4 个新数据源封装）
 # ═══════════════════════════════════════════════════════════

@@ -23,6 +23,12 @@ easy-tdx>=1.0,<2.0
 mootdx>=0.11,<1.0
 pytdx>=1.0  # mootdx 底层依赖；zhb_client 备胎路径（easy_tdx 首选）
 
+# ── V16.1.7 新数据源（可选，缺失时对应增强功能自动降级）──────────
+# levistock: 盘口异动/市场情绪/涨停池补充/i问财（字典 §12.10）
+# axdata+axdata_core: 短线指标 34 字段/涨跌停规则/筹码分布（字典 §12.12，直接消费项目 zhb.zip）
+levistock>=0.1
+axdata>=0.1
+
 # ── Google Drive（V7 已切换至 google-auth + google-api-python-client）
 # ⚠️ pydrive2 / oauth2client 已废弃，保留兼容运行但不再主动安装
 # ⚠️ 如升级，参考 gd_uploader.py 头部说明：

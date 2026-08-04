@@ -1281,6 +1281,44 @@ async def generate_report_async(session, code, output_path, ind_comp=None, idx_q
         _debug_log(f"sht limit_pool: {_e}")
         L("    (打板数据获取失败)")
 
+    # V16.1.7: 盘口异动个股检测（字典 §12.10.1 levistock 实测可用）+ AxData 短线指标（§12.12.1）
+    try:
+        from stock_common import get_stock_changes, get_shortline_indicators
+
+        # 盘口异动（火箭发射/大笔买入/封涨停板/有大买盘 4 类）
+        for _ct, _ctn in [("8201", "火箭发射"), ("8193", "大笔买入"), ("8205", "封涨停板"), ("64", "有大买盘")]:
+            try:
+                _chg_list = get_stock_changes(_ct)
+                _hit = next((c for c in _chg_list if c.get("code") == code), None)
+                if _hit:
+                    L(f"    🚀 盘口异动[{_ctn}]: 时间{_hit.get('time','')} 涨幅{_safe_float(_hit.get('change_pct',0)):+.2f}%")
+            except Exception as _e:
+                _debug_log(f"sht stock_changes {_ct}: {_e}")
+
+        # AxData 短线指标 34 字段（消费项目 zhb.zip，零下载）
+        try:
+            _sl = await asyncio.to_thread(get_shortline_indicators, code)
+            if _sl:
+                _parts = []
+                if _sl.get("open_volume_ratio"):
+                    _parts.append(f"开盘量比{_sl['open_volume_ratio']:.2f}")
+                if _sl.get("auction_prev_volume_ratio"):
+                    _parts.append(f"竞价昨比{_sl['auction_prev_volume_ratio']:.2f}")
+                if _sl.get("seal_to_float_ratio") is not None and _sl.get("seal_to_float_ratio", 0) > 0:
+                    _parts.append(f"封流比{_sl['seal_to_float_ratio']*100:.3f}%")
+                if _sl.get("limit_board_text"):
+                    _parts.append(f"几天几板:{_sl['limit_board_text']}")
+                if _sl.get("limit_up_streak_days"):
+                    _parts.append(f"连板{_sl['limit_up_streak_days']}")
+                if _sl.get("year_limit_up_days"):
+                    _parts.append(f"年涨停{_sl['year_limit_up_days']}次")
+                if _parts:
+                    L(f"    📐 短线指标(ZHB同源): {' | '.join(_parts)}")
+        except Exception as _e:
+            _debug_log(f"sht shortline_indicators: {_e}")
+    except Exception as _e:
+        _debug_log(f"sht changes/shortline: {_e}")
+
     L("\n"+"─"*72); L("【十五、综合信号汇总】"); L("─"*36)
 
     signals = []

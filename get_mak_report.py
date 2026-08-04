@@ -1131,6 +1131,29 @@ async def generate_sector_report(output_path):
         f"  📊 市场广度: 上涨{_up_cnt}/下跌{_down_cnt} | 涨跌比{_ud_ratio:.2f} | {'偏多' if _ud_ratio>1.5 else '偏空' if _ud_ratio<0.7 else '均衡'}"
     )
 
+    # V16.1.7: 财联社市场情绪增强（字典 §12.10.2 实测可用——热度/封板率/炸板/高开率/获利率/连板梯队）
+    try:
+        from stock_common import get_cls_market_emotion
+        _emotion = get_cls_market_emotion()
+        if _emotion:
+            _md = _emotion.get("market_degree")
+            _ur = _emotion.get("up_ratio")
+            _uo = _emotion.get("up_open_num")
+            _perf = _emotion.get("performance")
+            _uor = _emotion.get("up_open_ratio")
+            _pr = _emotion.get("profit_ratio")
+            if _md is not None:
+                _emo_tag = "🔥 亢奋" if _md >= 75 else "😐 中性" if _md >= 40 else "🧊 冰点"
+                L(f"  🌡️ 财联社市场热度: {_md}/100 {_emo_tag}")
+            if _ur is not None:
+                L(f"  📈 封板率: {_ur}（炸板 {_uo} 只）| 高开率: {_uor} | 获利率: {_pr} | 昨涨停今表现: {_perf}")
+            _ladder = _emotion.get("limit_up_board") or {}
+            if isinstance(_ladder, dict) and _ladder:
+                _ladder_str = " | ".join(f"{k}{v.get('count','')}家({v.get('continuous_rate','')})" for k, v in list(_ladder.items())[:4])
+                L(f"  🪜 财联社连板梯队: {_ladder_str}")
+    except Exception as _e:
+        _debug_log(f"mak cls_market_emotion: {_e}")
+
     # V10.3: 全市场主力净买入总量
     _total_main_net_buy = 0
     _main_net_buy_count = 0
@@ -1305,6 +1328,37 @@ async def generate_sector_report(output_path):
     except Exception as _e:
         _debug_log(f"mak limit_pool: {_e}")
         L("  (打板数据获取失败)")
+
+    # V16.1.7: 开盘红涨停天梯 + 东财盘口异动（字典 §12.10.4/§12.10.1 实测可用）
+    try:
+        from stock_common import get_kph_limit_ladder, get_stock_changes
+        L(f"\n{'='*90}")
+        L("【B+. 涨停天梯与盘口异动（开盘红/东财）】")
+        L(f"{'─'*90}")
+        _ladder = get_kph_limit_ladder()
+        if _ladder:
+            L(f"  涨停天梯共 {len(_ladder)} 只:")
+            L(f"  {'代码':<8} {'名称':<10} {'连板':>4} {'大单一字':>6} {'人气':>4} {'板块涨停':>6} {'个股额(亿)':>10}")
+            L(f"  {'-'*70}")
+            for s in _ladder[:20]:
+                _one = "✓" if s.get("one_word") else ""
+                _pop = "🔥" if s.get("popular") else ""
+                _amt = _safe_float(s.get("amount", 0)) / 1e8
+                L(f"  {str(s.get('code','')):<8} {str(s.get('name','')):<10} {s.get('limit_count',0):>4} {_one:>6} {_pop:>4} {s.get('plate_limit_up_count',0):>6} {_amt:>10.2f}")
+        else:
+            L("  (涨停天梯数据获取失败)")
+        # 盘口异动（火箭发射 8201）
+        _changes = get_stock_changes("8201")
+        if _changes:
+            _codes_abn = set(_abnormal_codes)
+            _rel = [c for c in _changes if c.get("code") in _codes_abn or True][:15]
+            L(f"\n  🚀 盘口异动·火箭发射 {len(_changes)} 只（TOP15 按名称）:")
+            for c in _rel[:15]:
+                L(f"    {c.get('code','')} {c.get('name','')} 时间{c.get('time','')} 涨幅{_safe_float(c.get('change_pct',0)):+.2f}%")
+        else:
+            L("  (盘口异动数据获取失败)")
+    except Exception as _e:
+        _debug_log(f"mak ladder/changes: {_e}")
 
     L(f"\n{'='*90}")
     L("【C. 板块-异动集中度分析】")

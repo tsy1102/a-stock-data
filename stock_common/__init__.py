@@ -114,6 +114,9 @@ __all__ = [
     "get_limit_up_pool", "get_limit_broken_pool", "get_limit_down_pool", "get_limit_pool_summary",
     "get_yesterday_limit_pool",  # V16.1: 昨日涨停池（晋级率）
     "extract_report_valuation",  # V16.1: 研报估值提取
+    # V16.1.7: 新数据源封装（字典 §12.10/12.12）
+    "get_cls_market_emotion", "get_kph_limit_ladder",
+    "get_stock_changes", "get_shortline_indicators",
     "em_stock_monitor",  # V16.0: 重点监控池
     "get_board_fund_flow",  # V16.0: 板块资金流向
     "ths_limit_up_pool",
@@ -296,6 +299,9 @@ from stock_common.sc_datasource import (
     get_limit_up_pool, get_limit_broken_pool, get_limit_down_pool, get_limit_pool_summary,
     get_yesterday_limit_pool,  # V16.1: 昨日涨停池（晋级率）
     extract_report_valuation,  # V16.1: 研报估值提取
+    # V16.1.7: 新数据源封装（字典 §12.10/12.12）
+    get_cls_market_emotion, get_kph_limit_ladder,
+    get_stock_changes, get_shortline_indicators,
     em_stock_monitor,  # V16.0: 重点监控池
     get_board_fund_flow,  # V16.0: 板块资金流向
     ths_limit_up_pool,

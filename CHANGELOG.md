@@ -4,7 +4,32 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
-## [16.1.4] - 2026-08-05
+## [16.1.5] - 2026-08-05
+
+**双字典体系修正（field_dict 全量录入 + script_data_dict V16.1 同步）**。
+
+### 📖 原则明确（用户定义）
+
+- **field_dict.md** = 测试确认真实有效的字段**全部录入**（无论项目是否使用），方便后期脚本升级扩展、免重复寻找
+- **script_data_dict.md** = 项目**已使用**接口和字段的应用与印证，**包括优先级**
+
+### 🆕 field_dict.md（2209→2353 行）
+
+1. **§12.13 eltdx 完整方法字典**（74 方法入口/115+ 可调用名，文档确认未实测）：
+   - 行情快照/财务批量（0x0010 万股/千元口径）/除权除息/涨跌停限制表（无 get_price_limits，用 limits.special）
+   - K线复权（qfq/hfq/fixed_qfq 定点复权）/行情列表（涨速/短换手/开盘抢筹）/集合竞价/分时/逐笔
+   - **resources.read_stats（zhb.zip）与项目 ZHB 同语义**（60日Beta/PE TTM/自由流通股本/连板统计/成交额序列）
+   - F10 方法概览（评分/诊断/预测/题材/北向/估值/主营/分红/增减持）
+2. **§12.14 akshare 接口分类全景**（15 分类：行情/财务/估值/资金流/龙虎榜/两融/股东/分红/板块/涨停池/异动/北向/可转债/期权/ESG）
+3. 修正先前偏差：此前只录"项目可用"——现已按"确认有效即录"原则补全 eltdx/akshare
+
+### 🔧 script_data_dict.md（487→536 行）
+
+1. **V16.1 同步**：ful 下线（5.6 标注+引擎迁移说明）、6 大脚本→5 大脚本、easy_tdx 适配层替代 mootdx 表述
+2. **新增"V16.1 新接入字段与优先级总表"**：已接入（涨停跌停价/eps/bps/资金流12字段/晋级率/评级变化/两融维度）+ 扩展素材（AxData 短线指标 34 字段最高优先/涨跌停规则/盘口异动/市场情绪/i问财/筹码分布/ESG/乐咕估值序列）标注接入成本
+3. 双字典约定更新：明确 field_dict=全量录入、script_data_dict=已用+优先级
+
+
 
 **AxData 假设实测验证：stats_root 直接消费项目 zhb.zip（三源校准闭环）**。
 

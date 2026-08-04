@@ -2204,5 +2204,149 @@ return result
 ---
 
 > 📌 **重要提示**：本文件是项目的**关键字典**，所有数据接口与字段调整前必查。优先采用字典中已确定的内容，可大幅减少重复反向工程工作。
+
+### 12.13 eltdx 完整方法字典（2026-08-05 文档确认，未实测）
+
+> **来源**：https://github.com/electkismet/eltdx（303⭐，Research-Only 许可，2026-08-04 活跃）+ docs/METHOD_REFERENCE.md
+> **定位**：在线协议客户端，74 个方法入口 / 115+ 可调用名（含别名），底层覆盖 0x054c/0x0547/0x052d/0x0537/0x0fc5/0x0fc6/0x056a/0x000f/0x0010/0x0452/0x06b9 等 + F10 走 7615/TQLEX HTTP 网关
+> **状态标注**：本文档字段来自官方文档（方法级参考），**未实测**；如需接入项目需先实测核实
+> **与 AxData 关系**：eltdx 为底层协议库，AxData 为其迭代（257 接口，Apache-2.0）——字段价值已被 AxData 覆盖
+
+#### 12.13.1 行情快照（get_quote / get_snapshots）文档确认
+
+| 字段 | 含义 |
+|:---|:---|
+| last_price / pre_close_price | 最新价 / 昨收 |
+| open_price / high_price / low_price | 今开 / 最高 / 最低 |
+| total_hand / current_hand | 总成交量（手）/ 现手 |
+| amount | 成交额 |
+| inside_dish / outer_disc | 内盘 / 外盘 |
+| open_amount_yuan | 开盘金额（元）|
+| buy_levels / sell_levels | get_quote 买一~买五 / 卖一~卖五；get_snapshots 仅一档 |
+| change / change_pct | 派生：涨跌额 / 涨跌幅 |
+| sum_buy_vol / sum_sell_vol | 派生：五档买卖量合计 |
+
+#### 12.13.2 财务批量（get_finance_batch，0x0010）文档确认
+
+| 字段 | 含义 | 单位 |
+|:---|:---|:---|
+| updated_date / ipo_date | 财务更新日期 / 上市日期 | - |
+| eps_raw | 每股收益原始值 | - |
+| liu_tong_gu_ben_raw_float | 流通股本原始值 | **万股** |
+| zong_gu_ben_raw_float | 总股本原始值 | **万股** |
+| zong_zi_chan_raw_float | 总资产原始值 | **千元** |
+| jing_li_run_raw_float | 净利润原始值 | **千元** |
+| circulating_shares / total_shares | 派生：流通/总股本 | 股 |
+| total_assets_yuan / net_profit_yuan | 派生：总资产/净利润 | 元 |
+
+#### 12.13.3 除权除息（get_gbbq / get_xdxr，0x000f）文档确认
+
+| 字段 | 含义 |
+|:---|:---|
+| date / category_name | 事件日期 / 类别名称 |
+| c1_value~c4_value | 按类别解码的四个业务值 |
+| fenhong / peigujia | 分红 / 配股价（XdxrRecord）|
+| songzhuangu / peigu | 送转股 / 配股（XdxrRecord）|
+
+#### 12.13.4 涨跌停限制（limits.special / scan_special，0x0452）文档确认
+
+> **注意**：eltdx **无 get_price_limits 方法**；涨跌停价来自特殊品种涨跌停限制表
+
+| 字段 | 含义 |
+|:---|:---|
+| limit_up_price / limit_down_price | 涨停价 / 跌停价 |
+
+#### 12.13.5 K线（bars.get，0x052d）文档确认
+
+| 字段 | 含义 |
+|:---|:---|
+| time / open / high / low / close | 时间 / OHLC |
+| volume_lots | 成交量（手）|
+| amount | 成交额 |
+| up_count / down_count | 指数类上涨/下跌家数 |
+| adjust | none/qfq/hfq/fixed_qfq/fixed_hfq（定点复权需 anchor_date）|
+| period | 1m/5m/15m/30m/60m/day/week/month/quarter/year + 10m/2d/5s 自定义 |
+
+#### 12.13.6 行情列表（quotes.list_by_category，0x054b）文档确认
+
+> 含**涨速/短换手/2分钟金额/开盘抢筹/量涨速**等短线字段（与 AxData 实时快照 §12.12.2 同源）
+
+| 字段 | 含义 |
+|:---|:---|
+| rise_speed / short_turnover | 涨速 / 短换手 |
+| min2_amount / opening_rush | 近2分钟金额 / 开盘抢筹 |
+| vol_rise_speed / locked_amount | 量涨速 / 封单额（=bid1×bid_vol1×100）|
+
+#### 12.13.7 服务器统计资源（resources.read_stats，zhb.zip）文档确认 ⚠️重要
+
+> **与项目 ZHB 直接对应**：eltdx 同样消费 tdxstat.cfg/tdxstat2.cfg（zhb.zip）！
+
+| TdxStatRow 字段 | 含义 |
+|:---|:---|
+| 60日 Beta / PE TTM | 与 ZHB tdxstat Col[2]=BetaValue / Col[9]=pe_ttm 同语义 |
+| 自由流通股本 | 与 ZHB Col[11]=FreeLtgb 同语义 |
+| 年内涨停数 / 连板统计 | 与 ZHB tdxstat 涨停相关字段 |
+
+| TdxStat2Row 字段 | 含义 |
+|:---|:---|
+| 当日/前一日/前两日成交额、封单额 | 与 ZHB tdxstat2 amount/amount_1d/amount_2d 同语义 |
+| 当日/前一日开盘量额 | 与 AxData 短线指标 prev_open_* 同源 |
+
+#### 12.13.8 F10 方法概览（7615/TQLEX HTTP 网关，文档确认）
+
+| 方法 | 返回内容 | 项目对应 |
+|:---|:---|:---|
+| stock_score | 综合评分/排名/资金基本面主题面评分 | AxData §12.12.4 |
+| finance_diagnosis | 营运/盈利/成长/现金流/资产质量诊断 | AxData F10 |
+| profit_forecast | EPS/归母净利润/营业收入预测 | reportapi |
+| hot_topics / topic_compare | 题材名称/关联度/入选日期/原因/题材内对比 | push2 f129 / MacClient |
+| northbound_holding | 沪深股通持股比例/数量/变动 | get_northbound_hold |
+| theme_market | 题材行情/相关板块/成分股 | MacClient |
+| valuation | PE/PB/市销率/市现率/估值百分位/市值 | push2 f162-167 |
+| business_composition | 主营收入/成本/毛利/占比/毛利率 | 新浪三表 |
+| dividend_financing | 分红方案/股权登记日/除权派息日/股息率 | get_dividend_history |
+| shareholder_change_plans | 股东增减持计划 | 巨潮公告关键词 |
+
+#### 12.13.9 集合竞价/分时/成交（文档确认）
+
+| 方法 | 主要字段 |
+|:---|:---|
+| auctions.series（0x056a）| matched_volume 虚拟成交量 / unmatched_volume / price |
+| get_auction_0925 | 09:25 竞价结果（price/volume/amount）|
+| minutes.today/history/recent | 分时（price/avg_price 均价/volume）|
+| minutes.aux（0x051b）| 买卖力道 buy_commission/sell_commission / 成交对比 |
+| trades.today/history | 逐笔（price/volume/side buy-sell-neutral/trade_amount_yuan）|
+
+---
+
+### 12.14 akshare 接口分类全景（2026-08-05 文档确认）
+
+> **来源**：https://github.com/akfamily/akshare（21774⭐，MIT，1.18.81 高频周更）
+> **定位**：A股数据接口大全（数千接口，封装几十个源）——**字典准确性校准基准**，详见 §12.11
+> **状态标注**：接口分类来自官方文档，字段级需按接口调用实测
+
+| 分类 | 代表接口（_em=东财/_sina=新浪/_tx=腾讯/_lg=乐咕）| 项目对应 |
+|:---|:---|:---|
+| 行情 | stock_zh_a_spot_em（全市场）/ stock_zh_a_hist（历史K线）/ stock_zh_a_tick_tx_js（逐笔）| push2/腾讯 |
+| 财务 | stock_financial_abstract（F10摘要）/ stock_financial_analysis_indicator（指标）| 新浪三表 |
+| 估值 | stock_a_indicator_lg（乐咕 PE/PB/股息率**历史序列**）/ stock_zh_valuation_baidu | push2 f162-167 |
+| 资金流 | stock_individual_fund_flow / stock_sector_fund_flow_rank | push2 f137-146 |
+| 龙虎榜 | stock_lhb_detail_em / stock_lhb_stock_statistic_em | datacenter |
+| 两融 | stock_margin_detail_szse/sse | datacenter |
+| 股东 | stock_zh_a_gdhs_detail_em（股东户数）| RPT_HOLDERNUMLATEST |
+| 分红 | stock_fhps_detail_em | get_dividend_history |
+| 板块 | stock_board_industry_name_em / stock_board_concept_name_em | clist/slist |
+| 涨停池 | stock_zt_pool_em / stock_zt_pool_strong_em / stock_zt_pool_previous_em | push2ex |
+| 异动 | stock_changes_em（盘口异动，同 levistock §12.10.1）| 项目空白 |
+| 北向 | stock_hsgt_hist_em（历史）/ stock_hsgt_fund_flow_summary_em | get_northbound_hold |
+| 可转债 | bond_zh_hs_cov_info / bond_zh_hs_cov_daily | ZHB 可转债 |
+| 期权 | option_finance_board / option_sse_daily_sina | 项目⏸️ |
+| ESG | 无专门模块（akshare 部分覆盖）| AxData §12.12.7 |
+
+**价值重申**：akshare 不新增独家数据（项目已直连多数源），核心价值是**多源交叉校准**（乐咕历史估值序列 → 替换 val 模拟 PE 百分位）。
+
+---
+
+> 📌 **重要提示**：本文件是项目的**关键字典**，所有数据接口与字段调整前必查。优先采用字典中已确定的内容，可大幅减少重复反向工程工作。
 > 📌 **重要提示**：本文件是项目的**关键字典**，所有数据接口与字段调整前必查。优先采用字典中已确定的内容，可大幅减少重复反向工程工作。
 

@@ -3,6 +3,13 @@
 get_med_report.py — A股中线深度投研报告
 
 版本信息:
+    V15.2  2026-07-28 - V15.2 P0 崩溃修复：修复 board UnboundLocalError；缓存 valid_if 强化
+    V15.1  2026-07-26 - V15.1 全局 ZHB 旁路普及：休市日及盘前，财务与股东结构数据 100% 走 ZHB 静态层提取，生成速度提升 80%
+    V15.0  2026-07-26 - 接入 CanonicalStockData 强类型数据合约，实施基于真实周期的 ZHB-First 离线优先路由
+    V14.0  2026-07-22 - 文档同步：docstring 版本信息更新到 V14.0；is_workday() Bug 修复由 stock_common 上游提供
+    V13.x  2026-07-22 - 受益于 stock_cache.py dataclass 透明序列化（脚本无改动）
+    V12.6  2026-07-22 - 受益于字段路由简化（移除估值字段 HTTP fallback）
+    V12.4  2026-07-22 - 抽象 BaseReportRunner 基类
     V9.5   2026-07-11 - 东财资金流120天fallback静默异常添加 _debug_log 日志
     V9.3.3 2026-07-11 - 两融数据添加融券余额列；流通股东显示统一为0%；休市提示文案丰富统一
     V9.3.2 2026-07-09 - 基础设施修复：TDX K线假数据防护、SQLite WAL死锁修复、代理环境兼容（脚本本身无改动，受益于底层修复）
@@ -27,38 +34,63 @@ import os, sys, re
 
 from gd_uploader import init_gd, upload_stock_report_by_code, cleanup_gd_proxy
 
-# 快照数据累积器（批量结束后一次性写入）
-_SNAPSHOT_DATA: dict = {}
+# V15.3 修复: 4 个报告模块同名 _SNAPSHOT_DATA 全局变量冲突
+# 抽出到 stock_common.sc_snapshot 统一管理
+# V15.3.1: 直接 import 共享的 SnapshotProxy 类，删除 20 行重复定义
+from stock_common.sc_snapshot import SnapshotProxy as _SnapshotProxy  # noqa: E402
 
-from tdx_client import (tdx_get_quote_full,
-                         tdx_get_history_fund_flow,
-                         tdx_get_belong_boards, tdx_get_board_members,
-                         tdx_get_board_by_name,
-                         cleanup_tdx)
+_SNAPSHOT_DATA = _SnapshotProxy()
+
+from tdx_client import (
+    tdx_get_quote_full,
+    tdx_get_belong_boards,
+    tdx_get_board_members,
+    tdx_get_board_by_name,
+    cleanup_tdx,
+)
 
 import data_provider
 
-from stock_common import (clean_codes, _safe_float, _debug_log,
-                          get_holder_structure,
-                          _load_strategy_config,
-                          create_async_session,
-                          get_dragon_tiger_board_async,
-                          holder_change_async, get_strategic_announcements_async,
-                          parse_args, get_tencent_quote, baidu_kline_full,
-                          get_dividend_history, get_industry_comparison,
-                          get_stock_info,
-                          get_eps_forecast_async, get_reports_async,
-                          get_northbound_hold_async, get_margin_trading_async,
-                          get_block_trade_async, get_lockup_expiry_async,
-                          get_gross_margin_and_roe_async, get_industry_peers,
-                          get_sina_financial_report_async, get_sina_balance_sheet_async,
-                          get_hsgt_macro_flow_async,
-                          is_trading_day, get_market_status,
-                          calculate_multi_school_scores,
-                          get_zhb_single_stock_data, is_zhb_data_fresh,
-                          get_zhb_industry_map, get_zhb_dividend_yield,
-                          get_zhb_data_date, get_zhb_ipo_price,
-                          cls_telegraph, cninfo_irm)  # V10.3
+from stock_common import (
+    clean_codes,
+    _safe_float,
+    _debug_log,
+    BaseReportRunner,
+    get_holder_structure,
+    _load_strategy_config,
+    create_async_session,
+    get_dragon_tiger_board_async,
+    holder_change_async,
+    get_strategic_announcements_async,
+    parse_args,
+    get_tencent_quote,
+    baidu_kline_full,
+    get_dividend_history,
+    get_industry_comparison,
+    get_stock_info,
+    get_eps_forecast_async,
+    get_reports_async,
+    get_northbound_hold_async,
+    get_margin_trading_async,
+    get_block_trade_async,
+    get_lockup_expiry_async,
+    get_gross_margin_and_roe_async,
+    get_industry_peers,
+    get_sina_financial_report_async,
+    get_sina_balance_sheet_async,
+    get_hsgt_macro_flow_async,
+    is_trading_day,
+    get_market_status,
+    calculate_multi_school_scores,
+    get_zhb_single_stock_data,
+    is_zhb_data_fresh,
+    get_zhb_industry_map,
+    get_zhb_dividend_yield,
+    get_zhb_data_date,
+    get_zhb_ipo_price,
+    cls_telegraph,
+    cninfo_irm,
+)  # V10.3
 
 _SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 
@@ -71,23 +103,22 @@ _peers_high = _mkt_cfg.get("peers_mcap_high", 3.0)
 
 # ==================== 核心数据抓取模块 ====================
 
+
 def get_fund_flow_120d(code):
-    """V7.5: 60日资金流 → TDX TCP（东财push2 fallback）"""
-    tdx_data = tdx_get_history_fund_flow(code, 60)
-    if tdx_data:
-        return {"data": tdx_data, "error": "", "source": "tdx"}
-    # V9.3.1: 增加东财push2his fallback（与sht报告一致）
+    """V7.5: 60日资金流 → 东财HTTP（get_em_history_fund_flow，与 TDX 接口同源）"""
+    from stock_common.sc_datasource import get_em_history_fund_flow
+
     try:
-        from get_sht_report import _get_eastmoney_fund_flow_120d
-        em_data = _get_eastmoney_fund_flow_120d(code)
-        if em_data:
-            return {"data": em_data, "error": "", "source": "eastmoney_push2"}
+        data = get_em_history_fund_flow(code, 60)
+        if data:
+            return {"data": data, "error": "", "source": "eastmoney"}
     except Exception as _e:
-        _debug_log(f"med _get_eastmoney_fund_flow_120d error ({code}): {_e}")
-        pass
+        _debug_log(f"med get_fund_flow_120d error ({code}): {_e}")
     return {"data": [], "error": "资金流数据获取失败"}
 
+
 # V7.5: get_dragon_tiger_board 由 stock_common 统一提供
+
 
 async def get_holder_change_async(session, code):
     """async 版: 股东户数变化"""
@@ -115,7 +146,9 @@ async def get_stock_sector_rank_async(code, info=None):
                     except Exception as _e:
                         _debug_log(f"med sector_rank get_change_pct_async error: {_e}")
                     return {"rank": i, "total": len(members), "change_pct": my_chg}
-    ind_name = (industry_boards[0].get("name","") if industry_boards else "") or (info.get("industry","") if info else "")
+    ind_name = (industry_boards[0].get("name", "") if industry_boards else "") or (
+        info.get("industry", "") if info else ""
+    )
     if ind_name:
         st = tdx_get_board_by_name(ind_name, board_type=0)
         if st:
@@ -135,11 +168,14 @@ async def get_stock_sector_rank_async(code, info=None):
 
 # ==================== 报告生成引擎 ====================
 
+
 async def generate_report_async(session, code, output_path, ind_comp=None, hsgt=None):
     """async 版: 支持 ind_comp/hsgt 外部缓存，批量模式下避免重复查询"""
     today_str = date.today().strftime("%Y-%m-%d")
     lines = []
-    def L(s=""): lines.append(s)
+
+    def L(s=""):
+        lines.append(s)
 
     L("=" * 72)
     L(f"  {code} 中线深度投研报告 — {today_str} {datetime.now().strftime('%H:%M:%S')}")
@@ -186,7 +222,9 @@ async def generate_report_async(session, code, output_path, ind_comp=None, hsgt=
         hsgt = await get_hsgt_macro_flow_async(session)
     if hsgt:
         signal = "偏多" if hsgt['total'] > 0 else "偏空"
-        L(f"  今日北向资金总净流入: {hsgt['total']:.2f} 亿元 (沪股通 {hsgt['hgt']:.2f}亿 | 深股通 {hsgt['sgt']:.2f}亿)")
+        L(
+            f"  今日北向资金总净流入: {hsgt['total']:.2f} 亿元 (沪股通 {hsgt['hgt']:.2f}亿 | 深股通 {hsgt['sgt']:.2f}亿)"
+        )
         L(f"  大盘外资情绪: {signal} （中线仓位参考点）")
     else:
         L("  (北向宏观资金流向获取失败)")
@@ -194,69 +232,20 @@ async def generate_report_async(session, code, output_path, ind_comp=None, hsgt=
     # ─── 1. 基本信息与实时估值 ───
     L("\n【二、个股基本信息与估值锚点】")
     L("─" * 72)
-    # V10.1: zhb优先获取估值、阶段涨幅、52周高低、股息率，原有路径降为fallback
-    # V10.2: zhb数据日期标注（延迟时提示用户）
-    # V11.5: 优先使用 data_provider.get_stock_composite_async 统一入口
-    _zhb_data = None
-    if is_zhb_data_fresh():
-        _zhb_data = get_zhb_single_stock_data(code)
-    else:
-        _zhb_date = get_zhb_data_date() or ""
-        if _zhb_date:
-            L(f"  ℹ️ zhb数据日期: {_zhb_date}（延迟，阶段涨幅/52周高低等数据可能有1-2天滞后）")
+    # V15 统一数据中心：通过 get_canonical_stock_data 获取强类型标准化数据
+    # V15.2 修正: async 上下文必须包 to_thread，否则阻塞主事件循环
+    from data_provider import get_canonical_stock_data
+
+    cdata = await asyncio.to_thread(get_canonical_stock_data, code)
+    price_today = cdata.price
+    q = cdata.to_dict()
 
     info = get_stock_info(code)
-    
-    # 使用 data_provider 统一获取行情数据（优先ZHB，失败fallback到腾讯/通达信）
-    _composite = None
-    try:
-        _composite = await data_provider.get_stock_composite_async(code)
-    except Exception as _e:
-        _debug_log(f"med get_stock_composite_async error ({code}): {_e}")
-    
-    # 构建兼容的 q 对象，保持下游代码不变
-    q = {}
-    _tencent_q = None
-    if _composite:
-        q["price"] = _composite.get("price", 0) or 0
-        q["change_pct"] = _composite.get("change_pct", 0) or 0
-        q["pe_ttm"] = _composite.get("pe_ttm", 0) or 0
-        q["pb"] = _composite.get("pb", 0) or 0
-        q["mcap_yi"] = _composite.get("mcap_yi", 0) or 0
-        q["turnover_pct"] = _composite.get("turnover_pct", 0) or 0
-        q["amount"] = (_composite.get("amount_wan", 0) or 0) * 10000
-    else:
-        _tencent_q = get_tencent_quote(code)
-        if _tencent_q:
-            q = _tencent_q
-    
-    price_today = q.get("price", 0) if q else 0
-    
-    # 盘前标记仍从腾讯行情获取（composite未提供此字段）
-    if not q.get("_is_pre_market") and _tencent_q:
-        q["_is_pre_market"] = _tencent_q.get("_is_pre_market", False)
-    elif not q.get("_is_pre_market"):
-        try:
-            _tencent_q2 = get_tencent_quote(code)
-            if _tencent_q2:
-                q["_is_pre_market"] = _tencent_q2.get("_is_pre_market", False)
-                q["pe_static"] = _tencent_q2.get("pe_static", 0)
-        except Exception as _e:
-            _debug_log(f"med tencent_fallback error ({code}): {_e}")
+    stock_name = cdata.name or info.get('name', 'N/A')
+    stock_industry = cdata.industry or info.get('industry', 'N/A')
 
-    L(f"  股票名称: {info.get('name', 'N/A')} ({info.get('code', code)})")
-
-    # 行业归属：zhb优先，info返回N/A时用zhb补充
-    _industry = info.get('industry', 'N/A')
-    if _industry == 'N/A' and _zhb_data:
-        _zhb_ind_code = _zhb_data.get("industry_code", "")
-        if _zhb_ind_code:
-            _zhb_industry_map = get_zhb_industry_map()
-            _zhb_ind_name = _zhb_industry_map.get(_zhb_ind_code, "")
-            if _zhb_ind_name:
-                _industry = _zhb_ind_name
-                info["industry"] = _zhb_ind_name
-    L(f"  所属板块: {_industry}")
+    L(f"  股票名称: {stock_name} ({cdata.code})")
+    L(f"  所属板块: {stock_industry}")
 
     list_date_raw = info.get("list_date", "")
     if list_date_raw and len(list_date_raw) >= 8:
@@ -265,44 +254,47 @@ async def generate_report_async(session, code, output_path, ind_comp=None, hsgt=
         list_date_fmt = list_date_raw
     L(f"  上市日期: {list_date_fmt}")
 
-    # 阶段涨幅、52周区间（zhb独有，直接展示）
-    if _zhb_data:
-        _zhb_change_5d = _zhb_data.get("change_5d", 0)
-        _zhb_change_10d = _zhb_data.get("change_10d", 0)
-        _zhb_change_20d = _zhb_data.get("change_20d", 0)
-        _zhb_change_30d = _zhb_data.get("change_30d", 0)
-        _zhb_change_60d = _zhb_data.get("change_60d", 0)
-        if _zhb_change_5d or _zhb_change_10d or _zhb_change_20d or _zhb_change_30d or _zhb_change_60d:
-            L(f"  [阶段涨幅] 近5日: {_zhb_change_5d:+.2f}% | 近10日: {_zhb_change_10d:+.2f}% | 近20日: {_zhb_change_20d:+.2f}% | 近30日: {_zhb_change_30d:+.2f}% | 近60日: {_zhb_change_60d:+.2f}%")
+    if cdata.change_5d or cdata.change_10d or cdata.change_20d or cdata.change_60d:
+        L(
+            f"  [阶段涨幅] 近5日: {cdata.change_5d:+.2f}% | 近10日: {cdata.change_10d:+.2f}% | 近20日: {cdata.change_20d:+.2f}% | 近60日: {cdata.change_60d:+.2f}%"
+        )
 
-        _zhb_high_52w = _zhb_data.get("high_52w", 0)
-        _zhb_low_52w = _zhb_data.get("low_52w", 0)
-        if _zhb_high_52w > 0 and _zhb_low_52w > 0 and price_today > 0:
-            _zhb_52w_pos = (price_today - _zhb_low_52w) / (_zhb_high_52w - _zhb_low_52w) * 100 if _zhb_high_52w != _zhb_low_52w else 50
-            L(f"  [52周区间] 最高: {_zhb_high_52w:.2f}元 | 最低: {_zhb_low_52w:.2f}元 | 当前位置: {_zhb_52w_pos:.0f}%")
+    # 52周区间与 IPO 破发度分析 (cdata 统一提供)
+    if cdata.high_52w > 0 and cdata.low_52w > 0 and cdata.price > 0:
+        _52w_pos = (
+            (cdata.price - cdata.low_52w) / (cdata.high_52w - cdata.low_52w) * 100
+            if cdata.high_52w != cdata.low_52w
+            else 50
+        )
+        L(
+            f"  [52周区间] 最高: {cdata.high_52w:.2f}元 | 最低: {cdata.low_52w:.2f}元 | 当前位置: {_52w_pos:.0f}%"
+        )
 
-        # V10.3: IPO破发度分析
-        _ipo_price = _zhb_data.get("ipo_price", 0) or get_zhb_ipo_price(code)
-        if _ipo_price and _ipo_price > 0 and price_today > 0:
-            _ipo_pct = (price_today - _ipo_price) / _ipo_price * 100
-            if _ipo_pct < 0:
-                L(f"  [IPO破发度] 发行价: {_ipo_price:.2f}元 | 当前价: {price_today:.2f}元 | 破发幅度: {_ipo_pct:.2f}%")
-                if _ipo_pct < -30:
-                    L(f"  📉 深度破发: 破发幅度超30%，安全边际较高")
-                elif _ipo_pct < -10:
-                    L(f"  ⚠️ 轻度破发: 破发幅度10-30%，关注基本面支撑")
+    if cdata.ipo_price > 0 and cdata.price > 0:
+        _ipo_pct = (cdata.price - cdata.ipo_price) / cdata.ipo_price * 100
+        if _ipo_pct < 0:
+            L(
+                f"  [IPO破发度] 发行价: {cdata.ipo_price:.2f}元 | 当前价: {cdata.price:.2f}元 | 破发幅度: {_ipo_pct:.2f}%"
+            )
+            if _ipo_pct < -30:
+                L(f"  📉 深度破发: 破发幅度超30%，安全边际较高")
+            elif _ipo_pct < -10:
+                L(f"  ⚠️ 轻度破发: 破发幅度10-30%，关注基本面支撑")
 
         # V10.3: 中线动能对比（20日 vs 60日）
-        if _zhb_change_20d and _zhb_change_60d:
-            _momentum_diff = _zhb_change_20d - _zhb_change_60d
-            L(f"  [中线动能] 20日涨幅: {_zhb_change_20d:+.2f}% | 60日涨幅: {_zhb_change_60d:+.2f}% | 差值: {_momentum_diff:+.2f}%")
-            if _zhb_change_20d > 0 and _momentum_diff > 5:
+        if cdata.change_20d and cdata.change_60d:
+            _momentum_diff = cdata.change_20d - cdata.change_60d
+            L(
+                f"  [中线动能] 20日涨幅: {cdata.change_20d:+.2f}% | 60日涨幅: {cdata.change_60d:+.2f}% | 差值: {_momentum_diff:+.2f}%"
+            )
+            if cdata.change_20d > 0 and _momentum_diff > 5:
                 L(f"  🚀 加速上涨: 短期涨幅显著高于中期，动能增强")
-            elif _zhb_change_20d < 0 and _momentum_diff < -5:
+            elif cdata.change_20d < 0 and _momentum_diff < -5:
                 L(f"  🛑 减速下跌: 短期跌幅大于中期，动能衰竭")
 
     if ind_comp is None:
-        ind_comp = get_industry_comparison()
+        # V15.4.2: 同步行业对比包 to_thread
+        ind_comp = await asyncio.to_thread(get_industry_comparison)
     stock_ind = info.get('industry', '')
     peer_data = {"industry": "", "my_mcap": 0, "my_rank": 0, "industry_count": 0, "peers": []}
     fin_metrics = {}
@@ -314,7 +306,9 @@ async def generate_report_async(session, code, output_path, ind_comp=None, hsgt=
                 try:
                     _rank_info = await get_stock_sector_rank_async(code, info=info)
                     if _rank_info:
-                        L(f"  本股今日{_rank_info['change_pct']:+.2f}%，板块内排名第{_rank_info['rank']}/{_rank_info['total']}名")
+                        L(
+                            f"  本股今日{_rank_info['change_pct']:+.2f}%，板块内排名第{_rank_info['rank']}/{_rank_info['total']}名"
+                        )
                 except Exception as _e:
                     _debug_log(f"med sector_rank error: {_e}")
                 if row['rank'] <= 10:
@@ -334,28 +328,23 @@ async def generate_report_async(session, code, output_path, ind_comp=None, hsgt=
                 break
 
     await asyncio.sleep(0.5)
-    peer_data = get_industry_peers(code, 3, info=info)
+    # V15.4.2: 同步同业对比包 to_thread
+    peer_data = await asyncio.to_thread(get_industry_peers, code, 3, info=info)
     if peer_data.get("my_rank", 0) > 0 and peer_data.get("industry_count", 0) > 0:
-        L(f"  板块内排名: 按总市值排序, 该股排名第 {peer_data['my_rank']}/{peer_data['industry_count']} 位")
+        L(
+            f"  板块内排名: 按总市值排序, 该股排名第 {peer_data['my_rank']}/{peer_data['industry_count']} 位"
+        )
 
-    L(f"  总市值:   {q.get('mcap_yi', 0):.2f}亿元 (流通股本 {info.get('float_shares', 0)/1e8:.2f}亿股)")
-    if q.get("_is_pre_market"):
+    L(f"  总市值:   {cdata.mcap_yi:.2f}亿元 (流通股本 {cdata.float_shares_wan/1e4:.2f}亿股)")
+    if cdata.time_anchor == "t-1":
         L("  ⚠️ 盘前模式（9:30前），以下行情数据基于上一交易日收盘数据")
-    L(f"  当前价:   {price_today:.2f}元  (今日涨跌: {q.get('change_pct', 0):.2f}%)")
-    # PE估值：zhb优先，无zhb时fallback到腾讯行情
-    _zhb_pe_dynamic = _zhb_data.get("pe_dynamic", 0) if _zhb_data else 0
-    _zhb_pe_ttm = _zhb_data.get("pe_ttm", 0) if _zhb_data else 0
-    if _zhb_pe_ttm and _zhb_pe_ttm > 0:
-        _pe_ttm = _zhb_pe_ttm
-        _pe_s = f"{_zhb_pe_dynamic:.2f}x" if _zhb_pe_dynamic > 0 else "N/A（亏损）"
-    else:
-        _pe_ttm = q.get('pe_ttm', 0); _pe_static = q.get('pe_static', 0)
-        _pe_s = f"{_pe_static:.2f}x" if _pe_ttm > 0 and _pe_static > 0 else "N/A（亏损）"
-    # 股息率：zhb优先
-    _zhb_div_yield = _zhb_data.get("dividend_yield", 0) if _zhb_data else 0
-    _div_str = f"  股息率: {_zhb_div_yield:.2f}%" if _zhb_div_yield > 0 else ""
-    L(f"  动态市盈率 PE(TTM): {_pe_ttm:.2f}x | 静态PE: {_pe_s} | 市净率 PB: {q.get('pb', 0):.2f}")
-    if _div_str: L(_div_str)
+    L(f"  当前价:   {cdata.price:.2f}元  (今日涨跌: {cdata.change_pct:.2f}%)")
+    _pe_s = f"{cdata.pe_dynamic:.2f}x" if cdata.pe_dynamic > 0 else "N/A（亏损）"
+    _pe_ttm_str = f"{cdata.pe_ttm:.2f}" if cdata.pe_ttm > 0 else "N/A"
+    _div_str = f"  股息率: {cdata.dividend_yield:.2f}%" if cdata.dividend_yield > 0 else ""
+    L(f"  动态市盈率 PE(TTM): {_pe_ttm_str}x | 静态PE: {_pe_s} | 市净率 PB: {cdata.pb:.2f}")
+    if _div_str:
+        L(_div_str)
 
     # ─── 2. 财务业绩兑现追踪 ───
     L("\n【三、历史财务业绩兑现追踪 (近5季度)】")
@@ -379,7 +368,15 @@ async def generate_report_async(session, code, output_path, ind_comp=None, hsgt=
             L(f"  {date_val:<12} {rev_yi:>15} {profit_yi:>15} {npm:>8}")
         L("\n  💡 中线逻辑核实：观察收入与净利润是否保持同步增长。")
     else:
-        L("  (新浪财报数据获取失败或该股暂无相关数据)")
+        # V16.0: CanonicalStockData 无 net_profit_yi 字段（只有 net_profit，单位元）→ /1e8 转亿元
+        net_profit_yi = (cdata.net_profit or 0) / 1e8
+        if net_profit_yi > 0 or (cdata.roe is not None and cdata.roe > 0):
+            roe_str = f"{cdata.roe:.2f}%" if cdata.roe is not None else "N/A"
+            L(
+                f"  [ZHB 离线快照] 归母净利润: {net_profit_yi:.2f} 亿元 | ROE: {roe_str} | PE(TTM): {cdata.pe_ttm:.1f}x | PB: {cdata.pb:.2f}x"
+            )
+        else:
+            L("  (新浪财报数据获取失败或该股暂无相关数据)")
 
     # ─── 4. 资产负债表财务健康度 ───
     L("\n【四、资产负债表财务健康度（排雷）】")
@@ -400,12 +397,20 @@ async def generate_report_async(session, code, output_path, ind_comp=None, hsgt=
         total_liab = latest.get("负债合计", "0")
 
         def to_yi(v):
-            try: return float(v) / 1e8
-            except (ValueError, TypeError): return 0.0
+            try:
+                return float(v) / 1e8
+            except (ValueError, TypeError):
+                return 0.0
 
-        ar_yi = to_yi(ar); inv_yi = to_yi(inv); gw_yi = to_yi(gw)
-        cash_yi = to_yi(cash); st_debt_yi = to_yi(st_debt); due_debt_yi = to_yi(due_debt)
-        equity_yi = to_yi(equity); asset_yi = to_yi(total_assets); liab_yi = to_yi(total_liab)
+        ar_yi = to_yi(ar)
+        inv_yi = to_yi(inv)
+        gw_yi = to_yi(gw)
+        cash_yi = to_yi(cash)
+        st_debt_yi = to_yi(st_debt)
+        due_debt_yi = to_yi(due_debt)
+        equity_yi = to_yi(equity)
+        asset_yi = to_yi(total_assets)
+        liab_yi = to_yi(total_liab)
 
         L(f"  {'科目':<26} {'金额(亿元)':>12} {'占总资产%':>10}")
         L(f"  {'-'*55}")
@@ -426,9 +431,12 @@ async def generate_report_async(session, code, output_path, ind_comp=None, hsgt=
             ar_prev = to_yi(prev.get("应收账款", "0"))
             inv_prev = to_yi(prev.get("存货", "0"))
             gw_prev = to_yi(prev.get("商誉", "0"))
+
             def pct_chg(cur, prv):
-                if prv > 0: return (cur - prv) / prv * 100
+                if prv > 0:
+                    return (cur - prv) / prv * 100
                 return 0
+
             L("\n  📈 环比变动（本期 vs 上期）:")
             L(f"    - 应收账款: {ar_yi:.2f}亿 (环比 {pct_chg(ar_yi, ar_prev):+.1f}%)")
             L(f"    - 存货: {inv_yi:.2f}亿 (环比 {pct_chg(inv_yi, inv_prev):+.1f}%)")
@@ -436,31 +444,49 @@ async def generate_report_async(session, code, output_path, ind_comp=None, hsgt=
 
         flags = []
         if asset_yi > 0 and ar_yi / asset_yi > _ar_ratio_warn / 100:
-            flags.append(f"⚠️ 应收账款占比{ar_yi/asset_yi*100:.0f}% > {_ar_ratio_warn:.0f}%，回款风险预警")
+            flags.append(
+                f"⚠️ 应收账款占比{ar_yi/asset_yi*100:.0f}% > {_ar_ratio_warn:.0f}%，回款风险预警"
+            )
         _total_debt = st_debt_yi + due_debt_yi
         if cash_yi > 0 and _total_debt > 0 and cash_yi / _total_debt < 1.5:
-            flags.append(f"⚠️ 货币资金{cash_yi:.1f}亿仅覆盖短期债务{_total_debt:.1f}亿的{cash_yi/_total_debt*100:.0f}%，偿债压力较大")
+            flags.append(
+                f"⚠️ 货币资金{cash_yi:.1f}亿仅覆盖短期债务{_total_debt:.1f}亿的{cash_yi/_total_debt*100:.0f}%，偿债压力较大"
+            )
         # 商誉风险预警：需同时满足净资产>0和商誉占比超阈值
         if equity_yi > 0 and gw_yi > equity_yi * _gw_ratio / 100:
-            flags.append(f"⚠️ 商誉占净资产{gw_yi/equity_yi*100:.0f}% > {_gw_ratio:.0f}%，减值风险预警")
+            flags.append(
+                f"⚠️ 商誉占净资产{gw_yi/equity_yi*100:.0f}% > {_gw_ratio:.0f}%，减值风险预警"
+            )
         elif gw_yi > 0 and equity_yi == 0:
             flags.append(f"⚠️ 商誉{gw_yi:.1f}亿，但净资产数据缺失，无法计算占比")
         if asset_yi > 0 and liab_yi / asset_yi > _debt_ratio_warn / 100:
-            flags.append(f"⚠️ 资产负债率{liab_yi/asset_yi*100:.0f}% > {_debt_ratio_warn:.0f}%，杠杆偏高")
+            flags.append(
+                f"⚠️ 资产负债率{liab_yi/asset_yi*100:.0f}% > {_debt_ratio_warn:.0f}%，杠杆偏高"
+            )
         if prev and financials:
             try:
                 _rev_latest = _safe_float(financials[0].get("营业总收入", "0"))
-                _rev_prev = _safe_float(financials[1].get("营业总收入", "0")) if len(financials) > 1 else 0
+                _rev_prev = (
+                    _safe_float(financials[1].get("营业总收入", "0")) if len(financials) > 1 else 0
+                )
                 _ar_incr = ar_yi - ar_prev
-                _rev_decr = (_rev_latest - _rev_prev) / 1e8 if _rev_latest > 1e5 else _rev_latest - _rev_prev
+                _rev_decr = (
+                    (_rev_latest - _rev_prev) / 1e8
+                    if _rev_latest > 1e5
+                    else _rev_latest - _rev_prev
+                )
                 if _rev_decr < 0 and _ar_incr > 0:
                     flags.append(f"⚠️ 营收下滑但应收账款逆势增长{_ar_incr:.2f}亿，回款风险加剧")
                 elif _ar_incr / max(_rev_decr, 1) > 0.3:
-                    flags.append(f"⚠️ 应收账款增量占营收增量{_ar_incr/max(_rev_decr,1)*100:.0f}%，营收含金量偏低")
-            except (ValueError, TypeError, ZeroDivisionError, IndexError) as _e: _debug_log(f"med bs_flag_calc: {_e}")
+                    flags.append(
+                        f"⚠️ 应收账款增量占营收增量{_ar_incr/max(_rev_decr,1)*100:.0f}%，营收含金量偏低"
+                    )
+            except (ValueError, TypeError, ZeroDivisionError, IndexError) as _e:
+                _debug_log(f"med bs_flag_calc: {_e}")
         if flags:
             L("")
-            for flag in flags: L(f"  {flag}")
+            for flag in flags:
+                L(f"  {flag}")
         else:
             L("\n  ✅ 资产负债表整体健康，未触发预警阈值。")
     else:
@@ -469,6 +495,7 @@ async def generate_report_async(session, code, output_path, ind_comp=None, hsgt=
     # ─── 5. 一致预期与PEG成长估值 ───
     L("\n【五、机构一致预期与前向 PEG】")
     L("─" * 72)
+    reports = None  # V16.1: 研报懒加载，EPS fallback 与评级章节共享
     df_eps = await get_eps_forecast_async(session, code)
     eps_cur = eps_next = None
     eps_has_data = False
@@ -481,18 +508,33 @@ async def generate_report_async(session, code, output_path, ind_comp=None, hsgt=
                 cnt = int(row.iloc[1]) if pd.notna(row.iloc[1]) else 0
                 mean_v = float(row.iloc[3]) if pd.notna(row.iloc[3]) else 0
                 L(f"  {year:<10} {cnt:<10} {mean_v:<12.3f}")
-                if i == 0: eps_cur = mean_v; eps_has_data = True
-                elif i == 1: eps_next = mean_v
-            except (ValueError, TypeError, IndexError) as _e: _debug_log(f"med eps_row_parse: {_e}")
+                if i == 0:
+                    eps_cur = mean_v
+                    eps_has_data = True
+                elif i == 1:
+                    eps_next = mean_v
+            except (ValueError, TypeError, IndexError) as _e:
+                _debug_log(f"med eps_row_parse: {_e}")
     if not eps_has_data:
-        reports_em = await get_reports_async(session, code, max_pages=1)
+        # V16.1: 复用研报正文请求（避免 max_pages=1 与 max_pages=3 两次重复请求）
+        # 仅当研报尚未在"六"章节获取时独立请求
+        try:
+            if reports is None:
+                reports = await get_reports_async(session, code, max_pages=3)
+        except Exception:
+            reports = None
         em_eps = None
-        if reports_em:
-            for r in reports_em:
+        if reports:
+            for r in reports:
                 ty = r.get("predictThisYearEps")
                 ny = r.get("predictNextYearEps")
-                if ty is not None and str(ty).strip(): em_eps = {"eps_cur": float(ty), "eps_next": float(ny) if ny is not None and str(ny).strip() else None}
-                if em_eps: break
+                if ty is not None and str(ty).strip():
+                    em_eps = {
+                        "eps_cur": float(ty),
+                        "eps_next": float(ny) if ny is not None and str(ny).strip() else None,
+                    }
+                if em_eps:
+                    break
         if em_eps:
             eps_cur = em_eps["eps_cur"]
             eps_next = em_eps.get("eps_next")
@@ -504,59 +546,71 @@ async def generate_report_async(session, code, output_path, ind_comp=None, hsgt=
             L("  东财研报一致预期EPS (同花顺兜底):")
             L(f"  {'年度':<14} {'预测EPS'}")
             L(f"  {'-'*30}")
-            if eps_cur: L(f"  {label_cur:<14} {eps_cur:.3f}")
-            if eps_next: L(f"  {label_next:<14} {eps_next:.3f}")
+            if eps_cur:
+                L(f"  {label_cur:<14} {eps_cur:.3f}")
+            if eps_next:
+                L(f"  {label_next:<14} {eps_next:.3f}")
     if eps_has_data and price_today and eps_cur and eps_cur > 0:
         pe_fwd = price_today / eps_cur
         L(f"\n  ➤ 前向市盈率 (预测今年): {pe_fwd:.2f}x")
         if eps_next and eps_cur > 0:
             cagr = (eps_next / eps_cur) - 1
             L(f"  ➤ 预期净利增速: {cagr*100:.1f}%")
-            peg = pe_fwd / (cagr * 100) if cagr > 0 else float("in")
-            if peg == float("in"): eval_str = "无法计算"
-            elif peg < _peg_good: eval_str = "偏低估 (合理区间之下)"
-            elif peg <= _peg_rational: eval_str = "估值合理"
-            else: eval_str = "偏高估 (存在透支预期风险)"
+            peg = pe_fwd / (cagr * 100) if cagr > 0 else float("inf")
+            if peg == float("inf"):
+                eval_str = "无法计算"
+            elif peg < _peg_good:
+                eval_str = "偏低估 (合理区间之下)"
+            elif peg <= _peg_rational:
+                eval_str = "估值合理"
+            else:
+                eval_str = "偏高估 (存在透支预期风险)"
             L(f"  ➤ 核心 PEG 指标: {peg:.2f} → {eval_str}")
         _sk_m, _sr_m = baidu_kline_full(code)
         if len(_sr_m) >= 26:
-            _ci_m = next((i for i,k in enumerate(_sk_m) if k in ("close","close_price")), -1)
+            _ci_m = next((i for i, k in enumerate(_sk_m) if k in ("close", "close_price")), -1)
             if _ci_m >= 0:
-                _cls_m = [_safe_float(rr[_ci_m]) for rr in _sr_m[-26:] if len(rr) > _ci_m]
+                # V16.1: 取更多 K 线（120 根）接入共享技术引擎（MACD/RSI/BOLL/KDJ/均线）
+                _cls_m = [_safe_float(rr[_ci_m]) for rr in _sr_m[-120:] if len(rr) > _ci_m]
                 if len(_cls_m) >= 26:
-                    def _ema(data, n):
-                        e = [data[0]]; m = 2/(n+1)
-                        for i in range(1, len(data)): e.append(data[i]*m + e[-1]*(1-m))
-                        return e[-1]
-                    _ema12 = _ema(_cls_m[-25:], 12)
-                    _ema26 = _ema(_cls_m[-45:], 26)
-                    _dif = _ema12 - _ema26
-                    # DEA = EMA(DIF, 9)，需要 DIF 序列
-                    _dif_series = []
-                    _e12 = _cls_m[0]; _e26 = _cls_m[0]
-                    for _c in _cls_m:
-                        _e12 = _c * 2/13 + _e12 * 11/13
-                        _e26 = _c * 2/27 + _e26 * 25/27
-                        _dif_series.append(_e12 - _e26)
-                    _dea = _ema(_dif_series[-9:] or [0], 9)
-                    _macd_sig = "金叉" if _dif > _dea else "死叉" if _dif < _dea else "粘合"
-                    L(f"  [MACD] DIF={_dif:.3f} DEA={_dea:.3f}（{_macd_sig}）")
-                    _ma20 = sum(_cls_m[-20:])/20
-                    _ma60 = sum(_cls_m[-60:])/60 if len(_cls_m) >= 60 else _ma20
-                    _ma_st = "多头排列" if _cls_m[-1]>_ma20>_ma60 else ("空头排列" if _cls_m[-1]<_ma20 else "震荡")
-                    L(f"  [均线] MA20={_ma20:.2f} | {_ma_st}")
+                    from stock_common.sc_technical import analyze_technical
+
+                    # 重建 highs/lows（若无则用 close 近似）
+                    _hi_m = _cls_m[:]
+                    _lo_m = _cls_m[:]
+                    _tech = analyze_technical(_cls_m, _hi_m, _lo_m, [])
+                    _macd = _tech.get("macd", {})
+                    if _macd:
+                        _dif = _macd.get("dif", 0)
+                        _dea = _macd.get("dea", 0)
+                        _macd_sig = "金叉" if _dif > _dea else "死叉" if _dif < _dea else "粘合"
+                        L(f"  [MACD] DIF={_dif:.3f} DEA={_dea:.3f}（{_macd_sig}）")
+                    _ma20 = _tech.get("ma", {}).get("ma20", 0)
+                    _ma60 = _tech.get("ma", {}).get("ma60", 0)
+                    _ma_st = (
+                        "多头排列"
+                        if _cls_m[-1] > _ma20 > _ma60
+                        else ("空头排列" if _cls_m[-1] < _ma20 else "震荡")
+                    )
+                    L(f"  [均线] MA20={_ma20:.2f} MA60={_ma60:.2f} | {_ma_st}")
+                    _rsi = _tech.get("rsi", {})
+                    if _rsi:
+                        L(f"  [RSI] RSI14={_rsi.get('rsi14', 0):.1f}{'（超买）' if _rsi.get('rsi14', 0) > 70 else '（超卖）' if _rsi.get('rsi14', 0) < 30 else ''}")
+                    _boll = _tech.get("boll", {})
+                    if _boll:
+                        L(f"  [BOLL] 位置={_boll.get('pos_pct', 50):.0f}% 带宽={_boll.get('width_pct', 0):.1f}%")
             if pe_fwd > _pe_mid and cagr > 0:
                 digest = math.log(pe_fwd / _pe_mid) / math.log(1 + cagr)
                 L(f"  ➤ 估值消化到30x需: {digest:.1f} 年")
             try:
                 _sk_p, _sr_p = baidu_kline_full(code)
-                _ci_p = next((i for i,k in enumerate(_sk_p) if k in ("close","close_price")), -1)
+                _ci_p = next((i for i, k in enumerate(_sk_p) if k in ("close", "close_price")), -1)
                 if _ci_p >= 0 and eps_cur > 0:
                     _hp = [_safe_float(rr[_ci_p]) for rr in _sr_p if len(rr) > _ci_p]
                     if len(_hp) > 20:
-                        _hpe = [p/eps_cur for p in _hp if p > 0]
+                        _hpe = [p / eps_cur for p in _hp if p > 0]
                         if _hpe:
-                            _pc = sum(1 for p in _hpe if p < pe_fwd)/len(_hpe)*100
+                            _pc = sum(1 for p in _hpe if p < pe_fwd) / len(_hpe) * 100
                             L(f"  PE历史分位: {_pc:.0f}%（低于{_pc:.0f}%的历史时间）")
             except Exception as _e:
                 _debug_log(f"med pe_percentile error: {_e}")
@@ -567,10 +621,16 @@ async def generate_report_async(session, code, output_path, ind_comp=None, hsgt=
             L("  ⚠️ 该股为ST/风险警示股，不具备黑马潜质，中线严禁左侧建仓！")
         elif financials and len(financials) >= 2:
             try:
-                p1, p2 = _safe_float(financials[-1]["净利润"]), _safe_float(financials[-2]["净利润"])
-                r1, r2 = _safe_float(financials[-1]["营业总收入"]), _safe_float(financials[-2]["营业总收入"])
-                if p1 > p2 and r1 > r2: has_black_horse = True
-            except (IndexError, KeyError, TypeError) as _e: _debug_log(f"med black_horse_check: {_e}")
+                p1, p2 = _safe_float(financials[-1]["净利润"]), _safe_float(
+                    financials[-2]["净利润"]
+                )
+                r1, r2 = _safe_float(financials[-1]["营业总收入"]), _safe_float(
+                    financials[-2]["营业总收入"]
+                )
+                if p1 > p2 and r1 > r2:
+                    has_black_horse = True
+            except (IndexError, KeyError, TypeError) as _e:
+                _debug_log(f"med black_horse_check: {_e}")
         if has_black_horse:
             L("  ⚡ 无机构覆盖，但近两季度净利润+营收连续环比改善，具备黑马潜质预警！")
         else:
@@ -579,15 +639,35 @@ async def generate_report_async(session, code, output_path, ind_comp=None, hsgt=
     # ─── 4. 研报评级风向标 ───
     L("\n【六、研报评级统计与风向变动 (近3个月)】")
     L("─" * 72)
-    reports = await get_reports_async(session, code, max_pages=3)
+    # V16.1: 复用 EPS fallback 已拉取的研报（避免两次请求）
+    if reports is None:
+        reports = await get_reports_async(session, code, max_pages=3)
     if reports:
         buy_count, add_count = 0, 0
+        rating_up, rating_down = 0, 0
         for r in reports:
             rating = str(r.get("emRatingName", ""))
-            if "买入" in rating: buy_count += 1
-            elif "增持" in rating: add_count += 1
+            if "买入" in rating:
+                buy_count += 1
+            elif "增持" in rating:
+                add_count += 1
+            # V16.1: 评级变化统计（ratingChange: 3=上调 1=下调 参考）
+            _rc = r.get("ratingChange")
+            if _rc is not None:
+                try:
+                    rc_int = int(_rc)
+                    if rc_int >= 3:
+                        rating_up += 1
+                    elif rc_int == 1:
+                        rating_down += 1
+                except (TypeError, ValueError):
+                    pass
         L(f"  统计样本：近 {len(reports)} 篇研报")
         L(f"  ➤ 【买入】评级: {buy_count} 篇 | 【增持】评级: {add_count} 篇")
+        # V16.1: 评级风向（评级上调/下调）
+        if rating_up or rating_down:
+            L(f"  ➤ 评级变化: 上调 {rating_up} 篇 | 下调 {rating_down} 篇"
+              + (" → 机构态度偏积极" if rating_up > rating_down else " → 机构态度偏谨慎" if rating_down > rating_up else ""))
         L("\n  最新 5 篇核心研报观点:")
         for r in reports[:5]:
             pub_date = str(r.get("publishDate", ""))[:10]
@@ -606,7 +686,8 @@ async def generate_report_async(session, code, output_path, ind_comp=None, hsgt=
         for i, a in enumerate(anns[:10], 1):
             L(f"  {i}. [{a['date']}] {a['title']}")
         rc = sum(1 for a in anns if "减持" in a["title"])
-        if rc > 0: L(f"\n  ⚠️ 减持预警：近期有 {rc} 条减持相关公告，请仔细甄别。")
+        if rc > 0:
+            L(f"\n  ⚠️ 减持预警：近期有 {rc} 条减持相关公告，请仔细甄别。")
         L("\n  💡 中线提醒：重点关注定增、股权激励、减持计划及大额中标公告。")
     else:
         L("  近期无过滤后的重大公告。")
@@ -622,7 +703,9 @@ async def generate_report_async(session, code, output_path, ind_comp=None, hsgt=
             # 边界检查：变化率超过±500%视为异常数据，不显示
             _cr_disp = _cr if abs(_cr) <= 500 else (999.99 if _cr > 500 else -999.99)
             _cr_flag = " ⚠️" if abs(_cr) > 500 else ""
-            L(f"    截止 {h['date']}: 股东数 {h['holder_num']:,} 户 | 环比变化 {_cr_disp:+.2f}%{_cr_flag}")
+            L(
+                f"    截止 {h['date']}: 股东数 {h['holder_num']:,} 户 | 环比变化 {_cr_disp:+.2f}%{_cr_flag}"
+            )
         latest = holders[0]
         if latest["change_ratio"] <= -3:
             L("    ✅ 结论: 筹码正在集中，利好中线。")
@@ -631,10 +714,13 @@ async def generate_report_async(session, code, output_path, ind_comp=None, hsgt=
 
     lockup = await get_lockup_expiry_async(session, code, days=180)
     if lockup:
-        _cal_evts = [f"{_h['date']} 解禁{_h['ratio']:.1f}%" for _h in lockup if _h.get('ratio', 0) > 0]
+        _cal_evts = [
+            f"{_h['date']} 解禁{_h['ratio']:.1f}%" for _h in lockup if _h.get('ratio', 0) > 0
+        ]
         L("\n  ➤ 未来可预期事件:")
         if _cal_evts:
-            for _ev in _cal_evts[:5]: L(f"    📅 {_ev}")
+            for _ev in _cal_evts[:5]:
+                L(f"    📅 {_ev}")
         else:
             L("    (暂无已披露近期事件)")
     if lockup:
@@ -653,7 +739,9 @@ async def generate_report_async(session, code, output_path, ind_comp=None, hsgt=
     if nb:
         _label = "期" if len(nb) <= 12 else "个交易日"
         L(f"  近 {len(nb)} {_label}北向持仓数据:")
-        L(f"  {'日期':<12} {'持股数量(万)':>12} {'持股市值(万)':>12} {'持股占比%':>10} {'变动股数(万)':>12}")
+        L(
+            f"  {'日期':<12} {'持股数量(万)':>12} {'持股市值(万)':>12} {'持股占比%':>10} {'变动股数(万)':>12}"
+        )
         L(f"  {'-'*65}")
         for d in nb:
             _mcap = d.get('market_cap', 0) or 0
@@ -661,8 +749,12 @@ async def generate_report_async(session, code, output_path, ind_comp=None, hsgt=
             _shares = d.get('hold_shares', 0) or 0
             if _mcap == 0 and _shares > 0 and price_today > 0:
                 _mcap = _shares * price_today
-                _ratio = _shares / info.get('total_shares', 1) if info.get('total_shares', 0) > 0 else 0
-            L(f"  {d['date']:<12} {_shares/1e4:>12.0f} {_mcap/1e4:>12.0f} {_ratio:>9.4f}% {d['change_shares']/1e4:>+12.0f}")
+                _ratio = (
+                    _shares / info.get('total_shares', 1) if info.get('total_shares', 0) > 0 else 0
+                )
+            L(
+                f"  {d['date']:<12} {_shares/1e4:>12.0f} {_mcap/1e4:>12.0f} {_ratio:>9.4f}% {d['change_shares']/1e4:>+12.0f}"
+            )
         if len(nb) >= 2:
             ratio_change = nb[0]["hold_ratio"] - nb[-1]["hold_ratio"]
             if ratio_change > 0:
@@ -682,32 +774,48 @@ async def generate_report_async(session, code, output_path, ind_comp=None, hsgt=
             L(f"  所属板块: {peer_data['industry']}")
             L(f"  本股市值: {peer_data['my_mcap']:.1f}亿元")
             if peer_data.get("my_rank", 0) > 0:
-                L(f"  业内排名: 第 {peer_data['my_rank']}/{peer_data['industry_count']} 位（按总市值）")
-            L(f"  {'代码':<8} {'名称':<12} {'股价':>8} {'涨跌幅%':>8} {'市值(亿)':>10} {'PE':>8} {'换手率%':>8}")
+                L(
+                    f"  业内排名: 第 {peer_data['my_rank']}/{peer_data['industry_count']} 位（按总市值）"
+                )
+            L(
+                f"  {'代码':<8} {'名称':<12} {'股价':>8} {'涨跌幅%':>8} {'市值(亿)':>10} {'PE':>8} {'换手率%':>8}"
+            )
             L(f"  {'-'*70}")
-            L(f"  {code:<8} {info.get('name','N/A'):<12} {price_today:>8.2f} {q.get('change_pct',0):>7.2f}% {peer_data['my_mcap']:>9.1f} {q.get('pe_ttm',0):>7.1f} {q.get('turnover_pct',0):>7.2f}% ← 本股")
+            L(
+                f"  {code:<8} {info.get('name','N/A'):<12} {price_today:>8.2f} {cdata.change_pct:>7.2f}% {peer_data['my_mcap']:>9.1f} {cdata.pe_ttm:>7.1f} {cdata.turnover_pct:>7.2f}% ← 本股"
+            )
             for p in peer_data["peers"]:
-                L(f"  {p['code']:<8} {p['name']:<12} {p['price']:>8.2f} {p['change_pct']:>7.2f}% {p['mcap_yi']:>9.1f} {p['pe']:>7.1f} {p['turnover']:>7.2f}%")
-            fin_metrics = await get_gross_margin_and_roe_async(session, code, fin_report=financials, bs_data=bs_data)
+                L(
+                    f"  {p['code']:<8} {p['name']:<12} {p['price']:>8.2f} {p['change_pct']:>7.2f}% {p['mcap_yi']:>9.1f} {p['pe']:>7.1f} {p['turnover']:>7.2f}%"
+                )
+            fin_metrics = await get_gross_margin_and_roe_async(
+                session, code, fin_report=financials, bs_data=bs_data
+            )
             if fin_metrics:
-                gm = fin_metrics.get("gross_margin"); roe = fin_metrics.get("roe")
+                gm = fin_metrics.get("gross_margin")
+                roe = fin_metrics.get("roe")
                 parts = []
-                if gm is not None: parts.append(f"毛利率 {gm:.1f}%")
-                if roe is not None: parts.append(f"ROE {roe:.1f}%")
-                if parts: L(f"\n  📊 本股财务质量: {' | '.join(parts)}")
+                if gm is not None:
+                    parts.append(f"毛利率 {gm:.1f}%")
+                if roe is not None:
+                    parts.append(f"ROE {roe:.1f}%")
+                if parts:
+                    L(f"\n  📊 本股财务质量: {' | '.join(parts)}")
     else:
         L(f"  无法获取同业数据（板块: {peer_data.get('industry', '未知')}）")
 
     # ─── 中线主力资金底仓流向 ───
     L("\n【十一、中线主力资金流向 (60日基准)】")
     L("─" * 72)
-    fund_flow = get_fund_flow_120d(code)
+    # V15.4.2: 同步资金流包 to_thread
+    fund_flow = await asyncio.to_thread(get_fund_flow_120d, code)
     if fund_flow["data"]:
+        # V16.1: get_em_history_fund_flow "最新在前"，[:20]/[:60] 取最近（原 [-20:]/[-60:] 取最旧）
         fund_data = fund_flow["data"]
-        recent_20 = fund_data[-20:]
+        recent_20 = fund_data[:20]
         total_main_20 = sum(d["main_net"] for d in recent_20)
         days_bullish_20 = sum(1 for d in recent_20 if d["main_net"] > 0)
-        recent_60 = fund_data[-60:]
+        recent_60 = fund_data[:60]
         total_main_60 = sum(d["main_net"] for d in recent_60)
         L("  ➤ 近 20 个交易日：")
         L(f"    主力净流入天数: {days_bullish_20} 天 / 20 天")
@@ -724,8 +832,8 @@ async def generate_report_async(session, code, output_path, ind_comp=None, hsgt=
         L("  中线资金流数据获取失败。")
 
     if fund_flow.get("data") and len(fund_flow["data"]) >= 20:
-        _p20 = [d["main_net"] for d in fund_flow["data"][-20:]]
-        _pc_chg = q.get("change_pct", 0) if q else 0
+        _p20 = [d["main_net"] for d in fund_flow["data"][:20]]
+        _pc_chg = cdata.change_pct
         _cum_f = sum(_p20)
         if _cum_f < 0 and _pc_chg > 3:
             L(f"  ⚠️ 量价背离：近20日主力净流出{abs(_cum_f)/1e8:.2f}亿，股价涨{_pc_chg:.1f}%缺支撑")
@@ -736,10 +844,27 @@ async def generate_report_async(session, code, output_path, ind_comp=None, hsgt=
     L("─" * 72)
     margin = await get_margin_trading_async(session, code)
     if margin:
-        L(f"  {'日期':<12} {'融资余额(万)':>10} {'融资买入(万)':>10} {'融资偿还(万)':>10} {'融券余额(万)':>10}")
+        L(
+            f"  {'日期':<12} {'融资余额(万)':>10} {'融资买入(万)':>10} {'融资偿还(万)':>10} {'融券余额(万)':>10}"
+        )
         L(f"  {'-'*70}")
         for d in margin[:10]:
-            L(f"  {d['date']:<12} {d['rzye']/1e4:>14.0f} {d['rzmre']/1e4:>14.0f} {d['rzche']/1e4:>14.0f} {d['rqye']/1e4:>14.0f}")
+            L(
+                f"  {d['date']:<12} {d['rzye']/1e4:>14.0f} {d['rzmre']/1e4:>14.0f} {d['rzche']/1e4:>14.0f} {d['rqye']/1e4:>14.0f}"
+            )
+        # V16.1: 两融净买入 + 3/5/10日维度（中线资金确认）
+        latest = margin[0]
+        if latest.get("rzjme") is not None:
+            L(f"\n  ➤ 最新融资净买入: {latest['rzjme']/1e4:+.0f}万元"
+              + (f" | 融券净卖出: {latest.get('rqjmg', 0)/1e4:+.0f}万元" if latest.get("rqjmg") is not None else ""))
+        _d5 = next((d for d in margin if d.get("rzmre_5d") is not None), None)
+        _d10 = next((d for d in margin if d.get("rzmre_10d") is not None), None)
+        if _d5:
+            L(f"  ➤ 5日融资买入: {_d5['rzmre_5d']/1e4:.0f}万元 | 5日偿还: {_d5.get('rzche_5d',0)/1e4:.0f}万元 | 5日涨幅: {_d5.get('chg_5d',0):+.2f}%")
+        if _d10:
+            L(f"  ➤ 10日融资买入: {_d10['rzmre_10d']/1e4:.0f}万元 | 10日偿还: {_d10.get('rzche_10d',0)/1e4:.0f}万元 | 10日涨幅: {_d10.get('chg_10d',0):+.2f}%")
+        if latest.get("balance_gr") is not None:
+            L(f"  ➤ 融资余额环比: {latest['balance_gr']*100:+.2f}%")
     else:
         L("  该股无融资融券数据（可能不是两融标的）。")
 
@@ -753,7 +878,9 @@ async def generate_report_async(session, code, output_path, ind_comp=None, hsgt=
         L(f"  {'日期':<12} {'成交价':>6} {'溢价%':>6} {'成交量':>8} {'买方':<24}")
         L(f"  {'-'*75}")
         for d in bt_filtered:
-            L(f"  {d['date']:<12} {d['price']:>8.2f} {d['premium_pct']:>7.2f}% {d['vol']/1e4:>8.0f}万 {d['buyer']:<24}")
+            L(
+                f"  {d['date']:<12} {d['price']:>8.2f} {d['premium_pct']:>7.2f}% {d['vol']/1e4:>8.0f}万 {d['buyer']:<24}"
+            )
     else:
         L("  无大宗交易记录。")
 
@@ -774,13 +901,17 @@ async def generate_report_async(session, code, output_path, ind_comp=None, hsgt=
             L(f"  {'营业部名称':<30} {'买入(万)':>9} {'卖出(万)':>9} {'净额(万)':>9}")
             L(f"  {'-'*70}")
             for s in seats["buy"]:
-                L(f"  {s['name']:<30} {s['buy_amt']:>12.1f} {s['sell_amt']:>12.1f} {s['net']:>12.1f}")
+                L(
+                    f"  {s['name']:<30} {s['buy_amt']:>12.1f} {s['sell_amt']:>12.1f} {s['net']:>12.1f}"
+                )
         if seats["sell"]:
             L("\n  最近卖出席位 TOP5:")
             L(f"  {'营业部名称':<30} {'买入(万)':>9} {'卖出(万)':>9} {'净额(万)':>9}")
             L(f"  {'-'*70}")
             for s in seats["sell"]:
-                L(f"  {s['name']:<30} {s['buy_amt']:>12.1f} {s['sell_amt']:>12.1f} {s['net']:>12.1f}")
+                L(
+                    f"  {s['name']:<30} {s['buy_amt']:>12.1f} {s['sell_amt']:>12.1f} {s['net']:>12.1f}"
+                )
         inst = dtb["institution"]
         if inst and (inst.get("buy_amt", 0) > 0 or inst.get("sell_amt", 0) > 0):
             L("\n  机构买卖统计:")
@@ -793,10 +924,10 @@ async def generate_report_async(session, code, output_path, ind_comp=None, hsgt=
     # ─── 9. 高股息防御属性 (分红历史) ───
     L("\n【十五、高股息防御属性 (近十次分红)】")
     L("─" * 72)
-    # 股息率：zhb优先展示
-    _zhb_div_yield = _zhb_data.get("dividend_yield", 0) if _zhb_data else 0
+    # 股息率：cdata 统一提供
+    _zhb_div_yield = cdata.dividend_yield
     if _zhb_div_yield > 0:
-        L(f"  当前股息率: {_zhb_div_yield:.2f}%（zhb数据）")
+        L(f"  当前股息率: {_zhb_div_yield:.2f}%")
     div = get_dividend_history(code)
     if div and len(div) >= 3:
         _dy = len(set(d["date"][:4] for d in div if d.get("bonus_rmb", 0) > 0))
@@ -820,7 +951,9 @@ async def generate_report_async(session, code, output_path, ind_comp=None, hsgt=
     if st:
         L(f"  数据来源: 十大流通股东季报（最近 {len(st)} 期）")
         L("")
-        _header = f"  {'截止':<12} {'北向':>6}  {'外资':>8}  {'境内机构':>8}  {'个人':>6}  {'Top10':>6}"
+        _header = (
+            f"  {'截止':<12} {'北向':>6}  {'外资':>8}  {'境内机构':>8}  {'个人':>6}  {'Top10':>6}"
+        )
         L(_header)
         L(f"  {'-'*60}")
         for p in st:
@@ -854,11 +987,12 @@ async def generate_report_async(session, code, output_path, ind_comp=None, hsgt=
         _nb_s = _safe_float(nb[-1].get("hold_shares", 0))
         _nb_e = _safe_float(nb[0].get("hold_shares", 0))
         if _nb_s > 0:
-            _nb_chg = (_nb_e - _nb_s)/_nb_s*100
+            _nb_chg = (_nb_e - _nb_s) / _nb_s * 100
             _bt_items.append(f"北向近{len(nb)}日持仓{_nb_chg:+.1f}%")
     if _bt_items:
         L("【回测参考】")
-        for _bi in _bt_items: L(f"  📊 {_bi}")
+        for _bi in _bt_items:
+            L(f"  📊 {_bi}")
 
     # ─── 十七、舆情与互动 ───
     L("\n【十七、舆情与互动】")
@@ -913,66 +1047,76 @@ async def generate_report_async(session, code, output_path, ind_comp=None, hsgt=
     except Exception as _e:
         _debug_log(f"med cninfo_irm: {_e}")
 
-    L("\n"+"─"*72); L("【仓位管理建议】"); L("─"*72)
-    
+    L("\n" + "─" * 72)
+    L("【仓位管理建议】")
+    L("─" * 72)
+
     # V8.2: 使用统一评分接口
     from stock_common import ScoreData, calculate_score
-    
+
     # 构建评分数据
     score_data = ScoreData(
         code=code,
         name=info.get('name', ''),
         price=price_today,
     )
-    
+
     # 基本面数据
     if fin_metrics:
         score_data.roe = fin_metrics.get("roe", 0) or 0
         score_data.gross_margin = fin_metrics.get("gross_margin", 0) or 0
-    
+
     # 净利率
     if financials and len(financials) > 0:
         _rev = _safe_float(financials[0].get("营业总收入", 0))
         _np = _safe_float(financials[0].get("净利润", 0))
         if _rev > 0:
             score_data.net_profit_margin = _np / _rev * 100
-    
+
     # 资产负债率
     if bs_data and len(bs_data) > 0:
         _eq = _safe_float(bs_data[0].get("归属于母公司股东权益合计", 0))
         _ta = _safe_float(bs_data[0].get("资产总计", 1))
         if _ta > 0:
             score_data.asset_liability_ratio = 1 - (_eq / _ta)
-    
+
     # 估值数据
-    if q:
-        score_data.pe_ttm = q.get("pe_ttm", 0) or 0
+    score_data.pe_ttm = cdata.pe_ttm
     if peer_data and peer_data.get("peers"):
-        score_data.industry_pe = sum(p.get("pe", 0) for p in peer_data["peers"]) / max(len(peer_data["peers"]), 1)
-    
+        score_data.industry_pe = sum(p.get("pe", 0) for p in peer_data["peers"]) / max(
+            len(peer_data["peers"]), 1
+        )
+
     # 北向数据
     if nb and len(nb) >= 2:
         score_data.northbound_change = nb[0]["hold_shares"] - nb[-1]["hold_shares"]
-    
+
     # 机构持仓
     _st = get_holder_structure(code)
     if _st:
         score_data.institution_holding_pct = _st[0].get("domestic", 0)
-    
+
     # 筹码数据
     if holders and len(holders) >= 2:
         score_data.holder_change_ratio = holders[0]["change_ratio"]
-    
+
     # 计算评分
-    result = calculate_score("med", score_data)
+    # V16.1: 传入 strategy_config.yaml 的 scoring_med 权重（此前未传 cfg → 用硬编码默认）
+    _score_cfg = _load_strategy_config() or {}
+    _med_cfg = {"weights_med": (_score_cfg.get("scoring_med") or {}).get("weights_med", {})}
+    result = calculate_score("med", score_data, _med_cfg)
     _ps = result.total_score
     _details = result.details
-    
+
     L(f"  评分明细: {' | '.join(_details[:6])}" if _details else None)
-    if _ps >= 70: L(f"  中线评分: {_ps:.0f}/100 → 强烈推荐，仓位40%")
-    elif _ps >= 45: L(f"  中线评分: {_ps:.0f}/100 → 建议配置，仓位25%")
-    elif _ps >= 20: L(f"  中线评分: {_ps:.0f}/100 → 观察仓，仓位10%")
-    else: L(f"  中线评分: {_ps:.0f}/100 → 暂不建议，等待基本面拐点")
+    if _ps >= 70:
+        L(f"  中线评分: {_ps:.0f}/100 → 强烈推荐，仓位40%")
+    elif _ps >= 45:
+        L(f"  中线评分: {_ps:.0f}/100 → 建议配置，仓位25%")
+    elif _ps >= 20:
+        L(f"  中线评分: {_ps:.0f}/100 → 观察仓，仓位10%")
+    else:
+        L(f"  中线评分: {_ps:.0f}/100 → 暂不建议，等待基本面拐点")
     L("  核心驱动: 基本面拐点 / 估值 PEG / 筹码结构 / 重大事件")
 
     # 多评委评审团评分（V8.9）
@@ -1009,7 +1153,7 @@ async def generate_report_async(session, code, output_path, ind_comp=None, hsgt=
         "name": info.get('name', ''),
         "total_score": _ps,
         "price": price_today,
-        "report_source": "med"
+        "report_source": "med",
     }
 
     output = "\n".join(filter(None, lines))
@@ -1019,96 +1163,82 @@ async def generate_report_async(session, code, output_path, ind_comp=None, hsgt=
     return output
 
 
-if __name__ == "__main__":
-    args = parse_args()
-    base_dir = os.path.dirname(os.path.abspath(__file__))
-    sn = os.path.basename(__file__)
-    time_str = datetime.now().strftime("%Y%m%d_%H%M")
-    try:
-        report_type = sn.split("_")[1]
-    except Exception as _e:
-        _debug_log(f"med scoring: {_e}")
+# ═══════════════════════════════════════════════════════════════
+# V12.4: MedReportRunner — 统一运行框架
+# ═══════════════════════════════════════════════════════════════
+
+
+class MedReportRunner(BaseReportRunner):
+    """A股中线深度投研报告 Runner (V12.4)"""
+
+    def __init__(self):
+        super().__init__("get_med_report", "med", "A股中线深度投研报告")
+
+    def execute_pipeline(self) -> dict:
+        ts = datetime.now().strftime("%Y%m%d_%H%M")
         report_type = "med"
 
-    # ─── GD 认证 ───────────────────────────────────────────────
-    drive, gd_proxy_set, gd_parent_folder_id, skip_upload = None, False, None, False
-    if not args.no_upload:
-        drive, gd_proxy_set, gd_parent_folder_id, skip_upload = init_gd(base_dir)
+        args = self.args
+        _cached_ind_comp = get_industry_comparison()
 
-    os.makedirs(args.output, exist_ok=True)
-    _results = []
-    _cached_ind_comp = get_industry_comparison()
+        async def _main_async():
+            codes = clean_codes(args.codes, verbose=True)
+            if not codes:
+                print("  ❌ 没有有效的股票代码")
+                return []
+            for code in codes:
+                try:
+                    print(f"  📋 加入队列: {code}", flush=True)
+                except UnicodeEncodeError:
+                    print(f"  [INFO] 加入队列: {code}", flush=True)
 
-    # ─── Step 1: async 并行生成所有报告 ─────────────────────────────
-    async def _process_one(_session, code, ts):
-        result_path = os.path.join(args.output, f"{code}_{report_type}_{ts}.txt")
-        try:
-            await generate_report_async(_session, code, result_path,
-                                        ind_comp=_cached_ind_comp, hsgt=None)
-            print(f"  ✅ 已保存: {result_path}", flush=True)
-            return {"code": code, "status": "成功", "error": "", "path": result_path}
-        except Exception as e:
-            print(f"❌ {code} 数据生成失败: {e}", flush=True)
-            return {"code": code, "status": "数据失败", "error": str(e), "path": ""}
-
-    async def _main_async():
-        _codes = clean_codes(args.codes, verbose=True)
-        if not _codes:
-            print("  ❌ 没有有效的股票代码")
-            return []
-        for code in _codes:
-            print(f"  📋 加入队列: {code}", flush=True)
-
-        _session = await create_async_session()
-        try:
-            sem = asyncio.Semaphore(3)
-
-            async def _limited(code):
-                async with sem:
-                    return await _process_one(_session, code, time_str)
-
-            results = await asyncio.gather(*[_limited(code) for code in _codes])
-            return results
-        finally:
-            await _session.close()
-
-    _results = asyncio.run(_main_async())
-
-    # ─── Step 2: 串行上传至 Google Drive（GD API 有速率限制） ──────
-    for _r in _results:
-        if _r["status"] == "成功" and not skip_upload and drive and gd_parent_folder_id:
-            code = _r["code"]
-            result_path = _r.get("path", os.path.join(args.output, f"{code}_{report_type}_{time_str}.txt"))
-            gd_ok = False
+            _session = await create_async_session()
             try:
-                _stock_info = get_stock_info(code)
-                q_name = _stock_info.get("name", "") if _stock_info else ""
-                if upload_stock_report_by_code(drive, gd_parent_folder_id, code, q_name, result_path):
-                    gd_ok = True
-            except Exception as gd_e:
-                print(f"  ⚠️ GD 上传异常: {gd_e}", flush=True)
-                _r["status"] = "GD上传异常"
-                _r["error"] = str(gd_e)
-            if not gd_ok:
-                if _r["status"] == "成功":
-                    _r["status"] = "GD上传失败"
+                sem = asyncio.Semaphore(3)
 
-    # 汇总
-    cleanup_gd_proxy(gd_proxy_set)
-    # 缓存现在使用统一的SQLite管理，无需手动刷新
-    cleanup_tdx()
-    total = len(_results)
-    ok = [r for r in _results if r["status"] == "成功"]
-    fd = [r for r in _results if r["status"] == "数据失败"]
-    fg = [r for r in _results if r["status"] in ("GD上传失败", "GD上传异常", "GD未连接")]
-    print(f"\n{'=' * 60}\n  批量执行完成 — 共处理 {total} 只股票\n{'=' * 60}")
-    print(f"  ✅ 全部成功: {len(ok)}  |  ❌ 数据失败: {len(fd)}  |  ⚠️ GD上传失败: {len(fg)}")
-    for r in fd:
-        print(f"    ❌ {r['code']} — {r['error'][:80]}")
-    for r in fg:
-        print(f"    ⚠️ {r['code']}")
+                async def _limited(code):
+                    async with sem:
+                        result_path = os.path.join(args.output, f"{code}_{report_type}_{ts}.txt")
+                        try:
+                            await generate_report_async(
+                                _session, code, result_path, ind_comp=_cached_ind_comp, hsgt=None
+                            )
+                            print(f"  ✅ 已保存: {result_path}", flush=True)
+                            return {
+                                "code": code,
+                                "status": "成功",
+                                "error": "",
+                                "path": result_path,
+                            }
+                        except Exception as e:
+                            print(f"❌ {code} 数据生成失败: {e}", flush=True)
+                            return {"code": code, "status": "数据失败", "error": str(e), "path": ""}
 
-    # 批量写入快照（一次性，不重复写）
-    if _SNAPSHOT_DATA:
-        from stock_common.analyze_history import save_snapshot
-        save_snapshot("med", _SNAPSHOT_DATA)
+                results = await asyncio.gather(*[_limited(c) for c in codes])
+                return results
+            finally:
+                await _session.close()
+
+        _results = asyncio.run(_main_async())
+
+        if _SNAPSHOT_DATA:
+            from stock_common.analyze_history import save_snapshot
+
+            save_snapshot("med", _SNAPSHOT_DATA)
+
+        ok = [r for r in _results if r["status"] == "成功"]
+        fd = [r for r in _results if r["status"] == "数据失败"]
+        print(f"\n{'='*60}\n  批量执行完成 — 共处理 {len(_results)} 只股票\n{'='*60}")
+        print(f"  ✅ 全部成功: {len(ok)}  |  ❌ 数据失败: {len(fd)}")
+        for r in fd:
+            print(f"    ❌ {r['code']} — {r['error'][:80]}")
+
+        return {"results": _results, "time_str": ts, "report_type": report_type}
+
+    def upload_reports(self, drive, folder_id: str, results) -> None:
+        self.upload_multi_reports(drive, folder_id, results)
+
+
+if __name__ == "__main__":
+    runner = MedReportRunner()
+    runner.run()

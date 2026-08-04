@@ -1,42 +1,50 @@
-# Google Drive OAuth 客户端凭据（从 Google Cloud Console 下载，请勿提交）
+# Google Drive OAuth 客户端凭据与令牌
 client_secrets.json
-
-# Google Drive 授权令牌（首次认证后自动生成，请勿提交）
 credentials.json
 
-# 生成的报告
+# 运行时输出与中间数据
 reports/
-
-# 日志
 logs/
+snapshots/
+holder_cache.json
 
-# Python缓存
+# Python & 测试临时缓存
 __pycache__/
 *.pyc
 *.pyo
 .pytest_cache/
-
-# TRAE IDE
-.reasonix/
-
-# 缓存文件
-holder_cache.json
-*.cache
+.mypy_cache/
 *.tmp
+*.cache
+
+# 本地 SQLite 缓存与临时数据库
 cache/
+*.db
+*.db-journal
+*.db-wal
+*.db-shm
 stock_cache.db
 
-# 评分快照（运行时生成，无需提交）
-snapshots/
+# 草稿箱与临时调研沙盒
+scratch/*
+!scratch/README.md
+!scratch/INVENTORY.md
+!scratch/parse_zhb.py
+!scratch/query_tipinfo.py
+!scratch/sample_all.py
+!scratch/search_mcap.py
+!scratch/get_real_data.py
 
-#文档目录（已纳入版本控制）
-# docs/
+# V9.6 只读参考标杆（永不修改、不进 git）
+a-stock-data-v9.6/
 
-# macOS
+# 编辑器与 OS 配置文件
 .DS_Store
-
-# IDE
+.reasonix/
 .vscode/
 .idea/
 *.swp
 *.swo
+
+# V16.1: Playwright MCP 浏览器会话快照（含登录态，不入库）
+.playwright-mcp/

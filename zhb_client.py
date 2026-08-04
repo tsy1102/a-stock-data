@@ -49,7 +49,9 @@ from stock_common import _debug_log
 # ═══════════════════════════════════════
 
 _ZHB_CACHE_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "cache", "zhb")
-_KEEP_DAYS = 7
+# V15.1: 移除 _KEEP_DAYS 自动删除阈值，改由用户手动维护 cache/zhb 目录
+# 用户要求保留更多历史 ZHB 文件以便后续对比与字段深挖，不再自动清理过期文件
+_KEEP_DAYS = 36500  # 约 100 年，等同于关闭自动清理（仅手动触发）
 _MIN_DISK_SPACE_MB = 100  # 最小保留磁盘空间（MB）
 _LOCK_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "cache", "zhb", ".zhb.lock")
 
@@ -182,6 +184,357 @@ class ZhbData:
         self._adr_stocks: Optional[List[Dict[str, str]]] = None
         self._convertible_bonds: Optional[List[Dict[str, Any]]] = None
         self._delisted_stocks: Optional[Dict[str, str]] = None
+        # V14.2 新增
+        self._stock_profile: Optional[Dict[str, str]] = None
+        self._unified_name_map: Optional[Dict[str, str]] = None  # V15.1 合并多个 ZHB 字典
+        self._concept_chain: Optional[Dict[str, List[str]]] = None
+        self._neednote_holidays: Optional[List[str]] = None
+        self._neednote_jyweek: Optional[List[str]] = None
+        self._brk_seat: Optional[Dict[str, str]] = None
+        self._special_tags: Optional[Dict[str, List[str]]] = None
+
+    # ── V14.2 新增：profile.dat 全市场简称 ──
+
+    @property
+    def stock_profile(self) -> Dict[str, str]:
+        """全市场 4888 只 A 股代码→标准中文简称（GBK 编码，V14.2 新增）。
+
+        用途：替代 `get_stock_basic_info()` 中东财 code_to_name HTTP 调用。
+        返回: {6位代码: 中文简称}
+        """
+        if self._stock_profile is None:
+            self._stock_profile = self._parse_profile()
+        return self._stock_profile
+
+    def _parse_profile(self) -> Dict[str, str]:
+        """解析 profile.dat（64 字节/记录固定长二进制格式）。
+
+        格式：每 64 字节一条记录，前 1 字节为市场标识（0=深圳/1=上海），
+              紧接 6 字节为股票代码（ASCII），之后是 GBK 编码的中文简称。
+
+        V15.1 修复：原实现取前 6 字节作为代码，但实际前 1 字节是市场标识，
+              导致沪市代码错位、深市记录全部被过滤（4889 → 仅 224 条）。
+        修复后跳过首字节市场标识，从第 1 字节开始取 6 位代码。
+        """
+        data = self.raw_files.get("profile.dat", b"")
+        if not data:
+            return {}
+        result: Dict[str, str] = {}
+        record_size = 64
+        # profile.dat 是 GBK 编码的固定长记录
+        try:
+            for i in range(0, len(data), record_size):
+                record = data[i:i + record_size]
+                if len(record) < 8:
+                    continue
+                # V15.1: 跳过首字节市场标识，从第 1 字节开始取 6 位代码
+                code_bytes = record[1:7].replace(b"\x00", b"").decode("ascii", errors="ignore").strip()
+                if not code_bytes or len(code_bytes) != 6:
+                    continue
+                # V15.2 P0 修复: 名称段严格限制在 record[7:15] 8 字节
+                # 原实现 record[7:] 取 57 字节，但实际名称只有 6-8 字节，剩余 49 字节是填充
+                # 末尾填充包含拼音/简码等非 0 字节，混入名称导致 'TCL集团\x00\x00l@2\x01' 类乱码
+                name_bytes = record[7:15]
+                # 取第一个 \x00 之前的内容（去除填充 0）
+                null_pos = name_bytes.find(b"\x00")
+                if null_pos >= 0:
+                    name_bytes = name_bytes[:null_pos]
+                try:
+                    # V14.2.1: 增加全角空格去除（个别股票简称尾部可能残余全角空格）
+                    name = name_bytes.decode("gbk", errors="ignore").strip().strip("\u3000")
+                except Exception:
+                    name = ""
+                if name and code_bytes:
+                    result[code_bytes] = name
+        except Exception as e:
+            _debug_log(f"_parse_profile error: {e}")
+        return result
+
+    def get_stock_name(self, code: str) -> Optional[str]:
+        """获取股票简称（V14.2 新增便捷方法）。
+
+        V15.1 增强：融合多个 ZHB 字典（profile.dat + relation.dat +
+              tdxpkmore.cfg + pttab.dat），覆盖度从 5% 提升到 30%+。
+        """
+        name = self.stock_profile.get(code)
+        if name:
+            return name
+        # Fallback 到 relation.dat / tdxpkmore / pttab
+        name_map = self._get_unified_name_map()
+        return name_map.get(code)
+
+    @property
+    def unified_name_map(self) -> Dict[str, str]:
+        """V15.1 统一简称字典：合并 profile.dat + relation.dat +
+        tdxpkmore.cfg + pttab.dat，覆盖度 ~30%。
+        """
+        return self._get_unified_name_map()
+
+    def _get_unified_name_map(self) -> Dict[str, str]:
+        """懒加载统一简称字典（合并 4 个 ZHB 文件）。"""
+        if self._unified_name_map is None:
+            self._unified_name_map = self._build_unified_name_map()
+        return self._unified_name_map
+
+    def _build_unified_name_map(self) -> Dict[str, str]:
+        """合并 4 个 ZHB 文件的简称字典。"""
+        import re as _re
+        result: Dict[str, str] = {}
+
+        # 1. tdxpkmore.cfg：新股/特色股票（1355 条）
+        data = self.raw_files.get("tdxpkmore.cfg", b"")
+        if data:
+            try:
+                text = data.decode("gbk", errors="ignore")
+                for ln in text.split("\n"):
+                    parts = ln.split("|")
+                    if len(parts) >= 2 and len(parts[1]) == 6 and parts[1].isdigit():
+                        if len(parts) >= 3 and parts[2]:
+                            result[parts[1]] = parts[2]
+            except Exception as _e:
+                _debug_log(f"_parse_tdxpkmore error: {_e}")
+
+        # 2. pttab.dat：沪深老股/B 股（1775 条）
+        data = self.raw_files.get("pttab.dat", b"")
+        if data:
+            try:
+                text = data.decode("gbk", errors="ignore")
+                for ln in text.split("\n"):
+                    parts = ln.split(",")
+                    if len(parts) >= 3 and len(parts[1]) == 6 and parts[1].isdigit():
+                        if parts[1] not in result and parts[2]:
+                            result[parts[1]] = parts[2]
+            except Exception as _e:
+                _debug_log(f"_parse_pttab error: {_e}")
+
+        # 3. relation.dat：A/B 股（~1645 条有效）
+        data = self.raw_files.get("relation.dat", b"")
+        if data:
+            try:
+                # 格式：\x00{4,6}CODE\x00{4,6}NAME (GBK)
+                pattern = _re.compile(rb"\x00{4,6}(\d{6})\x00{4,6}([\x80-\xff]{4,16})")
+                for m in pattern.finditer(data):
+                    code = m.group(1).decode("ascii", errors="ignore")
+                    try:
+                        name = m.group(2).decode("gbk", errors="ignore").strip().strip("　")
+                    except Exception:
+                        name = ""
+                    # 过滤掉 "A股" "B股" 等元数据
+                    if (code and name and len(name) >= 2
+                            and not name.startswith("A股") and not name.startswith("B股")
+                            and code not in result):
+                        result[code] = name
+            except Exception as _e:
+                _debug_log(f"_parse_relation error: {_e}")
+
+        # 4. profile.dat：沪市老股（~224 条，错位但有补充价值）
+        # 不主动合并，避免污染；若需要可单独查 stock_profile
+        return result
+
+    # ── V14.2 新增：tdxchain.cfg 概念/产业链节点 ──
+
+    @property
+    def concept_chain(self) -> Dict[str, List[str]]:
+        """tdxchain.cfg 概念/产业链节点（V15.1 重写）。
+
+        用途：替代 `em_hot_concept()` 中同花顺热榜 HTTP 调用（仅静态匹配部分）。
+        返回: {概念名称: [股票代码列表]}
+
+        V15.1 重要修正：tdxchain.cfg 实际只有 80 行，格式为 `板块代码|chain_id|产业链名称`，
+        并不包含成分股。本函数重写为「板块代码 → 名称」映射（反向也支持），
+        成分股请改用 tdx_get_belong_boards()。
+        """
+        if self._concept_chain is None:
+            self._concept_chain = self._parse_tdxchain()
+        return self._concept_chain
+
+    def _parse_tdxchain(self) -> Dict[str, List[str]]:
+        """解析 tdxchain.cfg（V15.1 重写为板块代码→名称映射）。
+
+        实测格式：每行 `880506|CYL00210|新基建-5G`（3 列）
+        - parts[0] = 板块代码（6位数字）
+        - parts[1] = 产业链节点 ID
+        - parts[2] = 产业链名称
+
+        返回：{产业链名称: [板块代码]}，兼容原 V14.2 API（外层是 dict 而非 list）
+        """
+        data = self.raw_files.get("tdxchain.cfg", b"")
+        if not data:
+            return {}
+        result: Dict[str, List[str]] = {}
+        try:
+            text = data.decode("gbk", errors="ignore")
+            for line in text.splitlines():
+                line = line.strip()
+                if not line or "|" not in line:
+                    continue
+                parts = line.split("|")
+                if len(parts) < 3:
+                    continue
+                code = parts[0].strip()
+                name = parts[2].strip()
+                if not code or not name:
+                    continue
+                # 反向索引：name -> [code]（兼容原 API 格式）
+                if name not in result:
+                    result[name] = []
+                result[name].append(code)
+        except Exception as e:
+            _debug_log(f"_parse_tdxchain error: {e}")
+        return result
+
+    def get_concept_stocks(self, concept_name: str) -> List[str]:
+        """获取概念/产业链名称下的板块代码列表（V15.1 重写）。
+
+        注意：tdxchain.cfg 不含成分股，本函数返回的是"产业链名称对应的板块代码列表"，
+        真正的"股票代码列表"请改用 tdx_get_belong_boards()（TDX 协议）。
+        """
+        if concept_name in self.concept_chain:
+            return self.concept_chain[concept_name]
+        for k, v in self.concept_chain.items():
+            if concept_name in k:
+                return v
+        return []
+
+    def get_stock_concepts(self, code: str) -> List[str]:
+        """获取股票所属概念/产业链名称（V15.1 重写）。
+
+        注意：tdxchain.cfg 不含成分股，本函数无法反查"股票→概念"。
+        如需查询个股所属概念，请改用 tdx_get_belong_boards()（TDX 协议）。
+        本函数保留仅为向后兼容，永远返回空列表。
+        """
+        return []
+
+    # ── V14.2 新增：neednote.dat 调休补班日 ──
+
+    @property
+    def neednote_holidays(self) -> List[str]:
+        """官方休市日列表（YYYYMMDD 格式，V14.2 新增）。
+
+        用途：作为 stock_calendar.holidays 字典的补充，覆盖未来日期。
+        数据源：neednote.dat 的 RecentCFETSHoliday 段。
+        """
+        if self._neednote_holidays is None:
+            self._neednote_holidays, self._neednote_jyweek = self._parse_neednote()
+        return self._neednote_holidays
+
+    @property
+    def neednote_jyweek(self) -> List[str]:
+        """官方调休补班日列表（YYYYMMDD 格式，V14.2 新增）。
+
+        用途：作为 stock_calendar.workdays 字典的补充。
+        数据源：neednote.dat 的 RecentCFETSJYWeek 段。
+        """
+        if self._neednote_jyweek is None:
+            self._neednote_holidays, self._neednote_jyweek = self._parse_neednote()
+        return self._neednote_jyweek
+
+    def _parse_neednote(self) -> tuple:
+        """解析 neednote.dat（INI 格式：RecentCFETSHoliday + RecentCFETSJYWeek）。
+
+        返回: ([休市日列表], [调休补班日列表])
+        """
+        holidays: List[str] = []
+        jyweek: List[str] = []
+        data = self.raw_files.get("neednote.dat", b"")
+        if not data:
+            return holidays, jyweek
+        try:
+            text = data.decode("gbk", errors="ignore")
+            current_section = ""
+            for line in text.splitlines():
+                line = line.strip()
+                if not line:
+                    continue
+                if line.startswith("[") and line.endswith("]"):
+                    current_section = line[1:-1].strip()
+                    continue
+                if current_section == "RecentCFETSHoliday":
+                    # 格式：YYYYMMDD 或 YYYYMMDD=日期名
+                    date_part = line.split("=")[0].split("|")[0].strip()
+                    if date_part.isdigit() and len(date_part) == 8:
+                        holidays.append(date_part)
+                elif current_section == "RecentCFETSJYWeek":
+                    date_part = line.split("=")[0].split("|")[0].strip()
+                    if date_part.isdigit() and len(date_part) == 8:
+                        jyweek.append(date_part)
+        except Exception as e:
+            _debug_log(f"_parse_neednote error: {e}")
+        return holidays, jyweek
+
+    # ── V14.2 新增：brkseat.dat 龙虎榜席位 ──
+
+    @property
+    def brk_seat(self) -> Dict[str, str]:
+        """龙虎榜营业部席位代码→名称（V14.2 新增）。
+
+        用途：增强 seat_db.py，补充官方权威席位数据。
+        """
+        if self._brk_seat is None:
+            self._brk_seat = self._parse_brkseat()
+        return self._brk_seat
+
+    def _parse_brkseat(self) -> Dict[str, str]:
+        """解析 brkseat.dat（Pipe 格式：席位代码|营业部名称）。"""
+        data = self.raw_files.get("brkseat.dat", b"")
+        if not data:
+            return {}
+        result: Dict[str, str] = {}
+        try:
+            text = data.decode("gbk", errors="ignore")
+            for line in text.splitlines():
+                line = line.strip()
+                if not line or "|" not in line:
+                    continue
+                parts = line.split("|", 1)
+                if len(parts) == 2:
+                    code = parts[0].strip()
+                    name = parts[1].strip()
+                    if code and name:
+                        result[code] = name
+        except Exception as e:
+            _debug_log(f"_parse_brkseat error: {e}")
+        return result
+
+    # ── V14.2 增强：pttab.dat 特别标签（红筹/AH/概念）──
+
+    @property
+    def special_tags(self) -> Dict[str, List[str]]:
+        """特别标签（红筹股/AH股/概念标的 等，V14.2 新增）。
+
+        返回: {标签名: [股票代码列表]}
+        """
+        if self._special_tags is None:
+            self._special_tags = self._parse_special_tags()
+        return self._special_tags
+
+    def _parse_special_tags(self) -> Dict[str, List[str]]:
+        """解析 pttab.dat 完整版（V14.2 扩展：含红筹/AH/概念 等特别标签）。
+
+        区别于 delisted_stocks（仅退市股），本方法解析全部特别标签。
+        """
+        data = self.raw_files.get("pttab.dat", b"")
+        if not data:
+            return {}
+        result: Dict[str, List[str]] = {}
+        try:
+            text = data.decode("gbk", errors="ignore")
+            for line in text.splitlines():
+                line = line.strip()
+                if not line or "|" not in line:
+                    continue
+                # 格式：标签|代码1,代码2,代码3...
+                parts = line.split("|", 1)
+                if len(parts) != 2:
+                    continue
+                tag = parts[0].strip()
+                members = [m.strip()[-6:] for m in parts[1].split(",") if m.strip()]
+                members = [m for m in members if m.isdigit() and len(m) == 6]
+                if tag and members:
+                    result.setdefault(tag, []).extend(members)
+        except Exception as e:
+            _debug_log(f"_parse_special_tags error: {e}")
+        return result
 
     # ── spblock 大板块 ──
 
@@ -352,7 +705,7 @@ class ZhbData:
             [11] unknown_11      未知(大数值)
             [12] unknown_12      未知(部分为日期)
             [13] unknown_13      未知(小整数)
-            [14] unknown_14      未知(大数值)
+            [14] net_profit_kcf  扣非净利润(万元) ★2026-08-03联网确认(东财KCFJCXSYJLR 14/14匹配)
             [15] employee_count  员工人数
             [16] unknown_16      未知
             [17] change_20d      20日涨跌幅(%)
@@ -362,7 +715,7 @@ class ZhbData:
             [21] change_ytd      年初至今涨跌幅(%)
             [22] unknown_22      未知
             [23] unknown_23      未知
-            [24] volume          成交量(股)
+            [24] unknown_24      未知(9天恒定静态数据, 非成交量; 2026-08-03联网核实)
             [25] unknown_25      未知(部分为空)
             [26] unknown_26      未知
             [27] change_5k_bar   近5根K线涨跌幅(交易日口径,%)
@@ -413,7 +766,14 @@ class ZhbData:
                 "change_30d": _f(18, float),
                 "change_60d": _f(19, float),
                 "change_ytd": _f(21, float),
-                "volume": _f(24, float),
+                # V16.0: Col[14] = 扣非净利润(万元)，2026-08-03 联网核实
+                # （14/14 公司与东财 KCFJCXSYJLR 比值=1.000，含亏损公司）
+                "net_profit_kcf": _f(14, float),
+                # V16.0: Col[24] 原误映射为 volume（成交量），经 9 天连续 + 联网核实
+                # （腾讯/东财 30 家）证明为 9 天恒定静态数据，非成交量。
+                # 且不同公司对应不同报告期净资产/负债快照（报告期不一致），
+                # 改名为 unknown_24 防止下游误用为成交量。
+                "unknown_24": _f(24, float),
                 "change_5k_bar": _f(27, float),
                 "change_5d": _f(28, float),
                 "change_10k_bar": _f(29, float),
@@ -825,46 +1185,36 @@ class ZhbData:
 # ═══════════════════════════════════════
 
 def _download_zhb_zip() -> Optional[bytes]:
-    """从通达信服务器下载 zhb.zip 原始二进制数据。"""
+    """从通达信服务器下载 zhb.zip 原始二进制数据。
+
+    V12.0: 使用 mootdx 替代 pytdx，统一 TCP 层依赖。
+    mootdx 底层使用 tdxpy，支持 get_report_file_by_size 方法。
+    """
     try:
-        from pytdx.hq import TdxHq_API
-        from pytdx.parser.get_report_file import GetReportFile
+        from mootdx.quotes import Quotes
     except ImportError as e:
-        _debug_log(f"zhb: pytdx not available: {e}")
+        _debug_log(f"zhb: mootdx not available: {e}")
         return None
 
-    api = TdxHq_API(auto_retry=True)
     filename = "zhb.zip"
 
     for ip, port in _ZHB_HOSTS:
         try:
             _debug_log(f"zhb: trying {ip}:{port}")
-            if not api.connect(ip, port):
+            # mootdx 使用 bestip 机制，但我们可以手动指定服务器
+            client = Quotes.factory(market='std', bestip=False)
+            # 手动连接指定服务器
+            if not client.client.connect(ip, port):
                 _debug_log(f"zhb: connect failed {ip}")
+                client.close()
                 continue
 
-            offset = 0
-            chunks: List[bytes] = []
+            try:
+                data = client.client.get_report_file_by_size(filename)
+            finally:
+                client.close()
 
-            while True:
-                cmd = GetReportFile(api.client)
-                cmd.setParams(filename, offset)
-                res = cmd.call_api()
-
-                if not res or "chunksize" not in res or res["chunksize"] == 0:
-                    break
-
-                chunk_data = res["chunkdata"]
-                chunks.append(chunk_data)
-                offset += res["chunksize"]
-
-                if res["chunksize"] < 0x7530:
-                    break
-
-            api.disconnect()
-
-            if chunks:
-                data = b"".join(chunks)
+            if data and len(data) > 0:
                 # 验证是否是有效的 zip
                 try:
                     with zipfile.ZipFile(io.BytesIO(data)):
@@ -874,13 +1224,12 @@ def _download_zhb_zip() -> Optional[bytes]:
                 except zipfile.BadZipFile:
                     _debug_log(f"zhb: invalid zip from {ip}, trying next")
                     continue
+            else:
+                _debug_log(f"zhb: empty data from {ip}")
+                continue
 
         except Exception as e:
             _debug_log(f"zhb: download error from {ip}: {e}")
-            try:
-                api.disconnect()
-            except Exception:
-                pass
             continue
 
     _debug_log("zhb: all hosts failed")
@@ -948,7 +1297,11 @@ def _save_to_cache(date_str: str, data: bytes) -> None:
 
 
 def _cleanup_old_files() -> None:
-    """清理 N 天前的旧 zhb 文件。"""
+    """清理 N 天前的旧 zhb 文件。
+
+    V15.1: 由于 _KEEP_DAYS 已设为 36500（约 100 年），本函数实际不再自动删除文件，
+           仅保留以供未来按需启用。如需清理历史文件，请手动删除 cache/zhb 目录。
+    """
     try:
         _ensure_cache_dir()
         cutoff = time.time() - _KEEP_DAYS * 86400
@@ -1094,7 +1447,7 @@ def market_stat_snapshot(codes: Optional[List[str]] = None) -> Dict[str, Dict[st
     Returns:
         {code: {change_pct, streak_days, pe_dynamic, pe_ttm, dividend_yield,
                 change_pct_1d, change_pct_2d, change_5d, change_10d, change_20d,
-                change_30d, change_60d, change_ytd, volume, employee_count, ...}}
+                change_30d, change_60d, change_ytd, unknown_24, employee_count, ...}}
     """
     zhb = get_zhb()
     if zhb is None:
@@ -1454,3 +1807,104 @@ if __name__ == "__main__":
             print(f"  ... 共 {len(zhb.sw_industries)} 个")
         print()
         print(f"=== 行业映射总数: {len(zhb.industry_map)} ===")
+
+# ═══════════════════════════════════════════════════════════════
+# V14.2 新增便捷函数 - 6 个新 ZHB 数据集
+# ═══════════════════════════════════════════════════════════════
+
+def get_stock_name_from_zhb(code: str) -> Optional[str]:
+    """从 ZHB profile.dat 获取股票简称（V14.2 新增，替代东财 HTTP code_to_name）。
+
+    Args:
+        code: 6位股票代码
+
+    Returns:
+        股票简称（中文），无数据时返回 None
+    """
+    zhb = get_zhb()
+    if zhb is None:
+        return None
+    return zhb.get_stock_name(code)
+
+
+def get_stock_profile() -> Dict[str, str]:
+    """获取全市场 A 股代码→简称映射（V14.2 新增）。
+
+    返回: {6位代码: 中文简称}
+    """
+    zhb = get_zhb()
+    if zhb is None:
+        return {}
+    return zhb.stock_profile
+
+
+def get_concept_chain_from_zhb() -> Dict[str, List[str]]:
+    """获取 ZHB 200+ 概念/产业链节点（V14.2 新增，替代同花顺热榜 HTTP）。
+
+    返回: {概念名称: [股票代码列表]}
+    """
+    zhb = get_zhb()
+    if zhb is None:
+        return {}
+    return zhb.concept_chain
+
+
+def get_stock_concepts_from_zhb(code: str) -> List[str]:
+    """获取股票所属 ZHB 概念/产业链节点（V14.2 新增）。
+
+    Args:
+        code: 6位股票代码
+
+    Returns:
+        概念名称列表（无数据时返回空列表）
+    """
+    zhb = get_zhb()
+    if zhb is None:
+        return []
+    return zhb.get_stock_concepts(code)
+
+
+def get_zhb_official_holidays() -> List[str]:
+    """获取 ZHB neednote.dat 官方休市日列表（V14.2 新增）。
+
+    返回格式: ["20260101", "20260218", ...]（YYYYMMDD 字符串）
+    用作 stock_calendar.holidays 字典的补充，覆盖未来日期。
+    """
+    zhb = get_zhb()
+    if zhb is None:
+        return []
+    return zhb.neednote_holidays
+
+
+def get_zhb_official_jyweek() -> List[str]:
+    """获取 ZHB neednote.dat 官方调休补班日列表（V14.2 新增）。
+
+    返回格式: ["20260131", "20260214", ...]（YYYYMMDD 字符串）
+    用作 stock_calendar.workdays 字典的补充。
+    """
+    zhb = get_zhb()
+    if zhb is None:
+        return []
+    return zhb.neednote_jyweek
+
+
+def get_brk_seat_from_zhb() -> Dict[str, str]:
+    """获取 ZHB 龙虎榜营业部席位映射（V14.2 新增）。
+
+    返回: {席位代码: 营业部名称}
+    """
+    zhb = get_zhb()
+    if zhb is None:
+        return {}
+    return zhb.brk_seat
+
+
+def get_special_tags_from_zhb() -> Dict[str, List[str]]:
+    """获取 ZHB 特别标签（红筹/AH/概念 等，V14.2 新增）。
+
+    返回: {标签名: [股票代码列表]}
+    """
+    zhb = get_zhb()
+    if zhb is None:
+        return {}
+    return zhb.special_tags

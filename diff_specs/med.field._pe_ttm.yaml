@@ -1,0 +1,12 @@
+id: med.field._pe_ttm
+report: med
+kind: field
+name: _pe_ttm
+priority: P2
+status: pending
+v9_present: true
+v15_present: false
+
+detail: |
+  v9.6 报告 med 有表达式字段 _pe_ttm
+  v15 报告 med 无此字段

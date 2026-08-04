@@ -6,6 +6,19 @@
   - 基于 SQLite 的持久化缓存，支持 TTL 自动过期 + LRU 清理
   - 装饰器模式：@cached / @cached_async，不破坏原函数签名
 
+V15.0 更新：
+  - ZHB 离线数据全量旁路 (Bypass SQLite Disk Cache)：30+ 静态/估值/财务字段直接在 RAM 字典提取（<0.001ms），零 SQLite 磁盘读写开销
+  - 数据库职责瘦身：仅保留历史 K线、龙虎榜席位明细、F10 报表三表等重网络 API
+  - 数据库空间瘦身，杜绝 Windows 平台 .db-journal 文件死锁风险
+
+V15.2 更新：
+  - 统一 valid_if 工厂函数 make_valid_if()：拒绝 None/空 dict/空 list/全零 dict，替代散落的 r is not None
+  - 恢复 V10.0/V12.6 期间简化的 ZHB 交叉验证 _cross_verify_with_zhb()
+  - 恢复 cross_verify=True "两次获取一致" 语义（仅多天 TTL 启用）
+  - L1 缓存上限 5000→10000，避免 val 报告 5721+ zhb_data 频繁淘汰
+  - _has_zero_price 递归检查嵌套结构，捕获龙虎榜未成交席位等 0 值
+  - stock_cache.py clear CLI 增强，支持按 category 清理
+
 V10.2 更新：
   - 修复 cross_verify 读写互斥BUG：get_cache 的 prev_value != value 检查与 set_cache 数据变化分支冲突，导致14个分类缓存永久失效
   - 修复 _has_zero_price 递归误杀：原递归检查嵌套结构导致龙虎榜/行业对比等含0值子项的有效缓存被跳过，改为仅检查顶层
@@ -55,6 +68,8 @@ TTL 分级策略（V10.0 优化）：
 from __future__ import annotations
 
 import json
+from collections import OrderedDict  # V15.3: L1 缓存改 LRU
+from dataclasses import asdict, is_dataclass
 import os
 import sys
 import hashlib
@@ -83,32 +98,48 @@ _cache_logger = logging.getLogger("stock_cache")
 #   - 线程安全（使用锁）
 #
 
-_L1_CACHE: Dict[str, tuple] = {}  # {cache_key: (value, expiry_timestamp)}
+# V15.3 LRU 改造: 用 OrderedDict 维护访问顺序，热点 key 永驻
+# 旧版按"最早过期"淘汰会把热点 key 错杀（如果热点 key ttl 短）
+_L1_CACHE: "OrderedDict[str, tuple]" = OrderedDict()  # {cache_key: (value, expiry_timestamp)}
 _L1_CACHE_LOCK = threading.Lock()
-_L1_MAX_ENTRIES = 5000  # L1最大条目数
+_L1_MAX_ENTRIES = 10000  # V15.2: L1最大条目数 5000→10000（val 报告 5721+ zhb_data 频繁淘汰）
 
 
 def _l1_get(key: str) -> Optional[Any]:
-    """L1内存缓存读取。"""
+    """L1内存缓存读取。V15.3 LRU: 访问时把 key 移到 OrderedDict 末尾。"""
     with _L1_CACHE_LOCK:
         entry = _L1_CACHE.get(key)
         if entry is None:
             return None
         value, expiry = entry
         if expiry > time.time():
+            # LRU: 命中时移到末尾（最近使用），淘汰时 popitem(last=False) 删最久未用
+            _L1_CACHE.move_to_end(key)
             return value
         del _L1_CACHE[key]
     return None
 
 
 def _l1_set(key: str, value: Any, ttl_seconds: int) -> None:
-    """L1内存缓存写入。"""
+    """L1内存缓存写入。
+
+    V15.3 LRU: 写入时已存在则刷新 expiry 并移到末尾；
+    满了时 popitem(last=False) 删除最久未访问的 key（热点 key 永驻）。
+
+    V13.1: dataclass 透明序列化，确保 get_cache 返回 dict（不破坏现有调用）。
+    """
+    serialized = _serialize_for_cache(value)
     with _L1_CACHE_LOCK:
-        if len(_L1_CACHE) >= _L1_MAX_ENTRIES:
-            oldest = min(_L1_CACHE.items(), key=lambda x: x[1][1])
-            del _L1_CACHE[oldest[0]]
         expiry = time.time() + ttl_seconds
-        _L1_CACHE[key] = (value, expiry)
+        if key in _L1_CACHE:
+            # 已存在则更新 + 移到末尾
+            _L1_CACHE[key] = (serialized, expiry)
+            _L1_CACHE.move_to_end(key)
+            return
+        _L1_CACHE[key] = (serialized, expiry)
+        if len(_L1_CACHE) > _L1_MAX_ENTRIES:
+            # 淘汰最久未访问的（OrderedDict 头部）
+            _L1_CACHE.popitem(last=False)
 
 
 def _l1_clear() -> None:
@@ -141,32 +172,9 @@ def _record_cache_hit(category: str, hit: bool) -> None:
             cat_stats["misses"] += 1
 
 
-def print_cache_stats() -> None:
-    """打印缓存命中率统计。在脚本运行结束时调用。"""
-    with _STATS_LOCK:
-        total = _CACHE_STATS["total_get"]
-        if total == 0:
-            return
-        hits = _CACHE_STATS["total_hit"]
-        rate = hits / total * 100
-        saved = total - hits
-        print(f"\n{'─' * 60}", flush=True)
-        print(f"[缓存统计] 总请求: {total} | 命中: {hits} | 未命中: {saved} | 命中率: {rate:.1f}%", flush=True)
-        # 按未命中数降序，显示前10个低命中率分类
-        cat_stats = _CACHE_STATS["category_stats"]
-        sorted_cats = sorted(cat_stats.items(), key=lambda x: x[1]["misses"], reverse=True)
-        low_rate_cats = [(c, s) for c, s in sorted_cats if s["misses"] > 0][:10]
-        if low_rate_cats:
-            print("[分类命中率] (按未命中数降序，仅显示有未命中的分类)", flush=True)
-            for cat, s in low_rate_cats:
-                cat_total = s["hits"] + s["misses"]
-                cat_rate = s["hits"] / cat_total * 100 if cat_total > 0 else 0
-                print(f"  {cat:25s} 命中率: {cat_rate:5.1f}%  ({s['hits']}/{cat_total})", flush=True)
-        print(f"{'─' * 60}", flush=True)
-
-
-# 进程退出时自动打印缓存统计（V10.0）
-atexit.register(print_cache_stats)
+# V16.0: 原内存版 print_cache_stats（旧 175 行）与 CLI 版（1001 行）同名冲突，
+# 后者覆盖前者 → 内存版为死代码，已删除。保留 CLI DB 统计版。
+# atexit 注册（原 200 行）实际运行时指向 CLI 版。
 
 
 # ═══════════════════════════════════════
@@ -184,6 +192,60 @@ _MAX_CACHE_SIZE_BYTES = _MAX_CACHE_SIZE_MB * 1024 * 1024
 _DISABLE_CACHE = os.environ.get("STOCK_NOCACHE", "") == "1"
 
 # ═══════════════════════════════════════
+# V16 软过期窗口（秒）: 硬过期后仍可返回旧值的窗口
+# 解决"集体过期 → 并发重拉 → 限流/封 IP"（参考仓库: 东财风控，批量任务降频）
+# 适用: HTTP 重负载分类。窗口取 1 个 TTL 周期，过期后数据仍可信（历史数据不变）
+_SOFT_EXPIRY_WINDOW: "Dict[str, int]" = {
+    "dragon_tiger":     7 * 86400,   # 历史数据不变，过期后仍可信
+    "fund_flow":        7 * 86400,
+    "margin_trading":   7 * 86400,
+    "block_trade":      7 * 86400,
+    "lockup_expiry":    7 * 86400,
+    "announcements":    7 * 86400,
+    "northbound":       7 * 86400,
+    "hsgt_flow":        7 * 86400,
+    "reports":          1 * 86400,
+    "industry_reports": 1 * 86400,
+    "stock_news":       6 * 3600,
+    "global_news":      6 * 3600,
+    "news":             6 * 3600,
+    "hot_rank":         2 * 3600,
+    "hot_concept":      2 * 3600,
+}
+
+# 软过期命中统计
+_SOFT_STATS = {"soft_hit_count": 0, "hard_miss_count": 0}
+
+# V16.0: 批量提交计数器 — L2 读命中不再每次 UPDATE 后立即 commit，
+# 每 _COMMIT_BATCH 次才 commit 一次，减少万级读命中的 SQLite 写放大
+_COMMIT_BATCH = 50
+_pending_commit_count = 0
+# V16.0: 写路径 _enforce_size_limit 节流计数器 — 每 _SIZE_LIMIT_EVERY 次写才全表清理
+_SIZE_LIMIT_EVERY = 100
+_write_count_since_cleanup = 0
+
+
+def _maybe_commit(force: bool = False) -> None:
+    """V16.0: 批量提交：达到阈值或强制时才 commit。"""
+    global _pending_commit_count
+    _pending_commit_count += 1
+    if force or _pending_commit_count >= _COMMIT_BATCH:
+        try:
+            _get_db().commit()
+        except Exception as _e:
+            _cache_logger.debug(f"_maybe_commit: {_e}")
+        _pending_commit_count = 0
+
+
+def _soft_expiry_allowed(category: str, expires_at: float, now: float) -> bool:
+    """软过期判断: 条目已硬过期，但在软窗口内 → 允许返回旧值。"""
+    window = _SOFT_EXPIRY_WINDOW.get(category, 0)
+    if window <= 0:
+        return False
+    return now < expires_at + window
+
+
+# ═══════════════════════════════════════
 # TTL 常量（秒）
 # ═══════════════════════════════════════
 TTL: Dict[str, int] = {
@@ -194,12 +256,12 @@ TTL: Dict[str, int] = {
     "concept_blocks":  30 * 86400,   # 概念板块列表（V10.0: 7天→30天）
     "board_type":       7 * 86400,   # 沪市/深市/北交所
 
-    # 财务数据（财报发布才变）
-    "financial":        90 * 86400,   # 新浪利润表
-    "balance_sheet":    90 * 86400,   # 新浪资产负债表
-    "cash_flow":        90 * 86400,   # 东财现金流量表（V9.6新增）
-    "gross_margin_roe": 90 * 86400,   # 毛利率 + ROE（可复用财务数据）
-    "eps_forecast":     30 * 86400,   # EPS 预测
+    # 财务数据（改为 24 小时或跟随 trading_day，废弃原 90 天静态，防止错位穿透）
+    "financial":        24 * 3600,   # 新浪利润表
+    "balance_sheet":    24 * 3600,   # 新浪资产负债表
+    "cash_flow":        24 * 3600,   # 东财现金流量表（V9.6新增）
+    "gross_margin_roe": 24 * 3600,   # 毛利率 + ROE（可复用财务数据）
+    "eps_forecast":     24 * 3600,   # EPS 预测
 
     # 日频数据（收盘后固定，历史数据不变可延长TTL）
     "dragon_tiger":     7 * 86400,   # 龙虎榜（历史数据不变，V10.0: 1天→7天）
@@ -217,9 +279,9 @@ TTL: Dict[str, int] = {
     "hot_rank":         1 * 3600,    # 东财人气榜（小时级变化）
     "hot_concept":      1 * 3600,    # 概念命中（小时级变化）
 
-    # 研报（更新不频繁）
-    "reports":          3 * 86400,   # 东财研报列表
-    "industry_reports": 1 * 86400,   # 行业研报
+    # 研报（V16 校准: 3天→1小时，避免新研报滞后；研报非秒级数据，1h 刷新足够）
+    "reports":          1 * 3600,    # 东财研报列表
+    "industry_reports": 1 * 3600,    # 行业研报
 
     # 新闻舆情（更新频繁）
     "stock_news":       6 * 3600,    # 个股新闻（6小时）
@@ -247,9 +309,9 @@ TTL: Dict[str, int] = {
     "f10_share_capital":    7 * 86400,  # F4 股本结构（偶尔更新）
     "f10_industry":         7 * 86400,  # F15 行业分析（每周更新）
     "f10_themes":           3 * 86400,  # F11 热点题材（不定期）
-    "f10_financial":       90 * 86400,  # F3 财务分析（季报周期）
+    "f10_financial":       24 * 3600,  # F3 财务分析（改为24小时）
     "f10_overview":        30 * 86400,  # F2 公司概况（几乎不变）
-    "f10_operation":       90 * 86400,  # F10 经营分析（季度更新）
+    "f10_operation":       24 * 3600,  # F10 经营分析（改为24小时）
     "f10_governance":      30 * 86400,  # F8 高管治理（几乎不变）
     "f10_dividend":        30 * 86400,  # F7 分红融资（偶尔更新）
     "f10_inst_hold":       30 * 86400,  # F6 机构持股（季度更新）
@@ -350,6 +412,40 @@ def _get_db() -> sqlite3.Connection:
         return _db
 
 
+def _close_db() -> None:
+    """关闭数据库连接（进程退出时调用，确保 WAL 日志完整 checkpoint）。"""
+    global _db
+    if _db is not None:
+        with _db_lock:
+            if _db is not None:
+                try:
+                    _db.commit()
+                    _db.execute("PRAGMA wal_checkpoint(FULL)")
+                    _db.close()
+                    _cache_logger.debug("Database connection closed")
+                except Exception as _e:
+                    _cache_logger.debug(f"_close_db error: {_e}")
+                _db = None
+
+atexit.register(_close_db)
+
+
+def _maybe_enforce_size_limit() -> None:
+    """V16.0: 节流版 _enforce_size_limit — 每 _SIZE_LIMIT_EVERY 次写才执行一次全表清理。
+
+    原实现每次 set_cache 都调用 _enforce_size_limit（DELETE 过期 + commit），
+    冷 run 上万次写 → 上万次全表清理 ≈ 20-60s 纯浪费。
+    """
+    global _write_count_since_cleanup
+    _write_count_since_cleanup += 1
+    if _write_count_since_cleanup >= _SIZE_LIMIT_EVERY:
+        _write_count_since_cleanup = 0
+        try:
+            _enforce_size_limit()
+        except Exception as _e:
+            _cache_logger.debug(f"_maybe_enforce_size_limit: {_e}")
+
+
 def _enforce_size_limit() -> None:
     """写入时维护：先清理过期条目，再检查是否超限。"""
     db = _get_db()
@@ -426,14 +522,22 @@ def get_cache(category: str, func_name: str, *args: Any,
         cursor = db.cursor()
         cursor.execute(
             "SELECT value, expires_at, hit_count, prev_value, verified "
-            "FROM cache_entries WHERE key=? AND expires_at>?",
-            (key, now)
+            "FROM cache_entries WHERE key=?",
+            (key,)
         )
         row = cursor.fetchone()
         if row is None:
             _record_cache_hit(category, False)
             return None
         value_blob, expires_at, hit_count, prev_value_blob, verified = row
+        # V16 软过期三态判断: 新鲜 / 软过期(stale) / 硬过期
+        if expires_at <= now:
+            if _soft_expiry_allowed(category, expires_at, now):
+                _SOFT_STATS["soft_hit_count"] += 1
+            else:
+                _SOFT_STATS["hard_miss_count"] += 1
+                _record_cache_hit(category, False)
+                return None
         # 交叉验证模式：未验证的缓存视为未命中
         # V10.2 修复：删除 prev_value != value 的误删检查
         #   原逻辑：set_cache 数据变化分支会写入 prev_value=旧值, value=新值, verified=1
@@ -443,13 +547,16 @@ def get_cache(category: str, func_name: str, *args: Any,
             _record_cache_hit(category, False)
             return None
         # 更新访问时间 + 命中计数
+        # V16.0: 去掉每读 commit（原代码每次命中 UPDATE+commit → 万级重访 30-90s）
         cursor.execute(
             "UPDATE cache_entries SET hit_count=hit_count+1, last_accessed=? WHERE key=?",
             (now, key)
         )
-        db.commit()
+        _maybe_commit()
         # V10.3: 将L2结果写入L1，加速后续访问
         value = json.loads(value_blob.decode("utf-8"))
+        # V13.1: dataclass 自动反序列化暂不启用，由调用方按需调用 _deserialize_from_cache()
+        # V16: 仅新鲜数据写回 L1；软过期 stale 数据不写（避免 L1 长期返回旧值）
         ttl = expires_at - now
         if ttl > 0:
             _l1_set(key, value, ttl)
@@ -461,36 +568,192 @@ def get_cache(category: str, func_name: str, *args: Any,
         return None
 
 
-def _has_zero_price(value: Any) -> bool:
-    """检查顶层 dict 是否包含 price=0 或 close=0（TDX 坏数据特征）。
+def _serialize_for_cache(value):
+    """V13.1: dataclass 透明序列化（写入时把 dataclass 转 dict）
 
-    V10.2 修复：原实现递归检查所有子层级，导致嵌套结构中任一子项 price=0
-    （如龙虎榜未成交席位、板块列表中无成交板块）就误杀整条缓存。
-    现改为仅检查顶层 dict 的 price/close 字段，避免误杀。
+    支持：
+      - dataclass 实例：递归 asdict() 转为 dict
+      - 嵌套结构（dict/list 内含 dataclass）：递归转换
+      - 普通类型（str/int/float/None）：原样返回
     """
+    if is_dataclass(value) and not isinstance(value, type):
+        return _serialize_for_cache(asdict(value))
     if isinstance(value, dict):
-        # 仅检查顶层 price/close，不递归子层级
-        if value.get("price") == 0 or value.get("close") == 0:
-            return True
+        return {k: _serialize_for_cache(v) for k, v in value.items()}
+    if isinstance(value, (list, tuple)):
+        return [_serialize_for_cache(v) for v in value]
+    return value
+
+
+def _deserialize_from_cache(value, target_cls=None):
+    """V13.1: dataclass 透明反序列化（读取时把 dict 转 dataclass）
+
+    Args:
+        value: 从缓存读出的 JSON 反序列化结果（dict/primitives）
+        target_cls: 可选的目标 dataclass 类型。如果提供且 value 是 dict，
+                    则反序列化为 target_cls 实例。
+
+    V13.1 阶段暂不启用自动反序列化（避免破坏现有调用），
+    仅作为工具函数提供给 V13.2 Runner 主动调用。
+    """
+    if target_cls is not None and isinstance(value, dict):
+        try:
+            return target_cls(**value)
+        except (TypeError, ValueError):
+            return value
+    return value
+
+
+# ═══════════════════════════════════════════════════════════
+# V15.2: 统一 valid_if 工厂函数（替代散落的 r is not None）
+# ═══════════════════════════════════════════════════════════
+
+def make_valid_if(check_zeros: bool = True, min_size: int = 0) -> Callable[[Any], bool]:
+    """V15.2: 生成通用 valid_if 校验函数。
+
+    用于 @cached / @cached_async 装饰器，统一拒绝空数据缓存。
+
+    Args:
+        check_zeros: 是否检查所有数值为 0（默认 True）
+        min_size: dict/list 最小有效长度（默认 0，即空 dict 拒绝）
+
+    Returns:
+        callable: 接受返回值 r，返回 True/False
+
+    Examples:
+        # F10 数据：拒绝 None/空 dict/全 0 dict
+        @cached(category="f10_fund_flow", valid_if=make_valid_if())
+
+        # 龙虎榜：要求至少 1 条记录
+        @cached(category="dragon_tiger", valid_if=make_valid_if(min_size=1))
+
+        # 纯数据列表：拒绝空 list
+        @cached(category="news", valid_if=make_valid_if(check_zeros=False))
+    """
+    def validator(r: Any) -> bool:
+        # 1) None 拒绝
+        if r is None:
+            return False
+        # 2) 空 dict/list 拒绝
+        if isinstance(r, (dict, list)) and len(r) <= min_size:
+            return False
+        # 3) 全 0 字段检查（仅对 dict）
+        if check_zeros and isinstance(r, dict):
+            for v in r.values():
+                if isinstance(v, (int, float)) and v == 0:
+                    return False
+                # 嵌套 dict 递归检查一层
+                if isinstance(v, dict):
+                    for vv in v.values():
+                        if isinstance(vv, (int, float)) and vv == 0:
+                            return False
+        return True
+    return validator
+
+
+def _has_zero_price(value: Any) -> bool:
+    """递归检查 dict 是否包含 price=0 或 close=0（TDX 坏数据特征）。
+
+    V15.2 修复：原 V10.2 实现仅检查顶层 dict 的 price/close 字段，但实际场景中
+    龙虎榜未成交席位的子 dict 含 price=0，板块列表中无成交板块的嵌套 dict 含
+    amount=0 都被漏过。改为递归检查所有 dict 层级（深度上限 3 层避免性能问题）。
+
+    排除规则（避免误杀）：
+      - list/tuple 中的 0 值不视为坏数据
+      - 字段名以 _ 开头（私有标记）不检查
+    """
+    def _check_recursive(v: Any, depth: int = 0) -> bool:
+        if depth > 3:
+            return False
+        if isinstance(v, dict):
+            # 检查关键价格字段
+            for key in ("price", "close", "open", "high", "low"):
+                if v.get(key) == 0:
+                    return True
+            # 递归子 dict
+            for sub_v in v.values():
+                if _check_recursive(sub_v, depth + 1):
+                    return True
         return False
-    # list/tuple 不再递归检查（避免误杀含 0 值子项的有效列表）
-    return False
+    return _check_recursive(value)
+
+
+# ═══════════════════════════════════════════════════════════
+# V15.2: ZHB 交叉验证工具函数（恢复用户历史机制）
+# ═══════════════════════════════════════════════════════════
+
+def _cross_verify_with_zhb(code: str, http_value: Any, threshold_pct: float = 50.0) -> bool:
+    """V15.2: HTTP 返回值与 ZHB dict 关键字段对比，偏离过大则拒绝。
+
+    用途：防止"网络瞬断 → HTTP 返回异常值"被缓存。
+    适用场景：F10/f10_fund_flow/dragon_tiger 等 HTTP 数据。
+
+    Args:
+        code: 股票代码
+        http_value: HTTP 接口返回值（dict）
+        threshold_pct: 偏离阈值（默认 50%），超出视为坏数据
+
+    Returns:
+        bool: True=通过验证，False=偏离过大拒绝
+
+    异常安全：任何 ZHB 读取异常都返回 True（不阻断缓存）
+    """
+    if not code or not isinstance(http_value, dict):
+        return True
+    try:
+        from stock_common import get_zhb_single_stock_data
+        zhb = get_zhb_single_stock_data(code)
+        if not zhb:
+            return True  # 无 ZHB 数据时跳过验证
+        # 关键字段对比（HTTP vs ZHB）
+        for field in ("pe_ttm", "pb", "price", "change_pct"):
+            if field not in http_value or field not in zhb:
+                continue
+            v_http = _safe_float(http_value.get(field))
+            v_zhb = _safe_float(zhb.get(field))
+            if v_zhb == 0 or v_http == 0:
+                continue  # 一方为 0 时不对比
+            diff_pct = abs(v_http - v_zhb) / abs(v_zhb) * 100
+            if diff_pct > threshold_pct:
+                # 偏离过大，记日志但不抛异常
+                try:
+                    from stock_common import _debug_log
+                    _debug_log(f"cross_verify fail: {code} {field} http={v_http} zhb={v_zhb} diff={diff_pct:.1f}%")
+                except Exception:
+                    pass
+                return False
+    except Exception:
+        return True  # 任何异常都通过验证
+    return True
+
+
+def _safe_float(v: Any) -> float:
+    """安全转 float（V15.2: cross_verify 工具）"""
+    try:
+        if v is None or v == "":
+            return 0.0
+        return float(v)
+    except (TypeError, ValueError):
+        return 0.0
+
+
+# V16.0: 加入 zhb_data — 17 个函数体只读 ZHB RAM 字典（<1ms），
+# 原走完整 SQLite 写路径（INSERT+commit+全表清理 ≈ 2-4ms/次），负优化
+_ZHB_BYPASS_CATEGORIES = {
+    "basic_info_static", "share_capital", "concept_blocks", "board_type",
+    "zhb_data",
+}
 
 
 def set_cache(category: str, func_name: str, value: Any, ttl: int, *args: Any,
               trading_day: bool = False, cross_verify: bool = False, **kwargs: Any) -> None:
     """写入缓存（None/空值/价格为零不写入）。
-    V10.3: L1/L2双级缓存架构 — 同时写入L1内存缓存和L2 SQLite。
-
-    Args:
-        category: 缓存分类
-        func_name: 函数名
-        value: 缓存值
-        ttl: 过期秒数（trading_day=True 时忽略，改用交易日 15:00 过期）
-        trading_day: True=按交易日过期（F10 高频分类），False=固定 TTL（默认）
-        cross_verify: True=启用交叉验证（写入时对比前一次数据，一致才标记为已验证）
+    V15.0: ZHB 静态分类白名单触发 100% 磁盘旁路，零 SQLite 磁盘写开销。
+    V15.2: F10/f10_fund_flow/dragon_tiger 自动调用 _cross_verify_with_zhb。
     """
     if _DISABLE_CACHE:
+        return
+    if category in _ZHB_BYPASS_CATEGORIES:
         return
     if value is None:
         return
@@ -499,13 +762,21 @@ def set_cache(category: str, func_name: str, value: Any, ttl: int, *args: Any,
     # V8.9: 检测 price=0 / close=0 — TDX 坏数据特征，不缓存
     if _has_zero_price(value):
         return
+    # V15.2: F10 / f10_fund_flow / dragon_tiger 自动 ZHB 交叉验证
+    # 提取股票代码（args[0] 通常是 code）
+    if category in ("f10_fund_flow", "f10_announcements", "f10_reminders",
+                    "f10_financial", "f10_shareholder", "f10_share_capital",
+                    "f10_news", "dragon_tiger") and args:
+        code = args[0] if isinstance(args[0], str) else ""
+        if code and not _cross_verify_with_zhb(code, value):
+            return  # 偏离 ZHB 过大，拒绝缓存
     key = _build_key(category, func_name, *args, **kwargs)
     now = time.time()
     # V9.0: trading_day 模式 — 过期时间设为下一个交易日 15:00
     expires_at = _calc_trading_day_expiry() if trading_day else now + ttl
     try:
         db = _get_db()
-        value_bytes = json.dumps(value, ensure_ascii=False).encode("utf-8")
+        value_bytes = json.dumps(_serialize_for_cache(value), ensure_ascii=False).encode("utf-8")
         cursor = db.cursor()
 
         if not cross_verify:
@@ -517,18 +788,20 @@ def set_cache(category: str, func_name: str, value: Any, ttl: int, *args: Any,
                 (key, value_bytes, now, expires_at, now)
             )
         else:
-            # 交叉验证模式：首次写入即验证（信任 valid_if 校验），数据变化时自动更新
-            # V10.0: 原逻辑要求两次获取数据完全相同才标记 verified=1，
-            #         但多进程并发 + 数据源含实时字段（如 price/timestamp）导致永远无法验证通过。
-            #         新逻辑：通过 valid_if 校验即标记 verified=1，数据变化时用新数据替换并保持 verified=1。
+            # V15.2 真正实现"两次获取一致"语义：
+            #   - 第一次写入：verified=1（V16.0: 信任调用方 valid_if 校验，避免冷启动双拉）
+            #   - 第二次相同数据：prev_value == value_bytes，verified=1
+            #   - 第二次不同数据：prev_value != value_bytes，verified 降为 0
+            #   - get_cache cross_verify=True 时返回 verified=1 的缓存
+            #   - 冷启动首次命中即返回（V16.0 修复原逻辑首写 verified=0 → 每次冷 run 双拉）
             with _db_lock:
                 cursor.execute(
-                    "SELECT value, verified FROM cache_entries WHERE key=? AND expires_at>?",
+                    "SELECT value, prev_value, verified FROM cache_entries WHERE key=? AND expires_at>?",
                     (key, now)
                 )
                 row = cursor.fetchone()
                 if row is None:
-                    # 第一次写入：直接标记为已验证（valid_if 已在上层校验）
+                    # 第一次写入：verified=1（V16.0: 不再等待第二次验证）
                     cursor.execute(
                         "INSERT OR REPLACE INTO cache_entries "
                         "(key, value, created_at, expires_at, hit_count, last_accessed, prev_value, verified) "
@@ -536,23 +809,26 @@ def set_cache(category: str, func_name: str, value: Any, ttl: int, *args: Any,
                         (key, value_bytes, now, expires_at, now, value_bytes)
                     )
                 else:
-                    existing_blob, verified = row
-                    if existing_blob == value_bytes:
-                        # 数据相同：刷新过期时间
+                    existing_blob, prev_value_blob, verified = row
+                    if prev_value_blob == value_bytes:
+                        # 第二次获取与上次一致：标记 verified=1（两次获取一致）
                         cursor.execute(
-                            "UPDATE cache_entries SET expires_at=?, last_accessed=? WHERE key=?",
-                            (expires_at, now, key)
+                            "UPDATE cache_entries SET value=?, verified=1, "
+                            "expires_at=?, last_accessed=? WHERE key=?",
+                            (value_bytes, expires_at, now, key)
                         )
                     else:
-                        # 数据不同（数据源更新）：用新数据替换，保持 verified=1
+                        # 第二次获取与上次不同：仅更新 prev_value/value，verified 仍 0
+                        # 等待下一次获取再验证
                         cursor.execute(
-                            "UPDATE cache_entries SET value=?, prev_value=?, verified=1, "
+                            "UPDATE cache_entries SET value=?, prev_value=?, verified=0, "
                             "created_at=?, expires_at=?, last_accessed=? WHERE key=?",
                             (value_bytes, existing_blob, now, expires_at, now, key)
                         )
 
-        db.commit()
-        _enforce_size_limit()
+        # V16.0: 写路径去掉每写 commit（原每次 INSERT + commit + 全表清理双 commit）
+        _maybe_commit(force=True)  # 写入必须落盘，但用批量化 commit
+        _maybe_enforce_size_limit()
         
         # V10.3: 同时写入 L1 内存缓存
         l1_ttl = expires_at - now
@@ -571,6 +847,8 @@ def invalidate_category(category: str, pattern: str = "") -> int:
 
     Returns:
         删除的条目数量
+
+    V12.1: 同步清空 L1 内存缓存，防止 L1/L2 数据不一致。
     """
     try:
         db = _get_db()
@@ -586,20 +864,31 @@ def invalidate_category(category: str, pattern: str = "") -> int:
                 (f"{category}:%",)
             )
         db.commit()
-        return cursor.rowcount
+        deleted = cursor.rowcount
+        # V12.1: 同步清空 L1 内存缓存，确保一致性
+        # V12.5 修复: 函数名错误 _l1_cache_clear → _l1_clear (V12.1 引入的回归 bug)
+        _l1_clear()
+        return deleted
     except Exception as _e:
         _cache_logger.debug(f"invalidate_category error ({category}): {_e}")
         return 0
 
 
 def invalidate_prefix(prefix: str) -> int:
-    """按 key 前缀批量删除（如 "holder:600519"）。"""
+    """按 key 前缀批量删除（如 "holder:600519"）。
+
+    V12.1: 同步清空 L1 内存缓存，防止 L1/L2 数据不一致。
+    """
     try:
         db = _get_db()
         cursor = db.cursor()
         cursor.execute("DELETE FROM cache_entries WHERE key LIKE ?", (f"{prefix}%",))
         db.commit()
-        return cursor.rowcount
+        deleted = cursor.rowcount
+        # V12.1: 同步清空 L1 内存缓存，确保一致性
+        # V12.5 修复: 函数名错误 _l1_cache_clear → _l1_clear
+        _l1_clear()
+        return deleted
     except Exception as _e:
         _cache_logger.debug(f"invalidate_prefix error ({prefix}): {_e}")
         return 0

@@ -3,6 +3,9 @@
 迁移：
   - V4: oauth2client + pydrive2（均已 deprecated / 不再活跃维护）
   - V7: google-auth + google-auth-oauthlib + google-api-python-client（Google 官方推荐）
+  - V15.2: init_gd 非交互模式自动跳过（sys.stdin.isatty() 检测）；所有 print 加 flush=True
+  - V15.1: 自动重试 3 次 + 显式 "⚠️ GD 云端同步跳过" 日志
+  - V14.0: docstring 版本信息统一更新
 
 API 映射：
   旧 OAuth2WebServerFlow → InstalledAppFlow.from_client_secrets_file
@@ -416,6 +419,13 @@ def init_gd(base_dir: str) -> Tuple[Optional[Any], bool, Optional[str], bool]:
     """
     drive, proxy_set = None, False
 
+    # V15.2: 检测非交互模式（main.py 子进程 stdin=None / 管道），
+    # 跳过 input() 等待，避免卡住后台批量运行
+    import sys
+    if not sys.stdin.isatty():
+        print("  ℹ️ 检测到非交互模式（stdin 非 tty），自动跳过云端上传", flush=True)
+        return None, False, None, True
+
     # 交互式连接
     while True:
         print("  正在初始化 Google Drive 安全连接…", flush=True)
@@ -452,7 +462,7 @@ def init_gd(base_dir: str) -> Tuple[Optional[Any], bool, Optional[str], bool]:
             print("  无效选择，默认立即重试…", flush=True)
 
     # 获取根文件夹「a-stock-data」（parent_id=None 表示在根目录下查找/创建）
-    root_id = retry_get_folder_interactive(drive, "a-stock-data", None, max_auto_retry=0)
+    root_id = retry_get_folder_interactive(drive, "a-stock-data", None, max_auto_retry=3)
     if not root_id:
         return drive, proxy_set, None, True
 

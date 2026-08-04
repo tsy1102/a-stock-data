@@ -1,0 +1,12 @@
+id: sht.field._pe_t
+report: sht
+kind: field
+name: _pe_t
+priority: P2
+status: pending
+v9_present: true
+v15_present: false
+
+detail: |
+  v9.6 报告 sht 有表达式字段 _pe_t
+  v15 报告 sht 无此字段

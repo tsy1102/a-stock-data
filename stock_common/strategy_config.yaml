@@ -163,3 +163,25 @@ scoring:
     holder_count_high: 8     # 股东户数增加≥8 高筹码分散加分
     margin_high: 10          # 融资余额增长>10% 杠杆资金看多加
     margin_low: -10         # 融资余额增长<-10% 杠杆资金看减
+
+# ── V16.1: 报告评分权重（sht/med/lng 各自持有周期权重）─────
+# 使用者: get_sht_report.py / get_med_report.py / get_lng_report.py
+scoring_sht:
+  weights_sht:
+    technical: 0.40     # 短线：技术面 40%
+    flow: 0.35          # 资金面 35%
+    holder: 0.25        # 筹码面 25%
+
+scoring_med:
+  weights_med:
+    fundamental: 0.35   # 中线：基本面 35%
+    valuation: 0.25     # 估值面 25%
+    flow: 0.20          # 资金面 20%
+    holder: 0.20        # 筹码面 20%
+
+scoring_lng:
+  weights_lng:
+    fundamental: 0.30   # 长线：基本面 30%
+    valuation: 0.30     # 估值面 30%
+    dividend: 0.20      # 分红面 20%
+    holder: 0.20        # 筹码面 20%

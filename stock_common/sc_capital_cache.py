@@ -93,11 +93,14 @@ def get_share_capital(code: str) -> Dict[str, Any]:
         单位：万股
     """
     cap_cache = _load_capital_cache()
-    if code in cap_cache:
-        return cap_cache[code]
+    cached = cap_cache.get(code)
+    # V15.2 P0 修复: 脏数据保护 —— 缓存里 total_shares=0 时也视为未命中，重新拉取
+    if cached and cached.get("total_shares", 0) > 0:
+        return cached
 
     result = _fetch_share_capital(code)
-    if result:
+    # V15.2 P0 修复: 只有 total_shares > 0 才写入缓存（避免脏数据污染）
+    if result and result.get("total_shares", 0) > 0:
         with _cache_lock:
             cap_cache[code] = result
         _save_capital_cache()
@@ -120,10 +123,14 @@ def _fetch_share_capital(code: str) -> Dict[str, Any]:
     try:
         from tdx_client import tdx_get_finance_info
         fin = tdx_get_finance_info(code)
-        if fin and "latest_indicators" in fin:
-            ind = fin["latest_indicators"]
-            total = float(ind.get("total_capital", 0) or 0)
-            float_shares = float(ind.get("float_capital", 0) or 0)
+        if fin:
+            # V15.1: tdx_get_finance_info 返回 0x0010 协议 dict（key 为拼音）
+            # zongguben = 总股本, liutongguben = 流通股本（单位：万股）
+            # 参考 docs/field_dict.md 第 7.1 节
+            total = float(fin.get("zongguben", 0) or 0)
+            float_shares = float(fin.get("liutongguben", 0) or 0)
+            # 注：原代码期望 fin["latest_indicators"]（F10 接口），但 tdx_get_finance_info
+            #     实际是 0x0010 协议，不含 latest_indicators key。已修正。
     except Exception:
         pass
 

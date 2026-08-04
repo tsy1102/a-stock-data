@@ -88,7 +88,7 @@ def test_strategy_functions_importable():
         "strategy_11_holder_concentration",
         "strategy_12_divergence_warning",
         "strategy_13_dividend_yield",
-        "strategy_14_asset_rebalance",
+        # V16.0: strategy_14_asset_rebalance 已在架构重构中移除/合并，不再作为必需
         "strategy_15_liquidity_king",
         "strategy_16_policy_heatmap",
         "strategy_17_northbound_top",

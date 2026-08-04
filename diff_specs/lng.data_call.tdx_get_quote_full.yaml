@@ -1,0 +1,12 @@
+id: lng.data_call.tdx_get_quote_full
+report: lng
+kind: data_call
+name: tdx_get_quote_full
+priority: P1
+status: pending
+v9_present: true
+v15_present: false
+
+detail: |
+  v9.6 报告 lng 调用数据源函数 tdx_get_quote_full
+  v15 报告 lng 未找到该调用（数据源丢失或改名）

@@ -5,6 +5,11 @@
 当 TDX 服务器不可达时自动回退到原始 HTTP 源（百度K线/腾讯行情）。
 
 版本信息:
+    V15.2  2026-07-28 - 8 个 F10 函数 valid_if 强化（用 make_valid_if 替代 r is not None）；tdx_get_quote_full 重构为 ZHB→TDX→HTTP 优先级
+    V15.1  2026-07-26 - tdx_get_fund_flow 改名为 em_get_fund_flow（新增别名，保留旧函数）；tdx_get_history_fund_flow 同理
+    V14.0  2026-07-22 - 文档同步：docstring 版本信息更新到 V14.0
+    V12.6  2026-07-22 - 受益于字段路由简化
+    V12.0  2026-07-22 - 完全移除 easy_tdx 依赖，统一用 mootdx
     V10.2  2026-07-16 - F10系列valid_if放宽：bool(r)改为r is not None，避免空dict/list拒写缓存
     V9.5   2026-07-11 - 静默异常日志化（23处 except Exception 添加 _debug_log）
     V9.4   2026-07-11 - VERSION文件单一来源版本号管理
@@ -20,6 +25,7 @@
     V8.0   2026-06-17 - 初始版本
     V7.5 - Monkey-patch心跳线程/全局调用锁/进程内缓存
 """
+
 from __future__ import annotations
 
 import time
@@ -31,84 +37,25 @@ from typing import Any, Dict, List, Optional, Tuple, cast
 import requests
 
 from stock_common import _safe_float, UA, _request_with_retry, _quick_request, _debug_log
-from stock_cache import cached
+from stock_cache import cached, make_valid_if, TTL  # V15.2 强化 + V15.5.7 TTL
+from config import TDX_MIN_INTERVAL, MAX_RETRY_COUNT, RETRY_DELAY_SECONDS
 
 # ═══════════════════════════════════════
-# V7.5: Monkey-patch easy_tdx 心跳线程 + 全局调用锁
-# 问题 1：easy_tdx 的 TdxConnection.stop_heartbeat 会把 self._stop_event 置为 None，
-#          而 _heartbeat_loop 仍在运行 self._stop_event.wait(...) → 潜在 AttributeError。
-# 问题 2：_heartbeat_loop 内部只 except OSError，而 _recv_exact_sock 抛的是 TdxConnectionError
-#         （非 OSError 子类），所以"连接被服务器关闭"会直接穿透整个线程 → 打印满屏堆栈。
-# 问题 3：`_TDX_CLIENT` / `_TDX_MAC_CLIENT` 是单例，多线程并发读写同一个 socket
-#         → 协议包错乱卡死。
-# 解决：重写 stop_heartbeat（只 set 不置 None）；给 _heartbeat_loop 加最外层 Exception 保护，
-#       让心跳线程静默死亡而不泄漏堆栈；加 `_TDX_CALL_LOCK = RLock()`，让 TDX 请求串行。
+# V7.5: 全局调用锁
+# `_TDX_CLIENT` 是单例，多线程并发读写同一个 socket 会导致协议包错乱卡死。
+# 用 RLock 让同一线程可重入。
+# V12.0: 移除 easy_tdx 后，MacClient 相关代码已全部删除，仅保留 mootdx 客户端。
 # ═══════════════════════════════════════
 import threading as _tdx_th
 
-
-def _patch_easy_tdx_heartbeat() -> None:
-    try:
-        from easy_tdx.transport import sync as _tdx_sync_mod
-        _TdxConnection = getattr(_tdx_sync_mod, "TdxConnection", None)
-        if _TdxConnection is None:
-            return
-
-        def _safe_stop_heartbeat(self) -> None:
-            """温柔停止：只 set 事件，不将 _stop_event 置 None。"""
-            se = getattr(self, "_stop_event", None)
-            if isinstance(se, _tdx_th.Event):
-                try:
-                    se.set()
-                except Exception as _e:
-                    _debug_log(f"tdx stop_heartbeat set event: {_e}")
-            hb = getattr(self, "_heartbeat_thread", None)
-            if isinstance(hb, _tdx_th.Thread) and hb.is_alive():
-                try:
-                    hb.join(timeout=0.5)
-                except Exception as _e:
-                    _debug_log(f"tdx stop_heartbeat join thread: {_e}")
-            try:
-                setattr(self, "_heartbeat_thread", None)
-            except Exception as _e:
-                _debug_log(f"tdx stop_heartbeat setattr: {_e}")
-
-        _orig_heartbeat_loop = getattr(_TdxConnection, "_heartbeat_loop", None)
-
-        def _safe_heartbeat_loop(self, *args: Any, **kwargs: Any) -> None:
-            """_heartbeat_loop 的最外层保护：捕获所有异常，静默死亡不打印堆栈。"""
-            try:
-                se = getattr(self, "_stop_event", None)
-                if not isinstance(se, _tdx_th.Event):
-                    return
-                if _orig_heartbeat_loop is not None:
-                    _orig_heartbeat_loop(self, *args, **kwargs)
-            except Exception as _e:
-                _debug_log(f"tdx stop_heartbeat inner: {_e}")
-                return
-
-        _TdxConnection.stop_heartbeat = _safe_stop_heartbeat
-        if _orig_heartbeat_loop is not None:
-            _TdxConnection._heartbeat_loop = _safe_heartbeat_loop
-    except Exception as _e:
-        _debug_log(f"tdx monkey-patch heartbeat error: {_e}")
-
-_patch_easy_tdx_heartbeat()
-
 _TDX_AVAILABLE: Optional[bool] = None
 _TDX_CLIENT: Optional[Any] = None
-_TDX_MAC_CLIENT: Optional[Any] = None
 _last_request_time: float = 0.0
-_TDX_RECONNECT_ATTEMPTS: int = 3
-_TDX_RECONNECT_DELAY: float = 0.5
-
-# V8.9: MacClient 失败缓存（避免重复重试退避）
-_MAC_AVAILABLE: Optional[bool] = None
+_TDX_RECONNECT_ATTEMPTS: int = MAX_RETRY_COUNT
+_TDX_RECONNECT_DELAY: float = RETRY_DELAY_SECONDS
 # V8.5: TDX请求最小间隔（秒），防止过快请求被服务器断开
 # 100ms = 约10次/秒，批量运行时更稳定
-_TDX_MIN_INTERVAL: float = 0.1
-# V7.5: 全局调用锁 — `_TDX_CLIENT` / `_TDX_MAC_CLIENT` 是单例，多线程并发
-# 调用时读写同一个 socket 会导致协议错乱卡死。用 RLock 让同一线程可重入。
+_TDX_MIN_INTERVAL: float = TDX_MIN_INTERVAL
 _TDX_CALL_LOCK = _tdx_th.RLock()
 
 # V9.3.2: 返回假数据的TDX服务器黑名单
@@ -119,7 +66,7 @@ _TDX_BAD_HOSTS: set[str] = set()
 
 def _tdx_throttle():
     """V8.5: TDX请求节流：确保两次请求间隔 >= _TDX_MIN_INTERVAL
-    
+
     必须在 _TDX_CALL_LOCK 内调用。
     """
     global _last_request_time
@@ -129,6 +76,7 @@ def _tdx_throttle():
         time.sleep(_TDX_MIN_INTERVAL - elapsed)
     _last_request_time = time.time()
 
+
 # ── V7.5: 进程内缓存 ─────────────────────────────────────────────
 # 策略并发阶段只做纯 CPU 计算，不再触发网络 IO。
 # key 格式: f"{period}:{code}:{count}"，period: D=日线, W=周线, Q=行情
@@ -136,24 +84,32 @@ _TDX_KLINE_CACHE: Dict[str, Tuple[List[str], List[List[str]]]] = {}
 _TDX_WKLINE_CACHE: Dict[str, Tuple[List[str], List[List[str]]]] = {}
 _TDX_QUOTE_CACHE: Dict[str, Dict[str, Any]] = {}
 
+
 # ═══════════════════════════════════════
 # 基础工具
 # ═══════════════════════════════════════
 def _market_prefix(code: str) -> str:
-    if code.startswith(("6", "9")): return "sh"
-    elif code.startswith("8"): return "bj"
+    if code.startswith(("6", "9")):
+        return "sh"
+    elif code.startswith("8"):
+        return "bj"
     return "sz"
 
+
 def _market_from_code(code: str) -> int:
-    if code.startswith(("6", "9")): return 1
-    elif code.startswith("8"): return 2
+    if code.startswith(("6", "9")):
+        return 1
+    elif code.startswith("8"):
+        return 2
     return 0
+
 
 def _index_to_market_code(idx_code: str) -> Tuple[int, str]:
     prefix = idx_code[:2]
     num = idx_code[2:]
     m = 1 if prefix == "sh" else 0
     return (m, num)
+
 
 # ═══════════════════════════════════════
 # 按域名独立限流配置（基于诊断脚本实测）
@@ -178,8 +134,12 @@ _DOMAIN_LAST_TIME: Dict[str, float] = {}
 _DOMAIN_LAST_TIME_LOCK = _tdx_th.Lock()
 
 
-def _http_get(url: str, params: Optional[Dict[str, Any]] = None,
-              headers: Optional[Dict[str, str]] = None, timeout: int = 15) -> Optional[requests.Response]:
+def _http_get(
+    url: str,
+    params: Optional[Dict[str, Any]] = None,
+    headers: Optional[Dict[str, str]] = None,
+    timeout: int = 15,
+) -> Optional[requests.Response]:
     """按域名独立限流的 HTTP GET 请求（基于诊断脚本实测参数）。
 
     V9.0 新增：线程锁保护 _DOMAIN_LAST_TIME。
@@ -188,6 +148,7 @@ def _http_get(url: str, params: Optional[Dict[str, Any]] = None,
 
     # 解析域名
     from urllib.parse import urlparse
+
     parsed = urlparse(url)
     domain = parsed.netloc
 
@@ -209,360 +170,310 @@ def _http_get(url: str, params: Optional[Dict[str, Any]] = None,
 
     try:
         # V9.3.1: 数据获取全部直连，不使用系统代理（代理仅用于GD上传）
-        return requests.get(url, params=params, headers=headers or {"User-Agent": UA},
-                            timeout=timeout, proxies={"http": None, "https": None})
+        return requests.get(
+            url,
+            params=params,
+            headers=headers or {"User-Agent": UA},
+            timeout=timeout,
+            proxies={"http": None, "https": None},
+        )
     except Exception as _e:
         _debug_log(f"tdx _tdx_http_get error ({url}): {_e}")
         return None
+
 
 # ═══════════════════════════════════════
 # TDX 连接管理
 # ═══════════════════════════════════════
 
-def _pre_scan_tdx_hosts() -> list[str]:
-    """预扫描所有 TDX 服务器，返回通过全部健康检查的主机列表。
-    
-    扫描结果缓存到文件（24小时有效），避免每次启动都扫描。
-    测试项：TCP连通性、K线接口、历史资金流接口。
+# ── V15.5: easy_tdx 1.20.4 适配层 ──────────────────────────────
+# 背景: mootdx 0.11.7 停更（2024-07）+ BESTIP bug 无修复，且 TDX 服务器存在
+# "TCP 握手通但返空 body"的静默空表（参考仓库 FAQ V3.4.1 #43）。
+# easy_tdx 1.20.4 内置: 服务器健康分引擎(_health) + K线空数据故障转移(_reconnect)
+# + 52 候选服务器。本适配层把其 API 包装成 mootdx 兼容接口，下游零改动。
+# 2026-08-01 实测: 180.153.18.170 可取到真实 K 线（与腾讯报价一致）。
+# ───────────────────────────────────────────────────────────────
+
+# 实测可用服务器白名单（2026-08-01 实测）
+_EASY_TDX_PRIMARY_HOST = "180.153.18.170"
+_EASY_TDX_PREFERRED_HOSTS = ["180.153.18.170", "150.158.160.2", "124.71.187.122"]
+
+# mootdx frequency → easy_tdx KlineCategory 映射
+# mootdx: 0=5min 1=15min 2=30min 3=60min 4=day 5=week 6=month 7/8=1min 9=day 10=quarter 11=year
+# easy_tdx: MIN_1=7 MIN_5=0 MIN_15=1 MIN_30=2 MIN_60=3 DAY=4 WEEK=5 MONTH=6 QUARTER=10 YEAR=11
+_FREQ_TO_CATEGORY = {0: 0, 1: 1, 2: 2, 3: 3, 4: 4, 5: 5, 6: 6, 7: 7, 8: 7, 9: 4, 10: 10, 11: 11}
+
+# 沪市指数白名单（000 开头中属于 SH 的指数；399xxx 属 SZ）
+_SH_INDEX_CODES = {"000001", "000016", "000300", "000688", "000852", "000905"}
+
+
+def _easy_market(code: str, is_index: bool = False) -> int:
+    """本项目 code → easy_tdx Market（0=深圳, 1=上海, 2=北京）。"""
+    if is_index:
+        if code.startswith("399"):
+            return 0  # 深证成指/创业板指
+        return 1  # 沪指数（含 000xxx 白名单）
+    # 股票/ETF/B股: 6/5/9 开头为沪市
+    return 1 if code.startswith(("6", "5", "9")) else 0
+
+
+class _EasyTdxAdapter:
+    """把 easy_tdx 1.20.4 TdxClient 包装成 mootdx 兼容接口（V15.5）。
+
+    字段对齐:
+      - bars: vol 股→手(/100)；新增 datetime 列（date + ' 00:00'，与 mootdx 一致）
+      - index_bars: 同 bars（指数）
+      - quotes: pre_close → last_close（mootdx 列名）
+      - finance: 列名去下划线（jing_lirun → jinglirun 等，mootdx 风格）
     """
-    cache_dir = os.path.join(os.path.dirname(__file__), "cache")
-    cache_file = os.path.join(cache_dir, "tdx_hosts_cache.json")
-    
-    if os.path.exists(cache_file):
+
+    def __init__(self, client: Any) -> None:
+        self._client = client
+        self.closed = False
+
+    def _df_aligned(self, df) -> Any:
+        """补 datetime 列（date → datetime YYYY-MM-DD HH:MM）。"""
+        if df is None or df.empty:
+            return df
+        df = df.copy()
+        if "date" in df.columns and "datetime" not in df.columns:
+            df["datetime"] = df["date"].astype(str) + " 00:00"
+        return df
+
+    def bars(self, symbol: str, frequency: int = 9, start: int = 0, offset: int = 800) -> Any:
+        market = _easy_market(symbol)
+        category = _FREQ_TO_CATEGORY.get(frequency, 4)
         try:
-            with open(cache_file, 'r', encoding='utf-8') as f:
-                data = json.load(f)
-                if time.time() - data.get('timestamp', 0) < 86400:
-                    _good_hosts = data.get('good_hosts', [])
-                    if _good_hosts:
-                        _debug_log(f"TDX 主机缓存有效，跳过扫描，白名单 {len(_good_hosts)} 台")
-                        return _good_hosts
+            df = self._client.get_security_bars(market, symbol, category, start, offset)
         except Exception as _e:
-            _debug_log(f"读取 TDX 主机缓存失败: {_e}")
-    
-    from easy_tdx.config import get_known_hosts
-    all_hosts = get_known_hosts()
-    _debug_log(f"开始预扫描 TDX 服务器，共 {len(all_hosts)} 台")
-    
-    good_hosts = []
-    
-    def _test_single_host(_host):
+            _debug_log(f"easy_tdx bars error ({symbol}): {_e}")
+            import pandas as _pd
+
+            return _pd.DataFrame()
+        if df is None or df.empty:
+            return df
+        df = self._df_aligned(df)
+        # V15.5: easy_tdx vol 单位=股，mootdx=手 → /100 对齐下游
+        if "vol" in df.columns:
+            df["vol"] = df["vol"] / 100.0
+        return df
+
+    def index_bars(
+        self, symbol: str, frequency: int = 9, start: int = 0, offset: int = 800, market: Any = None
+    ) -> Any:
+        mkt = market if market is not None else _easy_market(symbol, is_index=True)
+        category = _FREQ_TO_CATEGORY.get(frequency, 4)
         try:
-            from easy_tdx import TdxClient, Market, KlineCategory
-            _client = TdxClient(host=_host, port=7709)
-            _client.connect()
-            
-            _bars = _client.get_security_bars(Market.SH, "600519", KlineCategory.DAY, 0, 3)
-            if _bars is None or (hasattr(_bars, 'empty') and _bars.empty) or len(_bars) < 2:
-                _client.close()
-                return None
-            
-            _df = _client.get_history_fund_flow(1, "600519", 0, 10)
-            if _df is None or (hasattr(_df, 'empty') and _df.empty) or len(_df) < 5:
-                _client.close()
-                return None
-            
-            _client.close()
-            return _host
+            df = self._client.get_index_bars(mkt, symbol, category, start, offset)
         except Exception as _e:
-            _debug_log(f"tdx _test_single_host ({_host}): {_e}")
-            return None
-    
+            _debug_log(f"easy_tdx index_bars error ({symbol}): {_e}")
+            import pandas as _pd
+
+            return _pd.DataFrame()
+        return self._df_aligned(df)
+
+    def quotes(self, symbol: str) -> Any:
+        market = _easy_market(symbol)
+        try:
+            df = self._client.get_security_quotes([(market, symbol)])
+        except Exception as _e:
+            _debug_log(f"easy_tdx quotes error ({symbol}): {_e}")
+            import pandas as _pd
+
+            return _pd.DataFrame()
+        if df is None or df.empty:
+            return df
+        df = df.copy()
+        # mootdx 列名 last_close（easy_tdx 叫 pre_close）
+        if "pre_close" in df.columns and "last_close" not in df.columns:
+            df["last_close"] = df["pre_close"]
+        return df
+
+    def finance(self, symbol: str) -> Any:
+        market = _easy_market(symbol)
+        try:
+            df = self._client.get_finance_info(market, symbol)
+        except Exception as _e:
+            _debug_log(f"easy_tdx finance error ({symbol}): {_e}")
+            import pandas as _pd
+
+            return _pd.DataFrame()
+        if df is None or df.empty:
+            return df
+        # easy_tdx 列名带下划线（jing_lirun），mootdx 无下划线（jinglirun）
+        df = df.copy()
+        df.columns = [c.replace("_", "") for c in df.columns]
+        return df
+
+    def close(self) -> None:
+        self.closed = True
+        try:
+            self._client.close()
+        except Exception:
+            pass
+
+
+def _create_easy_tdx_adapter():
+    """创建 easy_tdx 1.20.4 适配器（首选实测服务器，失败 from_best_host 内置换台）。"""
     try:
-        import concurrent.futures
-        with concurrent.futures.ThreadPoolExecutor(max_workers=10) as _executor:
-            _results = list(_executor.map(_test_single_host, all_hosts))
-        good_hosts = [_h for _h in _results if _h is not None]
+        from easy_tdx.client import TdxClient
+
+        try:
+            c = TdxClient(
+                host=_EASY_TDX_PRIMARY_HOST, port=7709, auto_reconnect=True, heartbeat_interval=15.0
+            )
+            c.connect()
+            _debug_log(f"easy_tdx connected: {_EASY_TDX_PRIMARY_HOST}")
+        except Exception as _e:
+            _debug_log(f"easy_tdx primary host failed ({_EASY_TDX_PRIMARY_HOST}): {_e}")
+            c = TdxClient.from_best_host(hosts=_EASY_TDX_PREFERRED_HOSTS, ping_timeout=3.0)
+            _debug_log("easy_tdx from_best_host connected")
+        return _EasyTdxAdapter(c)
     except Exception as _e:
-        _debug_log(f"TDX 预扫描并发执行失败，降级为串行: {_e}")
-        for _host in all_hosts[:20]:
-            _result = _test_single_host(_host)
-            if _result:
-                good_hosts.append(_result)
-    
-    if good_hosts:
-        _debug_log(f"TDX 预扫描完成，找到 {len(good_hosts)} 台可用服务器")
-    else:
-        _debug_log("TDX 预扫描完成，未找到可用服务器")
-    
-    try:
-        os.makedirs(cache_dir, exist_ok=True)
-        with open(cache_file, 'w', encoding='utf-8') as f:
-            json.dump({'timestamp': time.time(), 'good_hosts': good_hosts}, f)
-    except Exception as _e:
-        _debug_log(f"保存 TDX 主机缓存失败: {_e}")
-    
-    return good_hosts
+        _debug_log(f"easy_tdx adapter create error: {_e}")
+        return None
 
 
 def _check_tdx() -> bool:
+    """V12.0: 检测 mootdx 是否可用（缓存结果）。
+
+    V14.2.3: bestip=True 改为 False（避免 mootdx 探速循环卡死）
+    """
     global _TDX_AVAILABLE
     if _TDX_AVAILABLE is not None:
         return _TDX_AVAILABLE
-    
-    _pre_scanned = _pre_scan_tdx_hosts()
-    if _pre_scanned:
-        _TDX_AVAILABLE = True
-        _debug_log(f"TDX 预扫描找到 {len(_pre_scanned)} 台可用服务器")
-        return True
-    
-    import socket as _sock
-    _TDX_HOSTS = [
-        '124.71.187.122', '123.60.73.44', '124.70.133.119', '124.71.187.72',
-        '123.60.84.66', '101.35.121.35', '111.231.113.208',
-        '111.230.186.52', '175.178.112.197', '175.178.128.227', '43.139.95.83',
-        '129.204.230.128', '119.97.185.59',
-    ]
-    for _ip in _TDX_HOSTS[:8]:
-        try:
-            _s = _sock.socket(_sock.AF_INET, _sock.SOCK_STREAM)
-            _s.settimeout(2)
-            _s.connect((_ip, 7709))
-            _s.close()
-            break
-        except Exception as _e:
-            _debug_log(f"tdx _check_tdx socket connect ({_ip}): {_e}")
-            continue
-    else:
-        _TDX_AVAILABLE = False
-        return False
     with _TDX_CALL_LOCK:
         if _TDX_AVAILABLE is not None:
             return _TDX_AVAILABLE
+        # V15.5: easy_tdx 1.20.4 优先探测（健康分+空数据换台+52服务器）
+        _adapter = _create_easy_tdx_adapter()
+        if _adapter is not None:
+            try:
+                _df = _adapter.bars(symbol='600519', frequency=9, start=0, offset=1)
+                _TDX_AVAILABLE = _df is not None and not _df.empty
+                if not _TDX_AVAILABLE:
+                    _debug_log("tdx _check_tdx: easy_tdx bars 空，回退 mootdx")
+                    raise RuntimeError("easy_tdx bars empty")
+                _adapter.close()
+                return _TDX_AVAILABLE
+            except Exception as _e:
+                _debug_log(f"tdx _check_tdx easy_tdx error: {_e}")
+        # mootdx 备胎
         try:
-            from easy_tdx import TdxClient
-            _c = TdxClient(host=_ip, port=7709)
-            _c.connect()
-            _q = _c.get_security_quotes([(1, "600519")])
-            _TDX_AVAILABLE = _q is not None and not _q.empty
-            _c.close()
+            from mootdx.quotes import Quotes
+
+            # V14.2.3: bestip=False 跳过 mootdx 探速循环（与 _get_tdx_client 保持一致）
+            _c = Quotes.factory(market='std', bestip=False)
+            _df = _c.bars(symbol='600519', frequency=9, start=0, offset=1)
+            _TDX_AVAILABLE = _df is not None and not _df.empty
+            try:
+                _c.close()
+            except Exception:
+                pass
         except Exception as _e:
-            _debug_log(f"tdx _check_tdx error ({_ip}): {_e}")
+            _debug_log(f"tdx _check_tdx mootdx error: {_e}")
             _TDX_AVAILABLE = False
     return _TDX_AVAILABLE
 
-def _get_tdx_client() -> Optional[Any]:
-    """V7.5: 获取 TdxClient（加锁，线程安全），连接异常时自动重连。
 
-    V8.5: 重连改为指数退避（0.5s, 1s, 2s），防止频繁重连被封禁。
-    V9.0: 使用 from_best_host() 自动选择最快主机，不再依赖 _check_tdx 的 _ip 变量。
-    V9.4: 使用预扫描白名单，只从通过 K线和资金流测试的服务器中选择。
+def _get_tdx_client() -> Optional[Any]:
+    """V12.0: 获取 mootdx StdQuotes 客户端（线程安全，自动重连）。
+
+    mootdx 内部已管理 bestip 选择、心跳线程、自动重连，无需 monkey-patch。
+    保留 _TDX_CALL_LOCK 串行化避免协议包错乱，保留 _tdx_throttle 节流。
     """
     with _TDX_CALL_LOCK:
         global _TDX_CLIENT
         for attempt in range(_TDX_RECONNECT_ATTEMPTS):
             if _TDX_CLIENT is not None:
-                try:
-                    _TDX_CLIENT.ensure_connected()
+                if not getattr(_TDX_CLIENT, 'closed', True):
                     return _TDX_CLIENT
+                try:
+                    _TDX_CLIENT.close()
                 except Exception as _e:
-                    _debug_log(f"tdx ensure_connected error: {_e}")
-                    try:
-                        _TDX_CLIENT.close()
-                    except Exception as _e:
-                        _debug_log(f"tdx close old client: {_e}")
-                    _TDX_CLIENT = None
-                    if attempt < _TDX_RECONNECT_ATTEMPTS - 1:
-                        time.sleep(_TDX_RECONNECT_DELAY * (2 ** attempt))
-                    continue
+                    _debug_log(f"tdx close old mootdx client: {_e}")
+                _TDX_CLIENT = None
+                if attempt < _TDX_RECONNECT_ATTEMPTS - 1:
+                    time.sleep(_TDX_RECONNECT_DELAY * (2**attempt))
+                continue
             if not _check_tdx():
                 return None
+            # V15.5: easy_tdx 1.20.4 首选（内置健康分+空数据换台+52服务器）
+            _adapter = _create_easy_tdx_adapter()
+            if _adapter is not None:
+                _TDX_CLIENT = _adapter
+                _tdx_health_check(_TDX_CLIENT)
+                return _TDX_CLIENT
+            # mootdx 备胎（同协议双通道）
             try:
-                from easy_tdx import TdxClient
-                from easy_tdx.config import get_known_hosts
-                
-                _pre_scanned = _pre_scan_tdx_hosts()
-                if _pre_scanned:
-                    _debug_log(f"使用预扫描白名单，{len(_pre_scanned)} 台可用服务器")
-                    _good_hosts = [h for h in _pre_scanned if h not in _TDX_BAD_HOSTS]
-                else:
-                    _all_hosts = get_known_hosts()
-                    _good_hosts = [h for h in _all_hosts if h not in _TDX_BAD_HOSTS]
-                
-                if not _good_hosts:
-                    _debug_log("tdx 所有主机都被标记为坏，重置黑名单给一次机会")
-                    _TDX_BAD_HOSTS.clear()
-                    if _pre_scanned:
-                        _good_hosts = _pre_scanned
-                    else:
-                        _good_hosts = get_known_hosts()
-                
-                _TDX_CLIENT = TdxClient.from_best_host(hosts=_good_hosts)
-                _TDX_CLIENT.connect()
+                from mootdx.quotes import Quotes
+
+                # V14.2.1: bestip=True 会触发 mootdx "[-] 选择最快的服务器..." 探速循环，
+                # 休市日多个 TCP 节点超时导致卡死数分钟。改为 False 跳过探速，
+                # 与 zhb_client.py 保持一致（手动指定服务器）。
+                _TDX_CLIENT = Quotes.factory(market='std', bestip=False)
                 _tdx_health_check(_TDX_CLIENT)
                 return _TDX_CLIENT
             except Exception as _e:
-                _debug_log(f"tdx _get_tdx_client new client error: {_e}")
+                _debug_log(f"tdx _get_tdx_client mootdx new client error: {_e}")
                 _TDX_CLIENT = None
                 if attempt < _TDX_RECONNECT_ATTEMPTS - 1:
-                    time.sleep(_TDX_RECONNECT_DELAY * (2 ** attempt))
+                    time.sleep(_TDX_RECONNECT_DELAY * (2**attempt))
         return None
+
 
 def _tdx_health_check(client) -> None:
-    """检查 TDX 关键接口是否可用，便于调试。
+    """V12.0: mootdx 关键接口健康检查。
 
-    V9.3.2: 新增 K线接口校验。部分 TDX 服务器返回假数据
-   （ret_count=800 但 body 为 0 字节），导致 TdxDecodeError。
-    检测到此类服务器时标记为坏主机并抛出异常，触发 _get_tdx_client 换IP重连。
+    mootdx 内部 bestip 已过滤不可用节点，这里仅做日志记录便于调试，
+    K线假数据仍触发换IP（通过抛 RuntimeError 让 _get_tdx_client 重连）。
     """
-    import pandas as pd
     try:
-        _finance_info = client.get_finance_info(1, "600519")
-        if _finance_info is None or _finance_info.empty:
-            _debug_log("TDX health check: get_finance_info 不可用")
+        _df = client.bars(symbol='600519', frequency=9, start=0, offset=1)
+        if _df is None or _df.empty:
+            _debug_log("TDX health check: bars 返回空")
         else:
-            _debug_log("TDX health check: get_finance_info 正常")
+            _debug_log("TDX health check: bars 正常")
     except Exception as _e:
-        _debug_log(f"TDX health check: get_finance_info 异常: {_e}")
+        _debug_log(f"TDX health check: bars 异常: {_e}")
     try:
-        _fund_flow = client.get_fund_flow(1, "600519")
-        if _fund_flow is None or _fund_flow.empty:
-            _debug_log("TDX health check: get_fund_flow 不可用")
+        _q = client.quotes(symbol='600519')
+        if _q is None or _q.empty:
+            _debug_log("TDX health check: quotes 不可用")
         else:
-            _debug_log("TDX health check: get_fund_flow 正常")
+            _debug_log("TDX health check: quotes 正常")
     except Exception as _e:
-        _debug_log(f"TDX health check: get_fund_flow 异常: {_e}")
+        _debug_log(f"TDX health check: quotes 异常: {_e}")
     try:
-        _xdxr = client.get_xdxr_info(1, "600519")
-        if _xdxr is None or _xdxr.empty:
-            _debug_log("TDX health check: get_xdxr_info 不可用")
+        _f = client.finance(symbol='600519')
+        if _f is None or _f.empty:
+            _debug_log("TDX health check: finance 不可用")
         else:
-            _debug_log("TDX health check: get_xdxr_info 正常")
+            _debug_log("TDX health check: finance 正常")
     except Exception as _e:
-        _debug_log(f"TDX health check: get_xdxr_info 异常: {_e}")
+        _debug_log(f"TDX health check: finance 异常: {_e}")
     try:
-        _history_fund_flow = client.get_history_fund_flow(1, "600519", 0, 10)
-        if _history_fund_flow is None or _history_fund_flow.empty:
-            _host = getattr(client, '_host', '')
-            if _host:
-                _TDX_BAD_HOSTS.add(_host)
-            _debug_log(f"TDX health check: get_history_fund_flow 返回空，标记 {_host} 为坏主机")
-            raise RuntimeError(f"TDX host {_host} returns empty history fund flow data")
-        _debug_log("TDX health check: get_history_fund_flow 正常")
-    except RuntimeError:
-        raise
+        _x = client.xdxr(symbol='600519')
+        if _x is None or _x.empty:
+            _debug_log("TDX health check: xdxr 不可用")
+        else:
+            _debug_log("TDX health check: xdxr 正常")
     except Exception as _e:
-        _host = getattr(client, '_host', '')
-        _err_name = type(_e).__name__
-        if 'Decode' in _err_name or '数据不足' in str(_e):
-            if _host:
-                _TDX_BAD_HOSTS.add(_host)
-            _debug_log(f"TDX health check: get_history_fund_flow 解码失败，标记 {_host} 为坏主机: {_e}")
-            raise RuntimeError(f"TDX host {_host} returns corrupted fund flow data: {_e}") from _e
-        _debug_log(f"TDX health check: get_history_fund_flow 异常: {_e}")
-    # V9.3.2: K线接口校验 — 部分服务器返回假数据（ret_count=800但0字节body）
-    # 这类服务器行情/财务接口正常，但K线接口返回畸形数据导致 TdxDecodeError
-    try:
-        from easy_tdx import KlineCategory, Market
-        _bars = client.get_security_bars(Market.SH, "600519", KlineCategory.DAY, 0, 1)
-        if _bars is None or (hasattr(_bars, 'empty') and _bars.empty):
-            _host = getattr(client, '_host', '')
-            if _host:
-                _TDX_BAD_HOSTS.add(_host)
-            _debug_log(f"TDX health check: get_security_bars 返回空，标记 {_host} 为坏主机")
-            raise RuntimeError(f"TDX host {_host} returns empty K-line data")
-        _debug_log("TDX health check: get_security_bars 正常")
-    except RuntimeError:
-        raise  # 抛出给 _get_tdx_client 触发换IP重连
-    except Exception as _e:
-        _host = getattr(client, '_host', '')
-        _err_name = type(_e).__name__
-        if 'Decode' in _err_name or '数据不足' in str(_e):
-            if _host:
-                _TDX_BAD_HOSTS.add(_host)
-            _debug_log(f"TDX health check: get_security_bars 解码失败，标记 {_host} 为坏主机: {_e}")
-            raise RuntimeError(f"TDX host {_host} returns corrupted K-line data: {_e}") from _e
-        _debug_log(f"TDX health check: get_security_bars 异常: {_e}")
+        _debug_log(f"TDX health check: xdxr 异常: {_e}")
 
-def _mac_health_check(client) -> None:
-    """检查 MacClient 关键接口是否可用，便于调试。"""
-    try:
-        _belong = client.get_belong_board(1, "600519")
-        if _belong is None or _belong.empty:
-            _debug_log("MacClient health check: get_belong_board 不可用")
-        else:
-            _debug_log("MacClient health check: get_belong_board 正常")
-    except Exception as _e:
-        _debug_log(f"MacClient health check: get_belong_board 异常: {_e}")
-    try:
-        _board_list = client.get_board_list(0)
-        if _board_list is None or _board_list.empty:
-            _debug_log("MacClient health check: get_board_list 不可用")
-        else:
-            _debug_log("MacClient health check: get_board_list 正常")
-    except Exception as _e:
-        _debug_log(f"MacClient health check: get_board_list 异常: {_e}")
-
-def _check_mac() -> bool:
-    """检测 MacClient 是否可用（缓存失败状态，避免重复重试退避）。"""
-    global _MAC_AVAILABLE
-    if _MAC_AVAILABLE is not None:
-        return _MAC_AVAILABLE
-    with _TDX_CALL_LOCK:
-        if _MAC_AVAILABLE is not None:
-            return _MAC_AVAILABLE
-        try:
-            from easy_tdx import MacClient
-            c = MacClient.from_best_host()
-            c.connect()
-            c.close()
-            _MAC_AVAILABLE = True
-        except Exception as _e:
-            _debug_log(f"tdx _check_mac error: {_e}")
-            _MAC_AVAILABLE = False
-    return _MAC_AVAILABLE
-
-
-def _get_mac_client() -> Optional[Any]:
-    """V7.5: 获取 MacClient（加锁，线程安全），连接异常时自动重连。
-    
-    V8.5: 重连改为指数退避（0.5s, 1s, 2s），防止频繁重连被封禁。
-    V8.9: 添加 _check_mac() 失败缓存，快速返回。
-    """
-    if not _check_mac():
-        return None
-    with _TDX_CALL_LOCK:
-        global _TDX_MAC_CLIENT
-        for attempt in range(_TDX_RECONNECT_ATTEMPTS):
-            if _TDX_MAC_CLIENT is not None:
-                try:
-                    _TDX_MAC_CLIENT.ensure_connected()
-                    return _TDX_MAC_CLIENT
-                except Exception as _e:
-                    _debug_log(f"tdx _get_mac_client ensure_connected: {_e}")
-                    try:
-                        _TDX_MAC_CLIENT.close()
-                    except Exception as _e:
-                        _debug_log(f"tdx close old mac client: {_e}")
-                    _TDX_MAC_CLIENT = None
-                    if attempt < _TDX_RECONNECT_ATTEMPTS - 1:
-                        time.sleep(_TDX_RECONNECT_DELAY * (2 ** attempt))
-                    continue
-            try:
-                from easy_tdx import MacClient
-                _TDX_MAC_CLIENT = MacClient.from_best_host()
-                _TDX_MAC_CLIENT.connect()
-                _mac_health_check(_TDX_MAC_CLIENT)
-                return _TDX_MAC_CLIENT
-            except Exception as _e:
-                _debug_log(f"tdx _get_mac_client new client error: {_e}")
-                _TDX_MAC_CLIENT = None
-                if attempt < _TDX_RECONNECT_ATTEMPTS - 1:
-                    time.sleep(_TDX_RECONNECT_DELAY * (2 ** attempt))
-        return None
 
 def _reset_tdx_connections() -> None:
     """V7.5: 重置所有 TDX 缓存引用（加锁）。"""
     with _TDX_CALL_LOCK:
-        global _TDX_CLIENT, _TDX_MAC_CLIENT, _TDX_AVAILABLE
+        global _TDX_CLIENT, _TDX_AVAILABLE
         _TDX_CLIENT = None
-        _TDX_MAC_CLIENT = None
         _TDX_AVAILABLE = None
+
 
 def cleanup_tdx() -> None:
     """V7.5: 脚本退出前清理（加锁）。"""
     with _TDX_CALL_LOCK:
-        global _TDX_CLIENT, _TDX_MAC_CLIENT, _TDX_AVAILABLE
+        global _TDX_CLIENT, _TDX_AVAILABLE
         try:
             if _TDX_CLIENT is not None:
                 _stop_ev = getattr(_TDX_CLIENT, '_stop_event', None)
@@ -571,46 +482,50 @@ def cleanup_tdx() -> None:
                 time.sleep(0.05)
         except Exception as _e:
             _debug_log(f"tdx cleanup client heartbeat: {_e}")
-        try:
-            if _TDX_MAC_CLIENT is not None:
-                _stop_ev = getattr(_TDX_MAC_CLIENT, '_stop_event', None)
-                if _stop_ev is not None:
-                    _stop_ev.set()
-                time.sleep(0.05)
-        except Exception as _e:
-            _debug_log(f"tdx cleanup mac_client heartbeat: {_e}")
         _TDX_CLIENT = None
-        _TDX_MAC_CLIENT = None
         _TDX_AVAILABLE = None
+
 
 # ═══════════════════════════════════════
 # Fallback: 原始 V3 HTTP 源
 # ═══════════════════════════════════════
 def _tencent_quote_full_fallback(code: str, is_pre_market: bool = False) -> Dict[str, Any]:
     """腾讯行情兜底 → dict(含 name, price, change_pct, pe, pb 等)。
-    
+
     V9.3: 盘前模式（is_pre_market=True）使用上一交易日日K线数据，避免实时接口返回0值
     """
     if is_pre_market:
         return _pre_market_quote_from_kline(code)
-    
+
     try:
         url = f"https://qt.gtimg.cn/q={_market_prefix(code)}{code}"
         r = _quick_request(url, headers={"User-Agent": UA}, timeout=10)
-        if r is None: return {}
+        if r is None:
+            return {}
         r.encoding = "gbk"
         vals = r.text.split('"')[1].split("~")
-        if len(vals) < 53: return {}
+        if len(vals) < 53:
+            return {}
         return {
-            "name": vals[1], "price": _safe_float(vals[3]), "last_close": _safe_float(vals[4]),
-            "open": _safe_float(vals[5]), "change_amt": _safe_float(vals[31]),
-            "change_pct": _safe_float(vals[32]), "high": _safe_float(vals[33]),
-            "low": _safe_float(vals[34]), "amount_wan": _safe_float(vals[37]),
-            "turnover_pct": _safe_float(vals[38]), "pe_ttm": _safe_float(vals[39]),
-            "amplitude_pct": _safe_float(vals[43]), "float_mcap_yi": _safe_float(vals[44]),
-            "mcap_yi": _safe_float(vals[45]), "pb": _safe_float(vals[46]),
-            "limit_up": _safe_float(vals[47]), "limit_down_price": _safe_float(vals[48]),
-            "vol_ratio": _safe_float(vals[49]), "pe_static": _safe_float(vals[52]),
+            "name": vals[1],
+            "price": _safe_float(vals[3]),
+            "last_close": _safe_float(vals[4]),
+            "open": _safe_float(vals[5]),
+            "change_amt": _safe_float(vals[31]),
+            "change_pct": _safe_float(vals[32]),
+            "high": _safe_float(vals[33]),
+            "low": _safe_float(vals[34]),
+            "amount_wan": _safe_float(vals[37]),
+            "turnover_pct": _safe_float(vals[38]),
+            "pe_ttm": _safe_float(vals[39]),
+            "amplitude_pct": _safe_float(vals[43]),
+            "float_mcap_yi": _safe_float(vals[44]),
+            "mcap_yi": _safe_float(vals[45]),
+            "pb": _safe_float(vals[46]),
+            "limit_up": _safe_float(vals[47]),
+            "limit_down_price": _safe_float(vals[48]),
+            "vol_ratio": _safe_float(vals[49]),
+            "pe_static": _safe_float(vals[52]),
             "bid1_vol": _safe_float(vals[10]) * 100,
         }
     except Exception as _e:
@@ -620,7 +535,7 @@ def _tencent_quote_full_fallback(code: str, is_pre_market: bool = False) -> Dict
 
 def _pre_market_quote_from_kline(code: str) -> Dict[str, Any]:
     """盘前模式：从日K线数据构建行情字典。
-    
+
     使用上一交易日的收盘价作为当前价，上上个交易日收盘价作为昨收，
     重新计算涨跌幅。
     """
@@ -628,31 +543,31 @@ def _pre_market_quote_from_kline(code: str) -> Dict[str, Any]:
         keys, rows = tdx_get_security_bars(code, count=3)
         if not keys or len(rows) < 2:
             return {}
-        
+
         idx_close = keys.index('close') if 'close' in keys else 2
         idx_open = keys.index('open') if 'open' in keys else 1
         idx_high = keys.index('high') if 'high' in keys else 3
         idx_low = keys.index('low') if 'low' in keys else 4
         idx_amount = keys.index('amount') if 'amount' in keys else 6
-        
+
         last_row = rows[0]
         prev_row = rows[1]
-        
+
         close = _safe_float(last_row[idx_close], 0)
         prev_close = _safe_float(prev_row[idx_close], 0)
         open_val = _safe_float(last_row[idx_open], 0)
         high = _safe_float(last_row[idx_high], 0)
         low = _safe_float(last_row[idx_low], 0)
         amount_wan = _safe_float(last_row[idx_amount], 0) / 10000
-        
+
         change_amt = 0.0
         change_pct = 0.0
         if prev_close > 0:
             change_amt = close - prev_close
             change_pct = change_amt / prev_close * 100
-        
+
         return {
-            "name": "", 
+            "name": "",
             "price": close,
             "last_close": prev_close,
             "open": open_val,
@@ -677,49 +592,106 @@ def _pre_market_quote_from_kline(code: str) -> Dict[str, Any]:
         _debug_log(f"pre-market quote from kline error: {_e}")
         return {}
 
+
+_TENCENT_BATCH_CACHE: Dict[str, Dict[str, Dict[str, Any]]] = {}
+_TENCENT_BATCH_CACHE_DATE: str = ""
+
+
 def _tencent_batch_fallback(codes: List[str]) -> Dict[str, Dict[str, Any]]:
-    """腾讯批量行情 → {code: {name, price, change_pct, ...}}。"""
-    if not codes: return {}
+    """腾讯批量行情 → {code: {name, price, change_pct, ...}}。
+
+    V15.5.10: 分批（每批 60 只）——全市场 7957 只拼单 URL（64KB）会被腾讯拒绝。
+    V16.0: 进程内缓存（按交易日维度）— mak 双重拉取 / val→mak 跨脚本复用，
+    避免全市场 133 批 ×2 重复拉取（原浪费 60-150s）。
+    """
+    if not codes:
+        return {}
+    global _TENCENT_BATCH_CACHE_DATE
+    _today = datetime.now().strftime("%Y%m%d")
+    if _TENCENT_BATCH_CACHE_DATE != _today:
+        _TENCENT_BATCH_CACHE.clear()
+        _TENCENT_BATCH_CACHE_DATE = _today
     result: Dict[str, Dict[str, Any]] = {}
-    prefixed = []
-    for c in codes:
-        prefixed.append(f"{_market_prefix(c)}{c}")
-    try:
-        r = _http_get("https://qt.gtimg.cn/q=" + ",".join(prefixed), timeout=15)
-        if r is None: return result
-        for line in r.text.strip().split(";"):
-            if "=" not in line or '"' not in line: continue
-            key = line.split("=")[0].split("_")[-1]
-            vals = line.split('"')[1].split("~")
-            if len(vals) < 53: continue
-            cv = key[2:]
+    # 收集未命中的代码
+    missing = [c for c in codes if c not in _TENCENT_BATCH_CACHE]
+    if missing:
+        _BATCH = 60  # 腾讯 qt.gtimg.cn 单次 URL 安全上限（经验值 60-80）
+        for _start in range(0, len(missing), _BATCH):
+            _chunk = missing[_start : _start + _BATCH]
+            prefixed = [f"{_market_prefix(c)}{c}" for c in _chunk]
             try:
-                result[cv] = {
-                    "name": vals[1], "price": float(vals[3]) if vals[3] else 0,
-                    "change_pct": float(vals[32]) if vals[32] else 0,
-                    "mcap_yi": float(vals[45]) if vals[45] else 0,
-                    "pe_ttm": float(vals[39]) if vals[39] else 0,
-                    "turnover_pct": float(vals[38]) if vals[38] else 0,
-                    "amount_wan": float(vals[37]) if vals[37] else 0,
-                }
-            except (ValueError, TypeError): pass
-    except Exception as _e:
-        _debug_log(f"tdx tencent_quote_batch parse error: {_e}")
+                r = _http_get("https://qt.gtimg.cn/q=" + ",".join(prefixed), timeout=15)
+                if r is None:
+                    continue
+                for line in r.text.strip().split(";"):
+                    if "=" not in line or '"' not in line:
+                        continue
+                    key = line.split("=")[0].split("_")[-1]
+                    vals = line.split('"')[1].split("~")
+                    if len(vals) < 53:
+                        continue
+                    cv = key[2:]
+                    try:
+                        _TENCENT_BATCH_CACHE[cv] = {
+                            "name": vals[1],
+                            "price": float(vals[3]) if vals[3] else 0,
+                            "change_pct": float(vals[32]) if vals[32] else 0,
+                            "mcap_yi": float(vals[45]) if vals[45] else 0,
+                            "pe_ttm": float(vals[39]) if vals[39] else 0,
+                            "turnover_pct": float(vals[38]) if vals[38] else 0,
+                            "amount_wan": float(vals[37]) if vals[37] else 0,
+                        }
+                    except (ValueError, TypeError):
+                        pass
+            except Exception as _e:
+                _debug_log(f"tdx tencent_quote_batch parse error (batch {_start}): {_e}")
+            # V16.0: 批间加 100ms 间隔，消除全市场 133 批 0 间隔连打模式
+            if _start + _BATCH < len(missing):
+                time.sleep(0.1)
+    # 组装结果（含缓存命中）
+    for c in codes:
+        if c in _TENCENT_BATCH_CACHE:
+            result[c] = _TENCENT_BATCH_CACHE[c]
     return result
+
 
 # ═══════════════════════════════════════
 # 行情 + K线适配器
 # ═══════════════════════════════════════
 def tdx_get_security_bars(code: str, count: int = 800) -> Tuple[List[str], List[List[str]]]:
-    """获取日 K 线 → (keys, rows)，V7.5: 进程内缓存 + 全局锁。"""
+    """获取日 K 线 → (keys, rows)，V7.5: 进程内缓存 + 全局锁。
+
+    V12.0: 底层改用 mootdx StdQuotes.bars(frequency=9)。
+    mootdx 返回 DataFrame 列：open/close/high/low/vol/amount/year/month/day/datetime。
+    """
     cache_key = f"D:{code}:{count}"
     cached = _TDX_KLINE_CACHE.get(cache_key)
     if cached is not None:
         return cached
+    # V14.3 P3: 跨进程磁盘缓存（避免周日首次跑 1000+ 次 TCP 请求）
+    try:
+        from stock_common.sc_kline_cache import get_cached_kline, set_cached_kline
+
+        disk_cached = get_cached_kline("D", code, count)
+        if disk_cached is not None:
+            _TDX_KLINE_CACHE[cache_key] = disk_cached
+            return disk_cached
+    except Exception:
+        pass
     with _TDX_CALL_LOCK:
         cached = _TDX_KLINE_CACHE.get(cache_key)
         if cached is not None:
             return cached
+        # V14.3 P3: 再次检查磁盘缓存（防止并发首次进入）
+        try:
+            from stock_common.sc_kline_cache import get_cached_kline, set_cached_kline
+
+            disk_cached = get_cached_kline("D", code, count)
+            if disk_cached is not None:
+                _TDX_KLINE_CACHE[cache_key] = disk_cached
+                return disk_cached
+        except Exception:
+            pass
         for _retry in range(2):
             client = _get_tdx_client()
             if client is None:
@@ -728,76 +700,91 @@ def tdx_get_security_bars(code: str, count: int = 800) -> Tuple[List[str], List[
                 return result
             try:
                 _tdx_throttle()  # V8.5: TDX请求节流
-                from easy_tdx import KlineCategory
-                bars = client.get_security_bars(_market_from_code(code), code, KlineCategory.DAY, 0, count)
-                if bars is None: 
+                # V14.3 P2: 显式 5s 超时包装（仅 Unix 下通过 SIGALRM 启用，Windows 下属性安全隔离）
+                import signal
+
+                if hasattr(signal, 'SIGALRM'):
+
+                    def _timeout_handler(signum, frame):
+                        raise TimeoutError("tdx_get_security_bars timeout (5s)")
+
+                    old_handler = signal.signal(signal.SIGALRM, _timeout_handler)
+                    signal.alarm(5)
+                try:
+                    bars = client.bars(symbol=code, frequency=9, start=0, offset=count)
+                finally:
+                    if hasattr(signal, 'SIGALRM'):
+                        signal.alarm(0)
+                        signal.signal(signal.SIGALRM, old_handler)
+                if bars is None or bars.empty:
                     result = [], []
                     _TDX_KLINE_CACHE[cache_key] = result
                     return result
                 keys = ['time', 'open', 'close', 'high', 'low', 'volume', 'amount']
                 rows = []
-                if hasattr(bars, 'columns'):
-                    if bars.empty:
-                        result = [], []
-                        _TDX_KLINE_CACHE[cache_key] = result
-                        return result
-                    for _, row in bars.iterrows():
-                        rows.append([
-                            str(row.get('date', ''))[:10],
+                for _, row in bars.iterrows():
+                    # mootdx 用 'datetime' 列（'YYYY-MM-DD HH:MM'），取前10位日期
+                    dt = str(row.get('datetime', ''))
+                    rows.append(
+                        [
+                            dt[:10],
                             str(row.get('open', '')),
                             str(row.get('close', '')),
                             str(row.get('high', '')),
                             str(row.get('low', '')),
                             str(row.get('vol', '')),
                             str(row.get('amount', '')),
-                        ])
-                else:
-                    if not bars:
-                        result = [], []
-                        _TDX_KLINE_CACHE[cache_key] = result
-                        return result
-                    for bar in bars:
-                        time_str = f"{bar.year:04d}-{bar.month:02d}-{bar.day:02d}"
-                        rows.append([time_str, f"{bar.open:.2f}", f"{bar.close:.2f}", f"{bar.high:.2f}",
-                                     f"{bar.low:.2f}", f"{bar.vol:.0f}", f"{bar.amount:.2f}"])
+                        ]
+                    )
                 result = (keys, rows)
                 _TDX_KLINE_CACHE[cache_key] = result
+                # V14.3 P3: 写入跨进程磁盘缓存
+                if rows:
+                    try:
+                        from stock_common.sc_kline_cache import set_cached_kline
+
+                        set_cached_kline("D", code, count, result)
+                    except Exception:
+                        pass
                 return result
             except Exception as _e:
-                # V9.3.2: TdxDecodeError 说明服务器返回假数据，标记坏主机
-                _host = getattr(client, '_host', '')
                 _err_name = type(_e).__name__
                 if 'Decode' in _err_name or '数据不足' in str(_e):
-                    if _host:
-                        _TDX_BAD_HOSTS.add(_host)
-                        _debug_log(f"tdx K线解码失败，标记 {_host} 为坏主机: {_e}")
+                    _debug_log(f"tdx K线解码失败: {_e}")
                 _reset_tdx_connections()
                 continue
         result = [], []
-        _debug_log(f"tdx K线获取失败，百度fallback已删除，返回空数据 ({code})")
+        _debug_log(f"tdx K线获取失败，返回空数据 ({code})")
         _TDX_KLINE_CACHE[cache_key] = result
         return result
 
 
 def tdx_get_latest_bar_with_ma(code: str):
     keys, rows = tdx_get_security_bars(code, count=120)
-    if not keys or not rows: return {}
+    if not keys or not rows:
+        return {}
     idx_map = {k: i for i, k in enumerate(keys)}
     ci = idx_map.get('close', -1)
-    if ci < 0 or len(rows) < 20: return {}
+    if ci < 0 or len(rows) < 20:
+        return {}
     closes = [_safe_float(r[ci]) for r in rows if len(r) > ci]
     closes = [c for c in closes if c > 0]
+
     def _sma(data, n):
-        if len(data) < n: return 0
+        if len(data) < n:
+            return 0
         return sum(data[-n:]) / n
+
     last = rows[-1]
     result = {}
     for i, k in enumerate(keys):
-        if i < len(last): result[k] = last[i]
+        if i < len(last):
+            result[k] = last[i]
     result['ma5avgprice'] = f"{_sma(closes, 5):.2f}"
     result['ma10avgprice'] = f"{_sma(closes, 10):.2f}"
     result['ma20avgprice'] = f"{_sma(closes, 20):.2f}"
     return result
+
 
 def _is_before_market_open() -> bool:
     """判断当前是否为盘前时段（9:30之前）。"""
@@ -807,27 +794,83 @@ def _is_before_market_open() -> bool:
 
 def _get_trading_date_for_quote() -> str:
     """获取当前行情数据对应的交易日期。
-    
+
     盘前（<9:30）：使用上一交易日日期
     盘中（>=9:30）：使用今日日期
     """
     if _is_before_market_open():
         from stock_common.stock_calendar import get_last_trading_day
+
         return get_last_trading_day().strftime("%Y-%m-%d")
     return datetime.now().strftime("%Y-%m-%d")
 
 
 def tdx_get_quote_full(code: str) -> Dict[str, Any]:
-    """获取个股完整行情（腾讯兜底，TDX 补强，V7.5 加锁 + 缓存）。
-    
+    """获取个股完整行情（V15.1 重构：ZHB → TDX → 腾讯 HTTP）。
+
     V9.3: 盘前模式（9:30前）使用上一交易日日K线数据，缓存Key包含交易日期
+    V12.0: 底层改用 mootdx StdQuotes.quotes(symbol)。注意 mootdx 列名为
+           'last_close'（对应原 easy_tdx 的 'pre_close'）。
+    V15.1: 优先级调整 ZHB → TDX → 腾讯 HTTP（与 docs/field_dict.md 一致）：
+           - 盘前/盘后：ZHB T-1 数据（无网络）
+           - 盘中：ZHB 缺失时走 TDX TCP
+           - TDX 失败/缺失：降级到腾讯 HTTP
     """
     trading_date = _get_trading_date_for_quote()
     cache_key = f"Q:{code}:{trading_date}"
     cached = _TDX_QUOTE_CACHE.get(cache_key)
     if cached is not None:
         return cached
-    result = _tencent_quote_full_fallback(code, is_pre_market=_is_before_market_open())
+    result: Dict[str, Any] = {}
+
+    # 优先级 1：ZHB 本地（盘前/盘后/周末/16:30后用 T-1 数据）
+    try:
+        from stock_common import get_zhb_single_stock_data, is_zhb_data_fresh
+
+        if is_zhb_data_fresh(max_delay_days=1):
+            zhb = get_zhb_single_stock_data(code)
+            if zhb:
+                _safe = lambda k: zhb.get(k, 0)
+                if _safe("price"):
+                    result["price"] = zhb["price"]
+                if _safe("change_pct") is not None:
+                    result["change_pct"] = zhb["change_pct"]
+                if _safe("open"):
+                    result["open"] = zhb["open"]
+                if _safe("high"):
+                    result["high"] = zhb["high"]
+                if _safe("low"):
+                    result["low"] = zhb["low"]
+                if _safe("last_close"):
+                    result["last_close"] = zhb["last_close"]
+                # V16.0: ZHB tdxstat2 Col[3] amount 已是万元（zhb_client.py:797），去掉二次 /10000
+                # 之前误除导致 ZHB 新鲜时 amount_wan 缩小 1 万倍
+                if _safe("amount"):
+                    result["amount_wan"] = zhb["amount"]
+                # V16.0: 移除 ZHB volume 注入 — Col[24] 曾误映射为 volume(成交量)，
+                # 经 9 天连续+联网核实为恒定静态数据(非成交量)，已改名为 unknown_24。
+                # 真实成交量只能来自 TDX/腾讯行情（下方 TDX TCP 分支填充）。
+                # if _safe("volume"): result["volume_hand"] = zhb["volume"]
+                if _safe("pe_ttm"):
+                    result["pe_ttm"] = zhb["pe_ttm"]
+                if _safe("pb"):
+                    result["pb"] = zhb["pb"]
+                if _safe("turnover_pct"):
+                    result["turnover_pct"] = zhb["turnover_pct"]
+                if _safe("change_pct_1d") is not None:
+                    result["change_pct_1d"] = zhb["change_pct_1d"]
+                if _safe("change_pct_2d") is not None:
+                    result["change_pct_2d"] = zhb["change_pct_2d"]
+                if _safe("amount_1d"):
+                    result["amount_1d"] = zhb["amount_1d"]
+                if _safe("amount_2d"):
+                    result["amount_2d"] = zhb["amount_2d"]
+                if zhb.get("industry"):
+                    result["industry"] = zhb["industry"]
+    except Exception as _e:
+        _debug_log(f"tdx zhb quote fallback error ({code}): {_e}")
+
+    # 优先级 2：TDX TCP（盘中实时补强）
     with _TDX_CALL_LOCK:
         cached = _TDX_QUOTE_CACHE.get(cache_key)
         if cached is not None:
@@ -836,151 +879,168 @@ def tdx_get_quote_full(code: str) -> Dict[str, Any]:
         if client is not None:
             try:
                 _tdx_throttle()  # V8.5: TDX请求节流
-                quotes = client.get_security_quotes([(_market_from_code(code), code)])
-                # V9.0: get_security_quotes 返回 DataFrame，需用 .empty/iloc[0]
+                quotes = client.quotes(symbol=code)
                 if quotes is not None and not quotes.empty:
                     q = quotes.iloc[0]
-                    if q['price']: result['price'] = q['price']
-                    if q['pre_close']: result['last_close'] = q['pre_close']
-                    if q['open']: result['open'] = q['open']
-                    if q['high']: result['high'] = q['high']
-                    if q['low']: result['low'] = q['low']
-                    if q['amount']: result['amount_wan'] = q['amount'] / 10000.0
-                    if q['pre_close'] and q['pre_close'] > 0:
-                        result['change_pct'] = (q['price'] - q['pre_close']) / q['pre_close'] * 100
-                        result['change_amt'] = q['price'] - q['pre_close']
-                    result['bid1'] = q['bid1']; result['bid2'] = q['bid2']; result['bid3'] = q['bid3']
-                    result['bid4'] = q['bid4']; result['bid5'] = q['bid5']
-                    result['ask1'] = q['ask1']; result['ask2'] = q['ask2']; result['ask3'] = q['ask3']
-                    result['ask4'] = q['ask4']; result['ask5'] = q['ask5']
+                    # mootdx 列名 'last_close' = 昨收
+                    pre_close = q.get('last_close', 0)
+                    if q.get('price') and not result.get('price'):
+                        result['price'] = q['price']
+                    if pre_close and not result.get('last_close'):
+                        result['last_close'] = pre_close
+                    if q.get('open') and not result.get('open'):
+                        result['open'] = q['open']
+                    if q.get('high') and not result.get('high'):
+                        result['high'] = q['high']
+                    if q.get('low') and not result.get('low'):
+                        result['low'] = q['low']
+                    if q.get('amount') and not result.get('amount_wan'):
+                        result['amount_wan'] = q['amount'] / 10000.0
+                    if pre_close and pre_close > 0 and not result.get('change_pct'):
+                        result['change_pct'] = (q['price'] - pre_close) / pre_close * 100
+                        result['change_amt'] = q['price'] - pre_close
+                    for i in range(1, 6):
+                        result[f'bid{i}'] = q.get(f'bid{i}', 0)
+                        result[f'ask{i}'] = q.get(f'ask{i}', 0)
             except Exception as _e:
                 _debug_log(f"tdx quote supplement error: {_e}")
-    # V8.9: 腾讯超时时 TDX 补充不完整 → 返回空字典（让 if q: 保护生效）
+
+    # 优先级 3：腾讯 HTTP（最后兜底）
+    if not result or "pe_ttm" not in result:
+        http_result = _tencent_quote_full_fallback(code, is_pre_market=_is_before_market_open())
+        if http_result:
+            # 合并：HTTP 仅填充 ZHB/TDX 缺失的字段
+            for k, v in http_result.items():
+                if k not in result or not result.get(k):
+                    result[k] = v
+
+    # V8.9: 兜底仍无 pe_ttm → 返回空字典（让 if q: 保护生效）
     if result and "pe_ttm" not in result:
         result = {}
     _TDX_QUOTE_CACHE[cache_key] = result
     return result
 
-def tdx_get_quotes_batch(codes: List[str]) -> Dict[str, Dict[str, Any]]:
-    """批量获取行情（腾讯批量查询，TDX 增量修正）。"""
-    if not codes: return {}
-    result = _tencent_batch_fallback(codes)
-    with _TDX_CALL_LOCK:
-        client = _get_tdx_client()
-        if client is not None:
-            try:
-                _tdx_throttle()  # V8.5: TDX请求节流
-                stocks = [(_market_from_code(c), c) for c in codes]
-                quotes = client.get_security_quotes(stocks)
-                # V9.0: get_security_quotes 返回 DataFrame，需用 iterrows 遍历
-                if quotes is not None and not quotes.empty:
-                    for _, q in quotes.iterrows():
-                        q_code = str(q['code'])
-                        if q_code in result and q['price']:
-                            result[q_code]['price'] = q['price']
-                            if q['pre_close'] and q['pre_close'] > 0:
-                                result[q_code]['change_pct'] = round((q['price'] - q['pre_close']) / q['pre_close'] * 100, 2)
-            except Exception as _e:
-                _debug_log(f"tdx batch_quote supplement error: {_e}")
-    return result
 
 def tdx_get_index_quote(idx_code: str) -> Dict[str, Any]:
-    """获取指数行情（TDX 优先，腾讯兜底）。"""
+    """获取指数行情（TDX 优先，腾讯兜底）。
+
+    V12.0: mootdx 的 index_bars 直接接受指数代码（如 '000001'），
+           不再需要 market/code 拆分。
+    """
     with _TDX_CALL_LOCK:
         client = _get_tdx_client()
         if client is not None:
             try:
                 _tdx_throttle()  # V8.5: TDX请求节流
-                from easy_tdx import KlineCategory
-                market, code = _index_to_market_code(idx_code)
-                bars = client.get_index_bars(market, code, KlineCategory.DAY, 0, 2)
-                if bars is not None and not (hasattr(bars, 'empty') and bars.empty):
-                    if hasattr(bars, 'columns'):
-                        if len(bars) >= 2:
-                            last_c = float(bars.iloc[-1]['close']); prev_c = float(bars.iloc[-2]['close'])
-                            last_o = float(bars.iloc[-1]['open'])
-                            chg = (last_c - prev_c) / prev_c * 100 if prev_c > 0 else 0
-                            return {"price": round(last_c, 2), "open": round(last_o, 2), "change_pct": round(chg, 2)}
-                    elif len(bars) >= 2:
-                        last = bars[-1]; prev = bars[-2]
-                        chg = (last.close - prev.close) / prev.close * 100 if prev.close > 0 else 0
-                        return {"price": round(last.close, 2), "open": round(last.open, 2), "change_pct": round(chg, 2)}
+                _, code = _index_to_market_code(idx_code)
+                bars = client.index_bars(symbol=code, frequency=9, start=0, offset=2)
+                if bars is not None and not bars.empty and len(bars) >= 2:
+                    last_c = float(bars.iloc[-1]['close'])
+                    prev_c = float(bars.iloc[-2]['close'])
+                    last_o = float(bars.iloc[-1]['open'])
+                    chg = (last_c - prev_c) / prev_c * 100 if prev_c > 0 else 0
+                    return {
+                        "price": round(last_c, 2),
+                        "open": round(last_o, 2),
+                        "change_pct": round(chg, 2),
+                    }
             except Exception as _e:
                 _debug_log(f"tdx index_quote error: {_e}")
     try:
         url = f"https://qt.gtimg.cn/q={idx_code}"
         r = _quick_request(url, headers={"User-Agent": UA}, timeout=10)
-        if r is None: return {}
+        if r is None:
+            return {}
         r.encoding = "gbk"
         v = r.text.split('"')[1].split("~")
-        return {"price": _safe_float(v[3]), "open": _safe_float(v[5]), "change_pct": _safe_float(v[32])}
+        return {
+            "price": _safe_float(v[3]),
+            "open": _safe_float(v[5]),
+            "change_pct": _safe_float(v[32]),
+        }
     except Exception as _e:
         _debug_log(f"tdx tdx_get_index_quote error ({idx_code}): {_e}")
         return {}
 
+
+@cached(category="kline", ttl_seconds=TTL["kline"])  # V16.1: 8000 根 K 线太贵，24h 磁盘缓存
 def tdx_get_historical_high(code: str) -> Optional[float]:
-    """历史最高价（800 根日 K 线内）。"""
+    """历史最高价（800 根日 K 线内）。
+
+    V12.0: mootdx bars offset 上限较高，可一次性拉取 8000 根。
+    V16.1: 补 @cached（val/lng 多次调用场景，避免重复 8000 根拉取）。
+    """
     with _TDX_CALL_LOCK:
         client = _get_tdx_client()
-        if client is None: return None
+        if client is None:
+            return None
         try:
-            from easy_tdx import KlineCategory
-            bars = client.get_security_bars(_market_from_code(code), code, KlineCategory.DAY, 0, 8000)
-            if bars is None: return None
-            if hasattr(bars, 'columns'):
-                if bars.empty: return None
-                return max(float(bars.iloc[i]['high']) for i in range(len(bars)) if float(bars.iloc[i]['high']) > 0)
-            if not bars: return None
-            values = [b.high for b in bars if b.high > 0]
+            bars = client.bars(symbol=code, frequency=9, start=0, offset=8000)
+            if bars is None or bars.empty:
+                return None
+            values = [float(v) for v in bars['high'].tolist() if float(v) > 0]
             return max(values) if values else None
         except Exception as _e:
             _debug_log(f"tdx tdx_get_historical_high error ({code}): {_e}")
             return None
 
+
 def tdx_get_index_bars(idx_code: str, count: int = 250):
-    # V9.3.2: 增加重试机制，TdxDecodeError时标记坏主机并换IP重连
+    """V12.0: mootdx index_bars 直接接受指数代码。"""
     for _retry in range(2):
         with _TDX_CALL_LOCK:
             client = _get_tdx_client()
             if client is None:
                 return [], []
             try:
-                from easy_tdx import KlineCategory
-                market, code = _index_to_market_code(idx_code)
-                bars = client.get_index_bars(market, code, KlineCategory.DAY, 0, count)
-                if bars is None: return [], []
+                m, code = _index_to_market_code(idx_code)
+                bars = client.index_bars(symbol=code, market=m, frequency=9, start=0, offset=count)
+                if bars is None or bars.empty:
+                    return [], []
                 keys = ['time', 'open', 'close', 'high', 'low', 'volume', 'amount']
                 rows = []
-                if hasattr(bars, 'columns'):
-                    if bars.empty: return [], []
-                    for _, row in bars.iterrows():
-                        rows.append([str(row.get('date',''))[:10], str(row.get('open','')), str(row.get('close','')),
-                                     str(row.get('high','')), str(row.get('low','')), str(row.get('vol','')),
-                                     str(row.get('amount',''))])
-                else:
-                    if not bars: return [], []
-                    for bar in bars:
-                        time_str = f"{bar.year:04d}-{bar.month:02d}-{bar.day:02d}"
-                        rows.append([time_str, f"{bar.open:.2f}", f"{bar.close:.2f}", f"{bar.high:.2f}",
-                                     f"{bar.low:.2f}", f"{bar.vol:.0f}", f"{bar.amount:.2f}"])
+                for _, row in bars.iterrows():
+                    dt = str(row.get('datetime', ''))
+                    rows.append(
+                        [
+                            dt[:10],
+                            str(row.get('open', '')),
+                            str(row.get('close', '')),
+                            str(row.get('high', '')),
+                            str(row.get('low', '')),
+                            str(row.get('vol', '')),
+                            str(row.get('amount', '')),
+                        ]
+                    )
                 return keys, rows
             except Exception as _e:
-                # V9.3.2: TdxDecodeError 说明服务器返回假数据，标记坏主机并重试
-                _host = getattr(client, '_host', '')
                 _err_name = type(_e).__name__
                 if 'Decode' in _err_name or '数据不足' in str(_e):
-                    if _host:
-                        _TDX_BAD_HOSTS.add(_host)
-                        _debug_log(f"tdx 指数K线解码失败，标记 {_host} 为坏主机: {_e}")
+                    _debug_log(f"tdx 指数K线解码失败: {_e}")
                 _reset_tdx_connections()
                 continue
     return [], []
 
+
 def tdx_get_weekly_bars(code: str, count: int = 100):
+    """V12.0: mootdx bars(frequency=5) 返回周K线。
+
+    V14.3 P3: 接入跨进程磁盘缓存。
+    """
     cache_key = f"W:{code}:{count}"
     cached = _TDX_WKLINE_CACHE.get(cache_key)
     if cached is not None:
         return cached
+    # V14.3 P3: 跨进程磁盘缓存
+    try:
+        from stock_common.sc_kline_cache import get_cached_kline, set_cached_kline
+
+        disk_cached = get_cached_kline("W", code, count)
+        if disk_cached is not None:
+            _TDX_WKLINE_CACHE[cache_key] = disk_cached
+            return disk_cached
+    except Exception:
+        pass
     with _TDX_CALL_LOCK:
         cached = _TDX_WKLINE_CACHE.get(cache_key)
         if cached is not None:
@@ -991,198 +1051,256 @@ def tdx_get_weekly_bars(code: str, count: int = 100):
             _TDX_WKLINE_CACHE[cache_key] = result
             return result
         try:
-            from easy_tdx import KlineCategory
-            bars = client.get_security_bars(_market_from_code(code), code, KlineCategory.WEEK, 0, count)
-            if bars is None:
+            # V14.3 P2: 显式 5s 超时包装（仅 Unix 下通过 SIGALRM 启用，Windows 下属性安全隔离）
+            import signal
+
+            if hasattr(signal, 'SIGALRM'):
+
+                def _timeout_handler(signum, frame):
+                    raise TimeoutError("tdx_get_weekly_bars timeout (5s)")
+
+                old_handler = signal.signal(signal.SIGALRM, _timeout_handler)
+                signal.alarm(5)
+            try:
+                bars = client.bars(symbol=code, frequency=5, start=0, offset=count)
+            finally:
+                if hasattr(signal, 'SIGALRM'):
+                    signal.alarm(0)
+                    signal.signal(signal.SIGALRM, old_handler)
+            if bars is None or bars.empty:
                 result = ([], [])
                 _TDX_WKLINE_CACHE[cache_key] = result
                 return result
             keys = ['time', 'open', 'close', 'high', 'low', 'volume', 'amount']
             rows = []
-            if hasattr(bars, 'columns'):
-                if bars.empty:
-                    result = ([], [])
-                    _TDX_WKLINE_CACHE[cache_key] = result
-                    return result
-                for _, row in bars.iterrows():
-                    rows.append([str(row.get('date',''))[:10], str(row.get('open','')), str(row.get('close','')),
-                                 str(row.get('high','')), str(row.get('low','')), str(row.get('vol','')),
-                                 str(row.get('amount',''))])
-            else:
-                if not bars:
-                    result = ([], [])
-                    _TDX_WKLINE_CACHE[cache_key] = result
-                    return result
-                for bar in bars:
-                    time_str = f"{bar.year:04d}-{bar.month:02d}-{bar.day:02d}"
-                    rows.append([time_str, f"{bar.open:.2f}", f"{bar.close:.2f}", f"{bar.high:.2f}",
-                                 f"{bar.low:.2f}", f"{bar.vol:.0f}", f"{bar.amount:.2f}"])
+            for _, row in bars.iterrows():
+                dt = str(row.get('datetime', ''))
+                rows.append(
+                    [
+                        dt[:10],
+                        str(row.get('open', '')),
+                        str(row.get('close', '')),
+                        str(row.get('high', '')),
+                        str(row.get('low', '')),
+                        str(row.get('vol', '')),
+                        str(row.get('amount', '')),
+                    ]
+                )
             result = (keys, rows)
             _TDX_WKLINE_CACHE[cache_key] = result
+            # V14.3 P3: 写入跨进程磁盘缓存
+            if rows:
+                try:
+                    from stock_common.sc_kline_cache import set_cached_kline
+
+                    set_cached_kline("W", code, count, result)
+                except Exception:
+                    pass
             return result
         except Exception as _e:
-            # V9.3.2: TdxDecodeError 说明服务器返回假数据，标记坏主机
-            _host = getattr(client, '_host', '')
             if 'Decode' in type(_e).__name__ or '数据不足' in str(_e):
-                if _host:
-                    _TDX_BAD_HOSTS.add(_host)
-                    _debug_log(f"tdx 周K线解码失败，标记 {_host} 为坏主机: {_e}")
+                _debug_log(f"tdx 周K线解码失败: {_e}")
             result = ([], [])
             _TDX_WKLINE_CACHE[cache_key] = result
             return result
 
+
 # ═══════════════════════════════════════
 # 资金流适配器
 # ═══════════════════════════════════════
-@cached(category="f10_fund_flow", trading_day=True, valid_if=lambda r: r is not None)
+@cached(
+    category="f10_fund_flow", trading_day=True, valid_if=make_valid_if()
+)  # V15.2: 拒绝空 dict/全 0
 def tdx_get_fund_flow(code: str):
-    with _TDX_CALL_LOCK:
-        client = _get_tdx_client()
-        if client is None: return {}
-        try:
-            df = client.get_fund_flow(_market_from_code(code), code)
-            if df is None or df.empty: return {}
-            row = df.iloc[0] if len(df) > 0 else None
-            if row is None: return {}
-            super_in = _safe_float(row.get('super_in', 0))
-            large_in = _safe_float(row.get('large_in', 0))
-            medium_in = _safe_float(row.get('medium_in', 0))
-            small_in = _safe_float(row.get('small_in', 0))
-            super_out = _safe_float(row.get('super_out', 0))
-            large_out = _safe_float(row.get('large_out', 0))
-            medium_out = _safe_float(row.get('medium_out', 0))
-            small_out = _safe_float(row.get('small_out', 0))
-            main_net = (super_in + large_in) - (super_out + large_out)
-            total_in = super_in + large_in + medium_in + small_in
-            total_out = super_out + large_out + medium_out + small_out
-            total_net = total_in - total_out
-            return {
-                "main_net": main_net, "main_net_wan": main_net / 10000.0,
-                "total_net": total_net,
-                "super_in": super_in, "super_out": super_out,
-                "large_in": large_in, "large_out": large_out,
-                "medium_in": medium_in, "medium_out": medium_out,
-                "small_in": small_in, "small_out": small_out,
-            }
-        except Exception as _e:
-            _debug_log(f"tdx tdx_get_fund_flow error ({code}): {_e}")
-            return {}
+    # V12.0: 委托到东财 HTTP 接口（原 TDX get_fund_flow 已废弃）
+    # V15.1: 实际数据源是东财 HTTP，函数名 tdx_* 易误导；
+    #        新代码请直接调用 em_get_fund_flow (别名) 或 sc_datasource.get_em_fund_flow
+    try:
+        from stock_common.sc_datasource import get_em_fund_flow
 
-@cached(category="f10_fund_flow", trading_day=True, valid_if=lambda r: r is not None)
+        return get_em_fund_flow(code)
+    except Exception as _e:
+        _debug_log(f"tdx tdx_get_fund_flow error ({code}): {_e}")
+        return None  # V15.2: 失败返回 None（不再返回 {}，避免 valid_if 误判）
+
+
+# V15.1: 别名，标注实际数据源是东财 HTTP（避免继续使用 tdx_* 误导）
+def em_get_fund_flow(code: str):
+    """V15.1 别名：实际数据源是东财 HTTP（原 tdx_get_fund_flow）。
+
+    新代码请使用本函数。
+    """
+    return tdx_get_fund_flow(code)
+
+
+@cached(
+    category="f10_fund_flow", trading_day=True, valid_if=make_valid_if()
+)  # V15.2: 拒绝空 dict/全 0
 def tdx_get_history_fund_flow(code: str, days: int = 120):
-    with _TDX_CALL_LOCK:
-        client = _get_tdx_client()
-        if client is None: return []
-        try:
-            df = client.get_history_fund_flow(_market_from_code(code), code, 0, days)
-            if df is None or df.empty: return []
-            rows = []
-            for _, row in df.iterrows():
-                super_in = _safe_float(row.get('super_in', 0))
-                large_in = _safe_float(row.get('large_in', 0))
-                medium_in = _safe_float(row.get('medium_in', 0))
-                small_in = _safe_float(row.get('small_in', 0))
-                super_out = _safe_float(row.get('super_out', 0))
-                large_out = _safe_float(row.get('large_out', 0))
-                medium_out = _safe_float(row.get('medium_out', 0))
-                small_out = _safe_float(row.get('small_out', 0))
-                main_net = (super_in + large_in) - (super_out + large_out)
-                super_net = super_in - super_out
-                large_net = large_in - large_out
-                mid_net = medium_in - medium_out
-                small_net = small_in - small_out
-                date_str = str(row.get('date', ''))[:10]
-                rows.append({
-                    "date": date_str, "main_net": main_net,
-                    "super_net": super_net, "large_net": large_net,
-                    "mid_net": mid_net, "small_net": small_net,
-                })
-            return rows
-        except Exception as _e:
-            # V9.3.1: 区分"无数据"和"解码失败"，解码失败时记录日志便于排查
-            _err_msg = str(_e)
-            if "数据不足" in _err_msg or "TdxDecodeError" in type(_e).__name__:
-                _debug_log(f"tdx_get_history_fund_flow decode error ({code}): {_e}")
-            return []
+    # V12.0: 委托到东财 HTTP 接口（原 TDX get_history_fund_flow 已废弃）
+    # V15.1: 实际数据源是东财 HTTP；新代码请使用 em_get_history_fund_flow
+    try:
+        from stock_common.sc_datasource import get_em_history_fund_flow
+
+        return get_em_history_fund_flow(code, days)
+    except Exception as _e:
+        _debug_log(f"tdx tdx_get_history_fund_flow error ({code}): {_e}")
+        return None  # V15.2: 失败返回 None（不再返回 []，避免 valid_if 误判）
+
+
+# V15.1: 别名
+def em_get_history_fund_flow(code: str, days: int = 120):
+    """V15.1 别名：实际数据源是东财 HTTP（原 tdx_get_history_fund_flow）。
+
+    新代码请使用本函数。
+    """
+    return tdx_get_history_fund_flow(code, days)
+
 
 # ═══════════════════════════════════════
 # 除权除息 + 公告适配器
 # ═══════════════════════════════════════
-def tdx_get_finance_roe(code: str):
+@cached(
+    category="financial", ttl_seconds=TTL["financial"]
+)  # V15.5.7: val strategy_10 300 次逐股 TDX 去重
+def tdx_get_finance_info(code: str) -> Optional[Dict[str, Any]]:
     """
-    TDX 最新 ROE → 替换 eastmoney MAINFINADATA 单期查询
-
-    返回: ROE% (float) 或 None
+    V13.0: 提取完整的 GetFinanceInfo (0x0010) 二进制解析结果，返回包含 37 个字段的核心财务数据字典。
+    关键字段：
+    - updated_date (财报披露日，可用于事件驱动 TTL)
+    - zongguben (总股本), liutongguben (流通股本)
+    - jinglirun (净利润), zhuyingshouru (主营收入)
+    - jingzichan (净资产), zongzichan (总资产)
+    - jingyingxianjinliu (经营现金流)
     """
     with _TDX_CALL_LOCK:
         client = _get_tdx_client()
-        if client is None: return None
+        if client is None:
+            return None
         try:
-            info = client.get_finance_info(_market_from_code(code), code)
-            if info is None: return None
-            profit = _safe_float(getattr(info, 'jing_lirun', 0))
-            equity = _safe_float(getattr(info, 'jing_zichan', 0))
-            if equity <= 0: return None
-            return round(profit / equity * 100, 2)
+            info = client.finance(symbol=code)
+            if info is None or info.empty:
+                return None
+            # 将 DataFrame 首行转换为纯净的 dict
+            # mootdx 返回的列包含了所有核心财务指标，并把 np.nan 转换为 None，方便后续处理
+            import math
+
+            row = info.iloc[0].to_dict()
+            clean_row = {}
+            for k, v in row.items():
+                if isinstance(v, float) and math.isnan(v):
+                    clean_row[k] = None
+                else:
+                    clean_row[k] = v
+            return clean_row
         except Exception as _e:
-            _debug_log(f"tdx tdx_get_roe_from_finance_info error ({code}): {_e}")
+            _debug_log(f"tdx tdx_get_finance_info error ({code}): {_e}")
             return None
 
 
+def tdx_get_finance_roe(code: str):
+    """
+    TDX 最新 ROE → 替换 eastmoney MAINFINADATA 单期查询
+    V13.0 改为直接复用全量 tdx_get_finance_info 接口提取。
+    """
+    info = tdx_get_finance_info(code)
+    if not info:
+        return None
+    profit = _safe_float(info.get('jinglirun', 0))
+    equity = _safe_float(info.get('jingzichan', 0))
+    if equity <= 0:
+        return None
+    return round(profit / equity * 100, 2)
+
+
+@cached(category="dividend", ttl_seconds=86400, cross_verify=True)  # V16.0: S13 高股息 100 次逐股 xdxr 无缓存 → 补缓存
 def tdx_get_dividend_history(code: str):
+    """V12.0: mootdx xdxr 列为 year/month/day（无 'date' 列），组合成日期字符串。"""
     with _TDX_CALL_LOCK:
         client = _get_tdx_client()
-        if client is None: return []
+        if client is None:
+            return []
         try:
-            df = client.get_xdxr_info(_market_from_code(code), code)
-            if df is None or df.empty: return []
+            df = client.xdxr(symbol=code)
+            if df is None or df.empty:
+                return []
             rows = []
             for _, row in df.iterrows():
-                cat = int(row.get('category', 0))
-                if cat != 1: continue
+                cat = int(row.get('category', 0) or 0)
+                if cat != 1:
+                    continue
                 fh = _safe_float(row.get('fenhong', 0))
                 szg = _safe_float(row.get('songzhuangu', 0))
                 pg = _safe_float(row.get('peigu', 0))
-                rows.append({
-                    "date": str(row.get('date', ''))[:10],
-                    "bonus_rmb": fh,
-                    "bonus_ratio": pg,
-                    "transfer_ratio": szg,
-                })
+                # mootdx 没有 'date' 列，从 year/month/day 组合
+                y = int(row.get('year', 0) or 0)
+                m = int(row.get('month', 0) or 0)
+                d = int(row.get('day', 0) or 0)
+                date_str = f"{y:04d}-{m:02d}-{d:02d}" if y > 0 else ''
+                rows.append(
+                    {
+                        "date": date_str,
+                        "bonus_rmb": fh,
+                        "bonus_ratio": pg,
+                        "transfer_ratio": szg,
+                    }
+                )
             rows.sort(key=lambda x: x["date"], reverse=True)
             return rows
         except Exception as _e:
             _debug_log(f"tdx tdx_get_dividend_history error ({code}): {_e}")
             return []
 
+
 def tdx_get_eps_from_reports(code: str):
     try:
         api = "https://reportapi.eastmoney.com/report/list"
         for page in range(1, 3):
-            params = {"pageSize":"50","industry":"*","rating":"*","beginTime":"2000-01-01","endTime":"2030-01-01","pageNo":str(page),"code":code,"qType":"0"}
+            params = {
+                "pageSize": "50",
+                "industry": "*",
+                "rating": "*",
+                "beginTime": "2000-01-01",
+                "endTime": "2030-01-01",
+                "pageNo": str(page),
+                "code": code,
+                "qType": "0",
+            }
             r = _request_with_retry(api, params=params, timeout=30)
-            if r is None: break
+            if r is None:
+                break
             rows = r.json().get("data") or []
-            if not rows: break
+            if not rows:
+                break
             this_year = next_year = None
             for r2 in rows:
                 ty = r2.get("predictThisYearEps")
                 ny = r2.get("predictNextYearEps")
-                if ty is not None: this_year = float(ty)
-                if ny is not None: next_year = float(ny)
+                if ty is not None:
+                    this_year = float(ty)
+                if ny is not None:
+                    next_year = float(ny)
                 if this_year is not None:
-                    return {"eps_cur": this_year, "eps_next": next_year, "analyst_count": 1, "source": "东财研报"}
+                    return {
+                        "eps_cur": this_year,
+                        "eps_next": next_year,
+                        "analyst_count": 1,
+                        "source": "东财研报",
+                    }
         return None
     except Exception as _e:
         _debug_log(f"tdx tdx_get_eps_from_reports error ({code}): {_e}")
         return None
 
-@cached(category="f10_announcements", trading_day=True, valid_if=lambda r: r is not None)
+
+@cached(
+    category="f10_announcements", trading_day=True, valid_if=make_valid_if()
+)  # V15.2: 拒绝空 dict/全 0
 def tdx_get_latest_announcements(code: str, days: int = 7):
     """从 TDX F10 公司公告中获取最新公告列表。
 
-    V9.0 修复：正确使用 get_company_info_category + get_company_info_content，
-    用 filename/start/length 参数读取「公司公告」分类，解析表格格式的公告列表。
+    V12.0: mootdx 用 F10C(symbol) 返回 list[OrderedDict] 取分类元数据，
+           F10(symbol, name) 直接返回完整文本（不需要 filename/start/length）。
 
     Args:
         code: 股票代码
@@ -1196,27 +1314,29 @@ def tdx_get_latest_announcements(code: str, days: int = 7):
         if client is None:
             return []
         try:
-            cats = client.get_company_info_category(_market_from_code(code), code)
-            if cats is None or cats.empty:
+            cats = client.F10C(symbol=code)
+            if not cats:
                 return []
             # 找到「公司公告」分类
-            ann_cat = cats[cats['name'] == '公司公告']
-            if ann_cat.empty:
+            ann_cat = next((c for c in cats if c.get('name') == '公司公告'), None)
+            if ann_cat is None:
+                # mootdx 的 F10 数据源不含「公司公告」分类（easy_tdx 特有）
+                # 该函数返回空，调用方应改用巨潮资讯 HTTP 接口（sc_datasource 已有）
+                _debug_log(f"tdx tdx_get_latest_announcements: mootdx 无「公司公告」分类 ({code})")
                 return []
-            row = ann_cat.iloc[0]
             _tdx_throttle()
-            content = client.get_company_info_content(
-                _market_from_code(code), code,
-                row['filename'], int(row['start']), int(row['length'])
-            )
-            if not content:
+            content = client.F10(symbol=code, name='公司公告')
+            # mootdx 在 name 不存在时返回 dict（所有分类），存在时返回 str
+            if not isinstance(content, str) or not content:
                 return []
             # 解析 F10 公告表格格式（GBK 文本，┌┬┐├┼┤└┴┘ 等分隔符）
             import re as _re
+
             lines = content.split('\n')
             anns = []
             current_date = ''
             from datetime import datetime, timedelta
+
             cutoff = (datetime.now() - timedelta(days=days)).strftime('%Y-%m-%d') if days else ''
             for line in lines:
                 line = line.strip()
@@ -1230,17 +1350,15 @@ def tdx_get_latest_announcements(code: str, days: int = 7):
                     if cutoff and current_date < cutoff:
                         continue
                     # 提取标题（去掉日期时间后的剩余内容）
-                    title = line[m.end():].strip()
+                    title = line[m.end() :].strip()
                     # 去掉左侧表格竖线分隔符
                     title = title.lstrip('│').strip()
                     # 去掉右侧表格竖线
                     title = title.rstrip('│').strip()
                     if title and len(title) > 3:
-                        anns.append({
-                            "title": title[:120],
-                            "date": current_date,
-                            "category": "公司公告"
-                        })
+                        anns.append(
+                            {"title": title[:120], "date": current_date, "category": "公司公告"}
+                        )
                 elif current_date and not cutoff or (cutoff and current_date >= cutoff):
                     # 续行（上一行的公告标题可能换行）
                     if line.startswith('│') or '│' in line:
@@ -1252,11 +1370,9 @@ def tdx_get_latest_announcements(code: str, days: int = 7):
                         for p in parts:
                             p = p.strip()
                             if p and len(p) > 3 and not _re.match(r'^[\d:\-\s]+$', p):
-                                anns.append({
-                                    "title": p[:120],
-                                    "date": current_date,
-                                    "category": "公司公告"
-                                })
+                                anns.append(
+                                    {"title": p[:120], "date": current_date, "category": "公司公告"}
+                                )
                                 break
             return anns[:10]
         except Exception as _e:
@@ -1268,8 +1384,12 @@ def tdx_get_latest_announcements(code: str, days: int = 7):
 # F10 分类数据获取（V9.0 新增）
 # ═══════════════════════════════════════
 
+
 def _f10_get_content(code: str, category_name: str) -> str:
     """获取 F10 指定分类的原始文本内容。
+
+    V12.0: mootdx 的 F10(symbol, name) 直接返回完整文本，
+           F10C(symbol) 仅用于校验分类是否存在。
 
     Args:
         code: 股票代码
@@ -1282,25 +1402,24 @@ def _f10_get_content(code: str, category_name: str) -> str:
     if client is None:
         return ''
     try:
-        cats = client.get_company_info_category(_market_from_code(code), code)
-        if cats is None or cats.empty:
+        # 先用 F10C 校验分类存在（避免直接 F10 拉取空分类）
+        cats = client.F10C(symbol=code)
+        if not cats or not any(c.get('name') == category_name for c in cats):
             return ''
-        target = cats[cats['name'] == category_name]
-        if target.empty:
-            return ''
-        row = target.iloc[0]
         _tdx_throttle()
-        content = client.get_company_info_content(
-            _market_from_code(code), code,
-            row['filename'], int(row['start']), int(row['length'])
-        )
+        content = client.F10(symbol=code, name=category_name)
+        # mootdx 在 name 不存在时返回 dict（所有分类），存在时返回 str
+        if not isinstance(content, str):
+            return ''
         return content or ''
     except Exception as _e:
-        _debug_log(f"tdx tdx_get_company_info_content error ({code}): {_e}")
+        _debug_log(f"tdx _f10_get_content error ({code}): {_e}")
         return ''
 
 
-@cached(category="f10_reminders", trading_day=True, valid_if=lambda r: r is not None)
+@cached(
+    category="f10_reminders", trading_day=True, valid_if=make_valid_if()
+)  # V15.2: 拒绝空 dict/全 0
 def tdx_get_latest_reminders(code: str) -> dict:
     """从 TDX F10「最新提示」分类获取综合信息（8 个子栏目一次拿全）。
 
@@ -1321,7 +1440,13 @@ def tdx_get_latest_reminders(code: str) -> dict:
             "risk_warnings": {...}
         }
     """
-    from stock_common.f10_parser import split_sections, parse_table, parse_paragraph_blocks, parse_key_value_table, extract_field
+    from stock_common.f10_parser import (
+        split_sections,
+        parse_table,
+        parse_paragraph_blocks,
+        parse_key_value_table,
+        extract_field,
+    )
     import re as _re
 
     with _TDX_CALL_LOCK:
@@ -1364,17 +1489,20 @@ def tdx_get_latest_reminders(code: str) -> dict:
                     'date': m.group(1),
                     'count': int(m.group(2)),
                     'change': m.group(3),
-                    'change_pct': _safe_float(m.group(4))
+                    'change_pct': _safe_float(m.group(4)),
                 }
             # 提取财务同比
-            m = _re.search(r'财务同比:([\d-]+)\s*营业收入\(万元\):([\d.]+)\s*同比增\(%\):([\d.-]+)\s*净利润\(万元\):([\d.]+)\s*同比增\(%\):([\d.-]+)', s1)
+            m = _re.search(
+                r'财务同比:([\d-]+)\s*营业收入\(万元\):([\d.]+)\s*同比增\(%\):([\d.-]+)\s*净利润\(万元\):([\d.]+)\s*同比增\(%\):([\d.-]+)',
+                s1,
+            )
             if m:
                 indicators['financial_yoy'] = {
                     'date': m.group(1),
                     'revenue': _safe_float(m.group(2)),
                     'revenue_yoy': _safe_float(m.group(3)),
                     'net_profit': _safe_float(m.group(4)),
-                    'net_profit_yoy': _safe_float(m.group(5))
+                    'net_profit_yoy': _safe_float(m.group(5)),
                 }
             result['latest_indicators'] = indicators
 
@@ -1405,7 +1533,9 @@ def tdx_get_latest_reminders(code: str) -> dict:
                         elif _re.match(r'\d{2}-\d{2}', ans_line):
                             break
                     if question:
-                        qa_list.append({'date': date, 'question': question[:200], 'answer': answer[:500]})
+                        qa_list.append(
+                            {'date': date, 'question': question[:200], 'answer': answer[:500]}
+                        )
                     i = j + 1 if answer else i + 1
                 else:
                     i += 1
@@ -1429,7 +1559,9 @@ def tdx_get_latest_reminders(code: str) -> dict:
 
         # 5. 最新异动
         s5 = sections.get('最新异动', '')
-        result['abnormal_movements'] = [] if '暂无数据' in s5 else [s5.strip()[:200]] if s5.strip() else []
+        result['abnormal_movements'] = (
+            [] if '暂无数据' in s5 else [s5.strip()[:200]] if s5.strip() else []
+        )
 
         # 6. 大宗交易
         s6 = sections.get('大宗交易', '')
@@ -1437,14 +1569,16 @@ def tdx_get_latest_reminders(code: str) -> dict:
             rows = parse_table(s6)
             block_trades: list = []
             for r in rows:
-                block_trades.append({
-                    'date': r.get('交易日期', ''),
-                    'price': _safe_float(r.get('成交价格(元)', 0)),
-                    'volume': _safe_float(r.get('成交数量(万股)', 0)),
-                    'amount': _safe_float(r.get('成交金额(万元)', 0)),
-                    'buyer': r.get('买方营业部', ''),
-                    'seller': r.get('卖方营业部', '')
-                })
+                block_trades.append(
+                    {
+                        'date': r.get('交易日期', ''),
+                        'price': _safe_float(r.get('成交价格(元)', 0)),
+                        'volume': _safe_float(r.get('成交数量(万股)', 0)),
+                        'amount': _safe_float(r.get('成交金额(万元)', 0)),
+                        'buyer': r.get('买方营业部', ''),
+                        'seller': r.get('卖方营业部', ''),
+                    }
+                )
             result['block_trades'] = block_trades
         else:
             result['block_trades'] = []
@@ -1455,14 +1589,16 @@ def tdx_get_latest_reminders(code: str) -> dict:
             rows = parse_table(s7)
             margin_data: list = []
             for r in rows:
-                margin_data.append({
-                    'date': r.get('交易日期', ''),
-                    'finance_balance': _safe_float(r.get('融资余额(万元)', 0)),
-                    'finance_buy': _safe_float(r.get('融资买入额(万元)', 0)),
-                    'securities_balance': _safe_float(r.get('融券余额(万元)', 0)),
-                    'securities_sell': _safe_float(r.get('融券卖出量(万股)', 0)),
-                    'total_balance': _safe_float(r.get('融资融券余额(万元)', 0))
-                })
+                margin_data.append(
+                    {
+                        'date': r.get('交易日期', ''),
+                        'finance_balance': _safe_float(r.get('融资余额(万元)', 0)),
+                        'finance_buy': _safe_float(r.get('融资买入额(万元)', 0)),
+                        'securities_balance': _safe_float(r.get('融券余额(万元)', 0)),
+                        'securities_sell': _safe_float(r.get('融券卖出量(万股)', 0)),
+                        'total_balance': _safe_float(r.get('融资融券余额(万元)', 0)),
+                    }
+                )
             result['margin_trading'] = margin_data
         else:
             result['margin_trading'] = []
@@ -1483,26 +1619,34 @@ def tdx_get_latest_reminders(code: str) -> dict:
                     risk['violation'] = {}
             # 交易所问询
             if '交易所问询' in s8:
-                inquiry_text = s8[s8.find('交易所问询'):]
+                inquiry_text = s8[s8.find('交易所问询') :]
                 next_sub = s8.find('【', s8.find('交易所问询') + 4)
-                inquiry_text = inquiry_text[:next_sub - s8.find('交易所问询')] if next_sub > 0 else inquiry_text
+                inquiry_text = (
+                    inquiry_text[: next_sub - s8.find('交易所问询')]
+                    if next_sub > 0
+                    else inquiry_text
+                )
                 risk['inquiry'] = '暂无数据' not in inquiry_text
             # 交易所监管
             if '交易所监管' in s8:
-                sup_text = s8[s8.find('交易所监管'):]
+                sup_text = s8[s8.find('交易所监管') :]
                 next_sub = s8.find('【', s8.find('交易所监管') + 4)
-                sup_text = sup_text[:next_sub - s8.find('交易所监管')] if next_sub > 0 else sup_text
+                sup_text = (
+                    sup_text[: next_sub - s8.find('交易所监管')] if next_sub > 0 else sup_text
+                )
                 risk['supervision'] = '暂无数据' not in sup_text
             # 特别处理
             if '特别处理' in s8:
-                st_text = s8[s8.find('特别处理'):]
+                st_text = s8[s8.find('特别处理') :]
                 risk['special_treatment'] = '暂无数据' not in st_text[:100]
         result['risk_warnings'] = risk
 
         return result
 
 
-@cached(category="f10_financial", valid_if=lambda r: r is not None, cross_verify=True)
+@cached(
+    category="f10_financial", valid_if=make_valid_if(), cross_verify=True
+)  # V15.2: 强化 valid_if
 def tdx_get_financial_analysis(code: str) -> dict:
     """从 TDX F10「财务分析」分类获取综合财务信息（10 个子栏目一次拿全）。
 
@@ -1526,7 +1670,12 @@ def tdx_get_financial_analysis(code: str) -> dict:
         }
     """
     from stock_common.f10_parser import (
-        split_sections, find_subsection, parse_tables, parse_table, transpose_table, merge_continuation_lines
+        split_sections,
+        find_subsection,
+        parse_tables,
+        parse_table,
+        transpose_table,
+        merge_continuation_lines,
     )
     import re as _re
 
@@ -1600,13 +1749,15 @@ def tdx_get_financial_analysis(code: str) -> dict:
                 rows = parse_table(merged_text)
                 items: list = []
                 for r in rows:
-                    items.append({
-                        'subject': r.get('变动科目', '').strip(),
-                        'reason': r.get('变动原因', '').strip(),
-                        'current_value': _safe_float(r.get('本期数值(万)', 0) or 0),
-                        'previous_value': _safe_float(r.get('上期/期初数(万)', 0) or 0),
-                        'change_pct': _safe_float(r.get('变动幅度(%)', 0) or 0)
-                    })
+                    items.append(
+                        {
+                            'subject': r.get('变动科目', '').strip(),
+                            'reason': r.get('变动原因', '').strip(),
+                            'current_value': _safe_float(r.get('本期数值(万)', 0) or 0),
+                            'previous_value': _safe_float(r.get('上期/期初数(万)', 0) or 0),
+                            'change_pct': _safe_float(r.get('变动幅度(%)', 0) or 0),
+                        }
+                    )
                 if items:
                     changes.append({'period': period, 'items': items})
             result['indicator_changes'] = changes
@@ -1657,7 +1808,9 @@ def tdx_get_financial_analysis(code: str) -> dict:
         return result
 
 
-@cached(category="f10_shareholder", valid_if=lambda r: r is not None, cross_verify=True)
+@cached(
+    category="f10_shareholder", valid_if=make_valid_if(), cross_verify=True
+)  # V15.2: 强化 valid_if
 def tdx_get_shareholder_research(code: str) -> dict:
     """从 TDX F10「股东研究」分类获取股东信息（7 个子栏目）。
 
@@ -1677,7 +1830,11 @@ def tdx_get_shareholder_research(code: str) -> dict:
         }
     """
     from stock_common.f10_parser import (
-        split_sections, parse_table, parse_tables, parse_key_value_table, parse_text_table
+        split_sections,
+        parse_table,
+        parse_tables,
+        parse_key_value_table,
+        parse_text_table,
     )
     import re as _re
 
@@ -1759,20 +1916,19 @@ def tdx_get_shareholder_research(code: str) -> dict:
                         parts = [p.strip() for p in _re.split(r'\s{2,}', line) if p.strip()]
                         # 十大股东格式：名称 股份性质 持股数 占比 增减 一致行动人
                         if len(parts) >= 5:
-                            holders.append({
-                                'name': parts[0],
-                                'share_type': parts[1],
-                                'shares': parts[2],
-                                'ratio': parts[3],
-                                'change': parts[4],
-                                'group': parts[5] if len(parts) > 5 else ''
-                            })
-                shareholder_periods.append({
-                    'type': label,
-                    'period': period,
-                    'summary': summary,
-                    'holders': holders[:10]
-                })
+                            holders.append(
+                                {
+                                    'name': parts[0],
+                                    'share_type': parts[1],
+                                    'shares': parts[2],
+                                    'ratio': parts[3],
+                                    'change': parts[4],
+                                    'group': parts[5] if len(parts) > 5 else '',
+                                }
+                            )
+                shareholder_periods.append(
+                    {'type': label, 'period': period, 'summary': summary, 'holders': holders[:10]}
+                )
             result['shareholder_changes'] = shareholder_periods
         else:
             result['shareholder_changes'] = []
@@ -1808,7 +1964,9 @@ def tdx_get_shareholder_research(code: str) -> dict:
         return result
 
 
-@cached(category="f10_share_capital", valid_if=lambda r: r is not None, cross_verify=True)
+@cached(
+    category="f10_share_capital", valid_if=make_valid_if(), cross_verify=True
+)  # V15.2: 强化 valid_if
 def tdx_get_share_capital(code: str) -> dict:
     """从 TDX F10「股本结构」分类获取股本信息（4 个子栏目）。
 
@@ -1823,9 +1981,7 @@ def tdx_get_share_capital(code: str) -> dict:
             "buyback": [...]         # 股票回购记录
         }
     """
-    from stock_common.f10_parser import (
-        split_sections, parse_table, parse_tables, transpose_table
-    )
+    from stock_common.f10_parser import split_sections, parse_table, parse_tables, transpose_table
 
     with _TDX_CALL_LOCK:
         content = _f10_get_content(code, '股本结构')
@@ -1891,9 +2047,13 @@ def tdx_get_share_capital(code: str) -> dict:
         return result
 
 
-@cached(category="f10_news", trading_day=True, valid_if=lambda r: r is not None)
+@cached(category="f10_news", trading_day=True, valid_if=make_valid_if())  # V15.2: 拒绝空 dict/全 0
 def tdx_get_company_news_f10(code: str, count: int = 10) -> list:
-    """从 TDX F10「公司报道」分类获取新闻列表。
+    """从 TDX F10 公司新闻分类获取列表。
+
+    V12.0: mootdx F10C 无「公司报道」分类，改用语义等价的「公司大事」。
+    「公司大事」是表格格式（｜ 日期 ｜ 标题 ｜），与「公司报道」段落格式不同，
+    需使用专门的表格解析逻辑。保留对原「公司报道」的 fallback。
 
     替代 1 个东财 HTTP 接口：
     - get_eastmoney_stock_news
@@ -1905,16 +2065,37 @@ def tdx_get_company_news_f10(code: str, count: int = 10) -> list:
     Returns:
         list: [{date, title, summary, url}, ...]
     """
+    import re as _re
     from stock_common.f10_parser import parse_paragraph_blocks
 
     with _TDX_CALL_LOCK:
+        # V12.0: 先尝试 mootdx 的「公司大事」（表格格式），再 fallback 到 easy_tdx 的「公司报道」（段落格式）
+        content = _f10_get_content(code, '公司大事')
+        if content:
+            # 「公司大事」表格格式解析：｜   YYYY-MM-DD   ｜标题内容｜
+            news = []
+            # 匹配 ｜   日期   ｜标题｜  格式
+            pattern = _re.compile(r'[｜|]\s*(\d{4}-\d{2}-\d{2})\s*[｜|]\s*([^｜|]+?)\s*[｜|]')
+            for m in pattern.finditer(content):
+                date_str = m.group(1)
+                title = m.group(2).strip()
+                if title and len(title) > 3:
+                    news.append(
+                        {
+                            "date": date_str,
+                            "title": title[:200],
+                            "summary": "",
+                            "url": "",
+                        }
+                    )
+            if news:
+                return news[:count]
+            # 表格解析失败时，尝试段落解析（万一格式变化）
+        # Fallback: 「公司报道」段落格式
         content = _f10_get_content(code, '公司报道')
         if not content:
             return []
-        # F13 公司报道无 【N.】 section，直接是段落块格式
-        # 去掉前2行 header（标题行 + 空行）
         lines = content.split('\n')
-        # 找到第一个 ──── 分隔线作为内容起点
         start_idx = 0
         for i, line in enumerate(lines):
             if '──' in line and '┬' in line:
@@ -1992,7 +2173,7 @@ def tdx_get_industry_analysis(code: str) -> dict:
                 result[result_key] = {
                     'cutoff_date': cutoff_date,
                     'my_rank': my_rank,
-                    'top_rankings': rows[:10]  # 前10名
+                    'top_rankings': rows[:10],  # 前10名
                 }
             else:
                 result[result_key] = {'cutoff_date': '', 'my_rank': {}, 'top_rankings': []}
@@ -2001,11 +2182,72 @@ def tdx_get_industry_analysis(code: str) -> dict:
 
 
 # ═══════════════════════════════════════════════════════════════
-# MacClient 板块/全市场函数（V9.2 恢复：误删的薄包装函数）
+# V12.0: 板块/全市场函数（原 MacClient 实现，已迁移到东财 HTTP + ZHB）
 # ═══════════════════════════════════════════════════════════════
+
+# ── V15.5.1: easy_tdx MacClient（v9.6 概念板块源，MAC 协议不走 push2）──
+_TDX_MAC_CLIENT = None
+
+
+def _get_mac_client() -> Optional[Any]:
+    """V15.5.1: 获取 easy_tdx MacClient（MAC 协议，板块归属源）。
+
+    v9.6 概念板块走 MacClient.get_belong_board（TCP 不封 IP）；
+    v15 误改为 push2 HTTP → 当前网络 push2 风控挂 → 概念 0 个。
+    恢复 v9.6 路径：白名单服务器首选 + from_best_host 换台。
+    """
+    global _TDX_MAC_CLIENT
+    with _TDX_CALL_LOCK:
+        for attempt in range(_TDX_RECONNECT_ATTEMPTS):
+            if _TDX_MAC_CLIENT is not None:
+                try:
+                    if hasattr(_TDX_MAC_CLIENT, "ensure_connected"):
+                        _TDX_MAC_CLIENT.ensure_connected()
+                    return _TDX_MAC_CLIENT
+                except Exception as _e:
+                    _debug_log(f"tdx _get_mac_client ensure_connected: {_e}")
+                    try:
+                        _TDX_MAC_CLIENT.close()
+                    except Exception:
+                        pass
+                    _TDX_MAC_CLIENT = None
+                    if attempt < _TDX_RECONNECT_ATTEMPTS - 1:
+                        time.sleep(_TDX_RECONNECT_DELAY * (2**attempt))
+                    continue
+            try:
+                from easy_tdx.mac.client import MacClient
+
+                try:
+                    _c = MacClient(
+                        host=_EASY_TDX_PRIMARY_HOST,
+                        port=7709,
+                        auto_reconnect=True,
+                        heartbeat_interval=15.0,
+                    )
+                    _c.connect()
+                    _TDX_MAC_CLIENT = _c
+                except Exception as _e:
+                    _debug_log(f"easy_tdx mac primary failed ({_EASY_TDX_PRIMARY_HOST}): {_e}")
+                    _TDX_MAC_CLIENT = MacClient.from_best_host(
+                        hosts=_EASY_TDX_PREFERRED_HOSTS, ping_timeout=3.0
+                    )
+                    _TDX_MAC_CLIENT.connect()
+                _debug_log("easy_tdx MacClient connected")
+                return _TDX_MAC_CLIENT
+            except Exception as _e:
+                _debug_log(f"tdx _get_mac_client easy_tdx error: {_e}")
+                _TDX_MAC_CLIENT = None
+                if attempt < _TDX_RECONNECT_ATTEMPTS - 1:
+                    time.sleep(_TDX_RECONNECT_DELAY * (2**attempt))
+    return None
+
 
 def tdx_get_belong_boards(code: str):
     """获取股票所属板块（行业/概念/地域/风格）。
+
+    V15.5.1: 恢复 v9.6 路径 — easy_tdx MacClient.get_belong_board（MAC 协议 TCP，
+    不封 IP）首选；失败 fallback 东财 push2 HTTP（原 V12.0 路径）。
+    背景: V12.0 误改为 push2 后，push2 连接级风控（参考仓库 FAQ）→ 概念板块 0 个。
 
     Returns:
         dict: {"industry": [...], "concept": [...], "area": [...], "style": [...]}
@@ -2013,73 +2255,82 @@ def tdx_get_belong_boards(code: str):
     """
     with _TDX_CALL_LOCK:
         client = _get_mac_client()
-        if client is None:
-            return {}
-        try:
-            df = client.get_belong_board(_market_from_code(code), code)
-            if df is None or df.empty:
-                return {}
-            result: Dict[str, List[Any]] = {"industry": [], "concept": [], "area": [], "style": []}
-            type_map = {0: "industry", 1: "industry", 12: "industry", 3: "area", 4: "concept", 5: "style"}
-            for _, row in df.iterrows():
-                bt = int(row.get('board_type', -1))
-                cat = type_map.get(bt, None)
-                if cat is None:
-                    continue
-                result[cat].append({
-                    "code": str(row.get('board_code', '')),
-                    "name": str(row.get('board_name', ''))
-                })
-            return result
-        except Exception as _e:
-            _debug_log(f"tdx_get_belong_boards {code}: {_e}")
-            return {}
+        if client is not None:
+            try:
+                df = client.get_belong_board(_easy_market(code), code)
+                if df is not None and not df.empty:
+                    result: Dict[str, List[Any]] = {
+                        "industry": [],
+                        "concept": [],
+                        "area": [],
+                        "style": [],
+                    }
+                    # v9.6 type_map: 0/1/2/12=行业 3=地域 4=概念 5=风格
+                    # V15.5.2: 补 type=2（实测 000100 行业板块"元器件"=type 2）
+                    type_map = {
+                        0: "industry",
+                        1: "industry",
+                        2: "industry",
+                        12: "industry",
+                        3: "area",
+                        4: "concept",
+                        5: "style",
+                    }
+                    for _, row in df.iterrows():
+                        bt = int(row.get('board_type', -1))
+                        cat = type_map.get(bt)
+                        if cat is None:
+                            continue
+                        result[cat].append(
+                            {
+                                "code": str(row.get('board_code', '')),
+                                "name": str(row.get('board_name', '')),
+                            }
+                        )
+                    _debug_log(
+                        f"tdx_get_belong_boards mac OK ({code}): "
+                        f"industry={len(result['industry'])} concept={len(result['concept'])}"
+                    )
+                    return result
+            except Exception as _e:
+                _debug_log(f"tdx_get_belong_boards mac error ({code}): {_e}")
+    # fallback: 东财 push2（原 V12.0 路径）
+    try:
+        from stock_common.sc_datasource import get_em_belong_boards
+
+        return get_em_belong_boards(code)
+    except Exception as _e:
+        _debug_log(f"tdx_get_belong_boards {code}: {_e}")
+        return {}
 
 
 def tdx_get_board_list(board_type: int = 0):
     """获取板块列表（行业/概念/地域等）。
 
+    V12.0: 委托到东财 HTTP 接口（原 TDX MacClient.get_board_list 已废弃）。
+
     Args:
-        board_type: 0=行业一级, 1=行业二级, 4=概念, 3=地域 (easy_tdx BoardType)
+        board_type: 0=行业一级, 1=行业二级, 4=概念, 3=地域
 
     Returns:
         list: [{"rank": int, "code": str, "name": str, "price": float,
                 "change_pct": float, "leader_name": str, "leader_change": float,
                 "up_count": int, "down_count": int}, ...]
     """
-    with _TDX_CALL_LOCK:
-        client = _get_mac_client()
-        if client is None:
-            return []
-        try:
-            from easy_tdx.mac.enums import BoardType
-            df = client.get_board_list(BoardType(board_type))
-            if df is None or df.empty:
-                return []
-            sectors = []
-            for i, (_, row) in enumerate(df.iterrows()):
-                price = _safe_float(row.get('price', 0))
-                pre_close = _safe_float(row.get('pre_close', 0))
-                chg_pct = round((price - pre_close) / pre_close * 100, 2) if pre_close > 0 else 0.0
-                sectors.append({
-                    "rank": i + 1,
-                    "code": str(row.get('code', '')),
-                    "name": str(row.get('name', '')),
-                    "price": price,
-                    "change_pct": chg_pct,
-                    "leader_name": str(row.get('symbol_name', '')),
-                    "leader_change": _safe_float(row.get('symbol_rise_speed', 0)),
-                    "up_count": 0,
-                    "down_count": 0,
-                })
-            return sectors
-        except Exception as _e:
-            _debug_log(f"tdx_get_board_list type={board_type}: {_e}")
-            return []
+    try:
+        from stock_common.sc_datasource import get_em_board_list
+
+        return get_em_board_list(board_type)
+    except Exception as _e:
+        _debug_log(f"tdx_get_board_list type={board_type}: {_e}")
+        return []
 
 
 def tdx_get_board_members(board_code: str, sort_by_change: bool = True):
     """获取板块成员列表。
+
+    V15.5.2: 恢复 v9.6 MacClient.get_board_members（MAC 协议 TCP，不封 IP）；
+             失败 fallback 东财 push2 HTTP。
 
     Returns:
         list: [{"code": str, "name": str, "price": float, "change_pct": float,
@@ -2088,75 +2339,136 @@ def tdx_get_board_members(board_code: str, sort_by_change: bool = True):
     """
     with _TDX_CALL_LOCK:
         client = _get_mac_client()
-        if client is None:
-            return []
-        try:
-            df = client.get_board_members(board_code)
-            if df is None or df.empty:
-                return []
-            members = []
-            for _, row in df.iterrows():
-                close = _safe_float(row.get('close', 0))
-                pre_close = _safe_float(row.get('pre_close', 0))
-                chg = round((close - pre_close) / pre_close * 100, 2) if pre_close > 0 else _safe_float(row.get('speed_pct', 0))
-                members.append({
-                    "code": str(row.get('code', '')),
-                    "name": str(row.get('name', '')),
-                    "price": close,
-                    "change_pct": chg,
-                    "mcap_yi": _safe_float(row.get('total_market_cap_ab', 0)) / 1e8,
-                    "turnover": _safe_float(row.get('turnover', 0)),
-                    "pe": _safe_float(row.get('pe_dynamic', row.get('pe_ttm', 0))),
-                    "main_net_amount": _safe_float(row.get('main_net_amount', 0)),
-                })
-            return members
-        except Exception as _e:
-            _debug_log(f"tdx_get_board_members {board_code}: {_e}")
-            return []
+        if client is not None:
+            try:
+                df = client.get_board_members(board_code)
+                if df is None or df.empty:
+                    return []
+                members = []
+                for _, row in df.iterrows():
+                    close = _safe_float(row.get('close', 0))
+                    pre_close = _safe_float(row.get('pre_close', 0))
+                    chg = (
+                        round((close - pre_close) / pre_close * 100, 2)
+                        if pre_close > 0
+                        else _safe_float(row.get('speed_pct', 0))
+                    )
+                    members.append(
+                        {
+                            "code": str(row.get('code', '')),
+                            "name": str(row.get('name', '')),
+                            "price": close,
+                            "change_pct": chg,
+                            "mcap_yi": _safe_float(row.get('total_market_cap_ab', 0)) / 1e8,
+                            "turnover": _safe_float(row.get('turnover', 0)),
+                            "pe": _safe_float(row.get('pe_dynamic', row.get('pe_ttm', 0))),
+                            "main_net_amount": _safe_float(row.get('main_net_amount', 0)),
+                        }
+                    )
+                return members
+            except Exception as _e:
+                _debug_log(f"tdx_get_board_members mac {board_code}: {_e}")
+    # fallback: 东财 push2
+    try:
+        from stock_common.sc_datasource import get_em_board_members
+
+        return get_em_board_members(board_code)
+    except Exception as _e:
+        _debug_log(f"tdx_get_board_members {board_code}: {_e}")
+        return []
 
 
 def tdx_get_board_by_name(board_name: str, board_type: int = 0):
     """按名称查找板块并返回成员列表。
 
+    V15.5.2: 恢复 v9.6 MacClient.get_board_list 名称匹配（MAC 协议 TCP）；
+             失败 fallback 东财 push2 HTTP。
+
     Args:
         board_name: 板块名称（支持模糊匹配）
-        board_type: 板块类型 (BoardType)
+        board_type: 板块类型
 
     Returns:
         list: 同 tdx_get_board_members 返回格式
     """
     with _TDX_CALL_LOCK:
         client = _get_mac_client()
-        if client is None:
+        if client is not None:
+            try:
+                from easy_tdx.mac.enums import BoardType
+
+                bt = BoardType(board_type)
+            except Exception as _e:
+                _debug_log(f"tdx tdx_get_board_by_name BoardType error ({board_type}): {_e}")
+                bt = None
+            if bt is not None:
+                try:
+                    board_df = client.get_board_list(bt)
+                    if board_df is not None and not board_df.empty:
+                        _name_clean = (
+                            board_name.replace("行业", "")
+                            .replace("板块", "")
+                            .replace("Ⅱ", "")
+                            .replace("Ⅲ", "")
+                        )
+                        matched_code = None
+                        for _, row in board_df.iterrows():
+                            row_name = str(row.get('name', ''))
+                            row_clean = (
+                                row_name.replace("行业", "")
+                                .replace("板块", "")
+                                .replace("Ⅱ", "")
+                                .replace("Ⅲ", "")
+                            )
+                            if (
+                                board_name in row_name
+                                or row_name in board_name
+                                or _name_clean in row_clean
+                                or row_clean in _name_clean
+                            ):
+                                matched_code = str(row.get('code', ''))
+                                break
+                        if matched_code:
+                            return tdx_get_board_members(matched_code)
+                except Exception as _e:
+                    _debug_log(f"tdx tdx_get_board_by_name mac error: {_e}")
+    # fallback: 东财 push2
+    try:
+        from stock_common.sc_datasource import get_em_board_list, get_em_board_members
+
+        board_list = get_em_board_list(board_type)
+        if not board_list:
             return []
-        try:
-            from easy_tdx.mac.enums import BoardType
-            bt = BoardType(board_type)
-        except Exception as _e:
-            _debug_log(f"tdx tdx_get_board_by_name BoardType error ({board_type}): {_e}")
-            return []
-        try:
-            board_df = client.get_board_list(bt)
-            if board_df is None or board_df.empty:
-                return []
-        except Exception as _e:
-            _debug_log(f"tdx tdx_get_board_by_name get_board_list error: {_e}")
-            return []
-        _name_clean = board_name.replace("行业", "").replace("板块", "").replace("Ⅱ", "").replace("Ⅲ", "")
+        _name_clean = (
+            board_name.replace("行业", "").replace("板块", "").replace("Ⅱ", "").replace("Ⅲ", "")
+        )
         matched_code = None
-        for _, row in board_df.iterrows():
+        for row in board_list:
             row_name = str(row.get('name', ''))
-            row_clean = row_name.replace("行业", "").replace("板块", "").replace("Ⅱ", "").replace("Ⅲ", "")
-            if board_name in row_name or row_name in board_name or _name_clean in row_clean or row_clean in _name_clean:
+            row_clean = (
+                row_name.replace("行业", "").replace("板块", "").replace("Ⅱ", "").replace("Ⅲ", "")
+            )
+            if (
+                board_name in row_name
+                or row_name in board_name
+                or _name_clean in row_clean
+                or row_clean in _name_clean
+            ):
                 matched_code = str(row.get('code', ''))
                 break
         if matched_code is None:
             return []
-        return tdx_get_board_members(matched_code)
+        return get_em_board_members(matched_code)
+    except Exception as _e:
+        _debug_log(f"tdx_get_board_by_name {board_name}: {_e}")
+        return []
 
 
 def tdx_get_market_abnormal_data():
     """全市场A股 + 多周期涨幅（用于异动扫描）。
+
+    V12.0: 改用 ZHB 全市场快照（原 TDX MacClient.get_stock_quotes_list 已废弃）。
+    ZHB 数据为 T-1 收盘快照，对异动扫描足够。
 
     Returns:
         list: [{"code": str, "name": str, "price": float, "change_pct": float,
@@ -2165,113 +2477,104 @@ def tdx_get_market_abnormal_data():
                 "ret_20d": float, "ret_60d": float,
                 "main_net_amount": float}, ...]
     """
-    with _TDX_CALL_LOCK:
-        client = _get_mac_client()
-        if client is None:
+    try:
+        from stock_common import get_zhb_full_market_snapshot
+        from zhb_client import get_stock_name_from_zhb
+
+        snapshot = get_zhb_full_market_snapshot()
+        if not snapshot:
             return []
+        all_stocks = []
+        # V14.2.1: 提前加载 ZHB profile 名称（修复 name 字段缺失 Bug）
+        zhb_name_cache: Dict[str, str] = {}
+        # V15.5.17: unified_name_map 优先（profile.dat 解析失败时仍覆盖 44%）
+        _unified_name: Dict[str, str] = {}
         try:
-            from easy_tdx.mac.enums import Category
-            from easy_tdx.codec.bitmap import FieldBit
+            from zhb_client import get_zhb
 
-            fields = [
-                FieldBit.CLOSE, FieldBit.PRE_CLOSE,
-                FieldBit.TURNOVER, FieldBit.AMOUNT,
-                FieldBit.CHANGE_3D_PCT, FieldBit.CHANGE_5D_PCT,
-                FieldBit.CHANGE_10D_PCT, FieldBit.CHANGE_20D_PCT,
-                FieldBit.CHANGE_60D_PCT,
-                FieldBit.MAIN_NET_AMOUNT,
-            ]
-
-            all_stocks = []
-            start = 0
-            page_size = 80
-            for _ in range(100):
-                df = client.get_stock_quotes_list(Category.A, start, page_size, fields=fields)
-                if df is None or df.empty:
-                    break
-                for _, row in df.iterrows():
-                    code = str(row.get('code', ''))
-                    name = str(row.get('name', ''))
-                    if not code or not name:
-                        continue
-                    if 'ST' in name or '退' in name:
-                        continue
-                    close = _safe_float(row.get('close', 0))
-                    pre_close = _safe_float(row.get('pre_close', 0))
-                    chg = round((close - pre_close) / pre_close * 100, 2) if pre_close > 0 else 0
-                    all_stocks.append({
-                        'code': code,
-                        'name': name,
-                        'price': close,
-                        'change_pct': chg,
-                        'turnover': _safe_float(row.get('turnover', 0)),
-                        'mcap_yi': _safe_float(row.get('amount', 0)) / 1e8 * 50,
-                        'ret_3d': _safe_float(row.get('change_3d_pct', 0)),
-                        'ret_5d': _safe_float(row.get('change_5d_pct', 0)),
-                        'ret_10d': _safe_float(row.get('change_10d_pct', 0)),
-                        'ret_20d': _safe_float(row.get('change_20d_pct', 0)),
-                        'ret_60d': _safe_float(row.get('change_60d_pct', 0)),
-                        'main_net_amount': _safe_float(row.get('main_net_amount', 0)),
-                    })
-                start += page_size
-                if len(df) < page_size:
-                    break
-            return all_stocks
-        except Exception as _e:
-            _debug_log(f"tdx_get_market_abnormal_data: {_e}")
-            return []
+            _unified_name = get_zhb().unified_name_map or {}
+        except Exception:
+            pass
+        for code, data in snapshot.items():
+            if not isinstance(data, dict):
+                continue
+            name = str(data.get('name', '') or '')
+            if not name:
+                # V14.2.1: ZHB tdxstat 快照无 name 字段，用 profile.dat 离线字典补齐
+                # V15.5.17: unified_name_map 优先（relation.dat+pttab 等合并，覆盖 44%）
+                if _unified_name.get(code):
+                    name = _unified_name[code]
+                elif code not in zhb_name_cache:
+                    zhb_name_cache[code] = get_stock_name_from_zhb(code) or ""
+                    name = zhb_name_cache[code]
+            # V15.5.17: name 缺失不再 continue（mak 层腾讯批量补全 name）
+            # 仅跳过明确的 ST/退市（避免垃圾股进扫描）
+            if 'ST' in name or '退' in name:
+                continue
+            price = _safe_float(data.get('price', 0))
+            change_pct = _safe_float(data.get('change_pct', 0))
+            # V15.5.17: price 缺失不再 continue（腾讯批量补全 price）
+            all_stocks.append(
+                {
+                    'code': code,
+                    'name': name,
+                    'price': price,
+                    'change_pct': change_pct,
+                    'turnover': _safe_float(data.get('turnover_pct', 0)),
+                    'mcap_yi': _safe_float(data.get('mcap_yi', 0)),
+                    'ret_3d': 0.0,  # V16.1: 移除 change_pct_2d 冒充 3 日收益（非真实 3 日窗口，宁缺毋滥）
+                    'ret_5d': _safe_float(data.get('change_5d', 0)),
+                    'ret_10d': _safe_float(data.get('change_10d', 0)),
+                    'ret_20d': _safe_float(data.get('change_20d', 0)),
+                    'ret_60d': _safe_float(data.get('change_60d', 0)),
+                    'main_net_amount': _safe_float(data.get('main_net_buy_amount', 0)) * 10000,
+                }
+            )
+        return all_stocks
+    except Exception as _e:
+        _debug_log(f"tdx_get_market_abnormal_data: {_e}")
+        return []
 
 
 def tdx_get_all_stocks():
-    """全市场A股列表（MacClient，连接中断自动重置并重试）。
+    """全市场A股列表。
+
+    V12.0: 改用 ZHB 全市场快照（原 TDX MacClient.get_stock_quotes_list 已废弃）。
+    ZHB 数据为 T-1 收盘快照，对盘后分析足够。
 
     Returns:
         list: [{"code": str, "name": str, "price": float, "change_pct": float,
                 "mcap_yi": float, "turnover_pct": float, "amount_yi": float}, ...]
     """
-    for _retry in range(2):
-        with _TDX_CALL_LOCK:
-            client = _get_mac_client()
-            if client is None:
-                return []
-            try:
-                from easy_tdx.mac.enums import Category
-                all_stocks = []
-                start = 0
-                page_size = 80
-                for _ in range(100):
-                    df = client.get_stock_quotes_list(Category.A, start, page_size)
-                    if df is None or df.empty:
-                        break
-                    for _, row in df.iterrows():
-                        code = str(row.get('code', ''))
-                        name = str(row.get('name', ''))
-                        if not code or not name:
-                            continue
-                        if 'ST' in name or '退' in name:
-                            continue
-                        close = _safe_float(row.get('close', 0))
-                        pre_close = _safe_float(row.get('pre_close', 0))
-                        chg = round((close - pre_close) / pre_close * 100, 2) if pre_close > 0 else 0
-                        turnover = _safe_float(row.get('turnover', 0))
-                        amount = _safe_float(row.get('amount', 0)) / 1e8
-                        mcap_est = amount * 50 if turnover > 0 else 0
-                        all_stocks.append({
-                            'code': code,
-                            'name': name,
-                            'price': close,
-                            'change_pct': chg,
-                            'mcap_yi': mcap_est,
-                            'turnover_pct': turnover,
-                            'amount_yi': amount,
-                        })
-                    start += page_size
-                    if len(df) < page_size:
-                        break
-                return all_stocks
-            except Exception as _e:
-                _debug_log(f"tdx tdx_get_all_stocks error: {_e}")
-                _reset_tdx_connections()
-                continue
-    return []
+    try:
+        from stock_common import get_zhb_full_market_snapshot
 
+        snapshot = get_zhb_full_market_snapshot()
+        if not snapshot:
+            return []
+        all_stocks = []
+        for code, data in snapshot.items():
+            if not isinstance(data, dict):
+                continue
+            name = str(data.get('name', '') or '')
+            if not name or 'ST' in name or '退' in name:
+                continue
+            price = _safe_float(data.get('price', 0))
+            if price <= 0:
+                continue
+            amount_wan = _safe_float(data.get('amount', 0))
+            all_stocks.append(
+                {
+                    'code': code,
+                    'name': name,
+                    'price': price,
+                    'change_pct': _safe_float(data.get('change_pct', 0)),
+                    'mcap_yi': _safe_float(data.get('mcap_yi', 0)),
+                    'turnover_pct': _safe_float(data.get('turnover_pct', 0)),
+                    'amount_yi': amount_wan / 10000.0,
+                }
+            )
+        return all_stocks
+    except Exception as _e:
+        _debug_log(f"tdx tdx_get_all_stocks error: {_e}")
+        return []

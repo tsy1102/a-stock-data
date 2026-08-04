@@ -1,0 +1,12 @@
+id: sht.label.⚠️ 盘前模式（9
+report: sht
+kind: label
+name: ⚠️ 盘前模式（9
+priority: P1
+status: pending
+v9_present: true
+v15_present: false
+
+detail: |
+  v9.6 报告 sht 有输出标签「⚠️ 盘前模式（9」
+  v15 报告 sht 无此标签（字段缺失或输出行被删）

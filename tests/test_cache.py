@@ -69,7 +69,7 @@ def test_cache_ttl_expiry(tmp_path, monkeypatch):
 
 
 def test_invalidate_category(tmp_path, monkeypatch):
-    """按分类批量删除。"""
+    """按分类批量删除（V12.1+ 自动同步清空 L1 内存缓存）。"""
     import stock_cache as sc
 
     fake_cache_db = tmp_path / "stock_cache.db"
@@ -84,8 +84,7 @@ def test_invalidate_category(tmp_path, monkeypatch):
     deleted = sc.invalidate_category("cat_A")
     assert deleted >= 2  # 删除数应至少 2
 
-    # 清除 L1 内存缓存（invalidate_category 仅清理 SQLite，L1 需手动清除）
-    sc._L1_CACHE.clear()
+    # V12.1: invalidate_category 已自动同步清空 L1，无需手动 _L1_CACHE.clear()
 
     # A 类应读不到
     assert sc.get_cache("cat_A", "f1", "code-1") is None
@@ -95,7 +94,7 @@ def test_invalidate_category(tmp_path, monkeypatch):
 
 
 def test_invalidate_prefix(tmp_path, monkeypatch):
-    """按 key 前缀批量删除。"""
+    """按 key 前缀批量删除（V12.1+ 自动同步清空 L1 内存缓存）。"""
     import stock_cache as sc
 
     fake_cache_db = tmp_path / "stock_cache.db"
@@ -107,13 +106,12 @@ def test_invalidate_prefix(tmp_path, monkeypatch):
     sc.set_cache("prefix_a", "f2", {"v": 2}, 3600, "x")
     sc.set_cache("other", "f3", {"v": 3}, 3600)
 
-    # 注意：invalidate_prefix 匹配的是原始 key 前缀（见 stock_cache.py）
-    # key 格式为 "category:func_name:..."
+    # invalidate_prefix 匹配的是原始 key 前缀
+    # key 格式为 "category:func_name[_arg1[_arg2]...]"（见 _build_key）
     deleted = sc.invalidate_prefix("prefix_a:")
     assert deleted >= 2
 
-    # 清除 L1 内存缓存（invalidate_prefix 仅清理 SQLite，L1 需手动清除）
-    sc._L1_CACHE.clear()
+    # V12.1: invalidate_prefix 已自动同步清空 L1，无需手动 _L1_CACHE.clear()
 
     assert sc.get_cache("prefix_a", "f1") is None
     assert sc.get_cache("other", "f3") == {"v": 3}

@@ -1,0 +1,12 @@
+id: ful.field.pe_vs_industry
+report: ful
+kind: field
+name: pe_vs_industry
+priority: P2
+status: pending
+v9_present: true
+v15_present: false
+
+detail: |
+  v9.6 报告 ful 有表达式字段 pe_vs_industry
+  v15 报告 ful 无此字段

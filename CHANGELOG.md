@@ -4,7 +4,32 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
-## [16.1] - 2026-08-04
+## [16.1.1] - 2026-08-04
+
+**zhb 下载迁移 easy_tdx + 依赖体系收敛**。实测 easy_tdx 1.20.4 完全覆盖 mootdx/pytdx 能力（K线/行情/财务/除权/逐笔/资金流/板块 + 健康分/故障转移/52 服务器）。
+
+### 🆕 变更
+
+1. **zhb.zip 下载 easy_tdx 首选**（[zhb_client.py](file:///d:/GitHub/test/zhb_client.py) `_download_zhb_zip`）：
+   - easy_tdx `get_report_file()` 分块拉取（实测 180.153.18.170 下载 1292315 字节有效 zip，45 文件）
+   - 主机顺序：3 个实测可用主机 → from_best_host 健康分兜底（52 候选）→ mootdx 备胎（保留 V12.0 路径）
+   - 原招商/国信节点已失效（实测超时/拒连），降为备胎列表尾部
+2. **主机清单更新**：`_ZHB_HOSTS` 前置 180.153.18.170 / 150.158.160.2 / 124.71.187.122
+3. **文档同步**：zhb_client docstring、requirements pytdx 注释、tdx_client/main/README "easy_tdx 移除"过时表述修正
+
+### 🧪 实测结论（2026-08-04，同一服务器对照）
+
+| 能力 | easy_tdx 1.20.4 | mootdx 0.11.7 | pytdx 1.72 直连 |
+|---|---:|---:|---:|
+| 日K线 | ✅ | ❌ 0 根 | ✅ |
+| 五档行情 | ✅ | ❌ 空 | ✅ |
+| 财务 37 字段 | ✅ | ✅ | - |
+| 除权除息 | ✅ | ✅ | - |
+| 指数/分钟/逐笔 | ✅ | ❌ 全灭 | ✅ |
+
+mootdx 0.11.7（2024-07 停更）行情类接口静默失败但 pytdx 底层正常 → 封装层 bug；easy_tdx 功能全 + 活跃维护 → 主通道。
+
+
 
 **报告体系重构：sht/med/lng 三视图 + ful 下线 + mak/val 引擎化 + 新字段接入**。基于 2026-08-04 接口实测破解（push2 stock/get 114 字段、ulist 239 字段，官方 TdxQuant 交叉验证）与投研职责审计。
 

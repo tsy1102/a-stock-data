@@ -31,6 +31,7 @@
 版本信息:
     V10.0  2026-07-14 - 全面升级：新增证监会行业/中概股ADR/可转债/退市股；进程安全文件锁；磁盘空间保护；节假日导出
     V9.6   2026-07-14 - 初始版本：基于 pytdx GetReportFile 下载 zhb.zip
+    V16.1.1 2026-08-04 - 下载改用 easy_tdx 首选（get_report_file 实测可用），mootdx/pytdx 降为备胎
 """
 from __future__ import annotations
 
@@ -56,7 +57,12 @@ _MIN_DISK_SPACE_MB = 100  # 最小保留磁盘空间（MB）
 _LOCK_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "cache", "zhb", ".zhb.lock")
 
 # 通达信行情节点（优先招商/国信主站，数据更新快）
+# V16.1.1: 前 3 个为 easy_tdx 实测可用主机（2026-08-04 实测 zhb.zip 下载成功）；
+#          其余保留历史招商/国信节点（可能失效，作 fallback 尝试）
 _ZHB_HOSTS = [
+    ("180.153.18.170", 7709),   # easy_tdx 实测可用（V16.1.1 首选）
+    ("150.158.160.2", 7709),    # easy_tdx 实测可用
+    ("124.71.187.122", 7709),   # easy_tdx 实测可用
     ("119.147.212.81", 7709),   # 招商证券深圳主站
     ("121.14.110.194", 7709),   # 国信证券深圳主站
     ("112.74.214.43", 7709),    # 招商深圳
@@ -1187,18 +1193,65 @@ class ZhbData:
 def _download_zhb_zip() -> Optional[bytes]:
     """从通达信服务器下载 zhb.zip 原始二进制数据。
 
-    V12.0: 使用 mootdx 替代 pytdx，统一 TCP 层依赖。
-    mootdx 底层使用 tdxpy，支持 get_report_file_by_size 方法。
+    V16.1.1: easy_tdx 首选（get_report_file 分块拉取，2026-08-04 实测 180.153.18.170
+    下载 1292315 字节有效 zip），失败逐台换 + from_best_host 健康分兜底；
+    mootdx/pytdx 降为备胎（原 V12.0 路径保留）。
     """
+    filename = "zhb.zip"
+
+    # ── 首选: easy_tdx（实测可用主机逐台尝试 + from_best_host 兜底）──
+    try:
+        from easy_tdx.client import TdxClient
+
+        for ip, port in _ZHB_HOSTS[:3]:
+            try:
+                _debug_log(f"zhb: easy_tdx trying {ip}:{port}")
+                c = TdxClient(host=ip, port=port, auto_reconnect=False)
+                c.connect()
+                try:
+                    data = c.get_report_file(filename)
+                finally:
+                    try:
+                        c.close()
+                    except Exception:
+                        pass
+                if data and len(data) > 0:
+                    try:
+                        with zipfile.ZipFile(io.BytesIO(data)):
+                            pass
+                        _debug_log(f"zhb: easy_tdx downloaded {len(data)} bytes from {ip}")
+                        return data
+                    except zipfile.BadZipFile:
+                        _debug_log(f"zhb: easy_tdx invalid zip from {ip}, trying next")
+                        continue
+            except Exception as e:
+                _debug_log(f"zhb: easy_tdx error from {ip}: {e}")
+                continue
+        # easy_tdx 健康分选台兜底（52 候选服务器）
+        try:
+            _debug_log("zhb: easy_tdx from_best_host fallback")
+            with TdxClient.from_best_host() as c:
+                data = c.get_report_file(filename)
+            if data and len(data) > 0:
+                with zipfile.ZipFile(io.BytesIO(data)):
+                    pass
+                _debug_log(f"zhb: easy_tdx from_best_host downloaded {len(data)} bytes")
+                return data
+        except Exception as e:
+            _debug_log(f"zhb: easy_tdx from_best_host error: {e}")
+    except ImportError:
+        _debug_log("zhb: easy_tdx not available, fallback to mootdx")
+    except Exception as e:
+        _debug_log(f"zhb: easy_tdx download error: {e}")
+
+    # ── 备胎: mootdx/pytdx（V12.0 原路径）──
     try:
         from mootdx.quotes import Quotes
     except ImportError as e:
         _debug_log(f"zhb: mootdx not available: {e}")
         return None
 
-    filename = "zhb.zip"
-
-    for ip, port in _ZHB_HOSTS:
+    for ip, port in _ZHB_HOSTS[3:]:
         try:
             _debug_log(f"zhb: trying {ip}:{port}")
             # mootdx 使用 bestip 机制，但我们可以手动指定服务器

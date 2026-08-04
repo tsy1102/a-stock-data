@@ -1926,5 +1926,165 @@ return result
 
 ---
 
+
+### 12.10 新数据源字段字典：levistock（2026-08-05 调研录入）
+
+> **来源**：https://github.com/fleetinglife/levistock（58⭐，2026-08-04 活跃，封装东财/财联社/同花顺/开盘红/i问财）
+> **价值**：5 类独家数据（盘口异动/市场情绪/复盘事件流/板块轮动/i问财）——项目 mak/sht 打板情绪层完全空白
+> **✅ 2026-08-05 实测**：盘口异动/市场情绪/涨停池/i问财 4 类接口全部可用（见 12.10.8 实测结论）。返回类型为 list[dict] / dict（非 DataFrame），字段名以下方实测为准
+
+#### 12.10.1 东财盘口异动（stock_changes_em / stock_changes_detail_em）🆕
+
+> 盘口异动实时列表（打板/短线情绪核心信号，项目当前无此数据）
+
+| 参数 | 值 | 含义 |
+|:---|:---|:---|
+| change_type | `8201` | **火箭发射**（快速拉升）|
+| | `8202` | 快速反弹 |
+| | `8193` | **大笔买入** |
+| | `8205` | **封涨停板** |
+| | `64` | **有大买盘** |
+| filter_st | True/False | 过滤 ST 及三板 |
+
+#### 12.10.2 财联社市场情绪（market_emotion_cls）🆕
+
+> 全市场情绪温度计（mak 情绪看板可直接引用，替代自算）
+
+| 字段 | 含义 |
+|:---|:---|
+| market_degree | 市场热度（0-100）|
+| shsz_balance | 两市成交额 |
+| shsz_balance_change_px | 较上日成交额变化 |
+| up_ratio / up_ratio_num | 封板率 / 封板数量 |
+| up_open_num | 炸板数量 |
+| performance | 昨涨停今表现 |
+| up_open_ratio | 高开率 |
+| profit_ratio | 获利率 |
+| up_down_dis | 涨跌分布(dict) |
+| limit_up_board | 连板梯队(dict) |
+
+#### 12.10.3 开盘红市场情绪（market_emotion_kph，**含历史**）🆕
+
+| 字段 | 含义 |
+|:---|:---|
+| zt / dt | 涨停 / 跌停总数 |
+| sjzt / sjdt | 实际涨停 / 跌停（非 ST）|
+| stzt / stdt | ST 涨停 / 跌停 |
+| rise_num / fall_num / flat | 上涨 / 下跌 / 平盘家数 |
+| sign | 市场人气判断文字 |
+| rise_dist / fall_dist | 各涨跌幅区间股票数（1..10 / -1..-10）|
+| szln / qscln | 沪市 / 全市成交额（元）|
+| s_zrcs / q_zrcs | 昨日沪市 / 昨日全市成交额 |
+
+#### 12.10.4 开盘红复盘（get_zttt 涨停天梯 / get_pmsl 盘面梳理 / get_his_limit_resumption 历史涨停复盘）🆕
+
+**涨停天梯（get_zttt）**：
+
+| StockList 索引 | 含义 |
+|:---:|:---|
+| [0] | 股票代码 |
+| [1] | 股票名称 |
+| [2] | 连板数 |
+| [3] | 涨停时间戳（秒）|
+| [4]/[5] | 所属板块代码 / 名称 |
+| [6] | 是否大单一字（1=是）|
+| [7] | 是否有人气（1=是）|
+| [8] | 板块涨停股数量 |
+| [9]/[10] | 个股 / 板块成交额（元）|
+
+**盘面梳理（get_pmsl，板块事件流）**：
+
+| 字段 | 含义 |
+|:---|:---|
+| TagID / TagName | 事件类型（大单一字/直线拉升/权重拉升/趋势新高/人气股杀跌…）|
+| TagShuXing | 事件属性（2=正面，0=负面，1=中性）|
+| ZSCode / ZSName | 板块代码 / 名称 |
+| Detail | 事件描述文字 |
+| StockList | 相关股票列表 [[代码, 名称], ...] |
+
+**历史涨停复盘（get_his_limit_resumption，含涨停原因）**：
+
+| 字段 | 含义 |
+|:---|:---|
+| reason | 涨停原因 |
+| themes | 题材 |
+| industry_id / industry_zt | 行业 ID / 同行业涨停数 |
+| limit_tag / limit_count | 连板标签（首板/二板…）/ 连板数 |
+| limit_time / open_time | 最后涨停 / 开板时间戳（0=未开板）|
+| seal_amount / seal_money | 封单量 / 封单金额（元）|
+| turnover / turnover_rate | 成交额 / 换手率 |
+| net_inflow / market_cap | 净流入 / 流通市值（元）|
+
+#### 12.10.5 板块轮动与热度（财联社 get_sector_rotation / get_sector_heat / market_wind_cls）🆕
+
+| 字段 | 含义 |
+|:---|:---|
+| plate_code / plate_name | 板块代码 / 名称（风口板块）|
+| catalyst | 催化剂描述 |
+| rank / cur_heat | 当前热度排名 / 热度值 |
+| rank_change | 排名变化（正=上升，负=下降）|
+| is_new | 是否新上榜（1=是）|
+| trade_date / plates | 轮动日期 / 当日 top10 板块列表 |
+
+#### 12.10.6 i问财自然语言查询（stock_strategy_wencai）🆕
+
+> 自然语言策略查询（如"涨停 3 天 成交量放大"）。项目此前因 iwencai 需 API Key 未接入——levistock 封装是否免 Key **待实测**。
+
+#### 12.10.7 开盘红板块排行（sector_ranking_kph）补充字段
+
+> 项目 `get_board_fund_flow` 只有今日/5日/10日主力净额——开盘红提供更细维度：
+
+| 字段 | 含义 |
+|:---|:---|
+| net_inflow_5d | **5日净流入**（元）|
+| buy_amount / sell_amount | 主买 / 主卖金额（元）|
+| turnover_rate / market_cap | 换手率 / 总市值 |
+| avg_change | 平均涨幅（%）|
+| stock_count | 成分股数量 |
+
+---
+
+#### 12.10.8 实测结论（2026-08-05，levistock 0.1.7）✅
+
+| 接口 | 实测 | 返回 | 字段 |
+|:---|:---:|:---|:---|
+| stock_changes_em(8201) | ✅ 2782 条 | list[dict] | stock_code/stock_name/market/time/change_pct(多值)/change_type(中文如"火箭发射") |
+| market_emotion_cls | ✅ 13 键 | dict | market_degree=57/shsz_balance=2.06万亿/up_ratio=85%/up_open_num=23/performance=4.42%/up_open_ratio=88%/profit_ratio=79%/up_down_dis/limit_up_board(一板111含17%晋级率) |
+| stock_zt_pool_em | ✅ 129 条 | list[dict] | date/stock_code/stock_name/price/change_pct/amount/circ_market/**circ_share**/turnover_rate/continuous/first_zt_time/last_zt_time/**main_inflow**/open_times/sector/**zt_days/zt_count** |
+| stock_strategy_wencai | ✅ 8 条 | dict | title(表头)/result(数据)；**免 Key**（api.levizhang.com 自动 cookie）；"连板3板以上"→传智教育 7 连板 |
+
+**与项目现有数据的差异**：
+- 涨停池字段比 push2ex 多：**circ_share（流通股本）**、**main_inflow（主力净流入）**、**zt_days/zt_count（近期涨停天数/次数）**——项目 `get_limit_up_pool` 无这些
+- 盘口异动是项目**完全空白**的数据维度（打板情绪信号）
+- 市场情绪字段集可直接替换 mak 的自算情绪指标
+- ⚠️ i问财超时 10s 可能不足（实测一次 ReadTimeout 后重试成功）——建议调用时包重试
+
+---
+
+### 12.11 多源校准基准表：akshare（2026-08-05 调研录入）
+
+> **来源**：https://github.com/akfamily/akshare（21774⭐，MIT，1.18.81 高频周更）
+> **定位**：不新增独家数据（项目已直连多数 HTTP 源），而是作为**字段准确性校准基准**——同一语义多源交叉验证
+> **注意**：akshare 接口高频变动，调用前查其文档站（akshare.akfamily.xyz）
+
+| 字典字段 | akshare 校准接口 | 校准意义 |
+|:---|:---|:---|
+| Col[14] 扣非净利 | `stock_financial_abstract`（东财F10）| 复核已破解字段 |
+| push2 f51/f52 涨跌停价 | `stock_zh_a_spot_em`（全市场含涨停价）| 批量校准 |
+| push2 f137-146 资金流 | `stock_individual_fund_flow` | 今日/5日/10日对照 |
+| f126 股息率 | `stock_a_indicator_lg`（乐咕，**含历史序列**）| 历史股息率校准 |
+| push2 f55/f92 EPS/BPS | `stock_financial_abstract` | 报告期对齐 |
+| 龙虎榜 EXPLAIN | `stock_lhb_detail_em` | 买卖占比对照 |
+| 两融 RZJME/RQJMG | `stock_margin_detail_szse` | 深市两融对照 |
+| 板块资金流 f62/f184 | `stock_sector_fund_flow_rank` | 行业资金流对照 |
+| PE 历史百分位 | `stock_a_indicator_lg`（乐咕历史PE）| **val estimate_pe_percentile 用真实数据替换模拟算法** |
+| 股东户数 | `stock_zh_a_gdhs_detail_em` | 与 RPT_HOLDERNUMLATEST 对照 |
+| 历史分红 | `stock_fhps_detail_em` | 与 get_dividend_history 对照 |
+
+**乐咕（legulegu）系列价值最高**：提供真实历史 PE/PB/股息率百分位序列——可校准/替换 val 的 `estimate_pe_percentile`（当前为新浪财报+模拟算法）。
+
+---
+
+> 📌 **重要提示**：本文件是项目的**关键字典**，所有数据接口与字段调整前必查。优先采用字典中已确定的内容，可大幅减少重复反向工程工作。
 > 📌 **重要提示**：本文件是项目的**关键字典**，所有数据接口与字段调整前必查。优先采用字典中已确定的内容，可大幅减少重复反向工程工作。
 

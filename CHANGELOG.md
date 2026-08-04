@@ -4,7 +4,25 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
-## [16.1.3] - 2026-08-05
+## [16.1.4] - 2026-08-05
+
+**AxData 假设实测验证：stats_root 直接消费项目 zhb.zip（三源校准闭环）**。
+
+### ✅ 验证结果（axdata 0.1.3 + axdata_core，stats_root=项目 cache/zhb/zhb_20260803.zip）
+
+1. **同源确认**：`stock_shortline_indicators_tdx` 调用成功，`stats_date=20260803` 与项目 zhb 包数据日期一致——AxData 短线指标直接消费项目 ZHB 文件，**零额外下载**
+2. **free_float_shares 三源精确闭环**：
+   - 600519: AxData=540949000股 = ZHB Col11=54094.90万×10000 = 官方 TdxQuant FreeLtgb=54094.90 ✅
+   - 000001: AxData=8160481200股 = ZHB Col11=816048.12万×10000 = 官方 FreeLtgb=816048.12 ✅
+   - → **ZHB Col[11] ↔ AxData free_float_shares ↔ TdxQuant FreeLtgb 三源一致**
+3. **34 字段全返回**：茅台 open_volume_ratio=1.01/prev_amount=48.99亿/昨开盘量=408手/竞价昨比=0.58
+4. **调用方式**：`request_interface("stock_shortline_indicators_tdx", params={"code":"600519","stats_root":"<zhb.zip>"}, ...)`
+
+### 📝 字典更新（field_dict.md §12.12）
+
+- §12.12 头部标注实测验证状态 + 三源闭环证据 + 调用代码示例
+
+
 
 **字典扩充：AxData 接口全景（257 接口）**。调研 electkismet/AxData 完整接口文档（https://electkismet.github.io/AxData/interfaces/），录入关键字段。
 

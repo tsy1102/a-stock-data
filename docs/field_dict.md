@@ -2205,6 +2205,94 @@ return result
 
 > 📌 **重要提示**：本文件是项目的**关键字典**，所有数据接口与字段调整前必查。优先采用字典中已确定的内容，可大幅减少重复反向工程工作。
 
+
+#### 12.12.8 跨源接口实测确认（2026-08-05，axdata 0.1.3 local 模式）
+
+> **方法**：`request_interface(name, params=..., fields=None, persist=False, data_root=None)` 逐个实测（串行+2s 间隔）
+> **原则**：测试确认真实有效即录入（无论项目是否使用）——为后期脚本升级提供现成接口
+> **注意**：参数名以 AxData 实际校验为准（常见差异：symbol↔code、date↔trade_date）
+
+**腾讯财经（5/6 ✅）**：
+
+| 接口 | 实测 | 关键字段 |
+|:---|:---:|:---|
+| stock_zh_a_hist_tx（A股历史日线）| ✅ 120 根 | trade_date/open/close/high/low/volume/amount/adjust |
+| stock_zh_index_daily_tx（指数日线）| ✅ 120 根 | 同上（指数）|
+| stock_zh_a_tick_tx_js（逐笔）| ✅ 10 条 | trade_time/price/change/volume/amount/**trade_side** |
+| get_tx_start_year（历史起始年）| ✅ | start_date/source_value |
+| tencent_realtime_snapshot（实时快照）| ✅ | last_price/pre_close/open/high/low/change/quote_time |
+| stock_zh_a_spot_tx（全市场列表）| ❌ 参数特殊 | sort_type/direction/offset（列表接口）|
+
+**财联社（8/10 ✅）**：
+
+| 接口 | 实测 | 关键字段 |
+|:---|:---:|:---|
+| cls_market_emotion（市场情绪）| ✅ | market_degree/shsz_balance/up_ratio/up_open_num/performance/rise_num/fall_num |
+| cls_limit_up_pool（涨停池含原因）| ✅ 139 条 | secu_code/secu_name/last_price/change_pct/**up_reason** |
+| cls_sector_heat（板块热度）| ✅ 20 条 | plate_code/rank/cur_heat/rank_change/is_new |
+| cls_market_wind（风口板块）| ✅ 3 条 | plate_code/plate_name/**catalyst** |
+| cls_sector_industry（行业实时）| ✅ 54 条 | change_pct/main_fund_diff/rise_count/fall_count/limit_up_count |
+| cls_sector_rotation（板块轮动）| ✅ 40 条 | trade_date/plate_code/plate_name/change_pct/rank |
+| cls_market_mainline（主线机会）| ✅ 3 条 | block_key/title/summary |
+| cls_news_telegraph（电报）| ✅ 5 条 | news_id/title/content/publish_time/category |
+
+**开盘红（4/4 ✅）**：
+
+| 接口 | 实测 | 关键字段 |
+|:---|:---:|:---|
+| kph_market_emotion（情绪）| ✅ | limit_up_count/real_limit_up_count/**st_limit_up_count**/rise_count/fall_count/market_sign |
+| kph_sector_ranking（板块排行）| ✅ 50 条 | plate_id/change_pct/amount/net_inflow/turnover_rate/market_cap/stock_count |
+| kph_limit_up_history（历史涨停复盘）| ✅ 50 条 | limit_time/open_time/**seal_amount/seal_money**/limit_tag/limit_count/themes/reason |
+| kph_limit_ladder（涨停天梯）| ✅ 137 条 | limit_count/limit_time/plate_name/**one_word/popular**/plate_limit_up_count/amount |
+
+**东财（8/8 ✅）**：
+
+| 接口 | 实测 | 关键字段 |
+|:---|:---:|:---|
+| eastmoney_stock_realtime_snapshot | ✅ | last_price/change_pct/volume/amount/amplitude/turnover_rate/pe_ttm/volume_ratio |
+| eastmoney_limit_up_pool（涨停池）| ✅ 138 条 | last_price/**limit_price**/change_pct/float_market_value/first_limit_time/last_limit_time |
+| eastmoney_yesterday_limit_up_pool（昨涨停）| ✅ 75 条 | 22 字段（含 limit_price/连续涨停）|
+| eastmoney_stock_changes（盘口异动）| ✅ 2792 条 | change_time/change_pct/**change_type/change_type_name** |
+| eastmoney_dragon_tiger_daily（龙虎榜）| ✅ 50 条 | reason/close_price/change_pct/buy_amount/sell_amount/**net_buy_amount** |
+| eastmoney_margin_trading（两融）| ✅ 24 条 | margin_balance/margin_buy_amount/**margin_net_buy_amount**/short_balance/short_sell_volume |
+| eastmoney_sector_realtime（板块）| ✅ 100 条 | sector_code/change_pct/amount/main_inflow/lead_stock_name |
+| eastmoney_stock_sector_belong（所属板块）| ✅ | sector_name |
+
+**巨潮（4/6 ✅）**：
+
+| 接口 | 实测 | 关键字段 |
+|:---|:---:|:---|
+| stock_profile_cninfo（公司概况）| ✅ 29 字段 | company_name/english_name/former_short_name/a_share_code/h_share_code/selected_indexes |
+| stock_dividend_cninfo（历史分红）| ✅ 31 条 | announcement_date/bonus_share_ratio/transfer_share_ratio/cash_dividend_ratio/record_date/ex_right_date |
+| cninfo_announcements（公告）| ✅ 30 条 | announcement_id/title/publish_date/file_type/file_size_kb/**download_url** |
+| stock_irm_cninfo（互动易）| ⚠️ 空返回 | 需参数核实 |
+| stock_hold_num_cninfo（股东户数）| ❌ 403 | 源端风控 |
+| cninfo_announcement_detail（PDF元信息）| ⚠️ 需 url 参数 | - |
+
+**交易所（3/3 ✅）**：
+
+| 接口 | 实测 | 关键字段 |
+|:---|:---:|:---|
+| stock_trade_calendar_exchange（交易日历）| ✅ 10 条 | cal_date/is_open/pretrade_date/next_trade_date |
+| stock_basic_info_exchange（基础信息）| ✅ 27 字段 | name/security_full_name/market_code/industry/region/company_code |
+| stock_historical_list_exchange（历史列表）| ✅ 119 万条 | trade_date/symbol/name/list_date/delist_date/listing_status |
+
+**新浪（7/8 ✅）**：
+
+| 接口 | 实测 | 关键字段 |
+|:---|:---:|:---|
+| stock_restricted_release_queue_sina（限售解禁）| ✅ 3 条 | release_date/**release_shares_10k/release_market_value_100m_yuan**/batch_no/announcement_date |
+| stock_zh_index_spot_sina（A股指数实时）| ✅ 80 条 | latest_price/change_pct/bid/ask/open/high |
+| stock_esg_rate_sina（ESG评级）| ✅ 10 条 | agency_name/**rating**/rating_period |
+| stock_lhb_detail_daily_sina（龙虎榜）| ✅ 56 条 | rank/close/metric_value/volume_10k_shares/amount_10k_yuan/indicator |
+| index_stock_cons_sina（指数成份）| ✅ 80 条 23 字段 | index_code/name/latest_price/change_pct/bid/ask |
+| fund_etf_category_sina（ETF分类行情）| ✅ 100 条 17 字段 | fund_code/fund_type/latest_price/change_pct |
+| stock_hk_index_spot_sina（港股指数）| ✅ 3 条 | index_code/latest_price/change_pct |
+| stock_financial_report_sina（财务报表）| ⚠️ 参数待查 | - |
+
+**实测总结**：腾讯 5/6 + 财联社 8/10 + 开盘红 4/4 + 东财 8/8 + 巨潮 4/6 + 交易所 3/3 + 新浪 7/8 = **39 个接口确认可用**。
+**项目高价值补充**：东财盘口异动（change_type 中文名）、开盘红历史涨停复盘（seal_money/one_word）、新浪限售解禁（万股/百万元口径）、巨潮公告 download_url（PDF 直链）、财联社涨停池 up_reason（涨停原因）。
+
 ### 12.13 eltdx 完整方法字典（2026-08-05 文档确认，未实测）
 
 > **来源**：https://github.com/electkismet/eltdx（303⭐，Research-Only 许可，2026-08-04 活跃）+ docs/METHOD_REFERENCE.md

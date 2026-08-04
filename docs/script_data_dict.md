@@ -1,9 +1,11 @@
 # 脚本应用接口与字段来源字典 (Script Data Dictionary)
 
 > **创建日期**：2026-07-28
-> **基于**：[field_dict.md](file:///d:/GitHub/test/docs/field_dict.md)（V15.1 字段元数据）
-> **目的**：明确每个脚本的每个字段从哪个接口获取、走哪个中间层函数、单位/含义如何，与 field_dict 形成"双字典"对照。
+> **更新日期**：2026-08-05（V16.1：ful 下线 → 5 大脚本；新数据源接入）
+> **基于**：[field_dict.md](file:///d:/GitHub/test/docs/field_dict.md)（V16.1 字段元数据，§12 多源字典）
+> **目的**：明确每个脚本的每个字段从哪个接口获取、走哪个中间层函数、单位/含义如何、**优先级**，与 field_dict 形成"双字典"对照。
 > **使用原则**：脚本调整前必查，避免重复反向工程；优先采用本字典已确定的中间层函数。
+> **V16.1 变化**：① `get_ful_report.py` 已下线（技术/风险引擎迁移至 `sc_technical.py`/`sc_risk.py`）② push2 字段包 19→50（涨停/跌停价/EPS/BPS/52周/资金流 12 字段）③ 评分权重可配置（scoring_sht/med/lng）④ 新数据源（levistock/AxData）已录入 field_dict §12.10-12.14，脚本未接入但可扩展
 
 ---
 
@@ -11,19 +13,20 @@
 
 ```
 ┌──────────────────────────────────────────────────────────┐
-│ Layer 1: ZHB 本地数据包（TCP 119.147.212.81:7709）         │
-│   - 解析后落盘到 cache/zhb/zhb_YYYYMMDD.zip               │
+│ Layer 1: ZHB 本地数据包（TCP 7709，easy_tdx 首选下载）      │
+│   - V16.1.1: zhb.zip 下载 easy_tdx get_report_file 首选    │
+│     （实测 180.153.18.170 成功），mootdx 备胎               │
 │   - 含 45 个文件（tdxstat/tdxstat2/tipinfo/profile.dat/…）│
 │   - 数据日期 = 包内数据日期 = 上一交易日（T-1）             │
 ├──────────────────────────────────────────────────────────┤
-│ Layer 2: TDX TCP 协议（mootdx + tdxpy）                   │
-│   - 0x06B9 GetReportFile  →  拉取 zhb.zip                 │
+│ Layer 2: TDX TCP 协议（easy_tdx 1.20.4 适配层首选）         │
+│   - V15.5: _EasyTdxAdapter 包装 easy_tdx → mootdx 兼容     │
+│   - 健康分引擎 + K线空数据故障转移 + 52 候选服务器           │
 │   - 0x0010 GetFinanceInfo → 单只股票 36 字段               │
-│   - 0x000X 行情/资金流（quote/fund_flow 等）               │
-│   - 注：tdx_client 中部分函数已委托给 HTTP（见后）         │
+│   - mootdx/pytdx 为备胎（0.11.7 行情类接口实测失效）        │
 ├──────────────────────────────────────────────────────────┤
 │ Layer 3: HTTP 网络（东财/腾讯/同花顺/新浪）                 │
-│   - 走 aiohttp + 令牌桶 + 熔断器                           │
+│   - 走 aiohttp + 令牌桶 + 熔断器 + 分域名限流（18 域名）    │
 │   - 数据日期 = T（实时）                                   │
 │   - ZHB 缺失或需最新数据时调用                              │
 └──────────────────────────────────────────────────────────┘
@@ -257,13 +260,19 @@
 
 类似 sht；PE/PB 用 ZHB only ✅。
 
-### 5.6 get_ful_report.py（全量综合）
+### 5.5 get_val_report.py（估值筛选）
 
-类似 sht；研报/新闻用 HTTP。
+类似 sht；PE/PB 用 ZHB only ✅。
+
+### 5.6 ~~get_ful_report.py~~（V16.1 已下线）
+
+> **V16.1 下线**：全维度报告不再生成（main.py `--ful` 仅提示）。其独有能力已迁移：
+> - 技术指标引擎（MACD/RSI/BOLL/KDJ/量能）→ `stock_common/sc_technical.py`（sht/med 复用）
+> - 风险扫描引擎（9 项清单）→ `stock_common/sc_risk.py`（med/lng 复用）
 
 ---
 
-## 六、 6 大报告脚本公共中间层清单
+## 六、 5 大报告脚本公共中间层清单（V16.1：ful 下线后）
 
 > **强制约定**：所有脚本统一通过以下中间层函数获取数据，**不再直接调用 `tdx_client` / `requests` / `_quick_request`**
 
@@ -431,9 +440,48 @@ from stock_common.sc_datasource import get_sina_financial_report, get_sina_balan
 ---
 
 > 📌 **双字典约定**：
-> - **field_dict.md** = 字段元数据（含义、单位、来源）
-> - **script_data_dict.md** = 脚本应用接口（中间层函数、调用模式）
+> - **field_dict.md** = 字段元数据（含义、单位、来源）——**测试确认真实有效即录入，无论是否使用**
+> - **script_data_dict.md** = 脚本应用接口（中间层函数、调用模式、优先级）
 > - 两者一一对应，缺一不可。
+
+---
+
+## V16.1 新接入字段与优先级总表（2026-08-05）
+
+> **原则**：field_dict §12 已录入全部测试确认字段（push2 扩展/levistock/AxData/akshare 校准）。
+> 下表标注**脚本当前是否已用**与**扩展优先级**——未用字段为后期脚本升级的现成素材，无需重新寻找。
+
+### V16.1 已接入脚本（数据层+三报告）
+
+| 字段 | 来源 | 脚本状态 | 优先级 |
+|:---|:---|:---:|:---:|
+| limit_up / limit_down（涨停跌停价）| push2 f51/f52 | sht 用（评分）| ✅ 已用 |
+| eps / bps | push2 f55/f92 | Canonical 有值 | ✅ 已用 |
+| dividend_yield | push2 f126 | Canonical 有值 | ✅ 已用 |
+| pe_dynamic / pe_ttm / pe_more / pb | push2 f162-167 | Canonical 有值 | ✅ 已用 |
+| high_52w / low_52w | push2 f174/f175 | Canonical 有值 | ✅ 已用 |
+| fund_main_today / 5d / 10d | push2 f137-146 | Canonical 有值（sht/med 待用）| ⭐ 高 |
+| report_period / quote_date | push2 f221 / data_date | Canonical 有值 | ✅ 已用 |
+| 昨日涨停晋级率 | push2ex getYesterdayZTPool | sht 已用 | ✅ 已用 |
+| 研报评级变化 | reportapi ratingChange | med 已用 | ✅ 已用 |
+| 两融 RZJME/RQJMG/10D/5D/3D | datacenter | med 已用 | ✅ 已用 |
+
+### 新数据源（field_dict §12.10-12.14 已录，脚本未接入——扩展素材）
+
+| 字段 | 来源 | 接入成本 | 扩展优先级 |
+|:---|:---|:---:|:---:|
+| 短线指标 34 字段（开盘量比/竞价昨比/封成比/几天几板）| AxData `stock_shortline_indicators_tdx`（**直接消费项目 zhb.zip，已实测**）| 零下载 | ⭐⭐⭐ 最高 |
+| 涨跌停 limit_rule 官方枚举（st_5pct/bse_30pct/ipo_first_day）| AxData `stock_daily_price_limit_tdx` | 一次测试 | ⭐⭐⭐ 最高 |
+| 盘口异动（火箭发射/大笔买入/封涨停板）| levistock `stock_changes_em`（已实测 2782 条）| 零成本 | ⭐⭐⭐ |
+| 市场情绪（热度/封板率/高开率/获利率/连板梯队）| levistock `market_emotion_cls`（已实测）| 零成本 | ⭐⭐ |
+| 涨停池补充字段（circ_share/main_inflow/zt_days）| levistock `stock_zt_pool_em`（已实测）| 零成本 | ⭐⭐ |
+| i问财自然语言选股 | levistock `stock_strategy_wencai`（免 Key，已实测）| 零成本 | ⭐⭐ |
+| 筹码分布（获利比例/90%成本集中度）| AxData `stock_chip_distribution_tdx` | 一次测试 | ⭐⭐ |
+| 题材资金走势 / 题材强度排行 | AxData concept_capital_flow / theme_strength_rank | 一次测试 | ⭐ |
+| ESG 评分 ×5 | AxData 新浪 ESG | 一次测试 | ⭐ |
+| 历史估值序列（校准 val PE 百分位）| akshare 乐咕 stock_a_indicator_lg | 一次测试 | ⭐⭐ |
+
+
 
 ---
 

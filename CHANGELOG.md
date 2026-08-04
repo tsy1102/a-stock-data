@@ -4,7 +4,32 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
-## [16.1.6] - 2026-08-05
+## [16.1.7] - 2026-08-05
+
+**统一数据层优先级重构（ZHB→TCP→腾讯→东财）**。按最新字典 §12.15 调整数据获取优先级，提升数据精度与运行速度。
+
+### 🎯 优先级原则
+
+**ZHB 一次性获取优先（零网络）→ TCP/easy_tdx 不易封禁优先 → 腾讯 HTTP（不封 IP）→ 东财 HTTP（限流最严，最后手段）**
+
+### 🔧 代码变更
+
+1. **`tdx_get_quote_full` pe_ttm 守卫修正**（[tdx_client.py](file:///d:/GitHub/test/tdx_client.py)）：缺 pe_ttm 不再整体置空——保留有效 TDX price/change_pct，防丢 TCP 实时价导致链跳到腾讯/东财
+2. **资金流标签修正**（[data_provider.py](file:///d:/GitHub/test/data_provider.py)）：`realtime:tdx` → `realtime:eastmoney`（tdx_get_fund_flow 实际委托东财 HTTP，原标签名实不符）
+3. **行业链删腾讯虚位级**（[data_provider.py](file:///d:/GitHub/test/data_provider.py)）：get_tencent_quote 无 industry 字段（死级）；实际结构 = push2 f127（免费副产品）→ TDX boards（TCP）→ ZHB，行情走 TDX 时行业自动走 TCP 不碰东财
+4. **概念链新增 push2 f129 兜底**（[sc_datasource.py](file:///d:/GitHub/test/stock_common/sc_datasource.py) + data_provider）：get_em_quote_full 请求包加 f129 并解析为 concepts 列表；概念 = TDX boards（TCP）→ push2 f129（免费副产品）→ ZHB
+5. **val 名称补全复用腾讯批量**（[get_val_report.py](file:///d:/GitHub/test/get_val_report.py)）：优先用主路径已有 `_tencent_map`（零额外请求），东财批量仅腾讯未命中 ≤200 只时兜底
+
+### ✅ 实测验证（600519）
+
+- canonical 字段来源：price/change_pct=realtime:tdx、industry/concepts=tdx:boards（TCP 优先 ✅）、pe_ttm/main_net_buy=zhb（ZHB 优先 ✅）
+- tdx_get_quote_full：price=1328.36 + pe_ttm=20.637（守卫修复不破坏正常路径）
+
+### 📖 字典
+
+- **field_dict.md §12.15 数据源优先级矩阵**：逐股链路（8 类数据）+ 批量链路 + V16.1.7 变更记录
+
+
 
 **AxData 跨源接口实测确认（39 个可用）**。按用户原则（测试确认真实有效即入字典），
 逐一实测 AxData 257 接口中腾讯/新浪/财联社/开盘红/东财/巨潮/交易所 7 源的代表接口。

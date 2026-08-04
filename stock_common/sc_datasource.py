@@ -4765,6 +4765,7 @@ def get_em_quote_full(code: str) -> Dict[str, Any]:
     # V16.1: 字段包从 19 个扩展为已验证字段包（2026-08-04 官方 TdxQuant 交叉验证）
     #   f51/f52=涨停/跌停价、f55=EPS、f92=BPS、f126=股息率、f162-167=PE×3/PB
     #   f174/f175=52周高低、f137-146=资金流12字段、f198=行业码、f80=交易时段
+    #   f129=概念列表（V16.1.7: 概念链 push2 兜底源）
     # 生产字段包（固定，非 f1-f250 全量，防风控）
     params = {
         "fltt": "2",
@@ -4772,7 +4773,7 @@ def get_em_quote_full(code: str) -> Dict[str, Any]:
         "secid": secid,
         "fields": (
             "f43,f44,f45,f46,f47,f48,f57,f58,f60,f84,f85,"
-            "f116,f117,f127,f128,f168,f169,f170,f171,f189,"
+            "f116,f117,f127,f128,f129,f168,f169,f170,f171,f189,"
             "f51,f52,f55,f92,f126,f162,f163,f164,f165,f166,f167,"
             "f174,f175,f198,f80,"
             "f135,f136,f137,f138,f139,f140,f141,f142,f143,f144,f145,f146,"
@@ -4873,6 +4874,10 @@ def get_em_quote_full(code: str) -> Dict[str, Any]:
         board = data.get("f128")
         if board and isinstance(board, str):
             result["board"] = board
+        # V16.1.7: f129 概念列表（逗号分隔 → list，概念链 push2 兜底源）
+        concepts_raw = data.get("f129")
+        if concepts_raw and isinstance(concepts_raw, str):
+            result["concepts"] = [c.strip() for c in concepts_raw.split(",") if c.strip()]
         list_date = data.get("f189")
         if list_date:
             try:

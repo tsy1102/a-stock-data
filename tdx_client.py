@@ -915,8 +915,13 @@ def tdx_get_quote_full(code: str) -> Dict[str, Any]:
                     result[k] = v
 
     # V8.9: 兜底仍无 pe_ttm → 返回空字典（让 if q: 保护生效）
+    # V16.1.7 修正: 缺 pe_ttm 不应整体置空——TDX 的 price/change_pct 仍有效，
+    # 置空会丢掉 TCP 实时价导致链跳到腾讯/东财。pe_ttm 缺失留 0，由上层 ZHB 兜底。
     if result and "pe_ttm" not in result:
-        result = {}
+        if not any(result.get(k) for k in ("price", "change_pct", "amount_wan", "turnover_pct")):
+            result = {}
+        else:
+            result["pe_ttm"] = 0.0
     _TDX_QUOTE_CACHE[cache_key] = result
     return result
 

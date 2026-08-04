@@ -1876,16 +1876,22 @@ async def run_discovery_async(output_path):
             _zhb_name_map = get_zhb().unified_name_map
         except Exception as _e:
             _debug_log(f"val zhb name map: {_e}")
-        # V15.1: 仅对 ZHB 字典未命中的股票走东财拉取（避免 27 批 × 15s 超时拖垮整体性能）
+        # V15.1: 仅对 ZHB 字典未命中的股票补名称（避免 27 批 × 15s 超时拖垮整体性能）
         _unmatched = [_c for _c in _all_codes if not _zhb_name_map.get(_c)]
-        if _unmatched and len(_unmatched) <= 200:  # 数量 ≤200 才走东财，否则纯 ZHB 兜底
-            try:
-                _name_map = get_em_batch_quotes(_unmatched)
-            except Exception as _e:
-                _debug_log(f"val name em_batch_quotes: {_e}")
-                _name_map = {}
-        else:
-            _name_map = {}
+        # V16.1.7: 优先复用已有 _tencent_map（主路径已批量拉取，零额外请求）；
+        # 仅腾讯也未命中的才走东财批量（≤200 只兜底，push2 限流最严）
+        _name_map = {}
+        if _unmatched:
+            _tencent_hit = {_c: _tencent_map.get(_c, {}) for _c in _unmatched if _tencent_map.get(_c, {}).get("name")}
+            if _tencent_hit:
+                _name_map.update({_c: {"name": v["name"]} for _c, v in _tencent_hit.items()})
+            _still_missing = [_c for _c in _unmatched if _c not in _name_map]
+            if _still_missing and len(_still_missing) <= 200:  # 数量 ≤200 才走东财，否则纯 ZHB 兜底
+                try:
+                    _em_names = get_em_batch_quotes(_still_missing)
+                    _name_map.update(_em_names)
+                except Exception as _e:
+                    _debug_log(f"val name em_batch_quotes: {_e}")
         for _items in all_selections.values():
             for _item in _items:
                 _name = _item.get("name", "")

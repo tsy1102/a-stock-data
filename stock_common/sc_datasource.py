@@ -47,7 +47,7 @@ V9.1 更新：
 - 交易日历、异步包装
 """
 
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Tuple
 from datetime import datetime, timedelta
 import time
 import re
@@ -963,6 +963,7 @@ def get_tencent_quote(code: str) -> Dict[str, Any]:
     try:
         from stock_common.sc_schema import normalize_at_boundary, DataSource
         from stock_common import _quick_request, _safe_float
+        from tdx_client import _TENCENT_FIELD_INDEX as _f, _TENCENT_MIN_FIELDS  # V16.2.4 (B5): 统一字段索引
         prefix = "sh" if code.startswith("6") else ("bj" if code.startswith(("8", "4", "92")) else "sz")
         r = _quick_request(f"https://qt.gtimg.cn/q={prefix}{code}", timeout=10)
         if r is None:
@@ -972,23 +973,27 @@ def get_tencent_quote(code: str) -> Dict[str, Any]:
         if "=" not in text or '"' not in text:
             return {}
         vals = text.split('"')[1].split("~")
-        if len(vals) < 53:
+        if len(vals) < _TENCENT_MIN_FIELDS:
+            _debug_log(
+                f"datasource tencent quote: 字段数 {len(vals)} < {_TENCENT_MIN_FIELDS} "
+                f"（腾讯协议可能变更，需核对 tdx_client._TENCENT_FIELD_INDEX）"
+            )
             return {}
         raw = {
             "code": code,
-            "name": vals[1],
-            "price": _safe_float(vals[3]),
-            "prev_close": _safe_float(vals[4]),
-            "open": _safe_float(vals[5]),
-            "volume_hand": _safe_float(vals[6]),  # 手
-            "change_pct": _safe_float(vals[32]),
-            "amount_wan": _safe_float(vals[37]),  # 万元
-            "turnover_pct": _safe_float(vals[38]),
-            "pe_ttm": _safe_float(vals[39]),
-            "mcap_yi": _safe_float(vals[45]),  # 亿元
-            "pb": _safe_float(vals[46]),
-            "high": _safe_float(vals[33]),
-            "low": _safe_float(vals[34]),
+            "name": vals[_f["name"]],
+            "price": _safe_float(vals[_f["price"]]),
+            "prev_close": _safe_float(vals[_f["last_close"]]),
+            "open": _safe_float(vals[_f["open"]]),
+            "volume_hand": _safe_float(vals[_f["volume_hand"]]),  # 手
+            "change_pct": _safe_float(vals[_f["change_pct"]]),
+            "amount_wan": _safe_float(vals[_f["amount_wan"]]),  # 万元
+            "turnover_pct": _safe_float(vals[_f["turnover_pct"]]),
+            "pe_ttm": _safe_float(vals[_f["pe_ttm"]]),
+            "mcap_yi": _safe_float(vals[_f["mcap_yi"]]),  # 亿元
+            "pb": _safe_float(vals[_f["pb"]]),
+            "high": _safe_float(vals[_f["high"]]),
+            "low": _safe_float(vals[_f["low"]]),
         }
         return normalize_at_boundary(raw, DataSource.TENCENT)
     except Exception as _e:
@@ -1156,9 +1161,9 @@ def get_stock_info(code: str) -> Dict[str, Any]:
             _debug_log(f"datasource eastmoney push2 list_date error: {_e}")
 
     if not total_shares and price > 0 and mcap > 0:
-        total_shares = int(mcap / price)
+        total_shares = int(mcap / price)  # V16.2.3: 单位=股（与 TDX zongguben 股口径一致）
     if not float_shares and price > 0 and float_mcap > 0:
-        float_shares = int(float_mcap / price)
+        float_shares = int(float_mcap / price)  # V16.2.3: 同上
 
     try:
         tdx_boards = tdx_get_belong_boards(code)
@@ -1907,11 +1912,20 @@ async def get_concept_blocks_async(session: Any, code: str) -> Dict[str, Any]:
 
 
 # 同花顺热点题材归因
+_THS_HOT_REASON_CACHE: Dict[str, Dict[str, str]] = {}  # {date_str: {code: reason}} 全市场一次拉取
+
+
 def get_ths_hot_reason(code: str, date_str: str) -> Optional[Dict[str, Any]]:
     """V7.5: 同花顺热点题材归因（短线脚本抽取统一）。
 
     返回: {"reason": str} 或 None。
+    V16.2: 进程级缓存 —— 按 date_str 缓存全市场结果（HTTP 接口一次返回当日全部涨停股原因，
+    原逐股重复请求；sht 全市场 7000+ 只 → 1 次）。
     """
+    _date_map = _THS_HOT_REASON_CACHE.get(date_str)
+    if _date_map is not None:
+        _r = _date_map.get(str(code))
+        return {"reason": _r} if _r else None
     url = f"http://zx.10jqka.com.cn/event/api/getharden/date/{date_str}/orderby/date/orderway/desc/charset/GBK/"
     try:
         r = _quick_request(
@@ -1920,15 +1934,24 @@ def get_ths_hot_reason(code: str, date_str: str) -> Optional[Dict[str, Any]]:
             timeout=10,
         )
         if r is None:
+            _THS_HOT_REASON_CACHE[date_str] = {}
             return None
         d = r.json()
         if str(d.get("errocode", 0)) != "0":
+            _THS_HOT_REASON_CACHE[date_str] = {}
             return None
+        _date_map = {}
         for row in d.get("data") or []:
-            if str(row.get("code")) == str(code):
-                return {"reason": row.get("reason", "")}
+            _c = str(row.get("code"))
+            _reason = row.get("reason", "")
+            if _c and _reason:
+                _date_map[_c] = _reason
+        _THS_HOT_REASON_CACHE[date_str] = _date_map
+        _r = _date_map.get(str(code))
+        return {"reason": _r} if _r else None
     except Exception as _e:
         _debug_log(f"datasource ths hot reason error: {_e}")
+    _THS_HOT_REASON_CACHE[date_str] = {}
     return None
 
 
@@ -1938,7 +1961,12 @@ async def get_ths_hot_reason_async(
     """V7.5: 同花顺热点题材归因
 
     V9.4: 原生 aiohttp 实现，移除 asyncio.to_thread 包装。
+    V16.2: 复用同步版进程缓存（按 date_str 一次拉取）。
     """
+    _date_map = _THS_HOT_REASON_CACHE.get(date_str)
+    if _date_map is not None:
+        _r = _date_map.get(str(code))
+        return {"reason": _r} if _r else None
     url = f"http://zx.10jqka.com.cn/event/api/getharden/date/{date_str}/orderby/date/orderway/desc/charset/GBK/"
     try:
         d = await _async_quick_request(
@@ -1948,20 +1976,29 @@ async def get_ths_hot_reason_async(
             timeout=10,
         )
         if d is None:
+            _THS_HOT_REASON_CACHE[date_str] = {}
             return None
         if str(d.get("errocode", 0)) != "0":
+            _THS_HOT_REASON_CACHE[date_str] = {}
             return None
+        _date_map = {}
         for row in d.get("data") or []:
-            if str(row.get("code")) == str(code):
-                return {"reason": row.get("reason", "")}
+            _c = str(row.get("code"))
+            _reason = row.get("reason", "")
+            if _c and _reason:
+                _date_map[_c] = _reason
+        _THS_HOT_REASON_CACHE[date_str] = _date_map
+        _r = _date_map.get(str(code))
+        return {"reason": _r} if _r else None
     except Exception as _e:
         _debug_log(f"datasource ths hot reason async error: {_e}")
+    _THS_HOT_REASON_CACHE[date_str] = {}
     return None
 
 
 # 行业对比
 @cached(
-    category="industry_peers",
+    category="industry_peers_v2",
     ttl_seconds=TTL["industry_peers"],
     trading_day=True,
     valid_if=lambda r: isinstance(r, dict)
@@ -1985,6 +2022,60 @@ def get_industry_peers(
     _mkt_cfg = _sc.get("market", {})
     _peers_low = _mkt_cfg.get("peers_mcap_low", 0.3)
     _peers_high = _mkt_cfg.get("peers_mcap_high", 3.0)
+
+    # 0. V16.2.17: 东财申万二级优先（datacenter 一次性映射缓存，零逐股请求；
+    # 成员市值用腾讯批量（进程内按交易日缓存，跨 mak/val/sht 复用））
+    try:
+        _l2 = get_em_industry_l2(code)
+        if _l2:
+            _l2_members = get_em_industry_members_l2(_l2)
+            if _l2_members:
+                from tdx_client import _tencent_batch_fallback
+
+                _tq = _tencent_batch_fallback(_l2_members) or {}
+                _rows = []
+                for _mc in _l2_members:
+                    # 过滤 B 股（200xxx/900xxx）与非 A 股代码，避免排行污染
+                    if len(_mc) != 6 or not _mc.isdigit() or _mc[:2] not in ("00", "30", "60", "68", "92"):
+                        continue
+                    _q = _tq.get(_mc) or {}
+                    _rows.append(
+                        {
+                            "code": _mc,
+                            "name": _q.get("name", _mc),
+                            "price": _q.get("price", 0) or 0,
+                            "change_pct": _q.get("change_pct", 0) or 0,
+                            "mcap_yi": _q.get("mcap_yi", 0) or 0,
+                            "pe": _q.get("pe_ttm", 0) or 0,
+                            "turnover": _q.get("turnover_pct", 0) or 0,
+                        }
+                    )
+                _by_mcap = sorted(_rows, key=lambda x: x["mcap_yi"], reverse=True)
+                _my_mcap = next((r["mcap_yi"] for r in _by_mcap if r["code"] == code), 0)
+                _my_rank = next((i for i, r in enumerate(_by_mcap, 1) if r["code"] == code), 0)
+                _others = [r for r in _by_mcap if r["code"] != code]
+                _peers = []
+                if _others:
+                    _peers.append(_others[0])  # 行业龙头
+                if _my_mcap > 0:
+                    _similar = [
+                        r
+                        for r in _others[1:]
+                        if _peers_low * _my_mcap <= r["mcap_yi"] <= _peers_high * _my_mcap
+                    ]
+                    _peers += _similar[: top_n - 1]
+                if len(_peers) < top_n:
+                    _peers += [r for r in _others if r not in _peers][: top_n - len(_peers)]
+                return {
+                    "industry": _l2,
+                    "my_mcap": _my_mcap,
+                    "my_rank": _my_rank,
+                    "industry_count": len(_l2_members),
+                    "peers": _peers[:top_n],
+                    "all_members": _by_mcap,
+                }
+    except Exception as _e:
+        _debug_log(f"datasource get_industry_peers em_l2 ({code}): {_e}")
 
     # 1. TDX board_members（通过 belong_board 获取 board_code）
     boards = tdx_get_belong_boards(code)
@@ -2134,14 +2225,39 @@ async def get_industry_peers_async(session: Any, code: str) -> List[Dict[str, An
     return await asyncio.to_thread(get_industry_peers, code)
 
 
-@cached(category="industry_peers", ttl_seconds=TTL["industry_peers"], trading_day=True)
+@cached(category="industry_peers_v2", ttl_seconds=TTL["industry_peers"], trading_day=True)
 def get_stock_sector_rank(
     code: str, info: Optional[Dict[str, Any]] = None, q: Optional[Dict[str, Any]] = None
 ) -> Optional[Dict[str, Any]]:
-    """V7.5: 板块内排名 — TDX 优先。
+    """V7.5: 板块内排名 — V16.2.17 东财申万二级优先（TDX 兜底）。
 
     返回: {"rank": int, "total": int, "change_pct": float} 或 None。
     """
+    # 0. V16.2.17: 东财申万二级成员（datacenter 一次性映射缓存 + 腾讯实时涨跌幅）
+    try:
+        _l2 = get_em_industry_l2(code)
+        if _l2:
+            _l2_members = get_em_industry_members_l2(_l2)
+            if _l2_members:
+                from tdx_client import _tencent_batch_fallback
+
+                _tq = _tencent_batch_fallback(_l2_members) or {}
+                _rows = []
+                for _mc in _l2_members:
+                    if len(_mc) != 6 or not _mc.isdigit() or _mc[:2] not in ("00", "30", "60", "68", "92"):
+                        continue
+                    _q = _tq.get(_mc) or {}
+                    _rows.append({"code": _mc, "change_pct": _q.get("change_pct", 0) or 0})
+                _by_chg = sorted(_rows, key=lambda x: x["change_pct"], reverse=True)
+                _chg = q.get("change_pct", 0) if q else 0
+                if not _chg:
+                    _chg = next((r["change_pct"] for r in _by_chg if r["code"] == code), 0)
+                for i, _r in enumerate(_by_chg, 1):
+                    if _r["code"] == code:
+                        return {"rank": i, "total": len(_by_chg), "change_pct": _chg}
+    except Exception as _e:
+        _debug_log(f"datasource get_stock_sector_rank em_l2 ({code}): {_e}")
+
     from tdx_client import tdx_get_belong_boards, tdx_get_board_members, tdx_get_board_by_name
 
     # 1. TDX board_members（同源分类，精确匹配）
@@ -2636,6 +2752,18 @@ async def get_hsgt_macro_flow_async(session: Any) -> Optional[Dict[str, Any]]:
     return await asyncio.to_thread(get_hsgt_macro_flow)
 
 
+def _normalize_lockup_ratio(v) -> float:
+    """V16.2: 统一解禁比例单位 → 百分数（%）。
+    FREE_RATIO/解禁比例 可能为小数(0.05)或百分数(5)；0<值<=1 视为小数转 %。"""
+    try:
+        f = float(v)
+        if 0 < f <= 1:
+            return round(f * 100, 2)
+        return round(f, 2)
+    except (TypeError, ValueError):
+        return 0.0
+
+
 @cached(category="lockup_expiry", ttl_seconds=TTL["lockup_expiry"], cross_verify=True)
 def get_lockup_expiry(code: str, days: int = 90, include_history: bool = False) -> Any:
     """限售解禁日历。
@@ -2683,7 +2811,7 @@ def get_lockup_expiry(code: str, days: int = 90, include_history: bool = False) 
                             or r.get('数量')
                             or 0
                         ),
-                        "ratio": _safe_float(
+                        "ratio": _normalize_lockup_ratio(
                             r.get('解禁比例(%)') or r.get('解禁比例') or r.get('比例') or 0
                         ),
                     }
@@ -2701,7 +2829,7 @@ def get_lockup_expiry(code: str, days: int = 90, include_history: bool = False) 
     except Exception as _e:
         _debug_log(f"datasource tdx share capital lockup f10 error: {_e}")
 
-    # Fallback: 东财 HTTP
+    # Fallback: 东财 HTTP（V16.2.3 单位修正: FREE_SHARES=**股**原样返回, FREE_RATIO=小数→转百分数）
     if include_history:
         data = _em_filter(
             code, "RPT_LIFT_STAGE", page_size=15, sort_columns="FREE_DATE", sort_types="-1"
@@ -2710,9 +2838,9 @@ def get_lockup_expiry(code: str, days: int = 90, include_history: bool = False) 
             {
                 "date": str(r.get("FREE_DATE", "") or "")[:10],
                 "type": r.get("FREE_SHARES_TYPE", ""),
-                "shares": _safe_float(r.get("FREE_SHARES")),
-                "ratio": _safe_float(r.get("FREE_RATIO")),
-                "able_shares": _safe_float(r.get("ABLE_FREE_SHARES")),
+                "shares": _safe_float(r.get("FREE_SHARES")),          # 股
+                "ratio": _normalize_lockup_ratio(r.get("FREE_RATIO")),  # 统一%
+                "able_shares": _safe_float(r.get("ABLE_FREE_SHARES")),  # 股
             }
             for r in data
         ]
@@ -2731,9 +2859,9 @@ def get_lockup_expiry(code: str, days: int = 90, include_history: bool = False) 
         {
             "date": str(r.get("FREE_DATE", "") or "")[:10],
             "type": r.get("FREE_SHARES_TYPE", ""),
-            "shares": float(r.get("FREE_SHARES") or 0),
-            "ratio": float(r.get("FREE_RATIO") or 0),
-            "able_shares": float(r.get("ABLE_FREE_SHARES") or 0),
+            "shares": float(r.get("FREE_SHARES") or 0),               # 股
+            "ratio": _normalize_lockup_ratio(r.get("FREE_RATIO")),     # 统一%
+            "able_shares": float(r.get("ABLE_FREE_SHARES") or 0),     # 万股
         }
         for r in data2
     ]
@@ -3483,7 +3611,6 @@ def get_eastmoney_minute_fund_flow(code: str) -> List[Dict[str, Any]]:
     market = "1" if code.startswith("6") else "0"
     secid = f"{market}.{code}"
 
-    url = "https://push2.eastmoney.com/api/qt/stock/fflow/kline/get"
     params = {
         "lmt": "0",
         "klt": "1",  # 1分钟
@@ -3493,7 +3620,8 @@ def get_eastmoney_minute_fund_flow(code: str) -> List[Dict[str, Any]]:
         "ut": "b2884a393a59ad64002292a3e90d46a5",
     }
     try:
-        r = _quick_request(url, params=params, headers={"User-Agent": UA}, timeout=10)
+        # V16.2.4: 多域轮换（分钟级延时域可能无窗口，失败时返回空由调用方降级）
+        r = _em_fflow_request("/api/qt/stock/fflow/kline/get", params)
         if r is None:
             return []
         d = r.json()
@@ -3580,6 +3708,208 @@ def get_fund_flow_weighted(code: str, tdx_data: Any = None) -> Dict[str, Any]:
 # ═══════════════════════════════════════════════════════════
 # 财联社快讯（V9.6 新增，V3.4复活版）
 # ═══════════════════════════════════════════════════════════
+
+
+def news_matches_stock(title: str, code: str, name: str = "") -> bool:
+    """V16.2.3: 快讯标题是否与个股相关（含代码 / 全名 / 简称）。
+
+    财联社等全市场快讯必须经本过滤后才可展示在个股报告"舆情"章节
+    （原实现直接展示全市场快讯，混入无关资讯）。"""
+    if not title:
+        return False
+    t = str(title)
+    if code and code in t:
+        return True
+    if name:
+        n = str(name).strip()
+        if n and n in t:
+            return True
+        # 简称匹配：去掉常见后缀（科技/股份/集团/控股/电子等）
+        _short = re.sub(
+            r"(科技|股份|集团|控股|电子|实业|国际|发展|证券|银行|医药|汽车|电力|能源|材料|化工)$",
+            "",
+            n,
+        )
+        if len(_short) >= 2 and _short in t:
+            return True
+    return False
+
+
+def get_history_fund_flow_120d(code: str, days: int = 60, prefer: str = "auto") -> Dict[str, Any]:
+    """V16.2.4 (D2): 统一 120 日资金流入口（消除 get_fund_flow_120d 在 sht/med 的双实现）。
+
+    Args:
+        code: 股票代码
+        days: 天数（默认 60）
+        prefer: "tdx"=TDX 优先→东财 fallback（sht 短线口径）；
+                "em"=仅东财（med 中线口径）；"auto"=TDX 优先
+
+    Returns:
+        {"data": [dict(元)] 或 [], "error": str, "source": str}
+        与 med/sht 原有 get_fund_flow_120d 返回结构完全一致。
+    """
+    if prefer != "em":
+        try:
+            from tdx_client import tdx_get_history_fund_flow
+
+            _tdx = tdx_get_history_fund_flow(code, days)
+            if _tdx:
+                return {"data": _tdx, "error": "", "source": "tdx"}
+        except Exception as _e:
+            _debug_log(f"datasource get_history_fund_flow_120d tdx ({code}): {_e}")
+    try:
+        _em = get_em_history_fund_flow(code, days)
+        if _em:
+            return {"data": _em, "error": "", "source": "eastmoney"}
+    except Exception as _e:
+        _debug_log(f"datasource get_history_fund_flow_120d em ({code}): {_e}")
+    return {"data": [], "error": "资金流数据获取失败"}
+
+
+# V16.2.17: 东财**申万二级**行业映射（datacenter-web 域，低风险；东财二级与申万二级同源，
+# 如 半导体/白酒Ⅱ/光学光电子/白色家电 —— 用户要求全部脚本统一"申万二级"粒度）
+# 全市场一次分页拉取（19 页 × 5000），进程内存 + 磁盘 JSON 双缓存（行业静态，7 天 TTL）。
+# 缓存版本隔离: 文件名带 _l2 后缀，与 V16.2.16 一级缓存(em_industry_map.json)互不污染。
+_EM_L2_MAP: Optional[Dict[str, str]] = None
+_EM_L2_MEMBERS: Optional[Dict[str, List[str]]] = None
+_EM_L2_LOADED_TS = 0.0
+_EM_L2_TTL = 7 * 86400
+# 东财行业一级名单（用于排除；二级 = 排除一级后 code 最小的行业板块）
+_EM_INDUSTRY_L1_NAMES = frozenset({
+    "农林牧渔", "基础化工", "钢铁", "有色金属", "电子", "家用电器", "食品饮料",
+    "纺织服饰", "轻工制造", "医药生物", "公用事业", "交通运输", "房地产", "商贸零售",
+    "社会服务", "综合", "建筑材料", "建筑装饰", "电力设备", "机械设备", "国防军工",
+    "汽车", "计算机", "传媒", "通信", "银行", "非银金融", "煤炭", "石油石化",
+    "环保", "美容护理",
+})
+
+
+def _em_l2_load_cached(_json, _os, _now) -> Optional[Dict[str, str]]:
+    """读磁盘缓存（两级：code→二级名、name→成员）。返回 l2_map 或 None。"""
+    _d = _os.path.dirname(_os.path.dirname(_os.path.abspath(__file__)))
+    global _EM_L2_MEMBERS
+    _mp = _os.path.join(_d, "cache", "em_industry_map_l2.json")
+    _mb = _os.path.join(_d, "cache", "em_industry_members_l2.json")
+    if not (_os.path.exists(_mp) and _os.path.exists(_mb)):
+        return None
+    try:
+        if _now - _os.path.getmtime(_mp) > _EM_L2_TTL or _now - _os.path.getmtime(_mb) > _EM_L2_TTL:
+            return None
+        with open(_mp, encoding="utf-8") as _f:
+            _m = _json.load(_f)
+        with open(_mb, encoding="utf-8") as _f:
+            _mbd = _json.load(_f)
+        if isinstance(_m, dict) and isinstance(_mbd, dict):
+            _EM_L2_MEMBERS = {k: list(v) for k, v in _mbd.items()}
+            return _m
+    except Exception as _e:
+        _debug_log(f"datasource em_l2 cache read: {_e}")
+    return None
+
+
+def get_em_industry_l2_data(force_refresh: bool = False) -> Tuple[Dict[str, str], Dict[str, List[str]]]:
+    """V16.2.17: 东财申万二级行业数据（全市场，一次性拉取缓存）。
+
+    返回: (map_l2: {股票代码: 申万二级名}, members_l2: {申万二级名: [成分代码]})
+    二级识别: type=2 行业板块中排除一级名单(_EM_INDUSTRY_L1_NAMES)后取 code 最小
+    （实测 000100: 电子[1201一级]/光学光电子[1038]/面板[1335] → 光学光电子；
+      600519: 食品饮料[438一级]/白酒Ⅱ[1277]/白酒Ⅲ[1575] → 白酒Ⅱ）。
+    """
+    import json as _json
+    import os as _os
+    import time as _time
+
+    global _EM_L2_MAP, _EM_L2_MEMBERS, _EM_L2_LOADED_TS
+    _now = _time.time()
+    if not force_refresh and _EM_L2_MAP is not None and _now - _EM_L2_LOADED_TS < _EM_L2_TTL:
+        return _EM_L2_MAP, (_EM_L2_MEMBERS or {})
+
+    _cached = _em_l2_load_cached(_json, _os, _now)
+    if not force_refresh and _cached is not None:
+        _EM_L2_MAP = _cached
+        _EM_L2_LOADED_TS = _now
+        return _EM_L2_MAP, (_EM_L2_MEMBERS or {})
+
+    _per_stock: Dict[str, List[Any]] = {}
+    _url = "https://datacenter-web.eastmoney.com/api/data/v1/get"
+    try:
+        _page = 1
+        while True:
+            _params = {
+                "reportName": "RPT_EM_BOARD_CONSTITUENT", "columns": "ALL",
+                "pageNumber": str(_page), "pageSize": "5000",
+            }
+            _r = em_get(_url, params=_params, headers={"User-Agent": UA}, timeout=30)
+            if _r is None:
+                break
+            _d = _r.json()
+            _res = _d.get("result") or {}
+            _rows = _res.get("data") or []
+            if not _rows:
+                break
+            for _row in _rows:
+                if str(_row.get("BOARD_TYPE_NEW", "")) == "2":
+                    _sc = str(_row.get("SECURITY_CODE", ""))
+                    _bc = _row.get("BOARD_CODE")
+                    _nm = str(_row.get("BOARD_NAME", "")).strip()
+                    if _sc and _nm and _nm != "-":
+                        try:
+                            _per_stock.setdefault(_sc, []).append((int(_bc), _nm))
+                        except (TypeError, ValueError):
+                            _per_stock.setdefault(_sc, []).append((0, _nm))
+            _pages = _res.get("pages") or 1
+            if _page >= int(_pages):
+                break
+            _page += 1
+        # 二级识别：排除一级名单后 code 最小；成员表反转
+        _map_l2: Dict[str, str] = {}
+        _members_l2: Dict[str, List[str]] = {}
+        for _sc, _boards in _per_stock.items():
+            _sb = sorted(_boards)
+            _l2 = next((nm for _c, nm in _sb if nm not in _EM_INDUSTRY_L1_NAMES), None)
+            if not _l2:
+                _l2 = _sb[0][1] if _sb else ""
+            if _l2:
+                _map_l2[_sc] = _l2
+                _members_l2.setdefault(_l2, []).append(_sc)
+        # 写磁盘缓存（版本隔离 _l2 后缀）
+        try:
+            _cache_dir = _os.path.join(_os.path.dirname(_os.path.dirname(_os.path.abspath(__file__))), "cache")
+            _os.makedirs(_cache_dir, exist_ok=True)
+            for _fn, _obj in (("em_industry_map_l2.json", _map_l2), ("em_industry_members_l2.json", _members_l2)):
+                _tmp = _os.path.join(_cache_dir, _fn + ".tmp")
+                with open(_tmp, "w", encoding="utf-8") as _f:
+                    _json.dump(_obj, _f, ensure_ascii=False)
+                _os.replace(_tmp, _os.path.join(_cache_dir, _fn))
+        except Exception as _e:
+            _debug_log(f"datasource em_l2 cache write: {_e}")
+    except Exception as _e:
+        _debug_log(f"datasource em_l2 fetch: {_e}")
+
+    _EM_L2_MAP = _map_l2
+    _EM_L2_MEMBERS = _members_l2
+    _EM_L2_LOADED_TS = _now
+    return _EM_L2_MAP, _EM_L2_MEMBERS
+
+
+def get_em_industry_l2(code: str) -> str:
+    """V16.2.17: 单只股票东财申万二级行业（映射缓存命中，零额外请求）。"""
+    try:
+        _m, _ = get_em_industry_l2_data()
+        return _m.get(code, "")
+    except Exception as _e:
+        _debug_log(f"datasource get_em_industry_l2 ({code}): {_e}")
+        return ""
+
+
+def get_em_industry_members_l2(l2_name: str) -> List[str]:
+    """V16.2.17: 东财申万二级板块成分（成员缓存命中，零额外请求）。"""
+    try:
+        _m, _mb = get_em_industry_l2_data()
+        return _mb.get(l2_name, []) if _mb else []
+    except Exception as _e:
+        _debug_log(f"datasource get_em_industry_members_l2 ({l2_name}): {_e}")
+        return []
 
 
 @cached(category="news", ttl_seconds=TTL["news"])
@@ -3693,6 +4023,12 @@ def dragon_tiger_backup(trade_date: str) -> Dict[str, Any]:
                 "Referer": "https://www.szse.cn/disclosure/supervision/dealinfo/index.html",
             },
         )
+        # V16.3 C1: 备胎源裸 urlopen 补节流（_DOMAIN_LIMITS 的 szse 域 3.0rps 不覆盖此直连路径）
+        try:
+            from stock_common.sc_network import _gen_wait_process_interval
+            _gen_wait_process_interval()
+        except Exception:
+            pass
         with urllib.request.urlopen(req, timeout=15, context=_ctx) as r:
             d = json.loads(r.read())
         if isinstance(d, list) and d:
@@ -3723,6 +4059,12 @@ def dragon_tiger_backup(trade_date: str) -> Dict[str, Any]:
                 "Referer": "https://www.sse.com.cn/disclosure/diclosure/public/",
             },
         )
+        # V16.3 C1: 备胎源裸 urlopen 补节流
+        try:
+            from stock_common.sc_network import _gen_wait_process_interval
+            _gen_wait_process_interval()
+        except Exception:
+            pass
         with urllib.request.urlopen(req, timeout=15) as r:
             t = r.read().decode("utf-8", "ignore")
         if "(" in t and ")" in t:
@@ -3786,6 +4128,12 @@ def cninfo_irm(code: str, page_size: int = 30, page_num: int = 1) -> List[Dict[s
     from datetime import datetime
     import requests
 
+    # V16.2.3: 巨潮互动易无统一入口（交易所直连），加进程级礼貌限速（每次调用 2 个请求）
+    try:
+        from stock_common.sc_network import _gen_wait_process_interval
+        _gen_wait_process_interval()
+    except Exception:
+        pass
     try:
         r1 = requests.post(
             "https://irm.cninfo.com.cn/newircs/index/queryKeyboardInfo",
@@ -4773,9 +5121,9 @@ def get_em_quote_full(code: str) -> Dict[str, Any]:
         "secid": secid,
         "fields": (
             "f43,f44,f45,f46,f47,f48,f57,f58,f60,f84,f85,"
-            "f116,f117,f127,f128,f129,f168,f169,f170,f171,f189,"
+            "f116,f117,f127,f128,f129,f168,f169,f170,f171,f189,"  # V16.2.3: f168 换手率补回（sht 换手率 0.00%）
             "f51,f52,f55,f92,f126,f162,f163,f164,f165,f166,f167,"
-            "f174,f175,f198,f80,"
+            "f174,f175,f198,f80,f221,"  # V16.2: f221 报告期
             "f135,f136,f137,f138,f139,f140,f141,f142,f143,f144,f145,f146,"
             "f178"
         ),
@@ -4944,6 +5292,11 @@ def get_em_quote_full(code: str) -> Dict[str, Any]:
         v = data.get("f198")
         if v and isinstance(v, str):
             result["industry_code_push2"] = v
+
+        # V16.2: 最新报告期（f221，YYYYMMDD）
+        v = data.get("f221")
+        if v and str(v).strip() and str(v).strip() != "-":
+            result["report_period"] = str(v).strip()
 
         # 交易时段数组（f80，JSON 字符串 → 原样保留）
         v = data.get("f80")
@@ -5379,11 +5732,38 @@ def get_em_belong_boards(code: str) -> Dict[str, List[Any]]:
     return result
 
 
+# V16.2.4: 东财 fflow 接口多域轮换 —— push2/push2his 对该 IP 连接级风控（RemoteDisconnected）时
+# 自动切 push2delay 延时镜像（仅当日，无历史窗口）；风控恢复后自动回全窗口域。
+_FFLOW_HOSTS = (
+    "push2his.eastmoney.com",   # 历史资金流主域（全窗口）
+    "push2.eastmoney.com",      # 实时主域
+    "push2delay.eastmoney.com", # 延时镜像（保底，仅当日）
+)
+
+
+def _em_fflow_request(path: str, params: Dict[str, Any], timeout: int = 10):
+    """V16.2.4: 依次尝试 _FFLOW_HOSTS，返回首个非 None 的 Response（含 403/429 语义由 em_get 处理）。"""
+    import random as _rand
+
+    _hosts = list(_FFLOW_HOSTS)
+    _rand.shuffle(_hosts[0:2])  # 前两域随机轮换（防固定域持续触发风控）
+    for _h in _hosts:
+        try:
+            _r = em_get(f"https://{_h}{path}", params=params, headers={"User-Agent": UA}, timeout=timeout)
+            if _r is not None:
+                return _r
+        except Exception as _e:
+            _debug_log(f"datasource fflow host {_h} error: {type(_e).__name__} {str(_e)[:60]}")
+    return None
+
+
 @requires_push2
 def get_em_fund_flow(code: str) -> Dict[str, Any]:
     """V12.0: 获取个股实时资金流（替代 TDX get_fund_flow）。
 
-    使用东财 push2 fflow daykline 接口，取最新一天的数据（即当日实时累计）。
+    使用东财 fflow daykline 接口，取最新一天的数据（即当日实时累计）。
+    V16.2.4 修复: push2/push2his 域连接级风控时自动切 push2delay 延时镜像域
+    （延时 15 分钟，盘后一致；风控面独立）。
 
     Returns:
         dict: {"main_net": float, "main_net_wan": float, "total_net": float,
@@ -5395,7 +5775,6 @@ def get_em_fund_flow(code: str) -> Dict[str, Any]:
     market = "1" if code.startswith("6") else "0"
     secid = f"{market}.{code}"
 
-    url = "https://push2.eastmoney.com/api/qt/stock/fflow/daykline/get"
     params = {
         "lmt": "1",  # 只取最新一天
         "klt": "101",  # 日K线
@@ -5405,7 +5784,7 @@ def get_em_fund_flow(code: str) -> Dict[str, Any]:
         "ut": "b2884a393a59ad64002292a3e90d46a5",
     }
     try:
-        r = em_get(url, params=params, headers={"User-Agent": UA}, timeout=10)
+        r = _em_fflow_request("/api/qt/stock/fflow/daykline/get", params)
         if r is None:
             return {}
         d = r.json()
@@ -5426,7 +5805,8 @@ def get_em_fund_flow(code: str) -> Dict[str, Any]:
         return {
             "main_net": main_net,
             "main_net_wan": main_net / 10000.0,
-            "total_net": main_net + small_net + medium_net,
+            # V16.2 修复: total_net = 全部五档净额之和（原漏大单/超大单）
+            "total_net": main_net + small_net + medium_net + large_net + super_net,
             "super_in": max(super_net, 0),
             "super_out": max(-super_net, 0),
             "large_in": max(large_net, 0),
@@ -5458,7 +5838,6 @@ def get_em_history_fund_flow(code: str, days: int = 120) -> List[Dict[str, Any]]
     market = "1" if code.startswith("6") else "0"
     secid = f"{market}.{code}"
 
-    url = "https://push2.eastmoney.com/api/qt/stock/fflow/daykline/get"
     params = {
         "lmt": str(max(days, 1)),
         "klt": "101",  # 日K线
@@ -5468,7 +5847,8 @@ def get_em_history_fund_flow(code: str, days: int = 120) -> List[Dict[str, Any]]
         "ut": "b2884a393a59ad64002292a3e90d46a5",
     }
     try:
-        r = em_get(url, params=params, headers={"User-Agent": UA}, timeout=10)
+        # V16.2.4: 多域轮换（push2his 全窗口 → push2 → push2delay 单日保底）
+        r = _em_fflow_request("/api/qt/stock/fflow/daykline/get", params)
         if r is None:
             return []
         d = r.json()
@@ -5519,6 +5899,12 @@ def get_cls_market_emotion() -> Dict[str, Any]:
     """
     try:
         import levistock as lk
+        # V16.2: levistock 内部直连东财，绕过统一限流 → 调用前走进程级协调（全局 ≤1 rps）
+        try:
+            from stock_common.sc_network import _em_wait_process_interval
+            _em_wait_process_interval()
+        except Exception:
+            pass
         d = lk.market_emotion_cls()
         if isinstance(d, dict) and d:
             return d
@@ -5537,6 +5923,12 @@ def get_kph_limit_ladder(date_str: str = "") -> List[Dict[str, Any]]:
     try:
         import levistock as lk
         from datetime import date, timedelta
+        # V16.2: 进程级节流（levistock 直连东财）
+        try:
+            from stock_common.sc_network import _em_wait_process_interval
+            _em_wait_process_interval()
+        except Exception:
+            pass
         if not date_str:
             # 默认最近交易日（开盘红复盘接口要求历史日期：昨天或更早）
             date_str = (date.today() - timedelta(days=1)).strftime("%Y-%m-%d")
@@ -5572,6 +5964,12 @@ def get_stock_changes(change_type: str = "8201") -> List[Dict[str, Any]]:
     """
     try:
         import levistock as lk
+        # V16.2: 进程级节流（levistock 直连东财）
+        try:
+            from stock_common.sc_network import _em_wait_process_interval
+            _em_wait_process_interval()
+        except Exception:
+            pass
         data = lk.stock_changes_em(change_type=change_type)
         if isinstance(data, list):
             rows = []

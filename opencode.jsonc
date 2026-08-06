@@ -10,6 +10,8 @@
   // ────────────────────────────────────────────────────────────────────────────
   // [1] 权限配置 (替代 ecc-hooks 的 permission.ask)
   //     只读工具一律放行; 编辑/写入保持人工确认; 测试/格式化/类型检查自动放行
+  //     V16.3 A1: 合并原 L14/L86 两个重复 permission 块（JSON 后者覆盖前者，
+  //     导致 L14 的 read/edit/bash 配置静默失效）——Playwright MCP 权限并入本块
   // ────────────────────────────────────────────────────────────────────────────
   "permission": {
     "read": "allow",
@@ -32,7 +34,15 @@
       "git.exe status": "allow",
       "git.exe diff": "allow",
       "git.exe log": "allow"
-    }
+    },
+    // Playwright MCP 浏览器权限（浏览器操作有副作用 → ask，只读快照放行）
+    "mcp__playwright__browser_navigate": "ask",
+    "mcp__playwright__browser_click": "ask",
+    "mcp__playwright__browser_fill": "ask",
+    "mcp__playwright__browser_snapshot": "allow",
+    "mcp__playwright__browser_screenshot": "allow",
+    "mcp__playwright__browser_console": "allow",
+    "mcp__playwright__browser_network": "allow"
   },
 
   // ────────────────────────────────────────────────────────────────────────────
@@ -81,15 +91,5 @@
       "command": ["npx", "@playwright/mcp@latest"],
       "enabled": true
     }
-  },
-
-  "permission": {
-    "mcp__playwright__browser_navigate": "ask",
-    "mcp__playwright__browser_click": "ask",
-    "mcp__playwright__browser_fill": "ask",
-    "mcp__playwright__browser_snapshot": "allow",
-    "mcp__playwright__browser_screenshot": "allow",
-    "mcp__playwright__browser_console": "allow",
-    "mcp__playwright__browser_network": "allow"
   }
 }

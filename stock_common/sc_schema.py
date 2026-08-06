@@ -641,13 +641,15 @@ def normalize_at_boundary(raw: dict, source: DataSource) -> dict:
     if v != 0.0:
         out["main_net_buy_hands"] = round(v, 2)
 
-    # 股本（统一万股）：EM/SINA 原始是股 → /1e4
+    # 股本（统一万股）：EM/SINA 原始是股 → /1e4；TDX 0x0010 zongguben 也是股
+    # V16.3 A2: TDX 分支原样透传（把股当万股）为隐患——raw 约定是"数据源原始 dict"
+    #（TDX finance 输出 zongguben=股，V16.2.3 确认），故统一 /1e4 转万股。
     total = _f("total_shares_wan", "f84", "total_shares", "zongguben")
     if total != 0.0:
-        out["total_shares_wan"] = round(total / 1e4, 2) if _EM else round(total, 2)
+        out["total_shares_wan"] = round(total / 1e4, 2)
     flt = _f("float_shares_wan", "f85", "float_shares", "liutongguben")
     if flt != 0.0:
-        out["float_shares_wan"] = round(flt / 1e4, 2) if _EM else round(flt, 2)
+        out["float_shares_wan"] = round(flt / 1e4, 2)
 
     # 市值（统一亿元）：EM/SINA 原始是元 → /1e8
     mc = _f("mcap_yi", "f116", "mcap", "total_mv")

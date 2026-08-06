@@ -41,7 +41,7 @@ def _get_with_retry(url, params=None, headers=None, timeout=10, retries=3, wait=
         try:
             r = requests.get(
                 url, params=params, headers=headers or _HDRS,
-                timeout=timeout, proxies=_PROXIES, verify=False,
+                timeout=timeout, proxies=_PROXIES, verify=True,
             )
             if r.status_code == 200:
                 return r
@@ -135,7 +135,7 @@ class TestEastMoneyStability:
                         "ut": "f057cbcbce2a86e2866ab8877db1d059",
                     },
                     headers={"Referer": "https://quote.eastmoney.com/", **_HDRS},
-                    timeout=15, proxies=_PROXIES, verify=False,
+                    timeout=15, proxies=_PROXIES, verify=True,
                 )
                 if r.status_code == 200:
                     break
@@ -197,7 +197,7 @@ class TestV16NewApis:
                         "ut": "bd1d9ddb04089700cf9c27f6f7426281",
                     },
                     headers={"Referer": "https://quote.eastmoney.com/", **_HDRS},
-                    timeout=15, proxies=_PROXIES, verify=False,
+                    timeout=15, proxies=_PROXIES, verify=True,
                 )
                 if r.status_code == 200:
                     break

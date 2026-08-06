@@ -4,6 +4,84 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
+## [16.3.0] - 2026-08-05
+
+**全项目审查整改（74 文件核查，用户批准全改）+ 文档/依赖清理。**
+
+### 🆕 审查整改（A/B/C 三级）
+
+1. **A1 opencode.jsonc 配置修复**：重复 `permission` key 合并（原 L14 块被 L86 覆盖静默失效，run_tests.ps1/py_compile 权限恢复）
+2. **A2 股本单位链路核查**：实测 canonical 正确（万股/mcap ✓），sc_schema TDX 分支统一 `/1e4` 防御修正 + data_provider 注释
+3. **A3 限流陷阱清除**：tdx_client 独立限流表移除 push2=100ms 条目（比 sc_network 0.4rps 松弛 10 倍，防未来旁路）
+4. **A4 val 报告 ascii 兜底修复**：except 分支重打中文可二次抛异常 → ascii replace
+5. **B 清理**：skills/ 4 孤儿 SKILL.md、verify_shell_rules.ps1、main.py 不可达分支/死条件、`__all__` 死别名、.cursor/、cache 遗留文件
+6. **C 低风险修**：龙虎榜备胎补节流、zhb_data 旁路注释明确、SQL 参数化（stock_cache LIMIT）、AGENTS.md §4.1 路径、关键容错点注释
+
+### 🐛 profile.dat 解析修复（重要）
+
+- 记录结构实测 = market(1)+code(6)+null(1)+name(8)+ts(4)+pad(44)——原 `record[7:15]` 取名称（首字节是 null 分隔符）→ **解析恒空 0 条，离线名称字典从未生效**；修复为 `record[8:16]` → 1644 条（历史名称记录）
+- 测试构造记录同步修正
+
+### 📚 文档与目录清理
+
+- **docs 精简**：删除 ANALYSIS_REPORT/implementation_plan（UTF-16 损坏）/tdx_field_dict/zhb_field_dict + archive 全部历史报告；保留 6 个活文档（field_dict/roadmap/script_data_dict/domain_glossary/architecture/references SKILL.md）
+- **diff_specs 路径统一**：`docs/archive/diff_specs_v15/` → 根级 `diff_specs/`（匹配 auto_fix_pipeline 的 `ROOT/diff_specs`）
+- **scratch 清理**：39 个 8/5 字段破解过程产物删除（结论已落库 field_dict）
+- **scripts 清理**：删除 verify_tdx_host/verify_ports/test_em_batch_quotes_limit（功能已被取代/体系重构）
+- **AGENTS.md 引用修正**：`master_data_sources_and_fields_reference.md`（从未创建）→ `docs/field_dict.md`
+- **requirements 对齐**：pytest/pytest-asyncio 移入 requirements-dev.txt（运行时不再声明）
+- **VERSION**：16.1 → 16.3
+
+### ✅ 验证
+
+- 263/263 测试通过（V16.2 系列每轮回归全绿）
+
+---
+
+## [16.2.0] - 2026-08-05
+
+**V16.2.1-V16.2.18 连续迭代：报告正确性 + 东财分域限流 + 缓存版本化 + 行业统一申万二级 + ZHB 字段破解。**
+
+### 🆕 报告正确性修复（V16.2.1-V16.2.5, V16.2.12-V16.2.14）
+
+1. **mak/sht NameError 修复**：模块级 import 补 `limit_pct_for`/`is_limit_up`/`stock_name`
+2. **单位修正**：easy_tdx zong_guben 实为**股**（非万股）；解禁 shares=股/ratio=%；balance_gr 已是百分数
+3. **分红失败根因**：`_EasyTdxAdapter` 补 `xdxr` 方法（AttributeError 曾误报"TDX 接口不可用"）→ 19 条分红含日期
+4. **val 策略04 PE 跨年修复**：Q1 直接用累计值（原 Q1-去年Q4 → 负数荒谬）→ 招商银行 18337420x → 5.82x
+5. **tdxstat2 Col[13] 重新定性**：T 日特色板块归属（微盘股/近已解禁/业绩预降…，成员按当日条件筛选），**非行业**；行业聚合改用 `is_industry_code` 过滤 + 东财申万二级
+6. **sht/med/lng 细节**：互动易 48h/标题/答案/10 条标注、快讯 48h、涨停价 f51=0 兜底推算
+
+### 🆕 东财分域限流与风控（V16.2.5-V16.2.13）
+
+- **根因修复**：`_quick_request` 调不存在的 `consume()`（AttributeError 被吞 → 令牌桶从未生效）→ `acquire(1)` + 全局时间戳
+- **push2 系共享归一化桶 0.4rps/2.5s**（5 域）；datacenter 1.0rps；腾讯 5.0rps；`EM_MIN_INTERVAL=1.0` 硬下限
+- **进程间文件锁**（stale 回收 60s）+ 429 指数退避 + **20h 封禁冷却**（连续 3 次断连自动跳过，参考仓库 PR#36）
+- **资金流多域轮换**：push2his→push2→push2delay（`_FFLOW_HOSTS`）
+- 换 IP 后实测：东财 13 域健康度矩阵 13/13 PASS（`tests/test_eastmoney_health.py`）
+
+### 🆕 TDX 服务器白名单（V16.2.9-V16.2.11）
+
+- 54 台全量实测（easy_tdx 45 + TDXW HQHOST 43 + HF 2）→ **5 台 FULL 白名单**（180.153.18.170/115.238.56.198/115.238.90.165/218.75.126.9/159.75.55.232）
+- `_tdx_host_data_complete` 原生 API 校验、探测只遍历白名单、北交所 8/4 段拦截、5 分钟标的级失败记忆、logging filter 抑制噪音、死锁修复（except 分支锁内重入）
+
+### 🆕 行业统一申万二级（V16.2.15-V16.2.17，用户决策）
+
+- 核查结论：TDX/东财/ZHB 均非申万官方；东财 datacenter `RPT_EM_BOARD_CONSTITUENT` 一级与申万同名
+- **申万二级全链路统一**：canonical L0 → mak 板块聚合 → 同业对比（`industry_peers_v2`，B 股过滤）→ 板块内排名；全市场 5625 只映射一次性拉取 + 7 天缓存（`em_industry_map_l2.json`/`em_industry_members_l2.json` 版本隔离）
+- **缓存版本化铁律**：口径变更升级 category（旧 v1 缓存 11 条已 invalidate）
+
+### 🧠 ZHB 字段破解（V16.2.18, 3 天 Delta + injoyai 源码 + 东财 f189）
+
+- **tdxstat Col[12]=新股开板日、Col[13]=上市连板数**（f189 交叉 18/24 精确）
+- **区间涨跌幅字典修正**：不存在 30日/90日字段——[17]=近20根K线/[18]=20日/[19]=近60根K线/[20]=60日（injoyai 130 日日线核验 MAE）
+- **tdxstat2 Col[4]=涨跌停封单额**（3 天 90-100% 涨停股验证）
+- Col[33]=主板连板数（143/143 涨停验证，20% 板不计数）；Col[23]"除权月数"证伪
+- zhb_client 新增 unseal_date/board_count/change_20k_bar/change_60k_bar 映射
+
+### ✅ 验证
+
+- 每轮修复全量回归 263/263 通过；换 IP 后东财 13 域健康 13/13
+
 ## [16.1.9] - 2026-08-05
 
 **ST 涨跌幅规则修正（5%→10%）**。V16.1.7 曾误按 AxData 文档旧快照 `st_5pct` 将 ST 阈值改为 5%；

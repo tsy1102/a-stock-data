@@ -58,6 +58,7 @@ from stock_common import (
     get_zhb_data_date,
     get_zhb_industry_map,
     calc_mcap_yi as _calc_mcap_yi,
+    limit_pct_for,  # V16.2: 统一涨跌停阈值（主板/ST 10 / 双创 20 / 北交所 30）
     is_limit_up,
     is_limit_down,  # V16.0: 统一涨停/跌停判断（含 ST）
     get_zhb_market_stat2_snapshot,
@@ -71,6 +72,30 @@ _ret10_warn = _abnl.get("ret_10d_warn", 70.0)  # 10日累计涨幅警示阈值
 _ret10_down = _abnl.get("ret_10d_severe_down", -50.0)  # 10日严重下跌阈值
 _vol_locked = _abnl.get("volume_locked_pct", 3.0)  # 极度锁仓阈值
 _vol_overload = _abnl.get("volume_overload_pct", 25.0)  # 爆量阈值
+
+# V16.2.7: A 股代码前缀白名单（与 val 的 _is_a_stock 同口径，过滤 ETF/LOF/可转债）
+_A_STOCK_PREFIXES = ("00", "30", "60", "68", "92")
+
+
+def _is_a_stock(code: str) -> bool:
+    """V16.2.7: 判断是否为 A 股（沪深主板/创业板/科创板/北交所）。
+
+    过滤掉的非 A 股：ETF（15/51/56/58 等）、LOF（50）、可转债（11/12/18）、
+    国债/债券 ETF、封闭式基金等（ZHB 全市场快照 7948 只含基金/ETF）。
+    """
+    if not code or len(code) != 6 or not code.isdigit():
+        return False
+    return code[:2] in _A_STOCK_PREFIXES
+
+
+def _is_industry_code(ic) -> bool:
+    """V16.2.16: 行业段判断（8803xx/8804xx 通达信行业、881xxx 申万版；滤掉风格/概念/地域）。"""
+    try:
+        from zhb_client import is_industry_code as _zhb_is_ind
+        return _zhb_is_ind(ic)
+    except Exception:
+        s = str(ic or "")
+        return len(s) == 6 and s.isdigit() and s.startswith(("8803", "8804", "881"))
 
 
 def _fmt_ret(v):
@@ -103,9 +128,12 @@ def get_stock_index(code):
 
 
 def get_threshold(code, name):
-    if code.startswith(("300", "301", "688")):
-        return 30
-    return 20
+    # V16.2: 统一走 sc_utils.limit_pct_for（主板/ST 10 / 创业板·科创板 20 / 北交所 30）
+    try:
+        from stock_common import limit_pct_for
+        return int(limit_pct_for(code, name))
+    except Exception:
+        return 20 if code.startswith(("300", "301", "688")) else 10
 
 
 def get_board_name(code, name):
@@ -159,6 +187,10 @@ async def get_market_abnormal_data():
                 if _tq.get("change_pct") is not None:
                     s["change_pct"] = _safe_float(_tq["change_pct"])
                     _cov += 1
+                # V16.2.14: 补股票名称（ZHB 快照缺失时，如退市整理/新上市股——
+                # 原缺失导致报告多处"只有代码无名称"）
+                if _tq.get("name") and not s.get("name"):
+                    s["name"] = _tq["name"]
             _debug_log(f"mak tencent realtime cover: {_cov}/{len(data)} 只")
         except Exception as _e:
             _debug_log(f"mak tencent cover error: {_e}")
@@ -241,7 +273,13 @@ async def _get_zhb_market_data():
                     "ret_20d": ret_20d,
                     "ret_60d": ret_60d,
                     "main_net_amount": 0,
-                    "industry_code": stat.get("industry_code", ""),
+                    # V16.2.16: Col[13] 大量为风格/概念（微盘股/近已解禁等）→ 只保留行业段
+                    #（8803xx/8804xx 通达信行业、881xxx 申万版），其余置空避免伪行业聚合
+                    "industry_code": (
+                        stat.get("industry_code", "")
+                        if _is_industry_code(stat.get("industry_code", ""))
+                        else ""
+                    ),
                 }
             )
 
@@ -517,11 +555,16 @@ def check_stock(s, idx_rets, index_closes_pool):
                 )
         if abs(dev) >= th:
             hist_cnt = 0
-            try:
-                hist_cnt, _ = count_history_deviations(code, idx_code, index_closes_pool, 10)
-            except Exception as _e:
-                _debug_log(f"mak hist_deviation error: {_e}")
+            # V16.2.12: 北交所老段（8/4 开头）白名单服务器无 K 线（实测 832000/430047），
+            # 历史偏离无法计算 → 直接 0（正确降级），跳过 7s 换台探测
+            if code.startswith(("8", "4")):
                 hist_cnt = 0
+            else:
+                try:
+                    hist_cnt, _ = count_history_deviations(code, idx_code, index_closes_pool, 10)
+                except Exception as _e:
+                    _debug_log(f"mak hist_deviation error: {_e}")
+                    hist_cnt = 0
             cnt_warn = ""
             if board == "主板" and hist_cnt >= 3:
                 cnt_warn = f" ⚠️ 近10日已触发{hist_cnt}次同向异动！再触发1次停牌核查！"
@@ -741,10 +784,19 @@ def _build_sectors_from_zhb() -> List[Dict[str, Any]]:
         except Exception as _e:
             _debug_log(f"mak ZHB sectors tencent cover: {_e}")
 
-        # 按 industry_code 分组
+        # 按行业分组 —— V16.2.17: 统一东财申万二级行业（datacenter 低风险一次性映射），
+        # Col[13] 仅作兜底（且只接受行业段 8803/8804/881，实测大量风格板块污染）
+        _em_ind_map: Dict[str, str] = {}
+        try:
+            from stock_common import get_em_industry_l2_data
+            _em_ind_map, _ = get_em_industry_l2_data()
+        except Exception as _e:
+            _debug_log(f"mak em industry map: {_e}")
         buckets: Dict[str, Dict[str, Any]] = {}
         for code, stat in snap.items():
             ind_code = stat.get("industry_code", "")
+            # 东财一级优先（申万口径统一）；无映射时用 Col[13] 行业段兜底
+            ind_code = _em_ind_map.get(code, "") or (ind_code if _is_industry_code(ind_code) else "")
             if not ind_code:
                 continue
             # V16.0: 优先用腾讯实时涨跌幅（今日盘中），否则退回 ZHB T-1
@@ -987,8 +1039,8 @@ def analyze_top_stocks(top_sectors):
             _sec_cache[s["code"]] = stocks
         _sec_code = s["code"]
         # V16.0: 用统一 is_limit_up 判断涨停（ST 10% 与主板一致），替代硬编码 19.5/9.5
-        _is_chuang = _sec_code.startswith(("300", "301", "688"))
-        _limit_thr = 19.5 if _is_chuang else 9.5
+        # V16.2: 统一用 limit_pct_for 阈值（主板/ST 10 / 创业板·科创板 20 / 北交所 30）
+        _limit_thr = limit_pct_for(_sec_code, s.get("name", "")) if _sec_code.startswith(("300", "301", "688")) else 9.5
         limit_up = [
             st
             for st in stocks
@@ -1072,6 +1124,12 @@ async def generate_sector_report(output_path):
     print("[数据装载] 获取全市场多日数据与指数基准...", flush=True)
     _t0 = time.time()
     all_stocks = await get_market_abnormal_data()
+    # V16.2.7: ZHB 全市场快照含 ETF/LOF/可转债（7948 只）——选股无意义且拖慢扫描，
+    # 过滤为纯 A 股（与 val 的 _is_a_stock 同口径：00/30/60/68/92 前缀）
+    _before = len(all_stocks)
+    all_stocks = [s for s in all_stocks if _is_a_stock(s.get("code", ""))]
+    if len(all_stocks) < _before:
+        print(f"  📋 A股过滤: 移除 {_before - len(all_stocks)} 只 ETF/LOF/可转债（{_before} → {len(all_stocks)}）", flush=True)
     _zhb_date = get_zhb_data_date()
     _zhb_fresh = is_zhb_data_fresh(max_delay_days=3)
     if _zhb_date:
@@ -1187,8 +1245,8 @@ async def generate_sector_report(output_path):
     for s in _zt_3d:
         r3 = s.get("ret_3d", 0)
         code = s.get("code", "")
-        # 按板块区分涨停阈值: 主板10%, 双创20%
-        _lim = 20 if code.startswith(("300", "301", "688")) else 10
+        # V16.2: 按板块统一阈值（主板/ST 10, 创业板·科创板 20, 北交所 30）
+        _lim = limit_pct_for(code, s.get("name", ""))
         if r3 >= _lim * 2.9:
             _lb_3d['3板+'] = _lb_3d.get('3板+', 0) + 1
             _max_board = max(_max_board, 3)
@@ -1410,10 +1468,8 @@ async def generate_sector_report(output_path):
         _r10 = s.get("ret_10d", 0)
         _r20 = s.get("ret_20d", 0)
         _r60 = s.get("ret_60d", 0)
-        if s["code"].startswith(("300", "301", "688")):
-            _th = 30
-        else:
-            _th = 20
+        # V16.2: 3日阈值统一（主板/ST 10 / 双创 20 / 北交所 30）
+        _th = limit_pct_for(s.get("code", ""), s.get("name", ""))
         _matched = False
         # 10日严重：近日可能触发过
         if abs(_r10) >= 80:
@@ -1577,80 +1633,26 @@ async def generate_sector_report(output_path):
             _lfi = round(_l["main_inflow"] / 1e8, 2)
             L(f"    {_lnm}: 涨幅{_l['change_pct']:+.2f}% 主力净流入{_lfi:+.2f}亿")
     L(f"\n{'='*90}")
-    L("【G. 同花顺强势股情绪池验证】")
+    L("【G. 同花顺强势股情绪池交叉验证】")
     L(f"{'─'*90}")
     _ths_limit = 50
     ths = await get_ths_hot_pool(today_str)
     if ths:
-        # 连板检测：按板块涨跌停线 + ret_3d判断
-        def _get_limit_pct(code):
-            if code.startswith(("300", "301", "688")):
-                return 20
-            return 10
-
-        def _is_zt(h):
-            lim = _get_limit_pct(h["code"])
-            return h.get("zhangfu", 0) >= lim * 0.95
-
-        # 对应板块1/2/3连板的3日累计涨幅阈值
-        def _lianban_level(code, ret3):
-            lim = _get_limit_pct(code)
-            if ret3 >= lim * 2.85:
-                return 3  # 3连板+
-            if ret3 >= lim * 1.9:
-                return 2  # 2连板
-            if ret3 >= lim * 0.95:
-                return 1  # 首板
-            return 0
-
-        _ths_zt = [h for h in ths if _is_zt(h)]
-        # 查all_stocks获取ret_3d
-        _stock_map = {s["code"]: s for s in all_stocks}
-        _lb_list = []  # 连板股票
-        _zt_list = []  # 涨停（非连板）
-        for h in _ths_zt:
-            s = _stock_map.get(h["code"])
-            if s:
-                _lv = _lianban_level(h["code"], s.get("ret_3d", 0))
-                if _lv >= 2:
-                    _lb_list.append((h["code"], h["name"], _lv))
-                else:
-                    _zt_list.append(h)
-            else:
-                _zt_list.append(h)
-        L(f"  今日强势股: {len(ths)} 只（按涨幅取前{_ths_limit}名）")
-        # 构建code→ths映射，便于连板股查表（连板股可能不在涨幅前50名内）
-        _ths_map = {h["code"]: h for h in ths}
-        if _lb_list:
-            # 有连板：先展示连板表格，再展示涨停表格
-            L(f"\n  连板: {len(_lb_list)} 只")
-            _lb_detail = " | ".join(f"{name}({code}) {lv}连板" for code, name, lv in _lb_list)
-            L(f"    连板明细: {_lb_detail}")
+        # V16.2.14: 与东财涨停池（B）/开盘红天梯（B+）去重——重叠股票已在 B/B+ 展示，
+        # 此处只展示"同花顺独家"（交叉验证增量），并给出重叠计数作为两源一致性指标
+        _zt_codes = {s.get("code", "") for s in _zt_3d} if '_zt_3d' in dir() else set()
+        _ladder_codes = {str(s.get("code", "")) for s in (_ladder or [])} if isinstance(_ladder, list) else set()
+        _ths_dup = [h for h in ths if h.get("code") in _zt_codes or h.get("code") in _ladder_codes]
+        _ths_only = [h for h in ths if h.get("code") not in _zt_codes and h.get("code") not in _ladder_codes]
+        L(f"  同花顺强势股 {len(ths)} 只：与东财涨停池/开盘红天梯重叠 {len(_ths_dup)} 只（已在 B/B+ 展示）")
+        L(f"  同花顺独家 {len(_ths_only)} 只（东财口径未覆盖，交叉验证增量）:")
+        if _ths_only:
             L(f"  {'代码':<8} {'名称':<12} {'涨幅%':>7} {'题材':<30}")
             L(f"  {'-'*65}")
-            # 连板表格：遍历_lb_list（已含全部连板股），从_ths_map取详情
-            for code, name, lv in _lb_list:
-                h = _ths_map.get(code)
-                if h:
-                    L(
-                        f"  {h['code']:<8} {h['name']:<12} {h['zhangfu']:>+7.2f}% {h.get('reason','')[:30]:<30}"
-                    )
-            L(f"\n  涨停: {len(_zt_list)} 只")
-            L(f"  {'代码':<8} {'名称':<12} {'涨幅%':>7} {'题材':<30}")
-            L(f"  {'-'*65}")
-            # 涨停表格：_zt_list已排除连板股，取前_ths_limit只（先排除连板再取top N）
-            for h in _zt_list[:_ths_limit]:
-                L(
-                    f"  {h['code']:<8} {h['name']:<12} {h['zhangfu']:>+7.2f}% {h.get('reason','')[:30]:<30}"
-                )
+            for h in _ths_only[:_ths_limit]:
+                L(f"  {h.get('code',''):<8} {h.get('name',''):<12} {_safe_float(h.get('zhangfu',0)):>+7.2f}% {str(h.get('reason',''))[:30]:<30}")
         else:
-            # 无连板：全量表
-            L(f"  {'代码':<8} {'名称':<12} {'涨幅%':>7} {'题材':<30}")
-            L(f"  {'-'*65}")
-            for h in ths[:_ths_limit]:
-                L(
-                    f"  {h['code']:<8} {h['name']:<12} {h['zhangfu']:>+7.2f}% {h.get('reason','')[:30]:<30}"
-                )
+            L("  （同花顺池全部被东财涨停池/开盘红覆盖，两源一致）")
     else:
         L("  暂无数据（需交易所收盘后更新）")
     L(f"\n{'='*90}")

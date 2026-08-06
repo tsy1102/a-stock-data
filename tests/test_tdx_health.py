@@ -52,6 +52,14 @@ class TestEasyMarket:
     def test_etf_sh(self):
         assert tc._easy_market("510300") == 1  # 沪深300ETF（沪）
 
+    def test_bse(self):
+        # V16.2.2: 北交所 8/4/92 段 → 北京（原映射到深圳/上海导致 K 线空响应）
+        assert tc._easy_market("832000") == 2
+        assert tc._easy_market("430047") == 2
+        assert tc._easy_market("920001") == 2
+        assert tc._market_prefix("920001") == "bj"
+        assert tc._market_from_code("920001") == 2
+
     def test_index_sh(self):
         assert tc._easy_market("000001", is_index=True) == 1  # 上证指数
 

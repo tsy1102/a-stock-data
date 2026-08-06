@@ -124,14 +124,16 @@ def _fetch_share_capital(code: str) -> Dict[str, Any]:
         from tdx_client import tdx_get_finance_info
         fin = tdx_get_finance_info(code)
         if fin:
-            # V15.1: tdx_get_finance_info 返回 0x0010 协议 dict（key 为拼音）
-            # zongguben = 总股本, liutongguben = 流通股本（单位：万股）
+            # V16.2.3 修正: 0x0010 协议 zongguben/liutongguben 实为**股**（easy_tdx 源码
+            # 注释"万股"错误，_SCALE=10000 乘出股）；本缓存统一输出**万股**（与 push2 f84 路径一致）。
             # 参考 docs/field_dict.md 第 7.1 节
-            total = float(fin.get("zongguben", 0) or 0)
-            float_shares = float(fin.get("liutongguben", 0) or 0)
+            total = float(fin.get("zongguben", 0) or 0) / 10000.0
+            float_shares = float(fin.get("liutongguben", 0) or 0) / 10000.0
             # 注：原代码期望 fin["latest_indicators"]（F10 接口），但 tdx_get_finance_info
             #     实际是 0x0010 协议，不含 latest_indicators key。已修正。
     except Exception:
+        # V16.3 C5: TDX 股本获取失败(网络/TCP)——下方有 push2 兜底 + 0 值保护，
+        # 吞掉属有意容错（具体错误可查日志层）
         pass
 
     if total == 0:
@@ -142,6 +144,7 @@ def _fetch_share_capital(code: str) -> Dict[str, Any]:
                 total = float(info.get("total_shares", 0) or 0) / 10000.0
                 float_shares = float(info.get("float_shares", 0) or 0) / 10000.0
         except Exception:
+            # V16.3 C5: push2 兜底失败——返回 0 值由调用方决定是否使用（有意容错）
             pass
 
     return {

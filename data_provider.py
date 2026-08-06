@@ -57,7 +57,7 @@ TTL分级策略：
 """
 
 from typing import Any, Dict, Optional, List
-from datetime import datetime, date
+from datetime import datetime, date, timedelta  # V16.2: timedelta 导入（_get_zhb_date_offset 使用）
 import asyncio
 
 from stock_cache import cached, TTL, make_valid_if  # V15.2: 强化 valid_if
@@ -437,6 +437,19 @@ def get_canonical_stock_data(code: str, force_realtime: bool = False) -> Any:
     turnover_pct, _ = _extract_with_source(
         "turnover_pct", rt_quote.get("turnover_pct"), zhb_dict.get("turnover_pct")
     )
+    # V16.2.3 修复: TDX 0x010C 无换手率、ZHB 无此字段 → sht 换手率恒 0。
+    # 腾讯行情 f38 有换手率且 @cached（命中无网络开销），补作兜底。
+    if not turnover_pct:
+        try:
+            from stock_common import get_tencent_quote
+
+            _tq = get_tencent_quote(code_str) or {}
+            _tv = _safe_float(_tq.get("turnover_pct") or 0)
+            if _tv > 0:
+                turnover_pct = _tv
+                field_sources["turnover_pct"] = "realtime:tencent"
+        except Exception as _e:
+            _debug_log(f"get_canonical_stock_data turnover tencent fallback error: {_e}")
     field_sources["turnover_pct"] = field_sources.get("turnover_pct", price_src)
 
     # 估值类 (ZHB 优先, push2/tdx 兜底)
@@ -464,8 +477,11 @@ def get_canonical_stock_data(code: str, force_realtime: bool = False) -> Any:
         except Exception as _e:
             _debug_log(f"get_canonical_stock_data pb calc error: {_e}")
     field_sources["pb"] = "zhb:static" if zhb_dict.get('pb') else field_sources.get("pb", "missing")
-    dividend_yield = _safe_float(zhb_dict.get('dividend_yield'))
-    field_sources["dividend_yield"] = "zhb:static" if zhb_dict.get('dividend_yield') else "missing"
+    # V16.2: 股息率主字段接入 push2 f126（ZHB 无值或旧值时用实时）
+    dividend_yield = _safe_float(zhb_dict.get('dividend_yield') or rt_quote.get('dividend_yield'))
+    field_sources["dividend_yield"] = (
+        "zhb:static" if zhb_dict.get('dividend_yield') else field_sources.get("dividend_yield", "missing")
+    )
     # V15.4: 振幅/量比 (push2 f171/f49)
     amplitude_pct = _safe_float(rt_quote.get('amplitude_pct') or zhb_dict.get('amplitude_pct') or 0)
     if amplitude_pct <= 0 and high_p > 0 and low_p > 0 and prev_close > 0:
@@ -516,10 +532,16 @@ def get_canonical_stock_data(code: str, force_realtime: bool = False) -> Any:
     field_sources["net_profit"] = "zhb:static" if net_profit else "missing"
     revenue = _safe_float(zhb_dict.get('revenue'))
     field_sources["revenue"] = "zhb:static" if revenue else "missing"
-    eps = _safe_float(zhb_dict.get('eps'))
-    field_sources["eps"] = "zhb:static" if eps else "missing"
+    # V16.2: EPS 主字段接入 push2 f55（实时 T 日数据源优先，ZHB T-1 兜底）
+    eps = _safe_float(rt_quote.get('eps') or zhb_dict.get('eps'))
+    field_sources["eps"] = (
+        "realtime:push2" if rt_quote.get('eps') else ("zhb:static" if eps else "missing")
+    )
 
     # 股本类 — V15.4 4 级 fallback: push2/tdx/tencent > ZHB
+    # V16.3 A2 注: rt_quote 若来自 get_stock_info(TDX finance) 其 total_shares 单位是**股**，
+    # 直接当万股会错 10000 倍——当前实测 rt_quote 不含股本（走下方 capital_cache 万股兜底，
+    # 值正确），此防御注释防止未来 rt_quote 加股本字段时误用。
     total_shares_wan = _safe_float(rt_quote.get('total_shares') or zhb_dict.get('total_shares'))
     # V15.5.3: 股本兜底 — sc_capital_cache（V10.1 全局股本缓存，ZHB 无 total_shares 字段）
     if not total_shares_wan:
@@ -591,10 +613,15 @@ def get_canonical_stock_data(code: str, force_realtime: bool = False) -> Any:
     field_sources["change_ytd"] = "zhb:static" if change_ytd else "missing"
     streak_days = int(zhb_dict.get('streak_days') or 0)
     field_sources["streak_days"] = "zhb:static" if streak_days else "missing"
-    high_52w = _safe_float(zhb_dict.get('high_52w'))
-    field_sources["high_52w"] = "zhb:static" if high_52w else "missing"
-    low_52w = _safe_float(zhb_dict.get('low_52w'))
-    field_sources["low_52w"] = "zhb:static" if low_52w else "missing"
+    # V16.2: 52 周高低价主字段接入 push2 f174/f175（实时优先，ZHB T-1 兜底）
+    high_52w = _safe_float(rt_quote.get('high_52w') or zhb_dict.get('high_52w'))
+    field_sources["high_52w"] = (
+        "realtime:push2" if rt_quote.get('high_52w') else ("zhb:static" if high_52w else "missing")
+    )
+    low_52w = _safe_float(rt_quote.get('low_52w') or zhb_dict.get('low_52w'))
+    field_sources["low_52w"] = (
+        "realtime:push2" if rt_quote.get('low_52w') else ("zhb:static" if low_52w else "missing")
+    )
     ipo_price = _safe_float(zhb_dict.get('ipo_price'))
     field_sources["ipo_price"] = "zhb:static" if ipo_price else "missing"
     employee_count = int(zhb_dict.get('employee_count') or 0)
@@ -609,6 +636,17 @@ def get_canonical_stock_data(code: str, force_realtime: bool = False) -> Any:
     industry = ''
     board = ''
     industry_code = str(zhb_dict.get('industry_code') or '')
+    # V16.2.17: L0 东财申万二级行业（datacenter 域低风险，全市场映射一次性缓存，零逐股请求；
+    # 东财二级与申万二级同源（半导体/白酒Ⅱ/光学光电子），统一"申万二级"口径）
+    try:
+        from stock_common import get_em_industry_l2
+
+        _em_ind = get_em_industry_l2(code_str)
+        if _em_ind:
+            industry = _em_ind
+            field_sources["industry"] = "realtime:em-datacenter"
+    except Exception as _e:
+        _debug_log(f"get_canonical_stock_data em industry: {_e}")
     # L1: push2 (em_quote_raw 已在 L3 push2 fallback 中填充, 免费副产品)
     # V16.0: get_em_quote_full 返回规范名 — f127→industry, f128→board(地域)
     if em_quote_raw.get('industry') and em_quote_raw['industry'] not in (None, '', 'None'):
@@ -674,10 +712,10 @@ def get_canonical_stock_data(code: str, force_realtime: bool = False) -> Any:
         field_sources["concepts"] = field_sources.get("concepts", "tdx:boards")
 
     # V16.0: 上市日期（list_date）— 从 push2 f189 / rt_quote / em_quote_raw 提取
+    # V16.2 修复: 去掉 data_date 回退（data_date 是本机日期，上市日期缺失时置空而非写成当天）
     list_date = str(
         rt_quote.get("list_date")
         or em_quote_raw.get("list_date")
-        or rt_quote.get("data_date", "")
         or ""
     )
     if list_date and list_date not in ("None", "nan"):
@@ -899,6 +937,19 @@ def _should_use_zhb_for_realtime() -> bool:
         return _get_market_status() != "trading"
 
 
+def _parse_zhb_date(zhb_date_str: str):
+    """V16.2: 统一解析 ZHB 日期（支持 YYYYMMDD 与 YYYY-MM-DD 两种格式）。"""
+    if not zhb_date_str:
+        return None
+    try:
+        s = str(zhb_date_str).strip()
+        if len(s) == 8 and s.isdigit():
+            return datetime.strptime(s, "%Y%m%d").date()
+        return datetime.strptime(s, "%Y-%m-%d").date()
+    except (ValueError, TypeError):
+        return None
+
+
 def _get_zhb_date_offset() -> int:
     """计算ZHB数据日期相对于今天的交易日偏移。
 
@@ -911,20 +962,14 @@ def _get_zhb_date_offset() -> int:
         from stock_common import get_zhb_data_date
 
         zhb_date_str = get_zhb_data_date()
-        if not zhb_date_str:
+        zhb_date = _parse_zhb_date(zhb_date_str)
+        if zhb_date is None:
             return 99
 
-        from datetime import datetime
-
-        zhb_date = datetime.strptime(zhb_date_str, "%Y-%m-%d").date()
         today = datetime.now().date()
 
         if zhb_date >= today:
             return 0
-        if zhb_date == today - timedelta(days=1):
-            return 1
-        if zhb_date == today - timedelta(days=2):
-            return 2
         return (today - zhb_date).days
     except Exception:
         return 99
@@ -954,10 +999,10 @@ def _get_trading_date_offset() -> int:
         from stock_common.stock_calendar import is_workday, get_last_trading_day
 
         zhb_date_str = get_zhb_data_date()
-        if not zhb_date_str:
+        zhb_date = _parse_zhb_date(zhb_date_str)
+        if zhb_date is None:
             return 99
 
-        zhb_date = datetime.strptime(zhb_date_str, "%Y-%m-%d").date()
         today = datetime.now().date()
         now = datetime.now()
 

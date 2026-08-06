@@ -303,6 +303,10 @@ async def _run_script_async(script: str, stock_codes: list, output_dir: str,
     print(f"▶ [{label}] 启动: {script} {codes_str}", flush=True)
 
     t0 = time.time()
+    # V16.2.4 (B1): proc 预初始化 —— create_subprocess_exec 抛异常（OSError/权限）时
+    # except 块引用 proc 不再 NameError 遮蔽真实异常
+    proc = None
+    drain_task = None
     try:
         # V15.2: stdout=PIPE 显式接管子进程输出，避免 Windows 控制台全缓冲导致 GD 日志被吞
         # V15.2 修复: env=sub_env 注入 PYTHONIOENCODING=utf-8，避免子进程继承父进程 GBK 编码
@@ -322,10 +326,8 @@ async def _run_script_async(script: str, stock_codes: list, output_dir: str,
                 if not line:
                     break
                 # 子进程输出继承父进程控制台编码（Windows GBK / Linux UTF-8）
-                try:
-                    print(line.decode("utf-8", errors="replace").rstrip(), flush=True)
-                except UnicodeDecodeError:
-                    print(line.decode("gbk", errors="replace").rstrip(), flush=True)
+                # V16.3 B3: 去掉 gbk 兜底分支——errors="replace" 永不抛 UnicodeDecodeError（不可达）
+                print(line.decode("utf-8", errors="replace").rstrip(), flush=True)
 
         drain_task = asyncio.create_task(_drain_output())
         try:
@@ -351,11 +353,12 @@ async def _run_script_async(script: str, stock_codes: list, output_dir: str,
     except KeyboardInterrupt:
         # V15.4.2 修复: Ctrl+C 时强制 kill 子进程，避免变成孤儿进程继续运行
         # Windows 上 asyncio.run() 抛 KeyboardInterrupt 后不会自动 kill 子进程
-        if proc and proc.returncode is None:
+        if proc is not None and proc.returncode is None:
             try:
                 proc.kill()
                 await proc.wait()
-                if 'drain_task' in locals() and not drain_task.done():
+                # V16.3 B3: 原 'drain_task' in locals() 恒为 True（L309 已初始化）——死条件
+                if not drain_task.done():
                     drain_task.cancel()
                 print(f"⚠ [{label}] {script} 被用户中断，已 kill 子进程", flush=True)
             except Exception as _ke:
@@ -365,11 +368,13 @@ async def _run_script_async(script: str, stock_codes: list, output_dir: str,
         return script, 130, time.time() - t0, label
     except Exception as e:
         # V15.4.2 修复: 其他异常也尝试 kill 子进程
-        if proc and proc.returncode is None:
+        if proc is not None and proc.returncode is None:
             try:
                 proc.kill()
                 await proc.wait()
             except Exception:
+                # V16.3 C5: kill 已失败(进程已退出/权限)——外部异常已由上层打印，
+                # 此处吞掉避免二次报错干扰主异常信息（有意容错）
                 pass
         print(f"✖ [{label}] {script} 运行异常: {e}", flush=True)
         return script, 1, time.time() - t0, label

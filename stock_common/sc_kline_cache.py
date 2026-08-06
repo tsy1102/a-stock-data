@@ -64,9 +64,12 @@ def _get_cache_dir() -> Path:
     return cache_dir
 
 
+_KLINE_CACHE_SCHEMA_VERSION = "v2"  # V16.2: schema 版本（数据格式/列变更时 +1，旧缓存自动失效）
+
+
 def _cache_path(period: str, code: str, count: int) -> Path:
-    """生成缓存文件路径。"""
-    return _get_cache_dir() / f"{period}_{code}_{count}.pkl"
+    """生成缓存文件路径。V16.2: 键含 schema 版本，避免旧结构缓存被静默复用。"""
+    return _get_cache_dir() / f"{period}_{code}_{count}_{_KLINE_CACHE_SCHEMA_VERSION}.pkl"
 
 
 # ═══════════════════════════════════════
@@ -190,8 +193,14 @@ def set_cached_kline(period: str, code: str, count: int, data: Tuple[list, list]
     with _cache_lock:
         try:
             p = _cache_path(period, code, count)
-            with open(p, "wb") as f:
+            # V16.2: 原子写（临时文件 + os.replace，避免其他进程读到半写入文件）
+            tmp = p.with_suffix(".pkl.tmp")
+            with open(tmp, "wb") as f:
                 pickle.dump(data, f, protocol=pickle.HIGHEST_PROTOCOL)
+            try:
+                os.replace(tmp, p)
+            except OSError:
+                tmp.unlink(missing_ok=True)
             # V14.3.1: 写入后检查总大小（异步线程友好，不阻塞主流程）
             # 仅在缓存大小可能接近上限时检查（每 100 次写入检查一次）
             enforce_size_limit()

@@ -76,7 +76,7 @@ from stock_common import (clean_codes, _safe_float, UA, _debug_log,
                           get_zhb_industry_map, get_zhb_dividend_yield,
                           get_zhb_change_ytd, get_zhb_data_date,
                           get_zhb_tip_info,
-                          cls_telegraph, cninfo_irm)  # V10.3
+                          cls_telegraph, news_matches_stock, cninfo_irm)  # V10.3, V16.2.3
 
 _SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 
@@ -325,8 +325,9 @@ async def generate_report_async(session, code, output_path, ind_comp=None):
     if _tip_info:
         _tip_eps = _tip_info.get("eps", 0)
         if _tip_eps and _tip_eps > 0:
-            _tip_pe = price_today / _tip_eps if price_today > 0 else 0
-            L(f"  [ZHB EPS] 最新EPS: {_tip_eps:.4f}元 | 对应PE: {_tip_pe:.1f}x")
+            # V16.2.4 修正: tipinfo eps 为单季口径（如 Q1），直接算"对应PE"会与 TTM PE 矛盾误导
+            # （实测 0.0692 → 68.9x vs TTM 21.64x），改为标注口径、不再展示误导性 PE
+            L(f"  [ZHB单季EPS] 最新报告期单季EPS: {_tip_eps:.4f}元（非TTM口径，估值请以上方 PE(TTM) 为准）")
 
     # 历史最高价：data_provider的high_52w优先，其次zhb，最后fallback到get_historical_high
     _dp_high_52w_for_hist = _dp_composite.get("high_52w", 0) if _dp_composite else 0
@@ -345,6 +346,7 @@ async def generate_report_async(session, code, output_path, ind_comp=None):
         elif ext_deviation <= -20:
             L(f"  📉 显著回调：距历史最高点已下跌 {abs(ext_deviation):.0f}%，处于阶段性低位区域。")
     
+    # V16.2.3 修正: info.total_shares 单位=股（easy_tdx zong_guben 实为股，非注释的万股）→ /1e8 转亿股
     L(f"  总股本:   {info.get('total_shares', 0)/1e8:.2f}亿股 | 总市值: {q.get('mcap_yi', 0):.2f}亿元")
     L(f"  当前股价: {price_today:.2f}元")
     
@@ -719,7 +721,9 @@ async def generate_report_async(session, code, output_path, ind_comp=None):
         except Exception as _de:
             _debug_log(f"lng dividend continuity: {_de}")
     else:
-        L("  暂无任何分红派息记录 (一毛不拔，纯博弈型或极早期成长型企业，长线防御力弱)。")
+        # V16.2.3: 区分"接口失败"与"真无分红"（tdx_get_dividend_history 失败返回 None）
+        L("  分红数据获取失败（TDX 接口暂不可用），未能确认分红历史。" if div is None else
+          "  暂无任何分红派息记录 (一毛不拔，纯博弈型或极早期成长型企业，长线防御力弱)。")
 
     L("\n【六、长线筹码沉淀与机构持股倾向】")
     L("─" * 72)
@@ -784,7 +788,8 @@ async def generate_report_async(session, code, output_path, ind_comp=None):
         _price = q.get("price", 0) if q else 0
         _fmc = q.get("float_mcap_yi", 1) if q else 1
         for h in lockup:
-            _jiejin_mc = (h['shares']/1e4 * _price / 1e8) if _price > 0 else 0
+            # V16.2.3: shares 单位=股；解禁市值(亿) = 股 × 价格 / 1e8
+            _jiejin_mc = (h['shares'] * _price / 1e8) if _price > 0 else 0
             _jiejin_pct = _jiejin_mc / _fmc * 100 if _fmc > 0 else 0
             _jiejin_tag = "🔴" if _jiejin_pct > 5 else ("🟡" if _jiejin_pct > 1 else "🟢")
             L(f"    - {h['date']}: {h['type']} ({h['shares']/1e4:.0f}万股, 解禁市值{_jiejin_mc:.1f}亿 占流通{_jiejin_pct:.1f}% {_jiejin_tag})")
@@ -853,7 +858,8 @@ async def generate_report_async(session, code, output_path, ind_comp=None):
             _lk_fmc = q.get("float_mcap_yi", 0) if q else 0
             _lk_ratio = 0.0
             if _lk_price > 0 and _lk_fmc > 0:
-                _lk_ratio = (_lk0.get("shares", 0) / 1e4 * _lk_price / 1e8) / _lk_fmc * 100
+                # V16.2.3: shares 单位=股；解禁市值(亿) = 股×价格/1e8；占比%
+                _lk_ratio = (_lk0.get("shares", 0) * _lk_price / 1e8) / _lk_fmc * 100
             _lk = {"date": str(_lk0.get("date", ""))[:10], "ratio": round(_lk_ratio, 2)}
         # 公告标题（减持/增持关键词）
         _ann_titles = [a.get("title", "") for a in anns] if anns else []
@@ -899,19 +905,21 @@ async def generate_report_async(session, code, output_path, ind_comp=None):
                 except (ValueError, TypeError):
                     pass
             title = str(item.get("title", "")).strip()
-            if title:
+            # V16.2.3: 快讯必须与个股相关（代码/名称/简称），否则跳过
+            if title and news_matches_stock(title, code, info.get("name", "")):
                 L(f"  · [{t_str[:16]}] {title[:80]}")
                 _cls_shown += 1
                 if _cls_shown >= 10:
                     break
         if _cls_shown == 0:
-            L("  近2天暂无财联社快讯")
+            L("  近2天无个股相关财联社快讯")
     except Exception as _e:
         _debug_log(f"lng cls_telegraph: {_e}")
 
-    # 互动易问答（近30天）
+    # 互动易问答（近30天）— V16.2.14: 显示答案 + 标注截取条数（30 天窗口内最新 10 条）
     try:
         irm = cninfo_irm(code, page_size=30)
+        L("  近30天互动易问答:")
         _irm_shown = 0
         _irm_cutoff = datetime.now() - timedelta(days=30)
         for item in irm:
@@ -923,11 +931,15 @@ async def generate_report_async(session, code, output_path, ind_comp=None):
                         continue
                 except (ValueError, TypeError):
                     pass
-            q = str(item.get("question", "")).strip()[:80]
+            q = str(item.get("question", "")).strip()[:120]
             if q:
-                L(f"  · [{t_str[:16]}] 互动: {q}")
+                a = str(item.get("answer", "")).strip()
+                _ans = f"答案: {a[:120]}" if a else "答案: （公司待回复）"
+                L(f"  · [{t_str[:16]}] 提问: {q}")
+                L(f"      {_ans}")
                 _irm_shown += 1
                 if _irm_shown >= 10:
+                    L(f"  （近30天共 {len(irm)} 条中最新 10 条）")
                     break
         if _irm_shown == 0:
             L("  近30天暂无互动易问答")

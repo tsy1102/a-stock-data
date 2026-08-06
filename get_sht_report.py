@@ -67,10 +67,12 @@ from stock_common import (clean_codes, _safe_float, UA, _debug_log,
                            get_lockup_expiry_async, get_market_status,
                            calculate_multi_school_scores, ScoreData,
                            ths_hot_list, em_hot_concept, get_eastmoney_stock_news,
-                           cls_telegraph, cninfo_irm,
+                           cls_telegraph, news_matches_stock, cninfo_irm,
                            get_zhb_single_stock_data, is_zhb_data_fresh,
                            get_zhb_industry_map, get_zhb_data_date,
-                           get_zhb_main_net_buy, get_zhb_streak_days)  # V10.3
+                            get_zhb_main_net_buy, get_zhb_streak_days,
+                            is_limit_up, is_limit_down,  # V16.2: 统一涨停/跌停判断（含北交所 30%）
+                            limit_pct_for)  # V10.3, V16.2: 统一涨跌停阈值
 
 from data_provider import (get_stock_composite_async, get_main_net_buy_async,
                             get_stock_price_async, get_change_pct_async,
@@ -140,90 +142,13 @@ def get_fund_flow_realtime(code, ff_120d=None):
 
 
 def get_fund_flow_120d(code):
-    """V7.5: 60日资金流 → TDX TCP（SKILL.md V3.2 增强：东财push2 fallback）"""
-    tdx_data = tdx_get_history_fund_flow(code, 60)
-    
-    if tdx_data:
-        return {"data": tdx_data, "error": "", "source": "tdx"}
-    
-    # TDX获取失败，尝试东财push2 fallback
-    try:
-        em_data = _get_eastmoney_fund_flow_120d(code)
-        if em_data:
-            return {"data": em_data, "error": "", "source": "eastmoney_push2"}
-    except Exception as _e:
-        _debug_log(f"get_fund_flow_120d eastmoney fallback ({code}): {_e}")
-    
-    return {"data": [], "error": "资金流数据获取失败"}
+    """V16.2.4 (D2): 统一走 sc_datasource.get_history_fund_flow_120d（TDX 优先→东财 fallback）。
 
-
-def _get_eastmoney_fund_flow_120d(code: str) -> List[float]:
-    """获取东财push2资金流120日数据（SKILL.md V3.2 推荐）。
-    
-    Args:
-        code: 股票代码
-    
-    Returns:
-        list: 主力净流入数据列表（单位：万元）
+    V7.5 原实现：TDX TCP + 东财 push2his fallback；统一后 em fallback 走 get_em_history_fund_flow
+    （dict 列表，元），sht 侧 _is_dict 分支天然兼容。
     """
-    from stock_common import em_get
-    
-    try:
-        secid = f"1.{code}" if code.startswith("6") else f"0.{code}"
-        url = "https://push2his.eastmoney.com/api/qt/stock/fflow/daykline/get"
-        params = {
-            "secid": secid,
-            "klt": 101,  # 日K线
-            "fields1": "f1,f2,f3,f7",
-            "fields2": "f51,f52,f53,f54,f55,f56,f57",
-        }
-        headers = {"User-Agent": UA, "Referer": "https://quote.eastmoney.com/"}
-        
-        r = em_get(url, params=params, headers=headers, timeout=15)
-        if r is None:
-            return []
-        
-        d = r.json()
-        klines = d.get("data", {}).get("klines", [])
-        if not klines:
-            return []
-        
-        result = []
-        for line in klines[-120:]:  # 取最近120天
-            parts = line.split(",")
-            if len(parts) >= 6:
-                main_net = float(parts[1]) / 10000  # 元转万元
-                result.append(main_net)
-        
-        return result
-    except Exception as _e:
-        _debug_log(f"sht fund_flow_parse: {_e}")
-        return []
-
-
-
-# V7.5: get_dragon_tiger_board 由 stock_common 统一提供（import 已导入）
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+    from stock_common import get_history_fund_flow_120d
+    return get_history_fund_flow_120d(code, 60, prefer="tdx")
 
 
 def get_baidu_kline_with_ma(code):
@@ -382,6 +307,18 @@ async def generate_report_async(session, code, output_path, ind_comp=None, idx_q
         L(f"  今开:     {cdata.open:.2f}元  昨收: {cdata.prev_close:.2f}元")
         L(f"  最高:     {cdata.high:.2f}元  最低: {cdata.low:.2f}元")
         L(f"  成交额:   {cdata.amount_wan/10000:.2f}亿元  换手率: {cdata.turnover_pct:.2f}%")
+        # V16.2.3 恢复: 振幅/涨停价/跌停价（V16.1 重构时丢失，对照 v9.6 模板；vol_ratio 未入 canonical 跳过）
+        if cdata.high > 0 and cdata.low > 0 and cdata.prev_close > 0:
+            _amp = (cdata.high - cdata.low) / cdata.prev_close * 100
+            L(f"  振幅:     {_amp:.2f}%")
+        _limit_up = getattr(cdata, 'limit_up', 0) or 0
+        _limit_dn = getattr(cdata, 'limit_down', 0) or 0
+        if _limit_up > 0 or _limit_dn > 0:
+            L(f"  涨停价:   {_limit_up:.2f}元  跌停价: {_limit_dn:.2f}元")
+        elif cdata.prev_close > 0:
+            # V16.2.14: push2 f51/f52 盘中可能为 0（v9.6 用腾讯有值）→ 按板块阈值计算兜底
+            _th = limit_pct_for(code, stock_name)
+            L(f"  涨停价:   {cdata.prev_close * (1 + _th / 100):.2f}元  跌停价: {cdata.prev_close * (1 - _th / 100):.2f}元（按{_th:.0f}%阈值推算）")
         L(f"  总市值:   {cdata.mcap_yi:.2f}亿元  流通市值: {cdata.float_mcap_yi:.2f}亿元")
         _pe_str = f"{cdata.pe_ttm:.2f}" if cdata.pe_ttm > 0 else "N/A（亏损）"
         L(f"  PE(TTM):  {_pe_str}  PE(动): {cdata.pe_dynamic:.2f}  PB: {cdata.pb:.2f}")
@@ -669,11 +606,11 @@ async def generate_report_async(session, code, output_path, ind_comp=None, idx_q
     _zhb_div_yield = cdata.dividend_yield if cdata and cdata.dividend_yield else 0
     if _zhb_div_yield and _zhb_div_yield > 0:
         L(f"  股息率: {_zhb_div_yield:.2f}%")
-    else:
-        div = await asyncio.to_thread(get_dividend_history, code)
-        if div:
-            ld2 = div[0]; ye = f"{(ld2['bonus_rmb']/price_today)*100:.2f}%" if price_today>0 else "N/A"
-            L(f"  最近分红: {ld2['date']} 每股{ld2['bonus_rmb']:.4f}元 (约{ye}股息率)")
+    # V16.2.3: zhb 有股息率时也补最近分红（对齐 v9.6 模板）；接口失败（None）不显示
+    div = await asyncio.to_thread(get_dividend_history, code)
+    if div:
+        ld2 = div[0]; ye = f"{(ld2['bonus_rmb']/price_today)*100:.2f}%" if price_today>0 else "N/A"
+        L(f"  最近分红: {ld2['date']} 每股{ld2['bonus_rmb']:.4f}元 (约{ye}股息率)")
 
     if blocks["concept"]:
 
@@ -796,10 +733,11 @@ async def generate_report_async(session, code, output_path, ind_comp=None, idx_q
             r20 = ff["data"][:20]
             if _is_dict:
                 tmain = sum(d["main_net"] for d in r20); tdays = sum(1 for d in r20 if d["main_net"]>0)
-                L(f"\n  近20日统计:\n    主力累计净流入: {tmain/1e4:.0f}万元\n    主力净流入天数: {tdays}/20天")
+                # V16.2.4: 延时镜像域可能只有当日 → 按实际条数标注
+                L(f"\n  近20日统计:\n    主力累计净流入: {tmain/1e4:.0f}万元\n    主力净流入天数: {tdays}/{len(r20)}天（实有数据）")
             else:
                 tmain = sum(r20); tdays = sum(1 for d in r20 if d>0)
-                L(f"\n  近20日统计:\n    主力累计净流入: {tmain:.0f}万元\n    主力净流入天数: {tdays}/20天")
+                L(f"\n  近20日统计:\n    主力累计净流入: {tmain:.0f}万元\n    主力净流入天数: {tdays}/{len(r20)}天（实有数据）")
 
             L(f"  信号: {'主力资金近期净流入 → 偏多' if tmain>0 else '主力资金近期净流出 → 偏空'}")
 
@@ -1012,7 +950,7 @@ async def generate_report_async(session, code, output_path, ind_comp=None, idx_q
 
         L(f"  近30天解禁 {len(rh)} 批:"); L(f"  {'日期':<12} {'类型':<30} {'数量':>10} {'占比%':>6}"); L(f"  {'-'*65}")
 
-        for h in rh: L(f"  {h['date']:<12} {str(h['type'])[:30]:<30} {h['shares']/1e4 if h['shares'] else 0:>12.0f}万 {h['ratio']:>7.2f}% {'🔴' if h['ratio']>_unlock_ratio_warn else ('🟡' if h['ratio']>1 else '🟢')}{'高' if h['ratio']>_unlock_ratio_warn else ('中' if h['ratio']>1 else '低')}")
+        for h in rh: L(f"  {h['date']:<12} {str(h['type'])[:30]:<30} {h['shares']/1e4:>12.0f}万 {h['ratio']:>7.2f}% {'🔴' if h['ratio']>_unlock_ratio_warn else ('🟡' if h['ratio']>1 else '🟢')}{'高' if h['ratio']>_unlock_ratio_warn else ('中' if h['ratio']>1 else '低')}")
 
     elif lockup["history"]: L(f"  近30天内无解禁（共 {len(lockup['history'])} 批历史记录，已省略）")
 
@@ -1022,7 +960,7 @@ async def generate_report_async(session, code, output_path, ind_comp=None, idx_q
 
         L(f"\n  未来{_unlock_warn}天待解禁 {len(lockup['upcoming'])} 批: ⚠️")
 
-        for h in lockup["upcoming"]: L(f"    {h['date']}: {str(h['type'])} 数量={h['shares']/1e4 if h['shares'] else 0:.0f}万 占比={h['ratio']:.2f}% 压力:{'🔴高' if h['ratio']>_unlock_ratio_warn else ('🟡中' if h['ratio']>1 else '🟢低')}")
+        for h in lockup["upcoming"]: L(f"    {h['date']}: {str(h['type'])} 数量={h['shares']/1e4:.0f}万 占比={h['ratio']:.2f}% 压力:{'🔴高' if h['ratio']>_unlock_ratio_warn else ('🟡中' if h['ratio']>1 else '🟢低')}")
 
     else: L(f"\n  未来{_unlock_warn}天无待解禁")
 
@@ -1150,7 +1088,7 @@ async def generate_report_async(session, code, output_path, ind_comp=None, idx_q
     try:
         cls_news = await asyncio.to_thread(cls_telegraph, page_size=50)
         _cls_shown = 0
-        _cutoff = datetime.now() - timedelta(minutes=420)
+        _cutoff = datetime.now() - timedelta(hours=48)  # V16.2.14: 7h→48h
         for item in cls_news:
             t_str = str(item.get("time", ""))
             if t_str:
@@ -1161,13 +1099,14 @@ async def generate_report_async(session, code, output_path, ind_comp=None, idx_q
                 except (ValueError, TypeError):
                     pass
             title = str(item.get("title", "")).strip()
-            if title:
+            # V16.2.3: 快讯必须与个股相关（代码/名称/简称），否则跳过（原直接展示全市场快讯）
+            if title and news_matches_stock(title, code, stock_name):
                 L(f"    · [{t_str[:16]}] {title[:80]}")
                 _cls_shown += 1
                 if _cls_shown >= 10:
                     break
         if _cls_shown == 0:
-            L("    近7小时暂无财联社快讯")
+            L("    近48小时无个股相关快讯")
     except Exception as _e:
         _debug_log(f"sht cls_telegraph: {_e}")
 
@@ -1180,11 +1119,12 @@ async def generate_report_async(session, code, output_path, ind_comp=None, idx_q
     except Exception as _e:
         _debug_log(f"ths_hot_list error: {_e}")
 
-    # 互动易问答（近24小时）— V16.1: 同步包 to_thread
+    # 互动易问答（近48小时）— V16.1: 同步包 to_thread；V16.2.14: 48h+标题+答案+合理条数
     try:
-        irm = await asyncio.to_thread(cninfo_irm, code, 20)
+        irm = await asyncio.to_thread(cninfo_irm, code, 30)
+        L("\n    近48小时互动易问答:")
         _irm_shown = 0
-        _irm_cutoff = datetime.now() - timedelta(hours=24)
+        _irm_cutoff = datetime.now() - timedelta(hours=48)
         for item in irm:
             t_str = str(item.get("ask_time", ""))
             if t_str:
@@ -1194,14 +1134,18 @@ async def generate_report_async(session, code, output_path, ind_comp=None, idx_q
                         continue
                 except (ValueError, TypeError):
                     pass
-            irm_q = str(item.get("question", "")).strip()[:80]
+            irm_q = str(item.get("question", "")).strip()[:120]
             if irm_q:
-                L(f"    · [{t_str[:16]}] 互动: {irm_q}")
+                irm_a = str(item.get("answer", "")).strip()
+                _ans_part = f"答案: {irm_a[:120]}" if irm_a else "答案: （公司待回复）"
+                L(f"    · [{t_str[:16]}] 提问: {irm_q}")
+                L(f"        {_ans_part}")
                 _irm_shown += 1
-                if _irm_shown >= 5:
+                if _irm_shown >= 10:
+                    L(f"    （近48小时共 {len(irm)} 条中最新 10 条）")
                     break
         if _irm_shown == 0:
-            L("    近24小时暂无互动易问答")
+            L("    近48小时暂无互动易问答")
     except Exception as _e:
         _debug_log(f"sht cninfo_irm: {_e}")
 
@@ -1262,10 +1206,10 @@ async def generate_report_async(session, code, output_path, ind_comp=None, idx_q
             yzt = get_yesterday_limit_pool()
             if yzt:
                 yzt_total = len(yzt)
-                # 晋级 = 今日仍涨停（涨幅≥9.5 或 20cm 阈值）
+                # 晋级 = 今日仍涨停（统一 is_limit_up 判断，含北交所 30%）
                 yzt_promoted = [
                     s for s in yzt
-                    if s.get("change_pct", 0) >= (19.5 if str(s.get("code","")).startswith(("300","301","688")) else 9.5)
+                    if is_limit_up(str(s.get("code","")), s.get("name",""), s.get("change_pct", 0))
                 ]
                 yzt_avg_pct = sum(s.get("change_pct", 0) for s in yzt) / yzt_total
                 promotion_rate = len(yzt_promoted) / yzt_total * 100 if yzt_total else 0
@@ -1470,7 +1414,7 @@ async def generate_report_async(session, code, output_path, ind_comp=None, idx_q
         from data_provider import _should_use_zhb_for_realtime
         if _should_use_zhb_for_realtime() and cdata.change_5d:
             stk3 = cdata.change_5d * 0.6  # ZHB 5日涨幅做3日偏离估算
-            tl = 30 if code.startswith(("300","301","688")) else 20
+            tl = limit_pct_for(code, stock_name)
             if stk3 >= tl:
                 signals.append(f"异动雷达(ZHB离线)：近5日涨幅{cdata.change_5d:+.2f}%，估算3日偏离{stk3:+.2f}%>={tl}%，触发异动")
         else:
@@ -1490,7 +1434,7 @@ async def generate_report_async(session, code, output_path, ind_comp=None, idx_q
                                 i_c = [_safe_float(rr[_ci2_r]) for rr in _ir_r[-4:] if len(rr) > _ci2_r]
                                 idx3 = (i_c[-1]/i_c[0]-1)*100 if len(i_c)==4 and i_c[0]>0 else 0
                                 dv = round(stk3-idx3,2)
-                                tl = 30 if code.startswith(("300","301","688")) else 20
+                                tl = limit_pct_for(code, stock_name)
                                 if dv>=tl: signals.append(f"异动雷达：3日偏离值{dv:+.2f}%>={tl}%，触发短期异动")
                                 elif dv>=tl*0.9: signals.append(f"异动雷达：3日偏离值{dv:+.2f}%，距红线仅差{tl-dv:.2f}%，卡异动")
     except Exception as _e:
@@ -1504,7 +1448,7 @@ async def generate_report_async(session, code, output_path, ind_comp=None, idx_q
 
     else: L("  (数据不足，暂无法生成综合信号)")
 
-    if q and price_today>0 and q.get("change_pct",0)>=(19.5 if code.startswith(("300","301","688")) else 9.5):
+    if q and price_today>0 and is_limit_up(code, stock_name, q.get("change_pct",0)):
 
         try:
 
@@ -1520,7 +1464,7 @@ async def generate_report_async(session, code, output_path, ind_comp=None, idx_q
 
                     _3d = (_c3[-1]/_c3[0]-1)*100
 
-                    _lb_pct = 20 if code.startswith(("300","301","688")) else 10
+                    _lb_pct = limit_pct_for(code, stock_name)   # V16.2: 统一阈值（北交所 30 等）
 
                     _lb2 = _lb_pct * 1.9
 

@@ -33,15 +33,15 @@ class TestZhbStockProfile:
         assert zhb.get_stock_name("600519") is None
 
     def test_parse_profile_format(self):
-        """测试 64 字节记录解析格式（V15.1: 首字节市场标识 + 6位代码 + 8字节简称）"""
+        """测试 64 字节记录解析格式（V16.3 D1: market(1)+code(6)+null(1)+name(8)+ts(4)+pad）"""
         from zhb_client import ZhbData
         zhb = ZhbData()
-        # 构造 64 字节记录：市场标识(1) + 600519(6) + 简称(8) + padding
-        # 注: 简称段 record[7:15] 只取 8 字节（V15.2），"平安银行" GBK 恰好 8 字节
+        # 构造 64 字节记录：市场标识(1) + 600519(6) + null分隔(1) + 简称(8) + padding
+        # V16.3 D1: 实测 profile.dat 结构含 null 分隔符（原 record[7:15] 取到 null 恒空）
         name = "平安银行"
         name_bytes = name.encode("gbk")
         assert len(name_bytes) == 8
-        record = b"\x01" + b"600519" + name_bytes + b"\x00" * (64 - 1 - 6 - 8)
+        record = b"\x01" + b"600519" + b"\x00" + name_bytes + b"\x00" * (64 - 1 - 6 - 1 - 8)
         assert len(record) == 64
         zhb.raw_files = {"profile.dat": record}
         profile = zhb.stock_profile
@@ -49,12 +49,12 @@ class TestZhbStockProfile:
         assert profile["600519"] == "平安银行"
 
     def test_get_stock_name_method(self):
-        """便捷方法测试（V15.1: 首字节市场标识 + 6位代码 + 8字节简称）"""
+        """便捷方法测试（V16.3 D1: 含 null 分隔符结构）"""
         from zhb_client import ZhbData
         zhb = ZhbData()
         name = "平安银行"
         name_bytes = name.encode("gbk")
-        record = b"\x00" + b"000001" + name_bytes + b"\x00" * (64 - 1 - 6 - 8)
+        record = b"\x00" + b"000001" + b"\x00" + name_bytes + b"\x00" * (64 - 1 - 6 - 1 - 8)
         zhb.raw_files = {"profile.dat": record}
         assert zhb.get_stock_name("000001") == "平安银行"
         assert zhb.get_stock_name("999999") is None

@@ -267,12 +267,17 @@ def estimate_pe_percentile(code, price, total_shares):
         return None
 
     # 还原为单季度（新浪财报是累计值，逐季拆解；亏损季度保留负值）
+    # V16.2.14 修复: 跨年边界 —— 每年 Q1(03-31) 的累计值 < 去年 Q4 累计，直接相减得大负数
+    # （实测 2024Q1=384亿 - 2023Q4累计=1480亿 = -1096亿 → TTM/PE 全错乱，PE 显示千万倍级）
     sq_profits = []
-    for i in range(len(profits)):
-        if i == 0:
-            sq_profits.append(profits[i])
+    _prev_year = None
+    for i, _f in enumerate(fin_sorted):
+        _yr = str(_f.get("报告日", ""))[:4]
+        if i == 0 or _yr != _prev_year:
+            sq_profits.append(profits[i])  # 首条 / 每年 Q1：累计值即当季值
         else:
             sq_profits.append(profits[i] - profits[i - 1])
+        _prev_year = _yr
 
     ttm_eps_list = []
     ttm_dates = []
@@ -919,7 +924,9 @@ def strategy_09_calendar_rotation():
                 params = {"pn": "1", "pz": "20", "po": "1", "np": "1",
                           "fltt": "2", "invt": "2", "fs": f"b:{ind_code}",
                           "fields": "f12,f14,f2,f3,f20"}
-                r = _request_with_retry(JP_URL, params=params, headers={"User-Agent": UA}, timeout=10)
+                # V16.2.10: 改 _quick_request（JP_URL=83.push2 属 push2 系风控面，
+                # 原 _request_with_retry 无令牌桶/熔断/封禁跳过/跨进程锁 → 限流遗漏入口）
+                r = _quick_request(JP_URL, params=params, headers={"User-Agent": UA}, timeout=10)
                 if r is None: continue
                 items = (r.json().get("data") or {}).get("dif", [])
                 for item in items:
@@ -1040,7 +1047,7 @@ def strategy_13_dividend_yield(stocks):
         price = s.get("price", 0)
         if price <= 0: continue
         divs = common_get_dividend_history(code)
-        if len(divs) < 3: continue
+        if not divs or len(divs) < 3: continue  # V16.2.3: 兼容 None（TDX 分红接口失败）
         # V16.1: TTM 股息率 = 近 12 个月累计派息 / 现价（原只用最近一次分红，低估半年报/季报分红公司）
         one_year_ago = (date.today() - timedelta(days=365)).strftime("%Y-%m-%d")
         ttm_bonus = sum(
@@ -1613,18 +1620,8 @@ async def run_discovery_async(output_path):
             _zhb_fresh = is_zhb_data_fresh(max_delay_days=3)
             all_codes = list(_snapshot.keys())
 
-            # V15.5.9: 全市场腾讯批量预加载（不封 IP，含 mcap_yi/pe_ttm/turnover_pct）
-            # 替代原逐股 get_em_quote_full（push2 连接级风控 + 1.5s 限流 → 7957 次卡死数小时）
-            _tencent_map: Dict[str, Dict[str, Any]] = {}
-            try:
-                from tdx_client import _tencent_batch_fallback
-                _tencent_map = _tencent_batch_fallback(all_codes)
-                if _tencent_map:
-                    _debug_log(f"val tencent batch: {len(_tencent_map)}/{len(all_codes)} 只")
-            except Exception as _e:
-                _debug_log(f"val tencent batch error: {_e}")
-
             # V12.1 休市期旁路优化：仅在非交易日和盘前（9:15前）旁路，其余时段获取T日数据
+            # V16.2 修复: 市场状态判断提前 —— 原逻辑先全市场腾讯批量（133 批/8s+）再丢弃，休市纯浪费
             from stock_common import get_market_status
             m_status, _ = get_market_status()
             is_bypass = m_status in ("closed", "pre_market")
@@ -1632,10 +1629,19 @@ async def run_discovery_async(output_path):
                 L(f"  ⚡ 探测到非盘中时段 ({m_status})，自动旁路实时行情，直接复用 ZHB 昨收快照基准！")
                 _price_map = {}
             else:
-                # V15.5.12: 复用腾讯批量（不封 IP）替代 push2 批量（连接级风控+1.5s限流→卡死）
+                # V15.5.9: 全市场腾讯批量预加载（不封 IP，含 mcap_yi/pe_ttm/turnover_pct）
+                # 替代原逐股 get_em_quote_full（push2 连接级风控 + 1.5s 限流 → 7957 次卡死数小时）
+                _tencent_map: Dict[str, Dict[str, Any]] = {}
+                try:
+                    from tdx_client import _tencent_batch_fallback
+                    _tencent_map = _tencent_batch_fallback(all_codes)
+                    if _tencent_map:
+                        _debug_log(f"val tencent batch: {len(_tencent_map)}/{len(all_codes)} 只")
+                except Exception as _e:
+                    _debug_log(f"val tencent batch error: {_e}")
                 L(f"  ✅ data_provider全市场: {len(all_codes)}只，腾讯批量行情 {len(_tencent_map)}只…")
                 _price_map = _tencent_map
-                
+
             # 转换为列表格式，过滤停牌股（volume=0），补充市值
             # V16.0: ZHB 不再提供 volume 字段（Col[24] 误映射已移除），此过滤自然失效
             all_stocks = []
@@ -1857,7 +1863,8 @@ async def run_discovery_async(output_path):
     try:
         print(f"  扫描完成（共 {_scan_total_time:.1f}s）", flush=True)
     except UnicodeEncodeError:
-        print(f"  [OK] 扫描完成（共 {_scan_total_time:.1f}s）", flush=True)
+        # V16.3 A4: 原兜底分支重打同一中文串（无 ascii 替换）会二次抛异常崩溃
+        print(f"  [OK] scan done ({_scan_total_time:.1f}s)".encode('ascii', errors='replace').decode('ascii'), flush=True)
 
     # V15.1: 补充缺失的股票名称（zhb数据源无name字段）
     # 优先用 ZHB unified_name_map（profile.dat + relation.dat + tdxpkmore + pttab，

@@ -42,7 +42,6 @@ httplib2>=0.22,<0.31   # ← 避开 0.32.0 代理解析 bug
 # ── A股日历与交易日判断（V8 新增）──────────────────────────────
 chinese-calendar>=1.11
 
-# ── 单元测试（可选，仅开发环境使用）───────────────────────────
+# ── 单元测试（V16.3：已移至 requirements-dev.txt）────────────────
 # 开发环境安装: pip install -r requirements-dev.txt
-pytest>=7.0
-pytest-asyncio>=0.20
+# pytest / pytest-asyncio 仅开发需要，运行时不再声明

@@ -237,10 +237,11 @@ class ZhbData:
                 code_bytes = record[1:7].replace(b"\x00", b"").decode("ascii", errors="ignore").strip()
                 if not code_bytes or len(code_bytes) != 6:
                     continue
-                # V15.2 P0 修复: 名称段严格限制在 record[7:15] 8 字节
-                # 原实现 record[7:] 取 57 字节，但实际名称只有 6-8 字节，剩余 49 字节是填充
-                # 末尾填充包含拼音/简码等非 0 字节，混入名称导致 'TCL集团\x00\x00l@2\x01' 类乱码
-                name_bytes = record[7:15]
+                # V16.3 D1: 名称段修正为 record[8:16]——实测结构为
+                # market(1)+code(6)+null(1)+name(8)+ts(4)+pad(44)，
+                # 原 record[7:15] 首字节是 null 分隔符导致解析恒空（0 条），
+                # 股票名称离线字典实际从未生效（此 bug 是"名称靠腾讯"的根因之一）
+                name_bytes = record[8:16]
                 # 取第一个 \x00 之前的内容（去除填充 0）
                 null_pos = name_bytes.find(b"\x00")
                 if null_pos >= 0:
@@ -708,28 +709,36 @@ class ZhbData:
             [8]  change_pct_2d   前日涨跌幅(%)
             [9]  pe_ttm          市盈率TTM
             [10] dividend_yield  股息率(%)
-            [11] unknown_11      未知(大数值)
-            [12] unknown_12      未知(部分为日期)
-            [13] unknown_13      未知(小整数)
+            [11] free_ltgb       自由流通股本(万股) ★2026-08-04官方TdxQuant确认
+            [12] unseal_date     新股开板日(YYYYMMDD) ★V16.2.18破解：2016+新股
+                 上市后首次不再涨停的日期。东财f189(上市日)交叉验证：
+                 差值=连板交易日数（001203大中矿业10天=8交易日✓、300750宁德8交易日✓、
+                 24样本18/24精确、余差1天为节假日近似）。老股为空。
+            [13] board_count     上市连板数(交易日) ★V16.2.18破解：开板日-上市日间
+                 交易日数（18/24精确匹配Col12-f189；300750=8连板✓ 001223首日开板=0✓）
             [14] net_profit_kcf  扣非净利润(万元) ★2026-08-03联网确认(东财KCFJCXSYJLR 14/14匹配)
             [15] employee_count  员工人数
-            [16] unknown_16      未知
-            [17] change_20d      20日涨跌幅(%)
-            [18] change_30d      30日涨跌幅(%)
-            [19] change_60d      60日涨跌幅(%)
-            [20] unknown_20      未知
+            [16] rd_input_fee    研发投入(万元) ★2026-08-04官方TdxQuant确认
+            [17] change_20k_bar  近20根K线涨跌幅(交易日口径) ★V16.2.18修正
+                 (injoyai 130日日线核验MAE0.23；原误标change_20d)
+            [18] change_20d      20日涨跌幅(%) ★V16.2.18修正(原误标30d；injoyai MAE0.23)
+            [19] change_60k_bar  近60根K线涨跌幅(交易日口径) ★V16.2.18修正
+                 (injoyai核验MAE≈0；原误标change_60d)
+            [20] change_60d      60日涨跌幅(%) ★V16.2.18修正(原误标90d?；injoyai核验MAE≈0)
             [21] change_ytd      年初至今涨跌幅(%)
-            [22] unknown_22      未知
-            [23] unknown_23      未知
-            [24] unknown_24      未知(9天恒定静态数据, 非成交量; 2026-08-03联网核实)
-            [25] unknown_25      未知(部分为空)
-            [26] unknown_26      未知
+            [22] shape_value     形态/板块代码 ★2026-08-04官方TdxQuant确认(50101/50109)
+            [23] unknown_23      未知(0-95离散枚举,24类,7月末31/32峰值8月初重置,
+                 疑月度累计计数; injoyai未命名)
+            [24] cash_zj         现金总额(元) ★2026-08-04官方TdxQuant确认
+            [25] pre_receive_zj  预收资金(万元) ★2026-08-04官方TdxQuant确认
+            [26] unknown_26      未知(0-48恒定分类码,仅少量变化; injoyai未命名)
             [27] change_5k_bar   近5根K线涨跌幅(交易日口径,%)
             [28] change_5d       近5日涨跌幅(日历日口径,%)
             [29] change_10k_bar  近10根K线涨跌幅(交易日口径,%)
             [30] change_10d      近10日涨跌幅(日历日口径,%)
-            [31-33]              通常为空
-            [34] unknown_34      未知
+            [31-32] unknown      未知(稀疏8%,两列有值集合相同,疑同源事件字段)
+            [33] unknown_33      未知(稀疏5%)
+            [34] other_qy_jzc    其他权益净资产(元) ★2026-08-04官方TdxQuant确认
         """
         data = self.raw_files.get("tdxstat.cfg", b"")
         if not data:
@@ -767,11 +776,22 @@ class ZhbData:
                 "change_pct_2d": _f(8, float),
                 "pe_ttm": _f(9, float),
                 "dividend_yield": _f(10, float),
+                # V16.2.18: Col[12]=新股开板日/Col[13]=上市连板数（东财f189交叉破解）
+                "unseal_date": parts[12].strip() if len(parts) > 12 else "",
+                "board_count": _f(13, int),
                 "employee_count": _f(15, int),
-                "change_20d": _f(17, float),
+                # 注: 以下 key 名沿用历史(语义见 docstring V16.2.18 修正):
+                #   change_20d 实为 Col[18] 20日涨跌幅（原误标30d）
+                #   change_30d 实为 Col[18] 20日涨跌幅（key 历史名, 值与 change_20d 相同）
+                #   change_60d 实为 Col[19] 近60根K线（原误标60d, 已另设 change_60k_bar）
+                #   change_ytd 实为 Col[21] YTD ✓
+                "change_20d": _f(18, float),
                 "change_30d": _f(18, float),
                 "change_60d": _f(19, float),
                 "change_ytd": _f(21, float),
+                # V16.2.18 新增: 交易日口径 K 线周期涨跌幅（injoyai 130日日线核验）
+                "change_20k_bar": _f(17, float),
+                "change_60k_bar": _f(19, float),
                 # V16.0: Col[14] = 扣非净利润(万元)，2026-08-03 联网核实
                 # （14/14 公司与东财 KCFJCXSYJLR 比值=1.000，含亏损公司）
                 "net_profit_kcf": _f(14, float),
@@ -817,7 +837,7 @@ class ZhbData:
             [10] main_net_buy_hands_1d T-1日主力净买入量(手) — V10.3新增
             [11] unknown_11          未知
             [12] unknown_12          未知
-            [13] industry_code       行业板块代码
+            [13] tday_special_board  T日特色板块归属（V16.2.17 重新定性，见下）
             [14] main_net_buy_amount T日主力净流入额(万元) — V10.3新增（双日Delta+公式验证）
             [15] main_net_buy_amount_1d T-1日主力净流入额(万元) — V10.3新增
             [16] ipo_price           IPO发行价(元)
@@ -828,6 +848,30 @@ class ZhbData:
 
         V10.3 更新：通过双日Delta验证和公式验算([9]*100*收盘价/10000≈[14])，
                    确认[9]/[14]为T日主力净买入量/额，[10]/[15]为T-1日滚动值。
+
+        V16.2.17 Col[13] 重新定性（原注释"行业板块代码"为误标）：
+            [13] 实为通达信 **T日"特色板块"归属**（动态条件板块），非行业代码。证据：
+            - 值域: 31%空 + 57%为8805-8809段特色板块（微盘股880823/高分红股880526/
+              近已解禁880898/业绩预降880843/一带一路880594…）+ 仅12%为881申万行业
+            - 板块性质: 成员按当日条件筛选（880823微盘股197只成交额全部≤2.93亿，
+              中位0.35亿，无一>5亿 → 严格符合"微盘"条件）
+            - 变化与不全: 归属随T日条件变化（市值/事件/概念维度）；每只仅取一个板块
+              （该股实际属多个板块，此处只列其一）→ 故出现变化/不全现象
+            - 结论: 不可用于行业聚合。行业请用 is_industry_code() 过滤后的
+              881申万行业段，或东财 datacenter 申万二级映射（get_em_industry_map_v2）
+
+        V16.2.18 补充（3天Delta + injoyai官方源码 + 东财f189交叉）：
+            [4]  疑**涨跌停封单额(万元)**：0804有值144只中143只涨跌停(99%)，
+                 600530跌停-10.02%也有值；122只涨停无值(封单为0/未封住)。
+                 值域: 000533=9207.45/000048=5874.65/000593=14272.09(万元)
+            [6]  疑**资金分档字段**(大单类)：有值93只,涨停占比26%,混合；
+                 000533涨停=10948.26(>主力净买额6249.73 → 分档口径)
+            [8]  疑**资金分档字段**(特大单类)：有值100只,涨停占比28%；
+                 000009=1063.63
+            [19] 未知(涨跌幅类,非标准K线周期)：100%非空、日更、对称分布
+                 (-62~+581,中位-2.49)；与tdxstat change序列/主力资金/K线
+                 5-250日周期均不匹配 → 疑主力成本偏离/资金收益率, injoyai未命名
+            [20] 同上(疑似[19]的相邻周期变体)
         """
         data = self.raw_files.get("tdxstat2.cfg", b"")
         if not data:
@@ -876,7 +920,7 @@ class ZhbData:
         return self.stock_stats2.get(code)
 
     def get_industry_code(self, code: str) -> str:
-        """获取股票的行业板块代码。"""
+        """获取股票的 T 日特色板块归属代码（V16.2.17：原"行业板块代码"为误标，非行业）。"""
         s2 = self.stock_stats2.get(code)
         if s2:
             return s2.get("industry_code", "")
@@ -1485,6 +1529,20 @@ def get_industry_map() -> Dict[str, str]:
     if zhb is None:
         return {}
     return zhb.industry_map
+
+
+def is_industry_code(ic: str) -> bool:
+    """V16.2.16: 判断 ZHB 板块代码是否为**行业**（vs 概念/风格/地域）。
+
+    实测 tdxstat2 Col[13] 大量为风格/概念（微盘股 880823/近已解禁 880898/一带一路 880594…），
+    只有以下段是行业：
+      8803xx/8804xx = 通达信自建行业（880301 煤炭 / 880400 医药 / 880492 元器件）
+      881xxx       = 通达信收录的申万版行业（881001 煤炭 / 881218 汽车零部件）
+    8800-8802(轮动/地域)、8805-8809(概念/风格) 均非行业。
+    """
+    if not ic or not isinstance(ic, str) or len(ic) != 6 or not ic.isdigit():
+        return False
+    return ic.startswith(("8803", "8804", "881"))
 
 
 # ═══════════════════════════════════════

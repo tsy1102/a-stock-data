@@ -44,7 +44,8 @@ def test_tdx_history_fund_flow():
 @pytest.mark.real_network
 def test_tdx_dividend_history():
     data = tdx_get_dividend_history("600519")
-    assert isinstance(data, list)
+    # V16.2.3: None=接口失败（区别于 [] 真无分红）；list=正常返回
+    assert isinstance(data, (list, type(None)))
 
 @pytest.mark.real_network
 def test_tdx_eps_from_reports():

@@ -2,7 +2,7 @@
 
 > 适用于:Windows 桌面版 Agent(原生执行 PowerShell)
 > 适用范围:本仓库根目录及其全部子目录
-> 版本:v1.0
+> 版本:v1.1
 
 ---
 
@@ -227,7 +227,9 @@ def test_approx():
 ### 4.1 读取带空格和 `[]` 的路径
 
 ```powershell
-$path = Join-Path $PSScriptRoot 'docs\backtest_v1432 [copy]\README.md'
+# V16.3 C4: 原验收路径 docs\backtest_v1432 [copy]\README.md 已随目录删除，
+# 改为真实存在路径（要点是 -LiteralPath 防通配符，与路径是否含特殊字符无关）
+$path = Join-Path $PSScriptRoot 'docs\references\a-stock-data\SKILL.md'
 if (Test-Path -LiteralPath $path) {
     Get-Content -Raw -LiteralPath $path | Select-Object -First 1
 } else { Write-Warning "not found: $path" }
@@ -331,6 +333,7 @@ Write-Output 'unreachable'
 - [ ] 外部程序走 splatting + `$LASTEXITCODE` 检查
 - [ ] 同一错误没有重试第 3 次
 - [ ] 主动跑测试(shell 层)走 `.\scripts\run_tests.ps1`,不是直接 `pytest ...`;写测试代码时 `import pytest` 是 OK 的
+- [ ] 验证报告(9.2)填了 `度量` 行(改动前后可数对比,见 11.1)
 
 不满足,先补再执行。
 
@@ -354,6 +357,8 @@ Write-Output 'unreachable'
 
 ### 8.2 高风险文件清单(改前必查)
 
+> 术语口径以 `docs/domain_glossary.md`(领域词汇表)为准,命名/注释不得引入新歧义。
+
 | 文件 | 改前必查项 |
 |---|---|
 | `sc_datasource.py` | ZHB 列索引映射、35 个未知字段、缓存 Key |
@@ -361,13 +366,13 @@ Write-Output 'unreachable'
 | `zhb_client.py` | 各解析器列映射、GBK/分隔符约定 |
 | `data_provider.py` | REQUIRES_REALTIME_HTTP / ZHB_SUFFICIENT 字段集 |
 | `stock_common/__init__.py` | 导出是否与实际定义一致(已知 58% 过期) |
-| `docs/master_data_sources_and_fields_reference.md` | 字段索引以 2026-07-28 版为准,Col[3]=pe_dynamic, Col[9]=pe_ttm |
+| `docs/field_dict.md` | 字段索引以 2026-07-28 版为准,Col[3]=pe_dynamic, Col[9]=pe_ttm(V16.3: 原引用 master_data_sources_and_fields_reference.md 从未创建,改指主字典) |
 
 ### 8.3 字段/签名变更时的连带检查
 
 若改动涉及 **dict key / 函数签名 / 返回结构** 变更,必须:
 - 找到并更新**所有**调用点(不允许只改定义)
-- 同步更新 `docs/master_data_sources_and_fields_reference.md`
+- 同步更新 `docs/field_dict.md`(主字段字典,含字段索引)
 - 检查是否有缓存反序列化依赖旧 key
 
 ---
@@ -402,6 +407,7 @@ VERIFICATION REPORT
 测试:     [PASS/FAIL] (X/Y passed)
 安全:     [PASS/FAIL] (X issues)
 Diff:     [X files changed]
+度量:     [Metric] (改动前后对比,见 11.1)
 
 Overall:  [READY/NOT READY] for commit
 待修复:
@@ -432,6 +438,11 @@ Overall:  [READY/NOT READY] for commit
 
 ### 10.2 必查清单
 
+> V1.1 双轴审查(mattpocock/skills `code-review` 提炼): **Standards 轴**(代码质量) + **Spec 轴**(实现意图)。
+> 两轴分开核查,避免"代码写得漂亮但做错了需求"。
+
+**Standards 轴(代码质量)**:
+
 - [ ] 无硬编码密钥/凭据(重点: `credentials.json` 不得进 git)
 - [ ] 无 SQL 注入(f-string 拼查询)
 - [ ] 无裸 `except` / 吞异常
@@ -442,8 +453,60 @@ Overall:  [READY/NOT READY] for commit
 - [ ] 无 `print()`(应 `_debug_log` / `logging`)
 - [ ] 新增功能有对应测试
 
+**Spec 轴(实现意图)**:
+
+- [ ] 对照原始需求/用户指令,确认改动**确实实现了要求**(而非自创方案)
+- [ ] 对照 `docs/roadmap.md` 最近决策记录(ADR),确认口径/约定一致(如行业统一申万二级)
+- [ ] 对照 `docs/domain_glossary.md` 术语,确认命名/注释未引入新歧义
+- [ ] 涉及数据契约的改动,对照 `docs/field_dict.md` / `docs/script_data_dict.md` 字段索引
+- [ ] 涉及缓存,确认缓存版本号(§4)已按口径变更升级
+
 ### 10.3 审批标准
 
 - **Approve**: 无 CRITICAL / HIGH
 - **Warning**: 仅 MEDIUM(谨慎合入)
 - **Block**: 有 CRITICAL / HIGH
+
+---
+
+## 11. 迭代度量与假设驱动调试 (Autoresearch 纪律)
+
+> 来源: uditgoenka/autoresearch v2.2 (github.com/uditgoenka/autoresearch, MIT) 提炼,源自 Karpathy's autoresearch。
+> 采纳范围:**仅方法论**(方案 A),不引入其命令/钩子/脚本——安装脚本为 bash 且与 1.1 节 Shell 规则冲突,
+> 其"commit before verify"与"未经用户要求不 commit"的仓库政策冲突,故不采纳。
+
+### 11.1 迭代度量 (Iteration Metric) — 每次改动必须量化
+
+**原则**: 一次改动必须绑定至少一个**可数的机械指标**,改动前后对比,不能只说"看起来更好"。
+
+| 场景 | 可选度量(取最容易量化的 1-2 个) |
+|---|---|
+| 代码修复 | 测试通过数 X/Y、耗时(如 78s)、失败数变化 |
+| 网络/限流 | 封禁次数、429 次数、平均响应延迟、成功率 |
+| 数据正确性 | 字段匹配条数(如分红 19 条)、错误报告数、偏差值(如 PE 18337420x→5.82x) |
+| 性能 | 总耗时(如 1000s→620s)、请求数、缓存命中率 |
+
+**执行要求**:
+
+- 改动完成后的验证报告(9.2)必须填 `度量` 行,格式 `指标: 改前 → 改后`
+- 无法量化时,写明理由(如"纯文档改动"),不得省略
+- roadmap 每次版本条目建议带度量(如"V16.2.12: 警告 17 条 → 0 条")
+
+### 11.2 假设驱动调试流程 (Hypothesis-Driven Debug)
+
+排查疑难 bug 时按以下顺序,**每个假设只做一次实验**,禁止盲目堆叠修法:
+
+1. **收集症状**: 报错原文、复现命令、现象(如"K线空但无报错")
+2. **最小化复现**: 缩小到最小输入/最小脚本(mattpocock `diagnosing-bugs` 提炼)——
+   去掉无关股票/字段/分支,确认在最小集上仍可复现;不可复现 → 说明症状与疑似面无关,先排查最小集差异
+3. **侦察**: 读相关代码路径 + 检查数据(如实测返回的原始值),先找"数据在哪一层失真"
+4. **提出假设**: 必须具体、可检验(如"push2 封禁是连接级而非请求级"),写成"若 X 则 Y"
+5. **单次实验**: 一次只验证一个假设(最小复现脚本/加日志/抓包),禁止同时改多处
+6. **判定**: 证实 → 修复;证伪 → 记录并排除,换下一个假设
+7. **记录**: 在回复中列出 假设/实验/结论 三行,证伪的同样记录(防重复踩坑)
+
+**硬约束**:
+
+- 假设未证实前**不得改业务代码**(可写临时复现脚本)
+- 每个假设耗时 > 15 分钟仍无结论 → 停止,汇报当前证据 + 剩余候选,不闷头继续
+- 与 1.7 节(同一错误重试 > 2 次停止)联动:修复失败回到"提出新假设"而非"再试一次"

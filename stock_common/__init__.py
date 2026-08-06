@@ -60,7 +60,7 @@ __all__ = [
     "get_version",
     "_safe_float",
     "ensure_output_dir", "get_script_dir",
-    "get_board_type", "is_limit_up", "is_limit_down",
+    "get_board_type", "limit_pct_for", "is_limit_up", "is_limit_down",
     "clean_codes", "parse_args",
     "_safe_cleanup_tdx",
     "_load_settings", "_load_strategy_config",
@@ -121,7 +121,7 @@ __all__ = [
     "get_board_fund_flow",  # V16.0: 板块资金流向
     "ths_limit_up_pool",
     "get_eastmoney_minute_fund_flow", "get_fund_flow_weighted",
-    "cls_telegraph", "dragon_tiger_backup", "fund_flow_backup", "cninfo_irm",
+    "cls_telegraph", "news_matches_stock", "get_history_fund_flow_120d", "get_em_industry_l2_data", "get_em_industry_l2", "get_em_industry_members_l2", "dragon_tiger_backup", "fund_flow_backup", "cninfo_irm",
     # zhb A级数据（V9.6）
     "get_zhb_sp_block", "get_zhb_sp_block_list", "get_zhb_sw_industries",
     "get_zhb_industry_map", "get_zhb_data_date",
@@ -148,9 +148,7 @@ __all__ = [
     # V10.1: 全局股本缓存 + 市值计算
     "get_share_capital", "calc_mcap_yi", "calc_float_mcap_yi",
     # V16: 连续 ZHB 回溯补充字段
-    "sc_zhb",
     "backtrack_field", "backtrack_stats", "backtrack_with_extractor",
-    "list_zhb_archives", "zhb_archive_summary",
     # V12.4: 策略报告通用运行框架
     "BaseReportRunner",
 ]
@@ -199,7 +197,7 @@ from stock_common.sc_utils import (
     get_version,
     _safe_float,
     ensure_output_dir, get_script_dir,
-    get_board_type, is_limit_up, is_limit_down,
+    get_board_type, limit_pct_for, is_limit_up, is_limit_down,
     clean_codes, parse_args,
     _safe_cleanup_tdx,
     _load_settings, _load_strategy_config,
@@ -308,7 +306,7 @@ from stock_common.sc_datasource import (
     # 东财分钟级资金流（V9.6）
     get_eastmoney_minute_fund_flow, get_fund_flow_weighted,
     # 财联社快讯/官方备胎池/舆情互动层（V9.6）
-    cls_telegraph, dragon_tiger_backup, fund_flow_backup, cninfo_irm,
+    cls_telegraph, news_matches_stock, get_history_fund_flow_120d, get_em_industry_l2_data, get_em_industry_l2, get_em_industry_members_l2, dragon_tiger_backup, fund_flow_backup, cninfo_irm,
     # zhb A级数据（V9.6）
     get_zhb_sp_block, get_zhb_sp_block_list, get_zhb_sw_industries,
     get_zhb_industry_map, get_zhb_data_date,
@@ -342,8 +340,6 @@ from stock_common.sc_datasource import (
 # ═══════════════════════════════════════════════════════════════
 from stock_common.sc_zhb import (
     backtrack_field, backtrack_stats, backtrack_with_extractor,
-    list_archives as list_zhb_archives,
-    archive_summary as zhb_archive_summary,
 )
 
 

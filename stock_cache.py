@@ -105,14 +105,18 @@ _L1_CACHE_LOCK = threading.Lock()
 _L1_MAX_ENTRIES = 10000  # V15.2: L1最大条目数 5000→10000（val 报告 5721+ zhb_data 频繁淘汰）
 
 
-def _l1_get(key: str) -> Optional[Any]:
-    """L1内存缓存读取。V15.3 LRU: 访问时把 key 移到 OrderedDict 末尾。"""
+def _l1_get(key: str, cross_verify: bool = False) -> Optional[Any]:
+    """L1内存缓存读取。V15.3 LRU: 访问时把 key 移到 OrderedDict 末尾。
+    V16.2: 存储 (value, expiry, verified) —— cross_verify 模式拒绝未验证缓存（修复 L1 绕过 verified）。"""
     with _L1_CACHE_LOCK:
         entry = _L1_CACHE.get(key)
         if entry is None:
             return None
-        value, expiry = entry
+        value, expiry = entry[0], entry[1]
+        verified = entry[2] if len(entry) > 2 else False
         if expiry > time.time():
+            if cross_verify and not verified:
+                return None
             # LRU: 命中时移到末尾（最近使用），淘汰时 popitem(last=False) 删最久未用
             _L1_CACHE.move_to_end(key)
             return value
@@ -120,23 +124,24 @@ def _l1_get(key: str) -> Optional[Any]:
     return None
 
 
-def _l1_set(key: str, value: Any, ttl_seconds: int) -> None:
+def _l1_set(key: str, value: Any, ttl_seconds: int, verified: bool = False) -> None:
     """L1内存缓存写入。
 
     V15.3 LRU: 写入时已存在则刷新 expiry 并移到末尾；
     满了时 popitem(last=False) 删除最久未访问的 key（热点 key 永驻）。
 
     V13.1: dataclass 透明序列化，确保 get_cache 返回 dict（不破坏现有调用）。
+    V16.2: 存储 verified 标记（cross_verify 数据一致性追踪）。
     """
     serialized = _serialize_for_cache(value)
     with _L1_CACHE_LOCK:
         expiry = time.time() + ttl_seconds
         if key in _L1_CACHE:
             # 已存在则更新 + 移到末尾
-            _L1_CACHE[key] = (serialized, expiry)
+            _L1_CACHE[key] = (serialized, expiry, verified)
             _L1_CACHE.move_to_end(key)
             return
-        _L1_CACHE[key] = (serialized, expiry)
+        _L1_CACHE[key] = (serialized, expiry, verified)
         if len(_L1_CACHE) > _L1_MAX_ENTRIES:
             # 淘汰最久未访问的（OrderedDict 头部）
             _L1_CACHE.popitem(last=False)
@@ -456,23 +461,25 @@ def _enforce_size_limit() -> None:
     except Exception as _e:
         _cache_logger.debug(f"enforce_size_limit cleanup: {_e}")
     # 再检查 DB 大小是否超限
-    db_path = os.path.getsize(_CACHE_DB)
-    if db_path < _MAX_CACHE_SIZE_BYTES:
+    # V16.3 C3: 变量名修正——原 db_path 实际存的是"字节数"（误导）
+    db_size_bytes = os.path.getsize(_CACHE_DB)
+    if db_size_bytes < _MAX_CACHE_SIZE_BYTES:
         return
     cursor = db.cursor()
     cursor.execute("SELECT COUNT(*) FROM cache_entries")
     total = cursor.fetchone()[0]
     if total == 0:
         return
-    # 删除最久未访问的 20%
+    # 删除最久未访问的 20%（V16.3 C3: f-string 拼 LIMIT 改参数化，防注入模式）
     delete_count = max(1, total // 5)
     cursor.execute(
         "DELETE FROM cache_entries WHERE key IN ("
-        f"  SELECT key FROM cache_entries ORDER BY last_accessed ASC LIMIT {delete_count}"
-        ")"
+        "  SELECT key FROM cache_entries ORDER BY last_accessed ASC LIMIT ?"
+        ")",
+        (delete_count,),
     )
     db.commit()
-    print(f"[stock_cache] 缓存超限（{db_path / 1024 / 1024:.1f}MB），已清理 {delete_count} 条最久未访问条目", flush=True)
+    print(f"[stock_cache] 缓存超限（{db_size_bytes / 1024 / 1024:.1f}MB），已清理 {delete_count} 条最久未访问条目", flush=True)
 
 
 # ═══════════════════════════════════════
@@ -510,8 +517,8 @@ def get_cache(category: str, func_name: str, *args: Any,
         return None
     key = _build_key(category, func_name, *args, **kwargs)
     
-    # V10.3: 优先 L1 内存缓存
-    l1_result = _l1_get(key)
+    # V10.3: 优先 L1 内存缓存（V16.2: cross_verify 模式 L1 也校验 verified）
+    l1_result = _l1_get(key, cross_verify=cross_verify)
     if l1_result is not None:
         _record_cache_hit(category, True)
         return l1_result
@@ -559,7 +566,7 @@ def get_cache(category: str, func_name: str, *args: Any,
         # V16: 仅新鲜数据写回 L1；软过期 stale 数据不写（避免 L1 长期返回旧值）
         ttl = expires_at - now
         if ttl > 0:
-            _l1_set(key, value, ttl)
+            _l1_set(key, value, ttl, verified=bool(verified))
         _record_cache_hit(category, True)
         return value
     except Exception as _e:
@@ -739,6 +746,9 @@ def _safe_float(v: Any) -> float:
 
 # V16.0: 加入 zhb_data — 17 个函数体只读 ZHB RAM 字典（<1ms），
 # 原走完整 SQLite 写路径（INSERT+commit+全表清理 ≈ 2-4ms/次），负优化
+# V16.3 C2: 旁路名单内的分类 = @cached 装饰器**永不写入 L1/L2**（命中率恒 0，
+# 装饰器仅为接口一致性保留）——非 bug，是有意设计；后续若 data_provider 的
+# get_market_snapshot 等出现真实计算开销，再移出本名单。
 _ZHB_BYPASS_CATEGORIES = {
     "basic_info_static", "share_capital", "concept_blocks", "board_type",
     "zhb_data",
@@ -773,7 +783,11 @@ def set_cache(category: str, func_name: str, value: Any, ttl: int, *args: Any,
     key = _build_key(category, func_name, *args, **kwargs)
     now = time.time()
     # V9.0: trading_day 模式 — 过期时间设为下一个交易日 15:00
+    # V16.2 修复: min(now+ttl, 交易日截止) —— 盘中 ttl 仍生效（如 stock_quote 30min），
+    # 修复原实现 trading_day 覆盖 ttl 导致实时数据盘中冻结到收盘的问题
     expires_at = _calc_trading_day_expiry() if trading_day else now + ttl
+    if trading_day:
+        expires_at = min(expires_at, now + ttl)
     try:
         db = _get_db()
         value_bytes = json.dumps(_serialize_for_cache(value), ensure_ascii=False).encode("utf-8")
@@ -830,10 +844,10 @@ def set_cache(category: str, func_name: str, value: Any, ttl: int, *args: Any,
         _maybe_commit(force=True)  # 写入必须落盘，但用批量化 commit
         _maybe_enforce_size_limit()
         
-        # V10.3: 同时写入 L1 内存缓存
+        # V10.3: 同时写入 L1 内存缓存（V16.2: 带 verified 标记）
         l1_ttl = expires_at - now
         if l1_ttl > 0:
-            _l1_set(key, value, l1_ttl)
+            _l1_set(key, value, l1_ttl, verified=bool(verified) if cross_verify else False)
     except Exception as _e:
         _cache_logger.debug(f"set_cache: {_e}")
 
@@ -895,7 +909,9 @@ def invalidate_prefix(prefix: str) -> int:
 
 
 def clear_expired() -> int:
-    """删除所有已过期的缓存条目，返回删除数量。"""
+    """删除所有已过期的缓存条目，返回删除数量。
+    V16.2: 同时清理 L1 中已过期条目（原 L1 残留导致 clear 后仍返回旧值）。"""
+    _l1_clear()  # L1 无法精确按 key 过期，直接整体清（进程级，成本低）
     try:
         db = _get_db()
         cursor = db.cursor()
@@ -908,7 +924,8 @@ def clear_expired() -> int:
 
 
 def clear_all() -> None:
-    """清空所有缓存。"""
+    """清空所有缓存。V16.2: 同时清空 L1（原只清 SQLite，同进程仍返回旧值）。"""
+    _l1_clear()
     try:
         db = _get_db()
         db.execute("DELETE FROM cache_entries")
@@ -1031,6 +1048,17 @@ def cached(category: str, ttl_seconds: Optional[int] = None,
         cross_verify: True=启用交叉验证（两次获取一致才标记为已验证，未验证不返回缓存）
     """
     _ttl = ttl_seconds if ttl_seconds is not None else TTL.get(category, TTL["default"])
+    # V16.2: per-key single-flight —— 同 key 并发 miss 时仅一次上游请求（SQLite 锁不能阻止重复网络请求）
+    _sf_locks: Dict[str, threading.Lock] = {}
+    _sf_lock_guard = threading.Lock()
+
+    def _sf_acquire(sf_key: str) -> threading.Lock:
+        with _sf_lock_guard:
+            lock = _sf_locks.get(sf_key)
+            if lock is None:
+                lock = threading.Lock()
+                _sf_locks[sf_key] = lock
+            return lock
 
     def decorator(func: F) -> F:
         @functools.wraps(func)
@@ -1041,16 +1069,26 @@ def cached(category: str, ttl_seconds: Optional[int] = None,
             if use_args:
                 cache_value = get_cache(category, func.__name__, *args,
                                         cross_verify=cross_verify, **kwargs)
+                sf_key = _build_key(category, func.__name__, *args, **kwargs)
             else:
                 cache_value = get_cache(category, func.__name__,
                                         cross_verify=cross_verify)
+                sf_key = f"{category}:{func.__name__}"
             if cache_value is not None:
                 # V8.9: 读取时也校验 — 命中但校验不通过视为未命中
                 if valid_if is None or valid_if(cache_value):
                     return cache_value
             else:
                 cache_value = None  # 确保下面重新获取
-            result = func(*args, **kwargs)
+            # V16.2: single-flight —— 锁内再查一次（双检锁），避免重复上游请求
+            _lock = _sf_acquire(sf_key)
+            with _lock:
+                cache_value2 = get_cache(category, func.__name__,
+                                         cross_verify=cross_verify, *args, **kwargs) if use_args else get_cache(
+                                             category, func.__name__, cross_verify=cross_verify)
+                if cache_value2 is not None and (valid_if is None or valid_if(cache_value2)):
+                    return cache_value2
+                result = func(*args, **kwargs)
             # valid_if 校验：不通过则不缓存
             if valid_if is None or valid_if(result):
                 if use_args:

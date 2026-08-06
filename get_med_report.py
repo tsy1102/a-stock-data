@@ -89,6 +89,7 @@ from stock_common import (
     get_zhb_data_date,
     get_zhb_ipo_price,
     cls_telegraph,
+    news_matches_stock,
     cninfo_irm,
 )  # V10.3
 
@@ -105,16 +106,12 @@ _peers_high = _mkt_cfg.get("peers_mcap_high", 3.0)
 
 
 def get_fund_flow_120d(code):
-    """V7.5: 60日资金流 → 东财HTTP（get_em_history_fund_flow，与 TDX 接口同源）"""
-    from stock_common.sc_datasource import get_em_history_fund_flow
+    """V16.2.4 (D2): 统一走 sc_datasource.get_history_fund_flow_120d（东财直连）。
 
-    try:
-        data = get_em_history_fund_flow(code, 60)
-        if data:
-            return {"data": data, "error": "", "source": "eastmoney"}
-    except Exception as _e:
-        _debug_log(f"med get_fund_flow_120d error ({code}): {_e}")
-    return {"data": [], "error": "资金流数据获取失败"}
+    V7.5 原实现直连 get_em_history_fund_flow；统一后保留"仅东财"口径（中线业绩视角）。
+    """
+    from stock_common import get_history_fund_flow_120d
+    return get_history_fund_flow_120d(code, 60, prefer="em")
 
 
 # V7.5: get_dragon_tiger_board 由 stock_common 统一提供
@@ -240,7 +237,7 @@ async def generate_report_async(session, code, output_path, ind_comp=None, hsgt=
     price_today = cdata.price
     q = cdata.to_dict()
 
-    info = get_stock_info(code)
+    info = await asyncio.to_thread(get_stock_info, code)  # V16.2: 同步网络调用包 to_thread（防阻塞事件循环）
     stock_name = cdata.name or info.get('name', 'N/A')
     stock_industry = cdata.industry or info.get('industry', 'N/A')
 
@@ -317,7 +314,7 @@ async def generate_report_async(session, code, output_path, ind_comp=None, hsgt=
                     leader_code = row["leader"]
                     leader_name = ""
                     try:
-                        li = get_stock_info(leader_code)
+                        li = await asyncio.to_thread(get_stock_info, leader_code)  # V16.2: to_thread
                         leader_name = li.get("name", "")
                     except Exception as _e:
                         _debug_log(f"med leader_info error: {_e}")
@@ -817,8 +814,9 @@ async def generate_report_async(session, code, output_path, ind_comp=None, hsgt=
         days_bullish_20 = sum(1 for d in recent_20 if d["main_net"] > 0)
         recent_60 = fund_data[:60]
         total_main_60 = sum(d["main_net"] for d in recent_60)
+        # V16.2.4: 延时镜像域可能只有当日数据 → 按实际条数标注，避免"1天/20天"误导
         L("  ➤ 近 20 个交易日：")
-        L(f"    主力净流入天数: {days_bullish_20} 天 / 20 天")
+        L(f"    主力净流入天数: {days_bullish_20} 天 / {len(recent_20)} 天（实有数据）")
         L(f"    累计主力净流入: {total_main_20/1e8:.2f} 亿元")
         L("  ➤ 近 60 个交易日（中期视角）：")
         L(f"    累计主力净流入: {total_main_60/1e8:.2f} 亿元")
@@ -864,7 +862,7 @@ async def generate_report_async(session, code, output_path, ind_comp=None, hsgt=
         if _d10:
             L(f"  ➤ 10日融资买入: {_d10['rzmre_10d']/1e4:.0f}万元 | 10日偿还: {_d10.get('rzche_10d',0)/1e4:.0f}万元 | 10日涨幅: {_d10.get('chg_10d',0):+.2f}%")
         if latest.get("balance_gr") is not None:
-            L(f"  ➤ 融资余额环比: {latest['balance_gr']*100:+.2f}%")
+            L(f"  ➤ 融资余额环比: {latest['balance_gr']:+.2f}%")  # V16.2.3: balance_gr 已是百分数（东财原值），去掉 *100
     else:
         L("  该股无融资融券数据（可能不是两融标的）。")
 
@@ -942,7 +940,9 @@ async def generate_report_async(session, code, output_path, ind_comp=None, hsgt=
             yield_str = f"{(d['bonus_rmb'] / price_today) * 100:.2f}%" if price_today > 0 else "N/A"
             L(f"  {d['date']:<14} {d['bonus_rmb']:>12.4f}  约 {yield_str} (按现价计)")
     else:
-        L("  暂无分红记录（非防御型收息标的）。")
+        # V16.2.3: 区分"接口失败"与"真无分红"
+        L("  分红数据获取失败（TDX 接口暂不可用）。" if div is None else
+          "  暂无分红记录（非防御型收息标的）。")
 
     # ─── 16. 十大流通股东机构动向 ───
     L("\n【十六、十大流通股东机构动向】")
@@ -1001,7 +1001,7 @@ async def generate_report_async(session, code, output_path, ind_comp=None, hsgt=
     try:
         cls_news = cls_telegraph(page_size=50)
         _cls_shown = 0
-        _cls_cutoff = datetime.now() - timedelta(days=3)
+        _cls_cutoff = datetime.now() - timedelta(hours=48)  # V16.2.14: 3天→48h
         for item in cls_news:
             t_str = str(item.get("time", ""))
             if t_str:
@@ -1012,21 +1012,23 @@ async def generate_report_async(session, code, output_path, ind_comp=None, hsgt=
                 except (ValueError, TypeError):
                     pass
             title = str(item.get("title", "")).strip()
-            if title:
+            # V16.2.3: 快讯必须与个股相关（代码/名称/简称），否则跳过
+            if title and news_matches_stock(title, code, cdata.name):
                 L(f"  · [{t_str[:16]}] {title[:80]}")
                 _cls_shown += 1
                 if _cls_shown >= 10:
                     break
         if _cls_shown == 0:
-            L("  近3天暂无财联社快讯")
+            L("  近48小时无个股相关财联社快讯")
     except Exception as _e:
         _debug_log(f"med cls_telegraph: {_e}")
 
-    # 互动易问答（近7小时）
+    # 互动易问答（近48小时）— V16.2.14: 48h+标题+答案+合理条数
     try:
-        irm = cninfo_irm(code, page_size=20)
+        irm = cninfo_irm(code, page_size=30)
+        L("  近48小时互动易问答:")
         _irm_shown = 0
-        _irm_cutoff = datetime.now() - timedelta(hours=7)
+        _irm_cutoff = datetime.now() - timedelta(hours=48)
         for item in irm:
             t_str = str(item.get("ask_time", ""))
             if t_str:
@@ -1036,14 +1038,18 @@ async def generate_report_async(session, code, output_path, ind_comp=None, hsgt=
                         continue
                 except (ValueError, TypeError):
                     pass
-            q = str(item.get("question", "")).strip()[:80]
+            q = str(item.get("question", "")).strip()[:120]
             if q:
-                L(f"  · [{t_str[:16]}] 互动: {q}")
+                a = str(item.get("answer", "")).strip()
+                _ans = f"答案: {a[:120]}" if a else "答案: （公司待回复）"
+                L(f"  · [{t_str[:16]}] 提问: {q}")
+                L(f"      {_ans}")
                 _irm_shown += 1
-                if _irm_shown >= 5:
+                if _irm_shown >= 10:
+                    L(f"  （近48小时共 {len(irm)} 条中最新 10 条）")
                     break
         if _irm_shown == 0:
-            L("  近7小时暂无互动易问答")
+            L("  近48小时暂无互动易问答")
     except Exception as _e:
         _debug_log(f"med cninfo_irm: {_e}")
 

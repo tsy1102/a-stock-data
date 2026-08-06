@@ -170,7 +170,8 @@ _DOMAIN_LIMITS: Dict[str, Dict[str, Any]] = {
     "finance.pae.baidu.com": {"sleep_ms": 150, "semaphore": None, "rps": 5.0},
     "zx.10jqka.com.cn": {"sleep_ms": 150, "semaphore": None, "rps": 5.0},
     "datacenter-web.eastmoney.com": {"sleep_ms": 1000, "semaphore": None, "rps": 1.0},
-    "push2.eastmoney.com": {"sleep_ms": 1500, "semaphore": None, "rps": 0.6},
+    # V16.2.7: push2 系共享风控面且阈值极低（0.6rps 连续探测即触发连接级风控）→ 降到 0.4rps(2.5s)
+    "push2.eastmoney.com": {"sleep_ms": 2500, "semaphore": None, "rps": 0.4},
     # V16.0: push2ex（涨停/炸板/跌停池）与 push2 共用东财风控面，
     # 原缺省 100ms=10rps 无令牌桶 → 最高封禁风险点，补限流对齐 push2
     "push2ex.eastmoney.com": {"sleep_ms": 1500, "semaphore": None, "rps": 0.6},
@@ -178,8 +179,10 @@ _DOMAIN_LIMITS: Dict[str, Dict[str, Any]] = {
     "np-weblist.eastmoney.com": {"sleep_ms": 1000, "semaphore": None, "rps": 1.0},
     # V16.0.2: 补齐遗漏的东财域名限流（参考仓库"东财所有域名统一限流"原则）
     # 之前以下域名落入默认 100ms=10rps → 封禁隐患（尤其 emappdata 热榜高频）
-    "83.push2.eastmoney.com": {"sleep_ms": 1500, "semaphore": None, "rps": 0.6},
-    "push2his.eastmoney.com": {"sleep_ms": 1500, "semaphore": None, "rps": 0.6},
+    "83.push2.eastmoney.com": {"sleep_ms": 2500, "semaphore": None, "rps": 0.4},
+    "push2his.eastmoney.com": {"sleep_ms": 2500, "semaphore": None, "rps": 0.4},
+    # V16.2.4: push2delay（延时 15 分钟镜像域，fflow 资金流主入口——push2/push2his 连接级风控时唯一可用）
+    "push2delay.eastmoney.com": {"sleep_ms": 1000, "semaphore": None, "rps": 1.0},
     "emappdata.eastmoney.com": {"sleep_ms": 1000, "semaphore": None, "rps": 1.0},
     "datacenter.eastmoney.com": {"sleep_ms": 1000, "semaphore": None, "rps": 1.0},
     "data.eastmoney.com": {"sleep_ms": 1000, "semaphore": None, "rps": 1.0},
@@ -228,19 +231,90 @@ except Exception as _e:
 _em_lock_file = os.path.join(_em_lock_dir, "em_rate_limit")
 _gen_lock_file = os.path.join(_em_lock_dir, "gen_rate_limit")
 
+# V16.2.6: 东财 push2 系共享同一风控面（实测 push2/push2his/83.push2 同时被连接级风控，
+# 而 push2delay/push2ex 独立可用）→ 令牌桶/熔断器必须按风控面归一化共享，
+# 否则 3 个独立桶各 0.6rps = 同风控面合计 1.8rps 叠加触发封禁。
+_EM_PUSH2_FAMILY = (
+    "push2.eastmoney.com",
+    "push2his.eastmoney.com",
+    "83.push2.eastmoney.com",
+    "1.push2.eastmoney.com",
+    "2.push2.eastmoney.com",
+)
+
+# V16.2.8: 参考仓库 PR#36 防封铁律（luodada99 实战案例）——
+# 连续 3 次 RemoteDisconnected → 标记该风控面封禁 → 后续请求直接跳过（不浪费请求、不加重封禁）。
+# IP 级封禁实测恢复 **20+ 小时**（远超原文档"30-60 分钟"估计，文案已同步修正）。
+_EM_BAN_STREAK: Dict[str, int] = {}   # 归一化域 → 连续断连次数
+_EM_BANNED_UNTIL: Dict[str, float] = {}  # 归一化域 → 封禁解除时间戳
+_EM_BAN_THRESHOLD = 3
+_EM_BAN_COOLDOWN = 20 * 3600  # 20 小时
+
+
+def _record_em_disconnect(ft_domain: str) -> None:
+    """V16.2.8: 记录连接级断连（RemoteDisconnected 等），连续 N 次标记该风控面封禁。"""
+    _EM_BAN_STREAK[ft_domain] = _EM_BAN_STREAK.get(ft_domain, 0) + 1
+    if _EM_BAN_STREAK[ft_domain] >= _EM_BAN_THRESHOLD:
+        _EM_BANNED_UNTIL[ft_domain] = time.time() + _EM_BAN_COOLDOWN
+        _EM_BAN_STREAK[ft_domain] = 0
+        try:
+            _biz_logger.warning(
+                f"EM {ft_domain} 连续 {_EM_BAN_THRESHOLD} 次连接级断连 → 判定 IP 级封禁 "
+                f"（实测恢复 20+ 小时），本进程后续请求将跳过该风控面"
+            )
+        except Exception:
+            pass
+
+
+def _em_is_banned(ft_domain: str) -> bool:
+    """V16.2.8: 该风控面是否处于封禁跳过期。"""
+    _until = _EM_BANNED_UNTIL.get(ft_domain, 0.0)
+    if _until <= 0:
+        return False
+    if time.time() >= _until:
+        _EM_BANNED_UNTIL.pop(ft_domain, None)
+        _EM_BAN_STREAK.pop(ft_domain, None)
+        return False
+    return True
+
+
+def _normalize_em_domain(domain: str) -> str:
+    """V16.2.6: 东财 push2 系域名归一化（同风控面共享限流/熔断），其余域名原样返回。"""
+    if domain in _EM_PUSH2_FAMILY:
+        return "push2.eastmoney.com"
+    return domain
+
+
+_LOCK_STALE_SECONDS = 60.0  # V16.2: 锁文件 stale 阈值（进程崩溃后自动回收）
+
 
 def _file_lock_acquire(lock_path: str, timeout: float = 10.0) -> bool:
-    """跨进程互斥：尝试创建唯一文件做锁。成功返回 True，超时返回 False。"""
+    """V16.2 修复: 跨进程互斥锁 —— 所有进程竞争**同一个**锁文件（原每 PID 一个文件导致互斥失效）。
+    锁文件内容为 PID+时间戳；进程崩溃残留超过 _LOCK_STALE_SECONDS 时视为 stale 回收。
+    成功返回 True，超时返回 False。"""
     _deadline = time.time() + timeout
-    _pid_str = str(os.getpid())
-    _unique_path = lock_path + "_" + _pid_str
+    _payload = f"{os.getpid()}|{time.time():.3f}"
     while time.time() < _deadline:
         try:
-            _fd = os.open(_unique_path, os.O_CREAT | os.O_EXCL | os.O_RDWR)
-            os.close(_fd)
+            _fd = os.open(lock_path, os.O_CREAT | os.O_EXCL | os.O_RDWR)
+            try:
+                os.write(_fd, _payload.encode("utf-8"))
+            finally:
+                os.close(_fd)
             return True
         except FileExistsError:
-            # 已被其他进程持有，短暂让出
+            # 已被其他进程持有：检查是否 stale（进程已崩溃）
+            try:
+                _st = os.stat(lock_path)
+                if time.time() - _st.st_mtime > _LOCK_STALE_SECONDS:
+                    try:
+                        os.remove(lock_path)
+                        _debug_log(f"file_lock_acquire: removed stale lock {lock_path}")
+                        continue  # 重新竞争
+                    except OSError:
+                        pass  # 被他人抢先删除，下一轮再试
+            except OSError:
+                pass  # 文件刚被删除，下一轮再试
             time.sleep(0.05)
         except Exception as _e:
             _debug_log(f"file_lock_acquire error ({lock_path}): {_e}")
@@ -249,11 +323,18 @@ def _file_lock_acquire(lock_path: str, timeout: float = 10.0) -> bool:
 
 
 def _file_lock_release(lock_path: str) -> None:
-    """释放跨进程锁：删除自己创建的文件。"""
-    _unique_path = lock_path + "_" + str(os.getpid())
+    """V16.2: 释放跨进程锁（删除共享锁文件，仅当内容属于本进程）。"""
     try:
-        if os.path.exists(_unique_path):
-            os.remove(_unique_path)
+        if os.path.exists(lock_path):
+            try:
+                with open(lock_path, "r", encoding="utf-8") as _f:
+                    _content = _f.read().strip()
+                _owner_pid = int(_content.split("|")[0]) if _content else -1
+            except (OSError, ValueError):
+                _owner_pid = -1
+            # 只删除自己持有的锁（避免误删他人刚创建的新锁）
+            if _owner_pid == os.getpid() or _owner_pid == -1:
+                os.remove(lock_path)
     except Exception as _e:
         _debug_log(f"sc_network file_lock_release: {_e}")
 
@@ -284,28 +365,42 @@ def em_get(url: str, params: dict | None = None, headers: dict | None = None,
     )
 
     _domain = urlparse(url).netloc
+    # V16.2.6: push2 系（push2/push2his/83.push2/1.push2/2.push2）共享同一风控面 →
+    # 令牌桶/熔断器按归一化 key 共享（原 3 个独立桶各 0.6rps 合计 1.8rps 叠加触发封禁）
+    _ft_domain = _normalize_em_domain(_domain)
+
+    # V16.2.8: 封禁跳过期直接拒绝（参考仓库 PR#36：连续 3 次断连标记封禁，不再浪费请求）
+    if _em_is_banned(_ft_domain):
+        _RL_STATS["em_rate_limit_count"] = _RL_STATS.get("em_rate_limit_count", 0) + 1
+        _debug_log(f"em_get: {_ft_domain} 封禁跳过中（20h 冷却），拒绝 {url[:80]}")
+        return None
 
     # V12.1: 熔断器保护 - 如果该域名熔断器处于 Open 状态，直接拒绝
+    # V16.2 修复: CircuitBreakerError 是 Exception 子类，原 try/except 会吞掉它 → open 时仍发请求。
+    # 现在只在"熔断器检查本身失败"时吞错；open 状态直接 raise。
     try:
-        _circuit_breaker = get_domain_circuit_breaker(_domain)
-        if _circuit_breaker.state == "open":
-            _debug_log(f"em_get: domain {_domain} circuit breaker is open, request rejected")
-            raise CircuitBreakerError(f"Domain {_domain} is circuit-broken")
+        _circuit_breaker = get_domain_circuit_breaker(_ft_domain)
     except Exception as _e:
-        _debug_log(f"em_get: circuit breaker check failed: {_e}")
+        _debug_log(f"em_get: circuit breaker init failed: {_e}")
+        _circuit_breaker = None
+    if _circuit_breaker is not None and _circuit_breaker.state == "open":
+        _debug_log(f"em_get: domain {_domain} circuit breaker is open, request rejected")
+        raise CircuitBreakerError(f"Domain {_domain} is circuit-broken")
 
     # V12.1: 令牌桶限流 - 替代原有简单 sleep
     # V16.0: rps 从 _DOMAIN_LIMITS 读取（push2=0.6, push2ex=0.6, datacenter=1.0），
     # 不再硬编码 1.0；EM_MIN_INTERVAL 作为硬性全局下限（两者取严），使"调大 EM_MIN_INTERVAL"真正生效
+    # V16.2.6: 桶 key 用归一化 _ft_domain（push2 系共享 0.6rps），rps 读取仍用原始域配置
     try:
         _cfg_rps = _DOMAIN_LIMITS.get(_domain, {}).get("rps", 1.0)
-        _bucket = get_domain_token_bucket(_domain, rps=_cfg_rps)
+        _bucket = get_domain_token_bucket(_ft_domain, rps=_cfg_rps)
         _bucket.acquire(1)
         # V16.0: EM_MIN_INTERVAL 作为硬性下限（参考仓库: 每请求强制 ≥EM_MIN_INTERVAL，无突发）
         _min_interval = max(float(EM_MIN_INTERVAL), 1.0 / max(_cfg_rps, 1e-6))
         _elapsed = time.time() - _EM_LAST_CALL[0]
         if _elapsed < _min_interval:
             time.sleep(_min_interval - _elapsed)
+        _EM_LAST_CALL[0] = time.time()
     except Exception as _e:
         _debug_log(f"em_get: token bucket acquire failed: {_e}")
         # Fallback: 使用原有 sleep 逻辑
@@ -336,41 +431,74 @@ def em_get(url: str, params: dict | None = None, headers: dict | None = None,
         _response = EM_SESSION.get(url, params=params, headers=session_headers,
                                    timeout=timeout, **kwargs)
 
-        # V16.0: 统一 403 处理（对齐 _do_request）— 403 = 东财风控明确信号
-        if _response.status_code == 403:
-            _RL_STATS["em_403_count"] += 1
+        # V16.2 修复: 403/429 统一走失败路径 —— 不再返回响应走"成功"分支（原 403 后仍 _on_success 并返回 403 响应）
+        _status = _response.status_code
+        if _status in (403, 429):
+            _RL_STATS["em_403_count"] += 1 if _status == 403 else 0
+            _RL_STATS["em_429_count"] = _RL_STATS.get("em_429_count", 0) + (1 if _status == 429 else 0)
             try:
-                _biz_logger.warning(f"EM 403 rate-limited: {_domain} {url[:120]}")
+                _biz_logger.warning(f"EM {_status} rate-limited: {_domain} {url[:120]}")
             except Exception:
                 pass
-            _CONSECUTIVE_403["count"] += 1
-            _CONSECUTIVE_403["last_ts"] = time.time()
-            if _CONSECUTIVE_403["count"] >= 3:
-                raise RateLimitBlockedError(
-                    f"EM 连续 {_CONSECUTIVE_403['count']} 次 403，疑似 IP 被封。"
-                    f"建议: 停止 30-60 分钟 / 换网络 / 调大 EM_MIN_INTERVAL / 切换备胎源"
-                )
+            if _status == 403:
+                _CONSECUTIVE_403["count"] += 1
+                _CONSECUTIVE_403["last_ts"] = time.time()
+                if _CONSECUTIVE_403["count"] >= 3:
+                    raise RateLimitBlockedError(
+                        f"EM 连续 {_CONSECUTIVE_403['count']} 次 403，疑似 IP 被封。"
+                        f"建议: 停止 20+ 小时（参考仓库 PR#36 实测恢复时间）/ 换网络 / 调大 EM_MIN_INTERVAL / 切换备胎源"
+                    )
+            else:
+                _CONSECUTIVE_403["count"] = 0  # 429 不算 403 连续
+            # 熔断失败计数 + 退避
             try:
-                get_domain_circuit_breaker(_domain)._on_failure()
+                get_domain_circuit_breaker(_ft_domain)._on_failure()
             except Exception:
                 pass
-            time.sleep(exponential_backoff(0, base=2.0, max_wait=60.0))
+            _wait_s = exponential_backoff(0, base=2.0, max_wait=60.0)
+            # 429 Retry-After 优先
+            try:
+                _ra = _response.headers.get("Retry-After")
+                if _ra and _ra.strip().isdigit():
+                    _wait_s = min(max(float(_ra.strip()), 1.0), 120.0)
+            except Exception:
+                pass
+            time.sleep(_wait_s)
+            # V16.2.3: 429（瞬时风控）退避后重试一次；403 直接失败（重试 403 加速封禁）
+            if _status == 429:
+                try:
+                    _r2 = EM_SESSION.get(url, params=params, headers=session_headers,
+                                         timeout=timeout, **kwargs)
+                    if _r2 is not None and _r2.status_code not in (403, 429):
+                        try:
+                            get_domain_circuit_breaker(_ft_domain)._on_success()
+                        except Exception:
+                            pass
+                        return _r2
+                except Exception:
+                    pass
+                _RL_STATS["em_429_count"] = _RL_STATS.get("em_429_count", 0) + 1
+            return None  # V16.2: 明确失败语义（对齐调用方 `if r is None` 约定），不再当成功返回
 
-        # V12.1: 成功则重置熔断器
+        # V12.1: 成功则重置熔断器 + 清零断连计数（V16.2.8）
         try:
-            _circuit_breaker = get_domain_circuit_breaker(_domain)
+            _circuit_breaker = get_domain_circuit_breaker(_ft_domain)
             _circuit_breaker._on_success()
         except Exception:
             pass
+        _EM_BAN_STREAK.pop(_ft_domain, None)
 
         return _response
     except Exception as _e:
         # V12.1: 失败则记录到熔断器
         try:
-            _circuit_breaker = get_domain_circuit_breaker(_domain)
+            _circuit_breaker = get_domain_circuit_breaker(_ft_domain)
             _circuit_breaker._on_failure()
         except Exception:
             pass
+        # V16.2.8: 连接级断连（RemoteDisconnected 等）累计 → 标记封禁跳过（参考仓库 PR#36）
+        if isinstance(_e, (requests.exceptions.ConnectionError, requests.exceptions.ConnectTimeout)):
+            _record_em_disconnect(_ft_domain)
         raise
     finally:
         _EM_LAST_CALL[0] = time.time()
@@ -380,28 +508,31 @@ def em_get(url: str, params: dict | None = None, headers: dict | None = None,
 
 
 def _em_wait_process_interval() -> float:
-    """进程间协调：检查距上次东财请求的间隔，不够则 sleep。
-
-    返回实际等待的秒数（0 表示无需等待）。
-    """
+    """V16.2 修复: 进程间协调（跨进程原子）—— 用共享文件锁把"检查间隔+更新标记"做成原子操作，
+    原实现读 mtime 与写文件分离，并发 3-5 进程时速率按进程倍增。
+    返回实际等待的秒数（0 表示无需等待）。"""
     import random as _rand
     _target_interval = 1.0 + _rand.uniform(0.10, 0.30)
+    _waited = 0.0
     try:
-        if os.path.exists(_em_lock_file):
-            _elapsed = time.time() - os.path.getmtime(_em_lock_file)
-            if _elapsed < _target_interval:
-                _wait = _target_interval - _elapsed
-                time.sleep(_wait)
-                # touch 文件标记本次请求
-                with open(_em_lock_file, "w") as _f:
-                    _f.write(str(time.time()))
-                return _wait
-        # 无论是否等待，都 touch 文件标记本次请求
-        with open(_em_lock_file, "w") as _f:
-            _f.write(str(time.time()))
+        if not _file_lock_acquire(_em_lock_file, timeout=_target_interval + 5.0):
+            return 0.0
+        try:
+            _now = time.time()
+            if os.path.exists(_em_lock_file):
+                _elapsed = _now - os.path.getmtime(_em_lock_file)
+                if _elapsed < _target_interval:
+                    _wait = _target_interval - _elapsed
+                    time.sleep(_wait)
+                    _waited = _wait
+            # 锁内 touch 文件标记本次请求（原子更新）
+            with open(_em_lock_file, "w") as _f:
+                _f.write(f"{os.getpid()}|{time.time():.3f}")
+        finally:
+            _file_lock_release(_em_lock_file)
     except Exception as _e:
         _debug_log(f"sc_network em_wait_process_interval: {_e}")
-    return 0.0
+    return _waited
 
 
 def _gen_wait_process_interval() -> float:
@@ -427,7 +558,7 @@ def _gen_wait_process_interval() -> float:
 def _request_with_retry(url: str, params: Optional[Dict[str, Any]] = None,
                         headers: Optional[Dict[str, str]] = None, timeout: int = 15,
                         max_retries: int = 3, data: Optional[Dict[str, Any]] = None,
-                        method: str = "GET", verify: bool = False) -> Optional[requests.Response]:
+                        method: str = "GET", verify: bool = True) -> Optional[requests.Response]:  # V16.2: 默认校验证书
     """带并发限流的 HTTP 请求（按域名独立限流）。
 
     V7.5 优化版：按域名独立控制并发和 sleep，不再使用全局 Semaphore。
@@ -481,12 +612,13 @@ def _request_with_retry(url: str, params: Optional[Dict[str, Any]] = None,
 def _quick_request(url: str, params: Optional[Dict[str, Any]] = None,
                    headers: Optional[Dict[str, str]] = None, timeout: int = 15,
                    max_retries: int = 3, data: Optional[Dict[str, Any]] = None,
-                   method: str = "GET", verify: bool = False) -> Optional[requests.Response]:
+                   method: str = "GET", verify: bool = True) -> Optional[requests.Response]:  # V16.2: 默认校验证书
     """通用 HTTP 请求（按域名独立限流）。
 
     V7.5 优化版：按域名独立控制并发和 sleep，不再使用全局 Semaphore。
     V8.5 新增：添加随机抖动防止被限流。
     V9.0 新增：线程锁保护 + 限流统计。
+    V16.2 新增：eastmoney 域接入 TokenBucket + CircuitBreaker + 跨进程文件锁（消除限流旁路）。
     """
     import random as _rand
 
@@ -494,12 +626,53 @@ def _quick_request(url: str, params: Optional[Dict[str, Any]] = None,
     parsed = urlparse(url)
     domain = parsed.netloc
 
+    is_em = "eastmoney.com" in domain
+    if is_em:
+        # V16.2.8: 封禁跳过期直接返回 None（参考仓库 PR#36：不浪费请求、不加重封禁）
+        _ft_domain = _normalize_em_domain(domain)
+        if _em_is_banned(_ft_domain):
+            _RL_STATS["em_rate_limit_count"] = _RL_STATS.get("em_rate_limit_count", 0) + 1
+            _debug_log(f"quick_request: {_ft_domain} 封禁跳过中（20h 冷却），拒绝 {url[:80]}")
+            return None
+        # V16.2: 东财域统一走容错层（令牌桶 + 熔断），与 em_get 同口径
+        # V16.2.6: 桶/熔断按归一化 key（push2 系共享风控面）；consume() 方法不存在
+        #（原调用每次抛 AttributeError 被吞 → 桶从未生效，只剩 1s 文件锁）→ 改阻塞 acquire()
+        try:
+            from stock_common.sc_fault_tolerance import (
+                get_domain_token_bucket,
+                get_domain_circuit_breaker,
+            )
+
+            _cb = get_domain_circuit_breaker(_ft_domain)
+            if _cb.state == "open":
+                # V16.2: 返回 None 而非抛异常（对齐调用方 `if r is None` 约定，69 处调用方无需全改）
+                _RL_STATS["em_rate_limit_count"] = _RL_STATS.get("em_rate_limit_count", 0) + 1
+                _log_rate_limit(domain, 0.0)
+                return None
+            _cfg_rps = _DOMAIN_LIMITS.get(domain, {}).get("rps", 1.0)
+            try:
+                get_domain_token_bucket(_ft_domain, rps=float(_cfg_rps)).acquire(1)
+            except Exception as _e:
+                _debug_log(f"quick_request token bucket acquire failed ({domain}): {_e}")
+            # V16.2.6: 补全局时间戳检查（与 em_get 同强度，防同进程多通道叠加）
+            _min_interval = max(float(EM_MIN_INTERVAL), 1.0 / max(_cfg_rps, 1e-6))
+            _elapsed = time.time() - _EM_LAST_CALL[0]
+            if _elapsed < _min_interval:
+                time.sleep(_min_interval - _elapsed)
+            _EM_LAST_CALL[0] = time.time()
+            # 跨进程协调（≤1 rps 全局）
+            try:
+                _em_wait_process_interval()
+            except Exception as _e:
+                _debug_log(f"quick_request em process interval: {_e}")
+        except Exception as _e:
+            _debug_log(f"quick_request ft init error ({domain}): {_e}")
+
     # 获取该域名的限流配置（默认 sleep=100ms 作为兜底）
     limit = _DOMAIN_LIMITS.get(domain, {"sleep_ms": 100})
     sleep_ms = limit["sleep_ms"]
 
     # 按域名独立 sleep，添加 10-30ms 随机抖动
-    is_em = "eastmoney.com" in domain
     wait_ms = 0.0
     with _DOMAIN_LAST_TIME_LOCK:
         last_time = _DOMAIN_LAST_TIME.get(domain, 0.0)
@@ -573,7 +746,7 @@ def _do_request(url: str, params: Optional[Dict[str, Any]],
                 if _CONSECUTIVE_403["count"] >= 3:
                     raise RateLimitBlockedError(
                         f"EM 连续 {_CONSECUTIVE_403['count']} 次 403，疑似 IP 被封。"
-                        f"建议: 停止 30-60 分钟 / 换网络 / 调大 EM_MIN_INTERVAL / 切换备胎源"
+                        f"建议: 停止 20+ 小时（参考仓库 PR#36 实测恢复时间）/ 换网络 / 调大 EM_MIN_INTERVAL / 切换备胎源"
                     )
                 if _HAS_FAULT_TOLERANCE:
                     try:
@@ -806,10 +979,12 @@ async def _async_request_with_retry(session, url: str, params=None,
         return None
 
     domain = urlparse(url).netloc
+    # V16.2.6: push2 系共享风控面 → 熔断器归一化
+    _ft_domain = _normalize_em_domain(domain)
 
     if _HAS_FAULT_TOLERANCE:
         try:
-            cb = get_domain_circuit_breaker(domain)
+            cb = get_domain_circuit_breaker(_ft_domain)
             if cb.state == "open":
                 _debug_log(f"Circuit breaker open for {domain}, skipping request")
                 return None
@@ -822,11 +997,16 @@ async def _async_request_with_retry(session, url: str, params=None,
 
     async with _em_async_lock:
         now = time.time()
-        elapsed = now - _em_async_last_request
+        # V16.2.3 修复: 异步通道与同步通道（em_get 的 _EM_LAST_CALL）共享全局间隔，
+        # 原双通道各自 1rps → 同进程混合调用（lng/med 的 composite 异步 + canonical 同步 to_thread）合计 2rps，
+        # 超过东财 push2 域 0.6rps 风控阈值 → 403/429。
         interval = 1.0 + _rand.uniform(0.10, 0.30)
-        if _em_async_last_request > 0 and elapsed < interval:
+        _last = max(_em_async_last_request, _EM_LAST_CALL[0])
+        elapsed = now - _last
+        if _last > 0 and elapsed < interval:
             await asyncio.sleep(interval - elapsed)
         _em_async_last_request = time.time()
+        _EM_LAST_CALL[0] = time.time()
 
         await _em_wait_process_interval_async()
 
@@ -846,6 +1026,12 @@ async def _async_request_with_retry(session, url: str, params=None,
                 async with session.get(url, params=params, headers=_req_headers,
                                        timeout=timeout_obj) as response:
                     if response.status == 200:
+                        # V16.2: 成功重置熔断器
+                        if _HAS_FAULT_TOLERANCE:
+                            try:
+                                get_domain_circuit_breaker(_ft_domain)._on_success()
+                            except Exception:
+                                pass
                         return await response.json(content_type=None)
                     if response.status == 429:
                         if attempt < max_retries - 1:
@@ -855,8 +1041,20 @@ async def _async_request_with_retry(session, url: str, params=None,
                                 wait_s = 1.0 * (2 ** attempt)
                             await asyncio.sleep(wait_s)
                             continue
+                        if _HAS_FAULT_TOLERANCE:
+                            try:
+                                get_domain_circuit_breaker(_ft_domain)._on_failure()
+                            except Exception:
+                                pass
                         return None
-                    await asyncio.sleep(1.0 * (attempt + 1))
+                    # V16.2: 403 及一切非 200/429 → 记熔断失败，不重试（重试 403 加速封禁）
+                    if _HAS_FAULT_TOLERANCE:
+                        try:
+                            get_domain_circuit_breaker(_ft_domain)._on_failure()
+                        except Exception:
+                            pass
+                    _RL_STATS["em_403_count"] = _RL_STATS.get("em_403_count", 0) + 1
+                    return None
             except (aiohttp.ClientError, asyncio.TimeoutError):
                 if attempt < max_retries - 1:
                     if _HAS_FAULT_TOLERANCE:
@@ -865,6 +1063,11 @@ async def _async_request_with_retry(session, url: str, params=None,
                         wait_s = 2.0 * (attempt + 1)
                     await asyncio.sleep(wait_s)
                     continue
+                if _HAS_FAULT_TOLERANCE:
+                    try:
+                        get_domain_circuit_breaker(domain)._on_failure()
+                    except Exception:
+                        pass
                 return None
             except Exception as _e:
                 _debug_log(f"async_request_with_retry unexpected error ({url}): {_e}")
@@ -892,10 +1095,12 @@ async def _async_quick_request(session, url: str, params=None,
         return None
 
     domain = urlparse(url).netloc
+    # V16.2.6: 熔断器按风控面归一化（东财 push2 系共享）
+    _ft_domain = _normalize_em_domain(domain)
 
     if _HAS_FAULT_TOLERANCE:
         try:
-            cb = get_domain_circuit_breaker(domain)
+            cb = get_domain_circuit_breaker(_ft_domain)
             if cb.state == "open":
                 _debug_log(f"Circuit breaker open for {domain}, skipping request")
                 return None

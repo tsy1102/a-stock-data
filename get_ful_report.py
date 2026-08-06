@@ -1509,7 +1509,8 @@ async def layer_risk(code: str, layers_ref: Optional[Dict] = None) -> Dict[str, 
         import uuid
         # 通过东财公告API简单查询含"质押"关键词的近期公告条数
         url = "https://np-weblist.eastmoney.com/comm/web/getFastNewsList"
-        r = _request_with_retry(url, params={
+        # V16.2.10: 改 _quick_request（东财域统一限流；原 _request_with_retry 无桶/熔断/封禁跳过）
+        r = _quick_request(url, params={
             "client": "web", "biz": "web_724", "fastColumn": "102",
             "sortEnd": "", "pageSize": "10", "req_trace": str(uuid.uuid4()),
         }, headers={"User-Agent": UA, "Referer": "https://kuaixun.eastmoney.com/"}, timeout=8)

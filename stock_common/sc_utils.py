@@ -115,35 +115,36 @@ def get_board_type(code: str, name: str = "") -> str:
     return "主板"
 
 
+def limit_pct_for(code: str, name: str = "") -> float:
+    """V16.2: 统一涨跌停理论阈值（%）。规则: 主板/ST 10 / 创业板·科创板 20 / 北交所 30。
+    供脚本连板/偏离/涨停判断复用（替代各处硬编码 9.5/19.5/10/20）。"""
+    board = get_board_type(code, name)
+    if board == "北交所":
+        return 30.0
+    if board in ("创业板", "科创板"):
+        return 20.0
+    return 10.0
+
+
 def is_limit_up(code: str, name: str, change_pct: float) -> bool:
     """V7.5: 统一涨停判断。区分板块阈值。
     V10.0: ST 涨跌幅已放宽至 10%（与主板一致）。
     V16.1.8: 北交所 30%（老 8/4 号段 + 新 92 号段）；创业板·科创板 20%。
-    规则: 主板/ST 10% / 创业板·科创板 20% / 北交所 30%。"""
+    V16.2: 用 limit_pct_for 统一阈值。"""
     if not change_pct:
         return False
-    board = get_board_type(code, name)
-    if board == "北交所":
-        return change_pct >= 29.5
-    if board in ("创业板", "科创板"):
-        return change_pct >= 19.5
-    # ST 与主板一致（10% 涨跌幅）
-    return change_pct >= 9.5
+    thr = limit_pct_for(code, name)
+    return change_pct >= thr - 0.5
 
 
 def is_limit_down(code: str, name: str, change_pct: float) -> bool:
     """V7.5: 统一跌停判断。区分板块阈值。
     V10.0: ST 涨跌幅已放宽至 10%（与主板一致）。
-    V16.1.8: 北交所 30%；创业板·科创板 20%。"""
+    V16.2: 用 limit_pct_for 统一阈值。"""
     if not change_pct:
         return False
-    board = get_board_type(code, name)
-    if board == "北交所":
-        return change_pct <= -29.5
-    if board in ("创业板", "科创板"):
-        return change_pct <= -19.5
-    # ST 与主板一致（10% 涨跌幅）
-    return change_pct <= -9.5
+    thr = limit_pct_for(code, name)
+    return change_pct <= -(thr - 0.5)
 
 
 # ═══════════════════════════════════════

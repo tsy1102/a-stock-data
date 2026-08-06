@@ -13,6 +13,8 @@
   - 交易日 `09:30-24:00`（含盘中与盘后）：行情与资金流字段 100% 强制走网络 HTTP/TDX 接口，确保获取 T 日真实收盘价
 - **行业统一申万二级**（V16.2.17 用户决策）：canonical/mak 板块聚合/同业对比/板块内排名全链路统一为东财 datacenter 申万二级（半导体/白酒Ⅱ/光学光电子…），全市场映射一次性分页拉取 + 7 天缓存（`em_industry_map_l2.json`），零逐股请求、零 push2 风控面
 - **东财分域限流与风控体系**（V16.2.5-V16.2.13）：push2 系共享归一化令牌桶 **0.4rps/2.5s**、datacenter 1.0rps、腾讯 5.0rps；全局时间戳硬下限（`EM_MIN_INTERVAL=1.0`）+ 进程间文件锁 + 429 指数退避 + **连续 3 次断连 → 20 小时封禁冷却自动跳过**（参考仓库 PR#36 实战结论）；资金流多域轮换（push2his→push2→push2delay）
+- **东财全局节奏（V16.3 O15 方案 A）**：所有东财请求统一跨进程 1.0-1.3s 全局节流（45000 请求/小时封禁阈值余量 30 倍）+ **强制直连**（除 GD 上传外全部忽略系统代理——防 FlClash 机房 IP 封禁）+ push2delay 域破解通道（≤10 字段/请求）
+- **字典驱动多源路由（V16.3 N-O）**：field_dict 623 字段/723 字段×源记录 + §零·B 自动生成矩阵（gen_field_matrix.py）；数据源难易度按参考仓库 v3.2 + 实测（ZHB→TDX/腾讯→新浪/巨潮→同花顺→AxData→东财）；统一层多源 fallback 对齐（F10 财务九件套/0x0010 金额角→元/920 北交所路由/腾讯 52周股息率）
 - **TDX 服务器白名单**（V16.2.9-V16.2.11）：54 台全量实测收敛为 **5 台 FULL 服务器**（K线/行情/财务三项完整），探测与轮换只遍历白名单；`_tdx_host_data_complete` 原生 API 数据完整性校验 + 北交所 8/4 段拦截 + 5 分钟标的级失败记忆
 - **ZHB 字段深度破解**（V16.2.18-V16.3 D）：新股开板日/上市连板数（东财 f189 交叉验证）、涨跌停封单额、主板连板数、profile.dat 历史名称记录（64 字节结构）等字段确认；tdxstat2 Col[13] 重新定性为 **T 日特色板块归属**（非行业）；区间涨跌幅字典修正（不存在 30日/90日字段，injoyai 130 日日线核验）
 - **缓存版本化防污染**（V16.2.16+ 铁律）：行业/口径变更必须升级 `@cached` category（如 `industry_peers_v2`），旧缓存不读取；`zhb_data` 等 5 分类旁路（ZHB RAM 字典 <1ms，SQLite 写路径负优化）
@@ -35,7 +37,7 @@
 - **代码清洗**：自动处理股票代码格式问题（`600519` / `600519茅台` / `600519 茅台`）
 - **异步并发**：30+ 异步函数支持高效并发请求
 - **类型安全**：mypy 静态检查通过，类型注解完整覆盖
-- **测试体系**（V16.3）：13 个测试文件 / **263 项单元测试 100% 通过**（默认离线运行，real_network 标记隔离）；`tests/test_eastmoney_health.py` 13 域健康度矩阵、`tests/test_tdx_health.py` 白名单/适配器覆盖
+- **测试体系**（V16.3）：17 个测试文件 / **295 项单元测试 100% 通过**（默认离线运行，real_network 标记隔离）；`tests/test_eastmoney_health.py` 13 域健康度矩阵、`tests/test_tdx_health.py` 白名单/适配器覆盖
 
 ---
 
@@ -149,22 +151,20 @@ a-stock-data/
 ├── get_lng_report.py             # 长线报告生成（730 日窗口）
 ├── get_val_report.py             # 估值报告生成（策略选股）
 ├── get_mak_report.py             # 市场热点报告生成（异动扫描）
-├── get_ful_report.py             # ~~V16.1 已下线~~（仅测试引用，能力并入 sht/med/lng）
+├── get_ful_report.py             # V16.3 O19 已删除（能力并入 sht/med/lng）
 │
 ├── scripts/                      # 辅助脚本
 │   ├── run_tests.ps1             # 测试统一入口（AGENTS.md 强制 shell 层中转）
 │   ├── run_with_system_python.ps1/.bat  # 系统 Python 3.12 启动包装
 │   ├── update_calendar.py        # 交易日历数据更新（chinese-calendar 库同步）
 │   ├── clean_cache.py            # 缓存清理快捷脚本
-│   ├── auto_fix_pipeline.py      # v9.6 对比修复流水线（diff_specs/ + baselines/）
+│   ├── auto_fix_pipeline.py      # v9.6 对比修复流水线
 │   ├── capture_baseline.py / compare_baseline.py  # 基线捕获/对比
 │   ├── backtest_topn.py          # top_n 回测验证
 │   ├── perf_compare.py           # V13.2 dataclass vs dict 性能压测
+│   ├── gen_field_matrix.py       # V16.3 O field_dict §零·B 字段×源矩阵自动生成
 │   ├── sync_readme.py            # V14.1 CHANGELOG → README 自动同步
 │   └── backup-opencode.ps1       # opencode 配置备份
-│
-├── diff_specs/                   # v9.6 vs v15 差异规格（auto_fix_pipeline 状态文件）
-├── baselines/                    # v9.6/v15 静态基线 JSON（capture_baseline 产出）
 │
 ├── docs/                         # 技术文档
 │   ├── architecture.md           # 项目架构与数据流图（Mermaid）
@@ -187,22 +187,28 @@ a-stock-data/
 ├── reports/                      # 报告输出目录（运行时自动创建，.gitignore）
 ├── snapshots/                    # 评分快照（历史对比/背离检测，.gitignore）
 ├── cache/                        # 缓存数据库 + ZHB 数据包 + 行业映射缓存（.gitignore）
-└── tests/                        # pytest 测试用例（13 文件 / 263 测试）
-    ├── test_cache.py             # 缓存层基础
-    ├── test_calendar.py          # 交易日历
-    ├── test_core_defense.py      # 事件锁/令牌桶/熔断器
-    ├── test_eastmoney_health.py  # V16.2.6 东财 13 域健康度矩阵（real_network）
-    ├── test_field_routing.py     # 字段路由决策树
-    ├── test_gd_uploader.py       # Google Drive 上传
-    ├── test_report_runner.py     # ReportRunner 框架
-    ├── test_sc_schema.py         # sc_schema dataclass/归一化
-    ├── test_sc_technical_risk.py # 技术指标/风险引擎
-    ├── test_scoring.py           # 评分系统
-    ├── test_stock_common.py      # 公共工具
-    ├── test_strategy.py          # 策略配置
-    ├── test_tdx_health.py        # TDX 适配器/白名单
-    ├── test_zhb_client.py        # ZHB 解析
-    └── test_zhb_new_datasets.py  # ZHB 新数据集/profile/概念链
+└── tests/                        # pytest 测试用例（按架构分层，281 项）
+    ├── conftest.py               # 网络拦截/公共 fixture（real_network 隔离）
+    ├── data/                     # ① 数据源层（数据从哪来）
+    │   ├── test_data_zhb.py      # ZHB 包解析/字段破解/行业段过滤
+    │   ├── test_data_tdx.py      # TDX TCP/适配器/白名单
+    │   ├── test_data_eastmoney.py# 东财接口/13 域健康矩阵（real_network）
+    │   └── test_data_network.py  # 限流/令牌桶/熔断/封禁冷却
+    ├── core/                     # ② 统一层/服务层
+    │   ├── test_core_cache.py    # 缓存层
+    │   ├── test_core_schema.py   # 字段元数据/归一化
+    │   ├── test_core_routing.py  # 字段路由
+    │   ├── test_core_calendar.py # 交易日历
+    │   ├── test_core_technical.py# 技术/风险引擎
+    │   ├── test_core_scoring.py  # 评分
+    │   └── test_core_utils.py    # 公共工具
+    ├── reports/                  # ③ 报告应用层
+    │   ├── test_report_runner.py # ReportRunner 框架
+    │   └── test_report_strategy.py # 策略配置
+    └── infra/                    # ④ 基础设施（外部依赖）
+        ├── test_infra_gd.py      # Google Drive 上传
+        ├── test_infra_f10.py     # F10 集成（real_network）
+        └── test_infra_api_stability.py  # 外部 API 字段契约（real_network）
 ```
 
 ---
@@ -297,7 +303,6 @@ TOKEN_BUCKET_RPS_TENCENT = 5.0
 from data_provider import (
     get_canonical_stock_data,    # 强类型合约（每字段带 field_sources 溯源）
     get_stock_composite,         # dict 聚合入口
-    get_stock_composite_dataclass,  # V13.1 opt-in dataclass
     get_pe_ttm, get_pb, get_turnover_pct,  # ZHB 字段
     get_market_snapshot,         # 全市场快照
     REQUIRES_REALTIME_HTTP,      # 字段分类常量

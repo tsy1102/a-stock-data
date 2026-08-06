@@ -140,46 +140,23 @@ def check_dependencies():
     numpy/chinese_calendar/aiosqlite），Google Drive 套件作为可选。
     """
     missing = []
-    # 网络与配置类（必须）
-    try:
-        import requests  # noqa: F401
-    except ImportError:
-        missing.append("requests")
-    try:
-        import yaml  # noqa: F401
-    except ImportError:
-        missing.append("PyYAML")
-    try:
-        import aiohttp  # noqa: F401
-    except ImportError:
-        missing.append("aiohttp")
-    try:
-        import aiosqlite  # noqa: F401
-    except ImportError:
-        missing.append("aiosqlite")
-    # 数据源核心（必须，TDX 协议 + ZHB 下载）
-    try:
-        import mootdx  # noqa: F401
-    except ImportError:
-        missing.append("mootdx")
-    try:
-        import pytdx  # noqa: F401
-    except ImportError:
-        missing.append("pytdx")
-    # 数据处理（必须，K 线 + 财务表）
-    try:
-        import pandas  # noqa: F401
-    except ImportError:
-        missing.append("pandas")
-    try:
-        import numpy  # noqa: F401
-    except ImportError:
-        missing.append("numpy")
-    # A股日历（必须，is_workday() / is_holiday()）
-    try:
-        import chinese_calendar  # noqa: F401
-    except ImportError:
-        missing.append("chinese-calendar")
+    # M12: 9 个 try/except ImportError 批量化为 importlib.util.find_spec（V16.3 E）
+    import importlib.util as _ilu
+
+    _REQUIRED_PKGS = [
+        ("requests", "requests"),
+        ("yaml", "PyYAML"),
+        ("aiohttp", "aiohttp"),
+        ("aiosqlite", "aiosqlite"),
+        ("mootdx", "mootdx"),
+        ("pytdx", "pytdx"),
+        ("pandas", "pandas"),
+        ("numpy", "numpy"),
+        ("chinese_calendar", "chinese-calendar"),
+    ]
+    for _mod, _pkg in _REQUIRED_PKGS:
+        if _ilu.find_spec(_mod) is None:
+            missing.append(_pkg)
     # Google Drive 套件（可选，仅 GD 上传需要）
     optional_missing = []
     try:
@@ -358,7 +335,8 @@ async def _run_script_async(script: str, stock_codes: list, output_dir: str,
                 proc.kill()
                 await proc.wait()
                 # V16.3 B3: 原 'drain_task' in locals() 恒为 True（L309 已初始化）——死条件
-                if not drain_task.done():
+                # M8: 加 None 检查——KeyboardInterrupt 在 drain_task 赋值前触发时其为 None
+                if drain_task is not None and not drain_task.done():
                     drain_task.cancel()
                 print(f"⚠ [{label}] {script} 被用户中断，已 kill 子进程", flush=True)
             except Exception as _ke:

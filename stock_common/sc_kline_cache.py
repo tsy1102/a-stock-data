@@ -57,9 +57,13 @@ _cache_lock = threading.Lock()
 # ═══════════════════════════════════════
 
 def _get_cache_dir() -> Path:
-    """获取 K 线缓存目录。"""
+    """获取 K 线缓存目录。
+
+    V16.3 O23: 统一到 cache/kline/（原 .cache/kline 为 V14.3 隐藏目录设计遗留，
+    与主缓存 cache/ 不一致——已迁移现有缓存文件）。
+    """
     repo_root = Path(__file__).parent.parent.resolve()
-    cache_dir = repo_root / ".cache" / "kline"
+    cache_dir = repo_root / "cache" / "kline"
     cache_dir.mkdir(parents=True, exist_ok=True)
     return cache_dir
 

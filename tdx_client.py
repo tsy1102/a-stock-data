@@ -387,6 +387,62 @@ class _EasyTdxAdapter:
             return None
         return self.finance(symbol)
 
+    def F10C(self, symbol: str) -> list:
+        """V16.3 O: F10 分类目录（mootdx 兼容）。
+
+        easy_tdx get_company_info_category（0x02CF 协议）→ [{'name','filename','start','length'}, ...]。
+        """
+        try:
+            market = _easy_market(symbol)
+            df = self._client.get_company_info_category(market, symbol)
+            if df is None or df.empty:
+                return []
+            out = []
+            for _, row in df.iterrows():
+                out.append(
+                    {
+                        "name": str(row.get("name", "")),
+                        "filename": str(row.get("filename", "")),
+                        "start": str(row.get("start", 0)),
+                        "length": str(row.get("length", 0)),
+                    }
+                )
+            return out
+        except Exception as _e:
+            _debug_log(f"easy_tdx F10C error ({symbol}): {_e}")
+            return []
+
+    def F10(self, symbol: str, name: str) -> str:
+        """V16.3 O: F10 指定分类文本（mootdx 兼容）。
+
+        easy_tdx get_company_info_content（0x02D0 协议）按分类 start/length 切片。
+        """
+        try:
+            market = _easy_market(symbol)
+            cats = self._client.get_company_info_category(market, symbol)
+            if cats is None or cats.empty:
+                return ""
+            for _, row in cats.iterrows():
+                if str(row.get("name", "")) != name:
+                    continue
+                start = row.get("start", 0)
+                length = row.get("length", 0)
+                # NaN 防护：pandas 空值 int() 会抛 ValueError，跳过该行
+                if start != start or length != length:
+                    _debug_log(f"easy_tdx F10 NaN start/length ({symbol} {name})")
+                    continue
+                content = self._client.get_company_info_content(
+                    market,
+                    symbol,
+                    str(row.get("filename", "")),
+                    int(start),
+                    int(length),
+                )
+                return content or ""
+        except Exception as _e:
+            _debug_log(f"easy_tdx F10 error ({symbol}): {_e}")
+        return ""
+
     def close(self) -> None:
         self.closed = True
         try:
@@ -691,9 +747,16 @@ def _tencent_quote_full_fallback(code: str, is_pre_market: bool = False) -> Dict
             )
             return {}
         _f = _TENCENT_FIELD_INDEX
+        # V16.3 O16: 北交所老号段僵尸数据检测（参考仓库 v3.6.0）——43/83/87 已迁 920，
+        # 腾讯对老码返回成交量 0 + 价格定格——丢弃触发后续 fallback
+        _vol_v = _safe_float(vals[_f["volume_hand"]])
+        _price_v = _safe_float(vals[_f["price"]])
+        if code.startswith(("43", "83", "87")) and _vol_v == 0 and _price_v > 0:
+            _debug_log(f"tdx tencent quote stale (老号段僵尸数据): {code}")
+            return {}
         return {
             "name": vals[_f["name"]],
-            "price": _safe_float(vals[_f["price"]]),
+            "price": _price_v,
             "last_close": _safe_float(vals[_f["last_close"]]),
             "open": _safe_float(vals[_f["open"]]),
             "change_amt": _safe_float(vals[_f["change_amt"]]),
@@ -806,8 +869,12 @@ _TENCENT_FIELD_INDEX = {
     "limit_down_price": 48,
     "vol_ratio": 49,
     "pe_static": 52,
+    # V16.3 O20: 破解确认的新字段（field_dict 12.1）
+    "high_52w": 67,        # 52周最高价(元)
+    "low_52w": 68,         # 52周最低价(元)
+    "dividend_yield": 64,  # 股息率(%)（=push2 f126 同源）
 }
-_TENCENT_MIN_FIELDS = 53  # 协议最小字段数（不足即视为 schema 变化/截断）
+_TENCENT_MIN_FIELDS = 69  # V16.3 O22: 覆盖 high_52w=67/low_52w=68/dividend_yield=64 索引（原 53 会 IndexError）  # 协议最小字段数（不足即视为 schema 变化/截断）
 
 
 def _tencent_batch_fallback(codes: List[str]) -> Dict[str, Dict[str, Any]]:
@@ -859,10 +926,21 @@ def _tencent_batch_fallback(codes: List[str]) -> Dict[str, Dict[str, Any]]:
                         )
                         continue
                     cv = key[2:]
+                    # V16.3 O16: 北交所老号段僵尸数据丢弃（43/83/87 已迁 920，成交量 0 定格）
+                    # V16.3 O22: float 解析包进 per-code 保护（原在批级 try 外——
+                    # 单只坏字段（如 "--"）丢整批 60 只）
+                    try:
+                        _bvol = float(vals[_TENCENT_FIELD_INDEX["volume_hand"]]) if vals[_TENCENT_FIELD_INDEX["volume_hand"]] else 0
+                        _bprice = float(vals[_TENCENT_FIELD_INDEX["price"]]) if vals[_TENCENT_FIELD_INDEX["price"]] else 0
+                    except (ValueError, TypeError):
+                        continue
+                    if cv.startswith(("43", "83", "87")) and _bvol == 0 and _bprice > 0:
+                        _debug_log(f"tdx tencent batch stale (老号段僵尸数据): {cv}")
+                        continue
                     try:
                         _TENCENT_BATCH_CACHE[cv] = {
                             "name": vals[_TENCENT_FIELD_INDEX["name"]],
-                            "price": float(vals[_TENCENT_FIELD_INDEX["price"]]) if vals[_TENCENT_FIELD_INDEX["price"]] else 0,
+                            "price": _bprice,
                             "change_pct": float(vals[_TENCENT_FIELD_INDEX["change_pct"]]) if vals[_TENCENT_FIELD_INDEX["change_pct"]] else 0,
                             "mcap_yi": float(vals[_TENCENT_FIELD_INDEX["mcap_yi"]]) if vals[_TENCENT_FIELD_INDEX["mcap_yi"]] else 0,
                             "pe_ttm": float(vals[_TENCENT_FIELD_INDEX["pe_ttm"]]) if vals[_TENCENT_FIELD_INDEX["pe_ttm"]] else 0,
@@ -2600,6 +2678,10 @@ def tdx_get_board_list(board_type: int = 0):
     """获取板块列表（行业/概念/地域等）。
 
     V12.0: 委托到东财 HTTP 接口（原 TDX MacClient.get_board_list 已废弃）。
+    V16.3 L 注: 曾尝试恢复 MAC 优先——经用户纠正方向错误（MAC 56 通达信行业
+    粒度粗于东财 100，且与申万二级口径不一致）；行业排名应走 ZHB 旁路（129 申万二级，
+    见 get_mak_report._build_sectors_from_zhb）。本函数保持东财委托（低频批量 clist，
+    非逐股，非风控元凶；风控元凶 mak 100 次 members fallback 已由 ZHB 旁路消除）。
 
     Args:
         board_type: 0=行业一级, 1=行业二级, 4=概念, 3=地域

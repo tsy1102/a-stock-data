@@ -1,3 +1,99 @@
+from __future__ import annotations
+import pytest
+import unittest
+from zhb_client import (
+    get_zhb, invalidate_cache, list_sp_blocks, get_sp_block,
+    get_sw_industries, get_industry_map, market_stat_snapshot,
+    get_stock_stat, get_stock_stat2, get_high_52w, get_low_52w,
+    get_industry_code, is_data_fresh, get_tip_info, get_ipo_list,
+    get_ah_stocks, get_broker_name, get_holidays, get_csrc_industries,
+    get_adr_stocks, get_convertible_bonds, get_delisted_stocks
+)
+from stock_common.sc_datasource import (
+    get_zhb_sp_block, get_zhb_sp_block_list, get_zhb_sw_industries,
+    get_zhb_industry_map, get_zhb_data_date, is_zhb_data_fresh,
+    get_zhb_holidays, get_zhb_csrc_industries, get_zhb_adr_stocks,
+    get_zhb_convertible_bonds, get_zhb_delisted_stocks
+)
+
+def test_zhb_client_download():
+    invalidate_cache()
+    zhb = get_zhb()
+    assert zhb is not None
+    assert len(zhb.raw_files) > 0
+
+def test_zhb_spblock():
+    blocks = list_sp_blocks()
+    assert len(blocks) > 0
+    codes = get_sp_block("中证2000")
+    if codes is not None:
+        assert isinstance(codes, list)
+
+def test_zhb_sw_industries():
+    sw = get_sw_industries()
+    assert len(sw) > 0
+
+def test_zhb_industry_map():
+    ind_map = get_industry_map()
+    assert len(ind_map) > 0
+
+def test_zhb_sc_datasource_integration():
+    blocks = get_zhb_sp_block_list()
+    assert isinstance(blocks, list)
+    sw = get_zhb_sw_industries()
+    assert isinstance(sw, dict)
+
+def test_zhb_tdxstat_snapshot():
+    snapshot = market_stat_snapshot()
+    assert len(snapshot) > 0
+    stat = get_stock_stat("600519")
+    if stat:
+        assert "change_pct" in stat
+
+def test_zhb_tdxstat2():
+    s2 = get_stock_stat2("600519")
+    if s2:
+        high = get_high_52w("600519")
+        low = get_low_52w("600519")
+        assert high is not None and low is not None
+
+def test_zhb_freshness():
+    assert is_data_fresh(30) in (True, False)
+    assert is_zhb_data_fresh(30) in (True, False)
+
+def test_zhb_tipinfo():
+    zhb = get_zhb()
+    if zhb and len(zhb.tip_info) > 0:
+        tip = get_tip_info("600519")
+        assert isinstance(tip, dict) or tip is None
+
+def test_zhb_ipo_list():
+    ipo_list = get_ipo_list()
+    assert isinstance(ipo_list, list)
+
+def test_zhb_ah_and_brokers():
+    ah = get_ah_stocks()
+    assert isinstance(ah, list)
+    name = get_broker_name("1")
+    assert isinstance(name, str)
+
+def test_zhb_holidays():
+    holidays = get_holidays()
+    assert isinstance(holidays, list)
+
+def test_zhb_csrc_industries():
+    csrc = get_csrc_industries()
+    assert isinstance(csrc, dict)
+
+def test_zhb_adr_bonds_delisted():
+    adr = get_adr_stocks()
+    assert isinstance(adr, list)
+    bonds = get_convertible_bonds()
+    assert isinstance(bonds, list)
+    delisted = get_delisted_stocks()
+    assert isinstance(delisted, dict)
+
+
 """test_zhb_new_datasets.py — V14.2 新挖掘的 6 个 ZHB 数据集单元测试
 
 测试覆盖：
@@ -6,8 +102,6 @@
   - stock_calendar.py 补充日历
   - Fallback 路径（ZHB 缺失时优雅降级）
 """
-from __future__ import annotations
-
 import datetime
 import os
 import sys
@@ -319,3 +413,91 @@ class TestZhbFallback:
 
 if __name__ == "__main__":
     pytest.main([__file__, "-v"])
+
+
+class TestZhbUnsealFields(unittest.TestCase):
+    """V16.2.18: tdxstat Col[12]=新股开板日 / Col[13]=上市连板数 解析。"""
+
+    def _parse(self, line: str):
+        from zhb_client import ZhbData
+        zhb = ZhbData()
+        zhb.raw_files = {"tdxstat.cfg": line.encode("gbk", errors="ignore")}
+        stats = zhb.stock_stats
+        return stats.get("600519", {})
+
+    def test_unseal_date_and_board_count(self):
+        # 35 列构造：Col12=20210520（开板日）、Col13=8（连板数）
+        parts = ["0", "600519", "0", "20.0", "20260804", "-1", "0.5", "0.2", "0.1",
+                 "20.5", "3.9", "54094.9", "20210520", "8", "2723998", "34992",
+                 "5931", "9.45", "6.07", "-8.38", "5.5", "9.66", "50101", "0",
+                 "4878669", "302719", "0", "2.49", "1.18", "3.93", "5.41",
+                 "", "", "", "0"]
+        row = "|".join(parts)
+        st = self._parse(row)
+        self.assertEqual(st.get("unseal_date"), "20210520")
+        self.assertEqual(st.get("board_count"), 8)
+
+    def test_old_stock_empty(self):
+        parts = ["0", "600519", "0", "20.0", "20260804", "-1", "0.5", "0.2", "0.1",
+                 "20.5", "3.9", "54094.9", "", "", "2723998", "34992",
+                 "5931", "9.45", "6.07", "-8.38", "5.5", "9.66", "50101", "0",
+                 "4878669", "302719", "0", "2.49", "1.18", "3.93", "5.41",
+                 "", "", "", "0"]
+        st = self._parse("|".join(parts))
+        self.assertEqual(st.get("unseal_date"), "")
+        self.assertIsNone(st.get("board_count"))
+
+
+
+class TestZhbKbarMappings(unittest.TestCase):
+    """V16.2.18: Col[17]=近20根K线 / Col[19]=近60根K线 精确映射（injoyai 核验）。"""
+
+    def _parse(self):
+        from zhb_client import ZhbData
+        zhb = ZhbData()
+        parts = ["0", "600519", "0", "20.0", "20260804", "-1", "0.5", "0.2", "0.1",
+                 "20.5", "3.9", "54094.9", "", "", "2723998", "34992",
+                 "5931", "9.45", "6.07", "-8.38", "5.5", "9.66", "50101", "0",
+                 "4878669", "302719", "0", "2.49", "1.18", "3.93", "5.41",
+                 "", "", "", "0"]
+        zhb.raw_files = {"tdxstat.cfg": ("|".join(parts)).encode("gbk", errors="ignore")}
+        return zhb.stock_stats.get("600519", {})
+
+    def test_kbar_mappings(self):
+        st = self._parse()
+        self.assertEqual(st.get("change_20k_bar"), 9.45)   # Col[17]
+        self.assertEqual(st.get("change_60k_bar"), -8.38)  # Col[19]
+        self.assertEqual(st.get("change_20d"), 6.07)       # Col[18]（历史 key 名）
+        self.assertEqual(st.get("change_60d"), -8.38)      # Col[19]（历史 key 名，与 60k_bar 同源）
+        self.assertEqual(st.get("change_ytd"), 9.66)       # Col[21]
+
+
+if __name__ == "__main__":
+    unittest.main()
+
+
+
+class TestIsIndustryCode(unittest.TestCase):
+    """V16.2.16: tdxstat2 Col[13] 行业段过滤（8803/8804 通达信行业、881 申万版）。"""
+
+    def _is_ind(self, ic):
+        from zhb_client import is_industry_code
+        return is_industry_code(ic)
+
+    def test_industry_segments_true(self):
+        self.assertTrue(self._is_ind("880301"))  # 煤炭（通达信行业）
+        self.assertTrue(self._is_ind("880492"))  # 元器件
+        self.assertTrue(self._is_ind("881218"))  # 汽车零部件（申万版）
+
+    def test_style_concept_false(self):
+        self.assertFalse(self._is_ind("880898"))  # 近已解禁（风格）
+        self.assertFalse(self._is_ind("880823"))  # 微盘股（风格）
+        self.assertFalse(self._is_ind("880594"))  # 一带一路（概念）
+        self.assertFalse(self._is_ind("880201"))  # 黑龙江（地域）
+
+    def test_invalid_false(self):
+        self.assertFalse(self._is_ind(""))
+        self.assertFalse(self._is_ind("123456"))
+        self.assertFalse(self._is_ind("88"))
+        self.assertFalse(self._is_ind(None))
+

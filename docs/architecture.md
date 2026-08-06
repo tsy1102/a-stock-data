@@ -3,7 +3,7 @@
 本项目采用「**main.py 调度 → 子进程执行报告脚本 → 调用数据源层 → 上传 GD**」的层次化架构。
 下文使用 Mermaid 描述核心模块之间的实际调用关系，便于开发者快速了解系统全景。
 
-> 📌 **V12.4+ 重要更新**：所有 6 大报告脚本统一继承 `BaseReportRunner` 基类（V12.4），消除样板代码；V12.5 进一步将 GD 上传逻辑真正落地到基类辅助方法。
+> 📌 **V12.4+ 重要更新**：所有 5 大报告脚本（ful 已删）统一继承 `BaseReportRunner` 基类（V12.4），消除样板代码；V12.5 进一步将 GD 上传逻辑真正落地到基类辅助方法。
 
 ## 1. 总体架构
 
@@ -13,7 +13,7 @@ graph TD
     Main -- "asyncio.create_subprocess_exec" --> Sht[get_sht_report.py]
     Main -- "asyncio.create_subprocess_exec" --> Med[get_med_report.py]
     Main -- "asyncio.create_subprocess_exec" --> Lng[get_lng_report.py]
-    Main -- "asyncio.create_subprocess_exec" --> Ful[get_ful_report.py]
+    Main -- "asyncio.create_subprocess_exec" --> (sht/med/lng/val/mak)
     Main -- "asyncio.create_subprocess_exec" --> Val[get_val_report.py]
     Main -- "asyncio.create_subprocess_exec" --> Mak[get_mak_report.py]
 
@@ -59,7 +59,7 @@ graph TD
 | ├ `get_sht_report.py` | 短线策略个股分析报告 |
 | ├ `get_med_report.py` | 中线深度投研报告 |
 | ├ `get_lng_report.py` | 长线价投专属深度体检报告 |
-| ├ `get_ful_report.py` | 九层全维度分析引擎 |
+| ├ ~~`get_ful_report.py`~~ | V16.3 O19 已删除（能力并入 sht/med/lng）|
 | └ `get_mak_report.py` | 异动及行业轮动扫描报告 |
 | **`stock_common/sc_report_runner.py`** | V12.4+ **核心基类**：`BaseReportRunner`，统一 CLI 解析 / Banner / Summary / GD 上传模板（`upload_single_report` / `upload_multi_reports`）/ TDX 资源清理 |
 | **`stock_common/`** 包 | 数据源层与公共工具的集合，由各报告脚本统一调用 |
@@ -203,7 +203,7 @@ graph LR
 | 类别 | 文件 |
 |------|------|
 | 入口 | `main.py` |
-| 报告脚本 | `get_sht_report.py` / `get_med_report.py` / `get_lng_report.py` / `get_ful_report.py` / `get_val_report.py` / `get_mak_report.py` |
+| 报告脚本 | `get_sht_report.py` / `get_med_report.py` / `get_lng_report.py` / `get_val_report.py` / `get_mak_report.py`（ful 已删）|
 | **Runner 框架**（V12.4+） | `stock_common/sc_report_runner.py` |
 | 数据源层 | `tdx_client.py` / `stock_common/sc_datasource.py` / `stock_common/sc_network.py` |
 | 数据中心 | `data_provider.py`（V11.0+ 统一入口） |

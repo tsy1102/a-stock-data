@@ -654,17 +654,8 @@ def _quick_request(url: str, params: Optional[Dict[str, Any]] = None,
                 get_domain_token_bucket(_ft_domain, rps=float(_cfg_rps)).acquire(1)
             except Exception as _e:
                 _debug_log(f"quick_request token bucket acquire failed ({domain}): {_e}")
-            # V16.2.6: 补全局时间戳检查（与 em_get 同强度，防同进程多通道叠加）
-            _min_interval = max(float(EM_MIN_INTERVAL), 1.0 / max(_cfg_rps, 1e-6))
-            _elapsed = time.time() - _EM_LAST_CALL[0]
-            if _elapsed < _min_interval:
-                time.sleep(_min_interval - _elapsed)
-            _EM_LAST_CALL[0] = time.time()
-            # 跨进程协调（≤1 rps 全局）
-            try:
-                _em_wait_process_interval()
-            except Exception as _e:
-                _debug_log(f"quick_request em process interval: {_e}")
+            # V16.3 O22: 全局节奏（_em_wait_process_interval 跨进程 1.0-1.3s）统一由
+            # _do_request 执行——此处不再重复等待（原 L657-667 与 _do_request 叠加 → 速率减半耗时翻倍）
         except Exception as _e:
             _debug_log(f"quick_request ft init error ({domain}): {_e}")
 
@@ -710,6 +701,12 @@ def _do_request(url: str, params: Optional[Dict[str, Any]],
 
     for attempt in range(max_retries):
         try:
+            # V16.3 O15: 方案A——东财全域名统一全局节奏（跨进程 1.0-1.3s + 100-300ms 抖动，
+            # 文件锁原子）。per-domain 限流只锁单域，多域名并行时东财总速率会叠加
+            # （实测 45000 请求/小时触发 push2 全系列封禁 20+ 小时）——全局节奏保证
+            # 任何时间窗口东财总速率 ≤1 req/s，恢复 v9.6 已验证行为。
+            if is_em:
+                _em_wait_process_interval()
             _req_headers = headers.copy() if headers else {}
             if not _req_headers.get("User-Agent"):
                 if _HAS_FAULT_TOLERANCE:
@@ -858,7 +855,13 @@ def requires_push2(fn):
 
 
 def _market_code(code: str) -> int:
-    """6位代码 → TDX 市场代码 (0=深圳, 1=上海)"""
+    """6位代码 → TDX 市场代码 (0=深圳, 1=上海, 2=北交所)。
+
+    V16.3 O16: 补北交所分支——920 号段（2024-10 起启用）及 8/4 老号段返回 2，
+    此前 920 落到 0(深圳)，TDX finance_info 等按错误市场请求（参考仓库 v3.5.1 同款修复）。
+    """
+    if code.startswith(("92", "8", "4", "43", "83", "87")):
+        return 2
     return 1 if code.startswith("6") else 0
 
 

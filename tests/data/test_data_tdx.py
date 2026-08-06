@@ -1,3 +1,83 @@
+import pytest
+from tdx_client import (
+    tdx_get_security_bars,
+    tdx_get_quote_full,
+    tdx_get_index_quote,
+    tdx_get_fund_flow,
+    tdx_get_history_fund_flow,
+    tdx_get_dividend_history,
+    tdx_get_eps_from_reports,
+    tdx_get_belong_boards,
+    tdx_get_board_list,
+    tdx_get_board_members,
+    tdx_get_all_stocks
+)
+
+@pytest.mark.real_network
+def test_tdx_security_bars():
+    keys, rows = tdx_get_security_bars("600519", count=5)
+    assert rows is not None
+
+@pytest.mark.real_network
+def test_tdx_quote_full():
+    data = tdx_get_quote_full("600519")
+    assert isinstance(data, dict)
+    assert "price" in data
+
+@pytest.mark.real_network
+def test_tdx_index_quote():
+    data = tdx_get_index_quote("sh000001")
+    assert isinstance(data, dict)
+    assert "price" in data
+
+@pytest.mark.real_network
+def test_tdx_fund_flow():
+    data = tdx_get_fund_flow("600519")
+    if data:
+        assert "main_net" in data
+
+@pytest.mark.real_network
+def test_tdx_history_fund_flow():
+    data = tdx_get_history_fund_flow("600519", days=5)
+    assert isinstance(data, list)
+
+@pytest.mark.real_network
+def test_tdx_dividend_history():
+    data = tdx_get_dividend_history("600519")
+    # V16.2.3: None=接口失败（区别于 [] 真无分红）；list=正常返回
+    assert isinstance(data, (list, type(None)))
+
+@pytest.mark.real_network
+def test_tdx_eps_from_reports():
+    data = tdx_get_eps_from_reports("600519")
+    if data:
+        assert "eps_cur" in data
+
+@pytest.mark.real_network
+def test_tdx_belong_boards():
+    sh_data = tdx_get_belong_boards("600519")
+    sz_data = tdx_get_belong_boards("000001")
+    assert isinstance(sh_data, dict) or isinstance(sz_data, dict)
+
+@pytest.mark.real_network
+def test_tdx_board_list():
+    data = tdx_get_board_list(0)
+    assert isinstance(data, list)
+
+@pytest.mark.real_network
+def test_tdx_board_members():
+    boards = tdx_get_belong_boards("600519")
+    if boards and boards.get("industry"):
+        board_code = boards["industry"][0]["code"]
+        members = tdx_get_board_members(board_code)
+        assert isinstance(members, list)
+
+@pytest.mark.real_network
+def test_tdx_all_stocks():
+    data = tdx_get_all_stocks()
+    assert isinstance(data, list)
+
+
 #!/usr/bin/env python3
 """test_tdx_health.py — V15.5 easy_tdx 适配层单元测试
 
@@ -11,7 +91,7 @@
 import sys
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
 
 import pandas as pd
 import pytest
@@ -74,13 +154,25 @@ class _MockClient:
     """mock easy_tdx TdxClient。"""
 
     def __init__(self, bars_df=None, quotes_df=None, finance_df=None, index_df=None,
-                 raise_on=None):
+                 raise_on=None, f10_cats_df=None, f10_content=None):
         self.bars_df = bars_df
         self.quotes_df = quotes_df
         self.finance_df = finance_df
         self.index_df = index_df
         self.raise_on = raise_on or set()
         self.closed_flag = False
+        self.f10_cats_df = f10_cats_df
+        self.f10_content = f10_content
+
+    def get_company_info_category(self, *a, **k):
+        if "f10cats" in self.raise_on:
+            raise RuntimeError("f10cats fail")
+        return self.f10_cats_df
+
+    def get_company_info_content(self, *a, **k):
+        if "f10content" in self.raise_on:
+            raise RuntimeError("f10content fail")
+        return self.f10_content
 
     def get_security_bars(self, *a, **k):
         if "bars" in self.raise_on:
@@ -186,6 +278,72 @@ class TestAdapterClose:
         a.close()
         assert a.closed is True
         assert mc.closed_flag is True
+
+
+class TestAdapterF10:
+    """V16.3 O: F10C/F10 代理（0x02CF 分类目录 + 0x02D0 内容切片）。"""
+
+    def _cats(self, start_nan=False):
+        rows = [
+            {"name": "最新提示", "filename": "000100.txt", "start": "0", "length": "1000"},
+            {"name": "财务分析", "filename": "000100.txt", "start": "1000", "length": "500"},
+        ]
+        if start_nan:
+            rows[1]["start"] = float("nan")
+        return pd.DataFrame(rows)
+
+    def test_f10c_returns_category_list(self):
+        a = tc._EasyTdxAdapter(_MockClient(f10_cats_df=self._cats()))
+        cats = a.F10C(symbol="000100")
+        assert len(cats) == 2
+        assert cats[1]["name"] == "财务分析"
+        assert cats[1]["start"] == "1000"
+
+    def test_f10c_empty_df_returns_empty_list(self):
+        a = tc._EasyTdxAdapter(_MockClient(f10_cats_df=pd.DataFrame()))
+        assert a.F10C(symbol="000100") == []
+
+    def test_f10_returns_content_for_matching_category(self):
+        mc = _MockClient(f10_cats_df=self._cats(), f10_content="财务分析文本")
+        a = tc._EasyTdxAdapter(mc)
+        assert a.F10(symbol="000100", name="财务分析") == "财务分析文本"
+
+    def test_f10_unknown_category_returns_empty(self):
+        a = tc._EasyTdxAdapter(_MockClient(f10_cats_df=self._cats(), f10_content="x"))
+        assert a.F10(symbol="000100", name="不存在的分类") == ""
+
+    def test_f10_nan_start_skips_row(self):
+        """NaN start/length 行跳过而非整体失败（V16.3 O 修复）。"""
+        mc = _MockClient(f10_cats_df=self._cats(start_nan=True), f10_content="财务分析文本")
+        a = tc._EasyTdxAdapter(mc)
+        assert a.F10(symbol="000100", name="财务分析") == ""
+
+    def test_f10_exception_returns_empty(self):
+        a = tc._EasyTdxAdapter(_MockClient(f10_cats_df=self._cats(), raise_on={"f10content"}))
+        assert a.F10(symbol="000100", name="财务分析") == ""
+
+
+class TestGrossMarginAndRoeEpsContract:
+    """V16.3 O: get_gross_margin_and_roe F10 路径返回契约含 eps 键（main_indicators）。
+
+    canonical 的 eps 离线兜底依赖该键；新浪 fallback 分支无 eps 键（调用方 .get() 容缺）。
+    """
+
+    def test_f10_path_returns_eps_and_roe(self):
+        fake = {
+            "profitability": [{"营业毛利率": "12.4975", "加权净资产收益率": "2.47"}],
+            "main_indicators": [{"period": "2026-03-31", "基本每股收益(元)": "0.0692"}],
+        }
+        from unittest.mock import patch
+
+        with patch("tdx_client.tdx_get_financial_analysis", return_value=fake):
+            from stock_common.sc_datasource import get_gross_margin_and_roe
+
+            out = get_gross_margin_and_roe("F10TEST01")
+            assert out is not None
+            assert out["roe"] == 2.47
+            assert out["gross_margin"] == 12.4975
+            assert out["eps"] == 0.0692
 
 
 # ── 服务器白名单 ──

@@ -50,9 +50,8 @@ from stock_common import _debug_log
 # ═══════════════════════════════════════
 
 _ZHB_CACHE_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "cache", "zhb")
-# V15.1: 移除 _KEEP_DAYS 自动删除阈值，改由用户手动维护 cache/zhb 目录
-# 用户要求保留更多历史 ZHB 文件以便后续对比与字段深挖，不再自动清理过期文件
-_KEEP_DAYS = 36500  # 约 100 年，等同于关闭自动清理（仅手动触发）
+# V15.1: 自动清理已移除（M3: _cleanup_old_files 随 _KEEP_DAYS 删除），
+# 用户手动维护 cache/zhb 目录（保留历史 ZHB 文件供对比与字段深挖）
 _MIN_DISK_SPACE_MB = 100  # 最小保留磁盘空间（MB）
 _LOCK_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "cache", "zhb", ".zhb.lock")
 
@@ -164,6 +163,22 @@ def _check_disk_space() -> bool:
     except Exception as e:
         _debug_log(f"zhb: disk space check error: {e}")
         return True  # 检查失败时继续执行
+
+
+def _safe_cast(parts: list, idx: int, cast: type = float) -> Any:
+    """安全取值并转换类型（H1: 原 4 个 parser 内重复的 _f 嵌套函数提取为模块级）。
+
+    从分割后的行 parts 中取第 idx 列，空值返回 None，转换失败返回原始字符串。
+    """
+    if idx >= len(parts):
+        return None
+    v = parts[idx].strip()
+    if not v:
+        return None
+    try:
+        return cast(v)
+    except (ValueError, TypeError):
+        return v
 
 
 # ═══════════════════════════════════════
@@ -753,57 +768,45 @@ class ZhbData:
             if not code:
                 continue
 
-            def _f(idx: int, cast: type = float) -> Any:
-                """安全取值并转换类型。"""
-                if idx >= len(parts):
-                    return None
-                v = parts[idx].strip()
-                if not v:
-                    return None
-                try:
-                    return cast(v)
-                except (ValueError, TypeError):
-                    return v
-
             result[code] = {
-                "market": _f(0, int),
+                "market": _safe_cast(parts, 0, int),
                 "code": code,
-                "pe_dynamic": _f(3, float),
+                "pe_dynamic": _safe_cast(parts, 3, float),
                 "date": parts[4].strip() if len(parts) > 4 else "",
-                "streak_days": _f(5, int),
-                "change_pct": _f(6, float),
-                "change_pct_1d": _f(7, float),
-                "change_pct_2d": _f(8, float),
-                "pe_ttm": _f(9, float),
-                "dividend_yield": _f(10, float),
+                "streak_days": _safe_cast(parts, 5, int),
+                "change_pct": _safe_cast(parts, 6, float),
+                "change_pct_1d": _safe_cast(parts, 7, float),
+                "change_pct_2d": _safe_cast(parts, 8, float),
+                "pe_ttm": _safe_cast(parts, 9, float),
+                "dividend_yield": _safe_cast(parts, 10, float),
                 # V16.2.18: Col[12]=新股开板日/Col[13]=上市连板数（东财f189交叉破解）
                 "unseal_date": parts[12].strip() if len(parts) > 12 else "",
-                "board_count": _f(13, int),
-                "employee_count": _f(15, int),
+                "board_count": _safe_cast(parts, 13, int),
+                "employee_count": _safe_cast(parts, 15, int),
                 # 注: 以下 key 名沿用历史(语义见 docstring V16.2.18 修正):
                 #   change_20d 实为 Col[18] 20日涨跌幅（原误标30d）
                 #   change_30d 实为 Col[18] 20日涨跌幅（key 历史名, 值与 change_20d 相同）
                 #   change_60d 实为 Col[19] 近60根K线（原误标60d, 已另设 change_60k_bar）
                 #   change_ytd 实为 Col[21] YTD ✓
-                "change_20d": _f(18, float),
-                "change_30d": _f(18, float),
-                "change_60d": _f(19, float),
-                "change_ytd": _f(21, float),
+                "change_20d": _safe_cast(parts, 18, float),
+                "change_30d": _safe_cast(parts, 18, float),
+                "change_60d": _safe_cast(parts, 19, float),
+                "change_ytd": _safe_cast(parts, 21, float),
                 # V16.2.18 新增: 交易日口径 K 线周期涨跌幅（injoyai 130日日线核验）
-                "change_20k_bar": _f(17, float),
-                "change_60k_bar": _f(19, float),
+                "change_20k_bar": _safe_cast(parts, 17, float),
+                "change_60k_bar": _safe_cast(parts, 19, float),
                 # V16.0: Col[14] = 扣非净利润(万元)，2026-08-03 联网核实
                 # （14/14 公司与东财 KCFJCXSYJLR 比值=1.000，含亏损公司）
-                "net_profit_kcf": _f(14, float),
+                "net_profit_kcf": _safe_cast(parts, 14, float),
                 # V16.0: Col[24] 原误映射为 volume（成交量），经 9 天连续 + 联网核实
                 # （腾讯/东财 30 家）证明为 9 天恒定静态数据，非成交量。
                 # 且不同公司对应不同报告期净资产/负债快照（报告期不一致），
                 # 改名为 unknown_24 防止下游误用为成交量。
-                "unknown_24": _f(24, float),
-                "change_5k_bar": _f(27, float),
-                "change_5d": _f(28, float),
-                "change_10k_bar": _f(29, float),
-                "change_10d": _f(30, float),
+                "unknown_24": _safe_cast(parts, 24, float),
+                "change_5k_bar": _safe_cast(parts, 27, float),
+                "change_5d": _safe_cast(parts, 28, float),
+                "change_10k_bar": _safe_cast(parts, 29, float),
+                "change_10d": _safe_cast(parts, 30, float),
             }
         return result
 
@@ -886,32 +889,21 @@ class ZhbData:
             if not code:
                 continue
 
-            def _f(idx: int, cast: type = float) -> Any:
-                if idx >= len(parts):
-                    return None
-                v = parts[idx].strip()
-                if not v:
-                    return None
-                try:
-                    return cast(v)
-                except (ValueError, TypeError):
-                    return v
-
             result[code] = {
-                "market": _f(0, int),
+                "market": _safe_cast(parts, 0, int),
                 "code": code,
                 "date": parts[2].strip() if len(parts) > 2 else "",
-                "amount": _f(3, float),
-                "amount_1d": _f(5, float),
-                "amount_2d": _f(7, float),
-                "main_net_buy_hands": _f(9, float),
-                "main_net_buy_hands_1d": _f(10, float),
+                "amount": _safe_cast(parts, 3, float),
+                "amount_1d": _safe_cast(parts, 5, float),
+                "amount_2d": _safe_cast(parts, 7, float),
+                "main_net_buy_hands": _safe_cast(parts, 9, float),
+                "main_net_buy_hands_1d": _safe_cast(parts, 10, float),
                 "industry_code": parts[13].strip() if len(parts) > 13 else "",
-                "main_net_buy_amount": _f(14, float),
-                "main_net_buy_amount_1d": _f(15, float),
-                "ipo_price": _f(16, float),
-                "high_52w": _f(17, float),
-                "low_52w": _f(18, float),
+                "main_net_buy_amount": _safe_cast(parts, 14, float),
+                "main_net_buy_amount_1d": _safe_cast(parts, 15, float),
+                "ipo_price": _safe_cast(parts, 16, float),
+                "high_52w": _safe_cast(parts, 17, float),
+                "low_52w": _safe_cast(parts, 18, float),
             }
         return result
 
@@ -966,25 +958,14 @@ class ZhbData:
             if not code:
                 continue
 
-            def _f(idx: int, cast: type = float) -> Any:
-                if idx >= len(parts):
-                    return None
-                v = parts[idx].strip()
-                if not v:
-                    return None
-                try:
-                    return cast(v)
-                except (ValueError, TypeError):
-                    return v
-
             result[code] = {
                 "code": code,
                 "report_period": parts[2].strip() if len(parts) > 2 else "",
-                "eps": _f(3, float),
+                "eps": _safe_cast(parts, 3, float),
                 "disclose_date": parts[4].strip() if len(parts) > 4 else "",
                 "ex_date": parts[5].strip() if len(parts) > 5 else "",
                 "div_date": parts[8].strip() if len(parts) > 8 else "",
-                "div_amount": _f(9, float),
+                "div_amount": _safe_cast(parts, 9, float),
             }
         return result
 
@@ -1025,27 +1006,16 @@ class ZhbData:
             if len(parts) < 5:
                 continue
 
-            def _f(idx: int, cast: type = float) -> Any:
-                if idx >= len(parts):
-                    return None
-                v = parts[idx].strip()
-                if not v:
-                    return None
-                try:
-                    return cast(v)
-                except (ValueError, TypeError):
-                    return v
-
             result.append({
-                "type": _f(0, int),
+                "type": _safe_cast(parts, 0, int),
                 "code": parts[1].strip(),
                 "date": parts[2].strip(),
-                "issue_price": _f(3, float),
-                "issue_volume": _f(4, float),
-                "online_volume": _f(5, float),
+                "issue_price": _safe_cast(parts, 3, float),
+                "issue_volume": _safe_cast(parts, 4, float),
+                "online_volume": _safe_cast(parts, 5, float),
                 "name": parts[14].strip() if len(parts) > 14 else "",
-                "buy_price": _f(15, float),
-                "list_price": _f(16, float),
+                "buy_price": _safe_cast(parts, 15, float),
+                "list_price": _safe_cast(parts, 16, float),
             })
         return result
 
@@ -1393,30 +1363,6 @@ def _save_to_cache(date_str: str, data: bytes) -> None:
                 pass
 
 
-def _cleanup_old_files() -> None:
-    """清理 N 天前的旧 zhb 文件。
-
-    V15.1: 由于 _KEEP_DAYS 已设为 36500（约 100 年），本函数实际不再自动删除文件，
-           仅保留以供未来按需启用。如需清理历史文件，请手动删除 cache/zhb 目录。
-    """
-    try:
-        _ensure_cache_dir()
-        cutoff = time.time() - _KEEP_DAYS * 86400
-        for fname in os.listdir(_ZHB_CACHE_DIR):
-            fpath = os.path.join(_ZHB_CACHE_DIR, fname)
-            if not os.path.isfile(fpath):
-                continue
-            if not (fname.endswith(".zip") or fname.endswith(".pkl") or fname.endswith(".tmp")):
-                continue
-            try:
-                if os.path.getmtime(fpath) < cutoff:
-                    os.remove(fpath)
-            except Exception:
-                pass
-    except Exception as e:
-        _debug_log(f"zhb: cleanup error: {e}")
-
-
 # ═══════════════════════════════════════
 # 对外主接口
 # ═══════════════════════════════════════
@@ -1449,13 +1395,18 @@ def get_zhb() -> Optional[ZhbData]:
     else:
         try:
             # 尝试从服务器下载（拿到的数据日期可能是昨天或更早）
-            data = _download_zhb_zip()
+            # L4: _download_zhb_zip 内部已处理网络错误，但未预期异常（如 MemoryError）
+            # 会冒泡到调用方——外层捕获后降级到缓存路径
+            try:
+                data = _download_zhb_zip()
+            except Exception as _e:
+                _debug_log(f"zhb: download unexpected error: {_e}")
+                data = None
 
             if data:
                 zhb = _parse_zhb_data(data)
                 if zhb:
                     _save_to_cache(zhb.date, data)
-                    _cleanup_old_files()
                     with _zhb_cache_lock:
                         _zhb_memory_cache = zhb
                     return zhb

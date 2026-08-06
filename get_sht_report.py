@@ -46,7 +46,7 @@ from stock_common.sc_snapshot import SnapshotProxy as _SnapshotProxy  # noqa: E4
 # 保留 _SNAPSHOT_DATA 名字以便兼容历史引用（实际写入走 sc_snapshot.register）
 _SNAPSHOT_DATA = _SnapshotProxy()
 
-from tdx_client import (tdx_get_security_bars, tdx_get_latest_bar_with_ma,
+from tdx_client import (tdx_get_latest_bar_with_ma,
                          tdx_get_quote_full, tdx_get_index_quote,
                          tdx_get_history_fund_flow,  # V16.0: 移除 tdx_get_fund_flow（改用统一层 get_main_net_buy）
                          cleanup_tdx)
@@ -859,21 +859,35 @@ async def generate_report_async(session, code, output_path, ind_comp=None, idx_q
 
         if _all_depts:
 
+            # V16.3 J: trader_tags 是席位分类标签（机构/北向/量化/游资/散户），
+            # 只有 [游资] 类才叫"著名游资"；机构/北向等单独归类显示
             _buy_tags = [x[0] for x in _all_depts if x[2] == "buy"]
 
             _sell_tags = [x[0] for x in _all_depts if x[2] == "sell"]
 
-            _unique_buy = list(dict.fromkeys(_buy_tags))
+            _youzi_buy = list(dict.fromkeys(t for t in _buy_tags if t == "[游资]"))
 
-            _unique_sell = list(dict.fromkeys(_sell_tags))
+            _youzi_sell = list(dict.fromkeys(t for t in _sell_tags if t == "[游资]"))
 
-            if _unique_buy:
+            _other_buy = [t for t in _buy_tags if t != "[游资]"]
 
-                L(f"  🟢 著名游资买入: {'、'.join(_unique_buy)}")
+            _other_sell = [t for t in _sell_tags if t != "[游资]"]
 
-            if _unique_sell:
+            if _youzi_buy:
 
-                L(f"  🔴 著名游资卖出: {'、'.join(_unique_sell)}")
+                L(f"  🟢 著名游资买入: {'、'.join(_youzi_buy)}")
+
+            if _youzi_sell:
+
+                L(f"  🔴 著名游资卖出: {'、'.join(_youzi_sell)}")
+
+            if _other_buy or _other_sell:
+
+                _ob = {t: _buy_tags.count(t) for t in dict.fromkeys(_other_buy)}
+
+                _os = {t: _sell_tags.count(t) for t in dict.fromkeys(_other_sell)}
+
+                L(f"  🏦 其他席位分类: 买入{'、'.join(f'{k}×{v}' for k, v in _ob.items()) if _ob else '无'} | 卖出{'、'.join(f'{k}×{v}' for k, v in _os.items()) if _os else '无'}")
 
             L("  📊 席位明细:")
 
@@ -1418,7 +1432,7 @@ async def generate_report_async(session, code, output_path, ind_comp=None, idx_q
             if stk3 >= tl:
                 signals.append(f"异动雷达(ZHB离线)：近5日涨幅{cdata.change_5d:+.2f}%，估算3日偏离{stk3:+.2f}%>={tl}%，触发异动")
         else:
-            _sk_r, _sr_r = tdx_get_security_bars(code, count=5)
+            _sk_r, _sr_r = baidu_kline_full(code, count=5)
             if len(_sr_r) >= 4 and len(_sk_r) > 0:
                 _ci_r = next((i for i,k in enumerate(_sk_r) if k in ("close","close_price")), -1)
                 if _ci_r >= 0:
@@ -1452,7 +1466,7 @@ async def generate_report_async(session, code, output_path, ind_comp=None, idx_q
 
         try:
 
-            _sk, _sr = tdx_get_security_bars(code, count=5)
+            _sk, _sr = baidu_kline_full(code, count=5)
 
             _ci = next((i for i,k in enumerate(_sk) if k in ("close","close_price")), -1)
 

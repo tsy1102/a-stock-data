@@ -194,10 +194,34 @@ def clean_codes(raw_list, verbose=False):
         # V11.2: 检测命令行参数粘连（如 "601718际华--all"）
         if "--" in raw and not raw.strip().startswith("--"):
             flag_warnings.append(raw)
-        code = "".join(c for c in raw if c.isdigit())[:6]
-        if len(code) < 6:
+        raw_s = raw.strip().upper()
+        # V16.3 O16: 显式前缀提取（sh/sz/bj）
+        prefix = None
+        for _p in ("SH", "SZ", "BJ"):
+            if raw_s.startswith(_p):
+                prefix = _p
+                break
+        # 前后缀矛盾拒绝（SH000001.SZ 自相矛盾——参考仓库 v3.6.0 norm_ticker）
+        if prefix and (".SH" in raw_s or ".SZ" in raw_s or ".BJ" in raw_s):
+            skipped.append(raw + "(前后缀矛盾)")
+            continue
+        # V16.3 O16: 不再截断 7 位数字（6005190 会截成 600519 返回另一只票的数据——参考仓库 v3.6.0）
+        digits = "".join(c for c in raw if c.isdigit())
+        if len(digits) != 6:
             skipped.append(raw)
             continue
+        code = digits
+        # V16.3 O16: 显式前缀与号段一致性（sh+6 沪市 / sz+0/3 深市 / bj+92/8/4 北交所；
+        # sh000001 上证指数等 000 号段沪市指数被拒——参考仓库 v3.5.1/v3.6.0）
+        if prefix:
+            ok = (
+                (prefix == "SH" and code.startswith("6"))
+                or (prefix == "SZ" and code.startswith(("0", "3")))
+                or (prefix == "BJ" and code.startswith(("92", "8", "4")))
+            )
+            if not ok:
+                skipped.append(raw + "(前缀与号段矛盾)")
+                continue
         if code in seen:
             skipped.append(raw + "(重复)")
             continue

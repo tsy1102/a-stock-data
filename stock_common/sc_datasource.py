@@ -979,13 +979,20 @@ def get_tencent_quote(code: str) -> Dict[str, Any]:
                 f"（腾讯协议可能变更，需核对 tdx_client._TENCENT_FIELD_INDEX）"
             )
             return {}
+        _price_v = _safe_float(vals[_f["price"]])
+        _vol_v = _safe_float(vals[_f["volume_hand"]])
+        # V16.3 O16: 北交所老号段僵尸数据检测（参考仓库 v3.6.0）——43/83/87 已迁 920xxx，
+        # 腾讯对老码返回 HTTP 200 + 成交量 0 + 价格定格迁移日的僵尸数据——丢弃触发上游 fallback
+        if code.startswith(("43", "83", "87")) and _vol_v == 0 and _price_v > 0:
+            _debug_log(f"datasource tencent quote stale (老号段僵尸数据): {code}")
+            return {}
         raw = {
             "code": code,
             "name": vals[_f["name"]],
-            "price": _safe_float(vals[_f["price"]]),
+            "price": _price_v,
             "prev_close": _safe_float(vals[_f["last_close"]]),
             "open": _safe_float(vals[_f["open"]]),
-            "volume_hand": _safe_float(vals[_f["volume_hand"]]),  # 手
+            "volume_hand": _vol_v,  # 手
             "change_pct": _safe_float(vals[_f["change_pct"]]),
             "amount_wan": _safe_float(vals[_f["amount_wan"]]),  # 万元
             "turnover_pct": _safe_float(vals[_f["turnover_pct"]]),
@@ -994,6 +1001,10 @@ def get_tencent_quote(code: str) -> Dict[str, Any]:
             "pb": _safe_float(vals[_f["pb"]]),
             "high": _safe_float(vals[_f["high"]]),
             "low": _safe_float(vals[_f["low"]]),
+            # V16.3 O20: 字典多源对齐（field_dict 12.1 破解）——52周/股息率 fallback 链补腾讯
+            "high_52w": _safe_float(vals[_f["high_52w"]]),
+            "low_52w": _safe_float(vals[_f["low_52w"]]),
+            "dividend_yield": _safe_float(vals[_f["dividend_yield"]]),
         }
         return normalize_at_boundary(raw, DataSource.TENCENT)
     except Exception as _e:
@@ -1053,8 +1064,10 @@ def get_em_batch_quotes(codes: List[str]) -> Dict[str, Dict[str, Any]]:
                 price = _safe_float(item.get("f2", 0))
                 change_pct = _safe_float(item.get("f3", 0))
                 # V15.2 P0: mcap_yi (f20) 和 float_mcap_yi (f21)
-                mcap_yi = _safe_float(item.get("f20", 0))
-                float_mcap_yi = _safe_float(item.get("f21", 0))
+                # V16.3 O17: ulist f20/f21 实测单位是**元**（茅台 1635794278989）——需 /1e8 转亿
+                # （此前直接赋值导致批量路径 mcap 错 1e8 倍——canonical L3 单股路径无此问题）
+                mcap_yi = _safe_float(item.get("f20", 0)) / 1e8
+                float_mcap_yi = _safe_float(item.get("f21", 0)) / 1e8
                 if code:
                     result[code] = {
                         "name": name,
@@ -1085,13 +1098,18 @@ def get_em_batch_quotes(codes: List[str]) -> Dict[str, Dict[str, Any]]:
 
 
 @cached(category="kline", ttl_seconds=TTL["kline"])
-def baidu_kline_full(code, is_index=False):
-    """V4: 全量K线 → tdx_client 适配器（TDX日K线，自动fallback百度）"""
+def baidu_kline_full(code, is_index=False, count=800):
+    """全量K线 → tdx_client 适配器（纯 TDX 日K线）。
+
+    V16.3 O16: 修正误导性 docstring——百度 PAE 已无实际调用（v3.1.0 起参考仓库同款
+    下线 fundflow，本仓库 K 线全程 TDX），函数名保留向后兼容。
+    V16.3 O19: 加 count 参数（脚本层直调 tdx_get_security_bars 统一入口，跨脚本共享缓存）。
+    """
     from tdx_client import tdx_get_security_bars, tdx_get_index_bars
 
     if is_index:
         return tdx_get_index_bars(code)
-    return tdx_get_security_bars(code)
+    return tdx_get_security_bars(code, count=count)
 
 
 async def get_tencent_quote_async(session: Any, code: str) -> Dict[str, Any]:
@@ -2517,7 +2535,8 @@ def get_sina_financial_report(code: str, num_periods: int = 12) -> Dict[str, Any
         return cache_value
 
     # 新浪 HTTP
-    prefix = "sh" if code.startswith("6") else "sz"
+    # V16.3 O16: 北交所 920 号段走 bj 前缀（此前落 sz 静默查不到财报）
+    prefix = "bj" if code.startswith(("92", "8", "4", "43", "83", "87")) else ("sh" if code.startswith("6") else "sz")
     paper_code = f"{prefix}{code}"
     url = "https://quotes.sina.cn/cn/api/openapi.php/CompanyFinanceService.getFinanceReport2022"
     params = {
@@ -2587,7 +2606,8 @@ def get_sina_balance_sheet(code: str) -> List[Dict[str, Any]]:
     """
     # 新浪 HTTP
     try:
-        prefix = "sh" if code.startswith("6") else "sz"
+        # V16.3 O16: 北交所 920/8/4 号段走 bj 前缀
+        prefix = "bj" if code.startswith(("92", "8", "4", "43", "83", "87")) else ("sh" if code.startswith("6") else "sz")
         paper_code = f"{prefix}{code}"
         url = "https://quotes.sina.cn/cn/api/openapi.php/CompanyFinanceService.getFinanceReport2022"
         params = {"paperCode": paper_code, "source": "fzb", "type": "0", "page": "1", "num": "5"}
@@ -2884,7 +2904,82 @@ async def get_lockup_expiry_async(
     return await asyncio.to_thread(get_lockup_expiry, code, days, include_history)
 
 
-@cached(category="gross_margin_roe", ttl_seconds=TTL["gross_margin_roe"], cross_verify=True)
+@cached(category="financial", ttl_seconds=TTL["financial"], cross_verify=True)
+def get_roe_trend_series(
+    code: str,
+    num_periods: int = 8,
+    financials: Any = None,
+    bs_data: Any = None,
+    total_shares: float = 0,
+) -> List[Dict[str, Any]]:
+    """ROE/EPS/BPS 多期趋势（统一层——V16.3 O19 从 get_lng_report 下沉）。
+
+    F10 财务分析（TDX TCP 第 2 档）优先：加权净资产收益率/基本EPS/每股净资产（9 期）；
+    新浪财报自算兜底（摊薄口径：净利/期末权益）——**口径差异以 roe_type 字段标注**
+    （weighted=F10 加权 / diluted=新浪摊薄），消费端须显示口径或仅用 weighted 期数。
+
+    Returns:
+        [{date, roe, roe_kc, eps, bps, roe_type}]
+    """
+    # ① F10 优先（TDX，加权口径）
+    try:
+        from tdx_client import tdx_get_financial_analysis
+
+        f10 = tdx_get_financial_analysis(code)
+        if f10:
+            pf = f10.get("profitability") or []
+            mi = f10.get("main_indicators") or []
+            if pf and mi:
+                pf_map = {r.get("period"): r for r in pf}
+                mi_map = {r.get("period"): r for r in mi}
+                rows = []
+                for period in [r.get("period") for r in mi[:num_periods]]:
+                    if not period:
+                        continue
+                    p = pf_map.get(period) or {}
+                    m = mi_map.get(period) or {}
+                    rows.append(
+                        {
+                            "date": period,
+                            "roe": _safe_float(p.get("加权净资产收益率")),
+                            "roe_kc": None,
+                            "eps": _safe_float(m.get("基本每股收益(元)")),
+                            "bps": _safe_float(m.get("每股净资产(元)")),
+                            "roe_type": "weighted",
+                        }
+                    )
+                if rows:
+                    return rows
+    except Exception as _e:
+        _debug_log(f"datasource roe_trend_series f10 error ({code}): {_e}")
+    # ② 新浪财报自算兜底（摊薄口径）
+    if not financials or not bs_data or total_shares <= 0:
+        return []
+    bs_map = {b.get("报告日", ""): b for b in bs_data}
+    rows = []
+    for fin in financials[:num_periods]:
+        rd = fin.get("报告日", "")
+        bs = bs_map.get(rd)
+        if not bs:
+            continue
+        profit = _safe_float(fin.get("净利润", 0))
+        equity = _safe_float(bs.get("归属于母公司股东权益合计", 0))
+        roe = round(profit / equity * 100, 2) if equity > 0 else None
+        eps = round(profit / total_shares, 4) if total_shares > 0 else None
+        bps = round(equity / total_shares, 2) if total_shares > 0 else None
+        rows.append(
+            {
+                "date": rd,
+                "roe": roe,
+                "roe_kc": None,
+                "eps": eps,
+                "bps": bps,
+                "roe_type": "diluted",
+            }
+        )
+    return rows
+
+
 def get_gross_margin_and_roe(
     code: str, fin_report: Any = None, bs_data: Any = None
 ) -> Dict[str, Any]:
@@ -2900,15 +2995,21 @@ def get_gross_margin_and_roe(
                 latest = profitability[0]
                 gross_margin = _safe_float(latest.get('营业毛利率'))
                 roe = _safe_float(latest.get('加权净资产收益率'))
+                # V16.3 O: 同一次 F10 拉取顺带取基本每股收益（main_indicators，
+                # 与 ZHB tipinfo eps 交叉验证一致），canonical eps fallback 复用
+                eps = None
+                main_indicators = f10.get('main_indicators', [])
+                if main_indicators:
+                    eps = _safe_float(main_indicators[0].get('基本每股收益(元)'))
                 # 任一字段有效即返回（避免 F10 缺字段时返回 None）
-                if gross_margin or roe:
-                    return {"gross_margin": gross_margin, "roe": roe}
+                if gross_margin or roe or eps:
+                    return {"gross_margin": gross_margin, "roe": roe, "eps": eps}
     except Exception as _e:
         _debug_log(f"datasource tdx financial analysis profitability error: {_e}")
     # Fallback: 新浪 HTTP
     try:
         if fin_report is None:
-            prefix = "SH" if code.startswith("6") else "SZ"
+            prefix = "BJ" if code.startswith(("92", "8", "4", "43", "83", "87")) else ("SH" if code.startswith("6") else "SZ")
             paper_code = f"{prefix}{code}"
             url = "https://quotes.sina.cn/cn/api/openapi.php/CompanyFinanceService.getFinanceReport2022"
             params = {
@@ -2922,10 +3023,19 @@ def get_gross_margin_and_roe(
             if r is None or r.status_code != 200:
                 return None
             d = r.json()
-            items = (d.get("result") or {}).get("data", [])
-            if not items:
+            # V16.3 O17: 新浪财报结构是 result.data.report_list（按报告期 dict），
+            # 非 result.data 列表——旧写法 items[0] 拿到日期键字符串导致 fallback 永远失败
+            # （参考仓库 v3.2.1 同款修复）
+            _rl = ((d.get("result") or {}).get("data") or {}).get("report_list") or {}
+            if not _rl:
                 return None
-            item = items[0]
+            _period = next(iter(_rl))
+            _period_data = _rl[_period] or {}
+            # V16.3 O22: report_list[period] 结构是 {"data": [{item_title,item_value},...]}——
+            # 必须先构建 item_map（O17 直接 item.get("营业总收入") 取到 None → 假 ROE=0.0）
+            item = {e.get("item_title", ""): e.get("item_value") for e in _period_data.get("data", [])}
+            if not item:
+                return None
         else:
             item = fin_report[0] if fin_report else None
             if not item:
@@ -2946,10 +3056,14 @@ def get_gross_margin_and_roe(
         roe = None
         if bs:
             equity_yi = _safe_float(bs[0].get("归属于母公司股东权益合计", 0))
-            if equity_yi > 0:
-                roe = (profit * 100) / equity_yi if equity_yi > 0 else None
-
-        return {"gross_margin": gross_margin, "roe": roe}
+            if equity_yi > 0 and profit:
+                roe = (profit * 100) / equity_yi
+        # V16.3 O22: 数据缺失时返回 None 而非假值 0.0（避免被标 tdx:f10 并缓存）
+        if gross_margin is None and roe is None:
+            return None
+        # 契约：F10 分支返回 {"gross_margin", "roe", "eps"}（V16.3 O）；
+        # 新浪 fallback 分支仅 {"gross_margin", "roe"}——调用方必须 .get() 容缺
+        return {"gross_margin": gross_margin, "roe": roe, "eps": None}
     except Exception as _e:
         _debug_log(f"datasource get_gross_margin_and_roe ({code}): {_e}")
         return None
@@ -3544,35 +3658,64 @@ def get_board_fund_flow(board_type: str = "industry", top_n: int = 20) -> List[D
         "area": "m:90+t:1+f:!50",
     }
     fs = fs_map.get(board_type, fs_map["industry"])
-    # V16.0: 用 _quick_request（支持备用域名 fallback，规避 push2 主域名 IP 风控）
-    # 2026-08-03 实测：push2.eastmoney.com 风控断连时 83.push2.eastmoney.com 可用
-    url = "https://push2.eastmoney.com/api/qt/clist/get"
-    params = {
-        "pn": "1", "pz": str(top_n), "po": "1", "np": "1",
-        "fltt": "2", "invt": "2",
+    # V16.3 O16: 翻页支持（参考仓库 v3.5.1）——先取首页拿真实 total，top_n>200 才翻页；
+    # total 缺失按"不足一页即末页"收敛；提前返空即跳出防死循环。
+    _PAGE = 200  # 东财 clist 单页上限
+    params_tpl = {
+        "po": "1", "np": "1", "fltt": "2", "invt": "2",
         "fs": fs,
         "fields": "f12,f14,f2,f3,f62,f66,f69,f72,f75,f184",
         "ut": "bd1d9ddb04089700cf9c27f6f7426281",
     }
-    try:
-        r = _quick_request(url, params=params, headers={"User-Agent": UA}, timeout=10)
-        if r is None:
-            # fallback: 备用域名（83.push2 实测可用）
-            try:
+
+    def _fetch_page(pn: int, pz: int) -> dict:
+        params = dict(params_tpl, pn=str(pn), pz=str(pz))
+        try:
+            r = _quick_request(
+                "https://push2.eastmoney.com/api/qt/clist/get",
+                params=params, headers={"User-Agent": UA}, timeout=10,
+            )
+            if r is None:
+                # fallback: 备用域名（83.push2 实测可用）
                 r = _quick_request(
                     "http://83.push2.eastmoney.com/api/qt/clist/get",
                     params=params, headers={"User-Agent": UA}, timeout=10,
                 )
-            except Exception as _e2:
-                _debug_log(f"datasource board_fund_flow fallback: {_e2}")
-        if r is None:
+            if r is None:
+                return {}
+            d = r.json()
+            return d.get("data") or {}
+        except Exception as _e:
+            _debug_log(f"datasource board_fund_flow page {pn}: {_e}")
+            return {}
+
+    try:
+        data0 = _fetch_page(1, min(top_n, _PAGE))
+        if not data0:
             return []
-        d = r.json()
-        diff = (d.get("data") or {}).get("diff") or []
-        if isinstance(diff, dict):
-            diff = list(diff.values())
+        total = data0.get("total")
+        if isinstance(total, str):
+            try:
+                total = int(total)
+            except ValueError:
+                total = None
+        diff0 = data0.get("diff") or []
+        if isinstance(diff0, dict):
+            diff0 = list(diff0.values())
+        all_items = list(diff0)
+        # 需要翻页：total 存在且 > 当前已取，且 top_n 超过单页
+        need = top_n if total is None else min(top_n, total)
+        while len(all_items) < need and len(diff0) > 0:
+            pn = len(all_items) // _PAGE + 1
+            data_n = _fetch_page(pn, _PAGE)
+            diff_n = data_n.get("diff") or []
+            if isinstance(diff_n, dict):
+                diff_n = list(diff_n.values())
+            if not diff_n:
+                break  # 提前返空即末页（防死循环）
+            all_items.extend(diff_n)
         out = []
-        for item in diff:
+        for item in all_items[:top_n]:
             out.append(
                 {
                     "code": str(item.get("f12", "")),
@@ -3748,19 +3891,35 @@ def get_history_fund_flow_120d(code: str, days: int = 60, prefer: str = "auto") 
         {"data": [dict(元)] 或 [], "error": str, "source": str}
         与 med/sht 原有 get_fund_flow_120d 返回结构完全一致。
     """
+    def _norm_ff(data):
+        """V16.3 O19: 强制归一为 dict 列表（单位元）——历史遗留 float 列表（万元）自动转 dict(元)。"""
+        if data and isinstance(data[0], (int, float)):
+            return [
+                {
+                    "date": "",
+                    "main_net": v * 1e4,
+                    "super_net": 0,
+                    "large_net": 0,
+                    "mid_net": 0,
+                    "small_net": 0,
+                }
+                for v in data
+            ]
+        return data
+
     if prefer != "em":
         try:
             from tdx_client import tdx_get_history_fund_flow
 
             _tdx = tdx_get_history_fund_flow(code, days)
             if _tdx:
-                return {"data": _tdx, "error": "", "source": "tdx"}
+                return {"data": _norm_ff(_tdx), "error": "", "source": "tdx"}
         except Exception as _e:
             _debug_log(f"datasource get_history_fund_flow_120d tdx ({code}): {_e}")
     try:
         _em = get_em_history_fund_flow(code, days)
         if _em:
-            return {"data": _em, "error": "", "source": "eastmoney"}
+            return {"data": _norm_ff(_em), "error": "", "source": "eastmoney"}
     except Exception as _e:
         _debug_log(f"datasource get_history_fund_flow_120d em ({code}): {_e}")
     return {"data": [], "error": "资金流数据获取失败"}
@@ -4029,7 +4188,14 @@ def dragon_tiger_backup(trade_date: str) -> Dict[str, Any]:
             _gen_wait_process_interval()
         except Exception:
             pass
-        with urllib.request.urlopen(req, timeout=15, context=_ctx) as r:
+        # V16.3 O14: 备胎源强制直连（ProxyHandler({}) 忽略系统代理——GD 外全部直连）
+        # V16.3 O22: OpenerDirector.open 不接受 context 关键字（原 TypeError 使备胎源永久失效）——
+        # 自定义 SSL context 通过 HTTPSHandler 注入
+        _opener = urllib.request.build_opener(
+            urllib.request.ProxyHandler({}),
+            urllib.request.HTTPSHandler(context=_ctx),
+        )
+        with _opener.open(req, timeout=15) as r:
             d = json.loads(r.read())
         if isinstance(d, list) and d:
             for row in d[0].get("data", []):
@@ -4065,7 +4231,9 @@ def dragon_tiger_backup(trade_date: str) -> Dict[str, Any]:
             _gen_wait_process_interval()
         except Exception:
             pass
-        with urllib.request.urlopen(req, timeout=15) as r:
+        # V16.3 O14: 强制直连（忽略系统代理）
+        _opener = urllib.request.build_opener(urllib.request.ProxyHandler({}))
+        with _opener.open(req, timeout=15) as r:
             t = r.read().decode("utf-8", "ignore")
         if "(" in t and ")" in t:
             json_str = t[t.index("(") + 1 : t.rindex(")")]
@@ -4087,7 +4255,8 @@ def fund_flow_backup(code: str, days: int = 60) -> List[Dict[str, Any]]:
     Returns:
         资金流列表，包含日期、主力/大单/中单/小单净流入
     """
-    prefix = "sh" if code.startswith("6") else "sz"
+    # V16.3 O16: 北交所 920/8/4 号段走 bj 前缀（此 URL 当前未用 prefix，保留统一口径）
+    prefix = "bj" if code.startswith(("92", "8", "4", "43", "83", "87")) else ("sh" if code.startswith("6") else "sz")
     url = (
         "https://vip.stock.finance.sina.com.cn/quotes_service/api/json_v2.php/MoneyFlow.ssl_bkzj_bk"
     )
@@ -4135,11 +4304,14 @@ def cninfo_irm(code: str, page_size: int = 30, page_num: int = 1) -> List[Dict[s
     except Exception:
         pass
     try:
+        # V16.3 O14: 巨潮互动易强制直连（忽略系统代理——GD 外全部直连）
+        _no_proxy = {"http": None, "https": None}
         r1 = requests.post(
             "https://irm.cninfo.com.cn/newircs/index/queryKeyboardInfo",
             data={"keyWord": code},
             headers={"User-Agent": UA},
             timeout=10,
+            proxies=_no_proxy,
         )
         d1 = r1.json().get("data") or []
         if not d1:
@@ -4161,6 +4333,7 @@ def cninfo_irm(code: str, page_size: int = 30, page_num: int = 1) -> List[Dict[s
             params=params,
             headers={"User-Agent": UA},
             timeout=10,
+            proxies=_no_proxy,
         )
         rows = r2.json().get("rows") or []
 
@@ -5090,7 +5263,7 @@ def get_em_quote_full(code: str) -> Dict[str, Any]:
             "volume_hand": float,     # f47  成交量(手)
             "amount_wan": float,      # f48  成交额(元→万元)
             "turnover_pct": float,    # f168 换手率(%)
-            "pe_ttm": float,          # f57→f9 实际 PE(TTM)（push2 不直接给 PE，但可计算）
+            "pe_ttm": float,          # f163 PE(TTM) (fltt=2 下为浮点，无需 /100)
             "pe_dynamic": float,
             "pb": float,
             "mcap_yi": float,         # f116 总市值(元→亿元)
@@ -5513,7 +5686,7 @@ def em_hot_concept(code: str) -> List[Dict[str, Any]]:
         # V16.0.2: 改用 _quick_request（走限流），原 EM_SESSION.post 直连绕过限流
         import json as _json
 
-        prefix = "SH" if code.startswith("6") else "SZ"
+        prefix = "BJ" if code.startswith(("92", "8", "4", "43", "83", "87")) else ("SH" if code.startswith("6") else "SZ")
         r = _quick_request(
             "https://emappdata.eastmoney.com/stockrank/getHotStockRankList",
             data=_json.dumps({**_hot_body, "srcSecurityCode": prefix + code}),

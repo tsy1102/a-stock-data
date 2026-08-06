@@ -36,8 +36,7 @@ REPORT_SCRIPTS = {
     "sht": "get_sht_report.py",
     "med": "get_med_report.py",
     "lng": "get_lng_report.py",
-    "ful": "get_ful_report.py",
-    "val": "get_val_report.py",
+        "val": "get_val_report.py",
     "mak": "get_mak_report.py",
 }
 

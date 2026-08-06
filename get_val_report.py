@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-get_val_report.py — 18 策略全市场发现引擎
+get_val_report.py — 21 策略全市场发现引擎
 方法论驱动的 A 股选股脚本，从全市场发现可操作标的。
 每策略精选 TOP 5，生成含具体数值推理的报告。
 
@@ -32,22 +32,21 @@ V7.5 新增:
   - 从 stock_common 导入统一龙虎榜函数 / 统一板块判断 / 涨停判断
 
 Usage:
-    python get_val_report.py                  # 全量 18 策略
+    python get_val_report.py                  # 全量 21 策略
     python get_val_report.py -o ./reports     # 指定输出目录
     python get_val_report.py --no-upload      # 跳过 GD 上传
 """
 
 import time, os
 from datetime import date, datetime, timedelta  # V16.1: 策略13 TTM 股息率需 timedelta
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 from concurrent.futures import ThreadPoolExecutor
 
 from gd_uploader import init_gd, upload_type_reports, cleanup_gd_proxy
-from tdx_client import (tdx_get_security_bars,
-                         tdx_get_weekly_bars,
+from tdx_client import (tdx_get_weekly_bars,
                          tdx_get_board_list,
                          tdx_get_all_stocks,
-                         tdx_get_finance_roe, cleanup_tdx)  # V16.0: 移除 tdx_get_fund_flow（改统一层）
+                         cleanup_tdx)  # V16.0: 移除 tdx_get_fund_flow（改统一层）
 from stock_common import (_safe_float, _request_with_retry, _quick_request, UA,
                            JP_URL,
                            _load_settings, _load_strategy_config, get_holder_structure,
@@ -84,7 +83,7 @@ _SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 
 def baidu_kline_last(code: str) -> Dict[str, Any]:
     """V4: 最新K线+MA → tdx_client 适配器（本地计算MA5/10/20）"""
-    keys, rows = tdx_get_security_bars(code, count=120)
+    keys, rows = common_baidu_kline_full(code, count=120)
     if not keys or not rows or not rows[-1]: return {}
     idx_map = {k: i for i, k in enumerate(keys)}
     ci = idx_map.get('close', -1)
@@ -97,13 +96,17 @@ def baidu_kline_last(code: str) -> Dict[str, Any]:
     if 'ma5avgprice' not in res and ci >= 0 and len(rows) >= 20:
         closes = [_safe_float(r[ci]) for r in rows if len(r) > ci]
         closes = [c for c in closes if c > 0]
-        def _sma(d, n):
-            if len(d) < n: return 0
-            return sum(d[-n:]) / n
-        res['ma5avgprice'] = str(round(_sma(closes, 5), 2))
-        res['ma10avgprice'] = str(round(_sma(closes, 10), 2))
-        res['ma20avgprice'] = str(round(_sma(closes, 20), 2))
+        res['ma5avgprice'] = str(round(_sma(closes, 5) or 0, 2))
+        res['ma10avgprice'] = str(round(_sma(closes, 10) or 0, 2))
+        res['ma20avgprice'] = str(round(_sma(closes, 20) or 0, 2))
     return res
+
+
+def _sma(data: list, n: int) -> Optional[float]:
+    """简单移动平均（H2: 原 3 处重复的 sma/_sma 嵌套函数提取为模块级）。"""
+    if len(data) < n:
+        return None
+    return sum(data[-n:]) / n
 
 
 # ─── 周线聚合（日K线 → 周K线 + MA计算） — 策略02使用 ───
@@ -119,13 +122,10 @@ def compute_weekly_ma(code):
             closes = [_safe_float(r[ci]) for r in rows if len(r) > ci]
             closes = [c for c in closes if c > 0]
             if len(closes) >= 10:
-                def sma(data, n):
-                    if len(data) < n: return None
-                    return sum(data[-n:]) / n
-                ma5 = sma(closes, 5)
-                ma10 = sma(closes, 10)
-                ma20 = sma(closes, 20)
-                ma30 = sma(closes, 30)
+                ma5 = _sma(closes, 5)
+                ma10 = _sma(closes, 10)
+                ma20 = _sma(closes, 20)
+                ma30 = _sma(closes, 30)
                 last_close = closes[-1] if closes else 0
                 spreads = [v for v in [ma5, ma10, ma20, ma30] if v is not None and v > 0]
                 cluster_spread = ((max(spreads) - min(spreads)) / min(spreads) * 100) if len(spreads) >= 4 and min(spreads) > 0 else None
@@ -137,7 +137,7 @@ def compute_weekly_ma(code):
                 }
 
     # Fallback: 日K线手动聚合为周K线（TDX 不可用时）
-    keys, rows = tdx_get_security_bars(code, count=600)
+    keys, rows = common_baidu_kline_full(code, count=600)
     if not keys or not rows or len(rows) < 50:
         return {}
     idx_map = {k: i for i, k in enumerate(keys)}
@@ -168,14 +168,10 @@ def compute_weekly_ma(code):
 
     closes = [c for _, c, _ in week_closes]
 
-    def sma(data, n):
-        if len(data) < n: return None
-        return sum(data[-n:]) / n
-
-    ma5 = sma(closes, 5)
-    ma10 = sma(closes, 10)
-    ma20 = sma(closes, 20)
-    ma30 = sma(closes, 30)
+    ma5 = _sma(closes, 5)
+    ma10 = _sma(closes, 10)
+    ma20 = _sma(closes, 20)
+    ma30 = _sma(closes, 30)
     last_close = closes[-1] if closes else 0
     spreads = [v for v in [ma5, ma10, ma20, ma30] if v is not None and v > 0]
     cluster_spread = ((max(spreads) - min(spreads)) / min(spreads) * 100) if len(spreads) >= 4 and min(spreads) > 0 else None
@@ -510,8 +506,8 @@ def _fast_kline(code: str, count: int = 800):
     TDX 适配器实测 0.0s/次（磁盘缓存命中）。
     """
     try:
-        from tdx_client import tdx_get_security_bars
-        _k, _r = tdx_get_security_bars(code, count=count)
+        # V16.3 O22: 统一走 baidu_kline_full（原局部 tdx_get_security_bars 死 import 已清）
+        _k, _r = common_baidu_kline_full(code, count=count)
         if _r and len(_r) >= 65:
             return _k, _r
     except Exception as _e:
@@ -611,7 +607,7 @@ def strategy_03_volume_breakout(hot_pool):
     for stock in hot_pool:
         code = stock.get("code", "")
         name = stock.get("name", "")
-        keys, rows = tdx_get_security_bars(code, count=100)
+        keys, rows = common_baidu_kline_full(code, count=100)
         if len(rows) < 65: continue
         idx_close = -1
         idx_vol = -1
@@ -954,8 +950,16 @@ async def strategy_10_contrarian_value(stocks, top_n=300):
     result = []
     for s in candidates:
         code = s["code"]
-        # V4: TDX get_finance_info 替代 push2 MAINFINADATA（单期ROE ≥ 15%）
-        roe = tdx_get_finance_roe(code)
+        # V16.3 O19: 统一层 ROE（F10 加权净资产收益率——与 med/lng 报告口径一致；
+        # 原 tdx_get_finance_roe 为 0x0010 单期摊薄口径，跨脚本不可比）
+        try:
+            from stock_common.sc_datasource import get_gross_margin_and_roe
+
+            gmar = get_gross_margin_and_roe(code) or {}
+            roe = gmar.get("roe")
+        except Exception as _e:
+            _debug_log(f"val strategy_10 roe error ({code}): {_e}")
+            roe = None
         if roe is None or roe < _roe_good: continue
         keys, rows = _fast_kline(code)
         if len(rows) < 250: continue
@@ -1451,17 +1455,23 @@ def strategy_20_main_fund_ratio(stocks, top_n=1000):
             _debug_log(f"val strategy20 stat2 load: {_e}")
     for s in stocks:
         code = s["code"]
-        amount_wan = _safe_float(s.get("amount", 0))
+        # V16.3 O21: 资金占比需分子分母同基准——use_zhb 时分母也用 stat2 T-1 amount
+        #（原分母=腾讯 T 日成交额 → 盘中 T-1 资金流 ÷ T 日成交额 时间基准错位）
+        _s2 = _zhb_stat2.get(code, {}) if use_zhb else {}
+        amount_wan = (
+            _safe_float(_s2.get("amount", 0))
+            if use_zhb and _s2.get("amount")
+            else _safe_float(s.get("amount", 0))
+        )
         if not amount_wan or amount_wan == 0:
             continue
         main_amount = 0.0
         data_source = ""
         if use_zhb:
             # V15.5.14: tdxstat2 全市场快照 O(1) 读（main_net_buy_amount）
-            _s2 = _zhb_stat2.get(code, {})
             main_amount = _safe_float(_s2.get("main_net_buy_amount", 0))
             if main_amount:
-                data_source = "ZHB(T-1)"
+                data_source = "ZHB(T-1,同基准)"
             else:
                 try:
                     zhb_main = get_main_net_buy(code)
@@ -1470,7 +1480,7 @@ def strategy_20_main_fund_ratio(stocks, top_n=1000):
                     zhb_main = None
                 if zhb_main:
                     main_amount = _safe_float(zhb_main.get("main_net_buy_amount", 0))
-                    data_source = "ZHB(T-1)"
+                    data_source = "ZHB(T-1,同基准)"
         if not main_amount or main_amount <= 0:
             # V16.0: 统一走 data_provider.get_main_net_buy（内部 ZHB→HTTP 优先级），
             # 替代直连 tdx_get_fund_flow（函数名误导，实为东财 HTTP）
@@ -1698,9 +1708,9 @@ async def run_discovery_async(output_path):
                     # mcap=0 由策略的 mcap>=50 过滤自然排除，可接受
                     # V11.5: 实时字段统一覆盖（混合分层：API动态层覆盖静态层）
                     _rt = _price_map.get(_code, {})
-                    _real_chg = _safe_float(_rt.get("change_pct", 0))
-                    if _real_chg:
-                        _stock["change_pct"] = _real_chg
+                    # V16.3 O21: 平盘（0%）也是今日事实——is not None 判定，0 不回退 ZHB T-1
+                    if _rt.get("change_pct") is not None:
+                        _stock["change_pct"] = _safe_float(_rt.get("change_pct", 0))
                     _real_amount = _safe_float(_rt.get("amount_wan", 0))
                     if _real_amount and _real_amount > 0:
                         _stock["amount"] = _real_amount
@@ -1910,10 +1920,11 @@ async def run_discovery_async(output_path):
                         _stock_map[_item["code"]]["name"] = _nm
 
     L("\n" + "=" * 85)
-    L("  扫描结果汇总: 20个策略共产出 " + str(sum(len(v) for v in all_selections.values())) + " 次选择")
+    L("  扫描结果汇总: " + str(len(all_selections)) + "个策略共产出 " + str(sum(len(v) for v in all_selections.values())) + " 次选择")
     L("─" * 85)
 
-    _sfmt = {"策略01":"01 龙回头战法","策略02":"02 周线多头","策略03":"03 量价齐升","策略04":"04 核心打折","策略05":"05 W底形态","策略06":"06 红三兵","策略07":"07 均线金叉","策略08":"08 政策驱动","策略09":"09 日历效应","策略10":"10 逆向白马","策略11":"11 筹码集中","策略12":"12 量价信号","策略13":"13 红利低波","策略14":"14 股债平衡","策略15":"15 头部风向标","策略16":"16 政策热度","策略17":"17 北向Top","策略18":"18 龙虎榜活跃度","策略19":"19 52周低位","策略20":"20 主力资金"}
+    # V16.3 J: _sfmt 同步注册表——补 21/22、删已移除的 14、修正 15（流动性王）
+    _sfmt = {"策略01":"01 龙回头战法","策略02":"02 周线多头","策略03":"03 量价齐升","策略04":"04 核心打折","策略05":"05 W底形态","策略06":"06 红三兵","策略07":"07 均线金叉","策略08":"08 政策驱动","策略09":"09 日历效应","策略10":"10 逆向白马","策略11":"11 筹码集中","策略12":"12 量价信号","策略13":"13 红利低波","策略15":"15 流动性王","策略16":"16 政策热度","策略17":"17 北向Top","策略18":"18 龙虎榜活跃度","策略19":"19 52周低位","策略20":"20 主力资金","策略21":"21 量能三连击","策略22":"22 资金动量"}
 
     for _st_name in _names_full:
         items = all_selections.get(_st_name, [])
@@ -1957,10 +1968,10 @@ async def run_discovery_async(output_path):
 
 
 class ValReportRunner(BaseReportRunner):
-    """18 策略全市场发现引擎 Runner"""
+    """21 策略全市场发现引擎 Runner"""
 
     def __init__(self):
-        super().__init__("get_val_report", "val", "18 策略全市场发现引擎")
+        super().__init__("get_val_report", "val", "21 策略全市场发现引擎")
 
     def execute_pipeline(self) -> str:
         ts = datetime.now().strftime("%Y%m%d_%H%M")

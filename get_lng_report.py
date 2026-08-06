@@ -27,12 +27,10 @@ get_lng_report.py — A股长线价投专属深度体检报告
     V8.0 2026-06-17 - 初始版本
 """
 
-import argparse, math, pandas as pd
+import math, pandas as pd
 import asyncio
 from datetime import date, datetime, timedelta
-import os, sys
-
-from gd_uploader import init_gd, upload_stock_report_by_code, cleanup_gd_proxy
+import os
 
 # V15.3 修复: 4 个报告模块同名 _SNAPSHOT_DATA 全局变量冲突
 # 抽出到 stock_common.sc_snapshot 统一管理
@@ -41,40 +39,29 @@ from stock_common.sc_snapshot import SnapshotProxy as _SnapshotProxy  # noqa: E4
 
 _SNAPSHOT_DATA = _SnapshotProxy()
 
-from tdx_client import (tdx_get_quote_full,
-                         tdx_get_historical_high, tdx_get_board_list,
-                         cleanup_tdx)
+from tdx_client import (
+    tdx_get_historical_high, tdx_get_board_list,
+)
 from data_provider import (
     get_stock_composite_async,
-    get_stock_price_async,
-    get_pe_ttm_async,
-    get_pb_async,
     get_canonical_stock_data,  # V15.3 强类型合约推广
-    get_dividend_yield_async,
-    get_52w_range_async,
-    get_change_pct_async,
-    get_change_ytd_async,
-    get_amount_wan_async,
-    get_turnover_pct_async,
-    get_main_net_buy_async,
 )
-from stock_common import (clean_codes, _safe_float, UA, _debug_log,
-                           _load_settings, _load_strategy_config, BaseReportRunner,
+from stock_common import (clean_codes, _safe_float, _debug_log,
+                           _load_strategy_config, BaseReportRunner,
                            _market_code,
                           get_holder_structure,
                           create_async_session,
                           get_strategic_announcements_async,
-                          parse_args, get_tencent_quote, baidu_kline_full,
+                          baidu_kline_full,
                           get_dividend_history,
                           get_stock_info,
                           get_eps_forecast_async, get_reports_async,
                           get_lockup_expiry_async, get_industry_peers,
                           get_sina_financial_report_async, get_sina_balance_sheet_async,
-                          is_trading_day, get_market_status,
+                          get_market_status,
                           calculate_multi_school_scores,
                           get_zhb_single_stock_data, is_zhb_data_fresh,
-                          get_zhb_industry_map, get_zhb_dividend_yield,
-                          get_zhb_change_ytd, get_zhb_data_date,
+                          get_zhb_industry_map, get_zhb_data_date,
                           get_zhb_tip_info,
                           cls_telegraph, news_matches_stock, cninfo_irm)  # V10.3, V16.2.3
 
@@ -92,22 +79,21 @@ def industry_comparison(top_n=20):
 
 
 def get_roe_trend(code, num_periods=8, financials=None, bs_data=None, total_shares=0):
-    """V7.5: ROE/EPS/BPS → 从新浪财报本地计算（东财 MAINFINADATA 已删除）"""
-    if not financials or not bs_data or total_shares <= 0:
+    """V16.3 O19: 薄包装——统一层 get_roe_trend_series（sc_datasource）。
+
+    F10 加权 ROE 优先（TDX 第 2 档），新浪摊薄口径兜底；口径以 roe_type 标注。
+    """
+    try:
+        from stock_common.sc_datasource import get_roe_trend_series
+
+        return get_roe_trend_series(code, num_periods, financials, bs_data, total_shares)
+    except Exception as _e:
+        try:
+            from stock_common import _debug_log as _dl
+            _dl(f"lng get_roe_trend wrapper error ({code}): {_e}")
+        except Exception:
+            pass
         return []
-    bs_map = {b.get("报告日", ""): b for b in bs_data}
-    rows = []
-    for fin in financials[:num_periods]:
-        rd = fin.get("报告日", "")
-        bs = bs_map.get(rd)
-        if not bs: continue
-        profit = _safe_float(fin.get("净利润", 0))
-        equity = _safe_float(bs.get("归属于母公司股东权益合计", 0))
-        roe = round(profit / equity * 100, 2) if equity > 0 else None
-        eps = round(profit / total_shares, 4) if total_shares > 0 else None
-        bps = round(equity / total_shares, 2) if total_shares > 0 else None
-        rows.append({"date": rd, "roe": roe, "roe_kc": None, "eps": eps, "bps": bps})
-    return rows
 
 
 def get_historical_high(code):
@@ -193,11 +179,13 @@ async def generate_report_async(session, code, output_path, ind_comp=None):
 
     # V10.1: zhb优先获取估值、阶段涨幅、52周高低、股息率，原有路径降为fallback
     # V10.2: zhb数据日期标注（延迟时提示用户）
+    # V16.3 M: 数据新鲜度分级——C 类静态（估值/52周/股本/行业）无条件用 ZHB（T-1 无影响，
+    #   不做 fresh 拦截）；阶段涨幅（A/B 类）挂 fresh（≤3 天）避免盘中精度损失
     _zhb_data = None
     _zhb_date = ""
-    if is_zhb_data_fresh():
-        _zhb_data = get_zhb_single_stock_data(code)
-    else:
+    _zhb_data = get_zhb_single_stock_data(code)
+    _zhb_fresh = is_zhb_data_fresh()
+    if not _zhb_fresh:
         _zhb_date = get_zhb_data_date() or ""
         if _zhb_date:
             L(f"  ℹ️ zhb数据日期: {_zhb_date}（延迟，阶段涨幅/52周高低等数据可能有1-2天滞后）")
@@ -292,11 +280,11 @@ async def generate_report_async(session, code, output_path, ind_comp=None):
     _dp_pe_ttm_val = _dp_composite.get("pe_ttm", 0) if _dp_composite else 0
     _dp_pb_val = _dp_composite.get("pb", 0) if _dp_composite else 0
 
-    _zhb_change_ytd = _zhb_data.get("change_ytd", 0) if _zhb_data else 0
-    _zhb_change_5d = _zhb_data.get("change_5d", 0) if _zhb_data else 0
-    _zhb_change_10d = _zhb_data.get("change_10d", 0) if _zhb_data else 0
-    _zhb_change_20d = _zhb_data.get("change_20d", 0) if _zhb_data else 0
-    _zhb_change_60d = _zhb_data.get("change_60d", 0) if _zhb_data else 0
+    _zhb_change_ytd = _zhb_data.get("change_ytd", 0) if (_zhb_data and _zhb_fresh) else 0
+    _zhb_change_5d = _zhb_data.get("change_5d", 0) if (_zhb_data and _zhb_fresh) else 0
+    _zhb_change_10d = _zhb_data.get("change_10d", 0) if (_zhb_data and _zhb_fresh) else 0
+    _zhb_change_20d = _zhb_data.get("change_20d", 0) if (_zhb_data and _zhb_fresh) else 0
+    _zhb_change_60d = _zhb_data.get("change_60d", 0) if (_zhb_data and _zhb_fresh) else 0
     # change_ytd: data_provider优先
     _show_change_ytd = _dp_change_ytd if _dp_change_ytd and _dp_change_ytd != 0 else _zhb_change_ytd
     if _show_change_ytd:
@@ -514,8 +502,10 @@ async def generate_report_async(session, code, output_path, ind_comp=None):
                 _tdx_fi_snapshot = fi
                 # V15.1: 修正 0x0010 协议 key（参考 docs/field_dict.md 第 7 章）
                 # 正确 key: jingyingxianjinliu / jinglirun（无下划线）
-                _tdx_ocf = _safe_float(fi.iloc[0].get('jingyingxianjinliu', 0))
-                _tdx_np = _safe_float(fi.iloc[0].get('jinglirun', 0))
+                # V16.3 O19: 0x0010 金额字段单位=角（field_dict §零 O 实测）——/10 得元
+                # （此前直接 /1e8 显示亿 → 现金流/净利偏大 10 倍）
+                _tdx_ocf = _safe_float(fi.iloc[0].get('jingyingxianjinliu', 0)) / 10.0
+                _tdx_np = _safe_float(fi.iloc[0].get('jinglirun', 0)) / 10.0
     except Exception as _e:
         _debug_log(f"lng tdx_ocf error: {_e}")
 
@@ -591,7 +581,8 @@ async def generate_report_async(session, code, output_path, ind_comp=None):
             tdx_fi = client.get_finance_info(_market_code(code), code) if client else None
         if tdx_fi is not None and not tdx_fi.empty:
             # V15.1: 修正 0x0010 协议 key（参考 docs/field_dict.md）
-            ocf = _safe_float(tdx_fi.iloc[0].get('jingyingxianjinliu', 0)) / 1e8
+            # V16.3 O19: 角→元（/10）后再 /1e8 显示亿——否则偏大 10 倍
+            ocf = _safe_float(tdx_fi.iloc[0].get('jingyingxianjinliu', 0)) / 10.0 / 1e8
             if ocf != 0:
                 parts.append(f"经营现金流 {ocf:.2f}亿")
     except Exception as _e:

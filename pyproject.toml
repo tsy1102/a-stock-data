@@ -27,7 +27,7 @@ markers = [
 ]
 norecursedirs = [
     "__pycache__",
-    "reports",
+    "./reports",
     "snapshots",
     "logs",
     ".git",

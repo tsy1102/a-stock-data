@@ -57,8 +57,8 @@ TTL分级策略：
 """
 
 from typing import Any, Dict, Optional, List
-from datetime import datetime, date, timedelta  # V16.2: timedelta 导入（_get_zhb_date_offset 使用）
-import asyncio
+import math
+from datetime import datetime, date, timedelta  # timedelta 供 _get_trading_date_offset 使用（M14 注释修正）
 
 from stock_cache import cached, TTL, make_valid_if  # V15.2: 强化 valid_if
 from stock_common.sc_network import _fallback_logger
@@ -532,11 +532,89 @@ def get_canonical_stock_data(code: str, force_realtime: bool = False) -> Any:
     field_sources["net_profit"] = "zhb:static" if net_profit else "missing"
     revenue = _safe_float(zhb_dict.get('revenue'))
     field_sources["revenue"] = "zhb:static" if revenue else "missing"
+    # V16.3 O: ZHB 无 roe/毛利率/净利率/net_profit/revenue（tdxstat 碰撞确认无财务深度字段），
+    # 未命中时 fallback TDX —— F10 财务分析（roe/毛利率，@cached gross_margin_roe）+
+    # 0x0010（净利/营收，单位角 → /10 得元，@cached financial）——逐股首次后零重复请求。
+    if roe is None or gross_margin is None:
+        try:
+            from stock_common.sc_datasource import get_gross_margin_and_roe
+
+            _gmar = get_gross_margin_and_roe(code_str) or {}
+            if roe is None and _gmar.get('roe') is not None:
+                roe = _safe_float(_gmar.get('roe'))
+                field_sources["roe"] = "tdx:f10" if roe is not None else "missing"
+            if gross_margin is None and _gmar.get('gross_margin') is not None:
+                gross_margin = _safe_float(_gmar.get('gross_margin'))
+                field_sources["gross_margin"] = "tdx:f10" if gross_margin is not None else "missing"
+        except Exception as _e:
+            _debug_log(f"canonical gross_margin_roe fallback error ({code_str}): {_e}")
+    if not net_profit or not revenue:
+        try:
+            from tdx_client import tdx_get_finance_info
+
+            _fin = tdx_get_finance_info(code_str) or {}
+            if not net_profit and _fin.get('jinglirun') is not None:
+                net_profit = _safe_float(_fin.get('jinglirun')) / 10.0
+                field_sources["net_profit"] = "tdx:0x0010" if net_profit else "missing"
+            if not revenue and _fin.get('zhuyingshouru') is not None:
+                revenue = _safe_float(_fin.get('zhuyingshouru')) / 10.0
+                field_sources["revenue"] = "tdx:0x0010" if revenue else "missing"
+        except Exception as _e:
+            _debug_log(f"canonical finance_info fallback error ({code_str}): {_e}")
+    # V16.3 O20: 字典多源对齐——0x0010 失败时新浪财报兜底（@cached financial，
+    # 主源成功零额外请求；单位：新浪元直接）
+    if not net_profit or not revenue:
+        try:
+            from stock_common.sc_datasource import get_sina_financial_report
+
+            _fin_rows = get_sina_financial_report(code_str, 1) or []
+            if not net_profit and _fin_rows:
+                _np = _safe_float(_fin_rows[0].get("净利润"))
+                if _np:
+                    net_profit = _np
+                    field_sources["net_profit"] = "sina:lrb"
+            if not revenue and _fin_rows:
+                _rev = _safe_float(_fin_rows[0].get("营业总收入"))
+                if _rev:
+                    revenue = _rev
+                    field_sources["revenue"] = "sina:lrb"
+        except Exception as _e:
+            _debug_log(f"canonical sina financial fallback error ({code_str}): {_e}")
+    # 净利率自算兜底——仅当净利/营收同源同单位时计算（0x0010 角或新浪元，
+    # V16.3 O20 扩展：新浪同源也可自算；混合源单位相消失效跳过）
+    if (
+        net_profit_margin is None
+        and net_profit
+        and revenue
+        and field_sources.get("net_profit") == field_sources.get("revenue")
+        and field_sources.get("net_profit") in ("tdx:0x0010", "sina:lrb")
+    ):
+        _npm = (net_profit / revenue) * 100.0
+        if math.isfinite(_npm):
+            net_profit_margin = round(_npm, 2)
+            field_sources["net_profit_margin"] = "calc:net_profit/revenue"
     # V16.2: EPS 主字段接入 push2 f55（实时 T 日数据源优先，ZHB T-1 兜底）
+    # V16.3 O: 离线兜底 F10 基本每股收益（main_indicators，与 ZHB tipinfo 交叉验证一致）
     eps = _safe_float(rt_quote.get('eps') or zhb_dict.get('eps'))
-    field_sources["eps"] = (
-        "realtime:push2" if rt_quote.get('eps') else ("zhb:static" if eps else "missing")
-    )
+    if not eps:
+        # 离线兜底 F10 基本每股收益（main_indicators，与 ZHB tipinfo 交叉验证一致；
+        # @cached gross_margin_roe——roe/毛利率分支已调过则零额外请求）
+        try:
+            from stock_common.sc_datasource import get_gross_margin_and_roe
+
+            _gmar2 = get_gross_margin_and_roe(code_str) or {}
+            if _gmar2.get('eps') is not None:
+                eps = _safe_float(_gmar2.get('eps'))
+        except Exception as _e:
+            _debug_log(f"canonical eps f10 fallback error ({code_str}): {_e}")
+    if rt_quote.get('eps'):
+        field_sources["eps"] = "realtime:push2"
+    elif eps and zhb_dict.get('eps'):
+        field_sources["eps"] = "zhb:static"
+    elif eps:
+        field_sources["eps"] = "tdx:f10"
+    else:
+        field_sources["eps"] = "missing"
 
     # 股本类 — V15.4 4 级 fallback: push2/tdx/tencent > ZHB
     # V16.3 A2 注: rt_quote 若来自 get_stock_info(TDX finance) 其 total_shares 单位是**股**，
@@ -596,6 +674,19 @@ def get_canonical_stock_data(code: str, force_realtime: bool = False) -> Any:
 
     holder_count = int(zhb_dict.get('holder_count') or 0)
     field_sources["holder_count"] = "zhb:static" if holder_count else "missing"
+    # V16.3 O: 股东户数兜底 — 0x0010 gudong_renshu（比巨潮 stock_hold_num_cninfo 更易，
+    # 与 net_profit/revenue 同一次 finance_info 拉取共用缓存）
+    if not holder_count:
+        try:
+            from tdx_client import tdx_get_finance_info
+
+            _fin_hc = tdx_get_finance_info(code_str) or {}
+            _hc = _safe_float(_fin_hc.get('gudong_renshu'))
+            if _hc and _hc > 0:
+                holder_count = int(_hc)
+                field_sources["holder_count"] = "tdx:0x0010"
+        except Exception as _e:
+            _debug_log(f"canonical holder_count fallback error ({code_str}): {_e}")
 
     # 历史衍生指标
     change_5d = _safe_float(zhb_dict.get('change_5d'))
@@ -616,11 +707,11 @@ def get_canonical_stock_data(code: str, force_realtime: bool = False) -> Any:
     # V16.2: 52 周高低价主字段接入 push2 f174/f175（实时优先，ZHB T-1 兜底）
     high_52w = _safe_float(rt_quote.get('high_52w') or zhb_dict.get('high_52w'))
     field_sources["high_52w"] = (
-        "realtime:push2" if rt_quote.get('high_52w') else ("zhb:static" if high_52w else "missing")
+        "realtime" if rt_quote.get('high_52w') else ("zhb:static" if high_52w else "missing")
     )
     low_52w = _safe_float(rt_quote.get('low_52w') or zhb_dict.get('low_52w'))
     field_sources["low_52w"] = (
-        "realtime:push2" if rt_quote.get('low_52w') else ("zhb:static" if low_52w else "missing")
+        "realtime" if rt_quote.get('low_52w') else ("zhb:static" if low_52w else "missing")
     )
     ipo_price = _safe_float(zhb_dict.get('ipo_price'))
     field_sources["ipo_price"] = "zhb:static" if ipo_price else "missing"
@@ -678,9 +769,8 @@ def get_canonical_stock_data(code: str, force_realtime: bool = False) -> Any:
         elif zhb_dict.get('industry'):
             industry = zhb_dict['industry']
             field_sources["industry"] = "zhb:static"
-    # 关键: 剥离"子"后缀（"光学光电子" → "光学光电"）
-    if industry.endswith("子") and len(industry) > 2:
-        industry = industry[:-1]
+    # V16.3 J: 删除"剥离'子'后缀"逻辑——V16.2.17 统一东财申万二级后官方名为
+    # "光学光电子"，剥离成"光学光电"导致 sht/med/lng 报告行业名不一致
     if not industry:
         field_sources["industry"] = field_sources.get("industry", "missing")
     if not field_sources.get("industry_code"):
@@ -745,9 +835,9 @@ def get_canonical_stock_data(code: str, force_realtime: bool = False) -> Any:
         main_net_buy_wan=main_net_buy_wan,
         main_net_buy_hands=main_net_buy_hands,
         main_net_buy_wan_1d=main_net_buy_wan_1d,
-        roe=roe,
-        gross_margin=gross_margin,
-        net_profit_margin=net_profit_margin,
+        roe=roe or 0.0,
+        gross_margin=gross_margin or 0.0,
+        net_profit_margin=net_profit_margin or 0.0,
         net_profit=net_profit,
         revenue=revenue,
         eps=eps,
@@ -1149,27 +1239,6 @@ def get_dividend_yield(code: str) -> Optional[float]:
     return None
 
 
-@cached(category="zhb_data", ttl_seconds=TTL["basic_info"], trading_day=True)
-def get_net_profit_kcf(code: str) -> Optional[float]:
-    """获取扣非净利润（万元）。
-
-    V16.0: tdxstat.cfg Col[14]，2026-08-03 联网核实与东财 KCFJCXSYJLR 14/14 匹配。
-    静态字段（财报期更新），ZHB only。
-    用途：净利润质量筛选（扣非 vs 归母差异）、基本面离线快照、盘前扫描。
-    """
-    try:
-        from stock_common import get_zhb_net_profit_kcf, is_zhb_data_fresh
-
-        if is_zhb_data_fresh(max_delay_days=3):
-            v = get_zhb_net_profit_kcf(code)
-            if v is not None:
-                return v
-    except Exception as _e:
-        _debug_log(f"data_provider error: {_e}")
-        pass
-    return None
-
-
 @cached(
     category="zhb_data", ttl_seconds=7 * 86400, valid_if=make_valid_if(check_zeros=False)
 )  # V15.2: tuple 不做空值检查，只拒 None
@@ -1301,11 +1370,12 @@ def get_amount_wan(code: str) -> Optional[float]:
     ZHB 缺失时降级到腾讯/TDX 实时数据。
     TTL：30分钟 + 交易日模式
     """
-    # 优先级 1：ZHB（T-1 数据，1 天延迟可接受）
+    # 优先级 1：ZHB（T-1 数据，1 天延迟可接受；V16.3 M: A 类仅盘前/非交易日可用——
+    # 9:30-24:00 含盘后 ZHB 仍为 T-1，不接受当日成交额用 T-1）
     try:
         from stock_common import get_zhb_amount_wan, is_zhb_data_fresh
 
-        if is_zhb_data_fresh(max_delay_days=1):
+        if is_zhb_data_fresh(max_delay_days=1) and _should_use_zhb_for_realtime():
             amount = get_zhb_amount_wan(code)
             if amount and amount > 0:
                 return amount
@@ -1350,11 +1420,12 @@ def get_main_net_buy(code: str) -> Optional[Dict[str, Any]]:
     """获取主力资金流向。
 
     准实时字段：优先ZHB（1天延迟可接受），失败fallback到API。
+    V16.3 M: A 类字段——9:30-24:00（含盘后）ZHB 为 T-1 不接受，仅盘前/非交易日用 ZHB。
     """
     try:
         from stock_common import get_zhb_main_net_buy, is_zhb_data_fresh
 
-        if is_zhb_data_fresh(max_delay_days=1):
+        if is_zhb_data_fresh(max_delay_days=1) and _should_use_zhb_for_realtime():
             data = get_zhb_main_net_buy(code)
             if data and any(data.values()):
                 return data
@@ -1434,15 +1505,19 @@ def get_stock_info(code: str) -> Optional[Dict[str, Any]]:
     valid_if=make_valid_if(check_zeros=False),
 )  # V15.2: 拒绝 None/空
 def get_turnover_pct(code: str) -> Optional[float]:
-    """V12.6: turnover_pct uses ZHB only, no HTTP fallback."""
+    """V12.6: turnover_pct uses ZHB only, no HTTP fallback.
+    V16.3 M: 换手率归 A 类（当日即时指标）——9:30-24:00 不接受 ZHB T-1，
+    仅盘前/非交易日用 ZHB；运行时 canonical 的腾讯兜底接管（get_canonical_stock_data）。
+    """
     try:
         from stock_common import get_zhb_single_stock_data
 
-        zhb = get_zhb_single_stock_data(code)
-        if zhb:
-            turnover = _safe_float(zhb.get("turnover_pct", 0))
-            if turnover > 0:
-                return turnover
+        if _should_use_zhb_for_realtime():
+            zhb = get_zhb_single_stock_data(code)
+            if zhb:
+                turnover = _safe_float(zhb.get("turnover_pct", 0))
+                if turnover > 0:
+                    return turnover
     except Exception as _e:
         _debug_log(f"data_provider error: {_e}")
         pass
@@ -1489,7 +1564,7 @@ def get_totals(code: str) -> Optional[float]:
 def get_market_cap(code: str) -> Optional[float]:
     """获取流通市值（亿元）。
 
-    静态字段：优先ZHB，失败则动态计算。
+    B 类字段（T-1~T-3 可接受）：ZHB 优先 max_delay=1，不做时段保护（V16.3 M 用户决策归 B）。
     """
     try:
         from stock_common import get_zhb_single_stock_data, is_zhb_data_fresh
@@ -1568,7 +1643,7 @@ def get_streak_days(code: str) -> Optional[int]:
     try:
         from stock_common import get_zhb_streak_days, is_zhb_data_fresh
 
-        if is_zhb_data_fresh(max_delay_days=1):
+        if is_zhb_data_fresh(max_delay_days=1) and _should_use_zhb_for_realtime():
             return get_zhb_streak_days(code)
     except Exception as _e:
         _debug_log(f"data_provider error: {_e}")
@@ -1835,24 +1910,31 @@ def get_stock_composite(code: str) -> Dict[str, Any]:
     try:
         from stock_common import get_zhb_single_stock_data, is_zhb_data_fresh
 
-        if is_zhb_data_fresh(max_delay_days=1):
-            zhb_data = get_zhb_single_stock_data(code)
-            if zhb_data:
-                zhb_fresh = True
+        # V16.3 M 数据新鲜度分级（用户原则：ZHB 成本最低优先；按字段精度分级）：
+        #   A 即时（价格/涨幅/成交额/换手/资金流）→ 实时优先，ZHB 仅兜底（max_delay=1）
+        #   B 中精度（PE/PB/股息率/连涨/市值）→ ZHB 优先（max_delay=3）
+        #   C 静态（股本/52周/行业/上市日/股东/分红/北向）→ **ZHB 无条件**（T-1 无影响，
+        #     不做新鲜度检查——周一盘前 ZHB=上周五延迟>1 天时 C 类仍应直接用，不走网络）
+        zhb_data = get_zhb_single_stock_data(code)
+        if zhb_data:
+            zhb_fresh = is_zhb_data_fresh(max_delay_days=3)
     except Exception as _e:
         _debug_log(f"data_provider error: {_e}")
         pass
 
+    if zhb_data:
+        # C 类静态字段：无条件用 ZHB（T-1 精度无影响）
+        result["high_52w"] = _safe_float(zhb_data.get("high_52w", 0))
+        result["low_52w"] = _safe_float(zhb_data.get("low_52w", 0))
+        result["total_shares"] = _safe_float(zhb_data.get("total_shares", 0))
+        result["industry"] = zhb_data.get("industry", "")
     if zhb_fresh and zhb_data:
+        # B 类中精度 + A 类兜底：仅 ZHB 新鲜（≤3 天）时用
         result["pe_ttm"] = _safe_float(zhb_data.get("pe_ttm", 0))
         result["pb"] = _safe_float(zhb_data.get("pb", 0))
         result["dividend_yield"] = _safe_float(zhb_data.get("dividend_yield", 0))
-        result["high_52w"] = _safe_float(zhb_data.get("high_52w", 0))
-        result["low_52w"] = _safe_float(zhb_data.get("low_52w", 0))
         result["change_ytd"] = _safe_float(zhb_data.get("change_ytd", 0))
         result["turnover_pct"] = _safe_float(zhb_data.get("turnover_pct", 0))
-        result["total_shares"] = _safe_float(zhb_data.get("total_shares", 0))
-        result["industry"] = zhb_data.get("industry", "")
         result["streak_days"] = int(zhb_data.get("streak_days", 0))
 
         float_mcap = _safe_float(zhb_data.get("float_mcap", 0))
@@ -1952,78 +2034,6 @@ def get_stock_composite(code: str) -> Dict[str, Any]:
         result["_trading_offset"] = _trading_offset
 
     return result
-
-
-# ═══════════════════════════════════════════════════
-# 通用字段获取接口
-# ═══════════════════════════════════════════════════
-
-
-def get_field_value(code: str, field_name: str) -> Optional[Any]:
-    """通用字段获取接口。
-
-    根据字段时效性自动选择最优数据源。
-    """
-    field_name = field_name.lower()
-
-    if field_name == "price":
-        return get_stock_price(code)
-    elif field_name == "change_pct":
-        return get_change_pct(code)
-    elif field_name == "pe_ttm":
-        return get_pe_ttm(code)
-    elif field_name == "pb":
-        return get_pb(code)
-    elif field_name == "dividend_yield":
-        return get_dividend_yield(code)
-    elif field_name == "mcap_yi":
-        return calc_mcap_yi(code)
-    elif field_name == "main_net_buy":
-        return get_main_net_buy(code)
-    elif field_name == "high_52w":
-        _range = get_52w_range(code)
-        return _range[0] if _range else None
-    elif field_name == "low_52w":
-        _range = get_52w_range(code)
-        return _range[1] if _range else None
-    elif field_name == "change_ytd":
-        return get_change_ytd(code)
-    elif field_name == "amount_wan":
-        return get_amount_wan(code)
-    elif field_name == "turnover_pct":
-        return get_turnover_pct(code)
-    elif field_name == "total_shares" or field_name == "totals":
-        return get_totals(code)
-    elif field_name == "float_mcap_yi" or field_name == "market_cap":
-        return get_market_cap(code)
-    elif field_name == "industry":
-        return get_industry(code)
-    elif field_name == "streak_days":
-        return get_streak_days(code)
-
-    try:
-        from stock_common import get_zhb_single_stock_data, is_zhb_data_fresh
-
-        if _is_realtime(field_name):
-            if is_zhb_data_fresh(max_delay_days=0):
-                zhb = get_zhb_single_stock_data(code)
-                if zhb:
-                    return zhb.get(field_name)
-        elif _is_near_realtime(field_name):
-            if is_zhb_data_fresh(max_delay_days=1):
-                zhb = get_zhb_single_stock_data(code)
-                if zhb:
-                    return zhb.get(field_name)
-        else:
-            if is_zhb_data_fresh(max_delay_days=3):
-                zhb = get_zhb_single_stock_data(code)
-                if zhb:
-                    return zhb.get(field_name)
-    except Exception as _e:
-        _debug_log(f"data_provider error: {_e}")
-        pass
-
-    return None
 
 
 # ═══════════════════════════════════════════════════
@@ -2139,18 +2149,6 @@ def dict_to_normalized_quote(code: str, raw: dict, source=None):
         source=source,
         time_anchor=TimeAnchor.T_MINUS_1,
     )
-
-
-def get_stock_composite_dataclass(code: str):
-    """V13.1: get_stock_composite 的 dataclass 输出版本（opt-in）。
-
-    返回 NormalizedQuote 实例；如需更多字段（pe_ttm/pb 等），可继续
-    通过 dict_to_normalized_quote 的扩展点实现。
-    """
-    raw = get_stock_composite(code)
-    if not raw:
-        return None
-    return dict_to_normalized_quote(code, raw)
 
 
 def get_market_snapshot_dataclass(codes=None):

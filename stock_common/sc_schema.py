@@ -215,28 +215,28 @@ FIELD_SPECS: Tuple[FieldSpec, ...] = (
         is_real_time=False, zhb_t_minus_1_acceptable=True, batch_friendly=True,
     ),
 
-    # ─── 财务类（ZHB 即可）───
+    # ─── 财务类（ZHB 即可；V16.3 O: TDX 0x0010/F10 为实际主源——ZHB 无这些字段，见 field_dict §零）───
     FieldSpec(
         name="net_profit", description="净利润（元）",
-        source_preference=(DataSource.ZHB,),
+        source_preference=(DataSource.TDX, DataSource.ZHB),
         time_anchor=TimeAnchor.T_MINUS_1, unit=Unit.YUAN,
         is_real_time=False, zhb_t_minus_1_acceptable=True, batch_friendly=False,
     ),
     FieldSpec(
         name="revenue", description="营业收入（元）",
-        source_preference=(DataSource.ZHB,),
+        source_preference=(DataSource.TDX, DataSource.ZHB),
         time_anchor=TimeAnchor.T_MINUS_1, unit=Unit.YUAN,
         is_real_time=False, zhb_t_minus_1_acceptable=True, batch_friendly=False,
     ),
     FieldSpec(
         name="roe", description="ROE（百分点）",
-        source_preference=(DataSource.ZHB,),
+        source_preference=(DataSource.TDX, DataSource.ZHB),
         time_anchor=TimeAnchor.T_MINUS_1, unit=Unit.PERCENT,
         is_real_time=False, zhb_t_minus_1_acceptable=True, batch_friendly=False,
     ),
     FieldSpec(
         name="eps", description="每股收益（元）",
-        source_preference=(DataSource.ZHB,),
+        source_preference=(DataSource.TDX, DataSource.ZHB),
         time_anchor=TimeAnchor.T_MINUS_1, unit=Unit.YUAN,
         is_real_time=False, zhb_t_minus_1_acceptable=True, batch_friendly=False,
     ),

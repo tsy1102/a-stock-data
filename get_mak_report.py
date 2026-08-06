@@ -48,6 +48,7 @@ from stock_common import (
     _debug_log,
     _load_strategy_config,
     get_recent_dragon_tiger,
+    baidu_kline_full,
     BaseReportRunner,
     parse_args as common_parse_args,
     is_trading_day,
@@ -245,9 +246,20 @@ async def _get_zhb_market_data():
             # V15.5.15: 腾讯实时优先（今日 change_pct/price），缺失回退 ZHB T-1
             _tq = _tencent_map.get(code, {})
             price = _safe_float(_tq.get("price") or price_map.get(code, {}).get("price", 0))
-            change_pct = _safe_float(_tq.get("change_pct") or stat.get("change_pct", 0))
-            amount_wan = _safe_float(stat.get("amount", 0))
-            turnover = _safe_float(price_map.get(code, {}).get("turnover_pct", 0))
+            # V16.3 O21: 平盘（change_pct=0）也是今日事实——is not None 判定，0 不回退 ZHB T-1
+            _tq_cp = _tq.get("change_pct")
+            change_pct = _safe_float(_tq_cp if _tq_cp is not None else stat.get("change_pct", 0))
+            # V16.3 O21: amount 优先腾讯 T 日（原 stat.amount=T-1——盘中"今日成交额"实为昨日）
+            amount_wan = _safe_float(
+                _tq.get("amount_wan")
+                if _tq.get("amount_wan") is not None
+                else stat.get("amount", 0)
+            )
+            # V16.3 O21: turnover 优先腾讯 T 日（原 price_map=ZHB T-1）
+            _tq_to = _tq.get("turnover_pct")
+            turnover = _safe_float(
+                _tq_to if _tq_to is not None else price_map.get(code, {}).get("turnover_pct", 0)
+            )
 
             mcap_yi = _calc_mcap_yi(code, price)
 
@@ -256,7 +268,8 @@ async def _get_zhb_market_data():
             ret_20d = _safe_float(stat.get("change_20d", 0))
             ret_60d = _safe_float(stat.get("change_60d", 0))
 
-            ret_3d = _calc_3d_from_daily(stat)
+            # V16.3 O21: ret_3d 的 r0 用腾讯 T 日（原 stat.change_pct=T-1——盘中 3 日偏离失真）
+            ret_3d = _calc_3d_from_daily(stat, today_change_pct=change_pct if _tq_cp is not None else None)
 
             result.append(
                 {
@@ -289,52 +302,16 @@ async def _get_zhb_market_data():
         return []
 
 
-def _canonicalize_stock(code: str, stock_dict: Dict[str, Any]) -> Any:
-    """V15.1: 把 _get_zhb_market_data() 返回的 dict 转换为 CanonicalStockData 强类型对象。
-
-    用于下游需要强类型访问的场景（如单只深度分析的字段校验）。
-    大量批量访问请直接使用原 dict（性能优先）。
-
-    Args:
-        code: 6 位股票代码
-        stock_dict: _get_zhb_market_data() 返回的 dict
-
-    Returns:
-        CanonicalStockData 实例；若 ZHB 无该股票则返回空数据实例
-    """
-    try:
-        from data_provider import get_canonical_stock_data
-
-        # 优先走 get_canonical_stock_data（统一权威），失败时 fallback 到 dict 构造
-        return get_canonical_stock_data(code)
-    except Exception:
-        from stock_common.sc_schema import CanonicalStockData
-
-        return CanonicalStockData(
-            code=code,
-            name=stock_dict.get("name", ""),
-            price=stock_dict.get("price", 0.0),
-            change_pct=stock_dict.get("change_pct", 0.0),
-            mcap_yi=stock_dict.get("mcap_yi", 0.0),
-            change_5d=stock_dict.get("ret_5d", 0.0),
-            change_10d=stock_dict.get("ret_10d", 0.0),
-            change_20d=stock_dict.get("ret_20d", 0.0),
-            change_60d=stock_dict.get("ret_60d", 0.0),
-            industry_code=stock_dict.get("industry_code", ""),
-            data_source="zhb",
-            time_anchor="t-1",
-            is_valid=False,
-        )
-
-
-def _calc_3d_from_daily(stat):
+def _calc_3d_from_daily(stat, today_change_pct=None):
     """V10.1: 从T/T-1/T-2日涨跌幅推算3日累计涨跌幅。
 
     使用复利计算：(1+r1)*(1+r2)*(1+r3) - 1
     V16.0: 三值全 0（数据缺失）时返回 0，不再用 change_5d*0.6 捏造 fudge 值，
     避免把捏造数据当作真实 3 日涨跌幅进入异动判定。
+    V16.3 O21: today_change_pct 参数——盘中腾讯 T 日涨跌幅优先（原 stat.change_pct 为 T-1）。
     """
-    r0 = _safe_float(stat.get("change_pct", 0)) / 100.0
+    _r0_raw = today_change_pct if today_change_pct is not None else stat.get("change_pct", 0)
+    r0 = _safe_float(_r0_raw) / 100.0
     r1 = _safe_float(stat.get("change_pct_1d", 0)) / 100.0
     r2 = _safe_float(stat.get("change_pct_2d", 0)) / 100.0
 
@@ -347,7 +324,7 @@ def _calc_3d_from_daily(stat):
 
 def get_baidu_kline(code, days=20):
     """V4: K线数据 → tdx_client 适配器（TDX日K线，自动fallback百度）"""
-    keys, rows = tdx_get_security_bars(code, count=days + 10)
+    keys, rows = baidu_kline_full(code, count=days + 10)
     if not keys or not rows:
         return [], []
     idx_map = {k: i for i, k in enumerate(keys)}
@@ -382,7 +359,22 @@ def get_index_returns():
                         return closes
         except Exception as _e:
             _debug_log(f"mak index_kline tdx error {ic}: {_e}")
-        # 腾讯兜底：至少拿到最新收盘价（只能算 1 日回报）
+        # 腾讯日K序列兜底（V16.3 O19: 原实时 2 值 → ret_3d/10d/20d/60d 静默 None——
+        # 改用 ifzq.gtimg.cn 前复权日K，完整序列）
+        try:
+            r = _quick_request(
+                f"https://ifzq.gtimg.cn/appstock/app/fqkline/get?param={ic},day,,,250,qfq",
+                timeout=10,
+            )
+            if r:
+                d = (r.json().get("data") or {}).get(ic, {})
+                kline = d.get("qfqday") or d.get("day") or []
+                closes = [_safe_float(row[2]) for row in kline if len(row) > 2 and row[2]]
+                if closes:
+                    return closes
+        except Exception as _e:
+            _debug_log(f"mak index_kline tencent kline error {ic}: {_e}")
+        # 最后兜底：实时 2 值（仅 1 日回报——指标静默 None 有提示）
         try:
             r = _quick_request(f"https://qt.gtimg.cn/q={ic}", timeout=10)
             if r:
@@ -413,11 +405,17 @@ def get_abnormal_announcements(code):
     try:
         td = date.today().strftime("%Y-%m-%d")
         sd = (date.today() - timedelta(days=7)).strftime("%Y-%m-%d")
-        oid = (
-            "gssh0" + code
-            if code.startswith("6")
-            else ("gsbj0" + code if code.startswith(("8", "4")) else "gssz0" + code)
-        )
+        # V16.3 O16: 改用动态 orgId 查询（szse_stock.json——硬编码 gssx0 对 920 北交所号段失效）
+        try:
+            from stock_common.sc_datasource import _cninfo_get_orgid
+
+            oid = _cninfo_get_orgid(code)
+        except Exception:
+            oid = (
+                "gssh0" + code
+                if code.startswith("6")
+                else ("gsbj0" + code if code.startswith(("92", "8", "4")) else "gssz0" + code)
+            )
         # orgId精准查询
         payload = {
             "orgId": oid,
@@ -706,11 +704,14 @@ def get_all_sectors():
 
     V15.1: 当 TDX/东财 HTTP 不可用时，自动旁路到 ZHB tdxstat + industry_code
           自聚合板块行情（覆盖 ~90% 申万行业），确保 mak 报告 C/D/E/F 不空白。
+    V16.3 L（push2 风控治本）: 优先级反转——**ZHB 旁路优先**（_build_sectors_from_zhb
+          129 申万二级板块全成员、零网络、零 push2）；TDX board_list 仅当 ZHB 失败时兜底。
+          原 TDX→东财 路径的 BK 码与 MAC 成员码体系不匹配 → 每板块 fallback push2 clist
+          （100 次）→ 2026-08-06 实跑触发 push2 风控。
     """
-    sectors = tdx_get_board_list(0)
+    sectors = _build_sectors_from_zhb()
     if not sectors:
-        # V15.1: ZHB 旁路 - 从 tdxstat 全市场快照按 industry_code 自聚合板块
-        sectors = _build_sectors_from_zhb()
+        sectors = tdx_get_board_list(0)
         if not sectors:
             return []
     # 第1轮: 所有板块粗评分（仅涨跌幅），取前 50 进入精评
@@ -778,9 +779,9 @@ def _build_sectors_from_zhb() -> List[Dict[str, Any]]:
 
             _tm = _tencent_batch_fallback(list(snap.keys())) or {}
             for _code, _tq in _tm.items():
-                _cp = _safe_float(_tq.get("change_pct"))
-                if _tq.get("price") and _cp != 0:
-                    _tencent_rt[_code] = _cp
+                # V16.3 O21: 平盘（0%）也是今日事实——is not None 判定，0 不回退 ZHB T-1
+                if _tq.get("change_pct") is not None:
+                    _tencent_rt[_code] = _safe_float(_tq.get("change_pct", 0))
         except Exception as _e:
             _debug_log(f"mak ZHB sectors tencent cover: {_e}")
 
@@ -997,26 +998,49 @@ def analyze_top_stocks(top_sectors):
             from stock_common.sc_datasource import get_zhb_full_market_snapshot
 
             snap = get_zhb_full_market_snapshot() or {}
+            # V16.3 J: 名称兜底用腾讯批量（profile 仅覆盖 1644 只，缺失时显示 code(code)）
+            _tq_names = {}
+            # V16.3 O22: _tm 在 try 前初始化（原仅 try 内赋值——异常时 E 段整段 NameError 丢失）
+            _tm: dict = {}
+            try:
+                from tdx_client import _tencent_batch_fallback
+
+                _tm = _tencent_batch_fallback(member_codes) or {}
+                _tq_names = {_c: _q.get("name", "") for _c, _q in _tm.items() if _q.get("name")}
+            except Exception as _e:
+                _debug_log(f"mak E tencent names: {_e}")
             from zhb_client import get_stock_name_from_zhb
 
             stocks = []
             for _c in member_codes:
                 _st = snap.get(_c) or {}
-                _cp = _safe_float(_st.get("change_pct", 0))
+                _tq = _tm.get(_c) or {}
+                # V16.3 O21: E 段成分股 change_pct 优先腾讯 T 日实时（原只用于 name——
+                # 盘中运行 E 段"涨停梯队/龙头"实为昨日名单，与 D 段板块 T 日口径错位）
+                _cp = (
+                    _safe_float(_tq.get("change_pct"))
+                    if _tq.get("change_pct") is not None
+                    else _safe_float(_st.get("change_pct", 0))
+                )
                 _mc = _safe_float(_st.get("mcap_yi", 0))
                 _to = _safe_float(_st.get("turnover", 0))
+                _nm = get_stock_name_from_zhb(_c) or _tq_names.get(_c, "") or _c
                 stocks.append(
                     {
                         "code": _c,
-                        "name": get_stock_name_from_zhb(_c) or _c,
+                        "name": _nm,
                         "change_pct": _cp,
-                        "price": _safe_float(_st.get("price", 0)),
+                        "price": _safe_float(_tq.get("price") or _st.get("price", 0)),
                         "mcap_yi": _mc,
                         "turnover": _to,
                         "amount_yi": (
-                            _safe_float(_st.get("amount", 0)) / 10000.0
-                            if _st.get("amount", 0)
-                            else 0
+                            _safe_float(_tq.get("amount_wan", 0)) / 10000.0
+                            if _tq.get("amount_wan")
+                            else (
+                                _safe_float(_st.get("amount", 0)) / 10000.0
+                                if _st.get("amount", 0)
+                                else 0
+                            )
                         ),
                         "main_net_amount": _safe_float(_st.get("main_net_buy_amount", 0)) * 1e4,
                     }
@@ -1225,7 +1249,8 @@ async def generate_sector_report(output_path):
                     _main_net_buy_count += 1
         _total_main_net_buy_yi = _total_main_net_buy / 10000.0
         L(
-            f"  💰 主力资金: 全市场主力净流入{_total_main_net_buy_yi:+.2f}亿元（{_main_net_buy_count}只个股净流入）"
+            f"  💰 主力资金: 全市场主力净流入{_total_main_net_buy_yi:+.2f}亿元"
+            f"（{_main_net_buy_count}只个股净流入，ZHB T-1 口径）"
         )
         if _total_main_net_buy_yi > 50:
             L(f"    🟢 主力资金大幅净流入，市场资金面偏多")
@@ -1501,7 +1526,7 @@ async def generate_sector_report(output_path):
                     # ST/退市不在 all_stocks 池中 → 从 TDX K线 临时算 3/10/20 日涨幅
                     _r3 = _r10 = _r20 = 0
                     try:
-                        _k, _kr = tdx_get_security_bars(_c, count=30)
+                        _k, _kr = baidu_kline_full(_c, count=30)
                         if _k and _kr:
                             _ci = next(
                                 (i for i, kk in enumerate(_k) if kk in ("close", "close_price")), -1
@@ -1577,7 +1602,10 @@ async def generate_sector_report(output_path):
     top_analysis = analyze_top_stocks(top10)
     for ta in top_analysis:
         nm = normalize_industry(ta["sector"])
-        L(f"\n  🔥 {nm} ({ta['data']['code']}) 总分={ta['data'].get('score',0):.1f}")
+        _code = ta['data'].get('code', '')
+        # V16.3 L: ZHB 旁路板块 code=行业名（非 BK 码）→ 避免 "煤炭开采 (煤炭开采)" 重复
+        _code_show = f" ({_code})" if _code and _code != ta["sector"] else ""
+        L(f"\n  🔥 {nm}{_code_show} 总分={ta['data'].get('score',0):.1f}")
 
         L(f"     ├─ 成分股总数: {ta.get('total_stocks',0)} 只")
         if ta['limit_up_count'] > 0:

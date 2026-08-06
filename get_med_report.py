@@ -368,7 +368,8 @@ async def generate_report_async(session, code, output_path, ind_comp=None, hsgt=
         # V16.0: CanonicalStockData 无 net_profit_yi 字段（只有 net_profit，单位元）→ /1e8 转亿元
         net_profit_yi = (cdata.net_profit or 0) / 1e8
         if net_profit_yi > 0 or (cdata.roe is not None and cdata.roe > 0):
-            roe_str = f"{cdata.roe:.2f}%" if cdata.roe is not None else "N/A"
+            # V16.3 O22: roe=0 视为缺失（canonical 缺失时 0.0 伪装——0% 无信息量）
+            roe_str = f"{cdata.roe:.2f}%" if cdata.roe and cdata.roe > 0 else "N/A"
             L(
                 f"  [ZHB 离线快照] 归母净利润: {net_profit_yi:.2f} 亿元 | ROE: {roe_str} | PE(TTM): {cdata.pe_ttm:.1f}x | PB: {cdata.pb:.2f}x"
             )

@@ -58,26 +58,6 @@ async def test_lng_report():
     print("✅ lng: 舆情与互动章节存在")
 
 
-@pytest.mark.real_network
-@pytest.mark.asyncio
-async def test_ful_report():
-    """测试全维度报告中的核心章节。"""
-    from get_ful_report import analyze_stock
-    _name, r = await analyze_stock('600519')
-    assert '1. 行情与技术分析' in r, "缺少【行情与技术分析】章节"
-    print("✅ ful: 行情与技术分析章节存在")
-    assert '2. 机构研报与估值' in r, "缺少【机构研报与估值】章节"
-    print("✅ ful: 机构研报与估值章节存在")
-    assert '3. 行业对比分析' in r, "缺少【行业对比分析】章节"
-    print("✅ ful: 行业对比分析章节存在")
-    assert '4. 交易信号与题材' in r, "缺少【交易信号与题材】章节"
-    print("✅ ful: 交易信号与题材章节存在")
-    assert '7. 基本面与财务健康' in r, "缺少【基本面与财务健康】章节"
-    print("✅ ful: 基本面与财务健康章节存在")
-    assert '8. 风险扫描' in r, "缺少【风险扫描】章节"
-    print("✅ ful: 风险扫描章节存在")
-
-
 async def main():
     print("=" * 60)
     print("测试 F10 章节集成")
@@ -88,9 +68,6 @@ async def main():
 
     print("\n--- 2. 长线报告 (lng) ---")
     await test_lng_report()
-
-    print("\n--- 3. 全维度报告 (ful) ---")
-    await test_ful_report()
 
     print("\n" + "=" * 60)
     print("全部测试通过！")

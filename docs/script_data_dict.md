@@ -5,7 +5,7 @@
 > **基于**：[field_dict.md](file:///d:/GitHub/test/docs/field_dict.md)（V16.1 字段元数据，§12 多源字典）
 > **目的**：明确每个脚本的每个字段从哪个接口获取、走哪个中间层函数、单位/含义如何、**优先级**，与 field_dict 形成"双字典"对照。
 > **使用原则**：脚本调整前必查，避免重复反向工程；优先采用本字典已确定的中间层函数。
-> **V16.1 变化**：① `get_ful_report.py` 已下线（技术/风险引擎迁移至 `sc_technical.py`/`sc_risk.py`）② push2 字段包 19→50（涨停/跌停价/EPS/BPS/52周/资金流 12 字段）③ 评分权重可配置（scoring_sht/med/lng）④ 新数据源（levistock/AxData）已录入 field_dict §12.10-12.14，脚本未接入但可扩展
+> **V16.1 变化**：① `get_ful_report.py` 已删除（V16.3 O19——能力并入 sht/med/lng）② push2 字段包 19→50（涨停/跌停价/EPS/BPS/52周/资金流 12 字段）③ 评分权重可配置（scoring_sht/med/lng）④ 新数据源（levistock/AxData）已录入 field_dict §12.10-12.14，脚本未接入但可扩展
 
 ---
 
@@ -264,7 +264,7 @@
 
 类似 sht；PE/PB 用 ZHB only ✅。
 
-### 5.6 ~~get_ful_report.py~~（V16.1 已下线）
+### 5.6 ~~get_ful_report.py~~（V16.3 O19 已删除）
 
 > **V16.1 下线**：全维度报告不再生成（main.py `--ful` 仅提示）。其独有能力已迁移：
 > - 技术指标引擎（MACD/RSI/BOLL/KDJ/量能）→ `stock_common/sc_technical.py`（sht/med 复用）

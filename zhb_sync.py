@@ -37,7 +37,7 @@ from typing import Optional, Dict, Any
 try:
     from zhb_client import (
         get_zhb, _download_zhb_zip, _parse_zhb_data, _save_to_cache,
-        _cleanup_old_files, _get_cache_path, _ZHB_CACHE_DIR, _KEEP_DAYS,
+        _get_cache_path, _ZHB_CACHE_DIR,
         _acquire_file_lock, _release_file_lock, _check_disk_space,
         _zhb_memory_cache, _zhb_cache_lock
     )
@@ -45,7 +45,7 @@ except ImportError:
     sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
     from zhb_client import (
         get_zhb, _download_zhb_zip, _parse_zhb_data, _save_to_cache,
-        _cleanup_old_files, _get_cache_path, _ZHB_CACHE_DIR, _KEEP_DAYS,
+        _get_cache_path, _ZHB_CACHE_DIR,
         _acquire_file_lock, _release_file_lock, _check_disk_space,
         _zhb_memory_cache, _zhb_cache_lock
     )
@@ -250,8 +250,7 @@ def sync_once(force: bool = False) -> bool:
             return True
 
         _save_to_cache(zhb.date, data)
-        _cleanup_old_files()
-
+    
         with _zhb_cache_lock:
             global _zhb_memory_cache
             _zhb_memory_cache = zhb

@@ -4,6 +4,32 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
+## [16.3.1] - 2026-08-06
+
+**V16.3 O 系列：F10 财务接入 + 字典全面破解 + 东财限流治本 + 统一层梳理。**
+
+### 🆕 新增
+
+- **TDX F10 财务分析接入**：`_EasyTdxAdapter` 补 F10C/F10 代理（0x02CF/0x02D0，此前静默失败）——roe/毛利率/eps 走 F10、net_profit/revenue/holder_count 走 0x0010（金额单位角→/10 得元）；canonical 7 财务字段全有值
+- **字典全面破解**（13 轮 + 多源交叉）：腾讯 33 未知位破 12（委比/涨速/5日/20日涨幅/逐笔金额量/股息率TTM/52周/委差）、push2 财务九件套（f105/f109/f173/f183-f188/f191/f192）+ 3 误标修正；新浪 [33] 逐笔串互验；field_dict 623 字段/723 记录 + §零·B 自动生成矩阵
+- **数据源难易度修正**（O18）：按参考仓库 v3.2 + 实测重排（ZHB→TDX/腾讯→新浪/巨潮→同花顺→AxData→东财）+ 数据获取模式维度（批量单字段 vs 逐股多字段）
+- **统一层多源对齐**（O17/O20）：get_roe_trend_series 下沉、腾讯 52周/股息率接入、新浪财务 fallback 结构修复、K 线统一 baidu_kline_full
+
+### 🔧 修复
+
+- **东财限流方案 A**（O15）：所有东财请求统一跨进程 1.0-1.3s 全局节奏（45000/h 阈值余量 30 倍）——修复 per-domain 限流多域叠加超共享风控
+- **强制直连**（O14）：除 GD 上传外全部忽略系统代理（FlClash 机房 IP 封禁根因）+ 4 处裸调用补齐
+- **920 北交所路由**（O16）：_market_code 北交所分支 + 新浪前缀 bj + 腾讯僵尸数据检测 + 板块资金流翻页 + clean_codes 强化（参考仓库 releases 对照 5 项）
+- **统一层覆盖修复**（O19/O22）：lng 0x0010 单位 /10（10 倍错误）、val strategy_10/20、mak E 段/ret_3d/指数K线、新浪 fallback 结构（假 ROE 缓存）、_quick_request 双重节流、深交所备胎源 opener TypeError 等 7 项双路审查修复
+
+### 🗑️ 移除
+
+- **get_ful_report.py 删除**（能力已并入 sht/med/lng——技术/风险引擎早已迁移 sc_technical/sc_risk）；main.py --ful 保留友好提示
+
+### 📊 val/mak 新鲜度（O21）
+
+- 盘中/盘后避免 ZHB T-1 渗入：mak E 段成分股/ret_3d/amount/turnover 腾讯 T 日优先、val 策略20 资金占比同基准、平盘股 change_pct is not None 判定；慢变量（区间涨幅/资金控盘）标注 T-1
+
 ## [16.3.0] - 2026-08-05
 
 **全项目审查整改（74 文件核查，用户批准全改）+ 文档/依赖清理。**

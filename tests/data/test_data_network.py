@@ -3,6 +3,7 @@
 V15: 测试 ZHB 事件锁、令牌桶/熔断器核心防御机制
 """
 import unittest
+import time
 from unittest.mock import Mock, patch, MagicMock
 
 
@@ -72,3 +73,39 @@ class TestCacheEventLock(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class TestEmBanCooldown(unittest.TestCase):
+    """V16.2.8: 连续 3 次断连 → 20h 封禁冷却。"""
+
+    def setUp(self):
+        import stock_common.sc_network as sn
+        self.sn = sn
+        sn._EM_BAN_STREAK.clear()
+        sn._EM_BANNED_UNTIL.clear()
+
+    def tearDown(self):
+        self.sn._EM_BAN_STREAK.clear()
+        self.sn._EM_BANNED_UNTIL.clear()
+
+    def test_below_threshold_not_banned(self):
+        self.sn._record_em_disconnect("push2.eastmoney.com")
+        self.sn._record_em_disconnect("push2.eastmoney.com")
+        self.assertFalse(self.sn._em_is_banned("push2.eastmoney.com"))
+
+    def test_three_strikes_banned(self):
+        for _ in range(3):
+            self.sn._record_em_disconnect("push2.eastmoney.com")
+        self.assertTrue(self.sn._em_is_banned("push2.eastmoney.com"))
+
+    def test_cooldown_expiry_clears(self):
+        self.sn._EM_BANNED_UNTIL["push2.eastmoney.com"] = time.time() - 1  # 已过期
+        self.assertFalse(self.sn._em_is_banned("push2.eastmoney.com"))
+        self.assertNotIn("push2.eastmoney.com", self.sn._EM_BANNED_UNTIL)
+
+    def test_domains_isolated(self):
+        for _ in range(3):
+            self.sn._record_em_disconnect("push2.eastmoney.com")
+        self.assertTrue(self.sn._em_is_banned("push2.eastmoney.com"))
+        self.assertFalse(self.sn._em_is_banned("datacenter-web.eastmoney.com"))
+

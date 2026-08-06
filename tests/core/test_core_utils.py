@@ -2,6 +2,7 @@
 V14.0: 扩充测试覆盖 _safe_float / get_board_type / is_limit_up / clean_codes 全部边界场景。
 """
 from __future__ import annotations
+import unittest
 
 import os
 import sys
@@ -208,3 +209,26 @@ class TestCleanCodes:
 
 if __name__ == "__main__":
     pytest.main([__file__, "-v"])
+
+
+class TestSafeCast(unittest.TestCase):
+    """V16.3 E H1: zhb_client _safe_cast（原 4 处 _f 嵌套提取为模块级）。"""
+
+    def _cast(self, parts, idx, cast=float):
+        from zhb_client import _safe_cast
+        return _safe_cast(parts, idx, cast)
+
+    def test_normal(self):
+        self.assertEqual(self._cast(["a", "1.5"], 1), 1.5)
+        self.assertEqual(self._cast(["a", "7"], 1, int), 7)
+
+    def test_empty_returns_none(self):
+        self.assertIsNone(self._cast(["a", ""], 1))
+        self.assertIsNone(self._cast(["a", "  "], 1))
+
+    def test_out_of_range_returns_none(self):
+        self.assertIsNone(self._cast(["a", "b"], 5))
+
+    def test_cast_failure_returns_raw(self):
+        self.assertEqual(self._cast(["a", "not-a-number"], 1), "not-a-number")
+

@@ -1,0 +1,20 @@
+{
+ "date": "20260812",
+ "start": "2026-08-12 17:07:40",
+ "sources": {
+  "em_hot": {
+   "ok": true,
+   "secs": 4.3,
+   "file": "C:\\Opencode\\docs\\field_verification\\20260812\\raw_em_hot.json"
+  }
+ },
+ "end": "2026-08-12 17:07:44",
+ "total_secs": 4.3,
+ "updated": "2026-08-12 18:00 (补齐: ulist239 北交所bug修复20/20, cninfo/reports全量20/20, em_hot push2delay修复50条)",
+ "incomplete": {
+  "push2": "8/20 push2主域封禁中(不重采,push2_full已覆盖)",
+  "thsdk": "收盘不可用,盘中补",
+  "tdxquant_bse": "北交所2只服务器空",
+  "push2ex_limit_down": "8/12 跌停0只(92涨停,市场强)"
+ }
+}

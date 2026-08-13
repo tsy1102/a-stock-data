@@ -1,4 +1,4 @@
-# ============================================================================
+﻿# ============================================================================
 # run_tests.ps1 - 测试统一入口（shell 层强制走 .ps1 中转，禁止直接 pytest）
 # ============================================================================
 # 目的: 解决 shell 转义 + 路径（-LiteralPath）+ 退出码透传，避免 pytest 直连
@@ -23,6 +23,9 @@ param(
 
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
+# V16.4.1: 强制 UTF-8 输出（opencode 子进程不加载 Profile，系统代码页 936 时中文乱码）
+[Console]::OutputEncoding = [System.Text.Encoding]::UTF8
+$OutputEncoding = [Console]::OutputEncoding
 
 # ────────────────────────────────────────────────────────────────────────────
 # 定位仓库根目录（本脚本位于 <root>/scripts/）

@@ -36,7 +36,7 @@ pytestmark = pytest.mark.real_network  # 需 REAL_NETWORK=1 才运行（conftest
 
 _PROXIES = {"http": None, "https": None}
 _BASE_HDRS = {
-    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/126.0.0.0",
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36",
     "Referer": "https://quote.eastmoney.com/",
 }
 _UT = "f057cbcbce2a86e2866ab8877db1d059"

@@ -29,7 +29,7 @@ import urllib3
 from datetime import datetime, timedelta
 
 try:
-    from config import EM_MIN_INTERVAL, HTTP_TIMEOUT_SECONDS
+    from core.config import EM_MIN_INTERVAL, HTTP_TIMEOUT_SECONDS
     _USE_CONFIG = True
 except ImportError:
     EM_MIN_INTERVAL = 1.0
@@ -71,7 +71,6 @@ __all__ = [
     '_gen_async_last_request', '_HAS_ASYNCIO', '_HAS_AIOHTTP',
     '_ensure_async_locks', '_em_wait_process_interval_async',
     '_gen_wait_process_interval_async', 'create_async_session',
-    'get_em_async_session',  # V12.2: 全局异步Session单例
     '_async_request_with_retry', '_async_quick_request',
     'requires_push2',
     'RateLimitBlockedError',
@@ -120,7 +119,7 @@ def _debug_log(msg: str) -> None:
 # ═══════════════════════════════════════
 # 常量
 # ═══════════════════════════════════════
-UA: str = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36"
+UA: str = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36"
 DATACENTER_URL: str = "https://datacenter-web.eastmoney.com/api/data/v1/get"
 JP_URL: str = "http://83.push2.eastmoney.com/api/qt/clist/get"
 
@@ -202,6 +201,8 @@ _DOMAIN_LIMITS: Dict[str, Dict[str, Any]] = {
     "query.sse.com.cn": {"sleep_ms": 200, "semaphore": None, "rps": 3.0},
     "vip.stock.finance.sina.com.cn": {"sleep_ms": 150, "semaphore": None, "rps": 5.0},
     "data.10jqka.com.cn": {"sleep_ms": 150, "semaphore": None, "rps": 5.0},
+    # V16.3.3: 同花顺官方金融数据 REST（fuyao，字典 §12.8.12c）——官方 4001 限流 + 本地 500ms/2rps 保守
+    "fuyao.aicubes.cn": {"sleep_ms": 500, "semaphore": None, "rps": 2.0},
 }
 # 每个域名独立的最后请求时间
 _DOMAIN_LAST_TIME: Dict[str, float] = {}
@@ -467,6 +468,16 @@ def em_get(url: str, params: dict | None = None, headers: dict | None = None,
             # V16.2.3: 429（瞬时风控）退避后重试一次；403 直接失败（重试 403 加速封禁）
             if _status == 429:
                 try:
+                    # V16.4.1: 重试前补一次节流——原裸重试绕过令牌桶/进程间隔/时间戳,
+                    # 封禁恢复期可能全速重试加重风控(2026-08-12 二次封禁教训)
+                    try:
+                        _min_i = max(float(EM_MIN_INTERVAL), 1.0 / max(_cfg_rps, 1e-6))
+                        _el2 = time.time() - _EM_LAST_CALL[0]
+                        if _el2 < _min_i:
+                            time.sleep(_min_i - _el2)
+                        _EM_LAST_CALL[0] = time.time()
+                    except Exception:
+                        pass
                     _r2 = EM_SESSION.get(url, params=params, headers=session_headers,
                                          timeout=timeout, **kwargs)
                     if _r2 is not None and _r2.status_code not in (403, 429):
@@ -507,106 +518,89 @@ def em_get(url: str, params: dict | None = None, headers: dict | None = None,
         _RL_STATS["em_request_count"] += 1
 
 
-def _em_wait_process_interval() -> float:
-    """V16.2 修复: 进程间协调（跨进程原子）—— 用共享文件锁把"检查间隔+更新标记"做成原子操作，
-    原实现读 mtime 与写文件分离，并发 3-5 进程时速率按进程倍增。
-    返回实际等待的秒数（0 表示无需等待）。"""
-    import random as _rand
-    _target_interval = 1.0 + _rand.uniform(0.10, 0.30)
+def _process_interval_wait(lock_file: str, target_interval: float,
+                           use_lock: bool = False, use_content_ts: bool = False) -> float:
+    """V17.0 R2: 进程间协调核心(sync 版)——EM/GEN 原 2 函数收敛。
+
+    Args:
+        lock_file: 锁文件路径
+        target_interval: 目标间隔(秒, 已含抖动)
+        use_lock: True=EM 版——跨进程文件锁(检查+更新原子化); False=GEN 版无锁
+        use_content_ts: True=EM 版——读锁文件**内容**时间戳(| 分隔取 [1]);
+                        False=GEN 版读 mtime
+    返回实际等待秒数(0=无需等待)。
+
+    ⚠️ V17.0 审查实测(_file_lock_acquire): acquire 用 O_CREAT|O_EXCL 创建锁文件并**立即写入
+    pid|ts payload**, release 时删除文件——故锁内读到的内容时间戳恒为本次 acquire 时刻,
+    elapsed≈0 → **每次 EM sync 请求固定睡满 1.0-1.3s**。该行为自 V16.2 引入文件锁起即如此
+    (V16.4.1 只是把读 mtime 换成读内容, 两者同样"acquire 刚写→≈0"), 非 V17.0 回归。
+    效果: 全局 EM ≤1rps 串行——比"利用上次请求差"更保守, 防封目标完全达成, 维持现状。
+    """
     _waited = 0.0
     try:
-        if not _file_lock_acquire(_em_lock_file, timeout=_target_interval + 5.0):
-            return 0.0
+        if use_lock:
+            if not _file_lock_acquire(lock_file, timeout=target_interval + 5.0):
+                return 0.0
         try:
+            _last_ts = 0.0
+            if use_content_ts:
+                try:
+                    with open(lock_file, "r", encoding="utf-8") as _f:
+                        _content = _f.read().strip()
+                    if _content and "|" in _content:
+                        _last_ts = float(_content.split("|")[1])
+                except (OSError, ValueError):
+                    _last_ts = 0.0
+            elif os.path.exists(lock_file):
+                _last_ts = os.path.getmtime(lock_file)
             _now = time.time()
-            if os.path.exists(_em_lock_file):
-                _elapsed = _now - os.path.getmtime(_em_lock_file)
-                if _elapsed < _target_interval:
-                    _wait = _target_interval - _elapsed
+            if _last_ts > 0:
+                _elapsed = _now - _last_ts
+                if _elapsed < target_interval:
+                    _wait = target_interval - _elapsed
                     time.sleep(_wait)
                     _waited = _wait
-            # 锁内 touch 文件标记本次请求（原子更新）
-            with open(_em_lock_file, "w") as _f:
-                _f.write(f"{os.getpid()}|{time.time():.3f}")
+            # 写时间戳标记本次请求(锁内原子更新)
+            if use_content_ts:
+                with open(lock_file, "w") as _f:
+                    _f.write(f"{os.getpid()}|{time.time():.3f}")
+            else:
+                with open(lock_file, "w") as _f:
+                    _f.write(str(time.time()))
         finally:
-            _file_lock_release(_em_lock_file)
+            if use_lock:
+                _file_lock_release(lock_file)
     except Exception as _e:
-        _debug_log(f"sc_network em_wait_process_interval: {_e}")
+        _debug_log(f"sc_network process_interval_wait: {_e}")
     return _waited
 
 
-def _gen_wait_process_interval() -> float:
-    """进程间协调：检查距上次通用请求的间隔（0.2s 礼貌限速）。"""
+def _em_wait_process_interval() -> float:
+    """V17.0 R2: EM sync 薄包装(文件锁 + 内容时间戳 + 1.0-1.3s)。"""
     import random as _rand
-    _target_interval = 0.2 + _rand.uniform(0.01, 0.05)
-    try:
-        if os.path.exists(_gen_lock_file):
-            _elapsed = time.time() - os.path.getmtime(_gen_lock_file)
-            if _elapsed < _target_interval:
-                _wait = _target_interval - _elapsed
-                time.sleep(_wait)
-                with open(_gen_lock_file, "w") as _f:
-                    _f.write(str(time.time()))
-                return _wait
-        with open(_gen_lock_file, "w") as _f:
-            _f.write(str(time.time()))
-    except Exception as _e:
-        _debug_log(f"sc_network em_wait_process_interval: {_e}")
-    return 0.0
+    return _process_interval_wait(
+        _em_lock_file, 1.0 + _rand.uniform(0.10, 0.30), use_lock=True, use_content_ts=True,
+    )
+
+
+def _gen_wait_process_interval() -> float:
+    """V17.0 R2: GEN sync 薄包装(无锁 + mtime + 0.2s)。"""
+    import random as _rand
+    return _process_interval_wait(
+        _gen_lock_file, 0.2 + _rand.uniform(0.01, 0.05), use_lock=False, use_content_ts=False,
+    )
 
 
 def _request_with_retry(url: str, params: Optional[Dict[str, Any]] = None,
                         headers: Optional[Dict[str, str]] = None, timeout: int = 15,
                         max_retries: int = 3, data: Optional[Dict[str, Any]] = None,
                         method: str = "GET", verify: bool = True) -> Optional[requests.Response]:  # V16.2: 默认校验证书
-    """带并发限流的 HTTP 请求（按域名独立限流）。
+    """V17.0 S2: 兼容别名——统一走 _quick_request(封禁跳过 + EM 容错 + 跨进程锁)。
 
-    V7.5 优化版：按域名独立控制并发和 sleep，不再使用全局 Semaphore。
-    V8.5 新增：添加随机抖动防止被限流。
-    V9.0 新增：线程锁保护 + 限流统计。
-    V11.5 新增：令牌桶限流 + 熔断器模式 + 随机UA/Referer
+    历史: 原独立实现缺 EM 封禁跳过/域容错; V16.2.10 起新代码全部迁移 _quick_request,
+    V17.0 将剩余 4 个调用点(东财域)迁移后本函数仅作外部兼容保留。
     """
-    import random as _rand
-
-    parsed = urlparse(url)
-    domain = parsed.netloc
-    is_em = "eastmoney.com" in domain
-
-    if _HAS_FAULT_TOLERANCE:
-        try:
-            cb = get_domain_circuit_breaker(domain)
-            if cb.state == "open":
-                _debug_log(f"Circuit breaker open for {domain}, skipping request")
-                return None
-
-            rps = _DOMAIN_LIMITS.get(domain, {"sleep_ms": 100}).get("rps", 1.0)
-            tb = get_domain_token_bucket(domain, rps=rps)
-            tb.acquire()
-        except Exception as _e:
-            _debug_log(f"Fault tolerance init error ({domain}): {_e}")
-
-    limit = _DOMAIN_LIMITS.get(domain, {"sleep_ms": 100})
-    sleep_ms = limit["sleep_ms"]
-
-    wait_ms = 0.0
-    with _DOMAIN_LAST_TIME_LOCK:
-        last_time = _DOMAIN_LAST_TIME.get(domain, 0.0)
-        now = time.time()
-        elapsed_ms = (now - last_time) * 1000
-        jitter_ms = _rand.uniform(10, 30)
-        total_sleep_ms = sleep_ms + jitter_ms
-        if total_sleep_ms > 0 and last_time > 0 and elapsed_ms < total_sleep_ms:
-            wait_ms = total_sleep_ms - elapsed_ms
-        _DOMAIN_LAST_TIME[domain] = now + wait_ms / 1000.0
-    if wait_ms > 0:
-        time.sleep(wait_ms / 1000.0)
-        if is_em:
-            _RL_STATS["em_rate_limit_count"] += 1
-            _log_rate_limit(domain, wait_ms)
-    if is_em:
-        _RL_STATS["em_request_count"] += 1
-
-    return _do_request(url, params, headers, timeout, max_retries, data, method, verify)
+    return _quick_request(url, params, headers, timeout, max_retries, data, method, verify)
 
 
 def _quick_request(url: str, params: Optional[Dict[str, Any]] = None,
@@ -848,7 +842,8 @@ def requires_push2(fn):
             _biz_logger.warning(f"PUSH2 used: {fn.__module__}.{fn.__name__}")
         except Exception:
             pass
-        _RL_STATS.setdefault("push2_call_count", _RL_STATS.get("push2_call_count", 0) + 1)
+        # V16.4.1: 原 setdefault 第二次起不生效 → push2 审计计数恒为 1
+        _RL_STATS["push2_call_count"] = _RL_STATS.get("push2_call_count", 0) + 1
         return fn(*args, **kwargs)
 
     return wrapper
@@ -859,10 +854,11 @@ def _market_code(code: str) -> int:
 
     V16.3 O16: 补北交所分支——920 号段（2024-10 起启用）及 8/4 老号段返回 2，
     此前 920 落到 0(深圳)，TDX finance_info 等按错误市场请求（参考仓库 v3.5.1 同款修复）。
+    V17.0 S3: 补 9 开头沪 B 股(900xxx) → 1，与 tdx_client._market_from_code 口径对齐。
     """
     if code.startswith(("92", "8", "4", "43", "83", "87")):
         return 2
-    return 1 if code.startswith("6") else 0
+    return 1 if code.startswith(("6", "9")) else 0
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -897,44 +893,64 @@ def _ensure_async_locks():
         _gen_async_lock = asyncio.Semaphore(3)  # 通用: 与东财保持一致
 
 
-async def _em_wait_process_interval_async() -> float:
-    """async 版进程间协调：与同步版共用同一文件。"""
-    import random as _rand
-    _target_interval = 1.0 + _rand.uniform(0.10, 0.30)
+async def _process_interval_wait_async(lock_file: str, target_interval: float,
+                                       use_content_ts: bool = False) -> float:
+    """V17.0 R2: 进程间协调核心(async 版)——EM/GEN 原 2 函数收敛。
+
+    无文件锁(阻塞锁会卡事件循环, 属有意为之); 与同步版共用同一文件。
+    use_content_ts: EM 版读内容时间戳(| 分隔取 [1], 兼容纯数字); GEN 版读 mtime。
+    """
     try:
-        if os.path.exists(_em_lock_file):
-            _elapsed = time.time() - os.path.getmtime(_em_lock_file)
-            if _elapsed < _target_interval:
-                _wait = _target_interval - _elapsed
-                await asyncio.sleep(_wait)
-                with open(_em_lock_file, "w") as _f:
+        _last_ts = 0.0
+        if use_content_ts:
+            if os.path.exists(lock_file):
+                try:
+                    with open(lock_file, "r", encoding="utf-8") as _f:
+                        _c = _f.read().strip()
+                    if _c and "|" in _c:
+                        _last_ts = float(_c.split("|")[1])
+                    elif _c:
+                        _last_ts = float(_c)
+                except (OSError, ValueError):
+                    _last_ts = 0.0
+        elif os.path.exists(lock_file):
+            _last_ts = os.path.getmtime(lock_file)
+        _elapsed = time.time() - _last_ts if _last_ts > 0 else target_interval
+        if _elapsed < target_interval:
+            _wait = target_interval - _elapsed
+            await asyncio.sleep(_wait)
+            if use_content_ts:
+                with open(lock_file, "w") as _f:
+                    _f.write(f"{os.getpid()}|{time.time():.3f}")
+            else:
+                with open(lock_file, "w") as _f:
                     _f.write(str(time.time()))
-                return _wait
-        with open(_em_lock_file, "w") as _f:
-            _f.write(str(time.time()))
+            return _wait
+        if use_content_ts:
+            with open(lock_file, "w") as _f:
+                _f.write(f"{os.getpid()}|{time.time():.3f}")
+        else:
+            with open(lock_file, "w") as _f:
+                _f.write(str(time.time()))
     except Exception as _e:
-        _debug_log(f"sc_network em_wait_process_interval: {_e}")
+        _debug_log(f"sc_network process_interval_wait_async: {_e}")
     return 0.0
+
+
+async def _em_wait_process_interval_async() -> float:
+    """V17.0 R2: EM async 薄包装(内容时间戳 + 1.0-1.3s, 与同步版共用文件)。"""
+    import random as _rand
+    return await _process_interval_wait_async(
+        _em_lock_file, 1.0 + _rand.uniform(0.10, 0.30), use_content_ts=True,
+    )
 
 
 async def _gen_wait_process_interval_async() -> float:
-    """async 版通用进程间协调：与同步版共用同一文件。"""
+    """V17.0 R2: GEN async 薄包装(mtime + 0.2s, 与同步版共用文件)。"""
     import random as _rand
-    _target_interval = 0.2 + _rand.uniform(0.01, 0.05)
-    try:
-        if os.path.exists(_gen_lock_file):
-            _elapsed = time.time() - os.path.getmtime(_gen_lock_file)
-            if _elapsed < _target_interval:
-                _wait = _target_interval - _elapsed
-                await asyncio.sleep(_wait)
-                with open(_gen_lock_file, "w") as _f:
-                    _f.write(str(time.time()))
-                return _wait
-        with open(_gen_lock_file, "w") as _f:
-            _f.write(str(time.time()))
-    except Exception as _e:
-        _debug_log(f"sc_network gen_wait_process_interval_async: {_e}")
-    return 0.0
+    return await _process_interval_wait_async(
+        _gen_lock_file, 0.2 + _rand.uniform(0.01, 0.05), use_content_ts=False,
+    )
 
 
 async def create_async_session():
@@ -948,134 +964,19 @@ async def create_async_session():
     return aiohttp.ClientSession(headers={"User-Agent": UA}, trust_env=False)
 
 
-async def get_em_async_session():
-    """获取全局异步 Session 单例（V12.2）。
-
-    与同步 EM_SESSION 对应，提供全局共享的 aiohttp.ClientSession，
-    在单个脚本执行期间贯穿复用同一个 TCP 连接池。
-
-    返回: aiohttp.ClientSession 对象
-    """
-    global _EM_ASYNC_SESSION
-    if _EM_ASYNC_SESSION is not None:
-        return _EM_ASYNC_SESSION
-    with _EM_ASYNC_SESSION_LOCK:
-        if _EM_ASYNC_SESSION is not None:
-            return _EM_ASYNC_SESSION
-        if not _HAS_AIOHTTP:
-            raise RuntimeError("aiohttp 未安装，请先运行: pip install aiohttp")
-        _EM_ASYNC_SESSION = aiohttp.ClientSession(headers={"User-Agent": UA}, trust_env=False)
-        _debug_log("Created global async session")
-        return _EM_ASYNC_SESSION
-
-
 async def _async_request_with_retry(session, url: str, params=None,
                                     headers=None, timeout: int = 15,
                                     max_retries: int = 3, method: str = "GET"):
-    """异步版: 带并发限流的东财请求（Semaphore(3) + 统一间隔保护）。
+    """V17.0 S2: 兼容别名——统一走 _async_quick_request(其内部已按域名分流 EM/GEN)。
 
-    修复V7.5.1: 在async with块内读取完JSON再返回，避免response对象在块外失效。
-    V11.5 新增: 熔断器模式 + 随机UA/Referer + 指数退避
+    历史: 原独立实现为东财专用(EM 锁+1.0-1.3s 间隔+封禁跳过); V17.0 将 EM 分流
+    并入 _async_quick_request 后本函数仅作外部兼容保留, 语义等价。
     返回: parsed JSON dict 或 None（失败时）
     """
-    if not _HAS_ASYNCIO or not _HAS_AIOHTTP:
-        return None
-
-    domain = urlparse(url).netloc
-    # V16.2.6: push2 系共享风控面 → 熔断器归一化
-    _ft_domain = _normalize_em_domain(domain)
-
-    if _HAS_FAULT_TOLERANCE:
-        try:
-            cb = get_domain_circuit_breaker(_ft_domain)
-            if cb.state == "open":
-                _debug_log(f"Circuit breaker open for {domain}, skipping request")
-                return None
-        except Exception as _e:
-            _debug_log(f"Async fault tolerance init error ({domain}): {_e}")
-
-    _ensure_async_locks()
-    global _em_async_last_request
-    import random as _rand
-
-    async with _em_async_lock:
-        now = time.time()
-        # V16.2.3 修复: 异步通道与同步通道（em_get 的 _EM_LAST_CALL）共享全局间隔，
-        # 原双通道各自 1rps → 同进程混合调用（lng/med 的 composite 异步 + canonical 同步 to_thread）合计 2rps，
-        # 超过东财 push2 域 0.6rps 风控阈值 → 403/429。
-        interval = 1.0 + _rand.uniform(0.10, 0.30)
-        _last = max(_em_async_last_request, _EM_LAST_CALL[0])
-        elapsed = now - _last
-        if _last > 0 and elapsed < interval:
-            await asyncio.sleep(interval - elapsed)
-        _em_async_last_request = time.time()
-        _EM_LAST_CALL[0] = time.time()
-
-        await _em_wait_process_interval_async()
-
-        _req_headers = headers.copy() if headers else {}
-        if not _req_headers.get("User-Agent"):
-            if _HAS_FAULT_TOLERANCE:
-                _req_headers["User-Agent"] = get_random_ua()
-            else:
-                _req_headers["User-Agent"] = UA
-        if "eastmoney.com" in domain and not _req_headers.get("Referer"):
-            if _HAS_FAULT_TOLERANCE:
-                _req_headers["Referer"] = get_random_referer()
-
-        for attempt in range(max_retries):
-            try:
-                timeout_obj = aiohttp.ClientTimeout(total=timeout)
-                async with session.get(url, params=params, headers=_req_headers,
-                                       timeout=timeout_obj) as response:
-                    if response.status == 200:
-                        # V16.2: 成功重置熔断器
-                        if _HAS_FAULT_TOLERANCE:
-                            try:
-                                get_domain_circuit_breaker(_ft_domain)._on_success()
-                            except Exception:
-                                pass
-                        return await response.json(content_type=None)
-                    if response.status == 429:
-                        if attempt < max_retries - 1:
-                            if _HAS_FAULT_TOLERANCE:
-                                wait_s = exponential_backoff(attempt)
-                            else:
-                                wait_s = 1.0 * (2 ** attempt)
-                            await asyncio.sleep(wait_s)
-                            continue
-                        if _HAS_FAULT_TOLERANCE:
-                            try:
-                                get_domain_circuit_breaker(_ft_domain)._on_failure()
-                            except Exception:
-                                pass
-                        return None
-                    # V16.2: 403 及一切非 200/429 → 记熔断失败，不重试（重试 403 加速封禁）
-                    if _HAS_FAULT_TOLERANCE:
-                        try:
-                            get_domain_circuit_breaker(_ft_domain)._on_failure()
-                        except Exception:
-                            pass
-                    _RL_STATS["em_403_count"] = _RL_STATS.get("em_403_count", 0) + 1
-                    return None
-            except (aiohttp.ClientError, asyncio.TimeoutError):
-                if attempt < max_retries - 1:
-                    if _HAS_FAULT_TOLERANCE:
-                        wait_s = exponential_backoff(attempt)
-                    else:
-                        wait_s = 2.0 * (attempt + 1)
-                    await asyncio.sleep(wait_s)
-                    continue
-                if _HAS_FAULT_TOLERANCE:
-                    try:
-                        get_domain_circuit_breaker(domain)._on_failure()
-                    except Exception:
-                        pass
-                return None
-            except Exception as _e:
-                _debug_log(f"async_request_with_retry unexpected error ({url}): {_e}")
-                return None
-        return None
+    return await _async_quick_request(
+        session, url, params=params, headers=headers,
+        timeout=timeout, max_retries=max_retries, method=method,
+    )
 
 
 async def _async_quick_request(session, url: str, params=None,
@@ -1083,10 +984,13 @@ async def _async_quick_request(session, url: str, params=None,
                                max_retries: int = 3,
                                data=None, method: str = "GET",
                                is_json: bool = True, encoding=None):
-    """异步版: 通用 HTTP 请求（腾讯/新浪/同花顺/巨潮等，Semaphore(5) + 统一间隔保护）。
+    """异步版: 通用 HTTP 请求（腾讯/新浪/同花顺/巨潮等，Semaphore(3) + 统一间隔保护, EM 域自动分流）。
 
     V7.5.1修复: 在 async with 块内读取完数据再返回，避免 response 连接释放后读取失败。
     V11.5 新增: 熔断器模式 + 随机UA/Referer + 指数退避
+    V17.0 S2: 按域名分流 EM/GEN——EM 域(原 _async_request_with_retry 语义): 封禁跳过 +
+    EM 锁 + 1.0-1.3s 间隔(与同步 em_get 共享 _EM_LAST_CALL) + EM 跨进程节奏 + Referer 注入;
+    GEN 域: 0.2s 间隔 + GEN 跨进程节奏。
 
     Args:
         is_json:  True (默认) → 解析为 JSON，返回 dict/list。False → 返回原始文本 str
@@ -1111,19 +1015,43 @@ async def _async_quick_request(session, url: str, params=None,
             _debug_log(f"Async quick fault tolerance init error ({domain}): {_e}")
 
     _ensure_async_locks()
-    global _gen_async_last_request
+    # V17.0 S2: 按域名分流 EM/GEN——EM 域(原 _async_request_with_retry 语义):
+    #   封禁跳过 + EM 锁 + 1.0-1.3s 间隔(与同步通道共享 _EM_LAST_CALL) + EM 跨进程节奏;
+    #   GEN 域: 0.2s 间隔 + GEN 跨进程节奏。
+    is_em = "eastmoney.com" in domain
     import random as _rand
     import json as _json
 
-    async with _gen_async_lock:
-        now = time.time()
-        elapsed = now - _gen_async_last_request
-        interval = 0.2 + _rand.uniform(0.01, 0.05)
-        if _gen_async_last_request > 0 and elapsed < interval:
-            await asyncio.sleep(interval - elapsed)
-        _gen_async_last_request = time.time()
+    if is_em:
+        # V16.2.8: 封禁跳过期直接返回 None（参考仓库 PR#36：不浪费请求、不加重封禁）
+        if _em_is_banned(_ft_domain):
+            _RL_STATS["em_rate_limit_count"] = _RL_STATS.get("em_rate_limit_count", 0) + 1
+            _debug_log(f"async quick_request: {_ft_domain} 封禁跳过中（20h 冷却），拒绝 {url[:80]}")
+            return None
 
-        await _gen_wait_process_interval_async()
+    async with (_em_async_lock if is_em else _gen_async_lock):
+        now = time.time()
+        if is_em:
+            global _em_async_last_request  # noqa: PLW0603
+            # V16.2.3: 异步通道与同步通道（em_get 的 _EM_LAST_CALL）共享全局间隔，
+            # 原双通道各自 1rps → 同进程混合调用合计 2rps，超过 push2 域 0.6rps 风控阈值 → 403/429。
+            interval = 1.0 + _rand.uniform(0.10, 0.30)
+            _last = max(_em_async_last_request, _EM_LAST_CALL[0])
+            if _last > 0 and now - _last < interval:
+                await asyncio.sleep(interval - (now - _last))
+            _em_async_last_request = time.time()
+            _EM_LAST_CALL[0] = time.time()
+        else:
+            global _gen_async_last_request  # noqa: PLW0603
+            interval = 0.2 + _rand.uniform(0.01, 0.05)
+            if _gen_async_last_request > 0 and now - _gen_async_last_request < interval:
+                await asyncio.sleep(interval - (now - _gen_async_last_request))
+            _gen_async_last_request = time.time()
+
+        if is_em:
+            await _em_wait_process_interval_async()
+        else:
+            await _gen_wait_process_interval_async()
 
         _req_headers = headers.copy() if headers else {}
         if not _req_headers.get("User-Agent"):
@@ -1131,6 +1059,10 @@ async def _async_quick_request(session, url: str, params=None,
                 _req_headers["User-Agent"] = get_random_ua()
             else:
                 _req_headers["User-Agent"] = UA
+        if is_em and not _req_headers.get("Referer"):
+            # V17.0 S2: 继承原 _async_request_with_retry 的 EM 域 Referer 注入
+            if _HAS_FAULT_TOLERANCE:
+                _req_headers["Referer"] = get_random_referer()
 
         for attempt in range(max_retries):
             try:
@@ -1164,7 +1096,9 @@ async def _async_quick_request(session, url: str, params=None,
                                 wait_s = 1.0 * (2 ** attempt)
                             await asyncio.sleep(wait_s)
                             continue
-                await asyncio.sleep(0.5 * (attempt + 1))
+                # V16.4.1: 403/500 等非 200/429 直接失败——原落下方 sleep 重试循环,
+                # 违反同文件"重试 403 加速封禁"铁律(与 _async_request_with_retry L1055 对齐)
+                return None
             except (aiohttp.ClientError, asyncio.TimeoutError, ValueError, _json.JSONDecodeError):
                 if attempt < max_retries - 1:
                     if _HAS_FAULT_TOLERANCE:

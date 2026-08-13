@@ -9,7 +9,7 @@ import json
 import os
 from unittest import mock
 
-from gd_uploader import (
+from core.gd_uploader import (
     _find_working_proxy,
     cleanup_gd_proxy,
     get_or_create_drive_folder,

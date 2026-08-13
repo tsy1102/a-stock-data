@@ -19,7 +19,7 @@ API 映射：
   模式A —— 多股票逐个上传（ful/sht/med/lng 等批量脚本使用）：
     每个股票创建独立子文件夹「代码-2个中文」，逐个上传
     文件夹命名规则：跳过ST前缀，取前2个中文字符，无中文时显示「代码-」
-    from gd_uploader import init_gd, upload_stock_report_by_code, cleanup_gd_proxy
+    from core.gd_uploader import init_gd, upload_stock_report_by_code, cleanup_gd_proxy
     drive, proxy_set, parent_id, skip = init_gd(base_dir)
     if drive and not skip:
         upload_stock_report_by_code(drive, parent_id, "600519", "贵州茅台", "./out/600519_ful_xxx.txt")
@@ -27,7 +27,7 @@ API 映射：
 
   模式B —— 统一类型文件夹上传（val/mak 等单类型脚本使用）：
     所有文件放入统一子文件夹「val」/「mak」
-    from gd_uploader import init_gd, upload_type_reports, cleanup_gd_proxy
+    from core.gd_uploader import init_gd, upload_type_reports, cleanup_gd_proxy
     drive, proxy_set, parent_id, skip = init_gd(base_dir)
     if drive and not skip:
         upload_type_reports(drive, parent_id, "mak", ["./out/mak_report_xxx.txt"])
@@ -56,6 +56,8 @@ from stock_common import _debug_log
 
 # ── Google API SCOPES ───────────────────────────────────────────
 _SCOPES = ["https://www.googleapis.com/auth/drive.file"]
+# V17.0: 凭据集中到仓库 credentials/ 子目录（gitignore 规则同步迁移）
+_CRED_SUBDIR = "credentials"
 _TOKEN_FILENAME = "credentials.json"
 _CLIENT_SECRETS_FILENAME = "client_secrets.json"
 _MIME_TEXT = "text/plain; charset=utf-8"
@@ -116,7 +118,7 @@ def _run_oauth_flow(base_dir: str):
     """首次授权：走 InstalledAppFlow（会打开浏览器或打印 URL）。"""
     try:
         from google_auth_oauthlib.flow import InstalledAppFlow
-        secrets_path = os.path.join(base_dir, _CLIENT_SECRETS_FILENAME)
+        secrets_path = os.path.join(base_dir, _CRED_SUBDIR, _CLIENT_SECRETS_FILENAME)
         if not os.path.exists(secrets_path):
             print(f"  ❌ 缺少 {_CLIENT_SECRETS_FILENAME}，请从 Google Cloud Console 下载：", flush=True)
             print("     https://console.cloud.google.com/apis/credentials", flush=True)
@@ -131,7 +133,7 @@ def _run_oauth_flow(base_dir: str):
 
 def _get_or_create_credentials(base_dir: str):
     """入口：加载现有 token → 刷新 → 都失败则走首次 OAuth。"""
-    token_path = os.path.join(base_dir, _TOKEN_FILENAME)
+    token_path = os.path.join(base_dir, _CRED_SUBDIR, _TOKEN_FILENAME)                       # V17.0: credentials/ 子目录
     # 1) 加载现有 token
     creds = _load_saved_credentials(token_path)
     if creds:
@@ -192,11 +194,25 @@ def init_google_drive(base_dir: str) -> Tuple[Optional[Any], bool]:
         if "invalid_grant" in msg or "revoked" in msg.lower() or "expired" in msg.lower():
             print("  🔑 GD Token 已过期或已被吊销，清除后请重新运行脚本授权", flush=True)
             try:
-                os.remove(os.path.join(base_dir, _TOKEN_FILENAME))
+                os.remove(os.path.join(base_dir, _CRED_SUBDIR, _TOKEN_FILENAME))  # V17.0: credentials/ 子目录
             except OSError:
                 pass
         else:
             print(f"  ⚠️ 云盘连接失败：{msg}", flush=True)
+            # V16.4.0: 网络抖动自动重试（前 2 次默认 1s 后自动重试——对齐交互模式"重试"选择）
+            for _attempt in (1, 2):
+                import time as _t
+
+                _t.sleep(1.0)
+                print(f"  ⏳ 自动重试 {_attempt}/2（1s 后）…", flush=True)
+                try:
+                    service = build("drive", "v3", credentials=creds, cache_discovery=False)
+                    service.about().get(fields="user").execute()
+                    print("  ✅ Google Drive 认证成功（重试后）", flush=True)
+                    return service, proxy_was_set
+                except Exception as _e2:
+                    _debug_log(f"gd retry {_attempt} error: {_e2}")
+            print("  ❌ 云盘连接失败（重试 2 次仍失败）", flush=True)
         return None, proxy_was_set
 
 
@@ -419,12 +435,31 @@ def init_gd(base_dir: str) -> Tuple[Optional[Any], bool, Optional[str], bool]:
     """
     drive, proxy_set = None, False
 
-    # V15.2: 检测非交互模式（main.py 子进程 stdin=None / 管道），
-    # 跳过 input() 等待，避免卡住后台批量运行
+    # V15.2: 非交互模式（main.py 子进程 stdin=PIPE）——原实现直接跳过上传。
+    # V16.4.0: 已有 token 时不跳过（自动重试路径已加固）；仅"无 token 需 OAuth 交互授权"时跳过
     import sys
+
     if not sys.stdin.isatty():
-        print("  ℹ️ 检测到非交互模式（stdin 非 tty），自动跳过云端上传", flush=True)
-        return None, False, None, True
+        import os as _os
+
+        _token_file = _os.path.join(base_dir, _CRED_SUBDIR, "credentials.json")  # V17.0: credentials/ 子目录
+        _has_token = _os.path.exists(_token_file)
+        if not _has_token:
+            print("  ?? 检测到非交互模式（stdin 非 tty）且无 GD token——自动跳过云端上传", flush=True)
+            return None, False, None, True
+        try:
+            drive, proxy_set = init_google_drive(base_dir)
+            if drive:
+                print("  ? GD 连接成功（非交互+已有 token）", flush=True)
+                root_id = get_or_create_drive_folder(drive, "a-stock-data")
+                if root_id:
+                    return drive, proxy_set, root_id, False
+                print("  ?? GD 根文件夹获取失败——跳过上传", flush=True)
+            else:
+                print("  ?? GD 连接失败（非交互）——跳过上传", flush=True)
+        except Exception as e:
+            print(f"  ?? GD 初始化异常（非交互）——跳过上传: {str(e)[:80]}", flush=True)
+        return None, proxy_set, None, True
 
     # 交互式连接
     while True:

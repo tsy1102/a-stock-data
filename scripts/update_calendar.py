@@ -19,6 +19,15 @@ import shutil
 import sys
 from pathlib import Path
 
+# V16.4.1: 强制 UTF-8 输出（下沉到代码自身——任何 agent/机器/直接运行均 UTF-8，
+# 不依赖系统代码页/环境变量/Profile；纯标准库，幂等）
+for _stream in (sys.stdout, sys.stderr):
+    if _stream is not None and hasattr(_stream, "reconfigure"):
+        try:
+            _stream.reconfigure(encoding="utf-8", errors="replace")
+        except Exception:
+            pass
+
 
 def _get_lib_data() -> tuple[dict, dict, int, int]:
     """从 chinese_calendar 库获取数据。
@@ -225,6 +234,17 @@ def main():
         return
 
     target = Path(__file__).parent.parent / "stock_common" / "stock_calendar.py"
+
+    # V16.4.1 防覆盖保护: 生成模板为 V9.2 时代旧版, 直接覆盖会抹掉 V14.0 ZHB 校验/
+    # V14.2 补充日历/CLI 入口等新逻辑。检测目标含 V14+ 标记则拒绝覆盖。
+    if target.exists():
+        _cur = target.read_text(encoding="utf-8")
+        _v14_markers = ("invalidate_zhb_supplement_cache", "is_workday_with_zhb_supplement")
+        if any(m in _cur for m in _v14_markers):
+            print(f"[BLOCK] {target} 含 V14+ 新逻辑(检测到 {_v14_markers[0]}), 拒绝覆盖!")
+            print("        本脚本模板仍为 V9.2 旧版。请手动更新 generate_calendar_file 模板")
+            print("        为补丁式(仅替换 holidays/workdays 字典段)后再运行。")
+            sys.exit(3)
 
     if args.dry_run:
         content = generate_calendar_file(holidays, workdays, min_year, max_year)

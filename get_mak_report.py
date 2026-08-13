@@ -23,34 +23,34 @@ get_mak_report.py — A股异动及行业轮动扫描报告
     V8.7   2026-06-25 - 死代码清理：同步版替换为薄包装
 """
 
-import argparse, time, os, warnings, asyncio
+# V16.4.1: 强制 UTF-8 输出（下沉到代码自身——任何 agent/机器/直接运行均 UTF-8，
+# 不再依赖 main.py 注入的 PYTHONIOENCODING 环境变量）
+from stock_common.env_setup import ensure_utf8_stdio
+
+ensure_utf8_stdio()
+
+import time, os, warnings, asyncio  # V16.4.1: 删 argparse
 from typing import Any, Dict, List
 from datetime import date, datetime, timedelta
-from collections import Counter
-from concurrent.futures import ThreadPoolExecutor, as_completed
+from concurrent.futures import ThreadPoolExecutor, as_completed  # V16.4.1: 删 Counter
 
 warnings.filterwarnings('ignore')
-from data_provider import get_market_snapshot_async
-from gd_uploader import init_gd, upload_type_reports, cleanup_gd_proxy
-from tdx_client import (
-    tdx_get_security_bars,
+from core.data_provider import get_market_snapshot_async
+
+from core.tdx_client import (  # V16.4.1: 删 tdx_get_security_bars/cleanup_tdx
     tdx_get_index_bars,
     tdx_get_board_list,
     tdx_get_board_members,
     tdx_get_market_abnormal_data,
-    cleanup_tdx,
 )
 from stock_common import (
     _safe_float,
-    _request_with_retry,
     _quick_request,
-    UA,
-    _debug_log,
+    _debug_log,  # V17.0 审查: 删 UA 死导入(getharden 委托 sc_datasource 后无引用)
     _load_strategy_config,
     get_recent_dragon_tiger,
     baidu_kline_full,
-    BaseReportRunner,
-    parse_args as common_parse_args,
+    BaseReportRunner,  # V16.4.1: 删 _request_with_retry/common_parse_args
     is_trading_day,
     get_market_status,
     get_zhb_full_market_snapshot,
@@ -59,6 +59,7 @@ from stock_common import (
     get_zhb_data_date,
     get_zhb_industry_map,
     calc_mcap_yi as _calc_mcap_yi,
+    save_text_report,  # V17.0 S5: 写尾样板公共函数
     limit_pct_for,  # V16.2: 统一涨跌停阈值（主板/ST 10 / 双创 20 / 北交所 30）
     is_limit_up,
     is_limit_down,  # V16.0: 统一涨停/跌停判断（含 ST）
@@ -74,25 +75,26 @@ _ret10_down = _abnl.get("ret_10d_severe_down", -50.0)  # 10日严重下跌阈值
 _vol_locked = _abnl.get("volume_locked_pct", 3.0)  # 极度锁仓阈值
 _vol_overload = _abnl.get("volume_overload_pct", 25.0)  # 爆量阈值
 
-# V16.2.7: A 股代码前缀白名单（与 val 的 _is_a_stock 同口径，过滤 ETF/LOF/可转债）
-_A_STOCK_PREFIXES = ("00", "30", "60", "68", "92")
+
+# V16.3.3 (2026-08-10 字典 12.15.8): ST/次新标注（不剔除——ST 涨跌幅已统一 10%，市场价值正常体现）
+def _name_mark(name: str) -> str:
+    """V17.0 S5: 统一走 sc_utils.name_mark（原本地实现已收敛）。"""
+    from stock_common.sc_utils import name_mark as _u_name_mark
+
+    return _u_name_mark(name)
 
 
 def _is_a_stock(code: str) -> bool:
-    """V16.2.7: 判断是否为 A 股（沪深主板/创业板/科创板/北交所）。
+    """V17.0 S3: 统一走 sc_utils.is_a_stock（原本地 _A_STOCK_PREFIXES 定义已收敛）。"""
+    from stock_common.sc_utils import is_a_stock as _u_is_a_stock
 
-    过滤掉的非 A 股：ETF（15/51/56/58 等）、LOF（50）、可转债（11/12/18）、
-    国债/债券 ETF、封闭式基金等（ZHB 全市场快照 7948 只含基金/ETF）。
-    """
-    if not code or len(code) != 6 or not code.isdigit():
-        return False
-    return code[:2] in _A_STOCK_PREFIXES
+    return _u_is_a_stock(code)
 
 
 def _is_industry_code(ic) -> bool:
     """V16.2.16: 行业段判断（8803xx/8804xx 通达信行业、881xxx 申万版；滤掉风格/概念/地域）。"""
     try:
-        from zhb_client import is_industry_code as _zhb_is_ind
+        from core.zhb_client import is_industry_code as _zhb_is_ind
         return _zhb_is_ind(ic)
     except Exception:
         s = str(ic or "")
@@ -128,13 +130,6 @@ def get_stock_index(code):
         return "sz399001"
 
 
-def get_threshold(code, name):
-    # V16.2: 统一走 sc_utils.limit_pct_for（主板/ST 10 / 创业板·科创板 20 / 北交所 30）
-    try:
-        from stock_common import limit_pct_for
-        return int(limit_pct_for(code, name))
-    except Exception:
-        return 20 if code.startswith(("300", "301", "688")) else 10
 
 
 def get_board_name(code, name):
@@ -177,7 +172,7 @@ async def get_market_abnormal_data():
     # V15.5.16: 统一腾讯实时覆盖（无论 ZHB/TDX 分支）— 今日盘中涨停判断
     if data:
         try:
-            from tdx_client import _tencent_batch_fallback
+            from core.tdx_client import _tencent_batch_fallback
 
             _tm = _tencent_batch_fallback([s.get("code", "") for s in data]) or {}
             _cov = 0
@@ -221,13 +216,13 @@ async def _get_zhb_market_data():
         # ZHB T-1 change_pct 不反映今日盘中涨停 → A 段涨停数失真
         _tencent_map: Dict[str, Dict[str, Any]] = {}
         try:
-            from tdx_client import _tencent_batch_fallback
+            from core.tdx_client import _tencent_batch_fallback
 
             _tencent_map = _tencent_batch_fallback(all_codes) or {}
         except Exception as _e:
             _debug_log(f"mak tencent batch: {_e}")
         # V14.2.1: 提前一次性获取 ZHB profile 离线简称（修复 mak 0只 Bug）
-        from zhb_client import get_stock_name_from_zhb
+        from core.zhb_client import get_stock_name_from_zhb
 
         zhb_name_cache = {}
         for code, stat in snapshot.items():
@@ -261,7 +256,8 @@ async def _get_zhb_market_data():
                 _tq_to if _tq_to is not None else price_map.get(code, {}).get("turnover_pct", 0)
             )
 
-            mcap_yi = _calc_mcap_yi(code, price)
+            # 2026-08-11: 修复恒 0——腾讯批量直给 mcap_yi，缺失才走 股本×price 计算
+            mcap_yi = _safe_float(_tq.get("mcap_yi") or 0) or _calc_mcap_yi(code, price)
 
             ret_5d = _safe_float(stat.get("change_5d", 0))
             ret_10d = _safe_float(stat.get("change_10d", 0))
@@ -285,7 +281,11 @@ async def _get_zhb_market_data():
                     "ret_10d": ret_10d,
                     "ret_20d": ret_20d,
                     "ret_60d": ret_60d,
-                    "main_net_amount": 0,
+                    # V16.4.1: 新股标记字段——change_pct_1d/2d 为空 = 上市不足 3 个交易日
+                    # (创业板/科创板新股前 5 日无涨跌幅限制, 首日 +662% 等极端值会让偏离判定失真)
+                    "change_pct_1d": stat.get("change_pct_1d", ""),
+                    "change_pct_2d": stat.get("change_pct_2d", ""),
+                    "main_net_amount": (_safe_float(stat.get("main_net_buy_amount", 0)) or 0) * 1e4,
                     # V16.2.16: Col[13] 大量为风格/概念（微盘股/近已解禁等）→ 只保留行业段
                     #（8803xx/8804xx 通达信行业、881xxx 申万版），其余置空避免伪行业聚合
                     "industry_code": (
@@ -402,82 +402,17 @@ def get_index_returns():
 
 
 def get_abnormal_announcements(code):
-    try:
-        td = date.today().strftime("%Y-%m-%d")
-        sd = (date.today() - timedelta(days=7)).strftime("%Y-%m-%d")
-        # V16.3 O16: 改用动态 orgId 查询（szse_stock.json——硬编码 gssx0 对 920 北交所号段失效）
-        try:
-            from stock_common.sc_datasource import _cninfo_get_orgid
+    """V17.0 S4: 统一走 sc_datasource.get_strategic_announcements(带缓存+TDX兜底)。
 
-            oid = _cninfo_get_orgid(code)
-        except Exception:
-            oid = (
-                "gssh0" + code
-                if code.startswith("6")
-                else ("gsbj0" + code if code.startswith(("92", "8", "4")) else "gssz0" + code)
-            )
-        # orgId精准查询
-        payload = {
-            "orgId": oid,
-            "stock": f"{code},{oid}",
-            "tabName": "fulltext",
-            "pageSize": "10",
-            "pageNum": "1",
-            "column": "",
-            "category": "",
-            "plate": "",
-            "seDate": f"{sd}~{td}",
-            "searchkey": "",
-            "secid": "",
-            "sortName": "",
-            "sortType": "",
-            "isHLtitle": "true",
-        }
-        h = {
-            "User-Agent": UA,
-            "Content-Type": "application/x-www-form-urlencoded",
-            "Referer": "https://www.cninfo.com.cn/new/disclosure",
-            "Origin": "https://www.cninfo.com.cn",
-        }
-        r = _quick_request(
-            "https://www.cninfo.com.cn/new/hisAnnouncement/query",
-            data=payload,
-            headers=h,
-            timeout=15,
-            method="POST",
-        )
-        d = r.json()
-        anns = (d.get("announcements", []) or []) if r is not None else []
-        if not anns:
-            # fallback searchkey
-            payload2 = {
-                "orgId": "",
-                "stock": "",
-                "tabName": "fulltext",
-                "pageSize": "10",
-                "pageNum": "1",
-                "column": "",
-                "category": "",
-                "plate": "",
-                "seDate": f"{sd}~{td}",
-                "searchkey": str(code),
-                "secid": "",
-                "sortName": "",
-                "sortType": "",
-                "isHLtitle": "true",
-            }
-            r2 = _quick_request(
-                "https://www.cninfo.com.cn/new/hisAnnouncement/query",
-                data=payload2,
-                headers=h,
-                timeout=15,
-                method="POST",
-            )
-            if r2 is not None:
-                d2 = r2.json()
-                anns = d2.get("announcements", []) or []
-        abnormal = [a for a in anns if "异常波动" in (a.get("announcementTitle", "") or "")]
-        severe = [a for a in abnormal if "严重" in (a.get("announcementTitle", "") or "")]
+    原本地实现(orgId 动态查询 + searchkey fallback + 7 天窗口)与共享版重复——
+    现以 keywords=["异常波动"] 复用共享层, 返回 (异常公告数, 严重异常数)。
+    """
+    try:
+        from stock_common.sc_datasource import get_strategic_announcements
+
+        anns = get_strategic_announcements(code, page_size=10, days=7, keywords=["异常波动"])
+        abnormal = [a for a in anns if "异常波动" in (a.get("title", "") or "")]
+        severe = [a for a in abnormal if "严重" in (a.get("title", "") or "")]
         return len(abnormal), len(severe)
     except Exception as _e:
         _debug_log(f"mak get_abnormal_announcements: {_e}")
@@ -524,9 +459,14 @@ def count_history_deviations(code, index_code, index_closes_pool, days_lookback=
 def check_stock(s, idx_rets, index_closes_pool):
     code = s["code"]
     name = s["name"]
+    # V16.4.1: 上市不足 3 个交易日的新股跳过偏离异动判定——
+    # 创业板/科创板新股前 5 日无涨跌幅限制(首日 +662% 等), 3/10/20 日偏离无意义
+    # (2026-08-12 实测 301717 超纯应材 8/11 上市首日 +662.24% → 20日偏离被误算 +676.84%)
+    if not s.get("change_pct_1d") and not s.get("change_pct_2d"):
+        return []
     idx_code = get_stock_index(code)
     idx = idx_rets.get(idx_code, {})
-    th = get_threshold(code, name)
+    th = int(limit_pct_for(code, name))  # V17.0 S3: 直调统一阈值(替代 get_threshold)
     board = get_board_name(code, name)
     results = []
     if s["ret_3d"] != 0 and idx.get("ret_3d") is not None:
@@ -588,7 +528,7 @@ def check_stock(s, idx_rets, index_closes_pool):
         ceiling = 100 - dev if dev > 0 else None
         ceiling_note = ""
         if ceiling is not None and ceiling > 0:
-            limit_pct = 10 if code.startswith("6") else 20
+            limit_pct = limit_pct_for(code, s.get("name", ""))
             remaining_stops = ceiling / limit_pct
             if remaining_stops <= 3:
                 ceiling_note = f" 距100%仅剩{ceiling:.1f}%（约{remaining_stops:.1f}涨停）！"
@@ -763,7 +703,7 @@ def _build_sectors_from_zhb() -> List[Dict[str, Any]]:
     """
     try:
         from stock_common.sc_datasource import get_zhb_full_market_snapshot
-        from zhb_client import get_zhb
+        from core.zhb_client import get_zhb
 
         snap = get_zhb_full_market_snapshot()
         if not snap:
@@ -773,15 +713,29 @@ def _build_sectors_from_zhb() -> List[Dict[str, Any]]:
 
         # V16.0: 腾讯实时覆盖 change_pct（板块涨幅口径与个股 A 段一致）
         # 原实现直接用 ZHB T-1 快照 change_pct → 板块涨幅反映昨日，个股反映今日，口径错位
-        _tencent_rt: Dict[str, float] = {}
+        # V16.3 O27: 同时记录腾讯 T 日成交额（amount_wan），板块 amount_yi 改为 T 日聚合
+        _tencent_rt: Dict[str, Dict[str, float]] = {}
         try:
-            from tdx_client import _tencent_batch_fallback
+            from core.tdx_client import _tencent_batch_fallback
 
             _tm = _tencent_batch_fallback(list(snap.keys())) or {}
             for _code, _tq in _tm.items():
                 # V16.3 O21: 平盘（0%）也是今日事实——is not None 判定，0 不回退 ZHB T-1
+                _entry: Dict[str, float] = {}
                 if _tq.get("change_pct") is not None:
-                    _tencent_rt[_code] = _safe_float(_tq.get("change_pct", 0))
+                    _entry["change_pct"] = _safe_float(_tq.get("change_pct", 0))
+                _amt = _safe_float(_tq.get("amount_wan", 0))
+                if _amt > 0:
+                    _entry["amount_wan"] = _amt
+                # 2026-08-11: 注入腾讯 mcap_yi/price——修复板块市值加权恒退化（ZHB 快照无 mcap_yi）
+                _mcap = _safe_float(_tq.get("mcap_yi", 0))
+                if _mcap > 0:
+                    _entry["mcap_yi"] = _mcap
+                _tq_price = _safe_float(_tq.get("price", 0))
+                if _tq_price > 0:
+                    _entry["price"] = _tq_price
+                if _entry:
+                    _tencent_rt[_code] = _entry
         except Exception as _e:
             _debug_log(f"mak ZHB sectors tencent cover: {_e}")
 
@@ -801,10 +755,21 @@ def _build_sectors_from_zhb() -> List[Dict[str, Any]]:
             if not ind_code:
                 continue
             # V16.0: 优先用腾讯实时涨跌幅（今日盘中），否则退回 ZHB T-1
-            _rt_chg = _tencent_rt.get(code)
+            _rt = _tencent_rt.get(code)
+            _rt_chg = _rt.get("change_pct") if _rt else None
             chg = _rt_chg if _rt_chg is not None else (stat.get("change_pct", 0) or 0)
-            amt = (stat.get("amount", 0) or 0) / 10000.0  # 万→亿
-            mcap = stat.get("mcap_yi", 0) or 0
+            # V16.3 O27: 板块成交额改腾讯 T 日聚合（amount_wan 万→亿），
+            # 原 ZHB T-1 amount 盘中失真（成交额是昨日）；腾讯缺失时退回 T-1
+            _rt_amt = _rt.get("amount_wan") if _rt else None
+            amt = (_rt_amt / 10000.0) if _rt_amt else ((stat.get("amount", 0) or 0) / 10000.0)  # 万→亿
+            # 2026-08-11: 修复恒 0——腾讯 mcap_yi → price×股本计算兜底（与 val 4 级兜底同思路）
+            _rt_mcap = _safe_float(_rt.get("mcap_yi", 0)) if _rt else 0
+            mcap = _rt_mcap
+            if not mcap:
+                _rt_price = _safe_float(_rt.get("price", 0)) if _rt else 0
+                _base = _rt_price if _rt_price > 0 else (_safe_float(stat.get("price", 0) or 0))
+                if _base > 0:
+                    mcap = _safe_float(_calc_mcap_yi(code, _base) or 0)
             # V16.0: main_net_buy_amount 单位是万元，统一转元（×1e4），
             # 与 TDX 路径（get_em_board_members f62 = 元）保持一致，
             # 使报表统一 /1e8 换算亿元正确（原来 ZHB 路径 1 亿被显示成 0.0001 亿）
@@ -903,24 +868,14 @@ def get_sector_stocks(sector_code):
 
 
 async def get_ths_hot_pool(date_str):
-    url = f"http://zx.10jqka.com.cn/event/api/getharden/date/{date_str}/orderby/date/orderway/desc/charset/GBK/"
+    """V17.0 S4: 请求统一走 sc_datasource.get_ths_hot_raw(三版收敛), 本地保留加工。
+
+    加工: 涨跌幅 snapshot 交叉修正 + 过滤 0 涨跌 + 按涨跌幅降序。
+    """
+    from stock_common.sc_datasource import get_ths_hot_raw
+
     try:
-        r = _quick_request(url, headers={"User-Agent": UA}, timeout=10)
-        if r is None:
-            return []
-        try:
-            d = r.json()
-        except Exception as _e:
-            _debug_log(f"mak sector_item: {_e}")
-            try:
-                r.encoding = "GBK"
-                d = r.json()
-            except Exception as _e:
-                _debug_log(f"mak sector_inner: {_e}")
-                return []
-        if str(d.get("errocode", 0)) != "0" and str(d.get("errorcode", 0)) != "0":
-            return []
-        items = d.get("data", [])
+        items = await asyncio.to_thread(get_ths_hot_raw, date_str)
         if not items:
             return []
         rows = []
@@ -1003,13 +958,13 @@ def analyze_top_stocks(top_sectors):
             # V16.3 O22: _tm 在 try 前初始化（原仅 try 内赋值——异常时 E 段整段 NameError 丢失）
             _tm: dict = {}
             try:
-                from tdx_client import _tencent_batch_fallback
+                from core.tdx_client import _tencent_batch_fallback
 
                 _tm = _tencent_batch_fallback(member_codes) or {}
                 _tq_names = {_c: _q.get("name", "") for _c, _q in _tm.items() if _q.get("name")}
             except Exception as _e:
                 _debug_log(f"mak E tencent names: {_e}")
-            from zhb_client import get_stock_name_from_zhb
+            from core.zhb_client import get_stock_name_from_zhb
 
             stocks = []
             for _c in member_codes:
@@ -1064,7 +1019,7 @@ def analyze_top_stocks(top_sectors):
         _sec_code = s["code"]
         # V16.0: 用统一 is_limit_up 判断涨停（ST 10% 与主板一致），替代硬编码 19.5/9.5
         # V16.2: 统一用 limit_pct_for 阈值（主板/ST 10 / 创业板·科创板 20 / 北交所 30）
-        _limit_thr = limit_pct_for(_sec_code, s.get("name", "")) if _sec_code.startswith(("300", "301", "688")) else 9.5
+        _limit_thr = limit_pct_for(_sec_code, s.get("name", ""))
         limit_up = [
             st
             for st in stocks
@@ -1196,7 +1151,10 @@ async def generate_sector_report(output_path):
     _zt_count = sum(
         1 for s in all_stocks if is_limit_up(s["code"], s.get("name", ""), s.get("change_pct", 0))
     )
-    _zt_float = sum(1 for s in all_stocks if 5 <= s.get("change_pct", 0) < 9.5)
+    _zt_float = sum(
+        1 for s in all_stocks
+        if 5 <= s.get("change_pct", 0) < limit_pct_for(s["code"], s.get("name", ""))
+    )
     _zb_rate = _zt_float / max(_zt_count + _zt_float, 1) * 100
     _dt_count = sum(
         1 for s in all_stocks if is_limit_down(s["code"], s.get("name", ""), s.get("change_pct", 0))
@@ -1208,16 +1166,33 @@ async def generate_sector_report(output_path):
     _up_cnt = sum(1 for s in all_stocks if s.get("change_pct", 0) > 0)
     _down_cnt = sum(1 for s in all_stocks if s.get("change_pct", 0) < 0)
     _ud_ratio = _up_cnt / max(_down_cnt, 1)
-    L(f"  🌡️ 短线情绪: 涨停{_zt_count} | 跌停{_dt_count} | 异动触发{total_abnormal}只")
+    L(f"  🌡️ 短线情绪: 涨停{_zt_count} | 跌停{_dt_count} | 异动触发{total_abnormal}只"
+      f"（涨停按涨跌幅口径,与 B 段涨停池口径不同）")
     L(
         f"  📊 市场广度: 上涨{_up_cnt}/下跌{_down_cnt} | 涨跌比{_ud_ratio:.2f} | {'偏多' if _ud_ratio>1.5 else '偏空' if _ud_ratio<0.7 else '均衡'}"
     )
 
     # V16.1.7: 财联社市场情绪增强（字典 §12.10.2 实测可用——热度/封板率/炸板/高开率/获利率/连板梯队）
+    # V16.3 O37: KPL 情绪互校（字典 §12.15.2——财联社 → 开盘红 → KPL 三源兜底，8/7 交叉验证：涨停 74 三家一致）
     try:
         from stock_common import get_cls_market_emotion
         _emotion = get_cls_market_emotion()
-        if _emotion:
+        if not _emotion:
+            # O37: 财联社失败 → KPL 兜底（strong 情绪值/连板高度——匿名接口）
+            try:
+                from stock_common import get_kpl_market_sentiment, get_kpl_broken_ratio
+                _kpl = get_kpl_market_sentiment()
+                _kbr = get_kpl_broken_ratio()
+                if _kpl:
+                    _ks = _kpl.get("strong")
+                    if _ks is not None:
+                        _emo_tag = "🔥 亢奋" if _ks >= 75 else "😐 中性" if _ks >= 40 else "🧊 冰点"
+                        L(f"  🌡️ 开盘啦情绪值: {_ks}/100 {_emo_tag}（连板高度 {_kpl.get('lbgd')} | 大幅回撤 {_kpl.get('df_num')}）")
+                    if _kbr:
+                        L(f"  📈 开盘啦破板率: {_kbr.get('broken_ratio')}（涨停 {_kbr.get('zt')} | 跌停 {_kbr.get('dt')} | 炸板 {_kbr.get('broken_num')}）")
+            except Exception as _e2:
+                _debug_log(f"mak kpl emotion fallback: {_e2}")
+        elif _emotion:
             _md = _emotion.get("market_degree")
             _ur = _emotion.get("up_ratio")
             _uo = _emotion.get("up_open_num")
@@ -1233,6 +1208,14 @@ async def generate_sector_report(output_path):
             if isinstance(_ladder, dict) and _ladder:
                 _ladder_str = " | ".join(f"{k}{v.get('count','')}家({v.get('continuous_rate','')})" for k, v in list(_ladder.items())[:4])
                 L(f"  🪜 财联社连板梯队: {_ladder_str}")
+            # O37: KPL 情绪指标互校（strong/连板高度——不同体系独立验证）
+            try:
+                from stock_common import get_kpl_market_sentiment
+                _kpl = get_kpl_market_sentiment()
+                if _kpl and _kpl.get("strong") is not None:
+                    L(f"  🧭 开盘啦互校: 情绪值 {_kpl.get('strong')} | 连板高度 {_kpl.get('lbgd')} | 涨停 {_kpl.get('ztjs')}（独立源交叉验证）")
+            except Exception as _e3:
+                _debug_log(f"mak kpl emotion cross-check: {_e3}")
     except Exception as _e:
         _debug_log(f"mak cls_market_emotion: {_e}")
 
@@ -1331,7 +1314,8 @@ async def generate_sector_report(output_path):
             L(f"    🚨 {r['name']}({r['code']})  {r['desc']}")
     items = sorted(results["严重"], key=lambda x: x["score"], reverse=True)
     if items:
-        L("\n  🔥🔥 严重异动 —— 已触发:")
+        # V16.4.1: 标题修正——"严重" 是 10日/20日偏离(非 3日"已触发"级别)
+        L("\n  🔥🔥 严重异动 —— 10日/20日偏离值触发:")
         for r in items[:8]:
             ann_info = ""
             _tt = _tech(r["code"])
@@ -1360,6 +1344,21 @@ async def generate_sector_report(output_path):
     L("【B. 涨停池扫描（打板情绪看板）】")
     L(f"{'─'*90}")
     try:
+        # V16.3.3 (2026-08-10 字典 12.15.5): 涨停数三源互校——财联社=KPL=复盘啦
+        # （2026-08-10 实测 99=99=99 一致）；push2ex 明细仍作主数据源
+        try:
+            from stock_common import get_limit_pool_multi_source
+
+            _multi = get_limit_pool_multi_source()
+            if _multi.get("sources"):
+                _src_txt = " / ".join(
+                    f"{k}={v}" for k, v in _multi["sources"].items() if v is not None
+                )
+                _verified = "✅ 三源互校一致" if _multi.get("cross_verified") else "⚠️ 源间差异"
+                L(f"  📊 涨停数互校: 财联社/KPL/复盘啦 {_src_txt} → {_multi.get('total')} 只 {_verified} | 最高连板 {_multi.get('max_ladder')}")
+        except Exception as _e:
+            _debug_log(f"mak multi_source error: {_e}")
+
         from stock_common import get_limit_pool_summary
 
         pool = get_limit_pool_summary()
@@ -1388,16 +1387,21 @@ async def generate_sector_report(output_path):
             L(f"  {'-'*70}")
             for item in zt_list[:30]:
                 fund_yi = item.get('limit_fund', 0) / 1e8 if item.get('limit_fund', 0) else 0
+                # V16.4.1: 封板时间修复——push2ex first_limit_time 为 5 位字符串(如 "92500"),
+                # 原字符串切片 fbt[:2]:fbt[2:4] 得到 "92:50" 错位。统一转 int 再按 HHMM 拆。
                 fbt_raw = item.get('first_limit_time', '')
-                if isinstance(fbt_raw, int) and fbt_raw > 0:
-                    fbt_h = fbt_raw // 10000
-                    fbt_m = (fbt_raw % 10000) // 100
+                try:
+                    _fbt_int = int(fbt_raw) if fbt_raw not in ("", None) else 0
+                except (TypeError, ValueError):
+                    _fbt_int = 0
+                if _fbt_int > 0:
+                    fbt_h = _fbt_int // 10000
+                    fbt_m = (_fbt_int % 10000) // 100
                     fbt_fmt = f"{fbt_h:02d}:{fbt_m:02d}"
                 else:
-                    fbt = str(fbt_raw)
-                    fbt_fmt = f"{fbt[:2]}:{fbt[2:4]}" if len(fbt) >= 4 else fbt
+                    fbt_fmt = str(fbt_raw)
                 L(
-                    f"  {item.get('code',''):<8} {item.get('name',''):<10} {item.get('change_pct',0):>+8.2f}% {item.get('limit_count',0):>4.0f} {fbt_fmt:>8} {fund_yi:>+10.2f} {item.get('sector',''):<12}"
+                    f"  {item.get('code',''):<8} {item.get('name',''):<10}{_name_mark(item.get('name',''))} {item.get('change_pct',0):>+8.2f}% {item.get('limit_count',0):>4.0f} {fbt_fmt:>8} {fund_yi:>+10.2f} {item.get('sector',''):<12}"
                 )
 
         # 炸板明细
@@ -1406,7 +1410,7 @@ async def generate_sector_report(output_path):
             L("\n  炸板明细:")
             for item in zb_list[:15]:
                 L(
-                    f"    {item.get('code','')} {item.get('name','')} 涨幅{item.get('change_pct',0):+.2f}% 炸板{item.get('broken_count',0):.0f}次 板块:{item.get('sector','')}"
+                    f"    {item.get('code','')} {item.get('name','')}{_name_mark(item.get('name',''))} 涨幅{item.get('change_pct',0):+.2f}% 炸板{item.get('broken_count',0):.0f}次 板块:{item.get('sector','')}"
                 )
     except Exception as _e:
         _debug_log(f"mak limit_pool: {_e}")
@@ -1418,6 +1422,8 @@ async def generate_sector_report(output_path):
         L(f"\n{'='*90}")
         L("【B+. 涨停天梯与盘口异动（开盘红/东财）】")
         L(f"{'─'*90}")
+        # V16.4.1: 提前初始化——import/接口失败时 _ladder 未定义, L1562 引用会 NameError 击穿
+        _ladder = []
         _ladder = get_kph_limit_ladder()
         if _ladder:
             L(f"  涨停天梯共 {len(_ladder)} 只:")
@@ -1433,8 +1439,11 @@ async def generate_sector_report(output_path):
         # 盘口异动（火箭发射 8201）
         _changes = get_stock_changes("8201")
         if _changes:
-            _codes_abn = set(_abnormal_codes)
-            _rel = [c for c in _changes if c.get("code") in _codes_abn or True][:15]
+            # V16.4.1: 原引用未赋值的 _abnormal_codes(L1577 才赋值) → 每次必 NameError 被吞,
+            # B+ 盘口异动段永不显示; 改为现算
+            _codes_abn = set(r["code"] for r in results["已触发"] + results["严重"])
+            _rel = [c for c in _changes if c.get("code") in _codes_abn] or _changes[:15]
+            _rel = _rel[:15]
             L(f"\n  🚀 盘口异动·火箭发射 {len(_changes)} 只（TOP15 按名称）:")
             for c in _rel[:15]:
                 L(f"    {c.get('code','')} {c.get('name','')} 时间{c.get('time','')} 涨幅{_safe_float(c.get('change_pct',0)):+.2f}%")
@@ -1444,6 +1453,24 @@ async def generate_sector_report(output_path):
         _debug_log(f"mak ladder/changes: {_e}")
 
     L(f"\n{'='*90}")
+    # V16.4.0: 同花顺独家交叉验证（原 G 段移入——涨停明细末尾备注）
+    try:
+        _ths_pool = await get_ths_hot_pool(today_str)
+    except Exception as _e:
+        _debug_log(f"mak ths pool note: {_e}")
+        _ths_pool = []
+    if _ths_pool:
+        _zt_all = {s.get('code', '') for s in _zt_3d} if '_zt_3d' in dir() else set()
+        _ladder_all = {str(s.get('code', '')) for s in (_ladder or [])} if isinstance(_ladder, list) else set()
+        _ths_only = [h for h in _ths_pool if h.get('code') not in _zt_all and h.get('code') not in _ladder_all]
+        L('')
+        L(f"  ❗ 同花顺独家 {len(_ths_only)} 只（东财口径未覆盖，交叉验证增量）:")
+        if _ths_only:
+            L(f"  {'代码':<8} {'名称':<10} {'涨幅%':>7} {'题材':<30}")
+            L(f"  {'-'*65}")
+            for _h in _ths_only[:10]:
+                L(f"  {_h.get('code',''):<8} {_h.get('name',''):<10}{_name_mark(_h.get('name',''))} {_safe_float(_h.get('zhangfu',0)):>+7.2f}% {str(_h.get('reason',''))[:30]:<30}")
+
     L("【C. 板块-异动集中度分析】")
     L(f"{'─'*90}")
     sectors = get_all_sectors()
@@ -1594,6 +1621,16 @@ async def generate_sector_report(output_path):
         L(
             f"\n  🏆 轮动冠军: {normalize_industry(top10[0]['name'])} 评分 {top10[0].get('score',0):.1f}"
         )
+        # V16.3 O37: 板块轮动矩阵对照（duanxianxia——ths 涨幅/kaipan 强度双口径，字典 §12.18）
+        try:
+            from stock_common import get_plate_rotation_top
+            _pr_top = get_plate_rotation_top("kaipan", 20, 5)
+            if _pr_top:
+                L(f"\n  🧭 外部轮动对照（开盘啦强度分 top5）:")
+                for _p in _pr_top:
+                    L(f"      #{_p['rank']} {_p['code']} {_p['name']} 强度 {_p['value']} {'↑' if _p['color']=='red' else '↓'}")
+        except Exception as _e:
+            _debug_log(f"mak plate rotation cross-check: {_e}")
     else:
         L("\n  ⚠️ 无法获取行业板块数据")
     L(f"\n{'='*90}")
@@ -1633,7 +1670,10 @@ async def generate_sector_report(output_path):
     L(f"\n{'='*90}")
     L("【F. 资金流验证：真金白银 vs 虚涨】")
     L(f"{'─'*90}")
-    with_money = [s for s in sectors[:50] if s.get("main_inflow", 0) > 0]
+    # V16.4.0: 按评分筛选（原 sectors[:50] 前 50 高评分板块可能全为净流入 → 虚涨段恒空）
+    _scored = [s for s in sectors if s.get("score", 0) >= 30] or sectors
+    with_money = [s for s in _scored if s.get("main_inflow", 0) > 0]
+    without_money = [s for s in _scored if s.get("main_inflow", 0) <= 0]
     without_money = [s for s in sectors[:50] if s.get("main_inflow", 0) <= 0]
     if with_money:
         _sorted_in = sorted(with_money, key=lambda x: x.get('main_inflow', 0), reverse=True)
@@ -1661,32 +1701,7 @@ async def generate_sector_report(output_path):
             _lfi = round(_l["main_inflow"] / 1e8, 2)
             L(f"    {_lnm}: 涨幅{_l['change_pct']:+.2f}% 主力净流入{_lfi:+.2f}亿")
     L(f"\n{'='*90}")
-    L("【G. 同花顺强势股情绪池交叉验证】")
-    L(f"{'─'*90}")
-    _ths_limit = 50
-    ths = await get_ths_hot_pool(today_str)
-    if ths:
-        # V16.2.14: 与东财涨停池（B）/开盘红天梯（B+）去重——重叠股票已在 B/B+ 展示，
-        # 此处只展示"同花顺独家"（交叉验证增量），并给出重叠计数作为两源一致性指标
-        _zt_codes = {s.get("code", "") for s in _zt_3d} if '_zt_3d' in dir() else set()
-        _ladder_codes = {str(s.get("code", "")) for s in (_ladder or [])} if isinstance(_ladder, list) else set()
-        _ths_dup = [h for h in ths if h.get("code") in _zt_codes or h.get("code") in _ladder_codes]
-        _ths_only = [h for h in ths if h.get("code") not in _zt_codes and h.get("code") not in _ladder_codes]
-        L(f"  同花顺强势股 {len(ths)} 只：与东财涨停池/开盘红天梯重叠 {len(_ths_dup)} 只（已在 B/B+ 展示）")
-        L(f"  同花顺独家 {len(_ths_only)} 只（东财口径未覆盖，交叉验证增量）:")
-        if _ths_only:
-            L(f"  {'代码':<8} {'名称':<12} {'涨幅%':>7} {'题材':<30}")
-            L(f"  {'-'*65}")
-            for h in _ths_only[:_ths_limit]:
-                L(f"  {h.get('code',''):<8} {h.get('name',''):<12} {_safe_float(h.get('zhangfu',0)):>+7.2f}% {str(h.get('reason',''))[:30]:<30}")
-        else:
-            L("  （同花顺池全部被东财涨停池/开盘红覆盖，两源一致）")
-    else:
-        L("  暂无数据（需交易所收盘后更新）")
-    L(f"\n{'='*90}")
-    output = "\n".join(filter(None, lines))
-    with open(output_path, "w", encoding="utf-8") as f:
-        f.write(output)
+    output = save_text_report(output_path, lines)  # V17.0 S5: 公共样板
     return output
 
 
@@ -1698,7 +1713,7 @@ class MakReportRunner(BaseReportRunner):
 
     def execute_pipeline(self) -> str:
         sn = os.path.basename(__file__).replace(".py", "")
-        ts = datetime.now().strftime("%Y%m%d_%H%M")
+        ts = self.report_ts  # V17.0 R1: 基类统一口径(%Y%m%d_%H%M)
         op = os.path.join(self.args.output, f"{sn}_{ts}.txt")
         try:
             print("  ⏱ 预计 2-3 分钟", flush=True)

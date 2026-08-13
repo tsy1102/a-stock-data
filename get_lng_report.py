@@ -27,6 +27,12 @@ get_lng_report.py — A股长线价投专属深度体检报告
     V8.0 2026-06-17 - 初始版本
 """
 
+# V16.4.1: 强制 UTF-8 输出（下沉到代码自身——任何 agent/机器/直接运行均 UTF-8，
+# 不再依赖 main.py 注入的 PYTHONIOENCODING 环境变量）
+from stock_common.env_setup import ensure_utf8_stdio
+
+ensure_utf8_stdio()
+
 import math, pandas as pd
 import asyncio
 from datetime import date, datetime, timedelta
@@ -39,18 +45,16 @@ from stock_common.sc_snapshot import SnapshotProxy as _SnapshotProxy  # noqa: E4
 
 _SNAPSHOT_DATA = _SnapshotProxy()
 
-from tdx_client import (
+from core.tdx_client import (
     tdx_get_historical_high, tdx_get_board_list,
 )
-from data_provider import (
-    get_stock_composite_async,
-    get_canonical_stock_data,  # V15.3 强类型合约推广
+from core.data_provider import (
+    get_canonical_stock_data,  # V15.3 强类型合约推广; V17.0 R3: 唯一综合数据入口(替代已删 get_stock_composite_async)
 )
-from stock_common import (clean_codes, _safe_float, _debug_log,
+from stock_common import (_safe_float, _debug_log,
                            _load_strategy_config, BaseReportRunner,
                            _market_code,
                           get_holder_structure,
-                          create_async_session,
                           get_strategic_announcements_async,
                           baidu_kline_full,
                           get_dividend_history,
@@ -59,7 +63,7 @@ from stock_common import (clean_codes, _safe_float, _debug_log,
                           get_lockup_expiry_async, get_industry_peers,
                           get_sina_financial_report_async, get_sina_balance_sheet_async,
                           get_market_status,
-                          calculate_multi_school_scores,
+                          save_text_report,  # V17.0 S5: 写尾样板公共函数(V17.0 审查: 删 clean_codes/create_async_session/calculate_multi_school_scores 死导入)
                           get_zhb_single_stock_data, is_zhb_data_fresh,
                           get_zhb_industry_map, get_zhb_data_date,
                           get_zhb_tip_info,
@@ -71,7 +75,16 @@ _SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 # ==================== 长线价投核心数据模块 ====================
 
 def industry_comparison(top_n=20):
-    """V4: 全行业排名 → TDX board_list 替代 push2"""
+    """V16.3 O25: 行业排名 → ZHB 本地聚合优先（参照系 T-1 可接受，零网络），
+    TDX board_list 兜底（原 V4 直接东财 clist——每次现取，用户纠正应 ZHB）。"""
+    try:
+        from stock_common.sc_datasource import get_industry_rank_from_zhb
+
+        rows = get_industry_rank_from_zhb(top_n)
+        if rows:
+            return rows
+    except Exception as _e:
+        _debug_log(f"lng industry_rank zhb error: {_e}")
     sectors = tdx_get_board_list(0)
     if not sectors:
         return []
@@ -151,30 +164,23 @@ async def generate_report_async(session, code, output_path, ind_comp=None):
     L("─" * 72)
 
     # V11.5: 优先使用 data_provider 统一数据中心层获取综合数据
+    # V17.0 R3: get_stock_composite_async 链已删除(220 行)——统一走
+    # get_canonical_stock_data(CanonicalStockData 覆盖全部原 composite 字段, 已逐一核对)
     _dp_composite = None
-    try:
-        _dp_composite = await get_stock_composite_async(code, session)
-    except Exception as _e:
-        _debug_log(f"lng dp_composite error: {_e}")
-
-    # V15.3: 强类型合约推广 —— 同步用 cdata 拿关键字段（price/mcap_yi），
-    # 用 cdata 的字段覆盖 _dp_composite 中的 0/缺失值
     _cdata = None
     try:
         _cdata = await asyncio.to_thread(get_canonical_stock_data, code)
     except Exception as _e:
         _debug_log(f"lng cdata error: {_e}")
-    if _cdata is not None and _dp_composite is not None:
-        # cdata 优先（更权威的 push2 实时源 + 强类型）
+    if _cdata is not None:
+        # 兼容 dict 读取面: 由强类型合约构建(原 _dp_composite 字段全集)
         _dp_composite = {
-            **_dp_composite,
-            "price": _cdata.price or _dp_composite.get("price", 0),
-            "change_pct": _cdata.change_pct or _dp_composite.get("change_pct", 0),
-            "mcap_yi": _cdata.mcap_yi or _dp_composite.get("mcap_yi", 0),
-            "float_mcap_yi": _cdata.float_mcap_yi or _dp_composite.get("float_mcap_yi", 0),
-            "industry": _cdata.industry or _dp_composite.get("industry", ""),
-            "board": _cdata.board or _dp_composite.get("board", ""),
-            "name": _cdata.name or _dp_composite.get("name", ""),
+            "price": _cdata.price, "change_pct": _cdata.change_pct,
+            "mcap_yi": _cdata.mcap_yi, "float_mcap_yi": _cdata.float_mcap_yi,
+            "industry": _cdata.industry, "board": _cdata.board, "name": _cdata.name,
+            "change_ytd": _cdata.change_ytd, "high_52w": _cdata.high_52w,
+            "low_52w": _cdata.low_52w, "dividend_yield": _cdata.dividend_yield,
+            "pe_ttm": _cdata.pe_ttm, "pb": _cdata.pb,
         }
 
     # V10.1: zhb优先获取估值、阶段涨幅、52周高低、股息率，原有路径降为fallback
@@ -198,8 +204,19 @@ async def generate_report_async(session, code, output_path, ind_comp=None):
     # V16.1: 复用上方 _cdata（避免同一股票两次 get_canonical_stock_data）
     cdata = _cdata
     if cdata is None:
-        from data_provider import get_canonical_stock_data
+        # V17.0 审查: 首次失败二次获取——成功后同步重建 _dp_composite(原遗漏导致与 price 不同源)
+        from core.data_provider import get_canonical_stock_data
+
         cdata = await asyncio.to_thread(get_canonical_stock_data, code)
+        if cdata is not None:
+            _dp_composite = {
+                "price": cdata.price, "change_pct": cdata.change_pct,
+                "mcap_yi": cdata.mcap_yi, "float_mcap_yi": cdata.float_mcap_yi,
+                "industry": cdata.industry, "board": cdata.board, "name": cdata.name,
+                "change_ytd": cdata.change_ytd, "high_52w": cdata.high_52w,
+                "low_52w": cdata.low_52w, "dividend_yield": cdata.dividend_yield,
+                "pe_ttm": cdata.pe_ttm, "pb": cdata.pb,
+            }
 
     _quote = {
         "price": cdata.price,
@@ -220,7 +237,7 @@ async def generate_report_async(session, code, output_path, ind_comp=None):
     if _industry in ('N/A', '', None):
         # Fallback 1: TDX boards
         try:
-            from tdx_client import tdx_get_belong_boards
+            from core.tdx_client import tdx_get_belong_boards
             # V15.4.2: 同步 TDX 包 to_thread
             boards = await asyncio.to_thread(tdx_get_belong_boards, code)
             if boards and boards.get("industry"):
@@ -230,17 +247,25 @@ async def generate_report_async(session, code, output_path, ind_comp=None):
             pass
     if _industry in ('N/A', '', None) and _zhb_data:
         # Fallback 2: ZHB industry_code 映射（tdxzs3.cfg 已有 1000+ 行业映射）
+        # V17.0 修复: 仅认 881 段=通达信行业板块(实锤); 880 段=概念/风格(股权转让/微盘股等,
+        # 今日字典定案)不可当行业——否则妖股会显示"股权转让"类概念名
         _zhb_ind_code = _zhb_data.get("industry_code", "")
-        if _zhb_ind_code:
+        if _zhb_ind_code and _zhb_ind_code.startswith("881"):
             _zhb_industry_map = get_zhb_industry_map()
             _zhb_ind_name = _zhb_industry_map.get(_zhb_ind_code, "")
             if _zhb_ind_name:
                 _industry = _zhb_ind_name
                 info["industry"] = _zhb_ind_name
+    # V16.3.3 (2026-08-10 字典 12.15.8): ST/次新风险信号（结构化名称——ST 不剔除仅标注，涨跌幅已统一 10%）
+    if getattr(_cdata, "is_st", False):
+        L(f"  ⚠️ 风险标记: **ST/*ST**（退市风险——长期价值需严格财务验证）")
+    if getattr(_cdata, "is_new", False):
+        L(f"  🆕 次新标记: 上市 ≤5 日（历史数据不足，长线谨慎）")
     L(f"  所属板块: {_industry}")
 
     # V15.4.2: 同步同业对比包 to_thread
     peer_data_lng = await asyncio.to_thread(get_industry_peers, code, 3, info=info)
+    _ic_d = None  # V16.4.1: try 前初始化——原 L420 `'_ic_d' in dir()` 防御脆弱
     try:
         _ind_name = info.get("industry", "")
         _ic_d = ind_comp if ind_comp is not None else industry_comparison(20)
@@ -306,7 +331,9 @@ async def generate_report_async(session, code, output_path, ind_comp=None):
         _mcap_yi = q.get("mcap_yi", 0)
         if _mcap_yi > 0:
             _per_capita_mcap = _mcap_yi * 10000 / _zhb_employee_count
-            L(f"  [人效比] 人均创造市值: {_per_capita_mcap:,.0f}元/人")
+            # V16.4.1: 单位修正——_mcap_yi 为亿元×10000=万元, 除以人数得"万元/人"
+            # (原标"元/人"误导: 177 亿/1202 人 = 1473 万, 非 1473 元)
+            L(f"  [人效比] 人均创造市值: {_per_capita_mcap:,.0f}万元/人")
 
     # V10.3: 从tipinfo获取EPS（zhb独有数据）
     _tip_info = get_zhb_tip_info(code)
@@ -354,9 +381,14 @@ async def generate_report_async(session, code, output_path, ind_comp=None):
         _pe_static = _zhb_pe_dynamic
     else:
         _pe = q.get('pe_ttm', 0)
-        _pe_static = q.get('pe_static', 0)
+        # V16.4.1: q 无 pe_static 键(恒 0) → else 分支 PE(静态) 永远 N/A; 用 ZHB 静态口径兜底
+        _pe_static = _zhb_pe_dynamic or q.get('pe_static', 0)
     if _pe > 0:
         _ey = f"{100/_pe:.2f}%"
+        # V16.4.1: 标注 PE 来源口径(ZHB pe_ttm 基于最近年报/季报净利, 可能与
+        # 报告期最新财务表有滞后——2026-08-12 实测 000506: ZHB=110.47(2025年报 1.59亿)
+        # vs 财务表 TTM 4.73 亿(含 2026Q1) 应 ~37x, 口径差 3 倍)
+        _pe_src = "data_provider" if (_dp_pe and _dp_pe > 0) else ("ZHB" if (_zhb_pe_ttm and _zhb_pe_ttm > 0) else "腾讯")
     else:
         _ey = "N/A"
         # V16.0: 改用统一层 _cdata（get_canonical_stock_data）的财务字段计算 EPS，
@@ -370,7 +402,7 @@ async def generate_report_async(session, code, output_path, ind_comp=None):
                     _ey = f"{_eps / price_today * 100:.2f}%"
         except Exception as _e:
             _debug_log(f"lng finance_info error: {_e}")
-    L(f"    市盈率 PE(TTM): {_pe:.2f}x (盈利收益率粗估: {_ey})")
+    L(f"    市盈率 PE(TTM): {_pe:.2f}x ({_pe_src}口径; 盈利收益率粗估: {_ey})")
     L(f"    市盈率 PE(静态): {_pe_static:.2f}x" if _pe > 0 and _pe_static > 0 else "    市盈率 PE(静态): N/A（亏损）")
     # PB：data_provider优先，其次zhb，最后fallback到腾讯行情
     if _dp_pb and _dp_pb > 0:
@@ -390,7 +422,7 @@ async def generate_report_async(session, code, output_path, ind_comp=None):
         L(f"  板块排名: 按总市值排序, 该股排名第 {peer_data_lng['my_rank']}/{peer_data_lng['industry_count']} 位")
 
     try:
-        _ic_data = _ic_d if '_ic_d' in dir() else None
+        _ic_data = _ic_d  # V16.4.1: 已 try 前初始化, 不再依赖 dir() 防御
         if _ic_data and isinstance(_ic_data, list):
             _our_ind = info.get("industry", "")
             for _ind in _ic_data:
@@ -469,6 +501,11 @@ async def generate_report_async(session, code, output_path, ind_comp=None):
             L(f"  {'-'*35}")
             for g in gm_rows:
                 L(f"  {g['date']:<12} {g['gm']:>9.2f}% {g['npm']:>9.2f}%")
+            # V16.4.1: 净利率>100% 口径提示(2026-08-12 实测 000506 招金黄金 2026Q1
+            # 净利 1.87 亿 > 营收 1.79 亿——东财 f183-f188 与 TDX F10 双源一致,
+            # 系大额投资收益/非经营收益主导的季度, 非数据错误)
+            if any(g["npm"] > 100 for g in gm_rows):
+                L("  ⚠️ 注: 净利率>100% 为净利含大额投资收益等非经营项(双源核验一致), 非计算错误")
             latest_gm = gm_rows[0]["gm"]
             if latest_gm >= 40:
                 L(f"  ✅ 毛利率 {latest_gm:.1f}% ≥ 40%，具备较强定价权与护城河。")
@@ -494,7 +531,7 @@ async def generate_report_async(session, code, output_path, ind_comp=None):
     # V16.1: 0x0010 财务快照存局部变量，供下方"核心财务指标"复用（避免重复 TCP 请求）
     _tdx_fi_snapshot = None
     try:
-        from tdx_client import _get_tdx_client
+        from core.tdx_client import _get_tdx_client
         c = _get_tdx_client()
         if c:
             fi = c.get_finance_info(_market_code(code), code)
@@ -576,7 +613,7 @@ async def generate_report_async(session, code, output_path, ind_comp=None):
         if _tdx_fi_snapshot is not None:
             tdx_fi = _tdx_fi_snapshot
         else:
-            from tdx_client import _get_tdx_client
+            from core.tdx_client import _get_tdx_client
             client = _get_tdx_client()
             tdx_fi = client.get_finance_info(_market_code(code), code) if client else None
         if tdx_fi is not None and not tdx_fi.empty:
@@ -635,11 +672,12 @@ async def generate_report_async(session, code, output_path, ind_comp=None):
         if eps_next and eps_cur > 0:
             cagr = (eps_next / eps_cur) - 1
             L(f"    未来一年预期净利增速: {cagr*100:.1f}%")
-            peg = pe_fwd / (cagr * 100) if cagr > 0 else float("in")
+            peg = pe_fwd / (cagr * 100) if cagr > 0 else float("inf")  # V16.4.1: 原 "in" 拼写错误→ValueError
             if peg > 5:
                 L(f"    PEG: >5.0（增速过低或PE过高导致极端值，不具参考意义）")
             else:
-                L(f"    PEG (市盈率相对盈利增长比率): {peg:.2f} (长线买入参考: <1低估, 1-1.5合理)")
+                # V16.4.1: 跨期口径标注——pe_fwd 用本年 EPS, 增速用明年 EPS(向前 PEG)
+                L(f"    PEG (市盈率相对盈利增长比率): {peg:.2f} (长线买入参考: <1低估, 1-1.5合理) [PE本年/增速明年,跨期口径]")
             if cagr > 0:
                 digest_25 = math.log(pe_fwd / 25) / math.log(1 + cagr) if pe_fwd > 25 else 0
                 try:
@@ -708,7 +746,14 @@ async def generate_report_async(session, code, output_path, ind_comp=None):
                 elif _consec >= 3:
                     L(f"  ✅ 分红连续性: 连续分红 {_consec} 年")
                 elif _consec >= 1:
-                    L(f"  ℹ️ 分红连续性: 近 {_consec} 年有分红（连续性待观察）")
+                    # V16.4.1: 补"最近分红年份距今"——2026-08-12 实测 000506 最近分红
+                    # 在 2014 年, 原"近 2 年有分红"表述误导(应为"近 2 个分红年度, 距今 12 年")
+                    _last_div_year = _sorted_years[-1]
+                    _gap = date.today().year - _last_div_year
+                    if _gap >= 2:
+                        L(f"  ℹ️ 分红连续性: 最近分红 {_consec} 个年度（最近一次 {_last_div_year} 年, 距今 {_gap} 年, 长期未分红）")
+                    else:
+                        L(f"  ℹ️ 分红连续性: 近 {_consec} 年有分红（连续性待观察）")
         except Exception as _de:
             _debug_log(f"lng dividend continuity: {_de}")
     else:
@@ -924,7 +969,8 @@ async def generate_report_async(session, code, output_path, ind_comp=None):
                     pass
             q = str(item.get("question", "")).strip()[:120]
             if q:
-                a = str(item.get("answer", "")).strip()
+                # V16.4.1: answer 可能为 None(接口返回 null)——str(None)="None" 曾直接展示
+                a = str(item.get("answer") or "").strip()
                 _ans = f"答案: {a[:120]}" if a else "答案: （公司待回复）"
                 L(f"  · [{t_str[:16]}] 提问: {q}")
                 L(f"      {_ans}")
@@ -999,19 +1045,10 @@ async def generate_report_async(session, code, output_path, ind_comp=None):
     elif _ps>=20: L(f"  长线评分: {_ps:.0f}/100 → 观察仓，仓位15%")
     else: L(f"  长线评分: {_ps:.0f}/100 → 暂不建议，等待更好的安全边际")
     
-    # 多评委评审团评分（V8.9，替代原手动价值派评分）
-    try:
-        multi_scores = calculate_multi_school_scores(score_data)
-        L("")
-        L("  ★ 多评委评审团评分")
-        L(f"    价值派评分: {multi_scores['value'].total_score:.1f}分")
-        L(f"    成长派评分: {multi_scores['growth'].total_score:.1f}分")
-        L(f"    投机派评分: {multi_scores['speculator'].total_score:.1f}分")
-        L(f"    综合共识: {multi_scores['consensus'].total_score:.1f}分")
-        if multi_scores['dispersion'] > 15:
-            L(f"    ⚠️ 派别分歧度较大({multi_scores['dispersion']:.1f})，投资需谨慎")
-    except Exception as e:
-        L(f"    多评委评分异常: {e}")
+    # V17.0 R5: 多评委评审团评分渲染统一走 sc_render(原 12 行逐字重复已收敛)
+    from stock_common.sc_render import render_multi_school_scores
+
+    multi_scores = render_multi_school_scores(L, score_data)
 
     # 综合投资建议
     try:
@@ -1038,10 +1075,7 @@ async def generate_report_async(session, code, output_path, ind_comp=None):
         "report_source": "lng"
     }
 
-    output = "\n".join(filter(None, lines))
-
-    with open(output_path, "w", encoding="utf-8") as f:
-        f.write(output)
+    output = save_text_report(output_path, lines)  # V17.0 S5: 公共样板
     return output
 
 
@@ -1057,60 +1091,13 @@ class LngReportRunner(BaseReportRunner):
         super().__init__("get_lng_report", "lng", "A股长线价投专属深度体检报告")
 
     def execute_pipeline(self) -> dict:
-        ts = datetime.now().strftime("%Y%m%d_%H%M")
-        report_type = "lng"
-
-        args = self.args
+        # V17.0 R4: 批量骨架收敛到基类 execute_batch_pipeline(原 90 行本地实现删除)
         _cached_ind_comp = industry_comparison(20)
-
-        async def _main_async():
-            codes = clean_codes(args.codes, verbose=True)
-            if not codes:
-                print("  ❌ 没有有效的股票代码")
-                return []
-            for code in codes:
-                try:
-                    print(f"  📋 加入队列: {code}", flush=True)
-                except UnicodeEncodeError:
-                    print(f"  [INFO] 加入队列: {code}", flush=True)
-
-            _session = await create_async_session()
-            try:
-                sem = asyncio.Semaphore(3)
-
-                async def _limited(code):
-                    async with sem:
-                        result_path = os.path.join(args.output, f"{code}_{report_type}_{ts}.txt")
-                        try:
-                            await generate_report_async(
-                                _session, code, result_path,
-                                ind_comp=_cached_ind_comp
-                            )
-                            print(f"  ✅ 已保存: {result_path}", flush=True)
-                            return {"code": code, "status": "成功", "error": "", "path": result_path}
-                        except Exception as e:
-                            print(f"❌ {code} 数据生成失败: {e}", flush=True)
-                            return {"code": code, "status": "数据失败", "error": str(e), "path": ""}
-
-                results = await asyncio.gather(*[_limited(c) for c in codes])
-                return results
-            finally:
-                await _session.close()
-
-        _results = asyncio.run(_main_async())
-
-        if _SNAPSHOT_DATA:
-            from stock_common.analyze_history import save_snapshot
-            save_snapshot("lng", _SNAPSHOT_DATA)
-
-        ok = [r for r in _results if r["status"] == "成功"]
-        fd = [r for r in _results if r["status"] == "数据失败"]
-        print(f"\n{'='*60}\n  批量执行完成 — 共处理 {len(_results)} 只股票\n{'='*60}")
-        print(f"  ✅ 全部成功: {len(ok)}  |  ❌ 数据失败: {len(fd)}")
-        for r in fd:
-            print(f"    ❌ {r['code']} — {r['error'][:80]}")
-
-        return {"results": _results, "time_str": ts, "report_type": report_type}
+        return self.execute_batch_pipeline(
+            "lng", generate_report_async,
+            gen_kwargs={"ind_comp": _cached_ind_comp},
+            snapshot_data=_SNAPSHOT_DATA,
+        )
 
     def upload_reports(self, drive, folder_id: str, results) -> None:
         self.upload_multi_reports(drive, folder_id, results)

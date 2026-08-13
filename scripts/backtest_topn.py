@@ -27,11 +27,20 @@ import zipfile
 from pathlib import Path
 from typing import Any, Callable, Dict, List, Optional, Set
 
+# V16.4.1: 强制 UTF-8 输出（下沉到代码自身——任何 agent/机器/直接运行均 UTF-8，
+# 不依赖系统代码页/环境变量/Profile；纯标准库，幂等）
+for _stream in (sys.stdout, sys.stderr):
+    if _stream is not None and hasattr(_stream, "reconfigure"):
+        try:
+            _stream.reconfigure(encoding="utf-8", errors="replace")
+        except Exception:
+            pass
+
 # 路径设置
 ROOT = Path(__file__).parent.parent
 sys.path.insert(0, str(ROOT))
 
-from zhb_client import _parse_zhb_data
+from core.zhb_client import _parse_zhb_data
 
 
 # ═══════════════════════════════════════

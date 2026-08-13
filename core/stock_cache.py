@@ -4,7 +4,7 @@
 设计目标：
   - 所有 get_* 网络请求函数统一走本层，避免重复请求 + 降低 API 被封概率
   - 基于 SQLite 的持久化缓存，支持 TTL 自动过期 + LRU 清理
-  - 装饰器模式：@cached / @cached_async，不破坏原函数签名
+  - 装饰器模式：@cached，不破坏原函数签名（@cached_async 从未实现，V17.0 已移除占位）
 
 V15.0 更新：
   - ZHB 离线数据全量旁路 (Bypass SQLite Disk Cache)：30+ 静态/估值/财务字段直接在 RAM 字典提取（<0.001ms），零 SQLite 磁盘读写开销
@@ -46,7 +46,7 @@ V9.2 更新：
 
 V9.1 更新：
   - 新增 16 个 F10 分类 TTL（5 个高频用交易日过期，11 个低频用固定 TTL）
-  - @cached / @cached_async / set_cache 新增 trading_day: bool 参数
+  - @cached / set_cache 新增 trading_day: bool 参数
   - 新增 _calc_trading_day_expiry() 按最近交易日计算过期时间
 
 TTL 分级策略（V10.0 优化）：
@@ -185,7 +185,8 @@ def _record_cache_hit(category: str, hit: bool) -> None:
 # ═══════════════════════════════════════
 # 目录与文件路径
 # ═══════════════════════════════════════
-_CACHE_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "cache")
+# V17.0 包化: 上提一级到仓库根(模块移入 core/ 后 __file__ 在 core/ 下)
+_CACHE_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "cache")
 _CACHE_DB = os.path.join(_CACHE_DIR, "stock_cache.db")
 os.makedirs(_CACHE_DIR, exist_ok=True)
 
@@ -208,7 +209,6 @@ _SOFT_EXPIRY_WINDOW: "Dict[str, int]" = {
     "lockup_expiry":    7 * 86400,
     "announcements":    7 * 86400,
     "northbound":       7 * 86400,
-    "hsgt_flow":        7 * 86400,
     "reports":          1 * 86400,
     "industry_reports": 1 * 86400,
     "stock_news":       6 * 3600,
@@ -255,17 +255,18 @@ def _soft_expiry_allowed(category: str, expires_at: float, now: float) -> bool:
 # ═══════════════════════════════════════
 TTL: Dict[str, int] = {
     # 静态数据（几乎不变）
-    "basic_info":       1 * 86400,   # 股票基本信息（含市值/价格等动态字段，V10.1: 30天→1天）
-    "basic_info_static": 90 * 86400, # 股票静态信息（总股本/上市日期等，V10.1新增）
+    "static_permanent":  3650 * 86400,  # V16.3.3: 绝对不变字段（上市日期/发行价/核心名称/代码/交易所）——10 年
+    "basic_info":       1 * 3600,    # 股票基本信息（含市值/价格等动态字段，V16.3 O24: 1天→1小时）
+    "basic_info_static": 365 * 86400, # 股票静态信息（总股本/上市日期——上市日期永远不变，V16.3 O24: 90天→365天）
     "share_capital":   90 * 86400,   # 股本数据（总股本、流通股，V10.1新增）
     "concept_blocks":  30 * 86400,   # 概念板块列表（V10.0: 7天→30天）
     "board_type":       7 * 86400,   # 沪市/深市/北交所
+    "board_list":       7 * 86400,   # 板块列表（行业排名参照系——T-1 可接受，V16.3 O25 新增，trading_day 覆盖）
 
     # 财务数据（改为 24 小时或跟随 trading_day，废弃原 90 天静态，防止错位穿透）
     "financial":        24 * 3600,   # 新浪利润表
     "balance_sheet":    24 * 3600,   # 新浪资产负债表
     "cash_flow":        24 * 3600,   # 东财现金流量表（V9.6新增）
-    "gross_margin_roe": 24 * 3600,   # 毛利率 + ROE（可复用财务数据）
     "eps_forecast":     24 * 3600,   # EPS 预测
 
     # 日频数据（收盘后固定，历史数据不变可延长TTL）
@@ -294,32 +295,32 @@ TTL: Dict[str, int] = {
     "news":             6 * 3600,    # 财联社快讯（V9.6新增，6小时）
 
     # 行业/概念热度（每日变化，V11.2: 改为交易日模式）
-    "industry_peers":   24 * 3600,   # 行业可比公司（trading_day=True覆盖）
     "industry_compare":  24 * 3600,   # 行业板块排名（trading_day=True覆盖）
+    "industry_peers_v2": 24 * 3600,   # 行业可比公司（V16.2.16 版本化——trading_day 覆盖）
     "ths_hot_reason":   24 * 3600,   # 同花顺热点题材（trading_day=True覆盖）
     "hsgt_macro_flow":  24 * 3600,   # 北向资金大盘流向（trading_day=True覆盖）
+
+    # V16.3.3 新源缓存分类（2026-08-10 字典 12.15.5 充实后补充）
+    "market_emotion_multi": 7 * 86400,  # 涨停池三源互校（财联社=KPL=复盘啦——trading_day 覆盖，盘中 6s+ 调用必须缓存）
+    "kpl_sentiment":        7 * 86400,  # KPL 市场情绪（strong/连板/涨停——trading_day 覆盖）
+    "fupan_review":         7 * 86400,  # 复盘啦涨停天梯/盘面（get_zttt/get_pmsl——trading_day 覆盖）
+    "plate_rotation":       7 * 86400,  # 板块轮动 N×天矩阵（duanxianxia——trading_day 覆盖）
+    "fuyao_snapshot":       30 * 60,    # fuyao 行情快照（30min——盘中动态）
+    "fuyao_valuation":      1 * 3600,   # fuyao 估值（1h——pe/pb 随价但低频）
+    "fuyao_ladder":         7 * 86400,  # fuyao 涨停梯队（trading_day 覆盖）
 
     # 分红历史（公告不频繁）
     "dividend":         30 * 86400,   # 分红历史
 
-    # F10 数据（V9.0 新增，5 个高频分类用 trading_day 模式，11 个低频用固定 TTL）
+    # F10 数据（V9.0 新增；V16.3 O25 清理 8 个死分类——现 F10 走 f10_financial 等在用分类）
     # 高频分类（每日更新，休市不变，通过 @cached(trading_day=True) 启用交易日模式）
     "f10_reminders":       24 * 3600,   # F2 最新提示（交易日模式覆盖此值）
     "f10_news":            24 * 3600,   # F13 公司报道（交易日模式覆盖此值）
-    "f10_reports":         24 * 3600,   # F16 研报评级（交易日模式覆盖此值）
-    "f10_fund_flow":       24 * 3600,   # F9 资金动向（交易日模式覆盖此值）
     "f10_announcements":   24 * 3600,   # F12 公司公告（交易日模式覆盖此值）
-    # 低频分类（固定 TTL）
+    "f10_fund_flow":       24 * 3600,   # F9 资金动向（交易日模式覆盖此值）
     "f10_shareholder":      7 * 86400,  # F5 股东研究（季度更新）
     "f10_share_capital":    7 * 86400,  # F4 股本结构（偶尔更新）
-    "f10_industry":         7 * 86400,  # F15 行业分析（每周更新）
-    "f10_themes":           3 * 86400,  # F11 热点题材（不定期）
-    "f10_financial":       24 * 3600,  # F3 财务分析（改为24小时）
-    "f10_overview":        30 * 86400,  # F2 公司概况（几乎不变）
-    "f10_operation":       24 * 3600,  # F10 经营分析（改为24小时）
-    "f10_governance":      30 * 86400,  # F8 高管治理（几乎不变）
-    "f10_dividend":        30 * 86400,  # F7 分红融资（偶尔更新）
-    "f10_inst_hold":       30 * 86400,  # F6 机构持股（季度更新）
+    "f10_financial":       24 * 3600,  # F3 财务分析（V16.3 O: F10 接入主缓存）
 
     # 通用兜底（1 小时）
     "default":          3600,
@@ -327,12 +328,18 @@ TTL: Dict[str, int] = {
 
 
 def _calc_trading_day_expiry() -> float:
-    """计算 F10 交易日模式的过期时间戳：下一个收盘更新点（交易日 15:00）。
+    """计算交易日模式的过期时间戳（V16.3 O24 用户 TTL 语义重构）。
 
-    逻辑：
-    - 今天是交易日且现在 < 15:00 → 今天 15:00（盘前数据，等收盘更新）
-    - 今天是交易日且现在 >= 15:00 → 下一个交易日 15:00（盘后数据，等明天更新）
-    - 今天不是交易日 → 下一个交易日 15:00
+    用户逻辑：TTL 以"数据交易日"为粒度，非物理时间——
+    - **9:30 是分界**：交易日 9:30 后 = 新的一天（延续到 24:00）；
+      9:30 前数据=上一交易日（盘前 T-1 正确）
+    - **同一数据交易日内的多次扫描共享缓存**（9:30 后首次拉当日数据，后续共享）
+    - **非交易日不过期**（数据日不变——周五缓存跨周末仍有效，直到下个交易日 9:30）
+
+    过期点 = 下一个数据交易日 9:30：
+    - 交易日且 now >= 9:30 → 数据日=今天 → 下个交易日 9:30 过期（次日刷新）
+    - 交易日且 now < 9:30 → 数据日=上一交易日 → 今天 9:30 过期（开盘即新一天）
+    - 非交易日 → 数据日=最近交易日 → 下个交易日 9:30 过期
 
     任何异常时 fallback 到 now + 24h（保证不会因日历问题导致缓存写入失败）。
 
@@ -349,13 +356,16 @@ def _calc_trading_day_expiry() -> float:
     today = now.date()
 
     try:
-        if is_workday(today) and now.hour < 15:
-            # 盘前：数据是上一交易日收盘后的，今天 15:00 后会更新
-            target = datetime.combine(today, dtime(15, 0))
+        # V16.3 O29: 运算符优先级 bug 修复——原 `is_workday(today) and now.hour < 9 or (now.hour == 9 and now.minute < 30)`
+        # 被解析为 `(is_workday and hour<9) OR (hour==9 and minute<30)`——非交易日 9:00-9:29
+        # 命中第二分支（未检查 is_workday）→ target=今天 9:30（已过去）→ 缓存立即过期
+        if is_workday(today) and (now.hour < 9 or (now.hour == 9 and now.minute < 30)):
+            # 交易日 9:30 前：数据=上一交易日 → 今天 9:30 过期（开盘即新一天）
+            target = datetime.combine(today, dtime(9, 30))
         else:
-            # 盘后或非交易日：找下一个交易日 15:00
+            # 9:30 后（含交易日与非交易日）：数据日已定 → 下个交易日 9:30 过期
             next_td = get_next_trading_day(today)
-            target = datetime.combine(next_td, dtime(15, 0))
+            target = datetime.combine(next_td, dtime(9, 30))
     except Exception as _e:
         _cache_logger.debug(f"calc_trading_day_expiry calc error: {_e}")
         # 交易日历年份超出范围或其他异常，fallback 到 24h
@@ -618,7 +628,7 @@ def _deserialize_from_cache(value, target_cls=None):
 def make_valid_if(check_zeros: bool = True, min_size: int = 0) -> Callable[[Any], bool]:
     """V15.2: 生成通用 valid_if 校验函数。
 
-    用于 @cached / @cached_async 装饰器，统一拒绝空数据缓存。
+    用于 @cached 装饰器，统一拒绝空数据缓存。
 
     Args:
         check_zeros: 是否检查所有数值为 0（默认 True）
@@ -847,7 +857,10 @@ def set_cache(category: str, func_name: str, value: Any, ttl: int, *args: Any,
         # V10.3: 同时写入 L1 内存缓存（V16.2: 带 verified 标记）
         l1_ttl = expires_at - now
         if l1_ttl > 0:
-            _l1_set(key, value, l1_ttl, verified=bool(verified) if cross_verify else False)
+            # V16.4.1: row is None(首次插入)分支走 else 前的 INSERT, `verified` 从未定义 →
+            # 原 NameError 被外层 except 吞掉, L1 永不写入(6 个 cross_verify 分类每次冷写都丢 L1)
+            _l1_verified = bool(verified) if cross_verify and "verified" in locals() else False
+            _l1_set(key, value, l1_ttl, verified=_l1_verified)
     except Exception as _e:
         _cache_logger.debug(f"set_cache: {_e}")
 
@@ -1104,9 +1117,9 @@ def cached(category: str, ttl_seconds: Optional[int] = None,
 
 
 # ═══════════════════════════════════════
-# 异步装饰器 @cached_async
+# V17.0 S8: @cached_async 从未实现(此前仅注释占位)——实际异步模式为
+# "sync @cached + async 包装委托 sync" (sc_datasource/report 层), 占位 TypeVar AF 一并移除。
 # ═══════════════════════════════════════
-AF = TypeVar("AF", bound=Callable[..., Any])
 
 
 
@@ -1119,6 +1132,14 @@ AF = TypeVar("AF", bound=Callable[..., Any])
 # CLI 工具（可直接运行 python stock_cache.py）
 # ═══════════════════════════════════════
 if __name__ == "__main__":
+    # V16.4.1: CLI 入口强制 UTF-8 输出（库 import 时不动全局 stdio）
+    for _stream in (sys.stdout, sys.stderr):
+        if _stream is not None and hasattr(_stream, "reconfigure"):
+            try:
+                _stream.reconfigure(encoding="utf-8", errors="replace")
+            except Exception:
+                pass
+
     import argparse
 
     parser = argparse.ArgumentParser(description="stock_cache CLI 工具")

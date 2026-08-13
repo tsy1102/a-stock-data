@@ -70,10 +70,10 @@ from stock_common.sc_network import (
 )
 
 # 导入配置加载
-from stock_common.sc_utils import _load_settings, _safe_float
+from stock_common.sc_utils import _load_settings, _safe_float, em_secid_prefix  # V17.0 S3: 统一 secid 前缀
 
 # 导入缓存层
-from stock_cache import TTL, cached, make_valid_if  # V15.2: 强化 valid_if
+from core.stock_cache import TTL, cached, make_valid_if  # V15.2: 强化 valid_if
 
 # ═══════════════════════════════════════════════════════════
 # 东财数据中心核心函数
@@ -95,7 +95,7 @@ def eastmoney_datacenter(
     """
     try:
         full_filter = filter_str if filter_str else f'(SECURITY_CODE="{code}")'
-        r = _request_with_retry(
+        r = _quick_request(
             DATACENTER_URL,
             params={
                 "reportName": report_name,
@@ -241,7 +241,7 @@ _HOLDER_CACHE_REFRESH: int = 90 * 86400  # 90 天 — 强制刷新阈值（跨�
 def _holder_fetch_from_sqlite(code: str) -> Optional[Dict[str, Any]]:
     """从 SQLite 获取股东户数数据。"""
     try:
-        from stock_cache import get_cache
+        from core.stock_cache import get_cache
 
         cache_key = f"holder_data:{code}"
         cached_data = get_cache("holder", "holder_data", cache_key)
@@ -255,7 +255,7 @@ def _holder_fetch_from_sqlite(code: str) -> Optional[Dict[str, Any]]:
 def _holder_update_sqlite(code: str, records: List[Dict[str, Any]], timestamp: float) -> None:
     """更新 SQLite 中的股东户数数据。"""
     try:
-        from stock_cache import set_cache
+        from core.stock_cache import set_cache
 
         cache_key = f"holder_data:{code}"
         data = {"records": records, "updated": timestamp}
@@ -287,7 +287,7 @@ def _holder_fetch_em(code: str, page_size: int) -> List[Dict[str, Any]]:
 
 def _holder_fetch_tdx_optimized(code: str, records: List[Dict[str, Any]], now: float) -> bool:
     """从 TDX 拿最新 1 期，去重后追加到 records（优化版：直接更新 SQLite）。"""
-    from tdx_client import _get_tdx_client
+    from core.tdx_client import _get_tdx_client
 
     client = _get_tdx_client()
     if client is None:
@@ -327,7 +327,7 @@ def holder_change(code: str) -> List[Dict[str, Any]]:
 
     返回: [{date, holder_num, change_num, change_ratio, avg_shares}, ...] 最新在前
     """
-    from stock_cache import get_cache, set_cache, TTL
+    from core.stock_cache import get_cache, set_cache, TTL
 
     # 尝试从缓存获取
     cache_key = f"holder_data:{code}"
@@ -397,7 +397,7 @@ def _holder_fetch_f10(code: str) -> List[Dict[str, Any]]:
     字段映射：F10 entry (period + 股东人数(户) + 人均流通股(股) + etc.) → records [{date, holder_num, avg_shares}]
     """
     try:
-        from tdx_client import tdx_get_shareholder_research
+        from core.tdx_client import tdx_get_shareholder_research
 
         f10 = tdx_get_shareholder_research(code)
         if not f10:
@@ -530,7 +530,8 @@ def _cninfo_get_orgid(code: str) -> str:
 
 @cached(category="announcements", ttl_seconds=TTL["announcements"])
 def get_strategic_announcements(
-    code: str, page_size: int = 50, days: Optional[int] = None, importance_filter: bool = False
+    code: str, page_size: int = 50, days: Optional[int] = None,
+    importance_filter: bool = False, keywords: Optional[List[str]] = None,
 ) -> List[Dict[str, Any]]:
     """巨潮公告查询 → orgId → searchkey → TDX F10 三层兜底（SKILL.md V3.2.2 增强：动态orgId查询）。
 
@@ -539,6 +540,7 @@ def get_strategic_announcements(
         page_size: 返回数量上限
         days: 限定最近 N 天，None=不限（长线），30=中线，7=短线
         importance_filter: V7.5新增，是否仅返回重要公告（True=仅重要，False=全部）
+        keywords: V17.0 S4 新增——自定义关键词过滤（覆盖默认列表；mak 异动公告用 ["异常波动"]）
     返回: [{title, date, type, is_important}, ...]
     """
     # 计算日期范围
@@ -577,28 +579,29 @@ def get_strategic_announcements(
         "Referer": "https://www.cninfo.com.cn/new/disclosure",
     }
     _cfg = _load_settings()
-    keywords = _cfg.get(
-        "announcement_keywords",
-        [
-            "回购",
-            "增持",
-            "减持",
-            "年报",
-            "分红",
-            "派息",
-            "激励",
-            "员工持股",
-            "战略合作",
-            "业绩预告",
-            "中标",
-            "立案",
-            "合同",
-            "收购",
-            "股权转让",
-            "异动",
-            "严重异动",
-        ],
-    )
+    if keywords is None:
+        keywords = _cfg.get(
+            "announcement_keywords",
+            [
+                "回购",
+                "增持",
+                "减持",
+                "年报",
+                "分红",
+                "派息",
+                "激励",
+                "员工持股",
+                "战略合作",
+                "业绩预告",
+                "中标",
+                "立案",
+                "合同",
+                "收购",
+                "股权转让",
+                "异动",
+                "严重异动",
+            ],
+        )
     _noise = _cfg.get("announcement_noise", ["摘要", "提示性", "英文版"])
     _importance_kw = _cfg.get("announcement_importance_keywords", [])
     try:
@@ -634,7 +637,7 @@ def get_strategic_announcements(
         if not anns:
             # 巨潮双路径均失败 → TDX F10 兜底
             try:
-                from tdx_client import tdx_get_latest_announcements
+                from core.tdx_client import tdx_get_latest_announcements
 
                 tdx_anns = tdx_get_latest_announcements(code, days=7)
                 if tdx_anns:
@@ -770,7 +773,7 @@ async def get_strategic_announcements_async(
         if not anns:
             try:
                 import asyncio
-                from tdx_client import tdx_get_latest_announcements
+                from core.tdx_client import tdx_get_latest_announcements
 
                 tdx_anns = await asyncio.to_thread(tdx_get_latest_announcements, code, days=7)
                 if tdx_anns:
@@ -825,7 +828,7 @@ async def get_strategic_announcements_async(
 _holder_structure_cache: Dict[str, List[Dict[str, Any]]] = {}
 
 
-@cached(category="financial", ttl_seconds=TTL["financial"], cross_verify=True)
+@cached(category="financial", ttl_seconds=TTL["financial"], cross_verify=True, trading_day=True, valid_if=make_valid_if())
 def get_holder_structure(code: str) -> List[Dict[str, Any]]:
     """东财 RPT_F10_EH_HOLDERS → 多季度十大流通股东分类统计。
     模块级缓存，同一脚本运行期内不重复调 API。
@@ -963,7 +966,7 @@ def get_tencent_quote(code: str) -> Dict[str, Any]:
     try:
         from stock_common.sc_schema import normalize_at_boundary, DataSource
         from stock_common import _quick_request, _safe_float
-        from tdx_client import _TENCENT_FIELD_INDEX as _f, _TENCENT_MIN_FIELDS  # V16.2.4 (B5): 统一字段索引
+        from core.tdx_client import _TENCENT_FIELD_INDEX as _f, _TENCENT_MIN_FIELDS  # V16.2.4 (B5): 统一字段索引
         prefix = "sh" if code.startswith("6") else ("bj" if code.startswith(("8", "4", "92")) else "sz")
         r = _quick_request(f"https://qt.gtimg.cn/q={prefix}{code}", timeout=10)
         if r is None:
@@ -996,7 +999,10 @@ def get_tencent_quote(code: str) -> Dict[str, Any]:
             "change_pct": _safe_float(vals[_f["change_pct"]]),
             "amount_wan": _safe_float(vals[_f["amount_wan"]]),  # 万元
             "turnover_pct": _safe_float(vals[_f["turnover_pct"]]),
+            "vol_ratio": _safe_float(vals[_f["vol_ratio"]]),  # V16.4.0: 量比 v49——val 策略 07 金叉依赖
             "pe_ttm": _safe_float(vals[_f["pe_ttm"]]),
+            # V17.0 修复: 删 pe_dynamic←[52]——腾讯 [52] 实为静态 PE(2026-08-13 字典实锤), 非动态;
+            # 腾讯无真动态 PE 字段, pe_dynamic 统一由 push2 f162 / fuyao pe_mrq 提供
             "mcap_yi": _safe_float(vals[_f["mcap_yi"]]),  # 亿元
             "pb": _safe_float(vals[_f["pb"]]),
             "high": _safe_float(vals[_f["high"]]),
@@ -1005,8 +1011,18 @@ def get_tencent_quote(code: str) -> Dict[str, Any]:
             "high_52w": _safe_float(vals[_f["high_52w"]]),
             "low_52w": _safe_float(vals[_f["low_52w"]]),
             "dividend_yield": _safe_float(vals[_f["dividend_yield"]]),
+            # V16.3.3 (2026-08-10 字典 12.1/12.15.5): 腾讯未知位破解接入
+            "roa": _safe_float(vals[_f["roa"]]),              # ROA(%) — 已验证
+            "main_net_inflow_yi": _safe_float(vals[_f["main_net_inflow_yi"]]),  # 主力净流入(亿)
+            "panel_price": _safe_float(vals[_f["panel_price"]]),  # 盘口参考价
+            "bid1_vol": _safe_float(vals[_f["bid1_vol"]]),          # 买一量(手) —— V16.3.4 新增（sht 封单资金）
         }
-        return normalize_at_boundary(raw, DataSource.TENCENT)
+        result = normalize_at_boundary(raw, DataSource.TENCENT)
+        # V16.3.3: normalize 为白名单映射——腾讯独有字段（normalize 未定义）在此透传
+        for _xk in ("roa", "main_net_inflow_yi", "panel_price", "bid1_vol", "vol_ratio"):
+            if raw.get(_xk) not in (None, 0, "", "0", "0.0"):
+                result[_xk] = raw[_xk]
+        return result
     except Exception as _e:
         _debug_log(f"datasource get_tencent_quote ({code}): {_e}")
         return {}
@@ -1028,8 +1044,8 @@ def get_em_batch_quotes(codes: List[str]) -> Dict[str, Dict[str, Any]]:
         return {}
 
     # 东财市场代码前缀: 沪市为 1., 深市为 0.
-    sh_codes = [f"1.{c}" for c in codes if c.startswith("6")]
-    sz_codes = [f"0.{c}" for c in codes if not c.startswith("6")]
+    sh_codes = [f"{em_secid_prefix(c)}{c}" for c in codes if em_secid_prefix(c) == "1."]
+    sz_codes = [f"{em_secid_prefix(c)}{c}" for c in codes if em_secid_prefix(c) == "0."]  # V17.0 S3: 统一前缀
     all_formatted_codes = sh_codes + sz_codes
 
     result = {}
@@ -1097,7 +1113,7 @@ def get_em_batch_quotes(codes: List[str]) -> Dict[str, Dict[str, Any]]:
     return result
 
 
-@cached(category="kline", ttl_seconds=TTL["kline"])
+@cached(category="kline", ttl_seconds=TTL["kline"], trading_day=True, valid_if=make_valid_if())
 def baidu_kline_full(code, is_index=False, count=800):
     """全量K线 → tdx_client 适配器（纯 TDX 日K线）。
 
@@ -1105,7 +1121,7 @@ def baidu_kline_full(code, is_index=False, count=800):
     下线 fundflow，本仓库 K 线全程 TDX），函数名保留向后兼容。
     V16.3 O19: 加 count 参数（脚本层直调 tdx_get_security_bars 统一入口，跨脚本共享缓存）。
     """
-    from tdx_client import tdx_get_security_bars, tdx_get_index_bars
+    from core.tdx_client import tdx_get_security_bars, tdx_get_index_bars
 
     if is_index:
         return tdx_get_index_bars(code)
@@ -1115,7 +1131,7 @@ def baidu_kline_full(code, is_index=False, count=800):
 async def get_tencent_quote_async(session: Any, code: str) -> Dict[str, Any]:
     """异步版 get_tencent_quote（复用 TDX 同步函数）"""
     import asyncio
-    from tdx_client import tdx_get_quote_full
+    from core.tdx_client import tdx_get_quote_full
 
     return await asyncio.to_thread(tdx_get_quote_full, code)
 
@@ -1128,7 +1144,7 @@ async def get_tencent_quote_async(session: Any, code: str) -> Dict[str, Any]:
 )
 def get_stock_info(code: str) -> Dict[str, Any]:
     """V7.5: 个股基本信息 → 腾讯行情 + TDX"""
-    from tdx_client import _get_tdx_client, tdx_get_belong_boards
+    from core.tdx_client import _get_tdx_client, tdx_get_belong_boards
 
     name = industry = list_date = ""
     total_shares = float_shares = mcap = float_mcap = price = 0
@@ -1240,7 +1256,7 @@ def get_reports(code: str, max_pages: int = 3) -> List[Dict[str, Any]]:
             "qType": "0",
         }
         try:
-            r = _request_with_retry(api_url, params=params, timeout=30)
+            r = _quick_request(api_url, params=params, timeout=30)
             if r is None:
                 break
             rows = r.json().get("data") or []
@@ -1448,7 +1464,7 @@ def get_eps_forecast(code: str) -> Dict[str, Any]:
         _debug_log(f"datasource ths eps forecast parse error: {_e}")
     # 东财研报兜底
     try:
-        from tdx_client import tdx_get_eps_from_reports
+        from core.tdx_client import tdx_get_eps_from_reports
 
         em_eps = tdx_get_eps_from_reports(code)
         if em_eps and em_eps.get("eps_cur"):
@@ -1506,7 +1522,7 @@ async def get_eps_forecast_async(session: Any, code: str) -> Dict[str, Any]:
         _debug_log(f"datasource ths eps forecast async parse error: {_e}")
 
     try:
-        from tdx_client import tdx_get_eps_from_reports
+        from core.tdx_client import tdx_get_eps_from_reports
 
         em_eps = tdx_get_eps_from_reports(code)
         if em_eps and em_eps.get("eps_cur"):
@@ -1701,7 +1717,7 @@ def get_margin_trading(code: str) -> List[Dict[str, Any]]:
     """
     # V9.0: 优先使用 F10 最新提示中的融资融券数据
     try:
-        from tdx_client import tdx_get_latest_reminders
+        from core.tdx_client import tdx_get_latest_reminders
 
         f10 = tdx_get_latest_reminders(code)
         if f10:
@@ -1861,7 +1877,7 @@ async def get_block_trade_async(session: Any, code: str) -> List[Dict[str, Any]]
 @cached(category="dividend", ttl_seconds=TTL["dividend"], cross_verify=True)
 def get_dividend_history(code):
     """V7.5: 分红历史 → TDX xdxr_info（东财 fallback 已删除）"""
-    from tdx_client import tdx_get_dividend_history
+    from core.tdx_client import tdx_get_dividend_history
 
     return tdx_get_dividend_history(code)
 
@@ -1884,7 +1900,7 @@ def get_concept_blocks(code: str) -> Dict[str, Any]:
       - 概念为空时 fallback 到 ZHB get_concept_from_zhb (解析 tdxchain.cfg)
       - 避免 V15.3 实测"概念板块 0 个"问题（sht 报告对比 V9.6 缺 16 个概念）
     """
-    from tdx_client import tdx_get_belong_boards
+    from core.tdx_client import tdx_get_belong_boards
 
     boards = tdx_get_belong_boards(code) or {}
     result = {
@@ -1896,7 +1912,7 @@ def get_concept_blocks(code: str) -> Dict[str, Any]:
     # V15.4: 概念为空时 fallback 到 ZHB concept_chain (tdxchain.cfg)
     if not result["concept"]:
         try:
-            from data_provider import get_concept_from_zhb
+            from core.data_provider import get_concept_from_zhb
 
             zhb_concepts = get_concept_from_zhb(code) or []
             if zhb_concepts:
@@ -1930,7 +1946,37 @@ async def get_concept_blocks_async(session: Any, code: str) -> Dict[str, Any]:
 
 
 # 同花顺热点题材归因
-_THS_HOT_REASON_CACHE: Dict[str, Dict[str, str]] = {}  # {date_str: {code: reason}} 全市场一次拉取
+_THS_HOT_REASON_CACHE: Dict[str, list] = {}  # V17.0 S4: {date_str: 原始行 list[dict]}(get_ths_hot_raw 缓存)
+
+
+def get_ths_hot_raw(date_str: str) -> list:
+    """V17.0 S4: 同花顺 getharden 原始列表(三版收敛的唯一请求入口)。
+
+    返回当日强势股行列表 list[dict]（含 id/name/code/reason/date/market），失败返回 []。
+    V17.0 探针实测(2026-08-13): 响应 UTF-8 JSON, r.json() 直接解析即可——原 mak 版
+    GBK 重试分支永不触发(死分支); 失败不写负缓存(原 async 版写 {} 会毒化后续调用)。
+    """
+    _cached_rows = _THS_HOT_REASON_CACHE.get(date_str)
+    if _cached_rows is not None:
+        return _cached_rows
+    url = f"http://zx.10jqka.com.cn/event/api/getharden/date/{date_str}/orderby/date/orderway/desc/charset/GBK/"
+    try:
+        r = _quick_request(
+            url,
+            headers={"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36"},
+            timeout=10,
+        )
+        if r is None:
+            return []
+        d = r.json()
+        if str(d.get("errocode", 0)) != "0":
+            return []
+        rows = d.get("data") or []
+        _THS_HOT_REASON_CACHE[date_str] = rows
+        return rows
+    except Exception as _e:
+        _debug_log(f"datasource ths hot raw error: {_e}")
+    return []
 
 
 def get_ths_hot_reason(code: str, date_str: str) -> Optional[Dict[str, Any]]:
@@ -1939,37 +1985,12 @@ def get_ths_hot_reason(code: str, date_str: str) -> Optional[Dict[str, Any]]:
     返回: {"reason": str} 或 None。
     V16.2: 进程级缓存 —— 按 date_str 缓存全市场结果（HTTP 接口一次返回当日全部涨停股原因，
     原逐股重复请求；sht 全市场 7000+ 只 → 1 次）。
+    V17.0 S4: 底层统一走 get_ths_hot_raw（三版收敛, 缓存存原始行）。
     """
-    _date_map = _THS_HOT_REASON_CACHE.get(date_str)
-    if _date_map is not None:
-        _r = _date_map.get(str(code))
-        return {"reason": _r} if _r else None
-    url = f"http://zx.10jqka.com.cn/event/api/getharden/date/{date_str}/orderby/date/orderway/desc/charset/GBK/"
-    try:
-        r = _quick_request(
-            url,
-            headers={"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/117.0.0.0"},
-            timeout=10,
-        )
-        if r is None:
-            _THS_HOT_REASON_CACHE[date_str] = {}
-            return None
-        d = r.json()
-        if str(d.get("errocode", 0)) != "0":
-            _THS_HOT_REASON_CACHE[date_str] = {}
-            return None
-        _date_map = {}
-        for row in d.get("data") or []:
-            _c = str(row.get("code"))
-            _reason = row.get("reason", "")
-            if _c and _reason:
-                _date_map[_c] = _reason
-        _THS_HOT_REASON_CACHE[date_str] = _date_map
-        _r = _date_map.get(str(code))
-        return {"reason": _r} if _r else None
-    except Exception as _e:
-        _debug_log(f"datasource ths hot reason error: {_e}")
-    _THS_HOT_REASON_CACHE[date_str] = {}
+    rows = get_ths_hot_raw(date_str)
+    for row in rows:
+        if str(row.get("code")) == str(code) and row.get("reason"):
+            return {"reason": row["reason"]}
     return None
 
 
@@ -1980,44 +2001,24 @@ async def get_ths_hot_reason_async(
 
     V9.4: 原生 aiohttp 实现，移除 asyncio.to_thread 包装。
     V16.2: 复用同步版进程缓存（按 date_str 一次拉取）。
+    V17.0 S4: 底层统一走同步 get_ths_hot_raw（to_thread 执行，三版收敛）。
     """
-    _date_map = _THS_HOT_REASON_CACHE.get(date_str)
-    if _date_map is not None:
-        _r = _date_map.get(str(code))
-        return {"reason": _r} if _r else None
-    url = f"http://zx.10jqka.com.cn/event/api/getharden/date/{date_str}/orderby/date/orderway/desc/charset/GBK/"
-    try:
-        d = await _async_quick_request(
-            session,
-            url,
-            headers={"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/117.0.0.0"},
-            timeout=10,
-        )
-        if d is None:
-            _THS_HOT_REASON_CACHE[date_str] = {}
-            return None
-        if str(d.get("errocode", 0)) != "0":
-            _THS_HOT_REASON_CACHE[date_str] = {}
-            return None
-        _date_map = {}
-        for row in d.get("data") or []:
-            _c = str(row.get("code"))
-            _reason = row.get("reason", "")
-            if _c and _reason:
-                _date_map[_c] = _reason
-        _THS_HOT_REASON_CACHE[date_str] = _date_map
-        _r = _date_map.get(str(code))
-        return {"reason": _r} if _r else None
-    except Exception as _e:
-        _debug_log(f"datasource ths hot reason async error: {_e}")
-    _THS_HOT_REASON_CACHE[date_str] = {}
+    rows = _THS_HOT_REASON_CACHE.get(date_str)
+    if rows is None:
+        import asyncio
+
+        await asyncio.to_thread(get_ths_hot_raw, date_str)
+        rows = _THS_HOT_REASON_CACHE.get(date_str) or []
+    for row in rows:
+        if str(row.get("code")) == str(code) and row.get("reason"):
+            return {"reason": row["reason"]}
     return None
 
 
 # 行业对比
 @cached(
     category="industry_peers_v2",
-    ttl_seconds=TTL["industry_peers"],
+    ttl_seconds=TTL["industry_peers_v2"],
     trading_day=True,
     valid_if=lambda r: isinstance(r, dict)
     and bool(r.get("peers"))
@@ -2033,7 +2034,7 @@ def get_industry_peers(
         "peers": [...], "all_members": [...]
     }
     """
-    from tdx_client import tdx_get_belong_boards, tdx_get_board_members, tdx_get_board_by_name
+    from core.tdx_client import tdx_get_belong_boards, tdx_get_board_members, tdx_get_board_by_name
     from stock_common.sc_utils import _load_strategy_config
 
     _sc = _load_strategy_config()
@@ -2048,7 +2049,7 @@ def get_industry_peers(
         if _l2:
             _l2_members = get_em_industry_members_l2(_l2)
             if _l2_members:
-                from tdx_client import _tencent_batch_fallback
+                from core.tdx_client import _tencent_batch_fallback
 
                 _tq = _tencent_batch_fallback(_l2_members) or {}
                 _rows = []
@@ -2188,7 +2189,7 @@ def get_industry_peers(
 
     # 3. V9.0 Fallback: F10 行业分析（仅返回行业名 + 公司规模排名，无 peer 市值）
     try:
-        from tdx_client import tdx_get_industry_analysis
+        from core.tdx_client import tdx_get_industry_analysis
 
         f10 = tdx_get_industry_analysis(code)
         if f10:
@@ -2243,7 +2244,7 @@ async def get_industry_peers_async(session: Any, code: str) -> List[Dict[str, An
     return await asyncio.to_thread(get_industry_peers, code)
 
 
-@cached(category="industry_peers_v2", ttl_seconds=TTL["industry_peers"], trading_day=True)
+@cached(category="industry_peers_v2", ttl_seconds=TTL["industry_peers_v2"], trading_day=True)
 def get_stock_sector_rank(
     code: str, info: Optional[Dict[str, Any]] = None, q: Optional[Dict[str, Any]] = None
 ) -> Optional[Dict[str, Any]]:
@@ -2257,7 +2258,7 @@ def get_stock_sector_rank(
         if _l2:
             _l2_members = get_em_industry_members_l2(_l2)
             if _l2_members:
-                from tdx_client import _tencent_batch_fallback
+                from core.tdx_client import _tencent_batch_fallback
 
                 _tq = _tencent_batch_fallback(_l2_members) or {}
                 _rows = []
@@ -2276,7 +2277,7 @@ def get_stock_sector_rank(
     except Exception as _e:
         _debug_log(f"datasource get_stock_sector_rank em_l2 ({code}): {_e}")
 
-    from tdx_client import tdx_get_belong_boards, tdx_get_board_members, tdx_get_board_by_name
+    from core.tdx_client import tdx_get_belong_boards, tdx_get_board_members, tdx_get_board_by_name
 
     # 1. TDX board_members（同源分类，精确匹配）
     boards = tdx_get_belong_boards(code)
@@ -2315,9 +2316,95 @@ async def get_stock_sector_rank_async(session: Any, code: str) -> Dict[str, Any]
     return await asyncio.to_thread(get_stock_sector_rank, code)
 
 
-@cached(category="industry_compare", ttl_seconds=TTL["industry_compare"], trading_day=True)
+def get_industry_rank_from_zhb(top_n: int = 20) -> List[Dict[str, Any]]:
+    """ZHB 本地行业排名（V16.3 O25——用户：行业可比/排名 ZHB 就能获取，参照系 T-1 可接受）。
+
+    从 get_zhb_full_market_snapshot + 申万二级映射（_em_ind_map 缓存）自聚合：
+    市值加权涨跌幅 + 涨跌家数 + 领涨股——零网络（ZHB 内存 + L2 JSON 缓存）。
+    输出兼容 tdx_get_board_list 格式：[{rank, code, name, change_pct, up_count, down_count,
+    leader_name, leader_change, amount_yi, _member_count}]——lng/med/sht 行业排名参照系直用。
+    """
+    try:
+        from core.zhb_client import get_zhb
+
+        snap = get_zhb_full_market_snapshot()
+        if not snap:
+            return []
+        zhb = get_zhb()
+        industry_map = zhb.industry_map or {}
+        # 申万二级映射（东财 L2 缓存——7 天 JSON，不联网）
+        _em_ind_map: Dict[str, str] = {}
+        try:
+            _em_ind_map, _ = get_em_industry_l2_data()
+        except Exception:
+            pass
+        buckets: Dict[str, dict] = {}
+        for code, stat in snap.items():
+            ind_code = stat.get("industry_code", "")
+            # 内联行业段判定（mak _is_industry_code 逻辑：8803/8804/881 通达信行业/申万段）
+            _valid_ind = (
+                bool(ind_code)
+                and len(str(ind_code)) == 6
+                and str(ind_code).isdigit()
+                and str(ind_code).startswith(("8803", "8804", "881"))
+            )
+            ind_code = _em_ind_map.get(code, "") or (ind_code if _valid_ind else "")
+            if not ind_code:
+                continue
+            chg = _safe_float(stat.get("change_pct", 0))
+            mcap = _safe_float(stat.get("mcap_yi", 0))
+            amt = (_safe_float(stat.get("amount", 0)) or 0) / 10000.0
+            b = buckets.setdefault(
+                ind_code,
+                {"_chgs": [], "_mcaps": [], "_amts": [], "_up": 0, "_down": 0,
+                 "_best_chg": -999.0, "_best_name": ""},
+            )
+            b["_chgs"].append(chg)
+            b["_mcaps"].append(mcap)
+            b["_amts"].append(amt)
+            if chg > 0:
+                b["_up"] += 1
+            elif chg < 0:
+                b["_down"] += 1
+            if chg > b["_best_chg"]:
+                b["_best_chg"] = chg
+                b["_best_name"] = zhb.get_stock_name(code) or ""
+        rows = []
+        for ind_code, b in buckets.items():
+            total_mcap = sum(b["_mcaps"])
+            if total_mcap > 0 and b["_mcaps"]:
+                wchg = sum(c * m for c, m in zip(b["_chgs"], b["_mcaps"])) / total_mcap
+            elif b["_chgs"]:
+                wchg = sum(b["_chgs"]) / len(b["_chgs"])
+            else:
+                wchg = 0
+            rows.append(
+                {
+                    "rank": 0,
+                    "code": ind_code,
+                    "name": industry_map.get(ind_code, ind_code),
+                    "change_pct": round(wchg, 2),
+                    "up_count": b["_up"],
+                    "down_count": b["_down"],
+                    "amount_yi": round(sum(b["_amts"]), 2),
+                    "leader_name": b["_best_name"],
+                    "leader_change": round(b["_best_chg"], 2),
+                    "_member_count": len(b["_chgs"]),
+                }
+            )
+        rows.sort(key=lambda x: -x["change_pct"])
+        for i, r in enumerate(rows):
+            r["rank"] = i + 1
+        return rows
+    except Exception as _e:
+        _debug_log(f"datasource get_industry_rank_from_zhb: {_e}")
+        return []
+
+
+@cached(category="industry_compare", ttl_seconds=TTL["industry_compare"], trading_day=True, valid_if=make_valid_if())
 def get_industry_comparison(top_n: int = 20) -> Dict[str, Any]:
-    """V4.2: 全行业排名 → TDX board_list（SKILL.md V3.2 增强：东财push2 fallback）。
+    """V4.2: 全行业排名 → ZHB 本地优先（V16.3 O25——用户：ZHB 就能获取，参照系 T-1 可接受），
+    TDX board_list / 东财 push2 兜底。
 
     Args:
         top_n: 返回行业数量上限（当前未使用，保留参数兼容性）。
@@ -2325,7 +2412,13 @@ def get_industry_comparison(top_n: int = 20) -> Dict[str, Any]:
     Returns:
         dict: {"top": 涨幅TOP, "bottom": 跌幅TOP, "all": 全部行业, "total": 行业总数}。
     """
-    from tdx_client import tdx_get_board_list
+    # V16.3 O25: ZHB 本地聚合优先（零网络）——参照系 T-1 可接受
+    _zhb_rows = get_industry_rank_from_zhb(top_n)
+    if _zhb_rows:
+        _top = _zhb_rows[:5]
+        _bottom = _zhb_rows[-5:][::-1]
+        return {"top": _top, "bottom": _bottom, "all": _zhb_rows, "total": len(_zhb_rows)}
+    from core.tdx_client import tdx_get_board_list
 
     sectors = tdx_get_board_list(0)  # BoardType.HY = 0 行业一级
 
@@ -2432,7 +2525,7 @@ def get_eastmoney_stock_news(code: str, page_size: int = 20) -> List[Dict[str, A
         list: 新闻列表，包含标题、发布时间、来源、摘要等字段
     """
     try:
-        from tdx_client import tdx_get_company_news_f10
+        from core.tdx_client import tdx_get_company_news_f10
 
         f10_news = tdx_get_company_news_f10(code, count=page_size)
         if f10_news:
@@ -2517,7 +2610,7 @@ def get_sina_financial_report(code: str, num_periods: int = 12) -> Dict[str, Any
     V13.1: 彻底实现 ZHB 财报事件锁，抛弃 24小时 粗暴刷新。
     将 ZHB 的 report_date 拼入缓存 Key，实现永久缓存 + 瞬间刷新。
     """
-    from stock_cache import get_cache, set_cache
+    from core.stock_cache import get_cache, set_cache
     from stock_common import get_zhb_single_stock_data
 
     zhb = get_zhb_single_stock_data(code)
@@ -2597,7 +2690,7 @@ async def get_sina_financial_report_async(
     return await asyncio.to_thread(get_sina_financial_report, code, num_periods)
 
 
-@cached(category="balance_sheet", ttl_seconds=TTL["balance_sheet"], cross_verify=True)
+@cached(category="balance_sheet", ttl_seconds=TTL["balance_sheet"], cross_verify=True, trading_day=True, valid_if=make_valid_if())
 def get_sina_balance_sheet(code: str) -> List[Dict[str, Any]]:
     """获取新浪资产负债表（fzb）最近5期数据
 
@@ -2659,7 +2752,7 @@ async def get_sina_balance_sheet_async(session: Any, code: str) -> List[Dict[str
     return await asyncio.to_thread(get_sina_balance_sheet, code)
 
 
-@cached(category="cash_flow", ttl_seconds=TTL["cash_flow"], cross_verify=True)
+@cached(category="cash_flow", ttl_seconds=TTL["cash_flow"], cross_verify=True, trading_day=True, valid_if=make_valid_if())
 def get_eastmoney_cash_flow(code: str) -> List[Dict[str, Any]]:
     """获取东财现金流量表（新浪xjllb接口已失效，使用东财数据中心替代）
 
@@ -2805,7 +2898,7 @@ def get_lockup_expiry(code: str, days: int = 90, include_history: bool = False) 
 
     # V9.0: 优先使用 F10 股本结构中的限售解禁数据
     try:
-        from tdx_client import tdx_get_share_capital
+        from core.tdx_client import tdx_get_share_capital
 
         f10 = tdx_get_share_capital(code)
         if f10:
@@ -2904,7 +2997,7 @@ async def get_lockup_expiry_async(
     return await asyncio.to_thread(get_lockup_expiry, code, days, include_history)
 
 
-@cached(category="financial", ttl_seconds=TTL["financial"], cross_verify=True)
+@cached(category="financial", ttl_seconds=TTL["financial"], cross_verify=True, trading_day=True, valid_if=make_valid_if())
 def get_roe_trend_series(
     code: str,
     num_periods: int = 8,
@@ -2923,7 +3016,7 @@ def get_roe_trend_series(
     """
     # ① F10 优先（TDX，加权口径）
     try:
-        from tdx_client import tdx_get_financial_analysis
+        from core.tdx_client import tdx_get_financial_analysis
 
         f10 = tdx_get_financial_analysis(code)
         if f10:
@@ -2986,7 +3079,7 @@ def get_gross_margin_and_roe(
     """获取最新年度的毛利率和ROE"""
     # V9.0: 优先使用 F10 财务分析中的盈利能力指标
     try:
-        from tdx_client import tdx_get_financial_analysis
+        from core.tdx_client import tdx_get_financial_analysis
 
         f10 = tdx_get_financial_analysis(code)
         if f10:
@@ -3297,7 +3390,7 @@ def _parse_limit_pool(data: list) -> List[Dict[str, Any]]:
     return result
 
 
-@cached(category="limit_pool", ttl_seconds=TTL["limit_pool"])
+@cached(category="limit_pool", ttl_seconds=TTL["limit_pool"], trading_day=True)
 @requires_push2  # V16.0: push2ex 与东财共用风控面，标记审计
 def get_limit_up_pool(date_str: str = "") -> List[Dict[str, Any]]:
     """获取东财涨停池数据
@@ -3334,7 +3427,7 @@ def get_limit_up_pool(date_str: str = "") -> List[Dict[str, Any]]:
         return []
 
 
-@cached(category="limit_pool", ttl_seconds=TTL["limit_pool"])
+@cached(category="limit_pool", ttl_seconds=TTL["limit_pool"], trading_day=True)
 @requires_push2  # V16.0: push2ex 与东财共用风控面，标记审计
 def get_limit_broken_pool(date_str: str = "") -> List[Dict[str, Any]]:
     """获取东财炸板池数据
@@ -3371,7 +3464,7 @@ def get_limit_broken_pool(date_str: str = "") -> List[Dict[str, Any]]:
         return []
 
 
-@cached(category="limit_pool", ttl_seconds=TTL["limit_pool"])
+@cached(category="limit_pool", ttl_seconds=TTL["limit_pool"], trading_day=True)
 @requires_push2  # V16.0: push2ex 与东财共用风控面，标记审计
 def get_limit_down_pool(date_str: str = "") -> List[Dict[str, Any]]:
     """获取东财跌停池数据
@@ -3408,7 +3501,7 @@ def get_limit_down_pool(date_str: str = "") -> List[Dict[str, Any]]:
         return []
 
 
-@cached(category="limit_pool", ttl_seconds=TTL["limit_pool"])
+@cached(category="limit_pool", ttl_seconds=TTL["limit_pool"], trading_day=True)
 @requires_push2  # V16.0: push2ex 与东财共用风控面，标记审计
 def get_yesterday_limit_pool(date_str: str = "") -> List[Dict[str, Any]]:
     """V16.1: 东财昨日涨停池（getYesterdayZTPool）— 昨涨停今表现。
@@ -3469,7 +3562,7 @@ def get_yesterday_limit_pool(date_str: str = "") -> List[Dict[str, Any]]:
         return []
 
 
-@cached(category="limit_pool", ttl_seconds=TTL["limit_pool"])
+@cached(category="limit_pool", ttl_seconds=TTL["limit_pool"], trading_day=True)
 @requires_push2  # V16.0: push2ex 与东财共用风控面，标记审计
 def get_limit_pool_summary(date_str: str = "") -> Dict[str, Any]:
     """获取打板数据汇总（涨停池+炸板池+跌停池）
@@ -3508,7 +3601,7 @@ def get_limit_pool_summary(date_str: str = "") -> Dict[str, Any]:
 # ═══════════════════════════════════════════════════════════
 
 
-@cached(category="limit_pool", ttl_seconds=TTL["limit_pool"])
+@cached(category="limit_pool", ttl_seconds=TTL["limit_pool"], trading_day=True)
 def ths_limit_up_pool(date_str: str = "") -> List[Dict[str, Any]]:
     """同花顺涨停揭秘（涨停原因 + 封板质量增强源）。
 
@@ -3580,7 +3673,7 @@ def ths_limit_up_pool(date_str: str = "") -> List[Dict[str, Any]]:
 # ═══════════════════════════════════════════════════════════
 
 
-@cached(category="limit_pool", ttl_seconds=TTL["limit_pool"])
+@cached(category="limit_pool", ttl_seconds=TTL["limit_pool"], trading_day=True)
 def em_stock_monitor(only_active: bool = True) -> List[Dict[str, Any]]:
     """获取交易所重点监控池（风险警示/重点监控名单）。
 
@@ -3636,7 +3729,7 @@ def em_stock_monitor(only_active: bool = True) -> List[Dict[str, Any]]:
 # ═══════════════════════════════════════════════════════════
 
 
-@cached(category="fund_flow", ttl_seconds=TTL["fund_flow"])
+@cached(category="fund_flow", ttl_seconds=TTL["fund_flow"], trading_day=True)
 @requires_push2
 def get_board_fund_flow(board_type: str = "industry", top_n: int = 20) -> List[Dict[str, Any]]:
     """获取板块资金流向（行业/概念/地域板块的主力净流入排名）。
@@ -3740,7 +3833,7 @@ def get_board_fund_flow(board_type: str = "industry", top_n: int = 20) -> List[D
 # ═══════════════════════════════════════════════════════════
 
 
-@cached(category="fund_flow", ttl_seconds=TTL["fund_flow"])
+@cached(category="fund_flow", ttl_seconds=TTL["fund_flow"], trading_day=True)
 @requires_push2
 def get_eastmoney_minute_fund_flow(code: str) -> List[Dict[str, Any]]:
     """获取东财个股分钟级资金流数据
@@ -3751,8 +3844,7 @@ def get_eastmoney_minute_fund_flow(code: str) -> List[Dict[str, Any]]:
     Returns:
         分钟级资金流列表，每项包含时间/主力净流入/小单净流入/中单净流入/大单净流入
     """
-    market = "1" if code.startswith("6") else "0"
-    secid = f"{market}.{code}"
+    secid = f"{em_secid_prefix(code)}{code}"  # V17.0 S3: 统一前缀(含北交所 92)
 
     params = {
         "lmt": "0",
@@ -3811,7 +3903,7 @@ def get_fund_flow_weighted(code: str, tdx_data: Any = None) -> Dict[str, Any]:
         tdx_ff = tdx_data
     else:
         try:
-            from tdx_client import tdx_get_fund_flow
+            from core.tdx_client import tdx_get_fund_flow
 
             tdx_ff = tdx_get_fund_flow(code)
         except Exception:
@@ -3909,7 +4001,7 @@ def get_history_fund_flow_120d(code: str, days: int = 60, prefer: str = "auto") 
 
     if prefer != "em":
         try:
-            from tdx_client import tdx_get_history_fund_flow
+            from core.tdx_client import tdx_get_history_fund_flow
 
             _tdx = tdx_get_history_fund_flow(code, days)
             if _tdx:
@@ -3991,6 +4083,9 @@ def get_em_industry_l2_data(force_refresh: bool = False) -> Tuple[Dict[str, str]
 
     _per_stock: Dict[str, List[Any]] = {}
     _url = "https://datacenter-web.eastmoney.com/api/data/v1/get"
+    # V16.4.1: try 外初始化——异常路径 L4152 引用会 UnboundLocalError(被调用方吞掉掩盖真错)
+    _map_l2: Dict[str, str] = {}
+    _members_l2: Dict[str, List[str]] = {}
     try:
         _page = 1
         while True:
@@ -4021,8 +4116,6 @@ def get_em_industry_l2_data(force_refresh: bool = False) -> Tuple[Dict[str, str]
                 break
             _page += 1
         # 二级识别：排除一级名单后 code 最小；成员表反转
-        _map_l2: Dict[str, str] = {}
-        _members_l2: Dict[str, List[str]] = {}
         for _sc, _boards in _per_stock.items():
             _sb = sorted(_boards)
             _l2 = next((nm for _c, nm in _sb if nm not in _EM_INDUSTRY_L1_NAMES), None)
@@ -4363,58 +4456,16 @@ def cninfo_irm(code: str, page_size: int = 30, page_num: int = 1) -> List[Dict[s
 # ═══════════════════════════════════════════════════════════
 
 
-def get_zhb_sp_block(name: str) -> List[str]:
-    """V9.6: 获取大板块成分股（基于 zhb.zip 的 spblock.dat）。
-
-    支持的板块：融资融券/沪深港通/中证500/中证1000/中证2000/国证2000/
-                 深证成指/专精特新/含可转债/转融券/金融类企业 等35个大板块。
-    突破 mootdx block_zs.dat 的 400 只限制。
-
-    Args:
-        name: 板块名称（支持模糊匹配，如"中证2000"、"融资融券"）
-
-    Returns:
-        股票代码列表，如 ["000001", "000002", ...]
-    """
-    try:
-        from zhb_client import get_sp_block
-
-        return get_sp_block(name)
-    except Exception as _e:
-        _debug_log(f"datasource zhb sp_block ({name}): {_e}")
-        return []
 
 
-def get_zhb_sp_block_list() -> List[tuple]:
-    """V9.6: 列出所有大板块 (名称, 成分股数)。"""
-    try:
-        from zhb_client import list_sp_blocks
-
-        return list_sp_blocks()
-    except Exception as _e:
-        _debug_log(f"datasource zhb sp_block_list: {_e}")
-        return []
 
 
-def get_zhb_sw_industries() -> Dict[str, str]:
-    """V9.6: 获取申万行业分类 {板块代码: 板块名称}。
-
-    包含 467 个四级分类（门类→大类→中类→小类），
-    是公募基金的通用行业标准。
-    """
-    try:
-        from zhb_client import get_sw_industries
-
-        return get_sw_industries()
-    except Exception as _e:
-        _debug_log(f"datasource zhb sw_industries: {_e}")
-        return {}
 
 
 def get_zhb_industry_map() -> Dict[str, str]:
     """V9.6: 获取行业代码→名称映射（全类型，1000+条）。"""
     try:
-        from zhb_client import get_industry_map
+        from core.zhb_client import get_industry_map
 
         return get_industry_map()
     except Exception as _e:
@@ -4425,7 +4476,7 @@ def get_zhb_industry_map() -> Dict[str, str]:
 def get_zhb_data_date() -> str:
     """V9.6: 获取 zhb 数据的日期（YYYYMMDD），用于报告中标注数据时效性。"""
     try:
-        from zhb_client import get_zhb
+        from core.zhb_client import get_zhb
 
         zhb = get_zhb()
         return zhb.date if zhb else ""
@@ -4439,33 +4490,8 @@ def get_zhb_data_date() -> str:
 # ═══════════════════════════════════════════════════════════
 
 
-def get_zhb_stock_stat(code: str) -> Optional[Dict[str, Any]]:
-    """V9.6: 获取个股统计快照（涨跌幅/PE/5-60日涨跌幅等）。
-
-    基于 zhb.zip 的 tdxstat.cfg，数据可能有1-2天延迟。
-    用于盘后初筛和辅助参考，不适合实时交易决策。
-    """
-    try:
-        from zhb_client import get_stock_stat
-
-        return get_stock_stat(code)
-    except Exception as _e:
-        _debug_log(f"datasource zhb stock_stat ({code}): {_e}")
-        return None
 
 
-def get_zhb_stock_stat2(code: str) -> Optional[Dict[str, Any]]:
-    """V9.6: 获取个股资金流向和板块归属。
-
-    基于 zhb.zip 的 tdxstat2.cfg，包含行业代码、52周高低价等。
-    """
-    try:
-        from zhb_client import get_stock_stat2
-
-        return get_stock_stat2(code)
-    except Exception as _e:
-        _debug_log(f"datasource zhb stock_stat2 ({code}): {_e}")
-        return None
 
 
 def get_zhb_market_snapshot(codes: Optional[List[str]] = None) -> Dict[str, Dict[str, Any]]:
@@ -4475,7 +4501,7 @@ def get_zhb_market_snapshot(codes: Optional[List[str]] = None) -> Dict[str, Dict
     数据可能有1-2天延迟，仅用于盘后初筛。
     """
     try:
-        from zhb_client import market_stat_snapshot
+        from core.zhb_client import market_stat_snapshot
 
         return market_stat_snapshot(codes)
     except Exception as _e:
@@ -4490,7 +4516,7 @@ def get_zhb_52w_range(code: str) -> tuple:
         (high_52w, low_52w) 元组，获取失败返回 (None, None)
     """
     try:
-        from zhb_client import get_high_52w, get_low_52w
+        from core.zhb_client import get_high_52w, get_low_52w
 
         return (get_high_52w(code), get_low_52w(code))
     except Exception as _e:
@@ -4498,15 +4524,6 @@ def get_zhb_52w_range(code: str) -> tuple:
         return (None, None)
 
 
-def get_zhb_industry_code(code: str) -> str:
-    """V9.6: 获取股票的行业板块代码（如880679）。"""
-    try:
-        from zhb_client import get_industry_code
-
-        return get_industry_code(code)
-    except Exception as _e:
-        _debug_log(f"datasource zhb industry_code ({code}): {_e}")
-        return ""
 
 
 def is_zhb_data_fresh(max_delay_days: int = 3) -> bool:
@@ -4515,7 +4532,7 @@ def is_zhb_data_fresh(max_delay_days: int = 3) -> bool:
     数据过旧时调用方应降级到原有HTTP/TCP接口。
     """
     try:
-        from zhb_client import is_data_fresh
+        from core.zhb_client import is_data_fresh
 
         return is_data_fresh(max_delay_days)
     except Exception as _e:
@@ -4525,9 +4542,12 @@ def is_zhb_data_fresh(max_delay_days: int = 3) -> bool:
 
 # V10.2 新增：zhb 字段时效性分级
 # V10.3 更新：新增准实时字段分类（主力资金流向等，1天延迟可接受）
-# 实时字段：zhb 日期必须是今天（max_delay_days=0），否则 fallback 原接口
-# 准实时字段：1天延迟可接受（max_delay_days=1），如主力资金流向
-# 阶段/静态字段：3天延迟可接受（max_delay_days=3）
+# V16.3.3 更新 (2026-08-10 字典 12.15.6 ABCD 缓存分级正式化——与统一层路由矩阵区分)：
+#   A 实时字段：zhb 日期必须是今天（max_delay_days=0），否则 fallback 原接口
+#   B 准实时字段：1天延迟可接受（max_delay_days=1）——资金流类 + streak_days 连板
+#   C 日频字段：3天延迟可接受（max_delay_days=3）——区间涨跌幅/52周/pe/股息率等（滚动但慢变）
+#   D 静态字段：90天延迟可接受（max_delay_days=90）——恒定数据（ipo_price/股本/行业等，长假容忍）
+#   （注：ABCD 缓存分级管"zhb 数据能否使用"；统一层 ABCD 路由矩阵管"各源优先级"——两个维度）
 _ZHB_REALTIME_FIELDS = frozenset(
     {
         "change_pct",
@@ -4551,6 +4571,28 @@ _ZHB_NEAR_REALTIME_FIELDS = frozenset(
         "main_net_buy_hands_1d",
         "main_net_buy_amount",
         "main_net_buy_amount_1d",
+        # V16.3.3: streak_days 连板天数 1 个交易日即变（8/7 涨停 → 8/8 可能断板）——
+        # 原归静态(3天)严重失真，上移准实时
+        "streak_days",
+    }
+)
+
+# V16.3.3: D 级静态字段 — 恒定数据（90天容忍：长假/停更不触发无谓 fallback）
+# 依据：ipo_price 上市至今不变（茅台 31.39）、股本/员工/行业/概念低频变化
+_ZHB_STATIC_FIELDS = frozenset(
+    {
+        "ipo_price",
+        "employee_count",
+        "total_shares",
+        "float_shares",
+        "total_shares_wan",
+        "float_shares_wan",
+        "industry",
+        "industry_code",
+        "board",
+        "concepts",
+        "list_date",
+        "name",
     }
 )
 
@@ -4558,11 +4600,11 @@ _ZHB_NEAR_REALTIME_FIELDS = frozenset(
 def zhb_field_safe(field_name: str) -> bool:
     """V10.2: 判断 zhb 指定字段在当前数据滞后状态下是否安全可用。
     V10.3: 新增准实时字段分类（max_delay_days=1）。
-
-    按字段时效性需求分级：
-    - 实时字段（change_pct/amount/price 等）：zhb 日期必须是今天，否则不安全
-    - 准实时字段（main_net_buy 等）：1天延迟可接受
-    - 阶段/静态字段（pe_ttm/high_52w/dividend_yield 等）：3天延迟可接受
+    V16.3.3: ABCD 四级缓存分级正式化（字典 12.15.6 缓存维度）：
+    - A 实时字段（change_pct/amount/price 等）：zhb 日期必须是今天（max_delay_days=0）
+    - B 准实时字段（main_net_buy/streak_days 等）：1天延迟可接受（max_delay_days=1）
+    - C 日频字段（pe_ttm/high_52w/dividend_yield 等）：3天延迟可接受（max_delay_days=3）
+    - D 静态字段（ipo_price/股本/行业等恒定数据）：90天延迟可接受（max_delay_days=90）
 
     Args:
         field_name: zhb 字段名（如 "change_pct", "pe_ttm", "high_52w"）
@@ -4571,12 +4613,15 @@ def zhb_field_safe(field_name: str) -> bool:
         True=该字段当前可安全使用 zhb 数据，False=应 fallback 原接口
     """
     if field_name in _ZHB_REALTIME_FIELDS:
-        # 实时字段：zhb 日期必须是今天（max_delay_days=0）
+        # A 实时字段：zhb 日期必须是今天（max_delay_days=0）
         return is_zhb_data_fresh(max_delay_days=0)
     if field_name in _ZHB_NEAR_REALTIME_FIELDS:
-        # 准实时字段：1天延迟可接受（max_delay_days=1）
+        # B 准实时字段：1天延迟可接受（max_delay_days=1）
         return is_zhb_data_fresh(max_delay_days=1)
-    # 阶段/静态字段：3天延迟可接受
+    if field_name in _ZHB_STATIC_FIELDS:
+        # D 静态字段：90天延迟可接受（max_delay_days=90）——恒定数据长假容忍
+        return is_zhb_data_fresh(max_delay_days=90)
+    # C 日频字段：3天延迟可接受（max_delay_days=3）
     return is_zhb_data_fresh(max_delay_days=3)
 
 
@@ -4588,7 +4633,7 @@ def zhb_field_safe(field_name: str) -> bool:
 def get_zhb_tip_info(code: str) -> Optional[Dict[str, Any]]:
     """V9.6: 获取个股财报日历信息（财报期/EPS/披露日/除权日/分红日）。"""
     try:
-        from zhb_client import get_tip_info
+        from core.zhb_client import get_tip_info
 
         return get_tip_info(code)
     except Exception as _e:
@@ -4596,37 +4641,10 @@ def get_zhb_tip_info(code: str) -> Optional[Dict[str, Any]]:
         return None
 
 
-def get_zhb_ipo_list() -> List[Dict[str, Any]]:
-    """V9.6: 获取新股申购日历列表。"""
-    try:
-        from zhb_client import get_ipo_list
-
-        return get_ipo_list()
-    except Exception as _e:
-        _debug_log(f"datasource zhb ipo_list: {_e}")
-        return []
 
 
-def get_zhb_ah_stocks() -> List[Dict[str, str]]:
-    """V9.6: 获取A+H股列表。"""
-    try:
-        from zhb_client import get_ah_stocks
-
-        return get_ah_stocks()
-    except Exception as _e:
-        _debug_log(f"datasource zhb ah_stocks: {_e}")
-        return []
 
 
-def get_zhb_broker_name(broker_id: str) -> str:
-    """V9.6: 获取券商简称（基于brkcomp.dat，842家券商）。"""
-    try:
-        from zhb_client import get_broker_name
-
-        return get_broker_name(broker_id)
-    except Exception as _e:
-        _debug_log(f"datasource zhb broker_name ({broker_id}): {_e}")
-        return broker_id
 
 
 # ═══════════════════════════════════════════════════════════
@@ -4634,101 +4652,18 @@ def get_zhb_broker_name(broker_id: str) -> str:
 # ═══════════════════════════════════════════════════════════
 
 
-def get_zhb_holidays() -> List[str]:
-    """V10.0: 获取节假日列表（1991-2030）。
-
-    返回格式为 YYYYMMDD 字符串列表。
-    注意：仅作参考，主用 stock_calendar 模块。
-    """
-    try:
-        from zhb_client import get_holidays
-
-        return get_holidays()
-    except Exception as _e:
-        _debug_log(f"datasource zhb holidays: {_e}")
-        return []
 
 
-def get_zhb_csrc_industries() -> Dict[str, str]:
-    """V10.0: 获取证监会行业分类 {代码: 名称}。
-
-    共3703个行业分类，涵盖A-S门类。
-    """
-    try:
-        from zhb_client import get_csrc_industries
-
-        return get_csrc_industries()
-    except Exception as _e:
-        _debug_log(f"datasource zhb csrc_industries: {_e}")
-        return {}
 
 
-def get_zhb_adr_stocks() -> List[Dict[str, str]]:
-    """V10.0: 获取中概股ADR列表。
-
-    返回: [{'a_code': A股代码, 'a_name': A股名称, 'adr_code': ADR代码, 'adr_name': ADR名称}, ...]
-    """
-    try:
-        from zhb_client import get_adr_stocks
-
-        return get_adr_stocks()
-    except Exception as _e:
-        _debug_log(f"datasource zhb adr_stocks: {_e}")
-        return []
 
 
-def get_zhb_convertible_bonds() -> List[Dict[str, Any]]:
-    """V10.0: 获取可转债列表。"""
-    try:
-        from zhb_client import get_convertible_bonds
-
-        return get_convertible_bonds()
-    except Exception as _e:
-        _debug_log(f"datasource zhb convertible_bonds: {_e}")
-        return []
 
 
-def get_zhb_delisted_stocks() -> Dict[str, str]:
-    """V10.0: 获取退市股票代码→名称映射。"""
-    try:
-        from zhb_client import get_delisted_stocks
-
-        return get_delisted_stocks()
-    except Exception as _e:
-        _debug_log(f"datasource zhb delisted_stocks: {_e}")
-        return {}
 
 
-def should_use_zhb_data() -> tuple[bool, str]:
-    """V10.0: 根据当前时机判断是否应使用zhb数据。
-
-    Returns:
-        (should_use, expected_date): 是否使用zhb，期望的数据日期(YYYYMMDD)
-
-    时间逻辑：
-        - 收盘后(15:00后): 使用当日数据
-        - 开盘前(9:30前): 使用上一交易日数据
-        - 休市日: 使用上一交易日数据
-        - 盘中(9:30-15:00): 必须实时获取，返回(False, "")
-    """
-    try:
-        from zhb_client import should_use_zhb_data
-
-        return should_use_zhb_data()
-    except Exception as _e:
-        _debug_log(f"datasource zhb should_use_zhb_data: {_e}")
-        return (False, "")
 
 
-def is_zhb_date_matching() -> bool:
-    """V10.0: 判断当前zhb数据日期是否符合预期。"""
-    try:
-        from zhb_client import is_zhb_date_matching
-
-        return is_zhb_date_matching()
-    except Exception as _e:
-        _debug_log(f"datasource zhb is_zhb_date_matching: {_e}")
-        return False
 
 
 # ═══════════════════════════════════════════════════════════
@@ -4743,7 +4678,7 @@ def get_zhb_full_market_snapshot(codes: Optional[List[str]] = None) -> Dict[str,
     包含涨跌幅、PE、股息率、52周高低价、成交额、行业代码等。
     """
     try:
-        from zhb_client import full_market_snapshot
+        from core.zhb_client import full_market_snapshot
 
         return full_market_snapshot(codes)
     except Exception as _e:
@@ -4754,7 +4689,7 @@ def get_zhb_full_market_snapshot(codes: Optional[List[str]] = None) -> Dict[str,
 def get_zhb_market_stat2_snapshot(codes: Optional[List[str]] = None) -> Dict[str, Dict[str, Any]]:
     """V10.1: 全市场资金流向+板块归属快照（tdxstat2）。"""
     try:
-        from zhb_client import market_stat2_snapshot
+        from core.zhb_client import market_stat2_snapshot
 
         return market_stat2_snapshot(codes)
     except Exception as _e:
@@ -4765,7 +4700,7 @@ def get_zhb_market_stat2_snapshot(codes: Optional[List[str]] = None) -> Dict[str
 def get_zhb_dividend_yield(code: str) -> Optional[float]:
     """V10.1: 获取股息率(%)。"""
     try:
-        from zhb_client import get_dividend_yield
+        from core.zhb_client import get_dividend_yield
 
         return get_dividend_yield(code)
     except Exception as _e:
@@ -4776,7 +4711,7 @@ def get_zhb_dividend_yield(code: str) -> Optional[float]:
 def get_zhb_streak_days(code: str) -> Optional[int]:
     """V10.1: 获取连涨连跌天数（正=连涨，负=连跌）。"""
     try:
-        from zhb_client import get_streak_days
+        from core.zhb_client import get_streak_days
 
         return get_streak_days(code)
     except Exception as _e:
@@ -4787,7 +4722,7 @@ def get_zhb_streak_days(code: str) -> Optional[int]:
 def get_zhb_change_ytd(code: str) -> Optional[float]:
     """V10.1: 获取年初至今涨跌幅(%)。"""
     try:
-        from zhb_client import get_change_ytd
+        from core.zhb_client import get_change_ytd
 
         return get_change_ytd(code)
     except Exception as _e:
@@ -4795,21 +4730,12 @@ def get_zhb_change_ytd(code: str) -> Optional[float]:
         return None
 
 
-def get_zhb_ipo_price(code: str) -> Optional[float]:
-    """V10.1: 获取IPO发行价(元)。"""
-    try:
-        from zhb_client import get_ipo_price
-
-        return get_ipo_price(code)
-    except Exception as _e:
-        _debug_log(f"datasource zhb ipo_price ({code}): {_e}")
-        return None
 
 
 def get_zhb_amount_wan(code: str) -> Optional[float]:
     """V10.1: 获取今日成交额(万元)。"""
     try:
-        from zhb_client import get_amount_wan
+        from core.zhb_client import get_amount_wan
 
         return get_amount_wan(code)
     except Exception as _e:
@@ -4817,35 +4743,8 @@ def get_zhb_amount_wan(code: str) -> Optional[float]:
         return None
 
 
-def get_zhb_amount_1d(code: str) -> Optional[float]:
-    """V10.1: 获取昨日成交额(万元)。"""
-    try:
-        from zhb_client import get_amount_1d
-
-        return get_amount_1d(code)
-    except Exception as _e:
-        _debug_log(f"datasource zhb amount_1d ({code}): {_e}")
-        return None
 
 
-def get_zhb_net_profit_kcf(code: str) -> Optional[float]:
-    """V16.0: 获取扣非净利润(万元)。
-
-    对应 tdxstat.cfg Col[14]（2026-08-03 联网核实：与东财 KCFJCXSYJLR 14/14 匹配）。
-    用途：净利润质量筛选（扣非 vs 归母差异）、基本面离线快照。
-    """
-    try:
-        from zhb_client import get_stock_stat
-
-        stat = get_stock_stat(code)
-        if stat:
-            v = stat.get("net_profit_kcf")
-            if v not in (None, 0, ""):
-                return float(v)
-        return None
-    except Exception as _e:
-        _debug_log(f"datasource zhb net_profit_kcf ({code}): {_e}")
-        return None
 
 
 def get_zhb_main_net_buy(code: str) -> Optional[Dict[str, Any]]:
@@ -4861,7 +4760,7 @@ def get_zhb_main_net_buy(code: str) -> Optional[Dict[str, Any]]:
         None if zhb不可用
     """
     try:
-        from zhb_client import get_main_net_buy
+        from core.zhb_client import get_main_net_buy
 
         return get_main_net_buy(code)
     except Exception as _e:
@@ -4869,26 +4768,8 @@ def get_zhb_main_net_buy(code: str) -> Optional[Dict[str, Any]]:
         return None
 
 
-def get_zhb_main_net_buy_amount(code: str) -> Optional[float]:
-    """V10.3: 获取T日主力净流入额(万元)。"""
-    try:
-        from zhb_client import get_main_net_buy_amount
-
-        return get_main_net_buy_amount(code)
-    except Exception as _e:
-        _debug_log(f"datasource zhb main_net_buy_amount ({code}): {_e}")
-        return None
 
 
-def get_zhb_main_net_buy_amount_1d(code: str) -> Optional[float]:
-    """V10.3: 获取T-1日主力净流入额(万元)。"""
-    try:
-        from zhb_client import get_main_net_buy_amount_1d
-
-        return get_main_net_buy_amount_1d(code)
-    except Exception as _e:
-        _debug_log(f"datasource zhb main_net_buy_amount_1d ({code}): {_e}")
-        return None
 
 
 def get_zhb_single_stock_data(code: str) -> Optional[Dict[str, Any]]:
@@ -4903,7 +4784,7 @@ def get_zhb_single_stock_data(code: str) -> Optional[Dict[str, Any]]:
         获取失败返回 None。
     """
     try:
-        from zhb_client import get_stock_stat, get_stock_stat2, get_tip_info
+        from core.zhb_client import get_stock_stat, get_stock_stat2, get_tip_info
 
         stat1 = get_stock_stat(code)
         stat2 = get_stock_stat2(code)
@@ -5203,7 +5084,7 @@ def get_recent_dragon_tiger(days: int = 5) -> Dict[str, Any]:
             "source": "WEB",
             "client": "WEB",
         }
-        r = _request_with_retry(url, params=params, headers={"User-Agent": UA}, timeout=15)
+        r = _quick_request(url, params=params, headers={"User-Agent": UA}, timeout=15)
         if r is None:
             return {}
         d = r.json()
@@ -5247,6 +5128,24 @@ async def get_recent_dragon_tiger_async(session, days: int = 5) -> Dict[str, Any
 def get_em_quote_full(code: str) -> Dict[str, Any]:
     """V15.2 P0 修复: 通过东财 push2 stock/get 获取完整行情。
 
+    V16.3.3: host 参数化重构——本函数走 push2 主域（风控最严，最后手段）；
+    常规兜底请用 get_em_quote_full_delay（push2delay 镜像域，风控独立）。
+    """
+    return _em_quote_full_impl(code, "https://push2.eastmoney.com/api/qt/stock/get")
+
+
+def get_em_quote_full_delay(code: str) -> Dict[str, Any]:
+    """V16.3.3 (2026-08-10 字典 12.15.5): push2delay 镜像域版全字段行情。
+
+    2026-08-10 实测：push2 主域连接级风控（RemoteDisconnected）；push2delay 风控独立、
+    114 字段全量可用、延时 15 分钟非盘中无影响——统一层 L3 东财兜底应优先本函数。
+    """
+    return _em_quote_full_impl(code, "https://push2delay.eastmoney.com/api/qt/stock/get")
+
+
+def _em_quote_full_impl(code: str, host: str = "https://push2delay.eastmoney.com/api/qt/stock/get") -> Dict[str, Any]:
+    """内部实现：host 参数化的全字段行情获取（f43-f221，字典 12.9.1）。
+
     ZHB tdxstat.cfg 35 字段中无 price/change_pct/open/high/low/last_close 等行情字段，
     只能从 HTTP 接口拿。push2 stock/get 是最权威的实时行情源（盘后返回收盘价）。
 
@@ -5279,10 +5178,9 @@ def get_em_quote_full(code: str) -> Dict[str, Any]:
     """
     if not code or len(code) != 6:
         return {}
-    market = "1" if code.startswith("6") else "0"
-    secid = f"{market}.{code}"
+    secid = f"{em_secid_prefix(code)}{code}"  # V17.0 S3: 统一前缀(含北交所 92)
 
-    url = "https://push2.eastmoney.com/api/qt/stock/get"
+    url = host
     # V16.1: 字段包从 19 个扩展为已验证字段包（2026-08-04 官方 TdxQuant 交叉验证）
     #   f51/f52=涨停/跌停价、f55=EPS、f92=BPS、f126=股息率、f162-167=PE×3/PB
     #   f174/f175=52周高低、f137-146=资金流12字段、f198=行业码、f80=交易时段
@@ -5520,6 +5418,189 @@ def get_em_quote_full(code: str) -> Dict[str, Any]:
 
 
 # ═══════════════════════════════════════════════════════════
+# ═══════════════════════════════════════════════════════════
+# V16.3.3 (2026-08-10 字典 12.15.5): 涨停池三源互校
+# ═══════════════════════════════════════════════════════════
+@cached(category="market_emotion_multi", ttl_seconds=TTL["market_emotion_multi"], trading_day=True,
+        valid_if=lambda r: bool(r and r.get("sources")))
+def get_limit_pool_multi_source(date: Optional[str] = None) -> Dict[str, Any]:
+    """涨停池三源互校——财联社=KPL=复盘啦（2026-08-10 实测 99=99=99 三源一致）。
+
+    源顺序（低风险优先）: 财联社 → KPL → 复盘啦 → push2ex(东财兜底)。
+    每源 1 次调用（间隔 2s，失败自动跳过——不阻塞、不重复请求）。
+
+    Args:
+        date: 可选日期 YYYY-MM-DD（push2ex 历史；财联社/KPL/复盘啦用当日）
+
+    Returns:
+        dict: {
+            "total": int,              # 涨停总数（多源一致值）
+            "sources": {源: 数量},     # 各源实测值（None=源失败）
+            "cross_verified": bool,    # ≥2 源一致
+            "max_ladder": int,         # 最高连板
+            "detail": dict,            # 复盘啦 StockList 全量等
+        }
+    """
+    import time as _time
+    from collections import Counter
+
+    out: Dict[str, Any] = {"sources": {}, "cross_verified": False, "max_ladder": 0, "detail": {}}
+
+    cls_n = None
+    try:
+        from stock_common import get_cls_market_emotion
+        emo = get_cls_market_emotion() or {}
+        try:
+            cls_n = int(emo.get("up_ratio_num") or 0)
+        except (ValueError, TypeError):
+            cls_n = None
+    except Exception as _e:
+        _debug_log(f"multi_source cls: {_e}")
+    out["sources"]["cls"] = cls_n
+    _time.sleep(2.0)
+
+    kpl_n = None
+    try:
+        from stock_common import get_kpl_market_sentiment
+        sent = get_kpl_market_sentiment() or {}
+        try:
+            kpl_n = int(sent.get("ztjs") or 0)
+        except (ValueError, TypeError):
+            kpl_n = None
+        try:
+            out["max_ladder"] = max(out["max_ladder"], int(sent.get("lbgd") or 0))
+        except (ValueError, TypeError):
+            pass
+    except Exception as _e:
+        _debug_log(f"multi_source kpl: {_e}")
+    out["sources"]["kpl"] = kpl_n
+    _time.sleep(2.0)
+
+    fupan_n = None
+    fupan_list = []
+    try:
+        from levistock.stock.stock_fupanla_kph import get_zttt
+        z = get_zttt() or {}
+        sl = z.get("StockList") or []
+        fupan_list = sl
+        fupan_n = len(sl)
+        for r in sl:
+            if len(r) > 2:
+                try:
+                    out["max_ladder"] = max(out["max_ladder"], int(r[2]))
+                except (ValueError, TypeError):
+                    pass
+    except Exception as _e:
+        _debug_log(f"multi_source fupan: {_e}")
+    out["sources"]["fupan"] = fupan_n
+    out["detail"]["fupan_list"] = fupan_list[:200]
+    _time.sleep(2.0)
+
+    push2ex_n = None
+    if cls_n is None and kpl_n is None and fupan_n is None:
+        try:
+            from stock_common import get_limit_up_pool
+            pool = get_limit_up_pool(date) or []
+            push2ex_n = len(pool)
+        except Exception as _e:
+            _debug_log(f"multi_source push2ex: {_e}")
+    out["sources"]["push2ex"] = push2ex_n
+
+    vals = [v for v in (cls_n, kpl_n, fupan_n, push2ex_n) if v is not None]
+    if vals:
+        cnt = Counter(vals)
+        top_v, top_c = cnt.most_common(1)[0]
+        if top_c >= 2:
+            out["total"] = top_v
+            out["cross_verified"] = True
+        else:
+            out["total"] = max(vals)
+    else:
+        out["total"] = 0
+
+    return out
+# ═══════════════════════════════════════════════════════════
+# V16.3.3 (2026-08-10 字典 12.15.5): 复盘啦缓存包装（levistock 直连无缓存——mak B 段高频）
+# ═══════════════════════════════════════════════════════════
+@cached(category="fupan_review", ttl_seconds=TTL["fupan_review"], trading_day=True)
+def get_fupan_zttt() -> Dict[str, Any]:
+    """复盘啦涨停天梯（get_zttt 缓存包装）——StockList[99]/ZhuShuList[22] 完整结构。
+    字典 12.10.4：涨停天梯；2026-08-10 实测 99 只与财联社/KPL 三源一致。
+    """
+    try:
+        from levistock.stock.stock_fupanla_kph import get_zttt
+        return get_zttt() or {}
+    except Exception as _e:
+        _debug_log(f"datasource fupan zttt: {_e}")
+        return {}
+@cached(category="fupan_review", ttl_seconds=TTL["fupan_review"], trading_day=True)
+def get_fupan_pmsl() -> Dict[str, Any]:
+    """复盘啦盘面梳理（get_pmsl 缓存包装）——List[30] 每条 6 字段（TimeMin/TagID/ZSCode/Detail/TagShuXing/TagName）。"""
+    try:
+        from levistock.stock.stock_fupanla_kph import get_pmsl
+        return get_pmsl() or {}
+    except Exception as _e:
+        _debug_log(f"datasource fupan pmsl: {_e}")
+        return {}
+
+
+# ═══════════════════════════════════════════════════════════
+# V16.3.3 (2026-08-10 字典 12.15.8): 永久字段独立缓存（10 年 TTL）
+# ═══════════════════════════════════════════════════════════
+@cached(category="static_permanent", ttl_seconds=TTL["static_permanent"])
+def get_stock_permanent_info(code: str) -> Dict[str, Any]:
+    """永久不变字段（10 年缓存——字典 12.15.8 static_permanent）。
+    - list_date: push2 f189（东财基础信息——外层永久缓存吸收单次 HTTP 成本）
+    - ipo_price: ZHB tdxstat2 Col[16]（本地零网络）
+    - name_core: 由调用方 parse_stock_name 处理（核心名称永久）
+    返回 {"list_date", "ipo_price"}（缺失字段省略）。
+    """
+    out: Dict[str, Any] = {}
+    try:
+        # V16.3.3: list_date 走 push2delay f189（push2 主域连接风控实测——f189 拿不到）
+        # V16.4.1: "9" 前缀误命中 920 北交所(secid 1.920xxx 恒失败) → 北交所分支提前
+        if code.startswith(("92", "8", "4", "43", "83", "87")):
+            _mkt = "0"
+        else:
+            _mkt = "1" if code.startswith(("6", "9")) else "0"
+        r = _quick_request(
+            "https://push2delay.eastmoney.com/api/qt/stock/get",
+            params={"secid": f"{_mkt}.{code}", "fields": "f189",
+                    "ut": "f057cbcbce2a86e2866ab8877db1d059"},
+            timeout=10,
+        )
+        if r is not None and r.status_code == 200:
+            _d = r.json().get("data") or {}
+            if _d.get("f189"):
+                out["list_date"] = str(_d["f189"])
+    except Exception as _e:
+        _debug_log(f"permanent list_date ({code}): {_e}")
+    if not out.get("list_date"):
+        # TDX 0x0010 兜底（ipo_date 字段——字典 12.14 已录）
+        try:
+            from core.tdx_client import tdx_get_finance_info
+            fin = tdx_get_finance_info(code) or {}
+            if fin.get("ipo_date"):
+                out["list_date"] = str(fin["ipo_date"])
+        except Exception as _e:
+            _debug_log(f"permanent list_date tdx ({code}): {_e}")
+    try:
+        from core.zhb_client import get_zhb_single_stock_data
+        z = get_zhb_single_stock_data(code) or {}
+        if z.get("ipo_price"):
+            out["ipo_price"] = z["ipo_price"]
+    except Exception as _e:
+        _debug_log(f"permanent ipo_price ({code}): {_e}")
+    return out
+    """复盘啦盘面梳理（get_pmsl 缓存包装）——List[30] 每条 6 字段。"""
+    try:
+        from levistock.stock.stock_fupanla_kph import get_pmsl
+        return get_pmsl() or {}
+    except Exception as _e:
+        _debug_log(f"datasource fupan pmsl: {_e}")
+        return {}
+
+
 # 数据源模块总计：68个函数（含同步+异步版本）
 # ═══════════════════════════════════════════════════════════
 
@@ -5537,7 +5618,7 @@ def eastmoney_stock_info_push2(code: str) -> Dict[str, Any]:
     当 TDX 无法获取 list_date 时作为 fallback。
     返回: {code, name, industry, total_shares, float_shares, mcap, float_mcap, list_date}
     """
-    market_code = 1 if code.startswith("6") else 0
+    market_code = 1 if em_secid_prefix(code) == "1." else 0  # V17.0 S3: 统一(含北交所 92)
     url = "https://push2.eastmoney.com/api/qt/stock/get"
     params = {
         "fltt": "2",
@@ -5636,10 +5717,11 @@ def em_hot_rank(top: int = 50) -> List[Dict[str, Any]]:
         data = r.json().get("data") or []
         if not data:
             return []
-        # 人气榜只给带前缀代码，用 push2 补名称/价格
+        # 人气榜只给带前缀代码，用 push2delay 补名称/价格(V16.4.1: 原 push2 主域——
+        # 连接级封禁期会整体失败 → 改 push2delay 镜像域,与采集脚本 ulist239 一致)
         secids = [("0." if it["sc"].startswith("SZ") else "1.") + it["sc"][2:] for it in data]
         u = _quick_request(
-            "https://push2.eastmoney.com/api/qt/ulist.np/get",
+            "https://push2delay.eastmoney.com/api/qt/ulist.np/get",
             params={
                 "ut": "f057cbcbce2a86e2866ab8877db1d059",
                 "fltt": 2,
@@ -5874,8 +5956,7 @@ def get_em_belong_boards(code: str) -> Dict[str, List[Any]]:
     if not code or len(code) != 6:
         return result
 
-    market = "1" if code.startswith("6") else "0"
-    secid = f"{market}.{code}"
+    secid = f"{em_secid_prefix(code)}{code}"  # V17.0 S3: 统一前缀(含北交所 92)
 
     # V15.2 P0 修复: 字段含义纠正
     # f127 = 行业名称（字符串，如"光学光电子"）
@@ -5945,8 +6026,7 @@ def get_em_fund_flow(code: str) -> Dict[str, Any]:
                "medium_in": float, "medium_out": float,
                "small_in": float, "small_out": float}
     """
-    market = "1" if code.startswith("6") else "0"
-    secid = f"{market}.{code}"
+    secid = f"{em_secid_prefix(code)}{code}"  # V17.0 S3: 统一前缀(含北交所 92)
 
     params = {
         "lmt": "1",  # 只取最新一天
@@ -6008,8 +6088,7 @@ def get_em_history_fund_flow(code: str, days: int = 120) -> List[Dict[str, Any]]
         list: [{"date": str, "main_net": float, "super_net": float,
                 "large_net": float, "mid_net": float, "small_net": float}, ...]
     """
-    market = "1" if code.startswith("6") else "0"
-    secid = f"{market}.{code}"
+    secid = f"{em_secid_prefix(code)}{code}"  # V17.0 S3: 统一前缀(含北交所 92)
 
     params = {
         "lmt": str(max(days, 1)),

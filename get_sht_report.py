@@ -28,15 +28,18 @@
 """
 
 
+# V16.4.1: 强制 UTF-8 输出（下沉到代码自身——任何 agent/机器/直接运行均 UTF-8，
+# 不再依赖 main.py 注入的 PYTHONIOENCODING 环境变量）
+from stock_common.env_setup import ensure_utf8_stdio
 
-import time, os
-from typing import List
+ensure_utf8_stdio()
+
+
+import os
 
 import asyncio
 
 from datetime import date, datetime, timedelta
-
-from gd_uploader import init_gd, upload_stock_report_by_code, cleanup_gd_proxy
 
 # V15.3 修复: 4 个报告模块同名 _SNAPSHOT_DATA 全局变量冲突
 # 抽出到 stock_common.sc_snapshot 统一管理（sc_report_runner 也用此模块）
@@ -46,40 +49,30 @@ from stock_common.sc_snapshot import SnapshotProxy as _SnapshotProxy  # noqa: E4
 # 保留 _SNAPSHOT_DATA 名字以便兼容历史引用（实际写入走 sc_snapshot.register）
 _SNAPSHOT_DATA = _SnapshotProxy()
 
-from tdx_client import (tdx_get_latest_bar_with_ma,
-                         tdx_get_quote_full, tdx_get_index_quote,
-                         tdx_get_history_fund_flow,  # V16.0: 移除 tdx_get_fund_flow（改用统一层 get_main_net_buy）
-                         cleanup_tdx)
+from core.tdx_client import (tdx_get_latest_bar_with_ma,
+                         tdx_get_index_quote)  # V16.4.1: 删 3 个未使用导入
 
-
-
-from stock_common import (clean_codes, _safe_float, UA, _debug_log,
+from stock_common import (_safe_float, _debug_log,
                            _load_settings, _load_strategy_config, BaseReportRunner,
-                           get_dragon_tiger_board,
-                           create_async_session, get_dragon_tiger_board_async,
+                           get_dragon_tiger_board_async,
                            holder_change_async, get_strategic_announcements_async,
-                           parse_args, get_tencent_quote, baidu_kline_full,
+                           baidu_kline_full,
                            get_reports, get_dividend_history, get_industry_comparison,
                            get_concept_blocks, get_ths_hot_reason_async, get_industry_peers,
                            get_stock_sector_rank, get_stock_info, get_hsgt_macro_flow, get_hsgt_macro_flow_async,
                            get_eps_forecast_async, get_margin_trading_async,
                            get_block_trade_async, get_northbound_hold_async,
                            get_lockup_expiry_async, get_market_status,
-                           calculate_multi_school_scores, ScoreData,
+                           ScoreData,  # V17.0 审查: 删 clean_codes/create_async_session/calculate_multi_school_scores(基类/渲染收敛)
                            ths_hot_list, em_hot_concept, get_eastmoney_stock_news,
                            cls_telegraph, news_matches_stock, cninfo_irm,
-                           get_zhb_single_stock_data, is_zhb_data_fresh,
-                           get_zhb_industry_map, get_zhb_data_date,
-                            get_zhb_main_net_buy, get_zhb_streak_days,
-                            is_limit_up, is_limit_down,  # V16.2: 统一涨停/跌停判断（含北交所 30%）
-                            limit_pct_for)  # V10.3, V16.2: 统一涨跌停阈值
+                           get_zhb_data_date,
+                           get_zhb_streak_days,
+                           is_limit_up,  # V16.2: 统一涨停/跌停判断（含北交所 30%）
+                           limit_pct_for)  # V10.3, V16.2: 统一涨跌停阈值
 
-from data_provider import (get_stock_composite_async, get_main_net_buy_async,
-                            get_stock_price_async, get_change_pct_async,
-                            get_amount_wan_async, get_pe_ttm_async,
-                            get_pb_async, get_dividend_yield_async,
-                            get_52w_range_async, get_change_ytd_async,
-                            get_turnover_pct_async)
+from core.data_provider import get_main_net_buy_async  # V16.4.1: 删 9 个未使用 async 包装
+from stock_common.sc_utils import save_text_report  # V17.0 S5: 写尾样板公共函数
 
 
 
@@ -114,7 +107,7 @@ def get_fund_flow_realtime(code, ff_120d=None):
         dict or None
     """
     try:
-        from data_provider import get_main_net_buy
+        from core.data_provider import get_main_net_buy
         mnb = get_main_net_buy(code)
         if mnb and mnb.get("main_net_buy_amount"):
             return {"data": [mnb["main_net_buy_amount"]], "detail": mnb, "source": "unified"}
@@ -266,7 +259,7 @@ async def generate_report_async(session, code, output_path, ind_comp=None, idx_q
 
     # V15 统一数据中心：通过 get_canonical_stock_data 获取强类型标准化数据
     # V15.2 修正: async 上下文必须包 to_thread，否则阻塞主事件循环（val 死锁根因）
-    from data_provider import get_canonical_stock_data
+    from core.data_provider import get_canonical_stock_data
     cdata = await asyncio.to_thread(get_canonical_stock_data, code)
     price_today = cdata.price
     q = cdata.to_dict()
@@ -278,6 +271,11 @@ async def generate_report_async(session, code, output_path, ind_comp=None, idx_q
 
     L(f"  股票名称: {stock_name}")
     L(f"  股票代码: {cdata.code}")
+    # V16.3.3 (2026-08-10 字典 12.15.8): ST/次新风险信号（canonical is_st/is_new——结构化名称）
+    if getattr(cdata, "is_st", False):
+        L(f"  ⚠️ 风险标记: **ST/*ST**（退市风险——涨跌停按板块阈值，短线注意连续跌停风险）")
+    if getattr(cdata, "is_new", False):
+        L(f"  🆕 次新标记: 上市 ≤5 日（临时前缀已忽略——涨跌停规则可能不同）")
     L(f"  所属板块: {stock_industry}")
     L(f"  总股本:   {cdata.total_shares_wan/1e4:.2f}亿股")
     L(f"  流通股本: {cdata.float_shares_wan/1e4:.2f}亿股")
@@ -390,6 +388,10 @@ async def generate_report_async(session, code, output_path, ind_comp=None, idx_q
         _sig = "偏多" if hsgt["total"] > 0 else "偏空"
 
         L(f"  💰 今日北向资金: 沪股通 {hsgt['hgt']:+.2f}亿 | 深股通 {hsgt['sgt']:+.2f}亿 | 合计 {hsgt['total']:+.2f}亿（{_sig}）")
+        # V16.4.1: 数据层降级标记展示——2026-08-12 实测深股通 379.75 亿(sgt/hgt 比例 40.9 异常,
+        # 远超历史单日记录), 源数据存疑时显式警告, 避免误导
+        if hsgt.get("data_quality") == "degraded":
+            L(f"  ⚠️ 北向数据降级: {hsgt.get('warning', '源数据异常')}")
 
     # V15.4.2: 资金流同步调用包 to_thread，避免阻塞事件循环
     ff = await asyncio.to_thread(get_fund_flow_120d, code)
@@ -399,10 +401,12 @@ async def generate_report_async(session, code, output_path, ind_comp=None, idx_q
         _fd = rf["data"]
         L(f"  💰 今日主力净流入: {_fd[0]:.0f}万元 ({_fd[0]/1e4:.2f}亿)")
     else:
-        if ff and len(ff) > 0:
-            last_day_flow = ff.iloc[0].get('net_main', 0) if hasattr(ff, 'iloc') else 0
+        if ff and ff.get("data") and len(ff["data"]) > 0:
+            # 2026-08-11: 统一层 O19 已归一 dict(元)——直接读最新一条（数据"最新在前"）
+            _d0 = ff["data"][0]
+            last_day_flow = (_safe_float(_d0.get("main_net", 0)) or 0) / 1e4
             if last_day_flow != 0:
-                L(f"  💰 昨日主力净流入: {last_day_flow:.0f}万元 ({last_day_flow/1e4:.2f}亿)")
+                L(f"  ▲ 昨日主力净流入: {last_day_flow:.0f}万元 ({last_day_flow/1e4:.2f}亿)")
             else:
                 L("\n  [资金流向] 今日主力净流入(实时): 暂无数据")
         else:
@@ -560,8 +564,11 @@ async def generate_report_async(session, code, output_path, ind_comp=None, idx_q
     await asyncio.sleep(0.5)
 
     # V16.1: lite 模式跳过同业对比（省一次 TDX 板块成员查询）
+    # V16.4.1: lite 分支补 peers/my_mcap 键——下游 L654/L1422 裸索引 peer_data["peers"],
+    # 缺键时 --depth lite 必抛 KeyError 整份报告失败
     if _dc.get("skip_industry_peers"):
-        peer_data = {"my_rank": 0, "industry_count": 0, "industry": stock_ind}
+        peer_data = {"my_rank": 0, "industry_count": 0, "industry": stock_ind,
+                     "peers": [], "my_mcap": 0}
     else:
         # V15.4.2: 同步同业对比包 to_thread (TDX 限流时易卡)
         peer_data = await asyncio.to_thread(get_industry_peers, code, 3, info=info)
@@ -648,9 +655,14 @@ async def generate_report_async(session, code, output_path, ind_comp=None, idx_q
 
             _my_mcap = peer_data['my_mcap'] if peer_data['my_mcap'] > 0 else q.get('mcap_yi', 0)
 
-            L(f"  {code:<8} {info.get('name','N/A'):<12} {price_today:>8.2f} {q.get('change_pct',0):>7.2f}% {_my_mcap:>9.1f} {q.get('pe_ttm',0):>7.1f} {q.get('turnover_pct',0):>7.2f}% ← 本股")
+            _my_pe = q.get('pe_ttm', 0) or 0
+            _my_pe_s = f"{_my_pe:.1f}" if _my_pe > 0 else "亏损"
+            L(f"  {code:<8} {info.get('name','N/A'):<12} {price_today:>8.2f} {q.get('change_pct',0):>7.2f}% {_my_mcap:>9.1f} {_my_pe_s:>8} {q.get('turnover_pct',0):>7.2f}% ← 本股")
 
-            for p in peer_data["peers"]: L(f"  {p['code']:<8} {p['name']:<12} {p['price']:>8.2f} {p['change_pct']:>7.2f}% {p['mcap_yi']:>9.1f} {p['pe']:>7.1f} {p['turnover']:>7.2f}%")
+            for p in peer_data["peers"]:
+                _ppe = p.get('pe', 0) or 0
+                _ppe_s = f"{_ppe:.1f}" if _ppe > 0 else "亏损"
+                L(f"  {p['code']:<8} {p['name']:<12} {p['price']:>8.2f} {p['change_pct']:>7.2f}% {p['mcap_yi']:>9.1f} {_ppe_s:>8} {p['turnover']:>7.2f}%")
 
     else: L(f"  无法获取同业数据（板块: {peer_data.get('industry','未知')}）")
 
@@ -675,14 +687,23 @@ async def generate_report_async(session, code, output_path, ind_comp=None, idx_q
             _debug_log(f"get_main_net_buy_async error ({code}): {_e}")
     if zhb_main_net:
         zhb_date = get_zhb_data_date()
-        L(f"\n  ➤ ZHB主力资金流向 ({zhb_date}):")
+        # V16.4.1: 标签修正——数据来自 canonical(盘中/盘后走东财实时), 不总是 ZHB
+        _flow_src = f"canonical(东财实时)" if (q and q.get("main_net_buy_wan")) else f"ZHB({zhb_date})"
+        L(f"\n  ➤ 主力资金流向 ({_flow_src}):")
         L(f"    T日主力净买入量: {zhb_main_net['main_net_buy_hands']:.0f}手")
-        L(f"    T日主力净流入额: {zhb_main_net['main_net_buy_amount']:+.0f}万元")
+        _amt = zhb_main_net['main_net_buy_amount']
+        L(f"    T日主力净流入额: {_amt:+.0f}万元")
         if zhb_main_net['main_net_buy_amount_1d']:
             L(f"    T-1日主力净流入额: {zhb_main_net['main_net_buy_amount_1d']:+.0f}万元")
-        flow_ratio = abs(zhb_main_net['main_net_buy_amount']) / q.get('amount_wan', 0) * 100 if q.get('amount_wan', 0) else 0
-        L(f"    主力资金占比: {flow_ratio:.2f}%")
-        L(f"    信号: {'🟢 主力资金净流入' if zhb_main_net['main_net_buy_amount'] > 0 else '🔴 主力资金净流出'}")
+        _amt_wan = q.get('amount_wan', 0) if q else 0
+        # V16.4.1: 占比保留符号(原 abs 把净流出显示成正占比, 222% 即由此+源数据异常);
+        # 净额绝对值超成交额 = 源数据存疑, 显式标注
+        flow_ratio = _amt / _amt_wan * 100 if _amt_wan else 0
+        _flow_note = ""
+        if abs(flow_ratio) > 100:
+            _flow_note = " ⚠️ 异常:净流入额超成交额(源数据存疑)"
+        L(f"    主力资金占比: {flow_ratio:+.2f}%{_flow_note}")
+        L(f"    信号: {'🟢 主力资金净流入' if _amt > 0 else '🔴 主力资金净流出'}")
 
     # V15.2 修复: 改名 _composite → q
     streak = None
@@ -1285,7 +1306,7 @@ async def generate_report_async(session, code, output_path, ind_comp=None, idx_q
 
     is_lu2 = lu2>0 and abs(np3-lu2)/lu2<0.005
 
-    _lu = q.get("limit_up",0) if q else 0; _ld = q.get("limit_down_price",0) if q else 0
+    _lu = q.get("limit_up",0) if q else 0; _ld = q.get("limit_down",0) if q else 0
 
     _hi = q.get("high",0) if q else 0; _lo = q.get("low",0) if q else 0; _chg = q.get("change_pct",0) if q else 0
 
@@ -1330,7 +1351,8 @@ async def generate_report_async(session, code, output_path, ind_comp=None, idx_q
         if chg>0: signals.append(f"北向资金近{len(nb)}日净增持，外资看多信号")
 
     if ff["data"] and len(ff["data"])>=20:
-        _ff_data = ff["data"][-20:]
+        # V16.4.1: ff 数据最新在前(实测 [0]=今日)——原 [-20:] 取最旧 20 日, 近20日统计全错
+        _ff_data = ff["data"][:20]
         if _ff_data and isinstance(_ff_data[0], dict):
             tmain2 = sum(d.get("main_net", 0) for d in _ff_data)
         else:
@@ -1412,7 +1434,9 @@ async def generate_report_async(session, code, output_path, ind_comp=None, idx_q
 
                 break
 
-    mc = miq.get("change_pct") if miq else None; bc2 = biq.get("change_pct") if biq else {}
+    mc = miq.get("change_pct") if miq else None
+    # V16.4.1: biq 为空时 bc2 应为 None(原 {} 会骗过下方 all(... is not None) 判断)
+    bc2 = biq.get("change_pct") if biq else None
 
     sc2 = q.get("change_pct",0) if q else None; ic2 = industry_change_pct if industry_rank>0 else None
 
@@ -1425,7 +1449,7 @@ async def generate_report_async(session, code, output_path, ind_comp=None, idx_q
         elif abs(sc2-ic2)<1.0 and abs(sc2)>0.5: signals.append(f"📊 随波逐流模型：个股 {sc2:+.2f}% ≈ 板块 {ic2:+.2f}%，属板块普涨型跟风")
 
     try:
-        from data_provider import _should_use_zhb_for_realtime
+        from core.data_provider import _should_use_zhb_for_realtime
         if _should_use_zhb_for_realtime() and cdata.change_5d:
             stk3 = cdata.change_5d * 0.6  # ZHB 5日涨幅做3日偏离估算
             tl = limit_pct_for(code, stock_name)
@@ -1573,19 +1597,10 @@ async def generate_report_async(session, code, output_path, ind_comp=None, idx_q
     elif _ps>=15: L(f"  短线评分: {_ps:.0f}/100 → 轻仓试探，仓位10%，止损-3%")
     else: L(f"  短线评分: {_ps:.0f}/100 → 观望，仓位5%试水")
 
-    # 多评委评审团评分（V8.9）
-    try:
-        multi_scores = calculate_multi_school_scores(score_data)
-        L("")
-        L("  ★ 多评委评审团评分")
-        L(f"    价值派评分: {multi_scores['value'].total_score:.1f}分")
-        L(f"    成长派评分: {multi_scores['growth'].total_score:.1f}分")
-        L(f"    投机派评分: {multi_scores['speculator'].total_score:.1f}分")
-        L(f"    综合共识: {multi_scores['consensus'].total_score:.1f}分")
-        if multi_scores['dispersion'] > 15:
-            L(f"    ⚠️ 派别分歧度较大({multi_scores['dispersion']:.1f})，投资需谨慎")
-    except Exception as e:
-        L(f"    多评委评分异常: {e}")
+    # V17.0 R5: 多评委评审团评分渲染统一走 sc_render(原 12 行逐字重复已收敛)
+    from stock_common.sc_render import render_multi_school_scores
+
+    multi_scores = render_multi_school_scores(L, score_data)
 
     # 综合投资建议
     try:
@@ -1613,7 +1628,7 @@ async def generate_report_async(session, code, output_path, ind_comp=None, idx_q
                 L(f"     标签: {in_hot['tag']}")
         # V14.2: 优先用 ZHB tdxchain.cfg 本地概念匹配（零网络请求）
         try:
-            from data_provider import get_concept_from_zhb
+            from core.data_provider import get_concept_from_zhb
             zhb_concepts = await asyncio.to_thread(get_concept_from_zhb, code)
             if zhb_concepts:
                 L(f"     产业链/概念（ZHB 本地）: {', '.join(zhb_concepts[:5])}")
@@ -1634,9 +1649,7 @@ async def generate_report_async(session, code, output_path, ind_comp=None, idx_q
         "report_source": "sht"
     }
 
-    output = "\n".join(filter(None, lines))
-
-    with open(output_path,"w",encoding="utf-8") as f: f.write(output)
+    output = save_text_report(output_path, lines)  # V17.0 S5: 公共样板
 
     return output
 
@@ -1663,9 +1676,8 @@ class ShtReportRunner(BaseReportRunner):
         super().__init__("get_sht_report", "sht", "短线策略个股分析报告")
 
     def execute_pipeline(self) -> dict:
-        ts = datetime.now().strftime("%Y%m%d_%H%M")
-        report_type = "sht"
-
+        # V17.0 R4: 批量骨架收敛到基类 execute_batch_pipeline——
+        # 缓存构建/prefetch 钩子/逐只 GD 上传钩子(pre_gd_init)全部参数化, 原 110 行本地实现删除
         _cached_ind_comp = get_industry_comparison()
         _cached_idx_q = {}
         for ic in ("sh000001", "sz399106", "sz399102", "sh000688"):
@@ -1673,60 +1685,31 @@ class ShtReportRunner(BaseReportRunner):
             if _iq:
                 _cached_idx_q[ic] = _iq
         _cached_hsgt = get_hsgt_macro_flow()
+        # V16.4.1: 缓存值必须传入——否则每只股票重复拉 HSGT, 与 docstring"批量避免重复查询"相悖
 
-        args = self.args
+        def _prefetch(codes):
+            # V16.3.10: 批量行情预取(push2delay ulist 1 次请求拿全部核心行情字段)
+            from core.data_provider import prefetch_quote_batch
 
-        async def _main_async():
-            codes = clean_codes(args.codes, verbose=True)
-            if not codes:
-                print("  ❌ 没有有效的股票代码")
-                return []
-            for code in codes:
-                try:
-                    print(f"  📋 加入队列: {code}", flush=True)
-                except UnicodeEncodeError:
-                    print(f"  [INFO] 加入队列: {code}", flush=True)
+            return prefetch_quote_batch(codes)
 
-            _session = await create_async_session()
-            try:
-                sem = asyncio.Semaphore(3)
-
-                async def _limited(code):
-                    async with sem:
-                        result_path = os.path.join(args.output, f"{code}_{report_type}_{ts}.txt")
-                        try:
-                            await generate_report_async(
-                                _session, code, result_path,
-                                ind_comp=_cached_ind_comp, idx_q=_cached_idx_q,
-                                hsgt=None, depth=args.depth
-                            )
-                            print(f"  ✅ 已保存: {result_path}", flush=True)
-                            return {"code": code, "status": "成功", "error": "", "path": result_path}
-                        except Exception as e:
-                            print(f"❌ {code} 数据生成失败: {e}", flush=True)
-                            return {"code": code, "status": "数据失败", "error": str(e), "path": ""}
-
-                results = await asyncio.gather(*[_limited(c) for c in codes])
-                return results
-            finally:
-                await _session.close()
-
-        _results = asyncio.run(_main_async())
-
-        if _SNAPSHOT_DATA:
-            from stock_common.analyze_history import save_snapshot
-            save_snapshot("sht", _SNAPSHOT_DATA)
-
-        ok = [r for r in _results if r["status"] == "成功"]
-        fd = [r for r in _results if r["status"] == "数据失败"]
-        print(f"\n{'='*60}\n  批量执行完成 — 共处理 {len(_results)} 只股票\n{'='*60}")
-        print(f"  ✅ 全部成功: {len(ok)}  |  ❌ 数据失败: {len(fd)}")
-        for r in fd:
-            print(f"    ❌ {r['code']} — {r['error'][:80]}")
-
-        return {"results": _results, "time_str": ts, "report_type": report_type}
+        return self.execute_batch_pipeline(
+            "sht", generate_report_async,
+            gen_kwargs={
+                "ind_comp": _cached_ind_comp, "idx_q": _cached_idx_q,
+                "hsgt": _cached_hsgt, "depth": self.args.depth,
+            },
+            prefetch_fn=_prefetch,
+            snapshot_data=_SNAPSHOT_DATA,
+            # V17.0: 去除 pre_gd_init(逐只上传)——main.py 已改用输出活性检测(无固定超时),
+            # "超时 kill 丢 GD" 场景不再存在 → 上传逻辑与 med/lng 统一(全部完成后统一上传)
+        )
 
     def upload_reports(self, drive, folder_id: str, results) -> None:
+        # V16.4.1: execute_pipeline 已逐只上传(_gd_per_stock=True)时 no-op 防重复;
+        # 早 init 失败时回退批量上传(原逻辑)
+        if getattr(self, "_gd_per_stock", False):
+            return
         self.upload_multi_reports(drive, folder_id, results)
 
 

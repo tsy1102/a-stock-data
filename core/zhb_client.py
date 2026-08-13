@@ -38,6 +38,52 @@ from __future__ import annotations
 import os
 import io
 import zipfile
+
+
+# V16.4.0: 全市场解析结果持久化——键=zip 日期 + schema 版本
+# marshal 比 pickle 快 5-10 倍（数据全为 dict/float/str/int 内置类型）
+_ZHB_PARSE_SCHEMA = 1
+
+
+def _zhb_parse_cache_path(name: str, date: str) -> str:
+    # V17.0 包化说明: 双 dirname 在模块移入 core/ 后恰好解析到 仓库根/cache/zhb_parsed（原在根时解析到 C:\cache 属历史 bug）; 勿改为单 dirname
+    d = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+                     "cache", "zhb_parsed")
+    os.makedirs(d, exist_ok=True)
+    return os.path.join(d, f"{name}_{date}_v{_ZHB_PARSE_SCHEMA}.bin")
+
+
+def _zhb_parse_load(name: str, date: str):
+    if not date:
+        return None
+    try:
+        import marshal
+
+        fp = _zhb_parse_cache_path(name, date)
+        if os.path.exists(fp) and os.path.getsize(fp) > 0:
+            with open(fp, "rb") as f:
+                return marshal.load(f)
+    except Exception:
+        pass
+    return None
+
+
+def _zhb_parse_save(name: str, date: str, data) -> None:
+    if not date or data is None:
+        return
+    try:
+        import marshal
+
+        fp = _zhb_parse_cache_path(name, date)
+        tmp = fp + ".tmp"
+        with open(tmp, "wb") as f:
+            marshal.dump(data, f)
+        os.replace(tmp, fp)
+    except Exception:
+        pass
+
+
+
 import time
 import threading
 from datetime import date, datetime
@@ -49,11 +95,12 @@ from stock_common import _debug_log
 # 配置常量
 # ═══════════════════════════════════════
 
-_ZHB_CACHE_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "cache", "zhb")
+# V17.0 包化: 上提一级到仓库根（模块移入 core/ 后 __file__ 在 core/ 下）
+_ZHB_CACHE_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "cache", "zhb")
 # V15.1: 自动清理已移除（M3: _cleanup_old_files 随 _KEEP_DAYS 删除），
 # 用户手动维护 cache/zhb 目录（保留历史 ZHB 文件供对比与字段深挖）
 _MIN_DISK_SPACE_MB = 100  # 最小保留磁盘空间（MB）
-_LOCK_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "cache", "zhb", ".zhb.lock")
+_LOCK_FILE = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "cache", "zhb", ".zhb.lock")
 
 # 通达信行情节点（优先招商/国信主站，数据更新快）
 # V16.1.1: 前 3 个为 easy_tdx 实测可用主机（2026-08-04 实测 zhb.zip 下载成功）；
@@ -706,7 +753,10 @@ class ZhbData:
     def stock_stats(self) -> Dict[str, Dict[str, Any]]:
         """全市场个股统计快照 {code: {字段名: 值}}。"""
         if self._stock_stats is None:
-            self._stock_stats = self._parse_tdxstat()
+            self._stock_stats = _zhb_parse_load("tdxstat", self.date)
+            if self._stock_stats is None:
+                self._stock_stats = self._parse_tdxstat()
+                _zhb_parse_save("tdxstat", self.date, self._stock_stats)
         return self._stock_stats
 
     def _parse_tdxstat(self) -> Dict[str, Dict[str, Any]]:
@@ -734,12 +784,15 @@ class ZhbData:
             [14] net_profit_kcf  扣非净利润(万元) ★2026-08-03联网确认(东财KCFJCXSYJLR 14/14匹配)
             [15] employee_count  员工人数
             [16] rd_input_fee    研发投入(万元) ★2026-08-04官方TdxQuant确认
-            [17] change_20k_bar  近20根K线涨跌幅(交易日口径) ★V16.2.18修正
+            [17] change_20k_bar  近20根K线涨跌幅(含当日, 交易日口径) ★V16.2.18修正
                  (injoyai 130日日线核验MAE0.23；原误标change_20d)
-            [18] change_20d      20日涨跌幅(%) ★V16.2.18修正(原误标30d；injoyai MAE0.23)
+            [18] change_20d      20日涨跌幅 ★V16.3 O28修正：实为"截至T-1的20根K线"
+                 (K线缓存926只对照中位差0.93；非日历20日——c20相关仅0.37排除)
             [19] change_60k_bar  近60根K线涨跌幅(交易日口径) ★V16.2.18修正
                  (injoyai核验MAE≈0；原误标change_60d)
-            [20] change_60d      60日涨跌幅(%) ★V16.2.18修正(原误标90d?；injoyai核验MAE≈0)
+            [20] change_60d      60日涨跌幅 ★V16.3 O28修正：实为"截至T-1的60根K线"
+                 (K线缓存926只对照中位差1.28；原V16.2.18"日历60日"为误判——
+                 c60相关仅0.25排除；change_60d key 已改读本列)
             [21] change_ytd      年初至今涨跌幅(%)
             [22] shape_value     形态/板块代码 ★2026-08-04官方TdxQuant确认(50101/50109)
             [23] unknown_23      未知(0-95离散枚举,24类,7月末31/32峰值8月初重置,
@@ -790,11 +843,16 @@ class ZhbData:
                 #   change_ytd 实为 Col[21] YTD ✓
                 "change_20d": _safe_cast(parts, 18, float),
                 "change_30d": _safe_cast(parts, 18, float),
-                "change_60d": _safe_cast(parts, 19, float),
+                "change_60d": _safe_cast(parts, 20, float),
                 "change_ytd": _safe_cast(parts, 21, float),
                 # V16.2.18 新增: 交易日口径 K 线周期涨跌幅（injoyai 130日日线核验）
                 "change_20k_bar": _safe_cast(parts, 17, float),
                 "change_60k_bar": _safe_cast(parts, 19, float),
+                # V16.3 O28: K线缓存精确对照（926只, baidu_kline_full）——
+                #   Col[18] ≈ 截至T-1的20根K线（中位差0.93, 非日历20日）
+                #   Col[20] ≈ 截至T-1的60根K线（中位差1.28, 非日历60日）
+                #   原 V16.2.18 "60日日历口径" 为误判（c60 相关仅0.25 排除）
+                #   → change_60d 已改读 Col[20]（原误读 Col[19]）
                 # V16.0: Col[14] = 扣非净利润(万元)，2026-08-03 联网核实
                 # （14/14 公司与东财 KCFJCXSYJLR 比值=1.000，含亏损公司）
                 "net_profit_kcf": _safe_cast(parts, 14, float),
@@ -820,7 +878,10 @@ class ZhbData:
     def stock_stats2(self) -> Dict[str, Dict[str, Any]]:
         """全市场资金流向+板块归属 {code: {字段名: 值}}。"""
         if self._stock_stats2 is None:
-            self._stock_stats2 = self._parse_tdxstat2()
+            self._stock_stats2 = _zhb_parse_load("tdxstat2", self.date)
+            if self._stock_stats2 is None:
+                self._stock_stats2 = self._parse_tdxstat2()
+                _zhb_parse_save("tdxstat2", self.date, self._stock_stats2)
         return self._stock_stats2
 
     def _parse_tdxstat2(self) -> Dict[str, Dict[str, Any]]:
@@ -838,16 +899,16 @@ class ZhbData:
             [8]  unknown_8           未知(占位)
             [9]  main_net_buy_hands  T日主力净买入量(手) — V10.3新增（双日Delta+公式验证）
             [10] main_net_buy_hands_1d T-1日主力净买入量(手) — V10.3新增
-            [11] unknown_11          未知
-            [12] unknown_12          未知
+            [11] change_5k_bar   近5根K线涨跌幅(与tdxstat Col[27]完全一致r=1.0) ★V16.3 O28
+            [12] change_250k_bar 近250根K线涨跌幅(年线) ★V16.3 O28破解(K线缓存k250 r=0.973)
             [13] tday_special_board  T日特色板块归属（V16.2.17 重新定性，见下）
             [14] main_net_buy_amount T日主力净流入额(万元) — V10.3新增（双日Delta+公式验证）
             [15] main_net_buy_amount_1d T-1日主力净流入额(万元) — V10.3新增
             [16] ipo_price           IPO发行价(元)
             [17] high_52w            52周最高价
             [18] low_52w             52周最低价
-            [19] unknown_19          未知
-            [20] unknown_20          未知
+            [19] change_30k_bar     近30根K线涨跌幅(含噪) ★V16.3 O28(K线缓存k30 r=0.96+)
+            [20] change_30k_bar_ref 近30根K线涨跌幅(更纯,中位差2.55) ★V16.3 O28
 
         V10.3 更新：通过双日Delta验证和公式验算([9]*100*收盘价/10000≈[14])，
                    确认[9]/[14]为T日主力净买入量/额，[10]/[15]为T-1日滚动值。
@@ -871,10 +932,10 @@ class ZhbData:
                  000533涨停=10948.26(>主力净买额6249.73 → 分档口径)
             [8]  疑**资金分档字段**(特大单类)：有值100只,涨停占比28%；
                  000009=1063.63
-            [19] 未知(涨跌幅类,非标准K线周期)：100%非空、日更、对称分布
-                 (-62~+581,中位-2.49)；与tdxstat change序列/主力资金/K线
-                 5-250日周期均不匹配 → 疑主力成本偏离/资金收益率, injoyai未命名
-            [20] 同上(疑似[19]的相邻周期变体)
+            [19] 近30根K线涨跌幅(含噪) ★V16.3 O28：K线缓存926只对照 k30 r=0.96+，
+                 中位差5.36（原"非标准K线周期"判断过时——实为标准30根K线周期，
+                 含复权/基准噪声；"主力成本偏离"假设被排除）
+            [20] 近30根K线涨跌幅(更纯) ★V16.3 O28：k30 r=0.975，中位差2.55
         """
         data = self.raw_files.get("tdxstat2.cfg", b"")
         if not data:
@@ -904,6 +965,16 @@ class ZhbData:
                 "ipo_price": _safe_cast(parts, 16, float),
                 "high_52w": _safe_cast(parts, 17, float),
                 "low_52w": _safe_cast(parts, 18, float),
+                # V16.3 O28: K线缓存精确对照（926只, baidu_kline_full）——
+                #   Col[11] = 近5根K线涨跌幅（与 tdxstat Col[27] r=1.0000 完全一致，重复字段）
+                #   Col[12] = 近250根K线涨跌幅（年线，k250 r=0.973；原 D2 疑"YTD"为巧合，
+                #             c250 r=0.68 / k120 r=0.72 均不及）
+                #   Col[19] = 近30根K线涨跌幅（k30 r=0.96+，含噪——原 D2 疑"20日"为近似）
+                #   Col[20] = 近30根K线涨跌幅（k30 r=0.975 更纯——中位差 2.55）
+                "change_5k_bar": _safe_cast(parts, 11, float),
+                "change_250k_bar": _safe_cast(parts, 12, float),
+                "change_30k_bar": _safe_cast(parts, 19, float),
+                "change_30k_bar_ref": _safe_cast(parts, 20, float),
             }
         return result
 
@@ -1174,17 +1245,21 @@ class ZhbData:
         return self._delisted_stocks
 
     def _parse_delisted(self) -> Dict[str, str]:
-        """解析 pttab.dat（股票代码对照表，含退市股）。"""
+        """解析 pttab.dat（股票代码对照表，含退市股）。
+
+        V16.4.1: 实测分隔符为逗号(样本 '0,000003,深金田A')——原用 "|" 恒解析失败,
+        退市股映射从未生效; 与 _build_unified_name_map 同源同分隔符。
+        """
         data = self.raw_files.get("pttab.dat", b"")
         if not data:
             return {}
         text = data.decode("gbk", errors="ignore")
         result: Dict[str, str] = {}
         for line in text.splitlines():
-            parts = line.split("|")
-            if len(parts) >= 2:
-                code = parts[0].strip()
-                name = parts[1].strip()
+            parts = line.split(",")
+            if len(parts) >= 3:
+                code = parts[1].strip()
+                name = parts[2].strip()
                 if code:
                     result[code] = name
         return result
@@ -1367,11 +1442,71 @@ def _save_to_cache(date_str: str, data: bytes) -> None:
 # 对外主接口
 # ═══════════════════════════════════════
 
+_ZH_B_DOWNLOAD_MARK = os.path.join(os.path.dirname(_ZHB_CACHE_DIR), "zhb", ".last_download")
+
+
+def _zhb_download_tried_today() -> bool:
+    """V16.4.1: 今天是否已尝试过下载(成败都记)。
+
+    ZHB 包 T+1 清晨发布: 8/12 盘中服务器最新仍可能只有 8/10 包——
+    若无标记, "本地 < 最近交易日" 判定会让每次运行都触发下载
+    (拿到同一旧包, 白费一次 TCP 且加重服务器压力)。
+    """
+    try:
+        if os.path.exists(_ZH_B_DOWNLOAD_MARK):
+            _mark = open(_ZH_B_DOWNLOAD_MARK, encoding="utf-8").read().strip()
+            return _mark == datetime.now().strftime("%Y%m%d")
+    except Exception:
+        pass
+    return False
+
+
+def _zhb_mark_download_tried() -> None:
+    try:
+        with open(_ZH_B_DOWNLOAD_MARK, "w", encoding="utf-8") as f:
+            f.write(datetime.now().strftime("%Y%m%d"))
+    except Exception:
+        pass
+
+
+def _zhb_needs_download(local_date: str, zhb_local=None) -> bool:
+    """V16.4.1: 本地 zip 日期 < 最近交易日 → 需要下载。
+
+    修复 V16.4.0"本地 zip 优先"不检查日期的缺陷(本地有任何旧包就永不下新包)。
+    每天最多触发一次下载(见 _zhb_download_tried_today)。
+    拿不准时保守返回 True(触发下载, 下载失败自然回落本地缓存, 无害)。
+
+    V16.4.1 递归修复: 原实现 import stock_calendar.get_last_trading_day,
+    而 stock_calendar.is_workday 反向调用 zhb_client.get_holidays → get_zhb,
+    与 get_zhb→needs_download 形成递归环 → RecursionError → 下载永不执行。
+    改为使用本地包自身节假日表(zhb_local.holidays, YYYYMMDD)计算最近交易日,
+    零外部依赖、零递归。近似误差只会"多触发一次下载"(当天限 1 次),不会漏。
+    """
+    if _zhb_download_tried_today():
+        return False
+    try:
+        from datetime import date as _date, timedelta as _td
+
+        _local = _date(int(local_date[:4]), int(local_date[4:6]), int(local_date[6:8]))
+        _holidays = set(zhb_local.holidays) if zhb_local is not None else set()
+        _candidate = _date.today()
+        for _ in range(30):
+            if _candidate.weekday() <= 4 and _candidate.strftime("%Y%m%d") not in _holidays:
+                break
+            _candidate -= _td(days=1)
+        return _local < _candidate
+    except Exception:
+        return True
+
+
 def get_zhb() -> Optional[ZhbData]:
     """获取 zhb 数据（带缓存）。
 
-    优先内存缓存 → 文件缓存 → 在线下载
+    优先内存缓存 → 文件缓存(仅当日新鲜) → 在线下载
     下载失败返回 None（调用方需降级处理）。
+
+    V16.4.1: 文件缓存分支增加日期新鲜度检查——本地包缺最近交易日时
+    继续走下载分支(原 V16.4.0 本地优先不检查日期,永不更新)。
 
     V10.0 新增：
         - 进程安全文件锁（防止多进程同时下载）
@@ -1388,6 +1523,28 @@ def get_zhb() -> Optional[ZhbData]:
     if not _check_disk_space():
         _debug_log("zhb: disk space insufficient after cleanup")
         # 即使空间不足也尝试加载缓存
+
+    # V16.4.0: 本地最新 zip 优先（启动 24s→秒开）——下载降为"本地无/过期"兜底
+    # V16.4.1: 加日期新鲜度检查(_zhb_needs_download),过期则走下载分支
+    try:
+        _ensure_cache_dir()
+        _cached = sorted(
+            [f for f in os.listdir(_ZHB_CACHE_DIR) if f.endswith(".zip")],
+            reverse=True,
+        )
+        if _cached:
+            try:
+                _zhb_local = _parse_zhb_data(
+                    open(os.path.join(_ZHB_CACHE_DIR, _cached[0]), "rb").read()
+                )
+                if _zhb_local and not _zhb_needs_download(_zhb_local.date, _zhb_local):
+                    with _zhb_cache_lock:
+                        _zhb_memory_cache = _zhb_local
+                    return _zhb_local
+            except Exception:
+                pass
+    except Exception:
+        pass
 
     # 获取文件锁（进程安全）
     if not _acquire_file_lock(timeout=30.0):
@@ -1407,6 +1564,10 @@ def get_zhb() -> Optional[ZhbData]:
                 zhb = _parse_zhb_data(data)
                 if zhb:
                     _save_to_cache(zhb.date, data)
+                    # V16.4.1: 仅"下载+解析成功"才标记"今天已尝试"——
+                    # 失败不标记,当天后续运行可重试(实测下载主机间歇性失败,
+                    # 失败即标记会让当天一直吃旧包)
+                    _zhb_mark_download_tried()
                     with _zhb_cache_lock:
                         _zhb_memory_cache = zhb
                     return zhb

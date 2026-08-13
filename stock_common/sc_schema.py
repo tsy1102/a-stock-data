@@ -281,13 +281,14 @@ FIELD_SPECS: Tuple[FieldSpec, ...] = (
         is_real_time=False, zhb_t_minus_1_acceptable=True, batch_friendly=False,
     ),
     FieldSpec(
-        name="change_30d", description="近 30 日累计涨跌幅（百分点，V15.1 启用）",
+        name="change_30d", description="近 30 日累计涨跌幅（百分点，V15.1 启用）⚠️ V17.0 实锤: tdxstat.cfg 无 30 日列, 历史遗留 key 实读 Col[18](=20 日值); 真实 30 日仅 TdxQuant ZAFPre30——消费方按 20 日语义使用",
         source_preference=(DataSource.ZHB,),
         time_anchor=TimeAnchor.T_MINUS_1, unit=Unit.PERCENT,
         is_real_time=False, zhb_t_minus_1_acceptable=True, batch_friendly=False,
     ),
     FieldSpec(
-        name="change_60d", description="近 60 日累计涨跌幅（百分点）",
+        name="change_60d",
+        description="近60根K线涨跌幅（截至T-1口径，百分点；V16.3 O28 修正：原误读 Col[19] 含当日，现读 Col[20]）",
         source_preference=(DataSource.ZHB,),
         time_anchor=TimeAnchor.T_MINUS_1, unit=Unit.PERCENT,
         is_real_time=False, zhb_t_minus_1_acceptable=True, batch_friendly=False,
@@ -438,6 +439,9 @@ class CanonicalStockData:
     """
     code: str
     name: str = ""
+    name_core: str = ""          # V16.3.3: 核心名称（去 N/C/XD/XR/DR/S 临时前缀 + ST 标记）——名称主体永久不变
+    is_st: bool = False          # V16.3.3: 是否 ST/*ST（退市风险信号——不可忽略）
+    is_new: bool = False         # V16.3.3: 是否次新股（N/C 前缀，上市 ≤5 日）
     price: float = 0.0               # 当前/收盘价格 (元)
     change_pct: float = 0.0          # 涨跌幅 (%)
     open: float = 0.0                # 开盘价 (元)
@@ -461,6 +465,7 @@ class CanonicalStockData:
 
     # 财务与股本类
     roe: float = 0.0                 # ROE (%)
+    roa: float = 0.0                 # ROA 总资产收益率 (%) — 腾讯 tx66（2026-08-10 确认：招行 1.12=年化 ROA 精确）
     gross_margin: float = 0.0        # 毛利率 (%)
     net_profit_margin: float = 0.0   # 净利率 (%)
     net_profit: float = 0.0          # 净利润 (元)
@@ -476,7 +481,7 @@ class CanonicalStockData:
     change_5d: float = 0.0           # 5日涨跌幅 (%)
     change_10d: float = 0.0          # 10日涨跌幅 (%)
     change_20d: float = 0.0          # 20日涨跌幅 (%)
-    change_30d: float = 0.0          # 30日涨跌幅 (%) — V15.1 启用
+    change_30d: float = 0.0          # ⚠️ V17.0 实锤: 历史遗留 key 实为 20 日值(Col[18]); tdxstat.cfg 无 30 日列, 真实 30 日=TdxQuant ZAFPre30
     change_60d: float = 0.0          # 60日涨跌幅 (%)
     change_ytd: float = 0.0          # 年初至今涨跌幅 (%)
     streak_days: int = 0             # 连涨(正)/连跌(负)天数
@@ -495,6 +500,7 @@ class CanonicalStockData:
     trading_periods: Tuple[Dict[str, Any], ...] = field(default_factory=tuple)  # 交易时段数组 — push2 f80
     report_period: str = ""          # 最新报告期 (YYYYMMDD) — push2 f221 / ulist f221
     quote_date: str = ""             # 行情快照日期 (YYYY-MM-DD) — push2 data_date
+    bid1_vol: float = 0.0            # 买一量 (手) ← 腾讯协议 v10（2026-08-11: 新增——sht 封单资金/信号/预警依赖）
 
     # V16.1: 资金流细分（push2 f135-f146，单位元）
     fund_main_today: float = 0.0     # 主力净流入(今日)

@@ -6,6 +6,11 @@
   - 自动同步到 README.md 顶部"版本历史"区
   - 单一权威源（CHANGELOG.md）→ README 自动同步
 
+> ⚠️ V17.0(2026-08-14)格式变更：CHANGELOG 已整体精简——仅 V17.0/V16.4.1 为 `## [版本]` 节(可同步)，
+> V16.3-V16.2 为摘要列表、V16.1 及以前为归档表(非 `## [` 节, 本脚本不处理)。
+> README"版本历史"区现为**手工维护的速览表**(含归档), 运行本脚本会将其覆盖为仅 2 节的同步结果——
+> 如需保留速览表请勿运行, 或运行后手工合并归档部分。
+
 使用方式：
   1. 手动运行：python scripts/sync_readme.py
   2. CI 集成：git commit 前自动运行
@@ -16,12 +21,21 @@
   - 重写 README.md 顶部的"版本历史"块
   - 其他 README 内容保持不变
 """
+
 from __future__ import annotations
 
 import re
 import sys
 from pathlib import Path
 from datetime import datetime
+
+# V16.3.2: GBK 控制台兜底（新机 Windows 中文代码页 print emoji 抛 UnicodeEncodeError）
+for _stream in (sys.stdout, sys.stderr):
+    if _stream is not None and hasattr(_stream, "reconfigure"):
+        try:
+            _stream.reconfigure(encoding="utf-8", errors="replace")
+        except Exception:
+            pass
 
 
 CHANGELOG = Path("CHANGELOG.md")
@@ -31,7 +45,28 @@ README = Path("README.md")
 SUMMARY_BEGIN = "## 📋 版本历史"
 
 # emoji 列表（按顺序，每个版本轮换）
-EMOJIS = ["🐛", "✨", "📊", "🔧", "🏗️", "📦", "🛠️", "🧹", "💾", "🔬", "🔌", "🎯", "🔀", "🧱", "🌱", "🌰", "🚀", "💡", "📚", "🧪"]
+EMOJIS = [
+    "🐛",
+    "✨",
+    "📊",
+    "🔧",
+    "🏗️",
+    "📦",
+    "🛠️",
+    "🧹",
+    "💾",
+    "🔬",
+    "🔌",
+    "🎯",
+    "🔀",
+    "🧱",
+    "🌱",
+    "🌰",
+    "🚀",
+    "💡",
+    "📚",
+    "🧪",
+]
 
 
 def select_emoji(version: str, body: str) -> str:

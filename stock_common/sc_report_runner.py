@@ -20,16 +20,18 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from stock_common import (
     parse_args,
+    clean_codes,
+    create_async_session,
     _debug_log
 )
 
 try:
-    from tdx_client import cleanup_tdx
+    from core.tdx_client import cleanup_tdx
 except ImportError:
     cleanup_tdx = lambda: None
 
 try:
-    from gd_uploader import (
+    from core.gd_uploader import (
         init_gd,
         cleanup_gd_proxy,
         upload_type_reports,
@@ -56,7 +58,10 @@ class BaseReportRunner:
         self.report_type = report_type
         self.description = description
         self.args: Optional[argparse.Namespace] = None
+        # V17.0 R1: ts 口径统一——report_ts=%Y%m%d_%H%M(报告文件名/上传用, 与 5 脚本原局部计算一致);
+        # time_str=%H%M%S(秒级, 历史保留)
         self.time_str = datetime.now().strftime("%Y%m%d_%H%M%S")
+        self.report_ts = datetime.now().strftime("%Y%m%d_%H%M")
         self.today_str = date.today().strftime("%Y-%m-%d")
 
     def run(self) -> Any:
@@ -98,6 +103,103 @@ class BaseReportRunner:
     def execute_pipeline(self) -> Any:
         """子类必须实现具体计算流水线。"""
         raise NotImplementedError("Subclasses must implement execute_pipeline()")
+
+    def execute_batch_pipeline(self, report_type: str, generator_fn: Any,
+                               gen_kwargs: Optional[dict] = None,
+                               prefetch_fn: Optional[callable] = None,
+                               snapshot_data: Any = None,
+                               pre_gd_init: bool = False) -> dict:
+        """V17.0 R4: 批量流水线骨架(med/lng/sht 原 execute_pipeline 90 行×3 收敛)。
+
+        Args:
+            report_type: 报告简称(sht/med/lng)
+            generator_fn: async (session, code, path, **gen_kwargs) -> None(单股报告生成)
+            gen_kwargs: 传给 generator_fn 的固定参数(行业对比等缓存)
+            prefetch_fn: 可选钩子——批量行情预取 (codes) -> {code: info}(sht push2delay ulist)
+            snapshot_data: 可选——非空时保存评分快照(save_snapshot)
+            pre_gd_init: 可选——生成前早 init GD 并逐只上传(防超时全丢, sht V16.4.1 修复);
+                         早 init 失败自动回退 upload_reports 批量上传(_gd_per_stock=False)
+        返回: {"results": [{code,status,error,path}...], "time_str": ts, "report_type": report_type}
+        """
+        ts = self.report_ts
+        args = self.args
+        gen_kwargs = gen_kwargs or {}
+
+        self._gd_per_stock = False
+        _gd_drive = _gd_folder = None
+        if pre_gd_init and not getattr(args, "no_upload", False):
+            try:
+                mod = sys.modules.get(self.__class__.__module__)
+                mod_file = getattr(mod, '__file__', None) if mod else None
+                base_dir = os.path.dirname(os.path.abspath(mod_file)) if mod_file else os.getcwd()
+                _gd_drive, _gd_proxy_set, _gd_parent, _gd_skip = init_gd(base_dir)
+                if _gd_drive and not _gd_skip and _gd_parent:
+                    _gd_folder = _gd_parent
+                    self._gd_per_stock = True
+            except Exception as _e:
+                _debug_log(f"{self.script_name} early gd init: {_e}")
+
+        async def _main_async():
+            codes = clean_codes(args.codes, verbose=True)
+            if not codes:
+                print("  ❌ 没有有效的股票代码")
+                return []
+            _pre = {}
+            if prefetch_fn:
+                try:
+                    _pre = prefetch_fn(codes) or {}
+                    print(f"  📡 批量行情预取: {len(_pre)}/{len(codes)} 只命中", flush=True)
+                except Exception as _e:
+                    _debug_log(f"{self.script_name} batch prefetch: {_e}")
+            for code in codes:
+                try:
+                    print(f"  📋 加入队列: {code}", flush=True)
+                except UnicodeEncodeError:
+                    print(f"  [INFO] 加入队列: {code}", flush=True)
+
+            _session = await create_async_session()
+            try:
+                sem = asyncio.Semaphore(3)
+
+                async def _limited(code):
+                    async with sem:
+                        result_path = os.path.join(args.output, f"{code}_{report_type}_{ts}.txt")
+                        try:
+                            await generator_fn(_session, code, result_path, **gen_kwargs)
+                            print(f"  ✅ 已保存: {result_path}", flush=True)
+                            if _gd_folder and _gd_drive:
+                                try:
+                                    _nm = (_pre.get(code, {}) or {}).get("name", "") or code
+                                    from core.gd_uploader import upload_stock_report_by_code as _up
+
+                                    _up(_gd_drive, _gd_folder, code, _nm, result_path)
+                                    print(f"  📎 已上传 GD: {code} ({_nm})", flush=True)
+                                except Exception as _e:
+                                    _debug_log(f"{self.script_name} per-stock gd upload {code}: {_e}")
+                            return {"code": code, "status": "成功", "error": "", "path": result_path}
+                        except Exception as e:
+                            print(f"❌ {code} 数据生成失败: {e}", flush=True)
+                            return {"code": code, "status": "数据失败", "error": str(e), "path": ""}
+
+                return await asyncio.gather(*[_limited(c) for c in codes])
+            finally:
+                await _session.close()
+
+        _results = asyncio.run(_main_async())
+
+        if snapshot_data:
+            from stock_common.analyze_history import save_snapshot
+
+            save_snapshot(report_type, snapshot_data)
+
+        ok = [r for r in _results if r["status"] == "成功"]
+        fd = [r for r in _results if r["status"] == "数据失败"]
+        print(f"\n{'='*60}\n  批量执行完成 — 共处理 {len(_results)} 只股票\n{'='*60}")
+        print(f"  ✅ 全部成功: {len(ok)}  |  ❌ 数据失败: {len(fd)}")
+        for r in fd:
+            print(f"    ❌ {r['code']} — {r['error'][:80]}")
+
+        return {"results": _results, "time_str": ts, "report_type": report_type}
 
     def _handle_gd_upload(self, base_dir: str, results: Any) -> None:
         """统一 GD 上传逻辑。"""
@@ -214,7 +316,7 @@ class BaseReportRunner:
         except Exception:
             pass
         try:
-            from tdx_client import tdx_get_quote_full
+            from core.tdx_client import tdx_get_quote_full
             return (tdx_get_quote_full(code) or {}).get("name", "")
         except Exception:
             return ""

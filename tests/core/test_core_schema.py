@@ -19,7 +19,7 @@ from dataclasses import dataclass
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 import stock_common.sc_schema as schema
-import stock_cache as sc
+import core.stock_cache as sc
 
 
 # ═══════════════════════════════════════════════════

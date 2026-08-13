@@ -83,6 +83,12 @@ def _no_real_network(monkeypatch, request):
     try:
         monkeypatch.setattr("requests.get", fake_get)
         monkeypatch.setattr("requests.post", fake_post)
+        # V17.0 (2026-08-13): 补拦 requests.Session.get/post——sc_network 若走 Session 则此前
+        # 真实网络泄漏(测试隔离被污染: canonical 补取缓存真实数据 → 后续 patch 测试假绿/假红)
+        import requests as _requests
+
+        monkeypatch.setattr(_requests.Session, "get", fake_get)
+        monkeypatch.setattr(_requests.Session, "post", fake_post)
     except Exception as _e:
         print(f"[conftest] monkeypatch requests failed: {_e}", flush=True)
         # monkeypatch 失败意味着真实网络调用可能泄漏，标记警告
@@ -104,8 +110,8 @@ def _no_real_network(monkeypatch, request):
 # ── 临时工作目录：避免污染真实项目根 ───────────────────────────
 @pytest.fixture
 def tmp_project(tmp_path):
-    """返回一个模拟项目根目录（含最小的 client_secrets.json）。"""
-    # 写入伪 client_secrets.json
+    """返回一个模拟项目根目录（含 credentials/ 子目录与最小 client_secrets.json）。"""
+    # 写入伪 client_secrets.json（V17.0: 凭据归位 credentials/ 子目录）
     fake_secrets = {
         "installed": {
             "client_id": "fake-id.apps.googleusercontent.com",
@@ -117,7 +123,9 @@ def tmp_project(tmp_path):
             "redirect_uris": ["urn:ietf:wg:oauth:2.0:oob", "http://localhost"],
         }
     }
-    secrets_file = tmp_path / "client_secrets.json"
+    cred_dir = tmp_path / "credentials"
+    cred_dir.mkdir(exist_ok=True)
+    secrets_file = cred_dir / "client_secrets.json"
     secrets_file.write_text(json.dumps(fake_secrets), encoding="utf-8")
 
     # 写入伪 strategy_config.yaml

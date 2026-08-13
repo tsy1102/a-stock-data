@@ -27,12 +27,16 @@ get_med_report.py — A股中线深度投研报告
     V8.0 2026-06-17 - 初始版本
 """
 
-import argparse, math, pandas as pd
+# V16.4.1: 强制 UTF-8 输出（下沉到代码自身——任何 agent/机器/直接运行均 UTF-8，
+# 不再依赖 main.py 注入的 PYTHONIOENCODING 环境变量）
+from stock_common.env_setup import ensure_utf8_stdio
+
+ensure_utf8_stdio()
+
+import math, pandas as pd  # V16.4.1: 删 argparse 未使用
 import asyncio
 from datetime import date, datetime, timedelta
-import os, sys, re
-
-from gd_uploader import init_gd, upload_stock_report_by_code, cleanup_gd_proxy
+import os
 
 # V15.3 修复: 4 个报告模块同名 _SNAPSHOT_DATA 全局变量冲突
 # 抽出到 stock_common.sc_snapshot 统一管理
@@ -41,30 +45,22 @@ from stock_common.sc_snapshot import SnapshotProxy as _SnapshotProxy  # noqa: E4
 
 _SNAPSHOT_DATA = _SnapshotProxy()
 
-from tdx_client import (
-    tdx_get_quote_full,
+from core.tdx_client import (  # V16.4.1: 删 tdx_get_quote_full/cleanup_tdx 未使用
     tdx_get_belong_boards,
     tdx_get_board_members,
     tdx_get_board_by_name,
-    cleanup_tdx,
 )
 
-import data_provider
-
 from stock_common import (
-    clean_codes,
     _safe_float,
     _debug_log,
     BaseReportRunner,
     get_holder_structure,
     _load_strategy_config,
-    create_async_session,
     get_dragon_tiger_board_async,
     holder_change_async,
     get_strategic_announcements_async,
-    parse_args,
-    get_tencent_quote,
-    baidu_kline_full,
+    baidu_kline_full,  # V16.4.1: 删 parse_args/get_tencent_quote 等未使用
     get_dividend_history,
     get_industry_comparison,
     get_stock_info,
@@ -81,13 +77,7 @@ from stock_common import (
     get_hsgt_macro_flow_async,
     is_trading_day,
     get_market_status,
-    calculate_multi_school_scores,
-    get_zhb_single_stock_data,
-    is_zhb_data_fresh,
-    get_zhb_industry_map,
-    get_zhb_dividend_yield,
-    get_zhb_data_date,
-    get_zhb_ipo_price,
+    save_text_report,  # V17.0 S5: 写尾样板公共函数(V17.0 审查: 删 clean_codes/create_async_session/calculate_multi_school_scores 死导入)
     cls_telegraph,
     news_matches_stock,
     cninfo_irm,
@@ -223,6 +213,9 @@ async def generate_report_async(session, code, output_path, ind_comp=None, hsgt=
             f"  今日北向资金总净流入: {hsgt['total']:.2f} 亿元 (沪股通 {hsgt['hgt']:.2f}亿 | 深股通 {hsgt['sgt']:.2f}亿)"
         )
         L(f"  大盘外资情绪: {signal} （中线仓位参考点）")
+        # V16.4.1: 数据层降级标记展示(2026-08-12 深股通 379.75 亿异常)
+        if hsgt.get("data_quality") == "degraded":
+            L(f"  ⚠️ 北向数据降级: {hsgt.get('warning', '源数据异常')}")
     else:
         L("  (北向宏观资金流向获取失败)")
 
@@ -231,7 +224,7 @@ async def generate_report_async(session, code, output_path, ind_comp=None, hsgt=
     L("─" * 72)
     # V15 统一数据中心：通过 get_canonical_stock_data 获取强类型标准化数据
     # V15.2 修正: async 上下文必须包 to_thread，否则阻塞主事件循环
-    from data_provider import get_canonical_stock_data
+    from core.data_provider import get_canonical_stock_data
 
     cdata = await asyncio.to_thread(get_canonical_stock_data, code)
     price_today = cdata.price
@@ -242,6 +235,11 @@ async def generate_report_async(session, code, output_path, ind_comp=None, hsgt=
     stock_industry = cdata.industry or info.get('industry', 'N/A')
 
     L(f"  股票名称: {stock_name} ({cdata.code})")
+    # V16.3.3 (2026-08-10 字典 12.15.8): ST/次新风险信号（结构化名称——ST 不剔除仅标注，涨跌幅已统一 10%）
+    if getattr(cdata, "is_st", False):
+        L(f"  ⚠️ 风险标记: **ST/*ST**（退市风险——基本面/财务审核需加强关注）")
+    if getattr(cdata, "is_new", False):
+        L(f"  🆕 次新标记: 上市 ≤5 日（财务数据不完整，中线谨慎）")
     L(f"  所属板块: {stock_industry}")
 
     list_date_raw = info.get("list_date", "")
@@ -368,10 +366,13 @@ async def generate_report_async(session, code, output_path, ind_comp=None, hsgt=
         # V16.0: CanonicalStockData 无 net_profit_yi 字段（只有 net_profit，单位元）→ /1e8 转亿元
         net_profit_yi = (cdata.net_profit or 0) / 1e8
         if net_profit_yi > 0 or (cdata.roe is not None and cdata.roe > 0):
-            # V16.3 O22: roe=0 视为缺失（canonical 缺失时 0.0 伪装——0% 无信息量）
+            # V16.3 O22: roe=0 视为缺失（canonical 缺失时 0.0 伪装成 0% 无信息量）
             roe_str = f"{cdata.roe:.2f}%" if cdata.roe and cdata.roe > 0 else "N/A"
+            # V16.4.0: F10 数据=最新报告期（非 T 日）——展示标注报告期防误读为"当前 ROE"
+            _rp = str(cdata.report_period or "")
+            _rp_label = f"（{_rp[:4]}Q{((int(_rp[4:6]) - 1) // 3 + 1)}）" if len(_rp) >= 6 and _rp.isdigit() else ""
             L(
-                f"  [ZHB 离线快照] 归母净利润: {net_profit_yi:.2f} 亿元 | ROE: {roe_str} | PE(TTM): {cdata.pe_ttm:.1f}x | PB: {cdata.pb:.2f}x"
+                f"  [ZHB 离线兜底] 归母净利润: {net_profit_yi:.2f} 亿元 | ROE: {roe_str}{_rp_label} | PE(TTM): {cdata.pe_ttm:.1f}x | PB: {cdata.pb:.2f}x"
             )
         else:
             L("  (新浪财报数据获取失败或该股暂无相关数据)")
@@ -780,7 +781,7 @@ async def generate_report_async(session, code, output_path, ind_comp=None, hsgt=
             )
             L(f"  {'-'*70}")
             L(
-                f"  {code:<8} {info.get('name','N/A'):<12} {price_today:>8.2f} {cdata.change_pct:>7.2f}% {peer_data['my_mcap']:>9.1f} {cdata.pe_ttm:>7.1f} {cdata.turnover_pct:>7.2f}% ← 本股"
+                f"  {code:<8} {stock_name:<12} {price_today:>8.2f} {cdata.change_pct:>7.2f}% {peer_data['my_mcap']:>9.1f} {cdata.pe_ttm:>7.1f} {cdata.turnover_pct:>7.2f}% ← 本股"
             )
             for p in peer_data["peers"]:
                 L(
@@ -790,6 +791,10 @@ async def generate_report_async(session, code, output_path, ind_comp=None, hsgt=
                 session, code, fin_report=financials, bs_data=bs_data
             )
             if fin_metrics:
+                _med_rp = str(cdata.report_period or "")
+                _med_rp_label = (
+                    f"（{_med_rp[:4]}Q{((int(_med_rp[4:6]) - 1) // 3 + 1)}）"
+                    if len(_med_rp) >= 6 and _med_rp.isdigit() else "")
                 gm = fin_metrics.get("gross_margin")
                 roe = fin_metrics.get("roe")
                 parts = []
@@ -798,7 +803,7 @@ async def generate_report_async(session, code, output_path, ind_comp=None, hsgt=
                 if roe is not None:
                     parts.append(f"ROE {roe:.1f}%")
                 if parts:
-                    L(f"\n  📊 本股财务质量: {' | '.join(parts)}")
+                    L(f"\n  📊 本股财务质量: {' | '.join(parts)}{_med_rp_label}")
     else:
         L(f"  无法获取同业数据（板块: {peer_data.get('industry', '未知')}）")
 
@@ -821,7 +826,12 @@ async def generate_report_async(session, code, output_path, ind_comp=None, hsgt=
         L(f"    累计主力净流入: {total_main_20/1e8:.2f} 亿元")
         L("  ➤ 近 60 个交易日（中期视角）：")
         L(f"    累计主力净流入: {total_main_60/1e8:.2f} 亿元")
-        if total_main_60 > 0:
+        # V16.4.1: 历史数据不足(<5 天)时不下中线结论——
+        # 2026-08-12 实测仅 1 天数据却输出"吸筹/护盘"误导性结论
+        _n_days = len(recent_60)
+        if _n_days < 5:
+            L(f"    ⚠️ 数据不足: 历史资金流仅 {_n_days} 天(源限制), 暂不下中线结论")
+        elif total_main_60 > 0:
             L("    ✅ 资金面结论: 中线资金呈吸筹/护盘状态。")
         else:
             L("    ⚠️ 资金面结论: 中线资金呈流出状态，需结合估值谨慎判断。")
@@ -1126,19 +1136,10 @@ async def generate_report_async(session, code, output_path, ind_comp=None, hsgt=
         L(f"  中线评分: {_ps:.0f}/100 → 暂不建议，等待基本面拐点")
     L("  核心驱动: 基本面拐点 / 估值 PEG / 筹码结构 / 重大事件")
 
-    # 多评委评审团评分（V8.9）
-    try:
-        multi_scores = calculate_multi_school_scores(score_data)
-        L("")
-        L("  ★ 多评委评审团评分")
-        L(f"    价值派评分: {multi_scores['value'].total_score:.1f}分")
-        L(f"    成长派评分: {multi_scores['growth'].total_score:.1f}分")
-        L(f"    投机派评分: {multi_scores['speculator'].total_score:.1f}分")
-        L(f"    综合共识: {multi_scores['consensus'].total_score:.1f}分")
-        if multi_scores['dispersion'] > 15:
-            L(f"    ⚠️ 派别分歧度较大({multi_scores['dispersion']:.1f})，投资需谨慎")
-    except Exception as e:
-        L(f"    多评委评分异常: {e}")
+    # V17.0 R5: 多评委评审团评分渲染统一走 sc_render(原 12 行逐字重复已收敛)
+    from stock_common.sc_render import render_multi_school_scores
+
+    multi_scores = render_multi_school_scores(L, score_data)
 
     # 综合投资建议
     try:
@@ -1163,10 +1164,7 @@ async def generate_report_async(session, code, output_path, ind_comp=None, hsgt=
         "report_source": "med",
     }
 
-    output = "\n".join(filter(None, lines))
-
-    with open(output_path, "w", encoding="utf-8") as f:
-        f.write(output)
+    output = save_text_report(output_path, lines)  # V17.0 S5: 公共样板
     return output
 
 
@@ -1182,65 +1180,14 @@ class MedReportRunner(BaseReportRunner):
         super().__init__("get_med_report", "med", "A股中线深度投研报告")
 
     def execute_pipeline(self) -> dict:
-        ts = datetime.now().strftime("%Y%m%d_%H%M")
-        report_type = "med"
-
-        args = self.args
+        # V17.0 R4: 批量骨架收敛到基类 execute_batch_pipeline(原 90 行本地实现删除)
+        # V17.0 审查: 删 gen_kwargs["hsgt"]=None 误导参数——generate 内部默认拉取(有 trading_day 缓存)
         _cached_ind_comp = get_industry_comparison()
-
-        async def _main_async():
-            codes = clean_codes(args.codes, verbose=True)
-            if not codes:
-                print("  ❌ 没有有效的股票代码")
-                return []
-            for code in codes:
-                try:
-                    print(f"  📋 加入队列: {code}", flush=True)
-                except UnicodeEncodeError:
-                    print(f"  [INFO] 加入队列: {code}", flush=True)
-
-            _session = await create_async_session()
-            try:
-                sem = asyncio.Semaphore(3)
-
-                async def _limited(code):
-                    async with sem:
-                        result_path = os.path.join(args.output, f"{code}_{report_type}_{ts}.txt")
-                        try:
-                            await generate_report_async(
-                                _session, code, result_path, ind_comp=_cached_ind_comp, hsgt=None
-                            )
-                            print(f"  ✅ 已保存: {result_path}", flush=True)
-                            return {
-                                "code": code,
-                                "status": "成功",
-                                "error": "",
-                                "path": result_path,
-                            }
-                        except Exception as e:
-                            print(f"❌ {code} 数据生成失败: {e}", flush=True)
-                            return {"code": code, "status": "数据失败", "error": str(e), "path": ""}
-
-                results = await asyncio.gather(*[_limited(c) for c in codes])
-                return results
-            finally:
-                await _session.close()
-
-        _results = asyncio.run(_main_async())
-
-        if _SNAPSHOT_DATA:
-            from stock_common.analyze_history import save_snapshot
-
-            save_snapshot("med", _SNAPSHOT_DATA)
-
-        ok = [r for r in _results if r["status"] == "成功"]
-        fd = [r for r in _results if r["status"] == "数据失败"]
-        print(f"\n{'='*60}\n  批量执行完成 — 共处理 {len(_results)} 只股票\n{'='*60}")
-        print(f"  ✅ 全部成功: {len(ok)}  |  ❌ 数据失败: {len(fd)}")
-        for r in fd:
-            print(f"    ❌ {r['code']} — {r['error'][:80]}")
-
-        return {"results": _results, "time_str": ts, "report_type": report_type}
+        return self.execute_batch_pipeline(
+            "med", generate_report_async,
+            gen_kwargs={"ind_comp": _cached_ind_comp},
+            snapshot_data=_SNAPSHOT_DATA,
+        )
 
     def upload_reports(self, drive, folder_id: str, results) -> None:
         self.upload_multi_reports(drive, folder_id, results)

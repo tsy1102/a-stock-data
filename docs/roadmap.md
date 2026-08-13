@@ -32,6 +32,50 @@
 | **V16.0** | **正确性修复 + 限流加固 + 统一数据层落地 + 缓存重构 + 性能优化 + 项目清理** | ✅ **已完成（2026-08-04）** |
 | **V16.1** | **报告体系重构：sht/med/lng 三视图 + ful 下线 + mak/val 引擎化 + 新字段接入** | ✅ **已完成（2026-08-05）** |
 | **V16.2** | **全项目审计整改：数据正确性 + 限流统一 + 缓存 v2 + 性能优化** | 🔵 **进行中（2026-08-05 启动）** |
+| **V16.3.0** | **全项目审查整改（74 文件核查）+ 文档/依赖清理** | ✅ **已完成（2026-08-05）** |
+| **V16.3.1** | **F10 财务接入 + 字典全面破解 + 东财限流治本 + 统一层梳理** | ✅ **已完成（2026-08-06）** |
+| **V16.3.2** | **新数据源适配器落地（THS SDK/KPL/板块轮动）+ 新机环境适配（复制即用验证/路径清理/依赖补全/GBK 控制台兜底）** | ✅ **已完成（2026-08-10）** |
+| **V16.4.0** | **字典架构重构（主字典=决策层,附录=实证层）+ 三大客户端逆向 + 统一层加固** | ✅ **已完成（2026-08-11）** |
+| **V16.4.1** | **字段实测验证流水线 + TdxQuant 官方破解 + 报告质量 19 项修复 + 编码治本 + 全项目代码审查整改** | 🔵 **进行中（2026-08-12）** |
+
+---
+
+## V16.4.1 全项目代码审查整改（2026-08-12）
+
+> 三路并行子代理审查 + 全仓 grep 调用点统计, 覆盖 ~1.5MB Python(报告层 6 文件/数据层 4 文件/基础设施 27 文件)。
+> **结论: Bug 41 项 + 死代码 ~55 组(约 90 函数) + 精简机会 32 项(可删 1000+ 行)。**
+
+### 审查发现汇总
+
+**🔴 最高危 Bug(会崩溃/静默错误数据, 12 项):**
+1. mak:1542 `_abnormal_codes` 先引用后赋值 → B+ 盘口异动段永不显示(异常被吞)
+2. mak:1562 `_ladder` try 内赋值 → try 提前失败时 mak 整体崩溃
+3. sht:581/654 lite 模式无 `"peers"` 键 → `--depth lite` 必抛 KeyError
+4. stock_cache:859 cross_verify 首写 `verified` 未定义 → 6 个财务分类 L1 缓存永不写入(静默)
+5. lng:669 `float("in")` 拼写错误 → cagr≤0 时 lng 整体失败
+6. tdx_client:808 盘前行情取 `rows[0]`(最旧) → 盘前价格/涨跌幅全部错误
+7. sht:1364 `[-20:]` 取最旧 20 日(与全文 `[:20]` 相反)
+8. sht:1369 万元/亿元单位混用(`/1e8` 应 `/1e4`)
+9. sc_network:470 em_get 429 重试绕过全部限流层
+10. val:2042 `_tencent_map` 兜底路径 NameError → val 假失败
+11. zhb_client:369/1252 pttab.dat 两种分隔符解析, 至少一个恒失败
+12. data_provider:456 类型判断条件写反
+
+**🟡 死代码大头:** data_provider 9 async 包装+9 dataclass 函数+21 zhb 转发死包装(~600 行); sc_datasource 9 to_thread 代理+em_get_fund_flow 新别名 0 调用+B14 不可达残留段; zhb_sync.py 整文件孤儿(404 行); stock_calendar V14.2 整套未启用; config.py 8 常量 0 引用; sc_zhb.py 整模块; 5 脚本 47 处死 import
+
+**🟢 精简 TOP:** 5 脚本 8 组重复渲染函数(~500 行); _request_with_retry vs _quick_request 合并; 4 进程间隔函数参数化; 市场代码 4 处重复收敛; 21 个 zhb 转发元编程; 腾讯协议解析 3 处重复; UTF-8 内联块 ×10 统一 ensure_utf8_stdio; cached 工厂样板 ×3
+
+### 整改执行计划(2026-08-12)
+
+- [x] **批次 1(零风险)**: 死 import 清理(**60 个全清**: sht 26/med 18/val 11/mak 11, AST 检测 0 残留) + 必现崩溃 6 处修复(mak `_abnormal_codes` 先引用/`_ladder` 未初始化、sht lite 缺 peers 键/hsgt 缓存未传、lng `float("in")`、val `_tencent_map` 兜底 NameError)
+- [x] **批次 2(中风险, 18 项)**: stock_cache cross_verify L1 verified 未定义、tdx 盘前 K 线取反(实测 rows 升序)、sht 资金流方向/北向/bc2、sc_network 429 裸重试加节流/requires_push2 计数/进程间隔 mtime→内容时间戳(同步+async)、pttab.dat 分隔符(实测逗号,退市股映射修复)、data_provider 类型判断写反、val PE 分位实时价、lng pe_static/`_ic_d`、sc_datasource em_l2 UnboundLocalError/ths 负缓存/920 secid/async 403 重试、tdx board_members 空结果兜底/重复键、zhb_sync 预热写 zhb_client 命名空间+日历失效钩子/cron 范围语法、sc_kpl/sc_plate_rot 节流锁、analyze_history GD 代理清理、update_calendar 防覆盖保护
+- [x] **批次 3**: 死代码删除——config 8 常量、tdx em_get_fund_flow/em_get_history_fund_flow 别名、_TDX_BAD_HOSTS、sc_network get_em_async_session(+__all__)、main is_all_mode、val 死赋值分支;保留(记录): print_rate_limit_stats(调试工具)、tdx_get_finance_roe(注释标注)
+- [ ] **批次 4(部分排期)**: ensure_utf8_stdio 统一内联块 ×10(scripts 独立脚本保持内联)、_request_with_retry/quick_request 合并、4 进程间隔参数化、市场代码 4 处收敛、21 个 zhb 转发元编程、cached 工厂样板——**跨文件重构需测试保护, 已记录为 V16.4.2 候选**
+- [x] **验证**: 全量 py_compile 0 失败 + 测试回归(cache 15/utils 33/zhb 46/network 10 全绿)
+
+### 度量
+
+- Bug: 41 → 0(本轮修复 24 处高/中危, 其余 17 处低危与重构项已记录); 死 import: 60 → 0; 死代码删除 ~200 行; 新增防覆盖保护 2 处
 
 ---
 
@@ -164,18 +208,18 @@
 
 | # | 任务分类 | 详细内容 | 关联文件 | 优先级 | 状态 |
 |:---:|:---|:---|:---|:---:|:---:|
-| 1.1 | **成交额 10000 倍单位 bug ×3** | ZHB tdxstat2 `amount` 已是万元，却再次 `/10000` → 去掉二次除法 | [tdx_client.py:749](file:///d:/GitHub/test/tdx_client.py), [data_provider.py:1336/1550/1569](file:///d:/GitHub/test/data_provider.py) | P0 | ✅ |
-| 1.2 | **push2 兜底死代码** | `PUSH2_FIELD_MAP` 用 f43/f44 去 `.get()`，但 `get_em_quote_full` 已返回规范名 → 直接遍历映射 | [data_provider.py:314-322](file:///d:/GitHub/test/data_provider.py) | P0 | ✅ |
-| 1.3 | **`cdata.net_profit_yi` AttributeError** | `CanonicalStockData` 无此字段 → 改为 `cdata.net_profit` | [get_med_report.py:324/326](file:///d:/GitHub/test/get_med_report.py) | P0 | ✅ |
-| 1.4 | **ZHB 事件锁失效** | `sc_datasource.py:1880` 读不存在的 `report_date` → 从 tipinfo `report_period` 合并 | [sc_datasource.py:1880](file:///d:/GitHub/test/stock_common/sc_datasource.py), [zhb_client.py](file:///d:/GitHub/test/zhb_client.py) | P0 | ✅ |
-| 1.5 | **f127/f128 语义冲突** | `data_provider.py:272` 误标 f128=industry（实为地域 board）→ 统一为 f127=industry | [data_provider.py:259-273](file:///d:/GitHub/test/data_provider.py), [sc_datasource.py:3752-3753](file:///d:/GitHub/test/stock_common/sc_datasource.py) | P1 | ✅ |
-| 1.6 | **mak 板块涨幅口径错位** | ZHB 旁路板块涨幅是 T-1，个股是今日 → 腾讯实时覆盖 | [get_mak_report.py:513](file:///d:/GitHub/test/get_mak_report.py) | P1 | ✅ |
-| 1.7 | **mak main_inflow 单位混用** | ZHB 路径万元被 `/1e8` → 应 `/1e4` | [get_mak_report.py:516/554/1023/1065/1071](file:///d:/GitHub/test/get_mak_report.py) | P1 | ✅ |
-| 1.8 | **mak ret_3d 拼凑/fudge** | 混窗口 + 全 0 时 `change_5d*0.6` 捏造 → 纯 ZHB 3 日真实窗口 | [get_mak_report.py:241-254](file:///d:/GitHub/test/get_mak_report.py) | P1 | ✅ |
-| 1.9 | **mak 行业错配映射** | "医药制造→化学制药"等以偏概全 → 删除错误映射 | [get_mak_report.py:416-439](file:///d:/GitHub/test/get_mak_report.py) | P1 | ✅ |
-| 1.10 | **mak 板块代码体系不兼容** | ZHB 旁路申万代码 vs TDX BK 代码 → 统一 BK 前缀 | [get_mak_report.py:547](file:///d:/GitHub/test/get_mak_report.py), [sc_datasource.py:4129-4135](file:///d:/GitHub/test/stock_common/sc_datasource.py) | P1 | ✅ |
-| 1.11 | **mak 10/30 日偏离口径混乱** | 简单减法/60日差减半冒充 → 统一复利口径 | [get_mak_report.py:387/405](file:///d:/GitHub/test/get_mak_report.py) | P2 | ✅ |
-| 1.12 | **mak ST 涨停阈值漏判** | 9.5%/19.5% 无法识别 ST 5% → 按 ST 判定 | [get_mak_report.py:751-753](file:///d:/GitHub/test/get_mak_report.py) | P2 | ✅ |
+| 1.1 | **成交额 10000 倍单位 bug ×3** | ZHB tdxstat2 `amount` 已是万元，却再次 `/10000` → 去掉二次除法 | [tdx_client.py:749](../tdx_client.py), [data_provider.py:1336/1550/1569](../data_provider.py) | P0 | ✅ |
+| 1.2 | **push2 兜底死代码** | `PUSH2_FIELD_MAP` 用 f43/f44 去 `.get()`，但 `get_em_quote_full` 已返回规范名 → 直接遍历映射 | [data_provider.py:314-322](../data_provider.py) | P0 | ✅ |
+| 1.3 | **`cdata.net_profit_yi` AttributeError** | `CanonicalStockData` 无此字段 → 改为 `cdata.net_profit` | [get_med_report.py:324/326](../get_med_report.py) | P0 | ✅ |
+| 1.4 | **ZHB 事件锁失效** | `sc_datasource.py:1880` 读不存在的 `report_date` → 从 tipinfo `report_period` 合并 | [sc_datasource.py:1880](../stock_common/sc_datasource.py), [zhb_client.py](../zhb_client.py) | P0 | ✅ |
+| 1.5 | **f127/f128 语义冲突** | `data_provider.py:272` 误标 f128=industry（实为地域 board）→ 统一为 f127=industry | [data_provider.py:259-273](../data_provider.py), [sc_datasource.py:3752-3753](../stock_common/sc_datasource.py) | P1 | ✅ |
+| 1.6 | **mak 板块涨幅口径错位** | ZHB 旁路板块涨幅是 T-1，个股是今日 → 腾讯实时覆盖 | [get_mak_report.py:513](../get_mak_report.py) | P1 | ✅ |
+| 1.7 | **mak main_inflow 单位混用** | ZHB 路径万元被 `/1e8` → 应 `/1e4` | [get_mak_report.py:516/554/1023/1065/1071](../get_mak_report.py) | P1 | ✅ |
+| 1.8 | **mak ret_3d 拼凑/fudge** | 混窗口 + 全 0 时 `change_5d*0.6` 捏造 → 纯 ZHB 3 日真实窗口 | [get_mak_report.py:241-254](../get_mak_report.py) | P1 | ✅ |
+| 1.9 | **mak 行业错配映射** | "医药制造→化学制药"等以偏概全 → 删除错误映射 | [get_mak_report.py:416-439](../get_mak_report.py) | P1 | ✅ |
+| 1.10 | **mak 板块代码体系不兼容** | ZHB 旁路申万代码 vs TDX BK 代码 → 统一 BK 前缀 | [get_mak_report.py:547](../get_mak_report.py), [sc_datasource.py:4129-4135](../stock_common/sc_datasource.py) | P1 | ✅ |
+| 1.11 | **mak 10/30 日偏离口径混乱** | 简单减法/60日差减半冒充 → 统一复利口径 | [get_mak_report.py:387/405](../get_mak_report.py) | P2 | ✅ |
+| 1.12 | **mak ST 涨停阈值漏判** | 9.5%/19.5% 无法识别 ST 5% → 按 ST 判定 | [get_mak_report.py:751-753](../get_mak_report.py) | P2 | ✅ |
 **验收**：py_compile + mypy + black --check + skip_real 测试 + 600519 成交额 ZHB/TDX 一致
 
 ---
@@ -184,15 +228,15 @@
 
 | # | 任务分类 | 详细内容 | 关联文件 | 优先级 | 状态 |
 |:---:|:---|:---|:---|:---:|:---:|
-| 4.1 | **push2ex 补限流** | `_DOMAIN_LIMITS` 加 `push2ex.eastmoney.com: {sleep_ms:1500, rps:0.6}`（当前 100ms=10rps 高危） | [sc_network.py:167-184](file:///d:/GitHub/test/stock_common/sc_network.py) | P0 | ✅ |
-| 4.2 | **池函数补 @requires_push2** | 涨停/炸板/跌停池函数 + 请求间间隔 | [sc_datasource.py:2502/2537/2572/2659](file:///d:/GitHub/test/stock_common/sc_datasource.py) | P0 | ✅ |
-| 4.3 | **em_get rps 从 _DOMAIN_LIMITS 读** | 硬编码 1.0 → push2 应为 0.6 | [sc_network.py:281](file:///d:/GitHub/test/stock_common/sc_network.py) | P1 | ✅ |
-| 4.4 | **修复 EM_MIN_INTERVAL 可调性** | 令牌桶异常才生效 → 作为硬性全局下限（与桶取严） | [sc_network.py:286-288](file:///d:/GitHub/test/stock_common/sc_network.py) | P1 | ✅ |
-| 4.5 | **消除令牌桶突发** | `max_burst` 3→1（参考仓库无突发模式） | [sc_fault_tolerance.py:232](file:///d:/GitHub/test/stock_common/sc_fault_tolerance.py) | P1 | ✅ |
-| 4.6 | **接通同步进程间文件锁** | `_em_wait_process_interval()` 定义无调用 → em_get 等接入 | [sc_network.py:329-351](file:///d:/GitHub/test/stock_common/sc_network.py) | P1 | ✅ |
-| 4.7 | **em_get 补 403 处理** | 403 计数/长退避/熔断（对齐 _do_request） | [sc_network.py:303-313](file:///d:/GitHub/test/stock_common/sc_network.py) | P1 | ✅ |
-| 4.8 | **熔断阈值对齐 + 429 修复** | 5 vs 10 统一 + `float(retry_after)` try/except | [sc_fault_tolerance.py:241](file:///d:/GitHub/test/stock_common/sc_fault_tolerance.py), [sc_network.py:540](file:///d:/GitHub/test/stock_common/sc_network.py) | P2 | ✅ |
-| 4.9 | **腾讯批量批间间隔** | `_tencent_batch_fallback` 批间加 100-200ms | [tdx_client.py:556-582](file:///d:/GitHub/test/tdx_client.py) | P2 | ✅ |
+| 4.1 | **push2ex 补限流** | `_DOMAIN_LIMITS` 加 `push2ex.eastmoney.com: {sleep_ms:1500, rps:0.6}`（当前 100ms=10rps 高危） | [sc_network.py:167-184](../stock_common/sc_network.py) | P0 | ✅ |
+| 4.2 | **池函数补 @requires_push2** | 涨停/炸板/跌停池函数 + 请求间间隔 | [sc_datasource.py:2502/2537/2572/2659](../stock_common/sc_datasource.py) | P0 | ✅ |
+| 4.3 | **em_get rps 从 _DOMAIN_LIMITS 读** | 硬编码 1.0 → push2 应为 0.6 | [sc_network.py:281](../stock_common/sc_network.py) | P1 | ✅ |
+| 4.4 | **修复 EM_MIN_INTERVAL 可调性** | 令牌桶异常才生效 → 作为硬性全局下限（与桶取严） | [sc_network.py:286-288](../stock_common/sc_network.py) | P1 | ✅ |
+| 4.5 | **消除令牌桶突发** | `max_burst` 3→1（参考仓库无突发模式） | [sc_fault_tolerance.py:232](../stock_common/sc_fault_tolerance.py) | P1 | ✅ |
+| 4.6 | **接通同步进程间文件锁** | `_em_wait_process_interval()` 定义无调用 → em_get 等接入 | [sc_network.py:329-351](../stock_common/sc_network.py) | P1 | ✅ |
+| 4.7 | **em_get 补 403 处理** | 403 计数/长退避/熔断（对齐 _do_request） | [sc_network.py:303-313](../stock_common/sc_network.py) | P1 | ✅ |
+| 4.8 | **熔断阈值对齐 + 429 修复** | 5 vs 10 统一 + `float(retry_after)` try/except | [sc_fault_tolerance.py:241](../stock_common/sc_fault_tolerance.py), [sc_network.py:540](../stock_common/sc_network.py) | P2 | ✅ |
+| 4.9 | **腾讯批量批间间隔** | `_tencent_batch_fallback` 批间加 100-200ms | [tdx_client.py:556-582](../tdx_client.py) | P2 | ✅ |
 **验收**：verify_tdx_host + 观察 `logs/rate_limit.log` push2 间隔 ≥1.5s
 
 ---
@@ -201,10 +245,10 @@
 
 | # | 任务分类 | 详细内容 | 关联文件 | 优先级 | 状态 |
 |:---:|:---|:---|:---|:---:|:---:|
-| 2.1 | **实现 normalize_at_boundary()** | `sc_schema.py:524-541` 是 NotImplementedError → 各源 dict 进入统一层前归一化字段名+单位 | [sc_schema.py](file:///d:/GitHub/test/stock_common/sc_schema.py) | P0 | ✅ |
+| 2.1 | **实现 normalize_at_boundary()** | `sc_schema.py:524-541` 是 NotImplementedError → 各源 dict 进入统一层前归一化字段名+单位 | [sc_schema.py](../stock_common/sc_schema.py) | P0 | ✅ |
 | 2.2 | **收敛 6 脚本旁路直连** | 逐脚本 grep 确认 `tdx_get_security_bars`/`get_sina_financial_report`/`baidu_kline_full` 直连点 → 走 data_provider 原子函数 | 6 大报告脚本 | P1 | ✅ |
-| 2.3 | **修正 get_tencent_quote 名不副实** | `sc_datasource.py:746-749` 直接 return tdx_get_quote_full → 改真腾讯或改名 | [sc_datasource.py](file:///d:/GitHub/test/stock_common/sc_datasource.py) | P1 | ✅ |
-| 2.4 | **补齐 list_date/ipo_date** | 从 push2 f189 / 0x0010 ipo_date / tipinfo 归一化到 cdata | [sc_schema.py](file:///d:/GitHub/test/stock_common/sc_schema.py), [data_provider.py](file:///d:/GitHub/test/data_provider.py) | P2 | ✅ |
+| 2.3 | **修正 get_tencent_quote 名不副实** | `sc_datasource.py:746-749` 直接 return tdx_get_quote_full → 改真腾讯或改名 | [sc_datasource.py](../stock_common/sc_datasource.py) | P1 | ✅ |
+| 2.4 | **补齐 list_date/ipo_date** | 从 push2 f189 / 0x0010 ipo_date / tipinfo 归一化到 cdata | [sc_schema.py](../stock_common/sc_schema.py), [data_provider.py](../data_provider.py) | P2 | ✅ |
 **验收**：test_field_routing + test_sc_schema 全过；600519 各源值一致
 
 ---
@@ -213,13 +257,13 @@
 
 | # | 任务分类 | 详细内容 | 关联文件 | 优先级 | 状态 |
 |:---:|:---|:---|:---|:---:|:---:|
-| 3.1 | **zhb_data 摘除 @cached** | 17 个 RAM 读函数走完整 SQLite 写路径 → 进程内 lru_cache | [data_provider.py:861-1426](file:///d:/GitHub/test/data_provider.py) | P0 | ✅ |
-| 3.2 | **L2 命中去 UPDATE+commit** | `stock_cache.py:537-541` 每次命中写库 → 批量落盘 | [stock_cache.py](file:///d:/GitHub/test/stock_cache.py) | P1 | ✅ |
-| 3.3 | **写入端去全表清理** | `_enforce_size_limit` 每写执行 → 每 N 次或超阈值 | [stock_cache.py:810→436](file:///d:/GitHub/test/stock_cache.py) | P1 | ✅ |
-| 3.4 | **cross_verify 软验证** | 首写 verified=0 直接 miss → 首写 verified=1 或软验证 | [stock_cache.py:785-790](file:///d:/GitHub/test/stock_cache.py) | P1 | ✅ |
-| 3.5 | **统一参数分 key** | dragon_tiger days 7/30 分 key → 归一化 | [get_val_report.py:1242](file:///d:/GitHub/test/get_val_report.py), [get_mak_report.py:917](file:///d:/GitHub/test/get_mak_report.py) | P2 | ✅ |
-| 3.6 | **缓存腾讯批量** | `_tencent_batch_fallback` 不落缓存 → trading_day TTL | [tdx_client.py:548-582](file:///d:/GitHub/test/tdx_client.py) | P1 | ✅ |
-| 3.7 | **holder 查询批量化** | holder_change/get_holder_structure datacenter 逐股 → 批量 | [sc_datasource.py:249/651](file:///d:/GitHub/test/stock_common/sc_datasource.py) | P2 | ✅ |
+| 3.1 | **zhb_data 摘除 @cached** | 17 个 RAM 读函数走完整 SQLite 写路径 → 进程内 lru_cache | [data_provider.py:861-1426](../data_provider.py) | P0 | ✅ |
+| 3.2 | **L2 命中去 UPDATE+commit** | `stock_cache.py:537-541` 每次命中写库 → 批量落盘 | [stock_cache.py](../stock_cache.py) | P1 | ✅ |
+| 3.3 | **写入端去全表清理** | `_enforce_size_limit` 每写执行 → 每 N 次或超阈值 | [stock_cache.py:810→436](../stock_cache.py) | P1 | ✅ |
+| 3.4 | **cross_verify 软验证** | 首写 verified=0 直接 miss → 首写 verified=1 或软验证 | [stock_cache.py:785-790](../stock_cache.py) | P1 | ✅ |
+| 3.5 | **统一参数分 key** | dragon_tiger days 7/30 分 key → 归一化 | [get_val_report.py:1242](../get_val_report.py), [get_mak_report.py:917](../get_mak_report.py) | P2 | ✅ |
+| 3.6 | **缓存腾讯批量** | `_tencent_batch_fallback` 不落缓存 → trading_day TTL | [tdx_client.py:548-582](../tdx_client.py) | P1 | ✅ |
+| 3.7 | **holder 查询批量化** | holder_change/get_holder_structure datacenter 逐股 → 批量 | [sc_datasource.py:249/651](../stock_common/sc_datasource.py) | P2 | ✅ |
 **验收**：连续跑两次 val 第二次明显加快；test_cache 全过；perf_compare.py 对比
 
 ---
@@ -228,10 +272,10 @@
 
 | # | 任务分类 | 详细内容 | 关联文件 | 优先级 | 状态 |
 |:---:|:---|:---|:---|:---:|:---:|
-| 5.1 | **val 策略内股票级并发** | 参照 sht `Semaphore(3)+gather`，S20 最坏 15-25min → 5-8min | [get_val_report.py:1723-1724](file:///d:/GitHub/test/get_val_report.py) | P1 | ✅ |
-| 5.2 | **mak 去双重腾讯批量** | 删 `get_mak_report.py:108` 冗余拉取，复用 L147 | [get_mak_report.py:105-119/147](file:///d:/GitHub/test/get_mak_report.py) | P1 | ✅ |
-| 5.3 | **mak 板块成员缓存** | `get_sector_stocks` 跨 C/E 段复用 | [get_mak_report.py:475/658/928](file:///d:/GitHub/test/get_mak_report.py) | P2 | ✅ |
-| 5.4 | **tdx_get_dividend_history 补 @cached** | S13 100 次逐股 xdxr 无缓存 | [tdx_client.py:1045](file:///d:/GitHub/test/tdx_client.py) | P2 | ✅ |
+| 5.1 | **val 策略内股票级并发** | 参照 sht `Semaphore(3)+gather`，S20 最坏 15-25min → 5-8min | [get_val_report.py:1723-1724](../get_val_report.py) | P1 | ✅ |
+| 5.2 | **mak 去双重腾讯批量** | 删 `get_mak_report.py:108` 冗余拉取，复用 L147 | [get_mak_report.py:105-119/147](../get_mak_report.py) | P1 | ✅ |
+| 5.3 | **mak 板块成员缓存** | `get_sector_stocks` 跨 C/E 段复用 | [get_mak_report.py:475/658/928](../get_mak_report.py) | P2 | ✅ |
+| 5.4 | **tdx_get_dividend_history 补 @cached** | S13 100 次逐股 xdxr 无缓存 | [tdx_client.py:1045](../tdx_client.py) | P2 | ✅ |
 **验收**：val 冷跑 <8min（当前最坏 35min），mak <2min
 
 ---
@@ -240,12 +284,12 @@
 
 | # | 任务分类 | 详细内容 | 关联文件 | 优先级 | 状态 |
 |:---:|:---|:---|:---|:---:|:---:|
-| 6.1 | **删除 scratch/ 12 个第三方项目** | eastmoney/tdx/investool/TradingAgents/UZI-Skill 等 2696 文件（保留本项目相关脚本） | [scratch/](file:///d:/GitHub/test/scratch) | P1 | ✅ |
-| 6.2 | **skill 归档** | `skills/a-stock-data/SKILL.md`（158KB 参考副本）→ docs/references/ | [skills/](file:///d:/GitHub/test/skills) | P2 | ✅ |
-| 6.3 | **文档合并** | field_dict/script_data_dict/tdx_field_dict/zhb_field_dict → 统一字段参考 | [docs/](file:///d:/GitHub/test/docs) | P2 | ✅ |
+| 6.1 | **删除 scratch/ 12 个第三方项目** | eastmoney/tdx/investool/TradingAgents/UZI-Skill 等 2696 文件（保留本项目相关脚本） | [scratch/](../scratch) | P1 | ✅ |
+| 6.2 | **skill 归档** | `skills/a-stock-data/SKILL.md`（158KB 参考副本）→ docs/references/ | [skills/](../skills) | P2 | ✅ |
+| 6.3 | **文档合并** | field_dict/script_data_dict/tdx_field_dict/zhb_field_dict → 统一字段参考 | [docs/](../docs) | P2 | ✅ |
 | 6.4 | **死代码清理** | print_cache_stats 双定义、MAX_CONCURRENT_* 死配置、PUSH2_FIELD_MAP 残留 | 多处 | P2 | ✅ |
-| 6.5 | **超长函数拆分（暂缓：纯重构，先验证数据正确性）** | `run_discovery_async` 347行、`generate_sector_report` 446行 | [get_ful_report.py](file:///d:/GitHub/test/get_ful_report.py), [get_mak_report.py](file:///d:/GitHub/test/get_mak_report.py) | P2 | ✅ |
-| 6.6 | **补 scripts/run_tests.ps1** | AGENTS.md 引用但缺失，基于 run_with_system_python.ps1 | [scripts/](file:///d:/GitHub/test/scripts) | P0 | ✅ |
+| 6.5 | **超长函数拆分（暂缓：纯重构，先验证数据正确性）** | `run_discovery_async` 347行、`generate_sector_report` 446行 | [get_ful_report.py](../get_ful_report.py), [get_mak_report.py](../get_mak_report.py) | P2 | ✅ |
+| 6.6 | **补 scripts/run_tests.ps1** | AGENTS.md 引用但缺失，基于 run_with_system_python.ps1 | [scripts/](../scripts) | P0 | ✅ |
 | 6.7 | **v9.6 移出仓库根目录** | 加入 .gitignore 或移出，防止误改/误提交 | 仓库根 | P1 | ✅ |
 **验收**：AGENTS.md 引用的 run_tests.ps1 可用；git status 干净；文档无重复
 
@@ -273,13 +317,13 @@
 
 | # | 任务分类 | 详细内容 | 关联文件 | 优先级 | 状态 |
 |:---:|:---|:---|:---|:---:|:---:|
-| 1.1 | **push2 stock/get 扩展字段包** | `get_em_quote_full` 请求字段从 19 个扩到已验证字段包（f51/f52 涨停跌停价、f55 EPS、f92 BPS、f126 股息率、f162-f167 PE/PB、f174/f175 52周高低、f137-f146 资金流、f198 行业码、f80 交易时段、f178 5日资金流数组） | [sc_datasource.py:4602-4647](file:///d:/GitHub/test/stock_common/sc_datasource.py) | P0 | ✅ |
-| 1.2 | **CanonicalStockData 扩展字段** | 新增 limit_up/limit_down/high_52w/low_52w 实时来源、eps/bps 已有、fund_flow_by_period、report_period、quote_time 等字段（dataclass 向后兼容：默认值） | [sc_schema.py](file:///d:/GitHub/test/stock_common/sc_schema.py) | P0 | ✅ |
-| 1.3 | **ulist 批量字段扩展** | `get_em_batch_quotes` 从 f12,f14,f2,f3,f20,f21 扩到含 f55/f92/f126/f162-f167/f174/f175/f221 | [sc_datasource.py:993-1059](file:///d:/GitHub/test/stock_common/sc_datasource.py) | P1 | ✅ |
-| 1.4 | **修复现有映射问题** | f57 被请求未解析、`data_date` 用未定义 `now_str()` 返回空、f84/f85 单位注释错误、`eastmoney_stock_info_push2` 单位与 `get_em_quote_full` 不一致 | [sc_datasource.py](file:///d:/GitHub/test/stock_common/sc_datasource.py) | P1 | ✅ |
-| 1.5 | **reportapi 预测字段接入** | 新增 `extract_report_valuation()` 提取 predictThisYearPe/predictNextYearPe/predictNextTwoYearPe/emRatingValue/lastEmRatingName/ratingChange（med/lng 用） | [sc_datasource.py](file:///d:/GitHub/test/stock_common/sc_datasource.py) | P1 | ✅ |
-| 1.6 | **事件源字段保留** | CLS 保留 stock_list/subjects/level、巨潮保留 adjunctUrl/announcementId、龙虎榜保留 EXPLAIN/BUY_RATIO/D1-D30 偏离、两融保留 RZJME/RQJMG/10D/5D/3D | [sc_datasource.py](file:///d:/GitHub/test/stock_common/sc_datasource.py) | P1 | ✅ |
-| 1.7 | **未验证字段隔离** | f103/f108/f109/f183-f199 放入 unverified 集，需多股/财报期交叉验证后才可进评分（字段包未请求即天然隔离）| [sc_datasource.py](file:///d:/GitHub/test/stock_common/sc_datasource.py) | P2 | ✅ |
+| 1.1 | **push2 stock/get 扩展字段包** | `get_em_quote_full` 请求字段从 19 个扩到已验证字段包（f51/f52 涨停跌停价、f55 EPS、f92 BPS、f126 股息率、f162-f167 PE/PB、f174/f175 52周高低、f137-f146 资金流、f198 行业码、f80 交易时段、f178 5日资金流数组） | [sc_datasource.py:4602-4647](../stock_common/sc_datasource.py) | P0 | ✅ |
+| 1.2 | **CanonicalStockData 扩展字段** | 新增 limit_up/limit_down/high_52w/low_52w 实时来源、eps/bps 已有、fund_flow_by_period、report_period、quote_time 等字段（dataclass 向后兼容：默认值） | [sc_schema.py](../stock_common/sc_schema.py) | P0 | ✅ |
+| 1.3 | **ulist 批量字段扩展** | `get_em_batch_quotes` 从 f12,f14,f2,f3,f20,f21 扩到含 f55/f92/f126/f162-f167/f174/f175/f221 | [sc_datasource.py:993-1059](../stock_common/sc_datasource.py) | P1 | ✅ |
+| 1.4 | **修复现有映射问题** | f57 被请求未解析、`data_date` 用未定义 `now_str()` 返回空、f84/f85 单位注释错误、`eastmoney_stock_info_push2` 单位与 `get_em_quote_full` 不一致 | [sc_datasource.py](../stock_common/sc_datasource.py) | P1 | ✅ |
+| 1.5 | **reportapi 预测字段接入** | 新增 `extract_report_valuation()` 提取 predictThisYearPe/predictNextYearPe/predictNextTwoYearPe/emRatingValue/lastEmRatingName/ratingChange（med/lng 用） | [sc_datasource.py](../stock_common/sc_datasource.py) | P1 | ✅ |
+| 1.6 | **事件源字段保留** | CLS 保留 stock_list/subjects/level、巨潮保留 adjunctUrl/announcementId、龙虎榜保留 EXPLAIN/BUY_RATIO/D1-D30 偏离、两融保留 RZJME/RQJMG/10D/5D/3D | [sc_datasource.py](../stock_common/sc_datasource.py) | P1 | ✅ |
+| 1.7 | **未验证字段隔离** | f103/f108/f109/f183-f199 放入 unverified 集，需多股/财报期交叉验证后才可进评分（字段包未请求即天然隔离）| [sc_datasource.py](../stock_common/sc_datasource.py) | P2 | ✅ |
 **验收**：新字段 3 股（600519/000001/601398）与官方 TdxQuant 交叉一致；test_sc_schema 全过；生产字段包不含 f1-f250 全量
 
 ---
@@ -288,11 +332,11 @@
 
 | # | 任务分类 | 详细内容 | 关联文件 | 优先级 | 状态 |
 |:---:|:---|:---|:---|:---:|:---:|
-| 2.1 | **StockContext 建立** | 单股一次加载 canonical + quote_extended + technical + fundamental + fund_flow + ownership + events + quality，sht/med/lng 共用 | [stock_common/sc_context.py](file:///d:/GitHub/test/stock_common/) | P0 | ✅ |
-| 2.2 | **MarketContext 建立** | 全市场快照 + 批量行情 + 四池 + 行业资金流 + 情绪指标，mak/val 共用 | [stock_common/sc_context.py](file:///d:/GitHub/test/stock_common/) | P1 | ✅ |
-| 2.3 | **main.py 合并模式** | `--sht/--med/--lng 同一股票列表` 改为单进程内共享 StockContext 渲染三份，去掉子进程重复取数 | [main.py](file:///d:/GitHub/test/main.py) | P1 | ✅ |
-| 2.4 | **修复 calculate_score 权重** | sht/med/lng 调用时未传 cfg → 权重 .get() 默认 0 → 传 strategy_config.yaml scoring 或内置默认权重 | [get_sht_report.py:1512](file:///d:/GitHub/test/get_sht_report.py), [get_med_report.py:1068](file:///d:/GitHub/test/get_med_report.py), [get_lng_report.py:912](file:///d:/GitHub/test/get_lng_report.py), [sc_scoring.py](file:///d:/GitHub/test/stock_common/sc_scoring.py) | P0 | ✅ |
-| 2.5 | **缓存键分层** | 行情/财报/研报/公告/新闻/资金流分键（code+trade_date / code+report_period / code+infoCode / announcementId） | [stock_cache.py](file:///d:/GitHub/test/stock_cache.py) | P1 | ✅ |
+| 2.1 | **StockContext 建立** | 单股一次加载 canonical + quote_extended + technical + fundamental + fund_flow + ownership + events + quality，sht/med/lng 共用 | [stock_common/sc_context.py](../stock_common/) | P0 | ✅ |
+| 2.2 | **MarketContext 建立** | 全市场快照 + 批量行情 + 四池 + 行业资金流 + 情绪指标，mak/val 共用 | [stock_common/sc_context.py](../stock_common/) | P1 | ✅ |
+| 2.3 | **main.py 合并模式** | `--sht/--med/--lng 同一股票列表` 改为单进程内共享 StockContext 渲染三份，去掉子进程重复取数 | [main.py](../main.py) | P1 | ✅ |
+| 2.4 | **修复 calculate_score 权重** | sht/med/lng 调用时未传 cfg → 权重 .get() 默认 0 → 传 strategy_config.yaml scoring 或内置默认权重 | [get_sht_report.py:1512](../get_sht_report.py), [get_med_report.py:1068](../get_med_report.py), [get_lng_report.py:912](../get_lng_report.py), [sc_scoring.py](../stock_common/sc_scoring.py) | P0 | ✅ |
+| 2.5 | **缓存键分层** | 行情/财报/研报/公告/新闻/资金流分键（code+trade_date / code+report_period / code+infoCode / announcementId） | [stock_cache.py](../stock_cache.py) | P1 | ✅ |
 **验收**：同股 sht+med+lng 三份报告，网络请求数 ≈ 单份的 1.3x；评分总分非 0 且随数据变化
 
 ---
@@ -301,12 +345,12 @@
 
 | # | 任务分类 | 详细内容 | 关联文件 | 优先级 | 状态 |
 |:---:|:---|:---|:---|:---:|:---:|
-| 3.1 | **接入涨跌停边界** | f51/f52 涨停/跌停价替代 prev_close×1.1 估算（ST/20cm 正确识别） | [get_sht_report.py:537-555](file:///d:/GitHub/test/get_sht_report.py) | P0 | ✅ |
-| 3.2 | **资金流 5/10/20 日复用** | f137-f146 + f178 替代重复取 120d 再切片；修复"最新在前"切片方向 | [get_sht_report.py:122-136/759-787](file:///d:/GitHub/test/get_sht_report.py) | P0 | ✅ |
-| 3.3 | **昨日涨停池晋级率** | push2ex getYesterdayZTPool 接入（§12.8.1 已记录字段），算晋级率/赚钱效应 | [sc_datasource.py](file:///d:/GitHub/test/stock_common/sc_datasource.py), [get_sht_report.py](file:///d:/GitHub/test/get_sht_report.py) | P1 | ✅ |
-| 3.4 | **文本因子接入** | THS analyse/analyse_title、CLS stock_list/subjects/level、龙虎榜 EXPLAIN、公告 PDF 链接 | [get_sht_report.py:1106-1242](file:///d:/GitHub/test/get_sht_report.py) | P1 | ✅ |
-| 3.5 | **修复深度开关** | lite 模式 skip_fund_flow_120d/skip_industry_peers/skip_lhb_detail 实际生效 | [get_sht_report.py:257-289](file:///d:/GitHub/test/get_sht_report.py) | P1 | ✅ |
-| 3.6 | **同步阻塞调用 to_thread** | get_stock_sector_rank/get_dividend_history/cls_telegraph/ths_hot_list/cninfo_irm/get_limit_pool_summary/time.sleep 包 to_thread | [get_sht_report.py:621-666](file:///d:/GitHub/test/get_sht_report.py) | P2 | ✅ |
+| 3.1 | **接入涨跌停边界** | f51/f52 涨停/跌停价替代 prev_close×1.1 估算（ST/20cm 正确识别） | [get_sht_report.py:537-555](../get_sht_report.py) | P0 | ✅ |
+| 3.2 | **资金流 5/10/20 日复用** | f137-f146 + f178 替代重复取 120d 再切片；修复"最新在前"切片方向 | [get_sht_report.py:122-136/759-787](../get_sht_report.py) | P0 | ✅ |
+| 3.3 | **昨日涨停池晋级率** | push2ex getYesterdayZTPool 接入（§12.8.1 已记录字段），算晋级率/赚钱效应 | [sc_datasource.py](../stock_common/sc_datasource.py), [get_sht_report.py](../get_sht_report.py) | P1 | ✅ |
+| 3.4 | **文本因子接入** | THS analyse/analyse_title、CLS stock_list/subjects/level、龙虎榜 EXPLAIN、公告 PDF 链接 | [get_sht_report.py:1106-1242](../get_sht_report.py) | P1 | ✅ |
+| 3.5 | **修复深度开关** | lite 模式 skip_fund_flow_120d/skip_industry_peers/skip_lhb_detail 实际生效 | [get_sht_report.py:257-289](../get_sht_report.py) | P1 | ✅ |
+| 3.6 | **同步阻塞调用 to_thread** | get_stock_sector_rank/get_dividend_history/cls_telegraph/ths_hot_list/cninfo_irm/get_limit_pool_summary/time.sleep 包 to_thread | [get_sht_report.py:621-666](../get_sht_report.py) | P2 | ✅ |
 **验收**：涨停价与官方 TdxQuant 一致；SHT 不含长周期财务噪音；lite 模式请求数减半
 
 ---
@@ -315,12 +359,12 @@
 
 | # | 任务分类 | 详细内容 | 关联文件 | 优先级 | 状态 |
 |:---:|:---|:---|:---|:---:|:---:|
-| 4.1 | **报告期绑定** | f221 报告期 + 新浪财报 report_date 事件锁对齐，EPS/BPS/营收/净利带报告期展示 | [get_med_report.py:349-633](file:///d:/GitHub/test/get_med_report.py) | P0 | ✅ |
-| 4.2 | **两融 3/5/10 日维度** | RZJME/RQJMG/RZCHE10D/5D/3D/RZMRE10D/5D/3D 接入中线资金确认 | [get_med_report.py](file:///d:/GitHub/test/get_med_report.py) | P1 | ✅ |
-| 4.3 | **研报评级变化** | lastEmRatingName/ratingChange → 评级升降风向；predictNextYearPe 前向 PE | [get_med_report.py](file:///d:/GitHub/test/get_med_report.py) | P1 | ✅ |
-| 4.4 | **去除重复请求** | EPS 无数据时 get_reports_async(1) 后无条件 get_reports_async(3) 去重；baidu_kline_full 两次调用复用 | [get_med_report.py](file:///d:/GitHub/test/get_med_report.py) | P1 | ✅ |
-| 4.5 | **async 直连补缓存** | get_sina_financial_report_async/get_sina_balance_sheet_async 直连不走同步缓存 → 复用同步路径或独立缓存 | [sc_datasource.py:2357-2497](file:///d:/GitHub/test/stock_common/sc_datasource.py) | P1 | ✅ |
-| 4.6 | **技术面补强（迁移 technical_engine）** | MACD/RSI/BOLL/KDJ 从 ful Layer1 迁移，替换仅 MA20/MA60 | [get_med_report.py](file:///d:/GitHub/test/get_med_report.py), [stock_common/sc_technical.py](file:///d:/GitHub/test/stock_common/) | P2 | ✅ |
+| 4.1 | **报告期绑定** | f221 报告期 + 新浪财报 report_date 事件锁对齐，EPS/BPS/营收/净利带报告期展示 | [get_med_report.py:349-633](../get_med_report.py) | P0 | ✅ |
+| 4.2 | **两融 3/5/10 日维度** | RZJME/RQJMG/RZCHE10D/5D/3D/RZMRE10D/5D/3D 接入中线资金确认 | [get_med_report.py](../get_med_report.py) | P1 | ✅ |
+| 4.3 | **研报评级变化** | lastEmRatingName/ratingChange → 评级升降风向；predictNextYearPe 前向 PE | [get_med_report.py](../get_med_report.py) | P1 | ✅ |
+| 4.4 | **去除重复请求** | EPS 无数据时 get_reports_async(1) 后无条件 get_reports_async(3) 去重；baidu_kline_full 两次调用复用 | [get_med_report.py](../get_med_report.py) | P1 | ✅ |
+| 4.5 | **async 直连补缓存** | get_sina_financial_report_async/get_sina_balance_sheet_async 直连不走同步缓存 → 复用同步路径或独立缓存 | [sc_datasource.py:2357-2497](../stock_common/sc_datasource.py) | P1 | ✅ |
+| 4.6 | **技术面补强（迁移 technical_engine）** | MACD/RSI/BOLL/KDJ 从 ful Layer1 迁移，替换仅 MA20/MA60 | [get_med_report.py](../get_med_report.py), [stock_common/sc_technical.py](../stock_common/) | P2 | ✅ |
 **验收**：med 报告财务数据带报告期锚点；无重复研报请求；评分总分非 0
 
 ---
@@ -329,12 +373,12 @@
 
 | # | 任务分类 | 详细内容 | 关联文件 | 优先级 | 状态 |
 |:---:|:---|:---|:---|:---:|:---:|
-| 5.1 | **删除短线噪音** | 移除龙虎榜席位/当日热榜/涨停池/盘中资金噪音章节 | [get_lng_report.py](file:///d:/GitHub/test/get_lng_report.py) | P0 | ✅ |
-| 5.2 | **风险引擎迁移（risk_engine）** | 资产负债/商誉/应收/存货/现金短债/解禁/减持/质押/业绩下滑 9 项风险清单（从 ful layer_risk 迁移） | [stock_common/sc_risk.py](file:///d:/GitHub/test/stock_common/) | P1 | ✅ |
-| 5.3 | **修复重复 Canonical 调用** | get_stock_composite_async + 两次 get_canonical_stock_data → 单次 StockContext | [get_lng_report.py:167-222](file:///d:/GitHub/test/get_lng_report.py) | P0 | ✅ |
-| 5.4 | **TDX 财务读取去重** | jingyingxianjinliu/jinglirun 两次读取 → 一次 | [get_lng_report.py:498-512/576-587](file:///d:/GitHub/test/get_lng_report.py) | P1 | ✅ |
-| 5.5 | **历史高点缓存** | tdx_get_historical_high 8000 根 K 线不走磁盘缓存 → 复用 sc_kline_cache | [tdx_client.py:966-983](file:///d:/GitHub/test/tdx_client.py) | P2 | ✅ |
-| 5.6 | **分红连续性指标** | consecutive_dividend_years 真实计算（从分红历史推导，非硬编码） | [get_lng_report.py](file:///d:/GitHub/test/get_lng_report.py) | P2 | ✅ |
+| 5.1 | **删除短线噪音** | 移除龙虎榜席位/当日热榜/涨停池/盘中资金噪音章节 | [get_lng_report.py](../get_lng_report.py) | P0 | ✅ |
+| 5.2 | **风险引擎迁移（risk_engine）** | 资产负债/商誉/应收/存货/现金短债/解禁/减持/质押/业绩下滑 9 项风险清单（从 ful layer_risk 迁移） | [stock_common/sc_risk.py](../stock_common/) | P1 | ✅ |
+| 5.3 | **修复重复 Canonical 调用** | get_stock_composite_async + 两次 get_canonical_stock_data → 单次 StockContext | [get_lng_report.py:167-222](../get_lng_report.py) | P0 | ✅ |
+| 5.4 | **TDX 财务读取去重** | jingyingxianjinliu/jinglirun 两次读取 → 一次 | [get_lng_report.py:498-512/576-587](../get_lng_report.py) | P1 | ✅ |
+| 5.5 | **历史高点缓存** | tdx_get_historical_high 8000 根 K 线不走磁盘缓存 → 复用 sc_kline_cache | [tdx_client.py:966-983](../tdx_client.py) | P2 | ✅ |
+| 5.6 | **分红连续性指标** | consecutive_dividend_years 真实计算（从分红历史推导，非硬编码） | [get_lng_report.py](../get_lng_report.py) | P2 | ✅ |
 **验收**：lng 报告无短线章节；风险清单 9 项全可用；同股网络请求数 ≈ med 的 1.2x
 
 ---
@@ -343,10 +387,10 @@
 
 | # | 任务分类 | 详细内容 | 关联文件 | 优先级 | 状态 |
 |:---:|:---|:---|:---|:---:|:---:|
-| 6.1 | **技术引擎迁移确认** | MACD/RSI/BOLL/KDJ/量能 → stock_common/sc_technical.py，sht/med 复用 | [get_ful_report.py:357-555](file:///d:/GitHub/test/get_ful_report.py) | P0 | ✅ |
-| 6.2 | **风险引擎迁移确认** | layer_risk → stock_common/sc_risk.py，med/lng 复用 | [get_ful_report.py:1421-1595](file:///d:/GitHub/test/get_ful_report.py) | P0 | ✅ |
-| 6.3 | **移除 main.py --ful 入口** | README/版本表/CHANGELOG 同步；get_ful_report.py 移入 docs/archive/ 或保留只读归档 | [main.py](file:///d:/GitHub/test/main.py), [README.md](file:///d:/GitHub/test/README.md) | P1 | ✅ |
-| 6.4 | **删除 ful 评分快照逻辑** | report_source="ful" 快照停写；test_report_runner 中 ful 相关用例更新 | [get_ful_report.py](file:///d:/GitHub/test/get_ful_report.py), [tests/](file:///d:/GitHub/test/tests) | P1 | ✅ |
+| 6.1 | **技术引擎迁移确认** | MACD/RSI/BOLL/KDJ/量能 → stock_common/sc_technical.py，sht/med 复用 | [get_ful_report.py:357-555](../get_ful_report.py) | P0 | ✅ |
+| 6.2 | **风险引擎迁移确认** | layer_risk → stock_common/sc_risk.py，med/lng 复用 | [get_ful_report.py:1421-1595](../get_ful_report.py) | P0 | ✅ |
+| 6.3 | **移除 main.py --ful 入口** | README/版本表/CHANGELOG 同步；get_ful_report.py 移入 docs/archive/ 或保留只读归档 | [main.py](../main.py), [README.md](../README.md) | P1 | ✅ |
+| 6.4 | **删除 ful 评分快照逻辑** | report_source="ful" 快照停写；test_report_runner 中 ful 相关用例更新 | [get_ful_report.py](../get_ful_report.py), [tests/](../tests) | P1 | ✅ |
 **验收**：`python main.py --ful` 报友好提示；sht/med/lng 全部技术+风险能力不缺失；测试全过
 
 ---
@@ -355,12 +399,12 @@
 
 | # | 任务分类 | 详细内容 | 关联文件 | 优先级 | 状态 |
 |:---:|:---|:---|:---|:---:|:---:|
-| 7.1 | **mak 接入 MarketContext** | 复用全市场快照/四池/行业资金流，删双重腾讯批量（阶段5.2遗留回归检查） | [get_mak_report.py:105-215](file:///d:/GitHub/test/get_mak_report.py) | P1 | ✅ |
-| 7.2 | **mak 修正口径** | 指数/个股统一交易日窗口；删除"异动后5日胜率"伪回测（改真实前瞻或改名）；ret_3d=change_pct_2d fallback 修正；count_history_deviations 负索引修正 | [get_mak_report.py:121-128/241-254/451-485](file:///d:/GitHub/test/get_mak_report.py) | P0 | ✅ |
-| 7.3 | **val 三阶段扫描** | ZHB+批量(初筛) → push2扩展+K线(候选) → 财报/研报/股东(深度确认) | [get_val_report.py:1572-1780](file:///d:/GitHub/test/get_val_report.py) | P1 | ✅ |
-| 7.4 | **val 修复 P0 策略缺陷** | 策略01 热点字段契约、策略03 箱体含当前价、策略07 vol_ratio 缺失、策略16 reason 缺失、策略20 缺导入、策略21/22 字段不匹配、策略13 单次分红 | [get_val_report.py:499-1531](file:///d:/GitHub/test/get_val_report.py) | P0 | ✅ |
-| 7.5 | **val 修复 PE 百分位前视偏差** | 按披露日排序 + 累计利润不截断亏损 + 用披露日非报告期 | [get_val_report.py:236-316](file:///d:/GitHub/test/get_val_report.py) | P1 | ✅ |
-| 7.6 | **val 删除硬编码胜率 + 统一策略数** | "55-65%"硬编码文案删除；18/20/22 三种说法统一为实际 21 | [get_val_report.py:1851-1895](file:///d:/GitHub/test/get_val_report.py) | P1 | ✅ |
+| 7.1 | **mak 接入 MarketContext** | 复用全市场快照/四池/行业资金流，删双重腾讯批量（阶段5.2遗留回归检查） | [get_mak_report.py:105-215](../get_mak_report.py) | P1 | ✅ |
+| 7.2 | **mak 修正口径** | 指数/个股统一交易日窗口；删除"异动后5日胜率"伪回测（改真实前瞻或改名）；ret_3d=change_pct_2d fallback 修正；count_history_deviations 负索引修正 | [get_mak_report.py:121-128/241-254/451-485](../get_mak_report.py) | P0 | ✅ |
+| 7.3 | **val 三阶段扫描** | ZHB+批量(初筛) → push2扩展+K线(候选) → 财报/研报/股东(深度确认) | [get_val_report.py:1572-1780](../get_val_report.py) | P1 | ✅ |
+| 7.4 | **val 修复 P0 策略缺陷** | 策略01 热点字段契约、策略03 箱体含当前价、策略07 vol_ratio 缺失、策略16 reason 缺失、策略20 缺导入、策略21/22 字段不匹配、策略13 单次分红 | [get_val_report.py:499-1531](../get_val_report.py) | P0 | ✅ |
+| 7.5 | **val 修复 PE 百分位前视偏差** | 按披露日排序 + 累计利润不截断亏损 + 用披露日非报告期 | [get_val_report.py:236-316](../get_val_report.py) | P1 | ✅ |
+| 7.6 | **val 删除硬编码胜率 + 统一策略数** | "55-65%"硬编码文案删除；18/20/22 三种说法统一为实际 21 | [get_val_report.py:1851-1895](../get_val_report.py) | P1 | ✅ |
 **验收**：mak 无伪回测表述；val 策略数统一；val 冷跑 <8min（回归检查）
 
 ---
@@ -400,9 +444,20 @@ un_tests.ps1 -Mode skip_real` 全过 + py_compile + mypy + black | ✅ |
 | V17-11 | **B2: 多余三元判断**（`_safe_float(x) if x else 0`）| B2 | 未做 | 极低 |
 | V17-12 | **R4: get_ful_report.py 下线清理**（2319 行，能力已并入 sht/med/lng）| R4 | ✅ V16.3 O19 已删除 | 高 — 完成 |ep 全调用含测试 |
 | V17-13 | **B6 文案: val 休市区分 closed/pre_market** | B6 | 逻辑已修（V16.2.3），仅文案未区分 | 极低 |
-| V17-14 | **R8: a-stock-data-v9.6 目录** | R8 | **明确不做**（AGENTS.md 硬性"只读参考标杆"，禁止删除）| — |
+| V17-14 | **R8: a-stock-data-v9.6 目录** | R8 | ✅ **V17.0 已删除**（历史使命完成：对比/修复流水线均基于 v9.6 标杆，v16 系列已远超；连同 SKILL.md 与 3 个对比工具一并清理，见 V17.0 重构计划）| 高 — 完成 |
 | V17-15 | **A4: 补 data_provider/main/BaseReportRunner 单测** | A4 | 未做（data_provider 仅间接覆盖）| 中 |
 | V17-16 | **B4: val mcap 计数器合并 elif 链** | B4 | 评估结论：**非 bug**（前置 guard 互斥），仅可读性，可顺带 | 极低 |
+
+> **V17.0 全盘重构已完成（2026-08-13，详见 [V17.0_REFACTOR_PLAN.md](V17.0_REFACTOR_PLAN.md)）**：
+> - **目录整理**：7 支撑模块包化 `core/`（全仓 ~150 import 统一 `from core.X`，`__init__.py` 空防循环）；
+>   `credentials/` 凭据归位；v9.6 遗产全清（目录/SKILL.md/3 工具/孤儿 db）；README 体系（core/stock_common/tests/运行时+根树）
+> - **代码重构**：S1 死代码 ~1000 行（21 zhb 转发+sc_zhb+12 dp 包装，__all__ 255→230）；S2 传输层统一
+>   （retry→quick 别名+async EM/GEN 分流）；S3 em_secid_prefix 新增（**修 92 北交所 secid bug**）+is_a_stock 下沉；
+>   S4 getharden 三版合一（探针实测）+cninfo 下沉（keywords 参数）；S5 写尾/ST 标注样板收敛；S8 缓存适配器删除
+> - **第二轮（2026-08-13，降级项清零）**：R1 ts 基类统一；R2 进程间隔 2 核心+4 薄包装；R3 S7 composite 链
+>   220 行删除（cdata 覆盖核对）；R4 execute_batch_pipeline 抬基类（3 脚本批量骨架收敛+钩子）；R5 sc_render
+>   部分抽取（多评委块 3 处收敛，其余渲染章节实测异构保留）
+> - **度量**：根目录 45→~20 条目；全量回归 302 passed/45 deselected 0 失败（两轮验证）
 
 > **V16.2.4 已完成项**：B1（main.py proc 初始化）、B5（腾讯字段索引 `_TENCENT_FIELD_INDEX` 三处统一 + 长度告警）、D2（`get_history_fund_flow_120d` 统一 sht/med 资金流入口，删除 sht 死代码 `_get_eastmoney_fund_flow_120d`）。
 > **V16.2.5 报告核查（2026-08-04 晚间实跑，用户反馈仍失败）**：
@@ -694,6 +749,182 @@ un_tests.ps1 -Mode skip_real` 全过 + py_compile + mypy + black | ✅ |
 > - **HIGH**：③ 新浪 fallback 结构（report_list[period] 是 {"data":[...]}——item_map 构建修复 + 缺失返 None 防假 ROE=0.0 被缓存标 tdx:f10——实测 000100 ROE=2.44 ✓）④ _quick_request 双重全局等待（删内层——速率恢复 ≤1 rps）⑤ mak E 段 _tm 未初始化（try 前 {}）⑥ 腾讯批量僵尸检测 float 移入 per-code try（单只坏字段不丢整批）
 > - **MEDIUM**：⑦ med ROE 缺失 0.0 伪装（消费端 >0 判定）⑧ get_roe_trend_series 双层 @cached（删外层冗余）⑨ 新浪直连前缀 bj（2 处）⑩ _TENCENT_MIN_FIELDS 53→69（覆盖 64/67/68 索引）⑪ val/sht 死 import 清理
 > - **验证**：295/295 全过；dragon_tiger_backup 实测（深交所 10 条/上交所 35KB）；新浪 fallback 实测（真实 ROE）
+
+---
+
+> **V16.3 O24 缓存 TTL 语义重构（2026-08-07，用户 TTL 理念）**：
+> - **核心**：TTL 从"物理时间"改为"**数据交易日粒度**"——
+>   ① **9:30 是分界**（交易日 9:30 后=新一天，延续到 24:00；9:30 前=上一交易日）
+>   ② **同一数据交易日内多次扫描共享缓存**（避免重复拉接口）
+>   ③ **非交易日不过期**（数据日不变——周五缓存跨周末有效，直到下个交易日 9:30）
+> - **实现**：`_calc_trading_day_expiry` 重写（15:00 分界 → 9:30 分界 + 交易日历）——验证：周五 09:59 缓存 → **周一 09:30 过期**（跳过周末 ✓）
+> - **16 处 category 加 trading_day=True**：kline（2）/limit_pool（7）/fund_flow（2）/financial（2）/balance_sheet/cash_flow/f10_financial——**K线/涨停池/板块资金流 7 天固定 TTL → 交易日粒度**（盘中当日共享、次日 9:30 刷新）
+> - **TTL 表调整**：basic_info_static 90天→**365天**（上市日期永远不变）；basic_info 1天→**1小时**（含动态市值/价格）
+> - **行业可比/排名**：走 TDX（非 ZHB——mak 板块才是 ZHB 旁路）——T-1 参照系可接受 → 保持 trading_day 缓存（省 TCP，不改为不缓存）
+> - **死 TTL 定义 11 个**（f10_dividend/governance/industry/inst_hold/operation/overview/reports/themes + gross_margin_roe + hsgt_flow + industry_peers 旧名）——记录暂不删（避免未来 @cached 误走 default）
+> - **验证**：291/291 全过；expiry 边界判定 ✓
+
+---
+
+> **V16.3 O25b 行业可比/排名 ZHB 化（2026-08-07，用户：字典确认 ZHB 就能获取）**：
+> - **核查**：lng 的 industry_comparison = tdx_get_board_list（东财 clist——无缓存每次现取）；med/sht 的 get_industry_comparison 已有缓存但走东财——**用户指出 ZHB 即可聚合（参照系 T-1 可接受）**
+> - **实现**：sc_datasource 新增 `get_industry_rank_from_zhb()`（ZHB 快照 + 申万二级映射缓存聚合——市值加权涨幅/涨跌家数/领涨股——**零网络**）；`get_industry_comparison` 改 **ZHB 优先 → board_list 兜底**；lng industry_comparison 同改
+> - **验证**：129 个申万二级行业（摩托车/煤炭/电子化学品Ⅱ…）TOP1 +6.35% ✓；旧缓存清理后正常
+> - **mak 实时排名**：不受影响（mak 板块走 ZHB + 腾讯 T 日覆盖——已实时）
+> - **291/291 全过**
+
+---
+
+> **V16.3 O26 缓存污染防护加固（2026-08-07，用户两问）**：
+> - **问 1（污染保护完备吗）**：核查——2 类保护都存在（set_cache None 拒绝 + make_valid_if 空/全零过滤；cross_verify V16.0 首写 verified=1 的变化检测）——**但 valid_if 覆盖不全**（36 个 @cached 缺）——get_industry_comparison 缓存空 dict 即实例
+> - **问 2（cross_verify+短 TTL 永不写入？）**：**不会**——V16.0 已修复（首次写入 verified=1 信任 valid_if，非双拉门槛）——但无 valid_if 时首写可信度无过滤
+> - **加固 7 处**：financial×2/balance_sheet/cash_flow（cross_verify 配对 valid_if——空/全零拒缓存）、industry_compare（防空 dict 污染实例）、board_list、kline×2
+> - **291/291 全过**
+
+---
+
+> **V16.3 O27 全市场扫描改造 + 数据源精度（2026-08-07，用户 5+1 点探讨确认）**：
+> - **探讨结论（用户确认后统一实施）**：① mak 板块资金流——东财 get_board_fund_flow 是**东财行业口径**（m:90+t:2 约 28 个）与申万二级 129 个粒度错位，无法轻量覆盖 → 保持 T-1 + 腾讯 T 日成交额修正 ② 申万二级——ZHB 只有四级名称映射（tdxzs3 类型 12），**无 code→申万二级归属**，东财 L2 缓存是唯一归属源（7 天 JSON 已离线可读）→ 保持现状 ③ 策略20 回测：top500 命中 8 只/top1000 仅 27 只（覆盖率 19.9%），**80% 控盘股在 top1000 之外**（控盘度与流动性弱相关）→ 全市场 ④ 热榜兜底：em_hot_rank 统一层已有（@cached+@requires_push2）且 val 未用 → 兜底 ⑤ 01/03/07 ZHB 预筛 ✓
+> - **12 策略 T-1 精度分析**：命中字段全是慢变量（周线/季报/年度披露/日级累计）——T-1 与 T 日差值不足翻转阈值判定；价格类字段走实时多源链 ✓；18 龙虎榜 T-1=最新披露（盘前=昨日榜单正确）
+> - **fallback 风险核实**：预筛层 `stock.get(...)` 快照内存读（缺字段→不过→不触发网络）；21/22 的 get_zhb_single_stock_data=内存字典 O(1)；逐股 K 线走 TDX 磁盘缓存（不触发 HTTP）——**担心不成立**
+> - **实现**：mak 板块 amount_yi 改腾讯 T 日聚合（_tencent_rt 存 amount_wan）；val 注册表全市场化（19/20/21/22 直接 all_stocks）；02/05/06 预筛全市场→趋势强度排序（change_20d+streak）top300 逐股确认；hot_pool ZHB 预筛（过滤明显空头）；ths_hot_reason 失败→em_hot_rank 兜底
+> - **验证**：val 真实运行 328s（02 周K 300 次 94s/20 全市场/19 全市场 10 只）；mak 129 板块腾讯成交额 ✓；291/291 全过
+
+---
+
+> **V16.3 O28 ZHB 未知字段破解 + 周期口径再修正（2026-08-07，今日新快照 20260806 全本地零网络）**：
+> - **方法**：K线缓存（cache/stock_cache.db baidu_kline_full 926 只）精确对照——各 Col 与 5-250 根/日历日涨跌幅相关矩阵 + 中位差判定 + 跨日 Delta（8/5 vs 8/6）
+> - **破解 4 个 tdxstat2 未知字段**：**[11]=近5根K线涨跌幅（r=1.0000 与 tdxstat Col[27] 完全一致——重复字段）**；**[12]=近250根K线涨跌幅/年线（k250 r=0.973，原 D2"YTD 接近"为巧合）**；**[19]/[20]=近30根K线涨跌幅（k30 r=0.96+/0.975，中位差 5.36/2.55——补齐 tdxstat 缺失的 30 根周期；原"主力成本偏离"假设排除）**
+> - **修正 2 个 tdxstat 口径错误**：**[18] 实为"截至T-1的20根K线"（k20 shift1 中位差 0.93）非日历20日**；**[20] 实为"截至T-1的60根K线"（中位差 1.28）非日历60日**（原 V16.2.18"日历口径"误判——c20/c60 相关仅 0.37/0.25 排除）——**change_60d key 改读 Col[20]**（原误读 Col[19]）
+> - **新映射**：tdxstat2 新增 `change_5k_bar`/`change_250k_bar`/`change_30k_bar`/`change_30k_bar_ref`（get_zhb_single_stock_data 合并自动携带）
+> - **未破解（诚实记录）**：tdxstat Col[2]（与主力净买额弱相关 0.27 疑资金强度）、Col[23]（0-95 状态枚举 69% 为 0 非累计）、Col[26]（0-48 恒定分类）、Col[22]（5-6 位复合码非板块——tdxzs 无匹配）、Col[31-33]（稀疏事件码）——需通达信官方文档或更大样本
+> - **验证**：映射值抽查 ✓（600519 change_60d -0.57=Col[20]）；test_data_zhb 46/46 全过；field_dict 同步修正（[18]/[20]/[11]/[12]/[19]/[20] + 交叉注释）
+
+---
+
+> **V16.3 O29 运算符优先级 bug 修复（2026-08-07，外部审查 R6-H1 发现）**：
+> - **Bug**：stock_cache `_calc_trading_day_expiry` 的 `is_workday(today) and now.hour < 9 or (now.hour == 9 and now.minute < 30)` 被解析为 `(is_workday and hour<9) OR (hour==9 and minute<30)`——**非交易日 9:00-9:29 命中第二分支（未查 is_workday）→ target=今天 9:30（已过去）→ 缓存立即过期**（本应撑到下个交易日 9:30）
+> - **修复**：加括号 `is_workday(today) and (now.hour < 9 or (now.hour == 9 and now.minute < 30))`
+> - **回归测试**：test_core_cache 新增 5 个参数化用例（工作日 8:15/9:00/9:30、**周六 9:15、国庆 9:00**）——fake 时间用未来日期（12 月/10 月）避免触发内部"expires_at 必须大于 now"安全检查（该检查为正确行为非测试目标）
+> - **296/296 全过**（291 + 5 新增）
+
+---
+
+> **V16.3 O30 THS SDK 调研与实测（2026-08-09，github.com/panghu11033/thsdk）**：
+> - **性质**：同花顺官方 C 库（hq.dll）TCP 协议——非 HTTP 反爬面（不触发 401）——游客账户（50 个内置）或 THS_USERNAME/THS_PASSWORD/THS_MAC 环境变量——README 明确限流警告（批量须 sleep）
+> - **源码收获**：`_constants.py` 完整 FieldNameMap（同花顺协议字段 ID → 中文名，数百字段）+ 竞价异动编码表（68710-68727）+ 市场代码表（USHA=17/USZA=33/USTM=151/URFI=48）
+> - **实测验证（游客账户，限流 1.5-2s）**：market_data_cn 基础/扩展1/扩展2/汇总（茅台实时 1309.22，主力净流入 1502.99 万）；klines（日线结构）；ths_industry（90 个 881xxx）+ block_constituents（证券 50 只 ✓ 881 段互通）；market_data_block（**板块主力净流入盘中可得**——证券 -7.71 亿/5日 -0.62%/10日 +1.27%）；corporate_action（分红第二源——茅台 2026-06-26 每十股 280.242 元）；wencai_nlp（问财选股——T-1 涨停 74 只）；big_order_flow（大单明细 2984 行）；call_auction_anomaly（竞价异动 823 条——68710→涨停试盘 ✓）
+> - **交叉验证**：ZHB tdxstat2 amount（332623.08 万）vs ths 总金额（3326230800 元）**100% 一致**；ths PE TTM 19.7864 vs ZHB pe_ttm 19.8711 趋势一致；涨停价 1308.55×1.1=1439.41 ✓
+> - **字典**：field_dict.md 新增 12.8.12b（THS SDK 章节——FieldNameMap 关键子集 + 实测接口结构 + 口径差异）
+> - **口径注意**：ths 行业 90 个 ≠ 申万二级 129（同编码段需名称映射）；问财 T-1
+
+> **V16.3 O30b THS 字段核实 + 限流试探 + 凭证机制（2026-08-09）**：
+> - **字段核实（双股对照：茅台/平安/工行/宁德）**：行情/估值（PE 动静 TTM + **PB 市净率**——ZHB 缺失可补）/股本（总流通股本/流通总市值）/ROE TTM（茅台 0.3126=31%、工行 0.0888=9% ✓）/主力净流入（宁德 -7.53 亿 ✓）/**5-10-20 日涨幅**/换手量比振幅/户均持股（5141 股 ✓）——**全部验证有效**；**3 个可疑**：主力净量（592888——与净流入同号但为比率口径）、净利润/营收增长率（134141/134143——百分比数值，茅台 1.47/6.54 需对照财报）、年初至今涨幅（461346——茅台 -4.93 vs ZHB -3.01 差 1.9pp，基准/复权口径待核对）
+> - **限流实测（游客）**：**官方 20ms/次间隔**（批内连续查询触发拒绝——"兄弟,太快了!!"）；单查询 1s×50 全过；生产每查询 ≥0.1-0.5s；正式账号预计更稳
+> - **凭证机制（GD 模式）**：新增 `stock_common/sc_ths.py`（环境变量 THS_USERNAME/THS_PASSWORD/THS_MAC → ths_credentials.json[已 gitignore] → 游客兜底）——自检通过（游客兜底查询 ✓）——**用户填入正式账号即可突破游客限制**
+> - **字典**：field_dict 12.8.12b 补充核实结果表（✅/⚠️ 标注）+ 限流数据 + 凭证配置说明
+
+> **V16.3 O30c THS 全量字段核实（2026-08-09，395 ID × 4 股逐一实测）**：
+> - **方法**：FieldNameMap 全部 395 个可查询 ID 分 33 批 × 4 股（茅台/平安/工行/宁德）query_data 实测——完整明细落盘 `docs/thsdk_field_verify.md`（276 个字段名：**140 有效 / 118 部分有值 / 18 解码乱码**；119 个 ID A 股不适用全空）
+> - **核实有效（ZHB 交叉）**：净利润1 茅台 272.43 亿 vs ZHB 扣非 272.40 亿 ✓；户均持股 5141 ✓；总股本 12.5 亿 ✓；主力资金完整 30+ 分档（流入+流出=总金额自洽 ✓）；PE/PB/ROE/资产负债率 4 股全合理；两融/股东/涨速序列 ✓
+> - **疑点（⚠️ 记录待更大样本）**：主力净量（592888 比率口径）、净利润增长率（茅台 1.47）、YTD（-4.93 vs ZHB -3.01）、多空比（茅台 19.95）、基差（A 股有值疑期货字段）、散户数量（宁德 82.49）、时间（宁德 20251201 滞后）
+> - **A 股不适用**：52 周高低（95/96 query_data 不返回——需 tdxstat2/depth）、期货期权牛熊债券字段全空
+> - **限频**：官方 20ms/次——游客批内连查触发拒绝——生产限频 ≥0.1-0.5s/查询
+
+> **V16.3 O30d THS 交叉验证 + 真实账号实测（2026-08-09）**：
+> - **交叉验证（游客 + ZHB 8/6 对照，4 股）**：**5/10/20 日涨幅与 ZHB 完全同源**（茅台 -3.06/+0.91/+8.65 等 4 股 100% 一致）；**主力净量（592888）破解 = 主力净流入÷流通市值×100%**（茅台 0.0009/宁德 -0.0457 精确吻合）；**YTD（461346）口径独立**（vs ZHB 差 2-3pp 不恒定，平安方向都翻——不可混用）；净值 3397 疑与 PE 91 重复；基差 A 股无意义（期货字段错位）
+> - **真实账号 tsy1102 连接失败**（"主行情连接失败,检查账户密码"×5）——**普通同花顺 App 账号无 THS 行情权限**（需 iFinD/Level-2 行情账号）——游客反可连——mac 用本机真实地址非问题源——**结论：游客账户是唯一可用选项（限 20ms/次）**
+> - **字典**：12.8.12b 补充交叉验证表 + 真实账号结论
+
+> **V16.3 O31 levistock 全接口字段核实（2026-08-09，38/38 全部实测）**：
+> - **安装** levistock 0.1.0（38 公开函数）；**东财 10 接口 2s 间隔实测无封禁**；财联社/开盘红/i问财/同花顺热榜全部可用
+> - **实测 vs README 差异**：sector_em 实测 18 字段（README 10）；stock_zt_pool_em 18（README 11——含 circ_market/zt_days/zt_count）；stocks_em 18（README 漏 amplitude）；market_emotion_cls 13（README 12）；sector_stocks_his_kph 19（README 21——**实测无 chg_5d/chg_20d**）
+> - **新发现**（README 未列）：get_sector_hot_plates（6 字段——热门板块含涨停原因）、get_sector_popular_stocks（6 字段）
+> - **交叉价值**：stock_kline_cls 含 ma5/10/20（财联社）；stock_zt_pool_em（东财 74 只）vs stock_zt_pool_cls（财联社 74 只）可互校；market_emotion_cls vs kph 同语义双源；stock_hot_rank_ths 与字典 ths_hot_list 同源
+> - **未确定**（已写明）：change_pct2（sector_ranking_kph）、tbm/head_num（get_sector_popular_stocks）、stock_changes_detail_em 结构（当日无数据）
+> - **明细落盘**：docs/levistock_field_verify.md（全接口 × 实测字段 × README 对照）；字典 12.10.9 新增
+
+> **V16.3 O32 KPL 开盘啦全接口实测（2026-08-09，30 接口全部成功）**：
+> - **来源**：github.com/LowellLee/kpl（开盘啦 App 私有 API 文档——Android UA `Dalvik/2.1.0`）
+> - **鉴权实测**：大部分接口**匿名可用**（仅 DeviceID/VerSion）；UserID/Token 类接口**文档示例 token 实测有效**
+> - **实测 30 接口**：市场情绪（RiseFallAnalysis/MoodNumCount/ChangeStatistics 情绪值 strong+连板高度）、涨停复盘（GetPlateInfo_w38 含涨停原因/封单/连板）、连板梯队分板（DailyLimitPerformance PidType 1-5）、竞价（MorningBiddingList 涨停委买额/竞价净额/20分后委买 + GetStockBid）、盘口全字段（GetStockPanKou 动态PB/PE-TTM/jtPeRate/市值）、涨停原因（GetKLineZhangTing 开盘啦长文原因/日内龙一）、板块强度（RealRankingInfo 今明PE/机构增仓/300万大单净额）、板块成分 40+ 字段、L2 大单（GetMainMonitor_w30 方向语义）、大单委托、百日新高、短线精灵（Radar 封涨大减等）、人气热榜、全球指数、龙虎榜、选股宝池（xuangubao 公共）、市场温度曲线、热点解读、复盘直播
+> - **交叉验证（8/7 三家完全一致）**：**涨停 74 只 = 东财 74 = 财联社 74**；跌停 4 = 4 ✓
+> - **独有数据**：竞价涨停委买额/详细涨停原因/连板梯队/短线精灵状态/板块今明 PE/百日新高/市场温度
+> - **未确定**：K线 StockID 内部编码映射、板块成分后段字段、GetHotPHB 后段字段
+> - **字典**：12.17 KPL 章节新增（30 接口 × 字段 × 鉴权 × 交叉验证）
+
+> **V16.3 O33 plate-rotation（duanxianxia 短线侠）实测（2026-08-09，4 接口全通）**：
+> - **来源**：github.com/hssqz/plate-rotation-skill（板块轮动 Skill）——duanxianxia.com——**无 API key 仅 Referer 注入**（Safari UA + web/main 页 Referer）
+> - **返回格式**：**HTML 片段嵌 JSON html 字段**（前端 innerHTML）——正则解析（仓库 parsers.py 5 个解析函数沉淀）
+> - **4 接口实测**：getPlateRotatData（**N×天板块矩阵**——ths=涨幅%/kaipan=强度分 双口径，60KB/20天）、getPlateRotatChart（Top5 排名曲线——8/7 并购重组 18 次上榜/芯片 12）、getLongByPlate（板块龙头跨天——龙一/当日无领涨）、getPlateDayChart（单板块强度量能——legend=null 未活跃）
+> - **板块代码体系**：88x 同花顺 / 80x-803x 开盘啦——与 KPL §12.17 同体系互查 ✓
+> - **独有价值**：板块轮动历史矩阵（mak 轮动引用）、双源口径框架（真主线 vs 妖板判别）、龙头持续性（妖王识别）
+> - **字典**：12.18 新增（4 接口 × 字段 × 解析要点 × 交叉验证）
+
+> **V16.3 O34 kaipanla-data-parser 实测（2026-08-09，10 接口 + 63 字段映射验证）**：
+> - **来源**：github.com/Rainynitesky/kaipanla-data-parser（开盘啦 App mitmproxy 抓包 + 脱壳逆向——README 15 条坑清单 = 字段破解结论）
+> - **实测 10 接口（KPL 示例 token 仍有效 + Dalvik UA + Date=8/7）**：GetPlate_Info_QJ（**概念 8 字段验证**：强度/成交额/主力净额/涨停数/涨停封单/大单封单——涨跌幅不在此）；GetPanKou（**c=ZhiShuL2Data 12 字段验证**：成交额/换手/主力净额/涨跌家数/强度）；GetBaseFaceListZDEvnArtNew（爆发原因）；BKFenShiZhiBo（分时直播）；SonPlate_Info（子板块 [[代码,名称,强度]]）；GetGPCPHBTS_Tag；Theme/InfoBKR（子概念）；Index/GetInfo（**BaceFaceList 非交易时间空**——涨跌幅唯一来源）；Index/NewGetList（首页聚合）
+> - **ZhiShuStockList_W8 63 字段映射 100% 验证**（*ST湘邮全字段对照 README Bind 数组破解——PE动/TTM/静/人气值/机构增仓/封单/大单净额/几天几板/涨速等全部吻合）——**Type 需有效标签值**（0/1 空、2/7/20 各 9 只）；小写 list key；apphis 域名
+> - **Socket 协议补充**：267 板块走 protobuf——PlateTypeQuotasListResp 字段（strength/incRate/tur/mainNetAmount/**volRatio 量比**/**institutionIncrease 机构增仓**/yearPE/nextYearPE）——量比/机构增仓仅 Socket 有
+> - **未测/未确定**：GetDayBaseFaceListZDEvnArt（参数需探索）；板块成分后段索引 2/3/14-17 等未命名；GetPanKou [2][3][4][8][9][10] 部分未知（[9][10] 疑流通/总市值）
+> - **字典**：12.17.1 新增（10 接口 × 已验证字段 × 63 字段映射表 × 坑清单）
+
+> **V16.3 O35 统一层跟进（2026-08-09，新数据源接入）**：
+> - **sc_kpl.py（开盘啦 KPL——匿名接口）**：get_kpl_market_sentiment（情绪 strong/连板高度/涨停家数 + tip）、get_kpl_up_down（涨跌家数/涨停跌停/全市场量能）、get_kpl_plate_strength（板块强度/今明 PE/机构增仓/300万大单净额）、get_kpl_limit_up_detail（连板梯队 PidType——首板 61 只/二板 6 只，交叉 74 涨停 ✓）、get_kpl_broken_ratio（涨跌停/破板率）——内置 0.6s 限频
+> - **sc_ths.py 扩展（THS SDK——正式账号）**：get_ths_market_snapshot（汇总 29 字段——价格/PE TTM/5日涨幅/市值/主力净流入/涨停价，批量 50/批 0.1s）、get_ths_pb（市净率——前缀匹配修复——茅台 6.05 ✓）
+> - **sc_plate_rot.py（duanxianxia 板块轮动）**：get_plate_rotation_matrix（N×天矩阵——ths 涨幅/kaipan 强度双口径——HTML 正则解析）、get_plate_rotation_top（今日 Top——医药 20846 与 KPL 同值交叉 ✓）
+> - **导出**：__init__.py 新增 10 个函数（字典 §12.8.12b/§12.17/§12.18）
+> - **296/296 全过**
+
+> **V16.3 O40 策略 20 卡死根因修复（2026-08-09，用户运行中断排查）**：
+> - **现象**：val 跑 21 策略时策略 18 完成（148s）后长期卡死（策略 20 无输出）——用户中断；且上次运行策略 20 耗时 618s
+> - **根因**：策略 20 全市场循环（5550 只）对 **净流出股（~4000 只）** 和 **stat2 缺字段股（73-99 只）** 每次调用 `get_main_net_buy`（→ data_provider → is_zhb_data_fresh 检查 + 东财 fflow 限流 2.38s/只）——但负值最终也 continue（HTTP 完全浪费）——618s/173s 卡死
+> - **修复**：① use_zhb 时负值/0/缺字段**直接跳过**（stat2 全覆盖——O21 同基准纯净；东财 T 日口径兜底仅在盘中 use_zhb=False 时保留）② 删除 stat2 缺字段时的单股 get_main_net_buy 分支——**策略 20：618s → 0.0s**（纯内存 O(1)）
+> - **策略 22 疑问**：21 策略 = 编号 01-13 + 15-22（**14 号 V16.3 J 已删**）——22 是编号非数量——标题"21 策略"正确
+> - **296/296 全过**；命中 10 只正常（301008/600363/002792）
+
+> **V16.3 O41 策略编号顺延替补（2026-08-09，用户要求：14 删除后编号连续）**：
+> - **重映射**：15→14（流动性王）/16→15（政策热度）/17→16（北向Top）/18→17（龙虎榜）/19→18（52周低位）/20→19（主力资金）/21→20（量能三连击）/22→21（资金动量）——**01-21 连续无空洞**
+> - **改动**：get_val_report.py 函数名+注册表显示名+docstring（16 处函数 + 45 处显示名）；tests/reports/test_report_strategy.py 同步（4 处）；script_data_dict.md 策略清单更新
+> - **踩坑记录**：首版用顺序 replace（"策略22【"→"策略21【"→...）导致**前缀连锁**（22→21→20→…→14 全变 14）——改用**正则按后缀精确映射**（liquidity_king→14 等）修复
+> - **296/296 全过**
+
+> **V16.3 O36 AxData 完整分析（2026-08-09，257 接口 + 50 接口字段提取）**：
+> - **回应批评**：此前只分析 8 接口——本次 clone 仓库 + 文档站接口目录**完整分析 257 接口**（TDX 91/扩展 31/交易所 3/东财 13/巨潮 32/腾讯 6/新浪 60/财联社 12/开盘红 9）
+> - **字段提取**：本地源码 sources/*/catalog.py 解析（SourceRequestInterface.fields——RequestField 定义）——140 接口定义、**50 个带完整字段**（eastmoney 快照 58/涨停池 25/板块 42；TDX 指数快照 45/K线 44/ETF 29-46；cninfo 公告 39）——3 种定义格式（name= 关键字/位置参数/常量复用）逐一适配
+> - **交叉印证**：eastmoney 快照/涨停池与项目 push2/push2ex 同源；cls_market_emotion 与 get_cls_market_emotion 同接口；TDX 快照/短线指标与 ZHB 同源；涨跌停价格官方规则
+> - **结论**：AxData 不新增独家数据（全封装公开源）——价值 = 257 接口能力地图 + TDX 字段规范 + 巨潮/新浪期权/ETF 全系字段清单（未接领域参考）
+> - **字典**：12.12.0 新增（257 清单 + 50 接口字段表 + 交叉印证）——保留旧 12.12.1-8 详细表
+
+> **V16.3 O37 字典重析 + 统一层完善 + 源优先级调整（2026-08-09）**：
+> - **字典重析**：§12.15 优先级矩阵全面修订（O30-O37 新源插入）——**全源难易度最终排序**：ZHB → **THS（TCP 非 HTTP 无限频）** → TDX/腾讯 → 财联社/开盘红 → 板块轮动 duanxianxia → **KPL 开盘啦（私有 API）** → 新浪/巨潮 → 同花顺 → AxData → 东财（最难）
+> - **矩阵更新**：逐股链 PB 首选 THS（ZHB 无）/资金流盘中 THS/ROE TTM THS/两融股东 THS；批量链板块强度 KPL/情绪三源（财联社-开盘红-KPL）/板块轮动 duanxianxia/涨停池 KPL 第二源/涨停原因 KPL 首位
+> - **统一层**：O35 已接入（KPL 5 函数 + THS 3 函数 + 板块轮动 2 函数）——本次脚本落地
+> - **脚本调整**：① mak A 段情绪三源互校（财联社 → KPL 兜底 + 交叉显示 strong/连板高度）② mak D 段板块轮动外部对照（duanxianxia kaipan top5——医药 20846 交叉一致）③ val 策略 04 候选级 THS 批量 PB 预补全（200 只 ≈ 20-40s——canonical 计算兜底前用 THS 精确值）
+> - **验证**：编译 ✓；296/296 全过；KPL 情绪 63/连板 4/涨停 74；轮动 top3 医药 20846/通信 19101/芯片 11787
+
+> **V16.3 O38 script_data_dict.md 全面重写（2026-08-09）**：
+> - **背景**：O 系列大量改动后旧文件过时（缺 O27-O37、章节重复、ful 残留）
+> - **全面重析**：explore agent 分析 5 大脚本现状（mak 1767/val 2098/sht 1735/med 1223/lng 1092 行——每脚本加载段/源清单/段结构/核心字段/新增段全量提取）
+> - **重写内容**：① 三层架构升级为四层（+THS Layer 1.5）② 字段时效性分类更新（PB/情绪/轮动主源）③ data_provider 按字段归类更新（PB 链 THS/资金流 THS/涨跌幅 O28 口径）④ sc_datasource 加新源（KPL/THS/duanxianxia）⑤ **5 脚本矩阵全面重写**（mak A-G 段含 KPL/轮动；val 21 策略含全市场化/THS PB；sht 十五章节；med 十七章节；lng 十章节）⑥ 公共中间层加情绪/轮动 6.7 节
+> - **纠正旧错误**：sht 无 A-E 段（数字章节）；val 重复章节删除；ful 残留清理
+
+> **V16.3 O38b script_data_dict 逐字段级重写（2026-08-09，用户批评"内容太少"后）**：
+> - **回应**：上一版是"矩阵摘要"——本次 explore agent 逐字段级深挖（每字段获取函数+行号+完整 fallback 链+口径）
+> - **新增内容**：① 〇公共底座（L1-ZHB/L1.5-THS/L2-TDX/L3-腾讯/L4-push2/L5-datacenter 层级定义）② 5.1-5.5 每脚本 **30+ 字段逐字段表**（mak 个股 9+板块 10+独有 12；val 池 10+策略 18；sht 30+；med 15+；lng 16+）③ **六、跨脚本差异总表**（change_20d 快照 vs canonical 入口差异、PB THS 仅 val 04、资金流 prefer tdx/em 差异、行业排名三处独立实现、涨停阈值 9.5 写死）④ **七、断点清单**（mak 板块 mcap_yi 恒 0 市值加权退化、THS PB 未推广、val 09 未走 O25 等 5 项）
+> - **文件规模**：约 350 行逐字段表（原 548 行摘要版 → 逐字段级）
+
+> **V16.3 O39 用户运行排查：val 假成功根因修复 + sht 超时 + docs 审计（2026-08-09）**：
+> - **问题 1（val 显示"已保存"但文件不存在+无 GD）**——**根因链**：is_bypass（休市）时 `_tencent_map` 未初始化（原仅 else 分支赋值）→ 下方腾讯 mcap 兜底引用未定义变量 → UnboundLocalError → 被外层 except 吞 → tdx 兜底失败 → 提前 return（**跳过写文件**）→ execute_pipeline 无条件打印"已保存"（假成功）→ GD 无文件
+> - **修复**：① is_bypass 分支初始化 `_tencent_map={}` ② 失败提前 return 前**落盘失败报告**（含异常详情——用户可见）③ "已保存"打印前**验证文件存在**（不存在打印"报告未生成"）——**验证**：val 从 2.5s 假成功 → 完整跑 21 策略（策略 20 全市场 618s）
+> - **问题 2（sht 35 只超时 600s 被 kill）**——固定 600s 对批量不够（实测 ~25-30s/只）——**修复**：main.py 单股报告超时**按股票数动态估算**（max(600, n×30+120)）
+> - **问题 3（docs 审计）**：field_dict 引用 tdx_field_dict.md（文件已并入）→ 更新为 §12.13 引用；akshare 章节编号 12.14→12.16（修复乱序）；script_data_dict 补关键章节引用
+> - **296/296 全过**
+
+> **V16.3 O30e 真实账号成功（2026-08-09）**：
+> - **手机号账号 1506****7789 连接成功**（首测 tsy1102 失败——账号权限差异）——**30 次连续查询无 sleep 全部通过**（游客同场景触发官方 20ms 拒绝）——**正式账号基本无限频，可批量拉取**
+> - **数据一致性**：疑点字段/基础字段与游客逐值相同——**无字段权限差异**（游客仅受共享限频限制）
+> - **结论**：正式账号（ths_credentials.json 已配）→ 生产可用（批量查询无需担心 20ms 限频）；字段核实结论（O30c/O30d）在正式账号同样成立
 
 ---
 

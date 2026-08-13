@@ -268,6 +268,9 @@ V13.1 data_provider opt-in 接口：
 - `get_market_snapshot_dataclass(codes)` → `{code: NormalizedQuote}`
 - `dict_to_normalized_quote(code, raw, source)` 通用工具
 
+> V17.0 S1: 以上三个 dataclass 辅助函数已删除(零调用); 强类型合约统一由
+> `get_canonical_stock_data` + `stock_common.sc_schema.NormalizedQuote` 承担。
+
 V13.2 性能压测（5000 记录，Python 3.12）：
 
 | 指标 | dict | dataclass (slots=True) | 改进 |

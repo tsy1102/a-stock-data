@@ -1,14 +1,37 @@
-# Google Drive OAuth 客户端凭据与令牌
-client_secrets.json
-credentials.json
+# ══════════════════════════════════════════════════════════════
+# .gitignore — V17.0 核实版(2026-08-14)
+# ⚠️ 注意: 不支持行尾注释——每行仅一个模式
+# 结构: 凭据 → 运行时数据 → 缓存 → 采集产物 → 临时/工具 → 编辑器
+# ══════════════════════════════════════════════════════════════
 
-# 运行时输出与中间数据
+# ── 凭据与密钥(不入库) ──────────────────────────────────────
+# V17.0: 凭据集中到 credentials/(3 个文件); 未来新增凭据需在此追加
+credentials/client_secrets.json
+credentials/credentials.json
+credentials/ths_credentials.json
+# 同花顺 fuyao API Key(交互输入自动保存)
+fuyao_key.txt
+
+# ── 运行时输出与中间数据(可重建) ────────────────────────────
 reports/
 logs/
 snapshots/
-holder_cache.json
 
-# Python & 测试临时缓存
+# ── 本地缓存(不入库, 可安全删除重建) ───────────────────────
+# 根级: stock_cache.db + zhb/ + 行业映射
+cache/
+# V17.0 补: 股本缓存 share_capital.json(运行时生成)
+stock_common/cache/
+*.db
+*.db-journal
+*.db-wal
+*.db-shm
+
+# ── 采集产物(可重采, 保留分析结论) ─────────────────────────
+# V17.0 补: 每日 raw_*.json 为可重采数据(2MB/日递增); analysis.md/映射表/pool.json 入库
+docs/field_verification/*/raw_*.json
+
+# ── Python & 测试临时缓存 ───────────────────────────────────
 __pycache__/
 *.pyc
 *.pyo
@@ -17,28 +40,11 @@ __pycache__/
 *.tmp
 *.cache
 
-# 本地 SQLite 缓存与临时数据库
-cache/
-*.db
-*.db-journal
-*.db-wal
-*.db-shm
-stock_cache.db
-
-# 草稿箱与临时调研沙盒
+# ── 调研沙盒(仅保留说明文件) ───────────────────────────────
 scratch/*
 !scratch/README.md
-!scratch/INVENTORY.md
-!scratch/parse_zhb.py
-!scratch/query_tipinfo.py
-!scratch/sample_all.py
-!scratch/search_mcap.py
-!scratch/get_real_data.py
 
-# V9.6 只读参考标杆（永不修改、不进 git）
-a-stock-data-v9.6/
-
-# 编辑器与 OS 配置文件
+# ── 编辑器与 OS 配置文件 ────────────────────────────────────
 .DS_Store
 .reasonix/
 .vscode/
@@ -46,5 +52,5 @@ a-stock-data-v9.6/
 *.swp
 *.swo
 
-# V16.1: Playwright MCP 浏览器会话快照（含登录态，不入库）
+# ── 浏览器会话快照(含登录态) ────────────────────────────────
 .playwright-mcp/

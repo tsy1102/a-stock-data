@@ -863,7 +863,7 @@ def is_workday(date):
 
         # 3. 辅助校验：ZHB 数据（残缺时不影响本地判断）
         try:
-            from zhb_client import get_holidays
+            from core.zhb_client import get_holidays
             zhb_holidays = get_holidays()
             if zhb_holidays:
                 date_str = date.strftime("%Y%m%d")
@@ -893,7 +893,7 @@ def _load_zhb_neednote_supplement():
         加载失败时返回 (set(), set())
     """
     try:
-        from zhb_client import get_zhb_official_holidays, get_zhb_official_jyweek
+        from core.zhb_client import get_zhb_official_holidays, get_zhb_official_jyweek
         supplement_holidays = set()
         # V14.2.1: 预过滤空元素和空白字符串
         for d_str in (s for s in get_zhb_official_holidays() if s and s.strip()):
@@ -936,7 +936,7 @@ def _ensure_zhb_supplement_loaded():
     """
     global _zhb_holidays_supplement, _zhb_workdays_supplement, _zhb_supplement_loaded, _last_zhb_supplement_date
     try:
-        from zhb_client import get_zhb
+        from core.zhb_client import get_zhb
         zhb = get_zhb()
         current_date = zhb.date if zhb is not None else ""
         # 已加载且日期未变：直接返回
@@ -997,7 +997,7 @@ def is_workday_with_zhb_supplement(date):
 
     # 5. V14.0 ZHB 残缺数据辅助校验
     try:
-        from zhb_client import get_holidays
+        from core.zhb_client import get_holidays
         zhb_holidays = get_holidays()
         if zhb_holidays:
             date_str = date.strftime("%Y%m%d")

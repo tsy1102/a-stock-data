@@ -215,7 +215,7 @@ class TestSafeCast(unittest.TestCase):
     """V16.3 E H1: zhb_client _safe_cast（原 4 处 _f 嵌套提取为模块级）。"""
 
     def _cast(self, parts, idx, cast=float):
-        from zhb_client import _safe_cast
+        from core.zhb_client import _safe_cast
         return _safe_cast(parts, idx, cast)
 
     def test_normal(self):

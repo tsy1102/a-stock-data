@@ -2,6 +2,10 @@
 
 本目录包含项目的 pytest 单元测试与集成测试，运行 `.\scripts\run_tests.ps1` 时自动收集。
 
+> **V17.0**: 核心模块已包化到 `core/`——测试中引用 config/data_provider/gd_uploader/
+> stock_cache/tdx_client/zhb_client/zhb_sync 一律 `from core.X import ...`;
+> `patch("core.tdx_client.xxx")`(mock 字符串同样带 core. 前缀, 否则假绿)。
+
 ## 目录结构（V16.3 F 按架构分层重构）
 
 ```
@@ -12,8 +16,10 @@ tests/
 │   ├── test_data_tdx.py           # TDX TCP / 适配器 / 服务器白名单
 │   ├── test_data_eastmoney.py     # 东财接口 / 13 域健康矩阵（real_network）
 │   └── test_data_network.py       # 令牌桶限流 / 熔断器 / 20h 封禁冷却
+│   └── test_data_prefetch.py      # sht 批量预取映射/单位换算/缓存命中
 ├── core/                          # ② 统一层 / 服务层
 │   ├── test_core_cache.py         # 统一缓存层（L1/L2/交叉验证/版本化）
+│   ├── test_core_capital_cache.py # 股本缓存单位自愈/schema 版本失效
 │   ├── test_core_schema.py        # CanonicalStockData / 归一化
 │   ├── test_core_routing.py       # 字段路由矩阵 / 断路器降级
 │   ├── test_core_calendar.py      # 交易日历（权威日历 + ZHB 补班校验）
@@ -38,6 +44,8 @@ tests/
 | 东财被封/接口变化 | `data/test_data_eastmoney.py` |
 | 限流/熔断/封禁 | `data/test_data_network.py` |
 | 缓存失效/污染 | `core/test_core_cache.py` |
+| 股本单位/schema 版本 | `core/test_core_capital_cache.py` |
+| 批量预取映射 | `data/test_data_prefetch.py` |
 | 字段口径/归一化 | `core/test_core_schema.py` |
 | 日历/节假日 | `core/test_core_calendar.py` |
 | 评分/技术指标 | `core/test_core_scoring.py` / `core/test_core_technical.py` |

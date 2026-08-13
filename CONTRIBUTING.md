@@ -4,7 +4,7 @@
 
 ## 行为准则
 
-请阅读 [CODE_OF_CONDUCT.md](file:///d:/GitHub/test/CODE_OF_CONDUCT.md) 了解社区行为规范。
+请阅读 [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) 了解社区行为规范。
 
 ## 提交流程
 
@@ -66,7 +66,7 @@ docs(readme): 更新依赖表格，拆分 dev 依赖
 ## 文档与版本号
 
 - 重要变更（新增功能、Bug 修复、破坏性改动）需要在 `CHANGELOG.md` 中记录
-- 版本号统一由根目录 [VERSION](file:///d:/GitHub/test/VERSION) 文件管理，**禁止在代码中硬编码版本号**
+- 版本号统一由根目录 [VERSION](VERSION) 文件管理，**禁止在代码中硬编码版本号**
 - README 中如有示例命令、依赖表、脚本列表变更，需同步更新
 
 ## 开发环境

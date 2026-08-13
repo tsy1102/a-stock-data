@@ -46,7 +46,7 @@ Set-ExecutionPolicy -Scope CurrentUser -ExecutionPolicy RemoteSigned
 
 两个脚本都做三件事：
 
-1. **自检**：验证 `C:\Users\tsy11\AppData\Local\Python\pythoncore-3.12-64\python.exe` 存在
+1. **自检**：自动探测系统 Python 3.12（`SYSTEM_PYTHON_EXE` 环境变量 > `py -3.12` > Windows Store 包 > PATH 上 3.12）
 2. **PATH 注入**：把系统 Python 3.12 目录放到 PATH 最前面
 3. **透传参数**：所有命令行参数原样转发到系统 Python
 
@@ -74,11 +74,24 @@ Set-ExecutionPolicy -Scope CurrentUser -ExecutionPolicy RemoteSigned
   ```
   输出最大成功 N 值将用于 V13.x 阶段批量调用优化决策。
 
+- **`check_em_health.py`** — 【V16.4.0】东财接口健康探测（6 域低频，间隔 5s 防封锁）。
+  `--once` 单域验证恢复；退出码 0=全 OK/1=有 FAIL。换 IP 后/开机时使用：
+  ```bat
+  python scripts\check_em_health.py
+  ```
+- **`upload_reports_to_gd.py` / `.bat`** — 【V16.4.1】补传 `reports/` 未上传文件到 Google Drive。
+  复用 `gd_uploader.py` 完整逻辑（文件夹规则/凭证/代理），**网盘已存在同名文件则跳过，只上传缺失**；
+  个股报告 → 「代码-名」子文件夹，val/mak → 类型文件夹；名称缺失时按前缀匹配网盘已有文件夹。
+  解决 GD 上传因超时/网络抖动漏传的问题：
+  ```bat
+  scripts\upload_reports_to_gd.bat            # 扫描+补传
+  scripts\upload_reports_to_gd.bat --dry-run  # 只扫描不上传
+  ```
 - **`run_with_system_python.bat` / `.ps1`** — 一键使用系统 Python 3.12，避免 TRAE IDE 内置 Python 3.10 抢占调用
 
 ### 历史脚本
 
-- **`update_calendar.py`** — 从 chinese_calendar 库更新交易日历（[`stock_common/stock_calendar.py`](file:///d:/GitHub/test/stock_common/stock_calendar.py) 数据补充）
+- **`update_calendar.py`** — 从 chinese_calendar 库更新交易日历（[`stock_common/stock_calendar.py`](../stock_common/stock_calendar.py) 数据补充）
 - **`sync_readme.py`** — 【V14.1】从 CHANGELOG.md 自动同步 README.md 顶部"历史版本摘要"块。设计目标：减少双重维护成本，CHANGELOG.md 作为单一权威源
   ```bat
   .\\scripts\\run_with_system_python.bat scripts\\sync_readme.py

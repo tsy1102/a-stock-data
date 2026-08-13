@@ -1,14 +1,14 @@
-<#
+﻿<#
 .SYNOPSIS
     One-click backup of opencode data + config, optionally project code.
 .DESCRIPTION
     Backs up:
       1. opencode data dir   : ~/.local/share/opencode (sessions, auth.json, opencode.db)
       2. opencode config dir : ~/.config/opencode (opencode.jsonc, agents, skills, plugins)
-      3. (optional) project  : a code directory (e.g. D:\GitHub\test)
+      3. (optional) project  : a code directory (e.g. repo root, pass -ProjectPath . when run from it)
 .EXAMPLE
     .\scripts\backup-opencode.ps1 -Destination D:\backup
-    .\scripts\backup-opencode.ps1 -Destination D:\backup -IncludeProject -ProjectPath D:\GitHub\test
+    .\scripts\backup-opencode.ps1 -Destination D:\backup -IncludeProject -ProjectPath .
 #>
 param(
     [Parameter(Mandatory = $true)]
@@ -19,6 +19,9 @@ param(
 
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
+# V16.4.1: 强制 UTF-8 输出（opencode 子进程不加载 Profile，系统代码页 936 时中文乱码）
+[Console]::OutputEncoding = [System.Text.Encoding]::UTF8
+$OutputEncoding = [Console]::OutputEncoding
 
 function Write-Step {
     param([string]$Message)
@@ -34,7 +37,12 @@ function Copy-Dir {
         throw "source not found: $Source"
     }
     New-Item -ItemType Directory -Path $Target -Force | Out-Null
-    Copy-Item -LiteralPath $Source -Destination $Target -Recurse -Force
+    $rbArgs = @($Source, $Target, '/E', '/XJ', '/R:3', '/W:2', '/NFL', '/NDL', '/NJH')
+    & robocopy.exe @rbArgs | Out-Null
+    $code = $LASTEXITCODE
+    if ($code -ge 8) {
+        throw "robocopy failed (exit $code): $Source -> $Target"
+    }
     if (-not (Test-Path -LiteralPath $Target)) {
         throw "copy failed: $Source -> $Target"
     }

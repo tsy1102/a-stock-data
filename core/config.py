@@ -3,7 +3,7 @@
 V12.2: 将分散在各模块中的硬编码常量集中到此处，便于统一调优和维护。
 
 使用方式：
-    from config import HTTP_TIMEOUT_SECONDS, MAX_RETRY_COUNT
+    from core.config import HTTP_TIMEOUT_SECONDS, MAX_RETRY_COUNT
 """
 from __future__ import annotations
 
@@ -12,9 +12,6 @@ from __future__ import annotations
 # ═══════════════════════════════════════
 HTTP_TIMEOUT_SECONDS = 15
 """HTTP 请求默认超时时间（秒）"""
-
-HTTP_TIMEOUT_LONG = 30
-"""HTTP 请求长超时时间（用于大数据量接口，如历史K线）"""
 
 # ═══════════════════════════════════════
 # 限流配置
@@ -35,33 +32,6 @@ RETRY_DELAY_SECONDS = 0.5
 """重试基础延迟（秒），实际延迟为 delay * (2 ** attempt)"""
 
 # ═══════════════════════════════════════
-# 缓存配置
-# ═══════════════════════════════════════
-CACHE_DEFAULT_TTL_DAYS = 365
-"""缓存默认过期时间（天），用于稳定的基础数据"""
-
-CACHE_SHORT_TTL_DAYS = 7
-"""短期缓存过期时间（天），用于频繁更新的数据"""
-
-CACHE_FINANCIAL_TTL_DAYS = 365
-"""财报数据缓存过期时间（天），财报数据一旦发布不会变更"""
-
-CACHE_DB_SIZE_LIMIT_MB = 500
-"""缓存数据库大小上限（MB）"""
-
-# ═══════════════════════════════════════
-# 市场时间配置
-# ═══════════════════════════════════════
-MARKET_OPEN_TIME = "09:30"
-"""市场开盘时间"""
-
-MARKET_CLOSE_TIME = "15:00"
-"""市场收盘时间"""
-
-PRE_MARKET_CUTOFF = "09:15"
-"""盘前截止时间（在此之前使用T-1数据）"""
-
-# ═══════════════════════════════════════
 # 容错配置
 # ═══════════════════════════════════════
 CIRCUIT_BREAKER_FAILURE_THRESHOLD = 10
@@ -70,8 +40,7 @@ CIRCUIT_BREAKER_FAILURE_THRESHOLD = 10
 CIRCUIT_BREAKER_RESET_TIMEOUT_SECONDS = 60
 """熔断器重置时间（秒）：断路后等待多久进入半开状态"""
 
-TOKEN_BUCKET_RPS_EASTMONEY = 1.0
-"""东财接口令牌桶速率（请求/秒）"""
-
-TOKEN_BUCKET_RPS_TENCENT = 5.0
-"""腾讯接口令牌桶速率（请求/秒）"""
+# V16.4.1: 原 TOKEN_BUCKET_RPS_EASTMONEY / TOKEN_BUCKET_RPS_TENCENT 为死配置
+# （无任何调用方）——令牌桶 rps 实际全部由 sc_network._DOMAIN_LIMITS 分域管理
+# （push2 系 0.4rps 最严，其余东财域 1.0rps，腾讯/新浪 5rps）。
+# V16.4.1 审查清理: 另删 8 个 0 引用常量(HTTP_TIMEOUT_LONG/CACHE_*/MARKET_*/PRE_MARKET_CUTOFF)

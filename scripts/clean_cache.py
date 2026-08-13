@@ -19,12 +19,21 @@ import subprocess
 import sys
 from pathlib import Path
 
+# V16.4.1: 强制 UTF-8 输出（下沉到代码自身——任何 agent/机器/直接运行均 UTF-8，
+# 不依赖系统代码页/环境变量/Profile；纯标准库，幂等）
+for _stream in (sys.stdout, sys.stderr):
+    if _stream is not None and hasattr(_stream, "reconfigure"):
+        try:
+            _stream.reconfigure(encoding="utf-8", errors="replace")
+        except Exception:
+            pass
+
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 
 
 def _run_stock_cache(args: list) -> int:
-    """调用 stock_cache.py 的子命令并返回退出码。"""
-    cmd = [sys.executable, str(PROJECT_ROOT / "stock_cache.py")] + args
+    """调用 stock_cache.py 的子命令并返回退出码（V17.0 包化: 改 -m core.stock_cache）。"""
+    cmd = [sys.executable, "-m", "core.stock_cache"] + args
     return subprocess.call(cmd, cwd=str(PROJECT_ROOT))
 
 

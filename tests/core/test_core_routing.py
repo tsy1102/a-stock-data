@@ -17,7 +17,7 @@ import unittest
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-import data_provider as dp
+import core.data_provider as dp
 
 
 class TestRealtimeHttpField(unittest.TestCase):
@@ -114,28 +114,6 @@ class TestSetsDisjoint(unittest.TestCase):
         )
 
 
-class TestLegacyThreeTierKept(unittest.TestCase):
-    """V12.6 keeps legacy _REALTIME_FIELDS / _NEAR_REALTIME_FIELDS / _STATIC_FIELDS
-    for backward compatibility with existing callers."""
-
-    def test_legacy_realtime_set_exists(self):
-        self.assertTrue(hasattr(dp, "_REALTIME_FIELDS"))
-        self.assertIn("price", dp._REALTIME_FIELDS)
-
-    def test_legacy_near_realtime_set_exists(self):
-        self.assertTrue(hasattr(dp, "_NEAR_REALTIME_FIELDS"))
-        self.assertIn("main_net_buy_amount", dp._NEAR_REALTIME_FIELDS)
-
-    def test_legacy_static_set_exists(self):
-        self.assertTrue(hasattr(dp, "_STATIC_FIELDS"))
-        self.assertIn("pe_ttm", dp._STATIC_FIELDS)
-
-    def test_legacy_helper_functions_still_work(self):
-        self.assertTrue(dp._is_realtime("price"))
-        self.assertTrue(dp._is_near_realtime("main_net_buy_amount"))
-        self.assertTrue(dp._is_static("pe_ttm"))
-
-
 class TestCanonicalDataAPI(unittest.TestCase):
     """V15 Unified Canonical Data API Tests."""
 
@@ -158,13 +136,14 @@ class TestCanonicalDataAPI(unittest.TestCase):
         """当 TDX/腾讯/东财全部抛异常时，get_canonical_stock_data 不抛异常并降级为 ZHB。"""
         from unittest.mock import patch
         # data_provider 函数内 `from stock_common import get_tencent_quote`，patch 包属性
-        with patch("tdx_client.tdx_get_quote_full", side_effect=RuntimeError("Circuit Breaker Open")):
+        with patch("core.tdx_client.tdx_get_quote_full", side_effect=RuntimeError("Circuit Breaker Open")):
             with patch("stock_common.get_tencent_quote", return_value={}):
-                with patch("stock_common.sc_datasource.get_em_quote_full", return_value={}):
-                    cdata = dp.get_canonical_stock_data("600519", force_realtime=True)
-                    self.assertIsNotNone(cdata)
-                    self.assertEqual(cdata.code, "600519")
-                    self.assertEqual(cdata.data_source, "zhb")
+                with patch("stock_common.sc_datasource.get_em_quote_full_delay", return_value={}):
+                    with patch("stock_common.sc_datasource.get_em_quote_full", return_value={}):
+                        cdata = dp.get_canonical_stock_data("600519", force_realtime=True)
+                        self.assertIsNotNone(cdata)
+                        self.assertEqual(cdata.code, "600519")
+                        self.assertEqual(cdata.data_source, "zhb")
 
 
 if __name__ == "__main__":

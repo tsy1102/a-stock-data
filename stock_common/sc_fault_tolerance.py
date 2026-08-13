@@ -238,7 +238,7 @@ def get_domain_circuit_breaker(domain: str) -> CircuitBreaker:
     """获取指定域名的熔断器（懒加载）。"""
     # V16.0: 阈值对齐 config.py（原硬编码 5 vs config 10），避免脱节
     try:
-        from config import CIRCUIT_BREAKER_FAILURE_THRESHOLD, CIRCUIT_BREAKER_RESET_TIMEOUT_SECONDS
+        from core.config import CIRCUIT_BREAKER_FAILURE_THRESHOLD, CIRCUIT_BREAKER_RESET_TIMEOUT_SECONDS
         _fail_thr = int(CIRCUIT_BREAKER_FAILURE_THRESHOLD)
         _reset_to = float(CIRCUIT_BREAKER_RESET_TIMEOUT_SECONDS)
     except Exception:

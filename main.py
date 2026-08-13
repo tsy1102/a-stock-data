@@ -121,6 +121,16 @@ from datetime import datetime
 
 from stock_common import get_script_dir, ensure_output_dir, clean_codes
 
+# V16.3.2: 新机 GBK 控制台兜底——父进程 stdout/stderr 强制 UTF-8 输出。
+# 背景：子进程已注入 PYTHONIOENCODING=utf-8（V15.2），但父进程自身在 GBK
+# 代码页控制台（如全新 Windows 中文环境）直接 print "▶/✔/⚠" 会抛
+# UnicodeEncodeError；旧机 UTF-8 控制台未触发。此处统一兜底，杜绝环境差异崩溃。
+# V16.4.1: 下沉到 stock_common.env_setup.ensure_utf8_stdio()（纯标准库，
+# 不依赖环境变量/Profile），main.py 与全部报告脚本共用同一实现。
+from stock_common.env_setup import ensure_utf8_stdio
+
+ensure_utf8_stdio()
+
 # 新的混合模式参数处理策略：
 # 1. 如果指定了--all，则每个脚本类型的股票 = 单独指定股票 + --all股票
 # 2. 如果没有指定--all，则每个脚本类型使用单独指定的股票
@@ -206,56 +216,46 @@ def parse_args():
   混合模式优势：每个脚本类型可以批量处理更多股票，提高并发效率
 """,
     )
+    parser.add_argument("--sht", nargs="*", default=[], help="短线报告股票代码（可多个）")
+    parser.add_argument("--med", nargs="*", default=[], help="中线报告股票代码（可多个）")
+    parser.add_argument("--lng", nargs="*", default=[], help="长线报告股票代码（可多个）")
     parser.add_argument(
-        "--sht", nargs="*", default=[],
-        help="短线报告股票代码（可多个）"
+        "--ful",
+        nargs="*",
+        default=[],
+        help="V16.1 已下线：全维度报告不再生成，请用 --sht/--med/--lng",
+    )
+    parser.add_argument("--val", action="store_true", help="全市场选股报告（不需要股票代码）")
+    parser.add_argument("--mak", action="store_true", help="异动扫描报告（不需要股票代码）")
+    parser.add_argument(
+        "--all",
+        nargs="*",
+        default=[],
+        help="所有报告共用此股票列表（将与单独指定的参数合并，支持混合批量处理）",
     )
     parser.add_argument(
-        "--med", nargs="*", default=[],
-        help="中线报告股票代码（可多个）"
-    )
-    parser.add_argument(
-        "--lng", nargs="*", default=[],
-        help="长线报告股票代码（可多个）"
-    )
-    parser.add_argument(
-        "--ful", nargs="*", default=[],
-        help="V16.1 已下线：全维度报告不再生成，请用 --sht/--med/--lng"
-    )
-    parser.add_argument(
-        "--val", action="store_true",
-        help="全市场选股报告（不需要股票代码）"
-    )
-    parser.add_argument(
-        "--mak", action="store_true",
-        help="异动扫描报告（不需要股票代码）"
-    )
-    parser.add_argument(
-        "--all", nargs="*", default=[],
-        help="所有报告共用此股票列表（将与单独指定的参数合并，支持混合批量处理）"
-    )
-    parser.add_argument(
-        "-o", "--output",
+        "-o",
+        "--output",
         default=os.path.join(_SCRIPT_DIR, "reports"),
-        help="报告输出目录（默认: 脚本目录下的 reports/）"
+        help="报告输出目录（默认: 脚本目录下的 reports/）",
     )
+    parser.add_argument("--no-upload", action="store_true", help="跳过 Google Drive 上传")
     parser.add_argument(
-        "--no-upload", action="store_true",
-        help="跳过 Google Drive 上传"
-    )
-    parser.add_argument(
-        "--concurrency", type=int, default=_MAX_CONCURRENCY,
-        help="最大并发脚本数（默认 1，不推荐超过 3）"
+        "--concurrency",
+        type=int,
+        default=_MAX_CONCURRENCY,
+        help="最大并发脚本数（默认 1，不推荐超过 3）",
     )
     return parser.parse_args()
 
 
-async def _run_script_async(script: str, stock_codes: list, output_dir: str,
-                            no_upload: bool, label: str) -> tuple:
+async def _run_script_async(
+    script: str, stock_codes: list, output_dir: str, no_upload: bool, label: str
+) -> tuple:
     """asyncio 子进程方式并发运行一个报告脚本。
-    
+
     asyncio 子进程方式并发运行一个报告脚本。
-    
+
     在混合模式下，每个脚本会批量处理指定的股票代码列表，
     充分利用脚本内部的并发机制（Semaphore(3)）来提高效率。
     """
@@ -294,7 +294,11 @@ async def _run_script_async(script: str, stock_codes: list, output_dir: str,
             stderr=asyncio.subprocess.STDOUT,
             env=sub_env,
         )
+
         # 异步实时打印子进程输出（解决 Windows 缓冲问题）
+        # V17.0: 增加输出活性时间戳——供卡死检测使用(子进程每行输出更新)
+        _out_state = {"last_ts": time.time()}
+
         async def _drain_output() -> None:
             if proc.stdout is None:
                 return
@@ -302,22 +306,36 @@ async def _run_script_async(script: str, stock_codes: list, output_dir: str,
                 line = await proc.stdout.readline()
                 if not line:
                     break
+                _out_state["last_ts"] = time.time()
                 # 子进程输出继承父进程控制台编码（Windows GBK / Linux UTF-8）
                 # V16.3 B3: 去掉 gbk 兜底分支——errors="replace" 永不抛 UnicodeDecodeError（不可达）
                 print(line.decode("utf-8", errors="replace").rstrip(), flush=True)
 
         drain_task = asyncio.create_task(_drain_output())
         try:
-            # V15.5.6: 超时分级 — 全市场扫描(val/mak) 30 分钟(需 1000s+)，单股报告 10 分钟
-            # V15.4.2: 原统一 600s 会把 val 强制 kill（val 实际运行 1000+ 秒）
-            _report_timeout = 1800 if script in ("get_val_report.py", "get_mak_report.py") else 600
-            rc = await asyncio.wait_for(proc.wait(), timeout=_report_timeout)
+            # V17.0: 去除固定超时(单一时间维度会误杀正常慢任务——35 只 sht 20 分钟持续有输出
+            # 曾被 875s 估算超时误杀, 历史 V15.4.2/V16.3 O39/V16.4.1 三度调参仍误伤)。
+            # 改为「输出活性检测」: 子进程持续输出=正常运行, 无限等待;
+            # 无任何输出超过 _STALL_TIMEOUT 判定卡死(正常脚本每只股票/每阶段都会打印进度)。
+            _STALL_TIMEOUT = 900  # 无输出 15 分钟判定卡死(全市场 val 策略阶段可能静默较久)
+            rc = None
+            while True:
+                if time.time() - _out_state["last_ts"] > _STALL_TIMEOUT:
+                    print(
+                        f"⚠ [{label}] {script} 无输出 {_STALL_TIMEOUT}s，判定卡死，强制 kill",
+                        flush=True,
+                    )
+                    proc.kill()
+                    await proc.wait()
+                    drain_task.cancel()
+                    return script, -1, time.time() - t0, label
+                try:
+                    rc = await asyncio.wait_for(proc.wait(), timeout=5)
+                    break
+                except asyncio.TimeoutError:
+                    pass
         except asyncio.TimeoutError:
-            print(f"⚠ [{label}] {script} 运行超时 {_report_timeout}s，强制 kill", flush=True)
-            proc.kill()
-            await proc.wait()
-            drain_task.cancel()
-            return script, -1, time.time() - t0, label
+            pass
         # 等待输出排空
         try:
             await asyncio.wait_for(drain_task, timeout=5)
@@ -370,20 +388,23 @@ async def main_async():
 
     # 判断运行模式
     has_flag = any([args.sht, args.med, args.lng, args.ful, args.val, args.mak, args.all])
-    
+
     if not has_flag:
-        # 无任何标志：默认跑 --all（所有报告，共用空股票列表，即全市场扫描）
+        # V16.4.1: 原注释"默认跑 --all 全市场扫描"与实际不符(args.all=[] → tasks_info 空 → exit);
+        # is_all_mode 死变量已删
         args.all = []
-        is_all_mode = True
     else:
         # 有参数时：如果指定了--all，则与单独指定参数共存
-        is_all_mode = False  # 使用新的混合模式，不是纯all模式
+        pass  # 混合模式：每个脚本类型 = 单独指定 + --all 合并
 
     output_dir = ensure_output_dir(args.output)
     ts = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     conc = min(max(args.concurrency, 1), 5)
     print(f"[{ts}] 批量报告启动 | 并发度: {conc} | 输出目录: {output_dir}", flush=True)
-    print(f"  GD上传: {'跳过' if args.no_upload else '启用'} | 防封限流: 文件协调 + 1.0s+ 间隔", flush=True)
+    print(
+        f"  GD上传: {'跳过' if args.no_upload else '启用'} | 防封限流: 文件协调 + 1.0s+ 间隔",
+        flush=True,
+    )
     print("-" * 60, flush=True)
 
     # 确定每个脚本的股票代码列表（混合模式：单独指定 + --all合并）
@@ -398,13 +419,13 @@ async def main_async():
     # V10.0: 调整顺序为 val → mak → sht → med → lng → ful，
     #        让全市场扫描产生的缓存被后续单股分析脚本复用
     tasks_info = []
-    
+
     # 第一阶段：全市场扫描（产生大量缓存）
     if args.val:
         tasks_info.append(("get_val_report.py", [], output_dir, args.no_upload, "全市场选股"))
     if args.mak:
         tasks_info.append(("get_mak_report.py", [], output_dir, args.no_upload, "异动扫描"))
-    
+
     # 第二阶段：单股分析（复用前面产生的缓存）
     for script, codes, label in [
         ("get_sht_report.py", sht_codes, "短线"),
@@ -416,7 +437,10 @@ async def main_async():
 
     # V16.1: FUL 已下线（引擎迁移至 sc_technical/sc_risk，能力并入 sht/med/lng）
     if args.ful:
-        print("⚠ [ful] V16.1 已下线：全维度报告不再单独生成。技术/风险能力已并入 sht/med/lng。", flush=True)
+        print(
+            "⚠ [ful] V16.1 已下线：全维度报告不再单独生成。技术/风险能力已并入 sht/med/lng。",
+            flush=True,
+        )
         print("  → 请改用 --sht/--med/--lng 获取对应持有周期报告", flush=True)
 
     if not tasks_info:
@@ -429,10 +453,13 @@ async def main_async():
     # 分批：每批最多 conc 个并发，避免瞬间发大量请求
     results_raw = []
     for batch_start in range(0, len(tasks_info), conc):
-        batch = tasks_info[batch_start:batch_start + conc]
+        batch = tasks_info[batch_start : batch_start + conc]
         batch_idx = batch_start // conc + 1
-        print(f"  [第 {batch_idx} 批] 并发运行 {len(batch)} 个脚本: " +
-              ", ".join(f"{t[4]}" for t in batch), flush=True)
+        print(
+            f"  [第 {batch_idx} 批] 并发运行 {len(batch)} 个脚本: "
+            + ", ".join(f"{t[4]}" for t in batch),
+            flush=True,
+        )
 
         batch_tasks = [_run_script_async(*t) for t in batch]
         batch_results = await asyncio.gather(*batch_tasks, return_exceptions=True)
@@ -454,19 +481,22 @@ async def main_async():
 
     # 汇总
     print(f"{'=' * 60}", flush=True)
-    print(f"[完成] 批量报告总耗时: {total_time:.1f} 秒 " +
-          f"(每批 {conc} 并发，已做三层防封保护：线程锁 + 进程间文件协调 + 时间戳)",
-          flush=True)
+    print(
+        f"[完成] 批量报告总耗时: {total_time:.1f} 秒 "
+        + f"(每批 {conc} 并发，已做三层防封保护：线程锁 + 进程间文件协调 + 时间戳)",
+        flush=True,
+    )
     for name, (rc, dt, label, _) in results.items():
         status = "OK" if rc == 0 else f"FAIL({rc})"
         print(f"  {label}: {status} ({dt:.1f}s)", flush=True)
     print(f"{'=' * 60}", flush=True)
 
     all_ok = all(v[0] == 0 for v in results.values())
-    
+
     # V7.5 新增：自动运行历史快照分析
     try:
         from stock_common.analyze_history import analyze_history
+
         print(f"{'=' * 60}", flush=True)
         print("[分析] 正在运行历史快照对比分析...", flush=True)
         report = analyze_history(skip_upload=args.no_upload)
@@ -475,7 +505,7 @@ async def main_async():
         print(f"  ⚠️ 历史分析模块未找到: {e}", flush=True)
     except Exception as e:
         print(f"  ⚠️ 历史分析运行异常: {e}", flush=True)
-    
+
     sys.exit(0 if all_ok else 1)
 
 
@@ -490,4 +520,11 @@ def main():
 
 if __name__ == "__main__":
     check_dependencies()
+    # V16.4.0: 首次运行自动检测/修复 UTF-8 环境（幂等——已配置零开销跳过，换电脑自动配置）
+    try:
+        from stock_common.env_setup import ensure_utf8_env
+
+        ensure_utf8_env()
+    except Exception:
+        pass
     main()

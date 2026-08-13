@@ -1,7 +1,7 @@
 from __future__ import annotations
 import pytest
 import unittest
-from zhb_client import (
+from core.zhb_client import (
     get_zhb, invalidate_cache, list_sp_blocks, get_sp_block,
     get_sw_industries, get_industry_map, market_stat_snapshot,
     get_stock_stat, get_stock_stat2, get_high_52w, get_low_52w,
@@ -10,11 +10,8 @@ from zhb_client import (
     get_adr_stocks, get_convertible_bonds, get_delisted_stocks
 )
 from stock_common.sc_datasource import (
-    get_zhb_sp_block, get_zhb_sp_block_list, get_zhb_sw_industries,
-    get_zhb_industry_map, get_zhb_data_date, is_zhb_data_fresh,
-    get_zhb_holidays, get_zhb_csrc_industries, get_zhb_adr_stocks,
-    get_zhb_convertible_bonds, get_zhb_delisted_stocks
-)
+    get_zhb_industry_map, get_zhb_data_date, is_zhb_data_fresh
+)  # V17.0 S1: 21 个 zhb 死转发已删, 测试同步清理
 
 def test_zhb_client_download():
     invalidate_cache()
@@ -36,12 +33,6 @@ def test_zhb_sw_industries():
 def test_zhb_industry_map():
     ind_map = get_industry_map()
     assert len(ind_map) > 0
-
-def test_zhb_sc_datasource_integration():
-    blocks = get_zhb_sp_block_list()
-    assert isinstance(blocks, list)
-    sw = get_zhb_sw_industries()
-    assert isinstance(sw, dict)
 
 def test_zhb_tdxstat_snapshot():
     snapshot = market_stat_snapshot()
@@ -120,7 +111,7 @@ class TestZhbStockProfile:
 
     def test_parse_profile_empty(self):
         """空数据时返回空 dict"""
-        from zhb_client import ZhbData
+        from core.zhb_client import ZhbData
         zhb = ZhbData()
         zhb.raw_files = {}
         assert zhb.stock_profile == {}
@@ -128,7 +119,7 @@ class TestZhbStockProfile:
 
     def test_parse_profile_format(self):
         """测试 64 字节记录解析格式（V16.3 D1: market(1)+code(6)+null(1)+name(8)+ts(4)+pad）"""
-        from zhb_client import ZhbData
+        from core.zhb_client import ZhbData
         zhb = ZhbData()
         # 构造 64 字节记录：市场标识(1) + 600519(6) + null分隔(1) + 简称(8) + padding
         # V16.3 D1: 实测 profile.dat 结构含 null 分隔符（原 record[7:15] 取到 null 恒空）
@@ -144,7 +135,7 @@ class TestZhbStockProfile:
 
     def test_get_stock_name_method(self):
         """便捷方法测试（V16.3 D1: 含 null 分隔符结构）"""
-        from zhb_client import ZhbData
+        from core.zhb_client import ZhbData
         zhb = ZhbData()
         name = "平安银行"
         name_bytes = name.encode("gbk")
@@ -158,7 +149,7 @@ class TestZhbColMappings:
     """V16.0: Col[14]=扣非净利润 / Col[24]=unknown_24 映射验证"""
 
     def _make_zhb(self):
-        from zhb_client import ZhbData
+        from core.zhb_client import ZhbData
         zhb = ZhbData()
         # 构造 tdxstat.cfg: 35 列, Col14=扣非净利润, Col24=原误标volume
         cols = ['0'] * 35
@@ -187,13 +178,13 @@ class TestZhbConceptChain:
     """V14.2: tdxchain.cfg 200+ 概念/产业链节点"""
 
     def test_parse_concept_chain_empty(self):
-        from zhb_client import ZhbData
+        from core.zhb_client import ZhbData
         zhb = ZhbData()
         assert zhb.concept_chain == {}
 
     def test_parse_concept_chain_format(self):
         """V15.1 重写: tdxchain.cfg 为 板块代码|节点ID|产业链名称 格式"""
-        from zhb_client import ZhbData
+        from core.zhb_client import ZhbData
         zhb = ZhbData()
         # 5G 板块映射: 880506|CYL00210|新基建-5G
         data = "880506|CYL00210|新基建-5G\n880507|CYL00211|新基建-5G\n880508|CYL00300|3D打印\n".encode("gbk")
@@ -205,7 +196,7 @@ class TestZhbConceptChain:
 
     def test_get_concept_stocks_method(self):
         """V15.1: 返回概念/产业链下的板块代码列表（非成分股）"""
-        from zhb_client import ZhbData
+        from core.zhb_client import ZhbData
         zhb = ZhbData()
         data = "880506|CYL00210|新基建-5G\n880507|CYL00211|新基建-5G\n".encode("gbk")
         zhb.raw_files = {"tdxchain.cfg": data}
@@ -215,7 +206,7 @@ class TestZhbConceptChain:
 
     def test_get_stock_concepts_method(self):
         """V15.1: tdxchain.cfg 不含成分股，反查恒返回空列表"""
-        from zhb_client import ZhbData
+        from core.zhb_client import ZhbData
         zhb = ZhbData()
         data = "880506|CYL00210|新基建-5G\n".encode("gbk")
         zhb.raw_files = {"tdxchain.cfg": data}
@@ -226,14 +217,14 @@ class TestZhbNeednote:
     """V14.2: neednote.dat 官方休市日+调休补班日"""
 
     def test_parse_neednote_empty(self):
-        from zhb_client import ZhbData
+        from core.zhb_client import ZhbData
         zhb = ZhbData()
         assert zhb.neednote_holidays == []
         assert zhb.neednote_jyweek == []
 
     def test_parse_neednote_format(self):
         """INI 格式：[RecentCFETSHoliday]/[RecentCFETSJYWeek]"""
-        from zhb_client import ZhbData
+        from core.zhb_client import ZhbData
         zhb = ZhbData()
         text = (
             "[RecentCFETSHoliday]\n"
@@ -254,13 +245,13 @@ class TestZhbBrkSeat:
     """V14.2: brkseat.dat 龙虎榜营业部席位"""
 
     def test_parse_brkseat_empty(self):
-        from zhb_client import ZhbData
+        from core.zhb_client import ZhbData
         zhb = ZhbData()
         assert zhb.brk_seat == {}
 
     def test_parse_brkseat_format(self):
         """Pipe 格式：席位代码|营业部名称"""
-        from zhb_client import ZhbData
+        from core.zhb_client import ZhbData
         zhb = ZhbData()
         data = "000001|国泰君安证券股份有限公司总部\n000002|中信证券股份有限公司总部\n".encode("gbk")
         zhb.raw_files = {"brkseat.dat": data}
@@ -273,13 +264,13 @@ class TestZhbSpecialTags:
     """V14.2: pttab.dat 特别标签（红筹/AH/概念）"""
 
     def test_parse_special_tags_empty(self):
-        from zhb_client import ZhbData
+        from core.zhb_client import ZhbData
         zhb = ZhbData()
         assert zhb.special_tags == {}
 
     def test_parse_special_tags_format(self):
         """Pipe 格式：标签|代码1,代码2,..."""
-        from zhb_client import ZhbData
+        from core.zhb_client import ZhbData
         zhb = ZhbData()
         data = "AH|600519,000001\n红筹|002193\n概念|600519,000858,002193\n".encode("gbk")
         zhb.raw_files = {"pttab.dat": data}
@@ -298,32 +289,32 @@ class TestDataProviderZhbFunctions:
 
     def test_get_stock_basic_info_from_zhb_no_data(self):
         """无 ZHB 数据时返回 None（优雅降级）"""
-        from data_provider import get_stock_basic_info_from_zhb
+        from core.data_provider import get_stock_basic_info_from_zhb
         result = get_stock_basic_info_from_zhb("600519")
         # ZHB 不可用时返回 None（不抛异常）
         assert result is None or (isinstance(result, dict) and "name" in result)
 
     def test_get_concept_from_zhb_returns_list(self):
         """返回值始终是 list（ZHB 缺失时返回空列表）"""
-        from data_provider import get_concept_from_zhb
+        from core.data_provider import get_concept_from_zhb
         result = get_concept_from_zhb("600519")
         assert isinstance(result, list)
 
     def test_get_new_share_calendar_from_zhb_returns_list(self):
         """返回值始终是 list"""
-        from data_provider import get_new_share_calendar_from_zhb
+        from core.data_provider import get_new_share_calendar_from_zhb
         result = get_new_share_calendar_from_zhb()
         assert isinstance(result, list)
 
     def test_get_special_tags_from_zhb_returns_dict(self):
         """返回值始终是 dict"""
-        from data_provider import get_special_tags_from_zhb
+        from core.data_provider import get_special_tags_from_zhb
         result = get_special_tags_from_zhb()
         assert isinstance(result, dict)
 
     def test_is_zhb_dataset_available_returns_bool(self):
         """返回值始终是 bool"""
-        from data_provider import is_zhb_dataset_available
+        from core.data_provider import is_zhb_dataset_available
         result = is_zhb_dataset_available()
         assert isinstance(result, bool)
 
@@ -393,7 +384,7 @@ class TestZhbFallback:
 
     def test_all_zhb_functions_dont_crash_without_zhb(self):
         """ZHB 不可用时不抛异常"""
-        from data_provider import (
+        from core.data_provider import (
             get_stock_basic_info_from_zhb,
             get_concept_from_zhb,
             get_new_share_calendar_from_zhb,
@@ -419,7 +410,7 @@ class TestZhbUnsealFields(unittest.TestCase):
     """V16.2.18: tdxstat Col[12]=新股开板日 / Col[13]=上市连板数 解析。"""
 
     def _parse(self, line: str):
-        from zhb_client import ZhbData
+        from core.zhb_client import ZhbData
         zhb = ZhbData()
         zhb.raw_files = {"tdxstat.cfg": line.encode("gbk", errors="ignore")}
         stats = zhb.stock_stats
@@ -453,7 +444,7 @@ class TestZhbKbarMappings(unittest.TestCase):
     """V16.2.18: Col[17]=近20根K线 / Col[19]=近60根K线 精确映射（injoyai 核验）。"""
 
     def _parse(self):
-        from zhb_client import ZhbData
+        from core.zhb_client import ZhbData
         zhb = ZhbData()
         parts = ["0", "600519", "0", "20.0", "20260804", "-1", "0.5", "0.2", "0.1",
                  "20.5", "3.9", "54094.9", "", "", "2723998", "34992",
@@ -468,7 +459,9 @@ class TestZhbKbarMappings(unittest.TestCase):
         self.assertEqual(st.get("change_20k_bar"), 9.45)   # Col[17]
         self.assertEqual(st.get("change_60k_bar"), -8.38)  # Col[19]
         self.assertEqual(st.get("change_20d"), 6.07)       # Col[18]（历史 key 名）
-        self.assertEqual(st.get("change_60d"), -8.38)      # Col[19]（历史 key 名，与 60k_bar 同源）
+        # V16.3 O28: change_60d 改读 Col[20]（实测 K 线缓存对照：Col[20]=截至T-1的60根K线，
+        # 中位差1.28 更纯；原误读 Col[19] 与 60k_bar 同源）
+        self.assertEqual(st.get("change_60d"), 5.5)        # Col[20]
         self.assertEqual(st.get("change_ytd"), 9.66)       # Col[21]
 
 
@@ -481,7 +474,7 @@ class TestIsIndustryCode(unittest.TestCase):
     """V16.2.16: tdxstat2 Col[13] 行业段过滤（8803/8804 通达信行业、881 申万版）。"""
 
     def _is_ind(self, ic):
-        from zhb_client import is_industry_code
+        from core.zhb_client import is_industry_code
         return is_industry_code(ic)
 
     def test_industry_segments_true(self):

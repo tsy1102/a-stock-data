@@ -1,0 +1,98 @@
+{
+ "date": "20260813",
+ "start": "2026-08-13 15:18:38",
+ "sources": {
+  "zhb": {
+   "ok": true,
+   "secs": 0.8,
+   "file": "C:\\Opencode\\docs\\field_verification\\20260813\\raw_zhb.json"
+  },
+  "tdx": {
+   "ok": true,
+   "secs": 4.0,
+   "file": "C:\\Opencode\\docs\\field_verification\\20260813\\raw_tdx.json"
+  },
+  "tencent": {
+   "ok": true,
+   "secs": 3.9,
+   "file": "C:\\Opencode\\docs\\field_verification\\20260813\\raw_tencent.json"
+  },
+  "push2": {
+   "ok": true,
+   "secs": 183.9,
+   "file": "C:\\Opencode\\docs\\field_verification\\20260813\\raw_push2.json"
+  },
+  "push2_full": {
+   "ok": true,
+   "secs": 51.7,
+   "file": "C:\\Opencode\\docs\\field_verification\\20260813\\raw_push2_full.json"
+  },
+  "sina": {
+   "ok": true,
+   "secs": 2.9,
+   "file": "C:\\Opencode\\docs\\field_verification\\20260813\\raw_sina.json"
+  },
+  "axdata": {
+   "ok": true,
+   "secs": 34.0,
+   "file": "C:\\Opencode\\docs\\field_verification\\20260813\\raw_axdata.json"
+  },
+  "market_sources": {
+   "ok": true,
+   "secs": 9.5,
+   "file": "C:\\Opencode\\docs\\field_verification\\20260813\\raw_market_sources.json"
+  },
+  "tdx_f10": {
+   "ok": true,
+   "secs": 2.3,
+   "file": "C:\\Opencode\\docs\\field_verification\\20260813\\raw_tdx_f10.json"
+  },
+  "thsdk": {
+   "ok": true,
+   "secs": 2.8,
+   "file": "C:\\Opencode\\docs\\field_verification\\20260813\\raw_thsdk.json"
+  },
+  "ulist239": {
+   "ok": true,
+   "secs": 1.2,
+   "file": "C:\\Opencode\\docs\\field_verification\\20260813\\raw_ulist239.json"
+  },
+  "push2ex": {
+   "ok": true,
+   "secs": 5.2,
+   "file": "C:\\Opencode\\docs\\field_verification\\20260813\\raw_push2ex.json"
+  },
+  "em_hot": {
+   "ok": true,
+   "secs": 3.0,
+   "file": "C:\\Opencode\\docs\\field_verification\\20260813\\raw_em_hot.json"
+  },
+  "cls": {
+   "ok": true,
+   "secs": 0.9,
+   "file": "C:\\Opencode\\docs\\field_verification\\20260813\\raw_cls.json"
+  },
+  "datacenter": {
+   "ok": true,
+   "secs": 42.8,
+   "file": "C:\\Opencode\\docs\\field_verification\\20260813\\raw_datacenter.json"
+  },
+  "tdx_f10_more": {
+   "ok": true,
+   "secs": 3.8,
+   "file": "C:\\Opencode\\docs\\field_verification\\20260813\\raw_tdx_f10_more.json"
+  },
+  "cninfo": {
+   "ok": true,
+   "secs": 33.3,
+   "file": "C:\\Opencode\\docs\\field_verification\\20260813\\raw_cninfo.json"
+  },
+  "reports": {
+   "ok": true,
+   "secs": 20.6,
+   "file": "C:\\Opencode\\docs\\field_verification\\20260813\\raw_reports.json"
+  }
+ },
+ "end": "2026-08-13 15:25:25",
+ "total_secs": 406.7
+}

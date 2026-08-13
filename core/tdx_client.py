@@ -37,8 +37,8 @@ from typing import Any, Dict, List, Optional, Tuple, cast
 import requests
 
 from stock_common import _safe_float, UA, _request_with_retry, _quick_request, _debug_log
-from stock_cache import cached, make_valid_if, TTL  # V15.2 强化 + V15.5.7 TTL
-from config import TDX_MIN_INTERVAL, MAX_RETRY_COUNT, RETRY_DELAY_SECONDS
+from core.stock_cache import cached, make_valid_if, TTL  # V15.2 强化 + V15.5.7 TTL
+from core.config import TDX_MIN_INTERVAL, MAX_RETRY_COUNT, RETRY_DELAY_SECONDS
 
 # V16.2.13: easy_tdx "声称 N 条但首条即解析失败" 警告 = 标的无 K 线的**正常降级提示**
 #（8/4 老段已适配器拦截；92 个别新股首次换台仍触发，无法预判）→ 精确过滤该消息，
@@ -72,11 +72,6 @@ _TDX_RECONNECT_DELAY: float = RETRY_DELAY_SECONDS
 # 100ms = 约10次/秒，批量运行时更稳定
 _TDX_MIN_INTERVAL: float = TDX_MIN_INTERVAL
 _TDX_CALL_LOCK = _tdx_th.RLock()
-
-# V9.3.2: 返回假数据的TDX服务器黑名单
-# 部分服务器K线接口返回 ret_count=800 但 body 为 0 字节，导致 TdxDecodeError
-# 标记后 from_best_host 会跳过这些 IP，防止反复选中坏服务器
-_TDX_BAD_HOSTS: set[str] = set()
 
 
 def _tdx_throttle():
@@ -222,8 +217,14 @@ def _http_get(
 #            218.75.126.9、159.75.55.232（通达信 HFHost 深圳备用站）
 # 注：通达信 DSHOST（扩展市场 Port 7727）为基金/港股协议，项目 std 行情(7709)不适用。
 # ───────────────────────────────────────────────────────────────
+# V16.3.9 移动线路复测（2026-08-11，74 台 = easy_tdx config + v9.6 缓存合并去重）：
+#   FULL 6 台 —— 原 5 台全部保持（移动线路可达性无退化）+
+#   新增 120.76.152.87（easy_tdx calc_hosts，原 54 台筛查未覆盖）。
+#   46 台 PARTIAL（quotes 恒空、bars/fin OK——腾讯云/华为云接入服务器，不入选）、23 台 FAIL。
+#   完整数据：docs/network_servers.md §二 + cache/tdx_full_retest_20260811.json
+# ───────────────────────────────────────────────────────────────
 
-# 实测可用服务器白名单（2026-08-05 全量核查，仅 FULL 服务器）
+# 实测可用服务器白名单（2026-08-11 移动线路复测，6 台 FULL）
 _EASY_TDX_PRIMARY_HOST = "180.153.18.170"
 _EASY_TDX_PREFERRED_HOSTS = [
     "180.153.18.170",
@@ -231,6 +232,7 @@ _EASY_TDX_PREFERRED_HOSTS = [
     "115.238.90.165",
     "218.75.126.9",
     "159.75.55.232",
+    "120.76.152.87",
 ]
 
 # mootdx frequency → easy_tdx KlineCategory 映射
@@ -798,8 +800,10 @@ def _pre_market_quote_from_kline(code: str) -> Dict[str, Any]:
         idx_low = keys.index('low') if 'low' in keys else 4
         idx_amount = keys.index('amount') if 'amount' in keys else 6
 
-        last_row = rows[0]
-        prev_row = rows[1]
+        # V16.4.1: 实测 tdx_get_security_bars 返回升序(旧→新)——原 rows[0]/rows[1] 取到最旧,
+        # 盘前价格/涨跌幅全部基于错误基准计算
+        last_row = rows[-1]
+        prev_row = rows[-2]
 
         close = _safe_float(last_row[idx_close], 0)
         prev_close = _safe_float(prev_row[idx_close], 0)
@@ -868,11 +872,17 @@ _TENCENT_FIELD_INDEX = {
     "limit_up": 47,
     "limit_down_price": 48,
     "vol_ratio": 49,
-    "pe_static": 52,
+    # V16.4.1: 删重复键(原 L880 与 L872 同为 pe_ttm:39, 后者恒生效)
+    "pe_dynamic": 52,      # V16.3.3 修正: [52]=动态PE/MRQ（实测 15.47=push2delay f162=fuyao pe_mrq）
+    "pe_static": 53,       # V16.3.3 修正: [53]=静态PE（实测 20.48=push2delay f163，原误标 52）
     # V16.3 O20: 破解确认的新字段（field_dict 12.1）
     "high_52w": 67,        # 52周最高价(元)
     "low_52w": 68,         # 52周最低价(元)
     "dividend_yield": 64,  # 股息率(%)（=push2 f126 同源）
+    # V16.3.3 (2026-08-10 字典 12.1/12.15.5 实测): 腾讯未知位破解
+    "roa": 66,             # ROA 总资产收益率(%) — 已验证（招行 1.12=年化 ROA 精确）
+    "main_net_inflow_yi": 75,  # 主力净流入(亿) — 与 push2 f137 同值（-4.55 验证）
+    "panel_price": 85,     # 盘口参考价（≈price±0.1，未确认精确语义）
 }
 _TENCENT_MIN_FIELDS = 69  # V16.3 O22: 覆盖 high_52w=67/low_52w=68/dividend_yield=64 索引（原 53 会 IndexError）  # 协议最小字段数（不足即视为 schema 变化/截断）
 
@@ -1309,7 +1319,7 @@ def tdx_get_index_quote(idx_code: str) -> Dict[str, Any]:
         return {}
 
 
-@cached(category="kline", ttl_seconds=TTL["kline"])  # V16.1: 8000 根 K 线太贵，24h 磁盘缓存
+@cached(category="kline", ttl_seconds=TTL["kline"], trading_day=True, valid_if=make_valid_if())  # V16.1: 8000 根 K 线太贵，24h 磁盘缓存
 def tdx_get_historical_high(code: str) -> Optional[float]:
     """历史最高价（800 根日 K 线内）。
 
@@ -1466,8 +1476,6 @@ def tdx_get_weekly_bars(code: str, count: int = 100):
 )  # V15.2: 拒绝空 dict/全 0
 def tdx_get_fund_flow(code: str):
     # V12.0: 委托到东财 HTTP 接口（原 TDX get_fund_flow 已废弃）
-    # V15.1: 实际数据源是东财 HTTP，函数名 tdx_* 易误导；
-    #        新代码请直接调用 em_get_fund_flow (别名) 或 sc_datasource.get_em_fund_flow
     try:
         from stock_common.sc_datasource import get_em_fund_flow
 
@@ -1477,21 +1485,11 @@ def tdx_get_fund_flow(code: str):
         return None  # V15.2: 失败返回 None（不再返回 {}，避免 valid_if 误判）
 
 
-# V15.1: 别名，标注实际数据源是东财 HTTP（避免继续使用 tdx_* 误导）
-def em_get_fund_flow(code: str):
-    """V15.1 别名：实际数据源是东财 HTTP（原 tdx_get_fund_flow）。
-
-    新代码请使用本函数。
-    """
-    return tdx_get_fund_flow(code)
-
-
 @cached(
     category="f10_fund_flow", trading_day=True, valid_if=make_valid_if()
 )  # V15.2: 拒绝空 dict/全 0
 def tdx_get_history_fund_flow(code: str, days: int = 120):
     # V12.0: 委托到东财 HTTP 接口（原 TDX get_history_fund_flow 已废弃）
-    # V15.1: 实际数据源是东财 HTTP；新代码请使用 em_get_history_fund_flow
     try:
         from stock_common.sc_datasource import get_em_history_fund_flow
 
@@ -1499,15 +1497,6 @@ def tdx_get_history_fund_flow(code: str, days: int = 120):
     except Exception as _e:
         _debug_log(f"tdx tdx_get_history_fund_flow error ({code}): {_e}")
         return None  # V15.2: 失败返回 None（不再返回 []，避免 valid_if 误判）
-
-
-# V15.1: 别名
-def em_get_history_fund_flow(code: str, days: int = 120):
-    """V15.1 别名：实际数据源是东财 HTTP（原 tdx_get_history_fund_flow）。
-
-    新代码请使用本函数。
-    """
-    return tdx_get_history_fund_flow(code, days)
 
 
 # ═══════════════════════════════════════
@@ -1555,6 +1544,7 @@ def tdx_get_finance_roe(code: str):
     """
     TDX 最新 ROE → 替换 eastmoney MAINFINADATA 单期查询
     V13.0 改为直接复用全量 tdx_get_finance_info 接口提取。
+    V16.4.1 审查: 全仓 0 调用(get_val_report.py:1038 仅注释提及)——保留待统一层迁移确认后删除
     """
     info = tdx_get_finance_info(code)
     if not info:
@@ -1624,7 +1614,7 @@ def tdx_get_eps_from_reports(code: str):
                 "code": code,
                 "qType": "0",
             }
-            r = _request_with_retry(api, params=params, timeout=30)
+            r = _quick_request(api, params=params, timeout=30)
             if r is None:
                 break
             rows = r.json().get("data") or []
@@ -2005,7 +1995,7 @@ def tdx_get_latest_reminders(code: str) -> dict:
 
 
 @cached(
-    category="f10_financial", valid_if=make_valid_if(), cross_verify=True
+    category="f10_financial", valid_if=make_valid_if(), cross_verify=True, trading_day=True
 )  # V15.2: 强化 valid_if
 def tdx_get_financial_analysis(code: str) -> dict:
     """从 TDX F10「财务分析」分类获取综合财务信息（10 个子栏目一次拿全）。
@@ -2674,6 +2664,7 @@ def tdx_get_belong_boards(code: str):
         return {}
 
 
+@cached(category="board_list", ttl_seconds=TTL["board_list"], trading_day=True, valid_if=make_valid_if())
 def tdx_get_board_list(board_type: int = 0):
     """获取板块列表（行业/概念/地域等）。
 
@@ -2682,6 +2673,8 @@ def tdx_get_board_list(board_type: int = 0):
     粒度粗于东财 100，且与申万二级口径不一致）；行业排名应走 ZHB 旁路（129 申万二级，
     见 get_mak_report._build_sectors_from_zhb）。本函数保持东财委托（低频批量 clist，
     非逐股，非风控元凶；风控元凶 mak 100 次 members fallback 已由 ZHB 旁路消除）。
+    V16.3 O25: 加交易日粒度缓存——lng/med/sht 行业排名参照系（T-1 可接受，
+    避免每次报告现取东财 clist）；mak/val 同享（当日共享、次日 9:30 刷新）。
 
     Args:
         board_type: 0=行业一级, 1=行业二级, 4=概念, 3=地域
@@ -2717,7 +2710,9 @@ def tdx_get_board_members(board_code: str, sort_by_change: bool = True):
             try:
                 df = client.get_board_members(board_code)
                 if df is None or df.empty:
-                    return []
+                    # V16.4.1: 空结果继续走东财兜底(原直接 return [] 使 docstring 承诺的
+                    # fallback 永不触发, 板块成分静默为空)
+                    raise ValueError("empty board members (tdx)")
                 members = []
                 for _, row in df.iterrows():
                     close = _safe_float(row.get('close', 0))
@@ -2853,7 +2848,7 @@ def tdx_get_market_abnormal_data():
     """
     try:
         from stock_common import get_zhb_full_market_snapshot
-        from zhb_client import get_stock_name_from_zhb
+        from core.zhb_client import get_stock_name_from_zhb
 
         snapshot = get_zhb_full_market_snapshot()
         if not snapshot:
@@ -2864,7 +2859,7 @@ def tdx_get_market_abnormal_data():
         # V15.5.17: unified_name_map 优先（profile.dat 解析失败时仍覆盖 44%）
         _unified_name: Dict[str, str] = {}
         try:
-            from zhb_client import get_zhb
+            from core.zhb_client import get_zhb
 
             _unified_name = get_zhb().unified_name_map or {}
         except Exception:

@@ -1,5 +1,5 @@
 import pytest
-from tdx_client import (
+from core.tdx_client import (
     tdx_get_security_bars,
     tdx_get_quote_full,
     tdx_get_index_quote,
@@ -96,7 +96,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
 import pandas as pd
 import pytest
 
-import tdx_client as tc
+import core.tdx_client as tc
 
 
 # ── _FREQ_TO_CATEGORY 映射 ──
@@ -138,7 +138,6 @@ class TestEasyMarket:
         assert tc._easy_market("430047") == 2
         assert tc._easy_market("920001") == 2
         assert tc._market_prefix("920001") == "bj"
-        assert tc._market_from_code("920001") == 2
 
     def test_index_sh(self):
         assert tc._easy_market("000001", is_index=True) == 1  # 上证指数
@@ -336,7 +335,7 @@ class TestGrossMarginAndRoeEpsContract:
         }
         from unittest.mock import patch
 
-        with patch("tdx_client.tdx_get_financial_analysis", return_value=fake):
+        with patch("core.tdx_client.tdx_get_financial_analysis", return_value=fake):
             from stock_common.sc_datasource import get_gross_margin_and_roe
 
             out = get_gross_margin_and_roe("F10TEST01")

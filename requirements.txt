@@ -19,15 +19,22 @@ numpy>=1.20,<2.0
 PyYAML>=5.4
 
 # ── 行情数据源（核心依赖，必须安装）───────────────────────────
-easy-tdx>=1.0,<2.0
+# easy-tdx: 首选适配层（V15.5+，活跃维护）——K线/行情/财务/xdxr/板块/ZHB 下载
+# 2026-08-10 实测：1.14.5 及以下 K线解码失败（TdxDecodeError）——必须 >=1.20.4
+easy-tdx>=1.20.4,<2.0
+# mootdx: easy_tdx 故障 fallback（健康检查/连接兜底/ZHB 备胎/指数K线）——双通道保留
 mootdx>=0.11,<1.0
-pytdx>=1.0  # mootdx 底层依赖；zhb_client 备胎路径（easy_tdx 首选）
 
 # ── V16.1.7 新数据源（可选，缺失时对应增强功能自动降级）──────────
 # levistock: 盘口异动/市场情绪/涨停池补充/i问财（字典 §12.10）
 # axdata+axdata_core: 短线指标 34 字段/涨跌停规则/筹码分布（字典 §12.12，直接消费项目 zhb.zip）
 levistock>=0.1
 axdata>=0.1
+
+# ── V16.3 O30 新数据源（可选，缺失时 THS 增强自动降级）──────────────
+# thsdk: 同花顺官方 C 库 SDK（sc_ths.py 依赖；正式账号见 ths_credentials.json，
+#        缺失时 get_ths_market_snapshot / get_ths_pb 等返回空/None）
+thsdk>=0.1
 
 # ── Google Drive（V7 已切换至 google-auth + google-api-python-client）
 # ⚠️ pydrive2 / oauth2client 已废弃，保留兼容运行但不再主动安装
@@ -36,7 +43,8 @@ axdata>=0.1
 google-auth>=2.0
 google-auth-oauthlib>=1.0
 google-api-python-client>=2.0
-httplib2>=0.22,<0.31   # ← 避开 0.32.0 代理解析 bug
+httplib2==0.22.0      # ← 固定 0.22.0：0.30.2 的 socks 模块损坏导致 GD 代理失效
+                       #   （2026-08-11 实测 10060 直连超时，降级 0.22.0 恢复）
 # pydrive2>=1.10    # ← V4 旧版，如需兼容可手动安装
 
 # ── A股日历与交易日判断（V8 新增）──────────────────────────────

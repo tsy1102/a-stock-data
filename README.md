@@ -6,6 +6,9 @@
 
 ## 功能特性
 
+- **字典架构重构（V16.4.0）**：主字典=决策层（field_dict 只留结论），附录=实证层（docs/verify/ 12 个文件）；三大客户端逆向（东财/通达信/同花顺）——tdxstat 35 列/tdxstat2 21 列官方破解（ipo_price/52周/PE 双口径铁证）、thsdk 市净率口径铁证、服务器全表（通达信 HQHOST 43/同花顺 123ths 域名族）；统一层加固（缓存 schema 版本化 + canonical 量级校验）；sht 批量预取优化（push2delay ulist 300/批）
+- **字段实测验证流水线（V16.4.1）**：20 股固定股票池 + 19 源按天采集（`scripts/capture_field_probe.py` → `docs/field_verification/`）；TdxQuant 官方 88 字段交叉破解（Col[3]=StaticPE_TTM/Col[24]=CashZJ 万元/[26]=YearZTDay 等 18/18 实锤）；每日会话纪要锚点 `docs/session_notes/`
+- **全盘重构与字段破解（V17.0）**：7 支撑模块包化 `core/`；批量骨架收敛基类 `execute_batch_pipeline`；main.py 固定超时改**输出活性检测**；主力净流入全链统一 f137、行业仅认 881 段、PE 动态=f162（字典实锤）；**命名规律破解**——Amo=Amount 金额族、"N日"涨跌幅全交易日口径、tdxstat2 21 列全映射（封单额三日滚动）、f137-146 资金流定位、通达信行业体系（881 行业/880 概念/X 码细分行业）；script_data_dict.md 全量重写
 - **5种报告类型**（V16.1: ful 下线）：短线(sht)、中线(med)、长线(lng)、估值选股(val)、市场状态(mak)
 - **标准化数据合约对象**（V15.0-V15.2）：`CanonicalStockData` 不可变强类型合约，封装 50+ 核心数据字段及元数据溯源标签（`field_sources`），彻底消除异构多源数据冲突
 - **基于真实周期的 ZHB-First 离线优先路由**（V15.1 全局普及）：
@@ -37,7 +40,7 @@
 - **代码清洗**：自动处理股票代码格式问题（`600519` / `600519茅台` / `600519 茅台`）
 - **异步并发**：30+ 异步函数支持高效并发请求
 - **类型安全**：mypy 静态检查通过，类型注解完整覆盖
-- **测试体系**（V16.3）：17 个测试文件 / **295 项单元测试 100% 通过**（默认离线运行，real_network 标记隔离）；`tests/test_eastmoney_health.py` 13 域健康度矩阵、`tests/test_tdx_health.py` 白名单/适配器覆盖
+- **测试体系**（V16.3）：17 个测试文件 / **296 项单元测试 100% 通过**（默认离线运行，real_network 标记隔离）；`tests/test_eastmoney_health.py` 13 域健康度矩阵、`tests/test_tdx_health.py` 白名单/适配器覆盖
 
 ---
 
@@ -47,6 +50,38 @@
 
 - Python **3.12**（系统 Python，`scripts/run_tests.ps1` 强制；main.py 自动探测）
 - Windows / macOS / Linux
+
+### 新机器部署（复制项目后）
+
+项目全部路径基于脚本自身位置动态定位（`__file__`），**无任何绝对路径硬编码**；复制到任意目录即可运行，首次运行自动创建 `cache/`、`logs/`、`reports/`、`snapshots/` 并下载 ZHB 数据包。
+
+1. 安装 Python 3.12（任意发行版；Windows Store 版已验证可用）
+2. `pip install -r requirements.txt`（运行时依赖 17+ 项；`levistock/axdata/thsdk` 为可选增强，缺失自动降级）
+3. `pip install -r requirements-dev.txt`（仅开发需要：pytest/mypy/black）
+4. 首次运行 `python main.py --sht 600519 --no-upload` 冒烟（首只约 5 分钟，含 ZHB 下载+缓存预热）
+
+可选配置（缺失不影响运行）：
+- **Google Drive 上传**：根目录放 `client_secrets.json`，首次运行浏览器 OAuth 生成 `credentials.json`；国内网络需本地代理（gd_uploader 自动探测 7890/10809/1080 等常见端口）
+- **同花顺增强**：根目录放 `ths_credentials.json`（`{"username":..,"password":..,"mac":..}`）或设 `THS_USERNAME/THS_PASSWORD` 环境变量；无凭证时 SDK 游客兜底
+
+**新电脑 UTF-8 环境初始化（V16.4.0，一次性）**：
+
+```powershell
+# 1. Python 全局 UTF-8（解决 python 输出/参数中文乱码）
+setx PYTHONUTF8 1
+
+# 2. PowerShell UTF-8（解决控制台/管道中文乱码——Profile 内容见下）
+Set-ExecutionPolicy -Scope CurrentUser RemoteSigned -Force
+New-Item -ItemType Directory -Force "$HOME\Documents\WindowsPowerShell" | Out-Null
+@"
+# UTF-8 environment init
+[Console]::OutputEncoding = [System.Text.Encoding]::UTF8
+`$OutputEncoding = [Console]::OutputEncoding
+chcp 65001 > `$null
+"@ | Set-Content -Path "$HOME\Documents\WindowsPowerShell\Microsoft.PowerShell_profile.ps1" -Encoding UTF8
+```
+
+> 完成后**注销重登**（setx 环境变量对新进程生效）。项目内文件统一 UTF-8；脚本文件避免在命令行内嵌中文（用脚本文件方式）。
 
 ### 安装依赖
 
@@ -117,63 +152,55 @@ python main.py [选项] 股票代码...
 ```
 a-stock-data/
 ├── main.py                       # 主入口程序（参数分发/子进程调度/超时分级）
-├── VERSION                       # 项目版本号（16.3，单一来源）
-├── config.py                     # V12.2 全局配置集中管理（超时/限流/熔断）
-├── data_provider.py              # V11.5 统一数据层（canonical 合约 + 字段路由 + 4 级 fallback）
-├── zhb_client.py                 # 通达信 zhb.zip 全局配置总包下载与解析（45 文件）
-├── zhb_sync.py                   # V10.3 ZHB 自动化入库管道（定时/手动/状态）
-├── tdx_client.py                 # mootdx/easy_tdx 统一层（K线/F10/资金流/板块，白名单 5 台）
-├── stock_cache.py                # V8.4 统一缓存层（SQLite + L1 内存 + TTL + cross_verify）
-├── gd_uploader.py                # Google Drive 上传（google-auth + google-api-python-client）
+├── VERSION                       # 项目版本号（17.0，单一来源）
 │
-├── stock_common/                 # V12.0 核心模块包（17 个子模块）
-│   ├── __init__.py               # 包入口，统一导出接口
-│   ├── sc_datasource.py          # 数据源查询模块（100+ 函数，行业映射/同业对比/资金流/龙虎榜）
+├── core/                         # V17.0 核心模块包（7 个支撑模块，见 core/README.md）
+│   ├── config.py                 # 全局配置集中管理（超时/限流/熔断）
+│   ├── data_provider.py          # 统一数据层（canonical 合约 + 字段路由 + 多级 fallback）
+│   ├── zhb_client.py             # 通达信 zhb.zip 全局配置总包下载与解析（45 文件）
+│   ├── zhb_sync.py               # ZHB 自动化入库管道（python -m core.zhb_sync）
+│   ├── tdx_client.py             # mootdx/easy_tdx 统一层（K线/F10/资金流/板块）
+│   ├── stock_cache.py            # 统一缓存层（SQLite + L1 内存 + TTL + cross_verify）
+│   └── gd_uploader.py            # Google Drive 上传（凭据在 credentials/）
+│
+├── stock_common/                 # 核心公共包（传输/数据源/评分/报告基类，见 stock_common/README.md）
+│   ├── __init__.py               # 包入口，统一导出接口（__all__ 250+ 项）
+│   ├── sc_datasource.py          # 数据源查询模块（100+ 函数）
 │   ├── sc_network.py             # 网络请求层（分域限流/令牌桶/封禁冷却/进程文件锁）
-│   ├── sc_fault_tolerance.py     # V12.1 容错层（TokenBucket/CircuitBreaker/RandomUAPool）
-│   ├── sc_schema.py              # V13.0 字段元数据层（FieldSpec + 3 个 Enum + normalize_at_boundary）
-│   ├── sc_utils.py               # 工具函数（_safe_float/is_limit_up/board_type 等）
-│   ├── sc_scoring.py             # 统一评分接口（ScoreData/ScoreResult）
-│   ├── sc_technical.py           # V16.1 技术指标引擎（MACD/RSI/BOLL/KDJ）
-│   ├── sc_risk.py                # V16.1 风险扫描引擎（9 项清单）
-│   ├── sc_zhb.py                 # 连续 ZHB 回溯补充字段
-│   ├── sc_kline_cache.py         # K线缓存（进程内）
-│   ├── sc_capital_cache.py       # 全局股本缓存（90 天 TTL）
-│   ├── sc_snapshot.py            # 评分快照（SnapshotProxy）
-│   ├── sc_report_runner.py       # V12.4 BaseReportRunner 基类
-│   ├── stock_calendar.py         # 交易日历模块（holidays/workdays 字典 + ZHB 补充）
-│   ├── analyze_history.py        # 评分快照分析与趋势背离检测
-│   ├── f10_parser.py             # F10 数据解析模块
-│   └── seat_db.py                # 龙虎榜席位数据库
+│   ├── sc_report_runner.py       # BaseReportRunner 基类
+│   └── ...                       # 详见 stock_common/README.md
 │
-├── get_sht_report.py             # 短线报告生成（90 日窗口）
+├── get_sht_report.py             # 短线报告生成（90 日窗口）——入口脚本
 ├── get_med_report.py             # 中线报告生成（180 日窗口）
 ├── get_lng_report.py             # 长线报告生成（730 日窗口）
 ├── get_val_report.py             # 估值报告生成（策略选股）
 ├── get_mak_report.py             # 市场热点报告生成（异动扫描）
-├── get_ful_report.py             # V16.3 O19 已删除（能力并入 sht/med/lng）
 │
-├── scripts/                      # 辅助脚本
+├── credentials/                  # V17.0 凭据集中目录（.gitignore 排除，不入库）
+│   ├── client_secrets.json       # GD OAuth 客户端凭据
+│   ├── credentials.json          # GD OAuth token（自动刷新）
+│   └── ths_credentials.json      # 同花顺 THS SDK 账号
+│
+├── scripts/                      # 辅助脚本（见 scripts/README.md）
 │   ├── run_tests.ps1             # 测试统一入口（AGENTS.md 强制 shell 层中转）
-│   ├── run_with_system_python.ps1/.bat  # 系统 Python 3.12 启动包装
-│   ├── update_calendar.py        # 交易日历数据更新（chinese-calendar 库同步）
-│   ├── clean_cache.py            # 缓存清理快捷脚本
-│   ├── auto_fix_pipeline.py      # v9.6 对比修复流水线
-│   ├── capture_baseline.py / compare_baseline.py  # 基线捕获/对比
+│   ├── update_calendar.py        # 交易日历数据更新（含 V14+ 防覆盖保护）
+│   ├── clean_cache.py            # 缓存清理快捷脚本（封装 python -m core.stock_cache）
 │   ├── backtest_topn.py          # top_n 回测验证
-│   ├── perf_compare.py           # V13.2 dataclass vs dict 性能压测
-│   ├── gen_field_matrix.py       # V16.3 O field_dict §零·B 字段×源矩阵自动生成
-│   ├── sync_readme.py            # V14.1 CHANGELOG → README 自动同步
+│   ├── perf_compare.py           # dataclass vs dict 性能压测
+│   ├── gen_field_matrix.py       # 字段×源矩阵自动生成
+│   ├── sync_readme.py            # CHANGELOG → README 自动同步
 │   └── backup-opencode.ps1       # opencode 配置备份
 │
-├── docs/                         # 技术文档
+├── docs/                         # 技术文档（见 docs/README.md）
 │   ├── architecture.md           # 项目架构与数据流图（Mermaid）
-│   ├── roadmap.md                # 版本路线图 + ADR 决策记录（V8.0-V16.3）
-│   ├── field_dict.md             # 主字段字典（ZHB 字段索引/破解记录）
+│   ├── roadmap.md                # 版本路线图 + ADR 决策记录
+│   ├── field_dict.md             # 主字段字典（ZHB 字段索引/破解结论）
+│   ├── V17.0_REFACTOR_PLAN.md    # V17.0 重构计划（执行基准）
+│   ├── verify/                   # 字典附录（实测值/样本/破解数据——实证层）
 │   ├── script_data_dict.md       # 脚本应用接口与字段来源字典
-│   ├── domain_glossary.md        # 领域词汇表（术语口径统一）
-│   └── references/a-stock-data/SKILL.md  # v9.6 标杆技能文档（只读对照）
+│   └── domain_glossary.md        # 领域词汇表（术语口径统一）
 │
+├── tests/                        # pytest 测试（按 data/core/reports/infra 分层，见 tests/README.md）
 ├── pyproject.toml                # pytest / mypy / black 等工具配置中心
 ├── requirements.txt              # 运行时依赖列表
 ├── requirements-dev.txt          # 开发依赖列表（测试/类型/格式）
@@ -184,31 +211,26 @@ a-stock-data/
 ├── LICENSE                       # MIT 许可证
 ├── README.md                     # 本文件
 │
-├── reports/                      # 报告输出目录（运行时自动创建，.gitignore）
+├── reports/                      # 报告输出目录（运行时，.gitignore）
 ├── snapshots/                    # 评分快照（历史对比/背离检测，.gitignore）
-├── cache/                        # 缓存数据库 + ZHB 数据包 + 行业映射缓存（.gitignore）
-└── tests/                        # pytest 测试用例（按架构分层，281 项）
-    ├── conftest.py               # 网络拦截/公共 fixture（real_network 隔离）
-    ├── data/                     # ① 数据源层（数据从哪来）
-    │   ├── test_data_zhb.py      # ZHB 包解析/字段破解/行业段过滤
-    │   ├── test_data_tdx.py      # TDX TCP/适配器/白名单
-    │   ├── test_data_eastmoney.py# 东财接口/13 域健康矩阵（real_network）
-    │   └── test_data_network.py  # 限流/令牌桶/熔断/封禁冷却
-    ├── core/                     # ② 统一层/服务层
-    │   ├── test_core_cache.py    # 缓存层
-    │   ├── test_core_schema.py   # 字段元数据/归一化
-    │   ├── test_core_routing.py  # 字段路由
-    │   ├── test_core_calendar.py # 交易日历
-    │   ├── test_core_technical.py# 技术/风险引擎
-    │   ├── test_core_scoring.py  # 评分
-    │   └── test_core_utils.py    # 公共工具
-    ├── reports/                  # ③ 报告应用层
-    │   ├── test_report_runner.py # ReportRunner 框架
-    │   └── test_report_strategy.py # 策略配置
-    └── infra/                    # ④ 基础设施（外部依赖）
-        ├── test_infra_gd.py      # Google Drive 上传
-        ├── test_infra_f10.py     # F10 集成（real_network）
-        └── test_infra_api_stability.py  # 外部 API 字段契约（real_network）
+├── cache/                        # 缓存数据库 + ZHB 数据包 + 行业映射（.gitignore）
+└── scratch/                      # 一次性调研沙盒（.gitignore，见 scratch/README.md）
+```
+
+> **目录职责总表**
+
+| 目录 | 目的 | 关键文件 |
+|:---|:---|:---|
+| `core/` | 核心支撑模块(数据层/传输/缓存/日历同步/上传) | data_provider / tdx_client / stock_cache |
+| `stock_common/` | 公共业务模块(网络层/数据源/评分/报告基类) | sc_network / sc_datasource / sc_report_runner |
+| `credentials/` | 凭据集中目录(不入库) | client_secrets / credentials / ths_credentials |
+| `scripts/` | 可复用运维命令 | run_tests.ps1 / update_calendar / clean_cache |
+| `docs/` | 技术文档(架构/决策/字段字典) | roadmap / field_dict / architecture |
+| `tests/` | pytest 测试(防退化守护) | data/ core/ reports/ infra/ |
+| `reports/` | 报告输出(运行时) | 见 reports/README.md |
+| `snapshots/` | 评分快照(运行时) | 见 snapshots/README.md |
+| `cache/` | 缓存数据(运行时) | stock_cache.db / zhb/ / 行业映射 |
+| `scratch/` | 一次性调研沙盒(用完即弃) | 见 scratch/README.md |
 ```
 
 ---
@@ -275,8 +297,7 @@ CACHE_DB_SIZE_LIMIT_MB = 500
 # 容错
 CIRCUIT_BREAKER_FAILURE_THRESHOLD = 10
 CIRCUIT_BREAKER_RESET_TIMEOUT_SECONDS = 60
-TOKEN_BUCKET_RPS_EASTMONEY = 1.0
-TOKEN_BUCKET_RPS_TENCENT = 5.0
+# 令牌桶 rps 由 sc_network._DOMAIN_LIMITS 分域管理（push2 系 0.4rps 最严）
 ```
 
 ### Google Drive 配置（可选）
@@ -338,10 +359,10 @@ from data_provider import (
 - **版本化防污染**（V16.2.16+）：口径变更升级 category（`industry_peers_v2`）
 - **dataclass 透明序列化**（V13.1）：`_serialize_for_cache` / `_deserialize_from_cache`
 - **环境变量开关**：`STOCK_NOCACHE=1` 临时禁用
-- **CLI 工具**：`python stock_cache.py stats` 查看命中率
+- **CLI 工具**：`python -m core.stock_cache stats` 查看命中率（V17.0 包化后）
 
 ```python
-from stock_cache import cached, invalidate_category, print_cache_stats
+from core.stock_cache import cached, invalidate_category, print_cache_stats
 
 @cached(category="dragon_tiger", ttl_seconds=24 * 3600)
 def get_dragon_tiger_board(code, days=30, include_seats=True):
@@ -375,7 +396,7 @@ status, message = get_market_status()
 # status: closed/pre_market/morning/lunch/afternoon/post_market
 ```
 
-### get_*_report.py（5 大 Runner + ful 下线）
+### get_*_report.py（5 大报告脚本 Runner，ful 已于 V16.3 O19 删除）
 
 报告脚本全部继承 `BaseReportRunner`（[stock_common/sc_report_runner.py](stock_common/sc_report_runner.py)）：
 
@@ -399,11 +420,37 @@ reports/
 
 ---
 
-## 版本历史
+## 📋 版本历史
 
-完整版本历史详见 [CHANGELOG.md](CHANGELOG.md)
+> 完整历史记录见 [CHANGELOG.md](CHANGELOG.md)(权威源, 由 scripts/sync_readme.py 同步)
 
----
+### V17.0(2026-08-13)— 全盘重构里程碑
+- 目录: 7 支撑模块包化 `core/`、v9.6 遗产清理、`credentials/` 凭据归位、README 体系补全
+- 重构: 死代码 ~1000 行、传输层统一、`execute_batch_pipeline` 基类批量骨架、main.py 超时改输出活性检测
+- 字典: 命名规律破解(拼音/英文/中英混合)——"N日"交易日口径、f137-146 资金流、封单额三日滚动、通达信行业体系
+- 统一层: 主力净流入全链 f137、PE 动态=f162、行业仅认 881 段; 全量回归 302 passed
+
+### V16.4.1(2026-08-12)— 字段验证流水线
+- 20 股股票池 + 19 源按天采集; TdxQuant 官方 88 字段交叉破解(18/18 实锤)
+- 报告质量 19 项修复; 编码体系治本(ensure_utf8_stdio + BOM + 管道禁令)
+- 每日会话纪要锚点体系(`docs/session_notes/`)
+
+### V16.3-V16.2(2026-08-05 ~ 08-11)— 近期摘要
+- 16.3.x: 字典重构(决策层+实证层)、THS SDK/KPL/板块轮动新源、行业统一申万二级、push2 系限流加固
+- 16.2.x: 限流防封体系(0.4rps 共享桶/封禁冷却/多域轮换)、ZHB 字段深度破解、行业统一、缓存版本化铁律
+
+### V16.1 及以前(2026-07-02 ~ 08-05)— 归档
+| 版本 | 里程碑 |
+|:---|:---|
+| 16.1 | ST 涨跌幅规则修正; 新数据源适配 |
+| 15.x | easy_tdx 移植、全量健康修复、ZHB 旁路普及、CanonicalStockData 标准化合约 |
+| 14.x | ZHB 数据集深度集成、性能优化、Top-N 回测、BaseReportRunner 引擎(V12.4 前身) |
+| 13.x | dataclass 数据容器(sc_schema) |
+| 12.x | TCP 统一层重构、data_provider 激活、三防封机制 |
+| 11.x | Data Provider 统一导入、缓存/跨日 Bug 修复 |
+| 10.x | zhb 资金流向解锁、字段映射重大修正、全局配置包升级 |
+| 9.x | mootdx 集成、缓存交叉验证、F10 全覆盖、舆情互动层 |
+| 8.x | 初始: 统一缓存层/评分接口/龙虎榜席位/北向修复 |
 
 ## 常见问题
 

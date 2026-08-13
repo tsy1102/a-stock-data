@@ -112,6 +112,9 @@ __all__ = [
     "eastmoney_stock_info_push2",
     "ths_hot_list", "em_hot_rank", "em_hot_concept",
     "get_limit_up_pool", "get_limit_broken_pool", "get_limit_down_pool", "get_limit_pool_summary",
+    "get_limit_pool_multi_source",  # V16.3.3: 涨停池三源互校
+    "get_fupan_zttt", "get_fupan_pmsl",  # V16.3.3: 复盘啦缓存包装
+    "get_stock_permanent_info",  # V16.3.3: 永久字段 10 年缓存
     "get_yesterday_limit_pool",  # V16.1: 昨日涨停池（晋级率）
     "extract_report_valuation",  # V16.1: 研报估值提取
     # V16.1.7: 新数据源封装（字典 §12.10/12.12）
@@ -122,35 +125,35 @@ __all__ = [
     "ths_limit_up_pool",
     "get_eastmoney_minute_fund_flow", "get_fund_flow_weighted",
     "cls_telegraph", "news_matches_stock", "get_history_fund_flow_120d", "get_em_industry_l2_data", "get_em_industry_l2", "get_em_industry_members_l2", "dragon_tiger_backup", "fund_flow_backup", "cninfo_irm",
-    # zhb A级数据（V9.6）
-    "get_zhb_sp_block", "get_zhb_sp_block_list", "get_zhb_sw_industries",
+    # zhb A级数据（V9.6）—— V17.0 S1: 删 21 个零调用死转发, 保留有调用方项
     "get_zhb_industry_map", "get_zhb_data_date",
     # zhb B级数据（V9.6 阶段二）
-    "get_zhb_stock_stat", "get_zhb_stock_stat2", "get_zhb_market_snapshot",
-    "get_zhb_52w_range", "get_zhb_industry_code", "is_zhb_data_fresh",
+    "get_zhb_market_snapshot", "is_zhb_data_fresh",
     "zhb_field_safe",
-    # zhb 辅助数据（V9.6 阶段三）
-    "get_zhb_tip_info", "get_zhb_ipo_list", "get_zhb_ah_stocks", "get_zhb_broker_name",
-    # zhb V10.0 新增
-    "get_zhb_holidays", "get_zhb_csrc_industries", "get_zhb_adr_stocks",
-    "get_zhb_convertible_bonds", "get_zhb_delisted_stocks",
-    # zhb V10.0 智能日期筛选
-    "should_use_zhb_data", "is_zhb_date_matching",
-    # zhb V10.1 新增：全量字段 + 衍生指标
+    # zhb 辅助数据（V9.6 阶段三）—— 仅保留存活项
+    "get_zhb_tip_info",
+    # zhb V10.1 新增：全量字段 + 衍生指标（仅保留存活项）
     "get_zhb_full_market_snapshot", "get_zhb_market_stat2_snapshot",
     "get_zhb_dividend_yield", "get_zhb_streak_days", "get_zhb_change_ytd",
-    "get_zhb_ipo_price", "get_zhb_amount_wan", "get_zhb_amount_1d",
-    "get_zhb_net_profit_kcf",  # V16.0: 扣非净利润(万元, Col[14]联网确认)
+    "get_zhb_amount_wan",
     "get_zhb_single_stock_data",
-    # zhb V10.3 新增：主力资金流向
-    "get_zhb_main_net_buy", "get_zhb_main_net_buy_amount",
-    "get_zhb_main_net_buy_amount_1d",
+    # zhb V10.3 新增：主力资金流向（仅保留存活项）
+    "get_zhb_main_net_buy",
     # V10.1: 全局股本缓存 + 市值计算
     "get_share_capital", "calc_mcap_yi", "calc_float_mcap_yi",
-    # V16: 连续 ZHB 回溯补充字段
-    "backtrack_field", "backtrack_stats", "backtrack_with_extractor",
+    # V16: 连续 ZHB 回溯补充字段（V17.0 S1: 函数本体随 sc_zhb 模块删除, 保留导出占位见 import 块注释）
     # V12.4: 策略报告通用运行框架
     "BaseReportRunner",
+    # V16.3 O35: 新数据源适配器（字典 §12.8.12b/§12.17/§12.18）
+    "get_ths_market_snapshot", "get_ths_pb", "get_ths_credentials",
+    "get_kpl_market_sentiment", "get_kpl_up_down", "get_kpl_plate_strength",
+    "get_kpl_limit_up_detail", "get_kpl_broken_ratio",
+    "get_plate_rotation_matrix", "get_plate_rotation_top",
+    # V16.3.3: fuyao 官方 REST
+    "is_fuyao_enabled", "get_fuyao_key", "ensure_fuyao_key",
+    "get_fuyao_snapshot", "get_fuyao_valuation", "get_fuyao_kline",
+    "get_fuyao_limit_up_ladder", "get_fuyao_hot_list", "get_fuyao_dragon_tiger",
+    "fuyao_to_thscode",
 ]
 
 # ═══════════════════════════════════════════════════════════════
@@ -202,6 +205,8 @@ from stock_common.sc_utils import (
     _safe_cleanup_tdx,
     _load_settings, _load_strategy_config,
     _settings_cache, _strategy_config_cache,
+    # V17.0 新增公共工具（S3 市场代码 / S5 报告样板 / sc_render）
+    em_secid_prefix, is_a_stock, name_mark, save_text_report,
 )
 
 from stock_common.sc_technical import (  # V16.1: 技术指标引擎
@@ -295,6 +300,9 @@ from stock_common.sc_datasource import (
     ths_hot_list, em_hot_rank, em_hot_concept,
     # 打板层（V9.6）
     get_limit_up_pool, get_limit_broken_pool, get_limit_down_pool, get_limit_pool_summary,
+    get_limit_pool_multi_source,
+    get_fupan_zttt, get_fupan_pmsl,
+    get_stock_permanent_info,
     get_yesterday_limit_pool,  # V16.1: 昨日涨停池（晋级率）
     extract_report_valuation,  # V16.1: 研报估值提取
     # V16.1.7: 新数据源封装（字典 §12.10/12.12）
@@ -307,39 +315,45 @@ from stock_common.sc_datasource import (
     get_eastmoney_minute_fund_flow, get_fund_flow_weighted,
     # 财联社快讯/官方备胎池/舆情互动层（V9.6）
     cls_telegraph, news_matches_stock, get_history_fund_flow_120d, get_em_industry_l2_data, get_em_industry_l2, get_em_industry_members_l2, dragon_tiger_backup, fund_flow_backup, cninfo_irm,
-    # zhb A级数据（V9.6）
-    get_zhb_sp_block, get_zhb_sp_block_list, get_zhb_sw_industries,
+    # zhb A级数据（V9.6）—— V17.0 S1: 删 21 个零调用死转发
     get_zhb_industry_map, get_zhb_data_date,
     # zhb B级数据（V9.6 阶段二）
-    get_zhb_stock_stat, get_zhb_stock_stat2, get_zhb_market_snapshot,
-    get_zhb_52w_range, get_zhb_industry_code, is_zhb_data_fresh,
+    get_zhb_market_snapshot, is_zhb_data_fresh,
     zhb_field_safe,
-    # zhb 辅助数据（V9.6 阶段三）
-    get_zhb_tip_info, get_zhb_ipo_list, get_zhb_ah_stocks, get_zhb_broker_name,
-    # zhb V10.0 新增
-    get_zhb_holidays, get_zhb_csrc_industries, get_zhb_adr_stocks,
-    get_zhb_convertible_bonds, get_zhb_delisted_stocks,
-    # zhb V10.0 智能日期筛选
-    should_use_zhb_data, is_zhb_date_matching,
-    # zhb V10.1 新增：全量字段 + 衍生指标
+    # zhb 辅助数据（V9.6 阶段三）—— 仅保留存活项
+    get_zhb_tip_info,
+    # zhb V10.1 新增：全量字段 + 衍生指标（仅保留存活项）
     get_zhb_full_market_snapshot, get_zhb_market_stat2_snapshot,
     get_zhb_dividend_yield, get_zhb_streak_days, get_zhb_change_ytd,
-    get_zhb_ipo_price, get_zhb_amount_wan, get_zhb_amount_1d,
-    get_zhb_net_profit_kcf,  # V16.0: 扣非净利润(万元)
+    get_zhb_amount_wan,
     get_zhb_single_stock_data,
-    # zhb V10.3 新增：主力资金流向
-    get_zhb_main_net_buy, get_zhb_main_net_buy_amount,
-    get_zhb_main_net_buy_amount_1d,
+    # zhb V10.3 新增：主力资金流向（仅保留存活项）
+    get_zhb_main_net_buy,
     # V10.1: 全局股本缓存 + 市值计算
     get_share_capital, calc_mcap_yi, calc_float_mcap_yi,
 )
 
 
 # ═══════════════════════════════════════════════════════════════
-# V16: 连续 ZHB 回溯补充字段（sc_zhb）
+# V16.3 O35: 新数据源适配器（字典 §12.8.12b THS / §12.17 KPL / §12.18 板块轮动）
 # ═══════════════════════════════════════════════════════════════
-from stock_common.sc_zhb import (
-    backtrack_field, backtrack_stats, backtrack_with_extractor,
+from stock_common.sc_ths import (  # THS SDK（同花顺官方 C 库——正式账号无限频）
+    get_ths_market_snapshot, get_ths_pb, get_ths_credentials,
+)
+from stock_common.sc_kpl import (  # 开盘啦 KPL（longhuvip 私有 API——匿名接口）
+    get_kpl_market_sentiment, get_kpl_up_down, get_kpl_plate_strength,
+    get_kpl_limit_up_detail, get_kpl_broken_ratio,
+)
+from stock_common.sc_plate_rot import (  # 板块轮动（duanxianxia 短线侠——N×天矩阵）
+    get_plate_rotation_matrix, get_plate_rotation_top,
+)
+
+# V16.3.3: 同花顺官方金融数据 REST（fuyao.aicubes.cn，字典 §12.8.12c）——Key 交互引导 + 跳过禁用
+from stock_common.sc_fuyao import (
+    is_fuyao_enabled, get_fuyao_key, ensure_fuyao_key,
+    get_fuyao_snapshot, get_fuyao_valuation, get_fuyao_kline,
+    get_fuyao_limit_up_ladder, get_fuyao_hot_list, get_fuyao_dragon_tiger,
+    fuyao_to_thscode,
 )
 
 

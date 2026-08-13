@@ -13,9 +13,9 @@
     - 状态追踪：记录最后成功同步时间，避免重复同步
 
 使用方式：
-    1. 命令行运行：python zhb_sync.py --once  # 单次同步
-    2. 定时任务：python zhb_sync.py --cron "0 9,18 * * *"  # 每天9点和18点
-    3. 后台守护：python zhb_sync.py --interval 6  # 每6小时同步一次
+    1. 命令行运行：python -m core.zhb_sync --once  # 单次同步（V17.0 包化后）
+    2. 定时任务：python -m core.zhb_sync --cron "0 9,18 * * *"  # 每天9点和18点
+    3. 后台守护：python -m core.zhb_sync --interval 6  # 每6小时同步一次
 
 版本: V14.0（2026-07-22，文档同步）
     V13.x：受益于 stock_cache.py dataclass 透明序列化
@@ -34,16 +34,27 @@ import threading
 from datetime import datetime, timedelta
 from typing import Optional, Dict, Any
 
+# V16.4.1: 强制 UTF-8 输出（下沉到代码自身——任何 agent/机器/直接运行均 UTF-8，
+# 不依赖系统代码页/环境变量/Profile；纯标准库，幂等）
+for _stream in (sys.stdout, sys.stderr):
+    if _stream is not None and hasattr(_stream, "reconfigure"):
+        try:
+            _stream.reconfigure(encoding="utf-8", errors="replace")
+        except Exception:
+            pass
+
 try:
-    from zhb_client import (
+    from core.zhb_client import (
         get_zhb, _download_zhb_zip, _parse_zhb_data, _save_to_cache,
         _get_cache_path, _ZHB_CACHE_DIR,
         _acquire_file_lock, _release_file_lock, _check_disk_space,
         _zhb_memory_cache, _zhb_cache_lock
     )
-except ImportError:
-    sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-    from zhb_client import (
+except ImportError:  # V17.0: 兜底改为根锚定(包化后直接运行 core/zhb_sync.py 场景)
+    import sys as _sys
+
+    _sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+    from core.zhb_client import (
         get_zhb, _download_zhb_zip, _parse_zhb_data, _save_to_cache,
         _get_cache_path, _ZHB_CACHE_DIR,
         _acquire_file_lock, _release_file_lock, _check_disk_space,
@@ -250,10 +261,23 @@ def sync_once(force: bool = False) -> bool:
             return True
 
         _save_to_cache(zhb.date, data)
-    
-        with _zhb_cache_lock:
-            global _zhb_memory_cache
-            _zhb_memory_cache = zhb
+
+        # V16.4.1: 预热须写入 zhb_client 模块命名空间——原 global 只改本模块的导入名,
+        # zhb_client.get_zhb() 读的是 zhb_client._zhb_memory_cache, 预热实际无效
+        try:
+            import core.zhb_client as _zbc
+
+            with _zbc._zhb_cache_lock:
+                _zbc._zhb_memory_cache = zhb
+        except Exception as _e:
+            _log_sync(f"zhb_client 内存缓存预热失败: {_e}")
+        # V16.4.1: 下载新包后失效 stock_calendar 的 ZHB 补充缓存(其 docstring 明确要求)
+        try:
+            from stock_common.stock_calendar import invalidate_zhb_supplement_cache
+
+            invalidate_zhb_supplement_cache()
+        except Exception:
+            pass
 
         state["last_sync_time"] = now
         state["last_sync_date"] = zhb.date
@@ -286,22 +310,35 @@ def _parse_cron(cron_expr: str) -> Optional[tuple]:
     支持格式：
         - "0 9 * * *" 每天9点
         - "0 9,18 * * *" 每天9点和18点
-        - "30 10 * * 1-5" 工作日10:30
+        - "30 10 * * 1-5" 工作日10:30 (V16.4.1: 支持 a-b 范围)
 
     Returns:
         (minute, hours, days, months, weekdays) 或 None
     """
+    def _field(raw: str, lo: int, hi: int) -> list:
+        """单字段解析: 支持 * / 逗号列表 / a-b 范围(V16.4.1: 原 "1-5" 抛 ValueError → None)"""
+        if raw == "*":
+            return list(range(lo, hi + 1))
+        out = []
+        for seg in raw.split(","):
+            if "-" in seg:
+                a, b = seg.split("-", 1)
+                out.extend(range(int(a), int(b) + 1))
+            else:
+                out.append(int(seg))
+        return sorted(set(out))
+
     parts = cron_expr.split()
     if len(parts) != 5:
         return None
     try:
-        minute = [int(x) for x in parts[0].split(",")] if parts[0] != "*" else list(range(60))
-        hour = [int(x) for x in parts[1].split(",")] if parts[1] != "*" else list(range(24))
-        day = [int(x) for x in parts[2].split(",")] if parts[2] != "*" else list(range(1, 32))
-        month = [int(x) for x in parts[3].split(",")] if parts[3] != "*" else list(range(1, 13))
-        weekday = [int(x) for x in parts[4].split(",")] if parts[4] != "*" else list(range(7))
+        minute = _field(parts[0], 0, 59)
+        hour = _field(parts[1], 0, 23)
+        day = _field(parts[2], 1, 31)
+        month = _field(parts[3], 1, 12)
+        weekday = _field(parts[4], 0, 6)
         return (minute, hour, day, month, weekday)
-    except ValueError:
+    except (ValueError, TypeError):
         return None
 
 

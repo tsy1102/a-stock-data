@@ -45,7 +45,7 @@ from stock_common.sc_network import _debug_log
 
 # 导入GD上传相关模块
 try:
-    from gd_uploader import init_gd, upload_type_reports, cleanup_gd_proxy, retry_get_folder_interactive, upload_report_to_drive
+    from core.gd_uploader import init_gd, upload_type_reports, cleanup_gd_proxy, retry_get_folder_interactive, upload_report_to_drive
     GD_AVAILABLE = True
 except ImportError:
     GD_AVAILABLE = False
@@ -85,6 +85,7 @@ def _upload_snapshot_to_gd(snapshot_path: str, skip_upload: bool = False) -> Non
     """上传快照文件到Google Drive的snapshot文件夹"""
     if skip_upload:
         return
+    drive, proxy_set = None, False
     try:
         # 初始化GD连接
         drive, proxy_set, parent_id, _skip = init_gd(os.path.dirname(SNAPSHOT_DIR))
@@ -92,25 +93,29 @@ def _upload_snapshot_to_gd(snapshot_path: str, skip_upload: bool = False) -> Non
         if not drive or _skip:
             print("  ⚠️ GD连接失败或用户选择跳过上传", flush=True)
             return
-            
+
         # 确保snapshot文件夹存在
         snapshot_id = retry_get_folder_interactive(drive, "snapshot", parent_id, max_auto_retry=3)
         if not snapshot_id:
             print("  ⚠️ GD snapshot文件夹获取失败", flush=True)
             return
-        
+
         # 上传快照文件
         filename = os.path.basename(snapshot_path)
         if upload_report_to_drive(drive, snapshot_path, snapshot_id, filename):
             print(f"  ✅ 快照已上传到GD: snapshot/{filename}", flush=True)
         else:
             print(f"  ⚠️ 快照GD上传失败: {filename}", flush=True)
-            
-        # 清理代理
-        cleanup_gd_proxy(proxy_set)
-        
+
     except Exception as e:
         print(f"  ⚠️ GD上传过程异常: {e}", flush=True)
+    finally:
+        # V16.4.1: 各提前 return 路径原不清理代理, 环境变量残留到进程结束(影响后续 HTTP 走代理)
+        if proxy_set:
+            try:
+                cleanup_gd_proxy(proxy_set)
+            except Exception:
+                pass
 
 
 # ═══════════════════════════════════════════════════════════

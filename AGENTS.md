@@ -2,7 +2,7 @@
 
 > 适用于:Windows 桌面版 Agent(原生执行 PowerShell)
 > 适用范围:本仓库根目录及其全部子目录
-> 版本:v1.1
+> 版本:v1.2(V16.4.1 重构:合并落盘规则、清理过时内容与已完成待办)
 
 ---
 
@@ -20,7 +20,7 @@ Get-Command pwsh -ErrorAction SilentlyContinue
 
 - OS:Windows(原生 Agent,不在 WSL/容器中)
 - Shell:**Windows PowerShell 5.1**(Desktop edition)
-- 仓库路径:`D:\GitHub\test`(Windows 文件系统,统一使用 `C:\...`,**禁止** `/mnt/c/...`)
+- 仓库路径:项目根目录(即本文件所在目录,用 `$PSScriptRoot` 获取;Windows 文件系统,统一使用 `C:\...`,**禁止** `/mnt/c/...`)
 - 不需要 `pwsh`;若检测到 PowerShell 7,仍按 PowerShell 兼容语法编写
 
 如果实际环境与上述不符,**先停手报差异**,不直接执行。
@@ -35,24 +35,56 @@ Get-Command pwsh -ErrorAction SilentlyContinue
 - **禁止嵌套** `powershell.exe -Command "..."` / `powershell -Command` / `pwsh -Command`。
 - 同一任务里,路径要么全是 `C:\...`,要么全是 `/mnt/c/...`,**不能混用**。
 
-### 1.2 复杂命令必须落盘为 `.ps1`
+### 1.2 复杂命令/中文输出必须落盘为 `.ps1`
 
-凡是满足下面任一条,**必须**写到临时或仓库下的 `.ps1` 文件,然后 `& .\.ps1` 或 `pwsh -File`:
+凡是满足下面**任一条**,**必须**写到临时或仓库下的 `.ps1` 文件,然后 `& .\.ps1` 或 `pwsh -File`:
 
 - 多层引号(`"..."` 里套 `'...'` 里套 `"..."`)
 - 包含 JSON / 正则 / Here-String
 - 多步判断或循环
 - 命令行 > 120 字符
+- **输出含中文**(含调试模式 `Select-String 读文件→Out-File→Get-Content` 等)——PowerShell
+  原生输出按系统代码页(GBK)写字节,opencode 按 UTF-8 解码必乱码(2026-08-12 实测),
+  落盘后由四行头部强制 UTF-8;或改用 Python 探针(项目已统一 `ensure_utf8_stdio`,输出天然 UTF-8)
 
-`.ps1` 开头固定两行:
+**V16.4.1 管道禁令(2026-08-12 二度实测根因)**: **禁止把 python 输出接 PowerShell 管道**
+(`python.exe ... | Select-Object` / `| Out-File | Get-Content` 等)——PS 5.1 对原生进程
+多字节 UTF-8 流的分块解码有缺陷,会破坏部分字符(行首「/行尾字变 �),**与 python 输出
+本身无关**(无管道直跑 100% 正常)。需要截断/存文件时:
+  - 截断:在 python 脚本内部控制(print 前切片),或直接无管道跑(opencode 超长自动落盘)
+  - 存文件:python 脚本自己写文件(open(..., encoding="utf-8")),**不要用 Out-File 中转**
+
+唯一例外——**无中文输出**的简单单行命令(`chcp`/`git status`/`Test-Path` 等)可直接执行。
+
+`.ps1` 开头固定四行(V16.4.1:后两行为 UTF-8 强制——opencode/Codex 子进程
+**不加载 Profile**,系统代码页 936(GBK) 时 PowerShell 原生输出乱码;实测
+会话内设置编码后输出即恢复):
 
 ```powershell
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
+[Console]::OutputEncoding = [System.Text.Encoding]::UTF8
+$OutputEncoding = [Console]::OutputEncoding
 ```
+
+> **V16.4.1 BOM 铁律(实测根因)**: `.ps1` 文件必须是 **UTF-8 with BOM**。
+> Windows PowerShell 5.1 对无 BOM 文件按 ANSI(GBK) 解析 → 文件内中文字面量
+> 在解析时即乱码(输出必然乱码,运行时设编码也救不回)。opencode/Codex 的
+> edit/write 写的是无 BOM UTF-8 —— **凡工具修改过 .ps1,必须重写为带 BOM**:
+>
+> ```powershell
+> $c = [System.IO.File]::ReadAllText($p, [System.Text.Encoding]::UTF8)
+> [System.IO.File]::WriteAllText($p, $c, (New-Object System.Text.UTF8Encoding($true)))
+> ```
+>
+> 校验:`Format-Hex` 头三字节应为 `EF BB BF`。`.py` 文件不受影响(Python 3 源
+> 文件默认 UTF-8,不依赖 BOM)。
 
 **禁止**为绕开脚本而全局放宽 `ExecutionPolicy`;如需执行,用
 `powershell -ExecutionPolicy Bypass -File .\xxx.ps1` 单次放行。
+
+> 校验:若临时脚本输出中文仍乱码,检查 .ps1 是否被 edit 工具重写丢 BOM
+> (见上文 BOM 铁律)。
 
 ### 1.3 路径
 
@@ -149,7 +181,7 @@ def test_approx():
 
 使用范围(本仓库现状):
 
-- 13 个测试文件已在 `tests/` 跑通(含 `@pytest.fixture`、`@pytest.mark.real_network`、`pytest.skip`、`pytest_asyncio` 等)
+- 17 个测试文件已在 `tests/` 跑通(含 `@pytest.fixture`、`@pytest.mark.real_network`、`pytest.skip`、`pytest_asyncio` 等)
 - `tests/conftest.py` 提供 `_no_real_network` autouse fixture 和 `endpoint` 参数化 fixture
 - `pyproject.toml` `[tool.pytest.ini_options]` 集中管 `testpaths` / `addopts` / `markers` / `norecursedirs`
 
@@ -170,7 +202,7 @@ def test_approx():
 - `python -m pytest ...`(同上,且 `python` 在 PS 里不可靠)
 - `pwsh` / `powershell.exe -Command "pytest ..."`(嵌套 shell)
 
-**统一入口**:[scripts/run_tests.ps1](file:///d:/GitHub/test/scripts/run_tests.ps1),支持:
+**统一入口**:[scripts/run_tests.ps1](scripts/run_tests.ps1),支持:
 
 | Mode | 行为 | 对应 pytest 原生命令 |
 |---|---|---|
@@ -188,14 +220,14 @@ def test_approx():
 .\scripts\run_tests.ps1 -Mode expression -Expression "test_cache"      # 用 -k 表达式
 ```
 
-底层 [run_with_system_python.ps1](file:///d:/GitHub/test/scripts/run_with_system_python.ps1) 负责强制使用系统 Python 3.12,
+底层 [run_with_system_python.ps1](scripts/run_with_system_python.ps1) 负责强制使用系统 Python 3.12,
 `run_tests.ps1` 只负责装配参数 + 透传退出码。
 
 #### 2.1.3 排错清单(测试跑不起来时,按顺序查)
 
 | 现象 | 原因 | 验证命令 |
 |---|---|---|
-| `[ERROR] System Python 3.12 not found` | `run_with_system_python.ps1` 硬编码路径不对应你的机器 | 打开脚本修 `PYTHON_EXE` 为 `where python.exe` 输出 |
+| `[ERROR] System Python 3.12 not found` | `run_with_system_python.ps1` 自动探测失败 | 设 `SYSTEM_PYTHON_EXE` 环境变量指向系统 Python 3.12，或安装 Python 3.12 后重试（探测顺序：env > py -3.12 > Windows Store 包 > PATH） |
 | `ModuleNotFoundError: No module named 'pytest'` | dev 依赖没装 | `pip install -r requirements-dev.txt` |
 | `no tests ran` / `collection error` | 工作目录不是仓库根 | `Test-Path -LiteralPath pyproject.toml`(应 True) |
 | 默认 `Mode=all` 一上来就 import error | 某个真网络测试在 collection 阶段炸 | 改用 `.\scripts\run_tests.ps1 -Mode module -Path <单文件>` |
@@ -214,7 +246,7 @@ def test_approx():
 ```
 先检测当前 Agent 是 Windows native 还是 WSL,并报告 PowerShell 版本。
 原生环境只使用 PowerShell,不混用 Bash/cmd,不嵌套 powershell -Command。
-复杂命令改写为 .ps1;路径使用 -LiteralPath,外部程序检查 $LASTEXITCODE。
+复杂命令或含中文输出的命令改写为 .ps1(首四行含 UTF-8 强制);路径使用 -LiteralPath,外部程序检查 $LASTEXITCODE。
 同一错误不要盲目重试。
 ```
 
@@ -227,9 +259,8 @@ def test_approx():
 ### 4.1 读取带空格和 `[]` 的路径
 
 ```powershell
-# V16.3 C4: 原验收路径 docs\backtest_v1432 [copy]\README.md 已随目录删除，
-# 改为真实存在路径（要点是 -LiteralPath 防通配符，与路径是否含特殊字符无关）
-$path = Join-Path $PSScriptRoot 'docs\references\a-stock-data\SKILL.md'
+# V17.0: v9.6/SKILL.md 已删除, 验收路径改为真实存在文件（要点是 -LiteralPath 防通配符）
+$path = Join-Path $PSScriptRoot 'docs\domain_glossary.md'
 if (Test-Path -LiteralPath $path) {
     Get-Content -Raw -LiteralPath $path | Select-Object -First 1
 } else { Write-Warning "not found: $path" }
@@ -309,6 +340,11 @@ Write-Output 'unreachable'
 | `pytest tests/ -v`(shell 层 bash 一行) / `python -m pytest ...` | `.\scripts\run_tests.ps1`(本仓库 shell 层强制入口);`import pytest` 写测试代码完全 OK |
 | 顶层就 `Set-StrictMode -Version Latest` + 紧跟 `param(...)` 段 | 解析顺序错了会让参数"未初始化";要么砍 param,要么先抓 $args 手解,再 Set-StrictMode |
 | `param([string[]]$ExtraArgs)` 数组类型标记 | 偶发兼容错,简写为 `param($ExtraArgs)` 即可,内部 if 兜底 |
+| opencode 单行命令中文乱码(子进程不加载 Profile,系统代码页 936) | **落盘 .ps1(四行头部)或 Python 探针**;单行仅限无中文输出(2026-08-12 实测"加前缀"约定易漏) |
+| **python 输出接 PowerShell 管道后乱码**(`\| Select-Object` / `\| Out-File \| Get-Content`) | **禁止管道接 python**——PS 5.1 分块解码破坏多字节字符,与 python 输出无关;无管道直跑 100% 正常(2026-08-12 二度实测) |
+| 项目 Python 脚本输出乱码(GBK 字节被 UTF-8 解码) | 入口脚本顶部统一强制 UTF-8(`ensure_utf8_stdio` / 内联 reconfigure 块,V16.4.1 已全量接入) |
+| `.ps1` 被工具 edit/write 后中文乱码(无 BOM 被 PS 5.1 按 GBK 解析) | 必须重写为 UTF-8 with BOM(`[System.IO.File]` 读 UTF-8 + `UTF8Encoding($true)` 写回) |
+| 在 `zhb_client.get_zhb` 下载判定里 import `stock_calendar` | ❌ 循环依赖: `stock_calendar.is_workday` 反向调 `get_holidays`→`get_zhb` → 递归爆栈,下载永不执行(2026-08-12 实测) |
 
 ---
 
@@ -328,7 +364,11 @@ Write-Output 'unreachable'
 
 - [ ] 当前 Shell 是 Windows PowerShell,不是 Bash
 - [ ] 没有 `powershell.exe -Command` 嵌套
-- [ ] 复杂命令都在 `.ps1` 文件里,文件首两行是 `Set-StrictMode` + `$ErrorActionPreference`
+- [ ] 复杂命令都在 `.ps1` 文件里,文件首四行是 `Set-StrictMode` + `$ErrorActionPreference` + `[Console]::OutputEncoding=UTF8` + `$OutputEncoding=UTF8`
+- [ ] **凡输出含中文的命令(含调试模式 Select-String→Out-File→Get-Content)已落盘 .ps1 或改 Python 探针**——未落盘的单行命令只用于无中文输出场景
+- [ ] **没有 `python ... |` 管道接 PS**(禁止模式;python 输出直跑或脚本内自截断)
+- [ ] `.ps1` 文件是 UTF-8 with BOM(`Format-Hex` 头三字节 `EF BB BF`;工具修改后必须重写带 BOM)
+- [ ] 新建/修改的 Python 入口脚本顶部有 UTF-8 强制(`ensure_utf8_stdio` 或内联 reconfigure 块)
 - [ ] 所有路径走 `-LiteralPath`
 - [ ] 外部程序走 splatting + `$LASTEXITCODE` 检查
 - [ ] 同一错误没有重试第 3 次
@@ -347,8 +387,8 @@ Write-Output 'unreachable'
 
 **首次 Edit/Write 某个文件前,必须先调查并在回复中列出:**
 
-1. **导入者**: 谁 `import` 了这个文件/函数?(`grep -rn "import X"` / `grep -rn "from X import"`)
-2. **调用方**: 该函数被哪些脚本/模块调用?(`grep -rn "func_name"`)
+1. **导入者**: 谁 `import` 了这个文件/函数?(用 Python 探针或 `Select-String -Pattern "import X"` 全仓扫描)
+2. **调用方**: 该函数被哪些脚本/模块调用?(同上扫描函数名)
 3. **数据契约**: 返回 dict 的 key、dataclass 字段、ZHB 列索引、SQLite Key 格式
 4. **缓存影响**: 是否影响 `report_date` 事件锁 / 缓存 Key 约定
 5. **测试影响**: 改动是否会破坏 `tests/` 现有用例
@@ -365,8 +405,8 @@ Write-Output 'unreachable'
 | `tdx_client.py` | 0x0010 协议字段名(mootdx dict key)、限流间隔 |
 | `zhb_client.py` | 各解析器列映射、GBK/分隔符约定 |
 | `data_provider.py` | REQUIRES_REALTIME_HTTP / ZHB_SUFFICIENT 字段集 |
-| `stock_common/__init__.py` | 导出是否与实际定义一致(已知 58% 过期) |
-| `docs/field_dict.md` | 字段索引以 2026-07-28 版为准,Col[3]=pe_dynamic, Col[9]=pe_ttm(V16.3: 原引用 master_data_sources_and_fields_reference.md 从未创建,改指主字典) |
+| `stock_common/__init__.py` | 导出是否与实际定义一致(2026-08-10 审计:`__all__` 241 项全部可访问,0 缺失;少数公共函数如 `get_em_quote_full` 未在 `__all__` 重导出,但调用方均直连子模块,无破坏) |
+| `docs/field_dict.md` | 字段索引以最新破解为准:Col[3]=StaticPE_TTM(pe_dynamic 为历史遗留名)、Col[9]=MorePE(2026-08-12 TdxQuant 18/18 实锤);ZHB 列索引变化见文档 §三 头部核实日期 |
 
 ### 8.3 字段/签名变更时的连带检查
 
@@ -389,7 +429,7 @@ Write-Output 'unreachable'
 | 2. 类型 | `mypy <file>` | 无新增错误 |
 | 3. 格式 | `black --check <file>`(line-length=100) | 无格式差异 |
 | 4. 测试 | `.\scripts\run_tests.ps1 -Mode skip_real` | 全部通过 |
-| 5. 安全 | `grep -rn "sk-\|api_key\|password\|token" <改动文件>` | 无硬编码密钥 |
+| 5. 安全 | `Select-String -Pattern "sk-|api_key|password|token" <改动文件>`(或 Python 探针) | 无硬编码密钥 |
 | 6. Diff | `git.exe diff --stat` | 改动符合预期 |
 
 > 注意: 阶段 4 全量跑较慢,改动局部时可先 `-Mode module -Path <单文件>`,提交前再全量。
@@ -449,7 +489,7 @@ Overall:  [READY/NOT READY] for commit
 - [ ] 函数 < 50 行,嵌套 < 4 层
 - [ ] 公开函数有类型注解
 - [ ] 无可变默认参数 `def f(x=[])`
-- [ ] 共享状态有锁(参考 `sc_network._em_last_request_time`)
+- [ ] 共享状态有锁(参考 `sc_network._EM_LAST_CALL` / `_DOMAIN_LAST_TIME`)
 - [ ] 无 `print()`(应 `_debug_log` / `logging`)
 - [ ] 新增功能有对应测试
 
@@ -510,3 +550,29 @@ Overall:  [READY/NOT READY] for commit
 - 假设未证实前**不得改业务代码**(可写临时复现脚本)
 - 每个假设耗时 > 15 分钟仍无结论 → 停止,汇报当前证据 + 剩余候选,不闷头继续
 - 与 1.7 节(同一错误重试 > 2 次停止)联动:修复失败回到"提出新假设"而非"再试一次"
+
+---
+
+## 12. 活跃待办(每次会话先检查)
+
+> 完成一项即删除对应条目;新会话开始时必须先看本节。
+
+### 12.1 ⏳ thsdk 盘中字段核对（2026-08-11 记录）
+
+- **背景**：thsdk 官方 _constants.py 427 个 ID→名称已归档（thsdk_field_verify.md 附录）；
+  其中 160 个 ⏳ 待盘中核对（盘口 6-10 档/港美字段/综合衍生）
+- **盘后结论**：同花顺行情网关非交易时段关闭实时查询（-6 非交易时间）——
+  thsdk 通道仅盘中 9:30-15:00 可用（服务器策略，与客户端版本/账号无关）
+- **待办**：**下次盘中（9:30-15:00）跑一次核对**：
+  1. market_data_cn query_key="汇率" 实测 30 字段全量返回
+  2. 自定义 data_type 拼接（如基础+402/407 股本）是否被 hq.dll 接受
+  3. 盘口 6-10 档字段（买6-10/卖6-10）是否存在
+- **追加**：核对完更新 thsdk_field_verify.md 的 ⏳ 状态为 ✅，删除本条
+
+### 12.2 ✅ 东财 push2 系已恢复（2026-08-12 确认）
+
+- 2026-08-12 健康探测 6/6 OK（push2/83.push2/push2delay/push2his/push2ex/datacenter-web）
+- `tests/data/test_data_eastmoney.py` 27/27 通过，无 skip → 原 §12.1 待办删除
+- 恢复后验证（原对照假设）：保持完整 UA + 观察是否再触发封禁（若低量复封 → 坐实 UA 嫌疑）
+- **2026-08-12 晚更新**：采集脚本触发二次封禁(失败连接重试叠加 ~300 次)——
+  已修复"失败不重试 + 域级熔断";push2 恢复期 5 主机字段差异对比待办保留

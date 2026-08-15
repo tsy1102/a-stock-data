@@ -1684,22 +1684,81 @@ def calc_mcap_yi(code: str, price: Optional[float] = None) -> Optional[float]:
     """计算总市值（亿元）。
 
     动态计算：总股本(本地静态) × 实时价格(API)。
+    V17.0.1(2026-08-16 性能修复): 股本优先 TDX 本机 base.dbf(标准 DBF, 零网络毫秒级)——
+    原 get_share_capital 缓存未命中时逐股 TDX TCP(6000+ 只=700s+, val 加载 811s 根因)。
     """
     if price is None:
         price = get_stock_price(code)
     if not price or price <= 0:
         return None
-    try:
-        from stock_common import get_share_capital
+    total_wan = _local_share_capital(code)
+    if not total_wan:
+        try:
+            from stock_common import get_share_capital
 
-        cap = get_share_capital(code)
-        total_wan = cap.get("total_shares", 0)
-        if total_wan > 0:
-            return price * total_wan / 10000.0
-    except Exception as _e:
-        _debug_log(f"data_provider error: {_e}")
-        pass
+            cap = get_share_capital(code)
+            total_wan = cap.get("total_shares", 0)
+        except Exception as _e:
+            _debug_log(f"data_provider error: {_e}")
+            return None
+    if total_wan > 0:
+        return price * total_wan / 10000.0
     return None
+
+
+_BASE_DBF_SHARES: Optional[Dict[str, float]] = None  # V17.0.1: base.dbf 总股本(万股) 模块级缓存
+
+
+def _local_share_capital(code: str) -> float:
+    """TDX 本机 base.dbf 总股本(万股)——零网络(标准 DBF, 7880 只, 一次性加载缓存).
+
+    V17.0.1: base.dbf 已全解(§四 客户端文件表)——ZGB 字段=总股本(万股)。
+    """
+    global _BASE_DBF_SHARES
+    if _BASE_DBF_SHARES is None:
+        try:
+            import struct as _st
+
+            _p = r"C:\new_tdx64\T0002\hq_cache\base.dbf"
+            with open(_p, "rb") as _f:
+                _raw = _f.read()
+            _nrec, _hlen, _rlen = _st.unpack_from("<I H H", _raw, 4)
+            _fields = []
+            _i = 32
+            while _raw[_i] != 0x0D:
+                _name = _raw[_i:_i + 11].split(b"\x00")[0].decode("gbk", "ignore")
+                _fields.append((_name, _raw[_i + 16]))
+                _i += 32
+            _zgb_idx = next((k for k, (n, _) in enumerate(_fields) if n == "ZGB"), -1)
+            _gpd_idx = next((k for k, (n, _) in enumerate(_fields) if n == "GPDM"), -1)
+            _pos = _hlen + 1
+            _map: Dict[str, float] = {}
+            for _r in range(_nrec):
+                if _gpd_idx < 0 or _zgb_idx < 0:
+                    break
+                _code = _raw[_pos:_pos + _rlen].decode("gbk", "ignore")
+                # 按字段偏移解析(GPDM/ZGB 位置固定, 逐字段累计偏移)
+                _off = _pos
+                _code_v = ""
+                _zgb_v = 0.0
+                for _k, (_n, _l) in enumerate(_fields):
+                    _seg = _raw[_off:_off + _l].decode("gbk", "ignore").strip()
+                    if _k == _gpd_idx:
+                        _code_v = _seg
+                    elif _k == _zgb_idx:
+                        try:
+                            _zgb_v = float(_seg)
+                        except ValueError:
+                            _zgb_v = 0.0
+                    _off += _l
+                if _code_v and _zgb_v > 0:
+                    _map[_code_v] = _zgb_v
+                _pos += _rlen
+            _BASE_DBF_SHARES = _map
+        except Exception as _e:
+            _debug_log(f"data_provider base.dbf shares load error: {_e}")
+            _BASE_DBF_SHARES = {}
+    return float(_BASE_DBF_SHARES.get(code, 0.0) or 0.0)
 
 
 @cached(category="basic_info_static", ttl_seconds=TTL["basic_info_static"])

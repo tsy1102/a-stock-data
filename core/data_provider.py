@@ -1105,6 +1105,9 @@ def get_canonical_stock_data(code: str, force_realtime: bool = False) -> Any:
         turnover_pct=turnover_pct,
         main_net_buy_wan=main_net_buy_wan,
         main_net_buy_hands=main_net_buy_hands,
+        # V17.0.1a 规范化: 竞价族规范键(与 main_net_buy_* 同值, 键名语义化)
+        open_amount_wan=main_net_buy_wan,  # 竞价额(万元)
+        bid_volume_hand=main_net_buy_hands,  # 竞价量(手)
         main_net_buy_wan_1d=main_net_buy_wan_1d,
         roe=roe or 0.0,
         roa=roa or 0.0,
@@ -1678,6 +1681,29 @@ def get_main_net_buy(code: str) -> Optional[Dict[str, Any]]:
         _debug_log(f"data_provider error: {_e}")
         pass
     return None
+
+
+def get_zt_streak_info(code: str) -> Dict[str, Any]:
+    """V17.0.1a 统一层规范化: 涨停族信息(零网络, ZHB 本机).
+
+    返回 {zt_lianban(连板天数), zt_type(涨停类型 0-1盘中/2+一字), zt_seal_amount(封单额万),
+          zt_seal_amount_1d/2d(昨日/前日封单额)}——tdxstat[31]/[33] + tdxstat2[4]/[6]/[8]。
+    sht 连板追踪统一入口(替代直连 get_zhb_single_stock_data 散取)。
+    """
+    try:
+        from stock_common.sc_datasource import get_zhb_single_stock_data
+
+        z = get_zhb_single_stock_data(code) or {}
+        return {
+            "zt_lianban": int(z.get("zt_lianban", 0) or 0),
+            "zt_type": int(z.get("zt_type", -1) if z.get("zt_type") is not None else -1),
+            "zt_seal_amount": float(z.get("zt_seal_amount", 0) or 0),
+            "zt_seal_amount_1d": float(z.get("zt_seal_amount_1d", 0) or 0),
+            "zt_seal_amount_2d": float(z.get("zt_seal_amount_2d", 0) or 0),
+        }
+    except Exception as _e:
+        _debug_log(f"data_provider get_zt_streak_info ({code}): {_e}")
+        return {}
 
 
 def calc_mcap_yi(code: str, price: Optional[float] = None) -> Optional[float]:

@@ -1034,20 +1034,30 @@ def get_tencent_quote(code: str) -> Dict[str, Any]:
         return {}
 
 
+# V17.0.1a(2026-08-16): get_em_batch_quotes 当日进程缓存——mak 全市场主力(17 请求)/名称补全复用,
+# 同进程多次调用去重(限流面+性能); 按日失效(盘中数据 T+0)
+_EM_BATCH_CACHE: Dict[str, Dict[str, Any]] = {}
+_EM_BATCH_CACHE_DATE: str = ""
+
+
 def get_em_batch_quotes(codes: List[str]) -> Dict[str, Dict[str, Any]]:
     """V12.0: 东财批量行情查询（替代TDX批量查询，修复URL超长Bug）。
 
-    使用东财 push2 接口批量获取股票行情，支持sc_network的容错机制。
-    自动分批（每批 300 个）避免 URI Too Long，并补全实时价格和涨跌幅。
-
-    Args:
-        codes: 股票代码列表（6位数字）
-
-    Returns:
-        dict: {code: {"name": str, "price": float, "change_pct": float}}
+    V17.0(2026-08-15): 改 push2delay 镜像域 + secids 参数(原 fs 返回 data:null);
+    V17.0.1a(2026-08-16): 当日进程缓存——增量拉取缺失代码, 命中直接返回。
     """
     if not codes:
         return {}
+    # V17.0.1a: 当日缓存命中直接返回(增量)
+    global _EM_BATCH_CACHE, _EM_BATCH_CACHE_DATE
+    from datetime import datetime as _dt2
+    _today2 = _dt2.now().strftime("%Y%m%d")
+    if _EM_BATCH_CACHE_DATE != _today2:
+        _EM_BATCH_CACHE.clear()
+        _EM_BATCH_CACHE_DATE = _today2
+    _missing = [c for c in codes if c not in _EM_BATCH_CACHE]
+    if not _missing:
+        return {c: _EM_BATCH_CACHE[c] for c in codes if c in _EM_BATCH_CACHE}
 
     # 东财市场代码前缀: 沪市为 1., 深市为 0.
     sh_codes = [f"{em_secid_prefix(c)}{c}" for c in codes if em_secid_prefix(c) == "1."]
@@ -1126,6 +1136,8 @@ def get_em_batch_quotes(codes: List[str]) -> Dict[str, Dict[str, Any]]:
         chunk = all_formatted_codes[i : i + chunk_size]
         _fetch_batch(chunk)
 
+    for _c, _v in result.items():
+        _EM_BATCH_CACHE[_c] = _v  # V17.0.1a: 写回当日缓存
     return result
 
 

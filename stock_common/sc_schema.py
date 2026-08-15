@@ -459,7 +459,10 @@ class CanonicalStockData:
     turnover_pct: float = 0.0        # 换手率 (%)
 
     # 资金流类
-    main_net_buy_wan: float = 0.0    # 主力净买额 (万元)
+    main_net_buy_wan: float = 0.0
+    # V17.0.1a 规范化: 竞价族规范键(值=main_net_buy_amount/hands 同源, 键名消除误导)
+    open_amount_wan: float = 0.0   # 开盘金额=集合竞价成交额(万元)
+    bid_volume_hand: float = 0.0   # 早盘竞价量(手)    # 主力净买额 (万元)
     main_net_buy_hands: float = 0.0  # 主力净买量 (手)
     main_net_buy_wan_1d: float = 0.0 # T-1 主力净买额 (万元)
 

@@ -5,8 +5,8 @@
   已存在(网盘同名文件) → 跳过, 只上传缺失文件。
 
 规则(与 gd_uploader 一致):
-  - {code}_{type}_{ts}.txt (sht/med/lng) → 股票子文件夹「{code}-名」
-  - get_val_report_*.txt / get_mak_report_*.txt → 类型文件夹 val/mak
+  - {code}_{type}_{ts}.md (sht/med/lng) → 股票子文件夹「{code}-名」
+  - get_val_report_*.md / get_mak_report_*.md → 类型文件夹 val/mak
 
 用法:
   python scripts/upload_reports_to_gd.py [--dry-run] [--dir reports]
@@ -24,8 +24,8 @@ _ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 if _ROOT not in sys.path:
     sys.path.insert(0, _ROOT)
 
-_STOCK_RE = re.compile(r"^(\d{6})_(sht|med|lng)_\d{8}_\d{4}\.txt$")
-_TYPE_RE = re.compile(r"^get_(val|mak)_report_\d{8}_\d{4}\.txt$")
+_STOCK_RE = re.compile(r"^(\d{6})_(sht|med|lng)_\d{8}_\d{4}\.(md|txt)$")
+_TYPE_RE = re.compile(r"^get_(val|mak)_report_\d{8}_\d{4}\.(md|txt)$")
 
 
 def _get_stock_name_map():
@@ -80,7 +80,7 @@ def main():
     args = ap.parse_args()
 
     reports_dir = args.dir
-    files = sorted(f for f in os.listdir(reports_dir) if f.endswith(".txt"))
+    files = sorted(f for f in os.listdir(reports_dir) if f.endswith((".md", ".txt")))
     if not files:
         print(f"reports 目录无文件: {reports_dir}")
         return

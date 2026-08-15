@@ -5,12 +5,22 @@
 # ══════════════════════════════════════════════════════════════
 
 # ── 凭据与密钥(不入库) ──────────────────────────────────────
-# V17.0: 凭据集中到 credentials/(3 个文件); 未来新增凭据需在此追加
-credentials/client_secrets.json
-credentials/credentials.json
-credentials/ths_credentials.json
-# 同花顺 fuyao API Key(交互输入自动保存)
+# V17.0: 凭据集中在 credentials/(3 个文件); 未来新增凭据需在此追加
+credentials/*
+# 同花顺/fuyao API Key(交互输入自动保存)
 fuyao_key.txt
+# V17.0.1 防御性: 通用密钥/令牌模式(防未来新增凭据漏网)
+*.key
+*.pem
+*.p12
+*.pfx
+id_rsa*
+.env
+*.env
+# 虚拟环境
+venv/
+.venv/
+env/
 
 # ── 运行时输出与中间数据(可重建) ────────────────────────────
 reports/

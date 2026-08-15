@@ -2896,7 +2896,7 @@ def tdx_get_market_abnormal_data():
                     'ret_10d': _safe_float(data.get('change_10d', 0)),
                     'ret_20d': _safe_float(data.get('change_20d', 0)),
                     'ret_60d': _safe_float(data.get('change_60d', 0)),
-                    'main_net_amount': _safe_float(data.get('main_net_buy_amount', 0)) * 10000,
+                    'main_net_amount': _safe_float(data.get('main_net_buy_amount', 0)) * 10000,  # ⚠️ V17.0 实锤=竞价额(万元→元), 非主力净
                 }
             )
         return all_stocks

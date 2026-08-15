@@ -63,7 +63,6 @@ from stock_common import (_safe_float, _debug_log,
                           get_lockup_expiry_async, get_industry_peers,
                           get_sina_financial_report_async, get_sina_balance_sheet_async,
                           get_market_status,
-                          save_text_report,  # V17.0 S5: 写尾样板公共函数(V17.0 审查: 删 clean_codes/create_async_session/calculate_multi_school_scores 死导入)
                           get_zhb_single_stock_data, is_zhb_data_fresh,
                           get_zhb_industry_map, get_zhb_data_date,
                           get_zhb_tip_info,
@@ -432,6 +431,7 @@ async def generate_report_async(session, code, output_path, ind_comp=None):
     except Exception as _e:
         _debug_log(f"lng industry_compare error: {_e}")
 
+
     L("\n【二、跨期财务纵深与长效业绩验证 (近8个报告期)】")
     L("─" * 72)
     financials = await get_sina_financial_report_async(session, code, num_periods=8)
@@ -632,7 +632,11 @@ async def generate_report_async(session, code, output_path, ind_comp=None):
 
     L("\n【四、未来三年机构一致预期与 PEG 均值回归模型】")
     L("─" * 72)
-    df_eps = await get_eps_forecast_async(session, code)
+    # H4 修复(2026-08-15 二审): 本地 ProfitForecast O(1) 优先(零网络), 未命中走网络兜底——与一章重复块合并
+    from stock_common.sc_datasource import get_eps_forecast as _eps_local
+    df_eps = await asyncio.to_thread(_eps_local, code)
+    if df_eps is None or df_eps.empty:
+        df_eps = await get_eps_forecast_async(session, code)
     eps_cur = eps_next = None
     eps_has_data = False
     if not df_eps.empty and len(df_eps.columns) >= 4:
@@ -1075,7 +1079,9 @@ async def generate_report_async(session, code, output_path, ind_comp=None):
         "report_source": "lng"
     }
 
-    output = save_text_report(output_path, lines)  # V17.0 S5: 公共样板
+    # V17.0(2026-08-15 C 方案): 全量 md 化——渲染层确定性转换(标题/分隔线/F10 边框表/对齐空格表→md)
+    from stock_common.md_render import render_md_report
+    output = render_md_report(output_path, lines)
     return output
 
 

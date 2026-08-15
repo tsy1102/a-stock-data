@@ -163,7 +163,7 @@ class BaseReportRunner:
 
                 async def _limited(code):
                     async with sem:
-                        result_path = os.path.join(args.output, f"{code}_{report_type}_{ts}.txt")
+                        result_path = os.path.join(args.output, f"{code}_{report_type}_{ts}.md")
                         try:
                             await generator_fn(_session, code, result_path, **gen_kwargs)
                             print(f"  ✅ 已保存: {result_path}", flush=True)
@@ -270,13 +270,13 @@ class BaseReportRunner:
             # 引用未定义的 path → UnboundLocalError。重构为单步赋值。
             if self.args:
                 default_path = os.path.join(
-                    self.args.output, f"{code}_{report_type}_{ts}.txt"
+                    self.args.output, f"{code}_{report_type}_{ts}.md"
                 )
             else:
                 # self.args=None 时用临时目录兜底（仅作为库使用时不传 args 场景）
                 import tempfile
                 default_path = os.path.join(
-                    tempfile.gettempdir(), f"{code}_{report_type}_{ts}.txt"
+                    tempfile.gettempdir(), f"{code}_{report_type}_{ts}.md"
                 )
             path = r.get("path", default_path) or default_path
             try:

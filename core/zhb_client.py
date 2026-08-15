@@ -42,7 +42,7 @@ import zipfile
 
 # V16.4.0: 全市场解析结果持久化——键=zip 日期 + schema 版本
 # marshal 比 pickle 快 5-10 倍（数据全为 dict/float/str/int 内置类型）
-_ZHB_PARSE_SCHEMA = 1
+_ZHB_PARSE_SCHEMA = 2  # V17.0.1a: tdxstat 新增涨停族(zt_lianban/zt_type)+tdxstat2 封单额(zt_seal_*)——解析缓存失效重解析
 
 
 def _zhb_parse_cache_path(name: str, date: str) -> str:

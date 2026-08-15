@@ -127,6 +127,13 @@ def text_to_md(lines: List[str]) -> List[str]:
             i = j
             continue
         if _SPACE_TABLE_HEADER.match(ln) and i + 1 < n and _SPACE_TABLE_SEP.match(lines[i + 1]):
+            # V17.0.1 修复(2026-08-16): 表头间隙预检——表头行须有 ≥2 个连续空格(≥3 列)才可能是表格;
+            # 报告标题行(如 "A 股策略发现报告  [时间]")恰有 1 个 2+ 空格间隙, 误判会吞掉后续全部行
+            _hdr_gaps = len(re.findall(r" {2,}", ln.lstrip()))
+            if _hdr_gaps < 2:
+                out.append(ln)  # 非表格: 原样输出, 后续分隔线/标题继续正常处理
+                i += 1
+                continue
             block = []
             j = i
             while j < n and lines[j].strip() and not _HEADING.match(lines[j]) \

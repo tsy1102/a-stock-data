@@ -34,6 +34,9 @@ from typing import Any, Dict, List
 from datetime import date, datetime, timedelta
 from concurrent.futures import ThreadPoolExecutor, as_completed  # V16.4.1: 删 Counter
 
+# H1/H2 修复(2026-08-15 二审): 全市场 ulist 主力净额(元, 带符号)模块级共享——_get_zhb_market_data 填充, 板块聚合/A 段读取
+_MAIN_NET_MAP_GLOBAL: Dict[str, float] = {}
+
 warnings.filterwarnings('ignore')
 from core.data_provider import get_market_snapshot_async
 
@@ -59,7 +62,6 @@ from stock_common import (
     get_zhb_data_date,
     get_zhb_industry_map,
     calc_mcap_yi as _calc_mcap_yi,
-    save_text_report,  # V17.0 S5: 写尾样板公共函数
     limit_pct_for,  # V16.2: 统一涨跌停阈值（主板/ST 10 / 双创 20 / 北交所 30）
     is_limit_up,
     is_limit_down,  # V16.0: 统一涨停/跌停判断（含 ST）
@@ -221,6 +223,23 @@ async def _get_zhb_market_data():
             _tencent_map = _tencent_batch_fallback(all_codes) or {}
         except Exception as _e:
             _debug_log(f"mak tencent batch: {_e}")
+        # V17.0(2026-08-15): 主力净流入批量方案——ulist.np/get 批量 f62+f66(=push2 f137+f140 特大+大单净,
+        # 20/20 对齐实锤)。此前 main_net_amount=ZHB main_net_buy_amount(实为竞价额, 名实不符)。
+        # fallback 链: ulist 批量(主) → ZHB 竞价额(兜底, 语义标注)
+        _main_net_map: Dict[str, float] = {}
+        try:
+            from stock_common.sc_datasource import get_em_batch_quotes
+
+            # ⚠️ H2 修复(2026-08-15 审查): 同步网络批量(17 chunk ~20-30s)在 async 上下文阻塞事件循环 → to_thread
+            _bq = await asyncio.to_thread(get_em_batch_quotes, all_codes) or {}
+            _main_net_map = {
+                code: (q.get("main_net_inflow_wan", 0.0) or 0.0) * 1e4  # 万元 → 元(下游 /1e8 元口径)
+                for code, q in _bq.items()
+            }
+            global _MAIN_NET_MAP_GLOBAL
+            _MAIN_NET_MAP_GLOBAL = dict(_main_net_map)  # H1: 板块聚合/A 段共享(元, 带符号)
+        except Exception as _e:
+            _debug_log(f"mak ulist main_net batch: {_e}")
         # V14.2.1: 提前一次性获取 ZHB profile 离线简称（修复 mak 0只 Bug）
         from core.zhb_client import get_stock_name_from_zhb
 
@@ -285,7 +304,11 @@ async def _get_zhb_market_data():
                     # (创业板/科创板新股前 5 日无涨跌幅限制, 首日 +662% 等极端值会让偏离判定失真)
                     "change_pct_1d": stat.get("change_pct_1d", ""),
                     "change_pct_2d": stat.get("change_pct_2d", ""),
-                    "main_net_amount": (_safe_float(stat.get("main_net_buy_amount", 0)) or 0) * 1e4,
+                    # V17.0(2026-08-15): 主力净额=ulist 批量 f62+f66(元口径, H1/M5 修复: 统一元+0值不误回退)
+                    "main_net_amount": (
+                        _main_net_map[code] if code in _main_net_map
+                        else (_safe_float(stat.get("main_net_buy_amount", 0)) or 0) * 1e4
+                    ),
                     # V16.2.16: Col[13] 大量为风格/概念（微盘股/近已解禁等）→ 只保留行业段
                     #（8803xx/8804xx 通达信行业、881xxx 申万版），其余置空避免伪行业聚合
                     "industry_code": (
@@ -770,10 +793,11 @@ def _build_sectors_from_zhb() -> List[Dict[str, Any]]:
                 _base = _rt_price if _rt_price > 0 else (_safe_float(stat.get("price", 0) or 0))
                 if _base > 0:
                     mcap = _safe_float(_calc_mcap_yi(code, _base) or 0)
-            # V16.0: main_net_buy_amount 单位是万元，统一转元（×1e4），
-            # 与 TDX 路径（get_em_board_members f62 = 元）保持一致，
-            # 使报表统一 /1e8 换算亿元正确（原来 ZHB 路径 1 亿被显示成 0.0001 亿）
-            main_net = (_safe_float(stat.get("main_net_buy_amount", 0)) or 0) * 1e4  # 万元→元
+            # H1 修复(2026-08-15 二审): 板块主力净流入改用 ulist 批量 f62+f66 结果(真主力, 带符号),
+            # 不再用 ZHB main_net_buy_amount(实为竞价额恒正→"虚涨"判定恒空/“真金白银”恒满)
+            main_net = _MAIN_NET_MAP_GLOBAL.get(code, 0.0)
+            if not main_net:
+                main_net = (_safe_float(stat.get("main_net_buy_amount", 0)) or 0) * 1e4  # 兜底: 竞价额(标注)
             b = buckets.setdefault(
                 ind_code,
                 {
@@ -1163,6 +1187,22 @@ async def generate_sector_report(output_path):
     L(f"\n{'='*90}")
     L("【A. 全市场情绪监测看板】")
     L(f"{'─'*90}")
+    # V17.0(2026-08-15): 北向宏观资金 + 两融杠杆情绪(A 段增强, P4)
+    try:
+        from stock_common.sc_datasource import get_hsgt_macro_flow
+
+        # ⚠️ 修复(2026-08-15): 同步网络调用在 async 上下文会阻塞事件循环 → to_thread 包装
+        _hsgt = await asyncio.to_thread(get_hsgt_macro_flow)
+        if _hsgt:
+            _hsig = "偏多" if _hsgt.get("total", 0) > 0 else "偏空"
+            L(f"  🌐 北向资金: 净流入 {_hsgt.get('total', 0):.2f} 亿(沪 {_hsgt.get('hgt', 0):.2f} | 深 {_hsgt.get('sgt', 0):.2f}) 外资情绪{_hsig}")
+            # M13 修复(2026-08-15 二审): 数据降级标记(与 med 一致, 2026-08-12 深股通 379.75 亿异常)
+            if _hsgt.get("data_quality") == "degraded":
+                L(f"  ⚠️ 北向数据降级: {_hsgt.get('warning', '源数据异常')}")
+        else:
+            L("  🌐 北向资金: (数据获取失败)")
+    except Exception as _e:
+        _debug_log(f"mak hsgt macro: {_e}")
     _up_cnt = sum(1 for s in all_stocks if s.get("change_pct", 0) > 0)
     _down_cnt = sum(1 for s in all_stocks if s.get("change_pct", 0) < 0)
     _ud_ratio = _up_cnt / max(_down_cnt, 1)
@@ -1176,12 +1216,12 @@ async def generate_sector_report(output_path):
     # V16.3 O37: KPL 情绪互校（字典 §12.15.2——财联社 → 开盘红 → KPL 三源兜底，8/7 交叉验证：涨停 74 三家一致）
     try:
         from stock_common import get_cls_market_emotion
-        _emotion = get_cls_market_emotion()
+        _emotion = await asyncio.to_thread(get_cls_market_emotion)  # M10: 防阻塞
         if not _emotion:
             # O37: 财联社失败 → KPL 兜底（strong 情绪值/连板高度——匿名接口）
             try:
                 from stock_common import get_kpl_market_sentiment, get_kpl_broken_ratio
-                _kpl = get_kpl_market_sentiment()
+                _kpl = await asyncio.to_thread(get_kpl_market_sentiment)  # M10: 防阻塞
                 _kbr = get_kpl_broken_ratio()
                 if _kpl:
                     _ks = _kpl.get("strong")
@@ -1220,25 +1260,38 @@ async def generate_sector_report(output_path):
         _debug_log(f"mak cls_market_emotion: {_e}")
 
     # V10.3: 全市场主力净买入总量
+    # H2 修复(2026-08-15 二审): 改用 ulist 批量 f62+f66 真主力(带符号)——原 ZHB main_net_buy_amount
+    # 实为竞价额(恒正)→ 求和恒正, "大幅净流入"信号恒触发
     _total_main_net_buy = 0
     _main_net_buy_count = 0
-    _stat2_snapshot = get_zhb_market_stat2_snapshot()
-    if _stat2_snapshot:
-        for _code, _stat in _stat2_snapshot.items():
-            _mna = _safe_float(_stat.get("main_net_buy_amount", 0))
-            if _mna:
-                _total_main_net_buy += _mna
-                if _mna > 0:
-                    _main_net_buy_count += 1
-        _total_main_net_buy_yi = _total_main_net_buy / 10000.0
-        L(
-            f"  💰 主力资金: 全市场主力净流入{_total_main_net_buy_yi:+.2f}亿元"
-            f"（{_main_net_buy_count}只个股净流入，ZHB T-1 口径）"
-        )
-        if _total_main_net_buy_yi > 50:
-            L(f"    🟢 主力资金大幅净流入，市场资金面偏多")
-        elif _total_main_net_buy_yi < -50:
-            L(f"    🔴 主力资金大幅净流出，市场资金面偏空")
+    if _MAIN_NET_MAP_GLOBAL:
+        for _code, _mna in _MAIN_NET_MAP_GLOBAL.items():
+            _total_main_net_buy += _mna
+            if _mna > 0:
+                _main_net_buy_count += 1
+    _main_net_src_label = "ulist f62+f66 口径"
+    if not _MAIN_NET_MAP_GLOBAL:
+        # H2 终审修复: ZHB 兜底为万元值——统一 /1e4 转亿元(原共用 /1e8 小 1e4 倍), 标签区分
+        _stat2_snapshot = get_zhb_market_stat2_snapshot()
+        if _stat2_snapshot:
+            for _code, _stat in _stat2_snapshot.items():
+                _mna = _safe_float(_stat.get("main_net_buy_amount", 0))
+                if _mna:
+                    _total_main_net_buy += _mna
+                    if _mna > 0:
+                        _main_net_buy_count += 1
+        _total_main_net_buy_yi = _total_main_net_buy / 1e4
+        _main_net_src_label = "ZHB 竞价额兜底口径(⚠️非主力)"
+    else:
+        _total_main_net_buy_yi = _total_main_net_buy / 1e8
+    L(
+        f"  💰 主力资金: 全市场主力净流入{_total_main_net_buy_yi:+.2f}亿元"
+        f"（{_main_net_buy_count}只净流入，{_main_net_src_label}）"
+    )
+    if _total_main_net_buy_yi > 50:
+        L(f"    🟢 主力资金大幅净流入，市场资金面偏多")
+    elif _total_main_net_buy_yi < -50:
+        L(f"    🔴 主力资金大幅净流出，市场资金面偏空")
     if _lbp > 80:
         L(f"    🔥 涨停{_lbp}家 > 80，情绪极度亢奋，警惕分化回落")
     if total_abnormal > 40 and _lbp > 60:
@@ -1701,7 +1754,9 @@ async def generate_sector_report(output_path):
             _lfi = round(_l["main_inflow"] / 1e8, 2)
             L(f"    {_lnm}: 涨幅{_l['change_pct']:+.2f}% 主力净流入{_lfi:+.2f}亿")
     L(f"\n{'='*90}")
-    output = save_text_report(output_path, lines)  # V17.0 S5: 公共样板
+    # V17.0(2026-08-15 C 方案): 全量 md 化——渲染层确定性转换(标题/分隔线/F10 边框表/对齐空格表→md)
+    from stock_common.md_render import render_md_report
+    output = render_md_report(output_path, lines)
     return output
 
 
@@ -1714,7 +1769,7 @@ class MakReportRunner(BaseReportRunner):
     def execute_pipeline(self) -> str:
         sn = os.path.basename(__file__).replace(".py", "")
         ts = self.report_ts  # V17.0 R1: 基类统一口径(%Y%m%d_%H%M)
-        op = os.path.join(self.args.output, f"{sn}_{ts}.txt")
+        op = os.path.join(self.args.output, f"{sn}_{ts}.md")
         try:
             print("  ⏱ 预计 2-3 分钟", flush=True)
         except UnicodeEncodeError:

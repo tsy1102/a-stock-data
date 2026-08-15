@@ -72,7 +72,6 @@ from stock_common import (_safe_float, _debug_log,
                            limit_pct_for)  # V10.3, V16.2: 统一涨跌停阈值
 
 from core.data_provider import get_main_net_buy_async  # V16.4.1: 删 9 个未使用 async 包装
-from stock_common.sc_utils import save_text_report  # V17.0 S5: 写尾样板公共函数
 
 
 
@@ -94,10 +93,10 @@ def _get_index_quote(idx_code):
 
 
 def get_fund_flow_realtime(code, ff_120d=None):
-    """V7.5: 今日主力净流入 → 统一层 get_main_net_buy（ZHB→HTTP），失败则尝试历史数据回退
+    """V7.5: 今日主力净流入 → 统一层 get_main_net_buy（V17.0 矩阵定案: f137+f140 无条件优先），失败则尝试历史数据回退
     
-    V16.0: 改用 data_provider.get_main_net_buy（统一 ZHB→HTTP 优先级），
-    替代原直连 tdx_get_fund_flow（函数名误导，实为东财 HTTP）。
+    V16.0: 改用 data_provider.get_main_net_buy（统一优先级），替代原直连 tdx_get_fund_flow。
+    V17.0(2026-08-14): 主力净=f137+f140(特大+大单, 同花顺/通达信定义)——ZHB 资金流键为竞价族不可作主力。
     
     Args:
         code: 股票代码
@@ -690,7 +689,8 @@ async def generate_report_async(session, code, output_path, ind_comp=None, idx_q
         # V16.4.1: 标签修正——数据来自 canonical(盘中/盘后走东财实时), 不总是 ZHB
         _flow_src = f"canonical(东财实时)" if (q and q.get("main_net_buy_wan")) else f"ZHB({zhb_date})"
         L(f"\n  ➤ 主力资金流向 ({_flow_src}):")
-        L(f"    T日主力净买入量: {zhb_main_net['main_net_buy_hands']:.0f}手")
+        if zhb_main_net['main_net_buy_hands']:
+            L(f"    T日主力净买入量: {zhb_main_net['main_net_buy_hands']:.0f}手")  # V17.0: 仅 TDX 0x0011 实时有值
         _amt = zhb_main_net['main_net_buy_amount']
         L(f"    T日主力净流入额: {_amt:+.0f}万元")
         if zhb_main_net['main_net_buy_amount_1d']:
@@ -1488,6 +1488,26 @@ async def generate_report_async(session, code, output_path, ind_comp=None, idx_q
 
     if q and price_today>0 and is_limit_up(code, stock_name, q.get("change_pct",0)):
 
+        # V17.0(2026-08-15): 连板追踪增强——ZHB [31] 真连板数(双日铁证定案)优先, fallback 3日涨幅估算
+        _zt_lb = 0
+        _zt_ty = -1  # L1 修复: 先行初始化, 异常时结构安全
+        _zt_seal = 0
+        try:
+            from stock_common.sc_datasource import get_zhb_single_stock_data
+            _zdata = get_zhb_single_stock_data(code) or {}
+            _zt_lb = int(_zdata.get("zt_lianban", 0) or 0)
+            _zt_v = _zdata.get("zt_type")
+            # H6 修复: 0 是合法值(盘中涨停档), 不能用 `or -1` 吞掉
+            _zt_ty = int(_zt_v) if _zt_v is not None else -1
+            _zt_seal = _zdata.get("zt_seal_amount", 0) or 0
+        except Exception as _e:  # H5 修复: 显式日志, 不静默吞
+            _debug_log(f"sht zt zhb data ({code}): {_e}")
+        if _zt_lb > 0:
+            # [33] 涨停类型: 0-1=盘中封板, 2+=竞价/一字(竞价占比单调实锤)
+            _ty_txt = "一字/竞价封板" if _zt_ty >= 2 else ("盘中封板" if _zt_ty >= 0 else "")
+            _seal_txt = f" 封单额(官方ZHB): {_zt_seal:.0f}万" if _zt_seal > 0 else ""
+            L(f"  📊 连板追踪: 今日涨停，真连板数 **{_zt_lb}板**(ZHB[31] 铁证){' ['+_ty_txt+']' if _ty_txt else ''}{_seal_txt}")
+
         try:
 
             _sk, _sr = baidu_kline_full(code, count=5)
@@ -1510,11 +1530,10 @@ async def generate_report_async(session, code, output_path, ind_comp=None, idx_q
 
                     _lb_t = "3连板" if _lb3<=_3d<_lb3+_lb_pct else ("2连板" if _lb2<=_3d<_lb3 else ("首板" if _lb_pct*0.95<=_3d<_lb2 else f"高标{int(_3d/_lb_pct)}板" if _3d>=_lb3+_lb_pct else ""))
 
-                    if _lb_t: L(f"  📊 连板追踪: 今日涨停，判定为{_lb_t}(3日累计{_3d:.1f}%)")
+                    if _lb_t and _zt_lb <= 0: L(f"  📊 连板追踪: 今日涨停，判定为{_lb_t}(3日累计{_3d:.1f}%)")
 
         except Exception as _e:
-
-            pass
+            _debug_log(f"sht lb estimate ({code}): {_e}")  # M11 修复(2026-08-15 二审): 吞异常补日志
 
     L("\n"+"─"*72); L("【仓位管理建议】"); L("─"*36)
 
@@ -1649,7 +1668,9 @@ async def generate_report_async(session, code, output_path, ind_comp=None, idx_q
         "report_source": "sht"
     }
 
-    output = save_text_report(output_path, lines)  # V17.0 S5: 公共样板
+    # V17.0(2026-08-15 C 方案): 全量 md 化——渲染层确定性转换(标题/分隔线/F10 边框表/对齐空格表→md)
+    from stock_common.md_render import render_md_report
+    output = render_md_report(output_path, lines)
 
     return output
 

@@ -77,7 +77,6 @@ from stock_common import (
     get_hsgt_macro_flow_async,
     is_trading_day,
     get_market_status,
-    save_text_report,  # V17.0 S5: 写尾样板公共函数(V17.0 审查: 删 clean_codes/create_async_session/calculate_multi_school_scores 死导入)
     cls_telegraph,
     news_matches_stock,
     cninfo_irm,
@@ -748,8 +747,11 @@ async def generate_report_async(session, code, output_path, ind_comp=None, hsgt=
             _shares = d.get('hold_shares', 0) or 0
             if _mcap == 0 and _shares > 0 and price_today > 0:
                 _mcap = _shares * price_today
+                # M12 修复(2026-08-15 二审): fallback 占比为小数(股数/总股本), 主路径为百分数
+                # (东财 FREE_SHARES_RATIO)——统一 ×100 百分数口径, 原差 100 倍
                 _ratio = (
-                    _shares / info.get('total_shares', 1) if info.get('total_shares', 0) > 0 else 0
+                    _shares / info.get('total_shares', 1) * 100
+                    if info.get('total_shares', 0) > 0 else 0
                 )
             L(
                 f"  {d['date']:<12} {_shares/1e4:>12.0f} {_mcap/1e4:>12.0f} {_ratio:>9.4f}% {d['change_shares']/1e4:>+12.0f}"
@@ -1164,7 +1166,9 @@ async def generate_report_async(session, code, output_path, ind_comp=None, hsgt=
         "report_source": "med",
     }
 
-    output = save_text_report(output_path, lines)  # V17.0 S5: 公共样板
+    # V17.0(2026-08-15 C 方案): 全量 md 化——渲染层确定性转换(标题/分隔线/F10 边框表/对齐空格表→md)
+    from stock_common.md_render import render_md_report
+    output = render_md_report(output_path, lines)
     return output
 
 

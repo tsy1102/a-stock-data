@@ -765,7 +765,7 @@ class ZhbData:
         字段映射（基于injoyai/tdx开源仓库源码验证 + 实盘比对）：
             [0]  market          市场代码 (0=SZ, 1=SH)
             [1]  code            股票代码
-            [2]  unknown_2       未知(可能是资金净流入强度)
+            [2]  unknown_2       未知(2026-08-14: 连续浮点 5069 unique 非枚举, 疑资金类指标)
             [3]  pe_dynamic      市盈率(动态)
             [4]  date            数据日期
             [5]  streak_days     连涨连跌天数(正=连涨,负=连跌)
@@ -794,18 +794,24 @@ class ZhbData:
                  (K线缓存926只对照中位差1.28；原V16.2.18"日历60日"为误判——
                  c60相关仅0.25排除；change_60d key 已改读本列)
             [21] change_ytd      年初至今涨跌幅(%)
-            [22] shape_value     形态/板块代码 ★2026-08-04官方TdxQuant确认(50101/50109)
-            [23] unknown_23      未知(0-95离散枚举,24类,7月末31/32峰值8月初重置,
-                 疑月度累计计数; injoyai未命名)
+            [22] shape_value     个股形态/板块代码 ★2026-08-04官方TdxQuant确认(50101/50109)
+            [23] zt_type_code    当日行情类型分档码(2026-08-14: 23 类 0-95, 同值组当日涨幅区间
+                  高度一致: 71=-10~-4大跌/70=+4~+20大涨/33=窄幅/52=-3~+1.9; 非个股基本面)
             [24] cash_zj         现金总额(元) ★2026-08-04官方TdxQuant确认
             [25] pre_receive_zj  预收资金(万元) ★2026-08-04官方TdxQuant确认
-            [26] unknown_26      未知(0-48恒定分类码,仅少量变化; injoyai未命名)
+            [26] unknown_26      未知(0-48恒定分类码,46类,仅少量变化; injoyai未命名)
+                  ★V17.0(2026-08-14)排除行业/省份: 全市场按tdxhy行业分组组内同值率
+                  仅1%(4/303,均=0)——行业/细分行业在 tdxhy.cfg(T/X码), 不在数值表
             [27] change_5k_bar   近5根K线涨跌幅(交易日口径,%)
             [28] change_5d       近5日涨跌幅(日历日口径,%)
             [29] change_10k_bar  近10根K线涨跌幅(交易日口径,%)
             [30] change_10d      近10日涨跌幅(日历日口径,%)
-            [31-32] unknown      未知(稀疏8%,两列有值集合相同,疑同源事件字段)
-            [33] unknown_33      未知(稀疏5%)
+            [31] zt_lianban       ✅ 2026-08-14 全市场铁证: **连板天数**(8/13 涨停 87 只分组=连板数
+                  4 组 100% 精确; 603221=12 精确; 002827 随日 +1; 官方 LastStartZT/func lbts)
+            [32] zt_count         ⚠️ 涨停族第二字段(官方 LastZTHzNum; 恒值 002827=6/603580=13;
+                  603221=11=[31]-1; 疑 ztcs1 涨停次数, 待终核)
+            [33] zt_type          ⚠️ 涨停事件族(值 0-5; 涨停股 93% 非空; 603221=1; 002827 跌停=0;
+                  疑 ztlx 涨停类型/开板次数, 待终核)
             [34] other_qy_jzc    其他权益净资产(元) ★2026-08-04官方TdxQuant确认
         """
         data = self.raw_files.get("tdxstat.cfg", b"")
@@ -865,6 +871,13 @@ class ZhbData:
                 "change_5d": _safe_cast(parts, 28, float),
                 "change_10k_bar": _safe_cast(parts, 29, float),
                 "change_10d": _safe_cast(parts, 30, float),
+                # V17.0(2026-08-15) 涨停族暴露(双日定案):
+                #   [31]=连板天数(8/14 复现: 首板/二板/三板/五板分组 100% 精确, 断板清零)
+                #   [32]=涨停累计计数(LastZTHzNum, 恒值, 待终核)
+                #   [33]=涨停类型/封板阶段(0-5, 竞价占比单调: 0=盘中涨停/5=一字)
+                "zt_lianban": _safe_cast(parts, 31, int),
+                "zt_count": _safe_cast(parts, 32, int),
+                "zt_type": _safe_cast(parts, 33, int),
             }
         return result
 
@@ -897,13 +910,16 @@ class ZhbData:
             [6]  unknown_6           未知(占位)
             [7]  amount_2d           前日总成交额(万元)
             [8]  unknown_8           未知(占位)
-            [9]  main_net_buy_hands  T日主力净买入量(手) — V10.3新增（双日Delta+公式验证）
-            [10] main_net_buy_hands_1d T-1日主力净买入量(手) — V10.3新增
+            [9]  bid_volume          ⚠️ V17.0(2026-08-14)实锤: **早盘竞价量(手)**——[9]×开盘价≈[14] 15/17 铁证
+                                     (键名 main_net_buy_hands 历史遗留, 非主力净买入量)
+            [10] bid_volume_1d       昨日早盘竞价量(手) — 同上, 键名历史遗留
             [11] change_5k_bar   近5根K线涨跌幅(与tdxstat Col[27]完全一致r=1.0) ★V16.3 O28
             [12] change_250k_bar 近250根K线涨跌幅(年线) ★V16.3 O28破解(K线缓存k250 r=0.973)
             [13] tday_special_board  T日特色板块归属（V16.2.17 重新定性，见下）
-            [14] main_net_buy_amount T日主力净流入额(万元) — V10.3新增（双日Delta+公式验证）
-            [15] main_net_buy_amount_1d T-1日主力净流入额(万元) — V10.3新增
+            [14] open_amount        ⚠️ V17.0(2026-08-14)实锤: **开盘金额=集合竞价成交额(万元)**, 非主力净流入!
+                                      (19/19 恒正+占比0.06-4.84%<5% 铁证; 通达信表头"开盘金额"定义; OpenAmo 同值)
+                                      键名 main_net_buy_amount 为历史遗留, 语义=开盘金额(竞价额)
+            [15] open_amount_1d    昨日开盘金额(竞价额, 万元) — 同上, 键名 main_net_buy_amount_1d 历史遗留
             [16] ipo_price           IPO发行价(元)
             [17] high_52w            52周最高价
             [18] low_52w             52周最低价
@@ -955,6 +971,11 @@ class ZhbData:
                 "code": code,
                 "date": parts[2].strip() if len(parts) > 2 else "",
                 "amount": _safe_cast(parts, 3, float),
+                # V17.0(2026-08-15) 封单额三日滚动暴露:
+                #   [4]=T日涨停封单额(万元, 涨停池 92/92 铁证)、[6]=T-1、[8]=T-2(官方确认昨/前封单额)
+                "zt_seal_amount": _safe_cast(parts, 4, float),
+                "zt_seal_amount_1d": _safe_cast(parts, 6, float),
+                "zt_seal_amount_2d": _safe_cast(parts, 8, float),
                 "amount_1d": _safe_cast(parts, 5, float),
                 "amount_2d": _safe_cast(parts, 7, float),
                 "main_net_buy_hands": _safe_cast(parts, 9, float),

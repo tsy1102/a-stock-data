@@ -4,6 +4,39 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
+## [17.0.1] - 2026-08-15
+
+**补丁: 字段增强实施(P0-P4) + 三轮代码审查闭环 + 全量 md 化 + 运行修复**
+
+### 🆕 字段增强(P0-P4, 基于已破解字段池)
+- **mak**: 主力净额 ulist 批量 f62+f66(=f137+f140 特大+大单, 20/20 实锤, push2delay 域, 元口径带符号)→
+  板块聚合/A 段看板同源; 北向宏观资金(to_thread+降级标记)
+- **sht**: 连板追踪 ZHB[31] 真连板数(双日铁证)+涨停类型[33]+官方封单额[4]; 3日涨幅估算降兜底
+- **val**: 21→23 策略——策略22 业绩预增(get_yjyg_all 全市场分页, ADD_AMP/IS_LATEST/日期缓存)+
+  策略23 盈利预期(本机 ProfitForecast O(1) 索引+股东户数 local_only)
+- **lng**: 机构一致预期(本机 ProfitForecast 优先)
+- **数据层**: zhb_client 暴露涨停族; get_em_batch_quotes +f62/f66(secids 参数修复);
+  get_eps_forecast 本机索引+local_only; get_yjyg_all; eastmoney_datacenter page_index
+
+### 🐛 三轮审查修复(2×python-reviewer + 运行复盘, 50+ 项)
+- **CRITICAL 类**: mak 主力单位 1e4 倍; data_provider TDX 兜底 T-1 单位 10000x;
+  med 北向占比 100 倍; get_eps_forecast 缓存失效+5000 次扫描; ulist 参数 fs→secids(data:null);
+  **val bypass 模式 price 全缺 → 10 策略 0 命中**(.day 尾部快速读补价, 终审修正 ÷1000→÷100);
+  mak A 段 ZHB 兜底单位; GD 补传脚本 .md 适配
+- **限流**: get_em_batch_quotes push2 主域→push2delay 镜像域; get_yjyg_all 全市场一次分页;
+  strategy_23/holder_change local_only 禁网络; mak/val async 阻塞 to_thread 4 处
+- **缓存**: ProfitForecast O(1) 索引+锁; 业绩预告日期缓存; _KLINE_PRICE_CACHE
+- **契约**: holder_num/ADD_AMP/IS_LATEST/zt_type 0 值 等
+
+### 📝 全量 md 化(C 方案)
+- 新增 stock_common/md_render.py 渲染层转换器(标题/分隔线/F10 边框表/空格表数据驱动切分/安全回退);
+  5 脚本写尾 render_md_report, 输出 .md(纯文本兼容); val [NN 名称] 标题支持
+
+### ✅ 回归
+- 269 passed / 45 deselected, 0 failed
+
+---
+
 ## [17.0] - 2026-08-13
 
 **里程碑：全盘重构(core/ 包化 + v9.6 清理) + 字段命名规律破解 + 运行核查修复。**

@@ -534,8 +534,8 @@ def get_canonical_stock_data(code: str, force_realtime: bool = False) -> Any:
         if _ed.get("pe_dynamic") not in (None, 0, '', '0', '0.0'):
             rt_quote["pe_dynamic"] = _ed["pe_dynamic"]
             field_sources["pe_dynamic"] = "realtime:push2delay"
-        for _fk in ("fund_main_today", "fund_main_5d", "fund_main_10d",
-                    "fund_super_today", "fund_large_today", "fund_mid_today"):
+        for _fk in ("fund_main_today", "fund_main_5d",
+                    "fund_super_today", "fund_large_today", "fund_mid_today", "fund_small_today"):
             if _ed.get(_fk) not in (None, 0, '', '0', '0.0'):
                 rt_quote[_fk] = _ed[_fk]
                 field_sources[_fk] = "realtime:push2delay"
@@ -732,28 +732,28 @@ def get_canonical_stock_data(code: str, force_realtime: bool = False) -> Any:
     # 资金流类（V17.0 修复 2026-08-13: 腾讯 tx75 与东财 f137 方向相反实测(-4.49 vs +3.59 亿),
     # 原"腾讯优先"错误——统一优先级: push2delay f137(今日字典实锤=f135-f136 主力买卖差) → ZHB(通达信) → 腾讯兜底
     tx_main_yi = _safe_float(rt_quote.get('main_net_inflow_yi') or 0)
-    pd_main = _safe_float(rt_quote.get('fund_main_today') or 0)  # 元
+    pd_main = _safe_float(rt_quote.get('fund_main_today') or 0)  # 元(主力净=f137+f140 特大+大单, V17.0 定案)
     # V17.0: 无条件 f137 优先(日级动态字段, 盘前/盘后均取最近交易日)——与 get_main_net_buy 同源
+    # ⚠️ 2026-08-14 实锤: ZHB main_net_buy_amount 实为**开盘金额(竞价额)**(19/19 恒正+占比<5%),
+    # 不可作主力净流入——ZHB 分支已移除
     if pd_main:
         main_net_buy_wan = pd_main / 1e4  # 元 → 万元
         field_sources["main_net_buy_wan"] = "realtime:push2delay"
-    else:
-        main_net_buy_wan = _safe_float(zhb_dict.get('main_net_buy_amount'))
-        field_sources["main_net_buy_wan"] = "zhb:t-1"
-    if not main_net_buy_wan and tx_main_yi:
-        main_net_buy_wan = tx_main_yi * 10000  # 亿 → 万元(腾讯口径存疑, 仅兜底)
+    elif tx_main_yi:
+        main_net_buy_wan = tx_main_yi * 10000  # 亿 → 万元(腾讯 tx75 口径存疑, 仅兜底)
         field_sources["main_net_buy_wan"] = "realtime:tencent"
-    if not main_net_buy_wan:
+    else:
         main_net_buy_wan = _safe_float(rt_fund.get('main_net_wan'))
         field_sources["main_net_buy_wan"] = "realtime:eastmoney"
-    main_net_buy_hands = _safe_float(
-        rt_fund.get('main_net_hands') if need_realtime_quote else zhb_dict.get('main_net_buy_hands')
-    )
+    # ⚠️ V17.0(2026-08-14): ZHB main_net_buy_hands 实为**早盘竞价量**(手, [9]×开盘≈[14] 铁证),
+    # 不可作主力净买入量——非实时路径置 0, 主力净量仅信 TDX 0x0011(rt_fund)
+    main_net_buy_hands = _safe_float(rt_fund.get('main_net_hands') if need_realtime_quote else 0)
     field_sources["main_net_buy_hands"] = (
-        "realtime:eastmoney" if rt_fund.get('main_net_hands') is not None else "zhb:t-1"
+        "realtime:eastmoney" if rt_fund.get('main_net_hands') is not None else "missing"
     )
-    main_net_buy_wan_1d = _safe_float(zhb_dict.get('main_net_buy_amount_1d'))
-    field_sources["main_net_buy_wan_1d"] = "zhb:t-1"
+    # ⚠️ V17.0: ZHB main_net_buy_amount_1d 实为昨日开盘金额(竞价额)——不再作为主力净流入 T-1
+    main_net_buy_wan_1d = 0.0
+    field_sources["main_net_buy_wan_1d"] = "missing"
 
     # 财务与股本类
     roe = _safe_float(zhb_dict.get('roe')) if zhb_dict.get('roe') is not None else None
@@ -1165,11 +1165,7 @@ def get_canonical_stock_data(code: str, force_realtime: bool = False) -> Any:
         fund_large_today=_safe_float(rt_quote.get("fund_large_today") or em_quote_raw.get("fund_large_today") or 0),
         fund_mid_today=_safe_float(rt_quote.get("fund_mid_today") or em_quote_raw.get("fund_mid_today") or 0),
         fund_main_5d=_safe_float(rt_quote.get("fund_main_5d") or em_quote_raw.get("fund_main_5d") or 0),
-        fund_super_5d=_safe_float(rt_quote.get("fund_super_5d") or em_quote_raw.get("fund_super_5d") or 0),
-        fund_large_5d=_safe_float(rt_quote.get("fund_large_5d") or em_quote_raw.get("fund_large_5d") or 0),
-        fund_main_10d=_safe_float(rt_quote.get("fund_main_10d") or em_quote_raw.get("fund_main_10d") or 0),
-        fund_super_10d=_safe_float(rt_quote.get("fund_super_10d") or em_quote_raw.get("fund_super_10d") or 0),
-        fund_large_10d=_safe_float(rt_quote.get("fund_large_10d") or em_quote_raw.get("fund_large_10d") or 0),
+        fund_small_today=_safe_float(rt_quote.get("fund_small_today") or em_quote_raw.get("fund_small_today") or 0),
         fund_5d_array=tuple(rt_quote.get("fund_5d_array") or em_quote_raw.get("fund_5d_array") or ()),
     )
 
@@ -1645,7 +1641,7 @@ def get_main_net_buy(code: str) -> Optional[Dict[str, Any]]:
         _ed = get_em_quote_full_delay(code) or {}
         if _ed.get("fund_main_today") not in (None, 0, '', '0', '0.0'):
             return {
-                "main_net_buy_hands": _safe_float(_ed.get("fund_main_hands") or 0),
+                "main_net_buy_hands": 0,  # L5 终审修复: get_em_quote_full_delay 无 fund_main_hands 键, 恒 0
                 "main_net_buy_hands_1d": 0,
                 "main_net_buy_hands_2d": 0,
                 "main_net_buy_amount": _safe_float(_ed.get("fund_main_today")) / 1e4,  # 元→万
@@ -1655,17 +1651,8 @@ def get_main_net_buy(code: str) -> Optional[Dict[str, Any]]:
             }
     except Exception as _e:
         _debug_log(f"data_provider error (f137 primary): {_e}")
-    # L2: ZHB T-1(盘前/非交易日用)
-    try:
-        from stock_common import get_zhb_main_net_buy, is_zhb_data_fresh
-
-        if is_zhb_data_fresh(max_delay_days=1) and _should_use_zhb_for_realtime():
-            data = get_zhb_main_net_buy(code)
-            if data and any(data.values()):
-                return data
-    except Exception as _e:
-        _debug_log(f"data_provider error: {_e}")
-        pass
+    # L2: 盘前/非交易日用 ZHB T-1——⚠️ 2026-08-14 实锤: ZHB main_net_buy_amount 实为
+    # **开盘金额(竞价额)**(19/19 恒正+占比<5%), 非主力净流入——已删除该分支
     try:
         from core.tdx_client import tdx_get_fund_flow, tdx_get_history_fund_flow
 
@@ -1676,10 +1663,11 @@ def get_main_net_buy(code: str) -> Optional[Dict[str, Any]]:
             main_net_buy_amount_1d = 0
             if history and len(history) >= 2:
                 prev_day = history[1]
-                main_net_buy_hands_1d = _safe_float(prev_day.get("main_net", 0))
-                main_net_buy_amount_1d = main_net_buy_hands_1d
+                # H3 修复(2026-08-15 二审): 历史资金流单位=元(东财 get_em_history_fund_flow),
+                # 原样赋给 万元 字段 → T-1 主力净流入虚高 1e4 倍; 且 main_net_hands 键不存在→恒 0
+                main_net_buy_amount_1d = _safe_float(prev_day.get("main_net", 0)) / 1e4  # 元→万
             return {
-                "main_net_buy_hands": _safe_float(ff.get("main_net_hands", 0)),
+                "main_net_buy_hands": 0,  # 东财无手数字段, 恒 0(与 L1 一致)
                 "main_net_buy_hands_1d": main_net_buy_hands_1d,
                 "main_net_buy_hands_2d": 0,
                 "main_net_buy_amount": _safe_float(ff.get("main_net_wan", 0)),
@@ -1982,18 +1970,19 @@ def get_volume_acceleration(code: str) -> Optional[Dict[str, Any]]:
 def get_capital_momentum(code: str) -> Optional[Dict[str, Any]]:
     """资金动量加速因子（纯ZHB数据，无需实时T数据）。
 
-    检测主力资金流入加速度：main_net_buy_amount - main_net_buy_amount_1d。
-    全部使用ZHB内部数据（文件名日期为基准日），时间维度完全对齐。
+    ⚠️ V17.0(2026-08-14)实锤修正: main_net_buy_amount/1d 实为**竞价额/昨日竞价额**(竞价量×价 15/17 铁证),
+    非主力净流入——本函数实际检测的是**竞价强度加速度**(今昨竞价额变化), 语义=竞价动量代理。
+    val 策略21"资金动量"基于此——若需真主力资金请改用东财 f137(批量场景待方案)。
 
     ZHB时间体系说明：
-      - main_net_buy_amount: ZHB文件名日期的主力净流入额（基准日）
-      - main_net_buy_amount_1d: 基准日前一交易日主力净流入额
+      - main_net_buy_amount: ZHB文件名日期的竞价额（基准日, 键名历史遗留）
+      - main_net_buy_amount_1d: 基准日前一交易日竞价额
       - 实际运行时，ZHB数据日期 = 脚本运行日期 - 1个交易日（次日更新机制）
 
     返回字典：
-      net_buy_t_1: 基准日主力净流入额（万元）
-      net_buy_t_2: 前一交易日主力净流入额（万元）
-      momentum: 动量值（净流入加速度）
+      net_buy_t_1: 基准日竞价额（万元, 键名历史遗留）
+      net_buy_t_2: 前一交易日竞价额（万元）
+      momentum: 动量值（竞价额加速度）
       momentum_ratio: 动量比率（相对变化率）
       signal: 信号标签（抢筹加速期/衰竭期/平稳）
     """

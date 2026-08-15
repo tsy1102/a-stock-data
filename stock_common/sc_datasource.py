@@ -88,6 +88,7 @@ def eastmoney_datacenter(
     page_size: int = 50,
     sort_columns: str = "",
     sort_types: str = "-1",
+    page_index: int = 1,
 ) -> List[Dict[str, Any]]:
     """东财数据中心统一查询（datacenter-web.eastmoney.com）。
 
@@ -101,7 +102,7 @@ def eastmoney_datacenter(
                 "reportName": report_name,
                 "columns": columns,
                 "filter": full_filter,
-                "pageNumber": "1",
+                "pageNumber": str(page_index),
                 "pageSize": str(page_size),
                 "sortColumns": sort_columns,
                 "sortTypes": sort_types,
@@ -316,7 +317,7 @@ def _holder_fetch_tdx(code: str, records: List[Dict[str, Any]], now: float) -> b
     return _holder_fetch_tdx_optimized(code, records, now)
 
 
-def holder_change(code: str) -> List[Dict[str, Any]]:
+def holder_change(code: str, local_only: bool = False) -> List[Dict[str, Any]]:
     """获取股东户数多期变化（优化版：直接使用 SQLite）。
 
     逻辑：
@@ -326,6 +327,9 @@ def holder_change(code: str) -> List[Dict[str, Any]]:
       - 缓存过期 ≥ 90 天 → F10 优先 → 东财 5 期兜底
 
     返回: [{date, holder_num, change_num, change_ratio, avg_shares}, ...] 最新在前
+
+    V17.0(2026-08-15) H6 修复: 新增 local_only——缓存未命中时直接返回 []
+    （val 策略23 全市场扫描禁逐股网络请求, 仅缓存命中判筹码集中）。
     """
     from core.stock_cache import get_cache, set_cache, TTL
 
@@ -335,6 +339,8 @@ def holder_change(code: str) -> List[Dict[str, Any]]:
 
     if cached_data is not None:
         return cached_data
+    if local_only:
+        return []
 
     # 缓存未命中，重新获取数据
     now = time.time()
@@ -1055,21 +1061,26 @@ def get_em_batch_quotes(codes: List[str]) -> Dict[str, Dict[str, Any]]:
         if not code_chunk:
             return
         fs_str = ",".join(code_chunk)
-        url = "https://push2.eastmoney.com/api/qt/ulist.np/get"
+        # V17.0(2026-08-15 运行前核查): push2 主域连接级封禁期整体失败+0.4rps 限流
+        # (17 chunk × 2.5s = 42.5s)——改 push2delay 镜像域(1.0rps 独立风控, 与采集 ulist239/人气榜先例一致);
+        # 盘后/盘中延时 15 分钟对 mak 全景报告可接受
+        url = "https://push2delay.eastmoney.com/api/qt/ulist.np/get"
         # V15.2 P0 修复: 增加 mcap_yi 字段（f20 总市值=f116/1e8, f21=f117 流通市值）
         # 之前只拉 f2/f3，导致 val 报告 18 步策略 mcap_yi=0
         # V16.1: 扩展字段包 — f55 EPS/f92 BPS/f126 股息率/f162-167 PE/PB/f174-175 52周高低/f221 报告期
+        # V17.0(2026-08-15): + f62/f66 主力净流入(ulist 索引=f137/f140 特大+大单净, 20/20 对齐实锤)
         params = {
             "fltt": "2",
             "invt": "2",
-            "fs": fs_str,
+            "secids": fs_str,  # V17.0(2026-08-15 冒烟修复): ulist.np/get 参数为 secids(非 fs)——fs 返回 data:null
             "fields": (
                 "f12,f14,f2,f3,f20,f21,"
-                "f55,f92,f126,f162,f163,f167,f174,f175,f221"
+                "f55,f92,f126,f162,f163,f167,f174,f175,f221,"
+                "f62,f66"
             ),
         }
         try:
-            r = em_get(url, params=params, headers={"User-Agent": UA}, timeout=15)
+            r = em_get(url, params=params, headers={"User-Agent": UA, "Referer": "https://quote.eastmoney.com/"}, timeout=15)
             if r is None:
                 return
             d = r.json()
@@ -1091,7 +1102,7 @@ def get_em_batch_quotes(codes: List[str]) -> Dict[str, Dict[str, Any]]:
                         "change_pct": change_pct,
                         "mcap_yi": mcap_yi,
                         "float_mcap_yi": float_mcap_yi,
-                        # V16.1: 扩展字段（val 横截面/初筛用）
+                        # V16.1: 扩展字段（val 横截面初筛用）
                         "eps": _safe_float(item.get("f55", 0)),
                         "bps": _safe_float(item.get("f92", 0)),
                         "dividend_yield": _safe_float(item.get("f126", 0)),
@@ -1101,6 +1112,11 @@ def get_em_batch_quotes(codes: List[str]) -> Dict[str, Dict[str, Any]]:
                         "high_52w": _safe_float(item.get("f174", 0)),
                         "low_52w": _safe_float(item.get("f175", 0)),
                         "report_period": str(item.get("f221", "")),
+                        # V17.0(2026-08-15): 主力净流入(万元) = 特大单净(f62) + 大单净(f66)
+                        # ulist f62/f66 索引 = push2 f137/f140(20/20 对齐实锤); 单位=元 → /1e4 万
+                        "main_net_inflow_wan": (
+                            _safe_float(item.get("f62", 0)) + _safe_float(item.get("f66", 0))
+                        ) / 1e4,
                     }
         except Exception as _e:
             _debug_log(f"datasource get_em_batch_quotes error: {_e}")
@@ -1425,15 +1441,46 @@ def get_industry_reports(
     return all_records
 
 
-@cached(
-    category="eps_forecast", ttl_seconds=TTL["eps_forecast"], cross_verify=True, trading_day=True
-)
-def get_eps_forecast(code: str) -> Dict[str, Any]:
-    """V7.5: 机构一致预期EPS — 同花顺正则提取 + 东财研报兜底。
+def get_eps_forecast(code: str, local_only: bool = False) -> "pd.DataFrame":  # LOW 修复: 实际返回 DataFrame
+    """V7.5: 机构一致预期EPS — 同花顺正则提取 + 东财研报兜底.
+
+    V17.0(2026-08-15): **本机 ProfitForecast JSON 优先(零网络)**——东财客户端
+    data/ProfitForecast.dat(5,607 只, 评级数+2025A/2026E-2029E EPS/PE)。
+    命中返回 DataFrame[年度, 机构数, 最小值, 均值, 最大值, 行业均值](同构兼容原契约);
+    未命中回退原同花顺网络抓取 → 东财研报兜底。
+
+    ⚠️ V17.0(2026-08-15): 文件一次性加载缓存(模块级)——val 全市场逐股调用时避免 5000 次
+    2.5MB JSON 重复读取(性能修复)。
 
     Returns:
-        DataFrame [年度, 机构数, 最小值, 均值, 最大值, 行业均值]。
+        DataFrame [年度, 机构数, 最小值, 均值, 最大值, 行业均值].
     """
+    try:
+        import pandas as _pd
+
+        _idx = _profit_forecast_index()
+        _r = _idx.get(code + ".")
+        if _r is None:
+            # M7 修复: 去后缀二级索引 O(1) 命中(免全表 startswith 扫描)
+            _r = _PROFIT_FORECAST_INDEX_SHORT.get(code)
+        if _r is not None:
+            _rows = []
+            for _i in range(1, 5):
+                _y = _r.get(f"YEAR{_i}")
+                _e = _r.get(f"EPS{_i}")
+                if _y and _e:
+                    _rows.append(
+                        [str(_y) + ("A" if _r.get(f"YEAR_MARK{_i}") == "A" else "E"),
+                         _r.get("RATING_ORG_NUM") or 0, _e, _e, _e, 0]
+                    )
+            if _rows:
+                return _pd.DataFrame(
+                    _rows, columns=["年度", "机构数", "最小值", "均值", "最大值", "行业均值"]
+                )
+        if local_only:  # H4 修复: 全市场扫描路径禁止网络兜底(限流)
+            return _pd.DataFrame()
+    except Exception as _e:
+        _debug_log(f"datasource local ProfitForecast read error: {_e}")
     try:
         import re as _re2
 
@@ -1603,6 +1650,120 @@ def get_northbound_hold(code: str, days: int = 20) -> List[Dict[str, Any]]:
 
 
 # ── 北向资金本地CSV缓存辅助函数 ──
+
+# V17.0(2026-08-15) H4 修复: 移除 @cached(DataFrame 不可 JSON 序列化→缓存永不生效);
+# 改用模块级 SECUCODE→row 索引(O(1) 查表) + local_only 开关(全市场扫描不触发网络兜底)
+_PROFIT_FORECAST_CACHE = None  # V17.0: 本机 ProfitForecast 一次性加载缓存
+_PROFIT_FORECAST_INDEX: dict = {}  # V17.0: {SECUCODE: row} O(1) 索引
+_PROFIT_FORECAST_INDEX_SHORT: dict = {}  # V17.0 M7: {去后缀 code: row} 二级索引(600519→O(1), 免全表扫描)
+_YJYG_ALL_CACHE = None  # V17.0: 全市场业绩预告当日缓存
+_PROFIT_CACHE_LOCK = None  # V17.0 M8: 懒加载锁(初始化于 _profit_forecast_index 首次调用)
+_YJYG_LOCK = None  # V17.0 M8: get_yjyg_all 缓存锁
+
+
+def _profit_forecast_index() -> dict:
+    """一次性加载 ProfitForecast.dat 并建 SECUCODE→row 索引(H4 修复: 5000 次线性扫描→O(1)).
+
+    M7 修复: 同时建去后缀二级索引(SECUCODE 去 .SH/.SZ), "600519" 直接 O(1) 命中。
+    M8 修复: threading.Lock 保证并发下索引原子可见(窗口期不读空索引)。
+    """
+    global _PROFIT_FORECAST_CACHE, _PROFIT_FORECAST_INDEX, _PROFIT_FORECAST_INDEX_SHORT, _PROFIT_CACHE_LOCK
+    if _PROFIT_CACHE_LOCK is None:
+        import threading as _th
+
+        _PROFIT_CACHE_LOCK = _th.Lock()
+    if _PROFIT_FORECAST_CACHE is None:
+        with _PROFIT_CACHE_LOCK:
+            if _PROFIT_FORECAST_CACHE is None:
+                try:
+                    import json as _json
+
+                    with open(r"C:\eastmoney\dfcf\data\ProfitForecast.dat", encoding="utf-8") as _f:
+                        _PROFIT_FORECAST_CACHE = _json.load(_f)
+                    _idx = {
+                        str(_r.get("SECUCODE", "")): _r
+                        for _r in (_PROFIT_FORECAST_CACHE.get("result", {}).get("data") or [])
+                    }
+                    _PROFIT_FORECAST_INDEX = _idx
+                    _PROFIT_FORECAST_INDEX_SHORT = {
+                        str(_k).split(".")[0]: _v for _k, _v in _idx.items()
+                    }
+                except Exception as _e:
+                    _debug_log(f"datasource ProfitForecast index load error: {_e}")
+                    _PROFIT_FORECAST_CACHE = {}
+    return _PROFIT_FORECAST_INDEX
+
+def _today_str() -> str:
+    """当日 YYYYMMDD(缓存日期口径用)."""
+    import datetime as _dt
+
+    return _dt.date.today().strftime("%Y%m%d")
+
+
+def get_yjyg_all() -> Dict[str, Dict[str, Any]]:
+    """全市场业绩预告(V17.0 2026-08-15) — 一次分页拉取 + 当日缓存.
+
+    ⚠️ 修复: 原逐股 get_yjyg 在 val 全市场扫描下=5000 次请求(限流灾难);
+    本函数单次分页拉全量(窗口期全市场预告 ~500-1000 条), 策略按 code 过滤。
+    M3 修复: 单股版 get_yjyg 已删除(死代码), 统一走本函数。
+    M4 定案: 幅度键=ADD_AMP_LOWER/UPPER(INCREASE_RATE 恒 None), IS_LATEST=1 去重。
+    M8 修复: threading.Lock + global 原子写缓存; M9: 动态年份; M1: 5 页上限。
+
+    Returns:
+        dict: {code: {predict_type, increase_rate, inc_lower, inc_upper, notice_date, report_date}}
+    """
+    global _YJYG_ALL_CACHE, _YJYG_LOCK
+    if _YJYG_LOCK is None:
+        import threading as _th
+
+        _YJYG_LOCK = _th.Lock()
+    _today = _today_str()
+    _c = _YJYG_ALL_CACHE
+    if _c is not None and _c.get("date") == _today:
+        return _c.get("data") or {}
+    out: Dict[str, Dict[str, Any]] = {}
+    try:
+        with _YJYG_LOCK:
+            if _YJYG_ALL_CACHE is not None and _YJYG_ALL_CACHE.get("date") == _today:
+                return _YJYG_ALL_CACHE.get("data") or {}
+            _year = _today[:4]
+            for _page in (1, 2, 3, 4, 5):  # M1: 5 页上限(2500 条), 空页 break
+                rows = eastmoney_datacenter(
+                    "",
+                    "RPT_PUBLIC_OP_NEWPREDICT",
+                    columns="ALL",
+                    filter_str=f"(REPORT_DATE>='{_year}-01-01')",  # M2/M9: 区间过滤+动态年份
+                    page_size=500,
+                    sort_columns="NOTICE_DATE",
+                    sort_types="-1",
+                    page_index=_page,
+                )
+                if not rows:
+                    break
+                for r in rows:
+                    code = str(r.get("SECURITY_CODE", "") or "").strip()
+                    if not code:
+                        continue
+                    if str(r.get("IS_LATEST", "") or "") == "1" or code not in out:
+                        out[code] = {
+                            "predict_type": str(r.get("PREDICT_TYPE", "") or ""),
+                            "increase_rate": (
+                                _safe_float(r.get("ADD_AMP_UPPER"))
+                                or _safe_float(r.get("ADD_AMP_LOWER"))
+                                or 0.0
+                            ),
+                            "inc_lower": _safe_float(r.get("ADD_AMP_LOWER")),
+                            "inc_upper": _safe_float(r.get("ADD_AMP_UPPER")),
+                            "notice_date": str(r.get("NOTICE_DATE", "") or "")[:10],
+                            "report_date": str(r.get("REPORT_DATE", "") or "")[:10],
+                        }
+            _YJYG_ALL_CACHE = {"date": _today, "data": out}
+    except Exception as _e:
+        _debug_log(f"datasource get_yjyg_all error: {_e}")
+    return dict(out)  # L4: 返回副本, 防调用方污染缓存
+
+
+
 def _northbound_cache_path(code: str) -> str:
     """北向资金本地CSV缓存路径"""
     import os
@@ -5377,22 +5538,23 @@ def _em_quote_full_impl(code: str, host: str = "https://push2delay.eastmoney.com
             except (TypeError, ValueError, json.JSONDecodeError):
                 result["trading_periods"] = []
 
-        # 资金流 12 字段（f135-f146，官方/ulist 交叉验证）
-        #   f137=主力今日、f138=超大单今日、f139=大单今日、f140=中单今日
-        #   f141=主力5日、f142=超大单5日、f143=大单5日
-        #   f144=主力10日、f145=超大单10日、f146=大单10日
-        #   单位：元
+        # 资金流 12 字段(f135-f146)——V17.0(2026-08-14 同花顺表头+买卖差自洽定案):
+        #   四档买卖结构: f135/136/137=特大(超大)单买/卖/净、f138/139/140=大单买/卖/净、
+        #                  f141/142/143=中单买/卖/净、f144/145/146=小单买/卖/净
+        #   (f137=f135-f136、f140=f138-f139、f143=f141-f142、f146=f144-f145 全自洽实测)
+        #   **主力净额(同花顺/通达信定义=特大+大单买卖差)= f137+f140**(由 data_provider 聚合)
+        #   单位: 元
         flow_map = {
-            "f137": ("fund_main_today", "fund_flow"),
-            "f138": ("fund_super_today", "fund_flow"),
-            "f139": ("fund_large_today", "fund_flow"),
-            "f140": ("fund_mid_today", "fund_flow"),
-            "f141": ("fund_main_5d", "fund_flow"),
-            "f142": ("fund_super_5d", "fund_flow"),
-            "f143": ("fund_large_5d", "fund_flow"),
-            "f144": ("fund_main_10d", "fund_flow"),
-            "f145": ("fund_super_10d", "fund_flow"),
-            "f146": ("fund_large_10d", "fund_flow"),
+            "f137": ("fund_super_today", "fund_flow"),   # 特大(超大)单净
+            "f138": ("fund_super_buy", "fund_flow"),     # 特大单买入金额
+            "f139": ("fund_super_sell", "fund_flow"),    # 特大单卖出金额
+            "f140": ("fund_large_today", "fund_flow"),   # 大单净
+            "f141": ("fund_mid_buy", "fund_flow"),       # 中单买入金额
+            "f142": ("fund_mid_sell", "fund_flow"),      # 中单卖出金额
+            "f143": ("fund_mid_today", "fund_flow"),     # 中单净
+            "f144": ("fund_small_buy", "fund_flow"),     # 小单买入金额
+            "f145": ("fund_small_sell", "fund_flow"),    # 小单卖出金额
+            "f146": ("fund_small_today", "fund_flow"),   # 小单净
         }
         for src, (dst, _cat) in flow_map.items():
             v = data.get(src)
@@ -5402,11 +5564,21 @@ def _em_quote_full_impl(code: str, host: str = "https://push2delay.eastmoney.com
                 except (TypeError, ValueError):
                     pass
 
+        # V17.0(2026-08-14): 主力净额 = 特大单净 + 大单净(同花顺/通达信"主力净额"官方定义)
+        _sv = result.get("fund_super_today")
+        _lv = result.get("fund_large_today")
+        if _sv is not None and _lv is not None:
+            result["fund_main_today"] = _sv + _lv
+
         # 近5日主力净流入数组（f178，JSON）
         v = data.get("f178")
         if v and isinstance(v, str):
             try:
                 result["fund_5d_array"] = json.loads(v)
+                # V17.0: 5日主力净由 f178 数组聚合(替代原 f141 误读)
+                _s5 = sum(float(x.get("mainNetAmt", 0)) for x in result["fund_5d_array"] if isinstance(x, dict))
+                if _s5:
+                    result["fund_main_5d"] = _s5
             except (TypeError, ValueError, json.JSONDecodeError):
                 pass
 

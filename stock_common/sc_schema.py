@@ -171,7 +171,7 @@ FIELD_SPECS: Tuple[FieldSpec, ...] = (
         is_real_time=True, zhb_t_minus_1_acceptable=True, batch_friendly=False,
     ),
     FieldSpec(
-        name="main_net_buy_amount", description="主力净买入额（万元）",
+        name="main_net_buy_amount", description="主力净买入额（万元）⚠️ V17.0 实锤: ZHB 该键实为开盘金额(竞价额)——主力净流入请用东财 f137",
         source_preference=(DataSource.ZHB, DataSource.TDX, DataSource.EASTMONEY),
         time_anchor=TimeAnchor.T_MINUS_1, unit=Unit.WAN_YUAN,
         is_real_time=True, zhb_t_minus_1_acceptable=True, batch_friendly=False,
@@ -502,17 +502,13 @@ class CanonicalStockData:
     quote_date: str = ""             # 行情快照日期 (YYYY-MM-DD) — push2 data_date
     bid1_vol: float = 0.0            # 买一量 (手) ← 腾讯协议 v10（2026-08-11: 新增——sht 封单资金/信号/预警依赖）
 
-    # V16.1: 资金流细分（push2 f135-f146，单位元）
-    fund_main_today: float = 0.0     # 主力净流入(今日)
-    fund_super_today: float = 0.0    # 超大单净流入(今日)
-    fund_large_today: float = 0.0    # 大单净流入(今日)
-    fund_mid_today: float = 0.0      # 中单净流入(今日)
-    fund_main_5d: float = 0.0        # 主力净流入(5日)
-    fund_super_5d: float = 0.0       # 超大单净流入(5日)
-    fund_large_5d: float = 0.0       # 大单净流入(5日)
-    fund_main_10d: float = 0.0       # 主力净流入(10日)
-    fund_super_10d: float = 0.0      # 超大单净流入(10日)
-    fund_large_10d: float = 0.0      # 大单净流入(10日)
+    # V16.1: 资金流细分(push2 f135-f146, 单位元)——V17.0(2026-08-14 同花顺表头+买卖差自洽定案)
+    fund_main_today: float = 0.0     # 主力净流入(今日, = 特大+大单 f137+f140)
+    fund_super_today: float = 0.0    # 特大(超大)单净流入(今日, f137)
+    fund_large_today: float = 0.0    # 大单净流入(今日, f140)
+    fund_mid_today: float = 0.0      # 中单净流入(今日, f143)
+    fund_small_today: float = 0.0    # 小单净流入(今日, f146) — V17.0 新增
+    fund_main_5d: float = 0.0        # 主力净流入(近5日, f178 数组聚合)
     fund_5d_array: Tuple[Dict[str, Any], ...] = field(default_factory=tuple)  # 近5日主力净流入数组 — push2 f178
 
     # 板块与概念

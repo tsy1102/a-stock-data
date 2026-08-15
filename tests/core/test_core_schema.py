@@ -276,11 +276,10 @@ class TestCanonicalV161ExtendedFields(unittest.TestCase):
         self.assertEqual(d.quote_date, "")
         self.assertEqual(d.fund_main_today, 0.0)
         self.assertEqual(d.fund_main_5d, 0.0)
-        self.assertEqual(d.fund_main_10d, 0.0)
         self.assertEqual(d.fund_super_today, 0.0)
         self.assertEqual(d.fund_large_today, 0.0)
         self.assertEqual(d.fund_mid_today, 0.0)
-        self.assertEqual(d.trading_periods, ())
+        self.assertEqual(d.fund_small_today, 0.0)
         self.assertEqual(d.fund_5d_array, ())
 
     def test_extended_fields_set(self):

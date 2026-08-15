@@ -20,6 +20,7 @@
 | sc_kpl.py | 涨停池/炸板池/跌停池/重点监控(push2ex) |
 | sc_plate_rot.py | 板块轮动数据 |
 | sc_capital_cache.py | 全局股本缓存(90 天 TTL, schema 版本校验) |
+| md_render.py | **报告 md 渲染转换器(V17.0.1)**——标题/分隔线/F10 边框表/空格表数据驱动切分→Markdown; 5 脚本写尾统一入口 |
 | sc_kline_cache.py | K线缓存(进程内) |
 | stock_calendar.py | 交易日历(holidays/workdays 字典 + ZHB 补充, 含 CLI 更新入口) |
 | seat_db.py / seats.json | 龙虎榜营业部席位数据库 |

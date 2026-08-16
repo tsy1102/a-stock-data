@@ -649,9 +649,15 @@ def get_canonical_stock_data(code: str, force_realtime: bool = False) -> Any:
         "prev_close", rt_quote.get("last_close"), zhb_dict.get("prev_close")
     )
     # V17.0.1c: TDX/zhb 均无昨收(TDX 快照无 last_close)时, 用 price 与 change_pct 反算
+    # M3(审查 2026-08-16): 反算加 sanity——change_pct 极端(如 -99.9, 可转债/退市整理无跌停保护)
+    # 会放大昨收荒谬值; 反算结果必须落在 price*0.5~price*2 内才接受
     if not prev_close and price and change_pct:
         try:
-            prev_close = _safe_float(price / (1 + change_pct / 100.0))
+            _pc = _safe_float(price / (1 + change_pct / 100.0))
+            if _pc > 0 and (price * 0.5 <= _pc <= price * 2.0):
+                prev_close = _pc
+            else:
+                _debug_log(f"get_canonical_stock_data prev_close 反算超界拒绝: price={price} chg={change_pct} pc={_pc}")
         except (ZeroDivisionError, TypeError):
             prev_close = 0
     field_sources["prev_close"] = field_sources.get("prev_close", price_src)

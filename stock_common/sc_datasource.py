@@ -3745,6 +3745,7 @@ def _tdxhy_industry_map() -> Dict[str, str]:
       - tdxhy.cfg(文本 Pipe): 市场|代码|T一级|空|空|X细分 —— 5,641 只 A 股全量
       - hy_tree.xml(GBK): X 码三级树 → 一级名(2 位 X 码)
     用途: 同花顺涨停池(无 sector 字段)的涨停板块分布注入。
+    M4(审查 2026-08-16): 异常时保持 None 不固化——允许下次调用重试(文件修复/路径恢复后生效)。
     """
     global _TDXHY_CACHE
     if _TDXHY_CACHE is not None:
@@ -3771,6 +3772,7 @@ def _tdxhy_industry_map() -> Dict[str, str]:
                     _m[_p[1]] = _m.get(_x, "") or ""
     except Exception as _e:
         _debug_log(f"_tdxhy_industry_map: {_e}")
+        return _m  # 异常不固化, 下次重试
     _TDXHY_CACHE = _m
     return _m
 
@@ -3794,6 +3796,14 @@ def get_limit_pool_summary(date_str: str = "") -> Dict[str, Any]:
     if not zt:
         zt = get_limit_up_pool(date_str)
         zt_source = "em"
+    # H1(审查 2026-08-16): 休市日 ths 内部回退最近交易日, 炸板/跌停池若仍用当天(空) →
+    # 封板率 100% 假象。统一口径: 回退后日期传给东财炸板/跌停池(东财对历史日期也有效)
+    _zt_date = ""
+    if zt_source == "ths":
+        try:
+            _zt_date = get_last_trading_day().strftime("%Y%m%d")
+        except Exception:
+            _zt_date = ""
     # 同花顺源无 sector → TDX 本机 tdxhy 一级行业注入(零网络)
     if zt_source == "ths" and zt:
         try:
@@ -3802,13 +3812,13 @@ def get_limit_pool_summary(date_str: str = "") -> Dict[str, Any]:
                 item["sector"] = _ind_map.get(item.get("code") or "", "") or ""
         except Exception as _e:
             _debug_log(f"get_limit_pool_summary tdxhy sector inject: {_e}")
-    zb = get_limit_broken_pool(date_str)
-    dt = get_limit_down_pool(date_str)
+    zb = get_limit_broken_pool(_zt_date or date_str)
+    dt = get_limit_down_pool(_zt_date or date_str)
 
-    # 按板块统计涨停分布
+    # 按板块统计涨停分布(M4: 空 sector 归"其他", 不产生空键)
     sector_stats: Dict[str, int] = {}
     for item in zt:
-        sec = item.get("sector", "其他")
+        sec = item.get("sector") or "其他"
         sector_stats[sec] = sector_stats.get(sec, 0) + 1
 
     # 封板成功率
@@ -3884,7 +3894,6 @@ def ths_limit_up_pool(date_str: str = "") -> List[Dict[str, Any]]:
 
         out = []
         for it in info:
-            ft = it.get("first_limit_up_time")
             # V17.0.1g: high_days 中文文本("首板"/"2板"/"3板"...) → 连板数; 东财契约兼容
             _hd = str(it.get("high_days", "") or "")
             _lc = 1
@@ -3896,6 +3905,17 @@ def ths_limit_up_pool(date_str: str = "") -> List[Dict[str, Any]]:
                     except (ValueError, TypeError):
                         _lc = 1
             # V17.0.1h: 附加字段(同一次请求已返回, 零额外压力)——打板质量/弹性/风险分层
+            # M2(审查 2026-08-16): 时间戳可能为 "0"/None/非数字 → 0 或异常会输出 1970-01-01
+            # 或整池吞错; 先 _safe_float 再判 >0(精度 <1s 无影响)
+            def _fmt_ts(_v: Any) -> str:
+                _f = _safe_float(_v)
+                if _f > 0:
+                    try:
+                        return datetime.fromtimestamp(int(_f)).strftime("%H:%M:%S")
+                    except (ValueError, OverflowError, OSError):
+                        pass
+                return ""
+
             _lbt = it.get("last_limit_up_time")
             out.append(
                 {
@@ -3905,19 +3925,15 @@ def ths_limit_up_pool(date_str: str = "") -> List[Dict[str, Any]]:
                     "change_pct": _safe_float(it.get("change_rate")),
                     "reason": it.get("reason_type", ""),
                     "board_type": it.get("limit_up_type", ""),
-                    "seal_rate": _safe_float(it.get("limit_up_suc_rate")),
+                    "seal_rate": _safe_float(it.get("limit_up_suc_rate")),  # 0-1 小数(实测全池 0-1, 1.0=完全封死)
                     "break_times": it.get("open_num") or 0,
                     "seal_amount": it.get("order_amount"),
                     "limit_fund": _safe_float(it.get("order_amount", 0)),  # 元, 东财契约同口径
                     "limit_count": _lc,
                     "zt_days": _lc,
                     "high_days": _hd,
-                    "first_time": (
-                        datetime.fromtimestamp(int(ft)).strftime("%H:%M:%S") if ft else ""
-                    ),
-                    "last_time": (
-                        datetime.fromtimestamp(int(_lbt)).strftime("%H:%M:%S") if _lbt else ""
-                    ),
+                    "first_time": _fmt_ts(it.get("first_limit_up_time")),
+                    "last_time": _fmt_ts(_lbt),
                     "is_again": it.get("is_again_limit"),
                     "turnover_rate": _safe_float(it.get("turnover_rate")),
                     "currency_value": _safe_float(it.get("currency_value")),  # 元

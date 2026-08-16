@@ -3735,15 +3735,73 @@ def get_yesterday_limit_pool(date_str: str = "") -> List[Dict[str, Any]]:
         return []
 
 
+_TDXHY_CACHE: Optional[Dict[str, str]] = None
+
+
+def _tdxhy_industry_map() -> Dict[str, str]:
+    """V17.0.1g(2026-08-16): TDX 本机行业映射 code→一级行业名(零网络, 进程缓存).
+
+    数据源(field_dict 表头·行业/细分行业唯一来源):
+      - tdxhy.cfg(文本 Pipe): 市场|代码|T一级|空|空|X细分 —— 5,641 只 A 股全量
+      - hy_tree.xml(GBK): X 码三级树 → 一级名(2 位 X 码)
+    用途: 同花顺涨停池(无 sector 字段)的涨停板块分布注入。
+    """
+    global _TDXHY_CACHE
+    if _TDXHY_CACHE is not None:
+        return _TDXHY_CACHE
+    _m: Dict[str, str] = {}
+    try:
+        import re as _re
+        # 1) hy_tree.xml: X码 → 一级名(层级栈: 2位=一级, 其下节点继承)
+        _lvl1 = ""
+        _text = open(r"C:\new_tdx64\T0002\cloud_cfg\hy_tree.xml", encoding="gbk", errors="ignore").read()
+        for _mn in _re.finditer(r'<node\s[^>]*caption="([^"]*)"[^>]*blockid="X(\d+)"|<node\s[^>]*blockid="X(\d+)"[^>]*caption="([^"]*)"', _text):
+            _cap = _mn.group(1) or _mn.group(4)
+            _xc = _mn.group(2) or _mn.group(3)
+            if len(_xc) == 2:
+                _lvl1 = _cap
+            else:
+                _m["X" + _xc] = _lvl1
+        # 2) tdxhy.cfg: code → X细分码(已带 X 前缀) → 一级名
+        for _ln in open(r"C:\new_tdx64\T0002\hq_cache\tdxhy.cfg", encoding="gbk", errors="ignore"):
+            _p = _ln.rstrip("\n").split("|")
+            if len(_p) >= 6 and len(_p[1]) == 6 and _p[1].isdigit():
+                _x = _p[5].strip()
+                if _x:
+                    _m[_p[1]] = _m.get(_x, "") or ""
+    except Exception as _e:
+        _debug_log(f"_tdxhy_industry_map: {_e}")
+    _TDXHY_CACHE = _m
+    return _m
+
+
 @cached(category="limit_pool", ttl_seconds=TTL["limit_pool"], trading_day=True)
-@requires_push2  # V16.0: push2ex 与东财共用风控面，标记审计
+@requires_push2  # V17.0.1g: 涨停池同花顺优先, 炸板/跌停池仍走 push2ex → 保留审计
 def get_limit_pool_summary(date_str: str = "") -> Dict[str, Any]:
     """获取打板数据汇总（涨停池+炸板池+跌停池）
+
+    V17.0.1g(2026-08-16): 涨停池改**同花顺优先**（10jqka 官方 dataapi, 字段更丰富:
+    涨停原因/板型/封板率/炸板次数; 与东财 push2ex 62 vs 63 只仅差北交所口径）;
+    同花顺无 sector 字段 → 用 TDX 本机 tdxhy 行业注入（零网络, 权威一级行业）;
+    失败兜底东财 push2ex。炸板池/跌停池无同花顺替代, 保持东财 push2ex（用户已确认）.
 
     Returns:
         包含涨停/炸板/跌停数量和详细数据的字典
     """
-    zt = get_limit_up_pool(date_str)
+    # 涨停池: 同花顺优先(2026-08-16 实测 62 只/1.01s), 东财兜底
+    zt = ths_limit_up_pool(date_str)
+    zt_source = "ths"
+    if not zt:
+        zt = get_limit_up_pool(date_str)
+        zt_source = "em"
+    # 同花顺源无 sector → TDX 本机 tdxhy 一级行业注入(零网络)
+    if zt_source == "ths" and zt:
+        try:
+            _ind_map = _tdxhy_industry_map()
+            for item in zt:
+                item["sector"] = _ind_map.get(item.get("code") or "", "") or ""
+        except Exception as _e:
+            _debug_log(f"get_limit_pool_summary tdxhy sector inject: {_e}")
     zb = get_limit_broken_pool(date_str)
     dt = get_limit_down_pool(date_str)
 
@@ -3794,7 +3852,13 @@ def ths_limit_up_pool(date_str: str = "") -> List[Dict[str, Any]]:
     """
     from datetime import datetime
 
-    date_str = date_str or datetime.now().strftime("%Y%m%d")
+    # V17.0.1g(2026-08-16): 休市日(周末/节假日)传当日返回空 → 自动回退最近交易日
+    if not date_str:
+        try:
+            from stock_common.stock_calendar import get_last_trading_day
+            date_str = get_last_trading_day().strftime("%Y%m%d")
+        except Exception:
+            date_str = datetime.now().strftime("%Y%m%d")
     url = "https://data.10jqka.com.cn/dataapi/limit_up/limit_up_pool"
     params = {
         "page": 1,
@@ -3817,18 +3881,31 @@ def ths_limit_up_pool(date_str: str = "") -> List[Dict[str, Any]]:
         out = []
         for it in info:
             ft = it.get("first_limit_up_time")
+            # V17.0.1g: high_days 中文文本("首板"/"2板"/"3板"...) → 连板数; 东财契约兼容
+            _hd = str(it.get("high_days", "") or "")
+            _lc = 1
+            if _hd.endswith("板"):
+                _n = _hd[:-1]
+                if _n.isdigit():
+                    try:
+                        _lc = int(_n)
+                    except (ValueError, TypeError):
+                        _lc = 1
             out.append(
                 {
                     "code": it.get("code"),
                     "name": it.get("name"),
                     "price": _safe_float(it.get("latest")),
-                    "pct": _safe_float(it.get("change_rate")),
+                    "change_pct": _safe_float(it.get("change_rate")),
                     "reason": it.get("reason_type", ""),
                     "board_type": it.get("limit_up_type", ""),
-                    "seal_rate": it.get("limit_up_suc_rate"),
+                    "seal_rate": _safe_float(it.get("limit_up_suc_rate")),
                     "break_times": it.get("open_num") or 0,
                     "seal_amount": it.get("order_amount"),
-                    "high_days": it.get("high_days", ""),
+                    "limit_fund": _safe_float(it.get("order_amount", 0)),  # 元, 东财契约同口径
+                    "limit_count": _lc,
+                    "zt_days": _lc,
+                    "high_days": _hd,
                     "first_time": (
                         datetime.fromtimestamp(int(ft)).strftime("%H:%M:%S") if ft else ""
                     ),

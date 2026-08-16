@@ -1224,9 +1224,21 @@ async def generate_report_async(session, code, output_path, ind_comp=None, idx_q
         L(f"    今日涨停 {zt_count} 只 | 炸板 {zb_count} 只 | 跌停 {dt_count} 只 | 封板率 {success_rate:.0f}%")
 
         # 检查当前股票是否在涨停池/炸板池中
+        # V17.0.1g: 叠加同花顺增强字段(涨停原因/板型/封板率/炸板次数——东财没有的维度)
         for item in pool.get("limit_up_list", []):
             if item.get("code") == code:
-                L(f"    ✅ 当前股票在涨停池中！连板数:{item.get('limit_count',0)} 板块:{item.get('sector','')} 封板资金:{item.get('limit_fund',0)/1e8:.2f}亿")
+                _extra = ""
+                if item.get("reason"):
+                    _extra += f" 原因:{item['reason']}"
+                if item.get("board_type"):
+                    _extra += f" 板型:{item['board_type']}"
+                if item.get("seal_rate"):
+                    _extra += f" 封板率:{_safe_float(item['seal_rate'])*100:.0f}%"
+                if item.get("break_times"):
+                    _extra += f" 炸板{item['break_times']}次"
+                if item.get("first_time"):
+                    _extra += f" 首封{item['first_time']}"
+                L(f"    📌 当前股票在涨停池中！连板{item.get('limit_count',0)} 板块:{item.get('sector','')} 封板资金:{item.get('limit_fund',0):.0f}元{_extra}")
                 break
         for item in pool.get("limit_broken_list", []):
             if item.get("code") == code:

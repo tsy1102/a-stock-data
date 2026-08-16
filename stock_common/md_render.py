@@ -18,6 +18,7 @@ from typing import List
 _BORDER_OPEN = re.compile(r"^\s*[┌├└]")
 _BORDER_ROW = re.compile(r"^\s*│")
 _LINE_ONLY = re.compile(r"^\s*[─=\-]{8,}\s*$")
+_SECTION_SEP = re.compile(r"^\s*[─=]{8,}\s*$")  # V17.0.2: 全角长线=章节分隔(表格块收集时挡); 半角 - 短横=表内分隔线(允许进块)
 _HEADING = re.compile(r"^\s*【[^】]{1,40}】")
 _HEADING_BRACKET = re.compile(r"^\s*\[\d{1,2}[^\]]{1,30}\]\s*$")  # val 格式: [01 龙回头]
 _SPACE_TABLE_HEADER = re.compile(r"^\s*[^\s│┌]")
@@ -69,14 +70,16 @@ def _border_rows_to_md(rows: List[str]) -> List[str]:
     return out
 
 
-def _space_table_to_md(block: List[str]) -> List[str]:
+def _space_table_to_md(block: List[str]) -> "tuple[list, list]":
     """数据驱动空格表转换: 表头取列名(按自身间隙), 数据行按自身间隙切分.
 
-    校验: 数据行列数 ≥ 表头列数-1 且 ≥2 列才成表; 否则原样保留。
+    V17.0.2(2026-08-16): 返回 (md_rows, rest)——数据行中段数不足的"信号/统计"文本行
+    从失败行起截断为 rest, 不参与表格(原整块回退导致股东户数/资金流/两融表全部不转)。
+    返回: (表格 md 行, 剩余普通行(可空))；无法成表时返回 (原 block, [])。
     """
     data_rows = [r for r in block[1:] if not _SPACE_TABLE_SEP.match(r)]
     if len(data_rows) < 1:
-        return block
+        return block, []
     # 表头列名: 按表头自身间隙切分
     header = block[0].strip()
     hdr_cells = _split_by_row_gaps(header, 8)
@@ -85,22 +88,24 @@ def _space_table_to_md(block: List[str]) -> List[str]:
 
     n_gaps = Counter(len(_split_by_row_gaps(r, 16)) for r in data_rows)
     if not n_gaps:
-        return block
+        return block, []
     cols = n_gaps.most_common(1)[0][0]
     if cols < 2:
-        return block
+        return block, []
     # 表头列名与列数对齐: 不足补空, 超出截断
     head = (hdr_cells + [""] * cols)[:cols]
     out = ["| " + " | ".join(head) + " |", "|" + "---|" * cols]
-    for r in data_rows:
+    for idx, r in enumerate(data_rows):
         cells = _split_by_row_gaps(r, cols)
-        if not cells:
-            continue
-        if len(cells) < cols - 1:
-            return block  # 某行明显少列 → 非表格, 原样
-        cells = (cells + [""] * cols)[:cols]
-        out.append("| " + " | ".join(cells) + " |")
-    return out
+        if len(cells) >= cols - 1:
+            cells = (cells + [""] * cols)[:cols]
+            out.append("| " + " | ".join(cells) + " |")
+        else:
+            # 段数不足 → 该行及之后非表格(信号/统计文本), 截断为 rest
+            if len(out) <= 2:  # 连一行有效数据都没有 → 整块非表格
+                return block, []
+            return out, data_rows[idx:]
+    return out, []
 
 
 def text_to_md(lines: List[str]) -> List[str]:
@@ -140,11 +145,16 @@ def text_to_md(lines: List[str]) -> List[str]:
                 continue
             block = []
             j = i
+            # V17.0.2: 章节分隔(全角 ─ 长线)不收集进表格块; 半角 - 表内分隔线允许进块
             while j < n and lines[j].strip() and not _HEADING.match(lines[j]) \
-                    and not _BORDER_OPEN.match(lines[j]):
+                    and not _BORDER_OPEN.match(lines[j]) and not _SECTION_SEP.match(lines[j]):
                 block.append(lines[j])
                 j += 1
-            out.extend(_space_table_to_md(block))
+            tbl_rows, rest = _space_table_to_md(block)
+            out.extend(tbl_rows)
+            if rest:
+                i = j - len(rest)  # 尾部非表格行交回主循环(去缩进/继续处理)
+                continue
             if out and not out[-1].startswith("| ") and out[-1] != "":
                 out.append("")  # B 修复: 表格块后补空行, 防与下一标题粘连
             elif out and out[-1].startswith("| "):

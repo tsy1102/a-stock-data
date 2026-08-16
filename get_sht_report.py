@@ -392,8 +392,9 @@ async def generate_report_async(session, code, output_path, ind_comp=None, idx_q
         L(f"  💰 今日北向资金: 沪股通 {hsgt['hgt']:+.2f}亿 | 深股通 {hsgt['sgt']:+.2f}亿 | 合计 {hsgt['total']:+.2f}亿（{_sig}）")
         # V16.4.1: 数据层降级标记展示——2026-08-12 实测深股通 379.75 亿(sgt/hgt 比例 40.9 异常,
         # 远超历史单日记录), 源数据存疑时显式警告, 避免误导
+        # V17.0.2: 内部字段名(warning 原文)下沉为统一话术
         if hsgt.get("data_quality") == "degraded":
-            L(f"  ⚠️ 北向数据降级: {hsgt.get('warning', '源数据异常')}")
+            L("  ⚠️ 北向资金数据源存疑(异常波动), 仅供参考")
 
     # V15.4.2: 资金流同步调用包 to_thread，避免阻塞事件循环
     ff = await asyncio.to_thread(get_fund_flow_120d, code)
@@ -401,14 +402,19 @@ async def generate_report_async(session, code, output_path, ind_comp=None, idx_q
 
     if rf and rf.get("data") and len(rf["data"]) > 0:
         _fd = rf["data"]
-        L(f"  💰 今日主力净流入: {_fd[0]:.0f}万元 ({_fd[0]/1e4:.2f}亿)")
+        # V17.0.2: 金额单单位展示(≥1亿→亿, 否则万), 去掉双单位冗余
+        _main_wan = _fd[0]
+        _main_txt = f"{_main_wan/1e4:.2f}亿" if abs(_main_wan) >= 1e4 else f"{_main_wan:.0f}万"
+        L(f"  💰 今日主力净流入: {_main_txt}")
     else:
         if ff and ff.get("data") and len(ff["data"]) > 0:
             # 2026-08-11: 统一层 O19 已归一 dict(元)——直接读最新一条（数据"最新在前"）
             _d0 = ff["data"][0]
             last_day_flow = (_safe_float(_d0.get("main_net", 0)) or 0) / 1e4
             if last_day_flow != 0:
-                L(f"  ▲ 昨日主力净流入: {last_day_flow:.0f}万元 ({last_day_flow/1e4:.2f}亿)")
+                # V17.0.2: 单单位
+                _t = f"{last_day_flow/1e4:.2f}亿" if abs(last_day_flow) >= 1e4 else f"{last_day_flow:.0f}万"
+                L(f"  ▲ 昨日主力净流入: {_t}")
             else:
                 L("\n  [资金流向] 今日主力净流入(实时): 暂无数据")
         else:
@@ -1154,7 +1160,7 @@ async def generate_report_async(session, code, output_path, ind_comp=None, idx_q
         hot_all = await asyncio.to_thread(ths_hot_list, "hour")
         in_hot = next((h for h in hot_all if h.get("code") == code), None)
         if in_hot:
-            L(f"    🔥 同花顺热榜 #{in_hot['rank']} 热度{in_hot['heat']}")
+            L(f"    🔥 同花顺热榜 #{in_hot['rank']}  热度值 {in_hot['heat']:,.0f}")
     except Exception as _e:
         _debug_log(f"ths_hot_list error: {_e}")
 
@@ -1314,7 +1320,9 @@ async def generate_report_async(session, code, output_path, ind_comp=None, idx_q
                 if _sl.get("auction_prev_volume_ratio"):
                     _parts.append(f"竞价昨比{_sl['auction_prev_volume_ratio']:.2f}")
                 if _sl.get("seal_to_float_ratio") is not None and _sl.get("seal_to_float_ratio", 0) > 0:
-                    _parts.append(f"封流比{_sl['seal_to_float_ratio']*100:.3f}%")
+                    # V17.0.2: 极小封流比(0.002%)无展示意义——过滤 <0.01%
+                    if _sl["seal_to_float_ratio"] * 100 >= 0.01:
+                        _parts.append(f"封流比{_sl['seal_to_float_ratio']*100:.2f}%")
                 if _sl.get("limit_board_text"):
                     _parts.append(f"几天几板:{_sl['limit_board_text']}")
                 if _sl.get("limit_up_streak_days"):
@@ -1670,7 +1678,7 @@ async def generate_report_async(session, code, output_path, ind_comp=None, idx_q
         # 检查该股是否在热榜中
         in_hot = next((h for h in hot_list if h.get("code") == code), None)
         if in_hot:
-            L(f"\n  📊 市场热度: 该股当前在同花顺热榜 #{in_hot['rank']}，热度{in_hot['heat']}")
+            L(f"\n  📊 市场热度: 该股当前在同花顺热榜 #{in_hot['rank']}，热度值 {in_hot['heat']:,.0f}")
             if in_hot.get("concepts"):
                 L(f"     关联概念: {', '.join(in_hot['concepts'][:3])}")
             if in_hot.get("tag"):

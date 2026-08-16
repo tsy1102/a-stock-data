@@ -4916,6 +4916,49 @@ def get_zhb_amount_wan(code: str) -> Optional[float]:
         return None
 
 
+def get_tdx_day_tail(code: str) -> Dict[str, Any]:
+    """V17.0.1d(2026-08-16): TDX 本机 .day 尾部快速读(零网络毫秒级).
+
+    新版 .day 32B 记录: date<uint32> + open/high/low/close<int32×0.01元(分)> +
+    amount<float32 元> + volume<int32 股> + reserved。
+    返回 {price, open, high, low, amount_wan, date}。
+    ⚠️ C1 终审修复(2026-08-15): 价格刻度 ÷1000→÷100(实测 600519 close=134199→1341.99)。
+    用途: 休市/盘前 canonical OHLC/成交额缺口兜底(与 TDX 快照同源, 零网络)。
+    """
+    try:
+        import os as _os
+        import struct as _st
+
+        _mkt = "bj" if code.startswith(("92", "8", "4", "43", "83", "87")) else ("sh" if code.startswith(("6", "9")) else "sz")
+        _path = _os.path.join(r"C:\new_tdx64\vipdoc", _mkt, "lday", f"{_mkt}{code}.day")
+        with open(_path, "rb") as _f:
+            _f.seek(-32, 2)
+            _rec = _f.read(32)
+        if len(_rec) < 32:
+            return {}
+        _date = _st.unpack_from("<I", _rec, 0)[0]
+        _open = _st.unpack_from("<I", _rec, 4)[0] / 100.0
+        _high = _st.unpack_from("<I", _rec, 8)[0] / 100.0
+        _low = _st.unpack_from("<I", _rec, 12)[0] / 100.0
+        _close = _st.unpack_from("<I", _rec, 16)[0] / 100.0
+        if _close <= 0:
+            return {}
+        _amount = _st.unpack_from("<f", _rec, 20)[0]  # 元
+        _volume = _st.unpack_from("<I", _rec, 24)[0]  # 股
+        return {
+            "price": _close,
+            "open": _open,
+            "high": _high,
+            "low": _low,
+            "amount_wan": (_amount / 1e4) if _amount and _amount > 0 else 0.0,
+            "volume_hand": (_volume / 100.0) if _volume and _volume > 0 else 0.0,
+            "date": _date,
+        }
+    except Exception as _e:
+        _debug_log(f"get_tdx_day_tail ({code}): {_e}")
+        return {}
+
+
 
 
 

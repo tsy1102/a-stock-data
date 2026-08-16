@@ -402,12 +402,19 @@ def get_canonical_stock_data(code: str, force_realtime: bool = False) -> Any:
                     field_sources[_k] = "realtime:push2delay:batch"
             _debug_log(f"get_canonical_stock_data batch prefetch hit ({code_str})")
         # L1: TDX 实时——V17.0 修复: prefetch 命中后跳过(原无条件执行, 35 只批量白做 35 次 TCP)
-        if not _batch_hit:
+        # V17.0.1c: 批量命中时批量数据无 OHLC(ulist 仅 15 精选字段) → OHLC 缺口补 TDX 快照
+        _need_ohlc = not (rt_quote.get("open") and rt_quote.get("high") and rt_quote.get("low"))
+        if not _batch_hit or _need_ohlc:
             try:
                 from core.tdx_client import tdx_get_quote_full
 
                 _tdx = tdx_get_quote_full(code_str) or {}
-                if _tdx.get("price"):
+                if _batch_hit and _need_ohlc:
+                    for _k in ("open", "high", "low", "last_close"):
+                        if _tdx.get(_k) not in (None, 0, "", "0", "0.0"):
+                            rt_quote[_k] = _tdx[_k]
+                            field_sources[_k] = "realtime:tdx"
+                elif _tdx.get("price"):
                     rt_quote = _tdx
                     for _k in _tdx:
                         field_sources[_k] = "realtime:tdx"
@@ -580,11 +587,20 @@ def get_canonical_stock_data(code: str, force_realtime: bool = False) -> Any:
     # V15.4: 已在 L1/L2/L3 标记 source, 这里仅做字段清洗
     # ─────────────────────────────────────────────────────────
     def _extract_with_source(field_name, rt_default=None, zhb_default=None):
-        """V15.4: 提取字段并按 source 优先级处理。"""
-        if rt_quote.get(field_name) not in (None, 0, '', '0', '0.0') and need_realtime_quote:
+        """V15.4: 提取字段并按 source 优先级处理。
+
+        V17.0.1c(2026-08-16): 去掉 need_realtime_quote 门控——休市/盘前 rt_quote
+        仍来自 TDX 快照(最近交易日), 值正确; 原门控导致休市时 open/high/low
+        只从 zhb 取(ZHB 无 OHLC) → 报告 0.00 元。rt_quote 有值优先, zhb 兜底。
+        V17.0.1d(2026-08-16): zhb 分支改用 zhb_default——原用 field_name 查
+        zhb_dict, 而 amount_wan 的 zhb 键是 'amount'(字段名查不到) → 成交额恒 0。
+        """
+        if rt_quote.get(field_name) not in (None, 0, '', '0', '0.0'):
             return _safe_float(rt_quote.get(field_name)), field_sources.get(
                 field_name, "realtime:unknown"
             )
+        if zhb_default not in (None, 0, '', '0', '0.0'):
+            return _safe_float(zhb_default), "zhb:t-1"
         if zhb_dict.get(field_name) not in (None, 0, '', '0', '0.0'):
             return _safe_float(zhb_dict.get(field_name)), "zhb:t-1"
         return _safe_float(rt_default if rt_default is not None else 0), "missing"
@@ -611,9 +627,33 @@ def get_canonical_stock_data(code: str, force_realtime: bool = False) -> Any:
     field_sources["high"] = field_sources.get("high", price_src)
     low_p, _ = _extract_with_source("low", rt_quote.get("low"), zhb_dict.get("low"))
     field_sources["low"] = field_sources.get("low", price_src)
+    # V17.0.1d: 休市/盘前 OHLC 缺口 → TDX 本机 .day 兜底(零网络, 与 TDX 快照同源)
+    if not (open_p and high_p and low_p):
+        try:
+            from stock_common.sc_datasource import get_tdx_day_tail
+
+            _day = get_tdx_day_tail(code_str)
+            if _day:
+                if not open_p:
+                    open_p = _safe_float(_day.get("open"))
+                    field_sources["open"] = "tdx:.day"
+                if not high_p:
+                    high_p = _safe_float(_day.get("high"))
+                    field_sources["high"] = "tdx:.day"
+                if not low_p:
+                    low_p = _safe_float(_day.get("low"))
+                    field_sources["low"] = "tdx:.day"
+        except Exception as _e:
+            _debug_log(f"get_canonical_stock_data .day ohlc fallback error: {_e}")
     prev_close, _ = _extract_with_source(
         "prev_close", rt_quote.get("last_close"), zhb_dict.get("prev_close")
     )
+    # V17.0.1c: TDX/zhb 均无昨收(TDX 快照无 last_close)时, 用 price 与 change_pct 反算
+    if not prev_close and price and change_pct:
+        try:
+            prev_close = _safe_float(price / (1 + change_pct / 100.0))
+        except (ZeroDivisionError, TypeError):
+            prev_close = 0
     field_sources["prev_close"] = field_sources.get("prev_close", price_src)
     amount_wan, amount_src = _extract_with_source(
         "amount_wan", rt_quote.get("amount_wan"), zhb_dict.get("amount")

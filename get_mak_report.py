@@ -1440,14 +1440,17 @@ async def generate_sector_report(output_path):
             L(f"  {'-'*70}")
             for item in zt_list[:30]:
                 fund_yi = item.get('limit_fund', 0) / 1e8 if item.get('limit_fund', 0) else 0
-                # V16.4.1: 封板时间修复——push2ex first_limit_time 为 5 位字符串(如 "92500"),
-                # 原字符串切片 fbt[:2]:fbt[2:4] 得到 "92:50" 错位。统一转 int 再按 HHMM 拆。
-                fbt_raw = item.get('first_limit_time', '')
+                # H2(审查 2026-08-16): ths 优先源输出 first_time(已格式化 HH:MM:SS),
+                # 东财 push2ex 输出 first_limit_time(5 位串 "92500")——双键兼容;
+                # ths 路径直接显示格式化时间, 东财路径按 HHMM 拆
+                fbt_raw = item.get('first_limit_time', '') or item.get('first_time', '')
                 try:
                     _fbt_int = int(fbt_raw) if fbt_raw not in ("", None) else 0
                 except (TypeError, ValueError):
                     _fbt_int = 0
-                if _fbt_int > 0:
+                if ":" in str(fbt_raw):
+                    fbt_fmt = str(fbt_raw)
+                elif _fbt_int > 0:
                     fbt_h = _fbt_int // 10000
                     fbt_m = (_fbt_int % 10000) // 100
                     fbt_fmt = f"{fbt_h:02d}:{fbt_m:02d}"

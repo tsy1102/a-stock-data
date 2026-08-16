@@ -2,6 +2,7 @@
 
 > 适用于:Windows 桌面版 Agent(原生执行 PowerShell)
 > 适用范围:本仓库根目录及其全部子目录
+> **静态上下文(必读, 减少重复探索)**: docs/PROJECT_CONTEXT.md——项目背景/架构/规范/约束; 字段类动态细节查 field_dict/script_data_dict
 > 版本:v1.2(V16.4.1 重构:合并落盘规则、清理过时内容与已完成待办)
 
 ---

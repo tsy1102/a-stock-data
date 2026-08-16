@@ -1224,7 +1224,7 @@ async def generate_report_async(session, code, output_path, ind_comp=None, idx_q
         L(f"    今日涨停 {zt_count} 只 | 炸板 {zb_count} 只 | 跌停 {dt_count} 只 | 封板率 {success_rate:.0f}%")
 
         # 检查当前股票是否在涨停池/炸板池中
-        # V17.0.1g: 叠加同花顺增强字段(涨停原因/板型/封板率/炸板次数——东财没有的维度)
+        # V17.0.1g/h: 叠加同花顺增强字段(涨停原因/板型/封板率/炸板次数/换手/流通市值/市场类型/回封)
         for item in pool.get("limit_up_list", []):
             if item.get("code") == code:
                 _extra = ""
@@ -1238,6 +1238,20 @@ async def generate_report_async(session, code, output_path, ind_comp=None, idx_q
                     _extra += f" 炸板{item['break_times']}次"
                 if item.get("first_time"):
                     _extra += f" 首封{item['first_time']}"
+                if item.get("last_time"):
+                    _extra += f" 末封{item['last_time']}"
+                if item.get("is_again"):
+                    _extra += " 回封板"
+                _mt = item.get("market_type", "")
+                if _mt in ("GEM", "USTM", "KCB"):
+                    _extra += f" {_mt}(20/30cm 高波动)"
+                if item.get("turnover_rate"):
+                    _extra += f" 换手{_safe_float(item['turnover_rate']):.1f}%"
+                if item.get("currency_value"):
+                    _cv = _safe_float(item['currency_value']) / 1e8
+                    _extra += f" 流通{_cv:.0f}亿"
+                if item.get("order_volume"):
+                    _extra += f" 封单量{_safe_float(item['order_volume'])/1e4:.0f}万股"
                 L(f"    📌 当前股票在涨停池中！连板{item.get('limit_count',0)} 板块:{item.get('sector','')} 封板资金:{item.get('limit_fund',0):.0f}元{_extra}")
                 break
         for item in pool.get("limit_broken_list", []):

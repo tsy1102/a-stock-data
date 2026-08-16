@@ -1886,6 +1886,13 @@ print(q.code, q.price, q.change_pct)
 | high_days | 几天几板 | ✅ |
 | first_limit_up_time | **Unix 秒时间戳**（非HHMMSS，需 fromtimestamp）| ✅ |
 | is_again_limit | 是否回封 | ✅ |
+| turnover_rate | 换手率（%） | ✅ V17.0.1h |
+| currency_value | 流通市值（元） | ✅ V17.0.1h |
+| order_volume | 封单量（股） | ✅ V17.0.1h |
+| last_limit_up_time | 最后封板时间（Unix 秒时间戳） | ✅ V17.0.1h |
+| change_tag | 封板状态码（如 LIMIT_BACK=回封） | ✅ V17.0.1h |
+| market_type | 市场类型（GEM=创业板/主板/科创） | ✅ V17.0.1h |
+| is_new | 是否新股 | ✅ V17.0.1h |
 
 **热榜**（`dq.10jqka.com.cn/fuyao/hot_list_data/out/hot_list/v1/stock`）→ `ths_hot_list`：
 

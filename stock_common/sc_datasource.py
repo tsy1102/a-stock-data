@@ -3775,7 +3775,7 @@ def _tdxhy_industry_map() -> Dict[str, str]:
     return _m
 
 
-@cached(category="limit_pool", ttl_seconds=TTL["limit_pool"], trading_day=True)
+@cached(category="limit_pool_v2", ttl_seconds=TTL["limit_pool"], trading_day=True)
 @requires_push2  # V17.0.1g: 涨停池同花顺优先, 炸板/跌停池仍走 push2ex → 保留审计
 def get_limit_pool_summary(date_str: str = "") -> Dict[str, Any]:
     """获取打板数据汇总（涨停池+炸板池+跌停池）
@@ -3832,7 +3832,7 @@ def get_limit_pool_summary(date_str: str = "") -> Dict[str, Any]:
 # ═══════════════════════════════════════════════════════════
 
 
-@cached(category="limit_pool", ttl_seconds=TTL["limit_pool"], trading_day=True)
+@cached(category="limit_pool_v2", ttl_seconds=TTL["limit_pool"], trading_day=True)
 def ths_limit_up_pool(date_str: str = "") -> List[Dict[str, Any]]:
     """同花顺涨停揭秘（涨停原因 + 封板质量增强源）。
 
@@ -3842,7 +3842,11 @@ def ths_limit_up_pool(date_str: str = "") -> List[Dict[str, Any]]:
     - 封板成功率（seal_rate）
     - 炸板次数（break_times）
 
-    作为东财涨停池的 fallback：东财接口失败时调用同花顺获取基础数据。
+    V17.0.1g(2026-08-16): 升格为涨停池**优先源**(同花顺优先, push2ex 兜底);
+    空日期自动回退最近交易日(休市传当日返回空)。
+    V17.0.1h(2026-08-16): 新增 7 字段(turnover_rate/currency_value/order_volume/
+    last_time/change_tag/market_type/is_new——同一次请求已返回, 零额外压力);
+    **缓存 category 升 limit_pool_v2**(旧 pickle 无新字段, 强制失效)。
 
     Args:
         date_str: 交易日，格式 YYYYMMDD
@@ -3891,6 +3895,8 @@ def ths_limit_up_pool(date_str: str = "") -> List[Dict[str, Any]]:
                         _lc = int(_n)
                     except (ValueError, TypeError):
                         _lc = 1
+            # V17.0.1h: 附加字段(同一次请求已返回, 零额外压力)——打板质量/弹性/风险分层
+            _lbt = it.get("last_limit_up_time")
             out.append(
                 {
                     "code": it.get("code"),
@@ -3909,7 +3915,16 @@ def ths_limit_up_pool(date_str: str = "") -> List[Dict[str, Any]]:
                     "first_time": (
                         datetime.fromtimestamp(int(ft)).strftime("%H:%M:%S") if ft else ""
                     ),
+                    "last_time": (
+                        datetime.fromtimestamp(int(_lbt)).strftime("%H:%M:%S") if _lbt else ""
+                    ),
                     "is_again": it.get("is_again_limit"),
+                    "turnover_rate": _safe_float(it.get("turnover_rate")),
+                    "currency_value": _safe_float(it.get("currency_value")),  # 元
+                    "order_volume": it.get("order_volume"),  # 股
+                    "change_tag": it.get("change_tag", ""),
+                    "market_type": it.get("market_type", ""),
+                    "is_new": it.get("is_new"),
                 }
             )
         return out

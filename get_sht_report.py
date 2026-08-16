@@ -268,16 +268,21 @@ async def generate_report_async(session, code, output_path, ind_comp=None, idx_q
     stock_name = cdata.name or info.get('name', 'N/A')
     stock_industry = cdata.industry or info.get('industry', 'N/A')
 
-    L(f"  股票名称: {stock_name}")
-    L(f"  股票代码: {cdata.code}")
+    # V17.0.1b(2026-08-16): 一章改为 md 表格(2 列表格, 原逐行'字段: 值'在 md 无法表格化)
+    L("| 项目 | 内容 |")
+    L("|---|---|")
+    L(f"| 股票名称 | {stock_name} |")
+    L(f"| 股票代码 | {cdata.code} |")
     # V16.3.3 (2026-08-10 字典 12.15.8): ST/次新风险信号（canonical is_st/is_new——结构化名称）
     if getattr(cdata, "is_st", False):
-        L(f"  ⚠️ 风险标记: **ST/*ST**（退市风险——涨跌停按板块阈值，短线注意连续跌停风险）")
+        L(f"| ⚠️ 风险标记 | **ST/*ST**（退市风险——涨跌停按板块阈值，短线注意连续跌停风险） |")
     if getattr(cdata, "is_new", False):
-        L(f"  🆕 次新标记: 上市 ≤5 日（临时前缀已忽略——涨跌停规则可能不同）")
-    L(f"  所属板块: {stock_industry}")
-    L(f"  总股本:   {cdata.total_shares_wan/1e4:.2f}亿股")
-    L(f"  流通股本: {cdata.float_shares_wan/1e4:.2f}亿股")
+        L(f"| 🆕 次新标记 | 上市 {getattr(cdata, 'listing_days', '?')} 日（临时前缀已忽略——涨跌停规则可能不同） |")
+    L(f"| 所属板块 | {stock_industry} |")
+    L(f"| 总股本 | {cdata.total_shares_wan/1e4:.2f}亿股 |")
+    L(f"| 流通股本 | {cdata.float_shares_wan/1e4:.2f}亿股 |")
+    L(f"| 上市日期 | {info.get('listing_date', 'N/A')} |")
+    L(f"| 52周区间 | {cdata.high_52w:.2f} ~ {cdata.low_52w:.2f} |")
 
     ld = info.get("list_date", "")
     if ld and len(ld) >= 8: ldf = f"{ld[:4]}-{ld[4:6]}-{ld[6:8]}"
@@ -298,27 +303,30 @@ async def generate_report_async(session, code, output_path, ind_comp=None, idx_q
     if cdata.price > 0 or cdata.change_pct != 0:
         if cdata.time_anchor == "t-1":
             L("  ⚠️ 盘前/休市模式，以下行情数据基于上一交易日收盘数据")
-        
-        L(f"  当前价:   {cdata.price:.2f}元")
-        L(f"  涨跌幅:   {cdata.change_pct:.2f}%")
-        L(f"  今开:     {cdata.open:.2f}元  昨收: {cdata.prev_close:.2f}元")
-        L(f"  最高:     {cdata.high:.2f}元  最低: {cdata.low:.2f}元")
-        L(f"  成交额:   {cdata.amount_wan/10000:.2f}亿元  换手率: {cdata.turnover_pct:.2f}%")
+        # V17.0.1b(2026-08-16): 二章行情改为 md 表格
+        L("")
+        L("| 指标 | 数值 |")
+        L("|---|---|")
+        L(f"| 当前价 | {cdata.price:.2f} 元 |")
+        L(f"| 涨跌幅 | {cdata.change_pct:.2f}% |")
+        L(f"| 今开 / 昨收 | {cdata.open:.2f} / {cdata.prev_close:.2f} 元 |")
+        L(f"| 最高 / 最低 | {cdata.high:.2f} / {cdata.low:.2f} 元 |")
+        L(f"| 成交额 / 换手率 | {cdata.amount_wan/10000:.2f} 亿元 / {cdata.turnover_pct:.2f}% |")
         # V16.2.3 恢复: 振幅/涨停价/跌停价（V16.1 重构时丢失，对照 v9.6 模板；vol_ratio 未入 canonical 跳过）
         if cdata.high > 0 and cdata.low > 0 and cdata.prev_close > 0:
             _amp = (cdata.high - cdata.low) / cdata.prev_close * 100
-            L(f"  振幅:     {_amp:.2f}%")
+            L(f"| 振幅 | {_amp:.2f}% |")
         _limit_up = getattr(cdata, 'limit_up', 0) or 0
         _limit_dn = getattr(cdata, 'limit_down', 0) or 0
         if _limit_up > 0 or _limit_dn > 0:
-            L(f"  涨停价:   {_limit_up:.2f}元  跌停价: {_limit_dn:.2f}元")
+            L(f"| 涨停价 / 跌停价 | {_limit_up:.2f} / {_limit_dn:.2f} 元 |")
         elif cdata.prev_close > 0:
             # V16.2.14: push2 f51/f52 盘中可能为 0（v9.6 用腾讯有值）→ 按板块阈值计算兜底
             _th = limit_pct_for(code, stock_name)
-            L(f"  涨停价:   {cdata.prev_close * (1 + _th / 100):.2f}元  跌停价: {cdata.prev_close * (1 - _th / 100):.2f}元（按{_th:.0f}%阈值推算）")
-        L(f"  总市值:   {cdata.mcap_yi:.2f}亿元  流通市值: {cdata.float_mcap_yi:.2f}亿元")
+            L(f"| 涨停价 / 跌停价 | {cdata.prev_close * (1 + _th / 100):.2f} / {cdata.prev_close * (1 - _th / 100):.2f} 元 |")
+        L(f"| 总市值 / 流通市值 | {cdata.mcap_yi:.2f} / {cdata.float_mcap_yi:.2f} 亿元 |")
         _pe_str = f"{cdata.pe_ttm:.2f}" if cdata.pe_ttm > 0 else "N/A（亏损）"
-        L(f"  PE(TTM):  {_pe_str}  PE(动): {cdata.pe_dynamic:.2f}  PB: {cdata.pb:.2f}")
+        L(f"| PE(TTM) / PE(动) / PB | {_pe_str} / {cdata.pe_dynamic:.2f} / {cdata.pb:.2f} |")
     else:
         L("  行情数据获取失败")
 

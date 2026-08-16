@@ -1198,7 +1198,7 @@ async def generate_sector_report(output_path):
             L(f"  🌐 北向资金: 净流入 {_hsgt.get('total', 0):.2f} 亿(沪 {_hsgt.get('hgt', 0):.2f} | 深 {_hsgt.get('sgt', 0):.2f}) 外资情绪{_hsig}")
             # M13 修复(2026-08-15 二审): 数据降级标记(与 med 一致, 2026-08-12 深股通 379.75 亿异常)
             if _hsgt.get("data_quality") == "degraded":
-                L(f"  ⚠️ 北向数据降级: {_hsgt.get('warning', '源数据异常')}")
+                L("  ⚠️ 北向资金数据源存疑(异常波动), 仅供参考")
         else:
             L("  🌐 北向资金: (数据获取失败)")
     except Exception as _e:

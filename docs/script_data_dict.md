@@ -93,10 +93,10 @@
 
 | 源 | 代表函数 | 脚本 |
 |:---|:---|:---|
-| 东财 push2ex | get_limit_up_pool/get_limit_broken_pool/get_limit_down_pool/get_yesterday_limit_pool | mak B/B+ |
+| 东财 push2ex | get_limit_broken_pool/get_limit_down_pool/get_yesterday_limit_pool(**炸板/跌停兜底, V17.0.1g 涨停池已改同花顺优先**) | mak B/B+ |
 | 东财 datacenter | get_em_industry_l2_data/get_holder_structure/get_margin_trading/get_block_trade/get_dragon_tiger_board/get_lockup_expiry/**get_yjyg_all(业绩预告全市场分页, V17.0)**/**eastmoney_datacenter(+page_index 参数)** | sht/med/lng/mak/val 策略22 |
 | 东财 push2delay | **get_em_quote_full_delay**(f162/163/167/174/175/f137-146 全字段)/prefetch_quote_batch(ulist)/**get_em_batch_quotes(+f62/f66 主力净, V17.0 2026-08-15)** | canonical/sht 批量预取/mak 全市场主力 |
-| 同花顺 | **get_ths_hot_raw(getharden 唯一入口, V17.0 三版合一)**/ths_hot_list/**get_eps_forecast(本机 ProfitForecast 优先, V17.0)** | val/mak/sht/lng |
+| 同花顺 | **get_ths_hot_raw(getharden 唯一入口, V17.0 三版合一)**/ths_hot_list/**get_eps_forecast(本机 ProfitForecast 优先, V17.0 |)**/**ths_limit_up_pool(涨停池优先源, V17.0.1g, 17 字段含涨停原因/板型/封板率/炸板/换手/流通市值; 缓存 limit_pool_v2)** | val/mak/sht/lng |
 | 财联社 | get_cls_market_emotion/cls_telegraph | mak A(主)/val 08/全脚本 |
 | 开盘啦 | get_kph_limit_ladder | mak B+ |
 | 巨潮 | **get_strategic_announcements(新增 keywords 参数, V17.0 下沉 mak 异动公告)**/cninfo_irm | mak/sht/med/lng |
@@ -165,6 +165,7 @@
 | 主力净流入 | 二章/七章**统一 f137+f140(主力=特大+大单, V17.0 定案)**; T日主力净买入量=TDX 0x0011(非实时 0 时跳过显示) |
 | PE(动) | cdata.pe_dynamic=push2delay f162(真动态 15.55, 腾讯静态不再覆盖) |
 | 封单 | 盘中实时估算=买一量×涨停价(合理); ZHB 封单额三日滚动为增强候选 |
+| 打板(涨停池, V17.0.1g/h) | **get_limit_pool_summary → 同花顺优先**(ths_limit_up_pool 17 字段: 原因/板型/封板率/炸板次数/首末封/回封/换手/流通市值/市场类型/新股, 缓存 limit_pool_v2) → 东财 push2ex 兜底; 板块分布=TDX tdxhy 一级行业注入(零网络); 炸板/跌停池保持东财; 昨日晋级率=东财 getYesterdayZTPool(唯一源, 含今日表现) |
 | 多评委 | **sc_render.render_multi_school_scores(V17.0)** |
 | 行业 | 东财申万二级 → TDX → **881 段过滤** |
 

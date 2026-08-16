@@ -1264,23 +1264,11 @@ async def generate_report_async(session, code, output_path, ind_comp=None, idx_q
         _debug_log(f"sht limit_pool: {_e}")
         L("    (打板数据获取失败)")
 
-    # V16.1.7: 盘口异动个股检测（字典 §12.10.1 levistock 实测可用）+ AxData 短线指标（§12.12.1）
+    # V16.1.7: AxData 短线指标（字典 §12.12.1，消费项目 zhb.zip）
+    # V17.0.1f(2026-08-16): 移除盘口异动 4 类扫描——push2ex 接口必要性不成立,
+    # 用户原则: 5 大脚本不扩张东财 push 接口; 该数据无增量价值, 不再采集
     try:
-        from stock_common import get_stock_changes, get_shortline_indicators
-
-        # 盘口异动（火箭发射/大笔买入/封涨停板/有大买盘 4 类）
-        # V17.0.1e: change_type 为码, 中文名在此映射; 时间含数据日期(休市=最近交易日盘中快照)
-        _ct_map = {"8201": "火箭发射", "8193": "大笔买入", "8205": "封涨停板", "64": "有大买盘"}
-        for _ct, _ctn in _ct_map.items():
-            try:
-                _chg_list = get_stock_changes(_ct)
-                _hit = next((c for c in _chg_list if c.get("code") == code), None)
-                if _hit:
-                    _t = _hit.get("time", "")
-                    _t_fmt = f"{_t[:2]}:{_t[2:4]}:{_t[4:6]}" if len(_t) == 6 else _t
-                    L(f"    🚀 盘口异动[{_ctn}]: 时间{_t_fmt}({_hit.get('date','')}) 涨幅{_safe_float(_hit.get('change_pct',0)):+.2f}% 触发价{_safe_float(_hit.get('price',0)):.2f}元")
-            except Exception as _e:
-                _debug_log(f"sht stock_changes {_ct}: {_e}")
+        from stock_common import get_shortline_indicators
 
         # AxData 短线指标 34 字段（消费项目 zhb.zip，零下载）
         try:

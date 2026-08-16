@@ -1469,11 +1469,12 @@ async def generate_sector_report(output_path):
         _debug_log(f"mak limit_pool: {_e}")
         L("  (打板数据获取失败)")
 
-    # V16.1.7: 开盘红涨停天梯 + 东财盘口异动（字典 §12.10.4/§12.10.1 实测可用）
+    # V16.1.7: 开盘红涨停天梯（字典 §12.10.4 实测可用）
+    # V17.0.1f(2026-08-16): 移除盘口异动段——用户原则: 5 大脚本零东财 push2ex 接口
     try:
-        from stock_common import get_kph_limit_ladder, get_stock_changes
+        from stock_common import get_kph_limit_ladder
         L(f"\n{'='*90}")
-        L("【B+. 涨停天梯与盘口异动（开盘红/东财）】")
+        L("【B+. 涨停天梯（开盘红）】")
         L(f"{'─'*90}")
         # V16.4.1: 提前初始化——import/接口失败时 _ladder 未定义, L1562 引用会 NameError 击穿
         _ladder = []
@@ -1489,21 +1490,8 @@ async def generate_sector_report(output_path):
                 L(f"  {str(s.get('code','')):<8} {str(s.get('name','')):<10} {s.get('limit_count',0):>4} {_one:>6} {_pop:>4} {s.get('plate_limit_up_count',0):>6} {_amt:>10.2f}")
         else:
             L("  (涨停天梯数据获取失败)")
-        # 盘口异动（火箭发射 8201）
-        _changes = get_stock_changes("8201")
-        if _changes:
-            # V16.4.1: 原引用未赋值的 _abnormal_codes(L1577 才赋值) → 每次必 NameError 被吞,
-            # B+ 盘口异动段永不显示; 改为现算
-            _codes_abn = set(r["code"] for r in results["已触发"] + results["严重"])
-            _rel = [c for c in _changes if c.get("code") in _codes_abn] or _changes[:15]
-            _rel = _rel[:15]
-            L(f"\n  🚀 盘口异动·火箭发射 {len(_changes)} 只（TOP15 按名称）:")
-            for c in _rel[:15]:
-                L(f"    {c.get('code','')} {c.get('name','')} 时间{c.get('time','')} 涨幅{_safe_float(c.get('change_pct',0)):+.2f}%")
-        else:
-            L("  (盘口异动数据获取失败)")
     except Exception as _e:
-        _debug_log(f"mak ladder/changes: {_e}")
+        _debug_log(f"mak ladder: {_e}")
 
     L(f"\n{'='*90}")
     # V16.4.0: 同花顺独家交叉验证（原 G 段移入——涨停明细末尾备注）

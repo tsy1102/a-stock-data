@@ -1185,8 +1185,8 @@ async def generate_sector_report(output_path):
     )
     _lbp = _zt_count
     L(f"\n{'='*90}")
-    L("【A. 全市场情绪监测看板】")
-    L(f"{'─'*90}")
+    L("## 【A. 全市场情绪监测看板】")
+    L(f"{'---'}")
     # V17.0(2026-08-15): 北向宏观资金 + 两融杠杆情绪(A 段增强, P4)
     try:
         from stock_common.sc_datasource import get_hsgt_macro_flow
@@ -1338,7 +1338,7 @@ async def generate_sector_report(output_path):
         L(
             f"  📊 多头异动股近5日涨幅为正的比例: {_pos_ratio:.0f}%（{min(len(_up_abn),30)}只样本，现状统计非前瞻回测）"
         )
-    L(f"{'─'*90}")
+    L(f"{'---'}")
     L(
         f"  扫描汇总: 卡异动{len(results['卡异动'])}只 | 已触发{len(results['已触发'])}只 | 严重{len(results['严重'])}只"
     )
@@ -1394,8 +1394,8 @@ async def generate_sector_report(output_path):
             L(f"    💥 {r['name']}({r['code']})  {r['desc']}")
     # 板块-异动交叉分析
     L(f"\n{'='*90}")
-    L("【B. 涨停池扫描（打板情绪看板）】")
-    L(f"{'─'*90}")
+    L("## 【B. 涨停池扫描（打板情绪看板）】")
+    L(f"{'---'}")
     try:
         # V16.3.3 (2026-08-10 字典 12.15.5): 涨停数三源互校——财联社=KPL=复盘啦
         # （2026-08-10 实测 99=99=99 一致）；push2ex 明细仍作主数据源
@@ -1477,8 +1477,8 @@ async def generate_sector_report(output_path):
     try:
         from stock_common import get_kph_limit_ladder
         L(f"\n{'='*90}")
-        L("【B+. 涨停天梯（开盘红）】")
-        L(f"{'─'*90}")
+        L("## 【B+. 涨停天梯（开盘红）】")
+        L(f"{'---'}")
         # V16.4.1: 提前初始化——import/接口失败时 _ladder 未定义, L1562 引用会 NameError 击穿
         _ladder = []
         _ladder = get_kph_limit_ladder()
@@ -1515,8 +1515,8 @@ async def generate_sector_report(output_path):
             for _h in _ths_only[:10]:
                 L(f"  {_h.get('code',''):<8} {_h.get('name',''):<10}{_name_mark(_h.get('name',''))} {_safe_float(_h.get('zhangfu',0)):>+7.2f}% {str(_h.get('reason',''))[:30]:<30}")
 
-    L("【C. 板块-异动集中度分析】")
-    L(f"{'─'*90}")
+    L("## 【C. 板块-异动集中度分析】")
+    L(f"{'---'}")
     sectors = get_all_sectors()
     scored = compute_rotation_scores(sectors)
     sorted_sectors = sorted(sectors, key=lambda x: x.get("score", 0), reverse=True)
@@ -1626,8 +1626,8 @@ async def generate_sector_report(output_path):
         _ann_dt = time.time() - _ann_t0
         print(f"  公告查询耗时: {_ann_dt:.2f}s", flush=True)
         L(f"\n{'='*90}")
-        L("【近3日异动回溯（高偏离值个股，可能近日触发过异动）】")
-        L(f"{'─'*90}")
+        L("## 【近3日异动回溯（高偏离值个股，可能近日触发过异动）】")
+        L(f"{'---'}")
         L(f"  {'代码':<8} {'名称':<12} {'3日偏离':>9} {'10日偏离':>9} {'20日偏离':>9} {'公告':<12}")
         L(f"  {'-'*75}")
         _shown = 0
@@ -1647,8 +1647,8 @@ async def generate_sector_report(output_path):
         L("  \n  💡 注: 回溯基于当日快照的10日/20日偏离值反推，非精确历史回放")
 
     L(f"\n{'='*90}")
-    L("【D. 行业轮动强度扫描】")
-    L(f"{'─'*90}")
+    L("## 【D. 行业轮动强度扫描】")
+    L(f"{'---'}")
     top10 = sorted_sectors[:10]
     L(f"  行业总数: {len(sectors)}个")
     L(
@@ -1678,8 +1678,8 @@ async def generate_sector_report(output_path):
     else:
         L("\n  ⚠️ 无法获取行业板块数据")
     L(f"\n{'='*90}")
-    L("【E. TOP10 板块深度分析（涨停梯队 + 龙头股）】")
-    L(f"{'─'*90}")
+    L("## 【E. TOP10 板块深度分析（涨停梯队 + 龙头股）】")
+    L(f"{'---'}")
     top_analysis = analyze_top_stocks(top10)
     for ta in top_analysis:
         nm = normalize_industry(ta["sector"])
@@ -1712,8 +1712,8 @@ async def generate_sector_report(output_path):
             _items.append(f"{_st['name']}({_st['code']}, {_label})")
         L(f"    龙头: {' | '.join(_items)}")
     L(f"\n{'='*90}")
-    L("【F. 资金流验证：真金白银 vs 虚涨】")
-    L(f"{'─'*90}")
+    L("## 【F. 资金流验证：真金白银 vs 虚涨】")
+    L(f"{'---'}")
     # V16.4.0: 按评分筛选（原 sectors[:50] 前 50 高评分板块可能全为净流入 → 虚涨段恒空）
     _scored = [s for s in sectors if s.get("score", 0) >= 30] or sectors
     with_money = [s for s in _scored if s.get("main_inflow", 0) > 0]

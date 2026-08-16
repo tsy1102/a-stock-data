@@ -159,8 +159,8 @@ async def generate_report_async(session, code, output_path, ind_comp=None):
         L("  ℹ️ 盘后收盘：数据为今日收盘快照，基本面数据不受影响")
     L("")
 
-    L("\n【一、企业基本盘与绝对估值锚点】")
-    L("─" * 72)
+    L("\n## 【一、企业基本盘与绝对估值锚点】")
+    L("---")
 
     # V11.5: 优先使用 data_provider 统一数据中心层获取综合数据
     # V17.0 R3: get_stock_composite_async 链已删除(220 行)——统一走
@@ -443,8 +443,8 @@ async def generate_report_async(session, code, output_path, ind_comp=None):
         _debug_log(f"lng industry_compare error: {_e}")
 
 
-    L("\n【二、跨期财务纵深与长效业绩验证 (近8个报告期)】")
-    L("─" * 72)
+    L("\n## 【二、跨期财务纵深与长效业绩验证 (近8个报告期)】")
+    L("---")
     financials = await get_sina_financial_report_async(session, code, num_periods=8)
     if financials:
         L(f"  {'报告期':<12} {'营业总收入(亿)':>10} {'净利润(亿)':>13}")
@@ -536,8 +536,8 @@ async def generate_report_async(session, code, output_path, ind_comp=None):
         except Exception as _e:
             _debug_log(f"lng cagr_calc error: {_e}")
 
-    L("\n【三、财务健康度排雷（现金流验证与商誉预警）】")
-    L("─" * 72)
+    L("\n## 【三、财务健康度排雷（现金流验证与商誉预警）】")
+    L("---")
     _tdx_ocf = 0.0; _tdx_np = 0.0
     # V16.1: 0x0010 财务快照存局部变量，供下方"核心财务指标"复用（避免重复 TCP 请求）
     _tdx_fi_snapshot = None
@@ -639,8 +639,8 @@ async def generate_report_async(session, code, output_path, ind_comp=None):
             L(f"    {p}")
     L("\n  💡 长线排雷：持续的经营现金净流入是检验账面利润真实性的最佳标准，高商誉+低现金含量=高危组合。")
 
-    L("\n【四、未来三年机构一致预期与 PEG 均值回归模型】")
-    L("─" * 72)
+    L("\n## 【四、未来三年机构一致预期与 PEG 均值回归模型】")
+    L("---")
     # H4 修复(2026-08-15 二审): 本地 ProfitForecast O(1) 优先(零网络), 未命中走网络兜底——与一章重复块合并
     from stock_common.sc_datasource import get_eps_forecast as _eps_local
     df_eps = await asyncio.to_thread(_eps_local, code)
@@ -712,8 +712,8 @@ async def generate_report_async(session, code, output_path, ind_comp=None):
     else:
         L("  无足够机构覆盖（冷门标的，长线投研需完全依赖自主财务尽调）。")
 
-    L("\n【五、长效股东回报属性 (分红与股息历史)】")
-    L("─" * 72)
+    L("\n## 【五、长效股东回报属性 (分红与股息历史)】")
+    L("---")
     # 股息率：data_provider优先，其次zhb展示
     _zhb_div_yield_5 = _zhb_data.get("dividend_yield", 0) if _zhb_data else 0
     _dp_div_yield_5 = _dp_composite.get("dividend_yield", 0) if _dp_composite else 0
@@ -774,8 +774,8 @@ async def generate_report_async(session, code, output_path, ind_comp=None):
         L("  分红数据获取失败（TDX 接口暂不可用），未能确认分红历史。" if div is None else
           "  暂无任何分红派息记录 (一毛不拔，纯博弈型或极早期成长型企业，长线防御力弱)。")
 
-    L("\n【六、长线筹码沉淀与机构持股倾向】")
-    L("─" * 72)
+    L("\n## 【六、长线筹码沉淀与机构持股倾向】")
+    L("---")
     st = await asyncio.to_thread(get_holder_structure, code)
     if st:
         L(f"  数据来源: 十大流通股东季报（最近 {len(st)} 期）")
@@ -828,8 +828,8 @@ async def generate_report_async(session, code, output_path, ind_comp=None):
     else:
         L("  机构持股数据获取失败。")
 
-    L("\n【七、达摩克利斯之剑：长周期限售股解禁压力】")
-    L("─" * 72)
+    L("\n## 【七、达摩克利斯之剑：长周期限售股解禁压力】")
+    L("---")
     lockup = await get_lockup_expiry_async(session, code, days=730)
     if lockup:
         total_upcoming = sum(h["shares"] for h in lockup)
@@ -846,8 +846,8 @@ async def generate_report_async(session, code, output_path, ind_comp=None):
     else:
         L("  ✅ 未来 2 年内无解禁压力，全流通或结构稳定。")
 
-    L("\n【八、战略级别重大公告 (回购/增持/员工持股/年报)】")
-    L("─" * 72)
+    L("\n## 【八、战略级别重大公告 (回购/增持/员工持股/年报)】")
+    L("---")
     anns = await get_strategic_announcements_async(session, code)
     if anns:
         for i, a in enumerate(anns[:12], 1):
@@ -860,8 +860,8 @@ async def generate_report_async(session, code, output_path, ind_comp=None):
     else:
         L("  近期无过滤后的战略级别重大公告。")
 
-    L("\n【九、机构长效共识度与投研透明度】")
-    L("─" * 72)
+    L("\n## 【九、机构长效共识度与投研透明度】")
+    L("---")
     reports = await get_reports_async(session, code, max_pages=5)
     if reports:
         buy_count, add_count = 0, 0
@@ -926,8 +926,8 @@ async def generate_report_async(session, code, output_path, ind_comp=None):
 
         _event_items = scan_event_risk(lockup=_lk, announcement_titles=_ann_titles, pledge_hits=_pledge_hits)
         _risk = combine_risk([], _event_items)
-        L("\n【九之二、风险扫描（解禁/减持/质押）】")
-        L("─" * 72)
+        L("\n## 【九之二、风险扫描（解禁/减持/质押）】")
+        L("---")
         for _it in _risk["items"]:
             _lv_icon = {"高": "🔴", "中": "🟡", "低": "🟢"}.get(_it["level"], "🟢")
             L(f"  {_lv_icon} {_it['name']}: {_it['text']}")
@@ -937,7 +937,7 @@ async def generate_report_async(session, code, output_path, ind_comp=None):
         _debug_log(f"lng risk engine: {_re}")
 
     # ─── 十、舆情与互动 ───
-    L("\n【十、舆情与互动】")
+    L("\n## 【十、舆情与互动】")
 
     # 财联社快讯（近2天）
     try:
@@ -996,7 +996,7 @@ async def generate_report_async(session, code, output_path, ind_comp=None):
     except Exception as _e:
         _debug_log(f"lng cninfo_irm: {_e}")
 
-    L("\n"+"─"*72); L("【仓位管理建议】"); L("─"*72)
+    L("\n"+"---"); L("## 【仓位管理建议】"); L("---")
     
     # V8.2: 使用统一评分接口
     from stock_common import ScoreData, calculate_score

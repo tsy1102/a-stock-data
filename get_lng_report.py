@@ -401,8 +401,11 @@ async def generate_report_async(session, code, output_path, ind_comp=None):
                     _ey = f"{_eps / price_today * 100:.2f}%"
         except Exception as _e:
             _debug_log(f"lng finance_info error: {_e}")
-    L(f"    市盈率 PE(TTM): {_pe:.2f}x ({_pe_src}口径; 盈利收益率粗估: {_ey})")
-    L(f"    市盈率 PE(静态): {_pe_static:.2f}x" if _pe > 0 and _pe_static > 0 else "    市盈率 PE(静态): N/A（亏损）")
+    # V17.0.1b(2026-08-16): 长线估值安全边际指标改为 md 表格
+    L("| 指标 | 数值 |")
+    L("|---|---|")
+    L(f"| 市盈率 PE(TTM) | {_pe:.2f}x ({_pe_src}口径; 盈利收益率粗估: {_ey}) |")
+    L(f"| 市盈率 PE(静态) | {_pe_static:.2f}x |" if _pe > 0 and _pe_static > 0 else "| 市盈率 PE(静态) | N/A（亏损） |")
     # PB：data_provider优先，其次zhb，最后fallback到腾讯行情
     if _dp_pb and _dp_pb > 0:
         _pb_val = _dp_pb
@@ -410,12 +413,12 @@ async def generate_report_async(session, code, output_path, ind_comp=None):
         _pb_val = _zhb_pb
     else:
         _pb_val = q.get('pb', 0)
-    L(f"    市净率 PB:      {_pb_val:.2f}x")
+    L(f"| 市净率 PB | {_pb_val:.2f}x |")
     # 股息率：data_provider优先，其次zhb
     _zhb_div_yield = _zhb_data.get("dividend_yield", 0) if _zhb_data else 0
     _show_div_yield = _dp_div if _dp_div and _dp_div > 0 else _zhb_div_yield
     if _show_div_yield > 0:
-        L(f"    股息率:        {_show_div_yield:.2f}%")
+        L(f"| 股息率 | {_show_div_yield:.2f}% |")
     
     if peer_data_lng.get("my_rank", 0) > 0 and peer_data_lng.get("industry_count", 0) > 0:
         L(f"  板块排名: 按总市值排序, 该股排名第 {peer_data_lng['my_rank']}/{peer_data_lng['industry_count']} 位")

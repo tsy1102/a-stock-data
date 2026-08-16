@@ -6439,30 +6439,65 @@ def get_stock_changes(change_type: str = "8201") -> List[Dict[str, Any]]:
     """V16.1.7: 东财盘口异动（字典 §12.10.1，levistock 实测 2782 条）。
 
     change_type: 8201 火箭发射 / 8193 大笔买入 / 8205 封涨停板 / 64 有大买盘 / 8202 快速反弹
-    返回: [{code/name/market/time/change_pct/change_type(中文)}]
+    返回: [{code/name/market/time/change_pct/price/change_type/date}]
+    V17.0.1e(2026-08-16): levistock 把原始字段 i 原样放入 change_pct——
+    实际 i 为逗号串 "涨跌幅小数,价格,涨跌幅小数"(push2ex getAllStockChanges 原始结构),
+    _safe_float 解析失败 → 涨幅恒 0。此处直接解析原始 JSON 修复。
     """
     try:
-        import levistock as lk
-        # V16.2: 进程级节流（levistock 直连东财）
-        try:
-            from stock_common.sc_network import _em_wait_process_interval
-            _em_wait_process_interval()
-        except Exception:
-            pass
-        data = lk.stock_changes_em(change_type=change_type)
-        if isinstance(data, list):
-            rows = []
-            for item in data:
-                if isinstance(item, dict):
-                    rows.append({
-                        "code": item.get("stock_code", ""),
-                        "name": item.get("stock_name", ""),
-                        "market": item.get("market", ""),
-                        "time": str(item.get("time", "")),
-                        "change_pct": _safe_float(item.get("change_pct", 0)),
-                        "change_type": item.get("change_type", ""),
-                    })
-            return rows
+        import requests
+        from stock_common import UA
+        from stock_common.stock_calendar import get_last_trading_day
+        from stock_common.sc_network import _em_wait_process_interval
+        _em_wait_process_interval()
+        _params = {
+            "type": change_type,
+            "ut": "7eea3edcaed734bea9cbfc24409ed989",
+            "pageindex": 0,
+            "pagesize": 10000,
+            "dpt": "wzchanges",
+        }
+        resp = requests.get(
+            "https://push2ex.eastmoney.com/getAllStockChanges",
+            params=_params, headers={"User-Agent": UA}, timeout=10,
+        )
+        resp.raise_for_status()
+        body = (resp.json().get("data") or {})
+        items = body.get("allstock", []) or []
+        _date = get_last_trading_day().strftime("%m-%d")
+        rows = []
+        for item in items:
+            if not isinstance(item, dict):
+                continue
+            code = str(item.get("c", ""))
+            name = str(item.get("n", ""))
+            if name.startswith("ST") or name.startswith("*ST"):
+                continue
+            tm = str(item.get("tm", ""))
+            if len(tm) == 5:
+                tm = "0" + tm
+            chg, px = 0.0, 0.0
+            _i = str(item.get("i", ""))
+            if _i and "," in _i:
+                _parts = _i.split(",")
+                try:
+                    # i 结构: 8201 火箭发射=涨幅,价格,涨幅; 8193 大笔买入/64 有大买盘=量(手),价格,涨跌幅,金额
+                    # 统一: 第三段=盘中触发时刻涨跌幅(小数→%), 第二段=触发价(实测 5 股全部自洽)
+                    chg = float(_parts[2]) * 100.0 if len(_parts) >= 3 else 0.0
+                    px = float(_parts[1]) if len(_parts) >= 2 else 0.0
+                except (ValueError, IndexError):
+                    pass
+            rows.append({
+                "code": code,
+                "name": name,
+                "market": str(item.get("m", "")),
+                "time": tm,
+                "change_pct": chg,
+                "price": px,
+                "change_type": change_type,
+                "date": _date,
+            })
+        return rows
     except Exception as _e:
         _debug_log(f"datasource get_stock_changes: {_e}")
     return []

@@ -146,8 +146,11 @@ def text_to_md(lines: List[str]) -> List[str]:
             block = []
             j = i
             # V17.0.2: 章节分隔(全角 ─ 长线)不收集进表格块; 半角 - 表内分隔线允许进块
+            # V17.0.2b: 脚本直接输出 md 后, 块边界还需终止: ## 标题行(带前缀)与 ---(3 短横装饰)
             while j < n and lines[j].strip() and not _HEADING.match(lines[j]) \
-                    and not _BORDER_OPEN.match(lines[j]) and not _SECTION_SEP.match(lines[j]):
+                    and not _BORDER_OPEN.match(lines[j]) and not _SECTION_SEP.match(lines[j]) \
+                    and not lines[j].lstrip().startswith("## ") \
+                    and lines[j].strip() != "---":
                 block.append(lines[j])
                 j += 1
             tbl_rows, rest = _space_table_to_md(block)
@@ -194,7 +197,8 @@ def _clean_text_line(ln: str) -> str:
 
 
 def render_md_report(path_md: str, lines: List[str]) -> str:
-    md_lines = text_to_md([ln for ln in lines if ln])
+    # V17.0.2b: 不过滤空行——空行是表格块收集的边界(过滤后块越过 ---/下一标题 → 列数污染 → 0 表格)
+    md_lines = text_to_md(lines)
     output = "\n".join(md_lines)
     with open(path_md, "w", encoding="utf-8") as _f:
         _f.write(output)

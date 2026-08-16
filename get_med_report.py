@@ -205,8 +205,8 @@ async def generate_report_async(session, code, output_path, ind_comp=None, hsgt=
         L("")
 
     # ─── 0. 宏观资金风向标 ───
-    L("\n【一、宏观资金面背景】")
-    L("─" * 72)
+    L("\n## 【一、宏观资金面背景】")
+    L("---")
     if hsgt is None:
         hsgt = await get_hsgt_macro_flow_async(session)
     if hsgt:
@@ -222,8 +222,8 @@ async def generate_report_async(session, code, output_path, ind_comp=None, hsgt=
         L("  (北向宏观资金流向获取失败)")
 
     # ─── 1. 基本信息与实时估值 ───
-    L("\n【二、个股基本信息与估值锚点】")
-    L("─" * 72)
+    L("\n## 【二、个股基本信息与估值锚点】")
+    L("---")
     # V15 统一数据中心：通过 get_canonical_stock_data 获取强类型标准化数据
     # V15.2 修正: async 上下文必须包 to_thread，否则阻塞主事件循环
     from core.data_provider import get_canonical_stock_data
@@ -344,8 +344,8 @@ async def generate_report_async(session, code, output_path, ind_comp=None, hsgt=
         L(_div_str)
 
     # ─── 2. 财务业绩兑现追踪 ───
-    L("\n【三、历史财务业绩兑现追踪 (近5季度)】")
-    L("─" * 72)
+    L("\n## 【三、历史财务业绩兑现追踪 (近5季度)】")
+    L("---")
     financials = await get_sina_financial_report_async(session, code)
     if financials:
         L(f"  {'报告期':<12} {'营业总收入':>11} {'净利润':>13} {'净利率':>8}")
@@ -380,8 +380,8 @@ async def generate_report_async(session, code, output_path, ind_comp=None, hsgt=
             L("  (新浪财报数据获取失败或该股暂无相关数据)")
 
     # ─── 4. 资产负债表财务健康度 ───
-    L("\n【四、资产负债表财务健康度（排雷）】")
-    L("─" * 72)
+    L("\n## 【四、资产负债表财务健康度（排雷）】")
+    L("---")
     bs_data = await get_sina_balance_sheet_async(session, code)
     if bs_data:
         latest = bs_data[0]
@@ -494,8 +494,8 @@ async def generate_report_async(session, code, output_path, ind_comp=None, hsgt=
         L("  (资产负债表数据获取失败)")
 
     # ─── 5. 一致预期与PEG成长估值 ───
-    L("\n【五、机构一致预期与前向 PEG】")
-    L("─" * 72)
+    L("\n## 【五、机构一致预期与前向 PEG】")
+    L("---")
     reports = None  # V16.1: 研报懒加载，EPS fallback 与评级章节共享
     df_eps = await get_eps_forecast_async(session, code)
     eps_cur = eps_next = None
@@ -638,8 +638,8 @@ async def generate_report_async(session, code, output_path, ind_comp=None, hsgt=
             L("  无机构覆盖数据（中线建议规避无主流机构覆盖的冷门股）")
 
     # ─── 4. 研报评级风向标 ───
-    L("\n【六、研报评级统计与风向变动 (近3个月)】")
-    L("─" * 72)
+    L("\n## 【六、研报评级统计与风向变动 (近3个月)】")
+    L("---")
     # V16.1: 复用 EPS fallback 已拉取的研报（避免两次请求）
     if reports is None:
         reports = await get_reports_async(session, code, max_pages=3)
@@ -680,8 +680,8 @@ async def generate_report_async(session, code, output_path, ind_comp=None, hsgt=
         L("  暂无相关研报评级数据。")
 
     # ─── 5. 重大公告追踪 ───
-    L("\n【七、重大实质性公告追踪 (避雷与催化)】")
-    L("─" * 72)
+    L("\n## 【七、重大实质性公告追踪 (避雷与催化)】")
+    L("---")
     anns = await get_strategic_announcements_async(session, code, days=30)
     if anns:
         for i, a in enumerate(anns[:10], 1):
@@ -694,8 +694,8 @@ async def generate_report_async(session, code, output_path, ind_comp=None, hsgt=
         L("  近期无过滤后的重大公告。")
 
     # ─── 6. 筹码稳定性分析 ───
-    L("\n【八、筹码稳定性与抛压评估】")
-    L("─" * 72)
+    L("\n## 【八、筹码稳定性与抛压评估】")
+    L("---")
     holders = await get_holder_change_async(session, code)
     if holders:
         L("  ➤ 股东户数变化趋势:")
@@ -734,8 +734,8 @@ async def generate_report_async(session, code, output_path, ind_comp=None, hsgt=
         L("\n  ➤ 解禁抛压预警: 未来半年内无解禁压力 ✅")
 
     # ─── 北向资金持仓动态 ───
-    L("\n【九、北向资金持仓动态】")
-    L("─" * 72)
+    L("\n## 【九、北向资金持仓动态】")
+    L("---")
     nb = await get_northbound_hold_async(session, code, 90)
     if nb:
         _label = "期" if len(nb) <= 12 else "个交易日"
@@ -769,8 +769,8 @@ async def generate_report_async(session, code, output_path, ind_comp=None, hsgt=
         L("  该股暂无北向资金持仓数据（可能非陆股通标的或数据延迟）")
 
     # ─── 同业龙头横向对比 ───
-    L("\n【十、同业龙头横向对比（赛道身位监测）】")
-    L("─" * 72)
+    L("\n## 【十、同业龙头横向对比（赛道身位监测）】")
+    L("---")
     if peer_data["peers"]:
         if "note" in peer_data["peers"][0]:
             L(f"  ⚠️ {peer_data['peers'][0]['note']}")
@@ -813,8 +813,8 @@ async def generate_report_async(session, code, output_path, ind_comp=None, hsgt=
         L(f"  无法获取同业数据（板块: {peer_data.get('industry', '未知')}）")
 
     # ─── 中线主力资金底仓流向 ───
-    L("\n【十一、中线主力资金流向 (60日基准)】")
-    L("─" * 72)
+    L("\n## 【十一、中线主力资金流向 (60日基准)】")
+    L("---")
     # V15.4.2: 同步资金流包 to_thread
     fund_flow = await asyncio.to_thread(get_fund_flow_120d, code)
     if fund_flow["data"]:
@@ -854,8 +854,8 @@ async def generate_report_async(session, code, output_path, ind_comp=None, hsgt=
         elif _cum_f > 0 and _pc_chg < -3:
             L(f"  💎 资金背离：股价下跌但主力净流入{_cum_f/1e8:.2f}亿，资金暗中介入")
 
-    L("\n【十二、融资融券（两融数据，近15日）】")
-    L("─" * 72)
+    L("\n## 【十二、融资融券（两融数据，近15日）】")
+    L("---")
     margin = await get_margin_trading_async(session, code)
     if margin:
         L(
@@ -882,8 +882,8 @@ async def generate_report_async(session, code, output_path, ind_comp=None, hsgt=
     else:
         L("  该股无融资融券数据（可能不是两融标的）。")
 
-    L("\n【十三、大宗交易（机构建仓痕迹）】")
-    L("─" * 72)
+    L("\n## 【十三、大宗交易（机构建仓痕迹）】")
+    L("---")
     bt = await get_block_trade_async(session, code)
     _one_year_ago = (datetime.now() - timedelta(days=365)).strftime("%Y-%m-%d")
     bt_filtered = [d for d in bt if d.get("date", "") >= _one_year_ago] if bt else []
@@ -898,8 +898,8 @@ async def generate_report_async(session, code, output_path, ind_comp=None, hsgt=
     else:
         L("  无大宗交易记录。")
 
-    L("\n【十四、龙虎榜机构动向】")
-    L("─" * 72)
+    L("\n## 【十四、龙虎榜机构动向】")
+    L("---")
     dtb = await get_dragon_tiger_board_async(session, code, days=180)
     if dtb and dtb.get("records"):
         L(f"  近180日上榜 {len(dtb['records'])} 次:")
@@ -936,8 +936,8 @@ async def generate_report_async(session, code, output_path, ind_comp=None, hsgt=
         L("  近180日无龙虎榜记录（白马蓝筹或近期未触发异动标准的个股，无龙虎榜属正常现象）。")
 
     # ─── 9. 高股息防御属性 (分红历史) ───
-    L("\n【十五、高股息防御属性 (近十次分红)】")
-    L("─" * 72)
+    L("\n## 【十五、高股息防御属性 (近十次分红)】")
+    L("---")
     # 股息率：cdata 统一提供
     _zhb_div_yield = cdata.dividend_yield
     if _zhb_div_yield > 0:
@@ -961,8 +961,8 @@ async def generate_report_async(session, code, output_path, ind_comp=None, hsgt=
           "  暂无分红记录（非防御型收息标的）。")
 
     # ─── 16. 十大流通股东机构动向 ───
-    L("\n【十六、十大流通股东机构动向】")
-    L("─" * 72)
+    L("\n## 【十六、十大流通股东机构动向】")
+    L("---")
     st = await asyncio.to_thread(get_holder_structure, code)
     if st:
         L(f"  数据来源: 十大流通股东季报（最近 {len(st)} 期）")
@@ -1006,12 +1006,12 @@ async def generate_report_async(session, code, output_path, ind_comp=None, hsgt=
             _nb_chg = (_nb_e - _nb_s) / _nb_s * 100
             _bt_items.append(f"北向近{len(nb)}日持仓{_nb_chg:+.1f}%")
     if _bt_items:
-        L("【回测参考】")
+        L("## 【回测参考】")
         for _bi in _bt_items:
             L(f"  📊 {_bi}")
 
     # ─── 十七、舆情与互动 ───
-    L("\n【十七、舆情与互动】")
+    L("\n## 【十七、舆情与互动】")
 
     # 财联社快讯（近3天）
     try:
@@ -1069,9 +1069,9 @@ async def generate_report_async(session, code, output_path, ind_comp=None, hsgt=
     except Exception as _e:
         _debug_log(f"med cninfo_irm: {_e}")
 
-    L("\n" + "─" * 72)
-    L("【仓位管理建议】")
-    L("─" * 72)
+    L("\n" + "---")
+    L("## 【仓位管理建议】")
+    L("---")
 
     # V8.2: 使用统一评分接口
     from stock_common import ScoreData, calculate_score

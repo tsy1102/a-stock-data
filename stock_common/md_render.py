@@ -110,6 +110,10 @@ def text_to_md(lines: List[str]) -> List[str]:
     while i < n:
         ln = lines[i]
         if _LINE_ONLY.match(ln):
+            # A 修复(2026-08-16): 标题后紧跟的分隔线抑制(脚本模式: ─ 标题 ─, 标题自带分隔, 多余 --- 视觉重复)
+            if out and out[-1].startswith("## ") or out and out[-1].startswith("### "):
+                i += 1
+                continue
             out.append("---")
             i += 1
             continue
@@ -141,11 +145,42 @@ def text_to_md(lines: List[str]) -> List[str]:
                 block.append(lines[j])
                 j += 1
             out.extend(_space_table_to_md(block))
+            if out and not out[-1].startswith("| ") and out[-1] != "":
+                out.append("")  # B 修复: 表格块后补空行, 防与下一标题粘连
+            elif out and out[-1].startswith("| "):
+                out.append("")
             i = j
             continue
-        out.append(ln)
+        # C/D/E 修复: 行首缩进去除 + ──装饰行 → ### + #N 编号 → **#N**(防被当标题)
+        _cleaned = _clean_text_line(ln)
+        out.append(_cleaned)
         i += 1
     return out
+
+
+_DECO_LINE = re.compile(r"^\s*[─\-=]+\s*(.*?)\s*[─\-=]+\s*$")
+_HASH_NUM = re.compile(r"^\s*#(\d{1,3})\s+")
+
+
+def _clean_text_line(ln: str) -> str:
+    """V17.0.1b(2026-08-16 排版优化): 普通行清理——去行首缩进/─装饰行转小节标题/#N 编号粗体/冒号对齐空格."""
+    # D: ── 装饰小节行 → ### 小节标题(如 "── 游资活跃度诊断 ──")
+    m = _DECO_LINE.match(ln)
+    if m and m.group(1).strip():
+        return "### " + m.group(1).strip()
+    # E: #N 编号行 → **#N**(防 md 把 #1 当 h1 标题)
+    m2 = _HASH_NUM.match(ln)
+    if m2:
+        return "  **#" + m2.group(1) + "** " + ln[m2.end():].strip()
+    # C: 去行首 1-4 空格缩进(保留列表语义行如 "  - "/"  1. ")
+    stripped = ln.lstrip()
+    if stripped.startswith(("- ", "* ", "1. ", "2. ", "> ")):
+        return ln.rstrip()
+    if len(ln) - len(stripped) <= 4:
+        ln = stripped
+    # 冒号对齐空格 → 单空格
+    ln = re.sub(r":\s{3,}", ": ", ln)
+    return ln.rstrip()
 
 
 def render_md_report(path_md: str, lines: List[str]) -> str:

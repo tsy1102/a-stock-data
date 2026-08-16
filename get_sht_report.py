@@ -1252,7 +1252,14 @@ async def generate_report_async(session, code, output_path, ind_comp=None, idx_q
                     _extra += f" 流通{_cv:.0f}亿"
                 if item.get("order_volume"):
                     _extra += f" 封单量{_safe_float(item['order_volume'])/1e4:.0f}万股"
-                L(f"    📌 当前股票在涨停池中！连板{item.get('limit_count',0)} 板块:{item.get('sector','')} 封板资金:{item.get('limit_fund',0) or 0:.0f}元{_extra}")
+                _lf = item.get('limit_fund', 0) or 0
+                if _lf >= 1e8:
+                    _lf_txt = f"{_lf/1e8:.2f}亿"
+                elif _lf >= 1e4:
+                    _lf_txt = f"{_lf/1e4:.0f}万"
+                else:
+                    _lf_txt = f"{_lf:.0f}"
+                L(f"    📌 当前股票在涨停池中！连板{item.get('limit_count',0)} 板块:{item.get('sector','')} 封板资金:{_lf_txt}元{_extra}")
                 break
         for item in pool.get("limit_broken_list", []):
             if item.get("code") == code:

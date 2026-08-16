@@ -4,6 +4,31 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
+## [17.0.2] - 2026-08-16
+
+**修复: 休市行情 OHLC 缺失 + 涨停池源切换 + 表格原则定稿 + 三轮全仓审查闭环**
+
+### 🐛 数据修复(canonical)
+- 休市/盘前 OHLC/成交额恒 0: _extract_with_source 去 need_realtime_quote 门控 +
+  zhb_default 修复(amount 键名不匹配) + prev_close 反算(price/(1+chg), 加 0.5~2x sanity) +
+  TDX 本机 .day 兜底(get_tdx_day_tail, 零网络) + 批量命中 TDX 补缺
+- 盘口异动涨幅恒 0(levistock 字段 i 解析错误) → 修复后按用户原则**移除采集**(sht/mak 零 push2ex)
+
+### 🔄 涨停池源切换(同花顺优先 + push2ex 兜底)
+- ths_limit_up_pool 升格优先源: 空日期回退最近交易日; 17 字段(原因/板型/封板率/炸板次数/
+  换手/流通市值/封单量/末封/回封/市场类型/新股, 一次请求零额外压力)
+- 板块分布: TDX 本机 tdxhy 一级行业注入(零网络, 进程缓存); 炸板/跌停池保持东财
+- 缓存 category 升 limit_pool_v2(字段变更强制失效); mak 封板时间双键兼容;
+  休市日三池日期口径统一(封板率 100% 假象修复)
+
+### 🎨 表格原则定稿(用户)
+- "字段: 值"竖排(基本信息/行情/估值)不表格化; 仅横向数字列对齐章节(同业/资金/龙虎榜)用表格
+- sht/lng 表格回退; 上市日期唯一来源 list_date
+
+### 🔍 三轮审查闭环(2H+10M+11L, 20 死函数清零)
+- med 板块内排名 NameError(永久静默失效)修复; mak 资金流验证段覆盖行删除
+- 研报 None 崩溃/EPS 守卫 >=4/解禁单位统一(F10 万→股)/val 策略14 单位分键/
+  to_thread 14 处/死 import 8 处/backtest 死函数
 ## [17.0.1] - 2026-08-15
 
 **补丁: 字段增强实施(P0-P4) + 三轮代码审查闭环 + 全量 md 化 + 运行修复**

@@ -195,7 +195,7 @@ async def generate_report_async(session, code, output_path, ind_comp=None):
         if _zhb_date:
             L(f"  ℹ️ zhb数据日期: {_zhb_date}（延迟，阶段涨幅/52周高低等数据可能有1-2天滞后）")
 
-    info = get_stock_info(code)
+    info = await asyncio.to_thread(get_stock_info, code)
     # V11.5: 优先从 data_provider 综合数据获取行情，fallback 到腾讯行情
     q = None
     # V15 统一数据中心：通过 get_canonical_stock_data 获取强类型标准化数据
@@ -207,15 +207,25 @@ async def generate_report_async(session, code, output_path, ind_comp=None):
         from core.data_provider import get_canonical_stock_data
 
         cdata = await asyncio.to_thread(get_canonical_stock_data, code)
-        if cdata is not None:
-            _dp_composite = {
-                "price": cdata.price, "change_pct": cdata.change_pct,
-                "mcap_yi": cdata.mcap_yi, "float_mcap_yi": cdata.float_mcap_yi,
-                "industry": cdata.industry, "board": cdata.board, "name": cdata.name,
-                "change_ytd": cdata.change_ytd, "high_52w": cdata.high_52w,
-                "low_52w": cdata.low_52w, "dividend_yield": cdata.dividend_yield,
-                "pe_ttm": cdata.pe_ttm, "pb": cdata.pb,
-            }
+        if cdata is None:
+            # MEDIUM(审查 2026-08-16): 二次获取仍失败 → 零值占位继续(不中断报告),
+            # 后续展示自动降级为 0/缺失
+            L("  ⚠️ 行情数据获取失败(连续两次), 估值与行情分析降级为空")
+            from types import SimpleNamespace
+
+            cdata = SimpleNamespace(
+                price=0, change_pct=0, pe_ttm=0, pb=0, mcap_yi=0, float_mcap_yi=0,
+                industry="", board="", name="", change_ytd=0, high_52w=0, low_52w=0,
+                dividend_yield=0,
+            )
+        _dp_composite = {
+            "price": cdata.price, "change_pct": cdata.change_pct,
+            "mcap_yi": cdata.mcap_yi, "float_mcap_yi": cdata.float_mcap_yi,
+            "industry": cdata.industry, "board": cdata.board, "name": cdata.name,
+            "change_ytd": cdata.change_ytd, "high_52w": cdata.high_52w,
+            "low_52w": cdata.low_52w, "dividend_yield": cdata.dividend_yield,
+            "pe_ttm": cdata.pe_ttm, "pb": cdata.pb,
+        }
 
     _quote = {
         "price": cdata.price,
@@ -599,12 +609,10 @@ async def generate_report_async(session, code, output_path, ind_comp=None):
     else:
         L("  (经营现金流数据获取失败)")
     parts = []
+    # LOW(审查 2026-08-16): 清理空块+冗余 locals 防御——gm_rows 直接可用
     if gm_rows:
-        pass
-    _gm_rows_ref = locals().get('gm_rows', [])
-    if _gm_rows_ref:
-        parts.append(f"毛利率 {_gm_rows_ref[0]['gm']:.2f}%")
-        parts.append(f"净利率 {_gm_rows_ref[0]['npm']:.2f}%")
+        parts.append(f"毛利率 {gm_rows[0]['gm']:.2f}%")
+        parts.append(f"净利率 {gm_rows[0]['npm']:.2f}%")
     if ext_roe_data and ext_roe_data[0].get("roe") is not None:
         parts.append(f"ROE {ext_roe_data[0]['roe']:.2f}%")
     if ext_roe_data and ext_roe_data[0].get("eps") is not None:
@@ -712,7 +720,7 @@ async def generate_report_async(session, code, output_path, ind_comp=None):
     _show_div_5 = _dp_div_yield_5 if _dp_div_yield_5 and _dp_div_yield_5 > 0 else _zhb_div_yield_5
     if _show_div_5 > 0:
         L(f"  当前股息率: {_show_div_5:.2f}%（zhb数据）")
-    div = get_dividend_history(code)
+    div = await asyncio.to_thread(get_dividend_history, code)
     if div:
         L("  近5次分红除息记录:")
         L(f"  {'除权除息日':<14} {'每股派息(元)':>8} {'折算对应股价股息率参考'}")
@@ -768,7 +776,7 @@ async def generate_report_async(session, code, output_path, ind_comp=None):
 
     L("\n【六、长线筹码沉淀与机构持股倾向】")
     L("─" * 72)
-    st = get_holder_structure(code)
+    st = await asyncio.to_thread(get_holder_structure, code)
     if st:
         L(f"  数据来源: 十大流通股东季报（最近 {len(st)} 期）")
         L("")
@@ -933,7 +941,7 @@ async def generate_report_async(session, code, output_path, ind_comp=None):
 
     # 财联社快讯（近2天）
     try:
-        cls_news = cls_telegraph(page_size=50)
+        cls_news = await asyncio.to_thread(cls_telegraph, 50)
         _cls_shown = 0
         _cls_cutoff = datetime.now() - timedelta(days=2)
         for item in cls_news:
@@ -959,7 +967,7 @@ async def generate_report_async(session, code, output_path, ind_comp=None):
 
     # 互动易问答（近30天）— V16.2.14: 显示答案 + 标注截取条数（30 天窗口内最新 10 条）
     try:
-        irm = cninfo_irm(code, page_size=30)
+        irm = await asyncio.to_thread(cninfo_irm, code, 30)
         L("  近30天互动易问答:")
         _irm_shown = 0
         _irm_cutoff = datetime.now() - timedelta(days=30)
@@ -1021,7 +1029,8 @@ async def generate_report_async(session, code, output_path, ind_comp=None):
     
     # 现金流和负债
     if _tdx_ocf != 0 and financials:
-        _np = float(financials[0].get("净利润", 1)) if financials else 1
+        # MEDIUM(审查 2026-08-16): float(None) TypeError——新浪缺键时崩溃, 改 _safe_float
+        _np = _safe_float(financials[0].get("净利润", 1)) if financials else 1
         if _np > 0:
             score_data.ocf_ratio = _tdx_ocf / _np
         if bs_data:
@@ -1032,7 +1041,7 @@ async def generate_report_async(session, code, output_path, ind_comp=None):
                 score_data.asset_liability_ratio = (_st + _lt) / _ta
     
     # 机构持仓
-    _inst = get_holder_structure(code)
+    _inst = await asyncio.to_thread(get_holder_structure, code)
     if _inst:
         score_data.institution_holding_pct = _inst[0].get("domestic", 0) + _inst[0].get("northbound", 0)
     

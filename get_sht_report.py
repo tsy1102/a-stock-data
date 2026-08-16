@@ -419,7 +419,8 @@ async def generate_report_async(session, code, output_path, ind_comp=None, idx_q
 
     df_eps = await get_eps_forecast_async(session, code)
 
-    if not df_eps.empty and len(df_eps.columns)>=2:
+    # MEDIUM(审查 2026-08-16): 守卫需 >=4 列(循环访问 iloc[_,3..5]), 原 >=2 列数不足时 IndexError
+    if not df_eps.empty and len(df_eps.columns) >= 4:
 
         _this_year = str(date.today().year)
 
@@ -514,7 +515,7 @@ async def generate_report_async(session, code, output_path, ind_comp=None, idx_q
 
         for r in rr[:10]:
 
-            L(f"  {str(r.get('publishDate',''))[:10]:<12} {r.get('orgSName',''):<16} {str(r.get('emRatingName','')):<10} {r.get('title','')[:50]}")
+            L(f"  {str(r.get('publishDate',''))[:10]:<12} {str(r.get('orgSName','') or ''):<16} {str(r.get('emRatingName','') or ''):<10} {str(r.get('title','') or '')[:50]}")
 
     elif reports: L(f"  近60天内无新研报（共 {len(reports)} 篇历史研报，已省略）")
 
@@ -1252,7 +1253,7 @@ async def generate_report_async(session, code, output_path, ind_comp=None, idx_q
                     _extra += f" 流通{_cv:.0f}亿"
                 if item.get("order_volume"):
                     _extra += f" 封单量{_safe_float(item['order_volume'])/1e4:.0f}万股"
-                L(f"    📌 当前股票在涨停池中！连板{item.get('limit_count',0)} 板块:{item.get('sector','')} 封板资金:{item.get('limit_fund',0):.0f}元{_extra}")
+                L(f"    📌 当前股票在涨停池中！连板{item.get('limit_count',0)} 板块:{item.get('sector','')} 封板资金:{item.get('limit_fund',0) or 0:.0f}元{_extra}")
                 break
         for item in pool.get("limit_broken_list", []):
             if item.get("code") == code:
@@ -1266,9 +1267,10 @@ async def generate_report_async(session, code, output_path, ind_comp=None, idx_q
             L(f"    涨停板块分布: {' | '.join(f'{k}({v})' for k,v in top_sectors)}")
 
         # V16.1: 昨日涨停池晋级率/赚钱效应（push2ex getYesterdayZTPool）
+        # MEDIUM(审查 2026-08-16): 同步 HTTP 包 to_thread
         try:
             from stock_common import get_yesterday_limit_pool
-            yzt = get_yesterday_limit_pool()
+            yzt = await asyncio.to_thread(get_yesterday_limit_pool)
             if yzt:
                 yzt_total = len(yzt)
                 # 晋级 = 今日仍涨停（统一 is_limit_up 判断，含北交所 30%）
@@ -1478,7 +1480,7 @@ async def generate_report_async(session, code, output_path, ind_comp=None, idx_q
             if stk3 >= tl:
                 signals.append(f"异动雷达(ZHB离线)：近5日涨幅{cdata.change_5d:+.2f}%，估算3日偏离{stk3:+.2f}%>={tl}%，触发异动")
         else:
-            _sk_r, _sr_r = baidu_kline_full(code, count=5)
+            _sk_r, _sr_r = await asyncio.to_thread(baidu_kline_full, code, 5)
             if len(_sr_r) >= 4 and len(_sk_r) > 0:
                 _ci_r = next((i for i,k in enumerate(_sk_r) if k in ("close","close_price")), -1)
                 if _ci_r >= 0:
@@ -1532,7 +1534,7 @@ async def generate_report_async(session, code, output_path, ind_comp=None, idx_q
 
         try:
 
-            _sk, _sr = baidu_kline_full(code, count=5)
+            _sk, _sr = await asyncio.to_thread(baidu_kline_full, code, 5)
 
             _ci = next((i for i,k in enumerate(_sk) if k in ("close","close_price")), -1)
 

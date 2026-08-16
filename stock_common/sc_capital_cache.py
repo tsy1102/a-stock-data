@@ -231,31 +231,6 @@ def get_capital_cache_stats() -> Dict[str, Any]:
     }
 
 
-def batch_refresh_capital(codes: list[str]) -> int:
-    """批量刷新股本缓存（仅刷新缺失的）。
-
-    Returns:
-        实际刷新的股票数量
-    """
-    cap_cache = _load_capital_cache()
-    missing = [c for c in codes if c not in cap_cache]
-    if not missing:
-        return 0
-
-    refreshed = 0
-    for code in missing:
-        result = _fetch_share_capital(code)
-        if result and result.get("total_shares", 0) > 0:
-            with _cache_lock:
-                cap_cache[code] = result
-            refreshed += 1
-
-    if refreshed > 0:
-        _save_capital_cache()
-
-    return refreshed
-
-
 if __name__ == "__main__":
     print("=== sc_capital_cache.py 自测 ===")
     stats = get_capital_cache_stats()

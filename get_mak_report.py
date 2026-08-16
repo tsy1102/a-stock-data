@@ -1718,7 +1718,6 @@ async def generate_sector_report(output_path):
     _scored = [s for s in sectors if s.get("score", 0) >= 30] or sectors
     with_money = [s for s in _scored if s.get("main_inflow", 0) > 0]
     without_money = [s for s in _scored if s.get("main_inflow", 0) <= 0]
-    without_money = [s for s in sectors[:50] if s.get("main_inflow", 0) <= 0]
     if with_money:
         _sorted_in = sorted(with_money, key=lambda x: x.get('main_inflow', 0), reverse=True)
         L("  ✅ 真金白银: 高评分且主力净流入:")

@@ -1219,14 +1219,6 @@ def get_canonical_stock_data(code: str, force_realtime: bool = False) -> Any:
     )
 
 
-def get_canonical_stock_data_batch(codes: List[str]) -> Dict[str, Any]:
-    """批量获取 CanonicalStockData 强类型字典。"""
-    res = {}
-    for c in codes:
-        res[c] = get_canonical_stock_data(c)
-    return res
-
-
 # ═══════════════════════════════════════════════════
 # 交易状态感知
 # ═══════════════════════════════════════════════════
@@ -1432,50 +1424,6 @@ def get_stock_price(code: str) -> Optional[float]:
 
 @cached(
     category="zhb_data",
-    ttl_seconds=TTL["f10_fund_flow"],
-    trading_day=True,
-    valid_if=make_valid_if(check_zeros=False),
-)  # V15.2: 拒绝 None/空（但允许 0 值）
-def get_pe_ttm(code: str) -> Optional[float]:
-    """V12.6: PE_TTM uses ZHB only, no HTTP fallback."""
-    try:
-        from stock_common import get_zhb_single_stock_data
-
-        zhb = get_zhb_single_stock_data(code)
-        if zhb:
-            pe = _safe_float(zhb.get("pe_ttm", 0))
-            if pe > 0:
-                return pe
-    except Exception as _e:
-        _debug_log(f"data_provider error: {_e}")
-        pass
-    return None
-
-
-@cached(
-    category="zhb_data",
-    ttl_seconds=TTL["f10_fund_flow"],
-    trading_day=True,
-    valid_if=make_valid_if(check_zeros=False),
-)  # V15.2: 拒绝 None/空（但允许 0 值）
-def get_pb(code: str) -> Optional[float]:
-    """V12.6: PB uses ZHB only, no HTTP fallback."""
-    try:
-        from stock_common import get_zhb_single_stock_data
-
-        zhb = get_zhb_single_stock_data(code)
-        if zhb:
-            pb = _safe_float(zhb.get("pb", 0))
-            if pb > 0:
-                return pb
-    except Exception as _e:
-        _debug_log(f"data_provider error: {_e}")
-        pass
-    return None
-
-
-@cached(
-    category="zhb_data",
     ttl_seconds=TTL["dividend"],
     trading_day=True,
     valid_if=make_valid_if(check_zeros=False),
@@ -1493,45 +1441,6 @@ def get_dividend_yield(code: str) -> Optional[float]:
             yield_val = get_zhb_dividend_yield(code)
             if yield_val:
                 return yield_val
-    except Exception as _e:
-        _debug_log(f"data_provider error: {_e}")
-        pass
-    return None
-
-
-@cached(
-    category="zhb_data", ttl_seconds=7 * 86400, valid_if=make_valid_if(check_zeros=False)
-)  # V15.2: tuple 不做空值检查，只拒 None
-def get_52w_range(code: str) -> Optional[tuple]:
-    """获取52周高低价区间。
-
-    静态字段：优先ZHB → K线计算。
-    TTL：7天（52周高低极少变化，仅创新高/低时变）
-    """
-    try:
-        from stock_common import get_zhb_52w_range, is_zhb_data_fresh
-
-        if is_zhb_data_fresh(max_delay_days=7):
-            high, low = get_zhb_52w_range(code)
-            if high > 0 and low > 0:
-                return (high, low)
-    except Exception as _e:
-        _debug_log(f"data_provider error: {_e}")
-        pass
-    # Fallback：从TDX K线数据计算52周高低
-    try:
-        from core.tdx_client import tdx_get_security_bars
-
-        keys, rows = tdx_get_security_bars(code, count=260)
-        if keys and rows:
-            idx_high = keys.index('high') if 'high' in keys else 3
-            idx_low = keys.index('low') if 'low' in keys else 4
-            highs = [_safe_float(r[idx_high]) for r in rows if r[idx_high]]
-            lows = [_safe_float(r[idx_low]) for r in rows if r[idx_low]]
-            if highs and lows:
-                h, l = max(highs), min(lows)
-                if h > 0 and l > 0:
-                    return (h, l)
     except Exception as _e:
         _debug_log(f"data_provider error: {_e}")
         pass
@@ -1871,111 +1780,6 @@ def get_turnover_pct(code: str) -> Optional[float]:
                 turnover = _safe_float(zhb.get("turnover_pct", 0))
                 if turnover > 0:
                     return turnover
-    except Exception as _e:
-        _debug_log(f"data_provider error: {_e}")
-        pass
-    return None
-
-
-@cached(category="share_capital", ttl_seconds=TTL["share_capital"])
-def get_totals(code: str) -> Optional[float]:
-    """获取总股本（万股）。
-
-    静态字段：优先本地股本缓存，失败fallback到ZHB。
-    """
-    try:
-        from stock_common import get_share_capital
-
-        cap = get_share_capital(code)
-        total = cap.get("total_shares", 0)
-        if total > 0:
-            return total
-    except Exception as _e:
-        _debug_log(f"data_provider error: {_e}")
-        pass
-    try:
-        from stock_common import get_zhb_single_stock_data, is_zhb_data_fresh
-
-        if is_zhb_data_fresh(max_delay_days=3):
-            zhb = get_zhb_single_stock_data(code)
-            if zhb:
-                total = _safe_float(zhb.get("total_shares", 0))
-                if total > 0:
-                    return total
-    except Exception as _e:
-        _debug_log(f"data_provider error: {_e}")
-        pass
-    return None
-
-
-@cached(
-    category="zhb_data",
-    ttl_seconds=TTL["f10_fund_flow"],
-    trading_day=True,
-    valid_if=make_valid_if(check_zeros=False),
-)  # V15.2: 拒绝 None/空
-def get_market_cap(code: str) -> Optional[float]:
-    """获取流通市值（亿元）。
-
-    B 类字段（T-1~T-3 可接受）：ZHB 优先 max_delay=1，不做时段保护（V16.3 M 用户决策归 B）。
-    """
-    try:
-        from stock_common import get_zhb_single_stock_data, is_zhb_data_fresh
-
-        if is_zhb_data_fresh(max_delay_days=1):
-            zhb = get_zhb_single_stock_data(code)
-            if zhb:
-                float_mcap = _safe_float(zhb.get("float_mcap", 0))
-                if float_mcap > 0:
-                    return float_mcap / 1e8
-    except Exception as _e:
-        _debug_log(f"data_provider error: {_e}")
-        pass
-    try:
-        price = get_stock_price(code)
-        if price and price > 0:
-            from stock_common import get_share_capital
-
-            cap = get_share_capital(code)
-            float_shares = cap.get("float_shares", 0)
-            if float_shares > 0:
-                return price * float_shares / 10000.0
-    except Exception as _e:
-        _debug_log(f"data_provider error: {_e}")
-        pass
-    return None
-
-
-@cached(category="basic_info_static", ttl_seconds=TTL["basic_info_static"])
-def get_industry(code: str) -> Optional[str]:
-    """获取所属行业名称。
-
-    静态字段：优先 TDX 板块 → ZHB concept 映射。
-    TTL：90天（行业归属几乎不变）
-
-    V15.1: ZHB dict 不含 industry 字段（参考 docs/field_dict.md 第 7.2 节），
-    移除 ZHB.get("industry") 调用，改为 TDX 优先。
-    """
-    try:
-        from core.tdx_client import tdx_get_belong_boards
-
-        boards = tdx_get_belong_boards(code)
-        if boards and boards.get("industry"):
-            return boards["industry"][0]["name"]
-    except Exception as _e:
-        _debug_log(f"data_provider error: {_e}")
-        pass
-    # Fallback: ZHB concept_chain 映射（V15.1 后已重写为板块代码→名称）
-    # V17.0 修复: 仅认 881 段=通达信行业板块(今日字典实锤); 880 段=概念/风格不可当行业
-    try:
-        from core.zhb_client import get_industry_code
-
-        ind_code = get_industry_code(code)
-        if ind_code and ind_code.startswith("881"):
-            from stock_common.sc_datasource import get_zhb_industry_map
-
-            ind_map = get_zhb_industry_map()
-            return ind_map.get(ind_code, "")
     except Exception as _e:
         _debug_log(f"data_provider error: {_e}")
         pass

@@ -114,7 +114,10 @@ async def get_holder_change_async(session, code):
 async def get_stock_sector_rank_async(code, info=None):
     """V4: 板块内排名 — TDX 优先，不可用时回退 board_by_name
     V11.5: 涨跌幅数据优先使用 data_provider
+    HIGH(审查 2026-08-16): 原 `await data_provider.get_change_pct_async` 无模块级
+    data_provider 名称 → 每次 NameError 被吞 → 板块内排名永久静默失效; 改函数内局部导入
     """
+    from core.data_provider import get_change_pct_async as _dp_get_change_pct_async
     boards = tdx_get_belong_boards(code)
     industry_boards = boards.get("industry", []) if boards else []
     if industry_boards:
@@ -126,7 +129,7 @@ async def get_stock_sector_rank_async(code, info=None):
                 if m["code"] == code:
                     my_chg = m["change_pct"]
                     try:
-                        _dp_chg = await data_provider.get_change_pct_async(code)
+                        _dp_chg = await _dp_get_change_pct_async(code)
                         if _dp_chg is not None:
                             my_chg = _dp_chg
                     except Exception as _e:
@@ -143,7 +146,7 @@ async def get_stock_sector_rank_async(code, info=None):
                 if s["code"] == code:
                     my_chg = s["change_pct"]
                     try:
-                        _dp_chg = await data_provider.get_change_pct_async(code)
+                        _dp_chg = await _dp_get_change_pct_async(code)
                         if _dp_chg is not None:
                             my_chg = _dp_chg
                     except Exception as _e:
@@ -197,7 +200,7 @@ async def generate_report_async(session, code, output_path, ind_comp=None, hsgt=
     else:
         note = ""
     if note:
-        print(f"\033[93m{note}\033[0m", flush=True)
+        # MEDIUM(审查 2026-08-16): 移除 print(双打印)——报告内 L 已输出, 与其余脚本一致
         L(f"  {note}")
         L("")
 
@@ -939,7 +942,7 @@ async def generate_report_async(session, code, output_path, ind_comp=None, hsgt=
     _zhb_div_yield = cdata.dividend_yield
     if _zhb_div_yield > 0:
         L(f"  当前股息率: {_zhb_div_yield:.2f}%")
-    div = get_dividend_history(code)
+    div = await asyncio.to_thread(get_dividend_history, code)
     if div and len(div) >= 3:
         _dy = len(set(d["date"][:4] for d in div if d.get("bonus_rmb", 0) > 0))
         L(f"  📊 分红持续性: 连续{_dy}年分红")
@@ -960,7 +963,7 @@ async def generate_report_async(session, code, output_path, ind_comp=None, hsgt=
     # ─── 16. 十大流通股东机构动向 ───
     L("\n【十六、十大流通股东机构动向】")
     L("─" * 72)
-    st = get_holder_structure(code)
+    st = await asyncio.to_thread(get_holder_structure, code)
     if st:
         L(f"  数据来源: 十大流通股东季报（最近 {len(st)} 期）")
         L("")
@@ -1012,7 +1015,7 @@ async def generate_report_async(session, code, output_path, ind_comp=None, hsgt=
 
     # 财联社快讯（近3天）
     try:
-        cls_news = cls_telegraph(page_size=50)
+        cls_news = await asyncio.to_thread(cls_telegraph, 50)
         _cls_shown = 0
         _cls_cutoff = datetime.now() - timedelta(hours=48)  # V16.2.14: 3天→48h
         for item in cls_news:
@@ -1038,7 +1041,7 @@ async def generate_report_async(session, code, output_path, ind_comp=None, hsgt=
 
     # 互动易问答（近48小时）— V16.2.14: 48h+标题+答案+合理条数
     try:
-        irm = cninfo_irm(code, page_size=30)
+        irm = await asyncio.to_thread(cninfo_irm, code, 30)
         L("  近48小时互动易问答:")
         _irm_shown = 0
         _irm_cutoff = datetime.now() - timedelta(hours=48)
@@ -1111,7 +1114,7 @@ async def generate_report_async(session, code, output_path, ind_comp=None, hsgt=
         score_data.northbound_change = nb[0]["hold_shares"] - nb[-1]["hold_shares"]
 
     # 机构持仓
-    _st = get_holder_structure(code)
+    _st = await asyncio.to_thread(get_holder_structure, code)
     if _st:
         score_data.institution_holding_pct = _st[0].get("domestic", 0)
 

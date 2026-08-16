@@ -217,7 +217,7 @@ async def generate_report_async(session, code, output_path, ind_comp=None, hsgt=
         L(f"  大盘外资情绪: {signal} （中线仓位参考点）")
         # V16.4.1: 数据层降级标记展示(2026-08-12 深股通 379.75 亿异常)
         if hsgt.get("data_quality") == "degraded":
-            L(f"  ⚠️ 北向数据降级: {hsgt.get('warning', '源数据异常')}")
+            L("  ⚠️ 北向资金数据源存疑(异常波动), 仅供参考")
     else:
         L("  (北向宏观资金流向获取失败)")
 

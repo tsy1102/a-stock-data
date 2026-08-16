@@ -723,7 +723,7 @@ async def strategy_04_core_discount(stocks):
                 for s in big_caps if s["code"][:2] not in ("92", "43", "83", "87", "88")
             ]
             if _ths_codes:
-                _ths_map = get_ths_market_snapshot(_ths_codes)
+                _ths_map = await asyncio.to_thread(get_ths_market_snapshot, _ths_codes)
                 _ths_pb = {}
                 for _c, _d in _ths_map.items():
                     for _k, _v in _d.items():
@@ -948,7 +948,7 @@ async def strategy_08_policy_driven(stocks, hot_pool=None):
             return _top5_sorted(_ths_result, lambda x: x["score"])
 
     # Fallback: 新闻 NLP 关键词匹配
-    news_list = cls_telegraph(30)
+    news_list = await asyncio.to_thread(cls_telegraph, 30)
     if not news_list:
         news_list = eastmoney_global_news(30)
     if not news_list: return []
@@ -1056,7 +1056,7 @@ async def strategy_10_contrarian_value(stocks, top_n=300):
         try:
             from stock_common.sc_datasource import get_gross_margin_and_roe
 
-            gmar = get_gross_margin_and_roe(code) or {}
+            gmar = await asyncio.to_thread(get_gross_margin_and_roe, code) or {}
             roe = gmar.get("roe")
         except Exception as _e:
             _debug_log(f"val strategy_10 roe error ({code}): {_e}")
@@ -1199,14 +1199,17 @@ def strategy_14_liquidity_king(top_liquidity_pool):
         today_vol = vols[-1]
         if avg_vol_5d > 0 and today_vol > avg_vol_5d * 1.5 and closes[-1] >= closes[-2]:
             vol_ratio = today_vol / avg_vol_5d
+            # MEDIUM(审查 2026-08-16): amount(万元) 与 amount_yi(亿元) 单位不同——
+            # 分键换算统一为亿元: amount/10000 → 亿, amount_yi 原样
+            _amt_yi = _safe_float(s.get("amount", 0)) / 10000 if _safe_float(s.get("amount", 0)) else _safe_float(s.get("amount_yi", 0))
             reason = (
-                f"位列全市场前5%核心流动性池，今日成交额{_safe_float(s.get('amount', 0) or s.get('amount_yi', 0))/10000:.2f}亿！"
+                f"位列全市场前5%核心流动性池，今日成交额{_amt_yi:.2f}亿！"
                 f"成交量异常放大至5日均量的{vol_ratio:.1f}倍，"
                 "主力资金高位接盘或强力破局，流动性溢价显著"
             )
             result.append({
                 "code": code, "name": s.get("name", ""), "reason": reason,
-                "score": _safe_float(s.get('amount', 0) or s.get('amount_yi', 0)) * vol_ratio / 10000,
+                "score": _amt_yi * vol_ratio,
             })
     return _top5_sorted(result, lambda x: x["score"])
 
@@ -2283,4 +2286,3 @@ class ValReportRunner(BaseReportRunner):
 if __name__ == "__main__":
     runner = ValReportRunner()
     runner.run()
-

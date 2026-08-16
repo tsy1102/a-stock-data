@@ -1540,22 +1540,6 @@ def tdx_get_finance_info(code: str) -> Optional[Dict[str, Any]]:
             return None
 
 
-def tdx_get_finance_roe(code: str):
-    """
-    TDX 最新 ROE → 替换 eastmoney MAINFINADATA 单期查询
-    V13.0 改为直接复用全量 tdx_get_finance_info 接口提取。
-    V16.4.1 审查: 全仓 0 调用(get_val_report.py:1038 仅注释提及)——保留待统一层迁移确认后删除
-    """
-    info = tdx_get_finance_info(code)
-    if not info:
-        return None
-    profit = _safe_float(info.get('jinglirun', 0))
-    equity = _safe_float(info.get('jingzichan', 0))
-    if equity <= 0:
-        return None
-    return round(profit / equity * 100, 2)
-
-
 @cached(category="dividend", ttl_seconds=86400, cross_verify=True)  # V16.0: S13 高股息 100 次逐股 xdxr 无缓存 → 补缓存
 def tdx_get_dividend_history(code: str):
     """V12.0: mootdx xdxr 列为 year/month/day（无 'date' 列），组合成日期字符串。

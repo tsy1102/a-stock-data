@@ -1811,15 +1811,6 @@ def get_change_ytd(code: str) -> Optional[float]:
     return s.get("change_ytd") if s else None
 
 
-def get_ipo_price(code: str) -> Optional[float]:
-    """获取IPO发行价(元)。"""
-    zhb = get_zhb()
-    if zhb is None:
-        return None
-    s2 = zhb.get_stock_stat2(code)
-    return s2.get("ipo_price") if s2 else None
-
-
 def get_amount_wan(code: str) -> Optional[float]:
     """获取今日成交额(万元)。"""
     zhb = get_zhb()
@@ -1827,15 +1818,6 @@ def get_amount_wan(code: str) -> Optional[float]:
         return None
     s2 = zhb.get_stock_stat2(code)
     return s2.get("amount") if s2 else None
-
-
-def get_amount_1d(code: str) -> Optional[float]:
-    """获取昨日成交额(万元)。"""
-    zhb = get_zhb()
-    if zhb is None:
-        return None
-    s2 = zhb.get_stock_stat2(code)
-    return s2.get("amount_1d") if s2 else None
 
 
 def get_main_net_buy(code: str) -> Optional[Dict[str, Any]]:
@@ -1865,24 +1847,6 @@ def get_main_net_buy(code: str) -> Optional[Dict[str, Any]]:
         "main_net_buy_amount": s2.get("main_net_buy_amount"),
         "main_net_buy_amount_1d": s2.get("main_net_buy_amount_1d"),
     }
-
-
-def get_main_net_buy_amount(code: str) -> Optional[float]:
-    """V10.3: 获取T日主力净流入额(万元)。"""
-    zhb = get_zhb()
-    if zhb is None:
-        return None
-    s2 = zhb.get_stock_stat2(code)
-    return s2.get("main_net_buy_amount") if s2 else None
-
-
-def get_main_net_buy_amount_1d(code: str) -> Optional[float]:
-    """V10.3: 获取T-1日主力净流入额(万元)。"""
-    zhb = get_zhb()
-    if zhb is None:
-        return None
-    s2 = zhb.get_stock_stat2(code)
-    return s2.get("main_net_buy_amount_1d") if s2 else None
 
 
 def is_data_fresh(max_delay_days: int = 3) -> bool:
@@ -2020,17 +1984,6 @@ def should_use_zhb_data() -> tuple[bool, str]:
         return (False, "")
 
 
-def is_zhb_date_matching() -> bool:
-    """判断当前zhb数据日期是否符合预期。"""
-    zhb = get_zhb()
-    if zhb is None or not zhb.date:
-        return False
-    should_use, expected_date = should_use_zhb_data()
-    if not should_use:
-        return False
-    return zhb.date == expected_date
-
-
 if __name__ == "__main__":
     print("=== zhb_client.py 自测 ===")
     zhb = get_zhb()
@@ -2071,28 +2024,6 @@ def get_stock_name_from_zhb(code: str) -> Optional[str]:
     return zhb.get_stock_name(code)
 
 
-def get_stock_profile() -> Dict[str, str]:
-    """获取全市场 A 股代码→简称映射（V14.2 新增）。
-
-    返回: {6位代码: 中文简称}
-    """
-    zhb = get_zhb()
-    if zhb is None:
-        return {}
-    return zhb.stock_profile
-
-
-def get_concept_chain_from_zhb() -> Dict[str, List[str]]:
-    """获取 ZHB 200+ 概念/产业链节点（V14.2 新增，替代同花顺热榜 HTTP）。
-
-    返回: {概念名称: [股票代码列表]}
-    """
-    zhb = get_zhb()
-    if zhb is None:
-        return {}
-    return zhb.concept_chain
-
-
 def get_stock_concepts_from_zhb(code: str) -> List[str]:
     """获取股票所属 ZHB 概念/产业链节点（V14.2 新增）。
 
@@ -2130,17 +2061,6 @@ def get_zhb_official_jyweek() -> List[str]:
     if zhb is None:
         return []
     return zhb.neednote_jyweek
-
-
-def get_brk_seat_from_zhb() -> Dict[str, str]:
-    """获取 ZHB 龙虎榜营业部席位映射（V14.2 新增）。
-
-    返回: {席位代码: 营业部名称}
-    """
-    zhb = get_zhb()
-    if zhb is None:
-        return {}
-    return zhb.brk_seat
 
 
 def get_special_tags_from_zhb() -> Dict[str, List[str]]:

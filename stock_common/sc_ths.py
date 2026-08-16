@@ -70,16 +70,6 @@ def get_ths_client(ops: Optional[Dict[str, Any]] = None):
     return THS(ops)
 
 
-def query_with_interval(method: str, *args, interval: float = QUERY_INTERVAL, **kwargs):
-    """限流封装：单次查询 + 固定间隔（批量循环时手动 sleep 更可控）。"""
-    from thsdk import THS
-
-    with get_ths_client() as ths:
-        resp = getattr(ths, method)(*args, **kwargs)
-        time.sleep(interval)
-        return resp
-
-
 # ═══════════════════════════════════════════════════════════════
 # V16.3 O35: 统一层入口（字典 §12.8.12b 字段核实结论）
 # ═══════════════════════════════════════════════════════════════

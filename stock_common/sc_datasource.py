@@ -3087,6 +3087,8 @@ def get_lockup_expiry(code: str, days: int = 90, include_history: bool = False) 
                     if not date_str:
                         continue
                     date_str = str(date_str)[:10]
+                    # MEDIUM(审查 2026-08-16): F10 解禁数量单位为**万**, 东财 FREE_SHARES 为**股**——
+                    # 统一 ×1e4 转股(下游按股处理: sht/med /1e4 显示万股, lng /1e8 算市值)
                     entry = {
                         "date": date_str,
                         "type": (r.get('解禁类型') or r.get('类型') or '').strip(),
@@ -3096,7 +3098,7 @@ def get_lockup_expiry(code: str, days: int = 90, include_history: bool = False) 
                             or r.get('解禁数量')
                             or r.get('数量')
                             or 0
-                        ),
+                        ) * 1e4,
                         "ratio": _normalize_lockup_ratio(
                             r.get('解禁比例(%)') or r.get('解禁比例') or r.get('比例') or 0
                         ),

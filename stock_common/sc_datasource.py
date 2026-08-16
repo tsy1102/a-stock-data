@@ -56,7 +56,6 @@ import asyncio
 
 # 导入网络层
 from stock_common.sc_network import (
-    _request_with_retry,
     em_get,
     _quick_request,
     requires_push2,

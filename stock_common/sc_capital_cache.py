@@ -19,7 +19,7 @@ import threading
 from typing import Any, Dict, Optional
 from datetime import datetime
 
-from core.stock_cache import cached, TTL
+from core.stock_cache import cached
 
 
 def _debug_log(msg: str) -> None:

@@ -113,7 +113,7 @@ def prefetch_quote_batch(codes: List[str]) -> Dict[str, Dict[str, Any]]:
         return em_secid_prefix(code)
 
     try:
-        from stock_common import _quick_request, _safe_float as _sf
+        from stock_common import _quick_request, _safe_float
 
         fields = "f2,f3,f4,f5,f6,f8,f12,f14,f15,f16,f17,f18,f20,f21"
         for i in range(0, len(missing), 300):

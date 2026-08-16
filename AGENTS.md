@@ -2,7 +2,9 @@
 
 > 适用于:Windows 桌面版 Agent(原生执行 PowerShell)
 > 适用范围:本仓库根目录及其全部子目录
-> **静态上下文(必读, 减少重复探索)**: docs/PROJECT_CONTEXT.md——项目背景/架构/规范/约束; 字段类动态细节查 field_dict/script_data_dict
+> **静态上下文(分层按需读取, 减少重复探索)**: docs/PROJECT_CONTEXT.md——含§0 指引目录(任务类型→热/温/冷区读取清单);
+> 🔥热区=AGENTS.md+§5 约束(每次必读); 🌤️温区=任务相关章节; 🧊冷区=仅任务需要时读对应文件;
+> 字段类动态细节查 field_dict/script_data_dict(冷区按需)
 > 版本:v1.2(V16.4.1 重构:合并落盘规则、清理过时内容与已完成待办)
 
 ---

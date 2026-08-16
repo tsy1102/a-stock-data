@@ -36,7 +36,7 @@ from typing import Any, Dict, List, Optional, Tuple, cast
 
 import requests
 
-from stock_common import _safe_float, UA, _request_with_retry, _quick_request, _debug_log
+from stock_common import _safe_float, UA, _quick_request, _debug_log
 from core.stock_cache import cached, make_valid_if, TTL  # V15.2 强化 + V15.5.7 TTL
 from core.config import TDX_MIN_INTERVAL, MAX_RETRY_COUNT, RETRY_DELAY_SECONDS
 
@@ -162,8 +162,7 @@ def _http_get(
 
     V9.0 新增：线程锁保护 _DOMAIN_LAST_TIME。
     """
-    import random as _rand
-
+    
     # 解析域名
     from urllib.parse import urlparse
 
@@ -1779,7 +1778,6 @@ def tdx_get_latest_reminders(code: str) -> dict:
         parse_table,
         parse_paragraph_blocks,
         parse_key_value_table,
-        extract_field,
     )
     import re as _re
 

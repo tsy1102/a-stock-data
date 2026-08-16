@@ -35,7 +35,6 @@ from stock_common.env_setup import ensure_utf8_stdio
 ensure_utf8_stdio()
 
 
-import os
 
 import asyncio
 

@@ -291,32 +291,6 @@ SIM_STRATEGIES: Dict[str, Callable[[List[Dict], int], List[str]]] = {
 # 评估指标
 # ═══════════════════════════════════════
 
-def calc_coverage(top_n_stocks: Set[str], strategy_results: Dict[str, Set[str]]) -> Dict[str, float]:
-    """计算每个策略的覆盖率（top_n 中被选中的占比）。"""
-    result = {}
-    for strategy_name, selected in strategy_results.items():
-        if not selected:
-            result[strategy_name] = 0.0
-            continue
-        # 策略选中的股票是否在 top_n 范围内
-        hit = len(selected & top_n_stocks)
-        result[strategy_name] = hit / len(selected) if selected else 0.0
-    return result
-
-
-def calc_stability(day_results: List[Set[str]]) -> float:
-    """计算 4 天结果的稳定性（0-1，越高越稳定）。"""
-    if len(day_results) < 2:
-        return 0.0
-    # 用 Jaccard 相似度的平均值
-    jaccards = []
-    for i in range(len(day_results)):
-        for j in range(i + 1, len(day_results)):
-            a, b = day_results[i], day_results[j]
-            if not a and not b:
-                continue
-            jaccards.append(len(a & b) / len(a | b) if a | b else 0.0)
-    return sum(jaccards) / len(jaccards) if jaccards else 0.0
 
 
 # ═══════════════════════════════════════

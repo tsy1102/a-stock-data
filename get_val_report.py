@@ -522,7 +522,7 @@ def _zhb_pattern_eligible(stock: dict, pattern: str = "double_bottom") -> bool:
     return True
 
 
-def _top5_sorted(candidates, key_func, reverse=True):
+def _top10_sorted(candidates, key_func, reverse=True):
     """从候选列表中取 TOP10，按 key_func 排序"""
     candidates.sort(key=key_func, reverse=reverse)
     return candidates[:10]
@@ -583,7 +583,7 @@ async def strategy_01_longhuitou(hot_pool, today_str):
         )
         result.append({"code": code, "name": name, "reason": reason,
                        "score": -abs(ma10_bias) + (8 - turnover) * 0.1})
-    return _top5_sorted(result, lambda x: x["score"])
+    return _top10_sorted(result, lambda x: x["score"])
 
 
 # ─── 策略02: 周线级别多均线多头排列 ───
@@ -625,7 +625,7 @@ def strategy_02_weekly_ma(stocks, top_n=None):
         )
         result.append({"code": code, "name": s.get("name", ""), "reason": reason,
                        "score": -w.get("cluster_spread", 0)})
-    return _top5_sorted(result, lambda x: x["score"])
+    return _top10_sorted(result, lambda x: x["score"])
 
 
 def _kline_indices(keys):
@@ -688,7 +688,7 @@ def strategy_03_volume_breakout(hot_pool):
         )
         result.append({"code": code, "name": name, "reason": reason,
                        "score": vol_ratio})
-    return _top5_sorted(result, lambda x: x["score"])
+    return _top10_sorted(result, lambda x: x["score"])
 
 
 # ─── 策略04: 核心资产打折买入 ───
@@ -773,7 +773,7 @@ async def strategy_04_core_discount(stocks):
                        "score": -pe_percentile})
         if len(result) >= 5:
             break
-    return _top5_sorted(result, lambda x: x["score"])
+    return _top10_sorted(result, lambda x: x["score"])
 
 
 # ─── 策略05: W底形态 ───
@@ -843,7 +843,7 @@ def strategy_05_double_bottom(stocks, top_n=None):
         )
         result.append({"code": code, "name": s.get("name", ""), "reason": reason,
                        "score": current_price / neckline if neckline > 0 else 0})
-    return _top5_sorted(result, lambda x: x["score"])
+    return _top10_sorted(result, lambda x: x["score"])
 
 
 # ─── 策略06: 红三兵 ───
@@ -888,7 +888,7 @@ def strategy_06_three_soldiers(stocks, top_n=500):
         )
         result.append({"code": code, "name": s.get("name", ""), "reason": reason,
                        "score": closes[2] / closes[0]})
-    return _top5_sorted(result, lambda x: x["score"])
+    return _top10_sorted(result, lambda x: x["score"])
 
 
 # ─── 策略07: 均线金叉 ───
@@ -917,7 +917,7 @@ def strategy_07_golden_cross(hot_pool):
         )
         result.append({"code": code, "name": name, "reason": reason,
                        "score": vol_ratio})
-    return _top5_sorted(result, lambda x: x["score"])
+    return _top10_sorted(result, lambda x: x["score"])
 
 
 # ─── 策略08: 政策驱动流（V7.5: 优先用同花顺 reason tags，新闻 NLP 为 fallback） ───
@@ -945,7 +945,7 @@ async def strategy_08_policy_driven(stocks, hot_pool=None):
                             "score": h.get("zhangfu", 0),
                         })
         if len(_ths_result) >= 3:
-            return _top5_sorted(_ths_result, lambda x: x["score"])
+            return _top10_sorted(_ths_result, lambda x: x["score"])
 
     # Fallback: 新闻 NLP 关键词匹配
     news_list = await asyncio.to_thread(cls_telegraph, 30)
@@ -974,7 +974,7 @@ async def strategy_08_policy_driven(stocks, hot_pool=None):
         )
         result.append({"code": code, "name": s.get("name", "") or "", "reason": reason,
                        "score": -pe_ttm})
-    return _top5_sorted(result, lambda x: x["score"])
+    return _top10_sorted(result, lambda x: x["score"])
 
 
 # ─── 策略09: 日历效应法 ───
@@ -1039,7 +1039,7 @@ def strategy_09_calendar_rotation():
             except Exception as _e:
                 _debug_log(f"val calendar_effect_item: {_e}")
                 continue
-    return _top5_sorted(result, lambda x: x["score"])
+    return _top10_sorted(result, lambda x: x["score"])
 
 
 # ─── 策略10: 逆向白马流 ───
@@ -1081,7 +1081,7 @@ async def strategy_10_contrarian_value(stocks, top_n=300):
         )
         result.append({"code": code, "name": s.get("name", ""), "reason": reason,
                        "score": -drawdown})
-    return _top5_sorted(result, lambda x: x["score"])
+    return _top10_sorted(result, lambda x: x["score"])
 
 
 # ─── 策略11: 筹码集中 ───
@@ -1107,7 +1107,7 @@ def strategy_11_holder_concentration(stocks, top_n=300):
                        "score": avg_shrink})
         if len(result) >= 5:
             break
-    return _top5_sorted(result, lambda x: x["score"])
+    return _top10_sorted(result, lambda x: x["score"])
 
 
 # ─── 策略12: 量价背离防守 ───
@@ -1138,7 +1138,7 @@ def strategy_12_divergence_warning(stocks, top_n=300):
         )
         result.append({"code": code, "name": s.get("name", ""), "reason": reason,
                        "score": vol_decline_pct})
-    return _top5_sorted(result, lambda x: x["score"])
+    return _top10_sorted(result, lambda x: x["score"])
 
 
 # ─── 策略13: 红利低波 ───
@@ -1173,7 +1173,7 @@ def strategy_13_dividend_yield(stocks):
                        "score": yield_pct})
         if len(result) >= 5:
             break
-    return _top5_sorted(result, lambda x: x["score"])
+    return _top10_sorted(result, lambda x: x["score"])
 
 
 # ─── 策略15: 头部资金风向标 ───
@@ -1211,7 +1211,7 @@ def strategy_14_liquidity_king(top_liquidity_pool):
                 "code": code, "name": s.get("name", ""), "reason": reason,
                 "score": _amt_yi * vol_ratio,
             })
-    return _top5_sorted(result, lambda x: x["score"])
+    return _top10_sorted(result, lambda x: x["score"])
 
 
 # ─── 策略16: 政策热度图谱（V7.5 新增） ───
@@ -1290,7 +1290,7 @@ def strategy_15_policy_heatmap(all_stocks, hot_pool):
         )
         results.append({"code": code, "name": c.get("name", ""), "reason": reason, "score": score})
 
-    return _top5_sorted(results, lambda x: x["score"])
+    return _top10_sorted(results, lambda x: x["score"])
 
 
 # ─── 策略17: 北向持仓 Top30 异动（V7.5 新增） ───
@@ -1360,7 +1360,7 @@ def strategy_16_northbound_top(all_stocks, top_n=200):
         if len(results) >= 8:  # 多拿一点供排序
             break
 
-    return _top5_sorted(results, lambda x: x["score"])
+    return _top10_sorted(results, lambda x: x["score"])
 
 
 # ─── 策略18: 龙虎榜席位活跃度（V7.5 新增） ───
@@ -1501,7 +1501,7 @@ def strategy_17_longhu_activity(all_stocks, today_str=None, top_n=200):
             _debug_log(f"val strategy_item: {_e}")
             continue
 
-    return _top5_sorted(results, lambda x: x["score"])
+    return _top10_sorted(results, lambda x: x["score"])
 
 # ─── 策略19: 52周位置百分位（V10.3新增）──
 
@@ -1537,7 +1537,7 @@ def strategy_18_52w_position(stocks, top_n=200):
         )
         result.append({"code": code, "name": s.get("name", ""), "reason": reason,
                        "score": 100 - position_pct})
-    return _top5_sorted(result, lambda x: x["score"])
+    return _top10_sorted(result, lambda x: x["score"])
 
 
 # ─── 策略20: 主力资金占比因子（V10.3新增）──
@@ -1611,7 +1611,7 @@ def strategy_19_main_fund_ratio(stocks, top_n=1000):
         )
         result.append({"code": code, "name": s.get("name", ""), "reason": reason,
                        "score": fund_ratio})
-    return _top5_sorted(result, lambda x: x["score"])
+    return _top10_sorted(result, lambda x: x["score"])
 
 
 # ═══════════════════════════════════════════════════════════════
@@ -1652,7 +1652,7 @@ def strategy_20_volume_acceleration(stocks, top_n=200):
             f"加速比 {accel_ratio:.2f}（放量加速）"
         )
         result.append({"code": code, "name": s.get("name", ""), "reason": reason, "score": score})
-    return _top5_sorted(result, lambda x: x["score"])
+    return _top10_sorted(result, lambda x: x["score"])
 
 
 def strategy_21_capital_momentum(stocks):
@@ -1688,7 +1688,7 @@ def strategy_21_capital_momentum(stocks):
             f"动量值={momentum:.0f}（信号: {signal or '看多'}，⚠️竞价额口径非主力净流入）"
         )
         result.append({"code": code, "name": s.get("name", ""), "reason": reason, "score": score})
-    return _top5_sorted(result, lambda x: x["score"])
+    return _top10_sorted(result, lambda x: x["score"])
 
 
 def strategy_22_yjyg(stocks):
@@ -1725,7 +1725,7 @@ def strategy_22_yjyg(stocks):
             f"{' 中报窗口' if yg.get('report_date', '').startswith('2026-06') else ''}"
         )
         result.append({"code": code, "name": s.get("name", ""), "reason": reason, "score": score})
-    return _top5_sorted(result, lambda x: x["score"])
+    return _top10_sorted(result, lambda x: x["score"])
 
 
 def strategy_23_earnings_expect(stocks):
@@ -1764,7 +1764,7 @@ def strategy_23_earnings_expect(stocks):
         except Exception as _e:
             _debug_log(f"val strategy23 eps expect {code}: {_e}")
             continue
-    return _top5_sorted(result, lambda x: x["score"])
+    return _top10_sorted(result, lambda x: x["score"])
 
 
 def _safe_int(v) -> int:
@@ -2194,7 +2194,8 @@ async def run_discovery_async(output_path):
         L("\n" + "-"*85)
         L(f"[{_title}]")
         if items:
-            for idx2, item in enumerate(items[:5], 1):
+            # V17.0.2d(2026-08-17): 用户要求显示全部候选(策略输出上限 10, 原展示截断 5)
+            for idx2, item in enumerate(items[:10], 1):
                 # V16.3.3 (2026-08-10 字典 12.15.8): ST 标注（不剔除——ST 涨跌幅已统一 10%，市场价值正常体现）
                 # V17.0 S5: 统一走 sc_utils.name_mark
                 from stock_common.sc_utils import name_mark as _u_name_mark

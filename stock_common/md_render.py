@@ -27,7 +27,9 @@ _SPLITTER = re.compile(r"[│｜|]")
 _BORDER_DECOR = re.compile(r"^[─┬┴┼├┌└┤┐┘\s]+$")
 # V17.0.2c: "字段: 值"对齐块推断(用户: md 折叠空格, 竖排对齐失效 → 对齐即表格)
 # 单字段值行: 字段名(1-14 字符, 无冒号) + 冒号 + ≥1 空格 + 值(值不含管道)
+# V17.0.2e: 排除行首 emoji/状态符号(✅⚡📊📋⏱ 等日志状态行不转表——用户: 无用 |---|---|)
 _FIELD_VAL = re.compile(r"^ {0,4}\S[^:：]{1,14}[:：]\s{1,}\S[^|]*$")
+_EMOJI_LEAD = re.compile(r"^ {0,4}(?:[\U0001F000-\U0001FAFF\u2600-\u27BF\u2B00-\u2BFF\uFE0F]|[✅⚡📊📋⏱⚠️📌💰🚀🔥📐📈📉💎🟢🟡🔴])")
 
 
 def _split_by_sep(r: str) -> List[str]:
@@ -148,12 +150,8 @@ def text_to_md(lines: List[str]) -> List[str]:
     n = len(lines)
     while i < n:
         ln = lines[i]
-        if _LINE_ONLY.match(ln):
-            # A 修复(2026-08-16): 标题后紧跟的分隔线抑制(脚本模式: ─ 标题 ─, 标题自带分隔, 多余 --- 视觉重复)
-            if out and out[-1].startswith("## ") or out and out[-1].startswith("### "):
-                i += 1
-                continue
-            out.append("---")
+        # V17.0.2e: 独立分隔线(--- 或长线)丢弃——md 标题字体/加粗已够区分, 用户要求去除
+        if _LINE_ONLY.match(ln) or ln.strip() == "---":
             i += 1
             continue
         if _HEADING.match(ln) or _HEADING_BRACKET.match(ln):
@@ -170,7 +168,7 @@ def text_to_md(lines: List[str]) -> List[str]:
             i = j
             continue
         # V17.0.2c: "字段: 值"对齐块 → 2 列表格(章节一/三基本信息与预期)
-        if _FIELD_VAL.match(ln):
+        if _FIELD_VAL.match(ln) and not _EMOJI_LEAD.match(ln):
             block = []
             j = i
             while j < n and lines[j].strip() and _FIELD_VAL.match(lines[j]) \

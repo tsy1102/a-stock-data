@@ -20,7 +20,8 @@ _BORDER_ROW = re.compile(r"^\s*│")
 _LINE_ONLY = re.compile(r"^\s*[─=\-]{8,}\s*$")
 _SECTION_SEP = re.compile(r"^\s*[─=]{8,}\s*$")  # V17.0.2: 全角长线=章节分隔(表格块收集时挡); 半角 - 短横=表内分隔线(允许进块)
 _HEADING = re.compile(r"^\s*【[^】]{1,40}】")
-_HEADING_BRACKET = re.compile(r"^\s*\[\d{1,2}[^\]]{1,30}\]\s*$")  # val 格式: [01 龙回头]
+# V17.0.2h: 放宽——任意整行 [xxx](含无数字前缀的 [多策略共振金股推荐]/[风控仪表盘 & 仓位管理])均转 ## 标题
+_HEADING_BRACKET = re.compile(r"^\s*\[[^\[\]]{1,40}\]\s*$")
 _SPACE_TABLE_HEADER = re.compile(r"^\s*[^\s│┌]")
 _SPACE_TABLE_SEP = re.compile(r"^\s*[─\-]{4,}(\s*[─\-]{4,})*\s*$")
 _SPLITTER = re.compile(r"[│｜|]")

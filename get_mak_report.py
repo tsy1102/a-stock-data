@@ -1127,7 +1127,7 @@ async def generate_sector_report(output_path):
 
     L("=" * 90)
     # V17.0.2i: 头部拆分(报告名/时间+时段分行)——原一行过长
-    L(f"  📊 A股异动及行业轮动扫描报告")
+    L(f"  **📊 A股异动及行业轮动扫描报告**")
     L(f"  ⏱ {today_str} {now.strftime('%H.%M.%S')} | {_mkt_note}")
     L("=" * 90)
     print("[数据装载] 获取全市场多日数据与指数基准...", flush=True)

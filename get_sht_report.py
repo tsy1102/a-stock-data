@@ -15,7 +15,7 @@
     V9.3.2 2026-07-09 - 基础设施修复：TDX K线假数据防护、SQLite WAL死锁修复、代理环境兼容（脚本本身无改动，受益于底层修复）
     V9.3   2026-07-07 - 盘前行情模式：9:30前使用上一交易日日K线数据；盘前提示文本；删除报告标题硬编码版本号
     V9.2   2026-07-05 - 异常处理规范化；缓存交叉验证机制启用
-    V9.1   2026-07-04 - F10 全覆盖：新增【异动与风险提示】章节+数据质量附录；修复资金流渲染 float/dict 兼容
+    V9.1   2026-07-04 - F10 全覆盖：新增**异动与风险提示**章节+数据质量附录；修复资金流渲染 float/dict 兼容
     V9.0   2026-07-02 - 舆情互动层（Layer 10）；上市日期 push2 fallback；valid_if 校验；_has_zero_price 拦截
     V8.8   2026-06-25 - GD上传逻辑统一化 & 快照格式升级（TXT+自动上传）
     V8.7   2026-06-25 - 死代码清理：同步版替换为薄包装
@@ -213,7 +213,7 @@ async def generate_report_async(session, code, output_path, ind_comp=None, idx_q
 
     # V17.0.2i: 头部拆分(报告名/时间+模式分行, 参照 mak 规则)
     L("="*72)
-    L(f"  {code} 个股深度数据报告")
+    L(f"  **{code} 个股深度数据报告**")
     L(f"  ⏱ {today_str} {datetime.now().strftime('%H.%M.%S')} | 模式: {_dc['desc']}")
     L("="*72)
     L("")
@@ -258,7 +258,7 @@ async def generate_report_async(session, code, output_path, ind_comp=None, idx_q
         L("  ⚠️ 非交易时段：数据为最近交易日快照，短线技术指标已标注")
     elif _mkt_status == "post_close":
         L("  ℹ️ 盘后收盘：数据为今日收盘快照，短线技术指标基于收盘价")
-    L("\n"+"---"); L("## 【一、个股基本信息】"); L("---")
+    L("\n"+"---"); L("## **一、个股基本信息**"); L("---")
 
     # V15 统一数据中心：通过 get_canonical_stock_data 获取强类型标准化数据
     # V15.2 修正: async 上下文必须包 to_thread，否则阻塞主事件循环（val 死锁根因）
@@ -425,7 +425,7 @@ async def generate_report_async(session, code, output_path, ind_comp=None, idx_q
         else:
             L("\n  [资金流向] 今日主力净流入(实时): 暂无数据")
 
-    L("\n"+"---"); L("## 【三、机构一致预期与估值】"); L("---")
+    L("\n"+"---"); L("## **三、机构一致预期与估值**"); L("---")
 
     df_eps = await get_eps_forecast_async(session, code)
 
@@ -510,7 +510,7 @@ async def generate_report_async(session, code, output_path, ind_comp=None, idx_q
 
             L(t)
 
-    L("\n"+"---"); L("## 【四、个股研报（东财）】"); L("---")
+    L("\n"+"---"); L("## **四、个股研报（东财）**"); L("---")
 
     # V15.4.2: 同步研报拉取包 to_thread
     reports = await asyncio.to_thread(get_reports, code, 5)
@@ -653,7 +653,7 @@ async def generate_report_async(session, code, output_path, ind_comp=None, idx_q
 
     else: L("  (该股今日未进入同花顺强势股列表，暂无热点题材归因数据)")
 
-    L("\n"+"---"); L("## 【六、同业龙头横向对比】"); L("---")
+    L("\n"+"---"); L("## **六、同业龙头横向对比**"); L("---")
 
     if peer_data["peers"]:
 
@@ -680,7 +680,7 @@ async def generate_report_async(session, code, output_path, ind_comp=None, idx_q
 
     else: L(f"  无法获取同业数据（板块: {peer_data.get('industry','未知')}）")
 
-    L("\n"+"---"); L("## 【七、资金走向分析】"); L("---")
+    L("\n"+"---"); L("## **七、资金走向分析**"); L("---")
 
     # V15.2 修复: 改名 _composite → q (cdata.to_dict() 的标准变量名)
     # 同时把 cdata 的字段名转换为 zhb_main_net dict 格式（向后兼容下游 print 逻辑）
@@ -779,7 +779,7 @@ async def generate_report_async(session, code, output_path, ind_comp=None, idx_q
 
     else: L("  (资金流数据获取失败)")
 
-    L("\n"+"---"); L("## 【八、北向资金持仓动态】"); L("---")
+    L("\n"+"---"); L("## **八、北向资金持仓动态**"); L("---")
 
     nb = await get_northbound_hold_async(session, code, 20)
 
@@ -807,7 +807,7 @@ async def generate_report_async(session, code, output_path, ind_comp=None, idx_q
 
     else: L("  该股暂无北向资金持仓数据（可能非陆股通标的或数据延迟）")
 
-    L("\n"+"---"); L("## 【九、龙虎榜席位】"); L("---")
+    L("\n"+"---"); L("## **九、龙虎榜席位**"); L("---")
 
     # 优化时段显示：根据不同市场状态提供更精准的提示
     current_time = datetime.now()
@@ -990,7 +990,7 @@ async def generate_report_async(session, code, output_path, ind_comp=None, idx_q
 
     else: L(f"  近{_recent_days}日无龙虎榜记录（白马蓝筹或近期未触发异动标准的个股，无龙虎榜属正常现象）")
 
-    L("\n"+"---"); L("## 【十、限售解禁日历】"); L("---")
+    L("\n"+"---"); L("## **十、限售解禁日历**"); L("---")
 
     lockup = await get_lockup_expiry_async(session, code, days=90, include_history=True)
 
@@ -1048,7 +1048,7 @@ async def generate_report_async(session, code, output_path, ind_comp=None, idx_q
 
     else: L("  该股无融资融券数据（可能不是两融标的）")
 
-    L("\n"+"---"); L("## 【十二、大宗交易】"); L("---")
+    L("\n"+"---"); L("## **十二、大宗交易**"); L("---")
 
     if _dc.get("skip_block_trade_detail"):
         L("  [lite模式] 跳过详细数据")
@@ -1069,7 +1069,7 @@ async def generate_report_async(session, code, output_path, ind_comp=None, idx_q
 
     else: L("  无大宗交易记录")
 
-    L("\n"+"---"); L("## 【十三、股东户数变化】"); L("---")
+    L("\n"+"---"); L("## **十三、股东户数变化**"); L("---")
 
     if _dc.get("skip_holder_history"):
         L("  [lite/medium模式] 跳过详细历史")
@@ -1110,7 +1110,7 @@ async def generate_report_async(session, code, output_path, ind_comp=None, idx_q
 
     else: L("  股东户数数据获取失败")
 
-    L("\n"+"---"); L("## 【十四、短线情绪与事件催化】"); L("---")
+    L("\n"+"---"); L("## **十四、短线情绪与事件催化**"); L("---")
 
     # 东财个股新闻（近7日）
     try:
@@ -1344,7 +1344,7 @@ async def generate_report_async(session, code, output_path, ind_comp=None, idx_q
     except Exception as _e:
         _debug_log(f"sht changes/shortline: {_e}")
 
-    L("\n"+"---"); L("## 【十五、综合信号汇总】"); L("---")
+    L("\n"+"---"); L("## **十五、综合信号汇总**"); L("---")
 
     signals = []
 
@@ -1581,7 +1581,7 @@ async def generate_report_async(session, code, output_path, ind_comp=None, idx_q
         except Exception as _e:
             _debug_log(f"sht lb estimate ({code}): {_e}")  # M11 修复(2026-08-15 二审): 吞异常补日志
 
-    L("\n"+"---"); L("## 【仓位管理建议】"); L("---")
+    L("\n"+"---"); L("## **仓位管理建议**"); L("---")
 
     # V8.2: 使用统一评分接口
     from stock_common import calculate_score
@@ -1671,11 +1671,11 @@ async def generate_report_async(session, code, output_path, ind_comp=None, idx_q
     try:
         _consensus = multi_scores['consensus'].total_score
         if _consensus >= 60:
-            _rating = "【中性偏乐观】整体表现良好，建议持续跟踪后分批配置"
+            _rating = "**中性偏乐观**整体表现良好，建议持续跟踪后分批配置"
         elif _consensus >= 40:
-            _rating = "【中性观望】各项指标均衡，等待更明确信号后再决策"
+            _rating = "**中性观望**各项指标均衡，等待更明确信号后再决策"
         else:
-            _rating = "【中性偏谨慎】多项评分偏低，需注意风险控制"
+            _rating = "**中性偏谨慎**多项评分偏低，需注意风险控制"
         L(f"  综合投资建议: {_rating}")
     except Exception as _e:
         _debug_log(f"multi_school_score error: {_e}")

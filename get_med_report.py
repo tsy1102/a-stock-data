@@ -168,7 +168,7 @@ async def generate_report_async(session, code, output_path, ind_comp=None, hsgt=
 
     L("=" * 72)
     # V17.0.2i: 头部拆分(参照 mak 规则)
-    L(f"  {code} 中线深度投研报告")
+    L(f"  **{code} 中线深度投研报告**")
     L(f"  ⏱ {today_str} {datetime.now().strftime('%H.%M.%S')}")
     L("=" * 72)
     L("")
@@ -207,7 +207,7 @@ async def generate_report_async(session, code, output_path, ind_comp=None, hsgt=
         L("")
 
     # ─── 0. 宏观资金风向标 ───
-    L("\n## 【一、宏观资金面背景】")
+    L("\n## **一、宏观资金面背景**")
     L("---")
     if hsgt is None:
         hsgt = await get_hsgt_macro_flow_async(session)
@@ -666,7 +666,7 @@ async def generate_report_async(session, code, output_path, ind_comp=None, hsgt=
                 except (TypeError, ValueError):
                     pass
         L(f"  统计样本：近 {len(reports)} 篇研报")
-        L(f"  ➤ 【买入】评级: {buy_count} 篇 | 【增持】评级: {add_count} 篇")
+        L(f"  ➤ **买入**评级: {buy_count} 篇 | **增持**评级: {add_count} 篇")
         # V16.1: 评级风向（评级上调/下调）
         if rating_up or rating_down:
             L(f"  ➤ 评级变化: 上调 {rating_up} 篇 | 下调 {rating_down} 篇"
@@ -696,7 +696,7 @@ async def generate_report_async(session, code, output_path, ind_comp=None, hsgt=
         L("  近期无过滤后的重大公告。")
 
     # ─── 6. 筹码稳定性分析 ───
-    L("\n## 【八、筹码稳定性与抛压评估】")
+    L("\n## **八、筹码稳定性与抛压评估**")
     L("---")
     holders = await get_holder_change_async(session, code)
     if holders:
@@ -739,7 +739,7 @@ async def generate_report_async(session, code, output_path, ind_comp=None, hsgt=
         L("\n  ➤ 解禁抛压预警: 未来半年内无解禁压力 ✅")
 
     # ─── 北向资金持仓动态 ───
-    L("\n## 【九、北向资金持仓动态】")
+    L("\n## **九、北向资金持仓动态**")
     L("---")
     nb = await get_northbound_hold_async(session, code, 90)
     if nb:
@@ -902,7 +902,7 @@ async def generate_report_async(session, code, output_path, ind_comp=None, hsgt=
     else:
         L("  无大宗交易记录。")
 
-    L("\n## 【十四、龙虎榜机构动向】")
+    L("\n## **十四、龙虎榜机构动向**")
     L("---")
     dtb = await get_dragon_tiger_board_async(session, code, days=180)
     if dtb and dtb.get("records"):
@@ -1008,12 +1008,12 @@ async def generate_report_async(session, code, output_path, ind_comp=None, hsgt=
             _nb_chg = (_nb_e - _nb_s) / _nb_s * 100
             _bt_items.append(f"北向近{len(nb)}日持仓{_nb_chg:+.1f}%")
     if _bt_items:
-        L("## 【回测参考】")
+        L("## **回测参考**")
         for _bi in _bt_items:
             L(f"  📊 {_bi}")
 
     # ─── 十七、舆情与互动 ───
-    L("\n## 【十七、舆情与互动】")
+    L("\n## **十七、舆情与互动**")
 
     # 财联社快讯（近3天）
     try:
@@ -1072,7 +1072,7 @@ async def generate_report_async(session, code, output_path, ind_comp=None, hsgt=
         _debug_log(f"med cninfo_irm: {_e}")
 
     L("\n" + "---")
-    L("## 【仓位管理建议】")
+    L("## **仓位管理建议**")
     L("---")
 
     # V8.2: 使用统一评分接口
@@ -1152,11 +1152,11 @@ async def generate_report_async(session, code, output_path, ind_comp=None, hsgt=
     try:
         _consensus = multi_scores['consensus'].total_score
         if _consensus >= 60:
-            _rating = "【中性偏乐观】整体表现良好，建议持续跟踪后分批配置"
+            _rating = "**中性偏乐观**整体表现良好，建议持续跟踪后分批配置"
         elif _consensus >= 40:
-            _rating = "【中性观望】各项指标均衡，等待更明确信号后再决策"
+            _rating = "**中性观望**各项指标均衡，等待更明确信号后再决策"
         else:
-            _rating = "【中性偏谨慎】多项评分偏低，需注意风险控制"
+            _rating = "**中性偏谨慎**多项评分偏低，需注意风险控制"
         L(f"  综合投资建议: {_rating}")
     except Exception as _e:
         _debug_log(f"med multi_school_score error: {_e}")

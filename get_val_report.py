@@ -1796,7 +1796,7 @@ async def run_discovery_async(output_path):
     def L(s=""): lines.append(s)
 
     L("---")
-    L(f"  A 股策略发现报告  [{today_str} {_t_now.strftime('%H.%M.%S')}]")
+    L(f"  **A 股策略发现报告**  [{today_str} {_t_now.strftime('%H.%M.%S')}]")
     L("---")
     L("  市场: A 股 | 策略: 23 | 引擎: asyncio | 并发: 3")
     L("-" * 85)

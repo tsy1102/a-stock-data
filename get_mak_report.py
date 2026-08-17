@@ -1430,14 +1430,12 @@ async def generate_sector_report(output_path):
             for sec, cnt in list(sector_stats.items())[:10]:
                 L(f"    {sec}: {cnt} 只")
 
-        # 涨停明细
+        # 涨停明细(V17.0.2f: 直接 md 表格 7 列, 避免空格表头粘连丢列)
         zt_list = pool.get("limit_up_list", [])
         if zt_list:
             L("\n  涨停明细（按封板时间排序）:")
-            L(
-                f"  {'代码':<8} {'名称':<10} {'涨跌幅':>8} {'连板':>4} {'封板时间':>8} {'封板资金(亿)':>10} {'板块':<12}"
-            )
-            L(f"  {'-'*70}")
+            L("| 代码 | 名称 | 涨跌幅 | 连板 | 封板时间 | 封板资金(亿) | 板块 |")
+            L("|---|---|---|---|---|---|---|")
             for item in zt_list[:30]:
                 fund_yi = item.get('limit_fund', 0) / 1e8 if item.get('limit_fund', 0) else 0
                 # H2(审查 2026-08-16): ths 优先源输出 first_time(已格式化 HH:MM:SS),
@@ -1457,16 +1455,18 @@ async def generate_sector_report(output_path):
                 else:
                     fbt_fmt = str(fbt_raw)
                 L(
-                    f"  {item.get('code',''):<8} {item.get('name',''):<10}{_name_mark(item.get('name',''))} {item.get('change_pct',0):>+8.2f}% {item.get('limit_count',0):>4.0f} {fbt_fmt:>8} {fund_yi:>+10.2f} {item.get('sector',''):<12}"
+                    f"| {item.get('code','')} | {item.get('name','')}{_name_mark(item.get('name',''))} | {item.get('change_pct',0):+.2f}% | {item.get('limit_count',0):.0f} | {fbt_fmt} | {fund_yi:+.2f} | {item.get('sector','')} |"
                 )
 
-        # 炸板明细
+        # 炸板明细(V17.0.2f: md 表格)
         zb_list = pool.get("limit_broken_list", [])
         if zb_list:
             L("\n  炸板明细:")
+            L("| 代码 | 名称 | 涨幅 | 炸板次数 | 板块 |")
+            L("|---|---|---|---|---|")
             for item in zb_list[:15]:
                 L(
-                    f"    {item.get('code','')} {item.get('name','')}{_name_mark(item.get('name',''))} 涨幅{item.get('change_pct',0):+.2f}% 炸板{item.get('broken_count',0):.0f}次 板块:{item.get('sector','')}"
+                    f"| {item.get('code','')} | {item.get('name','')}{_name_mark(item.get('name',''))} | {item.get('change_pct',0):+.2f}% | {item.get('broken_count',0):.0f} | {item.get('sector','')} |"
                 )
     except Exception as _e:
         _debug_log(f"mak limit_pool: {_e}")
@@ -1484,13 +1484,14 @@ async def generate_sector_report(output_path):
         _ladder = get_kph_limit_ladder()
         if _ladder:
             L(f"  涨停天梯共 {len(_ladder)} 只:")
-            L(f"  {'代码':<8} {'名称':<10} {'连板':>4} {'大单一字':>6} {'人气':>4} {'板块涨停':>6} {'个股额(亿)':>10}")
-            L(f"  {'-'*70}")
+            # V17.0.2f: md 表格
+            L("| 代码 | 名称 | 连板 | 大单一字 | 人气 | 板块涨停 | 个股额(亿) |")
+            L("|---|---|---|---|---|---|---|")
             for s in _ladder[:20]:
                 _one = "✓" if s.get("one_word") else ""
                 _pop = "🔥" if s.get("popular") else ""
                 _amt = _safe_float(s.get("amount", 0)) / 1e8
-                L(f"  {str(s.get('code','')):<8} {str(s.get('name','')):<10} {s.get('limit_count',0):>4} {_one:>6} {_pop:>4} {s.get('plate_limit_up_count',0):>6} {_amt:>10.2f}")
+                L(f"| {str(s.get('code',''))} | {str(s.get('name',''))} | {s.get('limit_count',0)} | {_one} | {_pop} | {s.get('plate_limit_up_count',0)} | {_amt:.2f} |")
         else:
             L("  (涨停天梯数据获取失败)")
     except Exception as _e:
@@ -1628,8 +1629,9 @@ async def generate_sector_report(output_path):
         L(f"\n{'='*90}")
         L("## 【近3日异动回溯（高偏离值个股，可能近日触发过异动）】")
         L(f"{'---'}")
-        L(f"  {'代码':<8} {'名称':<12} {'3日偏离':>9} {'10日偏离':>9} {'20日偏离':>9} {'公告':<12}")
-        L(f"  {'-'*75}")
+        # V17.0.2f: md 表格(用户: 20日偏离/公告 应分列)
+        L("| 代码 | 名称 | 3日偏离 | 10日偏离 | 20日偏离 | 公告 |")
+        L("|---|---|---|---|---|---|")
         _shown = 0
         for _r in _recent_top[:30]:
             _a_info = ""
@@ -1639,27 +1641,26 @@ async def generate_sector_report(output_path):
             else:
                 continue
             L(
-                f"  {_r[0]:<8} {_r[1]:<12} {_r[2]:>+9.2f}% {_r[3]:>+9.2f}% {_r[4]:>+9.2f}% {_a_info:<12}"
+                f"| {_r[0]} | {_r[1]} | {_r[2]:+.2f}% | {_r[3]:+.2f}% | {_r[4]:+.2f}% | {_a_info} |"
             )
             _shown += 1
         if _shown == 0:
             L("  (近3日无股票触发异常波动公告)")
-        L("  \n  💡 注: 回溯基于当日快照的10日/20日偏离值反推，非精确历史回放")
+        L("\n  💡 注: 回溯基于当日快照的10日/20日偏离值反推，非精确历史回放")
 
     L(f"\n{'='*90}")
     L("## 【D. 行业轮动强度扫描】")
     L(f"{'---'}")
     top10 = sorted_sectors[:10]
     L(f"  行业总数: {len(sectors)}个")
-    L(
-        f"  {'排名':<6} {'板块名称':<18} {'评分':>5} {'涨跌幅':>7} {'成交额(亿)':>9} {'主力净流(亿)':>11}"
-    )
-    L(f"  {'-'*55}")
+    # V17.0.2f: md 表格(用户: 该表应完整分列)
+    L("| 排名 | 板块名称 | 评分 | 涨跌幅 | 成交额(亿) | 主力净流(亿) |")
+    L("|---|---|---|---|---|---|")
     for i, ts in enumerate(top10, 1):
         name = normalize_industry(ts["name"])
         _mfi = round(ts.get('main_inflow', 0) / 1e8, 2) if abs(ts.get('main_inflow', 0)) > 0 else 0
         L(
-            f"  {i:<6} {name:<18} {ts.get('score',0):>5.1f} {ts['change_pct']:>+7.2f}% {ts.get('amount_yi',0):>9.1f} {_mfi:>+11.2f}"
+            f"| {i} | {name} | {ts.get('score',0):.1f} | {ts['change_pct']:+.2f}% | {ts.get('amount_yi',0):.1f} | {_mfi:+.2f} |"
         )
     if top10:
         L(
@@ -1670,9 +1671,12 @@ async def generate_sector_report(output_path):
             from stock_common import get_plate_rotation_top
             _pr_top = get_plate_rotation_top("kaipan", 20, 5)
             if _pr_top:
-                L(f"\n  🧭 外部轮动对照（开盘啦强度分 top5）:")
+                L("\n  🧭 外部轮动对照（开盘啦强度分 top5）:")
+                # V17.0.2f: md 表格
+                L("| 排名 | 板块代码 | 板块名称 | 强度 |")
+                L("|---|---|---|---|")
                 for _p in _pr_top:
-                    L(f"      #{_p['rank']} {_p['code']} {_p['name']} 强度 {_p['value']} {'↑' if _p['color']=='red' else '↓'}")
+                    L(f"| #{_p['rank']} | {_p['code']} | {_p['name']} | {_p['value']} {'↑' if _p['color']=='red' else '↓'} |")
         except Exception as _e:
             _debug_log(f"mak plate rotation cross-check: {_e}")
     else:
@@ -1719,30 +1723,41 @@ async def generate_sector_report(output_path):
     with_money = [s for s in _scored if s.get("main_inflow", 0) > 0]
     without_money = [s for s in _scored if s.get("main_inflow", 0) <= 0]
     if with_money:
-        _sorted_in = sorted(with_money, key=lambda x: x.get('main_inflow', 0), reverse=True)
+        # V17.0.2f: md 表格
         L("  ✅ 真金白银: 高评分且主力净流入:")
+        L("| 板块 | 评分 | 涨跌幅 | 主力净流入(亿) |")
+        L("|---|---|---|---|")
+        _sorted_in = sorted(with_money, key=lambda x: x.get('main_inflow', 0), reverse=True)
         for s in _sorted_in[:10]:
             L(
-                f"    {normalize_industry(s['name'])}: 评分{s.get('score',0):.1f} 涨幅{s['change_pct']:+.2f}% 净流入{round(s['main_inflow']/1e8,2):+.2f}亿"
+                f"| {normalize_industry(s['name'])} | {s.get('score',0):.1f} | {s['change_pct']:+.2f}% | {round(s['main_inflow']/1e8,2):+.2f} |"
             )
     if without_money:
-        _sorted_out = sorted(without_money, key=lambda x: x.get('main_inflow', 0), reverse=True)
+        # V17.0.2f: md 表格
         L("  ⚠️ 虚涨（主力净流出）:")
+        L("| 板块 | 评分 | 涨跌幅 | 主力净流出(亿) |")
+        L("|---|---|---|---|")
+        _sorted_out = sorted(without_money, key=lambda x: x.get('main_inflow', 0), reverse=True)
         for s in _sorted_out[:10]:
             L(
-                f"    {normalize_industry(s['name'])}: 评分{s.get('score',0):.1f} 涨幅{s['change_pct']:+.2f}% 主力净流出{round(abs(s['main_inflow'])/1e8,2):.2f}亿"
+                f"| {normalize_industry(s['name'])} | {s.get('score',0):.1f} | {s['change_pct']:+.2f}% | {round(abs(s['main_inflow'])/1e8,2):.2f} |"
             )
+    else:
+        # V17.0.2f: 虚涨段缺失核查——ulist f62+f66 批量失败时兜底 ZHB 竞价额(恒正) → 无净流出
+        L("  ℹ️ 无主力净流出的高分板块（ulist 批量数据可用时本段才有内容; 批量失败时兜底竞价额口径恒正）")
     _lurking = [
         s for s in sectors if s.get("main_inflow", 0) > 3e8 and 1 <= s.get("change_pct", 0) <= 5
     ]
     _lurking.sort(key=lambda x: x.get("main_inflow", 0), reverse=True)
     if _lurking:
+        # V17.0.2f: md 表格
         L("\n  🕵️ 潜伏信号（主力大幅流入但涨幅不大，可能正在建仓）:")
-        L(f"  {'-'*60}")
+        L("| 板块 | 涨跌幅 | 主力净流入(亿) |")
+        L("|---|---|---|")
         for _l in _lurking[:5]:
             _lnm = normalize_industry(_l["name"])
             _lfi = round(_l["main_inflow"] / 1e8, 2)
-            L(f"    {_lnm}: 涨幅{_l['change_pct']:+.2f}% 主力净流入{_lfi:+.2f}亿")
+            L(f"| {_lnm} | {_l['change_pct']:+.2f}% | {_lfi:+.2f} |")
     L(f"\n{'='*90}")
     # V17.0(2026-08-15 C 方案): 全量 md 化——渲染层确定性转换(标题/分隔线/F10 边框表/对齐空格表→md)
     from stock_common.md_render import render_md_report

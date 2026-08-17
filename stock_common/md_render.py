@@ -25,6 +25,9 @@ _SPACE_TABLE_HEADER = re.compile(r"^\s*[^\s│┌]")
 _SPACE_TABLE_SEP = re.compile(r"^\s*[─\-]{4,}(\s*[─\-]{4,})*\s*$")
 _SPLITTER = re.compile(r"[│｜|]")
 _BORDER_DECOR = re.compile(r"^[─┬┴┼├┌└┤┐┘\s]+$")
+# V17.0.2c: "字段: 值"对齐块推断(用户: md 折叠空格, 竖排对齐失效 → 对齐即表格)
+# 单字段值行: 字段名(1-14 字符, 无冒号) + 冒号 + ≥1 空格 + 值(值不含管道)
+_FIELD_VAL = re.compile(r"^ {0,4}\S[^:：]{1,14}[:：]\s{1,}\S[^|]*$")
 
 
 def _split_by_sep(r: str) -> List[str]:
@@ -108,6 +111,37 @@ def _space_table_to_md(block: List[str]) -> "tuple[list, list]":
     return out, []
 
 
+def _fieldval_block_to_md(block: List[str]) -> List[str]:
+    """V17.0.2c: "字段: 值"对齐块 → md 2 列表格.
+
+    推断规则(用户引导: 对齐如何推断表格): 连续 ≥3 行"字段: 值" → 转 | 字段 | 值 | 表;
+    行内多字段("今开: 205.00 元  昨收: 204.33 元")按 2+ 空格 + 短字段 + 冒号拆分各成一行;
+    不足 3 行 → 原样(竖排保留)。
+    """
+    rows: List[str] = []
+    for r in block:
+        m = _FIELD_VAL.match(r)
+        if not m:
+            return block
+        field, _, rest = r.partition(":")
+        rest = rest.strip()
+        if not rest:
+            return block
+        # 行内多字段拆分: 2+ 空格 + 字段名(1-12) + 冒号 + 空格
+        parts = re.split(r" {2,}(?=\S[^:：]{1,12}[:：] )", rest)
+        segs = [(field.strip(), parts[0].strip())]
+        for p in parts[1:]:
+            p = p.strip()
+            if not p:
+                continue
+            f2, _, v2 = p.partition(":")
+            segs.append((f2.strip(), v2.strip()))
+        rows.extend("| " + f + " | " + v + " |" for f, v in segs if v)
+    if len(rows) < 3:
+        return block
+    return [rows[0], "|---|---|"] + rows[1:]
+
+
 def text_to_md(lines: List[str]) -> List[str]:
     out: List[str] = []
     i = 0
@@ -134,6 +168,25 @@ def text_to_md(lines: List[str]) -> List[str]:
                 j += 1
             out.extend(_border_rows_to_md(block))
             i = j
+            continue
+        # V17.0.2c: "字段: 值"对齐块 → 2 列表格(章节一/三基本信息与预期)
+        if _FIELD_VAL.match(ln):
+            block = []
+            j = i
+            while j < n and lines[j].strip() and _FIELD_VAL.match(lines[j]) \
+                    and not _HEADING.match(lines[j]) and not _SECTION_SEP.match(lines[j]) \
+                    and not lines[j].lstrip().startswith("## "):
+                block.append(lines[j])
+                j += 1
+            if len(block) >= 3:
+                out.extend(_fieldval_block_to_md(block))
+                if out and out[-1].startswith("| "):
+                    out.append("")
+                i = j
+                continue
+            # 不足 3 行 → 逐行走普通行清理
+            out.append(_clean_text_line(ln))
+            i += 1
             continue
         if _SPACE_TABLE_HEADER.match(ln) and i + 1 < n and _SPACE_TABLE_SEP.match(lines[i + 1]):
             # V17.0.1 修复(2026-08-16): 表头间隙预检——表头行须有 ≥2 个连续空格(≥3 列)才可能是表格;

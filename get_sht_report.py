@@ -850,16 +850,19 @@ async def generate_report_async(session, code, output_path, ind_comp=None, idx_q
         seats = dtb["seats"]
 
         if seats["buy"]:
-
-            L("\n  最近买入席位 TOP5:"); L(f"  {'营业部名称':<30} {'买入(万)':>9} {'卖出(万)':>9} {'净额(万)':>9}"); L(f"  {'-'*70}")
-
-            for s in seats["buy"]: L(f"  {_tag(s['name'])} {s['name']:<28} {s['buy_amt']:>12.1f} {s['sell_amt']:>12.1f} {s['net']:>12.1f}")
+            # V17.0.2o: 直接 md 表格 4 列(原空格表被旧渲染器破坏)
+            L("\n  最近买入席位 TOP5:")
+            L("| 营业部名称 | 买入(万) | 卖出(万) | 净额(万) |")
+            L("|---|---|---|---|")
+            for s in seats["buy"]:
+                L(f"| {_tag(s['name'])} {s['name']} | {s['buy_amt']:.1f} | {s['sell_amt']:.1f} | {s['net']:.1f} |")
 
         if seats["sell"]:
-
-            L("\n  最近卖出席位 TOP5:"); L(f"  {'营业部名称':<30} {'买入(万)':>9} {'卖出(万)':>9} {'净额(万)':>9}"); L(f"  {'-'*70}")
-
-            for s in seats["sell"]: L(f"  {_tag(s['name'])} {s['name']:<28} {s['buy_amt']:>12.1f} {s['sell_amt']:>12.1f} {s['net']:>12.1f}")
+            L("\n  最近卖出席位 TOP5:")
+            L("| 营业部名称 | 买入(万) | 卖出(万) | 净额(万) |")
+            L("|---|---|---|---|")
+            for s in seats["sell"]:
+                L(f"| {_tag(s['name'])} {s['name']} | {s['buy_amt']:.1f} | {s['sell_amt']:.1f} | {s['net']:.1f} |")
 
         inst = dtb["institution"]
 

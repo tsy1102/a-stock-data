@@ -1058,9 +1058,12 @@ async def generate_report_async(session, code, output_path, ind_comp=None, idx_q
 
     if rbt:
 
-        L(f"  近30天共 {len(rbt)} 笔大宗交易:"); L(f"  {'日期':<12} {'成交价':>6} {'收盘价':>6} {'溢价%':>6} {'成交量':>10} {'买方':<24} {'卖方'}"); L(f"  {'-'*95}")
-
-        for d in rbt: L(f"  {d['date']:<12} {d['price']:>8.2f} {d['close']:>8.2f} {d['premium_pct']:>7.2f}% {d['vol']/1e4 if d['vol'] else 0:>10.0f}万 {d['buyer']:<24} {d['seller']}")
+        L(f"  近30天共 {len(rbt)} 笔大宗交易:")
+        # V17.0.2m: md 表格 7 列(原空格表"成交量万+买方"1 空格粘连合并列)
+        L("| 日期 | 成交价 | 收盘价 | 溢价% | 成交量(万股) | 买方 | 卖方 |")
+        L("|---|---|---|---|---|---|---|")
+        for d in rbt:
+            L(f"| {d['date']} | {d['price']:.2f} | {d['close']:.2f} | {d['premium_pct']:+.2f}% | {d['vol']/1e4 if d['vol'] else 0:.0f} | {d['buyer']} | {d['seller']} |")
 
     elif bt: L(f"  近30天内无大宗交易（共 {len(bt)} 笔历史记录，已省略）")
 

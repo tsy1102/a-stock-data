@@ -1684,7 +1684,8 @@ async def generate_sector_report(output_path):
                 L("| 排名 | 板块代码 | 板块名称 | 强度 |")
                 L("|---|---|---|---|")
                 for _p in _pr_top:
-                    L(f"| #{_p['rank']} | {_p['code']} | {_p['name']} | {_p['value']} {'↑' if _p['color']=='red' else '↓'} |")
+                    # V17.0.2m: 排名去 #(表格单元格内 #1 被渲染器高亮红色)
+                    L(f"| {_p['rank']} | {_p['code']} | {_p['name']} | {_p['value']} {'↑' if _p['color']=='red' else '↓'} |")
         except Exception as _e:
             _debug_log(f"mak plate rotation cross-check: {_e}")
     else:

@@ -167,7 +167,9 @@ async def generate_report_async(session, code, output_path, ind_comp=None, hsgt=
         lines.append(s)
 
     L("=" * 72)
-    L(f"  {code} 中线深度投研报告 — {today_str} {datetime.now().strftime('%H:%M:%S')}")
+    # V17.0.2i: 头部拆分(参照 mak 规则)
+    L(f"  {code} 中线深度投研报告")
+    L(f"  ⏱ {today_str} {datetime.now().strftime('%H.%M.%S')}")
     L("=" * 72)
     L("")
     _sc = _load_strategy_config()
@@ -912,20 +914,17 @@ async def generate_report_async(session, code, output_path, ind_comp=None, hsgt=
         seats = dtb["seats"]
         if seats["buy"]:
             L("\n  最近买入席位 TOP5:")
-            L(f"  {'营业部名称':<30} {'买入(万)':>9} {'卖出(万)':>9} {'净额(万)':>9}")
-            L(f"  {'-'*70}")
+            # V17.0.2i: md 表格(原空格表无表头行识别 → 未转)
+            L("| 营业部名称 | 买入(万) | 卖出(万) | 净额(万) |")
+            L("|---|---|---|---|")
             for s in seats["buy"]:
-                L(
-                    f"  {s['name']:<30} {s['buy_amt']:>12.1f} {s['sell_amt']:>12.1f} {s['net']:>12.1f}"
-                )
+                L(f"| {s['name']} | {s['buy_amt']:.1f} | {s['sell_amt']:.1f} | {s['net']:.1f} |")
         if seats["sell"]:
             L("\n  最近卖出席位 TOP5:")
-            L(f"  {'营业部名称':<30} {'买入(万)':>9} {'卖出(万)':>9} {'净额(万)':>9}")
-            L(f"  {'-'*70}")
+            L("| 营业部名称 | 买入(万) | 卖出(万) | 净额(万) |")
+            L("|---|---|---|---|")
             for s in seats["sell"]:
-                L(
-                    f"  {s['name']:<30} {s['buy_amt']:>12.1f} {s['sell_amt']:>12.1f} {s['net']:>12.1f}"
-                )
+                L(f"| {s['name']} | {s['buy_amt']:.1f} | {s['sell_amt']:.1f} | {s['net']:.1f} |")
         inst = dtb["institution"]
         if inst and (inst.get("buy_amt", 0) > 0 or inst.get("sell_amt", 0) > 0):
             L("\n  机构买卖统计:")
@@ -950,11 +949,12 @@ async def generate_report_async(session, code, output_path, ind_comp=None, hsgt=
             L("    💎 连续5年以上分红，具备稳定防御属性")
     if div:
         L("  近5次分红除息记录:")
-        L(f"  {'除权除息日':<14} {'每股派息(元)':>8} {'折算对应股价股息率参考'}")
-        L(f"  {'-'*55}")
+        # V17.0.2i: md 表格(原空格表无分隔线行 → 未转)
+        L("| 除权除息日 | 每股派息(元) | 折算对应股价股息率参考 |")
+        L("|---|---|---|")
         for d in div[:5]:
             yield_str = f"{(d['bonus_rmb'] / price_today) * 100:.2f}%" if price_today > 0 else "N/A"
-            L(f"  {d['date']:<14} {d['bonus_rmb']:>12.4f}  约 {yield_str} (按现价计)")
+            L(f"| {d['date']} | {d['bonus_rmb']:.4f} | 约 {yield_str} (按现价计) |")
     else:
         # V16.2.3: 区分"接口失败"与"真无分红"
         L("  分红数据获取失败（TDX 接口暂不可用）。" if div is None else

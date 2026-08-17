@@ -144,7 +144,9 @@ async def generate_report_async(session, code, output_path, ind_comp=None):
     def L(s=""): lines.append(s)
 
     L("=" * 72)
-    L(f"  {code} 长线价投专属深度体检报告 — {today_str} {datetime.now().strftime('%H:%M:%S')}")
+    # V17.0.2i: 头部拆分(参照 mak 规则)
+    L(f"  {code} 长线价投专属深度体检报告")
+    L(f"  ⏱ {today_str} {datetime.now().strftime('%H.%M.%S')}")
     L("=" * 72)
     L("")
 
@@ -468,14 +470,15 @@ async def generate_report_async(session, code, output_path, ind_comp=None):
     ext_roe_data = get_roe_trend(code, 8, financials=financials, bs_data=bs_data,
                                   total_shares=info.get("total_shares", 0))
     if ext_roe_data:
-        L(f"  {'报告期':<12} {'ROE%':>8} {'扣非ROE%':>10} {'EPS':>8} {'BPS':>10}")
-        L(f"  {'-'*55}")
+        # V17.0.2i: 直接 md 表格 5 列(原空格表数据行粘连)
+        L("| 报告期 | ROE% | 扣非ROE% | EPS | BPS |")
+        L("|---|---|---|---|---|")
         for r in ext_roe_data:
             ext_roe_str = f"{r['roe']:.2f}" if r['roe'] is not None else "N/A"
             ext_roe_kc_str = f"{r['roe_kc']:.2f}" if r['roe_kc'] is not None else "N/A"
             ext_eps_str = f"{r['eps']:.2f}" if r['eps'] is not None else "N/A"
             ext_bps_str = f"{r['bps']:.2f}" if r['bps'] is not None else "N/A"
-            L(f"  {r['date']:<12} {ext_roe_str:>8} {ext_roe_kc_str:>10} {ext_eps_str:>8} {ext_bps_str:>10}")
+            L(f"| {r['date']} | {ext_roe_str} | {ext_roe_kc_str} | {ext_eps_str} | {ext_bps_str} |")
         ext_last_roe = ext_roe_data[0].get("roe")
         if ext_last_roe is not None:
             if ext_last_roe >= 20:

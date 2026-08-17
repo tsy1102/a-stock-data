@@ -1434,7 +1434,8 @@ async def generate_sector_report(output_path):
         if sector_stats:
             L("\n  涨停板块分布（TOP10）:")
             for sec, cnt in list(sector_stats.items())[:10]:
-                L(f"    {sec}: {cnt} 只")
+                # V17.0.2l: 无冒号格式——原 "化工: 4 只" 被字段值块转表(表头强制加粗), 用户: 竖排
+                L(f"    {sec}({cnt} 只)")
 
         # 涨停明细(V17.0.2f: 直接 md 表格 7 列, 避免空格表头粘连丢列)
         zt_list = pool.get("limit_up_list", [])

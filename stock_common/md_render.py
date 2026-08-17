@@ -237,6 +237,10 @@ def text_to_md(lines: List[str]) -> List[str]:
                 and not out[-1].lstrip().startswith("| ") \
                 and not out[-1].lstrip().startswith("|---"):
             out.append("")
+        # V17.0.2l: 表格行后遇文本行也补空行——否则下一标题/提示被 md 渲染并进上一表格
+        if out and out[-1].lstrip().startswith(("| ", "|---")) \
+                and not _cleaned.lstrip().startswith(("| ", "|---")):
+            out.append("")
         out.append(_cleaned)
         i += 1
     return out

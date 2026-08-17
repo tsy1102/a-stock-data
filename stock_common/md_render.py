@@ -145,6 +145,14 @@ def _fieldval_block_to_md(block: List[str]) -> List[str]:
     return [rows[0], "|---|---|"] + rows[1:]
 
 
+def _ensure_tbl_blank(out: List[str]) -> None:
+    """V17.0.2k: 表格块输出前补空行(渲染器要求表格前有空行, 否则不渲染).
+    上一行若是表格行(| / |---)则无需补(表内连续)."""
+    if out and out[-1].strip() and not out[-1].lstrip().startswith("| ") \
+            and not out[-1].lstrip().startswith("|---"):
+        out.append("")
+
+
 def text_to_md(lines: List[str]) -> List[str]:
     out: List[str] = []
     i = 0
@@ -165,6 +173,7 @@ def text_to_md(lines: List[str]) -> List[str]:
             while j < n and (_BORDER_OPEN.match(lines[j]) or _BORDER_ROW.match(lines[j])):
                 block.append(lines[j])
                 j += 1
+            _ensure_tbl_blank(out)
             out.extend(_border_rows_to_md(block))
             i = j
             continue
@@ -178,6 +187,7 @@ def text_to_md(lines: List[str]) -> List[str]:
                 block.append(lines[j])
                 j += 1
             if len(block) >= 3:
+                _ensure_tbl_blank(out)
                 out.extend(_fieldval_block_to_md(block))
                 if out and out[-1].startswith("| "):
                     out.append("")
@@ -206,6 +216,7 @@ def text_to_md(lines: List[str]) -> List[str]:
                 block.append(lines[j])
                 j += 1
             tbl_rows, rest = _space_table_to_md(block)
+            _ensure_tbl_blank(out)
             out.extend(tbl_rows)
             if rest:
                 i = j - len(rest)  # 尾部非表格行交回主循环(去缩进/继续处理)
@@ -217,7 +228,15 @@ def text_to_md(lines: List[str]) -> List[str]:
             i = j
             continue
         # C/D/E 修复: 行首缩进去除 + ──装饰行 → ### + #N 编号 → **#N**(防被当标题)
+        # V17.0.2k: ①md 表格行前补空行(渲染器要求表格前有空行——原脚本文本行紧贴表格 → 不渲染);
+        #           ②**#N** → **N.**(# 被部分渲染器高亮为红色)
         _cleaned = _clean_text_line(ln)
+        _cleaned = re.sub(r"\*\*#(\d{1,3})\*\*", r"**\1.**", _cleaned)
+        # 表格行前补空行(渲染器要求); 分隔行(|---)与数据行(| )均视为表格行, 不补
+        if _cleaned.lstrip().startswith("| ") and out and out[-1].strip() \
+                and not out[-1].lstrip().startswith("| ") \
+                and not out[-1].lstrip().startswith("|---"):
+            out.append("")
         out.append(_cleaned)
         i += 1
     return out
@@ -233,10 +252,10 @@ def _clean_text_line(ln: str) -> str:
     m = _DECO_LINE.match(ln)
     if m and m.group(1).strip():
         return "### " + m.group(1).strip()
-    # E: #N 编号行 → **#N**(防 md 把 #1 当 h1 标题)
+    # E: #N 编号行 → **N.**(原 **#N** 的 # 被部分渲染器高亮为红色)
     m2 = _HASH_NUM.match(ln)
     if m2:
-        return "  **#" + m2.group(1) + "** " + ln[m2.end():].strip()
+        return "  **" + m2.group(1) + ".** " + ln[m2.end():].strip()
     # C: 去行首 1-4 空格缩进(保留列表语义行如 "  - "/"  1. ")
     stripped = ln.lstrip()
     if stripped.startswith(("- ", "* ", "1. ", "2. ", "> ")):

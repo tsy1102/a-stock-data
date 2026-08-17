@@ -211,7 +211,12 @@ async def generate_report_async(session, code, output_path, ind_comp=None, idx_q
 
     def L(s=""): lines.append(s)
 
-    L("="*72); L(f"  {code} 个股深度数据报告 [{_dc['desc']}] — {today_str} {datetime.now().strftime('%H:%M:%S')}"); L("="*72); L("")
+    # V17.0.2i: 头部拆分(报告名/时间+模式分行, 参照 mak 规则)
+    L("="*72)
+    L(f"  {code} 个股深度数据报告")
+    L(f"  ⏱ {today_str} {datetime.now().strftime('%H.%M.%S')} | 模式: {_dc['desc']}")
+    L("="*72)
+    L("")
 
     _30d_str = (datetime.now()-timedelta(days=30)).strftime("%Y-%m-%d")
 

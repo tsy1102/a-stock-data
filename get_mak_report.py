@@ -171,6 +171,26 @@ async def get_market_abnormal_data():
             data = await asyncio.to_thread(tdx_get_market_abnormal_data)
     else:
         data = await asyncio.to_thread(tdx_get_market_abnormal_data)
+    # V17.0.2g(2026-08-17): 主力净额批量(ulist f62+f66)必须在**两条路径**都执行——
+    # 原批量段在 _get_zhb_market_data 内, 盘中 zhb 非今日走 TDX 路径时永不执行
+    # → _MAIN_NET_MAP_GLOBAL 空 → 兜底竞价额(恒正) → F 段虚涨判定恒空
+    if data:
+        try:
+            _bq_codes = [str(d.get("code", "")) for d in data if d.get("code")]
+            if _bq_codes:
+                from stock_common.sc_datasource import get_em_batch_quotes
+                _bq = await asyncio.to_thread(get_em_batch_quotes, _bq_codes) or {}
+                if len(_bq) < len(_bq_codes) * 0.5:
+                    _bq2 = await asyncio.to_thread(get_em_batch_quotes, _bq_codes) or {}
+                    if len(_bq2) > len(_bq):
+                        _bq = _bq2
+                global _MAIN_NET_MAP_GLOBAL
+                _MAIN_NET_MAP_GLOBAL = {
+                    code: (q.get("main_net_inflow_wan", 0.0) or 0.0) * 1e4
+                    for code, q in _bq.items()
+                }
+        except Exception as _e:
+            _debug_log(f"mak ulist main_net batch (unified): {_e}")
     # V15.5.16: 统一腾讯实时覆盖（无论 ZHB/TDX 分支）— 今日盘中涨停判断
     if data:
         try:
@@ -223,23 +243,7 @@ async def _get_zhb_market_data():
             _tencent_map = _tencent_batch_fallback(all_codes) or {}
         except Exception as _e:
             _debug_log(f"mak tencent batch: {_e}")
-        # V17.0(2026-08-15): 主力净流入批量方案——ulist.np/get 批量 f62+f66(=push2 f137+f140 特大+大单净,
-        # 20/20 对齐实锤)。此前 main_net_amount=ZHB main_net_buy_amount(实为竞价额, 名实不符)。
-        # fallback 链: ulist 批量(主) → ZHB 竞价额(兜底, 语义标注)
-        _main_net_map: Dict[str, float] = {}
-        try:
-            from stock_common.sc_datasource import get_em_batch_quotes
-
-            # ⚠️ H2 修复(2026-08-15 审查): 同步网络批量(17 chunk ~20-30s)在 async 上下文阻塞事件循环 → to_thread
-            _bq = await asyncio.to_thread(get_em_batch_quotes, all_codes) or {}
-            _main_net_map = {
-                code: (q.get("main_net_inflow_wan", 0.0) or 0.0) * 1e4  # 万元 → 元(下游 /1e8 元口径)
-                for code, q in _bq.items()
-            }
-            global _MAIN_NET_MAP_GLOBAL
-            _MAIN_NET_MAP_GLOBAL = dict(_main_net_map)  # H1: 板块聚合/A 段共享(元, 带符号)
-        except Exception as _e:
-            _debug_log(f"mak ulist main_net batch: {_e}")
+        # V17.0.2g(2026-08-17): 主力净额批量已上移至 get_market_abnormal_data 统一执行(两条路径)
         # V14.2.1: 提前一次性获取 ZHB profile 离线简称（修复 mak 0只 Bug）
         from core.zhb_client import get_stock_name_from_zhb
 
@@ -1122,7 +1126,7 @@ async def generate_sector_report(output_path):
         lines.append(s)
 
     L("=" * 90)
-    L(f"  📊 A股异动及行业轮动扫描报告 — {today_str} {now.strftime('%H:%M:%S')} {_mkt_note}")
+    L(f"  📊 A股异动及行业轮动扫描报告 — {today_str} {now.strftime('%H.%M.%S')} {_mkt_note}")
     L("=" * 90)
     print("[数据装载] 获取全市场多日数据与指数基准...", flush=True)
     _t0 = time.time()
@@ -1646,7 +1650,7 @@ async def generate_sector_report(output_path):
             _shown += 1
         if _shown == 0:
             L("  (近3日无股票触发异常波动公告)")
-        L("\n  💡 注: 回溯基于当日快照的10日/20日偏离值反推，非精确历史回放")
+        L("\n  > 💡 注: 回溯基于当日快照的 10 日/20 日偏离值反推，非精确历史回放")
 
     L(f"\n{'='*90}")
     L("## 【D. 行业轮动强度扫描】")

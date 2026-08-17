@@ -6518,9 +6518,28 @@ def get_kph_limit_ladder(date_str: str = "") -> List[Dict[str, Any]]:
         except Exception:
             pass
         if not date_str:
-            # 默认最近交易日（开盘红复盘接口要求历史日期：昨天或更早）
-            date_str = (date.today() - timedelta(days=1)).strftime("%Y-%m-%d")
-        data = lk.get_zttt(date=date_str)
+            # V17.0.2g(2026-08-17): 开盘红复盘接口要求"已收盘交易日"(昨天或更早)——
+            # 原 今天-1 在周一/节后运行取到休市日 → 接口空 → "涨停天梯获取失败"
+            from stock_common.stock_calendar import get_last_trading_day
+            from datetime import date as _date
+
+            _ltd = get_last_trading_day()
+            _d0 = _ltd if isinstance(_ltd, _date) else _ltd.date()
+            # 最近交易日是今天(交易日盘中/盘前) → 回退到上一已收盘交易日
+            if _d0 == _date.today():
+                _d0 = _d0 - timedelta(days=1)
+            date_str = _d0.strftime("%Y-%m-%d")
+            # 回退日可能仍是休市日(周末) → 向前找首个有数据的日期(最多 7 天)
+            for _try in range(7):
+                data = lk.get_zttt(date=date_str)
+                _cnt = len(data.get("StockList") or []) if isinstance(data, dict) else len(data or [])
+                if _cnt > 0:
+                    break
+                date_str = (datetime.strptime(date_str, "%Y-%m-%d") - timedelta(days=1)).strftime("%Y-%m-%d")
+            else:
+                data = lk.get_zttt(date=date_str)
+        else:
+            data = lk.get_zttt(date=date_str)
         # levistock get_zttt 返回 dict: {"StockList": [...], "ZhuShuList": [...]}
         if isinstance(data, dict):
             data = data.get("StockList") or []

@@ -15,7 +15,7 @@ from __future__ import annotations
 import re
 from typing import List
 
-_BORDER_OPEN = re.compile(r"^\s*[┌├└]")
+_BORDER_OPEN = re.compile(r"^\s*[┌├└][─┬┼┴\-]+[┐┤┘]?$")  # V17.0.2g: 纯边框线行(无文字)——原含 ├ 把树形装饰(├─ 文字)误当 F10 边框表
 _BORDER_ROW = re.compile(r"^\s*│")
 _LINE_ONLY = re.compile(r"^\s*[─=\-]{8,}\s*$")
 _SECTION_SEP = re.compile(r"^\s*[─=]{8,}\s*$")  # V17.0.2: 全角长线=章节分隔(表格块收集时挡); 半角 - 短横=表内分隔线(允许进块)

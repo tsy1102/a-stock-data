@@ -145,7 +145,7 @@ async def generate_report_async(session, code, output_path, ind_comp=None):
 
     L("=" * 72)
     # V17.0.2i: 头部拆分(参照 mak 规则)
-    L(f"  {code} 长线价投专属深度体检报告")
+    L(f"  **{code} 长线价投专属深度体检报告**")
     L(f"  ⏱ {today_str} {datetime.now().strftime('%H.%M.%S')}")
     L("=" * 72)
     L("")
@@ -877,7 +877,7 @@ async def generate_report_async(session, code, output_path, ind_comp=None):
             elif "增持" in rating: add_count += 1
             
         L(f"  统计样本: 近 {len(reports)} 篇研报 | 参与覆盖的独立券商/机构: {len(org_set)} 家")
-        L(f"  ➤ 【买入】评级: {buy_count} 篇 | 【增持】评级: {add_count} 篇")
+        L(f"  ➤ **买入**评级: {buy_count} 篇 | **增持**评级: {add_count} 篇")
         
         L("\n  最新 10 篇核心研报观点:")
         L(f"  {'日期':<12} {'机构':<16} {'评级':<10} {'标题'}")
@@ -940,7 +940,7 @@ async def generate_report_async(session, code, output_path, ind_comp=None):
         _debug_log(f"lng risk engine: {_re}")
 
     # ─── 十、舆情与互动 ───
-    L("\n## 【十、舆情与互动】")
+    L("\n## **十、舆情与互动**")
 
     # 财联社快讯（近2天）
     try:
@@ -999,7 +999,7 @@ async def generate_report_async(session, code, output_path, ind_comp=None):
     except Exception as _e:
         _debug_log(f"lng cninfo_irm: {_e}")
 
-    L("\n"+"---"); L("## 【仓位管理建议】"); L("---")
+    L("\n"+"---"); L("## **仓位管理建议**"); L("---")
     
     # V8.2: 使用统一评分接口
     from stock_common import ScoreData, calculate_score
@@ -1071,11 +1071,11 @@ async def generate_report_async(session, code, output_path, ind_comp=None):
     try:
         _consensus = multi_scores['consensus'].total_score
         if _consensus >= 60:
-            _rating = "【中性偏乐观】整体表现良好，建议持续跟踪后分批配置"
+            _rating = "**中性偏乐观**整体表现良好，建议持续跟踪后分批配置"
         elif _consensus >= 40:
-            _rating = "【中性观望】各项指标均衡，等待更明确信号后再决策"
+            _rating = "**中性观望**各项指标均衡，等待更明确信号后再决策"
         else:
-            _rating = "【中性偏谨慎】多项评分偏低，需注意风险控制"
+            _rating = "**中性偏谨慎**多项评分偏低，需注意风险控制"
         L(f"  综合投资建议: {_rating}")
     except Exception as _e:
         _debug_log(f"lng multi_school_score error: {_e}")

@@ -164,7 +164,26 @@ def text_to_md(lines: List[str]) -> List[str]:
             i += 1
             continue
         if _HEADING.match(ln) or _HEADING_BRACKET.match(ln):
-            out.append("## " + ln.strip())
+            # V17.0.2n(设计师规范): 标题去【】/[]——原生 md 标题不需要括号装饰(txt 遗留)
+            _t = ln.strip()
+            if len(_t) >= 2 and _t[0] == "【" and _t[-1] == "】":
+                _t = _t[1:-1]
+            elif len(_t) >= 2 and _t[0] == "[" and _t[-1] == "]":
+                _t = _t[1:-1]
+            out.append("## " + _t)
+            i += 1
+            continue
+        # V17.0.2n: ➤ 小节行 → ### 小节标题(原生 md 层级)
+        if re.match(r"^\s*➤\s*\S", ln):
+            _sub = re.sub(r"^\s*➤\s*", "", ln).strip().rstrip(":：")
+            if _sub:
+                out.append("### " + _sub)
+                i += 1
+                continue
+        # V17.0.2n: ├─/└─ 树形装饰 → md 列表(txt 遗留符号去除)
+        if re.match(r"^\s*[├└]─\s*\S", ln):
+            _li = re.sub(r"^\s*[├└]─\s*", "", ln).strip()
+            out.append("- " + _li)
             i += 1
             continue
         if _BORDER_OPEN.match(ln):
@@ -232,6 +251,13 @@ def text_to_md(lines: List[str]) -> List[str]:
         #           ②**#N** → **N.**(# 被部分渲染器高亮为红色)
         _cleaned = _clean_text_line(ln)
         _cleaned = re.sub(r"\*\*#(\d{1,3})\*\*", r"**\1.**", _cleaned)
+        # V17.0.2n: 脚本直接输出 "## 【X】" 形式 → 去【】(原生 md 标题)
+        if _cleaned.startswith("## ") and "【" in _cleaned and _cleaned.rstrip().endswith("】"):
+            _cleaned = _cleaned.replace("【", "").replace("】", "")
+        elif _cleaned.startswith("## ") and "[" in _cleaned and _cleaned.rstrip().endswith("]"):
+            _t2 = _cleaned[3:].strip()
+            if _t2.startswith("[") and _t2.endswith("]"):
+                _cleaned = "## " + _t2[1:-1]
         # 表格行前补空行(渲染器要求); 分隔行(|---)与数据行(| )均视为表格行, 不补
         if _cleaned.lstrip().startswith("| ") and out and out[-1].strip() \
                 and not out[-1].lstrip().startswith("| ") \

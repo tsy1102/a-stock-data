@@ -701,13 +701,16 @@ async def generate_report_async(session, code, output_path, ind_comp=None, hsgt=
     holders = await get_holder_change_async(session, code)
     if holders:
         L("  ➤ 股东户数变化趋势:")
+        # V17.0.2m: md 表格(用户: 股东户数趋势用表格)
+        L("| 截止日期 | 股东户数 | 环比变化 |")
+        L("|---|---|---|")
         for h in holders[:5]:
             _cr = h['change_ratio']
             # 边界检查：变化率超过±500%视为异常数据，不显示
             _cr_disp = _cr if abs(_cr) <= 500 else (999.99 if _cr > 500 else -999.99)
             _cr_flag = " ⚠️" if abs(_cr) > 500 else ""
             L(
-                f"    截止 {h['date']}: 股东数 {h['holder_num']:,} 户 | 环比变化 {_cr_disp:+.2f}%{_cr_flag}"
+                f"| {h['date']} | {h['holder_num']:,} | {_cr_disp:+.2f}%{_cr_flag} |"
             )
         latest = holders[0]
         if latest["change_ratio"] <= -3:
@@ -891,12 +894,11 @@ async def generate_report_async(session, code, output_path, ind_comp=None, hsgt=
     bt_filtered = [d for d in bt if d.get("date", "") >= _one_year_ago] if bt else []
     if bt_filtered:
         L(f"  近1年共 {len(bt_filtered)} 笔大宗交易（历史共 {len(bt)} 笔）:")
-        L(f"  {'日期':<12} {'成交价':>6} {'溢价%':>6} {'成交量':>8} {'买方':<24}")
-        L(f"  {'-'*75}")
+        # V17.0.2m: md 表格(原空格表"成交量万+买方"1 空格粘连)
+        L("| 日期 | 成交价 | 溢价% | 成交量(万股) | 买方 |")
+        L("|---|---|---|---|---|")
         for d in bt_filtered:
-            L(
-                f"  {d['date']:<12} {d['price']:>8.2f} {d['premium_pct']:>7.2f}% {d['vol']/1e4:>8.0f}万 {d['buyer']:<24}"
-            )
+            L(f"| {d['date']} | {d['price']:.2f} | {d['premium_pct']:+.2f}% | {d['vol']/1e4:.0f} | {d['buyer']} |")
     else:
         L("  无大宗交易记录。")
 

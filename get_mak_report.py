@@ -1126,7 +1126,9 @@ async def generate_sector_report(output_path):
         lines.append(s)
 
     L("=" * 90)
-    L(f"  📊 A股异动及行业轮动扫描报告 — {today_str} {now.strftime('%H.%M.%S')} {_mkt_note}")
+    # V17.0.2i: 头部拆分(报告名/时间+时段分行)——原一行过长
+    L(f"  📊 A股异动及行业轮动扫描报告")
+    L(f"  ⏱ {today_str} {now.strftime('%H.%M.%S')} | {_mkt_note}")
     L("=" * 90)
     print("[数据装载] 获取全市场多日数据与指数基准...", flush=True)
     _t0 = time.time()
@@ -1515,10 +1517,11 @@ async def generate_sector_report(output_path):
         L('')
         L(f"  ❗ 同花顺独家 {len(_ths_only)} 只（东财口径未覆盖，交叉验证增量）:")
         if _ths_only:
-            L(f"  {'代码':<8} {'名称':<10} {'涨幅%':>7} {'题材':<30}")
-            L(f"  {'-'*65}")
+            # V17.0.2i: 直接 md 表格 4 列(原空格表"涨幅% 题材"因 1 空格粘连合并列)
+            L("| 代码 | 名称 | 涨幅% | 题材 |")
+            L("|---|---|---|---|")
             for _h in _ths_only[:10]:
-                L(f"  {_h.get('code',''):<8} {_h.get('name',''):<10}{_name_mark(_h.get('name',''))} {_safe_float(_h.get('zhangfu',0)):>+7.2f}% {str(_h.get('reason',''))[:30]:<30}")
+                L(f"| {_h.get('code','')} | {_h.get('name','')}{_name_mark(_h.get('name',''))} | {_safe_float(_h.get('zhangfu',0)):+.2f}% | {str(_h.get('reason',''))[:40]} |")
 
     L("## 【C. 板块-异动集中度分析】")
     L(f"{'---'}")
@@ -1718,7 +1721,9 @@ async def generate_sector_report(output_path):
                 else f"{_st.get('change_pct',0):+.1f}%"
             )
             _items.append(f"{_st['name']}({_st['code']}, {_label})")
-        L(f"    龙头: {' | '.join(_items)}")
+        # V17.0.2i: 无龙头时不输出空"龙头:"行
+        if _items:
+            L(f"    龙头: {' | '.join(_items)}")
     L(f"\n{'='*90}")
     L("## 【F. 资金流验证：真金白银 vs 虚涨】")
     L(f"{'---'}")

@@ -9,6 +9,7 @@
 - **字典架构重构（V16.4.0）**：主字典=决策层（field_dict 只留结论），附录=实证层（docs/verify/ 12 个文件）；三大客户端逆向（东财/通达信/同花顺）——tdxstat 35 列/tdxstat2 21 列官方破解（ipo_price/52周/PE 双口径铁证）、thsdk 市净率口径铁证、服务器全表（通达信 HQHOST 43/同花顺 123ths 域名族）；统一层加固（缓存 schema 版本化 + canonical 量级校验）；sht 批量预取优化（push2delay ulist 300/批）
 - **字段实测验证流水线（V16.4.1）**：20 股固定股票池 + 19 源按天采集（`scripts/capture_field_probe.py` → `docs/field_verification/`）；TdxQuant 官方 88 字段交叉破解（Col[3]=StaticPE_TTM/Col[24]=CashZJ 万元/[26]=YearZTDay 等 18/18 实锤）；每日会话纪要锚点 `docs/session_notes/`
 - **全盘重构与字段破解（V17.0）**：7 支撑模块包化 `core/`；批量骨架收敛基类 `execute_batch_pipeline`；main.py 固定超时改**输出活性检测**；主力净流入全链统一 f137、行业仅认 881 段、PE 动态=f162（字典实锤）；**命名规律破解**——Amo=Amount 金额族、"N日"涨跌幅全交易日口径、tdxstat2 21 列全映射（封单额三日滚动）、f137-146 资金流定位、通达信行业体系（881 行业/880 概念/X 码细分行业）；script_data_dict.md 全量重写
+- **md 格式整体规划与渲染修复（V17.0.2/17.0.3）**：标题去括号/小节 ### 层级/树形转列表；表格前后双向空行渲染修复（标题不再被并表）；**#N**→**N.** 红色数字消除；字段值块/明细/席位/大宗/股东户数全部 md 表格化；虚涨段根因修复（主力批量两路径统一）；涨停天梯休市日期修复；fflow push2delay 优先（风控）；fmt_preview 离线预览工具
 - **字段增强与全量 md 化（V17.0.1）**：mak 主力净额 ulist 批量 f62+f66 真主力（竞价额冒充修复）；sht 连板追踪 ZHB[31] 真连板数；val 21→23 策略（业绩预增 get_yjyg_all + 盈利预期本机 ProfitForecast）；lng 机构一致预期；三轮审查 50+ 项修复（单位 10000x/缓存失效/限流面/契约键）；**报告全量 md 化**（`md_render.py` 渲染层转换：标题/分隔线/F10 边框表/空格表数据驱动切分，输出 .md 纯文本兼容）；bypass 模式 .day 尾部补价（新版 .day 格式破解：OHLC=int32×0.01 元）
 - **5种报告类型**（V16.1: ful 下线）：短线(sht)、中线(med)、长线(lng)、估值选股(val)、市场状态(mak)
 - **标准化数据合约对象**（V15.0-V15.2）：`CanonicalStockData` 不可变强类型合约，封装 50+ 核心数据字段及元数据溯源标签（`field_sources`），彻底消除异构多源数据冲突

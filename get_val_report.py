@@ -1796,7 +1796,7 @@ async def run_discovery_async(output_path):
     def L(s=""): lines.append(s)
 
     L("---")
-    L(f"  A 股策略发现报告  [{today_str} {_t_now.strftime('%H:%M:%S')}]")
+    L(f"  A 股策略发现报告  [{today_str} {_t_now.strftime('%H.%M.%S')}]")
     L("---")
     L("  市场: A 股 | 策略: 23 | 引擎: asyncio | 并发: 3")
     L("-" * 85)
@@ -2037,7 +2037,7 @@ async def run_discovery_async(output_path):
     top_liquidity_pool = sorted(all_stocks, key=lambda x: _safe_float(x.get("amount", 0) or x.get("amount_yi", 0)), reverse=True)[:500]
 
     L(f"  ✅ 全市场: {len(all_stocks)} | 热点池(同花顺强势): {len(hot_pool)} | 流动性Top500: {len(top_liquidity_pool)}")
-    L(f"  ⏱ 全市场数据加载完成 @ {datetime.now().strftime('%H:%M:%S')}")
+    L(f"  ⏱ 全市场数据加载完成 @ {datetime.now().strftime('%H.%M.%S')}")
 
     all_selections = {}
 
@@ -2216,7 +2216,7 @@ async def run_discovery_async(output_path):
     if _res:
         for code, cnt in _res[:10]:
             _nm = _stock_map.get(code, {}).get("name", code)
-            L(f"  {_nm}({code}): {cnt}个策略")
+            L(f"  **{_nm}({code})**: {cnt}个策略")
     else:
         L("  今日暂无共振股票")
 

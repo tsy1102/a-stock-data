@@ -404,7 +404,11 @@ def _tdxstat_prescreen(stocks):
         return stocks, "", False
 
     try:
-        snapshot = get_zhb_market_snapshot()
+        # V17.0.4(2026-08-19): 改用合并快照(tdxstat+tdxstat2)——原 get_zhb_market_snapshot
+        # 仅 tdxstat, 无 high_52w/low_52w → 策略18(52周低位)恒 0 命中(实测 0/7991)
+        from core.zhb_client import full_market_snapshot
+
+        snapshot = full_market_snapshot()
     except Exception as _e:
         _debug_log(f"val tdxstat_prescreen: snapshot error: {_e}")
         return stocks, "", False

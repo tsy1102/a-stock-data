@@ -24,6 +24,7 @@ env/
 
 # ── 运行时输出与中间数据(可重建) ────────────────────────────
 reports/
+!reports/reupload.py
 logs/
 snapshots/
 

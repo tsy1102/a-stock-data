@@ -18,6 +18,7 @@
 | **L1.5 THS SDK** | stock_common/sc_ths.py(同花顺官方 C 库 TCP——正式账号无限频) | 独有: PB/ROE TTM/主力净流入盘中/两融/户均持股/市值——候选级补全 |
 | **L2 TDX TCP** | core/tdx_client(easy_tdx 适配) | 0x0010 金额**单位角**(O19 /10 得元); F10/boards/K线; **prefetch 命中时 canonical 跳过 TDX(V17.0)** |
 | **L3 腾讯** | sc_datasource `get_tencent_quote` / tdx_client `_tencent_batch_fallback`(60/批) | O21 平盘 `is not None` 不回退; [67]/[68]=52周高低(V17.0 实证); **tx75 主力净流入口径存疑(V17.0 实锤反向)→ 仅兜底** |
+| **L3.5 新浪日K** | quotes.sina.cn `CN_MarketDataService.getKLineData`(V17.0.4 新增, mak `get_index_returns` 指数多周期收益兜底) | 域级限流已配(sc_network 150ms/5rps); 前复权, 与腾讯 ifzq `qfq` 实测一致(<0.01); **能力全集**: scale=5/15/30/60(分钟)/240(日)/1200(周)/7200(月), 日K字段 `day/open/high/low/close/volume`, 分钟级追加 `amount`——当前仅用 close 算区间收益, 其余字段按需取用; 同类已有接口: 新浪财报 `CompanyFinanceService.getFinanceReport2022`(sc_datasource) |
 | **L4 东财 push2delay** | sc_datasource `get_em_quote_full_delay`(push2delay 镜像域, 风控独立) | **V17.0 主力源**: f162 动态PE/f163 静态PE/f137-146 资金流/f174-175 52周; ulist(f2-f21 行情, **估值字段返回 "-" 勿用**); 1.0rps 限流 |
 | **L5 东财 push2 主域** | sc_datasource `get_em_quote_full` | 风控最严最后手段; 当前 IP 封禁中自动跳过 |
 | **L6 东财 datacenter** | 龙虎榜/股东/北向/解禁/大宗(日期单引号) | 独有数据 |

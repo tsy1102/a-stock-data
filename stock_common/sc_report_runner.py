@@ -178,6 +178,9 @@ class BaseReportRunner:
                                     _debug_log(f"{self.script_name} per-stock gd upload {code}: {_e}")
                             return {"code": code, "status": "成功", "error": "", "path": result_path}
                         except Exception as e:
+                            import traceback as _tb
+
+                            _tb.print_exc()  # V17.0.4: 数据失败打印完整堆栈(诊断价值)
                             print(f"❌ {code} 数据生成失败: {e}", flush=True)
                             return {"code": code, "status": "数据失败", "error": str(e), "path": ""}
 

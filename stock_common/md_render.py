@@ -154,6 +154,10 @@ def _ensure_tbl_blank(out: List[str]) -> None:
 
 
 def text_to_md(lines: List[str]) -> List[str]:
+    # V17.0.4(2026-08-19): 对 None 行容错——脚本 L() 偶发追加 None
+    # (如某数据段返回 None 时 L(variable)), 原 _LINE_ONLY.match(None) TypeError
+    # 崩整个报告(实测 601138/300165/600276); None → 空行(不崩, 报告继续)
+    lines = ["" if ln is None else ln for ln in lines]
     out: List[str] = []
     i = 0
     n = len(lines)

@@ -672,6 +672,7 @@ TDX 服务器 (端口 7709)
 | **机构 EPS 预测** | 同花顺 HTML 正则解析 | TDX 研报 TCP API (`tdx_get_eps_from_reports`) | 东财研报 API | - |
 | **龙虎榜明细 (单股/全市场)**| 东财 Datacenter API (`RPT_DAILYBILLBOARD_DETAILSNEW`) | - *(无 Fallback，单点防护)* | - | - |
 | **同花顺题材 / 涨停池** | 同花顺 API (`getharden`) | - *(无 Fallback)* | - | - |
+| **指数多周期收益(指数K线)** | TDX TCP (`tdx_get_index_bars`) | 腾讯日K (ifzq.gtimg.cn `qfq`, 前复权) | **新浪日K (`getKLineData`, V17.0.4 新增兜底)** | 腾讯实时2值(仅1日) |
 
 ---
 

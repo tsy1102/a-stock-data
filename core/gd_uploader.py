@@ -145,7 +145,22 @@ def _run_oauth_flow(base_dir: str):
 
         def _flow():
             flow = InstalledAppFlow.from_client_secrets_file(secrets_path, _SCOPES)
-            return flow.run_local_server(port=0)
+            # V17.0.4(2026-08-19): 换 token 重试 2 次——浏览器授权成功但
+            # POST oauth2.googleapis.com/token 瞬时 SSLEOFError(代理 TLS 抖动)时
+            # 原逻辑直接失败 → 授权白做+循环重试; 重试 2 次(间隔 3s)提高成功率
+            import time as _t
+
+            for _attempt in range(3):
+                try:
+                    return flow.run_local_server(port=0)
+                except Exception as _e:
+                    _msg = str(_e)
+                    if _attempt < 2 and ("SSL" in _msg or "EOF" in _msg or "timeout" in _msg.lower()
+                                         or "Connection" in _msg or "Max retries" in _msg):
+                        print(f"  ⏳ 换 token 失败(网络/代理), 重试 {_attempt + 1}/2…", flush=True)
+                        _t.sleep(3.0)
+                        continue
+                    raise
 
         with _cf.ThreadPoolExecutor(max_workers=1) as _ex:
             _future = _ex.submit(_flow)

@@ -29,7 +29,7 @@ from stock_common.env_setup import ensure_utf8_stdio
 
 ensure_utf8_stdio()
 
-import time, os, warnings, asyncio  # V16.4.1: 删 argparse
+import time, os, warnings, asyncio, re, json  # V17.0.4: +re/json(新浪指数 K 兜底)
 from typing import Any, Dict, List
 from datetime import date, datetime, timedelta
 from concurrent.futures import ThreadPoolExecutor, as_completed  # V16.4.1: 删 Counter
@@ -407,6 +407,29 @@ def get_index_returns():
                     return closes
         except Exception as _e:
             _debug_log(f"mak index_kline tencent kline error {ic}: {_e}")
+        # V17.0.4(2026-08-19): 新浪日K兜底——TDX+腾讯日K 双源失败时(8/18 实测只剩实时2值),
+        # ret_3d/10d/20d 全 None → check_stock 严重/卡异动判定静默失效 → "严重0只" 假象。
+        # 新浪收盘与腾讯 ifzq 实测一致(<0.01 差), 前复权口径相同, 可作等价兜底
+        try:
+            r = _quick_request(
+                "https://quotes.sina.cn/cn/api/jsonp_v2.php/var/CN_MarketDataService.getKLineData",
+                params={"symbol": ic, "scale": 240, "ma": "no", "datalen": 250},
+                headers={"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)", "Referer": "https://finance.sina.com.cn/"},
+                timeout=10,
+            )
+            if r:
+                _txt = r.text
+                _m = re.search(r"\((.*)\)", _txt, re.S)
+                if _m:
+                    _arr = _m.group(1)
+                    if _arr.startswith("["):
+                        _rows = json.loads(_arr)
+                        closes = [_safe_float(x.get("close")) for x in _rows if x.get("close")]
+                        closes = [c for c in closes if c > 0]
+                        if closes:
+                            return closes
+        except Exception as _e:
+            _debug_log(f"mak index_kline sina error {ic}: {_e}")
         # 最后兜底：实时 2 值（仅 1 日回报——指标静默 None 有提示）
         try:
             r = _quick_request(f"https://qt.gtimg.cn/q={ic}", timeout=10)
@@ -1429,7 +1452,12 @@ async def generate_sector_report(output_path):
         pool = get_limit_pool_summary()
         zt_count = pool.get("limit_up_count", 0)
         zb_count = pool.get("limit_broken_count", 0)
+        # V17.0.4(2026-08-19 实测): 东财跌停池 getTopicDTPool 明细接口对 8/17/8/18 均返回
+        # tc>0 但 pool=[] 空(接口端 bug) → 池子口径恒 0 失真("跌停 0" 不可能);
+        # 改取 A 段涨跌幅口径 _dt_count(同源全市场数据, 可靠, 8/18 实测 8 只)
         dt_count = pool.get("limit_down_count", 0)
+        if dt_count == 0 and _dt_count > 0:
+            dt_count = _dt_count
         success_rate = pool.get("success_rate", 0)
         L(
             f"  涨停 {zt_count} 只 | 炸板 {zb_count} 只 | 跌停 {dt_count} 只 | 封板率 {success_rate:.0f}%"

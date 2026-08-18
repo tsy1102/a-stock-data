@@ -535,19 +535,27 @@ def _top10_sorted(candidates, key_func, reverse=True):
 # ─── V15.5.8: 快速 K 线（TDX 优先，百度 fallback）───
 
 def _fast_kline(code: str, count: int = 800):
-    """V15.5.8: K 线获取 — 优先 TDX（easy_tdx 适配器+磁盘缓存，快），失败 fallback 百度。
+    """V15.5.8: K 线获取——优先 TDX(mootdx+磁盘缓存, 跨进程持久, 缓存命中零网络),
+    失败 fallback 百度。
 
-    val 全市场扫描 strategy_05/06/12/15 对 1300 只候选逐股取 K 线，
-    原 common_baidu_kline_full（HTTP 0.9s/次）冷缓存 700-1200 秒。
-    TDX 适配器实测 0.0s/次（磁盘缓存命中）。
+    V17.0.4(2026-08-19): 修复注释与代码不符——原实现只调 common_baidu_kline_full(百度 HTTP,
+    每只 0.9s 冷+网络波动) → 形态类策略(05/06/12)命中随网络波动(凌晨全 0)。
+    TDX 磁盘缓存(sc_kline_cache)命中后稳定且零网络。
     """
     try:
-        # V16.3 O22: 统一走 baidu_kline_full（原局部 tdx_get_security_bars 死 import 已清）
+        from core.tdx_client import tdx_get_security_bars
+
+        _k, _r = tdx_get_security_bars(code, count)
+        if _r and len(_r) >= 65:
+            return _k, _r
+    except Exception as _e:
+        _debug_log(f"val _fast_kline tdx ({code}): {_e}")
+    try:
         _k, _r = common_baidu_kline_full(code, count=count)
         if _r and len(_r) >= 65:
             return _k, _r
     except Exception as _e:
-        _debug_log(f"val _fast_kline tdx fallback ({code}): {_e}")
+        _debug_log(f"val _fast_kline baidu ({code}): {_e}")
     return common_baidu_kline_full(code)
 
 

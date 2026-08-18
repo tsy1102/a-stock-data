@@ -92,60 +92,97 @@ def cleanup_gd_proxy(was_set: bool) -> None:
 # 2. OAuth 凭据加载 / 刷新 / 首次授权
 # ────────────────────────────────────────────────────────────────
 def _load_saved_credentials(token_path: str):
-    """从 credentials.json 加载已保存 token；过期/无效时返回 None。"""
+    """从 credentials.json 加载已保存 token；过期/无效时返回 (None, reason)。
+
+    V17.0.4(2026-08-19): 返回 (creds, error_type)——error_type:
+      None     正常(有效或刷新成功)
+      "invalid" token 结构无效/无 refresh_token(可安全删除文件)
+      "network" 刷新失败(网络瞬时)——**不清除文件**, 下次再试, 不触发 OAuth
+    原实现刷新异常一律返回 None → 调用方误删文件 → 走 OAuth 阻塞卡死(无人值守)。
+    """
     try:
         from google.oauth2.credentials import Credentials
         if not os.path.exists(token_path):
-            return None
+            return None, None
         creds = Credentials.from_authorized_user_file(token_path, _SCOPES)
         if creds and creds.valid:
-            return creds
+            return creds, None
         if creds and creds.expired and creds.refresh_token:
             from google.auth.transport.requests import Request
-            creds.refresh(Request())
-            # 刷新成功 → 覆写 token 文件
-            with open(token_path, "w", encoding="utf-8") as f:
-                f.write(creds.to_json())
-            return creds
-        # 刷新失败 → 视作 invalid
-        return None
+            try:
+                creds.refresh(Request())
+                with open(token_path, "w", encoding="utf-8") as f:
+                    f.write(creds.to_json())
+                return creds, None
+            except Exception as _e:
+                # 刷新失败: 网络问题(保留文件) vs token 被吊销(invalid)
+                _msg = str(_e).lower()
+                if "invalid_grant" in _msg or "revoked" in _msg or "expired" in _msg:
+                    _debug_log(f"gd refresh revoked ({token_path}): {_e}")
+                    return None, "invalid"
+                _debug_log(f"gd refresh network error ({token_path}): {_e}")
+                return None, "network"
+        return None, "invalid"
     except Exception as _e:
         _debug_log(f"gd _load_saved_credentials error ({token_path}): {_e}")
-        return None
+        return None, "invalid"
 
 
 def _run_oauth_flow(base_dir: str):
-    """首次授权：走 InstalledAppFlow（会打开浏览器或打印 URL）。"""
+    """首次授权：走 InstalledAppFlow（会打开浏览器或打印 URL）。
+
+    V17.0.4(2026-08-19): 加 90s 超时——无人值守(批处理/定时任务)环境
+    run_local_server 永久阻塞等待授权 → 卡死。超时返回 None(跳过上传, 不阻塞报告)。
+    """
     try:
+        import concurrent.futures as _cf
         from google_auth_oauthlib.flow import InstalledAppFlow
         secrets_path = os.path.join(base_dir, _CRED_SUBDIR, _CLIENT_SECRETS_FILENAME)
         if not os.path.exists(secrets_path):
             print(f"  ❌ 缺少 {_CLIENT_SECRETS_FILENAME}，请从 Google Cloud Console 下载：", flush=True)
             print("     https://console.cloud.google.com/apis/credentials", flush=True)
             return None
-        flow = InstalledAppFlow.from_client_secrets_file(secrets_path, _SCOPES)
-        creds = flow.run_local_server(port=0)
-        return creds
+
+        def _flow():
+            flow = InstalledAppFlow.from_client_secrets_file(secrets_path, _SCOPES)
+            return flow.run_local_server(port=0)
+
+        with _cf.ThreadPoolExecutor(max_workers=1) as _ex:
+            _future = _ex.submit(_flow)
+            try:
+                return _future.result(timeout=90)
+            except _cf.TimeoutError:
+                print("  ⏱ OAuth 授权超时(90s)——无人值守环境跳过授权, 本次不上传 GD", flush=True)
+                _future.cancel()
+                return None
     except Exception as e:
         print(f"  ⚠️ OAuth 流程失败：{e}", flush=True)
         return None
 
 
 def _get_or_create_credentials(base_dir: str):
-    """入口：加载现有 token → 刷新 → 都失败则走首次 OAuth。"""
+    """入口：加载现有 token → 刷新 → 都失败则走首次 OAuth。
+
+    V17.0.4(2026-08-19): 刷新失败为网络问题时不删除文件(下次再试)、不触发 OAuth——
+    原实现误删文件后走 run_local_server 无人值守永久阻塞(卡死根因)。
+    """
     token_path = os.path.join(base_dir, _CRED_SUBDIR, _TOKEN_FILENAME)                       # V17.0: credentials/ 子目录
     # 1) 加载现有 token
-    creds = _load_saved_credentials(token_path)
+    creds, err = _load_saved_credentials(token_path)
     if creds:
         return creds
-    # 2) token 失效 → 删除旧文件避免下次继续尝试
+    # 2) 网络问题(刷新失败): 保留文件, 跳过 OAuth, 本次不上传
+    if err == "network":
+        print("  ⚠️ GD 凭据刷新失败(网络问题)——保留文件, 本次跳过上传", flush=True)
+        return None
+    # 3) token 结构无效/被吊销 → 删除旧文件避免下次继续尝试
     try:
         if os.path.exists(token_path):
             os.remove(token_path)
             print("  🗑️ 已清除过期的旧 credentials.json", flush=True)
     except OSError:
         pass
-    # 3) 走首次 OAuth 授权
+    # 4) 走首次 OAuth 授权(90s 超时, 无人值守自动跳过)
     new_creds = _run_oauth_flow(base_dir)
     if new_creds is not None:
         try:

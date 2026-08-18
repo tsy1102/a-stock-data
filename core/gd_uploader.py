@@ -160,6 +160,10 @@ def _run_oauth_flow(base_dir: str):
                         print(f"  ⏳ 换 token 失败(网络/代理), 重试 {_attempt + 1}/2…", flush=True)
                         _t.sleep(3.0)
                         continue
+                    if "SSL" in _msg or "EOF" in _msg:
+                        print("  ⚠️ 换 token 域(oauth2.googleapis.com)连接异常——若浏览器能开授权页", flush=True)
+                        print("     但此处失败, 多为代理规则将该域直连(国内直连 Google 不通)。", flush=True)
+                        print("     请在代理软件中放行 googleapis.com(或切全局模式)后重试。", flush=True)
                     raise
 
         with _cf.ThreadPoolExecutor(max_workers=1) as _ex:

@@ -339,8 +339,14 @@ def _calc_3d_from_daily(stat, today_change_pct=None):
     """
     _r0_raw = today_change_pct if today_change_pct is not None else stat.get("change_pct", 0)
     r0 = _safe_float(_r0_raw) / 100.0
-    r1 = _safe_float(stat.get("change_pct_1d", 0)) / 100.0
-    r2 = _safe_float(stat.get("change_pct_2d", 0)) / 100.0
+    # V17.0.4(2026-08-19): 腾讯 T 日覆盖时, 快照 Col[6] 即 T-1(非 T-2)——
+    # 原逻辑 r1=Col[7]/r2=Col[8] 在覆盖分支漏掉 T-1, 3 日窗口错位成 T/T-2/T-3
+    if today_change_pct is not None:
+        r1 = _safe_float(stat.get("change_pct", 0)) / 100.0       # T-1
+        r2 = _safe_float(stat.get("change_pct_1d", 0)) / 100.0    # T-2
+    else:
+        r1 = _safe_float(stat.get("change_pct_1d", 0)) / 100.0    # T-2
+        r2 = _safe_float(stat.get("change_pct_2d", 0)) / 100.0    # T-3
 
     if r0 == 0 and r1 == 0 and r2 == 0:
         return 0.0

@@ -262,6 +262,12 @@ def text_to_md(lines: List[str]) -> List[str]:
             _t2 = _cleaned[3:].strip()
             if _t2.startswith("[") and _t2.endswith("]"):
                 _cleaned = "## " + _t2[1:-1]
+        # V17.0.4(2026-08-19): 标题被粗体包裹 "## **X**"(9.32 全局替换误伤)
+        # → 统一 "## X"(标题本身渲染加粗, 无需 **; 正文 ** 不受影响)
+        if _cleaned.startswith("## **") and _cleaned.rstrip().endswith("**"):
+            _t3 = _cleaned[5:].rstrip()
+            if _t3.endswith("**"):
+                _cleaned = "## " + _t3[:-2]
         # 表格行前补空行(渲染器要求); 分隔行(|---)与数据行(| )均视为表格行, 不补
         if _cleaned.lstrip().startswith("| ") and out and out[-1].strip() \
                 and not out[-1].lstrip().startswith("| ") \

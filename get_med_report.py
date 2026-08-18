@@ -874,16 +874,16 @@ async def generate_report_async(session, code, output_path, ind_comp=None, hsgt=
         # V16.1: 两融净买入 + 3/5/10日维度（中线资金确认）
         latest = margin[0]
         if latest.get("rzjme") is not None:
-            L(f"\n  ➤ 最新融资净买入: {latest['rzjme']/1e4:+.0f}万元"
+            L(f"  最新融资净买入: {latest['rzjme']/1e4:+.0f}万元"
               + (f" | 融券净卖出: {latest.get('rqjmg', 0)/1e4:+.0f}万元" if latest.get("rqjmg") is not None else ""))
         _d5 = next((d for d in margin if d.get("rzmre_5d") is not None), None)
         _d10 = next((d for d in margin if d.get("rzmre_10d") is not None), None)
         if _d5:
-            L(f"  ➤ 5日融资买入: {_d5['rzmre_5d']/1e4:.0f}万元 | 5日偿还: {_d5.get('rzche_5d',0)/1e4:.0f}万元 | 5日涨幅: {_d5.get('chg_5d',0):+.2f}%")
+            L(f"  5日融资买入: {_d5['rzmre_5d']/1e4:.0f}万元 | 5日偿还: {_d5.get('rzche_5d',0)/1e4:.0f}万元 | 5日涨幅: {_d5.get('chg_5d',0):+.2f}%")
         if _d10:
-            L(f"  ➤ 10日融资买入: {_d10['rzmre_10d']/1e4:.0f}万元 | 10日偿还: {_d10.get('rzche_10d',0)/1e4:.0f}万元 | 10日涨幅: {_d10.get('chg_10d',0):+.2f}%")
+            L(f"  10日融资买入: {_d10['rzmre_10d']/1e4:.0f}万元 | 10日偿还: {_d10.get('rzche_10d',0)/1e4:.0f}万元 | 10日涨幅: {_d10.get('chg_10d',0):+.2f}%")
         if latest.get("balance_gr") is not None:
-            L(f"  ➤ 融资余额环比: {latest['balance_gr']:+.2f}%")  # V16.2.3: balance_gr 已是百分数（东财原值），去掉 *100
+            L(f"  融资余额环比: {latest['balance_gr']:+.2f}%")  # V16.2.3: balance_gr 已是百分数（东财原值），去掉 *100
     else:
         L("  该股无融资融券数据（可能不是两融标的）。")
 

@@ -1885,9 +1885,17 @@ async def run_discovery_async(output_path):
                             _pk = _fast_day_close(_code) or {}
                             _KLINE_PRICE_CACHE[_code] = _pk
                         if _pk.get("price"):
-                            # M2 终审修复: .day 日期新鲜度校验(陈旧收盘价禁用于市值计算)
-                            if str(_pk.get("date", 0)) < str(_zhb_date or 0):
-                                _debug_log(f"val .day stale ({_code}): {_pk.get('date')} < ZHB {_zhb_date}")
+                            # M2 终审修复: .day 日期新鲜度校验——陈旧收盘价禁用于市值计算
+                            # V17.0.4(2026-08-19): 放宽为容忍 7 天——TDX .day 常滞后于 ZHB
+                            # (客户端未同步, 实测 8/14 vs ZHB 8/17), 原严格拒绝 → bypass 无价
+                            # → mcap=0 → 形态/估值类策略全 0 命中(8/19 4:22 全 0 根因);
+                            # 市值粗算对 ≤7 天旧价不敏感(偏差<3%), 拒绝的代价(全策略 0)更大
+                            try:
+                                _day_ok = str(_pk.get("date", 0)) >= str(int(_zhb_date or 0) - 7)
+                            except (ValueError, TypeError):
+                                _day_ok = True
+                            if not _day_ok:
+                                _debug_log(f"val .day stale ({_code}): {_pk.get('date')} < ZHB-7d {_zhb_date}")
                             else:
                                 _price = _safe_float(_pk["price"])
                                 _price_map.setdefault(_code, {})["price"] = _price

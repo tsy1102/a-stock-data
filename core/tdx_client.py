@@ -2873,7 +2873,7 @@ def tdx_get_market_abnormal_data():
                     'change_pct': change_pct,
                     'turnover': _safe_float(data.get('turnover_pct', 0)),
                     'mcap_yi': _safe_float(data.get('mcap_yi', 0)),
-                    'ret_3d': 0.0,  # V16.1: 移除 change_pct_2d 冒充 3 日收益（非真实 3 日窗口，宁缺毋滥）
+                    'ret_3d': _calc_ret_3d_snapshot(change_pct, data),
                     'ret_5d': _safe_float(data.get('change_5d', 0)),
                     'ret_10d': _safe_float(data.get('change_10d', 0)),
                     'ret_20d': _safe_float(data.get('change_20d', 0)),
@@ -2885,6 +2885,21 @@ def tdx_get_market_abnormal_data():
     except Exception as _e:
         _debug_log(f"tdx_get_market_abnormal_data: {_e}")
         return []
+
+
+def _calc_ret_3d_snapshot(change_pct, data):
+    """V17.0.4(2026-08-19): 快照口径 3 日累计涨跌幅(复利) T-1/T-2/T-3。
+
+    V16.1 曾因 ZHB 未破解 1d/2d 字段而移除(0.0 宁缺毋滥);
+    2026-08-19 实锤 ZHB tdxstat Col[7]/[8] = change_pct_1d/2d(zhb_client 已解析) →
+    恢复真实计算。
+    """
+    r0 = _safe_float(change_pct) / 100.0
+    r1 = _safe_float(data.get("change_pct_1d", 0)) / 100.0
+    r2 = _safe_float(data.get("change_pct_2d", 0)) / 100.0
+    if r0 == 0 and r1 == 0 and r2 == 0:
+        return 0.0
+    return round(((1 + r0) * (1 + r1) * (1 + r2) - 1) * 100.0, 2)
 
 
 def tdx_get_all_stocks():

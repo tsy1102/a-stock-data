@@ -570,7 +570,8 @@ async def generate_report_async(session, code, output_path, ind_comp=None, idx_q
 
                 break
 
-        L(f"  ➤ [板块共振监测] 该板块今日全市场排名: {rank_str}")
+        L("  ➤ 板块共振监测")
+        L(f"  该板块今日全市场排名: {rank_str}")
 
         if is_top: L("     🔥 提醒: 所在板块处于全市场 TOP10，具备较强板块共振溢价效应！")
 
@@ -589,7 +590,8 @@ async def generate_report_async(session, code, output_path, ind_comp=None, idx_q
 
     if peer_data.get("my_rank",0)>0 and peer_data.get("industry_count",0)>0:
 
-        L(f"  ➤ [市值排名] {peer_data.get('industry',stock_ind)}: 该股排名第 {peer_data['my_rank']}/{peer_data['industry_count']} 位 (按总市值)")
+        L("  ➤ 市值排名")
+        L(f"  {peer_data.get('industry', stock_ind)}: 该股排名第 {peer_data['my_rank']}/{peer_data['industry_count']} 位 (按总市值)")
 
     _has_peer = peer_data.get("my_rank",0)>0 and peer_data.get("industry_count",0)>0
 

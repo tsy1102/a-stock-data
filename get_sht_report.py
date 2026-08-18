@@ -391,15 +391,19 @@ async def generate_report_async(session, code, output_path, ind_comp=None, idx_q
         hsgt = await get_hsgt_macro_flow_async(session)
 
     if hsgt:
+        # V17.0.4(2026-08-19): data_quality=invalid → 数据源序列错位(同花顺 hgt/sgt 长度不同步,
+        # 末值恒为陈旧值——8/12-8/19 冻结 379.75)——不再展示错误数字
+        if hsgt.get("data_quality") == "invalid":
+            L("  ⚠️ 今日北向资金: 数据源异常(hgt/sgt 序列错位), 净流入暂缺")
+        else:
+            _sig = "偏多" if hsgt["total"] > 0 else "偏空"
 
-        _sig = "偏多" if hsgt["total"] > 0 else "偏空"
-
-        L(f"  💰 今日北向资金: 沪股通 {hsgt['hgt']:+.2f}亿 | 深股通 {hsgt['sgt']:+.2f}亿 | 合计 {hsgt['total']:+.2f}亿（{_sig}）")
-        # V16.4.1: 数据层降级标记展示——2026-08-12 实测深股通 379.75 亿(sgt/hgt 比例 40.9 异常,
-        # 远超历史单日记录), 源数据存疑时显式警告, 避免误导
-        # V17.0.2: 内部字段名(warning 原文)下沉为统一话术
-        if hsgt.get("data_quality") == "degraded":
-            L("  ⚠️ 北向资金数据源存疑(异常波动), 仅供参考")
+            L(f"  💰 今日北向资金: 沪股通 {hsgt['hgt']:+.2f}亿 | 深股通 {hsgt['sgt']:+.2f}亿 | 合计 {hsgt['total']:+.2f}亿（{_sig}）")
+            # V16.4.1: 数据层降级标记展示——2026-08-12 实测深股通 379.75 亿(sgt/hgt 比例 40.9 异常,
+            # 远超历史单日记录), 源数据存疑时显式警告, 避免误导
+            # V17.0.2: 内部字段名(warning 原文)下沉为统一话术
+            if hsgt.get("data_quality") == "degraded":
+                L("  ⚠️ 北向资金数据源存疑(异常波动), 仅供参考")
 
     # V15.4.2: 资金流同步调用包 to_thread，避免阻塞事件循环
     ff = await asyncio.to_thread(get_fund_flow_120d, code)

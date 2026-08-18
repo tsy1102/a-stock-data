@@ -212,14 +212,18 @@ async def generate_report_async(session, code, output_path, ind_comp=None, hsgt=
     if hsgt is None:
         hsgt = await get_hsgt_macro_flow_async(session)
     if hsgt:
-        signal = "偏多" if hsgt['total'] > 0 else "偏空"
-        L(
-            f"  今日北向资金总净流入: {hsgt['total']:.2f} 亿元 (沪股通 {hsgt['hgt']:.2f}亿 | 深股通 {hsgt['sgt']:.2f}亿)"
-        )
-        L(f"  大盘外资情绪: {signal} （中线仓位参考点）")
-        # V16.4.1: 数据层降级标记展示(2026-08-12 深股通 379.75 亿异常)
-        if hsgt.get("data_quality") == "degraded":
-            L("  ⚠️ 北向资金数据源存疑(异常波动), 仅供参考")
+        # V17.0.4(2026-08-19): invalid → 同花顺 hgt/sgt 序列错位, 末值恒陈旧(冻结 379.75)——不展示错误数字
+        if hsgt.get("data_quality") == "invalid":
+            L("  ⚠️ 今日北向资金: 数据源异常(hgt/sgt 序列错位), 净流入暂缺")
+        else:
+            signal = "偏多" if hsgt['total'] > 0 else "偏空"
+            L(
+                f"  今日北向资金总净流入: {hsgt['total']:.2f} 亿元 (沪股通 {hsgt['hgt']:.2f}亿 | 深股通 {hsgt['sgt']:.2f}亿)"
+            )
+            L(f"  大盘外资情绪: {signal} （中线仓位参考点）")
+            # V16.4.1: 数据层降级标记展示(2026-08-12 深股通 379.75 亿异常)
+            if hsgt.get("data_quality") == "degraded":
+                L("  ⚠️ 北向资金数据源存疑(异常波动), 仅供参考")
     else:
         L("  (北向宏观资金流向获取失败)")
 

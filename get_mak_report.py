@@ -1229,11 +1229,15 @@ async def generate_sector_report(output_path):
         # ⚠️ 修复(2026-08-15): 同步网络调用在 async 上下文会阻塞事件循环 → to_thread 包装
         _hsgt = await asyncio.to_thread(get_hsgt_macro_flow)
         if _hsgt:
-            _hsig = "偏多" if _hsgt.get("total", 0) > 0 else "偏空"
-            L(f"  🌐 北向资金: 净流入 {_hsgt.get('total', 0):.2f} 亿(沪 {_hsgt.get('hgt', 0):.2f} | 深 {_hsgt.get('sgt', 0):.2f}) 外资情绪{_hsig}")
-            # M13 修复(2026-08-15 二审): 数据降级标记(与 med 一致, 2026-08-12 深股通 379.75 亿异常)
-            if _hsgt.get("data_quality") == "degraded":
-                L("  ⚠️ 北向资金数据源存疑(异常波动), 仅供参考")
+            # V17.0.4(2026-08-19): invalid → 同花顺 hgt/sgt 序列错位, 末值恒陈旧——不展示错误数字
+            if _hsgt.get("data_quality") == "invalid":
+                L("  🌐 北向资金: 数据源异常(hgt/sgt 序列错位), 净流入暂缺")
+            else:
+                _hsig = "偏多" if _hsgt.get("total", 0) > 0 else "偏空"
+                L(f"  🌐 北向资金: 净流入 {_hsgt.get('total', 0):.2f} 亿(沪 {_hsgt.get('hgt', 0):.2f} | 深 {_hsgt.get('sgt', 0):.2f}) 外资情绪{_hsig}")
+                # M13 修复(2026-08-15 二审): 数据降级标记(与 med 一致, 2026-08-12 深股通 379.75 亿异常)
+                if _hsgt.get("data_quality") == "degraded":
+                    L("  ⚠️ 北向资金数据源存疑(异常波动), 仅供参考")
         else:
             L("  🌐 北向资金: (数据获取失败)")
     except Exception as _e:

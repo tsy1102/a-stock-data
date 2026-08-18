@@ -3002,6 +3002,15 @@ def get_hsgt_macro_flow() -> Optional[Dict[str, Any]]:
         sgt = d.get("sgt", [])
         if not hgt or not sgt:
             return None
+        # V17.0.4(2026-08-19 实测): 同花顺接口字段错位——hgt=当日分时(262 点 09:10-15:00),
+        # sgt=历史收盘序列(35 点), 长度不同步 → sgt[-1] 恒为陈旧值(8/12-8/19 冻结在 379.75,
+        # 全仓 47 份 sht/med 报告北向恒 -9.28/+379.75 系此根因)。长度不一致即判 invalid 拒绝展示。
+        if len(hgt) != len(sgt):
+            _debug_log("hsgt_macro_flow: hgt/sgt 序列长度不一致({}/{})——数据源字段错位, 拒绝展示".format(len(hgt), len(sgt)))
+            return {
+                "hgt": 0.0, "sgt": 0.0, "total": 0.0,
+                "data_quality": "invalid", "warning": "北向数据源 hgt/sgt 序列错位(字段长度不同步), 当日值暂缺",
+            }
         hgt_val = float(hgt[-1]) if hgt[-1] else 0
         sgt_val = float(sgt[-1]) if sgt[-1] else 0
 
@@ -3815,6 +3824,24 @@ def get_limit_pool_summary(date_str: str = "") -> Dict[str, Any]:
             _debug_log(f"get_limit_pool_summary tdxhy sector inject: {_e}")
     zb = get_limit_broken_pool(_zt_date or date_str)
     dt = get_limit_down_pool(_zt_date or date_str)
+    # V17.0.4(2026-08-19 实测): 东财 getTopicDTPool 明细接口 tc>0 但 pool=[] 空(8/17/8/18 均如此)
+    # → len(dt)=0 造成假"跌停 0"(市场不可能无跌停)。兜底: ZHB 全市场快照涨跌幅口径统计跌停数
+    # (零网络, 与 mak 涨跌幅口径同源一致)
+    _dt_fb = 0
+    if not dt:
+        try:
+            from stock_common import is_limit_down
+
+            _snap = get_zhb_full_market_snapshot() or {}
+            _dt_fb = sum(
+                1
+                for _c, _d in _snap.items()
+                if _d
+                and isinstance(_d, dict)
+                and is_limit_down(_c, str(_d.get("name", "") or ""), _safe_float(_d.get("change_pct", 0)))
+            )
+        except Exception as _e:
+            _debug_log(f"get_limit_pool_summary zhb dt fallback: {_e}")
 
     # 按板块统计涨停分布(M4: 空 sector 归"其他", 不产生空键)
     sector_stats: Dict[str, int] = {}
@@ -3829,7 +3856,7 @@ def get_limit_pool_summary(date_str: str = "") -> Dict[str, Any]:
     return {
         "limit_up_count": len(zt),
         "limit_broken_count": len(zb),
-        "limit_down_count": len(dt),
+        "limit_down_count": len(dt) or _dt_fb,
         "success_rate": round(success_rate, 1),
         "sector_stats": dict(sorted(sector_stats.items(), key=lambda x: x[1], reverse=True)[:10]),
         "limit_up_list": zt,
@@ -6334,12 +6361,19 @@ _FFLOW_HOSTS = (
 )
 
 
-def _em_fflow_request(path: str, params: Dict[str, Any], timeout: int = 10):
-    """V16.2.4: 依次尝试 _FFLOW_HOSTS，返回首个非 None 的 Response（含 403/429 语义由 em_get 处理）。"""
+def _em_fflow_request(path: str, params: Dict[str, Any], timeout: int = 10, prefer_his: bool = False):
+    """V16.2.4: 依次尝试 _FFLOW_HOSTS，返回首个非 None 的 Response（含 403/429 语义由 em_get 处理）。
+    V17.0.4(2026-08-19): prefer_his=True(历史资金流) → push2his 全窗口优先——
+    原顺序 push2delay 第 1(为 lmt=1 实时设计) 会把 daykline 历史请求截断成单日(8/18 全仓 sht 60日资金流仅 1 天根因)。
+    """
     import random as _rand
 
     _hosts = list(_FFLOW_HOSTS)
-    _rand.shuffle(_hosts[0:2])  # 前两域随机轮换（防固定域持续触发风控）
+    if prefer_his:
+        _his = "push2his.eastmoney.com"
+        _hosts = [_his] + [h for h in _hosts if h != _his]
+    else:
+        _rand.shuffle(_hosts[0:2])  # 前两域随机轮换（防固定域持续触发风控）
     for _h in _hosts:
         try:
             _r = em_get(f"https://{_h}{path}", params=params, headers={"User-Agent": UA}, timeout=timeout)
@@ -6439,7 +6473,9 @@ def get_em_history_fund_flow(code: str, days: int = 120) -> List[Dict[str, Any]]
     }
     try:
         # V16.2.4: 多域轮换（push2his 全窗口 → push2 → push2delay 单日保底）
-        r = _em_fflow_request("/api/qt/stock/fflow/daykline/get", params)
+        # V17.0.4(2026-08-19): prefer_his=True 历史资金流优先 push2his 全窗口
+        # (原顺序 push2delay 第 1 会把历史请求截断成单日——8/18 全仓 60日资金流仅 1 天根因)
+        r = _em_fflow_request("/api/qt/stock/fflow/daykline/get", params, prefer_his=True)
         if r is None:
             return []
         d = r.json()

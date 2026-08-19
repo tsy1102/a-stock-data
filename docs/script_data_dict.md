@@ -52,6 +52,9 @@
 | main_net_buy_wan(cdata) | get_canonical_stock_data | **f137+f140 /1e4(无条件) → 腾讯 tx75 → TDX**——与 get_main_net_buy 同源; ZHB 兜底已删(竞价额不可作主力) |
 | main_net_buy_wan_1d | cdata | **0(缺失)**——ZHB [15]=昨日竞价额(非主力 T-1), 已停用 |
 | 四档资金流 | get_em_quote_full_delay | **特大=f137/大=f140/中=f143/小=f146(净); 主力=f137+f140; 5日=f178 数组聚合; fund_*_5d/10d 旧映射已删** |
+| **vol_ratio(量比)** | cdata | **腾讯 [49](现用, val 策略07 依赖) → push2 f50(V17.0.4 破解, 20/20 与腾讯同值, 可作等价源)** |
+| **market_type(市场类型)** | get_board_type(code 推算) | **push2 f182(V17.0.4 破解官方枚举: 主板2/创业5/科创32/北交80, 可交叉验证)** |
+| **industry_code_push2(东财板块代码)** | get_em_quote_full | **push2 f198(BKxxxx, 已解析使用)** |
 
 ### 2.1b 竞价族(V17.0 实锤: ZHB tdxstat2 资金流键=竞价数据)
 | 字段 | 中间层 | 说明 |

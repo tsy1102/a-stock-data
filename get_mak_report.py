@@ -1456,12 +1456,12 @@ async def generate_sector_report(output_path):
         pool = get_limit_pool_summary()
         zt_count = pool.get("limit_up_count", 0)
         zb_count = pool.get("limit_broken_count", 0)
-        # V17.0.4(2026-08-19 实测): 东财跌停池 getTopicDTPool 明细接口对 8/17/8/18 均返回
-        # tc>0 但 pool=[] 空(接口端 bug) → 池子口径恒 0 失真("跌停 0" 不可能);
-        # 改取 A 段涨跌幅口径 _dt_count(同源全市场数据, 可靠, 8/18 实测 8 只)
-        dt_count = pool.get("limit_down_count", 0)
-        if dt_count == 0 and _dt_count > 0:
-            dt_count = _dt_count
+        # V17.0.4(2026-08-19 实测): 东财跌停池 getTopicDTPool 明细接口 tc>0 但 pool=[] 空;
+        # get_limit_pool_summary ZHB 兜底用的是**当前快照**(T-1, 如 8/18)→ 8/19 报告显示 8/18 跌停数(10),
+        # 与 A 段涨跌幅口径(8/19=152)严重不一致。统一: B 段跌停数无条件用 A 段 _dt_count(8/19 涨跌幅口径)
+        dt_count = _dt_count
+        if dt_count == 0 and pool.get("limit_down_count", 0) > 0:
+            dt_count = pool.get("limit_down_count", 0)
         success_rate = pool.get("success_rate", 0)
         L(
             f"  涨停 {zt_count} 只 | 炸板 {zb_count} 只 | 跌停 {dt_count} 只 | 封板率 {success_rate:.0f}%"

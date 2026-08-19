@@ -154,8 +154,18 @@ def _validate_zhb_data(zhb) -> bool:
         _log_sync(f"校验失败：无效的数据日期格式({zhb.date})")
         return False
 
-    stat_count = len(zhb.stock_stats) if zhb._stock_stats is not None else 0
-    stat2_count = len(zhb.stock_stats2) if zhb._stock_stats2 is not None else 0
+    # V17.0.4(2026-08-19): 强制触发惰性解析——原用 `zhb._stock_stats is not None` 判断,
+    # 下载后新对象 _stock_stats 未初始化 → 恒报"tdxstat=0 条"假警告(实际数据正常入库, 8/18 实测)
+    try:
+        stat_count = len(zhb.stock_stats or {})
+    except Exception as _e:
+        stat_count = 0
+        _log_sync(f"校验: tdxstat 解析失败 {_e}")
+    try:
+        stat2_count = len(zhb.stock_stats2 or {})
+    except Exception as _e:
+        stat2_count = 0
+        _log_sync(f"校验: tdxstat2 解析失败 {_e}")
 
     if stat_count < 5000:
         _log_sync(f"警告：tdxstat 数据量偏少({stat_count})，正常约7000+")

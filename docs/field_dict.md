@@ -112,13 +112,13 @@
 
 ### 零·B 字段×源总表（自动生成，勿手改）
 
-> 生成：`scripts/gen_field_matrix.py`，2026-08-06。从本字典全部字段表自动提取，共 914 个字段 / 1095 条字段×源记录。
+> 生成：`scripts/gen_field_matrix.py`，2026-08-06。从本字典全部字段表自动提取，共 920 个字段 / 1103 条字段×源记录。
 
 > 源排序按易→难：ZHB（离线零网络）→ TDX TCP（0x0010/F10/eltdx）→ AxData（local 模式）→ 腾讯（不封 IP）→ 东财（限流最严）→ 新浪 → 巨潮 → 其他。
 
 > 字段名基于章节标题分类推断，精确接口见各节；正文修改后重跑本脚本即同步。
 
-**B.1 多源字段（40 个，fallback 路由表）**
+**B.1 多源字段（42 个，fallback 路由表）**
 
 | 字段 | 源数 | 源（按易→难） |
 |:---|:---:|:---|
@@ -137,6 +137,8 @@
 | reason | 2 | 开盘红、东财 |
 | close | 2 | TDX-eltdx、东财 |
 | time | 2 | TDX-eltdx、东财 |
+| turnover_rate | 2 | 开盘红、东财 |
+| is_new | 2 | 财联社、东财 |
 | 涨跌停价 | 2 | akshare、东财 |
 | performance | 2 | 财联社、东财 |
 | turnover | 2 | 新浪、开盘红 |
@@ -163,21 +165,21 @@
 | 板块轮动 | 2 | TDX-0x0010/F10、腾讯 |
 | 涨停池 | 2 | TDX-0x0010/F10、腾讯 |
 
-**B.2 单源字段（874 个，无 fallback）**
+**B.2 单源字段（878 个，无 fallback）**
 
 - **ZHB（23）**：A 实时、B 准实时、C 日频、D 静态、PE、PE TTM、tdxstat Col[15] 员工数、tdxstat Col[22]、tdxstat Col[3]、tdxstat Col[5] streak_days、tdxstat Col[6、tdxstat2 Col[11] vs tdxstat Col[17]、tdxstat2 Col[12] vs tdxstat Col[19]、tipinfo Col[2]、前一日、前一日开盘量额、前两日成交额、封单额、年内涨停数、当日、日 Beta、涨跌幅滑动对、自由流通股本、连板统计
 - **TDX-0x0010/F10（214）**：*ST湘邮、AI解读、BKFenShiZhiBo、ChangeStatistics、C中芯、DR 茅台、DailyLimitPerformance、DailyLimitPerformance2、GetBaseFaceListZDEvnArtNew、GetDayBaseFaceListZDEvnArt、GetGPCPHBTS_Tag、GetHotPHB、GetInfo、GetKLineDay_W14、GetKLineZhangTing、GetMainMonitor_w30、GetPanKou、GetPlateInfo_w38、GetPlate_Info_QJ、GetStockBid、GetStockList（龙虎榜）、GetStockPanKou、GetStockTrendIncremental、GetWeiTuo_W14、GlobalCommon、GroupCount_w28、Index、InfoBKR、MoodNumCount、MorningBiddingList、NewGetList、N百花医药、Radar、RealRankingInfo、RiseFallAnalysis、ST百花医药、SonPlate_Info、Theme、XD、XR、ZhiShuStockList_W8、[verify、all、api、axdata_verify.md)、axdata_verify.md](verify、balance_sheet` 资产负债表、belong、cash_flow` 现金流量表、changqifuzhai、client_fields_enum.md)、client_fields_enum.md](verify、cunhuo、fupanwang、getLongByPlate、getPlateDayChart、getPlateRotatChart、getPlateRotatData、get_pmsl、get_sector_heat
   - … 其余 154 个见正文
 - **TDX-eltdx（60）**：Enum `Market、FinanceInfo`（财务）、FundFlow、HistoricalFundFlow、KlineCategory、MarketStat、SecurityBar`（K 线）、SecurityInfo`（证券列表）、SecurityQuote`（五档）、XdxrRecord`（除权除息）、adjust、auctions.series（0x056a）、business_composition、buy_levels、c1_value~c4_value、category_name、circulating_shares、current_hand、dividend_financing、down_count、eps_raw、fenhong、finance_diagnosis、get_auction_0925、high_price、history、hot_topics、inside_dish、jing_li_run_raw_float、liu_tong_gu_ben_raw_float、low_price、minutes.aux（0x051b）、minutes.today、net_profit_yuan、northbound_holding、open_amount_yuan、outer_disc、peigu、peigujia、period、pre_close_price、profit_forecast、recent、sell_levels、shareholder_change_plans、songzhuangu、stock_score、sum_buy_vol、sum_sell_vol、theme_market、topic_compare、total_assets_yuan、total_hand、total_shares、trades.today、up_count、valuation、volume_lots、zong_gu_ben_raw_float、zong_zi_chan_raw_float
-- **腾讯（14）**：K线、PB、ROA、pb、tdxstat Col[11]、tdxstat Col[14]、tdxstat Col[34]、估值 pe、分钟 K线、实测、月 K线、股息、腾讯字段 44、资金流(主力净)
+- **腾讯（15）**：K线、PB、ROA、pb、tdxstat Col[11]、tdxstat Col[14]、tdxstat Col[34]、主力净(全市场批量)、估值 pe、分钟 K线、实测、月 K线、股息、腾讯字段 44、资金流(主力净)
 - **新浪（25）**：URL、ask、ask_vol、bid、bid_vol、delta、gamma、item_tongbi、item_value、iv、last、limit_down、limit_up、netamount、open_interest、opendate、prev_close、report_list.{期次}.data[].item_title、report_type、strike、theory、theta、trade、vega、参数
-- **财联社（18）**：catalyst、cur_heat、is_new、limit_up_board、market_degree、plate_code、plate_name、plates、profit_ratio、rank、rank_change、shsz_balance、shsz_balance_change_px、up_down_dis、up_open_num、up_open_ratio、up_ratio、up_ratio_num
-- **开盘红（39）**：Detail、StockList、TagID、TagName、TagShuXing、ZSCode、ZSName、avg_change、buy_amount、dt、fall_dist、fall_num、flat、industry_id、industry_zt、limit_count、limit_tag、limit_time、market_cap、net_inflow、net_inflow_5d、open_time、q_zrcs、qscln、rise_dist、rise_num、s_zrcs、seal_money、sell_amount、sign、sjdt、sjzt、stdt、stock_count、stzt、szln、themes、turnover_rate、zt
+- **财联社（17）**：catalyst、cur_heat、limit_up_board、market_degree、plate_code、plate_name、plates、profit_ratio、rank、rank_change、shsz_balance、shsz_balance_change_px、up_down_dis、up_open_num、up_open_ratio、up_ratio、up_ratio_num
+- **开盘红（38）**：Detail、StockList、TagID、TagName、TagShuXing、ZSCode、ZSName、avg_change、buy_amount、dt、fall_dist、fall_num、flat、industry_id、industry_zt、limit_count、limit_tag、limit_time、market_cap、net_inflow、net_inflow_5d、open_time、q_zrcs、qscln、rise_dist、rise_num、s_zrcs、seal_money、sell_amount、sign、sjdt、sjzt、stdt、stock_count、stzt、szln、themes、zt
 - **akshare（12）**：BPS、EPS、PE 历史百分位、push2 f137-146 资金流、push2 f51、push2 f55、两融 RZJME、历史分红、扣非净利、板块资金流 f62、股息率、龙虎榜 EXPLAIN
 - **AxData（96）**：activity、amplitude_pct、ask1_price、ask1_volume、attack_pct、auction_prev_volume_ratio、average_change_pct、average_price、bid1_ask1_balance_pct、bid1_ask1_volume_diff、bid1_price、bid1_volume、capital_score、concept_capital_flow_tdx（题材资金走势）、cost70_concentration、cost70_range、cost90_concentration、cost90_range、current_volume、drawdown_pct、entrust_ratio、exchange、finance_updated_date、float_market_value、float_share、float_shares、free_float_market_value、free_float_share_z、free_float_shares、fundamental_score、high_change_pct、industry_name、industry_rank、industry_rank_total、inside_outside_ratio、inside_volume、instrument_id、limit_board_text、limit_ratio_pct、limit_rule、limit_stat_days、limit_status、limit_up_count_in_stat_days、limit_up_streak_days、low_change_pct、market_rank、market_rank_total、market_win_pct、name_flag、news_score、open_amount、open_amount_ratio_pct、open_change_pct、open_prev_amount_ratio、open_prev_seal_ratio、open_turnover_z、open_volume_hand、open_volume_ratio、option_chain_tdx（期权T型）、outside_volume
   - … 其余 36 个见正文
-- **东财（373）**：.1、.2、.2%、.2%）、.6、.7 全合理）、.9%、ABLE_FREE_SHARES、ACCUM_AMOUNT、ASSIGN_PROGRESS、AVG_FREE_SHARES、BILLBOARD_BUY_AMT、BILLBOARD_NET_AMT、BONUS_RATIO、BUY、BUYER_NAME、BUY_RATIO、BUY_SEAT、CHANGE_RATE、CHANGE_TYPE、CLOSE_PRICE、D1~D30_CLOSE_ADJCHRATE、DATE、DCP、DEAL_AMOUNT_RATIO、DEAL_AMT、DEAL_NET_RATIO、DEAL_PRICE、DEAL_VOLUME、END_DATE、EXPLAIN、EXPLANATION、EX_DIVIDEND_DATE、FIN_BALANCE_GR、FREE_DATE、FREE_MARKET_CAP、FREE_RATIO、FREE_SHARES、FREE_SHARES_TYPE、HOLDER_NUM、HOLDER_NUM_CHANGE、HOLDER_NUM_RATIO、LINK_URL、MARKET、NET、NET_BS_AMT、NextTwoYear、NextYear、OHLC、OPERATEDEPT_CODE、OPERATEDEPT_NAME、PRETAX_BONUS_RMB、RCHANGE3D、ROE TTM（31.3%、RPTA_WEB_RZRQ_GGMX（两融）、RPT_DAILYBILLBOARD_DETAILSNEW（龙虎榜）、RPT_HOLDERNUMLATEST（股东户数）、RPT_LIFT_STAGE（解禁）、RPT_SHAREBONUS_DET（分红）、RQCHL
-  - … 其余 313 个见正文
+- **东财（378）**：.1、.2、.2%、.2%）、.6、.7 全合理）、.9%、ABLE_FREE_SHARES、ACCUM_AMOUNT、ASSIGN_PROGRESS、AVG_FREE_SHARES、BILLBOARD_BUY_AMT、BILLBOARD_NET_AMT、BONUS_RATIO、BUY、BUYER_NAME、BUY_RATIO、BUY_SEAT、CHANGE_RATE、CHANGE_TYPE、CLOSE_PRICE、D1~D30_CLOSE_ADJCHRATE、DATE、DCP、DEAL_AMOUNT_RATIO、DEAL_AMT、DEAL_NET_RATIO、DEAL_PRICE、DEAL_VOLUME、END_DATE、EXPLAIN、EXPLANATION、EX_DIVIDEND_DATE、FIN_BALANCE_GR、FREE_DATE、FREE_MARKET_CAP、FREE_RATIO、FREE_SHARES、FREE_SHARES_TYPE、HOLDER_NUM、HOLDER_NUM_CHANGE、HOLDER_NUM_RATIO、LINK_URL、MARKET、NET、NET_BS_AMT、NextTwoYear、NextYear、OHLC、OPERATEDEPT_CODE、OPERATEDEPT_NAME、PRETAX_BONUS_RMB、RCHANGE3D、ROE TTM（31.3%、RPTA_WEB_RZRQ_GGMX（两融）、RPT_DAILYBILLBOARD_DETAILSNEW（龙虎榜）、RPT_HOLDERNUMLATEST（股东户数）、RPT_LIFT_STAGE（解禁）、RPT_SHAREBONUS_DET（分红）、RQCHL
+  - … 其余 318 个见正文
 
 <!-- /GEN:field-matrix -->
 
@@ -1372,6 +1374,11 @@ print(q.code, q.price, q.change_pct)
 | f170 | 涨跌幅 | % | ✅ |
 | f171 | 振幅 | % | ✅ |
 | f189 | **上市日期** | YYYY-MM-DD | ✅ |
+| f50 | **量比** | - | ✅（20/20 与腾讯[49] 完全一致, 2026-08-19 采集实锤）|
+| f121 | 资金流衍生指标 | - | ✅（=腾讯[71] 同源, 2026-08-19 17/20+浮点差）|
+| f122 | 资金流衍生指标 | - | ✅（=腾讯[62] 同源, 2026-08-19 17/20+浮点差）|
+| f182 | **市场类型枚举** | - | ✅（主板=2/创业板=5/科创板=32/北交所=80, 20/20 实锤）|
+| f198 | **东财板块代码** | BKxxxx | ✅（茅台 BK1277=白酒/农行 BK0475, 2026-08-19 实锤）|
 
 #### 12.3.2 板块/排行 `ulist.np/get`（本次联网新发现）
 

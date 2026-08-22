@@ -10,6 +10,8 @@
 - **字段实测验证流水线（V16.4.1）**：20 股固定股票池 + 19 源按天采集（`scripts/capture_field_probe.py` → `docs/field_verification/`）；TdxQuant 官方 88 字段交叉破解（Col[3]=StaticPE_TTM/Col[24]=CashZJ 万元/[26]=YearZTDay 等 18/18 实锤）；每日会话纪要锚点 `docs/session_notes/`
 - **全盘重构与字段破解（V17.0）**：7 支撑模块包化 `core/`；批量骨架收敛基类 `execute_batch_pipeline`；main.py 固定超时改**输出活性检测**；主力净流入全链统一 f137、行业仅认 881 段、PE 动态=f162（字典实锤）；**命名规律破解**——Amo=Amount 金额族、"N日"涨跌幅全交易日口径、tdxstat2 21 列全映射（封单额三日滚动）、f137-146 资金流定位、通达信行业体系（881 行业/880 概念/X 码细分行业）；script_data_dict.md 全量重写
 - **md 格式整体规划与渲染修复（V17.0.2/17.0.3）**：标题去括号/小节 ### 层级/树形转列表；表格前后双向空行渲染修复（标题不再被并表）；**#N**→**N.** 红色数字消除；字段值块/明细/席位/大宗/股东户数全部 md 表格化；虚涨段根因修复（主力批量两路径统一）；涨停天梯休市日期修复；fflow push2delay 优先（风控）；fmt_preview 离线预览工具
+- **历史报告深度核查与数据修复（V17.0.4）**：8/17-8/19 共 100+ 份 md 全量对比——mak 3日偏离恒 0(TDX 路径 ret_3d 硬编码)→ 恢复真实复利(300862 0→66.78%)；**北向资金冻结**（同花顺 hgt/sgt 序列错位, 47 份报告恒 -9.28/+379.75）→ invalid 拦截拒展示；**跌停 0 不可能**（东财 getTopicDTPool 明细空）→ ZHB 快照涨跌幅兜底 + mak 当日口径；历史资金流仅 1 天（push2delay 排第 1 截断）→ prefer_his 优先 push2his 全窗口；指数多周期 None → **新浪日K兜底**（getKLineData, scale 分钟/日/周/月, OHLCV）；zhb_sync 校验误报修复；**GD 补传工具 reports/reupload.py**（按日期核查未上传批量上传, 已上传跳过）
+- **字段破解与采集体系（V17.0.4）**：push2 **f50=量比**(20/20=腾讯[49])/**f182=市场类型**(主板2/创业5/科创32/北交80)/**f198=东财板块代码**(BKxxxx)/f121-122 资金流衍生(=腾讯[71]/[62])；field_dict 12.3.1 正式表 + §零·B 矩阵(920 字段) + script_data_dict 同步；采集 20260819/20260820(17-18 源, thsdk 非交易时段 0KB 已知)；ZHB 8/18 包同步
 - **字段增强与全量 md 化（V17.0.1）**：mak 主力净额 ulist 批量 f62+f66 真主力（竞价额冒充修复）；sht 连板追踪 ZHB[31] 真连板数；val 21→23 策略（业绩预增 get_yjyg_all + 盈利预期本机 ProfitForecast）；lng 机构一致预期；三轮审查 50+ 项修复（单位 10000x/缓存失效/限流面/契约键）；**报告全量 md 化**（`md_render.py` 渲染层转换：标题/分隔线/F10 边框表/空格表数据驱动切分，输出 .md 纯文本兼容）；bypass 模式 .day 尾部补价（新版 .day 格式破解：OHLC=int32×0.01 元）
 - **5种报告类型**（V16.1: ful 下线）：短线(sht)、中线(med)、长线(lng)、估值选股(val)、市场状态(mak)
 - **标准化数据合约对象**（V15.0-V15.2）：`CanonicalStockData` 不可变强类型合约，封装 50+ 核心数据字段及元数据溯源标签（`field_sources`），彻底消除异构多源数据冲突
@@ -42,7 +44,7 @@
 - **代码清洗**：自动处理股票代码格式问题（`600519` / `600519茅台` / `600519 茅台`）
 - **异步并发**：30+ 异步函数支持高效并发请求
 - **类型安全**：mypy 静态检查通过，类型注解完整覆盖
-- **测试体系**（V16.3）：17 个测试文件 / **296 项单元测试 100% 通过**（默认离线运行，real_network 标记隔离）；`tests/test_eastmoney_health.py` 13 域健康度矩阵、`tests/test_tdx_health.py` 白名单/适配器覆盖
+- **测试体系**（V16.3）：17 个测试文件 / **314 项用例 269 passed**（默认离线运行，real_network 标记隔离）；`tests/test_eastmoney_health.py` 13 域健康度矩阵、`tests/test_tdx_health.py` 白名单/适配器覆盖
 
 ---
 
@@ -63,8 +65,8 @@
 4. 首次运行 `python main.py --sht 600519 --no-upload` 冒烟（首只约 5 分钟，含 ZHB 下载+缓存预热）
 
 可选配置（缺失不影响运行）：
-- **Google Drive 上传**：根目录放 `client_secrets.json`，首次运行浏览器 OAuth 生成 `credentials.json`；国内网络需本地代理（gd_uploader 自动探测 7890/10809/1080 等常见端口）
-- **同花顺增强**：根目录放 `ths_credentials.json`（`{"username":..,"password":..,"mac":..}`）或设 `THS_USERNAME/THS_PASSWORD` 环境变量；无凭证时 SDK 游客兜底
+- **Google Drive 上传**：`credentials/client_secrets.json`（V17.0 凭据集中目录），首次运行浏览器 OAuth 生成 `credentials/credentials.json`；国内网络需本地代理（gd_uploader 自动探测 7890/10809/1080 等常见端口）
+- **同花顺增强**：`credentials/ths_credentials.json`（`{"username":..,"password":..,"mac":..}`）或设 `THS_USERNAME/THS_PASSWORD` 环境变量；无凭证时 SDK 游客兜底
 
 **新电脑 UTF-8 环境初始化（V16.4.0，一次性）**：
 
@@ -184,12 +186,16 @@ a-stock-data/
 │   └── ths_credentials.json      # 同花顺 THS SDK 账号
 │
 ├── scripts/                      # 辅助脚本（见 scripts/README.md）
+│   ├── capture_field_probe.py    # 字段实测采集（20 股 × 18 源 → docs/field_verification/YYYYMMDD/）
 │   ├── run_tests.ps1             # 测试统一入口（AGENTS.md 强制 shell 层中转）
 │   ├── update_calendar.py        # 交易日历数据更新（含 V14+ 防覆盖保护）
 │   ├── clean_cache.py            # 缓存清理快捷脚本（封装 python -m core.stock_cache）
 │   ├── backtest_topn.py          # top_n 回测验证
 │   ├── perf_compare.py           # dataclass vs dict 性能压测
 │   ├── gen_field_matrix.py       # 字段×源矩阵自动生成
+│   ├── fmt_preview.py            # 零网络格式预览工具（V17.0.3）
+│   ├── check_em_health.py        # 东财接口健康探测（6 域低频）
+│   ├── upload_reports_to_gd.py   # GD 补传（扫描未上传 md）
 │   ├── sync_readme.py            # CHANGELOG → README 自动同步
 │   └── backup-opencode.ps1       # opencode 配置备份
 │
@@ -307,8 +313,8 @@ CIRCUIT_BREAKER_RESET_TIMEOUT_SECONDS = 60
 如需启用云端上传功能：
 
 1. 在 Google Cloud Console 创建项目并启用 Drive API
-2. 下载 OAuth 2.0 凭证文件，保存为 `client_secrets.json`（项目根目录）
-3. 首次运行时会弹出浏览器进行授权，授权后自动生成 `credentials.json`
+2. 下载 OAuth 2.0 凭证文件，保存为 `credentials/client_secrets.json`（V17.0 凭据集中目录）
+3. 首次运行时会弹出浏览器进行授权，授权后自动生成 `credentials/credentials.json`
 
 > **注意**：
 > - OAuth scope 为 `drive.file`，脚本只能看到由该脚本自身创建或打开过的文件/文件夹
@@ -410,14 +416,14 @@ status, message = get_market_status()
 
 ## 输出示例
 
-报告文件命名格式：`{股票代码}_{报告类型}_{日期}_{时间}.txt`
+报告文件命名格式：`{股票代码}_{报告类型}_{日期}_{时间}.md`（V17.0.1 起全量 md 化）
 
 ```
 reports/
-├── 600519_sht_20260618_1430.txt    # 茅台短线报告
-├── 600519_med_20260618_1435.txt    # 茅台中线报告
-├── 600519_lng_20260618_1440.txt    # 茅台长线报告
-└── get_val_report_20260618_1445.txt # 估值汇总报告
+├── 600519_sht_20260618_1430.md    # 茅台短线报告
+├── 600519_med_20260618_1435.md    # 茅台中线报告
+├── 600519_lng_20260618_1440.md    # 茅台长线报告
+└── get_val_report_20260618_1445.md # 估值汇总报告
 ```
 
 ---
@@ -425,6 +431,79 @@ reports/
 ## 📋 版本历史
 
 完整版本历史详见 [CHANGELOG.md](CHANGELOG.md)。
+
+> 🔧 **V17.0.4**（2026-08-19）
+> **历史报告深度核查修复 + 数据采集体系完善 + 新字段破解 + GD 补传**
+>
+> - **mak 近3日异动回溯 3日偏离恒 0.00%**: TDX 路径 ret_3d 硬编码 0.0(V16.1 因 ZHB 未破解 1d/2d 移除, 现已破解)
+>   → `tdx_client._calc_ret_3d_snapshot` 恢复真实复利(实测 300862: 0.00→66.78%)
+> - **ZHB 路径腾讯覆盖分支 3 日窗口错位**(漏 T-1, 窗口 T/T-2/T-3): `_calc_3d_from_daily` 覆盖分支改取 Col[6]/[7]
+> - **北向资金冻结**(8/12-8/19 恒 -9.28/+379.75, 47 份报告全同): 同花顺接口 hgt(262 分时点) vs sgt(35 历史点)
+>   **序列错位** → `get_hsgt_macro_flow` 判 invalid 拒绝展示, sht/med/mak 三处消费点改"数据源异常, 净流入暂缺"
+> - **跌停 0 不可能**: 东财 `getTopicDTPool` 明细接口 tc>0 但 pool=[] 空(8/17/8/18 实测) →
+>   `get_limit_pool_summary` 用 ZHB 快照涨跌幅口径兜底(验证 0→2); mak B 段进一步无条件用 A 段当日 `_dt_count`
+> - **历史资金流仅 1 天**(8/18 全仓 35 份): `_FFLOW_HOSTS` push2delay 排第 1 截断历史请求 →
+>   `_em_fflow_request(prefer_his=True)` push2his 全窗口优先(实测 60 天)
+> - **指数多周期收益静默 None**(严重/卡异动判定失效): `get_index_returns` 加**新浪日K兜底**
+>   (quotes.sina.cn getKLineData, 与腾讯 ifzq 实测一致 <0.01; scale 支持分钟/日/周/月, OHLCV+amount)
+> - **sht/med 格式**: sht `➤ [板块共振监测]/[市值排名]` 括号拆分小节+内容; med 两融 4 处 ➤ 信息行去标题化;
+>   md_render 标题 `## **X**`(des2 全局替换误伤)→ 归一 `## X`
+> - **zhb_sync 校验误报**("tdxstat=0 条"假警告): 下载后惰性解析未触发 → `_validate_zhb_data` 强制访问 property
+>
+> - `reports/reupload.py`(gitignore 例外入库): 按日期核查未上传 md 批量上传; 已上传同名跳过;
+>   瞬时波动 30s 重试 2 轮; 名称从一章"股票名称/企业名称"提取(39 文件 0 缺失)
+>
+> - **push2 f50=量比**(20/20 与腾讯[49] 完全一致)、**f182=市场类型枚举**(主板2/创业5/科创32/北交80)、
+>   **f198=东财板块代码**(BKxxxx)、f121/f122=资金流衍生(与腾讯[71]/[62] 同源)
+> - 腾讯 [65]/[66] 静态排除项确认、f86 全局计数无信息量; ZHB tdxstat 全破解无新未知
+> - 字典登记: field_dict 12.3.1 正式表 + §零·B 矩阵重生成(914→920 字段) + script_data_dict 2.1
+>
+> - capture_field_probe 20260819(17 源 402s, thsdk 非交易时段 0KB 已知)/ 20260820(18 源 362s, ZHB=8/19)
+> - ZHB 8/18 包同步(zhb_sync, 7994 只); 8/19 报告核查: 章节全完整/数据逻辑 0 异常/000657 三报告交叉一致
+> - 回归 269 passed 持续通过
+
+> 🔧 **V17.0.3**（2026-08-17）
+> **md 报告格式整体规划 + 数据修复 + 风控优化 + 离线预览工具**
+>
+> - 标题 ## 【X】/## [X] → ## X(去括号); ➤ 小节 → ### 三级标题; ├─/└─ 树形 → md 列表
+> - 表格渲染修复: 表格前+后双向空行(4 出口统一)——"标题被并表/表格未渲染"根因
+> - **#N** → **N.**(渲染器 # 高亮红色消除); 涨停板块分布竖排(避开表头加粗)
+> - 头部拆分(报告名/时间+时段分行)+ 报告名加粗; 时间 %H.%M.%S(分钟红色消除)
+> - 字段值对齐块 → 2 列表格(行内多字段拆分); 状态行(emoji)不转表; 独立分隔线去除
+> - 表格使用原则: 多列数据用表格(明细/天梯/轮动/资金/财务/席位/北向/两融/大宗/股东户数);
+>   枚举/状态/提示竖排文本; 单列行移出表格(rest 截断)
+>
+> - 虚涨段恒空根因: 主力批量段仅在 ZHB 路径执行, 盘中 TDX 路径不跑 → 上移两路径统一
+>   (A 段 ulist f62+f66 真主力口径, 虚涨段恢复)
+> - 涨停天梯失败: 开盘红日期 今天-1(周一取周日空) → 最近交易日+向前找
+> - 同花顺独家/大宗交易/席位/股东户数/ROE 表 空格粘连 → 脚本直接 md 表格
+> - fflow 域顺序 push2delay 优先(策略20 逐股不再先打 push2 主域, 封禁风险源)
+> - val 策略展示 5→10 只; _top5_sorted → _top10_sorted 正名
+>
+> - scripts/fmt_preview.py: 零网络格式预览(重转报告/喂模拟行)
+> - 删 20 死函数+8 未用 import(三轮全仓核查闭环)
+> - 回归 269 passed 持续通过
+
+> 🔧 **V17.0.2**（2026-08-16）
+> **修复: 休市行情 OHLC 缺失 + 涨停池源切换 + 表格原则定稿 + 三轮全仓审查闭环**
+>
+> - 休市/盘前 OHLC/成交额恒 0: _extract_with_source 去 need_realtime_quote 门控 +
+>   zhb_default 修复(amount 键名不匹配) + prev_close 反算(price/(1+chg), 加 0.5~2x sanity) +
+>   TDX 本机 .day 兜底(get_tdx_day_tail, 零网络) + 批量命中 TDX 补缺
+> - 盘口异动涨幅恒 0(levistock 字段 i 解析错误) → 修复后按用户原则**移除采集**(sht/mak 零 push2ex)
+>
+> - ths_limit_up_pool 升格优先源: 空日期回退最近交易日; 17 字段(原因/板型/封板率/炸板次数/
+>   换手/流通市值/封单量/末封/回封/市场类型/新股, 一次请求零额外压力)
+> - 板块分布: TDX 本机 tdxhy 一级行业注入(零网络, 进程缓存); 炸板/跌停池保持东财
+> - 缓存 category 升 limit_pool_v2(字段变更强制失效); mak 封板时间双键兼容;
+>   休市日三池日期口径统一(封板率 100% 假象修复)
+>
+> - "字段: 值"竖排(基本信息/行情/估值)不表格化; 仅横向数字列对齐章节(同业/资金/龙虎榜)用表格
+> - sht/lng 表格回退; 上市日期唯一来源 list_date
+>
+> - med 板块内排名 NameError(永久静默失效)修复; mak 资金流验证段覆盖行删除
+> - 研报 None 崩溃/EPS 守卫 >=4/解禁单位统一(F10 万→股)/val 策略14 单位分键/
+>   to_thread 14 处/死 import 8 处/backtest 死函数
 
 > ✨ **V17.0.1**（2026-08-15）
 > **补丁: 字段增强实施(P0-P4) + 三轮代码审查闭环 + 全量 md 化 + 运行修复**

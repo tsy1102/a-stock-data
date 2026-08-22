@@ -37,10 +37,12 @@ TRAE IDE 自带一个 Python 3.10 解释器并将其注入到系统 PATH 前面�
 .\scripts\run_with_system_python.ps1 -m unittest tests.test_cache
 ```
 
-如果遇到执行策略错误，先执行一次：
-```powershell
-Set-ExecutionPolicy -Scope CurrentUser -ExecutionPolicy RemoteSigned
-```
+> 注：`.bat` 版本已不再提供（V16.4.1 起仅保留 `.ps1`，Windows PowerShell 5.1 原生环境）。
+>
+> 如果遇到执行策略错误，先执行一次：
+> ```powershell
+> Set-ExecutionPolicy -Scope CurrentUser -ExecutionPolicy RemoteSigned
+> ```
 
 ## 工作原理
 
@@ -87,7 +89,19 @@ Set-ExecutionPolicy -Scope CurrentUser -ExecutionPolicy RemoteSigned
   scripts\upload_reports_to_gd.bat            # 扫描+补传
   scripts\upload_reports_to_gd.bat --dry-run  # 只扫描不上传
   ```
-- **`run_with_system_python.bat` / `.ps1`** — 一键使用系统 Python 3.12，避免 TRAE IDE 内置 Python 3.10 抢占调用
+- **`capture_field_probe.py`** — 【V16.4.1】**字段实测采集脚本**（用户每日采集入口）：固定 20 股 × 18 源全字段
+  （ZHB/TDX/腾讯/push2+full/ulist239/新浪/AxData/财联社/KPL/板块轮动/thsdk/push2ex/人气榜/datacenter/巨潮/研报），
+  输出 `docs/field_verification/YYYYMMDD/`。`--dry-run` 只检查源可用性：
+  ```bat
+  python scripts/capture_field_probe.py                 # 采今天
+  python scripts/capture_field_probe.py --date 20260819 # 指定日期
+  ```
+- **`fmt_preview.py`** — 【V17.0.3】零网络格式预览：重转报告/喂模拟行，验证 md 渲染效果
+- **`run_tests.ps1`** — 【V16.4.1】pytest 统一入口（Mode: all/module/real/skip_real/expression + ExtraArgs 透传）
+- **`clean_cache.py`** — 缓存清理快捷脚本（封装 `python -m core.stock_cache`）
+- **`gen_field_matrix.py`** — 【V16.3】从 field_dict 字段表自动生成 §零·B 字段×源矩阵（幂等重写）
+- **`backtest_topn.py`** — top_n 回测验证
+- **`run_with_system_python.ps1`** — 一键使用系统 Python 3.12，避免 TRAE IDE 内置 Python 3.10 抢占调用
 
 ### 历史脚本
 

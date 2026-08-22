@@ -4,6 +4,41 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
+## [17.0.4] - 2026-08-19
+
+**历史报告深度核查修复 + 数据采集体系完善 + 新字段破解 + GD 补传**
+
+### 🐛 数据修复(历史报告核查驱动, 8/17-8/19 63+39 份 md 全量对比)
+- **mak 近3日异动回溯 3日偏离恒 0.00%**: TDX 路径 ret_3d 硬编码 0.0(V16.1 因 ZHB 未破解 1d/2d 移除, 现已破解)
+  → `tdx_client._calc_ret_3d_snapshot` 恢复真实复利(实测 300862: 0.00→66.78%)
+- **ZHB 路径腾讯覆盖分支 3 日窗口错位**(漏 T-1, 窗口 T/T-2/T-3): `_calc_3d_from_daily` 覆盖分支改取 Col[6]/[7]
+- **北向资金冻结**(8/12-8/19 恒 -9.28/+379.75, 47 份报告全同): 同花顺接口 hgt(262 分时点) vs sgt(35 历史点)
+  **序列错位** → `get_hsgt_macro_flow` 判 invalid 拒绝展示, sht/med/mak 三处消费点改"数据源异常, 净流入暂缺"
+- **跌停 0 不可能**: 东财 `getTopicDTPool` 明细接口 tc>0 但 pool=[] 空(8/17/8/18 实测) →
+  `get_limit_pool_summary` 用 ZHB 快照涨跌幅口径兜底(验证 0→2); mak B 段进一步无条件用 A 段当日 `_dt_count`
+- **历史资金流仅 1 天**(8/18 全仓 35 份): `_FFLOW_HOSTS` push2delay 排第 1 截断历史请求 →
+  `_em_fflow_request(prefer_his=True)` push2his 全窗口优先(实测 60 天)
+- **指数多周期收益静默 None**(严重/卡异动判定失效): `get_index_returns` 加**新浪日K兜底**
+  (quotes.sina.cn getKLineData, 与腾讯 ifzq 实测一致 <0.01; scale 支持分钟/日/周/月, OHLCV+amount)
+- **sht/med 格式**: sht `➤ [板块共振监测]/[市值排名]` 括号拆分小节+内容; med 两融 4 处 ➤ 信息行去标题化;
+  md_render 标题 `## **X**`(des2 全局替换误伤)→ 归一 `## X`
+- **zhb_sync 校验误报**("tdxstat=0 条"假警告): 下载后惰性解析未触发 → `_validate_zhb_data` 强制访问 property
+
+### 📤 GD 补传工具
+- `reports/reupload.py`(gitignore 例外入库): 按日期核查未上传 md 批量上传; 已上传同名跳过;
+  瞬时波动 30s 重试 2 轮; 名称从一章"股票名称/企业名称"提取(39 文件 0 缺失)
+
+### 🔍 字段破解(采集 20260819/20260820, 20 股横截面)
+- **push2 f50=量比**(20/20 与腾讯[49] 完全一致)、**f182=市场类型枚举**(主板2/创业5/科创32/北交80)、
+  **f198=东财板块代码**(BKxxxx)、f121/f122=资金流衍生(与腾讯[71]/[62] 同源)
+- 腾讯 [65]/[66] 静态排除项确认、f86 全局计数无信息量; ZHB tdxstat 全破解无新未知
+- 字典登记: field_dict 12.3.1 正式表 + §零·B 矩阵重生成(914→920 字段) + script_data_dict 2.1
+
+### 📦 采集与数据
+- capture_field_probe 20260819(17 源 402s, thsdk 非交易时段 0KB 已知)/ 20260820(18 源 362s, ZHB=8/19)
+- ZHB 8/18 包同步(zhb_sync, 7994 只); 8/19 报告核查: 章节全完整/数据逻辑 0 异常/000657 三报告交叉一致
+- 回归 269 passed 持续通过
+
 ## [17.0.3] - 2026-08-17
 
 **md 报告格式整体规划 + 数据修复 + 风控优化 + 离线预览工具**

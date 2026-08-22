@@ -55,4 +55,4 @@
 - **包入口 `__init__.py`** 是唯一对外门面: 所有公共函数经 `from stock_common import X` 导入;
   `__all__` 与 from-import 块必须保持同步(修改导出必查两份)。
 - **sc_datasource ↔ core 依赖全部为函数体内懒 import**(防循环依赖)。
-- **V17.0 状态**: sc_zhb.py(连续 ZHB 回溯)为 0 调用死代码, 计划在 V17.0 S1 删除(本表未列)。
+- **V17.0 状态**: sc_zhb.py(连续 ZHB 回溯)已删除(V17.0 S1 死代码清理, 2026-08-13)。

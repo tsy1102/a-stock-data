@@ -15,7 +15,7 @@ docs/
 ├── field_verification/      # 字段实测验证流水线（V16.4.1,按天归档）
 │   ├── pool.json            # 20 股固定股票池（固定 15 + 动态 5）
 │   ├── README.md            # 采集/核查流程说明
-│   └── YYYYMMDD/            # 每日:raw_*.json × 19 源 + meta + analysis + field_analysis
+│   └── YYYYMMDD/            # 每日:raw_*.json × 18 源 + meta + analysis + field_analysis
 ├── session_notes/           # 每日会话纪要锚点（V16.4.1,按天归档）
 │   ├── README.md            # 纪要保存逻辑与模板
 │   └── YYYYMMDD.md          # 当日全部改动/决策/成果/待办
@@ -41,7 +41,7 @@ docs/
 | 字段定义/来源/优先级 | field_dict.md（主字典）|
 | 脚本调整前 | script_data_dict.md（逐字段矩阵）|
 | 字段实测值/破解数据 | verify/ 对应附录（主字典引用处有链接）|
-| 当日采集数据/字段分析 | field_verification/YYYYMMDD/（19 源 raw + field_analysis）|
+| 当日采集数据/字段分析 | field_verification/YYYYMMDD/（18 源 raw + field_analysis）|
 | 跨日会话上下文恢复 | session_notes/YYYYMMDD.md（每日记忆锚点）|
 | 服务器选择/网络诊断 | verify/network_servers.md |
 | 客户端字段逆向 | verify/client_fields_enum.md |

@@ -52,6 +52,8 @@ from core.tdx_client import (tdx_get_latest_bar_with_ma,
                          tdx_get_index_quote)  # V16.4.1: 删 3 个未使用导入
 
 from stock_common import (_safe_float, _debug_log,
+                           get_fuyao_seal_info, get_fuyao_auction_snapshot,
+                           get_fuyao_auction_benchmark, get_fuyao_anomaly,
                            _load_settings, _load_strategy_config, BaseReportRunner,
                            get_dragon_tiger_board_async,
                            holder_change_async, get_strategic_announcements_async,
@@ -267,6 +269,10 @@ async def generate_report_async(session, code, output_path, ind_comp=None, idx_q
     price_today = cdata.price
     q = cdata.to_dict()
 
+    # V17.0.5 P0: fuyao 官方封单(涨停池 seal_money/max_seal_money——替代买一估算;
+    # trading_day 缓存, 全市场一次请求)。非涨停/无 Key → None, 回落原估算逻辑
+    _seal_info = await asyncio.to_thread(get_fuyao_seal_info, code)
+
     # V15.4.2: get_stock_info 内部调腾讯，包 to_thread
     info = await asyncio.to_thread(get_stock_info, code)
     stock_name = cdata.name or info.get('name', 'N/A')
@@ -294,6 +300,9 @@ async def generate_report_async(session, code, output_path, ind_comp=None, idx_q
 
     if cdata.change_5d or cdata.change_10d or cdata.change_20d:
         L(f"\n  [阶段涨幅] 近5日: {cdata.change_5d:+.2f}% | 近10日: {cdata.change_10d:+.2f}% | 近20日: {cdata.change_20d:+.2f}%")
+        # V17.0.5 P0: 本月至今涨跌幅(change_mtd)——短线周内动量与月内趋势衔接参考
+        if getattr(cdata, "change_mtd", 0):
+            L(f"  [本月至今] {cdata.change_mtd:+.2f}%（基准=上月末收盘）")
 
 
     L("\n"+"---"); L("## 【二、实时行情、估值与短线趋势】"); L("---")
@@ -494,30 +503,41 @@ async def generate_report_async(session, code, output_path, ind_comp=None, idx_q
 
     else: L("  无机构覆盖数据")
 
-    lu = q.get("limit_up",0) if q else 0; b1v = q.get("bid1_vol",0) if q else 0; np2 = q.get("price",0) if q else 0
-
-    is_lu = lu>0 and abs(np2-lu)/lu<0.005
-
-    if is_lu and b1v>0:
-
-        fa = b1v*lu/1e8; fr = fa/(q.get("mcap_yi",0) or 1)*100
-
-        if fa>=0.1 or fr>0.5:
-
-            t = f"  封单资金 {fa:.2f}亿元，占流通市值 {fr:.1f}%"
-
-            if fr>5: t += "\n  🔥 封单实力强劲，次日大概率高开"
-
-            elif fr>2: t += "\n  ✅ 封单质量良好"
-
-            else: t += "\n  ⚠️ 封单偏弱"
-
-            L(t)
+    # V17.0.5 P0: 官方封单口径优先(fuyao 涨停池 seal_money/max_seal_money), 买一估算兜底
+    if _seal_info:
+        fa = (_seal_info['seal_money'] or 0) / 1e8
+        fr = fa / (q.get('mcap_yi', 0) or 1) * 100
+        t = f"  封单资金 {fa:.2f}亿元（fuyao 官方），占流通市值 {fr:.1f}%"
+        _dec = _seal_info.get('seal_decay_ratio')
+        if _dec is not None:
+            _pct = _dec * 100
+            if _pct < 30:
+                t += f"\n  ⚠️ 封单衰减率 {_pct:.0f}%（峰值 {(_seal_info['max_seal_money'] or 0)/1e8:.1f}亿→现 {fa:.1f}亿）——烂板特征，警惕炸板"
+            elif _pct < 60:
+                t += f"\n  📊 封单衰减率 {_pct:.0f}%——盘中有所开板回封"
+            else:
+                t += f"\n  🔥 封单衰减率 {_pct:.0f}%——全日封死，封板质量极高"
+        if _seal_info.get('limit_up_reason'):
+            t += f"\n  涨停原因: {_seal_info['limit_up_reason']}"
+        L(t)
+    else:
+        lu = q.get("limit_up", 0) if q else 0
+        b1v = q.get("bid1_vol", 0) if q else 0
+        np2 = q.get("price", 0) if q else 0
+        is_lu = lu > 0 and abs(np2 - lu) / lu < 0.005
+        if is_lu and b1v > 0:
+            fa = b1v * lu / 1e8; fr = fa / (q.get("mcap_yi", 0) or 1) * 100
+            if fa >= 0.1 or fr > 0.5:
+                t = f"  封单资金 {fa:.2f}亿元，占流通市值 {fr:.1f}%"
+                if fr > 5: t += "\n  🔥 封单实力强劲，次日大概率高开"
+                elif fr > 2: t += "\n  ✅ 封单质量良好"
+                else: t += "\n  ⚠️ 封单偏弱"
+                L(t)
 
     L("\n"+"---"); L("## **四、个股研报（东财）**"); L("---")
 
     # V15.4.2: 同步研报拉取包 to_thread
-    reports = await asyncio.to_thread(get_reports, code, 5)
+    reports = await asyncio.to_thread(get_reports, code, 3)  # V17.0.7: 5→3(四章仅60天计数+前10篇, 3页足够)
 
     rr = [r for r in reports if str(r.get("publishDate",""))[:10]>=_60d_str]
 
@@ -754,7 +774,16 @@ async def generate_report_async(session, code, output_path, ind_comp=None, idx_q
             else:
                 L(f"    主力净流入(最新): {ff['data'][0]:+.0f}万元")
         else:
-            L("\n  ➤ 60日资金流监控 (最近 10 日):")
+            # V17.0.7: 标题按实际数据量自适应(2026-08-24 全批实测 push2his 连接封锁+
+            # push2delay daykline 返回空 klines, 上游退化后仅剩 TDX 单日——
+            # 原固定"最近 10 日"标题配 1 行数据误导)
+            _n_avail = len(ff["data"])
+            if _n_avail >= 10:
+                L("\n  ➤ 60日资金流监控 (最近 10 日):")
+            elif _n_avail > 1:
+                L(f"\n  ➤ 60日资金流监控 (仅 {_n_avail} 日可用):")
+            else:
+                L("\n  ➤ 60日资金流监控 (仅当日 1 日可用——历史窗口源暂缺, 单日数据不代表趋势):")
 
             _recent = ff["data"][:10]
 
@@ -773,7 +802,11 @@ async def generate_report_async(session, code, output_path, ind_comp=None, idx_q
                     L(f"  {d:>+12.0f}")
 
             r20 = ff["data"][:20]
-            if _is_dict:
+            # V17.0.7: 数据不足 5 日时跳过误导性统计(原"近20日统计: 0/1天"无信息量),
+            # 仅提示数据受限
+            if len(r20) < 5:
+                L("\n  ⚠️ 历史资金流窗口数据受限(<5 日), 趋势统计已跳过; 请以上方单日值结合龙虎榜/两融综合判断")
+            elif _is_dict:
                 tmain = sum(d["main_net"] for d in r20); tdays = sum(1 for d in r20 if d["main_net"]>0)
                 # V16.2.4: 延时镜像域可能只有当日 → 按实际条数标注
                 L(f"\n  近20日统计:\n    主力累计净流入: {tmain/1e4:.0f}万元\n    主力净流入天数: {tdays}/{len(r20)}天（实有数据）")
@@ -781,17 +814,31 @@ async def generate_report_async(session, code, output_path, ind_comp=None, idx_q
                 tmain = sum(r20); tdays = sum(1 for d in r20 if d>0)
                 L(f"\n  近20日统计:\n    主力累计净流入: {tmain:.0f}万元\n    主力净流入天数: {tdays}/{len(r20)}天（实有数据）")
 
-            L(f"  信号: {'主力资金近期净流入 → 偏多' if tmain>0 else '主力资金近期净流出 → 偏空'}")
+            if len(r20) >= 5:
+                L(f"  信号: {'主力资金近期净流入 → 偏多' if tmain>0 else '主力资金近期净流出 → 偏空'}")
 
     else: L("  (资金流数据获取失败)")
 
     L("\n"+"---"); L("## **八、北向资金持仓动态**"); L("---")
 
-    nb = await get_northbound_hold_async(session, code, 20)
+    # V17.0.7: datacenter 五类预取流水线消费端(批量启动时已后台拉取)
+    from stock_common.sc_datasource import resolve_datacenter
+    nb = await resolve_datacenter('northbound', code,
+                                  direct_fn=lambda: get_northbound_hold_async(session, code, 20))
 
     if nb:
 
-        L(f"  近 {len(nb)} 个交易日北向持仓数据:")
+        # V17.0.7: 标签如实化——北向持股披露为季度频(实测行日期=2026-06-30 季末),
+        # 原"近 N 个交易日"措辞误导; 补数据距今天数
+        _nb_latest = str(nb[0].get("date", "")) if isinstance(nb[0], dict) else ""
+        try:
+            _nb_age = (datetime.now() - datetime.strptime(_nb_latest, "%Y-%m-%d")).days
+        except (ValueError, TypeError):
+            _nb_age = None
+        if _nb_age is not None and _nb_age > 10:
+            L(f"  北向持仓共 {len(nb)} 期（季度频披露, 最新一期 {_nb_latest}, 距今 {_nb_age} 天）:")
+        else:
+            L(f"  北向持仓近 {len(nb)} 期:")
 
         L(f"  {'日期':<12} {'持股数量(万)':>12} {'持股市值(万)':>12} {'持股占比%':>10} {'变动股数(万)':>12}"); L(f"  {'-'*65}")
 
@@ -831,15 +878,22 @@ async def generate_report_async(session, code, output_path, ind_comp=None, idx_q
         L("  ⚠️ 休市日：数据为最近交易日快照，龙虎榜数据为最近一期已发布")
 
     # V8.5: lite模式跳过席位详情（V16.1: include_seats 一并关闭，省 2 次 API）
-    dtb = await get_dragon_tiger_board_async(session, code, days=180,
-                                             include_seats=not _dc.get("skip_lhb_detail", False),
-                                             enhance_seats=not _dc.get("skip_lhb_detail", False))
+    # V17.0.7: 走 datacenter 预取流水线(批量启动时已后台拉取)
+    dtb = await resolve_datacenter(
+        'dragon_tiger', code,
+        direct_fn=lambda: get_dragon_tiger_board_async(
+            session, code, days=180,
+            include_seats=not _dc.get("skip_lhb_detail", False),
+            enhance_seats=not _dc.get("skip_lhb_detail", False)))
 
     if dtb["records"]:
 
-        L(f"  近{_recent_days}日上榜 {len(dtb['records'])} 次:"); L(f"  {'日期':<12} {'上榜原因':<50} {'净买入(万)':>9} {'换手率':>6}"); L(f"  {'-'*85}")
-
-        for r in dtb["records"]: L(f"  {r['date']:<12} {r.get('reason','')[:48]:<50} {r['net_buy']:>12.1f} {r['turnover']:>7.2f}%")
+        L(f"  近{_recent_days}日上榜 {len(dtb['records'])} 次:")
+        # V17.0.6: 直出 md 表格(原 CJK 对齐空格表依赖脆弱的间隙推断, 常态未转换)
+        L("| 日期 | 上榜原因 | 净买入(万) | 换手率 |")
+        L("|---|---|---|---|")
+        for r in dtb["records"]:
+            L(f"| {r['date']} | {r.get('reason', '')} | {r['net_buy']:.1f} | {r['turnover']:.2f}% |")
 
         _cfg = _load_settings()
 
@@ -936,11 +990,18 @@ async def generate_report_async(session, code, output_path, ind_comp=None, idx_q
 
             L("  📊 席位明细:")
 
+            # V17.0.7: 排名标签修复——原硬编码"买五/卖五"(9 报告全批 5 行皆"买五"),
+            # 改按买卖方向分别计数(买一~买N / 卖一~卖M)
+            _rank_buy = 0
+            _rank_sell = 0
             for _tg, _nm, _sd, _nt in _all_depts[:5]:
-
-                _sd_txt = "买" if _sd == "buy" else "卖"
-
-                L(f"     {_sd_txt}五 {_tg} {_nm[:20]} 净{_nt:+.1f}万")
+                if _sd == "buy":
+                    _rank_buy += 1
+                    _rank_txt = f"买{_rank_buy}"
+                else:
+                    _rank_sell += 1
+                    _rank_txt = f"卖{_rank_sell}"
+                L(f"     {_rank_txt} {_tg} {_nm[:20]} 净{_nt:+.1f}万")
 
         else:
 
@@ -1001,7 +1062,8 @@ async def generate_report_async(session, code, output_path, ind_comp=None, idx_q
 
     L("\n"+"---"); L("## **十、限售解禁日历**"); L("---")
 
-    lockup = await get_lockup_expiry_async(session, code, days=90, include_history=True)
+    lockup = await resolve_datacenter('lockup', code,
+                                      direct_fn=lambda: get_lockup_expiry_async(session, code, days=90, include_history=True))
 
     rh = [h for h in lockup["history"] if _30d_str <= h["date"] <= today_str]
 
@@ -1029,13 +1091,17 @@ async def generate_report_async(session, code, output_path, ind_comp=None, idx_q
         L("  [lite模式] 跳过详细数据")
         margin = []
     else:
-        margin = await get_margin_trading_async(session, code)
+        margin = await resolve_datacenter('margin', code,
+                                      direct_fn=lambda: get_margin_trading_async(session, code))
 
-    if margin:
+    if margin and isinstance(margin, list):
+        # V17.0.9: isinstance 防御——批量预取偶发返回 dict(非 list)时跳过
+        # (300475 2026-08-27 批量实测 TypeError: string indices must be integers)
 
         L(f"  最近 {len(margin)} 个交易日数据:"); L(f"  {'日期':<12} {'融资余额(万)':>10} {'融资买入(万)':>10} {'融资偿还(万)':>10} {'融券余额(万)':>10}"); L(f"  {'-'*70}")
 
-        for d in margin[:10]: L(f"  {d['date']:<12} {d['rzye']/1e4:>14.0f} {d['rzmre']/1e4:>14.0f} {d['rzche']/1e4:>14.0f} {d['rqye']/1e4:>14.0f}")
+        # V17.0.7: 修复标签与行数不一致——原循环 [:10] 截断但标题写 len(margin)(=15)
+        for d in margin: L(f"  {d['date']:<12} {d['rzye']/1e4:>14.0f} {d['rzmre']/1e4:>14.0f} {d['rzche']/1e4:>14.0f} {d['rqye']/1e4:>14.0f}")
 
         _amt = q.get("amount_wan",0)*1e4 if q else 0
 
@@ -1063,7 +1129,8 @@ async def generate_report_async(session, code, output_path, ind_comp=None, idx_q
         L("  [lite模式] 跳过详细数据")
         bt = []; rbt = []
     else:
-        bt = await get_block_trade_async(session, code); rbt = [d for d in bt if d["date"]>=_30d_str]
+        bt = await resolve_datacenter('block_trade', code,
+                                  direct_fn=lambda: get_block_trade_async(session, code)); rbt = [d for d in bt if d["date"]>=_30d_str]
 
     if rbt:
 
@@ -1198,7 +1265,12 @@ async def generate_report_async(session, code, output_path, ind_comp=None, idx_q
                     pass
             irm_q = str(item.get("question", "")).strip()[:120]
             if irm_q:
-                irm_a = str(item.get("answer", "")).strip()
+                # V17.0.7: answer=None 时 str(None)="None" 被当有效文本展示(实测
+                # 300059/002156 报告出现"答案: None")——None/空/"none"统一视为待回复
+                _irm_raw = item.get("answer")
+                irm_a = "" if _irm_raw is None else str(_irm_raw).strip()
+                if irm_a.lower() == "none":
+                    irm_a = ""
                 _ans_part = f"答案: {irm_a[:120]}" if irm_a else "答案: （公司待回复）"
                 L(f"    · [{t_str[:16]}] 提问: {irm_q}")
                 L(f"        {_ans_part}")
@@ -1234,6 +1306,32 @@ async def generate_report_async(session, code, output_path, ind_comp=None, idx_q
         if rc>0: L(f"    ⚠️ 减持预警：近7日有 {rc} 条减持相关公告，请注意风险。")
 
     else: L("  近7日暂无触及关键词的重大公告")
+
+    # V17.0.7: FTShare 主线机会(字典 §12.10.10——全新维度, 无替代源)
+    try:
+        from stock_common.sc_ftshare import _ft_call
+        _ml = await asyncio.to_thread(_ft_call, 'market_mainline_cls')
+        if _ml and isinstance(_ml, dict):
+            _chances = _ml.get('chances') or []
+            if _chances:
+                L("\n  🧭 市场主线方向(财联社 FTShare):")
+                for ch in _chances[:3]:
+                    _title = ch.get('title', '')
+                    _days = ch.get('continued', 0)
+                    _hot = ch.get('hot', 0)
+                    _desc = str(ch.get('mainLine_desc', ''))[:120]
+                    L(f"    🔥 {_title} (持续{_days}天 | 热度{_hot})")
+                    if _desc:
+                        L(f"      {_desc}")
+                    # 龙头股前三
+                    for pl in (ch.get('plates') or [])[:2]:
+                        _pname = pl.get('name', '')
+                        for fk_key in ('faucet_1', 'faucet_2', 'faucet_3'):
+                            fk = pl.get(fk_key)
+                            if fk and fk.get('stock_name'):
+                                L(f"      龙头: {fk['stock_name']} ({fk.get('reason','')})")
+    except Exception as _e:
+        _debug_log(f"sht ftshare mainline: {_e}")
 
     # ── 打板分析 ── V16.1: 同步包 to_thread
     L("\n  ➤ 打板与涨停分析:")
@@ -1348,10 +1446,112 @@ async def generate_report_async(session, code, output_path, ind_comp=None, idx_q
                     _parts.append(f"年涨停{_sl['year_limit_up_days']}次")
                 if _parts:
                     L(f"    📐 短线指标(ZHB同源): {' | '.join(_parts)}")
+                # V17.0.5 P0: fuyao 竞价实时族(live)——与 ZHB T-1 同源互锁(19/19), 盘中时效升级
+                try:
+                    _auc = (await asyncio.to_thread(
+                        get_fuyao_auction_snapshot, [code], "live") or [])
+                    if _auc:
+                        _a = _auc[0]
+                        _aparts = []
+                        if _a.get("auction_unmatched") is not None:
+                            _um = _a["auction_unmatched"]
+                            _dir = "买盘未成交完(承接强)" if _um > 0 else "卖压未消化"
+                            _aparts.append(f"未匹配量{_um:+.0f}手({_dir})")
+                        if _a.get("auction_yesterday_ratio_pct") is not None:
+                            _yr = _a["auction_yesterday_ratio_pct"]
+                            if _yr < 50:
+                                _aparts.append(f"竞价昨比{_yr:.0f}%⚠️缩量高开诱多风险")
+                            elif _yr > 120:
+                                _aparts.append(f"竞价昨比{_yr:.0f}%放量")
+                            else:
+                                _aparts.append(f"竞价昨比{_yr:.0f}%")
+                        if _a.get("auction_volume_ratio") is not None:
+                            _aparts.append(f"竞价量比{_a['auction_volume_ratio']:.2f}")
+                        if _aparts:
+                            L(f"    ⚡ 竞价实时(fuyao): {' | '.join(_aparts)}")
+                except Exception as _e3:
+                    _debug_log(f"sht fuyao auction: {_e3}")
+
+                # V17.0.5 P1: 官方风向标标签直采(高开/放量等——免自建阈值)
+                try:
+                    _bl = await asyncio.to_thread(get_fuyao_auction_benchmark)
+                    _be = next((b for b in (_bl or []) if str(b.get("ticker")) == code), None)
+                    if _be and _be.get("tags"):
+                        L(f"    🏷️ 官方风向标标签: {'/'.join(str(x) for x in _be['tags'])}"
+                          f"（竞价 {_be.get('auction_pct', 0):+.2f}%）")
+                except Exception as _e4:
+                    _debug_log(f"sht fuyao benchmark: {_e4}")
+
         except Exception as _e:
             _debug_log(f"sht shortline_indicators: {_e}")
     except Exception as _e:
         _debug_log(f"sht changes/shortline: {_e}")
+
+    # V17.0.5 P1: 异动解读(fuyao AI 分析文本——替代 V17.0.2 移除的盘口异动扫描语义层)
+    try:
+        from stock_common import get_fuyao_anomaly as _f_ano
+
+        if is_fuyao_enabled():
+            _ano = await asyncio.to_thread(_f_ano, code)
+            if _ano:
+                _a0 = _ano[0]
+                _content = str(_a0.get("analysis_content", ""))[:120]
+                L(f"\n  🔍 异动解读(fuyao AI, 标签:{_a0.get('tag_name', '')}):")
+                L(f"    {_content}")
+                if _a0.get("keyword_list"):
+                    L(f"    关键词: {'、'.join(str(k) for k in _a0['keyword_list'][:6])}")
+    except Exception as _e:
+        _debug_log(f"sht fuyao anomaly: {_e}")
+
+    # V17.0.7: FTShare 昨日涨停池晋级富化(炸板次数分布/今日续封率——字典 §12.20)
+    try:
+        from stock_common import get_ft_limit_up_pool_yesterday
+
+        _ypool = await asyncio.to_thread(get_ft_limit_up_pool_yesterday)
+        if _ypool:
+            _yn = len(_ypool)
+            _cont = sum(1 for r in _ypool if r.get("status") == "limit_up")
+            _brks = [int(r.get("limit_up_break_count") or 0) for r in _ypool]
+            _brk_avg = sum(_brks) / _yn if _yn else 0
+            L(f"    🎯 昨日涨停({_yn}只)今日表现: 续封 {_cont} 只({_cont/_yn*100:.0f}%) | "
+              f"平均炸板 {_brk_avg:.1f} 次 | 断板 {_yn-_cont} 只")
+    except Exception as _e:
+        _debug_log(f"sht ftshare yesterday pool: {_e}")
+
+    # V17.0.7: FTShare 千股千评(散户情绪面——字典 §12.20 全新维度)
+    try:
+        from stock_common import (get_ft_comment_score_series,
+                                  get_ft_comment_desire,
+                                  get_ft_comment_org_participate)
+
+        _sc_series = await asyncio.to_thread(get_ft_comment_score_series, code)
+        if _sc_series:
+            _scores = [_safe_float(x.get("total_score")) for x in _sc_series]
+            _scores = [x for x in _scores if x is not None]
+            if _scores:
+                _last6 = _scores[-6:]
+                _cur = _last6[-1]
+                _prev = _last6[:-1] or [_cur]
+                _avg_prev = sum(_prev) / len(_prev)
+                _trend = "↑ 回升" if _cur > _avg_prev else ("↓ 走弱" if _cur < _avg_prev else "→ 持平")
+                L(f"  🧠 千股千评(FTShare): 综合评分 {_cur:.1f} {_trend}"
+                  f"(近{len(_prev)}日均值 {_avg_prev:.1f})")
+        _des = await asyncio.to_thread(get_ft_comment_desire, code)
+        if isinstance(_des, dict) and _des.get("participation_wish"):
+            _pw = float(_des["participation_wish"])
+            _pwc = float(_des.get("participation_wish_change") or 0)
+            L(f"     参与意愿: {_pw:.1f}%（较上期 {_pwc:+.1f}）"
+              f"{'' if abs(_pwc) < 10 else ' ⚠️ 情绪异动'}")
+        _org = await asyncio.to_thread(get_ft_comment_org_participate, code)
+        _org_v = None
+        if isinstance(_org, dict):
+            _org_v = _safe_float(_org.get("org_participate"))
+        elif isinstance(_org, list) and _org:
+            _org_v = _safe_float(_org[-1].get("org_participate"))
+        if _org_v:
+            L(f"     机构参与度: {_org_v*100:.1f}%")
+    except Exception as _e:
+        _debug_log(f"sht ftshare comment: {_e}")
 
     L("\n"+"---"); L("## **十五、综合信号汇总**"); L("---")
 
@@ -1398,6 +1598,13 @@ async def generate_report_async(session, code, output_path, ind_comp=None, idx_q
             _cr = (b1v2*lu2)/_tamt
 
             if _cr<_seal_ratio_warn: signals.append(f"⚠️ 封单预警：封单资金仅占今日成交额 {_cr*100:.1f}%，弱势烂板，极易炸板悶杀")
+    # V17.0.5 P0: 封单衰减率信号(fuyao 官方口径——峰值→现值)
+    if _seal_info and _seal_info.get("seal_decay_ratio") is not None:
+        _dec_pct = _seal_info["seal_decay_ratio"] * 100
+        if _dec_pct < 30:
+            signals.append(f"⚠️ 封单衰减率 {_dec_pct:.0f}%（峰值 {(_seal_info['max_seal_money'] or 0)/1e8:.1f}亿）——烂板，次日溢价预期转弱")
+        elif _dec_pct >= 90:
+            signals.append(f"🔥 封单全日封死（衰减率 {_dec_pct:.0f}%）——封板质量极高，动能延续概率大")
 
     if nb and len(nb)>=2:
 
@@ -1680,11 +1887,11 @@ async def generate_report_async(session, code, output_path, ind_comp=None, idx_q
     try:
         _consensus = multi_scores['consensus'].total_score
         if _consensus >= 60:
-            _rating = "**中性偏乐观**整体表现良好，建议持续跟踪后分批配置"
+            _rating = "**中性偏乐观** 整体表现良好，建议持续跟踪后分批配置"
         elif _consensus >= 40:
-            _rating = "**中性观望**各项指标均衡，等待更明确信号后再决策"
+            _rating = "**中性观望** 各项指标均衡，等待更明确信号后再决策"
         else:
-            _rating = "**中性偏谨慎**多项评分偏低，需注意风险控制"
+            _rating = "**中性偏谨慎** 多项评分偏低，需注意风险控制"
         L(f"  综合投资建议: {_rating}")
     except Exception as _e:
         _debug_log(f"multi_school_score error: {_e}")
@@ -1769,6 +1976,18 @@ class ShtReportRunner(BaseReportRunner):
 
             return prefetch_quote_batch(codes)
 
+        # V17.0.7: datacenter 五类(龙虎榜/两融/北向/解禁/大宗)批量预取流水线钩子
+        _depth = getattr(self.args, "depth", "deep") or "deep"
+        _seats_on = _depth != "lite"
+
+        async def _prefetch_async(session, codes):
+            from stock_common.sc_datasource import start_datacenter_prefetch
+
+            return start_datacenter_prefetch(
+                codes, session,
+                dragon_kwargs={"include_seats": _seats_on,
+                               "enhance_seats": _seats_on})
+
         return self.execute_batch_pipeline(
             "sht", generate_report_async,
             gen_kwargs={
@@ -1776,6 +1995,7 @@ class ShtReportRunner(BaseReportRunner):
                 "hsgt": _cached_hsgt, "depth": self.args.depth,
             },
             prefetch_fn=_prefetch,
+            prefetch_async_fn=_prefetch_async,
             snapshot_data=_SNAPSHOT_DATA,
             # V17.0: 去除 pre_gd_init(逐只上传)——main.py 已改用输出活性检测(无固定超时),
             # "超时 kill 丢 GD" 场景不再存在 → 上传逻辑与 med/lng 统一(全部完成后统一上传)

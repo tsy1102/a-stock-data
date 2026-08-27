@@ -49,7 +49,7 @@ _FUYAO_DISABLED = False
 # 已缓存的有效 Key
 _CACHED_KEY: Optional[str] = None
 
-# 常用端点路径（字典 §12.8.12c 31 端点子集——按业务接入优先级）
+# 常用端点路径（字典 §12.8.12c——V17.0.5 契约镜像 62 端点，按业务接入优先级）
 EP_SNAPSHOT = "/api/a-share/prices/snapshot"
 EP_KLINE = "/api/a-share/prices/historical"
 EP_VALUATION = "/api/a-share/valuations/snapshot"
@@ -57,6 +57,24 @@ EP_LIMIT_UP_LADDER = "/api/a-share/special-data/limit-up-ladder"
 EP_HOT_LIST = "/api/a-share/special-data/hot-stock-list"
 EP_DRAGON_TIGER = "/api/a-share/special-data/dragon-tiger-list"
 EP_TICKER_SEARCH = "/api/meta/tickers/search"
+# V17.0.5 新增（契约镜像 docs/verify/fuyao_api_full.md）
+EP_AUCTION_SNAP = "/api/a-share/auction/snapshot"
+EP_AUCTION_BENCH = "/api/a-share/auction/short-term-benchmark"
+EP_LIMIT_UP_POOL = "/api/a-share/special-data/limit-up-pool"
+EP_LIMIT_DOWN_POOL = "/api/a-share/special-data/limit-down-pool"
+EP_LIMIT_BREAK_POOL = "/api/a-share/special-data/limit-break-pool"
+EP_ANOMALY_STOCK = "/api/a-share/special-data/anomaly-analysis-stock"
+EP_ANOMALY_LIST = "/api/a-share/special-data/anomaly-analysis-list"
+EP_FIN_INDICATORS = "/api/a-share/financials/indicators"
+EP_INCOME = "/api/a-share/financials/income-statements"
+EP_BALANCE = "/api/a-share/financials/balance-sheets"
+EP_CASHFLOW = "/api/a-share/financials/cash-flow-statements"
+EP_TRADING_DAYS = "/api/a-share/calendar/trading-days"
+EP_ADJ_FACTORS = "/api/a-share/corporate-actions/adjustment-factors"
+EP_INDEX_CATALOG = "/api/a-share-index/catalog/ths-index-list"
+EP_INDEX_CONSTITUENTS = "/api/a-share-index/constituents/ths-stock-list"
+EP_INDEX_SNAPSHOT = "/api/a-share-index/prices/snapshot"
+EP_INDEX_HISTORICAL = "/api/a-share-index/prices/historical"
 
 
 def is_fuyao_enabled() -> bool:
@@ -226,18 +244,22 @@ def _items(d: Optional[Dict[str, Any]]) -> List[Dict[str, Any]]:
 
 
 def fuyao_to_thscode(code: str) -> str:
-    """项目 6 位代码 → thscode（600519→600519.SH / 000001→000001.SZ / 8xx/4xx→BJ）。"""
+    """项目 6 位代码 → thscode。
+
+    ⚠️ 北交所必须先判（V17.0.5 实测 bug："920118" 被 '9' 分支吃成 .SH → 服务端
+    1002 Unknown thscode 且**整批拒绝**；与 V16.4.1 ulist secids 同类顺序坑）。
+    """
     code = code.strip()
     if code.endswith((".SH", ".SZ", ".BJ")):
         return code
-    if code.startswith(("6", "9")):
-        return f"{code}.SH"
-    if code.startswith(("8", "4", "92")):
+    if code.startswith(("92", "8", "4", "43", "83", "87")):
         return f"{code}.BJ"
+    if code.startswith(("6", "9", "5")):
+        return f"{code}.SH"
     return f"{code}.SZ"
 
 
-@cached("fuyao_snapshot", "fuyao_snapshot")
+@cached("fuyao_snapshot")
 def get_fuyao_snapshot(codes: List[str]) -> List[Dict[str, Any]]:
     """行情快照（EP_SNAPSHOT）。无 Key/已跳过 → 空列表。"""
     if not codes:
@@ -246,7 +268,7 @@ def get_fuyao_snapshot(codes: List[str]) -> List[Dict[str, Any]]:
     return _items(_fuyao_raw(EP_SNAPSHOT, {"thscodes": ths}))
 
 
-@cached("fuyao_valuation", "fuyao_valuation")
+@cached("fuyao_valuation")
 def get_fuyao_valuation(codes: List[str]) -> List[Dict[str, Any]]:
     """估值快照（pe_ttm/pe_mrq/pb_mrq/ps_ttm/pcf_ttm）。"""
     if not codes:
@@ -275,7 +297,7 @@ def get_fuyao_kline(
     return _items(_fuyao_raw(EP_KLINE, params))
 
 
-@cached("fuyao_ladder", "fuyao_ladder", trading_day=True)
+@cached("fuyao_ladder", trading_day=True)
 def get_fuyao_limit_up_ladder() -> Optional[Dict[str, Any]]:
     """涨停梯队（date + boards 连板分类——独有结构，字典 §12.8.12c）。"""
     d = _fuyao_raw(EP_LIMIT_UP_LADDER)
@@ -288,11 +310,288 @@ def get_fuyao_hot_list(period: str = "hour") -> List[Dict[str, Any]]:
 
 
 def get_fuyao_dragon_tiger(trade_date: Optional[str] = None) -> List[Dict[str, Any]]:
-    """龙虎榜（trade_date 可选 YYYY-MM-DD）。"""
+    """龙虎榜（trade_date 可选 YYYY-MM-DD，盘后可回查）。"""
     params = {}
     if trade_date:
         params["trade_date"] = trade_date
     return _items(_fuyao_raw(EP_DRAGON_TIGER, params))
+
+
+# ═══════════════════════════════════════════════════════════════
+# V17.0.5 新增端点（契约镜像 docs/verify/fuyao_api_full.md §12.8.12c）
+# 盘后可用：财务/日历/复权/特色池/竞价终态——thsdk TCP 盘后关闭(-6)的替代通道
+# ═══════════════════════════════════════════════════════════════
+
+
+@cached("fuyao_auction")
+def get_fuyao_auction_snapshot(codes: List[str], stage: str = "final") -> List[Dict[str, Any]]:
+    """集合竞价快照（stage: live=盘中实时 / final=终态盘后可查）。
+
+    字段: auction_price/auction_pct/auction_volume/auction_amount/auction_unmatched(未匹配量)/
+          auction_turnover_pct/auction_yesterday_ratio_pct(昨量比)/auction_volume_ratio(竞价量比)/
+          pre_close_price/open_price/last_price/float_market_cap——对照 ZHB tdxstat2 竞价族。
+    """
+    if not codes:
+        return []
+    ths = ",".join(fuyao_to_thscode(c) for c in codes)
+    return _items(_fuyao_raw(EP_AUCTION_SNAP, {"thscodes": ths, "stage": stage}))
+
+
+def get_fuyao_auction_benchmark(date: Optional[str] = None) -> List[Dict[str, Any]]:
+    """短线风向标竞价基准（date=YYYY-MM-DD；tags[]: "高开"/"放量"等——同花顺独家分类）。"""
+    params = {"date": date} if date else {}
+    return _items(_fuyao_raw(EP_AUCTION_BENCH, params))
+
+
+def get_fuyao_limit_pool(
+    kind: str = "up", page: int = 1, size: int = 100, date_ms: Optional[int] = None,
+    sort_field: Optional[str] = None,
+) -> Optional[Dict[str, Any]]:
+    """涨跌停/炸板池（kind: up/down/break）。返回 data 全量（含 pagination/item[]）。
+
+    date_ms: 交易日零点毫秒戳——**任意交易日盘后回查**(东财 push2ex 仅当日)；
+    up 池 sort_field 白名单: last_price/continue_day_cnt/seal_money/limit_up_time。
+    up: seal_money/max_seal_money(封单双口径,元)/limit_up_reason/continue_day_text/cnt；
+    down: first/last_limit_time；break: open_times(开板次数)。
+    """
+    ep = {"up": EP_LIMIT_UP_POOL, "down": EP_LIMIT_DOWN_POOL, "break": EP_LIMIT_BREAK_POOL}.get(kind)
+    if not ep:
+        return None
+    params: Dict[str, Any] = {"page": page, "size": size}
+    if date_ms:
+        params["date_ms"] = date_ms
+    if sort_field:
+        params["sort_field"] = sort_field
+    d = _fuyao_raw(ep, params)
+    return (d.get("data") or {}) if d and d.get("code") == 0 else None
+
+
+@cached("fuyao_seal_map", trading_day=True)
+def get_fuyao_seal_map() -> Dict[str, Dict[str, Any]]:
+    """当日涨停池 → {ticker: item} 映射（sht 封单衰减率数据源；trading_day 缓存——全市场一次请求）。
+
+    item 含 seal_money(当前封单,元)/max_seal_money(峰值封单,元)/continue_day_cnt/limit_up_reason。
+    盘中=当日实时封单；盘后/周末自动回退最近完成交易日(date_ms 参数)。
+    """
+    d = get_fuyao_limit_pool(kind="up", page=1, size=200)
+    items = (d or {}).get("item") or []
+    if not items:
+        # 周末/节假日：服务端按"当前自然日"返空 → 回退最近已完成工作日
+        try:
+            import datetime
+
+            _d = datetime.date.today()
+            while _d.weekday() >= 5:
+                _d -= datetime.timedelta(days=1)
+            date_ms = int(datetime.datetime.combine(_d, datetime.time()).timestamp() * 1000)
+            d = get_fuyao_limit_pool(kind="up", page=1, size=200, date_ms=date_ms)
+            items = (d or {}).get("item") or []
+        except Exception as _e:
+            _debug_log(f"fuyao seal_map 回退查询失败: {_e}")
+    return {str(it.get("ticker")): it for it in items if it.get("ticker")}
+
+
+def get_fuyao_seal_info(code: str) -> Optional[Dict[str, Any]]:
+    """单只股票当日封单信息（非涨停股→None）。返回 {seal_money, max_seal_money,
+    seal_decay_ratio(封单衰减率=current/max, 越低=烂板), continue_day_cnt, limit_up_reason}。
+    单位: 元。"""
+    it = get_fuyao_seal_map().get(str(code).strip())
+    if not it:
+        return None
+    cur = fnum_local(it.get("seal_money"))
+    mx = fnum_local(it.get("max_seal_money"))
+    decay = None
+    if cur is not None and mx and mx > 0:
+        decay = round(cur / mx, 4)
+    return {
+        "seal_money": cur,
+        "max_seal_money": mx,
+        "seal_decay_ratio": decay,
+        "continue_day_cnt": it.get("continue_day_cnt"),
+        "limit_up_reason": it.get("limit_up_reason") or None,
+    }
+
+
+def get_fuyao_anomaly(code: Optional[str] = None) -> List[Dict[str, Any]]:
+    """个股异动原因（AI 分析文本+keyword_list+tag_name——独有；code=None 查列表）。"""
+    if code:
+        return _items(_fuyao_raw(EP_ANOMALY_STOCK, {"thscodes": fuyao_to_thscode(code)}))
+    return _items(_fuyao_raw(EP_ANOMALY_LIST))
+
+
+@cached("fuyao_indicators", trading_day=True)
+def get_fuyao_fin_indicators(thscode: str, report: str) -> Optional[Dict[str, Any]]:
+    """五类财务指标（report=YYYY-N 季报制，盘后可查；trading_day 缓存——报告期数据稳定）。
+
+    ⭐ index_weighted_avg_roe(ROE)/index_deduct_weighted_avg_roe(扣非ROE)/total_assets_net_ratio(ROA)
+    官方口径——tx[65]/tx[66] 对撞终判源。返回 {ability: {index_id: value}} 展平结构。
+    ⚠️ 上游契约偏差: 实际返回 calculate_* 前缀 id；中报(yyyy-2)入库滞后于披露日(5003)。
+    """
+    d = _fuyao_raw(EP_FIN_INDICATORS, {"thscode": fuyao_to_thscode(thscode), "report": report})
+    if not d or d.get("code") != 0:
+        return None
+    data = d.get("data") or {}
+    out: Dict[str, Dict[str, Any]] = {}
+    for ab in data.get("abilities") or []:
+        ability = ab.get("ability") or ""
+        out[ability] = {
+            (ind.get("index_id") or ""): ind.get("value")
+            for ind in (ab.get("indicators") or [])
+            if ind.get("index_id")
+        }
+    return out
+
+
+def get_fuyao_financials(
+    kind: str, thscode: str, limit: int = 4, report: Optional[str] = None,
+    period: str = "quarterly",
+) -> List[Dict[str, Any]]:
+    """三大报表（kind: income/balance/cashflow；limit 期数或 report 指定单期）。
+
+    V17.0.7 修复: 上游契约要求必传 `period`(annual/quarterly)——原实现缺失导致
+    code=1001 "Missing required parameter: period", 恒返回空列表(潜伏 bug,
+    本次 fuyao TTM 兜底接入时实测发现)。
+    """
+    ep = {"income": EP_INCOME, "balance": EP_BALANCE, "cashflow": EP_CASHFLOW}.get(kind)
+    if not ep:
+        return []
+    params: Dict[str, Any] = {
+        "thscode": fuyao_to_thscode(thscode),
+        "limit": limit,
+        "period": period,
+    }
+    if report:
+        params["report"] = report
+    return _items(_fuyao_raw(ep, params))
+
+
+def get_fuyao_trading_days(start: Optional[str] = None, end: Optional[str] = None) -> List[Dict[str, Any]]:
+    """交易日序列（date_ms/date）。"""
+    params: Dict[str, Any] = {}
+    if start:
+        params["start"] = start
+    if end:
+        params["end"] = end
+    return _items(_fuyao_raw(EP_TRADING_DAYS, params))
+
+
+def get_fuyao_adjustment_factors(thscode: str) -> List[Dict[str, Any]]:
+    """复权因子事件表（ticker/ex_date_ms/dividend_per_share/per_share_bonus）。"""
+    return _items(_fuyao_raw(EP_ADJ_FACTORS, {"thscode": fuyao_to_thscode(thscode)}))
+
+
+def get_fuyao_index_catalog(index_type: Optional[str] = None) -> List[Dict[str, Any]]:
+    """同花顺指数目录（行业/概念板块清单——THS 板块体系入口）。"""
+    params: Dict[str, Any] = {}
+    if index_type:
+        params["type"] = index_type
+    return _items(_fuyao_raw(EP_INDEX_CATALOG, params))
+
+
+def get_fuyao_index_constituents(ths_index_code: str) -> List[Dict[str, Any]]:
+    """同花顺指数成分股（thscode/ticker/name）。"""
+    return _items(_fuyao_raw(EP_INDEX_CONSTITUENTS, {"thscode": ths_index_code}))
+
+
+def get_fuyao_index_snapshot(codes: List[str]) -> List[Dict[str, Any]]:
+    """指数行情快照（11 字段同股票快照口径）。"""
+    if not codes:
+        return []
+    ths = ",".join(c if "." in c else fuyao_to_thscode(c) for c in codes)
+    return _items(_fuyao_raw(EP_INDEX_SNAPSHOT, {"thscodes": ths}))
+
+
+# ═══════════════════════════════════════════════════════════════
+# V17.0.5 基金域（lng/med 机构行为侧证）——契约见 verify/fuyao_api_full.md
+# ═══════════════════════════════════════════════════════════════
+
+EP_FUND_HOLDINGS = "/api/fund/portfolio/holdings"
+EP_FUND_PROFILE = "/api/fund/profile/detail"
+
+# 自选基金清单（gitignore；缺失→侧证功能静默跳过零请求）
+FUND_WATCH_PATH = _REPO_ROOT / "credentials" / "fund_watch.json"
+
+
+@cached("fuyao_fund_holdings", trading_day=True)
+def get_fuyao_fund_holdings(fund_thscode: str, fund_type: str = "otc") -> Optional[Dict[str, Any]]:
+    """基金重仓持仓（定期披露，非实时；trading_day 缓存——批量 lng/med 防 N×M 重复请求）。返回 data 全量或 None。
+
+    item[]: thscode/ticker/stock_name/hold_ratio/asset_type/position_capital/
+            period_increase_rate_pct/investment_rank/end_date_ms；
+    汇总: total_stock_ratio_pct/main_industry/concentration_ratio/turnover_rate_pct。
+    """
+    d = _fuyao_raw(EP_FUND_HOLDINGS, {"fund_type": fund_type, "thscode": fund_thscode})
+    return (d.get("data") or {}) if d and d.get("code") == 0 else None
+
+
+def get_fuyao_fund_profile(fund_thscode: str, fund_type: str = "otc") -> Optional[Dict[str, Any]]:
+    """基金基本资料（成立/规模/经理/费率）。"""
+    d = _fuyao_raw(EP_FUND_PROFILE, {"fund_type": fund_type, "thscode": fund_thscode})
+    return (d.get("data") or {}) if d and d.get("code") == 0 else None
+
+
+def load_fund_watch() -> List[Dict[str, Any]]:
+    """读取自选基金清单。缺失/格式错 → []。
+
+    格式: {"funds": [{"thscode": "025480.OF", "fund_type": "otc", "alias": "可选别名"}]}
+    （模板见 credentials/fund_watch.example.json）
+    """
+    try:
+        if FUND_WATCH_PATH.is_file():
+            cfg = json.loads(FUND_WATCH_PATH.read_text(encoding="utf-8"))
+            funds = cfg.get("funds") or []
+            return [f for f in funds if isinstance(f, dict) and f.get("thscode")]
+    except Exception as _e:
+        _debug_log(f"fuyao: fund_watch.json 读取失败: {_e}")
+    return []
+
+
+def get_fund_watch_evidence(stock_code: str, max_funds: int = 8) -> Optional[Dict[str, Any]]:
+    """lng/med 机构行为侧证：自选基金是否重仓目标股票（配置门控，无清单→None 零请求）。
+
+    返回 {"held": [...], "not_held": ["别名(code)"], "checked": N}；
+    held 元素: alias/thscode/hold_ratio/investment_rank/period_increase_rate_pct/
+               fund_stock_pct(基金股票仓位)/main_industry/concentration_ratio。
+    """
+    watch = load_fund_watch()
+    if not watch:
+        return None
+    stock_code = stock_code.strip()
+    held: List[Dict[str, Any]] = []
+    not_held: List[str] = []
+    for f in watch[:max_funds]:
+        ftype = f.get("fund_type") or ("exchange" if f["thscode"].endswith((".SH", ".SZ")) else "otc")
+        data = get_fuyao_fund_holdings(f["thscode"], ftype)
+        if not data:
+            continue
+        alias = f.get("alias") or f["thscode"]
+        items = data.get("item") or []
+        hit = next((it for it in items if str(it.get("ticker")) == stock_code), None)
+        if hit:
+            held.append({
+                "alias": alias,
+                "thscode": f["thscode"],
+                "stock_name": hit.get("stock_name"),
+                "hold_ratio": fnum_local(hit.get("hold_ratio")),
+                "investment_rank": hit.get("investment_rank"),
+                "period_increase_rate_pct": fnum_local(hit.get("period_increase_rate_pct")),
+                "end_date_ms": hit.get("end_date_ms"),
+                "fund_stock_pct": fnum_local(data.get("stock_ratio_pct")),
+                "main_industry": data.get("main_industry"),
+                "concentration_ratio": fnum_local(data.get("concentration_ratio")),
+            })
+        else:
+            not_held.append(alias)
+    return {"held": held, "not_held": not_held, "checked": len(held) + len(not_held)}
+
+
+def fnum_local(v: Any) -> Optional[float]:
+    try:
+        if v in (None, "", "-"):
+            return None
+        return float(v)
+    except (TypeError, ValueError):
+        return None
 
 
 if __name__ == "__main__":

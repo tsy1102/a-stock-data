@@ -321,6 +321,144 @@ def collect_thsdk(pool: list) -> dict:
         return {"stocks": {}, "error": str(e)[:200]}
 
 
+def _last_completed_trading_day():
+    """最近已完成交易日(周末回退周五;节假日不识别——探针用途可接受)。"""
+    import datetime
+
+    d = datetime.date.today()
+    while d.weekday() >= 5:
+        d -= datetime.timedelta(days=1)
+    return d
+
+
+def collect_fuyao(pool: list) -> dict:
+    """fuyao 官方 REST 全景采集（V17.0.5 新源——字典 §12.8.12c，全量契约见 verify/fuyao_api_full.md）。
+
+    个股级: 行情快照 / 估值(ps_ttm·pcf_ttm 新维度) / 集合竞价终态 /
+            五类财务指标(ROE·扣非ROE·ROA 官方口径——tx65/tx66 对撞终判源)
+    市场级: 短线风向标基准 / 涨跌停炸板池(date_ms 任意交易日回查) / 异动原因 / 龙虎榜
+    无 Key 时自动禁用(meta 标记 no_key)；~35 请求 @2rps(sc_network 域限流)。
+    """
+    from stock_common import (
+        get_fuyao_snapshot, get_fuyao_valuation, get_fuyao_fin_indicators,
+        get_fuyao_auction_snapshot, get_fuyao_auction_benchmark,
+        get_fuyao_limit_pool, get_fuyao_anomaly, get_fuyao_dragon_tiger,
+        get_fuyao_hot_list, is_fuyao_enabled,
+    )
+
+    out: dict = {"stocks": {}, "market": {}}
+    if not is_fuyao_enabled():
+        out["error"] = "no_key_disabled"
+        return out
+    codes = [p["code"] for p in pool]
+    td = _last_completed_trading_day()
+    date_ms = int(__import__("datetime").datetime.combine(td, __import__("datetime").time()).timestamp() * 1000)
+    out["probe_trading_day"] = td.isoformat()
+    out["date_ms"] = date_ms
+
+    snap = {r.get("ticker"): r for r in (get_fuyao_snapshot(codes) or [])}
+    val = {r.get("ticker"): r for r in (get_fuyao_valuation(codes) or [])}
+    auction = {r.get("ticker"): r for r in (get_fuyao_auction_snapshot(codes, stage="final") or [])}
+    for p in pool:
+        c = p["code"]
+        ind = None
+        used_report = None
+        for rpt in (_last_completed_trading_day().strftime("%Y") + "-2",
+                    _last_completed_trading_day().strftime("%Y") + "-1"):
+            ind = get_fuyao_fin_indicators(c, rpt)
+            if ind:
+                used_report = rpt
+                break
+        out["stocks"][c] = {
+            "snapshot": snap.get(c),
+            "valuation": val.get(c),
+            "auction_final": auction.get(c),
+            "fin_indicators": ind,
+            "fin_report": used_report,
+        }
+
+    mkt = out["market"]
+    bench = get_fuyao_auction_benchmark(td.isoformat())
+    mkt["short_term_benchmark"] = bench[:80] if isinstance(bench, list) else bench
+
+    # ── 中报(yyyy-2)就绪自动探测——tx[65]=扣非加权ROE(TTM) 的 L1 终判数据源 ──
+    # 哨兵: 首只股探 2026-2；上游入库滞后(披露日≠入库日, code=5003)时跳过全量拉取省配额
+    year = td.strftime("%Y")
+    sentinel = get_fuyao_fin_indicators(codes[0], year + "-2")
+    mkt["h1_indicators_ready"] = bool(sentinel)
+    mkt["h1_indicators"] = {}
+    if sentinel:
+        for c in codes:
+            ind = get_fuyao_fin_indicators(c, year + "-2") or {}
+            p = ind.get("profitability") or {}
+            if p:
+                mkt["h1_indicators"][c] = {
+                    "ded_weighted_roe": p.get("index_deduct_weighted_avg_roe"),
+                    "weighted_roe": p.get("index_weighted_avg_roe"),
+                    "roa": p.get("total_assets_net_ratio"),
+                }
+        print(f"  ⭐ 中报指标已入库({len(mkt['h1_indicators'])} 只)——tx65/tx66 L1 终判条件达成")
+
+    for kind in ("up", "down", "break"):
+        pd_ = get_fuyao_limit_pool(kind, page=1, size=200, date_ms=date_ms)
+        items = (pd_ or {}).get("item") or []
+        mkt[f"limit_{kind}_pool"] = {
+            "total": ((pd_ or {}).get("pagination") or {}).get("total"),
+            "count_captured": len(items),
+            "item": items,
+        }
+    mkt["anomaly_list"] = (get_fuyao_anomaly() or [])[:60]
+    mkt["dragon_tiger"] = (get_fuyao_dragon_tiger(td.isoformat()) or [])[:60]
+    mkt["hot_list_hour"] = (get_fuyao_hot_list("hour") or [])[:50]
+    return out
+
+
+def collect_ftshare(pool: list) -> dict:
+    """FTShare MCP 全景采集（V17.0.7 新源——字典 §12.20，全字段镜像见 verify/ftshare_fields_mirror.md）。
+
+    个股级: 千股千评四族（评分日序列/参与意愿/关注度/机构参与度）/
+            董监高变动明细(26字段) / 商誉个股明细
+    市场级: 大盘资金流 / DAEC 涨跌分布聚合 / 停牌列表 /
+            昨日涨停池(炸板回封时间数组) / 限售解禁按日 / 股权质押汇总
+    ~126 请求 @2rps(sc_network 域限流 market.ft.tech)；会话自动续期(TTL≈2h)。
+    """
+    from stock_common.sc_ftshare import (
+        is_ftshare_enabled, get_ft_comment_score_series, get_ft_comment_desire,
+        get_ft_comment_focus, get_ft_comment_org_participate,
+        get_ft_ggmx_changes, get_ft_goodwill_stock_detail,
+        get_ft_pledge_summary, get_ft_dapan_flow, get_ft_market_snapshot,
+        get_ft_suspension_list, get_ft_limit_up_pool_yesterday,
+        get_ft_unlock_by_date,
+    )
+
+    out: dict = {"stocks": {}, "market": {}}
+    if not is_ftshare_enabled():
+        out["error"] = "disabled"
+        return out
+
+    for p in pool:
+        c = p["code"]
+        out["stocks"][c] = {
+            "comment_score": (get_ft_comment_score_series(c) or [])[-10:],
+            "comment_desire": get_ft_comment_desire(c),
+            "comment_focus": get_ft_comment_focus(c),
+            "comment_org": get_ft_comment_org_participate(c),
+            "ggmx": (get_ft_ggmx_changes(c) or [])[:30],
+            "goodwill_detail": (get_ft_goodwill_stock_detail(c) or [])[:10],
+        }
+
+    mkt = out["market"]
+    mkt["dapan_flow"] = get_ft_dapan_flow()
+    mkt["market_snapshot"] = get_ft_market_snapshot()
+    mkt["suspension_list"] = (get_ft_suspension_list() or [])[:50]
+    mkt["limit_up_pool_yesterday"] = get_ft_limit_up_pool_yesterday()
+    td = _last_completed_trading_day().strftime("%Y%m%d")
+    mkt["unlock_by_date"] = (get_ft_unlock_by_date(td) or [])[:80]
+    mkt["pledge_summary"] = get_ft_pledge_summary()
+    mkt["probe_trading_day"] = td
+    return out
+
+
 def collect_ulist239(pool: list) -> dict:
     """东财 push2delay ulist.np 批量全字段(1 次请求 20 只,字典 §12.9 ulist 239 字段)。"""
     from stock_common import _quick_request
@@ -495,6 +633,7 @@ def main() -> None:
         "market_sources": collect_market_sources,  # V16.4.1: 财联社/KPL/板块轮动/龙虎榜
         "tdx_f10": collect_tdx_f10,         # V16.4.1: F10 财务/股本/分红
         "thsdk": collect_thsdk,             # V16.4.1: 同花顺 SDK(盘中才可用)
+        "fuyao": collect_fuyao,             # V17.0.5: fuyao 官方 REST(盘后可用——竞价/池/财务指标/估值 PS·PCF)
         "ulist239": collect_ulist239,       # V16.4.1: push2delay ulist 239 字段(批量)
         "push2ex": collect_push2ex,         # V16.4.1: 涨停/跌停/炸板池
         "em_hot": collect_em_hot,           # V16.4.1: 人气榜
@@ -503,6 +642,7 @@ def main() -> None:
         "tdx_f10_more": collect_tdx_f10_more,  # V16.4.1: 股东/新闻/提醒
         "cninfo": collect_cninfo,           # V16.4.1: 巨潮互动易
         "reports": collect_reports,         # V16.4.1: 研报
+        "ftshare": collect_ftshare,         # V17.0.7: FTShare MCP(千股千评/董监高/商誉/质押/解禁/打板池)
     }
     if args.only:
         collectors = {k: v for k, v in collectors.items() if k in [s.strip() for s in args.only.split(",")]}
@@ -524,9 +664,16 @@ def main() -> None:
 
     meta["end"] = time.strftime("%Y-%m-%d %H:%M:%S")
     meta["total_secs"] = round(time.time() - t0, 1)
+    # V17.0.10: 记录 ZHB 数据日期(T-1 规则)——对撞破解必须先核对此字段再定对撞报告日期
+    try:
+        meta["zhb_data_date"] = json.load(
+            open(os.path.join(out_dir, "raw_zhb.json"), encoding="utf-8")
+        ).get("zhb_date", "")
+    except Exception:
+        meta["zhb_data_date"] = ""
     with open(os.path.join(out_dir, "meta.json"), "w", encoding="utf-8") as f:
         json.dump(meta, f, ensure_ascii=False, indent=1)
-    print(f"✔ 完成: {out_dir} | 总耗时 {meta['total_secs']}s", flush=True)
+    print(f"✔ 完成: {out_dir} | 总耗时 {meta['total_secs']}s | ZHB={meta.get('zhb_data_date')}", flush=True)
 
 
 if __name__ == "__main__":

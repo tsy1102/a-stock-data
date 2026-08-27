@@ -961,6 +961,37 @@ async def get_holder_structure_async(
 
 
 # 行情和K线（函数内部导入避免循环依赖）
+def get_historical_high_qfq(code: str, count: int = 640) -> Optional[float]:
+    """V17.0.5 P2: 历史最高价（腾讯前复权日线, ~640 根≈2.6 年窗口）。
+
+    参考仓库 v3.7.0/3.2.5#28 同源问题修复: TDX bars 为不复权原始价,
+    长期分红股跨除权比较会低估真实回撤。qfq 口径与现价同基准可直接比。
+    接口: web.ifzq.gtimg.cn fqkline(字典 §12.1 备胎——免费无鉴权, 与 TDX 实测一致)。
+    """
+    from stock_common.sc_network import _quick_request
+
+    mkt = "bj" if code.startswith(("92", "8", "4", "43", "83", "87")) else (
+        "sh" if code.startswith(("6", "9", "5")) else "sz")
+    url = f"https://web.ifzq.gtimg.cn/appstock/app/fqkline/get"
+    try:
+        r = _quick_request(
+            url,
+            params={"param": f"{mkt}{code},day,,,{count},qfq"},
+            headers={"Referer": "https://gu.qq.com/"},
+            timeout=10,
+        )
+        if r is None:
+            return None
+        d = (r.json() or {}).get("data") or {}
+        node = d.get(f"{mkt}{code}") or {}
+        days = node.get("qfqday") or node.get("day") or []
+        highs = [float(row[3]) for row in days if len(row) > 3 and float(row[3]) > 0]
+        return max(highs) if highs else None
+    except Exception as _e:
+        _debug_log(f"datasource historical_high_qfq ({code}): {_e}")
+        return None
+
+
 def get_tencent_quote(code: str) -> Dict[str, Any]:
     """V4: 个股行情 → 腾讯 HTTP 实时（V16.0 修正名不副实问题）。
 
@@ -1017,14 +1048,16 @@ def get_tencent_quote(code: str) -> Dict[str, Any]:
             "low_52w": _safe_float(vals[_f["low_52w"]]),
             "dividend_yield": _safe_float(vals[_f["dividend_yield"]]),
             # V16.3.3 (2026-08-10 字典 12.1/12.15.5): 腾讯未知位破解接入
-            "roa": _safe_float(vals[_f["roa"]]),              # ROA(%) — 已验证
-            "main_net_inflow_yi": _safe_float(vals[_f["main_net_inflow_yi"]]),  # 主力净流入(亿)
+            # V17.0.5 正名: roa=TTM 滚动口径(~~年化~~)；新增 tx65=扣非加权ROE(TTM)——盈利质量对
+            "roa": _safe_float(vals[_f["roa_ttm"]]),              # ROA(TTM 滚动, %)
+            "roe_deduct_ttm": _safe_float(vals[_f["roe_deduct_ttm"]]),  # 扣非加权ROE(TTM, %)
+            "change_180td_pct": _safe_float(vals[_f["change_180td_pct"]]),  # 近180交易日涨跌幅(%) — V17.0.7 定案(tx75, 前复权; ~~主力净流入(亿)~~证伪)
             "panel_price": _safe_float(vals[_f["panel_price"]]),  # 盘口参考价
-            "bid1_vol": _safe_float(vals[_f["bid1_vol"]]),          # 买一量(手) —— V16.3.4 新增（sht 封单资金）
+            "bid1_vol": _safe_float(vals[_f["bid1_vol"]]),          # 买一量(手) — V16.3.4 新增（sht 封单资金用）
         }
         result = normalize_at_boundary(raw, DataSource.TENCENT)
         # V16.3.3: normalize 为白名单映射——腾讯独有字段（normalize 未定义）在此透传
-        for _xk in ("roa", "main_net_inflow_yi", "panel_price", "bid1_vol", "vol_ratio"):
+        for _xk in ("roa", "roe_deduct_ttm", "change_180td_pct", "panel_price", "bid1_vol", "vol_ratio"):
             if raw.get(_xk) not in (None, 0, "", "0", "0.0"):
                 result[_xk] = raw[_xk]
         return result
@@ -1973,10 +2006,16 @@ async def get_margin_trading_async(session: Any, code: str) -> List[Dict[str, An
     """async 版: 融资融券数据
 
     V9.0: 委托到同步版（已内置 F10 优先逻辑），保留 session 参数向后兼容。
+    V17.0.9: 返回类型防御——to_thread 偶发返回非 list(dict/None)时置 [],
+    防止批量消费端 for d in margin 遍历 dict keys 报 TypeError(300475 实测)。
     """
     import asyncio
 
-    return await asyncio.to_thread(get_margin_trading, code)
+    res = await asyncio.to_thread(get_margin_trading, code)
+    if not isinstance(res, list):
+        _debug_log(f"datasource margin_async({code}): 非 list 返回 {type(res).__name__}, 置 []")
+        return []
+    return res
 
 
 @cached(category="block_trade", ttl_seconds=TTL["block_trade"])
@@ -2017,6 +2056,7 @@ async def get_block_trade_async(session: Any, code: str) -> List[Dict[str, Any]]
     """async 版: 大宗交易数据
 
     V9.4: 原生 aiohttp 实现，移除 asyncio.to_thread 包装。
+    V17.0.9: data 类型防御——_em_filter_async 偶发返回 dict 时置 [].
     """
     data = await _em_filter_async(
         session,
@@ -2026,6 +2066,9 @@ async def get_block_trade_async(session: Any, code: str) -> List[Dict[str, Any]]
         sort_columns="TRADE_DATE",
         sort_types="-1",
     )
+    if not isinstance(data, list):
+        _debug_log(f"datasource block_trade_async({code}): 非 list 返回 {type(data).__name__}, 置 []")
+        data = []
     rows = []
     for row in data:
         close = float(row.get("CLOSE_PRICE") or 0)
@@ -2044,6 +2087,75 @@ async def get_block_trade_async(session: Any, code: str) -> List[Dict[str, Any]]
             }
         )
     return rows
+
+
+# ═══════════════════════════════════════════════════════════
+# V17.0.7: datacenter 五类批量预取流水线(sht 30 只批量场景)
+# ───────────────────────────────────────────────────────────
+# 动机(2026-08-25 审计): datacenter-web 1.0rps × 每股5类调用(龙虎榜/两融/北向/
+# 解禁/大宗) ≈ 每股5秒纯令牌桶等待, 是 sht 批量最大单项; 且 worker 只有 3 条,
+# dc 等待会占住车道。预取流水线在批量启动时按域串行(1rps)拉全批, 与 3 条
+# worker 的非 dc 部分(TCP F10/腾讯/巨潮/fuyao/CPU渲染)并行推进——
+# 消费速率(~9s/只÷3)慢于生产速率(~5s/只), 预取始终领先。
+_DC_PREFETCH_FUTURES: Dict[Any, Any] = {}  # (kind, code) -> asyncio.Future
+
+
+def start_datacenter_prefetch(codes, session, dragon_kwargs=None) -> int:
+    """调度五类 datacenter 数据的整批预取(幂等——已调度的 (kind,code) 跳过)。
+
+    必须在事件循环内调用(execute_batch_pipeline 的 prefetch_async_fn 钩子)。
+    消费侧用 resolve_datacenter('kind', code) 取结果; 未调度的键走调用方直调。
+
+    Returns:
+        本次新入队的 (kind, code) 项数
+    """
+    import asyncio as _aio
+
+    dk = dragon_kwargs or {}
+    specs = {
+        "dragon_tiger": lambda c: get_dragon_tiger_board_async(
+            session, c, days=180,
+            include_seats=dk.get("include_seats", True),
+            enhance_seats=dk.get("enhance_seats", True)),
+        "northbound": lambda c: get_northbound_hold_async(session, c, 20),
+        "margin": lambda c: get_margin_trading_async(session, c),
+        "lockup": lambda c: get_lockup_expiry_async(
+            session, c, days=90, include_history=True),
+        "block_trade": lambda c: get_block_trade_async(session, c),
+    }
+    loop = _aio.get_event_loop()
+    scheduled = 0
+    for kind, fetch in specs.items():
+        todo = [c for c in codes if (kind, c) not in _DC_PREFETCH_FUTURES]
+        if not todo:
+            continue
+        futs = {c: loop.create_future() for c in todo}
+        # 先注册后执行——消费方随时 await 不竞态
+        _DC_PREFETCH_FUTURES.update(futs)
+
+        async def _run(_todo=todo, _futs=futs, _fetch=fetch, _kind=kind):
+            for c in _todo:
+                try:
+                    res = await _fetch(c)
+                except Exception as e:
+                    _debug_log(f"datasource dc prefetch {_kind}/{c}: {e}")
+                    res = None
+                if not _futs[c].done():
+                    _futs[c].set_result(res)
+
+        loop.create_task(_run())
+        scheduled += len(todo)
+    return scheduled
+
+
+async def resolve_datacenter(kind: str, code: str, direct_fn=None):
+    """取预取结果; 该键未参与预取时回退 direct_fn()(原直调协程工厂)。"""
+    fut = _DC_PREFETCH_FUTURES.get((kind, code))
+    if fut is not None:
+        return await fut
+    if direct_fn is not None:
+        return await direct_fn()
+    return None
 
 
 @cached(category="dividend", ttl_seconds=TTL["dividend"], cross_verify=True)
@@ -3209,17 +3321,27 @@ def get_roe_trend_series(
                 pf_map = {r.get("period"): r for r in pf}
                 mi_map = {r.get("period"): r for r in mi}
                 rows = []
+                # V17.0.8: 扣非ROE 补全——F10 无直接扣非ROE 字段, 用同源推算:
+                # 扣非ROE ≈ 加权ROE × (扣非EPS / 基本EPS)(同口径近似, 与 ROE 列可比)。
+                # fuyao index_deduct_weighted_avg_roe 为 TTM 滚动口径, 与单期加权不可混排,
+                # 故不作为表格列源(仅保留 TTM 双口径对照走 roe_deduct_ttm)。
                 for period in [r.get("period") for r in mi[:num_periods]]:
                     if not period:
                         continue
                     p = pf_map.get(period) or {}
                     m = mi_map.get(period) or {}
+                    _roe = _safe_float(p.get("加权净资产收益率"))
+                    _eps = _safe_float(m.get("基本每股收益(元)"))
+                    _eps_kc = _safe_float(m.get("每股收益-扣除(元)"))
+                    _roe_kc = None
+                    if _roe and _eps and _eps_kc:
+                        _roe_kc = round(_roe * (_eps_kc / _eps), 2)
                     rows.append(
                         {
                             "date": period,
-                            "roe": _safe_float(p.get("加权净资产收益率")),
-                            "roe_kc": None,
-                            "eps": _safe_float(m.get("基本每股收益(元)")),
+                            "roe": _roe,
+                            "roe_kc": _roe_kc,
+                            "eps": _eps,
                             "bps": _safe_float(m.get("每股净资产(元)")),
                             "roe_type": "weighted",
                         }
@@ -3243,11 +3365,16 @@ def get_roe_trend_series(
         roe = round(profit / equity * 100, 2) if equity > 0 else None
         eps = round(profit / total_shares, 4) if total_shares > 0 else None
         bps = round(equity / total_shares, 2) if total_shares > 0 else None
+        # V17.0.8: 扣非ROE 同源推算——新浪财报含扣非净利时按同口径近似
+        profit_kc = _safe_float(fin.get("扣除非经常性损益后的净利润", 0))
+        roe_kc = None
+        if profit_kc and profit > 0 and roe is not None:
+            roe_kc = round(roe * (profit_kc / profit), 2)
         rows.append(
             {
                 "date": rd,
                 "roe": roe,
-                "roe_kc": None,
+                "roe_kc": roe_kc,
                 "eps": eps,
                 "bps": bps,
                 "roe_type": "diluted",
@@ -3647,6 +3774,34 @@ def get_limit_broken_pool(date_str: str = "") -> List[Dict[str, Any]]:
         return []
 
 
+def _query_dt_pool_tc(date_str: str = "") -> Optional[int]:
+    """V17.0.8: 东财 getTopicDTPool 的 tc 权威总数——pool 明细可能为空但 tc>0。
+    用于 get_limit_pool_summary 跌停兜底（替代会读到 T-1 的 ZHB 快照）。"""
+    if not date_str:
+        from datetime import datetime
+
+        date_str = datetime.now().strftime("%Y%m%d")
+    url = "https://push2ex.eastmoney.com/getTopicDTPool"
+    params = {
+        "ut": "7eea3edcaed734bea9cbfc24409ed989",
+        "dpt": "wz.ztzt",
+        "Pageindex": 0,
+        "pagesize": 100,
+        "sort": "fbt:asc",
+        "date": date_str,
+    }
+    try:
+        r = _quick_request(url, params=params, headers={"User-Agent": UA}, timeout=10)
+        if r is None:
+            return None
+        d = r.json()
+        tc = (d.get("data") or {}).get("tc")
+        return int(tc) if tc is not None else None
+    except Exception as _e:
+        _debug_log(f"datasource dt pool tc: {_e}")
+        return None
+
+
 @cached(category="limit_pool", ttl_seconds=TTL["limit_pool"], trading_day=True)
 @requires_push2  # V16.0: push2ex 与东财共用风控面，标记审计
 def get_limit_down_pool(date_str: str = "") -> List[Dict[str, Any]]:
@@ -3824,24 +3979,61 @@ def get_limit_pool_summary(date_str: str = "") -> Dict[str, Any]:
             _debug_log(f"get_limit_pool_summary tdxhy sector inject: {_e}")
     zb = get_limit_broken_pool(_zt_date or date_str)
     dt = get_limit_down_pool(_zt_date or date_str)
-    # V17.0.4(2026-08-19 实测): 东财 getTopicDTPool 明细接口 tc>0 但 pool=[] 空(8/17/8/18 均如此)
-    # → len(dt)=0 造成假"跌停 0"(市场不可能无跌停)。兜底: ZHB 全市场快照涨跌幅口径统计跌停数
-    # (零网络, 与 mak 涨跌幅口径同源一致)
-    _dt_fb = 0
+    # V17.0.8(2026-08-26 报告核查): 修复跌停兜底——旧逻辑(ZHB 快照涨跌幅口径)在盘中读到
+    # T-1(前一日) 快照, 把昨日跌停误报为今日(8/26 实测 22 假跌停, 真实=0)。
+    # 权威顺序: ① 东财 getTopicDTPool tc 总数(pool 可能空但 tc>0) → ② KPL RiseFallAnalysis dt
+    # (独立匿名源) → ③ ZHB 快照仅当数据日期==目标日期才允许(ZHB 盘中恒为 T-1)
+    _dt_fb = None
     if not dt:
         try:
-            from stock_common import is_limit_down
+            from datetime import datetime as _dtm
 
-            _snap = get_zhb_full_market_snapshot() or {}
-            _dt_fb = sum(
-                1
-                for _c, _d in _snap.items()
-                if _d
-                and isinstance(_d, dict)
-                and is_limit_down(_c, str(_d.get("name", "") or ""), _safe_float(_d.get("change_pct", 0)))
-            )
+            _target = _zt_date or date_str or _dtm.now().strftime("%Y%m%d")
+            # ① push2ex tc 权威总数
+            try:
+                from stock_common.sc_datasource import _query_dt_pool_tc
+
+                _dt_tc = _query_dt_pool_tc(_target)
+                if _dt_tc is not None:
+                    _dt_fb = _dt_tc
+            except Exception as _e1:
+                _debug_log(f"get_limit_pool_summary dt tc: {_e1}")
+            # ② KPL 独立匿名源(交叉验证)
+            if _dt_fb is None:
+                try:
+                    from stock_common.sc_kpl import get_kpl_broken_ratio
+
+                    _kpl_rf = get_kpl_broken_ratio()
+                    if _kpl_rf and _kpl_rf.get("date") == _target[:4] + "-" + _target[4:6] + "-" + _target[6:]:
+                        _dt_fb = int(_kpl_rf.get("dt") or 0)
+                except Exception as _e2:
+                    _debug_log(f"get_limit_pool_summary kpl dt: {_e2}")
+            # ③ ZHB 兜底: 仅当快照日期==目标日期(零网络最后手段)
+            if _dt_fb is None:
+                try:
+                    from stock_common import is_limit_down
+
+                    _zhb_date = get_zhb_data_date().replace("-", "")
+                    if _zhb_date == _target:
+                        _snap = get_zhb_full_market_snapshot() or {}
+                        _dt_fb = sum(
+                            1
+                            for _c, _d in _snap.items()
+                            if _d
+                            and isinstance(_d, dict)
+                            and is_limit_down(_c, str(_d.get("name", "") or ""), _safe_float(_d.get("change_pct", 0)))
+                        )
+                    else:
+                        _debug_log(
+                            f"get_limit_pool_summary dt: zhb date {_zhb_date} != target {_target}, 跳过 T-1 误判兜底"
+                        )
+                except Exception as _e3:
+                    _debug_log(f"get_limit_pool_summary zhb dt fallback: {_e3}")
+            if _dt_fb is None:
+                _dt_fb = 0
         except Exception as _e:
-            _debug_log(f"get_limit_pool_summary zhb dt fallback: {_e}")
+            _debug_log(f"get_limit_pool_summary dt fallback: {_e}")
+            _dt_fb = 0
 
     # 按板块统计涨停分布(M4: 空 sector 归"其他", 不产生空键)
     sector_stats: Dict[str, int] = {}
@@ -4818,22 +5010,6 @@ def get_zhb_market_snapshot(codes: Optional[List[str]] = None) -> Dict[str, Dict
         return {}
 
 
-def get_zhb_52w_range(code: str) -> tuple:
-    """V9.6: 获取52周最高价和最低价。
-
-    Returns:
-        (high_52w, low_52w) 元组，获取失败返回 (None, None)
-    """
-    try:
-        from core.zhb_client import get_high_52w, get_low_52w
-
-        return (get_high_52w(code), get_low_52w(code))
-    except Exception as _e:
-        _debug_log(f"datasource zhb 52w_range ({code}): {_e}")
-        return (None, None)
-
-
-
 
 def is_zhb_data_fresh(max_delay_days: int = 3) -> bool:
     """V9.6: 检查zhb数据是否新鲜（延迟在指定天数内）。
@@ -5526,6 +5702,14 @@ def _em_quote_full_impl(code: str, host: str = "https://push2delay.eastmoney.com
             "board": str,             # f128 地域板块名称
             "list_date": str,         # f189 上市日期
             "data_date": str,         # 行情快照日期
+            # V17.0.7 财务 TTM 族（口径经 fuyao 官方报表终判）:
+            "ocf_ttm": float,           # f103 经营活动现金流量净额 TTM (元)
+            "revenue_ttm": float,       # f104 营业总收入 TTM (元)
+            "net_profit_period": float, # f105 归母净利润 最新报告期 (元)
+            "eps_deduct_ttm": float,    # f108 扣非每股收益 TTM (元/股)
+            "net_profit_annual": float, # f109 归母净利润 最新年报 (元)
+            "eps_annual": float,        # f160 年报EPS (=f109/f84) (元/股)
+            "undist_profit_ps": float,  # f190 每股未分配利润 (元/股)
         }
     """
     if not code or len(code) != 6:
@@ -5548,7 +5732,11 @@ def _em_quote_full_impl(code: str, host: str = "https://push2delay.eastmoney.com
             "f51,f52,f55,f92,f126,f162,f163,f164,f165,f166,f167,"
             "f174,f175,f198,f80,f221,"  # V16.2: f221 报告期
             "f135,f136,f137,f138,f139,f140,f141,f142,f143,f144,f145,f146,"
-            "f178"
+            "f178,"
+            # V17.0.7(2026-08-25 字典终破): 财务 TTM 族——f103 经营现金流净额(TTM 元)/
+            # f104 营业总收入(TTM 元)/f105 归母净利(最新报告期 元)/f108 扣非EPS(TTM)/
+            # f109 归母净利(最新年报 元)/f160 年报EPS/f190 每股未分配利润
+            "f103,f104,f105,f108,f109,f160,f190"
         ),
         "ut": "f057cbcbce2a86e2866ab8877db1d059",
     }
@@ -5772,6 +5960,25 @@ def _em_quote_full_impl(code: str, host: str = "https://push2delay.eastmoney.com
                     result["fund_main_5d"] = _s5
             except (TypeError, ValueError, json.JSONDecodeError):
                 pass
+
+        # V17.0.7(2026-08-25 字典终破): 财务 TTM 族(单位见键注释; 口径经
+        # fuyao 官方三大报表 5/5 终判 + 报告期切换动态双证——详见
+        # docs/field_verification/20260825_cross_analysis.md)
+        for src, dst in [
+            ("f103", "ocf_ttm"),            # 经营活动现金流量净额 TTM (元)
+            ("f104", "revenue_ttm"),        # 营业总收入 TTM (元)
+            ("f105", "net_profit_period"),  # 归母净利润 最新报告期 (元)
+            ("f108", "eps_deduct_ttm"),     # 扣非每股收益 TTM (元/股)
+            ("f109", "net_profit_annual"),  # 归母净利润 最新年报 (元)
+            ("f160", "eps_annual"),         # 年报EPS (=f109/f84) (元/股)
+            ("f190", "undist_profit_ps"),   # 每股未分配利润 (元/股, ≡ulist f48)
+        ]:
+            v = data.get(src)
+            if v is not None and v != "-":
+                try:
+                    result[dst] = float(v)
+                except (TypeError, ValueError):
+                    pass
 
         result["data_date"] = datetime.now().strftime("%Y-%m-%d")
         return result
@@ -6447,6 +6654,89 @@ def get_em_fund_flow(code: str) -> Dict[str, Any]:
         return {}
 
 
+def get_index_kline_closes(index_code: str, days: int = 250) -> List[float]:
+    """指数日K收盘价序列（V17.0.7 自 mak.get_index_returns._get_kline 下沉统一层）。
+
+    四源链(与 mak 原实现逐行为等价迁移, 全走限流包装):
+      TDX 指数K线(core.tdx_client) → 腾讯 ifzq 前复权日K → 新浪 getKLineData
+      → 腾讯实时 2 值(仅 1 日回报兜底)。
+    供 mak 行业轮动/异动偏离(ret_3d/10d/20d/60d) 与其他脚本指数区间收益复用。
+
+    Args:
+        index_code: 指数代码（如 sh000001 / sz399106）
+        days: 需要的交易日数量
+
+    Returns:
+        收盘价列表（升序）；全部失败返回 []
+    """
+    import json as _json
+
+    # L1: TDX 指数K线(TCP 不封 IP)
+    try:
+        from core.tdx_client import tdx_get_index_bars
+
+        keys, rows = tdx_get_index_bars(index_code, count=days)
+        if keys and rows:
+            ci = next((i for i, k in enumerate(keys)
+                       if k in ("close", "close_price")), -1)
+            if ci >= 0:
+                closes = [_safe_float(r[ci]) for r in rows if len(r) > ci]
+                if closes:
+                    return closes
+    except Exception as _e:
+        _debug_log(f"datasource index_kline tdx error {index_code}: {_e}")
+
+    # L2: 腾讯 ifzq 前复权日K（完整序列）
+    try:
+        r = _quick_request(
+            f"https://ifzq.gtimg.cn/appstock/app/fqkline/get?param={index_code},day,,,{days},qfq",
+            timeout=10,
+        )
+        if r:
+            d = (r.json().get("data") or {}).get(index_code, {})
+            kline = d.get("qfqday") or d.get("day") or []
+            closes = [_safe_float(row[2]) for row in kline if len(row) > 2 and row[2]]
+            if closes:
+                return closes
+    except Exception as _e:
+        _debug_log(f"datasource index_kline tencent error {index_code}: {_e}")
+
+    # L3: 新浪日K（V17.0.4: 与腾讯 ifzq 实测一致 <0.01）
+    try:
+        r = _quick_request(
+            "https://quotes.sina.cn/cn/api/jsonp_v2.php/var/CN_MarketDataService.getKLineData",
+            params={"symbol": index_code, "scale": 240, "ma": "no", "datalen": days},
+            headers={"User-Agent": UA,
+                     "Referer": "https://finance.sina.com.cn"},
+            timeout=10,
+        )
+        if r:
+            _m = re.search(r"\((.*)\)", r.text, re.S)
+            if _m:
+                _arr = _m.group(1)
+                if _arr.startswith("["):
+                    _rows = _json.loads(_arr)
+                    closes = [_safe_float(x.get("close")) for x in _rows if x.get("close")]
+                    closes = [c for c in closes if c > 0]
+                    if closes:
+                        return closes
+    except Exception as _e:
+        _debug_log(f"datasource index_kline sina error {index_code}: {_e}")
+
+    # L4: 腾讯实时 2 值（仅 1 日回报——指标静默 None 有提示）
+    try:
+        r = _quick_request(f"https://qt.gtimg.cn/q={index_code}", timeout=10)
+        if r:
+            r.encoding = "gbk"
+            v = r.text.split('"')[1].split("~")
+            close = _safe_float(v[3])
+            pre_close = _safe_float(v[4])
+            return [pre_close, close] if close > 0 else []
+    except Exception as _e:
+        _debug_log(f"datasource index_kline realtime error {index_code}: {_e}")
+    return []
+
+
 @requires_push2
 def get_em_history_fund_flow(code: str, days: int = 120) -> List[Dict[str, Any]]:
     """V12.0: 获取个股历史资金流（替代 TDX get_history_fund_flow）。
@@ -6707,3 +6997,240 @@ def get_shortline_indicators(code: str) -> Dict[str, Any]:
 # ═══════════════════════════════════════════════════════════
 # 数据源模块总计：85个函数（V16.1.7 新增 4 个新数据源封装）
 # ═══════════════════════════════════════════════════════════
+
+# ═══════════════════════════════════════════════════════════════
+# V17.0.7: 通达信早盘/尾盘抢筹 + 东财选股器服务端筛选（来源 myhhub/stock）
+# ═══════════════════════════════════════════════════════════════
+
+_TDX_QC_URL = "http://excalc.icfqs.com:7616/TQLEX?Entry=HQServ.hq_nlp"
+_TDX_QC_TOKEN = "6679f5cadca97d68245a086793fc1bfc0a50b487487c812f"
+
+
+def get_tdx_chip_race(period: int = 0, sort: int = 1) -> List[Dict[str, Any]]:
+    """通达信早盘/尾盘抢筹数据（字典无此源——来源 myhhub/stock stock_chip_race.py）。
+
+    Args:
+        period: 0=早盘抢筹, 1=尾盘抢筹
+        sort: 排序(1=委托金额/2=成交金额/3=开盘金额/4=幅度/5=占比)
+
+    Returns:
+        [{"code","name","price","change_rate","bid_rate","bid_trust_amount",...}]
+    """
+    from stock_common import _quick_request
+
+    payload = json.dumps([{
+        "funcId": 20, "offset": 0, "count": 100,
+        "sort": sort, "period": period, "Token": _TDX_QC_TOKEN,
+        "modname": "JJQC",
+    }])
+    r = _quick_request(_TDX_QC_URL, data=payload, timeout=10, method="POST",
+                       headers={"Content-Type": "application/json; charset=UTF-8"})
+    if r is None:
+        return []
+    try:
+        rows = r.json()
+        if isinstance(rows, list) and rows:
+            inner = rows[0].get("data") or []
+            out = []
+            for d in inner:
+                out.append({
+                    "code": d.get("StockCode", ""),
+                    "name": d.get("StockName", ""),
+                    "pre_close": float(d.get("ZSJ", 0)) / 10000,
+                    "open_price": float(d.get("KPJ", 0)) / 10000,
+                    "price": float(d.get("ZJCJG", 0)) / 10000,
+                    "change_rate": float(d.get("ZDF", 0)),
+                    "deal_amount_wan": float(d.get("CJJE", 0)) / 1e4,
+                    "bid_trust_amount_wan": float(d.get("QCWTJE", 0)) / 1e4,
+                    "bid_deal_amount_wan": float(d.get("QCCJJE", 0)) / 1e4,
+                    "bid_rate_pct": float(d.get("QCFD", 0)) * 100,
+                    "bid_ratio_pct": float(d.get("QCZB", 0)) * 100,
+                    "limitup_days": int(d.get("TJZT", 0)),
+                    "limitup_boards": int(d.get("TJQB", 0)),
+                })
+            return out
+    except Exception as _e:
+        _debug_log(f"datasource get_tdx_chip_race: {_e}")
+    return []
+
+
+_EM_XUANGU_URL = "https://data.eastmoney.com/dataapi/xuangu/list"
+
+
+def get_em_xuangu(sty_fields: str = "", filter_expr: str = "",
+                  page: int = 1, page_size: int = 50) -> List[Dict[str, Any]]:
+    """东财选股器服务端筛选（200+ 字段任意组合——来源 myhhub/stock stock_selection.py）。
+
+    Args:
+        sty_fields: 逗号分隔的字段代码串（如 SECURITY_CODE,TOTAL_MARKET_CAP,NEW_PRICE）
+        filter_expr: 过滤表达式（如 (MARKET="上交所主板")(NEW_PRICE>10)）
+        page/page_size: 分页
+
+    Returns:
+        [{"SECURITY_CODE":"600519","SECURITY_NAME_ABBR":"贵州茅台",...}]
+    """
+    import requests as _req
+    from stock_common.sc_network import EM_SESSION
+
+    headers = {
+        "User-Agent": UA,
+        "Referer": "https://data.eastmoney.com/xuangu/",
+    }
+    params = {
+        "sty": sty_fields if sty_fields else "ALL",
+        "p": page,
+        "ps": page_size,
+        "source": "SELECT_SECURITIES",
+        "client": "WEB",
+    }
+    if filter_expr:
+        params["filter"] = filter_expr
+    try:
+        r = EM_SESSION.get(_EM_XUANGU_URL, params=params, headers=headers, timeout=15)
+        if r.status_code != 200:
+            return []
+        d = r.json()
+        return (d.get("result") or {}).get("data") or []
+    except Exception as _e:
+        _debug_log(f"datasource get_em_xuangu: {_e}")
+        return []
+
+
+# ═══════════════════════════════════════════════════════════════
+# V17.0.7: 开盘啦(KPL) 无 Token API 统一封装（字典 §12.21.5）
+# 来源: jinhao2003/kaipanla-crawler 方法验证 + 穷尽实测
+# 大部分端点无需 Token——直接 HTTP POST + Dalvik UA 即可获取数据
+# 域名分工: apphwhq=实时行情 / apphis=历史+板块 / applhb=龙虎榜
+# 限流: sc_network._DOMAIN_LIMITS 已注册 longhuvip.com 各子域 @3~5rps
+# ═══════════════════════════════════════════════════════════════
+
+_KPL_HQ = "https://apphwhq.longhuvip.com/w1/api/index.php"
+_KPL_HIS = "https://apphis.longhuvip.com/w1/api/index.php"
+_KPL_LHB = "https://applhb.longhuvip.com/w1/api/index.php"
+
+_KPL_HEADERS = {
+    "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
+    "User-Agent": "Dalvik/2.1.0 (Linux; U; Android 12; ALN-AL00 Build/W528JS)",
+    "Connection": "Keep-Alive",
+}
+
+_KPL_BASE = {
+    "PhoneOSNew": "1",
+    "DeviceID": "80ca7d1b-2a24-3cd0-a915-99b61f6f88aa",
+    "VerSion": "5.23.0.4",
+    "apiv": "w44",
+    "UserID": "",
+    "Token": "",
+}
+
+
+_KPL_LAST_CALL: float = 0.0
+
+
+def _kpl_post(url: str, action: str, controller: str, extra: dict = None) -> Optional[dict]:
+    """KPL 统一 POST（直接 requests.post——必须用 Dalvik UA，_quick_request 会覆盖导致空数据）。
+    自行限流 >=200ms。V17.0.7 字典 §12.21.5。"""
+    import time as _time
+    global _KPL_LAST_CALL
+    el = _time.time() - _KPL_LAST_CALL
+    if el < 0.2:
+        _time.sleep(0.2 - el)
+    _KPL_LAST_CALL = _time.time()
+
+    params = dict(_KPL_BASE)
+    params["a"] = action
+    params["c"] = controller
+    if extra:
+        params.update(extra)
+    body_parts = []
+    for k, v in params.items():
+        body_parts.append(f"{k}={v}")
+    body = "&".join(body_parts) + "&"
+    import requests as _req_mod
+    try:
+        r = _req_mod.post(url, data=body.encode("utf-8"),
+                          headers=dict(_KPL_HEADERS), timeout=15)
+        if r.status_code != 200:
+            return None
+        txt = r.text
+        cleaned = re.sub(r"[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]", "", txt)
+        d = json.loads(cleaned)
+        ec = str(d.get("errcode", ""))
+        if ec != "0":
+            _debug_log(f"kpl {action}/{controller}: errcode={ec} {d.get('errmsg','')[:60]}")
+            return None
+        return d.get("data") or d
+    except Exception as e:
+        _debug_log(f"kpl {action}/{controller}: {e}")
+        return None
+
+
+
+
+
+def kpl_get_market_emotion() -> Optional[Dict[str, Any]]:
+    """市场情绪实时数据（涨停数/跌停数/强度/连板高度）。
+
+    Returns:
+        {"ztjs": 涨停数, "df_num": 跌停数, "strong": 强度,
+         "lbgd": 连板高度, "Day": 日期}
+    """
+    return _kpl_post(_KPL_HQ, "ChangeStatistics", "HomeDingPan")
+
+
+def kpl_get_rise_fall_analysis() -> Optional[List]:
+    """涨跌分析 [涨停数,?,跌停数,?,涨跌比%,?,日期]。"""
+    return _kpl_post(_KPL_HQ, "RiseFallAnalysis", "HomeDingPan")
+
+
+def kpl_get_stock_zd_num() -> Optional[Dict[str, Any]]:
+    """涨跌家数。"""
+    return _kpl_post(_KPL_HQ, "MarketStockZDNum", "HomeDingPan")
+
+
+def kpl_get_real_ranking_info(date: str = "", index: int = 0) -> Optional[Dict[str, Any]]:
+    """板块排行列表(30只/页, 19列含 code/name/strength/change_pct/speed/
+    turnover/main_net/main_buy/main_sell/vol_ratio/circ_mv/big_order_net/
+    total_mv/pe_today/pe_next 等)。"""
+    return _kpl_post(_KPL_HIS, "RealRankingInfo", "ZhiShuRanking", {
+        "Type": "1", "ZSType": "7", "Index": str(index), "st": "30",
+        "Date": date, "Order": "1",
+    })
+
+
+def kpl_get_stock_list_w8(plate_id: str, date: str = "",
+                          stock_type: int = 0) -> Optional[Dict[str, Any]]:
+    """板块成分股详情(63字段, 需遍历 Type 0~19 合并去重)。
+    域名必须用 apphis.longhuvip.com；响应 key 是小写 list。"""
+    return _kpl_post(_KPL_HIS, "ZhiShuStockList_W8", "ZhiShuRanking", {
+        "PlateID": plate_id, "Date": date, "Type": str(stock_type),
+        "Index": "0", "st": "30", "Order": "1", "TSZB": "0",
+        "IsZZ": "0", "TSZB_Type": "0", "filterType": "0", "old": "1",
+    })
+
+
+def kpl_get_ytfp_bkhx(date: str = "") -> Optional[Dict[str, Any]]:
+    """复盘啦板块核心(涨停原因+题材+个股明细)。"""
+    extra = {}
+    if date:
+        extra["Date"] = date
+    return _kpl_post(_KPL_HIS, "GetYTFP_BKHX", "FuPanLa", extra)
+
+
+def kpl_get_ytfp_sctd(date: str = "") -> Optional[Dict[str, Any]]:
+    """复盘啦市场题材(几天几板 Tips，如'3天2板')。"""
+    extra = {}
+    if date:
+        extra["Date"] = date
+    return _kpl_post(_KPL_HIS, "GetYTFP_SCTD", "FuPanLa", extra)
+
+
+def kpl_get_lhb_stock_list() -> Optional[Dict[str, Any]]:
+    """龙虎榜股票列表。"""
+    return _kpl_post(_KPL_LHB, "GetStockList", "LongHuBang")
+
+
+def kpl_get_info() -> Optional[Dict[str, Any]]:
+    """首页聚合(ErBanList/JJJYList/TKGKList)。"""
+    extra = {"View": "1"}
+    return _kpl_post(_KPL_HQ, "GetInfo", "Index", extra)

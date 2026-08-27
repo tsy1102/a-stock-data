@@ -86,6 +86,8 @@ _BATCH_QUOTE_DATE: str = ""
 # V17.0: push2delay 估值/资金流补取进程缓存(当天)——sht 批量 35 只免重复请求
 _PD_EXTRA_CACHE: Dict[str, Dict[str, Any]] = {}
 _PD_EXTRA_CACHE_DATE: str = ""
+# V17.0.7: fuyao 财务 TTM 族兜底进程缓存——键=(code, report_period), 报告期稳定
+_FY_TTM_CACHE: Dict[Any, Dict[str, Any]] = {}
 
 
 def prefetch_quote_batch(codes: List[str]) -> Dict[str, Dict[str, Any]]:
@@ -233,6 +235,8 @@ except ImportError:
             "change_30d",
             "change_60d",
             "change_ytd",
+            # V17.0.5: tdxstat2 Col[11] 正名——本月至今涨跌幅(基准=上月末收盘)
+            "change_mtd",
             "streak_days",
             # 52w / ipo / employees
             "high_52w",
@@ -478,17 +482,21 @@ def get_canonical_stock_data(code: str, force_realtime: bool = False) -> Any:
                     )
 
     # V16.3.3 (2026-08-10 字典 12.15.5/12.15.6): 腾讯独有/实时估值字段补取——
-    # roa(tx66)/主力净流入(tx75)/盘口价(tx85)/pe_ttm/pb/股息率为腾讯字段；
+    # roa(tx66)/盘口价(tx85)/pe_ttm/pb/股息率为腾讯字段；
     # TDX 成功时 L2 fallback 不执行（TDX TCP 无 pe/pb/股息率），故主动补 1 次腾讯
     # （5rps 不封 IP，低成本）——C/D 层实时估值必须覆盖 ZHB T-1（19.88 vs 20.39 实测）
-    if need_realtime_quote and (not rt_quote.get("roa") or not rt_quote.get("pe_ttm")):
+    # V17.0.6 修复: 去 need_realtime_quote 门控——roa/roe_deduct_ttm 为季报披露驱动的
+    # 静态财务指标(TTM 滚动)，盘后完全可从腾讯获取(实测周六 1272.83/32.41 精确)，
+    # 原门控导致盘后报告盈利质量对恒为 0(missing)
+    if not rt_quote.get("roa") or not rt_quote.get("pe_ttm") or not rt_quote.get("roe_deduct_ttm"):
         try:
             from stock_common import get_tencent_quote
 
             _tq = get_tencent_quote(code_str) or {}
             # V17.0 修复: 补取循环删 pe_dynamic——腾讯 [52] 实为静态 PE(字典实锤),
             # 原会覆盖 push2 f162 的真动态 PE(15.55→20.58 错值); pe_dynamic 只信 f162/fuyao
-            for _tf in ("roa", "main_net_inflow_yi", "panel_price",
+            # V17.0.7: 删 main_net_inflow_yi(tx75 证伪=近180交易日涨幅, 非主力净流入)
+            for _tf in ("roa", "roe_deduct_ttm", "panel_price",
                         "pe_ttm", "pb", "dividend_yield"):
                 if _tq.get(_tf) not in (None, 0, '', '0', '0.0'):
                     rt_quote[_tf] = _tq[_tf]
@@ -498,7 +506,8 @@ def get_canonical_stock_data(code: str, force_realtime: bool = False) -> Any:
 
     # V16.3.3 (2026-08-10 字典 12.15.5): fuyao 估值印证位——有 Key 才用（无 Key 自动跳过）：
     # 腾讯失败时 fuyao 兜底估值（pe_ttm/pb_mrq 实测=腾讯精确 20.385/6.22）；官方 REST 风控面独立
-    if need_realtime_quote and not rt_quote.get("pe_ttm"):
+    # V17.0.6: 去 need_realtime_quote 门控——估值字段盘后同样可从 fuyao 获取(实测周六精确)
+    if not rt_quote.get("pe_ttm") or not rt_quote.get("ps_ttm"):
         try:
             from stock_common.sc_fuyao import is_fuyao_enabled, get_fuyao_valuation
 
@@ -506,19 +515,102 @@ def get_canonical_stock_data(code: str, force_realtime: bool = False) -> Any:
                 _fv = (get_fuyao_valuation([code_str]) or [])
                 if _fv:
                     _f0 = _fv[0]
-                    for _fk, _fsk in (("pe_ttm", "pe_ttm"), ("pe_mrq", "pe_dynamic"), ("pb_mrq", "pb")):
+                    for _fk, _fsk in (("pe_ttm", "pe_ttm"), ("pe_mrq", "pe_dynamic"),
+                                      ("pb_mrq", "pb"), ("ps_ttm", "ps_ttm"),
+                                      ("pcf_ttm", "pcf_ttm")):
                         if not rt_quote.get(_fsk) and _f0.get(_fk) not in (None, 0, '', '0', '0.0'):
                             rt_quote[_fsk] = _f0[_fk]
                             field_sources[_fsk] = "realtime:fuyao"
         except Exception as _e:
             _debug_log(f"get_canonical_stock_data fuyao valuation error ({code_str}): {_e}")
 
+    # ⭐ V17.0.7 层级调整: fuyao 升为财务 TTM 族**主源**——报告期驱动静态值无需实时性,
+    # 同花顺官方 REST 独立风控域(4001 退避, 无 push 封禁史), 盘后可查;
+    # push2delay 降为兜底(见下方 _ed 块, 仅填缺失键)。用户运行时段多为盘后,
+    # thsdk(TCP) 有盘后/午休关闸 → 定位为盘中专属特殊层, 不进通用 fallback 链。
+    # 聚合式(经 600519 对撞: ocf_ttm/net_profit_period/net_profit_annual 与
+    # push2 f103/f105/f109 逐字等): ocf_ttm = FY(Q4)+本期−去年同期(act_cash_flow_net);
+    # revenue_ttm 同法(operating_income, ⚠️ 营业收入口径 vs f104 总收入差~1.8%);
+    # eps_annual = net_profit_annual ÷ 总股本(sc_capital_cache 万股→股)。
+    # **进程缓存(按 code+report_period)**: 报告期数据稳定, 当日同股只算一次
+    if not rt_quote.get("ocf_ttm") or not rt_quote.get("revenue_ttm") \
+            or not rt_quote.get("net_profit_period") or not rt_quote.get("eps_annual"):
+        try:
+            from stock_common.sc_fuyao import is_fuyao_enabled
+
+            if is_fuyao_enabled():
+                global _FY_TTM_CACHE
+                _fy_key = (code_str, str(rt_quote.get("report_period") or ""))
+                _fy_cached = _FY_TTM_CACHE.get(_fy_key)
+                if _fy_cached is None:
+                    from stock_common.sc_fuyao import (
+                        get_fuyao_financials as _gff, fnum_local as _fl)
+
+                    def _series(kind, field):
+                        rows = _gff(kind, code_str, limit=8) or []
+                        out = {}
+                        for r0 in rows:
+                            key = (int(r0.get("fiscal_year") or 0),
+                                   str(r0.get("fiscal_period") or ""))
+                            out[key] = _fl(r0.get(field))
+                        return out
+
+                    _cf = _series("cashflow", "act_cash_flow_net")
+                    _inc = _series("income", "operating_income")
+                    _npf = _series("income", "parent_holder_net_profit")
+                    if _cf and _inc and _npf:
+                        # 本期 = 最新一条; 去年同期 = 同 fiscal_period 上一年; FY = 最近 Q4
+                        _cur_key = max(_cf)
+                        _cur_y, _cur_p = _cur_key
+                        _yago = _cf.get((_cur_y - 1, _cur_p))
+                        _fy_keys = [k for k in _cf if k[1] == "Q4" and k[0] < _cur_y]
+                        _fy_ocf = _cf.get(max(_fy_keys)) if _fy_keys else None
+                        if None not in (_yago, _fy_ocf):
+                            _ocf = _fy_ocf + (_cf.get(_cur_key) or 0) - _yago
+                            _rev_fyk = [k for k in _inc if k[1] == "Q4" and k[0] < _cur_y]
+                            _rev_fy = _inc.get(max(_rev_fyk), 0) if _rev_fyk else 0
+                            _np_fy = _npf.get(max(
+                                (k for k in _npf if k[1] == "Q4" and k[0] < _cur_y)))
+                            _fy_cached = {
+                                "ocf_ttm": _ocf,
+                                "revenue_ttm": _rev_fy + (_inc.get(_cur_key) or 0)
+                                - (_inc.get((_cur_y - 1, _cur_p)) or 0),
+                                "net_profit_period": _npf.get(_cur_key),
+                                "net_profit_annual": _np_fy,
+                            }
+                            _FY_TTM_CACHE[_fy_key] = _fy_cached
+                if _fy_cached:
+                    for _fk2 in ("ocf_ttm", "revenue_ttm",
+                                 "net_profit_period", "net_profit_annual"):
+                        _v2 = _fy_cached.get(_fk2)
+                        if _v2 and not rt_quote.get(_fk2):
+                            rt_quote[_fk2] = _v2
+                            field_sources[_fk2] = "realtime:fuyao"
+                    # eps_annual 折算——fuyao 无 EPS 字段, 用股本缓存归一(万股→股)
+                    if _fy_cached.get("net_profit_annual") and not rt_quote.get("eps_annual"):
+                        try:
+                            from stock_common.sc_capital_cache import get_share_capital as _gc2
+
+                            _sh_wan = _safe_float((_gc2(code_str) or {}).get("total_shares"))
+                            if _sh_wan > 0:
+                                rt_quote["eps_annual"] = (
+                                    _fy_cached["net_profit_annual"] / (_sh_wan * 1e4))
+                                field_sources["eps_annual"] = "calc:fuyao_np_annual/capital"
+                        except Exception as _e2:
+                            _debug_log(f"fuyao eps_annual calc error ({code_str}): {_e2}")
+        except Exception as _e:
+            _debug_log(f"get_canonical_stock_data fuyao ttm primary error ({code_str}): {_e}")
+
     # V17.0 修复: push2delay 估值+资金流补取——TDX 成功路径(TCP 无 PE/资金流统计)缺
-    # pe_dynamic/fund_*; 腾讯 [52] 实为静态 PE(字典实锤)不可作动态源; 腾讯 tx75 主力净流入
-    # 与东财 f137 **方向相反**(2026-08-13 实测 -4.49 vs +3.59 亿)不可作首选 → 统一 push2delay
-    # f162/f137(今日字典实锤)一次请求补全。**无条件执行(盘前也补)**: 主力净流入为日级动态字段,
-    # 盘前/盘后均应显示最近交易日 f137(而非 ZHB T-1)——sht 二章/七章口径统一的关键。
+    # pe_dynamic/fund_*; 腾讯 [52] 实为静态 PE(字典实锤)不可作动态源;
+    # ⚠️ V17.0.7: 原"腾讯 tx75 主力净流入方向相反不可作首选"注释作废——tx75 实为
+    # 近180交易日涨跌幅(非资金流, 语义完全不同), 资金流只信 push2delay f137 族。
+    # 统一 push2delay f162/f137 一次请求补全。**无条件执行(盘前也补)**: 主力净流入为
+    # 日级动态字段, 盘前/盘后均应显示最近交易日 f137(而非 ZHB T-1)——sht 二章/七章口径统一的关键。
     # **进程缓存(当天)**: sht 35 只批量每只 1 次 → 缓存命中免重复
+    # **V17.0.7 层级**: 本块降为财务 TTM 族**兜底**——pe_dynamic/fund_* 维持无条件覆盖
+    # (push2delay 唯一源), 财务四键仅在 fuyao 未填时补(不再覆盖 fuyao 主源值);
+    # eps_deduct_ttm/undist_profit_ps 无 fuyao 对应, 仍由本块提供(push 独有字段)
     if not rt_quote.get("pe_dynamic") or not rt_quote.get("fund_main_today"):
         global _PD_EXTRA_CACHE, _PD_EXTRA_CACHE_DATE
         from datetime import datetime as _dt2
@@ -544,6 +636,13 @@ def get_canonical_stock_data(code: str, force_realtime: bool = False) -> Any:
         for _fk in ("fund_main_today", "fund_main_5d",
                     "fund_super_today", "fund_large_today", "fund_mid_today", "fund_small_today"):
             if _ed.get(_fk) not in (None, 0, '', '0', '0.0'):
+                rt_quote[_fk] = _ed[_fk]
+                field_sources[_fk] = "realtime:push2delay"
+        # 财务族兜底——仅补缺失(fuyao 主源已填的键不覆盖); eps_deduct_ttm/
+        # undist_profit_ps 为 push 独有, 直接补
+        for _fk in ("ocf_ttm", "revenue_ttm", "net_profit_period", "net_profit_annual",
+                    "eps_deduct_ttm", "eps_annual", "undist_profit_ps"):
+            if not rt_quote.get(_fk) and _ed.get(_fk) not in (None, 0, '', '0', '0.0'):
                 rt_quote[_fk] = _ed[_fk]
                 field_sources[_fk] = "realtime:push2delay"
 
@@ -666,7 +765,8 @@ def get_canonical_stock_data(code: str, force_realtime: bool = False) -> Any:
     )
     field_sources["amount_wan"] = amount_src
     # V16.0: volume_hand 不再从 ZHB 兜底 — ZHB Col[24] 曾误映射为 volume(成交量)，
-    # 经核实为恒定静态数据(非成交量，已改名 unknown_24)。真实成交量只能来自实时行情。
+    # V17.0.9: Col[24] 已破解正名为 cash_reserve_wan(货币资金/万元, 静态财报字段)。
+    # 真实成交量只能来自实时行情。
     volume_hand, _ = _extract_with_source(
         "volume_hand", rt_quote.get("volume_hand"), None
     )
@@ -705,12 +805,21 @@ def get_canonical_stock_data(code: str, force_realtime: bool = False) -> Any:
     )
     # V16.3.3 (2026-08-10 字典 12.15.5): ROA 总资产收益率 — 腾讯 tx66（银行股精确：
     # 招行 1.12=年化 ROA/工行 0.67=年报 ROA 实测验证）；ZHB/push2delay 均无此字段
+    # V17.0.5 正名: 口径实为 **TTM 滚动**（fuyao total_assets_net_ratio 同族；银行 TTM≈年报故曾误标"年化"）
     roa = _safe_float(rt_quote.get('roa') or 0)
     if roa > 0 and roa < 100:
         field_sources["roa"] = "realtime:tencent"
     else:
         roa = 0.0
         field_sources["roa"] = "missing"
+    # V17.0.5: 扣非加权 ROE(TTM 滚动) — 腾讯 tx65（fuyao index_deduct_weighted_avg_roe 同族，
+    # 茅台 32.41 vs 官方 Q1 32.52；披露日跳变天然实验）——与 roa 成盈利质量对，lng 复利引擎口径升级候选
+    roe_deduct_ttm = _safe_float(rt_quote.get('roe_deduct_ttm') or 0)
+    if 0 < roe_deduct_ttm < 500:
+        field_sources["roe_deduct_ttm"] = "realtime:tencent"
+    else:
+        roe_deduct_ttm = 0.0
+        field_sources["roe_deduct_ttm"] = "missing"
     if need_realtime_quote:
         pe_dynamic = _safe_float(rt_quote.get('pe_dynamic') or zhb_dict.get('pe_dynamic'))
     else:
@@ -725,6 +834,9 @@ def get_canonical_stock_data(code: str, force_realtime: bool = False) -> Any:
         pb = _safe_float(rt_quote.get('pb') or zhb_dict.get('pb'))
     else:
         pb = _safe_float(zhb_dict.get('pb') or rt_quote.get('pb'))
+    # V17.0.5: PS(TTM)/PCF(TTM)——fuyao valuation 独有维度(rt_quote 由 L503 补取注入)
+    ps_ttm = _safe_float(rt_quote.get('ps_ttm') or 0)
+    pcf_ttm = _safe_float(rt_quote.get('pcf_ttm') or 0)
     # V16.3.3 (2026-08-10 字典 12.15.5): THS 盘中 PB 优先——仅 C 层(930-1500)调用
     # （THS 盘后返回空实测 23:16 全 query_key 空；账号限频 1.5s）
     if pb <= 0 and is_trading_hours:
@@ -775,9 +887,10 @@ def get_canonical_stock_data(code: str, force_realtime: bool = False) -> Any:
     vol_ratio = _safe_float(rt_quote.get('vol_ratio') or 0)
     field_sources["vol_ratio"] = field_sources.get("vol_ratio", "missing")
 
-    # 资金流类（V17.0 修复 2026-08-13: 腾讯 tx75 与东财 f137 方向相反实测(-4.49 vs +3.59 亿),
-    # 原"腾讯优先"错误——统一优先级: push2delay f137(今日字典实锤=f135-f136 主力买卖差) → ZHB(通达信) → 腾讯兜底
-    tx_main_yi = _safe_float(rt_quote.get('main_net_inflow_yi') or 0)
+    # 资金流类（V17.0 修复 2026-08-13: 统一优先级 push2delay f137(=f135-f136 主力买卖差) → 东财 rt_fund
+    # ⚠️ V17.0.7 (2026-08-25): 删除"腾讯 tx75 主力净流入(亿)"兜底分支——tx75 实为**近180交易日
+    # 涨跌幅%(前复权)**(K线窗口扫描定案, 字典 12.1), 旧分支会将其 ×10000 注入假主力净额
+    # (603221 134.52 → +13.45亿假流入); "方向相反"旧观察即此错位的表现
     pd_main = _safe_float(rt_quote.get('fund_main_today') or 0)  # 元(主力净=f137+f140 特大+大单, V17.0 定案)
     # V17.0: 无条件 f137 优先(日级动态字段, 盘前/盘后均取最近交易日)——与 get_main_net_buy 同源
     # ⚠️ 2026-08-14 实锤: ZHB main_net_buy_amount 实为**开盘金额(竞价额)**(19/19 恒正+占比<5%),
@@ -785,9 +898,6 @@ def get_canonical_stock_data(code: str, force_realtime: bool = False) -> Any:
     if pd_main:
         main_net_buy_wan = pd_main / 1e4  # 元 → 万元
         field_sources["main_net_buy_wan"] = "realtime:push2delay"
-    elif tx_main_yi:
-        main_net_buy_wan = tx_main_yi * 10000  # 亿 → 万元(腾讯 tx75 口径存疑, 仅兜底)
-        field_sources["main_net_buy_wan"] = "realtime:tencent"
     else:
         main_net_buy_wan = _safe_float(rt_fund.get('main_net_wan'))
         field_sources["main_net_buy_wan"] = "realtime:eastmoney"
@@ -1002,6 +1112,9 @@ def get_canonical_stock_data(code: str, force_realtime: bool = False) -> Any:
     field_sources["change_60d"] = "zhb:static" if change_60d else "missing"
     change_ytd = _safe_float(zhb_dict.get('change_ytd'))
     field_sources["change_ytd"] = "zhb:static" if change_ytd else "missing"
+    # V17.0.5: 本月至今涨跌幅(tdxstat2 Col[11] 正名 change_mtd, 基准=上月末收盘)
+    change_mtd = _safe_float(zhb_dict.get('change_mtd'))
+    field_sources["change_mtd"] = "zhb:static" if change_mtd else "missing"
     streak_days = int(zhb_dict.get('streak_days') or 0)
     field_sources["streak_days"] = "zhb:static" if streak_days else "missing"
     # V16.2: 52 周高低价主字段接入 push2 f174/f175（实时优先，ZHB T-1 兜底）
@@ -1127,7 +1240,9 @@ def get_canonical_stock_data(code: str, force_realtime: bool = False) -> Any:
     else:
         list_date = ""
 
-    source_tag = "http/tdx" if need_realtime_quote and rt_quote else "zhb"
+    # V17.0.6 修复: source_tag 只看价格字段(price)是否来自实时源——
+    # 原 `and rt_quote` 在 roa/ps_ttm 等财务字段补取后恒真, 导致盘后/熔断时误标 http/tdx
+    source_tag = "http/tdx" if need_realtime_quote and rt_quote.get("price") else "zhb"
     time_anchor_tag = "t_day" if (is_trading_hours or is_post_market) else "t-1"
 
     return CanonicalStockData(
@@ -1147,6 +1262,8 @@ def get_canonical_stock_data(code: str, force_realtime: bool = False) -> Any:
         pe_ttm=pe_ttm,
         pe_dynamic=pe_dynamic,
         pb=pb,
+        ps_ttm=ps_ttm,
+        pcf_ttm=pcf_ttm,
         dividend_yield=dividend_yield,
         turnover_pct=turnover_pct,
         main_net_buy_wan=main_net_buy_wan,
@@ -1157,6 +1274,7 @@ def get_canonical_stock_data(code: str, force_realtime: bool = False) -> Any:
         main_net_buy_wan_1d=main_net_buy_wan_1d,
         roe=roe or 0.0,
         roa=roa or 0.0,
+        roe_deduct_ttm=roe_deduct_ttm or 0.0,  # V17.0.5: 扣非加权ROE(TTM 滚动, 腾讯 tx65)
         gross_margin=gross_margin or 0.0,
         net_profit_margin=net_profit_margin or 0.0,
         net_profit=net_profit,
@@ -1173,6 +1291,7 @@ def get_canonical_stock_data(code: str, force_realtime: bool = False) -> Any:
         change_30d=change_30d,
         change_60d=change_60d,
         change_ytd=change_ytd,
+        change_mtd=change_mtd,  # V17.0.5: 本月至今涨跌幅(ZHB tdxstat2 Col[11] 正名字段)
         streak_days=streak_days,
         high_52w=high_52w,
         low_52w=low_52w,
@@ -1216,6 +1335,23 @@ def get_canonical_stock_data(code: str, force_realtime: bool = False) -> Any:
         fund_main_5d=_safe_float(rt_quote.get("fund_main_5d") or em_quote_raw.get("fund_main_5d") or 0),
         fund_small_today=_safe_float(rt_quote.get("fund_small_today") or em_quote_raw.get("fund_small_today") or 0),
         fund_5d_array=tuple(rt_quote.get("fund_5d_array") or em_quote_raw.get("fund_5d_array") or ()),
+        # V17.0.7: 财务 TTM 族(push2 f103-f190, fuyao 官方报表终判口径)——
+        # 从 rt_quote/em_quote_raw 透传(get_em_quote_full* 已解析规范键)
+        ocf_ttm=_safe_float(rt_quote.get("ocf_ttm") or em_quote_raw.get("ocf_ttm") or 0),
+        revenue_ttm=_safe_float(rt_quote.get("revenue_ttm") or em_quote_raw.get("revenue_ttm") or 0),
+        net_profit_period=_safe_float(
+            rt_quote.get("net_profit_period") or em_quote_raw.get("net_profit_period") or 0
+        ),
+        net_profit_annual=_safe_float(
+            rt_quote.get("net_profit_annual") or em_quote_raw.get("net_profit_annual") or 0
+        ),
+        eps_annual=_safe_float(rt_quote.get("eps_annual") or em_quote_raw.get("eps_annual") or 0),
+        eps_deduct_ttm=_safe_float(
+            rt_quote.get("eps_deduct_ttm") or em_quote_raw.get("eps_deduct_ttm") or 0
+        ),
+        undist_profit_ps=_safe_float(
+            rt_quote.get("undist_profit_ps") or em_quote_raw.get("undist_profit_ps") or 0
+        ),
     )
 
 
@@ -1643,6 +1779,8 @@ def get_zt_streak_info(code: str) -> Dict[str, Any]:
 
     返回 {zt_lianban(连板天数), zt_type(涨停类型 0-1盘中/2+一字), zt_seal_amount(封单额万),
           zt_seal_amount_1d/2d(昨日/前日封单额)}——tdxstat[31]/[33] + tdxstat2[4]/[6]/[8]。
+    V17.0.5 语义铁证(cross_analysis.md Part A): 封单额=limit_up_down_seal,
+    涨停为正/跌停为负; 三日滚动 col4@T≡col6@T+1≡col8@T+2(全市场 1434/1434)。
     sht 连板追踪统一入口(替代直连 get_zhb_single_stock_data 散取)。
     """
     try:

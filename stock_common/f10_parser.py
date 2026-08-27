@@ -289,21 +289,6 @@ def parse_paragraph_blocks(text: str) -> List[Dict[str, str]]:
     return results
 
 
-def extract_field(text: str, pattern: str) -> Optional[str]:
-    """从文本中提取匹配正则的第一个字段值。
-
-    Args:
-        text: 待搜索文本
-        pattern: 正则表达式（含一个捕获组）
-
-    Returns:
-        str: 匹配值，未找到返回 None
-    """
-    m = re.search(pattern, text)
-    if m:
-        return m.group(1).strip()
-    return None
-
 
 def parse_key_value_table(text: str) -> Dict[str, str]:
     """解析键值对表格（如风险提示中的违规稽查）。

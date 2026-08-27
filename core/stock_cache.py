@@ -308,6 +308,11 @@ TTL: Dict[str, int] = {
     "fuyao_snapshot":       30 * 60,    # fuyao 行情快照（30min——盘中动态）
     "fuyao_valuation":      1 * 3600,   # fuyao 估值（1h——pe/pb 随价但低频）
     "fuyao_ladder":         7 * 86400,  # fuyao 涨停梯队（trading_day 覆盖）
+    "fuyao_auction":        30 * 60,    # fuyao 集合竞价快照（30min；stage=final 终态盘后稳定）
+    # V17.0.5: 基金域/财务指标（trading_day 覆盖——报告期/定期披露数据日频足够）
+    "fuyao_fund_holdings":  7 * 86400,  # 基金重仓持仓（lng/med 批量侧证防 N×M 重复请求）
+    "fuyao_indicators":     7 * 86400,  # 五类财务指标（ROE/扣非/ROA 官方口径）
+    "fuyao_seal_map":       30 * 60,    # 涨停池封单映射（30min——盘中封单动态，sht 衰减率用）
 
     # 分红历史（公告不频繁）
     "dividend":         30 * 86400,   # 分红历史

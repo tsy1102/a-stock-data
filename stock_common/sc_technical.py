@@ -269,3 +269,214 @@ def analyze_technical(
         result["high_120d"] = max(closes)
         result["low_120d"] = min(closes)
     return result
+
+
+# ═══════════════════════════════════════════════════════════════
+# V17.0.7: 筹码分布 CYQ 算法（来源 myhhub/stock instock/core/kline/cyq.py，
+# MIT 许可；与通达信一致的经典"三角形分布 + 换手率衰减"模型）
+# ═══════════════════════════════════════════════════════════════
+
+def calculate_cyq(
+    dates: list,
+    opens: list,
+    closes: list,
+    highs: list,
+    lows: list,
+    turnovers: list,
+    current_index: int = -1,
+    accuracy_factor: int = 150,
+    crange: int = 120,
+    cyq_days: int = 210,
+) -> dict:
+    """筹码分布计算（Position Cost Distribution）。
+
+    从日K的 OHLC+换手率 推演全市场持仓成本分布。
+    经典"三角形分布 + 换手率衰减"模型，与通达信 CYQ 指标一致。
+
+    Args:
+        dates/closes/highs/lows/turnovers: K线序列(等长列表)
+        current_index: 当前K线下标(-1=最后一根)
+        accuracy_factor: 价格精度档数
+        crange: 锚点偏移量
+        cyq_days: 换手周期窗口(默认210交易日)
+
+    Returns:
+        {"benefit_pct": 获利盘比例(0~1),
+         "avg_cost": 平均成本价,
+         "cost_90_low": 90%筹码区间下界,
+         "cost_90_high": 90%筹码区间上界,
+         "concentration_90": 90%筹码集中度(0~1,越小越集中),
+         "cost_70_low": 70%筹码区间下界,
+         "cost_70_high": 70%筹码区间上界,
+         "concentration_70": 70%筹码集中度}
+    """
+    n = len(closes)
+    if n == 0:
+        return {}
+    idx = n + current_index if current_index < 0 else current_index
+    if idx < 1:
+        return {}
+
+    # 确定窗口 [start:end)
+    end = max(idx - crange + 1, 0)
+    start = max(end - cyq_days, 0)
+    if end <= start:
+        start = max(0, end - cyq_days)
+
+    # 窗口数据
+    w_open = [opens[i] for i in range(start, end)]
+    w_close = [closes[i] for i in range(start, end)]
+    w_high = [highs[i] for i in range(start, end)]
+    w_low = [lows[i] for i in range(start, end)]
+    w_turn = [min(t / 100.0, 1.0) if t > 1 else min(t, 1.0)
+              for t in (turnovers[i] for i in range(start, end))]
+    cur_close = closes[idx]
+
+    # 价格网格
+    hi = max(w_high) if w_high else 0
+    lo = min(w_low) if w_low else 0
+    if hi <= lo or lo <= 0:
+        return {}
+    acc = max(0.01, (hi - lo) / (accuracy_factor - 1))
+    yrange = [round(lo + acc * i, 2) for i in range(accuracy_factor)]
+
+    # 构建分布
+    xdata = [0.0] * accuracy_factor
+    for j in range(len(w_close)):
+        o, c = w_open[j], w_close[j]
+        h, l = w_high[j], w_low[j]
+        tr = w_turn[j]
+
+        avg = (o + c + h + l) / 4.0
+        H = int((h - lo) / acc)
+        L = int((l - lo) / acc + 0.99)
+        G = (accuracy_factor - 1) if h == l else 2.0 / (h - l)
+        P = int((avg - lo) / acc)
+
+        # 旧筹码衰减
+        for k2 in range(accuracy_factor):
+            xdata[k2] *= (1 - tr)
+
+        # 当日新筹码三角形分布叠加
+        if h == l:
+            if 0 <= P < accuracy_factor:
+                xdata[P] += G * tr / 2
+        else:
+            for k2 in range(max(0, L), min(H, accuracy_factor - 1) + 1):
+                price_k = lo + acc * k2
+                if abs(avg - l) < 1e-9 or abs(h - avg) < 1e-9:
+                    w = 1.0
+                elif price_k <= avg:
+                    denom = avg - l
+                    w = (price_k - l) / denom if denom > 0 else 0.0
+                else:
+                    denom = h - avg
+                    w = (h - price_k) / denom if denom > 0 else 0.0
+                xdata[k2] += w * G * tr
+
+    total_chips = sum(xdata)
+    if total_chips <= 0:
+        return {}
+
+    def _cost_by_chip(target_chip):
+        """从低价累计筹码到 target_chip 总量时的价格"""
+        cum = 0.0
+        for k2 in range(accuracy_factor):
+            cum += xdata[k2]
+            if cum >= target_chip:
+                return yrange[k2]
+        return yrange[-1]
+
+    def _benefit_part(price):
+        """当前价格以下的筹码占比(获利盘比例)"""
+        cum = 0.0
+        for k2 in range(accuracy_factor):
+            if yrange[k2] <= price:
+                cum += xdata[k2]
+        return cum / total_chips if total_chips > 0 else 0.0
+
+    benefit = _benefit_part(cur_close)
+    avg_cost = _cost_by_chip(total_chips * 0.5)
+
+    def _pct_range(pct):
+        lo_p = _cost_by_chip(total_chips * (1 - pct) / 2)
+        hi_p = _cost_by_chip(total_chips * (1 + pct) / 2)
+        conc = (hi_p - lo_p) / (hi_p + lo_p) if (hi_p + lo_p) > 0 else 0
+        return lo_p, hi_p, conc
+
+    c90_lo, c90_hi, c90_conc = _pct_range(0.9)
+    c70_lo, c70_hi, c70_conc = _pct_range(0.7)
+
+    return {
+        "benefit_pct": round(benefit, 4),
+        "avg_cost": round(avg_cost, 2),
+        "cost_90_low": round(c90_lo, 2),
+        "cost_90_high": round(c90_hi, 2),
+        "concentration_90": round(c90_conc, 4),
+        "cost_70_low": round(c70_lo, 2),
+        "cost_70_high": round(c70_hi, 2),
+        "concentration_70": round(c70_conc, 4),
+    }
+
+
+def get_kline_patterns(opens: list, highs: list, lows: list, closes: list) -> dict:
+    """61 种 K 线形态识别（V17.0.7，来源 myhhub/stock——纯 TA-Lib CDL 函数族委托）。
+
+    需安装 TA-Lib C 库（pip install TA-Lib）。未安装时返回 {}。
+    返回 {形态名: 最新值}，正值=买入信号 / 负值=卖出信号 / 0=无信号。
+
+    完整 61 形态清单见 docs/verify/ftshare_fields_mirror.md 同级注释或 myhhub/stock README。
+    """
+    result = {}
+    try:
+        import talib
+        import numpy as np
+
+        o = np.array(opens, dtype=np.float64)
+        h = np.array(highs, dtype=np.float64)
+        l = np.array(lows, dtype=np.float64)
+        c = np.array(closes, dtype=np.float64)
+        if len(c) < 3:
+            return {}
+
+        _cdl_map = {
+            "two_crows": "CDL2CROWS", "three_black_crows": "CDL3BLACKCROWS",
+            "three_inside_up_down": "CDL3INSIDE", "three_line_strike": "CDL3LINESTRIKE",
+            "three_outside_up_down": "CDL3OUTSIDE", "three_stars_in_the_south": "CDL3STARSINSOUTH",
+            "three_white_soldiers": "CDL3WHITESOLDIERS", "abandoned_baby": "CDLABANDONEDBABY",
+            "advance_block": "CDLADVANCEBLOCK", "belt_hold": "CDLBELTHOLD",
+            "breakaway": "CDLBREAKAWAY", "closing_marubozu": "CDLCLOSINGMARUBOZU",
+            "concealing_baby_swallow": "CDLCONCEALBABYSWALL", "counterattack": "CDLCOUNTERATTACK",
+            "dark_cloud_cover": "CDLDARKCLOUDCOVER", "doji": "CDLDOJI",
+            "doji_star": "CDLDOJISTAR", "dragonfly_doji": "CDLDRAGONFLYDOJI",
+            "engulfing_pattern": "CDLENGULFING", "evening_doji_star": "CDLEVENINGDOJISTAR",
+            "evening_star": "CDLEVENINGSTAR", "up_down_gap": "CDLGAPSIDESIDEWHITE",
+            "gravestone_doji": "CDLGRAVESTONEDOJI", "hammer": "CDLHAMMER",
+            "hanging_man": "CDLHANGINGMAN", "harami_pattern": "CDLHARAMI",
+            "harami_cross_pattern": "CDLHARAMICROSS", "high_wave_candle": "CDLHIGHWAVE",
+            "hikkake_pattern": "CDLHIKKAKE", "modified_hikkake_pattern": "CDLHIKKAKEMOD",
+            "homing_pigeon": "CDLHOMINGPIGEON", "identical_three_crows": "CDLIDENTICAL3CROWS",
+            "in_neck_pattern": "CDLINNECK", "inverted_hammer": "CDLINVERTEDHAMMER",
+            "kicking": "CDLKICKING", "kicking_bull_bear": "CDLKICKINGBYLENGTH",
+            "ladder_bottom": "CDLLADDERBOTTOM", "long_legged_doji": "CDLLONGLEGGEDDOJI",
+            "long_line_candle": "CDLLONGLINE", "marubozu": "CDLMARUBOZU",
+            "matching_low": "CDLMATCHINGLOW", "mat_hold": "CDLMATHOLD",
+            "morning_doji_star": "CDLMORNINGDOJISTAR", "morning_star": "CDLMORNINGSTAR",
+            "on_neck_pattern": "CDLONNECK", "piercing_pattern": "CDLPIERCING",
+            "rickshaw_man": "CDLRICKSHAWMAN", "rising_falling_three": "CDLRISEFALL3METHODS",
+            "separating_lines": "CDLSEPARATINGLINES", "shooting_star": "CDLSHOOTINGSTAR",
+            "short_line_candle": "CDLSHORTLINE", "spinning_top": "CDLSPINNINGTOP",
+            "stalled_pattern": "CDLSTALLEDPATTERN", "stick_sandwich": "CDLSTICKSANDWICH",
+            "takuri": "CDLTAKURI", "tasuki_gap": "CDLTASUKIGAP",
+            "thrusting_pattern": "CDLTHRUSTING", "tristar_pattern": "CDLTRISTAR",
+            "unique_3_river": "CDLUNIQUE3RIVER", "upside_gap_two_crows": "CDLUPSIDEGAP2CROWS",
+            "up_downside_gap_three": "CDLXSIDEGAP3METHODS",
+        }
+        for field_name, func_name in _cdl_map.items():
+            fn = getattr(talib, func_name, None)
+            if fn is not None:
+                vals = fn(o, h, l, c)
+                result[field_name] = int(vals[-1]) if len(vals) else 0
+    except ImportError:
+        pass
+    return result

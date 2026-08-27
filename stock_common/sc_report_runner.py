@@ -108,7 +108,8 @@ class BaseReportRunner:
                                gen_kwargs: Optional[dict] = None,
                                prefetch_fn: Optional[callable] = None,
                                snapshot_data: Any = None,
-                               pre_gd_init: bool = False) -> dict:
+                               pre_gd_init: bool = False,
+                               prefetch_async_fn: Optional[callable] = None) -> dict:
         """V17.0 R4: 批量流水线骨架(med/lng/sht 原 execute_pipeline 90 行×3 收敛)。
 
         Args:
@@ -119,6 +120,9 @@ class BaseReportRunner:
             snapshot_data: 可选——非空时保存评分快照(save_snapshot)
             pre_gd_init: 可选——生成前早 init GD 并逐只上传(防超时全丢, sht V16.4.1 修复);
                          早 init 失败自动回退 upload_reports 批量上传(_gd_per_stock=False)
+            prefetch_async_fn: 可选异步钩子(async (session, codes)->int, V17.0.7)——
+                         session 建立后调度后台预取流水线(sht datacenter 五类),
+                         与 worker 并行推进; 失败不阻塞批量
         返回: {"results": [{code,status,error,path}...], "time_str": ts, "report_type": report_type}
         """
         ts = self.report_ts
@@ -159,6 +163,14 @@ class BaseReportRunner:
 
             _session = await create_async_session()
             try:
+                # V17.0.7: 后台预取流水线钩子——session 建立后调度, 与 3 条 worker
+                # 并行推进(域令牌桶自然限速); 失败仅记日志不阻塞批量
+                if prefetch_async_fn:
+                    try:
+                        _n = await prefetch_async_fn(_session, codes)
+                        print(f"  📡 datacenter 预取流水线: {_n} 项入队(后台执行)", flush=True)
+                    except Exception as _e:
+                        _debug_log(f"{self.script_name} prefetch_async_fn: {_e}")
                 sem = asyncio.Semaphore(3)
 
                 async def _limited(code):

@@ -261,6 +261,12 @@ async def generate_report_async(session, code, output_path, ind_comp=None, hsgt=
         L(
             f"  [阶段涨幅] 近5日: {cdata.change_5d:+.2f}% | 近10日: {cdata.change_10d:+.2f}% | 近20日: {cdata.change_20d:+.2f}% | 近60日: {cdata.change_60d:+.2f}%"
         )
+    # V17.0.5 P0: 本月至今涨跌幅(tdxstat2 Col[11] change_mtd, 基准=上月末收盘)——
+    # med 持有期 1-3 月的动量锚点, 与 20/60 日正交
+    if getattr(cdata, "change_mtd", 0):
+        _mtd = cdata.change_mtd
+        _mtd_tag = "月内强势" if _mtd >= 10 else ("月内偏强" if _mtd >= 3 else ("月内走弱" if _mtd <= -10 else "月内平缓"))
+        L(f"  [本月至今] {_mtd:+.2f}%（{_mtd_tag}）——持有期动量参考")
 
     # 52周区间与 IPO 破发度分析 (cdata 统一提供)
     if cdata.high_52w > 0 and cdata.low_52w > 0 and cdata.price > 0:
@@ -345,13 +351,51 @@ async def generate_report_async(session, code, output_path, ind_comp=None, hsgt=
     _pe_s = f"{cdata.pe_dynamic:.2f}x" if cdata.pe_dynamic > 0 else "N/A（亏损）"
     _pe_ttm_str = f"{cdata.pe_ttm:.2f}" if cdata.pe_ttm > 0 else "N/A"
     _div_str = f"  股息率: {cdata.dividend_yield:.2f}%" if cdata.dividend_yield > 0 else ""
-    L(f"  动态市盈率 PE(TTM): {_pe_ttm_str}x | 静态PE: {_pe_s} | 市净率 PB: {cdata.pb:.2f}")
+    # V17.0.8: 标签修正——原"静态PE"实为 pe_dynamic(动态PE, f162), 与 LNG 对齐统一口径
+    L(f"  动态市盈率 PE(TTM): {_pe_ttm_str}x | 动态PE: {_pe_s} | 市净率 PB: {cdata.pb:.2f}")
     if _div_str:
         L(_div_str)
 
     # ─── 2. 财务业绩兑现追踪 ───
     L("\n## 【三、历史财务业绩兑现追踪 (近5季度)】")
     L("---")
+
+    # V17.0.5 P1: 财务兑现双源核验(fuyao 五类指标 growth 族——营收/净利同比官方口径)
+    try:
+        from stock_common import get_fuyao_fin_indicators as _f_fi, is_fuyao_enabled as _f_en
+
+        if _f_en():
+            _yy = date.today().year
+            _fi = None
+            _used_rp = ""
+            for _rp in (f"{_yy}-1", f"{_yy - 1}-4"):
+                _fi = await asyncio.to_thread(_f_fi, code, _rp)
+                if _fi:
+                    _used_rp = _rp
+                    break
+            if _fi:
+                _gw = _fi.get("growth") or {}
+                _pairs = [
+                    ("营业收入同比", "calculate_operating_income_yoy_growth_ratio",
+                     "operating_income_yoy_growth_ratio"),
+                    ("净利润同比", "calculate_parent_holder_net_profit_yoy_growth_ratio",
+                     "net_profit_yoy_growth_ratio"),
+                    ("营业利润同比", "calculate_operating_profit_yoy_growth_ratio",
+                     "operating_profit_yoy_growth_ratio"),
+                ]
+                _rows = []
+                for _label, _id1, _id2 in _pairs:
+                    _v = _gw.get(_id1, _gw.get(_id2))
+                    if _v is not None:
+                        _rows.append((_label, float(_v)))
+                if _rows:
+                    L(f"\n  [双源核验] fuyao 官方口径(报告期 {_used_rp}, 同花顺 Arsenal):")
+                    for _label, _v in _rows:
+                        L(f"    {_label}: {_v:+.2f}%")
+                    L("    （与上表 F10 口径互为独立源——偏差>2pp 时以财报原文为准）")
+    except Exception as _e:
+        _debug_log(f"med fuyao growth cross: {_e}")
+
     financials = await get_sina_financial_report_async(session, code)
     if financials:
         L(f"  {'报告期':<12} {'营业总收入':>11} {'净利润':>13} {'净利率':>8}")
@@ -384,6 +428,28 @@ async def generate_report_async(session, code, output_path, ind_comp=None, hsgt=
             )
         else:
             L("  (新浪财报数据获取失败或该股暂无相关数据)")
+
+    # V17.0.7: push2 财务族对照——f105 归母净利(最新报告期)双源核验 + f190 每股未分配
+    # (随 push2delay 补取入 canonical, 零额外请求; 口径经 fuyao 官方报表终判)
+    try:
+        _np_period_v7 = float(getattr(cdata, "net_profit_period", 0) or 0)
+        _upp_v7 = float(getattr(cdata, "undist_profit_ps", 0) or 0)
+        if _np_period_v7:
+            L("\n  [归母净利润双源核验] (push2delay f105, 最新报告期):")
+            _line_v7 = f"    push2 口径: {_np_period_v7/1e8:.2f} 亿元"
+            if financials:
+                _sina_np_v7 = _safe_float(financials[0].get("净利润", "0"))
+                if _sina_np_v7:
+                    _dev_v7 = abs(_np_period_v7 - _sina_np_v7) / abs(_sina_np_v7) * 100
+                    _tag_v7 = "✅ 双源一致" if _dev_v7 <= 2 else "⚠️ 偏差较大(少数股东损益或口径差异, 以财报原文为准)"
+                    _line_v7 += f" | 新浪财报: {_sina_np_v7/1e8:.2f} 亿元 → 偏差 {_dev_v7:.1f}% {_tag_v7}"
+            L(_line_v7)
+        if _upp_v7:
+            _upp_tag_v7 = ("🚨 为负(弥补亏损期)" if _upp_v7 < 0
+                           else ("✅ 分红池厚" if _upp_v7 >= 5 else "ℹ️ 分红池偏薄"))
+            L(f"  [每股未分配利润] {_upp_v7:.2f} 元（分红能力池子, push2 f190≡ulist f48）{_upp_tag_v7}")
+    except Exception as _e:
+        _debug_log(f"med push2 fin family cross: {_e}")
 
     # ─── 4. 资产负债表财务健康度 ───
     L("\n## 【四、资产负债表财务健康度（排雷）】")
@@ -670,10 +736,10 @@ async def generate_report_async(session, code, output_path, ind_comp=None, hsgt=
                 except (TypeError, ValueError):
                     pass
         L(f"  统计样本：近 {len(reports)} 篇研报")
-        L(f"  ➤ **买入**评级: {buy_count} 篇 | **增持**评级: {add_count} 篇")
+        L(f"  买入评级: {buy_count} 篇 | 增持评级: {add_count} 篇")
         # V16.1: 评级风向（评级上调/下调）
         if rating_up or rating_down:
-            L(f"  ➤ 评级变化: 上调 {rating_up} 篇 | 下调 {rating_down} 篇"
+            L(f"  评级变化: 上调 {rating_up} 篇 | 下调 {rating_down} 篇"
               + (" → 机构态度偏积极" if rating_up > rating_down else " → 机构态度偏谨慎" if rating_down > rating_up else ""))
         L("\n  最新 5 篇核心研报观点:")
         for r in reports[:5]:
@@ -736,9 +802,9 @@ async def generate_report_async(session, code, output_path, ind_comp=None, hsgt=
     if lockup:
         total_upcoming = sum(h["shares"] for h in lockup)
         L("\n  ➤ 解禁抛压预警 (未来180天):")
-        L(f"    ⚠️ 待解禁总计: {total_upcoming/1e4:.0f}万股")
+        L(f"    ⚠️ 待解禁总计: {total_upcoming/1e4:.1f}万股")
         for h in lockup:
-            L(f"    - {h['date']}: {h['type']} ({h['shares']/1e4:.0f}万股, 占 {h['ratio']:.2f}%)")
+            L(f"    - {h['date']}: {h['type']} ({h['shares']/1e4:.1f}万股, 占 {h['ratio']:.2f}%)")
     else:
         L("\n  ➤ 解禁抛压预警: 未来半年内无解禁压力 ✅")
 
@@ -911,11 +977,11 @@ async def generate_report_async(session, code, output_path, ind_comp=None, hsgt=
     dtb = await get_dragon_tiger_board_async(session, code, days=180)
     if dtb and dtb.get("records"):
         L(f"  近180日上榜 {len(dtb['records'])} 次:")
-        L(f"  {'日期':<12} {'上榜原因':<50} {'净买入(万)':>9} {'换手率':>6}")
-        L(f"  {'-'*85}")
+        # V17.0.6: 直出 md 表格(同 sht)
+        L("| 日期 | 上榜原因 | 净买入(万) | 换手率 |")
+        L("|---|---|---|---|")
         for r in dtb["records"]:
-            reason = r.get("reason", "")[:48]
-            L(f"  {r['date']:<12} {reason:<50} {r['net_buy']:>12.1f} {r['turnover']:>7.2f}%")
+            L(f"| {r['date']} | {r.get('reason', '')} | {r['net_buy']:.1f} | {r['turnover']:.2f}% |")
 
         seats = dtb["seats"]
         if seats["buy"]:
@@ -998,6 +1064,31 @@ async def generate_report_async(session, code, output_path, ind_comp=None, hsgt=
             L(f"  🔍 个人大股东合计持股 {latest['individual']:.1f}%，利益深度绑定")
     else:
         L("  十大流通股东数据获取失败。")
+
+    # ─── V17.0.5: 基金持仓侧证(自选基金清单门控——credentials/fund_watch.json, 缺失零请求) ───
+    try:
+        from stock_common.sc_fuyao import get_fund_watch_evidence
+
+        _fw = await asyncio.to_thread(get_fund_watch_evidence, code)
+    except Exception:
+        _fw = None
+    if _fw and _fw.get("checked"):
+        L("\n## 【十六之二、自选基金重仓侧证 (fuyao)】")
+        L("---")
+        if _fw["held"]:
+            for _f in _fw["held"]:
+                _line = f"  {_f['alias']}: 持仓占比 {_f['hold_ratio']:.2f}%"
+                if _f.get("investment_rank"):
+                    _line += f" / 第{_f['investment_rank']}大重仓"
+                _inc = _f.get("period_increase_rate_pct")
+                if _inc is not None:
+                    _line += f" / 报告期增减 {_inc:+.2f}%"
+                L(_line)
+            _f0 = _fw["held"][0]
+            L(f"  （基金股票仓位 {(_f0.get('fund_stock_pct') or 0):.1f}%，前十集中度 {(_f0.get('concentration_ratio') or 0):.1f}%）")
+        else:
+            L("  所列自选基金最新报告期均未重仓本股")
+        L("  （定期披露非实时；清单见 credentials/fund_watch.example.json）")
 
     L("\n" + "=" * 72)
     _bt_items = []
@@ -1156,11 +1247,11 @@ async def generate_report_async(session, code, output_path, ind_comp=None, hsgt=
     try:
         _consensus = multi_scores['consensus'].total_score
         if _consensus >= 60:
-            _rating = "**中性偏乐观**整体表现良好，建议持续跟踪后分批配置"
+            _rating = "**中性偏乐观** 整体表现良好，建议持续跟踪后分批配置"
         elif _consensus >= 40:
-            _rating = "**中性观望**各项指标均衡，等待更明确信号后再决策"
+            _rating = "**中性观望** 各项指标均衡，等待更明确信号后再决策"
         else:
-            _rating = "**中性偏谨慎**多项评分偏低，需注意风险控制"
+            _rating = "**中性偏谨慎** 多项评分偏低，需注意风险控制"
         L(f"  综合投资建议: {_rating}")
     except Exception as _e:
         _debug_log(f"med multi_school_score error: {_e}")

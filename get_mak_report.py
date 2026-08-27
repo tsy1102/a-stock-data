@@ -381,66 +381,15 @@ def get_index_returns():
         )
 
     def _get_kline(ic):
-        """V7: 指数K线 → TDX → 百度PAE → 腾讯（兜底）"""
+        """V17.0.7: 指数K线四源链下沉统一层 sc_datasource.get_index_kline_closes
+        (TDX → 腾讯 ifzq → 新浪日K → 腾讯实时2值)——原 mak 本地实现整体迁移,
+        行为等价; 其他脚本可复用同一实现。"""
         try:
-            keys, rows = tdx_get_index_bars(ic, count=250)
-            if keys and rows:
-                ci = next((i for i, k in enumerate(keys) if k in ("close", "close_price")), -1)
-                if ci >= 0:
-                    closes = [_safe_float(r[ci]) for r in rows if len(r) > ci]
-                    if closes:
-                        return closes
+            from stock_common.sc_datasource import get_index_kline_closes
+
+            return get_index_kline_closes(ic, days=250)
         except Exception as _e:
-            _debug_log(f"mak index_kline tdx error {ic}: {_e}")
-        # 腾讯日K序列兜底（V16.3 O19: 原实时 2 值 → ret_3d/10d/20d/60d 静默 None——
-        # 改用 ifzq.gtimg.cn 前复权日K，完整序列）
-        try:
-            r = _quick_request(
-                f"https://ifzq.gtimg.cn/appstock/app/fqkline/get?param={ic},day,,,250,qfq",
-                timeout=10,
-            )
-            if r:
-                d = (r.json().get("data") or {}).get(ic, {})
-                kline = d.get("qfqday") or d.get("day") or []
-                closes = [_safe_float(row[2]) for row in kline if len(row) > 2 and row[2]]
-                if closes:
-                    return closes
-        except Exception as _e:
-            _debug_log(f"mak index_kline tencent kline error {ic}: {_e}")
-        # V17.0.4(2026-08-19): 新浪日K兜底——TDX+腾讯日K 双源失败时(8/18 实测只剩实时2值),
-        # ret_3d/10d/20d 全 None → check_stock 严重/卡异动判定静默失效 → "严重0只" 假象。
-        # 新浪收盘与腾讯 ifzq 实测一致(<0.01 差), 前复权口径相同, 可作等价兜底
-        try:
-            r = _quick_request(
-                "https://quotes.sina.cn/cn/api/jsonp_v2.php/var/CN_MarketDataService.getKLineData",
-                params={"symbol": ic, "scale": 240, "ma": "no", "datalen": 250},
-                headers={"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)", "Referer": "https://finance.sina.com.cn/"},
-                timeout=10,
-            )
-            if r:
-                _txt = r.text
-                _m = re.search(r"\((.*)\)", _txt, re.S)
-                if _m:
-                    _arr = _m.group(1)
-                    if _arr.startswith("["):
-                        _rows = json.loads(_arr)
-                        closes = [_safe_float(x.get("close")) for x in _rows if x.get("close")]
-                        closes = [c for c in closes if c > 0]
-                        if closes:
-                            return closes
-        except Exception as _e:
-            _debug_log(f"mak index_kline sina error {ic}: {_e}")
-        # 最后兜底：实时 2 值（仅 1 日回报——指标静默 None 有提示）
-        try:
-            r = _quick_request(f"https://qt.gtimg.cn/q={ic}", timeout=10)
-            if r:
-                r.encoding = "gbk"
-                v = r.text.split('"')[1].split("~")
-                close = _safe_float(v[3])
-                pre_close = _safe_float(v[4])
-                return [pre_close, close] if close > 0 else []
-        except Exception as _e:
-            _debug_log(f"mak index_kline error: {_e}")
+            _debug_log(f"mak index_kline unified error {ic}: {_e}")
             return []
 
     result = {}
@@ -1036,7 +985,9 @@ def analyze_top_stocks(top_sectors):
                 )
                 _mc = _safe_float(_st.get("mcap_yi", 0))
                 _to = _safe_float(_st.get("turnover", 0))
-                _nm = get_stock_name_from_zhb(_c) or _tq_names.get(_c, "") or _c
+                # V17.0.8: 名称优先级——腾讯实时名优先(T 日), ZHB/TDX 名含历史旧名
+                # (霞客环保→协鑫能科/哈高科→湘财股份/二纺机→市北高新) 仅兜底
+                _nm = _tq_names.get(_c, "") or get_stock_name_from_zhb(_c) or _c
                 stocks.append(
                     {
                         "code": _c,
@@ -1104,6 +1055,12 @@ def analyze_top_stocks(top_sectors):
                 "limit_up_stocks": [
                     {"code": st["code"], "name": st["name"], "change_pct": st.get("change_pct", 0)}
                     for st in _leaders
+                ],
+                # V17.0.8: 涨停全量名单（E 段"涨停家数 → 名单"须与 count 严格一致，
+                # 原用 _leaders(含 over7/over5 替补) 导致声称3只实际只1只涨停的误导）
+                "limit_up_all": [
+                    {"code": st["code"], "name": st["name"], "change_pct": st.get("change_pct", 0)}
+                    for st in limit_up
                 ],
                 "top5_stocks": [
                     {"code": st["code"], "name": st["name"], "change_pct": st.get("change_pct", 0)}
@@ -1222,6 +1179,23 @@ async def generate_sector_report(output_path):
     L(f"\n{'='*90}")
     L("## 【A. 全市场情绪监测看板】")
     L(f"{'---'}")
+    # V17.0.7: FTShare 开盘红涨跌分布(10档——字典 §12.10.10 独有维度)
+    try:
+        from stock_common.sc_ftshare import _ft_call
+        _kph = await asyncio.to_thread(_ft_call, 'market_emotion_kph')
+        if _kph and isinstance(_kph, dict):
+            _rd = _kph.get('rise_dist') or {}
+            _fd = _kph.get('fall_dist') or {}
+            if _rd:
+                _up_line = ' '.join(f'{k}档:{v}' for k, v in sorted(_rd.items(), key=lambda x: int(x[0])) if int(v) > 0)
+                if _up_line:
+                    L(f"  上涨分布: {_up_line}")
+            if _fd:
+                _dn_line = ' '.join(f'{k}档:{v}' for k, v in sorted(_fd.items(), key=lambda x: -int(x[0])) if int(v) > 0)
+                if _dn_line:
+                    L(f"  下跌分布: {_dn_line}")
+    except Exception as _e:
+        _debug_log(f"mak ftshare kph distribution: {_e}")
     # V17.0(2026-08-15): 北向宏观资金 + 两融杠杆情绪(A 段增强, P4)
     try:
         from stock_common.sc_datasource import get_hsgt_macro_flow
@@ -1248,8 +1222,31 @@ async def generate_sector_report(output_path):
     L(f"  🌡️ 短线情绪: 涨停{_zt_count} | 跌停{_dt_count} | 异动触发{total_abnormal}只"
       f"（涨停按涨跌幅口径,与 B 段涨停池口径不同）")
     L(
-        f"  📊 市场广度: 上涨{_up_cnt}/下跌{_down_cnt} | 涨跌比{_ud_ratio:.2f} | {'偏多' if _ud_ratio>1.5 else '偏空' if _ud_ratio<0.7 else '均衡'}"
+        f"  📊 市场广度: 上涨{_up_cnt}/下跌{_down_cnt} | 涨跌比{_ud_ratio:.2f} | {'偏多' if _ud_ratio>1.5 else '偏空' if _ud_ratio<0.67 else '均衡'}"
     )
+
+    # V17.0.5 P0: fuyao 竞价情绪聚合(短线风向标 benchmark——9:25 盘前即得, 时效领先叙事型情绪源)
+    try:
+        from stock_common import get_fuyao_auction_benchmark, is_fuyao_enabled
+
+        if is_fuyao_enabled():
+            _bench = await asyncio.to_thread(get_fuyao_auction_benchmark)
+            if _bench:
+                _n = len(_bench)
+                _high_open = sum(1 for b in _bench if any("高开" in str(t) for t in (b.get("tags") or [])))
+                _vol_up = sum(1 for b in _bench if any("放量" in str(t) for t in (b.get("tags") or [])))
+                _pos_a = sum(1 for b in _bench if (b.get("auction_pct") or 0) > 0)
+                if _n:
+                    L(
+                        f"  ⚡ 竞价风向标(fuyao, 样本{_n}): 高开标签 {_high_open} 只({_high_open/_n*100:.0f}%)"
+                        f" | 放量 {_vol_up} 只({_vol_up/_n*100:.0f}%) | 竞价红盘 {_pos_a} 只({_pos_a/_n*100:.0f}%)"
+                    )
+                    if _high_open / _n > 0.5 and _vol_up / _n > 0.3:
+                        L("    🔥 竞价高开+放量共振，开盘进攻氛围浓厚")
+                    elif _pos_a / _n < 0.3:
+                        L("    ⚠️ 竞价红盘占比不足三成，开盘防御为上")
+    except Exception as _e:
+        _debug_log(f"mak fuyao auction benchmark: {_e}")
 
     # V16.1.7: 财联社市场情绪增强（字典 §12.10.2 实测可用——热度/封板率/炸板/高开率/获利率/连板梯队）
     # V16.3 O37: KPL 情绪互校（字典 §12.15.2——财联社 → 开盘红 → KPL 三源兜底，8/7 交叉验证：涨停 74 三家一致）
@@ -1459,9 +1456,39 @@ async def generate_sector_report(output_path):
         # V17.0.4(2026-08-19 实测): 东财跌停池 getTopicDTPool 明细接口 tc>0 但 pool=[] 空;
         # get_limit_pool_summary ZHB 兜底用的是**当前快照**(T-1, 如 8/18)→ 8/19 报告显示 8/18 跌停数(10),
         # 与 A 段涨跌幅口径(8/19=152)严重不一致。统一: B 段跌停数无条件用 A 段 _dt_count(8/19 涨跌幅口径)
-        dt_count = _dt_count
-        if dt_count == 0 and pool.get("limit_down_count", 0) > 0:
-            dt_count = pool.get("limit_down_count", 0)
+        # V17.0.8(2026-08-26 报告核查): P0 修复后 pool.limit_down_count 已走权威链
+        # (push2ex tc → KPL RiseFallAnalysis dt → ZHB 仅同日期), 恢复 pool 优先——
+        # A 段 _dt_count(涨跌幅口径, 实时池) 仅作兜底
+        dt_count = pool.get("limit_down_count", 0)
+        if dt_count == 0 and _dt_count > 0:
+            dt_count = _dt_count
+
+        # V17.0.5 P1: fuyao 跌停池明细(first/last_limit_time——东财 getTopicDTPool 空缺的正式解法)
+        try:
+            from stock_common import get_fuyao_limit_pool as _f_lp, is_fuyao_enabled as _f_on
+
+            if _f_on():
+                import datetime as _dt_mod
+
+                _d = _dt_mod.date.today()
+                while _d.weekday() >= 5:
+                    _d -= _dt_mod.timedelta(days=1)
+                _dms = int(_dt_mod.datetime.combine(_d, _dt_mod.time()).timestamp() * 1000)
+                _dlp = await asyncio.to_thread(_f_lp, "down", 1, 100, _dms)
+                _dl_items = (_dlp or {}).get("item") or []
+                if _dl_items:
+                    L("\n  跌停明细（fuyao 官方）:")
+                    L("| 代码 | 名称 | 跌幅 | 首次跌停 | 最后跌停 | 换手 |")
+                    L("|---|---|---|---|---|---|")
+                    for _it in _dl_items[:20]:
+                        L(
+                            f"| {_it.get('ticker','')} | {_it.get('name','')}"
+                            f"{_name_mark(_it.get('name',''))} | {_it.get('price_change_ratio_pct',0):.2f}%"
+                            f" | {_it.get('first_limit_time','-')} | {_it.get('last_limit_time','-')}"
+                            f" | {_it.get('turnover_ratio_pct',0):.2f}% |"
+                        )
+        except Exception as _e:
+            _debug_log(f"mak fuyao limit_down detail: {_e}")
         success_rate = pool.get("success_rate", 0)
         L(
             f"  涨停 {zt_count} 只 | 炸板 {zb_count} 只 | 跌停 {dt_count} 只 | 封板率 {success_rate:.0f}%"
@@ -1481,6 +1508,9 @@ async def generate_sector_report(output_path):
             L("\n  涨停明细（按封板时间排序）:")
             L("| 代码 | 名称 | 涨跌幅 | 连板 | 封板时间 | 封板资金(亿) | 板块 |")
             L("|---|---|---|---|---|---|---|")
+            if len(zt_list) > 30:
+                # V17.0.8: 明细截断注明(原 43 只只显 30 行, 读者误以为总数=表行数)
+                L(f"  > 共 {len(zt_list)} 只, 下表显示前 30 只（完整名单见涨停池源）")
             for item in zt_list[:30]:
                 fund_yi = item.get('limit_fund', 0) / 1e8 if item.get('limit_fund', 0) else 0
                 # H2(审查 2026-08-16): ths 优先源输出 first_time(已格式化 HH:MM:SS),
@@ -1539,8 +1569,30 @@ async def generate_sector_report(output_path):
                 L(f"| {str(s.get('code',''))} | {str(s.get('name',''))} | {s.get('limit_count',0)} | {_one} | {_pop} | {s.get('plate_limit_up_count',0)} | {_amt:.2f} |")
         else:
             L("  (涨停天梯数据获取失败)")
+
     except Exception as _e:
         _debug_log(f"mak ladder: {_e}")
+
+    # V17.0.5 P1: fuyao 连板天梯互校(boards 六档矩阵+seal_nextday 次日封板率——独有字段)
+    try:
+        from stock_common import get_fuyao_limit_up_ladder as _f_ladder
+
+        _lad = await asyncio.to_thread(_f_ladder)
+        _lad_items = ((_lad or {}).get("item") or [])
+        if _lad_items and isinstance(_lad_items, list):
+            _latest = _lad_items[0] if isinstance(_lad_items[0], dict) else {}
+            _boards = _latest.get("boards") or {}
+            _summary = []
+            for _bk in ("two_board", "three_board", "four_board", "five_board", "six_board", "seven_over"):
+                _lst = _boards.get(_bk) or []
+                if _lst:
+                    _sealed_next = sum(1 for x in _lst if x.get("seal_nextday"))
+                    _summary.append(f"{_bk.replace('_board','')}板{len(_lst)}只(次日续封{_sealed_next})")
+            if _summary:
+                L("\n  🪜 fuyao 连板矩阵互校（30 日窗口最新日）:")
+                L("    " + " | ".join(_summary))
+    except Exception as _e:
+        _debug_log(f"mak fuyao ladder: {_e}")
 
     L(f"\n{'='*90}")
     # V16.4.0: 同花顺独家交叉验证（原 G 段移入——涨停明细末尾备注）
@@ -1741,7 +1793,8 @@ async def generate_sector_report(output_path):
 
         L(f"     ├─ 成分股总数: {ta.get('total_stocks',0)} 只")
         if ta['limit_up_count'] > 0:
-            _zt_names = ' '.join(st['name'] + st['code'] for st in ta['limit_up_stocks'])
+            # V17.0.8: 涨停名单用真实涨停全量(limit_up_all)而非梯队(_leaders 含替补)
+            _zt_names = ' '.join(st['name'] + st['code'] for st in ta.get('limit_up_all', []))
             L(f"     ├─ 涨停家数: {ta['limit_up_count']} 只 → {_zt_names}")
         else:
             L("     ├─ 涨停家数: 0 只")

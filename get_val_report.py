@@ -1777,6 +1777,75 @@ def strategy_23_earnings_expect(stocks):
             _debug_log(f"val strategy23 eps expect {code}: {_e}")
             continue
     return _top10_sorted(result, lambda x: x["score"])
+def strategy_24_mtd_momentum(stocks):
+    """V17.0.5: 月内动量策略（纯 ZHB 数据，零网络——tdxstat2 Col[11] change_mtd）。
+
+    口径: 本月至今累积涨跌幅(基准=上月末最后交易日收盘)。
+    入选: 5% <= MTD <= 25%（强势但未透支; >25% 多为连板末端接力风险）;
+    排除停牌(MTD 缺失)。与策略20/21(量能/竞价动量)正交: 月内趋势维度。
+    """
+    result = []
+    for s in stocks:
+        code = s.get("code", "")
+        mtd = _safe_float(s.get("change_mtd"), 0)
+        if mtd == 0 or not (5.0 <= mtd <= 25.0):
+            continue
+        score = mtd
+        reason = (
+            f"本月至今 +{mtd:.2f}%(基准=上月末收盘)——月内趋势强劲且未过度拉伸,"
+            f"持有期动量延续候选"
+        )
+        result.append({"code": code, "name": s.get("name", ""), "reason": reason, "score": score})
+    return _top10_sorted(result, lambda x: x["score"])
+def strategy_25_ps_undervalued(stocks, top_n=500):
+    """V17.0.5 P2: PS 低估值策略（fuyao 估值快照批量——市值 top_n 预筛控配额）。
+
+    逻辑: 全样本 PS(TTM) 20 分位以下 且 PCF>0(经营现金流为正)。
+    适用: 高毛利未盈利/轻资产类 PE 失效标的的替代估值锚。
+    无 Key/限流时静默返回空(不阻塞其余策略)。
+    """
+    from stock_common import get_fuyao_valuation, is_fuyao_enabled
+
+    if not is_fuyao_enabled():
+        return []
+    pool = sorted(stocks, key=lambda x: _safe_float(x.get("mcap_yi", 0)), reverse=True)[:top_n]
+    vals = {}
+    for i in range(0, len(pool), 100):
+        batch = [s["code"] for s in pool[i: i + 100]]
+        try:
+            for r in get_fuyao_valuation(batch):
+                vals[str(r.get("ticker"))] = r
+        except Exception as _e:
+            _debug_log(f"val strategy25 valuation batch {i}: {_e}")
+    if not vals:
+        return []
+    _ps_sorted = sorted(
+        float(v["ps_ttm"]) for v in vals.values()
+        if v.get("ps_ttm") is not None and float(v["ps_ttm"]) > 0
+    )
+    if not _ps_sorted:
+        return []
+    _q20 = _ps_sorted[int(len(_ps_sorted) * 0.2)]
+    result = []
+    for s in pool:
+        r = vals.get(s.get("code", ""))
+        if not r:
+            continue
+        ps = r.get("ps_ttm")
+        pcf = r.get("pcf_ttm")
+        if ps is None or ps <= 0 or ps > _q20:
+            continue
+        if pcf is None or pcf <= 0:
+            continue
+        score = (_q20 / ps) * 10
+        reason = (
+            f"PS(TTM) {ps:.2f}x ≤ 全市场20分位({_q20:.2f}x)且经营现金流为正"
+            f"(PCF {pcf:.1f}x)——收入端低估候选"
+        )
+        result.append({"code": s["code"], "name": s.get("name", ""), "reason": reason, "score": score})
+    return _top10_sorted(result, lambda x: x["score"])
+
+
 
 
 def _safe_int(v) -> int:
@@ -2125,12 +2194,14 @@ async def run_discovery_async(output_path):
         ("策略21【资金动量】", strategy_21_capital_momentum, (all_stocks,)),  # V11.5: 纯ZHB数据
         ("策略22【业绩预增】", strategy_22_yjyg, (all_stocks,)),  # V17.0: 东财业绩预告(datacenter 单股查询)
         ("策略23【盈利预期】", strategy_23_earnings_expect, (all_stocks,)),  # V17.0: 本机 ProfitForecast+股东户数
+        ("策略24【月内动量】", strategy_24_mtd_momentum, (all_stocks,)),  # V17.0.5: change_mtd(ZHB Col[11], 零网络)
+        ("策略25【PS低估值】", strategy_25_ps_undervalued, (all_stocks,)),  # V17.0.5 P2: fuyao PS·PCF(市值top500)
     ]
 
     try:
-        print("  ▶ 23 策略并行扫描（asyncio 模式，并发 3）…", flush=True)
+        print("  ▶ 25 策略并行扫描（asyncio 模式，并发 3）…", flush=True)
     except UnicodeEncodeError:
-        print("  >> 23 策略并行扫描（asyncio 模式，并发 3）…", flush=True)
+        print("  >> 25 策略并行扫描（asyncio 模式，并发 3）…", flush=True)
     _scan_t0 = time.time()
 
     _names = [item[0] for item in _strategy_defs]
@@ -2205,7 +2276,7 @@ async def run_discovery_async(output_path):
     L("---")
 
     # V16.3 J: _sfmt 同步注册表——补 21/22、删已移除的 14、修正 15（流动性王）
-    _sfmt = {"策略01":"01 龙回头", "策略02":"02 周线多头", "策略03":"03 量价齐升", "策略04":"04 核心打折", "策略05":"05 W底形态", "策略06":"06 红三兵", "策略07":"07 金叉共振", "策略08":"08 政策驱动", "策略09":"09 日历效应", "策略10":"10 逆向白马", "策略11":"11 筹码集中", "策略12":"12 量价信号", "策略13":"13 高股息", "策略14":"14 流动性王", "策略15":"15 政策热度", "策略16":"16 北向Top", "策略17":"17 龙虎榜", "策略18":"18 52周低位", "策略19":"19 主力资金", "策略20":"20 量能三连击", "策略21":"21 资金动量", "策略22":"22 业绩预增", "策略23":"23 盈利预期"}
+    _sfmt = {"策略01":"01 龙回头", "策略02":"02 周线多头", "策略03":"03 量价齐升", "策略04":"04 核心打折", "策略05":"05 W底形态", "策略06":"06 红三兵", "策略07":"07 金叉共振", "策略08":"08 政策驱动", "策略09":"09 日历效应", "策略10":"10 逆向白马", "策略11":"11 筹码集中", "策略12":"12 量价信号", "策略13":"13 高股息", "策略14":"14 流动性王", "策略15":"15 政策热度", "策略16":"16 北向Top", "策略17":"17 龙虎榜", "策略18":"18 52周低位", "策略19":"19 主力资金", "策略20":"20 量能三连击", "策略21":"21 资金动量", "策略22":"22 业绩预增", "策略23":"23 盈利预期", "策略24":"24 月内动量", "策略25":"25 PS低估值"}
 
     for _st_name in _names_full:
         items = all_selections.get(_st_name, [])

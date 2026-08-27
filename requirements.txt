@@ -50,6 +50,16 @@ httplib2==0.22.0      # ← 固定 0.22.0：0.30.2 的 socks 模块损坏导致 
 # ── A股日历与交易日判断（V8 新增）──────────────────────────────
 chinese-calendar>=1.11
 
+# ── V17.0.7 新增源（无 pip 依赖——HTTP 直调/纯 Python 算法）────────
+# FTShare MCP: market.ft.tech JSON-RPC 网关（sc_ftshare.py，字典 §12.20）
+#   → 复用 requests 库直调公共网关，无需额外 pip 包
+#   → 可选环境变量: EAST_MONEY_COOKIE（东财 Cookie 注入防封禁）
+#   → 可选文件: config/eastmoney_cookie.txt（同上）
+# CYQ 筹码分布: sc_technical.calculate_cyq() 纯 Python 实现（零依赖）
+# K线形态识别: sc_technical.get_kline_patterns() 需 TA-Lib C 库
+#   → pip install TA-Lib  ← 可选，未安装时 get_kline_patterns 返回 {}
+# TA-Lib>=0.4.0  # ← 取消注释以启用 61 种 K 线形态识别
+
 # ── 单元测试（V16.3：已移至 requirements-dev.txt）────────────────
 # 开发环境安装: pip install -r requirements-dev.txt
 # pytest / pytest-asyncio 仅开发需要，运行时不再声明

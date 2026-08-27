@@ -108,33 +108,6 @@ def _no_real_network(monkeypatch, request):
 
 
 # ── 临时工作目录：避免污染真实项目根 ───────────────────────────
-@pytest.fixture
-def tmp_project(tmp_path):
-    """返回一个模拟项目根目录（含 credentials/ 子目录与最小 client_secrets.json）。"""
-    # 写入伪 client_secrets.json（V17.0: 凭据归位 credentials/ 子目录）
-    fake_secrets = {
-        "installed": {
-            "client_id": "fake-id.apps.googleusercontent.com",
-            "project_id": "fake-proj",
-            "auth_uri": "https://accounts.google.com/o/oauth2/auth",
-            "token_uri": "https://oauth2.googleapis.com/token",
-            "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
-            "client_secret": "fake-secret",
-            "redirect_uris": ["urn:ietf:wg:oauth:2.0:oob", "http://localhost"],
-        }
-    }
-    cred_dir = tmp_path / "credentials"
-    cred_dir.mkdir(exist_ok=True)
-    secrets_file = cred_dir / "client_secrets.json"
-    secrets_file.write_text(json.dumps(fake_secrets), encoding="utf-8")
-
-    # 写入伪 strategy_config.yaml
-    (tmp_path / "strategy_config.yaml").write_text(
-        "report:\n  default_formats: [txt, md]\n", encoding="utf-8"
-    )
-    return str(tmp_path)
-
-
 # ── test_em_rate_limit.py 的 endpoint fixture ──────────────────────
 @pytest.fixture(params=[
     {

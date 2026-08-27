@@ -153,7 +153,29 @@ __all__ = [
     "is_fuyao_enabled", "get_fuyao_key", "ensure_fuyao_key",
     "get_fuyao_snapshot", "get_fuyao_valuation", "get_fuyao_kline",
     "get_fuyao_limit_up_ladder", "get_fuyao_hot_list", "get_fuyao_dragon_tiger",
+    # V17.0.5: fuyao 新端点(竞价/池/异动/财务指标/报表/日历/复权/指数)
+    "get_fuyao_auction_snapshot", "get_fuyao_auction_benchmark",
+    "get_fuyao_limit_pool", "get_fuyao_anomaly", "get_fuyao_fin_indicators",
+    "get_fuyao_financials", "get_fuyao_trading_days", "get_fuyao_adjustment_factors",
+    "get_fuyao_index_catalog", "get_fuyao_index_constituents", "get_fuyao_index_snapshot",
+    # V17.0.5: 基金域(lng/med 机构侧证)
+    "get_fuyao_fund_holdings", "get_fuyao_fund_profile",
+    "load_fund_watch", "get_fund_watch_evidence",
+    # V17.0.5 P0: 封单衰减(sht)/情绪聚合原料
+    "get_fuyao_seal_map", "get_fuyao_seal_info",
     "fuyao_to_thscode",
+    # V17.0.7: FTShare MCP(字典 §12.20——千股千评/打板池/董监高/商誉质押解禁)
+    "is_ftshare_enabled", "get_ft_comment_score_series", "get_ft_comment_desire",
+    "get_ft_comment_focus", "get_ft_comment_org_participate", "get_ft_comment_all",
+    "get_ft_limit_up_pool_yesterday", "get_ft_limit_event_timeline",
+    "get_ft_ggmx_changes", "get_ft_goodwill_stock_detail", "get_ft_pledge_summary",
+    "get_ft_unlock_by_date", "get_ft_dapan_flow", "get_ft_market_snapshot",
+    "get_ft_suspension_list",
+    # V17.0.7: KPL 无 Token API(字典 §12.21.5——市场情绪/涨跌分析/板块排行/个股详情)
+    "kpl_get_market_emotion", "kpl_get_rise_fall_analysis",
+    "kpl_get_stock_zd_num", "kpl_get_real_ranking_info",
+    "kpl_get_stock_list_w8", "kpl_get_ytfp_bkhx", "kpl_get_ytfp_sctd",
+    "kpl_get_lhb_stock_list", "kpl_get_info",
 ]
 
 # ═══════════════════════════════════════════════════════════════
@@ -353,7 +375,28 @@ from stock_common.sc_fuyao import (
     is_fuyao_enabled, get_fuyao_key, ensure_fuyao_key,
     get_fuyao_snapshot, get_fuyao_valuation, get_fuyao_kline,
     get_fuyao_limit_up_ladder, get_fuyao_hot_list, get_fuyao_dragon_tiger,
+    # V17.0.5: 新端点
+    get_fuyao_auction_snapshot, get_fuyao_auction_benchmark,
+    get_fuyao_limit_pool, get_fuyao_anomaly, get_fuyao_fin_indicators,
+    get_fuyao_financials, get_fuyao_trading_days, get_fuyao_adjustment_factors,
+    get_fuyao_index_catalog, get_fuyao_index_constituents, get_fuyao_index_snapshot,
+    # V17.0.5: 基金域
+    get_fuyao_fund_holdings, get_fuyao_fund_profile,
+    load_fund_watch, get_fund_watch_evidence,
+    # V17.0.5 P0: 封单衰减(sht)
+    get_fuyao_seal_map, get_fuyao_seal_info,
     fuyao_to_thscode,
+)
+
+# --- FTShare MCP（V17.0.7 新源——字典 §12.20） ---
+from stock_common.sc_ftshare import (
+    is_ftshare_enabled,
+    get_ft_comment_score_series, get_ft_comment_desire, get_ft_comment_focus,
+    get_ft_comment_org_participate, get_ft_comment_all,
+    get_ft_limit_up_pool_yesterday, get_ft_limit_event_timeline,
+    get_ft_ggmx_changes, get_ft_goodwill_stock_detail, get_ft_pledge_summary,
+    get_ft_unlock_by_date, get_ft_dapan_flow, get_ft_market_snapshot,
+    get_ft_suspension_list,
 )
 
 

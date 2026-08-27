@@ -455,6 +455,8 @@ class CanonicalStockData:
     pe_ttm: float = 0.0              # PE(TTM) (倍)
     pe_dynamic: float = 0.0          # 动态PE (倍)
     pb: float = 0.0                  # PB (倍)
+    ps_ttm: float = 0.0              # V17.0.5: 市销率 TTM (fuyao 独有)
+    pcf_ttm: float = 0.0             # V17.0.5: 市现率 TTM (fuyao 独有)
     dividend_yield: float = 0.0      # 股息率 (%)
     turnover_pct: float = 0.0        # 换手率 (%)
 
@@ -468,7 +470,8 @@ class CanonicalStockData:
 
     # 财务与股本类
     roe: float = 0.0                 # ROE (%)
-    roa: float = 0.0                 # ROA 总资产收益率 (%) — 腾讯 tx66（2026-08-10 确认：招行 1.12=年化 ROA 精确）
+    roa: float = 0.0                 # V17.0.5 正名: ROA(TTM 滚动 %) — 腾讯 tx66（招行 1.12 精确；~~年化~~银行 TTM≈年报故曾误标）
+    roe_deduct_ttm: float = 0.0      # V17.0.5: 扣非加权ROE(TTM 滚动 %) — 腾讯 tx65（fuyao index_deduct_weighted_avg_roe 同族）
     gross_margin: float = 0.0        # 毛利率 (%)
     net_profit_margin: float = 0.0   # 净利率 (%)
     net_profit: float = 0.0          # 净利润 (元)
@@ -487,6 +490,8 @@ class CanonicalStockData:
     change_30d: float = 0.0          # ⚠️ V17.0 实锤: 历史遗留 key 实为 20 日值(Col[18]); tdxstat.cfg 无 30 日列, 真实 30 日=TdxQuant ZAFPre30
     change_60d: float = 0.0          # 60日涨跌幅 (%)
     change_ytd: float = 0.0          # 年初至今涨跌幅 (%)
+    # V17.0.5: 本月至今涨跌幅(tdxstat2 Col[11] 正名, 基准=上月末最后交易日收盘)
+    change_mtd: float = 0.0
     streak_days: int = 0             # 连涨(正)/连跌(负)天数
     high_52w: float = 0.0            # 52周最高 (元)
     low_52w: float = 0.0             # 52周最低 (元)
@@ -513,6 +518,16 @@ class CanonicalStockData:
     fund_small_today: float = 0.0    # 小单净流入(今日, f146) — V17.0 新增
     fund_main_5d: float = 0.0        # 主力净流入(近5日, f178 数组聚合)
     fund_5d_array: Tuple[Dict[str, Any], ...] = field(default_factory=tuple)  # 近5日主力净流入数组 — push2 f178
+
+    # V17.0.7 财务 TTM 族(push2 f103-f190, 口径经 fuyao 官方三大报表 5/5 终判;
+    # 详见 docs/field_verification/20260825_cross_analysis.md)
+    ocf_ttm: float = 0.0             # 经营活动现金流量净额 TTM (元) — push2 f103
+    revenue_ttm: float = 0.0         # 营业总收入 TTM (元) — push2 f104
+    net_profit_period: float = 0.0   # 归母净利润 最新报告期 (元) — push2 f105
+    net_profit_annual: float = 0.0   # 归母净利润 最新年报 (元) — push2 f109
+    eps_annual: float = 0.0          # 年报EPS =f109/f84 (元/股) — push2 f160
+    eps_deduct_ttm: float = 0.0      # 扣非每股收益 TTM (元/股) — push2 f108
+    undist_profit_ps: float = 0.0    # 每股未分配利润 (元/股, ≡ulist f48) — push2 f190
 
     # 板块与概念
     industry: str = ""               # 行业分类

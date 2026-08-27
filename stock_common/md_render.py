@@ -114,37 +114,6 @@ def _space_table_to_md(block: List[str]) -> "tuple[list, list]":
     return out, []
 
 
-def _fieldval_block_to_md(block: List[str]) -> List[str]:
-    """V17.0.2c: "字段: 值"对齐块 → md 2 列表格.
-
-    推断规则(用户引导: 对齐如何推断表格): 连续 ≥3 行"字段: 值" → 转 | 字段 | 值 | 表;
-    行内多字段("今开: 205.00 元  昨收: 204.33 元")按 2+ 空格 + 短字段 + 冒号拆分各成一行;
-    不足 3 行 → 原样(竖排保留)。
-    """
-    rows: List[str] = []
-    for r in block:
-        m = _FIELD_VAL.match(r)
-        if not m:
-            return block
-        field, _, rest = r.partition(":")
-        rest = rest.strip()
-        if not rest:
-            return block
-        # 行内多字段拆分: 2+ 空格 + 字段名(1-12) + 冒号 + 空格
-        parts = re.split(r" {2,}(?=\S[^:：]{1,12}[:：] )", rest)
-        segs = [(field.strip(), parts[0].strip())]
-        for p in parts[1:]:
-            p = p.strip()
-            if not p:
-                continue
-            f2, _, v2 = p.partition(":")
-            segs.append((f2.strip(), v2.strip()))
-        rows.extend("| " + f + " | " + v + " |" for f, v in segs if v)
-    if len(rows) < 3:
-        return block
-    return [rows[0], "|---|---|"] + rows[1:]
-
-
 def _ensure_tbl_blank(out: List[str]) -> None:
     """V17.0.2k: 表格块输出前补空行(渲染器要求表格前有空行, 否则不渲染).
     上一行若是表格行(| / |---)则无需补(表内连续)."""
@@ -153,11 +122,29 @@ def _ensure_tbl_blank(out: List[str]) -> None:
         out.append("")
 
 
+def _ensure_tbl_gap_after(out: List[str]) -> None:
+    """V17.0.7: 表格行之后接非表格文本时先补空行(防标题/提示被并进上一表格).
+
+    背景(2026-08-25 报告审计): ➤→### 与 字段:值 等提前 continue 分支
+    绕过通用尾部的补空行规则, 导致"股东户数表→### 信号:"等数十处标题与表格粘连。
+    """
+    if out and out[-1].lstrip().startswith(("| ", "|---")):
+        out.append("")
+
+
 def text_to_md(lines: List[str]) -> List[str]:
     # V17.0.4(2026-08-19): 对 None 行容错——脚本 L() 偶发追加 None
     # (如某数据段返回 None 时 L(variable)), 原 _LINE_ONLY.match(None) TypeError
     # 崩整个报告(实测 601138/300165/600276); None → 空行(不崩, 报告继续)
-    lines = ["" if ln is None else ln for ln in lines]
+    # V17.0.7: 展开行内嵌换行——L("\n➤ X") 的前导 \n 是作者的空行意图,
+    # 原实现被各分支的 strip/lstrip 静默吞掉, 造成表格与后续标题粘连
+    lines_exp: List[str] = []
+    for _ln in lines:
+        if _ln is None:
+            lines_exp.append("")
+        else:
+            lines_exp.extend(str(_ln).split("\n"))
+    lines = lines_exp
     out: List[str] = []
     i = 0
     n = len(lines)
@@ -181,12 +168,14 @@ def text_to_md(lines: List[str]) -> List[str]:
         if re.match(r"^\s*➤\s*\S", ln):
             _sub = re.sub(r"^\s*➤\s*", "", ln).strip().rstrip(":：")
             if _sub:
+                _ensure_tbl_gap_after(out)  # V17.0.7: 表后接 ### 先补空行
                 out.append("### " + _sub)
                 i += 1
                 continue
         # V17.0.2n: ├─/└─ 树形装饰 → md 列表(txt 遗留符号去除)
         if re.match(r"^\s*[├└]─\s*\S", ln):
             _li = re.sub(r"^\s*[├└]─\s*", "", ln).strip()
+            _ensure_tbl_gap_after(out)  # V17.0.7: 表后接列表先补空行
             out.append("- " + _li)
             i += 1
             continue
@@ -200,23 +189,11 @@ def text_to_md(lines: List[str]) -> List[str]:
             out.extend(_border_rows_to_md(block))
             i = j
             continue
-        # V17.0.2c: "字段: 值"对齐块 → 2 列表格(章节一/三基本信息与预期)
+        # V17.0.6: "字段: 值"块不再转 2 列表格——恢复竖排(用户原则: 基本信息/行情/估值
+        # 等键值竖排不表格化; 原 V17.0.3 转换使首行字段名成为加粗表头, 视觉喧宾夺主)。
+        # 多列数字明细仍走 _SPACE_TABLE_HEADER 分支或脚本直出 md 表格。
         if _FIELD_VAL.match(ln) and not _EMOJI_LEAD.match(ln):
-            block = []
-            j = i
-            while j < n and lines[j].strip() and _FIELD_VAL.match(lines[j]) \
-                    and not _HEADING.match(lines[j]) and not _SECTION_SEP.match(lines[j]) \
-                    and not lines[j].lstrip().startswith("## "):
-                block.append(lines[j])
-                j += 1
-            if len(block) >= 3:
-                _ensure_tbl_blank(out)
-                out.extend(_fieldval_block_to_md(block))
-                if out and out[-1].startswith("| "):
-                    out.append("")
-                i = j
-                continue
-            # 不足 3 行 → 逐行走普通行清理
+            _ensure_tbl_gap_after(out)  # V17.0.7: 表后接"字段: 值"先补空行
             out.append(_clean_text_line(ln))
             i += 1
             continue

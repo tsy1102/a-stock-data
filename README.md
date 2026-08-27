@@ -432,6 +432,551 @@ reports/
 
 完整版本历史详见 [CHANGELOG.md](CHANGELOG.md)。
 
+> 🔧 **V17.0.10**（2026-08-27）
+> **ZHB T-1 对撞规则固化 + Col[33] 连板数破解 + 批量报错修复**
+>
+>
+> **规则写入（CRACKING_METHODOLOGY.md 〇节 + field_verification README 每日流程）**：
+> - ZHB 本地包数据日期**恒为 T-1**——对撞破解严禁"当日报告 ↔ 当日采集 ZHB"直接比
+>   (2026-08-27 初犯得 type 0/20 假阴性, 纠正后 20/20)
+> - 正确矩阵: 采集目录 YYYYMMDD 的 ZHB(T-1) 应对撞 **T-1 当日报告**; 对撞当日报告
+>   须先验证字段实时性(如涨停族 type/lianban/count 实测为当日盘中值)
+> - 操作规范: 每次对撞先打印 raw_zhb.json 的 zhb_date + 报告文件名; 结论标注双日期
+> - capture_field_probe.py: meta.json 增写 zhb_data_date 字段, 完成行打印 ZHB 日期
+> - 回归 269 passed ✓
+>
+>
+>
+> **新破解: tdxstat Col[33] = 连板数（原"涨停类型族 ztlx"证伪）**
+> - 方法: **日期对齐对撞**——今日采集 ZHB(8/26数据) 与 8/27 MAK 报告涨停天梯对撞
+> - 铁证: type(Col33) 与天梯连板 **20/20 完全匹配**(000017=5/003040=4/002084=3 全精确)
+> - 当日涨停时 Col[31]/[32]/[33] 三字段一致=连板数; 非涨停日 type=None/0,
+>   count=涨停累计次数(近N日), lianban=历史高位(近N日最高连板/异动周期计数)
+> - 同步: field_dict.md Col[31]/[32]/[33] 对撞补强(Col33 ⚠️→✅)
+> - 中报指标入库 17 只(tx65/tx66 终判条件达成)
+> - 字段矩阵: 977 字段 / 1175 记录 / 多源 48
+> - 回归 269 passed ✓
+>
+>
+>
+> **1. LNG 688802(沐曦) 亏损股 UnboundLocalError**
+> - 根因: `_pe_src` 只在 `_pe>0`(盈利)分支赋值, 亏损股(pe_ttm=0/pe_dynamic=-699)走 else
+>   分支未赋值 → 444 行访问报 UnboundLocalError。仅亏损股触发, 盈利股全部正常。
+> - 修复: else 分支补 `_pe_src = "亏损(无正PE)"`。实测 688802 报告正常输出
+>   "PE(TTM): 0.00x (亏损(无正PE)口径...)"。
+>
+> **2. SHT 300475 批量 margin TypeError**
+> - 根因: `resolve_datacenter('margin')` 批量预取偶发返回非 list(dict), sht 1104 行
+>   `for d in margin` 遍历 dict keys → `d['date']` TypeError。
+> - 修复(双层防御): ① `get_margin_trading_async` to_thread 结果非 list 置 []
+>   (源头); ② sht 消费端 `if margin and isinstance(margin, list)` 防御;
+>   ③ `get_block_trade_async` 同步 data 非 list 防御。
+> - 回归 269 passed ✓
+
+> ✨ **V17.0.9**（2026-08-26）
+> **Col[24] 货币资金破解 + 报告核查修复**
+>
+>
+> **新破解: tdxstat Col[24] = 货币资金（万元）`cash_reserve_wan`**
+> - F10 资产负债表「货币资金」逐股对照终极锁定: 600519=535.188亿(unknown_24 100%一致),
+>   17 只有数据全部匹配(14 最新期精确 + 600675/688500 为报告期差异=2026Q1值)
+> - 跨日恒定根因=财报季度才更新(静态财务字段); 历史"成交量/总负债/股本"三假设证伪
+> - 同步: `zhb_client.py` Col[24] 正名 unknown_24→cash_reserve_wan; `data_provider`/`tdx_client`
+>   注释更新; `test_data_zhb.py` 断言更新(45 passed); `field_dict.md` 7.3 节破解结论 +
+>   P0-1 关闭 + 跨源对照表新增货币资金行; `field_verification/README` 破解里程碑
+> - 采集: 20260826 归档 19 源全 OK; push2 主域 20h 冷却(push2delay 正常); thsdk 盘后不可用
+> - 字段矩阵重生成: 977 字段 / 1175 记录 / 多源 48
+> - 全量回归 269 passed ✓
+
+> 🔧 **V17.0.8**（2026-08-26）
+> **82 份报告全量核查修复(跌停数假数据/扣非ROE/展示口径)**
+>
+>
+> **P0 跌停数假数据(22→0)根因修复**
+> - `get_limit_pool_summary` 跌停兜底重写: 旧逻辑直接读 ZHB 全市场快照算跌停,
+>   但快照盘中恒为 T-1(前一日)——8/26 盘中把 8/25 的 22 只跌停误报为今日
+>   (KPL/push2ex 双源证实今日真实跌停=0)。权威链: ① 东财 getTopicDTPool tc
+>   (新 `_query_dt_pool_tc`, pool 可空但 tc 权威) → ② KPL RiseFallAnalysis dt
+>   (独立匿名源, 校验日期) → ③ ZHB 仅当快照日期==目标日期
+> - 排查确认 22 与 8/25 炸板池 22 为巧合, `_parse_limit_pool` 无字段错位
+> - MAK B 段跌停数恢复 pool 优先(A 段涨跌幅口径兜底), 撤销 V17.0.4 强制覆盖
+>
+> **P1 扣非ROE 全 N/A 修复**
+> - `get_roe_trend_series` F10 路径补扣非ROE: 加权ROE×(扣非EPS/基本EPS) 同源推算
+>   (F10 无直接扣非ROE 字段; 曾用 fuyao index_deduct_weighted_avg_roe 实测为
+>   TTM 滚动口径与单期加权不可混排, 弃用)。新浪兜底同步加同口径推算
+>
+> **P2 展示/口径**
+> - MAK E 段涨停名单改真实涨停全量(limit_up_all, 原用梯队 _leaders 含替补致
+>   "声称3只实际1只"); 名称优先级腾讯实时名>ZHB(消除 霞客环保/哈高科/二纺机 旧名)
+> - MAK B 段涨停明细>30 只加截断注明(原 43 只只显 30 行易误解)
+> - MED "静态PE"→"动态PE" 标签修正(实为 pe_dynamic f162), 与 LNG 对齐;
+>   LNG PE(动态) 改 canonical pe_dynamic(原 ZHB 动态, 数值与 MED 不一致)
+> - LNG/MED 解禁明细保留一位小数(原 .0f 四舍五入致 1.4万股显示 1 → 明细≠总计)
+> - 回归 269 passed ✓
+
+> ✨ **V17.0.7**（2026-08-25）
+> **field_dict_gemini 对撞复核: f103/f104 终破 + f55/f105 语义纠错 + tx 区间涨幅族定案 + 散单第五档新破解**
+>
+> - **f103 = 经营活动现金流量净额(TTM)**: fuyao 官方季度现金流量表 5/5 精确
+>   (茅台 FY25 615.22+H1_26 706.91-H1_25 131.19=1190.94亿); 推翻 Gemini
+>   "营业利润/资产总计分行业"与 scratch 旧审计"利润总额存疑"两案并结;
+>   报告期切换 796→1190.94 亿动态吻合
+> - **f104 = 营业总收入(TTM)**(18/18 恒等式); **f105 = 归母净利润(最新报告期)**
+>   (fuyao 利润表逐字等; 切换日 Q1 272.43→H1 445.17)——证伪 Gemini"经营现金流"
+> - **f55 = 基本EPS(最新报告期)**=f105/f84(35.611): 恢复主字典旧注,
+>   证伪 Gemini"每股经营现金流"(F10 每股经营现金=56.55≠35.61);
+>   f109=归母净利(**最新年报**口径)/f160=年报EPS/f108=扣非EPS(**TTM**, 切换日跳变佐证)
+> - **tx 区间涨幅族定案(前复权)**: tx62=YTD / tx71=60交易日 / tx69=10交易日(L1,
+>   K线 w=10 平均偏差 0.101pp n=56) / tx75=180交易日 / tx79=250交易日(ZHB
+>   change_250k 中位差 1.24pp); **证伪 Gemini tx75="主力占比"/tx79="超大单占比"**
+>   (与东财占比族最大差 40pp 且符号翻转、值可超 ±100);
+>   **推翻 f121/f122 "资金流衍生指标"旧注**(实为 60日/YTD 涨幅)
+> - tx58/59 与"收盘竞价说"和解(9/9): 收盘后最新逐笔=竞价撮合单, 字段本义为最新逐笔
+> - tx56=Beta 维持 L4 未证实(池内回归不吻合, 农行 -0.19 反例)
+>
+> - **f147/f148/f149 = 散单(第五档)买入/卖出/净额**(净=买-卖 715/715 自洽);
+>   **f197 = 散单净占比 ≡ f149/f48×100**(154/154 含北交所)——修正 Gemini
+>   "-(f194+f195+f196)"公式(仅沪深成立, 根因=沪深守恒律"大中小散四档净额和≡0"
+>   137/140 逐字零; 北交所退化: f140≡0、f137≡f143、守恒律失效)
+> - f111 板级枚举(2/6/23/80/81)、f177 位掩码{1,65,577,1025,1089}、f199≡90 全样本复核通过
+>
+> - field_dict.md: 腾讯表 [56]/[58]/[59]/[62]/[69]/[71]/[75]/[79] 六行重写 +
+>   §12.9.1 V17.0.7 七条终破; verify/push2_verify.md、verify/tencent_verify.md
+>   加终判覆盖头注; §零·B 矩阵重生成(932 字段/1112 记录)
+> - 遗留: Col[31] vs 东财池同日对撞 32/46(ZHB 偏大 14 例)建议降回 ⚠️ 复核
+>
+> - **修复真 bug**: data_provider 主力净流入兜底链删除"腾讯 tx75×10000"分支——
+>   tx75 实为近180交易日涨幅, 旧分支会注入假主力净额(603221 +13.45亿假流入);
+>   tdx_client._TENCENT_FIELD_INDEX 键 main_net_inflow_yi→change_180td_pct 正名,
+>   sc_datasource 腾讯映射/白名单与 data_provider 补取循环同步更名
+> - **统一层接入财务 TTM 族**: _em_quote_full_impl 字段包 +f103/f104/f105/f108/
+>   f109/f160/f190 → 规范键 ocf_ttm/revenue_ttm/net_profit_period/net_profit_annual/
+>   eps_annual/eps_deduct_ttm/undist_profit_ps; push2delay 补取块(_PD_EXTRA_CACHE)
+>   同步透传; CanonicalStockData 新增同名字段(带默认值, asdict 序列化旧缓存兼容);
+>   冒烟实测 600519 七字段全中(ocf_ttm=1190.94亿=fuyao 终判值逐字等)
+> - **缓存层评估**: get_tencent_quote/_em_quote_full 均不走 SQLite @cached
+>   (stock_cache.py:60 明示实时行情不缓存), 键名变更/字段扩展零失效面;
+>   _PD_EXTRA_CACHE 按日进程缓存自动覆盖; 新增字段为报告期驱动静态值,
+>   无需新增 TTL 分类, 口径铁律不触发
+> - 回归: scripts/run_tests.ps1 -Mode skip_real → **269 passed / 45 deselected 基线不变**
+>
+> - **核查结论**: 五脚本代码零字段误用(sht 主力段自动受益 tx75 兜底删除;
+>   med 阶段涨幅全为 ZHB 实锤口径; lng tipinfo EPS 已有单季标注; val 仅取
+>   vol_ratio; mak 板块域编号不同构不冲突); get_main_net_buy 本体无 tx75 残留
+> - **实施 3 增强**(零额外网络请求——财务族随 push2delay 补取已入 canonical):
+>   ①lng 三章现金流双源对照: f103(TTM) vs 0x0010(报告期) + 经营现金流/收入比 +
+>     滚动现金含量(TTM OCF/上年归母, 跨两财年粗算标注);
+>     实测茅台 TTM 1190.94亿=fuyao 终判值逐字等、含量 144.7% ✅
+>   ②med 三章归母净利双源核验: f105 vs 新浪财报首行, 偏差>2pp 提示以财报为准;
+>     实测 445.17 vs 445.17 偏差 0.0% ✅
+>   ③lng 五章/med 三章: undist_profit_ps 每股未分配利润展示(分红能力池子,
+>     负值=弥补亏损期预警); 实测 159.74 元 ✅
+> - script_data_dict 补财务 TTM 族路由行; 矩阵重跑一致(932/1112)
+>
+> - **审计发现(脚本 audit_reports*.py)**: 81 处问题——系统性 3 类+散点:
+>   ①股东户数表→"### 信号:"粘连 ~25 处; ②综合建议加粗粘连(**中性观望**各项) ~40 处;
+>   ③席位明细 5 行全标"买五"(硬编码); ④互动易"答案: None"(str(None) 未兜底);
+>   ⑤两融标签 15 行实显 10 行; ⑥lng ROE 表前后缺空行; ⑦北向"近N个交易日"
+>   措辞失实(季度频数据); ⑧60日资金流标题固定"最近10日"配 1 行数据
+> - **上游退化确认(非代码回归)**: push2his 连接级封锁(RemoteDisconnected)+
+>   push2delay fflow daykline 返回空 klines(行为再变)→历史资金流仅剩 TDX 单日
+>   (V17.0.4 prefer_his 修复被上游再次绕过); 已按诚实降级处理
+> - **md_render.py 中心修复**: ➊行内嵌 \n 展开(L("\n➤ X") 的空行意图不再被吞);
+>   ➋新增 _ensure_tbl_gap_after: ➤→### / 字段:值 / 树形列表三个提前 continue
+>   分支补齐"表后空行"规则; 合成用例 T1-T5 全过
+> - **sht 脚本修复**: 席位排名 买一~买N/卖一~卖M 分别计数; 两融循环截断对齐标签;
+>   互动易 answer=None/"none" 兜底待回复; 北向标签如实化(期数+最新日期+距今天数);
+>   资金流段自适应标题(<10 日如实标注)+<5 日跳过误导性趋势统计;
+>   sht/med/lng 综合建议加粗后补空格; lng 评级行改"研报评级分布"(去 ### 内加粗)
+> - **验证**: 重生成 000657_sht 全部修复生效(买1~买5/两融15=15/表后空行/
+>   建议分隔/资金流诚实降级提示); 回归 269 passed 不变
+>
+> - **push 域退化实测确认**: push2his 连接级封锁(RemoteDisconnected)+push2delay
+>   fflow daykline 空 klines——历史资金流窗口断裂为上游行为变化, 非代码回归
+> - **thsdk 盘中实测(游客账号 13:01)**: 代码格式=USHA/USZA+6位10位定长(600519.SH 会报错);
+>   klines(count) 历史日K(8/24 总金额=ZHB stat2 amount 逐字等);
+>   **big_order_flow 盘中逐笔大单流**(茅台1520行: 时间/方向±1/量/金额/委托买卖)——
+>   push2 fflow 实时的盘中替代候选(需聚合, 非日级历史); 午休/盘后空 df 关闸复现
+> - **fuyao 三大报表 TTM 聚合对撞(600519)**: ocf_ttm=1190.94亿/net_profit_period=
+>   445.17亿/net_profit_annual=823.20亿 与 push2 f103/f105/f109 **逐字等**;
+>   revenue_ttm 差1.8%(营业收入 vs 营业总收入口径); **修复 get_fuyao_financials
+>   缺 period 必参的潜伏 bug(V17.0.5 引入, 恒返回空)**
+> - **data_provider 兜底链接入**: 财务 TTM 族 push2delay 缺失时 → fuyao 三大报表
+>   quarterly 聚合(_FY_TTM_CACHE 按 code+report_period 进程缓存); 
+>   eps_annual/eps_deduct_ttm/undist_profit_ps 无 fuyao 字段仍 push 独有
+> - **字典新增 §12.8.12d THS 族替代矩阵**: 七项 push 依赖逐一判定替代状态;
+>   script_data_dict 补兜底链路由行; 矩阵重跑(**950 字段/1134 记录/多源 45**)
+> - 回归 269 passed ✓
+>
+>
+> - **层级定案**: 用户运行时段多为盘后 → thsdk(TCP 盘后/午休关闸)定位**盘中专属
+>   特殊层**, 不进通用 fallback 链; **fuyao(REST 盘后可查+独立风控域+官方口径)
+>   升为 push 替代主力**
+> - **data_provider 层级重构**: 财务 TTM 族 **fuyao 三大报表聚合升主源**
+>   (ocf_ttm/revenue_ttm/net_profit_period/net_profit_annual + eps_annual=
+>   净利年报÷股本缓存折算), push2delay 降为兜底仅补缺失(fuyao 已填键不覆盖);
+>   实测 canonical field_sources: 四键=realtime:fuyao、eps_annual=calc:fuyao
+>   (65.85=f160 精确)、eps_deduct_ttm/undist_profit_ps=push2delay(push 独有)
+> - **字典 §12.8.12d 扩充**: thsdk 实测表(USHA/USZA 定长格式/klines 历史日K/
+>   big_order_flow 盘中逐笔大单流/关闸复现)+fuyao TTM 对撞表+七项路由表
+>   (thsdk 后移注记/fuyao 主源/行情快照插槽候选暂缓); script_data_dict 同步;
+>   矩阵重跑(**951 字段/1135 记录/多源45**)
+> - 结论: 涨停池/龙虎榜/行业概念已有非 push 备胎 ✓; 批量行情 ulist 维持
+>   push2delay(fuyao 不支持批量); 仅历史资金流窗口无同口径替代(上游断裂待复核)
+> - 回归 269 passed ✓
+>
+>
+> - **核查发现矩阵未反映新规则**: 头部源排序仍是 2026-08-06 旧文(无 THS 族);
+>   财务 TTM 族七键只在 blockquote/路由表中, 解析器不收录;
+>   SOURCE_ORDER 无同花顺-fuyao/thsdk 定义; sec_to_source 的 "12.8" 子串
+>   会把 fuyao 节误判为东财源
+> - **gen_field_matrix 三处修正**: ①SOURCE_ORDER 插入 同花顺-fuyao(腾讯后)/
+>   同花顺-thsdk(fuyao 后); ②sec_to_source 前置 fuyao/thsdk 分支(防 "12.8"
+>   子串误判); ③生成头部源排序文案更新为 V17.0.7 层级定案+动态日期
+> - **字典补标准字段表**(解析器只认标准表格): §12.8.12c 加三大报表 TTM 聚合族表
+>   (fuyao 主源侧); §12.9.1 加财务 TTM 族字段表(东财兜底侧)——双表归并使七键
+>   进入 B.1 多源表
+> - **验证**: 矩阵 B.1 出现 `ocf_ttm(f103) | 2 | 同花顺-fuyao、东财` 等五行,
+>   fuyao 排前=主源语义 ✓; B.2 新增 同花顺-fuyao(70)/同花顺-thsdk(63) 分组;
+>   总量 951→**952 字段/1139 记录/多源48**; 回归 269 passed ✓
+>
+>
+> - **动机(实测)**: 昨晚 sht 34 只 15.5 分钟(均27s/只), 最大单项=
+>   datacenter-web 1.0rps × 每股5类(龙虎榜/两融/北向/解禁/大宗)≈5s/股纯限流等待;
+>   且跨域并行度=1, 宽松域(腾讯0.15s/巨潮0.2s/fuyao0.5s)全排队在 dc 后面
+> - **实现**: sc_datasource 新增 start_datacenter_prefetch(幂等调度,
+>   future 先注册后执行防消费竞态)+resolve_datacenter(kind, code, direct_fn)
+>   (预取命中 await/未调度回退直调); execute_batch_pipeline 新增通用
+>   prefetch_async_fn 钩子(session 建立后调度后台流水线); sht runner 接线
+>   (dragon_kwargs 按 depth 传席位开关), 5 个调用点切换 resolve
+> - **时序模型**: 预取生产 ~5s/只 vs 消费 ~9s/只÷3 worker——预取始终领先;
+>   dc 等待移出 worker 车道, 与 TCP F10/腾讯/巨潮/CPU渲染并行
+> - **实弹验证**: 3 只批量 83s 全成功, "15 项入队"日志 ✓, 五类章节全在 ✓;
+>   回归 269 passed ✓; med/lng(2-3 只)无需接入
+> - 附带审计结论: 网络层 5 脚本零裸调用(全部 sc_network 包装);
+>   mak 指数K线四源链下沉为 get_index_kline_closes(行为等价迁移)
+>
+>
+> - **新增 docs/report_output_inventory.md**: 以最新实际报告逐节核对(非 changelog
+>   描述)的输出台账——sht/med/lng 全章节×引入版本×数据源×验证状态;
+>   **⛔门控段清单**(自选基金重仓侧证需配置清单文件/封单衰减率仅涨停股/
+>   fuyao 指标交叉已启用/thsdk 盘中限定)
+> - **修复 lng 历史高点渲染回归**: V17.0.5 P2 只改了 qfq 函数, 渲染层仍
+>   high_52w 优先→前复权修复从未生效(茅台显示52周高1539.98/-15.25%,
+>   真 qfq 高1806.54/-27.83%); 且 🔔📉回调分级嵌套在旧口径注分支下,
+>   qfq 路径时两级信号全部静默丢失——恢复 qfq 主路径+分级拉平+口径注按源切换
+> - **修复 lng 九章研报瞬断空转**: 单次请求失败整段"暂无研报覆盖"(实测复测
+>   同函数返回200条)——加一轮轻量重试(5页失败→1s后3页重试)
+> - **sht 研报页数 5→3**(四章仅60天计数+前10篇展示, 3页足够); med/lng 维持
+>   (med 六章近3月统计已是3; lng 九章共识度样本需要5)
+> - 台账同步说明 reportapi 三处用途与降页影响; 回归 269 passed ✓
+>
+>
+> - 应用户要求核查 https://github.com/FTShare-Lab/FTShare-MCP (207 工具 MCP 网关)
+> - 查重结论: **FTShare 本身=字典未登记新源**(上游聚合网关: 东财/同花顺/雪球/百度/
+>   华尔街见闻); **6 组全新维度**: 千股千评族×5、涨跌停事件时间线(3s)+DAEC 日内
+>   涨跌停分布历史、商誉族×5、董监高族×4+一致行动人、质押明细/汇总、业绩快报/
+>   停牌列表/非凸评级/语义新闻搜索; 已知字段多源补强(股东人数第三源/解禁第二源等);
+>   **DAEC 全市场快照族×8 为 push2delay ulist 替代候选**(需实测盘后可用性);
+>   雪球排名经代理部分复活(已死清单注记)
+> - 字典新增 §12.20(⏸️ 待实测): 分级盘点表+接入前置条件(MCP 协议/鉴权未明/
+>   必须先 tools/list 核配额); 对照警示(集合竞价结果须 ZHB 互锁/东财板块同上游无增量);
+>   宏观/港股/美股等维持"项目不需要"
+> - 矩阵重跑 957 字段/1148 记录
+>
+>
+> - 实测方式: 公共网关 MCP JSON-RPC 直调(无 SDK/无鉴权, SSE+UTF-8 解码), ~15 次调用
+> - ✅ 可用: 千股千评族(symbol=6位纯代码; score_em=日频评分序列64期;
+>   全市场表含 pe_dynamic/prime_cost 主力成本/focus/org_participate——字典外新维度);
+>   **昨日涨停池富于 push2ex**(炸板时间点数组/回封数组/续封标记——晋级率断板直接可用);
+>   daec_prev_closes 与本机K线逐字等
+> - ⚠️ 口径修正/半可用: daec_market_snapshot=市场级涨跌分布聚合(非个股快照);
+>   stocks_all 个股行情31字段(含 change_rate_day5~120/ytd 区间族)但
+>   **filter/order_by 服务端无效+分页上限200**→替代 ulist 批量不成立,
+>   维持 V17.0.7 层级结论; event_timeline_3s 样本选择不当待复核
+> - 字典 §12.20 升级为🔬最小实测完成(部分可用); 矩阵重跑 964 字段/1155 记录
+>
+>
+> - 第二轮采样(会话 TTL 自动续期): 154 工具 → **85 可用**(首轮全灭根因=会话过期,
+>   已定位并记录); 失败分类: MISSING_PARAMETER/INVALID_ARGUMENT/UPSTREAM 瞬态
+> - 全量字段镜像入库: **docs/verify/ftshare_fields_mirror.md**(85 工具×实际响应字段表)
+> - 字典 §12.20 追加高价值字段表摘录: 千股千评族(focus/org_participate/prime_cost/
+>   total_score)、昨日涨停池(炸板/回封时间数组)、**limit_event_timeline_3s(15 字段含
+>   跌停封单额)**、**ggmx 董监高 26 字段**、**unlock_by_date 17 字段(含持有人明细)**、
+>   **stock_filter 21 字段服务端筛选器**、**risk_warning_stock_quotes 44 字段 ST全行情**
+>   等; 附新维度定级建议(脚本采纳评估)
+> - 工程发现: 会话 TTL≈2h 需自动 re-init; 无鉴权确认; kline 族需 start_time+count
+> - 回归 269 passed ✓
+>
+>
+> - **新模块 stock_common/sc_ftshare.py**: MCP JSON-RPC 客户端(会话 TTL 90min
+>   自动续期+SSE/UTF-8 解析+空响应刷新重试)+代码双格式转换(纯6位/带后缀)+
+>   13 个业务函数(千股千评四族/昨日涨停池/事件时间线/董监高/商誉/质押/解禁按日/
+>   大盘资金流/市场分布/停牌列表); sc_network 注册 market.ft.tech @2rps;
+>   __init__ 导出 14 函数
+> - **sht 十四章**: 🧠千股千评行(综合评分+趋势/参与意愿+异动警示/机构参与度)+
+>   🎯昨日涨停池晋级统计(续封率/平均炸板/断板数)
+> - **lng 九之二**: 董监高变动结构化(近180日增持减持笔数+明细, 替代公告关键词弱口径)
+>   +商誉交叉核验(FTShare 商誉/净资产比 vs 三章自算)
+> - **采集脚本**: 新增 collect_ftshare(个股×6 族+市场级7项, ~126请求≈66s@2rps);
+>   实弹验证 raw_ftshare.json 落盘(20股全量, 评分序列含T日)
+> - 字典 §12.20 状态⏸️→✅; script_data_dict 路由行; 矩阵 964/1155; 回归 269 passed ✓
+>
+>
+> - **Col[31] 降级**: 全历史17包×K线涨停日历穷尽破解发现仅11%匹配严格连续连板;
+>   14例 ZHB>池值(N天M板型)→新假说 H3"本轮行情口径(允许炸板)"待明日同日终判;
+>   字典注记降为⚠️
+> - **tx65/tx66 L1 终判未达成**: fuyao H1 指标为报告期累计(非TTM)——茅台 H1=16.74%
+>   vs TTM=32.41%(约减半); 终判需 quarterly 序列聚合 TTM 或年报数据
+> - **千股千评 pe_dynamic ≡ push2 f162 动态PE**(偏差0.00%); prime_cost 偏离收盘-0.7%
+>   (候选主力持仓成本, 待筹码分布交叉)
+> - **Beta 回归**: 方向相关但系统性偏移+农行反例 → 维持L4; 需沪深300标准回归
+>
+>
+> 来源: https://github.com/myhhub/stock (14.1k stars, Apache-2.0)——经分析后采纳以下五项:
+>
+> #### P0-1: 东财 Cookie 注入 sc_network.em_get()
+> - 新增 `_get_eastmoney_cookie()`: 环境变量 EAST_MONEY_COOKIE > config/eastmoney_cookie.txt > 空
+> - em_get() 发请求前自动附加 Cookie 头——登录态请求大幅提高 push2 系封禁阈值
+> - 用户设置方式: `setx EAST_MONEY_COOKIE "从浏览器F12复制的Cookie值"` 后重启
+>
+> #### P0-2: CYQ 筹码分布算法移植 sc_technical.py
+> - 新增 `calculate_cyq(dates,opens,closes,highs,lows,turnovers,...)` 函数
+> - 经典"三角形分布+换手率衰减"模型(与通达信一致, 来源 instock/core/kline/cyq.py)
+> - 输出: 获利盘比例/平均成本(50%分位)/90%·70%筹码区间与集中度
+> - 冒烟: 茅台获利盘0%/平均成本1443.40 符合近期走势
+>
+> #### P1: TA-Lib 61 种 K 线形态识别
+> - 新增 `get_kline_patterns(opens,highs,lows,closes)` 函数(纯 CDL 函数族委托)
+> - 需安装 TA-Lib C 库; 未安装时返回 {}
+> - 消费场景: sht 十四章可加"今日出现形态"行
+>
+> #### P2-1: 通达信早盘/尾盘抢筹数据
+> - 新增 `get_tdx_chip_race(period=0|1)` → excalc.icfqs.com POST JSON
+> - 字段: 抢筹幅度/委托金额/成交金额/连板天数/板数——字典无此源
+>
+> #### P2-2: 东财选股器服务端筛选
+> - 新增 `get_em_xuangu(sty_fields,filter_expr,page,page_size)` → data.eastmoney.com/dataapi/xuangu/list
+> - 支持 200+ 字段组合筛选; val 部分本地扫描逻辑可下推到服务端执行
+>
+> 回归 269 passed ✓
+>
+>
+> - **机制**: 已配置 Cookie 时连续 5 次 403/429 → 打印醒目警告+四步续期指南;
+>   成功请求或无 Cookie 时计数归零; 提醒后重置避免刷屏
+> - **配置方式**: `setx EAST_MONEY_COOKIE "值"` 或 `config/eastmoney_cookie.txt`(已 gitignore)
+> - **验证**: push2delay 实弹请求携带登录态返回茅台行情 ✓; 回归 269 passed ✓
+>
+>
+> #### 修复1: ROE 表排序错乱
+> - 根因: get_roe_trend_series 返回数据先年报后季报(非纯时间降序)
+> - 修复: 渲染前按报告期日期降序排列
+> - 验证: 600519 ROE表 8期纯时间降序 ✓
+>
+> #### 修复2: 近3年营收CAGR虚假负值(-11%)
+> - 根因: 混用H1半年收入922亿与FY全年收入1720亿直接比值→假CAGR -19%
+> - 修复: 仅用年度报告(12-31截止)数据计算CAGR; 年数由实际可得FY期数决定
+> - 验证: 600519 近1年营收CAGR -1.2%(真实微降, 非-11%假值) ✓
+>
+> #### 修复3: fuyao 现金流官方指标口径缺失
+> - 问题: fuyao 净利现金含量98.8%(⚠️偏低)+现金营运指数0.71(🚨嫌疑)与
+>   双源对照滚动现金含量144.7%(✅充足)结论矛盾——实为H1单期vs TTM口径差异,
+>   茅台等下半年回款型企业 H1 现金含量天然偏低
+> - 修复: fuyao 行加"(报告期口径)"标注+ℹ️口径注指向下方 TTM 对照
+>
+> 验证: 重生成 600519_lng 三处全部生效; 回归 269 passed ✓
+>
+>
+> - **三层对照审计**(38函数 × 字典登记 × 脚本消费):
+>   字典覆盖率 31/38(82%)→补录后 38/38 ✅; 脚本直接消费仅 3/38(get_pmsl/get_zttt/market_emotion_cls)
+> - **7 个字典未录函数实测**: 4/7 可用(market_index_all_em 43指数11字段/market_mainline_cls
+>   财联社主线机会🆕/market_wind_stocks_cls 风口龙头股/news_telegraph_cls 电报快讯);
+>   2/7 接口异常(errcode=1020); sector_stock_belong_em=em_industry_map_l2 实时校准源
+> - 字典新增 §12.10.10 补录表+消费建议分级(高价值5个/中价值6个/低优先17个)
+> - 矩阵重跑 **971 字段/1162 记录**; 回归 269 passed ✓
+>
+>
+> - **根因**: `_reinit()` 内引用并赋值 `_LAST_POST` 但未声明 `global _LAST_POST`
+>   → Python 视为局部变量 → 首次读取抛 `UnboundLocalError` → 被
+>   `except Exception: pass` 吞掉 → `_SID` 永远为 None → ConnectionError
+> - 修复: 添加 `global _LAST_POST` 声明; 验证 mainline/comment_score 全通
+>
+>
+> - **方法**: 强制同步 ZHB 获取 8/25 数据包(内部日期确认=20260825) →
+>   与 push2ex 涨停池(8/25 盘后采集)做**真正同日对撞**
+> - **结果**: 65 只池股中 Col[31]==zt_continuous 仅 50 只(77%);
+>   15 例不等且全部为 ZHB>pool(如 603095 ZHB=10 vs 连板=5)
+> - **K线涨停日历重建**: 多数不匹配样本近 20 日内无连续涨停模式,
+>   但 ZHB 值高达 7~10 → 排除 H1(严格连续)和 H2(近20日累计)
+> - **结论**: Col[31] 是 TDX 内部定义的"近期异动周期计数"，与东财的
+>   zt_continuous(严格连续天数)是不同概念。字典注记从 ✅ 降级为 ⚠️，
+>   消费侧不应单独依赖此字段做连板判定，建议结合 push2ex zt_continuous 使用
+> - 另发现: 上游 ZHB 包在盘后仅更新至前一交易日(8/25 包含的是 8/24 数据),
+>   当日包需次日盘前才能同步
+>
+>
+> - 应用户要求分析 https://github.com/Rainynitesky/kaipanla-data-parser (61⭐, MIT)
+> - **性质**: mitmproxy 流量拦截 + Android 模拟器抓包开盘啦 App 私有 API——接入门槛极高
+> - **最有价值的发现**: ZhiShuStockList_W8 个股详情 63 字段，其中多个新维度
+>   (实际换手率/领涨次数/机构增仓Q1/300万大单净额/人气值/PE三口径)
+>   在 push2/fuyao/ZHB 中均无——但需模拟器+Token 管理+遍历 Type0~19
+> - 字典新增 §12.21(⏸️ 暂缓): 63字段定义表 + GetPanKou 板块盘口12字段 +
+>   SonPlate_Info 子板块层级 + Socket Protobuf 协议(volRatio/institutionIncrease 仅Socket推送)
+> - **与已有源的关系**: KPL 核心功能已由 levistock §12.10 + 直接API §12.17 覆盖；
+>   本仓库增量=63字段个股详情+板块盘口+子板块层级+Token自动刷新机制
+> - 矩阵重跑 971/1162; 回归 269 passed ✓
+>
+>
+> - **重大发现**: 开盘啦 API 大部分端点无需 Token——直接 HTTP POST + Dalvik UA 即可
+>   (jinhao2003/kaipanla-crawler 141⭐ 方法验证)
+> - **穷尽测试**: 22 个 Action 逐一实弹(盘中时段) → 9/22 无 Token 可用:
+>   ChangeStatistics(市场情绪 ztjs/strong/lbgd)/RiseFallAnalysis/RealRankingInfo/
+>   ZhiShuStockList_W8(63字段无Token可用!)/GetYTFP_BKHX/YTFP_SCTD/
+>   GetInfo/GetStockList(LongHuBang)/MarketStockZDNum 全部 ✅
+> - ❌ 不可用(需Token或特定参数): SharpWithdrawal/GetDayNewHigh_W28/DailyLimitPerformance/
+>   GetPanKou/GetZhangTingGene/MorningBiddingList 等
+> - 字典 §12.21 从⏸️→✅升级; 矩阵重跑 971字段/1175记录; 回归 269 passed ✓
+>
+>
+> - sc_network._DOMAIN_LIMITS 补注册 longhuvip.com 四子域 @5rps
+>   (apphwhq/apphis/applhb/apparticle——KPL 无 Token API 统一层依赖)
+> - stock_common.__init__.py 导出 kpl_get_* 九函数
+> - 回归 269 passed ✓
+
+> 🧹 **V17.0.6**（2026-08-23）
+> **md 报告格式治理: 键值表全面回退竖排 + 明细伪表转真表(用户审美驱动)**
+>
+> - **删除"字段: 值"块→2 列表格自动转换**(V17.0.3 引入)——恢复 V17.0.2 用户原则:
+>   基本信息/行情快照/估值/评分等键值竖排不表格化。原转换使首行字段名成为
+>   加粗伪表头(股票名称/T日主力净流入额/价值派评分等喧宾夺主), 且综合投资
+>   建议长文本被塞进单元格。死函数 _fieldval_block_to_md 一并清除。
+> - 普通行冒号对齐清理(:\s{3,}→": ")使还原后竖排自然对齐。
+>
+> - sht/med 龙虎榜上榜记录(日期/上榜原因/净买入/换手率): CJK 宽度对齐空格
+>   伪表依赖脆弱间隙推断、常态未转换 → 直出 md 表格(V17.0.2o 席位表先例)。
+> - med 评级统计行去标题化(➤/**嵌套——➤ 全局转 ### 使计数行变成章节标题)。
+>
+> - **165 个文件 / 623 个误转键值表**还原为竖排(保守判定: 2 列+字段名特征+
+>   值长≤60; 真 2 列数据表零误伤); med 存量评级标题滥用同步修正。
+>
+> - 探针四案例(键值块/一致预期空格表/龙虎榜 CJK 表/评分块)行为断言全过;
+>   回归 269 passed / 45 deselected 基线不变。
+
+> ✨ **V17.0.5**（2026-08-22）
+> **tdxstat2 Col[4]/Col[11] 终破 + 腾讯 ROE/ROA 对破解 + ulist/push2 字段编号不同构实锤**
+>
+> - **Col[11]=change_mtd 本月至今累积涨跌幅%**(基准=上月末最后交易日收盘):
+>   19/20 股×7 包全精确(误差≤±0.015pp); 月界重置实锤(Col11(8/3)≡chg(8/3) 差=0.000);
+>   **"WTD 本周至今"命名被证伪**(两周共享同一锚点排除每周重置; WTD 错觉=月初周 MTD≡WTD);
+>   旧解"近5根K线 r=1.0"亦证伪(中位差 6.1pp); **§7.3 周一相等悬案结案**
+>   (月初恰满 20 根 K 线时 MTD 与 Col[17] 窗口重合, 每月一次与星期无关)
+> - **Col[4]/[6]/[8]=limit_up_down_seal 用户修正完全证实**: 三日滚动 col4@T≡col6@T+1≡col8@T+2
+>   **1434/1434 全市场精确 0 失败**; 符号 100%(涨停正/跌停负, 8/19 千股跌停日中位数转负);
+>   ST ±5% 亦正确; 可接入打板/封单衰减策略
+> - **腾讯 tx[65]=ROE / tx[66]=ROA 盈利质量对**: 天然实验——各股随自己中报披露日跳变
+>   (600519 8/15 后 30.53→32.41、002827→15.13、688589/920118→8/21 披露后), 未披露股恒定;
+>   量级全符(工行 8.93/万科亏损负); 修订 08-10"tx65=roe 证伪"结论(系对照基准错误)
+> - **tx[69]≡ulist f160(86% 互锁)+推翻字典旧"振幅"解**(0/138 等 tx43 且 35% 负值);
+>   近10交易日窗口周六口径 37/38=97%(盘中口径待终破);
+>   **ul_f160 ≠ pf_f160(利润率类静态)——ulist239 与 push2 字段编号不同构再添一例**
+> - f190≡ul_f48 100%(138/138) 再实锤; tx62/tx71=f122/f121 资金流衍生再证
+>
+> - `core/zhb_client.py`: stat2 键改名 `change_5k_bar`→`change_mtd`(修复与 tdxstat Col[27]
+>   在 full_market_snapshot 合并时的静默同名覆盖); `_ZHB_PARSE_SCHEMA` 2→3(解析缓存强制失效)
+> - data_provider.get_zt_streak_info 补封单额符号语义注释
+>
+> - field_dict.md: tdxstat2 Col[4]/[6]/[8]/[11] 四行重写(铁证入典); §7.3 周一悬案结案;
+>   腾讯表 [62]/[65]/[66]/[69]/[71] 更新; V16.3 O28 备注标记推翻项
+> - 附录: tencent_verify.md/samples_verify.md V17.0.5 增补节; domain_glossary.md 同步;
+>   script_data_dict.md L1 层字段说明更新; §零·B 矩阵重生成(920 字段/1103 记录)
+>
+> - **新附录 verify/fuyao_api_full.md**(80KB): 上游 llms-full.txt 全量字段契约——62 端点
+>   请求参数+响应字段+口径注记零删减(行情/财务五类指标/估值 PS·PCF/竞价/涨跌停炸板池/
+>   异动原因 AI 文本/热榜/龙虎榜/基金 ~24 端点/全市场 Parquet 导出); §12.15.9 索引登记
+> - field_dict §12.8.12c 重写: 31→62 端点全景; **盘后可用性定案**(HTTPS REST 无 thsdk TCP
+>   盘后关闸限制——财务/池/竞价终态盘后可查, thsdk 盘后失败的替代通道); ROE/扣非ROE/ROA
+>   官方口径(tx65/66 对撞终判源); PS/PCF 字典新维度; seal_money/max_seal_money 封单双口径;
+>   auction_unmatched/昨量比/开板次数/seal_nextday 等新维度入典
+> - sc_fuyao.py 扩展 7→**18 端点**(auction×2/pools×3/anomaly×2/fin_indicators/
+>   financials×3/trading_days/adjustment_factors/index×3); __init__ __all__ 同步;
+>   ⚠️ 本机 Key 未配置→通道自动禁用(配 THS_FUYAO_API_KEY 即启用)
+> - **Key 已配置并实测(fuyao_key.txt, gitignore)**: 首采 20/20 全通——对撞三线:
+>   竞价族 auction_volume/amount ≡ ZHB[9]/[14] **19/19**、涨停池 seal_money ≡ zt_seal_amount **54/54**
+>   (双双 L1 互锁); tx65=扣非加权ROE(TTM) 官方 Q1 32.52≈32.41 锁定语义;
+>   契约偏差入典(calculate_* 前缀/归母同比未列/中报入库滞后 5003)
+> - 工程修复: fuyao_to_thscode 北交所前缀顺序 bug(920→.SH 整批拒绝);
+>   @cached 第二位置参数误当 ttl 潜伏 bug; TTL 表 +fuyao_auction
+> - **待办①中报终判自动化**: capture_field_probe 内置哨兵探测(h1_indicators_ready)——
+>   fuyao 上游入库当日即自动拉取全池扣非加权ROE/ROA 完成 tx65 L1 对撞, 无需人工盯守;
+>   当前状态: 上游仍滞后(code=5003), 哨兵正确跳过省配额
+> - **待办②基金域接入 lng/med**: sc_fuyao 新增 get_fuyao_fund_holdings/fund_profile +
+>   get_fund_watch_evidence(自选清单门控); lng【六、筹码与机构持股】/med 新增
+>   【十六之二、自选基金重仓侧证】段——输出持仓占比/重仓排名/报告期增减/
+>   基金股票仓位/重仓行业/前十集中度; 实测 025480.OF 10 持仓全字段到手
+>
+> - **sht**: 封单官方口径优先(fuyao seal_money 替代 bid1×涨停价估算)+**封单衰减率**
+>   (max/current, <30% 烂板预警/>=90% 全日封死)+涨停原因文本; 竞价实时族(live)
+>   未匹配量/昨量比(<50% 缩量诱多警示)/竞价量比——与 ZHB T-1 同源互锁时效升级;
+>   十五章新增衰减率信号(仓位降级联动既有 _seal_warn 体系)
+> - **med**: [本月至今] 动量锚点展示(change_mtd, 持有期 1-3 月正交基准)
+> - **lng**: ROE 双口径对照(报告期加权 F10 vs 扣非 TTM tx65, 差>5pp 盈利水分预警);
+>   现金流官方指标交叉(fuyao 净利润现金含量<80%/现金营运指数<0.9 排雷)
+> - **mak**: fuyao 竞价风向标聚合(高开/放量/红盘占比——9:25 盘前量化情绪,
+>   时效领先叙事型情绪源; 高开>50%+放量>30% 共振进攻信号)
+> - **val**: 新增策略24【月内动量】——change_mtd∈[5,25]% (ZHB 本地零网络);
+>   注册表/_sfmt/计数文案同步; 实测全市场 8003 只→2598 候选(Top10 月内 20%+)
+> - 统一层: canonical +change_mtd/+roe_deduct_ttm; 腾讯映射表 roa→TTM 正名(键名兼容)+
+>   +roe_deduct_ttm:65; sc_datasource 白名单透传补 roe_deduct_ttm; 缓存 TTL 表
+>   +fuyao_seal_map(30min)/fuyao_fund_holdings/fuyao_indicators(trading_day)
+>
+> - **sht**: 官方风向标标签直采(高开/放量——免自建阈值)+**异动解读 AI 文本**
+>   (fuyao anomaly-analysis-stock, 补 V17.0.2 移除盘口异动后的语义层空白)
+> - **med**: 财务兑现双源核验(fuyao growth 族营收/净利/营业利润同比 vs F10,
+>   calculate_* 前缀+契约 id 双兼容; 偏差>2pp 以财报原文为准提示)
+> - **mak**: 跌停池明细正式解法(fuyao limit-down-pool first/last_limit_time——
+>   东财 getTopicDTPool 空缺闭环); fuyao 连板矩阵互校(boards 六档+
+>   seal_nextday 次日续封率——独有字段, 30 日窗口)
+> - **P1-4 核查结论**: change_30d 全仓零脚本引用(仅 canonical 透传+注释)——
+>   无需迁移, 语义陷阱已由注释覆盖
+>
+> - **val 策略25【PS低估值】**: fuyao valuation 批量(市值 top500 预筛控配额)——
+>   PS(TTM)≤全市场20分位 且 PCF>0; PE 失效标的(高毛利未盈利/轻资产)替代估值锚;
+>   注册表/_sfmt/计数文案 24→25 同步
+> - **lng 历史高点前复权切换**: 新增 sc_datasource.get_historical_high_qfq
+>   (腾讯 ifzq fqkline, ~640 根≈2.6年窗口, 字典 §12.1 备胎接口);
+>   get_historical_high wrapper 改 qfq 优先/TDX 不复权兜底, 渲染口径注同步。
+>   实测: 600519 qfq 高点 1806.54 → 真实回撤 -29.6%(旧不复权口径虚报 -52%
+>   误触"长线黄金坑"信号); TDX 周末 None 时 qfq 主路径天然韧性强于旧实现
+>
+> - **roa/roe_deduct_ttm 盘后恒 0 修复**: 原 `need_realtime_quote` 门控导致休市日
+>   rt_quote={} → 盈利质量对(腾讯 tx65/tx66)盘后报告恒 missing。去门控后
+>   tencent extras 补取无条件执行——实测周六 600519: roa=27.3/roe_deduct_ttm=32.41 ✓
+> - **ps_ttm/pcf_ttm 入 canonical**: fuyao valuation 独有维度(ps_ttm/pcf_ttm)补入
+>   sc_schema CanonicalStockData + data_provider 构造; fuyao valuation 补取条件
+>   扩为 pe_ttm 或 ps_ttm 缺失即触发(原仅 pe_ttm); 实测 9.46/13.76 ✓
+> - **source_tag 判定修正**: 原 `and rt_quote` 在财务字段补取后恒真 → 熔断/盘后
+>   误标 http/tdx(测试 test_graceful_circuit_breaker_fallback 捕获); 改为只看
+>   `rt_quote.get("price")` 是否来自实时源
+>
+> - **死代码清理 4 处**: zhb_client.should_use_zhb_data(53 行, V15 遗留时机判断——
+>   ZHB-First 路由已由 data_provider REQUIRES_REALTIME_HTTP/ZHB_SUFFICIENT 取代)、
+>   f10_parser.extract_field(通用正则工具零调用)、sc_datasource.get_zhb_52w_range
+>   (V9.6 遗留——52 周已由 high_52w/low_52w 多源链取代)、conftest.tmp_project
+>   fixture(零测试引用)。删除后残留引用核查干净+py_compile 全过。
+> - **Bug 模式扫描零命中**: 裸 except/吞异常 0、可变默认参数 0、async 内
+>   time.sleep 0、requests 无 timeout 0; 本会话新增高危点作用域验证通过
+>   (sht _seal_info 跨段同函数/mak _dt_count A→B 段同函数)。
+> - **甄别说明**: 17 个"仅测试引用"生产函数(get_sw_industries/get_ah_stocks/
+>   日历族等)保留——属防退化测试覆盖的基础数据接口, 非死代码;
+>   print 输出集中于 GD 上传/批量 Runner/CLI 引导等用户可见交互层, 属设计选择。
+>
+> - P0 五项高危模式逐项核查: mootdx frequency 参数✓/解禁新列名✓/龙虎榜空窗口✓/
+>   EPS 均值列✓/历史高点不复权 ⚠️→lng 渲染加除权口径警示行(数据源切换待办)
+> - v3.7.0 新端点择要入典: 估值历史日频序列/复权因子 qfq·hfq/上市退市日/申万行业变迁史/
+>   CYQ 本地推演法; 宏观层暂不需要; 模式入典: 后缀静默错票(v3.7.1)/ETF 不覆盖个股资金流(#46);
+>   基线版本注释 V3.6.0→V3.7.1
+
 > 🔧 **V17.0.4**（2026-08-19）
 > **历史报告深度核查修复 + 数据采集体系完善 + 新字段破解 + GD 补传**
 >

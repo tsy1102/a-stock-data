@@ -42,7 +42,7 @@ import zipfile
 
 # V16.4.0: 全市场解析结果持久化——键=zip 日期 + schema 版本
 # marshal 比 pickle 快 5-10 倍（数据全为 dict/float/str/int 内置类型）
-_ZHB_PARSE_SCHEMA = 2  # V17.0.1a: tdxstat 新增涨停族(zt_lianban/zt_type)+tdxstat2 封单额(zt_seal_*)——解析缓存失效重解析
+_ZHB_PARSE_SCHEMA = 4  # V17.0.9(2026-08-26): tdxstat Col[24] 破解改名 unknown_24→cash_reserve_wan(货币资金万元)——解析缓存失效重解析
 
 
 def _zhb_parse_cache_path(name: str, date: str) -> str:
@@ -863,10 +863,12 @@ class ZhbData:
                 # （14/14 公司与东财 KCFJCXSYJLR 比值=1.000，含亏损公司）
                 "net_profit_kcf": _safe_cast(parts, 14, float),
                 # V16.0: Col[24] 原误映射为 volume（成交量），经 9 天连续 + 联网核实
-                # （腾讯/东财 30 家）证明为 9 天恒定静态数据，非成交量。
-                # 且不同公司对应不同报告期净资产/负债快照（报告期不一致），
-                # 改名为 unknown_24 防止下游误用为成交量。
-                "unknown_24": _safe_cast(parts, 24, float),
+                # 证明为 9 天恒定静态数据，非成交量。
+                # V17.0.9(2026-08-26 盘后采集破解): Col[24] = **货币资金(万元)**
+                # ——F10 资产负债表「货币资金」逐股对照: 600519=535.188亿(100%一致),
+                # 14/17 精确匹配; 600675/688500 差为报告期差异(unknown=2026Q1值,
+                # F10 最新H1已更新)。跨日恒定根因: 财报季度才更新。字段正名 cash_reserve_wan
+                "cash_reserve_wan": _safe_cast(parts, 24, float),
                 "change_5k_bar": _safe_cast(parts, 27, float),
                 "change_5d": _safe_cast(parts, 28, float),
                 "change_10k_bar": _safe_cast(parts, 29, float),
@@ -905,15 +907,19 @@ class ZhbData:
             [1]  code                股票代码
             [2]  date                数据日期
             [3]  amount              今日总成交额(万元)
-            [4]  unknown_4           未知(占位)
+            [4]  zt_seal_amount      ✅ T日涨跌停封单额(万元, 涨停为正/跌停为负) ★V17.0.5 全市场铁证
             [5]  amount_1d           昨日总成交额(万元)
-            [6]  unknown_6           未知(占位)
+            [6]  zt_seal_amount_1d   ✅ T-1 日封单额(Col[4] 滞后值)
             [7]  amount_2d           前日总成交额(万元)
-            [8]  unknown_8           未知(占位)
+            [8]  zt_seal_amount_2d   ✅ T-2 日封单额(Col[4] 二次滞后)
             [9]  bid_volume          ⚠️ V17.0(2026-08-14)实锤: **早盘竞价量(手)**——[9]×开盘价≈[14] 15/17 铁证
                                      (键名 main_net_buy_hands 历史遗留, 非主力净买入量)
             [10] bid_volume_1d       昨日早盘竞价量(手) — 同上, 键名历史遗留
-            [11] change_5k_bar   近5根K线涨跌幅(与tdxstat Col[27]完全一致r=1.0) ★V16.3 O28
+            [11] change_mtd          ✅ **本月至今累积涨跌幅%**(基准=上月末最后交易日收盘价)
+                                     ★V17.0.5 铁证(2026-08-22, docs/field_verification/20260822/cross_analysis.md):
+                                     19/20 股×7 包全精确(误差≤±0.015pp); Col11(8/3)≡chg(8/3)(基准=上月末收盘);
+                                     7/31 值属 7 月窗口=月度重置实锤; 原"近5根K线(r=1.0)"与"近5日复利"均证伪
+                                     (键名 change_5k_bar 历史遗留, 已改名; 注意与 tdxstat Col[27] change_5k_bar 是不同字段)
             [12] change_250k_bar 近250根K线涨跌幅(年线) ★V16.3 O28破解(K线缓存k250 r=0.973)
             [13] tday_special_board  T日特色板块归属（V16.2.17 重新定性，见下）
             [14] open_amount        ⚠️ V17.0(2026-08-14)实锤: **开盘金额=集合竞价成交额(万元)**, 非主力净流入!
@@ -941,13 +947,10 @@ class ZhbData:
               881申万行业段，或东财 datacenter 申万二级映射（get_em_industry_map_v2）
 
         V16.2.18 补充（3天Delta + injoyai官方源码 + 东财f189交叉）：
-            [4]  疑**涨跌停封单额(万元)**：0804有值144只中143只涨跌停(99%)，
-                 600530跌停-10.02%也有值；122只涨停无值(封单为0/未封住)。
-                 值域: 000533=9207.45/000048=5874.65/000593=14272.09(万元)
-            [6]  疑**资金分档字段**(大单类)：有值93只,涨停占比26%,混合；
-                 000533涨停=10948.26(>主力净买额6249.73 → 分档口径)
-            [8]  疑**资金分档字段**(特大单类)：有值100只,涨停占比28%；
-                 000009=1063.63
+            [4]/[6]/[8] V16.2.18"资金分档"推测已被 V17.0.5 全市场验证取代:
+                  三列为**同一封单额字段的三日滚动滞后序列**(col4@T≡col6@T+1≡col8@T+2,
+                  16 包全市场 1434/1434 精确相等 0 失败; 涨停为正/跌停为负, 符号 100% 一致)。
+                  命中率 90-96%(漏报=尾盘炸板/新股首日), ST ±5% 涨停亦正确带符号。
             [19] 近30根K线涨跌幅(含噪) ★V16.3 O28：K线缓存926只对照 k30 r=0.96+，
                  中位差5.36（原"非标准K线周期"判断过时——实为标准30根K线周期，
                  含复权/基准噪声；"主力成本偏离"假设被排除）
@@ -971,8 +974,9 @@ class ZhbData:
                 "code": code,
                 "date": parts[2].strip() if len(parts) > 2 else "",
                 "amount": _safe_cast(parts, 3, float),
-                # V17.0(2026-08-15) 封单额三日滚动暴露:
-                #   [4]=T日涨停封单额(万元, 涨停池 92/92 铁证)、[6]=T-1、[8]=T-2(官方确认昨/前封单额)
+                # V17.0.5(2026-08-22) 封单额三日滚动全市场铁证(cross_analysis.md Part A):
+                #   col4@T ≡ col6@T+1 ≡ col8@T+2 (1434/1434 精确相等);
+                #   涨停为正/跌停为负(符号 100% 一致); 单位万元
                 "zt_seal_amount": _safe_cast(parts, 4, float),
                 "zt_seal_amount_1d": _safe_cast(parts, 6, float),
                 "zt_seal_amount_2d": _safe_cast(parts, 8, float),
@@ -987,12 +991,14 @@ class ZhbData:
                 "high_52w": _safe_cast(parts, 17, float),
                 "low_52w": _safe_cast(parts, 18, float),
                 # V16.3 O28: K线缓存精确对照（926只, baidu_kline_full）——
-                #   Col[11] = 近5根K线涨跌幅（与 tdxstat Col[27] r=1.0000 完全一致，重复字段）
                 #   Col[12] = 近250根K线涨跌幅（年线，k250 r=0.973；原 D2 疑"YTD"为巧合，
                 #             c250 r=0.68 / k120 r=0.72 均不及）
                 #   Col[19] = 近30根K线涨跌幅（k30 r=0.96+，含噪——原 D2 疑"20日"为近似）
                 #   Col[20] = 近30根K线涨跌幅（k30 r=0.975 更纯——中位差 2.55）
-                "change_5k_bar": _safe_cast(parts, 11, float),
+                # V17.0.5: Col[11] 改名 change_5k_bar→change_mtd(本月至今累积涨跌幅%,
+                #   基准=上月末收盘; 原"近5根K线"解证伪——与 tdxstat Col[27] 实测中位差 6pp;
+                #   全市场 19 股×7 包铁证见 docs/field_verification/20260822/cross_analysis.md)
+                "change_mtd": _safe_cast(parts, 11, float),
                 "change_250k_bar": _safe_cast(parts, 12, float),
                 "change_30k_bar": _safe_cast(parts, 19, float),
                 "change_30k_bar_ref": _safe_cast(parts, 20, float),
@@ -1691,7 +1697,7 @@ def market_stat_snapshot(codes: Optional[List[str]] = None) -> Dict[str, Dict[st
     Returns:
         {code: {change_pct, streak_days, pe_dynamic, pe_ttm, dividend_yield,
                 change_pct_1d, change_pct_2d, change_5d, change_10d, change_20d,
-                change_30d, change_60d, change_ytd, unknown_24, employee_count, ...}}
+                change_30d, change_60d, change_ytd, cash_reserve_wan, employee_count, ...}}
     """
     zhb = get_zhb()
     if zhb is None:
@@ -1951,59 +1957,7 @@ def get_delisted_stocks() -> Dict[str, str]:
 # V10.0 智能日期筛选
 # ═══════════════════════════════════════
 
-def should_use_zhb_data() -> tuple[bool, str]:
-    """根据当前时机判断是否应使用zhb数据。
 
-    Returns:
-        (should_use, expected_date): 是否使用zhb，期望的数据日期(YYYYMMDD)
-
-    时间逻辑：
-        - 收盘后(15:00后): 使用当日数据
-        - 开盘前(9:30前): 使用上一交易日数据
-        - 休市日: 使用上一交易日数据
-        - 盘中(9:30-15:00): 必须实时获取，返回(False, "")
-    """
-    from datetime import date, datetime, time
-    from stock_common.sc_datasource import is_trading_day
-    from stock_common.stock_calendar import get_last_trading_day as get_previous_trading_day
-
-    now = datetime.now()
-    today = date.today()
-    current_time = now.time()
-
-    if not is_trading_day(today):
-        expected = get_previous_trading_day(today)
-        return (True, expected.strftime("%Y%m%d"))
-
-    if current_time >= time(15, 0):
-        return (True, today.strftime("%Y%m%d"))
-    elif current_time < time(9, 30):
-        expected = get_previous_trading_day(today)
-        return (True, expected.strftime("%Y%m%d"))
-    else:
-        return (False, "")
-
-
-if __name__ == "__main__":
-    print("=== zhb_client.py 自测 ===")
-    zhb = get_zhb()
-    if zhb is None:
-        print("❌ 获取失败")
-    else:
-        print(f"✅ 数据日期: {zhb.date}")
-        print(f"✅ 原始文件数: {len(zhb.raw_files)}")
-        print()
-        print("=== 大板块列表 ===")
-        for name, count in zhb.list_sp_blocks():
-            print(f"  {name:20s}  {count:5d} 只")
-        print()
-        print(f"=== 申万行业数量: {len(zhb.sw_industries)} ===")
-        for i, (code, name) in enumerate(list(zhb.sw_industries.items())[:10]):
-            print(f"  {code}  {name}")
-        if len(zhb.sw_industries) > 10:
-            print(f"  ... 共 {len(zhb.sw_industries)} 个")
-        print()
-        print(f"=== 行业映射总数: {len(zhb.industry_map)} ===")
 
 # ═══════════════════════════════════════════════════════════════
 # V14.2 新增便捷函数 - 6 个新 ZHB 数据集

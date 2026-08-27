@@ -879,8 +879,13 @@ _TENCENT_FIELD_INDEX = {
     "low_52w": 68,         # 52周最低价(元)
     "dividend_yield": 64,  # 股息率(%)（=push2 f126 同源）
     # V16.3.3 (2026-08-10 字典 12.1/12.15.5 实测): 腾讯未知位破解
-    "roa": 66,             # ROA 总资产收益率(%) — 已验证（招行 1.12=年化 ROA 精确）
-    "main_net_inflow_yi": 75,  # 主力净流入(亿) — 与 push2 f137 同值（-4.55 验证）
+    "roa_ttm": 66,         # V17.0.5 正名: ROA(TTM 滚动%)——~~"年化"~~（银行 TTM≈年报故曾误标；
+                           #   招行 1.12 精确；fuyao 官方 total_assets_net_ratio 同族）
+    "roe_deduct_ttm": 65,  # V17.0.5 新增: 扣非加权ROE(TTM 滚动%)——fuyao index_deduct_weighted_avg_roe
+                           #   同族（茅台 32.41 vs 官方 Q1 32.52；披露日跳变天然实验铁证）；
+    "change_180td_pct": 75,  # V17.0.7 正名: 近180交易日涨跌幅(%, 前复权)——腾讯独有长窗涨幅
+                             #   ~~"主力净流入(亿)"~~ 证伪(与东财占比族最大差40pp且符号翻转、
+                             #   值可超±100; K线窗口扫描 w=180 显著最优)——严禁再作资金流兜底
     "panel_price": 85,     # 盘口参考价（≈price±0.1，未确认精确语义）
 }
 _TENCENT_MIN_FIELDS = 69  # V16.3 O22: 覆盖 high_52w=67/low_52w=68/dividend_yield=64 索引（原 53 会 IndexError）  # 协议最小字段数（不足即视为 schema 变化/截断）
@@ -1179,7 +1184,7 @@ def tdx_get_quote_full(code: str) -> Dict[str, Any]:
                 if _safe("amount"):
                     result["amount_wan"] = zhb["amount"]
                 # V16.0: 移除 ZHB volume 注入 — Col[24] 曾误映射为 volume(成交量)，
-                # 经 9 天连续+联网核实为恒定静态数据(非成交量)，已改名为 unknown_24。
+                # V17.0.9: Col[24] 已破解正名为 cash_reserve_wan(货币资金/万元)。
                 # 真实成交量只能来自 TDX/腾讯行情（下方 TDX TCP 分支填充）。
                 # if _safe("volume"): result["volume_hand"] = zhb["volume"]
                 if _safe("pe_ttm"):

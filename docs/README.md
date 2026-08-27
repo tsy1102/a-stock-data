@@ -26,6 +26,7 @@ docs/
     ├── tencent_verify.md    # 腾讯 88 字段全复核 + 未知位矩阵（§12.1）
     ├── levistock_field_verify.md  # levistock 26/38 接口实测字段
     ├── thsdk_field_verify.md      # THS SDK 395 ID 字段核实
+    ├── fuyao_api_full.md          # fuyao 官方 REST 全量字段契约镜像（62 端点, §12.8.12c）
     ├── client_fields_enum.md      # 客户端字段枚举全景（东财/通达信/同花顺逆向）
     ├── network_servers.md         # 三源服务器清单 + 移动线路实测
     └── data/                # 附录数据文件（JSON）

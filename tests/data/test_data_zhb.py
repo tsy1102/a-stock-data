@@ -146,17 +146,17 @@ class TestZhbStockProfile:
 
 
 class TestZhbColMappings:
-    """V16.0: Col[14]=扣非净利润 / Col[24]=unknown_24 映射验证"""
+    """V16.0: Col[14]=扣非净利润 / Col[24]=货币资金 V17.0.9 破解"""
 
     def _make_zhb(self):
         from core.zhb_client import ZhbData
         zhb = ZhbData()
-        # 构造 tdxstat.cfg: 35 列, Col14=扣非净利润, Col24=原误标volume
+        # 构造 tdxstat.cfg: 35 列, Col14=扣非净利润, Col24=货币资金(万)
         cols = ['0'] * 35
         cols[0] = '1'          # market
         cols[1] = '600519'     # code
         cols[14] = '2723998.52'  # 扣非净利润(万)
-        cols[24] = '4878669.14'  # unknown_24
+        cols[24] = '4878669.14'  # 货币资金(万)
         line = '|'.join(cols)
         zhb.raw_files = {'tdxstat.cfg': line.encode('gbk')}
         return zhb
@@ -167,10 +167,10 @@ class TestZhbColMappings:
         assert stat['net_profit_kcf'] == 2723998.52
         assert 'volume' not in stat
 
-    def test_col24_maps_to_unknown_24(self):
+    def test_col24_maps_to_cash_reserve_wan(self):
         zhb = self._make_zhb()
         stat = zhb.stock_stats['600519']
-        assert stat['unknown_24'] == 4878669.14
+        assert stat['cash_reserve_wan'] == 4878669.14
         assert 'volume' not in stat
 
 

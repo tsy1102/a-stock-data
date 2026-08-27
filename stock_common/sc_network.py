@@ -150,6 +150,7 @@ class RateLimitBlockedError(Exception):
 
 # 连续 403 计数（模块级，跨调用累积）
 _CONSECUTIVE_403 = {"count": 0, "last_ts": 0.0}
+_EM_COOKIE_FAIL_COUNT = 0  # V17.0.7: Cookie 过期检测计数器
 
 # ═══════════════════════════════════════
 # 全局异步 Session 单例（V12.2）
@@ -203,6 +204,13 @@ _DOMAIN_LIMITS: Dict[str, Dict[str, Any]] = {
     "data.10jqka.com.cn": {"sleep_ms": 150, "semaphore": None, "rps": 5.0},
     # V16.3.3: 同花顺官方金融数据 REST（fuyao，字典 §12.8.12c）——官方 4001 限流 + 本地 500ms/2rps 保守
     "fuyao.aicubes.cn": {"sleep_ms": 500, "semaphore": None, "rps": 2.0},
+    # V17.0.7: FTShare MCP 网关（字典 §12.20）——配额未声明，保守 500ms/2rps
+    "market.ft.tech": {"sleep_ms": 500, "semaphore": None, "rps": 2.0},
+    # V17.0.7: 开盘啦(KPL) longhuvip.com 四子域——Dalvik UA 必须，自行限流 >=200ms
+    "apphwhq.longhuvip.com": {"sleep_ms": 200, "semaphore": None, "rps": 5.0},
+    "apphis.longhuvip.com": {"sleep_ms": 200, "semaphore": None, "rps": 5.0},
+    "applhb.longhuvip.com": {"sleep_ms": 200, "semaphore": None, "rps": 5.0},
+    "apparticle.longhuvip.com": {"sleep_ms": 200, "semaphore": None, "rps": 5.0},
 }
 # 每个域名独立的最后请求时间
 _DOMAIN_LAST_TIME: Dict[str, float] = {}
@@ -340,6 +348,44 @@ def _file_lock_release(lock_path: str) -> None:
         _debug_log(f"sc_network file_lock_release: {_e}")
 
 
+_EM_COOKIE: str | None = None
+_EM_COOKIE_LOADED = False
+
+
+def _get_eastmoney_cookie() -> str:
+    """V17.0.7: 东财 Cookie 获取（参考 myhhub/stock eastmoney_fetcher 方案）。
+
+    优先级: 环境变量 EAST_MONEY_COOKIE > config/eastmoney_cookie.txt > 空。
+    Cookie 过期(数天~数周)后需重新从浏览器获取——登录态请求大幅提高 push2 系阈值。
+    """
+    global _EM_COOKIE, _EM_COOKIE_LOADED
+    if _EM_COOKIE_LOADED:
+        return _EM_COOKIE or ""
+    import os as _os
+    # 1) 环境变量
+    val = _os.environ.get("EAST_MONEY_COOKIE", "")
+    if val:
+        _EM_COOKIE = val.strip()
+        _EM_COOKIE_LOADED = True
+        return _EM_COOKIE
+    # 2) 配置文件
+    for candidate in (
+        os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "config", "eastmoney_cookie.txt"),
+        os.path.join(os.path.dirname(os.path.abspath(__file__)), "eastmoney_cookie.txt"),
+    ):
+        p = os.path.normpath(candidate)
+        if os.path.isfile(p):
+            try:
+                val = open(p, encoding="utf-8").read().strip()
+                if val:
+                    _EM_COOKIE = val
+                    break
+            except Exception:
+                pass
+    _EM_COOKIE_LOADED = True
+    return _EM_COOKIE or ""
+
+
 def em_get(url: str, params: dict | None = None, headers: dict | None = None,
            timeout: int = 15, **kwargs):
     """东财统一请求入口（SKILL.md V3.2 推荐）：自动节流 + 复用session + 默认UA。
@@ -429,12 +475,36 @@ def em_get(url: str, params: dict | None = None, headers: dict | None = None,
         if "User-Agent" not in session_headers:
             session_headers["User-Agent"] = get_random_ua()
 
+        # V17.0.7: 东财 Cookie 注入——登录态请求大幅提高 push2 系封禁阈值
+        # (参考 myhhub/stock eastmoney_fetcher.py 方案)
+        _em_cookie = _get_eastmoney_cookie()
+        if _em_cookie:
+            session_headers["Cookie"] = _em_cookie
+
         _response = EM_SESSION.get(url, params=params, headers=session_headers,
                                    timeout=timeout, **kwargs)
 
         # V16.2 修复: 403/429 统一走失败路径 —— 不再返回响应走"成功"分支（原 403 后仍 _on_success 并返回 403 响应）
         _status = _response.status_code
         if _status in (403, 429):
+            # V17.0.7: Cookie 过期检测——已配置 Cookie 时连续 403/429 说明登录态失效
+            if _em_cookie:
+                _EM_COOKIE_FAIL_COUNT += 1
+                if _EM_COOKIE_FAIL_COUNT >= 5:
+                    print(
+                        "\n" + "⚠️" * 20 + "\n"
+                        "  ⚠️ 东财 Cookie 疑似过期！已配置 Cookie 但连续 "
+                        f"{_EM_COOKIE_FAIL_COUNT} 次 403/429。\n"
+                        "  请更新 Cookie：\n"
+                        "    1. Chrome 打开 quote.eastmoney.com 并登录\n"
+                        "    2. F12 → Console → 输入 document.cookie → 回车\n"
+                        "    3. 复制输出内容，替换 config/eastmoney_cookie.txt 文件全文\n"
+                        "    4. 或执行: setx EAST_MONEY_COOKIE \"粘贴的内容\" 后重启终端\n"
+                        + "⚠️" * 20 + "\n", flush=True,
+                    )
+                    _EM_COOKIE_FAIL_COUNT = 0  # 只提醒一次，重置计数
+            else:
+                _EM_COOKIE_FAIL_COUNT = 0
             _RL_STATS["em_403_count"] += 1 if _status == 403 else 0
             _RL_STATS["em_429_count"] = _RL_STATS.get("em_429_count", 0) + (1 if _status == 429 else 0)
             try:

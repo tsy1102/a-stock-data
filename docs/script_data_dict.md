@@ -14,10 +14,10 @@
 
 | 层级 | 实现位置 | 说明 |
 |:---|:---|:---|
-| **L1 ZHB 静态** | core/zhb_client `_parse_tdxstat`/`_parse_tdxstat2`/tipinfo; 入口 sc_datasource `get_zhb_single_stock_data` | T-1 快照; **tdxstat2 21 列全映射(V17.0)**;[4]/[6]/[8]=涨停封单额三日滚动; [13]=881 行业/880 概念双段; **⚠️ [9]/[10]/[14]/[15]=竞价量/竞价额(今/昨, 键名 main_net_buy_hands/amount 历史遗留——非主力资金流)** |
+| **L1 ZHB 静态** | core/zhb_client `_parse_tdxstat`/`_parse_tdxstat2`/tipinfo; 入口 sc_datasource `get_zhb_single_stock_data` | T-1 快照; **tdxstat2 21 列全映射(V17.0)**;[4]/[6]/[8]=涨停跌停封单额三日滚动(万元, 涨停正/跌停负, V17.0.5 铁证 limit_up_down_seal); **[11]=change_mtd 本月至今涨跌幅(基准=上月末收盘, V17.0.5 铁证——键名已由 change_5k_bar 改名)**; [13]=881 行业/880 概念双段; **⚠️ [9]/[10]/[14]/[15]=竞价量/竞价额(今/昨, 键名 main_net_buy_hands/amount 历史遗留——非主力资金流)** |
 | **L1.5 THS SDK** | stock_common/sc_ths.py(同花顺官方 C 库 TCP——正式账号无限频) | 独有: PB/ROE TTM/主力净流入盘中/两融/户均持股/市值——候选级补全 |
 | **L2 TDX TCP** | core/tdx_client(easy_tdx 适配) | 0x0010 金额**单位角**(O19 /10 得元); F10/boards/K线; **prefetch 命中时 canonical 跳过 TDX(V17.0)** |
-| **L3 腾讯** | sc_datasource `get_tencent_quote` / tdx_client `_tencent_batch_fallback`(60/批) | O21 平盘 `is not None` 不回退; [67]/[68]=52周高低(V17.0 实证); **tx75 主力净流入口径存疑(V17.0 实锤反向)→ 仅兜底** |
+| **L3 腾讯** | sc_datasource `get_tencent_quote` / tdx_client `_tencent_batch_fallback`(60/批) | O21 平盘 `is not None` 不回退; [67]/[68]=52周高低(V17.0 实证); **tx75 正名=近180交易日涨跌幅(V17.0.7 证伪"主力净流入")→ 已改名 change_180td_pct 并删除主力兜底分支** |
 | **L3.5 新浪日K** | quotes.sina.cn `CN_MarketDataService.getKLineData`(V17.0.4 新增, mak `get_index_returns` 指数多周期收益兜底) | 域级限流已配(sc_network 150ms/5rps); 前复权, 与腾讯 ifzq `qfq` 实测一致(<0.01); **能力全集**: scale=5/15/30/60(分钟)/240(日)/1200(周)/7200(月), 日K字段 `day/open/high/low/close/volume`, 分钟级追加 `amount`——当前仅用 close 算区间收益, 其余字段按需取用; 同类已有接口: 新浪财报 `CompanyFinanceService.getFinanceReport2022`(sc_datasource) |
 | **L4 东财 push2delay** | sc_datasource `get_em_quote_full_delay`(push2delay 镜像域, 风控独立) | **V17.0 主力源**: f162 动态PE/f163 静态PE/f137-146 资金流/f174-175 52周; ulist(f2-f21 行情, **估值字段返回 "-" 勿用**); 1.0rps 限流 |
 | **L5 东财 push2 主域** | sc_datasource `get_em_quote_full` | 风控最严最后手段; 当前 IP 封禁中自动跳过 |
@@ -48,13 +48,16 @@
 | 字段 | 中间层 | 优先级链(V17.0) |
 |:---|:---|:---|
 | price/change_pct/amount/turnover | get_canonical_stock_data | prefetch → TDX → 腾讯 → push2delay → push2 → ZHB |
-| **main_net_buy** | **get_main_net_buy** | **push2delay f137+f140(主力=特大+大单, 无条件) → 腾讯 tx75(兜底) → TDX 0x0011**——ZHB 分支已删(其资金流键=竞价额) |
-| main_net_buy_wan(cdata) | get_canonical_stock_data | **f137+f140 /1e4(无条件) → 腾讯 tx75 → TDX**——与 get_main_net_buy 同源; ZHB 兜底已删(竞价额不可作主力) |
+| **main_net_buy** | **get_main_net_buy** | **push2delay f137+f140(主力=特大+大单, 无条件) → TDX 0x0011**——ZHB 分支已删(其资金流键=竞价额); ~~腾讯 tx75 兜底~~ V17.0.7 删(证伪=180日涨幅) |
+| main_net_buy_wan(cdata) | get_canonical_stock_data | **f137+f140 /1e4(无条件) → TDX rt_fund**——与 get_main_net_buy 同源; ZHB 兜底已删(竞价额不可作主力); tx75 分支 V17.0.7 删除 |
 | main_net_buy_wan_1d | cdata | **0(缺失)**——ZHB [15]=昨日竞价额(非主力 T-1), 已停用 |
 | 四档资金流 | get_em_quote_full_delay | **特大=f137/大=f140/中=f143/小=f146(净); 主力=f137+f140; 5日=f178 数组聚合; fund_*_5d/10d 旧映射已删** |
 | **vol_ratio(量比)** | cdata | **腾讯 [49](现用, val 策略07 依赖) → push2 f50(V17.0.4 破解, 20/20 与腾讯同值, 可作等价源)** |
 | **market_type(市场类型)** | get_board_type(code 推算) | **push2 f182(V17.0.4 破解官方枚举: 主板2/创业5/科创32/北交80, 可交叉验证)** |
 | **industry_code_push2(东财板块代码)** | get_em_quote_full | **push2 f198(BKxxxx, 已解析使用)** |
+| **财务 TTM 族(V17.0.7)** | cdata ← _em_quote_full_impl +f103/f104/f105/f108/f109/f160/f190 | ocf_ttm=经营现金流净额(TTM 元)/revenue_ttm=营业总收入(TTM)/net_profit_period=归母净利(最新报告期)/net_profit_annual=归母净利(最新年报)/eps_annual=年报EPS/eps_deduct_ttm=扣非EPS(TTM)/undist_profit_ps=每股未分配——**口径经 fuyao 官方报表 5/5 终判**; 消费: lng 三章现金流双源对照+五章分红池、med 三章双源核验 |
+| **财务 TTM 族兜底链(V17.0.7 层级定案)** | get_canonical_stock_data | **fuyao 三大报表 quarterly 聚合(主源, 同花顺官方 REST 独立风控域+盘后可查) → push2delay f103 族(兜底, 仅补缺失)**: ocf_ttm/revenue_ttm/net_profit_period/net_profit_annual + eps_annual(净利年报÷股本缓存折算); revenue 兜底为营业收入口径差~1.8%需注记; eps_deduct_ttm/undist_profit_ps 无 fuyao 字段仍 push 独有; 进程缓存按(code,report_period); **thsdk(TCP) 盘后关闸 → 定位盘中专属特殊层不进通用链**(用户决策: 运行时段多为盘后) |
+| **FTShare MCP(V17.0.7 新源)** | sc_ftshare(市场.ft.tech @2rps) | 千股千评四族(评分日序列/参与意愿/关注度/机构参与度)+昨日涨停池(炸板回封时间数组)+董监高变动26字段+商誉明细+质押汇总+解禁按日+大盘资金流; 消费: sht十四章情绪面+lng九之二结构化排雷+采集脚本 raw_ftshare.json |
 
 ### 2.1b 竞价族(V17.0 实锤: ZHB tdxstat2 资金流键=竞价数据)
 | 字段 | 中间层 | 说明 |
@@ -214,7 +217,7 @@
 
 | 变更 | 前(V16.x) | 后(V17.0) |
 |:---|:---|:---|
-| 主力净流入 | ZHB 优先/腾讯 tx75 优先(口径分裂) | **f137(当日权威)无条件优先, 全链同源** |
+| 主力净流入 | ZHB 优先/腾讯 tx75 优先(口径分裂) | **f137(当日权威)无条件优先, 全链同源**; V17.0.7 tx75 兜底分支删除(tx75=180日涨幅非资金流) |
 | PE 动态 | 腾讯 [52] 冒充动态 | **push2delay f162 真动态; 腾讯静态剔除** |
 | 行业 | ZHB [13] 880/881 混合(概念污染) | **仅认 881 段; 880=概念/风格** |
 | 批量骨架 | 3 脚本各自 90-110 行 | **基类 execute_batch_pipeline(钩子参数化)** |

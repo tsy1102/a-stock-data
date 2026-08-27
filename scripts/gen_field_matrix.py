@@ -32,6 +32,11 @@ SOURCE_ORDER = [
     "TDX-0x0010/F10",
     "TDX-eltdx",
     "腾讯",
+    # V17.0.7 层级定案: 同花顺-fuyao(REST) 升至腾讯之后——官方口径/盘后可查/
+    # 独立风控域(4001 退避), 已升为财务 TTM 族主源; thsdk(TCP) 盘后关闸 →
+    # 盘中专属特殊层, 排其后、东财前。
+    "同花顺-fuyao",
+    "同花顺-thsdk",
     "新浪",
     "巨潮",
     "同花顺",
@@ -54,6 +59,11 @@ NON_FIELD_SEC = ("覆盖统计", "文件元信息", "接口分类全景", "已�
 
 def sec_to_source(sec: str) -> str:
     s = sec
+    # V17.0.7: THS 族识别——必须在东财分支之前(12.8.12c/d 含 "12.8" 子串会被误判)
+    if "fuyao" in s or "12.8.12c" in s or "12.8.12d" in s:
+        return "同花顺-fuyao"
+    if "thsdk" in s or "sc_ths" in s or "12.8.12b" in s:
+        return "同花顺-thsdk"
     if "腾讯" in s:
         return "腾讯"
     if "新浪" in s:
@@ -184,10 +194,11 @@ def render(name_sources, records) -> str:
 
     out = []
     out.append("### 零·B 字段×源总表（自动生成，勿手改）\n")
-    out.append(f"> 生成：`scripts/gen_field_matrix.py`，2026-08-06。从本字典全部字段表自动提取，"
+    out.append(f"> 生成：`scripts/gen_field_matrix.py`，2026-08-25。从本字典全部字段表自动提取，"
                f"共 {len(name_sources)} 个字段 / {records} 条字段×源记录。\n")
-    out.append("> 源排序按易→难：ZHB（离线零网络）→ TDX TCP（0x0010/F10/eltdx）→ AxData（local 模式）→ "
-               "腾讯（不封 IP）→ 东财（限流最严）→ 新浪 → 巨潮 → 其他。\n")
+    out.append("> 源排序按易→难（V17.0.7 层级定案）：ZHB（离线零网络）→ TDX TCP（0x0010/F10/eltdx）→ "
+               "腾讯（不封 IP）→ **同花顺-fuyao（官方 REST，盘后可查+独立风控域，V17.0.7 升为财务 TTM 族主源）** → "
+               "**同花顺-thsdk（TCP 盘后关闸——盘中专属特殊层）** → 新浪 → 巨潮 → 东财（限流最严）→ 其他。\n")
     out.append("> 字段名基于章节标题分类推断，精确接口见各节；正文修改后重跑本脚本即同步。\n")
     out.append(f"**B.1 多源字段（{len(multi)} 个，fallback 路由表）**\n")
     out.append("| 字段 | 源数 | 源（按易→难） |")

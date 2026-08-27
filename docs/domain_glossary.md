@@ -21,7 +21,7 @@
 | 术语 | 定义 | 备注 |
 |---|---|---|
 | tdxstat.cfg | 全市场个股统计快照(35 字段: 涨跌幅/PE/5-60日涨跌/扣非净利润/员工数…) | Col[3]=pe_dynamic, Col[9]=pe_ttm; Col[12]=新股开板日/Col[13]=上市连板数(V16.2.18 破解); [17]=近20根K线/[18]=20日/[19]=近60根K线/[20]=60日 |
-| tdxstat2.cfg | 全市场资金流向+板块归属(21 字段) | Col[13]=**T日特色板块**, 非行业(见 §4); Col[4]=疑涨跌停封单额 |
+| tdxstat2.cfg | 全市场资金流向+板块归属(21 字段) | Col[13]=**T日特色板块**, 非行业(见 §4); Col[4]/[6]/[8]=**limit_up_down_seal 涨跌停封单额三日滚动**(万元, 涨停正/跌停负, V17.0.5 铁证); Col[11]=**change_mtd 本月至今涨跌幅**(基准=上月末收盘, V17.0.5 铁证) |
 | profile.dat | 离线股票简称字典(代码→名称, 每日随 ZHB 更新) | `get_stock_name_from_zhb` |
 | tdxzs3.cfg | 板块代码→名称映射(880xxx 通达信自建 604 个 + 881xxx 申万版 467 个) | `industry_map` |
 | tipinfo.dat | 财报日历(EPS/披露日/除权除息/分红日) | |
@@ -81,7 +81,7 @@
 | 级 | 字段 | 说明 |
 |---|---|---|
 | **A 即时** | price① / change_pct / amount / volume① / open① / high① / low① / prev_close① / main_net_buy_amount / main_net_buy_hands / turnover_pct / streak_days | 价格/当日涨幅/当日成交/当日主力/换手/连涨（①为 TDX/腾讯实时字段，ZHB 无或仅兜底）|
-| **B 中精度** | pe_ttm / pe_dynamic / pb① / dividend_yield / mcap① / change_ytd / change_5d / change_10d / change_20d / change_30d / change_60d / **change_5k_bar / change_10k_bar / change_20k_bar / change_60k_bar** | 估值/股息/市值/阶段涨幅（含近 N 根 K 线口径）|
+| **B 中精度** | pe_ttm / pe_dynamic / pb① / dividend_yield / mcap① / change_ytd / **change_mtd** / change_5d / change_10d / change_20d / change_30d / change_60d / **change_5k_bar / change_10k_bar / change_20k_bar / change_60k_bar** | 估值/股息/市值/阶段涨幅（含近 N 根 K 线口径；change_mtd=本月至今, ZHB tdxstat2 Col[11]）|
 | **C 静态** | high_52w / low_52w / total_shares① / float_shares① / employee_count / ipo_price / industry① / industry_code / board① / concept① / eps / roe① / net_profit① / revenue① / **net_profit_kcf / unknown_24(现金总额) / board_count / unseal_date / amount_1d / amount_2d / main_net_buy_amount_1d / main_net_buy_hands_1d / change_pct_1d / change_pct_2d / disclose_date / report_period / div_date / div_amount / ex_date** | 股本/52周/行业/财务/历史序列（昨日/前日值、T-1 主力、连板数、开板日、分红财报）|
 | **D 参照系** | （派生，非 ZHB 字段）| 行业排名/板块聚合/指数对比 |
 

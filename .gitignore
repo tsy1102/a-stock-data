@@ -69,3 +69,6 @@ scratch/*
 # V17.0.1: 采集日志(测试产物)
 docs/field_verification/*/meta.json
 .freebuff/
+
+# FTShare/EastMoney credentials
+config/eastmoney_cookie.txt

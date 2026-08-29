@@ -1002,7 +1002,11 @@ def get_tencent_quote(code: str) -> Dict[str, Any]:
     try:
         from stock_common.sc_schema import normalize_at_boundary, DataSource
         from stock_common import _quick_request, _safe_float
-        from core.tdx_client import _TENCENT_FIELD_INDEX as _f, _TENCENT_MIN_FIELDS  # V16.2.4 (B5): 统一字段索引
+        from core.tdx_client import (
+            _TENCENT_FIELD_INDEX as _f,
+            _TENCENT_MIN_FIELDS,
+            _tencent_volume_divisor,  # V17.0.12: 科创板成交量单位换算
+        )  # V16.2.4 (B5): 统一字段索引
         prefix = "sh" if code.startswith("6") else ("bj" if code.startswith(("8", "4", "92")) else "sz")
         r = _quick_request(f"https://qt.gtimg.cn/q={prefix}{code}", timeout=10)
         if r is None:
@@ -1020,6 +1024,12 @@ def get_tencent_quote(code: str) -> Dict[str, Any]:
             return {}
         _price_v = _safe_float(vals[_f["price"]])
         _vol_v = _safe_float(vals[_f["volume_hand"]])
+        # V17.0.12: 科创板(688) 腾讯返回的是「股」而非「手」——÷100 归一到手。
+        # 实测(2026-08-29, 20 股): 成交额÷(量×现价) 反推每手股数, 688 段=1.01~1.02, 其余=99.3~100.9。
+        # 未修正前: 腾讯作为行情兜底源时, 科创板 volume_hand 被放大 100×。
+        _vdiv = _tencent_volume_divisor(code)
+        if _vol_v and _vdiv != 1.0:
+            _vol_v = _vol_v / _vdiv
         # V16.3 O16: 北交所老号段僵尸数据检测（参考仓库 v3.6.0）——43/83/87 已迁 920xxx，
         # 腾讯对老码返回 HTTP 200 + 成交量 0 + 价格定格迁移日的僵尸数据——丢弃触发上游 fallback
         if code.startswith(("43", "83", "87")) and _vol_v == 0 and _price_v > 0:
@@ -1031,7 +1041,7 @@ def get_tencent_quote(code: str) -> Dict[str, Any]:
             "price": _price_v,
             "prev_close": _safe_float(vals[_f["last_close"]]),
             "open": _safe_float(vals[_f["open"]]),
-            "volume_hand": _vol_v,  # 手
+            "volume_hand": _vol_v,  # 手（V17.0.12: 科创板 688 已在上方 ÷100 归一）
             "change_pct": _safe_float(vals[_f["change_pct"]]),
             "amount_wan": _safe_float(vals[_f["amount_wan"]]),  # 万元
             "turnover_pct": _safe_float(vals[_f["turnover_pct"]]),

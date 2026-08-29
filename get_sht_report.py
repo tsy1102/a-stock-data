@@ -1750,7 +1750,7 @@ async def generate_report_async(session, code, output_path, ind_comp=None, idx_q
 
     if q and price_today>0 and is_limit_up(code, stock_name, q.get("change_pct",0)):
 
-        # V17.0(2026-08-15): 连板追踪增强——ZHB [31] 真连板数(双日铁证定案)优先, fallback 3日涨幅估算
+        # V17.0(2026-08-15): 连板追踪增强——ZHB [33] 连板数(2026-08-27 天梯20/20 定案)优先, fallback 3日涨幅估算
         _zt_lb = 0
         _zt_ty = -1  # L1 修复: 先行初始化, 异常时结构安全
         _zt_seal = 0
@@ -1765,10 +1765,10 @@ async def generate_report_async(session, code, output_path, ind_comp=None, idx_q
         except Exception as _e:  # H5 修复: 显式日志, 不静默吞
             _debug_log(f"sht zt zhb data ({code}): {_e}")
         if _zt_lb > 0:
-            # [33] 涨停类型: 0-1=盘中封板, 2+=竞价/一字(竞价占比单调实锤)
+            # 封板类型(zt_type)原取自 Col[33]; V17.0.10 证伪 Col[33]=涨停类型、实为连板数, ZHB 不再提供(=_zt_ty=-1)
             _ty_txt = "一字/竞价封板" if _zt_ty >= 2 else ("盘中封板" if _zt_ty >= 0 else "")
             _seal_txt = f" 封单额(官方ZHB): {_zt_seal:.0f}万" if _zt_seal > 0 else ""
-            L(f"  📊 连板追踪: 今日涨停，真连板数 **{_zt_lb}板**(ZHB[31] 铁证){' ['+_ty_txt+']' if _ty_txt else ''}{_seal_txt}")
+            L(f"  📊 连板追踪: 今日涨停，真连板数 **{_zt_lb}板**(ZHB[33] 连板数铁证){' ['+_ty_txt+']' if _ty_txt else ''}{_seal_txt}")
 
         try:
 

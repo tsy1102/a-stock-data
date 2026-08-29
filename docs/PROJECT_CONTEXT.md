@@ -56,7 +56,7 @@
 
 - **字段破解纪律**: 每次破解必须遵循 `docs/field_verification/CRACKING_METHODOLOGY.md`(前置→七大思路→铁证分级 L1-L4→固化链条)。
 - **固化链条**(改字段后强制): ①field_dict → ②矩阵(§12.15/§零·B+gen_field_matrix.py)→ ③5 脚本获取/fallback → ④script_data_dict → ⑤回归。
-- **ZHB 解析缓存版本**: 字段结构变更必须升 `_ZHB_PARSE_SCHEMA`(当前=2), 否则旧 pickle 缺新键。
+- **ZHB 解析缓存版本**: 字段结构变更必须升 `_ZHB_PARSE_SCHEMA`(当前=4; 历史 1→2 加涨停族, 2→3 change_mtd 改名, 3→4 V17.0.9 Col[24] 改名 cash_reserve_wan), 否则旧 pickle 缺新键。
 - **口径铁律**: 主力净额=f137+f140(特大+大单); ZHB main_net_buy_* 键=竞价额/量(非主力); 行业仅认 881 段(880=概念); 交易日口径涨幅; 单位: 万元/元 严格区分。
 - **限流**: push2=0.4rps/push2delay=1.0/datacenter=1.0/腾讯=5.0; 熔断 3 连断→20h; 批量用 push2delay 镜像域。
 - 版本: V17.0.1(CHANGELOG.md 权威); 报告输出 `.md`(md_render.py 渲染层转换)。

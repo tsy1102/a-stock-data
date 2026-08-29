@@ -553,6 +553,15 @@ def _fast_kline(code: str, count: int = 800):
     try:
         _k, _r = common_baidu_kline_full(code, count=count)
         if _r and len(_r) >= 65:
+            # V17.0.10c(2026-08-28): 百度 fallback 结果也落盘, 使后续运行命中磁盘缓存(零网络/零
+            # TDX 锁), 避免 TDX 常年 <65 行的标的每次运行都重复 0.9~15s 百度请求(总时长"越来越长"根因)。
+            # 落盘键与 tdx_get_security_bars 读取键一致("D", code, count), 下次运行 tdx 入口直接命中。
+            try:
+                from stock_common.sc_kline_cache import set_cached_kline
+
+                set_cached_kline("D", code, count, (_k, _r))
+            except Exception:
+                pass
             return _k, _r
     except Exception as _e:
         _debug_log(f"val _fast_kline baidu ({code}): {_e}")
@@ -1882,6 +1891,7 @@ async def run_discovery_async(output_path):
     L("  市场: A 股 | 策略: 23 | 引擎: asyncio | 并发: 3")
     L("-" * 85)
     L("  预热: 加载市场数据 & 策略配置…")
+    _load_t0 = time.time()  # V17.0.10c(2026-08-28): 加载阶段耗时基；用于把总时长在"加载 vs 扫描"间拆分归因
 
     cfg = _load_settings()
     _cfg = cfg or {}
@@ -2126,7 +2136,7 @@ async def run_discovery_async(output_path):
     top_liquidity_pool = sorted(all_stocks, key=lambda x: _safe_float(x.get("amount", 0) or x.get("amount_yi", 0)), reverse=True)[:500]
 
     L(f"  ✅ 全市场: {len(all_stocks)} | 热点池(同花顺强势): {len(hot_pool)} | 流动性Top500: {len(top_liquidity_pool)}")
-    L(f"  ⏱ 全市场数据加载完成 @ {datetime.now().strftime('%H.%M.%S')}")
+    L(f"  ⏱ 全市场数据加载完成 @ {datetime.now().strftime('%H.%M.%S')}（耗时 {time.time() - _load_t0:.1f}s）")
 
     all_selections = {}
 

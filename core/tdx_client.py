@@ -984,6 +984,7 @@ def tdx_get_security_bars(code: str, count: int = 800) -> Tuple[List[str], List[
     V12.0: 底层改用 mootdx StdQuotes.bars(frequency=9)。
     mootdx 返回 DataFrame 列：open/close/high/low/vol/amount/year/month/day/datetime。
     """
+    global _TDX_CLIENT, _TDX_AVAILABLE  # V17.0.10c(2026-08-28): 截断重试需置空全局客户端以触发换台
     cache_key = f"D:{code}:{count}"
     cached = _TDX_KLINE_CACHE.get(cache_key)
     if cached is not None:
@@ -1050,6 +1051,19 @@ def tdx_get_security_bars(code: str, count: int = 800) -> Tuple[List[str], List[
                     result = [], []
                     _TDX_KLINE_CACHE[cache_key] = result
                     return result
+                # V17.0.10c(2026-08-28): 截断检测（与 index_bars 对称）——TDX 服务端偶发截断时
+                # easy_tdx 返回"非空的残缺列表"且不在非空时换台, 项目层补防护: 返回条数显著
+                # 少于请求量即视为截断, 换台重试取完整数据(新股/次新短历史属正常, 不会触发——
+                # 其返回量本就远小于请求量且非"截断", 但此处仍会多一次换台重试后被接受, 代价极低)。
+                if len(bars) < max(1, int(count * 0.9)):
+                    if _retry == 0:
+                        _debug_log(
+                            f"tdx 日K截断 ({code}): 返回 {len(bars)}/{count} 条, 换台重试取完整"
+                        )
+                        _TDX_CLIENT = None
+                        _TDX_AVAILABLE = None
+                        continue
+                    _debug_log(f"tdx 日K仍截断 ({code}): 返回 {len(bars)}/{count} 条, 接受残缺结果")
                 keys = ['time', 'open', 'close', 'high', 'low', 'volume', 'amount']
                 rows = []
                 for _, row in bars.iterrows():
@@ -1084,7 +1098,7 @@ def tdx_get_security_bars(code: str, count: int = 800) -> Tuple[List[str], List[
                     _debug_log(f"tdx K线解码失败: {_e}")
                 # V16.2.13 修复: 原 _reset_tdx_connections() 在 _TDX_CALL_LOCK 内重入锁
                 #（threading.Lock 不可重入）→ 异常路径死锁隐患；直接置空全局
-                global _TDX_CLIENT, _TDX_AVAILABLE
+                # V17.0.10c: 全局声明已在函数顶部(987), 此处直接置空即触发换台重试
                 _TDX_CLIENT = None
                 _TDX_AVAILABLE = None
                 continue
@@ -1364,6 +1378,21 @@ def tdx_get_index_bars(idx_code: str, count: int = 250):
                         _debug_log(f"tdx index_bars 空响应 ({idx_code})，换台重试")
                         continue
                     return [], []
+                # V17.0.10c(2026-08-28): 截断检测——easy_tdx 在 TDX 服务端偶发截断时
+                # 不会 raise, 而是丢弃残缺末条后返回"非空的残缺列表"(如 211/250),
+                # 其内部仅打 warning 且不在非空时换台, 导致项目静默拿到少 N 条的最近期数据。
+                # 这里补一道对称防护: 返回条数显著少于请求量即视为截断, 换台重试取完整数据。
+                if len(bars) < max(1, int(count * 0.9)):
+                    if _retry == 0:
+                        _debug_log(
+                            f"tdx index_bars 截断 ({idx_code}): 返回 {len(bars)}/{count} 条, 换台重试取完整"
+                        )
+                        _TDX_CLIENT = None
+                        _TDX_AVAILABLE = None
+                        continue
+                    _debug_log(
+                        f"tdx index_bars 仍截断 ({idx_code}): 返回 {len(bars)}/{count} 条, 接受残缺结果"
+                    )
                 keys = ['time', 'open', 'close', 'high', 'low', 'volume', 'amount']
                 rows = []
                 for _, row in bars.iterrows():

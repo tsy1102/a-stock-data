@@ -1777,8 +1777,9 @@ def get_main_net_buy(code: str) -> Optional[Dict[str, Any]]:
 def get_zt_streak_info(code: str) -> Dict[str, Any]:
     """V17.0.1a 统一层规范化: 涨停族信息(零网络, ZHB 本机).
 
-    返回 {zt_lianban(连板天数), zt_type(涨停类型 0-1盘中/2+一字), zt_seal_amount(封单额万),
-          zt_seal_amount_1d/2d(昨日/前日封单额)}——tdxstat[31]/[33] + tdxstat2[4]/[6]/[8]。
+    返回 {zt_lianban(连板数, tdxstat[33] ✅L1), zt_type(涨停类型, ZHB 无可靠源→恒 -1), zt_seal_amount(封单额万),
+          zt_seal_amount_1d/2d(昨日/前日封单额)}——tdxstat[33]/[31] + tdxstat2[4]/[6]/[8]。
+    V17.0.10: Col[33]=连板数(原 ztlx 涨停类型假设证伪), Col[31]=异动周期计数(⚠️, 非严格连板)。
     V17.0.5 语义铁证(cross_analysis.md Part A): 封单额=limit_up_down_seal,
     涨停为正/跌停为负; 三日滚动 col4@T≡col6@T+1≡col8@T+2(全市场 1434/1434)。
     sht 连板追踪统一入口(替代直连 get_zhb_single_stock_data 散取)。

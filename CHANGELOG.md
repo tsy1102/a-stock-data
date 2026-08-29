@@ -13,7 +13,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 ### 📐 ZHB T-1 对撞规则固化 V17.0.10b（2026-08-27）
 
 **规则写入（CRACKING_METHODOLOGY.md 〇节 + field_verification README 每日流程）**：
-- ZHB 本地包数据日期**恒为 T-1**——对撞破解严禁"当日报告 ↔ 当日采集 ZHB"直接比
+- ZHB 本地包数据日期=**最近交易日快照**(交易日运行落后 T-1; 休市日=报告数据日, 对撞有效)——严禁"当日报告 ↔ 当日采集 ZHB"直接比
   (2026-08-27 初犯得 type 0/20 假阴性, 纠正后 20/20)
 - 正确矩阵: 采集目录 YYYYMMDD 的 ZHB(T-1) 应对撞 **T-1 当日报告**; 对撞当日报告
   须先验证字段实时性(如涨停族 type/lianban/count 实测为当日盘中值)

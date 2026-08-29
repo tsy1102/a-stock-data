@@ -806,12 +806,12 @@ class ZhbData:
             [28] change_5d       近5日涨跌幅(日历日口径,%)
             [29] change_10k_bar  近10根K线涨跌幅(交易日口径,%)
             [30] change_10d      近10日涨跌幅(日历日口径,%)
-            [31] zt_lianban       ✅ 2026-08-14 全市场铁证: **连板天数**(8/13 涨停 87 只分组=连板数
-                  4 组 100% 精确; 603221=12 精确; 002827 随日 +1; 官方 LastStartZT/func lbts)
+            [31] zt_streak_cycle  ⚠️ 近期异动周期计数(非严格连板): 2026-08-25 同日对撞东财池仅
+                  77% 匹配(15/50 ZHB>pool), 由原"连板天数"假设降级; 连板数以 [33] 为准
             [32] zt_count         ⚠️ 涨停族第二字段(官方 LastZTHzNum; 恒值 002827=6/603580=13;
                   603221=11=[31]-1; 疑 ztcs1 涨停次数, 待终核)
-            [33] zt_type          ⚠️ 涨停事件族(值 0-5; 涨停股 93% 非空; 603221=1; 002827 跌停=0;
-                  疑 ztlx 涨停类型/开板次数, 待终核)
+            [33] zt_lianban       ✅ 连板数(2026-08-27 涨停天梯 20/20 L1 铁证; 原 ztlx 涨停
+                  类型假设证伪; 当日涨停时与 [31]/[32] 一致, 非涨停日=0
             [34] other_qy_jzc    其他权益净资产(元) ★2026-08-04官方TdxQuant确认
         """
         data = self.raw_files.get("tdxstat.cfg", b"")
@@ -874,12 +874,12 @@ class ZhbData:
                 "change_10k_bar": _safe_cast(parts, 29, float),
                 "change_10d": _safe_cast(parts, 30, float),
                 # V17.0(2026-08-15) 涨停族暴露(双日定案):
-                #   [31]=连板天数(8/14 复现: 首板/二板/三板/五板分组 100% 精确, 断板清零)
+                #   [31]=近期异动周期计数(⚠️, 非严格连板; 2026-08-25 同日对撞东财池仅77%匹配, 降级)
                 #   [32]=涨停累计计数(LastZTHzNum, 恒值, 待终核)
-                #   [33]=涨停类型/封板阶段(0-5, 竞价占比单调: 0=盘中涨停/5=一字)
-                "zt_lianban": _safe_cast(parts, 31, int),
+                #   [33]=连板数(✅ L1: 2026-08-27 涨停天梯20/20; 原 ztlx 涨停类型假设证伪)
+                "zt_streak_cycle": _safe_cast(parts, 31, int),
                 "zt_count": _safe_cast(parts, 32, int),
-                "zt_type": _safe_cast(parts, 33, int),
+                "zt_lianban": _safe_cast(parts, 33, int),
             }
         return result
 

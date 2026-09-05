@@ -168,6 +168,27 @@ def get_board_type(code: str, name: str = "") -> str:
     return "主板"
 
 
+def get_sec_type_enum(code: str) -> int:
+    """V17.0.32(2026-09-06): 市场类型枚举(≡ ulist f182)。
+
+    主字典 2026-08-19 f182 定案(20/20 实锤): 主板=2 / 创业板=5 / 科创板=32 / 北交所=80。
+    由代码前缀判定(与 f182 语义精确一致, 零网络); ST 不改变市场类型归属
+    (ST 是风险标记, 不共线于市场类型枚举, 故 *ST 创业板仍归 5)。
+
+    用途: 统一层 CanonicalStockData.sec_type 的权威取值; 5 大脚本可经 cdata.sec_type
+    直接拿到机器可读的市场类型, 替代对 `get_board_type()` 字符串再做比较。
+    """
+    c = str(code or "")
+    # 北交所(43/83/87 老号段 + 8/4 + 92 新号段) 须先于 "9→沪" 判定
+    if c.startswith(("92", "8", "4", "43", "83", "87")):
+        return 80
+    if c.startswith("688"):
+        return 32
+    if c.startswith(("300", "301")):
+        return 5
+    return 2  # 主板(含 ST)
+
+
 # V17.0 S3: A 股代码前缀统一判定（收敛 get_mak/get_val 双份定义）
 A_STOCK_PREFIXES = ("00", "30", "60", "68", "92")
 

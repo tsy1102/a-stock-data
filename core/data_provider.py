@@ -1206,6 +1206,16 @@ def get_canonical_stock_data(code: str, force_realtime: bool = False) -> Any:
         field_sources["industry_code"] = field_sources.get("industry", "missing")
     if not field_sources.get("board"):
         field_sources["board"] = "missing"
+    # V17.0.32(2026-09-06): 市场类型枚举 sec_type（≡ ulist f182: 主板=2/创业板=5/科创板=32/北交所=80）。
+    # 权威 L1 源为 ulist f182(主字典 2026-08-19 f182 定案 20/20 实锤); 统一层零网络,
+    # 由代码前缀本地推导(与 f182 语义精确一致, ST 不改变市场类型归属)。
+    try:
+        from stock_common.sc_utils import get_sec_type_enum
+        sec_type = get_sec_type_enum(code_str)
+        field_sources["sec_type"] = "calculated"
+    except Exception as _e:
+        _debug_log(f"get_canonical_stock_data sec_type error ({code_str}): {_e}")
+        sec_type = 0
     # concepts: 优先 TDX concept (TCP), 其次 push2 f129 (免费副产品), 最后 ZHB concept_chain
     concepts_list = []
     try:
@@ -1317,6 +1327,7 @@ def get_canonical_stock_data(code: str, force_realtime: bool = False) -> Any:
         industry=industry,
         industry_code=industry_code,
         board=board,
+        sec_type=sec_type,  # V17.0.32(2026-09-06): 市场类型枚举(≡ ulist f182)
         concepts=tuple(concepts_list),
         data_source=source_tag,
         time_anchor=time_anchor_tag,

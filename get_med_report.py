@@ -215,6 +215,12 @@ async def generate_report_async(session, code, output_path, ind_comp=None, hsgt=
         # V17.0.4(2026-08-19): invalid → 同花顺 hgt/sgt 序列错位, 末值恒陈旧(冻结 379.75)——不展示错误数字
         if hsgt.get("data_quality") == "invalid":
             L("  ⚠️ 今日北向资金: 数据源异常(hgt/sgt 序列错位), 净流入暂缺")
+        elif hsgt.get("data_quality") == "partial_hgt_only":
+            # V17.0.28: hgt=当日分时(可用), sgt=历史序列(不可用) → 只展示沪股通并声明单口径
+            signal = "偏多" if hsgt['hgt'] > 0 else "偏空"
+            L(f"  今日北向资金: 沪股通 {hsgt['hgt']:+.2f} 亿元"
+              f"（深股通序列为历史值暂缺，本项为沪股通单口径，非北向合计）")
+            L(f"  大盘外资情绪: {signal} （中线仓位参考点）")
         else:
             signal = "偏多" if hsgt['total'] > 0 else "偏空"
             L(
@@ -278,6 +284,28 @@ async def generate_report_async(session, code, output_path, ind_comp=None, hsgt=
         L(
             f"  [52周区间] 最高: {cdata.high_52w:.2f}元 | 最低: {cdata.low_52w:.2f}元 | 当前位置: {_52w_pos:.0f}%"
         )
+
+    # ── V17.0.27(2026-09-04) DEBT-007: Beta 中线波动风险档（契约孤儿字段消费，公理 A5）──
+    #   源: 腾讯 qt.gtimg [56]，置信度 **高**（887 只 800 日K线自构等权市场代理，
+    #   自算 Beta 与 [56] Pearson=0.908）。口径声明: 腾讯基准/窗口与自算有偏移，
+    #   此为**腾讯口径 Beta 估计值**，非本系统重算（A7——不可写成"本系统 Beta"）。
+    #   与 lng 同名章节的分工: lng 看「长线回撤预算」，med 看「1-3 月持有期的仓位容忍度」——
+    #   同一指标在不同持有期的含义不同，故两处文案不同而非简单复制。
+    _beta = _safe_float(getattr(cdata, "beta", 0) or 0)
+    if _beta > 0:
+        if _beta < 0.8:
+            _b_tag = "低波动防御型——中线持有回撤压力小"
+        elif _beta < 1.0:
+            _b_tag = "偏低波动——仓位可适度上调"
+        elif _beta < 1.2:
+            _b_tag = "与大盘同步——按标准仓位执行"
+        elif _beta < 1.5:
+            _b_tag = "高波动进攻型——持有期需预留回撤空间，建议仓位打 8 折"
+        else:
+            _b_tag = "极高波动——1-3 月持有期内大幅回撤概率高，建议仓位打 5 折"
+        L(f"  [Beta波动档] {_beta:.2f}（腾讯口径估计值）— {_b_tag}")
+    else:
+        L("  [Beta波动档] N/A（未取到）")
 
     if cdata.ipo_price > 0 and cdata.price > 0:
         _ipo_pct = (cdata.price - cdata.ipo_price) / cdata.ipo_price * 100
@@ -349,10 +377,13 @@ async def generate_report_async(session, code, output_path, ind_comp=None, hsgt=
         L("  ⚠️ 盘前模式（9:30前），以下行情数据基于上一交易日收盘数据")
     L(f"  当前价:   {cdata.price:.2f}元  (今日涨跌: {cdata.change_pct:.2f}%)")
     _pe_s = f"{cdata.pe_dynamic:.2f}x" if cdata.pe_dynamic > 0 else "N/A（亏损）"
-    _pe_ttm_str = f"{cdata.pe_ttm:.2f}" if cdata.pe_ttm > 0 else "N/A"
+    _pe_ttm_str = f"{cdata.pe_ttm:.2f}x" if cdata.pe_ttm > 0 else "N/A"
+    _pe_lyr_str = f"{cdata.pe_lyr:.2f}x" if cdata.pe_lyr > 0 else "N/A"
     _div_str = f"  股息率: {cdata.dividend_yield:.2f}%" if cdata.dividend_yield > 0 else ""
-    # V17.0.8: 标签修正——原"静态PE"实为 pe_dynamic(动态PE, f162), 与 LNG 对齐统一口径
-    L(f"  动态市盈率 PE(TTM): {_pe_ttm_str}x | 动态PE: {_pe_s} | 市净率 PB: {cdata.pb:.2f}")
+    # V17.0.17(2026-09-01) 据主字典定案修正: 三口径清晰化——
+    # PE(TTM)=f164 / 动态PE=pe_dynamic(f162) / 静态PE(LYR)=pe_lyr(f163)。
+    # 原"动态市盈率 PE(TTM)"标签把 TTM 误标"动态"，已拆分；新增静态PE露出。
+    L(f"  PE(TTM): {_pe_ttm_str}x | 动态PE: {_pe_s} | 静态PE(LYR): {_pe_lyr_str} | 市净率 PB: {cdata.pb:.2f}")
     if _div_str:
         L(_div_str)
 
@@ -639,19 +670,36 @@ async def generate_report_async(session, code, output_path, ind_comp=None, hsgt=
             else:
                 eval_str = "偏高估 (存在透支预期风险)"
             L(f"  ➤ 核心 PEG 指标: {peg:.2f} → {eval_str}")
-        _sk_m, _sr_m = baidu_kline_full(code)
+        _sk_m, _sr_m = await asyncio.to_thread(baidu_kline_full, code)
         if len(_sr_m) >= 26:
             _ci_m = next((i for i, k in enumerate(_sk_m) if k in ("close", "close_price")), -1)
             if _ci_m >= 0:
                 # V16.1: 取更多 K 线（120 根）接入共享技术引擎（MACD/RSI/BOLL/KDJ/均线）
-                _cls_m = [_safe_float(rr[_ci_m]) for rr in _sr_m[-120:] if len(rr) > _ci_m]
+                # V17.0.15 修复: TDX 日K 本就返回 open/close/high/low/volume/amount
+                #   （见 core/tdx_client.tdx_get_security_bars 的 keys），原实现却把
+                #   highs/lows 用 close 近似、volumes 传空列表，造成两处实质失真：
+                #   ① KDJ 的 RSV=(C−L9)/(H9−L9) 分母退化成「9 日*收盘价*极差」——系统性小于
+                #      真实 9 日振幅 → RSV 被放大 → 金叉/超买信号过度敏感（一字板时 H9==L9
+                #      还会被强制钉成 RSV=50）；
+                #   ② analyze_technical 在 volumes 为空时**根本不产出 volume 键** → 量价
+                #      配合判断全程缺失。改为按列名取真实值，仅在列缺失时回退 close 近似。
+                _hi_i = next((i for i, k in enumerate(_sk_m) if k in ("high", "high_price")), -1)
+                _lo_i = next((i for i, k in enumerate(_sk_m) if k in ("low", "low_price")), -1)
+                _vol_i = next((i for i, k in enumerate(_sk_m) if k in ("volume", "vol")), -1)
+                _need_i = max(i for i in (_ci_m, _hi_i, _lo_i, _vol_i) if i >= 0)
+                # 统一行过滤条件：确保 closes/highs/lows/volumes 四序列严格等长对齐
+                _rows_m = [rr for rr in _sr_m[-120:] if len(rr) > _need_i]
+                _cls_m = [_safe_float(rr[_ci_m]) for rr in _rows_m]
                 if len(_cls_m) >= 26:
                     from stock_common.sc_technical import analyze_technical
 
-                    # 重建 highs/lows（若无则用 close 近似）
-                    _hi_m = _cls_m[:]
-                    _lo_m = _cls_m[:]
-                    _tech = analyze_technical(_cls_m, _hi_m, _lo_m, [])
+                    _hi_m = ([_safe_float(rr[_hi_i]) for rr in _rows_m]
+                             if _hi_i >= 0 else _cls_m[:])
+                    _lo_m = ([_safe_float(rr[_lo_i]) for rr in _rows_m]
+                             if _lo_i >= 0 else _cls_m[:])
+                    _vol_m = ([_safe_float(rr[_vol_i]) for rr in _rows_m]
+                              if _vol_i >= 0 else [])
+                    _tech = analyze_technical(_cls_m, _hi_m, _lo_m, _vol_m)
                     _macd = _tech.get("macd", {})
                     if _macd:
                         _dif = _macd.get("dif", 0)
@@ -672,11 +720,35 @@ async def generate_report_async(session, code, output_path, ind_comp=None, hsgt=
                     _boll = _tech.get("boll", {})
                     if _boll:
                         L(f"  [BOLL] 位置={_boll.get('pos_pct', 50):.0f}% 带宽={_boll.get('width_pct', 0):.1f}%")
+                    # V17.0.15: KDJ 现基于真实 high/low（此前用 close 近似 → RSV 分母退化失真）
+                    _kdj = _tech.get("kdj", {})
+                    if _kdj:
+                        _k, _d = _kdj.get("k", 50.0), _kdj.get("d", 50.0)
+                        _kp, _dp = _kdj.get("k_prev", _k), _kdj.get("d_prev", _d)
+                        if _k > _d and _kp <= _dp:
+                            _kdj_sig = "✅金叉"
+                        elif _k < _d and _kp >= _dp:
+                            _kdj_sig = "⚠️死叉"
+                        else:
+                            _kdj_sig = ""
+                        _kdj_zone = "（超买）" if _k > 80 else ("（超卖）" if _k < 20 else "")
+                        L(f"  [KDJ] K={_k:.1f} D={_d:.1f} J={_kdj.get('j', 0):.1f}{_kdj_zone} {_kdj_sig}".rstrip())
+                    # V17.0.15: 量能分析（此前 volumes 恒传空列表 → analyze_technical 不产出该键）
+                    _vol = _tech.get("volume", {})
+                    if _vol:
+                        _vr = _vol.get("ratio", 1.0)
+                        _vt = _vol.get("trend_pct", 0.0)
+                        _vt_s = "放量" if _vt > 20 else ("缩量" if _vt < -20 else "量能平稳")
+                        L(
+                            f"  [量能] 今日 {_vol.get('today_wan', 0):.1f}万手 "
+                            f"(5日均 {_vol.get('ma5_wan', 0):.1f}万) 量比={_vr:.2f} "
+                            f"近5日较前5日 {_vt:+.1f}% → {_vt_s}"
+                        )
             if pe_fwd > _pe_mid and cagr > 0:
                 digest = math.log(pe_fwd / _pe_mid) / math.log(1 + cagr)
                 L(f"  ➤ 估值消化到30x需: {digest:.1f} 年")
             try:
-                _sk_p, _sr_p = baidu_kline_full(code)
+                _sk_p, _sr_p = await asyncio.to_thread(baidu_kline_full, code)
                 _ci_p = next((i for i, k in enumerate(_sk_p) if k in ("close", "close_price")), -1)
                 if _ci_p >= 0 and eps_cur > 0:
                     _hp = [_safe_float(rr[_ci_p]) for rr in _sr_p if len(rr) > _ci_p]
@@ -769,6 +841,13 @@ async def generate_report_async(session, code, output_path, ind_comp=None, hsgt=
     L("\n## **八、筹码稳定性与抛压评估**")
     L("---")
     holders = await get_holder_change_async(session, code)
+    # V17.0.14: 筹码分布 CYQ —— 提前获取(东财 kline f61 → calculate_cyq), 供章节+评分复用
+    _cyq_dict = {}
+    try:
+        from stock_common.sc_datasource import get_cyq_distribution
+        _cyq_dict = await asyncio.to_thread(get_cyq_distribution, code) or {}
+    except Exception as _e:
+        _debug_log(f"med cyq ({code}): {_e}")
     if holders:
         L("  ➤ 股东户数变化趋势:")
         # V17.0.2m: md 表格(用户: 股东户数趋势用表格)
@@ -787,6 +866,22 @@ async def generate_report_async(session, code, output_path, ind_comp=None, hsgt=
             L("    ✅ 结论: 筹码正在集中，利好中线。")
         elif latest["change_ratio"] >= 3:
             L("    ⚠️ 结论: 筹码趋于分散，散户增多，注意风险。")
+
+    # V17.0.14: 筹码分布 CYQ 章节(东财 kline f61 → calculate_cyq)
+    if _cyq_dict:
+        L("\n  ➤ 筹码分布（成本集中度）:")
+        _ben = _cyq_dict.get("benefit_pct", 0.0) or 0.0
+        _c90 = _cyq_dict.get("concentration_90", 0.0) or 0.0
+        _c70 = _cyq_dict.get("concentration_70", 0.0) or 0.0
+        _avg = _cyq_dict.get("avg_cost", 0.0) or 0.0
+        L(f"    - 获利盘比例: {_ben*100:.1f}%（当前价下持仓盈利占比）")
+        L(f"    - 平均成本: {_avg:.2f} 元")
+        L(f"    - 90% 筹码集中度: {_c90:.3f}（成本区间 {_cyq_dict.get('cost_90_low',0):.2f}~{_cyq_dict.get('cost_90_high',0):.2f}）")
+        L(f"    - 70% 筹码集中度: {_c70:.3f}（成本区间 {_cyq_dict.get('cost_70_low',0):.2f}~{_cyq_dict.get('cost_70_high',0):.2f}）")
+        _cflag = "高度集中" if _c90 < 0.12 else ("较集中" if _c90 < 0.2 else ("分散" if _c90 > 0.35 else "中性"))
+        _pflag = ("获利盘丰厚，上方解套抛压需关注" if _ben > 0.85
+                  else ("套牢盘较重，反弹承压" if _ben < 0.25 else "成本结构均衡"))
+        L(f"    ➤ 研判: 筹码{_cflag}；{_pflag}")
 
     lockup = await get_lockup_expiry_async(session, code, days=180)
     if lockup:
@@ -856,16 +951,32 @@ async def generate_report_async(session, code, output_path, ind_comp=None, hsgt=
                 L(
                     f"  业内排名: 第 {peer_data['my_rank']}/{peer_data['industry_count']} 位（按总市值）"
                 )
+            # V17.0.27(2026-09-04) 与 sht 同业表同步的三项修复（9/3 报告核查 #1/#2/#3）：
+            #   #1 本股/同业 PE 原为裸 `{x:.1f}`，亏损股输出 "0.0" —— 读者误读为「零估值」，
+            #      违反 A6（缺失≠0）。sht 同位置早有 `if >0 else "亏损"` 判断，med 漏做 →
+            #      同一消费点两个脚本实现不一致。此处补齐。
+            #   #2 列标题原写 "PE(TTM)"，但同业行 `p['pe']` 实为 pe_dynamic → 标题与口径不符
+            #      且与本股行(pe_ttm)不同口径、同列不可比。统一为「PE(动)」+ 本股行取 pe_dynamic。
+            #   #3 同业 change_pct 取不到时为 0，直接渲染 "0.00%" 被误读为「平盘」（实证 300442），
+            #      改为显式 N/A。
             L(
-                f"  {'代码':<8} {'名称':<12} {'股价':>8} {'涨跌幅%':>8} {'市值(亿)':>10} {'PE':>8} {'换手率%':>8}"
+                f"  {'代码':<8} {'名称':<12} {'股价':>8} {'涨跌幅%':>8} {'市值(亿)':>10} {'PE(动)':>9} {'PE(静)':>8} {'换手率%':>8}"
             )
-            L(f"  {'-'*70}")
+            L(f"  {'-'*80}")
+            _my_pe_lyr_s = f"{cdata.pe_lyr:.1f}" if cdata.pe_lyr > 0 else "N/A"
+            _my_pe_dyn = cdata.pe_dynamic or 0
+            _my_pe_dyn_s = f"{_my_pe_dyn:.1f}" if _my_pe_dyn > 0 else "亏损"
             L(
-                f"  {code:<8} {stock_name:<12} {price_today:>8.2f} {cdata.change_pct:>7.2f}% {peer_data['my_mcap']:>9.1f} {cdata.pe_ttm:>7.1f} {cdata.turnover_pct:>7.2f}% ← 本股"
+                f"  {code:<8} {stock_name:<12} {price_today:>8.2f} {cdata.change_pct:>7.2f}% {peer_data['my_mcap']:>9.1f} {_my_pe_dyn_s:>9} {_my_pe_lyr_s:>8} {cdata.turnover_pct:>7.2f}% ← 本股"
             )
             for p in peer_data["peers"]:
+                _ppe_lyr_s = f"{p.get('pe_lyr', 0):.1f}" if p.get('pe_lyr', 0) > 0 else "N/A"
+                _ppe = p.get('pe', 0) or 0
+                _ppe_s = f"{_ppe:.1f}" if _ppe > 0 else "亏损"
+                _pchg = p.get('change_pct', 0) or 0
+                _pchg_s = f"{_pchg:>7.2f}%" if _pchg != 0 else "    N/A "
                 L(
-                    f"  {p['code']:<8} {p['name']:<12} {p['price']:>8.2f} {p['change_pct']:>7.2f}% {p['mcap_yi']:>9.1f} {p['pe']:>7.1f} {p['turnover']:>7.2f}%"
+                    f"  {p['code']:<8} {p['name']:<12} {p['price']:>8.2f} {_pchg_s} {p['mcap_yi']:>9.1f} {_ppe_s:>9} {_ppe_lyr_s:>8} {p['turnover']:>7.2f}%"
                 )
             fin_metrics = await get_gross_margin_and_roe_async(
                 session, code, fin_report=financials, bs_data=bs_data
@@ -1210,14 +1321,21 @@ async def generate_report_async(session, code, output_path, ind_comp=None, hsgt=
     if nb and len(nb) >= 2:
         score_data.northbound_change = nb[0]["hold_shares"] - nb[-1]["hold_shares"]
 
-    # 机构持仓
-    _st = await asyncio.to_thread(get_holder_structure, code)
+    # M3 修复：复用前文【十六、十大流通股东机构动向】已拉取的股东结构，避免重复网络调用
+    _st = st
     if _st:
         score_data.institution_holding_pct = _st[0].get("domestic", 0)
 
     # 筹码数据
     if holders and len(holders) >= 2:
         score_data.holder_change_ratio = holders[0]["change_ratio"]
+
+    # V17.0.14: 筹码分布 CYQ(复用前文已拉取的 _cyq_dict, 避免重复网络调用)
+    if _cyq_dict:
+        score_data.cyq_benefit_pct = _cyq_dict.get("benefit_pct", 0.0) or 0.0
+        score_data.cyq_avg_cost = _cyq_dict.get("avg_cost", 0.0) or 0.0
+        score_data.cyq_concentration_90 = _cyq_dict.get("concentration_90", 0.0) or 0.0
+        score_data.cyq_concentration_70 = _cyq_dict.get("concentration_70", 0.0) or 0.0
 
     # 计算评分
     # V16.1: 传入 strategy_config.yaml 的 scoring_med 权重（此前未传 cfg → 用硬编码默认）

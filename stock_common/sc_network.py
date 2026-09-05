@@ -355,7 +355,7 @@ _EM_COOKIE_LOADED = False
 def _get_eastmoney_cookie() -> str:
     """V17.0.7: 东财 Cookie 获取（参考 myhhub/stock eastmoney_fetcher 方案）。
 
-    优先级: 环境变量 EAST_MONEY_COOKIE > config/eastmoney_cookie.txt > 空。
+    优先级: 环境变量 EAST_MONEY_COOKIE > credentials/eastmoney_cookie.txt（兼容旧 config/ 路径）> 空。
     Cookie 过期(数天~数周)后需重新从浏览器获取——登录态请求大幅提高 push2 系阈值。
     """
     global _EM_COOKIE, _EM_COOKIE_LOADED
@@ -368,8 +368,9 @@ def _get_eastmoney_cookie() -> str:
         _EM_COOKIE = val.strip()
         _EM_COOKIE_LOADED = True
         return _EM_COOKIE
-    # 2) 配置文件
+    # 2) 配置文件（V17.0.13: 凭据集中 credentials/，旧 config/ 路径保留兼容）
     for candidate in (
+        os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "credentials", "eastmoney_cookie.txt"),
         os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "config", "eastmoney_cookie.txt"),
         os.path.join(os.path.dirname(os.path.abspath(__file__)), "eastmoney_cookie.txt"),
     ):
@@ -498,7 +499,7 @@ def em_get(url: str, params: dict | None = None, headers: dict | None = None,
                         "  请更新 Cookie：\n"
                         "    1. Chrome 打开 quote.eastmoney.com 并登录\n"
                         "    2. F12 → Console → 输入 document.cookie → 回车\n"
-                        "    3. 复制输出内容，替换 config/eastmoney_cookie.txt 文件全文\n"
+                        "    3. 复制输出内容，替换 credentials/eastmoney_cookie.txt 文件全文\n"
                         "    4. 或执行: setx EAST_MONEY_COOKIE \"粘贴的内容\" 后重启终端\n"
                         + "⚠️" * 20 + "\n", flush=True,
                     )
@@ -1134,6 +1135,19 @@ async def _async_quick_request(session, url: str, params=None,
             if _HAS_FAULT_TOLERANCE:
                 _req_headers["Referer"] = get_random_referer()
 
+        # M8 修复：异步通道原从不更新熔断器(成功/失败都不调 _on_success/_on_failure)，
+        # 且 403 不计入封禁机制 → EM 异步路径完全绕过熔断/20h 封禁。现对齐同步 em_get：
+        #   成功 → _on_success；失败 → _on_failure；403 → 计入 _EM_BAN_STREAK(达阈值触发 20h 跳过)。
+        _cb = None
+        if _HAS_FAULT_TOLERANCE:
+            try:
+                _cb = get_domain_circuit_breaker(_ft_domain)
+            except Exception as _e:
+                _debug_log(f"Async quick cb init error ({domain}): {_e}")
+                _cb = None
+
+        _result = None
+        _got_403 = False
         for attempt in range(max_retries):
             try:
                 timeout_obj = aiohttp.ClientTimeout(total=timeout)
@@ -1143,8 +1157,13 @@ async def _async_quick_request(session, url: str, params=None,
                                             timeout=timeout_obj) as response:
                         if response.status == 200:
                             if is_json:
-                                return await response.json(content_type=None)
-                            return await response.text(encoding=encoding)
+                                _result = await response.json(content_type=None)
+                            else:
+                                _result = await response.text(encoding=encoding)
+                            break
+                        if response.status == 403:
+                            _got_403 = True
+                            break
                         if response.status == 429 and attempt < max_retries - 1:
                             if _HAS_FAULT_TOLERANCE:
                                 wait_s = exponential_backoff(attempt)
@@ -1152,13 +1171,21 @@ async def _async_quick_request(session, url: str, params=None,
                                 wait_s = 1.0 * (2 ** attempt)
                             await asyncio.sleep(wait_s)
                             continue
+                        # V16.4.1: 403/500 等非 200/429 直接失败——原落下方 sleep 重试循环,
+                        # 违反同文件"重试 403 加速封禁"铁律(与 _async_request_with_retry L1055 对齐)
+                        break
                 else:
                     async with session.get(url, params=params, headers=_req_headers,
                                            timeout=timeout_obj) as response:
                         if response.status == 200:
                             if is_json:
-                                return await response.json(content_type=None)
-                            return await response.text(encoding=encoding)
+                                _result = await response.json(content_type=None)
+                            else:
+                                _result = await response.text(encoding=encoding)
+                            break
+                        if response.status == 403:
+                            _got_403 = True
+                            break
                         if response.status == 429 and attempt < max_retries - 1:
                             if _HAS_FAULT_TOLERANCE:
                                 wait_s = exponential_backoff(attempt)
@@ -1166,9 +1193,7 @@ async def _async_quick_request(session, url: str, params=None,
                                 wait_s = 1.0 * (2 ** attempt)
                             await asyncio.sleep(wait_s)
                             continue
-                # V16.4.1: 403/500 等非 200/429 直接失败——原落下方 sleep 重试循环,
-                # 违反同文件"重试 403 加速封禁"铁律(与 _async_request_with_retry L1055 对齐)
-                return None
+                        break
             except (aiohttp.ClientError, asyncio.TimeoutError, ValueError, _json.JSONDecodeError):
                 if attempt < max_retries - 1:
                     if _HAS_FAULT_TOLERANCE:
@@ -1177,5 +1202,21 @@ async def _async_quick_request(session, url: str, params=None,
                         wait_s = 1.0 * (attempt + 1)
                     await asyncio.sleep(wait_s)
                     continue
-                return None
-        return None
+                break
+
+        if _got_403 and is_em:
+            try:
+                _record_em_disconnect(_ft_domain)
+            except Exception as _e:
+                _debug_log(f"Async quick 403 ban record error ({domain}): {_e}")
+
+        if _cb is not None:
+            try:
+                if _result is not None:
+                    _cb._on_success()
+                else:
+                    _cb._on_failure()
+            except Exception as _e:
+                _debug_log(f"Async quick cb update error ({domain}): {_e}")
+
+        return _result

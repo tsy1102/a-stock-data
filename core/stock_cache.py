@@ -262,6 +262,9 @@ TTL: Dict[str, int] = {
     "concept_blocks":  30 * 86400,   # 概念板块列表（V10.0: 7天→30天）
     "board_type":       7 * 86400,   # 沪市/深市/北交所
     "board_list":       7 * 86400,   # 板块列表（行业排名参照系——T-1 可接受，V16.3 O25 新增，trading_day 覆盖）
+    "board_members":      15 * 60,   # V17.0.26 DEBT-012: 板块成分股（push2 主域降频；消费方只作
+                                     # 「行业内相对排序参照系」(med rank / sc peers / val 日历效应)，
+                                     # 15min 陈旧对相对排序无影响；trading_day=True 保证跨交易日必失效）
 
     # 财务数据（改为 24 小时或跟随 trading_day，废弃原 90 天静态，防止错位穿透）
     "financial":        24 * 3600,   # 新浪利润表
@@ -313,6 +316,9 @@ TTL: Dict[str, int] = {
     "fuyao_fund_holdings":  7 * 86400,  # 基金重仓持仓（lng/med 批量侧证防 N×M 重复请求）
     "fuyao_indicators":     7 * 86400,  # 五类财务指标（ROE/扣非/ROA 官方口径）
     "fuyao_seal_map":       30 * 60,    # 涨停池封单映射（30min——盘中封单动态，sht 衰减率用）
+    # V17.0.26(2026-09-03, 字典 §12.15 缓存硬约束落地): 新增两类缓存分类
+    "fuyao_financials":    7 * 86400,    # fuyao 三大报表序列（trading_day 覆盖——报告期数据日频刷新足够；跨运行去重省官方 REST 配额，连接独立风控域仍限流）
+    "quote_full_delay":    7 * 86400,    # push2delay 单股全字段行情（trading_day 覆盖——15min 延时日级数据；降频防 push2 连接级风控，字典 §12.15.5 优先镜像域）
 
     # 分红历史（公告不频繁）
     "dividend":         30 * 86400,   # 分红历史
@@ -637,7 +643,9 @@ def make_valid_if(check_zeros: bool = True, min_size: int = 0) -> Callable[[Any]
 
     Args:
         check_zeros: 是否检查所有数值为 0（默认 True）
-        min_size: dict/list 最小有效长度（默认 0，即空 dict 拒绝）
+        min_size: 最少需要的元素数（默认 0）。**空 dict/list 恒拒绝**，
+            故 min_size=0 与 min_size=1 等价（均要求 >=1 条）；
+            min_size=N(N>=1) 表示「至少 N 条」。V17.0.26 修正了原先的 off-by-one。
 
     Returns:
         callable: 接受返回值 r，返回 True/False
@@ -646,7 +654,7 @@ def make_valid_if(check_zeros: bool = True, min_size: int = 0) -> Callable[[Any]
         # F10 数据：拒绝 None/空 dict/全 0 dict
         @cached(category="f10_fund_flow", valid_if=make_valid_if())
 
-        # 龙虎榜：要求至少 1 条记录
+        # 龙虎榜：要求至少 1 条记录（min_size=1 → len>=1 才有效）
         @cached(category="dragon_tiger", valid_if=make_valid_if(min_size=1))
 
         # 纯数据列表：拒绝空 list
@@ -656,8 +664,16 @@ def make_valid_if(check_zeros: bool = True, min_size: int = 0) -> Callable[[Any]
         # 1) None 拒绝
         if r is None:
             return False
-        # 2) 空 dict/list 拒绝
-        if isinstance(r, (dict, list)) and len(r) <= min_size:
+        # 2) 长度不足拒绝
+        #    V17.0.26(2026-09-03) 修复 off-by-one: 原为 `len(r) <= min_size`，
+        #    使 min_size=1 实为「要求 >=2 条」，与全部 5 处调用点的注释意图
+        #    （"至少 1 只股票才缓存" / "要求至少 1 条记录"）不符。
+        #    后果: 恰好 1 条记录的结果**永不入缓存**（不产生错误数据，只白白多打网络请求，
+        #    在 push2 主域上即为白付风控成本）。
+        #    修正后语义: 空容器**恒拒绝**（与 min_size=0 的默认行为一致），
+        #    且 min_size=N 表示「至少 N 条」——即 min(N, 1) 的下界由 max(1, N) 统一表达。
+        _min_len = max(1, min_size)
+        if isinstance(r, (dict, list)) and len(r) < _min_len:
             return False
         # 3) 全 0 字段检查（仅对 dict）
         if check_zeros and isinstance(r, dict):

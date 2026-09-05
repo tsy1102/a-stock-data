@@ -52,29 +52,13 @@ def identify_seat_tier(seat_name: str) -> Tuple[str, str]:
     aliases = db.get("seat_aliases", {})
     seat_details = db.get("seat_details", {})
 
-    # 精确匹配简称
-    for tier_name, members in tiers.items():
-        for member in members:
-            if member in seat_name or seat_name in member:
-                return tier_name, member
-
-    # 匹配别名
-    for short_name, alias_list in aliases.items():
-        for alias in alias_list:
-            if alias in seat_name or seat_name in alias:
-                # 找到对应的tier
-                details = seat_details.get(short_name, {})
-                tier = details.get("tier", "unknown")
-                return tier, short_name
-        # 别名列表中的名称本身也要检查
-        if short_name in seat_name:
-            details = seat_details.get(short_name, {})
-            tier = details.get("tier", "unknown")
-            return tier, short_name
-
-    # 模糊匹配席位的关键词（V16.3 E M13: 原 50 个 keyword 中 44 个被 tiers/aliases
-    # 层语义覆盖——任何命中它们的 seat_name 在前两层必先命中，属死条目；
-    # 仅保留 6 个真独有（券商+营业部全称变体，前两层无包含关系）。行为不变。
+    # M7 修复（2026-08-30）：原匹配用"双向子串 + 字典序首命中、无最长匹配"，
+    # 短席位名（如"盟主"）易误判为顶级游资、长名反被抢匹配。现改为：
+    #   1) 仍保留双向子串（member/alias in seat_name OR seat_name in member/alias）——
+    #      反向子句不可删：锁定回归 test_removed_keywords_still_work_via_aliases
+    #      要求 "拉萨" → "拉萨天团"（alias "拉萨团结路" 含 "拉萨" 仅能反向命中）；
+    #   2) 收集全部候选后按"命中最长子串"优先（最具体者胜），等长再按
+    #      tiers>aliases>keywords 的 priority 排序，消除字典序首命中的不确定性。
     keywords_map = {
         "光大佛山": ("legend", "佛山无影脚"),
         "中信杭州延安路": ("legend", "章盟主"),
@@ -84,9 +68,37 @@ def identify_seat_tier(seat_name: str) -> Tuple[str, str]:
         "广发上海东方路": ("new_gen", "毛老板"),
     }
 
+    _candidates = []  # (matched_len, priority, tier, short_name)  priority 越小越优先
+
+    # 1) tiers 层（双向子串，最长匹配）
+    for tier_name, members in tiers.items():
+        for member in members:
+            if member and (member in seat_name or seat_name in member):
+                _candidates.append((len(member), 0, tier_name, member))
+
+    # 2) aliases 层（双向子串，最长匹配）
+    for short_name, alias_list in aliases.items():
+        _matched_alias = None
+        for alias in alias_list:
+            if alias and (alias in seat_name or seat_name in alias):
+                _matched_alias = alias
+                break
+        if _matched_alias is None and short_name and (short_name in seat_name or seat_name in short_name):
+            _matched_alias = short_name
+        if _matched_alias is not None:
+            details = seat_details.get(short_name, {})
+            _candidates.append((len(_matched_alias), 1, details.get("tier", "unknown"), short_name))
+
+    # 3) keywords_map 兜底（双向子串，最长匹配）
     for keyword, (tier, short) in keywords_map.items():
-        if keyword in seat_name:
-            return tier, short
+        if keyword and (keyword in seat_name or seat_name in keyword):
+            _candidates.append((len(keyword), 2, tier, short))
+
+    if _candidates:
+        # 最长子串优先；等长则 priority 小者优先（tiers>aliases>keywords）
+        _candidates.sort(key=lambda c: (-c[0], c[1]))
+        _best = _candidates[0]
+        return _best[2], _best[3]
 
     return "unknown", ""
 
@@ -196,29 +208,38 @@ def enhance_lhb_seats(lhb_data: Dict[str, Any]) -> Dict[str, Any]:
             sell_negative_count += 1
 
     # 计算席位质量评分 (0-100)
-    # 基础分50
-    seat_quality_score = 50
-
-    # legend席位每次加10分
-    seat_quality_score += legend_count * 10
-    seat_quality_score += sell_legend_count * 5  # 卖方legend权重稍低
-
-    # 正面席位加分
-    seat_quality_score += positive_count * 5
-    # 反向席位扣分
-    seat_quality_score -= negative_count * 8
-
-    seat_quality_score = max(0, min(100, seat_quality_score))
-
-    # 判断溢价信号
-    if legend_count >= 2 and positive_count > negative_count:
-        premium_signal = "buy_high"  # 强势买入信号
-    elif sell_negative_count >= 2:
-        premium_signal = "sell_high"  # 强势卖出信号
-    elif negative_count > positive_count:
-        premium_signal = "sell_caution"  # 卖出警示
+    # V17.0.25(2026-09-02) P1-6 修复: 当龙虎榜席位全部未匹配到已知游资库(_recognized==0)时,
+    # 原逻辑恒输出基础分50 + neutral, 是伪精确评分(审计发现22份恒50/恒neutral)。此时评分无意义,
+    # 降级为 None / "unknown", 由渲染层标注「席位库未收录, 无法评级」。
+    _recognized = (legend_count + sell_legend_count + positive_count
+                   + sell_positive_count + negative_count + sell_negative_count)
+    if _recognized == 0:
+        seat_quality_score = None
+        premium_signal = "unknown"
     else:
-        premium_signal = "neutral"
+        # 基础分50
+        seat_quality_score = 50
+
+        # legend席位每次加10分
+        seat_quality_score += legend_count * 10
+        seat_quality_score += sell_legend_count * 5  # 卖方legend权重稍低
+
+        # 正面席位加分
+        seat_quality_score += positive_count * 5
+        # 反向席位扣分
+        seat_quality_score -= negative_count * 8
+
+        seat_quality_score = max(0, min(100, seat_quality_score))
+
+        # 判断溢价信号
+        if legend_count >= 2 and positive_count > negative_count:
+            premium_signal = "buy_high"  # 强势买入信号
+        elif sell_negative_count >= 2:
+            premium_signal = "sell_high"  # 强势卖出信号
+        elif negative_count > positive_count:
+            premium_signal = "sell_caution"  # 卖出警示
+        else:
+            premium_signal = "neutral"
 
     result["buy_seats_analysis"] = buy_analysis
     result["sell_seats_analysis"] = sell_analysis

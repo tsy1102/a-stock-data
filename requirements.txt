@@ -54,11 +54,15 @@ chinese-calendar>=1.11
 # FTShare MCP: market.ft.tech JSON-RPC 网关（sc_ftshare.py，字典 §12.20）
 #   → 复用 requests 库直调公共网关，无需额外 pip 包
 #   → 可选环境变量: EAST_MONEY_COOKIE（东财 Cookie 注入防封禁）
-#   → 可选文件: config/eastmoney_cookie.txt（同上）
+#   → 可选文件: credentials/eastmoney_cookie.txt（同上，旧 config/ 路径兼容）
 # CYQ 筹码分布: sc_technical.calculate_cyq() 纯 Python 实现（零依赖）
-# K线形态识别: sc_technical.get_kline_patterns() 需 TA-Lib C 库
-#   → pip install TA-Lib  ← 可选，未安装时 get_kline_patterns 返回 {}
-# TA-Lib>=0.4.0  # ← 取消注释以启用 61 种 K 线形态识别
+#   → V17.0.14 已接入管线（sc_datasource.get_cyq_distribution，走东财 kline f61 换手率）
+# K线形态识别（V17.0.15 已接入 sht 报告【十六·五】章）: get_kline_patterns() 61 种 CDL 形态
+#   → 需 TA-Lib（含 C 库）。2026-08-31 实测：Windows cp313 **有预编译 wheel**，
+#     直接 `pip install TA-Lib` 即成功（装到 0.7.1），无需 VS 编译环境。
+#   → 仍保持可选：未安装时 get_kline_patterns 静默返回 {}，sht 形态章节自动跳过、报告不中断。
+#     取消下行注释即可在新环境默认启用（注意：无编译环境的平台可能装失败，故不强制）。
+# TA-Lib>=0.6.0
 
 # ── 单元测试（V16.3：已移至 requirements-dev.txt）────────────────
 # 开发环境安装: pip install -r requirements-dev.txt

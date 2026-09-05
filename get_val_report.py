@@ -84,8 +84,10 @@ def _fast_day_close(code: str) -> Dict:
 from core.tdx_client import (tdx_get_weekly_bars,
                          tdx_get_board_list,
                          tdx_get_all_stocks)  # V16.4.1: 删 cleanup_tdx
-from stock_common import (_safe_float, _quick_request, UA,
-                           JP_URL,
+# V17.0.26(2026-09-03) DEBT-009: 移除 _quick_request / JP_URL 导入。
+#   二者唯一使用处已改用 sc_datasource.get_em_board_members 适配器（公理 A1 数据访问收口）。
+#   保留无用的裸客户端 import 会诱导后人继续直连，故一并清理（UA 为无害常量，保留）。
+from stock_common import (_safe_float, UA,
                            _load_settings, _load_strategy_config, get_holder_structure,
                            holder_change, is_limit_up, is_limit_down,
                            get_recent_dragon_tiger, get_dragon_tiger_board,
@@ -592,18 +594,34 @@ async def strategy_01_longhuitou(hot_pool, today_str):
         if price <= 0 or ma10 <= 0: continue
         ma10_bias = (price - ma10) / ma10 * 100
         if abs(ma10_bias) > _ma_dev_mid: continue
-        try:
-            turnover = await get_turnover_pct_async(code) or 0
-        except Exception:
-            turnover = 0
+        # V17.0.15: 换手率取值次序 = 池内已有实时字段(腾讯批量预加载, V15.5.9) > ZHB 查询。
+        # ⚠️ 原实现 `await get_turnover_pct_async(code) or 0` 存在静默缺陷：
+        #   get_turnover_pct 只查 ZHB 且**无实时兜底**，交易日 09:30-24:00（最常运行时段）
+        #   _should_use_zhb_for_realtime() 恒 False → 返回 None → 被 `or 0` 变成 0，于是
+        #     ①"换手率仅 0.0%，缩量企稳"是**由数据缺失伪造的利好结论**；
+        #     ②0 ≤ _turnover_cap 故不会被过滤；③(8-0)*0.1 反而拿到**最高**加分。
+        #   三者叠加 → 盘中运行时该策略结论系统性虚高（缺失值被当成"极度缩量"这一极值）。
+        turnover = _safe_float(stock.get("turnover_pct", 0))
+        if turnover <= 0:
+            try:
+                turnover = await get_turnover_pct_async(code) or 0
+            except Exception:
+                turnover = 0
         if turnover > _turnover_cap: continue
+        if turnover > 0:
+            _to_txt = f"换手率仅{turnover:.1f}%，缩量企稳，筹码沉淀充分"
+            _to_score = (8 - turnover) * 0.1
+        else:
+            # 取不到换手率 → 该判据**不参与**：既不伪造利好，也不因此误剔除标的
+            _to_txt = "换手率数据缺失(未参与缩量判据)"
+            _to_score = 0.0
         reason = (
             f"前期强势股(涨幅{zhangfu:.1f}%)，"
             f"当前回踩MA10({ma10:.2f}元)，乖离率{ma10_bias:+.2f}%，"
-            f"换手率仅{turnover:.1f}%，缩量企稳，筹码沉淀充分"
+            f"{_to_txt}"
         )
         result.append({"code": code, "name": name, "reason": reason,
-                       "score": -abs(ma10_bias) + (8 - turnover) * 0.1})
+                       "score": -abs(ma10_bias) + _to_score})
     return _top10_sorted(result, lambda x: x["score"])
 
 
@@ -1039,23 +1057,24 @@ def strategy_09_calendar_rotation():
             ind_code = ind.get("code", "")
             if not ind_code: continue
             try:
-                params = {"pn": "1", "pz": "20", "po": "1", "np": "1",
-                          "fltt": "2", "invt": "2", "fs": f"b:{ind_code}",
-                          "fields": "f12,f14,f2,f3,f20"}
-                # V16.2.10: 改 _quick_request（JP_URL=83.push2 属 push2 系风控面，
-                # 原 _request_with_retry 无令牌桶/熔断/封禁跳过/跨进程锁 → 限流遗漏入口）
-                r = _quick_request(JP_URL, params=params, headers={"User-Agent": UA}, timeout=10)
-                if r is None: continue
-                items = (r.json().get("data") or {}).get("dif", [])
-                for item in items:
-                    if len(result) >= 5: break
-                    c = str(item.get("f12", ""))
-                    if c in seen_codes: continue
+                # V17.0.26(2026-09-03) DEBT-009: 改用 sc_datasource 适配器 get_em_board_members（公理 A1 数据访问收口）。
+                #   原实现两处缺陷：
+                #   ① 生产脚本直连裸 _quick_request(JP_URL) —— 绕过统一层，无缓存、无归一化；
+                #   ② 取值 .get("dif") —— 东财 clist 接口返回键实为 "diff"，致 items 恒为 []，
+                #      日历效应成分股**从未入选**（静默失效、无报错，与 DEBT-008 同类的静默 bug）。
+                #   适配器封装同一接口、键名正确、BK 前缀已规范化，且 f9/f23 的 PE/PB 口径已按 V17.0.15 修正。
+                from stock_common.sc_datasource import get_em_board_members
+                for item in get_em_board_members(ind_code)[:20]:
+                    if len(result) >= 5:
+                        break
+                    c = str(item.get("code", ""))
+                    if c in seen_codes:
+                        continue
                     seen_codes.add(c)
                     result.append({
-                        "code": c, "name": item.get("f14", ""),
+                        "code": c, "name": item.get("name", ""),
                         "reason": f"{month}月日历效应板块'{ind.get('name', '')}'成分股，行业排名第{ind.get('rank', 0)}位",
-                        "score": _safe_float(item.get("f3", 0)),
+                        "score": _safe_float(item.get("change_pct", 0)),
                     })
             except Exception as _e:
                 _debug_log(f"val calendar_effect_item: {_e}")
@@ -1370,7 +1389,7 @@ def strategy_16_northbound_top(all_stocks, top_n=200):
         reason = (
             f"北向（香港中央结算）持仓 {nb_ratio:.2f}%，"
             f"机构+北向+QFII合计 {total_ratio:.1f}%，"
-            f"外资机构家数 {foreign_count} 家，"
+            f"外资机构家数（不含北向） {foreign_count} 家，"
             f"报告期 {report_date}，"
             f"市值 {mcap:.0f}亿，今日涨跌 {change_pct:+.1f}%{trend_text}"
         )
@@ -1471,7 +1490,15 @@ def strategy_17_longhu_activity(all_stocks, today_str=None, top_n=200):
                             break
 
             # 换手率加分：3-15% 为活跃合理区间
-            avg_turnover = sum(_safe_float(r.get("turnover", 0)) for r in _records) / max(list_days, 1)
+            # V17.0.15: 区分「真实低换手」与「数据缺失」。龙虎榜 turnover 来自 TDX
+            #   TURNOVERRATE（本地 TDX 日线陈旧，见字典 §12.x），缺失时 _safe_float→0.0。
+            #   该值**只影响加分不影响过滤**（turnover_bonus 下限 0），故方向不会反；
+            #   但原实现把 avg_turnover 无条件拼进 reason 文本 → 缺失时输出
+            #   「平均换手率 0.0%」这一**由数据缺失伪造的事实**。这里改为缺失则不出该子句。
+            _to_vals = [_safe_float(r.get("turnover", 0)) for r in _records]
+            _to_valid = [v for v in _to_vals if v > 0]
+            avg_turnover = (sum(_to_valid) / len(_to_valid)) if _to_valid else 0.0
+            _to_txt = f"，平均换手率 {avg_turnover:.1f}%" if _to_valid else ""
             turnover_bonus = 0.0
             if 3.0 <= avg_turnover <= 15.0:
                 turnover_bonus = 2.0
@@ -1508,8 +1535,8 @@ def strategy_17_longhu_activity(all_stocks, today_str=None, top_n=200):
                 f"近{list_days}天上榜，最近一次 {last_date}，"
                 f"机构净买 {inst_net:+.1f}万（买 {inst_buy:+.1f}万 / 卖 {inst_sell:+.1f}万），"
                 f"席位标签: {dept_tag_str}，"
-                f"期间合计净买 {recent_net_sum:+.1f}万，"
-                f"平均换手率 {avg_turnover:.1f}%，"
+                f"期间合计净买 {recent_net_sum:+.1f}万"
+                f"{_to_txt}，"          # V17.0.15: 换手率缺失时整句省略，避免伪造 0.0%
                 f"市值 {mcap:.0f}亿，今日涨跌 {change_pct:+.1f}%{_chg_note}"
             )
             results.append({
@@ -1992,10 +2019,12 @@ async def run_discovery_async(output_path):
                 # V15.2 P0 修复: 当 _price=0 但 _rt_data 有 mcap_yi（push2 直接给）时，
                 # 优先用 _rt_data["mcap_yi"]（避免 0 价格导致 mcap 算不出来）
                 if not _stock.get("mcap_yi") and _rt_data.get("mcap_yi"):
-                    _stock["mcap_yi"] = _safe_float(_rt_data["mcap_yi"])
-                    if _stock["mcap_yi"] > 0:
-                        if "mcap_yi" not in _stock or not _stock["mcap_yi"] > 0:
+                    # M18 修复：先取新值再判"旧值缺失/为0"决定是否计数，避免赋值后判断恒 False(漏计)
+                    _new_mcap = _safe_float(_rt_data["mcap_yi"])
+                    if _new_mcap > 0:
+                        if "mcap_yi" not in _stock or not _stock.get("mcap_yi") > 0:
                             _mcap_count += 1
+                        _stock["mcap_yi"] = _new_mcap
                 # V15.2 P0 兜底: 上面都没拿到 mcap_yi（_price=0 且 push2 批量无 mcap），
                 # 改用 get_em_quote_full 单只拉（已有 push2 fallback，可拿到 mcap）
                 if not _stock.get("mcap_yi") or _stock["mcap_yi"] <= 0:
@@ -2104,17 +2133,24 @@ async def run_discovery_async(output_path):
             continue
         _merged = dict(s)
         _th = _ths_by_code.get(s.get("code", ""), {})
+        # V17.0.15 实证纠正（探针 2026-08-28，getharden 返回 81 行）:
+        #   getharden **确实**返回 zhangfu(涨幅%) 与 huanshou(换手率%)，例如
+        #   000712 锦龙股份 {"close":11.8,"zhangfu":9.972,"huanshou":1.69}。
+        #   ⚠️ 旧注释 V16.4.0「getharden 不返回涨幅」**与实证矛盾、是错的** ——
+        #   字典 §12.8.12 的字段表才是对的。故本分支是**主路径**而非兜底。
+        #   elif 仅在「东财人气榜兜底且 pct 缺失」时才可能触发，保留作防御。
         if _th.get("zhangfu") is not None:
-            _merged["zhangfu"] = _th["zhangfu"]
+            _merged["zhangfu"] = _safe_float(_th["zhangfu"])
         elif _merged.get("change_pct"):
-            # V16.4.0: getharden 不返回涨幅——用腾讯批量 change_pct 兜底（否则策略 01 恒 0 命中）
             # V16.4.1 修复: 原 L1880 残留 `_merged["zhangfu"] = _th["zhangfu"]` 复制粘贴错误
             # —— elif 分支中 _th 必无 zhangfu, 裸索引必然 KeyError('zhangfu') 导致 val 全崩
             _merged["zhangfu"] = _safe_float(_merged.get("change_pct"))
         if _th.get("reason"):
             _merged["reason_tag"] = _th["reason"]
-        if _th.get("huanshou") is not None:
-            _merged["turnover_pct"] = _th["huanshou"]
+        # huanshou = getharden 当日换手率(%)（实证存在）。仅当为正才覆盖——
+        # 东财人气榜兜底路径无此键，此时保留腾讯批量预加载的 turnover_pct。
+        if _safe_float(_th.get("huanshou") or 0) > 0:
+            _merged["turnover_pct"] = _safe_float(_th["huanshou"])
         hot_pool.append(_merged)
 
     # V16.3 O27: hot_pool ZHB 预筛（缩小 01/03/07 的逐股 K 线量——ZHB 内存零成本，
@@ -2349,36 +2385,36 @@ class ValReportRunner(BaseReportRunner):
         except UnicodeEncodeError:
             print("  [INFO] 预计运行 3-7 分钟（asyncio 异步模式）", flush=True)
 
+        # M4 修复（O39 守卫收口，2026-08-30）：
+        #  - 异步成功 / 同步回退 两条路径的执行都放到异常分支里，但文件存在性判定
+        #    移到 try/except 之外，避免"异步成功却落盘失败"时误触发同步回退（双跑）。
+        #  - 文件真实存在才打印"✅ 已保存"；不存在则打印"⚠️ 报告未生成"警告，
+        #    不再静默假成功（V16.3 O39 回归守卫）。
+        #  - 仅当"异步与同步双路均失败（抛异常）"时才向上抛 RuntimeError，
+        #    让 run()（M1 已改为 re-raise）以非零退出码结束，main.py 的 all_ok 才是真实值。
+        _async_ok = False
         try:
             asyncio.run(run_discovery_async(op))
-            # V16.3 O39 修复: "已保存"前验证文件真实存在（原无条件打印——失败时假成功）
-            if os.path.exists(op):
-                try:
-                    print(f"  ✅ 已保存: {op}", flush=True)
-                except UnicodeEncodeError:
-                    print(f"  [OK] 已保存: {op}", flush=True)
-            else:
-                try:
-                    print(f"  ⚠️ 报告未生成（文件不存在: {op}）", flush=True)
-                except UnicodeEncodeError:
-                    print(f"  [WARN] 报告未生成: {op}", flush=True)
+            _async_ok = os.path.exists(op)
         except Exception as e:
-            try:
-                print(f"  ⚠️ asyncio 失败，退回同步模式: {e}", flush=True)
-            except UnicodeEncodeError:
-                print(f"  [WARN] asyncio 失败，退回同步模式: {e}", flush=True)
+            print(f"  ⚠️ asyncio 失败，退回同步模式: {e}", flush=True)
             try:
                 run_discovery(op)
-                try:
-                    print(f"  ✅ 已保存: {op}", flush=True)
-                except UnicodeEncodeError:
-                    print(f"  [OK] 已保存: {op}", flush=True)
+                _async_ok = os.path.exists(op)
             except Exception as e2:
-                try:
-                    print(f"❌ 报告生成失败: {e2}", flush=True)
-                except UnicodeEncodeError:
-                    print(f"[FAIL] 报告生成失败: {e2}", flush=True)
+                print(f"❌ 报告生成失败: {e2}", flush=True)
                 raise e2
+        if _async_ok:
+            try:
+                print(f"  ✅ 已保存: {op}", flush=True)
+            except UnicodeEncodeError:
+                print(f"  [OK] 已保存: {op}", flush=True)
+        else:
+            _err = f"报告未生成（文件不存在: {op}）"
+            try:
+                print(f"  ⚠️ {_err}", flush=True)
+            except UnicodeEncodeError:
+                print(f"  [WARN] {_err}", flush=True)
         return op
 
     def upload_reports(self, drive: Any, folder_id: str, output_file: str) -> None:

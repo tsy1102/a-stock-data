@@ -1,5 +1,8 @@
 # -*- coding: utf-8 -*-
-"""tests/core/test_tencent_volume_unit.py — 腾讯行情成交量单位（科创板 688 = 股）
+"""tests/core/test_core_tencent_volume_unit.py — 腾讯行情成交量单位（科创板 688 = 股）
+
+> 2026-08-30 重命名：原 `test_tencent_volume_unit.py` 不符合 `test_<层>_<主题>.py` 命名规约
+> （缺 `core_` 层前缀），改为现名。用例内容与数量（8 项）不变。
 
 V17.0.12 (2026-08-29) 修复：腾讯 qt.gtimg.cn 的 [6]成交量 / [7]外盘 / [8]内盘
 对**科创板 688 段**返回的是「股」，其余板块返回「手」。修复前腾讯作为行情兜底源时，

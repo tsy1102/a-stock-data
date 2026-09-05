@@ -107,6 +107,46 @@ def _no_real_network(monkeypatch, request):
         warnings.warn(f"conftest: failed to mock urlopen, real network calls may leak: {_e}")
 
 
+# ── real_network 测试的环境守卫 ───────────────────────────────────
+# 目的（公理 A8）：把「环境不具备」与「代码回归」区分开。
+# 依赖外部服务的集成测试，在上游不可用时报 FAIL 会污染回归基线——
+# 它会让"每次跑测都有 2 个红"成为常态，从而掩盖真正的新增失败。
+# 本守卫只判定"能不能测"，不触碰任何业务断言。
+def _probe_url(url: str, timeout: float) -> bool:
+    """轻量探测外部端点可达性（真实网络调用，不可被 mock）。
+
+    仅对 ``real_network`` 标记的测试有意义：``_no_real_network`` 对这类
+    测试会提前 return 而不打桩，因此这里的 urlopen 是真实的。
+    """
+    import urllib.request
+
+    try:
+        with urllib.request.urlopen(url, timeout=timeout) as resp:
+            return resp.status < 500
+    except Exception:
+        return False
+
+
+@pytest.fixture
+def skip_if_upstream_down():
+    """工厂 fixture：上游不可用时 skip，可用时原样放行。
+
+    用法::
+
+        def test_x(skip_if_upstream_down):
+            skip_if_upstream_down("fuyao", "https://fuyao.aicubes.cn")
+            ...                      # 原断言一个都不动
+
+    合规说明（A8）：这不是静默迁就——业务断言全部保留，
+    上游可用而断言失败照样 FAIL；仅当外部服务不可达时不做无意义判定。
+    """
+    def _check(name: str, url: str, timeout: float = 6.0) -> None:
+        if not _probe_url(url, timeout):
+            pytest.skip(f"上游 {name} 不可达（{url}）——环境性跳过，非代码回归")
+
+    return _check
+
+
 # ── 临时工作目录：避免污染真实项目根 ───────────────────────────
 # ── test_em_rate_limit.py 的 endpoint fixture ──────────────────────
 @pytest.fixture(params=[

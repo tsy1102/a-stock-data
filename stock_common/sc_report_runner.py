@@ -79,18 +79,32 @@ class BaseReportRunner:
         results = None
         try:
             results = self.execute_pipeline()
-            self._handle_gd_upload(base_dir, results)
         except Exception as e:
             try:
                 print(f"❌ {self.description} 执行失败: {e}", flush=True)
             except UnicodeEncodeError:
                 print(f"[FAIL] {self.description} 执行失败: {e}", flush=True)
             _debug_log(f"{self.script_name} run error: {e}")
+            # M1 修复：不再吞掉异常，让子进程以非零退出码结束，
+            # 使 main.py 的 all_ok 真实反映批量失败（收口"假成功"）。
+            raise
         finally:
             if cleanup_tdx:
                 cleanup_tdx()
             elapsed = time.time() - start_time
             self._print_summary(elapsed, results)
+
+        # GD 上传独立于流水线异常捕获：上传失败不应掩盖"报告已成功生成"的事实。
+        # M6 修复：若 execute_batch_pipeline 已开启 pre_gd_init 做逐股上传
+        # （self._gd_per_stock=True），则此处不再二次全量上传，避免重复上传。
+        if not getattr(self, "_gd_per_stock", False):
+            try:
+                self._handle_gd_upload(base_dir, results)
+            except Exception as e:
+                print(f"  ⚠️ GD 上传异常（不影响报告生成结果）: {e}", flush=True)
+                _debug_log(f"{self.script_name} gd upload error: {e}")
+        else:
+            _debug_log(f"{self.script_name} 已逐股上传 GD，跳过末尾全量上传")
 
         return results
 
@@ -162,15 +176,19 @@ class BaseReportRunner:
                     print(f"  [INFO] 加入队列: {code}", flush=True)
 
             _session = await create_async_session()
+            _prefetch_task = None
+            _gathered: list = []
             try:
-                # V17.0.7: 后台预取流水线钩子——session 建立后调度, 与 3 条 worker
-                # 并行推进(域令牌桶自然限速); 失败仅记日志不阻塞批量
+                # M5 修复：prefetch_async_fn 改为后台任务(asyncio.create_task)，
+                # 与 3 条 worker 真正并行推进（原 await 在前置位置导致串行，
+                # 注释"与 worker 并行"与实际行为不符）。它只做 datacenter 预热、
+                # 不产出 _pre，故并行不影响逐股 GD 上传逻辑。
                 if prefetch_async_fn:
                     try:
-                        _n = await prefetch_async_fn(_session, codes)
-                        print(f"  📡 datacenter 预取流水线: {_n} 项入队(后台执行)", flush=True)
+                        _prefetch_task = asyncio.create_task(prefetch_async_fn(_session, codes))
+                        print("  📡 datacenter 预取流水线: 已后台启动(与 worker 并行)", flush=True)
                     except Exception as _e:
-                        _debug_log(f"{self.script_name} prefetch_async_fn: {_e}")
+                        _debug_log(f"{self.script_name} prefetch_async_fn schedule: {_e}")
                 sem = asyncio.Semaphore(3)
 
                 async def _limited(code):
@@ -196,16 +214,39 @@ class BaseReportRunner:
                             print(f"❌ {code} 数据生成失败: {e}", flush=True)
                             return {"code": code, "status": "数据失败", "error": str(e), "path": ""}
 
-                return await asyncio.gather(*[_limited(c) for c in codes])
+                _gathered = await asyncio.gather(*[_limited(c) for c in codes])
             finally:
                 await _session.close()
+                if _prefetch_task is not None:
+                    try:
+                        _n = await _prefetch_task
+                        print(f"  📡 datacenter 预取流水线: {_n} 项入队完成", flush=True)
+                    except Exception as _e:
+                        _debug_log(f"{self.script_name} prefetch_async_fn: {_e}")
+            return _gathered
 
         _results = asyncio.run(_main_async())
 
         if snapshot_data:
             from stock_common.analyze_history import save_snapshot
 
-            save_snapshot(report_type, snapshot_data)
+            # M6 修复：快照结构校验——只接受 {code: {name, total_score}} 形态。
+            # 误传 pipeline results（非该形态）会让跨日期背离检测静默成空壳，故校验后保存。
+            if isinstance(snapshot_data, dict):
+                _bad = [
+                    c for c, v in snapshot_data.items()
+                    if not (isinstance(v, dict) and ("total_score" in v or "score" in v))
+                ]
+                if _bad:
+                    _debug_log(f"{self.script_name} snapshot 结构异常，跳过保存: {_bad[:5]}")
+                    print(
+                        f"  ⚠️ 评分快照结构异常（{len(_bad)} 项缺 total_score/score），跳过保存",
+                        flush=True,
+                    )
+                else:
+                    save_snapshot(report_type, snapshot_data)
+            else:
+                _debug_log(f"{self.script_name} snapshot_data 非 dict，跳过保存")
 
         ok = [r for r in _results if r["status"] == "成功"]
         fd = [r for r in _results if r["status"] == "数据失败"]

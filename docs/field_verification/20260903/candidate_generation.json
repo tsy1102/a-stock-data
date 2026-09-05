@@ -1,0 +1,656 @@
+{
+  "meta": {
+    "generated": "2026-09-03T12:20:57.377656",
+    "method": "思路9跨源覆盖三角 + 思路1扩展序位相邻；仅候选生成不定案",
+    "sources": [
+      "tencent",
+      "push2",
+      "fuyao",
+      "ulist239",
+      "zhb"
+    ]
+  },
+  "coverage_matrix": [
+    {
+      "basic": "price",
+      "label": "现价",
+      "class": "price",
+      "coverage": {
+        "tencent": true,
+        "push2": true,
+        "fuyao": true,
+        "ulist239": true,
+        "zhb": null
+      },
+      "n_yes": 4,
+      "n_no": 0
+    },
+    {
+      "basic": "open",
+      "label": "今开",
+      "class": "price",
+      "coverage": {
+        "tencent": true,
+        "push2": true,
+        "fuyao": true,
+        "ulist239": false,
+        "zhb": null
+      },
+      "n_yes": 3,
+      "n_no": 1
+    },
+    {
+      "basic": "prev_close",
+      "label": "昨收",
+      "class": "price",
+      "coverage": {
+        "tencent": true,
+        "push2": true,
+        "fuyao": true,
+        "ulist239": true,
+        "zhb": null
+      },
+      "n_yes": 4,
+      "n_no": 0
+    },
+    {
+      "basic": "high",
+      "label": "最高",
+      "class": "price",
+      "coverage": {
+        "tencent": true,
+        "push2": true,
+        "fuyao": true,
+        "ulist239": false,
+        "zhb": null
+      },
+      "n_yes": 3,
+      "n_no": 1
+    },
+    {
+      "basic": "low",
+      "label": "最低",
+      "class": "price",
+      "coverage": {
+        "tencent": true,
+        "push2": true,
+        "fuyao": true,
+        "ulist239": false,
+        "zhb": null
+      },
+      "n_yes": 3,
+      "n_no": 1
+    },
+    {
+      "basic": "volume",
+      "label": "成交量",
+      "class": "volume",
+      "coverage": {
+        "tencent": true,
+        "push2": true,
+        "fuyao": true,
+        "ulist239": true,
+        "zhb": null
+      },
+      "n_yes": 4,
+      "n_no": 0
+    },
+    {
+      "basic": "amount",
+      "label": "成交额",
+      "class": "amount",
+      "coverage": {
+        "tencent": true,
+        "push2": true,
+        "fuyao": true,
+        "ulist239": true,
+        "zhb": null
+      },
+      "n_yes": 4,
+      "n_no": 0
+    },
+    {
+      "basic": "pe_ttm",
+      "label": "市盈率TTM",
+      "class": "pe",
+      "coverage": {
+        "tencent": true,
+        "push2": true,
+        "fuyao": true,
+        "ulist239": false,
+        "zhb": null
+      },
+      "n_yes": 3,
+      "n_no": 1
+    },
+    {
+      "basic": "pe_dyn",
+      "label": "市盈率动态",
+      "class": "pe",
+      "coverage": {
+        "tencent": true,
+        "push2": true,
+        "fuyao": true,
+        "ulist239": false,
+        "zhb": null
+      },
+      "n_yes": 3,
+      "n_no": 1
+    },
+    {
+      "basic": "pe_lyr",
+      "label": "市盈率静态",
+      "class": "pe",
+      "coverage": {
+        "tencent": true,
+        "push2": true,
+        "fuyao": true,
+        "ulist239": false,
+        "zhb": null
+      },
+      "n_yes": 3,
+      "n_no": 1
+    },
+    {
+      "basic": "mktcap",
+      "label": "总市值",
+      "class": "mktcap",
+      "coverage": {
+        "tencent": true,
+        "push2": true,
+        "fuyao": true,
+        "ulist239": true,
+        "zhb": null
+      },
+      "n_yes": 4,
+      "n_no": 0
+    },
+    {
+      "basic": "float_mktcap",
+      "label": "流通市值",
+      "class": "mktcap",
+      "coverage": {
+        "tencent": true,
+        "push2": true,
+        "fuyao": true,
+        "ulist239": true,
+        "zhb": null
+      },
+      "n_yes": 4,
+      "n_no": 0
+    },
+    {
+      "basic": "pb",
+      "label": "市净率",
+      "class": "mktcap",
+      "coverage": {
+        "tencent": true,
+        "push2": true,
+        "fuyao": true,
+        "ulist239": true,
+        "zhb": null
+      },
+      "n_yes": 4,
+      "n_no": 0
+    },
+    {
+      "basic": "amplitude",
+      "label": "振幅",
+      "class": "amplitude",
+      "coverage": {
+        "tencent": false,
+        "push2": true,
+        "fuyao": false,
+        "ulist239": true,
+        "zhb": null
+      },
+      "n_yes": 2,
+      "n_no": 2
+    },
+    {
+      "basic": "turnover",
+      "label": "换手率",
+      "class": "turnover",
+      "coverage": {
+        "tencent": false,
+        "push2": true,
+        "fuyao": false,
+        "ulist239": true,
+        "zhb": null
+      },
+      "n_yes": 2,
+      "n_no": 2
+    },
+    {
+      "basic": "change_pct",
+      "label": "涨跌幅",
+      "class": "change",
+      "coverage": {
+        "tencent": true,
+        "push2": true,
+        "fuyao": true,
+        "ulist239": true,
+        "zhb": true
+      },
+      "n_yes": 5,
+      "n_no": 0
+    },
+    {
+      "basic": "week52_high",
+      "label": "52周最高",
+      "class": "week52",
+      "coverage": {
+        "tencent": true,
+        "push2": true,
+        "fuyao": false,
+        "ulist239": false,
+        "zhb": true
+      },
+      "n_yes": 3,
+      "n_no": 2
+    },
+    {
+      "basic": "week52_low",
+      "label": "52周最低",
+      "class": "week52",
+      "coverage": {
+        "tencent": true,
+        "push2": true,
+        "fuyao": false,
+        "ulist239": false,
+        "zhb": true
+      },
+      "n_yes": 3,
+      "n_no": 2
+    },
+    {
+      "basic": "roe",
+      "label": "ROE",
+      "class": "roe",
+      "coverage": {
+        "tencent": true,
+        "push2": true,
+        "fuyao": true,
+        "ulist239": true,
+        "zhb": true
+      },
+      "n_yes": 5,
+      "n_no": 0
+    },
+    {
+      "basic": "dividend",
+      "label": "股息率",
+      "class": "dividend",
+      "coverage": {
+        "tencent": true,
+        "push2": true,
+        "fuyao": true,
+        "ulist239": false,
+        "zhb": null
+      },
+      "n_yes": 3,
+      "n_no": 1
+    },
+    {
+      "basic": "beta",
+      "label": "Beta",
+      "class": "beta",
+      "coverage": {
+        "tencent": false,
+        "push2": false,
+        "fuyao": false,
+        "ulist239": false,
+        "zhb": null
+      },
+      "n_yes": 0,
+      "n_no": 4
+    },
+    {
+      "basic": "main_net",
+      "label": "主力净流入",
+      "class": "main_net",
+      "coverage": {
+        "tencent": false,
+        "push2": true,
+        "fuyao": false,
+        "ulist239": true,
+        "zhb": null
+      },
+      "n_yes": 2,
+      "n_no": 2
+    },
+    {
+      "basic": "float_shares",
+      "label": "流通股本",
+      "class": "capital",
+      "coverage": {
+        "tencent": true,
+        "push2": true,
+        "fuyao": true,
+        "ulist239": true,
+        "zhb": true
+      },
+      "n_yes": 5,
+      "n_no": 0
+    },
+    {
+      "basic": "total_shares",
+      "label": "总股本",
+      "class": "capital",
+      "coverage": {
+        "tencent": true,
+        "push2": true,
+        "fuyao": true,
+        "ulist239": true,
+        "zhb": true
+      },
+      "n_yes": 5,
+      "n_no": 0
+    }
+  ],
+  "candidates": [
+    {
+      "id": "tx[56]",
+      "source": "tencent",
+      "class": "beta",
+      "note": "Beta族·同口径未定(L4)；fuyao 全62端点无 Beta → 无官方捷径",
+      "coverage": {
+        "source": "tencent",
+        "class": "beta",
+        "basics_of_class": [
+          "beta"
+        ],
+        "cracked_in_source": [],
+        "missing_in_source": [
+          "beta"
+        ],
+        "is_snapshot_source": false,
+        "verdict": "该类基础指标在 tencent **未破解**（['beta']）→ 此未知**可能是该基础指标**（高优先级）；其他源中 0 个已覆盖该指标（注：全源均无 Beta 官方端点 → [56] 为腾讯自有 Beta 族实现）",
+        "covered_by_other_sources": []
+      },
+      "adjacent": {
+        "pos": 56,
+        "prev": [
+          null,
+          null
+        ],
+        "next": [
+          "成交额(万·4位)",
+          "amount"
+        ],
+        "block": "非同类/全局序位",
+        "hint": "全局序位相邻，**禁用**（上邻 None / 下邻 成交额(万·4位) 与未知不同类）→ 腾讯数组序位非语义顺序，[56]反例：相邻序位无相近/相反义",
+        "usable": false
+      },
+      "header_candidates": [
+        "[tdx] | 贝塔系数 | 近60天 vs 对应大盘 | **BetaValue** ✓ |"
+      ],
+      "priority_score": 6
+    },
+    {
+      "id": "tx[85]",
+      "source": "tencent",
+      "class": "price",
+      "note": "价格类字段(L3)；已证伪非现/昨/开/高/低/均价/MA/参考价",
+      "coverage": {
+        "source": "tencent",
+        "class": "price",
+        "basics_of_class": [
+          "price",
+          "open",
+          "prev_close",
+          "high",
+          "low"
+        ],
+        "cracked_in_source": [
+          "price",
+          "open",
+          "prev_close",
+          "high",
+          "low"
+        ],
+        "missing_in_source": [],
+        "is_snapshot_source": false,
+        "verdict": "该类基础指标在 tencent 已全部破解 → 此未知是**专门化/派生字段**，不是那个基础指标（高置信排除'基础指标'假设）"
+      },
+      "adjacent": {
+        "pos": 85,
+        "prev": [
+          "状态码",
+          "code"
+        ],
+        "next": [
+          "[86]手级量",
+          "volume"
+        ],
+        "block": "非同类/全局序位",
+        "hint": "全局序位相邻，**禁用**（上邻 状态码 / 下邻 [86]手级量 与未知不同类）→ 腾讯数组序位非语义顺序，[56]反例：相邻序位无相近/相反义",
+        "usable": false
+      },
+      "header_candidates": [
+        "[tdx] | 涨幅 | (现价-昨收)/昨收*100 | ZAF/f170 ✓ |",
+        "[tdx] | 涨跌 | 现价-昨收 | ulist f4 ✓ |",
+        "[tdx] | 涨速 | (现价-N分钟前价)/N分钟前价*100, N 可设置 | **Zangsu**(价格涨速) ✓ |",
+        "[tdx] | 市盈(动) | 现价/折算全年每股收益 | **f162** ✓(年化=Q1×4 验证) |",
+        "[tdx] | 振幅% | (最高-最低)/昨收*100 | 计算 ✓ |",
+        "[tdx] | 距5日线% | (现价-MA5)/MA5*100 | **MA5Value** ✓ |",
+        "[tdx] | 开盘% | (开盘-昨收)/昨收=竞价涨幅 | VOpenZAF ✓ |",
+        "[tdx] | 实体涨幅 | (现价-今开)/今开*100 | **公式修正**(原猜 (收盘-开盘)/昨收) |",
+        "[tdx] | 现均差% | (现价-均价)/昨收*100 | **公式修正**(原标\"现价-均价\") |",
+        "[em] | A11 | 最高 | A |",
+        "[em] | A12 | 最低 | A |",
+        "[em] | A20 | 昨收 | A |"
+      ],
+      "priority_score": 1
+    },
+    {
+      "id": "tx[86]",
+      "source": "tencent",
+      "class": "volume",
+      "note": "手级带符号量(❓)；已证伪非净主动买入量/委差",
+      "coverage": {
+        "source": "tencent",
+        "class": "volume",
+        "basics_of_class": [
+          "volume"
+        ],
+        "cracked_in_source": [
+          "volume"
+        ],
+        "missing_in_source": [],
+        "is_snapshot_source": false,
+        "verdict": "该类基础指标在 tencent 已全部破解 → 此未知是**专门化/派生字段**，不是那个基础指标（高置信排除'基础指标'假设）"
+      },
+      "adjacent": {
+        "pos": 86,
+        "prev": [
+          "[85]价格类",
+          "price"
+        ],
+        "next": [
+          "科创板/两融标记",
+          "code"
+        ],
+        "block": "非同类/全局序位",
+        "hint": "全局序位相邻，**禁用**（上邻 [85]价格类 / 下邻 科创板/两融标记 与未知不同类）→ 腾讯数组序位非语义顺序，[56]反例：相邻序位无相近/相反义",
+        "usable": false
+      },
+      "header_candidates": [
+        "[tdx] | 总量 | 当日成交量 | Volume ✓ |",
+        "[tdx] | 现量 | 最近一次分笔成交量 | **NowVol** ✓(现手) |",
+        "[tdx] | 换手 | 成交量/流通股本*100 | f168/fHSL ✓ |",
+        "[tdx] | 市盈(动) | 现价/折算全年每股收益 | **f162** ✓(年化=Q1×4 验证) |",
+        "[tdx] | 量比 | 开市后每分钟均量/过去5日每分钟均量 | f50/fLianB ✓ |",
+        "[tdx] | 内盘/外盘 | 主动卖/买盘成交量 | Inside/Outside ✓ |",
+        "[tdx] | 量涨速% | 最近N分钟放量比率 | **vzangsu** ✓✓ 官方确认 |",
+        "[tdx] | 短换手% | 最近N分钟换手(自由流通股本) | **Fzhsl 候选**(Fz=分钟+HSL=换手; 茅台 0.02%/妖股 0.79% 吻合) |",
+        "[tdx] | 每笔均量 | 成交总量/分时笔数 | 计算型 |",
+        "[tdx] | 封成比 | 封单量/已成交量 | tdxstat [33] 候选 |",
+        "[tdx] | 流通市值Z/换手Z/流通比例Z | Z=自由流通 | **Z 后缀=自由流通** ✓(FreeLtgb 确认) |",
+        "[tdx] | 封流比 | 封单量/自由流通股本 | sht 封流比 ✓ |"
+      ],
+      "priority_score": 1
+    },
+    {
+      "id": "push2:f106",
+      "source": "push2",
+      "class": "code",
+      "note": "常量100占位码",
+      "coverage": {
+        "source": "push2",
+        "class": "code",
+        "basics_of_class": [],
+        "cracked_in_source": [],
+        "missing_in_source": [],
+        "is_snapshot_source": false,
+        "verdict": "非基础指标类（状态码/常量/概念码），覆盖三角不适用；须按状态码/枚举/常量占位语义单独攻破（思路2表头+跨源同值对撞）"
+      },
+      "adjacent": null,
+      "header_candidates": [
+        "[em] | STOCK_CODE | 代码 | S |",
+        "[ths] | 8197 | 代码 | |",
+        "[ths] | 330325 | 涨停类型 | |",
+        "[ths] | 331136 | FREE板块净流入 | |"
+      ],
+      "priority_score": 1
+    },
+    {
+      "id": "push2:f107",
+      "source": "push2",
+      "class": "code",
+      "note": "市场标记布尔0/1，跨源=ulist:f13/f27（待补第3日升格）",
+      "coverage": {
+        "source": "push2",
+        "class": "code",
+        "basics_of_class": [],
+        "cracked_in_source": [],
+        "missing_in_source": [],
+        "is_snapshot_source": false,
+        "verdict": "非基础指标类（状态码/常量/概念码），覆盖三角不适用；须按状态码/枚举/常量占位语义单独攻破（思路2表头+跨源同值对撞）"
+      },
+      "adjacent": null,
+      "header_candidates": [
+        "[em] | STOCK_CODE | 代码 | S |",
+        "[ths] | 8197 | 代码 | |",
+        "[ths] | 330325 | 涨停类型 | |",
+        "[ths] | 331136 | FREE板块净流入 | |"
+      ],
+      "priority_score": 1
+    },
+    {
+      "id": "push2:f110",
+      "source": "push2",
+      "class": "code",
+      "note": "市场标记布尔0/1，=f107=ulist:f13/f27",
+      "coverage": {
+        "source": "push2",
+        "class": "code",
+        "basics_of_class": [],
+        "cracked_in_source": [],
+        "missing_in_source": [],
+        "is_snapshot_source": false,
+        "verdict": "非基础指标类（状态码/常量/概念码），覆盖三角不适用；须按状态码/枚举/常量占位语义单独攻破（思路2表头+跨源同值对撞）"
+      },
+      "adjacent": null,
+      "header_candidates": [
+        "[em] | STOCK_CODE | 代码 | S |",
+        "[ths] | 8197 | 代码 | |",
+        "[ths] | 330325 | 涨停类型 | |",
+        "[ths] | 331136 | FREE板块净流入 | |"
+      ],
+      "priority_score": 1
+    },
+    {
+      "id": "push2:f111",
+      "source": "push2",
+      "class": "code",
+      "note": "板级枚举{2,6,23,80,81}，=ulist:f19",
+      "coverage": {
+        "source": "push2",
+        "class": "code",
+        "basics_of_class": [],
+        "cracked_in_source": [],
+        "missing_in_source": [],
+        "is_snapshot_source": false,
+        "verdict": "非基础指标类（状态码/常量/概念码），覆盖三角不适用；须按状态码/枚举/常量占位语义单独攻破（思路2表头+跨源同值对撞）"
+      },
+      "adjacent": null,
+      "header_candidates": [
+        "[em] | STOCK_CODE | 代码 | S |",
+        "[ths] | 8197 | 代码 | |",
+        "[ths] | 330325 | 涨停类型 | |",
+        "[ths] | 331136 | FREE板块净流入 | |"
+      ],
+      "priority_score": 1
+    },
+    {
+      "id": "push2:f112",
+      "source": "push2",
+      "class": "code",
+      "note": "板级枚举{2,6,23,80,81}，=f111=ulist:f19",
+      "coverage": {
+        "source": "push2",
+        "class": "code",
+        "basics_of_class": [],
+        "cracked_in_source": [],
+        "missing_in_source": [],
+        "is_snapshot_source": false,
+        "verdict": "非基础指标类（状态码/常量/概念码），覆盖三角不适用；须按状态码/枚举/常量占位语义单独攻破（思路2表头+跨源同值对撞）"
+      },
+      "adjacent": null,
+      "header_candidates": [
+        "[em] | STOCK_CODE | 代码 | S |",
+        "[ths] | 8197 | 代码 | |",
+        "[ths] | 330325 | 涨停类型 | |",
+        "[ths] | 331136 | FREE板块净流入 | |"
+      ],
+      "priority_score": 1
+    },
+    {
+      "id": "push2:f118",
+      "source": "push2",
+      "class": "code",
+      "note": "15日采集均未返回·无数据",
+      "coverage": {
+        "source": "push2",
+        "class": "code",
+        "basics_of_class": [],
+        "cracked_in_source": [],
+        "missing_in_source": [],
+        "is_snapshot_source": false,
+        "verdict": "非基础指标类（状态码/常量/概念码），覆盖三角不适用；须按状态码/枚举/常量占位语义单独攻破（思路2表头+跨源同值对撞）"
+      },
+      "adjacent": null,
+      "header_candidates": [
+        "[em] | STOCK_CODE | 代码 | S |",
+        "[ths] | 8197 | 代码 | |",
+        "[ths] | 330325 | 涨停类型 | |",
+        "[ths] | 331136 | FREE板块净流入 | |"
+      ],
+      "priority_score": 1
+    },
+    {
+      "id": "zhb:Col[22]",
+      "source": "zhb",
+      "class": "code",
+      "note": "动态概念/热点码（源覆盖盲区）",
+      "coverage": {
+        "source": "zhb",
+        "class": "code",
+        "basics_of_class": [],
+        "cracked_in_source": [],
+        "missing_in_source": [],
+        "is_snapshot_source": true,
+        "verdict": "非基础指标类（状态码/常量/概念码），覆盖三角不适用；须按状态码/枚举/常量占位语义单独攻破（思路2表头+跨源同值对撞）"
+      },
+      "adjacent": null,
+      "header_candidates": [
+        "[em] | STOCK_CODE | 代码 | S |",
+        "[ths] | 8197 | 代码 | |",
+        "[ths] | 330325 | 涨停类型 | |",
+        "[ths] | 331136 | FREE板块净流入 | |"
+      ],
+      "priority_score": 1
+    }
+  ]
+}

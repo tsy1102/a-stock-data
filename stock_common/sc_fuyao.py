@@ -4,7 +4,7 @@ V16.3.3 新增：官方 REST 通道（字典 §12.8.12c）——Key 交互引导
 
 Key 获取优先级：
     1. 环境变量 THS_FUYAO_API_KEY（推荐，CI/长期使用）
-    2. 项目根 fuyao_key.txt（交互输入后自动保存，已 gitignore）
+    2. credentials/fuyao_key.txt（交互输入后自动保存，已 gitignore）
     3. 交互式引导（ensure_fuyao_key）——无 Key 时提供两个选项：
        a. 粘贴新 Key → 自动验证（meta/tickers/search）→ 保存 → 继续
        b. 跳过 → 本进程禁用 fuyao（_FUYAO_DISABLED=True），后续调用自动返回 None
@@ -31,7 +31,7 @@ from stock_common.sc_network import _quick_request, _debug_log
 # V16.3.3: fuyao 数据缓存（字典 12.15.5 新源充实后——避免每次网络请求消耗 Key 配额/限流）
 # V17.0 S8: 删 _fuyao_cached 适配器(与 _kpl_cached 逐字重复)——直接使用规范 cached
 try:
-    from core.stock_cache import cached, TTL
+    from core.stock_cache import cached, TTL, make_valid_if
 
     _HAS_CACHE = True
 except ImportError:  # pragma: no cover
@@ -40,7 +40,7 @@ except ImportError:  # pragma: no cover
 _logger = logging.getLogger("fuyao_adapter")
 
 _REPO_ROOT = Path(__file__).resolve().parent.parent
-_KEY_FILE = _REPO_ROOT / "fuyao_key.txt"
+_KEY_FILE = _REPO_ROOT / "credentials" / "fuyao_key.txt"
 
 _BASE = "https://fuyao.aicubes.cn"
 
@@ -83,7 +83,7 @@ def is_fuyao_enabled() -> bool:
 
 
 def get_fuyao_key() -> Optional[str]:
-    """解析 Key：环境变量 → fuyao_key.txt → None。不触发交互。"""
+    """解析 Key：环境变量 → credentials/fuyao_key.txt → None。不触发交互。"""
     global _CACHED_KEY
     if _CACHED_KEY:
         return _CACHED_KEY
@@ -138,7 +138,7 @@ def _interactive_acquire(stdin: Any = None) -> Optional[str]:
             if _verify_key(new_key):
                 _save_key(new_key)
                 _CACHED_KEY = new_key
-                print("  ✅ Key 验证通过，已保存到 fuyao_key.txt（gitignore）")
+                print("  ✅ Key 验证通过，已保存到 credentials/fuyao_key.txt（gitignore）")
                 return new_key
             print("  ❌ Key 验证失败（可能无效或未授权），请检查后重试（或选 2 跳过）")
         elif choice == "2":
@@ -155,7 +155,7 @@ def ensure_fuyao_key(interactive: bool = True, stdin: Any = None) -> Optional[st
 
     - 已配置（env/文件）→ 直接返回
     - 未配置且 interactive=True → 打印指导，用户二选一：
-        1) 粘贴新 Key（自动验证并保存到 fuyao_key.txt）→ 返回 Key
+        1) 粘贴新 Key（自动验证并保存到 credentials/fuyao_key.txt）→ 返回 Key
         2) 跳过 → 本进程禁用 fuyao，返回 None
       （stdin 可注入用于测试；非交互终端无输入时自动跳过，不阻塞）
     - 未配置且 interactive=False → 返回 None（不打扰）
@@ -187,7 +187,7 @@ def ensure_fuyao_key(interactive: bool = True, stdin: Any = None) -> Optional[st
 
 
 def _save_key(key: str) -> None:
-    """保存 Key 到项目根 fuyao_key.txt（已 gitignore）。"""
+    """保存 Key 到 credentials/fuyao_key.txt（已 gitignore）。"""
     try:
         _KEY_FILE.write_text(key.strip(), encoding="utf-8")
     except Exception as _e:
@@ -224,7 +224,7 @@ def _fuyao_raw(
         if d.get("code") != 0:
             _debug_log(f"fuyao: code={d.get('code')} msg={d.get('message')} {path}")
             if d.get("code") in (2001, 2003):
-                _debug_log("fuyao: Key 无效——请重新配置（删除 fuyao_key.txt 或更新环境变量）")
+                _debug_log("fuyao: Key 无效——请重新配置（删除 credentials/fuyao_key.txt 或更新环境变量）")
             return d
         return d
     except Exception as _e:
@@ -442,6 +442,7 @@ def get_fuyao_fin_indicators(thscode: str, report: str) -> Optional[Dict[str, An
     return out
 
 
+@cached("fuyao_financials", trading_day=True, valid_if=make_valid_if())
 def get_fuyao_financials(
     kind: str, thscode: str, limit: int = 4, report: Optional[str] = None,
     period: str = "quarterly",
@@ -600,7 +601,7 @@ if __name__ == "__main__":
     if k:
         print(
             "Key 状态: 已配置（来源:",
-            "环境变量" if os.environ.get("THS_FUYAO_API_KEY") else "fuyao_key.txt",
+            "环境变量" if os.environ.get("THS_FUYAO_API_KEY") else "credentials/fuyao_key.txt",
             ")",
         )
         snap = get_fuyao_snapshot(["600519"])

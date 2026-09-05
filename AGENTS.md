@@ -407,9 +407,25 @@ Write-Output 'unreachable'
 | `sc_datasource.py` | ZHB 列索引映射、35 个未知字段、缓存 Key |
 | `tdx_client.py` | 0x0010 协议字段名(mootdx dict key)、限流间隔 |
 | `zhb_client.py` | 各解析器列映射、GBK/分隔符约定 |
-| `data_provider.py` | REQUIRES_REALTIME_HTTP / ZHB_SUFFICIENT 字段集 |
+| `data_provider.py` | **字段路由真机制**（见下方注记）：`_should_use_zhb_for_realtime()` 时段判定 + `get_canonical_stock_data` 内联 `need_realtime_quote` + `sc_datasource.zhb_field_safe()` 的 ABCD 新鲜度分级 |
 | `stock_common/__init__.py` | 导出是否与实际定义一致(2026-08-10 审计:`__all__` 241 项全部可访问,0 缺失;少数公共函数如 `get_em_quote_full` 未在 `__all__` 重导出,但调用方均直连子模块,无破坏) |
-| `docs/field_dict.md` | 字段索引以最新破解为准:Col[3]=StaticPE_TTM(pe_dynamic 为历史遗留名)、Col[9]=MorePE(2026-08-12 TdxQuant 18/18 实锤);ZHB 列索引变化见文档 §三 头部核实日期 |
+| `docs/field_dict.md` | 字段索引以最新破解为准：Col[3]=StaticPE_TTM(pe_dynamic 为历史遗留名)、Col[9]=MorePE(2026-08-12 TdxQuant 18/18 实锤);ZHB 列索引变化见文档 §三 头部核实日期 |
+
+> **⚠️ 注记（2026-08-30 校正）：`REQUIRES_REALTIME_HTTP` / `ZHB_SUFFICIENT` 不控制运行时路由**
+>
+> 旧版本节曾把这两个集合列为 "改前必查项"，会误导——它们**不参与任何运行时分支决策**。现状：
+> - **定义**：`data_provider.py:180-260` 从 `sc_schema.FIELD_SPECS.is_real_time` 动态生成（单一权威源在 sc_schema）。
+> - **消费方**：仅 `tests/core/test_core_routing.py`（14 例）与 `test_core_schema.py` 通过
+>   `is_realtime_http_field()` / `is_zhb_sufficient_field()` 查询——**业务代码零调用**（全仓 grep 证实）。
+> - **因此它们是"测试契约元数据"而非死代码**：删除会破坏 14 个回归用例，**禁止删除**。
+> - **真正决定走 ZHB 还是 HTTP 的三处**：
+>   1. `_should_use_zhb_for_realtime()`（`data_provider.py:1394`）——非交易日/盘前 `t<9:30` → True 走 ZHB；
+>      交易日 `t≥9:30`（含盘中+盘后）→ False 强制 HTTP/TDX（因盘后磁盘 ZHB 仍是 T-1）。
+>   2. `get_canonical_stock_data` 内联三态（`data_provider.py:365-383`）——
+>      `need_realtime_quote = force_realtime or 盘中 or 盘后 or not zhb_dict`。
+>   3. `sc_datasource.zhb_field_safe(field)` 的 **ABCD 新鲜度分级**——A 实时 `max_delay=0`／
+>      B 准实时 `=1`（资金流、streak_days）／C 日频 `=3`（默认）／D 静态 `=90`（ipo_price、股本、行业、list_date）。
+> - 改路由行为请动上述三处；改字段的"是否实时"分类请动 `sc_schema.FIELD_SPECS`（会自动同步到两个集合）。
 
 ### 8.3 字段/签名变更时的连带检查
 
@@ -417,6 +433,47 @@ Write-Output 'unreachable'
 - 找到并更新**所有**调用点(不允许只改定义)
 - 同步更新 `docs/field_dict.md`(主字段字典,含字段索引)
 - 检查是否有缓存反序列化依赖旧 key
+
+### 8.4 统一层与数据访问收口 (2026-09-03 新增)
+
+> **理论层权威文档: `docs/ARCHITECTURE_THEORY.md`(架构公理 A1–A8)**
+> **偏离台账: `docs/DEBT_LEDGER.md`**
+> 本节是操作速查;完整论证与"为什么"见上述两个文件。
+
+**统一层 = 两层网关**(不是一个大对象):
+
+| 层 | 入口 | 职责 |
+|---|---|---|
+| **Tier1 门面** | `core/data_provider.get_canonical_stock_data()` | 核心 86 字段归一化契约、源选择、fallback、单位归一化、field_sources 溯源 |
+| **Tier2 适配器** | `sc_datasource.get_*` / `sc_fuyao.get_fuyao_*` / `tdx_client.tdx_get_*` | 专精数据(CYQ / F10 / 涨停梯队 / 龙虎榜 / 行业L2 / 宏观流向 / 竞价),已含 @cached + 归一化 + 令牌桶限流 |
+| **原始客户端** | `_get_tdx_client()` / `sc_network.em_get` / `sc_fuyao._fuyao_raw` / 裸 requests·httpx | **仅允许出现在 `stock_common/` 与 `core/tdx_client.py` 内部** |
+
+**铁律(公理 A1)**:生产脚本(`main.py` / `get_*_report.py` / `sc_report_runner.py` / `core/*.py`)
+取数必须先经过 Tier1 或 Tier2 的**公开函数**,禁止直连原始客户端。
+
+> **⚠️ 不要把专精数据塞进 `CanonicalStockData`** —— 会造成 god-object,
+> 且让 fallback 一致性更难做(而这正是统一层要解决的原始问题)。
+> **Tier2 适配器本身就是统一层的"专精面"**,调用它不等于绕过统一层。
+
+**自动化闸门**(提交前必跑):
+
+```powershell
+python.exe scripts\verify_data_access.py     # 公理 A1: 数据访问收口(禁止生产脚本直连原始客户端)
+python.exe scripts\verify_sync_check.py      # 公理 A7: 字典 ↔ 代码 同步
+```
+
+> 闸门已用 `tokenize` 剥离注释与字符串,故文档中引用违规符号的说明性注释不会误报。
+
+**🔴 禁止静默迁就(公理 A8,元公理)**:
+明知违反公理,却因"改动大 / 风险高"而不改、**也不记账** —— 这是最严重的违规,
+也是本仓库历史上多轮修改累积混乱的唯一成因。必须二选一:
+
+1. **按公理改**(哪怕改动面扩大);或
+2. **在 `docs/DEBT_LEDGER.md` 登记偏离** —— 写明**真实技术原因**(要动哪些消费方/测试、
+   缺什么验证手段)与偿还计划。禁止写"风险大""暂缓"这类无信息量的措辞。
+
+> 判断标准:债务台账的 OPEN 条目数应**单调下降**。
+> 显式债务是可偿还的,隐形债务是不可理解的。
 
 ---
 

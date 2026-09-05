@@ -31,11 +31,11 @@
 | 层 | 模块 | 说明 |
 |---|---|---|
 | 入口 | `main.py`(530 行) | 批处理调度, 输出活性检测(900s 无输出判卡死) |
-| 报告脚本 | `get_sht_report.py`(1747)/`get_med_report.py`(1202)/`get_lng_report.py`(1117)/`get_val_report.py`(2286)/`get_mak_report.py`(1792) | sht=短线/med=中线/lng=长线/val=23 策略全市场/mak=市场全景 |
+| 报告脚本 | `get_sht_report.py`(2014)/`get_med_report.py`(1301)/`get_lng_report.py`(1320)/`get_val_report.py`(2390)/`get_mak_report.py`(1899) | sht=短线 90 日/med=中线 180 日/lng=长线 730 日/val=25 策略全市场/mak=市场全景 A-F 六段 |
 | 核心包 | `core/`(data_provider/tdx_client/zhb_client/zhb_sync/stock_cache) | 统一数据层+协议层+缓存 |
 | 支撑 | `stock_common/`(sc_datasource/sc_network/sc_render/sc_schema/md_render 等) | 数据源/限流/渲染/合约 |
 | 脚本工具 | `scripts/`(run_tests/run_with_system_python/capture_field_probe/sync_readme 等) | 测试/采集/文档同步 |
-| 测试 | `tests/`(17 文件, **269 passed/45 deselected**) | pytest |
+| 测试 | `tests/`(**21 文件 / 370 个测试函数**；pytest 实际收集 398 项；**353 passed/45 deselected**) — data 5 文件 113 例 + core 10 文件 179 例 + infra 3 文件 14 例 + reports 3 文件 64 例 | pytest |
 
 **数据源分层**(字典 §12.15 权威): L1 ZHB 静态 → L1.5 THS SDK → L2 TDX TCP → L3 腾讯 → L4 push2delay → L5 push2 → L6 datacenter。批量=push2delay ulist HTTP(secids 参数); 单股 canonical=prefetch→TDX→腾讯→push2delay→push2→ZHB。
 
@@ -50,14 +50,23 @@
 - 统一入口: `scripts/run_tests.ps1`(禁止直接 `pytest`/`python -m pytest`)。
 - Mode: all(默认)/module+Path/real(需 REAL_NETWORK=1)/skip_real/expression+ExtraArgs。
 - 自定义 marker: `real_network`(需在 pyproject.toml 注册); conftest 自动跳过真网络。
-- 回归基线: **269 passed / 45 deselected, 0 failed**。
+- 回归基线: **353 passed / 45 deselected, 0 failed**（`skip_real` 模式）。
+  > **基线数字演变（2026-08-30 校正）**：`302`（2026-08-13 V17.0 时点快照，含已随 `ful` 脚本下线的测试）
+  > → `269`（稳定基线，README/CHANGELOG 中的历史条目属**当时真实记录**，不回改）
+  > → `277` = 269 + 8（V17.0.12 新增 `tests/core/test_core_tencent_volume_unit.py` 科创板量纲专项）
+  > → `311` = 277 + 34（报告层第一批：`test_reports_runner.py` 基类骨架 22 + `test_reports_strategy.py` val 策略注册表 12）
+  > → **`353` = 311 + 42**（报告层第二批：`test_reports_pipeline.py` 5 个 Runner 子类 `execute_pipeline` 装配）。
+  > **判回归一律以 353 为准**。
 
 ## 5. 固定业务约束(🔥热区: 字段/版本相关任务)
 
-- **字段破解纪律**: 每次破解必须遵循 `docs/field_verification/CRACKING_METHODOLOGY.md`(前置→七大思路→铁证分级 L1-L4→固化链条)。
+- **字段破解纪律**: 每次破解必须遵循 `docs/field_verification/CRACKING_METHODOLOGY.md`(前置→**八大思路**→铁证分级 L1-L4→固化链条)。
+  > ⚠️ 2026-08-30 校正：本节原文写"七大思路"已滞后。方法论于 2026-08-14 增补第 7 条「配置文件直解」
+  > 与第 8 条「多客户端本机文件交叉印证」，2026-08-27 / 08-29 又增补对撞判定标准与多日复核门槛。
+  > **每次破解前必须重读方法论原文**，勿以本节摘要为准。
 - **固化链条**(改字段后强制): ①field_dict → ②矩阵(§12.15/§零·B+gen_field_matrix.py)→ ③5 脚本获取/fallback → ④script_data_dict → ⑤回归。
 - **ZHB 解析缓存版本**: 字段结构变更必须升 `_ZHB_PARSE_SCHEMA`(当前=4; 历史 1→2 加涨停族, 2→3 change_mtd 改名, 3→4 V17.0.9 Col[24] 改名 cash_reserve_wan), 否则旧 pickle 缺新键。
-- **口径铁律**: 主力净额=f137+f140(特大+大单); ZHB main_net_buy_* 键=竞价额/量(非主力); 行业仅认 881 段(880=概念); 交易日口径涨幅; 单位: 万元/元 严格区分。
+- **口径铁律**: **主力净额 = f137**（V17.0.16 重定案；旧写 `f137+f140` 属**重复计数**、虚高约 40%——f137 本身已含超大单净 f140 + 大单净 f143；四档为 f140 超大单 / f143 大单 / f146 中单 / **f149 小单**，详见字典 §12.3.4）; ulist 批量侧同理 **主力净 = f62**（不再 +f66）; ZHB main_net_buy_* 键=竞价额/量(非主力); 行业仅认 881 段(880=概念); 交易日口径涨幅; 单位: 万元/元 严格区分。
 - **限流**: push2=0.4rps/push2delay=1.0/datacenter=1.0/腾讯=5.0; 熔断 3 连断→20h; 批量用 push2delay 镜像域。
 - 版本: V17.0.1(CHANGELOG.md 权威); 报告输出 `.md`(md_render.py 渲染层转换)。
 

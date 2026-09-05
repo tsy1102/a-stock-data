@@ -270,7 +270,6 @@ class TestCanonicalV161ExtendedFields(unittest.TestCase):
         self.assertEqual(d.limit_up, 0.0)
         self.assertEqual(d.limit_down, 0.0)
         self.assertEqual(d.bps, 0.0)
-        self.assertEqual(d.pe_more, 0.0)
         self.assertEqual(d.industry_code_push2, "")
         self.assertEqual(d.report_period, "")
         self.assertEqual(d.quote_date, "")
@@ -288,7 +287,6 @@ class TestCanonicalV161ExtendedFields(unittest.TestCase):
             limit_up=1494.88,
             limit_down=1223.08,
             bps=216.32,
-            pe_more=20.64,
             high_52w=1539.98,
             low_52w=1151.01,
             report_period="20260331",

@@ -120,10 +120,18 @@ def _market_from_code(code: str) -> int:
 
 
 def _index_to_market_code(idx_code: str) -> Tuple[int, str]:
-    prefix = idx_code[:2]
-    num = idx_code[2:]
-    m = 1 if prefix == "sh" else 0
-    return (m, num)
+    # V17.0.17: 兼容原始 6 位指数代码(如 '000001' 上证 / '399006' 创业板指)。
+    # 原实现无脑取前 2 字符当前缀 → 原始 '000001' 被拆成 ('00','0001') 返回 (0,'0001') 坏码,
+    # 致 tdx_get_index_bars 取不到数据(指数K线形态/异动雷达指数对照信号恒空)。
+    if idx_code[:2] in ("sh", "sz"):
+        prefix = idx_code[:2]
+        num = idx_code[2:]
+        m = 1 if prefix == "sh" else 0
+        return (m, num)
+    # 原始指数代码: SH 指数以 0/9 开头(mootdx market=1), SZ 指数以 3 开头(market=0)
+    if idx_code.startswith("3"):
+        return (0, idx_code)  # 深市指数
+    return (1, idx_code)  # 沪市指数(0/9 开头, 兜底默认沪)
 
 
 # ═══════════════════════════════════════
@@ -238,9 +246,6 @@ _EASY_TDX_PREFERRED_HOSTS = [
 # mootdx: 0=5min 1=15min 2=30min 3=60min 4=day 5=week 6=month 7/8=1min 9=day 10=quarter 11=year
 # easy_tdx: MIN_1=7 MIN_5=0 MIN_15=1 MIN_30=2 MIN_60=3 DAY=4 WEEK=5 MONTH=6 QUARTER=10 YEAR=11
 _FREQ_TO_CATEGORY = {0: 0, 1: 1, 2: 2, 3: 3, 4: 4, 5: 5, 6: 6, 7: 7, 8: 7, 9: 4, 10: 10, 11: 11}
-
-# 沪市指数白名单（000 开头中属于 SH 的指数；399xxx 属 SZ）
-_SH_INDEX_CODES = {"000001", "000016", "000300", "000688", "000852", "000905"}
 
 
 def _easy_market(code: str, is_index: bool = False) -> int:
@@ -774,7 +779,9 @@ def _tencent_quote_full_fallback(code: str, is_pre_market: bool = False) -> Dict
             "limit_up": _safe_float(vals[_f["limit_up"]]),
             "limit_down_price": _safe_float(vals[_f["limit_down_price"]]),
             "vol_ratio": _safe_float(vals[_f["vol_ratio"]]),
-            "pe_static": _safe_float(vals[_f["pe_static"]]),
+            # DEBT-004(2026-09-04): 删除冗余 pe_static 数据键(与 pe_lyr 同源同值, 违反 A2 无冗余别名)。
+            #   仅保留 pe_lyr —— 槽位 53 = 腾讯[53] = f163 静态PE(LYR), 见 _TENCENT_FIELD_INDEX["pe_static"]。
+            "pe_lyr": _safe_float(vals[_f["pe_static"]]),
             "bid1_vol": _safe_float(vals[_f["bid1_vol"]]) * 100,
         }
     except Exception as _e:
@@ -836,7 +843,6 @@ def _pre_market_quote_from_kline(code: str) -> Dict[str, Any]:
             "limit_up": 0.0,
             "limit_down_price": 0.0,
             "vol_ratio": 0.0,
-            "pe_static": 0.0,
             "_is_pre_market": True,
         }
     except Exception as _e:
@@ -886,7 +892,13 @@ _TENCENT_FIELD_INDEX = {
     "change_180td_pct": 75,  # V17.0.7 正名: 近180交易日涨跌幅(%, 前复权)——腾讯独有长窗涨幅
                              #   ~~"主力净流入(亿)"~~ 证伪(与东财占比族最大差40pp且符号翻转、
                              #   值可超±100; K线窗口扫描 w=180 显著最优)——严禁再作资金流兜底
-    "panel_price": 85,     # 盘口参考价（≈price±0.1，未确认精确语义）
+    # V17.0.25(2026-09-03, 据主字典 §12.1/§(7) 09-03 主动升级定案):
+    "avg_price": 85,       # 均价 / VWAP 类价格派生（L3 候选强）——茅台 t85=1297.00≈自算VWAP 1297.04(误差0.003%)；
+                           #   原误标"盘口参考价(未确认)"，2026-08-31 旧结论，已被 09-03 非对撞主动法升级推翻。
+    "beta": 56,            # Beta 族（高置信）——887只800日K线自构等权市场代理，自算 Beta 与 [56] Pearson=0.908；
+                           #   注: 腾讯基准/窗口与自算有偏移, 此为腾讯口径 Beta 估计值, 非本系统重算。
+    "bid_ask_net": 86,     # 手级带符号量（候选=委差/盘口净量, L4）——符号(收>开)仅3/6一致, 否定"日内净买";
+                           #   量级(手级带符号)与委差吻合, 委差瞬时L1快照与日K线解耦故日K线无法验证→维持L4候选。
 }
 _TENCENT_MIN_FIELDS = 69  # V16.3 O22: 覆盖 high_52w=67/low_52w=68/dividend_yield=64 索引（原 53 会 IndexError）  # 协议最小字段数（不足即视为 schema 变化/截断）
 
@@ -982,6 +994,9 @@ def _tencent_batch_fallback(codes: List[str]) -> Dict[str, Dict[str, Any]]:
                             "change_pct": float(vals[_TENCENT_FIELD_INDEX["change_pct"]]) if vals[_TENCENT_FIELD_INDEX["change_pct"]] else 0,
                             "mcap_yi": float(vals[_TENCENT_FIELD_INDEX["mcap_yi"]]) if vals[_TENCENT_FIELD_INDEX["mcap_yi"]] else 0,
                             "pe_ttm": float(vals[_TENCENT_FIELD_INDEX["pe_ttm"]]) if vals[_TENCENT_FIELD_INDEX["pe_ttm"]] else 0,
+                            # V17.0.23(2026-09-01): 静态PE(LYR, f163) — 腾讯[53]=f163 实锤(主字典定案),
+                            # 供同业对比表静态PE列横向比较(本股 cdata.pe_lyr 同源)。
+                            "pe_lyr": float(vals[_TENCENT_FIELD_INDEX["pe_static"]]) if vals[_TENCENT_FIELD_INDEX["pe_static"]] else 0,
                             "turnover_pct": float(vals[_TENCENT_FIELD_INDEX["turnover_pct"]]) if vals[_TENCENT_FIELD_INDEX["turnover_pct"]] else 0,
                             "amount_wan": float(vals[_TENCENT_FIELD_INDEX["amount_wan"]]) if vals[_TENCENT_FIELD_INDEX["amount_wan"]] else 0,
                         }
@@ -1070,10 +1085,17 @@ def tdx_get_security_bars(code: str, count: int = 800) -> Tuple[List[str], List[
                     # V16.2.13: easy_tdx 已内部换台（auto_reconnect=True → _find_host_returning_data
                     # 逐台实测白名单 5 台）——空 df = 换台后仍空 = 标的确无（如 92 新股/8/4 老段），
                     # 项目层重建换台是冗余重复，直接记忆 5 分钟返回空。
+                    # V17.0.17: 5 分钟失败记忆**仅限确无 K 线的号段**(北交所 92/老三板 8/4/43/83/87)。
+                    # 健康股(6/0/3)冷启动瞬断不应被拉黑——否则单只瞬断会冻结该股票 K线整批,
+                    # 且旧 @cached 会把空结果写入持久缓存致全月所有报告 K线形态章节恒空。
+                    # 健康股瞬断交由调用方重试; 上层 @cached 已用 valid_if 拒绝空结果(不缓存)。
                     _tdx_inc_empty_streak()
-                    _TDX_KLINE_EMPTY_UNTIL[code] = time.time() + 300  # 5 分钟失败记忆
                     result = [], []
-                    _TDX_KLINE_CACHE[cache_key] = result
+                    if code.startswith(("92", "43", "83", "87")) or code[0] in ("8", "4"):
+                        _TDX_KLINE_EMPTY_UNTIL[code] = time.time() + 300  # 5 分钟失败记忆(仅无数据号段)
+                        _TDX_KLINE_CACHE[cache_key] = result  # 无数据号段: 进程内也缓存空, 避免重复换台
+                    # 健康股(6/0/3)瞬断: 不写进程级缓存(与下方连接失败路径一致, 见 V16.2 注释),
+                    # 下次调用重新拉取; 上层 @cached valid_if 拒空, 不污染持久缓存。
                     return result
                 # V17.0.10c(2026-08-28): 截断检测（与 index_bars 对称）——TDX 服务端偶发截断时
                 # easy_tdx 返回"非空的残缺列表"且不在非空时换台, 项目层补防护: 返回条数显著
@@ -1533,6 +1555,8 @@ def tdx_get_weekly_bars(code: str, count: int = 100):
 )  # V15.2: 拒绝空 dict/全 0
 def tdx_get_fund_flow(code: str):
     # V12.0: 委托到东财 HTTP 接口（原 TDX get_fund_flow 已废弃）
+    # ⚠️ V17.0.13 口径（easy_tdx #55，2026-08-30）：禁止回退 easy_tdx 原生
+    # get_fund_flow（0x0fb5 逐笔聚合，与东财/同花顺主力净流入重合度仅 ~14%）。
     try:
         from stock_common.sc_datasource import get_em_fund_flow
 
@@ -1547,6 +1571,8 @@ def tdx_get_fund_flow(code: str):
 )  # V15.2: 拒绝空 dict/全 0
 def tdx_get_history_fund_flow(code: str, days: int = 120):
     # V12.0: 委托到东财 HTTP 接口（原 TDX get_history_fund_flow 已废弃）
+    # ⚠️ V17.0.13 口径（easy_tdx #55，2026-08-30）：禁止回退 easy_tdx 原生
+    # get_history_fund_flow（0x0fb5 逐笔聚合，与东财/同花顺主力净流入不可比）。
     try:
         from stock_common.sc_datasource import get_em_history_fund_flow
 

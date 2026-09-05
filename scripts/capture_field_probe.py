@@ -1,20 +1,28 @@
 #!/usr/bin/env python3
-"""capture_field_probe.py — 字段实测验证采集脚本(V16.4.1)
+"""capture_field_probe.py — 字段实测验证采集脚本(V17.0.24)
 
 固定股票池(docs/field_verification/pool.json)20 股,按天采集各源全字段:
   - ZHB    : full/stat/stat2/tipinfo 全字段(本地解析,零网络)
   - TDX    : 行情快照 + 财务 0x0010(TCP)
   - 腾讯   : qt.gtimg 单股全字段(~90 位,保存原始 split 数组)
   - 东财   : push2 stock/get 全字段(f1-f239,原样保存)
+  - fuyao  : 官方 REST 快照/估值/竞价/财务指标/三大报表(V17.0.7 财务TTM族主源)
 
+V17.0.24(2026-09-01) 据主字典最新定案更新:
+  - 新增 em_kline_f61: 东财日K(f61 换手率)——CYQ 筹码分布唯一源(字典 V17.0.14)
+  - 新增 em_fund_flow: push2delay f137/f140/f143/f146/f149 资金流四档——主力净额
+    唯一同口径源(V17.0.16: 主力净=f137, 勿 f137+f140); 走 delay 域不碰 push2 主域
+  - collect_fuyao 补 fin_report 三大报表(income/balance/cashflow)——f163 静态PE
+    闭环(f160 年报EPS)与 ocf_ttm/revenue_ttm TTM 重建的原始锚数据(V17.0.7)
 输出: docs/field_verification/{YYYYMMDD}/raw_{source}.json + meta.json
 用法:
   python scripts/capture_field_probe.py                 # 采今天(用现有 ZHB 包)
   python scripts/capture_field_probe.py --date 20260812
   python scripts/capture_field_probe.py --dry-run       # 只检查源可用性,不发请求
+  python scripts/capture_field_probe.py --only zhb,tdx,tencent   # 只采指定源
 """
 import sys, io, os, json, time, argparse
-from datetime import datetime
+from datetime import datetime, time as dt_time
 
 for _s in (sys.stdout, sys.stderr):
     if _s is not None and hasattr(_s, "reconfigure"):
@@ -124,12 +132,19 @@ def collect_push2(pool: list) -> dict:
     2026-08-12 实测: push2 半恢复状态——连接级风控仍在,首次连接约 50%
     概率 RemoteDisconnected(健康探测单次连接恰好成功)。V16.4.1 防封:
     失败**不再重试**(重试叠加失败连接会触发封禁),失败即记 error。
+    V17.0.24: 补域级熔断——首连失败即停止整段 push2 采集(剩余全记
+    error 不再发请求)。push2_full 已有 3 连失败熔断, 此处对齐。
+    push2 主域数据 push2delay 已镜像覆盖(collect_push2_full 兜底), 损失可接受。
     """
     from stock_common import _quick_request
 
     out = {"stocks": {}}
+    domain_dead = False  # V17.0.24: 域级熔断旗标
     for p in pool:
         c = p["code"]
+        if domain_dead:
+            out["stocks"][c] = {"__error__": "push2 domain circuit-broken (no retry)"}
+            continue
         secid = em_secid_prefix(c) + c  # V17.0 S3: 统一(修复 92 北交所误判 1.)
         url = "https://push2.eastmoney.com/api/qt/stock/get"
         try:
@@ -143,6 +158,7 @@ def collect_push2(pool: list) -> dict:
             r = None
         if r is None:
             out["stocks"][c] = {"__error__": "request failed (no retry)"}
+            domain_dead = True  # V17.0.24: 失败即熔断整域, 不再连打
             continue
         data = (r.json() or {}).get("data") or {}
         out["stocks"][c] = {"secid": secid, "n_fields": len(data), "data": data}
@@ -217,7 +233,10 @@ def collect_sina(pool: list) -> dict:
     out = {"stocks": {}}
     for p in pool:
         c = p["code"]
-        pre = "sh" if c.startswith("6") else ("bj" if c.startswith(("92", "8", "4", "43", "83", "87")) else "sz")
+        # M13 修复：原来只把 "6" 判沪市，漏 "5"(沪ETF)/"9"(沪B) → 新浪源误判 sz 污染跨源对照。
+        # 与 collect_tencent(:97) 同口径：92/8/4/43/83/87→bj，6/9/5→sh，其余→sz。
+        pre = "bj" if c.startswith(("92", "8", "4", "43", "83", "87")) else (
+            "sh" if c.startswith(("6", "9", "5")) else "sz")
         try:
             r = _quick_request(
                 f"https://hq.sinajs.cn/list={pre}{c}",
@@ -352,13 +371,28 @@ def collect_fuyao(pool: list) -> dict:
         return out
     codes = [p["code"] for p in pool]
     td = _last_completed_trading_day()
-    date_ms = int(__import__("datetime").datetime.combine(td, __import__("datetime").time()).timestamp() * 1000)
+    date_ms = int(datetime.combine(td, dt_time()).timestamp() * 1000)
     out["probe_trading_day"] = td.isoformat()
     out["date_ms"] = date_ms
 
     snap = {r.get("ticker"): r for r in (get_fuyao_snapshot(codes) or [])}
     val = {r.get("ticker"): r for r in (get_fuyao_valuation(codes) or [])}
     auction = {r.get("ticker"): r for r in (get_fuyao_auction_snapshot(codes, stage="final") or [])}
+    # V17.0.24: 三大报表(近 8 期 quarterly + 年报 annual)——财务 TTM 族主源原始锚:
+    # f163 静态PE=现价÷f160(年报EPS) 闭环验证 + ocf_ttm/revenue_ttm TTM 重建(R_YTD+FY−H1)
+    finrep = {}
+    try:
+        from stock_common.sc_fuyao import get_fuyao_financials as _gff
+        for p in pool:
+            c = p["code"]
+            finrep[c] = {
+                "income_q": _gff("income", c, limit=8, period="quarterly") or [],
+                "balance_q": _gff("balance", c, limit=8, period="quarterly") or [],
+                "cashflow_q": _gff("cashflow", c, limit=8, period="quarterly") or [],
+                "income_a": _gff("income", c, limit=3, period="annual") or [],
+            }
+    except Exception as _e:
+        finrep["__error__"] = str(_e)[:200]
     for p in pool:
         c = p["code"]
         ind = None
@@ -375,6 +409,8 @@ def collect_fuyao(pool: list) -> dict:
             "auction_final": auction.get(c),
             "fin_indicators": ind,
             "fin_report": used_report,
+            # V17.0.24: 三大报表原始数据(TTM 重建/静态PE 闭环锚)
+            "financials": finrep.get(c) if isinstance(finrep.get(c), dict) else None,
         }
 
     mkt = out["market"]
@@ -456,6 +492,93 @@ def collect_ftshare(pool: list) -> dict:
     mkt["unlock_by_date"] = (get_ft_unlock_by_date(td) or [])[:80]
     mkt["pledge_summary"] = get_ft_pledge_summary()
     mkt["probe_trading_day"] = td
+    return out
+
+
+def collect_em_kline_f61(pool: list) -> dict:
+    """东财日K线(**push2his** 域)——f61 换手率为 CYQ 筹码分布唯一源(字典 V17.0.14)。
+
+    TDX 0x0010 日K 与腾讯 ifzq 均无换手率 → 仅东财日K有。
+    🔴 域选择实测(2026-09-01): push2delay/push2 主域 kline dktotal=0 空返回(延时镜像
+    无历史窗口); **push2his 才有全窗口**(dktotal=5995, 150 根含今日)——与生产
+    `get_cyq_distribution` 的 `_em_fflow_request(prefer_his=True)` 同源。
+    klines 结构: "date,open,close,high,low,volume,amount,amplitude,pct,chg,turnover"
+    其中 turnover=f61 换手率; fqt=0 不复权(成本分布口径)。
+    """
+    from stock_common import _quick_request
+
+    out = {"stocks": {}}
+    domain_dead = False  # V17.0.24: 域级熔断(push2his 与 push2 同风控面, 3 连败即停)
+    fail_streak = 0
+    for p in pool:
+        c = p["code"]
+        if domain_dead:
+            out["stocks"][c] = {"__error__": "push2his circuit-broken (family risk-control)"}
+            continue
+        secid = em_secid_prefix(c) + c
+        try:
+            r = _quick_request(
+                "https://push2his.eastmoney.com/api/qt/stock/kline/get",
+                params={
+                    "secid": secid, "fields1": "f1,f2,f3,f4,f5,f6",
+                    "fields2": "f51,f52,f53,f54,f55,f56,f57,f58,f59,f60,f61",
+                    "klt": "101", "fqt": "0", "end": "20500101", "lmt": "150",
+                    "ut": "b2884a393a59ad64002292a3e90d46a5",
+                },
+                headers={"Referer": "https://quote.eastmoney.com/"},
+                timeout=15,
+            )
+            if r is None:
+                out["stocks"][c] = {"__error__": "request failed"}
+                fail_streak += 1
+                if fail_streak >= 3:
+                    domain_dead = True
+                continue
+            data = (r.json() or {}).get("data") or {}
+            klines = data.get("klines") or []
+            fail_streak = 0
+            out["stocks"][c] = {
+                "secid": secid, "dktotal": data.get("dktotal"), "n_klines": len(klines),
+                "klines_tail30": klines[-30:],   # 近 30 根精简
+                "klines_all": klines if len(klines) <= 150 else klines[:150],
+            }
+        except Exception as e:
+            out["stocks"][c] = {"__error__": str(e)[:200]}
+    return out
+
+
+def collect_em_fund_flow(pool: list) -> dict:
+    """东财资金流四档(push2delay 域)——f137 主力净额唯一同口径源(V17.0.16)。
+
+    stock/get: f135/136/137=主力(超大+大单)、f138/139/140=超大单、f141/142/143=大单、
+    f144/145/146=中单、f149=小单净。铁证 f137=f140+f143(169/169); ulist f62==f137(96.6%)。
+    全走 push2delay 镜像域(独立风控 1.0rps), 不碰 push2 主域。
+    """
+    from stock_common import _quick_request
+
+    ff_fields = ",".join(["f135", "f136", "f137",
+                          "f138", "f139", "f140",
+                          "f141", "f142", "f143",
+                          "f144", "f145", "f146", "f149"])
+    out = {"stocks": {}}
+    for p in pool:
+        c = p["code"]
+        secid = em_secid_prefix(c) + c
+        try:
+            r = _quick_request(
+                "https://push2delay.eastmoney.com/api/qt/stock/get",
+                params={"secid": secid, "fltt": "2", "invt": "2", "fields": ff_fields,
+                        "ut": "fa5fd1943c7b386f172d6893dbfba10b"},
+                headers={"Referer": "https://quote.eastmoney.com/"},
+                timeout=10,
+            )
+            if r is None:
+                out["stocks"][c] = {"__error__": "request failed"}
+                continue
+            data = (r.json() or {}).get("data") or {}
+            out["stocks"][c] = {"secid": secid, "n_fields": len(data), "data": data}
+        except Exception as e:
+            out["stocks"][c] = {"__error__": str(e)[:200]}
     return out
 
 
@@ -633,7 +756,9 @@ def main() -> None:
         "market_sources": collect_market_sources,  # V16.4.1: 财联社/KPL/板块轮动/龙虎榜
         "tdx_f10": collect_tdx_f10,         # V16.4.1: F10 财务/股本/分红
         "thsdk": collect_thsdk,             # V16.4.1: 同花顺 SDK(盘中才可用)
-        "fuyao": collect_fuyao,             # V17.0.5: fuyao 官方 REST(盘后可用——竞价/池/财务指标/估值 PS·PCF)
+        "fuyao": collect_fuyao,             # V17.0.5: fuyao 官方 REST(盘后可用——竞价/池/财务指标/估值 PS·PCF); V17.0.24 补三大报表
+        "em_kline_f61": collect_em_kline_f61,   # V17.0.24: 东财日K f61 换手率(CYQ 唯一源, delay 域)
+        "em_fund_flow": collect_em_fund_flow,   # V17.0.24: 资金流四档 f137 族(主力净唯一同口径源, delay 域)
         "ulist239": collect_ulist239,       # V16.4.1: push2delay ulist 239 字段(批量)
         "push2ex": collect_push2ex,         # V16.4.1: 涨停/跌停/炸板池
         "em_hot": collect_em_hot,           # V16.4.1: 人气榜

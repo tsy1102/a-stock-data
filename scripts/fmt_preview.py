@@ -46,7 +46,8 @@ def extract_script_lines(path, range_str):
     for ln in lines:
         m = re.search(r'L\((f?)"((?:[^"\\]|\\.)*)"\)', ln)
         if m:
-            val = m.group(2).encode().decode("unicode_escape") if False else m.group(2)
+            # M18 修复：原 `if False else m.group(2)` 死分支（调试开关误留），恒取 m.group(2)
+            val = m.group(2)
             out.append(val.replace("\\n", "\n"))
         else:
             out.append(ln.strip())

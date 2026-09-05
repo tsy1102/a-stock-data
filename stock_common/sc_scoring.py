@@ -86,6 +86,11 @@ class ScoreData:
     holder_change_ratio: float = 0.0
     holder_consecutive_decrease: bool = False
     institution_holding_pct: float = 0.0
+    # 筹码分布 CYQ(V17.0.14: 东财 kline f61 → calculate_cyq)
+    cyq_benefit_pct: float = 0.0        # 获利盘比例(0~1)
+    cyq_avg_cost: float = 0.0           # 平均成本价
+    cyq_concentration_90: float = 0.0   # 90%筹码集中度(0~1, 越小越集中)
+    cyq_concentration_70: float = 0.0   # 70%筹码集中度
 
     # 分红数据
     dividend_yield: float = 0.0
@@ -311,6 +316,27 @@ def _score_holder(data: ScoreData, cfg: Optional[Dict] = None) -> tuple:
     if data.institution_holding_pct > 0:
         score += hc.get("institution_hold", 10)
         details.append(f"机构持仓{data.institution_holding_pct:.1f}%")
+
+    # 筹码分布集中度(CYQ, V17.0.14)
+    if data.cyq_concentration_90 > 0:
+        _c90 = data.cyq_concentration_90
+        if _c90 < 0.12:
+            score += hc.get("cyq_tight", 12)
+            details.append("筹码高度集中")
+        elif _c90 < 0.2:
+            score += hc.get("cyq_focus", 7)
+            details.append("筹码较集中")
+        elif _c90 > 0.35:
+            score -= hc.get("cyq_spread", 6)
+            details.append("筹码分散")
+    # 获利比例(偏多信号; 过高=获利盘丰厚潜在抛压, 温和; 过低=套牢盘重)
+    if 0 < data.cyq_benefit_pct < 1:
+        if data.cyq_benefit_pct > 0.85:
+            score += hc.get("cyq_profit_high", 4)
+            details.append("获利盘丰厚")
+        elif data.cyq_benefit_pct < 0.25:
+            score -= hc.get("cyq_profit_low", 4)
+            details.append("套牢盘较重")
 
     return max(0, min(100, score)), details
 

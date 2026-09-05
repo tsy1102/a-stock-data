@@ -52,6 +52,43 @@ CACHE_SIZE_TARGET_BYTES = 400 * 1024 * 1024
 _cache_lock = threading.Lock()
 
 
+def _debug_log(msg: str) -> None:
+    """V17.0.25: 调试日志（仅 STOCK_CACHE_DEBUG 环境变量置位时输出, 避免污染正常输出）。"""
+    if os.environ.get("STOCK_CACHE_DEBUG"):
+        try:
+            print(f"[sc_kline_cache] {msg}", file=sys.stderr)
+        except Exception:
+            pass
+
+
+# ═══════════════════════════════════════
+# V17.0.25(2026-09-03): 非空守卫（实现项目铁律"只缓存非空结果"）
+# ═══════════════════════════════════════
+# 背景：em_get 等网络层只有令牌桶+熔断、无任何数据缓存；新接口须自加缓存(sc_kline_cache),
+# 否则 N 倍请求打挂 push2 连接级风控（字典 §12.3 实测恢复 20+ 小时）。但若把"空/失败结果"
+# 也写进磁盘, 会被后续 24h 内所有调用命中并当作"有效空数据"返回 → 投毒 + 掩盖源故障。
+# 故写入前强制校验非空, 空结果直接丢弃(不写盘, 调用方回退到网络重取)。
+
+def _kline_is_non_empty(data: Any) -> bool:
+    """K线数据 (keys, rows) 是否可缓存（非空）。"""
+    if not isinstance(data, (tuple, list)) or len(data) != 2:
+        return False
+    keys, rows = data[0], data[1]
+    if not isinstance(keys, (list, tuple)) or not isinstance(rows, (list, tuple)):
+        return False
+    return len(keys) > 0 and len(rows) > 0
+
+
+def _blob_is_non_empty(data: Any) -> bool:
+    """通用 blob（CYQ 等）是否可缓存（非空）。"""
+    if data is None:
+        return False
+    if isinstance(data, (dict, list, tuple, str)):
+        return len(data) > 0
+    # 其他标量类型（int/float/bool）视为非空可缓存
+    return True
+
+
 # ═══════════════════════════════════════
 # 路径与目录
 # ═══════════════════════════════════════
@@ -187,6 +224,8 @@ def set_cached_kline(period: str, code: str, count: int, data: Tuple[list, list]
     """V14.3 P3: 写入跨进程 K 线缓存。
 
     V14.3.1: 写入后检查总大小，超限时 LRU 清理。
+    V17.0.25(2026-09-03): 写入前强制非空校验——空/失败结果不写盘（项目铁律"只缓存非空结果"），
+        避免空数据投毒 24h 并掩盖源故障（调用方应回退网络重取）。
 
     Args:
         period: "D" 日线 / "W" 周线 / "Q" 行情
@@ -194,6 +233,9 @@ def set_cached_kline(period: str, code: str, count: int, data: Tuple[list, list]
         count: K 线根数
         data: (keys, rows) 元组
     """
+    if not _kline_is_non_empty(data):
+        _debug_log(f"sc_kline_cache: 跳过空 K线缓存 {period}:{code}:{count}（非空守卫）")
+        return
     with _cache_lock:
         try:
             p = _cache_path(period, code, count)
@@ -210,6 +252,81 @@ def set_cached_kline(period: str, code: str, count: int, data: Tuple[list, list]
             enforce_size_limit()
         except Exception:
             pass  # 缓存写入失败不阻塞主流程
+
+
+# ═══════════════════════════════════════
+# V17.0.15: 通用对象缓存（非 K 线数据）
+# ═══════════════════════════════════════
+
+def get_cached_blob(period: str, code: str, count: int) -> Optional[Any]:
+    """V17.0.15: 通用跨进程缓存读取——**任意可 pickle 对象**（如 CYQ 结果 dict）。
+
+    为什么单独开一对接口而不是直接复用 get_cached_kline：
+      后者的签名与 docstring 都绑定 TDX K 线语义（返回 `Tuple[list, list]` 的
+      (keys, rows)），拿它存 dict 虽能跑但会误导维护者。本接口机制完全相同
+      （同一 TTL 24h / 同一 LRU 500MB / 同一原子写 / 同一锁），仅放宽类型约束。
+
+    首要用途（V17.0.15 审查发现）：`get_cyq_distribution` 走东财 push2 kline，
+    而 `em_get` **只有令牌桶限流与熔断、没有任何数据缓存** —— 未加缓存前，
+    全仓扫描时 sht/med/lng 三脚本各调一次 → **3N 次东财请求**。东财 push2 系是
+    **连接级风控**（RemoteDisconnected，字典 §12.3 实测恢复 20+ 小时），风险极高。
+    CYQ 依赖的 240 根日K+换手率属 T+1 稳定数据，与 K 线同性质，故按同样 TTL 缓存。
+
+    Args:
+        period: 命名空间。当前**实际在用**的只有 `"CYQ"`（筹码分布）；
+            另有 `"D"`/"60" 等由 `get_cached_kline` 使用的日K命名空间（同一目录，
+            但走 K线专用接口）。
+            ⚠️ **"PAT"（K线形态）不是生产命名空间，勿据此认为已接入形态缓存**：
+            `get_kline_patterns` 是**纯本地 CPU 计算**（TA-Lib，输入为已缓存的
+            60 根日K），本身无网络请求，再缓存一次属冗余。
+            "PAT" 仅出现在 `tests/core/test_core_blob_cache.py` 中，作为
+            **与 CYQ 不同的第二个命名空间**来验证隔离性——是测试夹具，勿删，
+            也不要把生产代码指向它。此处澄清是为避免误判"形态已缓存"
+            而漏掉真正的网络热点。
+        code: 股票代码
+        count: 业务参数（CYQ = 换手窗口天数；K线 = 根数）
+
+    Returns:
+        pickle 对象；缓存不存在 / 已过期 / 损坏 → None（调用方应回退到网络请求）
+    """
+    with _cache_lock:
+        try:
+            p = _cache_path(period, code, count)
+            if not p.exists():
+                return None
+            if time.time() - p.stat().st_mtime > CACHE_TTL_SECONDS:
+                try:
+                    p.unlink()
+                except Exception:
+                    pass
+                return None
+            with open(p, "rb") as f:
+                return pickle.load(f)
+        except Exception:
+            return None
+
+
+def set_cached_blob(period: str, code: str, count: int, data: Any) -> None:
+    """V17.0.15: 通用跨进程缓存写入（配套 get_cached_blob，失败静默不阻塞主流程）。
+
+    V17.0.25(2026-09-03): 写入前强制非空校验——空/失败结果不写盘（项目铁律"只缓存非空结果"）。
+    """
+    if not _blob_is_non_empty(data):
+        _debug_log(f"sc_kline_cache: 跳过空 blob 缓存 {period}:{code}:{count}（非空守卫）")
+        return
+    with _cache_lock:
+        try:
+            p = _cache_path(period, code, count)
+            tmp = p.with_suffix(".pkl.tmp")
+            with open(tmp, "wb") as f:
+                pickle.dump(data, f, protocol=pickle.HIGHEST_PROTOCOL)
+            try:
+                os.replace(tmp, p)
+            except OSError:
+                tmp.unlink(missing_ok=True)
+            enforce_size_limit()
+        except Exception:
+            pass
 
 
 def clear_kline_cache(period: Optional[str] = None) -> int:
@@ -265,6 +382,9 @@ def get_cache_stats() -> dict:
 __all__ = [
     "get_cached_kline",
     "set_cached_kline",
+    # V17.0.15: 通用对象缓存（CYQ / 形态等非 K 线数据）
+    "get_cached_blob",
+    "set_cached_blob",
     "clear_kline_cache",
     "clear_expired",
     "enforce_size_limit",

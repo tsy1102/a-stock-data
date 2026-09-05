@@ -209,10 +209,20 @@ FIELD_SPECS: Tuple[FieldSpec, ...] = (
         is_real_time=False, zhb_t_minus_1_acceptable=True, batch_friendly=True,
     ),
     FieldSpec(
-        name="turnover_pct", description="换手率（百分点）",
-        source_preference=(DataSource.ZHB,),
-        time_anchor=TimeAnchor.T_MINUS_1, unit=Unit.PERCENT,
-        is_real_time=False, zhb_t_minus_1_acceptable=True, batch_friendly=True,
+        # V17.0.15 实证校正（原 V12.6 规格已与代码+字典漂移，三处证据）：
+        #   ① 换手率是**当日即时指标**——get_turnover_pct docstring(V16.3 M) 明确
+        #      "9:30-24:00 不接受 ZHB T-1，仅盘前/非交易日用 ZHB"；
+        #   ② canonical 主源实为**腾讯 T 日实时**：get_canonical_stock_data(:785-801)
+        #      rt_quote → zhb → `get_tencent_quote` 兜底，并写 field_sources
+        #      = "realtime:tencent"（V16.2.3，起因是 TDX 0x010C 无换手率、ZHB 无此字段
+        #      → sht 换手率恒 0）；
+        #   ③ 同花顺 getharden `huanshou` 亦为**当日**换手率（2026-08-28 探针实测
+        #      81 行：000712 huanshou=1.69 / zhangfu=9.972，见字典 §12.8.12）。
+        #   故主源 = 腾讯(东财 f168 同义) T 日；ZHB T-1 仅盘前/非交易日可接受。
+        name="turnover_pct", description="换手率（百分点，当日即时指标）",
+        source_preference=(DataSource.TENCENT, DataSource.ZHB),
+        time_anchor=TimeAnchor.T_DAY, unit=Unit.PERCENT,
+        is_real_time=True, zhb_t_minus_1_acceptable=True, batch_friendly=True,
     ),
 
     # ─── 财务类（ZHB 即可；V16.3 O: TDX 0x0010/F10 为实际主源——ZHB 无这些字段，见 field_dict §零）───
@@ -454,9 +464,12 @@ class CanonicalStockData:
     # 估值类
     pe_ttm: float = 0.0              # PE(TTM) (倍)
     pe_dynamic: float = 0.0          # 动态PE (倍)
+    pe_lyr: float = 0.0              # 静态PE(LYR, f163, 现价÷年报EPS) — V17.0.17(2026-09-01) 据主字典定案新增透传
     pb: float = 0.0                  # PB (倍)
     ps_ttm: float = 0.0              # V17.0.5: 市销率 TTM (fuyao 独有)
     pcf_ttm: float = 0.0             # V17.0.5: 市现率 TTM (fuyao 独有)
+    # V17.0.25(2026-09-03): 均价/VWAP（腾讯 [85]，据主字典 09-03 主动升级定案 = 均价/VWAP 类价格派生 L3 候选强）
+    avg_price: float = 0.0          # 均价 / VWAP（元，腾讯 qt.gtimg [85]）
     dividend_yield: float = 0.0      # 股息率 (%)
     turnover_pct: float = 0.0        # 换手率 (%)
 
@@ -484,6 +497,10 @@ class CanonicalStockData:
     holder_count: int = 0            # 股东户数 (户)
 
     # 衍生与历史指标
+    # V17.0.25(2026-09-03): Beta（腾讯 [56]，据主字典 09-03 主动升级定案 = Beta 族高置信）
+    beta: float = 0.0                # Beta（腾讯口径 Beta 估计值, 与自算 Pearson=0.908; 非本系统重算）
+    # V17.0.25(2026-09-03): 委差/盘口净量（腾讯 [86]，据主字典 09-03 主动升级定案 = 手级带符号量 L4 候选=委差）
+    bid_ask_net: float = 0.0         # 委差/盘口净量（手级带符号量, L4 候选）
     change_5d: float = 0.0           # 5日涨跌幅 (%)
     change_10d: float = 0.0          # 10日涨跌幅 (%)
     change_20d: float = 0.0          # 20日涨跌幅 (%)
@@ -503,19 +520,22 @@ class CanonicalStockData:
     limit_up: float = 0.0            # 涨停价 (元) — push2 f51 / 官方 ZTPrice
     limit_down: float = 0.0          # 跌停价 (元) — push2 f52 / 官方 DTPrice
     bps: float = 0.0                 # 每股净资产 (元) — push2 f92 / 东财F10 BPS
-    pe_more: float = 0.0             # PE(MorePE 口径) — push2 f164 / 官方 MorePE
     industry_code_push2: str = ""    # 行业板块代码 (如 BK1277) — push2 f198
     trading_periods: Tuple[Dict[str, Any], ...] = field(default_factory=tuple)  # 交易时段数组 — push2 f80
     report_period: str = ""          # 最新报告期 (YYYYMMDD) — push2 f221 / ulist f221
     quote_date: str = ""             # 行情快照日期 (YYYY-MM-DD) — push2 data_date
     bid1_vol: float = 0.0            # 买一量 (手) ← 腾讯协议 v10（2026-08-11: 新增——sht 封单资金/信号/预警依赖）
 
-    # V16.1: 资金流细分(push2 f135-f146, 单位元)——V17.0(2026-08-14 同花顺表头+买卖差自洽定案)
-    fund_main_today: float = 0.0     # 主力净流入(今日, = 特大+大单 f137+f140)
-    fund_super_today: float = 0.0    # 特大(超大)单净流入(今日, f137)
-    fund_large_today: float = 0.0    # 大单净流入(今日, f140)
-    fund_mid_today: float = 0.0      # 中单净流入(今日, f143)
-    fund_small_today: float = 0.0    # 小单净流入(今日, f146) — V17.0 新增
+    # V16.1: 资金流细分(push2, 单位元)
+    # V17.0.16(2026-08-31) 重定案 —— 旧版把四组当并列四档并算「主力 = f137 + f140」，**错的**。
+    # 实证（详见 docs/field_dict.md §12.3.3）：f137 = f140 + f143 精确成立（169/169，相对差 0.00），
+    # 且跨接口对撞 f62==f137 / f66==f140 / f72==f143 命中 96%+
+    #   → f137 本身就是主力净（超大单 + 大单），**不可再相加**；旧算法虚高约 40%。
+    fund_main_today: float = 0.0     # 主力净流入(今日, f137 = 超大单净 + 大单净)
+    fund_super_today: float = 0.0    # 超大单净流入(今日, f140)
+    fund_large_today: float = 0.0    # 大单净流入(今日, f143)
+    fund_mid_today: float = 0.0      # 中单净流入(今日, f146)
+    fund_small_today: float = 0.0    # 小单净流入(今日, f149) — V17.0.16 订正(原记 f146 实为中单净)
     fund_main_5d: float = 0.0        # 主力净流入(近5日, f178 数组聚合)
     fund_5d_array: Tuple[Dict[str, Any], ...] = field(default_factory=tuple)  # 近5日主力净流入数组 — push2 f178
 
@@ -643,9 +663,13 @@ def normalize_at_boundary(raw: dict, source: DataSource) -> dict:
         out["volume_hand"] = round(vol, 2)
 
     # 估值（倍 / %）
+    # 🔴 2026-09-01 统一层纠错（据 field_dict §12.8.12e/【PE 口径铁证】定案）：
+    #   f162=动态PE(pe_mrq) / f163=静态PE(LYR,pe_lyr) / f164=TTM(pe_ttm)。
+    #   原 `pe_ttm←f162`/`pe_dynamic←f163` 与主字典**完全相反**，会将静态PE灌入 pe_ttm、
+    #   动态PE灌入 pe_dynamic 的兜底键，导致下游"PE(TTM)"实际显示静态值。现已按定案纠正。
     for target, *keys in [
-        ("pe_ttm", "pe_ttm", "f162"),
-        ("pe_dynamic", "pe_dynamic", "f163"),
+        ("pe_ttm", "pe_ttm", "f164"),
+        ("pe_dynamic", "pe_dynamic", "f162"),
         ("pb", "pb", "f167"),
         ("dividend_yield", "dividend_yield"),
     ]:

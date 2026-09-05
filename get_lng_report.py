@@ -410,17 +410,19 @@ async def generate_report_async(session, code, output_path, ind_comp=None):
     _dp_div = _dp_composite.get("dividend_yield", 0) if _dp_composite else 0
     if _dp_pe and _dp_pe > 0:
         _pe = _dp_pe
-        # V17.0.8: 动态PE 统一走 canonical pe_dynamic(f162 动态口径, 与 MED 同源);
-        # 原用 _zhb_pe_dynamic(ZHB 动态) 与 MED 数值不一致(22.99 vs 26.99)
+        # V17.0.17(2026-09-01) 据主字典定案修正: 动态PE=canonical pe_dynamic(f162);
+        # 静态PE(LYR)=canonical pe_lyr(f163, 本次新增透传)。原 _pe_static 误用 pe_dynamic(动态) 当静态, 已纠正。
         _pe_dyn = float(getattr(_cdata, "pe_dynamic", 0) or 0) if _cdata else 0
-        _pe_static = _pe_dyn or _zhb_pe_dynamic
+        _pe_lyr = float(getattr(_cdata, "pe_lyr", 0) or 0) if _cdata else 0
     elif _zhb_pe_ttm and _zhb_pe_ttm > 0:
         _pe = _zhb_pe_ttm
-        _pe_static = _zhb_pe_dynamic
+        _pe_dyn = _zhb_pe_dynamic
+        _pe_lyr = 0  # ZHB 无静态PE字段(只有动态[3]/TTM[9]), 静态缺失不伪造
     else:
         _pe = q.get('pe_ttm', 0)
         # V16.4.1: q 无 pe_dynamic 键 → else 分支 PE(动态) 可能 N/A; 用 ZHB 动态口径兜底
-        _pe_static = _zhb_pe_dynamic or q.get('pe_dynamic', 0)
+        _pe_dyn = _zhb_pe_dynamic or q.get('pe_dynamic', 0)
+        _pe_lyr = float(getattr(_cdata, "pe_lyr", 0) or 0) if _cdata else 0
     if _pe > 0:
         _ey = f"{100/_pe:.2f}%"
         # V16.4.1: 标注 PE 来源口径(ZHB pe_ttm 基于最近年报/季报净利, 可能与
@@ -444,9 +446,23 @@ async def generate_report_async(session, code, output_path, ind_comp=None):
         except Exception as _e:
             _debug_log(f"lng finance_info error: {_e}")
     # V17.0.1e: 撤销 V17.0.1b 表格化——估值为"字段: 值"竖排, 不适用表格
-    L(f"    市盈率 PE(TTM): {_pe:.2f}x ({_pe_src}口径; 盈利收益率粗估: {_ey})")
-    # V17.0.8: 标签修正——原"PE(静态)"实为 ZHB pe_dynamic(动态PE), 与 MED 对齐统一口径
-    L(f"    市盈率 PE(动态): {_pe_static:.2f}x" if _pe > 0 and _pe_static > 0 else "    市盈率 PE(动态): N/A（亏损）")
+    # V17.0.27(2026-09-04) A6「缺失≠0」（9/3 报告核查 #1 的 lng 侧）:
+    #   亏损股 _pe=0 时原渲染 "0.00x"，虽有 "(亏损(无正PE)口径)" 注脚，但 0.00x 仍是
+    #   一个**可被下游/读者当作数值消费的假数**（0 是极值不是中性值）。改为显式 N/A。
+    L(f"    市盈率 PE(TTM): {_pe:.2f}x ({_pe_src}口径; 盈利收益率粗估: {_ey})"
+      if _pe > 0 else
+      f"    市盈率 PE(TTM): N/A（{_pe_src}口径; 盈利收益率粗估: {_ey}）")
+    # V17.0.17(2026-09-01) 据主字典定案修正: 动态PE=pe_dynamic(f162) / 静态PE(LYR)=pe_lyr(f163) 分开展示, 口径不再混淆
+    L(f"    动态市盈率 PE(动): {_pe_dyn:.2f}x" if _pe > 0 and _pe_dyn > 0 else "    动态市盈率 PE(动): N/A")
+    L(f"    静态市盈率 PE(LYR): {_pe_lyr:.2f}x" if _pe > 0 and _pe_lyr > 0 else "    静态市盈率 PE(LYR): N/A（无静态口径）")
+    # V17.0.26(2026-09-03) DEBT-008: 删除假的 PE(MorePE) 交叉验证展示行（与 med 报告同源问题）。
+    #   原注释称"pe_more 与 pe_ttm 口径略有差异，偏差大→提示异常"，但二者同源 f164，
+    #   该展示永不触发却向读者谎称存在两个独立口径 —— 违反公理 A2 / A7。
+    # V17.0.31(2026-09-04) DEBT-003: 下沉的 debug 自检一并删除。
+    #   它同样**永不触发**（f164 已统一映射为 pe_ttm，无任何源产出 pe_more 键
+    #   → _pe_more 恒 0 → `and _pe_more > 0` 恒假）。一个永不告警的"自检"不是自检，
+    #   是自我安慰（A7）。若将来需要 TTM 口径漂移监测，正确做法是**跨源**对比
+    #   （腾讯 vs 东财 vs ZHB 的 TTM 互校），走字典季度核验流程，而非同源别名比对。
     # PB：data_provider优先，其次zhb，最后fallback到腾讯行情
     if _dp_pb and _dp_pb > 0:
         _pb_val = _dp_pb
@@ -470,7 +486,9 @@ async def generate_report_async(session, code, output_path, ind_comp=None):
             _our_ind = info.get("industry", "")
             for _ind in _ic_data:
                 if _ind.get("name") == _our_ind or _our_ind in _ind.get("name", ""):
-                    L(f"  📊 板块横向对比: 本股PE={q.get('pe_ttm',0):.1f}x | 板块涨跌{_ind.get('change_pct',0):+.2f}%")
+                    _lng_pe_lyr = getattr(_cdata, "pe_lyr", 0) or 0
+                    _lng_pe_lyr_s = f"{_lng_pe_lyr:.1f}x" if _lng_pe_lyr > 0 else "N/A"
+                    L(f"  📊 板块横向对比: 本股PE(TTM)={q.get('pe_ttm',0):.1f}x | 本股PE(静)={_lng_pe_lyr_s} | 板块涨跌{_ind.get('change_pct',0):+.2f}%")
                     break
     except Exception as _e:
         _debug_log(f"lng industry_compare error: {_e}")
@@ -607,18 +625,18 @@ async def generate_report_async(session, code, output_path, ind_comp=None):
     # V16.1: 0x0010 财务快照存局部变量，供下方"核心财务指标"复用（避免重复 TCP 请求）
     _tdx_fi_snapshot = None
     try:
-        from core.tdx_client import _get_tdx_client
-        c = _get_tdx_client()
-        if c:
-            fi = c.get_finance_info(_market_code(code), code)
-            if fi is not None and not fi.empty:
-                _tdx_fi_snapshot = fi
-                # V15.1: 修正 0x0010 协议 key（参考 docs/field_dict.md 第 7 章）
-                # 正确 key: jingyingxianjinliu / jinglirun（无下划线）
-                # V16.3 O19: 0x0010 金额字段单位=角（field_dict §零 O 实测）——/10 得元
-                # （此前直接 /1e8 显示亿 → 现金流/净利偏大 10 倍）
-                _tdx_ocf = _safe_float(fi.iloc[0].get('jingyingxianjinliu', 0)) / 10.0
-                _tdx_np = _safe_float(fi.iloc[0].get('jinglirun', 0)) / 10.0
+        from core.tdx_client import tdx_get_finance_info
+        fi = tdx_get_finance_info(code)
+        if fi is not None:
+            _tdx_fi_snapshot = fi
+            # V15.1: 修正 0x0010 协议 key（参考 docs/field_dict.md 第 7 章）
+            # 正确 key: jingyingxianjinliu / jinglirun（无下划线）
+            # V16.3 O19: 0x0010 金额字段单位=角（field_dict §零 O 实测）——/10 得元
+            # （此前直接 /1e8 显示亿 → 现金流/净利偏大 10 倍）
+            # V17.0.26(2026-09-03): 改用 tdx_client 适配器 tdx_get_finance_info（返回归一化 dict, nan→None），
+            #   不再直连裸 _get_tdx_client().get_finance_info()，符合"统一层收口"规范（见 AGENTS.md §8.3）。
+            _tdx_ocf = _safe_float(fi.get('jingyingxianjinliu', 0)) / 10.0
+            _tdx_np = _safe_float(fi.get('jinglirun', 0)) / 10.0
     except Exception as _e:
         _debug_log(f"lng tdx_ocf error: {_e}")
 
@@ -687,13 +705,16 @@ async def generate_report_async(session, code, output_path, ind_comp=None):
         if _tdx_fi_snapshot is not None:
             tdx_fi = _tdx_fi_snapshot
         else:
-            from core.tdx_client import _get_tdx_client
-            client = _get_tdx_client()
-            tdx_fi = client.get_finance_info(_market_code(code), code) if client else None
-        if tdx_fi is not None and not tdx_fi.empty:
+            # V17.0.26(2026-09-03) DEBT-001: 改用 tdx_client 适配器（公理 A1 数据访问收口），
+            #   不再直连裸 _get_tdx_client().get_finance_info()。
+            from core.tdx_client import tdx_get_finance_info
+            tdx_fi = tdx_get_finance_info(code)
+        # 适配器返回 None 或非空 dict（nan→None），故用真值判断即可
+        if tdx_fi:
             # V15.1: 修正 0x0010 协议 key（参考 docs/field_dict.md）
             # V16.3 O19: 角→元（/10）后再 /1e8 显示亿——否则偏大 10 倍
-            ocf = _safe_float(tdx_fi.iloc[0].get('jingyingxianjinliu', 0)) / 10.0 / 1e8
+            # V17.0.26: 适配器返回归一化 dict, 取值从 .iloc[0].get() 改为 .get()
+            ocf = _safe_float(tdx_fi.get('jingyingxianjinliu', 0)) / 10.0 / 1e8
             if ocf != 0:
                 parts.append(f"经营现金流 {ocf:.2f}亿")
     except Exception as _e:
@@ -807,7 +828,7 @@ async def generate_report_async(session, code, output_path, ind_comp=None):
             if cagr > 0:
                 digest_25 = math.log(pe_fwd / 25) / math.log(1 + cagr) if pe_fwd > 25 else 0
                 try:
-                    _sk_p, _sr_p = baidu_kline_full(code)
+                    _sk_p, _sr_p = await asyncio.to_thread(baidu_kline_full, code)
                     _ci_p = next((i for i,k in enumerate(_sk_p) if k in ("close","close_price")), -1)
                     if _ci_p >= 0 and eps_cur > 0:
                         _hp = [_safe_float(rr[_ci_p]) for rr in _sr_p if len(rr) > _ci_p]
@@ -903,6 +924,13 @@ async def generate_report_async(session, code, output_path, ind_comp=None):
     L("\n## 【六、长线筹码沉淀与机构持股倾向】")
     L("---")
     st = await asyncio.to_thread(get_holder_structure, code)
+    # V17.0.14: 筹码分布 CYQ —— 提前获取(东财 kline f61 → calculate_cyq), 供章节+评分复用
+    _cyq_dict = {}
+    try:
+        from stock_common.sc_datasource import get_cyq_distribution
+        _cyq_dict = await asyncio.to_thread(get_cyq_distribution, code) or {}
+    except Exception as _e:
+        _debug_log(f"lng cyq ({code}): {_e}")
     if st:
         L(f"  数据来源: 十大流通股东季报（最近 {len(st)} 期）")
         L("")
@@ -953,6 +981,22 @@ async def generate_report_async(session, code, output_path, ind_comp=None):
                     L("    ⚠️ 筹码趋于分散，主力可能在出货")
     else:
         L("  机构持股数据获取失败。")
+
+    # V17.0.14: 筹码分布 CYQ 章节(东财 kline f61 → calculate_cyq)
+    if _cyq_dict:
+        L("\n  ➤ 筹码分布（成本集中度）:")
+        _ben = _cyq_dict.get("benefit_pct", 0.0) or 0.0
+        _c90 = _cyq_dict.get("concentration_90", 0.0) or 0.0
+        _c70 = _cyq_dict.get("concentration_70", 0.0) or 0.0
+        _avg = _cyq_dict.get("avg_cost", 0.0) or 0.0
+        L(f"    - 获利盘比例: {_ben*100:.1f}%（当前价下持仓盈利占比）")
+        L(f"    - 平均成本: {_avg:.2f} 元")
+        L(f"    - 90% 筹码集中度: {_c90:.3f}（成本区间 {_cyq_dict.get('cost_90_low',0):.2f}~{_cyq_dict.get('cost_90_high',0):.2f}）")
+        L(f"    - 70% 筹码集中度: {_c70:.3f}（成本区间 {_cyq_dict.get('cost_70_low',0):.2f}~{_cyq_dict.get('cost_70_high',0):.2f}）")
+        _cflag = "高度集中" if _c90 < 0.12 else ("较集中" if _c90 < 0.2 else ("分散" if _c90 > 0.35 else "中性"))
+        _pflag = ("获利盘丰厚，长线持有者浮盈较大" if _ben > 0.85
+                  else ("套牢盘较重，长线建仓成本区偏上方" if _ben < 0.25 else "成本结构均衡"))
+        L(f"    ➤ 研判: 筹码{_cflag}；{_pflag}")
 
     # ─── V17.0.5: 基金持仓侧证(自选基金清单门控——credentials/fund_watch.json, 缺失零请求) ───
     try:
@@ -1096,6 +1140,32 @@ async def generate_report_async(session, code, output_path, ind_comp=None):
     except Exception as _re:
         _debug_log(f"lng risk engine: {_re}")
 
+    # ── V17.0.27(2026-09-04) DEBT-007: Beta 风险档（契约孤儿字段消费，公理 A5）──
+    #   源: 腾讯 qt.gtimg [56]，置信度 **高** —— 887 只 800 日K线自构等权市场代理，
+    #   自算 Beta 与 [56] Pearson=0.908。口径声明: 腾讯基准/窗口与自算有偏移，
+    #   此为**腾讯口径 Beta 估计值**，非本系统重算（A7 文档代码同真，不可写作"本系统 Beta"）。
+    #   为什么放长线报告: Beta 衡量个股相对大盘的系统性波动暴露，是**持仓周期越长越显著**
+    #   的风险属性；短线它被日内噪声淹没，长线它决定组合波动与回撤预算 → lng 最合适。
+    try:
+        _beta = _safe_float(getattr(_cdata, "beta", 0) or 0) if _cdata is not None else 0.0
+        if _beta > 0:
+            if _beta < 0.8:
+                _b_lv, _b_txt = "🟢 低波动防御型", "涨跌幅小于大盘，适合作为压舱底仓"
+            elif _beta < 1.0:
+                _b_lv, _b_txt = "🟢 偏低波动", "略弱于大盘波动，回撤压力较小"
+            elif _beta < 1.2:
+                _b_lv, _b_txt = "🟡 与大盘同步", "波动与大盘基本同步，无额外系统性风险"
+            elif _beta < 1.5:
+                _b_lv, _b_txt = "🟠 高波动进攻型", "放大大盘波动，需相应下调仓位预算"
+            else:
+                _b_lv, _b_txt = "🔴 极高波动", "显著放大大盘波动（题材/高弹性），回撤风险高"
+            L(f"  📐 [Beta风险档] {_beta:.2f} — {_b_lv}；{_b_txt}")
+            L("     （腾讯口径 Beta 估计值，非本系统重算；用于仓位与回撤预算参考）")
+        else:
+            L("  📐 [Beta风险档] N/A（未取到）")
+    except Exception as _be:
+        _debug_log(f"lng beta risk tier: {_be}")
+
     # V17.0.7: FTShare 结构化排雷（字典 §12.20——董监高变动/商誉对照，零关键词弱口径）
     try:
         from stock_common import (get_ft_ggmx_changes,
@@ -1237,11 +1307,18 @@ async def generate_report_async(session, code, output_path, ind_comp=None):
             if _ta > 0:
                 score_data.asset_liability_ratio = (_st + _lt) / _ta
     
-    # 机构持仓
-    _inst = await asyncio.to_thread(get_holder_structure, code)
+    # M3 修复：复用前文【六、长线筹码沉淀与机构持股倾向】已拉取的股东结构，避免重复网络调用
+    _inst = st
     if _inst:
         score_data.institution_holding_pct = _inst[0].get("domestic", 0) + _inst[0].get("northbound", 0)
-    
+
+    # V17.0.14: 筹码分布 CYQ(复用前文已拉取的 _cyq_dict, 避免重复网络调用)
+    if _cyq_dict:
+        score_data.cyq_benefit_pct = _cyq_dict.get("benefit_pct", 0.0) or 0.0
+        score_data.cyq_avg_cost = _cyq_dict.get("avg_cost", 0.0) or 0.0
+        score_data.cyq_concentration_90 = _cyq_dict.get("concentration_90", 0.0) or 0.0
+        score_data.cyq_concentration_70 = _cyq_dict.get("concentration_70", 0.0) or 0.0
+
     # 计算评分
     # V16.1: 传入 strategy_config.yaml 的 scoring_lng 权重（此前未传 cfg → 用硬编码默认）
     _score_cfg = _load_strategy_config() or {}

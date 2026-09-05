@@ -29,7 +29,7 @@ from stock_common.env_setup import ensure_utf8_stdio
 
 ensure_utf8_stdio()
 
-import time, os, warnings, asyncio, re, json  # V17.0.4: +re/json(新浪指数 K 兜底)
+import time, os, math, warnings, asyncio, re, json  # V17.0.4: +re/json(新浪指数 K 兜底); V17.0.25: +math(连板对数估算)
 from typing import Any, Dict, List
 from datetime import date, datetime, timedelta
 from concurrent.futures import ThreadPoolExecutor, as_completed  # V16.4.1: 删 Counter
@@ -171,7 +171,7 @@ async def get_market_abnormal_data():
             data = await asyncio.to_thread(tdx_get_market_abnormal_data)
     else:
         data = await asyncio.to_thread(tdx_get_market_abnormal_data)
-    # V17.0.2g(2026-08-17): 主力净额批量(ulist f62+f66)必须在**两条路径**都执行——
+    # V17.0.2g(2026-08-17): 主力净额批量(ulist f62)必须在**两条路径**都执行——
     # 原批量段在 _get_zhb_market_data 内, 盘中 zhb 非今日走 TDX 路径时永不执行
     # → _MAIN_NET_MAP_GLOBAL 空 → 兜底竞价额(恒正) → F 段虚涨判定恒空
     if data:
@@ -308,7 +308,7 @@ async def _get_zhb_market_data():
                     # (创业板/科创板新股前 5 日无涨跌幅限制, 首日 +662% 等极端值会让偏离判定失真)
                     "change_pct_1d": stat.get("change_pct_1d", ""),
                     "change_pct_2d": stat.get("change_pct_2d", ""),
-                    # V17.0(2026-08-15): 主力净额=ulist 批量 f62+f66(元口径, H1/M5 修复: 统一元+0值不误回退)
+                    # V17.0(2026-08-15): 主力净额=ulist 批量 f62(元口径, H1/M5 修复: 统一元+0值不误回退)
                     "main_net_amount": (
                         _main_net_map[code] if code in _main_net_map
                         else (_safe_float(stat.get("main_net_buy_amount", 0)) or 0) * 1e4
@@ -775,11 +775,13 @@ def _build_sectors_from_zhb() -> List[Dict[str, Any]]:
                 _base = _rt_price if _rt_price > 0 else (_safe_float(stat.get("price", 0) or 0))
                 if _base > 0:
                     mcap = _safe_float(_calc_mcap_yi(code, _base) or 0)
-            # H1 修复(2026-08-15 二审): 板块主力净流入改用 ulist 批量 f62+f66 结果(真主力, 带符号),
-            # 不再用 ZHB main_net_buy_amount(实为竞价额恒正→"虚涨"判定恒空/“真金白银”恒满)
+            # V17.0.16: 板块主力净流入使用 ulist 批量 f62（真主力，带符号），
+            # 不再用 ZHB main_net_buy_amount（实为竞价额恒正）。
             main_net = _MAIN_NET_MAP_GLOBAL.get(code, 0.0)
             if not main_net:
-                main_net = (_safe_float(stat.get("main_net_buy_amount", 0)) or 0) * 1e4  # 兜底: 竞价额(标注)
+                # ZHB 的 main_net_buy_amount 是竞价额，不是主力净流入；缺失时保持 0，
+                # 避免把正的竞价成交额误计入板块资金流。
+                main_net = 0.0
             b = buckets.setdefault(
                 ind_code,
                 {
@@ -1206,6 +1208,11 @@ async def generate_sector_report(output_path):
             # V17.0.4(2026-08-19): invalid → 同花顺 hgt/sgt 序列错位, 末值恒陈旧——不展示错误数字
             if _hsgt.get("data_quality") == "invalid":
                 L("  🌐 北向资金: 数据源异常(hgt/sgt 序列错位), 净流入暂缺")
+            elif _hsgt.get("data_quality") == "partial_hgt_only":
+                # V17.0.28: hgt=当日分时(可用), sgt=历史序列(不可用) → 只展示沪股通并声明单口径
+                _hsig = "偏多" if _hsgt.get("hgt", 0) > 0 else "偏空"
+                L(f"  🌐 北向资金: 沪股通 {_hsgt.get('hgt', 0):+.2f}亿（{_hsig}）"
+                  f" | 深股通序列为历史值暂缺，本项为沪股通单口径，非北向合计")
             else:
                 _hsig = "偏多" if _hsgt.get("total", 0) > 0 else "偏空"
                 L(f"  🌐 北向资金: 净流入 {_hsgt.get('total', 0):.2f} 亿(沪 {_hsgt.get('hgt', 0):.2f} | 深 {_hsgt.get('sgt', 0):.2f}) 外资情绪{_hsig}")
@@ -1296,8 +1303,8 @@ async def generate_sector_report(output_path):
         _debug_log(f"mak cls_market_emotion: {_e}")
 
     # V10.3: 全市场主力净买入总量
-    # H2 修复(2026-08-15 二审): 改用 ulist 批量 f62+f66 真主力(带符号)——原 ZHB main_net_buy_amount
-    # 实为竞价额(恒正)→ 求和恒正, "大幅净流入"信号恒触发
+    # V17.0.16: 改用 ulist 批量 f62 主力净额(带符号)——原 ZHB main_net_buy_amount
+    # ZHB 竞价额仅作为批量源不可用时的显式非主力兜底。
     _total_main_net_buy = 0
     _main_net_buy_count = 0
     if _MAIN_NET_MAP_GLOBAL:
@@ -1305,9 +1312,9 @@ async def generate_sector_report(output_path):
             _total_main_net_buy += _mna
             if _mna > 0:
                 _main_net_buy_count += 1
-    _main_net_src_label = "ulist f62+f66 口径"
+    _main_net_src_label = "ulist f62 口径"
     if not _MAIN_NET_MAP_GLOBAL:
-        # H2 终审修复: ZHB 兜底为万元值——统一 /1e4 转亿元(原共用 /1e8 小 1e4 倍), 标签区分
+        # 批量主力净额不可用时，使用 ZHB 竞价额兜底，并明确标注为非主力口径。
         _stat2_snapshot = get_zhb_market_stat2_snapshot()
         if _stat2_snapshot:
             for _code, _stat in _stat2_snapshot.items():
@@ -1337,21 +1344,46 @@ async def generate_sector_report(output_path):
     _zt_3d = [
         s for s in all_stocks if is_limit_up(s["code"], s.get("name", ""), s.get("change_pct", 0))
     ]
+    # V17.0.25(2026-09-02) P1-4 修复: A段连板高度原由 ret_3d 估算封顶3板(>=4 分支为死代码),
+    # 与 B段真实最高连板(多源 max_ladder, 如 7板)矛盾。优先用财联社真实档位(_ladder),
+    # 否则退回 ret_3d 估算(放开3板封顶, 用复利对数算真实板数); KPL lbgd 作二次校验。
     _lb_3d = {}
     _max_board = 0
-    for s in _zt_3d:
-        r3 = s.get("ret_3d", 0)
-        code = s.get("code", "")
-        # V16.2: 按板块统一阈值（主板/ST 10, 创业板·科创板 20, 北交所 30）
-        _lim = limit_pct_for(code, s.get("name", ""))
-        if r3 >= _lim * 2.9:
-            _lb_3d['3板+'] = _lb_3d.get('3板+', 0) + 1
-            _max_board = max(_max_board, 3)
-        elif r3 >= _lim * 1.9:
-            _lb_3d['2板'] = _lb_3d.get('2板', 0) + 1
-            _max_board = max(_max_board, 2)
-        elif r3 >= _lim * 0.95:
-            _lb_3d['首板'] = _lb_3d.get('首板', 0) + 1
+    _cl_d = locals().get('_ladder')
+    if isinstance(_cl_d, dict) and _cl_d:
+        for _k, _v in _cl_d.items():
+            _cnt = _v.get('count', 0) if isinstance(_v, dict) else 0
+            _lb_3d[_k] = _cnt
+            _m = re.search(r'(\d+)', str(_k))
+            if _m:
+                _max_board = max(_max_board, int(_m.group(1)))
+    else:
+        for s in _zt_3d:
+            r3 = s.get("ret_3d", 0)
+            code = s.get("code", "")
+            # V16.2: 按板块统一阈值（主板/ST 10, 创业板·科创板 20, 北交所 30）
+            _lim = limit_pct_for(code, s.get("name", ""))
+            if r3 >= _lim * 0.95:
+                # 复利对数估算真实连板数: (1+lim%)^n - 1 = r3% → n = log(1+r3/100)/log(1+lim/100)
+                try:
+                    _est = max(1, int(round(math.log(1 + r3 / 100.0) / math.log(1 + _lim / 100.0))))
+                except (ValueError, ZeroDivisionError):
+                    _est = 1
+                if _est >= 3:
+                    _lb_3d['3板+'] = _lb_3d.get('3板+', 0) + 1
+                    _max_board = max(_max_board, _est)
+                elif _est == 2:
+                    _lb_3d['2板'] = _lb_3d.get('2板', 0) + 1
+                    _max_board = max(_max_board, 2)
+                else:
+                    _lb_3d['首板'] = _lb_3d.get('首板', 0) + 1
+    # KPL 连板高度(lbgd)二次校验/兜底——独立源最高连板
+    try:
+        _kpl_d = locals().get('_kpl')
+        if isinstance(_kpl_d, dict) and _kpl_d.get('lbgd') is not None:
+            _max_board = max(_max_board, int(_kpl_d['lbgd']))
+    except Exception:
+        pass
     if _lb_3d:
         _ladder_str = ' | '.join(f'{k}: {v}家' for k, v in sorted(_lb_3d.items()))
         _max_desc = f", 最高{_max_board}板" if _max_board else ", 最高首板"
@@ -1606,7 +1638,7 @@ async def generate_sector_report(output_path):
         _ladder_all = {str(s.get('code', '')) for s in (_ladder or [])} if isinstance(_ladder, list) else set()
         _ths_only = [h for h in _ths_pool if h.get('code') not in _zt_all and h.get('code') not in _ladder_all]
         L('')
-        L(f"  ❗ 同花顺独家 {len(_ths_only)} 只（东财口径未覆盖，交叉验证增量）:")
+        L(f"  ❗ 同花顺独家 {len(_ths_only)} 只（东财口径未覆盖，交叉验证增量；下表仅列前 10）:")
         if _ths_only:
             # V17.0.2i: 直接 md 表格 4 列(原空格表"涨幅% 题材"因 1 空格粘连合并列)
             L("| 代码 | 名称 | 涨幅% | 题材 |")
@@ -1696,7 +1728,7 @@ async def generate_sector_report(output_path):
                     # ST/退市不在 all_stocks 池中 → 从 TDX K线 临时算 3/10/20 日涨幅
                     _r3 = _r10 = _r20 = 0
                     try:
-                        _k, _kr = baidu_kline_full(_c, count=30)
+                        _k, _kr = await asyncio.to_thread(baidu_kline_full, _c, count=30)
                         if _k and _kr:
                             _ci = next(
                                 (i for i, kk in enumerate(_k) if kk in ("close", "close_price")), -1
@@ -1845,8 +1877,8 @@ async def generate_sector_report(output_path):
                 f"| {normalize_industry(s['name'])} | {s.get('score',0):.1f} | {s['change_pct']:+.2f}% | {round(abs(s['main_inflow'])/1e8,2):.2f} |"
             )
     else:
-        # V17.0.2f: 虚涨段缺失核查——ulist f62+f66 批量失败时兜底 ZHB 竞价额(恒正) → 无净流出
-        L("  ℹ️ 无主力净流出的高分板块（ulist 批量数据可用时本段才有内容; 批量失败时兜底竞价额口径恒正）")
+        # 批量主力净额缺失时，虚涨段无法判断，避免用恒正的 ZHB 竞价额伪造净流出结论。
+        L("  ℹ️ 无主力净流出的高分板块（需有 ulist f62 批量数据才能判断）")
     _lurking = [
         s for s in sectors if s.get("main_inflow", 0) > 3e8 and 1 <= s.get("change_pct", 0) <= 5
     ]

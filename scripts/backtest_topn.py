@@ -49,6 +49,22 @@ from core.zhb_client import _parse_zhb_data
 
 DAYS = ["20260721", "20260722", "20260723", "20260724"]
 TOP_N_CANDIDATES = [100, 200, 300, 500, 1000]
+
+
+def discover_days() -> List[str]:
+    """M15 修复：原 DAYS 硬编码固定 4 个 ZHB 包，缺失即 FileNotFoundError。
+
+    现优先从 CACHE_DIR 实际存在的 zhb_*.zip 发现可用日期；目录为空才回退硬编码 DAYS。
+    """
+    if CACHE_DIR.exists():
+        _found = sorted(
+            p.name[len("zhb_"):-len(".zip")]
+            for p in CACHE_DIR.glob("zhb_*.zip")
+            if p.name.startswith("zhb_") and p.name.endswith(".zip")
+        )
+        if _found:
+            return _found
+    return list(DAYS)
 CACHE_DIR = ROOT / "cache" / "zhb"
 OUTPUT_DIR = ROOT / "docs" / "backtest_v1432"
 
@@ -91,6 +107,10 @@ def load_zhb_snapshot(day: str) -> Dict[str, Dict[str, Any]]:
         if code not in merged:
             merged[code] = {}
         merged[code].update(stat2)
+    # M15 修复：ZHB 解析结果中 code 仅作为 dict 键，内部 stock dict 无 "code" 字段，
+    # 策略函数 s["code"] 会 KeyError。此处把 code 注入每个 stock dict，下游统一可用。
+    for code, stk in merged.items():
+        stk["code"] = code
     return merged
 
 
@@ -303,9 +323,9 @@ def main():
     print(f"  输出目录: {OUTPUT_DIR.relative_to(ROOT)}")
     print()
 
-    # 1. 加载 4 天 ZHB 数据
+    # 1. 加载 ZHB 数据（M15：从实际存在的包发现可用日期）
     snapshots: Dict[str, List[Dict]] = {}
-    for day in DAYS:
+    for day in discover_days():
         raw = load_zhb_snapshot(day)
         # 补全字段
         stocks = [enrich_stock(s) for s in raw.values()]
@@ -317,14 +337,18 @@ def main():
     # 2. 每天对每个 top_n 跑每个策略
     # 核心评估指标（V14.3.2 修正）：
     #   - "selected_count" = 策略在该 top_n 下选出的数量（反映 top_n 是否够大）
-    #   - "hit_in_top_n" = 策略选中的股票是否在 top_n 范围内
-    #   - "stability_score" = 与下一个 top_n 候选的 Jaccard 相似度（稳定性）
+    #   - "hit_in_top_n" = 策略选中的股票是否在 top_n 候选范围内（候选已截断到 top_n，
+    #     故恒等于 selected_count，仅作一致性校验，非独立指标）
+    #   - "coverage" = M14 修复：原 coverage = in_topn/top_n 因候选已截断 top_n 恒等于
+    #     selected_count/top_n，无独立意义、易误读为"策略覆盖度"。现改为
+    #     selected_count / 全市场非停牌股数 = 真实"策略覆盖度"（在全市场中的命中占比）。
     # 核心目标：找出"能稳定选到 5+ 个结果的最小 top_n"
     results: List[Dict[str, Any]] = []
     # 跨天结果缓存：{(strategy, top_n): [day1_results, day2_results, day3_results, day4_results]}
     cross_day_results: Dict[Tuple[str, int], List[Set[str]]] = {}
-    for day in DAYS:
+    for day in discover_days():
         all_stocks = snapshots[day]
+        total_universe = len(all_stocks)
         # 按 amount 排序的全市场 top_n 集合
         by_amount = sorted(all_stocks, key=lambda x: _safe_float(x.get("amount", 0)), reverse=True)
         for top_n in TOP_N_CANDIDATES:
@@ -338,7 +362,7 @@ def main():
                         cross_day_results[(strategy_name, top_n)] = []
                     cross_day_results[(strategy_name, top_n)].append(selected_set)
                     in_topn = len(selected_set & top_n_stocks)
-                    coverage = in_topn / top_n if top_n > 0 else 0
+                    coverage = len(selected_set) / total_universe if total_universe > 0 else 0
                     results.append({
                         "day": day,
                         "top_n": top_n,

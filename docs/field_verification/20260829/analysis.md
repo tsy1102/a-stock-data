@@ -335,7 +335,7 @@ Pearson（剔除 601288）        −0.863      符号翻转
 | `scripts/capture_field_probe.py` | 采集 **raw 原始值** | ❌ **刻意不换**（归一会污染字段破解数据） |
 
 **测试**
-- 专项 `tests/core/test_tencent_volume_unit.py`：**8 passed**。
+- 专项 `tests/core/test_core_tencent_volume_unit.py`：**8 passed**。
 - 修正 1 例断言：`test_zero_volume_still_zero` 原断言 `volume_hand == 0`，实际为 `None`。
   经查是 `normalize_at_boundary` 将 `0.0` 视为缺失输出 `None`（**既有的全局行为，与本次修复无关**；
   实测 `normalize({volume_hand: 0.0}) -> None`），且僵尸检测在 normalize 之前用 raw 值，功能不受影响。

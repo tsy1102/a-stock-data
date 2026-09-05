@@ -112,17 +112,20 @@ def get_share_capital(code: str) -> Dict[str, Any]:
         {"total_shares": float, "float_shares": float, "updated_at": str}
         单位：万股
     """
-    # V16.3.10 防御：旧版本缓存（V16.2.3 修正前 8-03 批次）total_shares 为"股"单位
-    # （>1e7 明显非万股——A 股总股本最大 ~2000 亿股=2e6 万股），命中时自动归一防复发
+    # V16.3.10 防御：旧版本缓存（V16.2.3 修正前 8-03 批次）total_shares 为"股"单位。
+    # 正确万股值上限约 3.6e7（工农中建类）；脏"股"值约 1e11 起。
+    # 阈值取 1e9 万股（=1e13 股，远超任何 A 股）：既不误伤大盘股正确值，又能归一脏数据。
+    # （旧注释"1e7 / 2e6 万股"少算一个数量级，曾把正确大盘股万股值误当"股"再÷10000，
+    #  市值低估~10000×，2026-08-30 修）
     def _norm(v):
-        return (v / 10000.0) if (v or 0) > 1e7 else v
+        return (v / 10000.0) if (v or 0) > 1e9 else v
 
     cap_cache = _load_capital_cache()
     cached = cap_cache.get(code)
     # V15.2 P0 修复: 脏数据保护 —— 缓存里 total_shares=0 时也视为未命中，重新拉取
     if cached and cached.get("total_shares", 0) > 0:
         ts, fs = cached.get("total_shares", 0), cached.get("float_shares", 0)
-        if ts > 1e7 or fs > 1e7:
+        if ts > 1e9 or fs > 1e9:
             cached = {"total_shares": _norm(ts), "float_shares": _norm(fs),
                       "updated_at": cached.get("updated_at", "")}
         return cached

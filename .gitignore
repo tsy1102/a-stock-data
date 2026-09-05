@@ -8,7 +8,7 @@
 # V17.0: 凭据集中在 credentials/(3 个文件); 未来新增凭据需在此追加
 credentials/*
 # 同花顺/fuyao API Key(交互输入自动保存)
-fuyao_key.txt
+credentials/fuyao_key.txt
 # V17.0.1 防御性: 通用密钥/令牌模式(防未来新增凭据漏网)
 *.key
 *.pem
@@ -76,4 +76,4 @@ docs/field_verification/*/meta.json
 .freebuff/
 
 # FTShare/EastMoney credentials
-config/eastmoney_cookie.txt
+credentials/eastmoney_cookie.txt

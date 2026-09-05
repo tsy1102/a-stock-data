@@ -53,6 +53,7 @@ import time
 import re
 import json
 import asyncio
+import os
 
 # 导入网络层
 from stock_common.sc_network import (
@@ -66,6 +67,7 @@ from stock_common.sc_network import (
     _debug_log,
     _async_request_with_retry,
     _async_quick_request,
+    RateLimitBlockedError,
 )
 
 # 导入配置加载
@@ -73,6 +75,15 @@ from stock_common.sc_utils import _load_settings, _safe_float, em_secid_prefix  
 
 # 导入缓存层
 from core.stock_cache import TTL, cached, make_valid_if  # V15.2: 强化 valid_if
+
+
+def _tdx_root() -> str:
+    """TDX 安装根目录（M12 修复：原代码硬编码 C:\\new_tdx64，非该安装路径的机器直接 FileNotFoundError）。
+
+    优先读取环境变量 TDX_HOME / TDX_ROOT，缺省回退 C:\\new_tdx64 以保持兼容。
+    """
+    return os.environ.get("TDX_HOME") or os.environ.get("TDX_ROOT") or r"C:\new_tdx64"
+
 
 # ═══════════════════════════════════════════════════════════
 # 东财数据中心核心函数
@@ -507,26 +518,38 @@ def _cninfo_get_orgid(code: str) -> str:
         return _CNINFO_ORGID_CACHE[code]
 
     # 硬编码 fallback（用于动态查询失败时）
+    # 市场前缀 → cninfo orgId 前缀：
+    #   6xxxxx(沪市主板/科创板) → gssh0
+    #   8xxxxx/4xxxxx/92xxxx(北交所) → gsbj0
+    #   0xxxxx/3xxxxx(深市) → gssz0
+    # M10 修复：原代码把 92x(北交所新代码段) 落入 else 得 gssz0(深市)，单位/主体错乱；
+    # 现归入北交所分支。
     if code.startswith("6"):
         fallback = f"gssh0{code}"
-    elif code.startswith("8") or code.startswith("4"):
+    elif code.startswith("8") or code.startswith("4") or code.startswith("92"):
         fallback = f"gsbj0{code}"
     else:
         fallback = f"gssz0{code}"
 
     # 尝试动态查询（SKILL.md V3.2.2 推荐方案）
-    try:
-        url = "https://www.cninfo.com.cn/new/data/szse_stock.json"
-        r = _quick_request(url, timeout=10)
-        if r is not None:
-            data = r.json()
-            for item in data:
-                if item.get("code") == code:
-                    orgid = item.get("orgId", fallback)
-                    _CNINFO_ORGID_CACHE[code] = orgid
-                    return orgid
-    except Exception as _e:
-        _debug_log(f"datasource cninfo orgid query error: {_e}")
+    # M10 修复：原仅查 szse(深市) 列表，沪/北交所代码恒查不到 → 恒走错误 fallback。
+    # 现按市场补充 shse(沪市) 列表，任一命中即返回真实 orgId。
+    _cninfo_json_candidates = [
+        "https://www.cninfo.com.cn/new/data/szse_stock.json",
+        "https://www.cninfo.com.cn/new/data/shse_stock.json",
+    ]
+    for url in _cninfo_json_candidates:
+        try:
+            r = _quick_request(url, timeout=10)
+            if r is not None:
+                data = r.json()
+                for item in data:
+                    if item.get("code") == code:
+                        orgid = item.get("orgId", fallback)
+                        _CNINFO_ORGID_CACHE[code] = orgid
+                        return orgid
+        except Exception as _e:
+            _debug_log(f"datasource cninfo orgid query error ({url}): {_e}")
 
     # 动态查询失败，返回硬编码 fallback
     _CNINFO_ORGID_CACHE[code] = fallback
@@ -1016,6 +1039,18 @@ def get_tencent_quote(code: str) -> Dict[str, Any]:
         if "=" not in text or '"' not in text:
             return {}
         vals = text.split('"')[1].split("~")
+
+        def _tv(key, default=0.0):
+            """V17.0.25: 腾讯字段越界安全取值——索引超数组长度(如 [86] 委差)时返回 default,
+            避免短数组个股直接下标 IndexError 致整条行情返回 {}（静默丢失兜底源）。"""
+            _i = _f.get(key)
+            if _i is None or _i >= len(vals):
+                return default
+            try:
+                return float(vals[_i])
+            except (ValueError, TypeError):
+                return default
+
         if len(vals) < _TENCENT_MIN_FIELDS:
             _debug_log(
                 f"datasource tencent quote: 字段数 {len(vals)} < {_TENCENT_MIN_FIELDS} "
@@ -1047,8 +1082,12 @@ def get_tencent_quote(code: str) -> Dict[str, Any]:
             "turnover_pct": _safe_float(vals[_f["turnover_pct"]]),
             "vol_ratio": _safe_float(vals[_f["vol_ratio"]]),  # V16.4.0: 量比 v49——val 策略 07 金叉依赖
             "pe_ttm": _safe_float(vals[_f["pe_ttm"]]),
-            # V17.0 修复: 删 pe_dynamic←[52]——腾讯 [52] 实为静态 PE(2026-08-13 字典实锤), 非动态;
-            # 腾讯无真动态 PE 字段, pe_dynamic 统一由 push2 f162 / fuyao pe_mrq 提供
+            # V17.0.23(2026-09-01): 静态PE(f163/LYR)——腾讯[53]=pe_static 实锤(主字典§12.8.12e,
+            # 茅台 19.73=push2 f163 120/120); 批量路径已接, 逐股现同步, 静态PE完全脱离 push2。
+            "pe_lyr": _safe_float(vals[_f["pe_static"]]),
+            # V17.0 修复: 删 pe_dynamic←[52]——🔴2026-09-01 纠正：腾讯 [52]=f162=动态PE(pe_mrq), 非静态;
+            # 原注释"实为静态PE"系 2026-08-13 误订(已据 fuyao 120/120 + 同花顺官方 pe_mrq=动态 推翻)。
+            # 注: 腾讯[53]=f163=静态PE(pe_lyr) 现为 L1(字典定案), 非"无独立静态PE"; pe_dynamic 仍只信 f162/fuyao。
             "mcap_yi": _safe_float(vals[_f["mcap_yi"]]),  # 亿元
             "pb": _safe_float(vals[_f["pb"]]),
             "high": _safe_float(vals[_f["high"]]),
@@ -1062,12 +1101,18 @@ def get_tencent_quote(code: str) -> Dict[str, Any]:
             "roa": _safe_float(vals[_f["roa_ttm"]]),              # ROA(TTM 滚动, %)
             "roe_deduct_ttm": _safe_float(vals[_f["roe_deduct_ttm"]]),  # 扣非加权ROE(TTM, %)
             "change_180td_pct": _safe_float(vals[_f["change_180td_pct"]]),  # 近180交易日涨跌幅(%) — V17.0.7 定案(tx75, 前复权; ~~主力净流入(亿)~~证伪)
-            "panel_price": _safe_float(vals[_f["panel_price"]]),  # 盘口参考价
+            # V17.0.25(2026-09-03): [85] 据主字典 09-03 主动升级定案 = 均价/VWAP 类价格派生(L3候选强)
+            "avg_price": _tv("avg_price"),  # 均价/VWAP（茅台 t85=1297.00≈自算VWAP 1297.04, 误差0.003%）
+            # V17.0.25(2026-09-03): [56]/[86] 据主字典 09-03 主动升级定案新增（越界安全取）
+            "beta": _tv("beta"),            # Beta 族（高置信, 腾讯口径 Beta 估计值）
+            "bid_ask_net": _tv("bid_ask_net"),  # 手级带符号量（候选=委差/盘口净量, L4）
             "bid1_vol": _safe_float(vals[_f["bid1_vol"]]),          # 买一量(手) — V16.3.4 新增（sht 封单资金用）
         }
         result = normalize_at_boundary(raw, DataSource.TENCENT)
         # V16.3.3: normalize 为白名单映射——腾讯独有字段（normalize 未定义）在此透传
-        for _xk in ("roa", "roe_deduct_ttm", "change_180td_pct", "panel_price", "bid1_vol", "vol_ratio"):
+        # V17.0.25: 透传列表增补 avg_price/beta/bid_ask_net（[85]/[56]/[86] 09-03 定案字段）
+        for _xk in ("roa", "roe_deduct_ttm", "change_180td_pct", "avg_price", "beta",
+                    "bid_ask_net", "bid1_vol", "vol_ratio", "pe_lyr"):
             if raw.get(_xk) not in (None, 0, "", "0", "0.0"):
                 result[_xk] = raw[_xk]
         return result
@@ -1120,7 +1165,9 @@ def get_em_batch_quotes(codes: List[str]) -> Dict[str, Dict[str, Any]]:
         # V15.2 P0 修复: 增加 mcap_yi 字段（f20 总市值=f116/1e8, f21=f117 流通市值）
         # 之前只拉 f2/f3，导致 val 报告 18 步策略 mcap_yi=0
         # V16.1: 扩展字段包 — f55 EPS/f92 BPS/f126 股息率/f162-167 PE/PB/f174-175 52周高低/f221 报告期
-        # V17.0(2026-08-15): + f62/f66 主力净流入(ulist 索引=f137/f140 特大+大单净, 20/20 对齐实锤)
+        # V17.0(2026-08-15): + f62 主力净流入(ulist f62 ↔ push2 f137, 跨接口对撞 96.6%)
+        # V17.0.16(2026-08-31): 去掉 f66 —— 旧代码误把 f62 当"特大单净"、f66 当"大单净"再相加，
+        #   实证 f62 == f66 + f72 (236/236) 证明 f62 已是主力净(含超大单+大单)，相加属重复计数。
         params = {
             "fltt": "2",
             "invt": "2",
@@ -1128,7 +1175,7 @@ def get_em_batch_quotes(codes: List[str]) -> Dict[str, Dict[str, Any]]:
             "fields": (
                 "f12,f14,f2,f3,f20,f21,"
                 "f55,f92,f126,f162,f163,f167,f174,f175,f221,"
-                "f62,f66"
+                "f62"  # V17.0.16: 只取 f62(主力净)；f66 已不再使用（见上方注释）
             ),
         }
         try:
@@ -1159,17 +1206,24 @@ def get_em_batch_quotes(codes: List[str]) -> Dict[str, Dict[str, Any]]:
                         "bps": _safe_float(item.get("f92", 0)),
                         "dividend_yield": _safe_float(item.get("f126", 0)),
                         "pe_dynamic": _safe_float(item.get("f162", 0)),
-                        "pe_ttm": _safe_float(item.get("f163", 0)),
+                        "pe_lyr": _safe_float(item.get("f163", 0)),
+                        "pe_ttm": _safe_float(item.get("f164", 0)),
                         "pb": _safe_float(item.get("f167", 0)),
                         "high_52w": _safe_float(item.get("f174", 0)),
                         "low_52w": _safe_float(item.get("f175", 0)),
                         "report_period": str(item.get("f221", "")),
-                        # V17.0(2026-08-15): 主力净流入(万元) = 特大单净(f62) + 大单净(f66)
-                        # ulist f62/f66 索引 = push2 f137/f140(20/20 对齐实锤); 单位=元 → /1e4 万
-                        "main_net_inflow_wan": (
-                            _safe_float(item.get("f62", 0)) + _safe_float(item.get("f66", 0))
-                        ) / 1e4,
+                        # V17.0.16(2026-08-31): 主力净流入(万元) = **f62 本身**，不再 + f66。
+                        # 旧版按「主力 = f62 + f66」计算，与 stock/get 侧「f137 + f140」是同一个 bug。
+                        # 实证（12 采集日 236 样本）：**f62 == f66 + f72 命中 236/236 = 100%**
+                        #   → f62 = 主力净(已含超大单+大单)，f66 = 超大单净，f72 = 大单净。
+                        # 再加 f66 即重复计一次超大单，虚高约 40%（与 push2 侧同量级）。
+                        # 索引对齐仍然成立：ulist f62/f66/f72 ↔ push2 f137/f140/f143（跨接口对撞 96%+）。
+                        "main_net_inflow_wan": _safe_float(item.get("f62", 0)) / 1e4,
                     }
+        except RateLimitBlockedError:
+            # M9 修复：EM 连续 403(IP 被封) 必须显性抛出，不能再被宽 except 吞成空数据
+            # （否则"IP 被封"表现为空结果，且无任何失败信号上浮到 run()/main.py）。
+            raise
         except Exception as _e:
             _debug_log(f"datasource get_em_batch_quotes error: {_e}")
 
@@ -1183,19 +1237,118 @@ def get_em_batch_quotes(codes: List[str]) -> Dict[str, Dict[str, Any]]:
     return result
 
 
-@cached(category="kline", ttl_seconds=TTL["kline"], trading_day=True, valid_if=make_valid_if())
-def baidu_kline_full(code, is_index=False, count=800):
+@cached(
+    category="kline",
+    ttl_seconds=TTL["kline"],
+    trading_day=True,
+    # V17.0.17: 原函数返回 (keys, rows) 元组, 而 make_valid_if() 只拒空 dict/list/None,
+    # 不拒空 tuple —— 瞬断返回的 ([],[]) 被当作有效结果写入缓存, 并以 trading_day TTL 冻结
+    # 整整一个交易日, 致全仓 K线形态/CYQ(OHLC) 章节恒空。改为显式拒绝空 rows:
+    # ① 未来瞬断不再缓存 ② 已存在的 stale [[],[]] 在读取时 valid_if 失败被当作 miss 重新拉取(自愈合)。
+    valid_if=lambda r: isinstance(r, (tuple, list)) and len(r) == 2 and len(r[1] or []) > 0,
+)
+def baidu_kline_full(code, count=800, is_index=False):
     """全量K线 → tdx_client 适配器（纯 TDX 日K线）。
 
     V16.3 O16: 修正误导性 docstring——百度 PAE 已无实际调用（v3.1.0 起参考仓库同款
     下线 fundflow，本仓库 K 线全程 TDX），函数名保留向后兼容。
     V16.3 O19: 加 count 参数（脚本层直调 tdx_get_security_bars 统一入口，跨脚本共享缓存）。
+    V17.0.17: 形参重排为 (code, count=800, is_index=False)。原签名 (code, is_index=False,
+    count=800) 是footgun——调用点 baidu_kline_full(code, 60) 会把 60 当成 is_index(真值)去取
+    **指数**K线, 个股返回空, 致 K线形态/异动雷达章节恒空, 且伴随"指数K线响应截断"告警。
+    重排后位置第2参即 count, 与所有调用点"count 位置传参"的意图一致(仅 get_sht 指数分支用
+    关键字 is_index=True)。
     """
     from core.tdx_client import tdx_get_security_bars, tdx_get_index_bars
 
     if is_index:
         return tdx_get_index_bars(code)
     return tdx_get_security_bars(code, count=count)
+
+
+@requires_push2
+def get_cyq_distribution(code: str, days: int = 240) -> Dict[str, Any]:
+    """V17.0.14: 筹码分布 CYQ —— 东财 push2 日K线(f61 换手率) → calculate_cyq。
+
+    来源(参考 chengzuopeng/stock-sdk chips 维度, 2026-08-30 分析): 成本分布是报告价值维度;
+    本项目 calculate_cyq(三角形分布+换手率衰减, 与通达信 CYQ 一致) V17.0.7 已实现,
+    但此前**未接入管线**(仅股东户数代理进 筹码面评分), 且**从未有单测**——
+    V17.0.14 本函数补齐数据入口, 单测见 tests/core/test_core_cyq.py(28 例, 含算法/入口/评分三层)。
+
+    为何用东财 kline: TDX 0x0010 日K(mootdx bars)与腾讯 ifzq fqkline 均**不含换手率字段**,
+    而 CYQ 必需 OHLC+换手率; 东财 push2his kline 的 f61=换手率(%)为权威口径, 复用 fflow 多域轮换。
+
+    Args:
+        code: 6位股票代码
+        days: 换手窗口(默认240≥calculate_cyq 的 cyq_days=210)
+
+    Returns:
+        calculate_cyq 字典(benefit_pct/avg_cost/cost_90_*/concentration_90/cost_70_*/concentration_70)
+        + "source" 字段; 失败/数据不足返回 {}。
+    """
+    from stock_common.sc_technical import calculate_cyq
+
+    secid = f"{em_secid_prefix(code)}{code}"  # V17.0 S3: 含北交所 92
+    params = {
+        "lmt": str(days),
+        "klt": "101",  # 日K
+        "secid": secid,
+        "fqt": "0",  # V17.0.17: 不复权(成本分布用实际成交价); 缺省 EM 返回 rc:102 data:null
+        "fields1": "f1,f2,f3,f4,f5,f6",
+        "fields2": "f51,f52,f53,f54,f55,f56,f57,f58,f59,f60,f61",
+        "ut": "b2884a393a59ad64002292a3e90d46a5",
+        "end": "20500101",
+    }
+    # V17.0.15: 24h 磁盘缓存（审查发现的关键风险）
+    #   em_get 只有**令牌桶限流 + 熔断**，**没有任何数据缓存** → 未加缓存前，全仓扫描时
+    #   sht/med/lng 三脚本各调一次 = **3N 次东财请求**。而东财 push2 系属**连接级风控**
+    #   （RemoteDisconnected，字典 §12.3 实测恢复 20+ 小时），一旦触发会连带影响资金流/行情等
+    #   同域接口。CYQ 依赖的 240 根日K+换手率属 T+1 稳定数据，与 K 线同性质 → 沿用同一 TTL。
+    try:
+        from stock_common.sc_kline_cache import get_cached_blob
+
+        _cached = get_cached_blob("CYQ", code, days)
+        if isinstance(_cached, dict) and _cached:
+            return dict(_cached)
+    except Exception:
+        pass
+    try:
+        # V17.0.14: 复用 fflow 多域轮换(push2his 全窗口优先——历史 K线需全窗口)
+        r = _em_fflow_request("/api/qt/stock/kline/get", params, prefer_his=True)
+        if r is None:
+            return {}
+        d = r.json()
+        klines = (d.get("data") or {}).get("klines") or []
+        if not klines:
+            return {}
+        dates, opens, closes, highs, lows, turns = [], [], [], [], [], []
+        for _kl in klines:
+            _p = str(_kl).split(",")
+            if len(_p) < 11:
+                continue
+            dates.append(_p[0])
+            opens.append(_safe_float(_p[1]))
+            closes.append(_safe_float(_p[2]))
+            highs.append(_safe_float(_p[3]))
+            lows.append(_safe_float(_p[4]))
+            turns.append(_safe_float(_p[10]))  # f61 = 换手率(%)
+        if len(closes) < 2:
+            return {}
+        _cyq = calculate_cyq(dates, opens, closes, highs, lows, turns)
+        if _cyq:
+            _cyq["source"] = "eastmoney_kline_f61"
+            # 只缓存**非空**结果：若把失败/空数据也写进缓存，当日后续调用会全部命中空值，
+            # 反而在接口恢复后仍拿不到数据（失败不缓存原则）。
+            try:
+                from stock_common.sc_kline_cache import set_cached_blob
+
+                set_cached_blob("CYQ", code, days, _cyq)
+            except Exception:
+                pass
+        return _cyq
+    except Exception as _e:
+        _debug_log(f"datasource cyq ({code}): {_e}")
+        return {}
 
 
 async def get_tencent_quote_async(session: Any, code: str) -> Dict[str, Any]:
@@ -2360,6 +2513,8 @@ def get_industry_peers(
                             "change_pct": _q.get("change_pct", 0) or 0,
                             "mcap_yi": _q.get("mcap_yi", 0) or 0,
                             "pe": _q.get("pe_ttm", 0) or 0,
+                            # V17.0.23: 静态PE(f163) 横向比较（V17.0.29 清理重复键行）
+                            "pe_lyr": _q.get("pe_lyr", 0) or 0,
                             "turnover": _q.get("turnover_pct", 0) or 0,
                         }
                     )
@@ -2435,9 +2590,29 @@ def get_industry_peers(
                             _p["change_pct"] = _q.get("change_pct", _p["change_pct"])
                             _p["mcap_yi"] = _q.get("mcap_yi", _p["mcap_yi"])
                             _p["pe"] = _q.get("pe_ttm", _p["pe"])
+                            _p["pe_lyr"] = _q.get("pe_lyr", _p.get("pe_lyr", 0))
                             _p["turnover"] = _q.get("turnover_pct", _p["turnover"])
                     except Exception as _e:
                         _debug_log(f"datasource tencent quote fallback error: {_e}")
+
+            # V17.0.29 (2026-09-02 P1 修复): 上方 V8.9 兜底只在 price<=0 时触发, 而 TDX
+            # board_members 返回的 price 有效 → 该分支永不执行, peers 字典根本没有 pe_lyr 键,
+            # 同业对比表 PE(静) 整列 N/A(实测 002193/002360/300165/301171 的 peers pe_lyr 均为 None)。
+            # 改为: 对缺失/为 0 的 pe_lyr 用腾讯批量(1 次请求, 进程级按日缓存)补静态PE, 不覆盖已有值。
+            _need_lyr = [str(_p.get("code", "")) for _p in peers
+                         if str(_p.get("code", "")) and not (_p.get("pe_lyr") or 0)]
+            if _need_lyr:
+                try:
+                    from core.tdx_client import _tencent_batch_fallback
+
+                    _tq = _tencent_batch_fallback(_need_lyr) or {}
+                    for _p in peers:
+                        _c = str(_p.get("code", ""))
+                        _lyr = (_tq.get(_c) or {}).get("pe_lyr")
+                        if _lyr:
+                            _p["pe_lyr"] = _lyr
+                except Exception as _e:
+                    _debug_log(f"datasource peers pe_lyr batch fallback error: {_e}")
             return {
                 "industry": primary["name"],
                 "my_mcap": my_mcap,
@@ -2514,6 +2689,7 @@ def get_industry_peers(
                         "change_pct": 0,
                         "mcap_yi": 0,
                         "pe": 0,
+                        "pe_lyr": 0,  # V17.0.23: F10 fallback 无静态PE, 置0(下游 N/A)
                         "turnover": 0,
                     }
                 )
@@ -2772,7 +2948,12 @@ def _get_eastmoney_industry_sectors() -> List[Dict[str, Any]]:
             return []
 
         d = r.json()
-        items = d.get("data", {}).get("dif", [])
+        # V17.0.26(2026-09-03) DEBT-010: 键名修正 dif → diff（东财 clist 接口返回 data.diff）。
+        #   原拼写错误致 items 恒为 [] → 本函数恒返回 [] → 调用方 L2898 `if em_sectors:` 永假，
+        #   东财实时涨跌幅补充分支**从未执行**（TDX 板块列表缺实时涨幅时无法补）。
+        #   隐蔽性强: 主路径 ZHB 可用时提前返回(L2890)，掩盖了该分支失效。
+        #   纯收益修复: HTTP 请求已发出、push2 风控成本已付，此前结果被白白丢弃。
+        items = d.get("data", {}).get("diff", [])
         if not items:
             return []
 
@@ -3108,8 +3289,12 @@ async def get_eastmoney_cash_flow_async(session: Any, code: str) -> List[Dict[st
     return rows
 
 
+# V17.0.28 (2026-09-02 P1 修复): 原为无条件缓存 —— 盘中源错位返回 data_quality="invalid" 后,
+# trading_day=True 会把该无效结果缓存整日(实测缓存行 hit=2, 导致 34/36 份报告恒显「数据源异常」),
+# 且源恢复后无法自愈。加 valid_if: invalid 不写缓存 → 下次调用重新取源。
 @cached(
-    category="hsgt_macro_flow", ttl_seconds=TTL["hsgt_macro_flow"], trading_day=True, use_args=False
+    category="hsgt_macro_flow", ttl_seconds=TTL["hsgt_macro_flow"], trading_day=True, use_args=False,
+    valid_if=lambda r: bool(r and r.get("data_quality") != "invalid"),
 )
 def get_hsgt_macro_flow() -> Optional[Dict[str, Any]]:
     """同花顺北向资金大盘净流入（宏观风向标）"""
@@ -3128,6 +3313,30 @@ def get_hsgt_macro_flow() -> Optional[Dict[str, Any]]:
         # sgt=历史收盘序列(35 点), 长度不同步 → sgt[-1] 恒为陈旧值(8/12-8/19 冻结在 379.75,
         # 全仓 47 份 sht/med 报告北向恒 -9.28/+379.75 系此根因)。长度不一致即判 invalid 拒绝展示。
         if len(hgt) != len(sgt):
+            # V17.0.28 (2026-09-02): 原实现一旦长度不等就把 hgt/sgt 一并归零 → 连有效的沪股通
+            # 当日实时值也丢了(实测 hgt=262 点当日分时从头累积, 末值 -9.28 亿有效;
+            # sgt=35 点历史收盘序列, 末值 379.75 陈旧)。改为:
+            #   识别「hgt 为当日分时」(长度>100 且首值≈0 即从头累积) → hgt 单值可用,
+            #   sgt 标记为缺失, data_quality="partial_hgt_only", 由渲染层只展示沪股通。
+            # 识别失败仍走原 invalid 分支, 保证不展示错误数字。
+            # 注意: 不能用 _safe_float(默认 0.0) 判首值 —— 非数字会返回 0.0 造成误判。
+            _hgt_head_ok = False
+            try:
+                _hgt_head_ok = abs(float(hgt[0])) < 1e-6
+            except (TypeError, ValueError, IndexError):
+                _hgt_head_ok = False
+            _hgt_is_intraday = len(hgt) > 100 and _hgt_head_ok
+            if _hgt_is_intraday:
+                _hgt_real = float(hgt[-1]) if hgt[-1] else 0.0
+                _debug_log(
+                    "hsgt_macro_flow: hgt/sgt 长度不一致({}/{})——hgt 判为当日分时(可用), sgt 为历史序列(不可用)".format(
+                        len(hgt), len(sgt)))
+                return {
+                    "hgt": _hgt_real, "sgt": 0.0, "total": _hgt_real,
+                    "sgt_valid": False,
+                    "data_quality": "partial_hgt_only",
+                    "warning": "深股通序列为历史收盘序列(非当日), 本项仅沪股通值可用",
+                }
             _debug_log("hsgt_macro_flow: hgt/sgt 序列长度不一致({}/{})——数据源字段错位, 拒绝展示".format(len(hgt), len(sgt)))
             return {
                 "hgt": 0.0, "sgt": 0.0, "total": 0.0,
@@ -3279,7 +3488,10 @@ def get_lockup_expiry(code: str, days: int = 90, include_history: bool = False) 
             "type": r.get("FREE_SHARES_TYPE", ""),
             "shares": float(r.get("FREE_SHARES") or 0),               # 股
             "ratio": _normalize_lockup_ratio(r.get("FREE_RATIO")),     # 统一%
-            "able_shares": float(r.get("ABLE_FREE_SHARES") or 0),     # 万股
+            # 与 history 分支同表同字段(RPT_LIFT_STAGE.ABLE_FREE_SHARES)，单位一致为"股"；
+            # 原注释误标"万股"造成与 history 分支单位矛盾（两分支均未做除法，实际存同一原始值）。
+            # TODO(2026-08-30): 东财该字段真实单位需实盘采样一次确认(股/万股)，当前与 FREE_SHARES 对齐为"股"。
+            "able_shares": float(r.get("ABLE_FREE_SHARES") or 0),     # 股
         }
         for r in data2
     ]
@@ -3930,7 +4142,7 @@ def _tdxhy_industry_map() -> Dict[str, str]:
         import re as _re
         # 1) hy_tree.xml: X码 → 一级名(层级栈: 2位=一级, 其下节点继承)
         _lvl1 = ""
-        _text = open(r"C:\new_tdx64\T0002\cloud_cfg\hy_tree.xml", encoding="gbk", errors="ignore").read()
+        _text = open(os.path.join(_tdx_root(), "T0002", "cloud_cfg", "hy_tree.xml"), encoding="gbk", errors="ignore").read()
         for _mn in _re.finditer(r'<node\s[^>]*caption="([^"]*)"[^>]*blockid="X(\d+)"|<node\s[^>]*blockid="X(\d+)"[^>]*caption="([^"]*)"', _text):
             _cap = _mn.group(1) or _mn.group(4)
             _xc = _mn.group(2) or _mn.group(3)
@@ -3939,7 +4151,7 @@ def _tdxhy_industry_map() -> Dict[str, str]:
             else:
                 _m["X" + _xc] = _lvl1
         # 2) tdxhy.cfg: code → X细分码(已带 X 前缀) → 一级名
-        for _ln in open(r"C:\new_tdx64\T0002\hq_cache\tdxhy.cfg", encoding="gbk", errors="ignore"):
+        for _ln in open(os.path.join(_tdx_root(), "T0002", "hq_cache", "tdxhy.cfg"), encoding="gbk", errors="ignore"):
             _p = _ln.rstrip("\n").split("|")
             if len(_p) >= 6 and len(_p[1]) == 6 and _p[1].isdigit():
                 _x = _p[5].strip()
@@ -3952,7 +4164,16 @@ def _tdxhy_industry_map() -> Dict[str, str]:
     return _m
 
 
-@cached(category="limit_pool_v2", ttl_seconds=TTL["limit_pool"], trading_day=True)
+# V17.0.26 (2026-09-02 P0 修复): 原为无条件缓存 —— 盘中源抖动(如 push2 主域熔断)返回空池后,
+# trading_day=True 会把「涨停0/炸板0/跌停0」缓存整日, 导致 32 份 sht + mak B 段全部显示 0
+# (实测: 底层 ths_limit_up_pool=49 / get_limit_up_pool=52 数据正常, 经缓存返回全 0;
+#  绕过缓存直调原始函数 = 涨停49/炸板15/跌停8/封板率76.6%)。
+# 加 valid_if: 三类计数全为 0 视为无效结果, 不写入缓存 → 下次调用重新取源自愈。
+@cached(category="limit_pool_v2", ttl_seconds=TTL["limit_pool"], trading_day=True,
+        valid_if=lambda r: bool(r and isinstance(r, dict) and (
+            (r.get("limit_up_count") or 0) > 0
+            or (r.get("limit_down_count") or 0) > 0
+            or (r.get("limit_broken_count") or 0) > 0)))
 @requires_push2  # V17.0.1g: 涨停池同花顺优先, 炸板/跌停池仍走 push2ex → 保留审计
 def get_limit_pool_summary(date_str: str = "") -> Dict[str, Any]:
     """获取打板数据汇总（涨停池+炸板池+跌停池）
@@ -3965,12 +4186,27 @@ def get_limit_pool_summary(date_str: str = "") -> Dict[str, Any]:
     Returns:
         包含涨停/炸板/跌停数量和详细数据的字典
     """
-    # 涨停池: 同花顺优先(2026-08-16 实测 62 只/1.01s), 东财兜底
+    # 涨停池: 同花顺优先(2026-08-16 实测 62 只/1.01s), 东财兜底。
+    # 若两者都返回空池，使用财联社/KPL/复盘啦的多源计数兜底；计数可用时
+    # 不能再把全市场涨停显示为 0，但因多源接口只提供计数，明细仍保持为空。
     zt = ths_limit_up_pool(date_str)
     zt_source = "ths"
+    _zt_count_override: Optional[int] = None
     if not zt:
         zt = get_limit_up_pool(date_str)
         zt_source = "em"
+    if not zt:
+        try:
+            _multi = get_limit_pool_multi_source(date_str or None)
+            _multi_total = _multi.get("total") if isinstance(_multi, dict) else None
+            if isinstance(_multi_total, int) and _multi_total > 0:
+                _zt_count_override = _multi_total
+                zt_source = "multi"
+                _debug_log(
+                    f"get_limit_pool_summary limit-up count fallback: multi_source={_multi_total}, detail unavailable"
+                )
+        except Exception as _e_multi:
+            _debug_log(f"get_limit_pool_summary multi-source fallback: {_e_multi}")
     # H1(审查 2026-08-16): 休市日 ths 内部回退最近交易日, 炸板/跌停池若仍用当天(空) →
     # 封板率 100% 假象。统一口径: 回退后日期传给东财炸板/跌停池(东财对历史日期也有效)
     _zt_date = ""
@@ -4051,12 +4287,14 @@ def get_limit_pool_summary(date_str: str = "") -> Dict[str, Any]:
         sec = item.get("sector") or "其他"
         sector_stats[sec] = sector_stats.get(sec, 0) + 1
 
-    # 封板成功率
-    total_attempt = len(zt) + len(zb)
-    success_rate = len(zt) / total_attempt * 100 if total_attempt > 0 else 0
+    # 封板成功率：多源仅提供计数时，用互校涨停数作为分子；若炸板池可用，
+    # 仍按“涨停 / (涨停 + 炸板)”计算，避免空明细把成功率伪造成 0%。
+    _zt_count = _zt_count_override if _zt_count_override is not None else len(zt)
+    total_attempt = _zt_count + len(zb)
+    success_rate = _zt_count / total_attempt * 100 if total_attempt > 0 else 0
 
     return {
-        "limit_up_count": len(zt),
+        "limit_up_count": _zt_count,
         "limit_broken_count": len(zb),
         "limit_down_count": len(dt) or _dt_fb,
         "success_rate": round(success_rate, 1),
@@ -4249,6 +4487,10 @@ def get_board_fund_flow(board_type: str = "industry", top_n: int = 20) -> List[D
     2026-08-03 联网验证：83.push2 备用域名可用。
     注意：push2 有 IP 级风控，遇 RemoteDisconnected 需等待 30-60 分钟。
 
+    ⚠️ 遗留(dead-code, 2026-09-01 战略重估标注): 经全仓 grep 确认本函数**未被 5 大脚本活跃路径调用**
+    （mak 板块分析走 KPL RealRankingInfo + ZHB 聚合, 不调板块资金流排名）。保留供未来/外部使用, 勿在
+    批量管线中新增调用以免触发东财 push2 连接级风控。
+
     Args:
         board_type: "industry"(行业 m:90 t:2) / "concept"(概念 m:90 t:3) / "area"(地域 m:90 t:1)
         top_n: 返回前 N 个板块
@@ -4352,6 +4594,10 @@ def get_eastmoney_minute_fund_flow(code: str) -> List[Dict[str, Any]]:
     V9.6 新增：使用东财push2接口获取分钟级资金流，用于与TDX资金流加权融合。
     数据格式与同花顺/百度资金流不同，但覆盖更稳定。
 
+    ⚠️ 遗留(dead-code, 2026-09-01 战略重估标注): 经全仓 grep 确认**未被 5 大脚本活跃路径调用**
+    （主力净额统一走 push2delay f137 / thsdk 口径, 弃用 easy_tdx 原生资金流——见 §12.15.5）。
+    保留供未来/外部使用, 勿在批量管线中新增调用。
+
     Returns:
         分钟级资金流列表，每项包含时间/主力净流入/小单净流入/中单净流入/大单净流入
     """
@@ -4402,6 +4648,10 @@ def get_fund_flow_weighted(code: str, tdx_data: Any = None) -> Dict[str, Any]:
     - TDX TCP资金流：权重 1.0（最实时、最准确）
     - 东财分钟级资金流：权重 0.6（覆盖稳定、数据量大）
 
+    ⚠️ 遗留(dead-code, 2026-09-01 战略重估标注): 经全仓 grep 确认**未被 5 大脚本活跃路径调用**
+    （主力净额统一走 push2delay f137 / thsdk 口径, 弃用 easy_tdx 原生资金流——见 §12.15.5）。
+    保留供未来/外部使用, 勿在批量管线中新增调用。
+
     Args:
         code: 股票代码
         tdx_data: TDX资金流数据（如已获取，避免重复请求）
@@ -4409,49 +4659,12 @@ def get_fund_flow_weighted(code: str, tdx_data: Any = None) -> Dict[str, Any]:
     Returns:
         加权融合后的资金流数据
     """
-    # TDX资金流（权重1.0）
-    if tdx_data is not None:
-        tdx_ff = tdx_data
-    else:
-        try:
-            from core.tdx_client import tdx_get_fund_flow
-
-            tdx_ff = tdx_get_fund_flow(code)
-        except Exception:
-            tdx_ff = None
-
-    # 东财分钟级资金流（权重0.6）
-    em_ff = get_eastmoney_minute_fund_flow(code)
-
-    result = {
-        "primary_source": "tdx" if tdx_ff else ("eastmoney" if em_ff else "none"),
-        "sources": {},
-    }
-
-    if tdx_ff:
-        result["sources"]["tdx"] = {"weight": 1.0, "data": tdx_ff}
-    if em_ff:
-        result["sources"]["eastmoney"] = {
-            "weight": 0.6,
-            "data_available": True,
-            "count": len(em_ff),
-        }
-
-    # 简化版：优先使用TDX，东财作为验证/补充
-    # 如果TDX有数据，以东财数据做交叉验证
-    if tdx_ff and em_ff:
-        result["cross_verified"] = True
-    elif tdx_ff:
-        result["cross_verified"] = False
-    elif em_ff:
-        # 仅有东财数据时，降低可信度标记
-        result["degraded"] = True
-        result["warning"] = "仅东财数据，无TDX交叉验证"
-
-    return result
-
-
-# ═══════════════════════════════════════════════════════════
+    # M18 清理：本函数为不完整实现（仅记录 source/权重/标记，未算加权融合值），
+    # 且全仓无调用方（仅 stock_common.__init__ 转发），属死代码。保留签名以避免
+    # 外部意外 import 缺失，但明确标记不再使用；如需加权资金流请直接用
+    # get_em_fund_flow / tdx_get_fund_flow。
+    _debug_log(f"get_fund_flow_weighted 已废弃(无调用方): {code}")
+    return {"primary_source": "none", "sources": {}, "deprecated": True}
 # 财联社快讯（V9.6 新增，V3.4复活版）
 # ═══════════════════════════════════════════════════════════
 
@@ -4493,6 +4706,12 @@ def get_history_fund_flow_120d(code: str, days: int = 60, prefer: str = "auto") 
     Returns:
         {"data": [dict(元)] 或 [], "error": str, "source": str}
         与 med/sht 原有 get_fund_flow_120d 返回结构完全一致。
+
+    ⚠️ V17.0.13 资金流口径（easy_tdx #55，2026-08-30）：本项目主力净额统一走
+    东财 push2 f137+f140 / thsdk 口径，**弃用 easy_tdx 原生资金流**（其 get_fund_flow
+    基于 0x0fb5 逐笔聚合、按成交额分档，与东财/同花顺主力净流入不可比，重合度 ~14%）。
+    下方 `tdx_get_history_fund_flow` 已委托东财 HTTP，最终仍归东财口径，安全；
+    但若 future 改回原生 easy_tdx 资金流，须先评估口径差异，禁止直接当主力净额源。
     """
     def _norm_ff(data):
         """V16.3 O19: 强制归一为 dict 列表（单位元）——历史遗留 float 列表（万元）自动转 dict(元)。"""
@@ -5252,7 +5471,7 @@ def get_tdx_day_tail(code: str) -> Dict[str, Any]:
         import struct as _st
 
         _mkt = "bj" if code.startswith(("92", "8", "4", "43", "83", "87")) else ("sh" if code.startswith(("6", "9")) else "sz")
-        _path = _os.path.join(r"C:\new_tdx64\vipdoc", _mkt, "lday", f"{_mkt}{code}.day")
+        _path = _os.path.join(_tdx_root(), "vipdoc", _mkt, "lday", f"{_mkt}{code}.day")
         with open(_path, "rb") as _f:
             _f.seek(-32, 2)
             _rec = _f.read(32)
@@ -5672,13 +5891,90 @@ def get_em_quote_full(code: str) -> Dict[str, Any]:
     return _em_quote_full_impl(code, "https://push2.eastmoney.com/api/qt/stock/get")
 
 
+@cached(category="quote_full_delay", trading_day=True, valid_if=make_valid_if())
 def get_em_quote_full_delay(code: str) -> Dict[str, Any]:
     """V16.3.3 (2026-08-10 字典 12.15.5): push2delay 镜像域版全字段行情。
 
     2026-08-10 实测：push2 主域连接级风控（RemoteDisconnected）；push2delay 风控独立、
     114 字段全量可用、延时 15 分钟非盘中无影响——统一层 L3 东财兜底应优先本函数。
+
+    V17.0.26(2026-09-03): 加 @cached——原每次调用直打 push2delay（单股 sht/med/lng 报告
+    每只多次、重跑 val 全市场重复打），违反字典 §12.15.5「push2delay 镜像域应优先缓存以降频」。
+    trading_day=True 保证日级数据次日 9:30 刷新（15min 延时数据缓存一天无影响）；
+    valid_if 拒绝空/全零行情避免投毒。数据_provider 的进程内 _PD_EXTRA_CACHE 仍做单 run 兜底去重。
     """
     return _em_quote_full_impl(code, "https://push2delay.eastmoney.com/api/qt/stock/get")
+
+
+# ═══════════════════════════════════════════════════════════
+# V17.0.26(2026-09-03) DEBT-011: push2delay ulist.np **批量**行情取数适配器
+# ═══════════════════════════════════════════════════════════
+# 字段集与 data_provider.prefetch_quote_batch 的映射键一一对应（改动须同步两侧）
+_ULIST_BATCH_FIELDS = "f2,f3,f4,f5,f6,f8,f12,f14,f15,f16,f17,f18,f20,f21"
+_ULIST_BATCH_SIZE = 300   # 东财 ulist.np 单批上限（实测 >300 返回截断/异常）
+
+
+def get_em_ulist_batch(codes: List[str], fields: str = _ULIST_BATCH_FIELDS) -> List[Dict[str, Any]]:
+    """V17.0.26: push2delay ulist.np 批量行情取数，返回**原始 diff 记录列表**。
+
+    背景(DEBT-011)：原先这段取数内联在 `core/data_provider.prefetch_quote_batch` 里
+    直连裸 HTTP，违反公理 A1（数据访问收口）。本函数把它下沉到适配器层。
+
+    分层约定（**重要**）:
+      - 本函数**只取数、不做业务语义映射**：返回原始 f2/f12/... 记录，
+        字段→业务名的映射与单位换算由调用方（Tier1 门面 data_provider）负责。
+        这样"取数在适配器、语义在门面"，避免语义散落两处。
+      - 安全域：固定 push2delay **镜像域**（风控独立），严禁 push2 主域
+        （45000/h 封禁 20h）。
+      - 自动分批：>300 只按 300/批拆分。
+      - 容错：单批失败（返回 None）或抛异常 → 跳过该批，不冒泡中断调用方。
+
+    关于缓存（公理 A4，有意不加 @cached，详见 DEBT-011 台账论证）:
+      - 批量接口若按 codes 组合做 key，组合数爆炸（sht 35 只的任意子集），
+        命中率极低，且 300 个 code 拼出的 key ≈ 2.1KB，SQLite 索引效率低；
+      - 真正的去重由**调用方门面层按 code 粒度**完成（prefetch_quote_batch 的
+        _BATCH_QUOTE_CACHE 只把 missing 的 code 传下来），比按批组合缓存更有效；
+      - 跨运行的单股行情缓存已由 `get_em_quote_full_delay` 覆盖。
+
+    Args:
+        codes: 股票代码列表（6 位纯数字，如 ["600519", "000001"]）
+        fields: 东财字段集；默认覆盖行情/OHLC/市值。
+                **不含估值字段** —— 实测 ulist.np 的 f162/f167/f126 恒返回 "-"
+                （与 stock/get 单股接口语义不同），估值须走单股接口补齐。
+
+    Returns:
+        list: 原始 diff 记录列表（每条 dict，键为 "f2"/"f12" 等东财字段码）。
+              全部失败返回 []（**只返回非空结果**，符合公理 A4）。
+    """
+    if not codes:
+        return []
+
+    # 92 北交所须先于 9 判定，统一走 em_secid_prefix（勿手写 startswith("9")）
+    from stock_common.sc_utils import em_secid_prefix
+    from stock_common import _quick_request
+
+    rows: List[Dict[str, Any]] = []
+    for i in range(0, len(codes), _ULIST_BATCH_SIZE):
+        chunk = codes[i : i + _ULIST_BATCH_SIZE]
+        secids = ",".join(em_secid_prefix(c) + c for c in chunk)
+        try:
+            r = _quick_request(
+                "https://push2delay.eastmoney.com/api/qt/ulist.np/get",
+                params={"fltt": "2", "invt": "2", "secids": secids, "fields": fields},
+                headers={"Referer": "https://quote.eastmoney.com/"},
+                timeout=10,
+            )
+            if r is None:      # 风控/封禁跳过，与 `_quick_request` 的 None 约定一致
+                continue
+            diff = (r.json().get("data") or {}).get("diff") or []
+            # 东财偶发以 dict（下标→记录）形式返回，统一摊平为 list
+            if isinstance(diff, dict):
+                diff = list(diff.values())
+            rows.extend(x for x in diff if isinstance(x, dict))
+        except Exception as _e:
+            _debug_log(f"datasource get_em_ulist_batch chunk[{i}:{i + _ULIST_BATCH_SIZE}]: {_e}")
+            continue
+    return rows
 
 
 def _em_quote_full_impl(code: str, host: str = "https://push2delay.eastmoney.com/api/qt/stock/get") -> Dict[str, Any]:
@@ -5700,7 +5996,8 @@ def _em_quote_full_impl(code: str, host: str = "https://push2delay.eastmoney.com
             "volume_hand": float,     # f47  成交量(手)
             "amount_wan": float,      # f48  成交额(元→万元)
             "turnover_pct": float,    # f168 换手率(%)
-            "pe_ttm": float,          # f163 PE(TTM) (fltt=2 下为浮点，无需 /100)
+            "pe_ttm": float,          # f164 PE(TTM) (fltt=2 下为浮点，无需 /100) — 🔴2026-09-01 纠正：f164=T重TTM，f163才是静态PE
+            "pe_lyr": float,           # f163 静态PE(LYR, 现价÷年报EPS)
             "pe_dynamic": float,
             "pb": float,
             "mcap_yi": float,         # f116 总市值(元→亿元)
@@ -5741,7 +6038,9 @@ def _em_quote_full_impl(code: str, host: str = "https://push2delay.eastmoney.com
             "f116,f117,f127,f128,f129,f168,f169,f170,f171,f189,"  # V16.2.3: f168 换手率补回（sht 换手率 0.00%）
             "f51,f52,f55,f92,f126,f162,f163,f164,f165,f166,f167,"
             "f174,f175,f198,f80,f221,"  # V16.2: f221 报告期
-            "f135,f136,f137,f138,f139,f140,f141,f142,f143,f144,f145,f146,"
+            # V17.0.16: 补 f149(小单净) —— 旧版只取 f135-f146，缺小单档，
+            # 导致四档占比之和不足 100%（大盘股缺 ~3%，小盘股缺 ~38%）。
+            "f135,f136,f137,f138,f139,f140,f141,f142,f143,f144,f145,f146,f149,"
             "f178,"
             # V17.0.7(2026-08-25 字典终破): 财务 TTM 族——f103 经营现金流净额(TTM 元)/
             # f104 营业总收入(TTM 元)/f105 归母净利(最新报告期 元)/f108 扣非EPS(TTM)/
@@ -5885,11 +6184,11 @@ def _em_quote_full_impl(code: str, host: str = "https://push2delay.eastmoney.com
             except (TypeError, ValueError):
                 pass
 
-        # PE 三口径 + PB（f162=动态PE/f163=静态PE-TTM/f164=MorePE/f167=PB）
+        # PE 三口径 + PB（🔴2026-09-01 据 field_dict 定案纠正：f162=动态PE/f163=静态PE(LYR)/f164=TTM(pe_ttm)/f167=PB）
         pe_map = {
             "f162": "pe_dynamic",
-            "f163": "pe_ttm",
-            "f164": "pe_more",
+            "f163": "pe_lyr",
+            "f164": "pe_ttm",
             "f167": "pb",
         }
         for src, dst in pe_map.items():
@@ -5927,23 +6226,49 @@ def _em_quote_full_impl(code: str, host: str = "https://push2delay.eastmoney.com
             except (TypeError, ValueError, json.JSONDecodeError):
                 result["trading_periods"] = []
 
-        # 资金流 12 字段(f135-f146)——V17.0(2026-08-14 同花顺表头+买卖差自洽定案):
-        #   四档买卖结构: f135/136/137=特大(超大)单买/卖/净、f138/139/140=大单买/卖/净、
-        #                  f141/142/143=中单买/卖/净、f144/145/146=小单买/卖/净
-        #   (f137=f135-f136、f140=f138-f139、f143=f141-f142、f146=f144-f145 全自洽实测)
-        #   **主力净额(同花顺/通达信定义=特大+大单买卖差)= f137+f140**(由 data_provider 聚合)
-        #   单位: 元
+        # 资金流字段(f135-f146 + f149)——V17.0.16(2026-08-31) 结构实证**重定案**
+        #
+        # ⚠️ 旧版(V17.0)把 f135-f146 当成**并列的四档** 特大/大单/中单/小单，并算
+        #    「主力净额 = f137 + f140」——**错的**，本段已按实证重写。
+        #
+        # 三条独立铁证（详见 docs/field_dict.md §12.3.3）：
+        #   ① 结构自洽 + 全组合盲搜（12 采集日 169 样本，相对差 **0.00**，100% 命中）：
+        #        f135 = f138 + f141     f136 = f139 + f142     f137 = f140 + f143
+        #      → **f137 是合计档**，不可能是并列的"特大单净"。
+        #        旧命名下应推出 f137 = f138 − f139 = f140，但实测 0/169 相等（96.4% 显著分离）。
+        #   ② ulist239 同名号段（12 采集日 236 样本）：**f62 == f66 + f72 命中 236/236 = 100%**
+        #      → 东财标准档位：f62=主力净、f66=超大单净、f72=大单净、f78=中单净、f84=小单净。
+        #   ③ 跨接口对撞（234 样本，2% 容差）：
+        #        f62==f137 96.6%   f66==f140 98.3%   f72==f143 96.2%
+        #        f78==f146 95.7%   f84==f149 96.2%   f84==f146 仅 0.9%（排除）
+        #
+        # 正确层级（买/卖/净 三组 + 主力为合计）：
+        #      f138/139/140 = 超大单 买/卖/净
+        #      f141/142/143 = 大单   买/卖/净
+        #      f135/136/137 = **主力** 买/卖/净  （= 超大单 + 大单，东财官方"主力"定义）
+        #      f144/145/146 = 中单   买/卖/净
+        #      f149         = 小单净（**f135-f146 段内没有小单买/卖明细**）
+        #
+        # 后果（旧 bug 的实际影响）：`主力净 = f137 + f140` 把超大单净**重复计一次**，
+        #   实测 (f137+f140)/f137 中位 **1.196** → 主力净额虚高约 **40%**，
+        #   并沿 data_provider `main_net_buy_amount` 流入各报告章节（静默、不报错）。
+        #   现改为**直接取 f137**，不再相加。
+        #
+        # 单位: 元
         flow_map = {
-            "f137": ("fund_super_today", "fund_flow"),   # 特大(超大)单净
-            "f138": ("fund_super_buy", "fund_flow"),     # 特大单买入金额
-            "f139": ("fund_super_sell", "fund_flow"),    # 特大单卖出金额
-            "f140": ("fund_large_today", "fund_flow"),   # 大单净
-            "f141": ("fund_mid_buy", "fund_flow"),       # 中单买入金额
-            "f142": ("fund_mid_sell", "fund_flow"),      # 中单卖出金额
-            "f143": ("fund_mid_today", "fund_flow"),     # 中单净
-            "f144": ("fund_small_buy", "fund_flow"),     # 小单买入金额
-            "f145": ("fund_small_sell", "fund_flow"),    # 小单卖出金额
-            "f146": ("fund_small_today", "fund_flow"),   # 小单净
+            "f135": ("fund_main_buy", "fund_flow"),      # 主力买入额 = f138 + f141
+            "f136": ("fund_main_sell", "fund_flow"),     # 主力卖出额 = f139 + f142
+            "f137": ("fund_main_today", "fund_flow"),    # 主力净额   = f140 + f143（**不可再加 f140**）
+            "f138": ("fund_super_buy", "fund_flow"),     # 超大单买入额
+            "f139": ("fund_super_sell", "fund_flow"),    # 超大单卖出额
+            "f140": ("fund_super_today", "fund_flow"),   # 超大单净额
+            "f141": ("fund_large_buy", "fund_flow"),     # 大单买入额
+            "f142": ("fund_large_sell", "fund_flow"),    # 大单卖出额
+            "f143": ("fund_large_today", "fund_flow"),   # 大单净额
+            "f144": ("fund_mid_buy", "fund_flow"),       # 中单买入额
+            "f145": ("fund_mid_sell", "fund_flow"),      # 中单卖出额
+            "f146": ("fund_mid_today", "fund_flow"),     # 中单净额
+            "f149": ("fund_small_today", "fund_flow"),   # 小单净额（无买/卖明细）
         }
         for src, (dst, _cat) in flow_map.items():
             v = data.get(src)
@@ -5953,11 +6278,8 @@ def _em_quote_full_impl(code: str, host: str = "https://push2delay.eastmoney.com
                 except (TypeError, ValueError):
                     pass
 
-        # V17.0(2026-08-14): 主力净额 = 特大单净 + 大单净(同花顺/通达信"主力净额"官方定义)
-        _sv = result.get("fund_super_today")
-        _lv = result.get("fund_large_today")
-        if _sv is not None and _lv is not None:
-            result["fund_main_today"] = _sv + _lv
+        # V17.0.16: 主力净额**直接等于 f137**（东财已聚合好 超大单 + 大单）。
+        # 旧版在此外加 f140 属重复计数，见上方 flow_map 注释的三条铁证。
 
         # 近5日主力净流入数组（f178，JSON）
         v = data.get("f178")
@@ -6001,8 +6323,16 @@ def _em_quote_full_impl(code: str, host: str = "https://push2delay.eastmoney.com
 # ═══════════════════════════════════════════════════════════
 # V16.3.3 (2026-08-10 字典 12.15.5): 涨停池三源互校
 # ═══════════════════════════════════════════════════════════
+# V17.0.27 (2026-09-02 P0 加固): 原 valid_if 只判 sources 非空 —— 而源全部抖动返回
+# {"cls": 0, "kpl": 0, "total": 0} 时 sources 仍是非空 dict，会被 trading_day=True 缓存整日；
+# 该值又被 get_limit_pool_summary 用作 _zt_count_override，导致「涨停0」二次污染。
+# 改为: 要求 total>0 或至少一个源计数>0，全 0 视为无效结果不写缓存 → 下次调用重新取源自愈。
 @cached(category="market_emotion_multi", ttl_seconds=TTL["market_emotion_multi"], trading_day=True,
-        valid_if=lambda r: bool(r and r.get("sources")))
+        valid_if=lambda r: bool(
+            r and isinstance(r, dict)
+            and ((r.get("total") or 0) > 0
+                 or any((v or 0) > 0 for v in (r.get("sources") or {}).values()
+                        if isinstance(v, (int, float))))))
 def get_limit_pool_multi_source(date: Optional[str] = None) -> Dict[str, Any]:
     """涨停池三源互校——财联社=KPL=复盘啦（2026-08-10 实测 99=99=99 三源一致）。
 
@@ -6446,18 +6776,33 @@ def get_em_board_list(board_type: int = 0) -> List[Dict[str, Any]]:
         return []
 
 
+@cached(category="board_members", ttl_seconds=TTL["board_members"], trading_day=True,
+        valid_if=make_valid_if(min_size=1))
 @requires_push2
 def get_em_board_members(board_code: str) -> List[Dict[str, Any]]:
     """V12.0: 获取板块成员列表（替代 TDX MacClient.get_board_members）。
 
     使用东财 push2 clist 接口，fs 参数为 b:BK{code}。
 
+    V17.0.26(2026-09-03) DEBT-012: 补 @cached（公理 A4——网络接口须自带缓存）。
+      背景: 本函数走 **push2 主域**（45000/h 封禁 20h，全仓风控最严），此前无缓存；
+      DEBT-009 修复后 val 报告开始调用它，调用频次从 0 上升；且 MAC TCP 主路径不可用时
+      （盘后/连接失败）med 的 sector_rank、sc 的 industry_peers/industry_compare 会对
+      **同一板块重复请求** —— 一次报告内可达数十次。
+      TTL 15min 的依据（不是拍脑袋）: 全部 5 处消费方（mak get_sector_stocks /
+      med sector_rank / sc industry_peers / sc industry_compare / val 日历效应）
+      使用本函数的方式**都是「行业内相对排序参照系」**——按 change_pct 或 mcap_yi 排序后
+      取本股名次，或按市值挑可比公司。相对排序对 15min 级价格陈旧不敏感。
+      `trading_day=True` 保证跨交易日必失效（成分股名单调整不会被掩盖）。
+      `valid_if=make_valid_if(min_size=1)`：空列表**不写缓存**（A4 只缓存非空 + 不掩盖降级信号，
+      与 DEBT-006 同理）——否则一次网络抖动产生的 [] 会被缓存 15 分钟。
+
     Args:
         board_code: 板块代码（如 "BK0447"）
 
     Returns:
         list: [{"code": str, "name": str, "price": float, "change_pct": float,
-                "mcap_yi": float, "turnover": float, "pe": float,
+                "mcap_yi": float, "turnover": float, "pe": float, "pb": float,
                 "main_net_amount": float}, ...]
     """
     # 规范化板块代码：纯数字 → 补 BK 前缀
@@ -6478,7 +6823,19 @@ def get_em_board_members(board_code: str) -> List[Dict[str, Any]]:
         "fltt": "2",
         "invt": "2",
         "fs": f"b:{bc}",
-        "fields": "f12,f14,f2,f3,f20,f21,f23,f62,f184",
+        # V17.0.15: 原只取 f23 且注释写 "PE(动)" —— **错的**。跨接口对撞实证
+        #   (2026-08-31, 12 采集日 150~238 样本, 2% 容差全 100% 命中):
+        #     ulist f9   == push2 f162 = 市盈率(动态)
+        #     ulist f114 == push2 f163 = 市盈率(静态)
+        #     ulist f115 == push2 f164 = 市盈率(TTM)
+        #     ulist f23  == push2 f167 = **市净率 PB**
+        #   量级佐证: f9 中位 20.84 / f23 中位 2.22，相差 9.4×——分属 PE 族与 PB 族。
+        #   后果: "pe" 实际拿到 PB → med 的 industry_pe 变成**行业平均 PB**，
+        #   而 sc_scoring.py:237 拿 pe_ttm(≈20) 与它比较 → `pe_ttm < industry_pe`
+        #   几乎恒 False → 「PE低于行业均值」+15 分**永不触发**（静默失效，不报错）。
+        #   注: TDX MAC 主路径用的是 pe_dynamic(真 PE)，故本 fix 只在东财兜底路径生效，
+        #   并使两条路径口径一致。
+        "fields": "f12,f14,f2,f3,f9,f20,f21,f23,f62,f184",
         "fid": "f3",  # 按涨跌幅排序
         "ut": "f057cbcbce2a86e2866ab8877db1d059",
     }
@@ -6501,7 +6858,10 @@ def get_em_board_members(board_code: str) -> List[Dict[str, Any]]:
                     # f20=总市值(元)，转换为亿元
                     "mcap_yi": _safe_float(item.get("f20", 0)) / 1e8,
                     "turnover": _safe_float(item.get("f184", 0)),  # 换手率
-                    "pe": _safe_float(item.get("f23", 0)),  # PE(动)
+                    # V17.0.15: f9 = 市盈率(动态)，与 TDX 主路径 pe_dynamic 口径一致
+                    "pe": _safe_float(item.get("f9", 0)),
+                    # V17.0.15: f23 = 市净率 PB（原被误当 PE 使用，见上方 fields 注释）
+                    "pb": _safe_float(item.get("f23", 0)),
                     "main_net_amount": _safe_float(item.get("f62", 0)),  # 主力净流入额
                 }
             )
@@ -6605,6 +6965,10 @@ def _em_fflow_request(path: str, params: Dict[str, Any], timeout: int = 10, pref
 def get_em_fund_flow(code: str) -> Dict[str, Any]:
     """V12.0: 获取个股实时资金流（替代 TDX get_fund_flow）。
 
+    ⚠️ V17.0.13 口径（easy_tdx #55，2026-08-30）：本项目主力净额统一用东财
+    fflow 口径（与 push2 f137+f140 / thsdk 一致）。**严禁**改用 easy_tdx 原生
+    get_fund_flow（0x0fb5 逐笔聚合，与东财/同花顺主力净流入重合度仅 ~14%，不可比）。
+
     使用东财 fflow daykline 接口，取最新一天的数据（即当日实时累计）。
     V16.2.4 修复: push2/push2his 域连接级风控时自动切 push2delay 延时镜像域
     （延时 15 分钟，盘后一致；风控面独立）。
@@ -6648,8 +7012,11 @@ def get_em_fund_flow(code: str) -> Dict[str, Any]:
         return {
             "main_net": main_net,
             "main_net_wan": main_net / 10000.0,
-            # V16.2 修复: total_net = 全部五档净额之和（原漏大单/超大单）
-            "total_net": main_net + small_net + medium_net + large_net + super_net,
+            # 东财定义"主力净流入 = 大单净流入 + 超大单净流入"(见本函数 klines 格式注释)，
+            # 故 total_net 应为主力+小单+中单，大单/超大单已被主力包含；原五档全加会把大/超重复计。
+            # （原 V16.2 注释"漏大单/超大单"为误解，2026-08-30 修；如需实盘复核：
+            # 取任一标的对比 main_net 与 large_net+super_net 是否相等）
+            "total_net": main_net + small_net + medium_net,
             "super_in": max(super_net, 0),
             "super_out": max(-super_net, 0),
             "large_in": max(large_net, 0),
@@ -6750,6 +7117,10 @@ def get_index_kline_closes(index_code: str, days: int = 250) -> List[float]:
 @requires_push2
 def get_em_history_fund_flow(code: str, days: int = 120) -> List[Dict[str, Any]]:
     """V12.0: 获取个股历史资金流（替代 TDX get_history_fund_flow）。
+
+    ⚠️ V17.0.13 口径（easy_tdx #55，2026-08-30）：沿用东财 fflow 口径，与
+    get_em_fund_flow / push2 f137+f140 一致。勿回退 easy_tdx 原生历史资金流
+    （0x0fb5 逐笔聚合，与东财/同花顺主力净流入不可比）。
 
     使用东财 push2 fflow daykline 接口，取最近 N 天的日级数据。
 

@@ -255,3 +255,47 @@ def test_calc_trading_day_expiry(tmp_path, monkeypatch, fake_time, expect_date):
     expiry = sc._calc_trading_day_expiry()
     expire_dt = real_dt.fromtimestamp(expiry)
     assert expire_dt.strftime("%Y-%m-%d %H:%M") == f"{expect_date} 09:30"
+
+
+# ═══════════════════════════════════════════════════════════
+# V17.0.26: make_valid_if 边界回归（off-by-one 静默缺陷）
+# ═══════════════════════════════════════════════════════════
+@pytest.mark.parametrize(
+    "value,min_size,expect",
+    [
+        # min_size=0（默认）：只拒绝空容器
+        ([], 0, False),
+        ([{"a": 1}], 0, True),
+        ({}, 0, False),
+        ({"a": 1}, 0, True),
+        # min_size=1：语义 = 「最少需要 1 条」→ 恰好 1 条**必须**有效
+        #   （V17.0.26 前实现为 len<=min_size 拒绝，使 1 条记录永不入缓存，
+        #    与全部调用点注释「至少 1 只股票才缓存」不符）
+        ([], 1, False),
+        ([{"a": 1}], 1, True),
+        ({"a": 1}, 1, True),
+        # min_size=2：1 条不足，2 条有效
+        ([{"a": 1}], 2, False),
+        ([{"a": 1}, {"a": 2}], 2, True),
+        # None 恒定拒绝
+        (None, 0, False),
+    ],
+)
+def test_make_valid_if_min_size_boundary(value, min_size, expect):
+    """min_size=N 语义必须是「至少 N 条」，而非「至少 N+1 条」。"""
+    import core.stock_cache as sc
+
+    validator = sc.make_valid_if(check_zeros=False, min_size=min_size)
+    assert validator(value) is expect, (
+        f"make_valid_if(min_size={min_size})({value!r}) 应返回 {expect}"
+    )
+
+
+def test_make_valid_if_rejects_all_zero_dict():
+    """check_zeros=True 时全零 dict 仍须拒绝（保持原语义）。"""
+    import core.stock_cache as sc
+
+    v = sc.make_valid_if()
+    assert v({"a": 0, "b": 0}) is False
+    assert v({"a": 1, "b": 0}) is False  # 含任一 0 即拒绝（V15.2 原语义，不改变）
+    assert v({"a": 1, "b": 2}) is True

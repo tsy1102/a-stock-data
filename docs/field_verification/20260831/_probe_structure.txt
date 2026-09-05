@@ -1,0 +1,623 @@
+=== raw_tencent.json structure ===
+type=dict; top-level keys/len: ['stocks']
+root.stocks -> dict len=20
+root.stocks.600519 -> dict len=3
+root.stocks.600519.url -> str len=30
+root.stocks.600519.n_fields -> int
+root.stocks.600519.fields -> list len=88
+root.stocks.600519.fields[] len=88; elem0 type=str
+  sample elem0 = '1'
+root.stocks.601288 -> dict len=3
+root.stocks.601288.url -> str len=30
+root.stocks.601288.n_fields -> int
+root.stocks.601288.fields -> list len=88
+root.stocks.601288.fields[] len=88; elem0 type=str
+  sample elem0 = '1'
+root.stocks.600309 -> dict len=3
+root.stocks.600309.url -> str len=30
+root.stocks.600309.n_fields -> int
+root.stocks.600309.fields -> list len=88
+root.stocks.600309.fields[] len=88; elem0 type=str
+  sample elem0 = '1'
+root.stocks.600675 -> dict len=3
+root.stocks.600675.url -> str len=30
+root.stocks.600675.n_fields -> int
+root.stocks.600675.fields -> list len=88
+root.stocks.600675.fields[] len=88; elem0 type=str
+  sample elem0 = '1'
+root.stocks.000568 -> dict len=3
+root.stocks.000568.url -> str len=30
+root.stocks.000568.n_fields -> int
+root.stocks.000568.fields -> list len=88
+root.stocks.000568.fields[] len=88; elem0 type=str
+  sample elem0 = '51'
+root.stocks.000007 -> dict len=3
+root.stocks.000007.url -> str len=30
+root.stocks.000007.n_fields -> int
+root.stocks.000007.fields -> list len=88
+root.stocks.000007.fields[] len=88; elem0 type=str
+  sample elem0 = '51'
+root.stocks.000037 -> dict len=3
+root.stocks.000037.url -> str len=30
+root.stocks.000037.n_fields -> int
+root.stocks.000037.fields -> list len=88
+root.stocks.000037.fields[] len=88; elem0 type=str
+  sample elem0 = '51'
+root.stocks.002034 -> dict len=3
+root.stocks.002034.url -> str len=30
+root.stocks.002034.n_fields -> int
+root.stocks.002034.fields -> list len=88
+root.stocks.002034.fields[] len=88; elem0 type=str
+  sample elem0 = '51'
+
+=== raw_fuyao.json structure ===
+type=dict; top-level keys/len: ['stocks', 'market', 'probe_trading_day', 'date_ms']
+root.stocks -> dict len=20
+root.stocks.600519 -> dict len=5
+root.stocks.600519.snapshot -> dict len=11
+root.stocks.600519.snapshot.thscode -> str len=9
+root.stocks.600519.snapshot.ticker -> str len=6
+root.stocks.600519.snapshot.volume -> int
+root.stocks.600519.snapshot.turnover -> int
+root.stocks.600519.snapshot.last_price -> float
+root.stocks.600519.snapshot.price_change -> float
+root.stocks.600519.snapshot.price_change_ratio_pct -> float
+root.stocks.600519.snapshot.open_price -> float
+root.stocks.600519.valuation -> dict len=8
+root.stocks.600519.valuation.thscode -> str len=9
+root.stocks.600519.valuation.ticker -> str len=6
+root.stocks.600519.valuation.name -> str len=4
+root.stocks.600519.valuation.pe_ttm -> float
+root.stocks.600519.valuation.pe_mrq -> float
+root.stocks.600519.valuation.pb_mrq -> float
+root.stocks.600519.valuation.ps_ttm -> float
+root.stocks.600519.valuation.pcf_ttm -> float
+root.stocks.600519.auction_final -> dict len=15
+root.stocks.600519.auction_final.thscode -> str len=9
+root.stocks.600519.auction_final.ticker -> str len=6
+root.stocks.600519.auction_final.name -> str len=4
+root.stocks.600519.auction_final.auction_price -> float
+root.stocks.600519.auction_final.auction_pct -> float
+root.stocks.600519.auction_final.auction_volume -> float
+root.stocks.600519.auction_final.auction_amount -> float
+root.stocks.600519.auction_final.auction_unmatched -> float
+root.stocks.600519.fin_indicators -> dict len=5
+root.stocks.600519.fin_indicators.growth -> dict len=5
+root.stocks.600519.fin_indicators.growth.calculate_operating_income_yoy_growth_ratio -> str len=10
+root.stocks.600519.fin_indicators.growth.calculate_operating_profit_yoy_growth_ratio -> str len=11
+root.stocks.600519.fin_indicators.growth.total_assets_growth_ratio -> str len=6
+root.stocks.600519.fin_indicators.growth.fixed_asset_invest_expansion_ratio -> str len=10
+root.stocks.600519.fin_indicators.growth.calculate_parent_holder_net_profit_yoy_growth_ratio -> str len=11
+root.stocks.600519.fin_indicators.profitability -> dict len=5
+root.stocks.600519.fin_indicators.profitability.total_assets_net_ratio -> str len=7
+root.stocks.600519.fin_indicators.profitability.index_deduct_weighted_avg_roe -> str len=7
+root.stocks.600519.fin_indicators.profitability.sale_gross_margin -> str len=7
+root.stocks.600519.fin_indicators.profitability.sale_net_interest_ratio -> str len=7
+root.stocks.600519.fin_indicators.profitability.index_weighted_avg_roe -> str len=7
+root.stocks.600519.fin_indicators.solvency -> dict len=5
+root.stocks.600519.fin_indicators.solvency.current_ratio -> str len=6
+root.stocks.600519.fin_indicators.solvency.cash_ratio -> str len=12
+root.stocks.600519.fin_indicators.solvency.quick_ratio -> str len=6
+root.stocks.600519.fin_indicators.solvency.earned_interest_multiple -> NoneType
+root.stocks.600519.fin_indicators.solvency.assets_debt_ratio -> str len=7
+root.stocks.600519.fin_indicators.operation -> dict len=5
+root.stocks.600519.fin_indicators.operation.total_assets_turnover_ratio -> str len=6
+root.stocks.600519.fin_indicators.operation.inventory_turnover_ratio -> str len=6
+root.stocks.600519.fin_indicators.operation.long_term_debt_equity_ratio -> str len=10
+root.stocks.600519.fin_indicators.operation.current_assets_turnover_ratio -> str len=6
+root.stocks.600519.fin_indicators.operation.receive_account_turnover_ratio -> str len=10
+root.stocks.600519.fin_indicators.cash-flow -> dict len=4
+root.stocks.600519.fin_indicators.cash-flow.net_profit_cash_content -> str len=12
+root.stocks.600519.fin_indicators.cash-flow.cash_operating_index -> str len=10
+root.stocks.600519.fin_indicators.cash-flow.operating_cash_flow_net_divide_income -> str len=7
+root.stocks.600519.fin_indicators.cash-flow.cash_meet_invest_ratio -> str len=10
+root.stocks.600519.fin_report -> str len=6
+root.stocks.601288 -> dict len=5
+root.stocks.601288.snapshot -> dict len=11
+root.stocks.601288.snapshot.thscode -> str len=9
+root.stocks.601288.snapshot.ticker -> str len=6
+root.stocks.601288.snapshot.volume -> int
+root.stocks.601288.snapshot.turnover -> int
+root.stocks.601288.snapshot.last_price -> float
+root.stocks.601288.snapshot.price_change -> float
+root.stocks.601288.snapshot.price_change_ratio_pct -> float
+root.stocks.601288.snapshot.open_price -> float
+root.stocks.601288.valuation -> dict len=8
+root.stocks.601288.valuation.thscode -> str len=9
+root.stocks.601288.valuation.ticker -> str len=6
+root.stocks.601288.valuation.name -> str len=4
+root.stocks.601288.valuation.pe_ttm -> float
+root.stocks.601288.valuation.pe_mrq -> float
+root.stocks.601288.valuation.pb_mrq -> float
+root.stocks.601288.valuation.ps_ttm -> float
+root.stocks.601288.valuation.pcf_ttm -> float
+root.stocks.601288.auction_final -> dict len=15
+root.stocks.601288.auction_final.thscode -> str len=9
+root.stocks.601288.auction_final.ticker -> str len=6
+root.stocks.601288.auction_final.name -> str len=4
+root.stocks.601288.auction_final.auction_price -> float
+root.stocks.601288.auction_final.auction_pct -> float
+root.stocks.601288.auction_final.auction_volume -> float
+root.stocks.601288.auction_final.auction_amount -> int
+root.stocks.601288.auction_final.auction_unmatched -> float
+root.stocks.601288.fin_indicators -> dict len=5
+root.stocks.601288.fin_indicators.growth -> dict len=5
+root.stocks.601288.fin_indicators.growth.calculate_operating_income_yoy_growth_ratio -> str len=11
+root.stocks.601288.fin_indicators.growth.calculate_operating_profit_yoy_growth_ratio -> str len=11
+root.stocks.601288.fin_indicators.growth.total_assets_growth_ratio -> str len=6
+root.stocks.601288.fin_indicators.growth.fixed_asset_invest_expansion_ratio -> str len=10
+root.stocks.601288.fin_indicators.growth.calculate_parent_holder_net_profit_yoy_growth_ratio -> str len=10
+root.stocks.601288.fin_indicators.profitability -> dict len=5
+root.stocks.601288.fin_indicators.profitability.total_assets_net_ratio -> str len=6
+root.stocks.601288.fin_indicators.profitability.index_deduct_weighted_avg_roe -> str len=6
+root.stocks.601288.fin_indicators.profitability.sale_gross_margin -> NoneType
+root.stocks.601288.fin_indicators.profitability.sale_net_interest_ratio -> str len=7
+root.stocks.601288.fin_indicators.profitability.index_weighted_avg_roe -> str len=6
+root.stocks.601288.fin_indicators.solvency -> dict len=5
+root.stocks.601288.fin_indicators.solvency.current_ratio -> NoneType
+root.stocks.601288.fin_indicators.solvency.cash_ratio -> NoneType
+root.stocks.601288.fin_indicators.solvency.quick_ratio -> NoneType
+root.stocks.601288.fin_indicators.solvency.earned_interest_multiple -> NoneType
+root.stocks.601288.fin_indicators.solvency.assets_debt_ratio -> str len=7
+root.stocks.601288.fin_indicators.operation -> dict len=5
+root.stocks.601288.fin_indicators.operation.total_assets_turnover_ratio -> str len=6
+root.stocks.601288.fin_indicators.operation.inventory_turnover_ratio -> NoneType
+root.stocks.601288.fin_indicators.operation.long_term_debt_equity_ratio -> str len=10
+root.stocks.601288.fin_indicators.operation.current_assets_turnover_ratio -> NoneType
+root.stocks.601288.fin_indicators.operation.receive_account_turnover_ratio -> NoneType
+root.stocks.601288.fin_indicators.cash-flow -> dict len=4
+root.stocks.601288.fin_indicators.cash-flow.net_profit_cash_content -> str len=12
+root.stocks.601288.fin_indicators.cash-flow.cash_operating_index -> str len=10
+root.stocks.601288.fin_indicators.cash-flow.operating_cash_flow_net_divide_income -> str len=7
+root.stocks.601288.fin_indicators.cash-flow.cash_meet_invest_ratio -> str len=10
+root.stocks.601288.fin_report -> str len=6
+root.stocks.600309 -> dict len=5
+root.stocks.600309.snapshot -> dict len=11
+root.stocks.600309.snapshot.thscode -> str len=9
+root.stocks.600309.snapshot.ticker -> str len=6
+root.stocks.600309.snapshot.volume -> int
+root.stocks.600309.snapshot.turnover -> int
+root.stocks.600309.snapshot.last_price -> float
+root.stocks.600309.snapshot.price_change -> float
+root.stocks.600309.snapshot.price_change_ratio_pct -> float
+root.stocks.600309.snapshot.open_price -> float
+root.stocks.600309.valuation -> dict len=8
+root.stocks.600309.valuation.thscode -> str len=9
+root.stocks.600309.valuation.ticker -> str len=6
+root.stocks.600309.valuation.name -> str len=4
+root.stocks.600309.valuation.pe_ttm -> float
+root.stocks.600309.valuation.pe_mrq -> float
+root.stocks.600309.valuation.pb_mrq -> float
+root.stocks.600309.valuation.ps_ttm -> float
+root.stocks.600309.valuation.pcf_ttm -> float
+root.stocks.600309.auction_final -> dict len=15
+root.stocks.600309.auction_final.thscode -> str len=9
+root.stocks.600309.auction_final.ticker -> str len=6
+root.stocks.600309.auction_final.name -> str len=4
+root.stocks.600309.auction_final.auction_price -> float
+root.stocks.600309.auction_final.auction_pct -> float
+root.stocks.600309.auction_final.auction_volume -> float
+root.stocks.600309.auction_final.auction_amount -> int
+root.stocks.600309.auction_final.auction_unmatched -> float
+root.stocks.600309.fin_indicators -> dict len=5
+root.stocks.600309.fin_indicators.growth -> dict len=5
+root.stocks.600309.fin_indicators.growth.calculate_operating_income_yoy_growth_ratio -> str len=11
+root.stocks.600309.fin_indicators.growth.calculate_operating_profit_yoy_growth_ratio -> str len=11
+root.stocks.600309.fin_indicators.growth.total_assets_growth_ratio -> str len=6
+root.stocks.600309.fin_indicators.growth.fixed_asset_invest_expansion_ratio -> str len=10
+root.stocks.600309.fin_indicators.growth.calculate_parent_holder_net_profit_yoy_growth_ratio -> str len=11
+root.stocks.600309.fin_indicators.profitability -> dict len=5
+root.stocks.600309.fin_indicators.profitability.total_assets_net_ratio -> str len=6
+root.stocks.600309.fin_indicators.profitability.index_deduct_weighted_avg_roe -> str len=6
+root.stocks.600309.fin_indicators.profitability.sale_gross_margin -> str len=7
+root.stocks.600309.fin_indicators.profitability.sale_net_interest_ratio -> str len=6
+root.stocks.600309.fin_indicators.profitability.index_weighted_avg_roe -> str len=6
+root.stocks.600309.fin_indicators.solvency -> dict len=5
+root.stocks.600309.fin_indicators.solvency.current_ratio -> str len=6
+root.stocks.600309.fin_indicators.solvency.cash_ratio -> str len=11
+root.stocks.600309.fin_indicators.solvency.quick_ratio -> str len=6
+root.stocks.600309.fin_indicators.solvency.earned_interest_multiple -> str len=7
+root.stocks.600309.fin_indicators.solvency.assets_debt_ratio -> str len=7
+root.stocks.600309.fin_indicators.operation -> dict len=5
+root.stocks.600309.fin_indicators.operation.total_assets_turnover_ratio -> str len=6
+root.stocks.600309.fin_indicators.operation.inventory_turnover_ratio -> str len=6
+root.stocks.600309.fin_indicators.operation.long_term_debt_equity_ratio -> str len=11
+root.stocks.600309.fin_indicators.operation.current_assets_turnover_ratio -> str len=6
+root.stocks.600309.fin_indicators.operation.receive_account_turnover_ratio -> str len=6
+root.stocks.600309.fin_indicators.cash-flow -> dict len=4
+root.stocks.600309.fin_indicators.cash-flow.net_profit_cash_content -> str len=12
+root.stocks.600309.fin_indicators.cash-flow.cash_operating_index -> str len=10
+root.stocks.600309.fin_indicators.cash-flow.operating_cash_flow_net_divide_income -> str len=6
+root.stocks.600309.fin_indicators.cash-flow.cash_meet_invest_ratio -> str len=10
+root.stocks.600309.fin_report -> str len=6
+root.stocks.600675 -> dict len=5
+root.stocks.600675.snapshot -> dict len=11
+root.stocks.600675.snapshot.thscode -> str len=9
+root.stocks.600675.snapshot.ticker -> str len=6
+root.stocks.600675.snapshot.volume -> int
+root.stocks.600675.snapshot.turnover -> int
+root.stocks.600675.snapshot.last_price -> float
+root.stocks.600675.snapshot.price_change -> float
+root.stocks.600675.snapshot.price_change_ratio_pct -> float
+root.stocks.600675.snapshot.open_price -> float
+root.stocks.600675.valuation -> dict len=8
+root.stocks.600675.valuation.thscode -> str len=9
+root.stocks.600675.valuation.ticker -> str len=6
+root.stocks.600675.valuation.name -> str len=4
+root.stocks.600675.valuation.pe_ttm -> float
+root.stocks.600675.valuation.pe_mrq -> float
+root.stocks.600675.valuation.pb_mrq -> float
+root.stocks.600675.valuation.ps_ttm -> float
+root.stocks.600675.valuation.pcf_ttm -> float
+root.stocks.600675.auction_final -> dict len=15
+root.stocks.600675.auction_final.thscode -> str len=9
+root.stocks.600675.auction_final.ticker -> str len=6
+root.stocks.600675.auction_final.name -> str len=4
+root.stocks.600675.auction_final.auction_price -> float
+root.stocks.600675.auction_final.auction_pct -> float
+root.stocks.600675.auction_final.auction_volume -> float
+root.stocks.600675.auction_final.auction_amount -> float
+root.stocks.600675.auction_final.auction_unmatched -> float
+root.stocks.600675.fin_indicators -> dict len=5
+root.stocks.600675.fin_indicators.growth -> dict len=5
+root.stocks.600675.fin_indicators.growth.calculate_operating_income_yoy_growth_ratio -> str len=12
+root.stocks.600675.fin_indicators.growth.calculate_operating_profit_yoy_growth_ratio -> str len=13
+root.stocks.600675.fin_indicators.growth.total_assets_growth_ratio -> str len=7
+root.stocks.600675.fin_indicators.growth.fixed_asset_invest_expansion_ratio -> str len=11
+root.stocks.600675.fin_indicators.growth.calculate_parent_holder_net_profit_yoy_growth_ratio -> str len=13
+root.stocks.600675.fin_indicators.profitability -> dict len=5
+root.stocks.600675.fin_indicators.profitability.total_assets_net_ratio -> str len=7
+root.stocks.600675.fin_indicators.profitability.index_deduct_weighted_avg_roe -> str len=7
+root.stocks.600675.fin_indicators.profitability.sale_gross_margin -> str len=7
+root.stocks.600675.fin_indicators.profitability.sale_net_interest_ratio -> str len=7
+root.stocks.600675.fin_indicators.profitability.index_weighted_avg_roe -> str len=7
+root.stocks.600675.fin_indicators.solvency -> dict len=5
+root.stocks.600675.fin_indicators.solvency.current_ratio -> str len=6
+root.stocks.600675.fin_indicators.solvency.cash_ratio -> str len=11
+root.stocks.600675.fin_indicators.solvency.quick_ratio -> str len=6
+root.stocks.600675.fin_indicators.solvency.earned_interest_multiple -> str len=6
+root.stocks.600675.fin_indicators.solvency.assets_debt_ratio -> str len=7
+root.stocks.600675.fin_indicators.operation -> dict len=5
+root.stocks.600675.fin_indicators.operation.total_assets_turnover_ratio -> str len=6
+root.stocks.600675.fin_indicators.operation.inventory_turnover_ratio -> str len=6
+root.stocks.600675.fin_indicators.operation.long_term_debt_equity_ratio -> str len=12
+root.stocks.600675.fin_indicators.operation.current_assets_turnover_ratio -> str len=6
+root.stocks.600675.fin_indicators.operation.receive_account_turnover_ratio -> str len=6
+root.stocks.600675.fin_indicators.cash-flow -> dict len=4
+root.stocks.600675.fin_indicators.cash-flow.net_profit_cash_content -> str len=12
+root.stocks.600675.fin_indicators.cash-flow.cash_operating_index -> str len=11
+root.stocks.600675.fin_indicators.cash-flow.operating_cash_flow_net_divide_income -> str len=8
+root.stocks.600675.fin_indicators.cash-flow.cash_meet_invest_ratio -> str len=10
+root.stocks.600675.fin_report -> str len=6
+root.stocks.000568 -> dict len=5
+root.stocks.000568.snapshot -> dict len=11
+root.stocks.000568.snapshot.thscode -> str len=9
+root.stocks.000568.snapshot.ticker -> str len=6
+root.stocks.000568.snapshot.volume -> int
+root.stocks.000568.snapshot.turnover -> int
+root.stocks.000568.snapshot.last_price -> int
+root.stocks.000568.snapshot.price_change -> float
+root.stocks.000568.snapshot.price_change_ratio_pct -> float
+root.stocks.000568.snapshot.open_price -> float
+root.stocks.000568.valuation -> dict len=8
+root.stocks.000568.valuation.thscode -> str len=9
+root.stocks.000568.valuation.ticker -> str len=6
+root.stocks.000568.valuation.name -> str len=4
+root.stocks.000568.valuation.pe_ttm -> float
+root.stocks.000568.valuation.pe_mrq -> float
+root.stocks.000568.valuation.pb_mrq -> float
+root.stocks.000568.valuation.ps_ttm -> float
+root.stocks.000568.valuation.pcf_ttm -> float
+root.stocks.000568.auction_final -> dict len=15
+root.stocks.000568.auction_final.thscode -> str len=9
+root.stocks.000568.auction_final.ticker -> str len=6
+root.stocks.000568.auction_final.name -> str len=4
+root.stocks.000568.auction_final.auction_price -> float
+root.stocks.000568.auction_final.auction_pct -> float
+root.stocks.000568.auction_final.auction_volume -> float
+root.stocks.000568.auction_final.auction_amount -> float
+root.stocks.000568.auction_final.auction_unmatched -> float
+root.stocks.000568.fin_indicators -> dict len=5
+root.stocks.000568.fin_indicators.growth -> dict len=5
+root.stocks.000568.fin_indicators.growth.calculate_operating_income_yoy_growth_ratio -> str len=12
+root.stocks.000568.fin_indicators.growth.calculate_operating_profit_yoy_growth_ratio -> str len=12
+root.stocks.000568.fin_indicators.growth.total_assets_growth_ratio -> str len=7
+root.stocks.000568.fin_indicators.growth.fixed_asset_invest_expansion_ratio -> str len=11
+root.stocks.000568.fin_indicators.growth.calculate_parent_holder_net_profit_yoy_growth_ratio -> str len=12
+root.stocks.000568.fin_indicators.profitability -> dict len=5
+root.stocks.000568.fin_indicators.profitability.total_assets_net_ratio -> str len=6
+root.stocks.000568.fin_indicators.profitability.index_deduct_weighted_avg_roe -> str len=6
+root.stocks.000568.fin_indicators.profitability.sale_gross_margin -> str len=7
+root.stocks.000568.fin_indicators.profitability.sale_net_interest_ratio -> str len=7
+root.stocks.000568.fin_indicators.profitability.index_weighted_avg_roe -> str len=6
+root.stocks.000568.fin_indicators.solvency -> dict len=5
+root.stocks.000568.fin_indicators.solvency.current_ratio -> str len=6
+root.stocks.000568.fin_indicators.solvency.cash_ratio -> str len=12
+root.stocks.000568.fin_indicators.solvency.quick_ratio -> str len=6
+root.stocks.000568.fin_indicators.solvency.earned_interest_multiple -> NoneType
+root.stocks.000568.fin_indicators.solvency.assets_debt_ratio -> str len=7
+root.stocks.000568.fin_indicators.operation -> dict len=5
+root.stocks.000568.fin_indicators.operation.total_assets_turnover_ratio -> str len=6
+root.stocks.000568.fin_indicators.operation.inventory_turnover_ratio -> str len=6
+root.stocks.000568.fin_indicators.operation.long_term_debt_equity_ratio -> str len=10
+root.stocks.000568.fin_indicators.operation.current_assets_turnover_ratio -> str len=6
+root.stocks.000568.fin_indicators.operation.receive_account_turnover_ratio -> str len=8
+root.stocks.000568.fin_indicators.cash-flow -> dict len=4
+root.stocks.000568.fin_indicators.cash-flow.net_profit_cash_content -> str len=11
+root.stocks.000568.fin_indicators.cash-flow.cash_operating_index -> str len=10
+root.stocks.000568.fin_indicators.cash-flow.operating_cash_flow_net_divide_income -> str len=7
+root.stocks.000568.fin_indicators.cash-flow.cash_meet_invest_ratio -> str len=10
+root.stocks.000568.fin_report -> str len=6
+root.stocks.000007 -> dict len=5
+root.stocks.000007.snapshot -> dict len=11
+root.stocks.000007.snapshot.thscode -> str len=9
+root.stocks.000007.snapshot.ticker -> str len=6
+root.stocks.000007.snapshot.volume -> int
+root.stocks.000007.snapshot.turnover -> int
+root.stocks.000007.snapshot.last_price -> float
+root.stocks.000007.snapshot.price_change -> float
+root.stocks.000007.snapshot.price_change_ratio_pct -> float
+root.stocks.000007.snapshot.open_price -> float
+root.stocks.000007.valuation -> dict len=8
+root.stocks.000007.valuation.thscode -> str len=9
+root.stocks.000007.valuation.ticker -> str len=6
+root.stocks.000007.valuation.name -> str len=3
+root.stocks.000007.valuation.pe_ttm -> float
+root.stocks.000007.valuation.pe_mrq -> float
+root.stocks.000007.valuation.pb_mrq -> float
+root.stocks.000007.valuation.ps_ttm -> float
+root.stocks.000007.valuation.pcf_ttm -> float
+root.stocks.000007.auction_final -> dict len=15
+root.stocks.000007.auction_final.thscode -> str len=9
+root.stocks.000007.auction_final.ticker -> str len=6
+root.stocks.000007.auction_final.name -> str len=3
+root.stocks.000007.auction_final.auction_price -> float
+root.stocks.000007.auction_final.auction_pct -> float
+root.stocks.000007.auction_final.auction_volume -> float
+root.stocks.000007.auction_final.auction_amount -> float
+root.stocks.000007.auction_final.auction_unmatched -> float
+root.stocks.000007.fin_indicators -> dict len=5
+root.stocks.000007.fin_indicators.growth -> dict len=5
+root.stocks.000007.fin_indicators.growth.calculate_operating_income_yoy_growth_ratio -> str len=10
+root.stocks.000007.fin_indicators.growth.calculate_operating_profit_yoy_growth_ratio -> str len=13
+root.stocks.000007.fin_indicators.growth.total_assets_growth_ratio -> str len=8
+root.stocks.000007.fin_indicators.growth.fixed_asset_invest_expansion_ratio -> str len=11
+root.stocks.000007.fin_indicators.growth.calculate_parent_holder_net_profit_yoy_growth_ratio -> str len=13
+root.stocks.000007.fin_indicators.profitability -> dict len=5
+root.stocks.000007.fin_indicators.profitability.total_assets_net_ratio -> str len=7
+root.stocks.000007.fin_indicators.profitability.index_deduct_weighted_avg_roe -> str len=7
+root.stocks.000007.fin_indicators.profitability.sale_gross_margin -> str len=7
+root.stocks.000007.fin_indicators.profitability.sale_net_interest_ratio -> str len=7
+root.stocks.000007.fin_indicators.profitability.index_weighted_avg_roe -> str len=7
+root.stocks.000007.fin_indicators.solvency -> dict len=5
+root.stocks.000007.fin_indicators.solvency.current_ratio -> str len=6
+root.stocks.000007.fin_indicators.solvency.cash_ratio -> str len=11
+root.stocks.000007.fin_indicators.solvency.quick_ratio -> str len=6
+root.stocks.000007.fin_indicators.solvency.earned_interest_multiple -> NoneType
+root.stocks.000007.fin_indicators.solvency.assets_debt_ratio -> str len=7
+root.stocks.000007.fin_indicators.operation -> dict len=5
+root.stocks.000007.fin_indicators.operation.total_assets_turnover_ratio -> str len=6
+root.stocks.000007.fin_indicators.operation.inventory_turnover_ratio -> str len=6
+root.stocks.000007.fin_indicators.operation.long_term_debt_equity_ratio -> str len=10
+root.stocks.000007.fin_indicators.operation.current_assets_turnover_ratio -> str len=6
+root.stocks.000007.fin_indicators.operation.receive_account_turnover_ratio -> str len=6
+root.stocks.000007.fin_indicators.cash-flow -> dict len=4
+root.stocks.000007.fin_indicators.cash-flow.net_profit_cash_content -> str len=14
+root.stocks.000007.fin_indicators.cash-flow.cash_operating_index -> str len=12
+root.stocks.000007.fin_indicators.cash-flow.operating_cash_flow_net_divide_income -> str len=7
+root.stocks.000007.fin_indicators.cash-flow.cash_meet_invest_ratio -> str len=11
+root.stocks.000007.fin_report -> str len=6
+root.stocks.000037 -> dict len=5
+root.stocks.000037.snapshot -> dict len=11
+root.stocks.000037.snapshot.thscode -> str len=9
+root.stocks.000037.snapshot.ticker -> str len=6
+root.stocks.000037.snapshot.volume -> int
+root.stocks.000037.snapshot.turnover -> int
+root.stocks.000037.snapshot.last_price -> float
+root.stocks.000037.snapshot.price_change -> float
+root.stocks.000037.snapshot.price_change_ratio_pct -> float
+root.stocks.000037.snapshot.open_price -> float
+root.stocks.000037.valuation -> dict len=8
+root.stocks.000037.valuation.thscode -> str len=9
+root.stocks.000037.valuation.ticker -> str len=6
+root.stocks.000037.valuation.name -> str len=4
+root.stocks.000037.valuation.pe_ttm -> float
+root.stocks.000037.valuation.pe_mrq -> float
+root.stocks.000037.valuation.pb_mrq -> float
+root.stocks.000037.valuation.ps_ttm -> float
+root.stocks.000037.valuation.pcf_ttm -> float
+root.stocks.000037.auction_final -> dict len=15
+root.stocks.000037.auction_final.thscode -> str len=9
+root.stocks.000037.auction_final.ticker -> str len=6
+root.stocks.000037.auction_final.name -> str len=4
+root.stocks.000037.auction_final.auction_price -> float
+root.stocks.000037.auction_final.auction_pct -> float
+root.stocks.000037.auction_final.auction_volume -> float
+root.stocks.000037.auction_final.auction_amount -> float
+root.stocks.000037.auction_final.auction_unmatched -> float
+root.stocks.000037.fin_indicators -> dict len=5
+root.stocks.000037.fin_indicators.growth -> dict len=5
+root.stocks.000037.fin_indicators.growth.calculate_operating_income_yoy_growth_ratio -> str len=11
+root.stocks.000037.fin_indicators.growth.calculate_operating_profit_yoy_growth_ratio -> str len=12
+root.stocks.000037.fin_indicators.growth.total_assets_growth_ratio -> str len=7
+root.stocks.000037.fin_indicators.growth.fixed_asset_invest_expansion_ratio -> str len=11
+root.stocks.000037.fin_indicators.growth.calculate_parent_holder_net_profit_yoy_growth_ratio -> str len=12
+root.stocks.000037.fin_indicators.profitability -> dict len=5
+root.stocks.000037.fin_indicators.profitability.total_assets_net_ratio -> str len=6
+root.stocks.000037.fin_indicators.profitability.index_deduct_weighted_avg_roe -> str len=6
+root.stocks.000037.fin_indicators.profitability.sale_gross_margin -> str len=7
+root.stocks.000037.fin_indicators.profitability.sale_net_interest_ratio -> str len=7
+root.stocks.000037.fin_indicators.profitability.index_weighted_avg_roe -> str len=6
+root.stocks.000037.fin_indicators.solvency -> dict len=5
+root.stocks.000037.fin_indicators.solvency.current_ratio -> str len=6
+root.stocks.000037.fin_indicators.solvency.cash_ratio -> str len=12
+root.stocks.000037.fin_indicators.solvency.quick_ratio -> str len=6
+root.stocks.000037.fin_indicators.solvency.earned_interest_multiple -> str len=6
+root.stocks.000037.fin_indicators.solvency.assets_debt_ratio -> str len=7
+root.stocks.000037.fin_indicators.operation -> dict len=5
+root.stocks.000037.fin_indicators.operation.total_assets_turnover_ratio -> str len=6
+root.stocks.000037.fin_indicators.operation.inventory_turnover_ratio -> str len=6
+root.stocks.000037.fin_indicators.operation.long_term_debt_equity_ratio -> str len=11
+root.stocks.000037.fin_indicators.operation.current_assets_turnover_ratio -> str len=6
+root.stocks.000037.fin_indicators.operation.receive_account_turnover_ratio -> str len=6
+root.stocks.000037.fin_indicators.cash-flow -> dict len=4
+root.stocks.000037.fin_indicators.cash-flow.net_profit_cash_content -> str len=13
+root.stocks.000037.fin_indicators.cash-flow.cash_operating_index -> str len=11
+root.stocks.000037.fin_indicators.cash-flow.operating_cash_flow_net_divide_income -> str len=8
+root.stocks.000037.fin_indicators.cash-flow.cash_meet_invest_ratio -> str len=11
+root.stocks.000037.fin_report -> str len=6
+root.stocks.002034 -> dict len=5
+root.stocks.002034.snapshot -> dict len=11
+root.stocks.002034.snapshot.thscode -> str len=9
+root.stocks.002034.snapshot.ticker -> str len=6
+root.stocks.002034.snapshot.volume -> int
+root.stocks.002034.snapshot.turnover -> int
+root.stocks.002034.snapshot.last_price -> float
+root.stocks.002034.snapshot.price_change -> float
+root.stocks.002034.snapshot.price_change_ratio_pct -> float
+root.stocks.002034.snapshot.open_price -> float
+root.stocks.002034.valuation -> dict len=8
+root.stocks.002034.valuation.thscode -> str len=9
+root.stocks.002034.valuation.ticker -> str len=6
+root.stocks.002034.valuation.name -> str len=4
+root.stocks.002034.valuation.pe_ttm -> float
+root.stocks.002034.valuation.pe_mrq -> float
+root.stocks.002034.valuation.pb_mrq -> float
+root.stocks.002034.valuation.ps_ttm -> float
+root.stocks.002034.valuation.pcf_ttm -> float
+root.stocks.002034.auction_final -> dict len=15
+root.stocks.002034.auction_final.thscode -> str len=9
+root.stocks.002034.auction_final.ticker -> str len=6
+root.stocks.002034.auction_final.name -> str len=4
+root.stocks.002034.auction_final.auction_price -> float
+root.stocks.002034.auction_final.auction_pct -> float
+root.stocks.002034.auction_final.auction_volume -> float
+root.stocks.002034.auction_final.auction_amount -> float
+root.stocks.002034.auction_final.auction_unmatched -> float
+root.stocks.002034.fin_indicators -> dict len=5
+root.stocks.002034.fin_indicators.growth -> dict len=5
+root.stocks.002034.fin_indicators.growth.calculate_operating_income_yoy_growth_ratio -> str len=11
+root.stocks.002034.fin_indicators.growth.calculate_operating_profit_yoy_growth_ratio -> str len=11
+root.stocks.002034.fin_indicators.growth.total_assets_growth_ratio -> str len=7
+root.stocks.002034.fin_indicators.growth.fixed_asset_invest_expansion_ratio -> str len=12
+root.stocks.002034.fin_indicators.growth.calculate_parent_holder_net_profit_yoy_growth_ratio -> str len=10
+root.stocks.002034.fin_indicators.profitability -> dict len=5
+root.stocks.002034.fin_indicators.profitability.total_assets_net_ratio -> str len=6
+root.stocks.002034.fin_indicators.profitability.index_deduct_weighted_avg_roe -> str len=6
+root.stocks.002034.fin_indicators.profitability.sale_gross_margin -> str len=7
+root.stocks.002034.fin_indicators.profitability.sale_net_interest_ratio -> str len=7
+root.stocks.002034.fin_indicators.profitability.index_weighted_avg_roe -> str len=6
+root.stocks.002034.fin_indicators.solvency -> dict len=5
+root.stocks.002034.fin_indicators.solvency.current_ratio -> str len=6
+root.stocks.002034.fin_indicators.solvency.cash_ratio -> str len=11
+root.stocks.002034.fin_indicators.solvency.quick_ratio -> str len=6
+root.stocks.002034.fin_indicators.solvency.earned_interest_multiple -> str len=6
+root.stocks.002034.fin_indicators.solvency.assets_debt_ratio -> str len=7
+root.stocks.002034.fin_indicators.operation -> dict len=5
+root.stocks.002034.fin_indicators.operation.total_assets_turnover_ratio -> str len=6
+root.stocks.002034.fin_indicators.operation.inventory_turnover_ratio -> str len=7
+root.stocks.002034.fin_indicators.operation.long_term_debt_equity_ratio -> str len=11
+root.stocks.002034.fin_indicators.operation.current_assets_turnover_ratio -> str len=6
+root.stocks.002034.fin_indicators.operation.receive_account_turnover_ratio -> str len=6
+root.stocks.002034.fin_indicators.cash-flow -> dict len=4
+root.stocks.002034.fin_indicators.cash-flow.net_profit_cash_content -> str len=12
+root.stocks.002034.fin_indicators.cash-flow.cash_operating_index -> str len=10
+root.stocks.002034.fin_indicators.cash-flow.operating_cash_flow_net_divide_income -> str len=7
+root.stocks.002034.fin_indicators.cash-flow.cash_meet_invest_ratio -> str len=10
+root.stocks.002034.fin_report -> str len=6
+root.market -> dict len=9
+root.market.short_term_benchmark -> list len=6
+root.market.short_term_benchmark[] len=6; elem0 type=dict
+root.market.short_term_benchmark[0].thscode -> str len=9
+root.market.short_term_benchmark[0].ticker -> str len=6
+root.market.short_term_benchmark[0].name -> str len=4
+root.market.short_term_benchmark[0].auction_pct -> float
+root.market.short_term_benchmark[0].tags -> list len=2
+root.market.short_term_benchmark[0].tags[] len=2; elem0 type=str
+  sample elem0 = '房地产服务'
+root.market.h1_indicators_ready -> bool
+root.market.h1_indicators -> dict len=20
+root.market.h1_indicators.600519 -> dict len=3
+root.market.h1_indicators.600519.ded_weighted_roe -> str len=7
+root.market.h1_indicators.600519.weighted_roe -> str len=7
+root.market.h1_indicators.600519.roa -> str len=7
+root.market.h1_indicators.601288 -> dict len=3
+root.market.h1_indicators.601288.ded_weighted_roe -> str len=6
+root.market.h1_indicators.601288.weighted_roe -> str len=6
+root.market.h1_indicators.601288.roa -> str len=6
+root.market.h1_indicators.600309 -> dict len=3
+root.market.h1_indicators.600309.ded_weighted_roe -> str len=6
+root.market.h1_indicators.600309.weighted_roe -> str len=6
+root.market.h1_indicators.600309.roa -> str len=6
+root.market.h1_indicators.600675 -> dict len=3
+root.market.h1_indicators.600675.ded_weighted_roe -> str len=7
+root.market.h1_indicators.600675.weighted_roe -> str len=7
+root.market.h1_indicators.600675.roa -> str len=7
+root.market.h1_indicators.000568 -> dict len=3
+root.market.h1_indicators.000568.ded_weighted_roe -> str len=6
+root.market.h1_indicators.000568.weighted_roe -> str len=6
+root.market.h1_indicators.000568.roa -> str len=6
+root.market.h1_indicators.000007 -> dict len=3
+root.market.h1_indicators.000007.ded_weighted_roe -> str len=7
+root.market.h1_indicators.000007.weighted_roe -> str len=7
+root.market.h1_indicators.000007.roa -> str len=7
+root.market.h1_indicators.000037 -> dict len=3
+root.market.h1_indicators.000037.ded_weighted_roe -> str len=6
+root.market.h1_indicators.000037.weighted_roe -> str len=6
+root.market.h1_indicators.000037.roa -> str len=6
+root.market.h1_indicators.002034 -> dict len=3
+root.market.h1_indicators.002034.ded_weighted_roe -> str len=6
+root.market.h1_indicators.002034.weighted_roe -> str len=6
+root.market.h1_indicators.002034.roa -> str len=6
+root.market.limit_up_pool -> dict len=3
+root.market.limit_up_pool.total -> int
+root.market.limit_up_pool.count_captured -> int
+root.market.limit_up_pool.item -> list len=86
+root.market.limit_up_pool.item[] len=86; elem0 type=dict
+root.market.limit_up_pool.item[0].thscode -> str len=9
+root.market.limit_up_pool.item[0].ticker -> str len=6
+root.market.limit_up_pool.item[0].name -> str len=3
+root.market.limit_up_pool.item[0].is_st -> bool
+root.market.limit_up_pool.item[0].is_new -> bool
+root.market.limit_up_pool.item[0].last_price -> float
+root.market.limit_up_pool.item[0].price_change_ratio_pct -> int
+root.market.limit_up_pool.item[0].limit_up_time -> str len=5
+root.market.limit_down_pool -> dict len=3
+root.market.limit_down_pool.total -> int
+root.market.limit_down_pool.count_captured -> int
+root.market.limit_down_pool.item -> list len=11
+root.market.limit_down_pool.item[] len=11; elem0 type=dict
+root.market.limit_down_pool.item[0].thscode -> str len=9
+root.market.limit_down_pool.item[0].ticker -> str len=6
+root.market.limit_down_pool.item[0].name -> str len=4
+root.market.limit_down_pool.item[0].last_price -> float
+root.market.limit_down_pool.item[0].price_change_ratio_pct -> float
+root.market.limit_down_pool.item[0].first_limit_time -> str len=5
+root.market.limit_down_pool.item[0].last_limit_time -> str len=5
+root.market.limit_down_pool.item[0].turnover_ratio_pct -> float
+root.market.limit_break_pool -> dict len=3
+root.market.limit_break_pool.total -> int
+root.market.limit_break_pool.count_captured -> int
+root.market.limit_break_pool.item -> list len=30
+root.market.limit_break_pool.item[] len=30; elem0 type=dict
+root.market.limit_break_pool.item[0].thscode -> str len=9
+root.market.limit_break_pool.item[0].ticker -> str len=6
+root.market.limit_break_pool.item[0].name -> str len=4
+root.market.limit_break_pool.item[0].last_price -> float
+root.market.limit_break_pool.item[0].price_change_ratio_pct -> float
+root.market.limit_break_pool.item[0].open_times -> int
+root.market.limit_break_pool.item[0].turnover_ratio_pct -> float
+root.market.limit_break_pool.item[0].turnover -> float
+root.market.anomaly_list -> list len=60
+root.market.anomaly_list[] len=60; elem0 type=dict
+root.market.anomaly_list[0].stock_name -> str len=4
+root.market.anomaly_list[0].analysis_content -> str len=247
+root.market.anomaly_list[0].keyword_list -> list len=3
+root.market.anomaly_list[0].keyword_list[] len=3; elem0 type=str
+  sample elem0 = '医药板块走弱'
+root.market.anomaly_list[0].thscode -> str len=9
+root.market.anomaly_list[0].tag_name -> str len=2
+root.market.dragon_tiger -> list len=0
+root.market.dragon_tiger[] len=0; elem0 type=NA
+root.probe_trading_day -> str len=10
+root.date_ms -> int

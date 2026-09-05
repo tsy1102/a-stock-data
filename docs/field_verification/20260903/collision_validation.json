@@ -1,0 +1,2325 @@
+{
+  "meta": {
+    "generated": "2026-09-03T12:01:58.540944",
+    "dates": [
+      "20260812",
+      "20260813",
+      "20260814",
+      "20260815",
+      "20260819",
+      "20260820",
+      "20260822",
+      "20260824",
+      "20260825",
+      "20260826",
+      "20260827",
+      "20260828",
+      "20260831",
+      "20260901",
+      "20260902"
+    ],
+    "n_dates": 15,
+    "rules": "对撞四铁律:精度对齐/命中率分层/比值族/多日复核/相关性陷阱/ZHB-T1"
+  },
+  "unknown_targets": {
+    "tx[56]": {
+      "n_dates": 15,
+      "n_anchors_scanned": 261,
+      "characterization": {
+        "n_total": 269,
+        "n_dates": 15,
+        "min": -0.22,
+        "max": 1.85,
+        "mean": 1.0324907063197026,
+        "n_distinct": 94,
+        "distinct_sample": [
+          -0.22,
+          -0.21,
+          -0.2,
+          -0.19,
+          -0.18,
+          -0.16,
+          -0.15,
+          0.1,
+          0.12,
+          0.15,
+          0.17,
+          0.19,
+          0.38,
+          0.39,
+          0.4
+        ],
+        "is_integer_enum": false,
+        "per_date_const_frac": 0.0
+      },
+      "best_candidate": [
+        1,
+        "ulist:f29"
+      ],
+      "top": [
+        {
+          "anchor": "ulist:f29",
+          "verdict": "舍入感知精度对齐 L1 (254/269, 15日≥18/20)",
+          "pooled_pa": 1,
+          "pooled_ro": 254,
+          "n_samples": 269,
+          "dates_pa_ge18_20": 0,
+          "dates_ro_ge18_20": 15,
+          "dates_rh_ge18_20": 0,
+          "pooled_exact": 1,
+          "corr_spearman": null,
+          "corr_pearson": null,
+          "ratio_cv": 0.39915708029464725,
+          "ratio_mean": 1.104527559055118
+        },
+        {
+          "anchor": "ulist:f13",
+          "verdict": "存疑/同族(中等命中率,多为巧合)",
+          "pooled_pa": 1,
+          "pooled_ro": 179,
+          "n_samples": 269,
+          "dates_pa_ge18_20": 0,
+          "dates_ro_ge18_20": 0,
+          "dates_rh_ge18_20": 0,
+          "pooled_exact": 1,
+          "corr_spearman": 0.05861337086946512,
+          "corr_pearson": 0.023668492672604558,
+          "ratio_cv": 0.4405530622538474,
+          "ratio_mean": 1.1813432835820896
+        },
+        {
+          "anchor": "ulist:f27",
+          "verdict": "存疑/同族(中等命中率,多为巧合)",
+          "pooled_pa": 1,
+          "pooled_ro": 179,
+          "n_samples": 269,
+          "dates_pa_ge18_20": 0,
+          "dates_ro_ge18_20": 0,
+          "dates_rh_ge18_20": 0,
+          "pooled_exact": 1,
+          "corr_spearman": 0.05861337086946512,
+          "corr_pearson": 0.023668492672604558,
+          "ratio_cv": 0.4405530622538474,
+          "ratio_mean": 1.1813432835820896
+        },
+        {
+          "anchor": "ulist:f98",
+          "verdict": "存疑/同族(中等命中率,多为巧合)",
+          "pooled_pa": 1,
+          "pooled_ro": 128,
+          "n_samples": 265,
+          "dates_pa_ge18_20": 0,
+          "dates_ro_ge18_20": 0,
+          "dates_rh_ge18_20": 0,
+          "pooled_exact": 1,
+          "corr_spearman": -0.14712795941801646,
+          "corr_pearson": -0.1668878960056968,
+          "ratio_cv": 0.7299767129782408,
+          "ratio_mean": 0.6571190476190476
+        },
+        {
+          "anchor": "ulist:f1",
+          "verdict": "存疑/同族(中等命中率,多为巧合)",
+          "pooled_pa": 0,
+          "pooled_ro": 165,
+          "n_samples": 269,
+          "dates_pa_ge18_20": 0,
+          "dates_ro_ge18_20": 0,
+          "dates_rh_ge18_20": 0,
+          "pooled_exact": 0,
+          "corr_spearman": null,
+          "corr_pearson": null,
+          "ratio_cv": 0.39915708029464725,
+          "ratio_mean": 0.552263779527559
+        },
+        {
+          "anchor": "ulist:f97",
+          "verdict": "存疑/同族(中等命中率,多为巧合)",
+          "pooled_pa": 0,
+          "pooled_ro": 125,
+          "n_samples": 265,
+          "dates_pa_ge18_20": 0,
+          "dates_ro_ge18_20": 0,
+          "dates_rh_ge18_20": 0,
+          "pooled_exact": 0,
+          "corr_spearman": -0.08040215694903266,
+          "corr_pearson": -0.08877253695024612,
+          "ratio_cv": 0.6709552151088826,
+          "ratio_mean": 0.7265047619047619
+        },
+        {
+          "anchor": "ulist:f147",
+          "verdict": "存疑/同族(中等命中率,多为巧合)",
+          "pooled_pa": 0,
+          "pooled_ro": 171,
+          "n_samples": 269,
+          "dates_pa_ge18_20": 0,
+          "dates_ro_ge18_20": 0,
+          "dates_rh_ge18_20": 0,
+          "pooled_exact": 0,
+          "corr_spearman": -0.05885000250975719,
+          "corr_pearson": -0.07776148589364537,
+          "ratio_cv": 0.43183595936611174,
+          "ratio_mean": 1.0860317460317461
+        },
+        {
+          "anchor": "ulist:f107",
+          "verdict": "存疑/同族(中等命中率,多为巧合)",
+          "pooled_pa": 0,
+          "pooled_ro": 22,
+          "n_samples": 269,
+          "dates_pa_ge18_20": 0,
+          "dates_ro_ge18_20": 0,
+          "dates_rh_ge18_20": 0,
+          "pooled_exact": 0,
+          "corr_spearman": -0.006051956167355752,
+          "corr_pearson": -0.005911832115973178,
+          "ratio_cv": 0.60787155861859,
+          "ratio_mean": 0.2630708661417323
+        },
+        {
+          "anchor": "ulist:f152",
+          "verdict": "存疑/同族(中等命中率,多为巧合)",
+          "pooled_pa": 0,
+          "pooled_ro": 165,
+          "n_samples": 269,
+          "dates_pa_ge18_20": 0,
+          "dates_ro_ge18_20": 0,
+          "dates_rh_ge18_20": 0,
+          "pooled_exact": 0,
+          "corr_spearman": null,
+          "corr_pearson": null,
+          "ratio_cv": 0.39915708029464725,
+          "ratio_mean": 0.552263779527559
+        },
+        {
+          "anchor": "push2:f59",
+          "verdict": "存疑/同族(中等命中率,多为巧合)",
+          "pooled_pa": 0,
+          "pooled_ro": 10,
+          "n_samples": 18,
+          "dates_pa_ge18_20": 0,
+          "dates_ro_ge18_20": 0,
+          "dates_rh_ge18_20": 0,
+          "pooled_exact": 0,
+          "corr_spearman": null,
+          "corr_pearson": null,
+          "ratio_cv": null,
+          "ratio_mean": null
+        }
+      ],
+      "best_correlation_candidates": [
+        {
+          "anchor": "ulist:f139",
+          "spearman": 0.8100002680068105
+        },
+        {
+          "anchor": "ulist:f19",
+          "spearman": 0.7464821051303016
+        },
+        {
+          "anchor": "push2:f111",
+          "spearman": 0.6968678047938314
+        },
+        {
+          "anchor": "push2:f112",
+          "spearman": 0.6968678047938314
+        },
+        {
+          "anchor": "ulist:f58",
+          "spearman": -0.6718985359922445
+        }
+      ]
+    },
+    "tx[85]": {
+      "n_dates": 15,
+      "n_anchors_scanned": 261,
+      "characterization": {
+        "n_total": 297,
+        "n_dates": 15,
+        "min": 0.0,
+        "max": 1350.16,
+        "mean": 73.15373737373737,
+        "n_distinct": 213,
+        "distinct_sample": [
+          0.0,
+          2.16,
+          2.2,
+          2.26,
+          2.28,
+          2.29,
+          2.3,
+          2.33,
+          2.35,
+          2.36,
+          2.39,
+          6.56,
+          6.7,
+          6.71,
+          6.85
+        ],
+        "is_integer_enum": false,
+        "per_date_const_frac": 0.06666666666666667
+      },
+      "best_candidate": [
+        59,
+        "ulist:f120"
+      ],
+      "top": [
+        {
+          "anchor": "ulist:f120",
+          "verdict": "存疑(仅1日≥18/20,未达多日复核门槛/数据稀疏)",
+          "pooled_pa": 59,
+          "pooled_ro": 59,
+          "n_samples": 297,
+          "dates_pa_ge18_20": 1,
+          "dates_ro_ge18_20": 1,
+          "dates_rh_ge18_20": 0,
+          "pooled_exact": 59,
+          "corr_spearman": null,
+          "corr_pearson": null,
+          "ratio_cv": null,
+          "ratio_mean": null
+        },
+        {
+          "anchor": "ulist:f126",
+          "verdict": "存疑(仅1日≥18/20,未达多日复核门槛/数据稀疏)",
+          "pooled_pa": 59,
+          "pooled_ro": 59,
+          "n_samples": 297,
+          "dates_pa_ge18_20": 1,
+          "dates_ro_ge18_20": 1,
+          "dates_rh_ge18_20": 0,
+          "pooled_exact": 59,
+          "corr_spearman": null,
+          "corr_pearson": null,
+          "ratio_cv": null,
+          "ratio_mean": null
+        },
+        {
+          "anchor": "ulist:f137",
+          "verdict": "存疑(仅1日≥18/20,未达多日复核门槛/数据稀疏)",
+          "pooled_pa": 59,
+          "pooled_ro": 59,
+          "n_samples": 297,
+          "dates_pa_ge18_20": 1,
+          "dates_ro_ge18_20": 1,
+          "dates_rh_ge18_20": 0,
+          "pooled_exact": 59,
+          "corr_spearman": null,
+          "corr_pearson": null,
+          "ratio_cv": null,
+          "ratio_mean": null
+        },
+        {
+          "anchor": "ulist:f138",
+          "verdict": "存疑(仅1日≥18/20,未达多日复核门槛/数据稀疏)",
+          "pooled_pa": 59,
+          "pooled_ro": 59,
+          "n_samples": 297,
+          "dates_pa_ge18_20": 1,
+          "dates_ro_ge18_20": 1,
+          "dates_rh_ge18_20": 0,
+          "pooled_exact": 59,
+          "corr_spearman": null,
+          "corr_pearson": null,
+          "ratio_cv": null,
+          "ratio_mean": null
+        },
+        {
+          "anchor": "ulist:f194",
+          "verdict": "存疑(仅1日≥18/20,未达多日复核门槛/数据稀疏)",
+          "pooled_pa": 59,
+          "pooled_ro": 59,
+          "n_samples": 297,
+          "dates_pa_ge18_20": 1,
+          "dates_ro_ge18_20": 1,
+          "dates_rh_ge18_20": 0,
+          "pooled_exact": 59,
+          "corr_spearman": null,
+          "corr_pearson": null,
+          "ratio_cv": null,
+          "ratio_mean": null
+        },
+        {
+          "anchor": "ulist:f216",
+          "verdict": "存疑(仅1日≥18/20,未达多日复核门槛/数据稀疏)",
+          "pooled_pa": 59,
+          "pooled_ro": 59,
+          "n_samples": 297,
+          "dates_pa_ge18_20": 1,
+          "dates_ro_ge18_20": 1,
+          "dates_rh_ge18_20": 0,
+          "pooled_exact": 59,
+          "corr_spearman": null,
+          "corr_pearson": null,
+          "ratio_cv": null,
+          "ratio_mean": null
+        },
+        {
+          "anchor": "ulist:f223",
+          "verdict": "存疑(仅1日≥18/20,未达多日复核门槛/数据稀疏)",
+          "pooled_pa": 59,
+          "pooled_ro": 59,
+          "n_samples": 297,
+          "dates_pa_ge18_20": 1,
+          "dates_ro_ge18_20": 1,
+          "dates_rh_ge18_20": 0,
+          "pooled_exact": 59,
+          "corr_spearman": null,
+          "corr_pearson": null,
+          "ratio_cv": null,
+          "ratio_mean": null
+        },
+        {
+          "anchor": "ulist:f200",
+          "verdict": "存疑(仅1日≥18/20,未达多日复核门槛/数据稀疏)",
+          "pooled_pa": 58,
+          "pooled_ro": 58,
+          "n_samples": 297,
+          "dates_pa_ge18_20": 1,
+          "dates_ro_ge18_20": 1,
+          "dates_rh_ge18_20": 0,
+          "pooled_exact": 58,
+          "corr_spearman": -0.16023840594049127,
+          "corr_pearson": -0.05823732024978307,
+          "ratio_cv": null,
+          "ratio_mean": null
+        },
+        {
+          "anchor": "ulist:f190",
+          "verdict": "存疑(仅1日≥18/20,未达多日复核门槛/数据稀疏)",
+          "pooled_pa": 57,
+          "pooled_ro": 57,
+          "n_samples": 297,
+          "dates_pa_ge18_20": 1,
+          "dates_ro_ge18_20": 1,
+          "dates_rh_ge18_20": 0,
+          "pooled_exact": 57,
+          "corr_spearman": -0.20668953934795953,
+          "corr_pearson": -0.06102045258908887,
+          "ratio_cv": null,
+          "ratio_mean": null
+        },
+        {
+          "anchor": "ulist:f231",
+          "verdict": "存疑(仅1日≥18/20,未达多日复核门槛/数据稀疏)",
+          "pooled_pa": 57,
+          "pooled_ro": 57,
+          "n_samples": 297,
+          "dates_pa_ge18_20": 1,
+          "dates_ro_ge18_20": 1,
+          "dates_rh_ge18_20": 0,
+          "pooled_exact": 57,
+          "corr_spearman": 0.012242934386464501,
+          "corr_pearson": -0.051176589771748625,
+          "ratio_cv": null,
+          "ratio_mean": null
+        }
+      ],
+      "best_correlation_candidates": [
+        {
+          "anchor": "push2:f19",
+          "spearman": 0.8787878787878788
+        },
+        {
+          "anchor": "push2:f39",
+          "spearman": 0.8787878787878788
+        },
+        {
+          "anchor": "push2:f35",
+          "spearman": 0.8787878787878788
+        },
+        {
+          "anchor": "push2:f37",
+          "spearman": 0.8787878787878788
+        },
+        {
+          "anchor": "push2:f17",
+          "spearman": 0.8787878787878788
+        }
+      ]
+    },
+    "tx[86]": {
+      "n_dates": 15,
+      "n_anchors_scanned": 261,
+      "characterization": {
+        "n_total": 297,
+        "n_dates": 15,
+        "min": -90911.0,
+        "max": 36560.0,
+        "mean": -2066.801346801347,
+        "n_distinct": 220,
+        "distinct_sample": [
+          -90911.0,
+          -78472.0,
+          -77615.0,
+          -58152.0,
+          -57802.0,
+          -57194.0,
+          -51069.0,
+          -46910.0,
+          -37473.0,
+          -33665.0,
+          -19889.0,
+          -13975.0,
+          -12329.0,
+          -10280.0,
+          -8872.0
+        ],
+        "is_integer_enum": true,
+        "per_date_const_frac": 0.06666666666666667
+      },
+      "best_candidate": [
+        59,
+        "ulist:f120"
+      ],
+      "top": [
+        {
+          "anchor": "ulist:f120",
+          "verdict": "存疑(仅1日≥18/20,未达多日复核门槛/数据稀疏)",
+          "pooled_pa": 59,
+          "pooled_ro": 59,
+          "n_samples": 297,
+          "dates_pa_ge18_20": 1,
+          "dates_ro_ge18_20": 1,
+          "dates_rh_ge18_20": 0,
+          "pooled_exact": 59,
+          "corr_spearman": null,
+          "corr_pearson": null,
+          "ratio_cv": null,
+          "ratio_mean": null
+        },
+        {
+          "anchor": "ulist:f126",
+          "verdict": "存疑(仅1日≥18/20,未达多日复核门槛/数据稀疏)",
+          "pooled_pa": 59,
+          "pooled_ro": 59,
+          "n_samples": 297,
+          "dates_pa_ge18_20": 1,
+          "dates_ro_ge18_20": 1,
+          "dates_rh_ge18_20": 0,
+          "pooled_exact": 59,
+          "corr_spearman": null,
+          "corr_pearson": null,
+          "ratio_cv": null,
+          "ratio_mean": null
+        },
+        {
+          "anchor": "ulist:f137",
+          "verdict": "存疑(仅1日≥18/20,未达多日复核门槛/数据稀疏)",
+          "pooled_pa": 59,
+          "pooled_ro": 59,
+          "n_samples": 297,
+          "dates_pa_ge18_20": 1,
+          "dates_ro_ge18_20": 1,
+          "dates_rh_ge18_20": 0,
+          "pooled_exact": 59,
+          "corr_spearman": null,
+          "corr_pearson": null,
+          "ratio_cv": null,
+          "ratio_mean": null
+        },
+        {
+          "anchor": "ulist:f138",
+          "verdict": "存疑(仅1日≥18/20,未达多日复核门槛/数据稀疏)",
+          "pooled_pa": 59,
+          "pooled_ro": 59,
+          "n_samples": 297,
+          "dates_pa_ge18_20": 1,
+          "dates_ro_ge18_20": 1,
+          "dates_rh_ge18_20": 0,
+          "pooled_exact": 59,
+          "corr_spearman": null,
+          "corr_pearson": null,
+          "ratio_cv": null,
+          "ratio_mean": null
+        },
+        {
+          "anchor": "ulist:f194",
+          "verdict": "存疑(仅1日≥18/20,未达多日复核门槛/数据稀疏)",
+          "pooled_pa": 59,
+          "pooled_ro": 59,
+          "n_samples": 297,
+          "dates_pa_ge18_20": 1,
+          "dates_ro_ge18_20": 1,
+          "dates_rh_ge18_20": 0,
+          "pooled_exact": 59,
+          "corr_spearman": null,
+          "corr_pearson": null,
+          "ratio_cv": null,
+          "ratio_mean": null
+        },
+        {
+          "anchor": "ulist:f216",
+          "verdict": "存疑(仅1日≥18/20,未达多日复核门槛/数据稀疏)",
+          "pooled_pa": 59,
+          "pooled_ro": 59,
+          "n_samples": 297,
+          "dates_pa_ge18_20": 1,
+          "dates_ro_ge18_20": 1,
+          "dates_rh_ge18_20": 0,
+          "pooled_exact": 59,
+          "corr_spearman": null,
+          "corr_pearson": null,
+          "ratio_cv": null,
+          "ratio_mean": null
+        },
+        {
+          "anchor": "ulist:f223",
+          "verdict": "存疑(仅1日≥18/20,未达多日复核门槛/数据稀疏)",
+          "pooled_pa": 59,
+          "pooled_ro": 59,
+          "n_samples": 297,
+          "dates_pa_ge18_20": 1,
+          "dates_ro_ge18_20": 1,
+          "dates_rh_ge18_20": 0,
+          "pooled_exact": 59,
+          "corr_spearman": null,
+          "corr_pearson": null,
+          "ratio_cv": null,
+          "ratio_mean": null
+        },
+        {
+          "anchor": "ulist:f200",
+          "verdict": "存疑(仅1日≥18/20,未达多日复核门槛/数据稀疏)",
+          "pooled_pa": 58,
+          "pooled_ro": 58,
+          "n_samples": 297,
+          "dates_pa_ge18_20": 1,
+          "dates_ro_ge18_20": 1,
+          "dates_rh_ge18_20": 0,
+          "pooled_exact": 58,
+          "corr_spearman": -0.09335240702070977,
+          "corr_pearson": 0.03572637267850962,
+          "ratio_cv": null,
+          "ratio_mean": null
+        },
+        {
+          "anchor": "ulist:f190",
+          "verdict": "存疑(仅1日≥18/20,未达多日复核门槛/数据稀疏)",
+          "pooled_pa": 57,
+          "pooled_ro": 57,
+          "n_samples": 297,
+          "dates_pa_ge18_20": 1,
+          "dates_ro_ge18_20": 1,
+          "dates_rh_ge18_20": 0,
+          "pooled_exact": 57,
+          "corr_spearman": -0.22505401885417012,
+          "corr_pearson": -0.6686586199348268,
+          "ratio_cv": null,
+          "ratio_mean": null
+        },
+        {
+          "anchor": "ulist:f231",
+          "verdict": "存疑(仅1日≥18/20,未达多日复核门槛/数据稀疏)",
+          "pooled_pa": 57,
+          "pooled_ro": 57,
+          "n_samples": 297,
+          "dates_pa_ge18_20": 1,
+          "dates_ro_ge18_20": 1,
+          "dates_rh_ge18_20": 0,
+          "pooled_exact": 57,
+          "corr_spearman": 0.028446827983167104,
+          "corr_pearson": 0.03989741532941566,
+          "ratio_cv": null,
+          "ratio_mean": null
+        }
+      ],
+      "best_correlation_candidates": [
+        {
+          "anchor": "push2:f50",
+          "spearman": 0.4474952683962706
+        },
+        {
+          "anchor": "fuyao:prev_price",
+          "spearman": 0.3856955807326316
+        },
+        {
+          "anchor": "fuyao:open_price",
+          "spearman": 0.3853324829674162
+        },
+        {
+          "anchor": "fuyao:low_price",
+          "spearman": 0.3831732929834146
+        },
+        {
+          "anchor": "fuyao:high_price",
+          "spearman": 0.3822377275476664
+        }
+      ]
+    },
+    "push2:f106": {
+      "n_dates": 8,
+      "n_anchors_scanned": 249,
+      "characterization": {
+        "n_total": 45,
+        "n_dates": 8,
+        "min": 100.0,
+        "max": 100.0,
+        "mean": 100.0,
+        "n_distinct": 1,
+        "distinct_sample": [
+          100.0
+        ],
+        "is_integer_enum": true,
+        "per_date_const_frac": 1.0
+      },
+      "best_candidate": [
+        0,
+        "tx[3]=现价"
+      ],
+      "top": [
+        {
+          "anchor": "tx[3]=现价",
+          "verdict": "无对撞(0命中)",
+          "pooled_pa": 0,
+          "pooled_ro": 0,
+          "n_samples": 19,
+          "dates_pa_ge18_20": 0,
+          "dates_ro_ge18_20": 0,
+          "dates_rh_ge18_20": 0,
+          "pooled_exact": 0,
+          "corr_spearman": null,
+          "corr_pearson": null,
+          "ratio_cv": null,
+          "ratio_mean": null
+        },
+        {
+          "anchor": "tx[4]=今开",
+          "verdict": "无对撞(0命中)",
+          "pooled_pa": 0,
+          "pooled_ro": 0,
+          "n_samples": 19,
+          "dates_pa_ge18_20": 0,
+          "dates_ro_ge18_20": 0,
+          "dates_rh_ge18_20": 0,
+          "pooled_exact": 0,
+          "corr_spearman": null,
+          "corr_pearson": null,
+          "ratio_cv": null,
+          "ratio_mean": null
+        },
+        {
+          "anchor": "tx[5]=昨收",
+          "verdict": "无对撞(0命中)",
+          "pooled_pa": 0,
+          "pooled_ro": 0,
+          "n_samples": 19,
+          "dates_pa_ge18_20": 0,
+          "dates_ro_ge18_20": 0,
+          "dates_rh_ge18_20": 0,
+          "pooled_exact": 0,
+          "corr_spearman": null,
+          "corr_pearson": null,
+          "ratio_cv": null,
+          "ratio_mean": null
+        },
+        {
+          "anchor": "tx[6]=成交量(手/股)",
+          "verdict": "无对撞(0命中)",
+          "pooled_pa": 0,
+          "pooled_ro": 0,
+          "n_samples": 19,
+          "dates_pa_ge18_20": 0,
+          "dates_ro_ge18_20": 0,
+          "dates_rh_ge18_20": 0,
+          "pooled_exact": 0,
+          "corr_spearman": null,
+          "corr_pearson": null,
+          "ratio_cv": null,
+          "ratio_mean": null
+        },
+        {
+          "anchor": "tx[7]=外盘",
+          "verdict": "无对撞(0命中)",
+          "pooled_pa": 0,
+          "pooled_ro": 0,
+          "n_samples": 19,
+          "dates_pa_ge18_20": 0,
+          "dates_ro_ge18_20": 0,
+          "dates_rh_ge18_20": 0,
+          "pooled_exact": 0,
+          "corr_spearman": null,
+          "corr_pearson": null,
+          "ratio_cv": null,
+          "ratio_mean": null
+        },
+        {
+          "anchor": "tx[8]=内盘",
+          "verdict": "无对撞(0命中)",
+          "pooled_pa": 0,
+          "pooled_ro": 0,
+          "n_samples": 19,
+          "dates_pa_ge18_20": 0,
+          "dates_ro_ge18_20": 0,
+          "dates_rh_ge18_20": 0,
+          "pooled_exact": 0,
+          "corr_spearman": null,
+          "corr_pearson": null,
+          "ratio_cv": null,
+          "ratio_mean": null
+        },
+        {
+          "anchor": "tx[33]=最高",
+          "verdict": "无对撞(0命中)",
+          "pooled_pa": 0,
+          "pooled_ro": 0,
+          "n_samples": 19,
+          "dates_pa_ge18_20": 0,
+          "dates_ro_ge18_20": 0,
+          "dates_rh_ge18_20": 0,
+          "pooled_exact": 0,
+          "corr_spearman": null,
+          "corr_pearson": null,
+          "ratio_cv": null,
+          "ratio_mean": null
+        },
+        {
+          "anchor": "tx[34]=最低",
+          "verdict": "无对撞(0命中)",
+          "pooled_pa": 0,
+          "pooled_ro": 0,
+          "n_samples": 19,
+          "dates_pa_ge18_20": 0,
+          "dates_ro_ge18_20": 0,
+          "dates_rh_ge18_20": 0,
+          "pooled_exact": 0,
+          "corr_spearman": null,
+          "corr_pearson": null,
+          "ratio_cv": null,
+          "ratio_mean": null
+        },
+        {
+          "anchor": "tx[37]=成交额(万·取整)",
+          "verdict": "无对撞(0命中)",
+          "pooled_pa": 0,
+          "pooled_ro": 0,
+          "n_samples": 19,
+          "dates_pa_ge18_20": 0,
+          "dates_ro_ge18_20": 0,
+          "dates_rh_ge18_20": 0,
+          "pooled_exact": 0,
+          "corr_spearman": null,
+          "corr_pearson": null,
+          "ratio_cv": null,
+          "ratio_mean": null
+        },
+        {
+          "anchor": "tx[38]=涨跌幅%",
+          "verdict": "无对撞(0命中)",
+          "pooled_pa": 0,
+          "pooled_ro": 0,
+          "n_samples": 19,
+          "dates_pa_ge18_20": 0,
+          "dates_ro_ge18_20": 0,
+          "dates_rh_ge18_20": 0,
+          "pooled_exact": 0,
+          "corr_spearman": null,
+          "corr_pearson": null,
+          "ratio_cv": null,
+          "ratio_mean": null
+        }
+      ],
+      "best_correlation_candidates": []
+    },
+    "push2:f107": {
+      "n_dates": 8,
+      "n_anchors_scanned": 249,
+      "characterization": {
+        "n_total": 45,
+        "n_dates": 8,
+        "min": 0.0,
+        "max": 1.0,
+        "mean": 0.5111111111111111,
+        "n_distinct": 2,
+        "distinct_sample": [
+          0.0,
+          1.0
+        ],
+        "is_integer_enum": true,
+        "per_date_const_frac": 0.375
+      },
+      "best_candidate": [
+        19,
+        "ulist:f13"
+      ],
+      "top": [
+        {
+          "anchor": "ulist:f13",
+          "verdict": "存疑(仅2日≥18/20,未达多日复核门槛/数据稀疏)",
+          "pooled_pa": 19,
+          "pooled_ro": 19,
+          "n_samples": 19,
+          "dates_pa_ge18_20": 2,
+          "dates_ro_ge18_20": 2,
+          "dates_rh_ge18_20": 0,
+          "pooled_exact": 19,
+          "corr_spearman": 1.0,
+          "corr_pearson": 1.0,
+          "ratio_cv": null,
+          "ratio_mean": null
+        },
+        {
+          "anchor": "ulist:f27",
+          "verdict": "存疑(仅2日≥18/20,未达多日复核门槛/数据稀疏)",
+          "pooled_pa": 19,
+          "pooled_ro": 19,
+          "n_samples": 19,
+          "dates_pa_ge18_20": 2,
+          "dates_ro_ge18_20": 2,
+          "dates_rh_ge18_20": 0,
+          "pooled_exact": 19,
+          "corr_spearman": 1.0,
+          "corr_pearson": 1.0,
+          "ratio_cv": null,
+          "ratio_mean": null
+        },
+        {
+          "anchor": "push2:f110",
+          "verdict": "存疑(仅2日≥18/20,未达多日复核门槛/数据稀疏)",
+          "pooled_pa": 19,
+          "pooled_ro": 19,
+          "n_samples": 19,
+          "dates_pa_ge18_20": 2,
+          "dates_ro_ge18_20": 2,
+          "dates_rh_ge18_20": 0,
+          "pooled_exact": 19,
+          "corr_spearman": 1.0,
+          "corr_pearson": 1.0,
+          "ratio_cv": null,
+          "ratio_mean": null
+        },
+        {
+          "anchor": "ulist:f120",
+          "verdict": "存疑/同族(中等命中率,多为巧合)",
+          "pooled_pa": 11,
+          "pooled_ro": 11,
+          "n_samples": 19,
+          "dates_pa_ge18_20": 0,
+          "dates_ro_ge18_20": 0,
+          "dates_rh_ge18_20": 0,
+          "pooled_exact": 11,
+          "corr_spearman": null,
+          "corr_pearson": null,
+          "ratio_cv": null,
+          "ratio_mean": null
+        },
+        {
+          "anchor": "ulist:f125",
+          "verdict": "存疑/同族(中等命中率,多为巧合)",
+          "pooled_pa": 11,
+          "pooled_ro": 11,
+          "n_samples": 19,
+          "dates_pa_ge18_20": 0,
+          "dates_ro_ge18_20": 0,
+          "dates_rh_ge18_20": 0,
+          "pooled_exact": 11,
+          "corr_spearman": 0.27638539919628335,
+          "corr_pearson": 0.2763853991962833,
+          "ratio_cv": null,
+          "ratio_mean": null
+        },
+        {
+          "anchor": "ulist:f126",
+          "verdict": "存疑/同族(中等命中率,多为巧合)",
+          "pooled_pa": 11,
+          "pooled_ro": 11,
+          "n_samples": 19,
+          "dates_pa_ge18_20": 0,
+          "dates_ro_ge18_20": 0,
+          "dates_rh_ge18_20": 0,
+          "pooled_exact": 11,
+          "corr_spearman": null,
+          "corr_pearson": null,
+          "ratio_cv": null,
+          "ratio_mean": null
+        },
+        {
+          "anchor": "ulist:f137",
+          "verdict": "存疑/同族(中等命中率,多为巧合)",
+          "pooled_pa": 11,
+          "pooled_ro": 11,
+          "n_samples": 19,
+          "dates_pa_ge18_20": 0,
+          "dates_ro_ge18_20": 0,
+          "dates_rh_ge18_20": 0,
+          "pooled_exact": 11,
+          "corr_spearman": null,
+          "corr_pearson": null,
+          "ratio_cv": null,
+          "ratio_mean": null
+        },
+        {
+          "anchor": "ulist:f138",
+          "verdict": "存疑/同族(中等命中率,多为巧合)",
+          "pooled_pa": 11,
+          "pooled_ro": 11,
+          "n_samples": 19,
+          "dates_pa_ge18_20": 0,
+          "dates_ro_ge18_20": 0,
+          "dates_rh_ge18_20": 0,
+          "pooled_exact": 11,
+          "corr_spearman": null,
+          "corr_pearson": null,
+          "ratio_cv": null,
+          "ratio_mean": null
+        },
+        {
+          "anchor": "ulist:f190",
+          "verdict": "存疑/同族(中等命中率,多为巧合)",
+          "pooled_pa": 11,
+          "pooled_ro": 11,
+          "n_samples": 19,
+          "dates_pa_ge18_20": 0,
+          "dates_ro_ge18_20": 0,
+          "dates_rh_ge18_20": 0,
+          "pooled_exact": 11,
+          "corr_spearman": 0.27638539919628335,
+          "corr_pearson": 0.2763853991962833,
+          "ratio_cv": null,
+          "ratio_mean": null
+        },
+        {
+          "anchor": "ulist:f194",
+          "verdict": "存疑/同族(中等命中率,多为巧合)",
+          "pooled_pa": 11,
+          "pooled_ro": 11,
+          "n_samples": 19,
+          "dates_pa_ge18_20": 0,
+          "dates_ro_ge18_20": 0,
+          "dates_rh_ge18_20": 0,
+          "pooled_exact": 11,
+          "corr_spearman": null,
+          "corr_pearson": null,
+          "ratio_cv": null,
+          "ratio_mean": null
+        }
+      ],
+      "best_correlation_candidates": [
+        {
+          "anchor": "ulist:f13",
+          "spearman": 1.0
+        },
+        {
+          "anchor": "ulist:f27",
+          "spearman": 1.0
+        },
+        {
+          "anchor": "push2:f110",
+          "spearman": 1.0
+        },
+        {
+          "anchor": "ulist:f12",
+          "spearman": 0.7015727799418169
+        },
+        {
+          "anchor": "push2:f57",
+          "spearman": 0.7015727799418169
+        }
+      ]
+    },
+    "push2:f110": {
+      "n_dates": 8,
+      "n_anchors_scanned": 249,
+      "characterization": {
+        "n_total": 45,
+        "n_dates": 8,
+        "min": 0.0,
+        "max": 1.0,
+        "mean": 0.5111111111111111,
+        "n_distinct": 2,
+        "distinct_sample": [
+          0.0,
+          1.0
+        ],
+        "is_integer_enum": true,
+        "per_date_const_frac": 0.375
+      },
+      "best_candidate": [
+        19,
+        "ulist:f13"
+      ],
+      "top": [
+        {
+          "anchor": "ulist:f13",
+          "verdict": "存疑(仅2日≥18/20,未达多日复核门槛/数据稀疏)",
+          "pooled_pa": 19,
+          "pooled_ro": 19,
+          "n_samples": 19,
+          "dates_pa_ge18_20": 2,
+          "dates_ro_ge18_20": 2,
+          "dates_rh_ge18_20": 0,
+          "pooled_exact": 19,
+          "corr_spearman": 1.0,
+          "corr_pearson": 1.0,
+          "ratio_cv": null,
+          "ratio_mean": null
+        },
+        {
+          "anchor": "ulist:f27",
+          "verdict": "存疑(仅2日≥18/20,未达多日复核门槛/数据稀疏)",
+          "pooled_pa": 19,
+          "pooled_ro": 19,
+          "n_samples": 19,
+          "dates_pa_ge18_20": 2,
+          "dates_ro_ge18_20": 2,
+          "dates_rh_ge18_20": 0,
+          "pooled_exact": 19,
+          "corr_spearman": 1.0,
+          "corr_pearson": 1.0,
+          "ratio_cv": null,
+          "ratio_mean": null
+        },
+        {
+          "anchor": "push2:f107",
+          "verdict": "存疑(仅2日≥18/20,未达多日复核门槛/数据稀疏)",
+          "pooled_pa": 19,
+          "pooled_ro": 19,
+          "n_samples": 19,
+          "dates_pa_ge18_20": 2,
+          "dates_ro_ge18_20": 2,
+          "dates_rh_ge18_20": 0,
+          "pooled_exact": 19,
+          "corr_spearman": 1.0,
+          "corr_pearson": 1.0,
+          "ratio_cv": null,
+          "ratio_mean": null
+        },
+        {
+          "anchor": "ulist:f120",
+          "verdict": "存疑/同族(中等命中率,多为巧合)",
+          "pooled_pa": 11,
+          "pooled_ro": 11,
+          "n_samples": 19,
+          "dates_pa_ge18_20": 0,
+          "dates_ro_ge18_20": 0,
+          "dates_rh_ge18_20": 0,
+          "pooled_exact": 11,
+          "corr_spearman": null,
+          "corr_pearson": null,
+          "ratio_cv": null,
+          "ratio_mean": null
+        },
+        {
+          "anchor": "ulist:f125",
+          "verdict": "存疑/同族(中等命中率,多为巧合)",
+          "pooled_pa": 11,
+          "pooled_ro": 11,
+          "n_samples": 19,
+          "dates_pa_ge18_20": 0,
+          "dates_ro_ge18_20": 0,
+          "dates_rh_ge18_20": 0,
+          "pooled_exact": 11,
+          "corr_spearman": 0.27638539919628335,
+          "corr_pearson": 0.2763853991962833,
+          "ratio_cv": null,
+          "ratio_mean": null
+        },
+        {
+          "anchor": "ulist:f126",
+          "verdict": "存疑/同族(中等命中率,多为巧合)",
+          "pooled_pa": 11,
+          "pooled_ro": 11,
+          "n_samples": 19,
+          "dates_pa_ge18_20": 0,
+          "dates_ro_ge18_20": 0,
+          "dates_rh_ge18_20": 0,
+          "pooled_exact": 11,
+          "corr_spearman": null,
+          "corr_pearson": null,
+          "ratio_cv": null,
+          "ratio_mean": null
+        },
+        {
+          "anchor": "ulist:f137",
+          "verdict": "存疑/同族(中等命中率,多为巧合)",
+          "pooled_pa": 11,
+          "pooled_ro": 11,
+          "n_samples": 19,
+          "dates_pa_ge18_20": 0,
+          "dates_ro_ge18_20": 0,
+          "dates_rh_ge18_20": 0,
+          "pooled_exact": 11,
+          "corr_spearman": null,
+          "corr_pearson": null,
+          "ratio_cv": null,
+          "ratio_mean": null
+        },
+        {
+          "anchor": "ulist:f138",
+          "verdict": "存疑/同族(中等命中率,多为巧合)",
+          "pooled_pa": 11,
+          "pooled_ro": 11,
+          "n_samples": 19,
+          "dates_pa_ge18_20": 0,
+          "dates_ro_ge18_20": 0,
+          "dates_rh_ge18_20": 0,
+          "pooled_exact": 11,
+          "corr_spearman": null,
+          "corr_pearson": null,
+          "ratio_cv": null,
+          "ratio_mean": null
+        },
+        {
+          "anchor": "ulist:f190",
+          "verdict": "存疑/同族(中等命中率,多为巧合)",
+          "pooled_pa": 11,
+          "pooled_ro": 11,
+          "n_samples": 19,
+          "dates_pa_ge18_20": 0,
+          "dates_ro_ge18_20": 0,
+          "dates_rh_ge18_20": 0,
+          "pooled_exact": 11,
+          "corr_spearman": 0.27638539919628335,
+          "corr_pearson": 0.2763853991962833,
+          "ratio_cv": null,
+          "ratio_mean": null
+        },
+        {
+          "anchor": "ulist:f194",
+          "verdict": "存疑/同族(中等命中率,多为巧合)",
+          "pooled_pa": 11,
+          "pooled_ro": 11,
+          "n_samples": 19,
+          "dates_pa_ge18_20": 0,
+          "dates_ro_ge18_20": 0,
+          "dates_rh_ge18_20": 0,
+          "pooled_exact": 11,
+          "corr_spearman": null,
+          "corr_pearson": null,
+          "ratio_cv": null,
+          "ratio_mean": null
+        }
+      ],
+      "best_correlation_candidates": [
+        {
+          "anchor": "ulist:f13",
+          "spearman": 1.0
+        },
+        {
+          "anchor": "ulist:f27",
+          "spearman": 1.0
+        },
+        {
+          "anchor": "push2:f107",
+          "spearman": 1.0
+        },
+        {
+          "anchor": "ulist:f12",
+          "spearman": 0.7015727799418169
+        },
+        {
+          "anchor": "push2:f57",
+          "spearman": 0.7015727799418169
+        }
+      ]
+    },
+    "push2:f111": {
+      "n_dates": 8,
+      "n_anchors_scanned": 249,
+      "characterization": {
+        "n_total": 45,
+        "n_dates": 8,
+        "min": 2.0,
+        "max": 81.0,
+        "mean": 13.6,
+        "n_distinct": 5,
+        "distinct_sample": [
+          2.0,
+          6.0,
+          23.0,
+          80.0,
+          81.0
+        ],
+        "is_integer_enum": true,
+        "per_date_const_frac": 0.25
+      },
+      "best_candidate": [
+        19,
+        "ulist:f19"
+      ],
+      "top": [
+        {
+          "anchor": "ulist:f19",
+          "verdict": "存疑(仅2日≥18/20,未达多日复核门槛/数据稀疏)",
+          "pooled_pa": 19,
+          "pooled_ro": 19,
+          "n_samples": 19,
+          "dates_pa_ge18_20": 2,
+          "dates_ro_ge18_20": 2,
+          "dates_rh_ge18_20": 2,
+          "pooled_exact": 19,
+          "corr_spearman": 1.0,
+          "corr_pearson": 1.0,
+          "ratio_cv": null,
+          "ratio_mean": null
+        },
+        {
+          "anchor": "push2:f112",
+          "verdict": "存疑(仅2日≥18/20,未达多日复核门槛/数据稀疏)",
+          "pooled_pa": 19,
+          "pooled_ro": 19,
+          "n_samples": 19,
+          "dates_pa_ge18_20": 2,
+          "dates_ro_ge18_20": 2,
+          "dates_rh_ge18_20": 2,
+          "pooled_exact": 19,
+          "corr_spearman": 1.0,
+          "corr_pearson": 1.0,
+          "ratio_cv": null,
+          "ratio_mean": null
+        },
+        {
+          "anchor": "ulist:f139",
+          "verdict": "相关性候选(L4,非定案,|Spearman|=0.838)",
+          "pooled_pa": 5,
+          "pooled_ro": 5,
+          "n_samples": 19,
+          "dates_pa_ge18_20": 0,
+          "dates_ro_ge18_20": 0,
+          "dates_rh_ge18_20": 0,
+          "pooled_exact": 5,
+          "corr_spearman": 0.8379305815963922,
+          "corr_pearson": 0.44783836492239454,
+          "ratio_cv": null,
+          "ratio_mean": null
+        },
+        {
+          "anchor": "tx[39]=动态PE",
+          "verdict": "相关性候选(L4,非定案,|Spearman|=0.649)",
+          "pooled_pa": 0,
+          "pooled_ro": 0,
+          "n_samples": 19,
+          "dates_pa_ge18_20": 0,
+          "dates_ro_ge18_20": 0,
+          "dates_rh_ge18_20": 0,
+          "pooled_exact": 0,
+          "corr_spearman": 0.6489266482353806,
+          "corr_pearson": 0.2761714272288676,
+          "ratio_cv": null,
+          "ratio_mean": null
+        },
+        {
+          "anchor": "ulist:f5",
+          "verdict": "相关性候选(L4,非定案,|Spearman|=0.761)",
+          "pooled_pa": 0,
+          "pooled_ro": 0,
+          "n_samples": 18,
+          "dates_pa_ge18_20": 0,
+          "dates_ro_ge18_20": 0,
+          "dates_rh_ge18_20": 0,
+          "pooled_exact": 0,
+          "corr_spearman": -0.7613297994786167,
+          "corr_pearson": -0.2226210877497718,
+          "ratio_cv": null,
+          "ratio_mean": null
+        },
+        {
+          "anchor": "ulist:f34",
+          "verdict": "相关性候选(L4,非定案,|Spearman|=0.773)",
+          "pooled_pa": 0,
+          "pooled_ro": 0,
+          "n_samples": 18,
+          "dates_pa_ge18_20": 0,
+          "dates_ro_ge18_20": 0,
+          "dates_rh_ge18_20": 0,
+          "pooled_exact": 0,
+          "corr_spearman": -0.7731416863534613,
+          "corr_pearson": -0.22249960097778604,
+          "ratio_cv": null,
+          "ratio_mean": null
+        },
+        {
+          "anchor": "ulist:f35",
+          "verdict": "相关性候选(L4,非定案,|Spearman|=0.766)",
+          "pooled_pa": 0,
+          "pooled_ro": 0,
+          "n_samples": 18,
+          "dates_pa_ge18_20": 0,
+          "dates_ro_ge18_20": 0,
+          "dates_rh_ge18_20": 0,
+          "pooled_exact": 0,
+          "corr_spearman": -0.7656250310694692,
+          "corr_pearson": -0.22259140918206288,
+          "ratio_cv": null,
+          "ratio_mean": null
+        },
+        {
+          "anchor": "ulist:f38",
+          "verdict": "相关性候选(L4,非定案,|Spearman|=0.635)",
+          "pooled_pa": 0,
+          "pooled_ro": 0,
+          "n_samples": 19,
+          "dates_pa_ge18_20": 0,
+          "dates_ro_ge18_20": 0,
+          "dates_rh_ge18_20": 0,
+          "pooled_exact": 0,
+          "corr_spearman": -0.635180341102584,
+          "corr_pearson": -0.17424788319164558,
+          "ratio_cv": null,
+          "ratio_mean": null
+        },
+        {
+          "anchor": "ulist:f39",
+          "verdict": "相关性候选(L4,非定案,|Spearman|=0.610)",
+          "pooled_pa": 0,
+          "pooled_ro": 0,
+          "n_samples": 19,
+          "dates_pa_ge18_20": 0,
+          "dates_ro_ge18_20": 0,
+          "dates_rh_ge18_20": 0,
+          "pooled_exact": 0,
+          "corr_spearman": -0.6096271089892618,
+          "corr_pearson": -0.17505155642141887,
+          "ratio_cv": null,
+          "ratio_mean": null
+        },
+        {
+          "anchor": "ulist:f57",
+          "verdict": "相关性候选(L4,非定案,|Spearman|=0.610)",
+          "pooled_pa": 0,
+          "pooled_ro": 0,
+          "n_samples": 19,
+          "dates_pa_ge18_20": 0,
+          "dates_ro_ge18_20": 0,
+          "dates_rh_ge18_20": 0,
+          "pooled_exact": 0,
+          "corr_spearman": -0.6096271089892618,
+          "corr_pearson": -0.4045831599489448,
+          "ratio_cv": null,
+          "ratio_mean": null
+        }
+      ],
+      "best_correlation_candidates": [
+        {
+          "anchor": "ulist:f19",
+          "spearman": 1.0
+        },
+        {
+          "anchor": "push2:f112",
+          "spearman": 1.0
+        },
+        {
+          "anchor": "ulist:f139",
+          "spearman": 0.8379305815963922
+        },
+        {
+          "anchor": "ulist:f34",
+          "spearman": -0.7731416863534613
+        },
+        {
+          "anchor": "push2:f49",
+          "spearman": -0.7731416863534613
+        }
+      ]
+    },
+    "push2:f112": {
+      "n_dates": 8,
+      "n_anchors_scanned": 249,
+      "characterization": {
+        "n_total": 45,
+        "n_dates": 8,
+        "min": 2.0,
+        "max": 81.0,
+        "mean": 13.6,
+        "n_distinct": 5,
+        "distinct_sample": [
+          2.0,
+          6.0,
+          23.0,
+          80.0,
+          81.0
+        ],
+        "is_integer_enum": true,
+        "per_date_const_frac": 0.25
+      },
+      "best_candidate": [
+        19,
+        "ulist:f19"
+      ],
+      "top": [
+        {
+          "anchor": "ulist:f19",
+          "verdict": "存疑(仅2日≥18/20,未达多日复核门槛/数据稀疏)",
+          "pooled_pa": 19,
+          "pooled_ro": 19,
+          "n_samples": 19,
+          "dates_pa_ge18_20": 2,
+          "dates_ro_ge18_20": 2,
+          "dates_rh_ge18_20": 2,
+          "pooled_exact": 19,
+          "corr_spearman": 1.0,
+          "corr_pearson": 1.0,
+          "ratio_cv": null,
+          "ratio_mean": null
+        },
+        {
+          "anchor": "push2:f111",
+          "verdict": "存疑(仅2日≥18/20,未达多日复核门槛/数据稀疏)",
+          "pooled_pa": 19,
+          "pooled_ro": 19,
+          "n_samples": 19,
+          "dates_pa_ge18_20": 2,
+          "dates_ro_ge18_20": 2,
+          "dates_rh_ge18_20": 2,
+          "pooled_exact": 19,
+          "corr_spearman": 1.0,
+          "corr_pearson": 1.0,
+          "ratio_cv": null,
+          "ratio_mean": null
+        },
+        {
+          "anchor": "ulist:f139",
+          "verdict": "相关性候选(L4,非定案,|Spearman|=0.838)",
+          "pooled_pa": 5,
+          "pooled_ro": 5,
+          "n_samples": 19,
+          "dates_pa_ge18_20": 0,
+          "dates_ro_ge18_20": 0,
+          "dates_rh_ge18_20": 0,
+          "pooled_exact": 5,
+          "corr_spearman": 0.8379305815963922,
+          "corr_pearson": 0.44783836492239454,
+          "ratio_cv": null,
+          "ratio_mean": null
+        },
+        {
+          "anchor": "tx[39]=动态PE",
+          "verdict": "相关性候选(L4,非定案,|Spearman|=0.649)",
+          "pooled_pa": 0,
+          "pooled_ro": 0,
+          "n_samples": 19,
+          "dates_pa_ge18_20": 0,
+          "dates_ro_ge18_20": 0,
+          "dates_rh_ge18_20": 0,
+          "pooled_exact": 0,
+          "corr_spearman": 0.6489266482353806,
+          "corr_pearson": 0.2761714272288676,
+          "ratio_cv": null,
+          "ratio_mean": null
+        },
+        {
+          "anchor": "ulist:f5",
+          "verdict": "相关性候选(L4,非定案,|Spearman|=0.761)",
+          "pooled_pa": 0,
+          "pooled_ro": 0,
+          "n_samples": 18,
+          "dates_pa_ge18_20": 0,
+          "dates_ro_ge18_20": 0,
+          "dates_rh_ge18_20": 0,
+          "pooled_exact": 0,
+          "corr_spearman": -0.7613297994786167,
+          "corr_pearson": -0.2226210877497718,
+          "ratio_cv": null,
+          "ratio_mean": null
+        },
+        {
+          "anchor": "ulist:f34",
+          "verdict": "相关性候选(L4,非定案,|Spearman|=0.773)",
+          "pooled_pa": 0,
+          "pooled_ro": 0,
+          "n_samples": 18,
+          "dates_pa_ge18_20": 0,
+          "dates_ro_ge18_20": 0,
+          "dates_rh_ge18_20": 0,
+          "pooled_exact": 0,
+          "corr_spearman": -0.7731416863534613,
+          "corr_pearson": -0.22249960097778604,
+          "ratio_cv": null,
+          "ratio_mean": null
+        },
+        {
+          "anchor": "ulist:f35",
+          "verdict": "相关性候选(L4,非定案,|Spearman|=0.766)",
+          "pooled_pa": 0,
+          "pooled_ro": 0,
+          "n_samples": 18,
+          "dates_pa_ge18_20": 0,
+          "dates_ro_ge18_20": 0,
+          "dates_rh_ge18_20": 0,
+          "pooled_exact": 0,
+          "corr_spearman": -0.7656250310694692,
+          "corr_pearson": -0.22259140918206288,
+          "ratio_cv": null,
+          "ratio_mean": null
+        },
+        {
+          "anchor": "ulist:f38",
+          "verdict": "相关性候选(L4,非定案,|Spearman|=0.635)",
+          "pooled_pa": 0,
+          "pooled_ro": 0,
+          "n_samples": 19,
+          "dates_pa_ge18_20": 0,
+          "dates_ro_ge18_20": 0,
+          "dates_rh_ge18_20": 0,
+          "pooled_exact": 0,
+          "corr_spearman": -0.635180341102584,
+          "corr_pearson": -0.17424788319164558,
+          "ratio_cv": null,
+          "ratio_mean": null
+        },
+        {
+          "anchor": "ulist:f39",
+          "verdict": "相关性候选(L4,非定案,|Spearman|=0.610)",
+          "pooled_pa": 0,
+          "pooled_ro": 0,
+          "n_samples": 19,
+          "dates_pa_ge18_20": 0,
+          "dates_ro_ge18_20": 0,
+          "dates_rh_ge18_20": 0,
+          "pooled_exact": 0,
+          "corr_spearman": -0.6096271089892618,
+          "corr_pearson": -0.17505155642141887,
+          "ratio_cv": null,
+          "ratio_mean": null
+        },
+        {
+          "anchor": "ulist:f57",
+          "verdict": "相关性候选(L4,非定案,|Spearman|=0.610)",
+          "pooled_pa": 0,
+          "pooled_ro": 0,
+          "n_samples": 19,
+          "dates_pa_ge18_20": 0,
+          "dates_ro_ge18_20": 0,
+          "dates_rh_ge18_20": 0,
+          "pooled_exact": 0,
+          "corr_spearman": -0.6096271089892618,
+          "corr_pearson": -0.4045831599489448,
+          "ratio_cv": null,
+          "ratio_mean": null
+        }
+      ],
+      "best_correlation_candidates": [
+        {
+          "anchor": "ulist:f19",
+          "spearman": 1.0
+        },
+        {
+          "anchor": "push2:f111",
+          "spearman": 1.0
+        },
+        {
+          "anchor": "ulist:f139",
+          "spearman": 0.8379305815963922
+        },
+        {
+          "anchor": "ulist:f34",
+          "spearman": -0.7731416863534613
+        },
+        {
+          "anchor": "push2:f49",
+          "spearman": -0.7731416863534613
+        }
+      ]
+    },
+    "push2:f118": {
+      "error": "无数据"
+    },
+    "zhb:Col[22](形态码)": {
+      "n_dates": 12,
+      "n_anchors_scanned": 261,
+      "characterization": {
+        "n_total": 93717,
+        "n_dates": 12,
+        "min": 10000.0,
+        "max": 141414.0,
+        "mean": 77727.67667552312,
+        "n_distinct": 1842,
+        "distinct_sample": [
+          10000.0,
+          10100.0,
+          10101.0,
+          10102.0,
+          10104.0,
+          10107.0,
+          10108.0,
+          10109.0,
+          10110.0,
+          10111.0,
+          10112.0,
+          10113.0,
+          10114.0,
+          10200.0,
+          10201.0
+        ],
+        "is_integer_enum": true,
+        "per_date_const_frac": 0.0
+      },
+      "best_candidate": [
+        0,
+        "tx[3]=现价"
+      ],
+      "top": [
+        {
+          "anchor": "tx[3]=现价",
+          "verdict": "无对撞(0命中)",
+          "pooled_pa": 0,
+          "pooled_ro": 0,
+          "n_samples": 237,
+          "dates_pa_ge18_20": 0,
+          "dates_ro_ge18_20": 0,
+          "dates_rh_ge18_20": 0,
+          "pooled_exact": 0,
+          "corr_spearman": -0.19673265855407898,
+          "corr_pearson": 0.0839659353588901,
+          "ratio_cv": 1.1320465662575505,
+          "ratio_mean": 5291.94149768691
+        },
+        {
+          "anchor": "tx[4]=今开",
+          "verdict": "无对撞(0命中)",
+          "pooled_pa": 0,
+          "pooled_ro": 0,
+          "n_samples": 237,
+          "dates_pa_ge18_20": 0,
+          "dates_ro_ge18_20": 0,
+          "dates_rh_ge18_20": 0,
+          "pooled_exact": 0,
+          "corr_spearman": -0.1939865755636274,
+          "corr_pearson": 0.08385717947629062,
+          "ratio_cv": 1.1338862674373047,
+          "ratio_mean": 5300.433659971437
+        },
+        {
+          "anchor": "tx[5]=昨收",
+          "verdict": "无对撞(0命中)",
+          "pooled_pa": 0,
+          "pooled_ro": 0,
+          "n_samples": 237,
+          "dates_pa_ge18_20": 0,
+          "dates_ro_ge18_20": 0,
+          "dates_rh_ge18_20": 0,
+          "pooled_exact": 0,
+          "corr_spearman": -0.18429187317201076,
+          "corr_pearson": 0.08430207554027613,
+          "ratio_cv": 1.1322510047621532,
+          "ratio_mean": 5347.274788104508
+        },
+        {
+          "anchor": "tx[6]=成交量(手/股)",
+          "verdict": "无对撞(0命中)",
+          "pooled_pa": 0,
+          "pooled_ro": 0,
+          "n_samples": 237,
+          "dates_pa_ge18_20": 0,
+          "dates_ro_ge18_20": 0,
+          "dates_rh_ge18_20": 0,
+          "pooled_exact": 0,
+          "corr_spearman": 0.14502807152912667,
+          "corr_pearson": 0.12445276449883673,
+          "ratio_cv": 3.754941278480016,
+          "ratio_mean": 2.046180544797655
+        },
+        {
+          "anchor": "tx[7]=外盘",
+          "verdict": "无对撞(0命中)",
+          "pooled_pa": 0,
+          "pooled_ro": 0,
+          "n_samples": 237,
+          "dates_pa_ge18_20": 0,
+          "dates_ro_ge18_20": 0,
+          "dates_rh_ge18_20": 0,
+          "pooled_exact": 0,
+          "corr_spearman": 0.14261021565935786,
+          "corr_pearson": 0.1269469331282194,
+          "ratio_cv": 4.288288423047298,
+          "ratio_mean": 4.618671107505371
+        },
+        {
+          "anchor": "tx[8]=内盘",
+          "verdict": "无对撞(0命中)",
+          "pooled_pa": 0,
+          "pooled_ro": 0,
+          "n_samples": 237,
+          "dates_pa_ge18_20": 0,
+          "dates_ro_ge18_20": 0,
+          "dates_rh_ge18_20": 0,
+          "pooled_exact": 0,
+          "corr_spearman": 0.15033781957941303,
+          "corr_pearson": 0.11971568252211837,
+          "ratio_cv": 3.8640411291665857,
+          "ratio_mean": 3.9677623908639963
+        },
+        {
+          "anchor": "tx[33]=最高",
+          "verdict": "无对撞(0命中)",
+          "pooled_pa": 0,
+          "pooled_ro": 0,
+          "n_samples": 237,
+          "dates_pa_ge18_20": 0,
+          "dates_ro_ge18_20": 0,
+          "dates_rh_ge18_20": 0,
+          "pooled_exact": 0,
+          "corr_spearman": -0.1853202846253867,
+          "corr_pearson": 0.08413945091423725,
+          "ratio_cv": 1.1338446810387566,
+          "ratio_mean": 5229.428542574833
+        },
+        {
+          "anchor": "tx[34]=最低",
+          "verdict": "无对撞(0命中)",
+          "pooled_pa": 0,
+          "pooled_ro": 0,
+          "n_samples": 237,
+          "dates_pa_ge18_20": 0,
+          "dates_ro_ge18_20": 0,
+          "dates_rh_ge18_20": 0,
+          "pooled_exact": 0,
+          "corr_spearman": -0.1861390551040276,
+          "corr_pearson": 0.08438357341736215,
+          "ratio_cv": 1.1280871565422432,
+          "ratio_mean": 5434.695899018448
+        },
+        {
+          "anchor": "tx[37]=成交额(万·取整)",
+          "verdict": "无对撞(0命中)",
+          "pooled_pa": 0,
+          "pooled_ro": 0,
+          "n_samples": 237,
+          "dates_pa_ge18_20": 0,
+          "dates_ro_ge18_20": 0,
+          "dates_rh_ge18_20": 0,
+          "pooled_exact": 0,
+          "corr_spearman": -0.014760507398141054,
+          "corr_pearson": 0.07496174076131011,
+          "ratio_cv": 3.251797721074785,
+          "ratio_mean": 14.788349356921495
+        },
+        {
+          "anchor": "tx[38]=涨跌幅%",
+          "verdict": "无对撞(0命中)",
+          "pooled_pa": 0,
+          "pooled_ro": 0,
+          "n_samples": 237,
+          "dates_pa_ge18_20": 0,
+          "dates_ro_ge18_20": 0,
+          "dates_rh_ge18_20": 0,
+          "pooled_exact": 0,
+          "corr_spearman": 0.09942381959985147,
+          "corr_pearson": 0.09306954683879363,
+          "ratio_cv": 2.2727563407557207,
+          "ratio_mean": 99469.3889632331
+        }
+      ],
+      "best_correlation_candidates": [
+        {
+          "anchor": "push2:f20",
+          "spearman": 0.48632443494405164
+        },
+        {
+          "anchor": "push2:f39",
+          "spearman": -0.40729671426564323
+        },
+        {
+          "anchor": "push2:f19",
+          "spearman": -0.40729671426564323
+        },
+        {
+          "anchor": "push2:f31",
+          "spearman": -0.40729671426564323
+        },
+        {
+          "anchor": "push2:f33",
+          "spearman": -0.40729671426564323
+        }
+      ]
+    }
+  },
+  "known_revalidation": {
+    "tx[3]=现价": {
+      "anchors": [
+        {
+          "anchor": "fuyao:last_price",
+          "verdict": "比值族定案 L1-U (比值≈1, CV=0.00e+00, 8日≥18/20比值命中)",
+          "pooled_pa": 159,
+          "n_samples": 159,
+          "dates_pa_ge18_20": 8,
+          "pooled_exact": 159,
+          "ratio": {
+            "n": 159,
+            "mean": 1.0,
+            "cv": 0.0,
+            "min": 1.0,
+            "max": 1.0
+          },
+          "corr": {
+            "n": 159,
+            "pearson": 1.0,
+            "spearman": 1.0,
+            "loo_flips": 0
+          }
+        },
+        {
+          "anchor": "push2:f43",
+          "verdict": "存疑(仅1日≥18/20,未达多日复核门槛/数据稀疏)",
+          "pooled_pa": 13,
+          "n_samples": 18,
+          "dates_pa_ge18_20": 1,
+          "pooled_exact": 13,
+          "ratio": null,
+          "corr": {
+            "n": 18,
+            "pearson": 0.9999990037294137,
+            "spearman": 1.0,
+            "loo_flips": 0
+          }
+        }
+      ]
+    },
+    "tx[4]=今开": {
+      "anchors": [
+        {
+          "anchor": "fuyao:prev_price",
+          "verdict": "比值族定案 L1-U (比值≈1, CV=0.00e+00, 8日≥18/20比值命中)",
+          "pooled_pa": 159,
+          "n_samples": 159,
+          "dates_pa_ge18_20": 8,
+          "pooled_exact": 159,
+          "ratio": {
+            "n": 159,
+            "mean": 1.0,
+            "cv": 0.0,
+            "min": 1.0,
+            "max": 1.0
+          },
+          "corr": {
+            "n": 159,
+            "pearson": 1.0,
+            "spearman": 1.0,
+            "loo_flips": 0
+          }
+        },
+        {
+          "anchor": "push2:f46",
+          "verdict": "存疑/同族(中等命中率,多为巧合)",
+          "pooled_pa": 2,
+          "n_samples": 18,
+          "dates_pa_ge18_20": 0,
+          "pooled_exact": 2,
+          "ratio": null,
+          "corr": {
+            "n": 18,
+            "pearson": 0.9999924058851516,
+            "spearman": 0.9979360165118679,
+            "loo_flips": 0
+          }
+        }
+      ]
+    },
+    "tx[5]=昨收": {
+      "anchors": [
+        {
+          "anchor": "fuyao:open_price",
+          "verdict": "比值族定案 L1-U (比值≈1, CV=0.00e+00, 8日≥18/20比值命中)",
+          "pooled_pa": 159,
+          "n_samples": 159,
+          "dates_pa_ge18_20": 8,
+          "pooled_exact": 159,
+          "ratio": {
+            "n": 159,
+            "mean": 1.0,
+            "cv": 0.0,
+            "min": 1.0,
+            "max": 1.0
+          },
+          "corr": {
+            "n": 159,
+            "pearson": 1.0,
+            "spearman": 1.0,
+            "loo_flips": 0
+          }
+        },
+        {
+          "anchor": "push2:f45",
+          "verdict": "存疑/同族(中等命中率,多为巧合)",
+          "pooled_pa": 2,
+          "n_samples": 18,
+          "dates_pa_ge18_20": 0,
+          "pooled_exact": 2,
+          "ratio": null,
+          "corr": {
+            "n": 18,
+            "pearson": 0.9998963296426664,
+            "spearman": 0.9979360165118679,
+            "loo_flips": 0
+          }
+        }
+      ]
+    },
+    "tx[33]=最高": {
+      "anchors": [
+        {
+          "anchor": "fuyao:high_price",
+          "verdict": "比值族定案 L1-U (比值≈1, CV=0.00e+00, 8日≥18/20比值命中)",
+          "pooled_pa": 159,
+          "n_samples": 159,
+          "dates_pa_ge18_20": 8,
+          "pooled_exact": 159,
+          "ratio": {
+            "n": 159,
+            "mean": 1.0,
+            "cv": 0.0,
+            "min": 1.0,
+            "max": 1.0
+          },
+          "corr": {
+            "n": 159,
+            "pearson": 1.0,
+            "spearman": 1.0,
+            "loo_flips": 0
+          }
+        },
+        {
+          "anchor": "push2:f44",
+          "verdict": "存疑(仅2日≥18/20,未达多日复核门槛/数据稀疏)",
+          "pooled_pa": 18,
+          "n_samples": 18,
+          "dates_pa_ge18_20": 2,
+          "pooled_exact": 18,
+          "ratio": null,
+          "corr": {
+            "n": 18,
+            "pearson": 1.0,
+            "spearman": 1.0,
+            "loo_flips": 0
+          }
+        }
+      ]
+    },
+    "tx[34]=最低": {
+      "anchors": [
+        {
+          "anchor": "fuyao:low_price",
+          "verdict": "比值族定案 L1-U (比值≈1, CV=0.00e+00, 8日≥18/20比值命中)",
+          "pooled_pa": 159,
+          "n_samples": 159,
+          "dates_pa_ge18_20": 8,
+          "pooled_exact": 159,
+          "ratio": {
+            "n": 159,
+            "mean": 1.0,
+            "cv": 0.0,
+            "min": 1.0,
+            "max": 1.0
+          },
+          "corr": {
+            "n": 159,
+            "pearson": 1.0,
+            "spearman": 1.0,
+            "loo_flips": 0
+          }
+        },
+        {
+          "anchor": "push2:f45",
+          "verdict": "存疑(仅2日≥18/20,未达多日复核门槛/数据稀疏)",
+          "pooled_pa": 18,
+          "n_samples": 18,
+          "dates_pa_ge18_20": 2,
+          "pooled_exact": 18,
+          "ratio": null,
+          "corr": {
+            "n": 18,
+            "pearson": 1.0,
+            "spearman": 1.0,
+            "loo_flips": 0
+          }
+        }
+      ]
+    },
+    "tx[39]=动态PE": {
+      "anchors": [
+        {
+          "anchor": "push2:f162",
+          "status": "锚缺失"
+        }
+      ]
+    },
+    "tx[53]=静态PE(lyr)": {
+      "anchors": [
+        {
+          "anchor": "push2:f163",
+          "status": "锚缺失"
+        }
+      ]
+    },
+    "tx[44]=流通市值(亿)": {
+      "anchors": [
+        {
+          "anchor": "push2:f117",
+          "verdict": "相关性候选(L4,非定案,|Spearman|=1.000)",
+          "pooled_pa": 0,
+          "n_samples": 19,
+          "dates_pa_ge18_20": 0,
+          "pooled_exact": 0,
+          "ratio": null,
+          "corr": {
+            "n": 19,
+            "pearson": 0.99999999785154,
+            "spearman": 1.0,
+            "loo_flips": 0
+          }
+        }
+      ]
+    },
+    "tx[45]=总市值(亿)": {
+      "anchors": [
+        {
+          "anchor": "push2:f116",
+          "verdict": "相关性候选(L4,非定案,|Spearman|=1.000)",
+          "pooled_pa": 0,
+          "n_samples": 19,
+          "dates_pa_ge18_20": 0,
+          "pooled_exact": 0,
+          "ratio": null,
+          "corr": {
+            "n": 19,
+            "pearson": 0.9999999981956654,
+            "spearman": 1.0,
+            "loo_flips": 0
+          }
+        }
+      ]
+    },
+    "tx[46]=PB": {
+      "anchors": [
+        {
+          "anchor": "push2:f167",
+          "status": "锚缺失"
+        }
+      ]
+    },
+    "tx[38]=涨跌幅%": {
+      "anchors": [
+        {
+          "anchor": "push2:f170",
+          "status": "锚缺失"
+        }
+      ]
+    },
+    "tx[65]=扣非加权ROE%": {
+      "anchors": [
+        {
+          "anchor": "push2:f173",
+          "status": "锚缺失"
+        },
+        {
+          "anchor": "ulist:f173",
+          "verdict": "无对撞(0命中)",
+          "pooled_pa": 0,
+          "n_samples": 297,
+          "dates_pa_ge18_20": 0,
+          "pooled_exact": 0,
+          "ratio": {
+            "n": 150,
+            "mean": 9.637720649728376,
+            "cv": 2.47018758683719,
+            "min": 0.05734265734265734,
+            "max": 190.2
+          },
+          "corr": {
+            "n": 297,
+            "pearson": -0.0076681502033209056,
+            "spearman": -0.0071919828356488075,
+            "loo_flips": 6
+          }
+        }
+      ]
+    },
+    "tx[67]=52w高": {
+      "anchors": [
+        {
+          "anchor": "zhb:high_52w",
+          "verdict": "精确对撞 L1 (275/297, 15日)",
+          "pooled_pa": 275,
+          "n_samples": 297,
+          "dates_pa_ge18_20": 14,
+          "pooled_exact": 275,
+          "ratio": {
+            "n": 297,
+            "mean": 1.0006286299783922,
+            "cv": 0.00933891269682246,
+            "min": 0.9446494464944651,
+            "max": 1.100163666121113
+          },
+          "corr": {
+            "n": 297,
+            "pearson": 0.9999992901672637,
+            "spearman": 0.9995938715573758,
+            "loo_flips": 0
+          }
+        }
+      ]
+    },
+    "tx[68]=52w低": {
+      "anchors": [
+        {
+          "anchor": "zhb:low_52w",
+          "verdict": "精确对撞 L1 (292/297, 15日)",
+          "pooled_pa": 292,
+          "n_samples": 297,
+          "dates_pa_ge18_20": 15,
+          "pooled_exact": 292,
+          "ratio": {
+            "n": 297,
+            "mean": 0.9996630691001617,
+            "cv": 0.0037166757528209918,
+            "min": 0.9397573940302576,
+            "max": 1.0
+          },
+          "corr": {
+            "n": 297,
+            "pearson": 0.9999994323847462,
+            "spearman": 0.9999065765611882,
+            "loo_flips": 0
+          }
+        }
+      ]
+    },
+    "zhb:pe_dynamic": {
+      "anchors": [
+        {
+          "anchor": "tx[39]=动态PE",
+          "verdict": "存疑(仅2日≥18/20,未达多日复核门槛/数据稀疏)",
+          "pooled_pa": 41,
+          "n_samples": 297,
+          "dates_pa_ge18_20": 2,
+          "pooled_exact": 41,
+          "ratio": {
+            "n": 297,
+            "mean": 1.059407726081748,
+            "cv": 0.3745945069856488,
+            "min": 0.714746019711903,
+            "max": 5.0325277397780805
+          },
+          "corr": {
+            "n": 297,
+            "pearson": 0.9694639434362013,
+            "spearman": 0.996197541420925,
+            "loo_flips": 0
+          }
+        }
+      ]
+    },
+    "zhb:dividend_yield%": {
+      "anchors": [
+        {
+          "anchor": "tx[64]=股息率%",
+          "verdict": "存疑(仅2日≥18/20,未达多日复核门槛/数据稀疏)",
+          "pooled_pa": 137,
+          "n_samples": 297,
+          "dates_pa_ge18_20": 0,
+          "pooled_exact": 137,
+          "ratio": {
+            "n": 204,
+            "mean": 1.1921115550019923,
+            "cv": 0.6182598018781804,
+            "min": 0.8156028368794326,
+            "max": 4.322784810126582
+          },
+          "corr": {
+            "n": 297,
+            "pearson": 0.8089022733084684,
+            "spearman": 0.8098323589331188,
+            "loo_flips": 0
+          }
+        },
+        {
+          "anchor": "push2:f126",
+          "status": "锚缺失"
+        }
+      ]
+    },
+    "zhb:high_52w": {
+      "anchors": [
+        {
+          "anchor": "tx[67]=52w高",
+          "verdict": "精确对撞 L1 (275/297, 15日)",
+          "pooled_pa": 275,
+          "n_samples": 297,
+          "dates_pa_ge18_20": 14,
+          "pooled_exact": 275,
+          "ratio": {
+            "n": 297,
+            "mean": 0.9994534448288184,
+            "cv": 0.008764703572848101,
+            "min": 0.9089556679559655,
+            "max": 1.0585937499999998
+          },
+          "corr": {
+            "n": 297,
+            "pearson": 0.9999992901672637,
+            "spearman": 0.9995938715573758,
+            "loo_flips": 0
+          }
+        }
+      ]
+    },
+    "zhb:ipo_price": {
+      "anchors": [
+        {
+          "anchor": "push2:f189",
+          "status": "锚缺失"
+        }
+      ]
+    },
+    "fuyao:pe_ttm": {
+      "anchors": [
+        {
+          "anchor": "push2:f164",
+          "status": "锚缺失"
+        },
+        {
+          "anchor": "zhb:pe_ttm",
+          "verdict": "无对撞(0命中)",
+          "pooled_pa": 0,
+          "n_samples": 160,
+          "dates_pa_ge18_20": 0,
+          "pooled_exact": 0,
+          "ratio": {
+            "n": 128,
+            "mean": 0.979955248293229,
+            "cv": 0.33530027599132894,
+            "min": 0.44514622883530014,
+            "max": 1.608119049975836
+          },
+          "corr": {
+            "n": 160,
+            "pearson": -0.8549505379305574,
+            "spearman": 0.22571305099419206,
+            "loo_flips": 0
+          }
+        }
+      ]
+    },
+    "fuyao:pe_mrq": {
+      "anchors": [
+        {
+          "anchor": "push2:f163",
+          "status": "锚缺失"
+        }
+      ]
+    },
+    "tx[47]=涨停价(板块幅度)": {
+      "formula_hits": 86,
+      "total": 293,
+      "rate": 0.2935153583617747
+    },
+    "tx[6]=成交量(手/股) vs fuyao:volume(股) 比值族": {
+      "688": {
+        "n": 40,
+        "mean": 1.0,
+        "cv": 0.0,
+        "min": 1.0,
+        "max": 1.0
+      },
+      "other": {
+        "n": 119,
+        "mean": 0.009999991123797061,
+        "cv": 1.9334619310330234e-05,
+        "min": 0.009998898588756985,
+        "max": 0.010000750525367757
+      }
+    }
+  }
+}

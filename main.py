@@ -312,30 +312,29 @@ async def _run_script_async(
                 print(line.decode("utf-8", errors="replace").rstrip(), flush=True)
 
         drain_task = asyncio.create_task(_drain_output())
-        try:
-            # V17.0: 去除固定超时(单一时间维度会误杀正常慢任务——35 只 sht 20 分钟持续有输出
-            # 曾被 875s 估算超时误杀, 历史 V15.4.2/V16.3 O39/V16.4.1 三度调参仍误伤)。
-            # 改为「输出活性检测」: 子进程持续输出=正常运行, 无限等待;
-            # 无任何输出超过 _STALL_TIMEOUT 判定卡死(正常脚本每只股票/每阶段都会打印进度)。
-            _STALL_TIMEOUT = 900  # 无输出 15 分钟判定卡死(全市场 val 策略阶段可能静默较久)
-            rc = None
-            while True:
-                if time.time() - _out_state["last_ts"] > _STALL_TIMEOUT:
-                    print(
-                        f"⚠ [{label}] {script} 无输出 {_STALL_TIMEOUT}s，判定卡死，强制 kill",
-                        flush=True,
-                    )
-                    proc.kill()
-                    await proc.wait()
-                    drain_task.cancel()
-                    return script, -1, time.time() - t0, label
-                try:
-                    rc = await asyncio.wait_for(proc.wait(), timeout=5)
-                    break
-                except asyncio.TimeoutError:
-                    pass
-        except asyncio.TimeoutError:
-            pass
+        # V17.0: 去除固定超时(单一时间维度会误杀正常慢任务——35 只 sht 20 分钟持续有输出
+        # 曾被 875s 估算超时误杀, 历史 V15.4.2/V16.3 O39/V16.4.1 三度调参仍误伤)。
+        # 改为「输出活性检测」: 子进程持续输出=正常运行, 无限等待;
+        # 无任何输出超过 _STALL_TIMEOUT 判定卡死(正常脚本每只股票/每阶段都会打印进度)。
+        # M1 死分支修复：原外层 `except asyncio.TimeoutError: pass` 永触发（内层 wait_for
+        # 的 TimeoutError 已被内层 except 捕获），属死分支，移除外层 try/except。
+        _STALL_TIMEOUT = 900  # 无输出 15 分钟判定卡死(全市场 val 策略阶段可能静默较久)
+        rc = None
+        while True:
+            if time.time() - _out_state["last_ts"] > _STALL_TIMEOUT:
+                print(
+                    f"⚠ [{label}] {script} 无输出 {_STALL_TIMEOUT}s，判定卡死，强制 kill",
+                    flush=True,
+                )
+                proc.kill()
+                await proc.wait()
+                drain_task.cancel()
+                return script, -1, time.time() - t0, label
+            try:
+                rc = await asyncio.wait_for(proc.wait(), timeout=5)
+                break
+            except asyncio.TimeoutError:
+                pass
         # 等待输出排空
         try:
             await asyncio.wait_for(drain_task, timeout=5)

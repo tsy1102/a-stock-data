@@ -167,6 +167,39 @@ def get_baidu_kline_with_ma(code):
 
 
 
+# V17.0.15: TA-Lib 61 种 K 线形态的中文名表（与 sc_technical.get_kline_patterns 的
+# _cdl_map 键一一对应；用于 sht 报告【十六·五、K线形态识别】章节的可读化输出）。
+# 未在表中的形态回退显示英文原名，不影响信号判读。
+_CDL_CN = {
+    "two_crows": "两只乌鸦", "three_black_crows": "三只乌鸦",
+    "three_inside_up_down": "三内升/降", "three_line_strike": "三线打击",
+    "three_outside_up_down": "三外升/降", "three_stars_in_the_south": "南方三星",
+    "three_white_soldiers": "红三兵", "abandoned_baby": "弃婴形态",
+    "advance_block": "大敌当前", "belt_hold": "捉腰带线", "breakaway": "脱离形态",
+    "closing_marubozu": "收盘缺影线", "concealing_baby_swallow": "藏婴吞没",
+    "counterattack": "反击线", "dark_cloud_cover": "乌云盖顶", "doji": "十字星",
+    "doji_star": "十字星线", "dragonfly_doji": "蜻蜓十字", "gravestone_doji": "墓碑十字",
+    "engulfing_pattern": "吞没形态", "evening_doji_star": "黄昏十字星",
+    "evening_star": "黄昏之星", "up_down_gap": "跳空并列阴阳", "hammer": "锤子线",
+    "hanging_man": "上吊线", "harami_pattern": "孕线", "harami_cross_pattern": "十字孕线",
+    "high_wave_candle": "风高浪大线", "hikkake_pattern": "陷阱",
+    "modified_hikkake_pattern": "修正陷阱", "homing_pigeon": "家鸽",
+    "identical_three_crows": "三胞胎乌鸦", "in_neck_pattern": "颈内线",
+    "inverted_hammer": "倒锤头", "kicking": "反冲形态",
+    "kicking_bull_bear": "缺影反冲", "ladder_bottom": "梯底",
+    "long_legged_doji": "长腿十字", "long_line_candle": "长蜡烛", "marubozu": "光头光脚",
+    "matching_low": "相同低价", "mat_hold": "铺垫", "morning_doji_star": "早晨十字星",
+    "morning_star": "早晨之星", "on_neck_pattern": "颈上线",
+    "piercing_pattern": "刺透形态", "rickshaw_man": "黄包车夫",
+    "rising_falling_three": "上升/下降三法", "separating_lines": "分离线",
+    "shooting_star": "射击之星", "short_line_candle": "短蜡烛", "spinning_top": "陀螺",
+    "stalled_pattern": "停顿形态", "stick_sandwich": "条形三明治", "takuri": "探水竿",
+    "tasuki_gap": "跳空并列", "thrusting_pattern": "切入形态", "tristar_pattern": "三星",
+    "unique_3_river": "独特三河", "upside_gap_two_crows": "向上跳空两乌鸦",
+    "up_downside_gap_three": "跳空三法",
+}
+
+
 async def generate_report_async(session, code, output_path, ind_comp=None, idx_q=None, hsgt=None, depth="deep"):
 
     """V7.5 async 版: 支持 ind_comp/idx_q/hsgt 外部缓存，批量模式下避免重复查询
@@ -335,7 +368,45 @@ async def generate_report_async(session, code, output_path, ind_comp=None, idx_q
             L(f"  涨停价:   {cdata.prev_close * (1 + _th / 100):.2f} 元  跌停价: {cdata.prev_close * (1 - _th / 100):.2f} 元")
         L(f"  总市值:   {cdata.mcap_yi:.2f} 亿元  流通市值: {cdata.float_mcap_yi:.2f} 亿元")
         _pe_str = f"{cdata.pe_ttm:.2f}" if cdata.pe_ttm > 0 else "N/A（亏损）"
-        L(f"  PE(TTM):  {_pe_str}  PE(动): {cdata.pe_dynamic:.2f}  PB: {cdata.pb:.2f}")
+        _pe_dyn_str = f"{cdata.pe_dynamic:.2f}" if cdata.pe_dynamic > 0 else "N/A"
+        _pe_lyr_str = f"{cdata.pe_lyr:.2f}" if cdata.pe_lyr > 0 else "N/A"
+        L(f"  PE(TTM):  {_pe_str}  PE(动): {_pe_dyn_str}  PE(静/LYR): {_pe_lyr_str}  PB: {cdata.pb:.2f}")
+
+        # ── V17.0.27(2026-09-04) DEBT-007: 契约孤儿字段消费（公理 A5 契约无孤儿）──
+        #   ① 均价偏离度 = (现价 − 当日均价VWAP) / 均价。
+        #      源: 腾讯 qt.gtimg [85]，置信度 **L3 强定案**（茅台 t85=1297.00 ≈ 自算VWAP
+        #      1297.04，误差 0.003%；2026-09-03 主动升级法推翻 08-31 的"盘口参考价(未确认)"旧结论）。
+        #      语义: 现价站上均价=日内买盘占优（收盘价 > 均价意味着当日多数成交在现价之下）；
+        #      反之卖盘占优。与 MA5 乖离互补——MA 看多日趋势、均价看日内成本。
+        _ap = getattr(cdata, "avg_price", 0) or 0
+        if _ap > 0:
+            _dev = (cdata.price - _ap) / _ap * 100
+            if _dev >= 2.0:
+                _dev_tag = "显著高于均价，日内强势（但追高需谨慎）"
+            elif _dev >= 0.5:
+                _dev_tag = "略高于均价，日内偏强"
+            elif _dev > -0.5:
+                _dev_tag = "贴近均价，多空胶着"
+            elif _dev > -2.0:
+                _dev_tag = "略低于均价，日内偏弱"
+            else:
+                _dev_tag = "显著低于均价，日内弱势"
+            L(f"  [均价偏离] 当日均价(VWAP): {_ap:.2f} 元 | 现价偏离: {_dev:+.2f}% — {_dev_tag}")
+        else:
+            L("  [均价偏离] N/A（当日均价未取到）")
+
+        #   ② 盘口委差（买方挂单量 − 卖方挂单量）
+        #      源: 腾讯 [86]，置信度 **L4 候选、语义未定案** —— 证据（tdx_client 槽位注释）：
+        #        符号(收>开)仅 3/6 一致 → "日内净买"解释已被**证伪**；委差是 L1 瞬时快照，
+        #        与日K线解耦，故**无法用日K线对撞验证**；量级与委差吻合但单位(手/股依板块而异)未验证。
+        #      处理（A8 禁止静默迁就 + 避免重蹈 DEBT-008「假 PE 交叉验证」覆辙）:
+        #        **只作观察展示并显式标注未定案，绝不参与任何信号/评分**。
+        #        待对撞定案后再升级为正式信号（台账 DEBT-014）。
+        _ban = getattr(cdata, "bid_ask_net", 0) or 0
+        if _ban != 0:
+            L(f"  [盘口委差] {_ban:+.0f}  ⚠️口径未定案(L4)，单位与符号待对撞验证，仅供观察、不参与信号判定")
+        else:
+            L("  [盘口委差] N/A（未取到）")
     else:
         L("  行情数据获取失败")
 
@@ -404,6 +475,11 @@ async def generate_report_async(session, code, output_path, ind_comp=None, idx_q
         # 末值恒为陈旧值——8/12-8/19 冻结 379.75)——不再展示错误数字
         if hsgt.get("data_quality") == "invalid":
             L("  ⚠️ 今日北向资金: 数据源异常(hgt/sgt 序列错位), 净流入暂缺")
+        elif hsgt.get("data_quality") == "partial_hgt_only":
+            # V17.0.28: hgt=当日分时(可用), sgt=历史序列(不可用) → 只展示沪股通并声明单口径
+            _sig = "偏多" if hsgt["hgt"] > 0 else "偏空"
+            L(f"  💰 今日北向资金: 沪股通 {hsgt['hgt']:+.2f}亿（{_sig}）"
+              f" | 深股通序列为历史值暂缺，本项为沪股通单口径，非北向合计")
         else:
             _sig = "偏多" if hsgt["total"] > 0 else "偏空"
 
@@ -691,18 +767,37 @@ async def generate_report_async(session, code, output_path, ind_comp=None, idx_q
 
             L(f"  所属板块: {peer_data['industry']}"); L(f"  本股市值: {_my_mcap_show:.1f}亿元")
 
-            L("  同业龙头对比:"); L(f"  {'代码':<8} {'名称':<12} {'股价':>8} {'涨跌幅%':>8} {'市值(亿)':>10} {'PE':>8} {'换手率%':>8}"); L(f"  {'-'*70}")
+            # V17.0.27(2026-09-04) 口径对齐修复（9/3 报告核查 #2）：
+            #   同业行 `p['pe']` 来自 tdx_get_board_members → pe_dynamic（东财兜底路径为 f9=动态PE，
+            #   V17.0.15 已定案）；而本股行原取 pe_ttm —— **同一列里两个口径**，横向对比不可比，
+            #   且列标题写 "PE(TTM)" 与同业行实际口径不符（语义漂移，A2）。
+            #   实测佐证: 300442 报告显示 PE(TTM)=43.9，统一层实测 pe_ttm=20.93 / pe_dynamic=19.68，
+            #   43.9 两者皆不匹配（来自 TDX MAC 的 pe_dynamic）。
+            #   修复: 本股行改用 pe_dynamic，列标题改为「PE(动)」→ 同列同口径 + 标题如实。
+            L("  同业龙头对比:"); L(f"  {'代码':<8} {'名称':<12} {'股价':>8} {'涨跌幅%':>8} {'市值(亿)':>10} {'PE(动)':>9} {'PE(静)':>8} {'换手率%':>8}"); L(f"  {'-'*80}")
 
             _my_mcap = peer_data['my_mcap'] if peer_data['my_mcap'] > 0 else q.get('mcap_yi', 0)
 
-            _my_pe = q.get('pe_ttm', 0) or 0
+            _my_pe = q.get('pe_dynamic', 0) or 0
             _my_pe_s = f"{_my_pe:.1f}" if _my_pe > 0 else "亏损"
-            L(f"  {code:<8} {info.get('name','N/A'):<12} {price_today:>8.2f} {q.get('change_pct',0):>7.2f}% {_my_mcap:>9.1f} {_my_pe_s:>8} {q.get('turnover_pct',0):>7.2f}% ← 本股")
+            _my_pe_lyr = cdata.pe_lyr or 0
+            _my_pe_lyr_s = f"{_my_pe_lyr:.1f}" if _my_pe_lyr > 0 else "N/A"
+            L(f"  {code:<8} {info.get('name','N/A'):<12} {price_today:>8.2f} {q.get('change_pct',0):>7.2f}% {_my_mcap:>9.1f} {_my_pe_s:>9} {_my_pe_lyr_s:>8} {q.get('turnover_pct',0):>7.2f}% ← 本股")
 
             for p in peer_data["peers"]:
                 _ppe = p.get('pe', 0) or 0
                 _ppe_s = f"{_ppe:.1f}" if _ppe > 0 else "亏损"
-                L(f"  {p['code']:<8} {p['name']:<12} {p['price']:>8.2f} {p['change_pct']:>7.2f}% {p['mcap_yi']:>9.1f} {_ppe_s:>8} {p['turnover']:>7.2f}%")
+                _ppe_lyr = p.get('pe_lyr', 0) or 0
+                _ppe_lyr_s = f"{_ppe_lyr:.1f}" if _ppe_lyr > 0 else "N/A"
+                # V17.0.27(2026-09-04) A6「缺失≠0」（9/3 报告核查 #3）：
+                #   peers 的 change_pct 来自 TDX board_members，取不到时返回 0 —— 直接渲染
+                #   成 "0.00%" 会被读者误读为「平盘」。实证: 300442 在 300454/301396 两份
+                #   报告同业表均显示 0.00%，但统一层对其 change_pct 的 field_source 是
+                #   **"missing"**，且该股当日换手率 0.88%（有成交、非停牌）→ 确为缺失非平盘。
+                #   平盘（真实 0.00%）在 A 股极罕见，故此处按「0 即缺失」显式渲染 N/A。
+                _pchg = p.get('change_pct', 0) or 0
+                _pchg_s = f"{_pchg:>7.2f}%" if _pchg != 0 else "    N/A "
+                L(f"  {p['code']:<8} {p['name']:<12} {p['price']:>8.2f} {_pchg_s} {p['mcap_yi']:>9.1f} {_ppe_s:>9} {_ppe_lyr_s:>8} {p['turnover']:>7.2f}%")
 
     else: L(f"  无法获取同业数据（板块: {peer_data.get('industry','未知')}）")
 
@@ -1023,7 +1118,12 @@ async def generate_report_async(session, code, output_path, ind_comp=None, idx_q
 
         elif _all_depts and _inst_net < -1000:
 
-            L("  ⚠️ 综合判断: 机构大额卖出 + 游资炒作，需谨慎")
+            # V17.0.25(2026-09-02) P1-5 修复: 原结论「机构大额卖出 + 游资炒作」仅凭 _all_depts(含北向/机构席位)
+            # 即输出, 与审计发现的4份「仅[北向]/[机构]仍称游资炒作」矛盾。须校验确有游资席位(_youzi_buy/_youzi_sell)。
+            if _youzi_buy or _youzi_sell:
+                L("  ⚠️ 综合判断: 机构大额卖出 + 游资炒作，需谨慎")
+            else:
+                L("  ⚠️ 综合判断: 机构大额卖出，需谨慎（未见知名游资席位）")
 
         elif _lhasa_count + _lhasa_sell > 3:
 
@@ -1033,14 +1133,19 @@ async def generate_report_async(session, code, output_path, ind_comp=None, idx_q
         if dtb.get("seat_analysis"):
             sa = dtb["seat_analysis"]
             L("\n  ── 席位增强分析 ──")
-            if sa.get("seat_quality_score"):
+            # V17.0.25(2026-09-02) P1-6 配套: 席位全部未匹配到已知游资库时,
+            # seat_quality_score=None / premium_signal="unknown" → 显式标注「无法评级」, 不输出伪精确 50 分。
+            if sa.get("seat_quality_score") is not None:
                 L(f"  席位质量评分: {sa['seat_quality_score']}分")
+            else:
+                L("  席位质量评分: N/A（龙虎榜席位未匹配到已知游资库，无法评级）")
             if sa.get("premium_signal"):
                 _signal_map = {
                     "buy_high": "✅ 强势买入信号，游资抢筹意愿强烈，短线关注",
                     "sell_high": "⚠️ 强势卖出信号，游资集中出货，注意回调风险",
                     "sell_caution": "⚠️ 卖出警示，卖方力量占优，建议观望",
                     "neutral": "➖ 中性评级，价格已透支，此时追涨性价比低",
+                    "unknown": "⚪ 数据不足（无已知游资席位，暂不评级）",
                 }
                 _signal_text = _signal_map.get(sa['premium_signal'], sa['premium_signal'])
                 L(f"  溢价信号: {_signal_text}")
@@ -1153,6 +1258,14 @@ async def generate_report_async(session, code, output_path, ind_comp=None, idx_q
     else:
         holders = await holder_change_async(session, code)
 
+    # V17.0.14: 筹码分布 CYQ —— 提前获取(东财 kline f61 → calculate_cyq), 供章节+评分复用
+    _cyq_dict = {}
+    try:
+        from stock_common.sc_datasource import get_cyq_distribution
+        _cyq_dict = await asyncio.to_thread(get_cyq_distribution, code) or {}
+    except Exception as _e:
+        _debug_log(f"sht cyq ({code}): {_e}")
+
     if holders:
 
         ld3 = holders[0]["date"]
@@ -1185,6 +1298,26 @@ async def generate_report_async(session, code, output_path, ind_comp=None, idx_q
             L(f"\n  ➤ 信号: {sig}")
 
     else: L("  股东户数数据获取失败")
+
+    # V17.0.14: 筹码分布 CYQ 章节(东财 kline f61 → calculate_cyq)
+    # V17.0.17 修复: 源空时渲染可见告警占位, 不再整章静默跳过(重演 V17.0 已修的 M1/M4 假空白章节反模式)
+    L("\n"+"---"); L("## **十三·五、筹码分布（成本集中度）**"); L("---")
+    if _cyq_dict:
+        _ben = _cyq_dict.get("benefit_pct", 0.0) or 0.0
+        _c90 = _cyq_dict.get("concentration_90", 0.0) or 0.0
+        _c70 = _cyq_dict.get("concentration_70", 0.0) or 0.0
+        _avg = _cyq_dict.get("avg_cost", 0.0) or 0.0
+        L(f"  - 获利盘比例: {_ben*100:.1f}%（当前价下持仓盈利占比）")
+        L(f"  - 平均成本: {_avg:.2f} 元")
+        L(f"  - 90% 筹码集中度: {_c90:.3f}（成本区间 {_cyq_dict.get('cost_90_low',0):.2f}~{_cyq_dict.get('cost_90_high',0):.2f}）")
+        L(f"  - 70% 筹码集中度: {_c70:.3f}（成本区间 {_cyq_dict.get('cost_70_low',0):.2f}~{_cyq_dict.get('cost_70_high',0):.2f}）")
+        _cflag = "高度集中" if _c90 < 0.12 else ("较集中" if _c90 < 0.2 else ("分散" if _c90 > 0.35 else "中性"))
+        _pflag = ("获利盘丰厚，上方解套抛压需关注" if _ben > 0.85
+                  else ("套牢盘较重，反弹承压" if _ben < 0.25 else "成本结构均衡"))
+        L(f"  ➤ 研判: 筹码{_cflag}；{_pflag}")
+    else:
+        # 源抓取失败(东财 push2his kline/get 返回空/异常) → 可见告警, 不再静默消失
+        L("  ⚠️ 东财 K线/CYQ 数据源暂不可用（kline/get 抓取失败或返回空），本章成本集中度数据暂缺")
 
     L("\n"+"---"); L("## **十四、短线情绪与事件催化**"); L("---")
 
@@ -1433,7 +1566,12 @@ async def generate_report_async(session, code, output_path, ind_comp=None, idx_q
                 if _sl.get("open_volume_ratio"):
                     _parts.append(f"开盘量比{_sl['open_volume_ratio']:.2f}")
                 if _sl.get("auction_prev_volume_ratio"):
-                    _parts.append(f"竞价昨比{_sl['auction_prev_volume_ratio']:.2f}")
+                    # V17.0.30(2026-09-02) 标签订正: 原标为「竞价昨比」, 但实测 32 份报告中
+                    # 该值 == fuyao「竞价量比」31/32(唯一不等的 688305 为 0.44 vs 0.43 舍入差),
+                    # 而与 fuyao「竞价昨比」归一化后 0/32 相同(如 000657: 本值5.20 / fuyao昨比149%)
+                    # → 本字段实为**竞价量比**(字段名 auction_prev_volume_ratio 的 prev 系误导)。
+                    # 原标签导致同一份报告 ZHB 段与 fuyao 段出现两个「竞价昨比」且数值矛盾。
+                    _parts.append(f"竞价量比{_sl['auction_prev_volume_ratio']:.2f}")
                 if _sl.get("seal_to_float_ratio") is not None and _sl.get("seal_to_float_ratio", 0) > 0:
                     # V17.0.2: 极小封流比(0.002%)无展示意义——过滤 <0.01%
                     if _sl["seal_to_float_ratio"] * 100 >= 0.01:
@@ -1458,7 +1596,13 @@ async def generate_report_async(session, code, output_path, ind_comp=None, idx_q
                             _dir = "买盘未成交完(承接强)" if _um > 0 else "卖压未消化"
                             _aparts.append(f"未匹配量{_um:+.0f}手({_dir})")
                         if _a.get("auction_yesterday_ratio_pct") is not None:
-                            _yr = _a["auction_yesterday_ratio_pct"]
+                            # V17.0.24(2026-09-02) 修正: 实测该字段返回**比值**而非百分数——
+                            # 000657=1.4875 / 600410=2.6442 / 300059=0.5931(与同族 auction_volume_ratio
+                            # 同为量比口径, 键名 _pct 系上游误导命名)。原代码直接按百分数比较
+                            # (<50 / >120) 并以 .0f% 渲染 → 全部样本恒落 <50 分支,
+                            # 2026-09-01 32/32 份报告误报「缩量高开诱多风险」, 且 >120 放量分支为死代码。
+                            # 修正: ×100 归一成百分数后再判阈值(保留原 50%/120% 语义)。
+                            _yr = _a["auction_yesterday_ratio_pct"] * 100.0
                             if _yr < 50:
                                 _aparts.append(f"竞价昨比{_yr:.0f}%⚠️缩量高开诱多风险")
                             elif _yr > 120:
@@ -1718,7 +1862,10 @@ async def generate_report_async(session, code, output_path, ind_comp=None, idx_q
             if stk3 >= tl:
                 signals.append(f"异动雷达(ZHB离线)：近5日涨幅{cdata.change_5d:+.2f}%，估算3日偏离{stk3:+.2f}%>={tl}%，触发异动")
         else:
-            _sk_r, _sr_r = await asyncio.to_thread(baidu_kline_full, code, 5)
+            # V17.0.15: count 5→60 —— 与下文【十六·五、K线形态识别】共用同一 cache_key
+            # ("D:{code}:60")，第二次命中进程内/磁盘缓存，**净增网络请求为 0**；
+            # 60 根同时满足 TA-Lib CDL 族的 lookback 需求（形态识别需 ≥3 根且历史越长越稳）。
+            _sk_r, _sr_r = await asyncio.to_thread(baidu_kline_full, code, 60)
             if len(_sr_r) >= 4 and len(_sk_r) > 0:
                 _ci_r = next((i for i,k in enumerate(_sk_r) if k in ("close","close_price")), -1)
                 if _ci_r >= 0:
@@ -1748,6 +1895,11 @@ async def generate_report_async(session, code, output_path, ind_comp=None, idx_q
 
     else: L("  (数据不足，暂无法生成综合信号)")
 
+    # V17.0.17: 预初始化 _sk/_sr, 供【十六·五、K线形态识别】复用。
+    # 此前 _sk/_sr 仅在涨停块(L1836)内赋值, 非涨停股触发 NameError 被下方 except 吞掉 → 整章静默消失
+    # (重演 V17.0 已修的 M1/M4 假空白章节反模式)。现预置空, 涨停块会覆盖, K线形态块按需自取。
+    _sk, _sr = [], []
+
     if q and price_today>0 and is_limit_up(code, stock_name, q.get("change_pct",0)):
 
         # V17.0(2026-08-15): 连板追踪增强——ZHB [33] 连板数(2026-08-27 天梯20/20 定案)优先, fallback 3日涨幅估算
@@ -1772,7 +1924,8 @@ async def generate_report_async(session, code, output_path, ind_comp=None, idx_q
 
         try:
 
-            _sk, _sr = await asyncio.to_thread(baidu_kline_full, code, 5)
+            # V17.0.15: count 5→60（与上文异动雷达共用 cache_key "D:{code}:60"，命中缓存零额外请求）
+            _sk, _sr = await asyncio.to_thread(baidu_kline_full, code, 60)
 
             _ci = next((i for i,k in enumerate(_sk) if k in ("close","close_price")), -1)
 
@@ -1796,6 +1949,61 @@ async def generate_report_async(session, code, output_path, ind_comp=None, idx_q
 
         except Exception as _e:
             _debug_log(f"sht lb estimate ({code}): {_e}")  # M11 修复(2026-08-15 二审): 吞异常补日志
+
+    # ─── V17.0.15: K线形态识别（TA-Lib 61 形态，短线择时高价值维度）───
+    # V17.0.17 修复: ① 此前 _sk/_sr 仅在涨停块(L1836)内赋值, 非涨停股触发 NameError 被 except 吞掉
+    #       → 整章静默消失(重演 V17.0 已修的 M1/M4 假空白章节反模式); 现统一在此自取(TDX 磁盘缓存
+    #       命中零额外请求), 涨停块已取则复用。② 源空/数据不足时渲染可见告警占位, 不再静默跳过。
+    #       ③ 有数据但无形态时显式标注"无显著形态", 使该维度章节稳定存在。
+    try:
+        # 确保 K 线数据可用: 涨停块(L1836)已取则复用, 否则自取
+        if not _sr:
+            _sk, _sr = await asyncio.to_thread(baidu_kline_full, code, 60)
+        _oi = next((i for i, k in enumerate(_sk) if k in ("open", "open_price")), -1)
+        _hi2 = next((i for i, k in enumerate(_sk) if k in ("high", "high_price")), -1)
+        _li2 = next((i for i, k in enumerate(_sk) if k in ("low", "low_price")), -1)
+        _ci2 = next((i for i, k in enumerate(_sk) if k in ("close", "close_price")), -1)
+        L("\n"+"---"); L("## **十六·五、K线形态识别（TA-Lib 61 形态）**"); L("---")
+        if not _sr or min(_oi, _hi2, _li2, _ci2) < 0:
+            # 源抓取失败(远端 TDX 截断/不可达) → 可见告警, 不再静默消失
+            L("  ⚠️ K线数据源暂不可用（TDX 远端行情抓取失败或返回空），本章形态识别数据暂缺")
+        else:
+            _need2 = max(_oi, _hi2, _li2, _ci2)
+            _rows_p = [rr for rr in _sr if len(rr) > _need2]
+            if len(_rows_p) < 3:
+                L("  ⚠️ K线数据不足（有效日K < 3 根），无法识别形态，暂缺")
+            else:
+                from stock_common.sc_technical import get_kline_patterns
+
+                _pat = get_kline_patterns(
+                    [_safe_float(rr[_oi]) for rr in _rows_p],
+                    [_safe_float(rr[_hi2]) for rr in _rows_p],
+                    [_safe_float(rr[_li2]) for rr in _rows_p],
+                    [_safe_float(rr[_ci2]) for rr in _rows_p],
+                )
+                _bull = [k for k, v in _pat.items() if v > 0]
+                _bear = [k for k, v in _pat.items() if v < 0]
+                if _bull or _bear:
+                    if _bull:
+                        L(f"  ➤ 看涨信号({len(_bull)}): "
+                          + "、".join(f"{_CDL_CN.get(k, k)}" for k in _bull[:6]))
+                    if _bear:
+                        L(f"  ➤ 看跌信号({len(_bear)}): "
+                          + "、".join(f"{_CDL_CN.get(k, k)}" for k in _bear[:6]))
+                    if _bull and not _bear:
+                        _pj = "短线形态**一致偏多**"
+                    elif _bear and not _bull:
+                        _pj = "短线形态**一致偏空**"
+                    else:
+                        _pj = "多空形态信号**对冲**，方向待量能确认"
+                    L(f"  📌 研判: {_pj}（看涨 {len(_bull)} / 看跌 {len(_bear)}）")
+                    L("  ⚠️ 形态信号须结合**位置与量能**解读——单日形态噪音大，仅作辅助确认，"
+                      "不可单独作为买卖依据；且信号基于日K收盘，盘中会变化。")
+                else:
+                    L("  (当前无显著看涨/看跌形态信号)")
+    except Exception as _e:
+        _debug_log(f"sht kline patterns ({code}): {_e}")
+        L("  ⚠️ K线形态识别异常，本章暂缺")
 
     L("\n"+"---"); L("## **仓位管理建议**"); L("---")
 
@@ -1835,6 +2043,13 @@ async def generate_report_async(session, code, output_path, ind_comp=None, idx_q
         score_data.holder_change_ratio = holders[0]["change_ratio"]
         if holders[0]["change_ratio"] < 0 and holders[1]["change_ratio"] < 0:
             score_data.holder_consecutive_decrease = True
+
+    # 筹码分布 CYQ(V17.0.14: _cyq_dict 已在上方股东户数段提前获取, 此处仅写入评分)
+    if _cyq_dict:
+        score_data.cyq_benefit_pct = _cyq_dict.get("benefit_pct", 0.0) or 0.0
+        score_data.cyq_avg_cost = _cyq_dict.get("avg_cost", 0.0) or 0.0
+        score_data.cyq_concentration_90 = _cyq_dict.get("concentration_90", 0.0) or 0.0
+        score_data.cyq_concentration_70 = _cyq_dict.get("concentration_70", 0.0) or 0.0
     
     # 北向数据
     if nb and len(nb) >= 2:
@@ -1869,14 +2084,16 @@ async def generate_report_async(session, code, output_path, ind_comp=None, idx_q
 
     if _seal_warn:
         # 封单弱时仓位降级：原仓位建议减半
-        if _ps >= 50: L(f"  短线评分: {_ps:.0f}/100 → 封单偏弱，仓位降至20%，止损-5% ⚠️")
-        elif _ps >= 30: L(f"  短线评分: {_ps:.0f}/100 → 封单偏弱，仓位降至12%，止损-5% ⚠️")
-        elif _ps >= 15: L(f"  短线评分: {_ps:.0f}/100 → 封单偏弱，仓位降至5%，止损-3% ⚠️")
-        else: L(f"  短线评分: {_ps:.0f}/100 → 封单偏弱，观望为主，仓位2% ⚠️")
-    elif _ps>=50: L(f"  短线评分: {_ps:.0f}/100 → 强烈参与，仓位40%，止损-5%")
-    elif _ps>=30: L(f"  短线评分: {_ps:.0f}/100 → 可参与，仓位25%，止损-5%")
-    elif _ps>=15: L(f"  短线评分: {_ps:.0f}/100 → 轻仓试探，仓位10%，止损-3%")
-    else: L(f"  短线评分: {_ps:.0f}/100 → 观望，仓位5%试水")
+        # V17.0.25(2026-09-02) P2-9 修复: 显示用 int() 截断(非四舍五入), 与档位判定(_ps>=50/30/15)一致 —
+        # 49.6 原 .0f 显示50却落30-49档, 读者误判。int(非负)即 floor。
+        if _ps >= 50: L(f"  短线评分: {int(_ps)}/100 → 封单偏弱，仓位降至20%，止损-5% ⚠️")
+        elif _ps >= 30: L(f"  短线评分: {int(_ps)}/100 → 封单偏弱，仓位降至12%，止损-5% ⚠️")
+        elif _ps >= 15: L(f"  短线评分: {int(_ps)}/100 → 封单偏弱，仓位降至5%，止损-3% ⚠️")
+        else: L(f"  短线评分: {int(_ps)}/100 → 封单偏弱，观望为主，仓位2% ⚠️")
+    elif _ps>=50: L(f"  短线评分: {int(_ps)}/100 → 强烈参与，仓位40%，止损-5%")
+    elif _ps>=30: L(f"  短线评分: {int(_ps)}/100 → 可参与，仓位25%，止损-5%")
+    elif _ps>=15: L(f"  短线评分: {int(_ps)}/100 → 轻仓试探，仓位10%，止损-3%")
+    else: L(f"  短线评分: {int(_ps)}/100 → 观望，仓位5%试水")
 
     # V17.0 R5: 多评委评审团评分渲染统一走 sc_render(原 12 行逐字重复已收敛)
     from stock_common.sc_render import render_multi_school_scores

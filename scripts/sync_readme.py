@@ -191,7 +191,7 @@ def build_summary_block(versions) -> str:
     return "\n".join(lines)
 
 
-def update_readme(versions) -> bool:
+def update_readme(versions, dry_run: bool = False) -> bool:
     """重写 README 版本历史块"""
     content = README.read_text(encoding="utf-8")
 
@@ -214,12 +214,38 @@ def update_readme(versions) -> bool:
     # 替换
     new_content = content[:begin_idx] + new_block + "\n" + content[end_idx:].lstrip("\n")
 
+    if dry_run:
+        print(f"[sync_readme][dry-run] 将重写 {README} 版本历史块（{len(new_block)} 字符），未实际写入")
+        return True
+
+    # S6 修复：写前备份，防止版本历史归档速览表丢失
+    _bak = README.with_suffix(README.suffix + ".bak")
+    try:
+        _bak.write_text(content, encoding="utf-8")
+        print(f"[sync_readme] 已备份原 README → {_bak}")
+    except Exception as _e:
+        print(f"[sync_readme] ⚠️ 备份失败: {_e}", file=sys.stderr)
     # 写回
     README.write_text(new_content, encoding="utf-8")
     return True
 
 
 def main():
+    import argparse
+
+    parser = argparse.ArgumentParser(description="从 CHANGELOG.md 同步 README.md 版本历史块")
+    parser.add_argument("--force", action="store_true",
+                        help="确认执行(会覆盖 README 版本历史块，运行前自动 .bak 备份)")
+    parser.add_argument("--dry-run", action="store_true", help="仅预览，不写入文件")
+    args = parser.parse_args()
+
+    # S6 修复：此脚本会覆盖 README 的"版本历史"块(可能丢失历史归档速览表)。
+    # 默认拒绝运行，必须显式 --force 或先 --dry-run 预览。
+    if not args.force and not args.dry_run:
+        print("⛔ 此脚本会覆盖 README.md 的'版本历史'块(可能丢失历史归档速览表)。", file=sys.stderr)
+        print("   如需保留归档请勿运行；确需同步请加 --force，或先 --dry-run 预览。", file=sys.stderr)
+        sys.exit(1)
+
     print(f"[sync_readme] 开始从 {CHANGELOG} 同步到 {README}")
     print(f"[sync_readme] 当前时间: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
 
@@ -234,7 +260,7 @@ def main():
     versions = extract_changelog_summaries()
     print(f"[sync_readme] 提取 {len(versions)} 个版本")
 
-    if update_readme(versions):
+    if update_readme(versions, dry_run=args.dry_run):
         print(f"[sync_readme] ✅ README.md 版本历史块已更新")
     else:
         print(f"[sync_readme] ❌ 更新失败")

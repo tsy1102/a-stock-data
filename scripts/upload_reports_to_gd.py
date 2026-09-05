@@ -109,8 +109,18 @@ def main():
     for folder, fns in sorted(targets.items()):
         print(f"  「{folder}」: {len(fns)} 个")
 
+    # M16 修复：原 dry-run 在列出文件夹后直接 return，导致下方循环内两处
+    # `if args.dry_run`(新建文件夹/逐文件"待上传")永不可达，--dry-run 实际不列待传
+    # 文件清单(与 help 不符)。现改为 dry-run 直接打印完整待上传清单后返回，不连接 GD。
     if args.dry_run:
-        print("\n[dry-run] 完成, 未上传")
+        _total = 0
+        print("\n[dry-run] 预览待上传文件清单(不实际连接/上传):")
+        for folder, fns in sorted(targets.items()):
+            print(f"  「{folder}」: {len(fns)} 个")
+            for fn in fns:
+                print(f"    📤 待上传: {fn}")
+                _total += 1
+        print(f"\n[dry-run] 共 {_total} 个文件待上传, 未实际上传")
         return
 
     drive, proxy_set, root_id, skip_upload = init_gd(_ROOT)
@@ -134,8 +144,6 @@ def main():
                 folder_id = match[0]
                 folder = [fname for fname, fid in existing_folders.items() if fid == folder_id][0]
         if folder_id is None:
-            if args.dry_run:
-                continue
             folder_id = retry_get_folder_interactive(drive, folder, root_id, max_auto_retry=3)
             if folder_id:
                 existing_folders[folder] = folder_id
@@ -151,9 +159,6 @@ def main():
             if fn in existing_files:
                 print(f"  ⏭️ 已存在, 跳过: {fn}")
                 skipped += 1
-                continue
-            if args.dry_run:
-                print(f"  📤 待上传: {fn}")
                 continue
             try:
                 if upload_report_to_drive(drive, local_path, folder_id, fn):

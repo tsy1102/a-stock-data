@@ -476,7 +476,9 @@ def get_kline_patterns(opens: list, highs: list, lows: list, closes: list) -> di
             fn = getattr(talib, func_name, None)
             if fn is not None:
                 vals = fn(o, h, l, c)
-                result[field_name] = int(vals[-1]) if len(vals) else 0
+                # M18 修复：talib 返回的 vals 为 numpy 数组，长度恒>0，原 `if len(vals) else 0`
+                # 的 else 分支不可达（恒取 int(vals[-1])），简化为直接取值。
+                result[field_name] = int(vals[-1])
     except ImportError:
         pass
     return result

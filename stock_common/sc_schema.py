@@ -552,7 +552,11 @@ class CanonicalStockData:
     # 板块与概念
     industry: str = ""               # 行业分类
     industry_code: str = ""          # 行业代码
-    board: str = ""                  # 板块归属
+    board: str = ""                  # 板块归属（地域, f128）
+    # V17.0.32(2026-09-06): 市场类型枚举(≡ ulist f182, 主字典 2026-08-19 定案 20/20 实锤)
+    #   主板=2 / 创业板=5 / 科创板=32 / 北交所=80; ST 不改变归属。
+    #   与 board(地域) 正交——前者是交易所/市场类型, 后者是注册地。
+    sec_type: int = 0                # 市场类型枚举（f182）
     concepts: Tuple[str, ...] = field(default_factory=tuple) # 所属概念
 
     # 元数据溯源

@@ -1479,6 +1479,18 @@ async def generate_report_async(session, code, output_path, ind_comp=None, idx_q
         success_rate = pool.get("success_rate", 0)
         L(f"    今日涨停 {zt_count} 只 | 炸板 {zb_count} 只 | 跌停 {dt_count} 只 | 封板率 {success_rate:.0f}%")
 
+        # V17.2.0: 全市场广度(通达信统计指数)交叉校验打板池口径
+        try:
+            from core.tdx_client import tdx_get_market_stat
+
+            _ms = await asyncio.to_thread(tdx_get_market_stat)
+            if _ms:
+                L(f"    全市场(通达信): 涨停{_ms['limit_up_count']}/跌停{_ms['limit_down_count']}"
+                  f" | 上涨{_ms['up_count']}/下跌{_ms['down_count']}"
+                  f" | 停牌{_ms['suspended_count']} | 总市值{_ms['total_market_cap']/1e12:.2f}万亿")
+        except Exception as _e:
+            _debug_log(f"sht market stat: {_e}")
+
         # 检查当前股票是否在涨停池/炸板池中
         # V17.0.1g/h: 叠加同花顺增强字段(涨停原因/板型/封板率/炸板次数/换手/流通市值/市场类型/回封)
         for item in pool.get("limit_up_list", []):

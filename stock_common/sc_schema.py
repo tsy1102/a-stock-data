@@ -473,6 +473,10 @@ class CanonicalStockData:
     dividend_yield: float = 0.0      # 股息率 (%)
     turnover_pct: float = 0.0        # 换手率 (%)
     vol_ratio: float = 0.0           # 量比 (push2 f49 / 腾讯 v49; data_provider:900 已计算并透传)
+    # V17.2.0(2026-09-07): TDX 实时五档行情协议直解（非派生）——内盘/外盘/涨速
+    s_vol: float = 0.0               # 内盘(主动卖成交量, 手) — easy_tdx SecurityQuote.s_vol (TDX 协议直解)
+    b_vol: float = 0.0               # 外盘(主动买成交量, 手) — easy_tdx SecurityQuote.b_vol
+    rise_speed: float = 0.0          # 涨速(%/min) — easy_tdx SecurityQuote.rise_speed (协议 reversed_bytes9/100)
     # V17.1: 资产负债表项(TDX GetFinanceInfo 0x0010, 单位角→元)——季频静态, 不扩大实时取数集
     total_assets: float = 0.0        # 总资产 (元, TDX f10 zongzichan/10)
     net_assets: float = 0.0          # 净资产/股东权益 (元, TDX f10 jingzichan/10)

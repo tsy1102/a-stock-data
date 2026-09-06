@@ -21,7 +21,9 @@ PyYAML>=5.4
 # ── 行情数据源（核心依赖，必须安装）───────────────────────────
 # easy-tdx: 首选适配层（V15.5+，活跃维护）——K线/行情/财务/xdxr/板块/ZHB 下载
 # 2026-08-10 实测：1.14.5 及以下 K线解码失败（TdxDecodeError）——必须 >=1.20.4
-easy-tdx>=1.20.4,<2.0
+# 2026-09-07: 升级到 1.32.6 ——新增 get_price_limits/get_market_stat/get_security_list_all；
+#   SecurityQuote 直解 s_vol(内盘)/b_vol(外盘)/rise_speed(涨速)。见 V17.2.0 改动。
+easy-tdx>=1.32.6,<2.0
 # mootdx: easy_tdx 故障 fallback（健康检查/连接兜底/ZHB 备胎/指数K线）——双通道保留
 mootdx>=0.11,<1.0
 

@@ -874,6 +874,21 @@ def get_canonical_stock_data(code: str, force_realtime: bool = False) -> Any:
                 field_sources["pb"] = "calculated"
         except Exception as _e:
             _debug_log(f"get_canonical_stock_data pb calc error: {_e}")
+    # V17.1: 总资产/净资产(资产负债表项)——TDX GetFinanceInfo(0x0010) 已 @cached, 边际代价低
+    total_assets = 0.0
+    net_assets = 0.0
+    try:
+        from core.tdx_client import tdx_get_finance_info
+        _fin_bs = tdx_get_finance_info(code_str) or {}
+        # zongzichan/jingzichan 单位=角(→元需/10), 字典§零·C line300/308 实锤
+        total_assets = _safe_float(_fin_bs.get('zongzichan')) / 10.0
+        net_assets = _safe_float(_fin_bs.get('jingzichan')) / 10.0
+        if total_assets:
+            field_sources["total_assets"] = "static:tdx_f10"
+        if net_assets:
+            field_sources["net_assets"] = "static:tdx_f10"
+    except Exception as _e:
+        _debug_log(f"get_canonical_stock_data balance-sheet assets error ({code_str}): {_e}")
     field_sources["pb"] = (
         "realtime:" + (field_sources.get("pb", "tencent").split(":")[-1])
         if need_realtime_quote and rt_quote.get('pb')
@@ -1293,6 +1308,8 @@ def get_canonical_stock_data(code: str, force_realtime: bool = False) -> Any:
         dividend_yield=dividend_yield,
         turnover_pct=turnover_pct,
         vol_ratio=vol_ratio,  # A: 量比透传(push2 f49/腾讯 v49, 上方:900 已计算)
+        total_assets=total_assets,  # V17.1: 总资产(元, TDX f10 zongzichan/10)
+        net_assets=net_assets,  # V17.1: 净资产/股东权益(元, TDX f10 jingzichan/10)
         main_net_buy_wan=main_net_buy_wan,
         main_net_buy_hands=main_net_buy_hands,
         # V17.0.1a 规范化: 竞价族规范键(与 main_net_buy_* 同值, 键名语义化)

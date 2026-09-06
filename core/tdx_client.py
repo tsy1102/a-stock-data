@@ -1308,6 +1308,21 @@ def tdx_get_quote_full(code: str) -> Dict[str, Any]:
                     for i in range(1, 6):
                         _put(f'bid{i}', q.get(f'bid{i}', 0), _is_rt)
                         _put(f'ask{i}', q.get(f'ask{i}', 0), _is_rt)
+                    # V17.2.0: TDX 协议直解 内盘/外盘/涨速（easy_tdx SecurityQuote 原生字段, 非派生）
+                    if q.get('s_vol') is not None:
+                        _put('s_vol', float(q['s_vol']), _is_rt)
+                    if q.get('b_vol') is not None:
+                        _put('b_vol', float(q['b_vol']), _is_rt)
+                    if q.get('rise_speed') is not None:
+                        _put('rise_speed', float(q['rise_speed']), _is_rt)
+                    # V17.2.0: 涨跌停价 TDX 计算兜底（easy_tdx get_price_limits, 按昨收规则；
+                    # 源无关, 独立于腾讯[47/48]/push2 f51/f52, 盘前盘后稳）
+                    if pre_close and pre_close > 0:
+                        _lu, _ld = tdx_get_price_limits(code, pre_close)
+                        if _lu:
+                            _put('limit_up', _lu, _is_rt)
+                        if _ld:
+                            _put('limit_down', _ld, _is_rt)
             except Exception as _e:
                 _debug_log(f"tdx quote supplement error: {_e}")
 
@@ -1330,6 +1345,74 @@ def tdx_get_quote_full(code: str) -> Dict[str, Any]:
             result["pe_ttm"] = 0.0
     _TDX_QUOTE_CACHE[cache_key] = result
     return result
+
+
+def tdx_get_price_limits(code: str, pre_close: float) -> Tuple[Optional[float], Optional[float]]:
+    """V17.2.0: 用 easy_tdx get_price_limits 按昨收规则计算涨跌停价（源无关, 盘前/盘后稳）。
+
+    作为腾讯[47/48]/push2 f51/f52 的兜底：普通股票纯算术(±10%/±20%/ST±5%, 按上市板块)，
+    仅上市初期(无涨跌幅限制窗口)才回查 K 线估上市天数。返回 (涨停价, 跌停价)，失败 (None, None)。
+    """
+    if not pre_close or pre_close <= 0:
+        return (None, None)
+    try:
+        _client = _get_tdx_client()
+        if _client is None:
+            return (None, None)
+        _market = _easy_market(code)
+        _lu, _ld = _client.get_price_limits(_market, code, "", pre_close)
+        return (_lu, _ld)
+    except Exception as _e:
+        _debug_log(f"tdx_get_price_limits error ({code}): {_e}")
+        return (None, None)
+
+
+_MARKET_STAT_CACHE: Dict[str, Any] = {}
+_MARKET_STAT_TS = 0.0
+
+
+def tdx_get_market_stat() -> Optional[Dict[str, Any]]:
+    """V17.2.0: 市场广度统计（涨停/跌停家数、涨跌家数、总市值）。
+
+    基于 easy_tdx get_market_stat（通达信 880005/880001/880006 统计指数）。
+    计数字段协议返回真实家数/10, easy_tdx 已 ×10 还原。失败返回 None
+    （通达信统计指数非所有服务器提供）。
+    返回 dict: up_count/down_count/neutral_count/suspended_count/total_count/
+               total_amount/total_volume/total_market_cap/limit_up_count/limit_down_count。
+    60s 进程内缓存（全市场数据, 避免批量报告逐股重复打 TDX）。
+    """
+    global _MARKET_STAT_CACHE, _MARKET_STAT_TS
+    import time as _time
+
+    _now = _time.time()
+    if _MARKET_STAT_CACHE and _now - _MARKET_STAT_TS < 60:
+        return _MARKET_STAT_CACHE
+    try:
+        _client = _get_tdx_client()
+        if _client is None:
+            return None
+        _df = _client.get_market_stat()
+        if _df is None or _df.empty:
+            return None
+        _r = _df.iloc[0]
+        _result = {
+            "up_count": int(_r.get("up_count", 0) or 0),
+            "down_count": int(_r.get("down_count", 0) or 0),
+            "neutral_count": int(_r.get("neutral_count", 0) or 0),
+            "suspended_count": int(_r.get("suspended_count", 0) or 0),
+            "total_count": int(_r.get("total_count", 0) or 0),
+            "total_amount": float(_r.get("total_amount", 0) or 0),
+            "total_volume": float(_r.get("total_volume", 0) or 0),
+            "total_market_cap": float(_r.get("total_market_cap", 0) or 0),
+            "limit_up_count": int(_r.get("limit_up_count", 0) or 0),
+            "limit_down_count": int(_r.get("limit_down_count", 0) or 0),
+        }
+        _MARKET_STAT_CACHE = _result
+        _MARKET_STAT_TS = _now
+        return _result
+    except Exception as _e:
+        _debug_log(f"tdx_get_market_stat error: {_e}")
+        return None
 
 
 def tdx_get_index_quote(idx_code: str) -> Dict[str, Any]:

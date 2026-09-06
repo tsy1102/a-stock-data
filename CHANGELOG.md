@@ -29,7 +29,18 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 ### ④ 字典正确性订正
 - `docs/field_dict.md` §12.8.12e：ZHB `main_net_buy_amount` 实锤=竞价额（非主力净流入），从"主力净买入额"canonical 移除（2026-08-14 实锤回填）。
 
-**验证**：5 个改动文件 `py_compile` 全通过；活跃代码全仓零功能性 thsdk 残留。
+### ⑤ easy-tdx 升级到 v1.32.6 + TDX 协议直解字段落地
+- `requirements.txt`：easy-tdx 下限 `>=1.20.4` → `>=1.32.6`（仓库已到 v1.32.6/2026-09-06；本机 venv 实测已装 1.32.6，升级=提锁下界，无需新依赖）。
+- **高优·内盘/外盘/涨速**：`easy_tdx` 的 `SecurityQuote` 已协议直解 `s_vol`(内盘/主动卖)/`b_vol`(外盘/主动买)/`rise_speed`(涨速)，此前 `tdx_get_quote_full` 只抽了 OHLC 五档而漏掉这 3 个。现于 `tdx_client.py` 的 TDX 补取块提取 → `sc_schema.py` 新增 `s_vol`/`b_vol`/`rise_speed`（默认 0）→ `data_provider.py` 合并链（批量预取路径下 TDX 未被咨询，主动补 1 次 TCP）+ 构造函数透传。零新源、零派生。
+- **中优·涨跌停价 TDX 计算兜底**：新增 `tdx_get_price_limits(code, pre_close)` 调 `easy_tdx.get_price_limits`（按昨收规则，ST/创业板/无涨跌幅窗口等自动处理）。在 `data_provider` 合并链作为腾讯[47/48] 之后的兜底层（优先级：腾讯 > TDX计算 > push2 f51/f52）。源无关，盘前/盘后稳。
+- **低优·市场广度**：新增 `tdx_get_market_stat()`（easy_tdx `get_market_stat`，通达信 880005/880001/880006 统计指数，60s 进程内缓存），接入 `get_mak_report.py` 与 `get_sht_report.py` 的广度/打板章，交叉校验样本涨跌家数与涨停/跌停家数。
+
+### ⑥ 申万口径核验（用户问：TDX 申万能否替代不稳定的东财？结论：不能翻转）
+- 经离线解析 `tdxhy.cfg`（库自带格式 `市场|代码|T一级(T码)|空|空|X细分码(X码)`）：**TDX 无任何申万列**；easy_tdx `parse_tdxhy_cfg` 把 `parts[5]` 标为 `sw_industry` 是误读，实测值 `X500102`/`X210205` 等为通达信 X码（非申万名）。
+- 故 **TDX 无申万源可挖**，东财 `em_industry_map_l2`（申万二级）仍是唯一申万来源，不可作 primary/fallback 翻转。
+- 项目安全目标已由 **③ 季度缓存**达成：东财封禁最严时也仅 ~4 次/年回源。`docs/field_dict.md` §12.8.12e 新增核验结论 blockquote；内盘/外盘/涨速 canonical 行由"未接"订正为 TDX `s_vol/b_vol/rise_speed`；`SecurityQuote` 字段表 stale 的"rise_speed 缺失"注记订正。
+
+**验证**：`py_compile` 全 5 文件通过；系统 Python 3.12 全量回归 **524 passed / 6 skipped / 0 failed**（含内盘/外盘/涨速/涨跌停/广度新接线）；活跃代码零 thsdk 残留。
 
 
 ## [V17.1.0] 2026-09-04 — V17-2 重构：`sc_datasource.py` 拆包（完成，零回归）

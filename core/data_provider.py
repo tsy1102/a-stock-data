@@ -507,6 +507,26 @@ def get_canonical_stock_data(code: str, force_realtime: bool = False) -> Any:
         except Exception as _e:
             _debug_log(f"get_canonical_stock_data tencent extras error ({code_str}): {_e}")
 
+    # V17.2.0: TDX 实时五档直解字段兜底（内盘/外盘/涨速/涨跌停价计算）——批量预取(ulist)路径下
+    # TDX 未被咨询, 这些源生字段缺失; 主动补 1 次 TDX TCP(get_canonical_stock_data 已缓存, 命中即廉价)。
+    # 优先级: 腾讯[47/48] > TDX get_price_limits 计算 > push2 f51/f52(已在上方填充)
+    _need_tdx_supp = ("s_vol" not in rt_quote or "b_vol" not in rt_quote
+                      or "rise_speed" not in rt_quote
+                      or not rt_quote.get("limit_up") or not rt_quote.get("limit_down"))
+    if _need_tdx_supp:
+        try:
+            from core.tdx_client import tdx_get_quote_full as _tdx_qf
+
+            _tdx_sup = _tdx_qf(code_str) or {}
+            for _k in ("s_vol", "b_vol", "rise_speed", "limit_up", "limit_down"):
+                if _k not in rt_quote or rt_quote.get(_k) in (None, 0, '', '0', '0.0'):
+                    _v = _tdx_sup.get(_k)
+                    if _v not in (None, 0, '', '0', '0.0'):
+                        rt_quote[_k] = _v
+                        field_sources[_k] = "realtime:tdx"
+        except Exception as _e:
+            _debug_log(f"get_canonical_stock_data tdx supplement error ({code_str}): {_e}")
+
     # V16.3.3 (2026-08-10 字典 12.15.5): fuyao 估值印证位——有 Key 才用（无 Key 自动跳过）：
     # 腾讯失败时 fuyao 兜底估值（pe_ttm/pb_mrq 实测=腾讯精确 20.385/6.22）；官方 REST 风控面独立
     # V17.0.6: 去 need_realtime_quote 门控——估值字段盘后同样可从 fuyao 获取(实测周六精确)
@@ -1301,6 +1321,10 @@ def get_canonical_stock_data(code: str, force_realtime: bool = False) -> Any:
         dividend_yield=dividend_yield,
         turnover_pct=turnover_pct,
         vol_ratio=vol_ratio,  # A: 量比透传(push2 f49/腾讯 v49, 上方:900 已计算)
+        # V17.2.0: TDX 实时五档直解 内盘/外盘/涨速
+        s_vol=_safe_float(rt_quote.get("s_vol") or 0),
+        b_vol=_safe_float(rt_quote.get("b_vol") or 0),
+        rise_speed=_safe_float(rt_quote.get("rise_speed") or 0),
         total_assets=total_assets,  # V17.1: 总资产(元, TDX f10 zongzichan/10)
         net_assets=net_assets,  # V17.1: 净资产/股东权益(元, TDX f10 jingzichan/10)
         main_net_buy_wan=main_net_buy_wan,

@@ -1231,6 +1231,19 @@ async def generate_sector_report(output_path):
     L(
         f"  📊 市场广度: 上涨{_up_cnt}/下跌{_down_cnt} | 涨跌比{_ud_ratio:.2f} | {'偏多' if _ud_ratio>1.5 else '偏空' if _ud_ratio<0.67 else '均衡'}"
     )
+    # V17.2.0: 全市场广度(通达信统计指数 880005/880001/880006) 交叉校验样本广度
+    try:
+        from core.tdx_client import tdx_get_market_stat
+
+        _ms = await asyncio.to_thread(tdx_get_market_stat)
+        if _ms:
+            _ms_ud = _ms["up_count"] / max(_ms["down_count"], 1)
+            L(f"  📊 全市场(通达信): 上涨{_ms['up_count']}/下跌{_ms['down_count']}"
+              f" | 涨停{_ms['limit_up_count']}/跌停{_ms['limit_down_count']}"
+              f" | 平{_ms['neutral_count']}/停牌{_ms['suspended_count']}"
+              f" | 涨跌比{_ms_ud:.2f} | 总市值{_ms['total_market_cap']/1e12:.2f}万亿")
+    except Exception as _e:
+        _debug_log(f"mak market stat: {_e}")
 
     # V17.0.5 P0: fuyao 竞价情绪聚合(短线风向标 benchmark——9:25 盘前即得, 时效领先叙事型情绪源)
     try:

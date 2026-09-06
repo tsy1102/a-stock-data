@@ -191,7 +191,7 @@ def calc_mcap_yi(code: str, price: float) -> float:
 
     Args:
         code: 股票代码
-        price: 当前价格（元）
+        price: 现价（元）
 
     Returns:
         总市值（亿元），失败返回0
@@ -210,7 +210,7 @@ def calc_float_mcap_yi(code: str, price: float) -> float:
 
     Args:
         code: 股票代码
-        price: 当前价格（元）
+        price: 现价（元）
 
     Returns:
         流通市值（亿元），失败返回0

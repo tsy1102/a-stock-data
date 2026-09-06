@@ -780,7 +780,7 @@ def _tencent_quote_full_fallback(code: str, is_pre_market: bool = False) -> Dict
             "limit_down_price": _safe_float(vals[_f["limit_down_price"]]),
             "vol_ratio": _safe_float(vals[_f["vol_ratio"]]),
             # DEBT-004(2026-09-04): 删除冗余 pe_static 数据键(与 pe_lyr 同源同值, 违反 A2 无冗余别名)。
-            #   仅保留 pe_lyr —— 槽位 53 = 腾讯[53] = f163 静态PE(LYR), 见 _TENCENT_FIELD_INDEX["pe_static"]。
+            #   仅保留 pe_lyr —— 槽位 53 = 腾讯[53] = f163 静态PE（LYR）, 见 _TENCENT_FIELD_INDEX["pe_static"]。
             "pe_lyr": _safe_float(vals[_f["pe_static"]]),
             "bid1_vol": _safe_float(vals[_f["bid1_vol"]]) * 100,
         }
@@ -792,7 +792,7 @@ def _tencent_quote_full_fallback(code: str, is_pre_market: bool = False) -> Dict
 def _pre_market_quote_from_kline(code: str) -> Dict[str, Any]:
     """盘前模式：从日K线数据构建行情字典。
 
-    使用上一交易日的收盘价作为当前价，上上个交易日收盘价作为昨收，
+    使用上一交易日的收盘价作为现价，上上个交易日收盘价作为昨收，
     重新计算涨跌幅。
     """
     try:
@@ -869,7 +869,7 @@ _TENCENT_FIELD_INDEX = {
     "low": 34,
     "amount_wan": 37,      # 成交额(万)
     "turnover_pct": 38,    # 换手率(%)
-    "pe_ttm": 39,          # 市盈率(TTM)
+    "pe_ttm": 39,          # 市盈率（TTM）
     "amplitude_pct": 43,
     "float_mcap_yi": 44,   # 流通市值(亿)
     "mcap_yi": 45,         # 总市值(亿)

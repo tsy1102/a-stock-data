@@ -122,7 +122,7 @@ def calc_bollinger(closes: List[float], period: int = 20, std_dev: float = 2.0) 
     lower = mid - std_dev * std
     latest = closes[-1]
 
-    # 当前价在布林带中的位置（0=下轨, 100=上轨, 50=中轨）
+    # 现价在布林带中的位置（0=下轨, 100=上轨, 50=中轨）
     band_width = upper - lower
     pos_pct = ((latest - lower) / band_width * 100) if band_width > 0 else 50
     width_pct = (band_width / mid * 100) if mid > 0 else 0
@@ -388,7 +388,7 @@ def calculate_cyq(
         return yrange[-1]
 
     def _benefit_part(price):
-        """当前价格以下的筹码占比(获利盘比例)"""
+        """现价以下的筹码占比(获利盘比例)"""
         cum = 0.0
         for k2 in range(accuracy_factor):
             if yrange[k2] <= price:

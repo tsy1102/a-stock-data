@@ -706,7 +706,7 @@ def strategy_03_volume_breakout(hot_pool):
                 v = _safe_float(row[idx_vol])
                 volumes.append(v)
         if len(closes) < 65: continue
-        # V16.1: 箱体上沿用"前60根"（排除当前价）— 原 max(closes[-60:]) 含当前价，
+        # V16.1: 箱体上沿用"前60根"（排除现价）— 原 max(closes[-60:]) 含现价，
         # 导致 current_price < box_top*1.01 恒真，策略永不命中
         recent_60 = closes[-61:-1]
         box_top = max(recent_60)
@@ -721,7 +721,7 @@ def strategy_03_volume_breakout(hot_pool):
             continue
         reason = (
             f"突破60日箱体上沿({box_top:.2f}元)，"
-            f"当前价{current_price:.2f}元，"
+            f"现价{current_price:.2f}元，"
             f"成交量放大至{vol_ratio:.1f}倍于10日均量，"
             "阻力位已扫清，上行空间打开"
         )
@@ -1558,7 +1558,7 @@ def strategy_18_52w_position(stocks, top_n=200):
     利用zhb的high_52w/low_52w，筛选处于52周低位的优质标的。
     
     逻辑:
-      1) 计算当前价格在52周区间内的位置百分位
+      1) 计算现价格在52周区间内的位置百分位
       2) 筛选位置百分位<30%（超卖区域）且PE合理的标的
       3) 评分: 位置百分位越低越好
     """
@@ -1581,7 +1581,7 @@ def strategy_18_52w_position(stocks, top_n=200):
         reason = (
             f"52周位置百分位={position_pct:.0f}%（低位超卖），"
             f"52周区间[{low_52w:.2f}, {high_52w:.2f}]（T-1），"
-            f"当前价{price:.2f}元(实时)，PE={pe_ttm:.1f}x(实时)"
+            f"现价{price:.2f}元(实时)，PE={pe_ttm:.1f}x(实时)"
         )
         result.append({"code": code, "name": s.get("name", ""), "reason": reason,
                        "score": 100 - position_pct})

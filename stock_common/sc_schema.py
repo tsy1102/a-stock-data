@@ -109,7 +109,7 @@ class FieldSpec:
 FIELD_SPECS: Tuple[FieldSpec, ...] = (
     # ─── 行情类（必须 HTTP 实时，V12.6 REQUIRES_REALTIME_HTTP）───
     FieldSpec(
-        name="price", description="当前价格（昨收参考）",
+        name="price", description="现价（昨收参考）",
         source_preference=(DataSource.ZHB, DataSource.TDX, DataSource.TENCENT, DataSource.EASTMONEY),
         time_anchor=TimeAnchor.T_MINUS_1, unit=Unit.YUAN,
         is_real_time=True, zhb_t_minus_1_acceptable=True, batch_friendly=True,
@@ -151,7 +151,7 @@ FIELD_SPECS: Tuple[FieldSpec, ...] = (
         is_real_time=True, zhb_t_minus_1_acceptable=True, batch_friendly=True,
     ),
     FieldSpec(
-        name="prev_close", description="昨收价（元）",
+        name="prev_close", description="昨收盘（元）",
         source_preference=(DataSource.ZHB, DataSource.TDX),
         time_anchor=TimeAnchor.T_MINUS_1, unit=Unit.YUAN,
         is_real_time=True, zhb_t_minus_1_acceptable=True, batch_friendly=False,
@@ -457,12 +457,12 @@ class CanonicalStockData:
     open: float = 0.0                # 开盘价 (元)
     high: float = 0.0                # 最高价 (元)
     low: float = 0.0                 # 最低价 (元)
-    prev_close: float = 0.0          # 昨收价 (元)
+    prev_close: float = 0.0          # 昨收盘 (元)
     amount_wan: float = 0.0          # 成交额 (万元)
     volume_hand: float = 0.0         # 成交量 (手)
 
     # 估值类
-    pe_ttm: float = 0.0              # PE(TTM) (倍)
+    pe_ttm: float = 0.0              # PE（TTM） (倍)
     pe_dynamic: float = 0.0          # 动态PE (倍)
     pe_lyr: float = 0.0              # 静态PE(LYR, f163, 现价÷年报EPS) — V17.0.17(2026-09-01) 据主字典定案新增透传
     pb: float = 0.0                  # PB (倍)
@@ -524,7 +524,7 @@ class CanonicalStockData:
     trading_periods: Tuple[Dict[str, Any], ...] = field(default_factory=tuple)  # 交易时段数组 — push2 f80
     report_period: str = ""          # 最新报告期 (YYYYMMDD) — push2 f221 / ulist f221
     quote_date: str = ""             # 行情快照日期 (YYYY-MM-DD) — push2 data_date
-    bid1_vol: float = 0.0            # 买一量 (手) ← 腾讯协议 v10（2026-08-11: 新增——sht 封单资金/信号/预警依赖）
+    bid1_vol: float = 0.0            # 买一量 (手) ← 腾讯协议 v10（2026-08-11: 新增——sht 封单额/信号/预警依赖）
 
     # V16.1: 资金流细分(push2, 单位元)
     # V17.0.16(2026-08-31) 重定案 —— 旧版把四组当并列四档并算「主力 = f137 + f140」，**错的**。
@@ -670,7 +670,7 @@ def normalize_at_boundary(raw: dict, source: DataSource) -> dict:
     # 🔴 2026-09-01 统一层纠错（据 field_dict §12.8.12e/【PE 口径铁证】定案）：
     #   f162=动态PE(pe_mrq) / f163=静态PE(LYR,pe_lyr) / f164=TTM(pe_ttm)。
     #   原 `pe_ttm←f162`/`pe_dynamic←f163` 与主字典**完全相反**，会将静态PE灌入 pe_ttm、
-    #   动态PE灌入 pe_dynamic 的兜底键，导致下游"PE(TTM)"实际显示静态值。现已按定案纠正。
+    #   动态PE灌入 pe_dynamic 的兜底键，导致下游"PE（TTM）"实际显示静态值。现已按定案纠正。
     for target, *keys in [
         ("pe_ttm", "pe_ttm", "f164"),
         ("pe_dynamic", "pe_dynamic", "f162"),

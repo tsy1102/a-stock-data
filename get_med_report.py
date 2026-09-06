@@ -80,6 +80,7 @@ from stock_common import (
     cls_telegraph,
     news_matches_stock,
     cninfo_irm,
+    sec_type_market_label,  # V17.0.32(2026-09-06): DEBT-016 报告露出 sec_type
 )  # V10.3
 
 _SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -255,6 +256,8 @@ async def generate_report_async(session, code, output_path, ind_comp=None, hsgt=
     if getattr(cdata, "is_new", False):
         L(f"  🆕 次新标记: 上市 ≤5 日（财务数据不完整，中线谨慎）")
     L(f"  所属板块: {stock_industry}")
+    # V17.0.32(2026-09-06) DEBT-016: 露出 sec_type（与 board 地域字段正交）→ 市场板块 + 涨跌幅限制
+    L(f"  市场板块: {sec_type_market_label(getattr(cdata, 'sec_type', 0), cdata.code, cdata.name)}")
 
     list_date_raw = info.get("list_date", "")
     if list_date_raw and len(list_date_raw) >= 8:
@@ -311,7 +314,7 @@ async def generate_report_async(session, code, output_path, ind_comp=None, hsgt=
         _ipo_pct = (cdata.price - cdata.ipo_price) / cdata.ipo_price * 100
         if _ipo_pct < 0:
             L(
-                f"  [IPO破发度] 发行价: {cdata.ipo_price:.2f}元 | 当前价: {cdata.price:.2f}元 | 破发幅度: {_ipo_pct:.2f}%"
+                f"  [IPO破发度] 发行价: {cdata.ipo_price:.2f}元 | 现价: {cdata.price:.2f}元 | 破发幅度: {_ipo_pct:.2f}%"
             )
             if _ipo_pct < -30:
                 L(f"  📉 深度破发: 破发幅度超30%，安全边际较高")
@@ -375,15 +378,15 @@ async def generate_report_async(session, code, output_path, ind_comp=None, hsgt=
     L(f"  总市值:   {cdata.mcap_yi:.2f}亿元 (流通股本 {cdata.float_shares_wan/1e4:.2f}亿股)")
     if cdata.time_anchor == "t-1":
         L("  ⚠️ 盘前模式（9:30前），以下行情数据基于上一交易日收盘数据")
-    L(f"  当前价:   {cdata.price:.2f}元  (今日涨跌: {cdata.change_pct:.2f}%)")
+    L(f"  现价:   {cdata.price:.2f}元  (今日涨跌: {cdata.change_pct:.2f}%)")
     _pe_s = f"{cdata.pe_dynamic:.2f}x" if cdata.pe_dynamic > 0 else "N/A（亏损）"
     _pe_ttm_str = f"{cdata.pe_ttm:.2f}x" if cdata.pe_ttm > 0 else "N/A"
     _pe_lyr_str = f"{cdata.pe_lyr:.2f}x" if cdata.pe_lyr > 0 else "N/A"
     _div_str = f"  股息率: {cdata.dividend_yield:.2f}%" if cdata.dividend_yield > 0 else ""
     # V17.0.17(2026-09-01) 据主字典定案修正: 三口径清晰化——
-    # PE(TTM)=f164 / 动态PE=pe_dynamic(f162) / 静态PE(LYR)=pe_lyr(f163)。
-    # 原"动态市盈率 PE(TTM)"标签把 TTM 误标"动态"，已拆分；新增静态PE露出。
-    L(f"  PE(TTM): {_pe_ttm_str}x | 动态PE: {_pe_s} | 静态PE(LYR): {_pe_lyr_str} | 市净率 PB: {cdata.pb:.2f}")
+    # PE（TTM）=f164 / 动态PE=pe_dynamic(f162) / 静态PE（LYR）=pe_lyr(f163)。
+    # 原"动态市盈率 PE（TTM）"标签把 TTM 误标"动态"，已拆分；新增静态PE露出。
+    L(f"  PE（TTM）: {_pe_ttm_str}x | 动态PE: {_pe_s} | 静态PE（LYR）: {_pe_lyr_str} | 市净率 PB: {cdata.pb:.2f}")
     if _div_str:
         L(_div_str)
 
@@ -455,7 +458,7 @@ async def generate_report_async(session, code, output_path, ind_comp=None, hsgt=
             _rp = str(cdata.report_period or "")
             _rp_label = f"（{_rp[:4]}Q{((int(_rp[4:6]) - 1) // 3 + 1)}）" if len(_rp) >= 6 and _rp.isdigit() else ""
             L(
-                f"  [ZHB 离线兜底] 归母净利润: {net_profit_yi:.2f} 亿元 | ROE: {roe_str}{_rp_label} | PE(TTM): {cdata.pe_ttm:.1f}x | PB: {cdata.pb:.2f}x"
+                f"  [ZHB 离线兜底] 归母净利润: {net_profit_yi:.2f} 亿元 | ROE: {roe_str}{_rp_label} | PE（TTM）: {cdata.pe_ttm:.1f}x | PB: {cdata.pb:.2f}x"
             )
         else:
             L("  (新浪财报数据获取失败或该股暂无相关数据)")
@@ -874,7 +877,7 @@ async def generate_report_async(session, code, output_path, ind_comp=None, hsgt=
         _c90 = _cyq_dict.get("concentration_90", 0.0) or 0.0
         _c70 = _cyq_dict.get("concentration_70", 0.0) or 0.0
         _avg = _cyq_dict.get("avg_cost", 0.0) or 0.0
-        L(f"    - 获利盘比例: {_ben*100:.1f}%（当前价下持仓盈利占比）")
+        L(f"    - 获利盘比例: {_ben*100:.1f}%（现价下持仓盈利占比）")
         L(f"    - 平均成本: {_avg:.2f} 元")
         L(f"    - 90% 筹码集中度: {_c90:.3f}（成本区间 {_cyq_dict.get('cost_90_low',0):.2f}~{_cyq_dict.get('cost_90_high',0):.2f}）")
         L(f"    - 70% 筹码集中度: {_c70:.3f}（成本区间 {_cyq_dict.get('cost_70_low',0):.2f}~{_cyq_dict.get('cost_70_high',0):.2f}）")
@@ -955,12 +958,12 @@ async def generate_report_async(session, code, output_path, ind_comp=None, hsgt=
             #   #1 本股/同业 PE 原为裸 `{x:.1f}`，亏损股输出 "0.0" —— 读者误读为「零估值」，
             #      违反 A6（缺失≠0）。sht 同位置早有 `if >0 else "亏损"` 判断，med 漏做 →
             #      同一消费点两个脚本实现不一致。此处补齐。
-            #   #2 列标题原写 "PE(TTM)"，但同业行 `p['pe']` 实为 pe_dynamic → 标题与口径不符
-            #      且与本股行(pe_ttm)不同口径、同列不可比。统一为「PE(动)」+ 本股行取 pe_dynamic。
+            #   #2 列标题原写 "PE（TTM）"，但同业行 `p['pe']` 实为 pe_dynamic → 标题与口径不符
+            #      且与本股行(pe_ttm)不同口径、同列不可比。统一为「PE（动）」+ 本股行取 pe_dynamic。
             #   #3 同业 change_pct 取不到时为 0，直接渲染 "0.00%" 被误读为「平盘」（实证 300442），
             #      改为显式 N/A。
             L(
-                f"  {'代码':<8} {'名称':<12} {'股价':>8} {'涨跌幅%':>8} {'市值(亿)':>10} {'PE(动)':>9} {'PE(静)':>8} {'换手率%':>8}"
+                f"  {'代码':<8} {'名称':<12} {'股价':>8} {'涨跌幅%':>8} {'市值(亿)':>10} {'PE（动）':>9} {'PE（静）':>8} {'换手率%':>8}"
             )
             L(f"  {'-'*80}")
             _my_pe_lyr_s = f"{cdata.pe_lyr:.1f}" if cdata.pe_lyr > 0 else "N/A"

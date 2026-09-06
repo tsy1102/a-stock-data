@@ -743,6 +743,61 @@ def get_sina_financial_report(code: str, num_periods: int = 12) -> Dict[str, Any
         return []
 
 
+def get_financial_report_with_fallback(code: str, num_periods: int = 12) -> Dict[str, Any]:
+    """B: 新浪利润表为主源；新浪缺失/空 → fuyao 利润表兜底。
+
+    返回与 get_sina_financial_report 完全同构的 List[Dict]：
+    {"报告日","营业总收入","营业成本","净利润"}，值均为字符串(元)，
+    下游 float() 解析逻辑不变。fuyao 英文键→新浪中文键映射据
+    docs/field_verification/20260901/raw_fuyao.json 的 income_q 实测键名校准
+    （report_date_ms / operating_income / parent_holder_net_profit / basic_eps）。
+    """
+    sina = get_sina_financial_report(code, num_periods)
+    if sina:
+        return sina
+    try:
+        from stock_common.sc_fuyao import get_fuyao_financials
+        fy = get_fuyao_financials("income", code, limit=num_periods, period="quarterly")
+        if not fy:
+            return []
+        out = []
+        for it in fy:
+            rdm = (it.get("report_date_ms") or it.get("report_date")
+                   or it.get("end_date") or it.get("accper"))
+            rdate = ""
+            if rdm:
+                try:
+                    _ms = float(rdm)
+                    if _ms > 1e12:  # epoch 毫秒
+                        _ms /= 1000.0
+                    from datetime import datetime
+                    rdate = datetime.fromtimestamp(_ms).strftime("%Y-%m-%d")
+                except Exception:
+                    rdate = str(rdm)
+            ni = it.get("parent_holder_net_profit",
+                        it.get("net_profit", it.get("归属母公司净利润", "0")))
+            rev = it.get("operating_income",
+                         it.get("total_operate_income", it.get("revenue", "0")))
+            cost = it.get("operating_cost", it.get("operating_cost_total", "0"))
+            out.append({
+                "报告日": rdate,
+                "营业总收入": _fin_str(rev),
+                "营业成本": _fin_str(cost),
+                "净利润": _fin_str(ni),
+            })
+        return out
+    except Exception as _e:
+        _debug_log(f"financial fallback fuyao ({code}): {_e}")
+        return []
+
+
+def _fin_str(v) -> str:
+    """fuyao 数值(元) → 字符串，保持与新浪一致(下游 float 解析)。"""
+    if v is None or isinstance(v, bool):
+        return "0"
+    return str(v)
+
+
 async def get_sina_financial_report_async(
     session: Any, code: str, num_periods: int = 12
 ) -> Dict[str, Any]:

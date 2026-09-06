@@ -72,7 +72,7 @@ from stock_common import (
     get_lockup_expiry_async,
     get_gross_margin_and_roe_async,
     get_industry_peers,
-    get_sina_financial_report_async,
+    get_sina_financial_report_async, get_financial_report_with_fallback,
     get_sina_balance_sheet_async,
     get_hsgt_macro_flow_async,
     is_trading_day,
@@ -431,6 +431,8 @@ async def generate_report_async(session, code, output_path, ind_comp=None, hsgt=
         _debug_log(f"med fuyao growth cross: {_e}")
 
     financials = await get_sina_financial_report_async(session, code)
+    if not financials:  # B: 新浪缺失 → fuyao 利润表兜底
+        financials = get_financial_report_with_fallback(code)
     if financials:
         L(f"  {'报告期':<12} {'营业总收入':>11} {'净利润':>13} {'净利率':>8}")
         L(f"  {'-'*60}")

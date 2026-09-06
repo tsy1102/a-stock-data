@@ -472,6 +472,7 @@ class CanonicalStockData:
     avg_price: float = 0.0          # 均价 / VWAP（元，腾讯 qt.gtimg [85]）
     dividend_yield: float = 0.0      # 股息率 (%)
     turnover_pct: float = 0.0        # 换手率 (%)
+    vol_ratio: float = 0.0           # 量比 (push2 f49 / 腾讯 v49; data_provider:900 已计算并透传)
 
     # 资金流类
     main_net_buy_wan: float = 0.0

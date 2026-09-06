@@ -1292,6 +1292,7 @@ def get_canonical_stock_data(code: str, force_realtime: bool = False) -> Any:
         pcf_ttm=pcf_ttm,
         dividend_yield=dividend_yield,
         turnover_pct=turnover_pct,
+        vol_ratio=vol_ratio,  # A: 量比透传(push2 f49/腾讯 v49, 上方:900 已计算)
         main_net_buy_wan=main_net_buy_wan,
         main_net_buy_hands=main_net_buy_hands,
         # V17.0.1a 规范化: 竞价族规范键(与 main_net_buy_* 同值, 键名语义化)

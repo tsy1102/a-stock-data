@@ -11,7 +11,6 @@
 | sc_network.py | 统一传输层: 分域限流/令牌桶/封禁冷却/跨进程文件锁/UA/Referer |
 | sc_fault_tolerance.py | 容错层: TokenBucket / CircuitBreaker / RandomUAPool |
 | sc_fuyao.py | 同花顺官方金融数据 API(fuyao)适配器 |
-| sc_ths.py | THS SDK 统一适配器(凭据 credentials/ths_credentials.json) |
 
 ### 数据源查询
 | 模块 | 职责 |

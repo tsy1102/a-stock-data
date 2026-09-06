@@ -189,6 +189,22 @@ def get_sec_type_enum(code: str) -> int:
     return 2  # 主板(含 ST)
 
 
+# V17.0.32(2026-09-06): 市场类型枚举 → 中文市场板块名（DEBT-016 报告露出用）
+SEC_TYPE_NAME = {2: "主板", 5: "创业板", 32: "科创板", 80: "北交所"}
+
+
+def sec_type_market_label(sec_type: int, code: str = "", name: str = "") -> str:
+    """V17.0.32(2026-09-06): 由市场类型枚举推导「市场板块 + 涨跌幅限制」标签（DEBT-016 报告露出）。
+
+    sec_type ≡ ulist f182（主板=2/创业板=5/科创板=32/北交所=80），由代码前缀本地推导、零网络
+    （见 get_sec_type_enum）。阈值复用 limit_pct_for（唯一事实源），不在此重复硬编码。
+    与 board(地域) 正交——前者是交易所/市场类型，后者是注册地。
+    """
+    bname = SEC_TYPE_NAME.get(int(sec_type or 0), "主板")
+    pct = limit_pct_for(code, name)
+    return f"{bname}（涨跌停 ±{pct:.0f}%）"
+
+
 # V17.0 S3: A 股代码前缀统一判定（收敛 get_mak/get_val 双份定义）
 A_STOCK_PREFIXES = ("00", "30", "60", "68", "92")
 

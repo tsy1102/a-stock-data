@@ -119,7 +119,7 @@
 
 > 生成：`scripts/gen_field_matrix.py`，2026-08-25。从本字典全部字段表自动提取，共 1155 个字段 / 1412 条字段×源记录。
 
-> 源排序按易→难（V17.0.7 层级定案）：ZHB（离线零网络）→ TDX TCP（0x0010/F10/eltdx）→ 腾讯（不封 IP）→ **同花顺-fuyao（官方 REST，盘后可查+独立风控域，V17.0.7 升为财务 TTM 族主源）** → **同花顺-thsdk（TCP 盘后关闸——盘中专属特殊层）** → 新浪 → 巨潮 → 东财（限流最严）→ 其他。
+> 源排序按易→难（V17.0.7 层级定案）：ZHB（离线零网络）→ TDX TCP（0x0010/F10/eltdx）→ 腾讯（不封 IP）→ **同花顺-fuyao（官方 REST，盘后可查+独立风控域，V17.0.7 升为财务 TTM 族主源）** → 新浪 → 巨潮 → 东财（限流最严）→ 其他。
 
 > 字段名基于章节标题分类推断，精确接口见各节；正文修改后重跑本脚本即同步。
 
@@ -142,19 +142,19 @@
 | 返回 | 2 | 腾讯、新浪 |
 | 价值 | 2 | 腾讯、新浪 |
 | 资金 | 2 | TDX-0x0010/F10、东财 |
-| 期权 | 2 | 同花顺-thsdk、东财 |
+| 期权 | 2 | 东财 |
 | code | 2 | TDX-0x0010/F10、东财 |
 | reason | 2 | 开盘红、东财 |
 | close | 2 | TDX-eltdx、东财 |
 | market | 2 | TDX-0x0010/F10、东财 |
 | turnover_rate | 2 | 开盘红、东财 |
 | is_new | 2 | 财联社、东财 |
-| 涨跌停价 | 2 | 同花顺-thsdk、akshare |
-| 均价 | 2 | 同花顺-thsdk、东财 |
-| 振幅% | 2 | 同花顺-thsdk、东财 |
-| 量比 | 2 | 同花顺-thsdk、东财 |
-| 流通股本 | 2 | 同花顺-thsdk、东财 |
-| 流通市值 | 2 | 同花顺-thsdk、东财 |
+| 涨跌停价 | 2 | akshare |
+| 均价 | 2 | 东财 |
+| 振幅% | 2 | 东财 |
+| 量比 | 2 | 东财 |
+| 流通股本 | 2 | 东财 |
+| 流通市值 | 2 | 东财 |
 | ocf_ttm(f103) | 2 | 同花顺-fuyao、东财 |
 | revenue_ttm(f104) | 2 | 同花顺-fuyao、东财 |
 | net_profit_period(f105) | 2 | 同花顺-fuyao、东财 |
@@ -202,7 +202,7 @@
 - **腾讯（16）**：[0] 市场标识、[29][54][55][77][78] 占位符、[40] 停牌标记、[56] Beta 族、[76] A股流通股本、[85] 价格类字段、[86] 手级带符号量、[87] 科创板、tdxstat Col[11]、tdxstat Col[14]、tdxstat Col[34]、两融标记、分钟 K线、实测、月 K线、腾讯字段 44
 - **同花顺-fuyao（115）**：K线、PB、ROA、`big_order_flow(ths_code)`、a-share、a-share-index、accounts_receivable、adjustment-factors、anomaly-analysis-list、anomaly-analysis-stock、auction、auction.float_market_cap、balance-sheets、calendar、cash-flow、cash-flow-statements、cash_equivalents_net_addition、catalog、constituents、corporate-actions、download-url、dragon-tiger-list、dump、eps_deduct_ttm(f108)、fflow 历史资金流窗口、financials、get 财务 TTM 族、growth、growth.calculate_operating_income_yoy_growth_ratio、growth.calculate_parent_holder_net_profit_yoy_growth_ratio、historical、holder_equity_total、hot-stock-list、hot-stock-list-history、hot-stock-rank-trend、income-statements、income_tax_expense、indicators、interest_expenses、klines(count=N)、limit-break-pool` 🆕、limit-down-pool` 🆕、limit-up-ladder、limit-up-pool、list、manage_fee、market-dumps、meta、net_profit、net_profit_annual、net_profit_period、ocf_ttm、operating_profit、operation、pay_dividends_profits_interest_cash、pb、pcf、prices、profit_total、profitability
   - … 其余 55 个见正文
-- **同花顺-thsdk（58）**：.1、.2、.2%、.2%）、.6、.7 全合理）、.9%、OHLC、ROE TTM（31.3%、TTM、PB 市净率×3、市销率TTM）、⚠️ 疑点：主力净量（592888=净流入、两融：融资余额（茅台 175.44 亿 ✓）、主力净量（592888）破解、主力增仓：今日、主力资金：主力净流入（宁德 -7.53 亿）、主动被动×特大、五日量、人均持股（茅台 5141 ✓）、股东总数、散户数量、估值（PE 动、债券专属字段、内盘外盘、净值（3397）、净利润增长率（134141）、净利营收增长率、净额、分钟、占比、周高低（95、均笔额）、基差（133778）、多空比（592946）、大单中单小单流入流出、委差委比、小单量笔数金额（完整 30+ 分档字段）、年初至今涨跌幅（461346）、总市值）、总额、手每笔、换手、散户数量（462057）、日占比 + 全市场排名、日涨跌幅、年初至今、开盘涨跌幅、实体涨跌幅、涨速 1、日涨跌幅（3250、时间（4）、期货、某基数的比率）、净利润增长率（百分比数值——茅台 1.47 待对照财报）、YTD（-4.93 vs ZHB -3.01 差 1.9pp——基准口径）、多空比（茅台 19.95 vs 工行 0.35 存疑）、基差（A 股有值疑期货字段错位）、散户数量（宁德 82.49 存疑）、时间字段（宁德 20251201 滞后）、流通比例 100、涨速、牛熊、股东：户均、股本（总股本 12.5 亿、融券、融券卖出、融资买入、行情（价格、财务：净利润1（茅台 272.43 亿 vs ZHB 扣非 272.40 亿一致）、资产负债率（12.1、资金流入流出
+- **同花顺-thsdk（2026-09-07 已退役）（58）**：.1、.2、.2%、.2%）、.6、.7 全合理）、.9%、OHLC、ROE TTM（31.3%、TTM、PB 市净率×3、市销率TTM）、⚠️ 疑点：主力净量（592888=净流入、两融：融资余额（茅台 175.44 亿 ✓）、主力净量（592888）破解、主力增仓：今日、主力资金：主力净流入（宁德 -7.53 亿）、主动被动×特大、五日量、人均持股（茅台 5141 ✓）、股东总数、散户数量、估值（PE 动、债券专属字段、内盘外盘、净值（3397）、净利润增长率（134141）、净利营收增长率、净额、分钟、占比、周高低（95、均笔额）、基差（133778）、多空比（592946）、大单中单小单流入流出、委差委比、小单量笔数金额（完整 30+ 分档字段）、年初至今涨跌幅（461346）、总市值）、总额、手每笔、换手、散户数量（462057）、日占比 + 全市场排名、日涨跌幅、年初至今、开盘涨跌幅、实体涨跌幅、涨速 1、日涨跌幅（3250、时间（4）、期货、某基数的比率）、净利润增长率（百分比数值——茅台 1.47 待对照财报）、YTD（-4.93 vs ZHB -3.01 差 1.9pp——基准口径）、多空比（茅台 19.95 vs 工行 0.35 存疑）、基差（A 股有值疑期货字段错位）、散户数量（宁德 82.49 存疑）、时间字段（宁德 20251201 滞后）、流通比例 100、涨速、牛熊、股东：户均、股本（总股本 12.5 亿、融券、融券卖出、融资买入、行情（价格、财务：净利润1（茅台 272.43 亿 vs ZHB 扣非 272.40 亿一致）、资产负债率（12.1、资金流入流出
 - **新浪（25）**：URL、ask、ask_vol、bid、bid_vol、delta、gamma、item_tongbi、item_value、iv、last、limit_down、limit_up、netamount、open_interest、opendate、prev_close、report_list.{期次}.data[].item_title、report_type、strike、theory、theta、trade、vega、参数
 - **财联社（14）**：catalyst、cur_heat、limit_up_board、market_degree、performance、profit_ratio、rank_change、shsz_balance、shsz_balance_change_px、up_down_dis、up_open_num、up_open_ratio、up_ratio、up_ratio_num
 - **开盘红（36）**：Detail、StockList、TagID、TagName、TagShuXing、ZSCode、ZSName、avg_change、buy_amount、dt、fall_dist、fall_num、flat、industry_id、industry_zt、limit_tag、market_cap、net_inflow、net_inflow_5d、open_time、q_zrcs、qscln、rise_dist、rise_num、s_zrcs、seal_money、sell_amount、sign、sjdt、sjzt、stdt、stock_count、stzt、szln、themes、zt
@@ -2799,6 +2799,8 @@ TDX `0x0010` 日K（`tdx_get_security_bars`，keys = `['time','open','close','hi
 
 #### 12.8.12b THS SDK（同花顺官方 C 库 TCP 协议，2026-08-09 实测）🆕
 
+> ⚠️ **已退役（2026-09-07）**：thsdk TCP 网关已从本项目移除——其仅盘中 9:30-15:00 可用，与用户盘后/盘前运行场景不符，且无不可替代字段（PB 由 TDX `price/bvps` 兜底、主力净流入由东财 f137 兜底）。以下为历史核实记录，保留供追溯。
+
 > **来源**：github.com/panghu11033/thsdk（MIT，233⭐，封装 ths 官方 hq.dll / hq.so，pip install thsdk）
 > **协议**：TCP 连接同花顺行情服务器（**非 HTTP 反爬面**——不触发 401/风控）——游客账户自动登录（50 个内置 thsguest_* 账号）或环境变量 THS_USERNAME/THS_PASSWORD/THS_MAC
 > **⚠️ 限流**：README 明确"ths 可能对频繁拉取限流"——批量任务须 sleep 间隔；游客账户随时可能失效
@@ -3069,7 +3071,7 @@ TDX `0x0010` 日K（`tdx_get_security_bars`，keys = `['time','open','close','hi
 | 市盈率（动） | 动态市盈率（最新报告期年化） | push2 f162／ulist f9／腾讯[52]／THS SDK 2942／开盘啦 `pe_dynamic`／ZHB `pe_dynamic`／fuyao `pe_mrq` | 同花顺 806289408「市盈(动)」 | canonical: push2+ulist+腾讯+ZHB+fuyao｜外部: THS/开盘啦 |
 | 市盈率（静） | 静态市盈率（年报 LYR） | push2 f163／ulist f114／腾讯[53]／THS SDK 2946／开盘啦 `pe_static` | 同花顺 806223872「市盈(lyr)」 | canonical: push2+ulist+腾讯｜外部: THS/开盘啦 |
 | 市盈率（TTM） | 滚动市盈率 | push2 f164／ulist f115／腾讯[39]／THS SDK 3153／开盘啦 `pe_ttm`／ZHB `pe_ttm`／fuyao `pe_ttm` | 全源同名 | canonical: push2+ulist+腾讯+ZHB+fuyao｜外部: THS/开盘啦 |
-| 市净率 | 市净率 PB(MRQ) | push2 f167／ulist f23／腾讯[46]／THS SDK 2947／开盘啦 `pb`／fuyao `pb_mrq` | 通达信「市净率」；同花顺 806354944 同 | canonical: push2+ulist+腾讯+fuyao+THS(pb)｜外部: THS行情/开盘啦 |
+| 市净率 | 市净率 PB(MRQ) | push2 f167／ulist f23／腾讯[46]／THS SDK 2947／开盘啦 `pb`／fuyao `pb_mrq` | 通达信「市净率」；同花顺 806354944 同 | canonical: push2+ulist+腾讯+fuyao｜外部: THS行情/开盘啦 |
 | 市销率 | 市销率 PS(TTM) | push2 f165／THS SDK 134071／fuyao `ps_ttm` | 通达信「市销率」 | canonical: push2+fuyao｜外部: THS |
 | 市现率 | 市现率 PCF(TTM) | push2 f166／fuyao `pcf_ttm` | 通达信「市现率」 | canonical: push2+fuyao |
 | 每股收益 | EPS（须带报告期/年报） | push2 f55(报告期)／f160(年报)／THS SDK 1002／fuyao `basic_eps` | 通达信「每股收益」 | canonical: push2+fuyao｜外部: THS |
@@ -3101,7 +3103,7 @@ TDX `0x0010` 日K（`tdx_get_security_bars`，keys = `['time','open','close','hi
 | 20日涨跌幅 | 近20交易日涨跌幅% | push2 f120／腾讯[70]／THS SDK 3252／ZHB `change_20d` | 通达信「20日涨幅%」 | canonical: push2+腾讯+ZHB｜外部: ulist/THS/同花顺 |
 | 60日涨跌幅 | 近60交易日涨跌幅% | push2 f121／ulist f24／腾讯[71]／同花顺 805371904／ZHB `change_60d` | 通达信「60日涨幅%」 | canonical: push2+ulist+腾讯+同花顺+ZHB｜外部: 无 |
 | 年内涨跌幅 | 年初至今涨跌幅（YTD）％ | push2 f122／ulist f25／腾讯[62]／THS SDK 461346／ZHB `change_ytd` | 东财 E10「今年涨幅%」 | canonical: push2+ulist+腾讯+THS+ZHB｜外部: 无 |
-| 主力净买入额 | 主力资金净差额＝大单主动性买额−大单主动性卖额（同花顺「主力净买额」／东财「主力净流入额」／东财「主力净额」为同一概念，仅软件叫法不同）。⚠️口径陷阱：各软件「大单」阈值不同（约100万／500万），跨源数值不可直接对撞，须先确认阈值或归一后再比 | push2 f137／ulist f62／同花顺 331068(FREE净流入)／THS SDK 592890／ZHB `main_net_buy_amount` | 东财 G1「主力净流入」 | canonical: push2+ulist+ZHB｜外部: 同花顺/THS |
+| 主力净买入额 | 主力资金净差额＝大单主动性买额−大单主动性卖额（同花顺「主力净买额」／东财「主力净流入额」／东财「主力净额」为同一概念，仅软件叫法不同）。⚠️口径陷阱：各软件「大单」阈值不同（约100万／500万），跨源数值不可直接对撞，须先确认阈值或归一后再比 | push2 f137／ulist f62／同花顺 331068(FREE净流入)／THS SDK 592890（thsdk TCP 网关已于 2026-09-07 退役） | 东财 G1「主力净流入」 | canonical: push2+ulist｜外部: 同花顺 |
 | 主力净买入手数 | 主力净买入(手) | ZHB `main_net_buy_hands` | ZHB 源字段（无官方中文名） | canonical: ZHB |
 | 昨日成交额 | 前1交易日成交额 | ZHB `amount_1d` | ZHB 源字段（规范名＋日期后缀） | 未接 canonical｜外部: ZHB(私有衍生) |
 | 前日成交额 | 前2交易日成交额 | ZHB `amount_2d` | ZHB 源字段（规范名＋日期后缀） | 未接 canonical｜外部: ZHB(私有衍生) |
@@ -4799,7 +4801,7 @@ volRatio=量比, institutionIncrease=机构增仓 仅在 Socket 推送中——H
 #### 12.15.4 O37 统一层跟进后的完整优先级（2026-08-09）
 
 > **全源难易度最终排序（O18 基线上 O30-O37 新增）**：
-> **ZHB（本地零网络）→ THS SDK（TCP 非 HTTP——正式账号实测无限频）→ TDX TCP / 腾讯（不封 IP）→ 财联社/开盘红（低风险匿名）→ 板块轮动 duanxianxia（Referer 注入）→ KPL 开盘啦（longhuvip 匿名+示例 token——私有 API 风险）→ 新浪/巨潮（低风险）→ 同花顺（401 反爬史）→ AxData（封装——无独家数据）→ 东财（最难：45000/h 封禁 20h——仅独有数据）**
+> **ZHB（本地零网络）→ TDX TCP / 腾讯（不封 IP）→ 财联社/开盘红（低风险匿名）→ 板块轮动 duanxianxia（Referer 注入）→ KPL 开盘啦（longhuvip 匿名+示例 token——私有 API 风险）→ 新浪/巨潮（低风险）→ 同花顺（401 反爬史）→ AxData（封装——无独家数据）→ 东财（最难：45000/h 封禁 20h——仅独有数据）**
 >
 > **脚本落地（O37）**：
 > - **mak A 段情绪**：财联社 → 开盘红 → KPL 三源互校（一源失败自动兜底）
@@ -4965,13 +4967,13 @@ volRatio=量比, institutionIncrease=机构增仓 仅在 Socket 推送中——H
 | **板块轮动** | duanxianxia(ths/kaipan 双口径) | KPL | ZHB 聚合 | - | cells 5 字段已全展开 |
 
 **fallback 总原则（实测修订版）**：
-> **ZHB（盘前零网络）→ TDX TCP（实时主源）→ 腾讯（不封 IP 四合一）→ push2delay（东财首选域）→ fuyao（官方印证）→ 财联社/开盘红/KPL（情绪涨停三源）→ 新浪/巨潮（低风险）→ THS SDK（盘中限时）→ push2（东财最后手段——仅独有数据，风控最严）**
+> **ZHB（盘前零网络）→ TDX TCP（实时主源）→ 腾讯（不封 IP 四合一）→ push2delay（东财首选域）→ fuyao（官方印证）→ 财联社/开盘红/KPL（情绪涨停三源）→ 新浪/巨潮（低风险）→ push2（东财最后手段——仅独有数据，风控最严）**
 
 > **⚠️ V17.0.7 跟进修订（2026-08-25，与 §零·B / 代码对齐）**：上述 §12.15.5 实测表为 **2026-08-10 快照**，当时 fuyao 仅作 L2/L3「官方印证」位。**V17.0.7 已据脚本实际接入把 fuyao 提权，本表财务行未同步**——现据实修订如下：
 > - **财务 TTM 族升主源**：`core/data_provider.py` L538-613 将 `ocf_ttm / revenue_ttm / net_profit_period / net_profit_annual / eps_annual` 改由 `get_fuyao_financials` 主取（同花顺官方三大报表 5/5 终判口径，报告期驱动静态值无需实时性），push2delay 降为兜底（仅补 fuyao 未填键，不覆盖主源值）。**§12.15.5 财务行 fuyao 应从 L4「fuyao financials」印证位 → 报告期驱动主源位**（位于 TDX F10/新浪之前——fuyao 官方报表口径最权威 + 盘后可查）。
 > - **估值 fuyao 仍腾讯之后印证兜底**（`data_provider.py` L518-536）：腾讯 88 字段四合一已含 PE/PB/ROA，fuyao 估值仅双保险，定位合理，**不提权**。
 > - **涨停梯队 fuyao boards L1 已接产**（`sc_datasource.py` `hot_list` fuyao），独有档位结构维持首位；炸板/竞价/异动由 `get_sht_report.py` 直接消费（L274/1452/1477/1492）。
-> - **提权结论（用户问询）**：fuyao 在同花顺两通道中已排 **thsdk 之前**（§零·B 层级定案：同花顺-fuyao → 同花顺-thsdk）——根因 **thsdk 盘后关闸(-6) 仅盘中可用**，fuyao REST 盘后可查 + 独立风控域（4001 退避，无 push 封禁史）；**财务/盘后场景 fuyao 实质优于 thsdk**。与 tdx 比**无需提权**：tdx TCP 仍是行情/静态字段零网络主源，fuyao REST 有网络依赖，二者场景互补（tdx 实时全字段 / fuyao 财务静态+盘后+独占领涨/炸板/竞价/异动）。**综上 fuyao 提权已在 V17.0.7 完成且落地代码，无需进一步调整**；与 §零·B 对齐后的现行主源位见该节「同花顺-fuyao（…V17.0.7 升为财务 TTM 族主源）」。
+> - **提权结论（用户问询）**：fuyao 在同花顺两通道中已排 **thsdk 之前**（§零·B 层级定案：同花顺-fuyao → 同花顺-thsdk（2026-09-07 已退役））——根因 **thsdk 盘后关闸(-6) 仅盘中可用**，fuyao REST 盘后可查 + 独立风控域（4001 退避，无 push 封禁史）；**财务/盘后场景 fuyao 实质优于 thsdk**。与 tdx 比**无需提权**：tdx TCP 仍是行情/静态字段零网络主源，fuyao REST 有网络依赖，二者场景互补（tdx 实时全字段 / fuyao 财务静态+盘后+独占领涨/炸板/竞价/异动）。**综上 fuyao 提权已在 V17.0.7 完成且落地代码，无需进一步调整**；与 §零·B 对齐后的现行主源位见该节「同花顺-fuyao（…V17.0.7 升为财务 TTM 族主源）」。
 
 #### 12.15.6 统一层 ABCD 四层路由矩阵（2026-08-10 正式化——代码 `_should_use_zhb_for_realtime` 已实现）
 

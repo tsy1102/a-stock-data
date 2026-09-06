@@ -34,7 +34,16 @@ axdata>=0.1
 # ── V16.3 O30 新数据源（可选，缺失时 THS 增强自动降级）──────────────
 # thsdk: 同花顺官方 C 库 SDK（sc_ths.py 依赖；正式账号见 ths_credentials.json，
 #        缺失时 get_ths_market_snapshot / get_ths_pb 等返回空/None）
-thsdk>=0.1
+#
+# ⚠️⚠️ 包名撞车警告（2026-09-06 实测，勿再踩）：
+#   PyPI 上的 `thsdk`（2.0.2，summary="Python SDK for financial market data"）是**同名不同库**，
+#   它**不导出 `THS` 类**；本项目 `stock_common/sc_ths.py:63` 需要的是 `from thsdk import THS`
+#   （同花顺官方 C 库 SDK，非 PyPI 公开分发，需从官方渠道获取 wheel 后本地安装）。
+#   装上 PyPI 版本只会把报错从 "No module named 'thsdk'" 变成
+#   "cannot import name 'THS' from 'thsdk'"，并让 pip 误报依赖已满足 —— 已在 2026-09-06 卸载。
+#   正确做法：拿到官方 wheel 后 `pip install <path-to-wheel>`，勿用 `pip install thsdk`。
+# 缺失属预期：相关功能自动降级，不影响主流程与回归（526 passed）。
+# thsdk>=0.1    ← 有意保留为注释：标记该依赖真实不可从 PyPI 满足
 
 # ── Google Drive（V7 已切换至 google-auth + google-api-python-client）
 # ⚠️ pydrive2 / oauth2client 已废弃，保留兼容运行但不再主动安装

@@ -742,38 +742,6 @@ async def strategy_04_core_discount(stocks):
     big_caps = [s for s in stocks if s.get("mcap_yi", 0) >= _mcap_min]
     if not big_caps: return []
     big_caps = sorted(big_caps, key=lambda x: x.get("mcap_yi", 0), reverse=True)[:_top_n]
-    # V16.3.7: THS 批量 PB 仅作**校验**（口径已统一——PB 一律走 canonical 腾讯/push2 除息口径，与东财/腾讯官网一致）；
-    # 字典 PB 双口径矩阵：THS 静态 vs 除息，除息窗口差异可至 14%（茅台 2026-08）；50 只/批 + 0.1s 限频
-    # V16.4.0: thsdk 通道仅盘中（9:30-15:00）可用——盘后官方账号拒绝登录（-6），
-    # 200 只逐只尝试会白等 10-15 分钟；与 canonical（data_provider is_trading_hours 保护）对齐
-    try:
-        from stock_common import get_market_status
-
-        _th_status = get_market_status()
-        _th_status = _th_status[0] if isinstance(_th_status, tuple) else _th_status
-        _ths_allowed = _th_status in ("morning", "lunch", "afternoon")
-    except Exception:
-        _ths_allowed = False  # V16.4.0 保守：时段不确定时不调 THS（THS 为校验非主源）
-    if _ths_allowed:
-        try:
-            from stock_common import get_ths_market_snapshot
-            _ths_codes = [
-                ("USHA" if s["code"].startswith("6") else "USZA") + s["code"]
-                for s in big_caps if s["code"][:2] not in ("92", "43", "83", "87", "88")
-            ]
-            if _ths_codes:
-                _ths_map = await asyncio.to_thread(get_ths_market_snapshot, _ths_codes)
-                _ths_pb = {}
-                for _c, _d in _ths_map.items():
-                    for _k, _v in _d.items():
-                        if _k.startswith("市净率") and _v not in (None, "", 4294967295, 2147483648):
-                            _ths_pb[_c[4:]] = _v
-                            break
-                for _s in big_caps:
-                    if _s["code"] in _ths_pb:
-                        _s["pb_ths"] = _ths_pb[_s["code"]]
-        except Exception as _e:
-            _debug_log(f"val strategy04 ths pb: {_e}")
     result = []
     # V15.1: 统一接入 get_canonical_stock_data 强类型合约（替代旧的 get_stock_composite_async）
     from core.data_provider import get_canonical_stock_data
@@ -786,12 +754,7 @@ async def strategy_04_core_discount(stocks):
             continue
         pe = _safe_float(cdata.pe_ttm)
         if pe <= 0 or pe > _pe_high: continue
-        # V16.3.7: THS 静态值 pb_ths 仅校验（见下），不参与取值——消除双口径漂移
-        # V16.3.7: 校验日志——THS 静态（扩展1）vs canonical（除息）差异 >10% 提示除息窗口
         pb = _safe_float(cdata.pb)  # V16.3.7: 口径统一——PB 一律走 canonical（腾讯/push2 除息口径）
-        _ths_ref = _safe_float(s.get("pb_ths", 0))
-        if _ths_ref > 0 and pb > 0 and abs(pb - _ths_ref) / pb > 0.10:
-            _debug_log(f"val04 pb 口径差异 {code}: canonical {pb} vs THS {_ths_ref}（除息窗口？）")
         if pb > _pb_high: continue
         mcap = _safe_float(cdata.mcap_yi)
         price = _safe_float(cdata.price)

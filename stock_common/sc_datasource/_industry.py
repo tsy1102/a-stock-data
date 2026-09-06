@@ -894,6 +894,10 @@ def get_em_board_members(board_code: str) -> List[Dict[str, Any]]:
         return []
 
 
+@cached(
+    category="industry_classification",
+    valid_if=lambda r: isinstance(r, dict) and bool(r.get("industry") or r.get("area")),
+)
 @requires_push2
 def get_em_belong_boards(code: str) -> Dict[str, List[Any]]:
     """V12.0: 获取股票所属板块（替代 TDX MacClient.get_belong_board）。

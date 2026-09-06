@@ -60,7 +60,7 @@ __all__ = [
     "get_version",
     "_safe_float",
     "ensure_output_dir", "get_script_dir",
-    "get_board_type", "get_sec_type_enum", "limit_pct_for", "is_limit_up", "is_limit_down",
+    "get_board_type", "get_sec_type_enum", "limit_pct_for", "sec_type_market_label", "is_limit_up", "is_limit_down",
     "clean_codes", "parse_args",
     "_safe_cleanup_tdx",
     "_load_settings", "_load_strategy_config",
@@ -96,6 +96,7 @@ __all__ = [
     "get_eastmoney_stock_news", "get_eastmoney_global_news",
     "get_sina_financial_report", "get_sina_financial_report_async",
     "get_sina_balance_sheet", "get_sina_balance_sheet_async",
+    "get_financial_report_with_fallback",
     "get_em_batch_quotes",
     # V12.0: 东财HTTP替代接口（完全移除easy_tdx）
     "get_em_board_list", "get_em_board_members", "get_em_belong_boards",
@@ -145,7 +146,6 @@ __all__ = [
     # V12.4: 策略报告通用运行框架
     "BaseReportRunner",
     # V16.3 O35: 新数据源适配器（字典 §12.8.12b/§12.17/§12.18）
-    "get_ths_market_snapshot", "get_ths_pb", "get_ths_credentials",
     "get_kpl_market_sentiment", "get_kpl_up_down", "get_kpl_plate_strength",
     "get_kpl_limit_up_detail", "get_kpl_broken_ratio",
     "get_plate_rotation_matrix", "get_plate_rotation_top",
@@ -222,7 +222,7 @@ from stock_common.sc_utils import (
     get_version,
     _safe_float,
     ensure_output_dir, get_script_dir,
-    get_board_type, get_sec_type_enum, limit_pct_for, is_limit_up, is_limit_down,
+    get_board_type, get_sec_type_enum, limit_pct_for, sec_type_market_label, is_limit_up, is_limit_down,
     clean_codes, parse_args,
     _safe_cleanup_tdx,
     _load_settings, _load_strategy_config,
@@ -296,6 +296,7 @@ from stock_common.sc_datasource import (
     # 新浪财报
     get_sina_financial_report, get_sina_financial_report_async,
     get_sina_balance_sheet, get_sina_balance_sheet_async,
+    get_financial_report_with_fallback,
     # 东财批量行情（V11.5新增，替代TDX）
     get_em_batch_quotes,
     # V12.0: 东财HTTP替代接口（完全移除easy_tdx）
@@ -357,11 +358,8 @@ from stock_common.sc_datasource import (
 
 
 # ═══════════════════════════════════════════════════════════════
-# V16.3 O35: 新数据源适配器（字典 §12.8.12b THS / §12.17 KPL / §12.18 板块轮动）
+# V16.3 O35: 新数据源适配器（字典 §12.17 KPL / §12.18 板块轮动）
 # ═══════════════════════════════════════════════════════════════
-from stock_common.sc_ths import (  # THS SDK（同花顺官方 C 库——正式账号无限频）
-    get_ths_market_snapshot, get_ths_pb, get_ths_credentials,
-)
 from stock_common.sc_kpl import (  # 开盘啦 KPL（longhuvip 私有 API——匿名接口）
     get_kpl_market_sentiment, get_kpl_up_down, get_kpl_plate_strength,
     get_kpl_limit_up_detail, get_kpl_broken_ratio,

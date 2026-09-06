@@ -300,6 +300,7 @@ TTL: Dict[str, int] = {
     # 行业/概念热度（每日变化，V11.2: 改为交易日模式）
     "industry_compare":  24 * 3600,   # 行业板块排名（trading_day=True覆盖）
     "industry_peers_v2": 24 * 3600,   # 行业可比公司（V16.2.16 版本化——trading_day 覆盖）
+    "industry_classification": 90 * 86400,  # V17.1: 个股所属板块分类(行业f127/地域f128, push2降频); 分类变化极慢→季度TTL
     "ths_hot_reason":   24 * 3600,   # 同花顺热点题材（trading_day=True覆盖）
     "hsgt_macro_flow":  24 * 3600,   # 北向资金大盘流向（trading_day=True覆盖）
 

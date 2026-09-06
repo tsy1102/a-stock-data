@@ -5,6 +5,33 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 
+## [V17.2.0] 2026-09-07 — 移除 thsdk TCP 网关 + 源降级与缓存优化
+
+> **状态：已完成。** 本轮主线："降低对东财/push2 的依赖、剔除仅盘中可用的 thsdk 网关"（用户场景为盘后/盘前运行脚本，thsdk 仅盘中可用，不符合）。
+
+### ① 移除 thsdk TCP 网关
+- 删除 `stock_common/sc_ths.py`（thsdk 唯一载体，`from thsdk import THS`）。
+- `stock_common/__init__.py`：移除模块级导入与 `__all__` 中 3 个 THS 导出名。
+- `core/data_provider.py`：删除 `_THS_FUND_CACHE` 全局缓存变量、T2 主力净流入 THS 快照兜底块（回退为仅东财 `push2delay f137`）、THS PB 兜底块（PB 改由 TDX `price/bvps` 兜底）。
+- `get_val_report.py`：删除 val04 的 `pb_ths` THS 抓取与跨源校验（纯调试，不影响 canonical 取值）。
+- `docs/field_dict.md`：市净率 canonical 去 `THS(pb)`；主力净 canonical 去 THS；源排序链/可用性表去 thsdk 节点；§12.8.12b 加"已退役 2026-09-07"横幅；余 2 处能力清单/提权叙述标注退役。
+- **保留**：同花顺 HTTP 网页接口（`get_ths_hot_raw` 强势股热榜 / `ths_limit_up_pool` 涨停揭秘，走 `zx/data.10jqka.com.cn` REST，盘后仍可用，报告在用）。
+
+### ② 涨停/跌停价脱离 push2（腾讯[47]/[48]）
+- `stock_common/sc_datasource/_quotes.py`：`get_tencent_quote` 的 `raw` 字典与透传白名单增补 `limit_up`(tx47) / `limit_down`(tx48)。
+- `core/data_provider.py`：腾讯 extras 补取块（不受 price 门控）增补 `limit_up`/`limit_down` 取数——push2(f51/f52) 不再是涨跌停价唯一来源。
+
+### ③ 行业/板块分类季度缓存（降频东财，不换源）
+- `core/stock_cache.py`：TTL 字典新增 `"industry_classification": 90*86400`。
+- `stock_common/sc_datasource/__init__.py`：`_EM_L2_TTL` 由 7 天提升至 90 天（申万二级全市场映射内存+磁盘双级）。
+- `stock_common/sc_datasource/_industry.py`：`get_em_belong_boards`（f127 行业 / f128 地域）加 `@cached(季度)`，命中后不再打 push2 主域。
+
+### ④ 字典正确性订正
+- `docs/field_dict.md` §12.8.12e：ZHB `main_net_buy_amount` 实锤=竞价额（非主力净流入），从"主力净买入额"canonical 移除（2026-08-14 实锤回填）。
+
+**验证**：5 个改动文件 `py_compile` 全通过；活跃代码全仓零功能性 thsdk 残留。
+
+
 ## [V17.1.0] 2026-09-04 — V17-2 重构：`sc_datasource.py` 拆包（完成，零回归）
 
 > **状态：已成功完成。** god-module `stock_common/sc_datasource.py`（7617 行 / 162 顶层函数）按域拆为包 `stock_common/sc_datasource/`，对外 `from stock_common.sc_datasource import X` 零破坏。Python 3.12 全量回归 **518 passed / 2 failed / 4 skipped**，与拆包前基线完全一致（2 失败为 f10 实时数据既有断言，与本次无关），拆包引入回归数为 **0**。

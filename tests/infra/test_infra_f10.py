@@ -15,6 +15,21 @@
     2. Key 在但上游网络不可达      → skip（环境不具备）
     3. 上游可达而章节缺失          → FAIL（真实回归，必须修）
 
+⚠️ 2026-09-06 更正（本文件长期误判的根因，务必读完再用本文件判红）：
+  上面"恒定的 2 个 FAILED 属环境性失败"的结论是**错的**，曾跨多个会话传播。
+  真实根因是**断言字符串本身陈旧**，与网络无关：
+    - V17.0.2n 起 `md_render.text_to_md` 会把脚本输出的 `## 【X】` 规范化为 `## X`
+      （设计师规范：原生 md 标题不需要括号装饰，见 md_render.py L236-237）。
+    - 本文件的断言仍写成 `'【三、历史财务业绩兑现追踪' in r`（**带【**），
+      而 `generate_report_async` 返回的是**已经过 text_to_md 渲染**的字符串，
+      【】已被剥离 → 该断言**在任何网络条件下都不可能成立**。
+  实证（2026-09-06，STOCK_NOCACHE=1，600519）：med/lng 两份报告的 10 个章节
+  标题**全部命中**，渲染形态为 `## 三、历史财务业绩兑现追踪 (近5季度)` 等（无【】）。
+  故本次仅剥离断言里的【】，**不弱化任何业务断言**（章节存在性判定原样保留）。
+
+  教训（登记进项目铁律）："回归基线里恒定的红"必须追到根因，
+  不能用"环境性失败"盖棺定论——它往往正是被掩盖的真实缺陷。
+
   ⚠️ 另修复一处测试隔离缺陷：原模块顶层 ``os.environ['STOCK_NOCACHE'] = '1'``
   在 **import（收集）阶段**即生效，会把"禁用缓存"泄漏给整个 pytest 会话，
   影响其他用例。现改为 fixture 内 monkeypatch，作用域收束到本文件。
@@ -66,10 +81,10 @@ async def test_med_report(skip_if_upstream_down):
     tmp = tempfile.NamedTemporaryFile(suffix='.txt', delete=False).name
     async with aiohttp.ClientSession() as s:
         r = await generate_report_async(s, '600519', tmp)
-    assert '【三、历史财务业绩兑现追踪' in r, "缺少【历史财务业绩兑现追踪】章节"
-    assert '【八、筹码稳定性与抛压评估' in r, "缺少【筹码稳定性与抛压评估】章节"
-    assert '【四、资产负债表财务健康度' in r, "缺少【资产负债表财务健康度】章节"
-    assert '【十七、舆情与互动】' in r, "缺少【十七、舆情与互动】章节"
+    assert '三、历史财务业绩兑现追踪' in r, "缺少【历史财务业绩兑现追踪】章节"
+    assert '八、筹码稳定性与抛压评估' in r, "缺少【筹码稳定性与抛压评估】章节"
+    assert '四、资产负债表财务健康度' in r, "缺少【资产负债表财务健康度】章节"
+    assert '十七、舆情与互动' in r, "缺少【十七、舆情与互动】章节"
 
 
 @pytest.mark.real_network
@@ -81,12 +96,12 @@ async def test_lng_report(skip_if_upstream_down):
     tmp = tempfile.NamedTemporaryFile(suffix='.txt', delete=False).name
     async with aiohttp.ClientSession() as s:
         r = await generate_report_async(s, '600519', tmp)
-    assert '【二、跨期财务纵深与长效业绩验证' in r, "缺少【跨期财务纵深与长效业绩验证】章节"
-    assert '【六、长线筹码沉淀与机构持股倾向' in r, "缺少【长线筹码沉淀与机构持股倾向】章节"
-    assert '【三、财务健康度排雷' in r, "缺少【财务健康度排雷】章节"
-    assert '【五、长效股东回报属性' in r, "缺少【长效股东回报属性】章节"
-    assert '【四、未来三年机构一致预期' in r, "缺少【未来三年机构一致预期】章节"
-    assert '【十、舆情与互动】' in r, "缺少【十、舆情与互动】章节"
+    assert '二、跨期财务纵深与长效业绩验证' in r, "缺少【跨期财务纵深与长效业绩验证】章节"
+    assert '六、长线筹码沉淀与机构持股倾向' in r, "缺少【长线筹码沉淀与机构持股倾向】章节"
+    assert '三、财务健康度排雷' in r, "缺少【财务健康度排雷】章节"
+    assert '五、长效股东回报属性' in r, "缺少【长效股东回报属性】章节"
+    assert '四、未来三年机构一致预期' in r, "缺少【未来三年机构一致预期】章节"
+    assert '十、舆情与互动' in r, "缺少【十、舆情与互动】章节"
 
 
 async def main():

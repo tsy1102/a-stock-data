@@ -70,7 +70,7 @@ from stock_common import (_safe_float, _debug_log,
                            get_zhb_data_date,
                            get_zhb_streak_days,
                            is_limit_up,  # V16.2: 统一涨停/跌停判断（含北交所 30%）
-                           limit_pct_for)  # V10.3, V16.2: 统一涨跌停阈值
+                           sec_type_market_label, limit_pct_for)  # V10.3, V16.2: 统一涨跌停阈值
 
 from core.data_provider import get_main_net_buy_async  # V16.4.1: 删 9 个未使用 async 包装
 
@@ -321,6 +321,8 @@ async def generate_report_async(session, code, output_path, ind_comp=None, idx_q
     if getattr(cdata, "is_new", False):
         L(f"  🆕 次新标记: 上市 {getattr(cdata, 'listing_days', '?')} 日（临时前缀已忽略——涨跌停规则可能不同）")
     L(f"  所属板块: {stock_industry}")
+    # V17.0.32(2026-09-06) DEBT-016: 露出 sec_type（与 board 地域字段正交）→ 市场板块 + 涨跌幅限制
+    L(f"  市场板块: {sec_type_market_label(getattr(cdata, 'sec_type', 0), cdata.code, cdata.name)}")
     L(f"  总股本:   {cdata.total_shares_wan/1e4:.2f}亿股")
     L(f"  流通股本: {cdata.float_shares_wan/1e4:.2f}亿股")
 
@@ -349,7 +351,7 @@ async def generate_report_async(session, code, output_path, ind_comp=None, idx_q
         if cdata.time_anchor == "t-1":
             L("  ⚠️ 盘前/休市模式，以下行情数据基于上一交易日收盘数据")
         # V17.0.1e: 撤销 V17.0.1b 表格化, 恢复原"字段: 值"竖排(基本信息/行情不适用表格)
-        L(f"  当前价:   {cdata.price:.2f} 元")
+        L(f"  现价:   {cdata.price:.2f} 元")
         L(f"  涨跌幅:   {cdata.change_pct:.2f}%")
         L(f"  今开:     {cdata.open:.2f} 元  昨收: {cdata.prev_close:.2f} 元")
         L(f"  最高:     {cdata.high:.2f} 元  最低: {cdata.low:.2f} 元")
@@ -370,7 +372,7 @@ async def generate_report_async(session, code, output_path, ind_comp=None, idx_q
         _pe_str = f"{cdata.pe_ttm:.2f}" if cdata.pe_ttm > 0 else "N/A（亏损）"
         _pe_dyn_str = f"{cdata.pe_dynamic:.2f}" if cdata.pe_dynamic > 0 else "N/A"
         _pe_lyr_str = f"{cdata.pe_lyr:.2f}" if cdata.pe_lyr > 0 else "N/A"
-        L(f"  PE(TTM):  {_pe_str}  PE(动): {_pe_dyn_str}  PE(静/LYR): {_pe_lyr_str}  PB: {cdata.pb:.2f}")
+        L(f"  PE（TTM）:  {_pe_str}  PE（动）: {_pe_dyn_str}  PE（静/LYR）: {_pe_lyr_str}  PB: {cdata.pb:.2f}")
 
         # ── V17.0.27(2026-09-04) DEBT-007: 契约孤儿字段消费（公理 A5 契约无孤儿）──
         #   ① 均价偏离度 = (现价 − 当日均价VWAP) / 均价。
@@ -423,7 +425,7 @@ async def generate_report_async(session, code, output_path, ind_comp=None, idx_q
 
             bias = (price_today-ma5)/ma5*100
 
-            L(f"  [短线趋势] 当前价相对 MA5 乖离率: {bias:+.2f}% ({'站上 MA5, 趋势偏强' if price_today>=ma5 else '跌破 MA5, 短线走弱'})")
+            L(f"  [短线趋势] 现价相对 MA5 乖离率: {bias:+.2f}% ({'站上 MA5, 趋势偏强' if price_today>=ma5 else '跌破 MA5, 短线走弱'})")
 
     L("")
 
@@ -583,7 +585,7 @@ async def generate_report_async(session, code, output_path, ind_comp=None, idx_q
     if _seal_info:
         fa = (_seal_info['seal_money'] or 0) / 1e8
         fr = fa / (q.get('mcap_yi', 0) or 1) * 100
-        t = f"  封单资金 {fa:.2f}亿元（fuyao 官方），占流通市值 {fr:.1f}%"
+        t = f"  封单额 {fa:.2f}亿元（fuyao 官方），占流通市值 {fr:.1f}%"
         _dec = _seal_info.get('seal_decay_ratio')
         if _dec is not None:
             _pct = _dec * 100
@@ -604,7 +606,7 @@ async def generate_report_async(session, code, output_path, ind_comp=None, idx_q
         if is_lu and b1v > 0:
             fa = b1v * lu / 1e8; fr = fa / (q.get("mcap_yi", 0) or 1) * 100
             if fa >= 0.1 or fr > 0.5:
-                t = f"  封单资金 {fa:.2f}亿元，占流通市值 {fr:.1f}%"
+                t = f"  封单额 {fa:.2f}亿元，占流通市值 {fr:.1f}%"
                 if fr > 5: t += "\n  🔥 封单实力强劲，次日大概率高开"
                 elif fr > 2: t += "\n  ✅ 封单质量良好"
                 else: t += "\n  ⚠️ 封单偏弱"
@@ -770,11 +772,11 @@ async def generate_report_async(session, code, output_path, ind_comp=None, idx_q
             # V17.0.27(2026-09-04) 口径对齐修复（9/3 报告核查 #2）：
             #   同业行 `p['pe']` 来自 tdx_get_board_members → pe_dynamic（东财兜底路径为 f9=动态PE，
             #   V17.0.15 已定案）；而本股行原取 pe_ttm —— **同一列里两个口径**，横向对比不可比，
-            #   且列标题写 "PE(TTM)" 与同业行实际口径不符（语义漂移，A2）。
-            #   实测佐证: 300442 报告显示 PE(TTM)=43.9，统一层实测 pe_ttm=20.93 / pe_dynamic=19.68，
+            #   且列标题写 "PE（TTM）" 与同业行实际口径不符（语义漂移，A2）。
+            #   实测佐证: 300442 报告显示 PE（TTM）=43.9，统一层实测 pe_ttm=20.93 / pe_dynamic=19.68，
             #   43.9 两者皆不匹配（来自 TDX MAC 的 pe_dynamic）。
-            #   修复: 本股行改用 pe_dynamic，列标题改为「PE(动)」→ 同列同口径 + 标题如实。
-            L("  同业龙头对比:"); L(f"  {'代码':<8} {'名称':<12} {'股价':>8} {'涨跌幅%':>8} {'市值(亿)':>10} {'PE(动)':>9} {'PE(静)':>8} {'换手率%':>8}"); L(f"  {'-'*80}")
+            #   修复: 本股行改用 pe_dynamic，列标题改为「PE（动）」→ 同列同口径 + 标题如实。
+            L("  同业龙头对比:"); L(f"  {'代码':<8} {'名称':<12} {'股价':>8} {'涨跌幅%':>8} {'市值(亿)':>10} {'PE（动）':>9} {'PE（静）':>8} {'换手率%':>8}"); L(f"  {'-'*80}")
 
             _my_mcap = peer_data['my_mcap'] if peer_data['my_mcap'] > 0 else q.get('mcap_yi', 0)
 
@@ -1307,7 +1309,7 @@ async def generate_report_async(session, code, output_path, ind_comp=None, idx_q
         _c90 = _cyq_dict.get("concentration_90", 0.0) or 0.0
         _c70 = _cyq_dict.get("concentration_70", 0.0) or 0.0
         _avg = _cyq_dict.get("avg_cost", 0.0) or 0.0
-        L(f"  - 获利盘比例: {_ben*100:.1f}%（当前价下持仓盈利占比）")
+        L(f"  - 获利盘比例: {_ben*100:.1f}%（现价下持仓盈利占比）")
         L(f"  - 平均成本: {_avg:.2f} 元")
         L(f"  - 90% 筹码集中度: {_c90:.3f}（成本区间 {_cyq_dict.get('cost_90_low',0):.2f}~{_cyq_dict.get('cost_90_high',0):.2f}）")
         L(f"  - 70% 筹码集中度: {_c70:.3f}（成本区间 {_cyq_dict.get('cost_70_low',0):.2f}~{_cyq_dict.get('cost_70_high',0):.2f}）")
@@ -1513,7 +1515,7 @@ async def generate_report_async(session, code, output_path, ind_comp=None, idx_q
                     _lf_txt = f"{_lf/1e4:.0f}万"
                 else:
                     _lf_txt = f"{_lf:.0f}"
-                L(f"    📌 当前股票在涨停池中！连板{item.get('limit_count',0)} 板块:{item.get('sector','')} 封板资金:{_lf_txt}元{_extra}")
+                L(f"    📌 当前股票在涨停池中！连板{item.get('limit_count',0)} 板块:{item.get('sector','')} 封单额:{_lf_txt}元{_extra}")
                 break
         for item in pool.get("limit_broken_list", []):
             if item.get("code") == code:
@@ -1741,7 +1743,7 @@ async def generate_report_async(session, code, output_path, ind_comp=None, idx_q
 
             _cr = (b1v2*lu2)/_tamt
 
-            if _cr<_seal_ratio_warn: signals.append(f"⚠️ 封单预警：封单资金仅占今日成交额 {_cr*100:.1f}%，弱势烂板，极易炸板悶杀")
+            if _cr<_seal_ratio_warn: signals.append(f"⚠️ 封单预警：封单额仅占今日成交额 {_cr*100:.1f}%，弱势烂板，极易炸板悶杀")
     # V17.0.5 P0: 封单衰减率信号(fuyao 官方口径——峰值→现值)
     if _seal_info and _seal_info.get("seal_decay_ratio") is not None:
         _dec_pct = _seal_info["seal_decay_ratio"] * 100

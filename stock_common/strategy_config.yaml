@@ -15,7 +15,7 @@ market:
   limit_order_strong: 5.0      # >5%=强势封板
   limit_order_mid: 2.0          # >2%=良好
   # 封单/成交额比值（<此值=弱势烂板）
-  seal_amount_ratio_warn: 0.1  # 封单资金占成交额比例 <10% 预警
+  seal_amount_ratio_warn: 0.1  # 封单额占成交额比例 <10% 预警
   # V7.5新增：涨停价格容差（相对于涨停价的比例）
   limit_price_tolerance: 0.005  # abs(price-limit_up)/limit_up < 此值 = 涨停有效
   # V7.5新增：封单量检测阈值

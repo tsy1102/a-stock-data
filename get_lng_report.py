@@ -66,7 +66,8 @@ from stock_common import (_safe_float, _debug_log,
                           get_zhb_single_stock_data, is_zhb_data_fresh,
                           get_zhb_industry_map, get_zhb_data_date,
                           get_zhb_tip_info,
-                          cls_telegraph, news_matches_stock, cninfo_irm)  # V10.3, V16.2.3
+                          cls_telegraph, news_matches_stock, cninfo_irm,
+                          sec_type_market_label)  # V10.3, V16.2.3; V17.0.32 DEBT-016 露出 sec_type
 
 _SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 
@@ -253,6 +254,8 @@ async def generate_report_async(session, code, output_path, ind_comp=None):
     price_today = cdata.price
 
     L(f"  企业名称: {info.get('name', 'N/A')} ({info.get('code', code)})")
+    # V17.0.32(2026-09-06) DEBT-016: 露出 sec_type（与 board 地域字段正交）→ 市场板块 + 涨跌幅限制
+    L(f"  市场板块: {sec_type_market_label(getattr(cdata, 'sec_type', 0), code, info.get('name', ''))}")
 
     # 行业归属：info.get('industry') → TDX boards → ZHB industry_code 映射
     # V15.1: ZHB dict 不含 industry 字段；改用 TDX boards（参考 docs/field_dict.md）
@@ -365,7 +368,7 @@ async def generate_report_async(session, code, output_path, ind_comp=None):
         if _tip_eps and _tip_eps > 0:
             # V16.2.4 修正: tipinfo eps 为单季口径（如 Q1），直接算"对应PE"会与 TTM PE 矛盾误导
             # （实测 0.0692 → 68.9x vs TTM 21.64x），改为标注口径、不再展示误导性 PE
-            L(f"  [ZHB单季EPS] 最新报告期单季EPS: {_tip_eps:.4f}元（非TTM口径，估值请以上方 PE(TTM) 为准）")
+            L(f"  [ZHB单季EPS] 最新报告期单季EPS: {_tip_eps:.4f}元（非TTM口径，估值请以上方 PE（TTM） 为准）")
 
     # 历史最高价——V17.0.7 修复渲染回归: V17.0.5 P2 只改了 qfq 函数, 本处仍
     # high_52w 优先导致前复权修复从未生效(茅台实测显示52周高1539.98/-15.25%,
@@ -411,7 +414,7 @@ async def generate_report_async(session, code, output_path, ind_comp=None):
     if _dp_pe and _dp_pe > 0:
         _pe = _dp_pe
         # V17.0.17(2026-09-01) 据主字典定案修正: 动态PE=canonical pe_dynamic(f162);
-        # 静态PE(LYR)=canonical pe_lyr(f163, 本次新增透传)。原 _pe_static 误用 pe_dynamic(动态) 当静态, 已纠正。
+        # 静态PE（LYR）=canonical pe_lyr(f163, 本次新增透传)。原 _pe_static 误用 pe_dynamic(动态) 当静态, 已纠正。
         _pe_dyn = float(getattr(_cdata, "pe_dynamic", 0) or 0) if _cdata else 0
         _pe_lyr = float(getattr(_cdata, "pe_lyr", 0) or 0) if _cdata else 0
     elif _zhb_pe_ttm and _zhb_pe_ttm > 0:
@@ -449,12 +452,12 @@ async def generate_report_async(session, code, output_path, ind_comp=None):
     # V17.0.27(2026-09-04) A6「缺失≠0」（9/3 报告核查 #1 的 lng 侧）:
     #   亏损股 _pe=0 时原渲染 "0.00x"，虽有 "(亏损(无正PE)口径)" 注脚，但 0.00x 仍是
     #   一个**可被下游/读者当作数值消费的假数**（0 是极值不是中性值）。改为显式 N/A。
-    L(f"    市盈率 PE(TTM): {_pe:.2f}x ({_pe_src}口径; 盈利收益率粗估: {_ey})"
+    L(f"    市盈率 PE（TTM）: {_pe:.2f}x ({_pe_src}口径; 盈利收益率粗估: {_ey})"
       if _pe > 0 else
-      f"    市盈率 PE(TTM): N/A（{_pe_src}口径; 盈利收益率粗估: {_ey}）")
-    # V17.0.17(2026-09-01) 据主字典定案修正: 动态PE=pe_dynamic(f162) / 静态PE(LYR)=pe_lyr(f163) 分开展示, 口径不再混淆
-    L(f"    动态市盈率 PE(动): {_pe_dyn:.2f}x" if _pe > 0 and _pe_dyn > 0 else "    动态市盈率 PE(动): N/A")
-    L(f"    静态市盈率 PE(LYR): {_pe_lyr:.2f}x" if _pe > 0 and _pe_lyr > 0 else "    静态市盈率 PE(LYR): N/A（无静态口径）")
+      f"    市盈率 PE（TTM）: N/A（{_pe_src}口径; 盈利收益率粗估: {_ey}）")
+    # V17.0.17(2026-09-01) 据主字典定案修正: 动态PE=pe_dynamic(f162) / 静态PE（LYR）=pe_lyr(f163) 分开展示, 口径不再混淆
+    L(f"    动态市盈率 PE（动）: {_pe_dyn:.2f}x" if _pe > 0 and _pe_dyn > 0 else "    动态市盈率 PE（动）: N/A")
+    L(f"    静态市盈率 PE（LYR）: {_pe_lyr:.2f}x" if _pe > 0 and _pe_lyr > 0 else "    静态市盈率 PE（LYR）: N/A（无静态口径）")
     # V17.0.26(2026-09-03) DEBT-008: 删除假的 PE(MorePE) 交叉验证展示行（与 med 报告同源问题）。
     #   原注释称"pe_more 与 pe_ttm 口径略有差异，偏差大→提示异常"，但二者同源 f164，
     #   该展示永不触发却向读者谎称存在两个独立口径 —— 违反公理 A2 / A7。
@@ -488,7 +491,7 @@ async def generate_report_async(session, code, output_path, ind_comp=None):
                 if _ind.get("name") == _our_ind or _our_ind in _ind.get("name", ""):
                     _lng_pe_lyr = getattr(_cdata, "pe_lyr", 0) or 0
                     _lng_pe_lyr_s = f"{_lng_pe_lyr:.1f}x" if _lng_pe_lyr > 0 else "N/A"
-                    L(f"  📊 板块横向对比: 本股PE(TTM)={q.get('pe_ttm',0):.1f}x | 本股PE(静)={_lng_pe_lyr_s} | 板块涨跌{_ind.get('change_pct',0):+.2f}%")
+                    L(f"  📊 板块横向对比: 本股PE（TTM）={q.get('pe_ttm',0):.1f}x | 本股PE（静）={_lng_pe_lyr_s} | 板块涨跌{_ind.get('change_pct',0):+.2f}%")
                     break
     except Exception as _e:
         _debug_log(f"lng industry_compare error: {_e}")
@@ -989,7 +992,7 @@ async def generate_report_async(session, code, output_path, ind_comp=None):
         _c90 = _cyq_dict.get("concentration_90", 0.0) or 0.0
         _c70 = _cyq_dict.get("concentration_70", 0.0) or 0.0
         _avg = _cyq_dict.get("avg_cost", 0.0) or 0.0
-        L(f"    - 获利盘比例: {_ben*100:.1f}%（当前价下持仓盈利占比）")
+        L(f"    - 获利盘比例: {_ben*100:.1f}%（现价下持仓盈利占比）")
         L(f"    - 平均成本: {_avg:.2f} 元")
         L(f"    - 90% 筹码集中度: {_c90:.3f}（成本区间 {_cyq_dict.get('cost_90_low',0):.2f}~{_cyq_dict.get('cost_90_high',0):.2f}）")
         L(f"    - 70% 筹码集中度: {_c70:.3f}（成本区间 {_cyq_dict.get('cost_70_low',0):.2f}~{_cyq_dict.get('cost_70_high',0):.2f}）")

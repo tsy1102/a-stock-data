@@ -96,7 +96,7 @@ def get_tencent_quote(code: str) -> Dict[str, Any]:
             # V17.0.25(2026-09-03): [56]/[86] 据主字典 09-03 主动升级定案新增（越界安全取）
             "beta": _tv("beta"),            # Beta 族（高置信, 腾讯口径 Beta 估计值）
             "bid_ask_net": _tv("bid_ask_net"),  # 手级带符号量（候选=委差/盘口净量, L4）
-            "bid1_vol": _safe_float(vals[_f["bid1_vol"]]),          # 买一量(手) — V16.3.4 新增（sht 封单资金用）
+            "bid1_vol": _safe_float(vals[_f["bid1_vol"]]),          # 买一量(手) — V16.3.4 新增（sht 封单额用）
         }
         result = normalize_at_boundary(raw, DataSource.TENCENT)
         # V16.3.3: normalize 为白名单映射——腾讯独有字段（normalize 未定义）在此透传
@@ -339,7 +339,7 @@ def _em_quote_full_impl(code: str, host: str = "https://push2delay.eastmoney.com
             "volume_hand": float,     # f47  成交量(手)
             "amount_wan": float,      # f48  成交额(元→万元)
             "turnover_pct": float,    # f168 换手率(%)
-            "pe_ttm": float,          # f164 PE(TTM) (fltt=2 下为浮点，无需 /100) — 🔴2026-09-01 纠正：f164=T重TTM，f163才是静态PE
+            "pe_ttm": float,          # f164 PE（TTM） (fltt=2 下为浮点，无需 /100) — 🔴2026-09-01 纠正：f164=T重TTM，f163才是静态PE
             "pe_lyr": float,           # f163 静态PE(LYR, 现价÷年报EPS)
             "pe_dynamic": float,
             "pb": float,
@@ -527,7 +527,7 @@ def _em_quote_full_impl(code: str, host: str = "https://push2delay.eastmoney.com
             except (TypeError, ValueError):
                 pass
 
-        # PE 三口径 + PB（🔴2026-09-01 据 field_dict 定案纠正：f162=动态PE/f163=静态PE(LYR)/f164=TTM(pe_ttm)/f167=PB）
+        # PE 三口径 + PB（🔴2026-09-01 据 field_dict 定案纠正：f162=动态PE/f163=静态PE（LYR）/f164=TTM(pe_ttm)/f167=PB）
         pe_map = {
             "f162": "pe_dynamic",
             "f163": "pe_lyr",

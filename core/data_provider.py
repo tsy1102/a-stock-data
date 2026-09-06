@@ -1688,7 +1688,7 @@ def get_change_ytd(code: str) -> Optional[float]:
         if keys and rows:
             idx_close = keys.index('close') if 'close' in keys else 2
             # tdx_get_security_bars 返回升序(旧→新)，见 tdx_client.py:802 实测。
-            # rows[-1]=当日最新价，rows[0]=最早一根(约250个交易日前≈年初)
+            # rows[-1]=当日现价，rows[0]=最早一根(约250个交易日前≈年初)
             current_price = _safe_float(rows[-1][idx_close])
             if len(rows) >= 2:
                 year_start_price = _safe_float(rows[0][idx_close])

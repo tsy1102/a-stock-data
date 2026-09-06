@@ -206,7 +206,7 @@ def get_industry_peers(
 
             # V17.0.29 (2026-09-02 P1 修复): 上方 V8.9 兜底只在 price<=0 时触发, 而 TDX
             # board_members 返回的 price 有效 → 该分支永不执行, peers 字典根本没有 pe_lyr 键,
-            # 同业对比表 PE(静) 整列 N/A(实测 002193/002360/300165/301171 的 peers pe_lyr 均为 None)。
+            # 同业对比表 PE（静） 整列 N/A(实测 002193/002360/300165/301171 的 peers pe_lyr 均为 None)。
             # 改为: 对缺失/为 0 的 pe_lyr 用腾讯批量(1 次请求, 进程级按日缓存)补静态PE, 不覆盖已有值。
             _need_lyr = [str(_p.get("code", "")) for _p in peers
                          if str(_p.get("code", "")) and not (_p.get("pe_lyr") or 0)]
@@ -846,7 +846,7 @@ def get_em_board_members(board_code: str) -> List[Dict[str, Any]]:
         "fltt": "2",
         "invt": "2",
         "fs": f"b:{bc}",
-        # V17.0.15: 原只取 f23 且注释写 "PE(动)" —— **错的**。跨接口对撞实证
+        # V17.0.15: 原只取 f23 且注释写 "PE（动）" —— **错的**。跨接口对撞实证
         #   (2026-08-31, 12 采集日 150~238 样本, 2% 容差全 100% 命中):
         #     ulist f9   == push2 f162 = 市盈率(动态)
         #     ulist f114 == push2 f163 = 市盈率（静态）

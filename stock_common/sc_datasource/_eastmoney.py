@@ -923,7 +923,7 @@ def get_eastmoney_minute_fund_flow(code: str) -> List[Dict[str, Any]]:
     数据格式与同花顺/百度资金流不同，但覆盖更稳定。
 
     ⚠️ 遗留(dead-code, 2026-09-01 战略重估标注): 经全仓 grep 确认**未被 5 大脚本活跃路径调用**
-    （主力净额统一走 push2delay f137 / thsdk 口径, 弃用 easy_tdx 原生资金流——见 §12.15.5）。
+    （主力净额统一走 push2delay f137 口径, 弃用 easy_tdx 原生资金流——见 §12.15.5）。
     保留供未来/外部使用, 勿在批量管线中新增调用。
 
     Returns:
@@ -977,7 +977,7 @@ def get_fund_flow_weighted(code: str, tdx_data: Any = None) -> Dict[str, Any]:
     - 东财分钟级资金流：权重 0.6（覆盖稳定、数据量大）
 
     ⚠️ 遗留(dead-code, 2026-09-01 战略重估标注): 经全仓 grep 确认**未被 5 大脚本活跃路径调用**
-    （主力净额统一走 push2delay f137 / thsdk 口径, 弃用 easy_tdx 原生资金流——见 §12.15.5）。
+    （主力净额统一走 push2delay f137 口径, 弃用 easy_tdx 原生资金流——见 §12.15.5）。
     保留供未来/外部使用, 勿在批量管线中新增调用。
 
     Args:
@@ -1009,7 +1009,7 @@ def get_history_fund_flow_120d(code: str, days: int = 60, prefer: str = "auto") 
         与 med/sht 原有 get_fund_flow_120d 返回结构完全一致。
 
     ⚠️ V17.0.13 资金流口径（easy_tdx #55，2026-08-30）：本项目主力净额统一走
-    东财 push2 f137+f140 / thsdk 口径，**弃用 easy_tdx 原生资金流**（其 get_fund_flow
+    东财 push2 f137+f140 口径，**弃用 easy_tdx 原生资金流**（其 get_fund_flow
     基于 0x0fb5 逐笔聚合、按成交额分档，与东财/同花顺主力净流入不可比，重合度 ~14%）。
     下方 `tdx_get_history_fund_flow` 已委托东财 HTTP，最终仍归东财口径，安全；
     但若 future 改回原生 easy_tdx 资金流，须先评估口径差异，禁止直接当主力净额源。
@@ -1557,7 +1557,7 @@ def get_em_fund_flow(code: str) -> Dict[str, Any]:
     """V12.0: 获取个股实时资金流（替代 TDX get_fund_flow）。
 
     ⚠️ V17.0.13 口径（easy_tdx #55，2026-08-30）：本项目主力净额统一用东财
-    fflow 口径（与 push2 f137+f140 / thsdk 一致）。**严禁**改用 easy_tdx 原生
+    fflow 口径（与 push2 f137+f140 一致）。**严禁**改用 easy_tdx 原生
     get_fund_flow（0x0fb5 逐笔聚合，与东财/同花顺主力净流入重合度仅 ~14%，不可比）。
 
     使用东财 fflow daykline 接口，取最新一天的数据（即当日实时累计）。

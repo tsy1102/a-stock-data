@@ -97,12 +97,16 @@ def get_tencent_quote(code: str) -> Dict[str, Any]:
             "beta": _tv("beta"),            # Beta 族（高置信, 腾讯口径 Beta 估计值）
             "bid_ask_net": _tv("bid_ask_net"),  # 手级带符号量（候选=委差/盘口净量, L4）
             "bid1_vol": _safe_float(vals[_f["bid1_vol"]]),          # 买一量(手) — V16.3.4 新增（sht 封单额用）
+            # V17.0.27(2026-09-07): 涨停/跌停价脱离 push2——腾讯[47]/[48]（字典 12.8.12e 行3082/3083 实锤）
+            "limit_up": _safe_float(vals[_f["limit_up"]]),
+            "limit_down": _safe_float(vals[_f["limit_down_price"]]),
         }
         result = normalize_at_boundary(raw, DataSource.TENCENT)
         # V16.3.3: normalize 为白名单映射——腾讯独有字段（normalize 未定义）在此透传
         # V17.0.25: 透传列表增补 avg_price/beta/bid_ask_net（[85]/[56]/[86] 09-03 定案字段）
         for _xk in ("roa", "roe_deduct_ttm", "change_180td_pct", "avg_price", "beta",
-                    "bid_ask_net", "bid1_vol", "vol_ratio", "pe_lyr"):
+                    "bid_ask_net", "bid1_vol", "vol_ratio", "pe_lyr",
+                    "limit_up", "limit_down"):
             if raw.get(_xk) not in (None, 0, "", "0", "0.0"):
                 result[_xk] = raw[_xk]
         return result

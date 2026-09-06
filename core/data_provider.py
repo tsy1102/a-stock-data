@@ -86,6 +86,7 @@ _BATCH_QUOTE_DATE: str = ""
 # V17.0: push2delay 估值/资金流补取进程缓存(当天)——sht 批量 35 只免重复请求
 _PD_EXTRA_CACHE: Dict[str, Dict[str, Any]] = {}
 _PD_EXTRA_CACHE_DATE: str = ""
+
 # V17.0.7: fuyao 财务 TTM 族兜底进程缓存——键=(code, report_period), 报告期稳定
 _FY_TTM_CACHE: Dict[Any, Dict[str, Any]] = {}
 
@@ -486,7 +487,9 @@ def get_canonical_stock_data(code: str, force_realtime: bool = False) -> Any:
     # V17.0.6 修复: 去 need_realtime_quote 门控——roa/roe_deduct_ttm 为季报披露驱动的
     # 静态财务指标(TTM 滚动)，盘后完全可从腾讯获取(实测周六 1272.83/32.41 精确)，
     # 原门控导致盘后报告盈利质量对恒为 0(missing)
-    if not rt_quote.get("roa") or not rt_quote.get("pe_ttm") or not rt_quote.get("roe_deduct_ttm"):
+    if (not rt_quote.get("roa") or not rt_quote.get("pe_ttm")
+            or not rt_quote.get("roe_deduct_ttm")
+            or not rt_quote.get("limit_up") or not rt_quote.get("limit_down")):
         try:
             from stock_common import get_tencent_quote
 
@@ -496,7 +499,8 @@ def get_canonical_stock_data(code: str, force_realtime: bool = False) -> Any:
             # V17.0.7: 删 main_net_inflow_yi(tx75 证伪=近180交易日涨幅, 非主力净流入)
             # V17.0.25(2026-09-03): panel_price→avg_price（[85]=均价/VWAP 09-03 定案）+ 新增 beta([56])/bid_ask_net([86])
             for _tf in ("roa", "roe_deduct_ttm", "avg_price", "beta", "bid_ask_net",
-                        "pe_ttm", "pe_lyr", "pb", "dividend_yield"):
+                        "pe_ttm", "pe_lyr", "pb", "dividend_yield",
+                        "limit_up", "limit_down"):
                 if _tq.get(_tf) not in (None, 0, '', '0', '0.0'):
                     rt_quote[_tf] = _tq[_tf]
                     field_sources[_tf] = "realtime:tencent"
@@ -526,7 +530,7 @@ def get_canonical_stock_data(code: str, force_realtime: bool = False) -> Any:
     # ⭐ V17.0.7 层级调整: fuyao 升为财务 TTM 族**主源**——报告期驱动静态值无需实时性,
     # 同花顺官方 REST 独立风控域(4001 退避, 无 push 封禁史), 盘后可查;
     # push2delay 降为兜底(见下方 _ed 块, 仅填缺失键)。用户运行时段多为盘后,
-    # thsdk(TCP) 有盘后/午休关闸 → 定位为盘中专属特殊层, 不进通用 fallback 链。
+    # thsdk TCP 网关(仅盘中可用)已于 2026-09-07 移除——主力净流入统一走东财 f137, 不进通用 fallback 链。
     # 聚合式(经 600519 对撞: ocf_ttm/net_profit_period/net_profit_annual 与
     # push2 f103/f105/f109 逐字等): ocf_ttm = FY(Q4)+本期−去年同期(act_cash_flow_net);
     # revenue_ttm 同法(operating_income, ⚠️ 营业收入口径 vs f104 总收入差~1.8%);
@@ -645,6 +649,7 @@ def get_canonical_stock_data(code: str, force_realtime: bool = False) -> Any:
             if not rt_quote.get(_fk) and _ed.get(_fk) not in (None, 0, '', '0', '0.0'):
                 rt_quote[_fk] = _ed[_fk]
                 field_sources[_fk] = "realtime:push2delay"
+
 
     # 3. 实时/收盘资金流
     rt_fund = {}
@@ -850,18 +855,6 @@ def get_canonical_stock_data(code: str, force_realtime: bool = False) -> Any:
     # V17.0.5: PS(TTM)/PCF(TTM)——fuyao valuation 独有维度(rt_quote 由 L503 补取注入)
     ps_ttm = _safe_float(rt_quote.get('ps_ttm') or 0)
     pcf_ttm = _safe_float(rt_quote.get('pcf_ttm') or 0)
-    # V16.3.3 (2026-08-10 字典 12.15.5): THS 盘中 PB 优先——仅 C 层(930-1500)调用
-    # （THS 盘后返回空实测 23:16 全 query_key 空；账号限频 1.5s）
-    if pb <= 0 and is_trading_hours:
-        try:
-            from stock_common.sc_ths import get_ths_pb
-
-            _tpb = get_ths_pb(code_str)
-            if _tpb and _tpb > 0:
-                pb = round(_tpb, 2)
-                field_sources["pb"] = "realtime:ths"
-        except Exception as _e:
-            _debug_log(f"get_canonical_stock_data ths pb error ({code_str}): {_e}")
     # V15.5.3: pb 兜底 — ZHB 无 pb 字段，用 TDX 每股净资产计算 (price / bvps)
     if pb <= 0 and price > 0:
         try:

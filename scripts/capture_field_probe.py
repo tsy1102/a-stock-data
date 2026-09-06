@@ -40,6 +40,11 @@ from stock_common.sc_utils import em_secid_prefix  # V17.0 S3: 统一 secid 前�
 POOL_PATH = os.path.join(_ROOT, "docs", "field_verification", "pool.json")
 OUT_BASE = os.path.join(_ROOT, "docs", "field_verification")
 
+# V17.1.x: 东财 stock/get 全字段(与主字典登记口径对齐 f1-f250, 保证采集不遗漏任何字段)。
+# 统一供 push2 / push2_full / ulist239 / em_fund_flow 等东财 f 编号端点复用;
+# 主字典 push2/ulist 最高登记到 f250, 故 range(1,251) 即全量。新增 f 编号时只需改此处。
+PUSH2_FULL_FIELDS = ",".join(f"f{i}" for i in range(1, 251))
+
 
 def load_pool() -> list:
     with open(POOL_PATH, "r", encoding="utf-8") as f:
@@ -127,9 +132,11 @@ def collect_tencent(pool: list) -> dict:
 
 
 def collect_push2(pool: list) -> dict:
-    """东财 push2 stock/get 全字段(不指定 fields → 服务端返回全量)。
+    """东财 push2 stock/get 显式全字段(f1-f250, PUSH2_FULL_FIELDS)。
 
-    2026-08-12 实测: push2 半恢复状态——连接级风控仍在,首次连接约 50%
+    V16.4.1 实测: 不指定 fields 时服务端仅返回 58 字段基础子集(缺 f162/f167 等估值字段),
+    故此处显式请求全字段, 与主字典登记口径对齐, 采集不遗漏。2026-08-12 实测: push2 半恢复状态——
+    连接级风控仍在,首次连接约 50%
     概率 RemoteDisconnected(健康探测单次连接恰好成功)。V16.4.1 防封:
     失败**不再重试**(重试叠加失败连接会触发封禁),失败即记 error。
     V17.0.24: 补域级熔断——首连失败即停止整段 push2 采集(剩余全记
@@ -150,7 +157,8 @@ def collect_push2(pool: list) -> dict:
         try:
             r = _quick_request(
                 url,
-                params={"secid": secid, "fltt": "2", "invt": "2", "ut": "fa5fd1943c7b386f172d6893dbfba10b"},
+                params={"secid": secid, "fltt": "2", "invt": "2", "fields": PUSH2_FULL_FIELDS,
+                        "ut": "fa5fd1943c7b386f172d6893dbfba10b"},
                 headers={"Referer": "https://quote.eastmoney.com/"},
                 timeout=10,
             )
@@ -180,7 +188,7 @@ def collect_push2_full(pool: list) -> dict:
     """
     from stock_common import _quick_request
 
-    fields = ",".join(f"f{i}" for i in range(1, 251))
+    fields = PUSH2_FULL_FIELDS  # f1-f250 显式全字段(与主字典口径对齐)
     push2_fail_streak = 0
     out = {"stocks": {}}
     for p in pool:
@@ -330,14 +338,12 @@ def collect_tdx_f10(pool: list) -> dict:
 
 
 def collect_thsdk(pool: list) -> dict:
-    """同花顺 SDK 实时快照(正式账号;非交易时段服务器拒绝,容错记录)。"""
-    from stock_common import get_ths_market_snapshot
+    """同花顺 SDK 实时快照(正式账号;非交易时段服务器拒绝,容错记录)。
 
-    try:
-        snap = get_ths_market_snapshot([p["code"] for p in pool]) or {}
-        return {"stocks": snap}
-    except Exception as e:
-        return {"stocks": {}, "error": str(e)[:200]}
+    V17.2.0: thsdk TCP 网关已从项目中完全移除(用户场景为盘后/盘前运行,
+    thsdk 仅盘中可用、对自己无价值)。此采集器保留为占位,返回已移除标记。
+    """
+    return {"stocks": {}, "error": "thsdk TCP 网关已于 V17.2.0 移除"}
 
 
 def _last_completed_trading_day():
@@ -474,13 +480,14 @@ def collect_ftshare(pool: list) -> dict:
 
     for p in pool:
         c = p["code"]
+        # V17.1.x: 去截断, 采全集(评分日序列/董监高变动/商誉明细全量), 方法轮与对撞铁律需完整经验。
         out["stocks"][c] = {
-            "comment_score": (get_ft_comment_score_series(c) or [])[-10:],
+            "comment_score": get_ft_comment_score_series(c) or [],
             "comment_desire": get_ft_comment_desire(c),
             "comment_focus": get_ft_comment_focus(c),
             "comment_org": get_ft_comment_org_participate(c),
-            "ggmx": (get_ft_ggmx_changes(c) or [])[:30],
-            "goodwill_detail": (get_ft_goodwill_stock_detail(c) or [])[:10],
+            "ggmx": get_ft_ggmx_changes(c) or [],
+            "goodwill_detail": get_ft_goodwill_stock_detail(c) or [],
         }
 
     mkt = out["market"]
@@ -556,10 +563,13 @@ def collect_em_fund_flow(pool: list) -> dict:
     """
     from stock_common import _quick_request
 
+    # V17.1.x: 补全 f147/f148(散单买/卖额, 主字典 §12.3.4 已登记)——原列表漏此二项致采集缺失。
     ff_fields = ",".join(["f135", "f136", "f137",
                           "f138", "f139", "f140",
                           "f141", "f142", "f143",
-                          "f144", "f145", "f146", "f149"])
+                          "f144", "f145", "f146",
+                          "f147", "f148",   # 散单(第五档)买/卖额
+                          "f149"])
     out = {"stocks": {}}
     for p in pool:
         c = p["code"]
@@ -598,7 +608,7 @@ def collect_ulist239(pool: list) -> dict:
         r = _quick_request(
             "https://push2delay.eastmoney.com/api/qt/ulist.np/get",
             params={"fltt": "2", "invt": "2", "secids": secids,
-                    "fields": ",".join(f"f{i}" for i in range(1, 251))},
+                    "fields": PUSH2_FULL_FIELDS},
             headers={"Referer": "https://quote.eastmoney.com/"},
             timeout=15,
         )
@@ -755,7 +765,7 @@ def main() -> None:
         "axdata": collect_axdata,           # V16.4.1: 短线指标 34 字段(零网络)
         "market_sources": collect_market_sources,  # V16.4.1: 财联社/KPL/板块轮动/龙虎榜
         "tdx_f10": collect_tdx_f10,         # V16.4.1: F10 财务/股本/分红
-        "thsdk": collect_thsdk,             # V16.4.1: 同花顺 SDK(盘中才可用)
+        "thsdk": collect_thsdk,             # V17.2.0: 同花顺 SDK TCP 网关已移除(占位返回移除标记)
         "fuyao": collect_fuyao,             # V17.0.5: fuyao 官方 REST(盘后可用——竞价/池/财务指标/估值 PS·PCF); V17.0.24 补三大报表
         "em_kline_f61": collect_em_kline_f61,   # V17.0.24: 东财日K f61 换手率(CYQ 唯一源, delay 域)
         "em_fund_flow": collect_em_fund_flow,   # V17.0.24: 资金流四档 f137 族(主力净唯一同口径源, delay 域)

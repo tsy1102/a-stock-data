@@ -433,12 +433,12 @@ _TDXHY_CACHE: Optional[Dict[str, str]] = None
 
 # V16.2.17: 东财**申万二级**行业映射（datacenter-web 域，低风险；东财二级与申万二级同源，
 # 如 半导体/白酒Ⅱ/光学光电子/白色家电 —— 用户要求全部脚本统一"申万二级"粒度）
-# 全市场一次分页拉取（19 页 × 5000），进程内存 + 磁盘 JSON 双缓存（行业静态，7 天 TTL）。
+# 全市场一次分页拉取（19 页 × 5000），进程内存 + 磁盘 JSON 双缓存（行业静态，90 天/季度 TTL）。
 # 缓存版本隔离: 文件名带 _l2 后缀，与 V16.2.16 一级缓存(em_industry_map.json)互不污染。
 _EM_L2_MAP: Optional[Dict[str, str]] = None
 _EM_L2_MEMBERS: Optional[Dict[str, List[str]]] = None
 _EM_L2_LOADED_TS = 0.0
-_EM_L2_TTL = 7 * 86400
+_EM_L2_TTL = 90 * 86400
 # 东财行业一级名单（用于排除；二级 = 排除一级后 code 最小的行业板块）
 _EM_INDUSTRY_L1_NAMES = frozenset({
     "农林牧渔", "基础化工", "钢铁", "有色金属", "电子", "家用电器", "食品饮料",

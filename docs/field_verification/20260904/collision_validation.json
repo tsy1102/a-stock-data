@@ -688,7 +688,7 @@
           "ratio_mean": null
         },
         {
-          "anchor": "tx[4]=今开",
+          "anchor": "tx[4]=昨收",
           "verdict": "无对撞(0命中)",
           "pooled_pa": 0,
           "pooled_ro": 0,
@@ -703,7 +703,7 @@
           "ratio_mean": null
         },
         {
-          "anchor": "tx[5]=昨收",
+          "anchor": "tx[5]=今开",
           "verdict": "无对撞(0命中)",
           "pooled_pa": 0,
           "pooled_ro": 0,
@@ -808,7 +808,7 @@
           "ratio_mean": null
         },
         {
-          "anchor": "tx[38]=涨跌幅%",
+          "anchor": "tx[38]=换手率%",
           "verdict": "无对撞(0命中)",
           "pooled_pa": 0,
           "pooled_ro": 0,
@@ -1669,7 +1669,7 @@
           "ratio_mean": 5370.037901263423
         },
         {
-          "anchor": "tx[4]=今开",
+          "anchor": "tx[4]=昨收",
           "verdict": "无对撞(0命中)",
           "pooled_pa": 0,
           "pooled_ro": 0,
@@ -1684,7 +1684,7 @@
           "ratio_mean": 5373.185796124329
         },
         {
-          "anchor": "tx[5]=昨收",
+          "anchor": "tx[5]=今开",
           "verdict": "无对撞(0命中)",
           "pooled_pa": 0,
           "pooled_ro": 0,
@@ -1789,7 +1789,7 @@
           "ratio_mean": 13.997212825908358
         },
         {
-          "anchor": "tx[38]=涨跌幅%",
+          "anchor": "tx[38]=换手率%",
           "verdict": "无对撞(0命中)",
           "pooled_pa": 0,
           "pooled_ro": 0,
@@ -1869,7 +1869,7 @@
         }
       ]
     },
-    "tx[4]=今开": {
+    "tx[4]=昨收": {
       "anchors": [
         {
           "anchor": "fuyao:prev_price",
@@ -1909,7 +1909,7 @@
         }
       ]
     },
-    "tx[5]=昨收": {
+    "tx[5]=今开": {
       "anchors": [
         {
           "anchor": "fuyao:open_price",
@@ -2091,7 +2091,7 @@
         }
       ]
     },
-    "tx[38]=涨跌幅%": {
+    "tx[38]=换手率%": {
       "anchors": [
         {
           "anchor": "push2:f170",

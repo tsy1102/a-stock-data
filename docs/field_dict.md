@@ -3075,8 +3075,8 @@ TDX `0x0010` 日K（`tdx_get_security_bars`，keys = `['time','open','close','hi
 | 每股收益 | EPS（须带报告期/年报） | push2 f55(报告期)／f160(年报)／THS SDK 1002／fuyao `basic_eps` | 通达信「每股收益」 | canonical: push2+fuyao｜外部: THS |
 | 每股净资产 | BPS | push2 f92／THS SDK 1005／TDX财务 `meigujingzichan` | 通达信「每股净资产」 | canonical: push2｜外部: THS/TDX财务 |
 | 净资产收益率% | ROE（须带加权/扣非/报告期） | push2 f173(加权·报告期)／腾讯[65](扣非加权·TTM)／THS SDK 1015／fuyao `index_weighted_avg_roe` | 通达信「净资产收益率%」 | canonical: push2+腾讯+fuyao｜外部: THS |
-| 总资产 | 资产总计 | THS SDK 543／TDX财务 `zongzichan`／fuyao `assets_total` | 通达信「总资产」 | 未接 canonical｜外部: THS/TDX财务/fuyao |
-| 净资产 | 股东权益 | TDX财务 `jingzichan` | 通达信「净资产」 | 未接 canonical｜外部: TDX财务 |
+| 总资产 | 资产总计 | THS SDK 543／TDX财务 `zongzichan`／fuyao `assets_total` | 通达信「总资产」 | canonical(TDX财务 0x0010 `zongzichan`/10→元)｜外部: THS/fuyao |
+| 净资产 | 股东权益 | TDX财务 `jingzichan` | 通达信「净资产」 | canonical(TDX财务 0x0010 `jingzichan`/10→元)｜外部: THS/fuyao |
 | 净利润 | 净利润（须带归母/扣非） | THS SDK 619/1566／TDX财务 `jinglirun`／fuyao `net_profit` | 通达信「净利润」 | canonical: push2+fuyao｜外部: THS/TDX财务 |
 | 营业收入 | 营业收入（⚠️vs 营业总收入） | THS SDK 602／TDX财务 `zhuyingshouru`／fuyao `operating_income` | 通达信「营业收入」 | canonical: push2+fuyao｜外部: THS/TDX财务 |
 | 涨停价 | 当日涨停价 | 腾讯[47]／THS SDK 69／push2ex `ztp` | 同花顺 20549「涨停价」 | canonical: push2(f51)⚠️spec对照漏列｜外部: 腾讯/THS/push2ex |

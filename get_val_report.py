@@ -103,7 +103,7 @@ from stock_common import (_safe_float, UA,
                            get_zhb_market_snapshot, is_zhb_data_fresh,
                            get_zhb_data_date,
                            calc_mcap_yi as _calc_mcap_yi,
-                           get_sina_financial_report,
+                           get_sina_financial_report, get_financial_report_with_fallback,
                            get_em_batch_quotes)  # V11.5
 from core.data_provider import (get_market_snapshot_async,
                            get_turnover_pct_async,
@@ -285,7 +285,7 @@ def estimate_pe_percentile(code, price, total_shares):
       2. 亏损季度不再截断为 0（保留负值，真实反映 TTM 利润）
       3. K线锚点用"报告期+60天"近似披露日（原直接用报告期 → 轻微前视）
     """
-    fin = get_sina_financial_report(code, num_periods=12)
+    fin = get_financial_report_with_fallback(code, num_periods=12)  # B: 新浪为主源，缺失时 fuyao 利润表兜底
     if len(fin) < 4:
         return None
 
@@ -947,8 +947,12 @@ def strategy_07_golden_cross(hot_pool):
             continue
         if any(v <= 0 for v in [ma5, ma10, ma20]): continue
         if not (ma5 > ma10 > ma20): continue
-        q = get_tencent_quote(code)
-        vol_ratio = q.get("vol_ratio", 0)
+        # A: 统一走 canonical 量比(push2 f49/腾讯 v49; data_provider:900 已计算并透传 vol_ratio 字段)
+        try:
+            _cd = get_canonical_stock_data(code)
+            vol_ratio = float(getattr(_cd, "vol_ratio", 0) or 0)
+        except Exception:
+            vol_ratio = 0
         if vol_ratio < 1.3: continue
         reason = (
             f"MA5({ma5:.2f})上穿MA10({ma10:.2f})和MA20({ma20:.2f})，"

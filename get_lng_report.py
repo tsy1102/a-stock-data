@@ -62,6 +62,7 @@ from stock_common import (_safe_float, _debug_log,
                           get_eps_forecast_async, get_reports_async,
                           get_lockup_expiry_async, get_industry_peers,
                           get_sina_financial_report_async, get_sina_balance_sheet_async,
+                          get_financial_report_with_fallback,  # B: 新浪缺失 → fuyao 利润表兜底
                           get_market_status,
                           get_zhb_single_stock_data, is_zhb_data_fresh,
                           get_zhb_industry_map, get_zhb_data_date,
@@ -500,6 +501,8 @@ async def generate_report_async(session, code, output_path, ind_comp=None):
     L("\n## 【二、跨期财务纵深与长效业绩验证 (近8个报告期)】")
     L("---")
     financials = await get_sina_financial_report_async(session, code, num_periods=8)
+    if not financials:  # B: 新浪缺失 → fuyao 利润表兜底
+        financials = get_financial_report_with_fallback(code, num_periods=8)
     if financials:
         L(f"  {'报告期':<12} {'营业总收入(亿)':>10} {'净利润(亿)':>13}")
         L(f"  {'-'*45}")
@@ -624,6 +627,8 @@ async def generate_report_async(session, code, output_path, ind_comp=None):
 
     L("\n## 【三、财务健康度排雷（现金流验证与商誉预警）】")
     L("---")
+    # C: 经营现金流(单报告期)/有息负债等 OCF 维度 canonical 不覆盖(仅 ocf_ttm=f103 为 TTM)，
+    #    故单期 OCF/NPL 必须取自 TDX 0x0010 快照(jingyingxianjinliu / 净利润字段)，不可删除。
     _tdx_ocf = 0.0; _tdx_np = 0.0
     # V16.1: 0x0010 财务快照存局部变量，供下方"核心财务指标"复用（避免重复 TCP 请求）
     _tdx_fi_snapshot = None

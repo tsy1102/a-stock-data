@@ -131,11 +131,40 @@ canonical 确实消费了这些源，但 spec 对照列的"各源字段对照"�
 | 外盘 | 无 | 腾讯/TDX快照 |
 | 涨速% | 无 | THS/push2ex/开盘啦 |
 | 连板天数 | 无（仅 `streak_days` 连涨连跌） | push2ex/fuyao/同花顺 |
-| 总资产 | 无 | THS/TDX财务/fuyao |
-| 净资产 | 无 | TDX财务 |
+| 总资产 | **✅ 已接入 canonical (V17.1, `total_assets`)** | TDX财务 0x0010 `zongzichan`/10→元；外部: THS/fuyao |
+| 净资产 | **✅ 已接入 canonical (V17.1, `net_assets`)** | TDX财务 0x0010 `jingzichan`/10→元；外部: THS/fuyao |
 | 昨日/前日成交额·封单额 | 无（ZHB 私有衍生，未升格 canonical） | ZHB |
 
 → 这 9 处是 spec 领先于实现的真实缺口。是否要补齐进 canonical 是独立决策（补则 5 大脚本可直接 `cdata.xxx` 消费，但会膨胀 86 字段契约 + 需补适配器映射）。本审计**仅透明化，不擅自扩展契约**。
+
+---
+
+## 10. B 方案执行（2026-09-06）：代价评估 → 用户采纳 B
+
+用户对 §9.2 的 9 处缺口要求"评估代价，再决定"。实测源键后，按"能低成本接则接、否则维持现状"原则给出分层结论：
+
+### 10.1 实测源键可得性（只读核查，决定代价）
+| 字段 | push2主域 | 腾讯适配器 | 其他可得源 | 实测结论 |
+|---|---|---|---|---|
+| 总资产 | ❌ 无映射 | ❌ 无映射 | TDX财务 0x0010 `zongzichan`（**已 @cached**） | ✅ 低成本 |
+| 净资产 | ❌ 无映射 | ❌ 无映射 | TDX财务 0x0010 `jingzichan`（同上） | ✅ 低成本 |
+| 委比% | ❌ | ❌（`_quotes.py:63-100` 未消费） | 东财表头 B14（**独立 API，未消费**） | ❌ 需新源适配 |
+| 内盘 | ❌ | ❌ | 东财表头 B8 / TDX快照（仅兜底取） | ❌ 需扩取数集 |
+| 外盘 | ❌ | ❌ | 东财表头 B9 / TDX快照 | ❌ 需扩取数集 |
+| 涨速% | ❌ | ❌ | 东财表头 A5 / TDX `vzangsu` | ❌ 需新源适配 |
+
+### 10.2 实施结果
+- **绿区（总资产/净资产）→ 已实施**：`total_assets`/`net_assets` 正式升格为 `CanonicalStockData` 契约字段（`sc_schema.py` + `core/data_provider.py` 提取块复用 `tdx_get_finance_info`，`@cached` 边际代价低；`zongzichan`/`jingzichan` 单位=角 → `/10.0` 得元，字典§零·C line300/308 实锤）。提交 `477f9f7`。§12.8.12e 两行接线状态已由"未接"更新为"canonical(TDX财务 0x0010)"。
+- **红区（委比/内盘/外盘/涨速）→ 维持现状**：push2 主域与腾讯适配器均无消费键，仅活于东财表头B系/AxData 快照（独立 API，代码现未消费）。接入需新增源适配 + 扩大取数集 + 把限流脆弱性传导进 5 大脚本主干（同之前 D 选项被否风险）→ 按 B 原则不做。
+- **封单额/连板/ZHB 1d2d 衍生（§9.2 红区）→ 维持外部路径**：99% 股票值为 0/-1，塞入 86 字段契约即污染，涨停语境才有意义，外部报告路径正确。
+
+### 10.3 遗留排查项（非本次范围）
+`core/data_provider.py:871` 既有 `bvps` 读 `meigujingzichan` **未 `/10`**，与本次 `zongzichan`/`jingzichan /10` 单位处理不一致。`meigujingzichan` 为每股值，可能本就为元（故无需 /10）；但若是角则 bvps 当前为 10× 偏大。需实测单股验证，本次不动，留作独立排查。
+
+### 10.4 验证
+- `py_compile`（sc_schema/data_provider）全过；`lint_field_names` ✅
+- `gen_field_matrix` 1155/1412/65（主字典零影响）；`real_dict_xcheck` f108/f109/f160 自洽
+- §12.8.12e 总行数/列数未变（仅 2 行接线状态由"未接"改为"canonical"）
 
 ### 9.3 验证
 - `gen_field_matrix` 1155 字段 / 1412 记录 / 多源 65（注入前后逐字一致）

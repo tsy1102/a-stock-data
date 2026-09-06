@@ -3048,65 +3048,65 @@ TDX `0x0010` 日K（`tdx_get_security_bars`，keys = `['time','open','close','hi
 > **覆盖度实测**（脚本 `scratch/check_tdx_coverage.py`）：通达信 1,924 表覆盖核心语义 **32/43**；
 > 缺失 11 项（涨跌额、涨跌幅、振幅、量比、涨停价、跌停价、委比、委差、内盘、外盘、52周）由同花顺 / 东财补齐，逐项见「依据」列。
 
-| 规范中文名 | 语义与口径 | 各源字段对照（**均为别名**） | 依据 |
-|:---|:---|:---|:---|
-| 现价 | 最新成交价 | push2 f43／ulist f2／腾讯[3]／新浪[3]／THS SDK 10／TDX `NOW`／TDX快照 `last_price`／fuyao `last_price`／开盘啦 `price`／push2ex `p` | 通达信「现价」；同花顺 20490 同 |
-| 昨收盘 | 前一交易日收盘价 | push2 f60／ulist f18／腾讯[4]／新浪[2]／THS SDK 6／TDX快照 `pre_close`／fuyao `prev_price` | 通达信「昨收盘」 |
-| 开盘价 | 当日开盘价 | push2 f46／ulist f17／腾讯[5]／新浪[1]／THS SDK 7／TDX快照 `open`／fuyao `open_price` | 东财 A10「开盘」；补「价」字与最高价/最低价自洽 |
-| 最高价 | 当日最高价 | push2 f44／ulist f15／腾讯[33][41]／新浪[4]／THS SDK 8／TDX快照 `high`／fuyao `high_price` | 通达信「最高价」 |
-| 最低价 | 当日最低价 | push2 f45／ulist f16／腾讯[34][42]／新浪[5]／THS SDK 9／TDX快照 `low`／fuyao `low_price` | 通达信「最低价」 |
-| 涨跌幅 | 涨跌幅% | push2 f170／ulist f3／腾讯[32]／THS SDK 199112／TDX快照 `change_pct`／ZHB `change_pct`／fuyao `price_change_ratio_pct` | 通达信/东财官方作「涨幅%」；本字典取「涨跌幅」（可正可负，且 push2/腾讯/ZHB 三源同名） |
-| 涨跌额 | 涨跌额（元） | push2 f169／ulist f4／腾讯[31]／THS SDK 264648／TDX快照 `change`／fuyao `price_change` | 东财 A4 作「涨跌」；取「涨跌额」（四源同名且无歧义） |
-| 成交量 | 成交量（⚠️手/股） | push2 f47／ulist f5／腾讯[6][36]／新浪[8]／THS SDK 13／TDX快照 `volume`／fuyao `volume` | 通达信「成交量」 |
-| 成交额 | 成交额（⚠️元/万元） | push2 f48／ulist f6／腾讯[37][57]／新浪[9]／THS SDK 19／TDX快照 `amount`／ZHB `amount`／开盘啦 `amount`／fuyao `turnover` | 通达信「成交额」 |
-| 换手率% | 换手率 | push2 f168／ulist f184／腾讯[38]／THS SDK 1968584／开盘啦 `turnover_pct` | 通达信「换手率%」；东财 A18「换手%」 |
-| 振幅% | 振幅 | push2 f171／腾讯[43]／THS SDK 526792／TDX快照 `amplitude_pct`／开盘啦 `amplitude`／push2ex `zf` | 同花顺 526792「振幅」（通达信无）；东财 A17「振幅%」 |
-| 量比 | 量比 | push2 f50／腾讯[49]／THS SDK 1771976／开盘啦 `vol_ratio` | 东财 A9「量比」（通达信仅「分价量比」12339） |
-| 总市值 | 总市值（亿元） | push2 f116／ulist f20／腾讯[45]／THS SDK 3541450／开盘啦 `total_mv` | 通达信「总市值」；同花顺 806092800 同 |
-| 流通市值 | 流通市值（亿元） | push2 f117／ulist f21／腾讯[44]／THS SDK 3475914／push2ex `ltsz`／开盘啦 `circ_mv`／fuyao `float_market_cap` | 通达信「流通市值」 |
-| 总股本 | 总股本（万股） | push2 f84／腾讯[73]／THS SDK 402／TDX财务 `zongguben` | 通达信「总股本」 |
-| 流通股本 | 流通股本（万股） | push2 f85／腾讯[72][76]／THS SDK 407／TDX财务 `liutongguben` | 通达信「流通股本」 |
-| 市盈率（动） | 动态市盈率（最新报告期年化） | push2 f162／ulist f9／腾讯[52]／THS SDK 2942／开盘啦 `pe_dynamic`／ZHB `pe_dynamic`／fuyao `pe_mrq` | 同花顺 806289408「市盈(动)」 |
-| 市盈率（静） | 静态市盈率（年报 LYR） | push2 f163／ulist f114／腾讯[53]／THS SDK 2946／开盘啦 `pe_static` | 同花顺 806223872「市盈(lyr)」 |
-| 市盈率（TTM） | 滚动市盈率 | push2 f164／ulist f115／腾讯[39]／THS SDK 3153／开盘啦 `pe_ttm`／ZHB `pe_ttm`／fuyao `pe_ttm` | 全源同名 |
-| 市净率 | 市净率 PB(MRQ) | push2 f167／ulist f23／腾讯[46]／THS SDK 2947／开盘啦 `pb`／fuyao `pb_mrq` | 通达信「市净率」；同花顺 806354944 同 |
-| 市销率 | 市销率 PS(TTM) | push2 f165／THS SDK 134071／fuyao `ps_ttm` | 通达信「市销率」 |
-| 市现率 | 市现率 PCF(TTM) | push2 f166／fuyao `pcf_ttm` | 通达信「市现率」 |
-| 每股收益 | EPS（须带报告期/年报） | push2 f55(报告期)／f160(年报)／THS SDK 1002／fuyao `basic_eps` | 通达信「每股收益」 |
-| 每股净资产 | BPS | push2 f92／THS SDK 1005／TDX财务 `meigujingzichan` | 通达信「每股净资产」 |
-| 净资产收益率% | ROE（须带加权/扣非/报告期） | push2 f173(加权·报告期)／腾讯[65](扣非加权·TTM)／THS SDK 1015／fuyao `index_weighted_avg_roe` | 通达信「净资产收益率%」 |
-| 总资产 | 资产总计 | THS SDK 543／TDX财务 `zongzichan`／fuyao `assets_total` | 通达信「总资产」 |
-| 净资产 | 股东权益 | TDX财务 `jingzichan` | 通达信「净资产」 |
-| 净利润 | 净利润（须带归母/扣非） | THS SDK 619/1566／TDX财务 `jinglirun`／fuyao `net_profit` | 通达信「净利润」 |
-| 营业收入 | 营业收入（⚠️vs 营业总收入） | THS SDK 602／TDX财务 `zhuyingshouru`／fuyao `operating_income` | 通达信「营业收入」 |
-| 涨停价 | 当日涨停价 | 腾讯[47]／THS SDK 69／push2ex `ztp` | 同花顺 20549「涨停价」 |
-| 跌停价 | 当日跌停价 | 腾讯[48]／THS SDK 70 | 同花顺 20550「跌停价」 |
-| 委比% | 委比 | push2 f191／腾讯[74]／THS SDK 461256／TDX快照 `entrust_ratio` | 东财 B14「委比%」（通达信无） |
-| 委差 | 委差（手） | push2 f192／腾讯[50]／THS SDK 395720 | 东财 B13「委差」（通达信无） |
-| 内盘 | 内盘成交量 | 腾讯[8]／TDX快照 `inside_volume` | 东财 B9「内盘」（通达信无） |
-| 外盘 | 外盘成交量 | 腾讯[7]／TDX快照 `outside_volume` | 东财 B8「外盘」（通达信无） |
-| 均价 | 平均成交价 | 腾讯[51]／TDX快照 `average_price` | 通达信「均价」；东财 B1 同 |
-| 52周最高价 | 52周最高价 | 腾讯[67]／THS SDK 95／ZHB `high_52w` | ZHB 名（通达信/同花顺均无） |
-| 52周最低价 | 52周最低价 | 腾讯[68]／THS SDK 96／ZHB `low_52w` | ZHB 名（通达信/同花顺均无） |
-| 封单额 | 涨停封单金额 | ZHB `zt_seal_amount`／fuyao `seal_money`／push2ex `fund`／TDX快照 `locked_amount`／同花顺 133971／开盘啦 `close_seal_amount` | 同花顺 133971「封单额」；通达信「总封单/最大封单」 |
-| 连板天数 | 连续涨停天数 | push2ex `lbc`／fuyao `continue_day_cnt`／同花顺 3426 | 通达信「连板天数」 |
-| 涨速% | 涨速 | THS SDK 48／push2ex `zs`／开盘啦 `speed` | 通达信「涨速%」；东财 A5 同 |
-| 股息率% | 股息率(TTM) | 腾讯[64]／push2 f126／ZHB `dividend_yield` | 通达信「股息率%」 |
-| 上市日期 | 上市日期 | push2 f189／TDX财务 `ipo_date` | 通达信「上市日期」 |
-| 行业 | 所属行业 | push2 f127／THS SDK 84／东财 I3／TDX财务 `industry` | 通达信「行业」 |
-| 代码 | 证券代码 | push2 f57／ulist f12／腾讯[2]／THS SDK 5／同花顺 8197／fuyao `ticker` | 同花顺 8197「代码」；东财 STOCK_CODE 同 |
-| 名称 | 证券名称 | push2 f58／ulist f14／腾讯[1]／新浪[0]／THS SDK 55 | 东财 STOCK_NAME「名称」 |
-| 5日涨跌幅 | 近5交易日涨跌幅% | push2 f119／腾讯[63]／THS SDK 3250／ZHB `change_5d` | 通达信「5日涨幅%」 |
-| 10日涨跌幅 | 近10交易日涨跌幅% | ulist f160／腾讯[69]／THS SDK 3251／ZHB `change_10d` | 通达信「10日涨幅%」 |
-| 20日涨跌幅 | 近20交易日涨跌幅% | push2 f120／腾讯[70]／THS SDK 3252／ZHB `change_20d` | 通达信「20日涨幅%」 |
-| 60日涨跌幅 | 近60交易日涨跌幅% | push2 f121／ulist f24／腾讯[71]／同花顺 805371904／ZHB `change_60d` | 通达信「60日涨幅%」 |
-| 年内涨跌幅 | 年初至今涨跌幅（YTD）％ | push2 f122／ulist f25／腾讯[62]／THS SDK 461346／ZHB `change_ytd` | 东财 E10「今年涨幅%」 |
-| 主力净买入额 | 主力资金净差额＝大单主动性买额−大单主动性卖额（同花顺「主力净买额」／东财「主力净流入额」／东财「主力净额」为同一概念，仅软件叫法不同）。⚠️口径陷阱：各软件「大单」阈值不同（约100万／500万），跨源数值不可直接对撞，须先确认阈值或归一后再比 | push2 f137／ulist f62／同花顺 331068(FREE净流入)／THS SDK 592890／ZHB `main_net_buy_amount` | 东财 G1「主力净流入」 |
-| 主力净买入手数 | 主力净买入(手) | ZHB `main_net_buy_hands` | ZHB 源字段（无官方中文名） |
-| 昨日成交额 | 前1交易日成交额 | ZHB `amount_1d` | ZHB 源字段（规范名＋日期后缀） |
-| 前日成交额 | 前2交易日成交额 | ZHB `amount_2d` | ZHB 源字段（规范名＋日期后缀） |
-| 昨日封单额 | 前1交易日封单额 | ZHB `zt_seal_amount_1d` | ZHB 源字段（规范名＋日期后缀） |
-| 前日封单额 | 前2交易日封单额 | ZHB `zt_seal_amount_2d` | ZHB 源字段（规范名＋日期后缀） |
+| 规范中文名 | 语义与口径 | 各源字段对照（**均为别名**） | 依据 | 统一层接线 |
+|:---|:---|:---|:---|:---|
+| 现价 | 最新成交价 | push2 f43／ulist f2／腾讯[3]／新浪[3]／THS SDK 10／TDX `NOW`／TDX快照 `last_price`／fuyao `last_price`／开盘啦 `price`／push2ex `p` | 通达信「现价」；同花顺 20490 同 | canonical: push2+ulist+腾讯+TDX快照+fuyao(+ZHB兜底)｜外部: 新浪/THS行情/TDX NOW/开盘啦/push2ex |
+| 昨收盘 | 前一交易日收盘价 | push2 f60／ulist f18／腾讯[4]／新浪[2]／THS SDK 6／TDX快照 `pre_close`／fuyao `prev_price` | 通达信「昨收盘」 | canonical: push2+ulist+腾讯+TDX快照+fuyao｜外部: 新浪/THS行情 |
+| 开盘价 | 当日开盘价 | push2 f46／ulist f17／腾讯[5]／新浪[1]／THS SDK 7／TDX快照 `open`／fuyao `open_price` | 东财 A10「开盘」；补「价」字与最高价/最低价自洽 | canonical: push2+ulist+腾讯+TDX快照+fuyao｜外部: 新浪/THS行情 |
+| 最高价 | 当日最高价 | push2 f44／ulist f15／腾讯[33][41]／新浪[4]／THS SDK 8／TDX快照 `high`／fuyao `high_price` | 通达信「最高价」 | canonical: push2+ulist+腾讯+TDX快照+fuyao｜外部: 新浪/THS行情 |
+| 最低价 | 当日最低价 | push2 f45／ulist f16／腾讯[34][42]／新浪[5]／THS SDK 9／TDX快照 `low`／fuyao `low_price` | 通达信「最低价」 | canonical: push2+ulist+腾讯+TDX快照+fuyao｜外部: 新浪/THS行情 |
+| 涨跌幅 | 涨跌幅% | push2 f170／ulist f3／腾讯[32]／THS SDK 199112／TDX快照 `change_pct`／ZHB `change_pct`／fuyao `price_change_ratio_pct` | 通达信/东财官方作「涨幅%」；本字典取「涨跌幅」（可正可负，且 push2/腾讯/ZHB 三源同名） | canonical: push2+ulist+腾讯+TDX快照+ZHB+fuyao｜外部: THS行情 |
+| 涨跌额 | 涨跌额（元） | push2 f169／ulist f4／腾讯[31]／THS SDK 264648／TDX快照 `change`／fuyao `price_change` | 东财 A4 作「涨跌」；取「涨跌额」（四源同名且无歧义） | canonical: push2+ulist+腾讯+TDX快照+fuyao｜外部: THS行情 |
+| 成交量 | 成交量（⚠️手/股） | push2 f47／ulist f5／腾讯[6][36]／新浪[8]／THS SDK 13／TDX快照 `volume`／fuyao `volume` | 通达信「成交量」 | canonical: push2+ulist+腾讯+TDX快照+fuyao｜外部: 新浪/THS行情 |
+| 成交额 | 成交额（⚠️元/万元） | push2 f48／ulist f6／腾讯[37][57]／新浪[9]／THS SDK 19／TDX快照 `amount`／ZHB `amount`／开盘啦 `amount`／fuyao `turnover` | 通达信「成交额」 | canonical: push2+ulist+腾讯+TDX快照+ZHB+fuyao｜外部: 新浪/THS行情/开盘啦 |
+| 换手率% | 换手率 | push2 f168／ulist f184／腾讯[38]／THS SDK 1968584／开盘啦 `turnover_pct` | 通达信「换手率%」；东财 A18「换手%」 | canonical: push2+ulist+腾讯｜外部: THS/开盘啦 |
+| 振幅% | 振幅 | push2 f171／腾讯[43]／THS SDK 526792／TDX快照 `amplitude_pct`／开盘啦 `amplitude`／push2ex `zf` | 同花顺 526792「振幅」（通达信无）；东财 A17「振幅%」 | canonical: push2+腾讯+TDX快照｜外部: THS/开盘啦/push2ex |
+| 量比 | 量比 | push2 f50／腾讯[49]／THS SDK 1771976／开盘啦 `vol_ratio` | 东财 A9「量比」（通达信仅「分价量比」12339） | canonical: push2+腾讯｜外部: THS/开盘啦 |
+| 总市值 | 总市值（亿元） | push2 f116／ulist f20／腾讯[45]／THS SDK 3541450／开盘啦 `total_mv` | 通达信「总市值」；同花顺 806092800 同 | canonical: push2+ulist+腾讯｜外部: THS/开盘啦 |
+| 流通市值 | 流通市值（亿元） | push2 f117／ulist f21／腾讯[44]／THS SDK 3475914／push2ex `ltsz`／开盘啦 `circ_mv`／fuyao `float_market_cap` | 通达信「流通市值」 | canonical: push2+ulist+腾讯+fuyao｜外部: THS/push2ex/开盘啦 |
+| 总股本 | 总股本（万股） | push2 f84／腾讯[73]／THS SDK 402／TDX财务 `zongguben` | 通达信「总股本」 | canonical: push2+腾讯｜外部: THS/TDX财务 |
+| 流通股本 | 流通股本（万股） | push2 f85／腾讯[72][76]／THS SDK 407／TDX财务 `liutongguben` | 通达信「流通股本」 | canonical: push2+腾讯｜外部: THS/TDX财务 |
+| 市盈率（动） | 动态市盈率（最新报告期年化） | push2 f162／ulist f9／腾讯[52]／THS SDK 2942／开盘啦 `pe_dynamic`／ZHB `pe_dynamic`／fuyao `pe_mrq` | 同花顺 806289408「市盈(动)」 | canonical: push2+ulist+腾讯+ZHB+fuyao｜外部: THS/开盘啦 |
+| 市盈率（静） | 静态市盈率（年报 LYR） | push2 f163／ulist f114／腾讯[53]／THS SDK 2946／开盘啦 `pe_static` | 同花顺 806223872「市盈(lyr)」 | canonical: push2+ulist+腾讯｜外部: THS/开盘啦 |
+| 市盈率（TTM） | 滚动市盈率 | push2 f164／ulist f115／腾讯[39]／THS SDK 3153／开盘啦 `pe_ttm`／ZHB `pe_ttm`／fuyao `pe_ttm` | 全源同名 | canonical: push2+ulist+腾讯+ZHB+fuyao｜外部: THS/开盘啦 |
+| 市净率 | 市净率 PB(MRQ) | push2 f167／ulist f23／腾讯[46]／THS SDK 2947／开盘啦 `pb`／fuyao `pb_mrq` | 通达信「市净率」；同花顺 806354944 同 | canonical: push2+ulist+腾讯+fuyao+THS(pb)｜外部: THS行情/开盘啦 |
+| 市销率 | 市销率 PS(TTM) | push2 f165／THS SDK 134071／fuyao `ps_ttm` | 通达信「市销率」 | canonical: push2+fuyao｜外部: THS |
+| 市现率 | 市现率 PCF(TTM) | push2 f166／fuyao `pcf_ttm` | 通达信「市现率」 | canonical: push2+fuyao |
+| 每股收益 | EPS（须带报告期/年报） | push2 f55(报告期)／f160(年报)／THS SDK 1002／fuyao `basic_eps` | 通达信「每股收益」 | canonical: push2+fuyao｜外部: THS |
+| 每股净资产 | BPS | push2 f92／THS SDK 1005／TDX财务 `meigujingzichan` | 通达信「每股净资产」 | canonical: push2｜外部: THS/TDX财务 |
+| 净资产收益率% | ROE（须带加权/扣非/报告期） | push2 f173(加权·报告期)／腾讯[65](扣非加权·TTM)／THS SDK 1015／fuyao `index_weighted_avg_roe` | 通达信「净资产收益率%」 | canonical: push2+腾讯+fuyao｜外部: THS |
+| 总资产 | 资产总计 | THS SDK 543／TDX财务 `zongzichan`／fuyao `assets_total` | 通达信「总资产」 | 未接 canonical｜外部: THS/TDX财务/fuyao |
+| 净资产 | 股东权益 | TDX财务 `jingzichan` | 通达信「净资产」 | 未接 canonical｜外部: TDX财务 |
+| 净利润 | 净利润（须带归母/扣非） | THS SDK 619/1566／TDX财务 `jinglirun`／fuyao `net_profit` | 通达信「净利润」 | canonical: push2+fuyao｜外部: THS/TDX财务 |
+| 营业收入 | 营业收入（⚠️vs 营业总收入） | THS SDK 602／TDX财务 `zhuyingshouru`／fuyao `operating_income` | 通达信「营业收入」 | canonical: push2+fuyao｜外部: THS/TDX财务 |
+| 涨停价 | 当日涨停价 | 腾讯[47]／THS SDK 69／push2ex `ztp` | 同花顺 20549「涨停价」 | canonical: push2(f51)⚠️spec对照漏列｜外部: 腾讯/THS/push2ex |
+| 跌停价 | 当日跌停价 | 腾讯[48]／THS SDK 70 | 同花顺 20550「跌停价」 | canonical: push2(f52)⚠️spec对照漏列｜外部: 腾讯/THS |
+| 委比% | 委比 | push2 f191／腾讯[74]／THS SDK 461256／TDX快照 `entrust_ratio` | 东财 B14「委比%」（通达信无） | 未接 canonical｜外部: push2/腾讯/THS/TDX快照 |
+| 委差 | 委差（手） | push2 f192／腾讯[50]／THS SDK 395720 | 东财 B13「委差」（通达信无） | canonical: 腾讯[86](bid_ask_net)⚠️spec对照漏列｜外部: push2 f192/腾讯[50]/THS |
+| 内盘 | 内盘成交量 | 腾讯[8]／TDX快照 `inside_volume` | 东财 B9「内盘」（通达信无） | 未接 canonical｜外部: 腾讯/TDX快照 |
+| 外盘 | 外盘成交量 | 腾讯[7]／TDX快照 `outside_volume` | 东财 B8「外盘」（通达信无） | 未接 canonical｜外部: 腾讯/TDX快照 |
+| 均价 | 平均成交价 | 腾讯[51]／TDX快照 `average_price` | 通达信「均价」；东财 B1 同 | canonical: 腾讯[85](avg_price)⚠️spec对照漏列｜外部: 腾讯[51]/TDX快照 |
+| 52周最高价 | 52周最高价 | 腾讯[67]／THS SDK 95／ZHB `high_52w` | ZHB 名（通达信/同花顺均无） | canonical: 腾讯+ZHB｜外部: THS |
+| 52周最低价 | 52周最低价 | 腾讯[68]／THS SDK 96／ZHB `low_52w` | ZHB 名（通达信/同花顺均无） | canonical: 腾讯+ZHB｜外部: THS |
+| 封单额 | 涨停封单金额 | ZHB `zt_seal_amount`／fuyao `seal_money`／push2ex `fund`／TDX快照 `locked_amount`／同花顺 133971／开盘啦 `close_seal_amount` | 同花顺 133971「封单额」；通达信「总封单/最大封单」 | 未接 canonical(仅bid1_vol买一量)｜外部: ZHB/fuyao/push2ex/TDX快照/开盘啦 |
+| 连板天数 | 连续涨停天数 | push2ex `lbc`／fuyao `continue_day_cnt`／同花顺 3426 | 通达信「连板天数」 | 未接 canonical(仅streak_days连涨连跌)｜外部: push2ex/fuyao/同花顺 |
+| 涨速% | 涨速 | THS SDK 48／push2ex `zs`／开盘啦 `speed` | 通达信「涨速%」；东财 A5 同 | 未接 canonical｜外部: THS/push2ex/开盘啦 |
+| 股息率% | 股息率(TTM) | 腾讯[64]／push2 f126／ZHB `dividend_yield` | 通达信「股息率%」 | canonical: 腾讯+push2+ZHB |
+| 上市日期 | 上市日期 | push2 f189／TDX财务 `ipo_date` | 通达信「上市日期」 | canonical: push2+TDX财务 |
+| 行业 | 所属行业 | push2 f127／THS SDK 84／东财 I3／TDX财务 `industry` | 通达信「行业」 | canonical: push2+THS｜外部: 东财I3/TDX财务 |
+| 代码 | 证券代码 | push2 f57／ulist f12／腾讯[2]／THS SDK 5／同花顺 8197／fuyao `ticker` | 同花顺 8197「代码」；东财 STOCK_CODE 同 | canonical: 全部(push2+ulist+腾讯+THS+同花顺+fuyao) |
+| 名称 | 证券名称 | push2 f58／ulist f14／腾讯[1]／新浪[0]／THS SDK 55 | 东财 STOCK_NAME「名称」 | canonical: push2+ulist+腾讯｜外部: 新浪/THS |
+| 5日涨跌幅 | 近5交易日涨跌幅% | push2 f119／腾讯[63]／THS SDK 3250／ZHB `change_5d` | 通达信「5日涨幅%」 | canonical: push2+腾讯+ZHB｜外部: ulist/THS/同花顺 |
+| 10日涨跌幅 | 近10交易日涨跌幅% | ulist f160／腾讯[69]／THS SDK 3251／ZHB `change_10d` | 通达信「10日涨幅%」 | canonical: push2+腾讯+ZHB｜外部: ulist/THS/同花顺 |
+| 20日涨跌幅 | 近20交易日涨跌幅% | push2 f120／腾讯[70]／THS SDK 3252／ZHB `change_20d` | 通达信「20日涨幅%」 | canonical: push2+腾讯+ZHB｜外部: ulist/THS/同花顺 |
+| 60日涨跌幅 | 近60交易日涨跌幅% | push2 f121／ulist f24／腾讯[71]／同花顺 805371904／ZHB `change_60d` | 通达信「60日涨幅%」 | canonical: push2+ulist+腾讯+同花顺+ZHB｜外部: 无 |
+| 年内涨跌幅 | 年初至今涨跌幅（YTD）％ | push2 f122／ulist f25／腾讯[62]／THS SDK 461346／ZHB `change_ytd` | 东财 E10「今年涨幅%」 | canonical: push2+ulist+腾讯+THS+ZHB｜外部: 无 |
+| 主力净买入额 | 主力资金净差额＝大单主动性买额−大单主动性卖额（同花顺「主力净买额」／东财「主力净流入额」／东财「主力净额」为同一概念，仅软件叫法不同）。⚠️口径陷阱：各软件「大单」阈值不同（约100万／500万），跨源数值不可直接对撞，须先确认阈值或归一后再比 | push2 f137／ulist f62／同花顺 331068(FREE净流入)／THS SDK 592890／ZHB `main_net_buy_amount` | 东财 G1「主力净流入」 | canonical: push2+ulist+ZHB｜外部: 同花顺/THS |
+| 主力净买入手数 | 主力净买入(手) | ZHB `main_net_buy_hands` | ZHB 源字段（无官方中文名） | canonical: ZHB |
+| 昨日成交额 | 前1交易日成交额 | ZHB `amount_1d` | ZHB 源字段（规范名＋日期后缀） | 未接 canonical｜外部: ZHB(私有衍生) |
+| 前日成交额 | 前2交易日成交额 | ZHB `amount_2d` | ZHB 源字段（规范名＋日期后缀） | 未接 canonical｜外部: ZHB(私有衍生) |
+| 昨日封单额 | 前1交易日封单额 | ZHB `zt_seal_amount_1d` | ZHB 源字段（规范名＋日期后缀） | 未接 canonical｜外部: ZHB(私有衍生) |
+| 前日封单额 | 前2交易日封单额 | ZHB `zt_seal_amount_2d` | ZHB 源字段（规范名＋日期后缀） | 未接 canonical｜外部: ZHB(私有衍生) |
 
 > **铁律一**：凡本字典任何章节提及上述语义，**一律使用「规范中文名」列的名称**。
 > 禁止再使用下列源私有异名（历史遗留，遇即订正）：

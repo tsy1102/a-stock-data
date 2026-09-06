@@ -849,8 +849,8 @@ def get_em_board_members(board_code: str) -> List[Dict[str, Any]]:
         # V17.0.15: 原只取 f23 且注释写 "PE(动)" —— **错的**。跨接口对撞实证
         #   (2026-08-31, 12 采集日 150~238 样本, 2% 容差全 100% 命中):
         #     ulist f9   == push2 f162 = 市盈率(动态)
-        #     ulist f114 == push2 f163 = 市盈率(静态)
-        #     ulist f115 == push2 f164 = 市盈率(TTM)
+        #     ulist f114 == push2 f163 = 市盈率（静态）
+        #     ulist f115 == push2 f164 = 市盈率（TTM）
         #     ulist f23  == push2 f167 = **市净率 PB**
         #   量级佐证: f9 中位 20.84 / f23 中位 2.22，相差 9.4×——分属 PE 族与 PB 族。
         #   后果: "pe" 实际拿到 PB → med 的 industry_pe 变成**行业平均 PB**，

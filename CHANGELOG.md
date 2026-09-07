@@ -5,6 +5,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 
+## [V17.2.4] 2026-09-07 — 第九轮跨源对撞破解 3 字段 + lint CROSS 类 + 字典纠错
+
+- **跨源对撞破解（78 待核实 → 3 L1 定案 / 3 L4 / 72 未解）**：基于 `CRACKING_METHODOLOGY.md` 四铁律，
+  以 `push2_full/em_fund_flow/zhb/tencent/fuyao/sina/tdx` 多源锚对 78 个 ulist239 待核实字段做精度对齐数值对撞。
+  - `f142`=买二价(bid2)（tdx/sina[14]/腾讯[12]，16日 rate 1.0，spot-check 茅台 1297.40 逐字等）
+  - `f143`=卖二价(ask2)（tdx/sina[24]/腾讯[22]，16日 rate 1.0，spot-check 茅台 1297.55 逐字等）→ 纠正先前「资金流」误判路径
+  - `f160`=20日涨跌幅%(腾讯[70]口径)（16日 rate 1.0）→ **≠push2 f120/ulist f110**（同名异义，茅台 -0.79 vs -0.69）
+- **关键纠错（铁律兜住两个伪命中）**：
+  - `f190=tdx hgu` 为「退化锚伪命中」（纯A样本 95% 为 0）→ 补 `anchor_degenerate` 护栏后剔除，f190 维持待核实（实测 95% 为 0、非0恒=3.0）
+  - 字典 line 1363「`腾讯[70]=push2 f120×100`」为错误断言 → 订正为「`腾讯[70]=ulist f160`，与 push2 f120 非同一口径」
+- **lint 加固**：`scripts/lint_field_same_number.py` 新增 `CROSS` 证据类（✅ + 跨源/第九轮审计标记 + 具名外部源），将「跨源对撞定案」列为「同号即同义」铁律的合规解药。
+- 工具：`scripts/verify_cross_source_crack.py`（永久跨源对撞引擎，含锚退化护栏）；报告：`docs/field_verification/20260907_round9_cross_source_crack.md`
+
 ## [V17.2.3] 2026-09-07 — 同号即同义 lint 守卫 + 78 条待核实扩展采样对撞
 
 > 类型：工具链/文档（无运行时字段取数变更；纯校验与解释性产出）。

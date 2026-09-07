@@ -20,6 +20,9 @@
   - VERIFIED    : ✅ + 数值实证/第七轮审计 标记，且对齐表确认 ulist fX → push2 fX（真同号同义）。
   - DISPROVED   : ⚠️ 已证伪 + 「实测 ulist fX = push2 fM (M≠X)」，且对齐表确认该异号映射。
   - UNVERIFIED  : ⚠️ 未实证/待核实/待破解/待数值对撞 —— 显式声明「无实证」，不主张同义，允许。
+  - CROSS       : ✅ + 跨源/交叉验证/第九轮审计 标记，且指明具体外部具名源字段
+                  （tdx/sina/tencent/fuyao/zhb/axdata 等）—— 经跨源数值对撞定案，非凭编号相同，
+                  是「同号即同义」铁律的正确解药，允许（须命名外部源，不得夹带裸同号断言）。
   - 其他含「同 push2 fX（同号）」裸断言、且无上述任一标记 → 违规（回到第七轮前的错误模式）。
 
 退出码 1 = 发现违规（可接入 CI / 提交前检查）；0 = 通过。
@@ -73,11 +76,17 @@ viol = []
 
 
 def classify(fn, status, note):
-    """返回 (cls, target_push2_or_None)。cls∈VERIFIED/DISPROVED/UNVERIFIED/BARE/OTHER。
+    """返回 (cls, target_push2_or_None)。cls∈VERIFIED/DISPROVED/UNVERIFIED/BARE/CROSS/OTHER。
 
     证据标记与跨号映射目标编号可能落在 status 或 note 任意一格，故统一以合并文本 text 判定。
     """
     text = "%s %s" % (status, note)
+    # 跨源对撞实证定案(优先于 VERIFIED): ✅ + 跨源证据标记 + 指明外部具名源字段。
+    # 这是「同号即同义」铁律的正确解药——经 tdx/sina/tencent/fuyao/zhb 具名字段数值对撞定案,
+    # 而非凭编号相同认定同义。证据标记: 跨源 / 交叉验证 / 第九轮审计 / 第9轮 / 第10轮。
+    if "✅" in status and any(k in text for k in
+                               ("跨源", "交叉验证", "第九轮审计", "第9轮", "第十轮", "第10轮")):
+        return "CROSS", None
     if "✅" in status and ("第七轮审计" in text or "数值实证" in text):
         return "VERIFIED", None
     if "已证伪" in status:
@@ -106,6 +115,15 @@ for ln_no, fn, status, note in rows_sec:
                          % (fn, target, align.get(fn, "无")), status))
     elif cls == "BARE":
         viol.append((ln_no, "裸「同号即同义」断言（编号相同即认定同义，未附跨源对撞证据），违反第七轮铁律", status))
+    elif cls == "CROSS":
+        # 跨源定案必须指明具体外部源(tdx/sina/tencent/fuyao/zhb/axdata 等)的具名字段,
+        # 否则证据不足; 且不得夹带裸同号断言(那仍违反铁律)。
+        text = "%s %s" % (status, note)
+        if not re.search(r"(tdx|sina|tencent|fuyao|zhb|axdata|push2|东财|通达信|腾讯|同花顺|ZHB)", text, re.I):
+            viol.append((ln_no, "CROSS 跨源定案未指明具体外部源字段，证据不足（须命名 tdx/sina/tencent/fuyao/zhb 等具名字段）", status))
+        m_same = re.search(r"同\s*push2\s*f(\d{1,3})", text)
+        if m_same and int(m_same.group(1)) == fn:
+            viol.append((ln_no, "CROSS 行仍夹带裸同号即同义断言，违反铁律", status))
     # UNVERIFIED / OTHER：允许（OTHER 不含 push2 映射主张）
 
 # 4b) 全文件回归：裸「✅ 同 push2 fX（同号…）」式断言（任何区块）

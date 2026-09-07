@@ -5,6 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 
+## [V17.2.5] 2026-09-07 — 采集脚本字段体系(scheme)血缘标注(A 方案落地)
+
+- **采集脚本 `scripts/capture_field_probe.py`**: 新增 `SOURCE_SCHEME` 映射, 为每个源标注字段体系(scheme)
+  (东财两套 f 编号族 `em.stock_get` vs `em.ulist_np` 同号≠同义; 其余源为独立命名/数组体系)。
+  - `main()` 写入每个 `raw_{source}.json` 顶层 `scheme` 键 + `meta.json` 的 `schemes` 映射与各源 `scheme` 项。
+  - 目的: 从数据血缘层面固化「同号即同义」陷阱的硬提示, 供对撞工具/lint 校验。
+- **对撞工具 `scripts/verify_cross_source_crack.py`**: 新增 `source_scheme()`(raw 无 scheme 键时回退 `BUILTIN_SCHEME`,
+  兼容 19 个历史目录) + 每条候选标注 `target_scheme/anchor_scheme`, 并捕获
+  **跨端点同号风险**(ulist.np 与 stock/get 以同一 f 编号精确命中)在报告 §五 单列复核。
+- 样本池不变(维持 A 股 20 股, 用户确认无需 AH/ETF/可转债); 本次仅补字段血缘元数据, 不改动任何字段取值或采集逻辑。
+
 ## [V17.2.4] 2026-09-07 — 第九轮跨源对撞破解 3 字段 + lint CROSS 类 + 字典纠错
 
 - **跨源对撞破解（78 待核实 → 3 L1 定案 / 3 L4 / 72 未解）**：基于 `CRACKING_METHODOLOGY.md` 四铁律，

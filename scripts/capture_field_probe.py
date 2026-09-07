@@ -14,7 +14,7 @@ V17.0.24(2026-09-01) 据主字典最新定案更新:
     唯一同口径源(V17.0.16: 主力净=f137, 勿 f137+f140); 走 delay 域不碰 push2 主域
   - collect_fuyao 补 fin_report 三大报表(income/balance/cashflow)——f163 静态PE
     闭环(f160 年报EPS)与 ocf_ttm/revenue_ttm TTM 重建的原始锚数据(V17.0.7)
-输出: docs/field_verification/{YYYYMMDD}/raw_{source}.json + meta.json
+输出: docs/field_verification/{YYYYMMDD}/raw_{source}.json(顶层含 scheme 字段体系标注) + meta.json(含 schemes 映射)
 用法:
   python scripts/capture_field_probe.py                 # 采今天(用现有 ZHB 包)
   python scripts/capture_field_probe.py --date 20260812
@@ -44,6 +44,41 @@ OUT_BASE = os.path.join(_ROOT, "docs", "field_verification")
 # 统一供 push2 / push2_full / ulist239 / em_fund_flow 等东财 f 编号端点复用;
 # 主字典 push2/ulist 最高登记到 f250, 故 range(1,251) 即全量。新增 f 编号时只需改此处。
 PUSH2_FULL_FIELDS = ",".join(f"f{i}" for i in range(1, 251))
+
+# A 方案(V17.2.5, 第九轮后落地): 字段体系(scheme)血缘标注。
+# 东方财富存在两套 f 编号体系, 同号≠同义(铁证 ulist.f62 == push2.f137 主力净):
+#   em.stock_get : push2 / push2_full / em_fund_flow 走 stock/get 端点, 同一套 f 编号
+#                  (f62=主力净, f164=pe_ttm); axdata 复用其 f 命名, 占位同族。
+#   em.ulist_np  : ulist239 走 ulist.np 端点, 独立 f 编号, 与 stock/get 不同号。
+# 其余源为命名/数组体系(zhb/tdx/tencent/sina/fuyao/ftshare…), 与任何 f 编号天然不可按号对应。
+# 标注写入每个 raw_{source}.json 顶层 scheme 键 + meta.json(schemes 映射), 供对撞工具
+# 与字典 lint 做血缘校验, 从数据层面固化「同号即同义」陷阱的硬提示。
+SOURCE_SCHEME = {
+    "push2":          "em.stock_get",
+    "push2_full":     "em.stock_get",
+    "em_fund_flow":   "em.stock_get",   # 同样走 push2delay stock/get, 与 push2 同编号族
+    "axdata":         "em.stock_get",    # 复用 PUSH2_FULL_FIELDS 命名(实际短纤指标, 占位同族)
+    "ulist239":       "em.ulist_np",     # 独立 f 编号体系, 与 stock/get 不同号
+    "zhb":            "zhb",
+    "tdx":            "tdx",
+    "tencent":        "tencent.qt",
+    "sina":           "sina.hq",
+    "fuyao":          "fuyao",
+    "ftshare":        "ftshare",
+    "em_kline_f61":   "em.kline",
+    "datacenter":     "em.datacenter",
+    "push2ex":        "em.push2ex",
+    "em_hot":         "em.hot",
+    "cls":            "cls",
+    "cninfo":         "cninfo",
+    "reports":        "reports",
+    "thsdk":          "thsdk.removed",
+    "market_sources": "market.mixed",
+    "tdx_f10":        "tdx.f10",
+    "tdx_f10_more":   "tdx.f10",
+}
+
+# 模块文档未改动处见上方 docstring; 输出文件新增 scheme 标注(见 main)。
 
 
 def load_pool() -> list:
@@ -796,17 +831,25 @@ def main() -> None:
         try:
             t1 = time.time()
             data = fn(pool)
+            # A 方案: 标注字段体系(scheme)血缘, 写入 raw 文件顶层 + meta, 供对撞工具/lint 校验
+            _scheme = SOURCE_SCHEME.get(name, "unknown")
+            if isinstance(data, dict):
+                data["scheme"] = _scheme
             path = os.path.join(out_dir, f"raw_{name}.json")
             with open(path, "w", encoding="utf-8") as f:
                 json.dump(data, f, ensure_ascii=False, indent=1, default=str)
-            meta["sources"][name] = {"ok": True, "secs": round(time.time() - t1, 1), "file": path}
+            meta["sources"][name] = {"scheme": _scheme, "ok": True,
+                                     "secs": round(time.time() - t1, 1), "file": path}
             print(f"  ✔ {name}: {meta['sources'][name]['secs']}s", flush=True)
         except Exception as e:
-            meta["sources"][name] = {"ok": False, "error": str(e)[:300]}
+            meta["sources"][name] = {"scheme": SOURCE_SCHEME.get(name, "unknown"),
+                                     "ok": False, "error": str(e)[:300]}
             print(f"  ✖ {name}: {e}", flush=True)
 
     meta["end"] = time.strftime("%Y-%m-%d %H:%M:%S")
     meta["total_secs"] = round(time.time() - t0, 1)
+    # A 方案: 本日各源字段体系(scheme)血缘总览, 供对撞工具/lint 直接读取
+    meta["schemes"] = {k: SOURCE_SCHEME.get(k, "unknown") for k in collectors}
     # V17.0.10: 记录 ZHB 数据日期(T-1 规则)——对撞破解必须先核对此字段再定对撞报告日期
     try:
         meta["zhb_data_date"] = json.load(

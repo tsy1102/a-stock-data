@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 
+## [V17.2.6] 2026-09-07 — lint 接上 scheme 血缘护栏
+
+- **`scripts/lint_field_same_number.py` 升级**：新增 `check_scheme_grounded()` 血缘护栏——字典主张 `ulist.fX = push2.fY` 同义时，强制校验采集 meta 的 scheme 标识（`docs/field_verification/*/meta.json` 的 `schemes` 字段，回退 `BUILTIN_SCHEME`）。
+  - 确认 `ulist239=em.ulist.np` ↔ `push2=em.stock_get` 属不同字段体系，故任何 `ulist↔push2` 同义主张**必须以权威对齐表 `ulist_push2_align.md` 的跨号映射条目为实证**；即便 X==Y（同号）也只是"同号"而非"同义"。
+  - 违规消息精确到 scheme 标识与缺失的跨号编号；scheme 未加载时降级为告警不阻断，保证 CI 健壮性。
+  - 仍保留全文件回归扫描（裸「同号即同义」断言零复发）。与 `verify_cross_source_crack.py` 的 `BUILTIN_SCHEME` 对齐。
+
 ## [V17.2.5] 2026-09-07 — 采集脚本字段体系(scheme)血缘标注(A 方案落地)
 
 - **采集脚本 `scripts/capture_field_probe.py`**: 新增 `SOURCE_SCHEME` 映射, 为每个源标注字段体系(scheme)

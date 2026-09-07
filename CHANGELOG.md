@@ -5,6 +5,30 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 
+## [V17.2.3] 2026-09-07 — 同号即同义 lint 守卫 + 78 条待核实扩展采样对撞
+
+> 类型：工具链/文档（无运行时字段取数变更；纯校验与解释性产出）。
+
+### ① 字典 lint 规则：同号即同义守卫（task 2）
+- 新增 `scripts/lint_field_same_number.py`（对标既有 `lint_field_names.py`）：扫描 `docs/field_dict.md`
+  §12.3.2.3 ulist239 登记表 + 全文件 f 编号行，**禁止「仅凭字段编号相同就认定语义相同」**的裸断言，
+  并要求任何声明 ulist↔push2 映射的登记必须在权威对齐表 `docs/verify/ulist_push2_align.md`
+  （ulist fN → push2 fM）登记实证；违规退出码 1（可接入 CI/提交前检查）。
+- 字典 §12.3.2.3 表头新增「**新增字段登记公约**」：声明 push2 映射须先在对齐表登记跨源对撞证据，
+  无实证者必须标 `⚠️ 同号同义·未实证·待核实`。
+- 现状：当前字典 113 行订正后 lint 通过（exit 0）；含负向用例验证（注入裸断言即报错）。
+
+### ② 78 条待核实字段扩展采样数值对撞（task 1）
+- 将第七轮临时 `remap`/`xref` 固化为永久工具 `scripts/verify_ulist_push2_collision.py`：
+  跨 `raw_ulist239.json × raw_push2_full.json` 配对目录做精确数值相等对撞 + Pearson 相关，
+  含**常量护栏**与**空标记护栏**（'-'/空不计入匹配，避免「都空↔都空」伪匹配）。
+- **扩展采样**：当日（2026-09-07）实采新增 1 个配对目录，语料 360 → **380 样本股**（19 交易日 × 20 股）。
+- 结论（380 样本，与 360 一致）：**52 NO_MATCH + 24 CONSTANT_DEGEN + 2 WEAK_HINT**，0 确证。
+  即 78 条绝大多数为 **ulist 专属字段**（退化恒值或无 push2 对应），仅 f147→f107@0.53、f190→f78@0.94 两条弱候选
+  （相关性近零，未认定，维持待核实）。数值对撞已触平台期——瓶颈在「ulist/push2 本就不同字段体系」，
+  后续建议转语义交叉引用（fuyao/ZHB/TDX 字段枚举）而非继续扩量。
+- 报告：`docs/field_verification/20260907_round8_collision_unverified.md`。
+
 ## [V17.2.2] 2026-09-07 — 字典「同号即同义」断言审计与订正
 
 > 类型：纯字典/文档审计（无代码变更，运行时行为不变）。

@@ -1,5 +1,7 @@
 # TDX 活体碰撞报告（2026-09-07）
 
+> ⚠️ **定位说明**：本报告是 **AI 字段碰撞/破解的验证工件**，所用 `mcp__tdx-connector` 为 WorkBuddy MCP 工具，**非 `a-stock-data` 项目依赖**；项目平时 `py` 运行不具备此能力，本报告的字段映射**不进入项目运行时取数路径**。项目真正的 TDX 运行时源是 `easy_tdx`（本地 TCP，已列 `requirements.txt`）。
+>
 > 目的：用 **TDX 云/TQLEX 实时真值** 作为字节级锚点，与项目既有历史采集序列（东财 push2 / 腾讯 / ZHB）对撞；并据活体值确认 TDX 源字段映射，补入字典。
 > 采集基线：`docs/field_verification/20260812~20260906`（18 日，含 茅台 600519 全序列）。
 > 工具：`mcp__tdx-connector__tdx_quotes`、`mcp__tdx-connector__tdx_api_data`（通达信云数据服务，只读、无账户/无交易权限）。

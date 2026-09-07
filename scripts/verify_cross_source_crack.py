@@ -184,6 +184,31 @@ def extract_source(date, name):
 
 ANCHOR_SOURCES = ["push2_full", "em_fund_flow", "zhb", "tencent", "fuyao", "sina", "tdx"]
 
+# ── 字段体系(scheme)血缘(与 capture_field_probe.py SOURCE_SCHEME 对齐, V17.2.5) ──
+# 历史采集目录(raw 文件无 scheme 键)用此回退; 新采集目录直接用 raw 文件顶层 scheme 键。
+# 用途: 标注每条对撞候选的源血缘, 并捕获「ulist.np 与 stock/get 同一 f 编号精确命中」这一
+# 高风险场景(同号≠同义陷阱的温床), 强制对照权威对齐表复核。
+BUILTIN_SCHEME = {
+    "push2": "em.stock_get", "push2_full": "em.stock_get",
+    "em_fund_flow": "em.stock_get", "axdata": "em.stock_get",
+    "ulist239": "em.ulist_np", "zhb": "zhb", "tdx": "tdx",
+    "tencent": "tencent.qt", "sina": "sina.hq", "fuyao": "fuyao",
+    "ftshare": "ftshare", "em_kline_f61": "em.kline",
+    "datacenter": "em.datacenter", "push2ex": "em.push2ex",
+    "em_hot": "em.hot", "cls": "cls", "cninfo": "cninfo",
+    "reports": "reports", "thsdk": "thsdk.removed",
+    "market_sources": "market.mixed", "tdx_f10": "tdx.f10",
+    "tdx_f10_more": "tdx.f10",
+}
+
+
+def source_scheme(date, name):
+    """读取某 (date,name) 的字段体系; raw 无 scheme 键时回退 BUILTIN_SCHEME。"""
+    o = load_raw(date, f"raw_{name}.json")
+    if isinstance(o, dict) and o.get("scheme"):
+        return o["scheme"]
+    return BUILTIN_SCHEME.get(name, "unknown")
+
 
 def get_unverified_fields():
     lines = open("docs/field_dict.md", encoding="utf-8").read().splitlines()
@@ -284,6 +309,8 @@ def main():
             continue
         # 预取各锚源(本日)
         anc_by_src = {src: get(date, src) for src in ANCHOR_SOURCES}
+        ul_scheme = source_scheme(date, "ulist239")
+        anc_scheme = {src: source_scheme(date, src) for src in ANCHOR_SOURCES}
         for fN in targets:
             tgt = {c: (ul.get(c) or {}).get(f"f{fN}") for c in ul}
             tgt = {c: v for c, v in tgt.items() if v is not None}
@@ -310,9 +337,14 @@ def main():
                     n, hit, rate, ratio, sp = res
                     if hit < 8:
                         continue
+                    # 跨端点同号风险标注: 目标(ulist.np) 与 锚(stock/get) 以同一 f 编号精确命中
+                    cross = (ul_scheme.startswith("em.") and anc_scheme[src].startswith("em.")
+                             and ul_scheme != anc_scheme[src] and fk == f"f{fN}")
                     records[(fN, src, fk)].append({
                         "date": date, "n": n, "hit": hit, "rate": rate,
                         "ratio": ratio, "sp": sp,
+                        "target_scheme": ul_scheme, "anchor_scheme": anc_scheme[src],
+                        "cross_em_same_fnum": cross,
                     })
 
     # ── 聚合 + 定案 ──
@@ -343,6 +375,9 @@ def main():
             "median_rate": round(median_rate, 3),
             "ratio": (statistics.median(ratio_vals) if ratio_vals else None),
             "best_spearman": round(best_sp, 3) if best_sp is not None else None,
+            "target_scheme": perdates[0].get("target_scheme"),
+            "anchor_scheme": perdates[0].get("anchor_scheme"),
+            "cross_em_same_fnum": any(d.get("cross_em_same_fnum") for d in perdates),
             "verdict": verdict,
         })
     # 排序: 每 fN 取最佳候选在前
@@ -358,8 +393,11 @@ def main():
     print(f"[done] L1定案={len(cracked_l1)} L4候选={len(cand_l4)} 未解={len(unresolved)}")
 
     # ── 写出 JSON ──
+    _schemes = {"ulist239": "em.ulist_np"}
+    _schemes.update({s: BUILTIN_SCHEME.get(s, "?") for s in ANCHOR_SOURCES})
     dump = {"targets": targets, "cracked_l1": cracked_l1,
             "cand_l4": cand_l4, "unresolved": unresolved,
+            "schemes": _schemes,
             "result": {str(fN): result.get(fN, []) for fN in targets}}
     if "--json" in __import__("sys").argv:
         jp = __import__("sys").argv[__import__("sys").argv.index("--json") + 1]
@@ -376,7 +414,7 @@ def _vrank(v):
 
 def _emit_md(dump):
     L = []
-    L.append("# 第九轮 跨源数值对撞破解 · 78 待核实 ulist239 字段\n")
+    L.append(f"# 第九轮 跨源数值对撞破解 · {len(dump['targets'])} 个待核实 ulist239 字段\n")
     L.append("> 方法论: CRACKING_METHODOLOGY.md 四铁律(精度对齐 / 命中率分层 / 比值族 / ≥3日复核)\n")
     L.append("> 目标: §12.3.2.3 标记 `⚠️ 同号同义·未实证·待核实` 的 78 个 ulist239 字段\n")
     L.append("> 锚源: push2_full / em_fund_flow / zhb / tencent / fuyao / sina / tdx (19 采集日 × 20 股)\n")
@@ -435,6 +473,32 @@ def _emit_md(dump):
     L.append("- 未解字段建议转向: ①配置直解(tdxhy.cfg/hy_tree 行业板块) ②时间序列(连续 ZHB 包) "
              "③本机二进制矿(东财 fullfinnew/datacenter 财务顺序) ④扩大个股采样。")
     L.append("- 本轮未接入 datacenter/cninfo/cls/ftshare 等嵌套源(结构异质), 后续可补为锚扩展覆盖率。")
+
+    # ── 字段体系(scheme)血缘 + 跨端点同号风险标注(V17.2.5) ──
+    L.append("\n## 五、字段体系(scheme)血缘标注与跨端点同号风险\n")
+    L.append("> 自 V17.2.5 起, 采集脚本为每个 raw 源写入 `scheme` 字段体系标注; 本报告据此标注血缘。\n")
+    scheme_map = {"ulist239": "em.ulist_np"}
+    scheme_map.update({s: BUILTIN_SCHEME.get(s, "?") for s in ANCHOR_SOURCES})
+    L.append("| 源 | 字段体系(scheme) | 编号族 |")
+    L.append("|---|---|---|")
+    _fam = {"em.stock_get": "东财 f 编号 A 族(stock/get)",
+            "em.ulist_np": "东财 f 编号 B 族(ulist.np, 与 A 族不同号)"}
+    for s, sch in scheme_map.items():
+        L.append(f"| {s} | {sch} | {_fam.get(sch, '独立命名/数组体系')} |")
+    L.append("")
+    L.append("**跨端点同号风险(ulist.np 与 stock/get 以同一 f 编号精确命中 — 须对照权威对齐表复核):**")
+    flagged = []
+    for fN in dump["targets"]:
+        for c in dump["result"].get(str(fN), []):
+            if c.get("cross_em_same_fnum"):
+                flagged.append((fN, c))
+    if flagged:
+        for fN, c in flagged:
+            L.append(f"- `ulist f{fN}` ↔ `{c['src']}:{c['field']}` "
+                     f"(中位率={c['median_rate']:.3f}, {c['verdict']}) "
+                     f"— 同号跨端点命中, 数值对撞已满足, 但登记字典前须权威对齐表背书")
+    else:
+        L.append("- 本轮无跨端点同号精确命中(高风险项为空)✅")
 
     open(OUT_MD, "w", encoding="utf-8").write("\n".join(L))
     print(f"[md] -> {OUT_MD}")

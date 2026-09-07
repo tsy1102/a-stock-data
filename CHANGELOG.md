@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 
+## [V17.2.7] 2026-09-07 — 修复 mak/val 报告数据矛盾与章节口径
+
+- **`get_val_report.py` 广度口径修复（根因：ZHB T-1 污染）**：
+  - 原仅用腾讯 T 日 `price` 覆盖 ZHB，但 `change_pct` 仍为 ZHB T-1 → 风控仪表盘涨停/跌停按 9/4 快照计算，与 mak 同日(9/7)广度(87/92/95)不可比。现**同步覆盖腾讯 T 日 `change_pct`**（盘前/休市旁路时 `_price_map` 为空则不覆盖，保留 ZHB T-1）。
+  - **数据基准标签修复**：原 `数据日期` 恒为 ZHB 日期 + `✅新鲜`(仅看 ZHB 3 日容忍)，具误导性。现按实际取数路径标注——盘后/盘中=`✅T日收盘`/`✅T日实时`+今日日期(与 mak 同基准)；盘前/休市=`⚠️T-1快照(最新交易日)`+ZHB 日期。
+- **`get_mak_report.py` 连板梯队首板修复**：原 ret_3d 阈值误杀导致 `首板≈1`（涨停总数 92 却首板仅 1）。现**首板 = 样本涨停总数 − 连板合计**反推，保证 首板+连板 恒等于本段涨停总数。
+- **`get_mak_report.py` 涨停/跌停多源口径标注**：明确 A 段「短线情绪(样本内·剔除ST/退)」87/3 与「全市场(通达信·含ST/退/北交所)」95/2 的口径差异（涨停含 ST/退/北交所故多于样本；跌停按主板10%口径故少于样本），与 B 段涨停池(财联社/KPL/复盘啦互校)92/2 三者不再看似矛盾。
+
 ## [V17.2.6] 2026-09-07 — lint 接上 scheme 血缘护栏
 
 - **`scripts/lint_field_same_number.py` 升级**：新增 `check_scheme_grounded()` 血缘护栏——字典主张 `ulist.fX = push2.fY` 同义时，强制校验采集 meta 的 scheme 标识（`docs/field_verification/*/meta.json` 的 `schemes` 字段，回退 `BUILTIN_SCHEME`）。

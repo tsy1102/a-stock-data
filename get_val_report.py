@@ -1946,6 +1946,12 @@ async def run_discovery_async(output_path):
                     _mcap_count += 1
                     
                 _price = _safe_float(_price_map.get(_code, {}).get("price", 0))
+                # V17.2.7(2026-09-07) 修复: 腾讯 T 日涨跌幅覆盖 ZHB T-1（与 mak 一致）。
+                # 原仅覆盖 price, change_pct 仍为 ZHB T-1 → 风控仪表盘涨停/跌停按 9/4 口径计算,
+                # 与 mak 同日(9/7)广度(87/92/95)不可比。盘前/休市旁路时 _price_map 为空, 不覆盖(保留 ZHB T-1)。
+                _tq_cp = _price_map.get(_code, {}).get("change_pct")
+                if _tq_cp is not None:
+                    _stock["change_pct"] = _safe_float(_tq_cp)
                 # V17.0(2026-08-15 运行核查): bypass(纯ZHB/休市)模式下 _price_map 为空 →
                 # price=0 → mcap 全 0 → 依赖 price/mcap 的策略(01/02/04/05/06/10/13/18)全 0 命中。
                 # 修复: 用 TDX 本机 .day 日线(零网络, 盘前模式同款)补收盘价 → 市值链恢复
@@ -2029,10 +2035,21 @@ async def run_discovery_async(output_path):
                     if _amount_wan > 0:
                         _stock["amount_yi"] = _amount_wan / 10000.0
                 all_stocks.append(_stock)
-            _fresh_tag = "✅新鲜" if _zhb_fresh else "⚠️延迟"
+            # V17.2.7(2026-09-07) 修复: 数据基准标签如实反映实际取数路径, 消除"✅新鲜"误导。
+            # 盘后/盘中: 腾讯 T 日行情已生效 → 基准=今日, 与 mak 同口径;
+            # 盘前/休市旁路: 仅 ZHB T-1 可用 → 基准=最新交易日(标注 T-1 快照)。
+            _t_day_used = (not is_bypass) and bool(_tencent_map)
+            if m_status in ("morning", "afternoon", "post_market"):
+                _fresh_tag = "✅T日实时"
+            elif m_status == "post_close":
+                _fresh_tag = "✅T日收盘"
+            else:
+                _fresh_tag = "⚠️T-1快照(最新交易日)"
+            _basis_date = _zhb_date if (is_bypass or not _tencent_map) else time.strftime("%Y%m%d")
             L(f"  ✅ data_provider全市场: {len(all_stocks)}只（过滤{_excluded}只停牌股，市值覆盖率{_mcap_count}/{len(all_stocks)}）[{_fresh_tag}]")
-            if _zhb_date:
-                L(f"  📊 数据日期: {_zhb_date}")
+            if _basis_date:
+                L(f"  📊 数据日期: {_basis_date}"
+                  f"{'（腾讯T日,与mak同基准）' if _t_day_used else '（ZHB最新交易日快照）'}")
             if is_bypass:
                 L(f"  📊 数据分层: [纯ZHB横截面] 已完全复用 ZHB 历史数据，无任何实时网络开销")
             else:

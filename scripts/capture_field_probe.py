@@ -90,6 +90,14 @@ def collect_tdx(pool: list) -> dict:
             rec["quote_full"] = tdx_get_quote_full(c)
         except Exception as e:
             rec["quote_full"] = {"__error__": str(e)[:200]}
+        # V17.2.0 增补: 显式暴露 TDX 协议直解字段(内盘/外盘/涨速)为顶层键,
+        # 便于碰撞脚本纵向串联, 无需钻 quote_full 嵌套。源=本地 easy_tdx TCP(非云连接器)。
+        # limit_up/limit_down 已随同次改动落入 quote_full, 碰撞脚本按需从 quote_full 读取。
+        _qf = rec["quote_full"]
+        if isinstance(_qf, dict) and "__error__" not in _qf:
+            for _k in ("s_vol", "b_vol", "rise_speed"):
+                if _qf.get(_k) is not None:
+                    rec[_k] = _qf[_k]
         try:
             rec["finance_info"] = tdx_get_finance_info(c)
         except Exception as e:

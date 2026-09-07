@@ -356,6 +356,29 @@ class _EasyTdxAdapter:
             df["last_close"] = df["pre_close"]
         return df
 
+    def price_limits(self, symbol: str, pre_close: float) -> Tuple[Optional[float], Optional[float]]:
+        """V17.2.0 修复: easy_tdx get_price_limits 期望 Market 枚举(非本项目 _easy_market 的 int)，
+        适配器在此转换。返回 (涨停价, 跌停价)，失败 (None, None)。
+        name 传空串 → compute_price_limits 按普通板(±10%/±20%)处理(ST 等特例降级为标准板)。
+        """
+        from easy_tdx.client import Market
+
+        _m = _easy_market(symbol)
+        _menum = {1: Market.SH, 0: Market.SZ, 2: Market.BJ}.get(_m, Market.SH)
+        try:
+            return self._client.get_price_limits(_menum, symbol, "", pre_close)
+        except Exception as _e:
+            _debug_log(f"easy_tdx price_limits error ({symbol}): {_e}")
+            return (None, None)
+
+    def market_stat(self) -> Any:
+        """V17.2.0 修复: 适配器补 easy_tdx get_market_stat（通达信统计指数 880005/880001/880006）。"""
+        try:
+            return self._client.get_market_stat()
+        except Exception as _e:
+            _debug_log(f"easy_tdx market_stat error: {_e}")
+            return None
+
     def finance(self, symbol: str) -> Any:
         market = _easy_market(symbol)
         try:
@@ -1359,8 +1382,7 @@ def tdx_get_price_limits(code: str, pre_close: float) -> Tuple[Optional[float], 
         _client = _get_tdx_client()
         if _client is None:
             return (None, None)
-        _market = _easy_market(code)
-        _lu, _ld = _client.get_price_limits(_market, code, "", pre_close)
+        _lu, _ld = _client.price_limits(code, pre_close)
         return (_lu, _ld)
     except Exception as _e:
         _debug_log(f"tdx_get_price_limits error ({code}): {_e}")
@@ -1391,7 +1413,7 @@ def tdx_get_market_stat() -> Optional[Dict[str, Any]]:
         _client = _get_tdx_client()
         if _client is None:
             return None
-        _df = _client.get_market_stat()
+        _df = _client.market_stat()
         if _df is None or _df.empty:
             return None
         _r = _df.iloc[0]

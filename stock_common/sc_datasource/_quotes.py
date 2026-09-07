@@ -261,6 +261,52 @@ def get_em_quote_full_delay(code: str) -> Dict[str, Any]:
     return _em_quote_full_impl(code, "https://push2delay.eastmoney.com/api/qt/stock/get")
 
 
+def get_em_fund_flow_multiday(code: str) -> Dict[str, Any]:
+    """V17.2.1: 多日主力净流入（ulist.np 端点 f164/f165；单位 元 / %）。
+
+    ⚠️ 跨端点同号异义铁律：push2delay **stock/get 主域** 的 f164 = pe_ttm（估值字段），
+       与 **ulist.np 端点** 的 f164 = 近5日主力净流入 **同号不同义**（东财跨端点复用 f 编号）。
+       本函数固定走 ulist.np，绝不从主域读 f164，避免污染 pe_ttm。
+
+    V17.2.1 实证（docs/field_verification/20260907_round5_multiday_check.md）：
+       ulist f164 == 最近 5 个**交易日**主力净(f62)滚动和，命中 10/11（按交易日序，非自然日）。
+
+    返回 {"fund_main_5d": 元, "fund_main_5d_pct": %}；失败/风控返回 {}。
+    """
+    try:
+        from stock_common.sc_utils import em_secid_prefix
+        from stock_common import _quick_request
+
+        r = _quick_request(
+            "https://push2delay.eastmoney.com/api/qt/ulist.np/get",
+            params={
+                "fltt": "2", "invt": "2",
+                "secids": em_secid_prefix(code) + code,
+                "fields": "f12,f164,f165",
+            },
+            headers={"Referer": "https://quote.eastmoney.com/"},
+            timeout=10,
+        )
+        if r is None:
+            return {}
+        diff = (r.json().get("data") or {}).get("diff") or []
+        if isinstance(diff, dict):
+            diff = list(diff.values())
+        if not diff or not isinstance(diff[0], dict):
+            return {}
+        it = diff[0]
+        out: Dict[str, Any] = {}
+        _v = it.get("f164")
+        if isinstance(_v, (int, float)):
+            out["fund_main_5d"] = float(_v)
+        _p = it.get("f165")
+        if isinstance(_p, (int, float)):
+            out["fund_main_5d_pct"] = float(_p)
+        return out
+    except Exception as _e:
+        _debug_log(f"datasource get_em_fund_flow_multiday({code}): {_e}")
+        return {}
+
 def get_em_ulist_batch(codes: List[str], fields: str = _ULIST_BATCH_FIELDS) -> List[Dict[str, Any]]:
     """V17.0.26: push2delay ulist.np 批量行情取数，返回**原始 diff 记录列表**。
 

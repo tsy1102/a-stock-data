@@ -5,6 +5,35 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 
+## [V17.2.1] 2026-09-07 — 五档资金流补全 + 多日聚合(f164/f165)进 canonical
+
+### ① 五档资金流「买/卖毛额」补全（8 字段）
+- `sc_schema.py` 新增 `fund_main_buy/sell`(f135/f136)、`fund_super_buy/sell`(f138/f139)、
+  `fund_large_buy/sell`(f141/f142)、`fund_mid_buy/sell`(f144/f145)。
+- 此前 `_quotes.py:606-618` 已映射全 13 个资金流字段，但 `data_provider` 补取块与构造函数
+  **只透传 6 个净额**，8 个毛额被丢弃 → 现已补齐（毛额用于多空力道判断）。
+- 实跑自洽校验（茅台 2026-09-07 盘中）：主力买 f135 = 超大单买 f138 + 大单买 f141
+  (231726069 + 752484240 = 984210309 ✓)；主力净 f137 = 超大单净 f140 + 大单净 f143
+  (-135603835 + 64083504 = -71520331 ✓)。
+
+### ② 多日主力净聚合（ulist.np f164/f165）
+- 新增 `get_em_fund_flow_multiday(code)`（`_quotes.py`），走 **ulist.np 端点**取
+  f164(近5日主力净, 元) / f165(占比 %)。
+- **⚠️ 跨端点同号异义铁律**：push2delay **主域 stock/get 的 f164 = pe_ttm**（估值字段），
+  与 **ulist.np 端点的 f164 = 多日主力净** 同号不同义（东财跨端点复用 f 编号）。
+  新函数固定走 ulist.np，绝不从主域读 f164，避免污染 pe_ttm。
+- `data_provider`：f178 数组聚合仍为 `fund_main_5d` **主路径**；缺失时由 f164 兜底；
+  新增 `fund_main_5d_pct`(f165)。
+- 实跑（2026-09-07 盘中）：茅台 565,785,777 元 / 3.3%；农行 101,161,008 / 0.95%；
+  宁德 -287,783,168 / -0.73%。
+
+### ③ 第五轮破译结论落地
+- `docs/field_verification/20260907_round5_multiday_check.md` 证实 ulist f164 = 最近 5 个
+  **交易日**主力净(f62)滚动和，命中 10/11（按交易日序，非自然日）→ 本轮据此落地。
+
+**验证**：3 文件 `py_compile` 通过；系统 Python 3.12 全量回归 **524 passed / 6 skipped / 0 failed**。
+
+
 ## [V17.2.0] 2026-09-07 — 移除 thsdk TCP 网关 + 源降级与缓存优化
 
 > **状态：已完成。** 本轮主线："降低对东财/push2 的依赖、剔除仅盘中可用的 thsdk 网关"（用户场景为盘后/盘前运行脚本，thsdk 仅盘中可用，不符合）。

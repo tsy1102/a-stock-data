@@ -3112,6 +3112,24 @@ TDX `0x0010` 日K（`tdx_get_security_bars`，keys = `['time','open','close','hi
 
 > **📌 申万口径核验结论（2026-09-07, V17.2.0）**：TDX `tdxhy.cfg`（库自带/实时 `get_report_file` 拉取）**不含申万列**——其字段仅 `市场|代码|T一级(通达信T码)|空|空|X细分码(通达信X码)`；easy_tdx `parse_tdxhy_cfg` 把 `parts[5]` 误标为 `sw_industry`，实测为 `X500102`/`X210205` 等通达信 X码（非申万名）。故 **TDX 无申万源可挖**，东财 `em_industry_map_l2`（申万二级）仍是唯一申万来源，**不可翻转 primary/fallback**。项目安全目标已由「行业/板块分类季度缓存」(`_EM_L2_TTL`=90天, datacenter 全量映射仅 ~4 次/年) 达成：东财封禁最严时亦仅季度级回源。通达信 T/X 码（`_tdxhy_industry_map`）仅用于涨停池 sector tagging，与申万并列但不同口径。
 
+> **📌 TDX(云/TQLEX) 源字段映射（2026-09-07 活体碰撞补源）**：通达信云数据服务（`mcp__tdx-connector`，端点 `tdxhub.icfqs.com`，**只读、无账户/无交易权限**）返回的实时 JSON 即 TDX 权威真值源。其字段为**应用层命名字段（非 TCP 字节偏移）**——属"字段目录发现"，字节级逆向已由 easy_tdx 净室实现完成。映射（详 `docs/field_verification/20260907_tdx_live_collision.md`）：
+> | canonical 规范名 | TDX 云 JSON 路径 | 单位 | 备注 |
+> |---|---|---|---|
+> | 内盘 | `HQInfo.Inside` | 手 | ↔ easy_tdx `s_vol`；与腾讯内盘总量同、分拆差 ~0.8%（主动买卖归类边界） |
+> | 外盘 | `HQInfo.Outside` | 手 | ↔ easy_tdx `b_vol` |
+> | 量比 | `HQInfo.LB` | 倍 | ↔ 腾讯[49]，三方一致 |
+> | 涨停价 | `ExtInfo.ZTPrice` | 元 | 自动 10%/20% 板规则 ↔ 腾讯[47] ↔ easy_tdx `get_price_limits` |
+> | 跌停价 | `ExtInfo.DTPrice` | 元 | 同上 ↔ 腾讯[48] |
+> | 委比 | `ProInfo.Wtb` | % | TDX 云直给，项目当前未接 |
+> | 主力净流入 | `ProInfo.主力资金净流入（元）` | 元 | push2 熔断时唯一活体锚；与东财 f137 口径待等价性对撞 |
+> | 资金净流入 | `ProInfo.资金净流入（元）` | 元 | 全市场资金流（含主力/散户合成） |
+> | 通达信行业码 | `ExtInfo.BelongHY` / `CwInfo.BelongHY` | 码 | **非申万**（茅台=82102 为通达信白酒码）；与申万并列不同口径 |
+> | 总资产 | `CwInfo.ZZC` | 万元 | ↔ easy_tdx `get_finance_info` zongzichan(角/10)；与东财总资产同值 |
+> | 净资产 | `CwInfo.JZC` | 万元 | ↔ jingzichan |
+> | 五档买卖 | `BspInfo[0..4].BuyP/SellP/BuyV/SellV` | 价/手 | ↔ bid1-5/ask1-5 |
+> | 衍生指标 | `CalcInfo.CA*`(约15) | — | 涨跌幅/振幅/换手/总市值/流通市值等衍生计算 |
+> **价值**：TDX 云真值可作字节级锚点（涨停/跌停价、量比、财报总额三方一致）；历史 `docs/field_verification/20260812~20260906`（含茅台连续序列）+ ZHB 历史序列构成"时间×源"二维验证网格。
+
 > **铁律一**：凡本字典任何章节提及上述语义，**一律使用「规范中文名」列的名称**。
 > 禁止再使用下列源私有异名（历史遗留，遇即订正）：
 > 「当前价」「最新价」「价格」→ **现价**；「今开价」「今开」「开盘」→ **开盘价**；「昨收价」「昨收」→ **昨收盘**；

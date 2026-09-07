@@ -77,3 +77,6 @@ docs/field_verification/*/meta.json
 
 # FTShare/EastMoney credentials
 credentials/eastmoney_cookie.txt
+
+# 本地保险备份(venv site-packages), 不入库
+.vendor_backup/

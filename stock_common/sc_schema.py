@@ -544,7 +544,18 @@ class CanonicalStockData:
     fund_large_today: float = 0.0    # 大单净流入(今日, f143)
     fund_mid_today: float = 0.0      # 中单净流入(今日, f146)
     fund_small_today: float = 0.0    # 小单净流入(今日, f149) — V17.0.16 订正(原记 f146 实为中单净)
-    fund_main_5d: float = 0.0        # 主力净流入(近5日, f178 数组聚合)
+    # V17.2.1: 五档资金流「买入额/卖出额」(毛额) —— 净额见上方，毛额用于判断多空力道
+    #   东财实证(茅台 2026-09-07 盘中): 主力买 = 超大单买 + 大单买 (231726069+752484240=984210309)
+    fund_main_buy: float = 0.0       # 主力买入额(今日, f135 = 超大单买 f138 + 大单买 f141)
+    fund_main_sell: float = 0.0      # 主力卖出额(今日, f136 = 超大单卖 f139 + 大单卖 f142)
+    fund_super_buy: float = 0.0      # 超大单买入额(今日, f138)
+    fund_super_sell: float = 0.0     # 超大单卖出额(今日, f139)
+    fund_large_buy: float = 0.0      # 大单买入额(今日, f141)
+    fund_large_sell: float = 0.0     # 大单卖出额(今日, f142)
+    fund_mid_buy: float = 0.0        # 中单买入额(今日, f144)
+    fund_mid_sell: float = 0.0       # 中单卖出额(今日, f145)
+    fund_main_5d: float = 0.0        # 主力净流入(近5日, f178 数组聚合；兜底 ulist f164)
+    fund_main_5d_pct: float = 0.0    # 近5日主力净占比%(ulist f165) — V17.2.1 新增
     fund_5d_array: Tuple[Dict[str, Any], ...] = field(default_factory=tuple)  # 近5日主力净流入数组 — push2 f178
 
     # V17.0.7 财务 TTM 族(push2 f103-f190, 口径经 fuyao 官方三大报表 5/5 终判;

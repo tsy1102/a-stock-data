@@ -657,11 +657,29 @@ def get_canonical_stock_data(code: str, force_realtime: bool = False) -> Any:
         if _ed.get("pe_dynamic") not in (None, 0, '', '0', '0.0'):
             rt_quote["pe_dynamic"] = _ed["pe_dynamic"]
             field_sources["pe_dynamic"] = "realtime:push2delay"
-        for _fk in ("fund_main_today", "fund_main_5d",
-                    "fund_super_today", "fund_large_today", "fund_mid_today", "fund_small_today"):
+        for _fk in ("fund_main_today", "fund_main_5d", "fund_main_5d_pct",
+                    "fund_super_today", "fund_large_today", "fund_mid_today", "fund_small_today",
+                    # V17.2.1: 五档买/卖毛额(净额已在上方)——多空力道判断用
+                    "fund_main_buy", "fund_main_sell",
+                    "fund_super_buy", "fund_super_sell",
+                    "fund_large_buy", "fund_large_sell",
+                    "fund_mid_buy", "fund_mid_sell"):
             if _ed.get(_fk) not in (None, 0, '', '0', '0.0'):
                 rt_quote[_fk] = _ed[_fk]
                 field_sources[_fk] = "realtime:push2delay"
+        # V17.2.1: 近5日主力净兜底 —— f178 数组聚合缺失时, 改用 ulist.np 端点 f164/f165。
+        #   ⚠️ 口径铁律: 主域 stock/get 的 f164 = pe_ttm(估值), **绝不可取**;
+        #      仅 ulist.np 端点的 f164 才是多日主力净(东财跨端点复用 f 编号)。
+        if not rt_quote.get("fund_main_5d"):
+            try:
+                from stock_common.sc_datasource import get_em_fund_flow_multiday
+                _mm = get_em_fund_flow_multiday(code_str) or {}
+                for _mk in ("fund_main_5d", "fund_main_5d_pct"):
+                    if _mm.get(_mk) not in (None, 0, '', '0', '0.0'):
+                        rt_quote[_mk] = _mm[_mk]
+                        field_sources[_mk] = "realtime:push2delay-ulist"
+            except Exception as _e2:
+                _debug_log(f"get_canonical_stock_data multiday fallback ({code_str}): {_e2}")
         # 财务族兜底——仅补缺失(fuyao 主源已填的键不覆盖); eps_deduct_ttm/
         # undist_profit_ps 为 push 独有, 直接补
         for _fk in ("ocf_ttm", "revenue_ttm", "net_profit_period", "net_profit_annual",
@@ -1404,6 +1422,16 @@ def get_canonical_stock_data(code: str, force_realtime: bool = False) -> Any:
         fund_main_5d=_safe_float(rt_quote.get("fund_main_5d") or em_quote_raw.get("fund_main_5d") or 0),
         fund_small_today=_safe_float(rt_quote.get("fund_small_today") or em_quote_raw.get("fund_small_today") or 0),
         fund_5d_array=tuple(rt_quote.get("fund_5d_array") or em_quote_raw.get("fund_5d_array") or ()),
+        # V17.2.1: 五档资金流买/卖毛额 + 近5日主力净占比
+        fund_main_buy=_safe_float(rt_quote.get("fund_main_buy") or em_quote_raw.get("fund_main_buy") or 0),
+        fund_main_sell=_safe_float(rt_quote.get("fund_main_sell") or em_quote_raw.get("fund_main_sell") or 0),
+        fund_super_buy=_safe_float(rt_quote.get("fund_super_buy") or em_quote_raw.get("fund_super_buy") or 0),
+        fund_super_sell=_safe_float(rt_quote.get("fund_super_sell") or em_quote_raw.get("fund_super_sell") or 0),
+        fund_large_buy=_safe_float(rt_quote.get("fund_large_buy") or em_quote_raw.get("fund_large_buy") or 0),
+        fund_large_sell=_safe_float(rt_quote.get("fund_large_sell") or em_quote_raw.get("fund_large_sell") or 0),
+        fund_mid_buy=_safe_float(rt_quote.get("fund_mid_buy") or em_quote_raw.get("fund_mid_buy") or 0),
+        fund_mid_sell=_safe_float(rt_quote.get("fund_mid_sell") or em_quote_raw.get("fund_mid_sell") or 0),
+        fund_main_5d_pct=_safe_float(rt_quote.get("fund_main_5d_pct") or em_quote_raw.get("fund_main_5d_pct") or 0),
         # V17.0.7: 财务 TTM 族(push2 f103-f190, fuyao 官方报表终判口径)——
         # 从 rt_quote/em_quote_raw 透传(get_em_quote_full* 已解析规范键)
         ocf_ttm=_safe_float(rt_quote.get("ocf_ttm") or em_quote_raw.get("ocf_ttm") or 0),

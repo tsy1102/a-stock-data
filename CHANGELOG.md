@@ -42,6 +42,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 **验证**：`py_compile` 全 5 文件通过；系统 Python 3.12 全量回归 **524 passed / 6 skipped / 0 failed**（含内盘/外盘/涨速/涨跌停/广度新接线）；活跃代码零 thsdk 残留。
 
+### ⑦ 补丁：V17.2.0 中优/低优 静默失效修复（2026-09-07 实跑发现）
+- **根因**：`_EasyTdxAdapter` 仅暴露 `bars/quotes/finance/xdxr/F10` 等方法，**无 `get_price_limits`/`get_market_stat`**；而 `tdx_get_price_limits`/`tdx_get_market_stat` 直接调 `client.get_price_limits(...)`/`client.get_market_stat()` → `AttributeError` 被 `except` 吞掉。两功能自 V17.2.0 上线起从未生效（离线测试 mock 未覆盖调用点，未捕获）。第二层根因：`easy_tdx.get_price_limits` 要 `Market` 枚举，而本项目 `_easy_market` 返回 int。
+- **修复**：适配器新增 `price_limits(symbol, pre_close)`（内部 int→`Market` 枚举转换）与 `market_stat()`；对应调用点改调 `client.price_limits(...)` / `client.market_stat()`。
+- **实测（真实 TDX 客户端）**：涨跌停价 茅台 1428.77/1168.99(×1.10)、宁德 419.4/279.6(×1.20)、中芯 148.64/99.1(×1.20) 全对；市场广度 涨停 41/跌停 9/上涨 2444/下跌 2914/总市值 11.4 万亿 正常返回。
+- **采集器增强**：`scripts/capture_field_probe.py` 的 `collect_tdx` 显式暴露 TDX 协议直解字段 `s_vol`(内盘)/`b_vol`(外盘)/`rise_speed`(涨速) 为顶层键，便于 `field_verification/` 纵向碰撞序列串联（源=本地 easy_tdx，非云连接器）。
+
+**验证（⑦）**：`py_compile` 全通过；真实 TDX 客户端实测两函数输出正确；系统 Python 3.12 全量回归 **524 passed / 6 skipped / 0 failed**（适配器改动无回归）。
+
 
 ## [V17.1.0] 2026-09-04 — V17-2 重构：`sc_datasource.py` 拆包（完成，零回归）
 

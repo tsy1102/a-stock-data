@@ -167,7 +167,7 @@ def collide(targets, corpus, align):
         if present == 0:
             results[X] = dict(verdict="NO_MATCH", reason="ulist f%d 在所有样本均缺失" % X,
                               n_samples=len(samples), best_Y=None, rate=0.0, corr=None,
-                              align_backed=None)
+                              align_backed=None, align_target=align.get(X))
             continue
         u_const = is_const(u_series)
         # 对每候选 push2 字段累计精确匹配

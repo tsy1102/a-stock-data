@@ -1226,8 +1226,8 @@ async def generate_sector_report(output_path):
     _up_cnt = sum(1 for s in all_stocks if s.get("change_pct", 0) > 0)
     _down_cnt = sum(1 for s in all_stocks if s.get("change_pct", 0) < 0)
     _ud_ratio = _up_cnt / max(_down_cnt, 1)
-    L(f"  🌡️ 短线情绪: 涨停{_zt_count} | 跌停{_dt_count} | 异动触发{total_abnormal}只"
-      f"（涨停按涨跌幅口径,与 B 段涨停池口径不同）")
+    L(f"  🌡️ 短线情绪(样本内·剔除ST/退): 涨停{_zt_count} | 跌停{_dt_count} | 异动触发{total_abnormal}只"
+      f"（涨跌幅口径;与B段涨停池/通达信全市场口径不同,三者不可直接相加比较）")
     L(
         f"  📊 市场广度: 上涨{_up_cnt}/下跌{_down_cnt} | 涨跌比{_ud_ratio:.2f} | {'偏多' if _ud_ratio>1.5 else '偏空' if _ud_ratio<0.67 else '均衡'}"
     )
@@ -1238,10 +1238,11 @@ async def generate_sector_report(output_path):
         _ms = await asyncio.to_thread(tdx_get_market_stat)
         if _ms:
             _ms_ud = _ms["up_count"] / max(_ms["down_count"], 1)
-            L(f"  📊 全市场(通达信): 上涨{_ms['up_count']}/下跌{_ms['down_count']}"
+            L(f"  📊 全市场(通达信·含ST/退/北交所): 上涨{_ms['up_count']}/下跌{_ms['down_count']}"
               f" | 涨停{_ms['limit_up_count']}/跌停{_ms['limit_down_count']}"
               f" | 平{_ms['neutral_count']}/停牌{_ms['suspended_count']}"
-              f" | 涨跌比{_ms_ud:.2f} | 总市值{_ms['total_market_cap']/1e12:.2f}万亿")
+              f" | 涨跌比{_ms_ud:.2f} | 总市值{_ms['total_market_cap']/1e12:.2f}万亿"
+              f"（全市场口径,涨停含ST/退/北交所故多于样本内{_zt_count}只;跌停按主板10%口径,故少于样本内{_dt_count}只）")
     except Exception as _e:
         _debug_log(f"mak market stat: {_e}")
 
@@ -1390,6 +1391,10 @@ async def generate_sector_report(output_path):
                     _max_board = max(_max_board, 2)
                 else:
                     _lb_3d['首板'] = _lb_3d.get('首板', 0) + 1
+    # V17.2.7(2026-09-07) 修复: 首板 = 样本涨停总数 - 连板合计, 杜绝 ret_3d 阈值误杀致首板≈1 的荒谬值;
+    # 首板 + 连板 恒等于本段涨停总数(_zt_count)。
+    _lb_total = sum(v for k, v in _lb_3d.items() if k != '首板')
+    _lb_3d['首板'] = max(0, len(_zt_3d) - _lb_total)
     # KPL 连板高度(lbgd)二次校验/兜底——独立源最高连板
     try:
         _kpl_d = locals().get('_kpl')

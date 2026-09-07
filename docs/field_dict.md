@@ -3130,6 +3130,12 @@ TDX `0x0010` 日K（`tdx_get_security_bars`，keys = `['time','open','close','hi
 > | 衍生指标 | `CalcInfo.CA*`(约15) | — | 涨跌幅/振幅/换手/总市值/流通市值等衍生计算 |
 > **价值（AI 对撞视角）**：TDX 云真值（仅 AI 对撞时可用）可作字节级锚点（涨停/跌停价、量比、财报总额三方一致）；历史 `docs/field_verification/20260812~20260906`（含茅台连续序列）+ ZHB 历史序列构成"时间×源"二维验证网格。注：上述结论均服务于「字段口径确认」，不进入项目运行时取数路径。
 
+> **📌 第一轮 TDX 云碰撞实测（2026-09-07, 仅 AI 对撞；详 `docs/field_verification/20260907_round1_tdxcloud_collision.md`）**
+> 方法：以 **云 `tdx_quotes` CwInfo 命名财务值**（第三源）＋ **本地 `tdx_get_financial_analysis` F10**（easy_tdx 管线，第二源）＋ **`zhb_client.get_stock_stat` tdxstat**（第一源）三源对撞 4 只（600519/300750/688981/601398）。
+> - **tdxstat 财务列破译获三源确认**：Col[14]=扣非净利润(万元) ×1e4 vs F10 扣非净利(元) 7/8 精确吻合（差≤5000元，纯四舍五入）；Col[24]=货币资金(万元) ×1e4 vs F10 货币资金(元) 同精度吻合（仅工行因银行资产负债表字段名差异 F10=None，非否定）。→ Col[14]/Col[24] 破译**由"东财F10单源"升级为"云CwInfo+本地F10+tdxstat"三重确认，铁证**。
+> - **云 CwInfo 暴露的 canonical 尚未从 TDX 取字段（潜在补源清单）**：`CwInfo.ZGB`总股本、`CwInfo.LTGB`流通股本、`CwInfo.MGSY2`每股收益、`CwInfo.MGJZC2`每股净资产、`CwInfo.JLY`净利润、`CwInfo.YYSR`营业收入、`CwInfo.YSZK`应收账款、`CwInfo.CH`存货、`CwInfo.LDFZ`流动负债、`CwInfo.GDRS`股东人数。这些已在项目内经 easy_tdx 他路径取得（总股本/流通/营收/净利 走 `get_finance_info`；股东人数走 `tdxstat`），**云值仅作命名口径对标，不新增运行时依赖**。
+> - **云原始三表未注册**：`tdxf10_gg_zcfz`/`lrb`/`xjll` 均返回 `-1005 功能未注册`，故云仅能提供 CwInfo 快照级财务命名值，无法替代 F10 全表。这**收敛了"云连接器能拿全部数据"的朴素预期**——它给的是「命名快照」，不是「全表字节」。
+
 > **铁律一**：凡本字典任何章节提及上述语义，**一律使用「规范中文名」列的名称**。
 > 禁止再使用下列源私有异名（历史遗留，遇即订正）：
 > 「当前价」「最新价」「价格」→ **现价**；「今开价」「今开」「开盘」→ **开盘价**；「昨收价」「昨收」→ **昨收盘**；

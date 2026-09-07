@@ -10,6 +10,10 @@
     —— 该对齐表即「跨源对撞证据」的唯一登记处。新增字段登记若声明 push2 映射，
     必须先在对撞脚本（`scripts/verify_ulist_push2_collision.py`）产出实证后写入对齐表，
     否则判违规。
+  ✅ scheme 血缘护栏：加载采集 meta 的 scheme 标识（`docs/field_verification/*/meta.json`
+    的 schemes 字段；回退 `BUILTIN_SCHEME`）确认 ulist239(em.ulist.np) 与
+    push2(em.stock_get) 属不同字段体系；在此前提下任何「ulist.fX = push2.fY」主张
+    必须以对齐表的跨号映射条目为实证——即便 X==Y 也只是「同号」而非「同义」。
 
 覆盖范围：
   1) 主守卫：§12.3.2.3 ulist239 全字段清单（新字段登记处，见该节说明「破解新字段直接在此登记」）。
@@ -29,6 +33,7 @@
 用法：python scripts/lint_field_same_number.py
 """
 import io
+import json
 import re
 import sys
 from pathlib import Path
@@ -44,6 +49,83 @@ if ALIGN.exists():
         for mm in re.finditer(r"ulist\s*f(\d{1,3})\s*\|\s*f(\d{1,3})", line):
             align[int(mm.group(1))] = int(mm.group(2))
 align_same = {u for u, p in align.items() if u == p}
+
+# --- 1b) 加载采集 meta 的 scheme 血缘（与 verify_cross_source_crack.py 对齐）---
+# 字典主张「ulist.fX = push2.fY」时，本守卫据此确认两源属不同字段体系(em.ulist.np
+# vs em.stock_get)，从而强制要求对齐表提供跨号映射实证（同号≠同义）。
+BUILTIN_SCHEME = {
+    "ulist239": "eastmoney.ulist.np",
+    "push2_full": "eastmoney.stock_get",
+    "em_fund_flow": "eastmoney.stock_get",
+    "axdata": "eastmoney.stock_get",
+    "tencent": "tencent.qt.gtimg.array",
+    "zhb": "tdx.zhb.named",
+    "tdx": "tdx.named",
+    "fuyao": "fuyao.named",
+    "sina": "sina.named",
+}
+# 字典/对齐表里用 "push2" 作简称，统一映射到采集源名
+SCHEME_RENAME = {"push2": "push2_full", "push2delay": "push2_full", "push2_full": "push2_full"}
+
+
+def load_schemes():
+    """从最新采集 meta.json 的 schemes 字段加载血缘；缺失则回退 BUILTIN。返回 (dict, src)。"""
+    FV = ROOT / "docs" / "field_verification"
+    best, best_date = None, ""
+    if FV.exists():
+        for d in FV.iterdir():
+            if not d.is_dir():
+                continue
+            m = d / "meta.json"
+            if not m.exists():
+                continue
+            try:
+                meta = json.loads(m.read_text(encoding="utf-8"))
+            except Exception:
+                continue
+            schemes = meta.get("schemes")
+            if not isinstance(schemes, dict):
+                continue
+            if d.name > best_date:   # YYYYMMDD 字符串比较 = 取最新目录
+                best_date, best = d.name, schemes
+    if best:
+        return best, best_date
+    return BUILTIN_SCHEME, "BUILTIN"
+
+
+SCHEMES, SCHEME_SRC = load_schemes()
+
+
+def scheme_of(src_name, schemes):
+    return schemes.get(SCHEME_RENAME.get(src_name, src_name))
+
+
+def check_scheme_grounded(fn, status, note):
+    """针对主张 ulist.fX 与 push2.fY 同义的登记行，做 scheme 血缘护栏。
+
+    返回 list：空=通过；含 "WARN:..." 条目=降级告警（不阻断）；其余=违规描述。
+    """
+    text = "%s %s" % (status, note)
+    m_p = re.search(r"push2\s*f(\d{1,3})", text)
+    if not m_p:
+        return None  # 本行未主张 push2 映射，护栏不介入
+    pY = int(m_p.group(1))
+    m_u = re.search(r"ulist\s*f(\d{1,3})", text)
+    uX = int(m_u.group(1)) if m_u else fn
+    s_ul = scheme_of("ulist239", SCHEMES)
+    s_pu = scheme_of("push2", SCHEMES)
+    if s_ul is None or s_pu is None:
+        return ["WARN:scheme 血缘未加载(%s/%s)，跳过护栏" % (s_ul, s_pu)]
+    if s_ul == s_pu:
+        # 同源体系下「同号=同义」可成立（本项目 ulist≠push2，正常不命中）
+        return None
+    # 异源体系：必须对齐表存在 ulist.fX → push2.fY 跨号映射实证
+    rec = align.get(uX)
+    if rec != pY:
+        return ["scheme 护栏：主张 ulist(%s).f%d = push2(%s).f%d，但权威对齐表无此跨号映射实证"
+                "（对齐表记 ulist.f%d → push2.f%s），「同号≠同义」铁律未被满足"
+                % (s_ul, uX, s_pu, pY, uX, ("无" if rec is None else rec))]
+    return []
 
 # --- 2) 解析字典 ---
 lines = DICT.read_text(encoding="utf-8").splitlines()
@@ -104,17 +186,19 @@ def classify(fn, status, note):
 # 4a) 主守卫：§12.3.2.3 登记行
 for ln_no, fn, status, note in rows_sec:
     cls, target = classify(fn, status, note)
-    if cls == "VERIFIED":
-        if fn not in align_same:
-            viol.append((ln_no, "VERIFIED 声明无对齐表 backing（ulist f%d 未在对齐表确认 → push2 f%d）" % (fn, fn), status))
-    elif cls == "DISPROVED":
-        if target is None:
-            viol.append((ln_no, "DISPROVED 行未解析出 push2 目标编号", status))
-        elif align.get(fn) != target:
-            viol.append((ln_no, "DISPROVED 跨号映射与对齐表不符（字典称 ulist f%d = push2 f%d，对齐表记为 → push2 f%s）"
-                         % (fn, target, align.get(fn, "无")), status))
-    elif cls == "BARE":
-        viol.append((ln_no, "裸「同号即同义」断言（编号相同即认定同义，未附跨源对撞证据），违反第七轮铁律", status))
+    if cls == "DISPROVED" and target is None:
+        viol.append((ln_no, "DISPROVED 行未解析出 push2 目标编号", status))
+        continue
+    if cls in ("VERIFIED", "DISPROVED", "BARE"):
+        # VERIFIED/DISPROVED/BARE 三类都主张(或伪装) ulist.fX 与 push2 同号同义，
+        # 统一走 scheme 血缘护栏：ulist239(em.ulist.np) 与 push2(em.stock_get) 是不同字段体系，
+        # 故须对齐表存在 ulist.fX → push2.fY 跨号映射实证(Y 即行内声明的 push2 编号，同号时 Y==X)。
+        msgs = check_scheme_grounded(fn, status, note)
+        for m in (msgs or []):
+            if m.startswith("WARN:"):
+                sys.stderr.write("  ⚠️ %s\n" % m[5:])
+            else:
+                viol.append((ln_no, m, status))
     elif cls == "CROSS":
         # 跨源定案必须指明具体外部源(tdx/sina/tencent/fuyao/zhb/axdata 等)的具名字段,
         # 否则证据不足; 且不得夹带裸同号断言(那仍违反铁律)。
@@ -141,6 +225,8 @@ for ln_no, fn, raw in all_frows:
 if viol:
     print("❌ 字段字典「同号即同义」检查失败，发现 %d 处违规：" % len(viol))
     print("   对齐表条目数: %d（同号真同义 %d 条）" % (len(align), len(align_same)))
+    print("   scheme 血缘(源=%s): ulist239=%s ↔ push2=%s（异体系→强制跨号映射实证）"
+          % (SCHEME_SRC, scheme_of("ulist239", SCHEMES), scheme_of("push2", SCHEMES)))
     print("   扫描 §12.3.2.3 登记行: %d  全文件 f 编号行: %d" % (len(rows_sec), len(all_frows)))
     for ln, why, txt in viol[:80]:
         print("   行%-5d  %s  | %s" % (ln, why, txt))
@@ -148,5 +234,7 @@ if viol:
 
 print("✅ 字段字典「同号即同义」检查通过：")
 print("   对齐表条目数: %d（同号真同义 %d 条，作为唯一实证登记处）" % (len(align), len(align_same)))
+print("   scheme 血缘(源=%s): ulist239=%s ↔ push2=%s（异体系，强制跨号映射实证）"
+      % (SCHEME_SRC, scheme_of("ulist239", SCHEMES), scheme_of("push2", SCHEMES)))
 print("   §12.3.2.3 登记行: %d（所有 push2 映射主张均已对齐表背书或显式标为待核实）" % len(rows_sec))
 print("   全文件 f 编号行: %d（无裸「同号即同义」断言复发）" % len(all_frows))

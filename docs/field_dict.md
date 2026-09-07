@@ -3112,7 +3112,7 @@ TDX `0x0010` 日K（`tdx_get_security_bars`，keys = `['time','open','close','hi
 
 > **📌 申万口径核验结论（2026-09-07, V17.2.0）**：TDX `tdxhy.cfg`（库自带/实时 `get_report_file` 拉取）**不含申万列**——其字段仅 `市场|代码|T一级(通达信T码)|空|空|X细分码(通达信X码)`；easy_tdx `parse_tdxhy_cfg` 把 `parts[5]` 误标为 `sw_industry`，实测为 `X500102`/`X210205` 等通达信 X码（非申万名）。故 **TDX 无申万源可挖**，东财 `em_industry_map_l2`（申万二级）仍是唯一申万来源，**不可翻转 primary/fallback**。项目安全目标已由「行业/板块分类季度缓存」(`_EM_L2_TTL`=90天, datacenter 全量映射仅 ~4 次/年) 达成：东财封禁最严时亦仅季度级回源。通达信 T/X 码（`_tdxhy_industry_map`）仅用于涨停池 sector tagging，与申万并列但不同口径。
 
-> **📌 TDX(云/TQLEX) 源字段映射（2026-09-07 活体碰撞补源）**：通达信云数据服务（`mcp__tdx-connector`，端点 `tdxhub.icfqs.com`，**只读、无账户/无交易权限**）返回的实时 JSON 即 TDX 权威真值源。其字段为**应用层命名字段（非 TCP 字节偏移）**——属"字段目录发现"，字节级逆向已由 easy_tdx 净室实现完成。映射（详 `docs/field_verification/20260907_tdx_live_collision.md`）：
+> **📌 TDX(云/TQLEX) 字段映射参考（2026-09-07 活体碰撞补源）** ⚠️ **本映射仅作 AI 字段碰撞/破解时的真值参考，非项目运行时数据源。** 下方 `mcp__tdx-connector` 通达信云数据服务（端点 `tdxhub.icfqs.com`，只读、无账户/无交易权限）属 **WorkBuddy MCP 工具**，仅在我（AI）做字段对撞/验证时调用；`a-stock-data` 项目平时以 `py` 运行、**不安装此依赖、不具备此能力**。项目真正的 TDX 运行时源是 `easy_tdx`（本地 TCP 协议，已列 `requirements.txt`），其字段为 easy_tdx `SecurityQuote`（`s_vol`/`b_vol`/`rise_speed` 等，见本字典 §12.8.12e 高优项）。云连接器返回的实时 JSON 字段为**应用层命名字段（非 TCP 字节偏移）**——属"字段目录发现"，字节级逆向已由 easy_tdx 净室实现完成。映射（详 `docs/field_verification/20260907_tdx_live_collision.md`，**仅 AI 对撞用**）：
 > | canonical 规范名 | TDX 云 JSON 路径 | 单位 | 备注 |
 > |---|---|---|---|
 > | 内盘 | `HQInfo.Inside` | 手 | ↔ easy_tdx `s_vol`；与腾讯内盘总量同、分拆差 ~0.8%（主动买卖归类边界） |
@@ -3128,7 +3128,7 @@ TDX `0x0010` 日K（`tdx_get_security_bars`，keys = `['time','open','close','hi
 > | 净资产 | `CwInfo.JZC` | 万元 | ↔ jingzichan |
 > | 五档买卖 | `BspInfo[0..4].BuyP/SellP/BuyV/SellV` | 价/手 | ↔ bid1-5/ask1-5 |
 > | 衍生指标 | `CalcInfo.CA*`(约15) | — | 涨跌幅/振幅/换手/总市值/流通市值等衍生计算 |
-> **价值**：TDX 云真值可作字节级锚点（涨停/跌停价、量比、财报总额三方一致）；历史 `docs/field_verification/20260812~20260906`（含茅台连续序列）+ ZHB 历史序列构成"时间×源"二维验证网格。
+> **价值（AI 对撞视角）**：TDX 云真值（仅 AI 对撞时可用）可作字节级锚点（涨停/跌停价、量比、财报总额三方一致）；历史 `docs/field_verification/20260812~20260906`（含茅台连续序列）+ ZHB 历史序列构成"时间×源"二维验证网格。注：上述结论均服务于「字段口径确认」，不进入项目运行时取数路径。
 
 > **铁律一**：凡本字典任何章节提及上述语义，**一律使用「规范中文名」列的名称**。
 > 禁止再使用下列源私有异名（历史遗留，遇即订正）：

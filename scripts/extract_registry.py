@@ -46,6 +46,75 @@ ALIGN = os.path.join(REPO_ROOT, "docs", "verify", "ulist_push2_align.md")
 sys.path.insert(0, SCRIPT_DIR)
 import gen_field_matrix as gm
 import verify_sync_check as vs
+import audit_field_completeness as afc
+
+
+# ---------------------------------------------------------------------------
+# 原生 token 抽取（v2，2026-09-12）：复用 audit_field_completeness.registered_field_sets
+# 的「章节→源→token」逻辑，保证 registry 的 fields[].code 即各源原生 token
+# （f144 / [1] / stockName / open ...），而非被 clean_field 剥掉 f 前缀后的中文名。
+# 这样 registry 才能作为 audit_field_completeness / field_landing_audit 的真相源。
+# ---------------------------------------------------------------------------
+_FCODE_SRC = {
+    "东财-push2(stock/get)", "东财-ulist239(np/get)", "AxData",
+    "东财-资金流(em_fund_flow)", "东财-em_kline_f61", "东财-push2ex",
+    "东财-datacenter(英文键)", "东财-slist", "东财-clist",
+}
+_INDEX_SRC = {"腾讯(qt.gtimg)", "新浪(hq.sinajs)",
+              "ZHB-tdxstat", "ZHB-tdxstat2", "ZHB-tipinfo"}
+_CAMEL_SRC = {"reports", "同花顺-fuyao", "同花顺-thsdk", "东财-datacenter(英文键)",
+              "东财-push2ex", "东财-热榜(em_hot)", "市场源(market_sources)",
+              "levistock(ftshare)", "财联社(cls)", "百度(baidu)", "沪深交易所",
+              "巨潮(cninfo)", "TDX(双命名源)", "TDX-F10(双命名源)"}
+
+
+def cell_token(cell: str, src: str):
+    """从表格首格抽取该源原生字段 token（与 afc.reg_tokens_for_section 同语义）。"""
+    cell = cell.strip().strip("`").strip()
+    cell = re.sub(r"\*\*", "", cell)
+    if src in _FCODE_SRC:
+        m = re.search(r"f(\d+)", cell, re.IGNORECASE)
+        return ("f" + m.group(1)) if m else None
+    if src in _INDEX_SRC:
+        m = re.search(r"\[(\d+)\]", cell)
+        return ("[" + m.group(1) + "]") if m else None
+    if src in _CAMEL_SRC:
+        m = re.search(r"[A-Za-z][A-Za-z0-9_]{2,}", cell)
+        return m.group(0) if m else None
+    # 默认：英文/中文名 token
+    m = re.search(r"[\u4e00-\u9fffA-Za-z_][\u4e00-\u9fffA-Za-z0-9_]{1,}", cell)
+    return m.group(0) if m else None
+
+
+# audit SECTION_MAP 源标签 → verify 分字典（无专属分字典者填 None）
+_AUDIT_VERIFY = {
+    "东财-push2(stock/get)": "push2_verify.md",
+    "东财-资金流(em_fund_flow)": "push2_verify.md",
+    "东财-ulist239(np/get)": None,
+    "东财-em_kline_f61": None,
+    "东财-push2ex": None,
+    "东财-datacenter(英文键)": None,
+    "东财-slist": None,
+    "东财-clist": None,
+    "腾讯(qt.gtimg)": "tencent_verify.md",
+    "新浪(hq.sinajs)": None,
+    "ZHB-tdxstat": "tdx_func_fields.md",
+    "ZHB-tdxstat2": "tdx_func_fields.md",
+    "ZHB-tipinfo": "tdx_func_fields.md",
+    "同花顺-fuyao": "fuyao_api_full.md",
+    "同花顺-thsdk": "thsdk_field_verify.md",
+    "reports": None,
+    "东财-热榜(em_hot)": None,
+    "市场源(market_sources)": None,
+    "levistock(ftshare)": "levistock_field_verify.md",
+    "财联社(cls)": None,
+    "百度(baidu)": None,
+    "沪深交易所": None,
+    "巨潮(cninfo)": None,
+    "TDX(双命名源)": "tdx_func_fields.md",
+    "TDX-F10(双命名源)": None,
+    "AxData": "axdata_verify.md",
+}
 
 
 # ---------------------------------------------------------------------------
@@ -100,22 +169,30 @@ def extract_canonical(first_cell: str) -> str:
 def extract():
     text = io.open(DICT, encoding="utf-8").read()
 
-    # ---- Layer1（确定性）：直接复用 build_matrix 权威映射，parity 由构造保证 ----
-    name_sources, records = gm.build_matrix()
+    # ---- Layer1（确定性）：复用 audit_field_completeness.registered_field_sets ----
+    # 该函数在 markdown 上逐章节跑 section_to_sources + reg_tokens_for_section，
+    # 产出「源标签 → 原生 token 集合」（f144 / [1] / stockName ...）。
+    # 直接作为 registry fields[].code，保证与 audit_field_completeness 的 REG 集合逐集合一致。
+    reg = afc.registered_field_sets()
 
     fields = OrderedDict()
-    for f, srcs in name_sources.items():
-        fields[f] = {
-            "code": f,
-            "source": None,
-            "sources": set(srcs),
-            "section": "",
-            "canonical": "",
-            "meaning": "",
-            "unit": "",
-            "status_raw": "",
-            "status": "unverified",
-        }
+    for src, toks in reg.items():
+        for tok in sorted(toks):
+            rec = fields.get(tok)
+            if rec is None:
+                rec = {
+                    "code": tok,
+                    "source": None,
+                    "sources": set(),
+                    "section": "",
+                    "canonical": "",
+                    "meaning": "",
+                    "unit": "",
+                    "status_raw": "",
+                    "status": "unverified",
+                }
+                fields[tok] = rec
+            rec["sources"].add(src)
 
     # ---- Layer2（最佳努力）：再走查 parse_tables，仅附加逐字段属性 ----
     tables = gm.parse_tables(text)
@@ -126,22 +203,23 @@ def extract():
     for sec, rows in tables:
         if any(kw in sec for kw in gm.NON_FIELD_SEC):
             continue
-        src = gm.sec_to_source(sec)
-        if src in gm.NOT_REAL_SOURCE:
+        srcs = afc.section_to_sources(sec)
+        if not srcs:
             continue
-        section_patterns[src].add(sec)
+        for src in srcs:
+            section_patterns[src].add(sec)
         for row in rows:
             if not row:
                 continue
             first = row[0]
             if first in ("字段", "索引", "含义", "---"):
                 continue
-            # 与 build_matrix 完全一致的字段切分，保证 key 对齐
-            for part in re.split(r"[/／]", first):
-                f = gm.clean_field(part)
-                if len(f) < 2:
+            # 对该行首格，按各命中源的「原生 token」抽取并回挂属性（key 与 Layer1 对齐）
+            for src in srcs:
+                tok = cell_token(first, src)
+                if not tok or len(tok) < 2:
                     continue
-                rec = fields.get(f)
+                rec = fields.get(tok)
                 if rec is None:
                     continue  # 仅对 Layer1 已登记的字段补属性，不引入新字段
                 if not rec["section"]:
@@ -175,36 +253,14 @@ def extract():
             attr_coverage["status"] += 1
         out_fields.append(rec)
 
-    # sources 元数据：来自 verify_sync_check.MAPPING + SOURCE_ORDER
+    # sources 元数据：以 audit_field_completeness.SECTION_MAP 源标签为权威命名空间
+    # （与 fields[].sources 完全一致，保证 field_source_map 视图对齐）
     out_sources = []
-    for src in gm.SOURCE_ORDER:
-        vf = None
-        for _k, v in vs.MAPPING.items():
-            # 反向找：MAPPING 的 value 文件名可能与源名近似；用 slug 匹配
-            if src.replace("-", "").replace(" ", "").lower() in v.replace("-", "").replace(" ", "").lower():
-                vf = v
-                break
-        # 精确补：fuyao/thsdk 等
-        if vf is None:
-            _map = {
-                "同花顺-fuyao": "fuyao_api_full.md",
-                "同花顺-thsdk": "thsdk_field_verify.md",
-                "东财": "push2_verify.md",
-                "腾讯": "tencent_verify.md",
-                "TDX-0x0010/F10": "tdx_func_fields.md",
-                "TDX-eltdx": "tdxhy_x_names.md",
-                "新浪": None,
-                "ZHB": "tdx_func_fields.md",
-                "财联社": "levistock_field_verify.md",
-                "开盘红": "levistock_field_verify.md",
-                "akshare": "samples_verify.md",
-                "AxData": "axdata_verify.md",
-            }
-            vf = _map.get(src)
+    for label, _subs in afc.SECTION_MAP:
         out_sources.append({
-            "name": src,
-            "verify_file": vf,
-            "section_patterns": sorted(section_patterns.get(src, [])),
+            "name": label,
+            "verify_file": _AUDIT_VERIFY.get(label),
+            "section_patterns": sorted(section_patterns.get(label, [])),
             "status": "active",
         })
 
@@ -278,23 +334,27 @@ def main():
           f"status={stats['attr_coverage']['status']}")
 
     if args.check_baseline:
-        name_sources, records = gm.build_matrix()
-        base_fields = len(name_sources)
-        # 去重 (字段,源) 配对计数：registry 的 record_count 语义（build_matrix 的 records
-        # 按行出现计数含同源重复行，1412≠1230 是计数口径差异，非数据缺失）
-        base_records = sum(len(v) for v in name_sources.values())
-        base_multi = sum(1 for s in name_sources.values() if len(s) >= 2)
+        # 基线：audit_field_completeness.registered_field_sets（原生 token），
+        # 与抽取器的 Layer1 复用同一函数，parity 由构造保证。
+        base_reg = afc.registered_field_sets()
+        base_field_sources = defaultdict(set)
+        for src, toks in base_reg.items():
+            for t in toks:
+                base_field_sources[t].add(src)
+        base_tokens = set(base_field_sources.keys())
+        base_fields = len(base_tokens)
+        base_records = sum(len(v) for v in base_reg.values())
+        base_multi = sum(1 for s in base_field_sources.values() if len(s) >= 2)
         ok = (stats["field_count"] == base_fields and
               stats["record_count"] == base_records and
               stats["multi_source_count"] == base_multi)
-        print(f"  G1 基线比对(去重配对): 抽取({stats['field_count']}/{stats['record_count']}/{stats['multi_source_count']}) "
+        print(f"  G1 基线比对(native token): 抽取({stats['field_count']}/{stats['record_count']}/{stats['multi_source_count']}) "
               f"vs 基线({base_fields}/{base_records}/{base_multi}) -> "
               f"{'PASS' if ok else 'FAIL'}")
         if not ok:
-            base_set = set(name_sources.keys())
-            ext_set = {r["code"] for r in registry["fields"]}
-            miss = base_set - ext_set
-            extra = ext_set - base_set
+            ext_tokens = {r["code"] for r in registry["fields"]}
+            miss = base_tokens - ext_tokens
+            extra = ext_tokens - base_tokens
             if miss:
                 print(f"    基线有而抽取缺失({len(miss)}): {sorted(miss)[:20]}")
             if extra:

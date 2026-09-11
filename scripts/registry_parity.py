@@ -1,17 +1,13 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""registry_parity.py — 字段登记表 parity 闸门（registry ↔ markdown）。
+"""registry_parity.py — 字段登记表 parity 闸门（registry ↔ markdown 原生 token）。
 
-校验 docs/field_verification/field_registry.json（单一真相源）与
-field_dict.md 的字段×源映射完全一致。用于 CI / 提交前闸门。
+校验 docs/field_verification/field_registry.json（单一真相源影子）与
+field_dict.md 经 audit_field_completeness.registered_field_sets() 抽取出的
+「原生 token × 源」集合完全一致。用于 CI / 提交前闸门。
 
 判定（G1）：
-  * 字段数、去重 (字段,源) 配对总数、多源字段数 三者须与
-    gen_field_matrix.build_matrix_from_md() 基线逐字节一致。
-  * 另抽样核对多源字段的源集合与基线一致。
-
-Phase 2(2026-09-12): 基线显式走 build_matrix_from_md()，registry 视图走
-build_matrix_from_registry()，二者分离避免「registry 读 registry」的循环自检。
+  * 字段数、去重 (token,源) 配对总数、多源 token 数 三者须与
+    audit_field_completeness.registered_field_sets() 基线逐字节一致。
+  * 另抽样核对多源 token 的源集合与基线一致。
 
 退出码：0=通过；1=未通过（不应提交）。
 """
@@ -34,8 +30,8 @@ REPO_ROOT = os.path.dirname(SCRIPT_DIR)
 REGISTRY = os.path.join(REPO_ROOT, "docs", "field_verification", "field_registry.json")
 
 sys.path.insert(0, SCRIPT_DIR)
-import gen_field_matrix as gm
 import field_registry_api as fra
+import audit_field_completeness as afc
 
 
 def main():
@@ -46,53 +42,59 @@ def main():
     with io.open(REGISTRY, encoding="utf-8") as f:
         reg = json.load(f)
 
-    # 基线：markdown 路径（golden，与 registry 互不依赖）
-    md_ns, _ = gm.build_matrix_from_md()
-    base_fields = len(md_ns)
-    base_pairs = sum(len(v) for v in md_ns.values())
-    base_multi = sum(1 for v in md_ns.values() if len(v) >= 2)
+    # 基线（原生 token）：audit_field_completeness.registered_field_sets
+    base_reg = afc.registered_field_sets()
+    base_field_sources = {}
+    for src, toks in base_reg.items():
+        for t in toks:
+            base_field_sources.setdefault(t, set()).add(src)
+    base_fields = len(base_field_sources)
+    base_records = sum(len(v) for v in base_reg.values())
+    base_multi = sum(1 for s in base_field_sources.values() if len(s) >= 2)
 
-    # registry 视图
-    reg_ns = fra.field_source_map(reg)
-    reg_field_n = len(reg_ns)
-    reg_pairs = sum(len(v) for v in reg_ns.values())
-    reg_multi = sum(1 for v in reg_ns.values() if len(v) >= 2)
+    # registry 视图（原生 token）：code -> set(sources)
+    reg_field_sources = {}
+    for r in reg["fields"]:
+        reg_field_sources.setdefault(r["code"], set()).update(r["sources"])
+    reg_fields = len(reg_field_sources)
+    reg_records = sum(len(v) for v in reg_field_sources.values())
+    reg_multi = sum(1 for v in reg_field_sources.values() if len(v) >= 2)
 
     problems = []
-    if reg_field_n != base_fields:
-        problems.append(f"字段数 {reg_field_n} != 基线 {base_fields}")
-    if reg_pairs != base_pairs:
-        problems.append(f"配对总数 {reg_pairs} != 基线 {base_pairs}")
+    if reg_fields != base_fields:
+        problems.append(f"字段数 {reg_fields} != 基线 {base_fields}")
+    if reg_records != base_records:
+        problems.append(f"配对总数 {reg_records} != 基线 {base_records}")
     if reg_multi != base_multi:
         problems.append(f"多源数 {reg_multi} != 基线 {base_multi}")
 
     # 集合级核对
-    miss = set(md_ns) - set(reg_ns)
-    extra = set(reg_ns) - set(md_ns)
+    miss = set(base_field_sources) - set(reg_field_sources)
+    extra = set(reg_field_sources) - set(base_field_sources)
     if miss:
         problems.append(f"基线有而 registry 缺 {len(miss)}: {sorted(miss)[:10]}")
     if extra:
         problems.append(f"registry 多出于基线 {len(extra)}: {sorted(extra)[:10]}")
 
-    # 抽样核对多源字段的源集合
+    # 抽样核对多源 token 的源集合
     sample_bad = []
-    for f, srcs in reg_ns.items():
+    for t, srcs in reg_field_sources.items():
         if len(srcs) >= 2:
-            if srcs != md_ns[f]:
-                sample_bad.append(f)
+            if srcs != base_field_sources.get(t):
+                sample_bad.append(t)
                 if len(sample_bad) >= 10:
                     break
     if sample_bad:
-        problems.append(f"多源字段源集合不一致(抽样): {sample_bad}")
+        problems.append(f"多源 token 源集合不一致(抽样): {sample_bad}")
 
-    print(f"parity: registry({reg_field_n}/{reg_pairs}/{reg_multi}) "
-          f"vs baseline-md({base_fields}/{base_pairs}/{base_multi})")
+    print(f"parity: registry({reg_fields}/{reg_records}/{reg_multi}) "
+          f"vs baseline({base_fields}/{base_records}/{base_multi})")
     if problems:
         print("FAIL:")
         for p in problems:
             print("  -", p)
         return 1
-    print("PASS: 字段×源映射 registry 与 field_dict.md 完全一致")
+    print("PASS: 原生 token × 源映射与 field_dict.md 完全一致")
     return 0
 
 

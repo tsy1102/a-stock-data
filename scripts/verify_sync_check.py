@@ -47,13 +47,24 @@ REPO_ROOT = os.path.dirname(SCRIPT_DIR)
 FIELD_DICT = os.path.join(REPO_ROOT, "docs", "field_dict.md")
 VERIFY_DIR = os.path.join(REPO_ROOT, "docs", "verify")
 
+# 单一真相源接入：优先用 field_registry.json 的 sources[].verify_file；
+# 缺失/不可用时回退到下方 MAPPING_HARDCODED（CI 闸门权威配置，须显式可审）。
+# 不静默吞错：registry 读取失败则退化为硬编码，闸门行为不变。
+try:
+    sys.path.insert(0, SCRIPT_DIR)
+    import field_registry_api as _fra
+except Exception:  # noqa: BLE001
+    _fra = None
+
 
 # ----------------------------------------------------------------------------
-# 内嵌「源→分字典」映射（★单一权威配置，须与 field_dict.md §12.15.10 保持同步）
+# 内嵌「源→分字典」映射（★单一权威配置（硬编码基线），须与 field_dict.md §12.15.10 保持同步）
 #   key  = 源名（仅作展示/诊断）
 #   file = verify/ 下的分字典文件名（basename）
+# 注：本映射现为 CI 闸门的硬编码基线；get_source_mapping() 会优先用 registry 覆盖，
+#     缺失项仍由此基线兜底，保证闸门行为在 registry 不完善时不退化。
 # ----------------------------------------------------------------------------
-MAPPING = {
+MAPPING_HARDCODED = {
     "em_indicators": "em_indicators.md",
     "em_tableheader_ids": "em_tableheader_ids.md",
     "tdx_func_fields": "tdx_func_fields.md",
@@ -72,6 +83,24 @@ MAPPING = {
     "network_servers": "network_servers.md",
     "levistock": "levistock_field_verify.md",
 }
+
+
+def get_source_mapping():
+    """源→分字典映射：优先 registry.sources[].verify_file（单一真相源），缺失回退硬编码基线。
+
+    返回 dict 保证包含所有 MAPPING_HARDCODED 条目（registry 仅覆盖已知项，不削减闸门）。
+    """
+    m = dict(MAPPING_HARDCODED)
+    if _fra is not None:
+        try:
+            reg = _fra.load_registry()
+            for s in reg.get("sources", []):
+                vf = s.get("verify_file")
+                if vf:
+                    m[s["name"]] = vf
+        except Exception:  # noqa: BLE001
+            pass
+    return m
 
 # 同步检查配置（best-effort）：对每个 (分字典, 字段 token 正则) 做子集比对。
 # 仅对「附录=完整原始全表」的源启用，避免误报。未列出的源跳过（人工复核）。
@@ -353,9 +382,23 @@ def main():
         else:
             print(f"   ✓ {base}")
 
+    # ---- 漂移检测（registry vs 硬编码基线，仅告警不失败）----
+    if _fra is not None:
+        try:
+            reg = _fra.load_registry()
+            reg_map = {s["name"]: s["verify_file"] for s in reg.get("sources", [])
+                       if s.get("verify_file")}
+            for name, vf in reg_map.items():
+                if name in MAPPING_HARDCODED and MAPPING_HARDCODED[name] != vf:
+                    warnings.append(
+                        f"映射漂移: 源 {name} registry={vf} 但硬编码基线={MAPPING_HARDCODED[name]}"
+                        f"（建议统一为 registry 单一真相源）")
+        except Exception:  # noqa: BLE001
+            pass
+
     # ---- HARD 3: 映射一致性 ----
-    print("[HARD] 3. 映射一致性（内嵌 MAPPING → 文件须存在且被引用）")
-    for src, base in sorted(MAPPING.items()):
+    print("[HARD] 3. 映射一致性（registry 优先 + 硬编码基线兜底 → 文件须存在且被引用）")
+    for src, base in sorted(get_source_mapping().items()):
         if base not in existing:
             msg = f"映射缺失文件: 源 {src} 指向 {base} 不存在"
             hard_failures.append(msg)

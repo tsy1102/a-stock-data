@@ -19,6 +19,11 @@ from __future__ import annotations
 import io, os, re, json, sys
 from collections import defaultdict
 
+# (b) 架构根治：优先从 field_registry.json 单一真相源读取「已登记字段集」，
+# 使 §零·A 主路径不再依赖 SECTION_MAP / section_to_sources 的字典章节解析（G0 标记脆弱点）。
+# registry 缺失或读失败时回退 registered_field_sets()（字典解析）。
+import field_registry_api as _fra
+
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DICT = os.path.join(ROOT, "docs", "field_dict.md")
 # v3.1 (2026-09-06): CAP/OUT 日期参数化 —— 每次全源采集后必须对「当日 raw」重跑本审计,
@@ -325,10 +330,32 @@ def registered_field_sets():
                 reg[src] |= reg_tokens_for_section(src, stext)
     return reg
 
+
+def registry_field_sets():
+    """(b) 架构根治：从 field_registry.json 单一真相源读取「已登记字段集」。
+
+    与 registered_field_sets() 语义等价（两者源标签 / token 完全一致，已 parity 验证），
+    但主路径不再解析 field_dict.md 章节，故不受章节搬家 / SECTION_MAP 硬编码影响。
+    若 registry 不可用（文件缺失 / 读取异常 / 空），返回 None 由调用方回退。
+    """
+    try:
+        reg = _fra.fields_by_source()
+    except Exception as _e:
+        print(f"   [warn] registry_field_sets 读取失败，回退 registered_field_sets: {_e}")
+        return None
+    if not reg:
+        return None
+    return reg
+
 # ---------------------------------------------------------------------------
 def main():
     raw = raw_field_sets()
-    reg = registered_field_sets()
+    reg = registry_field_sets()
+    if reg is None:
+        reg = registered_field_sets()
+        print("   [info] reg 数据来源: field_dict.md (registered_field_sets 回退)")
+    else:
+        print("   [info] reg 数据来源: field_registry.json (单一真相源)")
     os.makedirs(OUTDIR, exist_ok=True)
 
     report = {}

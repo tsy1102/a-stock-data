@@ -12,9 +12,11 @@
 用法：python scripts/lint_field_names.py
 退出码 1 = 发现违规（可作 CI/提交前检查）。
 """
-import io, re, sys
+import io, re, sys, os
 
-PATH = "docs/field_dict.md"
+# Phase 2(2026-09-12): 改用 ROOT 绝对路径，消除 CWD 耦合（G0 已标记：原相对路径在 CI 错误 CWD 下直接失败）。
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+PATH = os.path.join(ROOT, "docs", "field_dict.md")
 with io.open(PATH, encoding="utf-8") as f:
     lines = f.readlines()
 

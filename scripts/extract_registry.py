@@ -286,6 +286,13 @@ def extract():
                     "evidence": "ulist_push2_align.md",
                 })
 
+    # field_matrix：§零·B 投影（clean field-name × source），与 build_matrix_from_md 同构
+    # （1156 字段 / 1230 去重记录）。专供 gen_field_matrix 生成 §零·B；原生 token 集
+    # 仍存于 fields（供 audit_field_completeness 的 REG 半边与 RAW 对撞）。
+    # 二者是字段登记表的两个正交投影，registry 作为单一真相源同时持有。
+    _ns_md, _ = gm.build_matrix_from_md()
+    field_matrix = {k: sorted(v) for k, v in _ns_md.items()}
+
     registry = OrderedDict()
     registry["meta"] = {
         "version": 1,
@@ -297,6 +304,7 @@ def extract():
     }
     registry["sources"] = out_sources
     registry["fields"] = out_fields
+    registry["field_matrix"] = field_matrix
     registry["mappings"] = mappings
 
     stats = {
@@ -305,6 +313,8 @@ def extract():
         "mapping_count": len(mappings),
         "multi_source_count": sum(1 for r in out_fields if len(r["sources"]) >= 2),
         "record_count": sum(len(r["sources"]) for r in out_fields),
+        "field_matrix_count": len(field_matrix),
+        "field_matrix_record_count": sum(len(v) for v in field_matrix.values()),
         "attr_coverage": attr_coverage,
         "attr_scanned_rows": scanned,
     }
@@ -327,6 +337,7 @@ def main():
     print(f"OK: 写出 {args.out}")
     print(f"  字段数={stats['field_count']}  记录数={stats['record_count']}  "
           f"多源={stats['multi_source_count']}  源={stats['source_count']}  对齐={stats['mapping_count']}")
+    print(f"  field_matrix(§零·B投影)={stats['field_matrix_count']} 记录={stats['field_matrix_record_count']}")
     print(f"  逐字段属性覆盖率(扫描 {stats['attr_scanned_rows']} 行): "
           f"canonical={stats['attr_coverage']['canonical']}  "
           f"meaning={stats['attr_coverage']['meaning']}  "

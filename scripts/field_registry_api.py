@@ -32,9 +32,11 @@ def load_registry(path: str = REGISTRY) -> dict:
 
 
 def field_source_map(reg: Optional[dict] = None) -> Dict[str, Set[str]]:
-    """核心视图：{code: set(sources)}，与 gen_field_matrix.build_matrix() 同构。
+    """核心视图：{code: set(sources)}，与 audit_field_completeness.registered_field_sets() 同构
+    （原生 token × 源）。供 audit_field_completeness 的 REG 半边与 RAW 对撞，及 lint 等消费。
 
-    这是单一真相源的字段归属关系，parity 比对即对比此视图与 markdown 路径输出。
+    ⚠️ 注意：此视图的 code 为**原生 token**（f144 / [1] / amount / SH600519 ...），并非
+    §零·B 展示用的清洗字段名。§零·B 生成请改用 `field_matrix_map()`。
     """
     if reg is None:
         reg = load_registry()
@@ -42,6 +44,21 @@ def field_source_map(reg: Optional[dict] = None) -> Dict[str, Set[str]]:
     for r in reg["fields"]:
         out[r["code"]] = set(r["sources"])
     return out
+
+
+def field_matrix_map(reg: Optional[dict] = None) -> Dict[str, List[str]]:
+    """§零·B 投影：{clean_field_name: [sources]}，与 gen_field_matrix.build_matrix_from_md() 同构
+    （清洗字段名 × 源，1156 字段 / 1230 去重记录）。
+
+    专供 gen_field_matrix 生成 §零·B 字段×源总表——与 field_dict.md 当前 §零·B 逐字节一致。
+    registry 缺失 field_matrix 时抛异常，由调用方回退 markdown。
+    """
+    if reg is None:
+        reg = load_registry()
+    fm = reg.get("field_matrix")
+    if not fm:
+        raise KeyError("registry 缺少 field_matrix 投影（请重跑 extract_registry.py）")
+    return {k: list(v) for k, v in fm.items()}
 
 
 def record_count(reg: Optional[dict] = None) -> int:

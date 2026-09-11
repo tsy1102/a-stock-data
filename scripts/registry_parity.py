@@ -32,6 +32,7 @@ REGISTRY = os.path.join(REPO_ROOT, "docs", "field_verification", "field_registry
 sys.path.insert(0, SCRIPT_DIR)
 import field_registry_api as fra
 import audit_field_completeness as afc
+import gen_field_matrix as gm
 
 
 def main():
@@ -87,15 +88,51 @@ def main():
     if sample_bad:
         problems.append(f"多源 token 源集合不一致(抽样): {sample_bad}")
 
-    print(f"parity: registry({reg_fields}/{reg_records}/{reg_multi}) "
+    print(f"parity[native]: registry({reg_fields}/{reg_records}/{reg_multi}) "
           f"vs baseline({base_fields}/{base_records}/{base_multi})")
     if problems:
-        print("FAIL:")
+        print("  native FAIL:")
         for p in problems:
-            print("  -", p)
+            print("   -", p)
+    else:
+        print("  native PASS: 原生 token × 源映射与 field_dict.md 完全一致")
+
+    # ---- field_matrix 投影 parity（§零·B 生成一致性，G3 闸门）----
+    fm_problems = check_field_matrix(reg)
+    print(f"parity[field_matrix]: {'PASS' if not fm_problems else 'FAIL'}")
+    for p in fm_problems:
+        print("   -", p)
+
+    all_problems = problems + fm_problems
+    if all_problems:
         return 1
-    print("PASS: 原生 token × 源映射与 field_dict.md 完全一致")
+    print("PASS: registry 双重 parity 全部通过（原生 token + §零·B 投影）")
     return 0
+
+
+def check_field_matrix(reg: dict) -> list:
+    """§零·B 投影 parity：registry.field_matrix 须与 gen_field_matrix.build_matrix_from_md 同构。
+
+    这是 G3 闸门的本质——§零·B 块由 field_matrix 渲染，必须与当前 field_dict.md 逐字节一致。
+    """
+    if "field_matrix" not in reg:
+        return ["registry 缺少 field_matrix 投影（请重跑 extract_registry.py）"]
+    fm = reg["field_matrix"]
+    ns, _ = gm.build_matrix_from_md()
+    base = {k: sorted(v) for k, v in ns.items()}
+    problems = []
+    if set(fm) != set(base):
+        problems.append(f"field_matrix 字段集 != 基线 {len(fm)} vs {len(base)}; "
+                        f"缺 {len(set(base) - set(fm))} 多 {len(set(fm) - set(base))}")
+    bad = []
+    for k in set(fm) & set(base):
+        if sorted(fm[k]) != base[k]:
+            bad.append(k)
+            if len(bad) >= 10:
+                break
+    if bad:
+        problems.append(f"field_matrix 源集合不一致(抽样): {bad}")
+    return problems
 
 
 if __name__ == "__main__":

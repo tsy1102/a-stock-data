@@ -25,8 +25,7 @@
 > **已移出未破解（正文已破解，2026-09-02 存在性复核确认）**：[65]=tx65 扣非加权ROE(L1)、[66]=tx66 ROA(L1·单源无锚待复核)、[75]=近180交易日涨跌幅(L2+)；push2 f103=ocf_ttm、f108=扣非EPS(TTM)、**f109=归母净利润(年报)**（fuyao parent_holder_net_profit 20股逐字等✅）、f160=年报EPS、f190=每股未分配利润、f193-f197 财务衍生、f116/f117=总/流通市值(元)。下一步建议：f106(常量100占位·未破解) 与 [86](手级带符号量) 待更大样本定口径；**f107/f110/f111/f112/f118 已于 2026-09-04 多日对撞升格 L1（详见 §12.3.1.1）**。
 > Col[22] 需通达信官方文档或更大样本。
 
-> **§零·B 字段×源总表**（本字典尾部，自动生成）：全部字段 × 源的 fallback 路由矩阵，
-> 正文修改后重跑 `scripts/gen_field_matrix.py` 同步（勿手改）。
+> **§零·B 字段×源总表**（本字典尾部，由 `field_registry.json` 经 `scripts/gen_field_dict.py` 自动生成，勿手改；字段契约表仍由人工维护）：全部字段 × 源的 fallback 路由矩阵，正文/registry 修改后重跑 `scripts/gen_field_dict.py` 同步。
 
 > 原则：同一字段在不同接口可获取时，**按"易→难"选择**——
 > **ZHB（离线零网络）→ TDX TCP（不封 IP，首选）→ 腾讯（不封 IP，首选）→ 新浪（低风险）→ 巨潮（低风险）→
@@ -4988,6 +4987,30 @@ volRatio=量比, institutionIncrease=机构增仓 仅在 Socket 推送中——H
 | levistock | levistock_field_verify.md | 26/38 接口实测 | §12.10.9 |
 | ⚠️ ZHB (tdxstat/tdxstat2/tipinfo) | —（无分字典） | 主字典 §1/§2/§3 自身 | 主字典已含全字段表，破解直接登记本表 |
 | ⚠️ 新浪/akshare/其他文档确认源 | —（无分字典） | 主字典对应章 | 仅文档确认，无原始采集附录 |
+
+<!-- GEN:subdict-index -->
+
+### 分字典索引（由 field_registry.json 自动生成，勿手改）
+
+> 生成：`scripts/gen_field_dict.py`（Phase 3 起由 field_registry.json 单一真相源读取）。本表为「源→分字典」自动索引，权威同步规则见 §12.15.10。
+
+| 源 | 分字典（verify/） | 主要章节 |
+|:---|:---|:---|
+| 东财-push2(stock/get) | [push2_verify.md](verify/push2_verify.md) | 12.3.1 单股行情 `stock/get`（已由 get_em_quote_full 验证） |
+| 东财-资金流(em_fund_flow) | [push2_verify.md](verify/push2_verify.md) | 12.3.4 资金流四档层级 `stock/get` f135\~f149 **全量**（🆕 V17.0.16 **重定案** / V17.1.x **补登 f147/f148**） |
+| 腾讯(qt.gtimg) | [tencent_verify.md](verify/tencent_verify.md) | 12.1 腾讯 qt.gtimg.cn 完整字段字典（88 字段） |
+| 同花顺-fuyao | [fuyao_api_full.md](verify/fuyao_api_full.md) | 12.8.12c THS 官方金融数据 REST API（fuyao.aicubes.cn，2026-08-10 实测 7 接口 → V17.0.5 契约全量镜像 62 端点）🆕 |
+| 同花顺-thsdk | [thsdk_field_verify.md](verify/thsdk_field_verify.md) | 12.8.12b THS SDK（同花顺官方 C 库 TCP 协议，2026-08-09 实测）🆕 |
+| ZHB-tdxstat | [tdx_func_fields.md](verify/tdx_func_fields.md) | 1. `tdxstat.cfg` (个股综合统计快照，35 个字段，7,951 行) |
+| ZHB-tdxstat2 | [tdx_func_fields.md](verify/tdx_func_fields.md) | 2. `tdxstat2.cfg` (成交与资金流向表，21 个字段，7,951 行) |
+| ZHB-tipinfo | [tdx_func_fields.md](verify/tdx_func_fields.md) | 3. `tipinfo.dat` (财报日历与业绩快照，22 列，5,612 行) |
+| levistock(ftshare) | [levistock_field_verify.md](verify/levistock_field_verify.md) | 12.10.3 开盘红市场情绪（market_emotion_kph，**含历史**）🆕 |
+
+> 共 9 个源有专属分字典；无分字典的源以主字典自身为权威（见 §12.15.10 强制规则）。
+
+<!-- /GEN:subdict-index -->
+
+
 
 **强制流程（破解新字段后）**：
 1. 在主字典对应章登记字段（含 `核实状态`/`验证依据`/`铁证等级`）。

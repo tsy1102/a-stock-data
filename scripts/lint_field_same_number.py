@@ -43,12 +43,31 @@ ROOT = Path(__file__).resolve().parent.parent
 DICT = ROOT / "docs" / "field_dict.md"
 ALIGN = ROOT / "docs" / "verify" / "ulist_push2_align.md"
 
+# Phase 2(2026-09-12): registry 单一真相源访问层（mappings 已吸收 ulist_push2_align.md）。
+sys.path.insert(0, str(ROOT / "scripts"))
+import field_registry_api as fra
+
 # --- 1) 解析权威对齐表 -> {ulist_fn(int): push2_fn(int)} ---
+# Phase 2: 优先从 registry.mappings 读取（from=东财-ulist239 / to=东财-push2），
+# 失败或无条目回退直接解析 ulist_push2_align.md，保证脚本永不因 registry 缺失硬失败。
 align = {}
-if ALIGN.exists():
-    for line in ALIGN.read_text(encoding="utf-8").splitlines():
-        for mm in re.finditer(r"ulist\s*f(\d{1,3})\s*\|\s*f(\d{1,3})", line):
-            align[int(mm.group(1))] = int(mm.group(2))
+try:
+    for m in fra.mappings():
+        frm = m.get("from", {})
+        to = m.get("to", {})
+        if frm.get("source") == "东财-ulist239" and to.get("source") == "东财-push2":
+            try:
+                align[int(str(frm["code"]).lstrip("f"))] = int(str(to["code"]).lstrip("f"))
+            except (KeyError, ValueError):
+                continue
+    if not align:
+        raise RuntimeError("registry 无 ulist→push2 对齐条目")
+except Exception as _e:
+    print(f"[lint_field_same_number] registry 读取失败，回退对齐表: {_e}", file=sys.stderr)
+    if ALIGN.exists():
+        for line in ALIGN.read_text(encoding="utf-8").splitlines():
+            for mm in re.finditer(r"ulist\s*f(\d{1,3})\s*\|\s*f(\d{1,3})", line):
+                align[int(mm.group(1))] = int(mm.group(2))
 align_same = {u for u, p in align.items() if u == p}
 
 # --- 1b) 加载采集 meta 的 scheme 血缘（与 verify_cross_source_crack.py 对齐）---

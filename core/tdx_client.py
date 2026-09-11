@@ -72,6 +72,14 @@ _TDX_RECONNECT_DELAY: float = RETRY_DELAY_SECONDS
 # 100ms = 约10次/秒，批量运行时更稳定
 _TDX_MIN_INTERVAL: float = TDX_MIN_INTERVAL
 _TDX_CALL_LOCK = _tdx_th.RLock()
+# V17.2.x(2026-09-11): TDX 数据取数"降级"标志。一旦 client.bars() 触发跨平台 5s 超时
+# （说明行情服务器在盘后/弱网环境卡顿），置位后本进程内所有 tdx_get_security_bars /
+# tdx_get_weekly_bars 直接返回空，交由调用方既有的百度 HTTP fallback 取数，避免单只挂起
+# 叠加 _TDX_CALL_LOCK 全局串行 + 每次超时重建适配器(32s) 击穿 val 720s 硬墙。
+_TDX_SKIP_BARS: bool = False
+# V17.2.x(2026-09-11): 已验证(全量数据+连接成功)的 easy_tdx 适配器单例缓存。
+# _check_tdx 与 _get_tdx_client 共用，避免二者各建一次适配器导致首调付双倍 ~63s 建连成本。
+_TDX_VERIFIED_CLIENT: Optional[Any] = None
 
 
 def _tdx_throttle():
@@ -499,13 +507,24 @@ def _tdx_host_data_complete(client) -> bool:
     try:
         from easy_tdx import Market, KlineCategory
 
-        _df = client.get_security_bars(Market.SH, "600519", KlineCategory.DAY, 0, 5)
+        # V17.2.x(2026-09-11): 三项验证均为原生网络调用，Windows 无 SIGALRM 保护，盘后弱网卡顿
+        # 会无限挂起 → 统一 5s 跨平台超时；超时即判定该主机数据不全，交由上层换台/降级。
+        _df = _tdx_call_with_timeout(
+            lambda: client.get_security_bars(Market.SH, "600519", KlineCategory.DAY, 0, 5),
+            timeout_s=5, label="tdx bars verify",
+        )
         if _df is None or _df.empty:
             return False
-        _q = client.get_security_quotes([(Market.SH, "600519")])
+        _q = _tdx_call_with_timeout(
+            lambda: client.get_security_quotes([(Market.SH, "600519")]),
+            timeout_s=5, label="tdx quotes verify",
+        )
         if _q is None or len(_q) == 0:
             return False
-        _f = client.get_finance_info(Market.SH, "600519")
+        _f = _tdx_call_with_timeout(
+            lambda: client.get_finance_info(Market.SH, "600519"),
+            timeout_s=5, label="tdx finance verify",
+        )
         if _f is None or len(_f) == 0:
             return False
         return True
@@ -529,10 +548,9 @@ def _create_easy_tdx_adapter():
 
         # 1) 首选 primary，验证完整性（180.153.18.170 实测全量 ✓）
         try:
-            c = TdxClient(
-                host=_EASY_TDX_PRIMARY_HOST, port=7709, auto_reconnect=True, heartbeat_interval=15.0
-            )
-            c.connect()
+            # V17.2.x(2026-09-11): 跨平台 5s 连接超时——原 c.connect() 在 Windows 盘后弱网卡顿时
+            # 无限挂起(实测 32s/次)，叠加逐台探测 7 台 → 适配器创建 30s+。超时即视为该主机不可用，换下一台。
+            c = _tdx_connect_with_timeout(_EASY_TDX_PRIMARY_HOST, 7709, timeout_s=5)
             if _tdx_host_data_complete(c):
                 _debug_log(f"easy_tdx connected (full-data verified): {_EASY_TDX_PRIMARY_HOST}")
                 return _EasyTdxAdapter(c)
@@ -551,8 +569,8 @@ def _create_easy_tdx_adapter():
             _fallback_hosts.insert(0, _EASY_TDX_PRIMARY_HOST)
         for _h in _fallback_hosts:
             try:
-                _c = TdxClient(host=_h, port=7709, auto_reconnect=True, heartbeat_interval=15.0)
-                _c.connect()
+                # V17.2.x(2026-09-11): 跨平台 5s 连接超时（同 primary）
+                _c = _tdx_connect_with_timeout(_h, 7709, timeout_s=5)
                 if _tdx_host_data_complete(_c):
                     _debug_log(f"easy_tdx full-data host found: {_h}")
                     return _EasyTdxAdapter(_c)
@@ -565,7 +583,11 @@ def _create_easy_tdx_adapter():
                 _debug_log(f"easy_tdx host {_h} connect failed: {type(_e).__name__} {str(_e)[:60]}")
         # V16.2.9: from_best_host（延迟最优）结果必须验证完整性，不全则视为无可用全量服务器
         try:
-            c = TdxClient.from_best_host(hosts=_fallback_hosts, ping_timeout=3.0)
+            # V17.2.x(2026-09-11): from_best_host 内部多主机 ping+连接亦可能挂起，统一 10s 超时
+            c = _tdx_call_with_timeout(
+                lambda: TdxClient.from_best_host(hosts=_fallback_hosts, ping_timeout=3.0),
+                timeout_s=10, label="easy_tdx from_best_host",
+            )
             if _tdx_host_data_complete(c):
                 _debug_log("easy_tdx from_best_host connected (full-data verified)")
                 return _EasyTdxAdapter(c)
@@ -582,10 +604,29 @@ def _create_easy_tdx_adapter():
         return None
 
 
+def _get_verified_adapter():
+    """V17.2.x(2026-09-11): 缓存已验证(全量数据+连接成功)的 easy_tdx 适配器单例。
+
+    实测原 _check_tdx 建完适配器并 bars 探测后即 _adapter.close() 丢弃，_get_tdx_client 又
+    重建一次 → 首调付双倍 ~32s+31s≈63s 建连成本。此处集中构建并缓存到 _TDX_VERIFIED_CLIENT，
+    _check_tdx / _get_tdx_client 共用同一实例，后续调用零重建成本。须在 _TDX_CALL_LOCK 内调用。
+    """
+    global _TDX_VERIFIED_CLIENT, _TDX_AVAILABLE
+    if _TDX_VERIFIED_CLIENT is not None:
+        return _TDX_VERIFIED_CLIENT
+    _adapter = _create_easy_tdx_adapter()
+    if _adapter is not None:
+        _TDX_VERIFIED_CLIENT = _adapter
+        _TDX_AVAILABLE = True
+    return _TDX_VERIFIED_CLIENT
+
+
 def _check_tdx() -> bool:
     """V12.0: 检测 mootdx 是否可用（缓存结果）。
 
     V14.2.3: bestip=True 改为 False（避免 mootdx 探速循环卡死）
+    V17.2.x(2026-09-11): easy_tdx 适配器构建与缓存统一收口到 _get_verified_adapter()，
+    不再 build 后即 close 丢弃（避免与 _get_tdx_client 重复建连）；easy_tdx 全主机不可用才回退 mootdx。
     """
     global _TDX_AVAILABLE
     if _TDX_AVAILABLE is not None:
@@ -593,22 +634,12 @@ def _check_tdx() -> bool:
     with _TDX_CALL_LOCK:
         if _TDX_AVAILABLE is not None:
             return _TDX_AVAILABLE
-        # V15.5: easy_tdx 1.20.4 优先探测（健康分+空数据换台+52服务器）
-        # V16.2.9: _create_easy_tdx_adapter 已内置数据完整性验证（bars+quotes+finance），
-        # 此处 bars 探测仅作兜底确认（适配器返回即已全量验证过）
-        _adapter = _create_easy_tdx_adapter()
+        # V17.2.x: 统一走 _get_verified_adapter() 缓存建连（仅建一次，返回的适配器被缓存复用）
+        _adapter = _get_verified_adapter()
         if _adapter is not None:
-            try:
-                _df = _adapter.bars(symbol='600519', frequency=9, start=0, offset=1)
-                _TDX_AVAILABLE = _df is not None and not _df.empty
-                if not _TDX_AVAILABLE:
-                    _debug_log("tdx _check_tdx: easy_tdx bars 空，回退 mootdx")
-                    raise RuntimeError("easy_tdx bars empty")
-                _adapter.close()
-                return _TDX_AVAILABLE
-            except Exception as _e:
-                _debug_log(f"tdx _check_tdx easy_tdx error: {_e}")
-        # mootdx 备胎
+            _TDX_AVAILABLE = True
+            return True
+        # mootdx 备胎（仅当 easy_tdx 全部主机不可用）
         try:
             from mootdx.quotes import Quotes
 
@@ -641,20 +672,22 @@ def _get_tdx_client() -> Optional[Any]:
                 try:
                     _TDX_CLIENT.close()
                 except Exception as _e:
-                    _debug_log(f"tdx close old mootdx client: {_e}")
+                    _debug_log(f"tdx close old client: {_e}")
                 _TDX_CLIENT = None
                 if attempt < _TDX_RECONNECT_ATTEMPTS - 1:
                     time.sleep(_TDX_RECONNECT_DELAY * (2**attempt))
                 continue
+            # V17.2.x(2026-09-11): 优先复用已缓存的验证适配器（零重建成本）。
+            # _get_verified_adapter 与 _check_tdx 共用同一缓存实例，避免重复建连。
+            if _TDX_VERIFIED_CLIENT is not None:
+                _TDX_CLIENT = _TDX_VERIFIED_CLIENT
+                return _TDX_CLIENT
             if not _check_tdx():
                 return None
-            # V15.5: easy_tdx 1.20.4 首选（内置健康分+空数据换台+52服务器）
-            _adapter = _create_easy_tdx_adapter()
-            if _adapter is not None:
-                _TDX_CLIENT = _adapter
-                _tdx_health_check(_TDX_CLIENT)
+            if _TDX_VERIFIED_CLIENT is not None:
+                _TDX_CLIENT = _TDX_VERIFIED_CLIENT
                 return _TDX_CLIENT
-            # mootdx 备胎（同协议双通道）
+            # mootdx 备胎（同协议双通道）——仅当 easy_tdx 全主机不可用
             try:
                 from mootdx.quotes import Quotes
 
@@ -1072,13 +1105,103 @@ def _tencent_batch_fallback(codes: List[str]) -> Dict[str, Dict[str, Any]]:
 # ═══════════════════════════════════════
 # 行情 + K线适配器
 # ═══════════════════════════════════════
+
+def _tdx_bars_with_timeout(client, symbol: str, frequency: int, offset: int, timeout_s: float = 5.0):
+    """跨平台安全调用 client.bars —— 超时抛 TimeoutError（由调用方归一为空结果/不缓存/换台）。
+
+    V17.2.x(2026-09-11): 根因修复。原实现仅用 signal.SIGALRM 包裹 client.bars，而 Windows
+    无 SIGALRM → 盘后行情服务器偶发卡顿时 client.bars() 无限挂起；叠加 _TDX_CALL_LOCK 全局串行，
+    单只挂起会拖垮全批 K 线取数，使 val 报告 8 个技术策略击穿 720s 硬墙（val many skip@720s）。
+    - Unix：沿用 SIGALRM(timeout_s)（原 5s 语义不变）。
+    - Windows/无 SIGALRM：客户端调用跑在守护线程，主线程 join(timeout_s) 超时即判挂起，
+      抛 TimeoutError；守护线程随后自行结束（daemon，不持有 _TDX_CALL_LOCK），锁即时释放，
+      其余调用不被阻塞 → 级联挂起消除。调用方 except 中置空客户端强制换台。
+    """
+    import signal as _signal
+
+    if hasattr(_signal, "SIGALRM"):
+        def _alarm_handler(signum, frame):
+            raise TimeoutError(f"tdx bars timeout ({timeout_s}s)")
+        _old = _signal.signal(_signal.SIGALRM, _alarm_handler)
+        _signal.alarm(timeout_s)
+        try:
+            return client.bars(symbol=symbol, frequency=frequency, start=0, offset=offset)
+        finally:
+            _signal.alarm(0)
+            _signal.signal(_signal.SIGALRM, _old)
+    # Windows / 无 SIGALRM：守护线程 + join 超时
+    import threading as _th
+
+    _box: dict = {}
+    _err: dict = {}
+
+    def _run():
+        try:
+            _box["bars"] = client.bars(symbol=symbol, frequency=frequency, start=0, offset=offset)
+        except Exception as _e:  # noqa: BLE001 — 线程内异常需转交主线程
+            _err["e"] = _e
+
+    _t = _th.Thread(target=_run, daemon=True)
+    _t.start()
+    _t.join(timeout_s)
+    if _t.is_alive():
+        # 守护线程仍在跑 client.bars → 判挂起。不 join 等待（避免主线程被拖死），直接超时。
+        raise TimeoutError(f"tdx bars timeout ({timeout_s}s, Windows 线程超时)")
+    if "e" in _err:
+        raise _err["e"]
+    return _box.get("bars")
+
+
+def _tdx_call_with_timeout(fn, timeout_s: float = 5.0, label: str = "tdx call"):
+    """跨平台：守护线程跑阻塞 fn()，主线程 join(timeout_s) 超时即抛 TimeoutError。
+
+    用于包裹 easy_tdx 原生方法（get_security_bars/quotes/finance）及 from_best_host 等
+    Windows 下无 SIGALRM 保护、盘后弱网卡顿时无限挂起的网络调用。
+    """
+    import threading as _th
+
+    _box: dict = {}
+    _err: dict = {}
+
+    def _run():
+        try:
+            _box["v"] = fn()
+        except Exception as _e:  # noqa: BLE001
+            _err["e"] = _e
+
+    _t = _th.Thread(target=_run, daemon=True)
+    _t.start()
+    _t.join(timeout_s)
+    if _t.is_alive():
+        raise TimeoutError(f"{label} timeout ({timeout_s}s)")
+    if "e" in _err:
+        raise _err["e"]
+    return _box.get("v")
+
+
+def _tdx_connect_with_timeout(host: str, port: int = 7709, timeout_s: float = 5.0):
+    """构造并连接 easy_tdx TdxClient；超时抛 TimeoutError（交由调用方换台/降级）。"""
+    from easy_tdx.client import TdxClient
+
+    def _build():
+        _c = TdxClient(host=host, port=port, auto_reconnect=True, heartbeat_interval=15.0)
+        _c.connect()
+        return _c
+
+    return _tdx_call_with_timeout(_build, timeout_s=timeout_s, label=f"tdx connect {host}:{port}")
+
+
 def tdx_get_security_bars(code: str, count: int = 800) -> Tuple[List[str], List[List[str]]]:
     """获取日 K 线 → (keys, rows)，V7.5: 进程内缓存 + 全局锁。
 
     V12.0: 底层改用 mootdx StdQuotes.bars(frequency=9)。
     mootdx 返回 DataFrame 列：open/close/high/low/vol/amount/year/month/day/datetime。
     """
-    global _TDX_CLIENT, _TDX_AVAILABLE  # V17.0.10c(2026-08-28): 截断重试需置空全局客户端以触发换台
+    global _TDX_CLIENT, _TDX_AVAILABLE, _TDX_SKIP_BARS  # V17.0.10c: 截断重试置空换台; V17.2.x: 超时降级标志
+    # V17.2.x(2026-09-11): TDX 已降级（bars 超时）→ 直接返回空，交由调用方百度 fallback 取数，
+    # 不再触碰 _TDX_CALL_LOCK / 重建适配器（避免 5s 超时 + 32s 重建 的 per-stock 级联击穿 720s 硬墙）。
+    if _TDX_SKIP_BARS:
+        return [], []
     cache_key = f"D:{code}:{count}"
     cached = _TDX_KLINE_CACHE.get(cache_key)
     if cached is not None:
@@ -1119,22 +1242,11 @@ def tdx_get_security_bars(code: str, count: int = 800) -> Tuple[List[str], List[
                 return result
             try:
                 _tdx_throttle()  # V8.5: TDX请求节流
-                # V14.3 P2: 显式 5s 超时包装（仅 Unix 下通过 SIGALRM 启用，Windows 下属性安全隔离）
-                import signal
-
-                if hasattr(signal, 'SIGALRM'):
-
-                    def _timeout_handler(signum, frame):
-                        raise TimeoutError("tdx_get_security_bars timeout (5s)")
-
-                    old_handler = signal.signal(signal.SIGALRM, _timeout_handler)
-                    signal.alarm(5)
-                try:
-                    bars = client.bars(symbol=code, frequency=9, start=0, offset=count)
-                finally:
-                    if hasattr(signal, 'SIGALRM'):
-                        signal.alarm(0)
-                        signal.signal(signal.SIGALRM, old_handler)
+                # V17.2.x(2026-09-11): 跨平台 5s 超时——原仅 Unix SIGALRM，Windows 无 SIGALRM 致
+                # client.bars() 盘后卡顿无限挂起，叠加 _TDX_CALL_LOCK 全局串行拖垮全批 K 线取数，
+                # 使 val 8 个技术策略击穿 720s 硬墙。改用 _tdx_bars_with_timeout（Windows 守护线程
+                # join(5s) 超时，抛 TimeoutError→调用方 except 归一空结果/不缓存/置空客户端换台）。
+                bars = _tdx_bars_with_timeout(client, code, 9, count, timeout_s=5)
                 if bars is None or bars.empty:
                     # V16.2 修复: easy_tdx 空响应（ret_count 撒谎/服务器截断）。
                     # V16.2.13: easy_tdx 已内部换台（auto_reconnect=True → _find_host_returning_data
@@ -1197,6 +1309,16 @@ def tdx_get_security_bars(code: str, count: int = 800) -> Tuple[List[str], List[
                 _err_name = type(_e).__name__
                 if 'Decode' in _err_name or '数据不足' in str(_e):
                     _debug_log(f"tdx K线解码失败: {_e}")
+                # V17.2.x(2026-09-11): 跨平台 5s 超时(bars) 命中 → 行情服务器盘后/弱网卡顿，
+                # 置位 _TDX_SKIP_BARS 全局降级，本进程后续所有 bars 调用直接返回空(走百度 fallback)，
+                # 杜绝"超时→置空客户端→32s 重建适配器"的 per-stock 级联击穿 720s 硬墙。
+                if isinstance(_e, TimeoutError):
+                    _TDX_SKIP_BARS = True
+                    _debug_log(f"tdx K线取数超时降级({code})：后续 bars 走百度 fallback")
+                    # 已降级，本只无需再重试(避免再浪费一次 5s 超时)；循环外统一返回空走百度 fallback
+                    _TDX_CLIENT = None
+                    _TDX_AVAILABLE = None
+                    break
                 # V16.2.13 修复: 原 _reset_tdx_connections() 在 _TDX_CALL_LOCK 内重入锁
                 #（threading.Lock 不可重入）→ 异常路径死锁隐患；直接置空全局
                 # V17.0.10c: 全局声明已在函数顶部(987), 此处直接置空即触发换台重试
@@ -1616,6 +1738,10 @@ def tdx_get_weekly_bars(code: str, count: int = 100):
 
     V14.3 P3: 接入跨进程磁盘缓存。
     """
+    global _TDX_SKIP_BARS  # V17.2.x(2026-09-11): 超时降级标志（与日线对称）
+    # V17.2.x(2026-09-11): 与日线对称——TDX 降级后直接返回空，走调用方百度 fallback。
+    if _TDX_SKIP_BARS:
+        return [], []
     cache_key = f"W:{code}:{count}"
     cached = _TDX_WKLINE_CACHE.get(cache_key)
     if cached is not None:
@@ -1640,22 +1766,8 @@ def tdx_get_weekly_bars(code: str, count: int = 100):
             _TDX_WKLINE_CACHE[cache_key] = result
             return result
         try:
-            # V14.3 P2: 显式 5s 超时包装（仅 Unix 下通过 SIGALRM 启用，Windows 下属性安全隔离）
-            import signal
-
-            if hasattr(signal, 'SIGALRM'):
-
-                def _timeout_handler(signum, frame):
-                    raise TimeoutError("tdx_get_weekly_bars timeout (5s)")
-
-                old_handler = signal.signal(signal.SIGALRM, _timeout_handler)
-                signal.alarm(5)
-            try:
-                bars = client.bars(symbol=code, frequency=5, start=0, offset=count)
-            finally:
-                if hasattr(signal, 'SIGALRM'):
-                    signal.alarm(0)
-                    signal.signal(signal.SIGALRM, old_handler)
+            # V17.2.x(2026-09-11): 跨平台 5s 超时（同 tdx_get_security_bars，详见其注释）
+            bars = _tdx_bars_with_timeout(client, code, 5, count, timeout_s=5)
             if bars is None or bars.empty:
                 result = ([], [])
                 _TDX_WKLINE_CACHE[cache_key] = result
@@ -1689,8 +1801,17 @@ def tdx_get_weekly_bars(code: str, count: int = 100):
         except Exception as _e:
             if 'Decode' in type(_e).__name__ or '数据不足' in str(_e):
                 _debug_log(f"tdx 周K线解码失败: {_e}")
+            # V17.2.x(2026-09-11): bars 超时 → 全局降级，后续 bars 走百度 fallback（与日线对称）
+            if isinstance(_e, TimeoutError):
+                _TDX_SKIP_BARS = True
+                _debug_log(f"tdx 周K线取数超时降级({code})：后续 bars 走百度 fallback")
             result = ([], [])
             # V16.2 修复: 失败结果不写进程级缓存（与日线一致，避免永久负缓存）
+            # V17.2.x(2026-09-11): 失败/超时同样置空客户端强制换台（与日线对称，
+            # 避免挂起态客户端被后续调用复用，延续级联挂起）
+            global _TDX_CLIENT, _TDX_AVAILABLE
+            _TDX_CLIENT = None
+            _TDX_AVAILABLE = None
             return result
 
 

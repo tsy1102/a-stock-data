@@ -40,6 +40,10 @@ FV = ROOT / "docs" / "field_verification"
 ALIGN = ROOT / "docs" / "verify" / "ulist_push2_align.md"
 DICT = ROOT / "docs" / "field_dict.md"
 
+# Phase 2(2026-09-12): registry 单一真相源访问层（mappings 已吸收 ulist_push2_align.md）。
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import field_registry_api as fra
+
 
 # 空标记：两侧任意一方为这些值时，视为「无数据」，不参与精确匹配（避免「都空↔都空」式伪匹配）。
 SENTINELS = {None, "", "-", "—", "−", "null", "None", "NaN", "nan", "无", "空"}
@@ -73,7 +77,29 @@ def _norm_keys(d):
 
 
 def load_align():
+    """权威对齐表 {ulist_fN: push2_fM}。
+
+    Phase 2(2026-09-12): 优先从 registry 单一真相源（mappings）读取——
+    extract_registry 已将 ulist_push2_align.md 的对齐行吸收为 mappings
+    （from.source=东财-ulist239, to.source=东财-push2）。失败或无条目时回退
+    直接解析 ulist_push2_align.md，保证脚本永不因 registry 缺失而硬失败。
+    """
     align = {}
+    try:
+        for m in fra.mappings():
+            frm = m.get("from", {})
+            to = m.get("to", {})
+            if frm.get("source") == "东财-ulist239" and to.get("source") == "东财-push2":
+                try:
+                    u = int(str(frm["code"]).lstrip("f"))
+                    p = int(str(to["code"]).lstrip("f"))
+                except (KeyError, ValueError):
+                    continue
+                align[u] = p
+        if align:
+            return align
+    except Exception as _e:  # registry 缺失/损坏 → 回退 markdown
+        print(f"[verify_ulist_push2_collision] registry 读取失败，回退对齐表: {_e}", file=sys.stderr)
     if ALIGN.exists():
         for line in ALIGN.read_text(encoding="utf-8").splitlines():
             for mm in re.finditer(r"ulist\s*f(\d{1,3})\s*\|\s*f(\d{1,3})", line):

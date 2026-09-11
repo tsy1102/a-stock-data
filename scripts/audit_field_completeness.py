@@ -310,6 +310,12 @@ def reg_tokens_for_section(src, text):
 
 def registered_field_sets():
     text = io.open(DICT, encoding="utf-8").read()
+    # Phase 3(2026-09-12): 排除自动生成区块（<!-- GEN:* --> ... <!-- /GEN:* -->）。
+    # 这些区块由 field_registry.json / field_matrix 派生，不是手写字段契约，不应反馈进
+    # REG 基线 / registry 抽取——否则生成器自身的文件名/标记词（gen_field_dict / subdict /
+    # field_registry ...）会被误识为字段。§零·B 区块的 token 均为正文表格的重复项，
+    # 排除后 REG 集合与排除前完全一致（已验证：2252 不变）。
+    text = re.sub(r"<!-- GEN:.*?-->\n.*?<!-- /GEN:.*?-->\n?", "", text, flags=re.DOTALL)
     secs = split_sections(text)
     reg = defaultdict(set)
     stack = {}  # level -> [sources]

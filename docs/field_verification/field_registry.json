@@ -30500,6 +30500,3550 @@
       "status": "unverified"
     }
   ],
+  "field_matrix": {
+    "main_indicators` 主要财务指标": [
+      "TDX-0x0010/F10"
+    ],
+    "profitability` 盈利能力": [
+      "TDX-0x0010/F10"
+    ],
+    "growth` 成长能力": [
+      "TDX-0x0010/F10"
+    ],
+    "solvency` 偿债能力": [
+      "TDX-0x0010/F10"
+    ],
+    "operation` 营运能力": [
+      "TDX-0x0010/F10"
+    ],
+    "indicator_changes` 指标变动": [
+      "TDX-0x0010/F10"
+    ],
+    "balance_sheet` 资产负债表": [
+      "TDX-0x0010/F10"
+    ],
+    "income_statement` 利润表": [
+      "TDX-0x0010/F10"
+    ],
+    "cash_flow` 现金流量表": [
+      "TDX-0x0010/F10"
+    ],
+    "qoq_analysis` 环比分析": [
+      "TDX-0x0010/F10"
+    ],
+    "股本结构": [
+      "TDX-0x0010/F10"
+    ],
+    "股东户数": [
+      "TDX-0x0010/F10",
+      "akshare"
+    ],
+    "资产": [
+      "TDX-0x0010/F10"
+    ],
+    "负债": [
+      "TDX-0x0010/F10"
+    ],
+    "权益": [
+      "TDX-0x0010/F10"
+    ],
+    "经营业绩": [
+      "TDX-0x0010/F10"
+    ],
+    "现金流": [
+      "TDX-0x0010/F10"
+    ],
+    "基础信息": [
+      "TDX-0x0010/F10"
+    ],
+    "存货": [
+      "TDX-0x0010/F10"
+    ],
+    "每股指标": [
+      "TDX-0x0010/F10"
+    ],
+    "保留": [
+      "TDX-0x0010/F10"
+    ],
+    "gudongrenshu": [
+      "TDX-0x0010/F10"
+    ],
+    "zongzichan": [
+      "TDX-0x0010/F10"
+    ],
+    "liudongfuzhai": [
+      "TDX-0x0010/F10"
+    ],
+    "changqifuzhai": [
+      "TDX-0x0010/F10"
+    ],
+    "jingzichan": [
+      "TDX-0x0010/F10"
+    ],
+    "zhuyingshouru": [
+      "TDX-0x0010/F10"
+    ],
+    "jinglirun": [
+      "TDX-0x0010/F10"
+    ],
+    "jingyingxianjinliu": [
+      "TDX-0x0010/F10"
+    ],
+    "ipo_date": [
+      "TDX-0x0010/F10",
+      "TDX-eltdx"
+    ],
+    "liutongguben": [
+      "TDX-0x0010/F10"
+    ],
+    "zongguben": [
+      "TDX-0x0010/F10"
+    ],
+    "meigujingzichan": [
+      "TDX-0x0010/F10"
+    ],
+    "cunhuo": [
+      "TDX-0x0010/F10"
+    ],
+    "yingshouzhangkuan": [
+      "TDX-0x0010/F10"
+    ],
+    "zibengongjijin": [
+      "TDX-0x0010/F10"
+    ],
+    "weifenpeilirun": [
+      "TDX-0x0010/F10"
+    ],
+    "updated_date": [
+      "TDX-0x0010/F10",
+      "TDX-eltdx"
+    ],
+    "province": [
+      "TDX-0x0010/F10"
+    ],
+    "industry": [
+      "TDX-0x0010/F10"
+    ],
+    "协议中未提及的 18 字段": [
+      "TDX-0x0010/F10"
+    ],
+    "[0] 市场标识": [
+      "腾讯"
+    ],
+    "[29][54][55][77][78] 占位符": [
+      "腾讯"
+    ],
+    "[40] 停牌标记": [
+      "腾讯"
+    ],
+    "[56] Beta 族": [
+      "腾讯"
+    ],
+    "[76] A股流通股本": [
+      "腾讯"
+    ],
+    "[85] 价格类字段": [
+      "腾讯"
+    ],
+    "[86] 手级带符号量": [
+      "腾讯"
+    ],
+    "[87] 科创板": [
+      "腾讯"
+    ],
+    "两融标记": [
+      "腾讯"
+    ],
+    "月 K线": [
+      "腾讯"
+    ],
+    "分钟 K线": [
+      "腾讯"
+    ],
+    "返回": [
+      "新浪",
+      "腾讯"
+    ],
+    "实测": [
+      "腾讯"
+    ],
+    "价值": [
+      "新浪",
+      "腾讯"
+    ],
+    "URL": [
+      "新浪"
+    ],
+    "参数": [
+      "新浪"
+    ],
+    "行情": [
+      "TDX-0x0010/F10",
+      "东财",
+      "同花顺-fuyao"
+    ],
+    "研报": [
+      "东财"
+    ],
+    "信号": [
+      "东财"
+    ],
+    "资金": [
+      "TDX-0x0010/F10",
+      "东财"
+    ],
+    "新闻": [
+      "东财"
+    ],
+    "基础": [
+      "东财"
+    ],
+    "公告": [
+      "东财"
+    ],
+    "打板": [
+      "东财"
+    ],
+    "期权": [
+      "东财",
+      "同花顺-thsdk"
+    ],
+    "舆情": [
+      "东财"
+    ],
+    "备胎": [
+      "东财"
+    ],
+    "zdp": [
+      "东财"
+    ],
+    "amount": [
+      "AxData",
+      "TDX-0x0010/F10",
+      "TDX-eltdx",
+      "东财"
+    ],
+    "ltsz": [
+      "东财"
+    ],
+    "tshare": [
+      "东财"
+    ],
+    "hs": [
+      "东财"
+    ],
+    "lbc": [
+      "东财"
+    ],
+    "fbt": [
+      "东财"
+    ],
+    "lbt": [
+      "东财"
+    ],
+    "fund": [
+      "东财"
+    ],
+    "zbc": [
+      "东财"
+    ],
+    "hybk": [
+      "东财"
+    ],
+    "zttj.days": [
+      "东财"
+    ],
+    "zttj.ct": [
+      "东财"
+    ],
+    "ztp": [
+      "东财"
+    ],
+    "zf": [
+      "东财"
+    ],
+    "zs": [
+      "东财"
+    ],
+    "pe": [
+      "东财"
+    ],
+    "fba": [
+      "东财"
+    ],
+    "days": [
+      "东财"
+    ],
+    "oc": [
+      "东财"
+    ],
+    "yfbt": [
+      "东财"
+    ],
+    "ylbc": [
+      "东财"
+    ],
+    "TRADE_DATE": [
+      "东财"
+    ],
+    "SECURITY_CODE": [
+      "东财"
+    ],
+    "SECURITY_NAME_ABBR": [
+      "东财"
+    ],
+    "EXPLANATION": [
+      "东财"
+    ],
+    "BILLBOARD_NET_AMT": [
+      "东财"
+    ],
+    "BILLBOARD_BUY_AMT": [
+      "东财"
+    ],
+    "SELL_AMT": [
+      "东财"
+    ],
+    "CLOSE_PRICE": [
+      "东财"
+    ],
+    "CHANGE_RATE": [
+      "东财"
+    ],
+    "TURNOVERRATE": [
+      "东财"
+    ],
+    "OPERATEDEPT_NAME": [
+      "东财"
+    ],
+    "OPERATEDEPT_CODE": [
+      "东财"
+    ],
+    "BUY": [
+      "东财"
+    ],
+    "SELL": [
+      "东财"
+    ],
+    "NET": [
+      "东财"
+    ],
+    "DATE": [
+      "东财"
+    ],
+    "RZYE": [
+      "东财"
+    ],
+    "RZMRE": [
+      "东财"
+    ],
+    "RZCHE": [
+      "东财"
+    ],
+    "RQYE": [
+      "东财"
+    ],
+    "RQMCL": [
+      "东财"
+    ],
+    "RQCHL": [
+      "东财"
+    ],
+    "RZRQYE": [
+      "东财"
+    ],
+    "DEAL_PRICE": [
+      "东财"
+    ],
+    "DEAL_VOLUME": [
+      "东财"
+    ],
+    "DEAL_AMT": [
+      "东财"
+    ],
+    "BUYER_NAME": [
+      "东财"
+    ],
+    "SELLER_NAME": [
+      "东财"
+    ],
+    "END_DATE": [
+      "东财"
+    ],
+    "HOLDER_NUM": [
+      "东财"
+    ],
+    "HOLDER_NUM_CHANGE": [
+      "东财"
+    ],
+    "HOLDER_NUM_RATIO": [
+      "东财"
+    ],
+    "AVG_FREE_SHARES": [
+      "东财"
+    ],
+    "EX_DIVIDEND_DATE": [
+      "东财"
+    ],
+    "PRETAX_BONUS_RMB": [
+      "东财"
+    ],
+    "TRANSFER_RATIO": [
+      "东财"
+    ],
+    "BONUS_RATIO": [
+      "东财"
+    ],
+    "ASSIGN_PROGRESS": [
+      "东财"
+    ],
+    "FREE_DATE": [
+      "东财"
+    ],
+    "FREE_SHARES_TYPE": [
+      "东财"
+    ],
+    "FREE_SHARES": [
+      "东财"
+    ],
+    "ABLE_FREE_SHARES": [
+      "东财"
+    ],
+    "FREE_RATIO": [
+      "东财"
+    ],
+    "RPT_HOLDERNUMLATEST（股东户数）": [
+      "东财"
+    ],
+    "RPTA_WEB_RZRQ_GGMX（两融）": [
+      "东财"
+    ],
+    "RPT_SHAREBONUS_DET（分红）": [
+      "东财"
+    ],
+    "RPT_DAILYBILLBOARD_DETAILSNEW（龙虎榜）": [
+      "东财"
+    ],
+    "RPT_LIFT_STAGE（解禁）": [
+      "东财"
+    ],
+    "margin_trading.rqjmg": [
+      "东财"
+    ],
+    "margin_trading.rzjme": [
+      "东财"
+    ],
+    "margin_trading.chg_5d": [
+      "东财"
+    ],
+    "margin_trading.chg_10d": [
+      "东财"
+    ],
+    "margin_trading.rzche_5d": [
+      "东财"
+    ],
+    "margin_trading.rzmre_5d": [
+      "东财"
+    ],
+    "margin_trading.rzche_10d": [
+      "东财"
+    ],
+    "margin_trading.rzmre_10d": [
+      "东财"
+    ],
+    "margin_trading.balance_gr": [
+      "东财"
+    ],
+    "northbound_hold.date": [
+      "东财"
+    ],
+    "northbound_hold.hold_ratio": [
+      "东财"
+    ],
+    "northbound_hold.market_cap": [
+      "东财"
+    ],
+    "northbound_hold.hold_shares": [
+      "东财"
+    ],
+    "northbound_hold.change_ratio": [
+      "东财"
+    ],
+    "northbound_hold.change_shares": [
+      "东财"
+    ],
+    "title": [
+      "东财"
+    ],
+    "publishDate": [
+      "东财"
+    ],
+    "orgSName": [
+      "东财"
+    ],
+    "infoCode": [
+      "东财"
+    ],
+    "predictThisYearEps": [
+      "东财"
+    ],
+    "NextYear": [
+      "东财"
+    ],
+    "NextTwoYear": [
+      "东财"
+    ],
+    "emRatingName": [
+      "东财"
+    ],
+    "indvInduName": [
+      "东财"
+    ],
+    "industryName": [
+      "东财"
+    ],
+    "industryCode": [
+      "东财"
+    ],
+    "reportType": [
+      "东财"
+    ],
+    "attachPages": [
+      "东财"
+    ],
+    "attachSize": [
+      "东财"
+    ],
+    "content": [
+      "东财"
+    ],
+    "date": [
+      "AxData",
+      "TDX-0x0010/F10",
+      "TDX-eltdx",
+      "东财"
+    ],
+    "mediaName": [
+      "东财"
+    ],
+    "url": [
+      "东财"
+    ],
+    "summary": [
+      "东财"
+    ],
+    "showTime": [
+      "东财"
+    ],
+    "rk": [
+      "东财"
+    ],
+    "sc": [
+      "东财"
+    ],
+    "hisRc": [
+      "东财"
+    ],
+    "conceptName": [
+      "东财"
+    ],
+    "conceptId": [
+      "东财"
+    ],
+    "hitCount": [
+      "东财"
+    ],
+    "STKCODE": [
+      "东财"
+    ],
+    "STKNAME": [
+      "东财"
+    ],
+    "MARKET": [
+      "东财"
+    ],
+    "VALIDATESTARTDATE": [
+      "东财"
+    ],
+    "VALIDATEENDDATE": [
+      "东财"
+    ],
+    "LINK_URL": [
+      "东财"
+    ],
+    "code": [
+      "TDX-0x0010/F10",
+      "东财"
+    ],
+    "name": [
+      "AxData",
+      "TDX-0x0010/F10",
+      "东财"
+    ],
+    "reason": [
+      "东财",
+      "开盘红"
+    ],
+    "zhangfu": [
+      "东财"
+    ],
+    "huanshou": [
+      "东财"
+    ],
+    "chengjiaoe": [
+      "东财"
+    ],
+    "chengjiaoliang": [
+      "东财"
+    ],
+    "ddejingliang": [
+      "东财"
+    ],
+    "close": [
+      "TDX-eltdx",
+      "东财"
+    ],
+    "zhangdie": [
+      "东财"
+    ],
+    "market": [
+      "TDX-0x0010/F10",
+      "东财"
+    ],
+    "time": [
+      "TDX-0x0010/F10",
+      "TDX-eltdx",
+      "东财"
+    ],
+    "hgt": [
+      "东财"
+    ],
+    "sgt": [
+      "东财"
+    ],
+    "latest": [
+      "东财"
+    ],
+    "change_rate": [
+      "东财"
+    ],
+    "reason_type": [
+      "东财"
+    ],
+    "limit_up_type": [
+      "东财"
+    ],
+    "limit_up_suc_rate": [
+      "东财"
+    ],
+    "open_num": [
+      "东财"
+    ],
+    "order_amount": [
+      "东财"
+    ],
+    "high_days": [
+      "东财"
+    ],
+    "first_limit_up_time": [
+      "东财"
+    ],
+    "is_again_limit": [
+      "东财"
+    ],
+    "turnover_rate": [
+      "东财",
+      "开盘红"
+    ],
+    "currency_value": [
+      "东财"
+    ],
+    "order_volume": [
+      "东财"
+    ],
+    "last_limit_up_time": [
+      "东财"
+    ],
+    "change_tag": [
+      "东财"
+    ],
+    "market_type": [
+      "东财"
+    ],
+    "is_new": [
+      "东财",
+      "财联社"
+    ],
+    "order": [
+      "东财"
+    ],
+    "rate": [
+      "东财"
+    ],
+    "rise_and_fall": [
+      "东财"
+    ],
+    "hot_rank_chg": [
+      "东财"
+    ],
+    "tag.concept_tag": [
+      "东财"
+    ],
+    "tag.popularity_tag": [
+      "东财"
+    ],
+    "行情（价格": [
+      "同花顺-thsdk"
+    ],
+    "OHLC": [
+      "同花顺-thsdk"
+    ],
+    "涨跌停价": [
+      "akshare",
+      "同花顺-thsdk"
+    ],
+    "涨速": [
+      "同花顺-thsdk"
+    ],
+    "内盘外盘": [
+      "同花顺-thsdk"
+    ],
+    "委差委比": [
+      "同花顺-thsdk"
+    ],
+    "均价": [
+      "东财",
+      "同花顺-thsdk"
+    ],
+    "振幅%": [
+      "东财",
+      "同花顺-thsdk"
+    ],
+    "量比": [
+      "东财",
+      "同花顺-thsdk"
+    ],
+    "换手": [
+      "同花顺-thsdk"
+    ],
+    "五日量": [
+      "同花顺-thsdk"
+    ],
+    "手每笔": [
+      "同花顺-thsdk"
+    ],
+    "均笔额）": [
+      "同花顺-thsdk"
+    ],
+    "估值（PE 动": [
+      "同花顺-thsdk"
+    ],
+    "TTM、PB 市净率×3、市销率TTM）": [
+      "同花顺-thsdk"
+    ],
+    "股本（总股本 12.5 亿": [
+      "同花顺-thsdk"
+    ],
+    "流通股本": [
+      "东财",
+      "同花顺-thsdk"
+    ],
+    "流通比例 100": [
+      "同花顺-thsdk"
+    ],
+    ".6": [
+      "同花顺-thsdk"
+    ],
+    ".1": [
+      "同花顺-thsdk"
+    ],
+    "流通市值": [
+      "东财",
+      "同花顺-thsdk"
+    ],
+    "总市值）": [
+      "同花顺-thsdk"
+    ],
+    "财务：净利润1（茅台 272.43 亿 vs ZHB 扣非 272.40 亿一致）": [
+      "同花顺-thsdk"
+    ],
+    "ROE TTM（31.3%": [
+      "同花顺-thsdk"
+    ],
+    ".2%": [
+      "同花顺-thsdk"
+    ],
+    ".9%": [
+      "同花顺-thsdk"
+    ],
+    ".2%）": [
+      "同花顺-thsdk"
+    ],
+    "资产负债率（12.1": [
+      "同花顺-thsdk"
+    ],
+    ".2": [
+      "同花顺-thsdk"
+    ],
+    ".7 全合理）": [
+      "同花顺-thsdk"
+    ],
+    "净利营收增长率": [
+      "同花顺-thsdk"
+    ],
+    "主力资金：主力净流入（宁德 -7.53 亿）": [
+      "同花顺-thsdk"
+    ],
+    "大单中单小单流入流出": [
+      "同花顺-thsdk"
+    ],
+    "净额": [
+      "同花顺-thsdk"
+    ],
+    "总额": [
+      "同花顺-thsdk"
+    ],
+    "占比": [
+      "同花顺-thsdk"
+    ],
+    "主动被动×特大": [
+      "同花顺-thsdk"
+    ],
+    "小单量笔数金额（完整 30+ 分档字段）": [
+      "同花顺-thsdk"
+    ],
+    "资金流入流出": [
+      "同花顺-thsdk"
+    ],
+    "主力增仓：今日": [
+      "同花顺-thsdk"
+    ],
+    "日占比 + 全市场排名": [
+      "同花顺-thsdk"
+    ],
+    "两融：融资余额（茅台 175.44 亿 ✓）": [
+      "同花顺-thsdk"
+    ],
+    "融券": [
+      "同花顺-thsdk"
+    ],
+    "融资买入": [
+      "同花顺-thsdk"
+    ],
+    "融券卖出": [
+      "同花顺-thsdk"
+    ],
+    "股东：户均": [
+      "同花顺-thsdk"
+    ],
+    "人均持股（茅台 5141 ✓）、股东总数、散户数量": [
+      "同花顺-thsdk"
+    ],
+    "日涨跌幅、年初至今、开盘涨跌幅、实体涨跌幅、涨速 1": [
+      "同花顺-thsdk"
+    ],
+    "分钟": [
+      "同花顺-thsdk"
+    ],
+    "⚠️ 疑点：主力净量（592888=净流入": [
+      "同花顺-thsdk"
+    ],
+    "某基数的比率）、净利润增长率（百分比数值——茅台 1.47 待对照财报）、YTD（-4.93 vs ZHB -3.01 差 1.9pp——基准口径）、多空比（茅台 19.95 vs 工行 0.35 存疑）、基差（A 股有值疑期货字段错位）、散户数量（宁德 82.49 存疑）、时间字段（宁德 20251201 滞后）": [
+      "同花顺-thsdk"
+    ],
+    "周高低（95": [
+      "同花顺-thsdk"
+    ],
+    "期货": [
+      "同花顺-thsdk"
+    ],
+    "牛熊": [
+      "同花顺-thsdk"
+    ],
+    "债券专属字段": [
+      "同花顺-thsdk"
+    ],
+    "日涨跌幅（3250": [
+      "同花顺-thsdk"
+    ],
+    "主力净量（592888）破解": [
+      "同花顺-thsdk"
+    ],
+    "年初至今涨跌幅（461346）": [
+      "同花顺-thsdk"
+    ],
+    "净利润增长率（134141）": [
+      "同花顺-thsdk"
+    ],
+    "多空比（592946）": [
+      "同花顺-thsdk"
+    ],
+    "基差（133778）": [
+      "同花顺-thsdk"
+    ],
+    "净值（3397）": [
+      "同花顺-thsdk"
+    ],
+    "散户数量（462057）": [
+      "同花顺-thsdk"
+    ],
+    "时间（4）": [
+      "同花顺-thsdk"
+    ],
+    "meta": [
+      "同花顺-fuyao"
+    ],
+    "tickers": [
+      "同花顺-fuyao"
+    ],
+    "search": [
+      "同花顺-fuyao"
+    ],
+    "list": [
+      "同花顺-fuyao"
+    ],
+    "a-share": [
+      "同花顺-fuyao"
+    ],
+    "prices": [
+      "同花顺-fuyao"
+    ],
+    "snapshot": [
+      "同花顺-fuyao"
+    ],
+    "historical": [
+      "同花顺-fuyao"
+    ],
+    "corporate-actions": [
+      "同花顺-fuyao"
+    ],
+    "adjustment-factors": [
+      "同花顺-fuyao"
+    ],
+    "dump": [
+      "同花顺-fuyao"
+    ],
+    "market-dumps": [
+      "同花顺-fuyao"
+    ],
+    "{daily-k,daily-k-10d,adjustment-factors}": [
+      "同花顺-fuyao"
+    ],
+    "download-url": [
+      "同花顺-fuyao"
+    ],
+    "auction": [
+      "同花顺-fuyao"
+    ],
+    "short-term-benchmark": [
+      "同花顺-fuyao"
+    ],
+    "financials": [
+      "同花顺-fuyao"
+    ],
+    "income-statements": [
+      "同花顺-fuyao"
+    ],
+    "balance-sheets": [
+      "同花顺-fuyao"
+    ],
+    "cash-flow-statements": [
+      "同花顺-fuyao"
+    ],
+    "indicators": [
+      "同花顺-fuyao"
+    ],
+    "valuations": [
+      "同花顺-fuyao"
+    ],
+    "calendar": [
+      "同花顺-fuyao"
+    ],
+    "trading-days": [
+      "同花顺-fuyao"
+    ],
+    "a-share-index": [
+      "同花顺-fuyao"
+    ],
+    "catalog": [
+      "同花顺-fuyao"
+    ],
+    "ths-index-list": [
+      "同花顺-fuyao"
+    ],
+    "constituents": [
+      "同花顺-fuyao"
+    ],
+    "ths-stock-list": [
+      "同花顺-fuyao"
+    ],
+    "股票基础信息": [
+      "同花顺-fuyao"
+    ],
+    "所属同花顺指数查询": [
+      "同花顺-fuyao"
+    ],
+    "special-data": [
+      "同花顺-fuyao"
+    ],
+    "limit-up-pool": [
+      "同花顺-fuyao"
+    ],
+    "limit-down-pool` 🆕": [
+      "同花顺-fuyao"
+    ],
+    "limit-break-pool` 🆕": [
+      "同花顺-fuyao"
+    ],
+    "limit-up-ladder": [
+      "同花顺-fuyao"
+    ],
+    "hot-stock-list": [
+      "同花顺-fuyao"
+    ],
+    "hot-stock-list-history": [
+      "同花顺-fuyao"
+    ],
+    "hot-stock-rank-trend": [
+      "同花顺-fuyao"
+    ],
+    "skyrocket-list": [
+      "同花顺-fuyao"
+    ],
+    "anomaly-analysis-list": [
+      "同花顺-fuyao"
+    ],
+    "anomaly-analysis-stock": [
+      "同花顺-fuyao"
+    ],
+    "dragon-tiger-list": [
+      "同花顺-fuyao"
+    ],
+    "ocf_ttm(f103)": [
+      "东财",
+      "同花顺-fuyao"
+    ],
+    "revenue_ttm(f104)": [
+      "东财",
+      "同花顺-fuyao"
+    ],
+    "net_profit_period(f105)": [
+      "东财",
+      "同花顺-fuyao"
+    ],
+    "net_profit_annual(f109)": [
+      "东财",
+      "同花顺-fuyao"
+    ],
+    "eps_annual(f160)": [
+      "东财",
+      "同花顺-fuyao"
+    ],
+    "eps_deduct_ttm(f108)": [
+      "同花顺-fuyao"
+    ],
+    "undist_profit_ps(f190)": [
+      "同花顺-fuyao"
+    ],
+    "现价": [
+      "东财"
+    ],
+    "昨收盘": [
+      "东财"
+    ],
+    "开盘价": [
+      "东财"
+    ],
+    "最高价": [
+      "东财"
+    ],
+    "最低价": [
+      "东财"
+    ],
+    "涨跌幅": [
+      "TDX-0x0010/F10",
+      "东财"
+    ],
+    "涨跌额": [
+      "东财"
+    ],
+    "成交量": [
+      "东财"
+    ],
+    "成交额": [
+      "东财"
+    ],
+    "换手率%": [
+      "东财"
+    ],
+    "总市值": [
+      "东财"
+    ],
+    "总股本": [
+      "东财"
+    ],
+    "市盈率（动）": [
+      "东财"
+    ],
+    "市盈率（静）": [
+      "东财"
+    ],
+    "市盈率（TTM）": [
+      "东财"
+    ],
+    "市净率": [
+      "东财"
+    ],
+    "市销率": [
+      "东财"
+    ],
+    "市现率": [
+      "东财"
+    ],
+    "每股收益": [
+      "东财"
+    ],
+    "每股净资产": [
+      "东财"
+    ],
+    "净资产收益率%": [
+      "东财"
+    ],
+    "总资产": [
+      "东财"
+    ],
+    "净资产": [
+      "东财"
+    ],
+    "净利润": [
+      "东财"
+    ],
+    "营业收入": [
+      "东财"
+    ],
+    "涨停价": [
+      "东财"
+    ],
+    "跌停价": [
+      "东财"
+    ],
+    "委比%": [
+      "东财"
+    ],
+    "委差": [
+      "东财"
+    ],
+    "内盘": [
+      "东财"
+    ],
+    "外盘": [
+      "东财"
+    ],
+    "周最高价": [
+      "东财"
+    ],
+    "周最低价": [
+      "东财"
+    ],
+    "封单额": [
+      "东财"
+    ],
+    "连板天数": [
+      "东财"
+    ],
+    "涨速%": [
+      "东财"
+    ],
+    "股息率%": [
+      "东财"
+    ],
+    "上市日期": [
+      "东财"
+    ],
+    "行业": [
+      "TDX-0x0010/F10",
+      "东财"
+    ],
+    "代码": [
+      "东财"
+    ],
+    "名称": [
+      "东财"
+    ],
+    "日涨跌幅": [
+      "东财"
+    ],
+    "年内涨跌幅": [
+      "东财"
+    ],
+    "主力净买入额": [
+      "东财"
+    ],
+    "主力净买入手数": [
+      "东财"
+    ],
+    "昨日成交额": [
+      "东财"
+    ],
+    "前日成交额": [
+      "东财"
+    ],
+    "昨日封单额": [
+      "东财"
+    ],
+    "前日封单额": [
+      "东财"
+    ],
+    "超大单买入额": [
+      "东财"
+    ],
+    "超大单卖出额": [
+      "东财"
+    ],
+    "大单买入额": [
+      "东财"
+    ],
+    "大单卖出额": [
+      "东财"
+    ],
+    "中单买入额": [
+      "东财"
+    ],
+    "中单卖出额": [
+      "东财"
+    ],
+    "流动负债合计": [
+      "东财"
+    ],
+    "资产负债率%": [
+      "东财"
+    ],
+    "买二价": [
+      "东财"
+    ],
+    "卖二价": [
+      "东财"
+    ],
+    "行情协议固定枚举常量③(恒为3)": [
+      "东财"
+    ],
+    "行情协议固定枚举常量④(恒为4)": [
+      "东财"
+    ],
+    "manage_fee": [
+      "同花顺-fuyao"
+    ],
+    "net_profit": [
+      "同花顺-fuyao"
+    ],
+    "total_debt": [
+      "同花顺-fuyao"
+    ],
+    "profit_total": [
+      "同花顺-fuyao"
+    ],
+    "operating_profit": [
+      "同花顺-fuyao"
+    ],
+    "interest_expenses": [
+      "同花顺-fuyao"
+    ],
+    "income_tax_expense": [
+      "同花顺-fuyao"
+    ],
+    "accounts_receivable": [
+      "同花顺-fuyao"
+    ],
+    "holder_equity_total": [
+      "同花顺-fuyao"
+    ],
+    "cash_equivalents_net_addition": [
+      "同花顺-fuyao"
+    ],
+    "research_and_development_expenses": [
+      "同花顺-fuyao"
+    ],
+    "pay_dividends_profits_interest_cash": [
+      "同花顺-fuyao"
+    ],
+    "growth": [
+      "同花顺-fuyao"
+    ],
+    "profitability": [
+      "同花顺-fuyao"
+    ],
+    "solvency": [
+      "同花顺-fuyao"
+    ],
+    "operation": [
+      "同花顺-fuyao"
+    ],
+    "cash-flow": [
+      "同花顺-fuyao"
+    ],
+    "代码格式": [
+      "同花顺-fuyao"
+    ],
+    "klines(count=N)": [
+      "同花顺-fuyao"
+    ],
+    "`big_order_flow(ths_code)`": [
+      "同花顺-fuyao"
+    ],
+    "午休": [
+      "同花顺-fuyao"
+    ],
+    "盘后关闸": [
+      "同花顺-fuyao"
+    ],
+    "ocf_ttm": [
+      "同花顺-fuyao"
+    ],
+    "revenue_ttm": [
+      "同花顺-fuyao"
+    ],
+    "net_profit_period": [
+      "同花顺-fuyao"
+    ],
+    "net_profit_annual": [
+      "同花顺-fuyao"
+    ],
+    "fflow 历史资金流窗口": [
+      "同花顺-fuyao"
+    ],
+    "stock": [
+      "同花顺-fuyao"
+    ],
+    "get 财务 TTM 族": [
+      "同花顺-fuyao"
+    ],
+    "估值 pe": [
+      "同花顺-fuyao"
+    ],
+    "pb": [
+      "同花顺-fuyao"
+    ],
+    "ps": [
+      "同花顺-fuyao"
+    ],
+    "pcf": [
+      "同花顺-fuyao"
+    ],
+    "行情快照 quote 链": [
+      "同花顺-fuyao"
+    ],
+    "涨停池": [
+      "TDX-0x0010/F10",
+      "同花顺-fuyao"
+    ],
+    "封单": [
+      "同花顺-fuyao"
+    ],
+    "龙虎榜": [
+      "同花顺-fuyao"
+    ],
+    "批量行情 ulist": [
+      "同花顺-fuyao"
+    ],
+    "≥18": [
+      "同花顺-fuyao"
+    ],
+    "且 miss 可解释": [
+      "同花顺-fuyao"
+    ],
+    "~17": [
+      "同花顺-fuyao"
+    ],
+    "snapshot.last_price": [
+      "同花顺-fuyao"
+    ],
+    "snapshot.open_price` = `auction.auction_price": [
+      "同花顺-fuyao"
+    ],
+    "snapshot.high_price": [
+      "同花顺-fuyao"
+    ],
+    "snapshot.low_price": [
+      "同花顺-fuyao"
+    ],
+    "snapshot.prev_price` = `auction.pre_close_price": [
+      "同花顺-fuyao"
+    ],
+    "snapshot.price_change": [
+      "同花顺-fuyao"
+    ],
+    "snapshot.price_change_ratio_pct": [
+      "同花顺-fuyao"
+    ],
+    "snapshot.volume": [
+      "同花顺-fuyao"
+    ],
+    "snapshot.turnover": [
+      "同花顺-fuyao"
+    ],
+    "auction.float_market_cap": [
+      "同花顺-fuyao"
+    ],
+    "派生 `float_market_cap × (总股本÷流通股本)": [
+      "同花顺-fuyao"
+    ],
+    "派生 `last_price ÷ f92(BPS)": [
+      "同花顺-fuyao"
+    ],
+    "派生 `prev_price × 板块涨停幅度": [
+      "同花顺-fuyao"
+    ],
+    "profitability.index_weighted_avg_roe": [
+      "同花顺-fuyao"
+    ],
+    "growth.calculate_operating_income_yoy_growth_ratio": [
+      "同花顺-fuyao"
+    ],
+    "growth.calculate_parent_holder_net_profit_yoy_growth_ratio": [
+      "同花顺-fuyao"
+    ],
+    "profitability.sale_gross_margin": [
+      "同花顺-fuyao"
+    ],
+    "profitability.sale_net_interest_ratio": [
+      "同花顺-fuyao"
+    ],
+    "solvency.assets_debt_ratio": [
+      "同花顺-fuyao"
+    ],
+    "valuation.pe_mrq": [
+      "同花顺-fuyao"
+    ],
+    "valuation.pe_ttm": [
+      "同花顺-fuyao"
+    ],
+    "valuation.pb_mrq": [
+      "同花顺-fuyao"
+    ],
+    "valuation.ps_ttm": [
+      "同花顺-fuyao"
+    ],
+    "valuation.pcf_ttm": [
+      "同花顺-fuyao"
+    ],
+    "rank": [
+      "TDX-0x0010/F10",
+      "东财",
+      "财联社"
+    ],
+    "price": [
+      "TDX-0x0010/F10",
+      "东财"
+    ],
+    "pct": [
+      "东财"
+    ],
+    "rank_chg": [
+      "东财"
+    ],
+    "brief": [
+      "东财"
+    ],
+    "ctime": [
+      "东财"
+    ],
+    "level": [
+      "东财"
+    ],
+    "reading_num": [
+      "东财"
+    ],
+    "stock_list": [
+      "东财"
+    ],
+    "subjects": [
+      "东财"
+    ],
+    "report_list.{期次}.data[].item_title": [
+      "新浪"
+    ],
+    "item_value": [
+      "新浪"
+    ],
+    "item_tongbi": [
+      "新浪"
+    ],
+    "report_type": [
+      "新浪"
+    ],
+    "bid_vol": [
+      "新浪"
+    ],
+    "bid": [
+      "新浪"
+    ],
+    "last": [
+      "新浪"
+    ],
+    "ask": [
+      "新浪"
+    ],
+    "ask_vol": [
+      "新浪"
+    ],
+    "open_interest": [
+      "新浪"
+    ],
+    "strike": [
+      "新浪"
+    ],
+    "prev_close": [
+      "新浪"
+    ],
+    "open": [
+      "AxData",
+      "TDX-eltdx",
+      "新浪"
+    ],
+    "limit_up": [
+      "新浪"
+    ],
+    "limit_down": [
+      "新浪"
+    ],
+    "delta": [
+      "新浪"
+    ],
+    "gamma": [
+      "新浪"
+    ],
+    "theta": [
+      "新浪"
+    ],
+    "vega": [
+      "新浪"
+    ],
+    "iv": [
+      "新浪"
+    ],
+    "theory": [
+      "新浪"
+    ],
+    "opendate": [
+      "新浪"
+    ],
+    "trade": [
+      "新浪"
+    ],
+    "netamount": [
+      "新浪"
+    ],
+    "turnover": [
+      "开盘红",
+      "新浪"
+    ],
+    "announcementTitle": [
+      "东财"
+    ],
+    "announcementTypeName": [
+      "东财"
+    ],
+    "announcementTime": [
+      "东财"
+    ],
+    "announcementId": [
+      "东财"
+    ],
+    "mainContent": [
+      "东财"
+    ],
+    "attachedContent": [
+      "东财"
+    ],
+    "attachedAuthor": [
+      "东财"
+    ],
+    "pubDate": [
+      "东财"
+    ],
+    "companyShortName": [
+      "东财"
+    ],
+    "stockCode": [
+      "东财"
+    ],
+    "newMarketData.keys": [
+      "东财"
+    ],
+    "marketData": [
+      "东财"
+    ],
+    "ma5avgprice": [
+      "东财"
+    ],
+    "ma10avgprice": [
+      "东财"
+    ],
+    "ma20avgprice": [
+      "东财"
+    ],
+    "zqdm": [
+      "东财"
+    ],
+    "zqjc": [
+      "东财"
+    ],
+    "cjje": [
+      "东财"
+    ],
+    "plyy": [
+      "东财"
+    ],
+    "fileContents": [
+      "东财"
+    ],
+    "网易财经 126.net": [
+      "东财"
+    ],
+    "和讯": [
+      "东财"
+    ],
+    "凤凰行情": [
+      "东财"
+    ],
+    "腾讯资金流 ff_ 系列": [
+      "东财"
+    ],
+    "雪球免登录深度数据": [
+      "东财"
+    ],
+    "百度 PAE getrelatedblock（概念归属）": [
+      "东财"
+    ],
+    "百度 PAE fundflow": [
+      "东财"
+    ],
+    "fundsortlist（资金流）": [
+      "东财"
+    ],
+    "财联社旧 nodeapi": [
+      "东财"
+    ],
+    "telegraphList": [
+      "东财"
+    ],
+    "同花顺行业板块（V3.0 弃用）": [
+      "东财"
+    ],
+    "东财 dycalchis（日内异动池 em_price_anomaly）": [
+      "东财"
+    ],
+    "mootdx 库": [
+      "东财"
+    ],
+    "wenda_report_query": [
+      "东财"
+    ],
+    "wenda_notice_query": [
+      "东财"
+    ],
+    "wenda_news_query": [
+      "东财"
+    ],
+    "wenda_macro_query": [
+      "东财"
+    ],
+    "fund_san_buy(f147)": [
+      "东财"
+    ],
+    "fund_san_sell(f148)": [
+      "东财"
+    ],
+    "fund_san_net(f149)": [
+      "东财"
+    ],
+    "ACCUM_AMOUNT": [
+      "东财"
+    ],
+    "BUY_RATIO": [
+      "东财"
+    ],
+    "SELL_RATIO": [
+      "东财"
+    ],
+    "DEAL_AMOUNT_RATIO": [
+      "东财"
+    ],
+    "DEAL_NET_RATIO": [
+      "东财"
+    ],
+    "EXPLAIN": [
+      "东财"
+    ],
+    "FREE_MARKET_CAP": [
+      "东财"
+    ],
+    "NET_BS_AMT": [
+      "东财"
+    ],
+    "BUY_SEAT": [
+      "东财"
+    ],
+    "SELL_SEAT": [
+      "东财"
+    ],
+    "D1~D30_CLOSE_ADJCHRATE": [
+      "东财"
+    ],
+    "TRADE_MARKET": [
+      "东财"
+    ],
+    "CHANGE_TYPE": [
+      "东财"
+    ],
+    "RZJME": [
+      "东财"
+    ],
+    "RQJMG": [
+      "akshare",
+      "东财"
+    ],
+    "RZCHE10D": [
+      "东财"
+    ],
+    "RZMRE10D": [
+      "东财"
+    ],
+    "RZRQYECZ": [
+      "东财"
+    ],
+    "RZYEZB": [
+      "东财"
+    ],
+    "RCHANGE3D": [
+      "东财"
+    ],
+    "DCP": [
+      "东财"
+    ],
+    "FIN_BALANCE_GR": [
+      "东财"
+    ],
+    "ZDF": [
+      "东财"
+    ],
+    "SPJ": [
+      "东财"
+    ],
+    "SZ": [
+      "东财"
+    ],
+    "RQYL": [
+      "东财"
+    ],
+    "predictNextTwoYearPe": [
+      "东财"
+    ],
+    "predictNextYearPe": [
+      "东财"
+    ],
+    "predictThisYearPe": [
+      "东财"
+    ],
+    "newIssuePrice": [
+      "东财"
+    ],
+    "newListingDate": [
+      "东财"
+    ],
+    "newPeIssueA": [
+      "东财"
+    ],
+    "emRatingCode": [
+      "东财"
+    ],
+    "emRatingValue": [
+      "东财"
+    ],
+    "lastEmRatingName": [
+      "东财"
+    ],
+    "ratingChange": [
+      "东财"
+    ],
+    "researcher": [
+      "东财"
+    ],
+    "author": [
+      "东财"
+    ],
+    "encodeUrl": [
+      "东财"
+    ],
+    "analyse": [
+      "东财"
+    ],
+    "analyse_title": [
+      "东财"
+    ],
+    "topic": [
+      "东财"
+    ],
+    "subject_name": [
+      "东财"
+    ],
+    "share_num": [
+      "东财"
+    ],
+    "audio_url": [
+      "东财"
+    ],
+    "adjunctUrl": [
+      "东财"
+    ],
+    "adjunctSize": [
+      "东财"
+    ],
+    "adjunctType": [
+      "东财"
+    ],
+    "shortTitle": [
+      "东财"
+    ],
+    "secName": [
+      "东财"
+    ],
+    "orgId": [
+      "东财"
+    ],
+    "announcementType": [
+      "东财"
+    ],
+    "SecurityBar`（K 线）": [
+      "TDX-eltdx"
+    ],
+    "SecurityQuote`（五档）": [
+      "TDX-eltdx"
+    ],
+    "FinanceInfo`（财务）": [
+      "TDX-eltdx"
+    ],
+    "XdxrRecord`（除权除息）": [
+      "TDX-eltdx"
+    ],
+    "SecurityInfo`（证券列表）": [
+      "TDX-eltdx"
+    ],
+    "FundFlow": [
+      "TDX-eltdx"
+    ],
+    "HistoricalFundFlow": [
+      "TDX-eltdx"
+    ],
+    "MarketStat": [
+      "TDX-eltdx"
+    ],
+    "Enum `Market": [
+      "TDX-eltdx"
+    ],
+    "KlineCategory": [
+      "TDX-eltdx"
+    ],
+    "change_type": [
+      "TDX-0x0010/F10",
+      "东财"
+    ],
+    "filter_st": [
+      "东财"
+    ],
+    "market_degree": [
+      "财联社"
+    ],
+    "shsz_balance": [
+      "财联社"
+    ],
+    "shsz_balance_change_px": [
+      "财联社"
+    ],
+    "up_ratio": [
+      "财联社"
+    ],
+    "up_ratio_num": [
+      "财联社"
+    ],
+    "up_open_num": [
+      "财联社"
+    ],
+    "performance": [
+      "财联社"
+    ],
+    "up_open_ratio": [
+      "财联社"
+    ],
+    "profit_ratio": [
+      "财联社"
+    ],
+    "up_down_dis": [
+      "财联社"
+    ],
+    "limit_up_board": [
+      "财联社"
+    ],
+    "zt": [
+      "开盘红"
+    ],
+    "dt": [
+      "开盘红"
+    ],
+    "sjzt": [
+      "开盘红"
+    ],
+    "sjdt": [
+      "开盘红"
+    ],
+    "stzt": [
+      "开盘红"
+    ],
+    "stdt": [
+      "开盘红"
+    ],
+    "rise_num": [
+      "开盘红"
+    ],
+    "fall_num": [
+      "开盘红"
+    ],
+    "flat": [
+      "开盘红"
+    ],
+    "sign": [
+      "开盘红"
+    ],
+    "rise_dist": [
+      "开盘红"
+    ],
+    "fall_dist": [
+      "开盘红"
+    ],
+    "szln": [
+      "开盘红"
+    ],
+    "qscln": [
+      "开盘红"
+    ],
+    "s_zrcs": [
+      "开盘红"
+    ],
+    "q_zrcs": [
+      "开盘红"
+    ],
+    "TagID": [
+      "开盘红"
+    ],
+    "TagName": [
+      "开盘红"
+    ],
+    "TagShuXing": [
+      "开盘红"
+    ],
+    "ZSCode": [
+      "开盘红"
+    ],
+    "ZSName": [
+      "开盘红"
+    ],
+    "Detail": [
+      "开盘红"
+    ],
+    "StockList": [
+      "开盘红"
+    ],
+    "themes": [
+      "开盘红"
+    ],
+    "industry_id": [
+      "开盘红"
+    ],
+    "industry_zt": [
+      "开盘红"
+    ],
+    "limit_tag": [
+      "开盘红"
+    ],
+    "limit_count": [
+      "TDX-0x0010/F10",
+      "开盘红"
+    ],
+    "limit_time": [
+      "TDX-0x0010/F10",
+      "开盘红"
+    ],
+    "open_time": [
+      "开盘红"
+    ],
+    "seal_amount": [
+      "AxData",
+      "开盘红"
+    ],
+    "seal_money": [
+      "开盘红"
+    ],
+    "net_inflow": [
+      "开盘红"
+    ],
+    "market_cap": [
+      "开盘红"
+    ],
+    "plate_code": [
+      "TDX-0x0010/F10",
+      "财联社"
+    ],
+    "plate_name": [
+      "TDX-0x0010/F10",
+      "财联社"
+    ],
+    "catalyst": [
+      "财联社"
+    ],
+    "cur_heat": [
+      "财联社"
+    ],
+    "rank_change": [
+      "财联社"
+    ],
+    "trade_date": [
+      "AxData",
+      "财联社"
+    ],
+    "plates": [
+      "TDX-0x0010/F10",
+      "财联社"
+    ],
+    "value": [
+      "TDX-0x0010/F10"
+    ],
+    "color": [
+      "TDX-0x0010/F10"
+    ],
+    "dates": [
+      "TDX-0x0010/F10"
+    ],
+    "source": [
+      "TDX-0x0010/F10"
+    ],
+    "popular": [
+      "TDX-0x0010/F10"
+    ],
+    "one_word": [
+      "TDX-0x0010/F10"
+    ],
+    "change_pct": [
+      "AxData",
+      "TDX-0x0010/F10",
+      "TDX-eltdx"
+    ],
+    "plate_amount": [
+      "TDX-0x0010/F10"
+    ],
+    "preview_balance": [
+      "TDX-0x0010/F10"
+    ],
+    "plate_limit_up_count": [
+      "TDX-0x0010/F10"
+    ],
+    "preview_balance_change_px": [
+      "TDX-0x0010/F10"
+    ],
+    "net_inflow_5d": [
+      "开盘红"
+    ],
+    "buy_amount": [
+      "开盘红"
+    ],
+    "sell_amount": [
+      "开盘红"
+    ],
+    "avg_change": [
+      "开盘红"
+    ],
+    "stock_count": [
+      "开盘红"
+    ],
+    "stocks_em": [
+      "TDX-0x0010/F10"
+    ],
+    "stocks_all_em": [
+      "TDX-0x0010/F10"
+    ],
+    "market_index_em": [
+      "TDX-0x0010/F10"
+    ],
+    "all": [
+      "TDX-0x0010/F10"
+    ],
+    "sector_em": [
+      "TDX-0x0010/F10"
+    ],
+    "sector_stocks_em": [
+      "TDX-0x0010/F10"
+    ],
+    "belong": [
+      "TDX-0x0010/F10"
+    ],
+    "stock_zt_pool_em": [
+      "TDX-0x0010/F10"
+    ],
+    "stock_dt_pool_em": [
+      "TDX-0x0010/F10"
+    ],
+    "stock_yesterday_zt_em": [
+      "TDX-0x0010/F10"
+    ],
+    "stock_changes_em": [
+      "TDX-0x0010/F10"
+    ],
+    "market_emotion_cls": [
+      "TDX-0x0010/F10"
+    ],
+    "market_wind_cls": [
+      "TDX-0x0010/F10"
+    ],
+    "wind_stocks": [
+      "TDX-0x0010/F10"
+    ],
+    "sector_industry_cls": [
+      "TDX-0x0010/F10"
+    ],
+    "get_sector_heat": [
+      "TDX-0x0010/F10"
+    ],
+    "rotation": [
+      "TDX-0x0010/F10"
+    ],
+    "stock_timeline_cls": [
+      "TDX-0x0010/F10"
+    ],
+    "stock_kline_cls": [
+      "TDX-0x0010/F10"
+    ],
+    "stock_zt_pool_cls": [
+      "TDX-0x0010/F10"
+    ],
+    "market_emotion_kph": [
+      "TDX-0x0010/F10"
+    ],
+    "sector_ranking_kph": [
+      "TDX-0x0010/F10"
+    ],
+    "sector_stocks_his_kph": [
+      "TDX-0x0010/F10"
+    ],
+    "limit_up_his_kph": [
+      "TDX-0x0010/F10"
+    ],
+    "wind_vane": [
+      "TDX-0x0010/F10"
+    ],
+    "get_zttt": [
+      "TDX-0x0010/F10"
+    ],
+    "get_pmsl": [
+      "TDX-0x0010/F10"
+    ],
+    "stock_hot_rank_ths": [
+      "TDX-0x0010/F10"
+    ],
+    "stock_strategy_wencai": [
+      "TDX-0x0010/F10"
+    ],
+    "get_sector_hot_plates": [
+      "TDX-0x0010/F10"
+    ],
+    "get_sector_popular_stocks": [
+      "TDX-0x0010/F10"
+    ],
+    "is_trade_day": [
+      "TDX-0x0010/F10"
+    ],
+    "get_trade_days": [
+      "TDX-0x0010/F10"
+    ],
+    "limit_down_his_kph(date)": [
+      "TDX-0x0010/F10"
+    ],
+    "market_index_all_em()": [
+      "TDX-0x0010/F10"
+    ],
+    "market_mainline_cls()": [
+      "TDX-0x0010/F10"
+    ],
+    "market_wind_stocks_cls(plate_code)": [
+      "TDX-0x0010/F10"
+    ],
+    "news_telegraph_cls(date,category)": [
+      "TDX-0x0010/F10"
+    ],
+    "sector_stock_belong_em(stock_codes[])": [
+      "TDX-0x0010/F10"
+    ],
+    "wind_vane_his_kph(date)": [
+      "TDX-0x0010/F10"
+    ],
+    "stock_changes_em(8201)": [
+      "TDX-0x0010/F10"
+    ],
+    "扣非净利": [
+      "akshare"
+    ],
+    "push2 f51": [
+      "akshare"
+    ],
+    "push2 f137": [
+      "akshare"
+    ],
+    "资金流": [
+      "TDX-0x0010/F10",
+      "akshare"
+    ],
+    "股息率": [
+      "akshare"
+    ],
+    "push2 f55": [
+      "akshare"
+    ],
+    "EPS": [
+      "akshare"
+    ],
+    "BPS": [
+      "akshare"
+    ],
+    "龙虎榜 EXPLAIN": [
+      "akshare"
+    ],
+    "两融 RZJME": [
+      "akshare"
+    ],
+    "板块资金流 f62": [
+      "akshare"
+    ],
+    "PE 历史百分位": [
+      "akshare"
+    ],
+    "历史分红": [
+      "akshare"
+    ],
+    "instrument_id": [
+      "AxData"
+    ],
+    "symbol": [
+      "AxData"
+    ],
+    "tdx_code": [
+      "AxData"
+    ],
+    "exchange": [
+      "AxData"
+    ],
+    "stats_date": [
+      "AxData"
+    ],
+    "open_price": [
+      "AxData",
+      "TDX-eltdx"
+    ],
+    "pre_close": [
+      "AxData"
+    ],
+    "open_change_pct": [
+      "AxData"
+    ],
+    "open_amount": [
+      "AxData"
+    ],
+    "open_volume_hand": [
+      "AxData"
+    ],
+    "open_volume_ratio": [
+      "AxData"
+    ],
+    "open_turnover_z": [
+      "AxData"
+    ],
+    "open_prev_amount_ratio": [
+      "AxData"
+    ],
+    "auction_prev_volume_ratio": [
+      "AxData"
+    ],
+    "opening_rush": [
+      "AxData",
+      "TDX-eltdx"
+    ],
+    "open_prev_seal_ratio": [
+      "AxData"
+    ],
+    "prev_amount": [
+      "AxData"
+    ],
+    "prev_seal_amount": [
+      "AxData"
+    ],
+    "prev2_seal_amount": [
+      "AxData"
+    ],
+    "prev_open_volume_hand": [
+      "AxData"
+    ],
+    "prev_open_amount": [
+      "AxData"
+    ],
+    "float_shares": [
+      "AxData"
+    ],
+    "float_market_value": [
+      "AxData"
+    ],
+    "free_float_shares": [
+      "AxData"
+    ],
+    "free_float_market_value": [
+      "AxData"
+    ],
+    "seal_to_amount_ratio": [
+      "AxData"
+    ],
+    "seal_to_float_ratio": [
+      "AxData"
+    ],
+    "seal_prev_ratio": [
+      "AxData"
+    ],
+    "limit_stat_days": [
+      "AxData"
+    ],
+    "limit_up_count_in_stat_days": [
+      "AxData"
+    ],
+    "limit_board_text": [
+      "AxData"
+    ],
+    "limit_up_streak_days": [
+      "AxData"
+    ],
+    "year_limit_up_days": [
+      "AxData"
+    ],
+    "last_price": [
+      "AxData",
+      "TDX-eltdx"
+    ],
+    "high": [
+      "AxData",
+      "TDX-eltdx"
+    ],
+    "low": [
+      "AxData",
+      "TDX-eltdx"
+    ],
+    "change": [
+      "AxData",
+      "TDX-eltdx"
+    ],
+    "high_change_pct": [
+      "AxData"
+    ],
+    "low_change_pct": [
+      "AxData"
+    ],
+    "amplitude_pct": [
+      "AxData"
+    ],
+    "average_price": [
+      "AxData"
+    ],
+    "average_change_pct": [
+      "AxData"
+    ],
+    "drawdown_pct": [
+      "AxData"
+    ],
+    "attack_pct": [
+      "AxData"
+    ],
+    "volume": [
+      "AxData"
+    ],
+    "current_volume": [
+      "AxData"
+    ],
+    "inside_volume": [
+      "AxData"
+    ],
+    "outside_volume": [
+      "AxData"
+    ],
+    "inside_outside_ratio": [
+      "AxData"
+    ],
+    "open_amount_ratio_pct": [
+      "AxData"
+    ],
+    "bid1_price": [
+      "AxData"
+    ],
+    "bid1_volume": [
+      "AxData"
+    ],
+    "ask1_price": [
+      "AxData"
+    ],
+    "ask1_volume": [
+      "AxData"
+    ],
+    "locked_amount": [
+      "AxData",
+      "TDX-eltdx"
+    ],
+    "bid1_ask1_volume_diff": [
+      "AxData"
+    ],
+    "bid1_ask1_balance_pct": [
+      "AxData"
+    ],
+    "rise_speed": [
+      "AxData",
+      "TDX-eltdx"
+    ],
+    "short_turnover": [
+      "AxData",
+      "TDX-eltdx"
+    ],
+    "min2_amount": [
+      "AxData",
+      "TDX-eltdx"
+    ],
+    "vol_rise_speed": [
+      "AxData",
+      "TDX-eltdx"
+    ],
+    "entrust_ratio": [
+      "AxData"
+    ],
+    "activity": [
+      "AxData"
+    ],
+    "name_flag": [
+      "AxData"
+    ],
+    "pre_close_trade_date": [
+      "AxData"
+    ],
+    "pre_close_source": [
+      "AxData"
+    ],
+    "limit_up_price": [
+      "AxData",
+      "TDX-eltdx"
+    ],
+    "limit_down_price": [
+      "AxData",
+      "TDX-eltdx"
+    ],
+    "limit_ratio_pct": [
+      "AxData"
+    ],
+    "limit_rule": [
+      "AxData"
+    ],
+    "limit_status": [
+      "AxData"
+    ],
+    "score": [
+      "AxData"
+    ],
+    "industry_rank": [
+      "AxData"
+    ],
+    "industry_rank_total": [
+      "AxData"
+    ],
+    "market_rank": [
+      "AxData"
+    ],
+    "market_rank_total": [
+      "AxData"
+    ],
+    "market_win_pct": [
+      "AxData"
+    ],
+    "capital_score": [
+      "AxData"
+    ],
+    "fundamental_score": [
+      "AxData"
+    ],
+    "news_score": [
+      "AxData"
+    ],
+    "theme_score": [
+      "AxData"
+    ],
+    "industry_name": [
+      "AxData"
+    ],
+    "stock_name": [
+      "AxData"
+    ],
+    "profit_ratio_pct": [
+      "AxData"
+    ],
+    "cost90_concentration": [
+      "AxData"
+    ],
+    "cost90_range": [
+      "AxData"
+    ],
+    "cost70_concentration": [
+      "AxData"
+    ],
+    "cost70_range": [
+      "AxData"
+    ],
+    "total_share": [
+      "AxData"
+    ],
+    "float_share": [
+      "AxData"
+    ],
+    "free_float_share_z": [
+      "AxData"
+    ],
+    "finance_updated_date": [
+      "AxData"
+    ],
+    "share_source": [
+      "AxData"
+    ],
+    "stock_allotment_cninfo（配股）": [
+      "AxData"
+    ],
+    "option_chain_tdx（期权T型）": [
+      "AxData"
+    ],
+    "stock_share_change_cninfo（股本变动）": [
+      "AxData"
+    ],
+    "stock_realtime_rank_tdx（实时榜单）": [
+      "AxData"
+    ],
+    "concept_capital_flow_tdx（题材资金走势）": [
+      "AxData"
+    ],
+    "stock_theme_strength_rank_tdx（题材强度排行）": [
+      "AxData"
+    ],
+    "stock_financial_diagnosis_tdx（财务诊断）": [
+      "AxData"
+    ],
+    "stock_forecast_consensus_tdx（盈利预测）": [
+      "AxData"
+    ],
+    "新浪 ESG ×5（MSCI": [
+      "AxData"
+    ],
+    "华证": [
+      "AxData"
+    ],
+    "秩鼎": [
+      "AxData"
+    ],
+    "路孚特）": [
+      "AxData"
+    ],
+    "新浪期权 ×21": [
+      "AxData"
+    ],
+    "开盘红复盘 ×3（天梯": [
+      "AxData"
+    ],
+    "事件流": [
+      "AxData"
+    ],
+    "涨停复盘）": [
+      "AxData"
+    ],
+    "🆕 全新维度": [
+      "TDX-0x0010/F10"
+    ],
+    "🔄 已知字段新源": [
+      "TDX-0x0010/F10"
+    ],
+    "🔌 push 替代候选": [
+      "TDX-0x0010/F10"
+    ],
+    "🔄 死源复活": [
+      "TDX-0x0010/F10"
+    ],
+    "➖ 项目不需要": [
+      "TDX-0x0010/F10"
+    ],
+    "ft_stock_comment_score_em": [
+      "TDX-0x0010/F10"
+    ],
+    "ft_stock_comment_em": [
+      "TDX-0x0010/F10"
+    ],
+    "ft_limit_up_pool_yesterday": [
+      "TDX-0x0010/F10"
+    ],
+    "ft_daec_prev_closes": [
+      "TDX-0x0010/F10"
+    ],
+    "ft_daec_market_snapshot": [
+      "TDX-0x0010/F10"
+    ],
+    "ft_daec_stocks_all": [
+      "TDX-0x0010/F10"
+    ],
+    "ft_limit_event_timeline_3s": [
+      "TDX-0x0010/F10"
+    ],
+    "comment_score": [
+      "TDX-0x0010/F10"
+    ],
+    "comment_desire": [
+      "TDX-0x0010/F10"
+    ],
+    "comment_focus": [
+      "TDX-0x0010/F10"
+    ],
+    "comment_org": [
+      "TDX-0x0010/F10"
+    ],
+    "ggmx": [
+      "TDX-0x0010/F10"
+    ],
+    "goodwill_detail": [
+      "TDX-0x0010/F10"
+    ],
+    "GetInfo": [
+      "TDX-0x0010/F10"
+    ],
+    "MarketStockZDNum": [
+      "TDX-0x0010/F10"
+    ],
+    "ChangeStatistics": [
+      "TDX-0x0010/F10"
+    ],
+    "RiseFallAnalysis": [
+      "TDX-0x0010/F10"
+    ],
+    "RealRankingInfo": [
+      "TDX-0x0010/F10"
+    ],
+    "ZhiShuStockList_W8": [
+      "TDX-0x0010/F10"
+    ],
+    "GetYTFP_BKHX": [
+      "TDX-0x0010/F10"
+    ],
+    "GetYTFP_SCTD": [
+      "TDX-0x0010/F10"
+    ],
+    "GetStockList": [
+      "TDX-0x0010/F10"
+    ],
+    "SharpWithdrawal": [
+      "TDX-0x0010/F10"
+    ],
+    "GetDayNewHigh_W28": [
+      "TDX-0x0010/F10"
+    ],
+    "DailyLimitPerformance": [
+      "TDX-0x0010/F10"
+    ],
+    "GetPanKou": [
+      "TDX-0x0010/F10"
+    ],
+    "stock_zh_a_hist_tx（A股历史日线）": [
+      "东财"
+    ],
+    "stock_zh_index_daily_tx（指数日线）": [
+      "东财"
+    ],
+    "stock_zh_a_tick_tx_js（逐笔）": [
+      "东财"
+    ],
+    "get_tx_start_year（历史起始年）": [
+      "东财"
+    ],
+    "tencent_realtime_snapshot（实时快照）": [
+      "东财"
+    ],
+    "stock_zh_a_spot_tx（全市场列表）": [
+      "东财"
+    ],
+    "cls_market_emotion（市场情绪）": [
+      "东财"
+    ],
+    "cls_limit_up_pool（涨停池含原因）": [
+      "东财"
+    ],
+    "cls_sector_heat（板块热度）": [
+      "东财"
+    ],
+    "cls_market_wind（风口板块）": [
+      "东财"
+    ],
+    "cls_sector_industry（行业实时）": [
+      "东财"
+    ],
+    "cls_sector_rotation（板块轮动）": [
+      "东财"
+    ],
+    "cls_market_mainline（主线机会）": [
+      "东财"
+    ],
+    "cls_news_telegraph（电报）": [
+      "东财"
+    ],
+    "kph_market_emotion（情绪）": [
+      "东财"
+    ],
+    "kph_sector_ranking（板块排行）": [
+      "东财"
+    ],
+    "kph_limit_up_history（历史涨停复盘）": [
+      "东财"
+    ],
+    "kph_limit_ladder（涨停天梯）": [
+      "东财"
+    ],
+    "eastmoney_stock_realtime_snapshot": [
+      "东财"
+    ],
+    "eastmoney_limit_up_pool（涨停池）": [
+      "东财"
+    ],
+    "eastmoney_yesterday_limit_up_pool（昨涨停）": [
+      "东财"
+    ],
+    "eastmoney_stock_changes（盘口异动）": [
+      "东财"
+    ],
+    "eastmoney_dragon_tiger_daily（龙虎榜）": [
+      "东财"
+    ],
+    "eastmoney_margin_trading（两融）": [
+      "东财"
+    ],
+    "eastmoney_sector_realtime（板块）": [
+      "东财"
+    ],
+    "eastmoney_stock_sector_belong（所属板块）": [
+      "东财"
+    ],
+    "stock_profile_cninfo（公司概况）": [
+      "东财"
+    ],
+    "stock_dividend_cninfo（历史分红）": [
+      "东财"
+    ],
+    "cninfo_announcements（公告）": [
+      "东财"
+    ],
+    "stock_irm_cninfo（互动易）": [
+      "东财"
+    ],
+    "stock_hold_num_cninfo（股东户数）": [
+      "东财"
+    ],
+    "cninfo_announcement_detail（PDF元信息）": [
+      "东财"
+    ],
+    "stock_trade_calendar_exchange（交易日历）": [
+      "东财"
+    ],
+    "stock_basic_info_exchange（基础信息）": [
+      "东财"
+    ],
+    "stock_historical_list_exchange（历史列表）": [
+      "东财"
+    ],
+    "stock_restricted_release_queue_sina（限售解禁）": [
+      "东财"
+    ],
+    "stock_zh_index_spot_sina（A股指数实时）": [
+      "东财"
+    ],
+    "stock_esg_rate_sina（ESG评级）": [
+      "东财"
+    ],
+    "stock_lhb_detail_daily_sina（龙虎榜）": [
+      "东财"
+    ],
+    "index_stock_cons_sina（指数成份）": [
+      "东财"
+    ],
+    "fund_etf_category_sina（ETF分类行情）": [
+      "东财"
+    ],
+    "stock_hk_index_spot_sina（港股指数）": [
+      "东财"
+    ],
+    "stock_financial_report_sina（财务报表）": [
+      "东财"
+    ],
+    "概念": [
+      "TDX-0x0010/F10"
+    ],
+    "财务": [
+      "TDX-0x0010/F10"
+    ],
+    "估值": [
+      "TDX-0x0010/F10"
+    ],
+    "股本": [
+      "TDX-0x0010/F10"
+    ],
+    "两融": [
+      "TDX-0x0010/F10"
+    ],
+    "全市场快照": [
+      "TDX-0x0010/F10",
+      "同花顺-fuyao"
+    ],
+    "行业板块": [
+      "TDX-0x0010/F10"
+    ],
+    "板块强度": [
+      "TDX-0x0010/F10",
+      "同花顺-fuyao"
+    ],
+    "市场情绪": [
+      "TDX-0x0010/F10",
+      "同花顺-fuyao"
+    ],
+    "板块轮动": [
+      "TDX-0x0010/F10",
+      "同花顺-fuyao"
+    ],
+    "涨停原因": [
+      "TDX-0x0010/F10"
+    ],
+    "pre_close_price": [
+      "TDX-eltdx"
+    ],
+    "high_price": [
+      "TDX-eltdx"
+    ],
+    "low_price": [
+      "TDX-eltdx"
+    ],
+    "total_hand": [
+      "TDX-eltdx"
+    ],
+    "current_hand": [
+      "TDX-eltdx"
+    ],
+    "inside_dish": [
+      "TDX-eltdx"
+    ],
+    "outer_disc": [
+      "TDX-eltdx"
+    ],
+    "open_amount_yuan": [
+      "TDX-eltdx"
+    ],
+    "buy_levels": [
+      "TDX-eltdx"
+    ],
+    "sell_levels": [
+      "TDX-eltdx"
+    ],
+    "sum_buy_vol": [
+      "TDX-eltdx"
+    ],
+    "sum_sell_vol": [
+      "TDX-eltdx"
+    ],
+    "eps_raw": [
+      "TDX-eltdx"
+    ],
+    "liu_tong_gu_ben_raw_float": [
+      "TDX-eltdx"
+    ],
+    "zong_gu_ben_raw_float": [
+      "TDX-eltdx"
+    ],
+    "zong_zi_chan_raw_float": [
+      "TDX-eltdx"
+    ],
+    "jing_li_run_raw_float": [
+      "TDX-eltdx"
+    ],
+    "circulating_shares": [
+      "TDX-eltdx"
+    ],
+    "total_shares": [
+      "TDX-eltdx"
+    ],
+    "total_assets_yuan": [
+      "TDX-eltdx"
+    ],
+    "net_profit_yuan": [
+      "TDX-eltdx"
+    ],
+    "category_name": [
+      "TDX-eltdx"
+    ],
+    "c1_value~c4_value": [
+      "TDX-eltdx"
+    ],
+    "fenhong": [
+      "TDX-eltdx"
+    ],
+    "peigujia": [
+      "TDX-eltdx"
+    ],
+    "songzhuangu": [
+      "TDX-eltdx"
+    ],
+    "peigu": [
+      "TDX-eltdx"
+    ],
+    "volume_lots": [
+      "TDX-eltdx"
+    ],
+    "up_count": [
+      "TDX-eltdx"
+    ],
+    "down_count": [
+      "TDX-eltdx"
+    ],
+    "adjust": [
+      "TDX-eltdx"
+    ],
+    "period": [
+      "TDX-eltdx"
+    ],
+    "日 Beta": [
+      "ZHB"
+    ],
+    "PE TTM": [
+      "ZHB"
+    ],
+    "自由流通股本": [
+      "ZHB"
+    ],
+    "年内涨停数": [
+      "ZHB"
+    ],
+    "连板统计": [
+      "ZHB"
+    ],
+    "当日": [
+      "ZHB"
+    ],
+    "前一日": [
+      "ZHB"
+    ],
+    "前两日成交额、封单额": [
+      "ZHB"
+    ],
+    "前一日开盘量额": [
+      "ZHB"
+    ],
+    "stock_score": [
+      "TDX-eltdx"
+    ],
+    "finance_diagnosis": [
+      "TDX-eltdx"
+    ],
+    "profit_forecast": [
+      "TDX-eltdx"
+    ],
+    "hot_topics": [
+      "TDX-eltdx"
+    ],
+    "topic_compare": [
+      "TDX-eltdx"
+    ],
+    "northbound_holding": [
+      "TDX-eltdx"
+    ],
+    "theme_market": [
+      "TDX-eltdx"
+    ],
+    "valuation": [
+      "TDX-eltdx"
+    ],
+    "business_composition": [
+      "TDX-eltdx"
+    ],
+    "dividend_financing": [
+      "TDX-eltdx"
+    ],
+    "shareholder_change_plans": [
+      "TDX-eltdx"
+    ],
+    "auctions.series（0x056a）": [
+      "TDX-eltdx"
+    ],
+    "get_auction_0925": [
+      "TDX-eltdx"
+    ],
+    "minutes.today": [
+      "TDX-eltdx"
+    ],
+    "history": [
+      "TDX-eltdx"
+    ],
+    "recent": [
+      "TDX-eltdx"
+    ],
+    "minutes.aux（0x051b）": [
+      "TDX-eltdx"
+    ],
+    "trades.today": [
+      "TDX-eltdx"
+    ],
+    "K线": [
+      "同花顺-fuyao"
+    ],
+    "股息": [
+      "同花顺-fuyao"
+    ],
+    "ROA": [
+      "同花顺-fuyao"
+    ],
+    "PB": [
+      "同花顺-fuyao"
+    ],
+    "资金流(主力净)": [
+      "同花顺-fuyao"
+    ],
+    "主力净(全市场批量)": [
+      "同花顺-fuyao"
+    ],
+    "A 实时": [
+      "ZHB"
+    ],
+    "B 准实时": [
+      "ZHB"
+    ],
+    "C 日频": [
+      "ZHB"
+    ],
+    "D 静态": [
+      "ZHB"
+    ],
+    "永久（10 年）": [
+      "TDX-0x0010/F10"
+    ],
+    "季度（90-365 天）": [
+      "TDX-0x0010/F10"
+    ],
+    "季度（24h-7天）": [
+      "TDX-0x0010/F10"
+    ],
+    "每日（交易日）": [
+      "TDX-0x0010/F10"
+    ],
+    "贵州茅台": [
+      "TDX-0x0010/F10"
+    ],
+    "N百花医药": [
+      "TDX-0x0010/F10"
+    ],
+    "C中芯": [
+      "TDX-0x0010/F10"
+    ],
+    "XD": [
+      "TDX-0x0010/F10"
+    ],
+    "XR": [
+      "TDX-0x0010/F10"
+    ],
+    "DR 茅台": [
+      "TDX-0x0010/F10"
+    ],
+    "ST百花医药": [
+      "TDX-0x0010/F10"
+    ],
+    "*ST湘邮": [
+      "TDX-0x0010/F10"
+    ],
+    "[verify": [
+      "TDX-0x0010/F10"
+    ],
+    "push2_verify.md](verify": [
+      "TDX-0x0010/F10"
+    ],
+    "push2_verify.md)": [
+      "TDX-0x0010/F10"
+    ],
+    "axdata_verify.md](verify": [
+      "TDX-0x0010/F10"
+    ],
+    "axdata_verify.md)": [
+      "TDX-0x0010/F10"
+    ],
+    "samples_verify.md](verify": [
+      "TDX-0x0010/F10"
+    ],
+    "samples_verify.md)": [
+      "TDX-0x0010/F10"
+    ],
+    "tencent_verify.md](verify": [
+      "TDX-0x0010/F10"
+    ],
+    "tencent_verify.md)": [
+      "TDX-0x0010/F10"
+    ],
+    "[..": [
+      "TDX-0x0010/F10"
+    ],
+    "field_verification": [
+      "TDX-0x0010/F10"
+    ],
+    "report_existence_20260902.md](..": [
+      "TDX-0x0010/F10"
+    ],
+    "report_existence_20260902.md)": [
+      "TDX-0x0010/F10"
+    ],
+    "levistock_field_verify.md](verify": [
+      "TDX-0x0010/F10"
+    ],
+    "levistock_field_verify.md)": [
+      "TDX-0x0010/F10"
+    ],
+    "thsdk_field_verify.md](verify": [
+      "TDX-0x0010/F10"
+    ],
+    "thsdk_field_verify.md)": [
+      "TDX-0x0010/F10"
+    ],
+    "fuyao_api_full.md](verify": [
+      "TDX-0x0010/F10"
+    ],
+    "fuyao_api_full.md)": [
+      "TDX-0x0010/F10"
+    ],
+    "client_fields_enum.md](verify": [
+      "TDX-0x0010/F10"
+    ],
+    "client_fields_enum.md)": [
+      "TDX-0x0010/F10"
+    ],
+    "network_servers.md](verify": [
+      "TDX-0x0010/F10"
+    ],
+    "network_servers.md)": [
+      "TDX-0x0010/F10"
+    ],
+    "em_indicators.md](verify": [
+      "TDX-0x0010/F10"
+    ],
+    "em_indicators.md)": [
+      "TDX-0x0010/F10"
+    ],
+    "em_tableheader_ids.md](verify": [
+      "TDX-0x0010/F10"
+    ],
+    "em_tableheader_ids.md)": [
+      "TDX-0x0010/F10"
+    ],
+    "tdx_func_fields.md](verify": [
+      "TDX-0x0010/F10"
+    ],
+    "tdx_func_fields.md)": [
+      "TDX-0x0010/F10"
+    ],
+    "tdx_headers_definition.md](verify": [
+      "TDX-0x0010/F10"
+    ],
+    "tdx_headers_definition.md)": [
+      "TDX-0x0010/F10"
+    ],
+    "tdxhy_x_names.md](verify": [
+      "TDX-0x0010/F10"
+    ],
+    "tdxhy_x_names.md)": [
+      "TDX-0x0010/F10"
+    ],
+    "ftshare_fields_mirror.md](verify": [
+      "TDX-0x0010/F10"
+    ],
+    "ftshare_fields_mirror.md)": [
+      "TDX-0x0010/F10"
+    ],
+    "ulist_push2_align.md](verify": [
+      "TDX-0x0010/F10"
+    ],
+    "ulist_push2_align.md)": [
+      "TDX-0x0010/F10"
+    ],
+    "ths_tableheader_ids.md](verify": [
+      "TDX-0x0010/F10"
+    ],
+    "ths_tableheader_ids.md)": [
+      "TDX-0x0010/F10"
+    ],
+    "东财指标代码": [
+      "TDX-0x0010/F10"
+    ],
+    "东财表头": [
+      "TDX-0x0010/F10"
+    ],
+    "通达信官方字段": [
+      "TDX-0x0010/F10"
+    ],
+    "通达信表头": [
+      "TDX-0x0010/F10"
+    ],
+    "通达信行业": [
+      "TDX-0x0010/F10"
+    ],
+    "腾讯": [
+      "TDX-0x0010/F10"
+    ],
+    "push2": [
+      "TDX-0x0010/F10"
+    ],
+    "ulist↔push2 对齐": [
+      "TDX-0x0010/F10"
+    ],
+    "同花顺 SDK": [
+      "TDX-0x0010/F10"
+    ],
+    "同花顺 tableheader": [
+      "TDX-0x0010/F10"
+    ],
+    "样本矩阵": [
+      "TDX-0x0010/F10"
+    ],
+    "AxData": [
+      "TDX-0x0010/F10"
+    ],
+    "FTShare": [
+      "TDX-0x0010/F10"
+    ],
+    "fuyao": [
+      "TDX-0x0010/F10"
+    ],
+    "客户端枚举": [
+      "TDX-0x0010/F10"
+    ],
+    "服务器": [
+      "TDX-0x0010/F10"
+    ],
+    "levistock": [
+      "TDX-0x0010/F10"
+    ],
+    "⚠️ ZHB (tdxstat": [
+      "TDX-0x0010/F10"
+    ],
+    "tdxstat2": [
+      "TDX-0x0010/F10"
+    ],
+    "tipinfo)": [
+      "TDX-0x0010/F10"
+    ],
+    "⚠️ 新浪": [
+      "TDX-0x0010/F10"
+    ],
+    "akshare": [
+      "TDX-0x0010/F10"
+    ],
+    "其他文档确认源": [
+      "TDX-0x0010/F10"
+    ],
+    "MoodNumCount": [
+      "TDX-0x0010/F10"
+    ],
+    "GetPlate_Info_QJ": [
+      "TDX-0x0010/F10"
+    ],
+    "GetPlateInfo_w38": [
+      "TDX-0x0010/F10"
+    ],
+    "DailyLimitPerformance2": [
+      "TDX-0x0010/F10"
+    ],
+    "MorningBiddingList": [
+      "TDX-0x0010/F10"
+    ],
+    "GetStockBid": [
+      "TDX-0x0010/F10"
+    ],
+    "GetStockPanKou": [
+      "TDX-0x0010/F10"
+    ],
+    "GetKLineZhangTing": [
+      "TDX-0x0010/F10"
+    ],
+    "GetMainMonitor_w30": [
+      "TDX-0x0010/F10"
+    ],
+    "GetWeiTuo_W14": [
+      "TDX-0x0010/F10"
+    ],
+    "GroupCount_w28": [
+      "TDX-0x0010/F10"
+    ],
+    "Radar": [
+      "TDX-0x0010/F10"
+    ],
+    "GetHotPHB": [
+      "TDX-0x0010/F10"
+    ],
+    "GlobalCommon": [
+      "TDX-0x0010/F10"
+    ],
+    "GetKLineDay_W14": [
+      "TDX-0x0010/F10"
+    ],
+    "GetStockTrendIncremental": [
+      "TDX-0x0010/F10"
+    ],
+    "GetStockList（龙虎榜）": [
+      "TDX-0x0010/F10"
+    ],
+    "涨停": [
+      "TDX-0x0010/F10"
+    ],
+    "炸板": [
+      "TDX-0x0010/F10"
+    ],
+    "跌停池": [
+      "TDX-0x0010/F10"
+    ],
+    "market_indicator": [
+      "TDX-0x0010/F10"
+    ],
+    "line": [
+      "TDX-0x0010/F10"
+    ],
+    "surge_stock": [
+      "TDX-0x0010/F10"
+    ],
+    "stocks+plates": [
+      "TDX-0x0010/F10"
+    ],
+    "fupanwang": [
+      "TDX-0x0010/F10"
+    ],
+    "kpl": [
+      "TDX-0x0010/F10"
+    ],
+    "zhibo": [
+      "TDX-0x0010/F10"
+    ],
+    "GetBaseFaceListZDEvnArtNew": [
+      "TDX-0x0010/F10"
+    ],
+    "BKFenShiZhiBo": [
+      "TDX-0x0010/F10"
+    ],
+    "SonPlate_Info": [
+      "TDX-0x0010/F10"
+    ],
+    "GetGPCPHBTS_Tag": [
+      "TDX-0x0010/F10"
+    ],
+    "Theme": [
+      "TDX-0x0010/F10"
+    ],
+    "InfoBKR": [
+      "TDX-0x0010/F10"
+    ],
+    "Index": [
+      "TDX-0x0010/F10"
+    ],
+    "NewGetList": [
+      "TDX-0x0010/F10"
+    ],
+    "GetDayBaseFaceListZDEvnArt": [
+      "TDX-0x0010/F10"
+    ],
+    "盘面亮点": [
+      "TDX-0x0010/F10"
+    ],
+    "看强势（大幅回撤）": [
+      "TDX-0x0010/F10"
+    ],
+    "涨停天梯": [
+      "TDX-0x0010/F10"
+    ],
+    "龙虎榜动向": [
+      "TDX-0x0010/F10"
+    ],
+    "最强风口": [
+      "TDX-0x0010/F10"
+    ],
+    "明天炒什么": [
+      "TDX-0x0010/F10"
+    ],
+    "明天炒什么搜索": [
+      "TDX-0x0010/F10"
+    ],
+    "题材库搜索": [
+      "TDX-0x0010/F10"
+    ],
+    "题材库详情": [
+      "TDX-0x0010/F10"
+    ],
+    "快讯头条": [
+      "TDX-0x0010/F10"
+    ],
+    "快讯重要": [
+      "TDX-0x0010/F10"
+    ],
+    "全部": [
+      "TDX-0x0010/F10"
+    ],
+    "AI解读": [
+      "TDX-0x0010/F10"
+    ],
+    "直播内容": [
+      "TDX-0x0010/F10"
+    ],
+    "直播图标注": [
+      "TDX-0x0010/F10"
+    ],
+    "北证": [
+      "TDX-0x0010/F10"
+    ],
+    "沪深京": [
+      "TDX-0x0010/F10"
+    ],
+    "沪深": [
+      "TDX-0x0010/F10"
+    ],
+    "上证": [
+      "TDX-0x0010/F10"
+    ],
+    "创业板": [
+      "TDX-0x0010/F10"
+    ],
+    "科创板": [
+      "TDX-0x0010/F10"
+    ],
+    "权重表现": [
+      "TDX-0x0010/F10"
+    ],
+    "大幅回撤": [
+      "TDX-0x0010/F10"
+    ],
+    "今日涨停破板率": [
+      "TDX-0x0010/F10"
+    ],
+    "历史涨停破板率": [
+      "TDX-0x0010/F10"
+    ],
+    "赚钱效应": [
+      "TDX-0x0010/F10"
+    ],
+    "赚钱效应展开": [
+      "TDX-0x0010/F10"
+    ],
+    "昨日涨停": [
+      "TDX-0x0010/F10"
+    ],
+    "连板": [
+      "TDX-0x0010/F10"
+    ],
+    "破板表现分时": [
+      "TDX-0x0010/F10"
+    ],
+    "同上成交量": [
+      "TDX-0x0010/F10"
+    ],
+    "机构增仓（未过滤": [
+      "TDX-0x0010/F10"
+    ],
+    "过滤北向保险）": [
+      "TDX-0x0010/F10"
+    ],
+    "按板块": [
+      "TDX-0x0010/F10"
+    ],
+    "按个股": [
+      "TDX-0x0010/F10"
+    ],
+    "新高趋势": [
+      "TDX-0x0010/F10"
+    ],
+    "热搜排行": [
+      "TDX-0x0010/F10"
+    ],
+    "搜索": [
+      "TDX-0x0010/F10"
+    ],
+    "涨价榜": [
+      "TDX-0x0010/F10"
+    ],
+    "精选": [
+      "TDX-0x0010/F10"
+    ],
+    "股票": [
+      "TDX-0x0010/F10"
+    ],
+    "订阅": [
+      "TDX-0x0010/F10"
+    ],
+    "列表": [
+      "TDX-0x0010/F10"
+    ],
+    "内容详情": [
+      "TDX-0x0010/F10"
+    ],
+    "公告详情": [
+      "TDX-0x0010/F10"
+    ],
+    "全球指数": [
+      "TDX-0x0010/F10"
+    ],
+    "盘口精简（溢价基因）": [
+      "TDX-0x0010/F10"
+    ],
+    "消息速递": [
+      "TDX-0x0010/F10"
+    ],
+    "盯盘实时": [
+      "TDX-0x0010/F10"
+    ],
+    "涨停原因（个股）": [
+      "TDX-0x0010/F10"
+    ],
+    "概念题材": [
+      "TDX-0x0010/F10"
+    ],
+    "公司资料": [
+      "TDX-0x0010/F10"
+    ],
+    "股本股东": [
+      "TDX-0x0010/F10"
+    ],
+    "估值（市盈率 TTM）": [
+      "TDX-0x0010/F10"
+    ],
+    "主要指标": [
+      "TDX-0x0010/F10"
+    ],
+    "api": [
+      "TDX-0x0010/F10"
+    ],
+    "getPlateRotatData": [
+      "TDX-0x0010/F10"
+    ],
+    "getPlateRotatChart": [
+      "TDX-0x0010/F10"
+    ],
+    "getLongByPlate": [
+      "TDX-0x0010/F10"
+    ],
+    "getPlateDayChart": [
+      "TDX-0x0010/F10"
+    ]
+  },
   "mappings": [
     {
       "from": {

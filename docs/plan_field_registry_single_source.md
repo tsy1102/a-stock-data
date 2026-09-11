@@ -2,7 +2,7 @@
 
 > 关联：P0（`gen_field_matrix` §零·B 写回护栏，已提交 `1fc9dd4`）、P1（归档契约预检，已提交 `1fc9dd4`）
 > 数据来源：通达信 a-stock-data 字段破解体系（`docs/field_dict.md`）
-> 状态：**G0 闸门已签字（5 项安全默认已定）；Phase 1 抽取完成且 G1 闸门 PASS（已提交 `e009cc5`→`8728279`）；Phase 2（治理脚本改读 registry）已完成 6/8 脚本改读 + 2 个刻意排除/延迟（最新提交 `e3daf69`）。Phase 3（markdown 单向生成）待启动。**
+> 状态：**G0 闸门已签字（5 项安全默认已定）；Phase 1 抽取完成且 G1 闸门 PASS（已提交 `e009cc5`→`8728279`）；Phase 2（治理脚本改读 registry）已完成 6/8 脚本改读 + 2 个刻意排除/延迟（最新提交 `e3daf69`）；Phase 3（markdown 单向生成 `gen_field_dict.py`）已完成，G3 闸门 PASS（幂等、§零·B 字节一致、subdict-index 自动索引），详见 §6.4（本次收尾提交）。**
 
 ---
 
@@ -305,6 +305,37 @@ fields:                                  # 替代 markdown 字段表 + SECTION_M
 - **A7 闸门（`verify_sync_check`）增强而非削弱**：registry 声明源（ZHB/akshare/开盘红等）的 verify_file 也被校验，漂移仅告警。
 - **保留的字典扫描（lint_field_names / field_landing_audit）均为非脆弱的全文正则**，registry 数据形状不覆盖其需求，故安全保留。
 - Phase 2 未达"8/8 全改读"，但 6 个**真正受 SECTION_MAP/对齐表脆弱性影响**的脚本已解耦，2 个排除项有充分数据形状理由，**不构成反模式残留**。
+
+---
+
+### 6.4 Phase 3 实施记录与收尾（2026-09-12 完成）
+
+#### 6.4.1 交付物
+- `scripts/gen_field_dict.py`（新建）：由 `field_registry.json` 单一真相源渲染 `field_dict.md` 的机器生成区块：
+  * `<!-- GEN:field-matrix -->` —— §零·B 字段×源总表（复用 `gen_field_matrix.render`）。
+  * `<!-- GEN:subdict-index -->` —— 分字典索引（来自 `sources[].verify_file`）。
+  * 幂等：`--check` 仅校验不写回，供 CI / 提交前闸门；重复运行同一 registry 产出一致。
+- `scripts/extract_registry.py`：新增 `field_matrix` 投影（原生 token 视图 → 与 `build_matrix()` 同口径），供 gen_field_dict / registry_parity 消费。
+- `scripts/field_registry_api.py`：新增 `field_matrix_map()` 统一访问层（零依赖，registry 基座）。
+- `scripts/gen_field_matrix.py`：`build_matrix` registry 路径改读 `field_matrix` 投影（与 `--from-md` golden 回归一致）。
+- `scripts/registry_parity.py`：新增 `field_matrix` 投影 parity 校验（G1 双重 parity：原生 token + §零·B 投影）。
+- `docs/field_verification/field_registry.json`：重抽（与 §零·B 字节一致 + audit 不变 + parity，见 tasks 113–118）。
+- `docs/field_dict.md`：头部 §零·B 声明改指 `field_registry.json`/`gen_field_dict.py`；尾部新增 `<!-- GEN:subdict-index -->` 自动分字典索引块。
+
+#### 6.4.2 闸门结果（G3 收尾）
+| 闸门 | 工具 | 结果 |
+|---|---|---|
+| G1 双重 parity | `registry_parity.py` | PASS（native 2252/3260/549；field_matrix PASS） |
+| G3 幂等 | `gen_field_dict.py --check` | ✅ 与当前 `field_dict.md` 无差异 |
+| A7 一致性 | `verify_sync_check.py` | HARD FAIL:0 / WARN:0（registry 声明源亦校验） |
+| 同号即同义 | `lint_field_same_number.py` | PASS（87 对齐表条目 / 239 登记行 / 401 f 编号行） |
+
+> 注：`lint_field_names.py` 在 `field_dict.md` §12.3.2.3 f144 行存在「禁用异名回归: 最新价」预警（exit 1），**该预警在 master HEAD 已存在**（仅因本阶段顶部声明减 1 行致行号 1742→1741 位移），**非 Phase 3 引入**；属独立清理项，不在本阶段范围。
+
+#### 6.4.3 结论
+- 根治目标达成：markdown 字段表区块（§零·B + 分字典索引）由 registry **生成**而非被**解析**，彻底切断「改文档→改工具行为」反模式。
+- 字段契约表（四列 fNN/含义/单位/状态）仍人工维护（Layer2 覆盖率 ~38.7%，键空间为清洗字段名，生成会丢属性），待 Layer2 补全后纳入 Phase 4。
+- 保留的字典扫描（`lint_field_names` / `field_landing_audit` / `expand_range_fields`）见 §6.2 排除理由，registry 化不覆盖其需求。
 
 ---
 

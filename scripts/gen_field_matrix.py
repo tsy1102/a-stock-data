@@ -188,14 +188,16 @@ def build_matrix_from_md():
     return name_sources, records
 
 
-# Phase 2(2026-09-12): registry 单一真相源路径（与 build_matrix_from_md 同构：{code: set(sources)}）。
-# 由 field_registry_api.field_source_map 提供视图；任何读取失败抛异常交由 build_matrix 回退。
+# Phase 2/3(2026-09-12): registry 单一真相源路径（与 build_matrix_from_md 同构：{clean_name: set(sources)}）。
+# 由 field_registry_api.field_matrix_map 提供 §零·B 投影视图（1156 清洗字段名 / 1230 去重记录）；
+# 任何读取失败抛异常交由 build_matrix 回退 markdown。
 def build_matrix_from_registry():
     reg = fra.load_registry()
+    fm = fra.field_matrix_map(reg)
     name_sources = defaultdict(set)
-    for code, srcs in fra.field_source_map(reg).items():
+    for code, srcs in fm.items():
         name_sources[code].update(srcs)
-    records = fra.record_count(reg)
+    records = sum(len(v) for v in fm.values())
     return name_sources, records
 
 

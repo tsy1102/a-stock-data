@@ -8,7 +8,9 @@ import sys
 import types
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-BACKUP = os.path.join(ROOT, "_obsolete_v17_residue", "_sc_datasource_singlefile_backup.py")
+# V17.2.x(2026-09-10): 原位于 `_obsolete_v17_residue/`（该目录已清理），
+# 因本脚本仍以该单文件备份作为比对基准，故将文件本身迁至 `docs/backups/` 长期保留。
+BACKUP = os.path.join(ROOT, "docs", "backups", "_sc_datasource_singlefile_backup.py")
 sys.path.insert(0, ROOT)
 
 # 1) 载入原单文件备份为独立模块（ground truth）

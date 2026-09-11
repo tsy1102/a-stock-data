@@ -78,7 +78,7 @@ announcement_importance_keywords:
   - 行政处罚
   - 监管措施
 
-# 策略08/策略16-政策驱动关键词 → get_val_report.py 使用
+# 策略07/策略14-政策驱动关键词 → get_val_report.py 使用
 policy_keywords:
   - 政策
   - 支持
@@ -96,7 +96,7 @@ policy_keywords:
   - 消费
   - 科技
 
-# 策略09-日历效应月度映射 → get_val_report.py 使用
+# 策略08-日历效应月度映射 → get_val_report.py 使用
 season_map:
   1: [银行, 保险, 煤炭]
   2: [农林牧渔, 建材, 化工]

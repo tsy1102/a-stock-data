@@ -19,6 +19,7 @@ import time
 import math
 import re
 import threading
+import socket
 import logging
 from typing import Any, Dict, List, Optional, Tuple, Union
 from urllib.parse import urlparse
@@ -164,6 +165,11 @@ _EM_ASYNC_SESSION_LOCK = threading.Lock()
 # 按域名独立限流配置（基于诊断脚本实测）
 # ═══════════════════════════════════════
 # 注意: 增加 sleep_ms 防止被服务器限流/封禁
+# ⚠️ V17.2.x(2026-09-10) 治理说明：本表与 `core/tdx_client.py::_DOMAIN_LIMITS` (6 域)
+# **有意保持独立、不合并**（用户决策 Q5）——本表为 **HTTP 请求级**节流，
+# tdx_client 表为 **TDX TCP 长连接级**节流，语义不同不可统一。
+#   本表 37 域覆盖 HTTP 数据源；tdx_client 的 6 域是其子集（走 TCP 通道）。
+#   **新增/调整域名时须两处同步评估**（详见 tdx_client 侧同名说明）。
 _DOMAIN_LIMITS: Dict[str, Dict[str, Any]] = {
     "qt.gtimg.cn": {"sleep_ms": 150, "semaphore": None, "rps": 5.0},
     "quotes.sina.cn": {"sleep_ms": 150, "semaphore": None, "rps": 5.0},
@@ -482,6 +488,10 @@ def em_get(url: str, params: dict | None = None, headers: dict | None = None,
         if _em_cookie:
             session_headers["Cookie"] = _em_cookie
 
+        # V17.2.x: DNS 解析阶段硬超时护栏——在 connect/read 之前先把"解析挂起"转换为
+        # ConnectionError，使其落入下方连接级 except（_record_em_disconnect→封禁跳过/return None）的兜底路径。
+        _resolve_host_with_timeout(_domain)
+
         _response = EM_SESSION.get(url, params=params, headers=session_headers,
                                    timeout=timeout, **kwargs)
 
@@ -750,6 +760,60 @@ def _quick_request(url: str, params: Optional[Dict[str, Any]] = None,
     return _do_request(url, params, headers, timeout, max_retries, data, method, verify)
 
 
+# ─── DNS 解析阶段硬超时护栏（根因修复，2026-09-09）───
+# requests 的 timeout 仅覆盖 connect/read，不覆盖 DNS 解析（socket.getaddrinfo 不受其约束）。
+# 上游 DNS/路由间歇挂起时 requests 会无限阻塞而不抛异常，绕过所有 exception-based fallback，
+# 最终表现为 asyncio.gather 整批停滞 → main.py 900s 卡死强杀(-1)。此护栏用独立线程 +
+# join(timeout) 给 DNS 阶段加墙：挂起即快速抛 ConnectionError，落入既有 fallback 路径
+# （如 _do_request 的 ConnectionError except → 重试 → return None → 调用方降级）。
+# 带 TTL 缓存：命中缓存仅字典查找（零额外 DNS 查询）；仅缓存失效时做真实解析（此时才有线程超时护栏）。
+_DNS_CACHE: Dict[str, Tuple[Optional[str], float]] = {}
+_DNS_CACHE_TTL = 300.0
+_DNS_CACHE_LOCK = threading.Lock()
+_DNS_RESOLVE_TIMEOUT = 5.0
+
+
+def _resolve_host_with_timeout(host: str, timeout: float = _DNS_RESOLVE_TIMEOUT) -> None:
+    """对 host 做带硬超时的 DNS 解析预检。解析挂起/失败即抛 requests.exceptions.ConnectionError。
+
+    已为 IP 的 host 直接跳过（无需 DNS）。成功解析结果按 TTL 缓存，避免热路径每请求真实查询。
+    """
+    if not host:
+        return
+    _h = host.split(":")[0]
+    # 已是 IP（v4/v6）则跳过 DNS
+    if _h.replace(".", "").isdigit() or (_h.startswith("[") and _h.endswith("]")):
+        return
+    _now = time.time()
+    with _DNS_CACHE_LOCK:
+        _cached = _DNS_CACHE.get(_h)
+    if _cached is not None and _now - _cached[1] < _DNS_CACHE_TTL:
+        return  # 缓存命中（含此前成功解析的 IP），跳过预检
+    _res: Dict[str, Any] = {}
+
+    def _resolve() -> None:
+        try:
+            _res["ip"] = socket.gethostbyname(_h)
+        except Exception as _e:  # DNS 失败（NXDOMAIN / 临时错误 / 等服务端拒绝）
+            _res["err"] = _e
+
+    _th = threading.Thread(target=_resolve, daemon=True)
+    _th.start()
+    _th.join(timeout)
+    if _th.is_alive():
+        # DNS 解析挂起（超时不返回）——requests timeout 无法覆盖的盲区
+        raise requests.exceptions.ConnectionError(
+            f"DNS resolution timeout for {_h} (>={timeout}s, 疑似解析挂起)"
+        )
+    if "err" in _res:
+        # DNS 解析失败：按连接级错误抛出，复用既有 fallback
+        raise requests.exceptions.ConnectionError(
+            f"DNS resolution failed for {_h}: {_res['err']}"
+        )
+    with _DNS_CACHE_LOCK:
+        _DNS_CACHE[_h] = (_res.get("ip"), _now)
+
+
 def _do_request(url: str, params: Optional[Dict[str, Any]],
                 headers: Optional[Dict[str, str]], timeout: int, max_retries: int,
                 data: Optional[Dict[str, Any]], method: str, verify: bool) -> Optional[requests.Response]:
@@ -781,6 +845,10 @@ def _do_request(url: str, params: Optional[Dict[str, Any]],
             if is_em and not _req_headers.get("Referer"):
                 if _HAS_FAULT_TOLERANCE:
                     _req_headers["Referer"] = get_random_referer()
+
+            # V17.2.x: DNS 解析阶段硬超时护栏——在 connect/read 之前先把"解析挂起"转换为
+            # ConnectionError，使其落入下方 except（重试→return None）的既有 fallback 路径。
+            _resolve_host_with_timeout(domain)
 
             if method == "POST":
                 r = _HTTP_SESSION.post(url, data=data, params=params,

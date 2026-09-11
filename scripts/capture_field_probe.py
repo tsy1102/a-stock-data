@@ -34,6 +34,10 @@ for _s in (sys.stdout, sys.stderr):
 _ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 if _ROOT not in sys.path:
     sys.path.insert(0, _ROOT)
+# V17.2.7: 确保本脚本目录(含 field_meta.py)在 sys.path, 使采集时懒加载 field_meta 必然可达
+_SCRIPTS = os.path.dirname(os.path.abspath(__file__))
+if _SCRIPTS not in sys.path:
+    sys.path.insert(0, _SCRIPTS)
 
 from stock_common.sc_utils import em_secid_prefix  # V17.0 S3: 统一 secid 前缀
 
@@ -835,10 +839,21 @@ def main() -> None:
             _scheme = SOURCE_SCHEME.get(name, "unknown")
             if isinstance(data, dict):
                 data["scheme"] = _scheme
+            # V17.2.7: 字段级 raw/computed + 窗口溯源元数据, 嵌入 raw 文件顶层 `field_meta` 键,
+            # 使原始采集物自带字段身份溯源(consumed by computed_collider.py)。懒加载, 失败不影响采集。
+            _fm = None
+            try:
+                from field_meta import field_meta_block
+                _fm = field_meta_block(name)
+            except Exception:
+                _fm = None
+            if _fm is not None and isinstance(data, dict):
+                data["field_meta"] = _fm
             path = os.path.join(out_dir, f"raw_{name}.json")
             with open(path, "w", encoding="utf-8") as f:
                 json.dump(data, f, ensure_ascii=False, indent=1, default=str)
             meta["sources"][name] = {"scheme": _scheme, "ok": True,
+                                     "field_meta": _fm is not None,
                                      "secs": round(time.time() - t1, 1), "file": path}
             print(f"  ✔ {name}: {meta['sources'][name]['secs']}s", flush=True)
         except Exception as e:

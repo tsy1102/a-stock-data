@@ -67,6 +67,8 @@ scratch/*
 # V17.0.12 补: WorkBuddy 会话记忆/日志, 非仓库产物; 忽略仅免 git status 噪音
 # ⚠️ 该目录为项目数据, 忽略 ≠ 可删除
 .workbuddy-ai/
+# V17.0 补: WorkBuddy 项目级元数据(会话记忆/日志), 非仓库产物
+.workbuddy/
 
 # ── 浏览器会话快照(含登录态) ────────────────────────────────
 .playwright-mcp/

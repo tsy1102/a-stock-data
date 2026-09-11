@@ -481,6 +481,40 @@ def get_industry_rank_from_zhb(top_n: int = 20) -> List[Dict[str, Any]]:
 
 
 @cached(category="industry_compare", ttl_seconds=TTL["industry_compare"], trading_day=True, valid_if=make_valid_if())
+def get_industry_ranking(top_n: int = 20, _tag: str = "report") -> List[Dict[str, Any]]:
+    """V17.2.x(2026-09-10): 行业排名（**list 返回**）——由 val/lng 本地 `industry_comparison` 下沉合并。
+
+    ⚠️ 与相邻 `get_industry_comparison`（**dict 返回**，med 使用）**语义不同，勿混用**：
+      - 本函数: 返回 `list[dict]`——ZHB 行业榜行 或 TDX `board_list` 板块（供逐行渲染）；
+      - get_industry_comparison: 返回 `{"top"/"bottom"/"all"/"total"}` 聚合结构。
+      二者同名近义是历史演化产物，本函数以 `_ranking` 后缀显式区分。
+
+    Args:
+        top_n: 返回行业数量上限。
+        _tag: 调用方标识（仅用于日志定位，如 "val"/"lng"）。
+
+    Returns:
+        list[dict]: 行业行；全部失败时返回 []。
+    """
+    try:
+        rows = get_industry_rank_from_zhb(top_n)
+        if rows:
+            return rows
+    except Exception as _e:
+        _debug_log(f"{_tag} industry_rank zhb error: {_e}")
+    try:
+        # 惰性导入：core↔stock_common 存在循环依赖，沿用项目既有 lazy import 断环手法
+        from core.tdx_client import tdx_get_board_list
+
+        sectors = tdx_get_board_list(0)
+        if not sectors:
+            return []
+        return sectors
+    except Exception as _e:
+        _debug_log(f"{_tag} industry_rank tdx fallback error: {_e}")
+        return []
+
+
 def get_industry_comparison(top_n: int = 20) -> Dict[str, Any]:
     """V4.2: 全行业排名 → ZHB 本地优先（V16.3 O25——用户：ZHB 就能获取，参照系 T-1 可接受），
     TDX board_list / 东财 push2 兜底。

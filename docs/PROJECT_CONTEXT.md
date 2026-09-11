@@ -31,7 +31,7 @@
 | 层 | 模块 | 说明 |
 |---|---|---|
 | 入口 | `main.py`(530 行) | 批处理调度, 输出活性检测(900s 无输出判卡死) |
-| 报告脚本 | `get_sht_report.py`(2014)/`get_med_report.py`(1301)/`get_lng_report.py`(1320)/`get_val_report.py`(2390)/`get_mak_report.py`(1899) | sht=短线 90 日/med=中线 180 日/lng=长线 730 日/val=25 策略全市场/mak=市场全景 A-F 六段 |
+| 报告脚本 | `get_sht_report.py`(2014)/`get_med_report.py`(1301)/`get_lng_report.py`(1320)/`get_val_report.py`(2390)/`get_mak_report.py`(1899) | sht=短线 90 日/med=中线 180 日/lng=长线 730 日/val=23 策略全市场/mak=市场全景 A-F 六段 |
 | 核心包 | `core/`(data_provider/tdx_client/zhb_client/zhb_sync/stock_cache) | 统一数据层+协议层+缓存 |
 | 支撑 | `stock_common/`(sc_datasource/sc_network/sc_render/sc_schema/md_render 等) | 数据源/限流/渲染/合约 |
 | 脚本工具 | `scripts/`(run_tests/run_with_system_python/capture_field_probe/sync_readme 等) | 测试/采集/文档同步 |

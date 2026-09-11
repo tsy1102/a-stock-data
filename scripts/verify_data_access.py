@@ -95,13 +95,10 @@ _FROM_STOCK_COMMON_SC_NETWORK_RE = re.compile(
 EXEMPT_DIRS = (
     "stock_common/",     # 适配器层（公理 A1 允许）
     "scratch/",          # DEBT-002 显式豁免
-    "_obsolete_v17_residue/",  # V17.1.0(2026-09-06) 归档残渣：已废弃的拆分尝试
-                               # (_ARCHIVED_sc_datasource_split_20260904/) 与单文件备份
-                               # (_sc_datasource_singlefile_backup.py)。
-                               # 与 scratch/ 同论证：仅作为**等价性比对的参照副本**被
-                               # scripts/split_sc_datasource_v2.py 与 scripts/_verify_split.py
-                               # 以文件路径读取，全仓无任何 import 引用（已 grep 核实）。
-                               # 不豁免会产生 114 项噪声，淹没真实违规。
+    # V17.2.x(2026-09-10): `_obsolete_v17_residue/` 已清理，原单文件备份迁至 `docs/backups/`
+    # （已由下方 "docs/" 规则覆盖）。该备份仅作为**等价性比对的参照副本**被
+    # scripts/split_sc_datasource_v2.py 与 scripts/_verify_split.py 以文件路径读取，
+    # 全仓无任何 import 引用（已 grep 核实），故豁免不会产生真实违规漏报。
     "tests/",
     "docs/",
     "scripts/",          # 闸门工具自身

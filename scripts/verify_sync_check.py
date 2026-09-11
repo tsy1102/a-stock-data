@@ -34,6 +34,7 @@ verify_sync_check.py — 主字典 ↔ verify 分字典 一致性闸门（离线
 """
 
 import argparse
+import datetime
 import os
 import re
 import sys
@@ -149,18 +150,31 @@ def _subject_tokens(line, tok_re):
 
 def latest_upgrade_dates(text, token_regex):
     """主字典：返回 {token: 最新升级事件日期}。
-    仅统计「含升级事件短语 + 日期」的行，且只取该行「主语」位置的字段 token
-    （表格首格 / 加粗主语），避免把升级行中顺带提及的对照字段误判为被升级。"""
+    仅统计「含升级事件短语 + 日期」的行；日期取自「含升级短语的同子句」（以 ；。 切分），
+    而非整行最大日期——避免把同线更晚的「维持/确认」类日期（如 [85] 2026-09-09 维持L3）
+    误归为升级事件日（2026-09-03 主动升级），造成虚假陈旧误报。
+    仍只取该行「主语」位置的字段 token（表格首格 / 加粗主语），排除顺带提及的对照字段。"""
     tok_re = re.compile(token_regex)
+    clause_split = re.compile(r"[;；。]")
     out = {}
     for line in text.splitlines():
         if not UPGRADE_EVENT_RE.search(line):
             continue
-        dm = DATE_RE.search(line)
-        if not dm:
+        toks = _subject_tokens(line, tok_re)
+        if not toks:
             continue
-        d = dm.group(0)
-        for tok in _subject_tokens(line, tok_re):
+        # 取「所有含升级短语子句」的最大日期（同线多升级事件取最新）
+        d = None
+        for cl in clause_split.split(line):
+            if UPGRADE_EVENT_RE.search(cl):
+                ds = DATE_RE.findall(cl)
+                if ds:
+                    cd = max(ds)
+                    if d is None or cd > d:
+                        d = cd
+        if not d:
+            continue
+        for tok in toks:
             if tok not in out or d > out[tok]:
                 out[tok] = d
     return out
@@ -171,15 +185,108 @@ def latest_dates_anywhere(text, token_regex):
     tok_re = re.compile(token_regex)
     out = {}
     for line in text.splitlines():
-        dm = DATE_RE.search(line)
-        if not dm:
+        dates = DATE_RE.findall(line)
+        if not dates:
             continue
-        d = dm.group(0)
+        d = max(dates)  # 取该行最大日期（修复 2026-09-03/09 同现取首个的陈旧误判 bug）
         for m in tok_re.finditer(line):
             tok = m.group(0)
             if tok not in out or d > out[tok]:
                 out[tok] = d
     return out
+
+
+# ----------------------------------------------------------------------------
+# 主升分未升 矛盾检测 (HARD 4b) — 2026-09-11 增补
+#   主字典已定案(DET: L1/L2/L3/✅/精确/定案/固化/升格) 但 分字典同字段仍
+#   「待确认/未知/?/疑似」→ FAIL。
+#   动机：原 HARD 4 仅捕获「主动升级」短语（故意不含升格/固化以免复验误报），
+#   漏掉「主字典升格/固化 → 分字典仍 ?」这类真实脱节（即本次发现的分字典滞后根因）。
+#   另：原 HARD 4 不覆盖 ulist_push2_align.md 的 ? 语义行，本检查补齐。
+# ----------------------------------------------------------------------------
+SUB_UNRESOLVED_RE = re.compile(r"待确认|未知|疑似|待\s*F10|待终破|待\s*L1|待定|未定案|未实证")
+SUB_RESOLVED_POS = [
+    "L1-U", "L1", "L2", "L3", "L4", "✅", "精确", "定案", "固化", "升格",
+    "恒值占位", "常量占位", "未破解", "固定等级码", "固定占位",
+]
+
+CONTRADICTION_CHECKS = [
+    {"file": "push2_verify.md",      "token": r"\bf\d{2,3}\b", "fmt": "std"},
+    {"file": "tencent_verify.md",    "token": r"\[\d{1,3}\]",   "fmt": "std"},
+    {"file": "ulist_push2_align.md", "token": r"\bf\d{2,3}\b", "fmt": "ulist"},
+]
+
+
+def _rank(level):
+    return {"NONE": 0, "UND": 1, "UNINFO": 2, "DET": 3}.get(level, 0)
+
+
+def _classify_main(line):
+    """主字典某行对该字段的等级：DET(正向定案) > UNINFO(占位/未破解) > UND > NONE。"""
+    if any(k in line for k in ("L1-U", "L1", "L2", "L3", "✅", "精确", "定案", "固化", "升格")):
+        return "DET"
+    if any(k in line for k in ("恒值占位", "常量占位", "未破解", "固定等级码", "固定占位")):
+        return "UNINFO"
+    if SUB_UNRESOLVED_RE.search(line):
+        return "UND"
+    return "NONE"
+
+
+def _classify_subj(line):
+    """分字典某行对该字段的等级。"""
+    if SUB_UNRESOLVED_RE.search(line) and not any(k in line for k in SUB_RESOLVED_POS):
+        return "UND"
+    if any(k in line for k in SUB_RESOLVED_POS):
+        return "DET"
+    return "NONE"
+
+
+def main_status_map(text, token_regex):
+    """主字典：{token: (最强level, 最新日期)}，仅统计 subject 位置 token（表格首格/加粗）。"""
+    tok_re = re.compile(token_regex)
+    out = {}
+    for line in text.splitlines():
+        dm = DATE_RE.search(line)
+        d = dm.group(0) if dm else None
+        for tok in _subject_tokens(line, tok_re):
+            lvl = _classify_main(line)
+            if lvl == "NONE":
+                continue
+            cur = out.get(tok)
+            if cur is None:
+                out[tok] = (lvl, d)
+            elif _rank(lvl) > _rank(cur[0]) or (cur[1] is None and d):
+                out[tok] = (lvl, d if d else cur[1])
+    return out
+
+
+def sub_status_map(text, token_regex, fmt):
+    """分字典：{token: 最强level}。按 token 聚合取最强（避免同文件旧摘要行误报）。"""
+    tok_re = re.compile(token_regex)
+    agg = {}
+    for line in text.splitlines():
+        if not line.strip().startswith("|"):
+            continue
+        if fmt == "ulist":
+            cells = line.split("|")
+            if len(cells) < 4:
+                continue
+            m = tok_re.search(cells[2])
+            if not m:
+                continue
+            tok = m.group(0)
+            # ulist 列3 = push2 语义；含 '?' 即未解（含 "?市值"/"总股本?" 等猜测）
+            lvl = "UND" if "?" in cells[3] else _classify_subj(cells[3])
+        else:
+            toks = _subject_tokens(line, tok_re)
+            if not toks:
+                continue
+            tok = toks[0]
+            lvl = _classify_subj(line)
+        cur = agg.get(tok)
+        if cur is None or _rank(lvl) > _rank(cur):
+            agg[tok] = lvl
+    return agg
 
 
 # ----------------------------------------------------------------------------
@@ -291,6 +398,30 @@ def main():
         else:
             print(f"   ✓ {base}: 主字典 {len(main_up)} 个升级字段结论日期均 ≥ 分字典")
 
+    # ---- HARD 4b: 主升分未升（矛盾）----
+    print("[HARD] 4b. 主升分未升（主字典已定案 但 分字典仍 待确认/未知/?）")
+    for cfg in CONTRADICTION_CHECKS:
+        base = cfg["file"]
+        if base not in existing:
+            print(f"   - {base}: 跳过（附录不存在）")
+            continue
+        sub_text = read_text(os.path.join(VERIFY_DIR, base))
+        mmap = main_status_map(dict_text, cfg["token"])
+        smap = sub_status_map(sub_text, cfg["token"], cfg["fmt"])
+        found = False
+        for tok in sorted(smap):
+            if smap[tok] != "UND":
+                continue
+            m = mmap.get(tok)
+            if m and m[0] == "DET":
+                msg = (f"主升分未升: {base} 字段 {tok} 主字典已定案(L1/确定) "
+                       f"但分字典仍「待确认/未知/?」（须补同步）")
+                hard_failures.append(msg)
+                print(f"   ✗ {msg}")
+                found = True
+        if not found:
+            print(f"   ✓ {base}: 无主升分未升矛盾")
+
     # ---- WARN 5: 同步检查（best-effort，仅 --sync 时执行）----
     if not args.sync:
         print("[WARN] 5. 同步检查：跳过（未启用 --sync；需人工深审时加 --sync）")
@@ -323,6 +454,25 @@ def main():
     print("=" * 68)
     print(f" HARD FAIL: {len(hard_failures)} | WARN: {len(warnings)}")
     print("=" * 68)
+
+    # ---- 审计报告落盘 ----
+    try:
+        rep_dir = os.path.join(REPO_ROOT, "docs", "field_verification")
+        os.makedirs(rep_dir, exist_ok=True)
+        rep_path = os.path.join(rep_dir, "20260911_verify_sync_report.md")
+        with open(rep_path, "w", encoding="utf-8") as rf:
+            rf.write(f"# verify_sync_check 审计报告（{datetime.date.today()}）\n\n")
+            rf.write(f"- HARD FAIL: {len(hard_failures)}\n")
+            rf.write(f"- WARN: {len(warnings)}\n\n")
+            rf.write("## HARD FAIL 清单\n")
+            for m in hard_failures:
+                rf.write(f"- ❌ {m}\n")
+            rf.write("\n## WARN 清单\n")
+            for m in warnings:
+                rf.write(f"- ⚠️ {m}\n")
+        print(f"   报告已写入: {rep_path}")
+    except Exception as e:  # noqa: BLE001
+        print(f"   [WARN] 报告写入失败: {e}")
 
     if hard_failures:
         print("结果: ❌ 失败（存在断链/孤儿/映射不一致，须修复后提交）")

@@ -1001,8 +1001,11 @@ def get_history_fund_flow_120d(code: str, days: int = 60, prefer: str = "auto") 
     Args:
         code: 股票代码
         days: 天数（默认 60）
-        prefer: "tdx"=TDX 优先→东财 fallback（sht 短线口径）；
-                "em"=仅东财（med 中线口径）；"auto"=TDX 优先
+        prefer: "em"=东财直连（**推荐且为 sht/med 统一口径，2026-09-10 起**）；
+                "tdx"=⚠️ 历史别名，勿再用：其调用的 tdx_get_history_fund_flow
+                      自 V12.0 起已完全委托东财 HTTP，与本值同源同值，
+                      却会多一次冗余二次调用并把 source 误标为 "tdx"；
+                "auto"=同 "tdx"（保留仅为向后兼容）
 
     Returns:
         {"data": [dict(元)] 或 [], "error": str, "source": str}

@@ -33,7 +33,9 @@ import sys
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SRC = os.path.join(ROOT, "stock_common", "sc_datasource.py")
 PKG = os.path.join(ROOT, "stock_common", "sc_datasource")
-BACKUP = os.path.join(ROOT, "_obsolete_v17_residue", "_sc_datasource_singlefile_backup.py")
+# V17.2.x(2026-09-10): 原位于 `_obsolete_v17_residue/`（该目录已清理），
+# 因本脚本仍以该单文件备份作为比对基准，故将文件本身迁至 `docs/backups/` 长期保留。
+BACKUP = os.path.join(ROOT, "docs", "backups", "_sc_datasource_singlefile_backup.py")
 
 BUCKETS = ["_holders", "_eastmoney", "_quotes", "_industry",
            "_financials", "_pools", "_zhb", "_misc"]

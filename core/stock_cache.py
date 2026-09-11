@@ -85,6 +85,11 @@ from pathlib import Path
 
 _cache_logger = logging.getLogger("stock_cache")
 
+# V17.2.x(2026-09-10) 调整 E: 统一层字段契约版本号（缓存加固）
+# 当统一层字段语义发生【静态字段】重定义时，+1 此版本号即可令全部旧版本缓存 key 脱离引用而失效
+# （TTL 自然回收 / 下次写入覆盖）。版本嵌入缓存 key 前缀，旧 key 自动失效、无需手动清缓存。
+CACHE_CONTRACT_VERSION = "v1"
+
 # ═══════════════════════════════════════
 # L1 内存缓存（V10.3 新增）
 # ═══════════════════════════════════════
@@ -509,8 +514,8 @@ def _enforce_size_limit() -> None:
 # ═══════════════════════════════════════
 
 def _build_key(category: str, func_name: str, *args: Any, **kwargs: Any) -> str:
-    """根据函数名+参数生成缓存 key。"""
-    parts = [category, func_name]
+    """根据函数名+参数生成缓存 key（V17.2.x: 前缀嵌入 CACHE_CONTRACT_VERSION）。"""
+    parts = [CACHE_CONTRACT_VERSION, category, func_name]
     if args:
         parts.append("_".join(str(a) for a in args))
     if kwargs:
@@ -905,12 +910,12 @@ def invalidate_category(category: str, pattern: str = "") -> int:
         if pattern:
             cursor.execute(
                 "DELETE FROM cache_entries WHERE key LIKE ?",
-                (f"{category}:%{pattern}%",)
+                (f"{CACHE_CONTRACT_VERSION}:{category}:%{pattern}%",)
             )
         else:
             cursor.execute(
                 "DELETE FROM cache_entries WHERE key LIKE ?",
-                (f"{category}:%",)
+                (f"{CACHE_CONTRACT_VERSION}:{category}:%",)
             )
         db.commit()
         deleted = cursor.rowcount
@@ -931,7 +936,7 @@ def invalidate_prefix(prefix: str) -> int:
     try:
         db = _get_db()
         cursor = db.cursor()
-        cursor.execute("DELETE FROM cache_entries WHERE key LIKE ?", (f"{prefix}%",))
+        cursor.execute("DELETE FROM cache_entries WHERE key LIKE ?", (f"{CACHE_CONTRACT_VERSION}:{prefix}%",))
         db.commit()
         deleted = cursor.rowcount
         # V12.1: 同步清空 L1 内存缓存，确保一致性

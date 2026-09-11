@@ -290,12 +290,8 @@ FIELD_SPECS: Tuple[FieldSpec, ...] = (
         time_anchor=TimeAnchor.T_MINUS_1, unit=Unit.PERCENT,
         is_real_time=False, zhb_t_minus_1_acceptable=True, batch_friendly=False,
     ),
-    FieldSpec(
-        name="change_30d", description="近 30 日累计涨跌幅（百分点，V15.1 启用）⚠️ V17.0 实锤: tdxstat.cfg 无 30 日列, 历史遗留 key 实读 Col[18](=20 日值); 真实 30 日仅 TdxQuant ZAFPre30——消费方按 20 日语义使用",
-        source_preference=(DataSource.ZHB,),
-        time_anchor=TimeAnchor.T_MINUS_1, unit=Unit.PERCENT,
-        is_real_time=False, zhb_t_minus_1_acceptable=True, batch_friendly=False,
-    ),
+    # V17.2.x(2026-09-10) 审计决策 Q2: FieldSpec(change_30d) 已随契约字段一并删除——
+    #   实读 Col[18]=20 日值, 与 change_20d 完全同值, 属带误导名的错误副本。需要 30 日请由 K 线自算。
     FieldSpec(
         name="change_60d",
         description="近60根K线涨跌幅（截至T-1口径，百分点；V16.3 O28 修正：原误读 Col[19] 含当日，现读 Col[20]）",
@@ -449,6 +445,8 @@ class CanonicalStockData:
     """
     code: str
     name: str = ""
+    # V17.2.x(2026-09-10) 审计: 本字段由 parse_stock_name() 正常产出并已进契约, 但 5 大脚本零消费
+    #   (脚本直接用 name 做字符串处理 → 受 N/C/XD/XR/ST 临时前缀污染)。建议脚本统一改用 name_core 比对名称。
     name_core: str = ""          # V16.3.3: 核心名称（去 N/C/XD/XR/DR/S 临时前缀 + ST 标记）——名称主体永久不变
     is_st: bool = False          # V16.3.3: 是否 ST/*ST（退市风险信号——不可忽略）
     is_new: bool = False         # V16.3.3: 是否次新股（N/C 前缀，上市 ≤5 日）
@@ -468,8 +466,8 @@ class CanonicalStockData:
     pb: float = 0.0                  # PB (倍)
     ps_ttm: float = 0.0              # V17.0.5: 市销率 TTM (fuyao 独有)
     pcf_ttm: float = 0.0             # V17.0.5: 市现率 TTM (fuyao 独有)
-    # V17.0.25(2026-09-03): 均价/VWAP（腾讯 [85]，据主字典 09-03 主动升级定案 = 均价/VWAP 类价格派生 L3 候选强）
-    avg_price: float = 0.0          # 均价 / VWAP（元，腾讯 qt.gtimg [85]）
+    # V17.2.x(2026-09-10) 调整 A: 均价源 [85]→[51]（字典 09-08 round12 定案: [85]对均价锚仅3/20已撤销, [51]强锚+TDX快照 average_price）
+    avg_price: float = 0.0          # 均价 / VWAP（元，腾讯 qt.gtimg [51] + TDX快照 average_price）
     dividend_yield: float = 0.0      # 股息率 (%)
     turnover_pct: float = 0.0        # 换手率 (%)
     vol_ratio: float = 0.0           # 量比 (push2 f49 / 腾讯 v49; data_provider:900 已计算并透传)
@@ -482,12 +480,15 @@ class CanonicalStockData:
     net_assets: float = 0.0          # 净资产/股东权益 (元, TDX f10 jingzichan/10)
 
     # 资金流类
-    main_net_buy_wan: float = 0.0
-    # V17.0.1a 规范化: 竞价族规范键(值=main_net_buy_amount/hands 同源, 键名消除误导)
-    open_amount_wan: float = 0.0   # 开盘金额=集合竞价成交额(万元)
-    bid_volume_hand: float = 0.0   # 早盘竞价量(手)    # 主力净买额 (万元)
-    main_net_buy_hands: float = 0.0  # 主力净买量 (手)
-    main_net_buy_wan_1d: float = 0.0 # T-1 主力净买额 (万元)
+    # V17.2.x(2026-09-10) 审计决策 Q1 —— 资金流主口径消歧:
+    #   main_net_buy_wan 与 fund_main_today 是**同一指标的不同单位**:
+    #   实证 data_provider.py:957→962 → main_net_buy_wan = fund_main_today / 1e4 (元→万元),
+    #   仅当 fund_main_today 缺失时才回落东财 rt_fund['main_net_wan'](独立兜底源)。
+    #   → 口径权威 = fund_main_today(元, push2 f137); main_net_buy_wan 为展示层便利字段,
+    #     **禁止**为其单独取数(否则即双写, 两值可能分叉)。
+    main_net_buy_wan: float = 0.0    # 主力净买额(万元) ≡ fund_main_today/1e4(主) 或 rt_fund(兜底); 非独立指标
+    main_net_buy_hands: float = 0.0  # 主力净买量(手) —— 独立源: 东财 rt_fund['main_net_hands'](仅实时路径)
+    main_net_buy_wan_1d: float = 0.0 # T-1 主力净买额(万元) —— ⚠️ 当前恒 0: ZHB 该键实为昨日竞价额(已实锤不可用), 无 T-1 源接入, 保留占位
 
     # 财务与股本类
     roe: float = 0.0                 # ROE (%)
@@ -507,12 +508,17 @@ class CanonicalStockData:
     # 衍生与历史指标
     # V17.0.25(2026-09-03): Beta（腾讯 [56]，据主字典 09-03 主动升级定案 = Beta 族高置信）
     beta: float = 0.0                # Beta（腾讯口径 Beta 估计值, 与自算 Pearson=0.908; 非本系统重算）
-    # V17.0.25(2026-09-03): 委差/盘口净量（腾讯 [86]，据主字典 09-03 主动升级定案 = 手级带符号量 L4 候选=委差）
-    bid_ask_net: float = 0.0         # 委差/盘口净量（手级带符号量, L4 候选）
+    # V17.2.x(2026-09-10) 调整 B: 委差源 [86]→[50]+push2 f192（字典 09-08 定案: [86]非委差已撤销, [50]+f192 为 canonical）
+    bid_ask_net: float = 0.0         # 委差（手级带符号量, 腾讯[50] + push2 f192 兜底）
+    # V17.2.x(2026-09-10) 调整 C: 委比%（腾讯[74] + push2 f191 + TDX快照 entrust_ratio；字典 §12.8.12e canonical）
+    entrust_ratio: float = 0.0       # 委比(%)（腾讯[74]；push2 f191 / TDX快照 同义）
     change_5d: float = 0.0           # 5日涨跌幅 (%)
     change_10d: float = 0.0          # 10日涨跌幅 (%)
     change_20d: float = 0.0          # 20日涨跌幅 (%)
-    change_30d: float = 0.0          # ⚠️ V17.0 实锤: 历史遗留 key 实为 20 日值(Col[18]); tdxstat.cfg 无 30 日列, 真实 30 日=TdxQuant ZAFPre30
+    # ⚠️ change_30d 已于 V17.2.x(2026-09-10) 审计**删除**(审计决策 Q2):
+    #   zhb_client.py:851 实读 Col[18]=20 日值 → 与 change_20d 完全同值, 属带误导名的错误副本;
+    #   tdxstat.cfg 无 30 日列, 真实 30 日需 TdxQuant ZAFPre30(当前无该依赖)。
+    #   如需 30 日涨跌幅, 请由 K 线自算, **勿恢复此字段**。
     change_60d: float = 0.0          # 60日涨跌幅 (%)
     change_ytd: float = 0.0          # 年初至今涨跌幅 (%)
     # V17.0.5: 本月至今涨跌幅(tdxstat2 Col[11] 正名, 基准=上月末最后交易日收盘)
@@ -531,8 +537,11 @@ class CanonicalStockData:
     industry_code_push2: str = ""    # 行业板块代码 (如 BK1277) — push2 f198
     trading_periods: Tuple[Dict[str, Any], ...] = field(default_factory=tuple)  # 交易时段数组 — push2 f80
     report_period: str = ""          # 最新报告期 (YYYYMMDD) — push2 f221 / ulist f221
-    quote_date: str = ""             # 行情快照日期 (YYYY-MM-DD) — push2 data_date
+    quote_date: str = ""             # 行情快照日期 (YYYY-MM-DD) — push2 data_date（⚠️ 有单测断言 tests/core/test_core_schema.py:275, 勿删）
     bid1_vol: float = 0.0            # 买一量 (手) ← 腾讯协议 v10（2026-08-11: 新增——sht 封单额/信号/预警依赖）
+    # V17.2.x(2026-09-10) 调整 C: 买二/卖二价（腾讯[12]/[22] + tdx bid2/ask2 + sina[14]/[24]；字典 §12.8.12e canonical）
+    bid2: float = 0.0                # 买二价 (元)
+    ask2: float = 0.0                # 卖二价 (元)
 
     # V16.1: 资金流细分(push2, 单位元)
     # V17.0.16(2026-08-31) 重定案 —— 旧版把四组当并列四档并算「主力 = f137 + f140」，**错的**。
@@ -570,7 +579,9 @@ class CanonicalStockData:
 
     # 板块与概念
     industry: str = ""               # 行业分类
-    industry_code: str = ""          # 行业代码
+    # V17.2.x(2026-09-10) 审计决策 Q10: industry_code 与 industry_code_push2 **非冗余**——
+    #   二者属不同分类体系: 本字段=TDX 行业码; industry_code_push2=东财板块代码(push2 f198, 如 BK1277)。
+    industry_code: str = ""          # 行业代码 (TDX 行业分类体系)
     board: str = ""                  # 板块归属（地域, f128）
     # V17.0.32(2026-09-06): 市场类型枚举(≡ ulist f182, 主字典 2026-08-19 定案 20/20 实锤)
     #   主板=2 / 创业板=5 / 科创板=32 / 北交所=80; ST 不改变归属。
@@ -579,9 +590,12 @@ class CanonicalStockData:
     concepts: Tuple[str, ...] = field(default_factory=tuple) # 所属概念
 
     # 元数据溯源
+    # V17.2.x(2026-09-10) 审计决策 Q6: is_valid 由"恒 True 空壳"升级为**真实质量门禁**
+    #   (此前 data_provider 硬编码 is_valid=True 且全仓零引用 = 数据质量不可观测)。
+    #   规则: code 非空 且 价格类字段至少一项有效(price>0 或 prev_close>0)。
     data_source: str = "zhb"         # 数据来源 (zhb / tdx / http)
     time_anchor: str = "t-1"         # 时效锚点 (t_day / t-1)
-    is_valid: bool = True            # 数据合法校验标记
+    is_valid: bool = True            # 数据合法校验结果(真实 QC, 非恒 True)
 
     # V15.4: per-field source label (方案 C)
     # 字典 key = 字段名 (e.g. "price", "mcap_yi", "industry")
@@ -735,7 +749,7 @@ def normalize_at_boundary(raw: dict, source: DataSource) -> dict:
         ("change_5d", "change_5d"),
         ("change_10d", "change_10d"),
         ("change_20d", "change_20d"),
-        ("change_30d", "change_30d"),
+        # V17.2.x(2026-09-10): change_30d 别名映射已删(字段本身已删, 见审计决策 Q2)
         ("change_60d", "change_60d"),
         ("change_ytd", "change_ytd"),
         ("high_52w", "high_52w"),

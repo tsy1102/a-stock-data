@@ -1,0 +1,104 @@
+==================================================================================
+真实字典(script_data_dict.md) fNN 字段 × 5 大脚本+sc_datasource 代码消费 交叉核查
+==================================================================================
+真实字典提及 fNN 字段数 : 54
+生产代码消费 fNN 字段数 : 88
+
+✅ 一致（真实字典断言且代码消费）: 44 个
+🚫 故意不消费(否定语境, 预期)    : 0 个 -> 无
+⚠️  疑似滞后（真实字典断言消费, 代码未消费, 非基金流）: 10 个
+   f1     (区间/列举展开)
+   f7     行 [22]
+   f10    行 [22]
+   f11    行 [22]
+   f13    行 [22]
+   f19    行 [22]
+   f37    行 [235]
+   f50    行 [55]
+   f112   行 [235]
+   f182   行 [56]
+
+🔍 反向缺口（代码消费, 真实字典零提及）: 44 个
+   f43    [字面量] stock_common\sc_datasource\_eastmoney.py, stock_common\sc_datasource\_quotes.py
+   f44    [字面量] stock_common\sc_datasource\_quotes.py, stock_common\sc_schema.py
+   f45    [字面量] stock_common\sc_datasource\_quotes.py, stock_common\sc_schema.py
+   f46    [字面量] stock_common\sc_datasource\_quotes.py, stock_common\sc_schema.py
+   f47    [字面量] stock_common\sc_datasource\_quotes.py, stock_common\sc_schema.py
+   f48    [字面量] stock_common\sc_datasource\_quotes.py, stock_common\sc_schema.py
+   f49    [字面量] stock_common\sc_datasource\_quotes.py
+   f51    [字面量] stock_common\sc_datasource\_eastmoney.py, stock_common\sc_datasource\_quotes.py
+   f52    [字面量] stock_common\sc_datasource\_eastmoney.py, stock_common\sc_datasource\_quotes.py
+   f53    [批量] stock_common\sc_datasource\_eastmoney.py
+   f54    [批量] stock_common\sc_datasource\_eastmoney.py
+   f55    [字面量] stock_common\sc_datasource\_eastmoney.py, stock_common\sc_datasource\_quotes.py
+   f56    [批量] stock_common\sc_datasource\_eastmoney.py
+   f57    [字面量] stock_common\sc_datasource\_eastmoney.py, stock_common\sc_schema.py
+   f58    [字面量] stock_common\sc_datasource\_eastmoney.py, stock_common\sc_datasource\_quotes.py
+   f59    [批量] stock_common\sc_datasource\_eastmoney.py
+   f60    [字面量] stock_common\sc_datasource\_eastmoney.py, stock_common\sc_datasource\_quotes.py
+   f61    [批量] stock_common\sc_datasource\_eastmoney.py
+   f69    [字面量] stock_common\sc_datasource\_eastmoney.py
+   f75    [字面量] stock_common\sc_datasource\_eastmoney.py
+   f80    [字面量] stock_common\sc_datasource\_quotes.py
+   f84    [字面量] stock_common\sc_datasource\_eastmoney.py, stock_common\sc_datasource\_quotes.py
+   f85    [字面量] stock_common\sc_datasource\_eastmoney.py, stock_common\sc_datasource\_quotes.py
+   f92    [字面量] stock_common\sc_datasource\_eastmoney.py, stock_common\sc_datasource\_quotes.py
+   f116   [字面量] stock_common\sc_datasource\_eastmoney.py, stock_common\sc_datasource\_quotes.py
+   f117   [字面量] stock_common\sc_datasource\_eastmoney.py, stock_common\sc_datasource\_quotes.py
+   f126   [字面量] stock_common\sc_datasource\_eastmoney.py, stock_common\sc_datasource\_quotes.py
+   f127   [字面量] stock_common\sc_datasource\_eastmoney.py, stock_common\sc_datasource\_industry.py
+   f128   [字面量] stock_common\sc_datasource\_industry.py, stock_common\sc_datasource\_quotes.py
+   f129   [字面量] stock_common\sc_datasource\_quotes.py
+   f135   [字面量] stock_common\sc_datasource\_quotes.py
+   f136   [字面量] stock_common\sc_datasource\_industry.py, stock_common\sc_datasource\_quotes.py
+   f161   [字面量] stock_common\sc_datasource\_quotes.py
+   f164   [字面量] stock_common\sc_datasource\_eastmoney.py, stock_common\sc_datasource\_quotes.py
+   f165   [字面量] stock_common\sc_datasource\_quotes.py
+   f168   [字面量] stock_common\sc_datasource\_quotes.py, stock_common\sc_schema.py
+   f169   [字面量] stock_common\sc_datasource\_quotes.py
+   f170   [字面量] stock_common\sc_datasource\_quotes.py, stock_common\sc_schema.py
+   f171   [字面量] stock_common\sc_datasource\_quotes.py
+   f184   [字面量] stock_common\sc_datasource\_eastmoney.py, stock_common\sc_datasource\_industry.py
+   f189   [字面量] stock_common\sc_datasource\_eastmoney.py, stock_common\sc_datasource\_quotes.py
+   f191   [字面量] stock_common\sc_datasource\_quotes.py
+   f192   [字面量] stock_common\sc_datasource\_quotes.py
+   f221   [字面量] stock_common\sc_datasource\_eastmoney.py, stock_common\sc_datasource\_quotes.py
+
+----------------------------------------------------------------------------------
+关键估值/语义字段 离线采样（现成 raw_push2_full.json / raw_ulist239.json）
+----------------------------------------------------------------------------------
+[push2_full] C:\Tencent\WorkBuddy\a-stock-data\docs\field_verification\20260910\raw_push2_full.json  样本股 20 只
+   f162   [市盈率（动）] 出现 20 只, 样例: 18.04, 8.3, 12.0
+   f163   [市盈率（静）] 出现 20 只, 样例: 19.52, 8.35, 19.28
+   f167   [市净率] 出现 20 只, 样例: 6.39, 0.85, 2.17
+   f182   [市场类型枚举（2/5/32/80）] 出现 20 只, 样例: 2, 2, 2
+   f198   [东财板块代码（BKxxxx）] 出现 20 只, 样例: BK1277, BK0475, BK0538
+   f50    [量比] 出现 20 只, 样例: 0.68, 0.93, 0.76
+   f178   [5日资金流数组] 出现 20 只, 样例: [{"date":"2026-09-09","mainNetAmt":-277123472.0},{"date":"2026-09-08","mainNetAmt":-132647664.0},{"date":"2026-09-07","mainNetAmt":-186685648.0},{"date":"2026-09-04","mainNetAmt":368044528.0},{"date":"2026-09-03","mainNetAmt":89441136.0}], [{"date":"2026-09-09","mainNetAmt":59896560.0},{"date":"2026-09-08","mainNetAmt":1917168.0},{"date":"2026-09-07","mainNetAmt":-238700544.0},{"date":"2026-09-04","mainNetAmt":19297168.0},{"date":"2026-09-03","mainNetAmt":-144375392.0}], [{"date":"2026-09-09","mainNetAmt":129637771.0},{"date":"2026-09-08","mainNetAmt":333265702.0},{"date":"2026-09-07","mainNetAmt":-145419637.0},{"date":"2026-09-04","mainNetAmt":88223632.0},{"date":"2026-09-03","mainNetAmt":299788288.0}]
+   f103   [经营现金流（TTM）] 出现 20 只, 样例: 119093894077.08, 1394715000000.0, 34361226525.69
+   f104   [营业收入（TTM）] 出现 20 只, 样例: 173238481420.15, 766240000000.0, 231649000686.7
+   f105   [归母净利润（报告期）] 出现 20 只, 样例: 44516880421.86, 146381000000.0, 10062963544.81
+   f108   [每股收益（扣非·TTM）] 出现 20 只, 样例: 65.142935597, 0.851218405, 5.260368722
+   f109   [归母净利润（年报）] 出现 20 只, 样例: 82320067101.68, 291041000000.0, 12527201094.15
+   f160   [每股收益（年报）] 出现 20 只, 样例: 65.851754826, 0.831586025, 4.001697696
+   f190   [每股未分配利润] 出现 20 只, 样例: 159.736145749577, 3.798544133092, 32.318730963959
+   f174   [52周最高价] 出现 20 只, 样例: 1539.98, 8.43, 95.75
+   f175   [52周最低价] 出现 20 只, 样例: 1151.01, 5.79, 59.35
+
+[ulist239] C:\Tencent\WorkBuddy\a-stock-data\docs\field_verification\20260910\raw_ulist239.json  条目 20
+   f9     [市盈率（动）[ulist]] 出现 20 条, 样例: 18.04, 8.3, 12.0
+   f114   [市盈率（静）[ulist]] 出现 20 条, 样例: 19.52, 8.35, 19.28
+   f115   [市盈率（TTM）[ulist]] 出现 20 条, 样例: 19.73, 8.15, 14.67
+   f23    [市净率[ulist/clist]] 出现 20 条, 样例: 6.39, 0.85, 2.17
+
+----------------------------------------------------------------------------------
+腾讯 [NN] / ZHB Col[NN] 离线存在性（现成 raw_tencent.json / raw_zhb.json）
+----------------------------------------------------------------------------------
+真实字典腾讯 [NN] 提及: [3, 4, 6, 8, 9, 10, 11, 13, 14, 15, 18, 20, 28, 30, 31, 33, 39, 46, 49, 52, 67, 68]
+  采集数据首条键样本(前15): ['fields', 'n_fields', 'url']
+  命中存在: []
+  ⚠️ 采集数据未直接含下标(可能键名不同, 需人工核对): [3, 4, 6, 8, 9, 10, 11, 13, 14, 15, 18, 20, 28, 30, 31, 33, 39, 46, 49, 52, 67, 68]
+真实字典 ZHB Col[NN] 提及: [3, 6, 9, 28]
+  采集数据首条键样本(前20): ['full', 'name', 'stat', 'stat2', 'tipinfo']
+  命中存在: []
+  ⚠️ 采集数据未直接含 Col 下标(键名可能不同): [3, 6, 9, 28]

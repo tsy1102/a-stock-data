@@ -60,6 +60,14 @@ def get_tencent_quote(code: str) -> Dict[str, Any]:
         if code.startswith(("43", "83", "87")) and _vol_v == 0 and _price_v > 0:
             _debug_log(f"datasource tencent quote stale (老号段僵尸数据): {code}")
             return {}
+        # V17.2.x(2026-09-10) 调整 D: 腾讯[8]/[7] 内盘/外盘 单位随板块(科创板按股)→÷_vdiv 归一手
+        #   （与 TDX s_vol/b_vol、push2 f161/f49 单位对齐，统一层合成时不致量级错配）
+        _ssv = _tv("s_vol")
+        if _ssv and _vdiv != 1.0:
+            _ssv = _ssv / _vdiv
+        _bsv = _tv("b_vol")
+        if _bsv and _vdiv != 1.0:
+            _bsv = _bsv / _vdiv
         raw = {
             "code": code,
             "name": vals[_f["name"]],
@@ -91,11 +99,18 @@ def get_tencent_quote(code: str) -> Dict[str, Any]:
             "roa": _safe_float(vals[_f["roa_ttm"]]),              # ROA(TTM 滚动, %)
             "roe_deduct_ttm": _safe_float(vals[_f["roe_deduct_ttm"]]),  # 扣非加权ROE(TTM, %)
             "change_180td_pct": _safe_float(vals[_f["change_180td_pct"]]),  # 近180交易日涨跌幅(%) — V17.0.7 定案(tx75, 前复权; ~~主力净流入(亿)~~证伪)
-            # V17.0.25(2026-09-03): [85] 据主字典 09-03 主动升级定案 = 均价/VWAP 类价格派生(L3候选强)
-            "avg_price": _tv("avg_price"),  # 均价/VWAP（茅台 t85=1297.00≈自算VWAP 1297.04, 误差0.003%）
-            # V17.0.25(2026-09-03): [56]/[86] 据主字典 09-03 主动升级定案新增（越界安全取）
-            "beta": _tv("beta"),            # Beta 族（高置信, 腾讯口径 Beta 估计值）
-            "bid_ask_net": _tv("bid_ask_net"),  # 手级带符号量（候选=委差/盘口净量, L4）
+            # V17.2.x(2026-09-10) 调整 A: 均价源 [85]→[51]（字典 09-08 round12 定案: [85]对均价锚仅3/20已撤销, [51]强锚+TDX快照）
+            "avg_price": _tv("avg_price"),  # 均价/VWAP（腾讯[51]；TDX快照 average_price 同义）
+            # V17.0.25(2026-09-03): [56] Beta 族（高置信, 腾讯口径 Beta 估计值）
+            "beta": _tv("beta"),
+            # V17.2.x(2026-09-10) 调整 B: 委差源 [86]→[50]（字典 09-08 定案: [86]非委差已撤销, [50]+push2 f192 为 canonical）
+            "bid_ask_net": _tv("bid_ask_net"),  # 委差（手级带符号量, 腾讯[50]；push2 f192 兜底）
+            # V17.2.x(2026-09-10) 调整 C/D: 委比/买二卖二价/内盘外盘（字典 §12.8.12e canonical 实装）
+            "entrust_ratio": _tv("entrust_ratio"),  # 委比%(腾讯[74]；push2 f191 / TDX快照 同义)
+            "bid2": _tv("bid2"),  # 买二价(元, 腾讯[12]；tdx bid2 / sina[14] 同义)
+            "ask2": _tv("ask2"),  # 卖二价(元, 腾讯[22]；tdx ask2 / sina[24] 同义)
+            "s_vol": _ssv,  # 内盘(主动卖, 手) — 腾讯[8]（科创板按股已÷_vdiv 归手）
+            "b_vol": _bsv,  # 外盘(主动买, 手) — 腾讯[7]（科创板按股已÷_vdiv 归手）
             "bid1_vol": _safe_float(vals[_f["bid1_vol"]]),          # 买一量(手) — V16.3.4 新增（sht 封单额用）
             # V17.0.27(2026-09-07): 涨停/跌停价脱离 push2——腾讯[47]/[48]（字典 12.8.12e 行3082/3083 实锤）
             "limit_up": _safe_float(vals[_f["limit_up"]]),
@@ -104,8 +119,10 @@ def get_tencent_quote(code: str) -> Dict[str, Any]:
         result = normalize_at_boundary(raw, DataSource.TENCENT)
         # V16.3.3: normalize 为白名单映射——腾讯独有字段（normalize 未定义）在此透传
         # V17.0.25: 透传列表增补 avg_price/beta/bid_ask_net（[85]/[56]/[86] 09-03 定案字段）
+        # V17.2.x(2026-09-10): 透传列表增补 entrust_ratio/bid2/ask2/s_vol/b_vol（调整 C/D 实装字段）
         for _xk in ("roa", "roe_deduct_ttm", "change_180td_pct", "avg_price", "beta",
-                    "bid_ask_net", "bid1_vol", "vol_ratio", "pe_lyr",
+                    "bid_ask_net", "entrust_ratio", "bid2", "ask2", "s_vol", "b_vol",
+                    "bid1_vol", "vol_ratio", "pe_lyr",
                     "limit_up", "limit_down"):
             if raw.get(_xk) not in (None, 0, "", "0", "0.0"):
                 result[_xk] = raw[_xk]
@@ -429,7 +446,7 @@ def _em_quote_full_impl(code: str, host: str = "https://push2delay.eastmoney.com
         "fields": (
             "f43,f44,f45,f46,f47,f48,f57,f58,f60,f84,f85,"
             "f116,f117,f127,f128,f129,f168,f169,f170,f171,f189,"  # V16.2.3: f168 换手率补回（sht 换手率 0.00%）
-            "f51,f52,f55,f92,f126,f162,f163,f164,f165,f166,f167,"
+            "f49,f51,f52,f55,f92,f126,f161,f162,f163,f164,f165,f166,f167,f191,f192,"
             "f174,f175,f198,f80,f221,"  # V16.2: f221 报告期
             # V17.0.16: 补 f149(小单净) —— 旧版只取 f135-f146，缺小单档，
             # 导致四档占比之和不足 100%（大盘股缺 ~3%，小盘股缺 ~38%）。
@@ -576,6 +593,21 @@ def _em_quote_full_impl(code: str, host: str = "https://push2delay.eastmoney.com
                 result["dividend_yield"] = float(v)
             except (TypeError, ValueError):
                 pass
+
+        # V17.2.x(2026-09-10) 调整 B/D: 委差/委比/内盘/外盘（字典 §12.8.12e；push2 stock/get f192/f191/f161/f49）
+        #   ⚠️ 跨端点同号异义铁律：f49/f161/f191/f192 仅在本 stock/get 主域/镜像域读取，绝不混入 ulist.np 端点
+        for src, dst in [
+            ("f191", "entrust_ratio"),   # 委比%(东财 B14)
+            ("f192", "bid_ask_net"),     # 委差(手, 东财 B13)
+            ("f161", "s_vol"),           # 内盘(主动卖成交量, 手)
+            ("f49", "b_vol"),            # 外盘(主动买成交量, 手)
+        ]:
+            v = data.get(src)
+            if v is not None and v != "-":
+                try:
+                    result[dst] = float(v)
+                except (TypeError, ValueError):
+                    pass
 
         # PE 三口径 + PB（🔴2026-09-01 据 field_dict 定案纠正：f162=动态PE/f163=静态PE（LYR）/f164=TTM(pe_ttm)/f167=PB）
         pe_map = {

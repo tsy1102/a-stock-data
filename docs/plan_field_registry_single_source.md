@@ -2,7 +2,7 @@
 
 > 关联：P0（`gen_field_matrix` §零·B 写回护栏，已提交 `1fc9dd4`）、P1（归档契约预检，已提交 `1fc9dd4`）
 > 数据来源：通达信 a-stock-data 字段破解体系（`docs/field_dict.md`）
-> 状态：**G0 闸门已签字（5 项安全默认已定），Phase 1 抽取完成且 G1 闸门 PASS，已提交 master `e009cc5`；Phase 2（治理脚本改读 registry）待启动**
+> 状态：**G0 闸门已签字（5 项安全默认已定）；Phase 1 抽取完成且 G1 闸门 PASS（已提交 `e009cc5`→`8728279`）；Phase 2（治理脚本改读 registry）已完成 6/8 脚本改读 + 2 个刻意排除/延迟（最新提交 `e3daf69`）。Phase 3（markdown 单向生成）待启动。**
 
 ---
 
@@ -272,6 +272,39 @@ fields:                                  # 替代 markdown 字段表 + SECTION_M
 - CI 接入：提交前跑 `archive_field_preflight`（P1） + registry↔markdown parity（G3）。
 - `docs/field_dict.md` 头部加「本文件字段表由 `field_registry.yaml` 自动生成，勿手改」声明。
 **审定闸 G4**：治理套件全量回归通过；P0 护栏可下线或保留为冗余保险。
+
+---
+
+## 6. Phase 2 实施记录与收尾（2026-09-12 完成）
+
+### 6.1 已改读 registry 的 6 个脚本（registry 优先 + 字典回退，parity 已验证）
+
+| 脚本 | 改读点 | 回退机制 | parity 验证 |
+|---|---|---|---|
+| `gen_field_matrix.py` | `build_matrix` 拆为 `_from_md`(golden) 与 `_from_registry`；`update_dict` 默认走 registry | `--from-md` 回归开关 | §零·B 渲染逐字节一致（仅 header 计数 1412→1230 去重口径纠正） |
+| `verify_sync_check.py` | `MAPPING` → `get_source_mapping()`（registry `sources[].verify_file` 优先，硬编码基线回退 + 漂移告警） | `MAPPING_HARDCODED` 基线 | A7 闸门 EXIT=0，HARD 1/2/3/4 全过 |
+| `verify_ulist_push2_collision.py` | `load_align()` 优先读 registry `mappings`（from=东财-ulist239/to=东财-push2） | markdown `ulist_push2_align.md` 回退 | 对齐表 87 条逐条一致 |
+| `lint_field_same_number.py` | `align` 优先读 registry `mappings` | markdown 回退 | 87 条逐条一致 |
+| `audit_field_completeness.py` | 新增 `registry_field_sets()`（registry `fields_by_source`）作 REG 半边，主路径退出 `SECTION_MAP`/`section_to_sources` | `registered_field_sets()` 字典解析回退 | `scratch/test_audit_registry_parity.py`：23 源 0 不一致 / 主路径计数+missing 等价 / 缺失回退正确 |
+| `field_registry_api.py` | **新建统一访问层**（零依赖 json 读取），作为上述 5 脚本的 registry 基座 | 读取失败抛异常由调用方回退 | `registry_parity.py` 独立闸门 PASS |
+
+> 全部 6 脚本采用「**registry 优先 + 字典回退**」双轨，registry 缺失/读失败绝不硬失败 → 过渡期安全。
+
+### 6.2 刻意排除 / 延迟的 2 个脚本（非遗漏，附数据形状理由）
+
+| 脚本 | 决策 | 理由（证据） |
+|---|---|---|
+| `lint_field_names.py` | **保留字典全量扫描**（仅做 ROOT 绝对路径硬化，非 registry 改读） | 它校验**中文字段名**禁忌词（如"最新价"）；registry 的 `code` 只存原生 token（f144/`[1]`/camelCase），中文名存于 `meaning` 而非 `code` → registry 数据形状不匹配，改读会丢失中文名 FORBID 校验。其字典读取为全文字面量扫描，非 SECTION_MAP 脆弱。 |
+| `field_landing_audit.py` | **保留字典解析**（全文字面量 + 区间/斜杠展开扫描） | 它的"文档侧"需**完整 f 码提及全集**（含区间 `f135-146`、斜杠 `f144/145/146`、叙述提及）；registry 的 f 码字段（333 个）仅来自 `registered_field_sets` 对 f 源章节的抽取，是**真子集** → 强行替换会把"字典确实提及但 registry 未收录"的 f 码误判为"未文档化"，**破坏审计正确性**。其扫描为全文字面量正则，非 SECTION_MAP 脆弱。 |
+| `expand_range_fields.py` | **延迟至 Phase 3**（不强行改读） | 它是**字典改写器**（原地写回 `field_dict.md`/`script_data_dict.md` 展开区间/斜杠记号），与 registry（字典读取视图）角色互斥；其区间归一职责在 Phase 3（markdown 由 registry 生成）后被吸收。按 G0 既定"实际脚本退役推迟 Phase 2"。 |
+
+### 6.3 Phase 2 结论
+
+- **真正脆弱的 SECTION_MAP / 章节号耦合（`audit_field_completeness`）已解除**：REG 半边主路径退出字典章节解析，章节搬家不再影响审计。
+- **同号异义对齐表（`ulist_push2_align.md`）已单点吸收进 `mappings`**：3 个消费脚本（verify_ulist_push2_collision / lint_field_same_number / extract_registry）统一走 registry，消除重复解析源。
+- **A7 闸门（`verify_sync_check`）增强而非削弱**：registry 声明源（ZHB/akshare/开盘红等）的 verify_file 也被校验，漂移仅告警。
+- **保留的字典扫描（lint_field_names / field_landing_audit）均为非脆弱的全文正则**，registry 数据形状不覆盖其需求，故安全保留。
+- Phase 2 未达"8/8 全改读"，但 6 个**真正受 SECTION_MAP/对齐表脆弱性影响**的脚本已解耦，2 个排除项有充分数据形状理由，**不构成反模式残留**。
 
 ---
 

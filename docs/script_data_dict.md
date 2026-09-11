@@ -250,3 +250,73 @@
 H5 裸 except/H6 zt_type 吞 0 全部修复; M1 分页/M2 filter 语法/M3 删死代码/M4 ADD_AMP 实测定案/M5 0 值回退/
 M6 字符串格式化/M7 with open/M8 日期缓存/L1-L4 小项——详见 session_notes/20260815.md §8.15-8.16
 
+---
+
+## 八、2026-09-10 索引层滞后回填（real_dict_xcheck 代码实测）
+
+> **依据**：`docs/field_verification/20260910/field_dict_xcheck_report.md` §三 + `xcheck.log`。
+> **口径**：真实字典提及 54 字段 / 生产代码消费 88 字段；一致 44、反向缺口 44、真实滞后 4。
+> **f1/f7/f10/f11/f13/f19 共 6 个为「区间/列举展开」（如 `f1,f2,…,f250`）写法引起的 xcheck 误报，不回填。**
+> 本节回填 **44 反向缺口**（代码 `sc_datasource` 实测消费、字典原零提及）+ **4 真实滞后**（字典已载于 §二/§六，xcheck 因仅扫描 5 脚本未计入一致）。
+> 语义取自 `field_dict.md`（章节见各注）；消费模块/方式取自 `xcheck.log`。数据来源：通达信；以下均不构成投资建议。
+
+### 8.1 反向缺口（代码 sc_datasource 实测消费，字典原零提及）
+
+| fNN | 语义（field_dict.md） | 消费方式 | 消费模块 |
+|:---|:---|:---:|:---|
+| f43 | 现价 | 字面量 | sc_datasource/_eastmoney.py、_quotes.py |
+| f44 | 最高价 | 字面量 | sc_datasource/_quotes.py、_schema.py |
+| f45 | 最低价 | 字面量 | sc_datasource/_quotes.py、_schema.py |
+| f46 | 开盘价 | 字面量 | sc_datasource/_quotes.py、_schema.py |
+| f47 | 成交量（手） | 字面量 | sc_datasource/_quotes.py、_schema.py |
+| f48 | 成交额（元） | 字面量 | sc_datasource/_quotes.py、_schema.py |
+| f49 | 同号同义对齐表载 ulist f49 ≡ push2 f186（异号映射；push2 f49 本字段 §12.8 未单列语义） | 字面量 | sc_datasource/_quotes.py |
+| f51 | ≡ 腾讯[48] | 字面量 | sc_datasource/_eastmoney.py、_quotes.py |
+| f52 | ≡ 腾讯[49] | 字面量 | sc_datasource/_eastmoney.py、_quotes.py |
+| f53 | ulist 专属·待破解 | 批量 | sc_datasource/_eastmoney.py |
+| f54 | ulist 专属·待破解 | 批量 | sc_datasource/_eastmoney.py |
+| f55 | ≡ ulist:f112 | 字面量 | sc_datasource/_eastmoney.py、_quotes.py |
+| f56 | ulist 专属·待破解 | 批量 | sc_datasource/_eastmoney.py |
+| f57 | 股票代码 | 字面量 | sc_datasource/_eastmoney.py、_schema.py |
+| f58 | 股票名称 | 字面量 | sc_datasource/_eastmoney.py、_quotes.py |
+| f59 | ≡ ulist:f1 | 批量 | sc_datasource/_eastmoney.py |
+| f60 | 昨收盘 | 字面量 | sc_datasource/_eastmoney.py、_quotes.py |
+| f61 | ulist 专属·待破解 | 批量 | sc_datasource/_eastmoney.py |
+| f69 | ulist 专属·待破解 | 字面量 | sc_datasource/_eastmoney.py |
+| f75 | ulist 专属·待破解 | 字面量 | sc_datasource/_eastmoney.py |
+| f80 | 同号同义·未实证·待核实（§12.9 对齐表） | 字面量 | sc_datasource/_quotes.py |
+| f84 | 总股本（股→万股） | 字面量 | sc_datasource/_eastmoney.py、_quotes.py |
+| f85 | 流通股本（股→万股） | 字面量 | sc_datasource/_eastmoney.py、_quotes.py |
+| f92 | ≡ ulist:f113 | 字面量 | sc_datasource/_eastmoney.py、_quotes.py |
+| f116 | 总市值（元） | 字面量 | sc_datasource/_eastmoney.py、_quotes.py |
+| f117 | 流通市值（元） | 字面量 | sc_datasource/_eastmoney.py、_quotes.py |
+| f126 | 同号同义·未实证·待核实（§12.9 对齐表） | 字面量 | sc_datasource/_eastmoney.py、_quotes.py |
+| f127 | 行业名称 | 字面量 | sc_datasource/_eastmoney.py、_industry.py |
+| f128 | 地域板块名称 | 字面量 | sc_datasource/_industry.py、_quotes.py |
+| f129 | 净利率 | 字面量 | sc_datasource/_quotes.py |
+| f135 | 净资产（元） | 字面量 | sc_datasource/_quotes.py |
+| f136 | 主力卖出额（= f139 + f142） | 字面量 | sc_datasource/_industry.py、_quotes.py |
+| f161 | 同号同义·未实证·待核实（§12.9 对齐表） | 字面量 | sc_datasource/_quotes.py |
+| f164 | ≡ ulist:f115 | 字面量 | sc_datasource/_eastmoney.py、_quotes.py |
+| f165 | ≡ ulist:f130 | 字面量 | sc_datasource/_quotes.py |
+| f168 | 换手率% | 字面量 | sc_datasource/_quotes.py、_schema.py |
+| f169 | 涨跌额 | 字面量 | sc_datasource/_quotes.py |
+| f170 | 涨跌幅 | 字面量 | sc_datasource/_quotes.py、_schema.py |
+| f171 | 振幅% | 字面量 | sc_datasource/_quotes.py |
+| f184 | ≡ ulist:f41 | 字面量 | sc_datasource/_eastmoney.py、_industry.py |
+| f189 | 上市日期（YYYY-MM-DD） | 字面量 | sc_datasource/_eastmoney.py、_quotes.py |
+| f191 | 同号同义·未实证·待核实（§12.9 对齐表） | 字面量 | sc_datasource/_quotes.py |
+| f192 | 同号同义·未实证·待核实（§12.9 对齐表） | 字面量 | sc_datasource/_quotes.py |
+| f221 | ulist 专属·待破解 | 字面量 | sc_datasource/_eastmoney.py、_quotes.py |
+
+### 8.2 真实滞后（字典已载于 §二/§六，xcheck 因仅扫描 5 脚本未计入一致——显式锚定关闭缺口）
+
+| fNN | 字典已有记载 | 等效源 / 消费点 | 说明 |
+|:---|:---|:---|:---|
+| f37 | ulist239 `f37=ROE`（§六 变更总览；§12.3.2.3 全字段清单标「ulist 专属·待破解」） | ulist.np/get `f37` | 字典 §六 已载；xcheck 扫描 5 脚本未命中 ulist 直接消费，故计「滞后」——属工具扫描口径 artifact，非字典错误 |
+| f50 | 量比（§二 2.1 `vol_ratio`：腾讯[49] 现用 → push2 f50 等价源；§12.3.1 `f50 ✅`） | 腾讯[49]（现用） / push2 f50（等价） | 代码主用腾讯[49]，push2 f50 作等价源；非 push2 字面索引，xcheck 未计一致 |
+| f112 | ulist239 `f112=EPS`（§六 变更总览；§12.3.1.1 `f112 ✅ L1 板级枚举`） | ulist.np/get `f112` | 字典 §六/§12.3.1.1 已载；xcheck 扫描口径 artifact |
+| f182 | 市场类型枚举（§二 2.1 `market_type`：`push2 f182` 已由 get_board_type 本地推算；§12.3.1 `f182 ✅`） | `sc_utils.get_board_type()` 纯本地（零网络） | 代码**不**字面消费 push2 f182（本地按代码前缀推算）；字典 §二 已正名「纯本地」，xcheck 计「滞后」系将「push2 f182」误读为消费断言 |
+
+> **回填结论**：44 反向缺口现已在 §8.1 显式登记（字段/语义/消费模块），与 §12.8 主字典形成索引闭环；4 真实滞后在 §8.2 锚定原记载并说明为 xcheck 扫描口径 artifact。后续 `real_dict_xcheck.py` 复跑时，44 缺口将转为「一致」、4 滞后维持「字典已载」——索引维护层滞后关闭，字段语义正确性不受影响。
+

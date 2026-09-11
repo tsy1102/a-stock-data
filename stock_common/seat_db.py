@@ -4,6 +4,8 @@
 版本信息:
     V1.0 2026-06-22 - 初始版本，支持22位游资席位识别
     V8.5 - 集成到个股分析系统
+    V9.0 2026-09-09 - 第四匹配层(seats真实营业部全称) + 补全14位游资；
+                      修复"效果不明显"根因：真实龙虎榜完整营业部名此前无法命中已知库
 """
 
 import os
@@ -94,8 +96,24 @@ def identify_seat_tier(seat_name: str) -> Tuple[str, str]:
         if keyword and (keyword in seat_name or seat_name in keyword):
             _candidates.append((len(keyword), 2, tier, short))
 
+    # 4) seats 层（2026-09 补全）：消费 seat_details[*].seats 的真实营业部全称。
+    #    根因修复：真实龙虎榜输入为完整营业部名（OPERATEDEPT_NAME，如"国泰君安上海江苏路证券营业部"），
+    #    而前两层只匹配昵称/片段，覆盖率极低导致大量席位落空 unknown。本层直接对真实营业部全称做
+    #    双向子串匹配，使"国泰君安上海江苏路"命中章盟主、完整名亦命中。
+    #    priority=3（最低），仅当无更长/更优先的前三层命中时才兜底，故不破坏三层测试契约。
+    for sname, details in seat_details.items():
+        for seat_full in details.get("seats", []):
+            if not seat_full or seat_full in ("N/A",):
+                continue
+            if seat_full in seat_name:
+                # 真实全称是 seat_name 的子串：重叠长度 = 真实全称长度
+                _candidates.append((len(seat_full), 3, details.get("tier", "unknown"), sname))
+            elif seat_name in seat_full:
+                # seat_name 是真实全称的子串（如输入即片段）：重叠长度 = 输入长度
+                _candidates.append((len(seat_name), 3, details.get("tier", "unknown"), sname))
+
     if _candidates:
-        # 最长子串优先；等长则 priority 小者优先（tiers>aliases>keywords）
+        # 最长子串优先；等长则 priority 小者优先（tiers>aliases>keywords>seats）
         _candidates.sort(key=lambda c: (-c[0], c[1]))
         _best = _candidates[0]
         return _best[2], _best[3]

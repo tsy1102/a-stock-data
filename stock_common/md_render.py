@@ -168,8 +168,8 @@ def text_to_md(lines: List[str]) -> List[str]:
         if re.match(r"^\s*➤\s*\S", ln):
             _sub = re.sub(r"^\s*➤\s*", "", ln).strip().rstrip(":：")
             if _sub:
-                _ensure_tbl_gap_after(out)  # V17.0.7: 表后接 ### 先补空行
-                out.append("### " + _sub)
+                _ensure_tbl_gap_after(out)  # V17.0.7: 表后接强调行先补空行
+                out.append("**" + _sub + "**")
                 i += 1
                 continue
         # V17.0.2n: ├─/└─ 树形装饰 → md 列表(txt 遗留符号去除)
@@ -265,10 +265,10 @@ _HASH_NUM = re.compile(r"^\s*#(\d{1,3})\s+")
 
 def _clean_text_line(ln: str) -> str:
     """V17.0.1b(2026-08-16 排版优化): 普通行清理——去行首缩进/─装饰行转小节标题/#N 编号粗体/冒号对齐空格."""
-    # D: ── 装饰小节行 → ### 小节标题(如 "── 游资活跃度诊断 ──")
+    # D: ── 装饰小节行 → 行内加粗(如 "── 游资活跃度诊断 ──"); 不再升为 ### 标题, 避免与章节 H2 抢视觉
     m = _DECO_LINE.match(ln)
     if m and m.group(1).strip():
-        return "### " + m.group(1).strip()
+        return "**" + m.group(1).strip() + "**"
     # E: #N 编号行 → **N.**(原 **#N** 的 # 被部分渲染器高亮为红色)
     m2 = _HASH_NUM.match(ln)
     if m2:

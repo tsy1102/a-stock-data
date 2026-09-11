@@ -76,20 +76,14 @@ _SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 # ==================== 长线价投核心数据模块 ====================
 
 def industry_comparison(top_n=20):
-    """V16.3 O25: 行业排名 → ZHB 本地聚合优先（参照系 T-1 可接受，零网络），
-    TDX board_list 兜底（原 V4 直接东财 clist——每次现取，用户纠正应 ZHB）。"""
-    try:
-        from stock_common.sc_datasource import get_industry_rank_from_zhb
+    """V17.2.x(2026-09-10): 已下沉至 `stock_common.sc_datasource.get_industry_ranking`，此处仅薄转发。
 
-        rows = get_industry_rank_from_zhb(top_n)
-        if rows:
-            return rows
-    except Exception as _e:
-        _debug_log(f"lng industry_rank zhb error: {_e}")
-    sectors = tdx_get_board_list(0)
-    if not sectors:
-        return []
-    return sectors
+    保留本名是为兼容既有调用点；实现见共享层（lng/val 原两份近乎重复的实现已合并）。
+    返回 list[dict]（ZHB 行业榜行 或 TDX board_list 板块）。
+    """
+    from stock_common.sc_datasource import get_industry_ranking
+
+    return get_industry_ranking(top_n, "lng")
 
 
 def get_roe_trend(code, num_periods=8, financials=None, bs_data=None, total_shares=0):

@@ -7,7 +7,7 @@
 ## 功能特性
 
 - **5 种报告类型**：短线(sht) / 中线(med) / 长线(lng) / 估值选股(val) / 市场状态(mak)（ful 已于 V16.1 下线，能力并入前四类）。
-- **多源字段逆向破解**：ZHB / TDX 0x0010 / 东财 push2 / 腾讯 / 新浪 / 同花顺 fuyao·thsdk / 巨潮 / FTShare 私有协议字段交叉验证，实锤与样本沉淀于 `docs/field_dict.md` 与 `docs/verify/`；主字典只留结论、附录存实证。
+- **多源字段逆向破解**：ZHB / TDX 0x0010 / 东财 push2 / 腾讯 / 新浪 / 同花顺 fuyao / 巨潮 / FTShare 私有协议字段交叉验证（thsdk 通道已于 V17.0.29 移除），实锤与样本沉淀于 `docs/field_dict.md` 与 `docs/verify/`；主字典只留结论、附录存实证。
 - **统一数据合约**：唯一入口 `get_canonical_stock_data` 返回 `CanonicalStockData` 强类型合约（50+ 字段，每字段带 `field_sources` 溯源），消除异构多源冲突。
 - **ZHB-First 离线优先路由**：盘前 / 休市日 100% 走 ZHB 内存秒级提取；交易日盘中盘后强制网络取 T 日真实收盘价。
 - **申万二级行业统一**：东财 datacenter 一次性分页拉取 + 7 天缓存，零逐股请求、零 push2 风控面。
@@ -31,7 +31,8 @@
 项目全部路径基于脚本自身位置动态定位（`__file__`），**无任何绝对路径硬编码**；复制到任意目录即可运行，首次运行自动创建 `cache/`、`logs/`、`reports/`、`snapshots/` 并下载 ZHB 数据包。
 
 1. 安装 Python 3.12（任意发行版；Windows Store 版已验证可用）
-2. `pip install -r requirements.txt`（运行时依赖 17+ 项；`levistock/axdata/thsdk` 为可选增强，缺失自动降级）
+2. `pip install -r requirements.txt`（运行时依赖 16 项；`levistock`/`axdata` 为可选增强，缺失自动降级）
+   > ⚠️ **`thsdk` 已于 V17.0.29(2026-09-07) 随 `stock_common/sc_ths.py` 一同移除**，不再是可选依赖。
 3. `pip install -r requirements-dev.txt`（仅开发需要：pytest/mypy/black）
 4. 首次运行 `python main.py --sht 600519 --no-upload` 冒烟（首只约 5 分钟，含 ZHB 下载+缓存预热）
 
@@ -140,7 +141,7 @@ a-stock-data/
 │
 ├── stock_common/                 # 核心公共包（传输/数据源/评分/报告基类，见 stock_common/README.md）
 │   ├── __init__.py               # 包入口，统一导出接口（__all__ 250+ 项）
-│   ├── sc_datasource.py          # 数据源查询模块（100+ 函数）
+│   ├── sc_datasource/            # 数据源查询包（8 个子模块，138 个函数）
 │   ├── sc_network.py             # 网络请求层（分域限流/令牌桶/封禁冷却/进程文件锁）
 │   ├── sc_report_runner.py       # BaseReportRunner 基类
 │   └── ...                       # 详见 stock_common/README.md
@@ -218,7 +219,7 @@ a-stock-data/
 
 ### requirements.txt / config.py
 
-运行时依赖见 [`requirements.txt`](requirements.txt)（17+ 项；`levistock`/`axdata`/`thsdk` 可选，缺失自动降级），开发依赖见 [`requirements-dev.txt`](requirements-dev.txt)（pytest/mypy/black）。核心参数集中在 `core/config.py`：网络超时、限流（`EM_MIN_INTERVAL=1.0`）、重试、缓存（DB≤500MB）、熔断（阈值 10）；分域限流表在 `stock_common/sc_network.py::_DOMAIN_LIMITS`（push2 系最严 0.4rps）。完整定义以源文件为准。
+运行时依赖见 [`requirements.txt`](requirements.txt)（16 项；`levistock`/`axdata` 可选，缺失自动降级），开发依赖见 [`requirements-dev.txt`](requirements-dev.txt)（pytest/mypy/black）。核心参数集中在 `core/config.py`：网络超时、限流（`EM_MIN_INTERVAL=1.0`）、重试、缓存（DB≤500MB）、熔断（阈值 10）；分域限流表在 `stock_common/sc_network.py::_DOMAIN_LIMITS`（push2 系最严 0.4rps）。完整定义以源文件为准。
 
 ### Google Drive 配置（可选）
 
@@ -239,7 +240,8 @@ a-stock-data/
 文档完整架构（模块职责 / 数据流 / 并发限流 / 缓存分层 / 字段路由）见 [`docs/architecture.md`](docs/architecture.md)（含 Mermaid 图）。要点速览：
 
 - **`core/data_provider.py`**：唯一数据入口，封装 `CanonicalStockData` 强类型合约 + 字段路由 + 4 级 fallback（L0 东财申万二级 → push2 → TDX → ZHB），每字段带 `field_sources` 溯源。
-- **`stock_common/sc_network.py`**：分域限流（38 域）、进程文件锁、429 退避、连续封禁 20h 冷却。
+- **`stock_common/sc_network.py`**：分域限流（37 域）、进程文件锁、429 退避、连续封禁 20h 冷却。
+  > 注：`core/tdx_client.py::_DOMAIN_LIMITS` 另有 6 域**独立**限流表（TCP 长连接语义，与 HTTP 请求级节流不同，**有意不合并**）。
 - **`stock_common/sc_datasource.py`**：100+ 数据源查询函数。
 - **`stock_common/sc_schema.py`**：字段元数据层（`FieldSpec` / `TimeAnchor` / `DataSource` / `Unit`），`normalize_at_boundary` 单位归一。
 - **`core/stock_cache.py`**：SQLite + L1 内存 + TTL + `cross_verify` + single-flight + 版本化防污染。

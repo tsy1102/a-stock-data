@@ -142,6 +142,13 @@ def _index_to_market_code(idx_code: str) -> Tuple[int, str]:
 # 同花顺强势 zx.10jqka.com.cn: 并发10, sleep=0ms → 100% 成功
 # 东财 datacenter-web.eastmoney.com: 并发3, sleep=100ms → 100% 成功
 # ═══════════════════════════════════════
+# ⚠️ V17.2.x(2026-09-10) 治理说明：本表与 `stock_common/sc_network.py::_DOMAIN_LIMITS` (37 域)
+# **有意保持独立、不合并**（用户决策 Q5），原因：
+#   - 本表服务于 **TDX TCP 长连接**（easy_tdx，连接复用、按"连接级"节流）；
+#   - sc_network 表服务于 **HTTP 请求级**节流（每次请求独立限流 + 429 退避）；
+#   - 二者语义不同（长连接节流 vs 请求节流），强行统一会导致 TDX 侧被 HTTP 的严格 rps 误伤，
+#     或 HTTP 侧失去 TDX 的连接复用保护。
+#   本表 6 域是 sc_network 37 域的子集；**新增/调整域名时须两处同步评估**。
 _DOMAIN_LIMITS: Dict[str, Dict[str, Any]] = {
     "qt.gtimg.cn": {"sleep_ms": 0, "semaphore": None},
     "quotes.sina.cn": {"sleep_ms": 0, "semaphore": None},
@@ -915,13 +922,20 @@ _TENCENT_FIELD_INDEX = {
     "change_180td_pct": 75,  # V17.0.7 正名: 近180交易日涨跌幅(%, 前复权)——腾讯独有长窗涨幅
                              #   ~~"主力净流入(亿)"~~ 证伪(与东财占比族最大差40pp且符号翻转、
                              #   值可超±100; K线窗口扫描 w=180 显著最优)——严禁再作资金流兜底
-    # V17.0.25(2026-09-03, 据主字典 §12.1/§(7) 09-03 主动升级定案):
-    "avg_price": 85,       # 均价 / VWAP 类价格派生（L3 候选强）——茅台 t85=1297.00≈自算VWAP 1297.04(误差0.003%)；
-                           #   原误标"盘口参考价(未确认)"，2026-08-31 旧结论，已被 09-03 非对撞主动法升级推翻。
-    "beta": 56,            # Beta 族（高置信）——887只800日K线自构等权市场代理，自算 Beta 与 [56] Pearson=0.908；
-                           #   注: 腾讯基准/窗口与自算有偏移, 此为腾讯口径 Beta 估计值, 非本系统重算。
-    "bid_ask_net": 86,     # 手级带符号量（候选=委差/盘口净量, L4）——符号(收>开)仅3/6一致, 否定"日内净买";
-                           #   量级(手级带符号)与委差吻合, 委差瞬时L1快照与日K线解耦故日K线无法验证→维持L4候选。
+    # V17.0.25(2026-09-03)→2026-09-08 round12 + 2026-09-09 专项复核(字典定案): 均价=腾讯[51]+TDX快照
+    #   （🔥原腾讯[85] 对均价锚仅 3/20，已撤销其均价候选，回退 L3；主字典 09-08 TDX Average 20/20 精确强锚）
+    "avg_price": 51,       # 均价 / VWAP（元, 腾讯 qt.gtimg [51]；TDX快照 average_price 同义）
+    "beta": 56,            # Beta 族（高置信）——自算 Beta 与 [56] Pearson=0.908；腾讯口径估计值, 非本系统重算
+    # V17.0.25(2026-09-03)→2026-09-08 round12(字典定案): 委差=腾讯[50]+push2 f192
+    #   （🔥腾讯[86] 非委差: 等值 0/20、与 TDX 委比同号仅 55%, 已撤销[86]候选; [50]为委差强锚）
+    "bid_ask_net": 50,     # 委差（手级带符号量, 腾讯[50]；push2 f192 同义兜底）
+    # V17.2.x(2026-09-10) 统一层接线补全(字典 §12.8.12e canonical 实装):
+    "entrust_ratio": 74,   # 委比%(腾讯[74]；push2 f191 / TDX快照 entrust_ratio 同义)
+    "bid2": 12,            # 买二价(元, 腾讯[12]；tdx bid2 / sina[14] 同义)
+    "ask2": 22,            # 卖二价(元, 腾讯[22]；tdx ask2 / sina[24] 同义)
+    # V17.0.12: 腾讯[7]=外盘(主动买)/[8]=内盘(主动卖) 单位随板块(科创板按股, 需÷_tencent_volume_divisor 归手)
+    "s_vol": 8,            # 内盘(主动卖成交量, 手/股随板块) — 统一层键 s_vol（腾讯[8]）
+    "b_vol": 7,            # 外盘(主动买成交量, 手/股随板块) — 统一层键 b_vol（腾讯[7]）
 }
 _TENCENT_MIN_FIELDS = 69  # V16.3 O22: 覆盖 high_52w=67/low_52w=68/dividend_yield=64 索引（原 53 会 IndexError）  # 协议最小字段数（不足即视为 schema 变化/截断）
 
@@ -1021,8 +1035,26 @@ def _tencent_batch_fallback(codes: List[str]) -> Dict[str, Dict[str, Any]]:
                             # 供同业对比表静态PE列横向比较(本股 cdata.pe_lyr 同源)。
                             "pe_lyr": float(vals[_TENCENT_FIELD_INDEX["pe_static"]]) if vals[_TENCENT_FIELD_INDEX["pe_static"]] else 0,
                             "turnover_pct": float(vals[_TENCENT_FIELD_INDEX["turnover_pct"]]) if vals[_TENCENT_FIELD_INDEX["turnover_pct"]] else 0,
-                            "amount_wan": float(vals[_TENCENT_FIELD_INDEX["amount_wan"]]) if vals[_TENCENT_FIELD_INDEX["amount_wan"]] else 0,
-                        }
+                        "amount_wan": float(vals[_TENCENT_FIELD_INDEX["amount_wan"]]) if vals[_TENCENT_FIELD_INDEX["amount_wan"]] else 0,
+                        # V17.2.x(2026-09-10) 性能优化: 同一 qt.gtimg 响应已含以下字段, 在此一并抽取
+                        # (零额外请求, 仅多解析已返回字段), 供 val 批量预热 _BATCH_QUOTE_CACHE 短路
+                        # get_canonical_stock_data 的 TDX 实时段(OHLC)与 L490 估值补取, 消除全市场逐股网络。
+                        # 索引均沿用单股 get_tencent_quote 已验证的 _TENCENT_FIELD_INDEX; 键名对齐 canonical。
+                        "open": float(vals[_TENCENT_FIELD_INDEX["open"]]) if vals[_TENCENT_FIELD_INDEX["open"]] else 0,
+                        "high": float(vals[_TENCENT_FIELD_INDEX["high"]]) if vals[_TENCENT_FIELD_INDEX["high"]] else 0,
+                        "low": float(vals[_TENCENT_FIELD_INDEX["low"]]) if vals[_TENCENT_FIELD_INDEX["low"]] else 0,
+                        "last_close": float(vals[_TENCENT_FIELD_INDEX["last_close"]]) if vals[_TENCENT_FIELD_INDEX["last_close"]] else 0,
+                        "pb": float(vals[_TENCENT_FIELD_INDEX["pb"]]) if vals[_TENCENT_FIELD_INDEX["pb"]] else 0,
+                        "limit_up": float(vals[_TENCENT_FIELD_INDEX["limit_up"]]) if vals[_TENCENT_FIELD_INDEX["limit_up"]] else 0,
+                        "limit_down": float(vals[_TENCENT_FIELD_INDEX["limit_down_price"]]) if vals[_TENCENT_FIELD_INDEX["limit_down_price"]] else 0,
+                        "roa": float(vals[_TENCENT_FIELD_INDEX["roa_ttm"]]) if vals[_TENCENT_FIELD_INDEX["roa_ttm"]] else 0,
+                        "roe_deduct_ttm": float(vals[_TENCENT_FIELD_INDEX["roe_deduct_ttm"]]) if vals[_TENCENT_FIELD_INDEX["roe_deduct_ttm"]] else 0,
+                        "dividend_yield": float(vals[_TENCENT_FIELD_INDEX["dividend_yield"]]) if vals[_TENCENT_FIELD_INDEX["dividend_yield"]] else 0,
+                        # V17.2.x(2026-09-10) 性能优化: 动态PE([52]=f162=pe_mrq, 字典实锤) 同属 qt.gtimg 已返回字段,
+                        # 在此一并抽取供 val 批量预热 -> get_canonical_stock_data 命中后 rt_quote 自带 pe_dynamic,
+                        # 使 L640 push2delay 补充块的进入条件部分满足(仅剩 fund_main_today 由 _PD_EXTRA_CACHE 哨兵处理)。
+                        "pe_dynamic": float(vals[_TENCENT_FIELD_INDEX["pe_dynamic"]]) if vals[_TENCENT_FIELD_INDEX["pe_dynamic"]] else 0,
+                    }
                     except (ValueError, TypeError):
                         pass
             except Exception as _e:
@@ -1338,6 +1370,16 @@ def tdx_get_quote_full(code: str) -> Dict[str, Any]:
                         _put('b_vol', float(q['b_vol']), _is_rt)
                     if q.get('rise_speed') is not None:
                         _put('rise_speed', float(q['rise_speed']), _is_rt)
+                    # V17.2.x(2026-09-10) 调整 A/C: TDX快照均价/委比（字典 §12.8.12e 列 TDX快照源；
+                    #   easy_tdx/mootdx 未暴露该列则 q.get 返回 None 自动跳过，无副作用）
+                    for _snap_k, _cdk in (("average_price", "avg_price"),
+                                          ("entrust_ratio", "entrust_ratio")):
+                        _sv = q.get(_snap_k)
+                        if _sv is not None:
+                            try:
+                                _put(_cdk, float(_sv), _is_rt)
+                            except (TypeError, ValueError):
+                                pass
                     # V17.2.0: 涨跌停价 TDX 计算兜底（easy_tdx get_price_limits, 按昨收规则；
                     # 源无关, 独立于腾讯[47/48]/push2 f51/f52, 盘前盘后稳）
                     if pre_close and pre_close > 0:

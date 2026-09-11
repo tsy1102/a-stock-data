@@ -139,14 +139,14 @@ TTL 以「数据交易日」为界：**9:30 分界**（9:30 前=上一交易日�
 > - **现已补齐** `tests/reports/` 三个文件（按 `test_<层>_<主题>.py` 规约命名）：
 >   - `test_reports_runner.py`（22 例）— `BaseReportRunner` 契约、`execute_batch_pipeline` 五大骨架能力
 >     （代码清洗 / **并发上限 3** / **单股失败隔离** / prefetch 双钩子容错 / 快照落盘）、GD 上传编排。
->   - `test_reports_strategy.py`（12 例）— val **25 策略注册表与调度表双向一致**（防漏登记 / 防引用不存在函数）、
+>   - `test_reports_strategy.py`（12 例）— val **23 策略注册表与调度表双向一致**（防漏登记 / 防引用不存在函数）、
 >     **空股票池不崩**、**策略读取的配置键真实存在**（防键名笔误静默走默认值）。
 >   - `test_reports_pipeline.py`（42 例）— **5 个 Runner 子类各自的 `execute_pipeline` 装配**：
 >     sht/med/lng 的共享缓存**只拉一次**并注入 `gen_kwargs`、sht 的 `depth`→席位开关、
 >     prefetch 双钩子委托正确；val 的**「异步失败→同步回退」**与 **O39 假成功守卫**
 >     （asyncio 成功但文件不存在时须报「未生成」而非「已保存」）、mak 无回退必须 raise。
 > - 有效性经**变异测试**验证（两批共 7 处注入回归，全部被捕获）：
->   「调度表漏登记策略25」「并发上限 3→99」「单股失败不再隔离」；
+>   「调度表漏登记策略23」「并发上限 3→99」「单股失败不再隔离」；
 >   「sht 缓存未注入 gen_kwargs」「sht depth 席位开关失效」「val 去掉同步回退」「val 去掉 O39 守卫」。
 > - 现状：21 个测试文件 / 370 个测试函数（pytest 收集 398 项），**353 passed / 45 deselected / 0 failed**，
 >   data / core / infra / reports 四层（reports 层 3 文件 64 例）。

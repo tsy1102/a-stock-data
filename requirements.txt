@@ -33,19 +33,16 @@ mootdx>=0.11,<1.0
 levistock>=0.1
 axdata>=0.1
 
-# ── V16.3 O30 新数据源（可选，缺失时 THS 增强自动降级）──────────────
-# thsdk: 同花顺官方 C 库 SDK（sc_ths.py 依赖；正式账号见 ths_credentials.json，
-#        缺失时 get_ths_market_snapshot / get_ths_pb 等返回空/None）
+# ── thsdk（同花顺官方 C 库 SDK）—— V17.0.29(2026-09-07) 已完全移除 ──────────
+# ❌ 本依赖**不再是可选增强**，`stock_common/sc_ths.py` 已删除，请勿再安装或寻找。
+#    移除原因：thsdk TCP 网关仅盘中可用，对盘后/盘前运行无价值（详见 CHANGELOG V17.0.29）。
+#    现行替代：主力净流入走东财 push2 f137；PB 由 TDX `price/bvps` 兜底；
+#              保留同花顺 HTTP 网页接口（强势股热榜 / 涨停揭秘，盘后仍可用）。
 #
-# ⚠️⚠️ 包名撞车警告（2026-09-06 实测，勿再踩）：
-#   PyPI 上的 `thsdk`（2.0.2，summary="Python SDK for financial market data"）是**同名不同库**，
-#   它**不导出 `THS` 类**；本项目 `stock_common/sc_ths.py:63` 需要的是 `from thsdk import THS`
-#   （同花顺官方 C 库 SDK，非 PyPI 公开分发，需从官方渠道获取 wheel 后本地安装）。
-#   装上 PyPI 版本只会把报错从 "No module named 'thsdk'" 变成
-#   "cannot import name 'THS' from 'thsdk'"，并让 pip 误报依赖已满足 —— 已在 2026-09-06 卸载。
-#   正确做法：拿到官方 wheel 后 `pip install <path-to-wheel>`，勿用 `pip install thsdk`。
-# 缺失属预期：相关功能自动降级，不影响主流程与回归（526 passed）。
-# thsdk>=0.1    ← 有意保留为注释：标记该依赖真实不可从 PyPI 满足
+# 📌 历史包名撞车记录（2026-09-06 实测，留档以防回退时重踩）：
+#   PyPI 上的 `thsdk`（2.0.2）是**同名不同库**，不导出 `THS` 类；
+#   装上只会把报错从 "No module named 'thsdk'" 变成 "cannot import name 'THS'"，
+#   并让 pip 误报依赖已满足。即便未来要恢复，也应 `pip install <官方 wheel>` 而非 PyPI 包。
 
 # ── Google Drive（V7 已切换至 google-auth + google-api-python-client）
 # ⚠️ pydrive2 / oauth2client 已废弃，保留兼容运行但不再主动安装

@@ -135,13 +135,18 @@ def get_fund_flow_realtime(code, ff_120d=None):
 
 
 def get_fund_flow_120d(code):
-    """V16.2.4 (D2): 统一走 sc_datasource.get_history_fund_flow_120d（TDX 优先→东财 fallback）。
+    """V17.2.x(2026-09-10) 统一口径：与 med 对齐为 `prefer="em"`（东财直连）。
 
-    V7.5 原实现：TDX TCP + 东财 push2his fallback；统一后 em fallback 走 get_em_history_fund_flow
-    （dict 列表，元），sht 侧 _is_dict 分支天然兼容。
+    ⚠️ 变更依据（非行为变更，数据完全等价）：
+      - 原 sht 用 `prefer="tdx"`、med 用 `prefer="em"`，看似两口径；
+      - 实测 `tdx_get_history_fund_flow`(`core/tdx_client.py:1694`) **已完全委托东财 HTTP**
+        （"V12.0: 委托到东财 HTTP 接口（原 TDX get_history_fund_flow 已废弃）"），
+        且 V17.0.13 口径规定主力净额统一走东财 push2 f137+f140 —— **两路径数据同源同值**；
+      - `prefer="tdx"` 仅多一次对同一函数的冗余二次调用，且会把 `source` 误标为 "tdx"。
+      故统一为 "em" 直连：数据不变、source 标注正确、少一层间接调用。
     """
     from stock_common import get_history_fund_flow_120d
-    return get_history_fund_flow_120d(code, 60, prefer="tdx")
+    return get_history_fund_flow_120d(code, 60, prefer="em")
 
 
 def get_baidu_kline_with_ma(code):
@@ -168,7 +173,7 @@ def get_baidu_kline_with_ma(code):
 
 
 # V17.0.15: TA-Lib 61 种 K 线形态的中文名表（与 sc_technical.get_kline_patterns 的
-# _cdl_map 键一一对应；用于 sht 报告【十六·五、K线形态识别】章节的可读化输出）。
+# _cdl_map 键一一对应；用于 sht 报告【十七、K线形态识别】章节的可读化输出）。
 # 未在表中的形态回退显示英文原名，不影响信号判读。
 _CDL_CN = {
     "two_crows": "两只乌鸦", "three_black_crows": "三只乌鸦",
@@ -1161,9 +1166,6 @@ async def generate_report_async(session, code, output_path, ind_comp=None, idx_q
                 notable_sellers = [s for s in sa["sell_seats_analysis"] if s.get("short_name")]
                 if notable_sellers:
                     L(f"  卖方知名席位: {'、'.join([s['short_name'] for s in notable_sellers])}")
-                _notable = sa.get('notable_seats', [])
-                if _notable:
-                    L(f"  知名席位: {'、'.join(_notable)}")
 
     else: L(f"  近{_recent_days}日无龙虎榜记录（白马蓝筹或近期未触发异动标准的个股，无龙虎榜属正常现象）")
 
@@ -1303,7 +1305,7 @@ async def generate_report_async(session, code, output_path, ind_comp=None, idx_q
 
     # V17.0.14: 筹码分布 CYQ 章节(东财 kline f61 → calculate_cyq)
     # V17.0.17 修复: 源空时渲染可见告警占位, 不再整章静默跳过(重演 V17.0 已修的 M1/M4 假空白章节反模式)
-    L("\n"+"---"); L("## **十三·五、筹码分布（成本集中度）**"); L("---")
+    L("\n"+"---"); L("## **十四、筹码分布（成本集中度）**"); L("---")
     if _cyq_dict:
         _ben = _cyq_dict.get("benefit_pct", 0.0) or 0.0
         _c90 = _cyq_dict.get("concentration_90", 0.0) or 0.0
@@ -1321,7 +1323,7 @@ async def generate_report_async(session, code, output_path, ind_comp=None, idx_q
         # 源抓取失败(东财 push2his kline/get 返回空/异常) → 可见告警, 不再静默消失
         L("  ⚠️ 东财 K线/CYQ 数据源暂不可用（kline/get 抓取失败或返回空），本章成本集中度数据暂缺")
 
-    L("\n"+"---"); L("## **十四、短线情绪与事件催化**"); L("---")
+    L("\n"+"---"); L("## **十五、短线情绪与事件催化**"); L("---")
 
     # 东财个股新闻（近7日）
     try:
@@ -1476,6 +1478,28 @@ async def generate_report_async(session, code, output_path, ind_comp=None, idx_q
         zt_count = pool.get("limit_up_count", 0)
         zb_count = pool.get("limit_broken_count", 0)
         dt_count = pool.get("limit_down_count", 0)
+        # V17.2.9: 对齐 mak B 段跌停兜底——东财跌停池接口为空(tc>0 但 pool=[])时
+        # pool.limit_down_count=0, 回退涨跌幅口径全市场实时池(T日收盘, 与 mak _dt_count 同源)
+        if dt_count == 0:
+            try:
+                from core.tdx_client import tdx_get_market_abnormal_data
+                from stock_common import is_limit_down
+
+                _abn = tdx_get_market_abnormal_data()
+                if _abn:
+                    _dt_fb = sum(
+                        1
+                        for s in _abn
+                        if is_limit_down(
+                            str(s.get("code", "")),
+                            str(s.get("name", "") or ""),
+                            _safe_float(s.get("change_pct", 0)),
+                        )
+                    )
+                    if _dt_fb > 0:
+                        dt_count = _dt_fb
+            except Exception as _e:
+                _debug_log(f"sht dt fallback: {_e}")
         success_rate = pool.get("success_rate", 0)
         L(f"    今日涨停 {zt_count} 只 | 炸板 {zb_count} 只 | 跌停 {dt_count} 只 | 封板率 {success_rate:.0f}%")
 
@@ -1711,7 +1735,7 @@ async def generate_report_async(session, code, output_path, ind_comp=None, idx_q
     except Exception as _e:
         _debug_log(f"sht ftshare comment: {_e}")
 
-    L("\n"+"---"); L("## **十五、综合信号汇总**"); L("---")
+    L("\n"+"---"); L("## **十六、综合信号汇总**"); L("---")
 
     signals = []
 
@@ -1876,7 +1900,7 @@ async def generate_report_async(session, code, output_path, ind_comp=None, idx_q
             if stk3 >= tl:
                 signals.append(f"异动雷达(ZHB离线)：近5日涨幅{cdata.change_5d:+.2f}%，估算3日偏离{stk3:+.2f}%>={tl}%，触发异动")
         else:
-            # V17.0.15: count 5→60 —— 与下文【十六·五、K线形态识别】共用同一 cache_key
+            # V17.0.15: count 5→60 —— 与下文【十七、K线形态识别】共用同一 cache_key
             # ("D:{code}:60")，第二次命中进程内/磁盘缓存，**净增网络请求为 0**；
             # 60 根同时满足 TA-Lib CDL 族的 lookback 需求（形态识别需 ≥3 根且历史越长越稳）。
             _sk_r, _sr_r = await asyncio.to_thread(baidu_kline_full, code, 60)
@@ -1909,7 +1933,7 @@ async def generate_report_async(session, code, output_path, ind_comp=None, idx_q
 
     else: L("  (数据不足，暂无法生成综合信号)")
 
-    # V17.0.17: 预初始化 _sk/_sr, 供【十六·五、K线形态识别】复用。
+    # V17.0.17: 预初始化 _sk/_sr, 供【十七、K线形态识别】复用。
     # 此前 _sk/_sr 仅在涨停块(L1836)内赋值, 非涨停股触发 NameError 被下方 except 吞掉 → 整章静默消失
     # (重演 V17.0 已修的 M1/M4 假空白章节反模式)。现预置空, 涨停块会覆盖, K线形态块按需自取。
     _sk, _sr = [], []
@@ -1977,7 +2001,7 @@ async def generate_report_async(session, code, output_path, ind_comp=None, idx_q
         _hi2 = next((i for i, k in enumerate(_sk) if k in ("high", "high_price")), -1)
         _li2 = next((i for i, k in enumerate(_sk) if k in ("low", "low_price")), -1)
         _ci2 = next((i for i, k in enumerate(_sk) if k in ("close", "close_price")), -1)
-        L("\n"+"---"); L("## **十六·五、K线形态识别（TA-Lib 61 形态）**"); L("---")
+        L("\n"+"---"); L("## **十七、K线形态识别（TA-Lib 61 形态）**"); L("---")
         if not _sr or min(_oi, _hi2, _li2, _ci2) < 0:
             # 源抓取失败(远端 TDX 截断/不可达) → 可见告警, 不再静默消失
             L("  ⚠️ K线数据源暂不可用（TDX 远端行情抓取失败或返回空），本章形态识别数据暂缺")

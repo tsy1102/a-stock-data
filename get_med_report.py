@@ -96,9 +96,11 @@ _peers_high = _mkt_cfg.get("peers_mcap_high", 3.0)
 
 
 def get_fund_flow_120d(code):
-    """V16.2.4 (D2): 统一走 sc_datasource.get_history_fund_flow_120d（东财直连）。
+    """V17.2.x(2026-09-10) 统一口径：sht 已对齐至本 `prefer="em"`（东财直连）。
 
-    V7.5 原实现直连 get_em_history_fund_flow；统一后保留"仅东财"口径（中线业绩视角）。
+    原注释称"保留仅东财口径（中线业绩视角）"以区别于 sht 的 TDX 优先——该区分已不成立：
+    `tdx_get_history_fund_flow` 自 V12.0 起即委托东财 HTTP，两路径数据同源同值。
+    现 med 与 sht 完全一致（同一函数、同一参数），跨报告资金流结论可直接横向比较。
     """
     from stock_common import get_history_fund_flow_120d
     return get_history_fund_flow_120d(code, 60, prefer="em")

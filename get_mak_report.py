@@ -87,10 +87,10 @@ def _name_mark(name: str) -> str:
 
 
 def _is_a_stock(code: str) -> bool:
-    """V17.0 S3: 统一走 sc_utils.is_a_stock（原本地 _A_STOCK_PREFIXES 定义已收敛）。"""
-    from stock_common.sc_utils import is_a_stock as _u_is_a_stock
+    """V17.2.x(2026-09-10): 直接转调 sc_utils.is_a_stock（与 val 同口径：00/30/60/68/92 前缀）。"""
+    from stock_common.sc_utils import is_a_stock
 
-    return _u_is_a_stock(code)
+    return is_a_stock(code)
 
 
 def _is_industry_code(ic) -> bool:
@@ -1266,6 +1266,8 @@ async def generate_sector_report(output_path):
                         L("    🔥 竞价高开+放量共振，开盘进攻氛围浓厚")
                     elif _pos_a / _n < 0.3:
                         L("    ⚠️ 竞价红盘占比不足三成，开盘防御为上")
+        else:
+            L("  ⚠️ 竞价风向标：fuyao 竞价数据未启用（无盘前 9:25 短线情绪基准，开盘氛围判断缺失）")
     except Exception as _e:
         _debug_log(f"mak fuyao auction benchmark: {_e}")
 
@@ -1405,7 +1407,7 @@ async def generate_sector_report(output_path):
     if _lb_3d:
         _ladder_str = ' | '.join(f'{k}: {v}家' for k, v in sorted(_lb_3d.items()))
         _max_desc = f", 最高{_max_board}板" if _max_board else ", 最高首板"
-        L(f"  📊 连板梯队: {_ladder_str}{_max_desc}")
+        L(f"  📊 连板梯队（样本内3日连板统计）: {_ladder_str}{_max_desc}")
         if _max_board >= 4:
             L(f"    🔥 高标{_max_board}板打开空间，可积极做多")
         elif _max_board <= 1 and _zt_count > 30:
@@ -1478,6 +1480,20 @@ async def generate_sector_report(output_path):
         L("\n  🔻 空头崩盘 —— 新晋负向偏离异动:")
         for r in _down[:5]:
             L(f"    💥 {r['name']}({r['code']})  {r['desc']}")
+    # V17.3 (2026-09-10 mak 审查建议3): 复合异动标的——同票跨"卡异动/已触发/严重/严重预警"多严重度
+    # 合并为分层严重度汇总, 减少同一标的在多处重复呈现; 各窗口明细仍保留于上方分级区(诊断价值)
+    _combo = {}
+    for _lv in ("严重", "严重预警", "已触发", "卡异动"):
+        for _r in results[_lv]:
+            _combo.setdefault(_r["code"], []).append(_lv)
+    _combo_multi = {c: ls for c, ls in _combo.items() if len(ls) >= 2}
+    if _combo_multi:
+        _sev_order = {"严重": 0, "严重预警": 1, "已触发": 2, "卡异动": 3}
+        L("\n  📌 复合异动标的（多窗口共振 · 分层严重度汇总）:")
+        for _c in sorted(_combo_multi, key=lambda c: min(_sev_order[x] for x in _combo_multi[c])):
+            _nm = next((r["name"] for _lv in ("严重", "已触发", "卡异动") for r in results[_lv] if r["code"] == _c), _c)
+            _lv_str = " + ".join(sorted(set(_combo_multi[_c]), key=lambda x: _sev_order[x]))
+            L(f"    • {_nm}({_c}): {_lv_str}")
     # 板块-异动交叉分析
     L(f"\n{'='*90}")
     L("## 【B. 涨停池扫描（打板情绪看板）】")
@@ -1537,11 +1553,13 @@ async def generate_sector_report(output_path):
                             f" | {_it.get('first_limit_time','-')} | {_it.get('last_limit_time','-')}"
                             f" | {_it.get('turnover_ratio_pct',0):.2f}% |"
                         )
+            else:
+                L("  跌停明细：fuyao 数据未启用（无官方首次/最后跌停时刻与换手，仅保留涨停池口径跌停数）")
         except Exception as _e:
             _debug_log(f"mak fuyao limit_down detail: {_e}")
         success_rate = pool.get("success_rate", 0)
         L(
-            f"  涨停 {zt_count} 只 | 炸板 {zb_count} 只 | 跌停 {dt_count} 只 | 封板率 {success_rate:.0f}%"
+            f"  涨停 {zt_count} 只 | 炸板 {zb_count} 只 | 跌停 {dt_count} 只 | 封板率 {success_rate:.0f}%（涨停池口径）"
         )
 
         # 涨停板块分布
@@ -1625,22 +1643,25 @@ async def generate_sector_report(output_path):
 
     # V17.0.5 P1: fuyao 连板天梯互校(boards 六档矩阵+seal_nextday 次日封板率——独有字段)
     try:
-        from stock_common import get_fuyao_limit_up_ladder as _f_ladder
+        from stock_common import get_fuyao_limit_up_ladder as _f_ladder, is_fuyao_enabled as _f_lad_on
 
-        _lad = await asyncio.to_thread(_f_ladder)
-        _lad_items = ((_lad or {}).get("item") or [])
-        if _lad_items and isinstance(_lad_items, list):
-            _latest = _lad_items[0] if isinstance(_lad_items[0], dict) else {}
-            _boards = _latest.get("boards") or {}
-            _summary = []
-            for _bk in ("two_board", "three_board", "four_board", "five_board", "six_board", "seven_over"):
-                _lst = _boards.get(_bk) or []
-                if _lst:
-                    _sealed_next = sum(1 for x in _lst if x.get("seal_nextday"))
-                    _summary.append(f"{_bk.replace('_board','')}板{len(_lst)}只(次日续封{_sealed_next})")
-            if _summary:
-                L("\n  🪜 fuyao 连板矩阵互校（30 日窗口最新日）:")
-                L("    " + " | ".join(_summary))
+        if _f_lad_on():
+            _lad = await asyncio.to_thread(_f_ladder)
+            _lad_items = ((_lad or {}).get("item") or [])
+            if _lad_items and isinstance(_lad_items, list):
+                _latest = _lad_items[0] if isinstance(_lad_items[0], dict) else {}
+                _boards = _latest.get("boards") or {}
+                _summary = []
+                for _bk in ("two_board", "three_board", "four_board", "five_board", "six_board", "seven_over"):
+                    _lst = _boards.get(_bk) or []
+                    if _lst:
+                        _sealed_next = sum(1 for x in _lst if x.get("seal_nextday"))
+                        _summary.append(f"{_bk.replace('_board','')}板{len(_lst)}只(次日续封{_sealed_next})")
+                if _summary:
+                    L("\n  🪜 fuyao 连板矩阵互校（30 日窗口最新日）:")
+                    L("    " + " | ".join(_summary))
+        else:
+            L("  ⚠️ fuyao 连板矩阵互校：竞价数据未启用（无连板六档矩阵 / 次日封板率互校）")
     except Exception as _e:
         _debug_log(f"mak fuyao ladder: {_e}")
 
@@ -1663,6 +1684,9 @@ async def generate_sector_report(output_path):
             L("|---|---|---|---|")
             for _h in _ths_only[:10]:
                 L(f"| {_h.get('code','')} | {_h.get('name','')}{_name_mark(_h.get('name',''))} | {_safe_float(_h.get('zhangfu',0)):+.2f}% | {str(_h.get('reason',''))[:40]} |")
+    else:
+        L('')
+        L("  ⚠️ 同花顺独家交叉验证：数据源受限（同花顺网页接口 401 反爬），强势股热池暂无法获取，交叉验证增量视角缺失。")
 
     L("## 【C. 板块-异动集中度分析】")
     L(f"{'---'}")
@@ -1685,8 +1709,11 @@ async def generate_sector_report(output_path):
         _extra_dt_codes = set(_dt_map.keys()) - _abnormal_codes
     else:
         _extra_dt_codes = set()
-    if _sector_density or _dt_map:
-        L("  异动集聚板块TOP5（异动股数/密度，含龙虎榜补全）:")
+    # V17.2.9: 修复 C 段空表 bug——原 `if _sector_density or _dt_map` 在仅有龙虎榜数据
+    # (_dt_map 非空) 而无板块集聚(_sector_density 空) 时误触发标题, 但循环只遍历空列表
+    # 导致标题下无内容, 且龙虎榜补全(_extra_dt_codes)从未渲染。拆为两段独立输出。
+    if _sector_density:
+        L("  异动集聚板块TOP5（异动股数/密度）:")
         for _nm, _cnt, _den in _sector_density[:5]:
             L(f"    {normalize_industry(_nm)}: {_cnt}只异动（板块内密度{_den:.1f}%）")
             _s = next((s for s in sorted_sectors if s["name"] == _nm), None)
@@ -1696,16 +1723,20 @@ async def generate_sector_report(output_path):
                 for _abn in results["已触发"] + results["严重"]:
                     if _abn["code"] in _sc:
                         L(f"      {_abn['code']} {_abn['name']} - {_abn.get('desc','')}")
-                # 补全龙虎榜异动股票
-                for _c, _dt in _dt_map.items():
-                    if _c in _sc and _c not in _abnormal_codes:
-                        _dtn = _dt.get("name", "")
-                        _dt_display = f"{_c} {_dtn}" if _dtn else _c
-                        L(
-                            f"      {_dt_display} (龙虎榜) - {_dt['reason'][:40]} | 净买{_dt['net_buy']:.0f}万"
-                        )
     else:
         L("  今日异动股较少，未形成明显板块集聚")
+    # 龙虎榜异动补全（独立于板块集聚，避免仅龙虎榜数据时标题空表）
+    if _dt_map:
+        L("  龙虎榜异动补全（近3日，非已触发异常股）:")
+        for _c in list(_extra_dt_codes)[:5]:
+            _dt = _dt_map.get(_c)
+            if not _dt:
+                continue
+            _dtn = _dt.get("name", "")
+            _dt_display = f"{_c} {_dtn}" if _dtn else _c
+            L(
+                f"    {_dt_display} - {str(_dt.get('reason', ''))[:40]} | 净买{float(_dt.get('net_buy', 0)):.0f}万"
+            )
     # 近5日异动回溯（基于10日/20日/60日偏离值反推）
     _recent_high = []
     for s in all_stocks:

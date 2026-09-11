@@ -47,6 +47,11 @@ python scripts/capture_field_probe.py --dry-run       # 只显示各源可用性
    - 疑点(与字典解释矛盾/单位可疑/数值异常)
    - 未知字段观察(如 zhb `unknown_24`)
 5. 用户确认后,把结论回写 `field_dict.md`(状态: ✅实测 / ⚠️推测 / ❓未知 / ❌修正)
+6. **⚠️ 命名仲裁守卫（强制阻断, 2026-09-09 固化）**: 回写 `field_dict.md` 前后均须运行
+   `python scripts/lint_field_same_number.py --strict-naming`。
+   该模式将 **R3 命名缺口升为阻断级（exit≠0）**；**若报 R3 缺口,禁止回写 field_dict.md**,
+   须先补登 §12.8.12e 规范表或加数值二级复核标记,再重跑直到 exit 0。
+   （默认不带 `--strict-naming` 为 warn 级、不阻断,用于日常检视。）
 
 ## 源与限流(依据 sc_network._DOMAIN_LIMITS)
 

@@ -34,7 +34,7 @@ tests/
 │   └── test_infra_f10.py          # F10 章节集成（2，real_network）
 └── reports/                       # ④ 报告层（2026-08-30 新补）— 3 文件 / 64 例
     ├── test_reports_runner.py     # ReportRunner 基类 + execute_batch_pipeline 骨架（22）
-    ├── test_reports_strategy.py   # val 25 策略注册表 / 空池安全 / 配置键（12）
+    ├── test_reports_strategy.py   # val 23 策略注册表 / 空池安全 / 配置键（12）
     └── test_reports_pipeline.py   # 5 个 Runner 子类 execute_pipeline 装配（42）
 ```
 
@@ -69,7 +69,7 @@ tests/
 | 科创板成交量单位 | `core/test_core_tencent_volume_unit.py` |
 | GD 上传失败 | `infra/test_infra_gd.py` |
 | 降级/fallback 顺序 | `core/test_core_routing.py` |
-| **策略不工作（val 25 策略）** | `reports/test_reports_strategy.py` |
+| **策略不工作（val 23 策略）** | `reports/test_reports_strategy.py` |
 | **Runner/批量流水线骨架** | `reports/test_reports_runner.py` |
 | **5 个 Runner 子类取数/装配** | `reports/test_reports_pipeline.py` |
 | **报告正文渲染/章节内容** | ⚠️ **无专职测试** — 同下方缺口 |
@@ -77,7 +77,7 @@ tests/
 > ✅ **reports/ 层已补齐（2026-08-30，共 64 例）**，分两批落地：
 > - **① 骨架与注册表（22 + 12）**：`ReportRunner` 基类契约、`execute_batch_pipeline`
 >   五大骨架能力（代码清洗 / 并发上限 3 / 单股失败隔离 / 两个预取钩子容错 / 快照落盘）、
->   GD 上传编排，以及 `val` 的 25 策略注册表一致性 + 空池安全 + 配置键存在性。
+>   GD 上传编排，以及 `val` 的 23 策略注册表一致性 + 空池安全 + 配置键存在性。
 > - **② 五个 Runner 装配（42）**：`sht/med/lng/val/mak` 的 `execute_pipeline`
 >   ——公共契约（返回类型 / `report_type` / 生成器绑定 / 快照代理透传 / 上游调用次数钉死）、
 >   sht 四指数行情与 depth→席位开关、`val` 的 async→sync 回退与 V16.3 O39「文件不存在

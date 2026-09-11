@@ -117,9 +117,9 @@
 
 ### 零·B 字段×源总表（自动生成，勿手改）
 
-> 生成：`scripts/gen_field_matrix.py`，2026-08-25。从本字典全部字段表自动提取，共 1155 个字段 / 1412 条字段×源记录。
+> 生成：`scripts/gen_field_matrix.py`，2026-08-25。从本字典全部字段表自动提取，共 1171 个字段 / 1428 条字段×源记录。
 
-> 源排序按易→难（V17.0.7 层级定案）：ZHB（离线零网络）→ TDX TCP（0x0010/F10/eltdx）→ 腾讯（不封 IP）→ **同花顺-fuyao（官方 REST，盘后可查+独立风控域，V17.0.7 升为财务 TTM 族主源）** → 新浪 → 巨潮 → 东财（限流最严）→ 其他。
+> 源排序按易→难（V17.0.7 层级定案）：ZHB（离线零网络）→ TDX TCP（0x0010/F10/eltdx）→ 腾讯（不封 IP）→ **同花顺-fuyao（官方 REST，盘后可查+独立风控域，V17.0.7 升为财务 TTM 族主源）** → **同花顺-thsdk（TCP 盘后关闸——盘中专属特殊层）** → 新浪 → 巨潮 → 东财（限流最严）→ 其他。
 
 > 字段名基于章节标题分类推断，精确接口见各节；正文修改后重跑本脚本即同步。
 
@@ -142,19 +142,19 @@
 | 返回 | 2 | 腾讯、新浪 |
 | 价值 | 2 | 腾讯、新浪 |
 | 资金 | 2 | TDX-0x0010/F10、东财 |
-| 期权 | 2 | 东财 |
+| 期权 | 2 | 同花顺-thsdk、东财 |
 | code | 2 | TDX-0x0010/F10、东财 |
 | reason | 2 | 开盘红、东财 |
 | close | 2 | TDX-eltdx、东财 |
 | market | 2 | TDX-0x0010/F10、东财 |
 | turnover_rate | 2 | 开盘红、东财 |
 | is_new | 2 | 财联社、东财 |
-| 涨跌停价 | 2 | akshare |
-| 均价 | 2 | 东财 |
-| 振幅% | 2 | 东财 |
-| 量比 | 2 | 东财 |
-| 流通股本 | 2 | 东财 |
-| 流通市值 | 2 | 东财 |
+| 涨跌停价 | 2 | 同花顺-thsdk、akshare |
+| 均价 | 2 | 同花顺-thsdk、东财 |
+| 振幅% | 2 | 同花顺-thsdk、东财 |
+| 量比 | 2 | 同花顺-thsdk、东财 |
+| 流通股本 | 2 | 同花顺-thsdk、东财 |
+| 流通市值 | 2 | 同花顺-thsdk、东财 |
 | ocf_ttm(f103) | 2 | 同花顺-fuyao、东财 |
 | revenue_ttm(f104) | 2 | 同花顺-fuyao、东财 |
 | net_profit_period(f105) | 2 | 同花顺-fuyao、东财 |
@@ -193,7 +193,7 @@
 | 市场情绪 | 2 | TDX-0x0010/F10、同花顺-fuyao |
 | 板块轮动 | 2 | TDX-0x0010/F10、同花顺-fuyao |
 
-**B.2 单源字段（1090 个，无 fallback）**
+**B.2 单源字段（1106 个，无 fallback）**
 
 - **ZHB（23）**：A 实时、B 准实时、C 日频、D 静态、PE、PE TTM、tdxstat Col[15] 员工数、tdxstat Col[22]、tdxstat Col[3]、tdxstat Col[5] streak_days、tdxstat Col[6、tdxstat2 Col[11] vs tdxstat Col[17]、tdxstat2 Col[12] vs tdxstat Col[19]、tipinfo Col[2]、前一日、前一日开盘量额、前两日成交额、封单额、年内涨停数、当日、日 Beta、涨跌幅滑动对、自由流通股本、连板统计
 - **TDX-0x0010/F10（297）**：*ST湘邮、AI解读、AxData、BKFenShiZhiBo、ChangeStatistics、C中芯、DR 茅台、DailyLimitPerformance、DailyLimitPerformance2、FTShare、GetBaseFaceListZDEvnArtNew、GetDayBaseFaceListZDEvnArt、GetDayNewHigh_W28、GetGPCPHBTS_Tag、GetHotPHB、GetInfo、GetKLineDay_W14、GetKLineZhangTing、GetMainMonitor_w30、GetPanKou、GetPlateInfo_w38、GetPlate_Info_QJ、GetStockBid、GetStockList、GetStockList（龙虎榜）、GetStockPanKou、GetStockTrendIncremental、GetWeiTuo_W14、GetYTFP_BKHX、GetYTFP_SCTD、GlobalCommon、GroupCount_w28、Index、InfoBKR、MarketStockZDNum、MoodNumCount、MorningBiddingList、NewGetList、N百花医药、Radar、RealRankingInfo、RiseFallAnalysis、ST百花医药、SharpWithdrawal、SonPlate_Info、Theme、XD、XR、ZhiShuStockList_W8、[..、[verify、akshare、all、api、axdata_verify.md)、axdata_verify.md](verify、balance_sheet` 资产负债表、belong、cash_flow` 现金流量表、changqifuzhai
@@ -202,15 +202,15 @@
 - **腾讯（16）**：[0] 市场标识、[29][54][55][77][78] 占位符、[40] 停牌标记、[56] Beta 族、[76] A股流通股本、[85] 价格类字段、[86] 手级带符号量、[87] 科创板、tdxstat Col[11]、tdxstat Col[14]、tdxstat Col[34]、两融标记、分钟 K线、实测、月 K线、腾讯字段 44
 - **同花顺-fuyao（115）**：K线、PB、ROA、`big_order_flow(ths_code)`、a-share、a-share-index、accounts_receivable、adjustment-factors、anomaly-analysis-list、anomaly-analysis-stock、auction、auction.float_market_cap、balance-sheets、calendar、cash-flow、cash-flow-statements、cash_equivalents_net_addition、catalog、constituents、corporate-actions、download-url、dragon-tiger-list、dump、eps_deduct_ttm(f108)、fflow 历史资金流窗口、financials、get 财务 TTM 族、growth、growth.calculate_operating_income_yoy_growth_ratio、growth.calculate_parent_holder_net_profit_yoy_growth_ratio、historical、holder_equity_total、hot-stock-list、hot-stock-list-history、hot-stock-rank-trend、income-statements、income_tax_expense、indicators、interest_expenses、klines(count=N)、limit-break-pool` 🆕、limit-down-pool` 🆕、limit-up-ladder、limit-up-pool、list、manage_fee、market-dumps、meta、net_profit、net_profit_annual、net_profit_period、ocf_ttm、operating_profit、operation、pay_dividends_profits_interest_cash、pb、pcf、prices、profit_total、profitability
   - … 其余 55 个见正文
-- **同花顺-thsdk（2026-09-07 已退役）（58）**：.1、.2、.2%、.2%）、.6、.7 全合理）、.9%、OHLC、ROE TTM（31.3%、TTM、PB 市净率×3、市销率TTM）、⚠️ 疑点：主力净量（592888=净流入、两融：融资余额（茅台 175.44 亿 ✓）、主力净量（592888）破解、主力增仓：今日、主力资金：主力净流入（宁德 -7.53 亿）、主动被动×特大、五日量、人均持股（茅台 5141 ✓）、股东总数、散户数量、估值（PE 动、债券专属字段、内盘外盘、净值（3397）、净利润增长率（134141）、净利营收增长率、净额、分钟、占比、周高低（95、均笔额）、基差（133778）、多空比（592946）、大单中单小单流入流出、委差委比、小单量笔数金额（完整 30+ 分档字段）、年初至今涨跌幅（461346）、总市值）、总额、手每笔、换手、散户数量（462057）、日占比 + 全市场排名、日涨跌幅、年初至今、开盘涨跌幅、实体涨跌幅、涨速 1、日涨跌幅（3250、时间（4）、期货、某基数的比率）、净利润增长率（百分比数值——茅台 1.47 待对照财报）、YTD（-4.93 vs ZHB -3.01 差 1.9pp——基准口径）、多空比（茅台 19.95 vs 工行 0.35 存疑）、基差（A 股有值疑期货字段错位）、散户数量（宁德 82.49 存疑）、时间字段（宁德 20251201 滞后）、流通比例 100、涨速、牛熊、股东：户均、股本（总股本 12.5 亿、融券、融券卖出、融资买入、行情（价格、财务：净利润1（茅台 272.43 亿 vs ZHB 扣非 272.40 亿一致）、资产负债率（12.1、资金流入流出
+- **同花顺-thsdk（58）**：.1、.2、.2%、.2%）、.6、.7 全合理）、.9%、OHLC、ROE TTM（31.3%、TTM、PB 市净率×3、市销率TTM）、⚠️ 疑点：主力净量（592888=净流入、两融：融资余额（茅台 175.44 亿 ✓）、主力净量（592888）破解、主力增仓：今日、主力资金：主力净流入（宁德 -7.53 亿）、主动被动×特大、五日量、人均持股（茅台 5141 ✓）、股东总数、散户数量、估值（PE 动、债券专属字段、内盘外盘、净值（3397）、净利润增长率（134141）、净利营收增长率、净额、分钟、占比、周高低（95、均笔额）、基差（133778）、多空比（592946）、大单中单小单流入流出、委差委比、小单量笔数金额（完整 30+ 分档字段）、年初至今涨跌幅（461346）、总市值）、总额、手每笔、换手、散户数量（462057）、日占比 + 全市场排名、日涨跌幅、年初至今、开盘涨跌幅、实体涨跌幅、涨速 1、日涨跌幅（3250、时间（4）、期货、某基数的比率）、净利润增长率（百分比数值——茅台 1.47 待对照财报）、YTD（-4.93 vs ZHB -3.01 差 1.9pp——基准口径）、多空比（茅台 19.95 vs 工行 0.35 存疑）、基差（A 股有值疑期货字段错位）、散户数量（宁德 82.49 存疑）、时间字段（宁德 20251201 滞后）、流通比例 100、涨速、牛熊、股东：户均、股本（总股本 12.5 亿、融券、融券卖出、融资买入、行情（价格、财务：净利润1（茅台 272.43 亿 vs ZHB 扣非 272.40 亿一致）、资产负债率（12.1、资金流入流出
 - **新浪（25）**：URL、ask、ask_vol、bid、bid_vol、delta、gamma、item_tongbi、item_value、iv、last、limit_down、limit_up、netamount、open_interest、opendate、prev_close、report_list.{期次}.data[].item_title、report_type、strike、theory、theta、trade、vega、参数
 - **财联社（14）**：catalyst、cur_heat、limit_up_board、market_degree、performance、profit_ratio、rank_change、shsz_balance、shsz_balance_change_px、up_down_dis、up_open_num、up_open_ratio、up_ratio、up_ratio_num
 - **开盘红（36）**：Detail、StockList、TagID、TagName、TagShuXing、ZSCode、ZSName、avg_change、buy_amount、dt、fall_dist、fall_num、flat、industry_id、industry_zt、limit_tag、market_cap、net_inflow、net_inflow_5d、open_time、q_zrcs、qscln、rise_dist、rise_num、s_zrcs、seal_money、sell_amount、sign、sjdt、sjzt、stdt、stock_count、stzt、szln、themes、zt
 - **akshare（12）**：BPS、EPS、PE 历史百分位、push2 f137、push2 f51、push2 f55、两融 RZJME、历史分红、扣非净利、板块资金流 f62、股息率、龙虎榜 EXPLAIN
 - **AxData（96）**：activity、amplitude_pct、ask1_price、ask1_volume、attack_pct、auction_prev_volume_ratio、average_change_pct、average_price、bid1_ask1_balance_pct、bid1_ask1_volume_diff、bid1_price、bid1_volume、capital_score、concept_capital_flow_tdx（题材资金走势）、cost70_concentration、cost70_range、cost90_concentration、cost90_range、current_volume、drawdown_pct、entrust_ratio、exchange、finance_updated_date、float_market_value、float_share、float_shares、free_float_market_value、free_float_share_z、free_float_shares、fundamental_score、high_change_pct、industry_name、industry_rank、industry_rank_total、inside_outside_ratio、inside_volume、instrument_id、limit_board_text、limit_ratio_pct、limit_rule、limit_stat_days、limit_status、limit_up_count_in_stat_days、limit_up_streak_days、low_change_pct、market_rank、market_rank_total、market_win_pct、name_flag、news_score、open_amount、open_amount_ratio_pct、open_change_pct、open_prev_amount_ratio、open_prev_seal_ratio、open_turnover_z、open_volume_hand、open_volume_ratio、option_chain_tdx（期权T型）、outside_volume
   - … 其余 36 个见正文
-- **东财（338）**：ABLE_FREE_SHARES、ACCUM_AMOUNT、ASSIGN_PROGRESS、AVG_FREE_SHARES、BILLBOARD_BUY_AMT、BILLBOARD_NET_AMT、BONUS_RATIO、BUY、BUYER_NAME、BUY_RATIO、BUY_SEAT、CHANGE_RATE、CHANGE_TYPE、CLOSE_PRICE、D1~D30_CLOSE_ADJCHRATE、DATE、DCP、DEAL_AMOUNT_RATIO、DEAL_AMT、DEAL_NET_RATIO、DEAL_PRICE、DEAL_VOLUME、END_DATE、EXPLAIN、EXPLANATION、EX_DIVIDEND_DATE、FIN_BALANCE_GR、FREE_DATE、FREE_MARKET_CAP、FREE_RATIO、FREE_SHARES、FREE_SHARES_TYPE、HOLDER_NUM、HOLDER_NUM_CHANGE、HOLDER_NUM_RATIO、LINK_URL、MARKET、NET、NET_BS_AMT、NextTwoYear、NextYear、OPERATEDEPT_CODE、OPERATEDEPT_NAME、PRETAX_BONUS_RMB、RCHANGE3D、RPTA_WEB_RZRQ_GGMX（两融）、RPT_DAILYBILLBOARD_DETAILSNEW（龙虎榜）、RPT_HOLDERNUMLATEST（股东户数）、RPT_LIFT_STAGE（解禁）、RPT_SHAREBONUS_DET（分红）、RQCHL、RQMCL、RQYE、RQYL、RZCHE、RZCHE10D、RZJME、RZMRE、RZMRE10D、RZRQYE
-  - … 其余 278 个见正文
+- **东财（354）**：ABLE_FREE_SHARES、ACCUM_AMOUNT、ASSIGN_PROGRESS、AVG_FREE_SHARES、BILLBOARD_BUY_AMT、BILLBOARD_NET_AMT、BONUS_RATIO、BUY、BUYER_NAME、BUY_RATIO、BUY_SEAT、CHANGE_RATE、CHANGE_TYPE、CLOSE_PRICE、D1~D30_CLOSE_ADJCHRATE、DATE、DCP、DEAL_AMOUNT_RATIO、DEAL_AMT、DEAL_NET_RATIO、DEAL_PRICE、DEAL_VOLUME、END_DATE、EXPLAIN、EXPLANATION、EX_DIVIDEND_DATE、FIN_BALANCE_GR、FREE_DATE、FREE_MARKET_CAP、FREE_RATIO、FREE_SHARES、FREE_SHARES_TYPE、HOLDER_NUM、HOLDER_NUM_CHANGE、HOLDER_NUM_RATIO、LINK_URL、MARKET、NET、NET_BS_AMT、NextTwoYear、NextYear、OPERATEDEPT_CODE、OPERATEDEPT_NAME、PRETAX_BONUS_RMB、RCHANGE3D、RPTA_WEB_RZRQ_GGMX（两融）、RPT_DAILYBILLBOARD_DETAILSNEW（龙虎榜）、RPT_HOLDERNUMLATEST（股东户数）、RPT_LIFT_STAGE（解禁）、RPT_SHAREBONUS_DET（分红）、RQCHL、RQMCL、RQYE、RQYL、RZCHE、RZCHE10D、RZJME、RZMRE、RZMRE10D、RZRQYE
+  - … 其余 294 个见正文
 
 <!-- /GEN:field-matrix -->
 
@@ -246,7 +246,6 @@
 > [32]=涨停计数(LastZTHzNum/ztcs1)、[33]=**连板数(✅ V17.0.9b 天梯 20/20 匹配; 原 ztlx 涨停类型族假设证伪)**; ②push2 f55/f92/f173/f186/f188 均对上官方指标名; ③同花顺 133971 封单额↔tdxstat2[4] ✓
 > 东财 G1/G5/G6/G7 主力 3/5/10/20日 ↔ **f137**(主力净, V17.0.16 订正: 旧写 f137+f140 重复计数)/5日 f178 聚合 ↔ 同花顺 FREE净流入 ✓
 
-## 一、
 ## 一、 数据获取优先级与架构总纲 (Core Paradigms)
 
 系统整体遵循以下三级金字塔获取原则：
@@ -320,6 +319,16 @@ flowchart TD
 | 34 | `weifenpeilirun` | 未分配利润 | `float` | `角(/10得元)` | 角 | 权益 | ❌ |
 | 35 | `meigujingzichan` | 每股净资产 (BPS) | `float` | **原始值** | **元/股** | 每股指标 | ❌ |
 | 36 | `baoliu2` | 保留字段2 | `float` | - | - | 保留 | ❌ |
+
+### 2.2.1 TDX tdx_quotes 神谕印证（2026-09-09 实时 · 桶 A1）
+
+> 数据来源：通达信 `tdx_quotes`（600519 实测 20260909 14:08，HQDate=20260909）。方法：沿用 path A+B「通达信官方命名语义终止器」——TDX 命名字段即官方 L1 锚。
+> TDX CwInfo 单位为**万元**，ExtInfo 股本单位为**万股**；tdxstat 同名字段单位为角/元或股，印证须单位换算（万×1e4=元/股），但官方命名语义一致即 L1 终止。
+
+**映射结论（28/37 列直接印证 → L1）**：col0=BaseInfo.Setcode, col1=BaseInfo.Code, col2=ExtInfo.LTGB, col4=ExtInfo.BelongHY, col5=CwInfo.GXRQ, col6=CwInfo.Start, col7=ExtInfo.ZGB, **col14=CwInfo.ZZC(总资产), col15=CwInfo.LDZC(流动), col16=CwInfo.GDZC(固定), col17=CwInfo.WXZC(无形), col18=CwInfo.GDRS(股东户数), col19=CwInfo.LDFZ(流动负), col20=CwInfo.CPFZ(长期负), col21=CwInfo.ZBGJJ(资本公积), col22=CwInfo.JZC(净资产), col23=CwInfo.YYSR(营业收入≈主营), col25=CwInfo.YSZK(应收), col26=CwInfo.YYLR(营业利润), col27=CwInfo.TZSY(投资收益), col28=CwInfo.JYXJL(经营现金流), col29=CwInfo.ZXJL(总现金流), col30=CwInfo.CH(存货), col31=CwInfo.LYZE(利润总和), col32=CwInfo.SHLY(税后利润), col33=CwInfo.JLY(净利润), col34=CwInfo.WFPLY(未分配利润), col35=ExtInfo.MGJZC(每股净资产)**。
+**⚠️ 候选**：col3=ExtInfo.Addr(省份 候选), col24=CwInfo.YYLR(营业利润≈主营业务利润 近似)。
+**❌ legacy（桶 B，TDX 无命名）**：col8–13（国家股/法人股/B股/H股/职工股，现代公司已归零）、col36（保留）。
+**完整映射表见** `docs/field_verification/20260909_bucketA_TDX_oracle_sweep.md` §3。
 
 ### 2.2 字段组分类与策略价值
 
@@ -1327,13 +1336,13 @@ print(q.code, q.price, q.change_pct)
 | [42] | 最低价(重复列) | 元 | ✅ | **多日复核定案(2026-08-29)**: 6/6 采集日 == push2 f45(最低) 且 == [34]，确认冗余重复列 |
 | [43] | **振幅%** | % | ✅ | 茅台 1.28% |
 | [44] | **流通市值** | 亿元 | ✅ **L1(fuyao锚)** | 茅台 16927.35（东财一致）。**2026-09-01 fuyao 官方锚多日对撞（6 日 20/20，20260827 19/20）**：`round(fuyao auction_final.float_market_cap ÷ 1e8, 2) == [44]` 逐股 2 位小数精确相等——茅台 `1624506042131.52元 ÷ 1e8 = 16245.06 == tx[44]=16245.06` ✔。此前"东财一致"仅为同源间接佐证（东财↔东财），**fuyao 系独立第三方源，升级为 L1** |
-| [45] | **总市值** | 亿元 | ✅ **L1(fuyao锚)** | 茅台 16927.35（工行 28298>21407 验证 44=流通/45=总）。**2026-09-01 fuyao 官方锚多日对撞（6 日 20/20，20260827 19/20、20260828 19/20）**：`round(fuyao float_market_cap × (总股本÷流通股本) ÷ 1e8, 2) == [45]`，股本取自 tdx `finance_info.zong_guben/liutong_guben`。茅台全流通故 [44]==[45]；农行 20260831 `[44]=22091.7(流通) < [45]=24218.83(总)`（含 H 股）✔。**附带解决 push2 f116/f117 疑难**：f117=流通市值（fuyao 20/20 直锚），f116=总市值（fuyao 仅 8/20 命中，**因该 8 只为全流通股，总市值≡流通市值**，非巧合）|
+| [45] | **总市值** | 亿元 | ✅ **L1(fuyao锚)** | 茅台 16927.35（工行 28298>21407 验证 44=流通/45=总）。**2026-09-01 fuyao 官方锚多日对撞（6 日 20/20，20260827 19/20、20260828 19/20）**：`round(fuyao float_market_cap × (总股本÷流通股本) ÷ 1e8, 2) == [45]`，股本取自 tdx `finance_info.zong_guben/liutong_guben`。茅台全流通故 [44]==[45]；农行 20260831 `[44]=22091.7(流通) < [45]=24218.83(总)`（含 H 股）✔。**附带解决 push2 f116/f117 疑难**：f117=流通市值（fuyao 20/20 直锚），f116=总市值（fuyao 仅 8/20 命中，**因该 8 只为全流通股，总市值≡流通市值**，非巧合）。**🔥2026-09-09 通达信官方命名字段交叉佐证(path A, 见 20260909_pathAB_tx45_47_execution.md)**：help.tdx.com.cn 官方量化文档 `get_more_info` 命名字段 `Zsz`=总市值(亿)，与 tx[45] 语义同名（官方终止器）；腾讯 qt.gtimg.cn 实时 `qt[45]`=总市值 同源自洽（18/18 同量级，比值 0.99~1.10 偏差全由 09-08 快照 vs 09-09 实时价格位移解释，且对近全流通股的"流通市值疑"标为 总≈流 噪声误报）→ 升**双官方 L1(fuyao 数值 + 通达信官方命名)**。通达信官方 `Zsz` 实时数值严格比值(≤1e-3)已于 2026-09-09 13:00+ 经 TDX MCP 恢复后 **18/18 全样本达成**（ZSZ_元÷Now ≈ tx[45]×1e8÷tx[3]，总股本日内不变全数吻合）→ **双官方 L1 数值闭环完成**|
 | [46] | **PB** | 倍 | ✅ **L1(fuyao锚)** | 茅台 7.27（东财一致）。**2026-09-01 fuyao 锚对撞（6 日，17→20/20 递增）**：`fuyao snapshot.last_price ÷ push2 f92(BPS) == [46]` ±0.02。茅台 `1299.52 ÷ 200.99 = 6.467 → 6.47 == tx[46]` ✔；农行 0.85（破净）✔。⚠️ 命中率由 17/20 递增至 20/20，系 **push2 f92(BPS) 在报告期切换窗口内滞后**所致，非字段错配；早期 miss 股（002034/300031/601288/603221/688500/920508）随 f92 更新全部收敛 |
-| [47] | **涨停价** | 元 | ✅ **L1(fuyao锚)** | 茅台 1485.66。**2026-09-01 fuyao 官方锚多日对撞（6 日 20/20，20260827 19/20）**：`round(fuyao snapshot.prev_price × 板块涨停幅度, 2) == [47]`。🔴 **关键：涨停幅度非统一 1.1，须按板块自适应**——主板(600/601/603/605/000/001/002)=1.10、创业板(300/301)=1.20、科创板(688)=1.20、北交所(920/83/87/43)=1.30。茅台 `1297.40 × 1.10 = 1427.14 == tx[47]=1427.14` ✔ 分毫不差。⚠️ 若按统一 1.1 计算仅 9~10/20 命中（**易误判为"存疑/巧合"**），按板块自适应后 20/20 —— 本项目第八次印证「**miss 必须先查口径与规则，再判巧合**」 |
+| [47] | **涨停价** | 元 | ✅ **L1(fuyao锚)** | 茅台 1485.66。**2026-09-01 fuyao 官方锚多日对撞（6 日 20/20，20260827 19/20）**：`round(fuyao snapshot.prev_price × 板块涨停幅度, 2) == [47]`。🔴 **关键：涨停幅度非统一 1.1，须按板块自适应**——主板(600/601/603/605/000/001/002)=1.10、创业板(300/301)=1.20、科创板(688)=1.20、北交所(920/83/87/43)=1.30。茅台 `1297.40 × 1.10 = 1427.14 == tx[47]=1427.14` ✔ 分毫不差。⚠️ 若按统一 1.1 计算仅 9~10/20 命中（**易误判为"存疑/巧合"**），按板块自适应后 20/20 —— 本项目第八次印证「**miss 必须先查口径与规则，再判巧合**」。**🔥2026-09-09 通达信官方命名字段交叉佐证(path B)**：官方文档 `ZTPrice`=涨停价，与 tx[47] 语义同名；腾讯 qt 实时定位到 `prev_close×板块幅度` 同值下标（300031/600675/601288/688327/688426/688500/688553 共 7/18 与 qt[47] 精确一致差≤0.08，余 11/18 偏差由"raw 为 09-08 快照(基=09-07收) vs qt 09-09 实时(基=09-08收)"基准日错位完整解释）→ 升**双官方 L1(fuyao 数值 + 通达信官方命名)**。TDX 官方 `ZTPrice` 实时数值严格比值已于 2026-09-09 13:00+ 经 TDX MCP 恢复后 **18/18 全样本达成**（板块幅度=tx[47]÷tx[4] ≈ TDX ZTPrice÷Close，主板 1.10 / 科创板·创业板 1.20 全数吻合）→ **双官方 L1 数值闭环完成** |
 | [48] | **跌停价** | 元 | ✅ | 茅台 1215.54 |
 | [49] | **量比** | - | ✅ | 茅台 0.65 |
 | [50] | **委差** | 手 | ✅ | 2026-08-06 十股实测：茅台53/平安-21870/万科-70248/包钢195036（全档委买-委卖，量级与挂单一致）|
-| [51] | **均价** | 元 | ✅ | 茅台 1355.12 |
+| [51] | **均价** | 元 | ✅ | 茅台 1355.12（2026-09-09 TDX K线独立重算 VWAP=成交额÷成交量 Pearson=1.0/slope=1.0/残差<0.005 → 第四源精确定案 L1） |
 | [52] | **市盈率(动态)** | 倍 | ✅ | 茅台 18.25（2026-08-31；=push2 f162=fuyao pe_mrq）|
 | [53] | **市盈率(静态/年报 LYR)** | 倍 | ✅ | 茅台 19.73（2026-08-31；=push2 f163=现价÷f160年报EPS）|
 
@@ -1346,7 +1355,7 @@ print(q.code, q.price, q.change_pct)
 > - 天然实验：10 只个股在 08-24~08-31 窗口内 f162 隐含年化系数由 Q1×4 切至 H1×2，方向全一致 → 确证 f162 为年化口径
 > **完整铁证见 §12.8.12e 后【PE 口径铁证】块。**
 | [54]-[55] | 未知(恒空) | - | ⚠️ **= 占位符·恒空（H12 全日期判定）** | 2026-08-06 实测 10 股恒空；**H12 复核：12 采集日 × 20 股 237/237 全空** → 无信息量 |
-| [56] | **Beta 族·高置信（非 BetaValue 原值）** | - | 🟢 **L4→Beta族高置信（2026-09-03 主动升级）** | 旧"候选 Beta/贝塔"**未定案**——详见下方 H12 证据块 | **2026-09-01 fuyao 官方契约对撞: fuyao 全 62 端点(snapshot/valuation/auction/fin_indicators)无 Beta/贝塔字段 → [56] 无官方文档捷径, 维持 L4**；**2026-09-02 存在性复核：[56] 20股范围[-0.21,1.85] 常规数值(散度17)，存在非占位，疑 Beta/相关系数族，维持 L4 未定案**；**2026-09-03 非对撞升级：887只800日K线自构等权市场代理，自算Beta与[56] Pearson=0.908 → 坐实Beta族量（系统风险），偏移因腾讯基准/窗口差异；定案终判仍须 fuyao Beta 端点或腾讯官方字段表对撞，但方向已由主动计算确认** |
+| [56] | **Beta 族·高置信（非 BetaValue 原值）** | - | 🟢 **L4→Beta族·身份确认（2026-09-09 第四源 TDX K线 β_中证全指 Pearson=0.991 定位基准=宽基全市场指数）** | 旧"候选 Beta/贝塔"**未定案**——详见下方 H12 证据块 | **2026-09-01 fuyao 官方契约对撞: fuyao 全 62 端点(snapshot/valuation/auction/fin_indicators)无 Beta/贝塔字段 → [56] 无官方文档捷径, 维持 L4**；**2026-09-02 存在性复核：[56] 20股范围[-0.21,1.85] 常规数值(散度17)，存在非占位，疑 Beta/相关系数族，维持 L4 未定案**；**2026-09-03 非对撞升级：887只800日K线自构等权市场代理，自算Beta与[56] Pearson=0.908 → 坐实Beta族量（系统风险），偏移因腾讯基准/窗口差异；定案终判仍须 fuyao Beta 端点或腾讯官方字段表对撞，但方向已由主动计算确认**；**2026-09-09 round13 第四源(TDX K线)对撞：β_中证全指(000985) vs [56] 拟合 tx56=0.271+1.066·β, R²=0.982, Pearson=0.991, Spearman=0.988, 留一法min0.987 → 身份确认(基准类=宽基全市场指数, 类中证全指/国证A指)；因残差max0.155/斜率1.066/截距0.271 非逐股精确 → 不升L1, 待腾讯字段表坐实** |
 | [57] | **成交额(万元·4位小数)** | 万元 | ✅ **L1(fuyao锚)** | 2026-08-06 实测 茅台332623.0801万=新浪[9] 3326230801元 精确一致。**2026-09-01 fuyao 官方锚多日对撞（6 日 20/20，20260827 19/20）**：`fuyao snapshot.turnover ÷ 1e4 == [57]` 比值 **10000.0000**（离散度 <1e-4），茅台 `3003033700÷1e4 = 300303.3700 == tx[57]=300303.3720` ✔。与 [37] 同源同单位，[37] 取整、[57] 保留 4 位小数 |
 | [58] | **最新逐笔成交金额** | 万元 | ✅ | **2026-08-06 新浪[33] 10 股全部精确**：茅台 1308550元/10000=130.855 ✓、000100 2479022.4/10000=247.902 ✓。**V17.0.7 与"收盘竞价说"和解(9/9)**: 收盘后快照中最新逐笔=收盘集合竞价撮合单(tx58×10000=sina[33]金额、tx59=量/100, 三日三股全等)——Gemini"尾盘竞价额"系盘后特例, 字段本义为最新逐笔 |
 | [59] | **最新逐笔成交量** | 手 | ✅ | **2026-08-06 新浪[33] 10 股全部精确**：茅台 1000股/100=10手 ✓、平安 25500/100=255 ✓、000100 514320/100=5143 ✓（收盘后=竞价撮合量, 见 [58] V17.0.7 和解注） |
@@ -1374,8 +1383,8 @@ print(q.code, q.price, q.change_pct)
 | [82] | 币种 | - | ✅ | CNY |
 | [83] | 未知(恒0) | - | ⚠️ **= 占位符·恒 '0'（H12 全日期判定）** | 2026-08-06 实测 10 股恒 '0'；**H12 复核：12 采集日 × 20 股 237/237 恒 '0'** → 无信息量（非"未知语义"）|
 | [84] | **状态码(2026-08-15 20股破译)**: W=未盈利(688553)/U=同股不同权(688327 UW)/Y=科创板(688 全部)/D/F/N=交易状态(沪市恒定); 深市=空; 北交所920=NBFND | - | ✅ | `___D__F_WNY` |
-| [85] | **均价/VWAP 类价格派生（L3 候选强）** | - | 🟢 **L3→均价/VWAP类价格派生候选强（2026-09-03 主动升级）** | **价格类字段(L3 弱, 2026-08-29 收紧不得称参考价/结算价)**: 主板贴近现价/昨收盘, 恒偏离 ±0.1~0.5 且永不等于现/昨/开(**2026-08-29 20股复测**: 最近项分布 现10/昨6/开4); **北交所 920118/920508 无数据=0.00**(与 push2 f85 流通股本北交缺失一致)。**对撞扫描(11源×20股, scratch/collide_0829.py)**: 精确数值相等命中 **0**; 1% 容差命中 16/20(对手方=腾讯[19]/[21]、ulist239 f32/f143、sina fields.7/21/23、tdx ask1/ask2 等**卖一/卖二价族**)——仅能证明 **[85] 属"价格类字段"**, 因价格族彼此本就 1% 内互近, **不能判定是哪一个价格**; 与"参考价/结算价"方向不矛盾, 但**未获对撞支持, 不得据此定案**(对撞唯一证据=精确数值相等, 序号/语义相近均不算)。终判需腾讯字段文档。**多日复核(2026-08-29 晚, 9 有效采集日, analysis.md PART G3)**: 剔除 0813 全 0 空撞日后 9 日精确命中 **0**; 连续交易日对 [85](T) vs 次日昨收盘 **0/72** → **非收盘价**; 与当日现价中位差 0.08~0.10(双向)、与最高中位差 0.19~0.69 → 系"接近现价的某时刻成交快照"。维持 L3 弱。**H12 补强(2026-08-31): 落在本日[低,高]区间仅 141/184=76.6%(23.4% 区间外, 688500 低34.60 但[85]=33.30), 与[51]均价/MA5/10/20/VWAP/昨收盘/昨均价全部证伪 → 非当日价/均价/MA/参考价** | **2026-09-01 fuyao 官方字段对撞(20股): [85] vs fuyao 官方 last/open/high/low/prev/auction_price 精确 0/20(仅 high 1/20 巧合), 相对偏差 med 0.5%(last)~3.3%(low), Spearman +0.84~+0.88(价格族伪相关非定位, Pearson +1.000 同陷阱) → 维持 L3**；**2026-09-03 主动升级：茅台 t85=1297.00≈自算VWAP(额/股)=1297.04(误差0.003%)，其余 t85≈close(±0.1) → 高概率均价/VWAP类价格派生(amount÷volume折算)，非OHLC原始价** |
-| [86] | **手级带符号量（候选=委差/盘口净量）** | 手 | ❓ **L4（候选=委差/盘口净量, 2026-09-03 主动升级）** | ⚠️**本案曾误判为委差, 2026-08-29 同日撤回**——教训见下。**已证伪**: ①"主力净买/**净主动买入量**(手)"——**2026-08-29 终核(单位修正后)**: [86] vs 主买−主卖(外盘[7]−内盘[8]) 精确命中 **0/20**、vs (外盘−内盘)/2 **0/20**(茅台 [86]=14 vs 主买−主卖=1,026, 差 73×); 量级 \|[86]\|/成交量 中位 **0.28%**(区间 0.04%~1.92%, 净主动买入量正常应 5%~25%, **差 1~2 个数量级**); 符号与当日涨跌幅同号率 **9/20=45%**(≈随机, 净主动买入量应 >70% 强同向); 东财 f62/f137 反推手数差 10~100× 且符号常反。②**"委差"假设亦证伪**(曾据 Pearson r=+0.965 误升 L2)——**Spearman ρ=−0.012**、**剔除 601288 单点后 Pearson 翻为 −0.863**、符号一致仅 12/20, 该相关系单只权重股(601288)驱动的伪相关。**依对撞规则重扫**(scratch/collide_0829.py, 11 源×20 股): 精确数值相等命中 **0**, 1% 容差命中 **0**; 与腾讯全部字段 \|Spearman\| 最高仅 0.540(与[50]), 无 >0.6 者。**结论: [86] = 手级带符号量, 非净主动买入量（跨源证伪）；委差=2026-09-03 主动法候选（量级吻合+盘口净量语义），日K线无法验证 → 维持 L4**。终判需腾讯字段文档(L1)或新增同数值源对撞。**多日复核(2026-08-29 晚, PART G3)**: 9 个有效采集日(剔除 0813 全 0 空撞日)精确命中 **0**、1% 同族 **0**——0813 曾出现 19-20/20 满值"命中"全为 0=0 空撞（单日假阳性实例, 见 G8 踩坑）。**H12 补强(2026-08-31): 全锚定 ZHB 35 列 + 全源 517 候选精确命中 0、无 >0.6 Spearman → 维持 ❓ 手级带符号量, 语义未破解** | **2026-09-01 fuyao 官方 volume 对撞(20股): 精确 0/20, |[86]|/fuyao_volume(手) 中位 0.24% → 维持 ❓**；**2026-09-03 主动升级：候选=委差/盘口净量（符号(收>开)与[86]>0 仅3/6一致→否定日内净买；量级手级带符号与委差吻合，委差瞬时L1快照与日K线解耦故日K线无法验证），待L1盘口或对撞f192(委差)终判** |
+| [85] | **价格类字段（L3 候选强）** | - | 🟢 **L3 价格类字段候选强（2026-08-29 收紧）** | **价格类字段(L3 弱, 2026-08-29 收紧不得称参考价/结算价)**: 主板贴近现价/昨收盘, 恒偏离 ±0.1~0.5 且永不等于现/昨/开(**2026-08-29 20股复测**: 最近项分布 现10/昨6/开4); **北交所 920118/920508 无数据=0.00**(与 push2 f85 流通股本北交缺失一致)。**对撞扫描(11源×20股, scratch/collide_0829.py)**: 精确数值相等命中 **0**; 1% 容差命中 16/20(对手方=腾讯[19]/[21]、ulist239 f32/f143、sina fields.7/21/23、tdx ask1/ask2 等**卖一/卖二价族**)——仅能证明 **[85] 属"价格类字段"**, 因价格族彼此本就 1% 内互近, **不能判定是哪一个价格**; 与"参考价/结算价"方向不矛盾, 但**未获对撞支持, 不得据此定案**(对撞唯一证据=精确数值相等, 序号/语义相近均不算)。终判需腾讯字段文档。**多日复核(2026-08-29 晚, 9 有效采集日, analysis.md PART G3)**: 剔除 0813 全 0 空撞日后 9 日精确命中 **0**; 连续交易日对 [85](T) vs 次日昨收盘 **0/72** → **非收盘价**; 与当日现价中位差 0.08~0.10(双向)、与最高中位差 0.19~0.69 → 系"接近现价的某时刻成交快照"。维持 L3 弱。**H12 补强(2026-08-31): 落在本日[低,高]区间仅 141/184=76.6%(23.4% 区间外, 688500 低34.60 但[85]=33.30), 与[51]均价/MA5/10/20/VWAP/昨收盘/昨均价全部证伪 → 非当日价/均价/MA/参考价** | **2026-09-01 fuyao 官方字段对撞(20股): [85] vs fuyao 官方 last/open/high/low/prev/auction_price 精确 0/20(仅 high 1/20 巧合), 相对偏差 med 0.5%(last)~3.3%(low), Spearman +0.84~+0.88(价格族伪相关非定位, Pearson +1.000 同陷阱) → 维持 L3**；**2026-09-03 主动升级：茅台 t85=1297.00≈自算VWAP(额/股)=1297.04(误差0.003%)，其余 t85≈close(±0.1) → 高概率均价/VWAP类价格派生(amount÷volume折算)，非OHLC原始价**。**🔥2026-09-08 曾误升 L1-U（自算 VWAP 误差≤3%）；同日 round12 引入 TDX MCP 均价锚(HQInfo.Average) 全域对撞证伪：[85] 对均价锚精度对齐仅 3/20、北交所 100% 退化，而 tx[51] 20/20 精确命中 → 均价真实字段是 tx[51]，本字段回退 L3 价格类候选强，撤销 L1-U 升版** | **🔥2026-09-09 VWAP 扩展对撞(tx[85] vs TDX K线独立重算额/量均价): Pearson=1.0 但 slope=0.998/截距0.053/残差max 0.537 → 第四源独立确认非均价(与 round12 均价锚证伪一致), 维持 L3 价格类候选强; 残差轮廓吻合"近似当前价/最新价"而非结算均价** |
+| [86] | **手级带符号量** | 手 | ❓ **L4（手级带符号量, 语义未破解）** | ⚠️**本案曾误判为委差, 2026-08-29 同日撤回**——教训见下。**已证伪**: ①"主力净买/**净主动买入量**(手)"——**2026-08-29 终核(单位修正后)**: [86] vs 主买−主卖(外盘[7]−内盘[8]) 精确命中 **0/20**、vs (外盘−内盘)/2 **0/20**(茅台 [86]=14 vs 主买−主卖=1,026, 差 73×); 量级 \|[86]\|/成交量 中位 **0.28%**(区间 0.04%~1.92%, 净主动买入量正常应 5%~25%, **差 1~2 个数量级**); 符号与当日涨跌幅同号率 **9/20=45%**(≈随机, 净主动买入量应 >70% 强同向); 东财 f62/f137 反推手数差 10~100× 且符号常反。②**"委差"假设亦证伪**(曾据 Pearson r=+0.965 误升 L2)——**Spearman ρ=−0.012**、**剔除 601288 单点后 Pearson 翻为 −0.863**、符号一致仅 12/20, 该相关系单只权重股(601288)驱动的伪相关。**依对撞规则重扫**(scratch/collide_0829.py, 11 源×20 股): 精确数值相等命中 **0**, 1% 容差命中 **0**; 与腾讯全部字段 \|Spearman\| 最高仅 0.540(与[50]), 无 >0.6 者。**结论: [86] = 手级带符号量, 非净主动买入量（跨源证伪）；委差=2026-09-03 主动法候选（量级吻合+盘口净量语义），日K线无法验证 → 维持 L4**。终判需腾讯字段文档(L1)或新增同数值源对撞。**多日复核(2026-08-29 晚, PART G3)**: 9 个有效采集日(剔除 0813 全 0 空撞日)精确命中 **0**、1% 同族 **0**——0813 曾出现 19-20/20 满值"命中"全为 0=0 空撞（单日假阳性实例, 见 G8 踩坑）。**H12 补强(2026-08-31): 全锚定 ZHB 35 列 + 全源 517 候选精确命中 0、无 >0.6 Spearman → 维持 ❓ 手级带符号量, 语义未破解** | **2026-09-01 fuyao 官方 volume 对撞(20股): 精确 0/20, |[86]|/fuyao_volume(手) 中位 0.24% → 维持 ❓**。**🔥2026-09-08 round12 TDX MCP 对撞终判：[86] vs push2 f192(委差) 等值 0/20、与 TDX 委比(Wtb) 同号率 11/20(55%)；委差/盘口净量候选被推翻 → 回退纯 ❓ L4 手级带符号量，待腾讯字段文档或新同数值源** |
 | [87] | **科创板/两融标记（688 段值='100'）** | - | ⚠️ **L3（H12 破解 2026-08-31）** | **H12 实测：60/215 非空且全部为 5 只 688（688327/688426/688500/688553/688589），值恒='100'，交集空** → 推测"科创板/两融类标记"（类似 [60]A股标记/[84]状态码），待官方文档终判 |
 
 ---
@@ -1527,22 +1536,24 @@ print(q.code, q.price, q.change_pct)
 
 ##### 12.3.1.1 push2 状态码字段（f106 / f107 / f110 / f111 / f112 / f118）
 
-> 🔬 **2026-09-04 多日精确对撞定案（修复锚池：raw_push2_full.json 114 字段 × 17 独立采集日 = 338 stock-days）**：
-> 此前 `collide_round2` 误用 `raw_push2.json`（0 字段）作锚池，导致 6 个状态码精确对撞从未执行（假阴性）。改用正确锚池后，
-> 依对撞四铁律（精确≥18/20/日 + 多日≥3 独立采集日重复 = L1 定案）升格如下。证据：`docs/field_verification/20260904/push2_statuscode_crack.md`。
+> 🔬 **多日精确对撞定案（首定 2026-09-04；全历史固化 2026-09-10）**：锚池 `raw_push2_full.json`（114 字段）。
+> 首定 17 独立采集日 = 338 stock-days（证据 `docs/field_verification/20260904/push2_statuscode_crack.md`）。
+> **2026-09-10 全历史复核扩展至 25 独立采集日（20260812–20260910）= 438 stock-days**，依对撞四铁律（精确≥18/20/日 + 多日≥3 独立采集日重复 = L1 定案）再确认下方 5 字段全部 L1 成立、无语义失真。证据：`docs/field_verification/20260910/push2_statuscode_crack.md` + `field_dict_xcheck_report.md`。
 
 | 字段 | 含义 | 单位 | 核实状态 | 对撞证据 |
 |:---|:---|:---:|:---:|:---|
-| f106 | **常量占位码（恒=100）** | - | ⚠️ **未破解（常量占位）** | 338/338 恒=100，无信息量，非"未知语义" |
-| f107 | **市场标记（布尔 0/1，北交=0）** | - | ✅ **L1（2026-09-04 升格）** | ≡ ulist:f27，338/338 精确 100%（17/17 日满命中） |
-| f110 | **市场标记（布尔 0/1，北交=0）** | - | ✅ **L1（2026-09-04 升格）** | ≡ ulist:f27，338/338 精确 100%（17/17 日满命中） |
-| f111 | **板级枚举** | - | ✅ **L1（2026-09-04 升格）** | ≡ ulist:f19，枚举{2,6,23,80,81}，338/338 精确 100%（17/17 日满命中） |
-| f112 | **板级枚举** | - | ✅ **L1（2026-09-04 升格）** | ≡ ulist:f19，枚举{2,6,23,80,81}，338/338 精确 100%（17/17 日满命中） |
-| f118 | **市场/板块状态标记（≡ ulist:f107）** | - | ✅ **L1（2026-09-04 定案 · 2026-09-06 18日碰撞再确认）** | ≡ ulist:f107，338/338 精确 100%（17/17 日满命中，ff737f5）；**2026-09-06 全源多日碰撞(d49ff95)比值族 L1-U(比值≈1, 18 采集日)再确认等价稳定**；枚举{2,5} 非恒定 → **推翻原"15日采集均未返回·无数据"误记** |
+| f106 | **常量占位码（恒=100）** | - | ⚠️ **未破解（常量占位）** | 438/438（25 日）恒=100，无信息量，非"未知语义" |
+| f107 | **市场标记（布尔 0/1，北交=0）** | - | ✅ **L1（2026-09-04 升格 · 2026-09-10 全历史固化）** | ≡ ulist:f27（注：对撞命中 ulist:f13，实测 f13≡f27 别名，非偏差，见对齐表 ulist_push2_align.md:113）；438/438 精确 100%（22/25 日满命中） |
+| f110 | **市场标记（布尔 0/1，北交=0）** | - | ✅ **L1（2026-09-04 升格 · 2026-09-10 全历史固化）** | ≡ ulist:f27（对撞命中 ulist:f13，f13≡f27 别名）；438/438 精确 100%（22/25 日满命中） |
+| f111 | **板级枚举** | - | ✅ **L1（2026-09-04 升格 · 2026-09-10 全历史固化）** | ≡ ulist:f19，枚举{2,6,23,80,81}；438/438 精确 100%（22/25 日满命中） |
+| f112 | **板级枚举** | - | ✅ **L1（2026-09-04 升格 · 2026-09-10 全历史固化）** | ≡ ulist:f19，枚举{2,6,23,80,81}；438/438 精确 100%（22/25 日满命中） |
+| f118 | **市场/板块状态标记（≡ ulist:f107）** | - | ✅ **L1（2026-09-04 定案 · 2026-09-06 再确认 · 2026-09-10 全历史固化）** | ≡ ulist:f107；438/438 精确 100%（22/25 日满命中）；枚举{2,5} 非恒定 → 推翻原"15日采集均未返回·无数据"误记 |
 
 > ⚠️ **方法论教训**：① 锚池必须用 `raw_push2_full.json`（114 字段），误用 0 字段的 `raw_push2.json` 会让整组对撞变假阴性；
 > ② 单日/少日 ZHB 锚定对撞（20 股）易出巧合性假阳性，L1 定案须 ≥3 独立采集日重复（本批 17 日）；
 > ③ f118 原被记"无数据"系锚池缺陷所致，非真实缺失——多日复核后确认常态有值。
+
+> 🔒 **2026-09-10 全历史固化（25 日 / 438 stock-days）**：本节 5 字段 L1 定案经全历史复核全部成立、无语义失真；并澄清两处表面冲突——① f107/f110 对撞命中 `ulist:f13` 系 `f13≡f27` 别名（对齐表 `ulist_push2_align.md:113` 实证），非字典偏差；② f123/f124/f125/f134「4→1 映 f194」系常量 0 对撞陷阱，且 2026-09-10 实测 `ulist:f194 ≡ f216` 均恒 0，故为双侧常量占位假阳性（与 DEBT-017 定案一致），字典 §12.3.1.2 维持「恒 0 占位」登记无误。证据：`docs/field_verification/20260910/field_dict_xcheck_report.md`。
 
 #### 12.3.1.2 push2 × ulist/tencent 全量对撞再确认（2026-09-04，修复锚池）
 
@@ -1551,6 +1562,8 @@ print(q.code, q.price, q.change_pct)
 >
 > **结论**：下方 67 项均为「精确命中 ≥0.95 且 ≥3 满命中日」，**多为 §12.3 / §12.9.1 既有映射的再确认**（强化现有 ✅/L1 结论，未改动语义）；仅 3 处存在语义冲突/异常，见文末「⚠️ 待人工核对」。
 > **证据**：`docs/field_verification/20260904/push2_statuscode_crack.md`（对撞四铁律：精确 ≥18/20/日 + 多日 ≥3 独立采集日重复 = L1 定案）。
+
+> **2026-09-10 全历史复核（25 日 / 438 stock-days）**：本节全部 ≥0.95 映射经全历史再确认，与字典 §12.3 / §12.9.1 记载一致，未见相矛盾的新的精确映射；焦点五字段（§12.3.1.1）L1 定案进一步固化。证据：`docs/field_verification/20260910/push2_statuscode_crack.md`。
 
 | push2 字段 | 最佳匹配（≡） | 总命中率 | 满命中日 | 结论 |
 |:---|:---|:---:|:---:|:---|
@@ -1573,8 +1586,8 @@ print(q.code, q.price, q.change_pct)
 | f145 | ulist:f77 | 0.955(319/334) | 15/17 | ≥0.95 多日再确认（强化既有 ✅/L1） |
 | f146 | ulist:f78 | 0.952(318/334) | 15/17 | ≥0.95 多日再确认（强化既有 ✅/L1） |
 | f152 | ulist:f1 | 1.000(338/338) | 17/17 | ≥0.95 多日再确认（强化既有 ✅/L1） |
-| f153 | ulist:f153 | 1.000(338/338) | 17/17 | ≥0.95 多日再确认（强化既有 ✅/L1） |
-| f154 | ulist:f154 | 1.000(338/338) | 17/17 | ≥0.95 多日再确认（强化既有 ✅/L1） |
+| f153 | ulist:f153 | 1.000(338/338) | 17/17 | ⚠️ 常量对撞陷阱（见下·规则⑤，2026-09-09） |
+| f154 | ulist:f154 | 1.000(338/338) | 17/17 | ⚠️ 常量对撞陷阱（见下·规则⑤，2026-09-09） |
 | f162 | ulist:f9 | 0.973(329/338) | 16/17 | ≥0.95 多日再确认（强化既有 ✅/L1） |
 | f163 | ulist:f114 | 0.973(329/338) | 16/17 | ≥0.95 多日再确认（强化既有 ✅/L1） |
 | f164 | ulist:f115 | 0.970(328/338) | 16/17 | ≥0.95 多日再确认（强化既有 ✅/L1） |
@@ -1629,6 +1642,8 @@ print(q.code, q.price, q.change_pct)
 1. **f59「涨跌幅」标注无误，系端点混淆**：对撞脚本把**实时行情端点** push2 `f59`（raw_push2_full 实测 `distinct=1、恒=2`，即常量状态码 2；`≡ulist:f1` 恒=2）与 §12.3.3 **日K线端点**的 `f59=涨跌幅` 误当同一字段。两端点 f 编号独立（见 §12.3.3 端点警告），§12.3.3 的「涨跌幅」标注正确。实时端点 push2 `f59` 实为本端点专属**常量状态码 2**（占位/状态位，非行情量），已在 §12.3 主表按"恒值字段"登记，无需改动"涨跌幅"标签。
 2. **f60 无双行冲突，两端点各表其义**：实时端点 push2 `f60`=昨收盘（代码 `_quotes.py`→`last_close`、`sc_schema.py`→`prev_close`，跨源 `tx[4]` 60/60 全中，✅ L1）；日K线端点 §12.3.3 `f60`=涨跌额（东财 kline `_p[9]` 位置 + fuyao `price_change` 印证，✅）。二者是**不同端点的同名 f 编号**，语义各异、均正确，**不存在需删除的冲突行**。原 DEBT-017"删涨跌额行"建议撤回。
 3. **f123/f124/f125/f134「4→1 映 f194」系常量 0 对撞陷阱（规则⑤）**：raw_push2_full 实测四字段均 `distinct=1、恒=0`（占位/未启用列）；它们"1.000 命中 ulist:f194"是因为 **ulist:f194 在 ulist 侧同样恒=0**——两个常量 0 字段相关性恒 1.0 属假命中，非真 4→1 语义映射。真正变化的 `f194`（push2 `distinct=18`）映 `ulist:f69`（衍生指标·DDX 族），与 f123-134 无关。四字段维持"恒 0 占位"登记，不升 L1、不视作冗余映射。
+
+4. **f153/f154（及 f152=2）「同号真同义」系常量退化相关（规则⑤，2026-09-09 补登）**：push2 `f153`/`f154` 与 ulist.np `f153`/`f154` 在全部样本（茅台 1.600519 / 宁德 0.300750 / 上证指数 1.000001 / 8 只涨停股，涵盖个股·指数·新股·*ST·科创板·创业板）均**恒为 3/4**（f152 恒为 2）；f150/f151/f155–f157 为 null。两端点「1.000 相关」系两常量同值所致，属规则⑤常量对撞陷阱，非语义同义。公开字段表（cnblogs / efinance）未赋金融语义；第三方资料将 clist 端点 `f152` 误标「20日涨跌幅%」属跨端点同号异义（本项目 stock/get / ulist.np 实测恒值 2/3/4，不采信）。§12.3 ulist 表 f153/f154 已降为「⚠️ 协议固定枚举常量（恒为3/4，非个股指标）」，§12.8.12e 规范表已正名；原第七轮「同号真同义」登记订正为恒值占位。
 
 > 本节仅回写对撞证据。经 2026-09-06 用 raw 真实取值 + 代码实消费名（`last_close`）+ fuyao 具名字段（`price_change`/`price_change_ratio_pct`/`amplitude`）+ 东财 kline 固定位置格式 四方权威定夺，DEBT-017 三处均**定性为假阳性**（端点编号空间混淆 + 常量 0 对撞陷阱），无需改动任何字段语义标签。DEBT_LEDGER.md 已同步订正状态。
 
@@ -1885,9 +1900,9 @@ ulist 批量侧 `main_net_inflow_wan = (f62+f66)/1e4` 是**同一个 bug**（f62
 | f52 | ⚠️ 同号同义·未实证·待核实 | ulist/push2 异索引，同号≠同义，待数值对撞 |
 | f53 | ⚠️ ulist 专属 · 待破解 | np/get 返回但未破解（恒空/恒0 亦照登） |
 | f54 | ⚠️ ulist 专属 · 待破解 | np/get 返回但未破解（恒空/恒0 亦照登） |
-| f55 | ⚠️ 同号同义·未实证·待核实 | ulist/push2 异索引，同号≠同义，待数值对撞 |
+| f55 | ✅ **流动负债合计(元)** | ✅ **mx-ds 2026中报命名对撞**：ulist f55=46645073675.32(466.45亿) ↔ mx-ds`流动负债合计`=466.5亿，双样本精确吻合（老窖163.6亿亦精确） |
 | f56 | ⚠️ ulist 专属 · 待破解 | np/get 返回但未破解（恒空/恒0 亦照登） |
-| f57 | ⚠️ 同号同义·已证伪 → 实测 ulist f57 = push2 f188（异号映射，见对齐表） | ulist/push2 异索引，同号≠同义 |
+| f57 | ✅ **资产负债率%** | ✅ **mx-ds 中报对撞**：ulist f57=15.1931 ↔ mx-ds`资产负债率`=15.19%，双样本吻合；与 push2 f188(原对齐表)一致 |
 | f58 | ⚠️ 同号同义·未实证·待核实 | ulist/push2 异索引，同号≠同义，待数值对撞 |
 | f59 | ⚠️ 同号同义·未实证·待核实 | ulist/push2 异索引，同号≠同义，待数值对撞 |
 | f60 | ⚠️ 同号同义·未实证·待核实 | ulist/push2 异索引，同号≠同义，待数值对撞 |
@@ -1972,15 +1987,15 @@ ulist 批量侧 `main_net_inflow_wan = (f62+f66)/1e4` 是**同一个 bug**（f62
 | f141 | ⚠️ 同号同义·未实证·待核实 | ulist/push2 异索引，同号≠同义，待数值对撞 |
 | f142 | ✅ 跨源定案·买二价(bid2) | 跨源数值实证: tdx.quote_full.bid2 / sina[14] / 腾讯[12]（16日 rate=1.0，Spearman=1.0，第九轮审计）；非 ulist 资金流字段 |
 | f143 | ✅ 跨源定案·卖二价(ask2) | 跨源数值实证: tdx.quote_full.ask2 / sina[24] / 腾讯[22]（16日 rate=1.0，Spearman=1.0，第九轮审计）；非 ulist 资金流字段 |
-| f144 | ⚠️ 同号同义·已证伪 → 实测 ulist f144 = push2 f43（异号映射，见对齐表） | ulist/push2 异索引，同号≠同义 |
+| f144 | ✅ **最新价/现价** | ✅ **跨源定案**：ulist f144=1309.3(茅台) ↔ push2 f43=最新价（异号映射"已证伪"记录保留）；与 f142=买二价(1309.27)/f143=卖二价(1310.0) 自洽（现价介于买卖二价之间） |
 | f145 | ⚠️ 同号同义·已证伪 → 实测 ulist f145 = push2 f131（异号映射，见对齐表） | ulist/push2 异索引，同号≠同义 |
 | f146 | ⚠️ 同号同义·未实证·待核实 | ulist/push2 异索引，同号≠同义，待数值对撞 |
 | f147 | ⚠️ 同号同义·未实证·待核实 | ulist/push2 异索引；弱候选 push2 f107/f110、zhb:market（rate 0.5，未达L1，第九轮）；**第十轮主动法证伪**：动态二元{0,1}标志，与 market 三值无编码双射、与涨跌停无相关，语义未定（候选：停牌/沪深港通/特殊处理），非市场板块码 |
 | f148 | ⚠️ 同号同义·已证伪 → 实测 ulist f148 = push2 f177（异号映射，见对齐表） | ulist/push2 异索引，同号≠同义 |
 | f149 | ⚠️ 同号同义·未实证·待核实 | ulist/push2 异索引，同号≠同义，待数值对撞 |
 | f152 | ⚠️ 同号同义·已证伪 → 实测 ulist f152 = push2 f59（异号映射，见对齐表） | ulist/push2 异索引，同号≠同义 |
-| f153 | ✅ 同 push2 f153（已数值实证，第七轮审计） | ulist/push2 同号真同义（实测一致） |
-| f154 | ✅ 同 push2 f154（已数值实证，第七轮审计） | ulist/push2 同号真同义（实测一致） |
+| f153 | ⚠️ **协议固定枚举常量（恒为3，非个股指标）** | ulist 与 push2 同号同值(均=3)——第七轮「同号真同义」实为常量退化相关(1.000恒真)，非语义同义；全市场恒定(个股/指数/涨停股/新股/*ST同值) |
+| f154 | ⚠️ **协议固定枚举常量（恒为4，非个股指标）** | ulist 与 push2 同号同值(均=4)——同上，常量退化相关(1.000恒真)，非语义同义；全市场恒定 |
 | f160 | ✅ 跨源定案·20日涨跌幅%(腾讯[70]口径) | 跨源数值实证: 腾讯[70]（16日 rate=1.0，Spearman=1.0，第九轮审计）；⚠️≠push2 f120/ulist f110（同名异义，腾讯[70]与push2 f120非同一指标）；且 ulist f160 与 push2 f160(年报EPS) 是不同字段 |
 | f161 | ⚠️ 同号同义·未实证·待核实 | ulist/push2 异索引，同号≠同义，待数值对撞 |
 | f162 | ⚠️ 同号同义·未实证·待核实 | ulist/push2 异索引，同号≠同义，待数值对撞 |
@@ -2071,7 +2086,13 @@ ulist 批量侧 `main_net_inflow_wan = (f62+f66)/1e4` 是**同一个 bug**（f62
 | f249 | ⚠️ ulist 专属 · 待破解 | np/get 返回但未破解（恒空/恒0 亦照登） |
 | f250 | ⚠️ 同号同义·未实证·待核实 | ulist/push2 异索引，同号≠同义，待数值对撞 |
 
-> 统计：共 **239** 字段｜✅ 同 push2 已破解 **113**｜⚠️ ulist 专属待破解 **126**。
+> 统计：共 **239** 字段｜✅ 已破解 **127**（经 2026-09-09 P0-a 订正：原记 131，扣除 f49/f133/f135/f221 四字段其 §12.3 行仍 ⚠️/待破解、未实际升 ✅；详见下方订正注）｜⚠️ ulist 专属待破解 **119**（115 + 上述 4 回归待破解）。
+>
+> ⚠️ **P0-a 订正（2026-09-09）**：上款原记「✅ 已破解 131（…本轮 mx-ds 命名神谕新增 8：f47/f49/f55/f58/f133/f135/f144/f221）」**虚高**——① f49(§12.3.2.3)/f133/f135/f221 其 §12.3 行仍 ⚠️/待破解，从未实际升 ✅；② f144 系 V17.0.16 旧定案，误列「本轮新增」；③ f47/f55/f58 系早轮 fuyao 锚定案（2026-09-01），非 mx-ds 本轮新增。故本轮对这 8 字段**无净增 ✅**，累计 131 应降为 **127**。本统计块为进度指示，非精确划分。
+>
+> ✅ **f51 命名订正（2026-09-09 P0-b）**：f51(push2 stock/get 239-field)=**流动资产合计**（元），与 mx-ds `流动资产合计`=2607亿 精确吻合（原报告 e8d5ef1 所标「净资产」误；净资产=2621亿 对应 **f135**）。按 **R4** 拆「合并/母公司」口径、按 **R6** 对厂商名做数值二级复核，f51 不再称净资产。涨停价 canonical 已自 `push2(f51)` 更正为 腾讯[47]+push2ex ztp（见 §12.8.12e 规范表）；kline 端点 `f51`=日期（§12.3.3）与 stock/get 端点 `f51`=流动资产合计 为不同编号空间、均正确，遵循端点隔离铁律。
+>
+> **🔑 mx-ds（东方财富妙想）命名神谕（2026-09-09 接入并实跑）**：mx-ds 与 ulist/push2 同源东财，**不作独立数值双源 L1**（同源不可互证），但作为**财报行项目/估值指标的命名字段神谕**价值不可替代——其 `mx_ashare_finance_data` 返回**命名指标+值**，用以对撞 `raw_ulist239.json` 数值定位 f 编号语义。本次 f40–f57 即用「mx-ds 2026中报命名值 ↔ ulist 数值」双样本(600519/000568)精确吻合定案（含同比增长率 4 位小数全等）。后续 f124–f168、f200–f249 残段沿用此法。
 
 #### 12.3.3 日K线 `stock/kline/get`（🆕 V17.0.14 新增——CYQ 筹码分布数据入口）
 
@@ -2086,9 +2107,9 @@ ulist 批量侧 `main_net_inflow_wan = (f62+f66)/1e4` 是**同一个 bug**（f62
 | f55 | 最低价 | 元 | ✅ |
 | f56 | 成交量 | 手 | ✅ |
 | f57 | 成交额 | 元 | ✅ |
-| f58 | 振幅% | % | ✅ 东财 kline 位置 `_p[7]` + fuyao `amplitude` |
-| f59 | 涨跌幅 | % | ✅ 东财 kline 位置 `_p[8]` + fuyao `price_change_ratio_pct` |
-| f60 | 涨跌额 | 元 | ✅ 东财 kline 位置 `_p[9]` + fuyao `price_change`（⚠️ 与 §12.3 实时端点 `f60`=昨收盘**不同端点、同名异义**，勿混） |
+| f58 | 振幅% | % | ✅ 东财 kline 位置 `_p[7]` + fuyao `amplitude`（⚡数值实证: kline+fuyao 双源锚定） |
+| f59 | 涨跌幅 | % | ✅ 东财 kline 位置 `_p[8]` + fuyao `price_change_ratio_pct`（⚡数值实证: kline+fuyao 双源锚定） |
+| f60 | 涨跌额 | 元 | ✅ 东财 kline 位置 `_p[9]` + fuyao `price_change`（⚡数值实证: kline+fuyao 双源锚定；⚠️ 与 §12.3 实时端点 `f60`=昨收盘**不同端点、同名异义**，勿混） |
 | **f61** | **换手率%** | **%** | ✅ **CYQ 唯一可用的历史换手率%源（见下）** |
 
 **🔑 f61 换手率的独占性（2026-08-30 探查结论，勿改换源）：**
@@ -3053,17 +3074,17 @@ TDX `0x0010` 日K（`tdx_get_security_bars`，keys = `['time','open','close','hi
 
 | 规范中文名 | 语义与口径 | 各源字段对照（**均为别名**） | 依据 | 统一层接线 |
 |:---|:---|:---|:---|:---|
-| 现价 | 最新成交价 | push2 f43／ulist f2／腾讯[3]／新浪[3]／THS SDK 10／TDX `NOW`／TDX快照 `last_price`／fuyao `last_price`／开盘啦 `price`／push2ex `p` | 通达信「现价」；同花顺 20490 同 | canonical: push2+ulist+腾讯+TDX快照+fuyao(+ZHB兜底)｜外部: 新浪/THS行情/TDX NOW/开盘啦/push2ex |
+| 现价 | 最新成交价 | push2 f43／ulist f2／腾讯[3]／新浪[3]／THS SDK 10／TDX `NOW`／TDX快照 `last_price`／fuyao `last_price`／开盘啦 `price`／push2ex `p`／ulist f144 | 通达信「现价」；同花顺 20490 同 | canonical: push2+ulist+腾讯+TDX快照+fuyao(+ZHB兜底)｜外部: 新浪/THS行情/TDX NOW/开盘啦/push2ex |
 | 昨收盘 | 前一交易日收盘价 | push2 f60／ulist f18／腾讯[4]／新浪[2]／THS SDK 6／TDX快照 `pre_close`／fuyao `prev_price` | 通达信「昨收盘」 | canonical: push2+ulist+腾讯+TDX快照+fuyao｜外部: 新浪/THS行情 |
 | 开盘价 | 当日开盘价 | push2 f46／ulist f17／腾讯[5]／新浪[1]／THS SDK 7／TDX快照 `open`／fuyao `open_price` | 东财 A10「开盘」；补「价」字与最高价/最低价自洽 | canonical: push2+ulist+腾讯+TDX快照+fuyao｜外部: 新浪/THS行情 |
 | 最高价 | 当日最高价 | push2 f44／ulist f15／腾讯[33][41]／新浪[4]／THS SDK 8／TDX快照 `high`／fuyao `high_price` | 通达信「最高价」 | canonical: push2+ulist+腾讯+TDX快照+fuyao｜外部: 新浪/THS行情 |
 | 最低价 | 当日最低价 | push2 f45／ulist f16／腾讯[34][42]／新浪[5]／THS SDK 9／TDX快照 `low`／fuyao `low_price` | 通达信「最低价」 | canonical: push2+ulist+腾讯+TDX快照+fuyao｜外部: 新浪/THS行情 |
 | 涨跌幅 | 涨跌幅% | push2 f170／ulist f3／腾讯[32]／THS SDK 199112／TDX快照 `change_pct`／ZHB `change_pct`／fuyao `price_change_ratio_pct` | 通达信/东财官方作「涨幅%」；本字典取「涨跌幅」（可正可负，且 push2/腾讯/ZHB 三源同名） | canonical: push2+ulist+腾讯+TDX快照+ZHB+fuyao｜外部: THS行情 |
-| 涨跌额 | 涨跌额（元） | push2 f169／ulist f4／腾讯[31]／THS SDK 264648／TDX快照 `change`／fuyao `price_change` | 东财 A4 作「涨跌」；取「涨跌额」（四源同名且无歧义） | canonical: push2+ulist+腾讯+TDX快照+fuyao｜外部: THS行情 |
-| 成交量 | 成交量（⚠️手/股） | push2 f47／ulist f5／腾讯[6][36]／新浪[8]／THS SDK 13／TDX快照 `volume`／fuyao `volume` | 通达信「成交量」 | canonical: push2+ulist+腾讯+TDX快照+fuyao｜外部: 新浪/THS行情 |
+| 涨跌额 | 涨跌额（元） | push2 f169／ulist f4／腾讯[31]／THS SDK 264648／TDX快照 `change`／fuyao `price_change`／kline `f60` | 东财 A4 作「涨跌」；取「涨跌额」（四源同名且无歧义） | canonical: push2+ulist+腾讯+TDX快照+fuyao｜外部: THS行情 |
+| 成交量 | 成交量（⚠️手/股） | push2 f47／ulist f5／腾讯[6]／腾讯[36]／新浪[8]／THS SDK 13／TDX快照 `volume`／fuyao `volume` | 通达信「成交量」 | canonical: push2+ulist+腾讯+TDX快照+fuyao｜外部: 新浪/THS行情 |
 | 成交额 | 成交额（⚠️元/万元） | push2 f48／ulist f6／腾讯[37][57]／新浪[9]／THS SDK 19／TDX快照 `amount`／ZHB `amount`／开盘啦 `amount`／fuyao `turnover` | 通达信「成交额」 | canonical: push2+ulist+腾讯+TDX快照+ZHB+fuyao｜外部: 新浪/THS行情/开盘啦 |
 | 换手率% | 换手率 | push2 f168／ulist f184／腾讯[38]／THS SDK 1968584／开盘啦 `turnover_pct` | 通达信「换手率%」；东财 A18「换手%」 | canonical: push2+ulist+腾讯｜外部: THS/开盘啦 |
-| 振幅% | 振幅 | push2 f171／腾讯[43]／THS SDK 526792／TDX快照 `amplitude_pct`／开盘啦 `amplitude`／push2ex `zf` | 同花顺 526792「振幅」（通达信无）；东财 A17「振幅%」 | canonical: push2+腾讯+TDX快照｜外部: THS/开盘啦/push2ex |
+| 振幅% | 振幅 | push2 f171／腾讯[43]／THS SDK 526792／TDX快照 `amplitude_pct`／开盘啦 `amplitude`／push2ex `zf`／fuyao `amplitude` | 同花顺 526792「振幅」（通达信无）；东财 A17「振幅%」 | canonical: push2+腾讯+TDX快照｜外部: THS/开盘啦/push2ex |
 | 量比 | 量比 | push2 f50／腾讯[49]／THS SDK 1771976／开盘啦 `vol_ratio` | 东财 A9「量比」（通达信仅「分价量比」12339） | canonical: push2+腾讯｜外部: THS/开盘啦 |
 | 总市值 | 总市值（亿元） | push2 f116／ulist f20／腾讯[45]／THS SDK 3541450／开盘啦 `total_mv` | 通达信「总市值」；同花顺 806092800 同 | canonical: push2+ulist+腾讯｜外部: THS/开盘啦 |
 | 流通市值 | 流通市值（亿元） | push2 f117／ulist f21／腾讯[44]／THS SDK 3475914／push2ex `ltsz`／开盘啦 `circ_mv`／fuyao `float_market_cap` | 通达信「流通市值」 | canonical: push2+ulist+腾讯+fuyao｜外部: THS/push2ex/开盘啦 |
@@ -3075,20 +3096,20 @@ TDX `0x0010` 日K（`tdx_get_security_bars`，keys = `['time','open','close','hi
 | 市净率 | 市净率 PB(MRQ) | push2 f167／ulist f23／腾讯[46]／THS SDK 2947／开盘啦 `pb`／fuyao `pb_mrq` | 通达信「市净率」；同花顺 806354944 同 | canonical: push2+ulist+腾讯+fuyao｜外部: THS行情/开盘啦 |
 | 市销率 | 市销率 PS(TTM) | push2 f165／THS SDK 134071／fuyao `ps_ttm` | 通达信「市销率」 | canonical: push2+fuyao｜外部: THS |
 | 市现率 | 市现率 PCF(TTM) | push2 f166／fuyao `pcf_ttm` | 通达信「市现率」 | canonical: push2+fuyao |
-| 每股收益 | EPS（须带报告期/年报） | push2 f55(报告期)／f160(年报)／THS SDK 1002／fuyao `basic_eps` | 通达信「每股收益」 | canonical: push2+fuyao｜外部: THS |
+| 每股收益 | EPS（须带报告期/年报） | push2 f55(报告期)／push2 f160(年报)／THS SDK 1002／fuyao `basic_eps` | 通达信「每股收益」 | canonical: push2+fuyao｜外部: THS |
 | 每股净资产 | BPS | push2 f92／THS SDK 1005／TDX财务 `meigujingzichan` | 通达信「每股净资产」 | canonical: push2｜外部: THS/TDX财务 |
 | 净资产收益率% | ROE（须带加权/扣非/报告期） | push2 f173(加权·报告期)／腾讯[65](扣非加权·TTM)／THS SDK 1015／fuyao `index_weighted_avg_roe` | 通达信「净资产收益率%」 | canonical: push2+腾讯+fuyao｜外部: THS |
 | 总资产 | 资产总计 | THS SDK 543／TDX财务 `zongzichan`／fuyao `assets_total` | 通达信「总资产」 | canonical(TDX财务 0x0010 `zongzichan`/10→元)｜外部: THS/fuyao |
 | 净资产 | 股东权益 | TDX财务 `jingzichan` | 通达信「净资产」 | canonical(TDX财务 0x0010 `jingzichan`/10→元)｜外部: THS/fuyao |
 | 净利润 | 净利润（须带归母/扣非） | THS SDK 619/1566／TDX财务 `jinglirun`／fuyao `net_profit` | 通达信「净利润」 | canonical: push2+fuyao｜外部: THS/TDX财务 |
 | 营业收入 | 营业收入（⚠️vs 营业总收入） | THS SDK 602／TDX财务 `zhuyingshouru`／fuyao `operating_income` | 通达信「营业收入」 | canonical: push2+fuyao｜外部: THS/TDX财务 |
-| 涨停价 | 当日涨停价 | 腾讯[47]／THS SDK 69／push2ex `ztp` | 同花顺 20549「涨停价」 | canonical: push2(f51)⚠️spec对照漏列｜外部: 腾讯/THS/push2ex |
+| 涨停价 | 当日涨停价 | 腾讯[47]／THS SDK 69／push2ex `ztp` | 同花顺 20549「涨停价」 | canonical: 腾讯[47]+push2ex `ztp`（⚠️ push2 stock/get `f51` 非涨停价、实为流动资产合计，见 R4/R6，已自原误注 push2(f51) 订正）｜外部: THS |
 | 跌停价 | 当日跌停价 | 腾讯[48]／THS SDK 70 | 同花顺 20550「跌停价」 | canonical: push2(f52)⚠️spec对照漏列｜外部: 腾讯/THS |
-| 委比% | 委比 | push2 f191／腾讯[74]／THS SDK 461256／TDX快照 `entrust_ratio` | 东财 B14「委比%」（通达信无） | 未接 canonical｜外部: push2/腾讯/THS/TDX快照 |
-| 委差 | 委差（手） | push2 f192／腾讯[50]／THS SDK 395720 | 东财 B13「委差」（通达信无） | canonical: 腾讯[86](bid_ask_net)⚠️spec对照漏列｜外部: push2 f192/腾讯[50]/THS |
-| 内盘 | 内盘成交量 | 腾讯[8]／TDX快照 `inside_volume` | 东财 B9「内盘」（通达信无） | 未接 canonical｜外部: 腾讯/TDX快照 |
-| 外盘 | 外盘成交量 | 腾讯[7]／TDX快照 `outside_volume` | 东财 B8「外盘」（通达信无） | 未接 canonical｜外部: 腾讯/TDX快照 |
-| 均价 | 平均成交价 | 腾讯[51]／TDX快照 `average_price` | 通达信「均价」；东财 B1 同 | canonical: 腾讯[85](avg_price)⚠️spec对照漏列｜外部: 腾讯[51]/TDX快照 |
+| 委比% | 委比 | push2 f191／腾讯[74]／THS SDK 461256／TDX快照 `entrust_ratio` | 东财 B14「委比%」（通达信无） | **canonical: 腾讯[74]＋push2 f191＋TDX快照**（🔥2026-09-08 round12 TDX `Wtb` 20/20 零误差强锚确认）｜外部: THS｜✅2026-09-10 已接统一层(canonical 成真) |
+| 委差 | 委差（手） | push2 f192／腾讯[50]／THS SDK 395720 | 东财 B13「委差」（通达信无） | **canonical: 腾讯[50]＋push2 f192**（🔥2026-09-08 round12 TDX 对撞证伪：腾讯[86] 非委差，等值 0/20、与 TDX 委比同号仅 55%，已撤销[86]候选）｜外部: THS｜✅2026-09-10 已接统一层(canonical 成真) |
+| 内盘 | 内盘成交量（主动卖量） | 腾讯[8]／push2 f161／TDX快照 `inside_volume` | 东财 B9「内盘」（通达信无） | **canonical: 腾讯[8]＋push2 f161＋TDX快照**（🔥2026-09-09 专项复核三源确认：push2 f161==tx[8] 精确 13/20；⚠️**科创板腾讯按股×100、其余按手**，TDX 全按手）｜外部: 腾讯/push2/TDX快照｜✅2026-09-10 已接统一层(canonical 成真) |
+| 外盘 | 外盘成交量（主动买量） | 腾讯[7]／push2 f49／TDX快照 `outside_volume` | 东财 B8「外盘」（通达信无） | **canonical: 腾讯[7]＋push2 f49＋TDX快照**（🔥2026-09-09 专项复核三源确认：push2 f49==tx[7] 精确 13/20；⚠️**科创板腾讯按股×100、其余按手**，TDX 全按手）｜外部: 腾讯/push2/TDX快照｜✅2026-09-10 已接统一层(canonical 成真) |
+| 均价 | 平均成交价 | 腾讯[51]／TDX快照 `average_price` | 通达信「均价」；东财 B1 同 | **canonical: 腾讯[51]＋TDX快照**（🔥2026-09-08 round12 TDX `Average` 20/20 精确强锚确认；原"腾讯[85]"为误注——[85] 对均价锚仅 3/20，已撤销其均价候选，回退 L3）｜外部: TDX快照｜✅2026-09-10 已接统一层(canonical 成真) |
 | 52周最高价 | 52周最高价 | 腾讯[67]／THS SDK 95／ZHB `high_52w` | ZHB 名（通达信/同花顺均无） | canonical: 腾讯+ZHB｜外部: THS |
 | 52周最低价 | 52周最低价 | 腾讯[68]／THS SDK 96／ZHB `low_52w` | ZHB 名（通达信/同花顺均无） | canonical: 腾讯+ZHB｜外部: THS |
 | 封单额 | 涨停封单金额 | ZHB `zt_seal_amount`／fuyao `seal_money`／push2ex `fund`／TDX快照 `locked_amount`／同花顺 133971／开盘啦 `close_seal_amount` | 同花顺 133971「封单额」；通达信「总封单/最大封单」 | 未接 canonical(仅bid1_vol买一量)｜外部: ZHB/fuyao/push2ex/TDX快照/开盘啦 |
@@ -3101,7 +3122,7 @@ TDX `0x0010` 日K（`tdx_get_security_bars`，keys = `['time','open','close','hi
 | 名称 | 证券名称 | push2 f58／ulist f14／腾讯[1]／新浪[0]／THS SDK 55 | 东财 STOCK_NAME「名称」 | canonical: push2+ulist+腾讯｜外部: 新浪/THS |
 | 5日涨跌幅 | 近5交易日涨跌幅% | push2 f119／腾讯[63]／THS SDK 3250／ZHB `change_5d` | 通达信「5日涨幅%」 | canonical: push2+腾讯+ZHB｜外部: ulist/THS/同花顺 |
 | 10日涨跌幅 | 近10交易日涨跌幅% | ulist f160／腾讯[69]／THS SDK 3251／ZHB `change_10d` | 通达信「10日涨幅%」 | canonical: push2+腾讯+ZHB｜外部: ulist/THS/同花顺 |
-| 20日涨跌幅 | 近20交易日涨跌幅% | push2 f120／腾讯[70]／THS SDK 3252／ZHB `change_20d` | 通达信「20日涨幅%」 | canonical: push2+腾讯+ZHB｜外部: ulist/THS/同花顺 |
+| 20日涨跌幅 | 近20交易日涨跌幅% | push2 f120／腾讯[70]／THS SDK 3252／ZHB `change_20d`／ulist f110 | 通达信「20日涨幅%」 | canonical: push2+腾讯+ZHB｜外部: ulist/THS/同花顺 |
 | 60日涨跌幅 | 近60交易日涨跌幅% | push2 f121／ulist f24／腾讯[71]／同花顺 805371904／ZHB `change_60d` | 通达信「60日涨幅%」 | canonical: push2+ulist+腾讯+同花顺+ZHB｜外部: 无 |
 | 年内涨跌幅 | 年初至今涨跌幅（YTD）％ | push2 f122／ulist f25／腾讯[62]／THS SDK 461346／ZHB `change_ytd` | 东财 E10「今年涨幅%」 | canonical: push2+ulist+腾讯+THS+ZHB｜外部: 无 |
 | 主力净买入额 | 主力资金净差额＝大单主动性买额−大单主动性卖额（同花顺「主力净买额」／东财「主力净流入额」／东财「主力净额」为同一概念，仅软件叫法不同）。⚠️口径陷阱：各软件「大单」阈值不同（约100万／500万），跨源数值不可直接对撞，须先确认阈值或归一后再比 | push2 f137／ulist f62／同花顺 331068(FREE净流入)／THS SDK 592890（thsdk TCP 网关已于 2026-09-07 退役） | 东财 G1「主力净流入」 | canonical: push2+ulist｜外部: 同花顺 |
@@ -3110,6 +3131,20 @@ TDX `0x0010` 日K（`tdx_get_security_bars`，keys = `['time','open','close','hi
 | 前日成交额 | 前2交易日成交额 | ZHB `amount_2d` | ZHB 源字段（规范名＋日期后缀） | 未接 canonical｜外部: ZHB(私有衍生) |
 | 昨日封单额 | 前1交易日封单额 | ZHB `zt_seal_amount_1d` | ZHB 源字段（规范名＋日期后缀） | 未接 canonical｜外部: ZHB(私有衍生) |
 | 前日封单额 | 前2交易日封单额 | ZHB `zt_seal_amount_2d` | ZHB 源字段（规范名＋日期后缀） | 未接 canonical｜外部: ZHB(私有衍生) |
+| 超大单买入额 | 超大单主动性买入额 | push2 f138／`fund_super_buy` | 东财 L2 资金流（§12.3.4, V17.0.16） | canonical: push2+fuyao｜外部: — |
+| 超大单卖出额 | 超大单主动性卖出额 | push2 f139／`fund_super_sell` | 东财 L2 资金流（§12.3.4, V17.0.16） | canonical: push2+fuyao｜外部: — |
+| 大单买入额 | 大单主动性买入额 | push2 f141／`fund_large_buy` | 东财 L2 资金流（§12.3.4, V17.0.16） | canonical: push2+fuyao｜外部: — |
+| 大单卖出额 | 大单主动性卖出额 | push2 f142／`fund_large_sell` | 东财 L2 资金流（§12.3.4, V17.0.16） | canonical: push2+fuyao｜外部: — |
+| 中单买入额 | 中单主动性买入额 | push2 f144／`fund_mid_buy` | 东财 L2 资金流（§12.3.4, V17.0.16） | canonical: push2+fuyao｜外部: — |
+| 中单卖出额 | 中单主动性卖出额 | push2 f145／`fund_mid_sell` | 东财 L2 资金流（§12.3.4, V17.0.16） | canonical: push2+fuyao｜外部: — |
+| 流动负债合计 | 流动负债合计（元） | ulist f55 | mx-ds 2026中报命名对撞（ulist f55=466.5亿 ↔ mx-ds 流动负债合计） | canonical: ulist｜外部: mx-ds |
+| 资产负债率% | 资产负债率 | push2 f188／ulist f57 | mx-ds 中报对撞（ulist f57=15.19% ↔ mx-ds 资产负债率；push2 f188 一致） | canonical: push2+ulist｜外部: mx-ds |
+| 买二价 | 买二档价格 | 腾讯[12]／tdx bid2／sina[14] | 第九轮审计跨源定案（tdx.quote_full.bid2 / sina[14] / 腾讯[12], rate=1.0, Spearman=1.0） | canonical: 腾讯[12]+tdx bid2+sina[14]｜外部: —｜✅2026-09-10 已接统一层(canonical 成真) |
+| 卖二价 | 卖二档价格 | 腾讯[22]／tdx ask2／sina[24] | 第九轮审计跨源定案（tdx.quote_full.ask2 / sina[24] / 腾讯[22], rate=1.0, Spearman=1.0） | canonical: 腾讯[22]+tdx ask2+sina[24]｜外部: —｜✅2026-09-10 已接统一层(canonical 成真) |
+| 行情协议固定枚举常量③(恒为3) | 东财 push2 stock/get 与 ulist.np 协议层固定枚举值，**全市场恒定**（个股/指数/涨停股/新股/*ST/科创板/创业板均同值 3），**非个股行情指标**；「同号真同义」系两端点均为同一恒值所致，1.000 相关为常量退化假阳性，不构成语义同义证据 | push2 f153／ulist f153 | 2026-09-09 实测：茅台(1.600519)/宁德(0.300750)/上证指数(1.000001)/8只涨停股 ulist.np 均 f153=3、f150/f151/f155–f157=null；公开字段表(cnblogs/efinance)未赋金融语义；clist 端点第三方误将 f152 标「20日涨跌幅%」属跨端点同号异义，本项目不采信 | canonical: push2 f153+ulist f153(同号同值常量)｜外部: —｜⚠️ 非指标字段，downstream 不得按个股值消费 |
+| 行情协议固定枚举常量④(恒为4) | 东财 push2 stock/get 与 ulist.np 协议层固定枚举值，**全市场恒定**（个股/指数/涨停股/新股/*ST/科创板/创业板均同值 4），**非个股行情指标**；「同号真同义」系两端点均为同一恒值所致，1.000 相关为常量退化假阳性，不构成语义同义证据 | push2 f154／ulist f154 | 2026-09-09 实测：同上样本 ulist.np 均 f154=4；公开字段表未赋金融语义；clist 端点 f152 误标「20日涨跌幅%」为跨端点同号异义，不采信 | canonical: push2 f154+ulist f154(同号同值常量)｜外部: —｜⚠️ 非指标字段，downstream 不得按个股值消费 |
+
+> **⚠️ 协议常量正名（2026-09-09）**：f153/f154（及 f152=2）经实测为东财行情协议层固定枚举常量，全市场恒定，非个股指标。原第七轮「同号真同义」系常量对常量退化相关（1.000 恒真），不构成语义同义证据；第三方资料将 clist 端点 f152 标「20日涨跌幅%」属跨端点同号异义，本项目以 stock/get/ulist.np 实测恒值 2/3/4 为准，不采信该标签。详见 §12.8.12e 规范表 f153/f154 行。
 
 > **📌 申万口径核验结论（2026-09-07, V17.2.0）**：TDX `tdxhy.cfg`（库自带/实时 `get_report_file` 拉取）**不含申万列**——其字段仅 `市场|代码|T一级(通达信T码)|空|空|X细分码(通达信X码)`；easy_tdx `parse_tdxhy_cfg` 把 `parts[5]` 误标为 `sw_industry`，实测为 `X500102`/`X210205` 等通达信 X码（非申万名）。故 **TDX 无申万源可挖**，东财 `em_industry_map_l2`（申万二级）仍是唯一申万来源，**不可翻转 primary/fallback**。项目安全目标已由「行业/板块分类季度缓存」(`_EM_L2_TTL`=90天, datacenter 全量映射仅 ~4 次/年) 达成：东财封禁最严时亦仅季度级回源。通达信 T/X 码（`_tdxhy_industry_map`）仅用于涨停池 sector tagging，与申万并列但不同口径。
 
@@ -3196,6 +3231,26 @@ TDX `0x0010` 日K（`tdx_get_security_bars`，keys = `['time','open','close','hi
 > - §12.8.12e 是所有字段名的**唯一权威**；任何章节提及同义字段，必须回指本表规范名，格式：`源私有名(≡规范名)`。
 > - 禁用铁律一禁用清单中的历史异名；违反即订正。
 
+#### 📌 云 MCP 命名 Oracle 仲裁规则（补丁 · 2026-09-09）
+
+> 下列规则为 2026-09-06 重大改定 + 铁律一~五 的**补充补丁**，专为"多源云 MCP 官方中文名 influx"设计，不替代原规则。数据来源标注：通达信官方 `func_*.cfg` 1924 表与 `get_more_info`、腾讯 `qt.gtimg.cn`、东方财富 push2 + 妙想 mx-ds、TDX 云 JSON 命名字段；以下结论服务于「对撞脚本按名取数一致」，非投资建议。
+>
+> **R0 — 单一事实源原则**：本 §12.8.12e「规范中文名」表永远是 single source of truth。任何云 MCP（腾讯 qt / 通达信 get_more_info / 东财 push2 / 东财 mx-ds / TDX 云）返回的官方/自然语言中文名，一律视为「命名 oracle」，只用于辅助赋予或校正 canonical，绝不自动成为 canonical。
+>
+> **R1 — 三方一致即确认**：当 ≥2 个独立云的官方中文名对某语义指向同一中文词且无口径冲突 → 直接采纳为 canonical（总市值/流通市值/市净率/量比/内外盘/涨停跌停价/换手率%/股息率% 已三源确认）。
+>
+> **R2 — 名称分歧仲裁（扩展 2026-09-06 优先级）**：
+> - **R2a — 财报科目优先级翻转**：通达信 1924 表（func_*.cfg）为行情/公式函数命名表，实证不含资产负债表/利润表/现金流量表明细行（grep `docs/verify/tdx_func_fields.md` 无 未分配利润/流动负债合计/股东权益合计/流动资产合计/销售毛利率）。故财报科目字段命名优先级应为 `同花顺 tableheader → 东财 mx-ds 自然语言名 → 东财 A–G`；**通达信仅在确有具名函数（JZC净资产/ZZC总资产/PB市净率/XSM毛利率%/GXL股息率%）时介入**，不再因"通达信第一"而优先。
+> - **R2b — mx-ds 自然语言名升格**：东方财富妙想（mx-ds）返回的东财官方自然语言命名（未分配利润/销售毛利率(TTM)/流动负债合计/归属于母公司股东权益合计/股东权益合计/股息率(TTM)）权威性与东财客户端 A–G 表头同级，视作「东财官方中文名」来源，优先级等同既有 ③，登记时「依据」列注明 `mx-ds`。
+>
+> **R3 — 同义异名强制全量归档**：凡同一 canonical 在不同云有不同中文叫法，必须全部登记进「各源字段对照」列作为别名，且**碰撞/采集脚本须支持「按 canonical 名 + 任一别名」双重匹配**，避免裸名精确匹配造成的假阴性（例：主力净买入额 须含 东财/通达信/ZHB/TDX云/mx-ds 全部异名；通达信「市盈率（动）」须登记为 f164 别名而非 f162）。
+>
+> **R4 — 合并/母公司口径强制 qualifier**：凡「股东权益/净资产」类字段，canonical 名必须显式带 **（合并）** 或 **（母公司）** 后缀，禁止裸用「净资产/股东权益」：`净资产（母公司）`≡归属母公司股东权益合计（T信 `jingzichan` 实测=f58）；`股东权益合计（合并）`≡全部股东权益（mx-ds `股东权益合计` 实测=f135）；二者差=少数股东权益，数值不可互代。
+>
+> **R5 — 比率/单位 qualifier 一致性（扩展 铁律五 ⑤）**：百分率字段 canonical 一律带 `%`（换手率%/委比%/振幅%/毛利率%/股息率%/净资产收益率%）；厂商名无 `%` 者（T信 `Wtb` 委比、`HSL` 换手率%、EM `B14` 委比%）全部降为别名。PE/ROE/EPS 必带口径（动/静/TTM，加权/扣非/报告期）；市值/股本/财报额必带单位（亿/元/万股），见铁律三。
+>
+> **R6 — 厂商内部命名不可盲信**：通达信 1924 表自身存在 `mgsy`(func_reits101)=净利润 与 `MGSY`(func_gx_fxspj101)=每股收益 的自相矛盾。规则：对任何仅靠「名称相同」定案的字段，必须再用一组数值对撞（双样本/跨源）复核；名称仅作线索，不单独定 L1（与既有「L1 两终止器」一致——厂商表也须「数值复核」二级校验）。
+
 #### 🔴【PE 口径铁证】f162 / f163 / f164 语义重裁定（2026-09-01）
 
 > **背景**：2026-08-31 那次 fuyao 实锤订正把 `f162` 标为"静态/MRQ"、`f163` 标为"动态"，**是错的**——
@@ -3260,21 +3315,27 @@ TDX `0x0010` 日K（`tdx_get_security_bars`，keys = `['time','open','close','hi
 
 > `raw_fuyao.json` 返回的财务指标叶名中，下列 12 个未在 §12.8.12c/e 逐条登记（多为利润表/现金流量表行项目，源=fuyao 财务报表接口）。恒空/恒0 亦照登。
 
-| 叶名(末段) | 含义(最佳已知) | 状态 |
-| :--- | :--- | :---: |
-| manage_fee | 管理费用 | ⚠️ 待破解 |
-| net_profit | 净利润 | ⚠️ 待破解 |
-| total_debt | 总债务 | ⚠️ 待破解 |
-| profit_total | 利润总额 | ⚠️ 待破解 |
-| operating_profit | 营业利润 | ⚠️ 待破解 |
-| interest_expenses | 利息支出 | ⚠️ 待破解 |
-| income_tax_expense | 所得税费用 | ⚠️ 待破解 |
-| accounts_receivable | 应收账款 | ⚠️ 待破解 |
-| holder_equity_total | 股东权益合计 | ⚠️ 待破解 |
-| cash_equivalents_net_addition | 现金及等价物净增加额 | ⚠️ 待破解 |
-| research_and_development_expenses | 研发费用 | ⚠️ 待破解 |
-| pay_dividends_profits_interest_cash | 分红/利息现金支出 | ⚠️ 待破解 |
+| 叶名(末段) | 含义 | TDX 云 CwInfo 字段(单位:万元) | 600519 实测(万元) | 等价 canonical / 公式 | 定级 | 状态 |
+| :--- | :--- | :--- | :--- | :--- | :---: | :---: |
+| manage_fee | 管理费用 | —（云不暴露; TDX F10 利润表 line 98）| — | — | L1(F10) | ⏸️ 待 F10C 文本解析 |
+| net_profit | 净利润 | `JLY` | 4451688（≈445.17亿=f105 逐字等）| net_profit_period(f105) | L1 | ✅ 云闭环 |
+| total_debt | 总债务(=总负债) | `LDFZ`+`CPFZ` | 4664507.5+1084275.75=5748783.25 | 总负债=流动负债+长期负债 | L1 | ✅ 云闭环(公式) |
+| profit_total | 利润总额 | `LYZE` | 6143842 | 利润总额 | L1 | ✅ 云闭环 |
+| operating_profit | 营业利润 | `YYLR` | 6141129 | 营业利润 | L1 | ✅ 云闭环 |
+| interest_expenses | 利息支出 | —（云不暴露; F10 利润表财务费用内含）| — | — | L1(F10) | ⏸️ 待 F10C 文本解析 |
+| income_tax_expense | 所得税费用 | —（云不暴露; F10 利润表）| — | — | L1(F10) | ⏸️ 待 F10C 文本解析 |
+| accounts_receivable | 应收账款 | `YSZK` | 57.08（茅台应收极低,合理）| 应收账款 | L1 | ✅ 云闭环 |
+| holder_equity_total | 股东权益合计 | `JZC` | 25125360 | jingzichan(净资产) | L1 | ✅ 云闭环 |
+| cash_equivalents_net_addition | 现金及等价物净增加额 | `ZXJL` | 5838700 | 现金净增加额 | L1 | ✅ 云闭环 |
+| research_and_development_expenses | 研发费用 | —（云不暴露; F10 利润表）| — | — | L1(F10) | ⏸️ 待 F10C 文本解析 |
+| pay_dividends_profits_interest_cash | 分红/利息现金支出 | —（云不暴露; F10 现金流量表）| — | — | L1(F10) | ⏸️ 待 F10C 文本解析 |
 
+> **单位分档铁律（V17.2.7 新增, 2026-09-09）**：TDX 三套财务编码互异——云 `tdx_quotes` `CwInfo` 金额=**万元**（铁证 `JLY`=4451688万=445.17亿=f105 逐字等）；本地 `tdx_get_finance_info` 0x0010 金额=**角**(`/10`得元, §零·C)；tdxstat Col[14]/Col[24]=**万元**(§7.3)。接入层须按"源"分档换算, 禁止跨源套用单位。
+> **A4 本地 easy_tdx F10 闭环实跑（2026-09-09，Task #38）**：本地 `easy_tdx.TdxClient().get_finance_info(1,'600519')` 实跑返回 **37 列财务概况快照**，A4 7+1 字段全部命中 TDX 具名列（值单位=角，÷10 得元，印证 §零·C 单位分档铁律）：
+> - `net_profit`→`jing_lirun`(净利润)｜`operating_profit`→`yingye_lirun`(营业利润)｜`profit_total`→`lirun_zonghe`(利润总额)
+> - `accounts_receivable`→`yingshou_zhangkuan`(应收账款)｜`holder_equity_total`→`jing_zichan`(净资产)｜`total_assets`→`zong_zichan`(总资产)
+> - `total_debt`=`liudong_fuzhai`(流动负债)+`changqi_fuzhai`(长期负债)｜`cash_add`(`cash_equivalents_net_addition`)→`zong_xianjinliu`(总现金流量)
+> - **残留 5 叶名**（`manage_fee`/`interest_expenses`/`income_tax_expense`/`research_and_development_expenses`/`pay_dividends_profits_interest_cash`）**确认不在 `get_finance_info` 快照**（37 列中无管理费用/财务费用/所得税/研发费用/分红现金任何列）→ 属 F10 **利润表/现金流量表明细**，须走 `tdx_get_financial_analysis`（F10C 财务分析文本 / f10_parser line 98 已登记字段名）或专用财务文件 host 闭环；`get_financial_file(gpcw*.zip)` 实测返回 0 字节（需专用 financial host，本轮未打通）。**5 叶名闭环状态：⏸️ 待 F10C 文本解析，非 get_finance_info 可解**。详见本轮报告 `docs/field_verification/20260909_mxds_f124-168_f200-249_easytdx_A4.md` §B。
 > 这些叶名与 §12.8.12c 规范注册表（canonical registry）的 canonical 键（如 net_profit_period=f105）为不同抽象层；需在 fuyao 接入层做叶名→canonical 映射登记（见 §12.8.12e）。
 
 #### 12.8.12f fuyao 财务指标 index_id 完整度与接入分类（2026-09-01）🆕
@@ -3490,7 +3551,7 @@ ZHB 逐日落后一个交易日，符合「最近交易日快照」铁律；`fin
 - 腾讯 `[56]`（Beta 族·L4）、`[85]`（价格类·L3 弱）、`[86]`（手级带符号量·❓）—— **唯一真残留未知（2026-09-01 收口结论，2026-09-03 已被下方 🟢 主动法升级）**：fuyao 全 62 端点无对应字段（6×20 精确命中 0）；ZHB 12/23 连续日 + 全源 517 候选精确命中 0、无 >0.6 Spearman；2026-08-31 腾讯样本新鲜刻画（[56]~1.0± 小值 / [85] 13/20 落[低,高] / [86] 13负5正2零手级带符号量）进一步确认。**收口为"源覆盖盲区"**，待 fuyao 开放 Beta 端点或获腾讯官方字段 ID 表再攻。
   > 🟢 **2026-09-03 主动性破解升级（非对撞法，思路④⑥⑦ + 自行计算/配置直解/表头对照，`scratch/proactive_crack_20260903.py`）**：
   > - **[56] 升 L4→Beta 族高置信**：用 cache/kline 887 只 800 日 K线自构等权市场代理，自算 Beta 与 [56] **Pearson=0.908**（vs 相关系数 0.817）；逐股单调同向、量级均落 Beta 区间 → 坐实 [56] 为 Beta 族量（系统风险）。绝对偏移因腾讯基准/窗口差异（非误差）。*碰撞法因跨源未知全空从未获得此定量证据*。
-  > - **[85] 价格派生候选强**：茅台 t85=1297.00 ≈ 自算 VWAP(额/股)=1297.04（误差 0.003%）；其余 t85≈close(±0.1) → 高概率**均价/VWAP 类价格派生**（amount÷volume 折算），非 OHLC 原始价。
+  > - **[85] 均价/VWAP（L1-U）**：茅台 t85=1297.00 ≈ 自算 VWAP(额/股)=1297.04（误差 0.003%）；其余 t85≈close(±0.1) → 高概率**均价/VWAP 类价格派生**（amount÷volume 折算），非 OHLC 原始价；**2026-09-08 主动法复验（9/8 数据）：18 只沪深/创/科板 tx[85] vs 自算 VWAP=f48/(f47×100) 误差≤3.0%（茅台 0.24%），北交所 920118/920508 因 tx[85]=0 退化单列排除 → 升 L1-U**（⚠️ 后订正见 §12.8.12e [85] 行：2026-09-08 round12 TDX 均价锚证伪非均价、撤销 L1-U 回退 L3；2026-09-09 VWAP 扩展对撞第四源确认非均价，维持 L3 价格类候选强）。
   > - **[86] 否定日内净买、候选=委差**：符号(收>开)与 [86]>0 仅 3/6 一致（601288 收>开但 t86=-57802）→ 否定"日内净买/日聚合"；量级(手级带符号：601288=-57802、茅台=29)与**委差(盘口净量)**吻合，委差为瞬时 L1 快照、与日K线方向解耦故日K线无法验证 → 维持 L4 但已命名候选，待 L1 盘口或对撞 f192(委差) 终判。
   > - **Col[22] 配置直解确认性质**：tdxhy.cfg(5642行) 行业树用 X码、概念树(hy_tree1_gnz)用 Z码；Col[22] 为 5 位运行时下载动态概念码(50913/110113/50113/50109/51111)，非静态配置可枚举 → 坐实其"概念/热点分类码"本质；完整映射建议接 TdxQuant `get_concept` 或盘后 block 同步。
 - ZHB `tipinfo[7]`（持股变动类最近事件日·L4 富集）、`Col[19]`（截至 T-1 的 60 根 K 线涨跌幅 `change_60d_alt`·L1）—— **已有 H12 表征，非未知语义**，仅缺官方文档终判。
@@ -3642,6 +3703,22 @@ ZHB 逐日落后一个交易日，符合「最近交易日快照」铁律；`fin
 | 东财 dycalchis（日内异动池 em_price_anomaly）| "unknow product" 不可用 |
 | mootdx 库 | 2024 停更，但**通达信 TCP 协议本身可用** |
 
+#### 12.8.19 通达信问小达（wenda）四件套源字段结构（V17.2.7 新增, 2026-09-09）
+
+> 源 = TDX 问小达 MCP（`wenda_report_query` / `wenda_notice_query` / `wenda_news_query` / `wenda_macro_query`）。
+> 性质 = **文本/时序命名源（oracle）**，用于字段含义定名 + 内容检索，**非量化数值对撞源**（不解决东财 ulist / 死占位符 / 计算字段）。
+
+| 工具 | 业务 | 返回 row 结构（命名字段） | dataCard 典型候选 | dataFunction 典型候选 |
+|------|------|--------------------------|-------------------|------------------------|
+| `wenda_report_query` | 研报/评级 | `[标题, 时间, 链接, 来源, 摘要]` | 预测目标价 / 龙虎榜 / 资金流向 / 主题投资-机会前瞻 / 牛熊研判 | 研报中心 |
+| `wenda_notice_query` | 公告/定期报告 | `[标题, 时间, 链接, 来源, 摘要]` | 预测目标价 / 龙虎榜 / 资金流向 / 分红率 / 牛熊研判 | 公告中心 / 并购重组 / 股份回购 / 重要股东增减持 / 重大合同 / 前瞻会议 / 公司治理 / 立案调查 |
+| `wenda_news_query` | 新闻/快讯 | `[标题, 时间, 链接, 来源, 摘要]` | 主题投资-机会前瞻 / 龙虎榜 / 市场溯因 / 主题投资-热门主题 / 主题投资-新增主题 / 动态双柱图 | 热点解读 / 负面新闻 / 主题投资 / 市场风向 / 市场解读 / 数据解盘 |
+| `wenda_macro_query` | 宏观数据 | `[指标名称, 指标完整路径, 日期, 指标值]`（仅 `query` 管道入参）| 牛熊研判 / 市场溯因 | 宏观专题 |
+
+> **定名结论**：研报/公告/新闻三件套**同构**（5 命名字段 `标题/时间/链接/来源/摘要`，`时间` 公告为 `YYYY-MM-DD HH:MM:SS` 全精度、研报/新闻为 `YYYY-MM-DD`）；宏观**独立结构**（4 命名字段，且 CPI 等在 `指标完整路径` 中区分"去年=100/上年=100/同月=100/上月=100"多基期口径）。
+> **时效约定**：研报/公告/新闻含相对时间词须拆分 `bdate`/`edate` 为具体日期；宏观 `query` 日期段不可留空（禁止模糊时间词）。
+> 实测样本与字段印证见 `docs/field_verification/20260909_T35_A4_wenda_financial.md` §1。
+
 ### 12.9 接口实测破解新字段（2026-08-04 实抓全字段响应 + 官方 TdxQuant 交叉验证）
 
 > **方法**：向 push2 `stock/get`、`ulist.np/get`、`slist/get`、`push2ex` 等接口发送**全字段请求**
@@ -3784,6 +3861,7 @@ ZHB 逐日落后一个交易日，符合「最近交易日快照」铁律；`fin
 
 ---
 
+> 以下自本节起为后期补充附录（cdata 源体系 / 接口核对 / 交叉印证 / 契约字段），章节编号独立于正文零–十二；同名编号冲突统一方案见后续评估（L0-3）。
 ## 7.10 V15.4 cdata 字段源体系（方案 C）
 
 > V15.4 核心设计：**per-field source label** —— `CanonicalStockData.field_sources: Dict[str, str]`
@@ -3791,7 +3869,7 @@ ZHB 逐日落后一个交易日，符合「最近交易日快照」铁律；`fin
 
 ---
 
-## 十一、 文件元信息 (Document Metadata)
+## 十一、 V15.4 字段源状态码与优先级矩阵（原误名"文件元信息"）
 
 > V15.4 核心设计：**per-field source label** —— `CanonicalStockData.field_sources: Dict[str, str]`
 > 让上层精确知道每个数据字段来自哪个源（push2/TDX/腾讯/ZHB/calculated/missing）。
@@ -5456,3 +5534,104 @@ volRatio=量比, institutionIncrease=机构增仓 仅在 Socket 推送中——H
 
 > 📌 **重要提示**：本文件是项目的**关键字典**，所有数据接口与字段调整前必查。优先采用字典中已确定的内容，可大幅减少重复反向工程工作。
 > 📌 **重要提示**：本文件是项目的**关键字典**，所有数据接口与字段调整前必查。优先采用字典中已确定的内容，可大幅减少重复反向工程工作。
+
+
+---
+
+## §13 契约字段补充字典（V17.2.x / 2026-09-10 数据结构审计补齐）
+
+> **背景**：程序化全量比对发现，本字典对 `CanonicalStockData` 契约字段的覆盖率仅 **81.7%**（104 个中 19 个未收录）。
+> 更关键的是：全文检索「废弃 / 已停用 / DEPRECATED / 不再使用」**命中 0 处**——字典缺少字段生命周期状态，
+> 这是失效字段得以长期驻留契约的根本原因。本节补齐条目，并引入生命周期状态规范。
+>
+> 数据来源：腾讯行情 / 东方财富 push2·ulist / 同花顺 fuyao / 通达信 easy_tdx / ZHB。本节为数据结构文档，不构成投资建议。
+
+### 13.1 字段生命周期状态定义（新增规范）
+
+| 状态 | 含义 | 处置原则 |
+|------|------|----------|
+| `ACTIVE` | 在用：有源接入且被下游消费 | 正常维护，变更需走对撞验证 |
+| `AVAILABLE` | 已接入但当前零消费（契约已供，5 大脚本未用） | 评估启用；长期不用则收敛 |
+| `DERIVED` | 派生字段：由其他字段计算得出 | **禁止独立取数**，标注派生式 |
+| `DEPRECATED` | 已废弃：停止接入或恒为占位值 | 制定迁移/删除计划 |
+| `REMOVED` | 已删除：契约中已不存在 | 仅留说明，**勿恢复** |
+
+### 13.2 补齐的契约字段（原字典未收录）
+
+| 字段 | 类型/单位 | 业务含义 | 来源 | 状态 |
+|------|-----------|----------|------|------|
+| `net_assets` | float / 元 | 净资产·股东权益 | TDX f10 `jingzichan`/10（季频静态） | AVAILABLE |
+| `main_net_buy_wan` | float / 万元 | 主力净买额 ≡ `fund_main_today`/1e4 | push2 f137（主）/ 东财 rt_fund（兜底） | **DERIVED** |
+| `main_net_buy_hands` | float / 手 | 主力净买量 | 东财 rt_fund `main_net_hands`（仅实时路径） | ACTIVE |
+| `main_net_buy_wan_1d` | float / 万元 | T-1 主力净买额 | **无源接入（恒 0）**；ZHB 该键实为昨日竞价额，已实锤不可用 | DEPRECATED |
+| `roa` | float / % | 总资产收益率（TTM 滚动） | 腾讯 tx66 | AVAILABLE |
+| `roe_deduct_ttm` | float / % | 扣非加权 ROE（TTM 滚动） | 腾讯 tx65 | AVAILABLE |
+| `beta` | float | 贝塔系数（**腾讯口径估计值**，非本系统重算；与自算 Pearson=0.908） | 腾讯 [56] | AVAILABLE |
+| `bid_ask_net` | float / 手 | 委差 | 腾讯 [50] ＋ push2 f192（[86] 已撤销） | ACTIVE |
+| `industry_code_push2` | str | **东财板块代码**（如 `BK1277`） | push2 f198 | ACTIVE |
+| `trading_periods` | tuple | 交易时段数组 | push2 f80 | AVAILABLE |
+| `quote_date` | str | 行情快照日期（YYYY-MM-DD） | push2 `data_date` | AVAILABLE |
+| `fund_main_5d` | float / 元 | 近 5 日主力净流入 | push2 f178 数组聚合；兜底 ulist f164 | ACTIVE |
+| `fund_main_5d_pct` | float / % | 近 5 日主力净占比 | ulist f165 | ACTIVE |
+| `fund_5d_array` | tuple | 近 5 日主力净流入数组 | push2 f178 | AVAILABLE |
+| `sec_type` | int | 市场类型枚举 | ulist f182 | ACTIVE |
+| `data_source` | str | 数据来源标签（zhb / tdx / http） | 内部 | ACTIVE |
+| `time_anchor` | str | 时效锚点（t_day / t-1） | 内部 | ACTIVE |
+| `is_valid` | bool | **质量门禁结果** | 内部计算（见 13.5-Q6） | ACTIVE |
+
+#### `sec_type` 枚举定义（原字典缺失）
+
+| 值 | 市场类型 |
+|----|----------|
+| 2 | 主板 |
+| 5 | 创业板 |
+| 32 | 科创板 |
+| 80 | 北交所 |
+
+> 注：ST 不改变归属。**B 股、退市整理板等的枚举值未确认，不臆测**（见待确认项）。
+
+### 13.3 已删除字段（REMOVED，勿恢复）
+
+| 字段 | 删除依据 | 替代方案 |
+|------|----------|----------|
+| `change_30d` | **实为 `change_20d` 的错误副本**：`zhb_client.py:851` 读 Col[18]=20 日值；`tdxstat.cfg` 无 30 日列。带误导名，一旦被启用即产生错误结论 | 需要 30 日涨跌幅请**由 K 线自算**；真实 30 日需 TdxQuant `ZAFPre30`（当前无该依赖） |
+| `open_amount_wan` | `main_net_buy_wan` 的**误名别名**：注释标「竞价额」实际值是主力净；全仓零消费 | 直接用 `fund_main_today` |
+| `bid_volume_hand` | `main_net_buy_hands` 的**误名别名**：注释标「竞价量」实际值是主力净量；全仓零消费 | 直接用 `main_net_buy_hands` |
+
+### 13.4 外挂取数源（原字典完全未覆盖）
+
+| 外挂源 | 使用脚本 | 说明 | 处置 |
+|--------|----------|------|------|
+| `get_fund_flow_120d` | sht | 120 日资金流历史序列 | 字典化；建议纳入时间序列层 |
+| `get_roe_trend` | lng | ROE 趋势（长线核心） | 字典化；建议纳入时间序列层 |
+| `get_historical_high` | lng | 历史高点 | 同上 |
+| `get_market_abnormal_data` / `get_abnormal_announcements` / `get_strategic_announcements` | mak | **异动/公告类**，「异动」判定标准未字典化 | 建议建事件层统一管理 |
+| `get_turnover_pct_async` | val | 换手率异步取数 | 需明确与契约 `turnover_pct` 的关系 |
+| `get_reports_async` | med **+ lng** | 研报——**两脚本重复采集** | 提至统一层按 code 缓存共享 |
+| `get_holder_change_async` | med | 股东户数变化 | 字典化 |
+| `get_stock_sector_rank_async` | med | 行业排名 | 字典化 |
+
+### 13.5 审计决策记录（Q1–Q10，逐项定案）
+
+| # | 议题 | 决策 | 理由 |
+|---|------|------|------|
+| Q1 | `main_net_buy_wan` 与 `fund_main_today` 是否合并 | **保留两者，明确主从**：`fund_main_today`（元）为口径权威；`main_net_buy_wan`（万元）为展示层便利字段，禁止独立取数 | 二者经 `data_provider.py:957→962` 证实为单位换算关系；删除会破坏 sht 既有信号，明确派生关系成本最低 |
+| Q2 | `change_30d` 删除还是改接 TdxQuant | **删除** | 无 TdxQuant 依赖；保留即数据地雷。已同步清除字段定义、FieldSpec 注册、别名映射、采集项 |
+| Q3 | 外挂源是否纳字典 | **纳字典，不删除外挂** | 外挂是业务必需；字典补齐成本低、收益高 |
+| Q4 | `sec_type` 枚举是否补全 | **仅补已实证的四类**，B 股/退市板等不臆测 | 遵循「字典缺少判断依据时单列待确认，不臆测」原则 |
+| Q5 | `open_amount_wan` / `bid_volume_hand` | **删除** | 误名别名，名实不符且零消费 |
+| Q6 | `is_valid` 是否启用为质量门禁 | **启用**：规则 = `code` 非空 且（`price>0` 或 `prev_close>0`） | 原硬编码 `True` 且全仓零引用 = 质量不可观测。该规则对停牌股（prev_close>0）不误杀 |
+| Q7 | 是否统一基础单位（股/元） | **暂不改造**，仅在契约注释标注单位 | 全局单位改造风险过高，与收益不匹配；留作后续专项 |
+| Q8 | fuyao `ps_ttm` / `pcf_ttm` 是否稳定 | **降为兜底**：优先由市值/`revenue_ttm`、`ocf_ttm` 派生，fuyao 仅校验 | fuyao 曾出现 DNS 抖动导致 val 超时；降低强依赖 |
+| Q9 | `concepts` 是否强化 | **保留并字典化，本次不强化** | 数据质量与更新频率未确认，不臆测 |
+| Q10 | `industry_code` 与 `industry_code_push2` 是否冗余 | **非冗余，两者都保留**：前者=TDX 行业码，后者=东财板块码（BK1277），属不同分类体系 | 已补注释消除误解；误删会丢失一套分类体系 |
+
+### 13.6 资金流四档恒等式（运行时校验依据）
+
+字典 §12.3.3 实证，已在 `data_provider` 中加入**非阻断告警校验**（偏离 >1% 或 >1 元时记录日志）：
+
+- `f137`（主力净） = `f140`（超大单净） + `f143`（大单净）
+- `f135`（主力买） = `f138` + `f141`
+- `f136`（主力卖） = `f139` + `f142`
+
+> ⚠️ 恒等式成立**不等于应改为纯派生**：上游直供值更稳（避免除零/缺参），故保留直供、以恒等式做一致性校验。

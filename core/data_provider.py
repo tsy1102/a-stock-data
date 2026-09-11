@@ -231,7 +231,7 @@ except ImportError:
             "change_5d",
             "change_10d",
             "change_20d",
-            "change_30d",
+            # V17.2.x(2026-09-10): change_30d 已删(实为 20 日值错误副本, 详见 sc_schema 说明)
             "change_60d",
             "change_ytd",
             # V17.0.5: tdxstat2 Col[11] 正名——本月至今涨跌幅(基准=上月末收盘)
@@ -481,7 +481,7 @@ def get_canonical_stock_data(code: str, force_realtime: bool = False) -> Any:
                     )
 
     # V16.3.3 (2026-08-10 字典 12.15.5/12.15.6): 腾讯独有/实时估值字段补取——
-    # roa(tx66)/均价(tx85)/pe_ttm/pb/股息率为腾讯字段；
+    # roa(tx66)/均价(tx51)/pe_ttm/pb/股息率为腾讯字段；
     # TDX 成功时 L2 fallback 不执行（TDX TCP 无 pe/pb/股息率），故主动补 1 次腾讯
     # （5rps 不封 IP，低成本）——C/D 层实时估值必须覆盖 ZHB T-1（19.88 vs 20.39 实测）
     # V17.0.6 修复: 去 need_realtime_quote 门控——roa/roe_deduct_ttm 为季报披露驱动的
@@ -497,8 +497,10 @@ def get_canonical_stock_data(code: str, force_realtime: bool = False) -> Any:
             # V17.0 修复: 补取循环删 pe_dynamic——🔴2026-09-01 纠正：腾讯 [52]=f162=动态PE(pe_mrq, 字典实锤),
             # 非静态PE; 原注释"实为静态PE"系 2026-08-13 误订。pe_dynamic 只信 f162/fuyao, 不取腾讯[52]避免多源混用
             # V17.0.7: 删 main_net_inflow_yi(tx75 证伪=近180交易日涨幅, 非主力净流入)
-            # V17.0.25(2026-09-03): panel_price→avg_price（[85]=均价/VWAP 09-03 定案）+ 新增 beta([56])/bid_ask_net([86])
+            # V17.2.x(2026-09-10) 调整 A/B/C: avg_price 源 [85]→[51]、bid_ask_net 源 [86]→[50](+push2 f192)；
+            #   增补 entrust_ratio([74])/bid2([12])/ask2([22]) 接线(字典 §12.8.12e canonical 实装)
             for _tf in ("roa", "roe_deduct_ttm", "avg_price", "beta", "bid_ask_net",
+                        "entrust_ratio", "bid2", "ask2",
                         "pe_ttm", "pe_lyr", "pb", "dividend_yield",
                         "limit_up", "limit_down"):
                 if _tq.get(_tf) not in (None, 0, '', '0', '0.0'):
@@ -957,6 +959,9 @@ def get_canonical_stock_data(code: str, force_realtime: bool = False) -> Any:
     # ⚠️ 2026-08-14 实锤: ZHB main_net_buy_amount 实为**开盘金额(竞价额)**(19/19 恒正+占比<5%),
     # 不可作主力净流入——ZHB 分支已移除
     if pd_main:
+        # V17.2.x(2026-09-10) 审计决策 Q1: 明确 main_net_buy_wan 与 fund_main_today 的主从关系——
+        #   主: fund_main_today(push2 f137, 元)/1e4; 兜底: 下方 rt_fund['main_net_wan'](东财)。
+        #   二者为同一指标的不同单位, 禁止再为其单独取数(双写会导致两值分叉)。
         main_net_buy_wan = pd_main / 1e4  # 元 → 万元
         field_sources["main_net_buy_wan"] = "realtime:push2delay"
     else:
@@ -971,6 +976,21 @@ def get_canonical_stock_data(code: str, force_realtime: bool = False) -> Any:
     # ⚠️ V17.0: ZHB main_net_buy_amount_1d 实为昨日开盘金额(竞价额)——不再作为主力净流入 T-1
     main_net_buy_wan_1d = 0.0
     field_sources["main_net_buy_wan_1d"] = "missing"
+
+    # V17.2.x(2026-09-10) 审计 P2-1: 资金流四档恒等式**运行时校验**(不阻断, 仅告警)——
+    #   字典 §12.3.3 实证 f137 = f140 + f143 / f135 = f138 + f141 / f136 = f139 + f142。
+    #   上游直供值与派生值应一致; 显著偏离说明字段映射被改坏或端点语义漂移, 需人工介入。
+    _fm = _safe_float(rt_quote.get("fund_main_today") or em_quote_raw.get("fund_main_today") or 0)
+    _fs = _safe_float(rt_quote.get("fund_super_today") or em_quote_raw.get("fund_super_today") or 0)
+    _fl = _safe_float(rt_quote.get("fund_large_today") or em_quote_raw.get("fund_large_today") or 0)
+    if _fm and (_fs or _fl) and abs(_fm - (_fs + _fl)) > max(1.0, abs(_fm) * 0.01):
+        try:
+            _debug_log(
+                f"data_provider 资金流恒等式偏离: f137({_fm:.0f}) != f140+f143({_fs + _fl:.0f}) "
+                f"—— 疑似字段映射或端点语义漂移"
+            )
+        except Exception:
+            pass
 
     # 财务与股本类
     roe = _safe_float(zhb_dict.get('roe')) if zhb_dict.get('roe') is not None else None
@@ -1165,10 +1185,9 @@ def get_canonical_stock_data(code: str, force_realtime: bool = False) -> Any:
     field_sources["change_10d"] = "zhb:static" if change_10d else "missing"
     change_20d = _safe_float(zhb_dict.get('change_20d'))
     field_sources["change_20d"] = "zhb:static" if change_20d else "missing"
-    # V15.1: 启用 change_30d（tdxstat.cfg Col[18]）⚠️ V17.0 实锤: tdxstat.cfg 无 30 日列,
-    # change_30d 为历史遗留 key 实读 Col[18]=20 日值(与 change_20d 相同); 真实 30 日仅 TdxQuant ZAFPre30
-    change_30d = _safe_float(zhb_dict.get('change_30d'))
-    field_sources["change_30d"] = "zhb:static" if change_30d else "missing"
+    # V17.2.x(2026-09-10) 审计决策 Q2: change_30d **已删除**——
+    #   tdxstat.cfg 无 30 日列, 该 key 实读 Col[18]=20 日值(与 change_20d 完全同值), 属带误导名的错误副本;
+    #   真实 30 日需 TdxQuant ZAFPre30(当前无该依赖)。需要 30 日涨跌幅请由 K 线自算。
     change_60d = _safe_float(zhb_dict.get('change_60d'))
     field_sources["change_60d"] = "zhb:static" if change_60d else "missing"
     change_ytd = _safe_float(zhb_dict.get('change_ytd'))
@@ -1340,16 +1359,17 @@ def get_canonical_stock_data(code: str, force_realtime: bool = False) -> Any:
         turnover_pct=turnover_pct,
         vol_ratio=vol_ratio,  # A: 量比透传(push2 f49/腾讯 v49, 上方:900 已计算)
         # V17.2.0: TDX 实时五档直解 内盘/外盘/涨速
-        s_vol=_safe_float(rt_quote.get("s_vol") or 0),
-        b_vol=_safe_float(rt_quote.get("b_vol") or 0),
+        # V17.2.x(2026-09-10) 调整 D: 内盘/外盘合成——TDX实时(权威) > push2 f161/f49 > 腾讯[8]/[7]
+        s_vol=_safe_float(rt_quote.get("s_vol") or em_quote_raw.get("s_vol") or 0),
+        b_vol=_safe_float(rt_quote.get("b_vol") or em_quote_raw.get("b_vol") or 0),
         rise_speed=_safe_float(rt_quote.get("rise_speed") or 0),
         total_assets=total_assets,  # V17.1: 总资产(元, TDX f10 zongzichan/10)
         net_assets=net_assets,  # V17.1: 净资产/股东权益(元, TDX f10 jingzichan/10)
         main_net_buy_wan=main_net_buy_wan,
         main_net_buy_hands=main_net_buy_hands,
-        # V17.0.1a 规范化: 竞价族规范键(与 main_net_buy_* 同值, 键名语义化)
-        open_amount_wan=main_net_buy_wan,  # 竞价额(万元)
-        bid_volume_hand=main_net_buy_hands,  # 竞价量(手)
+        # V17.2.x(2026-09-10) 审计: open_amount_wan / bid_volume_hand **已删除**——
+        #   二者是 main_net_buy_wan / main_net_buy_hands 的**误名别名**: 注释标"竞价额/竞价量",
+        #   实际值却是主力净(与 2026-08-14 实锤"ZHB 该族实为竞价额"的历史错位正相反), 名实不符且全仓零消费。
         main_net_buy_wan_1d=main_net_buy_wan_1d,
         roe=roe or 0.0,
         roa=roa or 0.0,
@@ -1367,7 +1387,6 @@ def get_canonical_stock_data(code: str, force_realtime: bool = False) -> Any:
         change_5d=change_5d,
         change_10d=change_10d,
         change_20d=change_20d,
-        change_30d=change_30d,
         change_60d=change_60d,
         change_ytd=change_ytd,
         change_mtd=change_mtd,  # V17.0.5: 本月至今涨跌幅(ZHB tdxstat2 Col[11] 正名字段)
@@ -1384,7 +1403,9 @@ def get_canonical_stock_data(code: str, force_realtime: bool = False) -> Any:
         concepts=tuple(concepts_list),
         data_source=source_tag,
         time_anchor=time_anchor_tag,
-        is_valid=True,
+        # V17.2.x(2026-09-10) 审计决策 Q6: 真实质量门禁(原硬编码 True 且全仓零引用)
+        #   停牌股 prev_close>0 仍判有效 → 不误杀; 完全取数失败(价与昨收皆 0)才判无效。
+        is_valid=bool(code_str) and (price > 0 or prev_close > 0),
         # V15.4 方案 C: per-field source label
         field_sources=dict(field_sources),
         # V16.1: push2 扩展字段（f51/f52 涨停跌停、f55/f92 EPS/BPS、f126 股息率、
@@ -1409,11 +1430,16 @@ def get_canonical_stock_data(code: str, force_realtime: bool = False) -> Any:
             or ""
         ),
         bid1_vol=_safe_float(rt_quote.get("bid1_vol") or em_quote_raw.get("bid1_vol") or 0),
-        # V17.0.25(2026-09-03): 腾讯[85]/[56]/[86] 09-03 字典定案 surface 进统一层契约
-        # avg_price=均价/VWAP(腾讯[85])、beta=腾讯[56]口径Beta估计、bid_ask_net=委差/盘口净量(腾讯[86])
+        # V17.2.x(2026-09-10) 调整 A/B/C: 统一层契约接线(字典 §12.8.12e canonical)
+        # avg_price=均价/VWAP(腾讯[51]+TDX快照)、beta=腾讯[56]口径Beta估计、
+        # bid_ask_net=委差(腾讯[50]+push2 f192)、entrust_ratio=委比%(腾讯[74]+push2 f191+TDX快照)、
+        # bid2=买二价(腾讯[12]+tdx bid2)、ask2=卖二价(腾讯[22]+tdx ask2)
         avg_price=_safe_float(rt_quote.get("avg_price") or em_quote_raw.get("avg_price") or 0),
         beta=_safe_float(rt_quote.get("beta") or em_quote_raw.get("beta") or 0),
         bid_ask_net=_safe_float(rt_quote.get("bid_ask_net") or em_quote_raw.get("bid_ask_net") or 0),
+        entrust_ratio=_safe_float(rt_quote.get("entrust_ratio") or em_quote_raw.get("entrust_ratio") or 0),
+        bid2=_safe_float(rt_quote.get("bid2") or em_quote_raw.get("bid2") or 0),
+        ask2=_safe_float(rt_quote.get("ask2") or em_quote_raw.get("ask2") or 0),
         quote_date=str(rt_quote.get("data_date") or em_quote_raw.get("data_date") or ""),
         fund_main_today=_safe_float(rt_quote.get("fund_main_today") or em_quote_raw.get("fund_main_today") or 0),
         fund_super_today=_safe_float(rt_quote.get("fund_super_today") or em_quote_raw.get("fund_super_today") or 0),

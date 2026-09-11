@@ -130,8 +130,14 @@ def real_dict_lines_with_negation(text, lines):
 
 
 def latest_raw(sub):
-    """返回 docs/field_verification 下最新一天的某 raw json 路径。"""
-    days = sorted([p for p in (FV).iterdir() if p.is_dir()], reverse=True)
+    """返回 docs/field_verification 下最新一天的某 raw json 路径。
+
+    V17.2.7(2026-09-10) 修正: 仅认 8 位数字日期目录(如 20260910), 排除 _BAK_* 等
+    非日期目录 —— 否则反向排序时 _BAK_20260907_pre_refresh(下划线 ASCII 95) 会排在
+    20260910(数字) 之前, 导致采样误取 9/7 备份数据而非最新采集日。
+    """
+    days = sorted([p for p in (FV).iterdir()
+                   if p.is_dir() and re.fullmatch(r"\d{8}", p.name)], reverse=True)
     for d in days:
         cand = d / sub
         if cand.exists():

@@ -13,6 +13,11 @@ import re
 import sys
 from collections import defaultdict
 
+# Phase 2(2026-09-12): registry 单一真相源访问层。治理脚本改读 registry 而非解析 markdown。
+# 本模块既产 extract_registry 的抽取源，也消费 registry——通过 build_matrix() 的
+# use_registry 开关切换，避免 extract（须读 markdown）与运行时（读 registry）互相污染。
+import field_registry_api as fra
+
 # V16.4.1: 强制 UTF-8 输出（下沉到代码自身——任何 agent/机器/直接运行均 UTF-8，
 # 不依赖系统代码页/环境变量/Profile；纯标准库，幂等）
 for _stream in (sys.stdout, sys.stderr):
@@ -156,7 +161,9 @@ def clean_field(name: str) -> str:
     return s
 
 
-def build_matrix():
+# Phase 2(2026-09-12): 抽离纯 markdown 路径为 build_matrix_from_md（golden baseline）。
+# extract_registry 与 registry_parity 的 golden 对照均调用此函数，避免与 registry 路径互相污染。
+def build_matrix_from_md():
     text = io.open(DICT, encoding="utf-8").read()
     name_sources = defaultdict(set)
     records = 0
@@ -181,6 +188,33 @@ def build_matrix():
     return name_sources, records
 
 
+# Phase 2(2026-09-12): registry 单一真相源路径（与 build_matrix_from_md 同构：{code: set(sources)}）。
+# 由 field_registry_api.field_source_map 提供视图；任何读取失败抛异常交由 build_matrix 回退。
+def build_matrix_from_registry():
+    reg = fra.load_registry()
+    name_sources = defaultdict(set)
+    for code, srcs in fra.field_source_map(reg).items():
+        name_sources[code].update(srcs)
+    records = fra.record_count(reg)
+    return name_sources, records
+
+
+def build_matrix(use_registry: bool = False):
+    """Phase 2 统一入口。
+
+    - use_registry=True（默认给更新路径）：读 field_registry.json，不再解析 markdown 体积。
+    - use_registry=False（extract / parity golden 必须走此）：读 markdown，作为回退与对照基线。
+    失败时回退 markdown，保证脚本永不因 registry 缺失而硬失败。
+    """
+    if use_registry:
+        try:
+            return build_matrix_from_registry()
+        except Exception as _e:  # registry 缺失/损坏 → 回退 markdown
+            print(f"[gen_field_matrix] registry 读取失败，回退 markdown: {_e}", file=sys.stderr)
+            return build_matrix_from_md()
+    return build_matrix_from_md()
+
+
 def render(name_sources, records) -> str:
     order = {s: i for i, s in enumerate(SOURCE_ORDER)}
 
@@ -195,8 +229,9 @@ def render(name_sources, records) -> str:
 
     out = []
     out.append("### 零·B 字段×源总表（自动生成，勿手改）\n")
-    out.append(f"> 生成：`scripts/gen_field_matrix.py`，2026-08-25。从本字典全部字段表自动提取，"
-               f"共 {len(name_sources)} 个字段 / {records} 条字段×源记录。\n")
+    out.append(f"> 生成：`scripts/gen_field_matrix.py`（Phase 2 起从 field_registry.json 单一真相源读取，"
+               f"不再解析 field_dict.md 体积）。共 {len(name_sources)} 个字段 / {records} 条字段×源记录"
+               f"（去重配对口径，取代旧版按行出现的 1412 重复计数）。\n")
     out.append("> 源排序按易→难（V17.0.7 层级定案）：ZHB（离线零网络）→ TDX TCP（0x0010/F10/eltdx）→ "
                "腾讯（不封 IP）→ **同花顺-fuyao（官方 REST，盘后可查+独立风控域，V17.0.7 升为财务 TTM 族主源）** → "
                "**同花顺-thsdk（TCP 盘后关闸——盘中专属特殊层）** → 新浪 → 巨潮 → 东财（限流最严）→ 其他。\n")
@@ -242,8 +277,10 @@ def _save_baseline(count: int) -> None:
     with io.open(_ZERO_B_BASELINE, "w", encoding="utf-8") as _fh:
         json.dump({"count": count, "updated": _dt.date.today().isoformat()},
                   _fh, ensure_ascii=False, indent=2)
-def update_dict(force: bool = False) -> None:
-    name_sources, records = build_matrix()
+def update_dict(force: bool = False, use_registry: bool = True) -> None:
+    # Phase 2: 默认从 registry 读取（单一真相源），不再依赖 markdown 体积。
+    # --from-md 时回退 markdown 以做回归对照。
+    name_sources, records = build_matrix(use_registry=use_registry)
     content = render(name_sources, records)
     text = io.open(DICT, encoding="utf-8").read()
     # ---- P0 护栏 ----
@@ -274,8 +311,10 @@ def update_dict(force: bool = False) -> None:
 if __name__ == "__main__":
     import argparse
 
-    _ap = argparse.ArgumentParser(description="从 field_dict.md 生成 §零·B 字段×源总表（marker 区间原地写回）")
+    _ap = argparse.ArgumentParser(description="从 field_registry.json 生成 §零·B 字段×源总表（marker 区间原地写回）")
     _ap.add_argument("--force", action="store_true",
                      help="忽略 §零·B 写回收缩护栏（仅当确认字段真实下线时使用）")
+    _ap.add_argument("--from-md", action="store_true",
+                     help="回归模式：从 field_dict.md 读取而非 registry（用于 parity 对照）")
     _args = _ap.parse_args()
-    update_dict(force=_args.force)
+    update_dict(force=_args.force, use_registry=not _args.from_md)

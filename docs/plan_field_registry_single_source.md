@@ -2,7 +2,7 @@
 
 > 关联：P0（`gen_field_matrix` §零·B 写回护栏，已提交 `1fc9dd4`）、P1（归档契约预检，已提交 `1fc9dd4`）
 > 数据来源：通达信 a-stock-data 字段破解体系（`docs/field_dict.md`）
-> 状态：**G0 闸门已签字（5 项安全默认已定，见 §1.5 末尾），Phase 1 抽取完成（G1 闸门 PASS，见 §1.6），待提交 master**
+> 状态：**G0 闸门已签字（5 项安全默认已定），Phase 1 抽取完成且 G1 闸门 PASS，已提交 master `e009cc5`；Phase 2（治理脚本改读 registry）待启动**
 
 ---
 
@@ -171,7 +171,7 @@ mappings:                         # 替代 ulist_push2_align.md 对齐表（已�
 
 ---
 
-### 1.6 Phase 1 交付与 G1 闸门结果（已实施，待提交）
+### 1.6 Phase 1 交付与 G1 闸门结果（已实施，已提交 master `e009cc5`）
 
 **交付物**：
 - `scripts/extract_registry.py`：复用 `gen_field_matrix.parse_tables` + `verify_sync_check.MAPPING`，抽取 `field×source` 映射（Layer1，确定性）+ 逐字段属性（Layer2，最佳努力）+ `ulist_push2_align.md` 对齐表（→ `mappings`）。输出 `docs/field_verification/field_registry.json`（影子，不改动任何运行时行为）。

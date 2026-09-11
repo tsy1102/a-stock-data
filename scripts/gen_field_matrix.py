@@ -7,6 +7,7 @@
 from __future__ import annotations
 
 import io
+import json
 import os
 import re
 import sys
@@ -219,10 +220,43 @@ def render(name_sources, records) -> str:
     return "\n".join(out)
 
 
-def update_dict() -> None:
+# P0(2026-09-11): §零·B 写回收缩护栏。
+# 基线不取 §零·B 自身——其 B.2 单源列表按源截断至 60 条（render 刻意摘要），非全量镜像，
+# 用作基线会严重低估。改为用「最近一次成功生成」的字段数快照 sidecar 作权威基线；
+# 该 sidecar 须随字典一并提交，CI 方能生效。
+_ZERO_B_SHRINK_RATIO = 0.90
+_ZERO_B_BASELINE = os.path.join(ROOT, "docs", "field_verification", "zero_b_field_baseline.json")
+
+
+def _load_baseline() -> int:
+    """返回最近一次成功生成的字段数；无快照返回 -1（首次运行不护栏）。"""
+    try:
+        with io.open(_ZERO_B_BASELINE, encoding="utf-8") as _fh:
+            return int(json.load(_fh).get("count", -1))
+    except Exception:
+        return -1
+
+
+def _save_baseline(count: int) -> None:
+    import datetime as _dt
+    with io.open(_ZERO_B_BASELINE, "w", encoding="utf-8") as _fh:
+        json.dump({"count": count, "updated": _dt.date.today().isoformat()},
+                  _fh, ensure_ascii=False, indent=2)
+def update_dict(force: bool = False) -> None:
     name_sources, records = build_matrix()
     content = render(name_sources, records)
     text = io.open(DICT, encoding="utf-8").read()
+    # ---- P0 护栏 ----
+    baseline = _load_baseline()
+    new_count = len(name_sources)
+    if baseline > 0 and new_count < baseline * _ZERO_B_SHRINK_RATIO and not force:
+        raise SystemExit(
+            f"ABORT §零·B 写回: 字段数 {baseline} → {new_count}（骤降 "
+            f"{100 * (1 - new_count / baseline):.1f}% > "
+            f"{100 * (1 - _ZERO_B_SHRINK_RATIO):.0f}%）\n"
+            f"  疑似主字典章节被归档/误删导致输入萎缩。若确认系字段真实下线，"
+            f"请加 --force 重跑：python scripts/gen_field_matrix.py --force"
+        )
     marker = "<!-- GEN:field-matrix -->"
     start = text.find(marker)
     end_marker = "<!-- /GEN:field-matrix -->"
@@ -233,8 +267,15 @@ def update_dict() -> None:
     tail = text[end:] if end != -1 else text[text.find("\n", start):]
     # 保持尾部缩进（marker 后紧跟换行）
     io.open(DICT, "w", encoding="utf-8").write(head + "\n\n" + content + "\n" + tail)
+    _save_baseline(new_count)
     print(f"OK: {len(name_sources)} 字段 / {records} 记录 / 多源 {len([s for s in name_sources.values() if len(s) >= 2])}")
 
 
 if __name__ == "__main__":
-    update_dict()
+    import argparse
+
+    _ap = argparse.ArgumentParser(description="从 field_dict.md 生成 §零·B 字段×源总表（marker 区间原地写回）")
+    _ap.add_argument("--force", action="store_true",
+                     help="忽略 §零·B 写回收缩护栏（仅当确认字段真实下线时使用）")
+    _args = _ap.parse_args()
+    update_dict(force=_args.force)

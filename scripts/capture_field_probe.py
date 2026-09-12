@@ -12,9 +12,11 @@
   已登记但暂无 producer(标记 unwired, 写 meta 不进异常清单):
     东财-clist(§12.8.6) / 东财-slist(§12.8.5) / 沪深交易所(§12.8.17, 龙虎榜已被 fuyao 覆盖)
   已废弃不采集(标记 deprecated):
-    百度(baidu, §12.8.16 ❌→⏸️, PAE 失效改走 TDX 适配器) / 同花顺-thsdk(§12.8.12b, V17.2.0 已移除 TCP 网关)
-  真实可用但 registry 漏登记(保留采集, 属字典侧补登):
+    百度(baidu, §12.8.16 ❌→⏸️, PAE 失效改走 TDX 适配器)
+  真实可用, 已于 V17.2.13 补登 registry(此前 SECTION_MAP 漏登记, 属治理抽取债):
     TDX(行情+F10) / axdata / push2_full
+  已从项目彻底移除, 采集器同步删除(§12.8.12b 章节保留为退役追溯):
+    同花顺-thsdk(V17.0.29 移除 TCP 网关)
 
 V17.0.24(2026-09-01) 据主字典最新定案更新:
   - 新增 em_kline_f61: 东财日K(f61 换手率)——CYQ 筹码分布唯一源(字典 V17.0.14)
@@ -101,7 +103,6 @@ SOURCE_SCHEME = {
     "cls":            "cls",
     "cninfo":         "cninfo",
     "reports":        "reports",
-    "thsdk":          "thsdk.removed",
     "market_sources": "market.mixed",
     "tdx_f10":        "tdx.f10",
     "tdx_f10_more":   "tdx.f10",
@@ -412,15 +413,6 @@ def collect_tdx_f10(pool: list) -> dict:
                 rec[name] = {"__error__": str(e)[:150]}
         out["stocks"][c] = rec
     return out
-
-
-def collect_thsdk(pool: list) -> dict:
-    """同花顺 SDK 实时快照(正式账号;非交易时段服务器拒绝,容错记录)。
-
-    V17.2.0: thsdk TCP 网关已从项目中完全移除(用户场景为盘后/盘前运行,
-    thsdk 仅盘中可用、对自己无价值)。此采集器保留为占位,返回已移除标记。
-    """
-    return {"stocks": {}, "error": "thsdk TCP 网关已于 V17.2.0 移除"}
 
 
 # ── V17.2.12 主字典对齐: registry 已登记但本脚本暂无 producer 的源 ──
@@ -984,7 +976,6 @@ def main() -> None:
         "axdata": collect_axdata,           # V16.4.1: 短线指标 34 字段(零网络)
         "market_sources": collect_market_sources,  # V16.4.1: 财联社/KPL/板块轮动/龙虎榜
         "tdx_f10": collect_tdx_f10,         # V16.4.1: F10 财务/股本/分红
-        "thsdk": collect_thsdk,             # V17.2.0: 同花顺 SDK TCP 网关已移除(占位返回移除标记)
         "fuyao": collect_fuyao,             # V17.0.5: fuyao 官方 REST(盘后可用——竞价/池/财务指标/估值 PS·PCF); V17.0.24 补三大报表
         "em_kline_f61": collect_em_kline_f61,   # V17.0.24: 东财日K f61 换手率(CYQ 唯一源, delay 域)
         "em_fund_flow": collect_em_fund_flow,   # V17.0.24: 资金流四档 f137 族(主力净唯一同口径源, delay 域)

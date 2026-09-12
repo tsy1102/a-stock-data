@@ -77,7 +77,16 @@ SECTION_MAP = [
     ("腾讯(qt.gtimg)", ["12.1 腾讯"]),
     ("新浪(hq.sinajs)", ["12.2 新浪"]),
     ("同花顺-fuyao", ["12.8.12c", "12.8.12e", "12.8.12d"]),
-    ("同花顺-thsdk", ["12.8.12b"]),
+    # V17.2.13 补登：TDX / AxData / push2_full 此前从未进 SECTION_MAP（仅 _CAMEL_SRC/_FCODE_SRC
+    # 预留了命名空间），导致 registry/§零·B/field_matrix 长期漏抽这三源——与 capture_field_probe.py
+    # 实际采集清单（e63edbd 起即含 tdx/axdata/push2_full）严重脱节。现据主字典正文章节补登。
+    ("TDX(双命名源)", ["零·A TDX F10", "TCP GetFinanceInfo", "TDX tdx_quotes",
+                      "12.8.19 通达信问小达", "12.13.2 财务批量"]),
+    ("AxData", ["12.12 AxData 接口全景", "12.12.0 AxData 全量接口目录",
+                "12.12.8 跨源接口实测确认", "12.14 多源字段补齐矩阵"]),
+    ("东财-push2_full", ["12.3.1 单股行情"]),
+    # 同花顺-thsdk 已于 V17.0.29 从项目删除（sc_ths.py 移除、sc_datasource 不再 import），
+    # 属死源，依规退役（12.8.12b 章节保留为历史文档，不再进 registry/§零·B）。
     ("ZHB-tdxstat", ["tdxstat.cfg"]),
     ("ZHB-tdxstat2", ["tdxstat2.cfg"]),
     ("ZHB-tipinfo", ["tipinfo.dat"]),

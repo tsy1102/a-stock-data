@@ -89,11 +89,18 @@ TRAE IDE 自带一个 Python 3.10 解释器并将其注入到系统 PATH 前面�
   ```bat
   python scripts/capture_field_probe.py                 # 采今天
   python scripts/capture_field_probe.py --date 20260819 # 指定日期
+  python scripts/capture_field_probe.py --refresh-pool  # 采集前先刷新动态层(连板/新股/涨停)写回 pool.json
+  python scripts/capture_field_probe.py --refresh-pool-only   # 仅刷新动态层, 不采集
   ```
+  **动态层每日刷新（V17.2.10）**：`pool.json` 的 `dynamic` 5 只此前静态冻结（自 20260812）。新增
+  `refresh_dynamic_layer()`：每日运行前从同花顺涨停揭秘 `ths_limit_up_pool`（东财 `get_limit_up_pool` 兜底）
+  取涨停池，按「连板数(`high_days` 解析) → 新股(`is_new`) → 涨停」优先级选 5 只写回 `pool.json` 的 `dynamic`
+  （剔除与固定层重复、回注 `date=最近交易日`），固定层 15 只不动。网络/接口空时保留原动态层、不破坏采集。
+  涨停池 `limit_count` 字段对 `"N天M板"` 解析恒为 1（上游 bug），故连板数改由 `_parse_consecutive_boards(high_days)` 独立解析。
 
 ### 每日对撞破解流水线（V17.2.9 通用引擎）
 
-用户每日工作流：**先 `capture_field_probe.py` 采集 → 再 `collide.py` 全源对撞**。
+用户每日工作流：**先 `capture_field_probe.py --refresh-pool` 刷新动态层并采集 → 再 `collide.py` 全源对撞**。
 
 - **`collide.py`** — 【V17.2.9】**全源全字段通用对撞引擎**（取代上一轮把定向脚本简单拼合的 `crack_fields.py`）。
   对 `docs/field_verification/<date>/raw_*.json` 的**全部采集数据**做完整跨源对撞：

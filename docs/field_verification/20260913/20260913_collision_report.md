@@ -1,0 +1,805 @@
+# 全源对撞报告（20260913）
+
+> 数据窗口：20260906 ~ 20260913（7 天）｜字段 753 个｜样本值 87529 条
+> 主攻目标（unverified）=595｜新增 L1/L1-U 定案=0｜异号同义 596 / 同号镜像 120
+
+> **规则**：精度对齐 + 每日命中率≥0.9 + ≥3 独立日 + hub 巧合排除（详见 `COLLISION_RULES.md`）。本引擎只发现、不写字典；新定案经 field_dict.md 订正后由 sanctioned 管线 ingest。
+
+---
+
+## 一、L1 / L1-U 定案候选 — 异号同义（跨编号，高价值）(596)
+
+| 左字段(unverified) | 右字段 | 等级 | 命中率 | 天数 | 样本 | 比值 | hub | registry |
+|:--|:--|:--|--:|--:|--:|--:|:--|:--|
+| `em_fund_flow.f137` | `ulist239.f62` | L1 | 100.00% | 6 | 120 | - |  | ✅ |
+| `em_fund_flow.f140` | `ulist239.f66` | L1 | 100.00% | 6 | 120 | - |  | ✅ |
+| `em_fund_flow.f141` | `ulist239.f70` | L1 | 100.00% | 6 | 120 | - |  | ✅ |
+| `em_fund_flow.f142` | `ulist239.f71` | L1 | 100.00% | 6 | 120 | - |  | ✅ |
+| `em_fund_flow.f143` | `ulist239.f72` | L1 | 100.00% | 6 | 120 | - |  | ✅ |
+| `em_fund_flow.f144` | `ulist239.f76` | L1 | 100.00% | 6 | 120 | - |  | ✅ |
+| `em_fund_flow.f145` | `ulist239.f77` | L1 | 100.00% | 6 | 120 | - |  | ✅ |
+| `em_fund_flow.f146` | `ulist239.f78` | L1 | 100.00% | 6 | 120 | - |  | ✅ |
+| `em_fund_flow.f147` | `ulist239.f82` | L1 | 100.00% | 6 | 120 | - |  | ✅ |
+| `em_fund_flow.f148` | `ulist239.f83` | L1 | 100.00% | 6 | 120 | - |  | ✅ |
+| `em_fund_flow.f149` | `ulist239.f84` | L1 | 100.00% | 6 | 120 | - |  | ✅ |
+| `push2_full.f44` | `ulist239.f15` | L1 | 100.00% | 6 | 120 | - |  | ✅ |
+| `push2_full.f45` | `ulist239.f16` | L1 | 100.00% | 6 | 120 | - |  | ✅ |
+| `push2_full.f47` | `ulist239.f5` | L1 | 100.00% | 6 | 120 | - |  | ✅ |
+| `push2_full.f48` | `ulist239.f6` | L1 | 100.00% | 6 | 120 | - |  | ✅ |
+| `push2_full.f49` | `ulist239.f34` | L1 | 100.00% | 6 | 120 | - |  | ✅ |
+| `push2_full.f50` | `ulist239.f10` | L1 | 100.00% | 6 | 120 | - |  | ✅ |
+| `push2_full.f55` | `ulist239.f112` | L1 | 100.00% | 6 | 120 | - |  | ✅ |
+| `push2_full.f57` | `ulist239.f12` | L1 | 100.00% | 6 | 120 | - |  | ✅ |
+| `push2_full.f58` | `ulist239.f14` | L1 | 100.00% | 6 | 120 | - |  | ✅ |
+| `push2_full.f60` | `ulist239.f18` | L1 | 100.00% | 6 | 120 | - |  | ✅ |
+| `push2_full.f84` | `ulist239.f38` | L1 | 100.00% | 6 | 120 | - |  | ✅ |
+| `push2_full.f85` | `ulist239.f39` | L1 | 100.00% | 6 | 120 | - |  | ✅ |
+| `push2_full.f86` | `ulist239.f124` | L1 | 100.00% | 6 | 120 | - |  | ✅ |
+| `push2_full.f92` | `ulist239.f113` | L1 | 100.00% | 6 | 120 | - |  | ✅ |
+| `push2_full.f104` | `ulist239.f132` | L1 | 100.00% | 6 | 120 | - |  | ✅ |
+| `push2_full.f105` | `ulist239.f45` | L1 | 100.00% | 6 | 120 | - |  | ✅ |
+| `push2_full.f107` | `ulist239.f13` | L1 | 100.00% | 6 | 120 | - |  | ✅ |
+| `push2_full.f107` | `ulist239.f27` | L1 | 100.00% | 6 | 120 | - |  | ✅ |
+| `push2_full.f111` | `ulist239.f19` | L1 | 100.00% | 6 | 120 | - |  | ✅ |
+| `push2_full.f116` | `ulist239.f20` | L1 | 100.00% | 6 | 120 | - |  | ✅ |
+| `push2_full.f117` | `ulist239.f21` | L1 | 100.00% | 6 | 120 | - |  | ✅ |
+| `push2_full.f119` | `ulist239.f109` | L1 | 100.00% | 6 | 120 | - |  | ✅ |
+| `push2_full.f120` | `ulist239.f110` | L1 | 100.00% | 6 | 120 | - |  | ✅ |
+| `push2_full.f121` | `ulist239.f24` | L1 | 100.00% | 6 | 120 | - |  | ✅ |
+| `push2_full.f122` | `ulist239.f25` | L1 | 100.00% | 6 | 120 | - |  | ✅ |
+| `push2_full.f127` | `ulist239.f100` | L1 | 100.00% | 6 | 120 | - |  | ✅ |
+| `push2_full.f128` | `ulist239.f102` | L1 | 100.00% | 6 | 120 | - |  | ✅ |
+| `push2_full.f129` | `ulist239.f103` | L1 | 100.00% | 6 | 120 | - |  | ✅ |
+| `push2_full.f131` | `ulist239.f145` | L1 | 100.00% | 6 | 120 | - |  | ✅ |
+| `push2_full.f137` | `ulist239.f62` | L1 | 100.00% | 6 | 120 | - |  | ✅ |
+| `push2_full.f140` | `ulist239.f66` | L1 | 100.00% | 6 | 120 | - |  | ✅ |
+| `push2_full.f141` | `ulist239.f70` | L1 | 100.00% | 6 | 120 | - |  | ✅ |
+| `push2_full.f142` | `ulist239.f71` | L1 | 100.00% | 6 | 120 | - |  | ✅ |
+| `push2_full.f143` | `ulist239.f72` | L1 | 100.00% | 6 | 120 | - |  | ✅ |
+| `push2_full.f144` | `ulist239.f76` | L1 | 100.00% | 6 | 120 | - |  | ✅ |
+| `push2_full.f145` | `ulist239.f77` | L1 | 100.00% | 6 | 120 | - |  | ✅ |
+| `push2_full.f146` | `ulist239.f78` | L1 | 100.00% | 6 | 120 | - |  | ✅ |
+| `push2_full.f147` | `ulist239.f82` | L1 | 100.00% | 6 | 120 | - |  | ✅ |
+| `push2_full.f148` | `ulist239.f83` | L1 | 100.00% | 6 | 120 | - |  | ✅ |
+| `push2_full.f149` | `ulist239.f84` | L1 | 100.00% | 6 | 120 | - |  | ✅ |
+| `push2_full.f161` | `ulist239.f35` | L1 | 100.00% | 6 | 120 | - |  | ✅ |
+| `push2_full.f162` | `ulist239.f9` | L1 | 100.00% | 6 | 120 | - |  | ✅ |
+| `push2_full.f163` | `ulist239.f114` | L1 | 100.00% | 6 | 120 | - |  | ✅ |
+| `push2_full.f164` | `ulist239.f115` | L1 | 100.00% | 6 | 120 | - |  | ✅ |
+| `push2_full.f167` | `ulist239.f23` | L1 | 100.00% | 6 | 120 | - |  | ✅ |
+| `push2_full.f168` | `ulist239.f8` | L1 | 100.00% | 6 | 120 | - |  | ✅ |
+| `push2_full.f169` | `ulist239.f4` | L1 | 100.00% | 6 | 120 | - |  | ✅ |
+| `push2_full.f170` | `ulist239.f3` | L1 | 100.00% | 6 | 120 | - |  | ✅ |
+| `push2_full.f171` | `ulist239.f7` | L1 | 100.00% | 6 | 120 | - |  | ✅ |
+| `push2_full.f173` | `ulist239.f37` | L1 | 100.00% | 6 | 120 | - |  | ✅ |
+| `push2_full.f177` | `ulist239.f148` | L1 | 100.00% | 6 | 120 | - |  | ✅ |
+| `push2_full.f181` | `ulist239.f111` | L1 | 100.00% | 6 | 120 | - |  | ✅ |
+| `push2_full.f182` | `ulist239.f139` | L1 | 100.00% | 6 | 120 | - |  | ✅ |
+| `push2_full.f183` | `ulist239.f40` | L1 | 100.00% | 6 | 120 | - |  | ✅ |
+| `push2_full.f184` | `ulist239.f41` | L1 | 100.00% | 6 | 120 | - |  | ✅ |
+| `push2_full.f185` | `ulist239.f46` | L1 | 100.00% | 6 | 120 | - |  | ✅ |
+| `push2_full.f186` | `ulist239.f49` | L1 | 100.00% | 6 | 120 | - |  | ✅ |
+| `push2_full.f187` | `ulist239.f129` | L1 | 100.00% | 6 | 120 | - |  | ✅ |
+| `push2_full.f188` | `ulist239.f57` | L1 | 100.00% | 6 | 120 | - |  | ✅ |
+| `push2_full.f189` | `ulist239.f26` | L1 | 100.00% | 6 | 120 | - |  | ✅ |
+| `push2_full.f190` | `ulist239.f48` | L1 | 100.00% | 6 | 120 | - |  | ✅ |
+| `push2_full.f191` | `ulist239.f33` | L1 | 100.00% | 6 | 120 | - |  | ✅ |
+| `push2_full.f193` | `ulist239.f184` | L1 | 100.00% | 6 | 120 | - |  | ✅ |
+| `push2_full.f194` | `ulist239.f69` | L1 | 100.00% | 6 | 120 | - |  | ✅ |
+| `push2_full.f195` | `ulist239.f75` | L1 | 100.00% | 6 | 120 | - |  | ✅ |
+| `push2_full.f196` | `ulist239.f81` | L1 | 100.00% | 6 | 120 | - |  | ✅ |
+| `push2_full.f197` | `ulist239.f87` | L1 | 100.00% | 6 | 120 | - |  | ✅ |
+| `ulist239.f3` | `push2_full.f170` | L1 | 100.00% | 6 | 120 | - |  | ✅ |
+| `ulist239.f4` | `push2_full.f169` | L1 | 100.00% | 6 | 120 | - |  | ✅ |
+| `ulist239.f5` | `push2_full.f47` | L1 | 100.00% | 6 | 120 | - |  | ✅ |
+| `ulist239.f6` | `push2_full.f48` | L1 | 100.00% | 6 | 120 | - |  | ✅ |
+| `ulist239.f7` | `push2_full.f171` | L1 | 100.00% | 6 | 120 | - |  | ✅ |
+| `ulist239.f8` | `push2_full.f168` | L1 | 100.00% | 6 | 120 | - |  | ✅ |
+| `ulist239.f9` | `push2_full.f162` | L1 | 100.00% | 6 | 120 | - |  | ✅ |
+| `ulist239.f10` | `push2_full.f50` | L1 | 100.00% | 6 | 120 | - |  | ✅ |
+| `ulist239.f12` | `push2_full.f57` | L1 | 100.00% | 6 | 120 | - |  | ✅ |
+| `ulist239.f13` | `push2_full.f107` | L1 | 100.00% | 6 | 120 | - |  | ✅ |
+| `ulist239.f14` | `push2_full.f58` | L1 | 100.00% | 6 | 120 | - |  | ✅ |
+| `ulist239.f15` | `push2_full.f44` | L1 | 100.00% | 6 | 120 | - |  | ✅ |
+| `ulist239.f16` | `push2_full.f45` | L1 | 100.00% | 6 | 120 | - |  | ✅ |
+| `ulist239.f18` | `push2_full.f60` | L1 | 100.00% | 6 | 120 | - |  | ✅ |
+| `ulist239.f19` | `push2_full.f111` | L1 | 100.00% | 6 | 120 | - |  | ✅ |
+| `ulist239.f20` | `push2_full.f116` | L1 | 100.00% | 6 | 120 | - |  | ✅ |
+| `ulist239.f21` | `push2_full.f117` | L1 | 100.00% | 6 | 120 | - |  | ✅ |
+| `ulist239.f23` | `push2_full.f167` | L1 | 100.00% | 6 | 120 | - |  | ✅ |
+| `ulist239.f24` | `push2_full.f121` | L1 | 100.00% | 6 | 120 | - |  | ✅ |
+| `ulist239.f25` | `push2_full.f122` | L1 | 100.00% | 6 | 120 | - |  | ✅ |
+| `ulist239.f26` | `push2_full.f189` | L1 | 100.00% | 6 | 120 | - |  | ✅ |
+| `ulist239.f27` | `push2_full.f107` | L1 | 100.00% | 6 | 120 | - |  | ✅ |
+| `ulist239.f33` | `push2_full.f191` | L1 | 100.00% | 6 | 120 | - |  | ✅ |
+| `ulist239.f34` | `push2_full.f49` | L1 | 100.00% | 6 | 120 | - |  | ✅ |
+| `ulist239.f35` | `push2_full.f161` | L1 | 100.00% | 6 | 120 | - |  | ✅ |
+| `ulist239.f37` | `push2_full.f173` | L1 | 100.00% | 6 | 120 | - |  | ✅ |
+| `ulist239.f38` | `push2_full.f84` | L1 | 100.00% | 6 | 120 | - |  | ✅ |
+| `ulist239.f39` | `push2_full.f85` | L1 | 100.00% | 6 | 120 | - |  | ✅ |
+| `ulist239.f40` | `push2_full.f183` | L1 | 100.00% | 6 | 120 | - |  | ✅ |
+| `ulist239.f41` | `push2_full.f184` | L1 | 100.00% | 6 | 120 | - |  | ✅ |
+| `ulist239.f45` | `push2_full.f105` | L1 | 100.00% | 6 | 120 | - |  | ✅ |
+| `ulist239.f46` | `push2_full.f185` | L1 | 100.00% | 6 | 120 | - |  | ✅ |
+| `ulist239.f48` | `push2_full.f190` | L1 | 100.00% | 6 | 120 | - |  | ✅ |
+| `ulist239.f49` | `push2_full.f186` | L1 | 100.00% | 6 | 120 | - |  | ✅ |
+| `ulist239.f57` | `push2_full.f188` | L1 | 100.00% | 6 | 120 | - |  | ✅ |
+| `ulist239.f62` | `em_fund_flow.f137` | L1 | 100.00% | 6 | 120 | - |  | ✅ |
+| `ulist239.f62` | `push2_full.f137` | L1 | 100.00% | 6 | 120 | - |  | ✅ |
+| `ulist239.f66` | `em_fund_flow.f140` | L1 | 100.00% | 6 | 120 | - |  | ✅ |
+| `ulist239.f66` | `push2_full.f140` | L1 | 100.00% | 6 | 120 | - |  | ✅ |
+| `ulist239.f69` | `push2_full.f194` | L1 | 100.00% | 6 | 120 | - |  | ✅ |
+| `ulist239.f70` | `em_fund_flow.f141` | L1 | 100.00% | 6 | 120 | - |  | ✅ |
+| `ulist239.f70` | `push2_full.f141` | L1 | 100.00% | 6 | 120 | - |  | ✅ |
+| `ulist239.f71` | `em_fund_flow.f142` | L1 | 100.00% | 6 | 120 | - |  | ✅ |
+| `ulist239.f71` | `push2_full.f142` | L1 | 100.00% | 6 | 120 | - |  | ✅ |
+| `ulist239.f72` | `em_fund_flow.f143` | L1 | 100.00% | 6 | 120 | - |  | ✅ |
+| `ulist239.f72` | `push2_full.f143` | L1 | 100.00% | 6 | 120 | - |  | ✅ |
+| `ulist239.f75` | `push2_full.f195` | L1 | 100.00% | 6 | 120 | - |  | ✅ |
+| `ulist239.f76` | `em_fund_flow.f144` | L1 | 100.00% | 6 | 120 | - |  | ✅ |
+| `ulist239.f76` | `push2_full.f144` | L1 | 100.00% | 6 | 120 | - |  | ✅ |
+| `ulist239.f77` | `em_fund_flow.f145` | L1 | 100.00% | 6 | 120 | - |  | ✅ |
+| `ulist239.f77` | `push2_full.f145` | L1 | 100.00% | 6 | 120 | - |  | ✅ |
+| `ulist239.f78` | `em_fund_flow.f146` | L1 | 100.00% | 6 | 120 | - |  | ✅ |
+| `ulist239.f78` | `push2_full.f146` | L1 | 100.00% | 6 | 120 | - |  | ✅ |
+| `ulist239.f81` | `push2_full.f196` | L1 | 100.00% | 6 | 120 | - |  | ✅ |
+| `ulist239.f82` | `em_fund_flow.f147` | L1 | 100.00% | 6 | 120 | - |  | ✅ |
+| `ulist239.f82` | `push2_full.f147` | L1 | 100.00% | 6 | 120 | - |  | ✅ |
+| `ulist239.f83` | `em_fund_flow.f148` | L1 | 100.00% | 6 | 120 | - |  | ✅ |
+| `ulist239.f83` | `push2_full.f148` | L1 | 100.00% | 6 | 120 | - |  | ✅ |
+| `ulist239.f84` | `em_fund_flow.f149` | L1 | 100.00% | 6 | 120 | - |  | ✅ |
+| `ulist239.f84` | `push2_full.f149` | L1 | 100.00% | 6 | 120 | - |  | ✅ |
+| `ulist239.f87` | `push2_full.f197` | L1 | 100.00% | 6 | 120 | - |  | ✅ |
+| `ulist239.f100` | `push2_full.f127` | L1 | 100.00% | 6 | 120 | - |  | ✅ |
+| `ulist239.f102` | `push2_full.f128` | L1 | 100.00% | 6 | 120 | - |  | ✅ |
+| `ulist239.f103` | `push2_full.f129` | L1 | 100.00% | 6 | 120 | - |  | ✅ |
+| `ulist239.f109` | `push2_full.f119` | L1 | 100.00% | 6 | 120 | - |  | ✅ |
+| `ulist239.f110` | `push2_full.f120` | L1 | 100.00% | 6 | 120 | - |  | ✅ |
+| `ulist239.f111` | `push2_full.f181` | L1 | 100.00% | 6 | 120 | - |  | ✅ |
+| `ulist239.f112` | `push2_full.f55` | L1 | 100.00% | 6 | 120 | - |  | ✅ |
+| `ulist239.f113` | `push2_full.f92` | L1 | 100.00% | 6 | 120 | - |  | ✅ |
+| `ulist239.f114` | `push2_full.f163` | L1 | 100.00% | 6 | 120 | - |  | ✅ |
+| `ulist239.f115` | `push2_full.f164` | L1 | 100.00% | 6 | 120 | - |  | ✅ |
+| `ulist239.f124` | `push2_full.f86` | L1 | 100.00% | 6 | 120 | - |  | ✅ |
+| `ulist239.f129` | `push2_full.f187` | L1 | 100.00% | 6 | 120 | - |  | ✅ |
+| `ulist239.f132` | `push2_full.f104` | L1 | 100.00% | 6 | 120 | - |  | ✅ |
+| `ulist239.f139` | `push2_full.f182` | L1 | 100.00% | 6 | 120 | - |  | ✅ |
+| `ulist239.f145` | `push2_full.f131` | L1 | 100.00% | 6 | 120 | - |  | ✅ |
+| `ulist239.f148` | `push2_full.f177` | L1 | 100.00% | 6 | 120 | - |  | ✅ |
+| `ulist239.f184` | `push2_full.f193` | L1 | 100.00% | 6 | 120 | - |  | ✅ |
+| `fuyao.snapshot.volume` | `sina[8]` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `fuyao.snapshot.turnover` | `push2_full.f48` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `fuyao.snapshot.turnover` | `sina[9]` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `fuyao.snapshot.turnover` | `ulist239.f6` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `fuyao.snapshot.price_change` | `push2_full.f169` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `fuyao.snapshot.price_change` | `tencent[31]` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `fuyao.snapshot.price_change` | `ulist239.f4` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `fuyao.snapshot.high_price` | `push2_full.f44` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `fuyao.snapshot.high_price` | `sina[4]` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `fuyao.snapshot.high_price` | `tencent[33]` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `fuyao.snapshot.high_price` | `tencent[41]` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `fuyao.snapshot.high_price` | `ulist239.f15` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `fuyao.snapshot.low_price` | `push2_full.f45` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `fuyao.snapshot.low_price` | `sina[5]` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `fuyao.snapshot.low_price` | `tencent[34]` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `fuyao.snapshot.low_price` | `tencent[42]` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `fuyao.snapshot.low_price` | `ulist239.f16` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `fuyao.snapshot.prev_price` | `fuyao.auction_final.pre_close_price` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `fuyao.snapshot.prev_price` | `push2_full.f60` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `fuyao.snapshot.prev_price` | `sina[2]` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `fuyao.snapshot.prev_price` | `tdx.quote_full.last_close` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `fuyao.snapshot.prev_price` | `tencent[4]` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `fuyao.snapshot.prev_price` | `ulist239.f18` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `fuyao.valuation.pcf_ttm` | `ulist239.f131` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `fuyao.auction_final.pre_close_price` | `fuyao.snapshot.prev_price` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `fuyao.auction_final.pre_close_price` | `push2_full.f60` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `fuyao.auction_final.pre_close_price` | `sina[2]` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `fuyao.auction_final.pre_close_price` | `tdx.quote_full.last_close` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `fuyao.auction_final.pre_close_price` | `tencent[4]` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `fuyao.auction_final.pre_close_price` | `ulist239.f18` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `push2_full.f44` | `fuyao.snapshot.high_price` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `push2_full.f44` | `sina[4]` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `push2_full.f44` | `tencent[33]` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `push2_full.f44` | `tencent[41]` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `push2_full.f45` | `fuyao.snapshot.low_price` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `push2_full.f45` | `sina[5]` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `push2_full.f45` | `tencent[34]` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `push2_full.f45` | `tencent[42]` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `push2_full.f48` | `fuyao.snapshot.turnover` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `push2_full.f48` | `sina[9]` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `push2_full.f50` | `tencent[49]` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `push2_full.f51` | `tencent[47]` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `push2_full.f52` | `tencent[48]` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `push2_full.f57` | `tencent[2]` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `push2_full.f58` | `tencent[1]` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `push2_full.f60` | `fuyao.snapshot.prev_price` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `push2_full.f60` | `fuyao.auction_final.pre_close_price` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `push2_full.f60` | `sina[2]` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `push2_full.f60` | `tdx.quote_full.last_close` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `push2_full.f60` | `tencent[4]` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `push2_full.f71` | `tencent[51]` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `push2_full.f84` | `tdx.finance_info.zong_guben` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `push2_full.f84` | `tdx.finance_info.zongguben` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `push2_full.f84` | `tencent[73]` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `push2_full.f85` | `tdx.finance_info.liutong_guben` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `push2_full.f85` | `tdx.finance_info.liutongguben` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `push2_full.f85` | `tencent[72]` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `push2_full.f85` | `tencent[76]` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `push2_full.f107` | `push2_full.f110` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `push2_full.f110` | `push2_full.f107` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `push2_full.f110` | `ulist239.f13` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `push2_full.f110` | `ulist239.f27` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `push2_full.f111` | `push2_full.f112` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `push2_full.f112` | `push2_full.f111` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `push2_full.f112` | `ulist239.f19` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `push2_full.f119` | `tencent[63]` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `push2_full.f168` | `tencent[38]` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `push2_full.f169` | `fuyao.snapshot.price_change` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `push2_full.f169` | `tencent[31]` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `push2_full.f170` | `tencent[32]` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `push2_full.f171` | `tencent[43]` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `push2_full.f175` | `tencent[68]` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `sina[2]` | `fuyao.snapshot.prev_price` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `sina[2]` | `fuyao.auction_final.pre_close_price` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `sina[2]` | `push2_full.f60` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `sina[2]` | `tdx.quote_full.last_close` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `sina[2]` | `tencent[4]` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `sina[2]` | `ulist239.f18` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `sina[4]` | `fuyao.snapshot.high_price` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `sina[4]` | `push2_full.f44` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `sina[4]` | `tencent[33]` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `sina[4]` | `tencent[41]` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `sina[4]` | `ulist239.f15` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `sina[5]` | `fuyao.snapshot.low_price` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `sina[5]` | `push2_full.f45` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `sina[5]` | `tencent[34]` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `sina[5]` | `tencent[42]` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `sina[5]` | `ulist239.f16` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `sina[6]` | `sina[11]` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `sina[6]` | `tencent[9]` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `sina[6]` | `ulist239.f31` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `sina[7]` | `sina[21]` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `sina[7]` | `tencent[19]` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `sina[8]` | `fuyao.snapshot.volume` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `sina[9]` | `fuyao.snapshot.turnover` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `sina[9]` | `push2_full.f48` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `sina[9]` | `ulist239.f6` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `sina[11]` | `sina[6]` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `sina[11]` | `tencent[9]` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `sina[11]` | `ulist239.f31` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `sina[13]` | `tencent[11]` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `sina[13]` | `ulist239.f142` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `sina[15]` | `tencent[13]` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `sina[17]` | `tencent[15]` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `sina[19]` | `tencent[17]` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `sina[21]` | `sina[7]` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `sina[21]` | `tencent[19]` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `sina[23]` | `tencent[21]` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `sina[25]` | `tencent[23]` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `sina[27]` | `tencent[25]` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `sina[29]` | `tencent[27]` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `tdx.quote_full.last_close` | `fuyao.snapshot.prev_price` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `tdx.quote_full.last_close` | `fuyao.auction_final.pre_close_price` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `tdx.quote_full.last_close` | `push2_full.f60` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `tdx.quote_full.last_close` | `sina[2]` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `tdx.quote_full.last_close` | `tencent[4]` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `tdx.quote_full.last_close` | `ulist239.f18` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `tdx.finance_info.liutong_guben` | `push2_full.f85` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `tdx.finance_info.liutong_guben` | `tdx.finance_info.liutongguben` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `tdx.finance_info.liutong_guben` | `tencent[72]` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `tdx.finance_info.liutong_guben` | `tencent[76]` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `tdx.finance_info.liutong_guben` | `ulist239.f39` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `tdx.finance_info.zong_guben` | `push2_full.f84` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `tdx.finance_info.zong_guben` | `tdx.finance_info.zongguben` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `tdx.finance_info.zong_guben` | `tencent[73]` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `tdx.finance_info.zong_guben` | `ulist239.f38` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `tdx.finance_info.guojia_gu` | `tdx.finance_info.guojiagu` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `tdx.finance_info.faqiren_faren_gu` | `tdx.finance_info.faqirenfarengu` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `tdx.finance_info.faren_gu` | `tdx.finance_info.farengu` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `tdx.finance_info.b_gu` | `tdx.finance_info.bgu` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `tdx.finance_info.h_gu` | `tdx.finance_info.hgu` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `tdx.finance_info.zhigong_gu` | `tdx.finance_info.zhigonggu` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `tdx.finance_info.gudong_renshu` | `tdx.finance_info.gudongrenshu` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `tdx.finance_info.zong_zichan` | `tdx.finance_info.zongzichan` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `tdx.finance_info.liudong_zichan` | `tdx.finance_info.liudongzichan` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `tdx.finance_info.guding_zichan` | `tdx.finance_info.gudingzichan` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `tdx.finance_info.wuxing_zichan` | `tdx.finance_info.wuxingzichan` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `tdx.finance_info.liudong_fuzhai` | `tdx.finance_info.liudongfuzhai` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `tdx.finance_info.changqi_fuzhai` | `tdx.finance_info.changqifuzhai` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `tdx.finance_info.ziben_gongjijin` | `tdx.finance_info.zibengongjijin` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `tdx.finance_info.jing_zichan` | `tdx.finance_info.jingzichan` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `tdx.finance_info.zhuying_shouru` | `tdx.finance_info.zhuyingshouru` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `tdx.finance_info.zhuying_lirun` | `tdx.finance_info.zhuyinglirun` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `tdx.finance_info.yingshou_zhangkuan` | `tdx.finance_info.yingshouzhangkuan` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `tdx.finance_info.yingye_lirun` | `tdx.finance_info.yingyelirun` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `tdx.finance_info.touzi_shouyu` | `tdx.finance_info.touzishouyu` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `tdx.finance_info.jingying_xianjinliu` | `tdx.finance_info.jingyingxianjinliu` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `tdx.finance_info.zong_xianjinliu` | `tdx.finance_info.zongxianjinliu` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `tdx.finance_info.lirun_zonghe` | `tdx.finance_info.lirunzonghe` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `tdx.finance_info.shuihou_lirun` | `tdx.finance_info.shuihoulirun` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `tdx.finance_info.jing_lirun` | `tdx.finance_info.jinglirun` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `tdx.finance_info.weifen_lirun` | `tdx.finance_info.weifenlirun` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `tdx.finance_info.meigujing_zichan` | `tdx.finance_info.meigujingzichan` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `tdx.finance_info.liutongguben` | `push2_full.f85` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `tdx.finance_info.liutongguben` | `tdx.finance_info.liutong_guben` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `tdx.finance_info.liutongguben` | `tencent[72]` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `tdx.finance_info.liutongguben` | `tencent[76]` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `tdx.finance_info.liutongguben` | `ulist239.f39` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `tdx.finance_info.zongguben` | `push2_full.f84` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `tdx.finance_info.zongguben` | `tdx.finance_info.zong_guben` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `tdx.finance_info.zongguben` | `tencent[73]` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `tdx.finance_info.zongguben` | `ulist239.f38` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `tdx.finance_info.guojiagu` | `tdx.finance_info.guojia_gu` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `tdx.finance_info.faqirenfarengu` | `tdx.finance_info.faqiren_faren_gu` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `tdx.finance_info.farengu` | `tdx.finance_info.faren_gu` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `tdx.finance_info.bgu` | `tdx.finance_info.b_gu` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `tdx.finance_info.hgu` | `tdx.finance_info.h_gu` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `tdx.finance_info.zhigonggu` | `tdx.finance_info.zhigong_gu` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `tdx.finance_info.gudongrenshu` | `tdx.finance_info.gudong_renshu` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `tdx.finance_info.zongzichan` | `tdx.finance_info.zong_zichan` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `tdx.finance_info.liudongzichan` | `tdx.finance_info.liudong_zichan` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `tdx.finance_info.gudingzichan` | `tdx.finance_info.guding_zichan` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `tdx.finance_info.wuxingzichan` | `tdx.finance_info.wuxing_zichan` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `tdx.finance_info.liudongfuzhai` | `tdx.finance_info.liudong_fuzhai` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `tdx.finance_info.changqifuzhai` | `tdx.finance_info.changqi_fuzhai` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `tdx.finance_info.zibengongjijin` | `tdx.finance_info.ziben_gongjijin` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `tdx.finance_info.jingzichan` | `tdx.finance_info.jing_zichan` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `tdx.finance_info.zhuyingshouru` | `tdx.finance_info.zhuying_shouru` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `tdx.finance_info.zhuyinglirun` | `tdx.finance_info.zhuying_lirun` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `tdx.finance_info.yingshouzhangkuan` | `tdx.finance_info.yingshou_zhangkuan` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `tdx.finance_info.yingyelirun` | `tdx.finance_info.yingye_lirun` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `tdx.finance_info.touzishouyu` | `tdx.finance_info.touzi_shouyu` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `tdx.finance_info.jingyingxianjinliu` | `tdx.finance_info.jingying_xianjinliu` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `tdx.finance_info.zongxianjinliu` | `tdx.finance_info.zong_xianjinliu` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `tdx.finance_info.lirunzonghe` | `tdx.finance_info.lirun_zonghe` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `tdx.finance_info.shuihoulirun` | `tdx.finance_info.shuihou_lirun` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `tdx.finance_info.jinglirun` | `tdx.finance_info.jing_lirun` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `tdx.finance_info.weifenlirun` | `tdx.finance_info.weifen_lirun` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `tdx.finance_info.meigujingzichan` | `tdx.finance_info.meigujing_zichan` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `tencent[1]` | `push2_full.f58` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `tencent[1]` | `ulist239.f14` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `tencent[2]` | `push2_full.f57` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `tencent[2]` | `ulist239.f12` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `tencent[4]` | `fuyao.snapshot.prev_price` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `tencent[4]` | `fuyao.auction_final.pre_close_price` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `tencent[4]` | `push2_full.f60` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `tencent[4]` | `sina[2]` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `tencent[4]` | `tdx.quote_full.last_close` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `tencent[4]` | `ulist239.f18` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `tencent[6]` | `tencent[36]` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `tencent[9]` | `sina[6]` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `tencent[9]` | `sina[11]` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `tencent[9]` | `ulist239.f31` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `tencent[10]` | `ulist239.f211` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `tencent[11]` | `sina[13]` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `tencent[11]` | `ulist239.f142` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `tencent[13]` | `sina[15]` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `tencent[15]` | `sina[17]` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `tencent[17]` | `sina[19]` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `tencent[19]` | `sina[7]` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `tencent[19]` | `sina[21]` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `tencent[21]` | `sina[23]` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `tencent[23]` | `sina[25]` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `tencent[25]` | `sina[27]` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `tencent[27]` | `sina[29]` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `tencent[31]` | `fuyao.snapshot.price_change` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `tencent[31]` | `push2_full.f169` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `tencent[31]` | `ulist239.f4` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `tencent[32]` | `push2_full.f170` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `tencent[32]` | `ulist239.f3` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `tencent[33]` | `fuyao.snapshot.high_price` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `tencent[33]` | `push2_full.f44` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `tencent[33]` | `sina[4]` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `tencent[33]` | `tencent[41]` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `tencent[33]` | `ulist239.f15` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `tencent[34]` | `fuyao.snapshot.low_price` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `tencent[34]` | `push2_full.f45` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `tencent[34]` | `sina[5]` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `tencent[34]` | `tencent[42]` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `tencent[34]` | `ulist239.f16` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `tencent[36]` | `tencent[6]` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `tencent[38]` | `push2_full.f168` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `tencent[38]` | `ulist239.f8` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `tencent[41]` | `fuyao.snapshot.high_price` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `tencent[41]` | `push2_full.f44` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `tencent[41]` | `sina[4]` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `tencent[41]` | `tencent[33]` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `tencent[41]` | `ulist239.f15` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `tencent[42]` | `fuyao.snapshot.low_price` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `tencent[42]` | `push2_full.f45` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `tencent[42]` | `sina[5]` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `tencent[42]` | `tencent[34]` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `tencent[42]` | `ulist239.f16` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `tencent[43]` | `push2_full.f171` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `tencent[43]` | `ulist239.f7` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `tencent[47]` | `push2_full.f51` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `tencent[48]` | `push2_full.f52` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `tencent[49]` | `push2_full.f50` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `tencent[49]` | `ulist239.f10` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `tencent[51]` | `push2_full.f71` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `tencent[63]` | `push2_full.f119` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `tencent[63]` | `ulist239.f109` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `tencent[68]` | `push2_full.f175` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `tencent[72]` | `push2_full.f85` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `tencent[72]` | `tdx.finance_info.liutong_guben` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `tencent[72]` | `tdx.finance_info.liutongguben` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `tencent[72]` | `tencent[76]` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `tencent[72]` | `ulist239.f39` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `tencent[73]` | `push2_full.f84` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `tencent[73]` | `tdx.finance_info.zong_guben` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `tencent[73]` | `tdx.finance_info.zongguben` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `tencent[73]` | `ulist239.f38` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `tencent[76]` | `push2_full.f85` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `tencent[76]` | `tdx.finance_info.liutong_guben` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `tencent[76]` | `tdx.finance_info.liutongguben` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `tencent[76]` | `tencent[72]` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `tencent[76]` | `ulist239.f39` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `ulist239.f3` | `tencent[32]` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `ulist239.f4` | `fuyao.snapshot.price_change` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `ulist239.f4` | `tencent[31]` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `ulist239.f6` | `fuyao.snapshot.turnover` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `ulist239.f6` | `sina[9]` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `ulist239.f7` | `tencent[43]` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `ulist239.f8` | `tencent[38]` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `ulist239.f10` | `tencent[49]` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `ulist239.f12` | `tencent[2]` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `ulist239.f13` | `push2_full.f110` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `ulist239.f13` | `ulist239.f27` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `ulist239.f14` | `tencent[1]` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `ulist239.f15` | `fuyao.snapshot.high_price` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `ulist239.f15` | `sina[4]` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `ulist239.f15` | `tencent[33]` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `ulist239.f15` | `tencent[41]` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `ulist239.f16` | `fuyao.snapshot.low_price` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `ulist239.f16` | `sina[5]` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `ulist239.f16` | `tencent[34]` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `ulist239.f16` | `tencent[42]` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `ulist239.f18` | `fuyao.snapshot.prev_price` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `ulist239.f18` | `fuyao.auction_final.pre_close_price` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `ulist239.f18` | `sina[2]` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `ulist239.f18` | `tdx.quote_full.last_close` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `ulist239.f18` | `tencent[4]` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `ulist239.f19` | `push2_full.f112` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `ulist239.f27` | `push2_full.f110` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `ulist239.f27` | `ulist239.f13` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `ulist239.f31` | `sina[6]` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `ulist239.f31` | `sina[11]` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `ulist239.f31` | `tencent[9]` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `ulist239.f38` | `tdx.finance_info.zong_guben` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `ulist239.f38` | `tdx.finance_info.zongguben` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `ulist239.f38` | `tencent[73]` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `ulist239.f39` | `tdx.finance_info.liutong_guben` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `ulist239.f39` | `tdx.finance_info.liutongguben` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `ulist239.f39` | `tencent[72]` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `ulist239.f39` | `tencent[76]` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `ulist239.f109` | `tencent[63]` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `ulist239.f131` | `fuyao.valuation.pcf_ttm` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `ulist239.f142` | `sina[13]` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `ulist239.f142` | `tencent[11]` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `ulist239.f211` | `tencent[10]` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `zhb.full.change_20d` | `zhb.full.change_30d` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `zhb.full.change_20d` | `zhb.stat.change_30d` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `zhb.full.change_30d` | `zhb.full.change_20d` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `zhb.full.change_30d` | `zhb.stat.change_20d` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `zhb.stat.change_20d` | `zhb.full.change_30d` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `zhb.stat.change_20d` | `zhb.stat.change_30d` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `zhb.stat.change_30d` | `zhb.full.change_20d` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `zhb.stat.change_30d` | `zhb.stat.change_20d` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `fuyao.snapshot.high_price` | `tdx.quote_full.high` | L1 | 99.17% | 6 | 120 | - |  | — |
+| `push2_full.f44` | `tdx.quote_full.high` | L1 | 99.17% | 6 | 120 | - |  | — |
+| `push2_full.f162` | `tencent[52]` | L1 | 99.17% | 6 | 120 | - |  | — |
+| `push2_full.f164` | `tencent[39]` | L1 | 99.17% | 6 | 120 | - |  | — |
+| `push2_full.f175` | `zhb.full.low_52w` | L1 | 99.17% | 6 | 120 | - |  | — |
+| `push2_full.f175` | `zhb.stat2.low_52w` | L1 | 99.17% | 6 | 120 | - |  | — |
+| `sina[4]` | `tdx.quote_full.high` | L1 | 99.17% | 6 | 120 | - |  | — |
+| `tdx.quote_full.high` | `fuyao.snapshot.high_price` | L1 | 99.17% | 6 | 120 | - |  | — |
+| `tdx.quote_full.high` | `push2_full.f44` | L1 | 99.17% | 6 | 120 | - |  | — |
+| `tdx.quote_full.high` | `sina[4]` | L1 | 99.17% | 6 | 120 | - |  | — |
+| `tdx.quote_full.high` | `tencent[33]` | L1 | 99.17% | 6 | 120 | - |  | — |
+| `tdx.quote_full.high` | `tencent[41]` | L1 | 99.17% | 6 | 120 | - |  | — |
+| `tdx.quote_full.high` | `ulist239.f15` | L1 | 99.17% | 6 | 120 | - |  | — |
+| `tencent[33]` | `tdx.quote_full.high` | L1 | 99.17% | 6 | 120 | - |  | — |
+| `tencent[39]` | `push2_full.f164` | L1 | 99.17% | 6 | 120 | - |  | — |
+| `tencent[39]` | `ulist239.f115` | L1 | 99.17% | 6 | 120 | - |  | — |
+| `tencent[41]` | `tdx.quote_full.high` | L1 | 99.17% | 6 | 120 | - |  | — |
+| `tencent[52]` | `push2_full.f162` | L1 | 99.17% | 6 | 120 | - |  | — |
+| `tencent[52]` | `ulist239.f9` | L1 | 99.17% | 6 | 120 | - |  | — |
+| `tencent[68]` | `zhb.full.low_52w` | L1 | 99.17% | 6 | 120 | - |  | — |
+| `tencent[68]` | `zhb.stat2.low_52w` | L1 | 99.17% | 6 | 120 | - |  | — |
+| `ulist239.f9` | `tencent[52]` | L1 | 99.17% | 6 | 120 | - |  | — |
+| `ulist239.f15` | `tdx.quote_full.high` | L1 | 99.17% | 6 | 120 | - |  | — |
+| `ulist239.f115` | `tencent[39]` | L1 | 99.17% | 6 | 120 | - |  | — |
+| `zhb.full.low_52w` | `push2_full.f175` | L1 | 99.17% | 6 | 120 | - |  | — |
+| `zhb.full.low_52w` | `tencent[68]` | L1 | 99.17% | 6 | 120 | - |  | — |
+| `zhb.stat2.low_52w` | `push2_full.f175` | L1 | 99.17% | 6 | 120 | - |  | — |
+| `zhb.stat2.low_52w` | `tencent[68]` | L1 | 99.17% | 6 | 120 | - |  | — |
+| `push2_full.f120` | `tencent[70]` | L1 | 98.33% | 6 | 120 | - |  | — |
+| `push2_full.f163` | `tencent[53]` | L1 | 98.33% | 6 | 120 | - |  | — |
+| `sina[7]` | `ulist239.f32` | L1 | 98.33% | 6 | 120 | - |  | — |
+| `sina[21]` | `ulist239.f32` | L1 | 98.33% | 6 | 120 | - |  | — |
+| `sina[23]` | `ulist239.f143` | L1 | 98.33% | 6 | 120 | - |  | — |
+| `tencent[19]` | `ulist239.f32` | L1 | 98.33% | 6 | 120 | - |  | — |
+| `tencent[20]` | `ulist239.f212` | L1 | 98.33% | 6 | 120 | - |  | — |
+| `tencent[21]` | `ulist239.f143` | L1 | 98.33% | 6 | 120 | - |  | — |
+| `tencent[53]` | `push2_full.f163` | L1 | 98.33% | 6 | 120 | - |  | — |
+| `tencent[53]` | `ulist239.f114` | L1 | 98.33% | 6 | 120 | - |  | — |
+| `tencent[69]` | `ulist239.f160` | L1 | 98.33% | 6 | 120 | - |  | — |
+| `tencent[70]` | `push2_full.f120` | L1 | 98.33% | 6 | 120 | - |  | — |
+| `tencent[70]` | `ulist239.f110` | L1 | 98.33% | 6 | 120 | - |  | — |
+| `ulist239.f32` | `sina[7]` | L1 | 98.33% | 6 | 120 | - |  | — |
+| `ulist239.f32` | `sina[21]` | L1 | 98.33% | 6 | 120 | - |  | — |
+| `ulist239.f32` | `tencent[19]` | L1 | 98.33% | 6 | 120 | - |  | — |
+| `ulist239.f110` | `tencent[70]` | L1 | 98.33% | 6 | 120 | - |  | — |
+| `ulist239.f114` | `tencent[53]` | L1 | 98.33% | 6 | 120 | - |  | — |
+| `ulist239.f143` | `sina[23]` | L1 | 98.33% | 6 | 120 | - |  | — |
+| `ulist239.f143` | `tencent[21]` | L1 | 98.33% | 6 | 120 | - |  | — |
+| `ulist239.f160` | `tencent[69]` | L1 | 98.33% | 6 | 120 | - |  | — |
+| `ulist239.f212` | `tencent[20]` | L1 | 98.33% | 6 | 120 | - |  | — |
+| `push2_full.f52` | `tdx.quote_full.limit_down` | L1 | 98.00% | 5 | 100 | - |  | — |
+| `tencent[48]` | `tdx.quote_full.limit_down` | L1 | 98.00% | 5 | 100 | - |  | — |
+| `tdx.quote_full.limit_down` | `push2_full.f52` | L1 | 98.00% | 5 | 100 | - |  | — |
+| `tdx.quote_full.limit_down` | `tencent[48]` | L1 | 98.00% | 5 | 100 | - |  | — |
+| `fuyao.snapshot.low_price` | `tdx.quote_full.low` | L1 | 97.50% | 6 | 120 | - |  | — |
+| `push2_full.f45` | `tdx.quote_full.low` | L1 | 97.50% | 6 | 120 | - |  | — |
+| `push2_full.f51` | `tdx.quote_full.limit_up` | L1 | 97.50% | 6 | 120 | - |  | — |
+| `sina[5]` | `tdx.quote_full.low` | L1 | 97.50% | 6 | 120 | - |  | — |
+| `tdx.quote_full.low` | `fuyao.snapshot.low_price` | L1 | 97.50% | 6 | 120 | - |  | — |
+| `tdx.quote_full.low` | `push2_full.f45` | L1 | 97.50% | 6 | 120 | - |  | — |
+| `tdx.quote_full.low` | `sina[5]` | L1 | 97.50% | 6 | 120 | - |  | — |
+| `tdx.quote_full.low` | `tencent[34]` | L1 | 97.50% | 6 | 120 | - |  | — |
+| `tdx.quote_full.low` | `tencent[42]` | L1 | 97.50% | 6 | 120 | - |  | — |
+| `tdx.quote_full.low` | `ulist239.f16` | L1 | 97.50% | 6 | 120 | - |  | — |
+| `tdx.quote_full.limit_up` | `push2_full.f51` | L1 | 97.50% | 6 | 120 | - |  | — |
+| `tdx.quote_full.limit_up` | `tencent[47]` | L1 | 97.50% | 6 | 120 | - |  | — |
+| `tencent[34]` | `tdx.quote_full.low` | L1 | 97.50% | 6 | 120 | - |  | — |
+| `tencent[42]` | `tdx.quote_full.low` | L1 | 97.50% | 6 | 120 | - |  | — |
+| `tencent[47]` | `tdx.quote_full.limit_up` | L1 | 97.50% | 6 | 120 | - |  | — |
+| `ulist239.f16` | `tdx.quote_full.low` | L1 | 97.50% | 6 | 120 | - |  | — |
+| `tdx.finance_info.b_gu` | `ulist239.f200` | L1 | 95.00% | 6 | 120 | - |  | — |
+| `tdx.finance_info.h_gu` | `ulist239.f190` | L1 | 95.00% | 6 | 120 | - |  | — |
+| `tdx.finance_info.bgu` | `ulist239.f200` | L1 | 95.00% | 6 | 120 | - |  | — |
+| `tdx.finance_info.hgu` | `ulist239.f190` | L1 | 95.00% | 6 | 120 | - |  | — |
+| `ulist239.f190` | `tdx.finance_info.h_gu` | L1 | 95.00% | 6 | 120 | - |  | — |
+| `ulist239.f190` | `tdx.finance_info.hgu` | L1 | 95.00% | 6 | 120 | - |  | — |
+| `ulist239.f200` | `tdx.finance_info.b_gu` | L1 | 95.00% | 6 | 120 | - |  | — |
+| `ulist239.f200` | `tdx.finance_info.bgu` | L1 | 95.00% | 6 | 120 | - |  | — |
+| `fuyao.valuation.ps_ttm` | `ulist239.f130` | L1 | 90.00% | 6 | 120 | - |  | — |
+| `push2_full.f58` | `sina[0]` | L1 | 90.00% | 6 | 120 | - |  | — |
+| `sina[0]` | `push2_full.f58` | L1 | 90.00% | 6 | 120 | - |  | — |
+| `sina[0]` | `tencent[1]` | L1 | 90.00% | 6 | 120 | - |  | — |
+| `sina[0]` | `ulist239.f14` | L1 | 90.00% | 6 | 120 | - |  | — |
+| `tdx.finance_info.b_gu` | `tdx.finance_info.h_gu` | L1 | 90.00% | 6 | 120 | - |  | — |
+| `tdx.finance_info.b_gu` | `tdx.finance_info.hgu` | L1 | 90.00% | 6 | 120 | - |  | — |
+| `tdx.finance_info.b_gu` | `ulist239.f190` | L1 | 90.00% | 6 | 120 | - |  | — |
+| `tdx.finance_info.b_gu` | `ulist239.f231` | L1 | 90.00% | 6 | 120 | - |  | — |
+| `tdx.finance_info.h_gu` | `tdx.finance_info.b_gu` | L1 | 90.00% | 6 | 120 | - |  | — |
+| `tdx.finance_info.h_gu` | `tdx.finance_info.bgu` | L1 | 90.00% | 6 | 120 | - |  | — |
+| `tdx.finance_info.h_gu` | `ulist239.f200` | L1 | 90.00% | 6 | 120 | - |  | — |
+| `tdx.finance_info.h_gu` | `ulist239.f231` | L1 | 90.00% | 6 | 120 | - |  | — |
+| `tdx.finance_info.bgu` | `tdx.finance_info.h_gu` | L1 | 90.00% | 6 | 120 | - |  | — |
+| `tdx.finance_info.bgu` | `tdx.finance_info.hgu` | L1 | 90.00% | 6 | 120 | - |  | — |
+| `tdx.finance_info.bgu` | `ulist239.f190` | L1 | 90.00% | 6 | 120 | - |  | — |
+| `tdx.finance_info.bgu` | `ulist239.f231` | L1 | 90.00% | 6 | 120 | - |  | — |
+| `tdx.finance_info.hgu` | `tdx.finance_info.b_gu` | L1 | 90.00% | 6 | 120 | - |  | — |
+| `tdx.finance_info.hgu` | `tdx.finance_info.bgu` | L1 | 90.00% | 6 | 120 | - |  | — |
+| `tdx.finance_info.hgu` | `ulist239.f200` | L1 | 90.00% | 6 | 120 | - |  | — |
+| `tdx.finance_info.hgu` | `ulist239.f231` | L1 | 90.00% | 6 | 120 | - |  | — |
+| `tencent[1]` | `sina[0]` | L1 | 90.00% | 6 | 120 | - |  | — |
+| `ulist239.f14` | `sina[0]` | L1 | 90.00% | 6 | 120 | - |  | — |
+| `ulist239.f130` | `fuyao.valuation.ps_ttm` | L1 | 90.00% | 6 | 120 | - |  | — |
+| `ulist239.f190` | `tdx.finance_info.b_gu` | L1 | 90.00% | 6 | 120 | - |  | — |
+| `ulist239.f190` | `tdx.finance_info.bgu` | L1 | 90.00% | 6 | 120 | - |  | — |
+| `ulist239.f190` | `ulist239.f200` | L1 | 90.00% | 6 | 120 | - |  | — |
+| `ulist239.f190` | `ulist239.f231` | L1 | 90.00% | 6 | 120 | - |  | — |
+| `ulist239.f192` | `ulist239.f202` | L1 | 90.00% | 6 | 120 | - |  | — |
+| `ulist239.f192` | `ulist239.f233` | L1 | 90.00% | 6 | 120 | - |  | — |
+| `ulist239.f200` | `tdx.finance_info.h_gu` | L1 | 90.00% | 6 | 120 | - |  | — |
+| `ulist239.f200` | `tdx.finance_info.hgu` | L1 | 90.00% | 6 | 120 | - |  | — |
+| `ulist239.f200` | `ulist239.f190` | L1 | 90.00% | 6 | 120 | - |  | — |
+| `ulist239.f200` | `ulist239.f231` | L1 | 90.00% | 6 | 120 | - |  | — |
+| `ulist239.f202` | `ulist239.f192` | L1 | 90.00% | 6 | 120 | - |  | — |
+| `ulist239.f202` | `ulist239.f233` | L1 | 90.00% | 6 | 120 | - |  | — |
+| `ulist239.f231` | `tdx.finance_info.b_gu` | L1 | 90.00% | 6 | 120 | - |  | — |
+| `ulist239.f231` | `tdx.finance_info.h_gu` | L1 | 90.00% | 6 | 120 | - |  | — |
+| `ulist239.f231` | `tdx.finance_info.bgu` | L1 | 90.00% | 6 | 120 | - |  | — |
+| `ulist239.f231` | `tdx.finance_info.hgu` | L1 | 90.00% | 6 | 120 | - |  | — |
+| `ulist239.f231` | `ulist239.f190` | L1 | 90.00% | 6 | 120 | - |  | — |
+| `ulist239.f231` | `ulist239.f200` | L1 | 90.00% | 6 | 120 | - |  | — |
+| `ulist239.f233` | `ulist239.f192` | L1 | 90.00% | 6 | 120 | - |  | — |
+| `ulist239.f233` | `ulist239.f202` | L1 | 90.00% | 6 | 120 | - |  | — |
+
+## 二、L1 / L1-U 定案候选 — 同号镜像（同编号，低优先级）(120)
+
+| 左字段 | 右字段 | 等级 | 命中率 | 天数 | 样本 | 比值 | hub | registry |
+|:--|:--|:--|--:|--:|--:|--:|:--|:--|
+| `em_fund_flow.f135` | `push2_full.f135` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `em_fund_flow.f136` | `push2_full.f136` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `em_fund_flow.f137` | `push2_full.f137` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `em_fund_flow.f140` | `push2_full.f140` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `em_fund_flow.f141` | `push2_full.f141` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `em_fund_flow.f142` | `push2_full.f142` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `em_fund_flow.f143` | `push2_full.f143` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `em_fund_flow.f144` | `push2_full.f144` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `em_fund_flow.f145` | `push2_full.f145` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `em_fund_flow.f146` | `push2_full.f146` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `em_fund_flow.f147` | `push2_full.f147` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `em_fund_flow.f148` | `push2_full.f148` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `em_fund_flow.f149` | `push2_full.f149` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `push2_full.f135` | `em_fund_flow.f135` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `push2_full.f136` | `em_fund_flow.f136` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `push2_full.f137` | `em_fund_flow.f137` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `push2_full.f140` | `em_fund_flow.f140` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `push2_full.f141` | `em_fund_flow.f141` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `push2_full.f142` | `em_fund_flow.f142` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `push2_full.f143` | `em_fund_flow.f143` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `push2_full.f144` | `em_fund_flow.f144` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `push2_full.f145` | `em_fund_flow.f145` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `push2_full.f146` | `em_fund_flow.f146` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `push2_full.f147` | `em_fund_flow.f147` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `push2_full.f148` | `em_fund_flow.f148` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `push2_full.f149` | `em_fund_flow.f149` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `zhb.full.pe_dynamic` | `zhb.stat.pe_dynamic` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `zhb.full.streak_days` | `zhb.stat.streak_days` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `zhb.full.change_pct` | `zhb.stat.change_pct` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `zhb.full.change_pct_1d` | `zhb.stat.change_pct_1d` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `zhb.full.change_pct_2d` | `zhb.stat.change_pct_2d` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `zhb.full.pe_ttm` | `zhb.stat.pe_ttm` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `zhb.full.dividend_yield` | `zhb.stat.dividend_yield` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `zhb.full.board_count` | `zhb.stat.board_count` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `zhb.full.employee_count` | `zhb.stat.employee_count` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `zhb.full.change_20d` | `zhb.stat.change_20d` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `zhb.full.change_30d` | `zhb.stat.change_30d` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `zhb.full.change_60d` | `zhb.stat.change_60d` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `zhb.full.change_ytd` | `zhb.stat.change_ytd` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `zhb.full.change_20k_bar` | `zhb.stat.change_20k_bar` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `zhb.full.change_60k_bar` | `zhb.stat.change_60k_bar` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `zhb.full.net_profit_kcf` | `zhb.stat.net_profit_kcf` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `zhb.full.cash_reserve_wan` | `zhb.stat.cash_reserve_wan` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `zhb.full.change_5k_bar` | `zhb.stat.change_5k_bar` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `zhb.full.change_5d` | `zhb.stat.change_5d` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `zhb.full.change_10k_bar` | `zhb.stat.change_10k_bar` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `zhb.full.change_10d` | `zhb.stat.change_10d` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `zhb.full.amount` | `zhb.stat2.amount` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `zhb.full.zt_seal_amount` | `zhb.stat2.zt_seal_amount` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `zhb.full.amount_1d` | `zhb.stat2.amount_1d` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `zhb.full.amount_2d` | `zhb.stat2.amount_2d` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `zhb.full.main_net_buy_hands` | `zhb.stat2.main_net_buy_hands` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `zhb.full.main_net_buy_hands_1d` | `zhb.stat2.main_net_buy_hands_1d` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `zhb.full.main_net_buy_amount` | `zhb.stat2.main_net_buy_amount` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `zhb.full.main_net_buy_amount_1d` | `zhb.stat2.main_net_buy_amount_1d` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `zhb.full.ipo_price` | `zhb.stat2.ipo_price` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `zhb.full.high_52w` | `zhb.stat2.high_52w` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `zhb.full.low_52w` | `zhb.stat2.low_52w` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `zhb.full.change_mtd` | `zhb.stat2.change_mtd` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `zhb.full.change_250k_bar` | `zhb.stat2.change_250k_bar` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `zhb.full.change_30k_bar` | `zhb.stat2.change_30k_bar` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `zhb.full.change_30k_bar_ref` | `zhb.stat2.change_30k_bar_ref` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `zhb.stat.pe_dynamic` | `zhb.full.pe_dynamic` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `zhb.stat.streak_days` | `zhb.full.streak_days` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `zhb.stat.change_pct` | `zhb.full.change_pct` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `zhb.stat.change_pct_1d` | `zhb.full.change_pct_1d` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `zhb.stat.change_pct_2d` | `zhb.full.change_pct_2d` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `zhb.stat.pe_ttm` | `zhb.full.pe_ttm` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `zhb.stat.dividend_yield` | `zhb.full.dividend_yield` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `zhb.stat.board_count` | `zhb.full.board_count` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `zhb.stat.employee_count` | `zhb.full.employee_count` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `zhb.stat.change_20d` | `zhb.full.change_20d` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `zhb.stat.change_30d` | `zhb.full.change_30d` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `zhb.stat.change_60d` | `zhb.full.change_60d` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `zhb.stat.change_ytd` | `zhb.full.change_ytd` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `zhb.stat.change_20k_bar` | `zhb.full.change_20k_bar` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `zhb.stat.change_60k_bar` | `zhb.full.change_60k_bar` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `zhb.stat.net_profit_kcf` | `zhb.full.net_profit_kcf` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `zhb.stat.cash_reserve_wan` | `zhb.full.cash_reserve_wan` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `zhb.stat.change_5k_bar` | `zhb.full.change_5k_bar` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `zhb.stat.change_5d` | `zhb.full.change_5d` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `zhb.stat.change_10k_bar` | `zhb.full.change_10k_bar` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `zhb.stat.change_10d` | `zhb.full.change_10d` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `zhb.stat2.amount` | `zhb.full.amount` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `zhb.stat2.zt_seal_amount` | `zhb.full.zt_seal_amount` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `zhb.stat2.amount_1d` | `zhb.full.amount_1d` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `zhb.stat2.amount_2d` | `zhb.full.amount_2d` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `zhb.stat2.main_net_buy_hands` | `zhb.full.main_net_buy_hands` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `zhb.stat2.main_net_buy_hands_1d` | `zhb.full.main_net_buy_hands_1d` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `zhb.stat2.main_net_buy_amount` | `zhb.full.main_net_buy_amount` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `zhb.stat2.main_net_buy_amount_1d` | `zhb.full.main_net_buy_amount_1d` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `zhb.stat2.ipo_price` | `zhb.full.ipo_price` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `zhb.stat2.high_52w` | `zhb.full.high_52w` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `zhb.stat2.low_52w` | `zhb.full.low_52w` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `zhb.stat2.change_mtd` | `zhb.full.change_mtd` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `zhb.stat2.change_250k_bar` | `zhb.full.change_250k_bar` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `zhb.stat2.change_30k_bar` | `zhb.full.change_30k_bar` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `zhb.stat2.change_30k_bar_ref` | `zhb.full.change_30k_bar_ref` | L1 | 100.00% | 6 | 120 | - |  | — |
+| `tdx.quote_full.s_vol` | `tdx.s_vol` | L1 | 100.00% | 5 | 100 | - |  | — |
+| `tdx.quote_full.b_vol` | `tdx.b_vol` | L1 | 100.00% | 5 | 100 | - |  | — |
+| `tdx.quote_full.rise_speed` | `tdx.rise_speed` | L1 | 100.00% | 5 | 100 | - |  | — |
+| `tdx.s_vol` | `tdx.quote_full.s_vol` | L1 | 100.00% | 5 | 100 | - |  | — |
+| `tdx.b_vol` | `tdx.quote_full.b_vol` | L1 | 100.00% | 5 | 100 | - |  | — |
+| `tdx.rise_speed` | `tdx.quote_full.rise_speed` | L1 | 100.00% | 5 | 100 | - |  | — |
+| `zhb.full.change_pct_1d` | `tdx.quote_full.change_pct_1d` | L1 | 100.00% | 4 | 80 | - |  | — |
+| `zhb.full.change_pct_2d` | `tdx.quote_full.change_pct_2d` | L1 | 100.00% | 4 | 80 | - |  | — |
+| `zhb.full.amount_1d` | `tdx.quote_full.amount_1d` | L1 | 100.00% | 4 | 80 | - |  | — |
+| `zhb.full.amount_2d` | `tdx.quote_full.amount_2d` | L1 | 100.00% | 4 | 80 | - |  | — |
+| `zhb.stat.change_pct_1d` | `tdx.quote_full.change_pct_1d` | L1 | 100.00% | 4 | 80 | - |  | — |
+| `zhb.stat.change_pct_2d` | `tdx.quote_full.change_pct_2d` | L1 | 100.00% | 4 | 80 | - |  | — |
+| `zhb.stat2.amount_1d` | `tdx.quote_full.amount_1d` | L1 | 100.00% | 4 | 80 | - |  | — |
+| `zhb.stat2.amount_2d` | `tdx.quote_full.amount_2d` | L1 | 100.00% | 4 | 80 | - |  | — |
+| `tdx.quote_full.change_pct_1d` | `zhb.full.change_pct_1d` | L1 | 100.00% | 4 | 80 | - |  | — |
+| `tdx.quote_full.change_pct_1d` | `zhb.stat.change_pct_1d` | L1 | 100.00% | 4 | 80 | - |  | — |
+| `tdx.quote_full.change_pct_2d` | `zhb.full.change_pct_2d` | L1 | 100.00% | 4 | 80 | - |  | — |
+| `tdx.quote_full.change_pct_2d` | `zhb.stat.change_pct_2d` | L1 | 100.00% | 4 | 80 | - |  | — |
+| `tdx.quote_full.amount_1d` | `zhb.full.amount_1d` | L1 | 100.00% | 4 | 80 | - |  | — |
+| `tdx.quote_full.amount_1d` | `zhb.stat2.amount_1d` | L1 | 100.00% | 4 | 80 | - |  | — |
+| `tdx.quote_full.amount_2d` | `zhb.full.amount_2d` | L1 | 100.00% | 4 | 80 | - |  | — |
+| `tdx.quote_full.amount_2d` | `zhb.stat2.amount_2d` | L1 | 100.00% | 4 | 80 | - |  | — |
+
+## 三、L4 存疑候选（676）
+
+| 左字段 | 右字段 | 命中率 | 天数 | 样本 |
+|:--|:--|--:|--:|--:|
+| `fuyao.snapshot.turnover` | `tdx_mcp.amount` | 100.00% | 1 | 20 |
+| `fuyao.snapshot.last_price` | `fuyao.auction_final.last_price` | 100.00% | 6 | 120 |
+| `fuyao.snapshot.last_price` | `push2_full.f43` | 100.00% | 6 | 120 |
+| `fuyao.snapshot.last_price` | `push2_full.f179` | 100.00% | 6 | 120 |
+| `fuyao.snapshot.last_price` | `sina[3]` | 100.00% | 6 | 120 |
+| `fuyao.snapshot.last_price` | `tencent[3]` | 100.00% | 6 | 120 |
+| `fuyao.snapshot.last_price` | `ulist239.f2` | 100.00% | 6 | 120 |
+| `fuyao.snapshot.last_price` | `ulist239.f144` | 100.00% | 6 | 120 |
+| `fuyao.snapshot.open_price` | `fuyao.auction_final.auction_price` | 100.00% | 6 | 116 |
+| `fuyao.snapshot.open_price` | `fuyao.auction_final.open_price` | 100.00% | 6 | 120 |
+| `fuyao.snapshot.open_price` | `push2_full.f46` | 100.00% | 6 | 120 |
+| `fuyao.snapshot.open_price` | `sina[1]` | 100.00% | 6 | 120 |
+| `fuyao.snapshot.open_price` | `tdx.quote_full.open` | 100.00% | 6 | 120 |
+| `fuyao.snapshot.open_price` | `tencent[5]` | 100.00% | 6 | 120 |
+| `fuyao.snapshot.open_price` | `ulist239.f17` | 100.00% | 6 | 120 |
+| `fuyao.auction_final.auction_price` | `fuyao.snapshot.open_price` | 100.00% | 6 | 116 |
+| `fuyao.auction_final.auction_price` | `fuyao.auction_final.open_price` | 100.00% | 6 | 116 |
+| `fuyao.auction_final.auction_price` | `push2_full.f46` | 100.00% | 6 | 116 |
+| `fuyao.auction_final.auction_price` | `sina[1]` | 100.00% | 6 | 116 |
+| `fuyao.auction_final.auction_price` | `tdx.quote_full.open` | 100.00% | 6 | 116 |
+| `fuyao.auction_final.auction_price` | `tencent[5]` | 100.00% | 6 | 116 |
+| `fuyao.auction_final.auction_price` | `ulist239.f17` | 100.00% | 6 | 116 |
+| `fuyao.auction_final.open_price` | `fuyao.snapshot.open_price` | 100.00% | 6 | 120 |
+| `fuyao.auction_final.open_price` | `fuyao.auction_final.auction_price` | 100.00% | 6 | 116 |
+| `fuyao.auction_final.open_price` | `push2_full.f46` | 100.00% | 6 | 120 |
+| `fuyao.auction_final.open_price` | `sina[1]` | 100.00% | 6 | 120 |
+| `fuyao.auction_final.open_price` | `tdx.quote_full.open` | 100.00% | 6 | 120 |
+| `fuyao.auction_final.open_price` | `tencent[5]` | 100.00% | 6 | 120 |
+| `fuyao.auction_final.open_price` | `ulist239.f17` | 100.00% | 6 | 120 |
+| `fuyao.auction_final.last_price` | `fuyao.snapshot.last_price` | 100.00% | 6 | 120 |
+| `fuyao.auction_final.last_price` | `push2_full.f43` | 100.00% | 6 | 120 |
+| `fuyao.auction_final.last_price` | `push2_full.f179` | 100.00% | 6 | 120 |
+| `fuyao.auction_final.last_price` | `sina[3]` | 100.00% | 6 | 120 |
+| `fuyao.auction_final.last_price` | `tencent[3]` | 100.00% | 6 | 120 |
+| `fuyao.auction_final.last_price` | `ulist239.f2` | 100.00% | 6 | 120 |
+| `fuyao.auction_final.last_price` | `ulist239.f144` | 100.00% | 6 | 120 |
+| `push2_full.f43` | `fuyao.snapshot.last_price` | 100.00% | 6 | 120 |
+| `push2_full.f43` | `fuyao.auction_final.last_price` | 100.00% | 6 | 120 |
+| `push2_full.f43` | `push2_full.f179` | 100.00% | 6 | 120 |
+| `push2_full.f43` | `sina[3]` | 100.00% | 6 | 120 |
+| `push2_full.f43` | `tencent[3]` | 100.00% | 6 | 120 |
+| `push2_full.f43` | `ulist239.f2` | 100.00% | 6 | 120 |
+| `push2_full.f43` | `ulist239.f144` | 100.00% | 6 | 120 |
+| `push2_full.f46` | `fuyao.snapshot.open_price` | 100.00% | 6 | 120 |
+| `push2_full.f46` | `fuyao.auction_final.auction_price` | 100.00% | 6 | 116 |
+| `push2_full.f46` | `fuyao.auction_final.open_price` | 100.00% | 6 | 120 |
+| `push2_full.f46` | `sina[1]` | 100.00% | 6 | 120 |
+| `push2_full.f46` | `tdx.quote_full.open` | 100.00% | 6 | 120 |
+| `push2_full.f46` | `tencent[5]` | 100.00% | 6 | 120 |
+| `push2_full.f46` | `ulist239.f17` | 100.00% | 6 | 120 |
+| `push2_full.f48` | `tdx_mcp.amount` | 100.00% | 1 | 20 |
+| `push2_full.f52` | `tdx.quote_full.limit_down_price` | 100.00% | 2 | 40 |
+| `push2_full.f179` | `fuyao.snapshot.last_price` | 100.00% | 6 | 120 |
+| `push2_full.f179` | `fuyao.auction_final.last_price` | 100.00% | 6 | 120 |
+| `push2_full.f179` | `push2_full.f43` | 100.00% | 6 | 120 |
+| `push2_full.f179` | `sina[3]` | 100.00% | 6 | 120 |
+| `push2_full.f179` | `tencent[3]` | 100.00% | 6 | 120 |
+| `push2_full.f179` | `ulist239.f2` | 100.00% | 6 | 120 |
+| `push2_full.f179` | `ulist239.f144` | 100.00% | 6 | 120 |
+| `push2_full.f250` | `ulist239.f185` | 100.00% | 6 | 120 |
+
+_（仅显示前 60 / 共 676）_
+
+---
+
+> 数据来源：通达信 / 项目字段对撞体系。以上为方法论梳理，不构成投资建议。

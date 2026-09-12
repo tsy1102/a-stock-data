@@ -90,6 +90,33 @@ TRAE IDE 自带一个 Python 3.10 解释器并将其注入到系统 PATH 前面�
   python scripts/capture_field_probe.py                 # 采今天
   python scripts/capture_field_probe.py --date 20260819 # 指定日期
   ```
+
+### 每日对撞破解流水线（V17.2.9 通用引擎）
+
+用户每日工作流：**先 `capture_field_probe.py` 采集 → 再 `collide.py` 全源对撞**。
+
+- **`collide.py`** — 【V17.2.9】**全源全字段通用对撞引擎**（取代上一轮把定向脚本简单拼合的 `crack_fields.py`）。
+  对 `docs/field_verification/<date>/raw_*.json` 的**全部采集数据**做完整跨源对撞：
+  - 自动适配各源异构结构（fN 字典 / 位置列表 / 嵌套名典 / 标量），归一为 `(源,字段)→{(代码,日期):值}`；
+  - 读 `field_registry.json` 状态：**已 verified 字段移出主攻、改作对齐锚**；仅对 unverified（FOCUS）主攻；
+  - 严格套用 `collision_rules` 四铁律：精度对齐 + 每日命中率≥0.9 + ≥3 独立采集日 + hub 巧合排除；
+  - 比值族（单位换算 L1-U：CV≤1e-4 且比值∈{10^k}）；**异号同义（跨编号，高价值）与同号镜像分列报告**；
+  - **增量状态**（`collision_state.json`）：跨日累积 findings，日常只冒"新增"，已定案标 `✅` 再确认；
+  - **只发现、不写字典**（遵守单一真相源治理，新定案经 `field_dict.md` 订正后由 sanctioned 管线 ingest）。
+  ```bat
+  python scripts/collide.py                 # 默认近 7 天窗口，全量对撞
+  python scripts/collide.py --window 14     # 近 14 天
+  python scripts/collide.py --all           # 全部历史日期
+  python scripts/collide.py --date 20260913 # 指定报告日期戳（默认今天）
+  python scripts/collide.py --limit 20      # 仅取前 20 个左字段（自测）
+  ```
+  > 产物：`docs/field_verification/<date>/<date>_collision_report.md` + `.json`。
+  > 注：样本为 12 股，故 `HIT_RATE_L1=18/20` 在引擎内改为比率 **0.9**（符合四铁律精神）。
+- **`collision_rules.py`** — 【V17.2.8】**对撞四铁律 + 定案状态机（运行时规则真相源）**：
+  以 Python 常量为唯一权威（`HIT_RATE_L1=18` / `MULTI_DAY_MIN=3` / `CORR_SPEARMAN_MIN=0.6` 等），
+  对撞脚本入口自动 `print_active_rules()` 打印横幅；`python scripts/collision_rules.py --emit`
+  派生人读文档 `docs/field_verification/COLLISION_RULES.md`（与代码常量一致，防双源漂移）。
+
 - **`fmt_preview.py`** — 【V17.0.3】零网络格式预览：重转报告/喂模拟行，验证 md 渲染效果
 - **`run_tests.ps1`** — 【V16.4.1】pytest 统一入口（Mode: all/module/real/skip_real/expression + ExtraArgs 透传）
 - **`clean_cache.py`** — 缓存清理快捷脚本（封装 `python -m core.stock_cache`）

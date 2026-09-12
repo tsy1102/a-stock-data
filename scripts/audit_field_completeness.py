@@ -276,7 +276,7 @@ INDEXED = ("东财-push2(stock/get)", "东财-ulist239(np/get)", "AxData",
 def reg_tokens_for_section(src, text):
     toks = set()
     if src in ("东财-push2(stock/get)", "东财-ulist239(np/get)", "AxData", "东财-资金流(em_fund_flow)",
-               "东财-em_kline_f61"):
+               "东财-em_kline_f61", "东财-slist", "东财-clist"):
         for m in re.findall(r"\bf(\d+)\b", text):
             toks.add(f"f{m}")
     if src == "腾讯(qt.gtimg)":
@@ -311,7 +311,7 @@ def reg_tokens_for_section(src, text):
     # 英文 snake_case 字段（fuyao/datacenter/push2ex/热榜/市场源/levistock/财联社/thsdk）
     if src in ("同花顺-fuyao", "同花顺-thsdk", "东财-datacenter(英文键)", "东财-push2ex",
                "东财-热榜(em_hot)", "市场源(market_sources)", "levistock(ftshare)", "财联社(cls)",
-               "百度(baidu)", "沪深交易所", "巨潮(cninfo)", "东财-slist", "东财-clist",
+               "百度(baidu)", "沪深交易所", "巨潮(cninfo)",
                "TDX(双命名源)", "TDX-F10(双命名源)"):
         for m in re.findall(r"[a-z][a-z0-9_]{2,}", text):
             toks.add(m)

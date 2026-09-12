@@ -9,8 +9,10 @@
     / 市场源(market_sources) / TDX-F10 / 同花顺-fuyao / 东财-em_kline_f61 / 东财-资金流(em_fund_flow)
     / 东财-ulist239 / 东财-push2ex / 东财-热榜(em_hot) / 财联社(cls) / 东财-datacenter / 巨潮(cninfo)
     / 东财-reports / levistock(ftshare) / TDX-F10-more
+  已登记且已接入真实 producer(写 raw 文件, 计入异常清单判定):
+    东财-clist(§12.8.6, V17.2.13)/ 东财-slist(§12.8.5, V17.2.13)
   已登记但暂无 producer(标记 unwired, 写 meta 不进异常清单):
-    东财-clist(§12.8.6) / 东财-slist(§12.8.5) / 沪深交易所(§12.8.17, 龙虎榜已被 fuyao 覆盖)
+    沪深交易所(§12.8.17, 龙虎榜已被 fuyao 覆盖; 官方行情/公告端点待 probing)
   已废弃不采集(标记 deprecated):
     百度(baidu, §12.8.16 ❌→⏸️, PAE 失效改走 TDX 适配器)
   真实可用, 已于 V17.2.13 补登 registry(此前 SECTION_MAP 漏登记, 属治理抽取债):
@@ -40,6 +42,15 @@ V17.2.12(2026-09-12) 采集脚本↔主字典(field_registry.json, 23 源)逐源
     verify_cross_source_crack.py 的 BUILTIN_SCHEME 保持一致(对撞护栏血缘)。
   - TDX(行情+F10)/axdata/push2_full 为真实可用采集器但 registry 漏登记, 保留采集并在本注记标注
     (属字典侧补登, 非脚本缺陷)。
+
+V17.2.13(2026-09-12) clist/slist 真实 producer 接入(Q3 用户授权):
+  - collect_clist / collect_slist 由 unwired 占位升级为真实 producer: 直连 push2 clist/get、slist/get
+    (复刻 get_board_fund_flow 的 _quick_request + 83.push2 备域回退策略, 遵守 A1 分域限流)。
+  - clist 覆盖 行业/概念/地域 三类板块, 按 §12.8.6 登记字段全集(排名 + 今日/5日/10日 资金流)抓原始 f 字段;
+    slist 按 §12.8.5 **逐股**抓其归属板块(须带 secid, 裸 spt=3 实测 rc:102 已订正)字段 f12/f14/f3/f128/f140。
+    周六休市不影响(东财数据 API 7×24 服务最近交易日快照)。
+  - 沪深交易所(§12.8.17)仍 unwired: 龙虎榜已被 fuyao 覆盖, 官方行情/公告端点需单独 probing(反爬/域差异), 待后续。
+  - 配套: registry 补登 TDX/axdata/push2_full、退役 thsdk(见 V17.2.13 governance 提交); 采集脚本移除 collect_thsdk。
 
 输出: docs/field_verification/{YYYYMMDD}/raw_{source}.json(顶层含 scheme 字段体系标注) + meta.json(含 schemes 映射)
 用法:
@@ -108,9 +119,9 @@ SOURCE_SCHEME = {
     "tdx_f10_more":   "tdx.f10",
     # V17.2.12 主字典对齐: registry 已登记但本脚本暂无 producer 的源(显式标注血缘, 供对撞/lint 校验)
     "baidu":          "baidu.deprecated",   # §12.8.16 ❌→⏸️ 已废弃(PAE 失效, 改 TDX 适配器); 占位不采集
-    "clist":          "em.clist",           # 东财-clist(板块排名/板块资金流, §12.8.6); 暂无 producer → unwired
-    "slist":          "em.slist",           # 东财-slist(个股所属板块/概念归属, §12.8.5); 暂无 producer → unwired
-    "exchange":       "exchange.official",  # 沪深交易所官方(§12.8.17); 龙虎榜已被 fuyao 覆盖 → unwired
+    "clist":          "em.clist",           # 东财-clist(板块排名/板块资金流, §12.8.6); V17.2.13 真实 producer 已接入
+    "slist":          "em.slist",           # 东财-slist(个股所属板块/概念归属, §12.8.5); V17.2.13 真实 producer(须 secid, 裸 spt=3→rc:102 已订正)
+    "exchange":       "exchange.official",  # 沪深交易所官方(§12.8.17); 龙虎榜已被 fuyao 覆盖; 待官方端点 probing
 }
 
 # 模块文档未改动处见上方 docstring; 输出文件新增 scheme 标注(见 main)。
@@ -431,24 +442,104 @@ def collect_baidu(pool: list) -> dict:
 
 
 def collect_clist(pool: list) -> dict:
-    """东财 clist(板块排名/板块资金流, §12.8.6)——registry 已登记, 暂无 producer。
+    """东财 clist(板块排名/板块资金流, §12.8.6)——真实 producer(V17.2.13)。
 
-    底层 `get_em_board_list` / `get_em_board_members` / clist/get 端点存在,
-    但无单调用「全板块排名+资金流」聚合采集函数; 标记 unwired, 待补全 producer 后接入。
+    走 push2 clist/get(东财板块榜), 覆盖 行业(m:90 t:2)/概念(t:3)/地域(t:1) 三类,
+    按 §12.8.6 登记字段全集抓取原始 f 字段(排名 + 今日/5日/10日 资金流)。
+    A1: 复用 stock_common._quick_request(分域限流); 主域失败回退 83.push2 备域
+    (与 get_board_fund_flow 同策略)。注意 push2 有 IP 级风控, 本脚本为偶发字段核查用途、
+    非生产批量管线, 故可接受; 若遇 RemoteDisconnected 需等待 30-60 分钟再跑。
     """
-    return {"__unwired__": True, "registry_name": "东财-clist",
-            "section": "12.8.6 东财 clist（板块排名/板块资金流）",
-            "reason": "registry 已登记但本脚本无对应 producer; 待实现聚合采集"}
+    from stock_common import _quick_request, UA
+    # §12.8.6 登记字段全集: 排名(f2/f3/f4/f12/f13/f14/f104/f105/f128/f136/f140/f141/f207)
+    # + 资金流今日(f62/f184/f66/f72/f78/f84)/5日(f164/f165/f109/f257)/10日(f174/f175/f160)
+    FIELDS = ("f2,f3,f4,f12,f13,f14,f104,f105,f128,f136,f140,f141,f207,"
+              "f62,f184,f66,f72,f78,f84,f164,f165,f109,f257,f174,f175,f160")
+    TYPES = [("industry", "m:90+t:2"), ("concept", "m:90+t:3"), ("area", "m:90+t:1")]
+    out = {"records": [], "by_type": {}}
+    for label, fs in TYPES:
+        # V17.2.13 稳健分页: 以服务端 data.total 为权威总数驱动翻页, 避免「单页未满即误判末页」
+        # 导致的概念板(400+ 只)被截断为 100 的问题; 另设 50 页硬上限防异常死循环。
+        all_recs = []
+        total = None
+        pn = 1
+        while pn <= 50:
+            params = {"po": "1", "np": "1", "fltt": "2", "invt": "2", "fs": fs,
+                      "fields": FIELDS, "pz": "200", "pn": str(pn),
+                      "ut": "bd1d9ddb04089700cf9c27f6f7426281"}
+            hdr = {"User-Agent": UA, "Referer": "https://quote.eastmoney.com/"}
+            try:
+                r = _quick_request("https://push2.eastmoney.com/api/qt/clist/get",
+                                   params=params, headers=hdr, timeout=10)
+                if r is None:
+                    r = _quick_request("http://83.push2.eastmoney.com/api/qt/clist/get",
+                                       params=params, headers=hdr, timeout=10)
+                if r is None:
+                    out["by_type"][label] = {"__error__": "request failed (both domains)"}
+                    break
+                d = (r.json() or {}).get("data") or {}
+                if total is None:
+                    total = d.get("total")
+                diff = d.get("diff") or []
+                if isinstance(diff, dict):
+                    diff = list(diff.values())
+                if not diff:
+                    break
+                for it in diff:
+                    rec = dict(it); rec["_board_type"] = label
+                    all_recs.append(rec)
+                # 终止条件: 已达权威 total / 本页未满(末页) / 硬上限
+                if total is not None and len(all_recs) >= total:
+                    break
+                if len(diff) < 200:
+                    break
+                pn += 1
+            except Exception as e:
+                out["by_type"][label] = {"__error__": str(e)[:200]}
+                break
+        out["records"].extend(all_recs)
+        out["by_type"][label] = {"n": len(all_recs), "total": total}
+    return out
 
 
 def collect_slist(pool: list) -> dict:
-    """东财 slist(个股所属板块/概念归属, §12.8.5)——registry 已登记, 暂无 producer。
+    """东财 slist(个股所属板块/概念归属, §12.8.5)——真实 producer(V17.2.13, 联网实测修正)。
 
-    底层仅有 `get_em_industry_l2(code)`(单股行业)等, 无 slist/get 批量端点封装; 标记 unwired。
+    V17.2.13 联网实测订正(关键): slist/get **必须带 secid(个股 secid)**, 裸 spt=3(无 secid)
+    服务端恒返回 rc:102(拒收)。带 secid 时返回**该股票所属的全部板块**(行业/概念/地域混合一表),
+    字段: f12=板块 BK 代码、f14=板块名、f3=板块当日涨跌幅%、f128=板块龙头股名、f140=龙头股代码。
+    → 与 §12.8.5「个股所属板块/概念归属」语义完全吻合(逐股返回其归属板块列表)。
+    此前字典 §12.8.5 误记为「裸 spt=3 返回全局混合板块列表」, 经本次实测更正(裸 spt=3 → rc:102)。
+    A1: 复用 _quick_request(0.4rps 分域限流) + 83.push2 备域回退; 周六休市不影响(东财 7×24 快照)。
+    逐股请求(20 股), 单股失败记 __error__ 不中断(A8 禁止静默迁就)。
     """
-    return {"__unwired__": True, "registry_name": "东财-slist",
-            "section": "12.8.5 东财 slist（个股所属板块/概念归属）",
-            "reason": "registry 已登记但本脚本无对应 producer; 待实现 slist/get 封装"}
+    from stock_common import _quick_request, UA
+    FIELDS = "f12,f14,f3,f128,f140"  # 板块代码/名/涨跌幅/龙头名/龙头代码
+    out = {"stocks": {}}
+    for p in pool:
+        c = p["code"]
+        secid = em_secid_prefix(c) + c
+        params = {"spt": "3", "np": "1", "fltt": "2", "invt": "2", "secid": secid,
+                  "fields": FIELDS, "pz": "200", "pn": "1",
+                  "ut": "bd1d9ddb04089700cf9c27f6f7426281"}
+        hdr = {"User-Agent": UA, "Referer": "https://quote.eastmoney.com/"}
+        try:
+            r = _quick_request("https://push2.eastmoney.com/api/qt/slist/get",
+                               params=params, headers=hdr, timeout=10)
+            if r is None:
+                r = _quick_request("http://83.push2.eastmoney.com/api/qt/slist/get",
+                                   params=params, headers=hdr, timeout=10)
+            if r is None:
+                out["stocks"][c] = {"__error__": "request failed (both domains)"}
+                continue
+            d = (r.json() or {}).get("data") or {}
+            diff = d.get("diff") or []
+            if isinstance(diff, dict):
+                diff = list(diff.values())
+            out["stocks"][c] = {"secid": secid, "n_boards": len(diff), "boards": diff}
+        except Exception as e:
+            out["stocks"][c] = {"__error__": str(e)[:200]}
+    return out
 
 
 def collect_exchange(pool: list) -> dict:

@@ -428,9 +428,7 @@
         "沪深交易所",
         "TDX(双命名源)",
         "levistock(ftshare)",
-        "东财-clist",
         "东财-datacenter(英文键)",
-        "东财-slist",
         "东财-热榜(em_hot)",
         "财联社(cls)"
       ],
@@ -990,9 +988,7 @@
         "同花顺-fuyao",
         "TDX(双命名源)",
         "levistock(ftshare)",
-        "东财-clist",
         "东财-push2ex",
-        "东财-slist",
         "东财-热榜(em_hot)",
         "市场源(market_sources)"
       ],
@@ -1062,8 +1058,7 @@
         "同花顺-fuyao",
         "沪深交易所",
         "TDX(双命名源)",
-        "levistock(ftshare)",
-        "东财-clist"
+        "levistock(ftshare)"
       ],
       "section": "",
       "canonical": "",
@@ -1126,9 +1121,7 @@
         "沪深交易所",
         "TDX(双命名源)",
         "levistock(ftshare)",
-        "东财-clist",
         "东财-push2ex",
-        "东财-slist",
         "东财-热榜(em_hot)",
         "巨潮(cninfo)",
         "市场源(market_sources)"
@@ -1872,10 +1865,9 @@
     },
     {
       "code": "down_count",
-      "source": null,
+      "source": "TDX(双命名源)",
       "sources": [
-        "TDX(双命名源)",
-        "东财-clist"
+        "TDX(双命名源)"
       ],
       "section": "",
       "canonical": "",
@@ -2442,6 +2434,7 @@
         "levistock(ftshare)",
         "东财-clist",
         "东财-push2(stock/get)",
+        "东财-slist",
         "东财-ulist239(np/get)",
         "东财-资金流(em_fund_flow)"
       ],
@@ -3252,10 +3245,8 @@
         "同花顺-fuyao",
         "沪深交易所",
         "TDX(双命名源)",
-        "东财-clist",
         "东财-datacenter(英文键)",
         "东财-push2ex",
-        "东财-slist",
         "财联社(cls)"
       ],
       "section": "",
@@ -4697,9 +4688,7 @@
         "沪深交易所",
         "TDX(双命名源)",
         "levistock(ftshare)",
-        "东财-clist",
         "东财-push2ex",
-        "东财-slist",
         "东财-热榜(em_hot)",
         "市场源(market_sources)"
       ],
@@ -4910,7 +4899,6 @@
         "沪深交易所",
         "TDX(双命名源)",
         "levistock(ftshare)",
-        "东财-slist",
         "东财-热榜(em_hot)",
         "巨潮(cninfo)",
         "百度(baidu)"
@@ -5322,9 +5310,7 @@
       "sources": [
         "同花顺-fuyao",
         "TDX(双命名源)",
-        "levistock(ftshare)",
-        "东财-clist",
-        "东财-slist"
+        "levistock(ftshare)"
       ],
       "section": "",
       "canonical": "",
@@ -6541,10 +6527,9 @@
     },
     {
       "code": "today",
-      "source": null,
+      "source": "TDX(双命名源)",
       "sources": [
-        "TDX(双命名源)",
-        "东财-clist"
+        "TDX(双命名源)"
       ],
       "section": "",
       "canonical": "",
@@ -6808,10 +6793,9 @@
     },
     {
       "code": "up_count",
-      "source": null,
+      "source": "TDX(双命名源)",
       "sources": [
-        "TDX(双命名源)",
-        "东财-clist"
+        "TDX(双命名源)"
       ],
       "section": "",
       "canonical": "",
@@ -9846,6 +9830,7 @@
       "code": "f2",
       "source": null,
       "sources": [
+        "东财-clist",
         "东财-push2(stock/get)",
         "东财-ulist239(np/get)"
       ],
@@ -9961,7 +9946,9 @@
       "code": "f3",
       "source": null,
       "sources": [
+        "东财-clist",
         "东财-push2(stock/get)",
+        "东财-slist",
         "东财-ulist239(np/get)"
       ],
       "section": "12.3.2 板块/排行 `ulist.np/get`（本次联网新发现）",
@@ -10017,6 +10004,7 @@
       "code": "f4",
       "source": null,
       "sources": [
+        "东财-clist",
         "东财-push2(stock/get)",
         "东财-ulist239(np/get)"
       ],
@@ -11696,10 +11684,8 @@
         "同花顺-fuyao",
         "沪深交易所",
         "levistock(ftshare)",
-        "东财-clist",
         "东财-datacenter(英文键)",
         "东财-push2ex",
-        "东财-slist",
         "东财-热榜(em_hot)",
         "巨潮(cninfo)",
         "百度(baidu)",
@@ -11758,10 +11744,8 @@
       "code": "eastmoney",
       "source": null,
       "sources": [
-        "东财-clist",
         "东财-datacenter(英文键)",
-        "东财-push2ex",
-        "东财-slist"
+        "东财-push2ex"
       ],
       "section": "",
       "canonical": "",
@@ -11910,10 +11894,8 @@
       "sources": [
         "同花顺-fuyao",
         "levistock(ftshare)",
-        "东财-clist",
         "东财-datacenter(英文键)",
         "东财-push2ex",
-        "东财-slist",
         "百度(baidu)",
         "财联社(cls)"
       ],
@@ -14152,236 +14134,7 @@
       "status": "unverified"
     },
     {
-      "code": "esult",
-      "source": null,
-      "sources": [
-        "沪深交易所",
-        "东财-slist",
-        "百度(baidu)"
-      ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "status_raw": "",
-      "status": "unverified"
-    },
-    {
-      "code": "fields",
-      "source": null,
-      "sources": [
-        "东财-clist",
-        "东财-slist"
-      ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "status_raw": "",
-      "status": "unverified"
-    },
-    {
-      "code": "get_concept_blocks",
-      "source": "东财-slist",
-      "sources": [
-        "东财-slist"
-      ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "status_raw": "",
-      "status": "unverified"
-    },
-    {
-      "code": "getrelatedblock",
-      "source": null,
-      "sources": [
-        "沪深交易所",
-        "东财-slist",
-        "百度(baidu)"
-      ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "status_raw": "",
-      "status": "unverified"
-    },
-    {
-      "code": "lead_stock",
-      "source": "东财-slist",
-      "sources": [
-        "东财-slist"
-      ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "status_raw": "",
-      "status": "unverified"
-    },
-    {
-      "code": "slist",
-      "source": "东财-slist",
-      "sources": [
-        "东财-slist"
-      ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "status_raw": "",
-      "status": "unverified"
-    },
-    {
-      "code": "spt",
-      "source": "东财-slist",
-      "sources": [
-        "东财-slist"
-      ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "status_raw": "",
-      "status": "unverified"
-    },
-    {
       "code": "f257",
-      "source": "东财-clist",
-      "sources": [
-        "东财-clist"
-      ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "status_raw": "",
-      "status": "unverified"
-    },
-    {
-      "code": "get_board_fund_flow",
-      "source": null,
-      "sources": [
-        "levistock(ftshare)",
-        "东财-clist"
-      ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "status_raw": "",
-      "status": "unverified"
-    },
-    {
-      "code": "get_industry_comparison",
-      "source": "东财-clist",
-      "sources": [
-        "东财-clist"
-      ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "status_raw": "",
-      "status": "unverified"
-    },
-    {
-      "code": "large",
-      "source": null,
-      "sources": [
-        "levistock(ftshare)",
-        "东财-clist"
-      ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "status_raw": "",
-      "status": "unverified"
-    },
-    {
-      "code": "leader",
-      "source": "东财-clist",
-      "sources": [
-        "东财-clist"
-      ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "status_raw": "",
-      "status": "unverified"
-    },
-    {
-      "code": "leader_change",
-      "source": "东财-clist",
-      "sources": [
-        "东财-clist"
-      ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "status_raw": "",
-      "status": "unverified"
-    },
-    {
-      "code": "main_net",
-      "source": null,
-      "sources": [
-        "levistock(ftshare)",
-        "东财-clist"
-      ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "status_raw": "",
-      "status": "unverified"
-    },
-    {
-      "code": "main_pct",
-      "source": "东财-clist",
-      "sources": [
-        "东财-clist"
-      ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "status_raw": "",
-      "status": "unverified"
-    },
-    {
-      "code": "medium",
-      "source": "东财-clist",
-      "sources": [
-        "东财-clist"
-      ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "status_raw": "",
-      "status": "unverified"
-    },
-    {
-      "code": "small_net",
-      "source": "东财-clist",
-      "sources": [
-        "东财-clist"
-      ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "status_raw": "",
-      "status": "unverified"
-    },
-    {
-      "code": "super",
       "source": "东财-clist",
       "sources": [
         "东财-clist"
@@ -22706,6 +22459,34 @@
       "status": "unverified"
     },
     {
+      "code": "esult",
+      "source": null,
+      "sources": [
+        "沪深交易所",
+        "百度(baidu)"
+      ],
+      "section": "",
+      "canonical": "",
+      "meaning": "",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified"
+    },
+    {
+      "code": "getrelatedblock",
+      "source": null,
+      "sources": [
+        "沪深交易所",
+        "百度(baidu)"
+      ],
+      "section": "",
+      "canonical": "",
+      "meaning": "",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified"
+    },
+    {
       "code": "getstockquotation",
       "source": "百度(baidu)",
       "sources": [
@@ -24520,6 +24301,19 @@
       "status": "unverified"
     },
     {
+      "code": "get_board_fund_flow",
+      "source": "levistock(ftshare)",
+      "sources": [
+        "levistock(ftshare)"
+      ],
+      "section": "",
+      "canonical": "",
+      "meaning": "",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified"
+    },
+    {
       "code": "get_his_limit_resumption",
       "source": "levistock(ftshare)",
       "sources": [
@@ -25014,6 +24808,19 @@
       "status": "unverified"
     },
     {
+      "code": "large",
+      "source": "levistock(ftshare)",
+      "sources": [
+        "levistock(ftshare)"
+      ],
+      "section": "",
+      "canonical": "",
+      "meaning": "",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified"
+    },
+    {
       "code": "last_px",
       "source": "levistock(ftshare)",
       "sources": [
@@ -25329,6 +25136,19 @@
     },
     {
       "code": "main_inflow",
+      "source": "levistock(ftshare)",
+      "sources": [
+        "levistock(ftshare)"
+      ],
+      "section": "",
+      "canonical": "",
+      "meaning": "",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified"
+    },
+    {
+      "code": "main_net",
       "source": "levistock(ftshare)",
       "sources": [
         "levistock(ftshare)"

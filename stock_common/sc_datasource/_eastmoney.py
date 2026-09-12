@@ -1673,10 +1673,28 @@ def get_index_kline_closes(index_code: str, days: int = 250) -> List[float]:
         _debug_log(f"datasource index_kline tencent error {index_code}: {_e}")
 
     # L3: 新浪日K（V17.0.4: 与腾讯 ifzq 实测一致 <0.01）
+    # L3 主：新浪纯 JSON host（与字典 §12.2 一致，免正则剥壳；2026-09-12 由 jsonp 切换）
+    try:
+        r = _quick_request(
+            "https://money.finance.sina.com.cn/quotes_service/api/json_v2.php/CN_MarketData.getKLineData",
+            params={"symbol": index_code, "scale": 240, "ma": 5, "datalen": days},
+            headers={"User-Agent": UA,
+                     "Referer": "https://finance.sina.com.cn"},
+            timeout=10,
+        )
+        if r:
+            _rows = _json.loads(r.text)
+            closes = [_safe_float(x.get("close")) for x in _rows if x.get("close")]
+            closes = [c for c in closes if c > 0]
+            if closes:
+                return closes
+    except Exception as _e:
+        _debug_log(f"datasource index_kline sina json error {index_code}: {_e}")
+    # L3b 备：新浪 jsonp host（正则剥壳兜底，保持历史可用性）
     try:
         r = _quick_request(
             "https://quotes.sina.cn/cn/api/jsonp_v2.php/var/CN_MarketDataService.getKLineData",
-            params={"symbol": index_code, "scale": 240, "ma": "no", "datalen": days},
+            params={"symbol": index_code, "scale": 240, "ma": 5, "datalen": days},
             headers={"User-Agent": UA,
                      "Referer": "https://finance.sina.com.cn"},
             timeout=10,
@@ -1692,7 +1710,7 @@ def get_index_kline_closes(index_code: str, days: int = 250) -> List[float]:
                     if closes:
                         return closes
     except Exception as _e:
-        _debug_log(f"datasource index_kline sina error {index_code}: {_e}")
+        _debug_log(f"datasource index_kline sina jsonp error {index_code}: {_e}")
 
     # L4: 腾讯实时 2 值（仅 1 日回报——指标静默 None 有提示）
     try:

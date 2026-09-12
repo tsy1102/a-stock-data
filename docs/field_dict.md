@@ -1214,9 +1214,9 @@ print(q.code, q.price, q.change_pct)
 
 | 项 | 值 |
 |:---|:---|
-| URL | `https://money.finance.sina.com.cn/quotes_service/api/json_v2.php/CN_MarketData.getKLineData?symbol=sh600519&scale=240&ma=no&datalen=5` |
-| 参数 | symbol（sh/sz 前缀）；scale=5/15/30/60/240（分钟，日线用 240）；datalen 数量 |
-| 返回 | `[{day, open, high, low, close, volume}, ...]` JSON |
+| URL | `https://money.finance.sina.com.cn/quotes_service/api/json_v2.php/CN_MarketData.getKLineData?symbol=sh600519&scale=240&ma=5&datalen=5` |
+| 参数 | symbol（sh/sz 前缀）；scale=5/15/30/60/240(日线)/1200(周线)/7200(月线)；ma=5 额外返回 ma_price5/ma_volume5；datalen 数量 |
+| 返回 | `[{day, open, high, low, close, volume, ma_price5, ma_volume5}, ...]` JSON（ma=5 时多 2 字段；项目暂未消费，已观测登记——2026-09-12 实测 `ma_price5:1306.264, ma_volume5:2786513`） |
 | 价值 | 新浪 K线备胎（免费）；分钟线全周期（5m-60m）——mak 指数分时备胎 |
 
 **2026-08-10 全字段复核（新浪 34 字段 2 股实抓 + 腾讯/push2delay 交叉）**：核心字段全部确认 ✅——[0]名称 [1-5]OHLC+昨收盘 [6]/[7]买一/卖一 [8]成交量(股，茅台 6268572 股=62685.72 手=腾讯 62686 手 ✓) [9]成交额(8428304269 元=84.28 亿 ✓) [10]-[28]五档价量 [30]/[31]日期时间 [32]状态码 [33]逐笔串（D|量|金额——字典 V16.3 已破解）。新浪 34 字段与腾讯 88 字段交叉 100% 一致。

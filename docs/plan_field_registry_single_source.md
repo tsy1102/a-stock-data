@@ -2,7 +2,7 @@
 
 > 关联：P0（`gen_field_matrix` §零·B 写回护栏，已提交 `1fc9dd4`）、P1（归档契约预检，已提交 `1fc9dd4`）
 > 数据来源：通达信 a-stock-data 字段破解体系（`docs/field_dict.md`）
-> 状态：**G0 闸门已签字（5 项安全默认已定）；Phase 1 抽取完成且 G1 闸门 PASS（已提交 `e009cc5`→`8728279`）；Phase 2（治理脚本改读 registry）已完成 6/8 脚本改读 + 2 个刻意排除/延迟（最新提交 `e3daf69`）；Phase 3（markdown 单向生成 `gen_field_dict.py`）已完成，G3 闸门 PASS（幂等、§零·B 字节一致、subdict-index 自动索引），详见 §6.4（本次收尾提交）。**
+> 状态：**G0 闸门已签字（5 项安全默认已定）；Phase 1 抽取完成且 G1 闸门 PASS（已提交 `e009cc5`→`8728279`）；Phase 2（治理脚本改读 registry）已完成 6/8 脚本改读 + 2 个刻意排除/延迟（最新提交 `e3daf69`）；Phase 3（markdown 单向生成 `gen_field_dict.py`）已完成，G3 闸门 PASS（幂等、§零·B 字节一致、subdict-index 自动索引），详见 §6.4；Phase 4（切换与归档：CI 接入 + 声明就位 + 保留 markdown fallback 决策）已完成，G4 闸门全过，详见 §6.5。**
 
 ---
 
@@ -336,6 +336,39 @@ fields:                                  # 替代 markdown 字段表 + SECTION_M
 - 根治目标达成：markdown 字段表区块（§零·B + 分字典索引）由 registry **生成**而非被**解析**，彻底切断「改文档→改工具行为」反模式。
 - 字段契约表（四列 fNN/含义/单位/状态）仍人工维护（Layer2 覆盖率 ~38.7%，键空间为清洗字段名，生成会丢属性），待 Layer2 补全后纳入 Phase 4。
 - 保留的字典扫描（`lint_field_names` / `field_landing_audit` / `expand_range_fields`）见 §6.2 排除理由，registry 化不覆盖其需求。
+
+---
+
+### 6.5 Phase 4 实施记录与收尾（2026-09-12 完成）
+
+#### 6.5.1 交付物（切换与归档）
+- **CI/提交前闸门接入**：新建 `scripts/run_governance_gates.sh`（便携闸门运行器，本地 pre-commit 与 CI 共用），并安装 `.git/hooks/pre-commit` 调用它。
+  * 默认运行 3 个只读闸门：G1 `registry_parity` / G3 `gen_field_dict --check` / P1 `archive_field_preflight`。
+  * `--with-a7` 额外运行 A7 `verify_sync_check`（会重写审计报告文件，故默认不放入 pre-commit，仅 CI / 周期全量核查）。
+  * 短路逻辑：仅当 `docs/field_dict.md` / `docs/field_verification/field_registry.json` / `docs/verify/` 有改动时才跑闸门，无关提交不被拦；`--force` 强制跑（验证 / CI 用）。
+  * `PYTHON` 环境变量可指定解释器（项目要求系统 Python 3.12）。
+- **P1 闸门修复**：`archive_field_preflight._load_verify_mapping()` 原 import `verify_sync_check.MAPPING`，但 Phase 2 已将该属性改为 registry 优先 + 硬编码基线回退的 `get_source_mapping()`，导致 P1 的 MAPPING 覆盖检查实为**空表 no-op**（每次都误报 OK）。现改为调用 `get_source_mapping()`，恢复真实覆盖校验（SECTION_MAP / 断链 / MAPPING 三项均生效）。
+- **field_dict.md 声明**：「§零·B 由 `field_registry.json` 经 `gen_field_dict.py` 自动生成，勿手改」已在 Phase 3 落位（L28 + GEN marker L115/L4991），本阶段无需改动。
+
+#### 6.5.2 与计划原文的偏差（刻意、有据）
+- **「删除 8 脚本残留 markdown 解析分支」**：实际已在 **Phase 2 达成**——6 个脚本改为「registry 优先 + 字典回退」双轨，markdown 解析已降为**异常兜底**（即计划所要求的「仅保留 registry 读取 + 异常兜底」），而非主解析路径。Phase 4 **不再主动删除这些回退分支**：它们是过渡期安全网（registry 缺失/损坏时优雅降级而非硬失败），强行删除会重新引入脆弱性。
+- **`expand_range_fields.py` 退役延迟**：计划 G0/§6.2 原定「Phase 3 后区间归一职责被吸收 → 退役」。但字段契约表（四列 fNN/含义/单位/状态）**仍人工维护（Layer2 ~38.7%）且仍使用区间/斜杠记号**（如 f135-146、f144/145/146），`expand_range_fields` 对其规范化仍有价值；且全仓无任何脚本引用它（已孤立）。故**保留文件、标注为手动可选工具**，待 Layer2 契约表生成化落地后再退役。
+- **P0 护栏（gen_field_matrix §零·B 写回护栏）**：保留为**冗余保险**（输入已不依赖 markdown 体积，护栏目的弱化但不失效），不主动下线。
+- **A7 不入 pre-commit**：`verify_sync_check.py` 无条件重写 `20260911_verify_sync_report.md`，放入 pre-commit 会污染工作树；改为 `--with-a7` 供 CI / 周期核查，避免每次提交都改写报告。
+
+#### 6.5.3 G4 闸门结论
+| 闸门 | 工具 | 结果 |
+|---|---|---|
+| G1 双重 parity | `registry_parity.py` | PASS（native 2252/3260/549；field_matrix PASS） |
+| G3 幂等 | `gen_field_dict.py --check` | ✅ 与 field_dict.md 无差异 |
+| A7 一致性 | `verify_sync_check.py` | HARD FAIL:0 / WARN:0 |
+| P1 归档预检 | `archive_field_preflight.py` | ✅ 三项全过（已修复 MAPPING no-op） |
+
+治理套件全量回归通过；单一真相源契约经 CI / 提交前闸门锁定，未来「改 registry → 重生成 markdown」的链路被强制校验。
+
+#### 6.5.4 后续（超出本阶段，待 Layer2）
+- 字段契约表（四列）生成化：补全 Layer2 属性覆盖率（当前 ~38.7%）后，将四列契约表纳入 `gen_field_dict.py` 生成，届时 `expand_range_fields` 可正式退役。
+- 真实远程 CI：将 `scripts/run_governance_gates.sh --with-a7` 接入 GitHub Actions / 其他 CI（提供 `--with-a7` 即含 A7 全量核查）。
 
 ---
 

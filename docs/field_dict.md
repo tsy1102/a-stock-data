@@ -2118,7 +2118,7 @@ TDX `0x0010` 日K（`tdx_get_security_bars`，keys = `['time','open','close','hi
 | 研报 | iwencai NL 搜索 | openapi.iwencai.com | 无（需 API Key）| ⏸️ |
 | 信号 | 同花顺热点归因 | zx.10jqka.com.cn | `get_ths_hot_reason` | ✅ |
 | 信号 | 同花顺北向 | data.hexin.cn | `get_hsgt_macro_flow` | ✅ |
-| 信号 | 东财 slist 板块归属 | push2.eastmoney.com | `get_concept_blocks` | ✅ |
+| 信号 | 东财 slist 板块归属（采集探针源；运行时板块归属走 TDX `get_concept_blocks`）| push2.eastmoney.com | `collect_slist`（采集脚本）/ TDX `get_concept_blocks`（运行时）| ✅ |
 | 信号 | 东财 push2 资金流 | push2.eastmoney.com | `get_eastmoney_minute_fund_flow` | ✅ |
 | 信号 | 东财龙虎榜 | datacenter-web | `get_dragon_tiger_board` / `get_recent_dragon_tiger` | ✅ |
 | 信号 | 东财解禁 | datacenter-web | `get_lockup_expiry` | ✅ |
@@ -2397,17 +2397,22 @@ TDX `0x0010` 日K（`tdx_get_security_bars`，keys = `['time','open','close','hi
 > 另 `orgType`/`attachType`/`reportType` 在本样本中**恒值**（`white`/`0`/`2`），恒值不等于无意义，待行业研报样本对照。
 #### 12.8.5 东财 slist（个股所属板块/概念归属）✅
 
-> 接口：`https://push2.eastmoney.com/api/qt/slist/get`，`spt=3, pz=200, fields=f12,f14,f3,f128`
-> 项目函数：`get_concept_blocks`
-> **V3.2.2 替换百度 PAE `getrelatedblock`**（已失效 ResultCode 10003）
-> 特点：行业/概念/地域**混合一个列表**返回，板块名自解释（食品饮料=行业、贵州板块=地域、酿酒概念=概念）
+> 接口：`https://push2.eastmoney.com/api/qt/slist/get`
+> **⚠️ V17.2.13 实测订正（关键参数）**：`slist/get` **必须带 `secid`（个股 secid）**，
+> 参数 `spt=3, np=1, fltt=2, invt=2, secid={em_secid前缀}{代码}, fields=f12,f14,f3,f128,f140, pz=200`。
+> 裸 `spt=3`（无 `secid`）服务端**恒返回 `rc:102` 拒收**——此前误记为「裸 spt=3 返回全局混合板块列表」，经本次联网实测更正。
+> 带 `secid` 时返回**该股票所属的全部板块**（行业/概念/地域混合一表），与「个股所属板块/概念归属」语义吻合。
+> **项目函数：无（采集脚本 `collect_slist` 专用 source）**——注意 `get_concept_blocks` 实际走 **TDX** `tdx_get_belong_boards`（`_quotes.py:144`），**并非**本 slist 接口；
+> 本 slist 源为采集探针独立源，未接入运行时项目函数（如需运行时板块归属，优先 TDX，slist 作东财口径对照）。
+> **V3.2.2 替换百度 PAE `getrelatedblock`**（已失效 ResultCode 10003）。
 
 | 字段 | 含义 | 项目映射 | 状态 |
 |:---|:---|:---|:---:|
 | f12 | BK 板块代码 | code | ✅ |
 | f14 | 板块名称 | name | ✅ |
 | f3 | 板块当日涨跌幅 | change_pct | ✅ |
-| f128 | 板块龙头股 | lead_stock | ✅ |
+| f128 | 板块龙头股名 | lead_stock | ✅ |
+| f140 | 板块龙头股代码 | lead_stock_code | ✅ |
 
 #### 12.8.6 东财 clist（板块排名/板块资金流）✅
 

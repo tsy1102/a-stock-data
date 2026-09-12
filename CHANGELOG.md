@@ -5,6 +5,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 
+## [V17.2.10] 2026-09-13 — 动态层每日刷新(涨停池选连板/新股/涨停)
+
+- **`scripts/capture_field_probe.py`（新增）— `refresh_dynamic_layer()` 动态层每日刷新**：实现 `pool_rules.dynamic_refresh` 长期缺失的能力。`pool.json` 的 `dynamic` 5 只此前静态冻结（自 20260812）。现支持：
+  - 从同花顺涨停揭秘 `ths_limit_up_pool`（东财 `get_limit_up_pool` 兜底）取涨停池，按「连板数 → 新股 → 涨停」优先级选 5 只写回 `pool.json` 的 `dynamic`（`date=最近交易日`），固定层 15 只不动，剔除与固定层重复代码。
+  - **连板数独立解析**：上游 `ths_limit_up_pool` 的 `limit_count` 对 `"N天M板"` 格式解析恒为 1（上游 bug），改由新增 `_parse_consecutive_boards(high_days)` 从 `"M板"` 末位解析真实连板数。
+  - 网络/接口空时**保留原动态层、不破坏采集**；周末/非交易日自动回退最近交易日快照。
+  - 新增 CLI：`--refresh-pool`（采集前刷新）、`--refresh-pool-only`（仅刷新不采集）。
+- **文档**：`scripts/README.md` 与 `docs/field_verification/README.md` 补记每日工作流 `capture_field_probe.py --refresh-pool`；采集脚本 docstring 同步新增用法。
+
 ## [V17.2.9] 2026-09-13 — 通用全源对撞引擎 collide.py 取代定向脚本
 
 - **`scripts/collide.py`（新增）— 全源全字段通用对撞引擎**：覆盖 `docs/field_verification/<date>/raw_*.json` 的全部采集数据，按 `collision_rules` 四铁律（精度对齐 + 每日命中率≥0.9 + ≥3 独立采集日 + hub 巧合排除）做跨源对撞；增量状态 `collision_state.json` 跨日累积，日常只冒"新增"、已定案标 `✅` 再确认；报告拆分"异号同义（高价值）"与"同号镜像（低优先）"。取代上一轮把定向脚本简单拼合的 `crack_fields.py`。

@@ -30,16 +30,22 @@ docs/field_verification/
 python scripts/capture_field_probe.py                 # 采今天(用现有 ZHB 包)
 python scripts/capture_field_probe.py --date 20260812 # 指定日期目录
 python scripts/capture_field_probe.py --dry-run       # 只显示各源可用性,不发请求
+python scripts/capture_field_probe.py --refresh-pool  # 采集前刷新动态层(连板/新股/涨停)写回 pool.json
 ```
 
 注意: 东财 push2 为 0.4rps,20 只约 50s;脚本自动走 sc_network 全局限流。
 若东财处于封禁冷却(20h),push2 源留空并在 meta.json 标注,不影响其他源。
 
+> **动态层每日刷新（V17.2.10）**：`pool.json` 的 `dynamic` 5 只此前静态冻结（自 20260812）。
+> 现由采集脚本 `--refresh-pool` 在采集前自动从涨停池（同花顺 `ths_limit_up_pool`，东财兜底）挑选
+> 5 只连板/新股/涨停写回 `dynamic`（`date=最近交易日`），固定层 15 只不动。
+> 网络不可用时保留旧动态层。建议每日命令：`python scripts/capture_field_probe.py --refresh-pool`。
+
 ## 每日核查流程(固定)
 
 1. 跑采集脚本(约 3-5 分钟,含 ZHB 本地解析 + TDX + 腾讯 + push2)
    ```powershell
-   python scripts/capture_field_probe.py                 # 采今天
+   python scripts/capture_field_probe.py --refresh-pool   # 刷新动态层(连板/新股/涨停)再采集
    ```
 2. **跑全源对撞(通用引擎, V17.2.9)**——每次运行自动查询对撞四铁律:
    ```powershell

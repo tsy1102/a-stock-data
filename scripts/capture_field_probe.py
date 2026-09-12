@@ -64,6 +64,8 @@ V17.2.14(2026-09-12) 沪深交易所(§12.8.17)真实 producer 接入(Q3 用户�
   python scripts/capture_field_probe.py --date 20260812
   python scripts/capture_field_probe.py --dry-run       # 只检查源可用性,不发请求
   python scripts/capture_field_probe.py --only zhb,tdx,tencent   # 只采指定源
+  python scripts/capture_field_probe.py --refresh-pool  # 采集前从涨停池刷新动态层(连板/新股/涨停)再采集
+  python scripts/capture_field_probe.py --refresh-pool-only   # 仅刷新动态层写回 pool.json, 不采集
 """
 import sys, io, os, json, time, argparse
 from datetime import datetime, time as dt_time
@@ -137,6 +139,173 @@ def load_pool() -> list:
     with open(POOL_PATH, "r", encoding="utf-8") as f:
         data = json.load(f)
     return data["fixed"] + data["dynamic"]
+
+
+def _last_trading_day_str() -> str:
+    """返回最近交易日 YYYYMMDD(涨停池按交易日快照)。"""
+    try:
+        from stock_common.stock_calendar import get_last_trading_day
+        return get_last_trading_day().strftime("%Y%m%d")
+    except Exception:
+        return datetime.now().strftime("%Y%m%d")
+
+
+def _board_of(code: str, name: str = "", market_type: str = "") -> str:
+    """根据代码前缀(优先)与市场类型文本推导板块中文名。"""
+    c = str(code or "")
+    if c.startswith("688"):
+        return "科创板"
+    if c.startswith(("300", "301")):
+        return "创业板"
+    if c.startswith(("8", "92", "43")):
+        return "北交所"
+    if c.startswith("60"):
+        return "沪主板"
+    if c.startswith("002"):
+        return "中小板"
+    if c.startswith(("000", "003", "004")):
+        return "深主板"
+    mt = str(market_type)
+    if "科创" in mt:
+        return "科创板"
+    if "创业" in mt:
+        return "创业板"
+    if "北交" in mt:
+        return "北交所"
+    if "沪" in mt or "SH" in mt.upper():
+        return "沪主板"
+    if "深" in mt or "SZ" in mt.upper():
+        return "深主板"
+    return "其他"
+
+
+def _parse_consecutive_boards(high_days: str) -> int:
+    """从涨停池 high_days 文本解析连板数。
+
+    同花顺返回格式: '首板' / '2天2板' / '4天3板' / '4天4板' ...
+    其中末位 'M板' 的 M 即连续涨停板数(4天3板=近4交易日封3板);
+    '首板' 记为 1。上游 ths_limit_up_pool 的 limit_count 字段解析 'N天M板' 失败恒为 1,
+    故此处独立解析 high_days, 不依赖该字段。
+    """
+    import re
+    s = str(high_days or "")
+    if "首板" in s:
+        return 1
+    nums = re.findall(r"(\d+)板", s)        # 取 'M板' 的数字
+    if not nums:
+        nums = re.findall(r"\d+", s)         # 兜底: 任意数字取末位
+    return int(nums[-1]) if nums else 1
+
+
+def refresh_dynamic_layer(trade_date: str = "", write: bool = True) -> list:
+    """每日刷新动态层: 从涨停池挑选 5 只覆盖特殊状态(连板/新股/涨停)的股票。
+
+    挑选层级(呼应 pool_rules.dynamic_refresh「连板(ZHB streak>=5)/涨停池/新股」):
+      ① 连板(lc>=2) 按连板数降序
+      ② 新股(is_new) 按连板数降序(保证新股覆盖)
+      ③ 其余涨停(lc==1) 按涨幅降序
+    拼接至满 5 只; 剔除固定层代码与同代码重复, 保证与固定层不重叠。
+    写回 pool.json 的 dynamic(仅覆盖面, 不动 fixed), 并回填 date=实际交易日。
+    网络/解析失败时保留原动态层(返回 [] 并告警), 绝不破坏后续采集。
+
+    Args:
+        trade_date: 交易日 YYYYMMDD; 为空则取最近交易日。若指定日无数据(如周末)自动回退最近交易日。
+        write: True=写回 pool.json; False=仅返回候选(预览/--dry-run)。
+    Returns:
+        新动态层列表(每项 {code,name,tags,date}); 失败时返回 []。
+    """
+    if not trade_date:
+        trade_date = _last_trading_day_str()
+    used_date = trade_date
+
+    def _fetch(d: str):
+        try:
+            from stock_common import ths_limit_up_pool
+            p = ths_limit_up_pool(d)
+            if not p:
+                from stock_common import get_limit_up_pool
+                p = get_limit_up_pool(d)
+            return p or []
+        except Exception as e:
+            print(f"  ⚠ 动态层刷新失败(网络/依赖异常): {e}; 保留旧动态层", flush=True)
+            return None
+
+    pool = _fetch(trade_date)
+    if pool is None:
+        return []
+    # 指定日无数据 → 回退最近交易日
+    if not pool and trade_date != (last := _last_trading_day_str()):
+        pool = _fetch(last)
+        if pool is None:
+            return []
+        used_date = last
+    if not pool:
+        print(f"  ⚠ 涨停池为空(可能非交易日/接口空), 保留旧动态层", flush=True)
+        return []
+
+    # 固定层代码, 剔除与固定层重叠
+    try:
+        with open(POOL_PATH, "r", encoding="utf-8") as f:
+            data = json.load(f)
+        fixed_codes = {str(p.get("code")) for p in data.get("fixed", [])}
+    except Exception:
+        fixed_codes = set()
+
+    seen, parsed = set(), []
+    for it in pool:
+        code = str(it.get("code") or "")
+        if not code or code in seen or code in fixed_codes:
+            continue
+        seen.add(code)
+        lc = _parse_consecutive_boards(it.get("high_days")) or int(it.get("limit_count") or it.get("zt_days") or 1)
+        is_new = bool(it.get("is_new"))
+        name = it.get("name") or ""
+        is_st = name.startswith("*ST") or name.startswith("ST")
+        pct = float(it.get("change_pct") or 0)
+        parsed.append({"code": code, "name": name, "lc": lc, "is_new": is_new,
+                       "is_st": is_st, "pct": pct, "market_type": it.get("market_type", "")})
+
+    cont = sorted([x for x in parsed if x["lc"] >= 2], key=lambda x: (x["lc"], x["pct"]), reverse=True)
+    newp = sorted([x for x in parsed if x["is_new"]], key=lambda x: (x["lc"], x["pct"]), reverse=True)
+    zt = sorted([x for x in parsed if x["lc"] < 2], key=lambda x: x["pct"], reverse=True)
+
+    ordered, _seen = [], set()
+    for bucket in (cont, newp, zt):
+        for x in bucket:
+            if x["code"] in _seen:
+                continue
+            _seen.add(x["code"])
+            ordered.append(x)
+
+    picks_raw = ordered[:5]
+    if not picks_raw:
+        print(f"  ⚠ 有效候选为空, 保留旧动态层", flush=True)
+        return []
+
+    picks = []
+    for x in picks_raw:
+        board = _board_of(x["code"], x["name"], x["market_type"])
+        tags = [f"动态-{board}"]
+        tags.append(f"连板{x['lc']}" if x["lc"] >= 2 else "涨停")
+        if x["is_new"]:
+            tags.append("新股")
+        if x["is_st"]:
+            tags.append("ST")
+        picks.append({"code": x["code"], "name": x["name"], "tags": tags, "date": used_date})
+
+    if write:
+        try:
+            with open(POOL_PATH, "r", encoding="utf-8") as f:
+                data = json.load(f)
+            data["dynamic"] = picks
+            with open(POOL_PATH, "w", encoding="utf-8") as f:
+                # 沿用 pool.json 原始 1 空格缩进风格, 仅重写 dynamic 块, 避免每次刷新整文件重排(diff 噪声)
+                json.dump(data, f, ensure_ascii=False, indent=1)
+            print(f"  ✔ 动态层刷新成功(交易日 {used_date}, 涨停池 {len(pool)} 只 → 选 {len(picks)} 只): "
+                  + ", ".join(f"{p['code']}/{p['name']}" for p in picks), flush=True)
+        except Exception as e:
+            print(f"  ⚠ 动态层写回失败: {e}; 本次采集仍用内存候选", flush=True)
+    return picks
 
 
 def collect_zhb(pool: list) -> dict:
@@ -1109,7 +1278,22 @@ def main() -> None:
     ap.add_argument("--date", default=datetime.now().strftime("%Y%m%d"))
     ap.add_argument("--dry-run", action="store_true")
     ap.add_argument("--only", default="", help="只采指定源(逗号分隔: zhb,tdx,tencent,push2)")
+    ap.add_argument("--refresh-pool", action="store_true",
+                    help="采集前刷新动态层(从涨停池选 5 只连板/新股/涨停写回 pool.json)")
+    ap.add_argument("--refresh-pool-only", action="store_true",
+                    help="只刷新动态层并写回 pool.json, 不执行采集")
     args = ap.parse_args()
+
+    if args.refresh_pool_only:
+        picks = refresh_dynamic_layer(trade_date=args.date)
+        if picks:
+            print("动态层候选:\n" + "\n".join(f"  {p['code']} {p['name']} {p['tags']}" for p in picks))
+        else:
+            print("动态层刷新未产生候选(保留旧层)。")
+        return
+
+    if args.refresh_pool:
+        refresh_dynamic_layer(trade_date=args.date)
 
     pool = load_pool()
     if args.dry_run:

@@ -63,7 +63,9 @@ DATA_DIR = os.path.join(ROOT, "docs", "field_verification")
 REG_PATH = os.path.join(DATA_DIR, "field_registry.json")
 STATE_PATH = os.path.join(DATA_DIR, "collision_state.json")
 
-# 样本为 12 股，故 18/20 绝对阈值改为比率（符合四铁律精神）
+# 样本为 20 股（pool.json: fixed 15 + dynamic 5）。L1 命中率阈值 = HIT_RATE_L1(18)/20 = 0.9；
+# 采用比率而非绝对 18/20，便于样本数变动时阈值自适应（符合四铁律精神）。
+# 注：早期版本曾误记样本为 12 股，实际采集脚本 load_pool() 始终返回 20 只——采集无缩水。
 HIT_RATE_L1_RATIO = (CR.HIT_RATE_L1 / 20.0) if RULES_OK else 0.9   # 0.9
 MULTI_DAY_MIN = CR.MULTI_DAY_MIN if RULES_OK else 3
 RATIO_CV_MAX = CR.RATIO_CV_MAX if RULES_OK else 1e-4

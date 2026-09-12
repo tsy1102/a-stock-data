@@ -8,7 +8,7 @@
   ✅ 凡是声明 ulist fX 与 push2 存在映射关系的登记，必须在权威对齐表
     `docs/verify/ulist_push2_align.md`（ulist fN → push2 fM）中存在对应条目
     —— 该对齐表即「跨源对撞证据」的唯一登记处。新增字段登记若声明 push2 映射，
-    必须先在对撞脚本（`scripts/verify_ulist_push2_collision.py`）产出实证后写入对齐表，
+    必须先经跨源对撞实证后写入对齐表 `docs/verify/ulist_push2_align.md`，
     否则判违规。
   ✅ scheme 血缘护栏：加载采集 meta 的 scheme 标识（`docs/field_verification/*/meta.json`
     的 schemes 字段；回退 `BUILTIN_SCHEME`）确认 ulist239(em.ulist.np) 与
@@ -70,7 +70,7 @@ except Exception as _e:
                 align[int(mm.group(1))] = int(mm.group(2))
 align_same = {u for u, p in align.items() if u == p}
 
-# --- 1b) 加载采集 meta 的 scheme 血缘（与 verify_cross_source_crack.py 对齐）---
+# --- 1b) 加载采集 meta 的 scheme 血缘（与跨源对撞 BUILTIN_SCHEME 对齐）---
 # 字典主张「ulist.fX = push2.fY」时，本守卫据此确认两源属不同字段体系(em.ulist.np
 # vs em.stock_get)，从而强制要求对齐表提供跨号映射实证（同号≠同义）。
 BUILTIN_SCHEME = {

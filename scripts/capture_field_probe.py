@@ -39,7 +39,7 @@ V17.2.12(2026-09-12) 采集脚本↔主字典(field_registry.json, 23 源)逐源
     沪深交易所, 以及已废弃的 百度, 统一以 unwired/deprecated 标记纳入 collectors(写 meta、
     不进异常源清单), 使脚本采集清单与主字典源清单一一对应。
   - SOURCE_SCHEME 同步增补 baidu/clist/slist/exchange 四项 scheme 标注, 并与
-    verify_cross_source_crack.py 的 BUILTIN_SCHEME 保持一致(对撞护栏血缘)。
+    对撞护栏的 BUILTIN_SCHEME 保持一致(跨源对撞血缘约束)。
   - TDX(行情+F10)/axdata/push2_full 为真实可用采集器但 registry 漏登记, 保留采集并在本注记标注
     (属字典侧补登, 非脚本缺陷)。
 
@@ -1179,7 +1179,7 @@ def main() -> None:
             if isinstance(data, dict):
                 data["scheme"] = _scheme
             # V17.2.7: 字段级 raw/computed + 窗口溯源元数据, 嵌入 raw 文件顶层 `field_meta` 键,
-            # 使原始采集物自带字段身份溯源(consumed by computed_collider.py)。懒加载, 失败不影响采集。
+            # 使原始采集物自带字段身份溯源(供跨源对撞/血缘分析消费)。懒加载, 失败不影响采集。
             _fm = None
             try:
                 from field_meta import field_meta_block

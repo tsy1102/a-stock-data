@@ -49,8 +49,14 @@ V17.2.13(2026-09-12) clist/slist 真实 producer 接入(Q3 用户授权):
   - clist 覆盖 行业/概念/地域 三类板块, 按 §12.8.6 登记字段全集(排名 + 今日/5日/10日 资金流)抓原始 f 字段;
     slist 按 §12.8.5 **逐股**抓其归属板块(须带 secid, 裸 spt=3 实测 rc:102 已订正)字段 f12/f14/f3/f128/f140。
     周六休市不影响(东财数据 API 7×24 服务最近交易日快照)。
-  - 沪深交易所(§12.8.17)仍 unwired: 龙虎榜已被 fuyao 覆盖, 官方行情/公告端点需单独 probing(反爬/域差异), 待后续。
-  - 配套: registry 补登 TDX/axdata/push2_full、退役 thsdk(见 V17.2.13 governance 提交); 采集脚本移除 collect_thsdk。
+V17.2.14(2026-09-12) 沪深交易所(§12.8.17)真实 producer 接入(Q3 用户授权第③项):
+  - 沪深交易所(§12.8.17)真实 producer 接入: 直连深交所 szse.cn(CATALOGID=1842_xxpl)
+    结构化龙虎榜 + 上交所 query.sse.com.cn(JSONP fileContents→sse_raw), 抓取 zqdm/zqjc/cjje/plyy
+    验证 registry 字段; 复用 dragon_tiger_backup 已验证端点与节流范式(ProxyHandler 直连 + 全局节流, A1)。
+    周六休市自动回退最近交易日(周五)快照, 不影响采集。
+  - 配套(governance): 沪深交易所 源抽取从 snake_case 过度抽取分支移出, 改为显式字段白名单
+    {zqdm,zqjc,cjje,plyy,sse_raw}(§12.8.17 字段表登记的真实源字段), 剔除端点散文(szse/sse/com/
+    api/market/snap/ann/anotice/dragon_tiger_backup/... 共 13 个)对 registry 核心资产的污染。
 
 输出: docs/field_verification/{YYYYMMDD}/raw_{source}.json(顶层含 scheme 字段体系标注) + meta.json(含 schemes 映射)
 用法:
@@ -121,7 +127,7 @@ SOURCE_SCHEME = {
     "baidu":          "baidu.deprecated",   # §12.8.16 ❌→⏸️ 已废弃(PAE 失效, 改 TDX 适配器); 占位不采集
     "clist":          "em.clist",           # 东财-clist(板块排名/板块资金流, §12.8.6); V17.2.13 真实 producer 已接入
     "slist":          "em.slist",           # 东财-slist(个股所属板块/概念归属, §12.8.5); V17.2.13 真实 producer(须 secid, 裸 spt=3→rc:102 已订正)
-    "exchange":       "exchange.official",  # 沪深交易所官方(§12.8.17); 龙虎榜已被 fuyao 覆盖; 待官方端点 probing
+    "exchange":       "exchange.official",  # 沪深交易所官方(§12.8.17); V17.2.14 真实 producer 已接入(直连 szse/sse 龙虎榜端点)
 }
 
 # 模块文档未改动处见上方 docstring; 输出文件新增 scheme 标注(见 main)。
@@ -543,14 +549,76 @@ def collect_slist(pool: list) -> dict:
 
 
 def collect_exchange(pool: list) -> dict:
-    """沪深交易所官方(龙虎榜/行情/公告备胎, §12.8.17)——registry 已登记, 暂无 producer。
+    """沪深交易所官方(§12.8.17)——真实 producer(V17.2.14)。
 
-    龙虎榜已由 fuyao dragon_tiger 覆盖(字典已标注 ✅ 已覆盖); 交易所独立行情/公告备胎
-    无对应采集函数, 标记 unwired。
+    直连交易所官方龙虎榜端点(深交所 szse.cn + 上交所 query.sse.com.cn),
+    抓取 §12.8.17 登记字段 zqdm/zqjc/cjje/plyy(+原始 cjsl/dqrq/bz) 与 sse_raw(沪市全文),
+    验证 registry「沪深交易所」源字段。复用 dragon_tiger_backup(_eastmoney.py:1155)
+    已验证端点的节流范式: ProxyHandler({}) 直连 + _gen_wait_process_interval 全局节流(A1)。
+    注: 龙虎榜仅交易日产出; 非交易日(如周六休市)自动回退到最近交易日快照
+    (_last_completed_trading_day 取周五, 交易所历史龙虎榜数据可查, 不受周末影响)。
     """
-    return {"__unwired__": True, "registry_name": "沪深交易所",
-            "section": "12.8.17 沪深交易所官方（龙虎榜/行情/公告备胎）",
-            "reason": "registry 已登记; 龙虎榜已被 fuyao 覆盖, 其余端点无 producer → unwired"}
+    import urllib.request, json, ssl
+    from stock_common import UA
+    try:
+        from stock_common.sc_network import _gen_wait_process_interval
+    except Exception:
+        _gen_wait_process_interval = lambda: None
+
+    trade_date = _last_completed_trading_day().strftime("%Y-%m-%d")
+    out = {"records": [], "sse_raw": "", "szse_keys": [], "n_szse": 0,
+           "trade_date": trade_date}
+    _ctx = ssl._create_unverified_context()
+
+    # 深交所龙虎榜(结构化 JSON: zqdm/zqjc/cjje/plyy/cjsl/dqrq/bz)
+    su = ("https://www.szse.cn/api/report/ShowReport/data?SHOWTYPE=JSON"
+          f"&CATALOGID=1842_xxpl&TABKEY=tab1&txtStart={trade_date}"
+          f"&txtEnd={trade_date}&random=0.9")
+    try:
+        if _gen_wait_process_interval:
+            _gen_wait_process_interval()
+        req = urllib.request.Request(
+            su,
+            headers={"User-Agent": UA,
+                     "Referer": "https://www.szse.cn/disclosure/supervision/dealinfo/index.html"},
+        )
+        op = urllib.request.build_opener(
+            urllib.request.ProxyHandler({}),
+            urllib.request.HTTPSHandler(context=_ctx),
+        )
+        with op.open(req, timeout=15) as r:
+            d = json.loads(r.read())
+        if isinstance(d, list) and d:
+            rows = d[0].get("data", []) or []
+            out["n_szse"] = len(rows)
+            if rows:
+                out["szse_keys"] = sorted(rows[0].keys())
+                out["records"] = rows
+    except Exception as e:
+        out["__error_szse__"] = str(e)[:200]
+
+    # 上交所龙虎榜(JSONP 全文, 含营业部席位 → sse_raw)
+    eu = ("https://query.sse.com.cn/infodisplay/showTradePublicFile.do?"
+          f"jsonCallBack=cb&isPagination=false&dateTx={trade_date}")
+    try:
+        if _gen_wait_process_interval:
+            _gen_wait_process_interval()
+        req = urllib.request.Request(
+            eu,
+            headers={"User-Agent": UA,
+                     "Referer": "https://www.sse.com.cn/disclosure/diclosure/public/"},
+        )
+        op = urllib.request.build_opener(urllib.request.ProxyHandler({}))
+        with op.open(req, timeout=15) as r:
+            t = r.read().decode("utf-8", "ignore")
+        if "(" in t and ")" in t:
+            d2 = json.loads(t[t.index("(") + 1: t.rindex(")")])
+            fc = d2.get("fileContents", []) or []
+            out["sse_raw"] = "\n".join(fc)
+    except Exception as e:
+        out["__error_sse__"] = str(e)[:200]
+
+    return out
 
 
 def _last_completed_trading_day():

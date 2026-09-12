@@ -275,6 +275,12 @@ INDEXED = ("东财-push2(stock/get)", "东财-ulist239(np/get)", "AxData",
 
 def reg_tokens_for_section(src, text):
     toks = set()
+    # 沪深交易所(§12.8.17): 官方龙虎榜端点为 pinyin+CamelCase 混合命名, 通用 snake_case
+    # 抽取会把端点散文(szse/sse/com/api/market/snap/ann/anotice/dragon_tiger_backup/...)当字段
+    # 登记 → 污染 registry 核心资产。显式白名单仅取 §12.8.17 字段表登记的真实源字段
+    # (沪市全文以 sse_raw 映射名登记), 严格对齐单源真相。
+    if src == "沪深交易所":
+        return {"zqdm", "zqjc", "cjje", "plyy", "sse_raw"}
     if src in ("东财-push2(stock/get)", "东财-ulist239(np/get)", "AxData", "东财-资金流(em_fund_flow)",
                "东财-em_kline_f61", "东财-slist", "东财-clist"):
         for m in re.findall(r"\bf(\d+)\b", text):
@@ -311,7 +317,7 @@ def reg_tokens_for_section(src, text):
     # 英文 snake_case 字段（fuyao/datacenter/push2ex/热榜/市场源/levistock/财联社/thsdk）
     if src in ("同花顺-fuyao", "同花顺-thsdk", "东财-datacenter(英文键)", "东财-push2ex",
                "东财-热榜(em_hot)", "市场源(market_sources)", "levistock(ftshare)", "财联社(cls)",
-               "百度(baidu)", "沪深交易所", "巨潮(cninfo)",
+               "百度(baidu)", "巨潮(cninfo)",
                "TDX(双命名源)", "TDX-F10(双命名源)"):
         for m in re.findall(r"[a-z][a-z0-9_]{2,}", text):
             toks.add(m)

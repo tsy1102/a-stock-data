@@ -175,7 +175,6 @@ a-stock-data/
 │   ├── architecture.md           # 项目架构与数据流图（Mermaid）
 │   ├── roadmap.md                # 版本路线图 + ADR 决策记录
 │   ├── field_dict.md             # 主字段字典（ZHB 字段索引/破解结论）
-│   ├── V17.0_REFACTOR_PLAN.md    # V17.0 重构计划（执行基准）
 │   ├── verify/                   # 字典附录（实测值/样本/破解数据——实证层）
 │   ├── script_data_dict.md       # 脚本应用接口与字段来源字典
 │   └── domain_glossary.md        # 领域词汇表（术语口径统一）

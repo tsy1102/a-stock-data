@@ -16,7 +16,7 @@ v3 修正点 vs v2：
   - TDX / TDX-F10 仍标「双命名源」，reg 扫描 snake_case 叶名仅供人工复核参考，不强行 diff。
 """
 from __future__ import annotations
-import io, os, re, json, sys
+import io, os, re, json, sys, glob
 from collections import defaultdict
 
 # (b) 架构根治：优先从 field_registry.json 单一真相源读取「已登记字段集」，
@@ -175,7 +175,10 @@ def raw_field_sets():
             ms |= {kk for kk in v.keys()}
     raw["市场源(market_sources)"] = ms
     d = loadjson("raw_ftshare.json")
-    raw["levistock(ftshare)"] = set(_leaves(first_stock(d)))
+    # Phase 3 (2026-09-12): 改用叶键命名空间(与 reg_tokens_for_section 新逻辑对齐),
+    # 旧版 set(_leaves(...)) 产出的 dotted 路径(stocks.600xxx.high) 与 registry 命名空间错位,
+    # 会令 gap 审计产生假缺口。叶键(high/low/open/...)才是 ftshare 真实字段名。
+    raw["levistock(ftshare)"] = _leaf_keys(first_stock(d))
 
     # datacenter / axdata / em_fund_flow / tdx 双命名源
     d = loadjson("raw_datacenter.json")
@@ -266,6 +269,203 @@ def _leaves(o, pre=""):
                 out += _leaves(e, pre)
     return out
 
+def _leaf_keys(o):
+    """返回对象中所有「叶键」(非容器值的 dict key)。用于 snake 源 raw 真实字段提取。"""
+    out = set()
+    if isinstance(o, dict):
+        for k, v in o.items():
+            if isinstance(v, (dict, list)) and v:
+                out |= _leaf_keys(v)
+            else:
+                out.add(k)
+    elif isinstance(o, list) and o:
+        out |= _leaf_keys(o[0])
+    return out
+
+# ---------------------------------------------------------------------------
+# Phase 3 (2026-09-12): 根治 snake_case 源的「散文过度抽取」污染。
+#
+# 旧分支 `re.findall(r"[a-z][a-z0-9_]{2,}", text)` 把章节散文里的端点 URL / 请求参数
+# (ut/fs/pz/pn/sort/dpt...) / 函数名(get_*/sc_*/tdx_*) / 跨源 f 编号(f43/f57...) / 乱码碎片
+# 当成「本源字段」登记 → 污染 field_registry.json 核心资产(如 fuyao 原 699 令牌仅约 200 真)。
+#
+# 改为「真值三源并集」(已用 scripts/_diag_extract.py 验证 DROPPED 集合为纯污染):
+#   RAW_FIELD_KEYS[src] = 各源 raw_*.json 叶键(跨 docs/field_verification/2026* 全部 dated 目录聚合)
+#   _table_codes(stext) = 章节表格首列 / 全列英文代码单元 / 反引号令牌(无中文单元)
+#   CANON_ALIASES[src]  = §12.8.12e 规范注册表「各源字段对照」列中本源前缀的别名(仅本源, 严禁跨源串味)
+# 三者并集后剔除 f\d+ (f 编号属 push2/ulist/AxData, 永不属这些 snake 源)。
+# ---------------------------------------------------------------------------
+_RAW_FILE_FOR_SRC = {
+    "同花顺-fuyao": ["raw_fuyao.json"],
+    "东财-datacenter(英文键)": ["raw_datacenter.json"],
+    "东财-push2ex": ["raw_push2ex.json"],
+    "东财-热榜(em_hot)": ["raw_em_hot.json"],
+    "市场源(market_sources)": ["raw_market_sources.json"],
+    "levistock(ftshare)": ["raw_ftshare.json"],
+    "财联社(cls)": ["raw_cls.json"],
+    "巨潮(cninfo)": ["raw_cninfo.json"],
+    "TDX(双命名源)": ["raw_tdx.json", "raw_tdxquant.json"],
+    "TDX-F10(双命名源)": ["raw_tdx_f10.json"],
+    # 百度(baidu): 无 raw 捕获文件, 仅依赖 §12.8.16 表格 + 反引号令牌
+    "百度(baidu)": [],
+}
+# §12.8.12e「各源字段对照」列中各 snake 源的真实前缀(仅本源, 绝不含其他源别名)。
+# datacenter/em_hot/market_sources/cls/cninfo/baidu 在 §12.8.12e 无自身价格类别名
+# (其真实字段来自 raw + 表格), 故前缀为空列表 —— 这些源切勿串味抓取 开盘啦/东财 等别名。
+_CANON_PREFIX_FOR_SRC = {
+    "同花顺-fuyao": ["fuyao"],
+    "东财-datacenter(英文键)": [],
+    "东财-push2ex": ["push2ex"],
+    "东财-热榜(em_hot)": [],
+    "市场源(market_sources)": [],
+    "levistock(ftshare)": ["开盘啦", "开盘红", "KPL", "levistock", "ftshare"],
+    "财联社(cls)": [],
+    "巨潮(cninfo)": [],
+    "百度(baidu)": [],
+    "TDX(双命名源)": ["TDX快照", "TDX财务"],
+    # TDX-F10 为 F10 报告结构源, §12.8.12e 的 TDX 快照/财务别名属另一语境, 不串入
+    "TDX-F10(双命名源)": [],
+}
+
+def _agg_raw_leaf_keys(filenames):
+    """聚合 docs/field_verification/2026* 下所有 dated 目录的 raw 叶键(真实返回字段)。
+
+    剔除 _RAW_DENY(采集元数据键如 scheme, 非市场字段)后返回。
+    """
+    ks = set()
+    for fn in filenames:
+        for f in sorted(glob.glob(os.path.join(ROOT, "docs", "field_verification", "2026*", fn))):
+            try:
+                d = json.load(io.open(f, encoding="utf-8"))
+            except Exception:
+                continue
+            ks |= _leaf_keys(d)
+    return {k for k in ks if re.fullmatch(r"[A-Za-z][A-Za-z0-9_]{1,}", k) and k not in _RAW_DENY}
+
+def _build_raw_field_keys():
+    return {src: _agg_raw_leaf_keys(fns) for src, fns in _RAW_FILE_FOR_SRC.items()}
+
+# 跨源串味黑名单: 这些 token 是「源名 / 端点名 / 生成区块产物 / 采集元数据」, 绝非某源的真实字段。
+# _table_codes 扫描对比矩阵/全量字段表时, 单元格常出现其他源名(如 §12.13.8 含 reportapi、
+# §12.15.5 含 push2ex), 或不该登记的代码标识符(§12.10.9/§12.20 的 ft_* 函数、*_cls 类、
+# tdxstat/tdxchain 模块、push2delay 端点), 若不拦截会被错误登记到当前继承源的 registry 下。
+_DENY_TOKENS = {
+    # 各源 slug
+    "push2", "push2ex", "push2_full", "ulist", "ulist239", "ulistnp",
+    "tencent", "qt", "gtimg", "sina", "sinajs", "hq",
+    "fuyao", "ths", "thsdk",
+    "tdx", "tdx_f10", "tdxquant", "tdxhub", "tqlex",
+    "zhb", "cls", "baidu", "cninfo",
+    "axdata", "datacenter", "slist", "clist",
+    "em_hot", "emappdata", "em_fund_flow", "em_kline", "em_kline_f61",
+    "market_sources", "levistock", "ftshare", "kpl",
+    "eastmoney", "reports", "reportapi", "webstock", "westock", "mx_ds",
+    # 端点 / 模块名(非字段)
+    "push2delay", "tdxstat", "tdxstat2", "tdxchain",
+    # ZHB 字段(previx zhb_) 仅在 ZHB 源登记, 不得经对比矩阵串入 fuyao 等源
+    "zhb_date", "zhb_",
+    # 生成区块产物 / 采集元数据(非市场字段)
+    "subdict", "field_registry", "field_matrix", "gen_field_dict",
+    "scheme", "scheme_grounded",
+    # 项目模块 / 目录名, 仅经「项目代码正确使用/Bug」表、架构附录串入, 非字段
+    "stock_common", "field_verification",
+    # 实现符号(类/模块/布尔), 仅经对比/函数核实表串入, 非字段
+    "true", "false", "action", "controller", "detail", "index",
+    "zscode", "zsname", "apphis", "apphwhq", "apphlb",
+}
+# 前缀黑名单(源字段命名空间 / Python 函数名 / 代码命名空间, 经对比矩阵串入他源时拦截)
+_DENY_PREFIXES = ("zhb_", "get_", "sc_", "tdx_", "wenda_", "f10_")
+# raw 捕获里的采集元数据键(非市场字段), 仅在聚合 raw 叶键时剔除
+_RAW_DENY = {"scheme"}
+
+def _is_denied(tok):
+    """token 是否为代码标识符/源名/端点名(非真实市场字段), 须从 registry 抽取中排除。"""
+    t = tok.lower()
+    if t in _DENY_TOKENS:
+        return True
+    for p in _DENY_PREFIXES:
+        if t.startswith(p):
+            return True
+    # Python 代码标识符(函数/类/模块名), 非字段:
+    #   *_cls        —— 类(如 market_wind_cls / stock_zt_pool_cls)
+    #   ft_*         —— ftshare 模块函数(如 ft_get_eastmoney_dapan_flow)
+    #   *_ths        —— 同花顺代码标识符(如 stock_hot_rank_ths)
+    #   tdx\w+       —— tdx 模块变体(tdxstat/tdxchain...)
+    #   内部驼峰 aB   —— 表格里的 GetStockList/HomeDingPan/ZhiShuL2Data 等实现符号
+    #                   (真实驼峰字段如 TDX LastClose / fuyao BPS 来自 raw 捕获, 不经表格抽取,
+    #                    故此处拒绝表格驼峰不会丢失真实字段)
+    if t.endswith("_cls") or t.startswith("ft_") or t.endswith("_ths"):
+        return True
+    if re.fullmatch(r"tdx\w+", t):
+        return True
+    # 内部驼峰 aB(用原始大小写判断, 不能在 lower() 后判断): 表格里的 GetStockList/HomeDingPan/
+    # ZhiShuL2Data/TagID/Index 等实现符号。真实驼峰字段(LastClose/BPS)来自 raw 捕获, 不经表格抽取。
+    if re.search(r"[a-z][A-Z]", tok):
+        return True
+    return False
+
+def _table_codes(stext):
+    """从章节表格抽取真实英文代码: 首列(无中文)/全列无中文单元的字段清单/反引号令牌。
+
+    凡命中 _is_denied(源名/端点名/代码标识符/生成产物/采集元数据)的 token 一律丢弃, 杜绝跨源串味。
+    """
+    codes = set()
+    for line in stext.split("\n"):
+        s = line.strip()
+        if not s.startswith("|"):
+            continue
+        if re.match(r"^\|[\s:|-]+\|?\s*$", s):   # 分隔行
+            continue
+        cells = [c.strip() for c in s.strip("|").split("|")]
+        if not cells:
+            continue
+        # 首列(英文代码)
+        first = cells[0]
+        if not re.search(r"[一-鿿]", first):
+            for tok in re.split(r"[/,\s]+", first):
+                tok = tok.strip("`*")
+                if _is_denied(tok):
+                    continue
+                if re.fullmatch(r"[A-Za-z][A-Za-z0-9_]{1,}", tok) or \
+                   re.fullmatch(r"[A-Za-z][A-Za-z0-9_]*\.[A-Za-z0-9_]+", tok):
+                    codes.add(tok)
+        # 全列: 无中文的「字段清单」单元(端点全量响应字段列等), 逗号/空格分隔 + 反引号
+        for cell in cells:
+            if re.search(r"[一-鿿]", cell):
+                continue
+            for bt in re.findall(r"`([A-Za-z][A-Za-z0-9_./]{1,})`", cell):
+                if not _is_denied(bt):
+                    codes.add(bt)
+            for tok in re.split(r"[/,\s;]+", cell):
+                tok = tok.strip("`*()")
+                if _is_denied(tok):
+                    continue
+                if re.fullmatch(r"[A-Za-z][A-Za-z0-9_]{2,}", tok):
+                    codes.add(tok)
+    return codes
+
+def _build_canon_aliases():
+    """扫描 §12.8.12e 规范注册表, 按各源自身前缀抽取其别名令牌。"""
+    text = io.open(DICT, encoding="utf-8").read()
+    text = re.sub(r"<!-- GEN:.*?-->\n.*?<!-- /GEN:.*?-->\n?", "", text, flags=re.DOTALL)
+    canon_text = ""
+    for lv, t, s in split_sections(text):
+        if "12.8.12e" in t:
+            canon_text = s
+            break
+    out = {}
+    for src, prefixes in _CANON_PREFIX_FOR_SRC.items():
+        s = set()
+        for pre in prefixes:
+            pat = re.compile(rf"{re.escape(pre)}\s*`?([A-Za-z][A-Za-z0-9_.]+)`?")
+            for m in pat.finditer(canon_text):
+                s.add(m.group(1))
+        out[src] = s
+    return out
+
+RAW_FIELD_KEYS = _build_raw_field_keys()
+CANON_ALIASES = _build_canon_aliases()
+
 # ---------------------------------------------------------------------------
 # REG（扫描章节全文，按标题层级继承源）
 # ---------------------------------------------------------------------------
@@ -314,13 +514,17 @@ def reg_tokens_for_section(src, text):
                     toks.add(name)
             for m2 in re.findall(r"`([A-Za-z][A-Za-z0-9_]{2,})`", line):
                 toks.add(m2)
-    # 英文 snake_case 字段（fuyao/datacenter/push2ex/热榜/市场源/levistock/财联社/thsdk）
-    if src in ("同花顺-fuyao", "同花顺-thsdk", "东财-datacenter(英文键)", "东财-push2ex",
-               "东财-热榜(em_hot)", "市场源(market_sources)", "levistock(ftshare)", "财联社(cls)",
-               "百度(baidu)", "巨潮(cninfo)",
-               "TDX(双命名源)", "TDX-F10(双命名源)"):
-        for m in re.findall(r"[a-z][a-z0-9_]{2,}", text):
-            toks.add(m)
+    # 英文 snake_case 字段（fuyao/datacenter/push2ex/热榜/市场源/levistock/财联社/百度/巨潮/TDX/TDX-F10）
+    # —— Phase 3 (2026-09-12) 根治: 不再用 [a-z][a-z0-9_]{2,} 抓取章节散文(会把端点 URL / 请求参数
+    # / 函数名 / 跨源 f 编号当字段登记, 污染 registry)。改用「真值三源并集」:
+    #   RAW_FIELD_KEYS[src] ∪ _table_codes(text) ∪ CANON_ALIASES[src], 剔除 f\d+。
+    # 该并集经 scripts/_diag_extract.py 验证: 当前 registry 减该并集的 DROPPED 集合为纯污染,
+    # 不丢任何真实字段(同花顺-thsdk 已退役, 不在 _RAW_FILE_FOR_SRC 内)。
+    if src in _RAW_FILE_FOR_SRC:
+        toks |= RAW_FIELD_KEYS.get(src, set())
+        toks |= _table_codes(text)
+        toks |= CANON_ALIASES.get(src, set())
+        toks = {t for t in toks if not re.fullmatch(r"f\d+", t)}
     return toks
 
 def registered_field_sets():

@@ -42,7 +42,7 @@ import zipfile
 
 # V16.4.0: 全市场解析结果持久化——键=zip 日期 + schema 版本
 # marshal 比 pickle 快 5-10 倍（数据全为 dict/float/str/int 内置类型）
-_ZHB_PARSE_SCHEMA = 4  # V17.0.9(2026-08-26): tdxstat Col[24] 破解改名 unknown_24→cash_reserve_wan(货币资金万元)——解析缓存失效重解析
+_ZHB_PARSE_SCHEMA = 5  # V17.2.7(2026-09-12): 补抽 tdxstat 8 个遗漏列(Col[2]/[11]/[16]/[22]/[23]/[25]/[26]/[34],含 Col[22]=shape_value 官方L1)——解析缓存失效重解析
 
 
 def _zhb_parse_cache_path(name: str, date: str) -> str:
@@ -880,6 +880,19 @@ class ZhbData:
                 "zt_streak_cycle": _safe_cast(parts, 31, int),
                 "zt_count": _safe_cast(parts, 32, int),
                 "zt_lianban": _safe_cast(parts, 33, int),
+                # V17.2.7(2026-09-12) 补抽 8 个历史遗漏列(原 docstring 已定义但解析器未抽取):
+                #   Col[2]=unknown_2(连续浮点,疑资金类指标) / Col[11]=free_ltgb(自由流通股本万股,官方确认)
+                #   Col[16]=rd_input_fee(研发投入万元,官方确认) / Col[22]=shape_value(个股形态/板块代码,官方L1)
+                #   Col[23]=zt_type_code(当日行情类型分档码) / Col[25]=pre_receive_zj(预收资金万元,官方确认)
+                #   Col[26]=unknown_26(0-48恒定分类码) / Col[34]=other_qy_jzc(其他权益净资产元,官方确认)
+                "unknown_2": _safe_cast(parts, 2, float),
+                "free_ltgb": _safe_cast(parts, 11, float),
+                "rd_input_fee": _safe_cast(parts, 16, float),
+                "shape_value": parts[22].strip() if len(parts) > 22 else "",
+                "zt_type_code": _safe_cast(parts, 23, int),
+                "pre_receive_zj": _safe_cast(parts, 25, float),
+                "unknown_26": _safe_cast(parts, 26, int),
+                "other_qy_jzc": _safe_cast(parts, 34, float),
             }
         return result
 

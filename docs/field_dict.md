@@ -23,7 +23,7 @@
 > **2026-09-03 新一轮硬化对撞收口**（离线·无采集，套用对撞四铁律·详见 `field_verification/20260903/collision_validation_report.md`）：
 > 腾讯 [56]/[85]/[86]（**确认源覆盖盲区**：15日×261锚精确0命中；[56]跨源最强相关0.81<0.9（L4）；**2026-09-03 主动法自算Beta Pearson=0.908 → 升 Beta族高置信**、[85]0.88价格族伪相关→L3、[86]0.45→❓手级带符号量）、push2 f106（**常量100占位码·已刻画·未破解**）、f107=f110=ulist:f27（**市场标记布尔0/1·北交=0·L1定案(17日×20股338 stock-days精确100%)**）、f111=f112=ulist:f19（**板级枚举{2,6,23,80,81}·L1定案(17日×20股338 stock-days精确100%)**）、f118=ulist:f107（**🔥L1新定案·推翻'无数据'误记·17日×20股338 stock-days精确100%·枚举{2,5}非恒定·2026-09-06 18日碰撞比值族L1-U再确认**）、ZHB tdxstat Col[22]（**确认动态概念/热点码·12日93717样本/1842 distinct/0精确/最强相关0.49·源覆盖盲区**，7.5节）。
 > **已移出未破解（正文已破解，2026-09-02 存在性复核确认）**：[65]=tx65 扣非加权ROE(L1)、[66]=tx66 ROA(L1·单源无锚待复核)、[75]=近180交易日涨跌幅(L2+)；push2 f103=ocf_ttm、f108=扣非EPS(TTM)、**f109=归母净利润(年报)**（fuyao parent_holder_net_profit 20股逐字等✅）、f160=年报EPS、f190=每股未分配利润、f193-f197 财务衍生、f116/f117=总/流通市值(元)。下一步建议：f106(常量100占位·未破解) 与 [86](手级带符号量) 待更大样本定口径；**f107/f110/f111/f112/f118 已于 2026-09-04 多日对撞升格 L1（详见 §12.3.1.1）**。
-> Col[22] 需通达信官方文档或更大样本。
+> **Col[22] = `shape_value` 个股形态/板块代码（TDX 官方 TdxQuant 确认，5–6 位动态分类码，日更；完整码表枚举待补，属源覆盖盲区）**——性质已于 2026-09-12 经 31 日快照结构实证 + 跨日聚类升 L1（见 `docs/field_verification/20260912_zhb_col22_crack.md`）。
 
 > **§零·B 字段×源总表**（本字典尾部，由 `field_registry.json` 经 `scripts/gen_field_dict.py` 自动生成，勿手改；字段契约表仍由人工维护）：全部字段 × 源的 fallback 路由矩阵，正文/registry 修改后重跑 `scripts/gen_field_dict.py` 同步。
 
@@ -1596,40 +1596,40 @@ ulist 批量侧 `main_net_inflow_wan = (f62+f66)/1e4` 是**同一个 bug**（f62
 
 | fN | 状态 | 备注 |
 | :--: | :--- | :--- |
-| f1 | ⚠️ ulist 专属 · 待破解 | np/get 返回但未破解（恒空/恒0 亦照登） |
+| f1 | ✅ **跨源定案·异号同义**：ulist f1 ↔ push2 f59（多日精确对撞 L1：23 批次 / median|Δ|=0 / max|Δ|≤0.19，见 `docs/field_verification/20260912_ulist_collision.md`） | 枚举(全市场恒=2,非市场码) |
 | f2 | ⚠️ ulist 专属 · 待破解 | np/get 返回但未破解（恒空/恒0 亦照登） |
-| f3 | ⚠️ ulist 专属 · 待破解 | np/get 返回但未破解（恒空/恒0 亦照登） |
-| f4 | ⚠️ ulist 专属 · 待破解 | np/get 返回但未破解（恒空/恒0 亦照登） |
-| f5 | ⚠️ ulist 专属 · 待破解 | np/get 返回但未破解（恒空/恒0 亦照登） |
-| f6 | ⚠️ ulist 专属 · 待破解 | np/get 返回但未破解（恒空/恒0 亦照登） |
-| f7 | ⚠️ ulist 专属 · 待破解 | np/get 返回但未破解（恒空/恒0 亦照登） |
-| f8 | ⚠️ ulist 专属 · 待破解 | np/get 返回但未破解（恒空/恒0 亦照登） |
-| f9 | ⚠️ ulist 专属 · 待破解 | np/get 返回但未破解（恒空/恒0 亦照登） |
-| f10 | ⚠️ ulist 专属 · 待破解 | np/get 返回但未破解（恒空/恒0 亦照登） |
+| f3 | ✅ **跨源定案·异号同义**：ulist f3 ↔ push2 f170（多日精确对撞 L1：23 批次 / median|Δ|=0 / max|Δ|≤0.19，见 `docs/field_verification/20260912_ulist_collision.md`） | 涨跌幅%(=push2 f170) |
+| f4 | ✅ **跨源定案·异号同义**：ulist f4 ↔ push2 f169（多日精确对撞 L1：23 批次 / median|Δ|=0 / max|Δ|≤0.19，见 `docs/field_verification/20260912_ulist_collision.md`） | 涨跌额(=push2 f169) |
+| f5 | ✅ **跨源定案·异号同义**：ulist f5 ↔ push2 f47（多日精确对撞 L1：23 批次 / median|Δ|=0 / max|Δ|≤0.19，见 `docs/field_verification/20260912_ulist_collision.md`） | 成交量(=push2 f47) |
+| f6 | ✅ **跨源定案·异号同义**：ulist f6 ↔ push2 f48（多日精确对撞 L1：23 批次 / median|Δ|=0 / max|Δ|≤0.19，见 `docs/field_verification/20260912_ulist_collision.md`） | 成交额(=push2 f48) |
+| f7 | ✅ **跨源定案·异号同义**：ulist f7 ↔ push2 f171（多日精确对撞 L1：23 批次 / median|Δ|=0 / max|Δ|≤0.19，见 `docs/field_verification/20260912_ulist_collision.md`） | 量比(=push2 f171) |
+| f8 | ✅ **跨源定案·异号同义**：ulist f8 ↔ push2 f168（多日精确对撞 L1：23 批次 / median|Δ|=0 / max|Δ|≤0.19，见 `docs/field_verification/20260912_ulist_collision.md`） | =push2 f168 |
+| f9 | ✅ **跨源定案·异号同义**：ulist f9 ↔ push2 f162（多日精确对撞 L1：23 批次 / median|Δ|=0 / max|Δ|≤0.19，见 `docs/field_verification/20260912_ulist_collision.md`） | 连续(=push2 f162) |
+| f10 | ✅ **跨源定案·异号同义**：ulist f10 ↔ push2 f50（多日精确对撞 L1：23 批次 / median|Δ|=0 / max|Δ|≤0.19，见 `docs/field_verification/20260912_ulist_collision.md`） | 连续(=push2 f50) |
 | f11 | ⚠️ ulist 专属 · 待破解 | np/get 返回但未破解（恒空/恒0 亦照登） |
 | f12 | ⚠️ ulist 专属 · 待破解 | np/get 返回但未破解（恒空/恒0 亦照登） |
 | f13 | ⚠️ ulist 专属 · 待破解 | np/get 返回但未破解（恒空/恒0 亦照登） |
 | f14 | ⚠️ ulist 专属 · 待破解 | np/get 返回但未破解（恒空/恒0 亦照登） |
-| f15 | ⚠️ ulist 专属 · 待破解 | np/get 返回但未破解（恒空/恒0 亦照登） |
-| f16 | ⚠️ ulist 专属 · 待破解 | np/get 返回但未破解（恒空/恒0 亦照登） |
-| f17 | ⚠️ ulist 专属 · 待破解 | np/get 返回但未破解（恒空/恒0 亦照登） |
-| f18 | ⚠️ ulist 专属 · 待破解 | np/get 返回但未破解（恒空/恒0 亦照登） |
-| f19 | ⚠️ ulist 专属 · 待破解 | np/get 返回但未破解（恒空/恒0 亦照登） |
+| f15 | ✅ **跨源定案·异号同义**：ulist f15 ↔ push2 f44（多日精确对撞 L1：23 批次 / median|Δ|=0 / max|Δ|≤0.19，见 `docs/field_verification/20260912_ulist_collision.md`） | 最高价(=push2 f44) |
+| f16 | ✅ **跨源定案·异号同义**：ulist f16 ↔ push2 f45（多日精确对撞 L1：23 批次 / median|Δ|=0 / max|Δ|≤0.19，见 `docs/field_verification/20260912_ulist_collision.md`） | 最低价(=push2 f45) |
+| f17 | ✅ **跨源定案·异号同义**：ulist f17 ↔ push2 f46（多日精确对撞 L1：23 批次 / median|Δ|=0 / max|Δ|≤0.19，见 `docs/field_verification/20260912_ulist_collision.md`） | 开盘价(=push2 f46) |
+| f18 | ✅ **跨源定案·异号同义**：ulist f18 ↔ push2 f60（多日精确对撞 L1：23 批次 / median|Δ|=0 / max|Δ|≤0.19，见 `docs/field_verification/20260912_ulist_collision.md`） | 昨收盘价(=push2 f60) |
+| f19 | ✅ **跨源定案·异号同义**：ulist f19 ↔ push2 f111（多日精确对撞 L1：23 批次 / median|Δ|=0 / max|Δ|≤0.19，见 `docs/field_verification/20260912_ulist_collision.md`） | 板级枚举{2,6,23,80,81}(=push2 f111) |
 | f20 | ⚠️ ulist 专属 · 待破解 | np/get 返回但未破解（恒空/恒0 亦照登） |
 | f21 | ⚠️ ulist 专属 · 待破解 | np/get 返回但未破解（恒空/恒0 亦照登） |
 | f22 | ⚠️ ulist 专属 · 待破解 | np/get 返回但未破解（恒空/恒0 亦照登） |
-| f23 | ⚠️ ulist 专属 · 待破解 | np/get 返回但未破解（恒空/恒0 亦照登） |
-| f24 | ⚠️ ulist 专属 · 待破解 | np/get 返回但未破解（恒空/恒0 亦照登） |
-| f25 | ⚠️ ulist 专属 · 待破解 | np/get 返回但未破解（恒空/恒0 亦照登） |
-| f26 | ⚠️ ulist 专属 · 待破解 | np/get 返回但未破解（恒空/恒0 亦照登） |
+| f23 | ✅ **跨源定案·异号同义**：ulist f23 ↔ push2 f167（多日精确对撞 L1：23 批次 / median|Δ|=0 / max|Δ|≤0.19，见 `docs/field_verification/20260912_ulist_collision.md`） | 连续(=push2 f167) |
+| f24 | ✅ **跨源定案·异号同义**：ulist f24 ↔ push2 f121（多日精确对撞 L1：23 批次 / median|Δ|=0 / max|Δ|≤0.19，见 `docs/field_verification/20260912_ulist_collision.md`） | 连续(=push2 f121) |
+| f25 | ✅ **跨源定案·异号同义**：ulist f25 ↔ push2 f122（多日精确对撞 L1：23 批次 / median|Δ|=0 / max|Δ|≤0.19，见 `docs/field_verification/20260912_ulist_collision.md`） | 连续(=push2 f122) |
+| f26 | ✅ **跨源定案·异号同义**：ulist f26 ↔ push2 f189（多日精确对撞 L1：23 批次 / median|Δ|=0 / max|Δ|≤0.19，见 `docs/field_verification/20260912_ulist_collision.md`） | 上市日期(枚举,YYYYMMDD)(=push2 f189) |
 | f27 | ⚠️ ulist 专属 · 待破解 | np/get 返回但未破解（恒空/恒0 亦照登） |
 | f28 | ⚠️ ulist 专属 · 待破解 | np/get 返回但未破解（恒空/恒0 亦照登） |
-| f29 | ⚠️ ulist 专属 · 待破解 | np/get 返回但未破解（恒空/恒0 亦照登） |
+| f29 | ✅ **跨源定案·异号同义**：ulist f29 ↔ push2 f180（多日精确对撞 L1：23 批次 / median|Δ|=0 / max|Δ|≤0.19，见 `docs/field_verification/20260912_ulist_collision.md`） | 枚举(=push2 f180) |
 | f30 | ⚠️ ulist 专属 · 待破解 | np/get 返回但未破解（恒空/恒0 亦照登） |
 | f31 | ⚠️ ulist 专属 · 待破解 | np/get 返回但未破解（恒空/恒0 亦照登） |
 | f32 | ⚠️ ulist 专属 · 待破解 | np/get 返回但未破解（恒空/恒0 亦照登） |
-| f33 | ⚠️ ulist 专属 · 待破解 | np/get 返回但未破解（恒空/恒0 亦照登） |
-| f34 | ⚠️ ulist 专属 · 待破解 | np/get 返回但未破解（恒空/恒0 亦照登） |
+| f33 | ✅ **跨源定案·异号同义**：ulist f33 ↔ push2 f191（多日精确对撞 L1：23 批次 / median|Δ|=0 / max|Δ|≤0.19，见 `docs/field_verification/20260912_ulist_collision.md`） | 连续(=push2 f191) |
+| f34 | ✅ **跨源定案·异号同义**：ulist f34 ↔ push2 f49（多日精确对撞 L1：23 批次 / median|Δ|=0 / max|Δ|≤0.19，见 `docs/field_verification/20260912_ulist_collision.md`） | 枚举(=push2 f49) |
 | f35 | ⚠️ ulist 专属 · 待破解 | np/get 返回但未破解（恒空/恒0 亦照登） |
 | f36 | ⚠️ ulist 专属 · 待破解 | np/get 返回但未破解（恒空/恒0 亦照登） |
 | f37 | ⚠️ ulist 专属 · 待破解 | np/get 返回但未破解（恒空/恒0 亦照登） |
@@ -1836,7 +1836,7 @@ ulist 批量侧 `main_net_inflow_wan = (f62+f66)/1e4` 是**同一个 bug**（f62
 | f249 | ⚠️ ulist 专属 · 待破解 | np/get 返回但未破解（恒空/恒0 亦照登） |
 | f250 | ⚠️ 同号同义·未实证·待核实 | ulist/push2 异索引，同号≠同义，待数值对撞 |
 
-> 统计：共 **239** 字段｜✅ 已破解 **127**（经 2026-09-09 P0-a 订正：原记 131，扣除 f49/f133/f135/f221 四字段其 §12.3 行仍 ⚠️/待破解、未实际升 ✅；详见下方订正注）｜⚠️ ulist 专属待破解 **119**（115 + 上述 4 回归待破解）。
+> 统计：共 **239** 字段｜✅ 已破解 **148**（127 + 2026-09-12 增 21：ulist f1–f34 中 21 个经 23 批次精确对撞升 L1，见 `docs/field_verification/20260912_ulist_collision.md`）｜⚠️ ulist 专属待破解 **98**（119 − 本轮 21；进度指示非精确划分）。
 >
 > ⚠️ **P0-a 订正（2026-09-09）**：上款原记「✅ 已破解 131（…本轮 mx-ds 命名神谕新增 8：f47/f49/f55/f58/f133/f135/f144/f221）」**虚高**——① f49(§12.3.2.3)/f133/f135/f221 其 §12.3 行仍 ⚠️/待破解，从未实际升 ✅；② f144 系 V17.0.16 旧定案，误列「本轮新增」；③ f47/f55/f58 系早轮 fuyao 锚定案（2026-09-01），非 mx-ds 本轮新增。故本轮对这 8 字段**无净增 ✅**，累计 131 应降为 **127**。本统计块为进度指示，非精确划分。
 >

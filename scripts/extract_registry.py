@@ -53,7 +53,7 @@ import audit_field_completeness as afc
 # 原生 token 抽取（v2，2026-09-12）：复用 audit_field_completeness.registered_field_sets
 # 的「章节→源→token」逻辑，保证 registry 的 fields[].code 即各源原生 token
 # （f144 / [1] / stockName / open ...），而非被 clean_field 剥掉 f 前缀后的中文名。
-# 这样 registry 才能作为 audit_field_completeness / field_landing_audit 的真相源。
+# 这样 registry 才能作为 audit_field_completeness 的真相源。
 # ---------------------------------------------------------------------------
 _FCODE_SRC = {
     "东财-push2(stock/get)", "东财-ulist239(np/get)", "AxData", "东财-push2_full",

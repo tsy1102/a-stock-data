@@ -14,7 +14,7 @@
 消费方:
   1) capture_field_probe.py  —— 采集时把 field_meta_block(source) 嵌入 raw 文件顶层 `field_meta` 键,
      使原始采集物自带字段身份溯源(非事后补注)。
-  2) computed_collider.py    —— 按 anchor_source 分发"该用哪个锚源独立重算"。
+  2) 跨源对撞分析脚本    —— 按 anchor_source 分发"该用哪个锚源独立重算"。
 
 设计约束: 本模块仅依赖标准库, 零 import 负担, 可被采集脚本与分析脚本安全引入,
 不触发 stock_common 重依赖链路。
@@ -76,7 +76,7 @@ TENCENT_FIELD_META: Dict[int, FieldMeta] = {
     51: FieldMeta(51, FieldKind.COMPUTED, "intraday", "tdx_kline",
                  "均价/VWAP(元)=amount÷volume, L1 实测命中 tx[51] 20/20; "
                  "2026-09-09 TDX K线独立重算 VWAP=RawAmount/RawVolume Pearson=1.0/"
-                 "slope=1.0/残差<0.005 第四源精确定案 L1(computed_collider --field 51)"),
+                 "slope=1.0/残差<0.005 第四源精确定案 L1(TDX K线独立重算)"),
     56: FieldMeta(56, FieldKind.COMPUTED, "rolling", "tdx_kline",
                  "Beta(系统风险), 基准=宽基全市场指数(类中证全指/国证A指); "
                  "round13 第四源 TDX K线 β_中证全指 Pearson=0.991 身份确认(L4), 待腾讯字段表升L1"),
@@ -116,7 +116,7 @@ def field_meta_block(source: str) -> Optional[dict]:
         "fields": {str(idx): m.to_dict() for idx, m in sorted(reg.items())},
         "generated_by": "field_meta.py@V17.2.7",
         "note": "kind=raw/computed/placeholder; computed 字段须按 anchor_source 独立重算后对错, "
-                "禁止与 raw 交易所字段直接跨源对撞(见 computed_collider.py)",
+                "禁止与 raw 交易所字段直接跨源对撞(须按 anchor_source 独立重算后比对)",
     }
 
 

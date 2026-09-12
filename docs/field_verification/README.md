@@ -38,10 +38,21 @@ python scripts/capture_field_probe.py --dry-run       # 只显示各源可用性
 ## 每日核查流程(固定)
 
 1. 跑采集脚本(约 3-5 分钟,含 ZHB 本地解析 + TDX + 腾讯 + push2)
-2. **⚠️ ZHB T-1 规则(2026-08-27 固化)**: 采集脚本产出的 `raw_zhb.json` 数据日期恒为
+   ```powershell
+   python scripts/capture_field_probe.py                 # 采今天
+   ```
+2. **跑全源对撞(通用引擎, V17.2.9)**——每次运行自动查询对撞四铁律:
+   ```powershell
+   python scripts/collide.py                 # 默认近 7 天窗口，全源全字段完整对撞
+   python scripts/collide.py --window 14     # 近 14 天窗口
+   python scripts/collide.py --all           # 全部历史日期
+   python scripts/collide.py --date 20260913 # 指定报告日期戳（默认今天）
+   ```
+   产物: `docs/field_verification/<date>/<date>_collision_report.md` + `.json`（仅证据/候选, 不改 `field_dict.md`；新定案经字典订正后由 sanctioned 管线 ingest）。
+3. **⚠️ ZHB T-1 规则(2026-08-27 固化)**: 采集脚本产出的 `raw_zhb.json` 数据日期恒为
    **T-1(前一日)**。对撞破解时, 严禁拿"当日报告"直接对撞"当日采集的 ZHB"——须用
    **T-1 当日报告** 或验证字段实时性后对撞当日报告(详见 CRACKING_METHODOLOGY.md 〇节)
-3. Agent 对昨日/今日数据做 diff(字段值变化、异常值、跨股矛盾)
+4. Agent 对昨日/今日数据做 diff(字段值变化、异常值、跨股矛盾)
 4. 与 `field_dict.md` 对照,输出 `analysis.md`:
    - 新证据(实测值确认字段意义)
    - 疑点(与字典解释矛盾/单位可疑/数值异常)

@@ -158,7 +158,8 @@ a-stock-data/
 │   └── ths_credentials.json      # 同花顺 THS SDK 账号
 │
 ├── scripts/                      # 辅助脚本（见 scripts/README.md）
-│   ├── capture_field_probe.py    # 字段实测采集（20 股 × 18 源 → docs/field_verification/YYYYMMDD/）
+│   ├── capture_field_probe.py    # 字段实测采集（12 股 × 18 源 → docs/field_verification/YYYYMMDD/）
+│   ├── collide.py                # 【V17.2.9】全源全字段通用对撞引擎（每日采集后运行；自动查询 collision_rules 四铁律 + 增量状态跟进）
 │   ├── run_tests.ps1             # 测试统一入口（AGENTS.md 强制 shell 层中转）
 │   ├── update_calendar.py        # 交易日历数据更新（含 V14+ 防覆盖保护）
 │   ├── clean_cache.py            # 缓存清理快捷脚本（封装 python -m core.stock_cache）

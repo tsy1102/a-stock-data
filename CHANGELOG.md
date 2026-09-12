@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 
+## [V17.2.9] 2026-09-13 — 通用全源对撞引擎 collide.py 取代定向脚本
+
+- **`scripts/collide.py`（新增）— 全源全字段通用对撞引擎**：覆盖 `docs/field_verification/<date>/raw_*.json` 的全部采集数据，按 `collision_rules` 四铁律（精度对齐 + 每日命中率≥0.9 + ≥3 独立采集日 + hub 巧合排除）做跨源对撞；增量状态 `collision_state.json` 跨日累积，日常只冒"新增"、已定案标 `✅` 再确认；报告拆分"异号同义（高价值）"与"同号镜像（低优先）"。取代上一轮把定向脚本简单拼合的 `crack_fields.py`。
+- **`scripts/collision_rules.py`（新增，V17.2.8 规则真相源）— 对撞四铁律 + 定案状态机**：常量固化为代码真相源，对撞入口自动 `print_active_rules()`；`--emit` 派生人读文档 `docs/field_verification/COLLISION_RULES.md`，与代码常量一致防双源漂移。
+- **清理**：删除上一轮两个定向脚本 `crack_ulist_residuals_20260912.py` / `crack_zhb_col22_20260912.py`（功能已被 collide.py 全量覆盖）。
+- **文档**：README 三处（根 / scripts / field_verification）补记每日「采集 → 全量对撞」流水线；新增 `docs/field_verification/20260913/` 本轮全量对撞报告（.md + .json）。
+
 ## [V17.2.7] 2026-09-07 — 修复 mak/val 报告数据矛盾与章节口径
 
 - **`get_val_report.py` 广度口径修复（根因：ZHB T-1 污染）**：

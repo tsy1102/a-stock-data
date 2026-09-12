@@ -10,11 +10,11 @@
   1. SECTION_MAP 每个源的子串必须能在 docs/ 全树（主字典 ∪ 归档目录 ∪ verify 分字典）
      解析到标题文本；否则该源审计将报「字段未登记」假 GAP —— 即归档未同步 SECTION_MAP 搜索域。
   2. field_dict.md 引用的 docs/verify/*.md 必须真实存在（镜像 verify_sync_check HARD#1 断链）。
-  3. verify_sync_check.MAPPING 每个分字典文件必须存在且被主字典引用（孤儿/缺失，镜像 HARD#2/3）。
+  3. verify_sync_check.get_source_mapping() 每个分字典文件必须存在且被主字典引用（孤儿/缺失，镜像 HARD#2/3）。
 
 设计要点：
-  - 直接 import audit_field_completeness.SECTION_MAP 与 verify_sync_check.MAPPING 作为
-    单一权威配置，工具侧改动自动同步到本预检，不做硬编码复制。
+  - 直接 import audit_field_completeness.SECTION_MAP 与 verify_sync_check.get_source_mapping()
+    作为单一权威配置，工具侧改动自动同步到本预检，不做硬编码复制。
   - 不修改任何工具运行时逻辑（区别于 (b) 全量解耦方案）。
 
 退出码：有违规 → 1（可挂 pre-commit 闸门）；全过 → 0。
@@ -45,13 +45,17 @@ def _load_section_map():
 
 
 def _load_verify_mapping():
-    """复用 verify_sync_check.MAPPING 作为单一真相源。"""
+    """复用 verify_sync_check.get_source_mapping() 作为单一真相源。
+
+    Phase 2 起 verify_sync_check.MAPPING 已改为 registry 优先 + 硬编码基线回退的
+    get_source_mapping()；本预检复用同一权威映射，避免硬编码复制导致的漂移。
+    """
     try:
         sys.path.insert(0, SCRIPT_DIR)
         import verify_sync_check as vsc  # noqa: F401
-        return dict(vsc.MAPPING)
+        return dict(vsc.get_source_mapping())
     except Exception as _e:  # pragma: no cover
-        print(f"[WARN] 无法 import MAPPING（{_e}），回退空表", file=sys.stderr)
+        print(f"[WARN] 无法 import get_source_mapping（{_e}），回退空表", file=sys.stderr)
         return {}
 
 

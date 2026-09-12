@@ -73,7 +73,6 @@ MAPPING_HARDCODED = {
     "tencent": "tencent_verify.md",
     "push2": "push2_verify.md",
     "ulist_push2_align": "ulist_push2_align.md",
-    "thsdk": "thsdk_field_verify.md",
     "ths_tableheader": "ths_tableheader_ids.md",
     "samples": "samples_verify.md",
     "axdata": "axdata_verify.md",

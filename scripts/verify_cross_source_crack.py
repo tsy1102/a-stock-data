@@ -196,7 +196,7 @@ BUILTIN_SCHEME = {
     "ftshare": "ftshare", "em_kline_f61": "em.kline",
     "datacenter": "em.datacenter", "push2ex": "em.push2ex",
     "em_hot": "em.hot", "cls": "cls", "cninfo": "cninfo",
-    "reports": "reports", "thsdk": "thsdk.removed",
+    "reports": "reports",
     "market_sources": "market.mixed", "tdx_f10": "tdx.f10",
     "tdx_f10_more": "tdx.f10",
     # V17.2.12 主字典对齐(与 capture_field_probe.py SOURCE_SCHEME 同步):

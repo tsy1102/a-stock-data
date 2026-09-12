@@ -56,13 +56,13 @@ import audit_field_completeness as afc
 # 这样 registry 才能作为 audit_field_completeness / field_landing_audit 的真相源。
 # ---------------------------------------------------------------------------
 _FCODE_SRC = {
-    "东财-push2(stock/get)", "东财-ulist239(np/get)", "AxData",
+    "东财-push2(stock/get)", "东财-ulist239(np/get)", "AxData", "东财-push2_full",
     "东财-资金流(em_fund_flow)", "东财-em_kline_f61", "东财-push2ex",
     "东财-datacenter(英文键)", "东财-slist", "东财-clist",
 }
 _INDEX_SRC = {"腾讯(qt.gtimg)", "新浪(hq.sinajs)",
               "ZHB-tdxstat", "ZHB-tdxstat2", "ZHB-tipinfo"}
-_CAMEL_SRC = {"reports", "同花顺-fuyao", "同花顺-thsdk", "东财-datacenter(英文键)",
+_CAMEL_SRC = {"reports", "同花顺-fuyao", "东财-datacenter(英文键)",
               "东财-push2ex", "东财-热榜(em_hot)", "市场源(market_sources)",
               "levistock(ftshare)", "财联社(cls)", "百度(baidu)", "沪深交易所",
               "巨潮(cninfo)", "TDX(双命名源)", "TDX-F10(双命名源)"}
@@ -102,7 +102,9 @@ _AUDIT_VERIFY = {
     "ZHB-tdxstat2": "tdx_func_fields.md",
     "ZHB-tipinfo": "tdx_func_fields.md",
     "同花顺-fuyao": "fuyao_api_full.md",
-    "同花顺-thsdk": "thsdk_field_verify.md",
+    "TDX(双命名源)": "tdx_func_fields.md",
+    "AxData": "axdata_verify.md",
+    "东财-push2_full": "push2_verify.md",
     "reports": None,
     "东财-热榜(em_hot)": None,
     "市场源(market_sources)": None,

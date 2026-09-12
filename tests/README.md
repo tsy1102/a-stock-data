@@ -5,51 +5,61 @@
 > **V17.0**: 核心模块已包化到 `core/`——测试中引用 config/data_provider/gd_uploader/
 > stock_cache/tdx_client/zhb_client/zhb_sync 一律 `from core.X import ...`;
 > `patch("core.tdx_client.xxx")`(mock 字符串同样带 core. 前缀, 否则假绿)。
+>
+> **V17.2**: 数据源真实包为 `stock_common.*`——测试中 `from stock_common.sc_datasource import ...`、
+> `patch("stock_common.sc_datasource.xxx")` 为正确写法（与运行时包结构一致，原 README 所述 `core.X` 为笔误）。
 
-## 目录结构（V16.3 F 按架构分层重构）
+## 目录结构（2026-09-12 同步）
 
 ```
 tests/
-├── conftest.py                    # pytest 共享 fixtures（real_network 网络拦截）
-├── data/                          # ① 数据源层（数据从哪来）— 5 文件 / 113 例
-│   ├── test_data_zhb.py           # ZHB 包解析 / 字段破解 / 行业段过滤（45）
-│   ├── test_data_tdx.py           # TDX TCP / 适配器 / 服务器白名单（40）
-│   ├── test_data_eastmoney.py     # 东财接口 / 13 域健康矩阵（15，全 real_network）
-│   ├── test_data_network.py       # 令牌桶限流 / 熔断器 / 20h 封禁冷却（10）
-│   └── test_data_prefetch.py      # sht 批量预取映射/单位换算/缓存命中（3）
-├── core/                          # ② 统一层 / 服务层 — 10 文件 / 179 例
-│   ├── test_core_calendar.py      # 交易日历（权威日历 + ZHB 补班校验）（38）
-│   ├── test_core_utils.py         # 公共工具（_safe_float/is_limit_up/_safe_cast 等）（33）
-│   ├── test_core_schema.py        # CanonicalStockData / 归一化（31）
-│   ├── test_core_scoring.py       # 评分系统（21）
-│   ├── test_core_routing.py       # 字段路由矩阵 / 断路器降级（14）
-│   ├── test_core_technical.py     # 技术指标 / 风险引擎（13）
-│   ├── test_core_cache.py         # 统一缓存层（L1/L2/交叉验证/版本化）（11）
-│   ├── test_core_tencent_volume_unit.py # 科创板 688 成交量单位换算（8，V17.0.12 新增）
-│   ├── test_core_seat.py          # 龙虎榜席位三层匹配（6）
-│   └── test_core_capital_cache.py # 股本缓存单位自愈/schema 版本失效（4）
-├── infra/                         # ③ 基础设施（外部依赖）— 3 文件 / 14 例
-│   ├── test_infra_gd.py           # Google Drive 上传（7）
-│   ├── test_infra_api_stability.py # 外部 API 字段契约（5，real_network）
-│   └── test_infra_f10.py          # F10 章节集成（2，real_network）
-└── reports/                       # ④ 报告层（2026-08-30 新补）— 3 文件 / 64 例
-    ├── test_reports_runner.py     # ReportRunner 基类 + execute_batch_pipeline 骨架（22）
-    ├── test_reports_strategy.py   # val 23 策略注册表 / 空池安全 / 配置键（12）
-    └── test_reports_pipeline.py   # 5 个 Runner 子类 execute_pipeline 装配（42）
+├── conftest.py                       # pytest 共享 fixtures（real_network 网络拦截）
+├── test_degradation_contract.py      # 三层数据源降级契约 L1/L2/L3/L4 + 降级等价性
+├── test_sc_ta_core.py                # 技术指标核心：ref/sum_rolling/hhv/llv/sma/macd/rsi/boll/kdj 等
+├── test_symbol_norm.py               # 股票代码归一化（市场段/前缀/后缀/矛盾检测）
+├── test_seat_db_audit_fix.py         # 龙虎榜席位评分降级回归（审计 P1-6 修复守护）
+├── data/                            # ① 数据源层（数据从哪来）— 7 文件
+│   ├── test_data_zhb.py              # ZHB 包解析 / 字段破解 / 行业段过滤
+│   ├── test_data_tdx.py              # TDX TCP / 适配器 / 服务器白名单
+│   ├── test_data_eastmoney.py        # 东财接口 / 多域健康矩阵（全 real_network）
+│   ├── test_data_network.py          # 令牌桶限流 / 熔断器 / 封禁冷却
+│   ├── test_data_prefetch.py         # 批量预取映射 / 单位换算 / 缓存命中
+│   ├── test_data_em_board_members.py # 东财董事会成员
+│   └── test_data_em_fund_flow_tiers.py # 东财资金流分层
+├── core/                            # ② 统一层 / 服务层 — 12 文件
+│   ├── test_core_calendar.py         # 交易日历（权威日历 + ZHB 补班校验）
+│   ├── test_core_utils.py            # 公共工具（_safe_float/is_limit_up/_safe_cast 等）
+│   ├── test_core_schema.py           # CanonicalStockData / 归一化
+│   ├── test_core_scoring.py          # 评分系统
+│   ├── test_core_routing.py          # 字段路由矩阵 / 断路器降级
+│   ├── test_core_technical.py        # 技术指标 / 风险引擎
+│   ├── test_core_cache.py            # 统一缓存层（L1/L2/交叉验证/版本化）
+│   ├── test_core_tencent_volume_unit.py # 科创板 688 成交量单位换算
+│   ├── test_core_seat.py             # 龙虎榜席位三层匹配
+│   ├── test_core_capital_cache.py    # 股本缓存单位自愈 / schema 版本失效
+│   ├── test_core_blob_cache.py       # 统一层 blob 缓存
+│   ├── test_core_cyq.py              # 筹码分布（CYQ）计算
+│   └── test_sec_type_exposure.py     # 证券类型→板块标签（DEBT-016 锁固，位于 core/ 下）
+├── infra/                           # ③ 基础设施（外部依赖）— 3 文件
+│   ├── test_infra_gd.py              # Google Drive 上传
+│   ├── test_infra_api_stability.py   # 外部 API 字段契约（real_network）
+│   └── test_infra_f10.py             # F10 章节集成（real_network）
+└── reports/                         # ④ 报告层 — 5 文件（已纳入版本控制）
+    ├── test_reports_runner.py        # ReportRunner 基类 + execute_batch_pipeline 骨架
+    ├── test_reports_strategy.py      # val 23 策略注册表 / 空池安全 / 配置键
+    ├── test_reports_pipeline.py      # 5 个 Runner 子类 execute_pipeline 装配
+    ├── test_reports_chapter_omission.py # 报告章节缺失检测
+    └── test_reports_val_turnover.py  # val 换手率相关
 ```
 
-> **2026-08-30 校正**：本目录结构按实际文件重写。
-> - 原 `reports/` 层历史上一度规划过（`test_report_runner.py` / `test_report_strategy.py`）
->   但**从未落地**；2026-08-30 已按 `test_<层>_<主题>.py` 规约**重新补齐**为
->   `test_reports_runner.py` / `test_reports_strategy.py`。
-> - 现为 **data / core / infra / reports 四层**（21 文件 / **370 个测试函数**；
->   pytest 收集 398 项，差值为参数化展开 + mixin 被 3 个子类复用）。
-> - 回归基线 **353 passed / 45 deselected / 0 failed**（`skip_real`，2026-08-30 实测）；
->   演进 302 → 269 → 277 → 311 → **353**（+34 基类骨架与策略注册表，+42 五个 Runner 装配）。
->   判回归一律以 **353** 为准。
-> - ✅ 命名不一致**已修**（2026-08-30）：`tests/core/test_tencent_volume_unit.py` 未按
->   `test_<层>_<主题>.py` 规约带 `core_` 前缀，已 `git mv` 为 `test_core_tencent_volume_unit.py`
->   （保留 git 重命名历史）。已核查全仓无外部引用（`scripts/` 零引用；文档引用已同步）。
+> **2026-09-12 校正**：本目录结构按实际文件重写并核对。
+> - 共 **31 个测试文件**（不含 `conftest.py` 共享 fixtures），分 data(7) / core(12) / infra(3) / reports(5)
+>   四层 + 顶层 4 个专项测试（degradation_contract / sc_ta_core / symbol_norm / seat_db_audit_fix）。
+> - pytest 实际收集约 **561 个测试项**（含参数化展开；具体以 `pytest tests/ --collect-only` 实时为准）。
+> - **reports/ 曾因 `.gitignore:26` 的 `reports/` 规则被误忽略**（该规则本意忽略根级运行时输出目录），导致 5 个报告层
+>   测试长期游离于版本控制之外；已加 `!tests/reports/` 例外并纳入版本库（commit 见版本历史）。
+> - 已删除 `tests/_run_ta_tests.py`（手动桩运行器，注释前提"pytest 未装"已不成立，且 `_` 前缀不进 pytest 套件）。
+> - 命名规约：`test_<层>_<主题>.py`，层名与所在目录名一致；更新本 README 须按实际文件核对，勿沿用旧结构。
 
 ## 快速定位规则
 
@@ -59,38 +69,38 @@ tests/
 | TDX 行情/白名单 | `data/test_data_tdx.py` |
 | 东财被封/接口变化 | `data/test_data_eastmoney.py` |
 | 限流/熔断/封禁 | `data/test_data_network.py` |
+| 批量预取映射 | `data/test_data_prefetch.py` |
+| 东财董事会成员 | `data/test_data_em_board_members.py` |
+| 东财资金流分层 | `data/test_data_em_fund_flow_tiers.py` |
 | 缓存失效/污染 | `core/test_core_cache.py` |
 | 股本单位/schema 版本 | `core/test_core_capital_cache.py` |
-| 批量预取映射 | `data/test_data_prefetch.py` |
+| blob 缓存 | `core/test_core_blob_cache.py` |
+| 筹码分布 CYQ | `core/test_core_cyq.py` |
 | 字段口径/归一化 | `core/test_core_schema.py` |
 | 日历/节假日 | `core/test_core_calendar.py` |
 | 评分/技术指标 | `core/test_core_scoring.py` / `core/test_core_technical.py` |
-| 龙虎榜席位匹配 | `core/test_core_seat.py` |
+| 数据源降级契约 | `test_degradation_contract.py` |
+| 技术指标核心(ref/sma/macd...) | `test_sc_ta_core.py` |
+| 代码归一化 | `test_symbol_norm.py` |
+| 龙虎榜席位匹配/评分降级 | `core/test_core_seat.py` / `test_seat_db_audit_fix.py` |
 | 科创板成交量单位 | `core/test_core_tencent_volume_unit.py` |
+| 板块标签/涨跌幅限制 | `core/test_sec_type_exposure.py` |
 | GD 上传失败 | `infra/test_infra_gd.py` |
 | 降级/fallback 顺序 | `core/test_core_routing.py` |
-| **策略不工作（val 23 策略）** | `reports/test_reports_strategy.py` |
-| **Runner/批量流水线骨架** | `reports/test_reports_runner.py` |
-| **5 个 Runner 子类取数/装配** | `reports/test_reports_pipeline.py` |
-| **报告正文渲染/章节内容** | ⚠️ **无专职测试** — 同下方缺口 |
+| 策略不工作（val 23 策略） | `reports/test_reports_strategy.py` |
+| Runner/批量流水线骨架 | `reports/test_reports_runner.py` |
+| 5 个 Runner 子类取数/装配 | `reports/test_reports_pipeline.py` |
+| 报告章节缺失检测 | `reports/test_reports_chapter_omission.py` |
+| val 换手率 | `reports/test_reports_val_turnover.py` |
+| 报告正文渲染/章节内容 | ⚠️ 无专职测试（见下） |
 
-> ✅ **reports/ 层已补齐（2026-08-30，共 64 例）**，分两批落地：
-> - **① 骨架与注册表（22 + 12）**：`ReportRunner` 基类契约、`execute_batch_pipeline`
->   五大骨架能力（代码清洗 / 并发上限 3 / 单股失败隔离 / 两个预取钩子容错 / 快照落盘）、
->   GD 上传编排，以及 `val` 的 23 策略注册表一致性 + 空池安全 + 配置键存在性。
-> - **② 五个 Runner 装配（42）**：`sht/med/lng/val/mak` 的 `execute_pipeline`
->   ——公共契约（返回类型 / `report_type` / 生成器绑定 / 快照代理透传 / 上游调用次数钉死）、
->   sht 四指数行情与 depth→席位开关、`val` 的 async→sync 回退与 V16.3 O39「文件不存在
->   不得假成功」守卫、`mak` 无 sync 回退必须抛错。
+> **reports/ 层（5 文件，已纳入版本控制）**：覆盖 ReportRunner 基类契约、`execute_batch_pipeline`
+> 五大骨架能力、val 23 策略注册表一致性 + 空池安全 + 配置键存在性，以及 5 个 Runner 子类
+> `execute_pipeline` 装配（公共契约 / 生成器绑定 / 快照代理透传 / 上游调用次数钉死 / sync 回退守卫等）。
+> 两批用例均经变异测试验证有效。
 >
-> 两批用例均经**变异测试**验证有效，共注入 7 处回归全部被捕获：
-> 批次①「调度表漏登记策略25」「并发上限 3→99」「单股失败不再隔离」；
-> 批次②「sht 少取一个指数」「val 删掉 sync 回退」「val 去掉 O39 文件存在性校验」
-> 「mak 静默吞异常」。
->
-> ⚠️ **剩余缺口（已收窄）**：仅剩**报告正文渲染结果**（生成的 md 章节内容/措辞/数据
-> 呈现）无测试——需对数据层做大量打桩，成本高、易与业务改动耦合。
-> 取数与章节**装配**逻辑现已有回归保护；修改报告**正文渲染**时仍**勿假设已有保护**。
+> ⚠️ **剩余缺口**：仅剩**报告正文渲染结果**（生成的 md 章节内容/措辞/数据呈现）无测试——
+> 需对数据层做大量打桩，成本高、易与业务改动耦合。修改报告正文渲染时仍**勿假设已有保护**。
 > 相关进度见 `docs/roadmap.md` V17-1 / V17-15。
 
 ## 测试分类
@@ -109,7 +119,8 @@ tests/
 - **禁止版本号命名**（如 `test_v163_features`）——新功能测试按主题归入对应层文件
 - 新增功能必须带测试（防退化守护同层更新）
 - 更新本 README 时**必须按实际文件核对**，勿沿用旧结构（2026-08-30 曾发现目录树、
-  定位表、命名规约三处同时引用了已删除的 `reports/` 层）
+  定位表、命名规约三处同时引用了已删除的 `reports/` 层；2026-09-12 又发现 `reports/` 被
+  `.gitignore` 误忽略导致长期未受控）
 
 ## 日常使用
 

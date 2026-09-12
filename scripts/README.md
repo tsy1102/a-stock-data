@@ -70,12 +70,6 @@ TRAE IDE 自带一个 Python 3.10 解释器并将其注入到系统 PATH 前面�
   - 序列化：dict 0.005s → dataclass 0.012s（**+172%**，asdict 开销）
   - **结论**：dict 作为默认接口保留，dataclass 作为 opt-in 升级路径
 
-- **`test_em_batch_quotes_limit.py`** — 【V12.6】东财 `push2.eastmoney.com` 批量接口单次请求上限实测脚本。渐进式测试 100/500/1000/2000/5000 只股票。**标记为 `@pytest.mark.real_network`**，需要真实网络，建议用户在网络空闲时段择机运行：
-  ```bat
-  .\scripts\run_with_system_python.bat scripts\test_em_batch_quotes_limit.py
-  ```
-  输出最大成功 N 值将用于 V13.x 阶段批量调用优化决策。
-
 - **`check_em_health.py`** — 【V16.4.0】东财接口健康探测（6 域低频，间隔 5s 防封锁）。
   `--once` 单域验证恢复；退出码 0=全 OK/1=有 FAIL。换 IP 后/开机时使用：
   ```bat
@@ -102,6 +96,25 @@ TRAE IDE 自带一个 Python 3.10 解释器并将其注入到系统 PATH 前面�
 - **`gen_field_matrix.py`** — 【V16.3】从 field_dict 字段表自动生成 §零·B 字段×源矩阵（幂等重写）
 - **`backtest_topn.py`** — top_n 回测验证
 - **`run_with_system_python.ps1`** — 一键使用系统 Python 3.12，避免 TRAE IDE 内置 Python 3.10 抢占调用
+
+### 治理与字段登记流水线（V17.2 核心）
+
+字段登记表「单一真相源 ↔ field_dict.md」契约的本地治理与生成工具，全部位于 `scripts/`：
+
+- **`run_governance_gates.sh`** — 治理闸门运行器：G1 `registry_parity` / G3 `gen_field_dict --check` / P1 `archive_field_preflight`（`--with-a7` 追加 A7 `verify_sync_check`；相关文件未改动自动跳过）。CI 与 pre-commit 共用。
+- **`extract_registry.py`** — 从 `field_dict.md` 抽取构建 `field_registry.json` 单一真相源（原生 token + §零·B 投影）。
+- **`field_registry_api.py`** — registry 查询 API，被上述治理脚本广泛 import。
+- **`audit_field_completeness.py`** — 字段完整性审计（`snake_case` 源真值三源并集抽取），registry 字段来源。
+- **`gen_field_dict.py`** — 由 `field_registry.json` 幂等重写 `field_dict.md` §零·B。
+- **`gen_field_matrix.py`** — 由字段表生成 §零·B 字段×源矩阵（见上方）。
+- **`registry_parity.py`** — G1 双重 parity 校验（原生 token + §零·B 投影）。
+- **`archive_field_preflight.py`** — P1 归档契约预检（SECTION_MAP / 断链 / MAPPING 覆盖）。
+- **`verify_sync_check.py`** — A7 全量同步校验（重写审计报告）。
+- **`lint_field_same_number.py`** / **`lint_field_names.py`** — 字段同号 / 命名 lint 护栏。
+- **`field_meta.py`** — 字段元数据（FieldMeta 注册表），供采集脚本注入 raw 文件 `field_meta` 溯源、跨源对撞按 anchor_source 分发。
+- **`backup-opencode.ps1`** — OpenCode 配置备份工具（见根目录 README 目录树）。
+
+> 运行方式（系统 Python 3.12）：`PYTHON=/c/Users/tsy11/AppData/Local/Programs/Python/Python312/python.exe sh scripts/run_governance_gates.sh --force --with-a7`
 
 ### 历史脚本
 

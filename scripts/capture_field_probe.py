@@ -450,11 +450,12 @@ def collect_baidu(pool: list) -> dict:
 def collect_clist(pool: list) -> dict:
     """东财 clist(板块排名/板块资金流, §12.8.6)——真实 producer(V17.2.13)。
 
-    走 push2 clist/get(东财板块榜), 覆盖 行业(m:90 t:2)/概念(t:3)/地域(t:1) 三类,
-    按 §12.8.6 登记字段全集抓取原始 f 字段(排名 + 今日/5日/10日 资金流)。
-    A1: 复用 stock_common._quick_request(分域限流); 主域失败回退 83.push2 备域
-    (与 get_board_fund_flow 同策略)。注意 push2 有 IP 级风控, 本脚本为偶发字段核查用途、
-    非生产批量管线, 故可接受; 若遇 RemoteDisconnected 需等待 30-60 分钟再跑。
+    走 push2delay 镜像域 clist/get(东财板块榜, 与 push2 主域内容一致、延迟 15min 无影响),
+    覆盖 行业(m:90 t:2)/概念(t:3)/地域(t:1) 三类, 按 §12.8.6 登记字段全集抓取原始 f 字段
+    (排名 + 今日/5日/10日 资金流)。
+    A1: 复用 stock_common._quick_request(分域限流); **主域优先 push2delay**(独立风控面,
+    规避 push2 主域 IP 级封禁——实测 push2/push2his/83.push2 同风控面常 20h 冷却封禁,
+    而 push2delay/push2ex 独立可用); push2delay 失败回退 push2 主域。
     """
     from stock_common import _quick_request, UA
     # §12.8.6 登记字段全集: 排名(f2/f3/f4/f12/f13/f14/f104/f105/f128/f136/f140/f141/f207)
@@ -475,10 +476,10 @@ def collect_clist(pool: list) -> dict:
                       "ut": "bd1d9ddb04089700cf9c27f6f7426281"}
             hdr = {"User-Agent": UA, "Referer": "https://quote.eastmoney.com/"}
             try:
-                r = _quick_request("https://push2.eastmoney.com/api/qt/clist/get",
+                r = _quick_request("https://push2delay.eastmoney.com/api/qt/clist/get",
                                    params=params, headers=hdr, timeout=10)
                 if r is None:
-                    r = _quick_request("http://83.push2.eastmoney.com/api/qt/clist/get",
+                    r = _quick_request("https://push2.eastmoney.com/api/qt/clist/get",
                                        params=params, headers=hdr, timeout=10)
                 if r is None:
                     out["by_type"][label] = {"__error__": "request failed (both domains)"}
@@ -504,7 +505,18 @@ def collect_clist(pool: list) -> dict:
                 out["by_type"][label] = {"__error__": str(e)[:200]}
                 break
         out["records"].extend(all_recs)
-        out["by_type"][label] = {"n": len(all_recs), "total": total}
+        if all_recs:
+            out["by_type"][label] = {"n": len(all_recs), "total": total}
+        else:
+            # 请求成功但 0 条(板块榜恒有数据)→ 空载荷异常(多见于 push2 主域 IP 封禁
+            # 返回空成功响应), 显式标错以免 assess_result 误判 ok(公理 A8 禁止静默迁就)。
+            # 下列失败分支(line 484/504)已置 __error__ 的, 此处不覆盖。
+            _prev = out["by_type"].get(label, {})
+            if "__error__" not in _prev:
+                out["by_type"][label] = {
+                    "n": 0, "total": total,
+                    "__error__": "empty payload (0 records; possible push2 family IP-ban / endpoint anomaly)",
+                }
     return out
 
 
@@ -516,7 +528,7 @@ def collect_slist(pool: list) -> dict:
     字段: f12=板块 BK 代码、f14=板块名、f3=板块当日涨跌幅%、f128=板块龙头股名、f140=龙头股代码。
     → 与 §12.8.5「个股所属板块/概念归属」语义完全吻合(逐股返回其归属板块列表)。
     此前字典 §12.8.5 误记为「裸 spt=3 返回全局混合板块列表」, 经本次实测更正(裸 spt=3 → rc:102)。
-    A1: 复用 _quick_request(0.4rps 分域限流) + 83.push2 备域回退; 周六休市不影响(东财 7×24 快照)。
+    A1: 复用 _quick_request(分域限流); **主域优先 push2delay**(独立风控面, 规避 push2 主域 IP 封禁), 失败回退 push2 主域; 周六休市不影响(东财 7×24 快照)。
     逐股请求(20 股), 单股失败记 __error__ 不中断(A8 禁止静默迁就)。
     """
     from stock_common import _quick_request, UA
@@ -530,10 +542,10 @@ def collect_slist(pool: list) -> dict:
                   "ut": "bd1d9ddb04089700cf9c27f6f7426281"}
         hdr = {"User-Agent": UA, "Referer": "https://quote.eastmoney.com/"}
         try:
-            r = _quick_request("https://push2.eastmoney.com/api/qt/slist/get",
+            r = _quick_request("https://push2delay.eastmoney.com/api/qt/slist/get",
                                params=params, headers=hdr, timeout=10)
             if r is None:
-                r = _quick_request("http://83.push2.eastmoney.com/api/qt/slist/get",
+                r = _quick_request("https://push2.eastmoney.com/api/qt/slist/get",
                                    params=params, headers=hdr, timeout=10)
             if r is None:
                 out["stocks"][c] = {"__error__": "request failed (both domains)"}
@@ -542,7 +554,13 @@ def collect_slist(pool: list) -> dict:
             diff = d.get("diff") or []
             if isinstance(diff, dict):
                 diff = list(diff.values())
-            out["stocks"][c] = {"secid": secid, "n_boards": len(diff), "boards": diff}
+            if diff:
+                out["stocks"][c] = {"secid": secid, "n_boards": len(diff), "boards": diff}
+            else:
+                # 请求成功但 0 板块(个股恒有归属板块)→ 空载荷异常, 显式标错以免 assess_result
+                # 误判 ok(公理 A8 禁止静默迁就)。
+                out["stocks"][c] = {"secid": secid, "n_boards": 0,
+                                    "__error__": "empty payload (0 boards; possible push2 family IP-ban / endpoint anomaly)"}
         except Exception as e:
             out["stocks"][c] = {"__error__": str(e)[:200]}
     return out
@@ -1149,9 +1167,9 @@ def main() -> None:
         "ftshare": collect_ftshare,         # V17.0.7: FTShare MCP(千股千评/董监高/商誉/质押/解禁/打板池)
         # V17.2.12 主字典对齐: registry 已登记但本脚本暂无 producer(标记 unwired) / 已废弃(deprecated)
         "baidu": collect_baidu,            # §12.8.16 ❌→⏸️ 已废弃, 占位不采集
-        "clist": collect_clist,            # §12.8.6 东财-clist; 暂无 producer → unwired
-        "slist": collect_slist,            # §12.8.5 东财-slist; 暂无 producer → unwired
-        "exchange": collect_exchange,      # §12.8.17 沪深交易所; 龙虎榜已被 fuyao 覆盖 → unwired
+        "clist": collect_clist,            # §12.8.6 东财-clist; 真实 producer(V17.2.13, push2delay 镜像域)
+        "slist": collect_slist,            # §12.8.5 东财-slist; 真实 producer(V17.2.13, push2delay 镜像域)
+        "exchange": collect_exchange,      # §12.8.17 沪深交易所; 真实 producer(V17.2.14, 直连 szse/sse)
     }
     if args.only:
         collectors = {k: v for k, v in collectors.items() if k in [s.strip() for s in args.only.split(",")]}

@@ -199,6 +199,9 @@ BUILTIN_SCHEME = {
     "reports": "reports", "thsdk": "thsdk.removed",
     "market_sources": "market.mixed", "tdx_f10": "tdx.f10",
     "tdx_f10_more": "tdx.f10",
+    # V17.2.12 主字典对齐(与 capture_field_probe.py SOURCE_SCHEME 同步):
+    "baidu": "baidu.deprecated", "clist": "em.clist",
+    "slist": "em.slist", "exchange": "exchange.official",
 }
 
 

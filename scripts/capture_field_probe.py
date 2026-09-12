@@ -1,12 +1,20 @@
 #!/usr/bin/env python3
-"""capture_field_probe.py — 字段实测验证采集脚本(V17.0.24)
+"""capture_field_probe.py — 字段实测验证采集脚本(V17.2.12 主字典对齐)
 
-固定股票池(docs/field_verification/pool.json)20 股,按天采集各源全字段:
-  - ZHB    : full/stat/stat2/tipinfo 全字段(本地解析,零网络)
-  - TDX    : 行情快照 + 财务 0x0010(TCP)
-  - 腾讯   : qt.gtimg 单股全字段(~90 位,保存原始 split 数组)
-  - 东财   : push2 stock/get 全字段(f1-f239,原样保存)
-  - fuyao  : 官方 REST 快照/估值/竞价/财务指标/三大报表(V17.0.7 财务TTM族主源)
+固定股票池(docs/field_verification/pool.json)20 股,按天采集各源全字段。
+采集器集合与主字典 field_registry.json(23 源)逐源映射(V17.2.12 对齐):
+
+  已采集(可用 producer):
+    ZHB / TDX / 腾讯(qt.gtimg) / 东财-push2(+push2_full 全字段变体) / 新浪 / axdata(短线指标)
+    / 市场源(market_sources) / TDX-F10 / 同花顺-fuyao / 东财-em_kline_f61 / 东财-资金流(em_fund_flow)
+    / 东财-ulist239 / 东财-push2ex / 东财-热榜(em_hot) / 财联社(cls) / 东财-datacenter / 巨潮(cninfo)
+    / 东财-reports / levistock(ftshare) / TDX-F10-more
+  已登记但暂无 producer(标记 unwired, 写 meta 不进异常清单):
+    东财-clist(§12.8.6) / 东财-slist(§12.8.5) / 沪深交易所(§12.8.17, 龙虎榜已被 fuyao 覆盖)
+  已废弃不采集(标记 deprecated):
+    百度(baidu, §12.8.16 ❌→⏸️, PAE 失效改走 TDX 适配器) / 同花顺-thsdk(§12.8.12b, V17.2.0 已移除 TCP 网关)
+  真实可用但 registry 漏登记(保留采集, 属字典侧补登):
+    TDX(行情+F10) / axdata / push2_full
 
 V17.0.24(2026-09-01) 据主字典最新定案更新:
   - 新增 em_kline_f61: 东财日K(f61 换手率)——CYQ 筹码分布唯一源(字典 V17.0.14)
@@ -14,6 +22,23 @@ V17.0.24(2026-09-01) 据主字典最新定案更新:
     唯一同口径源(V17.0.16: 主力净=f137, 勿 f137+f140); 走 delay 域不碰 push2 主域
   - collect_fuyao 补 fin_report 三大报表(income/balance/cashflow)——f163 静态PE
     闭环(f160 年报EPS)与 ocf_ttm/revenue_ttm TTM 重建的原始锚数据(V17.0.7)
+V17.2.9(2026-09-12) 元数据与健康度修复:
+  - --only 增量采集**合并**已有 meta.json(sources/schemes/start/zhb_data_date 均保留),
+    修复「单源覆写整份元数据」缺陷; 新增 meta["only"] 与 meta["run"] 运行摘要。
+  - 新增 assess_result(): 按返回物中 __error__ 的真实数量判定源状态 ok/partial/failed,
+    修复「采集函数内部吞异常返回错误占位、外层仍标 ok=True」缺陷(A8 禁止静默迁就)。
+    源条目新增 status / n_error / n_total / n_dead / error_sample 字段。
+  - 控制台: 异常源打印 ⚠ + 失败计数, 运行结束追加异常源清单。
+
+V17.2.12(2026-09-12) 采集脚本↔主字典(field_registry.json, 23 源)逐源对齐:
+  - collectors 集合扩展为主字典 23 源的完整映射: 已登记但暂无 producer 的 东财-clist/slist、
+    沪深交易所, 以及已废弃的 百度, 统一以 unwired/deprecated 标记纳入 collectors(写 meta、
+    不进异常源清单), 使脚本采集清单与主字典源清单一一对应。
+  - SOURCE_SCHEME 同步增补 baidu/clist/slist/exchange 四项 scheme 标注, 并与
+    verify_cross_source_crack.py 的 BUILTIN_SCHEME 保持一致(对撞护栏血缘)。
+  - TDX(行情+F10)/axdata/push2_full 为真实可用采集器但 registry 漏登记, 保留采集并在本注记标注
+    (属字典侧补登, 非脚本缺陷)。
+
 输出: docs/field_verification/{YYYYMMDD}/raw_{source}.json(顶层含 scheme 字段体系标注) + meta.json(含 schemes 映射)
 用法:
   python scripts/capture_field_probe.py                 # 采今天(用现有 ZHB 包)
@@ -80,6 +105,11 @@ SOURCE_SCHEME = {
     "market_sources": "market.mixed",
     "tdx_f10":        "tdx.f10",
     "tdx_f10_more":   "tdx.f10",
+    # V17.2.12 主字典对齐: registry 已登记但本脚本暂无 producer 的源(显式标注血缘, 供对撞/lint 校验)
+    "baidu":          "baidu.deprecated",   # §12.8.16 ❌→⏸️ 已废弃(PAE 失效, 改 TDX 适配器); 占位不采集
+    "clist":          "em.clist",           # 东财-clist(板块排名/板块资金流, §12.8.6); 暂无 producer → unwired
+    "slist":          "em.slist",           # 东财-slist(个股所属板块/概念归属, §12.8.5); 暂无 producer → unwired
+    "exchange":       "exchange.official",  # 沪深交易所官方(§12.8.17); 龙虎榜已被 fuyao 覆盖 → unwired
 }
 
 # 模块文档未改动处见上方 docstring; 输出文件新增 scheme 标注(见 main)。
@@ -391,6 +421,53 @@ def collect_thsdk(pool: list) -> dict:
     thsdk 仅盘中可用、对自己无价值)。此采集器保留为占位,返回已移除标记。
     """
     return {"stocks": {}, "error": "thsdk TCP 网关已于 V17.2.0 移除"}
+
+
+# ── V17.2.12 主字典对齐: registry 已登记但本脚本暂无 producer 的源 ──
+# 这些采集器返回 {"__unwired__": ...} 占位, 由 main() 识别为 unwired/deprecated 状态
+# (写 meta、不写 raw 文件、不计入异常源清单), 使脚本采集清单与主字典 23 源一一对应。
+def collect_baidu(pool: list) -> dict:
+    """百度股市通(已废弃占位, 不采集)。
+
+    字典 §12.8.16: 百度 PAE `getrelatedblock` 已失效(ResultCode 10003),
+    K线/行情已切 TDX 适配器, 状态 ❌→⏸️。registry 仍标 active(与字典不一致)——
+    本采集器保留为 deprecated 占位, 明确标注, 不发出任何请求(A8: 不假装成功也不假装失败)。
+    """
+    return {"__unwired__": "deprecated", "registry_name": "百度(baidu)",
+            "section": "12.8.16 百度股市通（K线带MA）❌→⏸️",
+            "reason": "百度 PAE 已失效, K线/行情改走 TDX 适配器; 不采集"}
+
+
+def collect_clist(pool: list) -> dict:
+    """东财 clist(板块排名/板块资金流, §12.8.6)——registry 已登记, 暂无 producer。
+
+    底层 `get_em_board_list` / `get_em_board_members` / clist/get 端点存在,
+    但无单调用「全板块排名+资金流」聚合采集函数; 标记 unwired, 待补全 producer 后接入。
+    """
+    return {"__unwired__": True, "registry_name": "东财-clist",
+            "section": "12.8.6 东财 clist（板块排名/板块资金流）",
+            "reason": "registry 已登记但本脚本无对应 producer; 待实现聚合采集"}
+
+
+def collect_slist(pool: list) -> dict:
+    """东财 slist(个股所属板块/概念归属, §12.8.5)——registry 已登记, 暂无 producer。
+
+    底层仅有 `get_em_industry_l2(code)`(单股行业)等, 无 slist/get 批量端点封装; 标记 unwired。
+    """
+    return {"__unwired__": True, "registry_name": "东财-slist",
+            "section": "12.8.5 东财 slist（个股所属板块/概念归属）",
+            "reason": "registry 已登记但本脚本无对应 producer; 待实现 slist/get 封装"}
+
+
+def collect_exchange(pool: list) -> dict:
+    """沪深交易所官方(龙虎榜/行情/公告备胎, §12.8.17)——registry 已登记, 暂无 producer。
+
+    龙虎榜已由 fuyao dragon_tiger 覆盖(字典已标注 ✅ 已覆盖); 交易所独立行情/公告备胎
+    无对应采集函数, 标记 unwired。
+    """
+    return {"__unwired__": True, "registry_name": "沪深交易所",
+            "section": "12.8.17 沪深交易所官方（龙虎榜/行情/公告备胎）",
+            "reason": "registry 已登记; 龙虎榜已被 fuyao 覆盖, 其余端点无 producer → unwired"}
 
 
 def _last_completed_trading_day():
@@ -786,6 +863,78 @@ def dry_run(pool: list) -> None:
     print(f"  push2   : {'OK' if r is not None else 'FAIL'}")
 
 
+def assess_result(data) -> tuple:
+    """V17.2.9: 判定采集结果的真实健康度。
+
+    背景: 采集函数内部普遍以 try/except 吞掉异常并写入 `{"__error__": ...}` 占位
+    (全脚本 26 处), 因此 `fn(pool)` 正常返回 **不代表采集成功**。旧逻辑据此记
+    `ok: True`, 导致 em_kline_f61 遇东财风控 20/20 全失败、push2 主域 20/20 全失败时
+    仍被标为成功(触碰公理 A8「禁止静默迁就」)。
+
+    本函数递归统计返回物中 `__error__` 的出现次数, 据此给出三态判定:
+      - "ok"      : 零 __error__
+      - "partial" : 存在 __error__(字段级失败, 或仅部分容器元素整体失败)
+      - "failed"  : 容器元素全部整体失败, 或整个返回物就是一个错误占位
+
+    Args:
+        data: 采集函数返回物(通常形如 {"stocks": {code: {...}}})
+
+    Returns:
+        (ok, info); ok = (status == "ok"); info 含 status/n_error[/n_total/error_sample]
+    """
+    n_err = 0
+    sample = None
+
+    def walk(o):
+        nonlocal n_err, sample
+        if isinstance(o, dict):
+            if "__error__" in o:
+                n_err += 1
+                if sample is None:
+                    sample = str(o["__error__"])[:160]
+                return
+            for v in o.values():
+                walk(v)
+        elif isinstance(o, list):
+            for v in o:
+                walk(v)
+
+    walk(data)
+
+    # 顶层容器规模 + 其中"整体失败"的元素数(用于区分 partial / failed)。
+    # 注意: n_error 是**字段级**计数, 与容器元素数不同量纲, 不能直接比大小 ——
+    # 一只股票可有多个字段级 __error__, 故须单独统计"整个元素就是错误占位"的数量。
+    n_total = None
+    n_dead = 0
+    if isinstance(data, dict):
+        for _key in ("stocks", "records", "items"):
+            _v = data.get(_key)
+            if isinstance(_v, (dict, list)) and len(_v):
+                n_total = len(_v)
+                _items = _v.values() if isinstance(_v, dict) else _v
+                n_dead = sum(1 for it in _items
+                             if isinstance(it, dict) and "__error__" in it)
+                break
+
+    if n_err == 0:
+        return True, {"status": "ok", "n_error": 0}
+
+    if isinstance(data, dict) and "__error__" in data:
+        status = "failed"                      # 整个返回物即错误占位
+    elif n_total is not None and n_dead >= n_total:
+        status = "failed"                      # 容器元素全部整体失败
+    else:
+        status = "partial"                     # 字段级失败 / 仅部分元素失败
+
+    info = {"status": status, "n_error": n_err}
+    if n_total is not None:
+        info["n_total"] = n_total
+        info["n_dead"] = n_dead
+    if sample:
+        info["error_sample"] = sample
+    return False, info
+
+
 def main() -> None:
     ap = argparse.ArgumentParser(description="字段验证采集")
     ap.add_argument("--date", default=datetime.now().strftime("%Y%m%d"))
@@ -800,7 +949,30 @@ def main() -> None:
 
     t0 = time.time()
     print(f"▶ 采集开始: {args.date} | 股票 {len(pool)} 只 | 源: ZHB/TDX/腾讯/push2", flush=True)
+
+    out_dir = os.path.join(OUT_BASE, args.date)
+    os.makedirs(out_dir, exist_ok=True)
+    meta_path = os.path.join(out_dir, "meta.json")
+
     meta = {"date": args.date, "start": time.strftime("%Y-%m-%d %H:%M:%S"), "sources": {}}
+    # V17.2.9 修复: --only 增量采集必须**合并**已有 meta.json, 而非整份覆盖 ——
+    # 否则未参与本次采集的源会从元数据中消失(曾致 22 源元数据被单源覆写)。
+    if args.only and os.path.isfile(meta_path):
+        try:
+            with open(meta_path, encoding="utf-8") as f:
+                _prev = json.load(f)
+            if isinstance(_prev.get("sources"), dict):
+                meta["sources"].update(_prev["sources"])
+            if isinstance(_prev.get("schemes"), dict):
+                meta["schemes"] = dict(_prev["schemes"])
+            for _k in ("start", "zhb_data_date"):
+                if _prev.get(_k):
+                    meta[_k] = _prev[_k]
+            if _prev.get("end"):
+                meta["prev_end"] = _prev["end"]
+        except Exception as e:
+            print(f"  ⚠ 已有 meta.json 读取失败, 本次将整份覆盖: {e}", flush=True)
+    meta["only"] = args.only or None
 
     collectors = {
         "zhb": collect_zhb,
@@ -825,16 +997,33 @@ def main() -> None:
         "cninfo": collect_cninfo,           # V16.4.1: 巨潮互动易
         "reports": collect_reports,         # V16.4.1: 研报
         "ftshare": collect_ftshare,         # V17.0.7: FTShare MCP(千股千评/董监高/商誉/质押/解禁/打板池)
+        # V17.2.12 主字典对齐: registry 已登记但本脚本暂无 producer(标记 unwired) / 已废弃(deprecated)
+        "baidu": collect_baidu,            # §12.8.16 ❌→⏸️ 已废弃, 占位不采集
+        "clist": collect_clist,            # §12.8.6 东财-clist; 暂无 producer → unwired
+        "slist": collect_slist,            # §12.8.5 东财-slist; 暂无 producer → unwired
+        "exchange": collect_exchange,      # §12.8.17 沪深交易所; 龙虎榜已被 fuyao 覆盖 → unwired
     }
     if args.only:
         collectors = {k: v for k, v in collectors.items() if k in [s.strip() for s in args.only.split(",")]}
-    out_dir = os.path.join(OUT_BASE, args.date)
-    os.makedirs(out_dir, exist_ok=True)
 
     for name, fn in collectors.items():
         try:
             t1 = time.time()
             data = fn(pool)
+            # V17.2.12 主字典对齐: registry 已登记但本脚本暂无 producer 的源返回 __unwired__ 占位,
+            # 显式记为 unwired/deprecated(区别于 ok/partial/failed), 不写 raw 文件、不计入异常源清单。
+            _uw = data.get("__unwired__") if isinstance(data, dict) else None
+            if _uw:
+                _kind = "deprecated" if _uw == "deprecated" else "unwired"
+                meta["sources"][name] = {
+                    "scheme": SOURCE_SCHEME.get(name, "unknown"),
+                    "ok": False, "status": _kind,
+                    "registry_name": data.get("registry_name"),
+                    "section": data.get("section"),
+                    "secs": round(time.time() - t1, 1),
+                }
+                print(f"  ⊘ {name}: {_kind} (registry 已登记, 无 producer)", flush=True)
+                continue
             # A 方案: 标注字段体系(scheme)血缘, 写入 raw 文件顶层 + meta, 供对撞工具/lint 校验
             _scheme = SOURCE_SCHEME.get(name, "unknown")
             if isinstance(data, dict):
@@ -852,10 +1041,22 @@ def main() -> None:
             path = os.path.join(out_dir, f"raw_{name}.json")
             with open(path, "w", encoding="utf-8") as f:
                 json.dump(data, f, ensure_ascii=False, indent=1, default=str)
-            meta["sources"][name] = {"scheme": _scheme, "ok": True,
-                                     "field_meta": _fm is not None,
-                                     "secs": round(time.time() - t1, 1), "file": path}
-            print(f"  ✔ {name}: {meta['sources'][name]['secs']}s", flush=True)
+            # V17.2.9 修复: 采集函数会**内部吞异常**并返回 {"__error__": ...} 占位,
+            # 旧逻辑只要 fn(pool) 不抛异常就记 ok=True(曾致 em_kline_f61 20/20 全失败仍标 ok)。
+            # 现按返回物中 __error__ 的实际数量判定 status: ok / partial / failed。
+            _ok, _info = assess_result(data)
+            _entry = {"scheme": _scheme, "ok": _ok,
+                      "field_meta": _fm is not None,
+                      "secs": round(time.time() - t1, 1), "file": path}
+            _entry.update(_info)
+            meta["sources"][name] = _entry
+            if _ok:
+                print(f"  ✔ {name}: {_entry['secs']}s", flush=True)
+            else:
+                _nt = _entry.get("n_total")
+                _cnt = f"{_entry['n_error']}/{_nt}" if _nt else str(_entry["n_error"])
+                print(f"  ⚠ {name}: {_entry['secs']}s | {_entry['status']} | "
+                      f"{_cnt} 处 __error__ | {_entry.get('error_sample', '')}", flush=True)
         except Exception as e:
             meta["sources"][name] = {"scheme": SOURCE_SCHEME.get(name, "unknown"),
                                      "ok": False, "error": str(e)[:300]}
@@ -864,17 +1065,32 @@ def main() -> None:
     meta["end"] = time.strftime("%Y-%m-%d %H:%M:%S")
     meta["total_secs"] = round(time.time() - t0, 1)
     # A 方案: 本日各源字段体系(scheme)血缘总览, 供对撞工具/lint 直接读取
-    meta["schemes"] = {k: SOURCE_SCHEME.get(k, "unknown") for k in collectors}
+    # V17.2.9: 与已有 schemes 合并(--only 时不得丢失未采源的血缘标注)
+    meta["schemes"] = {**(meta.get("schemes") or {}),
+                       **{k: SOURCE_SCHEME.get(k, "unknown") for k in collectors}}
     # V17.0.10: 记录 ZHB 数据日期(T-1 规则)——对撞破解必须先核对此字段再定对撞报告日期
     try:
-        meta["zhb_data_date"] = json.load(
+        _zhb = json.load(
             open(os.path.join(out_dir, "raw_zhb.json"), encoding="utf-8")
         ).get("zhb_date", "")
+        meta["zhb_data_date"] = _zhb or meta.get("zhb_data_date", "")
     except Exception:
-        meta["zhb_data_date"] = ""
-    with open(os.path.join(out_dir, "meta.json"), "w", encoding="utf-8") as f:
+        meta.setdefault("zhb_data_date", "")
+    # V17.2.9: 本次运行的源级健康度汇总(--only 时只统计本次 collectors, 不误报历史源)
+    # V17.2.12: unwired/deprecated 为 registry 已登记但无 producer / 已废弃的预期态, 不计入异常源。
+    def _is_abnormal(s: dict) -> bool:
+        st = s.get("status")
+        if st in ("ok", "unwired", "deprecated"):
+            return False
+        return not s.get("ok", True)
+    _bad = [k for k in collectors if _is_abnormal(meta["sources"].get(k, {}))]
+    meta["run"] = {"only": args.only or None, "n_sources": len(collectors),
+                   "n_abnormal": len(_bad), "abnormal": _bad}
+    with open(meta_path, "w", encoding="utf-8") as f:
         json.dump(meta, f, ensure_ascii=False, indent=1)
     print(f"✔ 完成: {out_dir} | 总耗时 {meta['total_secs']}s | ZHB={meta.get('zhb_data_date')}", flush=True)
+    if _bad:
+        print(f"⚠ 本次存在异常源 {len(_bad)}/{len(collectors)}: {', '.join(_bad)}", flush=True)
 
 
 if __name__ == "__main__":

@@ -334,7 +334,6 @@
       "source": null,
       "sources": [
         "同花顺-fuyao",
-        "沪深交易所",
         "TDX(双命名源)",
         "levistock(ftshare)",
         "reports",
@@ -425,7 +424,6 @@
       "source": null,
       "sources": [
         "同花顺-fuyao",
-        "沪深交易所",
         "TDX(双命名源)",
         "levistock(ftshare)",
         "东财-datacenter(英文键)",
@@ -526,7 +524,6 @@
       "code": "ata",
       "source": null,
       "sources": [
-        "沪深交易所",
         "TDX(双命名源)",
         "levistock(ftshare)",
         "百度(baidu)"
@@ -1056,7 +1053,6 @@
       "source": null,
       "sources": [
         "同花顺-fuyao",
-        "沪深交易所",
         "TDX(双命名源)",
         "levistock(ftshare)"
       ],
@@ -1118,7 +1114,6 @@
       "source": null,
       "sources": [
         "同花顺-fuyao",
-        "沪深交易所",
         "TDX(双命名源)",
         "levistock(ftshare)",
         "东财-push2ex",
@@ -3243,7 +3238,6 @@
       "source": null,
       "sources": [
         "同花顺-fuyao",
-        "沪深交易所",
         "TDX(双命名源)",
         "东财-datacenter(英文键)",
         "东财-push2ex",
@@ -3965,7 +3959,6 @@
       "code": "ist",
       "source": null,
       "sources": [
-        "沪深交易所",
         "TDX(双命名源)",
         "levistock(ftshare)"
       ],
@@ -4464,7 +4457,6 @@
       "source": null,
       "sources": [
         "同花顺-fuyao",
-        "沪深交易所",
         "TDX(双命名源)",
         "levistock(ftshare)",
         "reports",
@@ -4655,9 +4647,8 @@
     },
     {
       "code": "mootdx",
-      "source": null,
+      "source": "TDX(双命名源)",
       "sources": [
-        "沪深交易所",
         "TDX(双命名源)"
       ],
       "section": "",
@@ -4685,7 +4676,6 @@
       "source": null,
       "sources": [
         "同花顺-fuyao",
-        "沪深交易所",
         "TDX(双命名源)",
         "levistock(ftshare)",
         "东财-push2ex",
@@ -4896,7 +4886,6 @@
       "code": "ode",
       "source": null,
       "sources": [
-        "沪深交易所",
         "TDX(双命名源)",
         "levistock(ftshare)",
         "东财-热榜(em_hot)",
@@ -5420,7 +5409,6 @@
       "code": "query",
       "source": null,
       "sources": [
-        "沪深交易所",
         "TDX(双命名源)",
         "巨潮(cninfo)",
         "财联社(cls)"
@@ -5490,7 +5478,6 @@
       "code": "reason",
       "source": null,
       "sources": [
-        "沪深交易所",
         "TDX(双命名源)",
         "levistock(ftshare)",
         "东财-热榜(em_hot)"
@@ -6000,7 +5987,6 @@
       "source": null,
       "sources": [
         "同花顺-fuyao",
-        "沪深交易所",
         "TDX(双命名源)",
         "东财-热榜(em_hot)",
         "巨潮(cninfo)",
@@ -11682,7 +11668,6 @@
       "source": null,
       "sources": [
         "同花顺-fuyao",
-        "沪深交易所",
         "levistock(ftshare)",
         "东财-datacenter(英文键)",
         "东财-push2ex",
@@ -21710,9 +21695,8 @@
     },
     {
       "code": "nodeapi",
-      "source": null,
+      "source": "财联社(cls)",
       "sources": [
-        "沪深交易所",
         "财联社(cls)"
       ],
       "section": "",
@@ -21947,9 +21931,8 @@
     },
     {
       "code": "telegraph",
-      "source": null,
+      "source": "财联社(cls)",
       "sources": [
-        "沪深交易所",
         "财联社(cls)"
       ],
       "section": "",
@@ -22235,9 +22218,8 @@
     },
     {
       "code": "ime",
-      "source": null,
+      "source": "巨潮(cninfo)",
       "sources": [
-        "沪深交易所",
         "巨潮(cninfo)"
       ],
       "section": "",
@@ -22460,9 +22442,8 @@
     },
     {
       "code": "esult",
-      "source": null,
+      "source": "百度(baidu)",
       "sources": [
-        "沪深交易所",
         "百度(baidu)"
       ],
       "section": "",
@@ -22474,9 +22455,8 @@
     },
     {
       "code": "getrelatedblock",
-      "source": null,
+      "source": "百度(baidu)",
       "sources": [
-        "沪深交易所",
         "百度(baidu)"
       ],
       "section": "",
@@ -22618,45 +22598,6 @@
       "status": "unverified"
     },
     {
-      "code": "ann",
-      "source": "沪深交易所",
-      "sources": [
-        "沪深交易所"
-      ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "status_raw": "",
-      "status": "unverified"
-    },
-    {
-      "code": "announcements_backup",
-      "source": "沪深交易所",
-      "sources": [
-        "沪深交易所"
-      ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "status_raw": "",
-      "status": "unverified"
-    },
-    {
-      "code": "anotice",
-      "source": "沪深交易所",
-      "sources": [
-        "沪深交易所"
-      ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "status_raw": "",
-      "status": "unverified"
-    },
-    {
       "code": "cjje",
       "source": "沪深交易所",
       "sources": [
@@ -22668,123 +22609,6 @@
       "unit": "amount",
       "status_raw": "✅",
       "status": "verified"
-    },
-    {
-      "code": "dragon_tiger_backup",
-      "source": "沪深交易所",
-      "sources": [
-        "沪深交易所"
-      ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "status_raw": "",
-      "status": "unverified"
-    },
-    {
-      "code": "dycalchis",
-      "source": "沪深交易所",
-      "sources": [
-        "沪深交易所"
-      ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "status_raw": "",
-      "status": "unverified"
-    },
-    {
-      "code": "em_price_anomaly",
-      "source": "沪深交易所",
-      "sources": [
-        "沪深交易所"
-      ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "status_raw": "",
-      "status": "unverified"
-    },
-    {
-      "code": "ff_",
-      "source": "沪深交易所",
-      "sources": [
-        "沪深交易所"
-      ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "status_raw": "",
-      "status": "unverified"
-    },
-    {
-      "code": "file",
-      "source": "沪深交易所",
-      "sources": [
-        "沪深交易所"
-      ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "status_raw": "",
-      "status": "unverified"
-    },
-    {
-      "code": "fundflow",
-      "source": "沪深交易所",
-      "sources": [
-        "沪深交易所"
-      ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "status_raw": "",
-      "status": "unverified"
-    },
-    {
-      "code": "fundsortlist",
-      "source": "沪深交易所",
-      "sources": [
-        "沪深交易所"
-      ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "status_raw": "",
-      "status": "unverified"
-    },
-    {
-      "code": "net",
-      "source": "沪深交易所",
-      "sources": [
-        "沪深交易所"
-      ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "status_raw": "",
-      "status": "unverified"
-    },
-    {
-      "code": "ontents",
-      "source": "沪深交易所",
-      "sources": [
-        "沪深交易所"
-      ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "status_raw": "",
-      "status": "unverified"
     },
     {
       "code": "plyy",
@@ -22800,125 +22624,7 @@
       "status": "verified"
     },
     {
-      "code": "product",
-      "source": "沪深交易所",
-      "sources": [
-        "沪深交易所"
-      ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "status_raw": "",
-      "status": "unverified"
-    },
-    {
-      "code": "sh1",
-      "source": "沪深交易所",
-      "sources": [
-        "沪深交易所"
-      ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "status_raw": "",
-      "status": "unverified"
-    },
-    {
-      "code": "snap",
-      "source": "沪深交易所",
-      "sources": [
-        "沪深交易所"
-      ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "status_raw": "",
-      "status": "unverified"
-    },
-    {
-      "code": "sse",
-      "source": "沪深交易所",
-      "sources": [
-        "沪深交易所"
-      ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "status_raw": "",
-      "status": "unverified"
-    },
-    {
       "code": "sse_raw",
-      "source": "沪深交易所",
-      "sources": [
-        "沪深交易所"
-      ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "status_raw": "",
-      "status": "unverified"
-    },
-    {
-      "code": "ssjjhq",
-      "source": "沪深交易所",
-      "sources": [
-        "沪深交易所"
-      ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "status_raw": "",
-      "status": "unverified"
-    },
-    {
-      "code": "szse",
-      "source": "沪深交易所",
-      "sources": [
-        "沪深交易所"
-      ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "status_raw": "",
-      "status": "unverified"
-    },
-    {
-      "code": "token",
-      "source": null,
-      "sources": [
-        "沪深交易所",
-        "levistock(ftshare)"
-      ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "status_raw": "",
-      "status": "unverified"
-    },
-    {
-      "code": "unknow",
-      "source": "沪深交易所",
-      "sources": [
-        "沪深交易所"
-      ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "status_raw": "",
-      "status": "unverified"
-    },
-    {
-      "code": "yunhq",
       "source": "沪深交易所",
       "sources": [
         "沪深交易所"
@@ -26923,6 +26629,19 @@
     },
     {
       "code": "ths_board_",
+      "source": "levistock(ftshare)",
+      "sources": [
+        "levistock(ftshare)"
+      ],
+      "section": "",
+      "canonical": "",
+      "meaning": "",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified"
+    },
+    {
+      "code": "token",
       "source": "levistock(ftshare)",
       "sources": [
         "levistock(ftshare)"

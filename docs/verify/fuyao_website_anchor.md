@@ -175,7 +175,7 @@
 
 ---
 
-## 八、Phase 1 概念/地域/行业列表页"可排序排行表"（JS 渲染 ⚠️ 会话门控待登录）
+## 八、Phase 1 概念/地域/行业列表页"可排序排行表"（JS 渲染 ⚠️ chameleon 反爬指纹令牌门控）
 
 > **环境已解禁（2026-09-13 14:00 实测）**：原"Chrome 硬阻断"结论已证伪。根因两层可修复误配（见计划文档 §六·5 / MEMORY 浏览器铁律）：①`--single-process --no-zygote` 把崩溃的 GPU 进程塞进主进程拖垮浏览器；②THS Nginx 按 `HeadlessChrome` UA 拦截返回 `Nginx forbidden`。改用**多进程 `headless=new` + `--disable-gpu --disable-gpu-sandbox` + 桌面 Chrome UA + `zh-CN` 语言**后，`/gn/` 已可加载（157KB 真实 HTML）。
 
@@ -183,20 +183,20 @@
 概念页"热点概念 / 概念驱动力"表列（CDP+`--dump-dom` 抽取 `<th>` 确证）：
 `日期 / 概念名称 / 驱动事件 / 龙头股 / 成分股数量`
 
-### 8.2 概念主排行表（可排序，涨跌幅/主力净流入/5日涨跌幅等）— XHR 已定位、会话门控 ⚠️
-- **真实 XHR 接口**（Chrome DevTools Protocol 网络捕获确证）：`https://q.10jqka.com.cn/api.php?t=gnldt&d=jsonp&callback=jQuery<ts>_<rand>&_=<ts>`
-  - `gnldt` = 概念列表数据（concept list data）。
-- **门控确证**：未登录态下该接口返回空数组 `jQuery...( [] )`（已分别用 `cb` 与页面真实 `jQuery183...` callback + 页面同源 Referer 复测，均空）。**需同花顺登录态（cookie）方可取数** → 动态列仍标 ⚠️ 待登录。
+### 8.2 概念主排行表（可排序，涨跌幅/主力净流入/5日涨跌幅等）— 真实 XHR 未触发 ⚠️（2026-09-13 重测订正）
+- **`api.php?t=gnldt` 经重测已证伪为"概念主表"**：该接口实为**公开「今日大盘异动」滚动条**，无登录/cookie 即返回实时内容（实测示例：`{"content":"今日大盘波动较小，无明显板块异动，请投资者耐心等待，控制仓位","date":"202609131130"}`），与用户会话无关 → **不是**概念排行主表。
+- **真实概念排行主表 XHR 在 headless 下根本未触发**：Chrome+CDP 完整抓包显示，概念板页面（`/gn/`）同源请求仅 `gn/`、`api.php?t=gnldt`、以及反爬令牌接口 `cbasspider.10jqka.com.cn:8443/spider/api/v1/access_token`；**排行表数据接口从未发起**。
+- **根因**：THS 概念排行表被 `chameleon` 反爬层门控——页面须先向 `cbasspider.../access_token` 动态申领临时令牌（依赖真实浏览器指纹），凭该令牌才放行排行数据 XHR。headless 无真实指纹→令牌无效→排行 XHR 静默失败、不发起。→ 动态列仍标 ⚠️ 待浏览器指纹通道。
 
 ### 8.3 地域 / 行业列表页 — 路径 404、端点待重探 ⚠️
 - `/dn/`（地域）、`/hy/`（行业）真实 **404**（非列表页路径，WebFetch 早前 404 判断正确）。
-- `api.php?t=dnldt / hyldt / dqldt / hydt` 均返回空 / 404 → 真实端点码待重探（或同样会话门控）。
+- `api.php?t=dnldt / hyldt / dqldt / hydt` 均返回空 / 404 → 真实端点码待重探（或同样被 `chameleon` 反爬指纹令牌门控）。
 
 ### 8.5 登录通道实测结论（2026-09-13 14:40）— 本沙箱不可行
 - 选定"用同花顺账号登录"补全，但实测：**登录域 `passport.10jqka.com.cn` 在本沙箱 DNS 解析失败（`DNS_PROBE_FINISHED_NXDOMAIN`）**，`q.10jqka.com.cn`/`data.10jqka.com.cn` 却正常解析 → 登录页本身不可达，无头登录路线在本环境**不可行**（且即便可达也大概率过验证码、并动用用户真实账号，风险高）。
-- 页面加载时调用的公开令牌接口 `https://cbasspider.10jqka.com.cn:8443/spider/api/v1/access_token`：直接 GET 返回 **405 Method Not Allowed**（需页面特定 POST/指纹），非简单公开 token；`gnldt` 空数组的根因即缺此反爬令牌（或用户会话），**非环境、非 UA、非 callback 格式问题**。
+- 页面加载时调用的反爬令牌接口 `https://cbasspider.10jqka.com.cn:8443/spider/api/v1/access_token`：直接 GET 返回 **405 Method Not Allowed**（需页面特定 POST + 浏览器指纹），证实 THS 以 `chameleon` **动态指纹令牌层**做反爬（非静态 cookie）。注：此接口与 `gnldt` 无因果关系——`gnldt` 本就返回公开「大盘异动」实时内容，并不依赖该令牌。
 - **最终判定**：概念/地域/行业动态排行表被 THS **反爬令牌层**封锁，属数据源自身防护，非本沙箱限制。Chrome 环境层已完全解禁（详见 §8.1 已逐字项），但动态表体在本环境**无法取得**，除非：
-  1. 用户从其本机已登录浏览器**导出 session cookie**（提供后本环境可重放 `api.php?t=gnldt` 取数）；或
+  1. 由**真实有头浏览器（含有效指纹）**触发 `chameleon` 动态令牌申领、放行排行 XHR 后再 CDP 抓包——普通静态 session cookie 重放无效（排行 XHR 在 headless 下根本不发起）；或
   2. 逆向 THS 反爬令牌获取逻辑（超出本计划范围、且涉 ToS 灰区，不建议）。
 
 ### 8.4 剩余预期列（主排行表，源自标准同花顺概念板，未浏览器逐字，标 ⚠️ 待登录）
@@ -217,7 +217,7 @@
 | 成分股数 | 成分股接口 `item[]` 长度 | fuyao | ⚠️待会话cookie |
 | 总市值 | fuyao 无独立总市值 | 派生/东财 | ⚠️待会话cookie |
 
-**解锁条件**：本沙箱登录域 `passport.10jqka.com.cn` DNS 不可达、公开令牌接口 405，故动态列无法在本环境取得。需用户提供其**本机已登录浏览器的 session cookie**（导出后本环境可重放 `api.php?t=gnldt` 逐字），或接受上表"标准同花顺概念板列"映射（已按 THS 通行列名对齐，但未经本环境逐字核验）。
+**解锁条件**：本沙箱登录域 `passport.10jqka.com.cn` DNS 不可达 → 无头登录路线不可行；且真实排行表被 `chameleon` **动态指纹令牌门控**（XHR 在 headless 下根本不发起），**单凭用户 session cookie 重放 `gnldt` 无效**（`gnldt` 乃公开「大盘异动」条、并非概念排行主表）。本环境动态列无法取得，除非换真实有头浏览器 + 指纹通道（CDP 抓包），或接受上表"标准同花顺概念板列"映射（已按 THS 通行列名对齐，但未经本环境逐字核验）。
 
 ---
 
@@ -240,7 +240,7 @@
 
 ## 十、待办 / 下一步（按计划文档 §七 顺序）
 
-1. **解锁 Phase 1**：环境已解禁（2026-09-13 14:00 证伪"Chrome 硬阻断"）。概念页静态列已逐字（§8.1）；主排行表 XHR=`api.php?t=gnldt` 已定位但**会话门控**——需用 `credentials/ths_credentials.json` 登录取 cookie 后重放（§8.2/§8.3）。地域/行业端点待重探。
+1. **解锁 Phase 1**：环境已解禁（2026-09-13 14:00 证伪"Chrome 硬阻断"）。概念页静态列已逐字（§8.1）；但**`api.php?t=gnldt` 经重测证伪为公开"大盘异动"条、并非概念排行主表**（§8.2 已订正）。真实排行主表 XHR 被 `chameleon` 动态指纹令牌门控、headless 下未触发，单凭登录 cookie 无法重放（§8.5 已订正）。地域/行业端点待重探。
 2. **补 fuyao 指数快照响应字段文档**：将 §二/§九 的板块级中文名回填 `fuyao_api_full.md` 与字典 §12.8.12c（修复文档缺口）。
 3. **字典回填**：各 fuyao 字段补中文规范名（§12.8.12e canonical）；新增 §12.8.12k「fuyao 网站中文名黄金锚」指向本表。
 4. **扩 `ths_tableheader_ids.md`**：从网站实测反推 tableheader 列 ID（当前仅 682 全表抽样）。

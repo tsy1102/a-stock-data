@@ -192,25 +192,32 @@
 - `/dn/`（地域）、`/hy/`（行业）真实 **404**（非列表页路径，WebFetch 早前 404 判断正确）。
 - `api.php?t=dnldt / hyldt / dqldt / hydt` 均返回空 / 404 → 真实端点码待重探（或同样会话门控）。
 
+### 8.5 登录通道实测结论（2026-09-13 14:40）— 本沙箱不可行
+- 选定"用同花顺账号登录"补全，但实测：**登录域 `passport.10jqka.com.cn` 在本沙箱 DNS 解析失败（`DNS_PROBE_FINISHED_NXDOMAIN`）**，`q.10jqka.com.cn`/`data.10jqka.com.cn` 却正常解析 → 登录页本身不可达，无头登录路线在本环境**不可行**（且即便可达也大概率过验证码、并动用用户真实账号，风险高）。
+- 页面加载时调用的公开令牌接口 `https://cbasspider.10jqka.com.cn:8443/spider/api/v1/access_token`：直接 GET 返回 **405 Method Not Allowed**（需页面特定 POST/指纹），非简单公开 token；`gnldt` 空数组的根因即缺此反爬令牌（或用户会话），**非环境、非 UA、非 callback 格式问题**。
+- **最终判定**：概念/地域/行业动态排行表被 THS **反爬令牌层**封锁，属数据源自身防护，非本沙箱限制。Chrome 环境层已完全解禁（详见 §8.1 已逐字项），但动态表体在本环境**无法取得**，除非：
+  1. 用户从其本机已登录浏览器**导出 session cookie**（提供后本环境可重放 `api.php?t=gnldt` 取数）；或
+  2. 逆向 THS 反爬令牌获取逻辑（超出本计划范围、且涉 ToS 灰区，不建议）。
+
 ### 8.4 剩余预期列（主排行表，源自标准同花顺概念板，未浏览器逐字，标 ⚠️ 待登录）
 预期列（常见同花顺概念板排行）：`板块名称 / 板块涨幅 / 涨幅排名 / 领涨股 / 领涨股涨幅 / 涨跌家数 / 资金净流入 / 成交额 / 成交量 / 换手率 / 成分股数 / 总市值`
 
 | 网站中文列名 | fuyao 对应 | 真实源判定 | 状态 |
 |------------|-----------|-----------|------|
-| 板块名称 | 指数 `name`（catalog） | fuyao | ⚠️待登录 |
-| 板块涨幅 | 指数快照 `price_change_ratio_pct` | fuyao（文档缺口） | ⚠️待登录 |
-| 涨幅排名 | 指数快照衍生 | fuyao（未文档化） | ⚠️待登录 |
-| 领涨股 | 成分股 `name` + 排序 | fuyao（需派生） | ⚠️待登录 |
-| 领涨股涨幅 | 成分股 `price_change_ratio_pct` 最大者 | fuyao | ⚠️待登录 |
-| 涨跌家数 | 板块快照衍生 | fuyao（未文档化） | ⚠️待登录 |
-| 资金净流入 | fuyao 无 | push2 f137 / 东财 | ⚠️待登录 |
-| 成交额 | 指数快照 `turnover` | fuyao | ⚠️待登录 |
-| 成交量 | 指数快照 `volume` | fuyao | ⚠️待登录 |
-| 换手率(%) | fuyao 无 | push2 / 东财 | ⚠️待登录 |
-| 成分股数 | 成分股接口 `item[]` 长度 | fuyao | ⚠️待登录 |
-| 总市值 | fuyao 无独立总市值 | 派生/东财 | ⚠️待登录 |
+| 板块名称 | 指数 `name`（catalog） | fuyao | ⚠️待会话cookie |
+| 板块涨幅 | 指数快照 `price_change_ratio_pct` | fuyao（文档缺口） | ⚠️待会话cookie |
+| 涨幅排名 | 指数快照衍生 | fuyao（未文档化） | ⚠️待会话cookie |
+| 领涨股 | 成分股 `name` + 排序 | fuyao（需派生） | ⚠️待会话cookie |
+| 领涨股涨幅 | 成分股 `price_change_ratio_pct` 最大者 | fuyao | ⚠️待会话cookie |
+| 涨跌家数 | 板块快照衍生 | fuyao（未文档化） | ⚠️待会话cookie |
+| 资金净流入 | fuyao 无 | push2 f137 / 东财 | ⚠️待会话cookie |
+| 成交额 | 指数快照 `turnover` | fuyao | ⚠️待会话cookie |
+| 成交量 | 指数快照 `volume` | fuyao | ⚠️待会话cookie |
+| 换手率(%) | fuyao 无 | push2 / 东财 | ⚠️待会话cookie |
+| 成分股数 | 成分股接口 `item[]` 长度 | fuyao | ⚠️待会话cookie |
+| 总市值 | fuyao 无独立总市值 | 派生/东财 | ⚠️待会话cookie |
 
-**解锁条件**：用 `credentials/ths_credentials.json`（同花顺账号密码）无头登录取得会话 cookie 后，重放 `api.php?t=gnldt` 取动态列逐字；地域/行业需先重探真实 `t` 码。登录可能遇验证码/2FA，需用户授权配合。
+**解锁条件**：本沙箱登录域 `passport.10jqka.com.cn` DNS 不可达、公开令牌接口 405，故动态列无法在本环境取得。需用户提供其**本机已登录浏览器的 session cookie**（导出后本环境可重放 `api.php?t=gnldt` 逐字），或接受上表"标准同花顺概念板列"映射（已按 THS 通行列名对齐，但未经本环境逐字核验）。
 
 ---
 

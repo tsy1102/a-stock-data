@@ -96,7 +96,7 @@ fuyao REST 契约（`§12.8.12c` 的 62 端点）**不能覆盖网站所有列**
 | Phase | 状态 | 产出 | 最近更新 | 备注 |
 |:---|:---|:---|:---|:---|
 | 0 方法验证 | ✅ 完成 | 通道结论（WebFetch 可用 / 浏览器硬阻断·segfault） | 2026-09-13 | 详情页/指数/港股/个股/新股 WebFetch 逐字✅；`agent-browser`(Chrome153) 与**系统 Chrome(152/153) 均 segfault(EXIT=139)/子进程崩溃**——本沙箱硬阻断 Chrome 子进程创建，浏览器自动化不可行 |
-| 1 板块列表页族 | 🟡 环境已解禁(残留=会话门控) | 指数列表(/zs/)✅逐字；概念页(/gn/)多进程 headless 已加载 157KB✅、静态列(日期/概念名称/驱动事件/龙头股/成分股数量)已逐字✅；概念主排行表 XHR=`api.php?t=gnldt` 已定位(CDP捕获)但**会话门控**(未登录返回空数组)；`/dn/`(地域)/`/hy/`(行业)真实 404、t码待重探 | 2026-09-13 14:30 | Chrome 硬阻断已证伪(原 `--single-process` 自伤+THS `HeadlessChrome` UA 拦截)；可用启动命令见 §六·5/MEMORY 浏览器铁律；概念动态表需 `credentials/ths_credentials.json` 登录重放；`/dn//hy/` 404 证实 WebFetch 早前判断正确 |
+| 1 板块列表页族 | 🟡 环境已解禁(残留=THS反爬令牌层) | 指数列表(/zs/)✅逐字；概念页(/gn/)多进程 headless 已加载 157KB✅、静态列(日期/概念名称/驱动事件/龙头股/成分股数量)已逐字✅；概念主排行表 XHR=`api.php?t=gnldt` 已定位(CDP捕获)但**反爬令牌门控**(未带令牌返回空数组)；`/dn/`(地域)/`/hy/`(行业)真实 404、t码待重探 | 2026-09-13 14:40 | Chrome 硬阻断已证伪(原 `--single-process` 自伤+THS `HeadlessChrome` UA 拦截)；**登录补全不可行**：登录域 `passport.10jqka.com.cn` 本沙箱 NXDOMAIN、公开令牌接口 GET 405 → 动态表属 THS 自身反爬防护，非环境限制；需用户导出本机 session cookie 方可重放取数 |
 | 2 板块详情成分股 | ✅ 完成 | 14 列映射（WebFetch 逐字核验） | 2026-09-13 | 已写入 `docs/verify/fuyao_website_anchor.md` §一/§二；fuyao 直覆 6/14 列，余 8 列标真源 |
 | 3 数据中心全子页 | 🟡 部分完成 | 资金流向(/stock/xsjj/)✅、港股(/hk/)✅、新股(/newstock/)✅ 逐字；龙虎榜正确 URL 404 | 2026-09-13 | 非 fuyao 列(IPO/港股)逐列确权真实源(东财/港股源)；剩余数据中子页为非 fuyao 域，已贡献中文名，详见黄金锚 §四/§五 |
 | 4 汇编+字典回填 | ✅ 完成 | 锚总表 v1.0 + §12.8.12k + ths_tableheader 扩 | 2026-09-13 | `fuyao_website_anchor.md` 重写 v1.0（六类页型实证）；`field_dict.md` §12.8.12k 索引+概要；`ths_tableheader_ids.md` §六 网站列名；**G1 闸门全过（extract 1388/1935/326 基线一致、parity 双 PASS，零污染）** |

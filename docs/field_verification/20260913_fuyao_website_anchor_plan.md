@@ -1,7 +1,7 @@
 # fuyao 源「网站中文名 ↔ 英文字段」黄金锚破解计划
 
 > **元数据**
-> - 创建：2026-09-13｜状态：**执行中（Phase 0 完成 / Phase 2 落地 / Phase 1 浏览器阻塞）**
+> - 创建：2026-09-13｜状态：**执行中（Phase 0–2 完成 / Phase 4 锚文档+字典回填完成 / Phase 1·3 浏览器阻塞部分完成 / Phase 5 待 commit）**
 > - 审批：用户已批准（范围=**全站完整破解**；非 fuyao 列=**逐列确权真实源**）
 > - ⚠️ **环境约束（2026-09-13 实测）**：本沙箱 `agent-browser`（Chrome 153）**无法启动**（`open about:blank` 零输出挂起、`timeout` 杀不掉、Chrome 残留），浏览器自动化被硬阻断。抽取统一改走 **WebFetch 通道**（详情页/数据中心可用）+ 列表页 JS 排行表**浏览器阻塞、标注待补**。
 > - 关联任务：Task #142–#147
@@ -89,18 +89,18 @@ fuyao REST 契约（`§12.8.12c` 的 62 端点）**不能覆盖网站所有列**
 - **列表页（`/gn/` 概念板块主排行表）**：WebFetch 两次均只返回概念名列表+热点轮动图+概念时间表，**未捕获可排序排行表头**（涨跌幅/换手率/领涨股/主力资金净流入/总市值/成分股数）——该表为 JS 渲染。→ Phase 1 须用 agent-browser 真实渲染抽取（后台安装中）。
 - **curl 直连 10jqka 在沙箱受限**：HTTP=200 但 body 写不下来（exit 23，疑似沙箱网络/写权限），故抽取统一走 WebFetch（详情页）/ agent-browser（列表页），不用 curl。
 - **首轮字段确权观察（详情页成分股列）**：现价/涨跌幅/涨跌/成交额/流通市值/市盈率 可对应 fuyao（last_price/price_change_ratio_pct/price_change/turnover/auction.float_market_cap/valuations.pe_*）；而 **涨速(%)/换手(%)/量比/振幅(%)/流通股 在 fuyao 62 端点中无对应字段** → 印证「逐列确权真实源」红线，非 fuyao 列须标 push2/东财/TDX 等。
-- **🔴 浏览器硬阻断（新增，2026-09-13）**：`npm i -g agent-browser && agent-browser install` 安装成功（Chrome 153 落地 `C:\Users\tsy11\.agent-browser\browsers\`），但运行态 `agent-browser open about:blank`（无网络）仍**零输出挂起**、`timeout 40` 无法杀掉、残留 `chrome.exe` 进程。判定：**本沙箱无法启动 Chrome**，浏览器自动化路径不可用。→ Phase 1 列表页 JS 排行表抽取改"详情页汇总块镜像 + 标准同花顺概念板列"建锚（标 ⚠️ 待浏览器），不虚构；待浏览器可用环境再补全。WebFetch 通道（详情页/数据中心）不受影响，继续推进 Phase 2/3。
+- **🔴 浏览器硬阻断（定论，2026-09-13）**：`agent-browser` 下载版 Chrome 153 运行态 `open about:blank` 零输出挂起、`timeout` 杀不掉、残留 `chrome.exe`；进一步验证**系统 Chrome（C:\Program Files\Google\Chrome\Application\，152/153）亦无法运行**——`--no-sandbox --headless=new/old --single-process --no-zygote --disable-gpu` 全组合下 **segfault（EXIT=139）/ Network service·GPU 子进程访问违规 0xC0000005**。判定：**本沙箱硬阻断 Chrome 子进程创建，浏览器自动化不可行**（非配置问题，属环境限制）。→ Phase 1 列表页 JS 排行表抽取改"详情页汇总块镜像 + 标准同花顺概念板列"建锚（标 ⚠️ 待浏览器），不虚构；待浏览器可用环境再补全。WebFetch 通道（详情页/指数/港股/个股/新股）不受影响，已推进 Phase 2/3/4。THS 登录凭据在 `credentials/ths_credentials.json`（用户名 15061507789），待浏览器可用环境再用于列表页补全。
 
 ## 七、进度追踪（每轮更新）
 
 | Phase | 状态 | 产出 | 最近更新 | 备注 |
 |:---|:---|:---|:---|:---|
-| 0 方法验证 | ✅ 完成 | 通道结论（WebFetch 可用 / 浏览器阻断） | 2026-09-13 | 详情页 WebFetch 逐字✅；`agent-browser` 本沙箱无法启动（Chrome 挂起），列表页 JS 表浏览器阻塞待补 |
-| 1 板块列表页族 | 🟡 阻塞 | 列清单+映射（标⚠️待浏览器） | 2026-09-13 | JS 排行表 WebFetch/数据子域(404)均取不到；以"详情页汇总镜像+标准列"建锚，详见黄金锚 §三 |
+| 0 方法验证 | ✅ 完成 | 通道结论（WebFetch 可用 / 浏览器硬阻断·segfault） | 2026-09-13 | 详情页/指数/港股/个股/新股 WebFetch 逐字✅；`agent-browser`(Chrome153) 与**系统 Chrome(152/153) 均 segfault(EXIT=139)/子进程崩溃**——本沙箱硬阻断 Chrome 子进程创建，浏览器自动化不可行 |
+| 1 板块列表页族 | 🟡 部分完成 | 指数列表(/zs/)✅服务器渲染逐字；概念/地域(/gn//dn/)/行业(/hy/)排行表⚠️JS阻塞 | 2026-09-13 | /zs/ 已逐字拿到 12 列；概念/地域/行业排行表 JS 渲染取不到，以"详情页汇总块镜像+标准同花顺概念板列"建锚(标⚠️)，详见黄金锚 §三/§八 |
 | 2 板块详情成分股 | ✅ 完成 | 14 列映射（WebFetch 逐字核验） | 2026-09-13 | 已写入 `docs/verify/fuyao_website_anchor.md` §一/§二；fuyao 直覆 6/14 列，余 8 列标真源 |
-| 3 数据中心全子页 | ⚪ 待开始 | 列清单+映射 | — | WebFetch 可达即做；全站范围 |
-| 4 汇编+字典回填 | 🟡 进行中 | 锚总表已建；§12.8.12k/ths_tableheader 待回填 | 2026-09-13 | `docs/verify/fuyao_website_anchor.md` 已落；字典章节+中文名补全待做 |
-| 5 治理验证+commit | ⚪ 待开始 | 闸门 PASS+commit | — | Phase 4 完成后跑 G1 |
+| 3 数据中心全子页 | 🟡 部分完成 | 资金流向(/stock/xsjj/)✅、港股(/hk/)✅、新股(/newstock/)✅ 逐字；龙虎榜正确 URL 404 | 2026-09-13 | 非 fuyao 列(IPO/港股)逐列确权真实源(东财/港股源)；剩余数据中子页为非 fuyao 域，已贡献中文名，详见黄金锚 §四/§五 |
+| 4 汇编+字典回填 | ✅ 完成 | 锚总表 v1.0 + §12.8.12k + ths_tableheader 扩 | 2026-09-13 | `fuyao_website_anchor.md` 重写 v1.0（六类页型实证）；`field_dict.md` §12.8.12k 索引+概要；`ths_tableheader_ids.md` §六 网站列名；**G1 闸门全过（extract 1388/1935/326 基线一致、parity 双 PASS，零污染）** |
+| 5 治理验证+commit | 🟡 进行中 | 闸门已 PASS；待 commit | 2026-09-13 | G1 原生 parity+§零·B 投影 PASS；提取基线计数与 HEAD 一致，§12.8.12k 零污染；准备独立 commit |
 
 ## 八、反失焦校验清单（每轮开工前逐项核对）
 

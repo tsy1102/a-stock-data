@@ -116,13 +116,13 @@
 
 ### 零·B 字段×源总表（自动生成，勿手改）
 
-> 生成：`scripts/gen_field_matrix.py`（Phase 2 起从 field_registry.json 单一真相源读取，不再解析 field_dict.md 体积）。共 1106 个字段 / 1173 条字段×源记录（去重配对口径，取代旧版按行出现的 1412 重复计数）。
+> 生成：`scripts/gen_field_matrix.py`（Phase 2 起从 field_registry.json 单一真相源读取，不再解析 field_dict.md 体积）。共 1122 个字段 / 1202 条字段×源记录（去重配对口径，取代旧版按行出现的 1412 重复计数）。
 
 > 源排序按易→难（V17.0.7 层级定案；2026-09-07 thsdk 已退役，不再列为活体源）：ZHB（离线零网络）→ TDX TCP（0x0010/F10/eltdx）→ 腾讯（不封 IP）→ **同花顺-fuyao（官方 REST，盘后可查+独立风控域，V17.0.7 升为财务 TTM 族主源）** → 新浪 → 巨潮 → 东财（限流最严）→ 其他。
 
 > 字段名基于章节标题分类推断，精确接口见各节；正文修改后重跑本脚本即同步。
 
-**B.1 多源字段（57 个，fallback 路由表）**
+**B.1 多源字段（70 个，fallback 路由表）**
 
 | 字段 | 源数 | 源（按易→难） |
 |:---|:---:|:---|
@@ -151,7 +151,20 @@
 | net_profit_period(f105) | 2 | 同花顺-fuyao、东财 |
 | net_profit_annual(f109) | 2 | 同花顺-fuyao、东财 |
 | eps_annual(f160) | 2 | 同花顺-fuyao、东财 |
+| 现价 | 2 | 同花顺-fuyao、东财 |
+| 开盘价 | 2 | 同花顺-fuyao、东财 |
+| 最高价 | 2 | 同花顺-fuyao、东财 |
+| 最低价 | 2 | 同花顺-fuyao、东财 |
 | 涨跌幅 | 2 | TDX-0x0010/F10、东财 |
+| 涨跌额 | 2 | 同花顺-fuyao、东财 |
+| 成交量 | 2 | 同花顺-fuyao、东财 |
+| 成交额 | 2 | 同花顺-fuyao、东财 |
+| 流通市值 | 2 | 同花顺-fuyao、东财 |
+| 市净率 | 2 | 同花顺-fuyao、东财 |
+| 市销率 | 2 | 同花顺-fuyao、东财 |
+| 市现率 | 2 | 同花顺-fuyao、东财 |
+| 封单额 | 2 | 同花顺-fuyao、东财 |
+| 连板天数 | 2 | 同花顺-fuyao、东财 |
 | 行业 | 2 | TDX-0x0010/F10、东财 |
 | 涨停池 | 2 | TDX-0x0010/F10、同花顺-fuyao |
 | price | 2 | TDX-0x0010/F10、东财 |
@@ -184,23 +197,23 @@
 | 市场情绪 | 2 | TDX-0x0010/F10、同花顺-fuyao |
 | 板块轮动 | 2 | TDX-0x0010/F10、同花顺-fuyao |
 
-**B.2 单源字段（1049 个，无 fallback）**
+**B.2 单源字段（1052 个，无 fallback）**
 
 - **ZHB（13）**：A 实时、B 准实时、C 日频、D 静态、PE TTM、前一日、前一日开盘量额、前两日成交额、封单额、年内涨停数、当日、日 Beta、自由流通股本、连板统计
 - **TDX-0x0010/F10（297）**：*ST湘邮、AI解读、AxData、BKFenShiZhiBo、ChangeStatistics、C中芯、DR 茅台、DailyLimitPerformance、DailyLimitPerformance2、FTShare、GetBaseFaceListZDEvnArtNew、GetDayBaseFaceListZDEvnArt、GetDayNewHigh_W28、GetGPCPHBTS_Tag、GetHotPHB、GetInfo、GetKLineDay_W14、GetKLineZhangTing、GetMainMonitor_w30、GetPanKou、GetPlateInfo_w38、GetPlate_Info_QJ、GetStockBid、GetStockList、GetStockList（龙虎榜）、GetStockPanKou、GetStockTrendIncremental、GetWeiTuo_W14、GetYTFP_BKHX、GetYTFP_SCTD、GlobalCommon、GroupCount_w28、Index、InfoBKR、MarketStockZDNum、MoodNumCount、MorningBiddingList、NewGetList、N百花医药、Radar、RealRankingInfo、RiseFallAnalysis、ST百花医药、SharpWithdrawal、SonPlate_Info、Theme、XD、XR、ZhiShuStockList_W8、[..、[verify、akshare、all、api、axdata_verify.md)、axdata_verify.md](verify、balance_sheet` 资产负债表、belong、cash_flow` 现金流量表、changqifuzhai
   - … 其余 237 个见正文
 - **TDX-eltdx（60）**：Enum `Market、FinanceInfo`（财务）、FundFlow、HistoricalFundFlow、KlineCategory、MarketStat、SecurityBar`（K 线）、SecurityInfo`（证券列表）、SecurityQuote`（五档）、XdxrRecord`（除权除息）、adjust、auctions.series（0x056a）、business_composition、buy_levels、c1_value~c4_value、category_name、circulating_shares、current_hand、dividend_financing、down_count、eps_raw、fenhong、finance_diagnosis、get_auction_0925、high_price、history、hot_topics、inside_dish、jing_li_run_raw_float、liu_tong_gu_ben_raw_float、low_price、minutes.aux（0x051b）、minutes.today、net_profit_yuan、northbound_holding、open_amount_yuan、outer_disc、peigu、peigujia、period、pre_close_price、profit_forecast、recent、sell_levels、shareholder_change_plans、songzhuangu、stock_score、sum_buy_vol、sum_sell_vol、theme_market、topic_compare、total_assets_yuan、total_hand、total_shares、trades.today、up_count、valuation、volume_lots、zong_gu_ben_raw_float、zong_zi_chan_raw_float
 - **腾讯（12）**：[0] 市场标识、[29][54][55][77][78] 占位符、[40] 停牌标记、[56] Beta 族、[76] A股流通股本、[85] 价格类字段、[86] 手级带符号量、[87] 科创板、两融标记、分钟 K线、实测、月 K线
-- **同花顺-fuyao（115）**：K线、PB、ROA、`big_order_flow(ths_code)`、a-share、a-share-index、accounts_receivable、adjustment-factors、anomaly-analysis-list、anomaly-analysis-stock、auction、auction.float_market_cap、balance-sheets、calendar、cash-flow、cash-flow-statements、cash_equivalents_net_addition、catalog、constituents、corporate-actions、download-url、dragon-tiger-list、dump、eps_deduct_ttm(f108)、fflow 历史资金流窗口、financials、get 财务 TTM 族、growth、growth.calculate_operating_income_yoy_growth_ratio、growth.calculate_parent_holder_net_profit_yoy_growth_ratio、historical、holder_equity_total、hot-stock-list、hot-stock-list-history、hot-stock-rank-trend、income-statements、income_tax_expense、indicators、interest_expenses、klines(count=N)、limit-break-pool` 🆕、limit-down-pool` 🆕、limit-up-ladder、limit-up-pool、list、manage_fee、market-dumps、meta、net_profit、net_profit_annual、net_profit_period、ocf_ttm、operating_profit、operation、pay_dividends_profits_interest_cash、pb、pcf、prices、profit_total、profitability
-  - … 其余 55 个见正文
+- **同花顺-fuyao（131）**：K线、PB、ROA、`big_order_flow(ths_code)`、a-share、a-share-index、accounts_receivable、adjustment-factors、anomaly-analysis-list、anomaly-analysis-stock、auction、auction.float_market_cap、balance-sheets、calendar、cash-flow、cash-flow-statements、cash_equivalents_net_addition、catalog、constituents、corporate-actions、download-url、dragon-tiger-list、dump、eps_deduct_ttm(f108)、fflow 历史资金流窗口、financials、get 财务 TTM 族、growth、growth.calculate_operating_income_yoy_growth_ratio、growth.calculate_parent_holder_net_profit_yoy_growth_ratio、historical、holder_equity_total、hot-stock-list、hot-stock-list-history、hot-stock-rank-trend、income-statements、income_tax_expense、indicators、interest_expenses、klines(count=N)、limit-break-pool` 🆕、limit-down-pool` 🆕、limit-up-ladder、limit-up-pool、list、manage_fee、market-dumps、meta、net_profit、net_profit_annual、net_profit_period、ocf_ttm、operating_profit、operation、pay_dividends_profits_interest_cash、pb、pcf、prices、profit_total、profitability
+  - … 其余 71 个见正文
 - **新浪（25）**：URL、ask、ask_vol、bid、bid_vol、delta、gamma、item_tongbi、item_value、iv、last、limit_down、limit_up、netamount、open_interest、opendate、prev_close、report_list.{期次}.data[].item_title、report_type、strike、theory、theta、trade、vega、参数
 - **财联社（14）**：catalyst、cur_heat、limit_up_board、market_degree、performance、profit_ratio、rank_change、shsz_balance、shsz_balance_change_px、up_down_dis、up_open_num、up_open_ratio、up_ratio、up_ratio_num
 - **开盘红（36）**：Detail、StockList、TagID、TagName、TagShuXing、ZSCode、ZSName、avg_change、buy_amount、dt、fall_dist、fall_num、flat、industry_id、industry_zt、limit_tag、market_cap、net_inflow、net_inflow_5d、open_time、q_zrcs、qscln、rise_dist、rise_num、s_zrcs、seal_money、sell_amount、sign、sjdt、sjzt、stdt、stock_count、stzt、szln、themes、zt
 - **akshare（13）**：BPS、EPS、PE 历史百分位、push2 f137、push2 f51、push2 f55、两融 RZJME、历史分红、扣非净利、板块资金流 f62、涨跌停价、股息率、龙虎榜 EXPLAIN
 - **AxData（96）**：activity、amplitude_pct、ask1_price、ask1_volume、attack_pct、auction_prev_volume_ratio、average_change_pct、average_price、bid1_ask1_balance_pct、bid1_ask1_volume_diff、bid1_price、bid1_volume、capital_score、concept_capital_flow_tdx（题材资金走势）、cost70_concentration、cost70_range、cost90_concentration、cost90_range、current_volume、drawdown_pct、entrust_ratio、exchange、finance_updated_date、float_market_value、float_share、float_shares、free_float_market_value、free_float_share_z、free_float_shares、fundamental_score、high_change_pct、industry_name、industry_rank、industry_rank_total、inside_outside_ratio、inside_volume、instrument_id、limit_board_text、limit_ratio_pct、limit_rule、limit_stat_days、limit_status、limit_up_count_in_stat_days、limit_up_streak_days、low_change_pct、market_rank、market_rank_total、market_win_pct、name_flag、news_score、open_amount、open_amount_ratio_pct、open_change_pct、open_prev_amount_ratio、open_prev_seal_ratio、open_turnover_z、open_volume_hand、open_volume_ratio、option_chain_tdx（期权T型）、outside_volume
   - … 其余 36 个见正文
-- **东财（368）**：ABLE_FREE_SHARES、ACCUM_AMOUNT、ASSIGN_PROGRESS、AVG_FREE_SHARES、BILLBOARD_BUY_AMT、BILLBOARD_NET_AMT、BONUS_RATIO、BUY、BUYER_NAME、BUY_RATIO、BUY_SEAT、CHANGE_RATE、CHANGE_TYPE、CLOSE_PRICE、CPFZ、D1~D30_CLOSE_ADJCHRATE、DATE、DCP、DEAL_AMOUNT_RATIO、DEAL_AMT、DEAL_NET_RATIO、DEAL_PRICE、DEAL_VOLUME、END_DATE、EXPLAIN、EXPLANATION、EX_DIVIDEND_DATE、FIN_BALANCE_GR、FREE_DATE、FREE_MARKET_CAP、FREE_RATIO、FREE_SHARES、FREE_SHARES_TYPE、HOLDER_NUM、HOLDER_NUM_CHANGE、HOLDER_NUM_RATIO、JLY、JZC、LDFZ、LINK_URL、LYZE、MARKET、NET、NET_BS_AMT、NextTwoYear、NextYear、OPERATEDEPT_CODE、OPERATEDEPT_NAME、PRETAX_BONUS_RMB、RCHANGE3D、RPTA_WEB_RZRQ_GGMX（两融）、RPT_DAILYBILLBOARD_DETAILSNEW（龙虎榜）、RPT_HOLDERNUMLATEST（股东户数）、RPT_LIFT_STAGE（解禁）、RPT_SHAREBONUS_DET（分红）、RQCHL、RQMCL、RQYE、RQYL、RZCHE
-  - … 其余 308 个见正文
+- **东财（355）**：ABLE_FREE_SHARES、ACCUM_AMOUNT、ASSIGN_PROGRESS、AVG_FREE_SHARES、BILLBOARD_BUY_AMT、BILLBOARD_NET_AMT、BONUS_RATIO、BUY、BUYER_NAME、BUY_RATIO、BUY_SEAT、CHANGE_RATE、CHANGE_TYPE、CLOSE_PRICE、CPFZ、D1~D30_CLOSE_ADJCHRATE、DATE、DCP、DEAL_AMOUNT_RATIO、DEAL_AMT、DEAL_NET_RATIO、DEAL_PRICE、DEAL_VOLUME、END_DATE、EXPLAIN、EXPLANATION、EX_DIVIDEND_DATE、FIN_BALANCE_GR、FREE_DATE、FREE_MARKET_CAP、FREE_RATIO、FREE_SHARES、FREE_SHARES_TYPE、HOLDER_NUM、HOLDER_NUM_CHANGE、HOLDER_NUM_RATIO、JLY、JZC、LDFZ、LINK_URL、LYZE、MARKET、NET、NET_BS_AMT、NextTwoYear、NextYear、OPERATEDEPT_CODE、OPERATEDEPT_NAME、PRETAX_BONUS_RMB、RCHANGE3D、RPTA_WEB_RZRQ_GGMX（两融）、RPT_DAILYBILLBOARD_DETAILSNEW（龙虎榜）、RPT_HOLDERNUMLATEST（股东户数）、RPT_LIFT_STAGE（解禁）、RPT_SHAREBONUS_DET（分红）、RQCHL、RQMCL、RQYE、RQYL、RZCHE
+  - … 其余 295 个见正文
 
 <!-- /GEN:field-matrix -->
 
@@ -3347,6 +3360,39 @@ ZHB 逐日落后一个交易日，符合「最近交易日快照」铁律；`fin
 | ZXJL | 现金及等价物净增加额 | 万元 | ✅ 云闭环 | 等价现金净增加额 |
 
 > **单位分档铁律**：TDX 三套财务编码互异——云 `tdx_quotes` `CwInfo` 金额=**万元**（铁证见上）；本地 `tdx_get_finance_info` 0x0010 = **角**(÷10 得元)；tdxstat Col[14]/Col[24] = **万元**。接入层须按源分档换算，禁止跨源套用单位。
+
+#### 12.8.12k fuyao 网站中文名黄金锚（THS q.10jqka.com.cn 官方中文列名 ↔ 英文字段）
+
+> **黄金锚（2026-09-13 建立）**：本锚把同花顺行情中心 `q.10jqka.com.cn` 可见的**中文列名（官方人类可读标签）**逐列映射到 fuyao REST 英文字段，作为"中文名 ↔ 英文键 ↔ 真实来源 ↔ 口径单位"三元对照。完整逐字总表见 **`docs/verify/fuyao_website_anchor.md`**（含 ✅ 逐字核验 / ⚠️ 浏览器阻塞 标注、非 fuyao 列逐列确权真实源）。本节为字典内的索引与概要，仅登记/映射，不改动任何运行时取数路径。
+> **环境约束**：本沙箱 Chrome（agent-browser 下载版 + 系统 Chrome 152/153）均无法启动（segfault / 子进程崩溃），浏览器自动化硬阻断；概念/地域/行业列表页 JS 排行表取不到，其列以"详情页汇总块镜像 + 标准同花顺概念板列"建锚并标 ⚠️。其余服务器渲染页（指数/港股/个股/新股/详情）均经 WebFetch 逐字抓取。THS 登录凭据在 `credentials/ths_credentials.json`（待浏览器可用环境再补全列表页）。
+
+**核心映射概要（fuyao 英文字段 → 网站官方中文名，✅=逐字实证）**：
+
+| 网站官方中文列名 | fuyao 英文字段 | 真实来源 | 核验 | 口径差异 |
+|:---|:---|:---|:---:|:---|
+| 最新价 / 现价 | last_price | fuyao 行情快照 | ✅ | CNY |
+| 涨跌额 / 涨跌 | price_change | fuyao 行情快照 | ✅ | CNY |
+| 涨跌幅(%) | price_change_ratio_pct | fuyao 行情快照 | ✅ | % |
+| 今开 / 开盘价 | open_price | fuyao 行情快照 | ✅ | CNY |
+| 最高价 | high_price | fuyao 行情快照 | ✅ | CNY |
+| 最低价 | low_price | fuyao 行情快照 | ✅ | CNY |
+| 昨收 | prev_price（竞价接口为 pre_close_price） | fuyao 行情快照 | ✅ | CNY |
+| 成交量 | volume | fuyao 行情快照 | ✅ | fuyao=股；网站显万手(×1e6) |
+| 成交额 | turnover | fuyao 行情快照 | ✅ | fuyao=元；网站显亿元(×1e8) |
+| 流通市值 | float_market_cap | fuyao | ✅ | fuyao=CNY；网站显亿(×1e8) |
+| 市盈率(TTM) | pe_ttm | fuyao 估值快照 | ✅ | 倍 |
+| 市盈率(MRQ) | pe_mrq | fuyao 估值快照 | ✅ | 倍 |
+| 市净率 | pb_mrq | fuyao 估值快照 | ✅ | 倍 |
+| 市销率 | ps_ttm | fuyao 估值快照 | ✅ | 倍（字典新维度） |
+| 市现率 | pcf_ttm | fuyao 估值快照 | ✅ | 倍（字典新维度） |
+| 竞价换手率 | auction_turnover_pct | fuyao 竞价快照 | ✅ | %（仅竞价，非全日） |
+| 相对昨日量比（竞价） | auction_yesterday_ratio_pct | fuyao 竞价快照 | ✅ | 倍 |
+| 竞价量比 | auction_volume_ratio | fuyao 竞价快照 | ✅ | 倍 |
+| 封单额 | seal_money | fuyao 涨停池 | ✅ | 元（÷1e4≡ZHB 万元） |
+| 连板天数 | continue_day_cnt | fuyao 涨停池 | ✅ | — |
+| 板块涨幅 / 涨幅排名 / 涨跌家数 / 资金净流入(亿) / 成交量(万手) / 成交额(亿) | a-share-index/prices/snapshot 板块级（响应表空，由网站补全） | fuyao 指数快照（文档缺口） | ✅（网站逐字） | 板块级 |
+
+**红线（用户强调，本锚严守）**：网站列 ≠ 全为 fuyao。非 fuyao 列（涨速/全日换手/量比/振幅/流通股/总市值/主力净流入/领涨股/成分股数/名称 等）均逐列确权真实源（push2 / 东财 / ZHB / TDX / 港股源 / IPO 源），喂 canonical registry，不假设全 fuyao。详见 `docs/verify/fuyao_website_anchor.md` §七。
 
 #### 12.8.13 财联社快讯（cls.cn v1 API + 本地签名）✅
 

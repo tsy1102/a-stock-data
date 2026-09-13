@@ -116,7 +116,7 @@
 
 ### 零·B 字段×源总表（自动生成，勿手改）
 
-> 生成：`scripts/gen_field_matrix.py`（Phase 2 起从 field_registry.json 单一真相源读取，不再解析 field_dict.md 体积）。共 1098 个字段 / 1165 条字段×源记录（去重配对口径，取代旧版按行出现的 1412 重复计数）。
+> 生成：`scripts/gen_field_matrix.py`（Phase 2 起从 field_registry.json 单一真相源读取，不再解析 field_dict.md 体积）。共 1106 个字段 / 1173 条字段×源记录（去重配对口径，取代旧版按行出现的 1412 重复计数）。
 
 > 源排序按易→难（V17.0.7 层级定案；2026-09-07 thsdk 已退役，不再列为活体源）：ZHB（离线零网络）→ TDX TCP（0x0010/F10/eltdx）→ 腾讯（不封 IP）→ **同花顺-fuyao（官方 REST，盘后可查+独立风控域，V17.0.7 升为财务 TTM 族主源）** → 新浪 → 巨潮 → 东财（限流最严）→ 其他。
 
@@ -184,7 +184,7 @@
 | 市场情绪 | 2 | TDX-0x0010/F10、同花顺-fuyao |
 | 板块轮动 | 2 | TDX-0x0010/F10、同花顺-fuyao |
 
-**B.2 单源字段（1041 个，无 fallback）**
+**B.2 单源字段（1049 个，无 fallback）**
 
 - **ZHB（13）**：A 实时、B 准实时、C 日频、D 静态、PE TTM、前一日、前一日开盘量额、前两日成交额、封单额、年内涨停数、当日、日 Beta、自由流通股本、连板统计
 - **TDX-0x0010/F10（297）**：*ST湘邮、AI解读、AxData、BKFenShiZhiBo、ChangeStatistics、C中芯、DR 茅台、DailyLimitPerformance、DailyLimitPerformance2、FTShare、GetBaseFaceListZDEvnArtNew、GetDayBaseFaceListZDEvnArt、GetDayNewHigh_W28、GetGPCPHBTS_Tag、GetHotPHB、GetInfo、GetKLineDay_W14、GetKLineZhangTing、GetMainMonitor_w30、GetPanKou、GetPlateInfo_w38、GetPlate_Info_QJ、GetStockBid、GetStockList、GetStockList（龙虎榜）、GetStockPanKou、GetStockTrendIncremental、GetWeiTuo_W14、GetYTFP_BKHX、GetYTFP_SCTD、GlobalCommon、GroupCount_w28、Index、InfoBKR、MarketStockZDNum、MoodNumCount、MorningBiddingList、NewGetList、N百花医药、Radar、RealRankingInfo、RiseFallAnalysis、ST百花医药、SharpWithdrawal、SonPlate_Info、Theme、XD、XR、ZhiShuStockList_W8、[..、[verify、akshare、all、api、axdata_verify.md)、axdata_verify.md](verify、balance_sheet` 资产负债表、belong、cash_flow` 现金流量表、changqifuzhai
@@ -199,8 +199,8 @@
 - **akshare（13）**：BPS、EPS、PE 历史百分位、push2 f137、push2 f51、push2 f55、两融 RZJME、历史分红、扣非净利、板块资金流 f62、涨跌停价、股息率、龙虎榜 EXPLAIN
 - **AxData（96）**：activity、amplitude_pct、ask1_price、ask1_volume、attack_pct、auction_prev_volume_ratio、average_change_pct、average_price、bid1_ask1_balance_pct、bid1_ask1_volume_diff、bid1_price、bid1_volume、capital_score、concept_capital_flow_tdx（题材资金走势）、cost70_concentration、cost70_range、cost90_concentration、cost90_range、current_volume、drawdown_pct、entrust_ratio、exchange、finance_updated_date、float_market_value、float_share、float_shares、free_float_market_value、free_float_share_z、free_float_shares、fundamental_score、high_change_pct、industry_name、industry_rank、industry_rank_total、inside_outside_ratio、inside_volume、instrument_id、limit_board_text、limit_ratio_pct、limit_rule、limit_stat_days、limit_status、limit_up_count_in_stat_days、limit_up_streak_days、low_change_pct、market_rank、market_rank_total、market_win_pct、name_flag、news_score、open_amount、open_amount_ratio_pct、open_change_pct、open_prev_amount_ratio、open_prev_seal_ratio、open_turnover_z、open_volume_hand、open_volume_ratio、option_chain_tdx（期权T型）、outside_volume
   - … 其余 36 个见正文
-- **东财（360）**：ABLE_FREE_SHARES、ACCUM_AMOUNT、ASSIGN_PROGRESS、AVG_FREE_SHARES、BILLBOARD_BUY_AMT、BILLBOARD_NET_AMT、BONUS_RATIO、BUY、BUYER_NAME、BUY_RATIO、BUY_SEAT、CHANGE_RATE、CHANGE_TYPE、CLOSE_PRICE、D1~D30_CLOSE_ADJCHRATE、DATE、DCP、DEAL_AMOUNT_RATIO、DEAL_AMT、DEAL_NET_RATIO、DEAL_PRICE、DEAL_VOLUME、END_DATE、EXPLAIN、EXPLANATION、EX_DIVIDEND_DATE、FIN_BALANCE_GR、FREE_DATE、FREE_MARKET_CAP、FREE_RATIO、FREE_SHARES、FREE_SHARES_TYPE、HOLDER_NUM、HOLDER_NUM_CHANGE、HOLDER_NUM_RATIO、LINK_URL、MARKET、NET、NET_BS_AMT、NextTwoYear、NextYear、OPERATEDEPT_CODE、OPERATEDEPT_NAME、PRETAX_BONUS_RMB、RCHANGE3D、RPTA_WEB_RZRQ_GGMX（两融）、RPT_DAILYBILLBOARD_DETAILSNEW（龙虎榜）、RPT_HOLDERNUMLATEST（股东户数）、RPT_LIFT_STAGE（解禁）、RPT_SHAREBONUS_DET（分红）、RQCHL、RQMCL、RQYE、RQYL、RZCHE、RZCHE10D、RZJME、RZMRE、RZMRE10D、RZRQYE
-  - … 其余 300 个见正文
+- **东财（368）**：ABLE_FREE_SHARES、ACCUM_AMOUNT、ASSIGN_PROGRESS、AVG_FREE_SHARES、BILLBOARD_BUY_AMT、BILLBOARD_NET_AMT、BONUS_RATIO、BUY、BUYER_NAME、BUY_RATIO、BUY_SEAT、CHANGE_RATE、CHANGE_TYPE、CLOSE_PRICE、CPFZ、D1~D30_CLOSE_ADJCHRATE、DATE、DCP、DEAL_AMOUNT_RATIO、DEAL_AMT、DEAL_NET_RATIO、DEAL_PRICE、DEAL_VOLUME、END_DATE、EXPLAIN、EXPLANATION、EX_DIVIDEND_DATE、FIN_BALANCE_GR、FREE_DATE、FREE_MARKET_CAP、FREE_RATIO、FREE_SHARES、FREE_SHARES_TYPE、HOLDER_NUM、HOLDER_NUM_CHANGE、HOLDER_NUM_RATIO、JLY、JZC、LDFZ、LINK_URL、LYZE、MARKET、NET、NET_BS_AMT、NextTwoYear、NextYear、OPERATEDEPT_CODE、OPERATEDEPT_NAME、PRETAX_BONUS_RMB、RCHANGE3D、RPTA_WEB_RZRQ_GGMX（两融）、RPT_DAILYBILLBOARD_DETAILSNEW（龙虎榜）、RPT_HOLDERNUMLATEST（股东户数）、RPT_LIFT_STAGE（解禁）、RPT_SHAREBONUS_DET（分红）、RQCHL、RQMCL、RQYE、RQYL、RZCHE
+  - … 其余 308 个见正文
 
 <!-- /GEN:field-matrix -->
 
@@ -3073,15 +3073,15 @@ TDX `0x0010` 日K（`tdx_get_security_bars`，keys = `['time','open','close','hi
 | 叶名(末段) | 含义 | TDX 云 CwInfo 字段(单位:万元) | 600519 实测(万元) | 等价 canonical / 公式 | 定级 | 状态 |
 | :--- | :--- | :--- | :--- | :--- | :---: | :---: |
 | manage_fee | 管理费用 | —（云不暴露; TDX F10 利润表 line 98）| — | — | L1(F10) | ⏸️ 待 F10C 文本解析 |
-| net_profit | 净利润 | `JLY` | 4451688（≈445.17亿=f105 逐字等）| net_profit_period(f105) | L1 | ✅ 云闭环 |
-| total_debt | 总债务(=总负债) | `LDFZ`+`CPFZ` | 4664507.5+1084275.75=5748783.25 | 总负债=流动负债+长期负债 | L1 | ✅ 云闭环(公式) |
-| profit_total | 利润总额 | `LYZE` | 6143842 | 利润总额 | L1 | ✅ 云闭环 |
-| operating_profit | 营业利润 | `YYLR` | 6141129 | 营业利润 | L1 | ✅ 云闭环 |
+| net_profit | 净利润 | JLY（净利润） | 4451688（≈445.17亿=f105 逐字等）| net_profit_period(f105) | L1 | ✅ 云闭环 |
+| total_debt | 总债务(=总负债) | LDFZ（流动负债）+CPFZ（长期负债） | 4664507.5+1084275.75=5748783.25 | 总负债=流动负债+长期负债 | L1 | ✅ 云闭环(公式) |
+| profit_total | 利润总额 | LYZE（利润总额） | 6143842 | 利润总额 | L1 | ✅ 云闭环 |
+| operating_profit | 营业利润 | YYLR（营业利润） | 6141129 | 营业利润 | L1 | ✅ 云闭环 |
 | interest_expenses | 利息支出 | —（云不暴露; F10 利润表财务费用内含）| — | — | L1(F10) | ⏸️ 待 F10C 文本解析 |
 | income_tax_expense | 所得税费用 | —（云不暴露; F10 利润表）| — | — | L1(F10) | ⏸️ 待 F10C 文本解析 |
-| accounts_receivable | 应收账款 | `YSZK` | 57.08（茅台应收极低,合理）| 应收账款 | L1 | ✅ 云闭环 |
-| holder_equity_total | 股东权益合计 | `JZC` | 25125360 | jingzichan(净资产) | L1 | ✅ 云闭环 |
-| cash_equivalents_net_addition | 现金及等价物净增加额 | `ZXJL` | 5838700 | 现金净增加额 | L1 | ✅ 云闭环 |
+| accounts_receivable | 应收账款 | YSZK（应收账款） | 57.08（茅台应收极低,合理）| 应收账款 | L1 | ✅ 云闭环 |
+| holder_equity_total | 股东权益合计 | JZC（净资产/股东权益） | 25125360 | jingzichan(净资产) | L1 | ✅ 云闭环 |
+| cash_equivalents_net_addition | 现金及等价物净增加额 | ZXJL（现金及等价物净增加额） | 5838700 | 现金净增加额 | L1 | ✅ 云闭环 |
 | research_and_development_expenses | 研发费用 | —（云不暴露; F10 利润表）| — | — | L1(F10) | ⏸️ 待 F10C 文本解析 |
 | pay_dividends_profits_interest_cash | 分红/利息现金支出 | —（云不暴露; F10 现金流量表）| — | — | L1(F10) | ⏸️ 待 F10C 文本解析 |
 
@@ -3329,6 +3329,24 @@ ZHB 逐日落后一个交易日，符合「最近交易日快照」铁律；`fin
 | rank_chg | 排名变化（较前一周期） | - | ✅ |
 
 > 与同花顺 `ths_hot_list`（§12.8.12）的 `hot_rank_chg` 同源不同接口，编号勿混。
+
+#### 12.8.12j TDX 云 tdx_quotes CwInfo 财务快照字段（TDX tdx_quotes）
+
+> **纠错归属（2026-09-13）**：下列 8 个拼音字段码 `JLY/JZC/YYLR/LDFZ/CPFZ/LYZE/YSZK/ZXJL` 原在 §12.8.12i 第三列以反引号标注为「TDX 云 CwInfo 字段(单位:万元) / ✅ 云闭环」，却被 `_table_codes` 误扫入 fuyao 继承段（§12.8.12i 标题不命中 fuyao 的 SECTION_MAP 子串、靠继承 12.8.12e 的 fuyao 标签，使第三列反引号令牌被登记为同花顺-fuyao 字段）。**真实归属 = TDX 云 `tdx_quotes` 的 `CwInfo` 财务快照字段码（单位：万元），既不是 fuyao、也不是 ZHB、更不是「源中不存在」。** 本节据此正名：标题含「TDX tdx_quotes」经 `section_to_sources` 归 `TDX(双命名源)`。置于 §12.8.12h 之后而非 12.8.12i 与 12.8.12f 之间，是为避免 level-4 源栈被本节 TDX 标签「粘滞」误污染其后的 §12.8.12f（fuyao index_id 表）——§12.8.13 命中财联社标签会重置该栈。
+> **实证**：`JLY`=4451688万=445.17亿，与 canonical `net_profit_period`(f105) 逐字等；其余 7 码在 `docs/verify/tdx_func_fields.md`（TDX `func_cwzb101.cfg` 财务码）均有据，且与 fuyao 财务报表叶名一一对应（见 §12.8.12i 逐行）。**非 ZHB**：ZHB `raw_zhb.json` 仅含 `main_net_buy_amount` 等拼音/英文键，无任何 `JLY` 类财务码；**非「源中不存在」**：确为 TDX 云真实字段，故归入 TDX 而非删除。
+
+| 字段码(TDX CwInfo) | 中文含义 | 单位 | 定级/状态 | 等价 canonical / 备注 |
+| :--- | :--- | :---: | :---: | :--- |
+| JLY | 净利润 | 万元 | ✅ 云闭环 | 等价 f105 净利润 |
+| JZC | 净资产/股东权益 | 万元 | ✅ 云闭环 | 等价净资产 |
+| YYLR | 营业利润 | 万元 | ✅ 云闭环 | 等价营业利润 |
+| LYZE | 利润总额 | 万元 | ✅ 云闭环 | 等价利润总额 |
+| LDFZ | 流动负债 | 万元 | ✅ 云闭环 | 总负债=流动+长期 |
+| CPFZ | 长期负债 | 万元 | ✅ 云闭环 | 总负债=流动+长期 |
+| YSZK | 应收账款 | 万元 | ✅ 云闭环 | 等价应收账款 |
+| ZXJL | 现金及等价物净增加额 | 万元 | ✅ 云闭环 | 等价现金净增加额 |
+
+> **单位分档铁律**：TDX 三套财务编码互异——云 `tdx_quotes` `CwInfo` 金额=**万元**（铁证见上）；本地 `tdx_get_finance_info` 0x0010 = **角**(÷10 得元)；tdxstat Col[14]/Col[24] = **万元**。接入层须按源分档换算，禁止跨源套用单位。
 
 #### 12.8.13 财联社快讯（cls.cn v1 API + 本地签名）✅
 

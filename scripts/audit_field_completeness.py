@@ -353,7 +353,7 @@ _DENY_TOKENS = {
     # 各源 slug
     "push2", "push2ex", "push2_full", "ulist", "ulist239", "ulistnp",
     "tencent", "qt", "gtimg", "sina", "sinajs", "hq",
-    "fuyao", "ths", "thsdk",
+    "fuyao", "ths", "thsdk", "sdk",
     "tdx", "tdx_f10", "tdxquant", "tdxhub", "tqlex",
     "zhb", "cls", "baidu", "cninfo",
     "axdata", "datacenter", "slist", "clist",

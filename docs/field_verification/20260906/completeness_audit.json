@@ -1,7 +1,7 @@
 {
   "AxData": {
     "raw_count": 0,
-    "reg_count": 0,
+    "reg_count": 18,
     "reg_eff_count": 0,
     "missing_count": 0,
     "missing": [],
@@ -9,7 +9,7 @@
   },
   "TDX(双命名源)": {
     "raw_count": 91,
-    "reg_count": 0,
+    "reg_count": 316,
     "reg_eff_count": 0,
     "missing_count": 91,
     "missing": [
@@ -245,7 +245,7 @@
   },
   "levistock(ftshare)": {
     "raw_count": 6,
-    "reg_count": 1164,
+    "reg_count": 218,
     "reg_eff_count": 6,
     "missing_count": 0,
     "missing": [],
@@ -261,7 +261,7 @@
   },
   "东财-datacenter(英文键)": {
     "raw_count": 23,
-    "reg_count": 62,
+    "reg_count": 100,
     "reg_eff_count": 23,
     "missing_count": 0,
     "missing": [],
@@ -285,7 +285,7 @@
   },
   "东财-push2ex": {
     "raw_count": 16,
-    "reg_count": 51,
+    "reg_count": 39,
     "reg_eff_count": 16,
     "missing_count": 0,
     "missing": [],
@@ -301,7 +301,7 @@
   },
   "东财-热榜(em_hot)": {
     "raw_count": 6,
-    "reg_count": 85,
+    "reg_count": 47,
     "reg_eff_count": 6,
     "missing_count": 0,
     "missing": [],
@@ -317,7 +317,7 @@
   },
   "同花顺-fuyao": {
     "raw_count": 84,
-    "reg_count": 699,
+    "reg_count": 226,
     "reg_eff_count": 84,
     "missing_count": 0,
     "missing": [],
@@ -325,7 +325,7 @@
   },
   "同花顺-thsdk": {
     "raw_count": 0,
-    "reg_count": 77,
+    "reg_count": 0,
     "reg_eff_count": 0,
     "missing_count": 0,
     "missing": [],
@@ -333,7 +333,7 @@
   },
   "巨潮(cninfo)": {
     "raw_count": 6,
-    "reg_count": 48,
+    "reg_count": 10,
     "reg_eff_count": 6,
     "missing_count": 0,
     "missing": [],
@@ -341,7 +341,7 @@
   },
   "市场源(market_sources)": {
     "raw_count": 36,
-    "reg_count": 61,
+    "reg_count": 99,
     "reg_eff_count": 36,
     "missing_count": 0,
     "missing": [],
@@ -365,7 +365,7 @@
   },
   "财联社(cls)": {
     "raw_count": 7,
-    "reg_count": 89,
+    "reg_count": 42,
     "reg_eff_count": 7,
     "missing_count": 0,
     "missing": [],

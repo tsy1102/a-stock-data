@@ -3392,6 +3392,8 @@ ZHB 逐日落后一个交易日，符合「最近交易日快照」铁律；`fin
 | 连板天数 | continue_day_cnt | fuyao 涨停池 | ✅ | — |
 | 板块涨幅 / 涨幅排名 / 涨跌家数 / 资金净流入(亿) / 成交量(万手) / 成交额(亿) | a-share-index/prices/snapshot 板块级（响应表空，由网站补全） | fuyao 指数快照（文档缺口） | ✅（网站逐字） | 板块级 |
 
+> **⚠️ 口径校正（2026-09-13 东方财富官网实测，详见锚文档 §十二）**：东方财富个股页"**市盈(动)**" = fuyao `pe_mrq`（报告期/静态 PE，**17.90**），**≠** `pe_ttm`（滚动 PE，**19.57**，东财个股页未单列）。此前易误将"市盈(动)"等同 `pe_ttm`；`pe_mrq` 才是官网"动"语义对应，`pe_ttm` 仅在"市盈率(TTM)"标签下对应。同理：市净率=`pb_mrq`、ROE=`fin_indicators.index_weighted_avg_roe`（加权，16.75）、毛利率/净利率=`sale_gross_margin`/`sale_net_interest_ratio`、负债率=`assets_debt_ratio`、净利润同比=`fin_indicators.growth.净利润同比`（以上均经 600519 值级对撞 ✅）。
+
 **红线（用户强调，本锚严守）**：网站列 ≠ 全为 fuyao。非 fuyao 列（涨速/全日换手/量比/振幅/流通股/总市值/主力净流入/领涨股/成分股数/名称 等）均逐列确权真实源（push2 / 东财 / ZHB / TDX / 港股源 / IPO 源），喂 canonical registry，不假设全 fuyao。详见 `docs/verify/fuyao_website_anchor.md` §七。
 
 #### 12.8.13 财联社快讯（cls.cn v1 API + 本地签名）✅

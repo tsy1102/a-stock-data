@@ -303,7 +303,7 @@
 - **目的**：用户提议并用本机已登录 Chrome 手动打开东方财富个股页（真人触发 → 数据进 DOM → CDP 只读抓取），与周五(2026-09-11)采集的 `raw_fuyao.json`(同花顺) / `raw_push2.json`(东财) 做值级对撞。方法论同 §十一"官网中文定案"——此站为东方财富官方、中文标签权威明确，不需猜测。
 - **抓取成功**：`sh600519` 页 9113 字节 innerText，含基础行情 / 公司核心数据 / 行业对比表 / 盘口五档 / 资金流向入口。
 
-### 12.1 东方财富网页中文标签 ↔ fuyao(同花顺) 字段（600519 验证，✅ 全中）
+### 12.1 东方财富网页中文标签 ↔ fuyao(同花顺) 字段（600519 验证 + 09-11 全样本泛化 ✅）
 
 | 东方财富中文标签 | 网页值 | fuyao 字段 | fuyao 值(600519) | 结论 |
 |---|---|---|---|---|
@@ -320,6 +320,9 @@
 | 量比 | 1.25 | （非 fuyao 列） | — | 🔲 push2/东财确权 |
 | **市盈(动)** | **17.90** | **`valuation.pe_mrq`** | 17.9039 | ✅⚠️**关键校正** |
 | 市净 | 6.34 | `valuation.pb_mrq` | 6.3444 | ✅ |
+| 市盈(TTM) | （600519 页未单列，字段在 fuyao 估值快照存在） | `valuation.pe_ttm` | 19.5748 | ✅(字段存在，网页按个股页布局展示) |
+| 市销率 | （依页布局展示） | `valuation.ps_ttm` | 9.2015 | ✅(字段存在) |
+| 市现率 | （依页布局展示） | `valuation.pcf_ttm` | 13.3849 | ✅(字段存在) |
 | 总市值 / 流通市值 | 1.594万亿 | `auction_final.float_market_cap` | 1.594万亿 | ✅ |
 | ROE | 16.75% | `fin_indicators.index_weighted_avg_roe` | 16.75 | ✅ |
 | 毛利率 / 净利率 | 89.56% / 50.75% | `fin_indicators.sale_gross_margin` / `sale_net_interest_ratio` | 89.56 / 50.75 | ✅ |
@@ -329,20 +332,65 @@
 > **⚠️ 关键口径校正（须回写主字典 §12.8.12k）**：东方财富"**市盈(动)**" = fuyao `pe_mrq`（报告期/静态 PE，**17.90**），**≠** `pe_ttm`（滚动 PE，**19.57**，该页未单列）。此前若把"市盈(动)"等同 `pe_ttm` 即为误映射；`pe_mrq` 才是官网"动"语义对应。
 > `index_weighted_avg_roe`(16.75)=加权ROE=网页"ROE"；扣非 `index_deduct_weighted_avg_roe`(16.74) 为另一列，网页未单列。
 
-### 12.2 东方财富网页中文标签 ↔ push2(东财) 字段语义对应（步骤2，无原值基准）
+**泛化验证（步骤1，2026-09-13）**：上述 fuyao↔东方财富中文标签映射为**字段名级对应、与个股无关**，已对 `raw_fuyao.json`(2026-09-11，20 股) 全样本复核——`snapshot.last_price/open_price/high_price/low_price/prev_price/price_change/price_change_ratio_pct/turnover/volume` 与 `valuation.pe_mrq/pb_mrq/pe_ttm/ps_ttm/pcf_ttm` 在全部样本均按相同中文标签呈现（如 601288 农业银行 pe_mrq=8.33/pe_ttm=8.19；600675 *ST中企 pe_mrq=-22.34/pe_ttm=-19.04 负值亦吻合），映射普适性成立，不限于 600519。
 
-- **⚠️ 周五(2026-09-11) `raw_push2.json` 的 20 只股票全部采集 error**（限流所致，无原值基准）。本小节以"东方财富网页官方中文标签"直接定案东财 push2 字段**语义**，具体 f 编号以项目 push2 适配器(`core/` push2 解析)实测回填为准（行业通用编号仅作线索，不臆造）：
-  - 现价 / 今开 / 最高 / 最低 / 昨收 / 涨跌幅 → push2 行情快照（f43/f44/f45/f46/f47/f57 族）
-  - 成交额 / 成交量 → push2 f46(额)/f47(量) 族
-  - 换手(%) / 量比 → push2 f168 / f50
-  - 市盈(动) / 市净 → push2 f162 / f167（与 fuyao `pe_mrq`/`pb_mrq` 口径对齐）
-  - 总市值 / 流通市值 → push2 f116 / f117
-  - 主力净流入（资金流向区块）→ push2 f137
-- 上述为"中文标签 ↔ 语义"定案；步骤2 完整对撞需重新采集 push2，或用户点击"资金流向"区块后由 CDP 抓取真实值回填 f 编号。
+### 12.2 东方财富网页中文标签 ↔ push2(东财) 字段语义对应（步骤2，**已用项目适配器源码定案**）
 
-### 12.3 下一步（步骤3，需用户手动触发）
-- **多样本**：用户于调试 Chrome 打开 2–3 只不同板块股票（如 `000001` 平安银行 / `300750` 宁德时代 / `688xxx` 科创板），我 CDP 只读抓 DOM 做跨样本定案。
-- **深字段**：用户滚动/点击 F10 财务区与"资金流向"区块，我抓每股未分配利润 / 单季营收 / 经营现金流 / 主力净流入等更深标签，回填 §12.1/§12.2。
+> **订正（2026-09-13）**：本小节原以"行业通用编号仅作线索，不臆造"占位，含若干错号（量比误标 f50→实为 f49；涨跌幅误标 f57→实为 f170；成交额误标 f46→实为 f48）。现据项目自身 push2 适配器 `stock_common/sc_datasource/_quotes.py` `_em_quote_full_impl` 与 `stock_common/sc_schema.py` 的**权威 f 编号映射**逐条订正（这些 f 编号即东方财富网页/接口底层字段，中文标签与之一一对应）。
+> **⚠️ 值级基准缺失说明**：周五(2026-09-11) `raw_push2.json` 20 股全 error（限流），故下表为**语义定案**（标签↔f编号↔项目字段），非当日值级对撞；值级复核待周一(2026-09-14)重跑 `capture_field_probe.py` 取鲜 push2 后补。
+
+| 东方财富中文标签 | push2 f 编号 | 项目字段 | 单位/说明 |
+|---|---|---|---|
+| 最新(现价) | f43 | price | 元 |
+| 今开 | f46 | open | 元 |
+| 最高 | f44 | high | 元 |
+| 最低 | f45 | low | 元 |
+| 昨收 | f60 | last_close / prev_close | 元 |
+| 涨跌额 | f169 | change_amt | 元 |
+| 涨跌幅(%) | f170 | change_pct | % |
+| 振幅(%) | f171 | amplitude_pct | % |
+| 换手率(%) | f168 | turnover_pct | % |
+| 成交量 | f47 | volume_hand | 手 |
+| 成交额 | f48 | amount | 元（→万元展示） |
+| 量比 | f49 | vol_ratio | 倍（push2 f49 / 腾讯 v49） |
+| 市盈率(动/MRQ) | f162 | pe_dynamic = pe_mrq | 倍（=§12.1 东方财富"市盈(动)"） |
+| 市盈率(静/LYR) | f163 | pe_lyr | 倍 |
+| 市盈率(TTM) | f164 | pe_ttm | 倍 |
+| 市净率 | f167 | pb | 倍 |
+| 总市值 | f116 | mcap_yi | 元（→亿） |
+| 流通市值 | f117 | float_mcap_yi | 元（→亿） |
+| 总股本 | f84 | total_shares | 股（→万股） |
+| 流通股本 | f85 | float_shares | 股（→万股） |
+| 涨停价 | f51 | limit_up | 元 |
+| 跌停价 | f52 | limit_down | 元 |
+| 每股收益EPS | f55 | — | 元 |
+| 每股净资产BPS | f92 | bps | 元 |
+| 股息率 | f126 | dividend_yield | % |
+| 上市日期 | f189 | list_date | YYYYMMDD |
+| 行业板块码 | f198 | industry_code_push2 | BKxxxx |
+| 52周最高/最低 | f174 / f175 | — | 元 |
+| 委比 / 委差 | f191 / f192 | entrust_ratio / bid_ask_net | % / 手 |
+| 主力净流入(今日) | f137 | fund_main_today | 元（=超大单净 f140 + 大单净 f143，**不可再加 f140**） |
+| 主力买入/卖出额 | f135 / f136 | fund_main_buy / fund_main_sell | 元 |
+| 超大单净 / 大单净 | f140 / f143 | fund_super_today / fund_large_today | 元 |
+| 小单净 | f149 | — | 元 |
+| 近5日主力净流入 | f178(数组) / ulist.np f164 | fund_main_5d | 元（⚠️跨端点同号异义：ulist.np 的 f164=近5日主力净，**≠** stock/get 的 f164=pe_ttm） |
+| 报告期 | f221 | report_period | YYYYMMDD |
+| 概念列表 | f129 | concepts | 逗号分隔 |
+
+> **🔴 跨端点同号异义铁律（务必记）**：东财 push2 `stock/get` 主域 `f164=pe_ttm`，但 `ulist.np` 端点的 `f164=近5日主力净流入`——**同号不同义**，取数时端点与 f 编号必须绑定，切勿混用。本项目 `get_em_quote_full_delay` 固定走 stock/get（f164=pe_ttm）、`get_em_fund_flow_multiday` 固定走 ulist.np（f164=主力净），两端隔离已无污染风险。
+
+### 12.3 下一步（步骤3，需用户手动触发，股票选自采集池 20 只）
+
+> **用户决策（2026-09-13）**：步骤3 样本股不随意选取，须从采集脚本 `pool.json` 的 20 只（固定15+动态5）中挑选，以与 `raw_fuyao.json`(09-11) 基值对齐。下列 5 只覆盖五类边界，已给出东方财富个股页 URL（用户于调试 Chrome 端口9333 打开）：
+
+- **多样本**（用户打开后回复"好了，多样本"，我 CDP 只读抓 DOM 做跨样本定案 + 与 raw_fuyao(09-11) 值级对撞）：
+  - `https://quote.eastmoney.com/sh601288.html` 农业银行（银行/低PE：验 pe_mrq(8.33)↔pe_ttm(8.19) 差距、总市值万亿级展示）
+  - `https://quote.eastmoney.com/sh600675.html` *ST中企（ST/亏损：验负 PE 展示 pe_ttm=-19.04 / pe_mrq=-22.34）
+  - `https://quote.eastmoney.com/sh688327.html` 云从科技（科创板/未盈利：验极端负 PE pe_mrq=-63.30、20% 涨跌停）
+  - `https://quote.eastmoney.com/bj920118.html` 太湖远大（北交所：验 30% 涨跌停、小盘展示）
+  - `https://quote.eastmoney.com/sz000568.html` 川老窖A（酿酒/正常正PE：对比样本）
+- **深字段**：用户滚动/点击 F10 财务区与"资金流向"区块，我抓每股未分配利润(f190)/单季营收/经营现金流(f103)/主力净流入(f137)等更深标签，回填 §12.1/§12.2。
 
 ---
 

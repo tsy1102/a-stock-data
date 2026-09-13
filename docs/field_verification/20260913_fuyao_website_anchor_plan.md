@@ -1,9 +1,9 @@
 # fuyao 源「网站中文名 ↔ 英文字段」黄金锚破解计划
 
 > **元数据**
-> - 创建：2026-09-13｜状态：**✅ 已完成（Phase 0–4 完成 / Phase 5 已 commit → `3ba6257` / Phase 1 环境已解禁：Chrome 多进程 headless 可跑、`/gn/` 概念页 157KB 已加载；残留=概念主表走 data.10jqka.com.cn XHR（需页面接口或登录）、`/dn/`/`/hy/` 真实 404 待重探）**
+> - 创建：2026-09-13｜状态：**✅ 已完成（Phase 0–4 完成 / Phase 5 已 commit → `3ba6257` / Phase 1 环境已解禁：Chrome 多进程 headless 可跑、`/gn/` 概念页 157KB 已加载；残留=概念排行主表被 THS `chameleon` 动态指纹令牌门控（headless 下 XHR 不发起）、`/dn/`/`/hy/` 真实 404 待重探）**
 > - 审批：用户已批准（范围=**全站完整破解**；非 fuyao 列=**逐列确权真实源**）
-> - ⚠️ **环境约束（2026-09-13 14:00 修订）**：原"Chrome 硬阻断"结论已**证伪**——根因两重用错：①`--single-process --no-zygote` 把崩溃的 GPU 进程塞进主进程拖垮整浏览器（GPU 初始化 `kFatalFailure` → `0xC0000005`）；②THS Nginx 按 `HeadlessChrome` UA 拦截返回 `<h1>Nginx forbidden.</h1>`。改用**多进程 `headless=new` + `--disable-gpu --disable-gpu-sandbox` + 桌面 Chrome UA + `zh-CN` 语言**后，Chrome 正常加载 `q.10jqka.com.cn/gn/`（157KB）且 `data.10jqka.com.cn` 根域 86KB 可达。残留：概念主排行表为 `data.10jqka.com.cn` **XHR 异步渲染**（`--dump-dom` 取不到表体，仅表头+侧栏热点），需页面接口或 `credentials/ths_credentials.json` 登录；`/dn/`(地域)/`/hy/`(行业) 为**真实 404**。
+> - ⚠️ **环境约束（2026-09-13 15:00 二次修订）**：原"Chrome 硬阻断"结论已**证伪**——根因两重用错：①`--single-process --no-zygote` 把崩溃的 GPU 进程塞进主进程拖垮整浏览器（GPU 初始化 `kFatalFailure` → `0xC0000005`）；②THS Nginx 按 `HeadlessChrome` UA 拦截返回 `<h1>Nginx forbidden.</h1>`。改用**多进程 `headless=new` + `--disable-gpu --disable-gpu-sandbox` + 桌面 Chrome UA + `zh-CN` 语言**后，Chrome 正常加载 `q.10jqka.com.cn/gn/`（157KB）。**二次重测订正（2026-09-13 15:00）**：`api.php?t=gnldt` 经实证实为**公开「今日大盘异动」滚动条**（无登录/cookie 即返回实时内容），**并非**概念排行主表；真实概念排行主表被 THS `chameleon` **动态指纹令牌层**门控——页面须先向 `cbasspider.../access_token` 动态申领临时令牌（依赖真实浏览器指纹，GET 返回 405），headless 无指纹→令牌无效→排行 XHR **静默不发起**。故单凭用户 session cookie 重放 `gnldt` 无效；`/dn/`(地域)/`/hy/`(行业) 为**真实 404**。
 > - 关联任务：Task #142–#147
 > - **反失焦铁律**：每轮开工前先核对本表「§七 进度追踪」与「§八 反失焦校验清单」；任何偏离须先回写本表再动手。本文件为单一真相源，禁止凭记忆偏离。
 
@@ -96,7 +96,7 @@ fuyao REST 契约（`§12.8.12c` 的 62 端点）**不能覆盖网站所有列**
 | Phase | 状态 | 产出 | 最近更新 | 备注 |
 |:---|:---|:---|:---|:---|
 | 0 方法验证 | ✅ 完成 | 通道结论（WebFetch 可用 / 浏览器硬阻断·segfault） | 2026-09-13 | 详情页/指数/港股/个股/新股 WebFetch 逐字✅；`agent-browser`(Chrome153) 与**系统 Chrome(152/153) 均 segfault(EXIT=139)/子进程崩溃**——本沙箱硬阻断 Chrome 子进程创建，浏览器自动化不可行 |
-| 1 板块列表页族 | 🟡 环境已解禁(残留=THS反爬令牌层) | 指数列表(/zs/)✅逐字；概念页(/gn/)多进程 headless 已加载 157KB✅、静态列(日期/概念名称/驱动事件/龙头股/成分股数量)已逐字✅；概念主排行表 XHR=`api.php?t=gnldt` 已定位(CDP捕获)但**反爬令牌门控**(未带令牌返回空数组)；`/dn/`(地域)/`/hy/`(行业)真实 404、t码待重探 | 2026-09-13 14:40 | Chrome 硬阻断已证伪(原 `--single-process` 自伤+THS `HeadlessChrome` UA 拦截)；**登录补全不可行**：登录域 `passport.10jqka.com.cn` 本沙箱 NXDOMAIN、公开令牌接口 GET 405 → 动态表属 THS 自身反爬防护，非环境限制；需用户导出本机 session cookie 方可重放取数 |
+| 1 板块列表页族 | 🟡 环境已解禁(残留=chameleon 反爬指纹令牌层) | 指数列表(/zs/)✅逐字；概念页(/gn/)多进程 headless 已加载 157KB✅、静态列(日期/概念名称/驱动事件/龙头股/成分股数量)已逐字✅；`api.php?t=gnldt` 经重测证伪为公开「大盘异动」条(非概念主表)；真实概念排行主表 XHR 被 `chameleon` 动态指纹令牌门控、**headless 下根本不发起**；`/dn/`(地域)/`/hy/`(行业)真实 404、t码待重探 | 2026-09-13 15:00 | Chrome 硬阻断已证伪(原 `--single-process` 自伤+THS `HeadlessChrome` UA 拦截)；`gnldt` 为公开异动条、与登录无关；真实排行表门控=动态指纹令牌(`cbasspider.../access_token` GET 405、需 POST+指纹)，headless 无指纹→XHR 不发起；登录域 `passport.10jqka.com.cn` NXDOMAIN、单凭 session cookie 重放 `gnldt` 无效 → 动态表闭环须真实有头浏览器+指纹通道，本环境不可行 |
 | 2 板块详情成分股 | ✅ 完成 | 14 列映射（WebFetch 逐字核验） | 2026-09-13 | 已写入 `docs/verify/fuyao_website_anchor.md` §一/§二；fuyao 直覆 6/14 列，余 8 列标真源 |
 | 3 数据中心全子页 | 🟡 部分完成 | 资金流向(/stock/xsjj/)✅、港股(/hk/)✅、新股(/newstock/)✅ 逐字；龙虎榜正确 URL 404 | 2026-09-13 | 非 fuyao 列(IPO/港股)逐列确权真实源(东财/港股源)；剩余数据中子页为非 fuyao 域，已贡献中文名，详见黄金锚 §四/§五 |
 | 4 汇编+字典回填 | ✅ 完成 | 锚总表 v1.0 + §12.8.12k + ths_tableheader 扩 | 2026-09-13 | `fuyao_website_anchor.md` 重写 v1.0（六类页型实证）；`field_dict.md` §12.8.12k 索引+概要；`ths_tableheader_ids.md` §六 网站列名；**G1 闸门全过（extract 1388/1935/326 基线一致、parity 双 PASS，零污染）** |

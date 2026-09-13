@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": 1,
-    "updated": "2026-09-12",
+    "updated": "2026-09-13",
     "source_of_truth": "field_registry.json",
     "generated_by": "scripts/extract_registry.py",
     "note": "本文件为字段登记表单一真相源（影子抽取）。docs/field_dict.md 字段表由本文件生成，勿手改。",
@@ -104,6 +104,7 @@
       "verify_file": "tdx_func_fields.md",
       "section_patterns": [
         "12.13.2 财务批量（get_finance_batch，0x0010）文档确认",
+        "12.8.12j TDX 云 tdx_quotes CwInfo 财务快照字段（TDX tdx_quotes）",
         "12.8.19 通达信问小达（wenda）四件套源字段结构（V17.2.7 新增, 2026-09-09）",
         "零·A TDX F10 财务分析字段结构（V16.3 O 实测 000100，2026-08-06）"
       ],
@@ -323,6 +324,19 @@
       "unit": "",
       "status_raw": "",
       "status": "unverified"
+    },
+    {
+      "code": "CPFZ",
+      "source": "TDX(双命名源)",
+      "sources": [
+        "TDX(双命名源)"
+      ],
+      "section": "12.8.12j TDX 云 tdx_quotes CwInfo 财务快照字段（TDX tdx_quotes）",
+      "canonical": "CPFZ",
+      "meaning": "长期负债",
+      "unit": "万元",
+      "status_raw": "✅ 云闭环",
+      "status": "verified"
     },
     {
       "code": "CashZJ",
@@ -689,6 +703,32 @@
       "status": "unverified"
     },
     {
+      "code": "JLY",
+      "source": "TDX(双命名源)",
+      "sources": [
+        "TDX(双命名源)"
+      ],
+      "section": "12.8.12j TDX 云 tdx_quotes CwInfo 财务快照字段（TDX tdx_quotes）",
+      "canonical": "JLY",
+      "meaning": "净利润",
+      "unit": "万元",
+      "status_raw": "✅ 云闭环",
+      "status": "verified"
+    },
+    {
+      "code": "JZC",
+      "source": "TDX(双命名源)",
+      "sources": [
+        "TDX(双命名源)"
+      ],
+      "section": "12.8.12j TDX 云 tdx_quotes CwInfo 财务快照字段（TDX tdx_quotes）",
+      "canonical": "JZC",
+      "meaning": "净资产/股东权益",
+      "unit": "万元",
+      "status_raw": "✅ 云闭环",
+      "status": "verified"
+    },
+    {
       "code": "Jjjz",
       "source": "TDX(双命名源)",
       "sources": [
@@ -752,6 +792,32 @@
       "unit": "",
       "status_raw": "",
       "status": "unverified"
+    },
+    {
+      "code": "LDFZ",
+      "source": "TDX(双命名源)",
+      "sources": [
+        "TDX(双命名源)"
+      ],
+      "section": "12.8.12j TDX 云 tdx_quotes CwInfo 财务快照字段（TDX tdx_quotes）",
+      "canonical": "LDFZ",
+      "meaning": "流动负债",
+      "unit": "万元",
+      "status_raw": "✅ 云闭环",
+      "status": "verified"
+    },
+    {
+      "code": "LYZE",
+      "source": "TDX(双命名源)",
+      "sources": [
+        "TDX(双命名源)"
+      ],
+      "section": "12.8.12j TDX 云 tdx_quotes CwInfo 财务快照字段（TDX tdx_quotes）",
+      "canonical": "LYZE",
+      "meaning": "利润总额",
+      "unit": "万元",
+      "status_raw": "✅ 云闭环",
+      "status": "verified"
     },
     {
       "code": "LastClose",
@@ -1443,6 +1509,32 @@
       "status": "unverified"
     },
     {
+      "code": "YSZK",
+      "source": "TDX(双命名源)",
+      "sources": [
+        "TDX(双命名源)"
+      ],
+      "section": "12.8.12j TDX 云 tdx_quotes CwInfo 财务快照字段（TDX tdx_quotes）",
+      "canonical": "YSZK",
+      "meaning": "应收账款",
+      "unit": "万元",
+      "status_raw": "✅ 云闭环",
+      "status": "verified"
+    },
+    {
+      "code": "YYLR",
+      "source": "TDX(双命名源)",
+      "sources": [
+        "TDX(双命名源)"
+      ],
+      "section": "12.8.12j TDX 云 tdx_quotes CwInfo 财务快照字段（TDX tdx_quotes）",
+      "canonical": "YYLR",
+      "meaning": "营业利润",
+      "unit": "万元",
+      "status_raw": "✅ 云闭环",
+      "status": "verified"
+    },
+    {
       "code": "YearZTDay",
       "source": "TDX(双命名源)",
       "sources": [
@@ -1662,6 +1754,19 @@
       "unit": "",
       "status_raw": "",
       "status": "unverified"
+    },
+    {
+      "code": "ZXJL",
+      "source": "TDX(双命名源)",
+      "sources": [
+        "TDX(双命名源)"
+      ],
+      "section": "12.8.12j TDX 云 tdx_quotes CwInfo 财务快照字段（TDX tdx_quotes）",
+      "canonical": "ZXJL",
+      "meaning": "现金及等价物净增加额",
+      "unit": "万元",
+      "status_raw": "✅ 云闭环",
+      "status": "verified"
     },
     {
       "code": "Zangsu",
@@ -12488,89 +12593,11 @@
       "status": "unverified"
     },
     {
-      "code": "CPFZ",
-      "source": "同花顺-fuyao",
-      "sources": [
-        "同花顺-fuyao"
-      ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "status_raw": "",
-      "status": "unverified"
-    },
-    {
       "code": "EPS",
       "source": null,
       "sources": [
         "同花顺-fuyao",
         "levistock(ftshare)"
-      ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "status_raw": "",
-      "status": "unverified"
-    },
-    {
-      "code": "JLY",
-      "source": "同花顺-fuyao",
-      "sources": [
-        "同花顺-fuyao"
-      ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "status_raw": "",
-      "status": "unverified"
-    },
-    {
-      "code": "JZC",
-      "source": "同花顺-fuyao",
-      "sources": [
-        "同花顺-fuyao"
-      ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "status_raw": "",
-      "status": "unverified"
-    },
-    {
-      "code": "LDFZ",
-      "source": "同花顺-fuyao",
-      "sources": [
-        "同花顺-fuyao"
-      ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "status_raw": "",
-      "status": "unverified"
-    },
-    {
-      "code": "LYZE",
-      "source": "同花顺-fuyao",
-      "sources": [
-        "同花顺-fuyao"
-      ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "status_raw": "",
-      "status": "unverified"
-    },
-    {
-      "code": "SDK",
-      "source": "同花顺-fuyao",
-      "sources": [
-        "同花顺-fuyao"
       ],
       "section": "",
       "canonical": "",
@@ -12590,45 +12617,6 @@
       "meaning": "滚动市盈率",
       "unit": "push2 f164／ulist f115／腾讯[39]／THS SDK 3153／开盘啦 `pe_ttm`／ZHB `pe_ttm`／fuyao `pe_ttm",
       "status_raw": "全源同名",
-      "status": "unverified"
-    },
-    {
-      "code": "YSZK",
-      "source": "同花顺-fuyao",
-      "sources": [
-        "同花顺-fuyao"
-      ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "status_raw": "",
-      "status": "unverified"
-    },
-    {
-      "code": "YYLR",
-      "source": "同花顺-fuyao",
-      "sources": [
-        "同花顺-fuyao"
-      ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "status_raw": "",
-      "status": "unverified"
-    },
-    {
-      "code": "ZXJL",
-      "source": "同花顺-fuyao",
-      "sources": [
-        "同花顺-fuyao"
-      ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "status_raw": "",
       "status": "unverified"
     },
     {
@@ -20064,6 +20052,30 @@
       "东财"
     ],
     "rank_chg": [
+      "东财"
+    ],
+    "JLY": [
+      "东财"
+    ],
+    "JZC": [
+      "东财"
+    ],
+    "YYLR": [
+      "东财"
+    ],
+    "LYZE": [
+      "东财"
+    ],
+    "LDFZ": [
+      "东财"
+    ],
+    "CPFZ": [
+      "东财"
+    ],
+    "YSZK": [
+      "东财"
+    ],
+    "ZXJL": [
       "东财"
     ],
     "brief": [

@@ -175,30 +175,42 @@
 
 ---
 
-## 八、Phase 1 概念/地域/行业列表页"可排序排行表"（JS 渲染 ⚠️ 浏览器阻塞待补全）
+## 八、Phase 1 概念/地域/行业列表页"可排序排行表"（JS 渲染 ⚠️ 会话门控待登录）
 
-`/gn/`（概念）、`/dn/`（地域 404）、`/hy/`（行业 404）的**排行表为 JS 渲染**，WebFetch 与 `data.10jqka.com.cn/conception/gn/`（404）均取不到；仅 `/gn/` 拿到"概念名列表 + 热点轮动图 + 概念时间表"（时间表含 `龙头股`/`成分股数量` 列）。
+> **环境已解禁（2026-09-13 14:00 实测）**：原"Chrome 硬阻断"结论已证伪。根因两层可修复误配（见计划文档 §六·5 / MEMORY 浏览器铁律）：①`--single-process --no-zygote` 把崩溃的 GPU 进程塞进主进程拖垮浏览器；②THS Nginx 按 `HeadlessChrome` UA 拦截返回 `Nginx forbidden`。改用**多进程 `headless=new` + `--disable-gpu --disable-gpu-sandbox` + 桌面 Chrome UA + `zh-CN` 语言**后，`/gn/` 已可加载（157KB 真实 HTML）。
 
-**以下为依据"详情页汇总块镜像 + 标准同花顺概念板列 + 用户枚举"的最佳已知集，未经浏览器逐字核验，标 `⚠️待浏览器`**：
+### 8.1 已逐字验证（服务器渲染静态 `<th>`，✅）
+概念页"热点概念 / 概念驱动力"表列（CDP+`--dump-dom` 抽取 `<th>` 确证）：
+`日期 / 概念名称 / 驱动事件 / 龙头股 / 成分股数量`
 
+### 8.2 概念主排行表（可排序，涨跌幅/主力净流入/5日涨跌幅等）— XHR 已定位、会话门控 ⚠️
+- **真实 XHR 接口**（Chrome DevTools Protocol 网络捕获确证）：`https://q.10jqka.com.cn/api.php?t=gnldt&d=jsonp&callback=jQuery<ts>_<rand>&_=<ts>`
+  - `gnldt` = 概念列表数据（concept list data）。
+- **门控确证**：未登录态下该接口返回空数组 `jQuery...( [] )`（已分别用 `cb` 与页面真实 `jQuery183...` callback + 页面同源 Referer 复测，均空）。**需同花顺登录态（cookie）方可取数** → 动态列仍标 ⚠️ 待登录。
+
+### 8.3 地域 / 行业列表页 — 路径 404、端点待重探 ⚠️
+- `/dn/`（地域）、`/hy/`（行业）真实 **404**（非列表页路径，WebFetch 早前 404 判断正确）。
+- `api.php?t=dnldt / hyldt / dqldt / hydt` 均返回空 / 404 → 真实端点码待重探（或同样会话门控）。
+
+### 8.4 剩余预期列（主排行表，源自标准同花顺概念板，未浏览器逐字，标 ⚠️ 待登录）
 预期列（常见同花顺概念板排行）：`板块名称 / 板块涨幅 / 涨幅排名 / 领涨股 / 领涨股涨幅 / 涨跌家数 / 资金净流入 / 成交额 / 成交量 / 换手率 / 成分股数 / 总市值`
 
 | 网站中文列名 | fuyao 对应 | 真实源判定 | 状态 |
 |------------|-----------|-----------|------|
-| 板块名称 | 指数 `name`（catalog） | fuyao | ⚠️待浏览器 |
-| 板块涨幅 | 指数快照 `price_change_ratio_pct` | fuyao（文档缺口） | ⚠️待浏览器 |
-| 涨幅排名 | 指数快照衍生 | fuyao（未文档化） | ⚠️待浏览器 |
-| 领涨股 | 成分股 `name` + 排序 | fuyao（需派生） | ⚠️待浏览器 |
-| 领涨股涨幅 | 成分股 `price_change_ratio_pct` 最大者 | fuyao | ⚠️待浏览器 |
-| 涨跌家数 | 板块快照衍生 | fuyao（未文档化） | ⚠️待浏览器 |
-| 资金净流入 | fuyao 无 | push2 f137 / 东财 | ⚠️待浏览器 |
-| 成交额 | 指数快照 `turnover` | fuyao | ⚠️待浏览器 |
-| 成交量 | 指数快照 `volume` | fuyao | ⚠️待浏览器 |
-| 换手率(%) | fuyao 无 | push2 / 东财 | ⚠️待浏览器 |
-| 成分股数 | 成分股接口 `item[]` 长度 | fuyao | ⚠️待浏览器 |
-| 总市值 | fuyao 无独立总市值 | 派生/东财 | ⚠️待浏览器 |
+| 板块名称 | 指数 `name`（catalog） | fuyao | ⚠️待登录 |
+| 板块涨幅 | 指数快照 `price_change_ratio_pct` | fuyao（文档缺口） | ⚠️待登录 |
+| 涨幅排名 | 指数快照衍生 | fuyao（未文档化） | ⚠️待登录 |
+| 领涨股 | 成分股 `name` + 排序 | fuyao（需派生） | ⚠️待登录 |
+| 领涨股涨幅 | 成分股 `price_change_ratio_pct` 最大者 | fuyao | ⚠️待登录 |
+| 涨跌家数 | 板块快照衍生 | fuyao（未文档化） | ⚠️待登录 |
+| 资金净流入 | fuyao 无 | push2 f137 / 东财 | ⚠️待登录 |
+| 成交额 | 指数快照 `turnover` | fuyao | ⚠️待登录 |
+| 成交量 | 指数快照 `volume` | fuyao | ⚠️待登录 |
+| 换手率(%) | fuyao 无 | push2 / 东财 | ⚠️待登录 |
+| 成分股数 | 成分股接口 `item[]` 长度 | fuyao | ⚠️待登录 |
+| 总市值 | fuyao 无独立总市值 | 派生/东财 | ⚠️待登录 |
 
-**解锁条件**：浏览器可用后跑 `scripts/harvest_ths_columns.py`（列表页用 agent-browser 抽 `<th>`）逐字确认，消除 `⚠️`。
+**解锁条件**：用 `credentials/ths_credentials.json`（同花顺账号密码）无头登录取得会话 cookie 后，重放 `api.php?t=gnldt` 取动态列逐字；地域/行业需先重探真实 `t` 码。登录可能遇验证码/2FA，需用户授权配合。
 
 ---
 
@@ -221,7 +233,7 @@
 
 ## 十、待办 / 下一步（按计划文档 §七 顺序）
 
-1. **解锁 Phase 1**：浏览器可用后写 `scripts/harvest_ths_columns.py`，消除 §八 `⚠️`。
+1. **解锁 Phase 1**：环境已解禁（2026-09-13 14:00 证伪"Chrome 硬阻断"）。概念页静态列已逐字（§8.1）；主排行表 XHR=`api.php?t=gnldt` 已定位但**会话门控**——需用 `credentials/ths_credentials.json` 登录取 cookie 后重放（§8.2/§8.3）。地域/行业端点待重探。
 2. **补 fuyao 指数快照响应字段文档**：将 §二/§九 的板块级中文名回填 `fuyao_api_full.md` 与字典 §12.8.12c（修复文档缺口）。
 3. **字典回填**：各 fuyao 字段补中文规范名（§12.8.12e canonical）；新增 §12.8.12k「fuyao 网站中文名黄金锚」指向本表。
 4. **扩 `ths_tableheader_ids.md`**：从网站实测反推 tableheader 列 ID（当前仅 682 全表抽样）。

@@ -1,0 +1,2 @@
+[check] field-matrix 已写回区=是; subdict-index 已写回区=是
+[check] 幂等结果: 存在差异（首次生成或 registry 已更新）

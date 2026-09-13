@@ -1,0 +1,4 @@
+parity[native]: registry(1393/1940/326) vs baseline(1393/1940/326)
+  native PASS: 原生 token × 源映射与 field_dict.md 完全一致
+parity[field_matrix]: PASS
+PASS: registry 双重 parity 全部通过（原生 token + §零·B 投影）

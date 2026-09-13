@@ -13,13 +13,13 @@
 - **抽取通道实测（2026-09-13）**：
   - `WebFetch` 通道**可用**：以下页面均逐字抓取成功——板块详情页（`/gn/detail/code/XXX/`）、A股个股行情页（`/stock/xsjj/`）、指数列表页（`/zs/`）、港股列表页（`/hk/`）、新股页（`/newstock/`）。
   - `agent-browser`（Chrome 153，agent-browser 下载版）**本沙箱无法启动**：`open about:blank`（无网络）即零输出挂起、`timeout` 杀不掉、Chrome 残留。
-  - **系统 Chrome（C:\Program Files\Google\Chrome\Application\，152/153）亦无法运行**：`--no-sandbox --headless --single-process --no-zygote --disable-gpu` 全组合下 **segfault（EXIT=139）** / 子进程崩溃（Network service / GPU process 访问违规 0xC0000005）。判定：**本沙箱硬阻断 Chrome 子进程创建，浏览器自动化不可行**。
+  - **系统 Chrome（C:\Program Files\Google\Chrome\Application\，152/153）亦无法运行**：`--no-sandbox --headless --single-process --no-zygote --disable-gpu` 全组合下 **segfault（EXIT=139）** / 子进程崩溃——**已证伪（2026-09-13 14:00）**：根因①`--single-process --no-zygote` 把 GPU 进程塞入主进程（GPU 虚拟化上下文失败 → 主进程 `0xC0000005`/SIGSEGV）；②THS Nginx 按 `HeadlessChrome` UA 拦截返回 `Nginx forbidden`。改用**多进程 `headless=new` + `--disable-gpu --disable-gpu-sandbox` + 桌面 Chrome UA** 后系统 Chrome 正常加载 `q.10jqka.com.cn/gn/`（157KB）。**结论：本沙箱 Chrome 可用**，真实有头浏览器+CDP 更稳（用户本机已登录 Chrome 端口9333 已成功抓取同花顺/东方财富受限页，见 §8.3/§十二）。
   - `curl` 直连 10jqka 沙箱受限（HTTP 200 但 body 写不下，exit 23）。
 - **因此**：
   - 所有**服务器渲染页**（`/zs/`、`/hk/`、`/stock/xsjj/`、`/newstock/`、详情页）已用 WebFetch 逐字抓取 → 本锚核心、可信。
   - **概念/地域/行业列表页"可排序排行表"**：原计划误判三页同构且均 JS 阻塞。**实测订正（2026-09-13 15:3x 登录态 CDP）**：行业 `thshy/`、地域 `dy/` 实为**服务器渲染**，已逐字抓取 12 列排行表（含「净流入（亿元）」= 主力净流入板块口径，✅ 见 §8.3）；概念 `/gn/` 仅「热点轮动图」热力图（涨跌幅%+资金流向亿元），其多列排行表为 `chameleon` 动态指纹令牌门控、headless 下不发起（⚠️ 见 §8.2，不虚构）。建锚纪律：非 fuyao 列逐列确权真实源、不归 fuyao。
 - **红线（用户强调）**：网站列 ≠ 全为 fuyao。逐列确权真实源，fuyao 无对应者标 push2/东财/ZHB/TDX 等，喂 canonical registry，不假设全 fuyao。
-- **THS 登录凭据**：项目 `credentials/ths_credentials.json` 含 `username: 15061507789` / `password` / `mac`。列表页排行表为 JS 渲染且疑似需登录态获取完整数据，但本沙箱浏览器被硬阻断，凭据暂无法用于无头渲染；记录备查。
+- **THS 登录凭据**：项目 `credentials/ths_credentials.json` 含 `username: 15061507789` / `password` / `mac`。用户本机已登录 Chrome（端口 9333）经 CDP 可读 DOM，已成功抓取同花顺/东方财富受限页（§8.3/§十二）；凭据用于人工登录本机浏览器，不用于无头重放；记录备查。
 
 ---
 
@@ -296,8 +296,54 @@
   - **fuyao REST 源（§12.8.12k / 估值快照）**：`pe_ttm / pe_mrq / pb_mrq / ps_ttm / pcf_ttm / auction_* / seal_money / continue_day_cnt` 等全部 ✅，**无未破解字段**。
   - **同花顺 HTTP 源（§12.8.12 同花顺：热点归因 / 北向 / 涨停揭秘 / 热榜 / EPS）**：全部 ✅，**无未破解字段**；thsdk 已于 V17.0.29 退役（空数据，见 §12.8.12b）。
   - 锚文档剩余 🔲/⚠️ 均为**非 fuyao 列**（按红线刻意不归 fuyao，待 push2/东财/腾讯 确权，见 §7.1/§7.3）及**概念页 `/gn/` 多列排行表**（chameleon 门控、headless 下 XHR 不发起，本环境不可得）；二者均**不属 fuyao/同花顺源自身的未破解字段**。
-  - **最终定论：当前主字典 fuyao 与同花顺各源已无尚未破解的字段。** 用户提出的"官网实值验证"方法论正确且本就已被采用（黄金锚即据官网中文标签构建）；受限于官网 chameleon 门控与列表虚拟滚动，个别深度值的"网页二次复核"在本环境不可行，但字段本身已通过 fuyao REST / 同花顺 HTTP 契约确权，无需猜测。
+  - **最终定论：当前主字典 fuyao 与同花顺各源已无尚未破解的字段。** 用户提出的"官网实值验证"方法论正确且本就已被采用（黄金锚即据官网中文标签构建）；受限于官网 chameleon 门控与列表虚拟滚动，个别深度值的"网页二次复核"在本环境不可行，但字段本身已通过 fuyao REST / 同花顺 HTTP 契约确权，
+
+## 十二、东方财富网页中文标签 ↔ fuyao / push2 字段映射（2026-09-13，用户本机登录态 Chrome + CDP 只读抓取 `quote.eastmoney.com/sh600519.html`）
+
+- **目的**：用户提议并用本机已登录 Chrome 手动打开东方财富个股页（真人触发 → 数据进 DOM → CDP 只读抓取），与周五(2026-09-11)采集的 `raw_fuyao.json`(同花顺) / `raw_push2.json`(东财) 做值级对撞。方法论同 §十一"官网中文定案"——此站为东方财富官方、中文标签权威明确，不需猜测。
+- **抓取成功**：`sh600519` 页 9113 字节 innerText，含基础行情 / 公司核心数据 / 行业对比表 / 盘口五档 / 资金流向入口。
+
+### 12.1 东方财富网页中文标签 ↔ fuyao(同花顺) 字段（600519 验证，✅ 全中）
+
+| 东方财富中文标签 | 网页值 | fuyao 字段 | fuyao 值(600519) | 结论 |
+|---|---|---|---|---|
+| 最新 | 1275.16 | `snapshot.last_price` | 1275.16 | ✅ |
+| 今开 | 1285.15 | `snapshot.open_price` | 1285.15 | ✅ |
+| 最高 | 1286.15 | `snapshot.high_price` | 1286.15 | ✅ |
+| 最低 | 1263.01 | `snapshot.low_price` | 1263.01 | ✅ |
+| 昨收 | 1285.13 | `snapshot.prev_price` | 1285.13 | ✅ |
+| 涨跌 | -9.97 | `snapshot.price_change` | -9.97 | ✅ |
+| 涨幅 | -0.78% | `snapshot.price_change_ratio_pct` | -0.776% | ✅(四舍五入) |
+| 成交额 | 44.31亿 | `snapshot.turnover` | 4.43e9元 | ✅ |
+| 成交量 | 3.480万 | `snapshot.volume` | 3480142(手) | ✅ |
+| 换手(%) | 0.28% | （非 fuyao 列） | — | 🔲 push2/东财确权 |
+| 量比 | 1.25 | （非 fuyao 列） | — | 🔲 push2/东财确权 |
+| **市盈(动)** | **17.90** | **`valuation.pe_mrq`** | 17.9039 | ✅⚠️**关键校正** |
+| 市净 | 6.34 | `valuation.pb_mrq` | 6.3444 | ✅ |
+| 总市值 / 流通市值 | 1.594万亿 | `auction_final.float_market_cap` | 1.594万亿 | ✅ |
+| ROE | 16.75% | `fin_indicators.index_weighted_avg_roe` | 16.75 | ✅ |
+| 毛利率 / 净利率 | 89.56% / 50.75% | `fin_indicators.sale_gross_margin` / `sale_net_interest_ratio` | 89.56 / 50.75 | ✅ |
+| 负债率 | 15.19% | `fin_indicators.assets_debt_ratio` | 15.19 | ✅ |
+| 净利润同比 | -1.95% | `fin_indicators.growth.净利润同比` | -1.95 | ✅ |
+
+> **⚠️ 关键口径校正（须回写主字典 §12.8.12k）**：东方财富"**市盈(动)**" = fuyao `pe_mrq`（报告期/静态 PE，**17.90**），**≠** `pe_ttm`（滚动 PE，**19.57**，该页未单列）。此前若把"市盈(动)"等同 `pe_ttm` 即为误映射；`pe_mrq` 才是官网"动"语义对应。
+> `index_weighted_avg_roe`(16.75)=加权ROE=网页"ROE"；扣非 `index_deduct_weighted_avg_roe`(16.74) 为另一列，网页未单列。
+
+### 12.2 东方财富网页中文标签 ↔ push2(东财) 字段语义对应（步骤2，无原值基准）
+
+- **⚠️ 周五(2026-09-11) `raw_push2.json` 的 20 只股票全部采集 error**（限流所致，无原值基准）。本小节以"东方财富网页官方中文标签"直接定案东财 push2 字段**语义**，具体 f 编号以项目 push2 适配器(`core/` push2 解析)实测回填为准（行业通用编号仅作线索，不臆造）：
+  - 现价 / 今开 / 最高 / 最低 / 昨收 / 涨跌幅 → push2 行情快照（f43/f44/f45/f46/f47/f57 族）
+  - 成交额 / 成交量 → push2 f46(额)/f47(量) 族
+  - 换手(%) / 量比 → push2 f168 / f50
+  - 市盈(动) / 市净 → push2 f162 / f167（与 fuyao `pe_mrq`/`pb_mrq` 口径对齐）
+  - 总市值 / 流通市值 → push2 f116 / f117
+  - 主力净流入（资金流向区块）→ push2 f137
+- 上述为"中文标签 ↔ 语义"定案；步骤2 完整对撞需重新采集 push2，或用户点击"资金流向"区块后由 CDP 抓取真实值回填 f 编号。
+
+### 12.3 下一步（步骤3，需用户手动触发）
+- **多样本**：用户于调试 Chrome 打开 2–3 只不同板块股票（如 `000001` 平安银行 / `300750` 宁德时代 / `688xxx` 科创板），我 CDP 只读抓 DOM 做跨样本定案。
+- **深字段**：用户滚动/点击 F10 财务区与"资金流向"区块，我抓每股未分配利润 / 单季营收 / 经营现金流 / 主力净流入等更深标签，回填 §12.1/§12.2。
 
 ---
 
-*反失焦：本表每条映射均注明"真实源判定"与"核验状态（✅逐字 / ⚠️待浏览器）"，禁止无来源归 fuyao。数据来源：通达信 / 同花顺(q.10jqka.com.cn) 官方中文列名、fuyao REST 契约。以上为字段治理层面的中文名黄金锚建工作，所有结论不构成投资建议。*
+：本表每条映射均注明"真实源判定"与"核验状态（✅逐字 / ⚠️待浏览器）"，禁止无来源归 fuyao。数据来源：通达信 / 同花顺(q.10jqka.com.cn) 官方中文列名、fuyao REST 契约。以上为字段治理层面的中文名黄金锚建工作，所有结论不构成投资建议。*

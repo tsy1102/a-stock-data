@@ -1,9 +1,9 @@
 # fuyao 源「网站中文名 ↔ 英文字段」黄金锚破解计划
 
 > **元数据**
-> - 创建：2026-09-13｜状态：**✅ 已完成（Phase 0–4 完成 / Phase 5 已 commit → `3ba6257` / 仅 Phase 1·3 概念·地域·行业列表页 JS 排行表因 Chrome 硬阻断标 ⚠️ 待浏览器环境补全）**
+> - 创建：2026-09-13｜状态：**✅ 已完成（Phase 0–4 完成 / Phase 5 已 commit → `3ba6257` / Phase 1 环境已解禁：Chrome 多进程 headless 可跑、`/gn/` 概念页 157KB 已加载；残留=概念主表走 data.10jqka.com.cn XHR（需页面接口或登录）、`/dn/`/`/hy/` 真实 404 待重探）**
 > - 审批：用户已批准（范围=**全站完整破解**；非 fuyao 列=**逐列确权真实源**）
-> - ⚠️ **环境约束（2026-09-13 实测）**：本沙箱 `agent-browser`（Chrome 153）**无法启动**（`open about:blank` 零输出挂起、`timeout` 杀不掉、Chrome 残留），浏览器自动化被硬阻断。抽取统一改走 **WebFetch 通道**（详情页/数据中心可用）+ 列表页 JS 排行表**浏览器阻塞、标注待补**。
+> - ⚠️ **环境约束（2026-09-13 14:00 修订）**：原"Chrome 硬阻断"结论已**证伪**——根因两重用错：①`--single-process --no-zygote` 把崩溃的 GPU 进程塞进主进程拖垮整浏览器（GPU 初始化 `kFatalFailure` → `0xC0000005`）；②THS Nginx 按 `HeadlessChrome` UA 拦截返回 `<h1>Nginx forbidden.</h1>`。改用**多进程 `headless=new` + `--disable-gpu --disable-gpu-sandbox` + 桌面 Chrome UA + `zh-CN` 语言**后，Chrome 正常加载 `q.10jqka.com.cn/gn/`（157KB）且 `data.10jqka.com.cn` 根域 86KB 可达。残留：概念主排行表为 `data.10jqka.com.cn` **XHR 异步渲染**（`--dump-dom` 取不到表体，仅表头+侧栏热点），需页面接口或 `credentials/ths_credentials.json` 登录；`/dn/`(地域)/`/hy/`(行业) 为**真实 404**。
 > - 关联任务：Task #142–#147
 > - **反失焦铁律**：每轮开工前先核对本表「§七 进度追踪」与「§八 反失焦校验清单」；任何偏离须先回写本表再动手。本文件为单一真相源，禁止凭记忆偏离。
 
@@ -96,7 +96,7 @@ fuyao REST 契约（`§12.8.12c` 的 62 端点）**不能覆盖网站所有列**
 | Phase | 状态 | 产出 | 最近更新 | 备注 |
 |:---|:---|:---|:---|:---|
 | 0 方法验证 | ✅ 完成 | 通道结论（WebFetch 可用 / 浏览器硬阻断·segfault） | 2026-09-13 | 详情页/指数/港股/个股/新股 WebFetch 逐字✅；`agent-browser`(Chrome153) 与**系统 Chrome(152/153) 均 segfault(EXIT=139)/子进程崩溃**——本沙箱硬阻断 Chrome 子进程创建，浏览器自动化不可行 |
-| 1 板块列表页族 | 🟡 部分完成 | 指数列表(/zs/)✅服务器渲染逐字；概念/地域(/gn//dn/)/行业(/hy/)排行表⚠️JS阻塞 | 2026-09-13 | /zs/ 已逐字拿到 12 列；概念/地域/行业排行表 JS 渲染取不到，以"详情页汇总块镜像+标准同花顺概念板列"建锚(标⚠️)，详见黄金锚 §三/§八 |
+| 1 板块列表页族 | 🟡 环境已解禁(残留=XHR网关) | 指数列表(/zs/)✅逐字；概念页(/gn/)多进程 headless 已加载 157KB✅；概念主排行表=data.10jqka.com.cn XHR 异步渲染、`--dump-dom` 取不到表体；`/dn/`(地域)/`/hy/`(行业)真实 404(URL 待重探) | 2026-09-13 14:00 | Chrome 硬阻断已证伪(原 `--single-process` 自伤+THS `HeadlessChrome` UA 拦截)；可用启动命令见 §六·5/MEMORY 浏览器铁律；概念表需页面 XHR 接口或 `credentials/ths_credentials.json` 登录；`/dn//hy/` 404 证实 WebFetch 早前判断正确 |
 | 2 板块详情成分股 | ✅ 完成 | 14 列映射（WebFetch 逐字核验） | 2026-09-13 | 已写入 `docs/verify/fuyao_website_anchor.md` §一/§二；fuyao 直覆 6/14 列，余 8 列标真源 |
 | 3 数据中心全子页 | 🟡 部分完成 | 资金流向(/stock/xsjj/)✅、港股(/hk/)✅、新股(/newstock/)✅ 逐字；龙虎榜正确 URL 404 | 2026-09-13 | 非 fuyao 列(IPO/港股)逐列确权真实源(东财/港股源)；剩余数据中子页为非 fuyao 域，已贡献中文名，详见黄金锚 §四/§五 |
 | 4 汇编+字典回填 | ✅ 完成 | 锚总表 v1.0 + §12.8.12k + ths_tableheader 扩 | 2026-09-13 | `fuyao_website_anchor.md` 重写 v1.0（六类页型实证）；`field_dict.md` §12.8.12k 索引+概要；`ths_tableheader_ids.md` §六 网站列名；**G1 闸门全过（extract 1388/1935/326 基线一致、parity 双 PASS，零污染）** |

@@ -2208,6 +2208,19 @@
       "status": "unverified"
     },
     {
+      "code": "bps",
+      "source": "TDX(双命名源)",
+      "sources": [
+        "TDX(双命名源)"
+      ],
+      "section": "",
+      "canonical": "",
+      "meaning": "",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified"
+    },
+    {
       "code": "business_composition",
       "source": "TDX(双命名源)",
       "sources": [
@@ -2392,6 +2405,19 @@
       "status": "unverified"
     },
     {
+      "code": "concepts",
+      "source": "TDX(双命名源)",
+      "sources": [
+        "TDX(双命名源)"
+      ],
+      "section": "",
+      "canonical": "",
+      "meaning": "",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified"
+    },
+    {
       "code": "continue_day_cnt",
       "source": null,
       "sources": [
@@ -2451,6 +2477,19 @@
       "status": "unverified"
     },
     {
+      "code": "dividend_yield",
+      "source": "TDX(双命名源)",
+      "sources": [
+        "TDX(双命名源)"
+      ],
+      "section": "",
+      "canonical": "",
+      "meaning": "",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified"
+    },
+    {
       "code": "down_count",
       "source": "TDX(双命名源)",
       "sources": [
@@ -2489,6 +2528,19 @@
       "unit": "",
       "status_raw": "",
       "status": "unverified"
+    },
+    {
+      "code": "eps_deduct_ttm",
+      "source": "TDX(双命名源)",
+      "sources": [
+        "TDX(双命名源)"
+      ],
+      "section": "12.8.12c THS 官方金融数据 REST API（fuyao.aicubes.cn，2026-08-10 实测 7 接口 → V17.0.5 契约全量镜像 62 端点）🆕",
+      "canonical": "eps_deduct_ttm(f108)",
+      "meaning": "扣非EPS TTM",
+      "unit": "元/股",
+      "status_raw": "push2 独有（fuyao 仅 basic_eps 无扣非EPS）→ 无官方锚",
+      "status": "verified"
     },
     {
       "code": "eps_raw",
@@ -2649,6 +2701,19 @@
     },
     {
       "code": "float_mcap_yi",
+      "source": "TDX(双命名源)",
+      "sources": [
+        "TDX(双命名源)"
+      ],
+      "section": "",
+      "canonical": "",
+      "meaning": "",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified"
+    },
+    {
+      "code": "float_shares",
       "source": "TDX(双命名源)",
       "sources": [
         "TDX(双命名源)"
@@ -20136,6 +20201,7 @@
       "同花顺-fuyao"
     ],
     "市盈率(TTM)": [
+      "东财",
       "同花顺-fuyao"
     ],
     "市盈率(MRQ)": [
@@ -20167,6 +20233,105 @@
     ],
     "成交额(亿)": [
       "同花顺-fuyao"
+    ],
+    "基本每股收益(元)": [
+      "东财"
+    ],
+    "扣非每股收益(元)": [
+      "东财"
+    ],
+    "每股净资产 BPS(元)": [
+      "东财"
+    ],
+    "总股本(万股)": [
+      "东财"
+    ],
+    "流通股本(万股)": [
+      "东财"
+    ],
+    "股息率(%)": [
+      "东财"
+    ],
+    "概念列表": [
+      "东财"
+    ],
+    "市盈率(动": [
+      "东财"
+    ],
+    "最新报告期年化)": [
+      "东财"
+    ],
+    "市盈率(静": [
+      "东财"
+    ],
+    "年报 LYR)": [
+      "东财"
+    ],
+    "每股公积金(元)": [
+      "东财"
+    ],
+    "每股未分配利润(元)": [
+      "东财"
+    ],
+    "每股经营现金流(元)": [
+      "东财"
+    ],
+    "权益系数": [
+      "东财"
+    ],
+    "产权比率": [
+      "东财"
+    ],
+    "股东人数(户)": [
+      "东财"
+    ],
+    "人均流通股(股)": [
+      "东财"
+    ],
+    "筹码集中度": [
+      "东财"
+    ],
+    "十大流通股东(名称": [
+      "东财"
+    ],
+    "性质": [
+      "东财"
+    ],
+    "持股数": [
+      "东财"
+    ],
+    "占比": [
+      "东财"
+    ],
+    "增减)": [
+      "东财"
+    ],
+    "股权质押比例": [
+      "东财"
+    ],
+    "分红方案": [
+      "东财"
+    ],
+    "银行业专项(存款": [
+      "东财"
+    ],
+    "贷款": [
+      "东财"
+    ],
+    "资本充足率": [
+      "东财"
+    ],
+    "不良率": [
+      "东财"
+    ],
+    "拨备覆盖率)": [
+      "东财"
+    ],
+    "总市值(元)": [
+      "东财"
+    ],
+    "流通市值(元)": [
+      "东财"
     ],
     "brief": [
       "东财"

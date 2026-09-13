@@ -26,8 +26,8 @@
 | ulist f20 | f116 | 总市值 |
 | ulist f21 | f117 | 流通市值 |
 | ulist f23 | f167 | PB |
-| ulist f24 | f121 | 资金流衍生指标(=腾讯[71]同源, ✅ §12.3.1) |
-| ulist f25 | f122 | 资金流衍生指标(=腾讯[62]同源, ✅ §12.3.1) |
+| ulist f24 | f121 | **60日涨跌幅(%)**，K线 close-to-close 实证(round-5)；原"资金流衍生指标"标注经 round-5 证伪 |
+| ulist f25 | f122 | **年初至今涨跌幅(%)**，K线 close-to-close 实证(round-5)；原"资金流衍生指标"标注经 round-5 证伪 |
 | ulist f26 | f189 | 上市日期 |
 | ulist f27 | f107 | 市场标记(布尔0/1,北交=0, ≡f107/f110, L1·第十轮复核) |
 | ulist f29 | f180 | ≡ulist:f29 同值(✅多日再确认 §12.3.1.2) |
@@ -65,8 +65,8 @@
 | ulist f102 | f128 | 地域 |
 | ulist f103 | f129 | 概念 |
 | ulist f107 | f118 | 市场/板块状态标记（≡push2:f118，L1·2026-09-10 全历史固化） |
-| ulist f109 | f119 | 资金流衍生指标(✅ §12.3.1) |
-| ulist f110 | f120 | 资金流衍生指标(✅ §12.3.1) |
+| ulist f109 | f119 | **5日涨跌幅(%)**，K线 close-to-close 实证(round-5)；原"资金流衍生指标"标注经 round-5 证伪 |
+| ulist f110 | f120 | **20日涨跌幅(%)**，K线 close-to-close 实证(round-5)；原"资金流衍生指标"标注经 round-5 证伪 |
 | ulist f111 | f181 | ≡ulist:f111 同值(✅多日再确认 §12.3.1.2) |
 | ulist f112 | f55 | EPS |
 | ulist f113 | f92 | BPS |

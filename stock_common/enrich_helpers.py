@@ -135,7 +135,12 @@ def fund_flow_detail_lines(cdata: Any) -> List[str]:
 
 
 def order_book_lines(cdata: Any) -> List[str]:
-    """盘口：委比、内外盘、买卖二价、涨速。短线情绪锋利信号。"""
+    """盘口：委比、内外盘、买卖二价、涨速。短线情绪锋利信号。
+
+    注：买二/卖二(bid2/ask2) 统一层自承口径未定案(L4)，且实测常出现与现价
+    偏离数倍的脏回退值。故加带宽 sanity gate：仅当与现价(price)同量级
+    (±15%)且买二<=卖二时渲染，越界视为脏数据隐藏，避免误导。
+    """
     try:
         er = _v(cdata, "entrust_ratio")
         bv = _v(cdata, "b_vol")
@@ -143,6 +148,7 @@ def order_book_lines(cdata: Any) -> List[str]:
         bid2 = _v(cdata, "bid2")
         ask2 = _v(cdata, "ask2")
         rs = _v(cdata, "rise_speed")
+        price = _v(cdata, "price")
         if er == 0 and bv == 0 and sv == 0 and bid2 == 0 and ask2 == 0 and rs == 0:
             return []
         out: List[str] = []
@@ -153,8 +159,12 @@ def order_book_lines(cdata: Any) -> List[str]:
         tot = bv + sv
         if tot > 0:
             out.append(f"  - 外盘(主动买)={bv/1e4:.1f}万手 / 内盘(主动卖)={sv/1e4:.1f}万手 → 主动买占比{_safe_div(bv,tot)*100:.1f}%")
-        if bid2 > 0 and ask2 > 0:
-            out.append(f"  - 买二={bid2:.2f}元 / 卖二={ask2:.2f}元（盘口支撑/压力位）")
+        # 买二/卖二 sanity gate：L4 未定案字段, 仅当与现价同量级且买二<=卖二时渲染, 越界隐藏
+        if bid2 > 0 and ask2 > 0 and price > 0:
+            _in_band = (price * 0.85 <= bid2 <= price * 1.15) and (price * 0.85 <= ask2 <= price * 1.15)
+            _no_cross = bid2 <= ask2
+            if _in_band and _no_cross:
+                out.append(f"  - 买二={bid2:.2f}元 / 卖二={ask2:.2f}元（盘口支撑/压力位）")
         if rs != 0:
             out.append(f"  - 涨速={rs:.2f}%/min（异动启动先行指标）")
         return out

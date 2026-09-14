@@ -1008,6 +1008,12 @@ def analyze_top_stocks(top_sectors):
                             )
                         ),
                         "main_net_amount": _safe_float(_st.get("main_net_buy_amount", 0)) * 1e4,
+                        # [ENRICH] 区间收益 + 主力净流入(取自 ZHB 全市场快照 _st, 零新增取数)
+                        "ret_5d": _safe_float(_st.get("change_5d", 0)),
+                        "ret_10d": _safe_float(_st.get("change_10d", 0)),
+                        "ret_20d": _safe_float(_st.get("change_20d", 0)),
+                        "ret_60d": _safe_float(_st.get("change_60d", 0)),
+                        "main_inflow": _safe_float(_st.get("main_net_buy_amount", 0)) * 1e4,
                     }
                 )
             _zhb_member_stocks_cache[key] = stocks
@@ -1065,7 +1071,18 @@ def analyze_top_stocks(top_sectors):
                     for st in limit_up
                 ],
                 "top5_stocks": [
-                    {"code": st["code"], "name": st["name"], "change_pct": st.get("change_pct", 0)}
+                    {
+                        "code": st["code"],
+                        "name": st["name"],
+                        "change_pct": st.get("change_pct", 0),
+                        "ret_5d": _safe_float(st.get("ret_5d", 0)),
+                        "ret_10d": _safe_float(st.get("ret_10d", 0)),
+                        "ret_20d": _safe_float(st.get("ret_20d", 0)),
+                        "ret_60d": _safe_float(st.get("ret_60d", 0)),
+                        "turnover": _safe_float(st.get("turnover", 0)),
+                        "mcap_yi": _safe_float(st.get("mcap_yi", 0)),
+                        "main_inflow": _safe_float(st.get("main_inflow", 0)),
+                    }
                     for st in _top5
                 ],
             }

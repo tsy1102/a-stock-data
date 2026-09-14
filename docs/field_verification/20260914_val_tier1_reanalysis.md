@@ -80,3 +80,12 @@
 - (b) Group A + Group B 走 **B1**（腾讯 qfqday 按需 + 横截面聚合，不引 DB）；
 - (c) Group A + Group B 走 **B2**（每日 K 线采集 + 时序库，重大变更，先开设计）；
 - (d) 暂不动，先消化。
+
+## 6. 已落地（2026-09-14，用户拍板 P1 = Group A）
+
+- **Group A 三因子现已齐备**：
+  - #006 变体 MTD 截面动量 → 既有 `strategy_22_mtd_momentum`（change_mtd，零网络）；
+  - #002 短期反转 → 新增 `strategy_24_short_reversal`（change_5d，零网络）；
+  - #009 规模 → 新增 `strategy_25_size_factor`（mcap_yi，零网络）。
+- 两新策略已登记 `_strategy_defs`，val 策略总数 **23 → 25**，满足 `tests/reports/test_reports_strategy.py` 25 策略契约（数量/编号连续 01–25/双向登记/展示名唯一）。
+- 全部为 ZHB 快照派生，**零架构改动、每日新鲜、零网络增量**。P1 与 P0（标准因子路线②）正交，P0 未启动。

@@ -186,7 +186,10 @@ _DOMAIN_LIMITS: Dict[str, Dict[str, Any]] = {
     # V16.0.2: 补齐遗漏的东财域名限流（参考仓库"东财所有域名统一限流"原则）
     # 之前以下域名落入默认 100ms=10rps → 封禁隐患（尤其 emappdata 热榜高频）
     "83.push2.eastmoney.com": {"sleep_ms": 2500, "semaphore": None, "rps": 0.4},
-    "push2his.eastmoney.com": {"sleep_ms": 2500, "semaphore": None, "rps": 0.4},
+    # V17.2.x: 2026-09-14 实测 push2 系即便 0.4rps(2.5s) 仍被东财远端 IP 级封禁(换 IP 后采集流量复触发)。
+    # 把 kline 主源 push2his 进一步放缓到 0.25rps(4s); 因家族共享归一化桶 + 全局 _EM_LAST_CALL,
+    # 此调整同时把 push2/83.push2 整族节奏拖慢, 降低远端封禁概率。用户确认后于次日采集前落地。
+    "push2his.eastmoney.com": {"sleep_ms": 4000, "semaphore": None, "rps": 0.25},
     # V16.2.4: push2delay（延时 15 分钟镜像域，fflow 资金流主入口——push2/push2his 连接级风控时唯一可用）
     "push2delay.eastmoney.com": {"sleep_ms": 1000, "semaphore": None, "rps": 1.0},
     "emappdata.eastmoney.com": {"sleep_ms": 1000, "semaphore": None, "rps": 1.0},

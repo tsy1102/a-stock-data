@@ -1886,6 +1886,13 @@ async def generate_sector_report(output_path):
                 _t5_chg = _t5.get('change_pct', 0)
                 _t5_icon = '🚀' if _t5_chg >= 10 else ('📈' if _t5_chg >= 5 else '  ')
                 L(f"       {_t5_icon} {_t5['name']}({_t5['code']})  {_t5_chg:>+8.2f}%")
+                # [ENRICH] 数据维度充实（仅用 ZHB 快照已有字段，零新增取数；异常不阻断报告）
+                try:
+                    from stock_common.enrich_helpers import mak_stock_lines
+                    for _ln in mak_stock_lines(_t5):
+                        L("       " + _ln)
+                except Exception as _e:
+                    _debug_log(f"mak enrich top5 error: {_e}")
         _items = []
         for _st in ta['limit_up_stocks']:
             # V16.0: 统一 is_limit_up 判断（ST 10% 与主板一致）

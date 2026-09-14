@@ -4,6 +4,8 @@
 > 触发：外部仓库分析（`lzwme/finance-quant-skills`）建议从 Alpha101/191 挑 5–10 个因子封装为 val `strategy_24~` 丰富现有 23 策略（"丰富不替换"）。
 > 数据来源标注：通达信（TDX 本地 .day / 腾讯 qfq 日线）/ 百度 K线 / ZHB 快照 / 各源 raw（20260819–0907）。以下为策略层方法结论，不构成投资建议。
 
+> 🔴 **勘误（2026-09-14 用户指正后）**：本文 §15/§20 称"val 已具备 800 日 K 线能力、Tier1 非阻塞"**有误**——仅核实了代码"能读 K 线"，未核实 K 线**是否每日新鲜**。真实链路：`tdx_get_security_bars`→easy_tdx/mootdx 连本机 TDX App TCP→读 `C:\new_tdx64\vipdoc\...\lday\*.day`（**用户运行 App 同步写入，项目只读不写**）；`cache/kline/*.pkl` 为 24h-TTL 惰性缓存；baidu 回退已弃用；代码自承滞后 ZHB 达 7 天。K 线**非项目每日系统新鲜数据**。正确重分析见 **`20260914_val_tier1_reanalysis.md`**（Tier1 拆 Group A 快照派生[零改动] / Group B 滚动窗口[需时序基础设施]）。
+
 ---
 
 ## 0. 前置判定（已核对真仓事实）

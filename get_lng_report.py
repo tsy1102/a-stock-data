@@ -1365,6 +1365,25 @@ async def generate_report_async(session, code, output_path, ind_comp=None):
         "report_source": "lng"
     }
 
+    # [ENRICH] 数据维度充实（统一层 canonical 字段，零新增取数；异常仅记录不阻断报告）
+    try:
+        from stock_common.enrich_helpers import (
+            long_term_return_lines, earnings_quality_lines, cash_content_lines, quality_gate_lines,
+        )
+        _enrich = []
+        _enrich += long_term_return_lines(cdata)
+        _enrich += earnings_quality_lines(cdata)
+        _enrich += cash_content_lines(cdata)
+        _enrich += quality_gate_lines(cdata)
+        if _enrich:
+            L("")
+            L("## 【补充·数据维度充实（基于统一层字段）】")
+            L("---")
+            for _ln in _enrich:
+                L(_ln)
+    except Exception as _e:
+        _debug_log(f"lng enrich error: {_e}")
+
     # V17.0(2026-08-15 C 方案): 全量 md 化——渲染层确定性转换(标题/分隔线/F10 边框表/对齐空格表→md)
     from stock_common.md_render import render_md_report
     output = render_md_report(output_path, lines)

@@ -2381,6 +2381,14 @@ async def run_discovery_async(output_path):
                 _st_mark = _u_name_mark(item.get('name', ''))
                 L(f"  #{idx2}  {item.get('name', '')} ({item.get('code', '')}){_st_mark}")
                 L(f"     {item.get('reason','')}")
+                # [ENRICH] 选股市场分层标注（code 前缀派生，零取数；不改变选股结果）
+                try:
+                    from stock_common.enrich_helpers import sec_type_label
+                    _layer = sec_type_label(item.get("code", ""))
+                    if _layer:
+                        L(f"     [市场分层] {_layer}")
+                except Exception:
+                    pass
         else:
             # V17.0.x(2026-09-10) 新维度: 无产出时给出成因提示, 避免"空章节"误导
             if _k == "策略23":

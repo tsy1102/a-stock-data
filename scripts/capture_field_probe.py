@@ -998,7 +998,7 @@ def collect_em_kline_f61(pool: list) -> dict:
     klines 结构: "date,open,close,high,low,volume,amount,amplitude,pct,chg,turnover"
     其中 turnover=f61 换手率; fqt=0 不复权(成本分布口径)。
     V17.2.x 可用性修复: 旧逻辑"连续3败即整段熔断"把后续股票直接判死(从未真试)→ 实测
-    13/20 误杀。改为: 每只股票**始终真试 push2his**(限流 0.4rps 由 _quick_request 内置),
+    13/20 误杀。改为: 每只股票**始终真试 push2his**(限流 0.25rps/4s 由 _quick_request 内置, 2026-09-14 由 0.4rps 进一步放缓以避远端封禁),
     失败仅记 error、不杀域; **仅 dktotal>0 才收**, 杜绝空数据误存。远端 IP 级封禁冷却后
     本采集器不再自伤、自动恢复(东财 push2 族风控面极敏感, 需采集间留足冷却)。
     """

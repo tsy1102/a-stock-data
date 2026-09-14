@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": 1,
-    "updated": "2026-09-13",
+    "updated": "2026-09-14",
     "source_of_truth": "field_registry.json",
     "generated_by": "scripts/extract_registry.py",
     "note": "本文件为字段登记表单一真相源（影子抽取）。docs/field_dict.md 字段表由本文件生成，勿手改。",
@@ -5481,8 +5481,9 @@
     },
     {
       "code": "[49]",
-      "source": "腾讯(qt.gtimg)",
+      "source": null,
       "sources": [
+        "新浪(hq.sinajs)",
         "腾讯(qt.gtimg)"
       ],
       "section": "12.1 腾讯 qt.gtimg.cn 完整字段字典（88 字段）",
@@ -5494,8 +5495,9 @@
     },
     {
       "code": "[50]",
-      "source": "腾讯(qt.gtimg)",
+      "source": null,
       "sources": [
+        "新浪(hq.sinajs)",
         "腾讯(qt.gtimg)"
       ],
       "section": "12.1 腾讯 qt.gtimg.cn 完整字段字典（88 字段）",
@@ -5654,8 +5656,9 @@
     },
     {
       "code": "[62]",
-      "source": "腾讯(qt.gtimg)",
+      "source": null,
       "sources": [
+        "新浪(hq.sinajs)",
         "腾讯(qt.gtimg)"
       ],
       "section": "",
@@ -5667,8 +5670,9 @@
     },
     {
       "code": "[63]",
-      "source": "腾讯(qt.gtimg)",
+      "source": null,
       "sources": [
+        "新浪(hq.sinajs)",
         "腾讯(qt.gtimg)"
       ],
       "section": "",
@@ -5760,8 +5764,9 @@
     },
     {
       "code": "[70]",
-      "source": "腾讯(qt.gtimg)",
+      "source": null,
       "sources": [
+        "新浪(hq.sinajs)",
         "腾讯(qt.gtimg)"
       ],
       "section": "",
@@ -5773,8 +5778,9 @@
     },
     {
       "code": "[71]",
-      "source": "腾讯(qt.gtimg)",
+      "source": null,
       "sources": [
+        "新浪(hq.sinajs)",
         "腾讯(qt.gtimg)"
       ],
       "section": "",
@@ -5892,8 +5898,9 @@
     },
     {
       "code": "[80]",
-      "source": "腾讯(qt.gtimg)",
+      "source": null,
       "sources": [
+        "新浪(hq.sinajs)",
         "腾讯(qt.gtimg)"
       ],
       "section": "",

@@ -990,51 +990,51 @@ def collect_em_kline_f61(pool: list) -> dict:
     """东财日K线(**push2his** 域)——f61 换手率为 CYQ 筹码分布唯一源(字典 V17.0.14)。
 
     TDX 0x0010 日K 与腾讯 ifzq 均无换手率 → 仅东财日K有。
-    🔴 域选择实测(2026-09-01): push2delay/push2 主域 kline dktotal=0 空返回(延时镜像
-    无历史窗口); **push2his 才有全窗口**(dktotal=5995, 150 根含今日)——与生产
-    `get_cyq_distribution` 的 `_em_fflow_request(prefer_his=True)` 同源。
+    🔴 域选择实测(2026-09-01 及 2026-09-14 换 IP 后复测三股 600519/000568/601288 均证):
+    push2/push2delay 主域 kline **dktotal 恒为 0 空返回**(延时镜像无历史窗口), 故镜像
+    **不可补数据且探测它纯耗限流额度、易触发远端重封**——本采集器**仅打 push2his**。
+    仅 push2his 有全窗口(dktotal=6004/7736/3924, 150 根)——与生产 `get_cyq_distribution`
+    的 `_em_fflow_request(prefer_his=True)` 同源。
     klines 结构: "date,open,close,high,low,volume,amount,amplitude,pct,chg,turnover"
     其中 turnover=f61 换手率; fqt=0 不复权(成本分布口径)。
+    V17.2.x 可用性修复: 旧逻辑"连续3败即整段熔断"把后续股票直接判死(从未真试)→ 实测
+    13/20 误杀。改为: 每只股票**始终真试 push2his**(限流 0.4rps 由 _quick_request 内置),
+    失败仅记 error、不杀域; **仅 dktotal>0 才收**, 杜绝空数据误存。远端 IP 级封禁冷却后
+    本采集器不再自伤、自动恢复(东财 push2 族风控面极敏感, 需采集间留足冷却)。
     """
     from stock_common import _quick_request
 
+    KLINE_FIELDS2 = "f51,f52,f53,f54,f55,f56,f57,f58,f59,f60,f61"
     out = {"stocks": {}}
-    domain_dead = False  # V17.0.24: 域级熔断(push2his 与 push2 同风控面, 3 连败即停)
-    fail_streak = 0
     for p in pool:
         c = p["code"]
-        if domain_dead:
-            out["stocks"][c] = {"__error__": "push2his circuit-broken (family risk-control)"}
-            continue
         secid = em_secid_prefix(c) + c
         try:
             r = _quick_request(
                 "https://push2his.eastmoney.com/api/qt/stock/kline/get",
-                params={
-                    "secid": secid, "fields1": "f1,f2,f3,f4,f5,f6",
-                    "fields2": "f51,f52,f53,f54,f55,f56,f57,f58,f59,f60,f61",
-                    "klt": "101", "fqt": "0", "end": "20500101", "lmt": "150",
-                    "ut": "b2884a393a59ad64002292a3e90d46a5",
-                },
+                params={"secid": secid, "fields1": "f1,f2,f3,f4,f5,f6",
+                        "fields2": KLINE_FIELDS2, "klt": "101", "fqt": "0",
+                        "end": "20500101", "lmt": "150",
+                        "ut": "b2884a393a59ad64002292a3e90d46a5"},
                 headers={"Referer": "https://quote.eastmoney.com/"},
                 timeout=15,
             )
-            if r is None:
-                out["stocks"][c] = {"__error__": "request failed"}
-                fail_streak += 1
-                if fail_streak >= 3:
-                    domain_dead = True
-                continue
-            data = (r.json() or {}).get("data") or {}
-            klines = data.get("klines") or []
-            fail_streak = 0
+        except Exception:
+            r = None
+        if r is None:
+            out["stocks"][c] = {"__error__": "push2his request failed/blocked"}
+            continue
+        data = (r.json() or {}).get("data") or {}
+        klines = data.get("klines") or []
+        dktotal = data.get("dktotal") or 0
+        if dktotal and len(klines) > 0:   # 仅真实窗口才算成功, 杜绝空数据误存
             out["stocks"][c] = {
-                "secid": secid, "dktotal": data.get("dktotal"), "n_klines": len(klines),
-                "klines_tail30": klines[-30:],   # 近 30 根精简
-                "klines_all": klines if len(klines) <= 150 else klines[:150],
+                "secid": secid, "dktotal": dktotal, "n_klines": len(klines),
+                "klines_tail30": klines[-30:],
+                "klines_all": klines[:150], "host": "push2his",
             }
-        except Exception as e:
-            out["stocks"][c] = {"__error__": str(e)[:200]}
+        else:
+            out["stocks"][c] = {"__error__": "push2his empty (dktotal=0)"}
     return out
 
 

@@ -470,7 +470,7 @@ class CanonicalStockData:
     avg_price: float = 0.0          # 均价 / VWAP（元，腾讯 qt.gtimg [51] + TDX快照 average_price）
     dividend_yield: float = 0.0      # 股息率 (%)
     turnover_pct: float = 0.0        # 换手率 (%)
-    vol_ratio: float = 0.0           # 量比 (push2 f49 / 腾讯 v49; data_provider:900 已计算并透传)
+    vol_ratio: float = 0.0           # 量比 (腾讯 idx49 / TDX快照; 字典 push2 f50≡量比 同源同义, 本层 push2 路径未请求 f50 — V16.4.0/2026-09-10 审计)
     # V17.2.0(2026-09-07): TDX 实时五档行情协议直解（非派生）——内盘/外盘/涨速
     s_vol: float = 0.0               # 内盘(主动卖成交量, 手) — easy_tdx SecurityQuote.s_vol (TDX 协议直解)
     b_vol: float = 0.0               # 外盘(主动买成交量, 手) — easy_tdx SecurityQuote.b_vol

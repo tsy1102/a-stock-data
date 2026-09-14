@@ -937,7 +937,7 @@ def get_canonical_stock_data(code: str, force_realtime: bool = False) -> Any:
         if need_realtime_quote and rt_quote.get('dividend_yield')
         else ("zhb:static" if zhb_dict.get('dividend_yield') else field_sources.get("dividend_yield", "missing"))
     )
-    # V15.4: 振幅/量比 (push2 f171/f49)
+    # V15.4: 振幅/量比 (振幅 push2 f171 / 量比 腾讯 idx49·TDX快照; ⚠️ push2 f49 实为外盘, 非量比)
     amplitude_pct = _safe_float(rt_quote.get('amplitude_pct') or zhb_dict.get('amplitude_pct') or 0)
     if amplitude_pct <= 0 and high_p > 0 and low_p > 0 and prev_close > 0:
         # L4 公式推算: 振幅 = (high - low) / last_close
@@ -1357,7 +1357,7 @@ def get_canonical_stock_data(code: str, force_realtime: bool = False) -> Any:
         pcf_ttm=pcf_ttm,
         dividend_yield=dividend_yield,
         turnover_pct=turnover_pct,
-        vol_ratio=vol_ratio,  # A: 量比透传(push2 f49/腾讯 v49, 上方:900 已计算)
+        vol_ratio=vol_ratio,  # A: 量比透传(腾讯 idx49 / TDX快照; 字典 push2 f50≡量比; 旧注"push2 f49"与"上方:900"均误, f49=外盘)
         # V17.2.0: TDX 实时五档直解 内盘/外盘/涨速
         # V17.2.x(2026-09-10) 调整 D: 内盘/外盘合成——TDX实时(权威) > push2 f161/f49 > 腾讯[8]/[7]
         s_vol=_safe_float(rt_quote.get("s_vol") or em_quote_raw.get("s_vol") or 0),

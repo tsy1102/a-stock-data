@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-get_val_report.py — 23 策略全市场发现引擎
+get_val_report.py — 25 策略全市场发现引擎
 方法论驱动的 A 股选股脚本，从全市场发现可操作标的。
 每策略精选 TOP 5，生成含具体数值推理的报告。
 
@@ -32,7 +32,7 @@ V7.5 新增:
   - 从 stock_common 导入统一龙虎榜函数 / 统一板块判断 / 涨停判断
 
 Usage:
-    python get_val_report.py                  # 全量 23 策略
+    python get_val_report.py                  # 全量 25 策略
     python get_val_report.py -o ./reports     # 指定输出目录
     python get_val_report.py --no-upload      # 跳过 GD 上传
 """
@@ -1745,6 +1745,55 @@ def strategy_23_ps_undervalued(stocks, top_n=500):
 
 
 
+def strategy_24_short_reversal(stocks):
+    """P1 (Tier1 路线①): 短期反转策略——纯 ZHB 快照派生, 零网络 (change_5d 近5日涨跌幅%)。
+
+    因子: Alpha#002 短期反转。近5日温和回撤的标的存在超卖反弹动能。
+    入选: -12% <= change_5d <= -0.5% (近期回调但未崩盘; >0 为上行趋势非反转,
+          ==0 为停牌/数据缺失); 排除 mcap_yi<20亿 以过滤仙股噪声。
+    评分: score = -change_5d (回撤越深、反弹动能越强); TOP10 取最强反转信号。
+    与策略18/19(量能/竞价动量)、策略22(月内动量)正交: 短周期反向维度。
+    """
+    result = []
+    for s in stocks:
+        code = s.get("code", "")
+        ch5 = _safe_float(s.get("change_5d"), 0)
+        mcap = _safe_float(s.get("mcap_yi"), 0)
+        if ch5 == 0 or ch5 > 0 or ch5 < -12.0:
+            continue
+        if mcap < 20.0:
+            continue
+        score = -ch5
+        reason = (
+            f"近5日回撤 {ch5:.2f}%(短期超卖)——反弹动能候选; "
+            f"市值 {mcap:.0f}亿过滤仙股噪声"
+        )
+        result.append({"code": code, "name": s.get("name", ""), "reason": reason, "score": score})
+    return _top10_sorted(result, lambda x: x["score"])
+
+
+def strategy_25_size_factor(stocks, top_n=300):
+    """P1 (Tier1 路线①): 规模因子策略——纯 ZHB 快照派生, 零网络 (mcap_yi 总市值, 亿)。
+
+    因子: Alpha#009 规模。小市值暴露带来小盘溢价(alpha)。
+    入选: 30亿 <= mcap_yi <= 800亿 (剔除微盘<30亿的流动性/ST风险与超大盘>800亿的低弹性)。
+    评分: score = -mcap_yi (市值越小、规模因子暴露越高); TOP10 取最小市值暴露。
+    与策略09【逆向白马】(大市值质量逆向)正交: 本策略为小盘规模暴露维度。
+    """
+    result = []
+    for s in stocks:
+        code = s.get("code", "")
+        mcap = _safe_float(s.get("mcap_yi"), 0)
+        if mcap < 30.0 or mcap > 800.0:
+            continue
+        score = -mcap
+        reason = (
+            f"总市值 {mcap:.0f}亿(规模因子小盘暴露)——小盘溢价候选"
+        )
+        result.append({"code": code, "name": s.get("name", ""), "reason": reason, "score": score})
+    return _top10_sorted(result, lambda x: x["score"])
+
+
 def _safe_int(v) -> int:
     try:
         return int(float(v))
@@ -1765,7 +1814,7 @@ async def run_discovery_async(output_path):
     """V7.5 异步版: 使用 asyncio.gather 并行跑 20 策略（约 2-3x 提速）
 
     V14.3.1: 移除入口处 _TDX_KLINE_CACHE.clear()（冗余操作）。
-    理由：进程级缓存本就只活在本进程内，新进程必空；同进程内 23 策略
+    理由：进程级缓存本就只活在本进程内，新进程必空；同进程内 25 策略
     共享同一份 L1 缓存是性能优化（22 次复用 vs 22 次从 L2 重读）。
     """
     _t_now = datetime.now()
@@ -2232,12 +2281,14 @@ async def run_discovery_async(output_path):
         ("策略21【盈利预期】", strategy_21_earnings_expect, (all_stocks,)),  # V17.0: 本机 ProfitForecast+股东户数
         ("策略22【月内动量】", strategy_22_mtd_momentum, (all_stocks,)),  # V17.0.5: change_mtd(ZHB Col[11], 零网络)
         ("策略23【PS低估值】", strategy_23_ps_undervalued, (all_stocks,)),  # V17.0.5 P2: fuyao PS·PCF(市值top500)
+        ("策略24【短期反转】", strategy_24_short_reversal, (all_stocks,)),  # P1(Tier1路线①): change_5d 近5日涨跌幅(零网络)
+        ("策略25【规模因子】", strategy_25_size_factor, (all_stocks,)),  # P1(Tier1路线①): mcap_yi 总市值(零网络)
     ]
 
     try:
-        print("  ▶ 23 策略并行扫描（asyncio 模式，并发 3）…", flush=True)
+        print("  ▶ 25 策略并行扫描（asyncio 模式，并发 3）…", flush=True)
     except UnicodeEncodeError:
-        print("  >> 23 策略并行扫描（asyncio 模式，并发 3）…", flush=True)
+        print("  >> 25 策略并行扫描（asyncio 模式，并发 3）…", flush=True)
     _scan_t0 = time.time()
 
     _names = [item[0] for item in _strategy_defs]
@@ -2372,10 +2423,10 @@ async def run_discovery_async(output_path):
 
 
 class ValReportRunner(BaseReportRunner):
-    """23 策略全市场发现引擎 Runner"""
+    """25 策略全市场发现引擎 Runner"""
 
     def __init__(self):
-        super().__init__("get_val_report", "val", "23 策略全市场发现引擎")
+        super().__init__("get_val_report", "val", "25 策略全市场发现引擎")
 
     def execute_pipeline(self) -> str:
         ts = self.report_ts  # V17.0 R1: 基类统一口径(%Y%m%d_%H%M)

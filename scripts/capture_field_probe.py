@@ -403,37 +403,59 @@ def collect_push2(pool: list) -> dict:
     连接级风控仍在,首次连接约 50%
     概率 RemoteDisconnected(健康探测单次连接恰好成功)。V16.4.1 防封:
     失败**不再重试**(重试叠加失败连接会触发封禁),失败即记 error。
-    V17.0.24: 补域级熔断——首连失败即停止整段 push2 采集(剩余全记
-    error 不再发请求)。push2_full 已有 3 连失败熔断, 此处对齐。
-    push2 主域数据 push2delay 已镜像覆盖(collect_push2_full 兜底), 损失可接受。
+    V17.2.x 可用性修复: 首连 push2 主域失败不再整段熔断记 error, 而是回退 push2delay
+    镜像域(与 collect_push2_full 一致逻辑), 使 push2 源在封禁时经镜像补全; 主域
+    恢复时自动回切(used_host 记录命中域)。push2delay 字段同构 f1-f250, 无损失。
     """
     from stock_common import _quick_request
 
+    # V17.2.x 可用性修复: push2 主域常遭 IP 级封禁(push2/push2his/83.push2 同风控面);
+    # push2delay 为独立风控面、字段同构(f1-f250)。故采用与 collect_push2_full 一致的
+    # 「push2 主域优先 → 失败即切 push2delay 镜像」3 连败熔断回退, 使 push2 源在封禁时
+    # 经镜像域补全可用性(数据同构, 无损失); used_host 记录实际命中域, 便于排查主域恢复。
+    fields = PUSH2_FULL_FIELDS  # f1-f250 显式全字段(与主字典口径对齐)
+    push2_fail_streak = 0
     out = {"stocks": {}}
-    domain_dead = False  # V17.0.24: 域级熔断旗标
     for p in pool:
         c = p["code"]
-        if domain_dead:
-            out["stocks"][c] = {"__error__": "push2 domain circuit-broken (no retry)"}
-            continue
         secid = em_secid_prefix(c) + c  # V17.0 S3: 统一(修复 92 北交所误判 1.)
-        url = "https://push2.eastmoney.com/api/qt/stock/get"
-        try:
-            r = _quick_request(
-                url,
-                params={"secid": secid, "fltt": "2", "invt": "2", "fields": PUSH2_FULL_FIELDS,
-                        "ut": "fa5fd1943c7b386f172d6893dbfba10b"},
-                headers={"Referer": "https://quote.eastmoney.com/"},
-                timeout=10,
-            )
-        except Exception:
-            r = None
+        r = None
+        used_host = ""
+        if push2_fail_streak < 3:
+            try:
+                r = _quick_request(
+                    "https://push2.eastmoney.com/api/qt/stock/get",
+                    params={"secid": secid, "fltt": "2", "invt": "2", "fields": fields,
+                            "ut": "fa5fd1943c7b386f172d6893dbfba10b"},
+                    headers={"Referer": "https://quote.eastmoney.com/"},
+                    timeout=10,
+                )
+                if r is not None:
+                    used_host = "push2"
+                    push2_fail_streak = 0
+                else:
+                    push2_fail_streak += 1
+            except Exception:
+                push2_fail_streak += 1
+                r = None
         if r is None:
-            out["stocks"][c] = {"__error__": "request failed (no retry)"}
-            domain_dead = True  # V17.0.24: 失败即熔断整域, 不再连打
+            try:
+                r = _quick_request(
+                    "https://push2delay.eastmoney.com/api/qt/stock/get",
+                    params={"secid": secid, "fltt": "2", "invt": "2", "fields": fields,
+                            "ut": "fa5fd1943c7b386f172d6893dbfba10b"},
+                    headers={"Referer": "https://quote.eastmoney.com/"},
+                    timeout=10,
+                )
+                if r is not None:
+                    used_host = "push2delay"
+            except Exception:
+                r = None
+        if r is None:
+            out["stocks"][c] = {"__error__": "request failed (push2+delay, no retry)"}
             continue
         data = (r.json() or {}).get("data") or {}
-        out["stocks"][c] = {"secid": secid, "n_fields": len(data), "data": data}
+        out["stocks"][c] = {"secid": secid, "host": used_host, "n_fields": len(data), "data": data}
     return out
 
 

@@ -2726,6 +2726,19 @@
       "status": "unverified"
     },
     {
+      "code": "fajirenfarengu",
+      "source": "TDX(双命名源)",
+      "sources": [
+        "TDX(双命名源)"
+      ],
+      "section": "",
+      "canonical": "",
+      "meaning": "",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified"
+    },
+    {
       "code": "faqiren_faren_gu",
       "source": "TDX(双命名源)",
       "sources": [
@@ -5538,6 +5551,19 @@
       "status": "unverified"
     },
     {
+      "code": "zhongguben",
+      "source": "TDX(双命名源)",
+      "sources": [
+        "TDX(双命名源)"
+      ],
+      "section": "",
+      "canonical": "",
+      "meaning": "",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified"
+    },
+    {
       "code": "zhuying_lirun",
       "source": "TDX(双命名源)",
       "sources": [
@@ -5565,6 +5591,19 @@
     },
     {
       "code": "zhuyinglirun",
+      "source": "TDX(双命名源)",
+      "sources": [
+        "TDX(双命名源)"
+      ],
+      "section": "",
+      "canonical": "",
+      "meaning": "",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified"
+    },
+    {
+      "code": "zhuyinglyrun",
       "source": "TDX(双命名源)",
       "sources": [
         "TDX(双命名源)"

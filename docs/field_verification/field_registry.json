@@ -111,16 +111,6 @@
       "status": "active"
     },
     {
-      "name": "eltdx(7709/7615)",
-      "verify_file": "eltdx_verify.md",
-      "section_patterns": [
-        "12.13.x eltdx 全字段破解（V17.2.15 接入 collect_eltdx，主字典第24源）",
-        "12.13.x eltdx 原始字节二次解码（tail_raw/record_hex/finance_info_raw → 引出未命名 f 字段）",
-        "12.8.12j eltdx 0x0010 财务批量与 TDX 同源（Rust 客户端 finance_batch）"
-      ],
-      "status": "active"
-    },
-    {
       "name": "AxData",
       "verify_file": "axdata_verify.md",
       "section_patterns": [
@@ -1857,7 +1847,59 @@
       "status": "unverified"
     },
     {
+      "code": "absolute_index",
+      "source": "TDX(双命名源)",
+      "sources": [
+        "TDX(双命名源)"
+      ],
+      "section": "",
+      "canonical": "",
+      "meaning": "",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified"
+    },
+    {
       "code": "adjust",
+      "source": "TDX(双命名源)",
+      "sources": [
+        "TDX(双命名源)"
+      ],
+      "section": "",
+      "canonical": "",
+      "meaning": "",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified"
+    },
+    {
+      "code": "adjust_mode",
+      "source": "TDX(双命名源)",
+      "sources": [
+        "TDX(双命名源)"
+      ],
+      "section": "",
+      "canonical": "",
+      "meaning": "",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified"
+    },
+    {
+      "code": "adjust_mode_raw",
+      "source": "TDX(双命名源)",
+      "sources": [
+        "TDX(双命名源)"
+      ],
+      "section": "",
+      "canonical": "",
+      "meaning": "",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified"
+    },
+    {
+      "code": "alignment_status",
       "source": "TDX(双命名源)",
       "sources": [
         "TDX(双命名源)"
@@ -2007,10 +2049,49 @@
       "status": "unverified"
     },
     {
+      "code": "auction_matched_volume",
+      "source": "TDX(双命名源)",
+      "sources": [
+        "TDX(双命名源)"
+      ],
+      "section": "",
+      "canonical": "",
+      "meaning": "",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified"
+    },
+    {
+      "code": "auction_prev_volume_ratio",
+      "source": "TDX(双命名源)",
+      "sources": [
+        "TDX(双命名源)"
+      ],
+      "section": "",
+      "canonical": "",
+      "meaning": "",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified"
+    },
+    {
       "code": "auction_turnover_pct",
       "source": null,
       "sources": [
         "同花顺-fuyao",
+        "TDX(双命名源)"
+      ],
+      "section": "",
+      "canonical": "",
+      "meaning": "",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified"
+    },
+    {
+      "code": "auction_unmatched_signed_volume",
+      "source": "TDX(双命名源)",
+      "sources": [
         "TDX(双命名源)"
       ],
       "section": "",
@@ -2102,6 +2183,19 @@
     },
     {
       "code": "basic_info_static",
+      "source": "TDX(双命名源)",
+      "sources": [
+        "TDX(双命名源)"
+      ],
+      "section": "",
+      "canonical": "",
+      "meaning": "",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified"
+    },
+    {
+      "code": "beta_60d",
       "source": "TDX(双命名源)",
       "sources": [
         "TDX(双命名源)"
@@ -2513,6 +2607,19 @@
       "status": "unverified"
     },
     {
+      "code": "eltdx",
+      "source": "TDX(双命名源)",
+      "sources": [
+        "TDX(双命名源)"
+      ],
+      "section": "",
+      "canonical": "",
+      "meaning": "",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified"
+    },
+    {
       "code": "entrust_ratio",
       "source": "TDX(双命名源)",
       "sources": [
@@ -2559,6 +2666,33 @@
         "TDX(双命名源)"
       ],
       "section": "12.13.2 财务批量（get_finance_batch，0x0010）文档确认",
+      "canonical": "",
+      "meaning": "",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified"
+    },
+    {
+      "code": "event_kind",
+      "source": "TDX(双命名源)",
+      "sources": [
+        "TDX(双命名源)"
+      ],
+      "section": "",
+      "canonical": "",
+      "meaning": "",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified"
+    },
+    {
+      "code": "exchange",
+      "source": null,
+      "sources": [
+        "同花顺-fuyao",
+        "TDX(双命名源)"
+      ],
+      "section": "",
       "canonical": "",
       "meaning": "",
       "unit": "",
@@ -2710,6 +2844,19 @@
       "status": "unverified"
     },
     {
+      "code": "float_market_value",
+      "source": "TDX(双命名源)",
+      "sources": [
+        "TDX(双命名源)"
+      ],
+      "section": "",
+      "canonical": "",
+      "meaning": "",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified"
+    },
+    {
       "code": "float_mcap_yi",
       "source": "TDX(双命名源)",
       "sources": [
@@ -2724,6 +2871,45 @@
     },
     {
       "code": "float_shares",
+      "source": "TDX(双命名源)",
+      "sources": [
+        "TDX(双命名源)"
+      ],
+      "section": "",
+      "canonical": "",
+      "meaning": "",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified"
+    },
+    {
+      "code": "free_float_market_value",
+      "source": "TDX(双命名源)",
+      "sources": [
+        "TDX(双命名源)"
+      ],
+      "section": "",
+      "canonical": "",
+      "meaning": "",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified"
+    },
+    {
+      "code": "free_float_shares",
+      "source": "TDX(双命名源)",
+      "sources": [
+        "TDX(双命名源)"
+      ],
+      "section": "",
+      "canonical": "",
+      "meaning": "",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified"
+    },
+    {
+      "code": "full_code",
       "source": "TDX(双命名源)",
       "sources": [
         "TDX(双命名源)"
@@ -2884,6 +3070,19 @@
       "source": null,
       "sources": [
         "同花顺-fuyao",
+        "TDX(双命名源)"
+      ],
+      "section": "",
+      "canonical": "",
+      "meaning": "",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified"
+    },
+    {
+      "code": "highest_ladder_level",
+      "source": "TDX(双命名源)",
+      "sources": [
         "TDX(双命名源)"
       ],
       "section": "",
@@ -3107,6 +3306,19 @@
       "status": "unverified"
     },
     {
+      "code": "ladder_level",
+      "source": "TDX(双命名源)",
+      "sources": [
+        "TDX(双命名源)"
+      ],
+      "section": "",
+      "canonical": "",
+      "meaning": "",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified"
+    },
+    {
       "code": "last_close",
       "source": "TDX(双命名源)",
       "sources": [
@@ -3147,6 +3359,58 @@
       "status": "unverified"
     },
     {
+      "code": "leader_code",
+      "source": "TDX(双命名源)",
+      "sources": [
+        "TDX(双命名源)"
+      ],
+      "section": "",
+      "canonical": "",
+      "meaning": "",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified"
+    },
+    {
+      "code": "leader_ladder_level",
+      "source": "TDX(双命名源)",
+      "sources": [
+        "TDX(双命名源)"
+      ],
+      "section": "",
+      "canonical": "",
+      "meaning": "",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified"
+    },
+    {
+      "code": "lianban_count",
+      "source": "TDX(双命名源)",
+      "sources": [
+        "TDX(双命名源)"
+      ],
+      "section": "",
+      "canonical": "",
+      "meaning": "",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified"
+    },
+    {
+      "code": "limit_board_text",
+      "source": "TDX(双命名源)",
+      "sources": [
+        "TDX(双命名源)"
+      ],
+      "section": "",
+      "canonical": "",
+      "meaning": "",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified"
+    },
+    {
       "code": "limit_down",
       "source": null,
       "sources": [
@@ -3174,6 +3438,45 @@
       "status": "unverified"
     },
     {
+      "code": "limit_or_count_raw",
+      "source": "TDX(双命名源)",
+      "sources": [
+        "TDX(双命名源)"
+      ],
+      "section": "",
+      "canonical": "",
+      "meaning": "",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified"
+    },
+    {
+      "code": "limit_stat_days",
+      "source": "TDX(双命名源)",
+      "sources": [
+        "TDX(双命名源)"
+      ],
+      "section": "",
+      "canonical": "",
+      "meaning": "",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified"
+    },
+    {
+      "code": "limit_status",
+      "source": "TDX(双命名源)",
+      "sources": [
+        "TDX(双命名源)"
+      ],
+      "section": "",
+      "canonical": "",
+      "meaning": "",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified"
+    },
+    {
       "code": "limit_up",
       "source": null,
       "sources": [
@@ -3188,11 +3491,50 @@
       "status": "unverified"
     },
     {
+      "code": "limit_up_count",
+      "source": "TDX(双命名源)",
+      "sources": [
+        "TDX(双命名源)"
+      ],
+      "section": "",
+      "canonical": "",
+      "meaning": "",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified"
+    },
+    {
+      "code": "limit_up_count_in_stat_days",
+      "source": "TDX(双命名源)",
+      "sources": [
+        "TDX(双命名源)"
+      ],
+      "section": "",
+      "canonical": "",
+      "meaning": "",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified"
+    },
+    {
       "code": "limit_up_price",
       "source": null,
       "sources": [
         "TDX(双命名源)",
         "levistock(ftshare)"
+      ],
+      "section": "",
+      "canonical": "",
+      "meaning": "",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified"
+    },
+    {
+      "code": "limit_up_streak_days",
+      "source": "TDX(双命名源)",
+      "sources": [
+        "TDX(双命名源)"
       ],
       "section": "",
       "canonical": "",
@@ -3416,6 +3758,19 @@
       "status": "unverified"
     },
     {
+      "code": "market_id",
+      "source": "TDX(双命名源)",
+      "sources": [
+        "TDX(双命名源)"
+      ],
+      "section": "",
+      "canonical": "",
+      "meaning": "",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified"
+    },
+    {
       "code": "market_snapshot",
       "source": null,
       "sources": [
@@ -3534,6 +3889,19 @@
       "status": "unverified"
     },
     {
+      "code": "mode_or_selector_raw",
+      "source": "TDX(双命名源)",
+      "sources": [
+        "TDX(双命名源)"
+      ],
+      "section": "",
+      "canonical": "",
+      "meaning": "",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified"
+    },
+    {
       "code": "more_info",
       "source": "TDX(双命名源)",
       "sources": [
@@ -3634,6 +4002,58 @@
       "status": "unverified"
     },
     {
+      "code": "open_amount",
+      "source": "TDX(双命名源)",
+      "sources": [
+        "TDX(双命名源)"
+      ],
+      "section": "",
+      "canonical": "",
+      "meaning": "",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified"
+    },
+    {
+      "code": "open_change_pct",
+      "source": "TDX(双命名源)",
+      "sources": [
+        "TDX(双命名源)"
+      ],
+      "section": "",
+      "canonical": "",
+      "meaning": "",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified"
+    },
+    {
+      "code": "open_prev_amount_ratio",
+      "source": "TDX(双命名源)",
+      "sources": [
+        "TDX(双命名源)"
+      ],
+      "section": "",
+      "canonical": "",
+      "meaning": "",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified"
+    },
+    {
+      "code": "open_prev_seal_ratio",
+      "source": "TDX(双命名源)",
+      "sources": [
+        "TDX(双命名源)"
+      ],
+      "section": "",
+      "canonical": "",
+      "meaning": "",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified"
+    },
+    {
       "code": "open_price",
       "source": null,
       "sources": [
@@ -3648,7 +4068,59 @@
       "status": "unverified"
     },
     {
+      "code": "open_turnover_z",
+      "source": "TDX(双命名源)",
+      "sources": [
+        "TDX(双命名源)"
+      ],
+      "section": "",
+      "canonical": "",
+      "meaning": "",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified"
+    },
+    {
+      "code": "open_volume_hand",
+      "source": "TDX(双命名源)",
+      "sources": [
+        "TDX(双命名源)"
+      ],
+      "section": "",
+      "canonical": "",
+      "meaning": "",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified"
+    },
+    {
+      "code": "open_volume_ratio",
+      "source": "TDX(双命名源)",
+      "sources": [
+        "TDX(双命名源)"
+      ],
+      "section": "",
+      "canonical": "",
+      "meaning": "",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified"
+    },
+    {
       "code": "opening_rush",
+      "source": "TDX(双命名源)",
+      "sources": [
+        "TDX(双命名源)"
+      ],
+      "section": "",
+      "canonical": "",
+      "meaning": "",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified"
+    },
+    {
+      "code": "order_count",
       "source": "TDX(双命名源)",
       "sources": [
         "TDX(双命名源)"
@@ -3815,11 +4287,141 @@
       "status": "unverified"
     },
     {
+      "code": "period_name",
+      "source": "TDX(双命名源)",
+      "sources": [
+        "TDX(双命名源)"
+      ],
+      "section": "",
+      "canonical": "",
+      "meaning": "",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified"
+    },
+    {
+      "code": "period_param_raw",
+      "source": "TDX(双命名源)",
+      "sources": [
+        "TDX(双命名源)"
+      ],
+      "section": "",
+      "canonical": "",
+      "meaning": "",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified"
+    },
+    {
+      "code": "period_raw",
+      "source": "TDX(双命名源)",
+      "sources": [
+        "TDX(双命名源)"
+      ],
+      "section": "",
+      "canonical": "",
+      "meaning": "",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified"
+    },
+    {
+      "code": "points",
+      "source": "TDX(双命名源)",
+      "sources": [
+        "TDX(双命名源)"
+      ],
+      "section": "",
+      "canonical": "",
+      "meaning": "",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified"
+    },
+    {
       "code": "pre_close",
       "source": null,
       "sources": [
         "TDX(双命名源)",
         "levistock(ftshare)"
+      ],
+      "section": "",
+      "canonical": "",
+      "meaning": "",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified"
+    },
+    {
+      "code": "prev2_seal_amount",
+      "source": "TDX(双命名源)",
+      "sources": [
+        "TDX(双命名源)"
+      ],
+      "section": "",
+      "canonical": "",
+      "meaning": "",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified"
+    },
+    {
+      "code": "prev_amount",
+      "source": "TDX(双命名源)",
+      "sources": [
+        "TDX(双命名源)"
+      ],
+      "section": "",
+      "canonical": "",
+      "meaning": "",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified"
+    },
+    {
+      "code": "prev_open_amount",
+      "source": "TDX(双命名源)",
+      "sources": [
+        "TDX(双命名源)"
+      ],
+      "section": "",
+      "canonical": "",
+      "meaning": "",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified"
+    },
+    {
+      "code": "prev_open_volume_hand",
+      "source": "TDX(双命名源)",
+      "sources": [
+        "TDX(双命名源)"
+      ],
+      "section": "",
+      "canonical": "",
+      "meaning": "",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified"
+    },
+    {
+      "code": "prev_seal_amount",
+      "source": "TDX(双命名源)",
+      "sources": [
+        "TDX(双命名源)"
+      ],
+      "section": "",
+      "canonical": "",
+      "meaning": "",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified"
+    },
+    {
+      "code": "previous_trade_date",
+      "source": "TDX(双命名源)",
+      "sources": [
+        "TDX(双命名源)"
       ],
       "section": "",
       "canonical": "",
@@ -3847,6 +4449,19 @@
       "status": "verified"
     },
     {
+      "code": "price_acc_raw",
+      "source": "TDX(双命名源)",
+      "sources": [
+        "TDX(双命名源)"
+      ],
+      "section": "",
+      "canonical": "",
+      "meaning": "",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified"
+    },
+    {
       "code": "price_change",
       "source": null,
       "sources": [
@@ -3865,6 +4480,32 @@
       "source": null,
       "sources": [
         "同花顺-fuyao",
+        "TDX(双命名源)"
+      ],
+      "section": "",
+      "canonical": "",
+      "meaning": "",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified"
+    },
+    {
+      "code": "price_delta_raw",
+      "source": "TDX(双命名源)",
+      "sources": [
+        "TDX(双命名源)"
+      ],
+      "section": "",
+      "canonical": "",
+      "meaning": "",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified"
+    },
+    {
+      "code": "price_milli",
+      "source": "TDX(双命名源)",
+      "sources": [
         "TDX(双命名源)"
       ],
       "section": "",
@@ -3915,6 +4556,36 @@
       "status": "unverified"
     },
     {
+      "code": "rank",
+      "source": null,
+      "sources": [
+        "同花顺-fuyao",
+        "TDX(双命名源)",
+        "levistock(ftshare)",
+        "东财-热榜(em_hot)",
+        "市场源(market_sources)"
+      ],
+      "section": "12.8.12h 东财人气榜 em_hot_rank 原始字段补录（V17.1.1 全量登记）",
+      "canonical": "rank",
+      "meaning": "人气排名",
+      "unit": "-",
+      "status_raw": "✅ 东财人气榜返回",
+      "status": "verified"
+    },
+    {
+      "code": "raw_payload",
+      "source": "TDX(双命名源)",
+      "sources": [
+        "TDX(双命名源)"
+      ],
+      "section": "",
+      "canonical": "",
+      "meaning": "",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified"
+    },
+    {
       "code": "recent",
       "source": "TDX(双命名源)",
       "sources": [
@@ -3928,7 +4599,46 @@
       "status": "unverified"
     },
     {
+      "code": "record_hex",
+      "source": "TDX(双命名源)",
+      "sources": [
+        "TDX(双命名源)"
+      ],
+      "section": "",
+      "canonical": "",
+      "meaning": "",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified"
+    },
+    {
+      "code": "request_count",
+      "source": "TDX(双命名源)",
+      "sources": [
+        "TDX(双命名源)"
+      ],
+      "section": "",
+      "canonical": "",
+      "meaning": "",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified"
+    },
+    {
       "code": "reserve2",
+      "source": "TDX(双命名源)",
+      "sources": [
+        "TDX(双命名源)"
+      ],
+      "section": "",
+      "canonical": "",
+      "meaning": "",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified"
+    },
+    {
+      "code": "reserved_zero",
       "source": "TDX(双命名源)",
       "sources": [
         "TDX(双命名源)"
@@ -3980,12 +4690,66 @@
       "status": "unverified"
     },
     {
+      "code": "seal_amount",
+      "source": null,
+      "sources": [
+        "TDX(双命名源)",
+        "levistock(ftshare)",
+        "市场源(market_sources)"
+      ],
+      "section": "12.10.4 开盘红复盘（get_zttt 涨停天梯 / get_pmsl 盘面梳理 / get_his_limit_resumption 历史涨停复盘）🆕",
+      "canonical": "",
+      "meaning": "",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified"
+    },
+    {
       "code": "seal_money",
       "source": null,
       "sources": [
         "同花顺-fuyao",
         "TDX(双命名源)",
         "levistock(ftshare)"
+      ],
+      "section": "",
+      "canonical": "",
+      "meaning": "",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified"
+    },
+    {
+      "code": "seal_prev_ratio",
+      "source": "TDX(双命名源)",
+      "sources": [
+        "TDX(双命名源)"
+      ],
+      "section": "",
+      "canonical": "",
+      "meaning": "",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified"
+    },
+    {
+      "code": "seal_to_amount_ratio",
+      "source": "TDX(双命名源)",
+      "sources": [
+        "TDX(双命名源)"
+      ],
+      "section": "",
+      "canonical": "",
+      "meaning": "",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified"
+    },
+    {
+      "code": "seal_to_float_ratio",
+      "source": "TDX(双命名源)",
+      "sources": [
+        "TDX(双命名源)"
       ],
       "section": "",
       "canonical": "",
@@ -4086,7 +4850,46 @@
       "status": "unverified"
     },
     {
+      "code": "side",
+      "source": "TDX(双命名源)",
+      "sources": [
+        "TDX(双命名源)"
+      ],
+      "section": "",
+      "canonical": "",
+      "meaning": "",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified"
+    },
+    {
       "code": "songzhuangu",
+      "source": "TDX(双命名源)",
+      "sources": [
+        "TDX(双命名源)"
+      ],
+      "section": "",
+      "canonical": "",
+      "meaning": "",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified"
+    },
+    {
+      "code": "start",
+      "source": "TDX(双命名源)",
+      "sources": [
+        "TDX(双命名源)"
+      ],
+      "section": "",
+      "canonical": "",
+      "meaning": "",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified"
+    },
+    {
+      "code": "start_raw",
       "source": "TDX(双命名源)",
       "sources": [
         "TDX(双命名源)"
@@ -4112,7 +4915,46 @@
       "status": "unverified"
     },
     {
+      "code": "stats_date",
+      "source": "TDX(双命名源)",
+      "sources": [
+        "TDX(双命名源)"
+      ],
+      "section": "",
+      "canonical": "",
+      "meaning": "",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified"
+    },
+    {
+      "code": "status_raw",
+      "source": "TDX(双命名源)",
+      "sources": [
+        "TDX(双命名源)"
+      ],
+      "section": "",
+      "canonical": "",
+      "meaning": "",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified"
+    },
+    {
       "code": "stock_score",
+      "source": "TDX(双命名源)",
+      "sources": [
+        "TDX(双命名源)"
+      ],
+      "section": "",
+      "canonical": "",
+      "meaning": "",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified"
+    },
+    {
+      "code": "target_trade_date",
       "source": "TDX(双命名源)",
       "sources": [
         "TDX(双命名源)"
@@ -4155,6 +4997,32 @@
       "status": "unverified"
     },
     {
+      "code": "time_label",
+      "source": "TDX(双命名源)",
+      "sources": [
+        "TDX(双命名源)"
+      ],
+      "section": "",
+      "canonical": "",
+      "meaning": "",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified"
+    },
+    {
+      "code": "time_minutes",
+      "source": "TDX(双命名源)",
+      "sources": [
+        "TDX(双命名源)"
+      ],
+      "section": "",
+      "canonical": "",
+      "meaning": "",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified"
+    },
+    {
       "code": "tipinfo",
       "source": null,
       "sources": [
@@ -4169,7 +5037,46 @@
       "status": "unverified"
     },
     {
+      "code": "token",
+      "source": "TDX(双命名源)",
+      "sources": [
+        "TDX(双命名源)"
+      ],
+      "section": "",
+      "canonical": "",
+      "meaning": "",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified"
+    },
+    {
       "code": "topic_compare",
+      "source": "TDX(双命名源)",
+      "sources": [
+        "TDX(双命名源)"
+      ],
+      "section": "",
+      "canonical": "",
+      "meaning": "",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified"
+    },
+    {
+      "code": "topic_id",
+      "source": "TDX(双命名源)",
+      "sources": [
+        "TDX(双命名源)"
+      ],
+      "section": "",
+      "canonical": "",
+      "meaning": "",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified"
+    },
+    {
+      "code": "topic_name",
       "source": "TDX(双命名源)",
       "sources": [
         "TDX(双命名源)"
@@ -4196,6 +5103,19 @@
     },
     {
       "code": "total_capital",
+      "source": "TDX(双命名源)",
+      "sources": [
+        "TDX(双命名源)"
+      ],
+      "section": "",
+      "canonical": "",
+      "meaning": "",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified"
+    },
+    {
+      "code": "total_seal_amount",
       "source": "TDX(双命名源)",
       "sources": [
         "TDX(双命名源)"
@@ -4247,7 +5167,33 @@
       "status": "unverified"
     },
     {
+      "code": "trade_datetime",
+      "source": "TDX(双命名源)",
+      "sources": [
+        "TDX(双命名源)"
+      ],
+      "section": "",
+      "canonical": "",
+      "meaning": "",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified"
+    },
+    {
       "code": "trades.today",
+      "source": "TDX(双命名源)",
+      "sources": [
+        "TDX(双命名源)"
+      ],
+      "section": "",
+      "canonical": "",
+      "meaning": "",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified"
+    },
+    {
+      "code": "trading_date",
       "source": "TDX(双命名源)",
       "sources": [
         "TDX(双命名源)"
@@ -4281,6 +5227,19 @@
       "sources": [
         "TDX(双命名源)",
         "levistock(ftshare)"
+      ],
+      "section": "",
+      "canonical": "",
+      "meaning": "",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified"
+    },
+    {
+      "code": "unknown_tail_raw",
+      "source": "TDX(双命名源)",
+      "sources": [
+        "TDX(双命名源)"
       ],
       "section": "",
       "canonical": "",
@@ -4384,6 +5343,19 @@
       "status": "unverified"
     },
     {
+      "code": "volume_hand",
+      "source": "TDX(双命名源)",
+      "sources": [
+        "TDX(双命名源)"
+      ],
+      "section": "",
+      "canonical": "",
+      "meaning": "",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified"
+    },
+    {
       "code": "volume_lots",
       "source": "TDX(双命名源)",
       "sources": [
@@ -4463,6 +5435,19 @@
     },
     {
       "code": "wuxingzichan",
+      "source": "TDX(双命名源)",
+      "sources": [
+        "TDX(双命名源)"
+      ],
+      "section": "",
+      "canonical": "",
+      "meaning": "",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified"
+    },
+    {
+      "code": "year_limit_up_days",
       "source": "TDX(双命名源)",
       "sources": [
         "TDX(双命名源)"
@@ -12754,22 +13739,6 @@
       "status": "verified"
     },
     {
-      "code": "rank",
-      "source": null,
-      "sources": [
-        "同花顺-fuyao",
-        "levistock(ftshare)",
-        "东财-热榜(em_hot)",
-        "市场源(market_sources)"
-      ],
-      "section": "12.8.12h 东财人气榜 em_hot_rank 原始字段补录（V17.1.1 全量登记）",
-      "canonical": "rank",
-      "meaning": "人气排名",
-      "unit": "-",
-      "status_raw": "✅ 东财人气榜返回",
-      "status": "verified"
-    },
-    {
       "code": "rank_chg",
       "source": "东财-热榜(em_hot)",
       "sources": [
@@ -13572,19 +14541,6 @@
     },
     {
       "code": "ex_date_ms",
-      "source": "同花顺-fuyao",
-      "sources": [
-        "同花顺-fuyao"
-      ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "status_raw": "",
-      "status": "unverified"
-    },
-    {
-      "code": "exchange",
       "source": "同花顺-fuyao",
       "sources": [
         "同花顺-fuyao"
@@ -17261,20 +18217,6 @@
       "status": "unverified"
     },
     {
-      "code": "seal_amount",
-      "source": null,
-      "sources": [
-        "levistock(ftshare)",
-        "市场源(market_sources)"
-      ],
-      "section": "12.10.4 开盘红复盘（get_zttt 涨停天梯 / get_pmsl 盘面梳理 / get_his_limit_resumption 历史涨停复盘）🆕",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "status_raw": "",
-      "status": "unverified"
-    },
-    {
       "code": "seal_map",
       "source": "levistock(ftshare)",
       "sources": [
@@ -19480,11 +20422,13 @@
     ],
     "code": [
       "TDX-0x0010/F10",
+      "TDX-eltdx",
       "东财"
     ],
     "name": [
       "AxData",
       "TDX-0x0010/F10",
+      "TDX-eltdx",
       "东财"
     ],
     "reason": [
@@ -20165,11 +21109,13 @@
     ],
     "rank": [
       "TDX-0x0010/F10",
+      "TDX-eltdx",
       "东财",
       "财联社"
     ],
     "price": [
       "TDX-0x0010/F10",
+      "TDX-eltdx",
       "东财"
     ],
     "pct": [
@@ -20926,6 +21872,7 @@
     ],
     "seal_amount": [
       "AxData",
+      "TDX-eltdx",
       "开盘红"
     ],
     "seal_money": [
@@ -21188,96 +22135,124 @@
       "AxData"
     ],
     "exchange": [
-      "AxData"
+      "AxData",
+      "TDX-eltdx"
     ],
     "stats_date": [
-      "AxData"
+      "AxData",
+      "TDX-eltdx"
     ],
     "open_price": [
       "AxData",
       "TDX-eltdx"
     ],
     "pre_close": [
-      "AxData"
+      "AxData",
+      "TDX-eltdx"
     ],
     "open_change_pct": [
-      "AxData"
+      "AxData",
+      "TDX-eltdx"
     ],
     "open_amount": [
-      "AxData"
+      "AxData",
+      "TDX-eltdx"
     ],
     "open_volume_hand": [
-      "AxData"
+      "AxData",
+      "TDX-eltdx"
     ],
     "open_volume_ratio": [
-      "AxData"
+      "AxData",
+      "TDX-eltdx"
     ],
     "open_turnover_z": [
-      "AxData"
+      "AxData",
+      "TDX-eltdx"
     ],
     "open_prev_amount_ratio": [
-      "AxData"
+      "AxData",
+      "TDX-eltdx"
     ],
     "auction_prev_volume_ratio": [
-      "AxData"
+      "AxData",
+      "TDX-eltdx"
     ],
     "opening_rush": [
       "AxData",
       "TDX-eltdx"
     ],
     "open_prev_seal_ratio": [
-      "AxData"
+      "AxData",
+      "TDX-eltdx"
     ],
     "prev_amount": [
-      "AxData"
+      "AxData",
+      "TDX-eltdx"
     ],
     "prev_seal_amount": [
-      "AxData"
+      "AxData",
+      "TDX-eltdx"
     ],
     "prev2_seal_amount": [
-      "AxData"
+      "AxData",
+      "TDX-eltdx"
     ],
     "prev_open_volume_hand": [
-      "AxData"
+      "AxData",
+      "TDX-eltdx"
     ],
     "prev_open_amount": [
-      "AxData"
+      "AxData",
+      "TDX-eltdx"
     ],
     "float_shares": [
-      "AxData"
+      "AxData",
+      "TDX-eltdx"
     ],
     "float_market_value": [
-      "AxData"
+      "AxData",
+      "TDX-eltdx"
     ],
     "free_float_shares": [
-      "AxData"
+      "AxData",
+      "TDX-eltdx"
     ],
     "free_float_market_value": [
-      "AxData"
+      "AxData",
+      "TDX-eltdx"
     ],
     "seal_to_amount_ratio": [
-      "AxData"
+      "AxData",
+      "TDX-eltdx"
     ],
     "seal_to_float_ratio": [
-      "AxData"
+      "AxData",
+      "TDX-eltdx"
     ],
     "seal_prev_ratio": [
-      "AxData"
+      "AxData",
+      "TDX-eltdx"
     ],
     "limit_stat_days": [
-      "AxData"
+      "AxData",
+      "TDX-eltdx"
     ],
     "limit_up_count_in_stat_days": [
-      "AxData"
+      "AxData",
+      "TDX-eltdx"
     ],
     "limit_board_text": [
-      "AxData"
+      "AxData",
+      "TDX-eltdx"
     ],
     "limit_up_streak_days": [
-      "AxData"
+      "AxData",
+      "TDX-eltdx"
     ],
     "year_limit_up_days": [
-      "AxData"
+      "AxData",
+      "TDX-eltdx"
     ],
     "last_price": [
       "AxData",
@@ -21317,7 +22292,8 @@
       "AxData"
     ],
     "volume": [
-      "AxData"
+      "AxData",
+      "TDX-eltdx"
     ],
     "current_volume": [
       "AxData"
@@ -21402,7 +22378,8 @@
       "AxData"
     ],
     "limit_status": [
-      "AxData"
+      "AxData",
+      "TDX-eltdx"
     ],
     "score": [
       "AxData"
@@ -21952,6 +22929,183 @@
       "TDX-eltdx"
     ],
     "trades.today": [
+      "TDX-eltdx"
+    ],
+    "full_code": [
+      "TDX-eltdx"
+    ],
+    "market_id": [
+      "TDX-eltdx"
+    ],
+    "target_trade_date": [
+      "TDX-eltdx"
+    ],
+    "previous_trade_date": [
+      "TDX-eltdx"
+    ],
+    "alignment_status": [
+      "TDX-eltdx"
+    ],
+    "beta_60d": [
+      "TDX-eltdx"
+    ],
+    "pe_ttm": [
+      "TDX-eltdx"
+    ],
+    "ladder_level": [
+      "TDX-eltdx"
+    ],
+    "topic_id": [
+      "TDX-eltdx"
+    ],
+    "topic_name": [
+      "TDX-eltdx"
+    ],
+    "limit_up_count": [
+      "TDX-eltdx"
+    ],
+    "highest_ladder_level": [
+      "TDX-eltdx"
+    ],
+    "lianban_count": [
+      "TDX-eltdx"
+    ],
+    "total_seal_amount": [
+      "TDX-eltdx"
+    ],
+    "leader_code": [
+      "TDX-eltdx"
+    ],
+    "leader_ladder_level": [
+      "TDX-eltdx"
+    ],
+    "volume_hand": [
+      "TDX-eltdx"
+    ],
+    "period_raw": [
+      "TDX-eltdx"
+    ],
+    "period_param_raw": [
+      "TDX-eltdx"
+    ],
+    "period_name": [
+      "TDX-eltdx"
+    ],
+    "start": [
+      "TDX-eltdx"
+    ],
+    "request_count": [
+      "TDX-eltdx"
+    ],
+    "adjust_mode_raw": [
+      "TDX-eltdx"
+    ],
+    "adjust_mode": [
+      "TDX-eltdx"
+    ],
+    "index": [
+      "TDX-eltdx"
+    ],
+    "absolute_index": [
+      "TDX-eltdx"
+    ],
+    "time_minutes": [
+      "TDX-eltdx"
+    ],
+    "time_label": [
+      "TDX-eltdx"
+    ],
+    "trade_datetime": [
+      "TDX-eltdx"
+    ],
+    "price_milli": [
+      "TDX-eltdx"
+    ],
+    "order_count": [
+      "TDX-eltdx"
+    ],
+    "status_raw": [
+      "TDX-eltdx"
+    ],
+    "side": [
+      "TDX-eltdx"
+    ],
+    "price_delta_raw": [
+      "TDX-eltdx"
+    ],
+    "price_acc_raw": [
+      "TDX-eltdx"
+    ],
+    "unknown_tail_raw": [
+      "TDX-eltdx"
+    ],
+    "reserved_zero": [
+      "TDX-eltdx"
+    ],
+    "record_hex": [
+      "TDX-eltdx"
+    ],
+    "event_kind": [
+      "TDX-eltdx"
+    ],
+    "auction_matched_volume": [
+      "TDX-eltdx"
+    ],
+    "auction_unmatched_signed_volume": [
+      "TDX-eltdx"
+    ],
+    "trading_date": [
+      "TDX-eltdx"
+    ],
+    "mode_or_selector_raw": [
+      "TDX-eltdx"
+    ],
+    "start_raw": [
+      "TDX-eltdx"
+    ],
+    "limit_or_count_raw": [
+      "TDX-eltdx"
+    ],
+    "points": [
+      "TDX-eltdx"
+    ],
+    "raw_payload": [
+      "TDX-eltdx"
+    ],
+    "AuctionPoint.index": [
+      "TDX-eltdx"
+    ],
+    "AuctionPoint.minute_of_day_raw": [
+      "TDX-eltdx"
+    ],
+    "AuctionPoint.second_raw": [
+      "TDX-eltdx"
+    ],
+    "AuctionPoint.time_label": [
+      "TDX-eltdx"
+    ],
+    "AuctionPoint.time_seconds": [
+      "TDX-eltdx"
+    ],
+    "AuctionPoint.price": [
+      "TDX-eltdx"
+    ],
+    "AuctionPoint.price_milli": [
+      "TDX-eltdx"
+    ],
+    "AuctionPoint.matched_volume": [
+      "TDX-eltdx"
+    ],
+    "AuctionPoint.unmatched_volume": [
+      "TDX-eltdx"
+    ],
+    "AuctionPoint.unmatched_direction_raw": [
+      "TDX-eltdx"
+    ],
+    "AuctionPoint.reserved_zero_0e": [
+      "TDX-eltdx"
+    ],
+    "AuctionPoint.record_hex": [
       "TDX-eltdx"
     ],
     "K线": [

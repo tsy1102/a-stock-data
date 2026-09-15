@@ -333,7 +333,9 @@ async def generate_report_async(session, code, output_path, ind_comp=None, idx_q
 
     # V17.0.1e: 上市日期唯一来源 list_date（原 listing_date/list_date 双键并存导致重复,
     # listing_date 恒 N/A）
-    ld = info.get("list_date", "") or info.get("listing_date", "")
+    # V17.2.21 修复: 优先用 canonical cdata.list_date（走 push2delay+10年缓存, 实测可用）,
+    # info.get 兜底（get_stock_info 走主域 push2 被风控拦截恒空）——修复 39 份个股报告上市日期全空
+    ld = cdata.list_date or info.get("list_date", "") or info.get("listing_date", "")
     if ld and len(ld) >= 8: ldf = f"{ld[:4]}-{ld[4:6]}-{ld[6:8]}"
     else: ldf = ld
     L(f"  上市日期: {ldf}")

@@ -261,7 +261,8 @@ async def generate_report_async(session, code, output_path, ind_comp=None, hsgt=
     # V17.0.32(2026-09-06) DEBT-016: 露出 sec_type（与 board 地域字段正交）→ 市场板块 + 涨跌幅限制
     L(f"  市场板块: {sec_type_market_label(getattr(cdata, 'sec_type', 0), cdata.code, cdata.name)}")
 
-    list_date_raw = info.get("list_date", "")
+    # V17.2.21 修复: 优先 cdata.list_date（push2delay+10年缓存, 实测可用）, info 兜底（主域 push2 被风控拦截恒空）
+    list_date_raw = cdata.list_date or info.get("list_date", "")
     if list_date_raw and len(list_date_raw) >= 8:
         list_date_fmt = f"{list_date_raw[:4]}-{list_date_raw[4:6]}-{list_date_raw[6:8]}"
     else:

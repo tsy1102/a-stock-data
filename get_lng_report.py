@@ -307,7 +307,8 @@ async def generate_report_async(session, code, output_path, ind_comp=None):
     except Exception as _e:
         _debug_log(f"lng industry_cycle error: {_e}")
     
-    ext_list_date_raw = info.get("list_date", "")
+    # V17.2.21 修复: 优先 cdata.list_date（push2delay+10年缓存, 实测可用）, info 兜底（主域 push2 被风控拦截恒空）
+    ext_list_date_raw = cdata.list_date or info.get("list_date", "")
     if ext_list_date_raw and len(ext_list_date_raw) >= 8:
         ext_list_year = int(ext_list_date_raw[:4])
         ext_years_listed = date.today().year - ext_list_year

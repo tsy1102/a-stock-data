@@ -1795,74 +1795,69 @@ def strategy_25_size_factor(stocks, top_n=300):
 
 
 def strategy_26_limit_ladder(all_stocks):
-    """V17.2.16: 连板梯队·短线封单强度策略——eltdx 7709/7615 实时(本地 TDX)。
+    """V17.2.16→V17.2.23: 连板梯队·短线封单强度策略——改走统一层 cdata.eltdx_*。
 
-    数据: get_eltdx_shortline_bundle() 一次性取 连板天梯(limit_ladder) + 批量短线指标
-          (shortline_indicators)。无本地 TDX / eltdx 未装 / 上游异常 → 返回 []（降级, 不阻断其余策略）。
-    因子: 连板梯队(ladder_level) + 封单占流通比(seal_to_float_ratio) + 开盘量比(open_volume_ratio)。
+    V17.2.23 重构: 不再直接解析 get_eltdx_shortline_bundle() 的 sl_map/ladder 原始结构,
+    改为 先预热 eltdx bundle(300s TTL 缓存, 统一层只读此缓存) → 再逐股经
+    get_canonical_stock_data(code) 读 cdata.eltdx_* 标准化字段。与统一层治理范式一致。
+    无本地 TDX / eltdx 未装 / bundle 取数失败 → sl_map 空 → 返回 []（降级, 不阻断其余策略）。
+    因子: 连板梯队(eltdx_ladder_level) + 封单占流通比(eltdx_seal_to_float_ratio) + 开盘量比(eltdx_open_volume_ratio)。
     入选:
-      A. 连板梯队: limit_ladder 中 ladder_level>=2(二板及以上) —— 连板高度即强度信号;
-      B. 短线强封: 首板(streak<2)且封流比 seal_to_float_ratio>=0.5%(封板坚决) —— 短线资金强度。
+      A. 连板梯队: eltdx_ladder_level>=2(二板及以上) —— 连板高度即强度信号;
+      B. 短线强封: 首板(streak<2)且封流比 eltdx_seal_to_float_ratio>=0.5%(封板坚决) —— 短线资金强度。
     排序: score 降序(score = 连板梯队×100 + 封流比; 非连板以封流比为主)。
     与策略24(短期反转)/策略22(月内动量)正交: 本策略为连板结构 + 封单强度维度(eltdx 实时)。
     """
     try:
         from core.eltdx_adapter import get_eltdx_shortline_bundle
+        from core.data_provider import get_canonical_stock_data
     except Exception:
         return []
-    # 仅对涨停/连板标的取短线指标(降负载; 非涨停 seal_to_float_ratio=0 无意义); 无则回退全市场
-    _lu = [
-        s for s in all_stocks
-        if s.get("code") and is_limit_up(s.get("code", ""), s.get("name", ""), _safe_float(s.get("change_pct", 0)))
-    ]
     _all_codes = [s.get("code", "") for s in all_stocks if s.get("code")]
-    _fetch = [s.get("code", "") for s in _lu] or _all_codes
-    if not _fetch:
+    if not _all_codes:
         return []
-    ladder, sl_map = get_eltdx_shortline_bundle(_fetch)
+    # 预热 eltdx bundle: 统一层 get_canonical_stock_data 只读此缓存; 300s TTL 内重复调用命中
+    try:
+        _lad, sl_map = get_eltdx_shortline_bundle(_all_codes)
+    except Exception:
+        return []
+    if not sl_map:
+        return []
     _name_map = {s.get("code"): s.get("name", "") for s in all_stocks if s.get("code")}
 
     def _plain(ec):
-        return ec[2:] if ec.startswith(("sh", "sz", "bj")) else ec
+        return ec[2:] if str(ec).startswith(("sh", "sz", "bj")) else ec
 
     picks = []
     seen = set()
-
-    # A. 连板天梯(二板及以上)
-    for rec in (ladder or []):
-        code = str(rec.get("code") or rec.get("full_code") or "")
-        plain = _plain(code)
-        ladder_level = _safe_float(rec.get("ladder_level") or 0)
-        if ladder_level < 2:
-            continue
-        sl = sl_map.get(code) or {}
-        streak = _safe_float(rec.get("limit_up_streak_days") or sl.get("limit_up_streak_days") or 0)
-        seal_ratio = _safe_float(sl.get("seal_to_float_ratio") or rec.get("seal_to_float_ratio") or 0)
-        open_vol = _safe_float(sl.get("open_volume_ratio") or rec.get("open_volume_ratio") or 0)
-        board_text = rec.get("limit_board_text") or sl.get("limit_board_text") or f"{int(ladder_level)}连板"
-        reason = (
-            f"连板梯队{ladder_level}板({board_text})"
-            + (f"·封流比{seal_ratio:.2f}%" if seal_ratio else "")
-            + (f"·开量比{open_vol:.2f}" if open_vol else "")
-        )
-        score = ladder_level * 100.0 + seal_ratio
-        picks.append({
-            "code": plain, "name": _name_map.get(plain, ""), "reason": reason, "score": score,
-            "ladder_level": ladder_level, "limit_up_streak_days": streak,
-            "seal_to_float_ratio": seal_ratio, "open_volume_ratio": open_vol,
-            "limit_board_text": board_text,
-        })
-        seen.add(plain)
-
-    # B. 短线强封(首板/非连板, 封流比显著)
-    for ec, sl in sl_map.items():
+    for ec in sl_map.keys():
         plain = _plain(ec)
-        if plain in seen:
+        c = get_canonical_stock_data(plain)  # 统一层: 读 bundle 缓存填充的 eltdx_* 字段
+        if not c.eltdx_has_shortline:
             continue
-        streak = _safe_float(sl.get("limit_up_streak_days") or 0)
-        seal_ratio = _safe_float(sl.get("seal_to_float_ratio") or 0)
+        ladder_level = c.eltdx_ladder_level
+        streak = c.eltdx_limit_up_streak_days
+        seal_ratio = c.eltdx_seal_to_float_ratio
+        open_vol = c.eltdx_open_volume_ratio
+        board_text = c.eltdx_limit_board_text
+        # A. 连板梯队(二板及以上)
+        if ladder_level >= 2:
+            reason = (
+                f"连板梯队{ladder_level}板({board_text})"
+                + (f"·封流比{seal_ratio:.2f}%" if seal_ratio else "")
+                + (f"·开量比{open_vol:.2f}" if open_vol else "")
+            )
+            score = ladder_level * 100.0 + seal_ratio
+            picks.append({
+                "code": plain, "name": _name_map.get(plain, ""), "reason": reason, "score": score,
+                "ladder_level": ladder_level, "limit_up_streak_days": streak,
+                "seal_to_float_ratio": seal_ratio, "open_volume_ratio": open_vol,
+                "limit_board_text": board_text,
+            })
+            seen.add(plain)
+            continue
+        # B. 短线强封(首板/非连板, 封流比显著)
         if streak < 2 and seal_ratio >= 0.5:
-            open_vol = _safe_float(sl.get("open_volume_ratio") or 0)
             reason = (
                 f"短线强封·封流比{seal_ratio:.2f}%(封板坚决)"
                 + (f"·开量比{open_vol:.2f}" if open_vol else "")
@@ -1870,10 +1865,9 @@ def strategy_26_limit_ladder(all_stocks):
             score = seal_ratio  # 非连板: 以封流比为主排序
             picks.append({
                 "code": plain, "name": _name_map.get(plain, ""), "reason": reason, "score": score,
-                "ladder_level": _safe_float(sl.get("ladder_level") or 0),
-                "limit_up_streak_days": streak,
+                "ladder_level": ladder_level, "limit_up_streak_days": streak,
                 "seal_to_float_ratio": seal_ratio, "open_volume_ratio": open_vol,
-                "limit_board_text": sl.get("limit_board_text") or "",
+                "limit_board_text": board_text,
             })
             seen.add(plain)
 
@@ -1882,51 +1876,62 @@ def strategy_26_limit_ladder(all_stocks):
 
 
 def strategy_27_shortline_fund_strength(all_stocks):
-    """V17.2.18: 短线资金强度·开盘抢筹策略——eltdx 7709/7615 实时(本地 TDX)。
+    """V17.2.18→V17.2.23: 短线资金强度·开盘抢筹策略——改走统一层 cdata.eltdx_*。
 
-    数据: get_eltdx_shortline_bundle() 批量短线指标(shortline_indicators, ShortlineIndicator 41 字段)。
-          无本地 TDX / eltdx 未装 / 上游异常 → 返回 []（降级, 不阻断其余策略）。
-    因子(基于真实字段, 数据来源: 通达信 eltdx):
-      - opening_rush:              开盘抢筹力度(正值=主力抢筹)
-      - auction_prev_volume_ratio: 集合竞价量比(竞价资金关注度)
-      - open_prev_amount_ratio:    开盘成交额/昨成交额(开盘放量确认)
-      - open_turnover_z:           开盘换手 Z 值(活跃度)
-      - open_change_pct:           开盘涨跌幅(资金推动方向)
-    入选: 非连板(ladder_level<2, 归策略26) + 开盘为正(open_change_pct>0) + 有抢筹(opening_rush>0)
-          + 竞价放量(auction_prev_volume_ratio>=1) + 开盘放量(open_prev_amount_ratio>=1)。
+    V17.2.23 重构: 同策略26, 先预热 eltdx bundle → 再逐股 get_canonical_stock_data(code) 读
+    cdata.eltdx_* 标准化字段, 不再直接解析 sl_map 原始结构。
+    无本地 TDX / eltdx 未装 / bundle 取数失败 → sl_map 空 → 返回 []（降级, 不阻断其余策略）。
+    因子(统一层字段名, 数据来源: 通达信 eltdx 7709/7615):
+      - eltdx_opening_rush:              开盘抢筹力度(正值=主力抢筹)
+      - eltdx_auction_prev_volume_ratio: 集合竞价量比(竞价资金关注度)
+      - eltdx_open_prev_amount_ratio:    开盘成交额/昨成交额(开盘放量确认)
+      - eltdx_open_turnover_z:           开盘换手 Z 值(活跃度)
+      - eltdx_open_change_pct:           开盘涨跌幅(资金推动方向)
+    入选: 非连板(eltdx_ladder_level<2, 归策略26) + 开盘为正(eltdx_open_change_pct>0) + 有抢筹(eltdx_opening_rush>0)
+          + 竞价放量(eltdx_auction_prev_volume_ratio>=1) + 开盘放量(eltdx_open_prev_amount_ratio>=1)。
     排序: score 降序(score = 2*cap(opening_rush,10) + cap(auction_prev_volume_ratio,5)
           + cap(open_prev_amount_ratio,5) + 0.5*cap(open_change_pct,10) + 0.5*cap(open_turnover_z,10))。
     与策略26(连板封单)正交: 本策略为竞价+开盘资金抢筹维度, 覆盖非连板短线活跃标的。
     """
     try:
         from core.eltdx_adapter import get_eltdx_shortline_bundle
+        from core.data_provider import get_canonical_stock_data
     except Exception:
         return []
     _all_codes = [s.get("code", "") for s in all_stocks if s.get("code")]
     if not _all_codes:
         return []
-    _ladder, sl_map = get_eltdx_shortline_bundle(_all_codes)
+    # 预热 eltdx bundle(300s TTL 缓存, 统一层只读此缓存; 策略26 已预热则命中)
+    try:
+        _ladder, sl_map = get_eltdx_shortline_bundle(_all_codes)
+    except Exception:
+        return []
+    if not sl_map:
+        return []
     _name_map = {s.get("code"): s.get("name", "") for s in all_stocks if s.get("code")}
 
     def _plain(ec):
-        return ec[2:] if ec.startswith(("sh", "sz", "bj")) else ec
+        return ec[2:] if str(ec).startswith(("sh", "sz", "bj")) else ec
 
     def _cap(v, hi):
         return min(_safe_float(v), hi)
 
     picks = []
-    for ec, sl in sl_map.items():
+    for ec in sl_map.keys():
         plain = _plain(ec)
-        ladder_level = _safe_float(sl.get("ladder_level") or 0)
+        c = get_canonical_stock_data(plain)  # 统一层: 读 bundle 缓存填充的 eltdx_* 字段
+        if not c.eltdx_has_shortline:
+            continue
+        ladder_level = c.eltdx_ladder_level
         if ladder_level >= 2:
             continue  # 连板归策略26
-        open_chg = _safe_float(sl.get("open_change_pct") or 0)
-        opening_rush = _safe_float(sl.get("opening_rush") or 0)
-        auction_vol = _safe_float(sl.get("auction_prev_volume_ratio") or 0)
-        open_amt = _safe_float(sl.get("open_prev_amount_ratio") or 0)
+        open_chg = c.eltdx_open_change_pct
+        opening_rush = c.eltdx_opening_rush
+        auction_vol = c.eltdx_auction_prev_volume_ratio
+        open_amt = c.eltdx_open_prev_amount_ratio
         if not (open_chg > 0 and opening_rush > 0 and auction_vol >= 1.0 and open_amt >= 1.0):
             continue
-        turn_z = _safe_float(sl.get("open_turnover_z") or 0)
+        turn_z = c.eltdx_open_turnover_z
         score = (2.0 * _cap(opening_rush, 10)
                  + 1.0 * _cap(auction_vol, 5)
                  + 1.0 * _cap(open_amt, 5)

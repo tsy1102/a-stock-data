@@ -111,6 +111,8 @@ SOURCE_SCHEME = {
     "ulist239":       "em.ulist_np",     # 独立 f 编号体系, 与 stock/get 不同号
     "zhb":            "zhb",
     "tdx":            "tdx",
+    "eltdx":          "eltdx",         # V17.2.25 补登: eltdx 7709/7615 Rust 客户端, 实时连板/短线指标源; 此前漏登记致 scheme=unknown 被 collide 跳过
+
     "tencent":        "tencent.qt",
     "sina":           "sina.hq",
     "fuyao":          "fuyao",
@@ -440,7 +442,19 @@ def collect_eltdx(pool: list) -> dict:
                 if _cc:
                     _sl_map[_cc] = _recd
         except Exception as _e:
-            out["shortline_error"] = str(_e)[:200]
+            # V17.2.25: 批量 shortline 原子失败(如某 BSE/920xxx 股 snapshot marker 缺失)→
+            # 降级为逐股重试, 保住其余 19 只的连板/短线数据, 不整批丢失。
+            out["shortline_error"] = f"batch failed, fallback per-code: {str(_e)[:120]}"
+            for _ec in ecodes:
+                try:
+                    _sl_one = client.helpers.shortline_indicators([_ec])
+                    for _rec in (_sl_one or []):
+                        _recd = _jfy(_rec)
+                        _cc = _recd.get("code") or _recd.get("full_code")
+                        if _cc:
+                            _sl_map[_cc] = _recd
+                except Exception:
+                    continue
         for p in pool:
             c = p["code"]
             ec = _ecode(c)
@@ -476,6 +490,19 @@ def collect_eltdx(pool: list) -> dict:
             except Exception as _e:
                 rec["f10_news"] = {"__error__": str(_e)[:200]}
             out["stocks"][c] = rec
+        # V17.2.25: 全局连板天梯(global_helpers.limit_ladder) 折回逐股结构, 使 collide.py
+        # (只读 stocks 逐股) 能消费 eltdx 特有连板字段(ladder_level/limit_up_streak_days/
+        # seal_to_float_ratio/open_volume_ratio/limit_board_text)。匹配键=plain code。
+        _ll = _gh.get("limit_ladder", {})
+        _ll_rows = _ll.get("rows") if isinstance(_ll, dict) else None
+        if _ll_rows:
+            for _row in _ll_rows:
+                _rc = _row.get("code") or _row.get("full_code")
+                _rc_plain = _rc[2:] if isinstance(_rc, str) and _rc[:2] in ("sh", "sz", "bj") else _rc
+                if _rc_plain in out["stocks"]:
+                    out["stocks"][_rc_plain]["limit_ladder"] = _jfy(_row)
+                elif _rc in out["stocks"]:
+                    out["stocks"][_rc]["limit_ladder"] = _jfy(_row)
     finally:
         try:
             if client is not None:

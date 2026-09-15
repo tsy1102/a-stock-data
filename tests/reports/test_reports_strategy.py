@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""tests/reports/test_reports_strategy.py — val 报告 25 策略注册表防线
+"""tests/reports/test_reports_strategy.py — val 报告 26 策略注册表防线
 
 针对 docs/roadmap.md 注记 B 记录的**报告层测试空白**，补上 val 策略侧的守护。
 
@@ -77,11 +77,11 @@ class TestStrategyRegistry(unittest.TestCase):
 
     def test_exactly_25_strategies(self):
         fns = _strategy_functions()
-        self.assertEqual(len(fns), 25, f"策略数量应为 25，实际 {len(fns)}")
+        self.assertEqual(len(fns), 26, f"策略数量应为 26，实际 {len(fns)}")
 
     def test_numbering_is_contiguous_01_to_25(self):
         nums = [n for n, _name, _f in _strategy_functions()]
-        self.assertEqual(nums, list(range(1, 26)))
+        self.assertEqual(nums, list(range(1, 27)))
 
     def test_all_are_callable_and_have_docstring_or_name(self):
         for num, name, fn in _strategy_functions():
@@ -95,8 +95,8 @@ class TestDispatchTable(unittest.TestCase):
     def test_dispatch_has_25_entries(self):
         src = _dispatch_source()
         found = _RE_DISPLAY.findall(src)
-        self.assertEqual(len(found), 25, f"调度表条目应为 25，实际 {len(found)}")
-        self.assertEqual(sorted(int(x) for x in found), list(range(1, 26)))
+        self.assertEqual(len(found), 26, f"调度表条目应为 26，实际 {len(found)}")
+        self.assertEqual(sorted(int(x) for x in found), list(range(1, 27)))
 
     def test_every_strategy_function_is_registered(self):
         """定义了却漏登记 → 报告静默少一节，必须拦住。"""
@@ -117,14 +117,14 @@ class TestDispatchTable(unittest.TestCase):
     def test_display_names_are_unique(self):
         src = _dispatch_source()
         names = re.findall(r'策略\d{2}【[^】]+】', src)
-        self.assertEqual(len(names), 25)
-        self.assertEqual(len(set(names)), 25, f"策略展示名重复: {names}")
+        self.assertEqual(len(names), 26)
+        self.assertEqual(len(set(names)), 26, f"策略展示名重复: {names}")
 
     def test_display_number_matches_function_number(self):
         """展示名编号必须与函数名编号一致（防止复制粘贴串行）。"""
         src = _dispatch_source()
         pairs = re.findall(r'策略(\d{2})【[^】]+】",\s*strategy_(\d{2})_', src)
-        self.assertEqual(len(pairs), 25, "展示名与函数名应能一一配对")
+        self.assertEqual(len(pairs), 26, "展示名与函数名应能一一配对")
         for disp, fn in pairs:
             self.assertEqual(disp, fn, f"编号错位: 展示 策略{disp} ↔ 函数 strategy_{fn}_")
 

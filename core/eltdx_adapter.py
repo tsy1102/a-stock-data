@@ -17,7 +17,7 @@ V17.2.15: 取代 easy_tdx 成为 TDX TCP 主源（core/tdx_client.py 调用）�
 
 from __future__ import annotations
 
-from typing import Any, Optional, Tuple
+from typing import Any, List, Optional, Tuple
 
 from stock_common import _debug_log
 
@@ -234,3 +234,104 @@ def create_eltdx_adapter() -> Optional[Any]:
     except Exception as _e:
         _debug_log(f"eltdx adapter create error: {_e}")
         return None
+
+
+def get_eltdx_shortline_bundle(all_codes: List[str], timeout: float = 20.0) -> Tuple[list, dict]:
+    """eltdx 连板天梯(limit_ladder) + 批量短线指标(shortline_indicators) 一体化采集。
+
+    V17.2.16: 供 val 策略层(策略26 连板梯队·短线封单强度)使用。
+    数据: 本地 TDX 7709/7615 实时(TCP); 无本地 TDX / eltdx 未装 / 上游异常 / 卡死(墙钟超时)
+          → 返回 ([], {}) 降级为空选, 不阻断其余策略。
+    返回: (ladder_list, shortline_map)
+      ladder_list:  list[dict]  —— limit_ladder() 全局连板天梯(rows)
+      shortline_map: {ecode: dict} —— shortline_indicators(ecodes) 批量命中(ShortlineIndicator 41 字段)
+    """
+    from dataclasses import asdict, is_dataclass
+
+    def _jfy(o):
+        if isinstance(o, bytes):
+            return o.hex()
+        if isinstance(o, (list, tuple)):
+            return [_jfy(x) for x in o]
+        if isinstance(o, dict):
+            return {str(k): _jfy(v) for k, v in o.items()}
+        if is_dataclass(o) and not isinstance(o, type):
+            return _jfy(asdict(o))
+        if isinstance(o, (str, int, float, bool)) or o is None:
+            return o
+        return str(o)
+
+    def _ecode(code: str) -> str:
+        c = str(code)
+        if c.startswith(("sh", "sz", "bj")):
+            return c
+        if c.startswith(("6", "5", "9", "11", "13")):
+            return "sh" + c
+        if c.startswith(("8", "4", "92")):
+            return "bj" + c
+        return "sz" + c  # 0/3/2/1 开头
+
+    def _work():
+        try:
+            from eltdx import TdxClient
+        except Exception as _e:  # eltdx 未安装 → 下游策略降级为空选
+            _debug_log(f"eltdx shortline bundle: import failed {_e}")
+            return ([], {})
+        client = None
+        try:
+            client = TdxClient(hosts=_ELTDX_HOSTS, probe_hosts=False, timeout=8.0)
+            # ── 连板天梯(全局, 一次调用) ──
+            ladder: list = []
+            try:
+                _ll = client.helpers.limit_ladder()
+                _rows = getattr(_ll, "rows", None) or []
+                ladder = [_jfy(r) for r in _rows]
+            except Exception as _e:
+                _debug_log(f"eltdx limit_ladder: {_e}")
+            # ── 批量短线指标(按代码, 一次批量) ──
+            ecodes = [_ecode(c) for c in all_codes]
+            sl_map: dict = {}
+            try:
+                _sl = client.helpers.shortline_indicators(ecodes)
+                _sl_rows = getattr(_sl, "rows", None)
+                _sl_iter = _sl_rows if _sl_rows is not None else _sl
+                for _rec in (_sl_iter or []):
+                    _d = _jfy(_rec)
+                    _cc = _d.get("code") or _d.get("full_code")
+                    if _cc:
+                        sl_map[_cc] = _d
+            except Exception as _e:
+                _debug_log(f"eltdx shortline_indicators: {_e}")
+            return (ladder, sl_map)
+        except Exception as _e:  # 连接/握手失败(无本地 TDX) → 降级
+            _debug_log(f"eltdx shortline bundle: {_e}")
+            return ([], {})
+        finally:
+            try:
+                if client is not None:
+                    client.close()
+            except Exception:
+                pass
+
+    # 硬墙钟封顶: eltdx 在无本地 TDX 时连接阶段可能超出 timeout=8 长效挂起。
+    # 用 daemon 线程 + join(timeout) 兜底(非 ThreadPoolExecutor: 其 __exit__ 的
+    # shutdown(wait=True) 会阻塞等待挂起线程, 使超时失效)。daemon=True 保证进程退出不被拖住。
+    import threading
+
+    _result: dict = {"val": ([], {})}
+
+    def _target():
+        try:
+            _result["val"] = _work()
+        except Exception as _e:
+            _debug_log(f"eltdx shortline bundle: {_e}")
+            _result["val"] = ([], {})
+
+    _t = threading.Thread(target=_target, daemon=True)
+    _t.start()
+    _t.join(timeout=timeout)
+    if _t.is_alive():
+        _debug_log(f"eltdx shortline bundle: 墙钟超时({timeout}s)降级为空选(无本地TDX/主站不可达)")
+        return ([], {})
+    return _result["val"]
+

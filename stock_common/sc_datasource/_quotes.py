@@ -771,7 +771,7 @@ def get_fupan_pmsl() -> Dict[str, Any]:
         return {}
 
 
-@cached(category="static_permanent", ttl_seconds=TTL["static_permanent"])
+@cached(category="static_permanent", ttl_seconds=TTL["static_permanent"], valid_if=make_valid_if())
 def get_stock_permanent_info(code: str) -> Dict[str, Any]:
     """永久不变字段（10 年缓存——字典 12.15.8 static_permanent）。
     - list_date: push2 f189（东财基础信息——外层永久缓存吸收单次 HTTP 成本）

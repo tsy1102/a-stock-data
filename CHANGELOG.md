@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 
+## [V17.2.12] 2026-09-15 — TDX 新式握手修复（A 路线：最小侵入 + 固化）
+
+- **问题**：2026-09 起通达信行情主站强制拒绝旧版三条固定握手（0x1893/0x1894/0x1899），握手有响应但连接上所有 K 线请求静默返回 2 字节空包（0x0320）、市场统计/板块指数快照返回空、`/market/stat` 500——服务器不报错只是不给数据。项目依赖的 `easy-tdx 1.32.6`（上游 `awayings/easy_tdx` 已撤、PyPI 不可装）静态握手全面失效（P0 实证：4 台可达主机 K线全 0 行、market_stat 全报错）。
+- **修复（直接 patch 在用包）**：`easy_tdx/commands/setup.py`（site-packages）的 `SETUP_COMMANDS` 由静态三元组改为单条动态握手 `build_handshake_command()`（`<HIHHH` = 0x010C + 随机 msg_id + 0x0003 + 0x0003 + 0x000D，payload 0x01）。transport 层遍历/ping/心跳下标访问均兼容，业务请求格式零改动。保留 `SETUP_CMD1/2/3` 常量供 `commands/__init__.py` 导入兼容。备份见 `C:/Users/tsy11/AppData/Local/Temp/tdx_test/setup_original_1.32.6.py`。
+- **固化守卫（防重装回退）**：新增 `core/_tdx_handshake_patch.py`，`import` 即把 easy_tdx 握手续命为新式动态单条握手，并回写 `transport.sync` / `transport.async_` 的模块级 `SETUP_COMMANDS` 引用以抗乱序 import；幂等（`_v17212_dynamic_handshake_patched` 标记）。在 `core/tdx_client.py` 与 `core/zhb_client.py` 顶部 `import core._tdx_handshake_patch`（须在 easy_tdx 绑定前；因 easy_tdx 引用均为函数内懒加载，模块顶部即满足）。**不**挂 `core/__init__.py`（其须保持空，防 core↔stock_common 循环依赖）。
+- **实证**：patch 后在用包直连主站成功取到个股/指数日K（各 10 行真实 OHLC）、市场统计（上涨1404/下跌4073/总市值11.26万亿）；守卫模块 E2E 连接取 K线 5 行、transport 引用同步无陈旧、重复 apply 幂等。
+- **影响面**：TDX 备用链（K线/市场统计/板块指数实时）由失效恢复为可用；东财主路径（quote/资金流/板块）不受影响。
+
 ## [V17.2.11] 2026-09-15 — 路由加固 + 官方备胎源(v3.8.0 同步)
 
 - **文档同步债（A）**：`docs/field_dict.md` §12.6 追加 **V17.2.11 同步核查（v3.7.1→v3.8.0 delta）**——上游 V3.8.0(2026-09-05) 纯增量零 breaking，本 fork 不 import 上游函数仅按能力对齐；v3.8.0 新增 6 入口（指数成分/权重/估值、交易日历、沪深官方两融、北交所行情）中，项目已有等价能力者标记为 ⏸️ 按需启用。

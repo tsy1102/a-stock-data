@@ -35,6 +35,10 @@
 """
 from __future__ import annotations
 
+# V17.2.12: TDX 新式握手固化补丁（2026-09 主站强制要求）。须在 easy_tdx 被使用/
+# 绑定前 import，确保动态握手生效。详见 core/_tdx_handshake_patch.py。
+import core._tdx_handshake_patch  # noqa: E402
+
 import os
 import io
 import zipfile

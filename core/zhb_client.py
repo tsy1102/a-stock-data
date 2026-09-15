@@ -37,9 +37,10 @@ from __future__ import annotations
 
 # V17.2.12: TDX 新式握手固化补丁（2026-09 主站强制要求）。须在 easy_tdx 被使用/
 # 绑定前 import，确保动态握手生效。详见 core/_tdx_handshake_patch.py。
-# V17.2.15 说明: tdx_client.py 已切换 eltdx（Rust 握手含 2026-09 修复，不再需要本补丁）；
-# 本模块 **保留** 补丁 import，因为 ZHB 报告 ZIP 下载走 easy_tdx 文件传输（eltdx 无此能力），
-# 仍需补丁修复 2026-09 主站握手。若将来 ZHB 下载迁移至其他源，可移除本补丁。
+# V17.2.15 说明: tdx_client.py 已切换 eltdx（Rust 握手含 2026-09 修复，不再需要本补丁）。
+# 本模块 **保留** 补丁 import 仅为稳妥：2026-09-15 实测 eltdx.ResourceApi.download_file("zhb.zip")
+# 经 0x06B9 可成功下载 zhb.zip（含 tdxstat.cfg/tdxstat2.cfg），即 eltdx **已具备** ZHB 下载能力，
+# 补丁理论上可移除。完整迁移（zhb_client 改用 eltdx 下载 + 保留现有 zip 解析）待专项实施，故暂留补丁。
 import core._tdx_handshake_patch  # noqa: E402
 
 import os

@@ -1335,6 +1335,42 @@ def get_canonical_stock_data(code: str, force_realtime: bool = False) -> Any:
     source_tag = "http/tdx" if need_realtime_quote and rt_quote.get("price") else "zhb"
     time_anchor_tag = "t_day" if (is_trading_hours or is_post_market) else "t-1"
 
+    # V17.2.22: eltdx 7709/7615 实时短线/连板指标经统一层暴露。
+    # 只读模块级 bundle 缓存(由 get_eltdx_shortline_bundle 批量预热, 300s TTL);
+    # 缓存未命中(未批量预热/无本地 TDX)则留默认 —— 绝不 per-stock 触发取数(N+1 打爆 TDX TCP)。
+    eltdx_ladder_level = 0
+    eltdx_limit_up_streak_days = 0
+    eltdx_limit_board_text = ""
+    eltdx_seal_to_float_ratio = 0.0
+    eltdx_open_volume_ratio = 0.0
+    eltdx_seal_amount = 0.0
+    eltdx_opening_rush = 0.0
+    eltdx_auction_prev_volume_ratio = 0.0
+    eltdx_open_prev_amount_ratio = 0.0
+    eltdx_open_change_pct = 0.0
+    eltdx_open_turnover_z = 0.0
+    eltdx_has_shortline = False
+    try:
+        from core.eltdx_adapter import get_eltdx_shortline_for_code
+
+        _eltdx = get_eltdx_shortline_for_code(code_str)
+        if _eltdx:
+            eltdx_ladder_level = int(_eltdx.get("ladder_level") or 0)
+            eltdx_limit_up_streak_days = int(_eltdx.get("limit_up_streak_days") or 0)
+            eltdx_limit_board_text = str(_eltdx.get("limit_board_text") or "")
+            eltdx_seal_to_float_ratio = _safe_float(_eltdx.get("seal_to_float_ratio"))
+            eltdx_open_volume_ratio = _safe_float(_eltdx.get("open_volume_ratio"))
+            eltdx_seal_amount = _safe_float(_eltdx.get("seal_amount"))
+            eltdx_opening_rush = _safe_float(_eltdx.get("opening_rush"))
+            eltdx_auction_prev_volume_ratio = _safe_float(_eltdx.get("auction_prev_volume_ratio"))
+            eltdx_open_prev_amount_ratio = _safe_float(_eltdx.get("open_prev_amount_ratio"))
+            eltdx_open_change_pct = _safe_float(_eltdx.get("open_change_pct"))
+            eltdx_open_turnover_z = _safe_float(_eltdx.get("open_turnover_z"))
+            eltdx_has_shortline = True
+            field_sources["eltdx_shortline"] = "eltdx:cache"
+    except Exception as _e:
+        _debug_log(f"get_canonical_stock_data eltdx enrichment error ({code_str}): {_e}")
+
     return CanonicalStockData(
         code=code_str,
         name=name,
@@ -1475,6 +1511,19 @@ def get_canonical_stock_data(code: str, force_realtime: bool = False) -> Any:
         undist_profit_ps=_safe_float(
             rt_quote.get("undist_profit_ps") or em_quote_raw.get("undist_profit_ps") or 0
         ),
+        # V17.2.22: eltdx 7709/7615 实时短线/连板指标(经统一层暴露, 读批量缓存)
+        eltdx_ladder_level=eltdx_ladder_level,
+        eltdx_limit_up_streak_days=eltdx_limit_up_streak_days,
+        eltdx_limit_board_text=eltdx_limit_board_text,
+        eltdx_seal_to_float_ratio=eltdx_seal_to_float_ratio,
+        eltdx_open_volume_ratio=eltdx_open_volume_ratio,
+        eltdx_seal_amount=eltdx_seal_amount,
+        eltdx_opening_rush=eltdx_opening_rush,
+        eltdx_auction_prev_volume_ratio=eltdx_auction_prev_volume_ratio,
+        eltdx_open_prev_amount_ratio=eltdx_open_prev_amount_ratio,
+        eltdx_open_change_pct=eltdx_open_change_pct,
+        eltdx_open_turnover_z=eltdx_open_turnover_z,
+        eltdx_has_shortline=eltdx_has_shortline,
     )
 
 

@@ -277,6 +277,15 @@ def get_eltdx_shortline_bundle(all_codes: List[str], timeout: float = 20.0) -> T
             return "bj" + c
         return "sz" + c  # 0/3/2/1 开头
 
+    # 模块级缓存: 同进程同 codes 集合 300s 内复用 bundle, 避免 val 多策略/统一层重复连接 eltdx
+    _ecodes = [_ecode(c) for c in all_codes]
+    _ckey = frozenset(_ecodes)
+    _cache = _SHORTLINE_BUNDLE_CACHE
+    if _cache.get("key") == _ckey and (time.time() - _cache.get("ts", 0.0)) < _SHORTLINE_TTL:
+        _cached = _cache.get("val")
+        if _cached:
+            return _cached
+
     def _work():
         try:
             from eltdx import TdxClient
@@ -339,5 +348,53 @@ def get_eltdx_shortline_bundle(all_codes: List[str], timeout: float = 20.0) -> T
     if _t.is_alive():
         _debug_log(f"eltdx shortline bundle: 墙钟超时({timeout}s)降级为空选(无本地TDX/主站不可达)")
         return ([], {})
-    return _result["val"]
+    _val = _result["val"]
+    _ladder, _sl = _val
+    # 仅缓存有效数据(非降级空选), 避免空选污染缓存导致 300s 内无法重试
+    if _ladder or _sl:
+        _SHORTLINE_BUNDLE_CACHE["key"] = _ckey
+        _SHORTLINE_BUNDLE_CACHE["ts"] = time.time()
+        _SHORTLINE_BUNDLE_CACHE["val"] = _val
+    return _val
+
+
+def get_eltdx_shortline_for_code(code: str, timeout: float = 20.0) -> Optional[Dict[str, Any]]:
+    """从模块级 bundle 缓存读取单只股票的 eltdx 短线/连板指标(不触发取数)。
+
+    V17.2.22: 供统一层 get_canonical_stock_data 暴露 eltdx 数据。
+    仅当此前某处调用过 get_eltdx_shortline_bundle(all_codes) 预热缓存(批量, 300s TTL)时有效;
+    否则返回 None —— 调用方应自行批量预热, 禁止 per-stock 触发取数(N+1 打爆 TDX TCP)。
+    返回 dict 含: ladder_level / limit_up_streak_days / limit_board_text / seal_to_float_ratio /
+    open_volume_ratio / seal_amount / opening_rush / auction_prev_volume_ratio /
+    open_prev_amount_ratio / open_change_pct / open_turnover_z (ShortlineIndicator schema)。
+    """
+    c = str(code)
+    if c.startswith(("sh", "sz", "bj")):
+        ek = c
+    elif c.startswith(("6", "5", "9", "11", "13")):
+        ek = "sh" + c
+    elif c.startswith(("8", "4", "92")):
+        ek = "bj" + c
+    else:
+        ek = "sz" + c
+    _cache = _SHORTLINE_BUNDLE_CACHE
+    if _cache.get("key") is None or (time.time() - _cache.get("ts", 0.0)) >= _SHORTLINE_TTL:
+        return None
+    _val = _cache.get("val")
+    if not _val:
+        return None
+    _ladder, _sl_map = _val
+    rec: Dict[str, Any] = {}
+    # 优先 sl_map(ShortlineIndicator 41 字段全量)
+    _sl = _sl_map.get(ek) or _sl_map.get(code)
+    if _sl:
+        rec.update(_sl)
+    # 连板天梯行按 code 匹配(兜底, 部分标的 sl_map 可能缺)
+    if _ladder:
+        for _r in _ladder:
+            _rc = _r.get("code") or _r.get("full_code") or ""
+            if _rc in (ek, code):
+                rec.update(_r)
+                break
+    return rec if rec else None
 

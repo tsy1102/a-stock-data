@@ -613,6 +613,22 @@ class CanonicalStockData:
     #   missing             - 完全没拿到
     field_sources: Dict[str, str] = field(default_factory=dict)
 
+    # V17.2.22: eltdx 7709/7615 实时短线/连板指标(经统一层 get_canonical_stock_data 暴露)
+    # 数据来源: get_eltdx_shortline_bundle 批量预热 -> 模块级缓存 -> 统一层 per-stock 读缓存(非取数)
+    # 默认值=未命中(无本地 TDX / 未批量预热) —— 不污染核心 86 字段契约(FIELD_SPECS 不含此组)
+    eltdx_ladder_level: int = 0            # 连板高度(档位, eltdx limit_ladder.ladder_level)
+    eltdx_limit_up_streak_days: int = 0    # 连续涨停天数(ShortlineIndicator.limit_up_streak_days)
+    eltdx_limit_board_text: str = ""       # 连板梯队文本(limit_board_text, e.g. "3天3板")
+    eltdx_seal_to_float_ratio: float = 0.0 # 封单额/流通市值(%)——封板坚决度(seal_to_float_ratio)
+    eltdx_open_volume_ratio: float = 0.0   # 开盘成交量比(open_volume_ratio)
+    eltdx_seal_amount: float = 0.0         # 封单额(元, seal_amount)
+    eltdx_opening_rush: float = 0.0        # 开盘抢筹(opening_rush)
+    eltdx_auction_prev_volume_ratio: float = 0.0  # 竞价量比(auction_prev_volume_ratio)
+    eltdx_open_prev_amount_ratio: float = 0.0     # 开盘额/昨额比(open_prev_amount_ratio)
+    eltdx_open_change_pct: float = 0.0     # 开盘涨跌幅%(open_change_pct)
+    eltdx_open_turnover_z: float = 0.0     # 开盘换手Z(open_turnover_z)
+    eltdx_has_shortline: bool = False      # 是否命中 eltdx 短线指标(批量缓存命中标记)
+
     def to_dict(self) -> Dict[str, Any]:
         """转换为通用字典（兼容旧脚本解析）。"""
         from dataclasses import asdict

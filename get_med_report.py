@@ -258,6 +258,11 @@ async def generate_report_async(session, code, output_path, ind_comp=None, hsgt=
     if getattr(cdata, "is_new", False):
         L(f"  🆕 次新标记: 上市 ≤5 日（财务数据不完整，中线谨慎）")
     L(f"  所属板块: {stock_industry}")
+    # V17.2.24: eltdx 连板状态（统一层 cdata.eltdx_*，源自 TDX 7709/7615 实时）
+    if getattr(cdata, "eltdx_has_shortline", False):
+        _ll = cdata.eltdx_ladder_level or 0
+        if _ll >= 2:
+            L(f"  🪜 连板状态: **{_ll}连板**（封流比{cdata.eltdx_seal_to_float_ratio:.2f}%）——短线强势，注意连续涨停风险")
     # V17.0.32(2026-09-06) DEBT-016: 露出 sec_type（与 board 地域字段正交）→ 市场板块 + 涨跌幅限制
     L(f"  市场板块: {sec_type_market_label(getattr(cdata, 'sec_type', 0), cdata.code, cdata.name)}")
 
@@ -1433,9 +1438,20 @@ class MedReportRunner(BaseReportRunner):
         # V17.0 R4: 批量骨架收敛到基类 execute_batch_pipeline(原 90 行本地实现删除)
         # V17.0 审查: 删 gen_kwargs["hsgt"]=None 误导参数——generate 内部默认拉取(有 trading_day 缓存)
         _cached_ind_comp = get_industry_comparison()
+
+        def _prefetch(codes):
+            # V17.2.24: eltdx 连板/封单/开盘抢筹批量预热(一次 TCP, 300s TTL 缓存;
+            # 统一层 cdata.eltdx_* 仅读此缓存, 禁止 per-stock 触发取数打爆 TDX TCP)
+            try:
+                from core.eltdx_adapter import get_eltdx_shortline_bundle
+                get_eltdx_shortline_bundle(list(codes))
+            except Exception:
+                pass
+
         return self.execute_batch_pipeline(
             "med", generate_report_async,
             gen_kwargs={"ind_comp": _cached_ind_comp},
+            prefetch_fn=_prefetch,
             snapshot_data=_SNAPSHOT_DATA,
         )
 

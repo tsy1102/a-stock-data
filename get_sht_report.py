@@ -523,6 +523,25 @@ async def generate_report_async(session, code, output_path, ind_comp=None, idx_q
         else:
             L("\n  [资金流向] 今日主力净流入(实时): 暂无数据")
 
+    # V17.2.24: eltdx 连板梯队与封单强度（统一层 cdata.eltdx_*，源自 TDX 7709/7615 实时）
+    if getattr(cdata, "eltdx_has_shortline", False):
+        _ll = cdata.eltdx_ladder_level or 0
+        _streak = cdata.eltdx_limit_up_streak_days or 0
+        _seal = cdata.eltdx_seal_to_float_ratio or 0.0
+        _ov = cdata.eltdx_open_volume_ratio or 0.0
+        _bt = cdata.eltdx_limit_board_text or ""
+        L("\n" + "---"); L("## 【二·附、连板梯队与封单强度（通达信 eltdx 实时）】"); L("---")
+        if _ll >= 2:
+            L(f"  🪜 连板梯队: **{_ll}连板**{('（' + _bt + '）') if _bt else ''}（连续涨停 {_streak} 日）")
+            L(f"  🔒 封单占流通比: {_seal:.2f}%（封板坚决度；封流比越高越难开板）")
+        else:
+            L(f"  🪜 连板高度: {_ll}板（未达连板梯队）")
+            if _seal >= 0.5:
+                L(f"  🔒 首板强封: 封单占流通比 {_seal:.2f}%（封板坚决）")
+        if _ov:
+            L(f"  📊 开盘量比: {_ov:.2f}（集合竞价活跃度）")
+        L("  📡 数据来源: 通达信 eltdx（本地 TDX 7709/7615 实时；无本地 TDX 时本小节不显示）")
+
     L("\n"+"---"); L("## **三、机构一致预期与估值**"); L("---")
 
     df_eps = await get_eps_forecast_async(session, code)
@@ -2249,7 +2268,15 @@ class ShtReportRunner(BaseReportRunner):
             # V16.3.10: 批量行情预取(push2delay ulist 1 次请求拿全部核心行情字段)
             from core.data_provider import prefetch_quote_batch
 
-            return prefetch_quote_batch(codes)
+            _ret = prefetch_quote_batch(codes)
+            # V17.2.24: eltdx 连板/封单/开盘抢筹批量预热(一次 TCP, 300s TTL 缓存;
+            # 统一层 cdata.eltdx_* 仅读此缓存, 禁止 per-stock 触发取数打爆 TDX TCP)
+            try:
+                from core.eltdx_adapter import get_eltdx_shortline_bundle
+                get_eltdx_shortline_bundle(list(codes))
+            except Exception:
+                pass
+            return _ret
 
         # V17.0.7: datacenter 五类(龙虎榜/两融/北向/解禁/大宗)批量预取流水线钩子
         _depth = getattr(self.args, "depth", "deep") or "deep"

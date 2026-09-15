@@ -1142,6 +1142,16 @@ async def generate_sector_report(output_path):
     # 过滤为纯 A 股（与 val 的 _is_a_stock 同口径：00/30/60/68/92 前缀）
     _before = len(all_stocks)
     all_stocks = [s for s in all_stocks if _is_a_stock(s.get("code", ""))]
+    # V17.2.24: eltdx 全局连板天梯预热(轻量接口, 仅 limit_ladder 一次调用, 不批量 shortline 防超时)
+    _eltdx_ladder = []
+    try:
+        from core.eltdx_adapter import get_eltdx_limit_ladder
+        _eltdx_ladder = await asyncio.to_thread(
+            get_eltdx_limit_ladder,
+            [s.get("code", "") for s in all_stocks if s.get("code")],
+        )
+    except Exception as _e:
+        _debug_log(f"mak eltdx limit_ladder: {_e}")
     if len(all_stocks) < _before:
         print(f"  📋 A股过滤: 移除 {_before - len(all_stocks)} 只 ETF/LOF/可转债（{_before} → {len(all_stocks)}）", flush=True)
     _zhb_date = get_zhb_data_date()
@@ -1704,6 +1714,30 @@ async def generate_sector_report(output_path):
     else:
         L('')
         L("  ⚠️ 同花顺独家交叉验证：数据源受限（同花顺网页接口 401 反爬），强势股热池暂无法获取，交叉验证增量视角缺失。")
+
+    # V17.2.24: 通达信 eltdx 连板天梯实时核验（TDX 7709/7615 原生；与 B/B+ 财联社/开盘红独立源交叉验证）
+    if _eltdx_ladder:
+        L("## 【B++. 连板天梯（通达信 eltdx 实时核验）】")
+        L("  （数据来源: 通达信 eltdx 本地 TDX 7709/7615 实时；与 B/B+ 财联社/开盘红连板梯队独立互校）")
+        _ladder_sorted = sorted(
+            [r for r in _eltdx_ladder if isinstance(r, dict) and (r.get("ladder_level") or 0) >= 2],
+            key=lambda x: (x.get("ladder_level") or 0), reverse=True,
+        )
+        if _ladder_sorted:
+            L("| 代码 | 名称 | 连板 | 连续涨停日 | 封流比% | 板块 |")
+            L("| --- | --- | --- | --- | --- | --- |")
+            for _r in _ladder_sorted[:30]:
+                _ec = _r.get("code") or _r.get("full_code") or ""
+                _plain = _ec[2:] if _ec.startswith(("sh", "sz", "bj")) else _ec
+                _nm = _r.get("name") or _r.get("stock_name") or _plain
+                _ll = _r.get("ladder_level") or 0
+                _streak = _r.get("limit_up_streak_days") or 0
+                _seal = _r.get("seal_to_float_ratio") or 0.0
+                _ind = _r.get("industry") or _r.get("sector") or ""
+                L(f"| {_plain} | {_nm} | {_ll}连板 | {_streak} | {_seal:.2f} | {_ind} |")
+        else:
+            L("  （当日无 ≥2 板连板标的 / 本地 TDX 未运行，eltdx 未返回数据）")
+        L("")
 
     L("## 【C. 板块-异动集中度分析】")
     L(f"{'---'}")

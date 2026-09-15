@@ -358,6 +358,72 @@ def get_eltdx_shortline_bundle(all_codes: List[str], timeout: float = 20.0) -> T
     return _val
 
 
+def get_eltdx_limit_ladder(timeout: float = 20.0) -> list:
+    """eltdx 全局连板天梯(limit_ladder) —— 独立轻量接口，供市场级扫描(mak)使用。
+
+    V17.2.24: 仅取全局梯队(一次调用)，不做 per-stock 批量 shortline_indicators
+              （避免 mak 对全市场 5000+ 代码触发超时/拖慢整批）。
+    数据: 本地 TDX 7709/7615 实时(TCP); 无本地 TDX / eltdx 未装 / 上游异常 / 卡死(墙钟超时)
+          → 返回 [] 降级, 不阻断报告。
+    返回: list[dict] —— 每行含 code/full_code/ladder_level/limit_up_streak_days/
+          limit_board_text/seal_to_float_ratio/open_volume_ratio 等(ShortlineIndicator schema)。
+    """
+    from dataclasses import asdict, is_dataclass
+
+    def _jfy(o):
+        if isinstance(o, bytes):
+            return o.hex()
+        if isinstance(o, (list, tuple)):
+            return [_jfy(x) for x in o]
+        if isinstance(o, dict):
+            return {str(k): _jfy(v) for k, v in o.items()}
+        if is_dataclass(o) and not isinstance(o, type):
+            return _jfy(asdict(o))
+        if isinstance(o, (str, int, float, bool)) or o is None:
+            return o
+        return str(o)
+
+    def _work():
+        try:
+            from eltdx import TdxClient
+        except Exception as _e:
+            _debug_log(f"eltdx limit_ladder: import failed {_e}")
+            return []
+        client = None
+        try:
+            client = TdxClient(hosts=_ELTDX_HOSTS, probe_hosts=False, timeout=8.0)
+            _ll = client.helpers.limit_ladder()
+            _rows = getattr(_ll, "rows", None) or []
+            return [_jfy(r) for r in _rows]
+        except Exception as _e:
+            _debug_log(f"eltdx limit_ladder: {_e}")
+            return []
+        finally:
+            try:
+                if client is not None:
+                    client.close()
+            except Exception:
+                pass
+
+    import threading
+    _result: dict = {"val": []}
+
+    def _target():
+        try:
+            _result["val"] = _work()
+        except Exception as _e:
+            _debug_log(f"eltdx limit_ladder: {_e}")
+            _result["val"] = []
+
+    _t = threading.Thread(target=_target, daemon=True)
+    _t.start()
+    _t.join(timeout=timeout)
+    if _t.is_alive():
+        _debug_log(f"eltdx limit_ladder: 墙钟超时({timeout}s)降级为空(无本地TDX/主站不可达)")
+        return []
+    return _result["val"]
+
+
 def get_eltdx_shortline_for_code(code: str, timeout: float = 20.0) -> Optional[Dict[str, Any]]:
     """从模块级 bundle 缓存读取单只股票的 eltdx 短线/连板指标(不触发取数)。
 

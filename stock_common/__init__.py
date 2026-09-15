@@ -85,6 +85,7 @@ __all__ = [
     "get_northbound_hold", "get_northbound_hold_async",
     "_northbound_cache_path", "_load_northbound_cache",
     "get_margin_trading", "get_margin_trading_async",
+    "get_margin_trading_backup", "get_bse_quote_backup",
     "get_block_trade", "get_block_trade_async",
     "get_dividend_history", "get_dividend_history_async",
     "get_concept_blocks", "get_concept_blocks_async",
@@ -278,6 +279,7 @@ from stock_common.sc_datasource import (
     _northbound_cache_path, _load_northbound_cache,
     # 融资融券
     get_margin_trading, get_margin_trading_async,
+    get_margin_trading_backup, get_bse_quote_backup,
     # 大宗交易
     get_block_trade, get_block_trade_async,
     # 分红

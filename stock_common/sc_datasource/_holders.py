@@ -59,7 +59,7 @@ def _holder_fetch_tdx_optimized(code: str, records: List[Dict[str, Any]], now: f
     client = _get_tdx_client()
     if client is None:
         return False
-    info = client.get_finance_info(1 if code.startswith("6") else 0, code)
+    info = client.get_finance_info(1 if em_exchange_prefix(code, upper=True) == "SH" else 0, code)  # V17.2.11
     if info is None or info.empty:
         return False
     # V15.1: 修正股东户数 key（参考 docs/field_dict.md 第 7 章）
@@ -268,7 +268,7 @@ def _cninfo_get_orgid(code: str) -> str:
     #   0xxxxx/3xxxxx(深市) → gssz0
     # M10 修复：原代码把 92x(北交所新代码段) 落入 else 得 gssz0(深市)，单位/主体错乱；
     # 现归入北交所分支。
-    if code.startswith("6"):
+    if em_exchange_prefix(code, upper=True) == "SH":  # V17.2.11: 收敛散点 startswith("6")
         fallback = f"gssh0{code}"
     elif code.startswith("8") or code.startswith("4") or code.startswith("92"):
         fallback = f"gsbj0{code}"

@@ -5,6 +5,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 
+## [V17.2.11] 2026-09-15 — 路由加固 + 官方备胎源(v3.8.0 同步)
+
+- **文档同步债（A）**：`docs/field_dict.md` §12.6 追加 **V17.2.11 同步核查（v3.7.1→v3.8.0 delta）**——上游 V3.8.0(2026-09-05) 纯增量零 breaking，本 fork 不 import 上游函数仅按能力对齐；v3.8.0 新增 6 入口（指数成分/权重/估值、交易日历、沪深官方两融、北交所行情）中，项目已有等价能力者标记为 ⏸️ 按需启用。
+- **路由加固（B）**：`stock_common/sc_utils.py` 的 `em_secid_prefix` 加 `.SH/.SZ/.BJ` 后缀识别（修复 v3.7.1 潜伏 bug——`000016.SH` 此前静默错票为深市 secid，因输入层归一化拦截未触发）；新增 `em_exchange_prefix(code, upper=False)` 统一产出交易所 mnemonic（sh/sz/bj 或 SH/SZ/BJ）。收敛散点 `code.startswith("6")` 路由（_eastmoney/_financials×3/_quotes×2/_holders×2/sc_utils 共 9 处）到 `em_exchange_prefix`；`_quotes.py:23` 的腾讯前缀同时补齐 43/83/87 北交所老号段（此前仅 8/4/92）。
+- **沪深官方两融降级源（C）**：新增 `stock_common/sc_datasource/_official_backup.py`（移植上游 V3.8.0 `margin_trading_backup` + Layer12 官方源辅助函数），提供 `get_margin_trading_backup(code)`——按代码自动判交易所(SH/SZ)、遍历最近交易日取已发布快照，归一化为与 `get_margin_trading` 一致的 dict 形状。归并进 `get_margin_trading`：东财 datacenter 空结果/封禁时自动降级，不依赖东财。
+- **北交所官方行情降级源（D）**：同模块提供 `bse_quote_backup` + `get_bse_quote_backup(code)`（北交所官方行情+五档，须核对交易日）。归并进 `get_em_quote_full` / `get_em_quote_full_delay`：北交所代码东财 push2 空结果/封禁时自动降级到北交所官方源，扩面并提升鲁棒性。
+- **导出**：`stock_common/__init__.py` 的 `__all__` 与 `sc_datasource` 导入块补充 `get_margin_trading_backup` / `get_bse_quote_backup`。
+- 注：官方备胎源为独立官方域名（sse.com.cn / szse.cn / bse.cn），不走东财限流，东财封禁时仍可用；实测 600519(茅台) 上交所两融、920021(流金科技) 北交所行情均成功取数。
+
 ## [V17.2.10] 2026-09-13 — 动态层每日刷新(涨停池选连板/新股/涨停)
 
 - **`scripts/capture_field_probe.py`（新增）— `refresh_dynamic_layer()` 动态层每日刷新**：实现 `pool_rules.dynamic_refresh` 长期缺失的能力。`pool.json` 的 `dynamic` 5 只此前静态冻结（自 20260812）。现支持：

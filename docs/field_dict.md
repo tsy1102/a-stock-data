@@ -2062,6 +2062,18 @@ TDX `0x0010` 日K（`tdx_get_security_bars`，keys = `['time','open','close','hi
 | **v3.7.0** 兼容性: PEP604 `X\|None` 在 py3.9 使 em_get 整层不可用 | ➖ 项目 Python 3.12 无影响 |
 | **v3.7.1** get_prefix 后缀路由(`000016.SH` 静默错票→secid `0.000016`=*ST康佳A，比返空更危险) | ✅ 模式入典——项目同类 bug 已两遇并修(V16.4.1 ulist secids/V17.0.5 fuyao_to_thscode)，总原则:**用户输入先归一化再进路由** |
 
+**V17.2.11 同步核查（2026-09-15，v3.7.1→v3.8.0 delta）**：
+
+| 上游变更 | 本项目状态 |
+|---|---|
+| **v3.8.0** 新增 6 入口（index_constituents/weights/valuation、trading_calendar、margin_trading_backup、bse_quote_backup）+ 3 官方来源 | ✅ 纯增量、零 breaking；旧函数签名不变；本 fork 不 import 上游函数，仅按能力对齐 |
+| **v3.8.0** `margin_trading_backup`（沪深交易所官方两融，分所调用，金额元/余量股·份；上交所融券余额源值为空保留空） | ✅ 已接入作东财 datacenter 封禁降级源——`sc_datasource/_official_backup.py::get_margin_trading_backup`，归并进 `get_margin_trading` 空结果兜底 |
+| **v3.8.0** `bse_quote_backup`（北交所官方行情+五档，须核对交易日，无历史回填） | ✅ 已接入作北交所东财 push2 封禁降级源——`get_bse_quote_backup`，归并进 `get_em_quote_full`/`get_em_quote_full_delay` 北交所空结果兜底 |
+| **v3.8.0** index_constituents/weights/valuation、trading_calendar | ⏸️ 项目已有等价能力（自研 trading_calendar / 同花顺指数成分 / 东财行业映射），按需启用，未接入 |
+| **v3.7.1** get_prefix 后缀路由潜伏 bug（`.SH` 静默错票） | ✅ V17.2.11 修复：`em_secid_prefix` 与新增 `em_exchange_prefix` 均加 `.SH/.SZ/.BJ` 后缀识别；散点 `startswith("6")` 路由收敛到 `em_exchange_prefix` |
+
+> 结论：v3.8.0 对现有字段契约与运行时无破坏性；C/D 两项以「官方备胎」形式补齐东财封禁时的韧性，数值语义严格对齐上游 SKILL.md（单位/字段名/交易日校验原样移植）。
+
 **v3.7.0 新端点择要登记（⏸️=上游可用未接入，按需启用）**：
 
 | 端点 | 内容 | 项目价值 |

@@ -275,7 +275,10 @@ def get_em_quote_full_delay(code: str) -> Dict[str, Any]:
     trading_day=True 保证日级数据次日 9:30 刷新（15min 延时数据缓存一天无影响）；
     valid_if 拒绝空/全零行情避免投毒。数据_provider 的进程内 _PD_EXTRA_CACHE 仍做单 run 兜底去重。
     """
-    return _em_quote_full_impl(code, "https://push2delay.eastmoney.com/api/qt/stock/get")
+    r = _em_quote_full_impl(code, "https://push2delay.eastmoney.com/api/qt/stock/get")
+    if not r and em_exchange_prefix(code, upper=True) == "BJ":  # V17.2.11: 北交所东财封禁 → 官方备份
+        r = get_bse_quote_backup(code) or {}
+    return r
 
 
 def get_em_fund_flow_multiday(code: str) -> Dict[str, Any]:
@@ -942,7 +945,7 @@ def em_hot_concept(code: str) -> List[Dict[str, Any]]:
         # V16.0.2: 改用 _quick_request（走限流），原 EM_SESSION.post 直连绕过限流
         import json as _json
 
-        prefix = "BJ" if code.startswith(("92", "8", "4", "43", "83", "87")) else ("SH" if code.startswith("6") else "SZ")
+        prefix = em_exchange_prefix(code, upper=True)  # V17.2.11: 收敛散点 startswith("6") 路由
         r = _quick_request(
             "https://emappdata.eastmoney.com/stockrank/getHotStockRankList",
             data=_json.dumps({**_hot_body, "srcSecurityCode": prefix + code}),

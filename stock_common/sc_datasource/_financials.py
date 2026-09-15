@@ -566,6 +566,14 @@ def get_margin_trading(code: str) -> List[Dict[str, Any]]:
         if row.get("FIN_BALANCE_GR") is not None:
             r["balance_gr"] = float(row["FIN_BALANCE_GR"])
         rows.append(r)
+    if not rows:
+        # V17.2.11: 东财 datacenter 封禁/空结果 → 沪深官方两融降级源（不依赖东财）
+        try:
+            _backup = get_margin_trading_backup(code)
+            if _backup:
+                rows = _backup
+        except Exception as _e:
+            _debug_log(f"sc_datasource get_margin_trading fallback error ({code}): {_e}")
     return rows
 
 
@@ -695,7 +703,7 @@ def get_sina_financial_report(code: str, num_periods: int = 12) -> Dict[str, Any
 
     # 新浪 HTTP
     # V16.3 O16: 北交所 920 号段走 bj 前缀（此前落 sz 静默查不到财报）
-    prefix = "bj" if code.startswith(("92", "8", "4", "43", "83", "87")) else ("sh" if code.startswith("6") else "sz")
+    prefix = em_exchange_prefix(code)  # V17.2.11: 收敛散点 startswith("6") 路由
     paper_code = f"{prefix}{code}"
     url = "https://quotes.sina.cn/cn/api/openapi.php/CompanyFinanceService.getFinanceReport2022"
     params = {
@@ -821,7 +829,7 @@ def get_sina_balance_sheet(code: str) -> List[Dict[str, Any]]:
     # 新浪 HTTP
     try:
         # V16.3 O16: 北交所 920/8/4 号段走 bj 前缀
-        prefix = "bj" if code.startswith(("92", "8", "4", "43", "83", "87")) else ("sh" if code.startswith("6") else "sz")
+        prefix = em_exchange_prefix(code)  # V17.2.11: 收敛散点 startswith("6") 路由
         paper_code = f"{prefix}{code}"
         url = "https://quotes.sina.cn/cn/api/openapi.php/CompanyFinanceService.getFinanceReport2022"
         params = {"paperCode": paper_code, "source": "fzb", "type": "0", "page": "1", "num": "5"}
@@ -1130,7 +1138,7 @@ def get_gross_margin_and_roe(
     # Fallback: 新浪 HTTP
     try:
         if fin_report is None:
-            prefix = "BJ" if code.startswith(("92", "8", "4", "43", "83", "87")) else ("SH" if code.startswith("6") else "SZ")
+            prefix = em_exchange_prefix(code, upper=True)  # V17.2.11: 收敛散点 startswith("6") 路由
             paper_code = f"{prefix}{code}"
             url = "https://quotes.sina.cn/cn/api/openapi.php/CompanyFinanceService.getFinanceReport2022"
             params = {

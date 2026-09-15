@@ -1254,7 +1254,7 @@ def fund_flow_backup(code: str, days: int = 60) -> List[Dict[str, Any]]:
         资金流列表，包含日期、主力/大单/中单/小单净流入
     """
     # V16.3 O16: 北交所 920/8/4 号段走 bj 前缀（此 URL 当前未用 prefix，保留统一口径）
-    prefix = "bj" if code.startswith(("92", "8", "4", "43", "83", "87")) else ("sh" if code.startswith("6") else "sz")
+    prefix = em_exchange_prefix(code)  # V17.2.11: 收敛散点 startswith("6") 路由
     url = (
         "https://vip.stock.finance.sina.com.cn/quotes_service/api/json_v2.php/MoneyFlow.ssl_bkzj_bk"
     )

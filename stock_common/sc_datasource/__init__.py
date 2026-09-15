@@ -71,7 +71,7 @@ from stock_common.sc_network import (
 )
 
 # 导入配置加载
-from stock_common.sc_utils import _load_settings, _safe_float, em_secid_prefix  # V17.0 S3: 统一 secid 前缀
+from stock_common.sc_utils import _load_settings, _safe_float, em_secid_prefix, em_exchange_prefix  # V17.0 S3: 统一 secid 前缀; V17.2.11: 交易所 mnemonic 前缀
 
 # 导入缓存层
 from core.stock_cache import TTL, cached, make_valid_if  # V15.2: 强化 valid_if
@@ -831,7 +831,7 @@ _KPL_LAST_CALL: float = 0.0
 # 子模块文件本身不是独立可导入模块，而是载入本命名空间的源码片段。
 # ═══════════════════════════════════════════════════════════
 import os as _os
-_PKG_ORDER = ('_holders', '_eastmoney', '_quotes', '_industry', '_financials', '_pools', '_zhb', '_misc')
+_PKG_ORDER = ('_holders', '_official_backup', '_eastmoney', '_quotes', '_industry', '_financials', '_pools', '_zhb', '_misc')
 _PKG_HERE = _os.path.dirname(_os.path.abspath(__file__))
 for _mod in _PKG_ORDER:
     _fp = _os.path.join(_PKG_HERE, _mod + '.py')

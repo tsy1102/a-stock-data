@@ -227,13 +227,39 @@ def em_secid_prefix(code: str) -> str:
     规则: 北交所(92 新号段 + 43/83/87 老号段 + 8/4) → "0."; 沪市(6xx/5x ETF/9xx 沪B) → "1.";
     其余(深市 00/30/15/16/159/399 指数等) → "0."。
     ⚠️ 北交所 92 号段以 "9" 开头——必须先于 "9→沪" 判断, 否则拼出 "1.92xxx" 恒失败。
+    V17.2.11: 支持 .SH/.SZ/.BJ 后缀(v3.7.1 潜伏 bug 修复——输入层归一化拦截故此前未触发)。
     """
-    c = str(code)
+    c = str(code).strip().upper()
+    if c.endswith(".SH"):
+        return "1."
+    if c.endswith(".SZ") or c.endswith(".BJ"):
+        return "0."
+    c = c.split(".")[0]
     if c.startswith(("92", "8", "4", "43", "83", "87")):
         return "0."
-    if c[0] in "569":
+    if c and c[0] in "569":
         return "1."
     return "0."
+
+
+def em_exchange_prefix(code: str, upper: bool = False) -> str:
+    """V17.2.11: 沪深北交易所 mnemonic 前缀（sh/sz/bj 或 SH/SZ/BJ），供 URL/参数拼接。
+
+    收敛散点 `code.startswith("6")` 路由（参考仓库 v3.7.1 同款路由加固）。
+    支持 .SH/.SZ/.BJ 后缀（v3.7.1 潜伏 bug 修复）。
+    规则: 后缀优先 → 否则号段：92/8/4/43/83/87→北交所(bj/BJ)；6→沪(sh/SH)；其余→深(sz/SZ)。
+    与 em_secid_prefix 分工：本函数产出交易所 mnemonic，后者产出东财 secid 前缀("0."/"1.")。
+    """
+    c = str(code).strip().upper()
+    suffix = None
+    if c.endswith((".SH", ".SZ", ".BJ")):
+        suffix = c[-2:]
+        c = c.split(".")[0]
+    if suffix == "SH" or (suffix is None and c.startswith("6")):
+        return "SH" if upper else "sh"
+    if suffix == "BJ" or (suffix is None and c.startswith(("92", "8", "4", "43", "83", "87"))):
+        return "BJ" if upper else "bj"
+    return "SZ" if upper else "sz"
 
 
 def name_mark(name: str) -> str:
@@ -365,7 +391,7 @@ def clean_codes(raw_list, verbose=False):
         # sh000001 上证指数等 000 号段沪市指数被拒——参考仓库 v3.5.1/v3.6.0）
         if prefix:
             ok = (
-                (prefix == "SH" and code.startswith("6"))
+                (prefix == "SH" and em_exchange_prefix(code, upper=True) == "SH")  # V17.2.11: 后缀健壮化
                 or (prefix == "SZ" and code.startswith(("0", "3")))
                 or (prefix == "BJ" and code.startswith(("92", "8", "4")))
             )

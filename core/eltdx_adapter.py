@@ -21,7 +21,13 @@ from typing import Any, List, Optional, Tuple
 
 from stock_common import _debug_log
 
+import time
+
 import pandas as _pd
+
+# get_eltdx_shortline_bundle 模块级缓存: 同进程同 codes 集合共享 bundle, 避免 val 多策略重复连接 eltdx。
+_SHORTLINE_BUNDLE_CACHE: dict = {"key": None, "ts": 0.0, "val": None}
+_SHORTLINE_TTL: float = 300.0
 
 # 已知全量 FULL 主机（V16.2.11/16.3.9 复测 6 台），pin 避免 eltdx 冷探测。
 # 注意 eltdx 主机格式须为 "ip:7709"（裸 IP 会被 rank_hosts_from_cache 过滤）。

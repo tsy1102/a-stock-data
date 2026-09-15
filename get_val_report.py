@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-get_val_report.py — 26 策略全市场发现引擎
+get_val_report.py — 27 策略全市场发现引擎
 方法论驱动的 A 股选股脚本，从全市场发现可操作标的。
 每策略精选 TOP 5，生成含具体数值推理的报告。
 
@@ -32,7 +32,7 @@ V7.5 新增:
   - 从 stock_common 导入统一龙虎榜函数 / 统一板块判断 / 涨停判断
 
 Usage:
-    python get_val_report.py                  # 全量 26 策略
+    python get_val_report.py                  # 全量 27 策略
     python get_val_report.py -o ./reports     # 指定输出目录
     python get_val_report.py --no-upload      # 跳过 GD 上传
 """
@@ -55,7 +55,7 @@ _KLINE_PRICE_CACHE: Dict[str, Dict] = {}  # V17.0: bypass 模式 .day 收盘价�
 _VAL_SNAPSHOT_CACHE: Dict[str, Any] = {}
 _VAL_TENCENT_CACHE: Dict[str, Dict[str, Dict[str, Any]]] = {}
 # 取数成本分桶(P2 并发): 网络/逐股K线/盘后datacenter 类限流到 3, 纯内存/ZHB 类放宽到 8。
-_VAL_NET_HEAVY = {1, 3, 7, 8, 15, 16, 17, 19, 22, 25, 26}
+_VAL_NET_HEAVY = {1, 3, 7, 8, 15, 16, 17, 19, 22, 25, 26, 27}
 
 def _fast_day_close(code: str) -> Dict:
     """V17.0(2026-08-15): TDX 本机 .day 尾部快速读(零网络毫秒级).
@@ -1881,6 +1881,72 @@ def strategy_26_limit_ladder(all_stocks):
     return picks[:60]  # 截断: 连板/强封标的本就稀缺, 60 上限保证报告可读
 
 
+def strategy_27_shortline_fund_strength(all_stocks):
+    """V17.2.18: 短线资金强度·开盘抢筹策略——eltdx 7709/7615 实时(本地 TDX)。
+
+    数据: get_eltdx_shortline_bundle() 批量短线指标(shortline_indicators, ShortlineIndicator 41 字段)。
+          无本地 TDX / eltdx 未装 / 上游异常 → 返回 []（降级, 不阻断其余策略）。
+    因子(基于真实字段, 数据来源: 通达信 eltdx):
+      - opening_rush:              开盘抢筹力度(正值=主力抢筹)
+      - auction_prev_volume_ratio: 集合竞价量比(竞价资金关注度)
+      - open_prev_amount_ratio:    开盘成交额/昨成交额(开盘放量确认)
+      - open_turnover_z:           开盘换手 Z 值(活跃度)
+      - open_change_pct:           开盘涨跌幅(资金推动方向)
+    入选: 非连板(ladder_level<2, 归策略26) + 开盘为正(open_change_pct>0) + 有抢筹(opening_rush>0)
+          + 竞价放量(auction_prev_volume_ratio>=1) + 开盘放量(open_prev_amount_ratio>=1)。
+    排序: score 降序(score = 2*cap(opening_rush,10) + cap(auction_prev_volume_ratio,5)
+          + cap(open_prev_amount_ratio,5) + 0.5*cap(open_change_pct,10) + 0.5*cap(open_turnover_z,10))。
+    与策略26(连板封单)正交: 本策略为竞价+开盘资金抢筹维度, 覆盖非连板短线活跃标的。
+    """
+    try:
+        from core.eltdx_adapter import get_eltdx_shortline_bundle
+    except Exception:
+        return []
+    _all_codes = [s.get("code", "") for s in all_stocks if s.get("code")]
+    if not _all_codes:
+        return []
+    _ladder, sl_map = get_eltdx_shortline_bundle(_all_codes)
+    _name_map = {s.get("code"): s.get("name", "") for s in all_stocks if s.get("code")}
+
+    def _plain(ec):
+        return ec[2:] if ec.startswith(("sh", "sz", "bj")) else ec
+
+    def _cap(v, hi):
+        return min(_safe_float(v), hi)
+
+    picks = []
+    for ec, sl in sl_map.items():
+        plain = _plain(ec)
+        ladder_level = _safe_float(sl.get("ladder_level") or 0)
+        if ladder_level >= 2:
+            continue  # 连板归策略26
+        open_chg = _safe_float(sl.get("open_change_pct") or 0)
+        opening_rush = _safe_float(sl.get("opening_rush") or 0)
+        auction_vol = _safe_float(sl.get("auction_prev_volume_ratio") or 0)
+        open_amt = _safe_float(sl.get("open_prev_amount_ratio") or 0)
+        if not (open_chg > 0 and opening_rush > 0 and auction_vol >= 1.0 and open_amt >= 1.0):
+            continue
+        turn_z = _safe_float(sl.get("open_turnover_z") or 0)
+        score = (2.0 * _cap(opening_rush, 10)
+                 + 1.0 * _cap(auction_vol, 5)
+                 + 1.0 * _cap(open_amt, 5)
+                 + 0.5 * _cap(open_chg, 10)
+                 + 0.5 * _cap(turn_z, 10))
+        reason = (
+            f"短线资金抢筹·开盘抢筹{opening_rush:.2f}"
+            + f"·竞价量比{auction_vol:.2f}·开盘放量{open_amt:.2f}"
+            + (f"·开涨{open_chg:.2f}%" if open_chg else "")
+            + (f"·换手Z{turn_z:.2f}" if turn_z else "")
+        )
+        picks.append({
+            "code": plain, "name": _name_map.get(plain, ""), "reason": reason, "score": score,
+            "opening_rush": opening_rush, "auction_prev_volume_ratio": auction_vol,
+            "open_prev_amount_ratio": open_amt, "open_change_pct": open_chg, "open_turnover_z": turn_z,
+        })
+    picks.sort(key=lambda x: x["score"], reverse=True)
+    return picks[:60]
+
+
 def _safe_int(v) -> int:
     try:
         return int(float(v))
@@ -1898,10 +1964,10 @@ def run_discovery(output_path):
 
 
 async def run_discovery_async(output_path):
-    """V7.5 异步版: 使用 asyncio.gather 并行跑 26 策略（约 2-3x 提速）
+    """V7.5 异步版: 使用 asyncio.gather 并行跑 27 策略（约 2-3x 提速）
 
     V14.3.1: 移除入口处 _TDX_KLINE_CACHE.clear()（冗余操作）。
-    理由：进程级缓存本就只活在本进程内，新进程必空；同进程内 26 策略
+    理由：进程级缓存本就只活在本进程内，新进程必空；同进程内 27 策略
     共享同一份 L1 缓存是性能优化（22 次复用 vs 22 次从 L2 重读）。
     """
     _t_now = datetime.now()
@@ -2371,12 +2437,13 @@ async def run_discovery_async(output_path):
         ("策略24【短期反转】", strategy_24_short_reversal, (all_stocks,)),  # P1(Tier1路线①): change_5d 近5日涨跌幅(零网络)
         ("策略25【规模因子】", strategy_25_size_factor, (all_stocks,)),  # P1(Tier1路线①): mcap_yi 总市值(零网络)
         ("策略26【连板梯队·短线封单强度】", strategy_26_limit_ladder, (all_stocks,)),  # V17.2.16: eltdx 7709/7615 实时(连板天梯+封流比)
+        ("策略27【短线资金强度·开盘抢筹】", strategy_27_shortline_fund_strength, (all_stocks,)),  # V17.2.18: eltdx 7709/7615 实时(竞价+开盘资金抢筹)
     ]
 
     try:
-        print("  ▶ 26 策略并行扫描（asyncio 模式，并发 3）…", flush=True)
+        print("  ▶ 27 策略并行扫描（asyncio 模式，并发 3）…", flush=True)
     except UnicodeEncodeError:
-        print("  >> 26 策略并行扫描（asyncio 模式，并发 3）…", flush=True)
+        print("  >> 27 策略并行扫描（asyncio 模式，并发 3）…", flush=True)
     _scan_t0 = time.time()
 
     _names = [item[0] for item in _strategy_defs]
@@ -2519,10 +2586,10 @@ async def run_discovery_async(output_path):
 
 
 class ValReportRunner(BaseReportRunner):
-    """26 策略全市场发现引擎 Runner"""
+    """27 策略全市场发现引擎 Runner"""
 
     def __init__(self):
-        super().__init__("get_val_report", "val", "26 策略全市场发现引擎")
+        super().__init__("get_val_report", "val", "27 策略全市场发现引擎")
 
     def execute_pipeline(self) -> str:
         ts = self.report_ts  # V17.0 R1: 基类统一口径(%Y%m%d_%H%M)

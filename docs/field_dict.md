@@ -117,7 +117,7 @@
 
 ### 零·B 字段×源总表（自动生成，勿手改）
 
-> 生成：`scripts/gen_field_matrix.py`（Phase 2 起从 field_registry.json 单一真相源读取，不再解析 field_dict.md 体积）。共 1227 个字段 / 1343 条字段×源记录（去重配对口径，取代旧版按行出现的 1412 重复计数）。
+> 生成：`scripts/gen_field_matrix.py`（Phase 2 起从 field_registry.json 单一真相源读取，不再解析 field_dict.md 体积）。共 1239 个字段 / 1355 条字段×源记录（去重配对口径，取代旧版按行出现的 1412 重复计数）。
 
 > 源排序按易→难（V17.0.7 层级定案；2026-09-07 thsdk 已退役，不再列为活体源）：ZHB（离线零网络）→ TDX TCP（0x0010/F10/eltdx）→ 腾讯（不封 IP）→ **同花顺-fuyao（官方 REST，盘后可查+独立风控域，V17.0.7 升为财务 TTM 族主源）** → 新浪 → 巨潮 → 东财（限流最严）→ 其他。
 
@@ -229,13 +229,13 @@
 | 市场情绪 | 2 | TDX-0x0010/F10、同花顺-fuyao |
 | 板块轮动 | 2 | TDX-0x0010/F10、同花顺-fuyao |
 
-**B.2 单源字段（1126 个，无 fallback）**
+**B.2 单源字段（1138 个，无 fallback）**
 
 - **ZHB（13）**：A 实时、B 准实时、C 日频、D 静态、PE TTM、前一日、前一日开盘量额、前两日成交额、封单额、年内涨停数、当日、日 Beta、自由流通股本、连板统计
 - **TDX-0x0010/F10（297）**：*ST湘邮、AI解读、AxData、BKFenShiZhiBo、ChangeStatistics、C中芯、DR 茅台、DailyLimitPerformance、DailyLimitPerformance2、FTShare、GetBaseFaceListZDEvnArtNew、GetDayBaseFaceListZDEvnArt、GetDayNewHigh_W28、GetGPCPHBTS_Tag、GetHotPHB、GetInfo、GetKLineDay_W14、GetKLineZhangTing、GetMainMonitor_w30、GetPanKou、GetPlateInfo_w38、GetPlate_Info_QJ、GetStockBid、GetStockList、GetStockList（龙虎榜）、GetStockPanKou、GetStockTrendIncremental、GetWeiTuo_W14、GetYTFP_BKHX、GetYTFP_SCTD、GlobalCommon、GroupCount_w28、Index、InfoBKR、MarketStockZDNum、MoodNumCount、MorningBiddingList、NewGetList、N百花医药、Radar、RealRankingInfo、RiseFallAnalysis、ST百花医药、SharpWithdrawal、SonPlate_Info、Theme、XD、XR、ZhiShuStockList_W8、[..、[verify、akshare、all、api、axdata_verify.md)、axdata_verify.md](verify、balance_sheet` 资产负债表、belong、cash_flow` 现金流量表、changqifuzhai
   - … 其余 237 个见正文
-- **TDX-eltdx（119）**：AuctionPoint.index、AuctionPoint.matched_volume、AuctionPoint.minute_of_day_raw、AuctionPoint.price、AuctionPoint.price_milli、AuctionPoint.record_hex、AuctionPoint.reserved_zero_0e、AuctionPoint.second_raw、AuctionPoint.time_label、AuctionPoint.time_seconds、AuctionPoint.unmatched_direction_raw、AuctionPoint.unmatched_volume、Enum `Market、FinanceInfo`（财务）、FundFlow、HistoricalFundFlow、KlineCategory、MarketStat、SecurityBar`（K 线）、SecurityInfo`（证券列表）、SecurityQuote`（五档）、XdxrRecord`（除权除息）、absolute_index、adjust、adjust_mode、adjust_mode_raw、alignment_status、auction_matched_volume、auction_unmatched_signed_volume、auctions.series（0x056a）、beta_60d、business_composition、buy_levels、c1_value~c4_value、category_name、circulating_shares、current_hand、dividend_financing、down_count、eps_raw、event_kind、fenhong、finance_diagnosis、full_code、get_auction_0925、high_price、highest_ladder_level、history、hot_topics、index、inside_dish、jing_li_run_raw_float、ladder_level、leader_code、leader_ladder_level、lianban_count、limit_or_count_raw、limit_up_count、liu_tong_gu_ben_raw_float、low_price
-  - … 其余 59 个见正文
+- **TDX-eltdx（131）**：AuctionPoint.index、AuctionPoint.matched_volume、AuctionPoint.minute_of_day_raw、AuctionPoint.price、AuctionPoint.price_milli、AuctionPoint.record_hex、AuctionPoint.reserved_zero_0e、AuctionPoint.second_raw、AuctionPoint.time_label、AuctionPoint.time_seconds、AuctionPoint.unmatched_direction_raw、AuctionPoint.unmatched_volume、Enum `Market、FinanceInfo`（财务）、FundFlow、HistoricalFundFlow、KlineCategory、MarketStat、SecurityBar`（K 线）、SecurityInfo`（证券列表）、SecurityQuote`（五档）、XdxrRecord`（除权除息）、absolute_index、adjust、adjust_mode、adjust_mode_raw、alignment_status、auction_matched_volume、auction_unmatched_signed_volume、auctions.series（0x056a）、beta_60d、business_composition、buy_levels、c1_value~c4_value、category_name、circulating_shares、current_hand、dividend_financing、down_count、eltdx_auction_prev_volume_ratio、eltdx_has_shortline、eltdx_ladder_level、eltdx_limit_board_text、eltdx_limit_up_streak_days、eltdx_open_change_pct、eltdx_open_prev_amount_ratio、eltdx_open_turnover_z、eltdx_open_volume_ratio、eltdx_opening_rush、eltdx_seal_amount、eltdx_seal_to_float_ratio、eps_raw、event_kind、fenhong、finance_diagnosis、full_code、get_auction_0925、high_price、highest_ladder_level、history
+  - … 其余 71 个见正文
 - **腾讯（12）**：[0] 市场标识、[29][54][55][77][78] 占位符、[40] 停牌标记、[56] Beta 族、[76] A股流通股本、[85] 价格类字段、[86] 手级带符号量、[87] 科创板、两融标记、分钟 K线、实测、月 K线
 - **同花顺-fuyao（130）**：K线、PB、ROA、`big_order_flow(ths_code)`、a-share、a-share-index、accounts_receivable、adjustment-factors、anomaly-analysis-list、anomaly-analysis-stock、auction、auction.float_market_cap、balance-sheets、calendar、cash-flow、cash-flow-statements、cash_equivalents_net_addition、catalog、constituents、corporate-actions、download-url、dragon-tiger-list、dump、eps_deduct_ttm(f108)、fflow 历史资金流窗口、financials、get 财务 TTM 族、growth、growth.calculate_operating_income_yoy_growth_ratio、growth.calculate_parent_holder_net_profit_yoy_growth_ratio、historical、holder_equity_total、hot-stock-list、hot-stock-list-history、hot-stock-rank-trend、income-statements、income_tax_expense、indicators、interest_expenses、klines(count=N)、limit-break-pool` 🆕、limit-down-pool` 🆕、limit-up-ladder、limit-up-pool、list、manage_fee、market-dumps、meta、net_profit、net_profit_annual、net_profit_period、ocf_ttm、operating_profit、operation、pay_dividends_profits_interest_cash、pb、pcf、prices、profit_total、profitability
   - … 其余 70 个见正文
@@ -5197,6 +5197,29 @@ volRatio=量比, institutionIncrease=机构增仓 仅在 Socket 推送中——H
 | AuctionPoint.unmatched_direction_raw | 未匹配方向原始值 | - |
 | AuctionPoint.reserved_zero_0e | 保留零 | - |
 | AuctionPoint.record_hex | 整条竞价点原始hex(二次解码用) | ⭐原始字节 |
+
+#### 12.13.11 eltdx 统一层契约字段（cdata.eltdx_*，V17.2.22 接入 canonical）
+
+> **来源**：eltdx 7709/7615 实时（ShortlineIndicator 41 字段）→ 经 V17.2.22 统一层接入 `get_canonical_stock_data` 的 `CanonicalStockData.eltdx_*` 聚合字段。
+> **性质**：本报告（§12.13.10）源字段的**标准化投影**，非 eltdx 新增字段；统一层加 300s TTL bundle 缓存，所有报告经单一入口 `cdata.eltdx_*` 取数（不再各自调 `get_eltdx_shortline_bundle`）。
+> **状态**：已随 V17.2.22 落地，`sc_schema.py` 注册 11 字段 + 1 命中标记；V17.2.23 起策略26/27 经 `cdata.eltdx_*` 消费。
+
+| 统一层字段 (cdata.eltdx_*) | 类型 | 中文语义 | ← 源字段 (eltdx token) | 来源 |
+|:---|:---|:---|:---|:---|
+| eltdx_ladder_level | int | 连板高度(档位, 如 3=三板) | ladder_level | eltdx 7709/7615 |
+| eltdx_limit_up_streak_days | int | 连续涨停天数 | limit_up_streak_days | eltdx 7709/7615 |
+| eltdx_limit_board_text | str | 连板梯队文本(如"3天3板") | limit_board_text | eltdx 7709/7615 |
+| eltdx_seal_to_float_ratio | float | 封单额/流通市值(%)——封板坚决度 | seal_to_float_ratio | eltdx 7709/7615 |
+| eltdx_open_volume_ratio | float | 开盘成交量比 | open_volume_ratio | eltdx 7709/7615 |
+| eltdx_seal_amount | float | 封单额(元) | seal_amount | eltdx 7709/7615 |
+| eltdx_opening_rush | float | 开盘抢筹力度(正值=主力抢筹) | opening_rush | eltdx 7709/7615 |
+| eltdx_auction_prev_volume_ratio | float | 集合竞价量比 | auction_prev_volume_ratio | eltdx 7709/7615 |
+| eltdx_open_prev_amount_ratio | float | 开盘成交额/昨成交额比 | open_prev_amount_ratio | eltdx 7709/7615 |
+| eltdx_open_change_pct | float | 开盘涨跌幅(%) | open_change_pct | eltdx 7709/7615 |
+| eltdx_open_turnover_z | float | 开盘换手 Z 值(活跃度) | open_turnover_z | eltdx 7709/7615 |
+| eltdx_has_shortline | bool | bundle 缓存命中标记(非 eltdx 原始字段, 内部派生) | — | 统一层派生 |
+
+> **消费方**：策略26（连板梯队·短线封单强度）、策略27（短线资金强度·开盘抢筹）经 `cdata.eltdx_*` 读取（V17.2.23 起）；其余报告可经 `get_canonical_stock_data(code).eltdx_*` 统一取数。
 
 
 

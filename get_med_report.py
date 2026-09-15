@@ -388,7 +388,9 @@ async def generate_report_async(session, code, output_path, ind_comp=None, hsgt=
     # V17.0.17(2026-09-01) 据主字典定案修正: 三口径清晰化——
     # PE（TTM）=f164 / 动态PE=pe_dynamic(f162) / 静态PE（LYR）=pe_lyr(f163)。
     # 原"动态市盈率 PE（TTM）"标签把 TTM 误标"动态"，已拆分；新增静态PE露出。
-    L(f"  PE（TTM）: {_pe_ttm_str}x | 动态PE: {_pe_s} | 静态PE（LYR）: {_pe_lyr_str} | 市净率 PB: {cdata.pb:.2f}")
+    # V17.2.20 修复(C): _pe_ttm_str 在 L385 已带 "x" 后缀, 此处误再拼 "x" 导致 "64.31xx" 双后缀。
+    # 与 _pe_s/_pe_lyr_str (L384/386 已带 x, L391 不另拼) 保持一致——去掉此处多余 "x"。
+    L(f"  PE（TTM）: {_pe_ttm_str} | 动态PE: {_pe_s} | 静态PE（LYR）: {_pe_lyr_str} | 市净率 PB: {cdata.pb:.2f}")
     if _div_str:
         L(_div_str)
 

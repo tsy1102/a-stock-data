@@ -394,8 +394,16 @@ async def generate_report_async(session, code, output_path, ind_comp=None):
         elif ext_deviation <= -20:
             L(f"  📉 显著回调：距历史最高点已下跌 {abs(ext_deviation):.0f}%，处于阶段性低位区域。")
     
-    # V16.2.3 修正: info.total_shares 单位=股（easy_tdx zong_guben 实为股，非注释的万股）→ /1e8 转亿股
-    L(f"  总股本:   {info.get('total_shares', 0)/1e8:.2f}亿股 | 总市值: {q.get('mcap_yi', 0):.2f}亿元")
+    # V16.2.3 修正: info.total_shares 单位=股 → /1e8 转亿股。
+    # V17.2.20 修复(B): get_stock_info 对部分标的(实测 002015/301511 等)不返回 total_shares(取默认0),
+    # 致"总股本: 0.00亿股"与有值总市值矛盾、且污染策略25规模因子。
+    # 回退 canonical 权威层 _cdata.total_shares_wan(万股)/1e4=亿股(A1公理: canonical 为唯一真相源, L440 已验证可靠)。
+    _total_shares_yi = _safe_float(info.get('total_shares', 0)) / 1e8
+    if _total_shares_yi <= 0 and _cdata is not None:
+        _tsw = _safe_float(getattr(_cdata, 'total_shares_wan', 0))
+        if _tsw > 0:
+            _total_shares_yi = _tsw / 1e4  # 万股→亿股
+    L(f"  总股本:   {_total_shares_yi:.2f}亿股 | 总市值: {q.get('mcap_yi', 0):.2f}亿元")
     L(f"  当前股价: {price_today:.2f}元")
     
     L("\n  ➤ 长线估值安全边际指标:")

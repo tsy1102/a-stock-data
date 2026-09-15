@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-get_val_report.py — 25 策略全市场发现引擎
+get_val_report.py — 26 策略全市场发现引擎
 方法论驱动的 A 股选股脚本，从全市场发现可操作标的。
 每策略精选 TOP 5，生成含具体数值推理的报告。
 
@@ -32,7 +32,7 @@ V7.5 新增:
   - 从 stock_common 导入统一龙虎榜函数 / 统一板块判断 / 涨停判断
 
 Usage:
-    python get_val_report.py                  # 全量 25 策略
+    python get_val_report.py                  # 全量 26 策略
     python get_val_report.py -o ./reports     # 指定输出目录
     python get_val_report.py --no-upload      # 跳过 GD 上传
 """
@@ -55,7 +55,7 @@ _KLINE_PRICE_CACHE: Dict[str, Dict] = {}  # V17.0: bypass 模式 .day 收盘价�
 _VAL_SNAPSHOT_CACHE: Dict[str, Any] = {}
 _VAL_TENCENT_CACHE: Dict[str, Dict[str, Dict[str, Any]]] = {}
 # 取数成本分桶(P2 并发): 网络/逐股K线/盘后datacenter 类限流到 3, 纯内存/ZHB 类放宽到 8。
-_VAL_NET_HEAVY = {1, 3, 7, 8, 15, 16, 17, 19, 22, 25}
+_VAL_NET_HEAVY = {1, 3, 7, 8, 15, 16, 17, 19, 22, 25, 26}
 
 def _fast_day_close(code: str) -> Dict:
     """V17.0(2026-08-15): TDX 本机 .day 尾部快速读(零网络毫秒级).
@@ -1794,6 +1794,93 @@ def strategy_25_size_factor(stocks, top_n=300):
     return _top10_sorted(result, lambda x: x["score"])
 
 
+def strategy_26_limit_ladder(all_stocks):
+    """V17.2.16: 连板梯队·短线封单强度策略——eltdx 7709/7615 实时(本地 TDX)。
+
+    数据: get_eltdx_shortline_bundle() 一次性取 连板天梯(limit_ladder) + 批量短线指标
+          (shortline_indicators)。无本地 TDX / eltdx 未装 / 上游异常 → 返回 []（降级, 不阻断其余策略）。
+    因子: 连板梯队(ladder_level) + 封单占流通比(seal_to_float_ratio) + 开盘量比(open_volume_ratio)。
+    入选:
+      A. 连板梯队: limit_ladder 中 ladder_level>=2(二板及以上) —— 连板高度即强度信号;
+      B. 短线强封: 首板(streak<2)且封流比 seal_to_float_ratio>=0.5%(封板坚决) —— 短线资金强度。
+    排序: score 降序(score = 连板梯队×100 + 封流比; 非连板以封流比为主)。
+    与策略24(短期反转)/策略22(月内动量)正交: 本策略为连板结构 + 封单强度维度(eltdx 实时)。
+    """
+    try:
+        from core.eltdx_adapter import get_eltdx_shortline_bundle
+    except Exception:
+        return []
+    # 仅对涨停/连板标的取短线指标(降负载; 非涨停 seal_to_float_ratio=0 无意义); 无则回退全市场
+    _lu = [
+        s for s in all_stocks
+        if s.get("code") and is_limit_up(s.get("code", ""), s.get("name", ""), _safe_float(s.get("change_pct", 0)))
+    ]
+    _all_codes = [s.get("code", "") for s in all_stocks if s.get("code")]
+    _fetch = [s.get("code", "") for s in _lu] or _all_codes
+    if not _fetch:
+        return []
+    ladder, sl_map = get_eltdx_shortline_bundle(_fetch)
+    _name_map = {s.get("code"): s.get("name", "") for s in all_stocks if s.get("code")}
+
+    def _plain(ec):
+        return ec[2:] if ec.startswith(("sh", "sz", "bj")) else ec
+
+    picks = []
+    seen = set()
+
+    # A. 连板天梯(二板及以上)
+    for rec in (ladder or []):
+        code = str(rec.get("code") or rec.get("full_code") or "")
+        plain = _plain(code)
+        ladder_level = _safe_float(rec.get("ladder_level") or 0)
+        if ladder_level < 2:
+            continue
+        sl = sl_map.get(code) or {}
+        streak = _safe_float(rec.get("limit_up_streak_days") or sl.get("limit_up_streak_days") or 0)
+        seal_ratio = _safe_float(sl.get("seal_to_float_ratio") or rec.get("seal_to_float_ratio") or 0)
+        open_vol = _safe_float(sl.get("open_volume_ratio") or rec.get("open_volume_ratio") or 0)
+        board_text = rec.get("limit_board_text") or sl.get("limit_board_text") or f"{int(ladder_level)}连板"
+        reason = (
+            f"连板梯队{ladder_level}板({board_text})"
+            + (f"·封流比{seal_ratio:.2f}%" if seal_ratio else "")
+            + (f"·开量比{open_vol:.2f}" if open_vol else "")
+        )
+        score = ladder_level * 100.0 + seal_ratio
+        picks.append({
+            "code": plain, "name": _name_map.get(plain, ""), "reason": reason, "score": score,
+            "ladder_level": ladder_level, "limit_up_streak_days": streak,
+            "seal_to_float_ratio": seal_ratio, "open_volume_ratio": open_vol,
+            "limit_board_text": board_text,
+        })
+        seen.add(plain)
+
+    # B. 短线强封(首板/非连板, 封流比显著)
+    for ec, sl in sl_map.items():
+        plain = _plain(ec)
+        if plain in seen:
+            continue
+        streak = _safe_float(sl.get("limit_up_streak_days") or 0)
+        seal_ratio = _safe_float(sl.get("seal_to_float_ratio") or 0)
+        if streak < 2 and seal_ratio >= 0.5:
+            open_vol = _safe_float(sl.get("open_volume_ratio") or 0)
+            reason = (
+                f"短线强封·封流比{seal_ratio:.2f}%(封板坚决)"
+                + (f"·开量比{open_vol:.2f}" if open_vol else "")
+            )
+            score = seal_ratio  # 非连板: 以封流比为主排序
+            picks.append({
+                "code": plain, "name": _name_map.get(plain, ""), "reason": reason, "score": score,
+                "ladder_level": _safe_float(sl.get("ladder_level") or 0),
+                "limit_up_streak_days": streak,
+                "seal_to_float_ratio": seal_ratio, "open_volume_ratio": open_vol,
+                "limit_board_text": sl.get("limit_board_text") or "",
+            })
+            seen.add(plain)
+
+    picks.sort(key=lambda x: x["score"], reverse=True)
+    return picks[:60]  # 截断: 连板/强封标的本就稀缺, 60 上限保证报告可读
+
+
 def _safe_int(v) -> int:
     try:
         return int(float(v))
@@ -1811,10 +1898,10 @@ def run_discovery(output_path):
 
 
 async def run_discovery_async(output_path):
-    """V7.5 异步版: 使用 asyncio.gather 并行跑 20 策略（约 2-3x 提速）
+    """V7.5 异步版: 使用 asyncio.gather 并行跑 26 策略（约 2-3x 提速）
 
     V14.3.1: 移除入口处 _TDX_KLINE_CACHE.clear()（冗余操作）。
-    理由：进程级缓存本就只活在本进程内，新进程必空；同进程内 25 策略
+    理由：进程级缓存本就只活在本进程内，新进程必空；同进程内 26 策略
     共享同一份 L1 缓存是性能优化（22 次复用 vs 22 次从 L2 重读）。
     """
     _t_now = datetime.now()
@@ -1825,7 +1912,7 @@ async def run_discovery_async(output_path):
     L("---")
     L(f"  **A 股策略发现报告**  [{today_str} {_t_now.strftime('%H.%M.%S')}]")
     L("---")
-    L("  市场: A 股 | 策略: 23 | 引擎: asyncio | 并发: 3")
+    L("  市场: A 股 | 策略: 26 | 引擎: asyncio | 并发: 3")
     L("-" * 85)
     L("  预热: 加载市场数据 & 策略配置…")
     _load_t0 = time.time()  # V17.0.10c(2026-08-28): 加载阶段耗时基；用于把总时长在"加载 vs 扫描"间拆分归因
@@ -2283,12 +2370,13 @@ async def run_discovery_async(output_path):
         ("策略23【PS低估值】", strategy_23_ps_undervalued, (all_stocks,)),  # V17.0.5 P2: fuyao PS·PCF(市值top500)
         ("策略24【短期反转】", strategy_24_short_reversal, (all_stocks,)),  # P1(Tier1路线①): change_5d 近5日涨跌幅(零网络)
         ("策略25【规模因子】", strategy_25_size_factor, (all_stocks,)),  # P1(Tier1路线①): mcap_yi 总市值(零网络)
+        ("策略26【连板梯队·短线封单强度】", strategy_26_limit_ladder, (all_stocks,)),  # V17.2.16: eltdx 7709/7615 实时(连板天梯+封流比)
     ]
 
     try:
-        print("  ▶ 25 策略并行扫描（asyncio 模式，并发 3）…", flush=True)
+        print("  ▶ 26 策略并行扫描（asyncio 模式，并发 3）…", flush=True)
     except UnicodeEncodeError:
-        print("  >> 25 策略并行扫描（asyncio 模式，并发 3）…", flush=True)
+        print("  >> 26 策略并行扫描（asyncio 模式，并发 3）…", flush=True)
     _scan_t0 = time.time()
 
     _names = [item[0] for item in _strategy_defs]
@@ -2431,10 +2519,10 @@ async def run_discovery_async(output_path):
 
 
 class ValReportRunner(BaseReportRunner):
-    """25 策略全市场发现引擎 Runner"""
+    """26 策略全市场发现引擎 Runner"""
 
     def __init__(self):
-        super().__init__("get_val_report", "val", "25 策略全市场发现引擎")
+        super().__init__("get_val_report", "val", "26 策略全市场发现引擎")
 
     def execute_pipeline(self) -> str:
         ts = self.report_ts  # V17.0 R1: 基类统一口径(%Y%m%d_%H%M)

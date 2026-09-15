@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": 1,
-    "updated": "2026-09-14",
+    "updated": "2026-09-15",
     "source_of_truth": "field_registry.json",
     "generated_by": "scripts/extract_registry.py",
     "note": "本文件为字段登记表单一真相源（影子抽取）。docs/field_dict.md 字段表由本文件生成，勿手改。",
@@ -107,6 +107,16 @@
         "12.8.12j TDX 云 tdx_quotes CwInfo 财务快照字段（TDX tdx_quotes）",
         "12.8.19 通达信问小达（wenda）四件套源字段结构（V17.2.7 新增, 2026-09-09）",
         "零·A TDX F10 财务分析字段结构（V16.3 O 实测 000100，2026-08-06）"
+      ],
+      "status": "active"
+    },
+    {
+      "name": "eltdx(7709/7615)",
+      "verify_file": "eltdx_verify.md",
+      "section_patterns": [
+        "12.13.x eltdx 全字段破解（V17.2.15 接入 collect_eltdx，主字典第24源）",
+        "12.13.x eltdx 原始字节二次解码（tail_raw/record_hex/finance_info_raw → 引出未命名 f 字段）",
+        "12.8.12j eltdx 0x0010 财务批量与 TDX 同源（Rust 客户端 finance_batch）"
       ],
       "status": "active"
     },

@@ -19,7 +19,14 @@ numpy>=1.20,<2.0
 PyYAML>=5.4
 
 # ── 行情数据源（核心依赖，必须安装）───────────────────────────
-# easy-tdx: 首选适配层（V15.5+，活跃维护）——K线/行情/财务/xdxr/板块/ZHB 下载
+# eltdx: V17.2.15 起成为 TDX TCP **主源**（Rust 内核 7709/7615 客户端，零依赖，Research-Only 许可）。
+#   - Rust 握手已含 2026-09 新式单条随机 msg_id → 无需 _tdx_handshake_patch（tdx_client.py 已移除补丁 import）。
+#   - 覆盖 quotes/K线/财务(0x0010)/xdxr/limit_ladder 等；原始字节(tail_raw/record_hex/finance_info_raw)
+#     二次解码可引出更多 f 字段（见 docs/eltdx_smoke_report_20260915.md）。
+#   - 北交所(83/87/88/43/46/92)快照偶发解析失败 → 上层 HTTP(ZHB/腾讯/东财) fallback。
+eltdx>=3.2.2,<4.0
+# easy-tdx: 保留用于 **ZHB 报告 ZIP 下载**（eltdx 无文件下载能力，zhb_client.py 仍走 easy_tdx + _tdx_handshake_patch）。
+#   TDX TCP 行情/财务主路径已由 eltdx 接管；easy_tdx 行情路径仅作兜底（2026-09 主站握手需补丁，通常不可用）。
 # 2026-08-10 实测：1.14.5 及以下 K线解码失败（TdxDecodeError）——必须 >=1.20.4
 # 2026-09-07: 升级到 1.32.6 ——新增 get_price_limits/get_market_stat/get_security_list_all；
 #   SecurityQuote 直解 s_vol(内盘)/b_vol(外盘)/rise_speed(涨速)。见 V17.2.0 改动。

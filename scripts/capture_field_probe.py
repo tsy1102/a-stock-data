@@ -362,6 +362,129 @@ def collect_tdx(pool: list) -> dict:
     return out
 
 
+def collect_eltdx(pool: list) -> dict:
+    """eltdx 全字段采集（V17.2.15, 主字典第 24 源）。
+
+    eltdx = Rust 内核通达信 7709/7615 客户端（PyPI 在线、零依赖、Research-Only 许可）。
+    覆盖: 行情快照(含 tail_raw 原始帧尾字节) / 日K(含 record_hex 原始记录) / 市场统计
+    (sh880005) / 0x0010 财务(含 finance_info_raw 原始块) / F10 新闻 / 短线指标
+    (ShortlineIndicator 41 字段) / 全局 Helpers(连板天梯/题材强度排行/成交对比/买卖力道
+    /实时排名)。
+    返回「命名字段 + 原始字节」双轨, 供 collide.py 值级对撞 + 原始字节二次解码(见 D 步)。
+    源 = 本地 eltdx TCP(非云连接器); 标注 scheme="eltdx" 独立血缘, 不动东财主路径。
+    """
+    from dataclasses import asdict, is_dataclass
+    from datetime import datetime as _dt
+
+    def _jfy(o):
+        """dataclass / datetime / bytes -> JSON 安全(字节统一转 hex)。"""
+        if isinstance(o, bytes):
+            return o.hex()
+        if isinstance(o, (list, tuple)):
+            return [_jfy(x) for x in o]
+        if isinstance(o, dict):
+            return {str(k): _jfy(v) for k, v in o.items()}
+        if isinstance(o, _dt):
+            return o.isoformat()
+        if is_dataclass(o) and not isinstance(o, type):
+            return _jfy(asdict(o))
+        if isinstance(o, (str, int, float, bool)) or o is None:
+            return o
+        return str(o)
+
+    def _ecode(code: str) -> str:
+        c = str(code)
+        if c.startswith(("sh", "sz", "bj")):
+            return c
+        if c.startswith(("6", "5", "9", "11", "13")):
+            return "sh" + c
+        if c.startswith(("8", "4", "92")):
+            return "bj" + c
+        return "sz" + c  # 0/3/2/1 开头
+
+    try:
+        from eltdx import TdxClient, F10Client
+    except Exception as _e:
+        return {"stocks": {}, "__error__": f"eltdx import failed: {str(_e)[:200]}"}
+
+    client = None
+    out = {"stocks": {}, "global_helpers": {}}
+    try:
+        # 默认探测主站(含 2026-09 新式握手); 单客户端复用(连接池)避免逐股重连。
+        client = TdxClient(timeout=8)
+        _gh = out["global_helpers"]
+        # ── 全局 Helpers(非逐股) ──
+        for _name, _fn in [
+            ("limit_ladder", lambda: client.helpers.limit_ladder()),
+            ("theme_strength_rank", lambda: client.helpers.theme_strength_rank()),
+            ("stock_theme_strength_rank", lambda: client.helpers.stock_theme_strength_rank()),
+            ("realtime_rank", lambda: client.helpers.realtime_rank()),
+            ("volume_comparison", lambda: client.helpers.volume_comparison()),
+            ("buy_sell_strength", lambda: client.helpers.buy_sell_strength()),
+            ("market_stat_880005", lambda: client.bars.get("sh880005", period="day", count=1)),
+        ]:
+            try:
+                _gh[_name] = _jfy(_fn())
+            except Exception as _e:
+                _gh[_name] = {"__error__": str(_e)[:200]}
+        # ── 逐股 ──
+        codes = [p["code"] for p in pool]
+        ecodes = [_ecode(c) for c in codes]
+        # 短线指标(批量, 41 字段/股) -> 命中映射
+        _sl_map = {}
+        try:
+            _sl = client.helpers.shortline_indicators(ecodes)
+            for _rec in (_sl or []):
+                _recd = _jfy(_rec)
+                _cc = _recd.get("code") or _recd.get("full_code")
+                if _cc:
+                    _sl_map[_cc] = _recd
+        except Exception as _e:
+            out["shortline_error"] = str(_e)[:200]
+        for p in pool:
+            c = p["code"]
+            ec = _ecode(c)
+            rec = {}
+            # 行情快照(含 tail_raw 原始帧尾)
+            try:
+                _snap = client.quotes.get_snapshots([ec])
+                _snaps = getattr(_snap, "snapshots", _snap) if not isinstance(_snap, list) else _snap
+                rec["quote_snapshot"] = _jfy(_snaps[0]) if _snaps else None
+            except Exception as _e:
+                rec["quote_snapshot"] = {"__error__": str(_e)[:200]}
+            # 日K(最新若干根 + record_hex 原始记录)
+            try:
+                _ks = client.bars.get(ec, period="day", count=5, include_raw=True)
+                _bars = getattr(_ks, "bars", None) or []
+                rec["kline_day"] = [_jfy(b) for b in _bars]
+            except Exception as _e:
+                rec["kline_day"] = {"__error__": str(_e)[:200]}
+            # 0x0010 财务(含 finance_info_raw 原始块)
+            try:
+                _fb = client.corporate.finance_batch(ec, include_raw=True)
+                _recs = getattr(_fb, "records", None) or []
+                rec["finance_batch"] = [_jfy(r) for r in _recs]
+            except Exception as _e:
+                rec["finance_batch"] = {"__error__": str(_e)[:200]}
+            # 短线指标(命中)
+            if ec in _sl_map:
+                rec["shortline"] = _sl_map[ec]
+            # F10 新闻(仅作 eltdx 能力登记; 不替代东财主路径)
+            try:
+                _f10 = F10Client(timeout=3)
+                rec["f10_news"] = _jfy(_f10.news(ec))
+            except Exception as _e:
+                rec["f10_news"] = {"__error__": str(_e)[:200]}
+            out["stocks"][c] = rec
+    finally:
+        try:
+            if client is not None:
+                client.close()
+        except Exception:
+            pass
+    return out
+
+
 def collect_tencent(pool: list) -> dict:
     """腾讯 qt.gtimg 单股全字段(保存原始 split 数组 + 索引名说明)。"""
     from stock_common import _quick_request
@@ -1352,6 +1475,7 @@ def main() -> None:
     collectors = {
         "zhb": collect_zhb,
         "tdx": collect_tdx,
+        "eltdx": collect_eltdx,        # V17.2.15 第24源: eltdx 全字段采集(命名+原始字节双轨)
         "tencent": collect_tencent,
         "push2": collect_push2,
         "push2_full": collect_push2_full,   # V16.4.1: f1-f250 显式全字段

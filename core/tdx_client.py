@@ -28,9 +28,10 @@
 
 from __future__ import annotations
 
-# V17.2.12: TDX 新式握手固化补丁（2026-09 主站强制要求）。须在 easy_tdx 被使用/
-# 绑定前 import，确保动态握手生效。详见 core/_tdx_handshake_patch.py。
-import core._tdx_handshake_patch  # noqa: E402
+# V17.2.15: TDX TCP 主源切换为 eltdx（Rust 内核 7709/7615 客户端）。
+# eltdx 握手已含 2026-09 新式单条随机 msg_id → 原 _tdx_handshake_patch 不再需要。
+# 注意: zhb_client.py 的 ZHB 报告 ZIP 下载仍走 easy_tdx 文件传输（eltdx 无此能力），
+# 故握手补丁保留于 zhb_client 侧，本模块不再 import。
 
 import time
 import os
@@ -609,8 +610,10 @@ def _create_easy_tdx_adapter():
 
 
 def _get_verified_adapter():
-    """V17.2.x(2026-09-11): 缓存已验证(全量数据+连接成功)的 easy_tdx 适配器单例。
+    """V17.2.x(2026-09-11): 缓存已验证(全量数据+连接成功)的 TDX 适配器单例。
 
+    V17.2.15: 优先级 eltdx（Rust 握手含 2026-09 修复）→ easy_tdx（2026-09 主站握手需
+    _tdx_handshake_patch，本模块已移除补丁 import → 通常不可用，仅作兜底）。
     实测原 _check_tdx 建完适配器并 bars 探测后即 _adapter.close() 丢弃，_get_tdx_client 又
     重建一次 → 首调付双倍 ~32s+31s≈63s 建连成本。此处集中构建并缓存到 _TDX_VERIFIED_CLIENT，
     _check_tdx / _get_tdx_client 共用同一实例，后续调用零重建成本。须在 _TDX_CALL_LOCK 内调用。
@@ -618,6 +621,20 @@ def _get_verified_adapter():
     global _TDX_VERIFIED_CLIENT, _TDX_AVAILABLE
     if _TDX_VERIFIED_CLIENT is not None:
         return _TDX_VERIFIED_CLIENT
+    # V17.2.15: eltdx 优先
+    try:
+        from core.eltdx_adapter import create_eltdx_adapter
+
+        _a = create_eltdx_adapter()
+        if _a is not None:
+            _TDX_VERIFIED_CLIENT = _a
+            _TDX_AVAILABLE = True
+            _debug_log("TDX adapter: eltdx connected (primary)")
+            return _a
+        _debug_log("TDX adapter: eltdx 不可用，回退 easy_tdx")
+    except Exception as _e:
+        _debug_log(f"eltdx primary adapter error: {_e}")
+    # 兜底 easy_tdx（2026-09 主站无补丁 → 通常返回 None）
     _adapter = _create_easy_tdx_adapter()
     if _adapter is not None:
         _TDX_VERIFIED_CLIENT = _adapter

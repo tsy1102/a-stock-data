@@ -5,6 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 
+## [V17.2.15] 2026-09-15 — TDX 主源切换 eltdx（Rust 客户端接管行情/财务）
+
+- **背景**：V17.2.12 的 easy_tdx 握手补丁是 dead-upstream 的临时续命（上游 `awayings/easy_tdx` 已 404，PyPI 不可装）。`eltdx`（Rust 内核 7709/7615 客户端，零依赖，Research-Only 许可）握手已含 2026-09 新式单条随机 msg_id，且协议层更完整（含 limit_ladder/题材强度/短线指标/集合竞价/逐笔等 net-new 能力）。
+- **新增 `core/eltdx_adapter.py`**：`_EltdxAdapter` 把 eltdx 包装成 mootdx 兼容接口（DataFrame 列名/单位对齐），供 `tdx_client.py` 零改动消费。覆盖 quotes / bars(index_bars) / finance(0x0010) / xdxr(stub) / F10C·F10(返回空→走东财) / price_limits·market_stat(尽力而为)。
+- **单位换算关键修复**：eltdx `FinanceRecord.*_raw_float` 聚合字段为**千元**口径（非万元），映射 mootdx 角口径须 ×10000（data_provider 对 zongzichan/jingzichan/jinglirun 按角 `/10` 得元）。实测反推：平安银行 `zong_zi_chan_raw_float=6.029e9` 千元 → 元=6.03万亿（与实际吻合）；首版误用 ×100000(万元→角) 会算出 60万亿，已订正。
+- **主站固定**：`TdxClient(hosts=[...:7709], probe_hosts=True)` pin 6 台 FULL 白名单（V16.2.11/16.3.9 复测），冷连接 6 分钟全量探测 → 4 秒，消除延迟痛点。
+- **握手补丁处理**：`tdx_client.py` 移除 `core._tdx_handshake_patch` import（eltdx 不需要）；**保留** `zhb_client.py` 的补丁 import——ZHB 报告 ZIP 下载走 easy_tdx 文件传输（eltdx 无此能力），仍需补丁修复 2026-09 握手。补丁文件 `core/_tdx_handshake_patch.py` **未删除**（zhb_client 仍依赖）。
+- **依赖**：`requirements.txt` 新增 `eltdx>=3.2.2,<4.0`（TDX TCP 主源），easy_tdx 注释收窄为"仅 ZHB 下载保留"。
+- **实测**：`tdx_get_finance_info('sz000001')`→ 元 6.03万亿 / BVPS 24.13；`tdx_get_security_bars`→ 3 行真实日K；quotes 快照 price/last_close/amount/s_vol/b_vol/五档齐全。北交所(83/87/92)快照 eltdx 偶发解析失败（"snapshot record marker not found"），已优雅降级到上层 HTTP fallback。
+- **配套（Step B/A）**：`scripts/capture_field_probe.py` 新增 `collect_eltdx` 采集源（命名+原始字节双轨），`field_registry.json` 登记第 24 源（簇尾 level-4 粘滞继承，不动东财主路径）；见 `docs/eltdx_smoke_report_20260915.md`。
+
 ## [V17.2.12] 2026-09-15 — TDX 新式握手修复（A 路线：最小侵入 + 固化）
 
 - **问题**：2026-09 起通达信行情主站强制拒绝旧版三条固定握手（0x1893/0x1894/0x1899），握手有响应但连接上所有 K 线请求静默返回 2 字节空包（0x0320）、市场统计/板块指数快照返回空、`/market/stat` 500——服务器不报错只是不给数据。项目依赖的 `easy-tdx 1.32.6`（上游 `awayings/easy_tdx` 已撤、PyPI 不可装）静态握手全面失效（P0 实证：4 台可达主机 K线全 0 行、market_stat 全报错）。

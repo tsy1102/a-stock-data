@@ -430,6 +430,7 @@ def run(args):
 
     # 5) 两两对撞
     raw_pairs = []          # (left, right, result)
+    guardrail_hits = []     # 命中 REFUTED_CONCLUSIONS 被拦截的伪结论候选
     for li in left_ids:
         L = store[li]
         for ri in right_ids:
@@ -442,6 +443,13 @@ def run(args):
                 continue
             res = collide_pair(L, R)
             if res:
+                ref = CR.match_refuted(li, ri) if RULES_OK else None
+                if ref is not None:
+                    guardrail_hits.append({
+                        "left": li, "right": ri,
+                        "id": ref["id"], "false_claim": ref["false_claim"],
+                    })
+                    continue
                 res["left"] = li
                 res["right"] = ri
                 res["same_code"] = (code_of(li) == code_of(ri))
@@ -501,7 +509,8 @@ def run(args):
     l4.sort(key=lambda p: -p["overall_hit"])
 
     report_md = build_report_md(today, window_dates, len(store), total,
-                                left_ids, l1, l4, new_count, verified)
+                                left_ids, l1, l4, new_count, verified,
+                                guardrail_hits)
     out_dir = os.path.join(DATA_DIR, today)
     os.makedirs(out_dir, exist_ok=True)
     md_path = os.path.join(out_dir, f"{today}_collision_report.md")
@@ -512,8 +521,8 @@ def run(args):
         json.dump({"date": today, "window": window_dates, "L1": l1, "L4": l4,
                    "new_count": new_count}, f, ensure_ascii=False, indent=2)
 
-    print(f"[collide] L1 候选={len(l1)}，L4 候选={len(l4)}，新增定案={new_count}",
-          file=sys.stderr)
+    print(f"[collide] L1 候选={len(l1)}，L4 候选={len(l4)}，新增定案={new_count}，"
+          f"护栏拦截={len(guardrail_hits)}", file=sys.stderr)
     print(f"[collide] 报告: {md_path}", file=sys.stderr)
     return md_path, json_path
 
@@ -526,7 +535,7 @@ def _l1_row(p):
 
 
 def build_report_md(today, window, nfields, nsamples, left_ids, l1, l4,
-                    new_count, verified):
+                    new_count, verified, guardrail_hits):
     # 拆分：异号同义（跨编号，高价值）优先；同号镜像（同编号）次之
     cross = [p for p in l1 if not p.get("same_code")]
     same = [p for p in l1 if p.get("same_code")]
@@ -570,6 +579,15 @@ def build_report_md(today, window, nfields, nsamples, left_ids, l1, l4,
             L.append(f"\n_（仅显示前 60 / 共 {len(l4)}）_")
     else:
         L.append("_本轮无 L4 候选。_\n")
+    L.append("\n## 四、已证伪护栏命中（被拦截的伪结论候选）（{0}）\n".format(len(guardrail_hits)))
+    if guardrail_hits:
+        L.append("| 左字段 | 右字段 | 命中护栏ID | 伪主张 |")
+        L.append("|:--|:--|:--|:--|")
+        for h in guardrail_hits:
+            L.append(f"| `{h['left']}` | `{h['right']}` | {h['id']} | {h['false_claim']} |")
+        L.append("\n_以上候选因命中 REFUTED_CONCLUSIONS（数值实证推翻）已被自动判伪，未进入 L1。_")
+    else:
+        L.append("_本轮无护栏命中（未产出与已证伪结论冲突的候选）。_\n")
     L.append("\n---\n")
     L.append("> 数据来源：通达信 / 项目字段对撞体系。以上为方法论梳理，不构成投资建议。\n")
     return "\n".join(L)

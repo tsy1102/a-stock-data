@@ -1,6 +1,6 @@
 # 对撞四铁律与定案状态机（运行时规则真相源）
 
-> 本文件由 `scripts/collision_rules.py` 自动派生（`python scripts/collision_rules.py --emit`），生成日 2026-09-13。
+> 本文件由 `scripts/collision_rules.py` 自动派生（`python scripts/collision_rules.py --emit`），生成日 2026-09-16。
 
 > 对撞脚本运行时自动 `print_active_rules()` 查询本规则；以代码常量（`collision_rules.py`）为唯一权威，本文档为其人读镜像。
 
@@ -38,6 +38,24 @@
 - **全历史复核 / 再确认（re-validation）**：全量扫描会顺带扫到已定案字段，结果标注「再确认 / 强化现有结论，未改动语义」，作为回归保护。
 - **锁定点 = 升到 L1**：该字段转为对齐锚 / 真值参考，用于破解其他未知字段时的核对与跨源一致性校验。
 - **双向可修正**：L1 遇矛盾新证据可降级或重议（如 tx[85] 均价候选因锚仅 3/20 回退 L3；tdxstat[31] 对撞东财仅 77% 匹配降级）。
+
+
+## 五、已证伪结论护栏（回归反例，2026-09-16 立规）
+
+> 经数值实证推翻的伪结论，固化为对撞反例；`collide.py` 命中即跳过该候选并记入报告，防止污染 field_dict.md。护栏只拒绝、不新增字段。
+
+- **R1_tencent_shares_reversed**｜伪主张：`tencent[72]=总股本、tencent[73]=流通股本`
+  - 真相（L1）：tencent[72]=A股流通股本、tencent[73]=总股本（[76]=A股流通=[72]）
+  - 证据：raw_tencent.json 农行601288(含H股): [72]=3192.442亿 < [73]=3499.830亿 → [72]为流通、[73]为总本
+- **R2_tipinfo_unlock_mislabel**｜伪主张：`tipinfo Col[7~9]/[13~16]=限售解禁(召开日/预告日/净利润/解禁日/股数/前次解禁)`
+  - 真相（L1）：Col[7]=异动日(未定)、Col[8]=分红日、Col[9]=分红金额(每10股,元)、Col[13]=股权登记日、Col[14]=配股/除权金额(万元)、Col[15]=增发事件日、Col[16]=增发募集金额(万元)
+  - 证据：field_dict:611-635(TdxQuant实锤+单位万元)；Col[14]=25224.80与字典配股金额逐字一致
+- **R3_tdxstat_col22_shape**｜伪主张：`tdxstat Col[22]=三周期(K线)走势形态复合码 A*10000+B*100+C`
+  - 真相（L1）：tdxstat Col[22]=概念/热点分类码（50913/110113 等对应具体概念，tdxhy.cfg 实锤）
+  - 证据：field_dict:26/3414 据 tdxhy.cfg 概念树定案；多位数分解对任意整数恒成立，不证形态语义
+- **R4_finance_info_raw_index_shift**｜伪主张：`eltdx finance_info_raw 槽位：总股本[1]/EPS[8]/总资产[9]/归母净利润[29] …`
+  - 真相（L1）：34 槽结构正确但索引偏移+2：总股本[4]/EPS[10]/总资产[11]/归母净利润[30]；field_dict §二 0x0010 财务协议36字段表已正确收录
+  - 证据：raw_eltdx.json 茅台600519 finance_info_raw 34浮点解析：槽[4]=125008.1562(总本)≠Gemini[1]；槽[30]=44516880(归母)≠Gemini[29]
 
 ---
 

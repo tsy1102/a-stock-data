@@ -71,6 +71,81 @@ SKIP_RULES = [
 ]
 
 
+# ───────────────────────────────────────────────────────────────────────
+# 已证伪结论护栏（2026-09-16 立规，源自对 Gemini 跨源对撞报告的实证核查）
+# ───────────────────────────────────────────────────────────────────────
+# 用途：把经数值实证推翻的「伪结论」固化为对撞反例，使后续自动对撞一旦产出
+# 同类候选直接判伪，防止污染 field_dict.md。护栏只拒绝、不新增字段。
+#   false_claim   : 伪主张原文
+#   correct       : 已定案真相（L1）
+#   evidence      : 可复现数值证据（采集快照 / 字典行号）
+#   blocked_pairs : 若两 token 相等即代表该伪结论，collide 直接跳过
+#   settled       : 该 token 语义已定，若作为对撞左字段被赋新含义即翻案，判伪
+REFUTED_CONCLUSIONS = [
+    {
+        "id": "R1_tencent_shares_reversed",
+        "false_claim": "tencent[72]=总股本、tencent[73]=流通股本",
+        "correct": "tencent[72]=A股流通股本、tencent[73]=总股本（[76]=A股流通=[72]）",
+        "evidence": "raw_tencent.json 农行601288(含H股): [72]=3192.442亿 < [73]=3499.830亿 → [72]为流通、[73]为总本",
+        "blocked_pairs": [["tencent[72]", "tencent[73]"]],
+        "settled": ["tencent[72]", "tencent[73]"],
+    },
+    {
+        "id": "R2_tipinfo_unlock_mislabel",
+        "false_claim": "tipinfo Col[7~9]/[13~16]=限售解禁(召开日/预告日/净利润/解禁日/股数/前次解禁)",
+        "correct": "Col[7]=异动日(未定)、Col[8]=分红日、Col[9]=分红金额(每10股,元)、Col[13]=股权登记日、"
+                   "Col[14]=配股/除权金额(万元)、Col[15]=增发事件日、Col[16]=增发募集金额(万元)",
+        "evidence": "field_dict:611-635(TdxQuant实锤+单位万元)；Col[14]=25224.80与字典配股金额逐字一致",
+        "blocked_pairs": [],
+        "settled": ["tipinfo.Col[7]", "tipinfo.Col[8]", "tipinfo.Col[9]",
+                    "tipinfo.Col[13]", "tipinfo.Col[14]", "tipinfo.Col[15]", "tipinfo.Col[16]"],
+    },
+    {
+        "id": "R3_tdxstat_col22_shape",
+        "false_claim": "tdxstat Col[22]=三周期(K线)走势形态复合码 A*10000+B*100+C",
+        "correct": "tdxstat Col[22]=概念/热点分类码（50913/110113 等对应具体概念，tdxhy.cfg 实锤）",
+        "evidence": "field_dict:26/3414 据 tdxhy.cfg 概念树定案；多位数分解对任意整数恒成立，不证形态语义",
+        "blocked_pairs": [],
+        "settled": ["tdxstat.Col[22]"],
+    },
+    {
+        "id": "R4_finance_info_raw_index_shift",
+        "false_claim": "eltdx finance_info_raw 槽位：总股本[1]/EPS[8]/总资产[9]/归母净利润[29] …",
+        "correct": "34 槽结构正确但索引偏移+2：总股本[4]/EPS[10]/总资产[11]/归母净利润[30]；"
+                   "field_dict §二 0x0010 财务协议36字段表已正确收录",
+        "evidence": "raw_eltdx.json 茅台600519 finance_info_raw 34浮点解析：槽[4]=125008.1562(总本)≠Gemini[1]；"
+                    "槽[30]=44516880(归母)≠Gemini[29]",
+        "blocked_pairs": [],
+        "settled": [],
+    },
+]
+
+# 语义已定 token 集合（合并各条 settled），左字段若为其中之一且属新主张 → 翻案，判伪
+SETTLED_REFUTED = set()
+for _c in REFUTED_CONCLUSIONS:
+    SETTLED_REFUTED.update(_c.get("settled", []))
+
+
+def match_refuted(left: str, right: str):
+    """若 (left,right) 命中已证伪结论，返回该结论 dict；否则 None。
+
+    命中条件：
+      * 显式 blocked_pairs（双向相等）；
+      * 或 left 属于 SETTLED_REFUTED（对撞左字段=待破解侧，对已定语义 token
+        提出新映射即翻案类伪结论）。
+    注：right 为已 verified 锚属正常破解用法，不拦截。
+    """
+    for c in REFUTED_CONCLUSIONS:
+        for a, b in c.get("blocked_pairs", []):
+            if (left == a and right == b) or (left == b and right == a):
+                return c
+    if left in SETTLED_REFUTED:
+        for c in REFUTED_CONCLUSIONS:
+            if left in c.get("settled", []):
+                return c
+    return None
+
+
 def print_active_rules(stream=None):
     """运行时自动查询并打印当前生效的对撞规则横幅。
 
@@ -141,6 +216,15 @@ def emit_markdown(path: str | None = None) -> str:
              "用于破解其他未知字段时的核对与跨源一致性校验。")
     L.append("- **双向可修正**：L1 遇矛盾新证据可降级或重议"
              "（如 tx[85] 均价候选因锚仅 3/20 回退 L3；tdxstat[31] 对撞东财仅 77% 匹配降级）。\n")
+    L.append("")
+    L.append("## 五、已证伪结论护栏（回归反例，2026-09-16 立规）\n")
+    L.append("> 经数值实证推翻的伪结论，固化为对撞反例；`collide.py` 命中即跳过该候选并记入报告，"
+             "防止污染 field_dict.md。护栏只拒绝、不新增字段。\n")
+    for c in REFUTED_CONCLUSIONS:
+        L.append(f"- **{c['id']}**｜伪主张：`{c['false_claim']}`")
+        L.append(f"  - 真相（L1）：{c['correct']}")
+        L.append(f"  - 证据：{c['evidence']}")
+    L.append("")
     L.append("---\n")
     L.append("> 数据来源：通达信 / 项目字段对撞体系。以上为方法论梳理，不构成投资建议。\n")
 

@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": 1,
-    "updated": "2026-09-15",
+    "updated": "2026-09-16",
     "source_of_truth": "field_registry.json",
     "generated_by": "scripts/extract_registry.py",
     "note": "本文件为字段登记表单一真相源（影子抽取）。docs/field_dict.md 字段表由本文件生成，勿手改。",

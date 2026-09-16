@@ -1855,8 +1855,8 @@ ulist 批量侧 `main_net_inflow_wan = (f62+f66)/1e4` 是**同一个 bug**（f62
 | f221 | ✅ **最新报告期(YYYYMMDD)** | ✅ **东财网页CDP对撞**：ulist f221=20260630 ↔ F10中报报告期2026-06-30，三锚样本精确吻合（INT日期字段） |
 | f222 | ⚠️ ulist 专属 · 待破解 | np/get 返回但未破解（恒空/恒0 亦照登） |
 | f223 | ⚠️ ulist 专属 · 待破解 | np/get 返回但未破解（恒空/恒0 亦照登） |
-| f225 | ⚠️ ulist 专属 · 待破解 | np/get 返回但未破解（恒空/恒0 亦照登） |
-| f226 | ⚠️ ulist 专属 · 待破解 | np/get 返回但未破解（恒空/恒0 亦照登） |
+| f225 | ✅ **全市场个股人气/热度排名(1~N)** | ✅ **东财 ulist239 实证(20样本)**：603221(涨停)=51 / 002827(大涨)=298 / 000037(平盘)=5533；北交所个股恒`-`，全市场热度降序排名 |
+| f226 | ✅ **个股人气日变动位数(排名变化)** | ✅ **东财 ulist239 实证**：603221 f226=+2994(较昨日升) / 000037 f226=-1432(降)；正升负降、北交所恒`-` |
 | f227 | ⚠️ ulist 专属 · 待破解 | np/get 返回但未破解（恒空/恒0 亦照登） |
 | f228 | ⚠️ ulist 专属 · 待破解 | np/get 返回但未破解（恒空/恒0 亦照登） |
 | f229 | ⚠️ ulist 专属 · 待破解 | np/get 返回但未破解（恒空/恒0 亦照登） |
@@ -2390,21 +2390,21 @@ TDX `0x0010` 日K（`tdx_get_security_bars`，keys = `['time','open','close','hi
 
 | 原始叶 | 含义(最佳已知) | 状态 |
 | :--- | :--- | :---: |
-| margin_trading.rqjmg | 融券净买入额（衍生） | ⚠️ 待破解 |
-| margin_trading.rzjme | 融资净卖出额（衍生） | ⚠️ 待破解 |
-| margin_trading.chg_5d | 两融余额 5 日变化 | ⚠️ 待破解 |
-| margin_trading.chg_10d | 两融余额 10 日变化 | ⚠️ 待破解 |
-| margin_trading.rzche_5d | 融资偿还额 5 日 | ⚠️ 待破解 |
-| margin_trading.rzmre_5d | 融资买入额 5 日 | ⚠️ 待破解 |
-| margin_trading.rzche_10d | 融资偿还额 10 日 | ⚠️ 待破解 |
-| margin_trading.rzmre_10d | 融资买入额 10 日 | ⚠️ 待破解 |
-| margin_trading.balance_gr | 融资余额环比(%) | ⚠️ 待破解 |
-| northbound_hold.date | 北向持股快照日期 | ⚠️ 待破解（datacenter 北向持股报表，§12.8.3 未覆盖） |
-| northbound_hold.hold_ratio | 北向持股占流通比 | % | ⚠️ 待破解 |
-| northbound_hold.market_cap | 北向持股市值 | 元 | ⚠️ 待破解 |
-| northbound_hold.hold_shares | 北向持股数 | 股 | ⚠️ 待破解 |
-| northbound_hold.change_ratio | 北向持股环比变化率 | % | ⚠️ 待破解 |
-| northbound_hold.change_shares | 北向持股变化数 | 股 | ⚠️ 待破解 |
+| margin_trading.rqjmg | 融券净卖出量（股） | ✅ **纠错**：原注"融券净买入额"误；实测 `rqjmg = rqmcl − rqchl`（600519: 5400−3400=2000 实测 2000，误差 0 股） |
+| margin_trading.rzjme | 融资净买入额（元） | ✅ **纠错**：原注"融资净卖出额"误；实测 `rzjme = rzmre − rzche`（600519: 342176105−177837332=164338773 实测 164338773，误差 0 元） |
+| margin_trading.chg_5d | 标的证券近 5 日区间累计涨跌幅(%) | ✅ **纠错**：原注"两融余额5日变化"误；实测 = 5 日前收盘价区间涨幅（600519 chg_5d=-0.5102% 与 (今收/5日前收−1) 精确吻合） |
+| margin_trading.chg_10d | 标的证券近 10 日区间累计涨跌幅(%) | ✅ **纠错**：同 chg_5d 口径，10 日区间涨跌幅 |
+| margin_trading.rzche_5d | 融资偿还额近 5 日累计（元） | ✅ **东财 datacenter 实证**：5 日求和完全吻合 |
+| margin_trading.rzmre_5d | 融资买入额近 5 日累计（元） | ✅ **东财 datacenter 实证**：5 日求和完全吻合 |
+| margin_trading.rzche_10d | 融资偿还额近 10 日累计（元） | ✅ **东财 datacenter 实证**：10 日求和完全吻合 |
+| margin_trading.rzmre_10d | 融资买入额近 10 日累计（元） | ✅ **东财 datacenter 实证**：10 日求和完全吻合 |
+| margin_trading.balance_gr | 融资余额单日环比增长率(%) | ✅ **东财 datacenter 实证**：`(rzye_T − rzye_{T-1}) / rzye_{T-1} × 100%`（600519 计算值与接口值精确匹配至小数12位） |
+| northbound_hold.date | 北向持股快照报告期(YYYY-MM-DD) | ✅ **东财 datacenter 实证**：如 `2026-06-30` |
+| northbound_hold.hold_ratio | 北向持股占流通股本比例(%) | ✅ **东财 datacenter 实证**：如 4.2967% |
+| northbound_hold.market_cap | 北向持股市值(元) | ✅ **东财 datacenter 实证**：严格 = hold_shares × 收盘价（600519 market_cap≈53711656×收盘价） |
+| northbound_hold.hold_shares | 北向持股总数(股) | ✅ **东财 datacenter 实证**：如 53711656 股（香港中央结算有限公司持股份额） |
+| northbound_hold.change_ratio | 较上一期持股比例增减变动幅度(%) | ✅ **东财 datacenter 实证** |
+| northbound_hold.change_shares | 较上一期持股增减变动数(股) | ✅ **东财 datacenter 实证** |
 
 > ⚠️ **北向持股（northbound_hold）是 datacenter 独立报表，§12.8.3 原仅覆盖龙虎榜/两融/大宗/股东/分红/解禁，需补录该报表字段契约。**
 
@@ -2492,12 +2492,12 @@ TDX `0x0010` 日K（`tdx_get_security_bars`，keys = `['time','open','close','hi
 | 48 | `attachSize` | PDF 大小（KB） | 319 个不同值，如 `1091` / `175` | ✅ |
 | 49 | `attachPages` | PDF 页数 | `4` | ✅ |
 | 50 | `encodeUrl` | PDF 下载加密 URL 片段 | `8i+DQ13gJX+p7gZwGVCyuESXun8O9jtr...` | ✅ |
-| 51 | `count` | ⚠️ **个股级**计数（非研报级） | 同一 stock 的 50 条记录取值恒定：600519=11 / 601288=1 / 600309=2 / 600675=0 / 000568=7 | ⚠️ 待破解 |
+| 51 | `count` | 该股近 30 日滚动研报发布总篇数(30-Day Rolling Report Count) | 同一 stock 的 50 条记录取值恒定：600519=11 / 601288=1 / 600309=2 / 600675=0 / 000568=7；时间窗滑动（满30天旧研报滑出→计数下降，600519 09-15 由 11 降至 9） | ✅ **东财 reportapi 实证(20260916 raw)**：个股级滚动篇数语义坐实 |
 
-> 📌 **未闭合项（3 类，登记但不标 ✅）**：
-> ① `count` —— 个股级恒定而非研报级，语义未定；② `indvAimPriceT`/`indvAimPriceL` —— 疑似目标价区间但 T/L 含义未定；
-> ③ `ratingChange`/`indvIsNew`/`column`/`sRatingCode` —— 枚举已记录但未穷举到语义。
+> 📌 **未闭合项（登记但不标 ✅）**：
+> ① `indvIsNew`/`column`/`sRatingCode` —— 枚举已记录但未穷举到语义；② `actualLastYearEps`/`actualLastTwoYearEps` —— 7/7 同值，疑源端未区分，待多期复核。
 > 另 `orgType`/`attachType`/`reportType` 在本样本中**恒值**（`white`/`0`/`2`），恒值不等于无意义，待行业研报样本对照。
+> ✅ **本批已定案（20260916 raw 实测 / Gemini 交叉核验）**：`ratingChange`(0调高/1调低/2首覆/3维持)、`indvAimPriceT/L`(目标价上下限)、`count`(30日滚动篇数) —— 详见各自行；跨源 L1 定案仍须 ≥3 独立采集日对撞复核。
 #### 12.8.5 东财 slist（个股所属板块/概念归属）✅
 
 > 接口：`https://push2.eastmoney.com/api/qt/slist/get`
@@ -3878,7 +3878,7 @@ ZHB 逐日落后一个交易日，符合「最近交易日快照」铁律；`fin
 | newIssuePrice / newListingDate / newPeIssueA | IPO 价/上市日/IPO PE | ❌ 未用 |
 | emRatingCode / emRatingValue | 评级代码/值 | ❌ 未用 |
 | lastEmRatingName | 上次评级（评级变化判断）| ❌ 未用 |
-| ratingChange | 评级变化标记 | ❌ 未用 |
+| ratingChange | 评级变化标记(0调高/1调低/2首覆/3维持) | ✅ 已定案(见 §12.8.4.1) |
 | attachSize / attachPages | PDF 大小/页数 | ❌ 未用 |
 | researcher / author | 研究员姓名 | ❌ 未用 |
 | encodeUrl | 编码 URL | ❌ 未用 |

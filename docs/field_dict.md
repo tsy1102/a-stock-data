@@ -117,7 +117,7 @@
 
 ### 零·B 字段×源总表（自动生成，勿手改）
 
-> 生成：`scripts/gen_field_matrix.py`（Phase 2 起从 field_registry.json 单一真相源读取，不再解析 field_dict.md 体积）。共 1239 个字段 / 1355 条字段×源记录（去重配对口径，取代旧版按行出现的 1412 重复计数）。
+> 生成：`scripts/gen_field_matrix.py`（Phase 2 起从 field_registry.json 单一真相源读取，不再解析 field_dict.md 体积）。共 1295 个字段 / 1411 条字段×源记录（去重配对口径，取代旧版按行出现的 1412 重复计数）。
 
 > 源排序按易→难（V17.0.7 层级定案；2026-09-07 thsdk 已退役，不再列为活体源）：ZHB（离线零网络）→ TDX TCP（0x0010/F10/eltdx）→ 腾讯（不封 IP）→ **同花顺-fuyao（官方 REST，盘后可查+独立风控域，V17.0.7 升为财务 TTM 族主源）** → 新浪 → 巨潮 → 东财（限流最严）→ 其他。
 
@@ -154,6 +154,7 @@
 | net_profit_period(f105) | 2 | 同花顺-fuyao、东财 |
 | net_profit_annual(f109) | 2 | 同花顺-fuyao、东财 |
 | eps_annual(f160) | 2 | 同花顺-fuyao、东财 |
+| 行业 | 2 | TDX-0x0010/F10、东财 |
 | 现价 | 2 | 同花顺-fuyao、东财 |
 | 开盘价 | 2 | 同花顺-fuyao、东财 |
 | 最高价 | 2 | 同花顺-fuyao、东财 |
@@ -168,7 +169,6 @@
 | 市现率 | 2 | 同花顺-fuyao、东财 |
 | 封单额 | 2 | 同花顺-fuyao、东财 |
 | 连板天数 | 2 | 同花顺-fuyao、东财 |
-| 行业 | 2 | TDX-0x0010/F10、东财 |
 | 涨停池 | 2 | TDX-0x0010/F10、同花顺-fuyao |
 | 市盈率(TTM) | 2 | 同花顺-fuyao、东财 |
 | turnover | 2 | 新浪、开盘红 |
@@ -229,7 +229,7 @@
 | 市场情绪 | 2 | TDX-0x0010/F10、同花顺-fuyao |
 | 板块轮动 | 2 | TDX-0x0010/F10、同花顺-fuyao |
 
-**B.2 单源字段（1138 个，无 fallback）**
+**B.2 单源字段（1194 个，无 fallback）**
 
 - **ZHB（13）**：A 实时、B 准实时、C 日频、D 静态、PE TTM、前一日、前一日开盘量额、前两日成交额、封单额、年内涨停数、当日、日 Beta、自由流通股本、连板统计
 - **TDX-0x0010/F10（297）**：*ST湘邮、AI解读、AxData、BKFenShiZhiBo、ChangeStatistics、C中芯、DR 茅台、DailyLimitPerformance、DailyLimitPerformance2、FTShare、GetBaseFaceListZDEvnArtNew、GetDayBaseFaceListZDEvnArt、GetDayNewHigh_W28、GetGPCPHBTS_Tag、GetHotPHB、GetInfo、GetKLineDay_W14、GetKLineZhangTing、GetMainMonitor_w30、GetPanKou、GetPlateInfo_w38、GetPlate_Info_QJ、GetStockBid、GetStockList、GetStockList（龙虎榜）、GetStockPanKou、GetStockTrendIncremental、GetWeiTuo_W14、GetYTFP_BKHX、GetYTFP_SCTD、GlobalCommon、GroupCount_w28、Index、InfoBKR、MarketStockZDNum、MoodNumCount、MorningBiddingList、NewGetList、N百花医药、Radar、RealRankingInfo、RiseFallAnalysis、ST百花医药、SharpWithdrawal、SonPlate_Info、Theme、XD、XR、ZhiShuStockList_W8、[..、[verify、akshare、all、api、axdata_verify.md)、axdata_verify.md](verify、balance_sheet` 资产负债表、belong、cash_flow` 现金流量表、changqifuzhai
@@ -245,8 +245,8 @@
 - **akshare（13）**：BPS、EPS、PE 历史百分位、push2 f137、push2 f51、push2 f55、两融 RZJME、历史分红、扣非净利、板块资金流 f62、涨跌停价、股息率、龙虎榜 EXPLAIN
 - **AxData（66）**：activity、amplitude_pct、ask1_price、ask1_volume、attack_pct、average_change_pct、average_price、bid1_ask1_balance_pct、bid1_ask1_volume_diff、bid1_price、bid1_volume、capital_score、concept_capital_flow_tdx（题材资金走势）、cost70_concentration、cost70_range、cost90_concentration、cost90_range、current_volume、drawdown_pct、entrust_ratio、finance_updated_date、float_share、free_float_share_z、fundamental_score、high_change_pct、industry_name、industry_rank、industry_rank_total、inside_outside_ratio、inside_volume、instrument_id、limit_ratio_pct、limit_rule、low_change_pct、market_rank、market_rank_total、market_win_pct、name_flag、news_score、open_amount_ratio_pct、option_chain_tdx（期权T型）、outside_volume、pre_close_source、pre_close_trade_date、profit_ratio_pct、score、share_source、stock_allotment_cninfo（配股）、stock_financial_diagnosis_tdx（财务诊断）、stock_forecast_consensus_tdx（盈利预测）、stock_name、stock_realtime_rank_tdx（实时榜单）、stock_share_change_cninfo（股本变动）、stock_theme_strength_rank_tdx（题材强度排行）、symbol、tdx_code、theme_score、total_share、事件流、华证
   - … 其余 6 个见正文
-- **东财（401）**：A+H 双上市标识、ABLE_FREE_SHARES、ACCUM_AMOUNT、ASSIGN_PROGRESS、AVG_FREE_SHARES、BILLBOARD_BUY_AMT、BILLBOARD_NET_AMT、BONUS_RATIO、BUY、BUYER_NAME、BUY_RATIO、BUY_SEAT、CHANGE_RATE、CHANGE_TYPE、CLOSE_PRICE、CPFZ、D1~D30_CLOSE_ADJCHRATE、DATE、DCP、DEAL_AMOUNT_RATIO、DEAL_AMT、DEAL_NET_RATIO、DEAL_PRICE、DEAL_VOLUME、END_DATE、EXPLAIN、EXPLANATION、EX_DIVIDEND_DATE、FIN_BALANCE_GR、FREE_DATE、FREE_MARKET_CAP、FREE_RATIO、FREE_SHARES、FREE_SHARES_TYPE、HOLDER_NUM、HOLDER_NUM_CHANGE、HOLDER_NUM_RATIO、JLY、JZC、LDFZ、LINK_URL、LYZE、MARKET、NET、NET_BS_AMT、NextTwoYear、NextYear、OPERATEDEPT_CODE、OPERATEDEPT_NAME、PRETAX_BONUS_RMB、RCHANGE3D、RPTA_WEB_RZRQ_GGMX（两融）、RPT_DAILYBILLBOARD_DETAILSNEW（龙虎榜）、RPT_HOLDERNUMLATEST（股东户数）、RPT_LIFT_STAGE（解禁）、RPT_SHAREBONUS_DET（分红）、RQCHL、RQMCL、RQYE、RQYL
-  - … 其余 341 个见正文
+- **东财（457）**：A+H 双上市标识、ABLE_FREE_SHARES、ACCUM_AMOUNT、ASSIGN_PROGRESS、AVG_FREE_SHARES、BILLBOARD_BUY_AMT、BILLBOARD_NET_AMT、BONUS_RATIO、BUY、BUYER_NAME、BUY_RATIO、BUY_SEAT、CHANGE_RATE、CHANGE_TYPE、CLOSE_PRICE、CPFZ、D1~D30_CLOSE_ADJCHRATE、DATE、DCP、DEAL_AMOUNT_RATIO、DEAL_AMT、DEAL_NET_RATIO、DEAL_PRICE、DEAL_VOLUME、END_DATE、EXPLAIN、EXPLANATION、EX_DIVIDEND_DATE、FIN_BALANCE_GR、FREE_DATE、FREE_MARKET_CAP、FREE_RATIO、FREE_SHARES、FREE_SHARES_TYPE、HOLDER_NUM、HOLDER_NUM_CHANGE、HOLDER_NUM_RATIO、JLY、JZC、LDFZ、LINK_URL、LYZE、MARKET、NET、NET_BS_AMT、NextTwoYear、NextYear、OPERATEDEPT_CODE、OPERATEDEPT_NAME、PRETAX_BONUS_RMB、RCHANGE3D、RPTA_WEB_RZRQ_GGMX（两融）、RPT_DAILYBILLBOARD_DETAILSNEW（龙虎榜）、RPT_HOLDERNUMLATEST（股东户数）、RPT_LIFT_STAGE（解禁）、RPT_SHAREBONUS_DET（分红）、RQCHL、RQMCL、RQYE、RQYL
+  - … 其余 397 个见正文
 
 <!-- /GEN:field-matrix -->
 
@@ -2932,7 +2932,8 @@ TDX `0x0010` 日K（`tdx_get_security_bars`，keys = `['time','open','close','hi
 
 | 规范中文名 | 语义与口径 | 各源字段对照（**均为别名**） | 依据 | 统一层接线 |
 |:---|:---|:---|:---|:---|
-| 现价 | 最新成交价 | push2 f43／ulist f2／腾讯[3]／新浪[3]／THS SDK 10／TDX `NOW`／TDX快照 `last_price`／fuyao `last_price`／开盘啦 `price`／push2ex `p`／ulist f144 | 通达信「现价」；同花顺 20490 同 | canonical: push2+ulist+腾讯+TDX快照+fuyao(+ZHB兜底)｜外部: 新浪/THS行情/TDX NOW/开盘啦/push2ex |
+| 行业 | 所属行业 | push2 f127／THS SDK 84／东财 I3／TDX财务 `industry`／ulist f100 | 通达信「行业」 | canonical: push2+THS｜外部: 东财I3/TDX财务 |
+| 现价 | 最新成交价 | push2 f43／ulist f2／腾讯[3]／新浪[3]／THS SDK 10／TDX `NOW`／TDX快照 `last_price`／fuyao `last_price`／开盘啦 `price`／push2ex `p`／ulist f144／ulist f59| 通达信「现价」；同花顺 20490 同 | canonical: push2+ulist+腾讯+TDX快照+fuyao(+ZHB兜底)｜外部: 新浪/THS行情/TDX NOW/开盘啦/push2ex |
 | 昨收盘 | 前一交易日收盘价 | push2 f60／ulist f18／腾讯[4]／新浪[2]／THS SDK 6／TDX快照 `pre_close`／fuyao `prev_price` | 通达信「昨收盘」 | canonical: push2+ulist+腾讯+TDX快照+fuyao｜外部: 新浪/THS行情 |
 | 开盘价 | 当日开盘价 | push2 f46／ulist f17／腾讯[5]／新浪[1]／THS SDK 7／TDX快照 `open`／fuyao `open_price` | 东财 A10「开盘」；补「价」字与最高价/最低价自洽 | canonical: push2+ulist+腾讯+TDX快照+fuyao｜外部: 新浪/THS行情 |
 | 最高价 | 当日最高价 | push2 f44／ulist f15／腾讯[33][41]／新浪[4]／THS SDK 8／TDX快照 `high`／fuyao `high_price` | 通达信「最高价」 | canonical: push2+ulist+腾讯+TDX快照+fuyao｜外部: 新浪/THS行情 |
@@ -2941,13 +2942,13 @@ TDX `0x0010` 日K（`tdx_get_security_bars`，keys = `['time','open','close','hi
 | 涨跌额 | 涨跌额（元） | push2 f169／ulist f4／腾讯[31]／THS SDK 264648／TDX快照 `change`／fuyao `price_change`／kline `f60` | 东财 A4 作「涨跌」；取「涨跌额」（四源同名且无歧义） | canonical: push2+ulist+腾讯+TDX快照+fuyao｜外部: THS行情 |
 | 成交量 | 成交量（⚠️手/股） | push2 f47／ulist f5／腾讯[6]／腾讯[36]／新浪[8]／THS SDK 13／TDX快照 `volume`／fuyao `volume` | 通达信「成交量」 | canonical: push2+ulist+腾讯+TDX快照+fuyao｜外部: 新浪/THS行情 |
 | 成交额 | 成交额（⚠️元/万元） | push2 f48／ulist f6／腾讯[37][57]／新浪[9]／THS SDK 19／TDX快照 `amount`／ZHB `amount`／开盘啦 `amount`／fuyao `turnover` | 通达信「成交额」 | canonical: push2+ulist+腾讯+TDX快照+ZHB+fuyao｜外部: 新浪/THS行情/开盘啦 |
-| 换手率% | 换手率 | push2 f168／ulist f184／腾讯[38]／THS SDK 1968584／开盘啦 `turnover_pct` | 通达信「换手率%」；东财 A18「换手%」 | canonical: push2+ulist+腾讯｜外部: THS/开盘啦 |
-| 振幅% | 振幅 | push2 f171／腾讯[43]／THS SDK 526792／TDX快照 `amplitude_pct`／开盘啦 `amplitude`／push2ex `zf`／fuyao `amplitude` | 同花顺 526792「振幅」（通达信无）；东财 A17「振幅%」 | canonical: push2+腾讯+TDX快照｜外部: THS/开盘啦/push2ex |
-| 量比 | 量比 | push2 f50／腾讯[49]／THS SDK 1771976／开盘啦 `vol_ratio` | 东财 A9「量比」（通达信仅「分价量比」12339） | canonical: push2+腾讯｜外部: THS/开盘啦 |
+| 换手率% | 换手率 | push2 f168／ulist f184／腾讯[38]／THS SDK 1968584／开盘啦 `turnover_pct`／ulist f8| 通达信「换手率%」；东财 A18「换手%」 | canonical: push2+ulist+腾讯｜外部: THS/开盘啦 |
+| 振幅% | 振幅 | push2 f171／腾讯[43]／THS SDK 526792／TDX快照 `amplitude_pct`／开盘啦 `amplitude`／push2ex `zf`／fuyao `amplitude`／ulist f7| 同花顺 526792「振幅」（通达信无）；东财 A17「振幅%」 | canonical: push2+腾讯+TDX快照｜外部: THS/开盘啦/push2ex |
+| 量比 | 量比 | push2 f50／腾讯[49]／THS SDK 1771976／开盘啦 `vol_ratio`／ulist f10| 东财 A9「量比」（通达信仅「分价量比」12339） | canonical: push2+腾讯｜外部: THS/开盘啦 |
 | 总市值 | 总市值（亿元） | push2 f116／ulist f20／腾讯[45]／THS SDK 3541450／开盘啦 `total_mv` | 通达信「总市值」；同花顺 806092800 同 | canonical: push2+ulist+腾讯｜外部: THS/开盘啦 |
 | 流通市值 | 流通市值（亿元） | push2 f117／ulist f21／腾讯[44]／THS SDK 3475914／push2ex `ltsz`／开盘啦 `circ_mv`／fuyao `float_market_cap` | 通达信「流通市值」 | canonical: push2+ulist+腾讯+fuyao｜外部: THS/push2ex/开盘啦 |
-| 总股本 | 总股本（万股） | push2 f84／腾讯[73]／THS SDK 402／TDX财务 `zongguben` | 通达信「总股本」 | canonical: push2+腾讯｜外部: THS/TDX财务 |
-| 流通股本 | 流通股本（万股） | push2 f85／腾讯[72][76]／THS SDK 407／TDX财务 `liutongguben` | 通达信「流通股本」 | canonical: push2+腾讯｜外部: THS/TDX财务 |
+| 总股本 | 总股本（万股） | push2 f84／腾讯[73]／THS SDK 402／TDX财务 `zongguben`／ulist f38| 通达信「总股本」 | canonical: push2+腾讯｜外部: THS/TDX财务 |
+| 流通股本 | 流通股本（万股） | push2 f85／腾讯[72][76]／THS SDK 407／TDX财务 `liutongguben`／ulist f39| 通达信「流通股本」 | canonical: push2+腾讯｜外部: THS/TDX财务 |
 | 市盈率（动） | 动态市盈率（最新报告期年化） | push2 f162／ulist f9／腾讯[52]／THS SDK 2942／开盘啦 `pe_dynamic`／ZHB `pe_dynamic`／fuyao `pe_mrq` | 同花顺 806289408「市盈(动)」 | canonical: push2+ulist+腾讯+ZHB+fuyao｜外部: THS/开盘啦 |
 | 市盈率（静） | 静态市盈率（年报 LYR） | push2 f163／ulist f114／腾讯[53]／THS SDK 2946／开盘啦 `pe_static` | 同花顺 806223872「市盈(lyr)」 | canonical: push2+ulist+腾讯｜外部: THS/开盘啦 |
 | 市盈率（TTM） | 滚动市盈率 | push2 f164／ulist f115／腾讯[39]／THS SDK 3153／开盘啦 `pe_ttm`／ZHB `pe_ttm`／fuyao `pe_ttm` | 全源同名 | canonical: push2+ulist+腾讯+ZHB+fuyao｜外部: THS/开盘啦 |
@@ -2956,17 +2957,17 @@ TDX `0x0010` 日K（`tdx_get_security_bars`，keys = `['time','open','close','hi
 | 市现率 | 市现率 PCF(TTM) | push2 f166／fuyao `pcf_ttm` | 通达信「市现率」 | canonical: push2+fuyao |
 | 每股收益 | EPS（须带报告期/年报） | push2 f55(报告期)／push2 f160(年报)／THS SDK 1002／fuyao `basic_eps` | 通达信「每股收益」 | canonical: push2+fuyao｜外部: THS |
 | 每股净资产 | BPS | push2 f92／THS SDK 1005／TDX财务 `meigujingzichan` | 通达信「每股净资产」 | canonical: push2｜外部: THS/TDX财务 |
-| 净资产收益率% | ROE（须带加权/扣非/报告期） | push2 f173(加权·报告期)／腾讯[65](扣非加权·TTM)／THS SDK 1015／fuyao `index_weighted_avg_roe` | 通达信「净资产收益率%」 | canonical: push2+腾讯+fuyao｜外部: THS |
-| 总资产 | 资产总计 | THS SDK 543／TDX财务 `zongzichan`／fuyao `assets_total` | 通达信「总资产」 | canonical(TDX财务 0x0010 `zongzichan`/10→元)｜外部: THS/fuyao |
+| 净资产收益率% | ROE（须带加权/扣非/报告期） | push2 f173(加权·报告期)／腾讯[65](扣非加权·TTM)／THS SDK 1015／fuyao `index_weighted_avg_roe`／ulist f37| 通达信「净资产收益率%」 | canonical: push2+腾讯+fuyao｜外部: THS |
+| 总资产 | 资产总计 | THS SDK 543／TDX财务 `zongzichan`／fuyao `assets_total`／ulist f50| 通达信「总资产」 | canonical(TDX财务 0x0010 `zongzichan`/10→元)｜外部: THS/fuyao |
 | 净资产 | 股东权益 | TDX财务 `jingzichan` | 通达信「净资产」 | canonical(TDX财务 0x0010 `jingzichan`/10→元)｜外部: THS/fuyao |
 | 净利润 | 净利润（须带归母/扣非） | THS SDK 619/1566／TDX财务 `jinglirun`／fuyao `net_profit` | 通达信「净利润」 | canonical: push2+fuyao｜外部: THS/TDX财务 |
-| 营业收入 | 营业收入（⚠️vs 营业总收入） | THS SDK 602／TDX财务 `zhuyingshouru`／fuyao `operating_income` | 通达信「营业收入」 | canonical: push2+fuyao｜外部: THS/TDX财务 |
+| 营业收入 | 营业收入（⚠️vs 营业总收入） | THS SDK 602／TDX财务 `zhuyingshouru`／fuyao `operating_income`／ulist f40| 通达信「营业收入」 | canonical: push2+fuyao｜外部: THS/TDX财务 |
 | 涨停价 | 当日涨停价 | 腾讯[47]／THS SDK 69／push2ex `ztp` | 同花顺 20549「涨停价」 | canonical: 腾讯[47]+push2ex `ztp`（⚠️ push2 stock/get `f51` 非涨停价、实为流动资产合计，见 R4/R6，已自原误注 push2(f51) 订正）｜外部: THS |
 | 跌停价 | 当日跌停价 | 腾讯[48]／THS SDK 70 | 同花顺 20550「跌停价」 | canonical: push2(f52)⚠️spec对照漏列｜外部: 腾讯/THS |
-| 委比% | 委比 | push2 f191／腾讯[74]／THS SDK 461256／TDX快照 `entrust_ratio` | 东财 B14「委比%」（通达信无） | **canonical: 腾讯[74]＋push2 f191＋TDX快照**（🔥2026-09-08 round12 TDX `Wtb` 20/20 零误差强锚确认）｜外部: THS｜✅2026-09-10 已接统一层(canonical 成真) |
+| 委比% | 委比 | push2 f191／腾讯[74]／THS SDK 461256／TDX快照 `entrust_ratio`／ulist f33| 东财 B14「委比%」（通达信无） | **canonical: 腾讯[74]＋push2 f191＋TDX快照**（🔥2026-09-08 round12 TDX `Wtb` 20/20 零误差强锚确认）｜外部: THS｜✅2026-09-10 已接统一层(canonical 成真) |
 | 委差 | 委差（手） | push2 f192／腾讯[50]／THS SDK 395720 | 东财 B13「委差」（通达信无） | **canonical: 腾讯[50]＋push2 f192**（🔥2026-09-08 round12 TDX 对撞证伪：腾讯[86] 非委差，等值 0/20、与 TDX 委比同号仅 55%，已撤销[86]候选）｜外部: THS｜✅2026-09-10 已接统一层(canonical 成真) |
-| 内盘 | 内盘成交量（主动卖量） | 腾讯[8]／push2 f161／TDX快照 `inside_volume` | 东财 B9「内盘」（通达信无） | **canonical: 腾讯[8]＋push2 f161＋TDX快照**（🔥2026-09-09 专项复核三源确认：push2 f161==tx[8] 精确 13/20；⚠️**科创板腾讯按股×100、其余按手**，TDX 全按手）｜外部: 腾讯/push2/TDX快照｜✅2026-09-10 已接统一层(canonical 成真) |
-| 外盘 | 外盘成交量（主动买量） | 腾讯[7]／push2 f49／TDX快照 `outside_volume` | 东财 B8「外盘」（通达信无） | **canonical: 腾讯[7]＋push2 f49＋TDX快照**（🔥2026-09-09 专项复核三源确认：push2 f49==tx[7] 精确 13/20；⚠️**科创板腾讯按股×100、其余按手**，TDX 全按手）｜外部: 腾讯/push2/TDX快照｜✅2026-09-10 已接统一层(canonical 成真) |
+| 内盘 | 内盘成交量（主动卖量） | 腾讯[8]／push2 f161／TDX快照 `inside_volume`／ulist f35| 东财 B9「内盘」（通达信无） | **canonical: 腾讯[8]＋push2 f161＋TDX快照**（🔥2026-09-09 专项复核三源确认：push2 f161==tx[8] 精确 13/20；⚠️**科创板腾讯按股×100、其余按手**，TDX 全按手）｜外部: 腾讯/push2/TDX快照｜✅2026-09-10 已接统一层(canonical 成真) |
+| 外盘 | 外盘成交量（主动买量） | 腾讯[7]／push2 f49／TDX快照 `outside_volume`／ulist f34| 东财 B8「外盘」（通达信无） | **canonical: 腾讯[7]＋push2 f49＋TDX快照**（🔥2026-09-09 专项复核三源确认：push2 f49==tx[7] 精确 13/20；⚠️**科创板腾讯按股×100、其余按手**，TDX 全按手）｜外部: 腾讯/push2/TDX快照｜✅2026-09-10 已接统一层(canonical 成真) |
 | 均价 | 平均成交价 | 腾讯[51]／TDX快照 `average_price` | 通达信「均价」；东财 B1 同 | **canonical: 腾讯[51]＋TDX快照**（🔥2026-09-08 round12 TDX `Average` 20/20 精确强锚确认；原"腾讯[85]"为误注——[85] 对均价锚仅 3/20，已撤销其均价候选，回退 L3）｜外部: TDX快照｜✅2026-09-10 已接统一层(canonical 成真) |
 | 52周最高价 | 52周最高价 | 腾讯[67]／THS SDK 95／ZHB `high_52w` | ZHB 名（通达信/同花顺均无） | canonical: 腾讯+ZHB｜外部: THS |
 | 52周最低价 | 52周最低价 | 腾讯[68]／THS SDK 96／ZHB `low_52w` | ZHB 名（通达信/同花顺均无） | canonical: 腾讯+ZHB｜外部: THS |
@@ -2974,8 +2975,7 @@ TDX `0x0010` 日K（`tdx_get_security_bars`，keys = `['time','open','close','hi
 | 连板天数 | 连续涨停天数 | push2ex `lbc`／fuyao `continue_day_cnt`／同花顺 3426 | 通达信「连板天数」 | 未接 canonical(仅streak_days连涨连跌)｜外部: push2ex/fuyao/同花顺 |
 | 涨速% | 涨速 | THS SDK 48／push2ex `zs`／开盘啦 `speed` | 通达信「涨速%」；东财 A5 同 | 未接 canonical｜外部: THS/push2ex/开盘啦 |
 | 股息率% | 股息率(TTM) | 腾讯[64]／push2 f126／ZHB `dividend_yield` | 通达信「股息率%」 | canonical: 腾讯+push2+ZHB |
-| 上市日期 | 上市日期 | push2 f189／TDX财务 `ipo_date` | 通达信「上市日期」 | canonical: push2+TDX财务 |
-| 行业 | 所属行业 | push2 f127／THS SDK 84／东财 I3／TDX财务 `industry` | 通达信「行业」 | canonical: push2+THS｜外部: 东财I3/TDX财务 |
+| 上市日期 | 上市日期 | push2 f189／TDX财务 `ipo_date`／ulist f26| 通达信「上市日期」 | canonical: push2+TDX财务 |
 | 代码 | 证券代码 | push2 f57／ulist f12／腾讯[2]／THS SDK 5／同花顺 8197／fuyao `ticker` | 同花顺 8197「代码」；东财 STOCK_CODE 同 | canonical: 全部(push2+ulist+腾讯+THS+同花顺+fuyao) |
 | 名称 | 证券名称 | push2 f58／ulist f14／腾讯[1]／新浪[0]／THS SDK 55 | 东财 STOCK_NAME「名称」 | canonical: push2+ulist+腾讯｜外部: 新浪/THS |
 | 5日涨跌幅 | 近5交易日涨跌幅% | push2 f119／腾讯[63]／THS SDK 3250／ZHB `change_5d` | 通达信「5日涨幅%」 | canonical: push2+腾讯+ZHB｜外部: ulist/THS/同花顺 |
@@ -2989,8 +2989,8 @@ TDX `0x0010` 日K（`tdx_get_security_bars`，keys = `['time','open','close','hi
 | 前日成交额 | 前2交易日成交额 | ZHB `amount_2d` | ZHB 源字段（规范名＋日期后缀） | 未接 canonical｜外部: ZHB(私有衍生) |
 | 昨日封单额 | 前1交易日封单额 | ZHB `zt_seal_amount_1d` | ZHB 源字段（规范名＋日期后缀） | 未接 canonical｜外部: ZHB(私有衍生) |
 | 前日封单额 | 前2交易日封单额 | ZHB `zt_seal_amount_2d` | ZHB 源字段（规范名＋日期后缀） | 未接 canonical｜外部: ZHB(私有衍生) |
-| 超大单买入额 | 超大单主动性买入额 | push2 f138／`fund_super_buy` | 东财 L2 资金流（§12.3.4, V17.0.16） | canonical: push2+fuyao｜外部: — |
-| 超大单卖出额 | 超大单主动性卖出额 | push2 f139／`fund_super_sell` | 东财 L2 资金流（§12.3.4, V17.0.16） | canonical: push2+fuyao｜外部: — |
+| 超大单买入额 | 超大单主动性买入额 | push2 f138／`fund_super_buy`／ulist f64| 东财 L2 资金流（§12.3.4, V17.0.16） | canonical: push2+fuyao｜外部: — |
+| 超大单卖出额 | 超大单主动性卖出额 | push2 f139／`fund_super_sell`／ulist f65| 东财 L2 资金流（§12.3.4, V17.0.16） | canonical: push2+fuyao｜外部: — |
 | 大单买入额 | 大单主动性买入额 | push2 f141／`fund_large_buy` | 东财 L2 资金流（§12.3.4, V17.0.16） | canonical: push2+fuyao｜外部: — |
 | 大单卖出额 | 大单主动性卖出额 | push2 f142／`fund_large_sell` | 东财 L2 资金流（§12.3.4, V17.0.16） | canonical: push2+fuyao｜外部: — |
 | 中单买入额 | 中单主动性买入额 | push2 f144／`fund_mid_buy` | 东财 L2 资金流（§12.3.4, V17.0.16） | canonical: push2+fuyao｜外部: — |
@@ -3001,6 +3001,73 @@ TDX `0x0010` 日K（`tdx_get_security_bars`，keys = `['time','open','close','hi
 | 卖二价 | 卖二档价格 | 腾讯[22]／tdx ask2／sina[24] | 第九轮审计跨源定案（tdx.quote_full.ask2 / sina[24] / 腾讯[22], rate=1.0, Spearman=1.0） | canonical: 腾讯[22]+tdx ask2+sina[24]｜外部: —｜✅2026-09-10 已接统一层(canonical 成真) |
 | 行情协议固定枚举常量③(恒为3) | 东财 push2 stock/get 与 ulist.np 协议层固定枚举值，**全市场恒定**（个股/指数/涨停股/新股/*ST/科创板/创业板均同值 3），**非个股行情指标**；「同号真同义」系两端点均为同一恒值所致，1.000 相关为常量退化假阳性，不构成语义同义证据 | push2 f153／ulist f153 | 2026-09-09 实测：茅台(1.600519)/宁德(0.300750)/上证指数(1.000001)/8只涨停股 ulist.np 均 f153=3、f150/f151/f155–f157=null；公开字段表(cnblogs/efinance)未赋金融语义；clist 端点第三方误将 f152 标「20日涨跌幅%」属跨端点同号异义，本项目不采信 | canonical: push2 f153+ulist f153(同号同值常量)｜外部: —｜⚠️ 非指标字段，downstream 不得按个股值消费 |
 | 行情协议固定枚举常量④(恒为4) | 东财 push2 stock/get 与 ulist.np 协议层固定枚举值，**全市场恒定**（个股/指数/涨停股/新股/*ST/科创板/创业板均同值 4），**非个股行情指标**；「同号真同义」系两端点均为同一恒值所致，1.000 相关为常量退化假阳性，不构成语义同义证据 | push2 f154／ulist f154 | 2026-09-09 实测：同上样本 ulist.np 均 f154=4；公开字段表未赋金融语义；clist 端点 f152 误标「20日涨跌幅%」为跨端点同号异义，不采信 | canonical: push2 f154+ulist f154(同号同值常量)｜外部: —｜⚠️ 非指标字段，downstream 不得按个股值消费 |
+| 行情协议固定枚举常量②(恒为2) | 东财 ulist.np/get 与 push2 stock/get 协议层固定枚举值，全市场恒定=2，非个股指标 | push2 f59／ulist f1 | 2026-09-12 ulist239 多日对撞 L1：ulist f1↔push2 f59 median|Δ|=0（见 docs/field_verification/20260912_ulist_collision.md） | canonical: push2 f59+ulist f1(同号同值常量)｜外部: —｜⚠️ 非指标字段，downstream 不得按个股值消费 |
+| 行情协议固定枚举常量(板级枚举{2,6,23,80,81}) | 东财协议层板级枚举常量，全市场恒定，非个股指标 | push2 f111／ulist f19 | 2026-09-12 ulist239 对撞 L1：ulist f19↔push2 f111（见 20260912_ulist_collision.md） | canonical: push2 f111+ulist f19｜外部: —｜⚠️ 非指标字段 |
+| 行情协议固定枚举常量(枚举,恒值) | 东财协议层固定枚举值，全市场恒定，非个股指标 | push2 f180／ulist f29 | 2026-09-12 ulist239 对撞 L1：ulist f29↔push2 f180（见 20260912_ulist_collision.md） | canonical: push2 f180+ulist f29｜外部: —｜⚠️ 非指标字段 |
+| 买一价 | 买一档价格（元） | ulist f31 | 东财网页CDP对撞：ulist f31↔报价页买一（见 §12.3.2 ulist239） | canonical: ulist f31｜外部: — |
+| 卖一价 | 卖一档价格（元） | ulist f32 | 东财网页CDP对撞：ulist f32↔报价页卖一 | canonical: ulist f32｜外部: — |
+| 人均流通股 | 人均流通股（股） | ulist f36 | 东财网页CDP对撞：ulist f36=流通股/股东户数（见 §12.3.2 ulist239） | canonical: ulist f36｜外部: — |
+| 营业收入同比增长(%) | 营业收入同比增长率（%） | ulist f41 | 东财网页CDP对撞：ulist f41↔F10 营业收入同比增长(%) | canonical: ulist f41｜外部: — |
+| 营业利润 | 营业利润（元） | ulist f42 | 东财F10 CDP对撞(利润表)：ulist f42↔三、营业利润 | canonical: ulist f42｜外部: — |
+| 投资收益 | 投资收益（元） | ulist f43 | 东财F10 CDP对撞(利润表)：ulist f43↔投资收益 | canonical: ulist f43｜外部: — |
+| 利润总额 | 利润总额（元） | ulist f44 | 东财F10 CDP对撞(利润表)：ulist f44↔利润总额（非营业利润） | canonical: ulist f44｜外部: — |
+| 未分配利润 | 未分配利润（元） | ulist f47 | 东财F10 CDP对撞(资产负债表)：ulist f47↔未分配利润 | canonical: ulist f47｜外部: — |
+| 流动资产合计 | 流动资产合计（元） | ulist f51 | 东财F10 CDP对撞(资产负债表)：ulist f51↔流动资产合计 | canonical: ulist f51｜外部: — |
+| 固定资产 | 固定资产（元） | ulist f52 | 东财F10 CDP对撞(资产负债表)：ulist f52↔固定资产 | canonical: ulist f52｜外部: — |
+| 无形资产 | 无形资产（元） | ulist f53 | 东财网页CDP对撞：ulist f53↔无形资产 | canonical: ulist f53｜外部: — |
+| 负债合计 | 负债合计（元） | ulist f54 | 东财网页CDP对撞：ulist f54↔负债合计 | canonical: ulist f54｜外部: — |
+| 非流动负债合计 | 非流动负债合计（元） | ulist f56 | 东财网页CDP对撞：ulist f56↔非流动负债合计 | canonical: ulist f56｜外部: — |
+| 资本公积 | 资本公积（元） | ulist f60 | 东财F10 CDP对撞(资产负债表)：ulist f60↔资本公积 | canonical: ulist f60｜外部: — |
+| 每股公积金 | 每股资本公积（元） | ulist f61 | 东财网页CDP对撞：ulist f61↔每股公积金 | canonical: ulist f61｜外部: — |
+| 超大单净买入额 | 超大单净流入额（元）= 超大单买入−卖出 | push2 f140／ulist f66 | 东财网页CDP对撞：ulist f66↔报价页超大单净流入；push2 f140=超大单净额（§12.3.4） | canonical: push2 f140+ulist f66｜外部: — |
+| 超大单流入占比(%) | 超大单流入额占成交额比（%） | ulist f67 | 东财网页CDP对撞：ulist f67=超大单流入/成交额 | canonical: ulist f67｜外部: — |
+| 超大单流出占比(%) | 超大单流出额占成交额比（%） | ulist f68 | 东财网页CDP对撞：ulist f68=超大单流出/成交额 | canonical: ulist f68｜外部: — |
+| 超大单净占比(%) | 超大单净流入额占成交额比（%） | ulist f69 | 东财网页CDP对撞：ulist f69↔报价页超大单净占比 | canonical: ulist f69｜外部: — |
+| 大单流入额 | 大单主动性流入额（元） | ulist f70 | 东财网页CDP对撞：ulist f70↔报价页大单流入 | canonical: ulist f70｜外部: — |
+| 大单流出额 | 大单主动性流出额（元） | ulist f71 | 东财网页CDP对撞：ulist f71↔报价页大单流出 | canonical: ulist f71｜外部: — |
+| 大单净流入额 | 大单净流入额（元）= 大单流入−流出 | ulist f72 | 东财网页CDP对撞：ulist f72↔报价页大单净流入 | canonical: ulist f72｜外部: — |
+| 大单流入占比% | 大单流入额占成交额比（%） | ulist f73 | 东财网页CDP对撞：ulist f73=大单流入/成交额 | canonical: ulist f73｜外部: — |
+| 大单流出占比% | 大单流出额占成交额比（%） | ulist f74 | 东财网页CDP对撞：ulist f74=大单流出/成交额 | canonical: ulist f74｜外部: — |
+| 大单净占比% | 大单净流入额占成交额比（%） | ulist f75 | 东财网页CDP对撞：ulist f75↔报价页大单净占比 | canonical: ulist f75｜外部: — |
+| 中单流入额 | 中单主动性流入额（元） | ulist f76 | 东财网页CDP对撞：ulist f76↔报价页中单流入 | canonical: ulist f76｜外部: — |
+| 中单流出额 | 中单主动性流出额（元） | ulist f77 | 东财网页CDP对撞：ulist f77↔报价页中单流出 | canonical: ulist f77｜外部: — |
+| 中单净流入额 | 中单净流入额（元）= 中单流入−流出 | push2 f146／ulist f78 | 东财 zjlx 跨源对撞：ulist f78=中单流入−流出；跨源对齐 push2 f146 | canonical: push2 f146+ulist f78｜外部: — |
+| 中单流入占比% | 中单流入额占成交额比（%） | ulist f79 | 东财网页CDP对撞：ulist f79=中单流入/成交额 | canonical: ulist f79｜外部: — |
+| 中单流出占比% | 中单流出额占成交额比（%） | ulist f80 | 东财网页CDP对撞：ulist f80=中单流出/成交额 | canonical: ulist f80｜外部: — |
+| 中单净占比% | 中单净流入额占成交额比（%） | ulist f81 | 东财网页CDP对撞：ulist f81↔报价页中单净占比 | canonical: ulist f81｜外部: — |
+| 小单流入额 | 小单主动性流入额（元） | ulist f82 | 东财网页CDP对撞：ulist f82↔报价页小单流入 | canonical: ulist f82｜外部: — |
+| 小单流出额 | 小单主动性流出额（元） | ulist f83 | 东财网页CDP对撞：ulist f83↔报价页小单流出 | canonical: ulist f83｜外部: — |
+| 小单净流入额 | 小单净流入额（元）= 小单流入−流出 | push2 f149／ulist f84 | 东财 zjlx 跨源对撞：ulist f84=小单流入−流出；跨源对齐 push2 f149 | canonical: push2 f149+ulist f84｜外部: — |
+| 小单流入占比% | 小单流入额占成交额比（%） | ulist f85 | 东财网页CDP对撞：ulist f85=小单流入/成交额 | canonical: ulist f85｜外部: — |
+| 小单流出占比% | 小单流出额占成交额比（%） | ulist f86 | 东财网页CDP对撞：ulist f86=小单流出/成交额 | canonical: ulist f86｜外部: — |
+| 小单净占比% | 小单净流入额占成交额比（%） | ulist f87 | 东财网页CDP对撞：ulist f87↔报价页小单净占比 | canonical: ulist f87｜外部: — |
+| 领涨股名称 | 所属行业领涨股名称 | ulist f101 | 东财网页CDP对撞：ulist f101↔报价页所属板块·领涨股 | canonical: ulist f101｜外部: — |
+| 地域板块 | 个股所属地域板块 | ulist f102 | 东财网页CDP对撞：ulist f102↔报价页所属板块·地域 | canonical: ulist f102｜外部: — |
+| 5日主力净流入额 | 近5日主力资金净流入额（元） | ulist f164 | 东财 zjlx 历史表聚合对撞：ulist f164↔5日主力净流入 | canonical: ulist f164｜外部: — |
+| 5日主力净占比% | 近5日主力净流入占成交额比（%） | ulist f165 | 东财 zjlx 历史表聚合对撞：ulist f165 | canonical: ulist f165｜外部: — |
+| 5日超大单净流入额 | 近5日超大单净流入额（元） | ulist f166 | 东财 zjlx 历史表聚合对撞：ulist f166 | canonical: ulist f166｜外部: — |
+| 5日超大单净占比% | 近5日超大单净流入占成交额比（%） | ulist f167 | 东财 zjlx 历史表聚合对撞：ulist f167 | canonical: ulist f167｜外部: — |
+| 5日大单净流入额 | 近5日大单净流入额（元） | ulist f168 | 东财 zjlx 历史表聚合对撞：ulist f168 | canonical: ulist f168｜外部: — |
+| 5日大单净占比% | 近5日大单净流入占成交额比（%） | ulist f169 | 东财 zjlx 历史表聚合对撞：ulist f169 | canonical: ulist f169｜外部: — |
+| 5日中单净流入额 | 近5日中单净流入额（元） | ulist f170 | 东财 zjlx 历史表聚合对撞：ulist f170 | canonical: ulist f170｜外部: — |
+| 5日中单净占比% | 近5日中单净流入占成交额比（%） | ulist f171 | 东财 zjlx 历史表聚合对撞：ulist f171 | canonical: ulist f171｜外部: — |
+| 5日小单净流入额 | 近5日小单净流入额（元） | ulist f172 | 东财 zjlx 历史表聚合对撞：ulist f172 | canonical: ulist f172｜外部: — |
+| 5日小单净占比% | 近5日小单净流入占成交额比（%） | ulist f173 | 东财 zjlx 历史表聚合对撞：ulist f173 | canonical: ulist f173｜外部: — |
+| 10日主力净流入额 | 近10日主力资金净流入额（元） | ulist f174 | 东财 zjlx 历史表聚合对撞：ulist f174↔10日主力净流入 | canonical: ulist f174｜外部: — |
+| 10日主力净占比% | 近10日主力净流入占成交额比（%） | ulist f175 | 东财 zjlx 历史表聚合对撞：ulist f175 | canonical: ulist f175｜外部: — |
+| 10日超大单净流入额 | 近10日超大单净流入额（元） | ulist f176 | 东财 zjlx 历史表聚合对撞：ulist f176 | canonical: ulist f176｜外部: — |
+| 10日超大单净占比% | 近10日超大单净流入占成交额比（%） | ulist f177 | 东财 zjlx 历史表聚合对撞：ulist f177 | canonical: ulist f177｜外部: — |
+| 10日大单净流入额 | 近10日大单净流入额（元） | ulist f178 | 东财 zjlx 历史表聚合对撞：ulist f178 | canonical: ulist f178｜外部: — |
+| 10日大单净占比% | 近10日大单净流入占成交额比（%） | ulist f179 | 东财 zjlx 历史表聚合对撞：ulist f179 | canonical: ulist f179｜外部: — |
+| 10日中单净流入额 | 近10日中单净流入额（元） | ulist f180 | 东财 zjlx 历史表聚合对撞：ulist f180 | canonical: ulist f180｜外部: — |
+| 10日中单净占比% | 近10日中单净流入占成交额比（%） | ulist f181 | 东财 zjlx 历史表聚合对撞：ulist f181 | canonical: ulist f181｜外部: — |
+| 10日小单净流入额 | 近10日小单净流入额（元） | ulist f182 | 东财 zjlx 历史表聚合对撞：ulist f182 | canonical: ulist f182｜外部: — |
+| 10日小单净占比% | 近10日小单净流入占成交额比（%） | ulist f183 | 东财 zjlx 历史表聚合对撞：ulist f183 | canonical: ulist f183｜外部: — |
+| 主力净比% | 主力净占比（主力净流入/成交额，%） | push2 f193／ulist f184 | 东财 zjlx 跨源对撞：ulist f184=主力净比；跨源对齐 push2 f193 | canonical: push2 f193+ulist f184｜外部: — |
+| 买一量 | 买一档成交量（手） | ulist f211 | 东财网页CDP对撞：ulist f211↔报价页买一量 | canonical: ulist f211｜外部: — |
+| 卖一量 | 卖一档成交量（手） | ulist f212 | 东财网页CDP对撞：ulist f212↔报价页卖一量 | canonical: ulist f212｜外部: — |
+| 最新报告期 | 最新财务报告期（YYYYMMDD） | ulist f221 | 东财网页CDP对撞：ulist f221↔F10中报报告期 | canonical: ulist f221｜外部: — |
+
 
 > **⚠️ 协议常量正名（2026-09-09）**：f153/f154（及 f152=2）经实测为东财行情协议层固定枚举常量，全市场恒定，非个股指标。原第七轮「同号真同义」系常量对常量退化相关（1.000 恒真），不构成语义同义证据；第三方资料将 clist 端点 f152 标「20日涨跌幅%」属跨端点同号异义，本项目以 stock/get/ulist.np 实测恒值 2/3/4 为准，不采信该标签。详见 §12.8.12e 规范表 f153/f154 行。
 
@@ -5420,8 +5487,9 @@ volRatio=量比, institutionIncrease=机构增仓 仅在 Socket 推送中——H
 | ZHB-tdxstat2 | [tdx_func_fields.md](verify/tdx_func_fields.md) | 2. `tdxstat2.cfg` (成交与资金流向表，21 个字段，7,951 行) |
 | ZHB-tipinfo | [tdx_func_fields.md](verify/tdx_func_fields.md) | 3. `tipinfo.dat` (财报日历与业绩快照，22 列，5,612 行) |
 | levistock(ftshare) | [levistock_field_verify.md](verify/levistock_field_verify.md) | 12.10.3 开盘红市场情绪（market_emotion_kph，**含历史**）🆕 |
+| eltdx（Rust 7709/7615 客户端） | [eltdx_verify.md](verify/eltdx_verify.md) | 12.13 eltdx 完整方法字典（Rust 7709/7615 客户端） |
 
-> 共 11 个源有专属分字典；无分字典的源以主字典自身为权威（见 §12.15.10 强制规则）。
+> 共 12 个源有专属分字典；无分字典的源以主字典自身为权威（见 §12.15.10 强制规则）。
 
 <!-- /GEN:subdict-index -->
 

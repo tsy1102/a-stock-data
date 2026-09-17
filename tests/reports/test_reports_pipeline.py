@@ -290,10 +290,12 @@ class TestMedRunnerPipeline(_BatchMixin, _RunnerTestBase):
         _r, _res, bp = self._invoke()
         self.assertEqual(set(bp.call_args.kwargs["gen_kwargs"]), {"ind_comp"})
 
-    def test_no_prefetch_hooks(self):
-        """med 不装配 prefetch 钩子（其数据源走逐股拉取路径）。"""
+    def test_med_prefetch_hook_is_eltdx_warming(self):
+        """med 经 prefetch_fn 预热 eltdx 短线 bundle(批量 TCP + 300s TTL 缓存, V17.2.24),
+        不应传逐股异步式 prefetch_async_fn。"""
         _r, _res, bp = self._invoke()
-        self.assertNotIn("prefetch_fn", bp.call_args.kwargs)
+        self.assertIn("prefetch_fn", bp.call_args.kwargs)
+        self.assertTrue(callable(bp.call_args.kwargs["prefetch_fn"]))
         self.assertNotIn("prefetch_async_fn", bp.call_args.kwargs)
 
 

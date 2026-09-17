@@ -1880,6 +1880,8 @@ async def generate_sector_report(output_path):
 
     L(f"\n{'='*90}")
     L("## 【D. 行业轮动强度扫描】")
+    L("  💡 口径: ZHB 快照聚合申万二级行业, 成交额/主力净流为板块成分股 T 日聚合"
+      "(板块成员数以实际快照覆盖为准); 与 E 段 TOP10 深度分析口径一致。")
     L(f"{'---'}")
     top10 = sorted_sectors[:10]
     L(f"  行业总数: {len(sectors)}个")

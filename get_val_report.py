@@ -2444,6 +2444,13 @@ async def run_discovery_async(output_path):
         ("策略26【连板梯队·短线封单强度】", strategy_26_limit_ladder, (all_stocks,)),  # V17.2.16: eltdx 7709/7615 实时(连板天梯+封流比)
         ("策略27【短线资金强度·开盘抢筹】", strategy_27_shortline_fund_strength, (all_stocks,)),  # V17.2.18: eltdx 7709/7615 实时(竞价+开盘资金抢筹)
     ]
+    # V17.2.25: 策略数自检——注册表条数须与 _STRATEGY_TOTAL 常量一致,
+    # 防止表头/正文漂移(曾硬编码 26 ≠ 实际 27)。新增策略须同步 bump 常量。
+    if len(_strategy_defs) != _STRATEGY_TOTAL:
+        raise RuntimeError(
+            f"策略数漂移: 注册 {len(_strategy_defs)} ≠ 常量 {_STRATEGY_TOTAL}；"
+            f"请同步 _strategy_defs 与 _STRATEGY_TOTAL"
+        )
 
     try:
         print("  ▶ 27 策略并行扫描（asyncio 模式，并发 3）…", flush=True)

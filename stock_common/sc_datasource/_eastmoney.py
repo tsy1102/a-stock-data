@@ -1390,12 +1390,12 @@ def get_dragon_tiger_board(
                     "net": round((row.get("NET") or 0) / 10000, 1),
                 }
             )
-        # 机构专用席位（code == "0" 为机构专用）
-        for row in buy_data:
+        # V17.2.26: 机构专用席位（code == "0" 为机构专用）。
+        # 买入额/卖出额须对【买入榜 + 卖出榜】全量明细求和——
+        # 机构专用被归入卖榜时其买入列此前被漏算，导致 institution.buy_amt 归零(报告 3.1)。
+        for row in list(buy_data) + list(sell_data):
             if str(row.get("OPERATEDEPT_CODE", "")) == "0":
                 institution["buy_amt"] += row.get("BUY") or 0
-        for row in sell_data:
-            if str(row.get("OPERATEDEPT_CODE", "")) == "0":
                 institution["sell_amt"] += row.get("SELL") or 0
         institution["buy_amt"] = round(institution["buy_amt"] / 10000, 1)
         institution["sell_amt"] = round(institution["sell_amt"] / 10000, 1)

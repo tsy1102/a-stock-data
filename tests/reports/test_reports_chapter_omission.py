@@ -1,6 +1,6 @@
 """test_reports_chapter_omission.py — 回归锁固「源空→可见告警而非静默缺章」反模式。
 
-背景: V17.0.14 接入【十三·五、筹码分布(CYQ)】、V17.0.15 接入【十六·五、K线形态识别】。
+背景: V17.0.14 接入【筹码分布(CYQ)】(当前 sht 报告编号 十四)、V17.0.15 接入【K线形态识别】(当前编号 十七)。本章号随报告章法演进, 测试字符串须同步当前结构(不再是十三·五/十六·五)。
 原门控 `if _cyq_dict:` / `if len(_sr)>=3` 在数据源抓取失败(东财 push2his kline/get 或
 远端 TDX bars 截断/不可达)时**整章静默跳过**, 不输出任何提示 → 重演 V17.0 已修的
 M1/M4「假空白章节/假成功」反模式。2026-08-31 QA 发现 8 月全量 360 份 sht 报告二者 0 出现。
@@ -163,12 +163,12 @@ def test_cyq_and_kline_chapters_survive_source_failure():
     text = _render_via_runner("lite")
     assert text, "报告渲染结果为空"
 
-    # 十三·五 CYQ: 标题必须在, 且源空时显式告警
-    assert "十三·五、筹码分布（成本集中度）" in text, "CYQ 章节标题缺失(静默跳过未修复)"
+    # 十四 CYQ: 标题必须在, 且源空时显式告警
+    assert "十四、筹码分布（成本集中度）" in text, "CYQ 章节标题缺失(静默跳过未修复)"
     assert "东财 K线/CYQ 数据源暂不可用" in text, "CYQ 源空时应渲染可见告警占位"
 
-    # 十六·五 K线形态: 标题必须在, 且源空时显式告警
-    assert "十六·五、K线形态识别（TA-Lib 61 形态）" in text, "K线形态章节标题缺失(静默跳过未修复)"
+    # 十七 K线形态: 标题必须在, 且源空时显式告警
+    assert "十七、K线形态识别（TA-Lib 61 形态）" in text, "K线形态章节标题缺失(静默跳过未修复)"
     assert "K线数据源暂不可用" in text, "K线形态源空时应渲染可见告警占位"
 
 
@@ -193,6 +193,6 @@ def test_cyq_chapter_renders_data_when_source_ok():
         finally:
             if os.path.exists(_tmp):
                 os.remove(_tmp)
-    assert "十三·五、筹码分布（成本集中度）" in text
+    assert "十四、筹码分布（成本集中度）" in text
     assert "获利盘比例: 60.0%" in text, "CYQ 源正常时应输出真实获利盘比例"
     assert "东财 K线/CYQ 数据源暂不可用" not in text, "CYQ 源正常时不应出现告警占位"

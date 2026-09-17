@@ -404,7 +404,10 @@ async def generate_report_async(session, code, output_path, ind_comp=None):
         _tsw = _safe_float(getattr(_cdata, 'total_shares_wan', 0))
         if _tsw > 0:
             _total_shares_yi = _tsw / 1e4  # 万股→亿股
-    L(f"  总股本:   {_total_shares_yi:.2f}亿股 | 总市值: {q.get('mcap_yi', 0):.2f}亿元")
+    # V17.2.26 修复(报告 3.2): 总股本取空(含 canonical 兜底后仍为空)时渲染"数据暂缺",
+    # 不再显示误导性的 0.00亿股(此前与有值总市值自相矛盾, 且曾污染规模因子)。
+    _ts_disp = f"{_total_shares_yi:.2f}亿股" if _total_shares_yi > 0 else "数据暂缺"
+    L(f"  总股本:   {_ts_disp} | 总市值: {q.get('mcap_yi', 0):.2f}亿元")
     L(f"  当前股价: {price_today:.2f}元")
     
     L("\n  ➤ 长线估值安全边际指标:")
@@ -536,8 +539,11 @@ async def generate_report_async(session, code, output_path, ind_comp=None):
         for r in ext_roe_data:
             ext_roe_str = f"{r['roe']:.2f}" if r['roe'] is not None else "N/A"
             ext_roe_kc_str = f"{r['roe_kc']:.2f}" if r['roe_kc'] is not None else "N/A"
-            ext_eps_str = f"{r['eps']:.2f}" if r['eps'] is not None else "N/A"
-            ext_bps_str = f"{r['bps']:.2f}" if r['bps'] is not None else "N/A"
+            # V17.2.26 修复(报告 3.6): get_roe_trend 返回 eps/bps 为 0.0001元单位(如 3375.90→0.3376元), 折算为元显示
+            ext_eps_val = r['eps']
+            ext_bps_val = r['bps']
+            ext_eps_str = f"{ext_eps_val/10000:.4f}" if ext_eps_val is not None else "N/A"
+            ext_bps_str = f"{ext_bps_val/10000:.4f}" if ext_bps_val is not None else "N/A"
             L(f"| {r['date']} | {ext_roe_str} | {ext_roe_kc_str} | {ext_eps_str} | {ext_bps_str} |")
         ext_last_roe = ext_roe_data[0].get("roe")
         if ext_last_roe is not None:
@@ -666,7 +672,10 @@ async def generate_report_async(session, code, output_path, ind_comp=None):
                 L(f"  ⚠️ 爆雷预警：商誉占净资产 {gw_ratio:.1f}% > 20%，注意行业周期下行时的商誉减值黑天鹅！")
             else:
                 L("  ✅ 商誉占比在安全范围内 (< 20%)。")
-        L(f"  资产负债率: {100 - equity_yi/asset_yi*100:.1f}%（截至 {bs_data[0].get('报告日','')}）" if asset_yi > 0 else "")
+        _liab = float(latest_bs.get("负债合计", 0))
+        # V17.2.26 修复(报告 3.3): 资产负债率须直接用负债合计/资产总计, 原用 100-归母权益/资产
+        # 忽略少数股东权益, 对含少数股东的公司系统性高估约5pp(如 002015: 68.7% vs med 63.6%)。
+        L(f"  资产负债率: {_liab/total_assets*100:.1f}%（截至 {bs_data[0].get('报告日','')}）" if (asset_yi > 0 and _liab > 0) else "")
         _st_loan = _safe_float(bs_data[0].get("短期借款", "0")) / 1e8
         _lt_loan = _safe_float(bs_data[0].get("长期借款", "0")) / 1e8
         _bd = _safe_float(bs_data[0].get("应付债券", "0")) / 1e8
@@ -709,8 +718,9 @@ async def generate_report_async(session, code, output_path, ind_comp=None):
         parts.append(f"净利率 {gm_rows[0]['npm']:.2f}%")
     if ext_roe_data and ext_roe_data[0].get("roe") is not None:
         parts.append(f"ROE {ext_roe_data[0]['roe']:.2f}%")
+    # V17.2.26 修复(报告 3.6): eps 为 0.0001元单位, 折算为元显示
     if ext_roe_data and ext_roe_data[0].get("eps") is not None:
-        parts.append(f"EPS {ext_roe_data[0]['eps']:.4f}")
+        parts.append(f"EPS {ext_roe_data[0]['eps']/10000:.4f}")
     try:
         # V16.1: 复用"三"章节的 0x0010 快照（避免重复 TCP 请求）
         if _tdx_fi_snapshot is not None:
@@ -796,12 +806,17 @@ async def generate_report_async(session, code, output_path, ind_comp=None):
     if not df_eps.empty and len(df_eps.columns) >= 4:
         L(f"  {'年度':<10} {'覆盖机构数':>7} {'预测EPS均值':<9}")
         L(f"  {'-'*40}")
+        _this_year = date.today().year
+        _eps_by_year = {}
         for i, row in df_eps.iterrows():
             try:
                 year = str(row.iloc[0]) if pd.notna(row.iloc[0]) else ""
                 cnt = int(row.iloc[1]) if pd.notna(row.iloc[1]) else 0
                 mean_v = float(row.iloc[3]) if pd.notna(row.iloc[3]) else 0
                 L(f"  {year:<10} {cnt:<10} {mean_v:<12.3f}")
+                _yd = ''.join(ch for ch in year if ch.isdigit())
+                if _yd:
+                    _eps_by_year[int(_yd)] = mean_v
                 if i == 0:
                     eps_cur = mean_v
                     eps_has_data = True
@@ -809,6 +824,12 @@ async def generate_report_async(session, code, output_path, ind_comp=None):
                     eps_next = mean_v
             except (ValueError, TypeError, IndexError):
                 pass
+        # V17.2.26 修复(报告 3.4/3.5): 前向PE/增速须取【本年度/明年】预测EPS, 不可按行位置取首行
+        # (首行常为上年实际, 致 pe_fwd 实为静态PE、增速=上年实际→本年预测, 与 med 口径错配)。
+        if _this_year in _eps_by_year:
+            eps_cur = _eps_by_year[_this_year]
+        if (_this_year + 1) in _eps_by_year:
+            eps_next = _eps_by_year[_this_year + 1]
     if not eps_has_data:
         em_eps = await _get_eps_from_em_reports_async(session, code)
         if em_eps:

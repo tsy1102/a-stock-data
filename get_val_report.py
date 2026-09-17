@@ -1963,6 +1963,10 @@ def _safe_int(v) -> int:
 # 报告生成（V7.5 异步版为主，同步版为 asyncio.run 包装）
 # ═══════════════════════════════════════════════
 
+# V17.2.25: 策略总数常量——与下方 run_discovery_async 内 _strategy_defs 注册表条数保持一致。
+# 表头(L1986)与策略数自检断言(L2449)均引用此常量；新增/删除策略须同步 bump，否则断言抛 RuntimeError。
+_STRATEGY_TOTAL = 27
+
 def run_discovery(output_path):
     """同步版包装：委托给异步版执行（保留向后兼容）。"""
     return asyncio.run(run_discovery_async(output_path))
@@ -1983,7 +1987,7 @@ async def run_discovery_async(output_path):
     L("---")
     L(f"  **A 股策略发现报告**  [{today_str} {_t_now.strftime('%H.%M.%S')}]")
     L("---")
-    L("  市场: A 股 | 策略: 26 | 引擎: asyncio | 并发: 3")
+    L(f"  市场: A 股 | 策略: {_STRATEGY_TOTAL} | 引擎: asyncio | 并发: 3")
     L("-" * 85)
     L("  预热: 加载市场数据 & 策略配置…")
     _load_t0 = time.time()  # V17.0.10c(2026-08-28): 加载阶段耗时基；用于把总时长在"加载 vs 扫描"间拆分归因

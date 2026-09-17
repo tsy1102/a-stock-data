@@ -364,7 +364,7 @@ def collect_tdx(pool: list) -> dict:
     return out
 
 
-def collect_eltdx(pool: list) -> dict:
+def collect_eltdx(pool: list, lite: bool = False) -> dict:
     """eltdx 全字段采集（V17.2.15, 主字典第 24 源）。
 
     eltdx = Rust 内核通达信 7709/7615 客户端（PyPI 在线、零依赖、Research-Only 许可）。
@@ -374,6 +374,12 @@ def collect_eltdx(pool: list) -> dict:
     /实时排名)。
     返回「命名字段 + 原始字节」双轨, 供 collide.py 值级对撞 + 原始字节二次解码(见 D 步)。
     源 = 本地 eltdx TCP(非云连接器); 标注 scheme="eltdx" 独立血缘, 不动东财主路径。
+    lite 模式(lite=True, 由 --eltdx-lite 触发): 跳过 kline_day/finance_batch/f10_news
+    (三者对撞均未消费, 且 kline/finance 与 tdx 源冗余、f10 仅能力登记), 仅保留
+    quote_snapshot + shortline + 连板天梯——即 collide.py 真正消费的 eltdx 字段。
+    注: lite 仅省次要载荷(实测 688.1s→668.5s, 约 2.8%); eltdx 采集主瓶颈是逐股
+    get_snapshots RPC(≈33s/股), 已通过 L461 起「批量 get_snapshots(ecodes) 一次预取」
+    彻底消解(20 次 RPC 往返→1 次), 与 eltdx shortline_indicators 批量 API 同源。
     """
     from dataclasses import asdict, is_dataclass
     from datetime import datetime as _dt
@@ -404,6 +410,14 @@ def collect_eltdx(pool: list) -> dict:
             return "bj" + c
         return "sz" + c  # 0/3/2/1 开头
 
+    def _is_bse(ec: str) -> bool:
+        # 北交所/BSE 股(92xxx→sh92xxx 及 bj 前缀)常缺 snapshot marker,
+        # 批量 API 遇之会整批挂起 ~660s 才抛异常 → 须剔出批量、单独逐股。
+        return ec.startswith("bj") or (ec.startswith("sh") and ec[2:].startswith("92"))
+
+    # 注意: eltdx 客户端非线程安全, 任何 eltdx 调用放进后台线程都会死锁挂起;
+    # 因此全程主线程直调, 不做线程超时护栏(护栏本身即死锁源)。挂起源靠"限定 codes 范围"消除。
+
     try:
         from eltdx import TdxClient, F10Client
     except Exception as _e:
@@ -414,15 +428,23 @@ def collect_eltdx(pool: list) -> dict:
     try:
         # 默认探测主站(含 2026-09 新式握手); 单客户端复用(连接池)避免逐股重连。
         client = TdxClient(timeout=8)
+        # 池代码(供全局 helpers 限域 + 逐股循环复用)
+        codes = [p["code"] for p in pool]
+        ecodes = [_ecode(c) for c in codes]
+        _bse = [e for e in ecodes if _is_bse(e)]
+        _a = [e for e in ecodes if e not in _bse]
         _gh = out["global_helpers"]
         # ── 全局 Helpers(非逐股) ──
+        # V17.2.28 根因修正: limit_ladder/theme_strength_rank/stock_theme_strength_rank 默认 codes=None
+        # 会扫描全市场 A 股(~5000 只)的 shortline_indicators + F10 主题查询, 单只 ~50ms 累积→~660s 挂起。
+        # 修复: 显式传入本池 ecodes(仅 ~20 只)将工作量降到本池, 秒级完成; eltdx 调用一律主线程直调
+        # (线程护栏会死锁非线程安全的客户端, 已废弃)。volume_comparison/buy_sell_strength 是逐股辅助
+        # (需 code 参数), 不属于全局, 移除以免报错。
         for _name, _fn in [
-            ("limit_ladder", lambda: client.helpers.limit_ladder()),
-            ("theme_strength_rank", lambda: client.helpers.theme_strength_rank()),
-            ("stock_theme_strength_rank", lambda: client.helpers.stock_theme_strength_rank()),
+            ("limit_ladder", lambda e=_a: client.helpers.limit_ladder(codes=e)),
+            ("theme_strength_rank", lambda e=_a: client.helpers.theme_strength_rank(codes=e)),
+            ("stock_theme_strength_rank", lambda e=_a: client.helpers.stock_theme_strength_rank(codes=e)),
             ("realtime_rank", lambda: client.helpers.realtime_rank()),
-            ("volume_comparison", lambda: client.helpers.volume_comparison()),
-            ("buy_sell_strength", lambda: client.helpers.buy_sell_strength()),
             ("market_stat_880005", lambda: client.bars.get("sh880005", period="day", count=1)),
         ]:
             try:
@@ -430,65 +452,100 @@ def collect_eltdx(pool: list) -> dict:
             except Exception as _e:
                 _gh[_name] = {"__error__": str(_e)[:200]}
         # ── 逐股 ──
-        codes = [p["code"] for p in pool]
-        ecodes = [_ecode(c) for c in codes]
-        # 短线指标(批量, 41 字段/股) -> 命中映射
+        # 短线指标(逐股, 41 字段/股) -> 命中映射(_sl_map); 主线程逐股直调
+        # (实测 ~1.0s/股, A股与 BSE 均安全, BSE 快速报错不挂)。
         _sl_map = {}
-        try:
-            _sl = client.helpers.shortline_indicators(ecodes)
-            for _rec in (_sl or []):
-                _recd = _jfy(_rec)
-                _cc = _recd.get("code") or _recd.get("full_code")
-                if _cc:
-                    _sl_map[_cc] = _recd
-        except Exception as _e:
-            # V17.2.25: 批量 shortline 原子失败(如某 BSE/920xxx 股 snapshot marker 缺失)→
-            # 降级为逐股重试, 保住其余 19 只的连板/短线数据, 不整批丢失。
-            out["shortline_error"] = f"batch failed, fallback per-code: {str(_e)[:120]}"
-            for _ec in ecodes:
-                try:
-                    _sl_one = client.helpers.shortline_indicators([_ec])
-                    for _rec in (_sl_one or []):
-                        _recd = _jfy(_rec)
-                        _cc = _recd.get("code") or _recd.get("full_code")
-                        if _cc:
-                            _sl_map[_cc] = _recd
-                except Exception:
-                    continue
+        # V17.2.28: 批量 shortline_indicators 进后台线程会死锁挂起, 且遇 BSE 坏码整批挂起;
+        # 改用主线程逐股直调(实测 ~1.0s/股, A股与 BSE 均安全, BSE 快速报错不挂), 绝无挂起。
+        for _ec in ecodes:
+            try:
+                _sl_one = client.helpers.shortline_indicators([_ec])
+                # shortline_indicators 返回 ShortlineIndicatorTable(非 list); 须取 .rows 迭代,
+                # 否则会遍历 dataclass 字段而非记录, 导致 shortline 永远挂不上。
+                for _rec in (getattr(_sl_one, "rows", None) or []):
+                    _recd = _jfy(_rec)
+                    # eltdx shortline 记录 code=纯数字(600000), 而逐股循环 ec=全码(sh600000);
+                    # 以 full_code 为主键, 使 per-stock 挂载 `if ec in _sl_map` 命中。
+                    _cc = _recd.get("full_code") or _recd.get("code")
+                    if _cc:
+                        _sl_map[_cc] = _recd
+            except Exception:
+                continue
+        # BSE 股: eltdx 所有 API 对其均挂起/失败(坏码 marker 缺失), 不调用,
+        # 逐股循环对 BSE 直接记 skipped, 避免单点调用同样挂起。
+        # ── 行情快照(A股批量一次取全部, 避免逐股 RPC 往返) ──
+        # 实测逐股 get_snapshots ~1.5s/股(A股), 批量 A股 0.0s; BSE 批量会整批挂起故已剔出 _a。
+        # 旧采集 688s 真正主因 = global_helpers 默认扫描全市场(~5000 只)→ 已改为限本池 ecodes。
+        _snap_map = {}
+        if _a:
+            try:
+                _batch = client.quotes.get_snapshots(_a)
+                _batch_snaps = getattr(_batch, "snapshots", _batch) if not isinstance(_batch, list) else _batch
+                if isinstance(_batch_snaps, dict):
+                    for _k, _v in _batch_snaps.items():
+                        _snap_map[str(_k)] = _v
+                elif isinstance(_batch_snaps, (list, tuple)):
+                    for _i, _el in enumerate(_batch_snaps):
+                        _code = getattr(_el, "code", None) or getattr(_el, "full_code", None)
+                        if _code:
+                            _snap_map[str(_code)] = _el
+                        elif _i < len(_a):
+                            _snap_map[_a[_i]] = _el
+            except Exception as _e:
+                # A股批量失败(罕见)→ 降级逐股保住快照(挂起风险已由 BSE 隔离消除)
+                out["snapshot_error"] = f"A-share batch failed, fallback per-code: {str(_e)[:120]}"
+                for _ec in _a:
+                    try:
+                        _s = client.quotes.get_snapshots([_ec])
+                        _ss = getattr(_s, "snapshots", _s) if not isinstance(_s, list) else _s
+                        if _ss:
+                            _snap_map[_ec] = _ss[0]
+                    except Exception:
+                        continue
+        # BSE 股: 不调用 get_snapshots(坏码单点调用同样挂起); 逐股循环记 skipped。
         for p in pool:
             c = p["code"]
             ec = _ecode(c)
             rec = {}
-            # 行情快照(含 tail_raw 原始帧尾)
+            # 行情快照(含 tail_raw 原始帧尾) —— 已由批量 _snap_map 预取
             try:
-                _snap = client.quotes.get_snapshots([ec])
-                _snaps = getattr(_snap, "snapshots", _snap) if not isinstance(_snap, list) else _snap
-                rec["quote_snapshot"] = _jfy(_snaps[0]) if _snaps else None
+                if ec in _snap_map:
+                    rec["quote_snapshot"] = _jfy(_snap_map[ec])
+                elif _is_bse(ec):
+                    # BSE 已在前述逐股分支尝试且预期缺 marker, 不重复调用(避免批量式挂起)
+                    rec["quote_snapshot"] = {"__error__": "BSE code: snapshot marker not available (skipped)"}
+                else:
+                    _snap = client.quotes.get_snapshots([ec])
+                    _snaps = getattr(_snap, "snapshots", _snap) if not isinstance(_snap, list) else _snap
+                    rec["quote_snapshot"] = _jfy(_snaps[0]) if _snaps else None
             except Exception as _e:
                 rec["quote_snapshot"] = {"__error__": str(_e)[:200]}
-            # 日K(最新若干根 + record_hex 原始记录)
-            try:
-                _ks = client.bars.get(ec, period="day", count=5, include_raw=True)
-                _bars = getattr(_ks, "bars", None) or []
-                rec["kline_day"] = [_jfy(b) for b in _bars]
-            except Exception as _e:
-                rec["kline_day"] = {"__error__": str(_e)[:200]}
-            # 0x0010 财务(含 finance_info_raw 原始块)
-            try:
-                _fb = client.corporate.finance_batch(ec, include_raw=True)
-                _recs = getattr(_fb, "records", None) or []
-                rec["finance_batch"] = [_jfy(r) for r in _recs]
-            except Exception as _e:
-                rec["finance_batch"] = {"__error__": str(_e)[:200]}
+            # 日K(最新若干根 + record_hex 原始记录) —— lite 模式跳过(与 tdx 源冗余, 对撞未消费)
+            if (not lite) and (not _is_bse(ec)):
+                try:
+                    _ks = client.bars.get(ec, period="day", count=5, include_raw=True)
+                    _bars = getattr(_ks, "bars", None) or []
+                    rec["kline_day"] = [_jfy(b) for b in _bars]
+                except Exception as _e:
+                    rec["kline_day"] = {"__error__": str(_e)[:200]}
+            # 0x0010 财务(含 finance_info_raw 原始块) —— lite 模式跳过(与 tdx 源冗余, 对撞未消费)
+            if (not lite) and (not _is_bse(ec)):
+                try:
+                    _fb = client.corporate.finance_batch(ec, include_raw=True)
+                    _recs = getattr(_fb, "records", None) or []
+                    rec["finance_batch"] = [_jfy(r) for r in _recs]
+                except Exception as _e:
+                    rec["finance_batch"] = {"__error__": str(_e)[:200]}
             # 短线指标(命中)
             if ec in _sl_map:
                 rec["shortline"] = _sl_map[ec]
-            # F10 新闻(仅作 eltdx 能力登记; 不替代东财主路径)
-            try:
-                _f10 = F10Client(timeout=3)
-                rec["f10_news"] = _jfy(_f10.news(ec))
-            except Exception as _e:
-                rec["f10_news"] = {"__error__": str(_e)[:200]}
+            # F10 新闻(仅作 eltdx 能力登记; 不替代东财主路径) —— lite 模式跳过
+            if (not lite) and (not _is_bse(ec)):
+                try:
+                    _f10 = F10Client(timeout=3)
+                    rec["f10_news"] = _jfy(_f10.news(ec))
+                except Exception as _e:
+                    rec["f10_news"] = {"__error__": str(_e)[:200]}
             out["stocks"][c] = rec
         # V17.2.25: 全局连板天梯(global_helpers.limit_ladder) 折回逐股结构, 使 collide.py
         # (只读 stocks 逐股) 能消费 eltdx 特有连板字段(ladder_level/limit_up_streak_days/
@@ -1454,6 +1511,9 @@ def main() -> None:
                     help="采集前刷新动态层(从涨停池选 5 只连板/新股/涨停写回 pool.json)")
     ap.add_argument("--refresh-pool-only", action="store_true",
                     help="只刷新动态层并写回 pool.json, 不执行采集")
+    ap.add_argument("--eltdx-lite", action="store_true",
+                    help="eltdx 采集瘦身: 跳过与 tdx 源冗余的 kline_day/finance_batch 及仅能力登记的 f10_news, "
+                         "仅采 quote_snapshot+shortline+连板天梯(对撞真正消费项), 大幅加速每日字段对撞采集")
     args = ap.parse_args()
 
     if args.refresh_pool_only:
@@ -1534,7 +1594,8 @@ def main() -> None:
     for name, fn in collectors.items():
         try:
             t1 = time.time()
-            data = fn(pool)
+            # V17.2.28: eltdx 瘦身开关——仅 eltdx 支持 lite(跳过冗余/能力登记载荷)
+            data = fn(pool, lite=args.eltdx_lite) if name == "eltdx" else fn(pool)
             # V17.2.12 主字典对齐: registry 已登记但本脚本暂无 producer 的源返回 __unwired__ 占位,
             # 显式记为 unwired/deprecated(区别于 ok/partial/failed), 不写 raw 文件、不计入异常源清单。
             _uw = data.get("__unwired__") if isinstance(data, dict) else None

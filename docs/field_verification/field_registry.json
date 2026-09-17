@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": 1,
-    "updated": "2026-09-16",
+    "updated": "2026-09-17",
     "source_of_truth": "field_registry.json",
     "generated_by": "scripts/extract_registry.py",
     "note": "本文件为字段登记表单一真相源（影子抽取）。docs/field_dict.md 字段表由本文件生成，勿手改。",
@@ -229,14 +229,6 @@
         "12.10.9 levistock 全接口字段核实（2026-08-09 复测，**38/38 全部实测**）🆕",
         "12.20 FTShare MCP（✅ 已采纳——2026-08-25 实测+接入统一层与采集脚本）🆕",
         "12.20.1 FTShare 股吧/评论原始字段补录（V17.1.1 全量登记）"
-      ],
-      "status": "active"
-    },
-    {
-      "name": "eltdx（Rust 7709/7615 客户端）",
-      "verify_file": "eltdx_verify.md",
-      "section_patterns": [
-        "12.13 eltdx 完整方法字典（Rust 7709/7615 客户端）"
       ],
       "status": "active"
     }
@@ -7588,9 +7580,9 @@
       ],
       "section": "12.3.1 单股行情 `stock/get`（已由 get_em_quote_full 验证）",
       "canonical": "f121",
-      "meaning": "资金流衍生指标",
+      "meaning": "资金流衍生指标(≡60日涨跌幅, 见[71]/ulist f24)",
       "unit": "-",
-      "status_raw": "✅（=腾讯[71] 同源, 2026-08-19 17/20+浮点差）",
+      "status_raw": "✅（=腾讯[71] 同源, 2026-08-19 17/20+浮点差；20260917 对撞 push2.f121≡tencent[71] 80对/4日 91.25%命中, 巩固 V17.0.7 定案）",
       "status": "verified"
     },
     {

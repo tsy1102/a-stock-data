@@ -798,7 +798,6 @@ def get_stock_permanent_info(code: str) -> Dict[str, Any]:
     - name_core: 由调用方 parse_stock_name 处理（核心名称永久）
     返回 {"list_date", "ipo_price"}（缺失字段省略）。
     """
-    from ._zhb import get_zhb_single_stock_data
     out: Dict[str, Any] = {}
     try:
         # V16.3.3: list_date 走 push2delay f189（push2 主域连接风控实测——f189 拿不到）

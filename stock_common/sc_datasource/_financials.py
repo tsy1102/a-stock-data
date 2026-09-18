@@ -714,7 +714,6 @@ def get_sina_financial_report(code: str, num_periods: int = 12) -> Dict[str, Any
     """
     from ._zhb import get_zhb_single_stock_data
     from core.stock_cache import get_cache, set_cache
-    from stock_common import get_zhb_single_stock_data
 
     zhb = get_zhb_single_stock_data(code)
     report_date = zhb.get("report_date", "unknown") if zhb else "unknown"

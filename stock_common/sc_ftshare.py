@@ -101,7 +101,7 @@ def _reinit() -> None:
 
 
 def _ensure_session() -> None:
-    global _SID, _LAST_INIT
+    global _SID
     if not _SID or (time.time() - _LAST_INIT) > _SESSION_TTL:
         _SID = None
         _reinit()
@@ -119,7 +119,6 @@ def _rpc(method: str, params: dict = None) -> Optional[dict]:
         if obj is not None:
             return obj
         if attempt == 0:
-            _SID = None
             _reinit()
     return None
 

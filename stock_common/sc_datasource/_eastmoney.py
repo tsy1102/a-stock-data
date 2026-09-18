@@ -178,7 +178,7 @@ def get_em_batch_quotes(codes: List[str]) -> Dict[str, Dict[str, Any]]:
     if not codes:
         return {}
     # V17.0.1a: 当日缓存命中直接返回(增量)
-    global _EM_BATCH_CACHE, _EM_BATCH_CACHE_DATE
+    global _EM_BATCH_CACHE_DATE
     from datetime import datetime as _dt2
     _today2 = _dt2.now().strftime("%Y%m%d")
     if _EM_BATCH_CACHE_DATE != _today2:
@@ -1273,7 +1273,6 @@ def fund_flow_backup(code: str, days: int = 60) -> List[Dict[str, Any]]:
         资金流列表，包含日期、主力/大单/中单/小单净流入
     """
     # V16.3 O16: 北交所 920/8/4 号段走 bj 前缀（此 URL 当前未用 prefix，保留统一口径）
-    prefix = em_exchange_prefix(code)  # V17.2.11: 收敛散点 startswith("6") 路由
     url = (
         "https://vip.stock.finance.sina.com.cn/quotes_service/api/json_v2.php/MoneyFlow.ssl_bkzj_bk"
     )

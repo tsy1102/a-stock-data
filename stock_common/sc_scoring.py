@@ -718,7 +718,6 @@ def format_multi_school_report(scores_result: Dict[str, Any], code: str = "", na
 
     # 投资建议
     dominant = scores_result["dominant_school"]
-    dominant_score = scores_result["school_labels"][dominant]["score"]
 
     lines.append("\n💡 投资建议:")
     if dominant == "value":

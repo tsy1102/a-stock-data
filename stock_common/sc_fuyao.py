@@ -159,7 +159,7 @@ def ensure_fuyao_key(interactive: bool = True, stdin: Any = None) -> Optional[st
       （stdin 可注入用于测试；非交互终端无输入时自动跳过，不阻塞）
     - 未配置且 interactive=False → 返回 None（不打扰）
     """
-    global _FUYAO_DISABLED, _CACHED_KEY
+    global _FUYAO_DISABLED
     if _FUYAO_DISABLED:
         return None
     k = get_fuyao_key()

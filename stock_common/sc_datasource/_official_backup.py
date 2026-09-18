@@ -16,11 +16,8 @@ from stock_common.sc_utils import em_exchange_prefix
 #
 # 数值语义严格对齐上游：单位、字段名、分页/交易日校验均原样移植，便于数值级对撞。
 
-import re
-import json
-import time
-import math
-from datetime import datetime, timezone, timedelta
+from datetime import timezone
+
 from io import BytesIO
 
 import requests

@@ -26,7 +26,6 @@ V13.0 新增 sc_schema.py 作为第 5 个子模块，提供：
 """
 from __future__ import annotations
 
-import os
 
 __all__ = [
     # sc_network

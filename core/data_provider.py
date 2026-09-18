@@ -365,7 +365,6 @@ def get_canonical_stock_data(code: str, force_realtime: bool = False) -> Any:
     is_today_trading = is_workday(now.date())
 
     t_val = now.hour * 100 + now.minute
-    is_pre_market = t_val < 930
     is_post_market = is_today_trading and (t_val >= 1500)
     is_trading_hours = is_today_trading and (930 <= t_val < 1500)
 
@@ -564,7 +563,6 @@ def get_canonical_stock_data(code: str, force_realtime: bool = False) -> Any:
             from stock_common.sc_fuyao import is_fuyao_enabled
 
             if is_fuyao_enabled():
-                global _FY_TTM_CACHE
                 _fy_key = (code_str, str(rt_quote.get("report_period") or ""))
                 _fy_cached = _FY_TTM_CACHE.get(_fy_key)
                 if _fy_cached is None:
@@ -638,7 +636,7 @@ def get_canonical_stock_data(code: str, force_realtime: bool = False) -> Any:
     # (push2delay 唯一源), 财务四键仅在 fuyao 未填时补(不再覆盖 fuyao 主源值);
     # eps_deduct_ttm/undist_profit_ps 无 fuyao 对应, 仍由本块提供(push 独有字段)
     if not rt_quote.get("pe_dynamic") or not rt_quote.get("fund_main_today"):
-        global _PD_EXTRA_CACHE, _PD_EXTRA_CACHE_DATE
+        global _PD_EXTRA_CACHE_DATE
         from datetime import datetime as _dt2
 
         _today = _dt2.now().strftime("%Y%m%d")
@@ -2028,7 +2026,6 @@ def _local_share_capital(code: str) -> float:
             for _r in range(_nrec):
                 if _gpd_idx < 0 or _zgb_idx < 0:
                     break
-                _code = _raw[_pos:_pos + _rlen].decode("gbk", "ignore")
                 # 按字段偏移解析(GPDM/ZGB 位置固定, 逐字段累计偏移)
                 _off = _pos
                 _code_v = ""

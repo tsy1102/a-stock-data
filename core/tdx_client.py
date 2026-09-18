@@ -1241,7 +1241,6 @@ def tdx_get_security_bars(code: str, count: int = 800) -> Tuple[List[str], List[
             return cached
         # V14.3 P3: 再次检查磁盘缓存（防止并发首次进入）
         try:
-            from stock_common.sc_kline_cache import get_cached_kline, set_cached_kline
 
             disk_cached = get_cached_kline("D", code, count)
             if disk_cached is not None:
@@ -1318,7 +1317,6 @@ def tdx_get_security_bars(code: str, count: int = 800) -> Tuple[List[str], List[
                 # V14.3 P3: 写入跨进程磁盘缓存
                 if rows:
                     try:
-                        from stock_common.sc_kline_cache import set_cached_kline
 
                         set_cached_kline("D", code, count, result)
                     except Exception:
@@ -1811,7 +1809,6 @@ def tdx_get_weekly_bars(code: str, count: int = 100):
             # V14.3 P3: 写入跨进程磁盘缓存
             if rows:
                 try:
-                    from stock_common.sc_kline_cache import set_cached_kline
 
                     set_cached_kline("W", code, count, result)
                 except Exception:

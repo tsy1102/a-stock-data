@@ -236,7 +236,6 @@ def get_limit_pool_summary(date_str: str = "") -> Dict[str, Any]:
         包含涨停/炸板/跌停数量和详细数据的字典
     """
     from ._industry import _tdxhy_industry_map
-    from ._misc import _query_dt_pool_tc
     from ._zhb import get_zhb_data_date
     from ._zhb import get_zhb_full_market_snapshot
     # 涨停池: 同花顺优先(2026-08-16 实测 62 只/1.01s), 东财兜底。
@@ -540,7 +539,6 @@ def get_limit_pool_multi_source(date: Optional[str] = None) -> Dict[str, Any]:
             "detail": dict,            # 复盘啦 StockList 全量等
         }
     """
-    from ._misc import get_cls_market_emotion
     import time as _time
     from collections import Counter
 

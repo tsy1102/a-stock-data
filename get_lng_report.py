@@ -278,9 +278,9 @@ async def generate_report_async(session, code, output_path, ind_comp=None):
                 info["industry"] = _zhb_ind_name
     # V16.3.3 (2026-08-10 字典 12.15.8): ST/次新风险信号（结构化名称——ST 不剔除仅标注，涨跌幅已统一 10%）
     if getattr(_cdata, "is_st", False):
-        L(f"  ⚠️ 风险标记: **ST/*ST**（退市风险——长期价值需严格财务验证）")
+        L("  ⚠️ 风险标记: **ST/*ST**（退市风险——长期价值需严格财务验证）")
     if getattr(_cdata, "is_new", False):
-        L(f"  🆕 次新标记: 上市 ≤5 日（历史数据不足，长线谨慎）")
+        L("  🆕 次新标记: 上市 ≤5 日（历史数据不足，长线谨慎）")
     L(f"  所属板块: {_industry}")
 
     # V15.4.2: 同步同业对比包 to_thread
@@ -322,9 +322,6 @@ async def generate_report_async(session, code, output_path, ind_comp=None):
     _dp_change_ytd = _dp_composite.get("change_ytd", 0) if _dp_composite else 0
     _dp_high_52w = _dp_composite.get("high_52w", 0) if _dp_composite else 0
     _dp_low_52w = _dp_composite.get("low_52w", 0) if _dp_composite else 0
-    _dp_div_yield = _dp_composite.get("dividend_yield", 0) if _dp_composite else 0
-    _dp_pe_ttm_val = _dp_composite.get("pe_ttm", 0) if _dp_composite else 0
-    _dp_pb_val = _dp_composite.get("pb", 0) if _dp_composite else 0
 
     _zhb_change_ytd = _zhb_data.get("change_ytd", 0) if (_zhb_data and _zhb_fresh) else 0
     _zhb_change_5d = _zhb_data.get("change_5d", 0) if (_zhb_data and _zhb_fresh) else 0
@@ -852,7 +849,7 @@ async def generate_report_async(session, code, output_path, ind_comp=None):
             L(f"    未来一年预期净利增速: {cagr*100:.1f}%")
             peg = pe_fwd / (cagr * 100) if cagr > 0 else float("inf")  # V16.4.1: 原 "in" 拼写错误→ValueError
             if peg > 5:
-                L(f"    PEG: >5.0（增速过低或PE过高导致极端值，不具参考意义）")
+                L("    PEG: >5.0（增速过低或PE过高导致极端值，不具参考意义）")
             else:
                 # V16.4.1: 跨期口径标注——pe_fwd 用本年 EPS, 增速用明年 EPS(向前 PEG)
                 L(f"    PEG (市盈率相对盈利增长比率): {peg:.2f} (长线买入参考: <1低估, 1-1.5合理) [PE本年/增速明年,跨期口径]")

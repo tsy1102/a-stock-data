@@ -130,9 +130,10 @@ a-stock-data/
 ├── main.py                       # 主入口程序（参数分发/子进程调度/超时分级）
 ├── VERSION                       # 项目版本号（17.3，单一来源）
 │
-├── core/                         # V17.0 核心模块包（7 个支撑模块，见 core/README.md）
+├── core/                         # V17.0 核心模块包（8 个支撑模块，见 core/README.md）
 │   ├── config.py                 # 全局配置集中管理（超时/限流/熔断）
 │   ├── data_provider.py          # 统一数据层（canonical 合约 + 字段路由 + 多级 fallback）
+│   ├── _accessors.py             # 跨边界访问器叶子模块（get_concept_from_zhb 等 7 个访问器，消除 data_provider↔stock_common 导入期循环依赖）
 │   ├── zhb_client.py             # 通达信 zhb.zip 全局配置总包下载与解析（45 文件）
 │   ├── zhb_sync.py               # ZHB 自动化入库管道（python -m core.zhb_sync）
 │   ├── tdx_client.py             # mootdx/easy_tdx 统一层（K线/F10/资金流/板块）

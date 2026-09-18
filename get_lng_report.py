@@ -527,8 +527,11 @@ async def generate_report_async(session, code, output_path, ind_comp=None):
 
     bs_data = await get_sina_balance_sheet_async(session, code)
     L("\n  ➤ 核心复利引擎（ROE净资产收益率追踪）:")
+    # V17.3 修正(审查): info.total_shares 单位=万股(== cdata.total_shares_wan);
+    # get_roe_trend_series 新浪兜底 eps=profit/total_shares 期望"股", 原传万股→EPS/BPS 错 1e4 倍。
+    # 改用统一层 cdata.total_shares_wan(万股)*1e4=股, 与 F10 加权口径同源。
     ext_roe_data = get_roe_trend(code, 8, financials=financials, bs_data=bs_data,
-                                  total_shares=info.get("total_shares", 0))
+                                  total_shares=(cdata.total_shares_wan * 1e4) if cdata.total_shares_wan > 0 else 0)
     if ext_roe_data:
         # V17.0.7: 按报告期日期降序排列(修复 FY 优先导致 Q 数据排错位置)
         ext_roe_data = sorted(ext_roe_data, key=lambda r: str(r.get('date', '')), reverse=True)

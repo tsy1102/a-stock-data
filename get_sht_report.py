@@ -980,7 +980,10 @@ async def generate_report_async(session, code, output_path, ind_comp=None, idx_q
 
                 _mcap = _shares * price_today
 
-                _ratio = _shares / info.get('total_shares',1) if info.get('total_shares',0) > 0 else 0
+                # V17.3 修正(审查): info.total_shares 单位=万股(== cdata.total_shares_wan), 而 _shares(北向持股)为股;
+                # 原 _shares/info.total_shares 股÷万股单位错配(差1e4), 且缺×100百分数口径(与 med 不一致)。
+                # 改统一层 cdata.total_shares_wan(万股)*1e4=股, ×100 得百分数, 与 med 同源同口径。
+                _ratio = _shares / (cdata.total_shares_wan * 1e4) * 100 if cdata.total_shares_wan > 0 else 0
 
             L(f"  {d['date']:<12} {_shares/1e4:>12.0f} {_mcap/1e4:>12.0f} {_ratio:>9.4f}% {d['change_shares']/1e4:>+12.0f}")
 

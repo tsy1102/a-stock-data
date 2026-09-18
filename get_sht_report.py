@@ -2169,6 +2169,9 @@ async def generate_report_async(session, code, output_path, ind_comp=None, idx_q
         else:
             _rating = "**中性偏谨慎** 多项评分偏低，需注意风险控制"
         L(f"  综合投资建议: {_rating}")
+        # V17.2.27(2026-09-18) P2 协调注: 短线评分(封单/资金维度)与综合建议(多评委共识分)维度独立,
+        # 前者看盘中博弈强度、后者看多因子共振质量, 二者可并存不冲突, 勿直接对照。
+        L("    ℹ️ 综合投资建议基于多评委共识分(基本面/技术/资金等多维共振), 与上文明细「短线评分」(封单强度/资金博弈维度)口径不同, 二者可并存不冲突")
     except Exception as _e:
         _debug_log(f"multi_school_score error: {_e}")
 

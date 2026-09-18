@@ -793,6 +793,8 @@ async def generate_report_async(session, code, output_path, ind_comp=None, hsgt=
                 _debug_log(f"med black_horse_check: {_e}")
         if has_black_horse:
             L("  ⚡ 无机构覆盖，但近两季度净利润+营收连续环比改善，具备黑马潜质预警！")
+        elif reports:
+            L("  暂无机构EPS一致预期（已有研报覆盖，详见【六】章节评级统计）")
         else:
             L("  无机构覆盖数据（中线建议规避无主流机构覆盖的冷门股）")
 
@@ -828,8 +830,14 @@ async def generate_report_async(session, code, output_path, ind_comp=None, hsgt=
         if rating_up or rating_down:
             L(f"  评级变化: 上调 {rating_up} 篇 | 下调 {rating_down} 篇"
               + (" → 机构态度偏积极" if rating_up > rating_down else " → 机构态度偏谨慎" if rating_down > rating_up else ""))
-        L("\n  最新 5 篇核心研报观点:")
-        for r in reports[:5]:
+        _rep_sorted = sorted(
+            reports,
+            key=lambda r: str(r.get("publishDate", r.get("reportDate", "")))[:10],
+            reverse=True,
+        )
+        _rep_shown = _rep_sorted[:5]
+        L(f"\n  最新 {len(_rep_shown)} 篇核心研报观点:")
+        for r in _rep_shown:
             pub_date = str(r.get("publishDate", ""))[:10]
             org = r.get("orgSName", "")
             title = r.get("title", "")[:45]

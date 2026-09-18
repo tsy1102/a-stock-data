@@ -3,7 +3,18 @@
 本文件不是独立可导入模块；其源码被 stock_common/sc_datasource/__init__.py
 exec 进包命名空间，与包内其他函数/状态共享同一 globals()。
 """
-# flake8: noqa: F821  (名称来自包共享命名空间，本片段不单独导入)
+
+import datetime
+from stock_common.sc_network import UA, _async_quick_request, _debug_log, _quick_request
+from stock_common.sc_utils import TTL, _load_settings, _safe_float, cached, em_exchange_prefix
+from core.stock_cache import make_valid_if
+
+
+import datetime
+from stock_common.sc_network import UA, _async_quick_request, _debug_log, _quick_request
+from stock_common.sc_utils import TTL, _load_settings, _safe_float, cached, em_exchange_prefix
+from core.stock_cache import make_valid_if
+
 
 @cached(
     category="basic_info",

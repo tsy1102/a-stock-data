@@ -3,7 +3,20 @@
 本文件不是独立可导入模块；其源码被 stock_common/sc_datasource/__init__.py
 exec 进包命名空间，与包内其他函数/状态共享同一 globals()。
 """
-# flake8: noqa: F821  (名称来自包共享命名空间，本片段不单独导入)
+
+import datetime
+from stock_common.sc_network import UA, _async_quick_request, _debug_log, _quick_request
+from stock_common.sc_utils import _load_settings, _safe_float, cached, em_exchange_prefix
+from core.stock_cache import make_valid_if
+from ._shared import _CNINFO_ORGID_CACHE, _HOLDER_CACHE_REFRESH, _HOLDER_CACHE_TTL, _holder_structure_cache
+
+
+import datetime
+from stock_common.sc_network import UA, _async_quick_request, _debug_log, _quick_request
+from stock_common.sc_utils import _load_settings, _safe_float, cached, em_exchange_prefix
+from core.stock_cache import make_valid_if
+from ._shared import _CNINFO_ORGID_CACHE, _HOLDER_CACHE_REFRESH, _HOLDER_CACHE_TTL, _holder_structure_cache
+
 
 def _holder_fetch_from_sqlite(code: str) -> Optional[Dict[str, Any]]:
     """从 SQLite 获取股东户数数据。"""

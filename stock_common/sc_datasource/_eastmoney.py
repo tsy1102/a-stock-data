@@ -3,7 +3,20 @@
 本文件不是独立可导入模块；其源码被 stock_common/sc_datasource/__init__.py
 exec 进包命名空间，与包内其他函数/状态共享同一 globals()。
 """
-# flake8: noqa: F821  (名称来自包共享命名空间，本片段不单独导入)
+
+import datetime
+from stock_common.sc_network import DATACENTER_URL, RateLimitBlockedError, UA, _async_request_with_retry, _biz_logger, _debug_log, _http_logger, _quick_request, em_get, requires_push2
+from stock_common.sc_utils import TTL, _safe_float, cached, em_exchange_prefix, em_secid_prefix
+from core.stock_cache import make_valid_if
+from ._shared import _DC_PREFETCH_FUTURES, _EM_BATCH_CACHE, _EM_L2_TTL, _FFLOW_HOSTS
+
+
+import datetime
+from stock_common.sc_network import DATACENTER_URL, RateLimitBlockedError, UA, _async_request_with_retry, _biz_logger, _debug_log, _http_logger, _quick_request, em_get, requires_push2
+from stock_common.sc_utils import TTL, _safe_float, cached, em_exchange_prefix, em_secid_prefix
+from core.stock_cache import make_valid_if
+from ._shared import _DC_PREFETCH_FUTURES, _EM_BATCH_CACHE, _EM_L2_TTL, _FFLOW_HOSTS
+
 
 def eastmoney_datacenter(
     code: str,

@@ -3,7 +3,16 @@
 本文件不是独立可导入模块；其源码被 stock_common/sc_datasource/__init__.py
 exec 进包命名空间，与包内其他函数/状态共享同一 globals()。
 """
-# flake8: noqa: F821  (名称来自包共享命名空间，本片段不单独导入)
+
+import datetime
+from stock_common.sc_network import UA, _debug_log
+from stock_common.sc_utils import TTL, cached
+
+
+import datetime
+from stock_common.sc_network import UA, _debug_log
+from stock_common.sc_utils import TTL, cached
+
 
 def _tdx_root() -> str:
     """TDX 安装根目录（M12 修复：原代码硬编码 C:\\new_tdx64，非该安装路径的机器直接 FileNotFoundError）。

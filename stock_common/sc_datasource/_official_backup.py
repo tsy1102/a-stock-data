@@ -319,3 +319,33 @@ def get_bse_quote_backup(code: str) -> dict:
     if last_err is not None:
         _debug_log(f"sc_datasource bse_quote_backup({code}): 全部日期失败，末错 {last_err!r}")
     return {}
+
+__all__ = [
+    'BytesIO',
+    '_debug_log',
+    '_official_code',
+    '_official_columns',
+    '_official_date',
+    '_official_excel',
+    '_official_frame',
+    '_official_get',
+    '_official_margin_code',
+    '_official_number',
+    '_official_total',
+    '_recent_trade_dates',
+    'bse_quote_backup',
+    'code',
+    'datetime',
+    'em_exchange_prefix',
+    'get_bse_quote_backup',
+    'get_margin_trading_backup',
+    'json',
+    'margin_trading_backup',
+    'math',
+    'pd',
+    're',
+    'requests',
+    'time',
+    'timedelta',
+    'timezone',
+]

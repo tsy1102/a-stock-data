@@ -225,3 +225,30 @@ def get_zhb_single_stock_data(code: str) -> Optional[Dict[str, Any]]:
         _debug_log(f"datasource zhb single_stock_data ({code}): {_e}")
         return None
 
+
+__all__ = [
+    '_ZHB_NEAR_REALTIME_FIELDS',
+    '_ZHB_REALTIME_FIELDS',
+    '_ZHB_STATIC_FIELDS',
+    '_debug_log',
+    'code',
+    'get_amount_wan',
+    'get_change_ytd',
+    'get_dividend_yield',
+    'get_main_net_buy',
+    'get_streak_days',
+    'get_zhb_amount_wan',
+    'get_zhb_change_ytd',
+    'get_zhb_data_date',
+    'get_zhb_dividend_yield',
+    'get_zhb_full_market_snapshot',
+    'get_zhb_industry_map',
+    'get_zhb_main_net_buy',
+    'get_zhb_market_snapshot',
+    'get_zhb_market_stat2_snapshot',
+    'get_zhb_single_stock_data',
+    'get_zhb_streak_days',
+    'get_zhb_tip_info',
+    'is_zhb_data_fresh',
+    'zhb_field_safe',
+]

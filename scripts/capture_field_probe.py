@@ -242,7 +242,7 @@ def refresh_dynamic_layer(trade_date: str = "", write: bool = True) -> list:
             return []
         used_date = last
     if not pool:
-        print(f"  ⚠ 涨停池为空(可能非交易日/接口空), 保留旧动态层", flush=True)
+        print("  ⚠ 涨停池为空(可能非交易日/接口空), 保留旧动态层", flush=True)
         return []
 
     # 固定层代码, 剔除与固定层重叠
@@ -281,7 +281,7 @@ def refresh_dynamic_layer(trade_date: str = "", write: bool = True) -> list:
 
     picks_raw = ordered[:5]
     if not picks_raw:
-        print(f"  ⚠ 有效候选为空, 保留旧动态层", flush=True)
+        print("  ⚠ 有效候选为空, 保留旧动态层", flush=True)
         return []
 
     picks = []

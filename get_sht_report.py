@@ -322,7 +322,7 @@ async def generate_report_async(session, code, output_path, ind_comp=None, idx_q
     L(f"  股票代码: {cdata.code}")
     # V16.3.3 (2026-08-10 字典 12.15.8): ST/次新风险信号（canonical is_st/is_new——结构化名称）
     if getattr(cdata, "is_st", False):
-        L(f"  ⚠️ 风险标记: **ST/*ST**（退市风险——涨跌停按板块阈值，短线注意连续跌停风险）")
+        L("  ⚠️ 风险标记: **ST/*ST**（退市风险——涨跌停按板块阈值，短线注意连续跌停风险）")
     if getattr(cdata, "is_new", False):
         L(f"  🆕 次新标记: 上市 {getattr(cdata, 'listing_days', '?')} 日（临时前缀已忽略——涨跌停规则可能不同）")
     L(f"  所属板块: {stock_industry}")
@@ -851,7 +851,7 @@ async def generate_report_async(session, code, output_path, ind_comp=None, idx_q
     if zhb_main_net:
         zhb_date = get_zhb_data_date()
         # V16.4.1: 标签修正——数据来自 canonical(盘中/盘后走东财实时), 不总是 ZHB
-        _flow_src = f"canonical(东财实时)" if (q and q.get("main_net_buy_wan")) else f"ZHB({zhb_date})"
+        _flow_src = "canonical(东财实时)" if (q and q.get("main_net_buy_wan")) else f"ZHB({zhb_date})"
         L(f"\n  ➤ 主力资金流向 ({_flow_src}):")
         if zhb_main_net['main_net_buy_hands']:
             L(f"    T日主力净买入量: {zhb_main_net['main_net_buy_hands']:.0f}手")  # V17.0: 仅 TDX 0x0011 实时有值
@@ -986,7 +986,6 @@ async def generate_report_async(session, code, output_path, ind_comp=None, idx_q
     L("\n"+"---"); L("## **九、龙虎榜席位**"); L("---")
 
     # 优化时段显示：根据不同市场状态提供更精准的提示
-    current_time = datetime.now()
     if _mkt_status == "pre_market":
         L("  ⚠️ 当前为盘前时段，龙虎榜数据为最近一期已发布数据（约16:30后更新）")
     elif _mkt_status in ("morning", "lunch"):
@@ -1483,7 +1482,6 @@ async def generate_report_async(session, code, output_path, ind_comp=None, idx_q
                         L(f"      {_desc}")
                     # 龙头股前三
                     for pl in (ch.get('plates') or [])[:2]:
-                        _pname = pl.get('name', '')
                         for fk_key in ('faucet_1', 'faucet_2', 'faucet_3'):
                             fk = pl.get(fk_key)
                             if fk and fk.get('stock_name'):

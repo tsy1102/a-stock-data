@@ -1041,7 +1041,7 @@ async def strategy_09_contrarian_value(stocks, top_n=300):
         if roe is None or roe < _roe_good: continue
         keys, rows = _fast_kline(code)
         if len(rows) < 250: continue
-        _ki = _kline_indices(keys); idx_c = _ki.get("close", -1); idx_v = _ki.get("vol", -1); idx_close = _ki.get("close", -1)
+        _ki = _kline_indices(keys); idx_close = _ki.get("close", -1)
         if idx_close < 0: continue
         closes = [_safe_float(r[idx_close]) for r in rows[-250:] if len(r) > idx_close]
         if not closes: continue
@@ -1327,7 +1327,6 @@ def strategy_15_longhu_activity(all_stocks, today_str=None, top_n=200):
             # 上榜次数
             _records = dtb.get("records", [])
             list_days = len(_records)
-            first_date = _records[-1].get("date", today_str) if _records else today_str
             last_date = _records[0].get("date", today_str) if _records else today_str
             recent_net_sum = sum(_safe_float(r.get("net_buy", 0)) for r in _records)
 
@@ -1989,8 +1988,6 @@ async def run_discovery_async(output_path):
     L("  预热: 加载市场数据 & 策略配置…")
     _load_t0 = time.time()  # V17.0.10c(2026-08-28): 加载阶段耗时基；用于把总时长在"加载 vs 扫描"间拆分归因
 
-    cfg = _load_settings()
-    _cfg = cfg or {}
 
     # V11.5: 使用 data_provider 统一数据中心层
     # 优先ZHB全量快照，失败fallback到TDX全市场，保持混合分层架构
@@ -2209,9 +2206,9 @@ async def run_discovery_async(output_path):
                 L(f"  📊 数据日期: {_basis_date}"
                   f"{'（腾讯T日,与mak同基准）' if _t_day_used else '（ZHB最新交易日快照）'}")
             if is_bypass:
-                L(f"  📊 数据分层: [纯ZHB横截面] 已完全复用 ZHB 历史数据，无任何实时网络开销")
+                L("  📊 数据分层: [纯ZHB横截面] 已完全复用 ZHB 历史数据，无任何实时网络开销")
             else:
-                L(f"  📊 数据分层: [API实时] price/change_pct/amount/pe_ttm/turnover_pct | [静态层] high_52w/low_52w/pb/dividend_yield/ipo_price/industry_code")
+                L("  📊 数据分层: [API实时] price/change_pct/amount/pe_ttm/turnover_pct | [静态层] high_52w/low_52w/pb/dividend_yield/ipo_price/industry_code")
         else:
             raise ValueError("market snapshot empty")
     except Exception as _e:
@@ -2408,9 +2405,6 @@ async def run_discovery_async(output_path):
     #     （V14.3.2 曾推荐 02→100/05→300；现按趋势优先，弱趋势小市值不再被 mcap 截断）
     _top_n_large = 300   # 形态类（02/05/06）— O27: 趋势强度排序后 top300 逐股确认
     _top_n_medium = 200  # 财务/筹码类（11/12/17）— 回测推荐 200（稳定性提升 26%）
-    _top_n_small = 100   # 周线/核心（02/04）— V14.3.2 推荐（O27 后 02 改走 _top_n_large）
-    _top_n_pure = 200    # 纯 ZHB 类（17/20）— 回测推荐 200（O27 后 17/19 全市场，保留备用）
-    _top_n_fund = 1000   # 主力资金（18）— O27 后全市场（回测 top1000 覆盖率仅 19.9%）
 
     # 策略注册（1-20 为同步函数，用 Semaphore 控制并发）
     # V14.3.2: 基于 4 天 ZHB 回测（docs/backtest_v1432/）差异化 top_n

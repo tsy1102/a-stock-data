@@ -57,7 +57,6 @@ from stock_common import (
     is_zhb_data_fresh,
     zhb_field_safe,
     get_zhb_data_date,
-    get_zhb_industry_map,
     calc_mcap_yi as _calc_mcap_yi,
     limit_pct_for,  # V16.2: 统一涨跌停阈值（主板/ST 10 / 双创 20 / 北交所 30）
     is_limit_up,
@@ -228,7 +227,6 @@ async def _get_zhb_market_data():
         # 第一次已经返回完整 dict，第二次只是浪费一次 ZHB 解析/网络 IO。
         # 直接复用 snapshot 作为 price_map。
         price_map = snapshot
-        industry_map = get_zhb_industry_map()
 
         result = []
         # V15.5.15: 腾讯批量实时行情（今日 change_pct/price，盘中涨停判断）
@@ -1129,7 +1127,7 @@ async def generate_sector_report(output_path):
 
     L("=" * 90)
     # V17.0.2i: 头部拆分(报告名/时间+时段分行)——原一行过长
-    L(f"  **📊 A股异动及行业轮动扫描报告**")
+    L("  **📊 A股异动及行业轮动扫描报告**")
     L(f"  ⏱ {today_str} {now.strftime('%H.%M.%S')} | {_mkt_note}")
     L("=" * 90)
     print("[数据装载] 获取全市场多日数据与指数基准...", flush=True)
@@ -1372,9 +1370,9 @@ async def generate_sector_report(output_path):
         f"（{_main_net_buy_count}只净流入，{_main_net_src_label}）"
     )
     if _total_main_net_buy_yi > 50:
-        L(f"    🟢 主力资金大幅净流入，市场资金面偏多")
+        L("    🟢 主力资金大幅净流入，市场资金面偏多")
     elif _total_main_net_buy_yi < -50:
-        L(f"    🔴 主力资金大幅净流出，市场资金面偏空")
+        L("    🔴 主力资金大幅净流出，市场资金面偏空")
     if _lbp > 80:
         L(f"    🔥 涨停{_lbp}家 > 80，情绪极度亢奋，警惕分化回落")
     if total_abnormal > 40 and _lbp > 60:
@@ -1435,7 +1433,7 @@ async def generate_sector_report(output_path):
         # V17.2.27(2026-09-18) P1 口径说明: A段连板高度为财联社情绪板档(市场口径),
         # B段【涨停池扫描】的"最高连板"为财联社/KPL/复盘啦三源互校口径(本报告封板基准),
         # 二者来源与统计窗口可能不同, 数值可并存; 全市场权威最高连板以 B段互校值为准。
-        L(f"    ℹ️ 本段连板高度为财联社情绪板档(市场口径); 全市场涨停数及最高连板三源互校口径见【B. 涨停池扫描】, 二者来源不同, 数值可并存, 以 B段互校值为全市场基准")
+        L("    ℹ️ 本段连板高度为财联社情绪板档(市场口径); 全市场涨停数及最高连板三源互校口径见【B. 涨停池扫描】, 二者来源不同, 数值可并存, 以 B段互校值为全市场基准")
         if _max_board >= 4:
             L(f"    🔥 高标{_max_board}板打开空间，可积极做多")
         elif _max_board <= 1 and _zt_count > 30:

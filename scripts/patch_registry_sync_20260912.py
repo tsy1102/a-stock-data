@@ -87,7 +87,7 @@ def verify_determinations() -> bool:
         print(f"  [✓] ZHB Col[22] 已登记: sources={f.get('sources')} "
               f"status={f.get('status')} meaning={str(f.get('meaning'))[:24]!r}")
     else:
-        print(f"  [✗] ZHB Col[22] 未在 registry 找到（主字典 ZHB tdxstat.cfg 表可能缺 Col[22] 行）")
+        print("  [✗] ZHB Col[22] 未在 registry 找到（主字典 ZHB tdxstat.cfg 表可能缺 Col[22] 行）")
         ok = False
 
     # 2) 21 对 ulist→push2 跨源映射（来自 ulist_push2_align.md，由 extract 解析进 mappings）

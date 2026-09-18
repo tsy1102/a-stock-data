@@ -459,7 +459,7 @@ def main():
     print(f"  📄 推荐表: {rec_json.relative_to(ROOT)}")
 
     # 6. 输出报告
-    print(f"\n📋 推荐 Top-N（按策略）：")
+    print("\n📋 推荐 Top-N（按策略）：")
     print(f"{'策略':<32} {'推荐 top_n':<10} {'选中数曲线':<55} {'稳定性曲线':<25}")
     print("-" * 130)
     for strategy in sorted(recommendations.keys()):

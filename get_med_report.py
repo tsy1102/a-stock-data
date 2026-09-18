@@ -75,7 +75,6 @@ from stock_common import (
     get_sina_financial_report_async, get_financial_report_with_fallback,
     get_sina_balance_sheet_async,
     get_hsgt_macro_flow_async,
-    is_trading_day,
     get_market_status,
     cls_telegraph,
     news_matches_stock,
@@ -186,7 +185,6 @@ async def generate_report_async(session, code, output_path, ind_comp=None, hsgt=
     _gw_ratio = _fund.get("gw_ratio_warn", 30.0)
 
     _now = datetime.now()
-    _is_td = is_trading_day(_now.date())
     _mkt_status, _mkt_note = get_market_status(_now)
 
     # 生成详细提示
@@ -254,9 +252,9 @@ async def generate_report_async(session, code, output_path, ind_comp=None, hsgt=
     L(f"  股票名称: {stock_name} ({cdata.code})")
     # V16.3.3 (2026-08-10 字典 12.15.8): ST/次新风险信号（结构化名称——ST 不剔除仅标注，涨跌幅已统一 10%）
     if getattr(cdata, "is_st", False):
-        L(f"  ⚠️ 风险标记: **ST/*ST**（退市风险——基本面/财务审核需加强关注）")
+        L("  ⚠️ 风险标记: **ST/*ST**（退市风险——基本面/财务审核需加强关注）")
     if getattr(cdata, "is_new", False):
-        L(f"  🆕 次新标记: 上市 ≤5 日（财务数据不完整，中线谨慎）")
+        L("  🆕 次新标记: 上市 ≤5 日（财务数据不完整，中线谨慎）")
     L(f"  所属板块: {stock_industry}")
     # V17.2.24: eltdx 连板状态（统一层 cdata.eltdx_*，源自 TDX 7709/7615 实时）
     if getattr(cdata, "eltdx_has_shortline", False):
@@ -325,9 +323,9 @@ async def generate_report_async(session, code, output_path, ind_comp=None, hsgt=
                 f"  [IPO破发度] 发行价: {cdata.ipo_price:.2f}元 | 现价: {cdata.price:.2f}元 | 破发幅度: {_ipo_pct:.2f}%"
             )
             if _ipo_pct < -30:
-                L(f"  📉 深度破发: 破发幅度超30%，安全边际较高")
+                L("  📉 深度破发: 破发幅度超30%，安全边际较高")
             elif _ipo_pct < -10:
-                L(f"  ⚠️ 轻度破发: 破发幅度10-30%，关注基本面支撑")
+                L("  ⚠️ 轻度破发: 破发幅度10-30%，关注基本面支撑")
 
         # V10.3: 中线动能对比（20日 vs 60日）
         if cdata.change_20d and cdata.change_60d:
@@ -336,9 +334,9 @@ async def generate_report_async(session, code, output_path, ind_comp=None, hsgt=
                 f"  [中线动能] 20日涨幅: {cdata.change_20d:+.2f}% | 60日涨幅: {cdata.change_60d:+.2f}% | 差值: {_momentum_diff:+.2f}%"
             )
             if cdata.change_20d > 0 and _momentum_diff > 5:
-                L(f"  🚀 加速上涨: 短期涨幅显著高于中期，动能增强")
+                L("  🚀 加速上涨: 短期涨幅显著高于中期，动能增强")
             elif cdata.change_20d < 0 and _momentum_diff < -5:
-                L(f"  🛑 减速下跌: 短期跌幅大于中期，动能衰竭")
+                L("  🛑 减速下跌: 短期跌幅大于中期，动能衰竭")
 
     if ind_comp is None:
         # V15.4.2: 同步行业对比包 to_thread

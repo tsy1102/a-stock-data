@@ -261,9 +261,9 @@ def main():
     print(f"[sync_readme] 提取 {len(versions)} 个版本")
 
     if update_readme(versions, dry_run=args.dry_run):
-        print(f"[sync_readme] ✅ README.md 版本历史块已更新")
+        print("[sync_readme] ✅ README.md 版本历史块已更新")
     else:
-        print(f"[sync_readme] ❌ 更新失败")
+        print("[sync_readme] ❌ 更新失败")
         sys.exit(1)
 
 

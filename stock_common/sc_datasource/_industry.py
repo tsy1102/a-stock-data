@@ -103,7 +103,6 @@ def get_industry_peers(
         "peers": [...], "all_members": [...]
     }
     """
-    from ._quotes import get_tencent_quote
     from core.tdx_client import tdx_get_belong_boards, tdx_get_board_members, tdx_get_board_by_name
     from stock_common.sc_utils import _load_strategy_config
 

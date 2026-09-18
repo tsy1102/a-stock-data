@@ -34,7 +34,7 @@ def get_historical_high_qfq(code: str, count: int = 640) -> Optional[float]:
 
     mkt = "bj" if code.startswith(("92", "8", "4", "43", "83", "87")) else (
         "sh" if code.startswith(("6", "9", "5")) else "sz")
-    url = f"https://web.ifzq.gtimg.cn/appstock/app/fqkline/get"
+    url = "https://web.ifzq.gtimg.cn/appstock/app/fqkline/get"
     try:
         r = _quick_request(
             url,

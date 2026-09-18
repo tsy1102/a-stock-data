@@ -94,7 +94,7 @@ def main():
     for fn in files:
         m = _STOCK_RE.match(fn)
         if m:
-            code, rtype = m.group(1), m.group(2)
+            code = m.group(1)
             fname = name_map.get(code, "") or ""
             folder = _make_stock_folder_name(code, fname)
             targets.setdefault(folder, []).append(fn)

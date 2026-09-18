@@ -5,6 +5,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 
+## [V17.3] 2026-09-18 — 架构重构落地 + 字段治理闭环
+
+- **运行时去 exec 重构（核心架构调整）**：`stock_common/sc_datasource/__init__.py` 由 `exec()` 动态注入改为显式模块导入 + 共享状态对象（`_shared.py`）传递，消除隐式命名空间、可静态分析、可 mock。逐片段提交（阶段1 抽取 _shared / 阶段2 显式导入 / 阶段3 re-export / 阶段4 mock 契约迁移 + 全量回归），全源对撞引擎复跑零回归。
+- **死代码清理**：vulture + pyflakes 分级扫描，Grep 二次确认无动态引用后分批删除（含 `stock_common/__init__.py` 死 re-export）；每批跑全量测试并独立提交。
+- **适配层字段治理**：补 `meaning` 元数据并标 `verified`（fuyao 带点字段 6/6 命中 `12.8.12c-z` 标准契约表）；`cell_token` 修复——camel 源 token 含 `.` 时取完整带点 token（如 `snapshot.price_change`）。
+- **通用跨源 mapping 存储**：新增 `docs/verify/cross_source_align.md`，集中记录 `fuyao.snapshot.*` / `tdx.quote_full.*` / `eltdx.quote_snapshot.*` / `zhb.full.*` / `tencent[*]` / `push2.f*` / `ulist239.f*` 的等价/互证关系（中文语义 + 证据），统一此前散落的附录术语。
+- **对撞流水线**：`20260918` 全量采集 → L1 候选 sanctioned 定案 → 治理闸门（G1 基线比对 / G3 幂等 / parity）全绿分批提交；`collide.py` 证伪回归护栏固化。
+- **版本**：`VERSION` 文件由 `17.2.9` 升 `17.3`（单一来源，代码经 `get_version()` 读取，无硬编码）。
+
 ## [V17.2.15] 2026-09-15 — TDX 主源切换 eltdx（Rust 客户端接管行情/财务）
 
 - **背景**：V17.2.12 的 easy_tdx 握手补丁是 dead-upstream 的临时续命（上游 `awayings/easy_tdx` 已 404，PyPI 不可装）。`eltdx`（Rust 内核 7709/7615 客户端，零依赖，Research-Only 许可）握手已含 2026-09 新式单条随机 msg_id，且协议层更完整（含 limit_ladder/题材强度/短线指标/集合竞价/逐笔等 net-new 能力）。

@@ -29,7 +29,7 @@ from stock_common.env_setup import ensure_utf8_stdio
 
 ensure_utf8_stdio()
 
-import time, os, math, warnings, asyncio, re, json  # V17.0.4: +re/json(新浪指数 K 兜底); V17.0.25: +math(连板对数估算)
+import time, os, math, warnings, asyncio, re  # V17.0.4: +re/json(新浪指数 K 兜底); V17.0.25: +math(连板对数估算)
 from typing import Any, Dict, List
 from datetime import date, datetime, timedelta
 from concurrent.futures import ThreadPoolExecutor, as_completed  # V16.4.1: 删 Counter
@@ -40,15 +40,13 @@ _MAIN_NET_MAP_GLOBAL: Dict[str, float] = {}
 warnings.filterwarnings('ignore')
 from core.data_provider import get_market_snapshot_async
 
-from core.tdx_client import (  # V16.4.1: 删 tdx_get_security_bars/cleanup_tdx
-    tdx_get_index_bars,
+from core.tdx_client import (# V16.4.1: 删 tdx_get_security_bars/cleanup_tdx,
     tdx_get_board_list,
     tdx_get_board_members,
     tdx_get_market_abnormal_data,
 )
 from stock_common import (
     _safe_float,
-    _quick_request,
     _debug_log,  # V17.0 审查: 删 UA 死导入(getharden 委托 sc_datasource 后无引用)
     _load_strategy_config,
     get_recent_dragon_tiger,
@@ -56,7 +54,6 @@ from stock_common import (
     BaseReportRunner,  # V16.4.1: 删 _request_with_retry/common_parse_args
     is_trading_day,
     get_market_status,
-    get_zhb_full_market_snapshot,
     is_zhb_data_fresh,
     zhb_field_safe,
     get_zhb_data_date,

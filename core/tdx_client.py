@@ -34,10 +34,8 @@ from __future__ import annotations
 # 故握手补丁保留于 zhb_client 侧，本模块不再 import。
 
 import time
-import os
-import json
-from datetime import datetime, date
-from typing import Any, Dict, List, Optional, Tuple, cast
+from datetime import datetime
+from typing import Any, Dict, List, Optional, Tuple
 
 import requests
 
@@ -2539,7 +2537,6 @@ def tdx_get_shareholder_research(code: str) -> dict:
         parse_table,
         parse_tables,
         parse_key_value_table,
-        parse_text_table,
     )
     import re as _re
 

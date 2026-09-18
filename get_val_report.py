@@ -90,12 +90,11 @@ def _fast_day_close(code: str) -> Dict:
 
 
 from core.tdx_client import (tdx_get_weekly_bars,
-                         tdx_get_board_list,
                          tdx_get_all_stocks)  # V16.4.1: 删 cleanup_tdx
 # V17.0.26(2026-09-03) DEBT-009: 移除 _quick_request / JP_URL 导入。
 #   二者唯一使用处已改用 sc_datasource.get_em_board_members 适配器（公理 A1 数据访问收口）。
 #   保留无用的裸客户端 import 会诱导后人继续直连，故一并清理（UA 为无害常量，保留）。
-from stock_common import (_safe_float, UA,
+from stock_common import (_safe_float,
                            _load_settings, _load_strategy_config, get_holder_structure,
                            holder_change, is_limit_up, is_limit_down,
                            get_recent_dragon_tiger, get_dragon_tiger_board,
@@ -104,14 +103,13 @@ from stock_common import (_safe_float, UA,
                            get_tencent_quote,
                            baidu_kline_full as common_baidu_kline_full,
                            get_dividend_history as common_get_dividend_history,
-                           get_market_status,
                            _debug_log,
                            cls_telegraph as _cls_telegraph,
                            get_eastmoney_global_news as _eastmoney_global_news,
-                           get_zhb_market_snapshot, is_zhb_data_fresh,
+                           is_zhb_data_fresh,
                            get_zhb_data_date,
                            calc_mcap_yi as _calc_mcap_yi,
-                           get_sina_financial_report, get_financial_report_with_fallback,
+                           get_financial_report_with_fallback,
                            get_em_batch_quotes)  # V11.5
 from core.data_provider import (get_market_snapshot_async,
                            get_turnover_pct_async,
@@ -939,7 +937,6 @@ async def strategy_07_policy_driven(stocks, hot_pool=None):
     if not candidates: return []
     result = []
     # V15.1: 统一接入 get_canonical_stock_data 强类型合约（替代旧的 get_stock_composite_async）
-    from core.data_provider import get_canonical_stock_data
     for s in candidates[:200]:
         code = s["code"]
         # V16.4.0: 快照 O(1)——原逐股 canonical（200×2.5s≈500s）改为快照 pe_ttm（ZHB 已有）

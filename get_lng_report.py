@@ -46,14 +46,13 @@ from stock_common.sc_snapshot import SnapshotProxy as _SnapshotProxy  # noqa: E4
 _SNAPSHOT_DATA = _SnapshotProxy()
 
 from core.tdx_client import (
-    tdx_get_historical_high, tdx_get_board_list,
+    tdx_get_historical_high,
 )
 from core.data_provider import (
     get_canonical_stock_data,  # V15.3 强类型合约推广; V17.0 R3: 唯一综合数据入口(替代已删 get_stock_composite_async)
 )
 from stock_common import (_safe_float, _debug_log,
                            _load_strategy_config, BaseReportRunner,
-                           _market_code,
                           get_holder_structure,
                           get_strategic_announcements_async,
                           baidu_kline_full,

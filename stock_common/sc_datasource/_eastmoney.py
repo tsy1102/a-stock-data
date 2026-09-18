@@ -406,7 +406,6 @@ def get_northbound_hold(code: str, days: int = 20) -> List[Dict[str, Any]]:
     Returns:
         list: [{date, hold_shares, market_cap, hold_ratio, change_shares, change_ratio}, ...]。
     """
-    import os
 
     data = eastmoney_datacenter(
         code,
@@ -495,7 +494,6 @@ async def get_northbound_hold_async(
 
     V9.4: 原生 aiohttp 实现，移除 asyncio.to_thread 包装。
     """
-    import os
 
     data = await eastmoney_datacenter_async(
         session,

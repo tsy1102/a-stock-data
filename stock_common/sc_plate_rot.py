@@ -19,7 +19,7 @@ import threading
 import time
 import urllib.parse
 import urllib.request
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List
 
 # V16.3.3: 板块轮动缓存（字典 12.15.5——mak D 段高频，矩阵数据收盘后不变）
 try:

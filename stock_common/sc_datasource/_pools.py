@@ -630,7 +630,7 @@ def get_kph_limit_ladder(date_str: str = "") -> List[Dict[str, Any]]:
     """
     try:
         import levistock as lk
-        from datetime import date, timedelta
+        from datetime import timedelta
         # V16.2: 进程级节流（levistock 直连东财）
         try:
             from stock_common.sc_network import _em_wait_process_interval

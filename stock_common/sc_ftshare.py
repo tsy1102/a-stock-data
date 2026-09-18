@@ -5,7 +5,7 @@
 ⚠️ 会话 TTL≈2 小时且过期后所有调用**静默返回空**——本模块自动 re-init。
 限流：market.ft.tech @2rps（sc_network._DOMAIN_LIMITS）+ 模块内 500ms 间隔。
 """
-from typing import Any, Dict, List, Optional
+from typing import Dict, List, Optional
 import json
 import time
 import uuid

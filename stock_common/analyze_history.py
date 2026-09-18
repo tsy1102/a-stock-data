@@ -45,7 +45,7 @@ from stock_common.sc_network import _debug_log
 
 # 导入GD上传相关模块
 try:
-    from core.gd_uploader import init_gd, upload_type_reports, cleanup_gd_proxy, retry_get_folder_interactive, upload_report_to_drive
+    from core.gd_uploader import init_gd, cleanup_gd_proxy, retry_get_folder_interactive, upload_report_to_drive
     GD_AVAILABLE = True
 except ImportError:
     GD_AVAILABLE = False

@@ -16,18 +16,15 @@ from __future__ import annotations
 import os
 import sys
 import time
-import math
-import re
 import threading
 import socket
 import logging
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, Optional, Tuple
 from urllib.parse import urlparse
 from tempfile import gettempdir as _gettempdir
 
 import requests
 import urllib3
-from datetime import datetime, timedelta
 
 try:
     from core.config import EM_MIN_INTERVAL, HTTP_TIMEOUT_SECONDS
@@ -40,7 +37,7 @@ except ImportError:
 try:
     from stock_common.sc_fault_tolerance import (
         get_random_ua, get_random_referer, exponential_backoff,
-        get_domain_token_bucket, get_domain_circuit_breaker, CircuitBreakerError
+        get_domain_circuit_breaker,
     )
     _HAS_FAULT_TOLERANCE = True
 except ImportError:

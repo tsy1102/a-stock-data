@@ -1148,7 +1148,6 @@ def get_em_xuangu(sty_fields: str = "", filter_expr: str = "",
     Returns:
         [{"SECURITY_CODE":"600519","SECURITY_NAME_ABBR":"贵州茅台",...}]
     """
-    import requests as _req
     from stock_common.sc_network import EM_SESSION
 
     headers = {

@@ -1112,7 +1112,6 @@ def _cli_update(backup: bool = False, dry_run: bool = False) -> None:
 
 if __name__ == "__main__":
     import argparse
-    import sys
 
     parser = argparse.ArgumentParser(description="A股交易日历（stock_calendar.py）")
     parser.add_argument("--check", action="store_true",

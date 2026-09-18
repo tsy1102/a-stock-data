@@ -30,8 +30,7 @@ import sys
 import time
 import json
 import argparse
-import threading
-from datetime import datetime, timedelta
+from datetime import datetime
 from typing import Optional, Dict, Any
 
 # V16.4.1: 强制 UTF-8 输出（下沉到代码自身——任何 agent/机器/直接运行均 UTF-8，
@@ -45,20 +44,18 @@ for _stream in (sys.stdout, sys.stderr):
 
 try:
     from core.zhb_client import (
-        get_zhb, _download_zhb_zip, _parse_zhb_data, _save_to_cache,
-        _get_cache_path, _ZHB_CACHE_DIR,
-        _acquire_file_lock, _release_file_lock, _check_disk_space,
-        _zhb_memory_cache, _zhb_cache_lock
+        _download_zhb_zip, _parse_zhb_data, _save_to_cache,
+        _ZHB_CACHE_DIR,
+        _acquire_file_lock, _release_file_lock, _check_disk_space
     )
 except ImportError:  # V17.0: 兜底改为根锚定(包化后直接运行 core/zhb_sync.py 场景)
     import sys as _sys
 
     _sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
     from core.zhb_client import (
-        get_zhb, _download_zhb_zip, _parse_zhb_data, _save_to_cache,
-        _get_cache_path, _ZHB_CACHE_DIR,
+        _download_zhb_zip, _parse_zhb_data, _save_to_cache,
+        _ZHB_CACHE_DIR,
         _acquire_file_lock, _release_file_lock, _check_disk_space,
-        _zhb_memory_cache, _zhb_cache_lock
     )
 
 

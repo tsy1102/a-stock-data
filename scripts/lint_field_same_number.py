@@ -33,7 +33,6 @@
 用法：python scripts/lint_field_same_number.py
 每日流水线强制阻断模式：python scripts/lint_field_same_number.py --strict-naming（R3 命名缺口升为阻断级 exit≠0；默认 warn 级不阻断）
 """
-import io
 import json
 import re
 import sys

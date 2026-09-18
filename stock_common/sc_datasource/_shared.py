@@ -6,7 +6,7 @@
 """
 
 from __future__ import annotations  # 注解惰性化: 模块级缓存类型注解(Dict/List/Any)不再运行时求值
-from typing import Any, Dict, List, Optional, Tuple, Set, FrozenSet, Union
+from typing import Any, Dict, List, Optional
 
 # 显式导出(含下划线共享状态), 使  可引入 _XXX 名
 __all__ = [

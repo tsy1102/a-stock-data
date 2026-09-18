@@ -111,7 +111,7 @@ def holder_change(code: str, local_only: bool = False) -> List[Dict[str, Any]]:
     V17.0(2026-08-15) H6 修复: 新增 local_only——缓存未命中时直接返回 []
     （val 策略23 全市场扫描禁逐股网络请求, 仅缓存命中判筹码集中）。
     """
-    from core.stock_cache import get_cache, set_cache, TTL
+    from core.stock_cache import get_cache
 
     # 尝试从缓存获取
     cache_key = f"holder_data:{code}"

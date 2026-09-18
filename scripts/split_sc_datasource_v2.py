@@ -28,7 +28,6 @@ mock.patch 对包内跨函数调用的生效）不同，本脚本采用「共享
 """
 import ast
 import os
-import sys
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SRC = os.path.join(ROOT, "stock_common", "sc_datasource.py")

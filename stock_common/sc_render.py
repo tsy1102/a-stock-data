@@ -7,7 +7,7 @@ V17.0 R5 实测结论(2026-08-13): 三脚本(sht/med/lng)渲染章节逐段对�
 """
 from __future__ import annotations
 
-from typing import Any, Callable, Optional
+from typing import Any, Callable
 
 
 def render_multi_school_scores(emit: Callable[[str], None], score_data: Any) -> Any:

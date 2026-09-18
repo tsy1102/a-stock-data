@@ -35,13 +35,9 @@
 """
 from __future__ import annotations
 
-# V17.2.12: TDX 新式握手固化补丁（2026-09 主站强制要求）。须在 easy_tdx 被使用/
-# 绑定前 import，确保动态握手生效。详见 core/_tdx_handshake_patch.py。
-# V17.2.15 说明: tdx_client.py 已切换 eltdx（Rust 握手含 2026-09 修复，不再需要本补丁）。
-# 本模块 **保留** 补丁 import 仅为稳妥：2026-09-15 实测 eltdx.ResourceApi.download_file("zhb.zip")
-# 经 0x06B9 可成功下载 zhb.zip（含 tdxstat.cfg/tdxstat2.cfg），即 eltdx **已具备** ZHB 下载能力，
-# 补丁理论上可移除。完整迁移（zhb_client 改用 eltdx 下载 + 保留现有 zip 解析）待专项实施，故暂留补丁。
-import core._tdx_handshake_patch  # noqa: E402
+# V17.3.1 P0: ZHB 下载已切换 eltdx (0x06B9, 见 _download_zhb_zip)。eltdx Rust 握手含
+# 2026-09 修复, 不再需要下方面向 easy_tdx 的 TDX 新式握手补丁, 故移除其 import。
+# core/_tdx_handshake_patch.py 文件保留作回滚资产 (tdx_client 的 easy_tdx 兜底路径本就不 import 它)。
 
 import os
 import io
@@ -1336,7 +1332,23 @@ def _download_zhb_zip() -> Optional[bytes]:
     """
     filename = "zhb.zip"
 
-    # ── 首选: easy_tdx（实测可用主机逐台尝试 + from_best_host 兜底）──
+    # ── 首选: eltdx (Rust 内核 0x06B9 下载 ZHB, V17.3.1 P0 实施) ──
+    try:
+        from core.eltdx_adapter import download_eltdx_report_file
+        _debug_log("zhb: trying eltdx download (0x06B9)")
+        data = download_eltdx_report_file(filename)
+        if data and len(data) > 0:
+            try:
+                with zipfile.ZipFile(io.BytesIO(data)):
+                    pass
+                _debug_log(f"zhb: eltdx downloaded {len(data)} bytes")
+                return data
+            except zipfile.BadZipFile:
+                _debug_log("zhb: eltdx returned invalid zip, falling back to easy_tdx")
+    except Exception as _e:
+        _debug_log(f"zhb: eltdx download error: {_e}")
+
+    # ── 兜底: easy_tdx（实测可用主机逐台尝试 + from_best_host 兜底）──
     try:
         from easy_tdx.client import TdxClient
 
@@ -1492,46 +1504,66 @@ def _save_to_cache(date_str: str, data: bytes) -> None:
 
 _ZH_B_DOWNLOAD_MARK = os.path.join(os.path.dirname(_ZHB_CACHE_DIR), "zhb", ".last_download")
 
+# V17.3.1 节流重构: 令牌文件由"日历日"改为记录"服务端返回的包数据日期"(YYYYMMDD)。
+# 抑制重下的判定由 blanket "今日是否已尝试" 改为: 今日已成功拉取 且 服务端返回包日期
+# == 本地包日期(服务端确未前进) 才抑制; 但若本地落后于最近交易日(本地<最近交易日,
+# 说明市场已有更新而服务端T+1新包尚未被我们拾取), 则仅冷却期内抑制, 期满后重新拉取,
+# 以拾取当日中途发布的新包——修复原"今日已尝试"锁死到次日的缺陷。
+_ZHB_REPROBE_COOLDOWN_SEC = 3 * 3600  # 落后时最多每3小时重探一次, 避免对陈旧服务端高频轰炸
 
-def _zhb_download_tried_today() -> bool:
-    """V16.4.1: 今天是否已尝试过下载(成败都记)。
 
-    ZHB 包 T+1 清晨发布: 8/12 盘中服务器最新仍可能只有 8/10 包——
-    若无标记, "本地 < 最近交易日" 判定会让每次运行都触发下载
-    (拿到同一旧包, 白费一次 TCP 且加重服务器压力)。
+def _zhb_last_server_date() -> str:
+    """读取令牌文件: 上次成功下载时服务端返回的包数据日期(YYYYMMDD); 无/非法则返回空串。
+
+    校验 8 位纯数字, 使旧版遗留的"日历日"标记(如 20260919)被安全忽略,
+    触发一次重新拉取后自愈为真实服务端数据日期。
     """
     try:
         if os.path.exists(_ZH_B_DOWNLOAD_MARK):
             _mark = open(_ZH_B_DOWNLOAD_MARK, encoding="utf-8").read().strip()
-            return _mark == datetime.now().strftime("%Y%m%d")
+            if len(_mark) == 8 and _mark.isdigit():
+                return _mark
     except Exception:
         pass
-    return False
+    return ""
 
 
-def _zhb_mark_download_tried() -> None:
+def _zhb_last_tried_ts() -> float:
+    """上次成功下载的时间戳(用于冷却判定)。"""
+    try:
+        if os.path.exists(_ZH_B_DOWNLOAD_MARK):
+            return os.path.getmtime(_ZH_B_DOWNLOAD_MARK)
+    except Exception:
+        pass
+    return 0.0
+
+
+def _zhb_mark_server_date(server_date: str) -> None:
+    """写入令牌文件: 记录本次成功下载时服务端返回的包数据日期。"""
     try:
         with open(_ZH_B_DOWNLOAD_MARK, "w", encoding="utf-8") as f:
-            f.write(datetime.now().strftime("%Y%m%d"))
+            f.write(server_date or "")
     except Exception:
         pass
 
 
 def _zhb_needs_download(local_date: str, zhb_local=None) -> bool:
-    """V16.4.1: 本地 zip 日期 < 最近交易日 → 需要下载。
+    """V17.3.1 节流重构: 仅当"今日已拉取 且 服务端返回日期==本地日期"才抑制重下,
+    而非 blanket 每日一次; 落后于最近交易日时引入重探冷却, 使同日新包可被拾取。
 
     修复 V16.4.0"本地 zip 优先"不检查日期的缺陷(本地有任何旧包就永不下新包)。
-    每天最多触发一次下载(见 _zhb_download_tried_today)。
     拿不准时保守返回 True(触发下载, 下载失败自然回落本地缓存, 无害)。
 
-    V16.4.1 递归修复: 原实现 import stock_calendar.get_last_trading_day,
-    而 stock_calendar.is_workday 反向调用 zhb_client.get_holidays → get_zhb,
-    与 get_zhb→needs_download 形成递归环 → RecursionError → 下载永不执行。
-    改为使用本地包自身节假日表(zhb_local.holidays, YYYYMMDD)计算最近交易日,
-    零外部依赖、零递归。近似误差只会"多触发一次下载"(当天限 1 次),不会漏。
+    关键判定:
+      1. 本地已与最近交易日持平(local>=最近交易日) 且 服务端返回日期==本地 → 抑制(服务端确未更新)。
+      2. 本地落后于最近交易日 且 服务端返回日期==本地(陈旧服务端尚未发布新包) →
+         冷却期内抑制, 期满(_ZHB_REPROBE_COOLDOWN_SEC)后返回 True 重新拉取, 拾取同日新包。
+      3. 其他(未拉取过 / 服务端日期!=本地) → 走本地<最近交易日 判定。
+
+    递归修复沿用 V16.4.1: 使用本地包自身节假日表(zhb_local.holidays)计算最近交易日,
+    零外部依赖、零递归。
     """
-    if _zhb_download_tried_today():
-        return False
+    _behind = True
     try:
         from datetime import date as _date, timedelta as _td
 
@@ -1542,9 +1574,22 @@ def _zhb_needs_download(local_date: str, zhb_local=None) -> bool:
             if _candidate.weekday() <= 4 and _candidate.strftime("%Y%m%d") not in _holidays:
                 break
             _candidate -= _td(days=1)
-        return _local < _candidate
+        _behind = _local < _candidate
     except Exception:
+        _behind = True  # 兜底: 拿不准就允许下载
+
+    _last = _zhb_last_server_date()
+    if _last and _last == local_date:
+        # 服务端返回日期==本地 → 服务端确未前进(尚未发布新包)
+        if not _behind:
+            return False  # 已与最近交易日持平且服务端未更新: 抑制重下
+        # 落后于最近交易日: 冷却期内抑制, 期满重探以拾取同日新包
+        import time as _t
+        if (_t.time() - _zhb_last_tried_ts()) < _ZHB_REPROBE_COOLDOWN_SEC:
+            return False
         return True
+
+    return _behind
 
 
 def get_zhb() -> Optional[ZhbData]:
@@ -1612,10 +1657,11 @@ def get_zhb() -> Optional[ZhbData]:
                 zhb = _parse_zhb_data(data)
                 if zhb:
                     _save_to_cache(zhb.date, data)
-                    # V16.4.1: 仅"下载+解析成功"才标记"今天已尝试"——
-                    # 失败不标记,当天后续运行可重试(实测下载主机间歇性失败,
-                    # 失败即标记会让当天一直吃旧包)
-                    _zhb_mark_download_tried()
+                    # V17.3.1 节流重构: 仅"下载+解析成功"才记录服务端返回的数据日期(令牌文件)——
+                    # 失败不记录,当天后续运行可重试(实测下载主机间歇性失败,
+                    # 失败即记录会让当天一直吃旧包); 记录的是数据日期而非日历日,
+                    # 配合 _zhb_needs_download 实现"服务端==本地才抑制 + 落后重探冷却"
+                    _zhb_mark_server_date(zhb.date)
                     with _zhb_cache_lock:
                         _zhb_memory_cache = zhb
                     return zhb

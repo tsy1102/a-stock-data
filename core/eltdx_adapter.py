@@ -256,6 +256,32 @@ def is_eltdx_available() -> bool:
         return False
 
 
+def download_eltdx_report_file(filename: str, timeout: float = 8.0) -> Optional[bytes]:
+    """V17.3.1 P0: 经 eltdx 底层 ResourceApi.download_file (0x06B9 协议) 下载 ZHB 等报告包。
+
+    ZHB 下载从 easy_tdx 迁移至 eltdx 主源 (zhb_client._download_zhb_zip 调用)。
+    - pin _ELTDX_HOSTS 避免冷连接全量探测 (~6min, 同 create_eltdx_adapter 策略)。
+    - download_file(path, *, chunk_size=30000, max_bytes=None) -> bytes, 失败时抛异常。
+    成功返回 zip 原始 bytes, 失败/不可用/返回空返回 None (交由上层降级 easy_tdx/mootdx)。
+    """
+    try:
+        from eltdx import TdxClient
+        c = TdxClient(hosts=_ELTDX_HOSTS, probe_hosts=False, timeout=timeout)
+        try:
+            data = c.resources.download_file(filename)
+        finally:
+            try:
+                c.close()
+            except Exception:
+                pass
+        if data and len(data) > 0:
+            return data
+        return None
+    except Exception as _e:
+        _debug_log(f"eltdx report_file download error ({filename}): {_e}")
+        return None
+
+
 def get_eltdx_shortline_bundle(all_codes: List[str], timeout: float = 20.0) -> Tuple[list, dict]:
     """eltdx 连板天梯(limit_ladder) + 批量短线指标(shortline_indicators) 一体化采集。
 

@@ -21,7 +21,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
   - `get_sht_report.py` 流通市值不自洽（002360：流通股本 3.26亿×现价 5.33 = 17.38亿 ≠ 报 16.44亿，偏差 5.4%）→ 流通市值改由 `流通股本×现价` 推导，与总市值/现价同源同价基（V17.3）。
   - `get_sht_report.py` 跌停计数矛盾根因：sht 原信任 `get_limit_pool_summary().limit_down_count`（跌停池接口 stale，实测 33 篇报 3 只），而 `get_mak_report` 用全市场 ZHB 快照 `is_limit_down` 口径得 0 只；修复为 sht 优先采用与 mak 同源的实时涨跌幅口径（仅在快照源不可用时回退 pool），消除 3 vs 0 矛盾（V17.3）。
   - `core/eltdx_adapter.py` 新增 `is_eltdx_available()` 轻量探测；`get_val_report.py` 策略 26/27（连板梯队/短线资金强度，依赖 eltdx 本地 TDX）空产出时区分"数据源缺失"与"真实无符合"——实测 0 为 eltdx 未连接导致的降级（非真实无连板/抢筹标的，当日 77 只涨停必有连板），报告显式标注"⚠️ 数据源不可用"（V17.3）。策略 02 周线多头 0 为严格 MA 多头排列条件导致的真实无符合（无误）。
-  - 注：`get_lng_report.py` 总股本=0 错误已于 V17.2.26 在代码层修复（渲染"数据暂缺"或经 canonical `total_shares_wan` 兜底填充）；今日 000938_lng 报告为修复前陈旧产物，重跑即消。
+  - `get_lng_report.py` 总股本=0 **单位 Bug（活体，非陈旧产物）**：`info.total_shares` 实测单位为**万股**（== `cdata.total_shares_wan`，如 000938=286008 万股），原 `get_lng_report.py:398` 误按 股 `/1e8` → 0.00286亿股，界面显示 `0.00亿股`，且正数值绕过 V17.2.26 的 `<=0` 守卫与"数据暂缺"分支。更正为 `/1e4` 与 canonical 兜底同源同单位（V17.3）。复盘：前期审计将其误判为"V17.2.26 已修复的陈旧产物"，实为活体单位 Bug——本次对 000938 重跑（后修复）先复现 `0.00亿股`、修复后得 `28.60亿股`，已实证修正。
 
 ## [V17.2.15] 2026-09-15 — TDX 主源切换 eltdx（Rust 客户端接管行情/财务）
 

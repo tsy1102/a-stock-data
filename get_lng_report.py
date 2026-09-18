@@ -391,11 +391,14 @@ async def generate_report_async(session, code, output_path, ind_comp=None):
         elif ext_deviation <= -20:
             L(f"  📉 显著回调：距历史最高点已下跌 {abs(ext_deviation):.0f}%，处于阶段性低位区域。")
     
-    # V16.2.3 修正: info.total_shares 单位=股 → /1e8 转亿股。
+    # V16.2.3 修正: info.total_shares 单位实为**万股**(实测 == cdata.total_shares_wan, 如 000938=286008 万股),
+    # 经 /1e4 转亿股(与 canonical 兜底 f402 同源同单位)。原注释"单位=股"为误判。
     # V17.2.20 修复(B): get_stock_info 对部分标的(实测 002015/301511 等)不返回 total_shares(取默认0),
-    # 致"总股本: 0.00亿股"与有值总市值矛盾、且污染策略25规模因子。
-    # 回退 canonical 权威层 _cdata.total_shares_wan(万股)/1e4=亿股(A1公理: canonical 为唯一真相源, L440 已验证可靠)。
-    _total_shares_yi = _safe_float(info.get('total_shares', 0)) / 1e8
+    # 致"总股本: 0.00亿股"与有值总市值矛盾、且污染策略25规模因子; 回退 canonical 权威层 _cdata.total_shares_wan。
+    # V17.3 修正(本报告 3.2 复盘): 原误按 股 /1e8 —— 实测 info.total_shares 实为 万股, /1e8 得 0.00286亿股
+    # → 界面显示 0.00亿股, 且正数值绕过 f399 的 <=0 守卫与 f403 的"数据暂缺"。更正为 /1e4 与 canonical 兜底一致。
+    # 该误判曾于前期审计被误判为"V17.2.26 已修复的陈旧产物", 实为活体单位 Bug(000938 重跑仍复现)。
+    _total_shares_yi = _safe_float(info.get('total_shares', 0)) / 1e4  # 万股→亿股
     if _total_shares_yi <= 0 and _cdata is not None:
         _tsw = _safe_float(getattr(_cdata, 'total_shares_wan', 0))
         if _tsw > 0:

@@ -11,7 +11,7 @@
 用法:
   python scripts/upload_reports_to_gd.py [--dry-run] [--dir reports]
 """
-import sys, io, os, re, argparse
+import sys, os, re, argparse
 
 for _s in (sys.stdout, sys.stderr):
     if _s is not None and hasattr(_s, "reconfigure"):

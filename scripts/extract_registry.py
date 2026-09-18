@@ -45,7 +45,6 @@ ALIGN = os.path.join(REPO_ROOT, "docs", "verify", "ulist_push2_align.md")
 # 复用已验证的解析基座
 sys.path.insert(0, SCRIPT_DIR)
 import gen_field_matrix as gm
-import verify_sync_check as vs
 import audit_field_completeness as afc
 
 

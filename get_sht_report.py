@@ -53,7 +53,7 @@ from core.tdx_client import (tdx_get_latest_bar_with_ma,
 
 from stock_common import (_safe_float, _debug_log,
                            get_fuyao_seal_info, get_fuyao_auction_snapshot,
-                           get_fuyao_auction_benchmark, get_fuyao_anomaly,
+                           get_fuyao_auction_benchmark,
                            _load_settings, _load_strategy_config, BaseReportRunner,
                            get_dragon_tiger_board_async,
                            holder_change_async, get_strategic_announcements_async,

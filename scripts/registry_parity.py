@@ -30,7 +30,6 @@ REPO_ROOT = os.path.dirname(SCRIPT_DIR)
 REGISTRY = os.path.join(REPO_ROOT, "docs", "field_verification", "field_registry.json")
 
 sys.path.insert(0, SCRIPT_DIR)
-import field_registry_api as fra
 import audit_field_completeness as afc
 import gen_field_matrix as gm
 

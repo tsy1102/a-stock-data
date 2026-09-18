@@ -26,7 +26,7 @@ import argparse
 import io
 import os
 import sys
-from typing import Optional, Tuple
+from typing import Tuple
 
 # UTF-8 强制（与 gen_field_matrix / extract_registry 一致）
 for _s in (sys.stdout, sys.stderr):

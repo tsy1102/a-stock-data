@@ -58,7 +58,7 @@ TTL分级策略：
 
 from typing import Any, Dict, Optional, List
 import math
-from datetime import datetime, date, timedelta  # timedelta 供 _get_trading_date_offset 使用（M14 注释修正）
+from datetime import datetime, timedelta  # timedelta 供 _get_trading_date_offset 使用（M14 注释修正）
 
 from core.stock_cache import cached, TTL, make_valid_if  # V15.2: 强化 valid_if
 from stock_common.sc_network import _fallback_logger

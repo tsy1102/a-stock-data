@@ -47,7 +47,7 @@ import math
 import glob
 import argparse
 from collections import defaultdict
-from datetime import date, datetime
+from datetime import date
 
 try:
     import collision_rules as CR

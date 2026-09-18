@@ -22,7 +22,6 @@ import json
 import logging
 import os
 import sys
-import time
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
@@ -31,7 +30,7 @@ from stock_common.sc_network import _quick_request, _debug_log
 # V16.3.3: fuyao 数据缓存（字典 12.15.5 新源充实后——避免每次网络请求消耗 Key 配额/限流）
 # V17.0 S8: 删 _fuyao_cached 适配器(与 _kpl_cached 逐字重复)——直接使用规范 cached
 try:
-    from core.stock_cache import cached, TTL, make_valid_if
+    from core.stock_cache import cached, make_valid_if
 
     _HAS_CACHE = True
 except ImportError:  # pragma: no cover

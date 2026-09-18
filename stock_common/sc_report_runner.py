@@ -16,7 +16,7 @@ import time
 import argparse
 import asyncio
 from datetime import datetime, date
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Optional
 
 from stock_common import (
     parse_args,

@@ -26,7 +26,7 @@ from typing import Any, Dict, List, Optional
 # V17.0 S8: 删 _kpl_cached 适配器(与 _fuyao_cached 逐字重复)——直接使用规范 cached;
 # core.stock_cache 是 sc_datasource 硬依赖, ImportError 分支属僵尸防御, 保留守卫结构。
 try:
-    from core.stock_cache import cached, TTL
+    from core.stock_cache import cached
 
     _HAS_CACHE = True
 except ImportError:  # pragma: no cover

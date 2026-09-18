@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 """确定性回写 2026-09-12 破解定案到 field_dict.md（含断言防静默丢改）。"""
 import os
-import sys
 
 PATH = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
                     "docs", "field_dict.md")

@@ -10,7 +10,7 @@
 
 import os
 import json
-from typing import Optional, Dict, Any, List, Tuple
+from typing import Optional, Dict, Any, Tuple
 
 from stock_common.sc_network import _debug_log
 

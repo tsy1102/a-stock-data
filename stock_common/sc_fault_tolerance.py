@@ -12,10 +12,9 @@
 from __future__ import annotations
 
 import time
-import math
 import random
 import threading
-from typing import Any, Callable, Dict, Optional
+from typing import Any, Callable, Dict
 
 _USER_AGENTS = [
     "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36",

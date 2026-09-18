@@ -79,9 +79,8 @@ import threading
 import atexit
 import functools
 import logging
-from typing import Any, Callable, Dict, Optional, TypeVar, Union, cast
-from datetime import datetime, date, time as dtime
-from pathlib import Path
+from typing import Any, Callable, Dict, Optional, TypeVar, cast
+from datetime import datetime, time as dtime
 
 _cache_logger = logging.getLogger("stock_cache")
 

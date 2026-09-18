@@ -45,11 +45,9 @@ API 映射：
 from __future__ import annotations
 
 import io
-import json
 import os
 import time
 import urllib.request
-from pathlib import Path
 from typing import Any, Dict, Optional, Tuple, cast
 
 from stock_common import _debug_log

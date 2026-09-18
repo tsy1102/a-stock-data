@@ -67,7 +67,7 @@ V17.2.14(2026-09-12) 沪深交易所(§12.8.17)真实 producer 接入(Q3 用户�
   python scripts/capture_field_probe.py --refresh-pool  # 采集前从涨停池刷新动态层(连板/新股/涨停)再采集
   python scripts/capture_field_probe.py --refresh-pool-only   # 仅刷新动态层写回 pool.json, 不采集
 """
-import sys, io, os, json, time, argparse
+import sys, os, json, time, argparse
 from datetime import datetime, time as dt_time
 
 for _s in (sys.stdout, sys.stderr):

@@ -49,3 +49,25 @@
 | ulist239.f212 | tencent[20] | 异号同义 | 60日涨跌幅 | 20260918 对撞 L1·hit=0.94·5d |
 | ulist239.f32 | sina[7] | 异号同义 | 1日涨跌幅 | 20260918 对撞 L1·hit=0.94·5d |
 | tencent[71] | push2.f121 | 异号同义 | 60日涨跌幅% | 20260918 对撞 L1·hit=0.92·5d |
+
+## 二、补齐候选（20260918 全量 49 条 · 含 6 条原排除项经黄金锚复核）
+
+> 以下为 20260918 对撞 49 条 L1 候选中、首轮未入上表（§一）的补齐项；其中 #4/#22/#33/#34/#36 为原 6 条排除项，经**双黄金锚**（fuyao 官网锚 / 东财官网锚）复核后定案（#19=`tencent[23]` 复核为证伪/丢弃，见 §三）。
+> 黄金锚复核依据：`docs/verify/eastmoney_website_anchor.md:265`（f175=52周最低、腾讯.idx68、zhb.low_52w）、`docs/verify/tencent_verify.md:20`（tx[69]≡ulist f160=区间累计涨幅类）、`docs/field_dict.md:1370/3527/3591`（sina[8]=成交量、snapshot.volume≡sina[8] 1:1）。
+> 关键修正：报告 `20260918_crack_report.md` 对 #4 锚义误标为 `change_pct_2d`（实为成交量）、对 #22/#33/#34 锚义误标 `tx[69]`（实为 52周最低）、对 #36 锚义误标 EPS（实为 10日涨跌幅）——均经黄金锚回订正。
+
+| 源A.字段A | 源B.字段B | 关系 | 中文语义 | 证据 |
+|---|---|---|---|---|
+| fuyao.snapshot.volume | sina[8] | 异号同义 | 成交量 | 20260918 对撞 L1·hit=1.0·5d（黄金锚 field_dict §12.2：sina[8]=成交量 ✅L1，snapshot.volume≡sina[8] 1:1） |
+| tencent[68] | push2.f175 | 异号同义 | 52周最低 | 20260918 对撞 L1·hit=1.0·5d（黄金锚 eastmoney_website_anchor f175=52周最低） |
+| zhb.full.low_52w | push2.f175 | 异号同义 | 52周最低 | 20260918 对撞 L1·hit=1.0·5d（黄金锚 eastmoney_website_anchor：zhb.low_52w=52周最低） |
+| zhb.stat2.low_52w | push2.f175 | 异号同义 | 52周最低 | 20260918 对撞 L1·hit=1.0·5d（黄金锚 eastmoney_website_anchor：zhb.low_52w=52周最低） |
+| tencent[69] | ulist239.f160 | 异号同义 | 10日涨跌幅 | 20260918 对撞 L1·hit=0.99·5d（黄金锚 tencent_verify tx[69]≡ulist f160=区间累计涨幅类/10日涨跌幅） |
+| ulist239.f13 | push2.f110 | 异号同义 | 市场标记（布尔 0/1，北交=0） | 20260918 对撞 L1·hit=1.0·5d |
+| ulist239.f19 | push2.f112 | 异号同义 | 板级枚举 | 20260918 对撞 L1·hit=1.0·5d |
+| ulist239.f27 | push2.f110 | 异号同义 | 市场标记（布尔 0/1，北交=0） | 20260918 对撞 L1·hit=1.0·5d |
+
+## 三、已排除候选（证伪/丢弃，不落字段，仅作回归护栏备案）
+
+- `tencent[23]` → `sina[25]`：原对撞判为数值巧合/证伪（报告 `20260918_crack_report.md` §二 row19 标注"*(丢弃)*"），经双黄金锚复核维持**证伪**——不写入 mappings（遵循治理铁律：证伪固化成护栏、不落成字段）。
+

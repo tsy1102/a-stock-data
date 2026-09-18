@@ -66,13 +66,23 @@ _INDEX_SRC = {"腾讯(qt.gtimg)", "新浪(hq.sinajs)",
 _CAMEL_SRC = {"reports", "同花顺-fuyao", "东财-datacenter(英文键)",
               "东财-push2ex", "东财-热榜(em_hot)", "市场源(market_sources)",
               "levistock(ftshare)", "财联社(cls)", "百度(baidu)", "沪深交易所",
-              "巨潮(cninfo)", "TDX(双命名源)", "TDX-F10(双命名源)"}
+              "巨潮(cninfo)", "TDX(双命名源)", "TDX-F10(双命名源)",
+              # V17.3 (2026-09-18): eltdx 适配层 + ZHB 三组纳入 camel 抽取，
+              # 使其带点 token(quote_snapshot.*/shortline.*/stat.*/stat2.*/tipinfo.*)
+              # 在 Layer2 保留完整带点形态，与 registered_field_sets 收录形态一致，方能回挂 meaning + 标 ✅ verified。
+              "TDX-eltdx(适配层)", "ZHB-tdxstat", "ZHB-tdxstat2", "ZHB-tipinfo"}
 
 
 def cell_token(cell: str, src: str):
     """从表格首格抽取该源原生字段 token（与 afc.reg_tokens_for_section 同语义）。"""
     cell = cell.strip().strip("`").strip()
     cell = re.sub(r"\*\*", "", cell)
+    # 带点字段（quote_full.*/stat.*/snapshot.*/shortline.*）：统一优先保留完整带点 token。
+    # 必须排在 _INDEX_SRC 的 [N] 分支之前——ZHB 同源既走 positional [N] 又走 stat.* 带点，
+    # 否则带点 token 被 _INDEX_SRC 误判 None，导致 Layer2 无法回挂 meaning + 标 ✅ verified。
+    if "." in cell and (src in _CAMEL_SRC or src in _INDEX_SRC):
+        m = re.search(r"[A-Za-z_][A-Za-z0-9_.]*", cell)
+        return m.group(0) if m else None
     if src in _FCODE_SRC:
         m = re.search(r"f(\d+)", cell, re.IGNORECASE)
         return ("f" + m.group(1)) if m else None
@@ -80,12 +90,7 @@ def cell_token(cell: str, src: str):
         m = re.search(r"\[(\d+)\]", cell)
         return ("[" + m.group(1) + "]") if m else None
     if src in _CAMEL_SRC:
-        # 带点字段(如 fuyao snapshot.price_change / tdx quote_full.bid1)保留完整带点 token，
-        # 与 registered_field_sets 收录形态一致；否则取首词会丢失子字段(见 afc 带点叶名逻辑)。
-        # 不影响 G1(仅比对 Layer1 的 registered token 集合)，只改变 Layer2 属性挂载对象。
-        if "." in cell:
-            m = re.search(r"[A-Za-z_][A-Za-z0-9_.]*", cell)
-            return m.group(0) if m else None
+        # 不带点英文/中文名 token（与 registered_field_sets 收录形态一致）。
         m = re.search(r"[A-Za-z][A-Za-z0-9_]{2,}", cell)
         return m.group(0) if m else None
     # 默认：英文/中文名 token

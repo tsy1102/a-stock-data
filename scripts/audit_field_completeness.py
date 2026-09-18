@@ -90,6 +90,10 @@ SECTION_MAP = [
     ("ZHB-tdxstat", ["tdxstat.cfg"]),
     ("ZHB-tdxstat2", ["tdxstat2.cfg"]),
     ("ZHB-tipinfo", ["tipinfo.dat"]),
+    # V17.3 (2026-09-18): 新增 eltdx 适配层源。此前 eltdx 在 §12.13.10/§12.13.11 有字段章节但
+    # 无 SECTION_MAP 条目 → registered_field_sets() 恒产 0 token → 审计/registry 长期漏抽 eltdx。
+    # 现据主字典章节补登，使其 quote_snapshot.* / shortline.* 带点 token 与 tdx/zhb 同权 registered + verified。
+    ("TDX-eltdx(适配层)", ["12.13.10", "12.13.11"]),
     ("财联社(cls)", ["12.8.13 财联社"]),
     ("百度(baidu)", ["12.8.16 百度"]),
     ("沪深交易所", ["12.8.17 沪深交易所"]),
@@ -306,6 +310,15 @@ _RAW_FILE_FOR_SRC = {
     "巨潮(cninfo)": ["raw_cninfo.json"],
     "TDX(双命名源)": ["raw_tdx.json", "raw_tdxquant.json"],
     "TDX-F10(双命名源)": ["raw_tdx_f10.json"],
+    # V17.3 (2026-09-18): eltdx 适配层源 raw 捕获（raw_eltdx.json, 自 20260915 起常态化采集）。
+    # 聚合 leaf keys 供 snake 路径补全；带点 token(quote_snapshot.*/shortline.*) 另经 §12.13.10/§12.13.11
+    # 标准契约表由 _table_codes 抽取，与 fuyao snapshot.* 同机制。
+    "TDX-eltdx(适配层)": ["raw_eltdx.json"],
+    # ZHB 三组已走 positional **[N]** 分支注册；此处挂空 list 以启用 snake 路径的 _table_codes，
+    # 使标准契约表的带点 token(stat.*/stat2.*/tipinfo.*) 亦能 registered（与 [N] 并存，不冲突）。
+    "ZHB-tdxstat": [],
+    "ZHB-tdxstat2": [],
+    "ZHB-tipinfo": [],
     # 百度(baidu): 无 raw 捕获文件, 仅依赖 §12.8.16 表格 + 反引号令牌
     "百度(baidu)": [],
 }

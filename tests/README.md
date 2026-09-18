@@ -46,14 +46,14 @@ tests/
 │   └── test_infra_f10.py             # F10 章节集成（real_network）
 └── reports/                         # ④ 报告层 — 5 文件（已纳入版本控制）
     ├── test_reports_runner.py        # ReportRunner 基类 + execute_batch_pipeline 骨架
-    ├── test_reports_strategy.py      # val 23 策略注册表 / 空池安全 / 配置键
+    ├── test_reports_strategy.py      # val 27 策略注册表 / 空池安全 / 配置键
     ├── test_reports_pipeline.py      # 5 个 Runner 子类 execute_pipeline 装配
     ├── test_reports_chapter_omission.py # 报告章节缺失检测
     └── test_reports_val_turnover.py  # val 换手率相关
 ```
 
 > **2026-09-12 校正**：本目录结构按实际文件重写并核对。
-> - 共 **31 个测试文件**（不含 `conftest.py` 共享 fixtures），分 data(7) / core(12) / infra(3) / reports(5)
+> - 共 **32 个测试文件**（不含 `conftest.py` 共享 fixtures），分 data(7) / core(13) / infra(3) / reports(5)
 >   四层 + 顶层 4 个专项测试（degradation_contract / sc_ta_core / symbol_norm / seat_db_audit_fix）。
 > - pytest 实际收集约 **561 个测试项**（含参数化展开；具体以 `pytest tests/ --collect-only` 实时为准）。
 > - **reports/ 曾因 `.gitignore:26` 的 `reports/` 规则被误忽略**（该规则本意忽略根级运行时输出目录），导致 5 个报告层
@@ -87,7 +87,7 @@ tests/
 | 板块标签/涨跌幅限制 | `core/test_sec_type_exposure.py` |
 | GD 上传失败 | `infra/test_infra_gd.py` |
 | 降级/fallback 顺序 | `core/test_core_routing.py` |
-| 策略不工作（val 23 策略） | `reports/test_reports_strategy.py` |
+| 策略不工作（val 27 策略） | `reports/test_reports_strategy.py` |
 | Runner/批量流水线骨架 | `reports/test_reports_runner.py` |
 | 5 个 Runner 子类取数/装配 | `reports/test_reports_pipeline.py` |
 | 报告章节缺失检测 | `reports/test_reports_chapter_omission.py` |
@@ -95,7 +95,7 @@ tests/
 | 报告正文渲染/章节内容 | ⚠️ 无专职测试（见下） |
 
 > **reports/ 层（5 文件，已纳入版本控制）**：覆盖 ReportRunner 基类契约、`execute_batch_pipeline`
-> 五大骨架能力、val 23 策略注册表一致性 + 空池安全 + 配置键存在性，以及 5 个 Runner 子类
+> 五大骨架能力、val 27 策略注册表一致性 + 空池安全 + 配置键存在性，以及 5 个 Runner 子类
 > `execute_pipeline` 装配（公共契约 / 生成器绑定 / 快照代理透传 / 上游调用次数钉死 / sync 回退守卫等）。
 > 两批用例均经变异测试验证有效。
 >

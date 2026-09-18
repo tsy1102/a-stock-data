@@ -15,7 +15,7 @@
 docs/field_verification/
 ├── pool.json          # 20 股股票池(固定 15 + 动态 5,动态层每日可换)
 ├── README.md          # 本文件
-└── YYYYMMDD/          # 按天归档
+└── YYYYMMDD/          # 按天归档(自动生成: 由 capture_field_probe.py 每日创建, 按约定不单列 README; 内容见本文件"每日核查流程"与 collide.py 产物)
     ├── raw_zhb.json       # ZHB full/stat/stat2/tipinfo 全字段(本地,零网络)
     ├── raw_tdx.json       # TDX TCP 行情/财务快照
     ├── raw_tencent.json   # 腾讯 qt.gtimg 全字段(~88 位)

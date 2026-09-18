@@ -15,7 +15,7 @@ docs/
 ├── field_verification/      # 字段实测验证流水线（V16.4.1,按天归档）
 │   ├── pool.json            # 20 股固定股票池（固定 15 + 动态 5）
 │   ├── README.md            # 采集/核查流程说明
-│   └── YYYYMMDD/            # 每日:raw_*.json × 18 源 + meta + analysis + field_analysis
+│   └── YYYYMMDD/            # 每日:raw_*.json × 18 源 + meta + analysis + field_analysis(自动生成, 无单独 README, 由 capture_field_probe.py 创建)
 ├── session_notes/           # 每日会话纪要锚点（V16.4.1,按天归档）
 │   ├── README.md            # 纪要保存逻辑与模板
 │   └── YYYYMMDD.md          # 当日全部改动/决策/成果/待办
@@ -62,3 +62,4 @@ docs/
 - **附录索引**：主字典 §12.15.9 登记所有附录（新增附录必须登记）
 - **数据文件**（JSON）统一放 `verify/data/`（cache/ 是运行时目录不入库）
 - **规范变更**（单位/结构）→ 递增对应缓存 schema 版本（见 cache/README.md）
+- **子目录说明**：`verify/` 已单列 `verify/README.md` 说明各附录分字典；`field_verification/YYYYMMDD/` 为 `capture_field_probe.py` 每日自动生成的采集产物, 按约定不单列 README(内容见 `field_verification/README.md` 与 `collide.py` 输出)。

@@ -1,0 +1,174 @@
+{
+ "stocks": {
+  "600519": {
+   "comment_score": [],
+   "comment_desire": null,
+   "comment_focus": null,
+   "comment_org": null,
+   "ggmx": [],
+   "goodwill_detail": []
+  },
+  "601288": {
+   "comment_score": [],
+   "comment_desire": null,
+   "comment_focus": null,
+   "comment_org": null,
+   "ggmx": [],
+   "goodwill_detail": []
+  },
+  "600309": {
+   "comment_score": [],
+   "comment_desire": null,
+   "comment_focus": null,
+   "comment_org": null,
+   "ggmx": [],
+   "goodwill_detail": []
+  },
+  "600675": {
+   "comment_score": [],
+   "comment_desire": null,
+   "comment_focus": null,
+   "comment_org": null,
+   "ggmx": [],
+   "goodwill_detail": []
+  },
+  "000568": {
+   "comment_score": [],
+   "comment_desire": null,
+   "comment_focus": null,
+   "comment_org": null,
+   "ggmx": [],
+   "goodwill_detail": []
+  },
+  "000007": {
+   "comment_score": [],
+   "comment_desire": null,
+   "comment_focus": null,
+   "comment_org": null,
+   "ggmx": [],
+   "goodwill_detail": []
+  },
+  "000037": {
+   "comment_score": [],
+   "comment_desire": null,
+   "comment_focus": null,
+   "comment_org": null,
+   "ggmx": [],
+   "goodwill_detail": []
+  },
+  "002034": {
+   "comment_score": [],
+   "comment_desire": null,
+   "comment_focus": null,
+   "comment_org": null,
+   "ggmx": [],
+   "goodwill_detail": []
+  },
+  "300031": {
+   "comment_score": [],
+   "comment_desire": null,
+   "comment_focus": null,
+   "comment_org": null,
+   "ggmx": [],
+   "goodwill_detail": []
+  },
+  "300788": {
+   "comment_score": [],
+   "comment_desire": null,
+   "comment_focus": null,
+   "comment_org": null,
+   "ggmx": [],
+   "goodwill_detail": []
+  },
+  "688553": {
+   "comment_score": [],
+   "comment_desire": null,
+   "comment_focus": null,
+   "comment_org": null,
+   "ggmx": [],
+   "goodwill_detail": []
+  },
+  "688589": {
+   "comment_score": [],
+   "comment_desire": null,
+   "comment_focus": null,
+   "comment_org": null,
+   "ggmx": [],
+   "goodwill_detail": []
+  },
+  "688327": {
+   "comment_score": [],
+   "comment_desire": null,
+   "comment_focus": null,
+   "comment_org": null,
+   "ggmx": [],
+   "goodwill_detail": []
+  },
+  "920118": {
+   "comment_score": [],
+   "comment_desire": null,
+   "comment_focus": null,
+   "comment_org": null,
+   "ggmx": [],
+   "goodwill_detail": []
+  },
+  "920508": {
+   "comment_score": [],
+   "comment_desire": null,
+   "comment_focus": null,
+   "comment_org": null,
+   "ggmx": [],
+   "goodwill_detail": []
+  },
+  "002790": {
+   "comment_score": [],
+   "comment_desire": null,
+   "comment_focus": null,
+   "comment_org": null,
+   "ggmx": [],
+   "goodwill_detail": []
+  },
+  "603421": {
+   "comment_score": [],
+   "comment_desire": null,
+   "comment_focus": null,
+   "comment_org": null,
+   "ggmx": [],
+   "goodwill_detail": []
+  },
+  "000823": {
+   "comment_score": [],
+   "comment_desire": null,
+   "comment_focus": null,
+   "comment_org": null,
+   "ggmx": [],
+   "goodwill_detail": []
+  },
+  "000993": {
+   "comment_score": [],
+   "comment_desire": null,
+   "comment_focus": null,
+   "comment_org": null,
+   "ggmx": [],
+   "goodwill_detail": []
+  },
+  "000980": {
+   "comment_score": [],
+   "comment_desire": null,
+   "comment_focus": null,
+   "comment_org": null,
+   "ggmx": [],
+   "goodwill_detail": []
+  }
+ },
+ "market": {
+  "dapan_flow": null,
+  "market_snapshot": null,
+  "suspension_list": [],
+  "limit_up_pool_yesterday": [],
+  "unlock_by_date": [],
+  "pledge_summary": null,
+  "probe_trading_day": "20260918"
+ },
+ "scheme": "ftshare"
+}

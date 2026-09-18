@@ -1,0 +1,65 @@
+{
+ "stocks": {
+  "600519": {
+   "__error__": "push2his request failed/blocked"
+  },
+  "601288": {
+   "__error__": "push2his request failed/blocked"
+  },
+  "600309": {
+   "__error__": "push2his request failed/blocked"
+  },
+  "600675": {
+   "__error__": "push2his request failed/blocked"
+  },
+  "000568": {
+   "__error__": "push2his request failed/blocked"
+  },
+  "000007": {
+   "__error__": "push2his request failed/blocked"
+  },
+  "000037": {
+   "__error__": "push2his request failed/blocked"
+  },
+  "002034": {
+   "__error__": "push2his request failed/blocked"
+  },
+  "300031": {
+   "__error__": "push2his request failed/blocked"
+  },
+  "300788": {
+   "__error__": "push2his request failed/blocked"
+  },
+  "688553": {
+   "__error__": "push2his request failed/blocked"
+  },
+  "688589": {
+   "__error__": "push2his request failed/blocked"
+  },
+  "688327": {
+   "__error__": "push2his request failed/blocked"
+  },
+  "920118": {
+   "__error__": "push2his request failed/blocked"
+  },
+  "920508": {
+   "__error__": "push2his request failed/blocked"
+  },
+  "002790": {
+   "__error__": "push2his request failed/blocked"
+  },
+  "603421": {
+   "__error__": "push2his request failed/blocked"
+  },
+  "000823": {
+   "__error__": "push2his request failed/blocked"
+  },
+  "000993": {
+   "__error__": "push2his request failed/blocked"
+  },
+  "000980": {
+   "__error__": "push2his request failed/blocked"
+  }
+ },
+ "scheme": "em.kline"
+}

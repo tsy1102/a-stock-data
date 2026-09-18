@@ -1,0 +1,105 @@
+{
+ "stocks": {
+  "600519": {
+   "financial_analysis": {},
+   "share_capital": {},
+   "dividend_history": []
+  },
+  "601288": {
+   "financial_analysis": {},
+   "share_capital": {},
+   "dividend_history": []
+  },
+  "600309": {
+   "financial_analysis": {},
+   "share_capital": {},
+   "dividend_history": []
+  },
+  "600675": {
+   "financial_analysis": {},
+   "share_capital": {},
+   "dividend_history": []
+  },
+  "000568": {
+   "financial_analysis": {},
+   "share_capital": {},
+   "dividend_history": []
+  },
+  "000007": {
+   "financial_analysis": {},
+   "share_capital": {},
+   "dividend_history": []
+  },
+  "000037": {
+   "financial_analysis": {},
+   "share_capital": {},
+   "dividend_history": []
+  },
+  "002034": {
+   "financial_analysis": {},
+   "share_capital": {},
+   "dividend_history": []
+  },
+  "300031": {
+   "financial_analysis": {},
+   "share_capital": {},
+   "dividend_history": []
+  },
+  "300788": {
+   "financial_analysis": {},
+   "share_capital": {},
+   "dividend_history": []
+  },
+  "688553": {
+   "financial_analysis": {},
+   "share_capital": {},
+   "dividend_history": []
+  },
+  "688589": {
+   "financial_analysis": {},
+   "share_capital": {},
+   "dividend_history": []
+  },
+  "688327": {
+   "financial_analysis": {},
+   "share_capital": {},
+   "dividend_history": []
+  },
+  "920118": {
+   "financial_analysis": {},
+   "share_capital": {},
+   "dividend_history": []
+  },
+  "920508": {
+   "financial_analysis": {},
+   "share_capital": {},
+   "dividend_history": []
+  },
+  "002790": {
+   "financial_analysis": {},
+   "share_capital": {},
+   "dividend_history": []
+  },
+  "603421": {
+   "financial_analysis": {},
+   "share_capital": {},
+   "dividend_history": []
+  },
+  "000823": {
+   "financial_analysis": {},
+   "share_capital": {},
+   "dividend_history": []
+  },
+  "000993": {
+   "financial_analysis": {},
+   "share_capital": {},
+   "dividend_history": []
+  },
+  "000980": {
+   "financial_analysis": {},
+   "share_capital": {},
+   "dividend_history": []
+  }
+ },
+ "scheme": "tdx.f10"
+}

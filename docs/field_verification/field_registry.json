@@ -30411,6 +30411,102 @@
       },
       "relation": "same_number_same_meaning",
       "evidence": "20260918 对撞 L1·hit=0.92·5d"
+    },
+    {
+      "from": {
+        "source": "fuyao",
+        "code": "volume"
+      },
+      "to": {
+        "source": "sina",
+        "code": "[8]"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260918 对撞 L1·hit=1.0·5d（黄金锚 field_dict §12.2：sina[8]=成交量 ✅L1，snapshot.volume≡sina[8] 1:1）"
+    },
+    {
+      "from": {
+        "source": "tencent",
+        "code": "[68]"
+      },
+      "to": {
+        "source": "push2",
+        "code": "f175"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260918 对撞 L1·hit=1.0·5d（黄金锚 eastmoney_website_anchor f175=52周最低）"
+    },
+    {
+      "from": {
+        "source": "zhb",
+        "code": "low_52w"
+      },
+      "to": {
+        "source": "push2",
+        "code": "f175"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260918 对撞 L1·hit=1.0·5d（黄金锚 eastmoney_website_anchor：zhb.low_52w=52周最低）"
+    },
+    {
+      "from": {
+        "source": "zhb",
+        "code": "low_52w"
+      },
+      "to": {
+        "source": "push2",
+        "code": "f175"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260918 对撞 L1·hit=1.0·5d（黄金锚 eastmoney_website_anchor：zhb.low_52w=52周最低）"
+    },
+    {
+      "from": {
+        "source": "tencent",
+        "code": "[69]"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f160"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260918 对撞 L1·hit=0.99·5d（黄金锚 tencent_verify tx[69]≡ulist f160=区间累计涨幅类/10日涨跌幅）"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f13"
+      },
+      "to": {
+        "source": "push2",
+        "code": "f110"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260918 对撞 L1·hit=1.0·5d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f19"
+      },
+      "to": {
+        "source": "push2",
+        "code": "f112"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260918 对撞 L1·hit=1.0·5d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f27"
+      },
+      "to": {
+        "source": "push2",
+        "code": "f110"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260918 对撞 L1·hit=1.0·5d"
     }
   ]
 }

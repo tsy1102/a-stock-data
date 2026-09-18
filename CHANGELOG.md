@@ -5,6 +5,10 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 
+## [V17.3.1] 2026-09-19 — ZHB 下载节流缺陷修复
+
+- **ZHB 下载节流逻辑修复（`core/zhb_client.py`）**：令牌文件 `.last_download` 由记录"日历日"改为记录"服务端返回的包数据日期"（YYYYMMDD）。`_zhb_needs_download` 抑制重下的判定由 blanket "今日是否已尝试"（每日一次闸门，会把同日 T+1 清晨发布的新包锁死到次日）改为——仅当"今日已成功拉取 且 服务端返回包日期 == 本地包日期（服务端确未前进）"才抑制；当本地落后于最近交易日时引入 3 小时重探冷却，使当日新包（如 `zhb_20260918`）可被拾取，而非滞留旧包直到次日。修复了"最新 ZHB 包停留在上一交易日"的缺陷（数据来源：通达信）。单元验证 6 项断言全过（不联网，monkeypatch 日期/时间）。
+
 ## [V17.3] 2026-09-18 — 架构重构落地 + 字段治理闭环
 
 - **运行时去 exec 重构（核心架构调整）**：`stock_common/sc_datasource/__init__.py` 由 `exec()` 动态注入改为显式模块导入 + 共享状态对象（`_shared.py`）传递，消除隐式命名空间、可静态分析、可 mock。逐片段提交（阶段1 抽取 _shared / 阶段2 显式导入 / 阶段3 re-export / 阶段4 mock 契约迁移 + 全量回归），全源对撞引擎复跑零回归。

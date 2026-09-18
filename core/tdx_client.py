@@ -30,8 +30,9 @@ from __future__ import annotations
 
 # V17.2.15: TDX TCP 主源切换为 eltdx（Rust 内核 7709/7615 客户端）。
 # eltdx 握手已含 2026-09 新式单条随机 msg_id → 原 _tdx_handshake_patch 不再需要。
-# 注意: zhb_client.py 的 ZHB 报告 ZIP 下载仍走 easy_tdx 文件传输（eltdx 无此能力），
-# 故握手补丁保留于 zhb_client 侧，本模块不再 import。
+# 注意: zhb_client.py 的 ZHB 报告 ZIP 下载自 V17.3.1 P0 起切换 eltdx (0x06B9,
+# ResourceApi.download_file), eltdx 已具备该能力; 握手补丁 (_tdx_handshake_patch) 亦随之移除,
+# 本模块本就不 import 该补丁。
 
 import time
 from datetime import datetime

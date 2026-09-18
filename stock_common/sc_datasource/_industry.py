@@ -3,7 +3,18 @@
 本文件不是独立可导入模块；其源码被 stock_common/sc_datasource/__init__.py
 exec 进包命名空间，与包内其他函数/状态共享同一 globals()。
 """
-# flake8: noqa: F821  (名称来自包共享命名空间，本片段不单独导入)
+
+from stock_common.sc_network import UA, _debug_log, em_get, requires_push2
+from stock_common.sc_utils import TTL, _safe_float, cached, em_secid_prefix
+from core.stock_cache import make_valid_if
+from ._shared import _EM_BOARD_TYPE_FS_MAP, _EM_INDUSTRY_L1_NAMES, _EM_L2_TTL
+
+
+from stock_common.sc_network import UA, _debug_log, em_get, requires_push2
+from stock_common.sc_utils import TTL, _safe_float, cached, em_secid_prefix
+from core.stock_cache import make_valid_if
+from ._shared import _EM_BOARD_TYPE_FS_MAP, _EM_INDUSTRY_L1_NAMES, _EM_L2_TTL
+
 
 @cached(category="industry_reports", ttl_seconds=TTL["reports"])
 def get_industry_reports(

@@ -1,3 +1,11 @@
+import datetime
+from stock_common.sc_network import _debug_log
+from stock_common.sc_utils import em_exchange_prefix
+
+import datetime
+from stock_common.sc_network import _debug_log
+from stock_common.sc_utils import em_exchange_prefix
+
 # stock_common/sc_datasource/_official_backup.py
 # V17.2.11: 官方交易所备胎源（参考 a-stock-data V3.8.0 官方备胎扩展，2026-09-05 实测）
 # 沪深交易所官方两融 + 北交所官方行情，用作东财封禁时的降级备份源。

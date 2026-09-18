@@ -3,7 +3,14 @@
 本文件不是独立可导入模块；其源码被 stock_common/sc_datasource/__init__.py
 exec 进包命名空间，与包内其他函数/状态共享同一 globals()。
 """
-# flake8: noqa: F821  (名称来自包共享命名空间，本片段不单独导入)
+
+from stock_common.sc_network import _debug_log
+from ._shared import _ZHB_NEAR_REALTIME_FIELDS, _ZHB_REALTIME_FIELDS, _ZHB_STATIC_FIELDS
+
+
+from stock_common.sc_network import _debug_log
+from ._shared import _ZHB_NEAR_REALTIME_FIELDS, _ZHB_REALTIME_FIELDS, _ZHB_STATIC_FIELDS
+
 
 def get_zhb_industry_map() -> Dict[str, str]:
     """V9.6: 获取行业代码→名称映射（全类型，1000+条）。"""

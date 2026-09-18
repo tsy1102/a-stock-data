@@ -3,7 +3,20 @@
 本文件不是独立可导入模块；其源码被 stock_common/sc_datasource/__init__.py
 exec 进包命名空间，与包内其他函数/状态共享同一 globals()。
 """
-# flake8: noqa: F821  (名称来自包共享命名空间，本片段不单独导入)
+
+import datetime
+from stock_common.sc_network import _debug_log, em_get, requires_push2
+from stock_common.sc_utils import TTL, cached, em_exchange_prefix
+from core.stock_cache import make_valid_if
+from ._shared import _EM_XUANGU_URL, _TDX_QC_TOKEN, _TDX_QC_URL, _THS_HOT_REASON_CACHE, _ULIST_BATCH_FIELDS, _ULIST_BATCH_SIZE
+
+
+import datetime
+from stock_common.sc_network import _debug_log, em_get, requires_push2
+from stock_common.sc_utils import TTL, cached, em_exchange_prefix
+from core.stock_cache import make_valid_if
+from ._shared import _EM_XUANGU_URL, _TDX_QC_TOKEN, _TDX_QC_URL, _THS_HOT_REASON_CACHE, _ULIST_BATCH_FIELDS, _ULIST_BATCH_SIZE
+
 
 def get_tencent_quote(code: str) -> Dict[str, Any]:
     """V4: 个股行情 → 腾讯 HTTP 实时（V16.0 修正名不副实问题）。

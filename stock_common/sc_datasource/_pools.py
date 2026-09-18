@@ -3,7 +3,18 @@
 本文件不是独立可导入模块；其源码被 stock_common/sc_datasource/__init__.py
 exec 进包命名空间，与包内其他函数/状态共享同一 globals()。
 """
-# flake8: noqa: F821  (名称来自包共享命名空间，本片段不单独导入)
+
+import datetime
+from stock_common.sc_network import UA, _debug_log, _quick_request, requires_push2
+from stock_common.sc_utils import TTL, _safe_float, cached
+from ._shared import _KPL_BASE, _KPL_HEADERS, _KPL_HIS, _KPL_HQ, _KPL_LHB
+
+
+import datetime
+from stock_common.sc_network import UA, _debug_log, _quick_request, requires_push2
+from stock_common.sc_utils import TTL, _safe_float, cached
+from ._shared import _KPL_BASE, _KPL_HEADERS, _KPL_HIS, _KPL_HQ, _KPL_LHB
+
 
 def _parse_limit_pool(data: list) -> List[Dict[str, Any]]:
     """解析东财 push2ex 涨停池/炸板池/跌停池数据"""

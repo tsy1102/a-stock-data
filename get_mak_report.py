@@ -310,7 +310,7 @@ async def _get_zhb_market_data():
                     "change_pct_2d": stat.get("change_pct_2d", ""),
                     # V17.0(2026-08-15): 主力净额=ulist 批量 f62(元口径, H1/M5 修复: 统一元+0值不误回退)
                     "main_net_amount": (
-                        _main_net_map[code] if code in _main_net_map
+                        _MAIN_NET_MAP_GLOBAL[code] if code in _MAIN_NET_MAP_GLOBAL
                         else (_safe_float(stat.get("main_net_buy_amount", 0)) or 0) * 1e4
                     ),
                     # V16.2.16: Col[13] 大量为风格/概念（微盘股/近已解禁等）→ 只保留行业段

@@ -36,7 +36,10 @@ from unittest import mock
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 
 from stock_common import sc_datasource  # noqa: E402
-from stock_common.sc_datasource import get_em_board_members  # noqa: E402
+from stock_common.sc_datasource import get_em_board_members, _industry  # noqa: E402
+# V17.2.18 重构后片段为独立模块: get_em_board_members 定义在 _industry, em_get 由其自身
+# 命名空间解析; 故补丁须打在 _industry.em_get (而非包级 re-export 副本) 才能穿透。
+
 from core.stock_cache import invalidate_category  # noqa: E402
 
 # V17.0.26 DEBT-012: 本函数已加 @cached。测试共用一个 board_code("BK0447")，
@@ -79,7 +82,7 @@ def _item(**over):
 
 
 def _call(payload, board_code="BK0447"):
-    with mock.patch.object(sc_datasource, "em_get", return_value=_FakeResp(payload)) as m:
+    with mock.patch.object(_industry, "em_get", return_value=_FakeResp(payload)) as m:
         r = get_em_board_members(board_code)
     return r, m
 
@@ -152,11 +155,11 @@ class TestEmBoardMembersRobustness(unittest.TestCase):
         self.assertAlmostEqual(r[0]["pe"], 18.22, places=4)
 
     def test_network_none_returns_empty(self):
-        with mock.patch.object(sc_datasource, "em_get", return_value=None):
+        with mock.patch.object(_industry, "em_get", return_value=None):
             self.assertEqual(get_em_board_members("BK0447"), [])
 
     def test_exception_returns_empty(self):
-        with mock.patch.object(sc_datasource, "em_get", side_effect=RuntimeError("boom")):
+        with mock.patch.object(_industry, "em_get", side_effect=RuntimeError("boom")):
             self.assertEqual(get_em_board_members("BK0447"), [])
 
     def test_missing_fields_default_zero(self):
@@ -186,7 +189,7 @@ class TestEmBoardMembersCache(unittest.TestCase):
     def test_second_call_served_from_cache(self):
         """同一板块 15min 内二次调用不得再打 push2 主域。"""
         with mock.patch.object(
-            sc_datasource, "em_get", return_value=_FakeResp({"data": {"diff": [_item()]}})
+            _industry, "em_get", return_value=_FakeResp({"data": {"diff": [_item()]}})
         ) as m:
             r1 = get_em_board_members("BK0447")
             r2 = get_em_board_members("BK0447")
@@ -198,14 +201,14 @@ class TestEmBoardMembersCache(unittest.TestCase):
     def test_empty_result_not_cached(self):
         """降级空列表不得写入缓存——下次调用必须真正重新取源（自愈）。"""
         with mock.patch.object(
-            sc_datasource, "em_get", return_value=_FakeResp({"data": {"diff": []}})
+            _industry, "em_get", return_value=_FakeResp({"data": {"diff": []}})
         ) as m:
             self.assertEqual(get_em_board_members("BK0447"), [])
         self.assertEqual(m.call_count, 1)
 
         # 同 key 再取：应重新发请求（证明 [] 未被缓存），且能拿到真实数据
         with mock.patch.object(
-            sc_datasource, "em_get", return_value=_FakeResp({"data": {"diff": [_item()]}})
+            _industry, "em_get", return_value=_FakeResp({"data": {"diff": [_item()]}})
         ) as m2:
             r = get_em_board_members("BK0447")
         self.assertEqual(m2.call_count, 1, "空结果被缓存了 → 抖动会被冻结 15 分钟")
@@ -214,7 +217,7 @@ class TestEmBoardMembersCache(unittest.TestCase):
     def test_distinct_board_codes_not_shared(self):
         """缓存键必须按板块区分，不能张冠李戴。"""
         with mock.patch.object(
-            sc_datasource, "em_get", return_value=_FakeResp({"data": {"diff": [_item()]}})
+            _industry, "em_get", return_value=_FakeResp({"data": {"diff": [_item()]}})
         ) as m:
             get_em_board_members("BK0447")
             get_em_board_members("BK0448")

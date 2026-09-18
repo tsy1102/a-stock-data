@@ -44,7 +44,9 @@ from unittest import mock
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 
 from stock_common import sc_datasource  # noqa: E402
-from stock_common.sc_datasource import _em_quote_full_impl  # noqa: E402
+from stock_common.sc_datasource import _em_quote_full_impl, _quotes  # noqa: E402
+# V17.2.18 重构后片段为独立模块: _em_quote_full_impl 定义在 _quotes, em_get 由其自身命名空间解析;
+# 故 em_get 补丁须打在 _quotes.em_get (而非包级 re-export 副本) 才能穿透。
 
 
 class _FakeResp:
@@ -84,7 +86,7 @@ def _payload(**over):
 
 
 def _call(**over):
-    with mock.patch.object(sc_datasource, "em_get", return_value=_FakeResp(_payload(**over))) as m:
+    with mock.patch.object(_quotes, "em_get", return_value=_FakeResp(_payload(**over))) as m:
         r = _em_quote_full_impl("600519")
     return r, m
 
@@ -205,7 +207,7 @@ class TestFundFlowRobustness(unittest.TestCase):
         """缺 f149 时不应产生 fund_small_today 键（保持 None/缺席，勿填 0）。"""
         p = _payload()
         del p["data"]["f149"]
-        with mock.patch.object(sc_datasource, "em_get", return_value=_FakeResp(p)):
+        with mock.patch.object(_quotes, "em_get", return_value=_FakeResp(p)):
             r = _em_quote_full_impl("600519")
         self.assertIsNone(r.get("fund_small_today"),
                           "缺失字段应缺席而非填 0——填 0 会让下游误判为'小单净为 0'")
@@ -215,12 +217,12 @@ class TestFundFlowRobustness(unittest.TestCase):
         self.assertIsNone(r.get("fund_small_today"))
 
     def test_network_failure_returns_empty(self):
-        with mock.patch.object(sc_datasource, "em_get", return_value=None):
+        with mock.patch.object(_quotes, "em_get", return_value=None):
             r = _em_quote_full_impl("600519")
         self.assertIsInstance(r, dict)
 
     def test_exception_swallowed(self):
-        with mock.patch.object(sc_datasource, "em_get", side_effect=RuntimeError("boom")):
+        with mock.patch.object(_quotes, "em_get", side_effect=RuntimeError("boom")):
             r = _em_quote_full_impl("600519")
         self.assertIsInstance(r, dict)
 

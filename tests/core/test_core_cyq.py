@@ -26,7 +26,9 @@ from unittest import mock
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 
 import stock_common.sc_datasource as sc_datasource
-from stock_common.sc_datasource import get_cyq_distribution
+from stock_common.sc_datasource import get_cyq_distribution, _eastmoney
+# V17.2.18 重构后片段为独立模块: _em_fflow_request 定义在 _eastmoney, get_cyq_distribution 经
+# _eastmoney 命名空间解析; 故补丁须打在 _eastmoney._em_fflow_request (而非包级 re-export 副本)。
 from stock_common.sc_scoring import ScoreData, _score_holder
 from stock_common.sc_technical import calculate_cyq
 
@@ -167,7 +169,7 @@ class TestGetCyqDistribution(_TmpCacheDir):
     """
 
     def _call(self, resp, code="600519"):
-        with mock.patch.object(sc_datasource, "_em_fflow_request", return_value=resp) as m:
+        with mock.patch.object(_eastmoney, "_em_fflow_request", return_value=resp) as m:
             r = get_cyq_distribution(code)
         return r, m
 
@@ -215,7 +217,7 @@ class TestGetCyqDistribution(_TmpCacheDir):
         self.assertEqual(r, {}, "全部坏行 → 有效收盘 < 2 → {}")
 
     def test_returns_empty_on_exception(self):
-        with mock.patch.object(sc_datasource, "_em_fflow_request",
+        with mock.patch.object(_eastmoney, "_em_fflow_request",
                                side_effect=RuntimeError("boom")):
             self.assertEqual(get_cyq_distribution("600519"), {},
                              "底层异常应被吞掉并返回 {}（报告不得因 CYQ 中断）")
@@ -241,7 +243,7 @@ class TestCyqDiskCache(_TmpCacheDir):
     """
 
     def _call(self, resp, code="600519"):
-        with mock.patch.object(sc_datasource, "_em_fflow_request", return_value=resp) as m:
+        with mock.patch.object(_eastmoney, "_em_fflow_request", return_value=resp) as m:
             r = get_cyq_distribution(code)
         return r, m
 
@@ -269,7 +271,7 @@ class TestCyqDiskCache(_TmpCacheDir):
         self.assertTrue(r, "重取后应得到真实 CYQ")
 
     def test_exception_result_is_not_cached(self):
-        with mock.patch.object(sc_datasource, "_em_fflow_request",
+        with mock.patch.object(_eastmoney, "_em_fflow_request",
                                side_effect=RuntimeError("boom")):
             self.assertEqual(get_cyq_distribution("600519"), {})
         _, m = self._call(_FakeResp({"data": {"klines": _mk_klines()}}))
@@ -282,7 +284,7 @@ class TestCyqDiskCache(_TmpCacheDir):
 
     def test_cache_is_per_days(self):
         """days 是缓存键的一部分：240 与 120 的窗口不可混用。"""
-        with mock.patch.object(sc_datasource, "_em_fflow_request",
+        with mock.patch.object(_eastmoney, "_em_fflow_request",
                                return_value=_FakeResp({"data": {"klines": _mk_klines()}})) as m:
             get_cyq_distribution("600519", days=240)
             get_cyq_distribution("600519", days=240)   # 命中缓存
@@ -298,7 +300,7 @@ class TestCyqDiskCache(_TmpCacheDir):
 
     def test_cache_failure_does_not_break_cyq(self):
         """缓存层本身不可用（磁盘满/权限）时，CYQ 必须仍能走网络拿到结果。"""
-        with mock.patch.object(sc_datasource, "_em_fflow_request",
+        with mock.patch.object(_eastmoney, "_em_fflow_request",
                                return_value=_FakeResp({"data": {"klines": _mk_klines()}})):
             with mock.patch("stock_common.sc_kline_cache.get_cached_blob",
                             side_effect=OSError("disk full")):

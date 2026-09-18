@@ -47,30 +47,6 @@ V9.1 更新：
 - 交易日历、异步包装
 """
 
-from typing import Any, Dict, List, Optional, Tuple
-from datetime import datetime, timedelta
-
-# 导入网络层
-from stock_common.sc_network import (
-    em_get,
-    _quick_request,
-    requires_push2,
-    DATACENTER_URL,
-    UA,
-    _http_logger,
-    _biz_logger,
-    _debug_log,
-    _async_request_with_retry,
-    _async_quick_request,
-    RateLimitBlockedError,
-)
-
-# 导入配置加载
-from stock_common.sc_utils import _load_settings, _safe_float, em_secid_prefix, em_exchange_prefix  # V17.0 S3: 统一 secid 前缀; V17.2.11: 交易所 mnemonic 前缀
-
-# 导入缓存层
-from core.stock_cache import TTL, cached, make_valid_if  # V15.2: 强化 valid_if
-
 # ═════════════════════════════════════════════════════════
 # V17.2 重构: 跨片段共享状态已抽取至 _shared.py(单实例, 见该模块)
 from ._shared import *

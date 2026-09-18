@@ -1434,7 +1434,11 @@ async def generate_sector_report(output_path):
     if _lb_3d:
         _ladder_str = ' | '.join(f'{k}: {v}家' for k, v in sorted(_lb_3d.items()))
         _max_desc = f", 最高{_max_board}板" if _max_board else ", 最高首板"
-        L(f"  📊 连板梯队（样本内3日连板统计）: {_ladder_str}{_max_desc}")
+        L(f"  📊 连板梯队（财联社情绪板档·市场口径）: {_ladder_str}{_max_desc}")
+        # V17.2.27(2026-09-18) P1 口径说明: A段连板高度为财联社情绪板档(市场口径),
+        # B段【涨停池扫描】的"最高连板"为财联社/KPL/复盘啦三源互校口径(本报告封板基准),
+        # 二者来源与统计窗口可能不同, 数值可并存; 全市场权威最高连板以 B段互校值为准。
+        L(f"    ℹ️ 本段连板高度为财联社情绪板档(市场口径); 全市场涨停数及最高连板三源互校口径见【B. 涨停池扫描】, 二者来源不同, 数值可并存, 以 B段互校值为全市场基准")
         if _max_board >= 4:
             L(f"    🔥 高标{_max_board}板打开空间，可积极做多")
         elif _max_board <= 1 and _zt_count > 30:
@@ -1595,7 +1599,8 @@ async def generate_sector_report(output_path):
             L("\n  涨停板块分布（TOP10）:")
             for sec, cnt in list(sector_stats.items())[:10]:
                 # V17.0.2l: 无冒号格式——原 "化工: 4 只" 被字段值块转表(表头强制加粗), 用户: 竖排
-                L(f"    {sec}({cnt} 只)")
+                # V17.2.27(2026-09-18) P2: 板块名统一走 normalize_industry, 与 C/D/E/F 段粒度一致
+                L(f"    {normalize_industry(sec)}({cnt} 只)")
 
         # 涨停明细(V17.0.2f: 直接 md 表格 7 列; V17.2.x: 按封板时间升序排序并渲染为表格,
         # 截断注移至表后——避免引用块插在分隔行与数据行之间破坏 md 表格结构, 与炸板明细一致)
@@ -1637,7 +1642,7 @@ async def generate_sector_report(output_path):
                 else:
                     fbt_fmt = str(fbt_raw)
                 L(
-                    f"| {item.get('code','')} | {item.get('name','')}{_name_mark(item.get('name',''))} | {item.get('change_pct',0):+.2f}% | {item.get('limit_count',0):.0f} | {fbt_fmt} | {fund_yi:+.2f} | {item.get('sector','')} |"
+                    f"| {item.get('code','')} | {item.get('name','')}{_name_mark(item.get('name',''))} | {item.get('change_pct',0):+.2f}% | {item.get('limit_count',0):.0f} | {fbt_fmt} | {fund_yi:+.2f} | {normalize_industry(item.get('sector',''))} |"
                 )
             if len(zt_list) > 30:
                 # V17.0.8: 明细截断注明(原 43 只只显 30 行, 读者误以为总数=表行数); 置于表后不破坏表格
@@ -1651,7 +1656,7 @@ async def generate_sector_report(output_path):
             L("|---|---|---|---|---|")
             for item in zb_list[:15]:
                 L(
-                    f"| {item.get('code','')} | {item.get('name','')}{_name_mark(item.get('name',''))} | {item.get('change_pct',0):+.2f}% | {item.get('broken_count',0):.0f} | {item.get('sector','')} |"
+                    f"| {item.get('code','')} | {item.get('name','')}{_name_mark(item.get('name',''))} | {item.get('change_pct',0):+.2f}% | {item.get('broken_count',0):.0f} | {normalize_industry(item.get('sector',''))} |"
                 )
     except Exception as _e:
         _debug_log(f"mak limit_pool: {_e}")
@@ -1677,6 +1682,8 @@ async def generate_sector_report(output_path):
                 _pop = "🔥" if s.get("popular") else ""
                 _amt = _safe_float(s.get("amount", 0)) / 1e8
                 L(f"| {str(s.get('code',''))} | {str(s.get('name',''))} | {s.get('limit_count',0)} | {_one} | {_pop} | {s.get('plate_limit_up_count',0)} | {_amt:.2f} |")
+            if len(_ladder) > 20:
+                L(f"  （上表显示前 20 只，完整名单共 {len(_ladder)} 只）")
         else:
             L("  (涨停天梯数据获取失败)")
 
@@ -1693,12 +1700,15 @@ async def generate_sector_report(output_path):
             if _lad_items and isinstance(_lad_items, list):
                 _latest = _lad_items[0] if isinstance(_lad_items[0], dict) else {}
                 _boards = _latest.get("boards") or {}
+                _BOARD_CN = {"two_board": "二", "three_board": "三", "four_board": "四",
+                             "five_board": "五", "six_board": "六", "seven_over": "七"}
                 _summary = []
                 for _bk in ("two_board", "three_board", "four_board", "five_board", "six_board", "seven_over"):
                     _lst = _boards.get(_bk) or []
                     if _lst:
                         _sealed_next = sum(1 for x in _lst if x.get("seal_nextday"))
-                        _summary.append(f"{_bk.replace('_board','')}板{len(_lst)}只(次日续封{_sealed_next})")
+                        _cn = _BOARD_CN.get(_bk, _bk.replace('_board', ''))
+                        _summary.append(f"{_cn}板{len(_lst)}只(次日续封{_sealed_next})")
                 if _summary:
                     L("\n  🪜 fuyao 连板矩阵互校（30 日窗口最新日）:")
                     L("    " + " | ".join(_summary))
@@ -1748,7 +1758,7 @@ async def generate_sector_report(output_path):
                 _ll = _r.get("ladder_level") or 0
                 _streak = _r.get("limit_up_streak_days") or 0
                 _seal = _r.get("seal_to_float_ratio") or 0.0
-                _ind = _r.get("industry") or _r.get("sector") or ""
+                _ind = normalize_industry(_r.get("industry") or _r.get("sector") or "")
                 L(f"| {_plain} | {_nm} | {_ll}连板 | {_streak} | {_seal:.2f} | {_ind} |")
         else:
             L("  （当日无 ≥2 板连板标的 / 本地 TDX 未运行，eltdx 未返回数据）")

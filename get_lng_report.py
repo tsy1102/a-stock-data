@@ -794,7 +794,7 @@ async def generate_report_async(session, code, output_path, ind_comp=None):
         _debug_log(f"lng ocf_ttm dual-source: {_e}")
     L("\n  💡 长线排雷：持续的经营现金净流入是检验账面利润真实性的最佳标准，高商誉+低现金含量=高危组合。")
 
-    L("\n## 【四、未来三年机构一致预期与 PEG 均值回归模型】")
+    L("\n## 【四、机构一致预期与 PEG 均值回归模型】")
     L("---")
     # H4 修复(2026-08-15 二审): 本地 ProfitForecast O(1) 优先(零网络), 未命中走网络兜底——与一章重复块合并
     from stock_common.sc_datasource import get_eps_forecast as _eps_local
@@ -804,8 +804,8 @@ async def generate_report_async(session, code, output_path, ind_comp=None):
     eps_cur = eps_next = None
     eps_has_data = False
     if not df_eps.empty and len(df_eps.columns) >= 4:
-        L(f"  {'年度':<10} {'覆盖机构数':>7} {'预测EPS均值':<9}")
-        L(f"  {'-'*40}")
+        L("| 年度 | 覆盖机构数 | 预测EPS均值 |")
+        L("|---|---|---|")
         _this_year = date.today().year
         _eps_by_year = {}
         for i, row in df_eps.iterrows():
@@ -813,7 +813,7 @@ async def generate_report_async(session, code, output_path, ind_comp=None):
                 year = str(row.iloc[0]) if pd.notna(row.iloc[0]) else ""
                 cnt = int(row.iloc[1]) if pd.notna(row.iloc[1]) else 0
                 mean_v = float(row.iloc[3]) if pd.notna(row.iloc[3]) else 0
-                L(f"  {year:<10} {cnt:<10} {mean_v:<12.3f}")
+                L(f"| {year} | {cnt} | {mean_v:.3f} |")
                 _yd = ''.join(ch for ch in year if ch.isdigit())
                 if _yd:
                     _eps_by_year[int(_yd)] = mean_v
@@ -838,12 +838,12 @@ async def generate_report_async(session, code, output_path, ind_comp=None):
             eps_has_data = True
             this_year = date.today().year
             L("  东财研报一致预期EPS (同花顺兜底):")
-            L(f"  {'年度':<14} {'预测EPS'}")
-            L(f"  {'-'*30}")
+            L("| 年度 | 预测EPS |")
+            L("|---|---|")
             if eps_cur:
-                L(f"  {this_year:<14} {eps_cur:.3f}")
+                L(f"| {this_year} | {eps_cur:.3f} |")
             if eps_next:
-                L(f"  {this_year + 1:<14} {eps_next:.3f}")
+                L(f"| {this_year + 1} | {eps_next:.3f} |")
     if eps_has_data and price_today and eps_cur and eps_cur > 0:
         pe_fwd = price_today / eps_cur
         L("\n  ➤ 基于机构预期的远期估值消化推演:")
@@ -1112,18 +1112,21 @@ async def generate_report_async(session, code, output_path, ind_comp=None):
         L(f"  统计样本: 近 {len(reports)} 篇研报 | 参与覆盖的独立券商/机构: {len(org_set)} 家")
         L(f"  ➤ 研报评级分布: **买入** {buy_count} 篇 / **增持** {add_count} 篇(共 {len(reports)} 篇)")
         
-        L("\n  最新 10 篇核心研报观点:")
-        L(f"  {'日期':<12} {'机构':<16} {'评级':<10} {'标题'}")
-        L(f"  {'-'*70}")
         _rp = [r for r in reports if str(r.get("publishDate",""))[:10] >= (date.today() - timedelta(days=730)).strftime("%Y-%m-%d")]
-        for r in _rp[:10]:
-            pub_date = str(r.get("publishDate", r.get("reportDate", "")))[:10]
-            org = r.get("orgSName", r.get("orgName", ""))
-            rating = r.get("emRatingName", r.get("rating", ""))
-            title = r.get("title", r.get("reportTitle", r.get("infoContent", "")))[:50]
-            if not title:
-                title = r.get("summary", "")[:50] if r.get("summary") else "无标题"
-            L(f"  {pub_date:<12} {org:<16} {str(rating):<10} {title}")
+        L("\n  最新 10 篇核心研报观点:")
+        if not _rp:
+            L("  （近2年暂无研报覆盖，机构共识度数据缺失）")
+        else:
+            L(f"  {'日期':<12} {'机构':<16} {'评级':<10} {'标题'}")
+            L(f"  {'-'*70}")
+            for r in _rp[:10]:
+                pub_date = str(r.get("publishDate", r.get("reportDate", "")))[:10]
+                org = r.get("orgSName", r.get("orgName", ""))
+                rating = r.get("emRatingName", r.get("rating", ""))
+                title = r.get("title", r.get("reportTitle", r.get("infoContent", "")))[:50]
+                if not title:
+                    title = r.get("summary", "")[:50] if r.get("summary") else "无标题"
+                L(f"  {pub_date:<12} {org:<16} {str(rating):<10} {title}")
         if len(org_set) > 10:
             L("\n  ✅ 结论：该股受到主流外脑机构的广泛覆盖，基本面透明度高，财务造假阻力大。")
         elif len(org_set) == 0:
@@ -1384,7 +1387,7 @@ async def generate_report_async(session, code, output_path, ind_comp=None):
         _debug_log(f"lng multi_school_score error: {_e}")
 
     L("\n" + "=" * 72)
-    L("  长线基石: 强劲自由现金流 / 持续高 ROE / 合理估值 / 高股息防御")
+    L("  长线理想基石（个股未必全具）: 强劲自由现金流 / 持续高 ROE / 合理估值 / 高股息防御")
     L("=" * 72)
 
     # 累积快照数据（批量结束后统一写入）

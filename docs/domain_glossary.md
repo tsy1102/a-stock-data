@@ -207,3 +207,175 @@ ZHB_SUFFICIENT 路由集为"ZHB 有无此字段"的静态声明不做移出（�
 | 迭代度量 | 每次改动绑定可数机械指标, 报告填"度量"行 | AGENTS.md §11.1 |
 | 假设驱动调试 | 症状→最小复现→侦察→假设→单次实验→判定→记录 | AGENTS.md §11.2 |
 | roadmap ADR | docs/roadmap.md 的 V16.2.x 决策记录(结论+证据+修复) | 决策回溯依据 |
+
+## 8. 字段英文名 ↔ 中文语义映射（英文→中文统一口径）
+
+> **目的**：统一项目内所有"英文字段标识符 → 中文语义"的口径，消除 adapter 层 / canonical / push2 f 编号 / 腾讯·新浪索引 各自为政的命名歧义。
+> **权威来源（互补非切换）**：两黄金锚（`fuyao_website_anchor.md` §六 / `eastmoney_website_anchor.md` §六·§十二）+ `cross_source_align.md`（通用跨源等价存储）+ `field_dict.md` §542（命名三模式）/§10.2（字段名与单位速查表）。
+> **定位**：本 §8 是"英文标识符 → 中文语义"的**统一检索入口**；f 编号细节与跨源数值互证以黄金锚为准，跨源等价以 `cross_source_align.md` 为准，避免重复维护。
+> **命名铁律**：中文名以**数值级 L1 证据**（`field_dict.md`）为最高权威，黄金锚仅供命名参照，冲突时锚回订正对齐字典（见黄金锚 §十一/§十四）。
+
+### 8.1 fuyao 适配层英文键 → 中文语义
+
+| fuyao 英文键 | 中文语义 | 口径/单位 | 备注 |
+|---|---|---|---|
+| `last_price` | 最新价 / 现价 | CNY | 快照 |
+| `open_price` | 今开 / 开盘价 | CNY | |
+| `high_price` | 最高价 | CNY | |
+| `low_price` | 最低价 | CNY | |
+| `prev_price` | 昨收 | CNY | ⚠️ 竞价接口字段名为 `pre_close_price`（同义异键） |
+| `volume` | 成交量 | **股** | 网站指数页显**万手**（×1e6） |
+| `turnover` | 成交额 | **元(CNY)** | 网站显**亿**（÷1e8） |
+| `float_market_cap` | 流通市值 | CNY | 网站显**亿**（÷1e8） |
+| `price_change` | 涨跌额 | CNY | |
+| `price_change_ratio_pct` | 涨跌幅(%) | % | |
+| `pe_ttm` | 市盈率(TTM) | 倍 | |
+| `pe_mrq` | 市盈率(动态/MRQ) | 倍 | ⚠️ 东财"市盈(动)"=此字段，非 `pe_ttm` |
+| `pb_mrq` | 市净率 | 倍 | MRQ 口径铁律（见黄金锚 §十二） |
+| `ps_ttm` | 市销率 | 倍 | |
+| `pcf_ttm` | 市现率 | 倍 | |
+| `auction_turnover_pct` | 竞价换手率 | % | **仅竞价，非全日换手** |
+| `auction_volume_ratio` | 竞价量比 | 倍 | |
+| `auction_yesterday_ratio_pct` | 相对昨日量比(竞价) | 倍 | |
+| `ticker` | 代码（纯代码） | — | |
+| `thscode` | 代码（带交易所后缀，如 600519.SH） | — | |
+| `name` | 名称 | — | 快照不返回，需 join |
+| `seal_money` | 封单额 | 元（÷1e4≡ZHB 万元） | 涨停池 |
+| `max_seal_money` | 峰值封单额 | 元 | |
+| `continue_day_cnt` | 连板天数 | — | |
+| `turnover_ratio_pct` | 换手率(%) | % | 涨停/跌停池衍生，非通用快照 |
+| `net_value`/`net_rate`/`buy_value`/`sell_value` | 龙虎榜净额/净比/买额/卖额 | 元/% | |
+| `fin_indicators.index_weighted_avg_roe` | 加权 ROE | % | |
+| `fin_indicators.sale_gross_margin` | 毛利率 | % | |
+| `fin_indicators.sale_net_interest_ratio` | 净利率 | % | |
+| `fin_indicators.assets_debt_ratio` | 资产负债率 | % | |
+| `fin_indicators.growth.净利润同比` | 净利润同比 | % | |
+
+### 8.2 tdx / eltdx / zhb 适配层字段 → 中文语义
+
+| 适配层字段 | 中文语义 | 口径/单位 | 备注 |
+|---|---|---|---|
+| `tdx.quote_full.change_pct` | 涨跌幅(%) | % | |
+| `tdx.quote_full.ask1` | 卖一价 | CNY | |
+| `tdx.quote_full.bid1` | 买一价 | CNY | |
+| `tdx.quote_full.change_amt` | 涨跌额 | CNY | ≡ push2.f169 |
+| `tdx.price` / `eltdx.quote_snapshot.price` | 现价 | CNY | ≡ push2.f43 |
+| `tdx.open` / `eltdx.quote_snapshot.open` | 今开 | CNY | |
+| `tdx.high` / `eltdx.quote_snapshot.high` | 最高 | CNY | |
+| `tdx.low` / `eltdx.quote_snapshot.low` | 最低 | CNY | |
+| `tdx.last_close` / `eltdx.quote_snapshot.prev_close` | 昨收 | CNY | |
+| `tdx.amount_wan` / `eltdx.quote_snapshot.amount` | 成交额 | 万元(tdx) / 元(eltdx) | ≡ push2.f48 |
+| `tdx.vol_ratio` | 量比 | 倍 | ≡ push2.f50（⚠️ 非 f49） |
+| `tdx.turnover_pct` | 换手率(%) | % | |
+| `tdx.pe_ttm` | 市盈率(TTM) | 倍 | |
+| `tdx.pe_static` | 市盈率(静态/LYR) | 倍 | |
+| `tdx.pb` | 市净率 | 倍 | |
+| `tdx.amplitude_pct` | 振幅(%) | % | |
+| `tdx.limit_up` / `tdx.limit_down_price` | 涨停价 / 跌停价 | CNY | |
+| `tdx.mcap_yi` / `tdx.float_mcap_yi` | 总市值 / 流通市值 | 亿元 | ×1e8↔元 |
+| `tdx.bid1_vol` | 买一量 | 手 | ×100↔股 |
+| `zhb.pe_ttm` / `zhb.pe_dynamic` | 市盈率(TTM) / 市盈率(动态) | 倍 | tdxstat.cfg：Col[3]=pe_dynamic, Col[9]=pe_ttm |
+| `zhb.pb` | 市净率 | 倍 | |
+| `zhb.dividend_yield` | 股息率 | % | |
+| `zhb.mcap` | 总市值 | — | |
+| `zhb.change_ytd` | 年初至今涨跌幅(YTD) | % | 基准=上年末最后交易日收盘 |
+| `zhb.change_mtd` | 本月至今涨跌幅(MTD) | % | 基准=上月末收盘（tdxstat2 Col[11]） |
+| `zhb.change_5d/10d/20d/30d/60d` | N 日涨跌幅 | % | **交易日口径**（非日历日） |
+| `zhb.change_5k_bar/10k_bar/20k_bar/60k_bar` | 近 N 根 K 线涨跌幅 | % | |
+| `zhb.high_52w` / `zhb.low_52w` | 52 周最高 / 最低 | CNY | ≡ push2.f174/f175 |
+| `zhb.total_shares` / `zhb.float_shares` | 总股本 / 流通股本 | 股 | |
+| `zhb.employee_count` | 员工数 | 人 | |
+| `zhb.ipo_price` | 发行价 | 元 | |
+| `zhb.industry` / `zhb.industry_code` | 行业 / 行业代码 | — | is_industry_code() 仅判 8803/8804/881 |
+| `zhb.board` / `zhb.concept` | 板块 / 概念 | — | |
+| `zhb.eps` / `zhb.roe` | 每股收益 / 净资产收益率 | 元 / % | |
+| `zhb.net_profit` / `zhb.revenue` | 净利润 / 营收 | 元 | |
+| `zhb.net_profit_kcf` | 扣非净利润 | 元 | |
+| `zhb.board_count` | 连板数 | — | tdxstat.cfg Col[13] |
+| `zhb.unseal_date` | 开板日 | YYYYMMDD | tdxstat.cfg Col[12] |
+| `zhb.main_net_buy_amount` / `zhb.main_net_buy_hands` | 主力净流入额 / 主力净流入手 | 元 / 手 | |
+| `zhb.limit_up_down_seal` | 涨跌停封单额(三日滚动) | 万元 | 涨停正/跌停负（tdxstat2 Col[4]/[6]/[8]） |
+| `zhb.streak_days` | 连涨天数 | — | |
+
+### 8.3 规范字段(canonical)英文 → 中文（含 push2 f 编号）
+
+| canonical 英文字段 | 中文语义 | push2 f 编号 | 单位 |
+|---|---|---|---|
+| `price` | 现价 / 最新价 | f43 | 元 |
+| `open` | 今开 | f46 | 元 |
+| `high` | 最高 | f44 | 元 |
+| `low` | 最低 | f45 | 元 |
+| `last_close` / `prev_close` | 昨收 | f60 | 元 |
+| `change_amt` | 涨跌额 | f169 | 元 |
+| `change_pct` | 涨跌幅(%) | f170 | % |
+| `amplitude_pct` | 振幅(%) | f171 | % |
+| `turnover_pct` | 换手率(%) | f168 | % |
+| `volume_hand` | 成交量 | f47 | 手 |
+| `amount` | 成交额 | f48 | 元 |
+| `vol_ratio` | 量比 | **f50** | 倍（⚠️ f49=外盘，非量比） |
+| `pe_dynamic` / `pe_mrq` | 市盈率(动/MRQ) | f162 | 倍 |
+| `pe_lyr` | 市盈率(静/LYR) | f163 | 倍 |
+| `pe_ttm` | 市盈率(TTM) | f164 | 倍 |
+| `pb` | 市净率 | f167 | 倍 |
+| `mcap_yi` | 总市值 | f116 | 元（→亿） |
+| `float_mcap_yi` | 流通市值 | f117 | 元（→亿） |
+| `total_shares` | 总股本 | f84 | 股（→万股） |
+| `float_shares` | 流通股本 | f85 | 股（→万股） |
+| `limit_up` / `limit_down` | 涨停价 / 跌停价 | f51 / f52 | 元 |
+| `eps` | 每股收益 | f55 | 元 |
+| `bps` | 每股净资产 | f92 | 元 |
+| `dividend_yield` | 股息率 | f126 | % |
+| `concepts` | 概念列表 | f129 | 逗号分隔 |
+| `entrust_ratio` / `bid_ask_net` | 委比 / 委差 | f191 / f192 | % / 手 |
+| `fund_main_today` | 主力净流入(今日) | f137 | 元（=f140+f143） |
+| `fund_main_buy` / `fund_main_sell` | 主力买入额 / 卖出额 | f135 / f136 | 元 |
+| `fund_super_today` | 超大单净流入 | f140 | 元 |
+| `fund_large_today` | 大单净流入 | f143 | 元 |
+| `industry_code_push2` | 行业板块码 | f198 | BKxxxx |
+
+### 8.4 push2 / ulist 常用 f 编号 → 中文（摘要）
+
+> 完整 f 编号↔中文↔跨源数值互证见两黄金锚 §十五/§十二。此处仅列高频字段，并标注**跨端点同号异义**铁律。
+
+| f 编号 | 中文语义 | 端点空间 | 备注 |
+|---|---|---|---|
+| f43 | 现价 / 最新价 | push2 | |
+| f44 / f45 / f46 | 最高 / 最低 / 今开 | push2 | |
+| f47 | 成交量（手） | push2 | |
+| f48 | 成交额（元） | push2 | ≡ fuyao.turnover / eltdx.amount |
+| f49 | **外盘**（非量比） | push2 | ⚠️ 历史误标量比，已订正 |
+| f50 | 量比 | push2 | |
+| f51 / f52 | 涨停价 / 跌停价 | push2 | |
+| f55 / f92 | 每股收益 / 每股净资产 | push2 | |
+| f57 | **股票代码**（push2）/ **涨跌幅**（ulist.np） | 跨端点 | 🔴 同号异义 |
+| f60 | 昨收 | push2 | |
+| f84 / f85 | 总股本 / 流通股本（push2）｜ **小单净流入**（ulist.np） | 跨端点 | 🔴 同号异义 |
+| f116 / f117 | 总市值 / 流通市值 | push2 | |
+| f126 | 股息率 | push2 | |
+| f129 | 概念列表 | push2 | |
+| f137 | 主力净流入(今日) | push2 | |
+| f140 / f143 | 超大单净 / 大单净 | push2 | |
+| f146 / f149 | 中单净 / 小单净 | push2 | |
+| f162 / f163 / f164 | PE(动) / PE(静) / PE(TTM)（push2）｜ **近5日主力净**（ulist.np） | 跨端点 | 🔴 同号异义 |
+| f167 | 市净率 | push2 | |
+| f168 / f169 / f170 / f171 | 换手率 / 涨跌额 / 涨跌幅 / 振幅 | push2 | |
+| f174 / f175 | 52周最高 / 最低 | push2 | ≡ zhb.high_52w/low_52w |
+| f189 | 上市日期 | push2 | |
+| f191 / f192 | 委比 / 委差 | push2 | |
+| **ulist f62 / f66 / f72 / f78 / f84** | 主力 / 超大单 / 大单 / 中单 / 小单 净流入 | ulist.np | 资金流块 |
+| **ulist f109 / f110 / f160 / f24 / f25** | 5日 / 20日 / 10日 / 60日 / YTD 涨跌幅 | ulist.np | |
+| **ulist f192** | A+H 双上市标识 | ulist.np | 有用；f186–f189 为 H 股行情占位 |
+
+> 🔴 **跨端点同号异义铁律**：东财 `push2 stock/get` 与 `ulist.np` 复用同套 f 编号但语义不同（如 f164、f57、f84）。取数时端点与 f 编号必须绑定，切勿混用。本项目 `get_em_quote_full_delay` 固定走 stock/get、`get_em_fund_flow_multiday` 固定走 ulist.np，两端隔离已无污染风险。
+
+### 8.5 跨源等价关系统一索引
+
+> 通用跨源等价/同义关系（fuyao/tdx/eltdx/zhb/tencent/push2/ulist/sina 任意源对）统一存储于 **`docs/verify/cross_source_align.md`**，经 `extract_registry.py` 解析入 `field_registry.json` mappings，`collide` 据 `load_registry_state` 标 `in_registry` 后 durable 定案。
+> 示例（今日已定案）：`fuyao.snapshot.price_change`≡`push2.f169`（涨跌额）、`fuyao.snapshot.turnover`≡`push2.f48`（成交额）、`eltdx.quote_snapshot.amount`≡`push2.f48`（成交额）、`tdx.quote_full.change_amt`≡`push2.f169`（涨跌额）。
+
+### 8.6 命名铁律与口径一致性
+
+- **命名三模式**（field_dict.md §542）：①纯拼音 ②纯英文 ③中英混合（英文修饰/类别词 + 拼音业务词，后缀族 Price/Flag/Num/Date/Vol/Amo/Value/Recent/Pre）。
+- **中文名权威层级**：数值级 L1 证据（field_dict.md）> 黄金锚中文标签；锚与字典冲突时**字典胜出**，锚回订正（黄金锚 §十一/§十四）。
+- **单位换算铁律**：fuyao `volume`=股、`turnover`/`float_market_cap`=元；push2 `amount`=元、`volume_hand`=手、`f116/f117`=元；ZHB `amount`=万元、资金流为元；tdx `amount_wan`=万元。跨源对撞必做量纲对齐（×100 手↔股、×1e4 万↔元、×1e8 亿↔元）。
+- **"免费副产品优先"规则**：rt_quote/em_quote_raw 已随行情返回的字段（f127 行业/f128 地域/f129 概念/f44/f45 52周）仅当行情本身已走 push2 时零成本采用，行情正常走 TDX 时须回 TDX/ZHB 主链（见 §5.5）。

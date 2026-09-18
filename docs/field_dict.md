@@ -1037,6 +1037,8 @@ print(q.code, q.price, q.change_pct)
 | **tipinfo.dat** | 22 | `eps/disclose_date/ex_date/div_amount/div_date` | 元/YYYYMMDD/元 |
 | **spblock.dat** | 35 大板块 | `中证2000/中证1000/中证500` | — |
 
+> **英文→中文语义统一口径**：本表仅列"数据源→字段名→单位"速查；字段英文标识符 ↔ 中文语义的完整映射（fuyao/tdx/eltdx/zhb 适配层键、canonical 字段、push2/ulist f 编号、跨源等价索引、命名铁律）统一维护于 **`docs/domain_glossary.md` §8 字段英文名 ↔ 中文语义映射**，作为唯一英文→中文检索入口，避免多文档重复维护与口径漂移。
+
 ---
 
 ## 十一、 文件元信息 (Document Metadata)

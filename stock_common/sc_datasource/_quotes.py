@@ -17,7 +17,7 @@ from stock_common.sc_network import EM_SESSION, UA, _debug_log, _em_wait_process
 from stock_common.sc_utils import _safe_float, em_exchange_prefix, em_secid_prefix
 from core.stock_cache import TTL, cached, make_valid_if
 from ._shared import _EM_XUANGU_URL, _TDX_QC_TOKEN, _TDX_QC_URL, _THS_HOT_REASON_CACHE, _ULIST_BATCH_FIELDS, _ULIST_BATCH_SIZE
-from core.data_provider import get_concept_from_zhb
+from core._accessors import get_concept_from_zhb
 from stock_common.sc_kpl import _f
 from stock_common.sc_schema import DataSource, normalize_at_boundary
 from stock_common.stock_calendar import get_last_trading_day

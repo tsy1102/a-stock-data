@@ -902,7 +902,7 @@ def _load_zhb_neednote_supplement():
                 year = int(d_str[:4])
                 month = int(d_str[4:6])
                 day = int(d_str[6:8])
-                supplement_holidays.add(date(year, month, day))
+                supplement_holidays.add(datetime.date(year, month, day))
             except (ValueError, TypeError, IndexError):
                 continue
         supplement_workdays = set()
@@ -912,7 +912,7 @@ def _load_zhb_neednote_supplement():
                 year = int(d_str[:4])
                 month = int(d_str[4:6])
                 day = int(d_str[6:8])
-                supplement_workdays.add(date(year, month, day))
+                supplement_workdays.add(datetime.date(year, month, day))
             except (ValueError, TypeError, IndexError):
                 continue
         return supplement_holidays, supplement_workdays

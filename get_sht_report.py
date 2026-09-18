@@ -1692,7 +1692,7 @@ async def generate_report_async(session, code, output_path, ind_comp=None, idx_q
 
     # V17.0.5 P1: 异动解读(fuyao AI 分析文本——替代 V17.0.2 移除的盘口异动扫描语义层)
     try:
-        from stock_common import get_fuyao_anomaly as _f_ano
+        from stock_common import get_fuyao_anomaly as _f_ano, is_fuyao_enabled
 
         if is_fuyao_enabled():
             _ano = await asyncio.to_thread(_f_ano, code)

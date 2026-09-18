@@ -242,6 +242,20 @@ def create_eltdx_adapter() -> Optional[Any]:
         return None
 
 
+def is_eltdx_available() -> bool:
+    """V17.3: 轻量探测 eltdx 本地 TDX 适配层是否已安装。
+
+    供 val 报告在 eltdx 依赖策略(26 连板梯队 / 27 短线资金强度)空产出时,
+    区分'数据源缺失(本地 TDX 未连接 / eltdx 未装)'与'真实无符合标的',
+    避免误导用户以为当日无连板/抢筹标的。
+    """
+    try:
+        import eltdx  # noqa: F401
+        return True
+    except Exception:
+        return False
+
+
 def get_eltdx_shortline_bundle(all_codes: List[str], timeout: float = 20.0) -> Tuple[list, dict]:
     """eltdx 连板天梯(limit_ladder) + 批量短线指标(shortline_indicators) 一体化采集。
 

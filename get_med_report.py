@@ -1286,6 +1286,10 @@ async def generate_report_async(session, code, output_path, ind_comp=None, hsgt=
             q = str(item.get("question", "")).strip()[:120]
             if q:
                 a = str(item.get("answer", "")).strip()
+                # V17.3 修复: cninfo_irm 对未回复问题偶发返回字面字符串 "None"/"nan",
+                # 需归一为"待回复", 否则泄漏 None 到报告(与 sht 的"(公司待回复)"口径对齐)
+                if a.lower() in ("none", "nan", "n/a", "null"):
+                    a = ""
                 _ans = f"答案: {a[:120]}" if a else "答案: （公司待回复）"
                 L(f"  · [{t_str[:16]}] 提问: {q}")
                 L(f"      {_ans}")

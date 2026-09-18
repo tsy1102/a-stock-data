@@ -375,7 +375,10 @@ async def generate_report_async(session, code, output_path, ind_comp=None, idx_q
             # V16.2.14: push2 f51/f52 盘中可能为 0（v9.6 用腾讯有值）→ 按板块阈值计算兜底
             _th = limit_pct_for(code, stock_name)
             L(f"  涨停价:   {cdata.prev_close * (1 + _th / 100):.2f} 元  跌停价: {cdata.prev_close * (1 - _th / 100):.2f} 元")
-        L(f"  总市值:   {cdata.mcap_yi:.2f} 亿元  流通市值: {cdata.float_mcap_yi:.2f} 亿元")
+        # V17.3 修复: 流通市值恒由 流通股本(亿股) × 现价 推导, 与总市值/现价同源同价基,
+        # 避免 cdata.float_mcap_yi 偶发 stale 价格(实测 002360: 报 16.44 亿 vs 3.26亿股×5.33=17.38 亿)导致不自洽
+        _float_mv_yi = (cdata.float_shares_wan / 1e4) * price_today if cdata.float_shares_wan else cdata.float_mcap_yi
+        L(f"  总市值:   {cdata.mcap_yi:.2f} 亿元  流通市值: {_float_mv_yi:.2f} 亿元")
         _pe_str = f"{cdata.pe_ttm:.2f}" if cdata.pe_ttm > 0 else "N/A（亏损）"
         _pe_dyn_str = f"{cdata.pe_dynamic:.2f}" if cdata.pe_dynamic > 0 else "N/A"
         _pe_lyr_str = f"{cdata.pe_lyr:.2f}" if cdata.pe_lyr > 0 else "N/A"
@@ -1496,29 +1499,30 @@ async def generate_report_async(session, code, output_path, ind_comp=None, idx_q
         pool = await asyncio.to_thread(get_limit_pool_summary)
         zt_count = pool.get("limit_up_count", 0)
         zb_count = pool.get("limit_broken_count", 0)
-        dt_count = pool.get("limit_down_count", 0)
-        # V17.2.9: 对齐 mak B 段跌停兜底——东财跌停池接口为空(tc>0 但 pool=[])时
-        # pool.limit_down_count=0, 回退涨跌幅口径全市场实时池(T日收盘, 与 mak _dt_count 同源)
-        if dt_count == 0:
-            try:
-                from core.tdx_client import tdx_get_market_abnormal_data
-                from stock_common import is_limit_down
+        # V17.3 修复: 跌停池接口(pool.limit_down_count)偶发返回 stale T-1 数据(实测 33 篇 sht 报 3 只,
+        # 而 mak A 段用全市场实时涨跌幅口径(is_limit_down)得 0 只)。为与 mak 同源同口径,
+        # 优先采用实时涨跌幅口径, 仅在实时源不可用时回退 pool。
+        _dt_count_pool = pool.get("limit_down_count", 0)
+        try:
+            from core.tdx_client import tdx_get_market_abnormal_data
+            from stock_common import is_limit_down
 
-                _abn = tdx_get_market_abnormal_data()
-                if _abn:
-                    _dt_fb = sum(
-                        1
-                        for s in _abn
-                        if is_limit_down(
-                            str(s.get("code", "")),
-                            str(s.get("name", "") or ""),
-                            _safe_float(s.get("change_pct", 0)),
-                        )
+            _abn = tdx_get_market_abnormal_data()
+            if _abn:
+                dt_count = sum(
+                    1
+                    for s in _abn
+                    if is_limit_down(
+                        str(s.get("code", "")),
+                        str(s.get("name", "") or ""),
+                        _safe_float(s.get("change_pct", 0)),
                     )
-                    if _dt_fb > 0:
-                        dt_count = _dt_fb
-            except Exception as _e:
-                _debug_log(f"sht dt fallback: {_e}")
+                )  # 实时口径优先(与 mak A 段 _dt_count 同源)
+            else:
+                dt_count = _dt_count_pool
+        except Exception as _e:
+            _debug_log(f"sht dt realtime: {_e}")
+            dt_count = _dt_count_pool
         success_rate = pool.get("success_rate", 0)
         L(f"    今日涨停 {zt_count} 只 | 炸板 {zb_count} 只 | 跌停 {dt_count} 只 | 封板率 {success_rate:.0f}%")
 

@@ -49,11 +49,6 @@ V9.1 更新：
 
 from typing import Any, Dict, List, Optional, Tuple
 from datetime import datetime, timedelta
-import time
-import re
-import json
-import asyncio
-import os
 
 # 导入网络层
 from stock_common.sc_network import (
@@ -719,18 +714,17 @@ from ._shared import *
 
 
 # ═══════════════════════════════════════════════════════════
-# V17.2 维护性拆包 loader（共享命名空间）
-# 将各域子模块的【源码】exec 进本包(模块)的 globals()，使全部函数与
-# 模块级状态共处同一命名空间：状态只有一份；mock.patch 打在
-# stock_common.sc_datasource.X 上的补丁对包内跨函数调用同样生效。
-# 子模块文件本身不是独立可导入模块，而是载入本命名空间的源码片段。
-# ═══════════════════════════════════════════════════════════
-import os as _os
-_PKG_ORDER = ('_holders', '_official_backup', '_eastmoney', '_quotes', '_industry', '_financials', '_pools', '_zhb', '_misc')
-_PKG_HERE = _os.path.dirname(_os.path.abspath(__file__))
-for _mod in _PKG_ORDER:
-    _fp = _os.path.join(_PKG_HERE, _mod + '.py')
-    with open(_fp, encoding='utf-8') as _fh:
-        _src = _fh.read()
-    exec(compile(_src, _fp, 'exec'), globals())
-del _mod, _fp, _src, _fh, _PKG_HERE, _PKG_ORDER, _os
+# ═══════════════════════════════════════════════
+# V17.2 维护性拆包: 各 _*.py 现为独立可导入子模块, 此处显式 re-export 其公开 API.
+# 跨片段符号由各子模块内部函数级懒导入解决(见各片段函数体内 from ._X import ...).
+# ═══════════════════════════════════════════════
+from ._holders import *
+from ._official_backup import *
+from ._eastmoney import *
+from ._quotes import *
+from ._industry import *
+from ._financials import *
+from ._pools import *
+from ._zhb import *
+from ._misc import *
+

@@ -944,8 +944,10 @@ async def generate_report_async(session, code, output_path, ind_comp=None, hsgt=
                 # M12 修复(2026-08-15 二审): fallback 占比为小数(股数/总股本), 主路径为百分数
                 # (东财 FREE_SHARES_RATIO)——统一 ×100 百分数口径, 原差 100 倍
                 _ratio = (
-                    _shares / info.get('total_shares', 1) * 100
-                    if info.get('total_shares', 0) > 0 else 0
+                    # V17.3 修正(审查): info.total_shares 单位万股(== cdata.total_shares_wan), _shares(北向持股)为股;
+                    # 原 _shares/info.total_shares 股÷万股错配(差1e4)。改统一层 cdata.total_shares_wan*1e4=股, ×100 百分数。
+                    _shares / (cdata.total_shares_wan * 1e4) * 100
+                    if cdata.total_shares_wan > 0 else 0
                 )
             L(
                 f"  {d['date']:<12} {_shares/1e4:>12.0f} {_mcap/1e4:>12.0f} {_ratio:>9.4f}% {d['change_shares']/1e4:>+12.0f}"

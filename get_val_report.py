@@ -2562,6 +2562,15 @@ async def run_discovery_async(output_path):
                     pass
             elif _k in ("策略14", "策略15", "策略20"):
                 L("  ⚠️ 盘后数据（北向/龙虎榜/业绩预告）当前时段无产出，属预期")
+            elif _k in ("策略26", "策略27"):
+                # V17.3 修复: 26/27 依赖 eltdx 本地 TDX 实时源; 源缺失时策略降级返回 [],
+                # 属"数据源不可用"而非"真实无符合标的"(当日 77 只涨停必有连板/抢筹)。
+                try:
+                    from core.eltdx_adapter import is_eltdx_available
+                    if not is_eltdx_available():
+                        L("  ⚠️ eltdx 数据源不可用（本地 TDX 未连接 / eltdx 未安装），本策略降级跳过——属数据源缺失，非真实无符合标的")
+                except Exception:
+                    pass
             L("  (今日无符合该策略阈值的标的)")
 
     _cf = {}

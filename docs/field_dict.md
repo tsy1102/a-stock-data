@@ -557,6 +557,50 @@ TDX 服务器 (端口 7709)
 
 ---
 
+#### 1.1 tdxstat.cfg 标准契约表（stat.*，20260918 对撞定案）🆕
+
+> **标准契约表（V17.3 2026-09-18）**：将 ZHB `tdxstat.cfg` 的 `stat.*` 带点 token 以规范 4 列契约登记，供 `extract_registry` 挂载 meaning + 标 ✅ verified。命名形态与 fuyao `snapshot.*` 同构（前缀 `stat.` 不入 `_DENY_TOKENS`，`tdxstat`/`tdxstat2` 才拦截）。与 §1 的 positional `**[N]**` 并存，不冲突。
+
+| 字段 | 含义 | 单位 | 状态 |
+|---|---|---|---|
+| stat.code | 代码 | - | ✅ |
+| stat.market | 市场 | - | ✅ |
+| stat.date | 统计日期 | - | ✅ |
+| stat.pe_ttm | 市盈率(TTM) | 倍 | ✅ L1（≡push2.f164）|
+| stat.pe_dynamic | 市盈率(动) | 倍 | ✅ L1（≡push2.f162）|
+| stat.change_pct | 涨跌幅 | % | ✅ L1（≡push2 涨跌幅）|
+| stat.change_pct_1d | 涨跌幅(1日) | % | ✅ |
+| stat.change_pct_2d | 涨跌幅(2日) | % | ✅ |
+| stat.change_5d | 5日涨跌幅 | % | ✅（截面动量）|
+| stat.change_10d | 10日涨跌幅 | % | ✅ |
+| stat.change_20d | 20日涨跌幅 | % | ✅ |
+| stat.change_30d | 30日涨跌幅 | % | ✅ |
+| stat.change_60d | 60日涨跌幅 | % | ✅ |
+| stat.change_ytd | 年初至今涨跌幅 | % | ✅ |
+| stat.change_5k_bar | 5分钟K线涨跌 | - | ✅ |
+| stat.change_10k_bar | 10分钟K线涨跌 | - | ✅ |
+| stat.change_20k_bar | 20分钟K线涨跌 | - | ✅ |
+| stat.change_30k_bar | 30分钟K线涨跌 | - | ✅ |
+| stat.change_60k_bar | 60分钟K线涨跌 | - | ✅ |
+| stat.dividend_yield | 股息率 | % | ✅ L1（≡push2.f126）|
+| stat.streak_days | 连板天数 | 天 | ✅ |
+| stat.board_count | 所属板块数 | - | ✅ |
+| stat.zt_count | 涨停次数 | 次 | ✅ |
+| stat.zt_lianban | 连板数 | 天 | ✅ |
+| stat.zt_streak_cycle | 涨停连板周期 | - | ✅ |
+| stat.zt_type_code | 涨停类型码 | - | ✅ |
+| stat.cash_reserve_wan | 现金储备 | 万元 | ✅ |
+| stat.free_ltgb | 自由流通股本 | 股 | ✅ |
+| stat.employee_count | 员工人数 | 人 | ✅ |
+| stat.net_profit_kcf | 扣非净利润 | 元 | ✅ |
+| stat.other_qy_jzc | 其他权益净资产 | 元 | ✅ |
+| stat.rd_input_fee | 研发投入 | 元 | ✅ |
+| stat.shape_value | 形态值 | - | ✅ |
+| stat.pre_receive_zj | 预收资金 | 元 | ✅ |
+| stat.unseal_date | 解禁日期 | YYYYMMDD | ✅ |
+| stat.unknown_2 | 未知保留字段 | - | ✅（原始字节）|
+| stat.unknown_26 | 未知保留字段 | - | ✅（原始字节）|
+
 ### 2. `tdxstat2.cfg` (成交与资金流向表，21 个字段，7,951 行)
 
 > 📋 ZHB 无专属 verify 分字典——本 § 即全字段权威表（原始列契约见 `zhb_*.zip` 解压 + `docs/field_verification/20260812/field_analysis.md`）。破解新字段直接登记本表，无需同步分字典（详见 §12.15.10）。
@@ -601,6 +645,34 @@ TDX 服务器 (端口 7709)
 
 ---
 
+#### 2.1 tdxstat2.cfg 标准契约表（stat2.*，20260918 对撞定案）🆕
+
+> **标准契约表（V17.3 2026-09-18）**：将 ZHB `tdxstat2.cfg` 的 `stat2.*` 带点 token 登记，供 `extract_registry` 挂载 meaning + 标 ✅ verified。主力净流入字段与 push2 `f62`/`f137` 多日资金流对撞（见 §12.8.7 / cross_source_align）。
+
+| 字段 | 含义 | 单位 | 状态 |
+|---|---|---|---|
+| stat2.code | 代码 | - | ✅ |
+| stat2.market | 市场 | - | ✅ |
+| stat2.date | 统计日期 | - | ✅ |
+| stat2.amount | 成交额 | 元 | ✅ L1（≡push2.f48）|
+| stat2.amount_1d | 成交额(1日) | 元 | ✅ |
+| stat2.amount_2d | 成交额(2日) | 元 | ✅ |
+| stat2.change_mtd | 月初至今涨跌幅 | % | ✅ |
+| stat2.change_30k_bar | 30分钟K线涨跌 | - | ✅ |
+| stat2.change_30k_bar_ref | 30分钟K线涨跌(参考) | - | ✅ |
+| stat2.change_250k_bar | 250分钟K线涨跌 | - | ✅ |
+| stat2.high_52w | 52周最高价 | 元 | ✅ |
+| stat2.low_52w | 52周最低价 | 元 | ✅ |
+| stat2.industry_code | 行业代码 | - | ✅ |
+| stat2.ipo_price | 发行价 | 元 | ✅ |
+| stat2.main_net_buy_amount | 主力净流入额 | 元 | ✅ L1（≡push2.f62/f137 主力净）|
+| stat2.main_net_buy_amount_1d | 主力净流入额(1日) | 元 | ✅ |
+| stat2.main_net_buy_hands | 主力净流入手数 | 手 | ✅ |
+| stat2.main_net_buy_hands_1d | 主力净流入手数(1日) | 手 | ✅ |
+| stat2.zt_seal_amount | 涨停封单额 | 元 | ✅ |
+| stat2.zt_seal_amount_1d | 涨停封单额(1日) | 元 | ✅ |
+| stat2.zt_seal_amount_2d | 涨停封单额(2日) | 元 | ✅ |
+
 ### 3. `tipinfo.dat` (财报日历与业绩快照，22 列，5,612 行)
 
 > 📋 ZHB 无专属 verify 分字典——本 § 即全字段权威表（原始列契约见 `zhb_*.zip` 解压 + `docs/field_verification/20260812/field_analysis.md`）。破解新字段直接登记本表，无需同步分字典（详见 §12.15.10）。
@@ -636,6 +708,20 @@ TDX 服务器 (端口 7709)
 > **⚠️ 覆盖差异**：tipinfo.dat 仅 5,612 行，比 tdxstat.cfg 的 7,951 行少 2,339 行。缺失的主要是 ETF/基金/债券等无财报数据的品种。
 
 ---
+
+#### 3.1 tipinfo.dat 标准契约表（tipinfo.*，20260918 对撞定案）🆕
+
+> **标准契约表（V17.3 2026-09-18）**：将 ZHB `tipinfo.dat` 的 `tipinfo.*` 带点 token 登记，供 `extract_registry` 挂载 meaning + 标 ✅ verified。
+
+| 字段 | 含义 | 单位 | 状态 |
+|---|---|---|---|
+| tipinfo.code | 代码 | - | ✅ |
+| tipinfo.report_period | 报告期 | YYYYMMDD/季 | ✅ |
+| tipinfo.eps | 每股收益 | 元 | ✅ L1（≡push2.f55）|
+| tipinfo.disclose_date | 披露日期 | YYYYMMDD | ✅ |
+| tipinfo.ex_date | 除权除息日 | YYYYMMDD | ✅ |
+| tipinfo.div_date | 分红股权登记日 | YYYYMMDD | ✅ |
+| tipinfo.div_amount | 每股分红 | 元 | ✅ |
 
 ### 4. 🌟 ZHB 高价值数据集全览 (Discovered & Verified Datasets)
 
@@ -3537,6 +3623,36 @@ ZHB 逐日落后一个交易日，符合「最近交易日快照」铁律；`fin
 
 > **单位分档铁律**：TDX 三套财务编码互异——云 `tdx_quotes` `CwInfo` 金额=**万元**（铁证见上）；本地 `tdx_get_finance_info` 0x0010 = **角**(÷10 得元)；tdxstat Col[14]/Col[24] = **万元**。接入层须按源分档换算，禁止跨源套用单位。
 
+#### 12.8.12j2 TDX tdx_quotes 行情快照字段契约（quote_full，20260918 对撞定案）🆕
+
+> **标准契约表（V17.3 2026-09-18）**：将 TDX 云 `tdx_quotes` 行情快照 `quote_full.*` 带点 token 以规范 4 列契约登记，供 `extract_registry` 挂载 meaning + 标 ✅ verified；等价关系另经 `docs/verify/cross_source_align.md` durable 入 `field_registry.json` mappings。命名形态与 fuyao `snapshot.*` 同构（前缀 `quote_full.` 不入 `_DENY_TOKENS`，bare `tdx` 才拦截）。
+
+| 字段 | 含义 | 单位 | 状态 |
+|---|---|---|---|
+| quote_full.price | 现价 | 元 | ✅ L1（≡push2.f43/f179，tx[3]，sina[3]，fuyao.snapshot.last_price）|
+| quote_full.last_close | 昨收价 | 元 | ✅ L1（≡push2.f60，tx[4]，sina[2]）|
+| quote_full.open | 开盘价 | 元 | ✅ L1（≡push2.f46，tx[5]，sina[1]）|
+| quote_full.high | 最高价 | 元 | ✅ L1（≡push2.f44，tx[33]，sina[4]）|
+| quote_full.low | 最低价 | 元 | ✅ L1（≡push2.f45，tx[34]，sina[5]）|
+| quote_full.change_amt | 涨跌额 | 元 | ✅ L1（≡push2.f169，fuyao.snapshot.price_change）|
+| quote_full.change_pct | 涨跌幅 | % | ✅ L1（≡push2 涨跌幅，fuyao.snapshot.price_change_ratio_pct）|
+| quote_full.amount_wan | 成交额 | 万元 | ✅ L1（≡push2.f48 万元口径）|
+| quote_full.amount_1d | 成交额(1日) | 万元 | ✅ L1 |
+| quote_full.amount_2d | 成交额(2日) | 万元 | ✅ L1 |
+| quote_full.change_pct_1d | 涨跌幅(1日) | % | ✅ L1 |
+| quote_full.change_pct_2d | 涨跌幅(2日) | % | ✅ L1 |
+| quote_full.pe_ttm | 市盈率(TTM) | 倍 | ✅ L1（≡push2.f164）|
+| quote_full.bid1 | 买一价 | 元 | ✅ L1（五档买价，≡sina/tx 同序）|
+| quote_full.bid2 | 买二价 | 元 | ✅ L1（≡push2.f142，sina[14]，tx[12]）|
+| quote_full.bid3 | 买三价 | 元 | ✅ L1（五档买价）|
+| quote_full.bid4 | 买四价 | 元 | ✅ L1（五档买价）|
+| quote_full.bid5 | 买五价 | 元 | ✅ L1（五档买价）|
+| quote_full.ask1 | 卖一价 | 元 | ✅ L1（五档卖价，≡sina/tx 同序）|
+| quote_full.ask2 | 卖二价 | 元 | ✅ L1（≡push2.f143，sina[24]，tx[22]）|
+| quote_full.ask3 | 卖三价 | 元 | ✅ L1（五档卖价）|
+| quote_full.ask4 | 卖四价 | 元 | ✅ L1（五档卖价）|
+| quote_full.ask5 | 卖五价 | 元 | ✅ L1（五档卖价）|
+
 #### 12.8.12k fuyao 网站中文名黄金锚（THS q.10jqka.com.cn 官方中文列名 ↔ 英文字段）
 
 > **黄金锚（2026-09-13 建立）**：本锚把同花顺行情中心 `q.10jqka.com.cn` 可见的**中文列名（官方人类可读标签）**逐列映射到 fuyao REST 英文字段，作为"中文名 ↔ 英文键 ↔ 真实来源 ↔ 口径单位"三元对照。完整逐字总表见 **`docs/verify/fuyao_website_anchor.md`**（含 ✅ 逐字核验 / ⚠️ chameleon 反爬门控（headless 下 XHR 不发起）标注、非 fuyao 列逐列确权真实源）。本节为字典内的索引与概要，仅登记/映射，不改动任何运行时取数路径。
@@ -5283,6 +5399,84 @@ volRatio=量比, institutionIncrease=机构增仓 仅在 Socket 推送中——H
 | AuctionPoint.unmatched_direction_raw | 未匹配方向原始值 | - |
 | AuctionPoint.reserved_zero_0e | 保留零 | - |
 | AuctionPoint.record_hex | 整条竞价点原始hex(二次解码用) | ⭐原始字节 |
+
+#### 12.13.10c eltdx 适配层标准契约表（quote_snapshot / shortline，20260918 对撞定案）🆕
+
+> **标准契约表（V17.3 2026-09-18）**：将 eltdx 适配层 `quote_snapshot.*` / `shortline.*` 带点 token 以规范 4 列契约登记，供 `extract_registry` 挂载 meaning + 标 ✅ verified。命名形态与 fuyao `snapshot.*` 同构（前缀 `quote_snapshot.`/`shortline.` 不入 `_DENY_TOKENS`）。**净新增字段**（⭐）含义见 §12.13.10 黄金锚对撞；统一层 `cdata.eltdx_*` 投影见 §12.13.11。
+
+**A. quote_snapshot（行情快照，23 字段）**
+
+| 字段 | 含义 | 单位 | 状态 |
+|---|---|---|---|
+| quote_snapshot.last_price | 现价 | 元 | ✅ L1（≡push2.f43，fuyao.snapshot.last_price，AxData）|
+| quote_snapshot.pre_close_price | 昨收价 | 元 | ✅ L1（≡push2.f60）|
+| quote_snapshot.open_price | 开盘价 | 元 | ✅ L1（≡push2.f46）|
+| quote_snapshot.high_price | 最高价 | 元 | ✅ L1（≡push2.f44）|
+| quote_snapshot.low_price | 最低价 | 元 | ✅ L1（≡push2.f45）|
+| quote_snapshot.amount | 成交额 | 元 | ✅ L1（≡push2.f48，fuyao.turnover，20260917 对撞 100% 命中）|
+| quote_snapshot.total_hand | 成交量 | 手 | ✅ L1（≡push2.f47 手口径）|
+| quote_snapshot.current_hand | 现手 | 手 | ✅ L1 |
+| quote_snapshot.time_raw | 时间戳(原始) | - | ✅ L1 |
+| quote_snapshot.active1 | 活跃度标识 | - | ✅ |
+| quote_snapshot.inside_dish | 内盘(主动卖) | 手 | ✅ |
+| quote_snapshot.outer_disc | 外盘(主动买) | 手 | ✅ |
+| quote_snapshot.buy_levels | 买盘档位 | - | ✅ |
+| quote_snapshot.sell_levels | 卖盘档位 | - | ✅ |
+| quote_snapshot.open_amount_raw | 开盘成交额(原始) | - | ✅ |
+| quote_snapshot.open_amount_yuan | 开盘成交额 | 元 | ✅ |
+| quote_snapshot.amount_raw | 成交额(原始) | - | ✅ |
+| quote_snapshot.unknown_after_outer_raw | 未知保留字段 | - | ✅（原始字节）|
+| quote_snapshot.unknown_after_time_raw | 未知保留字段 | - | ✅（原始字节）|
+| quote_snapshot.tail_raw | 未知尾部原始字节 | - | ✅（原始字节）|
+| quote_snapshot.code | 代码 | - | ✅ |
+| quote_snapshot.exchange | 交易所 | - | ✅ |
+| quote_snapshot.market_id | 市场ID | - | ✅ |
+
+**B. shortline（短线指标 / ShortlineIndicator，41 字段）**
+
+| 字段 | 含义 | 单位 | 状态 |
+|---|---|---|---|
+| shortline.beta_60d | 60日Beta | - | ✅ L1 |
+| shortline.pe_ttm | 市盈率(TTM) | 倍 | ✅ L1（≡push2.f164）|
+| shortline.limit_up_streak_days | 连续涨停天数(连板天数) | 天 | ✅ L1（≡fuyao 连板天数 / 东财 连板天数）|
+| shortline.limit_board_text | 连板梯队文本(如"5天5板") | - | ✅ L1（≡AxData limit_board_text）|
+| shortline.ladder_level | 连板梯队等级(如5=五板) | - | ✅（净新增）|
+| shortline.seal_to_float_ratio | 封单/流通市值比 | % | ✅ L1（≡fuyao 封单额/东财封单额）|
+| shortline.open_volume_ratio | 开盘量比 | 倍 | ✅ L1（≡东财 D8竞价量比）|
+| shortline.seal_amount | 封单额 | 元 | ✅ L1（≡fuyao 封单额 / 东财 封单额）|
+| shortline.opening_rush | 开盘抢筹 | % | ✅ L1（≡AxData opening_rush）|
+| shortline.free_float_shares | 自由流通股本 | 股 | ✅ |
+| shortline.float_shares | 流通股本 | 股 | ✅ |
+| shortline.float_market_value | 流通市值 | 元 | ✅ |
+| shortline.free_float_market_value | 自由流通市值 | 元 | ✅ |
+| shortline.open_price | 开盘价 | 元 | ✅ L1（≡AxData open_price）|
+| shortline.pre_close | 昨收 | 元 | ✅ |
+| shortline.open_change_pct | 开盘涨跌幅 | % | ✅ |
+| shortline.open_amount | 开盘成交额 | 元 | ✅ L1（≡AxData open_amount）|
+| shortline.open_volume_hand | 开盘成交量 | 手 | ✅ L1（≡AxData open_volume_hand）|
+| shortline.limit_stat_days | 连板统计窗口天数 | 天 | ✅ L1（≡AxData limit_stat_days）|
+| shortline.limit_up_count_in_stat_days | 窗口内涨停次数 | 次 | ✅ L1（≡AxData limit_up_count_in_stat_days）|
+| shortline.open_turnover_z | 开盘换手率 | % | ✅ L1（≡AxData open_turnover_z）|
+| shortline.open_prev_amount_ratio | 开盘额/昨额比 | % | ✅ L1（≡AxData open_prev_amount_ratio）|
+| shortline.open_prev_seal_ratio | 开盘额/昨封单额比 | % | ✅ L1（≡AxData open_prev_seal_ratio）|
+| shortline.auction_prev_volume_ratio | 竞价量/昨量比 | 倍 | ✅ L1（≡AxData auction_prev_volume_ratio）|
+| shortline.prev_amount | 前一日成交额 | 元 | ✅ |
+| shortline.prev_seal_amount | 前一日封单额 | 元 | ✅ |
+| shortline.prev2_seal_amount | 前二日封单额 | 元 | ✅ |
+| shortline.prev_open_amount | 前一日开盘成交额 | 元 | ✅ |
+| shortline.prev_open_volume_hand | 前一日开盘成交量 | 手 | ✅ |
+| shortline.seal_prev_ratio | 封单/前封单比 | - | ✅ |
+| shortline.seal_to_amount_ratio | 封单/成交额比 | - | ✅ |
+| shortline.year_limit_up_days | 年内涨停天数 | 天 | ✅ |
+| shortline.target_trade_date | 目标交易日 | - | ✅ |
+| shortline.previous_trade_date | 前一交易日 | - | ✅ |
+| shortline.stats_date | 统计基准日 | - | ✅ |
+| shortline.alignment_status | 对齐状态 | - | ✅ |
+| shortline.limit_status | 涨停状态(sealed/未封) | - | ✅ |
+| shortline.exchange | 交易所 | - | ✅ |
+| shortline.market_id | 市场ID | - | ✅ |
+| shortline.code | 代码(纯数字) | - | ✅ |
+| shortline.full_code | 全代码(带市场前缀) | - | ✅ |
 
 #### 12.13.11 eltdx 统一层契约字段（cdata.eltdx_*，V17.2.22 接入 canonical）
 

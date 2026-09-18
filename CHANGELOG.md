@@ -13,6 +13,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - **通用跨源 mapping 存储**：新增 `docs/verify/cross_source_align.md`，集中记录 `fuyao.snapshot.*` / `tdx.quote_full.*` / `eltdx.quote_snapshot.*` / `zhb.full.*` / `tencent[*]` / `push2.f*` / `ulist239.f*` 的等价/互证关系（中文语义 + 证据），统一此前散落的附录术语。
 - **对撞流水线**：`20260918` 全量采集 → L1 候选 sanctioned 定案 → 治理闸门（G1 基线比对 / G3 幂等 / parity）全绿分批提交；`collide.py` 证伪回归护栏固化。
 - **版本**：`VERSION` 文件由 `17.2.9` 升 `17.3`（单一来源，代码经 `get_version()` 读取，无硬编码）。
+- **registered_field_sets 扩展至 tdx/eltdx/zhb 带点 token（#260 字段治理收口）**：`audit_field_completeness.py` 的 `registered_field_sets()` 原先只覆盖 fc/fuyao/东财等主源，TDX 行情快照、eltdx 适配层、ZHB 三族的带点 token（`quote_full.*` / `quote_snapshot.*` / `shortline.*` / `stat.*` / `stat2.*` / `tipinfo.*`）无法被标 `verified`。本轮在 `field_dict.md` 新增 5 张标准契约表（12.8.12j2 TDX tdx_quotes、12.13.10c eltdx 适配层、1.1 tdxstat、2.1 tdxstat2、3.1 tipinfo），经黄金锚对撞定案后逐字段标 `✅ L1`；同步修复 `extract_registry.py` 的 `cell_token` 带点 token 优先级 Bug（ZHB 在 `_INDEX_SRC` 时 `[N]` 分支吞掉带点 token → 提前带点分支，使 `stat.*`/`stat2.*`/`tipinfo.*` 完整保留形态并挂上 meaning/status）。重生 `field_registry.json`：字段 **1484→1807**、源 **24→26**（新增 TDX-eltdx 适配层）、记录 2440、对齐 131；G1 基线比对 / G3 幂等 / P1 预检全绿，11 抽样 token 全部 `status=verified` 且 meaning 正确。
 
 ## [V17.2.15] 2026-09-15 — TDX 主源切换 eltdx（Rust 客户端接管行情/财务）
 

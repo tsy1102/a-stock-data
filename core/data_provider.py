@@ -1109,9 +1109,10 @@ def get_canonical_stock_data(code: str, force_realtime: bool = False) -> Any:
             total_shares_wan = _safe_float(_cap.get('total_shares'))
         except Exception as _e:
             _debug_log(f"get_canonical_stock_data total_shares fallback error: {_e}")
-    # V16.3.10 合理性校验（与 pe 范围过滤对称）：万股量级防御——
-    # A 股总股本 ≤ ~2000 亿股 = 2e6 万股；>1e7 明显为"股"单位误入，按 股→万 归一
-    if total_shares_wan > 1e7:
+    # V17.3 修复(跨层同步): 阈值必须与 sc_capital_cache(v2, _CAPITAL_SCHEMA_VERSION=2)对齐——取 1e9 万股(=1e13 股, 远超任何 A 股)。
+    # 旧阈值 1e7 少算一个数量级, 曾把正确大盘股万股值(工农中建 2e7~3.6e7 万股)误当"股"再÷10000,
+    # 致 total_shares_wan / mcap_yi 错 10000 倍(sc_capital_cache 注释已实锤此误伤)。统一层内联守卫须同步修正。
+    if total_shares_wan > 1e9:
         total_shares_wan = total_shares_wan / 1e4
     if rt_quote.get('total_shares') and rt_quote.get('total_shares') > 0:
         field_sources["total_shares_wan"] = field_sources.get("total_shares", "realtime:unknown")
@@ -1131,6 +1132,10 @@ def get_canonical_stock_data(code: str, force_realtime: bool = False) -> Any:
         field_sources["float_shares_wan"] = field_sources.get("float_shares", "realtime:unknown")
     else:
         field_sources["float_shares_wan"] = "zhb:static"
+    # V17.3 同步(跨层一致): float_shares_wan 与 total_shares_wan 同源(均经 sc_capital_cache 万股归一),
+    # 加相同 >1e9 防御, 防未来 rt_quote 加流通股本字段时"股"单位误入(与 total_shares_wan 守卫对称)
+    if float_shares_wan > 1e9:
+        float_shares_wan = float_shares_wan / 1e4
 
     # 市值类 — V15.4: 优先 rt_quote.mcap_yi, 否则 L4 公式推算
     mcap_yi = _safe_float(
@@ -1159,6 +1164,9 @@ def get_canonical_stock_data(code: str, force_realtime: bool = False) -> Any:
         field_sources["float_mcap_yi"] = "calculated"
     else:
         field_sources["float_mcap_yi"] = field_sources.get("float_mcap_yi", "missing")
+    # V17.3 同步(跨层一致): 与 mcap_yi(行1147 >1e6 万元→亿 守卫)对称, 防 zhb/rt_quote 万元单位误入
+    if float_mcap_yi > 1e6:
+        float_mcap_yi = float_mcap_yi / 1e4
 
     holder_count = int(zhb_dict.get('holder_count') or 0)
     field_sources["holder_count"] = "zhb:static" if holder_count else "missing"

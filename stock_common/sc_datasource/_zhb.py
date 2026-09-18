@@ -3,13 +3,11 @@
 本文件不是独立可导入模块；其源码被 stock_common/sc_datasource/__init__.py
 exec 进包命名空间，与包内其他函数/状态共享同一 globals()。
 """
-
+from __future__ import annotations
+import code
 from stock_common.sc_network import _debug_log
 from ._shared import _ZHB_NEAR_REALTIME_FIELDS, _ZHB_REALTIME_FIELDS, _ZHB_STATIC_FIELDS
-
-
-from stock_common.sc_network import _debug_log
-from ._shared import _ZHB_NEAR_REALTIME_FIELDS, _ZHB_REALTIME_FIELDS, _ZHB_STATIC_FIELDS
+from core.data_provider import get_amount_wan, get_change_ytd, get_dividend_yield, get_main_net_buy, get_streak_days
 
 
 def get_zhb_industry_map() -> Dict[str, str]:

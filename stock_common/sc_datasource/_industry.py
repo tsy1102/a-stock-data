@@ -3,17 +3,16 @@
 本文件不是独立可导入模块；其源码被 stock_common/sc_datasource/__init__.py
 exec 进包命名空间，与包内其他函数/状态共享同一 globals()。
 """
-
+from __future__ import annotations
+import asyncio
+import code
+import os
+import stat
 from stock_common.sc_network import UA, _debug_log, em_get, requires_push2
-from stock_common.sc_utils import TTL, _safe_float, cached, em_secid_prefix
-from core.stock_cache import make_valid_if
-from ._shared import _EM_BOARD_TYPE_FS_MAP, _EM_INDUSTRY_L1_NAMES, _EM_L2_TTL
-
-
-from stock_common.sc_network import UA, _debug_log, em_get, requires_push2
-from stock_common.sc_utils import TTL, _safe_float, cached, em_secid_prefix
-from core.stock_cache import make_valid_if
-from ._shared import _EM_BOARD_TYPE_FS_MAP, _EM_INDUSTRY_L1_NAMES, _EM_L2_TTL
+from stock_common.sc_utils import _load_strategy_config, _safe_float, em_secid_prefix
+from core.stock_cache import TTL, cached, make_valid_if
+from ._shared import _EM_BOARD_TYPE_FS_MAP, _EM_INDUSTRY_L1_NAMES, _EM_L2_LOADED_TS, _EM_L2_MAP, _EM_L2_MEMBERS, _EM_L2_TTL, _TDXHY_CACHE
+from stock_common.sc_kpl import _f
 
 
 @cached(category="industry_reports", ttl_seconds=TTL["reports"])
@@ -101,6 +100,7 @@ def get_industry_peers(
         "peers": [...], "all_members": [...]
     }
     """
+    from ._quotes import get_tencent_quote
     from core.tdx_client import tdx_get_belong_boards, tdx_get_board_members, tdx_get_board_by_name
     from stock_common.sc_utils import _load_strategy_config
 
@@ -414,6 +414,7 @@ def get_industry_rank_from_zhb(top_n: int = 20) -> List[Dict[str, Any]]:
     输出兼容 tdx_get_board_list 格式：[{rank, code, name, change_pct, up_count, down_count,
     leader_name, leader_change, amount_yi, _member_count}]——lng/med/sht 行业排名参照系直用。
     """
+    from ._zhb import get_zhb_full_market_snapshot
     try:
         from core.zhb_client import get_zhb
 
@@ -647,6 +648,7 @@ def _tdxhy_industry_map() -> Dict[str, str]:
     用途: 同花顺涨停池(无 sector 字段)的涨停板块分布注入。
     M4(审查 2026-08-16): 异常时保持 None 不固化——允许下次调用重试(文件修复/路径恢复后生效)。
     """
+    from ._misc import _tdx_root
     global _TDXHY_CACHE
     if _TDXHY_CACHE is not None:
         return _TDXHY_CACHE
@@ -685,6 +687,7 @@ def get_em_industry_l2_data(force_refresh: bool = False) -> Tuple[Dict[str, str]
     （实测 000100: 电子[1201一级]/光学光电子[1038]/面板[1335] → 光学光电子；
       600519: 食品饮料[438一级]/白酒Ⅱ[1277]/白酒Ⅲ[1575] → 白酒Ⅱ）。
     """
+    from ._eastmoney import _em_l2_load_cached
     import json as _json
     import os as _os
     import time as _time

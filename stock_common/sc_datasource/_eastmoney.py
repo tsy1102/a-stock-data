@@ -3,19 +3,21 @@
 本文件不是独立可导入模块；其源码被 stock_common/sc_datasource/__init__.py
 exec 进包命名空间，与包内其他函数/状态共享同一 globals()。
 """
-
-import datetime
-from stock_common.sc_network import DATACENTER_URL, RateLimitBlockedError, UA, _async_request_with_retry, _biz_logger, _debug_log, _http_logger, _quick_request, em_get, requires_push2
-from stock_common.sc_utils import TTL, _safe_float, cached, em_exchange_prefix, em_secid_prefix
-from core.stock_cache import make_valid_if
-from ._shared import _DC_PREFETCH_FUTURES, _EM_BATCH_CACHE, _EM_L2_TTL, _FFLOW_HOSTS
-
-
-import datetime
-from stock_common.sc_network import DATACENTER_URL, RateLimitBlockedError, UA, _async_request_with_retry, _biz_logger, _debug_log, _http_logger, _quick_request, em_get, requires_push2
-from stock_common.sc_utils import TTL, _safe_float, cached, em_exchange_prefix, em_secid_prefix
-from core.stock_cache import make_valid_if
-from ._shared import _DC_PREFETCH_FUTURES, _EM_BATCH_CACHE, _EM_L2_TTL, _FFLOW_HOSTS
+from __future__ import annotations
+from datetime import datetime, timedelta
+import asyncio
+import code
+import hashlib
+import json
+import os
+import re
+import urllib
+import uuid
+from stock_common.sc_network import DATACENTER_URL, RateLimitBlockedError, UA, _async_request_with_retry, _biz_logger, _debug_log, _gen_wait_process_interval, _http_logger, _quick_request, em_get, requires_push2
+from stock_common.sc_utils import _safe_float, em_exchange_prefix, em_secid_prefix
+from core.stock_cache import TTL, cached, make_valid_if
+from ._shared import _DC_PREFETCH_FUTURES, _EM_BATCH_CACHE, _EM_BATCH_CACHE_DATE, _EM_L2_TTL, _FFLOW_HOSTS
+from stock_common.sc_kpl import _f
 
 
 def eastmoney_datacenter(
@@ -542,6 +544,9 @@ def start_datacenter_prefetch(codes, session, dragon_kwargs=None) -> int:
     Returns:
         本次新入队的 (kind, code) 项数
     """
+    from ._financials import get_block_trade_async
+    from ._financials import get_lockup_expiry_async
+    from ._financials import get_margin_trading_async
     import asyncio as _aio
 
     dk = dragon_kwargs or {}

@@ -3,17 +3,16 @@
 本文件不是独立可导入模块；其源码被 stock_common/sc_datasource/__init__.py
 exec 进包命名空间，与包内其他函数/状态共享同一 globals()。
 """
-
-import datetime
-from stock_common.sc_network import UA, _debug_log, _quick_request, requires_push2
-from stock_common.sc_utils import TTL, _safe_float, cached
-from ._shared import _KPL_BASE, _KPL_HEADERS, _KPL_HIS, _KPL_HQ, _KPL_LHB
-
-
-import datetime
-from stock_common.sc_network import UA, _debug_log, _quick_request, requires_push2
-from stock_common.sc_utils import TTL, _safe_float, cached
-from ._shared import _KPL_BASE, _KPL_HEADERS, _KPL_HIS, _KPL_HQ, _KPL_LHB
+from __future__ import annotations
+from datetime import datetime, timedelta
+import json
+import re
+from stock_common.sc_network import UA, _debug_log, _em_wait_process_interval, _quick_request, requires_push2
+from stock_common.sc_utils import _safe_float, is_limit_down
+from core.stock_cache import TTL, cached
+from ._shared import _KPL_BASE, _KPL_HEADERS, _KPL_HIS, _KPL_HQ, _KPL_LAST_CALL, _KPL_LHB
+from stock_common.sc_kpl import _f, get_kpl_broken_ratio, get_kpl_market_sentiment
+from stock_common.stock_calendar import get_last_trading_day
 
 
 def _parse_limit_pool(data: list) -> List[Dict[str, Any]]:
@@ -233,6 +232,10 @@ def get_limit_pool_summary(date_str: str = "") -> Dict[str, Any]:
     Returns:
         包含涨停/炸板/跌停数量和详细数据的字典
     """
+    from ._industry import _tdxhy_industry_map
+    from ._misc import _query_dt_pool_tc
+    from ._zhb import get_zhb_data_date
+    from ._zhb import get_zhb_full_market_snapshot
     # 涨停池: 同花顺优先(2026-08-16 实测 62 只/1.01s), 东财兜底。
     # 若两者都返回空池，使用财联社/KPL/复盘啦的多源计数兜底；计数可用时
     # 不能再把全市场涨停显示为 0，但因多源接口只提供计数，明细仍保持为空。
@@ -534,6 +537,7 @@ def get_limit_pool_multi_source(date: Optional[str] = None) -> Dict[str, Any]:
             "detail": dict,            # 复盘啦 StockList 全量等
         }
     """
+    from ._misc import get_cls_market_emotion
     import time as _time
     from collections import Counter
 

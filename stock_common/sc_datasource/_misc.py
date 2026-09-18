@@ -3,15 +3,13 @@
 本文件不是独立可导入模块；其源码被 stock_common/sc_datasource/__init__.py
 exec 进包命名空间，与包内其他函数/状态共享同一 globals()。
 """
-
-import datetime
-from stock_common.sc_network import UA, _debug_log
-from stock_common.sc_utils import TTL, cached
-
-
-import datetime
-from stock_common.sc_network import UA, _debug_log
-from stock_common.sc_utils import TTL, cached
+from __future__ import annotations
+from datetime import datetime, timedelta
+import code
+import os
+from stock_common.sc_network import UA, _debug_log, _em_wait_process_interval, _quick_request
+from core.stock_cache import TTL, cached
+from stock_common.sc_kpl import _f
 
 
 def _tdx_root() -> str:

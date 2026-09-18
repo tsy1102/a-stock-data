@@ -3,17 +3,20 @@
 本文件不是独立可导入模块；其源码被 stock_common/sc_datasource/__init__.py
 exec 进包命名空间，与包内其他函数/状态共享同一 globals()。
 """
-
-import datetime
+from __future__ import annotations
+from datetime import datetime, timedelta
+import asyncio
+import code
+import re
+import subprocess
+import sys
 from stock_common.sc_network import UA, _async_quick_request, _debug_log, _quick_request
-from stock_common.sc_utils import TTL, _load_settings, _safe_float, cached, em_exchange_prefix
-from core.stock_cache import make_valid_if
-
-
-import datetime
-from stock_common.sc_network import UA, _async_quick_request, _debug_log, _quick_request
-from stock_common.sc_utils import TTL, _load_settings, _safe_float, cached, em_exchange_prefix
-from core.stock_cache import make_valid_if
+from stock_common.sc_utils import _load_settings, _safe_float, em_exchange_prefix
+from core.stock_cache import TTL, cached, get_cache, make_valid_if, set_cache
+from ._shared import _PROFIT_CACHE_LOCK, _PROFIT_FORECAST_CACHE, _PROFIT_FORECAST_INDEX, _PROFIT_FORECAST_INDEX_SHORT, _YJYG_ALL_CACHE, _YJYG_LOCK, _calendar_fallback_warned
+from stock_common.sc_fuyao import get_fuyao_financials
+from stock_common.sc_kpl import _f
+from stock_common.stock_calendar import is_workday
 
 
 @cached(
@@ -24,6 +27,8 @@ from core.stock_cache import make_valid_if
 )
 def get_stock_info(code: str) -> Dict[str, Any]:
     """V7.5: 个股基本信息 → 腾讯行情 + TDX"""
+    from ._eastmoney import eastmoney_stock_info_push2
+    from ._quotes import get_tencent_quote
     from core.tdx_client import _get_tdx_client, tdx_get_belong_boards
 
     name = industry = list_date = ""
@@ -434,6 +439,8 @@ def get_yjyg_all() -> Dict[str, Dict[str, Any]]:
     Returns:
         dict: {code: {predict_type, increase_rate, inc_lower, inc_upper, notice_date, report_date}}
     """
+    from ._eastmoney import eastmoney_datacenter
+    from ._misc import _today_str
     global _YJYG_ALL_CACHE, _YJYG_LOCK
     if _YJYG_LOCK is None:
         import threading as _th
@@ -498,6 +505,8 @@ def get_margin_trading(code: str) -> List[Dict[str, Any]]:
           渲染代码（sht/med/lng/ful）统一按元处理 `/1e4` 转万元显示，原代码直接返回
           万元数值，导致显示为实际值的 1/10000。修复：F10 数据 ×10000 转元单位。
     """
+    from ._eastmoney import eastmoney_datacenter
+    from ._official_backup import get_margin_trading_backup
     # V9.0: 优先使用 F10 最新提示中的融资融券数据
     try:
         from core.tdx_client import tdx_get_latest_reminders
@@ -614,6 +623,7 @@ def get_block_trade(code: str) -> List[Dict[str, Any]]:
     V9.1: 移除 F10 优先逻辑（F10 缺 close_price 和 premium_pct，且 volume 单位
           与东财 HTTP 不一致）。保留东财 HTTP 为主力数据源。
     """
+    from ._eastmoney import _em_filter
     # 东财 HTTP
     data = _em_filter(
         code, "RPT_DATA_BLOCKTRADE", page_size=15, sort_columns="TRADE_DATE", sort_types="-1"
@@ -644,6 +654,7 @@ async def get_block_trade_async(session: Any, code: str) -> List[Dict[str, Any]]
     V9.4: 原生 aiohttp 实现，移除 asyncio.to_thread 包装。
     V17.0.9: data 类型防御——_em_filter_async 偶发返回 dict 时置 [].
     """
+    from ._eastmoney import _em_filter_async
     data = await _em_filter_async(
         session,
         code,
@@ -695,6 +706,7 @@ def get_sina_financial_report(code: str, num_periods: int = 12) -> Dict[str, Any
     V13.1: 彻底实现 ZHB 财报事件锁，抛弃 24小时 粗暴刷新。
     将 ZHB 的 report_date 拼入缓存 Key，实现永久缓存 + 瞬间刷新。
     """
+    from ._zhb import get_zhb_single_stock_data
     from core.stock_cache import get_cache, set_cache
     from stock_common import get_zhb_single_stock_data
 
@@ -919,6 +931,8 @@ def get_lockup_expiry(code: str, days: int = 90, include_history: bool = False) 
         include_history=True: {"history": [...], "upcoming": [...]}
         include_history=False: [{"date", "type", "shares", "ratio"}, ...]
     """
+    from ._eastmoney import _em_filter
+    from ._eastmoney import eastmoney_datacenter
     # V10.2: today_str 内部自动计算，不作为函数参数（避免污染缓存 key）
     today_str = datetime.now().strftime("%Y-%m-%d")
     end_str = (datetime.strptime(today_str, "%Y-%m-%d") + timedelta(days=days)).strftime("%Y-%m-%d")

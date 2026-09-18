@@ -3,18 +3,15 @@
 本文件不是独立可导入模块；其源码被 stock_common/sc_datasource/__init__.py
 exec 进包命名空间，与包内其他函数/状态共享同一 globals()。
 """
-
-import datetime
-from stock_common.sc_network import UA, _async_quick_request, _debug_log, _quick_request
-from stock_common.sc_utils import _load_settings, _safe_float, cached, em_exchange_prefix
-from core.stock_cache import make_valid_if
-from ._shared import _CNINFO_ORGID_CACHE, _HOLDER_CACHE_REFRESH, _HOLDER_CACHE_TTL, _holder_structure_cache
-
-
-import datetime
-from stock_common.sc_network import UA, _async_quick_request, _debug_log, _quick_request
-from stock_common.sc_utils import _load_settings, _safe_float, cached, em_exchange_prefix
-from core.stock_cache import make_valid_if
+from __future__ import annotations
+from datetime import datetime, timedelta
+import asyncio
+import code
+import re
+import time
+from stock_common.sc_network import UA, _async_quick_request, _debug_log, _gen_wait_process_interval, _quick_request
+from stock_common.sc_utils import _load_settings, _safe_float, em_exchange_prefix
+from core.stock_cache import TTL, cached, get_cache, make_valid_if, set_cache
 from ._shared import _CNINFO_ORGID_CACHE, _HOLDER_CACHE_REFRESH, _HOLDER_CACHE_TTL, _holder_structure_cache
 
 
@@ -47,6 +44,7 @@ def _holder_update_sqlite(code: str, records: List[Dict[str, Any]], timestamp: f
 
 def _holder_fetch_em(code: str, page_size: int) -> List[Dict[str, Any]]:
     """从东财获取股东户数 → 按日期升序的 records 列表。"""
+    from ._eastmoney import _em_filter
     data = _em_filter(
         code, "RPT_F10_EH_HOLDERNUM", page_size=page_size, sort_columns="END_DATE", sort_types="-1"
     )
@@ -619,6 +617,7 @@ def get_holder_structure(code: str) -> List[Dict[str, Any]]:
 
     V9.1: 移除 F10 优先逻辑（F10 缺持股比例字段，机构持股计算为 0）。
     """
+    from ._eastmoney import eastmoney_datacenter
     if code in _holder_structure_cache:
         return _holder_structure_cache[code]
 

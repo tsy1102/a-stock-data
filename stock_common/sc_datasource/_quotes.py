@@ -3,19 +3,21 @@
 本文件不是独立可导入模块；其源码被 stock_common/sc_datasource/__init__.py
 exec 进包命名空间，与包内其他函数/状态共享同一 globals()。
 """
-
-import datetime
-from stock_common.sc_network import _debug_log, em_get, requires_push2
-from stock_common.sc_utils import TTL, cached, em_exchange_prefix
-from core.stock_cache import make_valid_if
+from __future__ import annotations
+from datetime import datetime, timedelta
+import asyncio
+import code
+import glob
+import json
+import os
+from stock_common.sc_network import EM_SESSION, UA, _debug_log, _em_wait_process_interval, _quick_request, em_get, requires_push2
+from stock_common.sc_utils import _safe_float, em_exchange_prefix, em_secid_prefix
+from core.stock_cache import TTL, cached, make_valid_if
 from ._shared import _EM_XUANGU_URL, _TDX_QC_TOKEN, _TDX_QC_URL, _THS_HOT_REASON_CACHE, _ULIST_BATCH_FIELDS, _ULIST_BATCH_SIZE
-
-
-import datetime
-from stock_common.sc_network import _debug_log, em_get, requires_push2
-from stock_common.sc_utils import TTL, cached, em_exchange_prefix
-from core.stock_cache import make_valid_if
-from ._shared import _EM_XUANGU_URL, _TDX_QC_TOKEN, _TDX_QC_URL, _THS_HOT_REASON_CACHE, _ULIST_BATCH_FIELDS, _ULIST_BATCH_SIZE
+from core.data_provider import get_concept_from_zhb
+from stock_common.sc_kpl import _f
+from stock_common.sc_schema import DataSource, normalize_at_boundary
+from stock_common.stock_calendar import get_last_trading_day
 
 
 def get_tencent_quote(code: str) -> Dict[str, Any]:
@@ -288,6 +290,7 @@ def get_em_quote_full_delay(code: str) -> Dict[str, Any]:
     trading_day=True 保证日级数据次日 9:30 刷新（15min 延时数据缓存一天无影响）；
     valid_if 拒绝空/全零行情避免投毒。数据_provider 的进程内 _PD_EXTRA_CACHE 仍做单 run 兜底去重。
     """
+    from ._official_backup import get_bse_quote_backup
     r = _em_quote_full_impl(code, "https://push2delay.eastmoney.com/api/qt/stock/get")
     if not r and em_exchange_prefix(code, upper=True) == "BJ":  # V17.2.11: 北交所东财封禁 → 官方备份
         r = get_bse_quote_backup(code) or {}
@@ -792,6 +795,7 @@ def get_stock_permanent_info(code: str) -> Dict[str, Any]:
     - name_core: 由调用方 parse_stock_name 处理（核心名称永久）
     返回 {"list_date", "ipo_price"}（缺失字段省略）。
     """
+    from ._zhb import get_zhb_single_stock_data
     out: Dict[str, Any] = {}
     try:
         # V16.3.3: list_date 走 push2delay f189（push2 主域连接风控实测——f189 拿不到）

@@ -64,6 +64,9 @@ __all__ = [
     "_safe_cleanup_tdx",
     "_load_settings", "_load_strategy_config",
     "_settings_cache", "_strategy_config_cache",
+    # V17.0 S5 写尾样板公共函数 —— 经 get_val_report.py 的 `from stock_common import save_text_report` 消费,
+    # 显式入 __all__ 使其 re-export 语义明确, 避免 pyflakes 误判为死导入而被误删(同 _safe_float 教训)。
+    "save_text_report",
     # sc_datasource
     "eastmoney_datacenter", "_em_filter",
     "eastmoney_datacenter_async", "_em_filter_async",
@@ -227,8 +230,10 @@ from stock_common.sc_utils import (
     _safe_cleanup_tdx,
     _load_settings, _load_strategy_config,
     _settings_cache, _strategy_config_cache,
-    # V17.0 新增公共工具（S3 市场代码 / S5 报告样板 / sc_render）
-    em_secid_prefix, is_a_stock, name_mark, save_text_report,
+    # V17.0 新增公共工具（S5 报告样板 / sc_render）
+    # 注: em_secid_prefix / is_a_stock / name_mark 仅被 `from stock_common.sc_utils import X`
+    #     直接消费, 无包级 `stock_common.X` 调用方, 故不在此 re-export(避免死导出)。
+    save_text_report,
 )
 
 from stock_common.sc_technical import (  # V16.1: 技术指标引擎

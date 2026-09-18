@@ -417,6 +417,9 @@ def em_get(url: str, params: dict | None = None, headers: dict | None = None,
         get_domain_token_bucket, get_domain_circuit_breaker, 
         get_random_ua, CircuitBreakerError
     )
+    # V17.2.x: _EM_COOKIE_FAIL_COUNT 是模块级全局(151 行初始化), 本函数内 += / = 重绑定,
+    # 必须声明 global, 否则 403/429 命中时抛 UnboundLocalError(引用前赋值)。
+    global _EM_COOKIE_FAIL_COUNT
 
     _domain = urlparse(url).netloc
     # V16.2.6: push2 系（push2/push2his/83.push2/1.push2/2.push2）共享同一风控面 →

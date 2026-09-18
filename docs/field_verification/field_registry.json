@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": 1,
-    "updated": "2026-09-17",
+    "updated": "2026-09-18",
     "source_of_truth": "field_registry.json",
     "generated_by": "scripts/extract_registry.py",
     "note": "本文件为字段登记表单一真相源（影子抽取）。docs/field_dict.md 字段表由本文件生成，勿手改。",
@@ -25143,6 +25143,42 @@
         "code": "f78"
       },
       "relation": "cross_number_diff_meaning",
+      "evidence": "ulist_push2_align.md"
+    },
+    {
+      "from": {
+        "source": "东财-ulist239",
+        "code": "f13"
+      },
+      "to": {
+        "source": "东财-push2",
+        "code": "f110"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "ulist_push2_align.md"
+    },
+    {
+      "from": {
+        "source": "东财-ulist239",
+        "code": "f19"
+      },
+      "to": {
+        "source": "东财-push2",
+        "code": "f112"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "ulist_push2_align.md"
+    },
+    {
+      "from": {
+        "source": "东财-ulist239",
+        "code": "f27"
+      },
+      "to": {
+        "source": "东财-push2",
+        "code": "f110"
+      },
+      "relation": "same_number_same_meaning",
       "evidence": "ulist_push2_align.md"
     }
   ]

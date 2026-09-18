@@ -5915,3 +5915,38 @@ volRatio=量比, institutionIncrease=机构增仓 仅在 Socket 推送中——H
 - **tdxstat**：`Col[2]`=Beta（field_dict:489，L1 已定，通达信官方确认）、`Col[26]`=YearZTDay（field_dict:513，L1 已定）
 
 > 注：报告中的**证伪项**（腾讯 `[72]/[73]` 股本颠倒、tipinfo `Col[7~9]/[13~16]` 解禁误标、tdxstat `Col[22]` 形态码、finance_info_raw 槽位偏移）已固化为 `collide.py` 回归护栏（`collision_rules.REFUTED_CONCLUSIONS`），不写入本字典；新候选（`[85]/[86]` 竞价、ulist `f11/f22/f30`、push2ex 拼音）仍走对撞四铁律、升 L1 后方可入字典。
+
+---
+
+## 附录：20260918 对撞破解定案（sanctioned 入库批次）
+
+> 来源：对撞引擎 7 天窗口（20260912~20260918）L1 候选，hit=0.92~1.0、≥3 独立日、四铁律全过。完整候选见 `docs/field_verification/20260918/20260918_crack_report.md`（49 条）。本批次挑选其中高置信、自名/锚义一致者定案，经 `extract_registry → gen_field_dict → parity` 管线 ingest。
+
+**一、durable 定案（已入 `docs/verify/ulist_push2_align.md` → `field_registry.json` mappings，collide 标记 `in_registry`）**
+- `ulist239.f13` ≡ `push2.f110`（市场标记，布尔0/1，北交=0）— 与既有 `f13→f107` 同义别名
+- `ulist239.f19` ≡ `push2.f112`（板级枚举{2,6,23,80,81}）— 与既有 `f19→f111` 同义别名
+- `ulist239.f27` ≡ `push2.f110`（市场标记，布尔0/1，北交=0）— 与既有 `f27→f107` 同义别名
+
+**二、跨源等价语义定案（fuyao 黄金锚自名 / EM f 编号锚定，记为字典权威语义；非 ulist↔push2 对无独立 mapping 存储，collide 每轮仍以 L1 复核确认）**
+- `fuyao.snapshot.price_change` ≡ `push2.f169` → 涨跌额（fuyao 自描述英文名即黄金锚真值）
+- `fuyao.snapshot.price_change_ratio_pct` ≡ `tdx.quote_full.change_pct` → 涨跌幅%
+- `fuyao.snapshot.turnover` ≡ `push2.f48` → 成交额
+- `fuyao.price_change` ≡ `push2.f169` → 涨跌额
+- `push2.f162` ≡ `tencent[52]` → 市盈率(动态)
+- `push2.f163` ≡ `tencent[53]` → 市盈率(静态/LYR)
+- `push2.f51` ≡ `tencent[47]` → 涨停价
+- `push2.f52` ≡ `tencent[48]` → 跌停价
+- `push2.f71` ≡ `tencent[51]` → 均价
+- `push2.f164` ≡ `tencent[39]` → PE(TTM)
+- `push2.f167` ≡ `tencent[46]` → PB
+- `push2.f170` ≡ `tencent[32]` → 涨跌幅
+- `ulist239.f7` ≡ `tencent[43]` → 振幅%
+- `ulist239.f8` ≡ `tencent[38]` → 换手率%
+- `ulist239.f10` ≡ `tencent[49]` → 量比
+- `tencent[72]` ≡ `push2.f85` → 流通股本
+- `tencent[73]` ≡ `push2.f84` → 总股本
+- `tdx.quote_full.change_amt` ≡ `push2.f169` → 涨跌额
+- `eltdx.quote_snapshot.amount` ≡ `push2.f48` → 成交额
+- `zhb.full.low_52w` / `zhb.stat2.low_52w` ≡ `push2.f175` → 52 周最低
+
+> 数据来源：通达信 / 项目字段对撞体系。以上为方法论梳理，不构成投资建议。

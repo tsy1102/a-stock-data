@@ -118,3 +118,14 @@
 | ulist f190 | f78 | 0.940 | −0.023 | 负相关伪匹配（数值常重合但量纲不同），留一法虽稳但相关性为负，驳回 |
 | ulist f200 | f78 | 0.940 | −0.023 | 同上 |
 | ulist f231 | f78 | 0.940 | −0.023 | 同上 |
+
+## 20260918 对撞 L1 新增定案（追加别名映射，sanctioned 入库）
+
+> 来源：`docs/field_verification/20260918/20260918_crack_report.md`（collide 7 天窗口 L1 候选，hit=1.0·5d，四铁律全过）。
+> 下列 ulist239↔push2 等价别名与既有 `f13→f107` / `f19→f111` / `f27→f107` 同义，追加 push2 锚；经 `extract_registry` 解析入 `field_registry.json` mappings，collide 标记 `in_registry` 后 durable 定案。
+
+| ulist | push2 | push2 语义 |
+|---|---|---|
+| ulist f13 | f110 | 市场标记（布尔0/1，北交=0；≡f107 别名，20260918 对撞 L1·hit=1.0·5d 定案） |
+| ulist f19 | f112 | 板级枚举{2,6,23,80,81}（≡f111 别名，20260918 对撞 L1·hit=1.0·5d 定案） |
+| ulist f27 | f110 | 市场标记（布尔0/1，北交=0；≡f107/f110 别名，20260918 对撞 L1·hit=1.0·5d 定案） |

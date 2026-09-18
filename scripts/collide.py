@@ -317,7 +317,7 @@ REG_ALIAS = {
     "同花顺": "thsdk", "thsdk": "thsdk",
     "AxData": "axdata", "axdata": "axdata",
     "FTShare": "ftshare", "ftshare": "ftshare",
-    "fuyao": "fuyao",
+    "fuyao": "fuyao", "eltdx": "eltdx",
     "新浪": "sina", "sina": "sina",
 }
 

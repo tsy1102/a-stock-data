@@ -1,9 +1,12 @@
 """_quotes.py — V17.2 拆包子模块（共享命名空间片段，由 __init__ 载入）
 
-本文件不是独立可导入模块；其源码被 stock_common/sc_datasource/__init__.py
-exec 进包命名空间，与包内其他函数/状态共享同一 globals()。
+本文件现为独立可导入子模块（不再经 exec 注入）。
+由 stock_common/sc_datasource/__init__.py 通过  显式 re-export 到包命名空间；
+跨片段符号由各子模块函数体内的局部懒导入（from ._DEFINER import NAME）提供，
+共享可变状态集中于 _shared.py（单实例）。
 """
 from __future__ import annotations
+from typing import Any, Dict, List, Optional
 from datetime import datetime, timedelta
 import asyncio
 import code

@@ -76,6 +76,10 @@ from stock_common.sc_utils import _load_settings, _safe_float, em_secid_prefix, 
 # 导入缓存层
 from core.stock_cache import TTL, cached, make_valid_if  # V15.2: 强化 valid_if
 
+# ═════════════════════════════════════════════════════════
+# V17.2 重构: 跨片段共享状态已抽取至 _shared.py(单实例, 见该模块)
+from ._shared import *
+
 
 
 
@@ -101,8 +105,6 @@ from core.stock_cache import TTL, cached, make_valid_if  # V15.2: 强化 valid_i
 # ═══════════════════════════════════════════════════════════
 
 # 股东户数缓存（直接使用 SQLite，优化版）
-_HOLDER_CACHE_TTL: int = 60 * 86400  # 60 天 — 新鲜阈值（同一季度内 TDX 增量更新）
-_HOLDER_CACHE_REFRESH: int = 90 * 86400  # 90 天 — 强制刷新阈值（跨季度用东财补全）
 
 
 
@@ -132,7 +134,6 @@ _HOLDER_CACHE_REFRESH: int = 90 * 86400  # 90 天 — 强制刷新阈值（跨�
 # ═══════════════════════════════════════════════════════════
 
 # 巨潮 orgId 缓存（模块级）
-_CNINFO_ORGID_CACHE = {}
 
 
 
@@ -142,7 +143,6 @@ _CNINFO_ORGID_CACHE = {}
 
 
 # 机构持股结构分析（替代 get_institutional_holder_ratio）
-_holder_structure_cache: Dict[str, List[Dict[str, Any]]] = {}
 
 
 
@@ -165,8 +165,6 @@ _holder_structure_cache: Dict[str, List[Dict[str, Any]]] = {}
 
 # V17.0.1a(2026-08-16): get_em_batch_quotes 当日进程缓存——mak 全市场主力(17 请求)/名称补全复用,
 # 同进程多次调用去重(限流面+性能); 按日失效(盘中数据 T+0)
-_EM_BATCH_CACHE: Dict[str, Dict[str, Any]] = {}
-_EM_BATCH_CACHE_DATE: str = ""
 
 
 
@@ -201,12 +199,6 @@ _EM_BATCH_CACHE_DATE: str = ""
 
 # V17.0(2026-08-15) H4 修复: 移除 @cached(DataFrame 不可 JSON 序列化→缓存永不生效);
 # 改用模块级 SECUCODE→row 索引(O(1) 查表) + local_only 开关(全市场扫描不触发网络兜底)
-_PROFIT_FORECAST_CACHE = None  # V17.0: 本机 ProfitForecast 一次性加载缓存
-_PROFIT_FORECAST_INDEX: dict = {}  # V17.0: {SECUCODE: row} O(1) 索引
-_PROFIT_FORECAST_INDEX_SHORT: dict = {}  # V17.0 M7: {去后缀 code: row} 二级索引(600519→O(1), 免全表扫描)
-_YJYG_ALL_CACHE = None  # V17.0: 全市场业绩预告当日缓存
-_PROFIT_CACHE_LOCK = None  # V17.0 M8: 懒加载锁(初始化于 _profit_forecast_index 首次调用)
-_YJYG_LOCK = None  # V17.0 M8: get_yjyg_all 缓存锁
 
 
 
@@ -246,7 +238,6 @@ _YJYG_LOCK = None  # V17.0 M8: get_yjyg_all 缓存锁
 # dc 等待会占住车道。预取流水线在批量启动时按域串行(1rps)拉全批, 与 3 条
 # worker 的非 dc 部分(TCP F10/腾讯/巨潮/fuyao/CPU渲染)并行推进——
 # 消费速率(~9s/只÷3)慢于生产速率(~5s/只), 预取始终领先。
-_DC_PREFETCH_FUTURES: Dict[Any, Any] = {}  # (kind, code) -> asyncio.Future
 
 
 
@@ -271,7 +262,6 @@ _DC_PREFETCH_FUTURES: Dict[Any, Any] = {}  # (kind, code) -> asyncio.Future
 
 
 # 同花顺热点题材归因
-_THS_HOT_REASON_CACHE: Dict[str, list] = {}  # V17.0 S4: {date_str: 原始行 list[dict]}(get_ths_hot_raw 缓存)
 
 
 
@@ -359,7 +349,6 @@ _THS_HOT_REASON_CACHE: Dict[str, list] = {}  # V17.0 S4: {date_str: 原始行 li
 
 
 
-_calendar_fallback_warned = False
 
 
 
@@ -383,7 +372,6 @@ _calendar_fallback_warned = False
 
 
 
-_TDXHY_CACHE: Optional[Dict[str, str]] = None
 
 
 
@@ -435,18 +423,6 @@ _TDXHY_CACHE: Optional[Dict[str, str]] = None
 # 如 半导体/白酒Ⅱ/光学光电子/白色家电 —— 用户要求全部脚本统一"申万二级"粒度）
 # 全市场一次分页拉取（19 页 × 5000），进程内存 + 磁盘 JSON 双缓存（行业静态，90 天/季度 TTL）。
 # 缓存版本隔离: 文件名带 _l2 后缀，与 V16.2.16 一级缓存(em_industry_map.json)互不污染。
-_EM_L2_MAP: Optional[Dict[str, str]] = None
-_EM_L2_MEMBERS: Optional[Dict[str, List[str]]] = None
-_EM_L2_LOADED_TS = 0.0
-_EM_L2_TTL = 90 * 86400
-# 东财行业一级名单（用于排除；二级 = 排除一级后 code 最小的行业板块）
-_EM_INDUSTRY_L1_NAMES = frozenset({
-    "农林牧渔", "基础化工", "钢铁", "有色金属", "电子", "家用电器", "食品饮料",
-    "纺织服饰", "轻工制造", "医药生物", "公用事业", "交通运输", "房地产", "商贸零售",
-    "社会服务", "综合", "建筑材料", "建筑装饰", "电力设备", "机械设备", "国防军工",
-    "汽车", "计算机", "传媒", "通信", "银行", "非银金融", "煤炭", "石油石化",
-    "环保", "美容护理",
-})
 
 
 
@@ -512,53 +488,9 @@ _EM_INDUSTRY_L1_NAMES = frozenset({
 #   C 日频字段：3天延迟可接受（max_delay_days=3）——区间涨跌幅/52周/pe/股息率等（滚动但慢变）
 #   D 静态字段：90天延迟可接受（max_delay_days=90）——恒定数据（ipo_price/股本/行业等，长假容忍）
 #   （注：ABCD 缓存分级管"zhb 数据能否使用"；统一层 ABCD 路由矩阵管"各源优先级"——两个维度）
-_ZHB_REALTIME_FIELDS = frozenset(
-    {
-        "change_pct",
-        "change_pct_1d",
-        "change_pct_2d",
-        "amount",
-        "amount_1d",
-        "amount_2d",
-        "price",
-        "open",
-        "high",
-        "low",
-        "prev_close",
-    }
-)
-
-_ZHB_NEAR_REALTIME_FIELDS = frozenset(
-    {
-        # V10.3: 主力资金流向字段 — 日频准实时，1天延迟可接受
-        "main_net_buy_hands",
-        "main_net_buy_hands_1d",
-        "main_net_buy_amount",
-        "main_net_buy_amount_1d",
-        # V16.3.3: streak_days 连板天数 1 个交易日即变（8/7 涨停 → 8/8 可能断板）——
-        # 原归静态(3天)严重失真，上移准实时
-        "streak_days",
-    }
-)
 
 # V16.3.3: D 级静态字段 — 恒定数据（90天容忍：长假/停更不触发无谓 fallback）
 # 依据：ipo_price 上市至今不变（茅台 31.39）、股本/员工/行业/概念低频变化
-_ZHB_STATIC_FIELDS = frozenset(
-    {
-        "ipo_price",
-        "employee_count",
-        "total_shares",
-        "float_shares",
-        "total_shares_wan",
-        "float_shares_wan",
-        "industry",
-        "industry_code",
-        "board",
-        "concepts",
-        "list_date",
-        "name",
-    }
-)
 
 
 
@@ -675,8 +607,6 @@ _ZHB_STATIC_FIELDS = frozenset(
 # V17.0.26(2026-09-03) DEBT-011: push2delay ulist.np **批量**行情取数适配器
 # ═══════════════════════════════════════════════════════════
 # 字段集与 data_provider.prefetch_quote_batch 的映射键一一对应（改动须同步两侧）
-_ULIST_BATCH_FIELDS = "f2,f3,f4,f5,f6,f8,f12,f14,f15,f16,f17,f18,f20,f21"
-_ULIST_BATCH_SIZE = 300   # 东财 ulist.np 单批上限（实测 >300 返回截断/异常）
 
 
 
@@ -727,12 +657,6 @@ _ULIST_BATCH_SIZE = 300   # 东财 ulist.np 单批上限（实测 >300 返回截
 
 
 # 板块类型 → 东财 fs 参数映射（替代 easy_tdx BoardType 枚举）
-_EM_BOARD_TYPE_FS_MAP = {
-    0: "m:90+t:2",  # 行业一级
-    1: "m:90+t:2",  # 行业二级（东财不区分，使用相同 fs）
-    3: "m:90+t:1",  # 地域
-    4: "m:90+t:3",  # 概念
-}
 
 
 
@@ -746,11 +670,6 @@ _EM_BOARD_TYPE_FS_MAP = {
 # V17.0.2j(2026-08-17): 顺序调整——push2delay 优先(get_em_fund_flow 仅取当日 lmt=1,
 # 无需历史窗口); 原 push2his/push2 优先导致 val 策略20 盘中 30+ 次逐股调用时
 # 每次先打 2 次 push2 主域(共享风控面) → 封禁风险源
-_FFLOW_HOSTS = (
-    "push2delay.eastmoney.com", # 延时镜像优先(独立风控, 当日数据够用)
-    "push2his.eastmoney.com",   # 历史资金流主域(全窗口, 兜底)
-    "push2.eastmoney.com",      # 实时主域(最后兜底)
-)
 
 
 
@@ -782,13 +701,10 @@ _FFLOW_HOSTS = (
 # V17.0.7: 通达信早盘/尾盘抢筹 + 东财选股器服务端筛选（来源 myhhub/stock）
 # ═══════════════════════════════════════════════════════════════
 
-_TDX_QC_URL = "http://excalc.icfqs.com:7616/TQLEX?Entry=HQServ.hq_nlp"
-_TDX_QC_TOKEN = "6679f5cadca97d68245a086793fc1bfc0a50b487487c812f"
 
 
 
 
-_EM_XUANGU_URL = "https://data.eastmoney.com/dataapi/xuangu/list"
 
 
 
@@ -801,27 +717,6 @@ _EM_XUANGU_URL = "https://data.eastmoney.com/dataapi/xuangu/list"
 # 限流: sc_network._DOMAIN_LIMITS 已注册 longhuvip.com 各子域 @3~5rps
 # ═══════════════════════════════════════════════════════════════
 
-_KPL_HQ = "https://apphwhq.longhuvip.com/w1/api/index.php"
-_KPL_HIS = "https://apphis.longhuvip.com/w1/api/index.php"
-_KPL_LHB = "https://applhb.longhuvip.com/w1/api/index.php"
-
-_KPL_HEADERS = {
-    "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
-    "User-Agent": "Dalvik/2.1.0 (Linux; U; Android 12; ALN-AL00 Build/W528JS)",
-    "Connection": "Keep-Alive",
-}
-
-_KPL_BASE = {
-    "PhoneOSNew": "1",
-    "DeviceID": "80ca7d1b-2a24-3cd0-a915-99b61f6f88aa",
-    "VerSion": "5.23.0.4",
-    "apiv": "w44",
-    "UserID": "",
-    "Token": "",
-}
-
-
-_KPL_LAST_CALL: float = 0.0
 
 # ═══════════════════════════════════════════════════════════
 # V17.2 维护性拆包 loader（共享命名空间）

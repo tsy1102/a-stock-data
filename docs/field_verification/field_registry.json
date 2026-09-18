@@ -94,6 +94,7 @@
       "verify_file": "fuyao_api_full.md",
       "section_patterns": [
         "12.8.12c THS 官方金融数据 REST API（fuyao.aicubes.cn，2026-08-10 实测 7 接口 → V17.0.5 契约全量镜像 62 端点）🆕",
+        "12.8.12c-z 适配层快照字段契约（20260918 对撞定案）",
         "12.8.12d THS 族替代 push 域能力矩阵（V17.0.7，2026-08-25 实测定案）🆕",
         "12.8.12e 规范字段注册表（canonical registry，跨源唯一语义名）🆕"
       ],
@@ -14072,7 +14073,7 @@
       "sources": [
         "东财-热榜(em_hot)"
       ],
-      "section": "",
+      "section": "12.8.12 同花顺（热点/北向/涨停揭秘/热榜/EPS）✅",
       "canonical": "",
       "meaning": "",
       "unit": "",
@@ -14085,7 +14086,7 @@
       "sources": [
         "东财-热榜(em_hot)"
       ],
-      "section": "",
+      "section": "12.8.12 同花顺（热点/北向/涨停揭秘/热榜/EPS）✅",
       "canonical": "",
       "meaning": "",
       "unit": "",
@@ -16137,12 +16138,12 @@
       "sources": [
         "同花顺-fuyao"
       ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "status_raw": "",
-      "status": "unverified"
+      "section": "12.8.12c-z 适配层快照字段契约（20260918 对撞定案）",
+      "canonical": "snapshot.high_price",
+      "meaning": "最高价",
+      "unit": "元",
+      "status_raw": "✅ L1（≡push2.f44）",
+      "status": "verified"
     },
     {
       "code": "snapshot.last_price",
@@ -16150,12 +16151,12 @@
       "sources": [
         "同花顺-fuyao"
       ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "status_raw": "",
-      "status": "unverified"
+      "section": "12.8.12c-z 适配层快照字段契约（20260918 对撞定案）",
+      "canonical": "snapshot.last_price",
+      "meaning": "现价",
+      "unit": "元",
+      "status_raw": "✅ L1（20260918 对撞 fuyao≡push2.f43/f179）",
+      "status": "verified"
     },
     {
       "code": "snapshot.low_price",
@@ -16163,12 +16164,12 @@
       "sources": [
         "同花顺-fuyao"
       ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "status_raw": "",
-      "status": "unverified"
+      "section": "12.8.12c-z 适配层快照字段契约（20260918 对撞定案）",
+      "canonical": "snapshot.low_price",
+      "meaning": "最低价",
+      "unit": "元",
+      "status_raw": "✅ L1（≡push2.f45）",
+      "status": "verified"
     },
     {
       "code": "snapshot.open_price",
@@ -16176,12 +16177,12 @@
       "sources": [
         "同花顺-fuyao"
       ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "status_raw": "",
-      "status": "unverified"
+      "section": "12.8.12c-z 适配层快照字段契约（20260918 对撞定案）",
+      "canonical": "snapshot.open_price",
+      "meaning": "开盘价",
+      "unit": "元",
+      "status_raw": "✅ L1（≡auction.auction_price/push2.f46）",
+      "status": "verified"
     },
     {
       "code": "snapshot.prev_price",
@@ -16189,12 +16190,12 @@
       "sources": [
         "同花顺-fuyao"
       ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "status_raw": "",
-      "status": "unverified"
+      "section": "12.8.12c-z 适配层快照字段契约（20260918 对撞定案）",
+      "canonical": "snapshot.prev_price",
+      "meaning": "昨收价",
+      "unit": "元",
+      "status_raw": "✅ L1（≡auction.pre_close_price/push2.f60）",
+      "status": "verified"
     },
     {
       "code": "snapshot.price_change",
@@ -16202,12 +16203,12 @@
       "sources": [
         "同花顺-fuyao"
       ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "status_raw": "",
-      "status": "unverified"
+      "section": "12.8.12c-z 适配层快照字段契约（20260918 对撞定案）",
+      "canonical": "snapshot.price_change",
+      "meaning": "涨跌额",
+      "unit": "元",
+      "status_raw": "✅ L1（≡push2.f169/tdx.change_amt；20260918 对撞 hit=1.0·5d）",
+      "status": "verified"
     },
     {
       "code": "snapshot.price_change_ratio_pct",
@@ -16215,12 +16216,12 @@
       "sources": [
         "同花顺-fuyao"
       ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "status_raw": "",
-      "status": "unverified"
+      "section": "12.8.12c-z 适配层快照字段契约（20260918 对撞定案）",
+      "canonical": "snapshot.price_change_ratio_pct",
+      "meaning": "涨跌幅",
+      "unit": "%",
+      "status_raw": "✅ L1（≡tdx.quote_full.change_pct）",
+      "status": "verified"
     },
     {
       "code": "snapshot.turnover",
@@ -16228,12 +16229,12 @@
       "sources": [
         "同花顺-fuyao"
       ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "status_raw": "",
-      "status": "unverified"
+      "section": "12.8.12c-z 适配层快照字段契约（20260918 对撞定案）",
+      "canonical": "snapshot.turnover",
+      "meaning": "成交额",
+      "unit": "元",
+      "status_raw": "✅ L1（≡push2.f48；⚠️字面\"换手率\"实指成交额，见 (6) 命名陷阱）",
+      "status": "verified"
     },
     {
       "code": "snapshot.volume",
@@ -16241,12 +16242,12 @@
       "sources": [
         "同花顺-fuyao"
       ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "status_raw": "",
-      "status": "unverified"
+      "section": "12.8.12c-z 适配层快照字段契约（20260918 对撞定案）",
+      "canonical": "snapshot.volume",
+      "meaning": "成交量",
+      "unit": "股",
+      "status_raw": "✅ L1（≡f47·100；sina[8] 1:1）",
+      "status": "verified"
     },
     {
       "code": "solvency",
@@ -21510,6 +21511,12 @@
     "valuation.pcf_ttm": [
       "同花顺-fuyao"
     ],
+    "snapshot.open_price": [
+      "同花顺-fuyao"
+    ],
+    "snapshot.prev_price": [
+      "同花顺-fuyao"
+    ],
     "rank": [
       "TDX-0x0010/F10",
       "TDX-eltdx",
@@ -25180,6 +25187,486 @@
       },
       "relation": "same_number_same_meaning",
       "evidence": "ulist_push2_align.md"
+    },
+    {
+      "from": {
+        "source": "fuyao",
+        "code": "price_change"
+      },
+      "to": {
+        "source": "push2",
+        "code": "f169"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260918 对撞 L1·hit=1.0·5d"
+    },
+    {
+      "from": {
+        "source": "fuyao",
+        "code": "price_change_ratio_pct"
+      },
+      "to": {
+        "source": "tdx",
+        "code": "change_pct"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260918 对撞 L1·hit=1.0·5d"
+    },
+    {
+      "from": {
+        "source": "fuyao",
+        "code": "turnover"
+      },
+      "to": {
+        "source": "push2",
+        "code": "f48"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260918 对撞 L1·hit=1.0·5d"
+    },
+    {
+      "from": {
+        "source": "push2",
+        "code": "f162"
+      },
+      "to": {
+        "source": "tencent",
+        "code": "[52]"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260918 对撞 L1·hit=1.0·5d"
+    },
+    {
+      "from": {
+        "source": "push2",
+        "code": "f163"
+      },
+      "to": {
+        "source": "tencent",
+        "code": "[53]"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260918 对撞 L1·hit=1.0·5d"
+    },
+    {
+      "from": {
+        "source": "push2",
+        "code": "f51"
+      },
+      "to": {
+        "source": "tencent",
+        "code": "[47]"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260918 对撞 L1·hit=1.0·5d"
+    },
+    {
+      "from": {
+        "source": "push2",
+        "code": "f52"
+      },
+      "to": {
+        "source": "tencent",
+        "code": "[48]"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260918 对撞 L1·hit=1.0·5d"
+    },
+    {
+      "from": {
+        "source": "push2",
+        "code": "f71"
+      },
+      "to": {
+        "source": "tencent",
+        "code": "[51]"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260918 对撞 L1·hit=1.0·5d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f162"
+      },
+      "to": {
+        "source": "tencent",
+        "code": "[52]"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260918 对撞 L1·hit=1.0·5d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f163"
+      },
+      "to": {
+        "source": "tencent",
+        "code": "[53]"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260918 对撞 L1·hit=1.0·5d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f51"
+      },
+      "to": {
+        "source": "tencent",
+        "code": "[47]"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260918 对撞 L1·hit=1.0·5d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f52"
+      },
+      "to": {
+        "source": "tencent",
+        "code": "[48]"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260918 对撞 L1·hit=1.0·5d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f71"
+      },
+      "to": {
+        "source": "tencent",
+        "code": "[51]"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260918 对撞 L1·hit=1.0·5d"
+    },
+    {
+      "from": {
+        "source": "sina",
+        "code": "[23]"
+      },
+      "to": {
+        "source": "tencent",
+        "code": "[21]"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260918 对撞 L1·hit=1.0·5d"
+    },
+    {
+      "from": {
+        "source": "tdx",
+        "code": "ask1"
+      },
+      "to": {
+        "source": "sina",
+        "code": "[7]"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260918 对撞 L1·hit=1.0·5d"
+    },
+    {
+      "from": {
+        "source": "tdx",
+        "code": "bid1"
+      },
+      "to": {
+        "source": "sina",
+        "code": "[6]"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260918 对撞 L1·hit=1.0·5d"
+    },
+    {
+      "from": {
+        "source": "tdx",
+        "code": "change_amt"
+      },
+      "to": {
+        "source": "push2",
+        "code": "f169"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260918 对撞 L1·hit=1.0·5d"
+    },
+    {
+      "from": {
+        "source": "tencent",
+        "code": "[32]"
+      },
+      "to": {
+        "source": "push2",
+        "code": "f170"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260918 对撞 L1·hit=1.0·5d"
+    },
+    {
+      "from": {
+        "source": "tencent",
+        "code": "[63]"
+      },
+      "to": {
+        "source": "push2",
+        "code": "f119"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260918 对撞 L1·hit=1.0·5d"
+    },
+    {
+      "from": {
+        "source": "tencent",
+        "code": "[72]"
+      },
+      "to": {
+        "source": "push2",
+        "code": "f85"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260918 对撞 L1·hit=1.0·5d"
+    },
+    {
+      "from": {
+        "source": "tencent",
+        "code": "[73]"
+      },
+      "to": {
+        "source": "push2",
+        "code": "f84"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260918 对撞 L1·hit=1.0·5d"
+    },
+    {
+      "from": {
+        "source": "tencent",
+        "code": "[76]"
+      },
+      "to": {
+        "source": "push2",
+        "code": "f85"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260918 对撞 L1·hit=1.0·5d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f10"
+      },
+      "to": {
+        "source": "tencent",
+        "code": "[49]"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260918 对撞 L1·hit=1.0·5d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f114"
+      },
+      "to": {
+        "source": "tencent",
+        "code": "[53]"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260918 对撞 L1·hit=1.0·5d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f7"
+      },
+      "to": {
+        "source": "tencent",
+        "code": "[43]"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260918 对撞 L1·hit=1.0·5d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f8"
+      },
+      "to": {
+        "source": "tencent",
+        "code": "[38]"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260918 对撞 L1·hit=1.0·5d"
+    },
+    {
+      "from": {
+        "source": "eltdx",
+        "code": "amount"
+      },
+      "to": {
+        "source": "push2",
+        "code": "f48"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260918 对撞 L1·hit=1.0·4d"
+    },
+    {
+      "from": {
+        "source": "tencent",
+        "code": "[70]"
+      },
+      "to": {
+        "source": "push2",
+        "code": "f120"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260918 对撞 L1·hit=0.98·5d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f142"
+      },
+      "to": {
+        "source": "sina",
+        "code": "[13]"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260918 对撞 L1·hit=0.98·5d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f211"
+      },
+      "to": {
+        "source": "tencent",
+        "code": "[10]"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260918 对撞 L1·hit=0.98·5d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f31"
+      },
+      "to": {
+        "source": "sina",
+        "code": "[6]"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260918 对撞 L1·hit=0.98·5d"
+    },
+    {
+      "from": {
+        "source": "push2",
+        "code": "f164"
+      },
+      "to": {
+        "source": "tencent",
+        "code": "[39]"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260918 对撞 L1·hit=0.97·5d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f164"
+      },
+      "to": {
+        "source": "tencent",
+        "code": "[39]"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260918 对撞 L1·hit=0.97·5d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f115"
+      },
+      "to": {
+        "source": "tencent",
+        "code": "[39]"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260918 对撞 L1·hit=0.97·5d"
+    },
+    {
+      "from": {
+        "source": "push2",
+        "code": "f167"
+      },
+      "to": {
+        "source": "tencent",
+        "code": "[46]"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260918 对撞 L1·hit=0.95·5d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f167"
+      },
+      "to": {
+        "source": "tencent",
+        "code": "[46]"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260918 对撞 L1·hit=0.95·5d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f143"
+      },
+      "to": {
+        "source": "tencent",
+        "code": "[21]"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260918 对撞 L1·hit=0.94·5d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f212"
+      },
+      "to": {
+        "source": "tencent",
+        "code": "[20]"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260918 对撞 L1·hit=0.94·5d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f32"
+      },
+      "to": {
+        "source": "sina",
+        "code": "[7]"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260918 对撞 L1·hit=0.94·5d"
+    },
+    {
+      "from": {
+        "source": "tencent",
+        "code": "[71]"
+      },
+      "to": {
+        "source": "push2",
+        "code": "f121"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260918 对撞 L1·hit=0.92·5d"
     }
   ]
 }

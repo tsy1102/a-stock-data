@@ -117,7 +117,7 @@
 
 ### 零·B 字段×源总表（自动生成，勿手改）
 
-> 生成：`scripts/gen_field_matrix.py`（Phase 2 起从 field_registry.json 单一真相源读取，不再解析 field_dict.md 体积）。共 1295 个字段 / 1411 条字段×源记录（去重配对口径，取代旧版按行出现的 1412 重复计数）。
+> 生成：`scripts/gen_field_matrix.py`（Phase 2 起从 field_registry.json 单一真相源读取，不再解析 field_dict.md 体积）。共 1297 个字段 / 1413 条字段×源记录（去重配对口径，取代旧版按行出现的 1412 重复计数）。
 
 > 源排序按易→难（V17.0.7 层级定案；2026-09-07 thsdk 已退役，不再列为活体源）：ZHB（离线零网络）→ TDX TCP（0x0010/F10/eltdx）→ 腾讯（不封 IP）→ **同花顺-fuyao（官方 REST，盘后可查+独立风控域，V17.0.7 升为财务 TTM 族主源）** → 新浪 → 巨潮 → 东财（限流最严）→ 其他。
 
@@ -229,7 +229,7 @@
 | 市场情绪 | 2 | TDX-0x0010/F10、同花顺-fuyao |
 | 板块轮动 | 2 | TDX-0x0010/F10、同花顺-fuyao |
 
-**B.2 单源字段（1194 个，无 fallback）**
+**B.2 单源字段（1196 个，无 fallback）**
 
 - **ZHB（13）**：A 实时、B 准实时、C 日频、D 静态、PE TTM、前一日、前一日开盘量额、前两日成交额、封单额、年内涨停数、当日、日 Beta、自由流通股本、连板统计
 - **TDX-0x0010/F10（297）**：*ST湘邮、AI解读、AxData、BKFenShiZhiBo、ChangeStatistics、C中芯、DR 茅台、DailyLimitPerformance、DailyLimitPerformance2、FTShare、GetBaseFaceListZDEvnArtNew、GetDayBaseFaceListZDEvnArt、GetDayNewHigh_W28、GetGPCPHBTS_Tag、GetHotPHB、GetInfo、GetKLineDay_W14、GetKLineZhangTing、GetMainMonitor_w30、GetPanKou、GetPlateInfo_w38、GetPlate_Info_QJ、GetStockBid、GetStockList、GetStockList（龙虎榜）、GetStockPanKou、GetStockTrendIncremental、GetWeiTuo_W14、GetYTFP_BKHX、GetYTFP_SCTD、GlobalCommon、GroupCount_w28、Index、InfoBKR、MarketStockZDNum、MoodNumCount、MorningBiddingList、NewGetList、N百花医药、Radar、RealRankingInfo、RiseFallAnalysis、ST百花医药、SharpWithdrawal、SonPlate_Info、Theme、XD、XR、ZhiShuStockList_W8、[..、[verify、akshare、all、api、axdata_verify.md)、axdata_verify.md](verify、balance_sheet` 资产负债表、belong、cash_flow` 现金流量表、changqifuzhai
@@ -237,8 +237,8 @@
 - **TDX-eltdx（131）**：AuctionPoint.index、AuctionPoint.matched_volume、AuctionPoint.minute_of_day_raw、AuctionPoint.price、AuctionPoint.price_milli、AuctionPoint.record_hex、AuctionPoint.reserved_zero_0e、AuctionPoint.second_raw、AuctionPoint.time_label、AuctionPoint.time_seconds、AuctionPoint.unmatched_direction_raw、AuctionPoint.unmatched_volume、Enum `Market、FinanceInfo`（财务）、FundFlow、HistoricalFundFlow、KlineCategory、MarketStat、SecurityBar`（K 线）、SecurityInfo`（证券列表）、SecurityQuote`（五档）、XdxrRecord`（除权除息）、absolute_index、adjust、adjust_mode、adjust_mode_raw、alignment_status、auction_matched_volume、auction_unmatched_signed_volume、auctions.series（0x056a）、beta_60d、business_composition、buy_levels、c1_value~c4_value、category_name、circulating_shares、current_hand、dividend_financing、down_count、eltdx_auction_prev_volume_ratio、eltdx_has_shortline、eltdx_ladder_level、eltdx_limit_board_text、eltdx_limit_up_streak_days、eltdx_open_change_pct、eltdx_open_prev_amount_ratio、eltdx_open_turnover_z、eltdx_open_volume_ratio、eltdx_opening_rush、eltdx_seal_amount、eltdx_seal_to_float_ratio、eps_raw、event_kind、fenhong、finance_diagnosis、full_code、get_auction_0925、high_price、highest_ladder_level、history
   - … 其余 71 个见正文
 - **腾讯（12）**：[0] 市场标识、[29][54][55][77][78] 占位符、[40] 停牌标记、[56] Beta 族、[76] A股流通股本、[85] 价格类字段、[86] 手级带符号量、[87] 科创板、两融标记、分钟 K线、实测、月 K线
-- **同花顺-fuyao（130）**：K线、PB、ROA、`big_order_flow(ths_code)`、a-share、a-share-index、accounts_receivable、adjustment-factors、anomaly-analysis-list、anomaly-analysis-stock、auction、auction.float_market_cap、balance-sheets、calendar、cash-flow、cash-flow-statements、cash_equivalents_net_addition、catalog、constituents、corporate-actions、download-url、dragon-tiger-list、dump、eps_deduct_ttm(f108)、fflow 历史资金流窗口、financials、get 财务 TTM 族、growth、growth.calculate_operating_income_yoy_growth_ratio、growth.calculate_parent_holder_net_profit_yoy_growth_ratio、historical、holder_equity_total、hot-stock-list、hot-stock-list-history、hot-stock-rank-trend、income-statements、income_tax_expense、indicators、interest_expenses、klines(count=N)、limit-break-pool` 🆕、limit-down-pool` 🆕、limit-up-ladder、limit-up-pool、list、manage_fee、market-dumps、meta、net_profit、net_profit_annual、net_profit_period、ocf_ttm、operating_profit、operation、pay_dividends_profits_interest_cash、pb、pcf、prices、profit_total、profitability
-  - … 其余 70 个见正文
+- **同花顺-fuyao（132）**：K线、PB、ROA、`big_order_flow(ths_code)`、a-share、a-share-index、accounts_receivable、adjustment-factors、anomaly-analysis-list、anomaly-analysis-stock、auction、auction.float_market_cap、balance-sheets、calendar、cash-flow、cash-flow-statements、cash_equivalents_net_addition、catalog、constituents、corporate-actions、download-url、dragon-tiger-list、dump、eps_deduct_ttm(f108)、fflow 历史资金流窗口、financials、get 财务 TTM 族、growth、growth.calculate_operating_income_yoy_growth_ratio、growth.calculate_parent_holder_net_profit_yoy_growth_ratio、historical、holder_equity_total、hot-stock-list、hot-stock-list-history、hot-stock-rank-trend、income-statements、income_tax_expense、indicators、interest_expenses、klines(count=N)、limit-break-pool` 🆕、limit-down-pool` 🆕、limit-up-ladder、limit-up-pool、list、manage_fee、market-dumps、meta、net_profit、net_profit_annual、net_profit_period、ocf_ttm、operating_profit、operation、pay_dividends_profits_interest_cash、pb、pcf、prices、profit_total、profitability
+  - … 其余 72 个见正文
 - **新浪（25）**：URL、ask、ask_vol、bid、bid_vol、delta、gamma、item_tongbi、item_value、iv、last、limit_down、limit_up、netamount、open_interest、opendate、prev_close、report_list.{期次}.data[].item_title、report_type、strike、theory、theta、trade、vega、参数
 - **财联社（14）**：catalyst、cur_heat、limit_up_board、market_degree、performance、profit_ratio、rank_change、shsz_balance、shsz_balance_change_px、up_down_dis、up_open_num、up_open_ratio、up_ratio、up_ratio_num
 - **开盘红（36）**：Detail、StockList、TagID、TagName、TagShuXing、ZSCode、ZSName、avg_change、buy_amount、dt、fall_dist、fall_num、flat、industry_id、industry_zt、limit_tag、market_cap、net_inflow、net_inflow_5d、open_time、q_zrcs、qscln、rise_dist、rise_num、s_zrcs、seal_money、sell_amount、sign、sjdt、sjzt、stdt、stock_count、stzt、szln、themes、zt
@@ -3487,6 +3487,23 @@ ZHB 逐日落后一个交易日，符合「最近交易日快照」铁律；`fin
 > **Key 安全**：`sk-fuyao-*` Key 仅存环境变量/密码管理器——**禁止写入字典/代码/提交**
 > **接入状态（V17.0.5）**：sc_fuyao.py 已接 **22 端点**（…+fund_holdings/fund_profile）；**Key 已配置(credentials/fuyao_key.txt)全通道激活**。lng/med 新增「自选基金重仓侧证」段——配置门控 credentials/fund_watch.json（模板 fund_watch.example.json），缺失时零请求静默跳过；get_fund_watch_evidence() 输出持仓占比/排名/报告期增减/基金股票仓位/重仓行业/集中度。采集脚本内置中报就绪哨兵(h1_indicators_ready)——tx65 L1 终判数据自动落库
 
+#### 12.8.12c-z 适配层快照字段契约（20260918 对撞定案）
+
+> 标准契约表：将 20260918 对撞 L1 候选中 fuyao 适配层字段（带点 token）以规范 4 列契约登记，供 `extract_registry` 挂载 meaning + 标 ✅ verified；其等价关系另经 `docs/verify/cross_source_align.md` durable 入 `field_registry.json` mappings（collide 标 in_registry）。命名陷阱见 (6) 节（`snapshot.turnover` 字面"换手率"实指成交额）。
+
+| 字段 | 含义 | 单位 | 状态 |
+|---|---|---|---|
+| snapshot.last_price | 现价 | 元 | ✅ L1（20260918 对撞 fuyao≡push2.f43/f179）|
+| snapshot.open_price | 开盘价 | 元 | ✅ L1（≡auction.auction_price/push2.f46）|
+| snapshot.high_price | 最高价 | 元 | ✅ L1（≡push2.f44）|
+| snapshot.low_price | 最低价 | 元 | ✅ L1（≡push2.f45）|
+| snapshot.prev_price | 昨收价 | 元 | ✅ L1（≡auction.pre_close_price/push2.f60）|
+| snapshot.price_change | 涨跌额 | 元 | ✅ L1（≡push2.f169/tdx.change_amt；20260918 对撞 hit=1.0·5d）|
+| snapshot.price_change_ratio_pct | 涨跌幅 | % | ✅ L1（≡tdx.quote_full.change_pct）|
+| snapshot.volume | 成交量 | 股 | ✅ L1（≡f47·100；sina[8] 1:1）|
+| snapshot.turnover | 成交额 | 元 | ✅ L1（≡push2.f48；⚠️字面"换手率"实指成交额，见 (6) 命名陷阱）|
+
+
 #### 12.8.12h 东财人气榜 em_hot_rank 原始字段补录（V17.1.1 全量登记）
 
 > `raw_em_hot.json` 的 `hot_rank` 列表项真实返回 6 键：`code/name`（已登记）+ 下列 4 键（此前未登记，源=东财人气榜 emappdata）。
@@ -5948,5 +5965,11 @@ volRatio=量比, institutionIncrease=机构增仓 仅在 Socket 推送中——H
 - `tdx.quote_full.change_amt` ≡ `push2.f169` → 涨跌额
 - `eltdx.quote_snapshot.amount` ≡ `push2.f48` → 成交额
 - `zhb.full.low_52w` / `zhb.stat2.low_52w` ≡ `push2.f175` → 52 周最低
+
+**三、适配层字段 meaning 与 verified 状态（20260918 收尾）**
+
+- **fuyao 适配层字段（snapshot.* 带点 token）**：已在本章 §12.8.12c-z 标准契约表补 meaning 并标 ✅ verified（经 `extract_registry` 挂载；G1 基线比对仅比对 registered token 集合，不受影响）。其等价于 EM f 编号的映射已 durable 入 `field_registry.json` mappings（`docs/verify/cross_source_align.md` → collide 标 in_registry）。
+- **tdx / eltdx / zhb 适配层字段**：等价关系已 durable 入 `field_registry.json` mappings（同上，collide 标 in_registry 固化），语义见本附录二、。但因 `registered_field_sets` 未收录其带点 token（`TDX(双命名源)` 仅含 `minutes.today`/`trades.today`；`ELTDX` 0 token；`ZHB-tdxstat` 为 `[N]` 索引形态），这些 token 在 `field_registry.json` 的 `fields[]` 中无记录，故暂无法在 `fields[].status` 标 verified。该限制列为后续项：扩展 `registered_field_sets` 收录 tdx/eltdx/zhb 带点 token 后，即可经标准契约表统一标 verified（本次为控制回归风险未改动 `audit_field_completeness` 注册集）。
+- **通用跨源 mapping 存储上线**：`docs/verify/cross_source_align.md` 取代"仅 ulist239↔push2 有独立 mapping"的旧约束，承载任意源对等价关系；`scripts/extract_registry.py` 已泛化解析（源前缀短别名 + collide `code_of` 形态 code）。本批次 40 条非 ulist↔push2 候选全部入表 durable 定案。
 
 > 数据来源：通达信 / 项目字段对撞体系。以上为方法论梳理，不构成投资建议。

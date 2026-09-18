@@ -41,6 +41,8 @@ REPO_ROOT = os.path.dirname(SCRIPT_DIR)
 DICT = os.path.join(REPO_ROOT, "docs", "field_dict.md")
 DEFAULT_OUT = os.path.join(REPO_ROOT, "docs", "field_verification", "field_registry.json")
 ALIGN = os.path.join(REPO_ROOT, "docs", "verify", "ulist_push2_align.md")
+# 通用跨源对齐表（非 ulist239↔push2 的等价/同义关系统一存储，sanctioned 入库）
+CROSS_ALIGN = os.path.join(REPO_ROOT, "docs", "verify", "cross_source_align.md")
 
 # 复用已验证的解析基座
 sys.path.insert(0, SCRIPT_DIR)
@@ -78,6 +80,12 @@ def cell_token(cell: str, src: str):
         m = re.search(r"\[(\d+)\]", cell)
         return ("[" + m.group(1) + "]") if m else None
     if src in _CAMEL_SRC:
+        # 带点字段(如 fuyao snapshot.price_change / tdx quote_full.bid1)保留完整带点 token，
+        # 与 registered_field_sets 收录形态一致；否则取首词会丢失子字段(见 afc 带点叶名逻辑)。
+        # 不影响 G1(仅比对 Layer1 的 registered token 集合)，只改变 Layer2 属性挂载对象。
+        if "." in cell:
+            m = re.search(r"[A-Za-z_][A-Za-z0-9_.]*", cell)
+            return m.group(0) if m else None
         m = re.search(r"[A-Za-z][A-Za-z0-9_]{2,}", cell)
         return m.group(0) if m else None
     # 默认：英文/中文名 token
@@ -146,6 +154,29 @@ def normalize_status(raw: str) -> str:
     if any(k in t for k in ("对撞", "印证", "锚", "实测", "复核", "确认", "一致")):
         return "verified"
     return "unverified"
+
+
+# 通用跨源对齐表(cross_source_align.md)的 id 解析：源前缀(短别名).字段 / 源前缀[索引]
+# -> (source短别名, code)；code 取 collide.code_of 形态(最后一个 '.' 之后 / '[索引]')，
+# 保证 collide.load_registry_state 能据 mappings 标 in_registry(durable 定案)。
+_ALIGN_SRCS = {"fuyao", "tdx", "eltdx", "zhb", "tencent", "push2",
+               "push2_full", "ulist239", "sina"}
+
+
+def _parse_align_id(idstr: str):
+    s = idstr.strip().strip("`").strip()
+    s = re.sub(r"\*\*", "", s)
+    if not s:
+        return None, None
+    if "[" in s:  # tencent[52] / sina[8] -> ('tencent', '[52]')
+        pre = s[:s.index("[")]
+        return pre, s[s.index("["):]
+    if "." in s:   # fuyao.snapshot.price_change -> ('fuyao', 'price_change')
+        # 源前缀=首个 '.' 之前(对齐 collide.alias_src); code=末个 '.' 之后(对齐 collide.code_of)
+        pre = s.split(".", 1)[0]
+        code = s.rsplit(".", 1)[-1]
+        return pre, code
+    return None, None
 
 
 def clean_text(s: str) -> str:
@@ -286,6 +317,32 @@ def extract():
                     "relation": relation,
                     "evidence": "ulist_push2_align.md",
                 })
+
+    # 通用跨源对齐（非 ulist239↔push2）：cross_source_align.md
+    # 承载 fuyao/tdx/eltdx/zhb/tencent/push2/push2_full/sina 任意源对的等价/同义关系，
+    # 经 _parse_align_id 解析为 (源短别名, code)，collide 标 in_registry 后 durable 定案。
+    if os.path.exists(CROSS_ALIGN):
+        for ln in io.open(CROSS_ALIGN, encoding="utf-8").read().split("\n"):
+            if not ln.strip().startswith("|"):
+                continue
+            cells = [c.strip() for c in ln.strip()[1:-1].split("|")]
+            if len(cells) < 2:
+                continue
+            pa, ca = _parse_align_id(cells[0])
+            pb, cb = _parse_align_id(cells[1])
+            # 仅接受已知源前缀（表头/分隔行等非源前缀自动跳过，避免污染 mappings）
+            if not (pa and ca and pb and cb and pa in _ALIGN_SRCS and pb in _ALIGN_SRCS):
+                continue
+            relation = ("same_number_same_meaning"
+                        if ("==" in ln or "同义" in ln or "别名" in ln)
+                        else "cross_number_diff_meaning")
+            evidence = cells[4] if len(cells) >= 5 else "cross_source_align.md"
+            mappings.append({
+                "from": {"source": pa, "code": ca},
+                "to": {"source": pb, "code": cb},
+                "relation": relation,
+                "evidence": evidence,
+            })
 
     # field_matrix：§零·B 投影（clean field-name × source），与 build_matrix_from_md 同构
     # （1156 字段 / 1230 去重记录）。专供 gen_field_matrix 生成 §零·B；原生 token 集

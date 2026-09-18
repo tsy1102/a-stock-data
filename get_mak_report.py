@@ -1597,15 +1597,27 @@ async def generate_sector_report(output_path):
                 # V17.0.2l: 无冒号格式——原 "化工: 4 只" 被字段值块转表(表头强制加粗), 用户: 竖排
                 L(f"    {sec}({cnt} 只)")
 
-        # 涨停明细(V17.0.2f: 直接 md 表格 7 列, 避免空格表头粘连丢列)
+        # 涨停明细(V17.0.2f: 直接 md 表格 7 列; V17.2.x: 按封板时间升序排序并渲染为表格,
+        # 截断注移至表后——避免引用块插在分隔行与数据行之间破坏 md 表格结构, 与炸板明细一致)
         zt_list = pool.get("limit_up_list", [])
         if zt_list:
+            def _seal_key(it):
+                # 封板时间排序键: 兼容 ths "HH:MM:SS" 与 东财 push2ex "HHMM[SS]" 两种格式
+                _raw = it.get('first_limit_time', '') or it.get('first_time', '')
+                try:
+                    if ':' in str(_raw):
+                        _h, _m, _s = str(_raw).split(':')
+                        return int(_h) * 3600 + int(_m) * 60 + int(_s)
+                    _v = int(_raw) if _raw not in ('', None) else 0
+                    if _v > 0:
+                        return (_v // 10000) * 3600 + ((_v % 10000) // 100) * 60 + (_v % 100)
+                except Exception:
+                    pass
+                return 10 ** 9  # 缺封板时间者置末
+            zt_list = sorted(zt_list, key=_seal_key)
             L("\n  涨停明细（按封板时间排序）:")
             L("| 代码 | 名称 | 涨跌幅 | 连板 | 封板时间 | 封单额(亿) | 板块 |")
             L("|---|---|---|---|---|---|---|")
-            if len(zt_list) > 30:
-                # V17.0.8: 明细截断注明(原 43 只只显 30 行, 读者误以为总数=表行数)
-                L(f"  > 共 {len(zt_list)} 只, 下表显示前 30 只（完整名单见涨停池源）")
             for item in zt_list[:30]:
                 fund_yi = item.get('limit_fund', 0) / 1e8 if item.get('limit_fund', 0) else 0
                 # H2(审查 2026-08-16): ths 优先源输出 first_time(已格式化 HH:MM:SS),
@@ -1627,6 +1639,9 @@ async def generate_sector_report(output_path):
                 L(
                     f"| {item.get('code','')} | {item.get('name','')}{_name_mark(item.get('name',''))} | {item.get('change_pct',0):+.2f}% | {item.get('limit_count',0):.0f} | {fbt_fmt} | {fund_yi:+.2f} | {item.get('sector','')} |"
                 )
+            if len(zt_list) > 30:
+                # V17.0.8: 明细截断注明(原 43 只只显 30 行, 读者误以为总数=表行数); 置于表后不破坏表格
+                L(f"  > 共 {len(zt_list)} 只, 上表显示前 30 只（完整名单见涨停池源）")
 
         # 炸板明细(V17.0.2f: md 表格)
         zb_list = pool.get("limit_broken_list", [])

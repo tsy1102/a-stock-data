@@ -17,7 +17,7 @@ V17.2.15: 取代 easy_tdx 成为 TDX TCP 主源（core/tdx_client.py 调用）�
 
 from __future__ import annotations
 
-from typing import Any, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 
 from stock_common import _debug_log
 

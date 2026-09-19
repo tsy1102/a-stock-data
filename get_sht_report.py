@@ -94,10 +94,10 @@ def _get_index_quote(idx_code):
 
 
 def get_fund_flow_realtime(code, ff_120d=None):
-    """V7.5: 今日主力净流入 → 统一层 get_main_net_buy（V17.0 矩阵定案: f137+f140 无条件优先），失败则尝试历史数据回退
+    """V7.5: 今日主力净流入 → 统一层 get_main_net_buy（V17.0 矩阵定案: f137 无条件优先，f137 本身=超大单f140+大单f143，V17.0.16 重定案禁止再+f140 重复计数），失败则尝试历史数据回退
     
     V16.0: 改用 data_provider.get_main_net_buy（统一优先级），替代原直连 tdx_get_fund_flow。
-    V17.0(2026-08-14): 主力净=f137+f140(特大+大单, 同花顺/通达信定义)——ZHB 资金流键为竞价族不可作主力。
+    V17.0(2026-08-14): 主力净=f137（本身=超大单f140+大单f143，V17.0.16 重定案：旧 f137+f140 重复计数虚高约40%已废）——ZHB 资金流键为竞价族不可作主力。
     
     Args:
         code: 股票代码
@@ -141,7 +141,7 @@ def get_fund_flow_120d(code):
       - 原 sht 用 `prefer="tdx"`、med 用 `prefer="em"`，看似两口径；
       - 实测 `tdx_get_history_fund_flow`(`core/tdx_client.py:1694`) **已完全委托东财 HTTP**
         （"V12.0: 委托到东财 HTTP 接口（原 TDX get_history_fund_flow 已废弃）"），
-        且 V17.0.13 口径规定主力净额统一走东财 push2 f137+f140 —— **两路径数据同源同值**；
+        且 V17.0.13 口径规定主力净额统一走东财 push2 f137（本身含超大单+大单，V17.0.16 重定案禁止再+f140）—— **两路径数据同源同值**；
       - `prefer="tdx"` 仅多一次对同一函数的冗余二次调用，且会把 `source` 误标为 "tdx"。
       故统一为 "em" 直连：数据不变、source 标注正确、少一层间接调用。
     """

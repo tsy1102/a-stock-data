@@ -130,7 +130,7 @@
     },
     {
       "name": "ZHB-tdxstat",
-      "verify_file": null,
+      "verify_file": "zhb_verify.md",
       "section_patterns": [
         "1. `tdxstat.cfg` (个股综合统计快照，35 个字段，7,951 行)",
         "1.1 tdxstat.cfg 标准契约表（stat.*，20260918 对撞定案）🆕"
@@ -139,7 +139,7 @@
     },
     {
       "name": "ZHB-tdxstat2",
-      "verify_file": null,
+      "verify_file": "zhb_verify.md",
       "section_patterns": [
         "2. `tdxstat2.cfg` (成交与资金流向表，21 个字段，7,951 行)",
         "2.1 tdxstat2.cfg 标准契约表（stat2.*，20260918 对撞定案）🆕"
@@ -148,7 +148,7 @@
     },
     {
       "name": "ZHB-tipinfo",
-      "verify_file": null,
+      "verify_file": "zhb_verify.md",
       "section_patterns": [
         "3. `tipinfo.dat` (财报日历与业绩快照，22 列，5,612 行)",
         "3.1 tipinfo.dat 标准契约表（tipinfo.*，20260918 对撞定案）🆕"
@@ -28535,7 +28535,7 @@
     "eltdx(适配层)": [
       "TDX-0x0010/F10"
     ],
-    "⚠️ ZHB (tdxstat": [
+    "ZHB (tdxstat": [
       "TDX-0x0010/F10"
     ],
     "tdxstat2": [

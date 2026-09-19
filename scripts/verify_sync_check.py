@@ -18,6 +18,9 @@ verify_sync_check.py — 主字典 ↔ verify 分字典 一致性闸门（离线
     4. 陈旧结论  : 主字典某字段有「升级事件」(主动升级/非对撞升级/升级定案方向/→Beta族高置信
                   /→均价-VWAP类价格派生候选强/候选=委差 等) 且日期新于分字典同字段最新日期
                   → 分字典未同步升级（防「主字典升级但分字典漏更」，即本次发现的真实漏洞）。
+    5. ZHB 镜像覆盖: zhb_verify.md 是主字典 §三 ZHB 三章的*镜像备份*（主字典始终唯一权威），
+                  强制其 Col[N] 集合与标准契约 token 集合与主字典逐字段一致——
+                  既保证「完全覆盖主字典」，又禁止「越权发明主字典之外字段」。
   ADVISORY WARN (best-effort; --strict 时升级为 FAIL) —— 仅 --sync 时执行:
     5. 同步检查  : 主字典中出现的某源字段 token，若对应分字典存在且可解析，
                   报告主字典有而分字典缺失的字段（即「已破解未同步」）。
@@ -86,6 +89,7 @@ MAPPING_HARDCODED = {
     "em_website_anchor": "eastmoney_website_anchor.md",
     "fuyao_website_anchor": "fuyao_website_anchor.md",
     "thsdk": "thsdk_field_verify.md",
+    "zhb": "zhb_verify.md",
 }
 
 
@@ -471,6 +475,55 @@ def main():
                 found = True
         if not found:
             print(f"   ✓ {base}: 无主升分未升矛盾")
+
+    # ---- HARD 5: ZHB 镜像覆盖检查（主字典 §三 ZHB 章 ⇄ zhb_verify.md 镜像备份）----
+    # 设计：zhb_verify.md 是主字典 ZHB 三章的*镜像备份*，主字典始终为唯一权威；
+    # 本检查强制镜像逐字段完全覆盖主字典（不得缺失、亦不得越权发明字段）。
+    print("[HARD] 5. ZHB 镜像覆盖检查（zhb_verify.md 须逐字段完全覆盖主字典 §三 ZHB 章）")
+    try:
+        if SCRIPT_DIR not in sys.path:
+            sys.path.insert(0, SCRIPT_DIR)
+        import gen_zhb_subdict as _zhb  # noqa: F401
+
+        main_pos = _zhb.extract_main_zhb()
+        sub_pos = _zhb.extract_subdict_zhb()
+        main_con = _zhb.extract_main_contract()
+        sub_con = _zhb.extract_subdict_contract()
+        zhb_ok = True
+        for src in ("tdxstat", "tdxstat2", "tipinfo"):
+            mset, sset = main_pos.get(src, set()), sub_pos.get(src, set())
+            if mset != sset:
+                zhb_ok = False
+                miss = sorted(mset - sset)
+                extra = sorted(sset - mset)
+                if miss:
+                    msg = (f"ZHB 镜像缺失: {src} 主字典 {len(miss)} 列未在 zhb_verify.md 覆盖"
+                           f"（须重跑 gen_zhb_subdict.py）: {miss[:10]}")
+                    hard_failures.append(msg)
+                    print(f"   ✗ {msg}")
+                if extra:
+                    msg = (f"ZHB 镜像越权: {src} zhb_verify.md 含 {len(extra)} 个主字典无的孤儿列"
+                           f"（镜像不得发明字段）: {extra[:10]}")
+                    hard_failures.append(msg)
+                    print(f"   ✗ {msg}")
+            else:
+                print(f"   ✓ {src}: 位置式契约 {len(mset)} 列完全覆盖")
+            mc, sc = main_con.get(src, set()), sub_con.get(src, set())
+            if mc and mc != sc:
+                zhb_ok = False
+                miss = sorted(mc - sc)
+                if miss:
+                    msg = (f"ZHB 标准契约缺失: {src} 主字典 {len(miss)} 个契约 token 未在镜像"
+                           f"（须重跑 gen_zhb_subdict.py）: {miss[:10]}")
+                    hard_failures.append(msg)
+                    print(f"   ✗ {msg}")
+            elif mc:
+                print(f"   ✓ {src}: 标准契约 token {len(mc)} 个一致")
+        if zhb_ok:
+            print("   ✓ ZHB 镜像 zhb_verify.md 与主字典 §三 逐字段一致（完全覆盖、无越权）")
+    except Exception as e:  # noqa: BLE001
+        warnings.append(f"ZHB 镜像覆盖检查跳过（gen_zhb_subdict 导入/解析失败: {e}）")
+        print(f"   ⚠ ZHB 镜像覆盖检查跳过: {e}")
 
     # ---- WARN 5: 同步检查（best-effort，仅 --sync 时执行）----
     if not args.sync:

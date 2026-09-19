@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": 1,
-    "updated": "2026-09-18",
+    "updated": "2026-09-19",
     "source_of_truth": "field_registry.json",
     "generated_by": "scripts/extract_registry.py",
     "note": "本文件为字段登记表单一真相源（影子抽取）。docs/field_dict.md 字段表由本文件生成，勿手改。",
@@ -6868,19 +6868,6 @@
       "status": "unverified"
     },
     {
-      "code": "ex_date",
-      "source": "ZHB-tipinfo",
-      "sources": [
-        "ZHB-tipinfo"
-      ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "status_raw": "",
-      "status": "unverified"
-    },
-    {
       "code": "hkblock.dat",
       "source": "ZHB-tipinfo",
       "sources": [
@@ -7414,19 +7401,6 @@
       "status": "verified"
     },
     {
-      "code": "tipinfo.ex_date",
-      "source": "ZHB-tipinfo",
-      "sources": [
-        "ZHB-tipinfo"
-      ],
-      "section": "3.1 tipinfo.dat 标准契约表（tipinfo.*，20260918 对撞定案）🆕",
-      "canonical": "tipinfo.ex_date",
-      "meaning": "除权除息日",
-      "unit": "YYYYMMDD",
-      "status_raw": "✅",
-      "status": "verified"
-    },
-    {
       "code": "tipinfo.report_period",
       "source": "ZHB-tipinfo",
       "sources": [
@@ -7438,6 +7412,19 @@
       "unit": "YYYYMMDD/季",
       "status_raw": "✅",
       "status": "verified"
+    },
+    {
+      "code": "tipinfo.zt_date_recent",
+      "source": "ZHB-tipinfo",
+      "sources": [
+        "ZHB-tipinfo"
+      ],
+      "section": "3.1 tipinfo.dat 标准契约表（tipinfo.*，20260918 对撞定案）🆕",
+      "canonical": "tipinfo.zt_date_recent",
+      "meaning": "最近涨停日(ZTDate_Recent)",
+      "unit": "YYYYMMDD",
+      "status_raw": "✅ 2026-09-19 本地实证定案（原 tipinfo.ex_date 误标除权除息日，已证伪）",
+      "status": "disproved"
     },
     {
       "code": "ukblock.dat",
@@ -7454,6 +7441,19 @@
     },
     {
       "code": "zip",
+      "source": "ZHB-tipinfo",
+      "sources": [
+        "ZHB-tipinfo"
+      ],
+      "section": "",
+      "canonical": "",
+      "meaning": "",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified"
+    },
+    {
+      "code": "zt_date_recent",
       "source": "ZHB-tipinfo",
       "sources": [
         "ZHB-tipinfo"
@@ -24687,7 +24687,7 @@
     "tipinfo.disclose_date": [
       "ZHB"
     ],
-    "tipinfo.ex_date": [
+    "tipinfo.zt_date_recent": [
       "ZHB"
     ],
     "tipinfo.div_date": [

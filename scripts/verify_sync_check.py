@@ -21,6 +21,9 @@ verify_sync_check.py — 主字典 ↔ verify 分字典 一致性闸门（离线
     5. ZHB 镜像覆盖: zhb_verify.md 是主字典 §三 ZHB 三章的*镜像备份*（主字典始终唯一权威），
                   强制其 Col[N] 集合与标准契约 token 集合与主字典逐字段一致——
                   既保证「完全覆盖主字典」，又禁止「越权发明主字典之外字段」。
+    6. ulist239 镜像覆盖: ulist_verify.md 是主字典 §12.3.2.3 ulist239 全字段清单的*镜像备份*
+                  （主字典始终唯一权威），强制其 fN 集合（239 字段，f1–f250 含间隔）与主字典
+                  精确集合相等——既保证「完全覆盖主字典」，又禁止「越权发明主字典之外字段」。
   ADVISORY WARN (best-effort; --strict 时升级为 FAIL) —— 仅 --sync 时执行:
     5. 同步检查  : 主字典中出现的某源字段 token，若对应分字典存在且可解析，
                   报告主字典有而分字典缺失的字段（即「已破解未同步」）。
@@ -90,6 +93,7 @@ MAPPING_HARDCODED = {
     "fuyao_website_anchor": "fuyao_website_anchor.md",
     "thsdk": "thsdk_field_verify.md",
     "zhb": "zhb_verify.md",
+    "ulist239": "ulist_verify.md",
 }
 
 
@@ -524,6 +528,39 @@ def main():
     except Exception as e:  # noqa: BLE001
         warnings.append(f"ZHB 镜像覆盖检查跳过（gen_zhb_subdict 导入/解析失败: {e}）")
         print(f"   ⚠ ZHB 镜像覆盖检查跳过: {e}")
+
+    # ---- HARD 6: ulist239 镜像覆盖检查（主字典 §12.3.2.3 ⇄ ulist_verify.md 镜像备份）----
+    # 设计：ulist_verify.md 是主字典 ulist239 章的*镜像备份*，主字典始终为唯一权威；
+    # 本检查强制镜像逐字段（fN 集合，精确集合相等）完全覆盖主字典（239 字段含间隔，
+    # 须逐号比对；不得缺失、亦不得越权发明字段）。
+    print("[HARD] 6. ulist239 镜像覆盖检查（ulist_verify.md 须逐字段完全覆盖主字典 §12.3.2.3）")
+    try:
+        if SCRIPT_DIR not in sys.path:
+            sys.path.insert(0, SCRIPT_DIR)
+        import gen_ulist_subdict as _ul  # noqa: F401
+
+        main_ul = _ul.extract_main_ulist()
+        sub_ul = _ul.extract_subdict_ulist()
+        if main_ul != sub_ul:
+            ul_ok = False
+            miss = sorted(main_ul - sub_ul)
+            extra = sorted(sub_ul - main_ul)
+            if miss:
+                msg = (f"ulist239 镜像缺失: 主字典 {len(miss)} 个 fN 未在 ulist_verify.md 覆盖"
+                       f"（须重跑 gen_ulist_subdict.py）: {miss[:12]}")
+                hard_failures.append(msg)
+                print(f"   ✗ {msg}")
+            if extra:
+                msg = (f"ulist239 镜像越权: ulist_verify.md 含 {len(extra)} 个主字典无的孤儿 fN"
+                       f"（镜像不得发明字段）: {extra[:12]}")
+                hard_failures.append(msg)
+                print(f"   ✗ {msg}")
+        else:
+            print(f"   ✓ ulist239 镜像 ulist_verify.md 与主字典 §12.3.2.3 逐字段一致"
+                  f"（fN 集合 {len(main_ul)} 个完全覆盖、无越权）")
+    except Exception as e:  # noqa: BLE001
+        warnings.append(f"ulist239 镜像覆盖检查跳过（gen_ulist_subdict 导入/解析失败: {e}）")
+        print(f"   ⚠ ulist239 镜像覆盖检查跳过: {e}")
 
     # ---- WARN 5: 同步检查（best-effort，仅 --sync 时执行）----
     if not args.sync:

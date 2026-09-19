@@ -7369,10 +7369,10 @@
       ],
       "section": "3.1 tipinfo.dat 标准契约表（tipinfo.*，20260918 对撞定案）🆕",
       "canonical": "tipinfo.div_amount",
-      "meaning": "每股分红",
-      "unit": "元",
-      "status_raw": "✅",
-      "status": "verified"
+      "meaning": "业绩预告金额(万元,可负)",
+      "unit": "万元",
+      "status_raw": "✅ 2026-09-19 二进制实锤（原\"每股分红\"误标, 证伪）",
+      "status": "disproved"
     },
     {
       "code": "tipinfo.div_date",
@@ -7382,10 +7382,10 @@
       ],
       "section": "3.1 tipinfo.dat 标准契约表（tipinfo.*，20260918 对撞定案）🆕",
       "canonical": "tipinfo.div_date",
-      "meaning": "分红股权登记日",
+      "meaning": "业绩预告日(ForecastDate)",
       "unit": "YYYYMMDD",
-      "status_raw": "✅",
-      "status": "verified"
+      "status_raw": "✅ 2026-09-19 二进制实锤（原\"分红股权登记日\"误标, 证伪）",
+      "status": "disproved"
     },
     {
       "code": "tipinfo.eps",

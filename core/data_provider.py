@@ -353,7 +353,12 @@ def get_canonical_stock_data(code: str, force_realtime: bool = False) -> Any:
     """
     from stock_common.sc_schema import CanonicalStockData
     from stock_common.stock_calendar import is_workday
-    from core.zhb_client import get_stock_name_from_zhb
+    from core.zhb_client import (
+        get_stock_name_from_zhb,
+        get_stock_name_from_zhb_offline_only,
+        cache_stock_name_from_network,
+        normalize_persistent_name,
+    )
 
     code_str = str(code).zfill(6)
     now = datetime.now()
@@ -697,17 +702,27 @@ def get_canonical_stock_data(code: str, force_realtime: bool = False) -> Any:
     # 4. 字段清洗与 Boundary Validation (V15.4: 每字段独立 source 标签)
     basic_info = get_stock_basic_info_from_zhb(code_str)
     zhb_name = basic_info.get('name', '') if isinstance(basic_info, dict) else ''
-    # name: 优先级 push2/tencent/tdx > ZHB
+    # name: 优先级 push2/tencent/tdx(网络) > ZHB 离线 > 持久化缓存(零网络)
+    # V17.3.3 持久化名称缓存：get_stock_name_from_zhb 已内置 ZHB 离线→磁盘缓存链路
+    offline_name = get_stock_name_from_zhb(code_str)
     name = str(
         rt_quote.get('name')
-        or zhb_dict.get('name')
-        or zhb_name
-        or get_stock_name_from_zhb(code_str)
+        or offline_name
         or ''
     )
+    # V17.3.3 写回：name 来自网络且 ZHB 离线缺失 → 写盘，避免重复联网
+    if name and rt_quote.get('name') and not get_stock_name_from_zhb_offline_only(code_str):
+        cache_stock_name_from_network(code_str, name)
     if not field_sources.get("name"):
         if name:
-            field_sources["name"] = "zhb:static" if zhb_name == name else "calculated"
+            # 来源比对用归一化主体名（剥离分红/次新等单日前缀，保留 ST），避免误标
+            name_persist = normalize_persistent_name(name)
+            if get_stock_name_from_zhb_offline_only(code_str) == name_persist:
+                field_sources["name"] = "zhb:static"
+            elif offline_name == name_persist:
+                field_sources["name"] = "cache:persist"
+            else:
+                field_sources["name"] = "calculated"
 
     # V16.3.3 (2026-08-10 字典名称设计): 结构化名称——核心名（永久不变）+ ST/次新标记
     # 临时前缀（N/C/XD/XR/DR/S）忽略；ST/*ST 不可忽略（风险信号）

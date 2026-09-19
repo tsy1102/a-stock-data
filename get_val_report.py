@@ -113,7 +113,7 @@ from stock_common import (_safe_float,
                            get_em_batch_quotes)  # V11.5
 from core.data_provider import (get_market_snapshot_async,
                            get_turnover_pct_async,
-                           get_main_net_buy)  # V16.1: 策略18 用同步版; V16.4.1: 删 async 版; V17.0: 内部=f137+f140 主力净
+                           get_main_net_buy)  # V16.1: 策略18 用同步版; V16.4.1: 删 async 版; V17.0: 内部=f137 主力净(f137=超大单f140+大单f143, V17.0.16 重定案不再+f140)
 from stock_common.sc_network import _fallback_logger  # V17.2.x: 策略级超时降级纳入统一 fallback 审计
 import asyncio
 import inspect

@@ -333,13 +333,12 @@ class ZhbData:
     def get_stock_name(self, code: str) -> Optional[str]:
         """获取股票简称（V14.2 新增便捷方法）。
 
-        V17.3.2 增强：先查 stock_profile（沪市老股，本地），再查合并全称字典
-        stock_name_map（覆盖 全宇宙~44% / 纯A股~58%，ZHB 名称源硬天花板），
-        优先于网络兜底（push2/tencent）。
+        V17.3.3 修正：直接走合并全称字典 stock_name_map（覆盖 全宇宙~44% / 纯A股~58%，
+        ZHB 名称源硬天花板）。该字典已按"越新越优先"合并 profile+relation+tdxpkmore+
+        tdxbjmore+addedcode_bj+othersg+xgsg+pttab，profile(最旧/含旧名) 已降为最低优先，
+        故不再单独优先查 stock_profile——否则更名股会返回旧名（如 002459 天业通联→晶澳科技）。
+        统一委托 stock_name_map，保证 get_stock_name 与 stock_name_map 完全一致。
         """
-        name = self.stock_profile.get(code)
-        if name:
-            return name
         return self.stock_name_map.get(code)
 
     @property
@@ -2379,8 +2378,90 @@ def get_delisted_stocks() -> Dict[str, str]:
 # V14.2 新增便捷函数 - 6 个新 ZHB 数据集
 # ═══════════════════════════════════════════════════════════════
 
+# ── V17.3.3 持久化名称缓存（降网主线）──
+# 数据来源：通达信 ZHB 离线字典（每日更新，最高优先）+ stock_cache 磁盘持久化
+# （网络取到的正确名写回，后续免重复联网）。
+_NAME_PERSIST_CATEGORY = "stock_name_persist"
+_NAME_PERSIST_TTL = 180 * 86400  # 名称长寿命，180 天自然刷新
+
+
+def _lookup_name_persist(code: str) -> Optional[str]:
+    """查持久化名称缓存（stock_cache SQLite，跨进程）。零网络。"""
+    try:
+        from core.stock_cache import get_cache
+
+        return get_cache(_NAME_PERSIST_CATEGORY, "name", code)
+    except Exception:
+        return None
+
+
+def normalize_persistent_name(raw: str) -> str:
+    """归一化为「持久主体名」：保留 ST/*ST 风险标记，剥离单日装饰前缀(N/C/XD/XR/DR/S)。
+
+    V17.3.3(2026-09-19) 降网缓存关键修正：网络实时名常带临时前缀（如除息日
+    'XD贵州茅台'、上市首日 'N新洁能'），若原样缓存会污染 180 天。
+    依据 stock_common.sc_utils.parse_stock_name 的权威约定——名称主体永久不变、
+    ST/*ST 为持久风险信号不可忽略、N/C/XD/XR/DR/S 为临时前缀须剥离。
+    用于缓存写回与来源标签比对，确保缓存名稳定且不含单日噪声。
+    """
+    s = (raw or "").strip()
+    if not s:
+        return ""
+    st_prefix = ""
+    if s.startswith("*ST"):
+        st_prefix = "*ST"
+        s = s[3:]
+    elif s.startswith("ST"):
+        st_prefix = "ST"
+        s = s[2:]
+    # 临时前缀：长前缀优先（XD/XR/DR > N/C/S），仅当其后仍有正文
+    for pfx in ("XD", "XR", "DR", "N", "C", "S"):
+        if s.startswith(pfx) and len(s) > len(pfx):
+            s = s[len(pfx):]
+            break
+    s = s.strip()
+    return (st_prefix + s) if st_prefix else s
+
+
+def get_stock_name_from_zhb_offline_only(code: str) -> Optional[str]:
+    """仅查 ZHB 离线合并字典（不查持久化缓存）。供写回守卫使用。"""
+    zhb = get_zhb()
+    if zhb is None:
+        return None
+    return zhb.get_stock_name(code)
+
+
+def cache_stock_name_from_network(code: str, name: str) -> None:
+    """网络取到正确名后写回持久化缓存（仅补充 ZHB 离线缺失部分）。
+
+    V17.3.3(2026-09-19) 降网主线：盘中/盘后联网取到的 name，写回磁盘缓存，
+    使盘前/T+1/重复查询直接命中本地，避免重复联网。
+    ZHB 离线已有该名的，永远用 ZHB（每日最新），不写缓存避免冗余/旧名残留。
+    """
+    if not name:
+        return
+    # 守卫：ZHB 离线已有 → 跳过（用 ZHB 即可，含缓存已命中情形）
+    if get_stock_name_from_zhb_offline_only(code):
+        return
+    # 归一化：剥离分红/次新等单日装饰前缀，保留 ST/*ST；避免污染缓存
+    persist = normalize_persistent_name(name)
+    if not persist:
+        return
+    try:
+        from core.stock_cache import set_cache
+
+        set_cache(_NAME_PERSIST_CATEGORY, "name", persist, _NAME_PERSIST_TTL, code)
+    except Exception:
+        pass
+
+
 def get_stock_name_from_zhb(code: str) -> Optional[str]:
-    """从 ZHB profile.dat 获取股票简称（V14.2 新增，替代东财 HTTP code_to_name）。
+    """从 ZHB 获取股票简称（V14.2 新增，替代东财 HTTP code_to_name）。
+
+    零网络优先链（V17.3.3 增强）：ZHB 离线合并字典（每日更新，最高优先）
+        → 持久化磁盘缓存（网络取到的名写回，跨进程）。
+    都不命中返回 None（上层走实时行情网络兜底）。所有调用方
+    （data_provider/tdx_client）自动受益。
 
     Args:
         code: 6位股票代码
@@ -2388,10 +2469,12 @@ def get_stock_name_from_zhb(code: str) -> Optional[str]:
     Returns:
         股票简称（中文），无数据时返回 None
     """
-    zhb = get_zhb()
-    if zhb is None:
-        return None
-    return zhb.get_stock_name(code)
+    # 1. ZHB 离线合并字典（最高优先，每日更新）
+    offline = get_stock_name_from_zhb_offline_only(code)
+    if offline:
+        return offline
+    # 2. 持久化磁盘缓存（网络取到的名写回，跨进程）
+    return _lookup_name_persist(code)
 
 
 def get_stock_concepts_from_zhb(code: str) -> List[str]:

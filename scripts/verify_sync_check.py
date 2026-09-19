@@ -81,6 +81,11 @@ MAPPING_HARDCODED = {
     "client_fields_enum": "client_fields_enum.md",
     "network_servers": "network_servers.md",
     "levistock": "levistock_field_verify.md",
+    "eltdx": "eltdx_verify.md",
+    "cross_source": "cross_source_align.md",
+    "em_website_anchor": "eastmoney_website_anchor.md",
+    "fuyao_website_anchor": "fuyao_website_anchor.md",
+    "thsdk": "thsdk_field_verify.md",
 }
 
 
@@ -372,8 +377,11 @@ def main():
         print("   (无引用，跳过)")
 
     # ---- HARD 2: 孤儿附录 ----
-    print("[HARD] 2. 孤儿附录检查（verify/*.md → 必须被引用）")
+    ORPHAN_EXCLUDE = {"README.md"}  # docs/verify/ 目录说明文件，非字段分字典，不计入孤儿
+    print("[HARD] 2. 孤儿附录检查（verify/*.md → 必须被引用，README.md 除外）")
     for base in sorted(existing):
+        if base in ORPHAN_EXCLUDE:
+            continue
         if base not in referenced:
             msg = f"孤儿附录: {base} 未被主字典引用（可能失维护/悬空）"
             hard_failures.append(msg)

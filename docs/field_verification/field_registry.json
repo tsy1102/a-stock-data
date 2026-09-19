@@ -130,7 +130,7 @@
     },
     {
       "name": "ZHB-tdxstat",
-      "verify_file": "tdx_func_fields.md",
+      "verify_file": null,
       "section_patterns": [
         "1. `tdxstat.cfg` (个股综合统计快照，35 个字段，7,951 行)",
         "1.1 tdxstat.cfg 标准契约表（stat.*，20260918 对撞定案）🆕"
@@ -139,7 +139,7 @@
     },
     {
       "name": "ZHB-tdxstat2",
-      "verify_file": "tdx_func_fields.md",
+      "verify_file": null,
       "section_patterns": [
         "2. `tdxstat2.cfg` (成交与资金流向表，21 个字段，7,951 行)",
         "2.1 tdxstat2.cfg 标准契约表（stat2.*，20260918 对撞定案）🆕"
@@ -148,7 +148,7 @@
     },
     {
       "name": "ZHB-tipinfo",
-      "verify_file": "tdx_func_fields.md",
+      "verify_file": null,
       "section_patterns": [
         "3. `tipinfo.dat` (财报日历与业绩快照，22 列，5,612 行)",
         "3.1 tipinfo.dat 标准契约表（tipinfo.*，20260918 对撞定案）🆕"
@@ -157,7 +157,7 @@
     },
     {
       "name": "TDX-eltdx(适配层)",
-      "verify_file": null,
+      "verify_file": "eltdx_verify.md",
       "section_patterns": [
         "12.13.10 eltdx Helpers 净新增字段破解（V17.2.15 实测，collect_eltdx 采集 + 黄金锚对撞）",
         "12.13.10c eltdx 适配层标准契约表（quote_snapshot / shortline，20260918 对撞定案）🆕",
@@ -28530,6 +28530,9 @@
       "TDX-0x0010/F10"
     ],
     "levistock": [
+      "TDX-0x0010/F10"
+    ],
+    "eltdx(适配层)": [
       "TDX-0x0010/F10"
     ],
     "⚠️ ZHB (tdxstat": [

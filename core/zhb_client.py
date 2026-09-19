@@ -264,6 +264,13 @@ class ZhbData:
         self._neednote_jyweek: Optional[List[str]] = None
         self._brk_seat: Optional[Dict[str, str]] = None
         self._special_tags: Optional[Dict[str, List[str]]] = None
+        self._trading_rules: Optional[Dict[str, Any]] = None
+        # V17.3.1 ZHB 深度重排查落实（2026-09-19）
+        self._index_names: Optional[Dict[str, str]] = None          # ilong.dat 跨市场指数名
+        self._block_short_names: Optional[Dict[str, str]] = None    # tdxbk.cfg 板块全称→简称
+        self._bj_stock_metadata: Optional[Dict[str, Dict[str, Any]]] = None  # 北交所元数据(合并)
+        self._concept_tree: Optional[Dict[str, Dict[str, Any]]] = None   # tend_std.cfg 题材概念树
+        self._pinyin_codes: Optional[Dict[str, str]] = None         # hspy.dat 拼音助记码
 
     # ── V14.2 新增：profile.dat 全市场简称 ──
 
@@ -1321,6 +1328,271 @@ class ZhbData:
             return delay <= max_delay_days
         except ValueError:
             return False
+
+    # ── V17.3.1 ZHB 重排查落实: hqrule.dat 交易规则 ──
+    @property
+    def trading_rules(self) -> Dict[str, Any]:
+        """交易规则 {KEY: VALUE}（涨跌停阈值/板块涨跌幅等，来自 hqrule.dat）。
+
+        V17.3.1(2026-09-19) ZHB 深度重排查: 该文件此前完全未被项目读取。
+        实测含 SHGTDayMax/SZGTDayMax(沪/深股通每日限额)、CYBZDRatio=0.20(创业板±20%)
+        等规则，可替代/补充硬编码的涨跌停阈值，使项目读取动态化。
+        """
+        if self._trading_rules is None:
+            self._trading_rules = self._parse_hqrule()
+        return self._trading_rules
+
+    def _parse_hqrule(self) -> Dict[str, Any]:
+        """解析 hqrule.dat（INI 风格: [RULE] 段 + KEY=VALUE 行）。"""
+        data = self.raw_files.get("hqrule.dat", b"")
+        if not data:
+            return {}
+        rules: Dict[str, Any] = {}
+        try:
+            for line in data.decode("gbk", errors="ignore").splitlines():
+                line = line.strip()
+                if not line or line.startswith("[") or "=" not in line:
+                    continue
+                k, v = line.split("=", 1)
+                k, v = k.strip(), v.strip()
+                try:
+                    rules[k] = int(v)
+                except ValueError:
+                    try:
+                        rules[k] = float(v)
+                    except ValueError:
+                        rules[k] = v
+            _debug_log(f"_parse_hqrule: {len(rules)} rules")
+        except Exception as _e:
+            _debug_log(f"_parse_hqrule error: {_e}")
+        return rules
+
+    # ── V17.3.1 ZHB 深度重排查落实（2026-09-19）：此前未解析的 A 股相关文件 ──
+
+    @property
+    def index_names(self) -> Dict[str, str]:
+        """跨市场指数代码→名称字典（来自 ilong.dat，907 条，含 A 股/港股/美股/板块指数）。
+
+        V17.3.1(2026-09-19) ZHB 重排查落实: 项目此前无离线指数字典，本文件为**补充**。
+        结构: 管道分隔 `市场|指数代码|?|名称[|说明]`，名称优先取第4字段，空则取第5字段。
+        """
+        if self._index_names is None:
+            self._index_names = self._parse_ilong()
+        return self._index_names
+
+    def _parse_ilong(self) -> Dict[str, str]:
+        """解析 ilong.dat，返回 {指数代码: 指数名称}。"""
+        data = self.raw_files.get("ilong.dat", b"")
+        if not data:
+            return {}
+        result: Dict[str, str] = {}
+        try:
+            for line in data.decode("gbk", errors="ignore").splitlines():
+                parts = line.split("|")
+                if len(parts) < 4:
+                    continue
+                code = parts[1].strip()
+                if not code:
+                    continue
+                name = parts[3].strip() or (parts[4].strip() if len(parts) >= 5 else "")
+                if name:
+                    result[code] = name
+            _debug_log(f"_parse_ilong: {len(result)} index names")
+        except Exception as _e:
+            _debug_log(f"_parse_ilong error: {_e}")
+        return result
+
+    @property
+    def block_short_names(self) -> Dict[str, str]:
+        """板块全称→简称映射（来自 tdxbk.cfg，58 条）。用于 spblock 板块展示富化。
+
+        V17.3.1(2026-09-19) ZHB 重排查落实: 此前未解析。spblock.dat 仅含板块全称，
+        本文件提供 简称↔全称 对照，零风险补充展示层。
+        """
+        if self._block_short_names is None:
+            self._block_short_names = self._parse_tdxbk()
+        return self._block_short_names
+
+    def _parse_tdxbk(self) -> Dict[str, str]:
+        """解析 tdxbk.cfg（管道分隔 `id|简称|全称|flag`），返回 {全称: 简称}。"""
+        data = self.raw_files.get("tdxbk.cfg", b"")
+        if not data:
+            return {}
+        result: Dict[str, str] = {}
+        try:
+            for line in data.decode("gbk", errors="ignore").splitlines():
+                parts = line.split("|")
+                if len(parts) >= 4:
+                    short = parts[1].strip()
+                    full = parts[2].strip()
+                    if full and short:
+                        result[full] = short
+            _debug_log(f"_parse_tdxbk: {len(result)} block name maps")
+        except Exception as _e:
+            _debug_log(f"_parse_tdxbk error: {_e}")
+        return result
+
+    @property
+    def bj_stock_metadata(self) -> Dict[str, Dict[str, Any]]:
+        """北交所股票元数据（合并 addedcode_bj.cfg + tdxbjmore.cfg）。
+
+        返回 {920代码: {old_code, name, status, list_date, category, flag}}。
+        V17.3.1(2026-09-19) ZHB 重排查落实: tdxstat 全市场快照已含北交所 920 代码，
+        本文件为**元数据补充**（老三板/新三板→北交所映射、切换状态、上市日、精选层分类）。
+        """
+        if self._bj_stock_metadata is None:
+            self._bj_stock_metadata = self._parse_bj_metadata()
+        return self._bj_stock_metadata
+
+    def _parse_bj_metadata(self) -> Dict[str, Dict[str, Any]]:
+        """解析 addedcode_bj.cfg（44|老代码|920代码|名称(已切换/已转板)|上市日）
+        与 tdxbjmore.cfg（44|920代码|分类|名称|flag|），合并为 920 代码索引的元数据。"""
+        result: Dict[str, Dict[str, Any]] = {}
+        data1 = self.raw_files.get("addedcode_bj.cfg", b"")
+        if data1:
+            try:
+                for line in data1.decode("gbk", errors="ignore").splitlines():
+                    if "," in line and "|" not in line:  # 跳过首行汇总头
+                        continue
+                    parts = line.split("|")
+                    if len(parts) < 5:
+                        continue
+                    old_code = parts[1].strip()
+                    new_code = parts[2].strip()
+                    name_field = parts[3].strip()
+                    list_date = parts[4].strip()
+                    status = ""
+                    for s in ("已切换", "已转板"):
+                        if s in name_field:
+                            status = s
+                            break
+                    name = name_field.replace("(已切换)", "").replace("(已转板)", "").strip()
+                    if new_code:
+                        result.setdefault(new_code, {})
+                        result[new_code].update({
+                            "old_code": old_code, "name": name,
+                            "status": status, "list_date": list_date,
+                        })
+                _debug_log(f"_parse_bj_metadata(addedcode_bj): {len(result)} entries")
+            except Exception as _e:
+                _debug_log(f"_parse_bj_metadata(addedcode_bj) error: {_e}")
+        data2 = self.raw_files.get("tdxbjmore.cfg", b"")
+        if data2:
+            try:
+                for line in data2.decode("gbk", errors="ignore").splitlines():
+                    parts = line.split("|")
+                    if len(parts) < 5:
+                        continue
+                    new_code = parts[1].strip()
+                    category = parts[2].strip()
+                    name = parts[3].strip()
+                    flag = parts[4].strip()
+                    if new_code:
+                        entry = result.setdefault(new_code, {})
+                        entry["category"] = category
+                        entry.setdefault("name", name)
+                        entry["flag"] = flag
+                _debug_log(f"_parse_bj_metadata(tdxbjmore): merged, total {len(result)}")
+            except Exception as _e:
+                _debug_log(f"_parse_bj_metadata(tdxbjmore) error: {_e}")
+        return result
+
+    @property
+    def concept_tree(self) -> Dict[str, Dict[str, Any]]:
+        """题材概念分类树（来自 tend_std.cfg，100 组，每组若干概念）。
+
+        返回 {组ID: {"parent": 父类名, "concepts": [概念名...]}}。
+        V17.3.1(2026-09-19) ZHB 重排查落实: 此前未解析，提供概念→分类层级的离线字典，
+        补充概念板块的层级展示。注意 tend_std 每组含 Num=N 标明真实概念数，
+        其后 Name(N+1)..Name(2N) 为通达信冗余重复条目，已按 Num 截断。
+        """
+        if self._concept_tree is None:
+            self._concept_tree = self._parse_tend_std()
+        return self._concept_tree
+
+    def _parse_tend_std(self) -> Dict[str, Dict[str, Any]]:
+        """解析 tend_std.cfg 概念分类树。
+
+        结构: [GROUPxx] 段 + Num=N(真实概念数) + Name01..NameN(概念) + ParentName=父类，
+        其后 Name(N+1)..Name(2N) 与 Title/ItemAttribute 为冗余重复，按 Num 截断。
+        返回 {组ID: {"parent": 父类名, "concepts": [概念名...]}}。
+        """
+        data = self.raw_files.get("tend_std.cfg", b"")
+        if not data:
+            return {}
+        result: Dict[str, Dict[str, Any]] = {}
+        current: Optional[str] = None
+        cur_num = 0
+        try:
+            for line in data.decode("gbk", errors="ignore").splitlines():
+                line = line.strip()
+                if not line:
+                    continue
+                if line.startswith("[") and line.endswith("]"):
+                    current = line[1:-1].strip()
+                    result[current] = {"parent": "", "concepts": []}
+                    cur_num = 0
+                    continue
+                if current is None:
+                    continue
+                if line.startswith("Num="):
+                    try:
+                        cur_num = int(line.split("=", 1)[1].strip())
+                    except ValueError:
+                        cur_num = 0
+                    continue
+                if line.startswith("ParentName="):
+                    result[current]["parent"] = line.split("=", 1)[1].strip()
+                    continue
+                if line.startswith("Name") and "=" in line:
+                    key, val = line.split("=", 1)
+                    val = val.strip()
+                    if not val:
+                        continue
+                    try:
+                        idx = int(key[4:])
+                    except ValueError:
+                        idx = 0
+                    if cur_num and idx > cur_num:
+                        continue  # 冗余重复条目，跳过
+                    result[current]["concepts"].append(val)
+            _debug_log(f"_parse_tend_std: {len(result)} groups")
+        except Exception as _e:
+            _debug_log(f"_parse_tend_std error: {_e}")
+        return result
+
+    @property
+    def pinyin_codes(self) -> Dict[str, str]:
+        """股票拼音助记码→代码字典（来自 hspy.dat，22 条，格式 市场|代码|拼音码）。
+
+        用于按拼音快速检索个股。V17.3.1(2026-09-19) ZHB 重排查落实:
+        此前误判为沪深港通标的，实测为通达信拼音助记码（如 ZJGH→002839 张家港行、
+        DSL→603233 大参林）。项目此前无拼音检索字典，本文件为**补充**（非冗余，
+        现有 hsgt_flow/hsgt_macro_flow 仅含沪深港通资金流，非标的基础清单）。
+        """
+        if self._pinyin_codes is None:
+            self._pinyin_codes = self._parse_hspy()
+        return self._pinyin_codes
+
+    def _parse_hspy(self) -> Dict[str, str]:
+        """解析 hspy.dat（管道分隔 `市场|代码|拼音助记码`），返回 {拼音码: 代码}。"""
+        data = self.raw_files.get("hspy.dat", b"")
+        if not data:
+            return {}
+        result: Dict[str, str] = {}
+        try:
+            for line in data.decode("utf-8", errors="ignore").splitlines():
+                parts = line.split("|")
+                if len(parts) >= 3:
+                    code = parts[1].strip()
+                    py = parts[2].strip()
+                    if code and py:
+                        result[py] = code
+            _debug_log(f"_parse_hspy: {len(result)} pinyin codes")
+        except Exception as _e:
+            _debug_log(f"_parse_hspy error: {_e}")
+        return result
+
 # ═══════════════════════════════════════
 
 def _download_zhb_zip() -> Optional[bytes]:
@@ -2093,3 +2365,47 @@ def get_special_tags_from_zhb() -> Dict[str, List[str]]:
     if zhb is None:
         return {}
     return zhb.special_tags
+
+
+# ═══════════════════════════════════════
+# V17.3.1 ZHB 深度重排查落实（2026-09-19）：新增文件访问入口
+# ═══════════════════════════════════════
+
+def get_index_names_from_zhb() -> Dict[str, str]:
+    """获取跨市场指数代码→名称字典（ilong.dat）。"""
+    zhb = get_zhb()
+    if zhb is None:
+        return {}
+    return zhb.index_names
+
+
+def get_block_short_names_from_zhb() -> Dict[str, str]:
+    """获取板块全称→简称映射（tdxbk.cfg）。"""
+    zhb = get_zhb()
+    if zhb is None:
+        return {}
+    return zhb.block_short_names
+
+
+def get_bj_stock_metadata_from_zhb() -> Dict[str, Dict[str, Any]]:
+    """获取北交所股票元数据（addedcode_bj.cfg + tdxbjmore.cfg 合并）。"""
+    zhb = get_zhb()
+    if zhb is None:
+        return {}
+    return zhb.bj_stock_metadata
+
+
+def get_concept_tree_from_zhb() -> Dict[str, Dict[str, Any]]:
+    """获取题材概念分类树（tend_std.cfg），返回 {组ID: {"parent": 父类, "concepts": [...]}}。"""
+    zhb = get_zhb()
+    if zhb is None:
+        return {}
+    return zhb.concept_tree
+
+
+def get_pinyin_codes_from_zhb() -> Dict[str, str]:
+    """获取股票拼音助记码→代码字典（hspy.dat）。"""
+    zhb = get_zhb()
+    if zhb is None:
+        return {}
+    return zhb.pinyin_codes

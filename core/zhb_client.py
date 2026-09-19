@@ -333,20 +333,32 @@ class ZhbData:
     def get_stock_name(self, code: str) -> Optional[str]:
         """获取股票简称（V14.2 新增便捷方法）。
 
-        V15.1 增强：融合多个 ZHB 字典（profile.dat + relation.dat +
-              tdxpkmore.cfg + pttab.dat），覆盖度从 5% 提升到 30%+。
+        V17.3.2 增强：先查 stock_profile（沪市老股，本地），再查合并全称字典
+        stock_name_map（覆盖 全宇宙~44% / 纯A股~58%，ZHB 名称源硬天花板），
+        优先于网络兜底（push2/tencent）。
         """
         name = self.stock_profile.get(code)
         if name:
             return name
-        # Fallback 到 relation.dat / tdxpkmore / pttab
-        name_map = self._get_unified_name_map()
-        return name_map.get(code)
+        return self.stock_name_map.get(code)
 
     @property
+    @property
     def unified_name_map(self) -> Dict[str, str]:
-        """V15.1 统一简称字典：合并 profile.dat + relation.dat +
-        tdxpkmore.cfg + pttab.dat，覆盖度 ~30%。
+        """V15.1 统一简称字典（向后兼容别名），现由 stock_name_map 全面替代。
+
+        V17.3.2 实测覆盖度: 全宇宙 44.0% / 纯A股 57.9%（ZHB 名称源硬天花板）。
+        """
+        return self._get_unified_name_map()
+
+    @property
+    def stock_name_map(self) -> Dict[str, str]:
+        """V17.3.2 个股简称全集字典（降网主线）。
+
+        合并全部可用 ZHB 名称源: profile + relation + tdxpkmore + tdxbjmore
+        + addedcode_bj + othersg + xgsg + pttab（退市兜底）。
+        覆盖度实测: 全宇宙 44.0% / 纯A股 57.9%（约 42% 普通主板名不在任何
+        ZHB 文件中，需网络兜底或持久化名称缓存，见 docs 报告）。
         """
         return self._get_unified_name_map()
 
@@ -357,41 +369,41 @@ class ZhbData:
         return self._unified_name_map
 
     def _build_unified_name_map(self) -> Dict[str, str]:
-        """合并 4 个 ZHB 文件的简称字典。"""
+        """V17.3.2 合并 ALL 可用 ZHB 名称源的个股简称字典（降网主线）。
+
+        覆盖度实测（zhb_20260918, 8055 全市场 / 5831 纯A股）:
+          - 旧实现仅 3 源(tdxpkmore/pttab/relation) 且 profile 被误排除 → 全宇宙 ~21.5%
+          - 现合并 profile(含!)+relation+tdxpkmore+tdxbjmore+addedcode_bj+othersg
+            +xgsg → 全宇宙 44.0% / 纯A股 57.9%（ZHB 名称源硬天花板, 约42%普通
+            主板名不在任何 ZHB 文件, 需网络兜底或持久化名称缓存）
+
+        优先级（高→低，高优先直接赋值覆盖低优先，确保更名后取新名）:
+          tdxpkmore(新股/特色,最新) > tdxbjmore/addedcode_bj(北交所)
+          > othersg/xgsg(转债/新股) > relation(A/B) > pttab(退市兜底)
+          > profile(沪市老股,可能旧名,仅 setdefault 补缺,绝不覆盖更源)
+        """
         import re as _re
         result: Dict[str, str] = {}
 
-        # 1. tdxpkmore.cfg：新股/特色股票（1355 条）
-        data = self.raw_files.get("tdxpkmore.cfg", b"")
-        if data:
-            try:
-                text = data.decode("gbk", errors="ignore")
-                for ln in text.split("\n"):
-                    parts = ln.split("|")
-                    if len(parts) >= 2 and len(parts[1]) == 6 and parts[1].isdigit():
-                        if len(parts) >= 3 and parts[2]:
-                            result[parts[1]] = parts[2]
-            except Exception as _e:
-                _debug_log(f"_parse_tdxpkmore error: {_e}")
+        def _norm(name: str) -> str:
+            # 全角 Ａ/Ｂ → 半角；去首尾空白；去末尾括注状态(如 "(已切换)")
+            name = name.replace("Ａ", "A").replace("Ｂ", "B").strip().strip("　")
+            name = _re.sub(r"[（(][^）)]*[）)]$", "", name).strip()
+            return name
 
-        # 2. pttab.dat：沪深老股/B 股（1775 条）
-        data = self.raw_files.get("pttab.dat", b"")
-        if data:
-            try:
-                text = data.decode("gbk", errors="ignore")
-                for ln in text.split("\n"):
-                    parts = ln.split(",")
-                    if len(parts) >= 3 and len(parts[1]) == 6 and parts[1].isdigit():
-                        if parts[1] not in result and parts[2]:
-                            result[parts[1]] = parts[2]
-            except Exception as _e:
-                _debug_log(f"_parse_pttab error: {_e}")
+        def _is_name(s: str) -> bool:
+            return bool(s) and _re.search(r"[\u4e00-\u9fff]", s) is not None and 1 < len(s) <= 12
 
-        # 3. relation.dat：A/B 股（~1645 条有效）
+        # ---- 低优先: profile.dat（沪市老股，含旧名，仅补缺） ----
+        for code, name in self.stock_profile.items():
+            n = _norm(name)
+            if n:
+                result.setdefault(code, n)
+
+        # ---- relation.dat（A/B 股，二进制正则） ----
         data = self.raw_files.get("relation.dat", b"")
         if data:
             try:
-                # 格式：\x00{4,6}CODE\x00{4,6}NAME (GBK)
                 pattern = _re.compile(rb"\x00{4,6}(\d{6})\x00{4,6}([\x80-\xff]{4,16})")
                 for m in pattern.finditer(data):
                     code = m.group(1).decode("ascii", errors="ignore")
@@ -399,16 +411,81 @@ class ZhbData:
                         name = m.group(2).decode("gbk", errors="ignore").strip().strip("　")
                     except Exception:
                         name = ""
-                    # 过滤掉 "A股" "B股" 等元数据
-                    if (code and name and len(name) >= 2
-                            and not name.startswith("A股") and not name.startswith("B股")
-                            and code not in result):
-                        result[code] = name
+                    if code and _is_name(name) and not name.startswith(("A股", "B股")):
+                        result[code] = _norm(name)  # 直接赋值，覆盖 profile 旧名
             except Exception as _e:
                 _debug_log(f"_parse_relation error: {_e}")
 
-        # 4. profile.dat：沪市老股（~224 条，错位但有补充价值）
-        # 不主动合并，避免污染；若需要可单独查 stock_profile
+        # ---- othersg.cfg / xgsg.cfg（可转债 / 新股，名称在末段中文域） ----
+        for fn in ("othersg.cfg", "xgsg.cfg"):
+            data = self.raw_files.get(fn, b"")
+            if not data:
+                continue
+            try:
+                for ln in data.decode("gbk", errors="ignore").splitlines():
+                    parts = ln.split("|")
+                    if len(parts) < 2:
+                        continue
+                    code = parts[1].strip()
+                    if len(code) != 6 or not code.isdigit():
+                        continue
+                    nm = next((_norm(p) for p in parts if _is_name(_norm(p))), "")
+                    if nm:
+                        result[code] = nm  # 直接赋值，覆盖低优先
+            except Exception as _e:
+                _debug_log(f"_parse_{fn} error: {_e}")
+
+        # ---- 北交所: tdxbjmore.cfg + addedcode_bj.cfg（920xxx，高于 relation） ----
+        data = self.raw_files.get("tdxbjmore.cfg", b"")
+        if data:
+            try:
+                for ln in data.decode("gbk", errors="ignore").splitlines():
+                    parts = ln.split("|")
+                    if len(parts) >= 4 and len(parts[1]) == 6 and parts[1].isdigit():
+                        nm = _norm(parts[3])
+                        if nm:
+                            result[parts[1]] = nm
+            except Exception as _e:
+                _debug_log(f"_parse_tdxbjmore error: {_e}")
+        data = self.raw_files.get("addedcode_bj.cfg", b"")
+        if data:
+            try:
+                # 格式: seq|old_code|new_code(92xxx)|name(含状态)|date
+                for ln in data.decode("gbk", errors="ignore").splitlines():
+                    parts = ln.split("|")
+                    if len(parts) >= 4 and len(parts[2]) == 6 and parts[2].isdigit():
+                        nm = _norm(parts[3])
+                        if nm:
+                            result[parts[2]] = nm
+            except Exception as _e:
+                _debug_log(f"_parse_addedcode_bj error: {_e}")
+
+        # ---- pttab.dat（已退市老股，0% 落于当前宇宙，仅兜底不覆盖） ----
+        data = self.raw_files.get("pttab.dat", b"")
+        if data:
+            try:
+                for ln in data.decode("gbk", errors="ignore").splitlines():
+                    parts = ln.split(",")
+                    if len(parts) >= 3 and len(parts[1]) == 6 and parts[1].isdigit():
+                        nm = _norm(parts[2])
+                        if nm:
+                            result[parts[1]] = nm  # 直接赋值，退市老名仅作兜底
+            except Exception as _e:
+                _debug_log(f"_parse_pttab error: {_e}")
+
+        # ---- 最高优先: tdxpkmore.cfg（新股/特色，名称最新，覆盖一切） ----
+        data = self.raw_files.get("tdxpkmore.cfg", b"")
+        if data:
+            try:
+                for ln in data.decode("gbk", errors="ignore").splitlines():
+                    parts = ln.split("|")
+                    if len(parts) >= 3 and len(parts[1]) == 6 and parts[1].isdigit():
+                        nm = _norm(parts[2])
+                        if nm:
+                            result[parts[1]] = nm
+            except Exception as _e:
+                _debug_log(f"_parse_tdxpkmore error: {_e}")
+
         return result
 
     # ── V14.2 新增：tdxchain.cfg 概念/产业链节点 ──

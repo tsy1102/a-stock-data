@@ -34,7 +34,7 @@
     },
     {
       "name": "东财-ulist239(np/get)",
-      "verify_file": null,
+      "verify_file": "ulist_verify.md",
       "section_patterns": [
         "12.3.2 板块/排行 `ulist.np/get`（本次联网新发现）",
         "12.3.2.3 ulist239 全字段清单（np/get 真实返回 239 字段，V17.1.1 全量登记）"
@@ -28479,78 +28479,6 @@
       "TDX-0x0010/F10"
     ],
     "ths_tableheader_ids.md)": [
-      "TDX-0x0010/F10"
-    ],
-    "东财指标代码": [
-      "TDX-0x0010/F10"
-    ],
-    "东财表头": [
-      "TDX-0x0010/F10"
-    ],
-    "通达信官方字段": [
-      "TDX-0x0010/F10"
-    ],
-    "通达信表头": [
-      "TDX-0x0010/F10"
-    ],
-    "通达信行业": [
-      "TDX-0x0010/F10"
-    ],
-    "腾讯": [
-      "TDX-0x0010/F10"
-    ],
-    "push2": [
-      "TDX-0x0010/F10"
-    ],
-    "ulist↔push2 对齐": [
-      "TDX-0x0010/F10"
-    ],
-    "同花顺 SDK": [
-      "TDX-0x0010/F10"
-    ],
-    "同花顺 tableheader": [
-      "TDX-0x0010/F10"
-    ],
-    "样本矩阵": [
-      "TDX-0x0010/F10"
-    ],
-    "AxData": [
-      "TDX-0x0010/F10"
-    ],
-    "FTShare": [
-      "TDX-0x0010/F10"
-    ],
-    "fuyao": [
-      "TDX-0x0010/F10"
-    ],
-    "客户端枚举": [
-      "TDX-0x0010/F10"
-    ],
-    "服务器": [
-      "TDX-0x0010/F10"
-    ],
-    "levistock": [
-      "TDX-0x0010/F10"
-    ],
-    "eltdx(适配层)": [
-      "TDX-0x0010/F10"
-    ],
-    "ZHB (tdxstat": [
-      "TDX-0x0010/F10"
-    ],
-    "tdxstat2": [
-      "TDX-0x0010/F10"
-    ],
-    "tipinfo)": [
-      "TDX-0x0010/F10"
-    ],
-    "⚠️ 新浪": [
-      "TDX-0x0010/F10"
-    ],
-    "akshare": [
-      "TDX-0x0010/F10"
-    ],
-    "其他文档确认源": [
       "TDX-0x0010/F10"
     ],
     "MoodNumCount": [

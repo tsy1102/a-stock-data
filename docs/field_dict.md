@@ -117,7 +117,7 @@
 
 ### 零·B 字段×源总表（自动生成，勿手改）
 
-> 生成：`scripts/gen_field_matrix.py`（Phase 2 起从 field_registry.json 单一真相源读取，不再解析 field_dict.md 体积）。共 1450 个字段 / 1566 条字段×源记录（去重配对口径，取代旧版按行出现的 1412 重复计数）。
+> 生成：`scripts/gen_field_matrix.py`（Phase 2 起从 field_registry.json 单一真相源读取，不再解析 field_dict.md 体积）。共 1426 个字段 / 1542 条字段×源记录（去重配对口径，取代旧版按行出现的 1412 重复计数）。
 
 > 源排序按易→难（V17.0.7 层级定案；2026-09-07 thsdk 已退役，不再列为活体源）：ZHB（离线零网络）→ TDX TCP（0x0010/F10/eltdx）→ 腾讯（不封 IP）→ **同花顺-fuyao（官方 REST，盘后可查+独立风控域，V17.0.7 升为财务 TTM 族主源）** → 新浪 → 巨潮 → 东财（限流最严）→ 其他。
 
@@ -229,12 +229,12 @@
 | 市场情绪 | 2 | TDX-0x0010/F10、同花顺-fuyao |
 | 板块轮动 | 2 | TDX-0x0010/F10、同花顺-fuyao |
 
-**B.2 单源字段（1349 个，无 fallback）**
+**B.2 单源字段（1325 个，无 fallback）**
 
 - **ZHB（78）**：A 实时、B 准实时、C 日频、D 静态、PE TTM、stat.board_count、stat.cash_reserve_wan、stat.change_10d、stat.change_10k_bar、stat.change_20d、stat.change_20k_bar、stat.change_30d、stat.change_30k_bar、stat.change_5d、stat.change_5k_bar、stat.change_60d、stat.change_60k_bar、stat.change_pct、stat.change_pct_1d、stat.change_pct_2d、stat.change_ytd、stat.code、stat.date、stat.dividend_yield、stat.employee_count、stat.free_ltgb、stat.market、stat.net_profit_kcf、stat.other_qy_jzc、stat.pe_dynamic、stat.pe_ttm、stat.pre_receive_zj、stat.rd_input_fee、stat.shape_value、stat.streak_days、stat.unknown_2、stat.unknown_26、stat.unseal_date、stat.zt_count、stat.zt_lianban、stat.zt_streak_cycle、stat.zt_type_code、stat2.amount、stat2.amount_1d、stat2.amount_2d、stat2.change_250k_bar、stat2.change_30k_bar、stat2.change_30k_bar_ref、stat2.change_mtd、stat2.code、stat2.date、stat2.high_52w、stat2.industry_code、stat2.ipo_price、stat2.low_52w、stat2.main_net_buy_amount、stat2.main_net_buy_amount_1d、stat2.main_net_buy_hands、stat2.main_net_buy_hands_1d、stat2.market
   - … 其余 18 个见正文
-- **TDX-0x0010/F10（298）**：*ST湘邮、AI解读、AxData、BKFenShiZhiBo、ChangeStatistics、C中芯、DR 茅台、DailyLimitPerformance、DailyLimitPerformance2、FTShare、GetBaseFaceListZDEvnArtNew、GetDayBaseFaceListZDEvnArt、GetDayNewHigh_W28、GetGPCPHBTS_Tag、GetHotPHB、GetInfo、GetKLineDay_W14、GetKLineZhangTing、GetMainMonitor_w30、GetPanKou、GetPlateInfo_w38、GetPlate_Info_QJ、GetStockBid、GetStockList、GetStockList（龙虎榜）、GetStockPanKou、GetStockTrendIncremental、GetWeiTuo_W14、GetYTFP_BKHX、GetYTFP_SCTD、GlobalCommon、GroupCount_w28、Index、InfoBKR、MarketStockZDNum、MoodNumCount、MorningBiddingList、NewGetList、N百花医药、Radar、RealRankingInfo、RiseFallAnalysis、ST百花医药、SharpWithdrawal、SonPlate_Info、Theme、XD、XR、ZHB (tdxstat、ZhiShuStockList_W8、[..、[verify、akshare、all、api、axdata_verify.md)、axdata_verify.md](verify、balance_sheet` 资产负债表、belong、cash_flow` 现金流量表
-  - … 其余 238 个见正文
+- **TDX-0x0010/F10（274）**：*ST湘邮、AI解读、BKFenShiZhiBo、ChangeStatistics、C中芯、DR 茅台、DailyLimitPerformance、DailyLimitPerformance2、GetBaseFaceListZDEvnArtNew、GetDayBaseFaceListZDEvnArt、GetDayNewHigh_W28、GetGPCPHBTS_Tag、GetHotPHB、GetInfo、GetKLineDay_W14、GetKLineZhangTing、GetMainMonitor_w30、GetPanKou、GetPlateInfo_w38、GetPlate_Info_QJ、GetStockBid、GetStockList、GetStockList（龙虎榜）、GetStockPanKou、GetStockTrendIncremental、GetWeiTuo_W14、GetYTFP_BKHX、GetYTFP_SCTD、GlobalCommon、GroupCount_w28、Index、InfoBKR、MarketStockZDNum、MoodNumCount、MorningBiddingList、NewGetList、N百花医药、Radar、RealRankingInfo、RiseFallAnalysis、ST百花医药、SharpWithdrawal、SonPlate_Info、Theme、XD、XR、ZhiShuStockList_W8、[..、[verify、all、api、axdata_verify.md)、axdata_verify.md](verify、balance_sheet` 资产负债表、belong、cash_flow` 现金流量表、changqifuzhai、client_fields_enum.md)、client_fields_enum.md](verify、color
+  - … 其余 214 个见正文
 - **TDX-eltdx（195）**：AuctionPoint.index、AuctionPoint.matched_volume、AuctionPoint.minute_of_day_raw、AuctionPoint.price、AuctionPoint.price_milli、AuctionPoint.record_hex、AuctionPoint.reserved_zero_0e、AuctionPoint.second_raw、AuctionPoint.time_label、AuctionPoint.time_seconds、AuctionPoint.unmatched_direction_raw、AuctionPoint.unmatched_volume、Enum `Market、FinanceInfo`（财务）、FundFlow、HistoricalFundFlow、KlineCategory、MarketStat、SecurityBar`（K 线）、SecurityInfo`（证券列表）、SecurityQuote`（五档）、XdxrRecord`（除权除息）、absolute_index、adjust、adjust_mode、adjust_mode_raw、alignment_status、auction_matched_volume、auction_unmatched_signed_volume、auctions.series（0x056a）、beta_60d、business_composition、buy_levels、c1_value~c4_value、category_name、circulating_shares、current_hand、dividend_financing、down_count、eltdx_auction_prev_volume_ratio、eltdx_has_shortline、eltdx_ladder_level、eltdx_limit_board_text、eltdx_limit_up_streak_days、eltdx_open_change_pct、eltdx_open_prev_amount_ratio、eltdx_open_turnover_z、eltdx_open_volume_ratio、eltdx_opening_rush、eltdx_seal_amount、eltdx_seal_to_float_ratio、eps_raw、event_kind、fenhong、finance_diagnosis、full_code、get_auction_0925、high_price、highest_ladder_level、history
   - … 其余 135 个见正文
 - **腾讯（12）**：[0] 市场标识、[29][54][55][77][78] 占位符、[40] 停牌标记、[56] Beta 族、[76] A股流通股本、[85] 收盘参考基准价（L2 机制确认）、[86] 收盘集合竞价净未匹配手数(带符号)（L2 机制确认）、[87] 科创板、两融标记、分钟 K线、实测、月 K线
@@ -1754,7 +1754,7 @@ ulist 批量侧 `main_net_inflow_wan = (f62+f66)/1e4` 是**同一个 bug**（f62
 
 > ⚠️ **ulist239 索引 ≠ push2 索引**（两套 fN 编号严禁混用，见 §12.9.1 证据块 / `docs/verify/ulist_push2_align.md`）。本表按 `ulist.np/get` 真实返回的 239 个 fN **全量登记**——
 > 其中 113 个与 push2 **同号（编号相同）**，但 **⚠️ 同号 ≠ 同义**（第七轮碰撞审计 2026-09-07）：360 配对样本实测仅 **f153/f154** 真同义，33 个为异号映射（ulist fN = push2 fM, M≠N），78 个无实证。**语义须按对齐表的跨号映射解读，严禁凭同号认定同义**。本表原「✅ 同 push2 fN（同号，跨源引用）」已逐行订正：2 条保留实证 ✅、33 条改「已证伪→正确映射」、78 条标 ⚠️ 待核实；其余 126 个为 ulist 专属字段，当前**待破解**（恒空/恒0 亦照登，标 ⚠️）。
-> 本表即 ulist239 的权威字段契约，破解新字段直接在此登记，无需另立分字典（见 §12.15.10）。
+> 本表即 ulist239 的权威字段契约，破解新字段直接在此登记；其镜像分字典 = [`ulist_verify.md`](verify/ulist_verify.md)（由 `scripts/gen_ulist_subdict.py` 从本表生成；**主字典始终为唯一权威**，分字典仅更清晰列明本表内容，不得引入主字典之外定名）。破解新字段登记本表后须重跑该脚本保持镜像同步（详见 §12.15.10）。
 > 📌 **新增字段登记公约（第七轮审计固化）**：凡声明 ulist fN 与 push2 存在映射关系的行，必须先在权威对齐表 `docs/verify/ulist_push2_align.md`（ulist fN → push2 fM，跨号映射）登记该实证条目；**禁止仅凭字段编号相同就认定同义**。无实证者状态必须标 `⚠️ 同号同义·未实证·待核实` 并注明「待数值对撞」。此公约由 `scripts/lint_field_same_number.py` 自动守卫（CI/提交前检查，违规退出码 1）。
 
 | fN | 状态 | 备注 |
@@ -5710,6 +5710,7 @@ volRatio=量比, institutionIncrease=机构增仓 仅在 Socket 推送中——H
 | levistock | levistock_field_verify.md | 26/38 接口实测 | §12.10.9 |
 | eltdx(适配层) | [eltdx_verify.md](verify/eltdx_verify.md) | 第24源字段破解（collect_eltdx 采集 + 黄金锚对撞定中文命名）| §12.13.10 / §12.13.11 |
 | ZHB (tdxstat/tdxstat2/tipinfo) | [zhb_verify.md](verify/zhb_verify.md)（镜像备份） | 主字典 §1/§2/§3 自身登记 + 重跑 `gen_zhb_subdict.py` 同步镜像 | 主字典即权威；分字典为镜像备份，须与主字典 ZHB 章逐字段一致（覆盖闸门强制） |
+| 东财-ulist239(np/get) | [ulist_verify.md](verify/ulist_verify.md)（镜像备份） | 主字典 §12.3.2.3 自身登记 + 重跑 `gen_ulist_subdict.py` 同步镜像 | 主字典即权威；分字典为镜像备份，须与主字典 ulist239 章逐字段（239 字段 f1–f250 含间隔）一致（覆盖闸门强制） |
 | ⚠️ 新浪/akshare/其他文档确认源 | —（无分字典） | 主字典对应章 | 仅文档确认，无原始采集附录 |
 
 <!-- GEN:subdict-index -->
@@ -5722,6 +5723,7 @@ volRatio=量比, institutionIncrease=机构增仓 仅在 Socket 推送中——H
 |:---|:---|:---|
 | 东财-push2(stock/get) | [push2_verify.md](verify/push2_verify.md) | 12.3.1 单股行情 `stock/get`（已由 get_em_quote_full 验证） |
 | 东财-资金流(em_fund_flow) | [push2_verify.md](verify/push2_verify.md) | 12.3.4 资金流四档层级 `stock/get` f135\~f149 **全量**（🆕 V17.0.16 **重定案** / V17.1.x **补登 f147/f148**） |
+| 东财-ulist239(np/get) | [ulist_verify.md](verify/ulist_verify.md) | 12.3.2 板块/排行 `ulist.np/get`（本次联网新发现） |
 | 腾讯(qt.gtimg) | [tencent_verify.md](verify/tencent_verify.md) | 12.1 腾讯 qt.gtimg.cn 完整字段字典（88 字段） |
 | 同花顺-fuyao | [fuyao_api_full.md](verify/fuyao_api_full.md) | 12.8.12c THS 官方金融数据 REST API（fuyao.aicubes.cn，2026-08-10 实测 7 接口 → V17.0.5 契约全量镜像 62 端点）🆕 |
 | TDX(双命名源) | [tdx_func_fields.md](verify/tdx_func_fields.md) | 12.13.2 财务批量（get_finance_batch，0x0010）文档确认 |
@@ -5733,7 +5735,7 @@ volRatio=量比, institutionIncrease=机构增仓 仅在 Socket 推送中——H
 | TDX-eltdx(适配层) | [eltdx_verify.md](verify/eltdx_verify.md) | 12.13.10 eltdx Helpers 净新增字段破解（V17.2.15 实测，collect_eltdx 采集 + 黄金锚对撞） |
 | levistock(ftshare) | [levistock_field_verify.md](verify/levistock_field_verify.md) | 12.10.3 开盘红市场情绪（market_emotion_kph，**含历史**）🆕 |
 
-> 共 12 个源有专属分字典；无分字典的源以主字典自身为权威（见 §12.15.10 强制规则）。
+> 共 13 个源有专属分字典；无分字典的源以主字典自身为权威（见 §12.15.10 强制规则）。
 
 <!-- /GEN:subdict-index -->
 

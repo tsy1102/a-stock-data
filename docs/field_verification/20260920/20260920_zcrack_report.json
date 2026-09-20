@@ -1,0 +1,515 @@
+{
+  "date": "20260920",
+  "zhb_anchor_findings": [
+    {
+      "target": "push2.f107",
+      "via": "zhb_anchor",
+      "best": {
+        "anchor": "zhb.full.other_qy_jzc",
+        "meaning": "其他权益净资产(万元?)",
+        "unit": "wan",
+        "rate": 0.6,
+        "ratio": null,
+        "n": 20
+      }
+    },
+    {
+      "target": "push2.f122",
+      "via": "zhb_anchor",
+      "best": {
+        "anchor": "zhb.full.change_ytd",
+        "meaning": "年初至今涨跌幅%",
+        "unit": "pct",
+        "rate": 0.95,
+        "ratio": null,
+        "n": 20
+      }
+    },
+    {
+      "target": "push2.f124",
+      "via": "zhb_anchor",
+      "best": {
+        "anchor": "zhb.full.other_qy_jzc",
+        "meaning": "其他权益净资产(万元?)",
+        "unit": "wan",
+        "rate": 0.9,
+        "ratio": null,
+        "n": 20
+      }
+    },
+    {
+      "target": "push2.f134",
+      "via": "zhb_anchor",
+      "best": {
+        "anchor": "zhb.full.other_qy_jzc",
+        "meaning": "其他权益净资产(万元?)",
+        "unit": "wan",
+        "rate": 0.9,
+        "ratio": null,
+        "n": 20
+      }
+    },
+    {
+      "target": "ulist239.f13",
+      "via": "zhb_anchor",
+      "best": {
+        "anchor": "zhb.full.other_qy_jzc",
+        "meaning": "其他权益净资产(万元?)",
+        "unit": "wan",
+        "rate": 0.6,
+        "ratio": null,
+        "n": 20
+      }
+    },
+    {
+      "target": "ulist239.f97",
+      "via": "zhb_anchor",
+      "best": {
+        "anchor": "zhb.full.other_qy_jzc",
+        "meaning": "其他权益净资产(万元?)",
+        "unit": "wan",
+        "rate": 0.5,
+        "ratio": null,
+        "n": 20
+      }
+    }
+  ],
+  "cross_findings": [
+    {
+      "target": "push2.f44",
+      "top": [
+        {
+          "rate": 1.0,
+          "match": "ulist239.f15",
+          "ratio": null,
+          "n": 20
+        },
+        {
+          "rate": 1.0,
+          "match": "tencent[41]",
+          "ratio": null,
+          "n": 20
+        },
+        {
+          "rate": 1.0,
+          "match": "tencent[33]",
+          "ratio": null,
+          "n": 20
+        }
+      ]
+    },
+    {
+      "target": "push2.f45",
+      "top": [
+        {
+          "rate": 1.0,
+          "match": "ulist239.f16",
+          "ratio": null,
+          "n": 20
+        },
+        {
+          "rate": 1.0,
+          "match": "tencent[42]",
+          "ratio": null,
+          "n": 20
+        },
+        {
+          "rate": 1.0,
+          "match": "tencent[34]",
+          "ratio": null,
+          "n": 20
+        }
+      ]
+    },
+    {
+      "target": "push2.f46",
+      "top": [
+        {
+          "rate": 1.0,
+          "match": "ulist239.f17",
+          "ratio": null,
+          "n": 20
+        },
+        {
+          "rate": 1.0,
+          "match": "tencent[5]",
+          "ratio": null,
+          "n": 20
+        },
+        {
+          "rate": 1.0,
+          "match": "tdx.quote_full.open",
+          "ratio": null,
+          "n": 20
+        }
+      ]
+    },
+    {
+      "target": "push2.f47",
+      "top": [
+        {
+          "rate": 1.0,
+          "match": "ulist239.f5",
+          "ratio": null,
+          "n": 20
+        },
+        {
+          "rate": 1.0,
+          "match": "push2_full.f47",
+          "ratio": null,
+          "n": 20
+        },
+        {
+          "rate": 0.85,
+          "match": "tencent[6]",
+          "ratio": null,
+          "n": 20
+        }
+      ]
+    },
+    {
+      "target": "push2.f48",
+      "top": [
+        {
+          "rate": 1.0,
+          "match": "ulist239.f6",
+          "ratio": null,
+          "n": 20
+        },
+        {
+          "rate": 1.0,
+          "match": "sina[9]",
+          "ratio": null,
+          "n": 20
+        },
+        {
+          "rate": 1.0,
+          "match": "push2_full.f48",
+          "ratio": null,
+          "n": 20
+        }
+      ]
+    },
+    {
+      "target": "push2.f49",
+      "top": [
+        {
+          "rate": 1.0,
+          "match": "ulist239.f34",
+          "ratio": null,
+          "n": 20
+        },
+        {
+          "rate": 1.0,
+          "match": "push2_full.f49",
+          "ratio": null,
+          "n": 20
+        },
+        {
+          "rate": 0.75,
+          "match": "tencent[7]",
+          "ratio": null,
+          "n": 20
+        }
+      ]
+    },
+    {
+      "target": "push2.f92",
+      "top": [
+        {
+          "rate": 1.0,
+          "match": "ulist239.f113",
+          "ratio": null,
+          "n": 20
+        },
+        {
+          "rate": 1.0,
+          "match": "push2_full.f92",
+          "ratio": null,
+          "n": 20
+        }
+      ]
+    },
+    {
+      "target": "push2.f103",
+      "top": [
+        {
+          "rate": 1.0,
+          "match": "push2_full.f103",
+          "ratio": null,
+          "n": 20
+        }
+      ]
+    },
+    {
+      "target": "push2.f107",
+      "top": [
+        {
+          "rate": 1.0,
+          "match": "ulist239.f27",
+          "ratio": null,
+          "n": 20
+        },
+        {
+          "rate": 1.0,
+          "match": "ulist239.f13",
+          "ratio": null,
+          "n": 20
+        },
+        {
+          "rate": 1.0,
+          "match": "push2_full.f110",
+          "ratio": null,
+          "n": 20
+        }
+      ]
+    },
+    {
+      "target": "push2.f111",
+      "top": [
+        {
+          "rate": 1.0,
+          "match": "ulist239.f19",
+          "ratio": null,
+          "n": 20
+        },
+        {
+          "rate": 1.0,
+          "match": "push2_full.f112",
+          "ratio": null,
+          "n": 20
+        },
+        {
+          "rate": 1.0,
+          "match": "push2_full.f111",
+          "ratio": null,
+          "n": 20
+        }
+      ]
+    },
+    {
+      "target": "push2.f112",
+      "top": [
+        {
+          "rate": 1.0,
+          "match": "ulist239.f19",
+          "ratio": null,
+          "n": 20
+        },
+        {
+          "rate": 1.0,
+          "match": "push2_full.f112",
+          "ratio": null,
+          "n": 20
+        },
+        {
+          "rate": 1.0,
+          "match": "push2_full.f111",
+          "ratio": null,
+          "n": 20
+        }
+      ]
+    },
+    {
+      "target": "push2.f122",
+      "top": [
+        {
+          "rate": 1.0,
+          "match": "ulist239.f25",
+          "ratio": null,
+          "n": 20
+        },
+        {
+          "rate": 1.0,
+          "match": "push2_full.f122",
+          "ratio": null,
+          "n": 20
+        },
+        {
+          "rate": 0.95,
+          "match": "zhb.stat.change_ytd",
+          "ratio": null,
+          "n": 20
+        }
+      ]
+    },
+    {
+      "target": "push2.f124",
+      "top": [
+        {
+          "rate": 1.0,
+          "match": "ulist239.f223",
+          "ratio": null,
+          "n": 20
+        },
+        {
+          "rate": 1.0,
+          "match": "ulist239.f216",
+          "ratio": null,
+          "n": 20
+        },
+        {
+          "rate": 1.0,
+          "match": "ulist239.f194",
+          "ratio": null,
+          "n": 20
+        }
+      ]
+    },
+    {
+      "target": "push2.f134",
+      "top": [
+        {
+          "rate": 1.0,
+          "match": "ulist239.f223",
+          "ratio": null,
+          "n": 20
+        },
+        {
+          "rate": 1.0,
+          "match": "ulist239.f216",
+          "ratio": null,
+          "n": 20
+        },
+        {
+          "rate": 1.0,
+          "match": "ulist239.f194",
+          "ratio": null,
+          "n": 20
+        }
+      ]
+    },
+    {
+      "target": "ulist239.f11",
+      "top": [
+        {
+          "rate": 0.8,
+          "match": "tencent[80]",
+          "ratio": null,
+          "n": 20
+        }
+      ]
+    },
+    {
+      "target": "ulist239.f13",
+      "top": [
+        {
+          "rate": 1.0,
+          "match": "push2_full.f110",
+          "ratio": null,
+          "n": 20
+        },
+        {
+          "rate": 1.0,
+          "match": "push2_full.f107",
+          "ratio": null,
+          "n": 20
+        },
+        {
+          "rate": 1.0,
+          "match": "push2.f110",
+          "ratio": null,
+          "n": 20
+        }
+      ]
+    },
+    {
+      "target": "ulist239.f45",
+      "top": [
+        {
+          "rate": 1.0,
+          "match": "push2_full.f105",
+          "ratio": null,
+          "n": 20
+        },
+        {
+          "rate": 1.0,
+          "match": "push2.f105",
+          "ratio": null,
+          "n": 20
+        }
+      ]
+    },
+    {
+      "target": "ulist239.f97",
+      "top": [
+        {
+          "rate": 0.5556,
+          "match": "eltdx.quote_snapshot.unknown_after_outer_raw",
+          "ratio": null,
+          "n": 18
+        },
+        {
+          "rate": 0.55,
+          "match": "tencent[83]",
+          "ratio": null,
+          "n": 20
+        },
+        {
+          "rate": 0.55,
+          "match": "tdx.quote_full.bid5",
+          "ratio": null,
+          "n": 20
+        }
+      ]
+    },
+    {
+      "target": "ulist239.f111",
+      "top": [
+        {
+          "rate": 1.0,
+          "match": "push2_full.f181",
+          "ratio": null,
+          "n": 20
+        },
+        {
+          "rate": 1.0,
+          "match": "push2.f181",
+          "ratio": null,
+          "n": 20
+        }
+      ]
+    },
+    {
+      "target": "zhb.full.unknown_2",
+      "top": [
+        {
+          "rate": 1.0,
+          "match": "zhb.stat.unknown_2",
+          "ratio": null,
+          "n": 20
+        },
+        {
+          "rate": 1.0,
+          "match": "eltdx.shortline.beta_60d",
+          "ratio": null,
+          "n": 18
+        }
+      ]
+    },
+    {
+      "target": "zhb.full.unknown_26",
+      "top": [
+        {
+          "rate": 1.0,
+          "match": "zhb.stat.unknown_26",
+          "ratio": null,
+          "n": 20
+        },
+        {
+          "rate": 1.0,
+          "match": "eltdx.shortline.year_limit_up_days",
+          "ratio": null,
+          "n": 18
+        },
+        {
+          "rate": 0.4,
+          "match": "ulist239.f147",
+          "ratio": null,
+          "n": 20
+        }
+      ]
+    }
+  ],
+  "note": "单采集日(20260920→20260918收盘)20股样本；multi-day门槛以单日近似，置信低于四铁律全满足的L1。"
+}

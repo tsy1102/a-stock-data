@@ -8460,9 +8460,9 @@
       ],
       "section": "12.3.1 单股行情 `stock/get`（已由 get_em_quote_full 验证）",
       "canonical": "f122",
-      "meaning": "资金流衍生指标",
-      "unit": "-",
-      "status_raw": "✅（=腾讯[62] 同源, 2026-08-19 17/20+浮点差）",
+      "meaning": "年初至今涨跌幅(%)（YTD, 前复权）",
+      "unit": "%",
+      "status_raw": "✅（≡腾讯[62]/ulist f25/ZHB `change_ytd`；与 V17.0.7 定案一致。2026-09-20 多源对撞：f122 vs zhb.change_ytd 20/20×0.95 精确相等、vs f121(资金流衍生) 0%→纠正\"资金流衍生指标\"旧注，旧行 2026-08-19 未随 V17.0.7 翻转，本次归并修正）",
       "status": "verified"
     },
     {

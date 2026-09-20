@@ -164,7 +164,16 @@ def _flatten(rec, source, scheme, code, date, out):
 
 
 def load_date(date_dir, store):
-    """加载某个日期目录下的所有 raw_*.json，累加到 store。"""
+    """加载某个日期目录下的所有 raw_*.json，累加到 store。
+
+    V17.3 同步更新（2026-09-20）：除逐股容器 ``stocks`` 外，亦摄入顶层 ``records``
+    （板块/龙虎榜等市场级结构化列表，如 clist / exchange）与其它顶层 dict/list 容器
+    （cls / em_hot / push2ex / market_sources / ftshare.market / eltdx.global_helpers 等），
+    使主字典已登记的 6 个市场级源不再因仅识别 ``stocks`` 而被静默丢弃
+    （旧逻辑曾将 clist/exchange/cls/em_hot/push2ex/market_sources 共 138 注册字段整段漏载）。
+    非逐股记录的 code 取记录自身标识(zqdm/f12/code/ticker)或容器下标，
+    不与逐股 (code,date) 重合，故不会污染逐股对撞，仅作为跨源锚/候选可用。
+    """
     d = os.path.join(DATA_DIR, date_dir)
     if not os.path.isdir(d):
         return 0
@@ -181,17 +190,41 @@ def load_date(date_dir, store):
         if not isinstance(doc, dict):
             continue
         scheme = doc.get("scheme")
+        # 收集所有可展平的顶层容器（dict-of-rec 或 list-of-rec）
+        containers = []
         stocks = doc.get("stocks")
-        if not isinstance(stocks, dict):
+        if isinstance(stocks, dict):
+            containers.append(stocks)
+        records = doc.get("records")
+        if isinstance(records, dict):
+            containers.append(records)
+        elif isinstance(records, list):
+            containers.append({f"__{i}": v for i, v in enumerate(records)})
+        # 其它顶层 dict/list 容器（市场级源：cls/em_hot/push2ex/market_sources/...）
+        for k, v in doc.items():
+            if k in ("scheme", "field_meta", "zhb_date", "stocks", "records"):
+                continue
+            if isinstance(v, dict) and v and all(isinstance(x, (dict, list)) for x in v.values()):
+                containers.append(v)
+            elif isinstance(v, list) and v and all(isinstance(x, dict) for x in v):
+                containers.append({f"__{i}": x for i, x in enumerate(v)})
+        if not containers:
             continue
-        for code, rec in stocks.items():
-            pairs = []
-            _flatten(rec, src, scheme, code, date_dir, pairs)
-            for fid, val in pairs:
-                store[fid]["vals"][(code, date_dir)] = val
-                store[fid]["scheme"] = scheme
-                store[fid]["src"] = src
-            cnt += len(pairs)
+        for cont in containers:
+            for code, rec in cont.items():
+                if not isinstance(rec, dict):
+                    continue
+                # 非逐股记录：优先取自身股票/板块标识作为碰撞键
+                _code = (rec.get("zqdm") or rec.get("f12") or rec.get("code")
+                         or rec.get("ticker") or code)
+                _code = str(_code)
+                pairs = []
+                _flatten(rec, src, scheme, _code, date_dir, pairs)
+                for fid, val in pairs:
+                    store[fid]["vals"][(_code, date_dir)] = val
+                    store[fid]["scheme"] = scheme
+                    store[fid]["src"] = src
+                cnt += len(pairs)
     return cnt
 
 
@@ -307,18 +340,46 @@ def range_overlap(L, R):
 # ───────────────────────────────────────────────────────────────────────
 # 状态读取（registry）+ 增量状态
 # ───────────────────────────────────────────────────────────────────────
+# V17.3 同步更新（2026-09-20）：主字典 field_registry.json 现以「显示名」登记源
+# （如 `TDX-eltdx(适配层)` / `ZHB-tipinfo` / `东财-datacenter(英文键)`），而采集脚本
+# 以「短键」产出 raw_<key>.json（scheme=短键）。旧 REG_ALIAS 仅覆盖早期 4 源，
+# 致 22 个源的已验证字段无法被 is_verified() 识别 → 反复被当作 unverified 主攻目标
+# 重对撞、且 findings 的 in_registry 标记恒为 False。
+# 本表分两段：① 采集器短键自映射到规范键（保证 raw 字段源名解析一致）；② 主字典
+# 显示名 → 规范短键（保证 verified 集合与 raw 字段同源同名）。两路解析到同一规范键即匹配。
 REG_ALIAS = {
-    "TDX(双命名源)": "tdx", "TDX": "tdx",
-    "东财-ulist239": "ulist239", "ulist": "ulist239", "ulist239": "ulist239",
-    "东财-push2": "push2", "push2": "push2", "push2_full": "push2",
-    "em_fund_flow": "push2", "push2ex": "push2", "push2delay": "push2",
-    "腾讯": "tencent", "tencent": "tencent",
-    "ZHB": "zhb", "ZHB-tdxstat": "zhb",
-    "同花顺": "thsdk", "thsdk": "thsdk",
-    "AxData": "axdata", "axdata": "axdata",
-    "FTShare": "ftshare", "ftshare": "ftshare",
-    "fuyao": "fuyao", "eltdx": "eltdx",
-    "新浪": "sina", "sina": "sina",
+    # ── ① 采集器短键（规范键，自映射） ──
+    "zhb": "zhb", "tdx": "tdx", "eltdx": "eltdx", "tencent": "tencent",
+    "push2": "push2", "push2_full": "push2_full", "sina": "sina", "axdata": "axdata",
+    "market_sources": "market_sources", "tdx_f10": "tdx_f10", "fuyao": "fuyao",
+    "em_kline_f61": "em_kline_f61", "em_fund_flow": "em_fund_flow", "ulist239": "ulist239",
+    "push2ex": "push2ex", "em_hot": "em_hot", "cls": "cls", "datacenter": "datacenter",
+    "tdx_f10_more": "tdx_f10_more", "cninfo": "cninfo", "reports": "reports",
+    "ftshare": "ftshare", "baidu": "baidu", "clist": "clist", "slist": "slist",
+    "exchange": "exchange", "tdx_f10": "tdx_f10", "tdx_f10_more": "tdx_f10_more",
+    # ── ② 主字典 field_registry.json 显示名 → 规范短键 ──
+    "ZHB": "zhb", "ZHB-tdxstat": "zhb", "ZHB-tdxstat2": "zhb", "ZHB-tipinfo": "zhb",
+    "TDX": "tdx", "TDX(双命名源)": "tdx", "TDX-eltdx(适配层)": "eltdx",
+    "东财-push2": "push2", "东财-push2(stock/get)": "push2",
+    "东财-push2_full": "push2_full",
+    "东财-资金流(em_fund_flow)": "em_fund_flow",
+    "东财-ulist239": "ulist239", "东财-ulist239(np/get)": "ulist239", "ulist": "ulist239",
+    "东财-push2ex": "push2ex",                      # 旧映射 push2ex→push2 为误，现已订正
+    "东财-datacenter(英文键)": "datacenter",
+    "东财-slist": "slist", "东财-clist": "clist",
+    "东财-em_kline_f61": "em_kline_f61",
+    "东财-热榜(em_hot)": "em_hot",
+    "腾讯": "tencent", "腾讯(qt.gtimg)": "tencent",
+    "新浪": "sina", "新浪(hq.sinajs)": "sina",
+    "同花顺": "fuyao", "同花顺-fuyao": "fuyao", "thsdk": "fuyao",  # thsdk 已退役, 语义并入 fuyao
+    "AxData": "axdata",
+    "FTShare": "ftshare", "levistock(ftshare)": "ftshare",
+    "财联社": "cls", "财联社(cls)": "cls",
+    "巨潮": "cninfo", "巨潮(cninfo)": "cninfo",
+    "沪深交易所": "exchange",
+    "百度": "baidu", "百度(baidu)": "baidu",
+    "市场源(market_sources)": "market_sources",
+    "reports": "reports",
 }
 
 
@@ -335,14 +396,16 @@ def load_registry_state():
     for f in reg.get("fields", []):
         if f.get("status") == "verified":
             src = REG_ALIAS.get(f.get("source", ""), f.get("source", ""))
-            verified.add((src, str(f.get("code", ""))))
+            # 与主字典 code 约定对齐：注册表存嵌套点路径(如 quote_snapshot.last_price)，
+            # 而 _flatten 输出 source.sub.k、code_of 仅取末段 last_price；两侧同取末段才对称。
+            verified.add((src, code_of(str(f.get("code", "")))))
     for m in reg.get("mappings", []):
         a = m.get("from", {})
         b = m.get("to", {})
         sa = REG_ALIAS.get(a.get("source", ""), a.get("source", ""))
         sb = REG_ALIAS.get(b.get("source", ""), b.get("source", ""))
-        mappings.add((sa, str(a.get("code", "")), sb, str(b.get("code", ""))))
-        mappings.add((sb, str(b.get("code", "")), sa, str(a.get("code", ""))))
+        mappings.add((sa, code_of(str(a.get("code", ""))), sb, code_of(str(b.get("code", "")))))
+        mappings.add((sb, code_of(str(b.get("code", ""))), sa, code_of(str(a.get("code", "")))))
     return verified, mappings
 
 

@@ -2,7 +2,7 @@
 """capture_field_probe.py — 字段实测验证采集脚本(V17.2.12 主字典对齐)
 
 固定股票池(docs/field_verification/pool.json)20 股,按天采集各源全字段。
-采集器集合与主字典 field_registry.json(23 源)逐源映射(V17.2.12 对齐):
+采集器集合与主字典 field_registry.json(26 源)逐源映射(V17.3 同步):
 
   已采集(可用 producer):
     ZHB / TDX / 腾讯(qt.gtimg) / 东财-push2(+push2_full 全字段变体) / 新浪 / axdata(短线指标)
@@ -34,8 +34,8 @@ V17.2.9(2026-09-12) 元数据与健康度修复:
     源条目新增 status / n_error / n_total / n_dead / error_sample 字段。
   - 控制台: 异常源打印 ⚠ + 失败计数, 运行结束追加异常源清单。
 
-V17.2.12(2026-09-12) 采集脚本↔主字典(field_registry.json, 23 源)逐源对齐:
-  - collectors 集合扩展为主字典 23 源的完整映射: 已登记但暂无 producer 的 东财-clist/slist、
+V17.3(2026-09-20) 采集脚本↔主字典(field_registry.json, 26 源)逐源对齐:
+  - collectors 集合扩展为主字典 26 源的完整映射: 已登记但暂无 producer 的 东财-clist/slist、
     沪深交易所, 以及已废弃的 百度, 统一以 unwired/deprecated 标记纳入 collectors(写 meta、
     不进异常源清单), 使脚本采集清单与主字典源清单一一对应。
   - SOURCE_SCHEME 同步增补 baidu/clist/slist/exchange 四项 scheme 标注, 并与
@@ -57,6 +57,17 @@ V17.2.14(2026-09-12) 沪深交易所(§12.8.17)真实 producer 接入(Q3 用户�
   - 配套(governance): 沪深交易所 源抽取从 snake_case 过度抽取分支移出, 改为显式字段白名单
     {zqdm,zqjc,cjje,plyy,sse_raw}(§12.8.17 字段表登记的真实源字段), 剔除端点散文(szse/sse/com/
     api/market/snap/ann/anotice/dragon_tiger_backup/... 共 13 个)对 registry 核心资产的污染。
+
+V17.3(2026-09-20) 采集↔字典/对撞同步核验:
+  - 源级覆盖确认: 主字典 26 源(含 V17.2 新增 eltdx/clist/slist/exchange/em_kline_f61/
+    em_fund_flow/ulist239/datacenter 全量、V17.3 五项 ZHB 新解析器)均已有 producer 或 unwired 占位,
+    无源级遗漏(commit 同步核验)。
+  - ZHB 五项新解析器(ilong/tdxbk/addedcode_bj/tend_std/hspy)为市场级参考字典(指数名/板块简称/
+    北交所元数据/概念树/拼音码), 非逐股字段, 与主字典仅登记 3 个逐股 ZHB 家族(tipinfo/tdxstat/
+    tdxstat2)一致; collect_zhb 已覆盖此 3 家族, 无采集遗漏。
+  - 对撞脚本 collide.py 同步: REG_ALIAS 全量对齐 26 源显示名→短键(修正 push2ex→push2、
+    同花顺→thsdk 两处误映射); load_date 除 stocks 外摄入 records/市场级容器, 使 clist/exchange/
+    cls/em_hot/push2ex/market_sources 共 138 注册字段不再被静默漏载。
 
 输出: docs/field_verification/{YYYYMMDD}/raw_{source}.json(顶层含 scheme 字段体系标注) + meta.json(含 schemes 映射)
 用法:
@@ -832,7 +843,7 @@ def collect_tdx_f10(pool: list) -> dict:
 
 # ── V17.2.12 主字典对齐: registry 已登记但本脚本暂无 producer 的源 ──
 # 这些采集器返回 {"__unwired__": ...} 占位, 由 main() 识别为 unwired/deprecated 状态
-# (写 meta、不写 raw 文件、不计入异常源清单), 使脚本采集清单与主字典 23 源一一对应。
+# (写 meta、不写 raw 文件、不计入异常源清单), 使脚本采集清单与主字典 26 源一一对应。
 def collect_baidu(pool: list) -> dict:
     """百度股市通(已废弃占位, 不采集)。
 

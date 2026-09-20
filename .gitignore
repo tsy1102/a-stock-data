@@ -34,7 +34,6 @@ snapshots/
 # 根级: stock_cache.db + zhb/ + 行业映射
 cache/*                   # 仅忽略缓存内容(子文件), 目录本身可遍历, 以便用 ! 例外保留 README
 !cache/README.md          # 缓存目录说明文档(与 scratch/README.md 同例, 不随缓存清理删除)
-cache/zhb/comte/          # V17.2.21 补: comte 解密产物(密钥流/明文二进制=用户行情主站配置, 不入库)
 # V17.0 补: 股本缓存 share_capital.json(运行时生成)
 stock_common/cache/
 *.db

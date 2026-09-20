@@ -5744,19 +5744,17 @@ volRatio=量比, institutionIncrease=机构增仓 仅在 Socket 推送中——H
 |:---|:---|:---|
 | 东财-push2(stock/get) | [push2_verify.md](verify/push2_verify.md) | 12.3.1 单股行情 `stock/get`（已由 get_em_quote_full 验证） |
 | 东财-资金流(em_fund_flow) | [push2_verify.md](verify/push2_verify.md) | 12.3.4 资金流四档层级 `stock/get` f135\~f149 **全量**（🆕 V17.0.16 **重定案** / V17.1.x **补登 f147/f148**） |
-| 东财-ulist239(np/get) | [ulist_verify.md](verify/ulist_verify.md) | 12.3.2 板块/排行 `ulist.np/get`（本次联网新发现） |
 | 腾讯(qt.gtimg) | [tencent_verify.md](verify/tencent_verify.md) | 12.1 腾讯 qt.gtimg.cn 完整字段字典（88 字段） |
 | 同花顺-fuyao | [fuyao_api_full.md](verify/fuyao_api_full.md) | 12.8.12c THS 官方金融数据 REST API（fuyao.aicubes.cn，2026-08-10 实测 7 接口 → V17.0.5 契约全量镜像 62 端点）🆕 |
 | TDX(双命名源) | [tdx_func_fields.md](verify/tdx_func_fields.md) | 12.13.2 财务批量（get_finance_batch，0x0010）文档确认 |
 | AxData | [axdata_verify.md](verify/axdata_verify.md) | 12.12.8 跨源接口实测确认（2026-08-05，axdata 0.1.3 local 模式） |
 | 东财-push2_full | [push2_verify.md](verify/push2_verify.md) | 12.3.1 单股行情 `stock/get`（已由 get_em_quote_full 验证） |
-| ZHB-tdxstat | [zhb_verify.md](verify/zhb_verify.md) | 1. `tdxstat.cfg` (个股综合统计快照，35 个字段，7,951 行) |
-| ZHB-tdxstat2 | [zhb_verify.md](verify/zhb_verify.md) | 2. `tdxstat2.cfg` (成交与资金流向表，21 个字段，7,951 行) |
-| ZHB-tipinfo | [zhb_verify.md](verify/zhb_verify.md) | 3. `tipinfo.dat` (财报日历与业绩快照，22 列，5,612 行) |
-| TDX-eltdx(适配层) | [eltdx_verify.md](verify/eltdx_verify.md) | 12.13.10 eltdx Helpers 净新增字段破解（V17.2.15 实测，collect_eltdx 采集 + 黄金锚对撞） |
+| ZHB-tdxstat | [tdx_func_fields.md](verify/tdx_func_fields.md) | 1. `tdxstat.cfg` (个股综合统计快照，35 个字段，7,951 行) |
+| ZHB-tdxstat2 | [tdx_func_fields.md](verify/tdx_func_fields.md) | 2. `tdxstat2.cfg` (成交与资金流向表，21 个字段，7,951 行) |
+| ZHB-tipinfo | [tdx_func_fields.md](verify/tdx_func_fields.md) | 3. `tipinfo.dat` (财报日历与业绩快照，22 列，5,612 行) |
 | levistock(ftshare) | [levistock_field_verify.md](verify/levistock_field_verify.md) | 12.10.3 开盘红市场情绪（market_emotion_kph，**含历史**）🆕 |
 
-> 共 13 个源有专属分字典；无分字典的源以主字典自身为权威（见 §12.15.10 强制规则）。
+> 共 11 个源有专属分字典；无分字典的源以主字典自身为权威（见 §12.15.10 强制规则）。
 
 <!-- /GEN:subdict-index -->
 

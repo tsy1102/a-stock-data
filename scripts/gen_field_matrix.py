@@ -114,7 +114,7 @@ def sec_to_source(sec: str) -> str:
 
 
 def parse_tables(text: str):
-    """提取 (章节, 表头, 数据行) 列表。"""
+    """提取 (章节, 表头, 数据行) 列表。表头=首行（block[0]），block[1] 为分隔行。"""
     lines = text.split("\n")
     cur_sec = ""
     tables = []
@@ -136,7 +136,7 @@ def parse_tables(text: str):
                 sep = block[1]
                 is_sep = len(sep) >= 2 and all(re.match(r"^:?-{2,}:?$", c or "-") for c in sep)
                 if is_sep:
-                    tables.append((cur_sec, block[2:]))
+                    tables.append((cur_sec, block[0], block[2:]))
             i = j
         else:
             i += 1
@@ -174,7 +174,7 @@ def build_matrix_from_md():
     text = io.open(DICT, encoding="utf-8").read()
     name_sources = defaultdict(set)
     records = 0
-    for sec, rows in parse_tables(text):
+    for sec, _header, rows in parse_tables(text):
         if any(kw in sec for kw in NON_FIELD_SEC):
             continue
         src = sec_to_source(sec)

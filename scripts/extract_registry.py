@@ -58,9 +58,13 @@ import audit_field_completeness as afc
 # ---------------------------------------------------------------------------
 _FCODE_SRC = {
     "东财-push2(stock/get)", "东财-ulist239(np/get)", "AxData", "东财-push2_full",
-    "东财-资金流(em_fund_flow)", "东财-em_kline_f61", "东财-push2ex",
+    "东财-资金流(em_fund_flow)", "东财-em_kline_f61",
     "东财-datacenter(英文键)", "东财-slist", "东财-clist",
 }
+# 注意：东财-push2ex 已从 _FCODE_SRC 移除（2026-09-20 复核修正）。
+# push2ex 涨停/炸板池字段为纯英文键（c/n/p/tshare/fund/lbc...），无 f 编号；
+# 原误列入 _FCODE_SRC 导致 cell_token 走 f(\d+) 分支恒返 None、全部短名字段漏挂属性。
+# 现归位 _CAMEL_SRC（line 67 已在列），由 camel 英文键分支正确抽取。
 _INDEX_SRC = {"腾讯(qt.gtimg)", "新浪(hq.sinajs)",
               "ZHB-tdxstat", "ZHB-tdxstat2", "ZHB-tipinfo"}
 _CAMEL_SRC = {"reports", "同花顺-fuyao", "东财-datacenter(英文键)",
@@ -96,6 +100,75 @@ def cell_token(cell: str, src: str):
     # 默认：英文/中文名 token
     m = re.search(r"[\u4e00-\u9fffA-Za-z_][\u4e00-\u9fffA-Za-z0-9_]{1,}", cell)
     return m.group(0) if m else None
+
+
+def _clean_header(h: str) -> str:
+    return h.strip().strip("`").strip()
+
+
+def locate_columns(header):
+    """按表头列名定位「token / meaning / unit / status」列索引（兼容非标准表）。
+
+    适用表头：
+      - 标准 4 列 `| 字段 | 含义 | 单位 | 状态 |`
+      - §2.1 `| 协议偏移 | 字段名(key) | 中文含义 | 类型 | 协议单位 | 还原后单位 | 字段分组 | 项目代码使用 |`
+        → token=1, meaning=2, unit=5(还原后单位, 末位单位列), status=7(项目代码使用含"使用")
+      - §12.8.1 `| 原始字段 | 含义 | 单位 | 项目映射 | 状态 |`
+        → token=0, meaning=1, unit=2, status=4(状态, 跳过项目映射)
+      - §12.8.17 `| 字段 | 含义 | 项目映射 | 状态 |` → token=0, meaning=1, status=3, 无 unit
+    找不到返回 None。
+    """
+    token = meaning = unit = status = None
+    for i, h in enumerate(header):
+        c = _clean_header(h)
+        if token is None:
+            # 命中「字段名 / 原始字段」或精确「字段」；排除「字段分组」等含「分组」者
+            if "字段名" in c or "原始字段" in c or c == "字段":
+                token = i
+        if meaning is None and "含义" in c:
+            meaning = i
+        if status is None and ("状态" in c or "使用" in c):
+            # "使用" 覆盖 §2.1 末列「项目代码使用」(承载 ✅/❌)
+            status = i
+    # 兜底：未命中任何 token 关键字表头（如 §12.10.7a「原始键」）→ 首列为字段名列，
+    # 兼容旧行为（row[0] 即 token），避免长名表（price/change_pct/limit_count 等）整体漏抽。
+    if token is None:
+        token = 0
+    # unit：取最后一个含「单位」的列（还原后单位 在 协议单位 之后 → 优先还原后单位）
+    for i, h in enumerate(header):
+        if "单位" in _clean_header(h):
+            unit = i
+    return token, meaning, unit, status
+
+
+def extract_tokens_from_cell(cell, srcs):
+    """从表格首/字段列单元格抽取全部原生 token（支持 `/` 分隔多字段）。
+
+    优先用 cell_token（按各源命名空间正确抽取 f 编号 / [索引] / 带点 / camel）；
+    仅当所有 src 的 cell_token 均失败（如 1~2 字符短名 c/n/p/hs/pe/oc）时，
+    兜底取单元格内 1+ 字符英文/带点 token，使其能回挂属性。
+    返回保序去重 token 列表（未注册者由调用方据 fields 字典过滤）。
+    """
+    cell = cell.strip().strip("`").strip()
+    cell = re.sub(r"\*\*", "", cell)
+    out, seen = [], set()
+    for part in re.split(r"[/／\s]+", cell):
+        p = part.strip().strip("`*").strip()
+        if not p:
+            continue
+        got = None
+        for src in srcs:
+            t = cell_token(p, src)
+            if t:
+                got = t
+                break
+        if got is None:
+            m = re.search(r"[A-Za-z_][A-Za-z0-9_.]*", p)
+            got = m.group(0) if m else None
+        if got and got not in seen:
+            seen.add(got)
+            out.append(got)
+    return out
 
 
 # audit SECTION_MAP 源标签 → verify 分字典（无专属分字典者填 None）
@@ -138,12 +211,15 @@ def normalize_status(raw: str) -> str:
     if not raw:
         return "unverified"
     t = raw.strip()
-    # 已证伪
-    if "证伪" in t or "推翻" in t:
-        return "disproved"
-    # 已定案同义（✅ 或 L1/L2 定案 / 跨源对撞）
+    # 已定案同义（✅ 或 L1/L2 定案 / 跨源对撞）优先于 证伪/推翻：
+    # 字段自身以 ✅ 标记即权威「已定案」，正文内 "证伪/推翻" 多指「被否决的其它次级主张」
+    # （如 shuihoulirun「✅ L1…推翻旧 ❌ 标注」、tipinfo.zt_date_recent「✅…原 ex_date 误标 已证伪」），
+    # 不应据此将字段整体判为 disproved。
     if "✅" in t or "L1" in t or "L2" in t or "定案" in t or "数值实证" in t or "交叉" in t or "跨源" in t:
         return "verified"
+    # 已证伪（字段自身未标 ✅ 的纯证伪/推翻情境）
+    if "证伪" in t or "推翻" in t:
+        return "disproved"
     # 候选待审
     if "候选" in t or "待核" in t:
         return "candidate"
@@ -182,6 +258,27 @@ def _parse_align_id(idstr: str):
         code = s.rsplit(".", 1)[-1]
         return pre, code
     return None, None
+
+
+# 状态标记（用于行内状态信号定位；⏸ 覆盖 ⏸️ 变体）
+_STATUS_MARKS = ("✅", "❌", "⏸", "证伪", "推翻", "候选", "待核",
+                "弃用", "未接入", "退役", "deprecated")
+
+def _row_status(row, status_idx):
+    """定位行内状态信号：优先 status 列，否则扫描整行首个含状态标记的单元格。
+
+    兼容表头与数据列数错位的行（如 §12.10.7a 的 change_pct 行多插了一个单位列，
+    使 ✅ 落在 status_idx 之后的单元格）。避免 header-driven 定位时误取单位列（如 '%'）。
+    """
+    if status_idx is not None and status_idx < len(row):
+        s = clean_text(row[status_idx])
+        if s and any(m in s for m in _STATUS_MARKS):
+            return s
+    for cell in row:
+        c = clean_text(cell)
+        if c and any(m in c for m in _STATUS_MARKS):
+            return c
+    return ""
 
 
 def clean_text(s: str) -> str:
@@ -237,7 +334,7 @@ def extract():
     attr_coverage = {"canonical": 0, "meaning": 0, "unit": 0, "status": 0}
     scanned = 0
 
-    for sec, rows in tables:
+    for sec, header, rows in tables:
         if any(kw in sec for kw in gm.NON_FIELD_SEC):
             continue
         srcs = afc.section_to_sources(sec)
@@ -245,32 +342,37 @@ def extract():
             continue
         for src in srcs:
             section_patterns[src].add(sec)
+        # 表头驱动列定位：兼容标准 4 列表 & §2.1/§12.8.1/§12.8.17 非标准表
+        t_idx, m_idx, u_idx, s_idx = locate_columns(header)
+        if t_idx is None:
+            continue
         for row in rows:
-            if not row:
+            if not row or t_idx >= len(row):
                 continue
-            first = row[0]
-            if first in ("字段", "索引", "含义", "---"):
+            tok_cell = row[t_idx].strip().strip("`").strip()
+            # 跳过表头残留 / 分隔行关键字（按字段列判定）
+            if tok_cell in ("字段", "索引", "含义", "---", "协议偏移", "原始字段"):
                 continue
-            # 对该行首格，按各命中源的「原生 token」抽取并回挂属性（key 与 Layer1 对齐）
-            for src in srcs:
-                tok = cell_token(first, src)
-                if not tok or len(tok) < 2:
+            # 首列/`/` 分隔的多字段（zqdm/zqjc、zttj.days/zttj.ct、yfbt/ylbc）逐 token 回挂同一属性
+            for tok in extract_tokens_from_cell(tok_cell, srcs):
+                if not tok:
                     continue
                 rec = fields.get(tok)
                 if rec is None:
                     continue  # 仅对 Layer1 已登记的字段补属性，不引入新字段
                 if not rec["section"]:
                     rec["section"] = sec
-                if len(row) >= 4:
-                    if not rec["canonical"]:
-                        rec["canonical"] = extract_canonical(first_cell=first)
-                    if not rec["meaning"] and len(row) >= 2:
-                        rec["meaning"] = clean_text(row[1])
-                    if not rec["unit"] and len(row) >= 3:
-                        rec["unit"] = clean_text(row[2])
-                    if not rec["status_raw"] and len(row) >= 4:
-                        rec["status_raw"] = clean_text(row[3])
-                        rec["status"] = normalize_status(row[3])
+                if not rec["canonical"]:
+                    rec["canonical"] = extract_canonical(first_cell=tok_cell)
+                if m_idx is not None and m_idx < len(row) and not rec["meaning"]:
+                    rec["meaning"] = clean_text(row[m_idx])
+                if u_idx is not None and u_idx < len(row) and not rec["unit"]:
+                    rec["unit"] = clean_text(row[u_idx])
+                if not rec["status_raw"]:
+                    sr = _row_status(row, s_idx)
+                    if sr:
+                        rec["status_raw"] = sr
+                        rec["status"] = normalize_status(sr)
                 scanned += 1
 
     # 收尾：sources 列表化 + 单源填 source + 覆盖率统计

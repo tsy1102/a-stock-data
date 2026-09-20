@@ -81,7 +81,14 @@ SECTION_MAP = [
     # 预留了命名空间），导致 registry/§零·B/field_matrix 长期漏抽这三源——与 capture_field_probe.py
     # 实际采集清单（e63edbd 起即含 tdx/axdata/push2_full）严重脱节。现据主字典正文章节补登。
     ("TDX(双命名源)", ["零·A TDX F10", "TCP GetFinanceInfo", "TDX tdx_quotes",
-                      "12.8.19 通达信问小达", "12.13.2 财务批量"]),
+                      "12.8.19 通达信问小达", "12.13.2 财务批量",
+                      # 2026-09-20：补登 §2.1 协议完整 36 字段表（用户称 §2.2 静态股本节）。
+                      # 该节 37 个拼音/英文名 token 早已经 RAW_FIELD_KEYS 注册于本源，
+                      # 但此前 SECTION_MAP 缺登 → section_to_sources 返回 [] → Layer2 永不处理
+                      # → meaning/status 全空。补登后 Layer2 据表头列名（token=col1 字段名、
+                      # meaning=col2 中文含义、status=col7 项目代码使用）回挂属性。
+                      # 0 新增 token（仅激活既有 token 的属性回挂），registered_field_sets 自洽、G1 parity-safe。
+                      "2.1 协议完整 36 字段表"]),
     ("AxData", ["12.12 AxData 接口全景", "12.12.0 AxData 全量接口目录",
                 "12.12.8 跨源接口实测确认", "12.14 多源字段补齐矩阵"]),
     ("东财-push2_full", ["12.3.1 单股行情"]),

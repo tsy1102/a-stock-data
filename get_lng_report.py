@@ -1115,6 +1115,16 @@ async def generate_report_async(session, code, output_path, ind_comp=None):
     else:
         L("  近期无过滤后的战略级别重大公告。")
 
+    # V17.3.8: tipinfo 回购预案结构化数据接线（field_dict §3 Col[19]/[20]，TdxW 串池 `回购预案:上限%.2f亿元` 实锤）
+    _hg_date = (_tip_info or {}).get("hg_date", "")
+    _hg_amount = (_tip_info or {}).get("hg_amount_yi", 0) or 0
+    if _hg_date or _hg_amount:
+        L("\n  📌 ZHB tipinfo 回购预案 (财报日历结构化数据):")
+        if _hg_date:
+            L(f"    回购预案公告日: {_hg_date}")
+        if _hg_amount:
+            L(f"    回购金额上限: {_hg_amount:.2f} 亿元")
+
     L("\n## 【九、机构长效共识度与投研透明度】")
     L("---")
     reports = await get_reports_async(session, code, max_pages=5)

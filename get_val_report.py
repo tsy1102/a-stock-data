@@ -2262,6 +2262,21 @@ async def run_discovery_async(output_path):
                 L(f"  ⚠ 同花顺强势股获取失败 → 东财人气榜兜底 {len(ths_hot_list)} 只")
         except Exception as _e:
             _debug_log(f"val hot pool fallback: {_e}")
+    # V17.4 (2026-09-21): 热门概念富集——对 hot pool 个股 lazily 附加 em_hot_concept 标签
+    # （沿用 get_sht_report.py:2203 同款 try/except 模式，零网络破坏；em_hot_concept 内部已缓存）。
+    # 仅附加 concepts 字段，不改变既有结构；strategy_07 政策驱动可直接消费。
+    if ths_hot_list:
+        try:
+            from core.data_provider import get_hot_concepts
+
+            for _hs in ths_hot_list:
+                _hc = _hs.get("code")
+                if _hc and "concepts" not in _hs:
+                    _con = get_hot_concepts(_hc)
+                    if _con:
+                        _hs["concepts"] = [c.get("concept") for c in _con[:3] if c.get("concept")]
+        except Exception as _e:
+            _debug_log(f"val hot pool concept enrich: {_e}")
     if not ths_hot_list:
         # V17.0.x(2026-09-10) 新维度修复: 同花顺 + 东财人气榜均不可用(反爬/限流)时,
         # 退化为 ZHB 内存强势股(当日涨幅降序 Top300)——零网络、稳定,

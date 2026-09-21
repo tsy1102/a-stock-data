@@ -628,42 +628,25 @@ def collect_push2(pool: list) -> dict:
     连接级风控仍在,首次连接约 50%
     概率 RemoteDisconnected(健康探测单次连接恰好成功)。V16.4.1 防封:
     失败**不再重试**(重试叠加失败连接会触发封禁),失败即记 error。
-    V17.2.x 可用性修复: 首连 push2 主域失败不再整段熔断记 error, 而是回退 push2delay
-    镜像域(与下方 em_fund_flow 一致逻辑), 使 push2 源在封禁时经镜像补全; 主域
-    恢复时自动回切(used_host 记录命中域)。push2delay 字段同构 f1-f250, 无损失。
+    V17.3.2 封禁规律对齐: 跨 33 采集日实证 push2 主域受扰率 80%、push2delay 镜像域可用率
+    ~93-97%(独立风控面), 故**优先走 push2delay 镜像域**(与运行时 _FFLOW_HOSTS / get_em_batch_quotes
+    一致策略), 主域仅作兜底; 两域字段同构(f1-f250)无损失。used_host 记录实际命中域便于排查。
     """
     from stock_common import _quick_request
 
-    # V17.2.x 可用性修复: push2 主域常遭 IP 级封禁(push2/push2his/83.push2 同风控面);
-    # push2delay 为独立风控面、字段同构(f1-f250)。故采用与 em_fund_flow 一致的
-    # 「push2 主域优先 → 失败即切 push2delay 镜像」3 连败熔断回退, 使 push2 源在封禁时
-    # 经镜像域补全可用性(数据同构, 无损失); used_host 记录实际命中域, 便于排查主域恢复。
+    # V17.3.2 封禁规律对齐: 跨 33 采集日实证 push2 主域受扰率 80%、push2delay 镜像域
+    # 可用率 ~93-97%(独立风控面, 主域被封时仍可用)。故**优先 push2delay 镜像域**,
+    # 仅当镜像域连续失败(罕见总封禁)才兜底试 push2 主域; 两域字段同构(f1-f250)无损失。
     fields = PUSH2_FULL_FIELDS  # f1-f250 显式全字段(与主字典口径对齐)
-    push2_fail_streak = 0
+    delay_fail_streak = 0
     out = {"stocks": {}}
     for p in pool:
         c = p["code"]
         secid = em_secid_prefix(c) + c  # V17.0 S3: 统一(修复 92 北交所误判 1.)
         r = None
         used_host = ""
-        if push2_fail_streak < 3:
-            try:
-                r = _quick_request(
-                    "https://push2.eastmoney.com/api/qt/stock/get",
-                    params={"secid": secid, "fltt": "2", "invt": "2", "fields": fields,
-                            "ut": "fa5fd1943c7b386f172d6893dbfba10b"},
-                    headers={"Referer": "https://quote.eastmoney.com/"},
-                    timeout=10,
-                )
-                if r is not None:
-                    used_host = "push2"
-                    push2_fail_streak = 0
-                else:
-                    push2_fail_streak += 1
-            except Exception:
-                push2_fail_streak += 1
-                r = None
-        if r is None:
+        # 首选 push2delay 镜像域(独立风控面, 实测可用率 ~95%)
+        if delay_fail_streak < 3:
             try:
                 r = _quick_request(
                     "https://push2delay.eastmoney.com/api/qt/stock/get",
@@ -674,10 +657,28 @@ def collect_push2(pool: list) -> dict:
                 )
                 if r is not None:
                     used_host = "push2delay"
+                    delay_fail_streak = 0
+                else:
+                    delay_fail_streak += 1
+            except Exception:
+                delay_fail_streak += 1
+                r = None
+        # 镜像域连续失败 → 兜底试 push2 主域(共享风控面; 镜像域若因总封禁同崩则主域亦大概率失败)
+        if r is None:
+            try:
+                r = _quick_request(
+                    "https://push2.eastmoney.com/api/qt/stock/get",
+                    params={"secid": secid, "fltt": "2", "invt": "2", "fields": fields,
+                            "ut": "fa5fd1943c7b386f172d6893dbfba10b"},
+                    headers={"Referer": "https://quote.eastmoney.com/"},
+                    timeout=10,
+                )
+                if r is not None:
+                    used_host = "push2"
             except Exception:
                 r = None
         if r is None:
-            out["stocks"][c] = {"__error__": "request failed (push2+delay, no retry)"}
+            out["stocks"][c] = {"__error__": "request failed (push2delay+push2, no retry)"}
             continue
         data = (r.json() or {}).get("data") or {}
         out["stocks"][c] = {"secid": secid, "host": used_host, "n_fields": len(data), "data": data}

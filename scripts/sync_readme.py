@@ -88,7 +88,7 @@ def select_emoji(version: str, body: str) -> str:
         return "🧹"
     if "缓存" in body or "cache" in body.lower():
         return "💾"
-    if "mootdx" in body or "tdx" in body.lower():
+    if "tdx" in body.lower():
         return "🔌"
     if "Data Provider" in body or "data_provider" in body:
         return "🎯"

@@ -73,7 +73,7 @@ V12.1 更新：
   - 死代码清理
 
 V12.0 更新：
-  - mootdx 统一 TCP 层（V12.0）；V15.5 起 easy_tdx 1.20.4 适配层首选（健康分+故障转移）
+  - eltdx 公网主站 TCP 层为主源（V17.2.15 起），easy_tdx 1.20.4+ 适配层兜底（健康分+故障转移）；mootdx 已于 V17.3.4 退役
 
 V9.5 更新：
   - 静默异常日志化：tdx_client.py/gd_uploader.py/get_med_report.py 共28处 except Exception 添加 _debug_log
@@ -144,10 +144,10 @@ def check_dependencies():
     """V7.5/15.3: 检查必要依赖是否已安装，缺失时提示用户。
 
     V15.3 修复: 原代码只检查 5 个包（aiohttp/yaml/google.*×3/requests），
-    但 requirements.txt 列出 14 个，缺 mootdx / pytdx / pandas / numpy / easy-tdx /
+    但 requirements.txt 列出核心依赖，缺 pytdx / pandas / numpy / easy-tdx /
     aiosqlite / chinese-calendar 等核心依赖时启动不报错，运行到具体报告才
-    ImportError 崩溃。补全 9 项检查（requests/yaml/aiohttp/mootdx/pytdx/pandas/
-    numpy/chinese_calendar/aiosqlite），Google Drive 套件作为可选。
+    ImportError 崩溃。补全检查（requests/yaml/aiohttp/aiosqlite/pytdx/pandas/
+    numpy/chinese_calendar；easy-tdx 经 git+https 锁定上游单独安装），Google Drive 套件作为可选。
     """
     missing = []
     # M12: 9 个 try/except ImportError 批量化为 importlib.util.find_spec（V16.3 E）

@@ -50,7 +50,7 @@ def get_stock_info(code: str) -> Dict[str, Any]:
     try:
         client = _get_tdx_client()
         if client:
-            # V15.5.4: 统一用适配器 finance() 方法（easy_tdx/mootdx 兼容，列名去下划线）
+            # V15.5.4: 统一用适配器 finance() 方法（eltdx/easy_tdx 兼容，列名去下划线）
             info = client.finance(symbol=code)
             if info is not None and not info.empty:
                 # V15.1: 修正 0x0010 协议 key（参考 docs/field_dict.md 第 7 章）

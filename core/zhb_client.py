@@ -1129,20 +1129,20 @@ class ZhbData:
     def _parse_tipinfo(self) -> Dict[str, Dict[str, Any]]:
         """解析 tipinfo.dat（22字段，5609只股票）。
 
-        字段映射：
-            [0]  market          市场代码
-            [1]  code            股票代码
-            [2]  report_period   财报期 (如 20260331 = 2026Q1)
-            [3]  eps             每股收益(元)
-            [4]  disclose_date   财报披露日
-            [5]  ex_date_1       除权除息日1
-            [6]  ex_date_2       除权除息日2
-            [8]  div_date        分红日
-            [9]  div_amount      分红金额(每10股, 元)
-            [10] unknown_10      未知(日期)
-            [11] unknown_11      未知(日期)
-            [13] record_date     登记日
-            [14] record_amount   登记金额
+        字段映射（与 field_dict.md §3 财报日历契约对齐；V17.3.6 校正旧误标）：
+
+            [0]  market           市场代码
+            [1]  code             股票代码
+            [2]  report_period    财报期 (如 20260331 = 2026Q1)
+            [3]  eps              每股收益(元)
+            [4]  disclose_date    财报披露日
+            [5]  zt_date_recent   最近涨停日（⚠️ 旧误标 ex_date/除权除息日，dict §3 已证伪）
+            [8]  div_date         业绩预告日（ForecastDate；⚠️ 旧误标"分红日"，dict §3 已证伪——
+                                 Col[9] 全市场 83% 负值、分红恒非负 → 必为预告净利）
+            [9]  div_amount       业绩预告净利润(万元, 可负)（ForecastAmount；旧误标"每10股分红元"）
+            [13] unlock_date      最新解禁日（Gemini 20260921 终局 + 字典实例 茅台 col14=48867.90万 互证）
+            [14] unlock_shares_wan 最新解禁数量(万股)
+            # [19]/[20] 回购预案日/回购上限(亿元) 为 Gemini 候选，字典实例 col20=30.00 支持回购上限，暂未接入
         """
         data = self.raw_files.get("tipinfo.dat", b"")
         if not data:
@@ -1157,15 +1157,20 @@ class ZhbData:
             if not code:
                 continue
 
-            result[code] = {
+            rec: Dict[str, Any] = {
                 "code": code,
                 "report_period": parts[2].strip() if len(parts) > 2 else "",
                 "eps": _safe_cast(parts, 3, float),
                 "disclose_date": parts[4].strip() if len(parts) > 4 else "",
-                "ex_date": parts[5].strip() if len(parts) > 5 else "",
+                "zt_date_recent": parts[5].strip() if len(parts) > 5 else "",
                 "div_date": parts[8].strip() if len(parts) > 8 else "",
                 "div_amount": _safe_cast(parts, 9, float),
             }
+            # 解禁族（Gemini 20260921 + 字典实例互证；非空才挂，避免噪声）
+            if len(parts) > 14:
+                rec["unlock_date"] = parts[13].strip()
+                rec["unlock_shares_wan"] = _safe_cast(parts, 14, float)
+            result[code] = rec
         return result
 
     def get_tip_info(self, code: str) -> Optional[Dict[str, Any]]:

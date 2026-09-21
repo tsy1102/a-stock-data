@@ -1359,18 +1359,28 @@ def get_canonical_stock_data(code: str, force_realtime: bool = False) -> Any:
     # 首次 HTTP 后永不过期，不再每次从行情链提取
     try:
         from stock_common.sc_datasource import get_stock_permanent_info
+        from core._accessors import normalize_list_date
 
         _pinfo = get_stock_permanent_info(code_str) or {}
         _p_list_date = _pinfo.get("list_date")
     except Exception as _e:
         _debug_log(f"get_canonical_stock_data permanent info error ({code_str}): {_e}")
         _p_list_date = None
-    list_date = str(
-        _p_list_date
-        or rt_quote.get("list_date")
-        or em_quote_raw.get("list_date")
-        or ""
-    )
+    # V17.3.5 修正(报告审查 #362): 永久缓存可能残留残缺上市日期(如 '1998-04-')。
+    # 归一化后若非完整 YYYY-MM-DD, 则 TDX 0x0010 ipo_date 兜底补全(本地 TCP, 廉价)。
+    _raw_ld = _p_list_date or rt_quote.get("list_date") or em_quote_raw.get("list_date") or ""
+    list_date = normalize_list_date(_raw_ld)
+    if not (len(list_date) == 10 and list_date[4] == "-" and list_date[7] == "-"):
+        try:
+            from core.tdx_client import tdx_get_finance_info
+
+            _fi = tdx_get_finance_info(code_str) or {}
+            if _fi.get("ipo_date"):
+                _tdx_ld = normalize_list_date(_fi["ipo_date"])
+                if _tdx_ld and len(_tdx_ld) == 10 and _tdx_ld[4] == "-" and _tdx_ld[7] == "-":
+                    list_date = _tdx_ld
+        except Exception as _e:
+            _debug_log(f"get_canonical_stock_data list_date tdx fallback error ({code_str}): {_e}")
     if list_date and list_date not in ("None", "nan"):
         field_sources["list_date"] = "static:permanent" if _p_list_date else (
             "realtime:push2" if rt_quote.get("list_date") else "missing"

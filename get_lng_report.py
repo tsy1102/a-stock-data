@@ -307,15 +307,17 @@ async def generate_report_async(session, code, output_path, ind_comp=None):
         _debug_log(f"lng industry_cycle error: {_e}")
     
     # V17.2.21 修复: 优先 cdata.list_date（push2delay+10年缓存, 实测可用）, info 兜底（主域 push2 被风控拦截恒空）
+    # V17.3.5 修正(报告审查 #362): 改用 normalize_list_date 归一化（避免切片对残缺值生成乱码）
+    from core._accessors import normalize_list_date
     ext_list_date_raw = cdata.list_date or info.get("list_date", "")
-    if ext_list_date_raw and len(ext_list_date_raw) >= 8:
-        ext_list_year = int(ext_list_date_raw[:4])
+    ext_list_fmt = normalize_list_date(ext_list_date_raw)
+    if ext_list_fmt and len(ext_list_fmt) == 10 and ext_list_fmt[4] == "-":
+        ext_list_year = int(ext_list_fmt[:4])
         ext_years_listed = date.today().year - ext_list_year
-        ext_list_fmt = f"{ext_list_date_raw[:4]}-{ext_list_date_raw[4:6]}-{ext_list_date_raw[6:8]}"
         ext_list_tag = "✅ 上市已满3年（长线安全标的）" if ext_years_listed >= 3 else "⚠️ 上市未满3年（次新股，警惕业绩变脸）"
         L(f"  上市日期: {ext_list_fmt}（已上市 {ext_years_listed} 年）{ext_list_tag}")
     else:
-        L(f"  上市日期: {ext_list_date_raw}")
+        L(f"  上市日期: {ext_list_fmt}")
     
     # zhb数据展示（阶段涨幅、52周区间、YTD、员工人数——zhb独有，直接展示）
     # V11.5: 优先从 data_provider 综合数据获取重叠字段，zhb独有字段保留原路径
@@ -541,11 +543,13 @@ async def generate_report_async(session, code, output_path, ind_comp=None):
         for r in ext_roe_data:
             ext_roe_str = f"{r['roe']:.2f}" if r['roe'] is not None else "N/A"
             ext_roe_kc_str = f"{r['roe_kc']:.2f}" if r['roe_kc'] is not None else "N/A"
-            # V17.2.26 修复(报告 3.6): get_roe_trend 返回 eps/bps 为 0.0001元单位(如 3375.90→0.3376元), 折算为元显示
+            # V17.3.5 修正(报告审查): get_roe_trend 的 F10 路径返回 基本每股收益(元)/每股净资产(元)
+            # （已是元单位），新浪兜底路径亦为 profit/total_shares（元/股）——两者均**非** 0.0001 元单位；
+            # 旧代码 /10000 致 EPS/BPS 缩水 1e4 倍（如 2.8元→0.0002元）。此处直接以元显示。
             ext_eps_val = r['eps']
             ext_bps_val = r['bps']
-            ext_eps_str = f"{ext_eps_val/10000:.4f}" if ext_eps_val is not None else "N/A"
-            ext_bps_str = f"{ext_bps_val/10000:.4f}" if ext_bps_val is not None else "N/A"
+            ext_eps_str = f"{ext_eps_val:.4f}" if ext_eps_val is not None else "N/A"
+            ext_bps_str = f"{ext_bps_val:.4f}" if ext_bps_val is not None else "N/A"
             L(f"| {r['date']} | {ext_roe_str} | {ext_roe_kc_str} | {ext_eps_str} | {ext_bps_str} |")
         ext_last_roe = ext_roe_data[0].get("roe")
         if ext_last_roe is not None:
@@ -619,20 +623,32 @@ async def generate_report_async(session, code, output_path, ind_comp=None):
 
     if financials and len(financials) >= 4:
         try:
-            # V17.0.7 修复: 仅用年度报告(12-31)计算 CAGR——原实现混用 H1/Q1 与 FY
-            # 导致虚假负增长(茅台 H1 922亿 vs FY 1720亿 → -19% 假 CAGR)
-            _fy_rows = [f for f in financials if "12-31" in f.get("报告日", "")]
+            # V17.3.5 修正(报告审查 #365): 仅用年报(报告日含 12-31/12/31/1231/12月31日)计算复合增速,
+            # 避免混入 H1/Q1 季报导致虚假负增长; 且要求 >=3 个年报点方可称 CAGR,
+            # 仅 2 点时降级为"近1年同比"并附数据质量提示(单年极端值多为年报数据缺口)。
+            def _is_year_end(rd):
+                s = str(rd or "")
+                return s.endswith("12-31") or s.endswith("12/31") or "1231" in s or ("12月31日" in s)
+            _fy_rows = [f for f in financials if _is_year_end(f.get("报告日", ""))]
             _rev3 = [_safe_float(f.get("营业总收入", "0")) for f in _fy_rows]
             _prf3 = [_safe_float(f.get("净利润", "0")) for f in _fy_rows]
             if len(_rev3) >= 2 and _rev3[0] > 0 and _rev3[-1] > 0:
-                _years = len(_rev3) - 1
-                _rev_cagr = (pow(_rev3[0]/_rev3[-1], 1/_years)-1)*100
-                if _prf3[0] > 0 and _prf3[-1] > 0:
-                    _prf_cagr = (pow(_prf3[0]/_prf3[-1], 1/_years)-1)*100
-                    _prf_cagr_str = f"{_prf_cagr:.1f}%"
+                if len(_rev3) >= 3:
+                    _years = len(_rev3) - 1
+                    _rev_cagr = (pow(_rev3[0]/_rev3[-1], 1/_years)-1)*100
+                    if _prf3[0] > 0 and _prf3[-1] > 0:
+                        _prf_cagr = (pow(_prf3[0]/_prf3[-1], 1/_years)-1)*100
+                        _prf_cagr_str = f"{_prf_cagr:.1f}%"
+                    else:
+                        _prf_cagr_str = "N/A (亏损)"
+                    L(f"  📊 近{_years}年营收CAGR: {_rev_cagr:.1f}% | 净利润CAGR: {_prf_cagr_str}")
                 else:
-                    _prf_cagr_str = "N/A (亏损)"
-                L(f"  📊 近{_years}年营收CAGR: {_rev_cagr:.1f}% | 净利润CAGR: {_prf_cagr_str}")
+                    _rev_yoy = (_rev3[0]/_rev3[-1]-1)*100
+                    _prf_yoy = (_prf3[0]/_prf3[-1]-1)*100 if (_prf3[0] > 0 and _prf3[-1] > 0) else None
+                    _prf_yoy_str = f"{_prf_yoy:.1f}%" if _prf_yoy is not None else "N/A (亏损)"
+                    L(f"  📊 近1年营收同比: {_rev_yoy:+.1f}% | 净利润同比: {_prf_yoy_str}")
+                    if abs(_rev_yoy) > 50 or (_prf_yoy is not None and abs(_prf_yoy) > 50):
+                        L("    ⚠️ 单年同比变动超 50%, 提示: 可能含年报数据缺口或口径切换, 数值仅供参考")
         except Exception as _e:
             _debug_log(f"lng cagr_calc error: {_e}")
 
@@ -720,9 +736,9 @@ async def generate_report_async(session, code, output_path, ind_comp=None):
         parts.append(f"净利率 {gm_rows[0]['npm']:.2f}%")
     if ext_roe_data and ext_roe_data[0].get("roe") is not None:
         parts.append(f"ROE {ext_roe_data[0]['roe']:.2f}%")
-    # V17.2.26 修复(报告 3.6): eps 为 0.0001元单位, 折算为元显示
+    # V17.3.5 修正(报告审查): eps 已是元单位（F10 基本每股收益(元)），不再 /10000
     if ext_roe_data and ext_roe_data[0].get("eps") is not None:
-        parts.append(f"EPS {ext_roe_data[0]['eps']/10000:.4f}")
+        parts.append(f"EPS {ext_roe_data[0]['eps']:.4f}")
     try:
         # V16.1: 复用"三"章节的 0x0010 快照（避免重复 TCP 请求）
         if _tdx_fi_snapshot is not None:
@@ -759,7 +775,7 @@ async def generate_report_async(session, code, output_path, ind_comp=None):
                     _npc = _cf.get("net_profit_cash_content")
                     _coi = _cf.get("cash_operating_index")
                     if _npc is not None or _coi is not None:
-                        L(f"\n  🔬 现金流官方指标交叉(fuyao, 报告期 {_rp}):")
+                        L(f"\n  🔬 现金流官方指标交叉(fuyao, 报告期 {_rp.replace('-', 'Q')}):")
                         if _npc is not None:
                             _v = float(_npc)
                             _tag = "✅ 含金量充足" if _v >= 100 else ("⚠️ 偏低" if _v >= 60 else "🚨 严重不足")
@@ -951,9 +967,15 @@ async def generate_report_async(session, code, output_path, ind_comp=None):
         except Exception as _de:
             _debug_log(f"lng dividend continuity: {_de}")
     else:
-        # V16.2.3: 区分"接口失败"与"真无分红"（tdx_get_dividend_history 失败返回 None）
-        L("  分红数据获取失败（TDX 接口暂不可用），未能确认分红历史。" if div is None else
-          "  暂无任何分红派息记录 (一毛不拔，纯博弈型或极早期成长型企业，长线防御力弱)。")
+        # V17.3.5 修正(报告审查 #363): 若股息率>0 已证实有分红, 绝不输出"一毛不拔"——
+        # get_dividend_history 返回空只代表明细接口失败/空窗, 与股息率矛盾时以股息率为准。
+        if _show_div_yield and _show_div_yield > 0:
+            L("  分红明细获取为空，但股息率显示该股有分红，明细数据可能存在缺口。" if div is None
+              else "  分红历史明细为空，但股息率显示该股有分红，建议以股息率为准。")
+        else:
+            # V16.2.3: 区分"接口失败"与"真无分红"（tdx_get_dividend_history 失败返回 None）
+            L("  分红数据获取失败（TDX 接口暂不可用），未能确认分红历史。" if div is None else
+              "  暂无任何分红派息记录 (一毛不拔，纯博弈型或极早期成长型企业，长线防御力弱)。")
 
     L("\n## 【六、长线筹码沉淀与机构持股倾向】")
     L("---")
@@ -1123,8 +1145,8 @@ async def generate_report_async(session, code, output_path, ind_comp=None):
             L(f"  {'-'*70}")
             for r in _rp[:10]:
                 pub_date = str(r.get("publishDate", r.get("reportDate", "")))[:10]
-                org = r.get("orgSName", r.get("orgName", ""))
-                rating = r.get("emRatingName", r.get("rating", ""))
+                org = r.get("orgSName", r.get("orgName", "")) or "—"
+                rating = r.get("emRatingName", r.get("rating", "")) or "—"
                 title = r.get("title", r.get("reportTitle", r.get("infoContent", "")))[:50]
                 if not title:
                     title = r.get("summary", "")[:50] if r.get("summary") else "无标题"

@@ -335,9 +335,10 @@ async def generate_report_async(session, code, output_path, ind_comp=None, idx_q
     # listing_date 恒 N/A）
     # V17.2.21 修复: 优先用 canonical cdata.list_date（走 push2delay+10年缓存, 实测可用）,
     # info.get 兜底（get_stock_info 走主域 push2 被风控拦截恒空）——修复 39 份个股报告上市日期全空
+    # V17.3.5 修正(报告审查 #362): 改用 normalize_list_date 归一化（避免切片对残缺值生成乱码）
+    from core._accessors import normalize_list_date
     ld = cdata.list_date or info.get("list_date", "") or info.get("listing_date", "")
-    if ld and len(ld) >= 8: ldf = f"{ld[:4]}-{ld[4:6]}-{ld[6:8]}"
-    else: ldf = ld
+    ldf = normalize_list_date(ld)
     L(f"  上市日期: {ldf}")
 
     if cdata.change_5d or cdata.change_10d or cdata.change_20d:
@@ -656,7 +657,7 @@ async def generate_report_async(session, code, output_path, ind_comp=None, idx_q
 
         for r in rr[:10]:
 
-            L(f"  {str(r.get('publishDate',''))[:10]:<12} {str(r.get('orgSName','') or ''):<16} {str(r.get('emRatingName','') or ''):<10} {str(r.get('title','') or '')[:50]}")
+            L(f"  {str(r.get('publishDate',''))[:10]:<12} {str(r.get('orgSName','') or '—'):<16} {str(r.get('emRatingName','') or '—'):<10} {str(r.get('title','') or '')[:50]}")
 
     elif reports: L(f"  近60天内无新研报（共 {len(reports)} 篇历史研报，已省略）")
 
@@ -768,7 +769,7 @@ async def generate_report_async(session, code, output_path, ind_comp=None, idx_q
 
     if blocks["concept"]:
 
-        L(f"\n  概念板块: {', '.join(b['name'] for b in blocks['concept'])}")
+        L(f"\n  概念板块(TDX): {', '.join(b['name'] for b in blocks['concept'])}")
 
     L("\n  ➤ 同花顺热点题材归因 (基于当日强势股/涨停榜):")
 
@@ -2202,7 +2203,9 @@ async def generate_report_async(session, code, output_path, ind_comp=None, idx_q
         # 东财概念命中（V14.2: 仅当 ZHB 无数据时 fallback）
         concepts = await asyncio.to_thread(em_hot_concept, code)
         if concepts:
-            L(f"     热门概念: {', '.join([c['concept'] for c in concepts[:3]])}")
+            # V17.3.5 修正(报告审查 #367): 标注来源(东财)以区别于上方 TDX 概念板块,
+            # 两者口径不同、可存在差异, 避免读者误判为报告自相矛盾。
+            L(f"     热门概念(东财): {', '.join([c['concept'] for c in concepts[:3]])}")
     except Exception as _e:
         _debug_log(f"em_hot_concept error: {_e}")
 

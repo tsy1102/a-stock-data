@@ -815,7 +815,12 @@ def get_stock_permanent_info(code: str) -> Dict[str, Any]:
         if r is not None and r.status_code == 200:
             _d = r.json().get("data") or {}
             if _d.get("f189"):
-                out["list_date"] = str(_d["f189"])
+                # V17.3.5 修正(报告审查): f189 可能为残缺形态(如 '1998-04-'), 归一化后仅当得到
+                # 完整 YYYY-MM-DD 才采用; 残缺(日缺失)视为缺失, 交由下方 TDX 0x0010 ipo_date 兜底补全。
+                from core._accessors import normalize_list_date
+                _ld = normalize_list_date(_d["f189"])
+                if _ld and len(_ld) == 10 and _ld[4] == "-" and _ld[7] == "-":
+                    out["list_date"] = _ld
     except Exception as _e:
         _debug_log(f"permanent list_date ({code}): {_e}")
     if not out.get("list_date"):
@@ -824,7 +829,8 @@ def get_stock_permanent_info(code: str) -> Dict[str, Any]:
             from core.tdx_client import tdx_get_finance_info
             fin = tdx_get_finance_info(code) or {}
             if fin.get("ipo_date"):
-                out["list_date"] = str(fin["ipo_date"])
+                from core._accessors import normalize_list_date
+                out["list_date"] = normalize_list_date(fin["ipo_date"])
         except Exception as _e:
             _debug_log(f"permanent list_date tdx ({code}): {_e}")
     try:

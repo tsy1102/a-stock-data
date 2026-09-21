@@ -5,7 +5,7 @@
 采集器集合与主字典 field_registry.json(26 源)逐源映射(V17.3 同步):
 
   已采集(可用 producer):
-    ZHB / TDX / 腾讯(qt.gtimg) / 东财-push2(+push2_full 全字段变体) / 新浪 / axdata(短线指标)
+    ZHB / TDX / 腾讯(qt.gtimg) / 东财-push2 / 新浪 / axdata(短线指标)
     / 市场源(market_sources) / TDX-F10 / 同花顺-fuyao / 东财-em_kline_f61 / 东财-资金流(em_fund_flow)
     / 东财-ulist239 / 东财-push2ex / 东财-热榜(em_hot) / 财联社(cls) / 东财-datacenter / 巨潮(cninfo)
     / 东财-reports / levistock(ftshare) / TDX-F10-more
@@ -16,7 +16,7 @@
   已废弃不采集(标记 deprecated):
     百度(baidu, §12.8.16 ❌→⏸️, PAE 失效改走 TDX 适配器)
   真实可用, 已于 V17.2.13 补登 registry(此前 SECTION_MAP 漏登记, 属治理抽取债):
-    TDX(行情+F10) / axdata / push2_full
+    TDX(行情+F10) / axdata
   已从项目彻底移除, 采集器同步删除(§12.8.12b 章节保留为退役追溯):
     同花顺-thsdk(V17.0.29 移除 TCP 网关)
 
@@ -40,8 +40,16 @@ V17.3(2026-09-20) 采集脚本↔主字典(field_registry.json, 26 源)逐源对
     不进异常源清单), 使脚本采集清单与主字典源清单一一对应。
   - SOURCE_SCHEME 同步增补 baidu/clist/slist/exchange 四项 scheme 标注, 并与
     对撞护栏的 BUILTIN_SCHEME 保持一致(跨源对撞血缘约束)。
-  - TDX(行情+F10)/axdata/push2_full 为真实可用采集器但 registry 漏登记, 保留采集并在本注记标注
+  - TDX(行情+F10)/axdata 为真实可用采集器但 registry 漏登记, 保留采集并在本注记标注
     (属字典侧补登, 非脚本缺陷)。
+
+V17.3.1(2026-09-21) push2_full 去重:
+  - 经实证 push2 与 push2_full 两采集函数逐字同构(同端点 push2/push2delay stock/get、同 f1-f250、
+    同兜底域), 且二者 114 字段值级 114/114 全相等; registry 中仅依赖 push2_full 而不在 push2 登记的
+    字段数 = 0 → 纯冗余负载。故从 collectors 注销 push2_full、删除 collect_push2_full 函数,
+    日常改采 push2 即可。主字典 field_dict.md 保留 push2_full 全部条目作运行时 fallback 参考
+    (语义与 push2 完全等价, 见 §12.9.1「同源同步治理规则」)。em_fund_flow 保留为 push2 子集韧性备源
+    (主域封禁时经 push2delay 补资金流四档)。
 
 V17.2.13(2026-09-12) clist/slist 真实 producer 接入(Q3 用户授权):
   - collect_clist / collect_slist 由 unwired 占位升级为真实 producer: 直连 push2 clist/get、slist/get
@@ -102,13 +110,13 @@ POOL_PATH = os.path.join(_ROOT, "docs", "field_verification", "pool.json")
 OUT_BASE = os.path.join(_ROOT, "docs", "field_verification")
 
 # V17.1.x: 东财 stock/get 全字段(与主字典登记口径对齐 f1-f250, 保证采集不遗漏任何字段)。
-# 统一供 push2 / push2_full / ulist239 / em_fund_flow 等东财 f 编号端点复用;
+# 统一供 push2 / ulist239 / em_fund_flow 等东财 f 编号端点复用;
 # 主字典 push2/ulist 最高登记到 f250, 故 range(1,251) 即全量。新增 f 编号时只需改此处。
 PUSH2_FULL_FIELDS = ",".join(f"f{i}" for i in range(1, 251))
 
 # A 方案(V17.2.5, 第九轮后落地): 字段体系(scheme)血缘标注。
 # 东方财富存在两套 f 编号体系, 同号≠同义(铁证 ulist.f62 == push2.f137 主力净):
-#   em.stock_get : push2 / push2_full / em_fund_flow 走 stock/get 端点, 同一套 f 编号
+#   em.stock_get : push2 / em_fund_flow 走 stock/get 端点, 同一套 f 编号
 #                  (f62=主力净, f164=pe_ttm); axdata 复用其 f 命名, 占位同族。
 #   em.ulist_np  : ulist239 走 ulist.np 端点, 独立 f 编号, 与 stock/get 不同号。
 # 其余源为命名/数组体系(zhb/tdx/tencent/sina/fuyao/ftshare…), 与任何 f 编号天然不可按号对应。
@@ -116,7 +124,6 @@ PUSH2_FULL_FIELDS = ",".join(f"f{i}" for i in range(1, 251))
 # 与字典 lint 做血缘校验, 从数据层面固化「同号即同义」陷阱的硬提示。
 SOURCE_SCHEME = {
     "push2":          "em.stock_get",
-    "push2_full":     "em.stock_get",
     "em_fund_flow":   "em.stock_get",   # 同样走 push2delay stock/get, 与 push2 同编号族
     "axdata":         "em.stock_get",    # 复用 PUSH2_FULL_FIELDS 命名(实际短纤指标, 占位同族)
     "ulist239":       "em.ulist_np",     # 独立 f 编号体系, 与 stock/get 不同号
@@ -622,13 +629,13 @@ def collect_push2(pool: list) -> dict:
     概率 RemoteDisconnected(健康探测单次连接恰好成功)。V16.4.1 防封:
     失败**不再重试**(重试叠加失败连接会触发封禁),失败即记 error。
     V17.2.x 可用性修复: 首连 push2 主域失败不再整段熔断记 error, 而是回退 push2delay
-    镜像域(与 collect_push2_full 一致逻辑), 使 push2 源在封禁时经镜像补全; 主域
+    镜像域(与下方 em_fund_flow 一致逻辑), 使 push2 源在封禁时经镜像补全; 主域
     恢复时自动回切(used_host 记录命中域)。push2delay 字段同构 f1-f250, 无损失。
     """
     from stock_common import _quick_request
 
     # V17.2.x 可用性修复: push2 主域常遭 IP 级封禁(push2/push2his/83.push2 同风控面);
-    # push2delay 为独立风控面、字段同构(f1-f250)。故采用与 collect_push2_full 一致的
+    # push2delay 为独立风控面、字段同构(f1-f250)。故采用与 em_fund_flow 一致的
     # 「push2 主域优先 → 失败即切 push2delay 镜像」3 连败熔断回退, 使 push2 源在封禁时
     # 经镜像域补全可用性(数据同构, 无损失); used_host 记录实际命中域, 便于排查主域恢复。
     fields = PUSH2_FULL_FIELDS  # f1-f250 显式全字段(与主字典口径对齐)
@@ -677,65 +684,11 @@ def collect_push2(pool: list) -> dict:
     return out
 
 
-def collect_push2_full(pool: list) -> dict:
-    """东财 push2 stock/get **显式全字段**(f1-f250)。
-
-    V16.4.1: 原 collect_push2 未指定 fields → 服务端仅返回 58 字段基础子集
-    (无 f162/f167 等估值字段)。字典 §12.9 破解为 f1~f250 全字段——
-    此处显式请求全字段。失败重试一次(半恢复期连接级拒绝)。
-    2026-08-12 实测: push2 半恢复期间歇全拒 → 自动切 push2delay 镜像域
-    (字段同构, 字典 §12.15.5; 独立风控面, 1.0rps)。
-    V16.4.1 防封(2026-08-12 封禁复盘): 失败**不再重试**——失败连接本身
-    积累服务器侧风控(当日 ~300 次连接尝试含半数失败 → 触发连接级封禁)。
-    每只: push2 一次 → 失败直接切 push2delay 一次; 连续 3 只 push2 失败
-    → 剩余股票全部走 push2delay(域级熔断, 不继续捅 push2)。
-    """
-    from stock_common import _quick_request
-
-    fields = PUSH2_FULL_FIELDS  # f1-f250 显式全字段(与主字典口径对齐)
-    push2_fail_streak = 0
-    out = {"stocks": {}}
-    for p in pool:
-        c = p["code"]
-        secid = em_secid_prefix(c) + c  # V17.0 S3: 统一(修复 92 北交所误判 1.)
-        r = None
-        used_host = ""
-        if push2_fail_streak < 3:
-            try:
-                r = _quick_request(
-                    "https://push2.eastmoney.com/api/qt/stock/get",
-                    params={"secid": secid, "fltt": "2", "invt": "2", "fields": fields,
-                            "ut": "fa5fd1943c7b386f172d6893dbfba10b"},
-                    headers={"Referer": "https://quote.eastmoney.com/"},
-                    timeout=10,
-                )
-                if r is not None:
-                    used_host = "push2"
-                    push2_fail_streak = 0
-                else:
-                    push2_fail_streak += 1
-            except Exception:
-                push2_fail_streak += 1
-                r = None
-        if r is None:
-            try:
-                r = _quick_request(
-                    "https://push2delay.eastmoney.com/api/qt/stock/get",
-                    params={"secid": secid, "fltt": "2", "invt": "2", "fields": fields,
-                            "ut": "fa5fd1943c7b386f172d6893dbfba10b"},
-                    headers={"Referer": "https://quote.eastmoney.com/"},
-                    timeout=10,
-                )
-                if r is not None:
-                    used_host = "push2delay"
-            except Exception:
-                r = None
-        if r is None:
-            out["stocks"][c] = {"__error__": "request failed (push2+delay, no retry)"}
-            continue
-        data = (r.json() or {}).get("data") or {}
-        out["stocks"][c] = {"secid": secid, "host": used_host, "n_fields": len(data), "data": data}
-    return out
+# NOTE(V17.3.1): collect_push2_full 已移除——与 collect_push2 逐字同构(同端点 push2/push2delay
+#   stock/get、同 f1-f250、同兜底域), 实测 114 字段值级 114/114 全相等, 属纯冗余负载。
+#   日常采集改走 collect_push2 即可; 如需对撞复核原 push2_full 号段, 用 `--only push2`。
+#   本函数不再保留(避免与 collect_push2 双份维护); 主字典 field_dict.md §12.9.1 保留
+#   push2_full 条目作运行时 fallback 参考(语义等价, 见「同源同步治理规则」)。
 
 
 def collect_sina(pool: list) -> dict:
@@ -1576,7 +1529,8 @@ def main() -> None:
         "eltdx": collect_eltdx,        # V17.2.15 第24源: eltdx 全字段采集(命名+原始字节双轨)
         "tencent": collect_tencent,
         "push2": collect_push2,
-        "push2_full": collect_push2_full,   # V16.4.1: f1-f250 显式全字段
+        # V17.3.1: push2_full 已移出默认采集(与 push2 完全同构、纯冗余负载);
+        #          日常改采 push2 即可; 字典侧保留 push2_full 作 fallback 参考(语义等价)。
         "sina": collect_sina,               # V16.4.1: 新浪行情全字段
         "axdata": collect_axdata,           # V16.4.1: 短线指标 34 字段(零网络)
         "market_sources": collect_market_sources,  # V16.4.1: 财联社/KPL/板块轮动/龙虎榜

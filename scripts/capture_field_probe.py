@@ -332,7 +332,7 @@ def collect_zhb(pool: list) -> dict:
     """ZHB 全字段(本地,零网络)。"""
     from core.zhb_client import (
         full_market_snapshot, market_stat_snapshot, market_stat2_snapshot,
-        get_tip_info, get_stock_name_from_zhb, get_zhb,
+        get_tip_info, get_stock_name_from_zhb, get_zhb, _lookup_name_persist,
     )
 
     zhb = get_zhb()
@@ -345,7 +345,7 @@ def collect_zhb(pool: list) -> dict:
         c = p["code"]
         tip = get_tip_info(c)
         out["stocks"][c] = {
-            "name": get_stock_name_from_zhb(c),
+            "name": _resolve_zhb_name(c),
             "full": full.get(c),
             "stat": stat.get(c),
             "stat2": stat2.get(c),
@@ -354,8 +354,27 @@ def collect_zhb(pool: list) -> dict:
     return out
 
 
+def _resolve_zhb_name(code: str) -> Optional[str]:
+    """ZHB 名称解析: 离线合并字典 → 持久化缓存(full 字典, 网络种子, 覆盖 ZHB 离线未含代码如 600519)。
+
+    V17.3.3: get_stock_name_from_zhb 已实现该回退链(离线→持久化); 此处显式化以保证
+    采集血缘不受后续重构影响, 并消除「采集时持久化缓存尚未播种导致 name=None」的瞬时现象
+    (重跑即能回退到缓存中的 贵州茅台/宁德时代 等正确名)。
+    """
+    n = get_stock_name_from_zhb(code)
+    if n:
+        return n
+    return _lookup_name_persist(code)
+
+
 def collect_tdx(pool: list) -> dict:
-    """TDX 行情快照 + 财务(失败标的记 None,不中断)。"""
+    """TDX 行情快照 + 财务(失败标的记 None,不中断)。
+
+    血缘: 经 core.tdx_client.tdx_get_quote_full / tdx_get_finance_info →
+    _get_verified_adapter()(V17.2.15: eltdx 优先 / easy_tdx 兜底) → eltdx
+    Rust 7709/7615 客户端。即采集 tdx 源与运行时 get_canonical_stock_data 同源
+    (eltdx), 采集血缘已与运行时一致; 非云连接器。
+    """
     from core.tdx_client import tdx_get_quote_full, tdx_get_finance_info
 
     out = {"stocks": {}}
@@ -367,7 +386,8 @@ def collect_tdx(pool: list) -> dict:
         except Exception as e:
             rec["quote_full"] = {"__error__": str(e)[:200]}
         # V17.2.0 增补: 显式暴露 TDX 协议直解字段(内盘/外盘/涨速)为顶层键,
-        # 便于碰撞脚本纵向串联, 无需钻 quote_full 嵌套。源=本地 easy_tdx TCP(非云连接器)。
+        # 便于碰撞脚本纵向串联, 无需钻 quote_full 嵌套。源=本地 eltdx TCP(经 core.tdx_client
+        # V17.2.15: eltdx 优先 / easy_tdx 兜底, 与运行时血缘一致); 非云连接器。
         # limit_up/limit_down 已随同次改动落入 quote_full, 碰撞脚本按需从 quote_full 读取。
         _qf = rec["quote_full"]
         if isinstance(_qf, dict) and "__error__" not in _qf:

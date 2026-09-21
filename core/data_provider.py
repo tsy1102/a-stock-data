@@ -75,6 +75,17 @@ def _debug_log(msg: str) -> None:
     _fallback_logger.debug(msg)
 
 
+# V17.4 (2026-09-21): 源优先级单一真相源 — 引用 core/source_priority 声明（行为不变）。
+# 仅在导入期做一次一致性校验（告警入 debug 日志），不改动任何 fallback 顺序。
+try:
+    from core import source_priority as _sp
+
+    for _w in _sp.check_all():
+        _debug_log(f"source_priority {_w}")
+except Exception as _e:  # 模块缺失/校验异常不影响运行时
+    _debug_log(f"source_priority check skipped: {_e}")
+
+
 def _safe_float(v) -> float:
     try:
         return float(v)
@@ -403,6 +414,8 @@ def get_canonical_stock_data(code: str, force_realtime: bool = False) -> Any:
                     rt_quote[_k] = _v
                     field_sources[_k] = "realtime:push2delay:batch"
             _debug_log(f"get_canonical_stock_data batch prefetch hit ({code_str})")
+        # 行情 fallback 顺序见 core/source_priority.QUOTE_FETCH_ORDER（L1→L4 单一真相源,
+        # 与下方内联分支一一对应, 勿改顺序）: tdx → tencent → eastmoney_push2delay → eastmoney_push2
         # L1: TDX 实时——V17.0 修复: prefetch 命中后跳过(原无条件执行, 35 只批量白做 35 次 TCP)
         # V17.0.1c: 批量命中时批量数据无 OHLC(ulist 仅 15 精选字段) → OHLC 缺口补 TDX 快照
         _need_ohlc = not (rt_quote.get("open") and rt_quote.get("high") and rt_quote.get("low"))
@@ -1178,6 +1191,25 @@ def get_canonical_stock_data(code: str, force_realtime: bool = False) -> Any:
     if float_mcap_yi > 1e6:
         float_mcap_yi = float_mcap_yi / 1e4
 
+    # V17.4 (2026-09-21): 市值双源一致性护栏（纯观测，非破坏性）。
+    # 当直取市值可用时，与「股本×价」公式估值独立比对；偏差 > 2× 仅记 debug 告警，
+    # 不改变取值（主路径已优先直取）。用于发现 rt_quote/ZHB 市值单位或股本缓存异常。
+    if price and price > 0:
+        if mcap_yi > 0 and total_shares_wan > 0:
+            _est = round((total_shares_wan * 10000 * price) / 1e8, 2)
+            if _est > 0 and (mcap_yi / _est > 2 or _est / mcap_yi > 2):
+                _debug_log(
+                    f"mcap_yi 双源偏差>{2}x ({code}): 直取={mcap_yi} 估算={_est} "
+                    f"[src={field_sources.get('mcap_yi')}]"
+                )
+        if float_mcap_yi > 0 and float_shares_wan > 0:
+            _fest = round((float_shares_wan * 10000 * price) / 1e8, 2)
+            if _fest > 0 and (float_mcap_yi / _fest > 2 or _fest / float_mcap_yi > 2):
+                _debug_log(
+                    f"float_mcap_yi 双源偏差>{2}x ({code}): 直取={float_mcap_yi} 估算={_fest} "
+                    f"[src={field_sources.get('float_mcap_yi')}]"
+                )
+
     holder_count = int(zhb_dict.get('holder_count') or 0)
     field_sources["holder_count"] = "zhb:static" if holder_count else "missing"
     # V16.3 O: 股东户数兜底 — 0x0010 gudong_renshu（比巨潮 stock_hold_num_cninfo 更易，
@@ -1780,6 +1812,22 @@ def get_zt_streak_info(code: str) -> Dict[str, Any]:
     except Exception as _e:
         _debug_log(f"data_provider get_zt_streak_info ({code}): {_e}")
         return {}
+
+
+def get_hot_concepts(code: str) -> List[Dict[str, Any]]:
+    """V17.4 (2026-09-21): 热门概念访问器——零状态、lazy、try/except。
+
+    沿用 get_zt_streak_info 的规范模式：不在 get_canonical_stock_data 热路径内调用
+    （避免新增网络延迟），由各报告脚本在自身概念/热门段按需调用（与 get_sht_report.py:2203
+    同款）。返回东财 em_hot_concept 概念列表 [{'concept','code','reason',...}]，异常时返回 []。
+    """
+    try:
+        from stock_common import em_hot_concept
+
+        return em_hot_concept(code) or []
+    except Exception as _e:
+        _debug_log(f"data_provider get_hot_concepts ({code}): {_e}")
+        return []
 
 
 def calc_mcap_yi(code: str, price: Optional[float] = None) -> Optional[float]:

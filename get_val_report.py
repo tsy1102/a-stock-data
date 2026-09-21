@@ -1796,7 +1796,7 @@ def strategy_26_limit_ladder(all_stocks):
     V17.2.23 重构: 不再直接解析 get_eltdx_shortline_bundle() 的 sl_map/ladder 原始结构,
     改为 先预热 eltdx bundle(300s TTL 缓存, 统一层只读此缓存) → 再逐股经
     get_canonical_stock_data(code) 读 cdata.eltdx_* 标准化字段。与统一层治理范式一致。
-    无本地 TDX / eltdx 未装 / bundle 取数失败 → sl_map 空 → 返回 []（降级, 不阻断其余策略）。
+    TDX 源(eltdx)不可用 / bundle 取数失败 → sl_map 空 → 返回 []（降级, 不阻断其余策略）。
     因子: 连板梯队(eltdx_ladder_level) + 封单占流通比(eltdx_seal_to_float_ratio) + 开盘量比(eltdx_open_volume_ratio)。
     入选:
       A. 连板梯队: eltdx_ladder_level>=2(二板及以上) —— 连板高度即强度信号;
@@ -1876,7 +1876,7 @@ def strategy_27_shortline_fund_strength(all_stocks):
 
     V17.2.23 重构: 同策略26, 先预热 eltdx bundle → 再逐股 get_canonical_stock_data(code) 读
     cdata.eltdx_* 标准化字段, 不再直接解析 sl_map 原始结构。
-    无本地 TDX / eltdx 未装 / bundle 取数失败 → sl_map 空 → 返回 []（降级, 不阻断其余策略）。
+    TDX 源(eltdx)不可用 / bundle 取数失败 → sl_map 空 → 返回 []（降级, 不阻断其余策略）。
     因子(统一层字段名, 数据来源: 通达信 eltdx 7709/7615):
       - eltdx_opening_rush:              开盘抢筹力度(正值=主力抢筹)
       - eltdx_auction_prev_volume_ratio: 集合竞价量比(竞价资金关注度)
@@ -2578,12 +2578,12 @@ async def run_discovery_async(output_path):
             elif _k in ("策略14", "策略15", "策略20"):
                 L("  ⚠️ 盘后数据（北向/龙虎榜/业绩预告）当前时段无产出，属预期")
             elif _k in ("策略26", "策略27"):
-                # V17.3 修复: 26/27 依赖 eltdx 本地 TDX 实时源; 源缺失时策略降级返回 [],
+                # V17.3 修复: 26/27 依赖 eltdx(TDX 公网主站)实时源; 源缺失时策略降级返回 [],
                 # 属"数据源不可用"而非"真实无符合标的"(当日 77 只涨停必有连板/抢筹)。
                 try:
                     from core.eltdx_adapter import is_eltdx_available
                     if not is_eltdx_available():
-                        L("  ⚠️ eltdx 数据源不可用（本地 TDX 未连接 / eltdx 未安装），本策略降级跳过——属数据源缺失，非真实无符合标的")
+                        L("  ⚠️ eltdx 数据源不可用（eltdx 包未装 / 公网主站不可达），本策略降级跳过——属数据源缺失，非真实无符合标的")
                 except Exception:
                     pass
             L("  (今日无符合该策略阈值的标的)")

@@ -1738,7 +1738,7 @@ async def generate_sector_report(output_path):
     # V17.2.24: 通达信 eltdx 连板天梯实时核验（TDX 7709/7615 原生；与 B/B+ 财联社/开盘红独立源交叉验证）
     if _eltdx_ladder:
         L("## 【B++. 连板天梯（通达信 eltdx 实时核验）】")
-        L("  （数据来源: 通达信 eltdx 本地 TDX 7709/7615 实时；与 B/B+ 财联社/开盘红连板梯队独立互校）")
+        L("  （数据来源: 通达信 eltdx（TDX 公网主站 7709/7615 实时）；与 B/B+ 财联社/开盘红连板梯队独立互校）")
         _ladder_sorted = sorted(
             [r for r in _eltdx_ladder if isinstance(r, dict) and (r.get("ladder_level") or 0) >= 2],
             key=lambda x: (x.get("ladder_level") or 0), reverse=True,
@@ -1756,7 +1756,7 @@ async def generate_sector_report(output_path):
                 _ind = normalize_industry(_r.get("industry") or _r.get("sector") or "")
                 L(f"| {_plain} | {_nm} | {_ll}连板 | {_streak} | {_seal:.2f} | {_ind} |")
         else:
-            L("  （当日无 ≥2 板连板标的 / 本地 TDX 未运行，eltdx 未返回数据）")
+            L("  （当日无 ≥2 板连板标的 / eltdx 数据源不可用，eltdx 未返回数据）")
         L("")
 
     L("## 【C. 板块-异动集中度分析】")

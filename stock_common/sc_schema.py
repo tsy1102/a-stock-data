@@ -615,7 +615,7 @@ class CanonicalStockData:
 
     # V17.2.22: eltdx 7709/7615 实时短线/连板指标(经统一层 get_canonical_stock_data 暴露)
     # 数据来源: get_eltdx_shortline_bundle 批量预热 -> 模块级缓存 -> 统一层 per-stock 读缓存(非取数)
-    # 默认值=未命中(无本地 TDX / 未批量预热) —— 不污染核心 86 字段契约(FIELD_SPECS 不含此组)
+    # 默认值=未命中(TDX 源 eltdx 不可用 / 未批量预热) —— 不污染核心 86 字段契约(FIELD_SPECS 不含此组)
     eltdx_ladder_level: int = 0            # 连板高度(档位, eltdx limit_ladder.ladder_level)
     eltdx_limit_up_streak_days: int = 0    # 连续涨停天数(ShortlineIndicator.limit_up_streak_days)
     eltdx_limit_board_text: str = ""       # 连板梯队文本(limit_board_text, e.g. "3天3板")

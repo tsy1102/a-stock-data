@@ -541,7 +541,7 @@ def _top10_sorted(candidates, key_func, reverse=True):
 # ─── V15.5.8: 快速 K 线（TDX 优先，百度 fallback）───
 
 def _fast_kline(code: str, count: int = 800):
-    """V15.5.8: K 线获取——优先 TDX(mootdx+磁盘缓存, 跨进程持久, 缓存命中零网络),
+    """V15.5.8: K 线获取——优先 TDX(eltdx 公网主站 + 磁盘缓存, easy_tdx 兜底; 跨进程持久, 缓存命中零网络),
     失败 fallback 百度。
 
     V17.0.4(2026-08-19): 修复注释与代码不符——原实现只调 common_baidu_kline_full(百度 HTTP,

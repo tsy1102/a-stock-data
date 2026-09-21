@@ -971,7 +971,7 @@ def requires_push2(fn):
     """V16 审计装饰器: 标记使用 push2 端点的函数。
 
     push2 是东财风控最严的域名（参考仓库 FAQ），每次调用打 WARNING 日志，
-    便于审计 push2 使用频率、督促优先走 ZHB/mootdx/腾讯。
+    便于审计 push2 使用频率、督促优先走 ZHB/eltdx(兜底 easy_tdx)/腾讯。
     用法:
         @requires_push2
         def get_x(...): ...

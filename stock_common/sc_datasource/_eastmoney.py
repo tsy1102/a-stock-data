@@ -317,7 +317,7 @@ def get_cyq_distribution(code: str, days: int = 240) -> Dict[str, Any]:
     但此前**未接入管线**(仅股东户数代理进 筹码面评分), 且**从未有单测**——
     V17.0.14 本函数补齐数据入口, 单测见 tests/core/test_core_cyq.py(28 例, 含算法/入口/评分三层)。
 
-    为何用东财 kline: TDX 0x0010 日K(mootdx bars)与腾讯 ifzq fqkline 均**不含换手率字段**,
+    为何用东财 kline: TDX 0x0010 日K(eltdx/easy_tdx bars)与腾讯 ifzq fqkline 均**不含换手率字段**,
     而 CYQ 必需 OHLC+换手率; 东财 push2his kline 的 f61=换手率(%)为权威口径, 复用 fflow 多域轮换。
 
     Args:

@@ -1115,16 +1115,6 @@ async def generate_report_async(session, code, output_path, ind_comp=None):
     else:
         L("  近期无过滤后的战略级别重大公告。")
 
-    # V17.3.8: tipinfo 回购预案结构化数据接线（field_dict §3 Col[19]/[20]，TdxW 串池 `回购预案:上限%.2f亿元` 实锤）
-    _hg_date = (_tip_info or {}).get("hg_date", "")
-    _hg_amount = (_tip_info or {}).get("hg_amount_yi", 0) or 0
-    if _hg_date or _hg_amount:
-        L("\n  📌 ZHB tipinfo 回购预案 (财报日历结构化数据):")
-        if _hg_date:
-            L(f"    回购预案公告日: {_hg_date}")
-        if _hg_amount:
-            L(f"    回购金额上限: {_hg_amount:.2f} 亿元")
-
     L("\n## 【九、机构长效共识度与投研透明度】")
     L("---")
     reports = await get_reports_async(session, code, max_pages=5)
@@ -1331,6 +1321,24 @@ async def generate_report_async(session, code, output_path, ind_comp=None):
             L("  近30天暂无互动易问答")
     except Exception as _e:
         _debug_log(f"lng cninfo_irm: {_e}")
+
+    # V17.3.9: 独立「回购预案与股东权益动作」章节（不再挂在战略公告下）。
+    # 数据来自 ZHB tipinfo Col[19]/[20]（field_dict §3 ✅ 定案，TdxW 串池 `回购预案:上限%.2f亿元` 实锤；
+    # dict §3.1 标准契约表已登记 tipinfo.hg_date / tipinfo.hg_amount_yi 并标 verified）。
+    L("\n## 【十一、回购预案与股东权益动作 (ZHB tipinfo 结构化数据)】")
+    L("---")
+    _hg_date = (_tip_info or {}).get("hg_date", "")
+    _hg_amount = (_tip_info or {}).get("hg_amount_yi", 0) or 0
+    if _hg_date or _hg_amount:
+        L("  📌 ZHB tipinfo 回购预案 (财报日历结构化数据):")
+        if _hg_date:
+            L(f"    回购预案公告日: {_hg_date}")
+        if _hg_amount:
+            L(f"    回购金额上限: {_hg_amount:.2f} 亿元")
+        L("  💡 回购预案本质是公司对自身价值的信心票；配合真金白银回购注销可提升每股收益，")
+        L("     属长线正向信号。需持续跟踪预案是否落地执行及实际回购进度（部分仅规划未实施）。")
+    else:
+        L("  ZHB tipinfo 暂无本股回购预案结构化记录（Col[19]/[20] 为空）。")
 
     L("\n"+"---"); L("## **仓位管理建议**"); L("---")
     

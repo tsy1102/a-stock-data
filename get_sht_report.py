@@ -67,8 +67,9 @@ from stock_common import (_safe_float, _debug_log,
                            ScoreData,  # V17.0 审查: 删 clean_codes/create_async_session/calculate_multi_school_scores(基类/渲染收敛)
                            ths_hot_list, em_hot_concept, get_eastmoney_stock_news,
                            cls_telegraph, news_matches_stock, cninfo_irm,
-                           get_zhb_data_date,
-                           get_zhb_streak_days,
+                          get_zhb_data_date,
+                          get_zhb_streak_days,
+                          get_zhb_tip_info,
                            is_limit_up,  # V16.2: 统一涨停/跌停判断（含北交所 30%）
                            sec_type_market_label, limit_pct_for)  # V10.3, V16.2: 统一涨跌停阈值
 
@@ -2069,6 +2070,23 @@ async def generate_report_async(session, code, output_path, ind_comp=None, idx_q
     except Exception as _e:
         _debug_log(f"sht kline patterns ({code}): {_e}")
         L("  ⚠️ K线形态识别异常，本章暂缺")
+
+    # V17.3.9: 短线报告接入 ZHB tipinfo 回购预案结构化数据（field_dict §3.1 tipinfo.hg_date / tipinfo.hg_amount_yi，verified）
+    L("\n## 【十八、回购预案与股东权益动作 (ZHB tipinfo 结构化数据)】")
+    L("---")
+    _tip_info = get_zhb_tip_info(code)
+    _hg_date = (_tip_info or {}).get("hg_date", "")
+    _hg_amount = (_tip_info or {}).get("hg_amount_yi", 0) or 0
+    if _hg_date or _hg_amount:
+        L("  📌 ZHB tipinfo 回购预案 (财报日历结构化数据):")
+        if _hg_date:
+            L(f"    回购预案公告日: {_hg_date}")
+        if _hg_amount:
+            L(f"    回购金额上限: {_hg_amount:.2f} 亿元")
+        L("  💡 回购预案属短线情绪正向催化（彰显信心+潜在买单），但须区分「预案」与「实际回购进度」；")
+        L("     突发大额回购预案常引发短线脉冲，需结合量能判别真伪与持续性。")
+    else:
+        L("  ZHB tipinfo 暂无本股回购预案结构化记录（Col[19]/[20] 为空）。")
 
     L("\n"+"---"); L("## **仓位管理建议**"); L("---")
 

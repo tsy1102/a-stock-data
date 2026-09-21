@@ -6924,6 +6924,32 @@
       "status": "unverified"
     },
     {
+      "code": "hg_amount_yi",
+      "source": "ZHB-tipinfo",
+      "sources": [
+        "ZHB-tipinfo"
+      ],
+      "section": "",
+      "canonical": "",
+      "meaning": "",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified"
+    },
+    {
+      "code": "hg_date",
+      "source": "ZHB-tipinfo",
+      "sources": [
+        "ZHB-tipinfo"
+      ],
+      "section": "",
+      "canonical": "",
+      "meaning": "",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified"
+    },
+    {
       "code": "hkblock.dat",
       "source": "ZHB-tipinfo",
       "sources": [
@@ -7389,6 +7415,32 @@
       "meaning": "每股收益",
       "unit": "元",
       "status_raw": "✅ L1",
+      "status": "verified"
+    },
+    {
+      "code": "tipinfo.hg_amount_yi",
+      "source": "ZHB-tipinfo",
+      "sources": [
+        "ZHB-tipinfo"
+      ],
+      "section": "3.1 tipinfo.dat 标准契约表（tipinfo.*，20260918 对撞定案）🆕",
+      "canonical": "tipinfo.hg_amount_yi",
+      "meaning": "回购金额上限",
+      "unit": "亿元",
+      "status_raw": "✅",
+      "status": "verified"
+    },
+    {
+      "code": "tipinfo.hg_date",
+      "source": "ZHB-tipinfo",
+      "sources": [
+        "ZHB-tipinfo"
+      ],
+      "section": "3.1 tipinfo.dat 标准契约表（tipinfo.*，20260918 对撞定案）🆕",
+      "canonical": "tipinfo.hg_date",
+      "meaning": "回购预案公告日",
+      "unit": "YYYYMMDD",
+      "status_raw": "✅",
       "status": "verified"
     },
     {
@@ -24686,6 +24738,12 @@
       "ZHB"
     ],
     "tipinfo.div_amount": [
+      "ZHB"
+    ],
+    "tipinfo.hg_date": [
+      "ZHB"
+    ],
+    "tipinfo.hg_amount_yi": [
       "ZHB"
     ],
     "[0] 市场标识": [

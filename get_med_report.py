@@ -64,6 +64,7 @@ from stock_common import (
     get_dividend_history,
     get_industry_comparison,
     get_stock_info,
+    get_zhb_tip_info,
     get_eps_forecast_async,
     get_reports_async,
     get_northbound_hold_async,
@@ -1318,6 +1319,23 @@ async def generate_report_async(session, code, output_path, ind_comp=None, hsgt=
             L("  近48小时暂无互动易问答")
     except Exception as _e:
         _debug_log(f"med cninfo_irm: {_e}")
+
+    # V17.3.9: 中线报告接入 ZHB tipinfo 回购预案结构化数据（field_dict §3.1 tipinfo.hg_date / tipinfo.hg_amount_yi，verified）
+    L("\n## 【十八、回购预案与股东权益动作 (ZHB tipinfo 结构化数据)】")
+    L("---")
+    _tip_info = get_zhb_tip_info(code)
+    _hg_date = (_tip_info or {}).get("hg_date", "")
+    _hg_amount = (_tip_info or {}).get("hg_amount_yi", 0) or 0
+    if _hg_date or _hg_amount:
+        L("  📌 ZHB tipinfo 回购预案 (财报日历结构化数据):")
+        if _hg_date:
+            L(f"    回购预案公告日: {_hg_date}")
+        if _hg_amount:
+            L(f"    回购金额上限: {_hg_amount:.2f} 亿元")
+        L("  💡 回购预案体现公司对自身价值的信心，回购注销可增厚每股收益，属中线正向催化；")
+        L("     需跟踪预案落地与实际回购进度（部分仅规划未实施）。")
+    else:
+        L("  ZHB tipinfo 暂无本股回购预案结构化记录（Col[19]/[20] 为空）。")
 
     L("\n" + "---")
     L("## **仓位管理建议**")

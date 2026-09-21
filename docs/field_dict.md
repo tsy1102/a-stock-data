@@ -117,7 +117,7 @@
 
 ### 零·B 字段×源总表（自动生成，勿手改）
 
-> 生成：`scripts/gen_field_matrix.py`（Phase 2 起从 field_registry.json 单一真相源读取，不再解析 field_dict.md 体积）。共 1427 个字段 / 1543 条字段×源记录（去重配对口径，取代旧版按行出现的 1412 重复计数）。
+> 生成：`scripts/gen_field_matrix.py`（Phase 2 起从 field_registry.json 单一真相源读取，不再解析 field_dict.md 体积）。共 1429 个字段 / 1545 条字段×源记录（去重配对口径，取代旧版按行出现的 1412 重复计数）。
 
 > 源排序按易→难（V17.0.7 层级定案；2026-09-07 thsdk 已退役，不再列为活体源）：ZHB（离线零网络）→ TDX TCP（0x0010/F10/eltdx）→ 腾讯（不封 IP）→ **同花顺-fuyao（官方 REST，盘后可查+独立风控域，V17.0.7 升为财务 TTM 族主源）** → 新浪 → 巨潮 → 东财（限流最严）→ 其他。
 
@@ -229,10 +229,10 @@
 | 市场情绪 | 2 | TDX-0x0010/F10、同花顺-fuyao |
 | 板块轮动 | 2 | TDX-0x0010/F10、同花顺-fuyao |
 
-**B.2 单源字段（1326 个，无 fallback）**
+**B.2 单源字段（1328 个，无 fallback）**
 
-- **ZHB（78）**：A 实时、B 准实时、C 日频、D 静态、PE TTM、stat.board_count、stat.cash_reserve_wan、stat.change_10d、stat.change_10k_bar、stat.change_20d、stat.change_20k_bar、stat.change_30d、stat.change_30k_bar、stat.change_5d、stat.change_5k_bar、stat.change_60d、stat.change_60k_bar、stat.change_pct、stat.change_pct_1d、stat.change_pct_2d、stat.change_ytd、stat.code、stat.date、stat.dividend_yield、stat.employee_count、stat.free_ltgb、stat.market、stat.net_profit_kcf、stat.other_qy_jzc、stat.pe_dynamic、stat.pe_ttm、stat.pre_receive_zj、stat.rd_input_fee、stat.shape_value、stat.streak_days、stat.unknown_2、stat.unknown_26、stat.unseal_date、stat.zt_count、stat.zt_lianban、stat.zt_streak_cycle、stat.zt_type_code、stat2.amount、stat2.amount_1d、stat2.amount_2d、stat2.change_250k_bar、stat2.change_30k_bar、stat2.change_30k_bar_ref、stat2.change_mtd、stat2.code、stat2.date、stat2.high_52w、stat2.industry_code、stat2.ipo_price、stat2.low_52w、stat2.main_net_buy_amount、stat2.main_net_buy_amount_1d、stat2.main_net_buy_hands、stat2.main_net_buy_hands_1d、stat2.market
-  - … 其余 18 个见正文
+- **ZHB（80）**：A 实时、B 准实时、C 日频、D 静态、PE TTM、stat.board_count、stat.cash_reserve_wan、stat.change_10d、stat.change_10k_bar、stat.change_20d、stat.change_20k_bar、stat.change_30d、stat.change_30k_bar、stat.change_5d、stat.change_5k_bar、stat.change_60d、stat.change_60k_bar、stat.change_pct、stat.change_pct_1d、stat.change_pct_2d、stat.change_ytd、stat.code、stat.date、stat.dividend_yield、stat.employee_count、stat.free_ltgb、stat.market、stat.net_profit_kcf、stat.other_qy_jzc、stat.pe_dynamic、stat.pe_ttm、stat.pre_receive_zj、stat.rd_input_fee、stat.shape_value、stat.streak_days、stat.unknown_2、stat.unknown_26、stat.unseal_date、stat.zt_count、stat.zt_lianban、stat.zt_streak_cycle、stat.zt_type_code、stat2.amount、stat2.amount_1d、stat2.amount_2d、stat2.change_250k_bar、stat2.change_30k_bar、stat2.change_30k_bar_ref、stat2.change_mtd、stat2.code、stat2.date、stat2.high_52w、stat2.industry_code、stat2.ipo_price、stat2.low_52w、stat2.main_net_buy_amount、stat2.main_net_buy_amount_1d、stat2.main_net_buy_hands、stat2.main_net_buy_hands_1d、stat2.market
+  - … 其余 20 个见正文
 - **TDX-0x0010/F10（274）**：*ST湘邮、AI解读、BKFenShiZhiBo、ChangeStatistics、C中芯、DR 茅台、DailyLimitPerformance、DailyLimitPerformance2、GetBaseFaceListZDEvnArtNew、GetDayBaseFaceListZDEvnArt、GetDayNewHigh_W28、GetGPCPHBTS_Tag、GetHotPHB、GetInfo、GetKLineDay_W14、GetKLineZhangTing、GetMainMonitor_w30、GetPanKou、GetPlateInfo_w38、GetPlate_Info_QJ、GetStockBid、GetStockList、GetStockList（龙虎榜）、GetStockPanKou、GetStockTrendIncremental、GetWeiTuo_W14、GetYTFP_BKHX、GetYTFP_SCTD、GlobalCommon、GroupCount_w28、Index、InfoBKR、MarketStockZDNum、MoodNumCount、MorningBiddingList、NewGetList、N百花医药、Radar、RealRankingInfo、RiseFallAnalysis、ST百花医药、SharpWithdrawal、SonPlate_Info、Theme、XD、XR、ZhiShuStockList_W8、[..、[verify、all、api、axdata_verify.md)、axdata_verify.md](verify、balance_sheet` 资产负债表、belong、cash_flow` 现金流量表、changqifuzhai、client_fields_enum.md)、client_fields_enum.md](verify、color
   - … 其余 214 个见正文
 - **TDX-eltdx（195）**：AuctionPoint.index、AuctionPoint.matched_volume、AuctionPoint.minute_of_day_raw、AuctionPoint.price、AuctionPoint.price_milli、AuctionPoint.record_hex、AuctionPoint.reserved_zero_0e、AuctionPoint.second_raw、AuctionPoint.time_label、AuctionPoint.time_seconds、AuctionPoint.unmatched_direction_raw、AuctionPoint.unmatched_volume、Enum `Market、FinanceInfo`（财务）、FundFlow、HistoricalFundFlow、KlineCategory、MarketStat、SecurityBar`（K 线）、SecurityInfo`（证券列表）、SecurityQuote`（五档）、XdxrRecord`（除权除息）、absolute_index、adjust、adjust_mode、adjust_mode_raw、alignment_status、auction_matched_volume、auction_unmatched_signed_volume、auctions.series（0x056a）、beta_60d、business_composition、buy_levels、c1_value~c4_value、category_name、circulating_shares、current_hand、dividend_financing、down_count、eltdx_auction_prev_volume_ratio、eltdx_has_shortline、eltdx_ladder_level、eltdx_limit_board_text、eltdx_limit_up_streak_days、eltdx_open_change_pct、eltdx_open_prev_amount_ratio、eltdx_open_turnover_z、eltdx_open_volume_ratio、eltdx_opening_rush、eltdx_seal_amount、eltdx_seal_to_float_ratio、eps_raw、event_kind、fenhong、finance_diagnosis、full_code、get_auction_0925、high_price、highest_ladder_level、history
@@ -713,8 +713,8 @@ TDX 服务器 (端口 7709)
 | **[16]** | *(丢弃)* | (老)增发募集金额(万元) | ✅ | `""` | V16.3 D2：000001=59880.24、000002=40000.00 |
 | **[17]** | *(丢弃)* | 待破解 | ⚠️ | `""` | 恒空 |
 | **[18]** | *(丢弃)* | 恒空占位符 | ⚠️ | `""` | 3 天 0/5615 空 |
-| **[19]** | *(丢弃)* | 回购预案公告日 = 官方 RecentHGDate（"HG"=HuiGou 回购；二进制 `回购预案:上限%.2f亿元` 实证） | ✅ | `""` | **20260919 二进制实锤(TdxW 串池 `回购预案:上限%.2f亿元`)**；V16.3 D2 000100=20260603；TdxQuant 单样本(600519=20251106) |
-| **[20]** | *(丢弃)* | 回购预案金额上限(亿元) = 官方 RecentHGAmo（二进制 `回购预案:上限%.2f亿元` 一锤定音；旧标"增发配股价"证伪） | ✅ | `""` | **20260919 二进制实锤**：原跨源冲突(回购金额 vs 增发配股价)由 TdxW 原生串 `回购预案:上限%.2f亿元` 终结 → Col[20]=回购上限(亿元); 000100=12.00/000333=130.00/600519=30.00 单位=亿元吻合回购案 |
+| **[19]** | `hg_date` | 回购预案公告日 = 官方 RecentHGDate（"HG"=HuiGou 回购；二进制 `回购预案:上限%.2f亿元` 实证） | ✅ | `""` | **20260919 二进制实锤(TdxW 串池 `回购预案:上限%.2f亿元`)**；V16.3 D2 000100=20260603；TdxQuant 单样本(600519=20251106) |
+| **[20]** | `hg_amount_yi` | 回购预案金额上限(亿元) = 官方 RecentHGAmo（二进制 `回购预案:上限%.2f亿元` 一锤定音；旧标"增发配股价"证伪） | ✅ | `""` | **20260919 二进制实锤**：原跨源冲突(回购金额 vs 增发配股价)由 TdxW 原生串 `回购预案:上限%.2f亿元` 终结 → Col[20]=回购上限(亿元); 000100=12.00/000333=130.00/600519=30.00 单位=亿元吻合回购案 |
 | **[21]** | *(丢弃)* | 待破解 | ⚠️ | `""` | **H12 2026-08-31 初判(⚠️, 已实证富集)**: 全市场 1473/5630=26.2% 非空; 板块倍率 **688=53.8%(2.06×)** / **创业板=39.3%(1.50×)** / 沪15.8%(0.60×) / 深17.1%(0.65×) → 科创板/创业板(解禁·增减持密集)显著富集, 支持"持股变动类最近事件日"; 与 Col[19]增发日差值随机(median 195天); 维持 ⚠️ 待官方文档终判 |
 
 > **🔶 2026-09-19 终局报告本地实证复核（36 期 ZHB 包全量 5644 行）**：22 列结构 **成立**，逐列填充率精确吻合（local 实测）：
@@ -751,6 +751,8 @@ TDX 服务器 (端口 7709)
 | tipinfo.zt_date_recent | 最近涨停日 | YYYYMMDD | ✅ 定案 |
 | tipinfo.div_date | 业绩预告日 | YYYYMMDD | ✅ |
 | tipinfo.div_amount | 业绩预告金额 | 万元 | ✅ |
+| tipinfo.hg_date | 回购预案公告日 | YYYYMMDD | ✅ |
+| tipinfo.hg_amount_yi | 回购金额上限 | 亿元 | ✅ |
 
 ### 4. 🌟 ZHB 高价值数据集全览 (Discovered & Verified Datasets)
 

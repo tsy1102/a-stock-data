@@ -11484,8 +11484,8 @@
       "canonical": "f88",
       "meaning": "",
       "unit": "",
-      "status_raw": "",
-      "status": "unverified"
+      "status_raw": "✅ 黄金锚(东财F参数表)",
+      "status": "verified"
     },
     {
       "code": "f89",
@@ -11497,8 +11497,8 @@
       "canonical": "f89",
       "meaning": "",
       "unit": "",
-      "status_raw": "",
-      "status": "unverified"
+      "status_raw": "✅ 黄金锚(东财F参数表)",
+      "status": "verified"
     },
     {
       "code": "f90",
@@ -11510,8 +11510,8 @@
       "canonical": "f90",
       "meaning": "",
       "unit": "",
-      "status_raw": "",
-      "status": "unverified"
+      "status_raw": "✅ 黄金锚(东财F参数表)",
+      "status": "verified"
     },
     {
       "code": "f91",
@@ -11521,6 +11521,19 @@
       ],
       "section": "12.3.2.3 ulist239 全字段清单（np/get 真实返回 239 字段，V17.1.1 全量登记）",
       "canonical": "f91",
+      "meaning": "",
+      "unit": "",
+      "status_raw": "✅ 黄金锚(东财F参数表)",
+      "status": "verified"
+    },
+    {
+      "code": "f93",
+      "source": "东财-ulist239(np/get)",
+      "sources": [
+        "东财-ulist239(np/get)"
+      ],
+      "section": "12.3.2.3 ulist239 全字段清单（np/get 真实返回 239 字段，V17.1.1 全量登记）",
+      "canonical": "f93",
       "meaning": "",
       "unit": "",
       "status_raw": "",
@@ -11536,8 +11549,8 @@
       "canonical": "f94",
       "meaning": "",
       "unit": "",
-      "status_raw": "",
-      "status": "unverified"
+      "status_raw": "✅ 黄金锚(东财F参数表)",
+      "status": "verified"
     },
     {
       "code": "f95",
@@ -11549,8 +11562,8 @@
       "canonical": "f95",
       "meaning": "",
       "unit": "",
-      "status_raw": "",
-      "status": "unverified"
+      "status_raw": "✅ 黄金锚(东财F参数表)",
+      "status": "verified"
     },
     {
       "code": "f97",
@@ -14726,6 +14739,20 @@
       "status": "verified"
     },
     {
+      "code": "hot_rank",
+      "source": null,
+      "sources": [
+        "同花顺-fuyao",
+        "东财-热榜(em_hot)"
+      ],
+      "section": "",
+      "canonical": "",
+      "meaning": "",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified"
+    },
+    {
       "code": "huanshou",
       "source": "东财-热榜(em_hot)",
       "sources": [
@@ -16123,19 +16150,6 @@
     },
     {
       "code": "holders/detail",
-      "source": "同花顺-fuyao",
-      "sources": [
-        "同花顺-fuyao"
-      ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "status_raw": "",
-      "status": "unverified"
-    },
-    {
-      "code": "hot_rank",
       "source": "同花顺-fuyao",
       "sources": [
         "同花顺-fuyao"

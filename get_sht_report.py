@@ -543,7 +543,7 @@ async def generate_report_async(session, code, output_path, ind_comp=None, idx_q
                 L(f"  🔒 首板强封: 封单占流通比 {_seal:.2f}%（封板坚决）")
         if _ov:
             L(f"  📊 开盘量比: {_ov:.2f}（集合竞价活跃度）")
-        L("  📡 数据来源: 通达信 eltdx（本地 TDX 7709/7615 实时；无本地 TDX 时本小节不显示）")
+        L("  📡 数据来源: 通达信 eltdx（TDX 公网主站 7709/7615 实时；eltdx 不可用时本小节不显示）")
 
     L("\n"+"---"); L("## **三、机构一致预期与估值**"); L("---")
 

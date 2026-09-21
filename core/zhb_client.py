@@ -35,9 +35,10 @@
 """
 from __future__ import annotations
 
-# V17.3.1 P0: ZHB 下载已切换 eltdx (0x06B9, 见 _download_zhb_zip)。eltdx Rust 握手含
-# 2026-09 修复, 不再需要下方面向 easy_tdx 的 TDX 新式握手补丁, 故移除其 import。
-# core/_tdx_handshake_patch.py 文件保留作回滚资产 (tdx_client 的 easy_tdx 兜底路径本就不 import 它)。
+# V17.3.x: eltdx 负责 ZHB 下载主路径 (0x06B9)；easy_tdx 仍作为兜底下载引擎，而其真实上游
+# (github.com/yanwei99521/easy-tdx 1.20.8) 仍发布静态三握手，对 2026-09 主站数据请求返回空包，
+# 故重新植入动态单握手补丁（须在 easy_tdx 任何 transport import 之前）。
+import core._tdx_handshake_patch  # noqa: F401  植入 2026-09 新式动态单握手（修复空数据）
 
 import os
 import io
@@ -1737,52 +1738,13 @@ def _download_zhb_zip() -> Optional[bytes]:
         except Exception as e:
             _debug_log(f"zhb: easy_tdx from_best_host error: {e}")
     except ImportError:
-        _debug_log("zhb: easy_tdx not available, fallback to mootdx")
+        _debug_log("zhb: easy_tdx not available")
     except Exception as e:
         _debug_log(f"zhb: easy_tdx download error: {e}")
 
-    # ── 备胎: mootdx/pytdx（V12.0 原路径）──
-    try:
-        from mootdx.quotes import Quotes
-    except ImportError as e:
-        _debug_log(f"zhb: mootdx not available: {e}")
-        return None
-
-    for ip, port in _ZHB_HOSTS[3:]:
-        try:
-            _debug_log(f"zhb: trying {ip}:{port}")
-            # mootdx 使用 bestip 机制，但我们可以手动指定服务器
-            client = Quotes.factory(market='std', bestip=False)
-            # 手动连接指定服务器
-            if not client.client.connect(ip, port):
-                _debug_log(f"zhb: connect failed {ip}")
-                client.close()
-                continue
-
-            try:
-                data = client.client.get_report_file_by_size(filename)
-            finally:
-                client.close()
-
-            if data and len(data) > 0:
-                # 验证是否是有效的 zip
-                try:
-                    with zipfile.ZipFile(io.BytesIO(data)):
-                        pass
-                    _debug_log(f"zhb: downloaded {len(data)} bytes from {ip}")
-                    return data
-                except zipfile.BadZipFile:
-                    _debug_log(f"zhb: invalid zip from {ip}, trying next")
-                    continue
-            else:
-                _debug_log(f"zhb: empty data from {ip}")
-                continue
-
-        except Exception as e:
-            _debug_log(f"zhb: download error from {ip}: {e}")
-            continue
-
-    _debug_log("zhb: all hosts failed")
+    # V17.3.x: mootdx/pytdx 已退役（停止维护、且同样受 2026-09 静态握手空包影响）。
+    # 仅剩 eltdx(主) + easy_tdx(兜底) 双引擎。
+    _debug_log("zhb: 所有下载引擎均失败")
     return None
 
 

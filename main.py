@@ -158,7 +158,6 @@ def check_dependencies():
         ("yaml", "PyYAML"),
         ("aiohttp", "aiohttp"),
         ("aiosqlite", "aiosqlite"),
-        ("mootdx", "mootdx"),
         ("pytdx", "pytdx"),
         ("pandas", "pandas"),
         ("numpy", "numpy"),

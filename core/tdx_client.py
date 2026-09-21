@@ -28,11 +28,13 @@
 
 from __future__ import annotations
 
-# V17.2.15: TDX TCP 主源切换为 eltdx（Rust 内核 7709/7615 客户端）。
-# eltdx 握手已含 2026-09 新式单条随机 msg_id → 原 _tdx_handshake_patch 不再需要。
-# 注意: zhb_client.py 的 ZHB 报告 ZIP 下载自 V17.3.1 P0 起切换 eltdx (0x06B9,
-# ResourceApi.download_file), eltdx 已具备该能力; 握手补丁 (_tdx_handshake_patch) 亦随之移除,
-# 本模块本就不 import 该补丁。
+# V17.2.x 起 TDX TCP 主源为 eltdx（Rust 内核，握手已含 2026-09 修复）。
+# easy_tdx 作为兜底行情引擎，但其真实上游(github.com/yanwei99521/easy-tdx 1.20.8)至今仍发布
+# 静态三握手，对 2026-09 行情主站「握手有响应、但所有数据请求静默返回空包(0x0320)」。
+# 因此必须在任何 `from easy_tdx ... import` 之前植入动态单握手补丁。
+# IMPORTANT: 本 import 在模块加载时即生效（core/_tdx_handshake_patch.py 末尾 apply()），
+# 并回写已绑定的 transport.sync / transport.async_ 的 SETUP_COMMANDS 引用。
+import core._tdx_handshake_patch  # noqa: F401  植入 2026-09 新式动态单握手（修复空数据）
 
 import time
 from datetime import datetime
@@ -611,11 +613,12 @@ def _create_easy_tdx_adapter():
 def _get_verified_adapter():
     """V17.2.x(2026-09-11): 缓存已验证(全量数据+连接成功)的 TDX 适配器单例。
 
-    V17.2.15: 优先级 eltdx（Rust 握手含 2026-09 修复）→ easy_tdx（2026-09 主站握手需
-    _tdx_handshake_patch，本模块已移除补丁 import → 通常不可用，仅作兜底）。
+    V17.2.15: 优先级 eltdx（Rust 握手含 2026-09 修复）→ easy_tdx（兜底引擎，已重新
+    植入 _tdx_handshake_patch 动态握手 → 2026-09 主站可用）。
     实测原 _check_tdx 建完适配器并 bars 探测后即 _adapter.close() 丢弃，_get_tdx_client 又
     重建一次 → 首调付双倍 ~32s+31s≈63s 建连成本。此处集中构建并缓存到 _TDX_VERIFIED_CLIENT，
     _check_tdx / _get_tdx_client 共用同一实例，后续调用零重建成本。须在 _TDX_CALL_LOCK 内调用。
+    V17.3.x: mootdx 退役，仅 eltdx + easy_tdx 双引擎。
     """
     global _TDX_VERIFIED_CLIENT, _TDX_AVAILABLE
     if _TDX_VERIFIED_CLIENT is not None:
@@ -633,7 +636,7 @@ def _get_verified_adapter():
         _debug_log("TDX adapter: eltdx 不可用，回退 easy_tdx")
     except Exception as _e:
         _debug_log(f"eltdx primary adapter error: {_e}")
-    # 兜底 easy_tdx（2026-09 主站无补丁 → 通常返回 None）
+    # 兜底 easy_tdx（已植入动态握手补丁，2026-09 主站可用）
     _adapter = _create_easy_tdx_adapter()
     if _adapter is not None:
         _TDX_VERIFIED_CLIENT = _adapter
@@ -642,11 +645,11 @@ def _get_verified_adapter():
 
 
 def _check_tdx() -> bool:
-    """V12.0: 检测 mootdx 是否可用（缓存结果）。
+    """V12.0: 检测 TDX（eltdx 主源 + easy_tdx 兜底）是否可用（缓存结果）。
 
-    V14.2.3: bestip=True 改为 False（避免 mootdx 探速循环卡死）
     V17.2.x(2026-09-11): easy_tdx 适配器构建与缓存统一收口到 _get_verified_adapter()，
-    不再 build 后即 close 丢弃（避免与 _get_tdx_client 重复建连）；easy_tdx 全主机不可用才回退 mootdx。
+    不再 build 后即 close 丢弃（避免与 _get_tdx_client 重复建连）。
+    V17.3.x: mootdx 退役，仅 eltdx + easy_tdx 双引擎；二者皆不可达即标记 TDX 不可用。
     """
     global _TDX_AVAILABLE
     if _TDX_AVAILABLE is not None:
@@ -659,29 +662,19 @@ def _check_tdx() -> bool:
         if _adapter is not None:
             _TDX_AVAILABLE = True
             return True
-        # mootdx 备胎（仅当 easy_tdx 全部主机不可用）
-        try:
-            from mootdx.quotes import Quotes
-
-            # V14.2.3: bestip=False 跳过 mootdx 探速循环（与 _get_tdx_client 保持一致）
-            _c = Quotes.factory(market='std', bestip=False)
-            _df = _c.bars(symbol='600519', frequency=9, start=0, offset=1)
-            _TDX_AVAILABLE = _df is not None and not _df.empty
-            try:
-                _c.close()
-            except Exception:
-                pass
-        except Exception as _e:
-            _debug_log(f"tdx _check_tdx mootdx error: {_e}")
-            _TDX_AVAILABLE = False
+        # V17.3.x: mootdx 已退役（停止维护、且同样受 2026-09 静态握手空包影响）。
+        # 仅剩 eltdx(主) + easy_tdx(兜底) 双引擎；二者皆不可达则标记 TDX 不可用。
+        _TDX_AVAILABLE = False
+        _debug_log("TDX 不可用：eltdx 与 easy_tdx 均未连通")
     return _TDX_AVAILABLE
 
 
 def _get_tdx_client() -> Optional[Any]:
-    """V12.0: 获取 mootdx StdQuotes 客户端（线程安全，自动重连）。
+    """V12.0: 获取 TDX 客户端（线程安全，自动重连）。
 
-    mootdx 内部已管理 bestip 选择、心跳线程、自动重连，无需 monkey-patch。
+    主源 eltdx / 兜底 easy_tdx 均通过 _get_verified_adapter() 统一构建与缓存；
     保留 _TDX_CALL_LOCK 串行化避免协议包错乱，保留 _tdx_throttle 节流。
+    V17.3.x: mootdx 退役，仅 eltdx + easy_tdx 双引擎。
     """
     with _TDX_CALL_LOCK:
         global _TDX_CLIENT
@@ -707,29 +700,17 @@ def _get_tdx_client() -> Optional[Any]:
             if _TDX_VERIFIED_CLIENT is not None:
                 _TDX_CLIENT = _TDX_VERIFIED_CLIENT
                 return _TDX_CLIENT
-            # mootdx 备胎（同协议双通道）——仅当 easy_tdx 全主机不可用
-            try:
-                from mootdx.quotes import Quotes
-
-                # V14.2.1: bestip=True 会触发 mootdx "[-] 选择最快的服务器..." 探速循环，
-                # 休市日多个 TCP 节点超时导致卡死数分钟。改为 False 跳过探速，
-                # 与 zhb_client.py 保持一致（手动指定服务器）。
-                _TDX_CLIENT = Quotes.factory(market='std', bestip=False)
-                _tdx_health_check(_TDX_CLIENT)
-                return _TDX_CLIENT
-            except Exception as _e:
-                _debug_log(f"tdx _get_tdx_client mootdx new client error: {_e}")
-                _TDX_CLIENT = None
-                if attempt < _TDX_RECONNECT_ATTEMPTS - 1:
-                    time.sleep(_TDX_RECONNECT_DELAY * (2**attempt))
+            # V17.3.x: mootdx 已退役。走到此处说明 eltdx 与 easy_tdx 均已不可用，
+            # 仅余兜底出口（下方 return None）。
+            _debug_log("tdx _get_tdx_client: eltdx 与 easy_tdx 均不可用")
         return None
 
 
 def _tdx_health_check(client) -> None:
-    """V12.0: mootdx 关键接口健康检查。
+    """V12.0: TDX 客户端关键接口健康检查。
 
-    mootdx 内部 bestip 已过滤不可用节点，这里仅做日志记录便于调试，
-    K线假数据仍触发换IP（通过抛 RuntimeError 让 _get_tdx_client 重连）。
+    仅做日志记录便于调试；K线假数据仍触发换IP（通过抛 RuntimeError 让 _get_tdx_client 重连）。
+    V17.3.x: mootdx 退役，适配 eltdx / easy_tdx 兜底适配器。
     """
     try:
         _df = client.bars(symbol='600519', frequency=9, start=0, offset=1)

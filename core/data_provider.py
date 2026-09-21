@@ -1385,7 +1385,7 @@ def get_canonical_stock_data(code: str, force_realtime: bool = False) -> Any:
 
     # V17.2.22: eltdx 7709/7615 实时短线/连板指标经统一层暴露。
     # 只读模块级 bundle 缓存(由 get_eltdx_shortline_bundle 批量预热, 300s TTL);
-    # 缓存未命中(未批量预热/无本地 TDX)则留默认 —— 绝不 per-stock 触发取数(N+1 打爆 TDX TCP)。
+    # 缓存未命中(未批量预热/TDX 源 eltdx 不可用)则留默认 —— 绝不 per-stock 触发取数(N+1 打爆 TDX TCP)。
     eltdx_ladder_level = 0
     eltdx_limit_up_streak_days = 0
     eltdx_limit_board_text = ""

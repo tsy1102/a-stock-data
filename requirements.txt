@@ -20,19 +20,22 @@ PyYAML>=5.4
 
 # ── 行情数据源（核心依赖，必须安装）───────────────────────────
 # eltdx: V17.2.15 起成为 TDX TCP **主源**（Rust 内核 7709/7615 客户端，零依赖，Research-Only 许可）。
-#   - Rust 握手已含 2026-09 新式单条随机 msg_id → 无需 _tdx_handshake_patch（tdx_client.py 已移除补丁 import）。
+#   - Rust 握手已含 2026-09 新式单条随机 msg_id。
 #   - 覆盖 quotes/K线/财务(0x0010)/xdxr/limit_ladder 等；原始字节(tail_raw/record_hex/finance_info_raw)
 #     二次解码可引出更多 f 字段（见 docs/eltdx_smoke_report_20260915.md）。
 #   - 北交所(83/87/88/43/46/92)快照偶发解析失败 → 上层 HTTP(ZHB/腾讯/东财) fallback。
 eltdx>=3.2.2,<4.0
-# easy-tdx: 保留用于 **ZHB 报告 ZIP 下载**（eltdx 无文件下载能力，zhb_client.py 仍走 easy_tdx + _tdx_handshake_patch）。
-#   TDX TCP 行情/财务主路径已由 eltdx 接管；easy_tdx 行情路径仅作兜底（2026-09 主站握手需补丁，通常不可用）。
-# 2026-08-10 实测：1.14.5 及以下 K线解码失败（TdxDecodeError）——必须 >=1.20.4
-# 2026-09-07: 升级到 1.32.6 ——新增 get_price_limits/get_market_stat/get_security_list_all；
-#   SecurityQuote 直解 s_vol(内盘)/b_vol(外盘)/rise_speed(涨速)。见 V17.2.0 改动。
-easy-tdx>=1.32.6,<2.0
-# mootdx: easy_tdx 故障 fallback（健康检查/连接兜底/ZHB 备胎/指数K线）——双通道保留
-mootdx>=0.11,<1.0
+# easy-tdx: TDX TCP 行情/财务兜底引擎 + ZHB 报告 ZIP 下载兜底（eltdx 无文件下载能力）。
+#   ★ 真实可维护上游 = github.com/yanwei99521/easy-tdx（PyPI 同名包已停更/404，非同一库）。
+#     本项目锁定其 1.20.8（commit 41e5637）。
+#   - 2026-09-07 起该上游仍发布**静态三握手**，对 2026-09 行情主站「握手有响应、数据请求静默空包」；
+#     必须在 import 前由 core/_tdx_handshake_patch.py 植入动态单握手（已在 tdx_client.py / zhb_client.py 顶部 import）。
+#   - 2026-08-10 实测：1.14.5 及以下 K线解码失败（TdxDecodeError）——必须 >=1.20.4。
+#   ⚠️ 从该上游全新安装需注意：其 pyproject.toml 含 [tool.hatch.build] artifacts=["web-ui/dist/"]，
+#     而 web-ui/dist 未随仓库发布（需 npm 构建、运行时不需要），直接 pip 构建会失败。
+#     安装方式：克隆后先删去该 [tool.hatch.build] 段，再 `pip install .`（本机当前已装 1.20.8）。
+easy-tdx @ git+https://github.com/yanwei99521/easy-tdx@41e56376fafa3abae0f6538f271eafd6af26d27f
+# mootdx: V17.3.x 已退役（停止维护、且同样受 2026-09 静态握手空包影响）。详见 core/tdx_client.py / core/zhb_client.py。
 
 # ── V16.1.7 新数据源（可选，缺失时对应增强功能自动降级）──────────
 # levistock: 盘口异动/市场情绪/涨停池补充/i问财（字典 §12.10）

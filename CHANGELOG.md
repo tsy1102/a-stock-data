@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 
+## [V17.3.4] 2026-09-22 — 退役 mootdx + 重激活握手补丁修复 TDX 空数据
+
+- **根因（"连接成功却返回空数据"）**：V17.2.15 将 TDX 主源切到 eltdx(Rust) 时，误判"eltdx 握手已含 2026-09 修复 → easy_tdx 补丁不再需要"，于是从 `tdx_client.py`/`zhb_client.py` 移除了 `core._tdx_handshake_patch` 的 import。但 easy_tdx 的真实上游(github.com/yanwei99521/easy-tdx)至今仍发布**静态三握手**，对 2026-09 行情主站"握手有响应、但所有数据请求静默返回空包(0x0320)"。故此前 easy_tdx 兜底路径连接成功却取不到任何 K 线/行情（mootdx 同源同症状）。eltdx 不受影响（Rust 内核自带修复）。
+- **修复（重激活动态握手补丁）**：在 `core/tdx_client.py` 与 `core/zhb_client.py` 顶部恢复 `import core._tdx_handshake_patch`（须在任意 `from easy_tdx ... import` 之前）。补丁在 import 时把 `setup.SETUP_COMMANDS` 与已绑定的 `transport.sync`/`transport.async_` 的 `SETUP_COMMANDS` 一并重写为新式单条动态握手（随机 msg_id + 0x000d + payload 0x01），并对齐 eltdx 行为。实证：`import tdx_client` 后 `easy_tdx.transport.sync.SETUP_COMMANDS len=1`、dynamic flag=True；实拉 `get_security_bars('600519', DAY)` 返回 5 行真实 OHLCV（open 1281.0 / close 1272.75 / vol 1,376,172）。
+- **退役 mootdx**：删除 `tdx_client.py` 的 `_check_tdx`/`_get_tdx_client` 中 `from mootdx.quotes import Quotes` 备胎分支与 `zhb_client.py` 的 mootdx 下载备胎循环；`main.py` 依赖自检移除 `("mootdx","mootdx")`；`requirements.txt` 删除 `mootdx` 依赖。仅留 eltdx(主) + easy_tdx(兜底) 双引擎。
+- **锁定 easy_tdx 上游**：`requirements.txt` 将 `easy-tdx>=1.32.6` 改为锁定真实可维护上游 `github.com/yanwei99521/easy-tdx @ 1.20.8 (commit 41e5637)`（PyPI 同名包已停更/404，非同一库）。已删除本机曾装入的非同源异构建 1.32.6，安装上游 1.20.8；注：其 pyproject 含未发布的 `web-ui/dist` artifacts，全新 `pip install .` 需先删除 `[tool.hatch.build]` 段（运行时不需要前端）。
+- **版本**：`VERSION` 17.3.1 → 17.3.4（单一来源）。
+
 ## [V17.3.1] 2026-09-19 — ZHB 下载节流缺陷修复
 
 - **ZHB 下载节流逻辑修复（`core/zhb_client.py`）**：令牌文件 `.last_download` 由记录"日历日"改为记录"服务端返回的包数据日期"（YYYYMMDD）。`_zhb_needs_download` 抑制重下的判定由 blanket "今日是否已尝试"（每日一次闸门，会把同日 T+1 清晨发布的新包锁死到次日）改为——仅当"今日已成功拉取 且 服务端返回包日期 == 本地包日期（服务端确未前进）"才抑制；当本地落后于最近交易日时引入 3 小时重探冷却，使当日新包（如 `zhb_20260918`）可被拾取，而非滞留旧包直到次日。修复了"最新 ZHB 包停留在上一交易日"的缺陷（数据来源：通达信）。单元验证 6 项断言全过（不联网，monkeypatch 日期/时间）。

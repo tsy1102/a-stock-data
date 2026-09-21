@@ -243,10 +243,10 @@ def create_eltdx_adapter() -> Optional[Any]:
 
 
 def is_eltdx_available() -> bool:
-    """V17.3: 轻量探测 eltdx 本地 TDX 适配层是否已安装。
+    """V17.3: 轻量探测 eltdx(TDX 公网主站适配层)是否已安装。
 
     供 val 报告在 eltdx 依赖策略(26 连板梯队 / 27 短线资金强度)空产出时,
-    区分'数据源缺失(本地 TDX 未连接 / eltdx 未装)'与'真实无符合标的',
+    区分'数据源缺失(eltdx 包未装 / 公网主站不可达)'与'真实无符合标的',
     避免误导用户以为当日无连板/抢筹标的。
     """
     try:
@@ -286,7 +286,8 @@ def get_eltdx_shortline_bundle(all_codes: List[str], timeout: float = 20.0) -> T
     """eltdx 连板天梯(limit_ladder) + 批量短线指标(shortline_indicators) 一体化采集。
 
     V17.2.16: 供 val 策略层(策略26 连板梯队·短线封单强度)使用。
-    数据: 本地 TDX 7709/7615 实时(TCP); 无本地 TDX / eltdx 未装 / 上游异常 / 卡死(墙钟超时)
+    数据: TDX 公网主站 7709/7615 实时(TCP)(包内 tdx_server.json 的 45 台公网主站, 与 mootdx 同源);
+          不依赖本地通达信安装; eltdx 包缺失 / 公网主站不可达 / 上游异常 / 卡死(墙钟超时)
           → 返回 ([], {}) 降级为空选, 不阻断其余策略。
     返回: (ladder_list, shortline_map)
       ladder_list:  list[dict]  —— limit_ladder() 全局连板天梯(rows)
@@ -358,7 +359,7 @@ def get_eltdx_shortline_bundle(all_codes: List[str], timeout: float = 20.0) -> T
             except Exception as _e:
                 _debug_log(f"eltdx shortline_indicators: {_e}")
             return (ladder, sl_map)
-        except Exception as _e:  # 连接/握手失败(无本地 TDX) → 降级
+        except Exception as _e:  # 连接/握手失败(公网主站不可达 / eltdx 引擎异常) → 降级
             _debug_log(f"eltdx shortline bundle: {_e}")
             return ([], {})
         finally:
@@ -368,7 +369,7 @@ def get_eltdx_shortline_bundle(all_codes: List[str], timeout: float = 20.0) -> T
             except Exception:
                 pass
 
-    # 硬墙钟封顶: eltdx 在无本地 TDX 时连接阶段可能超出 timeout=8 长效挂起。
+    # 硬墙钟封顶: eltdx 在公网主站不可达(网络阻断/全主站 down)时连接阶段可能超出 timeout=8 长效挂起。
     # 用 daemon 线程 + join(timeout) 兜底(非 ThreadPoolExecutor: 其 __exit__ 的
     # shutdown(wait=True) 会阻塞等待挂起线程, 使超时失效)。daemon=True 保证进程退出不被拖住。
     import threading
@@ -403,7 +404,8 @@ def get_eltdx_limit_ladder(timeout: float = 20.0) -> list:
 
     V17.2.24: 仅取全局梯队(一次调用)，不做 per-stock 批量 shortline_indicators
               （避免 mak 对全市场 5000+ 代码触发超时/拖慢整批）。
-    数据: 本地 TDX 7709/7615 实时(TCP); 无本地 TDX / eltdx 未装 / 上游异常 / 卡死(墙钟超时)
+    数据: TDX 公网主站 7709/7615 实时(TCP)(包内 tdx_server.json 的 45 台公网主站, 与 mootdx 同源);
+          不依赖本地通达信安装; eltdx 包缺失 / 公网主站不可达 / 上游异常 / 卡死(墙钟超时)
           → 返回 [] 降级, 不阻断报告。
     返回: list[dict] —— 每行含 code/full_code/ladder_level/limit_up_streak_days/
           limit_board_text/seal_to_float_ratio/open_volume_ratio 等(ShortlineIndicator schema)。

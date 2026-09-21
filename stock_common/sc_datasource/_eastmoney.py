@@ -1518,10 +1518,10 @@ def eastmoney_stock_info_push2(code: str) -> Dict[str, Any]:
     """东财 push2 个股基本面信息（含上市日期 f189，不走 TDX）。
 
     当 TDX 无法获取 list_date 时作为 fallback。
+    V17.3.2: push2 主域受扰率 80%, 故先主域、失败回退 push2delay 独立镜像域(可用率 ~95%)。
     返回: {code, name, industry, total_shares, float_shares, mcap, float_mcap, list_date}
     """
     market_code = 1 if em_secid_prefix(code) == "1." else 0  # V17.0 S3: 统一(含北交所 92)
-    url = "https://push2.eastmoney.com/api/qt/stock/get"
     params = {
         "fltt": "2",
         "invt": "2",
@@ -1529,25 +1529,32 @@ def eastmoney_stock_info_push2(code: str) -> Dict[str, Any]:
         "secid": f"{market_code}.{code}",
     }
     headers = {"User-Agent": UA, "Referer": "https://quote.eastmoney.com/"}
-    try:
-        r = em_get(url, params=params, headers=headers, timeout=10)
-        if r is None:
-            return {}
-        d = r.json().get("data", {})
-        return {
-            "code": d.get("f57", ""),
-            "name": d.get("f58", ""),
-            "industry": d.get("f127", ""),
-            "total_shares": d.get("f84", 0),
-            "float_shares": d.get("f85", 0),
-            "mcap": d.get("f116", 0),
-            "float_mcap": d.get("f117", 0),
-            "list_date": str(d.get("f189", "")),
-            "price": d.get("f43", 0),
-        }
-    except Exception as _e:
-        _debug_log(f"datasource eastmoney_stock_info_push2 ({code}): {_e}")
+    # V17.3.2 封禁规律对齐: 跨 33 采集日实证 push2 主域受扰率 80%、push2delay 镜像域可用率
+    # ~95%(独立熔断面, 主域被封时仍可用)。主域封禁时 em_get 抛 CircuitBreakerError/返回 None
+    # → 回退 push2delay(独立面)仍可取, 避免静默返回空(此前主域断路器 Open 被裸 except 吞成 {} )。
+    r = None
+    for _host in ("push2.eastmoney.com", "push2delay.eastmoney.com"):
+        try:
+            r = em_get(f"https://{_host}/api/qt/stock/get", params=params, headers=headers, timeout=10)
+            if r is not None:
+                break
+        except Exception as _e:
+            _debug_log(f"datasource eastmoney_stock_info_push2 ({code}) host {_host}: {_e}")
+            r = None
+    if r is None:
         return {}
+    d = r.json().get("data", {})
+    return {
+        "code": d.get("f57", ""),
+        "name": d.get("f58", ""),
+        "industry": d.get("f127", ""),
+        "total_shares": d.get("f84", 0),
+        "float_shares": d.get("f85", 0),
+        "mcap": d.get("f116", 0),
+        "float_mcap": d.get("f117", 0),
+        "list_date": str(d.get("f189", "")),
+        "price": d.get("f43", 0),
+    }
 
 
 def _em_fflow_request(path: str, params: Dict[str, Any], timeout: int = 10, prefer_his: bool = False):

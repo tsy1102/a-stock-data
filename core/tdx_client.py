@@ -1611,8 +1611,8 @@ def tdx_get_index_quote(idx_code: str) -> Dict[str, Any]:
         if client is not None:
             try:
                 _tdx_throttle()  # V8.5: TDX请求节流
-                _, code = _index_to_market_code(idx_code)
-                bars = client.index_bars(symbol=code, frequency=9, start=0, offset=2)
+                m, code = _index_to_market_code(idx_code)
+                bars = client.index_bars(symbol=code, market=m, frequency=9, start=0, offset=2)
                 if bars is None or bars.empty:
                     # V16.2.7: easy_tdx 指数空响应（ret_count 撒谎）→ 换台重试一次
                     global _TDX_CLIENT, _TDX_AVAILABLE
@@ -1621,7 +1621,7 @@ def tdx_get_index_quote(idx_code: str) -> Dict[str, Any]:
                     _debug_log(f"tdx index_quote 空响应 ({idx_code})，换台重试")
                     client = _get_tdx_client()
                     if client is not None:
-                        bars = client.index_bars(symbol=code, frequency=9, start=0, offset=2)
+                        bars = client.index_bars(symbol=code, market=m, frequency=9, start=0, offset=2)
                 if bars is not None and not bars.empty and len(bars) >= 2:
                     last_c = float(bars.iloc[-1]['close'])
                     prev_c = float(bars.iloc[-2]['close'])

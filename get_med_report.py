@@ -265,11 +265,9 @@ async def generate_report_async(session, code, output_path, ind_comp=None, hsgt=
     L(f"  市场板块: {sec_type_market_label(getattr(cdata, 'sec_type', 0), cdata.code, cdata.name)}")
 
     # V17.2.21 修复: 优先 cdata.list_date（push2delay+10年缓存, 实测可用）, info 兜底（主域 push2 被风控拦截恒空）
-    list_date_raw = cdata.list_date or info.get("list_date", "")
-    if list_date_raw and len(list_date_raw) >= 8:
-        list_date_fmt = f"{list_date_raw[:4]}-{list_date_raw[4:6]}-{list_date_raw[6:8]}"
-    else:
-        list_date_fmt = list_date_raw
+    # V17.3.5 修正(报告审查 #362): 改用 normalize_list_date 归一化——旧切片对残缺值(如 '1998-04-')会生成 '1998--0-4-' 乱码
+    from core._accessors import normalize_list_date
+    list_date_fmt = normalize_list_date(cdata.list_date or info.get("list_date", ""))
     L(f"  上市日期: {list_date_fmt}")
 
     if cdata.change_5d or cdata.change_10d or cdata.change_20d or cdata.change_60d:
@@ -619,12 +617,17 @@ async def generate_report_async(session, code, output_path, ind_comp=None, hsgt=
     if not df_eps.empty and len(df_eps.columns) >= 4:
         L(f"  {'年度':<10} {'覆盖机构数':<10} {'预测EPS均值':<12}")
         L(f"  {'-'*40}")
+        _this_year = date.today().year
+        _eps_by_year = {}
         for i, row in df_eps.iterrows():
             try:
                 year = str(row.iloc[0]) if pd.notna(row.iloc[0]) else ""
                 cnt = int(row.iloc[1]) if pd.notna(row.iloc[1]) else 0
                 mean_v = float(row.iloc[3]) if pd.notna(row.iloc[3]) else 0
                 L(f"  {year:<10} {cnt:<10} {mean_v:<12.3f}")
+                _yd = ''.join(ch for ch in year if ch.isdigit())
+                if _yd:
+                    _eps_by_year[int(_yd)] = mean_v
                 if i == 0:
                     eps_cur = mean_v
                     eps_has_data = True
@@ -632,6 +635,12 @@ async def generate_report_async(session, code, output_path, ind_comp=None, hsgt=
                     eps_next = mean_v
             except (ValueError, TypeError, IndexError) as _e:
                 _debug_log(f"med eps_row_parse: {_e}")
+        # V17.3.5 修正(报告审查): 前向PE/增速须取【本年度/明年】预测EPS, 不可按行位置取首行
+        # (首行常为上年实际, 致 pe_fwd 实为静态PE、与 lng 口径错配)。与 lng 口径对齐。
+        if _eps_by_year.get(_this_year) is not None:
+            eps_cur = _eps_by_year[_this_year]
+        if _eps_by_year.get(_this_year + 1) is not None:
+            eps_next = _eps_by_year[_this_year + 1]
     if not eps_has_data:
         # V16.1: 复用研报正文请求（避免 max_pages=1 与 max_pages=3 两次重复请求）
         # 仅当研报尚未在"六"章节获取时独立请求
@@ -769,7 +778,7 @@ async def generate_report_async(session, code, output_path, ind_comp=None, hsgt=
                         _hpe = [p / eps_cur for p in _hp if p > 0]
                         if _hpe:
                             _pc = sum(1 for p in _hpe if p < pe_fwd) / len(_hpe) * 100
-                            L(f"  PE历史分位: {_pc:.0f}%（低于{_pc:.0f}%的历史时间）")
+                            L(f"  PE历史分位: {_pc:.0f}%（当前PE高于{_pc:.0f}%的历史时间，数值越高越贵）")
             except Exception as _e:
                 _debug_log(f"med pe_percentile error: {_e}")
     else:
@@ -1162,9 +1171,15 @@ async def generate_report_async(session, code, output_path, ind_comp=None, hsgt=
             yield_str = f"{(d['bonus_rmb'] / price_today) * 100:.2f}%" if price_today > 0 else "N/A"
             L(f"| {d['date']} | {d['bonus_rmb']:.4f} | 约 {yield_str} (按现价计) |")
     else:
-        # V16.2.3: 区分"接口失败"与"真无分红"
-        L("  分红数据获取失败（TDX 接口暂不可用）。" if div is None else
-          "  暂无分红记录（非防御型收息标的）。")
+        # V17.3.5 修正(报告审查 #363): 若 ZHB 股息率>0 已证实有分红, 绝不输出"暂无分红记录"——
+        # 此时 get_dividend_history 返回空只代表明细接口失败/空窗, 与股息率矛盾时以股息率为准。
+        if _zhb_div_yield > 0:
+            L("  分红明细获取为空，但 ZHB 股息率显示该股有分红，明细数据可能存在缺口。" if div is None
+              else "  分红历史明细为空，但 ZHB 股息率显示该股有分红，建议以股息率为准。")
+        else:
+            # V16.2.3: 区分"接口失败"与"真无分红"
+            L("  分红数据获取失败（TDX 接口暂不可用）。" if div is None else
+              "  暂无分红记录（非防御型收息标的）。")
 
     # ─── 16. 十大流通股东机构动向 ───
     L("\n## 【十六、十大流通股东机构动向】")

@@ -12,9 +12,39 @@
 
 数据来源：通达信 / 多源对撞体系。
 """
+import re
 from typing import Any, Dict, List, Optional
 
 from core.stock_cache import TTL, cached, make_valid_if
+
+
+def normalize_list_date(raw: Any) -> str:
+    """将上市日期原始值归一到 'YYYY-MM-DD'（或无法补全时退回安全的截断串）。
+
+    处理 push2 f189 / TDX 0x0010 ipo_date / 永久缓存等多种来源可能返回的残缺形态：
+      - 8 位纯数字 '19980427'                -> '1998-04-27'
+      - 已格式化 '1998-04-27'               -> 原样（零补齐）
+      - 残缺 '1998-04-'（日缺失）            -> '1998-04'（不臆造日，交由 TDX 兜底补全）
+      - 其他                                -> 去空格原串
+    """
+    if not raw:
+        return ""
+    s = str(raw).strip()
+    if not s or s.lower() in ("none", "nan"):
+        return ""
+    # 已格式化形态(允许月/日非零补齐): YYYY-M-D / YYYY-MM-DD → 零补齐（须先于数字提取,
+    # 否则 '1998-4-7' 会被误判为 YYYYMM 6 位数字 → '1998-47'）
+    m = re.match(r"^(\d{4})-(\d{1,2})-(\d{1,2})$", s)
+    if m:
+        y, mo, d = m.groups()
+        return f"{y}-{int(mo):02d}-{int(d):02d}"
+    digits = re.sub(r"\D", "", s)
+    if len(digits) == 8:
+        return f"{digits[:4]}-{digits[4:6]}-{digits[6:8]}"
+    if len(digits) == 6:  # YYYYMM，日缺失
+        return f"{digits[:4]}-{digits[4:6]}"
+    return s
+
 
 def get_concept_from_zhb(code: str) -> List[str]:
     from stock_common import _debug_log, _safe_float

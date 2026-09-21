@@ -11510,8 +11510,8 @@
       "canonical": "f90",
       "meaning": "",
       "unit": "",
-      "status_raw": "原\"阶段涨跌幅连续块\"假设经K线对撞证伪(值不与任何N日回报匹配)；多周期资金流对撞亦排除(值非元额)；属资金流细分小比率，具体语义待定；块内第93号字段全20样本恒空(块内空位)",
-      "status": "disproved"
+      "status_raw": "",
+      "status": "unverified"
     },
     {
       "code": "f91",
@@ -11523,8 +11523,8 @@
       "canonical": "f91",
       "meaning": "",
       "unit": "",
-      "status_raw": "原\"阶段涨跌幅连续块\"假设经K线对撞证伪，多周期资金流对撞亦排除；属资金流细分小比率，具体语义待定",
-      "status": "disproved"
+      "status_raw": "",
+      "status": "unverified"
     },
     {
       "code": "f94",
@@ -11536,8 +11536,8 @@
       "canonical": "f94",
       "meaning": "",
       "unit": "",
-      "status_raw": "原\"阶段涨跌幅连续块\"假设经K线对撞证伪，多周期资金流对撞亦排除；属资金流细分小比率，具体语义待定",
-      "status": "disproved"
+      "status_raw": "",
+      "status": "unverified"
     },
     {
       "code": "f95",
@@ -11549,8 +11549,8 @@
       "canonical": "f95",
       "meaning": "",
       "unit": "",
-      "status_raw": "原\"阶段涨跌幅连续块\"假设经K线对撞证伪，多周期资金流对撞亦排除；属资金流细分小比率，具体语义待定",
-      "status": "disproved"
+      "status_raw": "",
+      "status": "unverified"
     },
     {
       "code": "f97",

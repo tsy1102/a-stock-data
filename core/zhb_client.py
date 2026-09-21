@@ -1142,7 +1142,8 @@ class ZhbData:
             [9]  div_amount       业绩预告净利润(万元, 可负)（ForecastAmount；旧误标"每10股分红元"）
             [13] unlock_date      最新解禁日（Gemini 20260921 终局 + 字典实例 茅台 col14=48867.90万 互证）
             [14] unlock_shares_wan 最新解禁数量(万股)
-            # [19]/[20] 回购预案日/回购上限(亿元) 为 Gemini 候选，字典实例 col20=30.00 支持回购上限，暂未接入
+            [19] hg_date          回购预案公告日（RecentHGDate；TdxW 串池 `回购预案:上限%.2f亿元` 实锤，dict §3 ✅）
+            [20] hg_amount_yi     回购预案金额上限(亿元)（RecentHGAmo；同串池一锤定音，dict §3 ✅；V17.3.8 接线）
         """
         data = self.raw_files.get("tipinfo.dat", b"")
         if not data:
@@ -1170,6 +1171,10 @@ class ZhbData:
             if len(parts) > 14:
                 rec["unlock_date"] = parts[13].strip()
                 rec["unlock_shares_wan"] = _safe_cast(parts, 14, float)
+            # 回购预案族（field_dict §3 Col[19]/[20]，TdxW 串池 `回购预案:上限%.2f亿元` 实锤；非空才挂避免噪声）
+            if len(parts) > 20:
+                rec["hg_date"] = parts[19].strip()
+                rec["hg_amount_yi"] = _safe_cast(parts, 20, float)
             result[code] = rec
         return result
 

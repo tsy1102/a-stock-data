@@ -688,7 +688,7 @@ TDX 服务器 (端口 7709)
 > 📋 ZHB 分字典 = [`zhb_verify.md`](verify/zhb_verify.md)（镜像备份，由 `scripts/gen_zhb_subdict.py` 从本 § 生成；**主字典始终为唯一权威**，分字典仅更清晰列明本表内容，不得引入主字典之外定名）。破解新字段登记本表后须重跑该脚本保持镜像同步（详见 §12.15.10）。
 
 分隔符：`|`（pipe），编码：GBK。覆盖 5,612 只标的（仅需财报数据的 A 股+北交所，不含 ETF/基金）。  
-代码解析器：`zhb_client.py` `_parse_tipinfo()`，代码中实际映射到 dict 的字段共 **7 个**。
+代码解析器：`zhb_client.py` `_parse_tipinfo()`，代码中实际映射到 dict 的字段共 **11 个**（7 个无条件 + unlock/hg 4 个条件映射；V17.3.8 起 Col[19]/[20] 回购预案已接线）。
 
 > **⚠️ 代码对齐注记（V17.3.6, commit `1e1233d`）**：`_parse_tipinfo` 已于本版本对齐本 §3 契约——`[5]→zt_date_recent`、`[8]→div_date`(业绩预告日)、`[9]→div_amount`(业绩预告净利润,万元可负)、`[13]/[14]→unlock_date/unlock_shares_wan`(解禁日/解禁量万股)。**旧代码误标 `div_amount=每10股分红元`、`[5]=ex_date` 除权除息日 已废止**，请勿再以旧代码注释充当字段语义反证（详见 `docs/field_verification/20260921/verify_gemini_reply.md`）。
 

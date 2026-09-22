@@ -94,3 +94,50 @@ def ipo_calendar(limit: int = 20) -> List[Dict[str, Any]]:
     for r in rows:
         r.update(_trace("ipo_calendar"))
     return rows
+
+
+def render_event_driven_section(code: str, events: tuple = ("业绩预告", "机构调研", "股东增减持", "股权质押"), include_cb: bool = True) -> List[str]:
+    """事件驱动层 markdown 渲染器(med/lng 报告共用) — 业绩预告/机构调研/股东增减持/股权质押; 可选可转债。
+
+    东财 datacenter 源; reportName 待对撞验证(治理铁律): 仅展示记录条数+数据溯源, 不呈现未验证字段数值,
+    避免把未对撞的字段值当作权威结论。返回 markdown 行列表(可能为空)。
+    """
+    from ._convertible import convertible_bonds
+    _all = {
+        "业绩预告": earnings_forecast,
+        "机构调研": institution_survey,
+        "股东增减持": holder_trades,
+        "股权质押": equity_pledge,
+    }
+    out: List[str] = []
+    _any = False
+    try:
+        for _name in events:
+            _fn = _all.get(_name)
+            if not _fn:
+                continue
+            try:
+                _rows = _fn(code)
+            except Exception as _e:
+                _debug_log(f"render_event_driven_section {_name}({code}) error: {_e}")
+                continue
+            if _rows:
+                _any = True
+                out.append(f"  • {_name}: 取到 {len(_rows)} 条 (东财 datacenter, reportName 待对撞验证)")
+        if include_cb:
+            try:
+                _cb = convertible_bonds()
+                _has = any(isinstance(_r, dict) and any(str(v) == code for v in _r.values()) for _r in _cb)
+                if _has:
+                    _any = True
+                    out.append(f"  • 可转债: 该标的发行有可转债 (convertible_bonds 已取到 {len(_cb)} 条, 条款/转股价值/溢价率字段待对撞验证)")
+            except Exception as _e:
+                _debug_log(f"render_event_driven_section cb({code}) error: {_e}")
+    except Exception as _e:
+        _debug_log(f"render_event_driven_section({code}) error: {_e}")
+        return []
+    if not _any:
+        return []
+    out.insert(0, "  事件驱动层(吸收上游 3.9.0 §14/§15, 东财 datacenter):")
+    out.append("  ⚠️ 字段映射待对撞验证(治理铁律): 当前仅展示记录条数与数据溯源, 正式字段解析将在 collide 验证后补全。")
+    return out

@@ -888,6 +888,19 @@ async def generate_report_async(session, code, output_path, ind_comp=None, hsgt=
     else:
         L("  近期无过滤后的重大公告。")
 
+    # V17.4: 事件驱动层接入(吸收上游 3.9.0 §14) — 业绩预告/机构调研/股东增减持/股权质押; 可转债可选小节
+    try:
+        from stock_common.sc_datasource import render_event_driven_section
+        _ev = await asyncio.to_thread(render_event_driven_section, code,
+                                      ("业绩预告", "机构调研", "股东增减持", "股权质押"), True)
+        if _ev:
+            L("\n## 【七之二、事件驱动与股东动作 (业绩预告/机构调研/股东增减持/股权质押)】")
+            L("---")
+            for _l in _ev:
+                L(_l)
+    except Exception as _e:
+        _debug_log(f"med event_driven({code}) error: {_e}")
+
     # ─── 6. 筹码稳定性分析 ───
     L("\n## **八、筹码稳定性与抛压评估**")
     L("---")

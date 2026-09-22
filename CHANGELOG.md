@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 
+## [V17.4.5] 2026-09-22 — 去除 sht 报告盘后恒 N/A 的「均价偏离 / 盘口委差」接入块
+
+- **背景**：用户**只在盘后扫描**；`get_sht_report.py` 渲染的「均价偏离」(`cdata.avg_price`/腾讯[85]) 与「盘口委差」(`cdata.bid_ask_net`/腾讯[86]) 均为**盘中 L1 字段，盘后快照恒为 0/None**，故盘后产物永远落 `N/A`——接入无意义。
+- **动作**：整体删除 `get_sht_report.py` 第 389–423 行（均价偏离、盘口委差两块渲染 + 其 DEBT-007/DEBT-014 注释文档）。语法校验通过（`py_compile` exit 0），字段残留计数 0。
+- **范围**：仅移除 sht 报告渲染层；`avg_price` 在 `get_lng_report.py:1281` 另有独立消费（不同 dict、不依赖盘后快照），不受影响，未改动。
+- **来源**：对应 `reports/audit_findings_20260922.md` 第 3 项（系统性缺口），用户授权"可以去除"。
+- **未推送**：按治理铁律本地 commit，不推送远端。
+
 ## [V17.4.4] 2026-09-22 — 修复 LPR「最新」取值 bug（取数分页错取历史旧值）+ None 渲染为 N/A
 
 - **LPR 最新值取数 bug 根因修复（真实 bug，非源过期）**：`stock_common/sc_datasource/_macro.py` 的 `lpr_history()` 调 `eastmoney_datacenter` 时 `sort_types="1"`（升序）且该函数默认只取第 1 页（单页、不自动翻页），致首屏返回最旧 200 行（1991 年起）；`get_macro_context()` 再取 `_lpr[-1]` = 第 200 行 ≈ 早期旧贷款基准利率 **5.76%**，且旧行 `LPR5Y` 为 null → 渲染成字面 `None`。修复：`lpr_history()` 改 `sort_types="-1"`（降序，首屏即最新 200 行）；`get_macro_context()` 取数改为 `max(_lpr, key=lambda r: r.get("date",""))`（取 TRADE_DATE 最大者=最新，防御性）。运行时验证返回 `lpr_1y=3.0 / lpr_5y=3.5`（与央行/邮储官网 2026-09-20 公布 1年 3.00% / 5年 3.50% 一致）。

@@ -5,6 +5,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 
+## [V17.3.16] 2026-09-22 — 订正裸 V17.4 (2026-09-21) 注释引用 → V17.3.4
+- 全量订正：core/source_priority.py:3、core/data_provider.py:81/1216/1850、get_val_report.py:2274 共 5 处裸 `V17.4 (2026-09-21)` 注释引用回订为 `V17.3.4`。
+- 溯源定位：该批注释源自未打版本标签的提交 `f0c468a`（"5脚本接入与fallback治理：源优先级单一真相源+市值护栏+概念富集"）；git 确认其为 `6aa4376`(V17.3.4) 的祖先 → 其代码首现于 V17.3.4 并被子嗣版本继承，故映射为 V17.3.4（修正此前记忆笔记误判的 17.3.5~17.3.9 谱系）。
+- 排除 `sc_fault_tolerance.py` 的 `Version/17.4 Safari` 浏览器 UA（非版本引用）。
+
 ## [V17.3.15] 2026-09-22 — 订正误标的 V17.4.x 版本引用
 - 全量订正：将代码注释与提交信息中误标的 V17.4.0~17.4.4 版本引用统一回订为真实谱系 V17.3.10~17.3.14（各提交实际编号）。根因为提交标签擅自越级跳 minor 到 17.4，而项目 VERSION 单一来源自 V17.3.4 起未变。
 - 同步订正 get_mak_report.py 异动扫描注释（MAK_SCAN_WORKERS 命名常量随 V17.3.12 引入，非 17.4.2）。

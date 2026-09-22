@@ -78,7 +78,7 @@ def _debug_log(msg: str) -> None:
     _fallback_logger.debug(msg)
 
 
-# V17.4 (2026-09-21): 源优先级单一真相源 — 引用 core/source_priority 声明（行为不变）。
+# V17.3.4 (2026-09-21): 源优先级单一真相源 — 引用 core/source_priority 声明（行为不变）。
 # 仅在导入期做一次一致性校验（告警入 debug 日志），不改动任何 fallback 顺序。
 try:
     from core import source_priority as _sp
@@ -1213,7 +1213,7 @@ def get_canonical_stock_data(code: str, force_realtime: bool = False) -> Any:
     if float_mcap_yi > 1e6:
         float_mcap_yi = float_mcap_yi / 1e4
 
-    # V17.4 (2026-09-21): 市值双源一致性护栏（纯观测，非破坏性）。
+    # V17.3.4 (2026-09-21): 市值双源一致性护栏（纯观测，非破坏性）。
     # 当直取市值可用时，与「股本×价」公式估值独立比对；偏差 > 2× 仅记 debug 告警，
     # 不改变取值（主路径已优先直取）。用于发现 rt_quote/ZHB 市值单位或股本缓存异常。
     if price and price > 0:
@@ -1847,7 +1847,7 @@ def get_zt_streak_info(code: str) -> Dict[str, Any]:
 
 
 def get_hot_concepts(code: str) -> List[Dict[str, Any]]:
-    """V17.4 (2026-09-21): 热门概念访问器——零状态、lazy、try/except。
+    """V17.3.4 (2026-09-21): 热门概念访问器——零状态、lazy、try/except。
 
     沿用 get_zt_streak_info 的规范模式：不在 get_canonical_stock_data 热路径内调用
     （避免新增网络延迟），由各报告脚本在自身概念/热门段按需调用（与 get_sht_report.py:2203

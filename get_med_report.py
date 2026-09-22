@@ -1485,6 +1485,13 @@ class MedReportRunner(BaseReportRunner):
         _cached_ind_comp = get_industry_comparison()
 
         def _prefetch(codes):
+            # V17.4: 批量行情预取(push2delay ulist) —— 与 sht 对齐, 避免盘中逐股回退 push2(0.4rps) 取数
+            _ret = {}
+            try:
+                from core.data_provider import prefetch_quote_batch
+                _ret = prefetch_quote_batch(list(codes)) or {}
+            except Exception:
+                pass
             # V17.2.24: eltdx 连板/封单/开盘抢筹批量预热(一次 TCP, 300s TTL 缓存;
             # 统一层 cdata.eltdx_* 仅读此缓存, 禁止 per-stock 触发取数打爆 TDX TCP)
             try:
@@ -1492,6 +1499,7 @@ class MedReportRunner(BaseReportRunner):
                 get_eltdx_shortline_bundle(list(codes))
             except Exception:
                 pass
+            return _ret
 
         return self.execute_batch_pipeline(
             "med", generate_report_async,

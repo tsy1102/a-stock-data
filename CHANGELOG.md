@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 
+## [V17.4.2] 2026-09-22 — 闭环上轮 3 项「遗留」：深交所ETF接口修复 + IPO募资额单位对撞订正 + ST名单 baostock 兜底接入
+- **① 深交所 ETF 接口恢复(修复真问题, 非"未知")**: 原 `_etf.py` 用 `fund.szse.cn`(本环境被封, 长期显"深市 ETF 数据暂不可用")。仓内 `_eastmoney.py:1195` 早已用 `www.szse.cn` 同名端点(龙虎榜)且本环境可用 → 切主站 `www.szse.cn/api/report/ShowReport/data` + 兜底回退 `fund.szse.cn`。实测 `www.szse.cn/...CATALOGID=1000_lf&selectJjlb=ETF` → HTTP 200、740 只、快照日 2026-09-22。另加 `pagesize=2000` 一页取全 + `sleep(0.05)`(原 0.3), 消除 37 页循环最坏 555s 挂死; 快照日与请求日不符时以快照日为准(不再抛错)。
+- **② IPO 募资额单位对撞订正(修复真 bug, 非"未知")**: 原渲染把 `TOTAL_RAISE_FUNDS` 当"元" `÷1e8` 显示 0.00。对撞确认单位=亿元: `TOTAL_ISSUE_NUM(万股)*ISSUE_PRICE(元)/1e4 == TOTAL_RAISE_FUNDS(亿元)`, 28 点误差 0。修复后直接按亿元展示, 恢复"募资(亿)"列与合计。验证: 未来 21 日 3 只新股申购, 预计募资约 84.5 亿元(粤芯半导体 75.00 / 联亚 9.50 / 莫森泰克 待定)。
+- **③ ST 北交所名单 baostock 兜底接入(闭环上游 §6.8, 非"未知")**: 原 `_st_list.py` 注释"baostock 兜底未接入"。上游权威仓库 §6.8 `st_stock_list()` 即东财 + baostock 兜底 → 已接入 `_st_list_baostock()`: 东财主源(沪深风险警示板)不可达时走 baostock(仅沪深, 上游 §6.8 明记 baostock 不支持北交所); 用守护线程 + `join(timeout=20)` 包裹(本沙箱同样封 baostock TCP, 原会挂起 150s → 现 ~11s 优雅抛错)。BJ 始终只能来自东财(上游已知限制, 非 bug)。验证: push2+baostock 双封下 `st_stock_list()` 诚实抛 `RuntimeError: ST名单(沪深)主源与 baostock 兜底均不可用`, 渲染段显"⚠️ ST名单源当前不可达", 不伪装空名单。
+- **性能修复(ETF 段 103s→10.2s)**: 原 `_fetch_etf` 对 SZ 也跑 10 天回退×2 主机, 撞 15s 超时×多次爆炸。改为 SZ 不回退历史日、单次尝试 + 25s 守护线程超时 → ETF 段耗时 103s→10.2s; 深市被封时优雅显"深市 ETF 数据暂不可用(待恢复)", 沪市 912 只(20197.8 亿份)正常。
+- **核证方式**: 拉取上游权威 SKILL.md(simonlin1212/a-stock-data)校对 §4.7 ETF 深交所当前快照 / §6.8 ST 名单 baostock 兜底 / 行 2183 IPO"单位: 亿元", 确认 3 项均属仓库已明确改进内容; 数值对撞为本项目 field 治理铁律终检(单位已定案, 非候选)。
+- **未推送**: 按用户指令本地 commit, 不推送远端。
+
 ## [V17.4.1] 2026-09-22 — 吸收层全量接入：申购日历/ETF份额/新浪研报/央视联播/上证e互动/ST名单 + 市场级报表 filter 根因修复
 - **市场级报表 filter 根因修复(核心)**: `sc_datasource/_eastmoney.py` 的 `eastmoney_datacenter` 在 `code=""` 且无显式 filter 时自动补 `(SECURITY_CODE="")` 把全市场报表(ipo_calendar/convertible_bonds/lpr_history)过滤成空——此为 V17.4.0 市场级报表恒空根因。修复为 `filter_str if filter_str else (f'(SECURITY_CODE="{code}")' if code else "")`；同步将 `_events.ipo_calendar`/`_convertible.convertible_bonds` 调用点 `filter_str=" "` 改 `""`。复采验证：ipo_calendar 20 / convertible_bonds 500 / lpr_history 166 条全部生效。
 - **申购日历接入 val/mak(抽水压力指标, #396)**: 新增 `ipo_calendar_recent()`(按 APPLY_DATE 倒序取未来申购)；`sc_market_signals.render_market_signals_section` 市场级附录新增【G. 近期新股申购日历·资金抽水压力监测】——以申购只数表征抽水压力(募资额字段 TOTAL_RAISE_FUNDS/PREDICT_RAISE_FUNDS 单位待对撞核实, 不展示未核数值)。

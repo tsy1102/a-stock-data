@@ -18,6 +18,7 @@
 from __future__ import annotations
 
 import re
+import threading
 from datetime import date, datetime, timedelta
 from typing import Any, Dict, List, Optional
 
@@ -75,7 +76,9 @@ def render_ipo_calendar_section(today_str: Optional[str] = None,
                                 lookahead_days: int = 21) -> List[str]:
     """近期新股申购日历 → 资金分流/抽水压力监测。
 
-    抽水压力 = 未来 lookahead_days 日内申购新股数 + 预计募资合计(定性指标)。
+    抽水压力 = 未来 lookahead_days 日内申购新股数 + 预计募资合计(亿元, 已对撞订正)。
+    募资额字段(TOTAL_RAISE_FUNDS/PREDICT_RAISE_FUNDS)单位=亿元: 对撞确认
+    TOTAL_ISSUE_NUM(万股)*ISSUE_PRICE(元)/1e4 == TOTAL_RAISE_FUNDS(28点误差0)。
     数据来源: 东财 datacenter(reportName=RPTA_APP_IPOAPPLY, 已对撞校正)。
     """
     out: List[str] = ["## 【G. 近期新股申购日历 · 资金抽水压力监测】", ""]
@@ -95,31 +98,37 @@ def render_ipo_calendar_section(today_str: Optional[str] = None,
     def _ad(r):
         return _parse_date(r.get("APPLY_DATE"))
 
+    def _rf(r):
+        # 募资额单位: 亿元(对撞确认, 见模块 docstring)
+        return _num(r.get("TOTAL_RAISE_FUNDS")) or _num(r.get("PREDICT_RAISE_FUNDS"))
+
     upcoming = [r for r in rows if (lambda d: d is not None and d >= today)(_ad(r))]
     recent = [r for r in rows if _ad(r) and _ad(r) < today]
 
     in_horizon = [r for r in upcoming if _ad(r) <= horizon]
+    total_raise = sum(_rf(r) for r in in_horizon if _rf(r) is not None)
 
     out.append(
         f"  💧 **抽水压力(以申购只数计)**: 未来 {lookahead_days} 日内有 **{len(in_horizon)}** 只新股申购"
-        f"（数据来源: 东财 datacenter, reportName=RPTA_APP_IPOAPPLY, 已对撞校正）。"
+        + (f"，预计募资约 **{total_raise:.1f} 亿元**（已定价/预测口径，待定价以预测值占位）" if total_raise > 0 else "")
+        + f"（数据来源: 东财 datacenter, reportName=RPTA_APP_IPOAPPLY, 已对撞校正, 单位亿元）。"
     )
-    out.append("  ⚠️ 募资额字段(TOTAL_RAISE_FUNDS/PREDICT_RAISE_FUNDS)单位(元/万元/亿元)待对撞核实，"
-               "本报告仅以申购只数表征抽水压力，不展示未核募资数值。")
     out.append("")
     out.append("  **即将申购（按申购日）:**")
-    out.append("  | 申购日 | 代码 | 名称 | 发行价 | 市场 | 状态 |")
-    out.append("  |---|---|---|---|---|---|")
+    out.append("  | 申购日 | 代码 | 名称 | 发行价 | 募资(亿) | 市场 | 状态 |")
+    out.append("  |---|---|---|---|---|---|---|")
     for r in sorted(upcoming, key=lambda r: (_ad(r) or datetime.max))[:12]:
         ad = (r.get("APPLY_DATE") or "")[:10]
         code = r.get("SECURITY_CODE") or r.get("SECUCODE") or ""
         name = r.get("SECURITY_NAME_ABBR") or r.get("SECURITY_NAME") or ""
         price = _num(r.get("ISSUE_PRICE"))
+        rf = _rf(r)
+        rf_s = f"{rf:.2f}" if rf is not None else "待定"
         mkt = r.get("TRADE_MARKET") or r.get("MARKET_TYPE_NEW") or ""
         state = "待申购" if _ad(r) and _ad(r) >= today else "已申购"
         out.append(
             f"  | {ad} | {code} | {name} | {price if price is not None else '待定'} "
-            f"| {mkt} | {state} |"
+            f"| {rf_s} | {mkt} | {state} |"
         )
     if recent:
         out.append("")
@@ -139,12 +148,28 @@ def render_ipo_calendar_section(today_str: Optional[str] = None,
 # ---------------------------------------------------------------------------
 def render_etf_shares_section(today_str: Optional[str] = None) -> List[str]:
     """ETF 份额(万份) → 市场资金载体规模。单日快照, 无环比。
-    数据来源: 上交所 query.sse.com.cn / 深交所 fund.szse.cn。
+    数据来源: 上交所 query.sse.com.cn / 深交所 www.szse.cn(主) + fund.szse.cn(兜底)。
     """
     out: List[str] = ["## 【H. ETF 份额规模（市场资金载体）】", ""]
 
     def _fetch_etf(exchange: str):
-        """逐日回退取最近一个有数据的快照(空列表/异常都继续回退)。"""
+        """取最近一个有数据的快照。SH 按日归档可回退; SZ 仅最新一日快照(不回退历史日)。"""
+        if exchange == "SZ":
+            # 深交所仅提供最新一日快照, 单次尝试 + 硬超时(避免受限网络下逐日回退×多主机挂死报告)
+            box: Dict[str, Any] = {}
+
+            def _run():
+                try:
+                    box["rows"] = etf_shares(today_str[:10] if today_str else date.today().strftime("%Y-%m-%d"), "SZ")
+                except Exception:
+                    box["rows"] = None
+
+            t = threading.Thread(target=_run, daemon=True)
+            t.start()
+            t.join(timeout=25)
+            if t.is_alive():
+                return None, None
+            return box.get("rows"), (today_str[:10] if today_str else None)
         for day in _backtrack_days(10):
             try:
                 rows = etf_shares(day, exchange)

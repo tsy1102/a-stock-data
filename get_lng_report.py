@@ -1479,7 +1479,7 @@ class LngReportRunner(BaseReportRunner):
     def execute_pipeline(self) -> dict:
         # V17.0 R4: 批量骨架收敛到基类 execute_batch_pipeline(原 90 行本地实现删除)
         _cached_ind_comp = industry_comparison(20)
-        # V17.4: 批量预取(与 med/sht 对齐) —— 行情(push2delay ulist) + eltdx 连板天梯,
+        # V17.3.10: 批量预取(与 med/sht 对齐) —— 行情(push2delay ulist) + eltdx 连板天梯,
         # 避免长线报告盘中逐股回退 push2/TDX 取数; 预取走 push2delay 安全域(1rps), 限流安全
         def _prefetch(codes):
             _ret = {}

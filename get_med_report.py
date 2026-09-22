@@ -1485,7 +1485,7 @@ class MedReportRunner(BaseReportRunner):
         _cached_ind_comp = get_industry_comparison()
 
         def _prefetch(codes):
-            # V17.4: 批量行情预取(push2delay ulist) —— 与 sht 对齐, 避免盘中逐股回退 push2(0.4rps) 取数
+            # V17.3.10: 批量行情预取(push2delay ulist) —— 与 sht 对齐, 避免盘中逐股回退 push2(0.4rps) 取数
             _ret = {}
             try:
                 from core.data_provider import prefetch_quote_batch

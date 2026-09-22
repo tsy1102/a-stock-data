@@ -1015,7 +1015,7 @@ def _tencent_batch_fallback(codes: List[str], use_l2_cache: bool = True) -> Dict
     result: Dict[str, Dict[str, Any]] = {}
     # 收集未命中的代码
     missing = [c for c in codes if c not in _TENCENT_BATCH_CACHE]
-    # V17.4.3: 跨进程共享——先读 val 预热写入的 L2 腾讯批量原始快照(覆盖整轮 60min TTL)，
+    # V17.3.13: 跨进程共享——先读 val 预热写入的 L2 腾讯批量原始快照(覆盖整轮 60min TTL)，
     # 命中即免网络；val 自身用 use_l2_cache=False 跳过(保证全市场取数盘中实时，并落盘供 mak 复用)。
     if use_l2_cache and missing:
         try:
@@ -1108,7 +1108,7 @@ def _tencent_batch_fallback(codes: List[str], use_l2_cache: bool = True) -> Dict
             # V16.0: 批间加 100ms 间隔，消除全市场 133 批 0 间隔连打模式
             if _start + _BATCH < len(missing):
                 time.sleep(0.1)
-    # V17.4.3: 落盘 L2 跨进程共享——把本次实际联网取得的子集写回 L2(val 全市场 / mak 仅补缺失)，
+    # V17.3.13: 落盘 L2 跨进程共享——把本次实际联网取得的子集写回 L2(val 全市场 / mak 仅补缺失)，
     # 供后续脚本(尤其 mak)免重打全市场网络。use_l2_cache=False(val)也照常写盘。
     try:
         from core.stock_cache import persist_tencent_batch_l2

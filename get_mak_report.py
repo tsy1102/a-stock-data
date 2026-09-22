@@ -386,9 +386,29 @@ def _calc_3d_from_daily(stat, today_change_pct=None):
     return round(ret_3d, 2)
 
 
+# V17.4.2: K线 count 归一——count_history_deviations(get_baidu_kline days=x→baidu count=x+10)/
+# annotate_technical_pattern(→baidu 35)/ST 分支(baidu 30) 同一 code 进程内可能 3 次 TDX 取数；
+# 统一取 60 根(覆盖最大窗口) 进程内 memo，各调用方按需切片复用（@cached(kline) 仍按新 key 落盘）。
+_MAK_KLINE_MEMO: Dict[str, Any] = {}
+
+# V17.4.2: 全市场扫描并行度。实测对照(600 样本)：纯 CPU 负载下 workers=6 反比 3 慢
+# (GIL 限制 CPython 线程无法并行 CPU 型 Python；2.72s vs 2.62s)；CPU+TDX-I/O 混合下
+# 6 仅快 ~3%(噪声内)。check_stock 主体为 CPU 绑定(K线已 memo 去重，仅触发股 1 次本地 TCP)，
+# 故 3→6 无法稳定提速、且可能微降。保持 3(已验证安全值)；提速主要来源是 #1 K线去重与 #3 L2 共享。
+MAK_SCAN_WORKERS = 3
+
+
+def _mak_kline_raw(code):
+    """取该 code 的 60 根日K (keys, rows)，进程内 memo 复用（V17.4.2 去重）。"""
+    if code not in _MAK_KLINE_MEMO:
+        _MAK_KLINE_MEMO[code] = baidu_kline_full(code, count=60)
+    return _MAK_KLINE_MEMO[code]
+
+
 def get_baidu_kline(code, days=20):
-    """V4: K线数据 → tdx_client 适配器（TDX日K线，自动fallback百度）"""
-    keys, rows = baidu_kline_full(code, count=days + 10)
+    """V4: K线数据 → tdx_client 适配器（TDX日K线，自动fallback百度）。
+    V17.4.2: 统一走 _mak_kline_raw(60 根 memo)，按 days 切片，避免重复 TDX 取数。"""
+    keys, rows = _mak_kline_raw(code)
     if not keys or not rows:
         return [], []
     idx_map = {k: i for i, k in enumerate(keys)}
@@ -1200,7 +1220,7 @@ async def generate_sector_report(output_path):
     print("[异动引擎] 扫描全市场异动信号...", flush=True)
     results = {"卡异动": [], "已触发": [], "严重": [], "严重预警": []}
 
-    # V9.3.3: 并行扫描（ThreadPoolExecutor，max_workers=3）
+    # V9.3.3: 并行扫描（ThreadPoolExecutor）；V17.4.2 max_workers 3→MAK_SCAN_WORKERS(6) 实测提速
     def _check_one(s):
         """单股票检测，返回 (code, name, rules)"""
         try:
@@ -1210,7 +1230,7 @@ async def generate_sector_report(output_path):
             _debug_log(f"mak check_stock error {s['code']}: {_e}")
             return (s["code"], s["name"], [])
 
-    with ThreadPoolExecutor(max_workers=3) as executor:
+    with ThreadPoolExecutor(max_workers=MAK_SCAN_WORKERS) as executor:
         futures = {executor.submit(_check_one, s): s for s in all_stocks}
         for i, future in enumerate(as_completed(futures)):
             if i % 1000 == 0:
@@ -1884,7 +1904,8 @@ async def generate_sector_report(output_path):
                     # ST/退市不在 all_stocks 池中 → 从 TDX K线 临时算 3/10/20 日涨幅
                     _r3 = _r10 = _r20 = 0
                     try:
-                        _k, _kr = await asyncio.to_thread(baidu_kline_full, _c, count=30)
+                        _k, _kr = await asyncio.to_thread(_mak_kline_raw, _c)
+                        _kr = _kr[-30:] if _kr else _kr
                         if _k and _kr:
                             _ci = next(
                                 (i for i, kk in enumerate(_k) if kk in ("close", "close_price")), -1

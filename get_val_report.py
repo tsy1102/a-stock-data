@@ -2081,6 +2081,15 @@ async def run_discovery_async(output_path):
                     _dp._PD_EXTRA_CACHE_DATE = _today_str
                     if _warmed:
                         _debug_log(f"val batch-quote prewarm: {_warmed}/{len(_tencent_map)} 只 -> _BATCH_QUOTE_CACHE(+_PD_EXTRA_CACHE 哨兵)")
+                        # V17.4.2: 跨进程共享——把已预热的全市场行情落盘 L2，
+                        # 后续 sht/med/lng 经 prefetch_quote_batch 读 L2 即零网络复用。
+                        # 仅持久化 _BATCH_QUOTE_CACHE(价/OHLC/涨跌)，不持久化 _PD_EXTRA_CACHE
+                        # 哨兵 0（否则会令他脚本主力资金段被误判为"无数据"而空白）。
+                        try:
+                            from core.stock_cache import persist_quote_batch_l2
+                            persist_quote_batch_l2(_dp._BATCH_QUOTE_CACHE)
+                        except Exception as _pe:
+                            _debug_log(f"val L2 persist error: {_pe}")
                 except Exception as _e:
                     _debug_log(f"val batch-quote prewarm error: {_e}")
 

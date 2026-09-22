@@ -64,7 +64,10 @@ from core._accessors import (
 import math
 from datetime import datetime, timedelta  # timedelta 供 _get_trading_date_offset 使用（M14 注释修正）
 
-from core.stock_cache import cached, TTL, make_valid_if  # V15.2: 强化 valid_if
+from core.stock_cache import (  # V15.2: 强化 valid_if
+    cached, TTL, make_valid_if, get_cache, set_cache,
+    QUOTE_BATCH_CACHE_CATEGORY,  # V17.4.2: 跨进程批量行情共享
+)
 
 
 def _debug_log(msg: str) -> None:
@@ -124,9 +127,21 @@ def prefetch_quote_batch(codes: List[str]) -> Dict[str, Dict[str, Any]]:
         _BATCH_QUOTE_DATE = _today
 
     missing = [c for c in codes if c not in _BATCH_QUOTE_CACHE]
+    # V17.4.2: 跨进程共享——先查 SQLite L2（val 预热已写入则零网络，限 15min 有效避免陈旧）
+    if missing:
+        try:
+            from core.stock_cache import read_quote_batch_l2
+            _l2_map = read_quote_batch_l2(missing)
+            for c, _l2 in _l2_map.items():
+                if c in missing:
+                    _BATCH_QUOTE_CACHE[c] = _l2
+                    missing.remove(c)
+        except Exception:
+            pass
     if not missing:
         return {c: _BATCH_QUOTE_CACHE[c] for c in codes}
 
+    to_fetch = list(missing)
     try:
         # V17.0.26(2026-09-03) DEBT-011: 取数下沉到 sc_datasource 适配器 get_em_ulist_batch
         #   （公理 A1 数据访问收口）。本函数(Tier1 门面)只保留"字段码→业务语义"映射与单位换算
@@ -167,6 +182,13 @@ def prefetch_quote_batch(codes: List[str]) -> Dict[str, Dict[str, Any]]:
             }
     except Exception as _e:
         _debug_log(f"prefetch_quote_batch error: {_e}")
+
+    # V17.4.2: 落盘 L2 跨进程共享——val 首跑预热后，其余脚本(子进程)免重打网络
+    try:
+        from core.stock_cache import persist_quote_batch_l2
+        persist_quote_batch_l2({c: _BATCH_QUOTE_CACHE[c] for c in to_fetch if c in _BATCH_QUOTE_CACHE})
+    except Exception:
+        pass
 
     return {c: _BATCH_QUOTE_CACHE[c] for c in codes if c in _BATCH_QUOTE_CACHE}
 

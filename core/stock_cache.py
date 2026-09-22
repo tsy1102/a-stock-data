@@ -89,6 +89,9 @@ _cache_logger = logging.getLogger("stock_cache")
 # （TTL 自然回收 / 下次写入覆盖）。版本嵌入缓存 key 前缀，旧 key 自动失效、无需手动清缓存。
 CACHE_CONTRACT_VERSION = "v1"
 
+# V17.4.2: 批量行情跨进程共享缓存分类——val 预热写入，sht/med/lng/mak 经 prefetch_quote_batch 读 L2
+QUOTE_BATCH_CACHE_CATEGORY = "quote_batch"
+
 # ═══════════════════════════════════════
 # L1 内存缓存（V10.3 新增）
 # ═══════════════════════════════════════
@@ -1157,6 +1160,89 @@ def cached(category: str, ttl_seconds: Optional[int] = None,
 # ═══════════════════════════════════════
 # CLI 工具（可直接运行 python stock_cache.py）
 # ═══════════════════════════════════════
+
+
+# ═══════════════════════════════════════
+# V17.4.2: 批量行情跨进程共享缓存（val 预热 → 其余 4 脚本零网络复用）
+# ═══════════════════════════════════════
+_QUOTE_BATCH_CACHE_TTL = 15 * 60  # V17.4.2: 跨进程共享限 15min 内有效(与 push2delay 原生延时同源, 避免 sht/med/lng 读到 val 陈旧快照)
+
+
+def persist_quote_batch_l2(batch_map, ttl_seconds=_QUOTE_BATCH_CACHE_TTL):
+    """V17.4.2: 把批量行情字典批量落盘到 SQLite L2（跨进程共享）。
+
+    设计意图：val 全市场预热时写一次（~5000 只），后续 sht/med/lng/mak 经
+    prefetch_quote_batch 读 L2 即零网络。key = quote_batch:prefetch_quote_batch:<code>，
+    与 prefetch_quote_batch 的 L2 读写 key 完全一致，故可跨进程命中。
+
+    批量 INSERT + 单次 commit，避免逐条 set_cache 的写放大（5000 次单写 ≈ 数秒）。
+    key 内已嵌 CACHE_CONTRACT_VERSION 前缀，旧版本自动失效。
+    """
+    if _DISABLE_CACHE or not batch_map:
+        return 0
+    try:
+        db = _get_db()
+        cur = db.cursor()
+        now = time.time()
+        exp = _calc_trading_day_expiry()
+        exp = min(exp, now + ttl_seconds)
+        n = 0
+        for code, data in batch_map.items():
+            if not data or not isinstance(data, dict) or not data.get("price"):
+                continue
+            key = _build_key(QUOTE_BATCH_CACHE_CATEGORY, "prefetch_quote_batch", code)
+            blob = json.dumps(_serialize_for_cache(data), ensure_ascii=False).encode("utf-8")
+            cur.execute(
+                "INSERT OR REPLACE INTO cache_entries "
+                "(key, value, created_at, expires_at, hit_count, last_accessed, prev_value, verified) "
+                "VALUES (?, ?, ?, ?, 0, ?, NULL, 0)",
+                (key, blob, now, exp, now),
+            )
+            n += 1
+        db.commit()
+        _cache_logger.debug(f"persist_quote_batch_l2: {n} entries -> L2")
+        return n
+    except Exception as _e:
+        _cache_logger.debug(f"persist_quote_batch_l2: {_e}")
+        return 0
+
+
+def read_quote_batch_l2(codes, category=QUOTE_BATCH_CACHE_CATEGORY, func_name="prefetch_quote_batch"):
+    """V17.4.2: 读取 val/mak 预热写入的批量行情 L2（跨进程共享）。
+
+    与 persist_quote_batch_l2 严格对称：同样的 _build_key(category, func_name, code) +
+    同样的过期语义，故 key 完全一致、可跨进程命中。返回 {code: data}。
+    """
+    if _DISABLE_CACHE or not codes:
+        return {}
+    out: Dict[str, Any] = {}
+    try:
+        now = time.time()
+        db = _get_db()
+        cur = db.cursor()
+        for code in codes:
+            key = _build_key(category, func_name, code)
+            cur.execute(
+                "SELECT value, expires_at FROM cache_entries WHERE key=?",
+                (key,),
+            )
+            row = cur.fetchone()
+            if row is None:
+                continue
+            blob, exp = row
+            if exp is not None and exp <= now and not _soft_expiry_allowed(category, exp, now):
+                continue
+            try:
+                data = json.loads(blob.decode("utf-8")) if isinstance(blob, (bytes, bytearray)) else json.loads(blob)
+            except Exception:
+                continue
+            out[code] = data
+        return out
+    except Exception as _e:
+        _cache_logger.debug(f"read_quote_batch_l2: {_e}")
+        return out
+
+
 if __name__ == "__main__":
     # V16.4.1: CLI 入口强制 UTF-8 输出（库 import 时不动全局 stdio）
     for _stream in (sys.stdout, sys.stderr):

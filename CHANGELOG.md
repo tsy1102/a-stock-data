@@ -5,6 +5,33 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 
+## [V17.3.15] 2026-09-22 — 订正误标的 V17.4.x 版本引用
+- 全量订正：将代码注释与提交信息中误标的 V17.4.0~17.4.4 版本引用统一回订为真实谱系 V17.3.10~17.3.14（各提交实际编号）。根因为提交标签擅自越级跳 minor 到 17.4，而项目 VERSION 单一来源自 V17.3.4 起未变。
+- 同步订正 get_mak_report.py 异动扫描注释（MAK_SCAN_WORKERS 命名常量随 V17.3.12 引入，非 17.4.2）。
+
+## [V17.3.14] 2026-09-22 — 修复评分快照链路断裂（评分突变背离报告消失根因）
+- 根因：sc_report_runner.execute_batch_pipeline 保存分支用 isinstance(snapshot_data, dict) 校验（M6，V17.1.0 引入）；但 sht/med/lng 传入的 _SNAPSHOT_DATA 实为 SnapshotProxy（V15.3.1，非 dict 子类）→ 校验恒 False → save_snapshot 自 V17.1.0 起从未被调用 → snapshots/ 无 snapshot_*.json → analyze_history 读空 → 评分突变背离（≥15 分）报告永久消失。
+- 修复：保存分支先对 SnapshotProxy/含 items() 的映射规整为真实 dict 再走结构校验与 save_snapshot；检测逻辑本身完好（构造 2 日快照 Δ=16 正确检出，Δ=10 对照不触发）。
+- 影响：sht/med/lng 评分快照恢复落盘；需连续运行 ≥2 个交易日方能重新产出异动报告（历史残留快照已耗尽，无法回溯补算）。
+
+## [V17.3.13] 2026-09-22 — 跨进程共享 TTL 15→60min + mak 复用 val 预热
+- _QUOTE_BATCH_CACHE_TTL 15→60min：覆盖整轮 30~40min 运行，避免后段脚本 val 快照过期后退回逐股网络补取；仍为严格硬过期（不在软过期窗口），不读跨日陈旧。
+- 复活 V16.0 "val→mak 跨脚本复用"意图：新增 TENCENT_BATCH_CACHE_CATEGORY + persist/read_tencent_batch_l2（原始腾讯批量形状，IN 子句分批 500）；_tencent_batch_fallback 增 use_l2_cache，val 写盘、mak 默认读盘零改动受益。
+- 限流（push2 0.4rps 硬上限）/源优先级/网络请求数均未变；仅增 L2 落盘（复用已发生的同批腾讯拉取）。
+
+## [V17.3.12] 2026-09-22 — val 预热跨进程惠及 sht/med/lng + mak K线去重
+- #1 mak K线 count 归一去重：_MAK_KLINE_MEMO + _mak_kline_raw(count=60) 进程内 memo，每 code 仅 1 次 baidu_kline_full（原 15/25/30 三处各取 → 1 次）。
+- #3 val 预热跨进程：read/persist_quote_batch_l2 对称 L2（15→60min TTL）；prefetch_quote_batch 入口读/出口写 L2；val 预热后落盘（刻意不含 _PD_EXTRA_CACHE 哨兵 0，避免他脚本主力资金段空白）。
+- #2 线程池 3→6 实测后保持 3：纯 CPU 负载下 workers=6 反比 3 慢（GIL 限制），CPU+I/O 混合仅快 ~3%（噪声内）；提速主源为 #1 与 #3。
+
+## [V17.3.11] 2026-09-22 — mak 异动扫描剔除重复全市场腾讯批量请求
+- 去重 mak 异动扫描中对全市场腾讯批量的重复拉取（双拉→单拉），降低重复网络请求。
+
+## [V17.3.10] 2026-09-22 — 批量行情预取延伸到中线/长线报告
+- 批量行情预取能力从短线延伸到中线/长线报告（与短线对齐），缩小三类报告的数据新鲜度差。
+
+> 注：17.3.5–17.3.9 各提交未在本文档登记（历史遗留），本段自 17.3.10 起补记。
+
 ## [V17.3.4] 2026-09-22 — 退役 mootdx + 重激活握手补丁修复 TDX 空数据
 
 - **根因（"连接成功却返回空数据"）**：V17.2.15 将 TDX 主源切到 eltdx(Rust) 时，误判"eltdx 握手已含 2026-09 修复 → easy_tdx 补丁不再需要"，于是从 `tdx_client.py`/`zhb_client.py` 移除了 `core._tdx_handshake_patch` 的 import。但 easy_tdx 的真实上游(github.com/yanwei99521/easy-tdx)至今仍发布**静态三握手**，对 2026-09 行情主站"握手有响应、但所有数据请求静默返回空包(0x0320)"。故此前 easy_tdx 兜底路径连接成功却取不到任何 K 线/行情（mootdx 同源同症状）。eltdx 不受影响（Rust 内核自带修复）。

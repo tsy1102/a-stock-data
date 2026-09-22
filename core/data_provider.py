@@ -66,7 +66,7 @@ from datetime import datetime, timedelta  # timedelta 供 _get_trading_date_offs
 
 from core.stock_cache import (  # V15.2: 强化 valid_if
     cached, TTL, make_valid_if, get_cache, set_cache,
-    QUOTE_BATCH_CACHE_CATEGORY,  # V17.4.2: 跨进程批量行情共享
+    QUOTE_BATCH_CACHE_CATEGORY,  # V17.3.12: 跨进程批量行情共享
 )
 
 
@@ -127,7 +127,7 @@ def prefetch_quote_batch(codes: List[str]) -> Dict[str, Dict[str, Any]]:
         _BATCH_QUOTE_DATE = _today
 
     missing = [c for c in codes if c not in _BATCH_QUOTE_CACHE]
-    # V17.4.2: 跨进程共享——先查 SQLite L2（val 预热已写入则零网络，限 15min 有效避免陈旧）
+    # V17.3.12: 跨进程共享——先查 SQLite L2（val 预热已写入则零网络，限 15min 有效避免陈旧）
     if missing:
         try:
             from core.stock_cache import read_quote_batch_l2
@@ -183,7 +183,7 @@ def prefetch_quote_batch(codes: List[str]) -> Dict[str, Dict[str, Any]]:
     except Exception as _e:
         _debug_log(f"prefetch_quote_batch error: {_e}")
 
-    # V17.4.2: 落盘 L2 跨进程共享——val 首跑预热后，其余脚本(子进程)免重打网络
+    # V17.3.12: 落盘 L2 跨进程共享——val 首跑预热后，其余脚本(子进程)免重打网络
     try:
         from core.stock_cache import persist_quote_batch_l2
         persist_quote_batch_l2({c: _BATCH_QUOTE_CACHE[c] for c in to_fetch if c in _BATCH_QUOTE_CACHE})

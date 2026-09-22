@@ -89,9 +89,9 @@ _cache_logger = logging.getLogger("stock_cache")
 # （TTL 自然回收 / 下次写入覆盖）。版本嵌入缓存 key 前缀，旧 key 自动失效、无需手动清缓存。
 CACHE_CONTRACT_VERSION = "v1"
 
-# V17.4.2: 批量行情跨进程共享缓存分类——val 预热写入，sht/med/lng/mak 经 prefetch_quote_batch 读 L2
+# V17.3.12: 批量行情跨进程共享缓存分类——val 预热写入，sht/med/lng/mak 经 prefetch_quote_batch 读 L2
 QUOTE_BATCH_CACHE_CATEGORY = "quote_batch"
-# V17.4.3: 腾讯批量【原始】快照分类——val 全市场 _tencent_batch_fallback 预热写入，mak 跨进程零网络复用
+# V17.3.13: 腾讯批量【原始】快照分类——val 全市场 _tencent_batch_fallback 预热写入，mak 跨进程零网络复用
 # (复活 V16.0 注释中"val→mak 跨脚本复用"意图；mak 走独立 ZHB+腾讯批量路径，不复用归一化 quote_batch)
 TENCENT_BATCH_CACHE_CATEGORY = "tencent_batch"
 
@@ -1166,16 +1166,16 @@ def cached(category: str, ttl_seconds: Optional[int] = None,
 
 
 # ═══════════════════════════════════════
-# V17.4.2: 批量行情跨进程共享缓存（val 预热 → 其余 4 脚本零网络复用）
+# V17.3.12: 批量行情跨进程共享缓存（val 预热 → 其余 4 脚本零网络复用）
 # ═══════════════════════════════════════
-# V17.4.3: 跨进程共享 TTL 由 15min 提至 60min。原因：5 脚本串行(val→mak→sht→med→lng)总耗时 30~40min，
+# V17.3.13: 跨进程共享 TTL 由 15min 提至 60min。原因：5 脚本串行(val→mak→sht→med→lng)总耗时 30~40min，
 # 旧 15min 窗口使后段脚本(sht/med/lng)在 val 预热落盘后已过期 → 退回逐股网络补取而变慢。60min 覆盖整轮
 # (留 ~20min 余量)且严格硬过期(quote_batch/tencent_batch 不在 _SOFT_EXPIRY_WINDOW，无软过期)——跨交易日/超时重跑仍重联网。
 _QUOTE_BATCH_CACHE_TTL = 60 * 60
 
 
 def persist_quote_batch_l2(batch_map, ttl_seconds=_QUOTE_BATCH_CACHE_TTL):
-    """V17.4.2: 把批量行情字典批量落盘到 SQLite L2（跨进程共享）。
+    """V17.3.12: 把批量行情字典批量落盘到 SQLite L2（跨进程共享）。
 
     设计意图：val 全市场预热时写一次（~5000 只），后续 sht/med/lng/mak 经
     prefetch_quote_batch 读 L2 即零网络。key = quote_batch:prefetch_quote_batch:<code>，
@@ -1214,7 +1214,7 @@ def persist_quote_batch_l2(batch_map, ttl_seconds=_QUOTE_BATCH_CACHE_TTL):
 
 
 def read_quote_batch_l2(codes, category=QUOTE_BATCH_CACHE_CATEGORY, func_name="prefetch_quote_batch"):
-    """V17.4.2: 读取 val/mak 预热写入的批量行情 L2（跨进程共享）。
+    """V17.3.12: 读取 val/mak 预热写入的批量行情 L2（跨进程共享）。
 
     与 persist_quote_batch_l2 严格对称：同样的 _build_key(category, func_name, code) +
     同样的过期语义，故 key 完全一致、可跨进程命中。返回 {code: data}。
@@ -1249,9 +1249,9 @@ def read_quote_batch_l2(codes, category=QUOTE_BATCH_CACHE_CATEGORY, func_name="p
         return out
 
 
-# V17.4.3: 腾讯批量原始快照跨进程共享（val 预热 → mak 零网络复用，复活 V16.0 注释中的 val→mak 跨脚本复用意图）
+# V17.3.13: 腾讯批量原始快照跨进程共享（val 预热 → mak 零网络复用，复活 V16.0 注释中的 val→mak 跨脚本复用意图）
 def persist_tencent_batch_l2(batch_map, ttl_seconds=_QUOTE_BATCH_CACHE_TTL):
-    """V17.4.3: 把腾讯批量【原始】行情字典批量落盘到 SQLite L2（跨进程共享）。
+    """V17.3.13: 把腾讯批量【原始】行情字典批量落盘到 SQLite L2（跨进程共享）。
 
     与 persist_quote_batch_l2 对称，但存的是 _tencent_batch_fallback 返回的【原始】腾讯批量形状
     (name/price/change_pct/mcap_yi/pe_ttm/pe_lyr/pe_dynamic/open/high/low/last_close/pb/limit_up/
@@ -1289,7 +1289,7 @@ def persist_tencent_batch_l2(batch_map, ttl_seconds=_QUOTE_BATCH_CACHE_TTL):
 
 
 def read_tencent_batch_l2(codes, category=TENCENT_BATCH_CACHE_CATEGORY, func_name="tencent_batch_fallback"):
-    """V17.4.3: 读取 val 预热写入的腾讯批量【原始】快照 L2（跨进程共享）。
+    """V17.3.13: 读取 val 预热写入的腾讯批量【原始】快照 L2（跨进程共享）。
 
     与 persist_tencent_batch_l2 严格对称：同样的 _build_key(category, func_name, code) +
     同样的过期语义。用 IN 子句分批(每批 500，规避 SQLite 变量上限 999)一次性查询，

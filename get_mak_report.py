@@ -161,7 +161,7 @@ async def get_market_abnormal_data():
           对应的 dataclass 形式由 _canonicalize_snapshot 转换层提供（V15.1）。
     """
     # V10.2: change_pct是实时字段，zhb日期必须是今天才能用
-    # V17.4.1: 腾讯批量实时覆盖改为**单次获取并共享**——先取全 ZHB 宇宙 codes 拉一次批量，
+    # V17.3.11: 腾讯批量实时覆盖改为**单次获取并共享**——先取全 ZHB 宇宙 codes 拉一次批量，
     # 既供 _get_zhb_market_data 构建今日 price/change_pct/ret_3d，也供 TDX fallback 路径覆盖，
     # 消除原 V15.5.15(内层)+V15.5.16(外层) 双拉全市场腾讯（每次扫描多 ~1-2s + 限流等待）。
     _tencent_map: Dict[str, Any] = {}
@@ -219,13 +219,13 @@ async def get_market_abnormal_data():
                 }
         except Exception as _e:
             _debug_log(f"mak ulist main_net batch (unified): {_e}")
-    # V17.4.1: 腾讯实时覆盖已改为单次获取并共享（ZHB 路径内层构建 / TDX 路径 _apply_tencent_cover），
+    # V17.3.11: 腾讯实时覆盖已改为单次获取并共享（ZHB 路径内层构建 / TDX 路径 _apply_tencent_cover），
     # 此处不再二次拉取。
     return data
 
 
 def _apply_tencent_cover(data, tencent_map: Dict[str, Any]) -> None:
-    """V17.4.1: 抽出原 V15.5.16 外层腾讯实时覆盖循环，供 TDX fallback 路径复用。
+    """V17.3.11: 抽出原 V15.5.16 外层腾讯实时覆盖循环，供 TDX fallback 路径复用。
 
     ZHB 路径已在 _get_zhb_market_data 内用共享 tencent_map 直接构建（无需再次覆盖）。
     仅覆盖 price/change_pct/name（与历史行为一致）。
@@ -254,7 +254,7 @@ async def _get_zhb_market_data(tencent_map: Optional[Dict[str, Any]] = None):
 
     返回格式与tdx_get_market_abnormal_data一致，便于无缝替换。
     V11.5: 使用data_provider的get_market_snapshot_async统一获取数据
-    V17.4.1: tencent_map 由上层 get_market_abnormal_data **单次获取并共享传入**，
+    V17.3.11: tencent_map 由上层 get_market_abnormal_data **单次获取并共享传入**，
              本函数直接用它构建 price/change_pct/amount/turnover/mcap/ret_3d（盘中今日值），
              不再自行拉取（消除原 V15.5.15 内层 + V15.5.16 外层双拉全市场腾讯）。
     """
@@ -270,7 +270,7 @@ async def _get_zhb_market_data(tencent_map: Optional[Dict[str, Any]] = None):
         price_map = snapshot
 
         result = []
-        # V17.4.1: 腾讯批量实时覆盖改为**上层单次获取并共享传入**（见 get_market_abnormal_data）：
+        # V17.3.11: 腾讯批量实时覆盖改为**上层单次获取并共享传入**（见 get_market_abnormal_data）：
         # 本函数不再自行拉取，直接用传入的 tencent_map 构建 price/change_pct/amount/turnover/
         # mcap/ret_3d（盘中今日值），避免原 V15.5.15(内层)+V15.5.16(外层) 双拉全市场腾讯。
         # V17.0.2g(2026-08-17): 主力净额批量已上移至 get_market_abnormal_data 统一执行(两条路径)
@@ -292,7 +292,7 @@ async def _get_zhb_market_data(tencent_map: Optional[Dict[str, Any]] = None):
             if 'ST' in name or '退' in name:
                 continue
 
-            # V15.5.15→V17.4.1: 腾讯实时优先（今日 price/change_pct/amount/turnover/mcap），缺失回退 ZHB T-1
+            # V15.5.15→V17.3.11: 腾讯实时优先（今日 price/change_pct/amount/turnover/mcap），缺失回退 ZHB T-1
             _tq = _tencent_map.get(code, {})
             price = _safe_float(_tq.get("price") or price_map.get(code, {}).get("price", 0))
             # V16.3 O21: 平盘（change_pct=0）也是今日事实——is not None 判定，0 不回退 ZHB T-1
@@ -386,12 +386,12 @@ def _calc_3d_from_daily(stat, today_change_pct=None):
     return round(ret_3d, 2)
 
 
-# V17.4.2: K线 count 归一——count_history_deviations(get_baidu_kline days=x→baidu count=x+10)/
+# V17.3.12: K线 count 归一——count_history_deviations(get_baidu_kline days=x→baidu count=x+10)/
 # annotate_technical_pattern(→baidu 35)/ST 分支(baidu 30) 同一 code 进程内可能 3 次 TDX 取数；
 # 统一取 60 根(覆盖最大窗口) 进程内 memo，各调用方按需切片复用（@cached(kline) 仍按新 key 落盘）。
 _MAK_KLINE_MEMO: Dict[str, Any] = {}
 
-# V17.4.2: 全市场扫描并行度。实测对照(600 样本)：纯 CPU 负载下 workers=6 反比 3 慢
+# V17.3.12: 全市场扫描并行度。实测对照(600 样本)：纯 CPU 负载下 workers=6 反比 3 慢
 # (GIL 限制 CPython 线程无法并行 CPU 型 Python；2.72s vs 2.62s)；CPU+TDX-I/O 混合下
 # 6 仅快 ~3%(噪声内)。check_stock 主体为 CPU 绑定(K线已 memo 去重，仅触发股 1 次本地 TCP)，
 # 故 3→6 无法稳定提速、且可能微降。保持 3(已验证安全值)；提速主要来源是 #1 K线去重与 #3 L2 共享。
@@ -399,7 +399,7 @@ MAK_SCAN_WORKERS = 3
 
 
 def _mak_kline_raw(code):
-    """取该 code 的 60 根日K (keys, rows)，进程内 memo 复用（V17.4.2 去重）。"""
+    """取该 code 的 60 根日K (keys, rows)，进程内 memo 复用（V17.3.12 去重）。"""
     if code not in _MAK_KLINE_MEMO:
         _MAK_KLINE_MEMO[code] = baidu_kline_full(code, count=60)
     return _MAK_KLINE_MEMO[code]
@@ -407,7 +407,7 @@ def _mak_kline_raw(code):
 
 def get_baidu_kline(code, days=20):
     """V4: K线数据 → tdx_client 适配器（TDX日K线，自动fallback百度）。
-    V17.4.2: 统一走 _mak_kline_raw(60 根 memo)，按 days 切片，避免重复 TDX 取数。"""
+    V17.3.12: 统一走 _mak_kline_raw(60 根 memo)，按 days 切片，避免重复 TDX 取数。"""
     keys, rows = _mak_kline_raw(code)
     if not keys or not rows:
         return [], []
@@ -1220,7 +1220,8 @@ async def generate_sector_report(output_path):
     print("[异动引擎] 扫描全市场异动信号...", flush=True)
     results = {"卡异动": [], "已触发": [], "严重": [], "严重预警": []}
 
-    # V9.3.3: 并行扫描（ThreadPoolExecutor）；V17.4.2 max_workers 3→MAK_SCAN_WORKERS(6) 实测提速
+    # V9.3.3: 并行扫描（ThreadPoolExecutor）；V17.3.12 并行度改走命名常量 MAK_SCAN_WORKERS。
+    # 注：实测 3→6 不提速(纯CPU下GIL反慢、CPU+I/O混合仅快~3%噪声内)，故常量值保持 3（见下定义处注释）。
     def _check_one(s):
         """单股票检测，返回 (code, name, rules)"""
         try:

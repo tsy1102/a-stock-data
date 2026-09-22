@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 
+## [V17.3.17] 2026-09-22 — 修复 push2 封禁态不跨进程共享（真正的遗漏限流一环）
+- 根因：原 `_EM_BANNED_UNTIL` 仅模块级内存态；5 大脚本 + 采集脚本以独立进程运行，限流器已跨进程文件锁协调，但**封禁态未共享** → 任一进程检测到 push2 族封禁仅自身停火，其余进程毫不知情继续狂轰 → 持续/反复触发东财 IP 级(20h+)封禁。9/21 全 push2 族 20/20 失败即此模式。
+- 修复：新增 `_EM_BANNED_FILE`（与限流锁同目录）持久化封禁态；`_mark_em_banned` 统一收口连接级断连 + 连续 403 两条路径，写共享文件；`_em_is_banned` 先查内存再查文件（5s 进程内缓存），跨进程互相感知停火。
+- 附带：scripts/check_em_health.py 裸 `requests.get` 直打 push2 全族（无节流/无封禁感知）改为走 `_quick_request`（分域限流 + 跨进程封禁跳过 + 全局 1.0–1.3s 节奏），已封禁域返回 `SKIP(banned)` 不加重封禁。
+- 验证：py_compile OK；跨进程封禁态共享 / 过期自动清除 / 3 次断连触发共享 全 PASS；tests/data/test_data_network.py 10 项无回归。
+- 未变更：push2 0.4rps=2.5s 硬上限、源优先级 QUOTE_FETCH_ORDER、缓存四条原则均保持不变。
+- 遗留（待用户拍板）：采集脚本 `capture_field_probe.py` 全市场≈5000 只逐股 push2 的**量级**问题（即使 0.4rps，也是 20+ 分钟持续占用主域风控面，与 5 大脚本 push2delay 用量叠加偶发触发总封禁）尚未改动。
+
 ## [V17.3.16] 2026-09-22 — 订正裸 V17.4 (2026-09-21) 注释引用 → V17.3.4
 - 全量订正：core/source_priority.py:3、core/data_provider.py:81/1216/1850、get_val_report.py:2274 共 5 处裸 `V17.4 (2026-09-21)` 注释引用回订为 `V17.3.4`。
 - 溯源定位：该批注释源自未打版本标签的提交 `f0c468a`（"5脚本接入与fallback治理：源优先级单一真相源+市值护栏+概念富集"）；git 确认其为 `6aa4376`(V17.3.4) 的祖先 → 其代码首现于 V17.3.4 并被子嗣版本继承，故映射为 V17.3.4（修正此前记忆笔记误判的 17.3.5~17.3.9 谱系）。

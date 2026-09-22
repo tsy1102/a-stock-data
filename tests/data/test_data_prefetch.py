@@ -66,11 +66,22 @@ class _FakeResp:
 
 @pytest.fixture()
 def clean_batch_cache(monkeypatch):
-    """隔离 _BATCH_QUOTE_CACHE / _BATCH_QUOTE_DATE，保证用例间互不污染。"""
+    """隔离 _BATCH_QUOTE_CACHE / _BATCH_QUOTE_DATE，保证用例间互不污染。
+
+    V17.3.12 起 prefetch_quote_batch 还会读/写 SQLite L2 跨进程缓存
+    (read_quote_batch_l2 / persist_quote_batch_l2)，必须一并隔离，
+    否则旧缓存会绕过 _quick_request mock 直接回填结果、并污染后续用例。
+    """
     import core.data_provider as dp
+    import core.stock_cache as sc
 
     monkeypatch.setattr(dp, "_BATCH_QUOTE_CACHE", {})
     monkeypatch.setattr(dp, "_BATCH_QUOTE_DATE", "")
+    # 隔离跨进程 L2 缓存层：只读返回空、写入 no-op
+    # （prefetch_quote_batch 内部 `from core.stock_cache import ...` 函数内导入，
+    #  monkeypatch 模块属性即可在调用时生效）
+    monkeypatch.setattr(sc, "read_quote_batch_l2", lambda codes, **kw: {})
+    monkeypatch.setattr(sc, "persist_quote_batch_l2", lambda *a, **kw: None)
     return dp
 
 

@@ -13,7 +13,8 @@ from stock_common.sc_network import _quick_request, UA
 from stock_common import _debug_log
 
 SSE_ETF_SHARES_URL = "https://query.sse.com.cn/commonQuery.do"
-SZSE_FUND_LIST_URL = "https://fund.szse.cn/api/report/ShowReport/data"
+SZSE_FUND_LIST_URL = "https://www.szse.cn/api/report/ShowReport/data"  # V17.4.2: 改用 www.szse.cn(同仓内 _eastmoney.py:1195 龙虎榜域名); fund.szse.cn 本环境被封
+SZSE_FUND_LIST_HOSTS = ["https://www.szse.cn", "https://fund.szse.cn"]  # 主站不可达时回退
 
 
 def _v39_num(value):
@@ -68,11 +69,25 @@ def _etf_shares_sse(day):
 
 
 def _etf_shares_szse(day):
+    """深交所基金列表(ETF) — 当前快照(单日)。主站 www.szse.cn 不可达时回退 fund.szse.cn。"""
+    last_err = None
+    for host in SZSE_FUND_LIST_HOSTS:
+        try:
+            return _etf_shares_szse_host(host, day)
+        except Exception as exc:
+            last_err = exc
+            continue
+    raise RuntimeError(f"深交所 ETF 列表所有主机均不可用: {last_err}")
+
+
+def _etf_shares_szse_host(host: str, day):
     rows, page, first = [], 1, None
     while first is None or page <= first[1]:
-        r = _quick_request(SZSE_FUND_LIST_URL, params={"SHOWTYPE": "JSON", "CATALOGID": "1000_lf",
-                                     "TABKEY": "tab1", "selectJjlb": "ETF", "PAGENO": page},
-                           headers={"User-Agent": UA, "Referer": "https://fund.szse.cn/"}, timeout=15)
+        r = _quick_request(host + "/api/report/ShowReport/data",
+                           params={"SHOWTYPE": "JSON", "CATALOGID": "1000_lf",
+                                   "TABKEY": "tab1", "selectJjlb": "ETF", "PAGENO": page,
+                                   "pagesize": 2000},
+                           headers={"User-Agent": UA, "Referer": "https://www.szse.cn/"}, timeout=15)
         if r is None:
             raise RuntimeError("深交所 ETF 列表请求失败")
         try:
@@ -90,9 +105,10 @@ def _etf_shares_szse(day):
             raise RuntimeError("深交所基金列表分页信息异常")
         if snap[1] < 1:
             raise RuntimeError(f"深交所基金列表 pagecount={snap[1]} 异常")
+        # 深交所仅提供最新一日快照: 请求日与快照日不符时以快照日为准(不再抛错)
         if first is None:
             if snap[0] != day:
-                raise ValueError(f"深交所当前规模快照日期是 {snap[0]}，非 {day}（深市只能取最新一天）")
+                _debug_log(f"etf_shares(SZ): 深交所仅提供最新快照 {snap[0]}(请求 {day}), 以快照日为准")
             first = snap
         elif snap != first:
             raise RuntimeError(f"深交所 ETF 列表翻页时快照从 {first} 变成 {snap}")
@@ -107,12 +123,12 @@ def _etf_shares_szse(day):
                 raise RuntimeError("深交所基金列表字段缺失")
             if not (code and name and shares):
                 raise RuntimeError("深交所基金列表字段格式改变")
-            rows.append({"date": day, "exchange": "SZ", "code": code.group(1),
+            rows.append({"date": snap[0], "exchange": "SZ", "code": code.group(1),
                          "name": name.group(1), "fund_category": rec.get("tzlb"),
                          "shares_10k": _v39_num(shares.group(1)),
                          "manager": rec.get("glrmc"), "listing_date": rec.get("ssrq")})
         page += 1
-        time.sleep(0.3)
+        time.sleep(0.05)
     if len(rows) != first[2]:
         raise RuntimeError(f"深交所 ETF 列表取到 {len(rows)} 条与总数 {first[2]} 不符")
     return rows

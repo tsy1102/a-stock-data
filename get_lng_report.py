@@ -189,6 +189,20 @@ async def generate_report_async(session, code, output_path, ind_comp=None):
     except Exception as _e:
         _debug_log(f"lng macro_context error: {_e}")
 
+    # V17.4: 事件驱动层接入(吸收上游 3.9.0 §14) — 业绩预告/机构调研; 可转债可选; 增减持/质押见九之二
+    try:
+        from stock_common.sc_datasource import render_event_driven_section
+        _ev = await asyncio.to_thread(render_event_driven_section, code,
+                                      ("业绩预告", "机构调研"), True)
+        if _ev:
+            L("\n## 【零之二、事件驱动与基本面催化 (业绩预告/机构调研)】")
+            L("---")
+            for _l in _ev:
+                L(_l)
+            L("  💡 股东增减持/股权质押风险详见【九之二、风险扫描】章节。")
+    except Exception as _e:
+        _debug_log(f"lng event_driven({code}) error: {_e}")
+
     L("\n## 【一、企业基本盘与绝对估值锚点】")
     L("---")
 

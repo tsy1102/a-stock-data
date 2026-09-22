@@ -174,7 +174,7 @@ async def generate_report_async(session, code, output_path, ind_comp=None):
         _mc = get_macro_context()
         _mc_lines = []
         if _mc.get("lpr_1y") is not None or _mc.get("lpr_5y") is not None:
-            _mc_lines.append(f"  LPR(最新): 1年 {_mc.get('lpr_1y')} / 5年 {_mc.get('lpr_5y')}")
+            _mc_lines.append(f"  LPR(最新): 1年 {_mc.get('lpr_1y') if _mc.get('lpr_1y') is not None else 'N/A'} / 5年 {_mc.get('lpr_5y') if _mc.get('lpr_5y') is not None else 'N/A'}")
         if _mc.get("repo_fr") is not None or _mc.get("repo_fdr") is not None:
             _mc_lines.append(f"  回购定盘利率: FR {_mc.get('repo_fr')} / FDR {_mc.get('repo_fdr')}")
         if _mc.get("calendar_count"):

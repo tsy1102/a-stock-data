@@ -73,7 +73,7 @@ def lpr_history() -> List[Dict[str, Any]]:
     try:
         rows = eastmoney_datacenter("", _EM_REPORTS["lpr"],
                                    columns="TRADE_DATE,LPR1Y,LPR5Y",
-                                   sort_columns="TRADE_DATE", sort_types="1", page_size=200)
+                                   sort_columns="TRADE_DATE", sort_types="-1", page_size=200)  # V17.4.4: 降序→首屏即最新200行(原函数升序只取最旧首屏, _lpr[-1]误取历史旧值)
     except Exception as _e:
         _dbg(f"lpr_history: 取值失败 -> {_e}")
         return []
@@ -219,7 +219,7 @@ def get_macro_context() -> Dict[str, Any]:
         _lpr = lpr_history()
         ctx["source_trace"].append("lpr")
         if _lpr:
-            _last = _lpr[-1]  # 已按日期升序, 末位为最新
+            _last = max(_lpr, key=lambda r: r.get("date", ""))  # 取 TRADE_DATE 最大者=最新(防御性, 不依赖排序假设)
             ctx["lpr_1y"] = _last.get("lpr_1y")
             ctx["lpr_5y"] = _last.get("lpr_5y")
     except Exception as _e:

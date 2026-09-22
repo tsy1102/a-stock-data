@@ -168,6 +168,27 @@ async def generate_report_async(session, code, output_path, ind_comp=None):
         L("  ℹ️ 盘后收盘：数据为今日收盘快照，基本面数据不受影响")
     L("")
 
+    # V17.4: 宏观利率层接入(吸收上游 3.9.0 §11) —— 长线视角: 利率/货币/政策环境
+    try:
+        from stock_common.sc_datasource import get_macro_context
+        _mc = get_macro_context()
+        _mc_lines = []
+        if _mc.get("lpr_1y") is not None or _mc.get("lpr_5y") is not None:
+            _mc_lines.append(f"  LPR(最新): 1年 {_mc.get('lpr_1y')} / 5年 {_mc.get('lpr_5y')}")
+        if _mc.get("repo_fr") is not None or _mc.get("repo_fdr") is not None:
+            _mc_lines.append(f"  回购定盘利率: FR {_mc.get('repo_fr')} / FDR {_mc.get('repo_fdr')}")
+        if _mc.get("calendar_count"):
+            _mc_lines.append(f"  近期宏观事件日历: {_mc.get('calendar_count')} 条")
+        if _mc_lines:
+            L("\n## 【零、宏观利率与政策环境】")
+            L("---")
+            for _ml in _mc_lines:
+                L(_ml)
+        else:
+            L("  ℹ️ 宏观利率层(吸收上游 §11): LPR/回购定盘/中债曲线/宏观日历 待对撞验证接入")
+    except Exception as _e:
+        _debug_log(f"lng macro_context error: {_e}")
+
     L("\n## 【一、企业基本盘与绝对估值锚点】")
     L("---")
 

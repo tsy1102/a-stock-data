@@ -228,14 +228,58 @@ class _EltdxAdapter:
             pass
 
 
+def _eltdx_fetch_probe(client: Any) -> bool:
+    """V17.4: #52 思路移植——取数级验活。
+
+    上游 mootdx #52 根因: TCP 握手通过 ≠ 能取数(行情命令失效返回 0 行空 body)。
+    仅做握手/快照验证会静默拿到空表。故此处必须**真实拉一根日 K 线非空**才算验活通过;
+    否则视为"连通但取数损坏", 明确返回 False 交上层 fallback(tencent/zhb/easy_tdx),
+    不把空表当正常数据。
+    """
+    try:
+        _snaps = client.quotes.get_snapshots(["sh600519"])
+        if not _snaps:
+            return False
+        _series = client.bars.get("sh600519", period="day", count=5, include_raw=False)
+        _bars = getattr(_series, "bars", None) or []
+        return len(_bars) > 0
+    except Exception as _e:
+        _debug_log(f"eltdx fetch probe error: {_e}")
+        return False
+
+
+# 取数级验活结果缓存(进程内 300s TTL), 避免重复拉 K 线
+_ELTDX_PROBE_CACHE: Dict[str, Any] = {"ok": None, "ts": 0.0}
+_ELTDX_PROBE_TTL = 300.0
+
+
 def create_eltdx_adapter() -> Optional[Any]:
-    """创建 eltdx 适配器（pin 白名单主机，避免冷探测）。失败返回 None。"""
+    """创建 eltdx 适配器（pin 白名单主机，避免冷探测）。失败返回 None。
+
+    V17.4: #52 思路移植——取数级验活: 连通但取数损坏(日K返回空/异常)时明确返回
+    None 交上层 fallback, 不再静默空表。验活结果缓存 300s。
+    """
     try:
         from eltdx import TdxClient
 
         c = TdxClient(hosts=_ELTDX_HOSTS, probe_hosts=False, timeout=8.0)
-        # 触发一次连接验证（取一只票快照，确保握手/主站可用）
-        c.quotes.get_snapshots(["sh600519"])
+        _now = time.time()
+        if _ELTDX_PROBE_CACHE["ok"] is None or (_now - _ELTDX_PROBE_CACHE["ts"]) >= _ELTDX_PROBE_TTL:
+            _ok = _eltdx_fetch_probe(c)
+            _ELTDX_PROBE_CACHE["ok"] = _ok
+            _ELTDX_PROBE_CACHE["ts"] = _now
+        else:
+            _ok = _ELTDX_PROBE_CACHE["ok"]
+        if not _ok:
+            _debug_log(
+                "eltdx adapter create: 取数级验活失败(连通但 K 线为空/异常) → 不可用, "
+                "交上层 tencent/zhb/easy_tdx fallback"
+            )
+            try:
+                c.close()
+            except Exception:
+                pass
+            return None
         return _EltdxAdapter(c)
     except Exception as _e:
         _debug_log(f"eltdx adapter create error: {_e}")

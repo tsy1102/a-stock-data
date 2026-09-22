@@ -703,4 +703,7 @@ from ._financials import *
 from ._pools import *
 from ._zhb import *
 from ._misc import *
+from ._macro import *        # V17.4: 宏观与利率层(吸收上游 3.9.0 §11)
+from ._events import *       # V17.4: 事件驱动层(吸收上游 3.9.0 §14)
+from ._convertible import *  # V17.4: 可转债层(吸收上游 3.9.0 §15)
 

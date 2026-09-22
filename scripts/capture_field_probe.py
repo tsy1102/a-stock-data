@@ -652,11 +652,14 @@ def collect_push2(pool: list) -> dict:
     ~93-97%(独立风控面), 故**优先走 push2delay 镜像域**(与运行时 _FFLOW_HOSTS / get_em_batch_quotes
     一致策略), 主域仅作兜底; 两域字段同构(f1-f250)无损失。used_host 记录实际命中域便于排查。
     """
-    from stock_common import _quick_request
+    from stock_common import _quick_request, _em_is_banned
 
     # V17.3.2 封禁规律对齐: 跨 33 采集日实证 push2 主域受扰率 80%、push2delay 镜像域
     # 可用率 ~93-97%(独立风控面, 主域被封时仍可用)。故**优先 push2delay 镜像域**,
     # 仅当镜像域连续失败(罕见总封禁)才兜底试 push2 主域; 两域字段同构(f1-f250)无损失。
+    # V17.3.17 跨进程封禁共享: push2delay 与 push2 为独立 ban key, 本/他进程标记 push2delay
+    # 封禁后此处直接跳过镜像域省一次请求, 走 push2 兜底(用户指令: 全走 push2delay, 仅当其
+    # 被封再回退其他 push2 源)。
     fields = PUSH2_FULL_FIELDS  # f1-f250 显式全字段(与主字典口径对齐)
     delay_fail_streak = 0
     out = {"stocks": {}}
@@ -665,8 +668,8 @@ def collect_push2(pool: list) -> dict:
         secid = em_secid_prefix(c) + c  # V17.0 S3: 统一(修复 92 北交所误判 1.)
         r = None
         used_host = ""
-        # 首选 push2delay 镜像域(独立风控面, 实测可用率 ~95%)
-        if delay_fail_streak < 3:
+        # 首选 push2delay 镜像域(独立风控面, 实测可用率 ~95%); 若已被任一进程跨进程标记封禁则跳过
+        if delay_fail_streak < 3 and not _em_is_banned("push2delay.eastmoney.com"):
             try:
                 r = _quick_request(
                     "https://push2delay.eastmoney.com/api/qt/stock/get",

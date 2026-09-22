@@ -2033,7 +2033,7 @@ async def run_discovery_async(output_path):
                     _tc_key = f"{_zhb_date_probe}|live"
                     _tencent_map = _VAL_TENCENT_CACHE.get(_tc_key)
                     if _tencent_map is None:
-                        _tencent_map = _tencent_batch_fallback(all_codes)
+                        _tencent_map = _tencent_batch_fallback(all_codes, use_l2_cache=False)
                         _VAL_TENCENT_CACHE[_tc_key] = _tencent_map
                     if _tencent_map:
                         _debug_log(f"val tencent batch: {len(_tencent_map)}/{len(all_codes)} 只")

@@ -7,6 +7,7 @@
 退出码: 0=全部 OK / 1=有 FAIL。
 注意: 不要高频运行（东财 IP 风控），建议每天最多 1-2 次；失败项会自动跳过等待（20h+ 自然恢复）。
 """
+import os
 import sys
 import time
 
@@ -15,8 +16,33 @@ for _s in (sys.stdout, sys.stderr):
         _s.reconfigure(encoding="utf-8", errors="replace")
 
 import requests
+from urllib.parse import urlparse
 
 UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36"
+
+
+def _throttled_get(url: str, timeout: int = 10):
+    """V17.3.17: 复用 sc_network._quick_request（分域限流 + 跨进程封禁跳过 + 全局 1.0-1.3s 节奏）。
+
+    原实现用裸 requests.get 直打 push2 全族，既无节流也无封禁感知——
+    在已封禁状态下仍狂轰会恶化 IP 级封禁。现统一走项目限流通道。
+    """
+    try:
+        import sys as _sys
+        _sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+        from stock_common.sc_network import _quick_request, _em_is_banned, _normalize_em_domain
+    except Exception:
+        _quick_request = None
+    if _quick_request is None:
+        # 兜底：仍至少尊重封禁态，避免裸轰
+        return requests.get(url, timeout=timeout,
+                            headers={"User-Agent": UA, "Referer": "https://quote.eastmoney.com/"},
+                            verify=True)
+    _ft = _normalize_em_domain(urlparse(url).netloc)
+    if _em_is_banned(_ft):
+        return None  # 已封禁 → 跳过，不浪费请求也不加重封禁
+    return _quick_request(url, timeout=timeout,
+                          headers={"User-Agent": UA, "Referer": "https://quote.eastmoney.com/"})
 
 PROBES = [
     ("push2", "https://push2.eastmoney.com/api/qt/stock/get?secid=1.600519&fields=f43,f57,f58,f167"),
@@ -32,9 +58,9 @@ ONLY_FIRST = "--once" in sys.argv
 
 def probe(name: str, url: str) -> str:
     try:
-        r = requests.get(url, timeout=10,
-                         headers={"User-Agent": UA, "Referer": "https://quote.eastmoney.com/"},
-                         verify=True)
+        r = _throttled_get(url, timeout=10)
+        if r is None:
+            return "SKIP(banned)"
         if r.status_code == 200:
             return "OK"
         return f"HTTP{r.status_code}"

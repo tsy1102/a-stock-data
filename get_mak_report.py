@@ -2081,6 +2081,13 @@ async def generate_sector_report(output_path):
             L(f"| {_lnm} | {_l['change_pct']:+.2f}% | {_lfi:+.2f} |")
     L(f"\n{'='*90}")
     # V17.0(2026-08-15 C 方案): 全量 md 化——渲染层确定性转换(标题/分隔线/F10 边框表/对齐空格表→md)
+    # V17.4.1 吸收层市场级信号附录: 申购日历(抽水压力)/ETF份额/新浪研报/央视新闻联播/上证e互动/ST名单
+    try:
+        from stock_common.sc_market_signals import render_market_signals_section
+        for _ms in render_market_signals_section(today_str):
+            L(_ms)
+    except Exception:
+        pass  # 吸收层信号任一源失败不应影响主报告生成(治理铁律: 不把失败伪装成空)
     from stock_common.md_render import render_md_report
     output = render_md_report(output_path, lines)
     return output

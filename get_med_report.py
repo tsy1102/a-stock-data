@@ -1496,6 +1496,15 @@ async def generate_report_async(session, code, output_path, ind_comp=None, hsgt=
         _debug_log(f"med enrich error: {_e}")
 
     # V17.0(2026-08-15 C 方案): 全量 md 化——渲染层确定性转换(标题/分隔线/F10 边框表/对齐空格表→md)
+    # V17.4.1 吸收层个股信号附录: 新浪研报 + 上证e互动(个股级)
+    try:
+        from stock_common.sc_market_signals import render_stock_research_section, render_stock_einteraction_section
+        for _ms in render_stock_research_section(code):
+            L(_ms)
+        for _ms in render_stock_einteraction_section(code):
+            L(_ms)
+    except Exception:
+        pass  # 吸收层信号任一源失败不应影响主报告生成
     from stock_common.md_render import render_md_report
     output = render_md_report(output_path, lines)
     return output

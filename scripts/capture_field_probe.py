@@ -88,6 +88,7 @@ V17.3(2026-09-20) 采集↔字典/对撞同步核验:
 """
 import sys, os, json, time, argparse
 from datetime import datetime, time as dt_time
+from typing import Optional  # V17.4.0 fix: _resolve_zhb_name 注解用到, 此前遗漏导入致模块加载即崩
 
 for _s in (sys.stdout, sys.stderr):
     if _s is not None and hasattr(_s, "reconfigure"):
@@ -150,6 +151,16 @@ SOURCE_SCHEME = {
     "clist":          "em.clist",           # 东财-clist(板块排名/板块资金流, §12.8.6); V17.2.13 真实 producer 已接入
     "slist":          "em.slist",           # 东财-slist(个股所属板块/概念归属, §12.8.5); V17.2.13 真实 producer(须 secid, 裸 spt=3→rc:102 已订正)
     "exchange":       "exchange.official",  # 沪深交易所官方(§12.8.17); V17.2.14 真实 producer 已接入(直连 szse/sse 龙虎榜端点)
+    # V17.4.0: 事件驱动/可转债/宏观层采集(吸收上游 3.9.0 §11/§14/§15) — 复用 em.datacenter scheme 供 collide 读取;
+    #          常量 _EM_REPORTS 标 verified=False, 本采集仅作真伪验证占位(治理铁律: 推断走候选、不越级定案)。
+    "event_dc":       "em.datacenter",
+    "macro_dc":       "em.datacenter",
+    # V17.4.1: 吸收层 5 模块(新源+新字段, 经上游权威仓库对撞校正) — 各标独立 scheme 供 collide 读取
+    "research_sina":  "sina.research",      # 新浪研报(研报第二来源, §2.4)
+    "etf":            "sse/szse.etf_shares", # ETF 份额(万份, §4.7)
+    "news_wscn_cctv": "cctv.news",          # 央视新闻联播(§5.5; WSCN 宏观日历已在 macro_dc)
+    "sse_e_interaction": "sse.e_interaction", # 上证e互动(§10.3)
+    "st_list":        "em.clist",           # ST/*ST 名单(§6.8, 风险警示板过滤)
 }
 
 # 模块文档未改动处见上方 docstring; 输出文件新增 scheme 标注(见 main)。
@@ -1355,6 +1366,167 @@ def collect_datacenter(pool: list) -> dict:
     return out
 
 
+def collect_event_dc(pool: list) -> dict:
+    """V17.4 事件驱动/可转债层采集(东财 datacenter) — 验证 _EM_REPORTS 候选常量真伪(治理铁律: 推断走候选)。
+
+    每股票采业绩预告/机构调研/股东增减持/股权质押; 另采全市场级新股申购日历 + 可转债列表(标的相关性由报告层判断)。
+    仅作采集占位: 取值异常不抛(对撞阶段再钉死常量); 返回 {"stocks": {...}} 供 collide 读取。
+    """
+    from stock_common.sc_datasource import (
+        earnings_forecast, institution_survey, holder_trades, equity_pledge,
+        ipo_calendar, convertible_bonds,
+    )
+    out = {"stocks": {}}
+    for p in pool:
+        c = p["code"]
+        rec = {}
+        for name, fn in [("earnings_forecast", earnings_forecast),
+                         ("institution_survey", institution_survey),
+                         ("holder_trades", holder_trades),
+                         ("equity_pledge", equity_pledge)]:
+            try:
+                v = fn(c)
+                rec[name] = v if isinstance(v, (list, dict)) else {"value": v}
+            except Exception as e:
+                rec[name] = {"__error__": str(e)[:150]}
+        out["stocks"][c] = rec
+    # 全市场级: 申购日历 + 可转债列表(标的相关性由报告层判断)
+    try:
+        out["ipo_calendar"] = ipo_calendar()
+    except Exception as e:
+        out["ipo_calendar"] = {"__error__": str(e)[:150]}
+    try:
+        out["convertible_bonds"] = convertible_bonds()
+    except Exception as e:
+        out["convertible_bonds"] = {"__error__": str(e)[:150]}
+    return out
+
+
+def collect_macro_dc(pool: list) -> dict:
+    """V17.4 宏观利率层采集(东财 datacenter + 中债/货币网占位) — 验证 _EM_REPORTS 候选常量真伪。
+
+    宏观为全市场级(不按个股); 套 stocks 壳以对齐 meta 评估。中债收益率曲线端点待补(返回空占位)。
+    """
+    from stock_common.sc_datasource import (
+        lpr_history, macro_calendar as _macro_cal, repo_fixing_rates, chinabond_yield_curve,
+    )
+    out = {"stocks": {}}
+    rec = {}
+    for name, fn in [("lpr_history", lpr_history),
+                     ("macro_calendar", _macro_cal),
+                     ("repo_fixing_fr", lambda: repo_fixing_rates("FR")),
+                     ("repo_fixing_fdr", lambda: repo_fixing_rates("FDR")),
+                     ("chinabond_yield_curve", chinabond_yield_curve)]:
+        try:
+            v = fn()
+            rec[name] = v if isinstance(v, (list, dict)) else {"value": v}
+        except Exception as e:
+            rec[name] = {"__error__": str(e)[:150]}
+    out["macro"] = rec
+    return out
+
+
+def _recent_trade_days(n: int = 4):
+    """返回最近 n 个自然日(YYYY-MM-DD), 用于 ETF/央视等按日快照源回退到最近有数据的日期。"""
+    from datetime import datetime, timedelta
+    d = datetime.now()
+    out = []
+    for _ in range(n):
+        out.append(d.strftime("%Y-%m-%d"))
+        d -= timedelta(days=1)
+    return out
+
+
+def collect_research_sina(pool: list) -> dict:
+    """V17.4.1 吸收层: 新浪研报(研报第二来源, §2.4)。
+
+    市场级(全市场最新一页) + 个股级抽样(前 5 只, 验证 per-stock 路径; 新浪 6s 节流, 不 20× 全量)。
+    """
+    from stock_common.sc_datasource import sina_research_reports
+    out = {"stocks": {}}
+    try:
+        out["market_latest"] = sina_research_reports()
+    except Exception as e:
+        out["market_latest"] = {"__error__": str(e)[:150]}
+    for p in pool[:5]:
+        c = p["code"]
+        try:
+            out["stocks"][c] = sina_research_reports(c)
+        except Exception as e:
+            out["stocks"][c] = {"__error__": str(e)[:150]}
+    return out
+
+
+def collect_etf(pool: list) -> dict:
+    """V17.4.1 吸收层: ETF 份额(万份, §4.7)。上交所按日归档/深交所当前快照。
+
+    取最近 4 个自然日里首个有数据的快照(深交所仅最新一天)。SH+SZ 全市场列表。
+    """
+    from stock_common.sc_datasource import etf_shares
+    out = {}
+    for ex in ("SH", "SZ"):
+        got = None
+        for day in _recent_trade_days(4):
+            try:
+                rows = etf_shares(day, ex)
+                if rows:
+                    got = rows
+                    break
+            except Exception as e:
+                got = {"__error__": f"{day}: {str(e)[:120]}"}
+        out[f"etf_{ex.lower()}"] = got if got is not None else {"__error__": "no data in last 4 days"}
+    return out
+
+
+def collect_news_wscn_cctv(pool: list) -> dict:
+    """V17.4.1 吸收层: 央视《新闻联播》(§5.5, 政策信号文本)。取最近 3 天首个有条目日。"""
+    from stock_common.sc_datasource import cctv_news
+    out = {}
+    attempts = []
+    got = None
+    for day in _recent_trade_days(3):
+        try:
+            rows = cctv_news(day)
+            attempts.append(f"{day}:{len(rows)}")
+            if rows:
+                got = rows
+                break
+        except Exception as e:
+            attempts.append(f"{day}:ERR {str(e)[:80]}")
+    out["cctv_xwlb"] = got if got is not None else {"__error__": "no data; " + "; ".join(attempts)}
+    return out
+
+
+def collect_sse_e_interaction(pool: list) -> dict:
+    """V17.4.1 吸收层: 上证e互动(§10.3)。市场级(全市场最新已回复) + 个股级抽样(前 3 只沪市股, uid 解析 ~10-13 请求/股)。"""
+    from stock_common.sc_datasource import sse_e_interaction
+    out = {"stocks": {}}
+    try:
+        out["market"] = sse_e_interaction()
+    except Exception as e:
+        out["market"] = {"__error__": str(e)[:150]}
+    for p in pool[:3]:
+        c = p["code"]
+        if not c.startswith(("60", "68", "900")):
+            continue
+        try:
+            out["stocks"][c] = sse_e_interaction(c, kind="answered")
+        except Exception as e:
+            out["stocks"][c] = {"__error__": str(e)[:150]}
+    return out
+
+
+def collect_st_list(pool: list) -> dict:
+    """V17.4.1 吸收层: ST/*ST 名单(§6.8, 沪深京风险警示板)。市场级(全市场当日快照)。"""
+    from stock_common.sc_datasource import st_stock_list
+    out = {}
+    try:
+        out["st_list"] = st_stock_list()
+    except Exception as e:
+        out["st_list"] = {"__error__": str(e)[:150]}
+    return out
+
+
 def collect_tdx_f10_more(pool: list) -> dict:
     """TDX F10 补充: 股东研究/公司新闻/异动提醒(TCP 免费)。"""
     from core.tdx_client import tdx_get_shareholder_research, tdx_get_company_news_f10, tdx_get_latest_reminders
@@ -1576,6 +1748,16 @@ def main() -> None:
         "clist": collect_clist,            # §12.8.6 东财-clist; 真实 producer(V17.2.13, push2delay 镜像域)
         "slist": collect_slist,            # §12.8.5 东财-slist; 真实 producer(V17.2.13, push2delay 镜像域)
         "exchange": collect_exchange,      # §12.8.17 沪深交易所; 真实 producer(V17.2.14, 直连 szse/sse)
+        # V17.4.0: 事件驱动/可转债/宏观层采集器(吸收上游 3.9.0 §11/§14/§15); 仅验证 _EM_REPORTS 常量真伪,
+        #          取值异常不抛(对撞阶段再钉死常量)。接入报告层见 get_med_report/get_lng_report(已接线)。
+        "event_dc": collect_event_dc,
+        "macro_dc": collect_macro_dc,
+        # V17.4.1: 吸收层 5 模块(新源+新字段) — 先更新采集脚本、再采集验证真实性(治理铁律: 接入报告层须在对撞验证后)
+        "research_sina": collect_research_sina,
+        "etf": collect_etf,
+        "news_wscn_cctv": collect_news_wscn_cctv,
+        "sse_e_interaction": collect_sse_e_interaction,
+        "st_list": collect_st_list,
     }
     if args.only:
         collectors = {k: v for k, v in collectors.items() if k in [s.strip() for s in args.only.split(",")]}

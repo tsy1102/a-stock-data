@@ -706,4 +706,10 @@ from ._misc import *
 from ._macro import *        # V17.4: 宏观与利率层(吸收上游 3.9.0 §11)
 from ._events import *       # V17.4: 事件驱动层(吸收上游 3.9.0 §14)
 from ._convertible import *  # V17.4: 可转债层(吸收上游 3.9.0 §15)
+# V17.4.1: 吸收层 5 模块(新源+新字段, 经上游权威仓库对撞校正)
+from ._research_sina import *    # 新浪研报(研报第二来源, §2.4)
+from ._etf import *             # ETF 份额(万份, §4.7)
+from ._news_wscn_cctv import *  # 央视新闻联播(§5.5; WSCN 宏观日历已在 _macro)
+from ._sse_e_interaction import *  # 上证e互动(§10.3)
+from ._st_list import *          # ST/*ST 名单(§6.8)
 

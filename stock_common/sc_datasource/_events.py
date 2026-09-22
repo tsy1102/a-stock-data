@@ -4,10 +4,11 @@
       (回购已在 V17.3.9 独立成章, 此处不复刻)。
 数据来源: 东财 datacenter。设计对齐上游: source/source_url/fetched_at 溯源; 结构错抛 RuntimeError;
 分页总数核对/空页≠末页校验留待对撞验证后补强。
-reportName 常量集中登记于 _EM_REPORTS, 标注 verified=False, 待对撞验证(治理铁律: 推断走候选、不越级定案)。
 
-在常量未经对撞验证前, 函数取值异常时优雅降级返回 [](不伪造数据); 待 collide 验证通过再切换为严格
-RuntimeError 契约。
+reportName 常量: 2026-09-22 经上游权威仓库(simonlin1212/a-stock-data)SKILL.md 对撞校正——
+原 V17.4.0 候选常量大量错误, 已订正为上游验证过的真值(RPT_PUBLIC_OP_NEWPREDICT / RPT_ORG_SURVEYNEW /
+RPT_SHARE_HOLDER_INCREASE / RPT_CSDC_LIST / RPTA_APP_IPOAPPLY)。常量已 verified=True(上游权威源),
+但字段语义仍需本项目 collide 对撞终检(治理铁律: 上游真值可引用, 本地字段映射需对撞定案)。
 """
 from __future__ import annotations
 from typing import Any, Dict, List
@@ -18,15 +19,16 @@ from stock_common import _debug_log
 
 DATACENTER_URL = "https://datacenter-web.eastmoney.com/api/data/v1/get"
 
+# V17.4.1: 经上游权威仓库 SKILL.md 对撞校正(原候选常量大量错误)
 _EM_REPORTS: Dict[str, str] = {
-    "earnings_forecast": "RPT_VALUEANALYSIS_DET",   # TODO: 对撞验证
-    "institution_survey": "RPT_ORG_SURVEY",         # TODO: 对撞验证
-    "holder_trades": "RPT_HOLDER_TRADE_DET",        # TODO: 对撞验证
-    "equity_pledge": "RPT_PLEDGE_DET",              # TODO: 对撞验证
-    "ipo_calendar": "RPT_NEW_STOCK_DT",             # TODO: 对撞验证
+    "earnings_forecast": "RPT_PUBLIC_OP_NEWPREDICT",   # 上游权威(原误 RPT_VALUEANALYSIS_DET)
+    "institution_survey": "RPT_ORG_SURVEYNEW",         # 上游权威(原误 RPT_ORG_SURVEY)
+    "holder_trades": "RPT_SHARE_HOLDER_INCREASE",      # 上游权威(原误 RPT_HOLDER_TRADE_DET)
+    "equity_pledge": "RPT_CSDC_LIST",                  # 上游权威(中国结算周度, 原误 RPT_PLEDGE_DET)
+    "ipo_calendar": "RPTA_APP_IPOAPPLY",               # 上游权威(原误 RPT_NEW_STOCK_DT)
 }
 _SOURCE_URLS: Dict[str, str] = {k: DATACENTER_URL for k in _EM_REPORTS}
-_VERIFIED = False
+_VERIFIED = True  # 常量取自上游权威仓库; 字段语义待本项目 collide 终检
 
 
 def _trace(source: str) -> Dict[str, Any]:
@@ -87,12 +89,32 @@ def equity_pledge(code: str, limit: int = 10) -> List[Dict[str, Any]]:
 def ipo_calendar(limit: int = 20) -> List[Dict[str, Any]]:
     """新股申购日历。东财源。"""
     try:
-        rows = eastmoney_datacenter("", _EM_REPORTS["ipo_calendar"], filter_str=" ", page_size=limit)
+        rows = eastmoney_datacenter("", _EM_REPORTS["ipo_calendar"], filter_str="", page_size=limit)
     except Exception as _e:
         _debug_log(f"ipo_calendar: 取值失败(待对撞验证) -> {_e}")
         return []
     for r in rows:
         r.update(_trace("ipo_calendar"))
+    return rows
+
+
+def ipo_calendar_recent(limit: int = 40) -> List[Dict[str, Any]]:
+    """近期新股申购(按申购日倒序取近期, 含即将申购) —— 抽水压力指标用。
+
+    东财 datacenter 默认按 APPLY_DATE 升序返回(最老在前), limit 小则只拿到 1988 年诸股;
+    此处显式 sort_columns=APPLY_DATE / sort_types=-1 倒序取近期, 供报告渲染"即将申购"。
+    数据来源: 东财 datacenter(reportName=RPTA_APP_IPOAPPLY, 已对撞校正)。
+    """
+    try:
+        rows = eastmoney_datacenter(
+            "", _EM_REPORTS["ipo_calendar"], filter_str="", page_size=limit,
+            sort_columns="APPLY_DATE", sort_types="-1",
+        )
+    except Exception as _e:
+        _debug_log(f"ipo_calendar_recent: 取值失败 -> {_e}")
+        return []
+    for r in rows:
+        r.update(_trace("ipo_calendar_recent"))
     return rows
 
 

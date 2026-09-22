@@ -38,7 +38,10 @@ def eastmoney_datacenter(
     V7.5 新增：HTTP状态码非200时记录日志，业务错误码(status=-1)时记录日志，JSON解析失败时记录日志。
     """
     try:
-        full_filter = filter_str if filter_str else f'(SECURITY_CODE="{code}")'
+        # V17.4.1: 市场级报表(code="")且无显式 filter 时传空过滤(返回全量);
+        # 此前恒补 (SECURITY_CODE="") 把全市场报表过滤成空(ipo_calendar/
+        # convertible_bonds/lpr_history 恒空根因)。
+        full_filter = filter_str if filter_str else (f'(SECURITY_CODE="{code}")' if code else "")
         r = _quick_request(
             DATACENTER_URL,
             params={
@@ -114,7 +117,8 @@ async def eastmoney_datacenter_async(
     V9.4: 原生 aiohttp 实现，移除 asyncio.to_thread 包装。
     """
     try:
-        full_filter = filter_str if filter_str else f'(SECURITY_CODE="{code}")'
+        # V17.4.1: 同同步版 —— 市场级报表(code="")传空过滤返回全量。
+        full_filter = filter_str if filter_str else (f'(SECURITY_CODE="{code}")' if code else "")
         d = await _async_request_with_retry(
             session,
             DATACENTER_URL,

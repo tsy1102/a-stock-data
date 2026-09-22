@@ -5,6 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 
+## [V17.4.1] 2026-09-22 — 吸收层全量接入：申购日历/ETF份额/新浪研报/央视联播/上证e互动/ST名单 + 市场级报表 filter 根因修复
+- **市场级报表 filter 根因修复(核心)**: `sc_datasource/_eastmoney.py` 的 `eastmoney_datacenter` 在 `code=""` 且无显式 filter 时自动补 `(SECURITY_CODE="")` 把全市场报表(ipo_calendar/convertible_bonds/lpr_history)过滤成空——此为 V17.4.0 市场级报表恒空根因。修复为 `filter_str if filter_str else (f'(SECURITY_CODE="{code}")' if code else "")`；同步将 `_events.ipo_calendar`/`_convertible.convertible_bonds` 调用点 `filter_str=" "` 改 `""`。复采验证：ipo_calendar 20 / convertible_bonds 500 / lpr_history 166 条全部生效。
+- **申购日历接入 val/mak(抽水压力指标, #396)**: 新增 `ipo_calendar_recent()`(按 APPLY_DATE 倒序取未来申购)；`sc_market_signals.render_market_signals_section` 市场级附录新增【G. 近期新股申购日历·资金抽水压力监测】——以申购只数表征抽水压力(募资额字段 TOTAL_RAISE_FUNDS/PREDICT_RAISE_FUNDS 单位待对撞核实, 不展示未核数值)。
+- **吸收层 5 新源 + ST 名单(全守卫渲染, #397/#400)**: 新增 `sc_market_signals.py` 渲染器, 6 源独立 try/except(单源失败仅该章节显"暂不可用", 不连累整份报告)。5 新数据采集器接入 `capture_field_probe.py`(`--only` 可单采), 今日采集 5 源 raw 已落盘(受 .gitignore 约束不外发)。
+  - 新浪研报(第二源)/ 央视《新闻联播》/ 上证e互动(市场级+个股级) 已验证可用并接入 val/mak/med/lng。
+  - ETF 份额: 沪市(SSE)可用; 深市(SZSE fund.szse.cn)当前接口暂不可用 → 显式"深市 ETF 数据暂不可用"而非伪装 0。
+  - ST/*ST 名单: 源(东财 push2 clist)今日曾全封禁 → 硬化 `st_stock_list`(源失败抛错交采集器记 `__error__`, 不再伪装空名单); 源恢复后实测 208 只(sh83/sz122/bj3), 章节显式"暂缓接入→自动显示"。
+- **对撞终检(#399)**: 今日 `collide.py --date 20260922 --window 3` 跑通(3 日 / 1216 字段 / 120,973 样本), 0 新 L1、8 guardrail 拦截——字段登记稳定, 确认 V17.4.0 的 reportName 候选常量大量错误, 已在 V17.4.1 经上游权威(黄金锚)+ 实采计数校正。
+- **治理铁律遵守**: 未对撞字段(募资额单位/ST 北交所细则)仅展示记录条数+数据溯源, 不把未验证数值当权威结论; 所有新增源均带 `_VERIFIED` 标记(取自上游权威仓库 2026-09-22 对撞校正), 待本项目 collide 终检。
+- **未推送**: 按用户指令本地 commit, 不推送远端。
+
 ## [V17.4.0] 2026-09-22 — 吸收上游 3.9.0：限流收口 + 宏观/事件/可转债层 + tdx 取数级验活
 - **限流收口(用户指令①)**: `scripts/capture_field_probe.py` 的 `collect_push2` 显式"全走 push2delay、仅当其被跨进程标记封禁再回退 push2"——`_em_is_banned("push2delay.eastmoney.com")` 命中即跳过镜像域省一次请求走兜底(用户: push2delay 更安全)。push2 与 push2delay 为独立 ban key(V17.3.17 已确认), 回退链路成立。
 - **tdx 取数级验活(用户指令③·#52 思路移植)**: `core/eltdx_adapter.py` 的 `create_eltdx_adapter()` 增加**取数级验活**——连通后必须真实拉一根日 K 线非空才算通过; 连通但取数损坏(静默空表)明确返回 None 交上层 tencent/zhb/easy_tdx fallback, 不再静默空表(上游 mootdx #52 根因: TCP 握手通过≠能取数)。验活结果缓存 300s。

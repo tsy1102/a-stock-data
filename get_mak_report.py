@@ -30,7 +30,7 @@ from stock_common.env_setup import ensure_utf8_stdio
 ensure_utf8_stdio()
 
 import time, os, math, warnings, asyncio, re  # V17.0.4: +re/json(新浪指数 K 兜底); V17.0.25: +math(连板对数估算)
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 from datetime import date, datetime, timedelta
 from concurrent.futures import ThreadPoolExecutor, as_completed  # V16.4.1: 删 Counter
 
@@ -161,12 +161,44 @@ async def get_market_abnormal_data():
           对应的 dataclass 形式由 _canonicalize_snapshot 转换层提供（V15.1）。
     """
     # V10.2: change_pct是实时字段，zhb日期必须是今天才能用
+    # V17.4.1: 腾讯批量实时覆盖改为**单次获取并共享**——先取全 ZHB 宇宙 codes 拉一次批量，
+    # 既供 _get_zhb_market_data 构建今日 price/change_pct/ret_3d，也供 TDX fallback 路径覆盖，
+    # 消除原 V15.5.15(内层)+V15.5.16(外层) 双拉全市场腾讯（每次扫描多 ~1-2s + 限流等待）。
+    _tencent_map: Dict[str, Any] = {}
     if zhb_field_safe("change_pct"):
-        data = await _get_zhb_market_data()
+        try:
+            _snap = await get_market_snapshot_async()
+            _snap_codes = list(_snap.keys()) if _snap else []
+        except Exception:
+            _snap_codes = []
+        if _snap_codes:
+            try:
+                from core.tdx_client import _tencent_batch_fallback
+
+                _tencent_map = _tencent_batch_fallback(_snap_codes) or {}
+            except Exception as _e:
+                _debug_log(f"mak tencent batch: {_e}")
+        data = await _get_zhb_market_data(tencent_map=_tencent_map)
         if not data:
             data = await asyncio.to_thread(tdx_get_market_abnormal_data)
+            if data:
+                try:
+                    from core.tdx_client import _tencent_batch_fallback
+
+                    _tencent_map = _tencent_batch_fallback([s.get("code", "") for s in data]) or {}
+                except Exception as _e:
+                    _debug_log(f"mak tencent batch(fallback): {_e}")
+                _apply_tencent_cover(data, _tencent_map)
     else:
         data = await asyncio.to_thread(tdx_get_market_abnormal_data)
+        if data:
+            try:
+                from core.tdx_client import _tencent_batch_fallback
+
+                _tencent_map = _tencent_batch_fallback([s.get("code", "") for s in data]) or {}
+            except Exception as _e:
+                _debug_log(f"mak tencent batch: {_e}")
+            _apply_tencent_cover(data, _tencent_map)
     # V17.0.2g(2026-08-17): 主力净额批量(ulist f62)必须在**两条路径**都执行——
     # 原批量段在 _get_zhb_market_data 内, 盘中 zhb 非今日走 TDX 路径时永不执行
     # → _MAIN_NET_MAP_GLOBAL 空 → 兜底竞价额(恒正) → F 段虚涨判定恒空
@@ -187,35 +219,44 @@ async def get_market_abnormal_data():
                 }
         except Exception as _e:
             _debug_log(f"mak ulist main_net batch (unified): {_e}")
-    # V15.5.16: 统一腾讯实时覆盖（无论 ZHB/TDX 分支）— 今日盘中涨停判断
-    if data:
-        try:
-            from core.tdx_client import _tencent_batch_fallback
-
-            _tm = _tencent_batch_fallback([s.get("code", "") for s in data]) or {}
-            _cov = 0
-            for s in data:
-                _tq = _tm.get(s.get("code", ""), {})
-                if _tq.get("price"):
-                    s["price"] = _safe_float(_tq["price"])
-                if _tq.get("change_pct") is not None:
-                    s["change_pct"] = _safe_float(_tq["change_pct"])
-                    _cov += 1
-                # V16.2.14: 补股票名称（ZHB 快照缺失时，如退市整理/新上市股——
-                # 原缺失导致报告多处"只有代码无名称"）
-                if _tq.get("name") and not s.get("name"):
-                    s["name"] = _tq["name"]
-            _debug_log(f"mak tencent realtime cover: {_cov}/{len(data)} 只")
-        except Exception as _e:
-            _debug_log(f"mak tencent cover error: {_e}")
+    # V17.4.1: 腾讯实时覆盖已改为单次获取并共享（ZHB 路径内层构建 / TDX 路径 _apply_tencent_cover），
+    # 此处不再二次拉取。
     return data
 
 
-async def _get_zhb_market_data():
+def _apply_tencent_cover(data, tencent_map: Dict[str, Any]) -> None:
+    """V17.4.1: 抽出原 V15.5.16 外层腾讯实时覆盖循环，供 TDX fallback 路径复用。
+
+    ZHB 路径已在 _get_zhb_market_data 内用共享 tencent_map 直接构建（无需再次覆盖）。
+    仅覆盖 price/change_pct/name（与历史行为一致）。
+    """
+    if not data or not tencent_map:
+        return
+    try:
+        _cov = 0
+        for s in data:
+            _tq = tencent_map.get(s.get("code", ""), {})
+            if _tq.get("price"):
+                s["price"] = _safe_float(_tq["price"])
+            if _tq.get("change_pct") is not None:
+                s["change_pct"] = _safe_float(_tq["change_pct"])
+                _cov += 1
+            # V16.2.14: 补股票名称（ZHB 快照缺失时，如退市整理/新上市股）
+            if _tq.get("name") and not s.get("name"):
+                s["name"] = _tq["name"]
+        _debug_log(f"mak tencent realtime cover: {_cov}/{len(data)} 只")
+    except Exception as _e:
+        _debug_log(f"mak tencent cover error: {_e}")
+
+
+async def _get_zhb_market_data(tencent_map: Optional[Dict[str, Any]] = None):
     """V10.1: 从zhb全市场快照构建异动扫描数据。
 
     返回格式与tdx_get_market_abnormal_data一致，便于无缝替换。
     V11.5: 使用data_provider的get_market_snapshot_async统一获取数据
+    V17.4.1: tencent_map 由上层 get_market_abnormal_data **单次获取并共享传入**，
+             本函数直接用它构建 price/change_pct/amount/turnover/mcap/ret_3d（盘中今日值），
+             不再自行拉取（消除原 V15.5.15 内层 + V15.5.16 外层双拉全市场腾讯）。
     """
     try:
         snapshot = await get_market_snapshot_async()
@@ -229,17 +270,12 @@ async def _get_zhb_market_data():
         price_map = snapshot
 
         result = []
-        # V15.5.15: 腾讯批量实时行情（今日 change_pct/price，盘中涨停判断）
-        # ZHB T-1 change_pct 不反映今日盘中涨停 → A 段涨停数失真
-        _tencent_map: Dict[str, Dict[str, Any]] = {}
-        try:
-            from core.tdx_client import _tencent_batch_fallback
-
-            _tencent_map = _tencent_batch_fallback(all_codes) or {}
-        except Exception as _e:
-            _debug_log(f"mak tencent batch: {_e}")
+        # V17.4.1: 腾讯批量实时覆盖改为**上层单次获取并共享传入**（见 get_market_abnormal_data）：
+        # 本函数不再自行拉取，直接用传入的 tencent_map 构建 price/change_pct/amount/turnover/
+        # mcap/ret_3d（盘中今日值），避免原 V15.5.15(内层)+V15.5.16(外层) 双拉全市场腾讯。
         # V17.0.2g(2026-08-17): 主力净额批量已上移至 get_market_abnormal_data 统一执行(两条路径)
         # V14.2.1: 提前一次性获取 ZHB profile 离线简称（修复 mak 0只 Bug）
+        _tencent_map = tencent_map or {}
         from core.zhb_client import get_stock_name_from_zhb
 
         zhb_name_cache = {}
@@ -256,7 +292,7 @@ async def _get_zhb_market_data():
             if 'ST' in name or '退' in name:
                 continue
 
-            # V15.5.15: 腾讯实时优先（今日 change_pct/price），缺失回退 ZHB T-1
+            # V15.5.15→V17.4.1: 腾讯实时优先（今日 price/change_pct/amount/turnover/mcap），缺失回退 ZHB T-1
             _tq = _tencent_map.get(code, {})
             price = _safe_float(_tq.get("price") or price_map.get(code, {}).get("price", 0))
             # V16.3 O21: 平盘（change_pct=0）也是今日事实——is not None 判定，0 不回退 ZHB T-1

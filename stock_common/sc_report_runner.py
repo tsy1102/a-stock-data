@@ -230,11 +230,22 @@ class BaseReportRunner:
         if snapshot_data:
             from stock_common.analyze_history import save_snapshot
 
+            # V17.4.4 修复: snapshot_data 可能是 SnapshotProxy (V15.3.1 引入, 非 dict 子类)。
+            # 原 M6 的 isinstance(snapshot_data, dict) 校验对其永远为 False → save_snapshot
+            # 自 V17.1.0 起从未被调用 → 评分快照 JSON 永不落盘 → analyze_history 读空 →
+            # 评分突变背离(≥15分)报告永久消失。现先规整为真实 dict 再走结构校验与保存。
+            if isinstance(snapshot_data, dict):
+                _snap = snapshot_data
+            elif hasattr(snapshot_data, "items"):
+                _snap = dict(snapshot_data.items())
+            else:
+                _snap = None
+
             # M6 修复：快照结构校验——只接受 {code: {name, total_score}} 形态。
             # 误传 pipeline results（非该形态）会让跨日期背离检测静默成空壳，故校验后保存。
-            if isinstance(snapshot_data, dict):
+            if _snap is not None and isinstance(_snap, dict):
                 _bad = [
-                    c for c, v in snapshot_data.items()
+                    c for c, v in _snap.items()
                     if not (isinstance(v, dict) and ("total_score" in v or "score" in v))
                 ]
                 if _bad:
@@ -244,9 +255,9 @@ class BaseReportRunner:
                         flush=True,
                     )
                 else:
-                    save_snapshot(report_type, snapshot_data)
-            else:
-                _debug_log(f"{self.script_name} snapshot_data 非 dict，跳过保存")
+                    save_snapshot(report_type, _snap)
+            elif _snap is None:
+                _debug_log(f"{self.script_name} snapshot_data 非字典且无可迭代 items，跳过保存")
 
         ok = [r for r in _results if r["status"] == "成功"]
         fd = [r for r in _results if r["status"] == "数据失败"]

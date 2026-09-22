@@ -37,6 +37,23 @@ _SOURCE_URLS: Dict[str, str] = {
 }
 _VERIFIED = True  # 常量/源取自上游权威仓库; 字段语义待本项目 collide 终检
 
+# V17.4.2: 展示数值字段溯源注记（满足「每个展示数值字段须有 field_dict/溯源」治理要求）
+#   说明: 宏观利率层字段均属官方公布利率(非 a-stock f-code 破解字段),
+#   其「溯源」即权威发布源; 下列字段语义直接在 dict 中订正为 VERIFIED,
+#   无需经本项目 f-code collide 终检(无对应 f 编号, 亦不进 field_dict 破解管线)。
+_VERIFIED_FIELD_SOURCES: Dict[str, Dict[str, str]] = {
+    # LPR —— 央行授权全国银行间同业拆借中心每月20日公布, 东财 datacenter(RPTA_WEB_RATE) 为聚合源
+    "lpr_1y": {"source": "央行LPR / 东财datacenter(RPTA_WEB_RATE)", "unit": "%", "status": "VERIFIED"},
+    "lpr_5y": {"source": "央行LPR / 东财datacenter(RPTA_WEB_RATE)", "unit": "%", "status": "VERIFIED"},
+    # 回购定盘 FR/FDR —— 中国货币网(外汇交易中心)官方 CSV 每日公布
+    "FR001": {"source": "中国货币网(外汇交易中心)官方CSV", "unit": "%", "status": "VERIFIED"},
+    "FR007": {"source": "中国货币网(外汇交易中心)官方CSV", "unit": "%", "status": "VERIFIED"},
+    "FR014": {"source": "中国货币网(外汇交易中心)官方CSV", "unit": "%", "status": "VERIFIED"},
+    "FDR001": {"source": "中国货币网(外汇交易中心)官方CSV", "unit": "%", "status": "VERIFIED"},
+    "FDR007": {"source": "中国货币网(外汇交易中心)官方CSV", "unit": "%", "status": "VERIFIED"},
+    "FDR014": {"source": "中国货币网(外汇交易中心)官方CSV", "unit": "%", "status": "VERIFIED"},
+}
+
 
 def _num(x: Any) -> Optional[float]:
     if x is None or x == "":

@@ -76,17 +76,31 @@ if __name__ == "__main__":
 
 
 class TestEmBanCooldown(unittest.TestCase):
-    """V16.2.8: 连续 3 次断连 → 20h 封禁冷却。"""
+    """V16.2.8: 连续 3 次断连 → 20h 封禁冷却。
+
+    V17.3.17 起 _em_is_banned 还会查跨进程共享文件(em_banned_state); 本测试只验证
+    内存态 streak/冷却逻辑, 故在 setUp 用 mock 把跨进程文件 I/O 隔离掉, 避免磁盘上
+    残留的封禁态让「应未封禁」的用例误判为已封禁。
+    """
 
     def setUp(self):
         import stock_common.sc_network as sn
+        import unittest.mock as _mock
         self.sn = sn
         sn._EM_BAN_STREAK.clear()
         sn._EM_BANNED_UNTIL.clear()
+        self._patchers = [
+            _mock.patch.object(sn, "_load_banned_file", return_value={}),
+            _mock.patch.object(sn, "_save_banned_file", return_value=None),
+        ]
+        for _p in self._patchers:
+            _p.start()
 
     def tearDown(self):
         self.sn._EM_BAN_STREAK.clear()
         self.sn._EM_BANNED_UNTIL.clear()
+        for _p in getattr(self, "_patchers", []):
+            _p.stop()
 
     def test_below_threshold_not_banned(self):
         self.sn._record_em_disconnect("push2.eastmoney.com")

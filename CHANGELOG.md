@@ -5,6 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 
+## [V17.4.3] 2026-09-22 — 补回 A1 闸门脚本 + 宏观字段 _VERIFIED 溯源 + 11 项测试失败针对性修正
+
+- **建议① 补回 A1 数据访问收口闸门** `scripts/verify_data_access.py`（AGENTS.md §8.4 要求、此前缺失）：
+  用 `tokenize` 剥离注释/字符串，扫描生产脚本(main.py / get_*_report.py / core/*.py 除 tdx_client.py)是否直连原始客户端(`_get_tdx_client` / `sc_network.em_get` / `sc_fuyao._fuyao_raw` / 裸 `requests`·`httpx`·`aiohttp`·`urllib`)。
+  实测真实仓库 **0 硬失败 0 警告**（exit 0）；`core/gd_uploader.py`(Google Drive 上传器, urllib 仅用于探测本地代理可达 OAuth)已按「非行情取数」语义文件级豁免, 但其 RAW_FUNC 类违规仍会被捕获(豁免不削弱检查)。
+- **建议② 宏观 LPR/回购定盘补 _VERIFIED 溯源注记** `_macro.py`：新增 `_VERIFIED_FIELD_SOURCES`，将 `lpr_1y/lpr_5y`(央行LPR/东财RPTA_WEB_RATE) 与 `FR001/007/014`、`FDR001/007/014`(中国货币网官方CSV) 显式订正为 VERIFIED(官方公布利率, 非 a-stock f-code 破解字段, 无需经本仓 collide 终检)，满足「每个展示数值字段须有溯源」治理要求。
+- **11 项测试失败针对性修正(不再仅归为历史遗留, 均定位真根因并修复)**:
+  - `test_data_network::TestEmBanCooldown`(2)：V17.3.17 给 `_em_is_banned` 加了**跨进程封禁文件**检查, 测试只清内存没清它 → 磁盘残留让「应未封禁」误判为已封禁。测试 setUp 用 `unittest.mock` 隔离 `_load_banned_file`/`_save_banned_file`, 4 例全过。
+  - `test_data_prefetch`(8)：V17.3.12 给 `prefetch_quote_batch` 加了 **SQLite L2 跨进程缓存**读写, 先于 `_quick_request` 注入、绕过 mock 并污染用例。测试 fixture 隔离 `read_quote_batch_l2`(→{}) / `persist_quote_batch_l2`(→noop), 9 例全过(`_ULIST_BATCH_FIELDS` 实测与断言完全一致)。
+  - `test_reports_pipeline::test_no_prefetch_hooks`(1)：V17.3.10 给 Lng 注册了 `prefetch_fn`(与 med/sht 对齐), 该「无 prefetch」断言是过期断言。改为断言 Lng 注册同步 `prefetch_fn` 且不注册 `prefetch_async_fn`, 1 例全过。
+
 ## [V17.4.2] 2026-09-22 — 闭环上轮 3 项「遗留」：深交所ETF接口修复 + IPO募资额单位对撞订正 + ST名单 baostock 兜底接入
 - **① 深交所 ETF 接口恢复(修复真问题, 非"未知")**: 原 `_etf.py` 用 `fund.szse.cn`(本环境被封, 长期显"深市 ETF 数据暂不可用")。仓内 `_eastmoney.py:1195` 早已用 `www.szse.cn` 同名端点(龙虎榜)且本环境可用 → 切主站 `www.szse.cn/api/report/ShowReport/data` + 兜底回退 `fund.szse.cn`。实测 `www.szse.cn/...CATALOGID=1000_lf&selectJjlb=ETF` → HTTP 200、740 只、快照日 2026-09-22。另加 `pagesize=2000` 一页取全 + `sleep(0.05)`(原 0.3), 消除 37 页循环最坏 555s 挂死; 快照日与请求日不符时以快照日为准(不再抛错)。
 - **② IPO 募资额单位对撞订正(修复真 bug, 非"未知")**: 原渲染把 `TOTAL_RAISE_FUNDS` 当"元" `÷1e8` 显示 0.00。对撞确认单位=亿元: `TOTAL_ISSUE_NUM(万股)*ISSUE_PRICE(元)/1e4 == TOTAL_RAISE_FUNDS(亿元)`, 28 点误差 0。修复后直接按亿元展示, 恢复"募资(亿)"列与合计。验证: 未来 21 日 3 只新股申购, 预计募资约 84.5 亿元(粤芯半导体 75.00 / 联亚 9.50 / 莫森泰克 待定)。

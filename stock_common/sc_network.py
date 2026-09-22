@@ -16,6 +16,7 @@ from __future__ import annotations
 import os
 import sys
 import time
+import json
 import threading
 import socket
 import logging
@@ -266,31 +267,97 @@ _EM_BAN_THRESHOLD = 3
 _EM_BAN_COOLDOWN = 20 * 3600  # 20 小时
 
 
+# V17.3.17: 封禁状态跨进程共享文件（与限流文件锁同一目录）。
+# 根因：原 _EM_BANNED_UNTIL 仅模块级内存态 → 5 大脚本 + 采集脚本作为独立进程各自为政，
+# 任一进程检测到 push2 族封禁后仅自身停火，其余进程毫不知情继续狂轰 → 持续/反复触发东财 IP 级封禁。
+# 限流器本身已是跨进程文件锁协调，但封禁态未共享，是真正的"遗漏的限流"一环。
+_EM_BANNED_FILE = os.path.join(_em_lock_dir, "em_banned_state")
+_EM_BANNED_CACHE: Dict[str, Any] = {"ts": 0.0, "data": {}}  # 进程内缓存（5s TTL，避免每次请求读盘）
+
+
+def _load_banned_file() -> Dict[str, float]:
+    """读取跨进程封禁态（带 5s 进程内缓存）。"""
+    _now = time.time()
+    if _now - _EM_BANNED_CACHE.get("ts", 0.0) < 5.0 and _EM_BANNED_CACHE.get("data") is not None:
+        return _EM_BANNED_CACHE["data"]
+    _data: Dict[str, float] = {}
+    try:
+        if os.path.exists(_EM_BANNED_FILE):
+            with open(_EM_BANNED_FILE, "r", encoding="utf-8") as _f:
+                _raw = json.load(_f)
+                if isinstance(_raw, dict):
+                    _data = {k: float(v) for k, v in _raw.items() if isinstance(v, (int, float))}
+    except Exception as _e:
+        _debug_log(f"sc_network load banned file: {_e}")
+    _EM_BANNED_CACHE["ts"] = _now
+    _EM_BANNED_CACHE["data"] = _data
+    return _data
+
+
+def _save_banned_file(data: Dict[str, float]) -> None:
+    """持久化跨进程封禁态；同时刷新进程内缓存。"""
+    try:
+        with open(_EM_BANNED_FILE, "w", encoding="utf-8") as _f:
+            json.dump(data, _f)
+        _EM_BANNED_CACHE["ts"] = time.time()
+        _EM_BANNED_CACHE["data"] = data
+    except Exception as _e:
+        _debug_log(f"sc_network save banned file: {_e}")
+
+
+def _mark_em_banned(ft_domain: str) -> None:
+    """V17.3.17: 标记某风控面 IP 级封禁，跨进程持久化（本进程 + 同机其他进程/脚本全部停火 20h）。
+
+    统一收口自 _record_em_disconnect（连接级断连）与 em_get/_do_request 的连续 403 路径——
+    原两条路径只有前者写内存态，403 路径仅在本进程抛错不共享；现统一经此函数写入共享文件。
+    """
+    _until = time.time() + _EM_BAN_COOLDOWN
+    _EM_BANNED_UNTIL[ft_domain] = _until
+    _EM_BAN_STREAK[ft_domain] = 0
+    try:
+        _data = _load_banned_file()
+        _data[ft_domain] = _until
+        _save_banned_file(_data)
+    except Exception as _e:
+        _debug_log(f"sc_network mark banned: {_e}")
+    try:
+        _biz_logger.warning(
+            f"EM {ft_domain} 标记 IP 级封禁（实测恢复 20+ 小时）→ 本进程及同机其他进程/脚本"
+            f"后续请求均跳过该风控面 {_EM_BAN_COOLDOWN/3600:.0f}h"
+        )
+    except Exception:
+        pass
+
+
 def _record_em_disconnect(ft_domain: str) -> None:
     """V16.2.8: 记录连接级断连（RemoteDisconnected 等），连续 N 次标记该风控面封禁。"""
     _EM_BAN_STREAK[ft_domain] = _EM_BAN_STREAK.get(ft_domain, 0) + 1
     if _EM_BAN_STREAK[ft_domain] >= _EM_BAN_THRESHOLD:
-        _EM_BANNED_UNTIL[ft_domain] = time.time() + _EM_BAN_COOLDOWN
-        _EM_BAN_STREAK[ft_domain] = 0
-        try:
-            _biz_logger.warning(
-                f"EM {ft_domain} 连续 {_EM_BAN_THRESHOLD} 次连接级断连 → 判定 IP 级封禁 "
-                f"（实测恢复 20+ 小时），本进程后续请求将跳过该风控面"
-            )
-        except Exception:
-            pass
+        _mark_em_banned(ft_domain)
 
 
 def _em_is_banned(ft_domain: str) -> bool:
-    """V16.2.8: 该风控面是否处于封禁跳过期。"""
+    """V16.2.8: 该风控面是否处于封禁跳过期。
+
+    V17.3.17: 先查本进程内存态，再查跨进程共享文件（其他脚本/进程已标记封禁时本进程也停火）。
+    """
     _until = _EM_BANNED_UNTIL.get(ft_domain, 0.0)
-    if _until <= 0:
-        return False
-    if time.time() >= _until:
-        _EM_BANNED_UNTIL.pop(ft_domain, None)
-        _EM_BAN_STREAK.pop(ft_domain, None)
-        return False
-    return True
+    if _until > 0:
+        if time.time() >= _until:
+            _EM_BANNED_UNTIL.pop(ft_domain, None)
+        else:
+            return True
+    # 跨进程：其他进程/脚本写入的封禁态
+    _data = _load_banned_file()
+    _fu = _data.get(ft_domain, 0.0)
+    if _fu > 0:
+        if time.time() >= _fu:
+            _data.pop(ft_domain, None)
+            _save_banned_file(_data)
+        else:
+            _EM_BANNED_UNTIL[ft_domain] = _fu  # 同步进内存，避免重复读盘
+            return True
+    return False
 
 
 def _normalize_em_domain(domain: str) -> str:
@@ -529,6 +596,11 @@ def em_get(url: str, params: dict | None = None, headers: dict | None = None,
                 _CONSECUTIVE_403["count"] += 1
                 _CONSECUTIVE_403["last_ts"] = time.time()
                 if _CONSECUTIVE_403["count"] >= 3:
+                    # V17.3.17: 403 型 IP 封禁同样跨进程共享（原仅本进程抛错，其余脚本/进程继续狂轰）
+                    try:
+                        _mark_em_banned(_ft_domain)
+                    except Exception:
+                        pass
                     raise RateLimitBlockedError(
                         f"EM 连续 {_CONSECUTIVE_403['count']} 次 403，疑似 IP 被封。"
                         f"建议: 停止 20+ 小时（参考仓库 PR#36 实测恢复时间）/ 换网络 / 调大 EM_MIN_INTERVAL / 切换备胎源"
@@ -877,6 +949,11 @@ def _do_request(url: str, params: Optional[Dict[str, Any]],
                 _CONSECUTIVE_403["count"] += 1
                 _CONSECUTIVE_403["last_ts"] = time.time()
                 if _CONSECUTIVE_403["count"] >= 3:
+                    # V17.3.17: 403 型 IP 封禁同样跨进程共享
+                    try:
+                        _mark_em_banned(_normalize_em_domain(domain))
+                    except Exception:
+                        pass
                     raise RateLimitBlockedError(
                         f"EM 连续 {_CONSECUTIVE_403['count']} 次 403，疑似 IP 被封。"
                         f"建议: 停止 20+ 小时（参考仓库 PR#36 实测恢复时间）/ 换网络 / 调大 EM_MIN_INTERVAL / 切换备胎源"

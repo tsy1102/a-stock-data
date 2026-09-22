@@ -2271,7 +2271,7 @@ async def run_discovery_async(output_path):
                 L(f"  ⚠ 同花顺强势股获取失败 → 东财人气榜兜底 {len(ths_hot_list)} 只")
         except Exception as _e:
             _debug_log(f"val hot pool fallback: {_e}")
-    # V17.4 (2026-09-21): 热门概念富集——对 hot pool 个股 lazily 附加 em_hot_concept 标签
+    # V17.3.4 (2026-09-21): 热门概念富集——对 hot pool 个股 lazily 附加 em_hot_concept 标签
     # （沿用 get_sht_report.py:2203 同款 try/except 模式，零网络破坏；em_hot_concept 内部已缓存）。
     # 仅附加 concepts 字段，不改变既有结构；strategy_07 政策驱动可直接消费。
     if ths_hot_list:

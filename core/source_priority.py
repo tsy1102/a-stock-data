@@ -1,6 +1,6 @@
 """源优先级单一真相源 (Single Source of Truth for source priority).
 
-V17.4 (2026-09-21): 将散落于三处的源优先级收敛到一处——
+V17.3.4 (2026-09-21): 将散落于三处的源优先级收敛到一处——
   1) core/data_provider.py 内联分支 (L1/L2/L3 fallback)
   2) docs/field_dict.md §零·B / §一 文档描述
   3) scripts/audit_field_completeness.py 的 SECTION_MAP 审计映射

@@ -998,7 +998,7 @@ def _tencent_volume_divisor(code: str) -> float:
     return 100.0 if str(code).startswith("688") else 1.0
 
 
-def _tencent_batch_fallback(codes: List[str]) -> Dict[str, Dict[str, Any]]:
+def _tencent_batch_fallback(codes: List[str], use_l2_cache: bool = True) -> Dict[str, Dict[str, Any]]:
     """腾讯批量行情 → {code: {name, price, change_pct, ...}}。
 
     V15.5.10: 分批（每批 60 只）——全市场 7957 只拼单 URL（64KB）会被腾讯拒绝。
@@ -1015,6 +1015,18 @@ def _tencent_batch_fallback(codes: List[str]) -> Dict[str, Dict[str, Any]]:
     result: Dict[str, Dict[str, Any]] = {}
     # 收集未命中的代码
     missing = [c for c in codes if c not in _TENCENT_BATCH_CACHE]
+    # V17.4.3: 跨进程共享——先读 val 预热写入的 L2 腾讯批量原始快照(覆盖整轮 60min TTL)，
+    # 命中即免网络；val 自身用 use_l2_cache=False 跳过(保证全市场取数盘中实时，并落盘供 mak 复用)。
+    if use_l2_cache and missing:
+        try:
+            from core.stock_cache import read_tencent_batch_l2
+            _l2_map = read_tencent_batch_l2(missing)
+            for _c, _l2 in _l2_map.items():
+                if _c in missing and _l2:
+                    _TENCENT_BATCH_CACHE[_c] = _l2
+                    missing.remove(_c)
+        except Exception:
+            pass
     if missing:
         _BATCH = 60  # 腾讯 qt.gtimg.cn 单次 URL 安全上限（经验值 60-80）
         # V16.2: 腾讯批量接入进程级节流（原批间固定 100ms 无协调，多进程时叠加）——用通用协调锁
@@ -1096,6 +1108,15 @@ def _tencent_batch_fallback(codes: List[str]) -> Dict[str, Dict[str, Any]]:
             # V16.0: 批间加 100ms 间隔，消除全市场 133 批 0 间隔连打模式
             if _start + _BATCH < len(missing):
                 time.sleep(0.1)
+    # V17.4.3: 落盘 L2 跨进程共享——把本次实际联网取得的子集写回 L2(val 全市场 / mak 仅补缺失)，
+    # 供后续脚本(尤其 mak)免重打全市场网络。use_l2_cache=False(val)也照常写盘。
+    try:
+        from core.stock_cache import persist_tencent_batch_l2
+        _new = {_c: _TENCENT_BATCH_CACHE[_c] for _c in missing if _c in _TENCENT_BATCH_CACHE}
+        if _new:
+            persist_tencent_batch_l2(_new)
+    except Exception:
+        pass
     # 组装结果（含缓存命中）
     for c in codes:
         if c in _TENCENT_BATCH_CACHE:

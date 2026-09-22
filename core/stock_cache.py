@@ -91,6 +91,9 @@ CACHE_CONTRACT_VERSION = "v1"
 
 # V17.4.2: 批量行情跨进程共享缓存分类——val 预热写入，sht/med/lng/mak 经 prefetch_quote_batch 读 L2
 QUOTE_BATCH_CACHE_CATEGORY = "quote_batch"
+# V17.4.3: 腾讯批量【原始】快照分类——val 全市场 _tencent_batch_fallback 预热写入，mak 跨进程零网络复用
+# (复活 V16.0 注释中"val→mak 跨脚本复用"意图；mak 走独立 ZHB+腾讯批量路径，不复用归一化 quote_batch)
+TENCENT_BATCH_CACHE_CATEGORY = "tencent_batch"
 
 # ═══════════════════════════════════════
 # L1 内存缓存（V10.3 新增）
@@ -1165,7 +1168,10 @@ def cached(category: str, ttl_seconds: Optional[int] = None,
 # ═══════════════════════════════════════
 # V17.4.2: 批量行情跨进程共享缓存（val 预热 → 其余 4 脚本零网络复用）
 # ═══════════════════════════════════════
-_QUOTE_BATCH_CACHE_TTL = 15 * 60  # V17.4.2: 跨进程共享限 15min 内有效(与 push2delay 原生延时同源, 避免 sht/med/lng 读到 val 陈旧快照)
+# V17.4.3: 跨进程共享 TTL 由 15min 提至 60min。原因：5 脚本串行(val→mak→sht→med→lng)总耗时 30~40min，
+# 旧 15min 窗口使后段脚本(sht/med/lng)在 val 预热落盘后已过期 → 退回逐股网络补取而变慢。60min 覆盖整轮
+# (留 ~20min 余量)且严格硬过期(quote_batch/tencent_batch 不在 _SOFT_EXPIRY_WINDOW，无软过期)——跨交易日/超时重跑仍重联网。
+_QUOTE_BATCH_CACHE_TTL = 60 * 60
 
 
 def persist_quote_batch_l2(batch_map, ttl_seconds=_QUOTE_BATCH_CACHE_TTL):
@@ -1240,6 +1246,87 @@ def read_quote_batch_l2(codes, category=QUOTE_BATCH_CACHE_CATEGORY, func_name="p
         return out
     except Exception as _e:
         _cache_logger.debug(f"read_quote_batch_l2: {_e}")
+        return out
+
+
+# V17.4.3: 腾讯批量原始快照跨进程共享（val 预热 → mak 零网络复用，复活 V16.0 注释中的 val→mak 跨脚本复用意图）
+def persist_tencent_batch_l2(batch_map, ttl_seconds=_QUOTE_BATCH_CACHE_TTL):
+    """V17.4.3: 把腾讯批量【原始】行情字典批量落盘到 SQLite L2（跨进程共享）。
+
+    与 persist_quote_batch_l2 对称，但存的是 _tencent_batch_fallback 返回的【原始】腾讯批量形状
+    (name/price/change_pct/mcap_yi/pe_ttm/pe_lyr/pe_dynamic/open/high/low/last_close/pb/limit_up/
+    limit_down/roa/roe_deduct_ttm/dividend_yield/turnover_pct/amount_wan)，供 mak 直接复用
+    (避免 mak 进程内再次全市场腾讯批量拉取 ~60-150s)。key = tencent_batch:tencent_batch_fallback:<code>，
+    与 _tencent_batch_fallback 的 L2 读 key 完全一致，可跨进程命中。批量 INSERT + 单次 commit。
+    """
+    if _DISABLE_CACHE or not batch_map:
+        return 0
+    try:
+        db = _get_db()
+        cur = db.cursor()
+        now = time.time()
+        exp = _calc_trading_day_expiry()
+        exp = min(exp, now + ttl_seconds)
+        n = 0
+        for code, data in batch_map.items():
+            if not data or not isinstance(data, dict) or not data.get("price"):
+                continue
+            key = _build_key(TENCENT_BATCH_CACHE_CATEGORY, "tencent_batch_fallback", code)
+            blob = json.dumps(_serialize_for_cache(data), ensure_ascii=False).encode("utf-8")
+            cur.execute(
+                "INSERT OR REPLACE INTO cache_entries "
+                "(key, value, created_at, expires_at, hit_count, last_accessed, prev_value, verified) "
+                "VALUES (?, ?, ?, ?, 0, ?, NULL, 0)",
+                (key, blob, now, exp, now),
+            )
+            n += 1
+        db.commit()
+        _cache_logger.debug(f"persist_tencent_batch_l2: {n} entries -> L2")
+        return n
+    except Exception as _e:
+        _cache_logger.debug(f"persist_tencent_batch_l2: {_e}")
+        return 0
+
+
+def read_tencent_batch_l2(codes, category=TENCENT_BATCH_CACHE_CATEGORY, func_name="tencent_batch_fallback"):
+    """V17.4.3: 读取 val 预热写入的腾讯批量【原始】快照 L2（跨进程共享）。
+
+    与 persist_tencent_batch_l2 严格对称：同样的 _build_key(category, func_name, code) +
+    同样的过期语义。用 IN 子句分批(每批 500，规避 SQLite 变量上限 999)一次性查询，
+    供 mak 大列表调用(避免逐 code SELECT)。返回 {code: data}。
+    """
+    if _DISABLE_CACHE or not codes:
+        return {}
+    out: Dict[str, Any] = {}
+    try:
+        now = time.time()
+        key_to_code = {_build_key(category, func_name, c): c for c in codes}
+        if not key_to_code:
+            return out
+        db = _get_db()
+        cur = db.cursor()
+        _items = list(key_to_code.items())
+        for _i in range(0, len(_items), 500):
+            _chunk = _items[_i:_i + 500]
+            _ph = ",".join("?" for _ in _chunk)
+            cur.execute(
+                f"SELECT key, value, expires_at FROM cache_entries WHERE key IN ({_ph})",
+                tuple(k for k, _ in _chunk),
+            )
+            for key, blob, exp in cur.fetchall():
+                code = key_to_code.get(key)
+                if code is None:
+                    continue
+                if exp is not None and exp <= now and not _soft_expiry_allowed(category, exp, now):
+                    continue
+                try:
+                    data = json.loads(blob.decode("utf-8")) if isinstance(blob, (bytes, bytearray)) else json.loads(blob)
+                except Exception:
+                    continue
+                out[code] = data
+        return out
+    except Exception as _e:
+        _cache_logger.debug(f"read_tencent_batch_l2: {_e}")
         return out
 
 

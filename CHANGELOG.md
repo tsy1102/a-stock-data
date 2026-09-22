@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 
+## [V17.4.4] 2026-09-22 — 修复 LPR「最新」取值 bug（取数分页错取历史旧值）+ None 渲染为 N/A
+
+- **LPR 最新值取数 bug 根因修复（真实 bug，非源过期）**：`stock_common/sc_datasource/_macro.py` 的 `lpr_history()` 调 `eastmoney_datacenter` 时 `sort_types="1"`（升序）且该函数默认只取第 1 页（单页、不自动翻页），致首屏返回最旧 200 行（1991 年起）；`get_macro_context()` 再取 `_lpr[-1]` = 第 200 行 ≈ 早期旧贷款基准利率 **5.76%**，且旧行 `LPR5Y` 为 null → 渲染成字面 `None`。修复：`lpr_history()` 改 `sort_types="-1"`（降序，首屏即最新 200 行）；`get_macro_context()` 取数改为 `max(_lpr, key=lambda r: r.get("date",""))`（取 TRADE_DATE 最大者=最新，防御性）。运行时验证返回 `lpr_1y=3.0 / lpr_5y=3.5`（与央行/邮储官网 2026-09-20 公布 1年 3.00% / 5年 3.50% 一致）。
+- **LPR 缺失值渲染修复**：`get_med_report.py:244` / `get_lng_report.py:177` 的 `LPR(最新)` 行，`lpr_1y/lpr_5y` 为 `None` 时由字面字符串 `None` 改为 `N/A`（与项目"缺失诚实标注"约定对齐）。
+- **审计回溯**：本报告系对 `reports/audit_findings_20260922.md` 第 2 项严重问题的根因修复；同审计第 1 项（中塑股份 301686 +683.3%）经复核为误报（该股 2026-09-22 当日创业板上市、首日无涨跌幅限制，+683.29% 为真实首板涨幅），不修复；第 3 项（sht 均价偏离/盘口委差 N/A）判定为非 bug 的设计性降级，不改代码。
+- **未推送**：按治理铁律本地 commit，不推送远端。
+
 ## [V17.4.3] 2026-09-22 — 补回 A1 闸门脚本 + 宏观字段 _VERIFIED 溯源 + 11 项测试失败针对性修正
 
 - **建议① 补回 A1 数据访问收口闸门** `scripts/verify_data_access.py`（AGENTS.md §8.4 要求、此前缺失）：

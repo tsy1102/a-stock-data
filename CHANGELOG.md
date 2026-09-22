@@ -5,6 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 
+## [V17.4.0] 2026-09-22 — 吸收上游 3.9.0：限流收口 + 宏观/事件/可转债层 + tdx 取数级验活
+- **限流收口(用户指令①)**: `scripts/capture_field_probe.py` 的 `collect_push2` 显式"全走 push2delay、仅当其被跨进程标记封禁再回退 push2"——`_em_is_banned("push2delay.eastmoney.com")` 命中即跳过镜像域省一次请求走兜底(用户: push2delay 更安全)。push2 与 push2delay 为独立 ban key(V17.3.17 已确认), 回退链路成立。
+- **tdx 取数级验活(用户指令③·#52 思路移植)**: `core/eltdx_adapter.py` 的 `create_eltdx_adapter()` 增加**取数级验活**——连通后必须真实拉一根日 K 线非空才算通过; 连通但取数损坏(静默空表)明确返回 None 交上层 tencent/zhb/easy_tdx fallback, 不再静默空表(上游 mootdx #52 根因: TCP 握手通过≠能取数)。验活结果缓存 300s。
+- **宏观利率层(§11, 用户指令②)**: 新增 `stock_common/sc_datasource/_macro.py`(中债收益率曲线/LPR/回购定盘/宏观日历 + `get_macro_context()` 聚合); 接入 **med【宏观资金面背景】** 与 **lng【零、宏观利率与政策环境】** 两处章节(全守卫, 有数据才渲染, 空数据给"待对撞验证接入"提示)。
+- **事件驱动层(§14)**: 新增 `stock_common/sc_datasource/_events.py`(业绩预告/机构调研/股东增减持/股权质押/新股申购; 回购已在 V17.3.9 独立成章不复刻)。
+- **可转债层(§15)**: 新增 `stock_common/sc_datasource/_convertible.py`(`convertible_bonds()` 条款/转股价值/溢价率/状态)。
+- **优化同步(§优化, 用户指令③)**: 三新模块统一带 `source`/`source_url`/`fetched_at` 溯源; 结构错抛 `RuntimeError`(非 KeyError); 取值异常优雅降级返回 [](不伪造数据)。reportName 常量集中登记并标注 `verified=False`, 待本项目 collide/field 对撞验证后方可视为权威(治理铁律: 推断走候选、不越级定案)。
+- **未变更**: push2 0.4rps 硬上限、源优先级 QUOTE_FETCH_ORDER、缓存四原则、核心 86 字段契约均不动。
+- **待办(用户指令③其余层面)**: 研报新浪第二源/ETF份额/华尔街见闻+央视新闻/上证e互动舆情/ST名单baostock退路/通达信官网盘后包/腾讯K线全谱——见分析报告(吸收/跳过/待定结论); 期货大宗用户明确不需要。新层 reportName 常量须对撞验证后入 field_dict。
+
 ## [V17.3.17] 2026-09-22 — 修复 push2 封禁态不跨进程共享（真正的遗漏限流一环）
 - 根因：原 `_EM_BANNED_UNTIL` 仅模块级内存态；5 大脚本 + 采集脚本以独立进程运行，限流器已跨进程文件锁协调，但**封禁态未共享** → 任一进程检测到 push2 族封禁仅自身停火，其余进程毫不知情继续狂轰 → 持续/反复触发东财 IP 级(20h+)封禁。9/21 全 push2 族 20/20 失败即此模式。
 - 修复：新增 `_EM_BANNED_FILE`（与限流锁同目录）持久化封禁态；`_mark_em_banned` 统一收口连接级断连 + 连续 403 两条路径，写共享文件；`_em_is_banned` 先查内存再查文件（5s 进程内缓存），跨进程互相感知停火。

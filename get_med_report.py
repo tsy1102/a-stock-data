@@ -235,6 +235,26 @@ async def generate_report_async(session, code, output_path, ind_comp=None, hsgt=
     else:
         L("  (北向宏观资金流向获取失败)")
 
+    # V17.4: 宏观利率层接入(吸收上游 3.9.0 §11) —— 利率/货币/政策环境, 与北向资金并列为宏观背景
+    try:
+        from stock_common.sc_datasource import get_macro_context
+        _mc = get_macro_context()
+        _mc_lines = []
+        if _mc.get("lpr_1y") is not None or _mc.get("lpr_5y") is not None:
+            _mc_lines.append(f"  LPR(最新): 1年 {_mc.get('lpr_1y')} / 5年 {_mc.get('lpr_5y')}")
+        if _mc.get("repo_fr") is not None or _mc.get("repo_fdr") is not None:
+            _mc_lines.append(f"  回购定盘利率: FR {_mc.get('repo_fr')} / FDR {_mc.get('repo_fdr')}")
+        if _mc.get("calendar_count"):
+            _mc_lines.append(f"  近期宏观事件日历: {_mc.get('calendar_count')} 条")
+        if _mc_lines:
+            L("\n  **宏观利率与政策环境**")
+            for _ml in _mc_lines:
+                L(_ml)
+        else:
+            L("  (宏观利率层数据待对撞验证接入: LPR/回购定盘/中债曲线/宏观日历)")
+    except Exception as _e:
+        _debug_log(f"med macro_context error: {_e}")
+
     # ─── 1. 基本信息与实时估值 ───
     L("\n## 【二、个股基本信息与估值锚点】")
     L("---")

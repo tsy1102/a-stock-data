@@ -12070,6 +12070,32 @@
       "status": "verified"
     },
     {
+      "code": "y_first_seal",
+      "source": "东财-push2ex",
+      "sources": [
+        "东财-push2ex"
+      ],
+      "section": "",
+      "canonical": "",
+      "meaning": "",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified"
+    },
+    {
+      "code": "y_limit_count",
+      "source": "东财-push2ex",
+      "sources": [
+        "东财-push2ex"
+      ],
+      "section": "",
+      "canonical": "",
+      "meaning": "",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified"
+    },
+    {
       "code": "yfbt",
       "source": "东财-push2ex",
       "sources": [
@@ -12077,9 +12103,9 @@
       ],
       "section": "12.8.1 东财 push2ex（涨停/炸板/跌停/昨涨停四池）✅",
       "canonical": "yfbt / ylbc",
-      "meaning": "待破解",
-      "unit": "-",
-      "status_raw": "⏸️",
+      "meaning": "昨日首次封板时间 / 昨日连板数",
+      "unit": "HHMMSS / 板",
+      "status_raw": "",
       "status": "unverified"
     },
     {
@@ -12090,9 +12116,9 @@
       ],
       "section": "12.8.1 东财 push2ex（涨停/炸板/跌停/昨涨停四池）✅",
       "canonical": "yfbt / ylbc",
-      "meaning": "待破解",
-      "unit": "-",
-      "status_raw": "⏸️",
+      "meaning": "昨日首次封板时间 / 昨日连板数",
+      "unit": "HHMMSS / 板",
+      "status_raw": "",
       "status": "unverified"
     },
     {

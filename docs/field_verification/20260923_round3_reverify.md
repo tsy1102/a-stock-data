@@ -69,12 +69,23 @@ Gemini 反驳的关键价值，不在于"推翻"我方哪条护栏，而在于**
 
 ---
 
-## 五、push2ex / reportapi：本仓无本地闭环，维持候选
+## 五、push2ex(yfbt/ylbc) / reportapi(sRatingCode 等)：本仓已有 raw，补做本地闭环
 
-- `raw_push2ex.json` 仅含 `limit_up_pool/limit_down_pool/limit_broken_pool`，字段为 `first_limit_time`/`zt_continuous`(今日) 等；**未发现** Gemini 所称 `yfbt`(昨日首次封板)/`ylbc`(昨日连板) 字段（疑似不同子端点或不同命名）。
-- `reportapi`(`sRatingCode`/`ratingChange`/`indvAimPrice`) 本仓 raw 完全缺失。
+> 本节为对第三轮初稿（"本仓 raw 完全缺失"）的订正。经全树扫描 + 跨 31 天 `raw_reports.json` 重算，初稿的"缺失"判断系**漏检**，现更正如下。
 
-**处置**：两项均**不晋级、不写护栏**——属外部文本主张，缺本地 raw 闭环。待另行采集对应端点后再碰撞。
+### 5.1 reportapi 三项 —— 本仓早有连续采集，非缺失
+- `docs/field_verification/20260812~20260921` **连续 31 天** `raw_reports.json`，每份均含 `sRatingCode`/`ratingChange`/`indvAimPrice`/`emRatingCode`/`sRatingName`（研究评级/盈利预测端点，即 Gemini 所称 reportapi）。
+- **`ratingChange`**：跨 31 天分布 `{3:8275, 2:1014, 1:56, 0:54, '':799}`，与"3维持/2首覆/1调低/0调高"完全吻合且稳定 → **已 ✅ L1**（与 `field_dict.md` 评级表定案一致）。
+- **`indvAimPriceT/L`**：46 条非空目标价数值正常 → **已 ✅ L1**。
+- **`sRatingCode`**：跨 31 天聚合发现**同一码映射多个 `sRatingName`**（如 `0201`↔买入2486/推荐470/强烈推荐56/买入(Buy)505/谨慎增持78；`0101`↔买入/增持/强烈推荐/推荐）——印证 `field_dict.md` 评级双轨制铁律：`sRatingCode` 为**机构私有内部评级代码**（前缀 01/02/03 似券商标识），**非跨机构通用语义，无法统一译码** → **维持 ⚠️，但理由由"缺失"订正为"非通用语义、须配合 sRatingName 解读"**。
+
+### 5.2 push2ex yfbt/ylbc —— 真缺口（端点已定位，实时补采受阻）
+- 源已定位：`stock_common/sc_datasource/_pools.py:181` `get_yesterday_limit_pool()` → `https://push2ex.eastmoney.com/getYesterdayZTPool`，响应 `data.pool[]` 每项带 `yfbt`(昨封板时间)/`ylbc`(昨连板数)，正是 Gemini 所指 push2ex 子端点。
+- 本仓**无任何 raw 快照含 yfbt/ylbc**（全树扫描仅 `_pools.py`/`field_dict`/`registry` 引用）；Round-3 初稿看的 `raw_push2ex.json` 只抓了"当日涨停池"子端点，未抓 `getYesterdayZTPool` → 确属真缺口。
+- **实时补采尝试（2026-09-23）**：端点可达（HTTP 200，`tc` 返回 78/47/54 等非零计数），但 `data.pool` 对全部 2026 日期恒为空（`qdate` 恒回显 20260923）。结论：**该端点在本环境对 2026 时间线不返回池数据**（本仓 31 天快照为早前/合成采集，无法被实时接口复现）→ 缺 raw 数值闭环。
+- **语义已由代码级 L0 证据确证**：`y_first_seal`=昨封板时间(HHMMSS)、`y_limit_count`=昨连板数(板)，与同表 `fbt/lbc`(今日变体) 为"昨日"对应项 → `field_dict.md` §12.8.1 `yfbt/ylbc` 由"待破解 ⏸️"订正为"⚠️ 含义已确认(代码级L0)，缺 raw 数值闭环升 L1"。
+
+**处置**：reportapi 三项**无需新采集**（已齐且多数已 ✅）；yfbt/ylbc **端点已定位**，待本环境恢复 2026 数据供给或改用既有快照后补采闭环。
 
 ---
 

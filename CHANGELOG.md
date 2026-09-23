@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 
+## [V17.4.10] 2026-09-23 — 第三轮核验订正：reportapi 非缺失、yfbt/ylbc 端点定位
+
+- **订正第三轮(commit 71e179e, V17.4.9) §5 误判**：原称"reportapi 本仓 raw 完全缺失"系漏检。`docs/field_verification/20260812~20260921` **连续 31 天** `raw_reports.json` 早含 `sRatingCode`/`ratingChange`/`indvAimPrice`/`emRatingCode`/`sRatingName`。跨 31 天重算：`ratingChange` 分布 `{3:8275, 2:1014, 1:56, 0:54, '':799}` 与"3维持/2首覆/1调低/0调高"吻合 → 已 ✅ L1；`indvAimPriceT/L` 非空目标价数值正常 → 已 ✅ L1；`sRatingCode` 同码多 `sRatingName`（如 `0201`↔买入2486/推荐470/强烈推荐56/买入(Buy)505/谨慎增持78；`0101`↔买入/增持/强烈推荐/推荐）证其为**机构私有评级代码、非跨机构通用语义** → 维持 ⚠️，理由由"缺失"订正为"非通用语义、须配合 sRatingName 解读"。
+- **yfbt/ylbc 端点定位**：源 = `stock_common/sc_datasource/_pools.py` `get_yesterday_limit_pool()` → `push2ex.eastmoney.com/getYesterdayZTPool`；响应 `data.pool[]` 带 `yfbt`(昨封板时间)/`ylbc`(昨连板数)，与同表 `fbt/lbc` 为昨日对应项。本仓无含此二字段的 raw 快照（Round-3 仅看了当日涨停池子端点，未见 `getYesterdayZTPool`）。
+- **实时补采受阻**：2026-09-23 实测端点可达(HTTP 200, `data.tc` 非空 78/47/54)，但 `data.pool` 对全部 2026 日期恒空(`qdate` 恒回显 20260923) → 本环境对 2026 时间线不返回池数据，缺 raw 数值闭环。
+- **处置**：reportapi 三项**无需新采集**（多数已 ✅）；yfbt/ylbc 含义已由代码级 L0 确证，`field_dict.md` §12.8.1 由"待破解 ⏸️"订正为"⚠️ 含义已确认(代码级L0)，缺 raw 数值闭环升 L1"；二者均不写护栏、不晋级 L1。
+- **治理铁律遵守**：全程基于本仓既有 raw 数值重算，未改动业务代码与字典生产管线；本地提交、未推送。
+
 ## [V17.4.9] 2026-09-23 — 第三方复核反驳·第三轮独立对撞：撤防 R6、重构 R7/R8、PE 三梯队闭环升级
 
 - **第三轮独立核验（对撞 Gemini 反驳）**：基于 `docs/field_verification/20260920/raw_ulist239.json`（20 股）数值重算，产出 `20260923_round3_reverify.md`。核心发现：000568/600309 的 `f48`/`f58`/`f113` 存在**源端报告期刷新异步**，上一轮(Round-2) R6/R7 将瞬时异步偏差误读为语义口径差异，本轮订正。

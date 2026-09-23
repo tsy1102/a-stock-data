@@ -4,6 +4,14 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
+## [V17.4.16] 2026-09-23 — zhb unknown_26 再研判：概念计数证伪（护栏 R10）+ 主板专属指数/名单计数假设
+
+- **`stat.unknown_26` 再研判（板块分层实证）**：tdxstat Col[26] 为有界分类码(0–62, 42类, 中位1)。全市场 8058 股解析/5576 非空，按板块 unknown_26 均值 **中小板6.14 > 深主板5.72 > 沪主板4.95**，而 **创业板0.88 / 科创板0.86（中位0）**。
+- **概念成分计数假设被证伪**：科创板概念最密集却 unknown_26≈0，故"概念计数"不成立（规模代理 corr=−0.17 非单调、与股息率−0.37/年初至今+0.39 无单一驱动）。
+- **护栏 R10**（`scripts/collision_rules.py` `REFUTED_CONCLUSIONS`）：固化"unknown_26=概念板块成分计数"为已证伪结论（`settled=[]` 不锁字段）。
+- **最一致假设修正为 主板专属 指数/名单 成分计数**（沪深300/中证100/上证50·180/深证成指·100/红利等，天然排除双创）；前轮 csiblock 仅覆盖中证指数家族、未含上证/深证家族，指数假设从未被充分检验。解锁所需数据由"概念板块成员表"修正为"主板指数成分股名单"。unknown_26 维持 ⚠️ 候选。
+- 治理：field_dict.md 仅改候选注释与 🆕 注记（字段名/状态不变）→ extract_registry 重写 registry(1 行随注释更新)、gen_field_dict --check 幂等一致 ✅；提交触发 G1/G3/P1 闸门；全程本地 commit、未推送。
+
 ## [V17.4.15] 2026-09-23 — zhb unknown_2 量比−1 假设证伪（护栏 R9）+ unknown_26 定案阻塞记录
 
 - **`stat.unknown_2`：证伪「量比−1」候选**：取 `cache/kline` 全市场日K线(20260922) volume 计算 `量比=vtoday/mean(v_prev5)`，与 `tdxstat.Col[2]` 同码比对 **1000 股**，corr(unknown_2, 量比)=**−0.08**（几乎零相关）、回归残差中位 0.70 → 量比−1 假设证伪；unknown_2 真义仍待定，维持 ⚠️ 候选。

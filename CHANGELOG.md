@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 
+## [V17.4.12] 2026-09-23 — 字段治理：订正 field_dict.md f190 语义（AH上市标识→每股未分配利润）+ 同步 §零·B 至 registry
+
+- **订正 f190 字典行自相矛盾（任务 #433）**：`field_dict.md` line 1946 原标 `f190 | ✅ | AH上市标识`，但 line 1948 已明确 f192 = A+H 双上市标识（20 样本实证）；且全文 line 1531（`f190↔ulist:f48` 338/338）/3038/3480/3495 与对撞引擎（push2.f190↔ulist239.f48 100%、61 样本）一致表明 f190 = 每股未分配利润（元/股）。line 1946 为笔误（与 f192 语义重复且违背其余全文），订正为 `每股未分配利润（元/股）`。
+- **§零·B 同步至 registry**：运行 sanctioned 管线（extract_registry → gen_field_dict → G1/G3/P1 闸门），§零·B 投影由 registry 幂等重写，ZHB 单源字段计数 80→84（registry 较旧 §零·B 多 4 个 ZHB 字段的既有漂移补齐，非本次引入）。
+- **治理铁律遵守**：G1 registry 双重 parity（原生 token + §零·B 投影）PASS、G3 gen_field_dict 幂等 PASS、P1 归档契约预检 PASS；全程本地 commit、未推送。
+
 ## [V17.4.11] 2026-09-23 — 修复采集脚本两处 import 回归（zhb/push2 整源失败）
 
 - **Bug A `collect_push2`（line ~666）**：`from stock_common import _em_is_banned` → `_em_is_banned` 实际定义在 `stock_common.sc_network`，未由包 `__init__` 重导出，导致整源 `ImportError`、未生成 `raw_push2.json`。修复：`from stock_common.sc_network import _em_is_banned`（与 `check_em_health.py:33` 一致）。

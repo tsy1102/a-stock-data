@@ -143,6 +143,14 @@ REFUTED_CONCLUSIONS = [
         "blocked_pairs": [],
         "settled": ["ulist.f129"],
     },
+    {
+        "id": "R9_zhb_unknown2_not_volratio_minus1",
+        "false_claim": "stat.unknown_2 (tdxstat Col[2]) = 量比−1",
+        "correct": "stat.unknown_2 真义仍未知（⚠️候选）；同日量比源(由 cache/kline 日K线 volume 计算 量比=vtoday/mean(v_prev5)) 与 unknown_2 全市场 1000 股同码比对 corr≈−0.08，证伪量比−1 假设",
+        "evidence": "probe5: 1000 matched stocks (2026-09-22), corr(unknown_2,量比)=−0.0807, corr(unknown_2,量比−1)=−0.0807, 回归残差中位 0.70（非量比−1）",
+        "blocked_pairs": [],
+        "settled": [],
+    },
 ]
 
 # 语义已定 token 集合（合并各条 settled），左字段若为其中之一且属新主张 → 翻案，判伪

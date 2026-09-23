@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
+## [V17.4.15] 2026-09-23 — zhb unknown_2 量比−1 假设证伪（护栏 R9）+ unknown_26 定案阻塞记录
+
+- **`stat.unknown_2`：证伪「量比−1」候选**：取 `cache/kline` 全市场日K线(20260922) volume 计算 `量比=vtoday/mean(v_prev5)`，与 `tdxstat.Col[2]` 同码比对 **1000 股**，corr(unknown_2, 量比)=**−0.08**（几乎零相关）、回归残差中位 0.70 → 量比−1 假设证伪；unknown_2 真义仍待定，维持 ⚠️ 候选。
+- **护栏 R9**（`scripts/collision_rules.py` `REFUTED_CONCLUSIONS`）：固化"unknown_2=量比−1"为已证伪结论（documentary，`settled=[]` 不锁字段），防止后续自动对撞再次提案。
+- **`stat.unknown_26` 定案阻塞记录**：候选义=概念/指数成分计数；实证阻塞——zhb 缓存无 block_gn.dat、em_industry 缓存为空、tdxstat2 无解释列(最大相关0.22)、csiblock/jjblock/hkblock/mgblock 指数/基金/港股/美股块与 unknown_26 相关≈0、东财/腾讯板块 API 本沙箱不可达；待用户提供文本化板块成员表后闭环。
+- 治理：field_dict.md 仅改候选注释（字段名/状态不变）→ extract_registry 重写 registry(2 行随注释更新)、gen_field_dict --check 幂等一致 ✅；提交触发 G1/G3/P1 闸门；全程本地 commit、未推送。
+
 ## [V17.4.14] 2026-09-23 — 补全 V17.4.13 闭合：提交遗漏的 zhb_client.py docstring + 再生 collision_state.json
 
 - **实际提交 V17.4.13 时遗漏的 `zhb_client.py` 改动**：V17.4.13 的 CHANGELOG 已声明"同步更新 `zhb_client.py` 中 `zt_type_code` 字段 docstring 与新语义一致"，但该文件当时未纳入提交（4e8f9da 仅含 CHANGELOG/VERSION/field_dict.md/field_registry.json）。本次补齐 `[23] zt_type_code` docstring 修订（2026-08-14 临时解读 → 2026-09-22 全市场 26 码定案），使代码侧注释与已提交的字典 `stat.zt_type_code` ✅ 语义完全一致。

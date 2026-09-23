@@ -712,4 +712,7 @@ from ._etf import *             # ETF 份额(万份, §4.7)
 from ._news_wscn_cctv import *  # 央视新闻联播(§5.5; WSCN 宏观日历已在 _macro)
 from ._sse_e_interaction import *  # 上证e互动(§10.3)
 from ._st_list import *          # ST/*ST 名单(§6.8)
+# V17.4.7: 吸收上游 3.10.0 两个新取数能力(经用户授权采纳, 取数层新增, 不涉字段字典晋升)
+from ._ticks import *             # 腾讯逐笔成交(§1.4, 替代失效 mootdx transaction)
+from ._futures_sina import *      # 新浪期货日K(§13.7, 补大商所历史日线)
 

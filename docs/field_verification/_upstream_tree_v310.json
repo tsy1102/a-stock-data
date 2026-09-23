@@ -1,0 +1,155 @@
+{
+  "sha": "2e0ae6383c649b2bc5f68d3bc430d357f1c59ae7",
+  "url": "https://api.github.com/repos/simonlin1212/a-stock-data/git/trees/2e0ae6383c649b2bc5f68d3bc430d357f1c59ae7",
+  "tree": [
+    {
+      "path": ".github",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "995463d3377c463bcc34bdc769d43e30fc1235e0",
+      "url": "https://api.github.com/repos/simonlin1212/a-stock-data/git/trees/995463d3377c463bcc34bdc769d43e30fc1235e0"
+    },
+    {
+      "path": ".github/FUNDING.yml",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "062b8903f9ca5577b8a12a7f1852d3f92801b459",
+      "size": 74,
+      "url": "https://api.github.com/repos/simonlin1212/a-stock-data/git/blobs/062b8903f9ca5577b8a12a7f1852d3f92801b459"
+    },
+    {
+      "path": ".gitignore",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "f83433cab8bcc04e6bd678aff339425fe77cc852",
+      "size": 38,
+      "url": "https://api.github.com/repos/simonlin1212/a-stock-data/git/blobs/f83433cab8bcc04e6bd678aff339425fe77cc852"
+    },
+    {
+      "path": "CHANGELOG.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "cfa0c79e6016d0e9ed519366a664fd921988737b",
+      "size": 77805,
+      "url": "https://api.github.com/repos/simonlin1212/a-stock-data/git/blobs/cfa0c79e6016d0e9ed519366a664fd921988737b"
+    },
+    {
+      "path": "LICENSE",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "088c0826ad3a02908696b1ff6c9e4fbd9b2823af",
+      "size": 10760,
+      "url": "https://api.github.com/repos/simonlin1212/a-stock-data/git/blobs/088c0826ad3a02908696b1ff6c9e4fbd9b2823af"
+    },
+    {
+      "path": "README.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "201575b38b3052b37fcaa02d4bd4156412c47585",
+      "size": 45055,
+      "url": "https://api.github.com/repos/simonlin1212/a-stock-data/git/blobs/201575b38b3052b37fcaa02d4bd4156412c47585"
+    },
+    {
+      "path": "README_en.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "12bbf83f8e8ae701d995b759f4cfd4a8679dfcd3",
+      "size": 40956,
+      "url": "https://api.github.com/repos/simonlin1212/a-stock-data/git/blobs/12bbf83f8e8ae701d995b759f4cfd4a8679dfcd3"
+    },
+    {
+      "path": "SKILL.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "05f1d1c09c5f9cef8955bd5960d2a18b4cf9065b",
+      "size": 425008,
+      "url": "https://api.github.com/repos/simonlin1212/a-stock-data/git/blobs/05f1d1c09c5f9cef8955bd5960d2a18b4cf9065b"
+    },
+    {
+      "path": "assets",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "bdcee7a67701ee7bd6f7696e5dda440d5388e0c9",
+      "url": "https://api.github.com/repos/simonlin1212/a-stock-data/git/trees/bdcee7a67701ee7bd6f7696e5dda440d5388e0c9"
+    },
+    {
+      "path": "assets/.gitkeep",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+      "size": 0,
+      "url": "https://api.github.com/repos/simonlin1212/a-stock-data/git/blobs/e69de29bb2d1d6434b8b29ae775ad8c2e48c5391"
+    },
+    {
+      "path": "assets/bmc-qr.png",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "4b694f74b750a0c46c6e2458cffbf9a226251161",
+      "size": 80325,
+      "url": "https://api.github.com/repos/simonlin1212/a-stock-data/git/blobs/4b694f74b750a0c46c6e2458cffbf9a226251161"
+    },
+    {
+      "path": "assets/bmc-sponsor.png",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "d2d727f5eafed96405394e0c5cc46a9d8d6fed76",
+      "size": 60327,
+      "url": "https://api.github.com/repos/simonlin1212/a-stock-data/git/blobs/d2d727f5eafed96405394e0c5cc46a9d8d6fed76"
+    },
+    {
+      "path": "docs",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "3bd97133b36dac8fed8fa1d8229915eabf87914e",
+      "url": "https://api.github.com/repos/simonlin1212/a-stock-data/git/trees/3bd97133b36dac8fed8fa1d8229915eabf87914e"
+    },
+    {
+      "path": "docs/source-integration-v3.8.0.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "ae06091bef47275894a8c89bb330eda8a38b4274",
+      "size": 7023,
+      "url": "https://api.github.com/repos/simonlin1212/a-stock-data/git/blobs/ae06091bef47275894a8c89bb330eda8a38b4274"
+    },
+    {
+      "path": "docs/source-integration-v3.9.0.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "50d3ce9931f85fc9422f23506e72b005f1377100",
+      "size": 15604,
+      "url": "https://api.github.com/repos/simonlin1212/a-stock-data/git/blobs/50d3ce9931f85fc9422f23506e72b005f1377100"
+    },
+    {
+      "path": "tests",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "85a7fe113c12ca24a930bb8803088f060c834808",
+      "url": "https://api.github.com/repos/simonlin1212/a-stock-data/git/trees/85a7fe113c12ca24a930bb8803088f060c834808"
+    },
+    {
+      "path": "tests/test_official_data.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "d5d76ba49ea1bc6c6ff57f836bf684a081741034",
+      "size": 16061,
+      "url": "https://api.github.com/repos/simonlin1212/a-stock-data/git/blobs/d5d76ba49ea1bc6c6ff57f836bf684a081741034"
+    },
+    {
+      "path": "tests/test_v310_sources.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "8ac99ef2a0784e3b44ce2ce7f94f7f86d1fa45d2",
+      "size": 17328,
+      "url": "https://api.github.com/repos/simonlin1212/a-stock-data/git/blobs/8ac99ef2a0784e3b44ce2ce7f94f7f86d1fa45d2"
+    },
+    {
+      "path": "tests/test_v39_sources.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "49106fe6846f41ead619ef5d71748c117936781f",
+      "size": 98491,
+      "url": "https://api.github.com/repos/simonlin1212/a-stock-data/git/blobs/49106fe6846f41ead619ef5d71748c117936781f"
+    }
+  ],
+  "truncated": false
+}

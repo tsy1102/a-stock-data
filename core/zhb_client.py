@@ -1137,6 +1137,7 @@ class ZhbData:
             [3]  eps              每股收益(元)
             [4]  disclose_date    财报披露日
             [5]  zt_date_recent   最近涨停日（⚠️ 旧误标 ex_date/除权除息日，dict §3 已证伪）
+            [10] dt_date_recent  最近跌停日（DTDate_Recent；2026-09-23 主数据 zhb_20260921.zip 解析实锤: 600519=20181029/000001=20150119/000002=20241009/000858=20200716/300750=空 全中；Gemini 终局候选值一致）
             [8]  div_date         业绩预告日（ForecastDate；⚠️ 旧误标"分红日"，dict §3 已证伪——
                                  Col[9] 全市场 83% 负值、分红恒非负 → 必为预告净利）
             [9]  div_amount       业绩预告净利润(万元, 可负)（ForecastAmount；旧误标"每10股分红元"）
@@ -1164,6 +1165,7 @@ class ZhbData:
                 "eps": _safe_cast(parts, 3, float),
                 "disclose_date": parts[4].strip() if len(parts) > 4 else "",
                 "zt_date_recent": parts[5].strip() if len(parts) > 5 else "",
+                "dt_date_recent": parts[10].strip() if len(parts) > 10 else "",
                 "div_date": parts[8].strip() if len(parts) > 8 else "",
                 "div_amount": _safe_cast(parts, 9, float),
             }

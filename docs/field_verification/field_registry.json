@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": 1,
-    "updated": "2026-09-21",
+    "updated": "2026-09-23",
     "source_of_truth": "field_registry.json",
     "generated_by": "scripts/extract_registry.py",
     "note": "本文件为字段登记表单一真相源（影子抽取）。docs/field_dict.md 字段表由本文件生成，勿手改。",
@@ -8596,10 +8596,10 @@
       ],
       "section": "12.3.1.2 push2 × ulist/tencent 全量对撞再确认（2026-09-04，修复锚池）",
       "canonical": "f124",
-      "meaning": "股东户数?",
+      "meaning": "收盘/最后行情Unix时间戳(秒)",
       "unit": "",
-      "status_raw": "",
-      "status": "unverified"
+      "status_raw": "L1定案(field_dict.md §12.3.1 证据块: V17.0.11 已破=当日收盘/最后行情 Unix 时间戳秒)",
+      "status": "verified"
     },
     {
       "code": "f125",
@@ -8699,10 +8699,10 @@
       ],
       "section": "12.3.2 板块/排行 `ulist.np/get`（本次联网新发现）",
       "canonical": "f130",
-      "meaning": "毛利率",
+      "meaning": "市销率TTM(ps_ttm)",
       "unit": "",
-      "status_raw": "",
-      "status": "unverified"
+      "status_raw": "L1定案(ulist f130=push2 f165, corr 0.979, field_dict.md §12.3.1 对齐表)",
+      "status": "verified"
     },
     {
       "code": "f131",
@@ -8713,10 +8713,10 @@
       ],
       "section": "12.3.2.3 ulist239 全字段清单（np/get 真实返回 239 字段，V17.1.1 全量登记）",
       "canonical": "f131",
-      "meaning": "",
+      "meaning": "市现率TTM(pcf_ttm)",
       "unit": "",
-      "status_raw": "",
-      "status": "unverified"
+      "status_raw": "L1定案(ulist f131=push2 f166, corr 0.973, field_dict.md §12.3.1 对齐表)",
+      "status": "verified"
     },
     {
       "code": "f132",
@@ -8727,10 +8727,10 @@
       ],
       "section": "12.3.2 板块/排行 `ulist.np/get`（本次联网新发现）",
       "canonical": "f132",
-      "meaning": "总资产",
+      "meaning": "滚动营业总收入TTM(revenue_ttm,元)",
       "unit": "",
-      "status_raw": "",
-      "status": "unverified"
+      "status_raw": "L1定案(ulist f132=push2 f104=revenue_ttm, corr 1.000, field_dict.md §12.3.1)",
+      "status": "verified"
     },
     {
       "code": "f133",
@@ -8741,10 +8741,10 @@
       ],
       "section": "12.3.2.3 ulist239 全字段清单（np/get 真实返回 239 字段，V17.1.1 全量登记）",
       "canonical": "f133",
-      "meaning": "",
+      "meaning": "股息率(TTM,近12月)",
       "unit": "",
-      "status_raw": "",
-      "status": "unverified"
+      "status_raw": "L1定案(ulist f133=f126=股息率, field_dict.md §12.3.1)",
+      "status": "verified"
     },
     {
       "code": "f134",
@@ -8979,9 +8979,9 @@
       ],
       "section": "12.3.4 资金流四档层级 `stock/get` f135\\~f149 **全量**（🆕 V17.0.16 **重定案** / V17.1.x **补登 f147/f148**）",
       "canonical": "f148",
-      "meaning": "待破解",
+      "meaning": "市场与板块属性复合二进制掩码(market&board bitmask, ulist239); 注: push2 f148=散单第五档卖出额(元)为同号异义",
       "unit": "元",
-      "status_raw": "✅",
+      "status_raw": "L1定案(re-collision 2026-09-23: 实测577/1089/1/65=1+64+512/1024位分解, 与交易所前缀/两融标志系统吻合; Gemini 提议核验通过)",
       "status": "verified"
     },
     {
@@ -9380,9 +9380,9 @@
       ],
       "section": "12.3.1.2 push2 × ulist/tencent 全量对撞再确认（2026-09-04，修复锚池）",
       "canonical": "f177",
-      "meaning": "",
+      "meaning": "10日超大单净占比%(ulist239=push2 f177)",
       "unit": "",
-      "status_raw": "≥0.95 多日再确认（强化既有 ✅/L1）",
+      "status_raw": "L1定案(field_dict.md §12.15 资金流 zjlx 历史表聚合对撞: ulist f177)",
       "status": "verified"
     },
     {
@@ -29763,7 +29763,7 @@
     {
       "from": {
         "source": "东财-ulist239",
-        "code": "f148"
+        "code": "f177"
       },
       "to": {
         "source": "东财-push2",

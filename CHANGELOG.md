@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 
+## [V17.4.6] 2026-09-23 — 字段治理：f148 重对撞定案 + ZHB 跌停日 L1 + 注册表旧误标清理
+
+- **① f148 主数据重对撞（解决硬冲突）**：Gemini 主张 ulist239 `f148`=市场/板块二进制掩码，与本项目旧 L1(=10日超大单净占比%)冲突。独立重对撞 `docs/field_verification/20260911/raw_ulist239.json` 全样本：**577/1089/1/65 = 1+64+512/1024 位分解**，与交易所前缀/两融标志系统吻合 → **Gemini 正确，ulist f148=复合二进制掩码（L1 定案）**。旧"10日超大单净占比%"实为 **ulist f177**（百分比字段，与 push2 f177 对齐），对齐表 `f177|ulist:f148` 系**转置错误**，已修为 `ulist:f177`。注意 push2 `stock/get` 的 `f148`=散单(第五档)卖出额(元)（§12.3.4）仍有效——此为**同号异义**陷阱（`docs/field_dict.md` 已加注）。
+- **② ZHB tipinfo.dat Col[10] 实列核验（涨停/跌停日）**：解析 `cache/zhb/zhb_20260921.zip` 实测 6 股——茅台 20181029 / 平安·平安保险·农行 20150119 / 万科 20241009 / 五粮液 20200716 全部命中真实历史跌停事件日，宁德(创业板时代从未 20% 跌停)=空；与 Gemini 候选值一致，由**项目自有数据独立闭环**。`Col[5]`(=zt_date_recent 涨停日) 与项目既有结论吻合。`core/zhb_client.py._parse_tipinfo` 已接入 `dt_date_recent=parts[10]`（编译通过，6/6 抽取验证）；`field_dict.md` §3 col[10] 由"待官方文档"**升级为 L1 定案**。
+- **③ 注册表旧误标同步 field_dict.md 既有 L1（治理缺口清理）**：`field_registry.json` 中 `f130/f131/f132/f133/f124` 的旧误标（毛利率/总资产/股东户数?/空）同步为既有 L1——`f132=revenue_ttm`、`f130=ps_ttm`、`f131=pcf_ttm`、`f133=股息率`、`f124=收盘Unix时间戳(秒)`，status 置 verified；`f148/f177` 含义与状态同步订正。经 `gen_field_dict.py` 回灌 + `registry_parity.py` 双重 parity 通过。
+- **治理铁律遵守**：外部 LLM(Gemini)分析=非授权候选，结论经本项目主数据独立闭环（非仅文本采信）；注册表为单一真相源、经 sanctioned 管线回灌；全程本地提交、未推送。
+
 ## [V17.4.5] 2026-09-22 — 去除 sht 报告盘后恒 N/A 的「均价偏离 / 盘口委差」接入块
 
 - **背景**：用户**只在盘后扫描**；`get_sht_report.py` 渲染的「均价偏离」(`cdata.avg_price`/腾讯[85]) 与「盘口委差」(`cdata.bid_ask_net`/腾讯[86]) 均为**盘中 L1 字段，盘后快照恒为 0/None**，故盘后产物永远落 `N/A`——接入无意义。

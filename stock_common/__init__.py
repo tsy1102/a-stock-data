@@ -128,7 +128,7 @@ __all__ = [
     "get_board_fund_flow",  # V16.0: 板块资金流向
     "ths_limit_up_pool",
     "get_eastmoney_minute_fund_flow", "get_fund_flow_weighted",
-    "cls_telegraph", "news_matches_stock", "get_history_fund_flow_120d", "get_em_industry_l2_data", "get_em_industry_l2", "get_em_industry_members_l2", "dragon_tiger_backup", "fund_flow_backup", "cninfo_irm",
+    "cls_telegraph", "news_matches_stock", "get_history_fund_flow_120d", "get_em_industry_l2_data", "get_em_industry_l2", "get_em_industry_members_l2", "dragon_tiger_backup", "fund_flow_backup", "cninfo_irm", "get_irm_qa",
     # zhb A级数据（V9.6）—— V17.0 S1: 删 21 个零调用死转发, 保留有调用方项
     "get_zhb_industry_map", "get_zhb_data_date",
     # zhb B级数据（V9.6 阶段二）
@@ -343,7 +343,7 @@ from stock_common.sc_datasource import (
     # 东财分钟级资金流（V9.6）
     get_eastmoney_minute_fund_flow, get_fund_flow_weighted,
     # 财联社快讯/官方备胎池/舆情互动层（V9.6）
-    cls_telegraph, news_matches_stock, get_history_fund_flow_120d, get_em_industry_l2_data, get_em_industry_l2, get_em_industry_members_l2, dragon_tiger_backup, fund_flow_backup, cninfo_irm,
+    cls_telegraph, news_matches_stock, get_history_fund_flow_120d, get_em_industry_l2_data, get_em_industry_l2, get_em_industry_members_l2, dragon_tiger_backup, fund_flow_backup, cninfo_irm, get_irm_qa,
     # zhb A级数据（V9.6）—— V17.0 S1: 删 21 个零调用死转发
     get_zhb_industry_map, get_zhb_data_date,
     # zhb B级数据（V9.6 阶段二）

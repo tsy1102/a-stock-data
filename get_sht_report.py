@@ -66,7 +66,7 @@ from stock_common import (_safe_float, _debug_log,
                            get_lockup_expiry_async, get_market_status,
                            ScoreData,  # V17.0 审查: 删 clean_codes/create_async_session/calculate_multi_school_scores(基类/渲染收敛)
                            ths_hot_list, em_hot_concept, get_eastmoney_stock_news,
-                           cls_telegraph, news_matches_stock, cninfo_irm,
+                           cls_telegraph, news_matches_stock, get_irm_qa,
                           get_zhb_data_date,
                           get_zhb_streak_days,
                           get_zhb_tip_info,
@@ -510,7 +510,13 @@ async def generate_report_async(session, code, output_path, ind_comp=None, idx_q
                 L(f"  🔒 首板强封: 封单占流通比 {_seal:.2f}%（封板坚决）")
         if _ov:
             L(f"  📊 开盘量比: {_ov:.2f}（集合竞价活跃度）")
-        L("  📡 数据来源: 通达信 eltdx（TDX 公网主站 7709/7615 实时；eltdx 不可用时本小节不显示）")
+        L("  📡 数据来源: 通达信 eltdx（TDX 公网主站 7709/7615 实时）")
+    else:
+        # V17.4.x (#442): eltdx 不可用时显式占位, 不静默缺章; 连板梯队/封单强度为 eltdx 专属实时能力,
+        # easy-tdx/mootdx 无对应接口, 故无等价后备通道.
+        L("\n" + "---"); L("## 【二·附、连板梯队与封单强度（通达信 eltdx 实时）】"); L("---")
+        L("  ⚠️ 数据源不可用：连板梯队与封单强度为通达信 eltdx（TDX 公网主站 7709/7615）专属实时能力，")
+        L("     当前 eltdx 后端不可达或未返回数据；该维度无等价后备通道（easy-tdx/mootdx 无对应接口），本节暂缺。")
 
     L("\n"+"---"); L("## **三、机构一致预期与估值**"); L("---")
 
@@ -1380,7 +1386,7 @@ async def generate_report_async(session, code, output_path, ind_comp=None, idx_q
 
     # 互动易问答（近48小时）— V16.1: 同步包 to_thread；V16.2.14: 48h+标题+答案+合理条数
     try:
-        irm = await asyncio.to_thread(cninfo_irm, code, 30)
+        irm = await asyncio.to_thread(get_irm_qa, code, 30)
         L("\n    近48小时互动易问答:")
         _irm_shown = 0
         _irm_cutoff = datetime.now() - timedelta(hours=48)

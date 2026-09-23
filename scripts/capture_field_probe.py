@@ -113,7 +113,7 @@ OUT_BASE = os.path.join(_ROOT, "docs", "field_verification")
 # V17.1.x: 东财 stock/get 全字段(与主字典登记口径对齐 f1-f250, 保证采集不遗漏任何字段)。
 # 统一供 push2 / ulist239 / em_fund_flow 等东财 f 编号端点复用;
 # 主字典 push2/ulist 最高登记到 f250, 故 range(1,251) 即全量。新增 f 编号时只需改此处。
-PUSH2_FULL_FIELDS = ",".join(f"f{i}" for i in range(1, 251))
+EM_FULL_FIELDS = ",".join(f"f{i}" for i in range(1, 251))
 
 # A 方案(V17.2.5, 第九轮后落地): 字段体系(scheme)血缘标注。
 # 东方财富存在两套 f 编号体系, 同号≠同义(铁证 ulist.f62 == push2.f137 主力净):
@@ -126,7 +126,7 @@ PUSH2_FULL_FIELDS = ",".join(f"f{i}" for i in range(1, 251))
 SOURCE_SCHEME = {
     "push2":          "em.stock_get",
     "em_fund_flow":   "em.stock_get",   # 同样走 push2delay stock/get, 与 push2 同编号族
-    "axdata":         "em.stock_get",    # 复用 PUSH2_FULL_FIELDS 命名(实际短纤指标, 占位同族)
+    "axdata":         "em.stock_get",    # 复用 EM_FULL_FIELDS 命名(实际短纤指标, 占位同族)
     "ulist239":       "em.ulist_np",     # 独立 f 编号体系, 与 stock/get 不同号
     "zhb":            "zhb",
     "tdx":            "tdx",
@@ -652,7 +652,7 @@ def collect_tencent(pool: list) -> dict:
 
 
 def collect_push2(pool: list) -> dict:
-    """东财 push2 stock/get 显式全字段(f1-f250, PUSH2_FULL_FIELDS)。
+    """东财 push2 stock/get 显式全字段(f1-f250, EM_FULL_FIELDS)。
 
     V16.4.1 实测: 不指定 fields 时服务端仅返回 58 字段基础子集(缺 f162/f167 等估值字段),
     故此处显式请求全字段, 与主字典登记口径对齐, 采集不遗漏。2026-08-12 实测: push2 半恢复状态——
@@ -671,7 +671,7 @@ def collect_push2(pool: list) -> dict:
     # V17.3.17 跨进程封禁共享: push2delay 与 push2 为独立 ban key, 本/他进程标记 push2delay
     # 封禁后此处直接跳过镜像域省一次请求, 走 push2 兜底(用户指令: 全走 push2delay, 仅当其
     # 被封再回退其他 push2 源)。
-    fields = PUSH2_FULL_FIELDS  # f1-f250 显式全字段(与主字典口径对齐)
+    fields = EM_FULL_FIELDS  # f1-f250 显式全字段(与主字典口径对齐)
     delay_fail_streak = 0
     out = {"stocks": {}}
     for p in pool:
@@ -1298,7 +1298,7 @@ def collect_ulist239(pool: list) -> dict:
         r = _quick_request(
             "https://push2delay.eastmoney.com/api/qt/ulist.np/get",
             params={"fltt": "2", "invt": "2", "secids": secids,
-                    "fields": PUSH2_FULL_FIELDS},
+                    "fields": EM_FULL_FIELDS},
             headers={"Referer": "https://quote.eastmoney.com/"},
             timeout=15,
         )

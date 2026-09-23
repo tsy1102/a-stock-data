@@ -4,6 +4,14 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
+## [V17.4.13] 2026-09-23 — zhb 残留未知位研判：zt_type_code 全量定案 + unknown_2/unknown_26 候选
+
+- **`stat.zt_type_code` 语义升级为 ✅**：由"涨停类型码"修订为"行情状态/涨跌强度分档码"，并补全 **7938 股全市场经验映射表**（26 码：高位 20/31/70/95→大涨涨停、低位 21/51/61/71/2/6→偏空大跌、码0=中性基准占53%）。数值闭环来源 `cache/zhb/zhb_20260922.zip` 全市场 `tdxstat.cfg`。
+- **`stat.unknown_2` 降级为 ⚠️ 候选**：连续浮点(7668 股·5119 unique)，与全市场各列零/弱相关(R²=0.50, max\|r\|=0.365)系独立指标；候选义=量比−1 或 动量/回撤复合因子，因探针源日期错位(zhb=20260922 vs tencent=20260923)无法同日闭环验证，待同日量比源佐证后方可晋级 L1。
+- **`stat.unknown_26` 降级为 ⚠️ 候选**：整数计数(0~62·42值·频次单调递减)，跨3周同值率 80.6%(近似恒定)；按上市板均值 深主板5.99/沪主板4.95/创业板0.91/科创板0.86/北交所0.39，主板大盘股显著高于双创，指向计数型属性(概念板块数/指数成分数/机构覆盖数)；板块 .dat 二进制格式且概念板块文件不在 zhb 缓存，未直接闭环，列为 ⚠️ 候选。
+- 同步更新 `zhb_client.py` 中 `zt_type_code` 字段 docstring 与新语义一致。
+- 治理：经 sanctioned 管线(extract_registry→gen_field_dict) + G1/G3/P1 闸门全 PASS；本地提交、未推送。
+
 
 ## [V17.4.12] 2026-09-23 — 字段治理：订正 field_dict.md f190 语义（AH上市标识→每股未分配利润）+ 同步 §零·B 至 registry
 

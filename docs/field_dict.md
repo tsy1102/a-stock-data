@@ -599,8 +599,10 @@ TDX 服务器 (端口 7709)
 | stat.shape_value | 形态值 | - | ✅ |
 | stat.pre_receive_zj | 预收资金 | 元 | ✅ |
 | stat.unseal_date | 解禁日期 | YYYYMMDD | ✅ |
-| stat.unknown_2 | 量比−1(候选)·连续浮点独立指标 | - | ⚠️ 候选 |
-| stat.unknown_26 | 概念/指数成分计数(候选)·主板显著高于双创 | - | ⚠️ 候选 |
+| stat.unknown_2 | 未知(量比−1假设已证伪)·连续浮点独立指标 | - | ⚠️ 候选 |
+| stat.unknown_26 | 未知(概念/指数成分计数假设待板块成员表佐证)·主板显著高于双创 | - | ⚠️ 候选 |
+> 🆕 **2026-09-23 同日量比源证伪 `unknown_2=量比−1`**：取 `cache/kline` 全市场日K线(20260922) volume 计算 `量比=vtoday/mean(v_prev5)`，与 `tdxstat.Col[2]` 同码比对 **1000 股**，corr(unknown_2, 量比)=**−0.08**、回归残差中位 0.70 → 假设证伪，真义仍待定（已立护栏 R9）。
+> 🆕 **`unknown_26` 定案阻塞**：假设=概念/指数成分计数，但本仓无文本化板块成员表（zhb 缓存无 block_gn.dat、em_industry 缓存为空、tdxstat2 无解释列、csiblock/jjblock/hkblock/mgblock 指数/基金/港股/美股块与 unknown_26 相关≈0），东财/腾讯板块 API 本沙箱不可达，待用户提供板块成员表后闭环。
 
 > **🔶 2026-09-19 本地实证（36 期 tdxstat 重算）`zt_type_code` 方向性分类码定案**：各码对应 Col[6] 涨跌幅均值方向与报告**完全一致**（多/空分组正确），量级±~1pp 差异源于样本窗口；`92` 确为剧烈震荡码（非封死跌停）。
 > | 码 | 方向 | 本地实测 | 码 | 方向 | 本地实测 |

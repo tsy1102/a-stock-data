@@ -6169,7 +6169,7 @@
       ],
       "section": "1.1 tdxstat.cfg 标准契约表（stat.*，20260918 对撞定案）🆕",
       "canonical": "stat.unknown_2",
-      "meaning": "量比−1(候选)·连续浮点独立指标",
+      "meaning": "未知(量比−1假设已证伪)·连续浮点独立指标",
       "unit": "-",
       "status_raw": "⚠️ 候选",
       "status": "candidate"
@@ -6182,7 +6182,7 @@
       ],
       "section": "1.1 tdxstat.cfg 标准契约表（stat.*，20260918 对撞定案）🆕",
       "canonical": "stat.unknown_26",
-      "meaning": "概念/指数成分计数(候选)·主板显著高于双创",
+      "meaning": "未知(概念/指数成分计数假设待板块成员表佐证)·主板显著高于双创",
       "unit": "-",
       "status_raw": "⚠️ 候选",
       "status": "candidate"

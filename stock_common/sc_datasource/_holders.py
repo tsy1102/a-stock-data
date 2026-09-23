@@ -765,7 +765,19 @@ def cninfo_irm(code: str, page_size: int = 30, page_num: int = 1) -> List[Dict[s
         d1 = r1.json().get("data") or []
         if not d1:
             return []
-        org_id = d1[0].get("secid")
+        # P0 修复(#440): 键盘查询为模糊搜索, 首条命中不一定是请求 code
+        # (沪市代码可能命中他司, 历史 601360 曾错连合金投资等)。按 stockCode 精确匹配;
+        # 多结果且无精确匹配视为跨公司错连, 返回空; 单结果沿用原 d1[0] 行为(不退步)。
+        _matched = None
+        for _it in d1:
+            if str(_it.get("stockCode") or "") == str(code) or str(_it.get("code") or "") == str(code):
+                _matched = _it
+                break
+        if _matched is None:
+            _matched = d1[0] if len(d1) == 1 else None
+        if _matched is None:
+            return []
+        org_id = _matched.get("secid")
 
         params = {
             "_t": 1,
@@ -807,6 +819,34 @@ def cninfo_irm(code: str, page_size: int = 30, page_num: int = 1) -> List[Dict[s
         return []
 
 
+def get_irm_qa(code: str, page_size: int = 30) -> List[Dict[str, Any]]:
+    """互动易问答统一入口（按市场路由, #441）。
+
+    沪市(60/68/900 开头)互动问答只在上证e互动(sse_e_interaction)有数据,
+    巨潮互动易(cninfo_irm)对沪市实测返回 0 条(见 _sse_e_interaction.py 头部说明);
+    深市/北交所走 cninfo_irm。返回归一化结构 {ask_time, question, answer},
+    与报告渲染层约定一致, 调用方无需关心底层双平台差异。
+    """
+    _digits = str(code)
+    if _digits.startswith(("60", "68", "900")):
+        try:
+            from stock_common.sc_datasource import sse_e_interaction
+            _rows = sse_e_interaction(code, kind="answered", page=1, page_size=page_size) or []
+            return [
+                {
+                    "ask_time": r.get("question_time") or "",
+                    "question": r.get("question") or "",
+                    "answer": r.get("answer"),
+                }
+                for r in _rows
+            ]
+        except Exception as _e:
+            _debug_log(f"datasource get_irm_qa sse({code}): {_e}")
+            return []
+    # 深市/北交所: 巨潮互动易
+    return cninfo_irm(code, page_size=page_size)
+
+
 __all__ = [
     'TTL',
     'UA',
@@ -831,6 +871,7 @@ __all__ = [
     'asyncio',
     'cached',
     'cninfo_irm',
+    'get_irm_qa',
     'code',
     'datetime',
     'em_exchange_prefix',

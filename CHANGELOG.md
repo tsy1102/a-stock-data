@@ -4,6 +4,16 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
+## [V17.4.17] 2026-09-23 — 五大报告脚本数据质量修复：互动易跨公司错连 + eltdx 缺章占位 + val 极端值护栏
+
+- **互动易跨公司错连根因修复（#440/#441）**：`cninfo_irm` 键盘查询为模糊搜索，原取 `d1[0].secid` 在沪市曾错连他司（如 601360 误连合金投资等内容）；新增按 `stockCode`/`code` 精确匹配，无匹配则空返回。新增 `get_irm_qa` 统一路由：沪市(60/68/900)改走 `sse_e_interaction`（上证 e 互动，自带强校验）、深市/北交所走 `cninfo_irm`；`get_sht/lng/med_report.py` 三处调用点由 `cninfo_irm` 改为 `get_irm_qa`，从调用层根绝跨公司错连。
+- **eltdx 缺章显式占位（#442）**：连板天梯/封单强度为 eltdx 专属 helper API（easy-tdx/mootdx 无等价接口，且前者在 2026 主站已结构性失活），源不可用时原为静默缺章；现 `get_mak_report.py`（B++ 连板天梯）、`get_sht_report.py`（二·附 连板梯队）显式渲染 `⚠️ 数据源不可用…无等价后备通道…本节暂缺`，并修正数据来源标注为中性表述。
+- **资金流失效标注（#443）**：`get_mak_report.py` F 段全市场行业主力净流入均为 0 时，原仍渲染含 0 表格误以为「无资金驱动」；新增 `_has_flow` 判定，失效时渲染 `⚠️ 资金流验证失效…本节无法判断真金白银 vs 虚涨，表格暂缺`。
+- **涨跌停多源互校标签（#444）**：`get_mak_report.py` 涨停/跌停/封板率行补 `ℹ️ 上述为涨停池口径，与【B++. 连板天梯(eltdx)】/【开盘啦情绪】独立源交叉验证，多源并存时以本节为全市场基准` 标注（A 段连板高度已含三源互校说明）。
+- **val 三处极端值护栏（#445）**：`get_val_report.py` §08 日历效应/成分股空名（`or leader_code` / `or c`），§09 逆向白马高 PE 误判（`pe_ttm <= 0 or > pe_ceiling` 跳过，避免 121–172x 标「错杀/低估」），§21 盈利预期近零基数（`abs(eps_a) < 0.05` 跳过，避免 0.01→2.25 EPS 算成 22400% 增速）。
+- **历史报告数据质量中和（#446）**：601360 三份历史报告（lng/med/sht）原互动易小节因路由错误显示他司内容，已替换为 `⚠️ 数据质量告警` 占位（不臆造历史问答）；reports/ 为生成物已 gitignore，不入库。
+- 治理：本次改动不含 field_dict.md/field_registry.json/docs/verify，不触发 G1/G3/P1 闸门（pre-commit 自动跳过）；全程本地 commit、未推送。
+
 ## [V17.4.16] 2026-09-23 — zhb unknown_26 再研判：概念计数证伪（护栏 R10）+ 主板专属指数/名单计数假设
 
 - **`stat.unknown_26` 再研判（板块分层实证）**：tdxstat Col[26] 为有界分类码(0–62, 42类, 中位1)。全市场 8058 股解析/5576 非空，按板块 unknown_26 均值 **中小板6.14 > 深主板5.72 > 沪主板4.95**，而 **创业板0.88 / 科创板0.86（中位0）**。

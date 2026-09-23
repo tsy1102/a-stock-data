@@ -1644,6 +1644,9 @@ async def generate_sector_report(output_path):
         L(
             f"  涨停 {zt_count} 只 | 炸板 {zb_count} 只 | 跌停 {dt_count} 只 | 封板率 {success_rate:.0f}%（涨停池口径）"
         )
+        # V17.4.x (#444): 涨跌停数为涨停池口径; 与 B++(eltdx)/KPL(开盘啦) 独立源交叉验证,
+        # 多源并存时以本节为全市场基准.
+        L("  ℹ️ 上述涨停/跌停数为涨停池口径；与【B++. 连板天梯(eltdx)】/【开盘啦情绪】独立源交叉验证，多源并存时以本节为全市场基准。")
 
         # 涨停板块分布
         sector_stats = pool.get("sector_stats", {})
@@ -1814,6 +1817,13 @@ async def generate_sector_report(output_path):
                 L(f"| {_plain} | {_nm} | {_ll}连板 | {_streak} | {_seal:.2f} | {_ind} |")
         else:
             L("  （当日无 ≥2 板连板标的 / eltdx 数据源不可用，eltdx 未返回数据）")
+        L("")
+    else:
+        # V17.4.x (#442): eltdx 不可用时显式占位, 不静默缺章; 连板天梯为 eltdx 专属实时能力,
+        # easy-tdx/mootdx 无对应接口, 故无等价后备通道(详见 core/eltdx_adapter.py 文档).
+        L("## 【B++. 连板天梯（通达信 eltdx 实时核验）】")
+        L("  ⚠️ 数据源不可用：连板天梯为通达信 eltdx（TDX 公网主站 7709/7615）专属实时能力，")
+        L("     当前 eltdx 后端不可达或未返回数据；该维度无等价后备通道（easy-tdx/mootdx 无对应接口），本节暂缺。")
         L("")
 
     L("## 【C. 板块-异动集中度分析】")
@@ -2041,31 +2051,37 @@ async def generate_sector_report(output_path):
     L(f"{'---'}")
     # V16.4.0: 按评分筛选（原 sectors[:50] 前 50 高评分板块可能全为净流入 → 虚涨段恒空）
     _scored = [s for s in sectors if s.get("score", 0) >= 30] or sectors
-    with_money = [s for s in _scored if s.get("main_inflow", 0) > 0]
-    without_money = [s for s in _scored if s.get("main_inflow", 0) <= 0]
-    if with_money:
-        # V17.0.2f: md 表格
-        L("  ✅ 真金白银: 高评分且主力净流入:")
-        L("| 板块 | 评分 | 涨跌幅 | 主力净流入(亿) |")
-        L("|---|---|---|---|")
-        _sorted_in = sorted(with_money, key=lambda x: x.get('main_inflow', 0), reverse=True)
-        for s in _sorted_in[:10]:
-            L(
-                f"| {normalize_industry(s['name'])} | {s.get('score',0):.1f} | {s['change_pct']:+.2f}% | {round(s['main_inflow']/1e8,2):+.2f} |"
-            )
-    if without_money:
-        # V17.0.2f: md 表格
-        L("  ⚠️ 虚涨（主力净流出）:")
-        L("| 板块 | 评分 | 涨跌幅 | 主力净流出(亿) |")
-        L("|---|---|---|---|")
-        _sorted_out = sorted(without_money, key=lambda x: x.get('main_inflow', 0), reverse=True)
-        for s in _sorted_out[:10]:
-            L(
-                f"| {normalize_industry(s['name'])} | {s.get('score',0):.1f} | {s['change_pct']:+.2f}% | {round(abs(s['main_inflow'])/1e8,2):.2f} |"
-            )
+    # V17.4.x (#443): 主力净流全为 0 → 资金流源失效, 显式标注, 不再把"数据缺失"误渲染为"净流0.00"
+    _has_flow = any((s.get("main_inflow", 0) or 0) != 0 for s in _scored)
+    if not _has_flow:
+        L("  ⚠️ 资金流验证失效：全市场行业主力净流入均为 0（资金流数据源未返回有效数据），")
+        L("     本节无法判断「真金白银 vs 虚涨」，表格暂缺。")
     else:
-        # 批量主力净额缺失时，虚涨段无法判断，避免用恒正的 ZHB 竞价额伪造净流出结论。
-        L("  ℹ️ 无主力净流出的高分板块（需有 ulist f62 批量数据才能判断）")
+        with_money = [s for s in _scored if s.get("main_inflow", 0) > 0]
+        without_money = [s for s in _scored if s.get("main_inflow", 0) <= 0]
+        if with_money:
+            # V17.0.2f: md 表格
+            L("  ✅ 真金白银: 高评分且主力净流入:")
+            L("| 板块 | 评分 | 涨跌幅 | 主力净流入(亿) |")
+            L("|---|---|---|---|")
+            _sorted_in = sorted(with_money, key=lambda x: x.get('main_inflow', 0), reverse=True)
+            for s in _sorted_in[:10]:
+                L(
+                    f"| {normalize_industry(s['name'])} | {s.get('score',0):.1f} | {s['change_pct']:+.2f}% | {round(s['main_inflow']/1e8,2):+.2f} |"
+                )
+        if without_money:
+            # V17.0.2f: md 表格
+            L("  ⚠️ 虚涨（主力净流出）:")
+            L("| 板块 | 评分 | 涨跌幅 | 主力净流出(亿) |")
+            L("|---|---|---|---|")
+            _sorted_out = sorted(without_money, key=lambda x: x.get('main_inflow', 0), reverse=True)
+            for s in _sorted_out[:10]:
+                L(
+                    f"| {normalize_industry(s['name'])} | {s.get('score',0):.1f} | {s['change_pct']:+.2f}% | {round(abs(s['main_inflow'])/1e8,2):.2f} |"
+                )
+        else:
+            # 批量主力净额缺失时，虚涨段无法判断，避免用恒正的 ZHB 竞价额伪造净流出结论。
+            L("  ℹ️ 无主力净流出的高分板块（需有 ulist f62 批量数据才能判断）")
     _lurking = [
         s for s in sectors if s.get("main_inflow", 0) > 3e8 and 1 <= s.get("change_pct", 0) <= 5
     ]

@@ -79,7 +79,7 @@ from stock_common import (
     get_market_status,
     cls_telegraph,
     news_matches_stock,
-    cninfo_irm,
+    get_irm_qa,
     sec_type_market_label,  # V17.0.32(2026-09-06): DEBT-016 报告露出 sec_type
 )  # V10.3
 
@@ -1321,7 +1321,7 @@ async def generate_report_async(session, code, output_path, ind_comp=None, hsgt=
 
     # 互动易问答（近48小时）— V16.2.14: 48h+标题+答案+合理条数
     try:
-        irm = await asyncio.to_thread(cninfo_irm, code, 30)
+        irm = await asyncio.to_thread(get_irm_qa, code, 30)
         L("  近48小时互动易问答:")
         _irm_shown = 0
         _irm_cutoff = datetime.now() - timedelta(hours=48)

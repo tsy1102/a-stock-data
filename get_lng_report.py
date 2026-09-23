@@ -66,7 +66,7 @@ from stock_common import (_safe_float, _debug_log,
                           get_zhb_single_stock_data, is_zhb_data_fresh,
                           get_zhb_industry_map, get_zhb_data_date,
                           get_zhb_tip_info,
-                          cls_telegraph, news_matches_stock, cninfo_irm,
+                          cls_telegraph, news_matches_stock, get_irm_qa,
                           sec_type_market_label)  # V10.3, V16.2.3; V17.0.32 DEBT-016 露出 sec_type
 
 _SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -1328,7 +1328,7 @@ async def generate_report_async(session, code, output_path, ind_comp=None):
 
     # 互动易问答（近30天）— V16.2.14: 显示答案 + 标注截取条数（30 天窗口内最新 10 条）
     try:
-        irm = await asyncio.to_thread(cninfo_irm, code, 30)
+        irm = await asyncio.to_thread(get_irm_qa, code, 30)
         L("  近30天互动易问答:")
         _irm_shown = 0
         _irm_cutoff = datetime.now() - timedelta(days=30)

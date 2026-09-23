@@ -986,7 +986,7 @@ def strategy_08_calendar_rotation():
                 f"当前{month}月，日历效应指向{', '.join(target_industries)}板块，"
                 f"行业'{ind.get('name', '')}'涨幅{ind.get('change_pct', 0)}%，为板块领涨股"
             )
-            result.append({"code": leader_code, "name": q.get("name", ""),
+            result.append({"code": leader_code, "name": q.get("name", "") or leader_code,
                            "reason": reason, "score": _safe_float(ind.get("change_pct", 0))})
     if len(result) < 5:
         for ind in matched:
@@ -1009,7 +1009,7 @@ def strategy_08_calendar_rotation():
                         continue
                     seen_codes.add(c)
                     result.append({
-                        "code": c, "name": item.get("name", ""),
+                        "code": c, "name": item.get("name", "") or c,
                         "reason": f"{month}月日历效应板块'{ind.get('name', '')}'成分股，行业排名第{ind.get('rank', 0)}位",
                         "score": _safe_float(item.get("change_pct", 0)),
                     })
@@ -1024,6 +1024,7 @@ def strategy_08_calendar_rotation():
 async def strategy_09_contrarian_value(stocks, top_n=300):
     _sc = _load_strategy_config()
     _roe_good = _sc.get("fundamental", {}).get("roe_good", 15.0)
+    _pe_ceiling = _sc.get("fundamental", {}).get("pe_ceiling", 60.0)
     candidates = [s for s in stocks if s.get("mcap_yi", 0) >= 50][:top_n]
     result = []
     for s in candidates:
@@ -1051,6 +1052,10 @@ async def strategy_09_contrarian_value(stocks, top_n=300):
         if drawdown > -40: continue
         # V15.2: 从 s dict O(1) 读 pe_ttm（避免循环 get_pe_ttm_async 触发大量 zhb_data 缓存）
         pe_ttm = _safe_float(s.get("pe_ttm", 0))
+        # V17.4.x (#445): 高 PE(>_pe_ceiling)或缺失(<=0)不算"错杀/低估"——高估值标的大跌非价值回归,
+        # 误标会误导读者; 仅当 PE 处于合理区间才纳入逆向白马候选.
+        if pe_ttm <= 0 or pe_ttm > _pe_ceiling:
+            continue
         reason = (
             f"最新ROE={roe:.1f}%≥15%（优质白马），"
             f"距52周最高价{high_52w:.2f}元已下跌{abs(drawdown):.0f}%，"
@@ -1651,6 +1656,10 @@ def strategy_21_earnings_expect(stocks):
             eps_a = next((float(r["均值"]) for r in rows if "2025" in str(r["年度"]) and "A" in str(r["年度"])), 0)
             eps_e = next((float(r["均值"]) for r in rows if "2026" in str(r["年度"]) and "E" in str(r["年度"])), 0)
             if not eps_a or not eps_e:
+                continue
+            # V17.4.x (#445): 近零基数(2025A EPS 过小时)增速%无意义(易出数万%极端值, 如 0.01→2.25 即 22400%),
+            # 跳过百分比排名(扭亏/基数过低场景不适用同比增速表述).
+            if abs(eps_a) < 0.05:
                 continue
             growth = (eps_e / eps_a - 1) * 100
             if growth < 20:

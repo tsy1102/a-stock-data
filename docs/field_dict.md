@@ -2399,7 +2399,9 @@ TDX `0x0010` 日K（`tdx_get_security_bars`，keys = `['time','open','close','hi
 | fba | 板上成交额 | 元 | - | ✅ |
 | days | 连续跌停天数 | 天 | - | ✅ |
 | oc | 开板次数 | 次 | - | ✅ |
-| yfbt / ylbc | 待破解 | - | - | ⏸️ |
+| yfbt / ylbc | 昨日首次封板时间 / 昨日连板数 | HHMMSS / 板 | y_first_seal / y_limit_count | ⚠️ |
+
+> ⚠️ 含义由 `stock_common/sc_datasource/_pools.py:get_yesterday_limit_pool()` 代码级确证（源 `push2ex.eastmoney.com/getYesterdayZTPool`，与同表 `fbt/lbc` 为「昨日」对应项）；本仓无含此二字段的 raw 快照、实时 2026 补采受阻，缺数值闭环故不升 L1。
 
 #### 12.8.2 东财 push2 历史资金流（120 日，日级）✅
 

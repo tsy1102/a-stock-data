@@ -5,6 +5,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 
+## [V17.4.7] 2026-09-23 — 吸收上游 3.10.0 两个新取数能力（腾讯逐笔 / 新浪期货日K）
+
+- **采纳上游 v3.10.0 新增能力 A：腾讯逐笔成交 `tencent_ticks(code)`（§1.4, 替代失效 mootdx transaction）**：新增 `stock_common/sc_datasource/_ticks.py`。沪深个股/ETF 当日分笔（约 3 秒一笔，非 Level-2），覆盖连续竞价+盘后定价；北交所/指数/代码不存在/当日无成交抛 `ValueError`，源格式变/收盘后连续竞价段成交额与行情快照核对不符（差>0.1%）抛 `RuntimeError`，盘后定价段缺号记入 `frame.attrs["missing_seq"]`。
+- **采纳上游 v3.10.0 新增能力 B：新浪期货日K `futures_kline_sina(symbol, start, end)`（§13.7, 补大商所历史日线）**：新增 `stock_common/sc_datasource/_futures_sina.py`。覆盖全部六家交易所（含大商所），代码不存在/太老/区间内无K 抛 `ValueError`，结算价新浪给 0 统一为 `None`。
+- **上游 `_v39_*` helper 语义忠实复刻**：抽 `stock_common/sc_datasource/_v39_compat.py` 集中实现上游 `_v39_num/_req_num/_fut_price/_parse_date/_src_date/_rows/_frame/_contract` 契约（必填数值缺/非有限→`RuntimeError`，格式变→`RuntimeError`，与 `sc_utils._safe_float` 的"缺值返回 default"刻意区分），两新模块显式 import，避免各模块重复定义与包级命名空间冲突（`__all__` 仅导出公开 API）。
+- **错误契约对齐上游**: 参数错/确实无数据→`ValueError`, 源格式变→`RuntimeError`, 不改变已有字段字典(取数层新增, 不涉 f-code 治理)。
+- **测试**: 新增 `tests/test_v310_sources.py`（21 项, 全部离线可跑）：纯解析函数（快照/逐笔页/期货JSONP）、错误契约（`ValueError`/`RuntimeError` 边界）、端到端（mock `_quick_request` 复现网络返回 + 收盘后完整性核对分支）、联网冒烟（`@pytest.mark.real_network` 受控, 需 `REAL_NETWORK=1`）。
+- **治理铁律遵守**: 上游 v3.10.0 的 Layer-1 重编号/INE 修正/doc 修正不涉本仓（自有 § 体系/未继承区）；唯一重叠 `lpr_history()` 已由 V17.4.4 覆盖；本次仅取数层新增, 经对撞校正, 未晋升字段字典; 全程本地提交、未推送。
+
 ## [V17.4.6] 2026-09-23 — 字段治理：f148 重对撞定案 + ZHB 跌停日 L1 + 注册表旧误标清理
 
 - **① f148 主数据重对撞（解决硬冲突）**：Gemini 主张 ulist239 `f148`=市场/板块二进制掩码，与本项目旧 L1(=10日超大单净占比%)冲突。独立重对撞 `docs/field_verification/20260911/raw_ulist239.json` 全样本：**577/1089/1/65 = 1+64+512/1024 位分解**，与交易所前缀/两融标志系统吻合 → **Gemini 正确，ulist f148=复合二进制掩码（L1 定案）**。旧"10日超大单净占比%"实为 **ulist f177**（百分比字段，与 push2 f177 对齐），对齐表 `f177|ulist:f148` 系**转置错误**，已修为 `ulist:f177`。注意 push2 `stock/get` 的 `f148`=散单(第五档)卖出额(元)（§12.3.4）仍有效——此为**同号异义**陷阱（`docs/field_dict.md` 已加注）。

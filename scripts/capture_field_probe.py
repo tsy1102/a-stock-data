@@ -106,6 +106,7 @@ if _SCRIPTS not in sys.path:
     sys.path.insert(0, _SCRIPTS)
 
 from stock_common.sc_utils import em_secid_prefix  # V17.0 S3: 统一 secid 前缀
+from core.zhb_client import get_stock_name_from_zhb, _lookup_name_persist  # V17.4.10 修复: 供模块级 _resolve_zhb_name 使用(原仅 collect_zhb 局部导入 → NameError)
 
 POOL_PATH = os.path.join(_ROOT, "docs", "field_verification", "pool.json")
 OUT_BASE = os.path.join(_ROOT, "docs", "field_verification")
@@ -663,7 +664,8 @@ def collect_push2(pool: list) -> dict:
     ~93-97%(独立风控面), 故**优先走 push2delay 镜像域**(与运行时 _FFLOW_HOSTS / get_em_batch_quotes
     一致策略), 主域仅作兜底; 两域字段同构(f1-f250)无损失。used_host 记录实际命中域便于排查。
     """
-    from stock_common import _quick_request, _em_is_banned
+    from stock_common import _quick_request
+    from stock_common.sc_network import _em_is_banned  # V17.4.10 修复: _em_is_banned 定义在 sc_network, 未由 stock_common 包 __init__ 重导出
 
     # V17.3.2 封禁规律对齐: 跨 33 采集日实证 push2 主域受扰率 80%、push2delay 镜像域
     # 可用率 ~93-97%(独立风控面, 主域被封时仍可用)。故**优先 push2delay 镜像域**,

@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 
+## [V17.4.11] 2026-09-23 — 修复采集脚本两处 import 回归（zhb/push2 整源失败）
+
+- **Bug A `collect_push2`（line ~666）**：`from stock_common import _em_is_banned` → `_em_is_banned` 实际定义在 `stock_common.sc_network`，未由包 `__init__` 重导出，导致整源 `ImportError`、未生成 `raw_push2.json`。修复：`from stock_common.sc_network import _em_is_banned`（与 `check_em_health.py:33` 一致）。
+- **Bug B `collect_zhb` → `_resolve_zhb_name`**：`get_stock_name_from_zhb`/`_lookup_name_persist` 仅在该函数内局部 import，模块级 `_resolve_zhb_name` 调用时 `NameError`，整源失败、未生成 `raw_zhb.json`。修复：提至模块级 import（line ~109）。
+- **验证**：`py_compile` + 模块加载冒烟通过；补采 `--only zhb,push2` 确认 `raw_zhb.json`(71KB, OK)、`raw_push2.json` 已生成（19/20 因本日东财 push2 家族封禁 `request failed`，属网络非代码，由 ulist239 覆盖）。
+- **范围**：纯 import 作用域修复，未触碰 field_dict/registry/verify，不触发 G1 闸门。
+
 ## [V17.4.10] 2026-09-23 — 第三轮核验订正：reportapi 非缺失、yfbt/ylbc 端点定位
 
 - **订正第三轮(commit 71e179e, V17.4.9) §5 误判**：原称"reportapi 本仓 raw 完全缺失"系漏检。`docs/field_verification/20260812~20260921` **连续 31 天** `raw_reports.json` 早含 `sRatingCode`/`ratingChange`/`indvAimPrice`/`emRatingCode`/`sRatingName`。跨 31 天重算：`ratingChange` 分布 `{3:8275, 2:1014, 1:56, 0:54, '':799}` 与"3维持/2首覆/1调低/0调高"吻合 → 已 ✅ L1；`indvAimPriceT/L` 非空目标价数值正常 → 已 ✅ L1；`sRatingCode` 同码多 `sRatingName`（如 `0201`↔买入2486/推荐470/强烈推荐56/买入(Buy)505/谨慎增持78；`0101`↔买入/增持/强烈推荐/推荐）证其为**机构私有评级代码、非跨机构通用语义** → 维持 ⚠️，理由由"缺失"订正为"非通用语义、须配合 sRatingName 解读"。

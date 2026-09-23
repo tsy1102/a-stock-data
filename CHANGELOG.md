@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
+## [V17.4.14] 2026-09-23 — 补全 V17.4.13 闭合：提交遗漏的 zhb_client.py docstring + 再生 collision_state.json
+
+- **实际提交 V17.4.13 时遗漏的 `zhb_client.py` 改动**：V17.4.13 的 CHANGELOG 已声明"同步更新 `zhb_client.py` 中 `zt_type_code` 字段 docstring 与新语义一致"，但该文件当时未纳入提交（4e8f9da 仅含 CHANGELOG/VERSION/field_dict.md/field_registry.json）。本次补齐 `[23] zt_type_code` docstring 修订（2026-08-14 临时解读 → 2026-09-22 全市场 26 码定案），使代码侧注释与已提交的字典 `stat.zt_type_code` ✅ 语义完全一致。
+- **再生并提交 `docs/field_verification/collision_state.json`**：该文件为 `collide.py` 增量对撞状态；V17.4.13 之后的 20260923 采集轮次将其窗口刷新为 3 日（n_days 6→3、n_pairs 120→60、last_seen 20260920→20260923），仍保留 zhb.full↔zhb.stat 的 `unknown_2`/`unknown_26` 内部配对；本次一并入库使引擎状态与最新探针一致。
+- 治理：本次改动不含 field_dict.md/field_registry.json/docs/verify，不触发 G1 闸门；全程本地 commit、未推送。
+
 ## [V17.4.13] 2026-09-23 — zhb 残留未知位研判：zt_type_code 全量定案 + unknown_2/unknown_26 候选
 
 - **`stat.zt_type_code` 语义升级为 ✅**：由"涨停类型码"修订为"行情状态/涨跌强度分档码"，并补全 **7938 股全市场经验映射表**（26 码：高位 20/31/70/95→大涨涨停、低位 21/51/61/71/2/6→偏空大跌、码0=中性基准占53%）。数值闭环来源 `cache/zhb/zhb_20260922.zip` 全市场 `tdxstat.cfg`。

@@ -6924,6 +6924,45 @@
       "status": "unverified"
     },
     {
+      "code": "equity_incentive_date",
+      "source": "ZHB-tipinfo",
+      "sources": [
+        "ZHB-tipinfo"
+      ],
+      "section": "",
+      "canonical": "",
+      "meaning": "",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified"
+    },
+    {
+      "code": "forecast_date_recent",
+      "source": "ZHB-tipinfo",
+      "sources": [
+        "ZHB-tipinfo"
+      ],
+      "section": "",
+      "canonical": "",
+      "meaning": "",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified"
+    },
+    {
+      "code": "forecast_type",
+      "source": "ZHB-tipinfo",
+      "sources": [
+        "ZHB-tipinfo"
+      ],
+      "section": "",
+      "canonical": "",
+      "meaning": "",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified"
+    },
+    {
       "code": "hg_amount_yi",
       "source": "ZHB-tipinfo",
       "sources": [
@@ -7184,6 +7223,19 @@
       "status": "unverified"
     },
     {
+      "code": "suspend_major_event_date",
+      "source": "ZHB-tipinfo",
+      "sources": [
+        "ZHB-tipinfo"
+      ],
+      "section": "",
+      "canonical": "",
+      "meaning": "",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified"
+    },
+    {
       "code": "tdxadr.cfg",
       "source": "ZHB-tipinfo",
       "sources": [
@@ -7418,6 +7470,45 @@
       "status": "verified"
     },
     {
+      "code": "tipinfo.equity_incentive_date",
+      "source": "ZHB-tipinfo",
+      "sources": [
+        "ZHB-tipinfo"
+      ],
+      "section": "3.1 tipinfo.dat 标准契约表（tipinfo.*，20260918 对撞定案）🆕",
+      "canonical": "tipinfo.equity_incentive_date",
+      "meaning": "股权激励预案/草案公告日",
+      "unit": "YYYYMMDD",
+      "status_raw": "✅ L1",
+      "status": "verified"
+    },
+    {
+      "code": "tipinfo.forecast_date_recent",
+      "source": "ZHB-tipinfo",
+      "sources": [
+        "ZHB-tipinfo"
+      ],
+      "section": "3.1 tipinfo.dat 标准契约表（tipinfo.*，20260918 对撞定案）🆕",
+      "canonical": "tipinfo.forecast_date_recent",
+      "meaning": "最新业绩预告发布日",
+      "unit": "YYYYMMDD",
+      "status_raw": "✅ L1",
+      "status": "verified"
+    },
+    {
+      "code": "tipinfo.forecast_type",
+      "source": "ZHB-tipinfo",
+      "sources": [
+        "ZHB-tipinfo"
+      ],
+      "section": "3.1 tipinfo.dat 标准契约表（tipinfo.*，20260918 对撞定案）🆕",
+      "canonical": "tipinfo.forecast_type",
+      "meaning": "业绩预告类型代码",
+      "unit": "枚举",
+      "status_raw": "✅ L1",
+      "status": "verified"
+    },
+    {
       "code": "tipinfo.hg_amount_yi",
       "source": "ZHB-tipinfo",
       "sources": [
@@ -7454,6 +7545,19 @@
       "meaning": "报告期",
       "unit": "YYYYMMDD/季",
       "status_raw": "✅",
+      "status": "verified"
+    },
+    {
+      "code": "tipinfo.suspend_major_event_date",
+      "source": "ZHB-tipinfo",
+      "sources": [
+        "ZHB-tipinfo"
+      ],
+      "section": "3.1 tipinfo.dat 标准契约表（tipinfo.*，20260918 对撞定案）🆕",
+      "canonical": "tipinfo.suspend_major_event_date",
+      "meaning": "重大事项停牌起始日",
+      "unit": "YYYYMMDD",
+      "status_raw": "✅ L1",
       "status": "verified"
     },
     {
@@ -8596,9 +8700,9 @@
       ],
       "section": "12.3.1.2 push2 × ulist/tencent 全量对撞再确认（2026-09-04，修复锚池）",
       "canonical": "f124",
-      "meaning": "收盘/最后行情Unix时间戳(秒)",
+      "meaning": "股东户数?",
       "unit": "",
-      "status_raw": "L1定案(field_dict.md §12.3.1 证据块: V17.0.11 已破=当日收盘/最后行情 Unix 时间戳秒)",
+      "status_raw": "✅",
       "status": "verified"
     },
     {
@@ -8699,9 +8803,9 @@
       ],
       "section": "12.3.2 板块/排行 `ulist.np/get`（本次联网新发现）",
       "canonical": "f130",
-      "meaning": "市销率TTM(ps_ttm)",
+      "meaning": "毛利率",
       "unit": "",
-      "status_raw": "L1定案(ulist f130=push2 f165, corr 0.979, field_dict.md §12.3.1 对齐表)",
+      "status_raw": "✅",
       "status": "verified"
     },
     {
@@ -8713,9 +8817,9 @@
       ],
       "section": "12.3.2.3 ulist239 全字段清单（np/get 真实返回 239 字段，V17.1.1 全量登记）",
       "canonical": "f131",
-      "meaning": "市现率TTM(pcf_ttm)",
+      "meaning": "",
       "unit": "",
-      "status_raw": "L1定案(ulist f131=push2 f166, corr 0.973, field_dict.md §12.3.1 对齐表)",
+      "status_raw": "✅",
       "status": "verified"
     },
     {
@@ -8727,9 +8831,9 @@
       ],
       "section": "12.3.2 板块/排行 `ulist.np/get`（本次联网新发现）",
       "canonical": "f132",
-      "meaning": "滚动营业总收入TTM(revenue_ttm,元)",
+      "meaning": "总资产",
       "unit": "",
-      "status_raw": "L1定案(ulist f132=push2 f104=revenue_ttm, corr 1.000, field_dict.md §12.3.1)",
+      "status_raw": "✅",
       "status": "verified"
     },
     {
@@ -8741,10 +8845,10 @@
       ],
       "section": "12.3.2.3 ulist239 全字段清单（np/get 真实返回 239 字段，V17.1.1 全量登记）",
       "canonical": "f133",
-      "meaning": "股息率(TTM,近12月)",
+      "meaning": "",
       "unit": "",
-      "status_raw": "L1定案(ulist f133=f126=股息率, field_dict.md §12.3.1)",
-      "status": "verified"
+      "status_raw": "",
+      "status": "unverified"
     },
     {
       "code": "f134",
@@ -8979,9 +9083,9 @@
       ],
       "section": "12.3.4 资金流四档层级 `stock/get` f135\\~f149 **全量**（🆕 V17.0.16 **重定案** / V17.1.x **补登 f147/f148**）",
       "canonical": "f148",
-      "meaning": "市场与板块属性复合二进制掩码(market&board bitmask, ulist239); 注: push2 f148=散单第五档卖出额(元)为同号异义",
+      "meaning": "待破解",
       "unit": "元",
-      "status_raw": "L1定案(re-collision 2026-09-23: 实测577/1089/1/65=1+64+512/1024位分解, 与交易所前缀/两融标志系统吻合; Gemini 提议核验通过)",
+      "status_raw": "✅",
       "status": "verified"
     },
     {
@@ -9380,9 +9484,9 @@
       ],
       "section": "12.3.1.2 push2 × ulist/tencent 全量对撞再确认（2026-09-04，修复锚池）",
       "canonical": "f177",
-      "meaning": "10日超大单净占比%(ulist239=push2 f177)",
+      "meaning": "",
       "unit": "",
-      "status_raw": "L1定案(field_dict.md §12.15 资金流 zjlx 历史表聚合对撞: ulist f177)",
+      "status_raw": "≥0.95 多日再确认（强化既有 ✅/L1）",
       "status": "verified"
     },
     {
@@ -9718,8 +9822,8 @@
       "canonical": "f199",
       "meaning": "",
       "unit": "",
-      "status_raw": "",
-      "status": "unverified"
+      "status_raw": "✅",
+      "status": "verified"
     },
     {
       "code": "f2",
@@ -10729,8 +10833,8 @@
       "canonical": "f202",
       "meaning": "",
       "unit": "",
-      "status_raw": "⚠️ 20260919 本地实证：000037=0(有B股)，无B股=-1；与 f200/f201/f203 同源，精确语义待定(候选)",
-      "status": "candidate"
+      "status_raw": "✅",
+      "status": "verified"
     },
     {
       "code": "f203",
@@ -11107,8 +11211,8 @@
       "canonical": "f231",
       "meaning": "",
       "unit": "",
-      "status_raw": "⚠️ 20260919 本地实证：688589=3(有转债)，无转债=0；精确语义待定(候选)",
-      "status": "candidate"
+      "status_raw": "✅",
+      "status": "verified"
     },
     {
       "code": "f232",
@@ -11133,8 +11237,8 @@
       "canonical": "f233",
       "meaning": "",
       "unit": "",
-      "status_raw": "⚠️ 20260919 本地实证：688589=1(有转债)，无转债=-1；精确语义待定(候选)",
-      "status": "candidate"
+      "status_raw": "✅",
+      "status": "verified"
     },
     {
       "code": "f234",
@@ -24746,6 +24850,18 @@
     "tipinfo.hg_amount_yi": [
       "ZHB"
     ],
+    "tipinfo.suspend_major_event_date": [
+      "ZHB"
+    ],
+    "tipinfo.forecast_date_recent": [
+      "ZHB"
+    ],
+    "tipinfo.forecast_type": [
+      "ZHB"
+    ],
+    "tipinfo.equity_incentive_date": [
+      "ZHB"
+    ],
     "[0] 市场标识": [
       "腾讯"
     ],
@@ -29763,7 +29879,7 @@
     {
       "from": {
         "source": "东财-ulist239",
-        "code": "f177"
+        "code": "f148"
       },
       "to": {
         "source": "东财-push2",

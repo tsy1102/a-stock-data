@@ -4,6 +4,14 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
+## [V17.4.20] 2026-09-24 — 字段治理表断裂修复 + 采集数据日命名铁律
+
+- **字段治理（sanctioned 管线晋级）**：`docs/field_dict.md` §12.1 腾讯 88 字段表中，一段 PE 口径二次重裁定的 blockquote 误插在 `[53]` 与 `[54]` 表行之间，打断了 markdown 表格，导致 `[54]–[88]` 整段（含 `[63]/[67]/[68]/[69]/[70]` 五个已 ✅ 字段）从未被 `extract_registry` 解析。现将该 blockquote 移至表尾（`[87]` 行之后、`---` 分隔之前），使全表连续可解析；重跑 `extract_registry → gen_field_dict → parity` 三闸门全过，5 条正式入 `field_registry.json` 为 `verified`，`collide.py` 不再将其当 `unverified` 反复重对撞。
+- **采集数据日命名铁律（根因修复 #449）**：`scripts/capture_field_probe.py` 原以「运行日」(`datetime.now()`) 命名采集目录，周末/法定节假日运行时目录名是假日、但数据实为上一交易日收盘，造成「目录名=假日 / 数据=上一交易日」的错位。`--date` 默认值改为 `_last_trading_day_str()`（基于 `stock_common.stock_calendar.get_last_trading_day()`，自动跳过周末+法定节假日），使目录名恒为「实际数据日」。`meta.json` 新增 `data_date`(数据日)/`run_date`(运行日) 双记录。
+- **幂等/覆盖（#449）**：新增 `--overwrite` 开关——默认对「已完整采集的数据日」幂等跳过（避免假日重复采集的重复网络负载与同名覆盖）；`--overwrite` 仅清空本次目标源的 raw 与 meta 记录后重采，保留其他源采集物。增量 `--only` 补采不触发跳过。
+- **collide.py 数据日键加固（#450）**：`load_date` 现优先采用 `meta.json` 的 `data_date`（采集时落盘的权威数据日）作非 ZHB 源碰撞键，缺省回落 `date_dir`（现已=数据日），使即便旧版「运行日命名」目录也能对齐到真实数据日；ZHB 仍单独用 `zhb_date`（P0-① 修复持续有效）。
+- 治理：含 field_dict/registry/verify 改动，G1/G3/P1 闸门全过；本地提交未推送。
+
 ## [V17.4.19] 2026-09-24 — 修复 collide.py ZHB 日期键错位 + 剔除异常采集日
 
 - **P0-① 修复**：`collide.py` 原以「采集目录名」作所有源的碰撞日期键，但 ZHB 包内真实数据日 `zhb_date` 恒为目录名的上一交易日（实测跨周末跳过），导致 ZHB 与任何外源恒差 1 个交易日、日频字段对撞系统性失效。现对 `src=="zhb"` 改用 `doc.zhb_date` 作键（`load_date` 内 `_date_key`）。

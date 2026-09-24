@@ -6169,7 +6169,7 @@
       ],
       "section": "1.1 tdxstat.cfg 标准契约表（stat.*，20260918 对撞定案）🆕",
       "canonical": "stat.unknown_2",
-      "meaning": "未知(量比−1假设已证伪)·连续浮点独立指标",
+      "meaning": "贝塔系数(60日)·L2候选(列[2]已定BetaValue: ihelp.dat L63官方定义+慢变特征实证自相关0.91, 待真实指数基准复现升L1)",
       "unit": "-",
       "status_raw": "⚠️ 候选",
       "status": "candidate"
@@ -6182,7 +6182,7 @@
       ],
       "section": "1.1 tdxstat.cfg 标准契约表（stat.*，20260918 对撞定案）🆕",
       "canonical": "stat.unknown_26",
-      "meaning": "未知(概念计数假设已证伪·主板专属指数/名单成分计数假设待主板指数成分表佐证)·主板显著>双创",
+      "meaning": "年内涨停天数 YearZTDay·L2候选(列[26]已定YearZTDay: ihelp.dat L64官方定义+事件级Δ实证, 待≥90%命中升L1)",
       "unit": "-",
       "status_raw": "⚠️ 候选",
       "status": "candidate"

@@ -4,7 +4,12 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
-## [V17.4.20] 2026-09-24 — 字段治理表断裂修复 + 采集数据日命名铁律
+## [V17.4.21] 2026-09-24 — 历史非交易日目录清理 + 盘中→盘后刷新逻辑
+
+- **历史非交易日目录清理（治标）**：扫描 `docs/field_verification/` 下所有 `YYYYMMDD` 目录，将「周末/法定节假日（运行日）命名」的目录修正为真实数据日（`get_last_trading_day(目录名)`）。真实数据日目录已存在者判为冗余→删除；唯一者→改名至真实数据日并修正 `meta.data_date`/`date`。共处理 8 个目录（7 删 1 改：20260822→20260821），清理后**零周末/节假日命名目录**，对撞数据污染根除。被删目录内的原始采集数据（raw_*.json）均已在对应交易日目录保全，仅删除了可在交易日目录重现的派生分析产物。
+- **盘中→盘后刷新逻辑（治本补全）**：`scripts/capture_field_probe.py` 新增 `market_phase` 判定（运行时刻 vs 数据日 15:00 收盘）。幂等跳过逻辑改为：①盘后已有=完整→幂等跳过；②盘中已有且本次仍盘中→跳过；③**盘中已有快照但本次盘后运行→自动刷新为收盘数据（覆盖重采目标源）**。直接回答「盘后采集发现盘中已采过」的场景：当前会**错误跳过**保留不完整快照，修复后改为**覆盖刷新为收盘数据**。`meta.json` 新增 `run_datetime`/`market_phase` 记录。`--overwrite` 仍强制重采。
+- **collide.py 排除项收敛**：`EXCLUDE_DIRS` 由 `{20260814,20260815}` 收敛为 `{20260814}`（仅留盘中 10:49 那次快照，周末目录已随清理删除）。
+- 治理：含 field_dict/registry/verify 无关改动（仅清历史数据目录 + 脚本逻辑），G1/G3/P1 闸门全过；PYTHON=py 提交，未推送。
 
 - **字段治理（sanctioned 管线晋级）**：`docs/field_dict.md` §12.1 腾讯 88 字段表中，一段 PE 口径二次重裁定的 blockquote 误插在 `[53]` 与 `[54]` 表行之间，打断了 markdown 表格，导致 `[54]–[88]` 整段（含 `[63]/[67]/[68]/[69]/[70]` 五个已 ✅ 字段）从未被 `extract_registry` 解析。现将该 blockquote 移至表尾（`[87]` 行之后、`---` 分隔之前），使全表连续可解析；重跑 `extract_registry → gen_field_dict → parity` 三闸门全过，5 条正式入 `field_registry.json` 为 `verified`，`collide.py` 不再将其当 `unverified` 反复重对撞。
 - **采集数据日命名铁律（根因修复 #449）**：`scripts/capture_field_probe.py` 原以「运行日」(`datetime.now()`) 命名采集目录，周末/法定节假日运行时目录名是假日、但数据实为上一交易日收盘，造成「目录名=假日 / 数据=上一交易日」的错位。`--date` 默认值改为 `_last_trading_day_str()`（基于 `stock_common.stock_calendar.get_last_trading_day()`，自动跳过周末+法定节假日），使目录名恒为「实际数据日」。`meta.json` 新增 `data_date`(数据日)/`run_date`(运行日) 双记录。

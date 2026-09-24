@@ -182,6 +182,30 @@ def _last_trading_day_str() -> str:
         return datetime.now().strftime("%Y%m%d")
 
 
+def _market_close_dt(date_str: str) -> datetime:
+    """数据日 15:00(收盘)时间点; A股收盘后视为完整(收盘)数据。"""
+    return datetime(int(date_str[:4]), int(date_str[4:6]), int(date_str[6:8]), 15, 0, 0)
+
+
+def _is_closed_phase_now(date_str: str) -> bool:
+    """本次运行是否处于数据日收盘之后(即采集到的是完整收盘数据)。"""
+    return datetime.now() >= _market_close_dt(date_str)
+
+
+def _is_closed_phase_existing(meta_path: str, date_str: str) -> bool:
+    """已有采集物是否收盘后(完整)。无 start 记录则保守当作盘中(可被刷新)。"""
+    try:
+        with open(meta_path, encoding="utf-8") as f:
+            m = json.load(f)
+        start = m.get("start") or m.get("run_datetime")
+        if not start:
+            return False
+        sd = datetime.strptime(start, "%Y-%m-%d %H:%M:%S")
+        return sd >= _market_close_dt(date_str)
+    except Exception:
+        return False
+
+
 def _board_of(code: str, name: str = "", market_type: str = "") -> str:
     """根据代码前缀(优先)与市场类型文本推导板块中文名。"""
     c = str(code or "")
@@ -1670,8 +1694,8 @@ def main() -> None:
     # 使文件夹名恒为"实际数据日"(收盘数据所属交易日), 根除"文件夹名是假日但数据是上一交易日"的根因。
     ap.add_argument("--date", default=_last_trading_day_str())
     ap.add_argument("--overwrite", action="store_true",
-                    help="覆盖重采: 清空既有同数据日目标源 raw_*.json 与 meta 记录后重新采集; "
-                         "默认幂等跳过已完整采集的数据日")
+                    help="强制覆盖重采: 清空既有同数据日目标源 raw_*.json 与 meta 记录后重新采集; "
+                         "默认: 盘后→盘后幂等跳过, 盘中→盘后自动刷新为收盘数据, 盘中→盘中跳过")
     ap.add_argument("--dry-run", action="store_true")
     ap.add_argument("--only", default="", help="只采指定源(逗号分隔: zhb,tdx,tencent,push2)")
     ap.add_argument("--refresh-pool", action="store_true",
@@ -1706,9 +1730,13 @@ def main() -> None:
     os.makedirs(out_dir, exist_ok=True)
     meta_path = os.path.join(out_dir, "meta.json")
 
+    _now = datetime.now()
     meta = {"date": args.date, "data_date": args.date,
-            "run_date": datetime.now().strftime("%Y%m%d"),
-            "start": time.strftime("%Y-%m-%d %H:%M:%S"), "sources": {}}
+            "run_date": _now.strftime("%Y%m%d"),
+            "run_datetime": _now.strftime("%Y-%m-%d %H:%M:%S"),
+            "start": _now.strftime("%Y-%m-%d %H:%M:%S"),
+            "market_phase": "closed" if _is_closed_phase_now(args.date) else "intraday",
+            "sources": {}}
     # V17.2.9 修复: --only 增量采集必须**合并**已有 meta.json, 而非整份覆盖 ——
     # 否则未参与本次采集的源会从元数据中消失(曾致 22 源元数据被单源覆写)。
     if args.only and os.path.isfile(meta_path):
@@ -1771,7 +1799,9 @@ def main() -> None:
     if args.only:
         collectors = {k: v for k, v in collectors.items() if k in [s.strip() for s in args.only.split(",")]}
 
-    # ── 幂等/覆盖：文件夹名已=数据日(交易日)。假日重复采集时默认跳过, 避免重复网络负载与同名覆盖 ──
+    # ── 幂等/覆盖：文件夹名已=数据日(交易日)。
+    #    盘后运行发现盘中已采快照 → 默认刷新为收盘数据(覆盖重采); 盘后→盘后默认幂等跳过; 盘中→盘中默认跳过。
+    #    --overwrite 强制重采(上方已清空目标源)。假日重复采集无同名覆盖问题(目录名=数据日)。 ──
     _existing_raws = sorted(glob.glob(os.path.join(out_dir, "raw_*.json")))
     if args.overwrite:
         # 仅清空本次将重采源(raw + meta 记录), 保留其他源采集物, 避免误删增量补采之外的数据
@@ -1796,13 +1826,42 @@ def main() -> None:
                     pass
         _existing_raws = sorted(glob.glob(os.path.join(out_dir, "raw_*.json")))
     if _existing_raws:
-        # 仅当「本次全部目标源」均已存在 raw 文件时才判定为"已完整采集", 增量 --only 补采不触发跳过
+        # 仅当「本次全部目标源」均已存在 raw 文件时判定采集物存在, 增量 --only 补采不触发跳过
         _want = set(collectors.keys())
         _have = {os.path.basename(p)[len("raw_"):-len(".json")] for p in _existing_raws}
         if _want.issubset(_have):
-            print(f"⏭ 数据日 {args.date} 采集物已存在且完整 (raw 文件 {len(_existing_raws)} 个, 源: {sorted(_have)}), "
-                  f"默认幂等跳过。如需重采请加 --overwrite。", flush=True)
-            return
+            # 完整度判定: 盘中快照(收盘前)应被盘后重采刷新为收盘数据, 避免对撞污染
+            _existing_closed = _is_closed_phase_existing(meta_path, args.date)
+            _new_closed = _is_closed_phase_now(args.date)
+            if _existing_closed and _new_closed:
+                print(f"⏭ 数据日 {args.date} 已存在完整(盘后)采集物 (raw {len(_existing_raws)} 个, 源: {sorted(_have)}), "
+                      f"默认幂等跳过。如需重采请加 --overwrite。", flush=True)
+                return
+            if (not _existing_closed) and (not _new_closed):
+                print(f"⏭ 数据日 {args.date} 已存在盘中快照且本次仍为盘中运行, 默认幂等跳过。", flush=True)
+                return
+            # 已有=盘中快照, 本次=盘后运行 → 刷新为收盘数据(覆盖重采目标源)
+            print(f"🔄 数据日 {args.date} 现有采集物为盘中快照(非收盘), 本次盘后运行将刷新为收盘数据。", flush=True)
+            _clear_raw = {os.path.join(out_dir, f"raw_{n}.json") for n in collectors}
+            for _p in _existing_raws:
+                if _p in _clear_raw:
+                    try:
+                        os.remove(_p)
+                    except Exception:
+                        pass
+            if os.path.isfile(meta_path):
+                try:
+                    _m = json.load(open(meta_path, encoding="utf-8"))
+                    for _n in [k for k in _m.get("sources", {}) if k in collectors]:
+                        del _m["sources"][_n]
+                    with open(meta_path, "w", encoding="utf-8") as _f:
+                        json.dump(_m, _f, ensure_ascii=False, indent=1)
+                except Exception:
+                    try:
+                        os.remove(meta_path)
+                    except Exception:
+                        pass
+            # 清空后 fall through 进入采集
 
     for name, fn in collectors.items():
         try:

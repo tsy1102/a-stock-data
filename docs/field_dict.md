@@ -62,7 +62,7 @@
 >
 > **V16.3.10 补充（2026-08-11 通达信客户端原始文件 + 12 股 F10 交叉验证）**：
 > tdxstat 35 列/tdxstat2 21 列经官方原始文件（hq_cache）逐列核验 + 12 股 F10 文本
-> 交叉印证——**确认列**：tdxstat Col[3]pe_dynamic/[6]change_pct/[9]pe_ttm/[10]股息率/
+> 交叉印证——**确认列**：tdxstat Col[3]pe_ttm/[6]change_pct/[9]pe_lyr/[10]股息率/
 > [15]员工/[18]20日/[21]ytd/[28]5日/[30]10日；tdxstat2 Col[3]成交额(万)/[5][7]昨日前日成交额/
 > [13]特色板块/[14][15]主力净买T/T-1/[16]ipo_price/[17][18]52周/[19][20]30日K线；
 > **新线索**：Col[11]=自由流通股本（万股，茅台 5.4 亿≈12.52×46% 大股东锁定——zhb 未解析，
@@ -488,13 +488,13 @@ TDX 服务器 (端口 7709)
 | **[0]** | `market` | 市场代码 | ✅ | `0`=深, `1`=沪, `2`=京 | `0` / `1` | 前缀拼接 (`sh`/`sz`/`bj`) |
 | **[1]** | `code` | 股票代码 | ✅ | 6位字符串 | `000001` / `600519` | 主键 Code |
 | **[2]** | *(丢弃)* | BetaValue（Beta 系数） | ✅ | `float` | `-0.1563` / `-0.0488` | **2026-08-04 官方通达信确认**：茅台 ZHB=-0.0963 vs 官方 BetaValue=-0.10、工行 ZHB=-0.4670 vs 官方=-0.47（均精确/接近）。9 天连续变化符合 Beta 时变性。平安官方 Beta=0（数据缺失），但 ZHB=-0.1721 量级一致。原"实时估值偏离系数"错误 |
-| **[3]** | `pe_dynamic` | 市盈率（动） = 官方 StaticPE_TTM | ✅ | `float` | `5.01` / `19.49` | ⭐⭐⭐⭐ 估值。**18/18 全样本匹配 TdxQuant StaticPE_TTM**（2026-08-12）；⚠️ **2026-09-01 二次重裁定**：Col[3] ≡ push2 **f162** = `pe_mrq` = **动态市盈率**（现价÷最新报告期年化EPS）。2026-08-31 曾误改为"静态/MRQ"（望文生义译 MRQ），已推翻。**变量名 `pe_dynamic` 反而与真实口径一致**；是同花顺 `pe_mrq`／东财"动态"／TdxQuant"StaticPE_TTM"三个名字打架（详见 §12.8.12e 后【PE 口径铁证】）|
+| **[3]** | `pe_ttm` | 市盈率（TTM） | ✅ | `float` | `5.01` / `19.49` | ⭐⭐⭐⭐ TTM 估值。**🔴 V17.4.22(2026-09-24) 实证订正**：原误标 `pe_dynamic`（2026-09-01「二次重裁定」由旧误标代码循环推导所致）。经外部金标准（ZHB Col[3] 对 TDX 实时 TTM：000858 `20.87`≈`20.67`、fuyao `pe_ttm` 20/20 吻合）确证 **Col[3]=pe_ttm（TTM）**，本列 ≡ push2 **f164** ≡ fuyao `pe_ttm`（详见 §三 V17.4.22 订正块）。|
 | **[4]** | `date` | 数据快照日期 | ✅ | `YYYYMMDD` | `20260727` | ZHB 数据新鲜度判断 |
 | **[5]** | `streak_days` | **连涨/连跌天数** | ✅ | 整数 (正=连涨, 负=连跌) | `4` / `-1` | ⭐⭐⭐⭐⭐ 短线动能指标 |
 | **[6]** | `change_pct` | T 日涨跌幅 (%) | ✅ | `float` | `0.09` / `-0.61` | ⭐⭐⭐⭐⭐ T日真实收盘涨跌幅 |
 | **[7]** | `change_pct_1d` | T-1 日涨跌幅 (%) | ✅ | `float` | `0.18` / `0.42` | ⭐⭐⭐⭐⭐ 与 Col6 形成1日滞后对 |
 | **[8]** | `change_pct_2d` | T-2 日涨跌幅 (%) | ✅ | `float` | `0.91` / `-1.00` | ⭐⭐⭐⭐⭐ 3日K线组合 |
-| **[9]** | `pe_ttm` | 市盈率（TTM） = 官方 MorePE | ✅ | `float` | `5.0571` / `19.5819` | ⭐⭐⭐⭐ TTM估值。**18/18 匹配 TdxQuant MorePE**（2026-08-12,茅台 20.4474 vs 官方 20.45） |
+| **[9]** | `pe_lyr` | 市盈率（静态/LYR） | ✅ | `float` | `5.0571` / `19.5819` | ⭐⭐⭐⭐ 静态(LYR)估值。**🔴 V17.4.22(2026-09-24) 实证订正**：原误标 `pe_ttm`。经外部金标准（ZHB Col[9] 对 TDX 实时静态PE：000858 `30.49`≈`30.20`）确证 **Col[9]=pe_lyr（静态/LYR）**，既非TTM亦非MRQ；本列 ≡ push2 **f163** ≡ fuyao `pe_lyr`。|
 | **[10]** | `dividend_yield` | 股息率 (%) = 官方 DYRatio | ✅ | `float` | `5.36` / `4.03` | ⭐⭐⭐⭐⭐ 股息策略。**18/18 匹配 TdxQuant DYRatio**（茅台 3.86=官方 3.86=push2 f126 3.87） |
 | **[11]** | *(丢弃)* | 自由流通股本 FreeLtgb（万股） | ✅ | `float` (大数值) | `816048.12` / `54094.90` | **2026-08-04 官方通达信 TdxQuant 确认**：茅台 FreeLtgb=54094.9、工行=3119269.27 与 ZHB 精确匹配（2/3 公司，平安因 H 股口径差异待查）。**V16.4.1 二次实测（2026-08-12）**：TdxQuant get_more_info 直接返回 FreeLtgb=54094.90（茅台），与 ZHB 完全一致 |
 | **[12]** | `unseal_date` | 新股开板日 (YYYYMMDD) | ✅ | 日期 | `""` / `""` | **V16.2.18 破解**（东财 f189 交叉）：2016+ 新股上市后首次不再涨停的日期；与 f189 上市日差值=连板交易日数（001203 大中矿业 10 日历日=8 交易日✓、300750 宁德 8 交易日✓、24 样本 18/24 精确、余差 1 天为节假日近似）。老股/2015 前为空。**V16.4.1 补强（2026-08-12，20 股×8 天序列）**：8 天完全稳定（静态字段）；10 只次新股案例全过（300788=20190715/6板、603221=20200326/3板、002827=20161226/11板、688553/688589/688327/688426/301091/688500 上市日=开板日且板数=0 即首日开板） |
@@ -521,16 +521,12 @@ TDX 服务器 (端口 7709)
 | **[33]** | *(丢弃)* | 连板数 | ✅ | `int` 0-28 | `000017=5` | **V17.0.9b 终极破解(2026-08-27 采集对撞, 日期对齐)**: 8/27 MAK 涨停天梯 20/20 **完全匹配**(000017=5/003040=4/002084=3/600103=2 全精确)——type==天梯连板数; 原"涨停类型族 ztlx 待终核"**证伪**; 与 [31]lianban/[32]count 当日涨停时三者一致(000017 5/5/5), 非涨停时 type=None/0 而 lianban/count 保留历史值; **双日期循环再验证(2026-08-27): 8/26 ZHB×8/27天梯 + 8/25 ZHB×8/26天梯 各 20/20=100%, 跨日稳健非巧合 → 升级 L1** | **🟢 20260919 终判(N天M板L连板模型, 本地36包实证)**: Col[31]=N(异动周期交易日总数,逐日+1)、Col[32]=M(周期内涨停天数)、Col[33]=L(当前连板数); M≤N 全样本0违例; 600540 08-27(N1M1L1)→09-14(N13M6L空)逐行吻合 → Col[31-33] 升 L1 |
 | **[34]** | *(丢弃)* | 其他权益净资产 OtherQYJzc（元） | ✅ | `float` | `8000000.00` / `0.00` | **2026-08-04 官方通达信确认**：工行 OtherQYJzc=38465699.84 vs ZHB=38465700（差异0.16浮点）。茅台=0（无其他权益）。平安=8000000 需进一步核实 |
 
-> **⚠️ 关于原文档 Col[3]/Col[9] 命名**：原文档将 Col[3] 标为"PE (TTM)"、Col[9] 标为"PE (静态)"。经代码逆向验证，**两者命名颠倒**：Col[3] = `pe_mrq`，Col[9] = `pe_ttm`。000001 实测值 Col[3]=5.01 vs Col[9]=5.0571，两者接近但不同。
-> **🔴 2026-09-01 二次重裁定（推翻 2026-08-31 那次"订正"）**：
-> - Col[3] ≡ push2 **f162** ≡ fuyao `pe_mrq` = **动态市盈率**（现价÷最新报告期**年化**EPS）。2026-08-31 曾误判为"静态/MRQ"（把 MRQ 望文生义译成"静态"），**已推翻**。
->   → 因此 **ZHB 变量名 `pe_dynamic` 与真实口径一致**（变量名反而对），只是 ZHB 内部该变量的**取值**来自 Col[3]=f162，**语义=动态**。
-> - Col[9] ≡ push2 **f164** ≡ fuyao `pe_ttm` = **TTM 市盈率**（此项 2026-08-31 判断正确）。
-> - push2 **f163** = **静态市盈率 LYR**（现价÷f160 年报EPS），**不是**动态PE。
-> - 证据：f162=现价÷(f55×年化系数) 120/120；f163=现价÷f160 120/120；f164=现价÷f108 120/120；
->   死证 `f162==现价÷f160` 0/120、`f163==现价÷(f55×2)` 0/120；10 股披露日 Q1×4→H1×2 跳变实验。
-> - **完整铁证见 §12.8.12e 后【PE 口径铁证】。**
-> **⚠️ V16.4.1 口径再修正（2026-08-12, TdxQuant 官方实测）**：Col[3]=20.35 匹配官方 **StaticPE_TTM** 口径（⚠️ TdxQuant 此名与实际口径不符——该值实为动态PE）；**同花顺 `DynaPE`=15.41 数值上即 push2 f162**（✅2026-08-31 fuyao 精确实锤；**2026-09-01 更正：`DynaPE` 的"动态"命名是对的**，f162 确为动态PE，2026-08-31 那句"f162 实为静态/MRQ、勿用 f162 当动态PE"**是错的，已作废**）；Col[9]=20.4474 匹配官方 `MorePE`=20.45。
+> **🔴 V17.4.22(2026-09-24) 实证订正（推翻 2026-09-01「二次重裁定」关于 tdxstat.cfg Col[3]/[9] 的命名）**：
+> - **正确语义**：tdxstat.cfg **Col[3] = `pe_ttm`（TTM 市盈率）**、**Col[9] = `pe_lyr`（静态/LYR 市盈率）**。
+> - **实证锚（外部金标准，非代码循环推导）**：取 TDX 实时行情 MCP 作神谕，000858 五粮液 ZHB `Col[3]=20.87` ≈ TDX 实时 **TTM 20.67**、ZHB `Col[9]=30.49` ≈ TDX 实时 **静态 30.20**；且 ZHB Col[3] 对 fuyao `pe_ttm` 20/20 吻合。两列相差约 50%（000858）证明是不同 PE 口径，标反确凿。
+> - **原「命名颠倒」结论为何错**：2026-09-01「二次重裁定」是**循环推导**——当时代码已误标 `pe_dynamic←Col[3]`、`pe_ttm←Col[9]`，它「经代码逆向验证」得出的 "Col[3]=pe_mrq(动态)/Col[9]=pe_ttm" 只是把误标代码重新陈述一遍，从未用外部金标准核验；其 000001 `Col[3]=5.01 vs Col[9]=5.0571「接近但不同」的论据也混淆了 动态(<TTM<静态) 的排序（Col[3]=20.87 落在 TTM 区间、Col[9]=30.49 落在静态区间已指向正确口径）。
+> - **push2 f162/f163/f164 三口径映射本身正确，但与 tdxstat.cfg 列号无关地成立**：f162=动态(最新报告期年化)、f163=静态LYR、f164=TTM——此铁证保留；只是 tdxstat.cfg 的 Col[3]/[9] 实际分别 = f164(TTM) / f163(静态LYR)，并非原块所断言的 Col[3]=f162。
+> - 解析器已随 V17.4.22 同步修正（`zhb_client.py:_parse_tdxstat`：`pe_ttm←col[3]`、`pe_lyr←col[9]`，移除错误 `pe_dynamic` 键）。完整证据见 `docs/field_verification/20260924_deepseek_claims_verify.md`。
 > **🔑 V17.0 拼音规律破解（2026-08-13, 详见 20260813/analysis.md §五）**：官方字段名=中文拼音缩写, 依此破解并双源实锤——
 > `ConZAFDateNum`=连续涨跌天数(==ZHB streak_days -2)、`ZAFYear/Pre20/Pre60`=年初至今/20日/60日涨幅(==change_ytd/20d/60d 全匹配)、
 > `Yield`=开盘金额(竞价额, 万)==main_net_buy_amount 4567.60、`CJJEPre1`=昨日成交额(==amount_1d)、
@@ -1189,7 +1185,7 @@ print(q.code, q.price, q.change_pct)
 | 数据源 | 字段数 | 关键字段 | 单位 |
 |:---|:---:|:---|:---|
 | **0x0010 协议** | 36 | `zongguben/liutongguben/jingzichan/jinglirun/gudongrenshu` | 万股/万元/户/元 |
-| **tdxstat.cfg** | 35 | `pe_ttm/pe_dynamic/change_pct/change_5d/dividend_yield` | 倍/百分比 |
+| **tdxstat.cfg** | 35 | `pe_ttm/pe_lyr/change_pct/change_5d/dividend_yield` | 倍/百分比 |
 | **tdxstat2.cfg** | 21 | `amount/main_net_buy_hands/main_net_buy_amount/high_52w/low_52w` | 万元/手/元 |
 | **tipinfo.dat** | 22 | `eps/disclose_date/ex_date/div_amount/div_date` | 元/YYYYMMDD/元 |
 | **spblock.dat** | 35 大板块 | `中证2000/中证1000/中证500` | — |
@@ -3113,7 +3109,7 @@ TDX `0x0010` 日K（`tdx_get_security_bars`，keys = `['time','open','close','hi
 | 流通市值 | 流通市值（亿元） | push2 f117／ulist f21／腾讯[44]／THS SDK 3475914／push2ex `ltsz`／开盘啦 `circ_mv`／fuyao `float_market_cap` | 通达信「流通市值」 | canonical: push2+ulist+腾讯+fuyao｜外部: THS/push2ex/开盘啦 |
 | 总股本 | 总股本（万股） | push2 f84／腾讯[73]／THS SDK 402／TDX财务 `zongguben`／ulist f38| 通达信「总股本」 | canonical: push2+腾讯｜外部: THS/TDX财务 |
 | 流通股本 | 流通股本（万股） | push2 f85／腾讯[72][76]／THS SDK 407／TDX财务 `liutongguben`／ulist f39| 通达信「流通股本」 | canonical: push2+腾讯｜外部: THS/TDX财务 |
-| 市盈率（动） | 动态市盈率（最新报告期年化） | push2 f162／ulist f9／腾讯[52]／THS SDK 2942／开盘啦 `pe_dynamic`／ZHB `pe_dynamic`／fuyao `pe_mrq` | 同花顺 806289408「市盈(动)」 | canonical: push2+ulist+腾讯+ZHB+fuyao｜外部: THS/开盘啦 |
+| 市盈率（动） | 动态市盈率（最新报告期年化） | push2 f162／ulist f9／腾讯[52]／THS SDK 2942／开盘啦 `pe_dynamic`／fuyao `pe_mrq` | 同花顺 806289408「市盈(动)」 | canonical: push2+ulist+腾讯+ZHB+fuyao｜外部: THS/开盘啦 |
 | 市盈率（静） | 静态市盈率（年报 LYR） | push2 f163／ulist f114／腾讯[53]／THS SDK 2946／开盘啦 `pe_static` | 同花顺 806223872「市盈(lyr)」 | canonical: push2+ulist+腾讯｜外部: THS/开盘啦 |
 | 市盈率（TTM） | 滚动市盈率 | push2 f164／ulist f115／腾讯[39]／THS SDK 3153／开盘啦 `pe_ttm`／ZHB `pe_ttm`／fuyao `pe_ttm` | 全源同名 | canonical: push2+ulist+腾讯+ZHB+fuyao｜外部: THS/开盘啦 |
 | 市净率 | 市净率 PB(MRQ) | push2 f167／ulist f23／腾讯[46]／THS SDK 2947／开盘啦 `pb`／fuyao `pb_mrq` | 通达信「市净率」；同花顺 806354944 同 | canonical: push2+ulist+腾讯+fuyao｜外部: THS行情/开盘啦 |
@@ -4180,10 +4176,10 @@ ZHB 逐日落后一个交易日，符合「最近交易日快照」铁律；`fin
 | **turnover_pct** | push2 f168 | TDX f9 | 腾讯 | — |
 | **amplitude_pct** | push2 f171 | TDX f10 | calculated (high-low/last_close) | — |
 | **vol_ratio** | push2 f49 | TDX f15 | — | — |
-| **pe_ttm** | push2 f164 | TDX f39 | ZHB Col 7 | calculated |
+| **pe_ttm** | push2 f164 | TDX f39 | ZHB Col[3] | calculated |
 | **pb** | push2 f167 | TDX f38 | ZHB Col 8 | calculated |
 | **pe_lyr**(静态/年报) | push2 f163 | TDX f40 | — | — |
-| **pe_mrq**(动态/最新报告期年化) | push2 f162 | TDX f39? | ZHB Col[3] | fuyao `pe_mrq` |
+| **pe_mrq**(动态/最新报告期年化) | push2 f162 | TDX f39? | — | fuyao `pe_mrq` |
 
 > ⚠️ **2026-09-01 二次重裁定（推翻 2026-08-31 那次订正）**：
 > - `pe_ttm` = **f164**（此项 2026-08-31 判断正确，fuyao 实锤 120/120）。
@@ -5327,7 +5323,7 @@ volRatio=量比, institutionIncrease=机构增仓 仅在 Socket 推送中——H
 
 | TdxStatRow 字段 | 含义 |
 |:---|:---|
-| 60日 Beta / PE TTM | 与 ZHB tdxstat Col[2]=BetaValue / Col[9]=pe_ttm 同语义 |
+| 60日 Beta / PE TTM | 与 ZHB tdxstat Col[2]=BetaValue / Col[9]=pe_lyr 同语义 |
 | 自由流通股本 | 与 ZHB Col[11]=FreeLtgb 同语义 |
 | 年内涨停数 / 连板统计 | 与 ZHB tdxstat 涨停相关字段 |
 
@@ -5676,7 +5672,7 @@ volRatio=量比, institutionIncrease=机构增仓 仅在 Socket 推送中——H
 
 **字段类别判断**（`data_provider` 两集合）：
 - `REQUIRES_REALTIME_HTTP`（A 实时）：price/change_pct/OHLC/volume/amount/prev_close/资金流——**C/D 层必走 HTTP**，A/B 层用 ZHB T-1
-- `ZHB_SUFFICIENT`（B 静态）：pe_ttm/pe_dynamic/dividend_yield/total_shares/float_shares/change_5d-60d/ytd/streak/52周/ipo_price/employee/industry/concept——**四层均 ZHB 优先**，HTTP 仅兜底
+- `ZHB_SUFFICIENT`（B 静态）：pe_ttm/dividend_yield/total_shares/float_shares/change_5d-60d/ytd/streak/52周/ipo_price/employee/industry/concept——**四层均 ZHB 优先**，HTTP 仅兜底
 
 **盘中实时字段 HTTP 链的 ZHB 位置**：
 > TDX（实时主源）→ 腾讯（不封 IP 四合一）→ push2delay（东财首选域）→ **ZHB T-1（最后兜底——非盘中/盘后场景实时源全失败时用旧值）** → push2（风控最严仅独有）
@@ -5694,7 +5690,7 @@ volRatio=量比, institutionIncrease=机构增仓 仅在 Socket 推送中——H
 |:---:|:---|:---:|:---|:---:|
 | **A 实时** | 行情 11（change_pct/OHLC/amount/1d/2d/price）| 0 | 盘中必须 fallback 原接口 | False ✓ |
 | **B 准实时** | 竞价族 4(main_net_buy_amount/1d/hands/1d **=竞价额/量**, V17.0 实锤) + **streak_days 连板** + **涨停族 [33]连板数/[31]异动周期计数/封单额[4][6][8]三日滚动** | 1 | 竞价/连板 1 交易日即变（8/7 涨停→8/8 断板）；streak 原误归静态 3 天→上移；⚠️ 真主力资金（东财 **f137**，V17.0.16 订正）走 A 实时链；[33] 连板数 2026-08-27 天梯 20/20 定案 | False → |
-| **C 日频** | 区间涨跌幅 6/52周/pe_ttm/pe_dynamic/股息率/eps/bps | 3 | 滚动但慢变（pe 随价 ±2.5%/日），周末容忍 | False ✓（4>3）|
+| **C 日频** | 区间涨跌幅 6/52周/pe_ttm/股息率/eps/bps | 3 | 滚动但慢变（pe 随价 ±2.5%/日），周末容忍 | False ✓（4>3）|
 | **D 静态** | ipo_price/employee/股本/行业/概念/上市日期/名称 | 90 | 恒定数据（茅台 ipo_price=31.39 上市至今不变），长假/停更容忍 | True ✓ |
 
 > **V16.3.3 调整内容**：① `streak_days` 从 C 级上移 B 级（1 天——连板数 1 日失真）② 新增 `_ZHB_STATIC_FIELDS` D 级（90 天——原全部静态字段 3 天过严，长假后无谓 fallback）

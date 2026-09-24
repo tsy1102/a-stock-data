@@ -3662,6 +3662,7 @@
       "sources": [
         "同花顺-fuyao",
         "TDX(双命名源)",
+        "ZHB-tdxstat",
         "levistock(ftshare)"
       ],
       "section": "",
@@ -5474,7 +5475,7 @@
       ],
       "section": "1. `tdxstat.cfg` (个股综合统计快照，35 个字段，7,951 行)",
       "canonical": "[3]",
-      "meaning": "市盈率（动） = 官方 StaticPE_TTM",
+      "meaning": "市盈率（TTM）",
       "unit": "万元",
       "status_raw": "✅",
       "status": "verified"
@@ -5576,7 +5577,7 @@
       ],
       "section": "1. `tdxstat.cfg` (个股综合统计快照，35 个字段，7,951 行)",
       "canonical": "[9]",
-      "meaning": "市盈率（TTM） = 官方 MorePE",
+      "meaning": "市盈率（静态/LYR）",
       "unit": "手",
       "status_raw": "✅",
       "status": "verified"
@@ -5734,20 +5735,6 @@
         "TDX-eltdx(适配层)",
         "ZHB-tdxstat",
         "财联社(cls)"
-      ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "status_raw": "",
-      "status": "unverified"
-    },
-    {
-      "code": "pe_dynamic",
-      "source": null,
-      "sources": [
-        "ZHB-tdxstat",
-        "levistock(ftshare)"
       ],
       "section": "",
       "canonical": "",
@@ -19263,6 +19250,19 @@
     },
     {
       "code": "participation_wish_change",
+      "source": "levistock(ftshare)",
+      "sources": [
+        "levistock(ftshare)"
+      ],
+      "section": "",
+      "canonical": "",
+      "meaning": "",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified"
+    },
+    {
+      "code": "pe_dynamic",
       "source": "levistock(ftshare)",
       "sources": [
         "levistock(ftshare)"

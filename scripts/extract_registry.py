@@ -241,7 +241,8 @@ def normalize_status(raw: str) -> str:
 # -> (source短别名, code)；code 取 collide.code_of 形态(最后一个 '.' 之后 / '[索引]')，
 # 保证 collide.load_registry_state 能据 mappings 标 in_registry(durable 定案)。
 _ALIGN_SRCS = {"fuyao", "tdx", "eltdx", "zhb", "tencent", "push2",
-               "push2_full", "ulist239", "sina"}
+               "push2_full", "ulist239", "sina",
+               "em_fund_flow", "event_dc", "push2ex", "em_hot", "exchange"}
 
 
 def _parse_align_id(idstr: str):
@@ -426,7 +427,7 @@ def extract():
                 })
 
     # 通用跨源对齐（非 ulist239↔push2）：cross_source_align.md
-    # 承载 fuyao/tdx/eltdx/zhb/tencent/push2/push2_full/sina 任意源对的等价/同义关系，
+    # 承载 fuyao/tdx/eltdx/zhb/tencent/push2/push2_full/sina/em_fund_flow/event_dc/push2ex/em_hot/exchange 任意源对的等价/同义关系，
     # 经 _parse_align_id 解析为 (源短别名, code)，collide 标 in_registry 后 durable 定案。
     if os.path.exists(CROSS_ALIGN):
         for ln in io.open(CROSS_ALIGN, encoding="utf-8").read().split("\n"):

@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
+## [V17.4.22] 2026-09-24 — P0: tdxstat PE 列标反修复 + unknown_2/26 晋级 L2 候选
+
+- **P0 PE 列标反修复（`core/zhb_client.py` `_parse_tdxstat`）**：tdxstat.cfg `[3]`/`[9]` 原误标 `[3]=pe_dynamic`、`[9]=pe_ttm`。经独立实证（000858 五粮液：ZHB `[3]=20.87`≈TDX 实时 TTM `20.67`、`[9]=30.49`≈TDX 实时静态 `30.20`；与 fuyao `pe_ttm` 20/20 吻合）确认实为 **`[3]=TTM`、`[9]=静态LYR`**。现修正解析器字段名：`pe_ttm←col[3]`、`pe_lyr←col[9]`，并移除错误 `pe_dynamic` 键（ZHB tdxstat.cfg 无动态 PE 列，动态 PE 来自 push2 f162，下游 `zhb_dict.get('pe_dynamic')` 自然回落实时源，未崩溃）。顺带修复下游 `data_provider` 取 ZHB 兜底 `pe_ttm` 原误喂 LYR 值的隐性 bug。
+- **`stat.unknown_2`/`stat.unknown_26` 晋级 L2 候选（sanctioned 管线）**：经 `extract_registry → gen_field_dict → parity` 三闸门（`G1`/`G3`/`P1` 全过），`stat.unknown_2` 落定为**贝塔系数(60日)**、`stat.unknown_26` 落定为**年内涨停天数 YearZTDay**。`field_dict.md` §12.1 列 `[2]`/`[26]` 早已定 `BetaValue`/`YearZTDay`（✅），本次在 `stat.*` 汇总表补齐语义并标 **L2 候选**（ihelp.dat L63/L64 官方定义逐字命中 + 慢变特征/事件级Δ实证）。**四铁律**：deepseek 自报命中 82.81% <90%，按本方治理仅定 L2、未越级 L1；待真实指数基准复现 / ≥90% 命中升 L1。
+- **残留待治理**：`field_dict.md` §三 关于 Col[3]/[9] 命名的旧警告（"Col[3]=pe_mrq, Col[9]=pe_ttm"）与本次代码实证相反，系早期由误标代码循环推导所致，需后续 sanctioned 修订（本提交聚焦 P0 代码修复 + unknown_2/26 晋级，未动该段 prose）。
+- 治理：含 field_dict/registry/verify 改动，G1/G3/P1 闸门全过；`PYTHON=py` 提交；未推送。
+
 ## [V17.4.21] 2026-09-24 — 历史非交易日目录清理 + 盘中→盘后刷新逻辑
 
 - **历史非交易日目录清理（治标）**：扫描 `docs/field_verification/` 下所有 `YYYYMMDD` 目录，将「周末/法定节假日（运行日）命名」的目录修正为真实数据日（`get_last_trading_day(目录名)`）。真实数据日目录已存在者判为冗余→删除；唯一者→改名至真实数据日并修正 `meta.data_date`/`date`。共处理 8 个目录（7 删 1 改：20260822→20260821），清理后**零周末/节假日命名目录**，对撞数据污染根除。被删目录内的原始采集数据（raw_*.json）均已在对应交易日目录保全，仅删除了可在交易日目录重现的派生分析产物。

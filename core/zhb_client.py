@@ -853,14 +853,14 @@ class ZhbData:
         字段映射（基于injoyai/tdx开源仓库源码验证 + 实盘比对）：
             [0]  market          市场代码 (0=SZ, 1=SH)
             [1]  code            股票代码
-            [2]  unknown_2       未知(2026-08-14: 连续浮点 5069 unique 非枚举, 疑资金类指标)
-            [3]  pe_dynamic      市盈率(动态)
+            [2]  unknown_2       贝塔系数(Beta, 60日) ★V17.4.22(2026-09-24)晋级L2候选: ihelp.dat L63官方定义+慢变特征实证(自相关0.91); 列[2]=通达信官方BetaValue已定案(✅)
+            [3]  pe_ttm          市盈率(TTM) ★V17.4.22(2026-09-24)实证修正: 原误标 pe_dynamic; tdxstat[3] 对 fuyao pe_ttm 20/20、对 TDX 实时TTM(000858:20.67≈20.87)精确吻合
             [4]  date            数据日期
             [5]  streak_days     连涨连跌天数(正=连涨,负=连跌)
             [6]  change_pct      今日涨跌幅(%)
             [7]  change_pct_1d   昨日涨跌幅(%)
             [8]  change_pct_2d   前日涨跌幅(%)
-            [9]  pe_ttm          市盈率TTM
+            [9]  pe_lyr          市盈率(静态/LYR) ★V17.4.22(2026-09-24)实证修正: 原误标 pe_ttm; tdxstat[9] 对 TDX 实时静态PE(000858:30.20≈30.49)吻合, 既非TTM亦非MRQ
             [10] dividend_yield  股息率(%)
             [11] free_ltgb       自由流通股本(万股) ★2026-08-04官方TdxQuant确认
             [12] unseal_date     新股开板日(YYYYMMDD) ★V16.2.18破解：2016+新股
@@ -887,7 +887,7 @@ class ZhbData:
                   低位21/51/61/71/2/6→偏空大跌、码0=中性基准; 同值组当日涨幅区间高度一致; 非个股基本面)
             [24] cash_zj         现金总额(元) ★2026-08-04官方TdxQuant确认
             [25] pre_receive_zj  预收资金(万元) ★2026-08-04官方TdxQuant确认
-            [26] unknown_26      未知(0-48恒定分类码,46类,仅少量变化; injoyai未命名)
+            [26] unknown_26      年内涨停天数 YearZTDay ★V17.4.22(2026-09-24)晋级L2候选: ihelp.dat L64官方定义+事件级Δ实证; 列[26]=通达信官方YearZTDay已定案(✅)
                   ★V17.0(2026-08-14)排除行业/省份: 全市场按tdxhy行业分组组内同值率
                   仅1%(4/303,均=0)——行业/细分行业在 tdxhy.cfg(T/X码), 不在数值表
             [27] change_5k_bar   近5根K线涨跌幅(交易日口径,%)
@@ -918,13 +918,13 @@ class ZhbData:
             result[code] = {
                 "market": _safe_cast(parts, 0, int),
                 "code": code,
-                "pe_dynamic": _safe_cast(parts, 3, float),
+                "pe_ttm": _safe_cast(parts, 3, float),  # ★V17.4.22 修正: [3]=TTM(原误标 pe_dynamic)
                 "date": parts[4].strip() if len(parts) > 4 else "",
                 "streak_days": _safe_cast(parts, 5, int),
                 "change_pct": _safe_cast(parts, 6, float),
                 "change_pct_1d": _safe_cast(parts, 7, float),
                 "change_pct_2d": _safe_cast(parts, 8, float),
-                "pe_ttm": _safe_cast(parts, 9, float),
+                "pe_lyr": _safe_cast(parts, 9, float),  # ★V17.4.22 修正: [9]=静态LYR(原误标 pe_ttm)
                 "dividend_yield": _safe_cast(parts, 10, float),
                 # V16.2.18: Col[12]=新股开板日/Col[13]=上市连板数（东财f189交叉破解）
                 "unseal_date": parts[12].strip() if len(parts) > 12 else "",
@@ -2084,7 +2084,7 @@ def market_stat_snapshot(codes: Optional[List[str]] = None) -> Dict[str, Dict[st
         codes: 股票代码列表，None 表示全市场
 
     Returns:
-        {code: {change_pct, streak_days, pe_dynamic, pe_ttm, dividend_yield,
+        {code: {change_pct, streak_days, pe_ttm, pe_lyr, dividend_yield,
                 change_pct_1d, change_pct_2d, change_5d, change_10d, change_20d,
                 change_30d, change_60d, change_ytd, cash_reserve_wan, employee_count, ...}}
     """
@@ -2121,7 +2121,7 @@ def full_market_snapshot(codes: Optional[List[str]] = None) -> Dict[str, Dict[st
         codes: 股票代码列表，None 表示全市场
 
     Returns:
-        {code: {change_pct, pe_dynamic, amount, industry_code, high_52w, ...}}
+        {code: {change_pct, pe_ttm, pe_lyr, amount, industry_code, high_52w, ...}}
     """
     s1 = market_stat_snapshot(codes)
     s2 = market_stat2_snapshot(codes)

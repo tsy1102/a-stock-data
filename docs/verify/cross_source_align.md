@@ -1,10 +1,10 @@
 # 跨源字段等价对齐表（通用存储，sanctioned 入库）
 
-> 用途：承载非 ulist239↔push2 的跨源等价/同义关系（fuyao/tdx/eltdx/zhb/tencent/push2/push2_full/sina 任意源对）。
+> 用途：承载非 ulist239↔push2 的跨源等价/同义关系（fuyao/tdx/eltdx/zhb/tencent/push2/push2_full/sina/em_fund_flow/event_dc/push2ex/em_hot/exchange 任意源对；后 5 个为 V17.4.22 batch-2 扩展接纳）。
 > 经 extract_registry.py 解析入 field_registry.json mappings，collide 据 load_registry_state 标 in_registry 后 durable 定案（不再每轮重新发现）。
 > 来源：docs/field_verification/20260918/20260918_crack_report.md（collide 7 天窗口 L1 候选，hit≥0.92·5d，四铁律全过）。
 > 格式：`| 源A.字段A | 源B.字段B | 关系 | 中文语义 | 证据 |`
-> 源前缀短别名：fuyao / tdx / eltdx / zhb / tencent / push2 / push2_full / ulist239 / sina
+> 源前缀短别名：fuyao / tdx / eltdx / zhb / tencent / push2 / push2_full / ulist239 / sina / em_fund_flow / event_dc / push2ex / em_hot / exchange
 > 注：fuyao/tdx/eltdx/zhb 适配层字段因 registered_field_sets 收录形态差异，verified 状态定案见 field_dict.md 附录；本表确保 collide in_registry 固化等价关系。
 
 | 源A.字段A | 源B.字段B | 关系 | 中文语义 | 证据 |
@@ -341,3 +341,76 @@
 | tencent[71] | ulist239.f24 | 异号同义 | 码级同义 | 20260924 对撞 L1·hit=0.90·9d |
 | ulist239.f192 | ulist239.f202 | 异号同义 | 码级同义 | 20260924 对撞 L1·hit=0.90·9d |
 | ulist239.f192 | ulist239.f233 | 异号同义 | 码级同义 | 20260924 对撞 L1·hit=0.90·9d |
+
+| push2ex.change_pct | fuyao.snapshot.price_change_ratio_pct | 异号同义 | 码级同义 | 20260924 对撞 L1·hit=1.00·9d |
+| push2ex.change_pct | tdx.quote_full.change_pct | 异号同义 | 码级同义 | 20260924 对撞 L1·hit=1.00·9d |
+| push2ex.amount | fuyao.snapshot.turnover | 异号同义 | 码级同义 | 20260924 对撞 L1·hit=1.00·9d |
+| push2ex.amount | sina[9] | 异号同义 | 码级同义 | 20260924 对撞 L1·hit=1.00·9d |
+| em_fund_flow.f137 | ulist239.f62 | 异号同义 | 码级同义 | 20260924 对撞 L1·hit=1.00·8d |
+| em_fund_flow.f140 | ulist239.f66 | 异号同义 | 码级同义 | 20260924 对撞 L1·hit=1.00·8d |
+| em_fund_flow.f141 | ulist239.f70 | 异号同义 | 码级同义 | 20260924 对撞 L1·hit=1.00·8d |
+| em_fund_flow.f142 | ulist239.f71 | 异号同义 | 码级同义 | 20260924 对撞 L1·hit=1.00·8d |
+| em_fund_flow.f143 | ulist239.f72 | 异号同义 | 码级同义 | 20260924 对撞 L1·hit=1.00·8d |
+| em_fund_flow.f144 | ulist239.f76 | 异号同义 | 码级同义 | 20260924 对撞 L1·hit=1.00·8d |
+| em_fund_flow.f145 | ulist239.f77 | 异号同义 | 码级同义 | 20260924 对撞 L1·hit=1.00·8d |
+| em_fund_flow.f146 | ulist239.f78 | 异号同义 | 码级同义 | 20260924 对撞 L1·hit=1.00·8d |
+| em_fund_flow.f147 | ulist239.f82 | 异号同义 | 码级同义 | 20260924 对撞 L1·hit=1.00·8d |
+| em_fund_flow.f148 | ulist239.f83 | 异号同义 | 码级同义 | 20260924 对撞 L1·hit=1.00·8d |
+| em_fund_flow.f149 | ulist239.f84 | 异号同义 | 码级同义 | 20260924 对撞 L1·hit=1.00·8d |
+| em_hot.pct | tencent[32] | 异号同义 | 码级同义 | 20260924 对撞 L1·hit=1.00·8d |
+| em_hot.pct | ulist239.f3 | 异号同义 | 码级同义 | 20260924 对撞 L1·hit=1.00·8d |
+| em_hot.pct | push2.f170 | 异号同义 | 码级同义 | 20260924 对撞 L1·hit=1.00·8d |
+| push2ex.amount | ulist239.f6 | 异号同义 | 码级同义 | 20260924 对撞 L1·hit=1.00·8d |
+| push2ex.amount | eltdx.quote_snapshot.amount | 异号同义 | 码级同义 | 20260924 对撞 L1·hit=1.00·8d |
+| push2ex.circulating_value | ulist239.f21 | 异号同义 | 码级同义 | 20260924 对撞 L1·hit=1.00·8d |
+| push2ex.total_value | ulist239.f20 | 异号同义 | 码级同义 | 20260924 对撞 L1·hit=1.00·8d |
+| em_fund_flow.f135 | push2_full.f135 | 异号同义 | 码级同义 | 20260924 对撞 L1·hit=1.00·7d |
+| em_fund_flow.f135 | push2.f135 | 异号同义 | 码级同义 | 20260924 对撞 L1·hit=1.00·7d |
+| em_fund_flow.f136 | push2_full.f136 | 异号同义 | 码级同义 | 20260924 对撞 L1·hit=1.00·7d |
+| em_fund_flow.f136 | push2.f136 | 异号同义 | 码级同义 | 20260924 对撞 L1·hit=1.00·7d |
+| em_fund_flow.f137 | push2_full.f137 | 异号同义 | 码级同义 | 20260924 对撞 L1·hit=1.00·7d |
+| em_fund_flow.f137 | push2.f137 | 异号同义 | 码级同义 | 20260924 对撞 L1·hit=1.00·7d |
+| em_fund_flow.f140 | push2_full.f140 | 异号同义 | 码级同义 | 20260924 对撞 L1·hit=1.00·7d |
+| em_fund_flow.f140 | push2.f140 | 异号同义 | 码级同义 | 20260924 对撞 L1·hit=1.00·7d |
+| em_fund_flow.f141 | push2_full.f141 | 异号同义 | 码级同义 | 20260924 对撞 L1·hit=1.00·7d |
+| em_fund_flow.f141 | push2.f141 | 异号同义 | 码级同义 | 20260924 对撞 L1·hit=1.00·7d |
+| em_fund_flow.f142 | push2_full.f142 | 异号同义 | 码级同义 | 20260924 对撞 L1·hit=1.00·7d |
+| em_fund_flow.f142 | push2.f142 | 异号同义 | 码级同义 | 20260924 对撞 L1·hit=1.00·7d |
+| em_fund_flow.f143 | push2_full.f143 | 异号同义 | 码级同义 | 20260924 对撞 L1·hit=1.00·7d |
+| em_fund_flow.f143 | push2.f143 | 异号同义 | 码级同义 | 20260924 对撞 L1·hit=1.00·7d |
+| em_fund_flow.f144 | push2_full.f144 | 异号同义 | 码级同义 | 20260924 对撞 L1·hit=1.00·7d |
+| em_fund_flow.f144 | push2.f144 | 异号同义 | 码级同义 | 20260924 对撞 L1·hit=1.00·7d |
+| em_fund_flow.f145 | push2_full.f145 | 异号同义 | 码级同义 | 20260924 对撞 L1·hit=1.00·7d |
+| em_fund_flow.f145 | push2.f145 | 异号同义 | 码级同义 | 20260924 对撞 L1·hit=1.00·7d |
+| em_fund_flow.f146 | push2_full.f146 | 异号同义 | 码级同义 | 20260924 对撞 L1·hit=1.00·7d |
+| em_fund_flow.f146 | push2.f146 | 异号同义 | 码级同义 | 20260924 对撞 L1·hit=1.00·7d |
+| em_fund_flow.f147 | push2_full.f147 | 异号同义 | 码级同义 | 20260924 对撞 L1·hit=1.00·7d |
+| em_fund_flow.f147 | push2.f147 | 异号同义 | 码级同义 | 20260924 对撞 L1·hit=1.00·7d |
+| em_fund_flow.f148 | push2_full.f148 | 异号同义 | 码级同义 | 20260924 对撞 L1·hit=1.00·7d |
+| em_fund_flow.f148 | push2.f148 | 异号同义 | 码级同义 | 20260924 对撞 L1·hit=1.00·7d |
+| em_fund_flow.f149 | push2_full.f149 | 异号同义 | 码级同义 | 20260924 对撞 L1·hit=1.00·7d |
+| em_fund_flow.f149 | push2.f149 | 异号同义 | 码级同义 | 20260924 对撞 L1·hit=1.00·7d |
+| em_hot.pct | zhb.full.change_pct | 异号同义 | 码级同义 | 20260924 对撞 L1·hit=1.00·7d |
+| em_hot.pct | zhb.stat.change_pct | 异号同义 | 码级同义 | 20260924 对撞 L1·hit=1.00·7d |
+| push2ex.amount | push2.f48 | 异号同义 | 码级同义 | 20260924 对撞 L1·hit=1.00·7d |
+| push2ex.circulating_value | push2.f117 | 异号同义 | 码级同义 | 20260924 对撞 L1·hit=1.00·7d |
+| push2ex.total_value | push2.f116 | 异号同义 | 码级同义 | 20260924 对撞 L1·hit=1.00·7d |
+| em_hot.pct | push2_full.f170 | 异号同义 | 码级同义 | 20260924 对撞 L1·hit=1.00·6d |
+| push2_full.f48 | push2ex.amount | 异号同义 | 码级同义 | 20260924 对撞 L1·hit=1.00·6d |
+| push2_full.f116 | push2ex.total_value | 异号同义 | 码级同义 | 20260924 对撞 L1·hit=1.00·6d |
+| push2_full.f117 | push2ex.circulating_value | 异号同义 | 码级同义 | 20260924 对撞 L1·hit=1.00·6d |
+| exchange.dqrq | sina[30] | 异号同义 | 码级同义 | 20260924 对撞 L1·hit=1.00·5d |
+| tencent[2] | exchange.zqdm | 异号同义 | 码级同义 | 20260924 对撞 L1·hit=1.00·5d |
+| push2_full.f57 | exchange.zqdm | 异号同义 | 码级同义 | 20260924 对撞 L1·hit=1.00·4d |
+| ulist239.f12 | exchange.zqdm | 异号同义 | 码级同义 | 20260924 对撞 L1·hit=1.00·4d |
+| push2.f57 | exchange.zqdm | 异号同义 | 码级同义 | 20260924 对撞 L1·hit=1.00·4d |
+| event_dc.ISSUE_NUM | event_dc.TOTAL_ISSUE_NUM | 异号同义 | 码级同义 | 20260924 对撞 L1·hit=1.00·3d |
+| event_dc.INDUSTRY_PE | event_dc.INDUSTRY_PE_NEW | 异号同义 | 码级同义 | 20260924 对撞 L1·hit=1.00·3d |
+| event_dc.OPEN_AVERAGE_PRICE | event_dc.AVERAGE_PRICE | 异号同义 | 码级同义 | 20260924 对撞 L1·hit=1.00·3d |
+| event_dc.OPEN_AVERAGE_PRICE | event_dc.LD_AVERAGE_PRICE | 异号同义 | 码级同义 | 20260924 对撞 L1·hit=1.00·3d |
+| event_dc.LATELY_PRICE | event_dc.TNEW_PRICE | 异号同义 | 码级同义 | 20260924 对撞 L1·hit=1.00·3d |
+| event_dc.AVERAGE_PRICE | event_dc.LD_AVERAGE_PRICE | 异号同义 | 码级同义 | 20260924 对撞 L1·hit=1.00·3d |
+| event_dc.TOTAL_RAISE_FUNDS | event_dc.DEC_SUMFINA | 异号同义 | 码级同义 | 20260924 对撞 L1·hit=1.00·3d |
+| event_dc.INITIAL_TRANSFER_PRICE | event_dc.TRANSFER_VALUE | 异号同义 | 码级同义 | 20260924 对撞 L1·hit=1.00·3d |
+| event_dc.PREDICT_ISSUE_PRICE1 | event_dc.CURRENT_ONEWORD_NUM | 异号同义 | 码级同义 | 20260924 对撞 L1·hit=0.90·3d |
+| event_dc.CURRENT_ONEWORD_NUM | event_dc.IS_RISKWARNING | 异号同义 | 码级同义 | 20260924 对撞 L1·hit=0.90·3d |

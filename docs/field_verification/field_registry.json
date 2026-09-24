@@ -30633,6 +30633,3234 @@
       },
       "relation": "same_number_same_meaning",
       "evidence": "20260918 对撞 L1·hit=1.0·5d"
+    },
+    {
+      "from": {
+        "source": "sina",
+        "code": "[6]"
+      },
+      "to": {
+        "source": "sina",
+        "code": "[11]"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=1.00·10d"
+    },
+    {
+      "from": {
+        "source": "sina",
+        "code": "[6]"
+      },
+      "to": {
+        "source": "tencent",
+        "code": "[9]"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=1.00·10d"
+    },
+    {
+      "from": {
+        "source": "sina",
+        "code": "[7]"
+      },
+      "to": {
+        "source": "sina",
+        "code": "[21]"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=1.00·10d"
+    },
+    {
+      "from": {
+        "source": "sina",
+        "code": "[7]"
+      },
+      "to": {
+        "source": "tencent",
+        "code": "[19]"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=1.00·10d"
+    },
+    {
+      "from": {
+        "source": "sina",
+        "code": "[9]"
+      },
+      "to": {
+        "source": "fuyao",
+        "code": "turnover"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=1.00·10d"
+    },
+    {
+      "from": {
+        "source": "sina",
+        "code": "[11]"
+      },
+      "to": {
+        "source": "tdx",
+        "code": "bid1"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=1.00·10d"
+    },
+    {
+      "from": {
+        "source": "sina",
+        "code": "[11]"
+      },
+      "to": {
+        "source": "tencent",
+        "code": "[9]"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=1.00·10d"
+    },
+    {
+      "from": {
+        "source": "sina",
+        "code": "[13]"
+      },
+      "to": {
+        "source": "tencent",
+        "code": "[11]"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=1.00·10d"
+    },
+    {
+      "from": {
+        "source": "sina",
+        "code": "[15]"
+      },
+      "to": {
+        "source": "tencent",
+        "code": "[13]"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=1.00·10d"
+    },
+    {
+      "from": {
+        "source": "sina",
+        "code": "[17]"
+      },
+      "to": {
+        "source": "tencent",
+        "code": "[15]"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=1.00·10d"
+    },
+    {
+      "from": {
+        "source": "sina",
+        "code": "[19]"
+      },
+      "to": {
+        "source": "tencent",
+        "code": "[17]"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=1.00·10d"
+    },
+    {
+      "from": {
+        "source": "sina",
+        "code": "[21]"
+      },
+      "to": {
+        "source": "tdx",
+        "code": "ask1"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=1.00·10d"
+    },
+    {
+      "from": {
+        "source": "sina",
+        "code": "[21]"
+      },
+      "to": {
+        "source": "tencent",
+        "code": "[19]"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=1.00·10d"
+    },
+    {
+      "from": {
+        "source": "sina",
+        "code": "[25]"
+      },
+      "to": {
+        "source": "tencent",
+        "code": "[23]"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=1.00·10d"
+    },
+    {
+      "from": {
+        "source": "sina",
+        "code": "[27]"
+      },
+      "to": {
+        "source": "tencent",
+        "code": "[25]"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=1.00·10d"
+    },
+    {
+      "from": {
+        "source": "sina",
+        "code": "[29]"
+      },
+      "to": {
+        "source": "tencent",
+        "code": "[27]"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=1.00·10d"
+    },
+    {
+      "from": {
+        "source": "tdx",
+        "code": "s_vol"
+      },
+      "to": {
+        "source": "tdx",
+        "code": "s_vol"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=1.00·10d"
+    },
+    {
+      "from": {
+        "source": "tdx",
+        "code": "b_vol"
+      },
+      "to": {
+        "source": "tdx",
+        "code": "b_vol"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=1.00·10d"
+    },
+    {
+      "from": {
+        "source": "tencent",
+        "code": "[6]"
+      },
+      "to": {
+        "source": "tencent",
+        "code": "[36]"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=1.00·10d"
+    },
+    {
+      "from": {
+        "source": "tencent",
+        "code": "[9]"
+      },
+      "to": {
+        "source": "tdx",
+        "code": "bid1"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=1.00·10d"
+    },
+    {
+      "from": {
+        "source": "tencent",
+        "code": "[19]"
+      },
+      "to": {
+        "source": "tdx",
+        "code": "ask1"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=1.00·10d"
+    },
+    {
+      "from": {
+        "source": "tencent",
+        "code": "[31]"
+      },
+      "to": {
+        "source": "fuyao",
+        "code": "price_change"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=1.00·10d"
+    },
+    {
+      "from": {
+        "source": "tencent",
+        "code": "[31]"
+      },
+      "to": {
+        "source": "tdx",
+        "code": "change_amt"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=1.00·10d"
+    },
+    {
+      "from": {
+        "source": "fuyao",
+        "code": "pcf_ttm"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f131"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=1.00·9d"
+    },
+    {
+      "from": {
+        "source": "sina",
+        "code": "[9]"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f6"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=1.00·9d"
+    },
+    {
+      "from": {
+        "source": "tencent",
+        "code": "[2]"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f12"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=1.00·9d"
+    },
+    {
+      "from": {
+        "source": "tencent",
+        "code": "[31]"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f4"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=1.00·9d"
+    },
+    {
+      "from": {
+        "source": "tencent",
+        "code": "[32]"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f3"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=1.00·9d"
+    },
+    {
+      "from": {
+        "source": "tencent",
+        "code": "[52]"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f9"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=1.00·9d"
+    },
+    {
+      "from": {
+        "source": "tencent",
+        "code": "[63]"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f109"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=1.00·9d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f4"
+      },
+      "to": {
+        "source": "fuyao",
+        "code": "price_change"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=1.00·9d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f4"
+      },
+      "to": {
+        "source": "tdx",
+        "code": "change_amt"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=1.00·9d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f38"
+      },
+      "to": {
+        "source": "tencent",
+        "code": "[73]"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=1.00·9d"
+    },
+    {
+      "from": {
+        "source": "sina",
+        "code": "[9]"
+      },
+      "to": {
+        "source": "push2",
+        "code": "f48"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=1.00·8d"
+    },
+    {
+      "from": {
+        "source": "sina",
+        "code": "[9]"
+      },
+      "to": {
+        "source": "eltdx",
+        "code": "amount"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=1.00·8d"
+    },
+    {
+      "from": {
+        "source": "tencent",
+        "code": "[2]"
+      },
+      "to": {
+        "source": "push2",
+        "code": "f57"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=1.00·8d"
+    },
+    {
+      "from": {
+        "source": "tencent",
+        "code": "[31]"
+      },
+      "to": {
+        "source": "push2",
+        "code": "f169"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=1.00·8d"
+    },
+    {
+      "from": {
+        "source": "tencent",
+        "code": "[38]"
+      },
+      "to": {
+        "source": "push2",
+        "code": "f168"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=1.00·8d"
+    },
+    {
+      "from": {
+        "source": "tencent",
+        "code": "[49]"
+      },
+      "to": {
+        "source": "push2",
+        "code": "f50"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=1.00·8d"
+    },
+    {
+      "from": {
+        "source": "push2",
+        "code": "f111"
+      },
+      "to": {
+        "source": "push2",
+        "code": "f112"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=1.00·8d"
+    },
+    {
+      "from": {
+        "source": "push2",
+        "code": "f171"
+      },
+      "to": {
+        "source": "tencent",
+        "code": "[43]"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=1.00·8d"
+    },
+    {
+      "from": {
+        "source": "zhb",
+        "code": "unknown_2"
+      },
+      "to": {
+        "source": "zhb",
+        "code": "unknown_2"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=1.00·8d"
+    },
+    {
+      "from": {
+        "source": "zhb",
+        "code": "unknown_26"
+      },
+      "to": {
+        "source": "zhb",
+        "code": "unknown_26"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=1.00·8d"
+    },
+    {
+      "from": {
+        "source": "tdx",
+        "code": "shuihouli run"
+      },
+      "to": {
+        "source": "tdx",
+        "code": "shuihoulirun"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=1.00·8d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f47"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f5"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=1.00·7d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f48"
+      },
+      "to": {
+        "source": "fuyao",
+        "code": "turnover"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=1.00·7d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f48"
+      },
+      "to": {
+        "source": "sina",
+        "code": "[9]"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=1.00·7d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f48"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f6"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=1.00·7d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f49"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f34"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=1.00·7d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f50"
+      },
+      "to": {
+        "source": "tencent",
+        "code": "[49]"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=1.00·7d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f50"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f10"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=1.00·7d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f55"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f112"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=1.00·7d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f57"
+      },
+      "to": {
+        "source": "tencent",
+        "code": "[2]"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=1.00·7d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f57"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f12"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=1.00·7d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f84"
+      },
+      "to": {
+        "source": "tencent",
+        "code": "[73]"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=1.00·7d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f84"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f38"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=1.00·7d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f85"
+      },
+      "to": {
+        "source": "tencent",
+        "code": "[72]"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=1.00·7d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f85"
+      },
+      "to": {
+        "source": "tencent",
+        "code": "[76]"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=1.00·7d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f85"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f39"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=1.00·7d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f86"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f124"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=1.00·7d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f92"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f113"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=1.00·7d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f104"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f132"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=1.00·7d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f105"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f45"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=1.00·7d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f111"
+      },
+      "to": {
+        "source": "push2_full",
+        "code": "f112"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=1.00·7d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f111"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f19"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=1.00·7d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f112"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f19"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=1.00·7d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f116"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f20"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=1.00·7d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f117"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f21"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=1.00·7d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f119"
+      },
+      "to": {
+        "source": "tencent",
+        "code": "[63]"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=1.00·7d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f119"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f109"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=1.00·7d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f121"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f24"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=1.00·7d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f122"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f25"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=1.00·7d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f127"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f100"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=1.00·7d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f128"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f102"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=1.00·7d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f131"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f145"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=1.00·7d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f137"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f62"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=1.00·7d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f140"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f66"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=1.00·7d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f141"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f70"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=1.00·7d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f142"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f71"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=1.00·7d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f143"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f72"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=1.00·7d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f144"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f76"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=1.00·7d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f145"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f77"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=1.00·7d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f146"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f78"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=1.00·7d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f147"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f82"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=1.00·7d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f148"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f83"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=1.00·7d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f149"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f84"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=1.00·7d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f161"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f35"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=1.00·7d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f162"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f9"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=1.00·7d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f163"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f114"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=1.00·7d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f164"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f115"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=1.00·7d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f167"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f23"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=1.00·7d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f168"
+      },
+      "to": {
+        "source": "tencent",
+        "code": "[38]"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=1.00·7d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f168"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f8"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=1.00·7d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f169"
+      },
+      "to": {
+        "source": "fuyao",
+        "code": "price_change"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=1.00·7d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f169"
+      },
+      "to": {
+        "source": "tdx",
+        "code": "change_amt"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=1.00·7d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f169"
+      },
+      "to": {
+        "source": "tencent",
+        "code": "[31]"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=1.00·7d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f169"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f4"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=1.00·7d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f170"
+      },
+      "to": {
+        "source": "tencent",
+        "code": "[32]"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=1.00·7d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f170"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f3"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=1.00·7d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f171"
+      },
+      "to": {
+        "source": "tencent",
+        "code": "[43]"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=1.00·7d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f171"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f7"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=1.00·7d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f173"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f37"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=1.00·7d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f175"
+      },
+      "to": {
+        "source": "tencent",
+        "code": "[68]"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=1.00·7d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f177"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f148"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=1.00·7d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f181"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f111"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=1.00·7d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f182"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f139"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=1.00·7d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f183"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f40"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=1.00·7d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f184"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f41"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=1.00·7d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f185"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f46"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=1.00·7d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f186"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f49"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=1.00·7d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f187"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f129"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=1.00·7d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f188"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f57"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=1.00·7d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f189"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f26"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=1.00·7d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f190"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f48"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=1.00·7d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f191"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f33"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=1.00·7d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f193"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f184"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=1.00·7d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f194"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f69"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=1.00·7d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f195"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f75"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=1.00·7d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f196"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f81"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=1.00·7d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f197"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f87"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=1.00·7d"
+    },
+    {
+      "from": {
+        "source": "tencent",
+        "code": "[32]"
+      },
+      "to": {
+        "source": "zhb",
+        "code": "change_pct"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=1.00·7d"
+    },
+    {
+      "from": {
+        "source": "tencent",
+        "code": "[32]"
+      },
+      "to": {
+        "source": "zhb",
+        "code": "change_pct"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=1.00·7d"
+    },
+    {
+      "from": {
+        "source": "tencent",
+        "code": "[63]"
+      },
+      "to": {
+        "source": "zhb",
+        "code": "change_5d"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=1.00·7d"
+    },
+    {
+      "from": {
+        "source": "tencent",
+        "code": "[63]"
+      },
+      "to": {
+        "source": "zhb",
+        "code": "change_5d"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=1.00·7d"
+    },
+    {
+      "from": {
+        "source": "tencent",
+        "code": "[68]"
+      },
+      "to": {
+        "source": "zhb",
+        "code": "low_52w"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=1.00·7d"
+    },
+    {
+      "from": {
+        "source": "tencent",
+        "code": "[68]"
+      },
+      "to": {
+        "source": "zhb",
+        "code": "low_52w"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=1.00·7d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f3"
+      },
+      "to": {
+        "source": "zhb",
+        "code": "change_pct"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=1.00·7d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f3"
+      },
+      "to": {
+        "source": "zhb",
+        "code": "change_pct"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=1.00·7d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f24"
+      },
+      "to": {
+        "source": "zhb",
+        "code": "change_60d"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=1.00·7d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f24"
+      },
+      "to": {
+        "source": "zhb",
+        "code": "change_60d"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=1.00·7d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f109"
+      },
+      "to": {
+        "source": "zhb",
+        "code": "change_5d"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=1.00·7d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f109"
+      },
+      "to": {
+        "source": "zhb",
+        "code": "change_5d"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=1.00·7d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f160"
+      },
+      "to": {
+        "source": "zhb",
+        "code": "change_10d"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=1.00·7d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f160"
+      },
+      "to": {
+        "source": "zhb",
+        "code": "change_10d"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=1.00·7d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f47"
+      },
+      "to": {
+        "source": "push2",
+        "code": "f47"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=1.00·6d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f48"
+      },
+      "to": {
+        "source": "push2",
+        "code": "f48"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=1.00·6d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f49"
+      },
+      "to": {
+        "source": "push2",
+        "code": "f49"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=1.00·6d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f50"
+      },
+      "to": {
+        "source": "push2",
+        "code": "f50"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=1.00·6d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f51"
+      },
+      "to": {
+        "source": "push2",
+        "code": "f51"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=1.00·6d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f52"
+      },
+      "to": {
+        "source": "push2",
+        "code": "f52"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=1.00·6d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f55"
+      },
+      "to": {
+        "source": "push2",
+        "code": "f55"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=1.00·6d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f57"
+      },
+      "to": {
+        "source": "push2",
+        "code": "f57"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=1.00·6d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f58"
+      },
+      "to": {
+        "source": "push2",
+        "code": "f58"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=1.00·6d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f71"
+      },
+      "to": {
+        "source": "push2",
+        "code": "f71"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=1.00·6d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f80"
+      },
+      "to": {
+        "source": "push2",
+        "code": "f80"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=1.00·6d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f84"
+      },
+      "to": {
+        "source": "push2",
+        "code": "f84"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=1.00·6d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f85"
+      },
+      "to": {
+        "source": "push2",
+        "code": "f85"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=1.00·6d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f86"
+      },
+      "to": {
+        "source": "push2",
+        "code": "f86"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=1.00·6d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f92"
+      },
+      "to": {
+        "source": "push2",
+        "code": "f92"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=1.00·6d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f103"
+      },
+      "to": {
+        "source": "push2",
+        "code": "f103"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=1.00·6d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f104"
+      },
+      "to": {
+        "source": "push2",
+        "code": "f104"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=1.00·6d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f105"
+      },
+      "to": {
+        "source": "push2",
+        "code": "f105"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=1.00·6d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f108"
+      },
+      "to": {
+        "source": "push2",
+        "code": "f108"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=1.00·6d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f109"
+      },
+      "to": {
+        "source": "push2",
+        "code": "f109"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=1.00·6d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f111"
+      },
+      "to": {
+        "source": "push2",
+        "code": "f111"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=1.00·6d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f111"
+      },
+      "to": {
+        "source": "push2",
+        "code": "f112"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=1.00·6d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f112"
+      },
+      "to": {
+        "source": "push2",
+        "code": "f111"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=1.00·6d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f112"
+      },
+      "to": {
+        "source": "push2",
+        "code": "f112"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=1.00·6d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f116"
+      },
+      "to": {
+        "source": "push2",
+        "code": "f116"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=1.00·6d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f117"
+      },
+      "to": {
+        "source": "push2",
+        "code": "f117"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=1.00·6d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f119"
+      },
+      "to": {
+        "source": "zhb",
+        "code": "change_5d"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=1.00·6d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f119"
+      },
+      "to": {
+        "source": "zhb",
+        "code": "change_5d"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=1.00·6d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f119"
+      },
+      "to": {
+        "source": "push2",
+        "code": "f119"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=1.00·6d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f121"
+      },
+      "to": {
+        "source": "zhb",
+        "code": "change_60d"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=1.00·6d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f121"
+      },
+      "to": {
+        "source": "zhb",
+        "code": "change_60d"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=1.00·6d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f121"
+      },
+      "to": {
+        "source": "push2",
+        "code": "f121"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=1.00·6d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f122"
+      },
+      "to": {
+        "source": "push2",
+        "code": "f122"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=1.00·6d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f127"
+      },
+      "to": {
+        "source": "push2",
+        "code": "f127"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=1.00·6d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f128"
+      },
+      "to": {
+        "source": "push2",
+        "code": "f128"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=1.00·6d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f129"
+      },
+      "to": {
+        "source": "push2",
+        "code": "f129"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=1.00·6d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f135"
+      },
+      "to": {
+        "source": "push2",
+        "code": "f135"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=1.00·6d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f136"
+      },
+      "to": {
+        "source": "push2",
+        "code": "f136"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=1.00·6d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f137"
+      },
+      "to": {
+        "source": "push2",
+        "code": "f137"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=1.00·6d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f140"
+      },
+      "to": {
+        "source": "push2",
+        "code": "f140"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=1.00·6d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f141"
+      },
+      "to": {
+        "source": "push2",
+        "code": "f141"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=1.00·6d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f142"
+      },
+      "to": {
+        "source": "push2",
+        "code": "f142"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=1.00·6d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f143"
+      },
+      "to": {
+        "source": "push2",
+        "code": "f143"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=1.00·6d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f144"
+      },
+      "to": {
+        "source": "push2",
+        "code": "f144"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=1.00·6d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f145"
+      },
+      "to": {
+        "source": "push2",
+        "code": "f145"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=1.00·6d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f146"
+      },
+      "to": {
+        "source": "push2",
+        "code": "f146"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=1.00·6d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f147"
+      },
+      "to": {
+        "source": "push2",
+        "code": "f147"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=1.00·6d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f148"
+      },
+      "to": {
+        "source": "push2",
+        "code": "f148"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=1.00·6d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f149"
+      },
+      "to": {
+        "source": "push2",
+        "code": "f149"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=1.00·6d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f160"
+      },
+      "to": {
+        "source": "push2",
+        "code": "f160"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=1.00·6d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f161"
+      },
+      "to": {
+        "source": "push2",
+        "code": "f161"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=1.00·6d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f162"
+      },
+      "to": {
+        "source": "push2",
+        "code": "f162"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=1.00·6d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f163"
+      },
+      "to": {
+        "source": "push2",
+        "code": "f163"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=1.00·6d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f164"
+      },
+      "to": {
+        "source": "push2",
+        "code": "f164"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=1.00·6d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f165"
+      },
+      "to": {
+        "source": "push2",
+        "code": "f165"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=1.00·6d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f166"
+      },
+      "to": {
+        "source": "push2",
+        "code": "f166"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=1.00·6d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f167"
+      },
+      "to": {
+        "source": "push2",
+        "code": "f167"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=1.00·6d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f168"
+      },
+      "to": {
+        "source": "push2",
+        "code": "f168"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=1.00·6d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f169"
+      },
+      "to": {
+        "source": "push2",
+        "code": "f169"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=1.00·6d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f170"
+      },
+      "to": {
+        "source": "zhb",
+        "code": "change_pct"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=1.00·6d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f170"
+      },
+      "to": {
+        "source": "zhb",
+        "code": "change_pct"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=1.00·6d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f170"
+      },
+      "to": {
+        "source": "push2",
+        "code": "f170"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=1.00·6d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f171"
+      },
+      "to": {
+        "source": "push2",
+        "code": "f171"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=1.00·6d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f173"
+      },
+      "to": {
+        "source": "push2",
+        "code": "f173"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=1.00·6d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f174"
+      },
+      "to": {
+        "source": "push2",
+        "code": "f174"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=1.00·6d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f175"
+      },
+      "to": {
+        "source": "zhb",
+        "code": "low_52w"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=1.00·6d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f175"
+      },
+      "to": {
+        "source": "zhb",
+        "code": "low_52w"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=1.00·6d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f175"
+      },
+      "to": {
+        "source": "push2",
+        "code": "f175"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=1.00·6d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f176"
+      },
+      "to": {
+        "source": "push2",
+        "code": "f176"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=1.00·6d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f177"
+      },
+      "to": {
+        "source": "push2",
+        "code": "f177"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=1.00·6d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f181"
+      },
+      "to": {
+        "source": "push2",
+        "code": "f181"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=1.00·6d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f182"
+      },
+      "to": {
+        "source": "push2",
+        "code": "f182"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=1.00·6d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f183"
+      },
+      "to": {
+        "source": "push2",
+        "code": "f183"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=1.00·6d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f184"
+      },
+      "to": {
+        "source": "push2",
+        "code": "f184"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=1.00·6d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f185"
+      },
+      "to": {
+        "source": "push2",
+        "code": "f185"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=1.00·6d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f186"
+      },
+      "to": {
+        "source": "push2",
+        "code": "f186"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=1.00·6d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f187"
+      },
+      "to": {
+        "source": "push2",
+        "code": "f187"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=1.00·6d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f188"
+      },
+      "to": {
+        "source": "push2",
+        "code": "f188"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=1.00·6d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f189"
+      },
+      "to": {
+        "source": "push2",
+        "code": "f189"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=1.00·6d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f190"
+      },
+      "to": {
+        "source": "push2",
+        "code": "f190"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=1.00·6d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f191"
+      },
+      "to": {
+        "source": "push2",
+        "code": "f191"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=1.00·6d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f192"
+      },
+      "to": {
+        "source": "push2",
+        "code": "f192"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=1.00·6d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f193"
+      },
+      "to": {
+        "source": "push2",
+        "code": "f193"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=1.00·6d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f194"
+      },
+      "to": {
+        "source": "push2",
+        "code": "f194"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=1.00·6d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f195"
+      },
+      "to": {
+        "source": "push2",
+        "code": "f195"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=1.00·6d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f196"
+      },
+      "to": {
+        "source": "push2",
+        "code": "f196"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=1.00·6d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f197"
+      },
+      "to": {
+        "source": "push2",
+        "code": "f197"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=1.00·6d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f198"
+      },
+      "to": {
+        "source": "push2",
+        "code": "f198"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=1.00·6d"
+    },
+    {
+      "from": {
+        "source": "push2",
+        "code": "f119"
+      },
+      "to": {
+        "source": "zhb",
+        "code": "change_5d"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=1.00·6d"
+    },
+    {
+      "from": {
+        "source": "push2",
+        "code": "f119"
+      },
+      "to": {
+        "source": "zhb",
+        "code": "change_5d"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=1.00·6d"
+    },
+    {
+      "from": {
+        "source": "push2",
+        "code": "f121"
+      },
+      "to": {
+        "source": "zhb",
+        "code": "change_60d"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=1.00·6d"
+    },
+    {
+      "from": {
+        "source": "push2",
+        "code": "f121"
+      },
+      "to": {
+        "source": "zhb",
+        "code": "change_60d"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=1.00·6d"
+    },
+    {
+      "from": {
+        "source": "push2",
+        "code": "f170"
+      },
+      "to": {
+        "source": "zhb",
+        "code": "change_pct"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=1.00·6d"
+    },
+    {
+      "from": {
+        "source": "push2",
+        "code": "f170"
+      },
+      "to": {
+        "source": "zhb",
+        "code": "change_pct"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=1.00·6d"
+    },
+    {
+      "from": {
+        "source": "fuyao",
+        "code": "auction_volume"
+      },
+      "to": {
+        "source": "eltdx",
+        "code": "open_volume_hand"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=1.00·5d"
+    },
+    {
+      "from": {
+        "source": "fuyao",
+        "code": "auction_amount"
+      },
+      "to": {
+        "source": "eltdx",
+        "code": "open_amount"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=1.00·5d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f48"
+      },
+      "to": {
+        "source": "eltdx",
+        "code": "amount"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=1.00·5d"
+    },
+    {
+      "from": {
+        "source": "tencent",
+        "code": "[38]"
+      },
+      "to": {
+        "source": "tdx",
+        "code": "turnover_pct"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=1.00·3d"
+    },
+    {
+      "from": {
+        "source": "tencent",
+        "code": "[44]"
+      },
+      "to": {
+        "source": "tdx",
+        "code": "float_mcap_yi"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=1.00·3d"
+    },
+    {
+      "from": {
+        "source": "tencent",
+        "code": "[45]"
+      },
+      "to": {
+        "source": "tdx",
+        "code": "mcap_yi"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=1.00·3d"
+    },
+    {
+      "from": {
+        "source": "tencent",
+        "code": "[46]"
+      },
+      "to": {
+        "source": "tdx",
+        "code": "pb"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=1.00·3d"
+    },
+    {
+      "from": {
+        "source": "tencent",
+        "code": "[49]"
+      },
+      "to": {
+        "source": "tdx",
+        "code": "vol_ratio"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=1.00·3d"
+    },
+    {
+      "from": {
+        "source": "tencent",
+        "code": "[53]"
+      },
+      "to": {
+        "source": "tdx",
+        "code": "pe_lyr"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=1.00·3d"
+    },
+    {
+      "from": {
+        "source": "tdx",
+        "code": "amplitude_pct"
+      },
+      "to": {
+        "source": "tencent",
+        "code": "[43]"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=1.00·3d"
+    },
+    {
+      "from": {
+        "source": "tdx",
+        "code": "limit_down_price"
+      },
+      "to": {
+        "source": "tencent",
+        "code": "[48]"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=1.00·3d"
+    },
+    {
+      "from": {
+        "source": "tencent",
+        "code": "[39]"
+      },
+      "to": {
+        "source": "zhb",
+        "code": "pe_dynamic"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=0.99·6d"
+    },
+    {
+      "from": {
+        "source": "tencent",
+        "code": "[39]"
+      },
+      "to": {
+        "source": "zhb",
+        "code": "pe_dynamic"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=0.99·6d"
+    },
+    {
+      "from": {
+        "source": "tdx",
+        "code": "limit_up"
+      },
+      "to": {
+        "source": "tencent",
+        "code": "[47]"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=0.99·4d"
+    },
+    {
+      "from": {
+        "source": "sina",
+        "code": "[11]"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f31"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=0.98·9d"
+    },
+    {
+      "from": {
+        "source": "tencent",
+        "code": "[9]"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f31"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=0.98·9d"
+    },
+    {
+      "from": {
+        "source": "tencent",
+        "code": "[11]"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f142"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=0.98·9d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f51"
+      },
+      "to": {
+        "source": "tdx",
+        "code": "limit_up"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=0.98·3d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f164"
+      },
+      "to": {
+        "source": "zhb",
+        "code": "pe_dynamic"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=0.98·6d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f164"
+      },
+      "to": {
+        "source": "zhb",
+        "code": "pe_dynamic"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=0.98·6d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f115"
+      },
+      "to": {
+        "source": "zhb",
+        "code": "pe_dynamic"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=0.98·6d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f115"
+      },
+      "to": {
+        "source": "zhb",
+        "code": "pe_dynamic"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=0.98·6d"
+    },
+    {
+      "from": {
+        "source": "push2",
+        "code": "f164"
+      },
+      "to": {
+        "source": "zhb",
+        "code": "pe_dynamic"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=0.98·5d"
+    },
+    {
+      "from": {
+        "source": "push2",
+        "code": "f164"
+      },
+      "to": {
+        "source": "zhb",
+        "code": "pe_dynamic"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=0.98·5d"
+    },
+    {
+      "from": {
+        "source": "sina",
+        "code": "[21]"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f32"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=0.96·9d"
+    },
+    {
+      "from": {
+        "source": "sina",
+        "code": "[23]"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f143"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=0.96·9d"
+    },
+    {
+      "from": {
+        "source": "tencent",
+        "code": "[19]"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f32"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=0.96·9d"
+    },
+    {
+      "from": {
+        "source": "push2",
+        "code": "f122"
+      },
+      "to": {
+        "source": "zhb",
+        "code": "change_ytd"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=0.95·6d"
+    },
+    {
+      "from": {
+        "source": "push2",
+        "code": "f122"
+      },
+      "to": {
+        "source": "zhb",
+        "code": "change_ytd"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=0.95·6d"
+    },
+    {
+      "from": {
+        "source": "tencent",
+        "code": "[67]"
+      },
+      "to": {
+        "source": "zhb",
+        "code": "high_52w"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=0.95·7d"
+    },
+    {
+      "from": {
+        "source": "tencent",
+        "code": "[67]"
+      },
+      "to": {
+        "source": "zhb",
+        "code": "high_52w"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=0.95·7d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f122"
+      },
+      "to": {
+        "source": "zhb",
+        "code": "change_ytd"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=0.95·6d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f122"
+      },
+      "to": {
+        "source": "zhb",
+        "code": "change_ytd"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=0.95·6d"
+    },
+    {
+      "from": {
+        "source": "tencent",
+        "code": "[46]"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f23"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=0.94·9d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f25"
+      },
+      "to": {
+        "source": "zhb",
+        "code": "change_ytd"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=0.94·7d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f25"
+      },
+      "to": {
+        "source": "zhb",
+        "code": "change_ytd"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=0.94·7d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f121"
+      },
+      "to": {
+        "source": "tencent",
+        "code": "[71]"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=0.91·7d"
+    },
+    {
+      "from": {
+        "source": "fuyao",
+        "code": "ps_ttm"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f130"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=0.90·9d"
+    },
+    {
+      "from": {
+        "source": "tencent",
+        "code": "[71]"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f24"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=0.90·9d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f192"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f202"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=0.90·9d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f192"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f233"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1·hit=0.90·9d"
     }
   ]
 }

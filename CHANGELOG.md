@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
+## [V17.4.19] 2026-09-24 — 修复 collide.py ZHB 日期键错位 + 剔除异常采集日
+
+- **P0-① 修复**：`collide.py` 原以「采集目录名」作所有源的碰撞日期键，但 ZHB 包内真实数据日 `zhb_date` 恒为目录名的上一交易日（实测跨周末跳过），导致 ZHB 与任何外源恒差 1 个交易日、日频字段对撞系统性失效。现对 `src=="zhb"` 改用 `doc.zhb_date` 作键（`load_date` 内 `_date_key`）。
+- **P0-② 修复**：剔除异常采集日 `20260814`（盘中快照，10:49:53 采集，其余日均为收盘后）→ 当日 change_pct 在 19/20 股同时失配，属采集时点缺陷非字段问题；并同列 `20260815`（周六、12:55 采集）入 `EXCLUDE_DIRS`。
+- 修复后跑 sanctioned 四铁律对撞，5 个腾讯高位下标候选全部升 L1（命中率 0.949–1.000、22 独立日）：`[63]=5日涨跌幅`、`[67]=52周最高价`、`[68]=52周最低价`、`[69]=10日涨跌幅`、`[70]=20日涨跌幅`（ZHB 语料中 change_20d≡change_30d 退化，锚点不冲突）。
+- 治理：纯代码修复，不含 field_dict/registry/verify，pre-commit 闸门自动跳过；本地提交未推送。
+
 ## [V17.4.18] 2026-09-24 — 文档漂移修复（9 处，命中 A7「文档代码同真」公理）+ 记忆体系收敛
 
 - **README.md**：① 目录树 VERSION `17.3.1`→`17.4.17`；② `CanonicalStockData` 字段数 `86`→`113`（经代码核验 `sc_schema.CanonicalStockData` 实测 113 字段，原 86 为 `FIELD_SPECS` 子集误标）；③ 测试体系描述由过时的「21 文件/370 函数/398 项/353 passed」更新为「33 文件/545 函数（参数化展开约 561 项）」；④ `tdx_client.py` 标注由「mootdx/easy_tdx 统一层」更正为「eltdx/easy_tdx 统一层（运行时主源 eltdx；mootdx 已于 V17.3.4 退役）」；⑤ 目录职责表移除对不存在的 `reports/README.md`/`snapshots/README.md` 的断链引用。

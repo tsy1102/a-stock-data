@@ -82,6 +82,12 @@ HUB_MAX = 6           # 单字段匹配超过此数 → 巧合，降级
 CONST_MAX_DISTINCT = 1  # 不同值 ≤1 → 常量，跳过
 ID_SUFFIX_HINTS = ("market", "code", "date", "name", "thscode", "ticker", "url", "host", "secid")
 
+# 剔除已知异常采集日（数据质量缺陷，不可参与对撞）：
+# - 20260814：盘中快照（采集 start=10:49:53，其余日均为 15:00–17:09 收盘后）→
+#   当日 change_pct 在 19/20 股同时失配（单日全市场同向，是采集时点问题非字段问题）。
+# - 20260815：周六非交易日，采集 start=12:55，同为异常快照，纳入剔除。
+EXCLUDE_DIRS = {"20260814", "20260815"}
+
 
 # ───────────────────────────────────────────────────────────────────────
 # 数值工具
@@ -177,6 +183,8 @@ def load_date(date_dir, store):
     d = os.path.join(DATA_DIR, date_dir)
     if not os.path.isdir(d):
         return 0
+    if date_dir in EXCLUDE_DIRS:
+        return 0
     cnt = 0
     for fp in sorted(glob.glob(os.path.join(d, "raw_*.json"))):
         base = os.path.basename(fp)
@@ -190,6 +198,14 @@ def load_date(date_dir, store):
         if not isinstance(doc, dict):
             continue
         scheme = doc.get("scheme")
+        # ZHB 日期键矫正（P0-① 修复）：ZHB 包内真实数据日为 zhb_date，恒为目录名的
+        # 上一交易日（实测跨周末跳过），须用 zhb_date 作碰撞键，否则与所有外源恒差 1 个交易日。
+        # 仅 raw_zhb.json(src=="zhb") 含 zhb_date 顶层字段；其余源沿用目录名 date_dir。
+        _date_key = date_dir
+        if src == "zhb":
+            zd = doc.get("zhb_date")
+            if zd:
+                _date_key = str(zd)
         # 收集所有可展平的顶层容器（dict-of-rec 或 list-of-rec）
         containers = []
         stocks = doc.get("stocks")
@@ -221,7 +237,7 @@ def load_date(date_dir, store):
                 pairs = []
                 _flatten(rec, src, scheme, _code, date_dir, pairs)
                 for fid, val in pairs:
-                    store[fid]["vals"][(_code, date_dir)] = val
+                    store[fid]["vals"][(_code, _date_key)] = val
                     store[fid]["scheme"] = scheme
                     store[fid]["src"] = src
                 cnt += len(pairs)

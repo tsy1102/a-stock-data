@@ -400,6 +400,32 @@ async def get_eps_forecast_async(session: Any, code: str) -> Dict[str, Any]:
     return _pd.DataFrame()
 
 
+async def resolve_eps_forecast(session: Any, code: str) -> "pd.DataFrame":
+    """V17.4.22 统一 med/lng 机构一致预期取数链路, 消除跨报告 EPS 矛盾。
+
+    单一数据源契约: 以网络实时一致预期(get_eps_forecast_async)为权威主源,
+    仅在主源不可达时回退本地 ProfitForecast 快照(get_eps_forecast)。
+    中线(med)与长线(lng)报告共用本函数, 确保解析路径与数据快照完全一致,
+    杜绝 001330 类 '2026E EPS 中线0.070 / 长线0.120' 的跨报告逻辑矛盾。
+    """
+    try:
+        _df = await get_eps_forecast_async(session, code)
+        if _df is not None and not _df.empty:
+            return _df
+    except Exception as _e:
+        _debug_log(f"resolve_eps_forecast async error: {_e}")
+    # 主源不可达 → 回退本地 ProfitForecast 快照(仍保证两份报告一致性)
+    try:
+        import pandas as _pd
+        _local = await asyncio.to_thread(get_eps_forecast, code)
+        if _local is not None and not _local.empty:
+            return _local
+    except Exception as _e:
+        _debug_log(f"resolve_eps_forecast local fallback error: {_e}")
+    import pandas as _pd
+    return _pd.DataFrame()
+
+
 def _profit_forecast_index() -> dict:
     """一次性加载 ProfitForecast.dat 并建 SECUCODE→row 索引(H4 修复: 5000 次线性扫描→O(1)).
 
@@ -1465,6 +1491,7 @@ __all__ = [
     'get_dividend_history_async',
     'get_eps_forecast',
     'get_eps_forecast_async',
+    'resolve_eps_forecast',
     'get_financial_report_with_fallback',
     'get_fuyao_financials',
     'get_gross_margin_and_roe',

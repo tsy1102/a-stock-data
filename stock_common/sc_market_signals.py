@@ -303,17 +303,24 @@ def render_st_list_section(today_str: Optional[str] = None) -> List[str]:
     """沪深京 ST/*ST 风险警示名单。数据来源: 东财风险警示板 + 北交所全表按名筛。
     源(东财 push2 clist)不可达时显式"暂缓接入", 不展示空名单(治理铁律)。
     """
-    out: List[str] = ["## 【L. 风险警示（ST/*ST）名单 · 待源恢复】", ""]
+    _title = "## 【L. 风险警示（ST/*ST）名单"
+    out: List[str] = []
     try:
         from stock_common.sc_datasource import st_stock_list
         rows = st_stock_list()
     except Exception as e:
+        out.append(f"{_title} · 待源恢复】")
+        out.append("")
         out.append("  ⚠️ ST名单源(东财 push2 clist)当前不可达，本信号**暂缓接入**；源恢复后自动显示（不展示空名单）。")
         out.append(f"  （诊断: {str(e)[:90]}）")
         return out
     if not rows:
+        out.append(f"{_title} · 无数据】")
+        out.append("")
         out.append("  （当前无 ST/*ST 名单数据）")
         return out
+    out.append(f"{_title}】")
+    out.append("")
     from collections import Counter
     c = Counter(r.get("market") for r in rows)
     out.append(f"  数据来源: 东财风险警示板（沪深）+ 北交所全表按名筛 ｜ 共 {len(rows)} 只: "
@@ -321,9 +328,13 @@ def render_st_list_section(today_str: Optional[str] = None) -> List[str]:
     out.append("")
     out.append("  | 代码 | 市场 | 名称 | 类型 | 现价 | 涨跌幅 |")
     out.append("  |---|---|---|---|---|---|")
+
+    def _cell(v):
+        return "—" if v is None or v == "" else v
+
     for r in rows[:30]:
-        out.append(f"  | {r.get('code')} | {r.get('market')} | {r.get('name')} | {r.get('st_type')} "
-                   f"| {r.get('price')} | {r.get('pct_change')} |")
+        out.append(f"  | {_cell(r.get('code'))} | {_cell(r.get('market'))} | {_cell(r.get('name'))} | {_cell(r.get('st_type'))} "
+                   f"| {_cell(r.get('price'))} | {_cell(r.get('pct_change'))} |")
     return out
 
 

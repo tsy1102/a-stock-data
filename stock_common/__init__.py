@@ -84,6 +84,7 @@ __all__ = [
     "baidu_kline_full", "get_stock_info", "get_stock_info_async",
     "get_reports", "get_reports_async",
     "get_industry_reports", "get_eps_forecast", "get_eps_forecast_async",
+    "resolve_eps_forecast",
     "get_northbound_hold", "get_northbound_hold_async",
     "_northbound_cache_path", "_load_northbound_cache",
     "get_margin_trading", "get_margin_trading_async",
@@ -278,6 +279,7 @@ from stock_common.sc_datasource import (
     # 研报
     get_reports, get_reports_async,
     get_industry_reports, get_eps_forecast, get_eps_forecast_async,
+    resolve_eps_forecast,
     # 北向资金
     get_northbound_hold, get_northbound_hold_async,
     _northbound_cache_path, _load_northbound_cache,

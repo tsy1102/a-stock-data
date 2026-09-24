@@ -58,7 +58,7 @@ from stock_common import (_safe_float, _debug_log,
                           baidu_kline_full,
                           get_dividend_history,
                           get_stock_info,
-                          get_eps_forecast_async, get_reports_async,
+                          get_eps_forecast_async, get_reports_async, resolve_eps_forecast,
                           get_lockup_expiry_async, get_industry_peers,
                           get_sina_financial_report_async, get_sina_balance_sheet_async,
                           get_financial_report_with_fallback,  # B: 新浪缺失 → fuyao 利润表兜底
@@ -850,10 +850,7 @@ async def generate_report_async(session, code, output_path, ind_comp=None):
     L("\n## 【四、机构一致预期与 PEG 均值回归模型】")
     L("---")
     # H4 修复(2026-08-15 二审): 本地 ProfitForecast O(1) 优先(零网络), 未命中走网络兜底——与一章重复块合并
-    from stock_common.sc_datasource import get_eps_forecast as _eps_local
-    df_eps = await asyncio.to_thread(_eps_local, code)
-    if df_eps is None or df_eps.empty:
-        df_eps = await get_eps_forecast_async(session, code)
+    df_eps = await resolve_eps_forecast(session, code)
     eps_cur = eps_next = None
     eps_has_data = False
     if not df_eps.empty and len(df_eps.columns) >= 4:

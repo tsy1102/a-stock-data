@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
+## [V17.4.23] 2026-09-24 — 报告数据质量修复：ST名单None渲染 + med/lng一致预期源统一
+
+- **问题1 ST名单表 None 字面渲染修复（`stock_common/sc_market_signals.py` `render_st_list_section`）**：val 报告 `【L. 风险警示（ST/*ST）名单】` 节在源可达但个别字段（现价/涨跌幅）为 `None` 时，原代码直接 `r.get('price')`/`r.get('pct_change')` 拼入表格，致渲染出字面 `None`（如 `| 873841 | sz | ST祥盛 | ST | None | None |`），与该节"待源恢复"标题自相矛盾。现新增 `_cell(v)` 辅助：对 `None`/空串统一转义为 `—`；章节标题改为按真实状态动态生成（源异常→`· 待源恢复`+暂缓接入提示；空列表→`· 无数据`；正常→无后缀），消除误导。功能冒烟测试三分支全过。
+- **问题2 med/lng 跨报告一致预期 EPS 矛盾修复（统一数据源）**：001330 中线 vs 长线报告对 `2026E` 一致预期 EPS 给出 `0.070`（3家机构）/ `0.120`（4家机构）矛盾值，致前向 PE `82.57x`/`48.17x`、PEG `0.44`/`0.89` 并存。根因：med 走 `get_eps_forecast_async`（纯网络实时），lng 走 `get_eps_forecast`（本地 ProfitForecast 快照优先），命中不同机构快照。新增共享解析器 `resolve_eps_forecast(session, code)`（`stock_common/sc_datasource/_financials.py`）：以网络实时一致预期为主源、本地快照为兜底，med/lng 共用同一函数，确保解析链路与数据快照完全一致。两报告 import 已注入、取数行已切换。
+- 治理：纯运行时代码修复（不影响 field_dict/registry/verify 契约）；PYTHON=py 提交；未推送。
+
 ## [V17.4.22] 2026-09-24 — P0: tdxstat PE 列标反修复 + unknown_2/26 晋级 L2 候选
 
 - **P0 PE 列标反修复（`core/zhb_client.py` `_parse_tdxstat`）**：tdxstat.cfg `[3]`/`[9]` 原误标 `[3]=pe_dynamic`、`[9]=pe_ttm`。经独立实证（000858 五粮液：ZHB `[3]=20.87`≈TDX 实时 TTM `20.67`、`[9]=30.49`≈TDX 实时静态 `30.20`；与 fuyao `pe_ttm` 20/20 吻合）确认实为 **`[3]=TTM`、`[9]=静态LYR`**。现修正解析器字段名：`pe_ttm←col[3]`、`pe_lyr←col[9]`，并移除错误 `pe_dynamic` 键（ZHB tdxstat.cfg 无动态 PE 列，动态 PE 来自 push2 f162，下游 `zhb_dict.get('pe_dynamic')` 自然回落实时源，未崩溃）。顺带修复下游 `data_provider` 取 ZHB 兜底 `pe_ttm` 原误喂 LYR 值的隐性 bug。

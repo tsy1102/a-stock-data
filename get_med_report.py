@@ -66,6 +66,7 @@ from stock_common import (
     get_stock_info,
     get_zhb_tip_info,
     get_eps_forecast_async,
+    resolve_eps_forecast,
     get_reports_async,
     get_northbound_hold_async,
     get_margin_trading_async,
@@ -632,7 +633,7 @@ async def generate_report_async(session, code, output_path, ind_comp=None, hsgt=
     L("\n## 【五、机构一致预期与前向 PEG】")
     L("---")
     reports = None  # V16.1: 研报懒加载，EPS fallback 与评级章节共享
-    df_eps = await get_eps_forecast_async(session, code)
+    df_eps = await resolve_eps_forecast(session, code)
     eps_cur = eps_next = None
     eps_has_data = False
     if not df_eps.empty and len(df_eps.columns) >= 4:

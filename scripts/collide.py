@@ -185,6 +185,17 @@ def load_date(date_dir, store):
         return 0
     if date_dir in EXCLUDE_DIRS:
         return 0
+    # 读取 meta.json 的权威数据日(采集时落盘 data_date), 用于非 ZHB 源碰撞键。
+    # V17.4.x 起采集脚本文件夹名=实际数据日, 并在 meta 记录 data_date(数据日)/run_date(运行日);
+    # 旧版文件夹名=运行日, 此处优先采用 meta.data_date 以对齐到真实数据日(根治假日错位)。
+    _meta_data_date = None
+    _meta_path = os.path.join(d, "meta.json")
+    if os.path.isfile(_meta_path):
+        try:
+            _m = json.load(open(_meta_path, encoding="utf-8"))
+            _meta_data_date = _m.get("data_date") or _m.get("date")
+        except Exception:
+            _meta_data_date = None
     cnt = 0
     for fp in sorted(glob.glob(os.path.join(d, "raw_*.json"))):
         base = os.path.basename(fp)
@@ -198,14 +209,18 @@ def load_date(date_dir, store):
         if not isinstance(doc, dict):
             continue
         scheme = doc.get("scheme")
-        # ZHB 日期键矫正（P0-① 修复）：ZHB 包内真实数据日为 zhb_date，恒为目录名的
-        # 上一交易日（实测跨周末跳过），须用 zhb_date 作碰撞键，否则与所有外源恒差 1 个交易日。
-        # 仅 raw_zhb.json(src=="zhb") 含 zhb_date 顶层字段；其余源沿用目录名 date_dir。
+        # 数据日判定（V17.4.x 与采集脚本对齐）：
+        # - 非 ZHB 源：优先采用 meta.json 的 data_date(采集时权威数据日); 缺省回落 date_dir(文件夹名, 现已=数据日)。
+        # - ZHB 源：ZHB 包内 zhb_date 为 ZHB 自有"as of"日期, 与文件夹名/运行日均可能差 1 个交易日,
+        #   必须单独用 zhb_date 作碰撞键, 否则与所有外源恒差 1 个交易日(P0-① 修复, 持续有效)。
         _date_key = date_dir
         if src == "zhb":
             zd = doc.get("zhb_date")
             if zd:
                 _date_key = str(zd)
+        else:
+            if _meta_data_date:
+                _date_key = str(_meta_data_date)
         # 收集所有可展平的顶层容器（dict-of-rec 或 list-of-rec）
         containers = []
         stocks = doc.get("stocks")

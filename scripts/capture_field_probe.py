@@ -86,7 +86,7 @@ V17.3(2026-09-20) 采集↔字典/对撞同步核验:
   python scripts/capture_field_probe.py --refresh-pool  # 采集前从涨停池刷新动态层(连板/新股/涨停)再采集
   python scripts/capture_field_probe.py --refresh-pool-only   # 仅刷新动态层写回 pool.json, 不采集
 """
-import sys, os, json, time, argparse
+import sys, os, json, time, argparse, glob
 from datetime import datetime, time as dt_time
 from typing import Optional  # V17.4.0 fix: _resolve_zhb_name 注解用到, 此前遗漏导入致模块加载即崩
 
@@ -1666,7 +1666,12 @@ def assess_result(data) -> tuple:
 
 def main() -> None:
     ap = argparse.ArgumentParser(description="字段验证采集")
-    ap.add_argument("--date", default=datetime.now().strftime("%Y%m%d"))
+    # V17.4.x: 默认数据日=最近交易日(而非运行日) —— 周末/法定节假日运行时自动回退上一交易日,
+    # 使文件夹名恒为"实际数据日"(收盘数据所属交易日), 根除"文件夹名是假日但数据是上一交易日"的根因。
+    ap.add_argument("--date", default=_last_trading_day_str())
+    ap.add_argument("--overwrite", action="store_true",
+                    help="覆盖重采: 清空既有同数据日目标源 raw_*.json 与 meta 记录后重新采集; "
+                         "默认幂等跳过已完整采集的数据日")
     ap.add_argument("--dry-run", action="store_true")
     ap.add_argument("--only", default="", help="只采指定源(逗号分隔: zhb,tdx,tencent,push2)")
     ap.add_argument("--refresh-pool", action="store_true",
@@ -1695,13 +1700,15 @@ def main() -> None:
         return
 
     t0 = time.time()
-    print(f"▶ 采集开始: {args.date} | 股票 {len(pool)} 只 | 源: ZHB/TDX/腾讯/push2", flush=True)
+    print(f"▶ 采集开始: 数据日={args.date} (运行日={datetime.now().strftime('%Y%m%d')}) | 股票 {len(pool)} 只 | 源: ZHB/TDX/腾讯/push2", flush=True)
 
     out_dir = os.path.join(OUT_BASE, args.date)
     os.makedirs(out_dir, exist_ok=True)
     meta_path = os.path.join(out_dir, "meta.json")
 
-    meta = {"date": args.date, "start": time.strftime("%Y-%m-%d %H:%M:%S"), "sources": {}}
+    meta = {"date": args.date, "data_date": args.date,
+            "run_date": datetime.now().strftime("%Y%m%d"),
+            "start": time.strftime("%Y-%m-%d %H:%M:%S"), "sources": {}}
     # V17.2.9 修复: --only 增量采集必须**合并**已有 meta.json, 而非整份覆盖 ——
     # 否则未参与本次采集的源会从元数据中消失(曾致 22 源元数据被单源覆写)。
     if args.only and os.path.isfile(meta_path):
@@ -1763,6 +1770,39 @@ def main() -> None:
     }
     if args.only:
         collectors = {k: v for k, v in collectors.items() if k in [s.strip() for s in args.only.split(",")]}
+
+    # ── 幂等/覆盖：文件夹名已=数据日(交易日)。假日重复采集时默认跳过, 避免重复网络负载与同名覆盖 ──
+    _existing_raws = sorted(glob.glob(os.path.join(out_dir, "raw_*.json")))
+    if args.overwrite:
+        # 仅清空本次将重采源(raw + meta 记录), 保留其他源采集物, 避免误删增量补采之外的数据
+        _clear_raw = {os.path.join(out_dir, f"raw_{n}.json") for n in collectors}
+        for _p in _existing_raws:
+            if _p in _clear_raw:
+                try:
+                    os.remove(_p)
+                except Exception:
+                    pass
+        if os.path.isfile(meta_path):
+            try:
+                _m = json.load(open(meta_path, encoding="utf-8"))
+                for _n in [k for k in _m.get("sources", {}) if k in collectors]:
+                    del _m["sources"][_n]
+                with open(meta_path, "w", encoding="utf-8") as _f:
+                    json.dump(_m, _f, ensure_ascii=False, indent=1)
+            except Exception:
+                try:
+                    os.remove(meta_path)
+                except Exception:
+                    pass
+        _existing_raws = sorted(glob.glob(os.path.join(out_dir, "raw_*.json")))
+    if _existing_raws:
+        # 仅当「本次全部目标源」均已存在 raw 文件时才判定为"已完整采集", 增量 --only 补采不触发跳过
+        _want = set(collectors.keys())
+        _have = {os.path.basename(p)[len("raw_"):-len(".json")] for p in _existing_raws}
+        if _want.issubset(_have):
+            print(f"⏭ 数据日 {args.date} 采集物已存在且完整 (raw 文件 {len(_existing_raws)} 个, 源: {sorted(_have)}), "
+                  f"默认幂等跳过。如需重采请加 --overwrite。", flush=True)
+            return
 
     for name, fn in collectors.items():
         try:

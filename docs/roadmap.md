@@ -103,7 +103,7 @@ TTL 以「数据交易日」为界：**9:30 分界**（9:30 前=上一交易日�
 | # | 任务 | 来源 | 当前状态 | 风险 |
 |:---:|:---|:---|:---|:---:|
 | V17-1 | **R1: 三报告 execute_pipeline 模板抽取**（sht/med/lng ~250 行 → `BaseReportRunner._run_batch`）| ANALYSIS_REPORT R1 | ✅ **V17.0 R4 已吸收**（`execute_batch_pipeline` ~111 行抬基类，含 GD 早 init/prefetch 钩子/Semaphore(3)/快照/汇总；三脚本 execute_pipeline 现为 8–40 行薄包装）| —（已完成；✅ 测试层已补齐，剩余 5 个 Runner 装配见注记 B）|
-| V17-2 | **R5: sc_datasource 拆包**（5734 行 → 子模块 package，__init__ re-export 保兼容）| R5 | 未做 | 中高 |
+| V17-2 | **R5: sc_datasource 拆包**（5734 行 → 子模块 package，__init__ re-export 保兼容）| R5 | ✅ 已完成（V17.1.0 sc_datasource.py 拆包为子包，零回归）| 中高 |
 | V17-3 | **R6: data_provider 与 sc_datasource 职责合并**（~30 个 thin wrapper 去重，~1500 行）| R6 | 未做 | 中高（与 V17-2 一起）|
 | V17-4 | **R7: lazy import 73 处 → 顶部 import**（需逐个核对循环依赖）| B7/R7 | 未做 | 中 |
 | V17-5 | **R2: with_fallbacks 装饰器**（data_provider 15 个 fallback 函数 ~600 行 → 装饰器）| R2 | ❌ **前提已失效 / 不适用**（V17.0 已把 fallback 收敛进 `get_canonical_stock_data` 单体内联链，不再是 15 个独立函数）| 高（强行做需重构 ~1000 行单体，不建议）|
@@ -173,5 +173,7 @@ TTL 以「数据交易日」为界：**9:30 分界**（9:30 前=上一交易日�
 > tdxzsbase 样本集/加密文件族/DayData 数据区——待未来策略需求定向攻破
 > **维护机制**: 季度性用新财报核验已解字段(2026-08-15 中报核验修正 4 处误判为范例)
 > **度量**: 破解产出 8/12 破 20+/8/13 破 15+/8/14 破 10+/8/15 破 0(新项目字段, 全为验证修正)→ 递减趋势坐实收官决策
+
+> **更新（2026-09-22~23，V17.4.x）**：字段破解已重启——吸收上游权威仓库（3.9.0/3.10.0）+ 字段治理大轮（ZHB tipinfo 4 字段 L1 定案、ulist 21 字段晋升至 147、zt_type_code 全量定案、unknown_2/unknown_26 证伪护栏 R9/R10、f190/f148/f177 订正、PE 三梯队闭环），并修复报告数据质量（互动易跨公司错连等）。本 ADR「收官」结论已不再适用，项目回到「持续治理」模式。
 
 > **说明**: 本 Roadmap 为动态文档，将根据实施进度和实际情况持续更新。

@@ -4,6 +4,17 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
+## [V17.4.18] 2026-09-24 — 文档漂移修复（9 处，命中 A7「文档代码同真」公理）+ 记忆体系收敛
+
+- **README.md**：① 目录树 VERSION `17.3.1`→`17.4.17`；② `CanonicalStockData` 字段数 `86`→`113`（经代码核验 `sc_schema.CanonicalStockData` 实测 113 字段，原 86 为 `FIELD_SPECS` 子集误标）；③ 测试体系描述由过时的「21 文件/370 函数/398 项/353 passed」更新为「33 文件/545 函数（参数化展开约 561 项）」；④ `tdx_client.py` 标注由「mootdx/easy_tdx 统一层」更正为「eltdx/easy_tdx 统一层（运行时主源 eltdx；mootdx 已于 V17.3.4 退役）」；⑤ 目录职责表移除对不存在的 `reports/README.md`/`snapshots/README.md` 的断链引用。
+- **core/README.md**：`tdx_client.py` 同④更正。
+- **scripts/README.md**：版本 `V17.3`→`V17.4.17`；移除已废弃的 `.bat` 推荐小节（与文内「`.bat` 已不再提供」自相矛盾），统一为 `.ps1`。
+- **docs/roadmap.md**：① R5「sc_datasource 拆包」状态由「未做」更正为「✅ 已完成（V17.1.0 拆包完成，零回归）」；② ADR「字段破解阶段收官(2026-08-15)」补「更新」注记：V17.4.x 已重启字段破解（吸收上游 + 治理大轮），「收官」结论不再适用。
+- **docs/ARCHITECTURE_THEORY.md**：项目记忆引用由 `.workbuddy-ai/memory/MEMORY.md` 改为 `.workbuddy/memory/MEMORY.md`（与记忆体系收敛一致）。
+- **tests/README.md**：测试文件数 `32`→`33`（不含 conftest）。
+- **记忆体系收敛**：废弃 `.workbuddy-ai/memory/`（停在 V17.1.0 的陈旧记忆 + field-cracking 旧 skill），已删除整个 `.workbuddy-ai/` 目录，后续统一采用 `.workbuddy/memory/`。
+- 治理：纯文档修订，不含 field_dict/registry/verify，不触发 G1/G3/P1 闸门；本地 commit、未推送。
+
 ## [V17.4.17] 2026-09-23 — 五大报告脚本数据质量修复：互动易跨公司错连 + eltdx 缺章占位 + val 极端值护栏
 
 - **互动易跨公司错连根因修复（#440/#441）**：`cninfo_irm` 键盘查询为模糊搜索，原取 `d1[0].secid` 在沪市曾错连他司（如 601360 误连合金投资等内容）；新增按 `stockCode`/`code` 精确匹配，无匹配则空返回。新增 `get_irm_qa` 统一路由：沪市(60/68/900)改走 `sse_e_interaction`（上证 e 互动，自带强校验）、深市/北交所走 `cninfo_irm`；`get_sht/lng/med_report.py` 三处调用点由 `cninfo_irm` 改为 `get_irm_qa`，从调用层根绝跨公司错连。

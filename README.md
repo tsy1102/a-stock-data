@@ -15,7 +15,7 @@
 - **统一缓存层**：SQLite + L1 内存 + TTL + `cross_verify` + single-flight + 版本化防污染（口径变更升 category）。
 - **TDX 服务器白名单**：54 台实测收敛为 5 台 FULL 服务器，探测轮换只遍历白名单。
 - **通用框架与工程化**：`BaseReportRunner` 共享骨架、并发下沉线程池、云端同步（GD 上传）、批量并行、mypy 类型安全。
-- **测试体系（防退化守护）**：21 文件 / 370 函数（pytest 收集 398 项，分层 data/core/infra/reports），回归基线 **353 passed / 45 deselected / 0 failed**；演进 302 → 269 → 277 → 311 → 353。
+- **测试体系（防退化守护）**：33 个测试文件 / 545 个测试函数（按 data/core/infra/reports 分层，参数化展开后约 561 项），回归基线以 `pytest tests/ --collect-only` 实时为准，详见 `tests/README.md`。
 
 ---
 
@@ -128,7 +128,7 @@ python main.py [选项] 股票代码...
 ```
 a-stock-data/
 ├── main.py                       # 主入口程序（参数分发/子进程调度/超时分级）
-├── VERSION                       # 项目版本号（17.3.1，单一来源）
+├── VERSION                       # 项目版本号（17.4.17，单一来源）
 │
 ├── core/                         # V17.0 核心模块包（8 个支撑模块，见 core/README.md）
 │   ├── config.py                 # 全局配置集中管理（超时/限流/熔断）
@@ -136,7 +136,7 @@ a-stock-data/
 │   ├── _accessors.py             # 跨边界访问器叶子模块（get_concept_from_zhb 等 7 个访问器，消除 data_provider↔stock_common 导入期循环依赖）
 │   ├── zhb_client.py             # 通达信 zhb.zip 全局配置总包下载与解析（45 文件）
 │   ├── zhb_sync.py               # ZHB 自动化入库管道（python -m core.zhb_sync）
-│   ├── tdx_client.py             # mootdx/easy_tdx 统一层（K线/F10/资金流/板块）
+│   ├── tdx_client.py             # eltdx/easy_tdx 统一层（运行时主源 eltdx；mootdx 已于 V17.3.4 退役）
 │   ├── stock_cache.py            # 统一缓存层（SQLite + L1 内存 + TTL + cross_verify）
 │   └── gd_uploader.py            # Google Drive 上传（凭据在 credentials/）
 │
@@ -181,7 +181,7 @@ a-stock-data/
 │   ├── script_data_dict.md       # 脚本应用接口与字段来源字典
 │   └── domain_glossary.md        # 领域词汇表（术语口径统一）
 │
-├── tests/                        # pytest 测试（21 文件 / 370 用例，按 data/core/infra/reports 分层，见 tests/README.md）
+├── tests/                        # pytest 测试（33 个测试文件 / 545 个测试函数，按 data/core/infra/reports 分层，见 tests/README.md）
 ├── pyproject.toml                # pytest / mypy / black 等工具配置中心
 ├── requirements.txt              # 运行时依赖列表
 ├── requirements-dev.txt          # 开发依赖列表（测试/类型/格式）
@@ -208,8 +208,8 @@ a-stock-data/
 | `scripts/` | 可复用运维命令 | run_tests.ps1 / update_calendar / clean_cache |
 | `docs/` | 技术文档(架构/决策/字段字典) | roadmap / field_dict / architecture |
 | `tests/` | pytest 测试(防退化守护) | data/ core/ reports/ infra/ |
-| `reports/` | 报告输出(运行时) | 见 reports/README.md |
-| `snapshots/` | 评分快照(运行时) | 见 snapshots/README.md |
+| `reports/` | 报告输出(运行时) | 运行时生成（.gitignore，无专职 README） |
+| `snapshots/` | 评分快照(运行时) | 运行时生成（.gitignore，无专职 README） |
 | `cache/` | 缓存数据(运行时) | stock_cache.db / zhb/ / 行业映射 |
 | `scratch/` | 一次性调研沙盒(用完即弃) | 见 scratch/README.md |
 ```
@@ -240,7 +240,7 @@ a-stock-data/
 
 文档完整架构（模块职责 / 数据流 / 并发限流 / 缓存分层 / 字段路由）见 [`docs/architecture.md`](docs/architecture.md)（含 Mermaid 图）。要点速览：
 
-- **`core/data_provider.py`**：唯一数据入口，封装 `CanonicalStockData` 强类型合约（86 字段 frozen 契约）+ 字段路由 + 4 级 fallback（L0 东财申万二级 → push2 → TDX → ZHB），每字段带 `field_sources` 溯源；跨边界访问器（概念/分红/连板/涨跌幅等 7 个）已拆至 `core/_accessors.py` 叶子模块，**消除与 `stock_common` 的导入期循环依赖**（直引 `import core.data_provider` 现已可用，不再依赖入口先载 stock_common 的约定）。
+- **`core/data_provider.py`**：唯一数据入口，封装 `CanonicalStockData` 强类型合约（113 字段 frozen 契约；其中 86 个纳入 `sc_schema.FIELD_SPECS` 元数据注册表，另有 12 个 eltdx 实时短线/连板指标字段为可选扩展）+ 字段路由 + 4 级 fallback（L0 东财申万二级 → push2 → TDX → ZHB），每字段带 `field_sources` 溯源；跨边界访问器（概念/分红/连板/涨跌幅等 7 个）已拆至 `core/_accessors.py` 叶子模块，**消除与 `stock_common` 的导入期循环依赖**（直引 `import core.data_provider` 现已可用，不再依赖入口先载 stock_common 的约定）。
 - **`stock_common/sc_network.py`**：分域限流（37 域）、进程文件锁、429 退避、连续封禁 20h 冷却。
   > 注：`core/tdx_client.py::_DOMAIN_LIMITS` 另有 6 域**独立**限流表（TCP 长连接语义，与 HTTP 请求级节流不同，**有意不合并**）。
 - **`stock_common/sc_datasource.py`**：100+ 数据源查询函数。

@@ -1,6 +1,6 @@
 # scripts/ - 工具脚本目录
 
-> 当前项目版本 **V17.3**。本目录工具随治理闸门 / 字段破解流水线演进（下游 `collide.py` / `capture_field_probe.py` / 治理脚本等），以下按功能分组说明。
+> 当前项目版本 **V17.4.17**。本目录工具随治理闸门 / 字段破解流水线演进（下游 `collide.py` / `capture_field_probe.py` / 治理脚本等），以下按功能分组说明。
 
 本目录提供项目本地化的工具脚本，避免 TRAE IDE 内置 Python 3.10 抢占调用。
 
@@ -14,32 +14,16 @@ TRAE IDE 自带一个 Python 3.10 解释器并将其注入到系统 PATH 前面�
 
 ## 解决方案
 
-### `run_with_system_python.bat`（推荐 CMD 用户）
+### `run_with_system_python.ps1`（推荐，Windows PowerShell 5.1 原生环境）
 
 强制使用系统 Python 3.12：
-
-```bat
-:: 单元测试
-.\scripts\run_with_system_python.bat -m unittest tests.test_cache
-
-:: pytest 测试
-.\scripts\run_with_system_python.bat -m pytest tests/test_cache.py
-
-:: 直接运行报告脚本
-.\scripts\run_with_system_python.bat get_sht_report.py 600519 --no-upload
-
-:: 安装依赖到系统 Python
-.\scripts\run_with_system_python.bat -m pip install some-package
-```
-
-### `run_with_system_python.ps1`（PowerShell 用户）
 
 ```powershell
 .\scripts\run_with_system_python.ps1 -m pytest tests/
 .\scripts\run_with_system_python.ps1 -m unittest tests.test_cache
 ```
 
-> 注：`.bat` 版本已不再提供（V16.4.1 起仅保留 `.ps1`，Windows PowerShell 5.1 原生环境）。
+> 注：`.bat` 版本已于 V16.4.1 移除，现仅提供 `.ps1`（本目录 CLI 示例均以 `.ps1` 为准）。
 >
 > 如果遇到执行策略错误，先执行一次：
 > ```powershell

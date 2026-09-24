@@ -34725,6 +34725,7410 @@
       },
       "relation": "same_number_same_meaning",
       "evidence": "20260924 对撞 L1·hit=0.90·3d"
+    },
+    {
+      "from": {
+        "source": "em_hot",
+        "code": "price"
+      },
+      "to": {
+        "source": "fuyao",
+        "code": "last_price"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·8d"
+    },
+    {
+      "from": {
+        "source": "em_hot",
+        "code": "price"
+      },
+      "to": {
+        "source": "fuyao",
+        "code": "last_price"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·8d"
+    },
+    {
+      "from": {
+        "source": "em_hot",
+        "code": "price"
+      },
+      "to": {
+        "source": "push2_full",
+        "code": "f43"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·6d"
+    },
+    {
+      "from": {
+        "source": "em_hot",
+        "code": "price"
+      },
+      "to": {
+        "source": "push2_full",
+        "code": "f179"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·6d"
+    },
+    {
+      "from": {
+        "source": "em_hot",
+        "code": "price"
+      },
+      "to": {
+        "source": "sina",
+        "code": "[3]"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·8d"
+    },
+    {
+      "from": {
+        "source": "em_hot",
+        "code": "price"
+      },
+      "to": {
+        "source": "tdx",
+        "code": "price"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·8d"
+    },
+    {
+      "from": {
+        "source": "em_hot",
+        "code": "price"
+      },
+      "to": {
+        "source": "tencent",
+        "code": "[3]"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·8d"
+    },
+    {
+      "from": {
+        "source": "em_hot",
+        "code": "price"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f2"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·8d"
+    },
+    {
+      "from": {
+        "source": "em_hot",
+        "code": "price"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f144"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·8d"
+    },
+    {
+      "from": {
+        "source": "em_hot",
+        "code": "price"
+      },
+      "to": {
+        "source": "push2",
+        "code": "f43"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·8d"
+    },
+    {
+      "from": {
+        "source": "em_hot",
+        "code": "price"
+      },
+      "to": {
+        "source": "push2",
+        "code": "f179"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·8d"
+    },
+    {
+      "from": {
+        "source": "em_hot",
+        "code": "price"
+      },
+      "to": {
+        "source": "eltdx",
+        "code": "last_price"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·7d"
+    },
+    {
+      "from": {
+        "source": "fuyao",
+        "code": "pre_close_price"
+      },
+      "to": {
+        "source": "fuyao",
+        "code": "prev_price"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·10d"
+    },
+    {
+      "from": {
+        "source": "fuyao",
+        "code": "pre_close_price"
+      },
+      "to": {
+        "source": "push2_full",
+        "code": "f60"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·7d"
+    },
+    {
+      "from": {
+        "source": "fuyao",
+        "code": "pre_close_price"
+      },
+      "to": {
+        "source": "sina",
+        "code": "[2]"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·10d"
+    },
+    {
+      "from": {
+        "source": "fuyao",
+        "code": "pre_close_price"
+      },
+      "to": {
+        "source": "tdx",
+        "code": "last_close"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·10d"
+    },
+    {
+      "from": {
+        "source": "fuyao",
+        "code": "pre_close_price"
+      },
+      "to": {
+        "source": "tencent",
+        "code": "[4]"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·10d"
+    },
+    {
+      "from": {
+        "source": "fuyao",
+        "code": "pre_close_price"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f18"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·9d"
+    },
+    {
+      "from": {
+        "source": "fuyao",
+        "code": "pre_close_price"
+      },
+      "to": {
+        "source": "push2",
+        "code": "f60"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·8d"
+    },
+    {
+      "from": {
+        "source": "fuyao",
+        "code": "pre_close_price"
+      },
+      "to": {
+        "source": "eltdx",
+        "code": "pre_close_price"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·8d"
+    },
+    {
+      "from": {
+        "source": "fuyao",
+        "code": "pre_close_price"
+      },
+      "to": {
+        "source": "eltdx",
+        "code": "pre_close"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·5d"
+    },
+    {
+      "from": {
+        "source": "fuyao",
+        "code": "pre_close_price"
+      },
+      "to": {
+        "source": "eltdx",
+        "code": "pre_close"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·5d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f43"
+      },
+      "to": {
+        "source": "em_hot",
+        "code": "price"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·6d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f43"
+      },
+      "to": {
+        "source": "fuyao",
+        "code": "last_price"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·7d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f43"
+      },
+      "to": {
+        "source": "fuyao",
+        "code": "last_price"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·7d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f43"
+      },
+      "to": {
+        "source": "push2_full",
+        "code": "f179"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·7d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f43"
+      },
+      "to": {
+        "source": "sina",
+        "code": "[3]"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·7d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f43"
+      },
+      "to": {
+        "source": "tdx",
+        "code": "price"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·7d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f43"
+      },
+      "to": {
+        "source": "tencent",
+        "code": "[3]"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·7d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f43"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f2"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·7d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f43"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f144"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·7d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f43"
+      },
+      "to": {
+        "source": "push2",
+        "code": "f43"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·6d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f43"
+      },
+      "to": {
+        "source": "push2",
+        "code": "f179"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·6d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f43"
+      },
+      "to": {
+        "source": "eltdx",
+        "code": "last_price"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·5d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f44"
+      },
+      "to": {
+        "source": "fuyao",
+        "code": "high_price"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·7d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f44"
+      },
+      "to": {
+        "source": "sina",
+        "code": "[4]"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·7d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f44"
+      },
+      "to": {
+        "source": "tdx",
+        "code": "high"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·7d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f44"
+      },
+      "to": {
+        "source": "tencent",
+        "code": "[33]"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·7d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f44"
+      },
+      "to": {
+        "source": "tencent",
+        "code": "[41]"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·7d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f44"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f15"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·7d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f44"
+      },
+      "to": {
+        "source": "push2",
+        "code": "f44"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·6d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f44"
+      },
+      "to": {
+        "source": "eltdx",
+        "code": "high_price"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·5d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f45"
+      },
+      "to": {
+        "source": "fuyao",
+        "code": "low_price"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·7d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f45"
+      },
+      "to": {
+        "source": "sina",
+        "code": "[5]"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·7d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f45"
+      },
+      "to": {
+        "source": "tdx",
+        "code": "low"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·7d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f45"
+      },
+      "to": {
+        "source": "tencent",
+        "code": "[34]"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·7d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f45"
+      },
+      "to": {
+        "source": "tencent",
+        "code": "[42]"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·7d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f45"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f16"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·7d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f45"
+      },
+      "to": {
+        "source": "push2",
+        "code": "f45"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·6d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f45"
+      },
+      "to": {
+        "source": "eltdx",
+        "code": "low_price"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·5d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f46"
+      },
+      "to": {
+        "source": "fuyao",
+        "code": "open_price"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·7d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f46"
+      },
+      "to": {
+        "source": "fuyao",
+        "code": "open_price"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·7d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f46"
+      },
+      "to": {
+        "source": "sina",
+        "code": "[1]"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·7d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f46"
+      },
+      "to": {
+        "source": "tdx",
+        "code": "open"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·7d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f46"
+      },
+      "to": {
+        "source": "tencent",
+        "code": "[5]"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·7d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f46"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f17"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·7d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f46"
+      },
+      "to": {
+        "source": "push2",
+        "code": "f46"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·6d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f46"
+      },
+      "to": {
+        "source": "eltdx",
+        "code": "open_price"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·5d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f60"
+      },
+      "to": {
+        "source": "fuyao",
+        "code": "prev_price"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·7d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f60"
+      },
+      "to": {
+        "source": "fuyao",
+        "code": "pre_close_price"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·7d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f60"
+      },
+      "to": {
+        "source": "sina",
+        "code": "[2]"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·7d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f60"
+      },
+      "to": {
+        "source": "tdx",
+        "code": "last_close"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·7d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f60"
+      },
+      "to": {
+        "source": "tencent",
+        "code": "[4]"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·7d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f60"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f18"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·7d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f60"
+      },
+      "to": {
+        "source": "push2",
+        "code": "f60"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·6d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f60"
+      },
+      "to": {
+        "source": "eltdx",
+        "code": "pre_close_price"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·5d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f107"
+      },
+      "to": {
+        "source": "push2_full",
+        "code": "f110"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·7d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f107"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f13"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·7d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f107"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f27"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·7d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f107"
+      },
+      "to": {
+        "source": "push2",
+        "code": "f107"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·6d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f107"
+      },
+      "to": {
+        "source": "push2",
+        "code": "f110"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·6d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f110"
+      },
+      "to": {
+        "source": "push2_full",
+        "code": "f107"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·7d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f110"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f13"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·7d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f110"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f27"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·7d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f110"
+      },
+      "to": {
+        "source": "push2",
+        "code": "f107"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·6d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f110"
+      },
+      "to": {
+        "source": "push2",
+        "code": "f110"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·6d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f120"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f110"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·7d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f120"
+      },
+      "to": {
+        "source": "zhb",
+        "code": "change_20d"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·6d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f120"
+      },
+      "to": {
+        "source": "zhb",
+        "code": "change_30d"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·6d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f120"
+      },
+      "to": {
+        "source": "zhb",
+        "code": "change_20d"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·6d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f120"
+      },
+      "to": {
+        "source": "zhb",
+        "code": "change_30d"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·6d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f120"
+      },
+      "to": {
+        "source": "push2",
+        "code": "f120"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·6d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f131"
+      },
+      "to": {
+        "source": "push2",
+        "code": "f131"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·6d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f179"
+      },
+      "to": {
+        "source": "em_hot",
+        "code": "price"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·6d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f179"
+      },
+      "to": {
+        "source": "fuyao",
+        "code": "last_price"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·7d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f179"
+      },
+      "to": {
+        "source": "fuyao",
+        "code": "last_price"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·7d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f179"
+      },
+      "to": {
+        "source": "push2_full",
+        "code": "f43"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·7d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f179"
+      },
+      "to": {
+        "source": "sina",
+        "code": "[3]"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·7d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f179"
+      },
+      "to": {
+        "source": "tdx",
+        "code": "price"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·7d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f179"
+      },
+      "to": {
+        "source": "tencent",
+        "code": "[3]"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·7d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f179"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f2"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·7d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f179"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f144"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·7d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f179"
+      },
+      "to": {
+        "source": "push2",
+        "code": "f43"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·6d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f179"
+      },
+      "to": {
+        "source": "push2",
+        "code": "f179"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·6d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f179"
+      },
+      "to": {
+        "source": "eltdx",
+        "code": "last_price"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·5d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f250"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f185"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·7d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f250"
+      },
+      "to": {
+        "source": "push2",
+        "code": "f250"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·6d"
+    },
+    {
+      "from": {
+        "source": "push2ex",
+        "code": "limit_count"
+      },
+      "to": {
+        "source": "zhb",
+        "code": "zt_lianban"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·7d"
+    },
+    {
+      "from": {
+        "source": "push2ex",
+        "code": "limit_count"
+      },
+      "to": {
+        "source": "zhb",
+        "code": "zt_lianban"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·7d"
+    },
+    {
+      "from": {
+        "source": "push2ex",
+        "code": "limit_count"
+      },
+      "to": {
+        "source": "eltdx",
+        "code": "ladder_level"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·5d"
+    },
+    {
+      "from": {
+        "source": "sina",
+        "code": "[1]"
+      },
+      "to": {
+        "source": "fuyao",
+        "code": "open_price"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·10d"
+    },
+    {
+      "from": {
+        "source": "sina",
+        "code": "[1]"
+      },
+      "to": {
+        "source": "fuyao",
+        "code": "open_price"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·10d"
+    },
+    {
+      "from": {
+        "source": "sina",
+        "code": "[1]"
+      },
+      "to": {
+        "source": "push2_full",
+        "code": "f46"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·7d"
+    },
+    {
+      "from": {
+        "source": "sina",
+        "code": "[1]"
+      },
+      "to": {
+        "source": "tdx",
+        "code": "open"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·10d"
+    },
+    {
+      "from": {
+        "source": "sina",
+        "code": "[1]"
+      },
+      "to": {
+        "source": "tencent",
+        "code": "[5]"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·10d"
+    },
+    {
+      "from": {
+        "source": "sina",
+        "code": "[1]"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f17"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·9d"
+    },
+    {
+      "from": {
+        "source": "sina",
+        "code": "[1]"
+      },
+      "to": {
+        "source": "push2",
+        "code": "f46"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·8d"
+    },
+    {
+      "from": {
+        "source": "sina",
+        "code": "[1]"
+      },
+      "to": {
+        "source": "eltdx",
+        "code": "open_price"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·8d"
+    },
+    {
+      "from": {
+        "source": "sina",
+        "code": "[1]"
+      },
+      "to": {
+        "source": "eltdx",
+        "code": "open_price"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·5d"
+    },
+    {
+      "from": {
+        "source": "sina",
+        "code": "[1]"
+      },
+      "to": {
+        "source": "eltdx",
+        "code": "open_price"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·5d"
+    },
+    {
+      "from": {
+        "source": "sina",
+        "code": "[2]"
+      },
+      "to": {
+        "source": "fuyao",
+        "code": "prev_price"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·10d"
+    },
+    {
+      "from": {
+        "source": "sina",
+        "code": "[2]"
+      },
+      "to": {
+        "source": "fuyao",
+        "code": "pre_close_price"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·10d"
+    },
+    {
+      "from": {
+        "source": "sina",
+        "code": "[2]"
+      },
+      "to": {
+        "source": "push2_full",
+        "code": "f60"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·7d"
+    },
+    {
+      "from": {
+        "source": "sina",
+        "code": "[2]"
+      },
+      "to": {
+        "source": "tdx",
+        "code": "last_close"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·10d"
+    },
+    {
+      "from": {
+        "source": "sina",
+        "code": "[2]"
+      },
+      "to": {
+        "source": "tencent",
+        "code": "[4]"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·10d"
+    },
+    {
+      "from": {
+        "source": "sina",
+        "code": "[2]"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f18"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·9d"
+    },
+    {
+      "from": {
+        "source": "sina",
+        "code": "[2]"
+      },
+      "to": {
+        "source": "push2",
+        "code": "f60"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·8d"
+    },
+    {
+      "from": {
+        "source": "sina",
+        "code": "[2]"
+      },
+      "to": {
+        "source": "eltdx",
+        "code": "pre_close_price"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·8d"
+    },
+    {
+      "from": {
+        "source": "sina",
+        "code": "[2]"
+      },
+      "to": {
+        "source": "eltdx",
+        "code": "pre_close"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·5d"
+    },
+    {
+      "from": {
+        "source": "sina",
+        "code": "[2]"
+      },
+      "to": {
+        "source": "eltdx",
+        "code": "pre_close"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·5d"
+    },
+    {
+      "from": {
+        "source": "sina",
+        "code": "[3]"
+      },
+      "to": {
+        "source": "em_hot",
+        "code": "price"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·8d"
+    },
+    {
+      "from": {
+        "source": "sina",
+        "code": "[3]"
+      },
+      "to": {
+        "source": "fuyao",
+        "code": "last_price"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·10d"
+    },
+    {
+      "from": {
+        "source": "sina",
+        "code": "[3]"
+      },
+      "to": {
+        "source": "fuyao",
+        "code": "last_price"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·10d"
+    },
+    {
+      "from": {
+        "source": "sina",
+        "code": "[3]"
+      },
+      "to": {
+        "source": "push2_full",
+        "code": "f43"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·7d"
+    },
+    {
+      "from": {
+        "source": "sina",
+        "code": "[3]"
+      },
+      "to": {
+        "source": "push2_full",
+        "code": "f179"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·7d"
+    },
+    {
+      "from": {
+        "source": "sina",
+        "code": "[3]"
+      },
+      "to": {
+        "source": "tdx",
+        "code": "price"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·10d"
+    },
+    {
+      "from": {
+        "source": "sina",
+        "code": "[3]"
+      },
+      "to": {
+        "source": "tencent",
+        "code": "[3]"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·10d"
+    },
+    {
+      "from": {
+        "source": "sina",
+        "code": "[3]"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f2"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·9d"
+    },
+    {
+      "from": {
+        "source": "sina",
+        "code": "[3]"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f144"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·9d"
+    },
+    {
+      "from": {
+        "source": "sina",
+        "code": "[3]"
+      },
+      "to": {
+        "source": "push2",
+        "code": "f43"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·8d"
+    },
+    {
+      "from": {
+        "source": "sina",
+        "code": "[3]"
+      },
+      "to": {
+        "source": "push2",
+        "code": "f179"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·8d"
+    },
+    {
+      "from": {
+        "source": "sina",
+        "code": "[3]"
+      },
+      "to": {
+        "source": "eltdx",
+        "code": "last_price"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·8d"
+    },
+    {
+      "from": {
+        "source": "sina",
+        "code": "[4]"
+      },
+      "to": {
+        "source": "fuyao",
+        "code": "high_price"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·10d"
+    },
+    {
+      "from": {
+        "source": "sina",
+        "code": "[4]"
+      },
+      "to": {
+        "source": "push2_full",
+        "code": "f44"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·7d"
+    },
+    {
+      "from": {
+        "source": "sina",
+        "code": "[4]"
+      },
+      "to": {
+        "source": "tdx",
+        "code": "high"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·10d"
+    },
+    {
+      "from": {
+        "source": "sina",
+        "code": "[4]"
+      },
+      "to": {
+        "source": "tencent",
+        "code": "[33]"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·10d"
+    },
+    {
+      "from": {
+        "source": "sina",
+        "code": "[4]"
+      },
+      "to": {
+        "source": "tencent",
+        "code": "[41]"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·10d"
+    },
+    {
+      "from": {
+        "source": "sina",
+        "code": "[4]"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f15"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·9d"
+    },
+    {
+      "from": {
+        "source": "sina",
+        "code": "[4]"
+      },
+      "to": {
+        "source": "push2",
+        "code": "f44"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·8d"
+    },
+    {
+      "from": {
+        "source": "sina",
+        "code": "[4]"
+      },
+      "to": {
+        "source": "eltdx",
+        "code": "high_price"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·8d"
+    },
+    {
+      "from": {
+        "source": "sina",
+        "code": "[5]"
+      },
+      "to": {
+        "source": "fuyao",
+        "code": "low_price"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·10d"
+    },
+    {
+      "from": {
+        "source": "sina",
+        "code": "[5]"
+      },
+      "to": {
+        "source": "push2_full",
+        "code": "f45"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·7d"
+    },
+    {
+      "from": {
+        "source": "sina",
+        "code": "[5]"
+      },
+      "to": {
+        "source": "tdx",
+        "code": "low"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·10d"
+    },
+    {
+      "from": {
+        "source": "sina",
+        "code": "[5]"
+      },
+      "to": {
+        "source": "tencent",
+        "code": "[34]"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·10d"
+    },
+    {
+      "from": {
+        "source": "sina",
+        "code": "[5]"
+      },
+      "to": {
+        "source": "tencent",
+        "code": "[42]"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·10d"
+    },
+    {
+      "from": {
+        "source": "sina",
+        "code": "[5]"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f16"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·9d"
+    },
+    {
+      "from": {
+        "source": "sina",
+        "code": "[5]"
+      },
+      "to": {
+        "source": "push2",
+        "code": "f45"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·8d"
+    },
+    {
+      "from": {
+        "source": "sina",
+        "code": "[5]"
+      },
+      "to": {
+        "source": "eltdx",
+        "code": "low_price"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·8d"
+    },
+    {
+      "from": {
+        "source": "tencent",
+        "code": "[3]"
+      },
+      "to": {
+        "source": "em_hot",
+        "code": "price"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·8d"
+    },
+    {
+      "from": {
+        "source": "tencent",
+        "code": "[3]"
+      },
+      "to": {
+        "source": "fuyao",
+        "code": "last_price"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·10d"
+    },
+    {
+      "from": {
+        "source": "tencent",
+        "code": "[3]"
+      },
+      "to": {
+        "source": "fuyao",
+        "code": "last_price"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·10d"
+    },
+    {
+      "from": {
+        "source": "tencent",
+        "code": "[3]"
+      },
+      "to": {
+        "source": "push2_full",
+        "code": "f43"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·7d"
+    },
+    {
+      "from": {
+        "source": "tencent",
+        "code": "[3]"
+      },
+      "to": {
+        "source": "push2_full",
+        "code": "f179"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·7d"
+    },
+    {
+      "from": {
+        "source": "tencent",
+        "code": "[3]"
+      },
+      "to": {
+        "source": "sina",
+        "code": "[3]"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·10d"
+    },
+    {
+      "from": {
+        "source": "tencent",
+        "code": "[3]"
+      },
+      "to": {
+        "source": "tdx",
+        "code": "price"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·10d"
+    },
+    {
+      "from": {
+        "source": "tencent",
+        "code": "[3]"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f2"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·9d"
+    },
+    {
+      "from": {
+        "source": "tencent",
+        "code": "[3]"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f144"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·9d"
+    },
+    {
+      "from": {
+        "source": "tencent",
+        "code": "[3]"
+      },
+      "to": {
+        "source": "push2",
+        "code": "f43"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·8d"
+    },
+    {
+      "from": {
+        "source": "tencent",
+        "code": "[3]"
+      },
+      "to": {
+        "source": "push2",
+        "code": "f179"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·8d"
+    },
+    {
+      "from": {
+        "source": "tencent",
+        "code": "[3]"
+      },
+      "to": {
+        "source": "eltdx",
+        "code": "last_price"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·8d"
+    },
+    {
+      "from": {
+        "source": "tencent",
+        "code": "[4]"
+      },
+      "to": {
+        "source": "fuyao",
+        "code": "prev_price"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·10d"
+    },
+    {
+      "from": {
+        "source": "tencent",
+        "code": "[4]"
+      },
+      "to": {
+        "source": "fuyao",
+        "code": "pre_close_price"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·10d"
+    },
+    {
+      "from": {
+        "source": "tencent",
+        "code": "[4]"
+      },
+      "to": {
+        "source": "push2_full",
+        "code": "f60"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·7d"
+    },
+    {
+      "from": {
+        "source": "tencent",
+        "code": "[4]"
+      },
+      "to": {
+        "source": "sina",
+        "code": "[2]"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·10d"
+    },
+    {
+      "from": {
+        "source": "tencent",
+        "code": "[4]"
+      },
+      "to": {
+        "source": "tdx",
+        "code": "last_close"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·10d"
+    },
+    {
+      "from": {
+        "source": "tencent",
+        "code": "[4]"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f18"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·9d"
+    },
+    {
+      "from": {
+        "source": "tencent",
+        "code": "[4]"
+      },
+      "to": {
+        "source": "push2",
+        "code": "f60"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·8d"
+    },
+    {
+      "from": {
+        "source": "tencent",
+        "code": "[4]"
+      },
+      "to": {
+        "source": "eltdx",
+        "code": "pre_close_price"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·8d"
+    },
+    {
+      "from": {
+        "source": "tencent",
+        "code": "[4]"
+      },
+      "to": {
+        "source": "eltdx",
+        "code": "pre_close"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·5d"
+    },
+    {
+      "from": {
+        "source": "tencent",
+        "code": "[4]"
+      },
+      "to": {
+        "source": "eltdx",
+        "code": "pre_close"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·5d"
+    },
+    {
+      "from": {
+        "source": "tencent",
+        "code": "[5]"
+      },
+      "to": {
+        "source": "fuyao",
+        "code": "open_price"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·10d"
+    },
+    {
+      "from": {
+        "source": "tencent",
+        "code": "[5]"
+      },
+      "to": {
+        "source": "fuyao",
+        "code": "open_price"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·10d"
+    },
+    {
+      "from": {
+        "source": "tencent",
+        "code": "[5]"
+      },
+      "to": {
+        "source": "push2_full",
+        "code": "f46"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·7d"
+    },
+    {
+      "from": {
+        "source": "tencent",
+        "code": "[5]"
+      },
+      "to": {
+        "source": "sina",
+        "code": "[1]"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·10d"
+    },
+    {
+      "from": {
+        "source": "tencent",
+        "code": "[5]"
+      },
+      "to": {
+        "source": "tdx",
+        "code": "open"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·10d"
+    },
+    {
+      "from": {
+        "source": "tencent",
+        "code": "[5]"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f17"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·9d"
+    },
+    {
+      "from": {
+        "source": "tencent",
+        "code": "[5]"
+      },
+      "to": {
+        "source": "push2",
+        "code": "f46"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·8d"
+    },
+    {
+      "from": {
+        "source": "tencent",
+        "code": "[5]"
+      },
+      "to": {
+        "source": "eltdx",
+        "code": "open_price"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·8d"
+    },
+    {
+      "from": {
+        "source": "tencent",
+        "code": "[5]"
+      },
+      "to": {
+        "source": "eltdx",
+        "code": "open_price"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·5d"
+    },
+    {
+      "from": {
+        "source": "tencent",
+        "code": "[5]"
+      },
+      "to": {
+        "source": "eltdx",
+        "code": "open_price"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·5d"
+    },
+    {
+      "from": {
+        "source": "tencent",
+        "code": "[33]"
+      },
+      "to": {
+        "source": "fuyao",
+        "code": "high_price"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·10d"
+    },
+    {
+      "from": {
+        "source": "tencent",
+        "code": "[33]"
+      },
+      "to": {
+        "source": "push2_full",
+        "code": "f44"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·7d"
+    },
+    {
+      "from": {
+        "source": "tencent",
+        "code": "[33]"
+      },
+      "to": {
+        "source": "sina",
+        "code": "[4]"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·10d"
+    },
+    {
+      "from": {
+        "source": "tencent",
+        "code": "[33]"
+      },
+      "to": {
+        "source": "tdx",
+        "code": "high"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·10d"
+    },
+    {
+      "from": {
+        "source": "tencent",
+        "code": "[33]"
+      },
+      "to": {
+        "source": "tencent",
+        "code": "[41]"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·10d"
+    },
+    {
+      "from": {
+        "source": "tencent",
+        "code": "[33]"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f15"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·9d"
+    },
+    {
+      "from": {
+        "source": "tencent",
+        "code": "[33]"
+      },
+      "to": {
+        "source": "push2",
+        "code": "f44"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·8d"
+    },
+    {
+      "from": {
+        "source": "tencent",
+        "code": "[33]"
+      },
+      "to": {
+        "source": "eltdx",
+        "code": "high_price"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·8d"
+    },
+    {
+      "from": {
+        "source": "tencent",
+        "code": "[34]"
+      },
+      "to": {
+        "source": "fuyao",
+        "code": "low_price"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·10d"
+    },
+    {
+      "from": {
+        "source": "tencent",
+        "code": "[34]"
+      },
+      "to": {
+        "source": "push2_full",
+        "code": "f45"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·7d"
+    },
+    {
+      "from": {
+        "source": "tencent",
+        "code": "[34]"
+      },
+      "to": {
+        "source": "sina",
+        "code": "[5]"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·10d"
+    },
+    {
+      "from": {
+        "source": "tencent",
+        "code": "[34]"
+      },
+      "to": {
+        "source": "tdx",
+        "code": "low"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·10d"
+    },
+    {
+      "from": {
+        "source": "tencent",
+        "code": "[34]"
+      },
+      "to": {
+        "source": "tencent",
+        "code": "[42]"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·10d"
+    },
+    {
+      "from": {
+        "source": "tencent",
+        "code": "[34]"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f16"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·9d"
+    },
+    {
+      "from": {
+        "source": "tencent",
+        "code": "[34]"
+      },
+      "to": {
+        "source": "push2",
+        "code": "f45"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·8d"
+    },
+    {
+      "from": {
+        "source": "tencent",
+        "code": "[34]"
+      },
+      "to": {
+        "source": "eltdx",
+        "code": "low_price"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·8d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f2"
+      },
+      "to": {
+        "source": "em_hot",
+        "code": "price"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·8d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f2"
+      },
+      "to": {
+        "source": "fuyao",
+        "code": "last_price"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·9d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f2"
+      },
+      "to": {
+        "source": "fuyao",
+        "code": "last_price"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·9d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f2"
+      },
+      "to": {
+        "source": "push2_full",
+        "code": "f43"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·7d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f2"
+      },
+      "to": {
+        "source": "push2_full",
+        "code": "f179"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·7d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f2"
+      },
+      "to": {
+        "source": "sina",
+        "code": "[3]"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·9d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f2"
+      },
+      "to": {
+        "source": "tdx",
+        "code": "price"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·9d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f2"
+      },
+      "to": {
+        "source": "tencent",
+        "code": "[3]"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·9d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f2"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f144"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·9d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f2"
+      },
+      "to": {
+        "source": "push2",
+        "code": "f43"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·8d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f2"
+      },
+      "to": {
+        "source": "push2",
+        "code": "f179"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·8d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f2"
+      },
+      "to": {
+        "source": "eltdx",
+        "code": "last_price"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·7d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f13"
+      },
+      "to": {
+        "source": "push2_full",
+        "code": "f107"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·7d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f13"
+      },
+      "to": {
+        "source": "push2_full",
+        "code": "f110"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·7d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f13"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f27"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·9d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f13"
+      },
+      "to": {
+        "source": "push2",
+        "code": "f107"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·8d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f15"
+      },
+      "to": {
+        "source": "fuyao",
+        "code": "high_price"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·9d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f15"
+      },
+      "to": {
+        "source": "push2_full",
+        "code": "f44"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·7d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f15"
+      },
+      "to": {
+        "source": "sina",
+        "code": "[4]"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·9d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f15"
+      },
+      "to": {
+        "source": "tdx",
+        "code": "high"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·9d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f15"
+      },
+      "to": {
+        "source": "tencent",
+        "code": "[33]"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·9d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f15"
+      },
+      "to": {
+        "source": "tencent",
+        "code": "[41]"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·9d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f15"
+      },
+      "to": {
+        "source": "push2",
+        "code": "f44"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·8d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f15"
+      },
+      "to": {
+        "source": "eltdx",
+        "code": "high_price"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·7d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f17"
+      },
+      "to": {
+        "source": "fuyao",
+        "code": "open_price"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·9d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f17"
+      },
+      "to": {
+        "source": "fuyao",
+        "code": "open_price"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·9d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f17"
+      },
+      "to": {
+        "source": "push2_full",
+        "code": "f46"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·7d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f17"
+      },
+      "to": {
+        "source": "sina",
+        "code": "[1]"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·9d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f17"
+      },
+      "to": {
+        "source": "tdx",
+        "code": "open"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·9d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f17"
+      },
+      "to": {
+        "source": "tencent",
+        "code": "[5]"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·9d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f17"
+      },
+      "to": {
+        "source": "push2",
+        "code": "f46"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·8d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f17"
+      },
+      "to": {
+        "source": "eltdx",
+        "code": "open_price"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·7d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f17"
+      },
+      "to": {
+        "source": "eltdx",
+        "code": "open_price"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·4d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f18"
+      },
+      "to": {
+        "source": "fuyao",
+        "code": "prev_price"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·9d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f18"
+      },
+      "to": {
+        "source": "fuyao",
+        "code": "pre_close_price"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·9d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f18"
+      },
+      "to": {
+        "source": "push2_full",
+        "code": "f60"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·7d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f18"
+      },
+      "to": {
+        "source": "sina",
+        "code": "[2]"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·9d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f18"
+      },
+      "to": {
+        "source": "tdx",
+        "code": "last_close"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·9d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f18"
+      },
+      "to": {
+        "source": "tencent",
+        "code": "[4]"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·9d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f18"
+      },
+      "to": {
+        "source": "push2",
+        "code": "f60"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·8d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f18"
+      },
+      "to": {
+        "source": "eltdx",
+        "code": "pre_close_price"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·7d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f18"
+      },
+      "to": {
+        "source": "eltdx",
+        "code": "pre_close"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·4d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f27"
+      },
+      "to": {
+        "source": "push2_full",
+        "code": "f107"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·7d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f27"
+      },
+      "to": {
+        "source": "push2_full",
+        "code": "f110"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·7d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f27"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f13"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·9d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f27"
+      },
+      "to": {
+        "source": "push2",
+        "code": "f107"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·8d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f39"
+      },
+      "to": {
+        "source": "push2_full",
+        "code": "f85"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·7d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f39"
+      },
+      "to": {
+        "source": "tencent",
+        "code": "[72]"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·9d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f39"
+      },
+      "to": {
+        "source": "tencent",
+        "code": "[76]"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·9d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f39"
+      },
+      "to": {
+        "source": "push2",
+        "code": "f85"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·8d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f39"
+      },
+      "to": {
+        "source": "eltdx",
+        "code": "float_shares"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·4d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f110"
+      },
+      "to": {
+        "source": "push2_full",
+        "code": "f120"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·7d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f110"
+      },
+      "to": {
+        "source": "zhb",
+        "code": "change_20d"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·7d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f110"
+      },
+      "to": {
+        "source": "zhb",
+        "code": "change_30d"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·7d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f110"
+      },
+      "to": {
+        "source": "zhb",
+        "code": "change_20d"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·7d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f110"
+      },
+      "to": {
+        "source": "zhb",
+        "code": "change_30d"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·7d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f110"
+      },
+      "to": {
+        "source": "push2",
+        "code": "f120"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·8d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f144"
+      },
+      "to": {
+        "source": "em_hot",
+        "code": "price"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·8d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f144"
+      },
+      "to": {
+        "source": "fuyao",
+        "code": "last_price"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·9d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f144"
+      },
+      "to": {
+        "source": "fuyao",
+        "code": "last_price"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·9d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f144"
+      },
+      "to": {
+        "source": "push2_full",
+        "code": "f43"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·7d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f144"
+      },
+      "to": {
+        "source": "push2_full",
+        "code": "f179"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·7d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f144"
+      },
+      "to": {
+        "source": "sina",
+        "code": "[3]"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·9d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f144"
+      },
+      "to": {
+        "source": "tdx",
+        "code": "price"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·9d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f144"
+      },
+      "to": {
+        "source": "tencent",
+        "code": "[3]"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·9d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f144"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f2"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·9d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f144"
+      },
+      "to": {
+        "source": "push2",
+        "code": "f43"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·8d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f144"
+      },
+      "to": {
+        "source": "push2",
+        "code": "f179"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·8d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f144"
+      },
+      "to": {
+        "source": "eltdx",
+        "code": "last_price"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·7d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f145"
+      },
+      "to": {
+        "source": "push2",
+        "code": "f131"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·8d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f185"
+      },
+      "to": {
+        "source": "push2_full",
+        "code": "f250"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·7d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f185"
+      },
+      "to": {
+        "source": "push2",
+        "code": "f250"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·8d"
+    },
+    {
+      "from": {
+        "source": "push2",
+        "code": "f43"
+      },
+      "to": {
+        "source": "em_hot",
+        "code": "price"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·8d"
+    },
+    {
+      "from": {
+        "source": "push2",
+        "code": "f43"
+      },
+      "to": {
+        "source": "fuyao",
+        "code": "last_price"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·8d"
+    },
+    {
+      "from": {
+        "source": "push2",
+        "code": "f43"
+      },
+      "to": {
+        "source": "fuyao",
+        "code": "last_price"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·8d"
+    },
+    {
+      "from": {
+        "source": "push2",
+        "code": "f43"
+      },
+      "to": {
+        "source": "push2_full",
+        "code": "f43"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·6d"
+    },
+    {
+      "from": {
+        "source": "push2",
+        "code": "f43"
+      },
+      "to": {
+        "source": "push2_full",
+        "code": "f179"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·6d"
+    },
+    {
+      "from": {
+        "source": "push2",
+        "code": "f43"
+      },
+      "to": {
+        "source": "sina",
+        "code": "[3]"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·8d"
+    },
+    {
+      "from": {
+        "source": "push2",
+        "code": "f43"
+      },
+      "to": {
+        "source": "tdx",
+        "code": "price"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·8d"
+    },
+    {
+      "from": {
+        "source": "push2",
+        "code": "f43"
+      },
+      "to": {
+        "source": "tencent",
+        "code": "[3]"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·8d"
+    },
+    {
+      "from": {
+        "source": "push2",
+        "code": "f43"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f2"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·8d"
+    },
+    {
+      "from": {
+        "source": "push2",
+        "code": "f43"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f144"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·8d"
+    },
+    {
+      "from": {
+        "source": "push2",
+        "code": "f43"
+      },
+      "to": {
+        "source": "push2",
+        "code": "f179"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·8d"
+    },
+    {
+      "from": {
+        "source": "push2",
+        "code": "f43"
+      },
+      "to": {
+        "source": "eltdx",
+        "code": "last_price"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·7d"
+    },
+    {
+      "from": {
+        "source": "push2",
+        "code": "f44"
+      },
+      "to": {
+        "source": "fuyao",
+        "code": "high_price"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·8d"
+    },
+    {
+      "from": {
+        "source": "push2",
+        "code": "f44"
+      },
+      "to": {
+        "source": "push2_full",
+        "code": "f44"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·6d"
+    },
+    {
+      "from": {
+        "source": "push2",
+        "code": "f44"
+      },
+      "to": {
+        "source": "sina",
+        "code": "[4]"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·8d"
+    },
+    {
+      "from": {
+        "source": "push2",
+        "code": "f44"
+      },
+      "to": {
+        "source": "tdx",
+        "code": "high"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·8d"
+    },
+    {
+      "from": {
+        "source": "push2",
+        "code": "f44"
+      },
+      "to": {
+        "source": "tencent",
+        "code": "[33]"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·8d"
+    },
+    {
+      "from": {
+        "source": "push2",
+        "code": "f44"
+      },
+      "to": {
+        "source": "tencent",
+        "code": "[41]"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·8d"
+    },
+    {
+      "from": {
+        "source": "push2",
+        "code": "f44"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f15"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·8d"
+    },
+    {
+      "from": {
+        "source": "push2",
+        "code": "f44"
+      },
+      "to": {
+        "source": "eltdx",
+        "code": "high_price"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·7d"
+    },
+    {
+      "from": {
+        "source": "push2",
+        "code": "f45"
+      },
+      "to": {
+        "source": "fuyao",
+        "code": "low_price"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·8d"
+    },
+    {
+      "from": {
+        "source": "push2",
+        "code": "f45"
+      },
+      "to": {
+        "source": "push2_full",
+        "code": "f45"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·6d"
+    },
+    {
+      "from": {
+        "source": "push2",
+        "code": "f45"
+      },
+      "to": {
+        "source": "sina",
+        "code": "[5]"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·8d"
+    },
+    {
+      "from": {
+        "source": "push2",
+        "code": "f45"
+      },
+      "to": {
+        "source": "tdx",
+        "code": "low"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·8d"
+    },
+    {
+      "from": {
+        "source": "push2",
+        "code": "f45"
+      },
+      "to": {
+        "source": "tencent",
+        "code": "[34]"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·8d"
+    },
+    {
+      "from": {
+        "source": "push2",
+        "code": "f45"
+      },
+      "to": {
+        "source": "tencent",
+        "code": "[42]"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·8d"
+    },
+    {
+      "from": {
+        "source": "push2",
+        "code": "f45"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f16"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·8d"
+    },
+    {
+      "from": {
+        "source": "push2",
+        "code": "f45"
+      },
+      "to": {
+        "source": "eltdx",
+        "code": "low_price"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·7d"
+    },
+    {
+      "from": {
+        "source": "push2",
+        "code": "f46"
+      },
+      "to": {
+        "source": "fuyao",
+        "code": "open_price"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·8d"
+    },
+    {
+      "from": {
+        "source": "push2",
+        "code": "f46"
+      },
+      "to": {
+        "source": "fuyao",
+        "code": "open_price"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·8d"
+    },
+    {
+      "from": {
+        "source": "push2",
+        "code": "f46"
+      },
+      "to": {
+        "source": "push2_full",
+        "code": "f46"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·6d"
+    },
+    {
+      "from": {
+        "source": "push2",
+        "code": "f46"
+      },
+      "to": {
+        "source": "sina",
+        "code": "[1]"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·8d"
+    },
+    {
+      "from": {
+        "source": "push2",
+        "code": "f46"
+      },
+      "to": {
+        "source": "tdx",
+        "code": "open"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·8d"
+    },
+    {
+      "from": {
+        "source": "push2",
+        "code": "f46"
+      },
+      "to": {
+        "source": "tencent",
+        "code": "[5]"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·8d"
+    },
+    {
+      "from": {
+        "source": "push2",
+        "code": "f46"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f17"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·8d"
+    },
+    {
+      "from": {
+        "source": "push2",
+        "code": "f46"
+      },
+      "to": {
+        "source": "eltdx",
+        "code": "open_price"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·7d"
+    },
+    {
+      "from": {
+        "source": "push2",
+        "code": "f46"
+      },
+      "to": {
+        "source": "eltdx",
+        "code": "open_price"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·4d"
+    },
+    {
+      "from": {
+        "source": "push2",
+        "code": "f60"
+      },
+      "to": {
+        "source": "fuyao",
+        "code": "prev_price"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·8d"
+    },
+    {
+      "from": {
+        "source": "push2",
+        "code": "f60"
+      },
+      "to": {
+        "source": "fuyao",
+        "code": "pre_close_price"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·8d"
+    },
+    {
+      "from": {
+        "source": "push2",
+        "code": "f60"
+      },
+      "to": {
+        "source": "push2_full",
+        "code": "f60"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·6d"
+    },
+    {
+      "from": {
+        "source": "push2",
+        "code": "f60"
+      },
+      "to": {
+        "source": "sina",
+        "code": "[2]"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·8d"
+    },
+    {
+      "from": {
+        "source": "push2",
+        "code": "f60"
+      },
+      "to": {
+        "source": "tdx",
+        "code": "last_close"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·8d"
+    },
+    {
+      "from": {
+        "source": "push2",
+        "code": "f60"
+      },
+      "to": {
+        "source": "tencent",
+        "code": "[4]"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·8d"
+    },
+    {
+      "from": {
+        "source": "push2",
+        "code": "f60"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f18"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·8d"
+    },
+    {
+      "from": {
+        "source": "push2",
+        "code": "f60"
+      },
+      "to": {
+        "source": "eltdx",
+        "code": "pre_close_price"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·7d"
+    },
+    {
+      "from": {
+        "source": "push2",
+        "code": "f60"
+      },
+      "to": {
+        "source": "eltdx",
+        "code": "pre_close"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·4d"
+    },
+    {
+      "from": {
+        "source": "push2",
+        "code": "f84"
+      },
+      "to": {
+        "source": "push2_full",
+        "code": "f84"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·6d"
+    },
+    {
+      "from": {
+        "source": "push2",
+        "code": "f84"
+      },
+      "to": {
+        "source": "tencent",
+        "code": "[73]"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·8d"
+    },
+    {
+      "from": {
+        "source": "push2",
+        "code": "f84"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f38"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·8d"
+    },
+    {
+      "from": {
+        "source": "push2",
+        "code": "f85"
+      },
+      "to": {
+        "source": "push2_full",
+        "code": "f85"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·6d"
+    },
+    {
+      "from": {
+        "source": "push2",
+        "code": "f85"
+      },
+      "to": {
+        "source": "tencent",
+        "code": "[72]"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·8d"
+    },
+    {
+      "from": {
+        "source": "push2",
+        "code": "f85"
+      },
+      "to": {
+        "source": "tencent",
+        "code": "[76]"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·8d"
+    },
+    {
+      "from": {
+        "source": "push2",
+        "code": "f85"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f39"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·8d"
+    },
+    {
+      "from": {
+        "source": "push2",
+        "code": "f85"
+      },
+      "to": {
+        "source": "eltdx",
+        "code": "float_shares"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·4d"
+    },
+    {
+      "from": {
+        "source": "push2",
+        "code": "f107"
+      },
+      "to": {
+        "source": "push2_full",
+        "code": "f107"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·6d"
+    },
+    {
+      "from": {
+        "source": "push2",
+        "code": "f107"
+      },
+      "to": {
+        "source": "push2_full",
+        "code": "f110"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·6d"
+    },
+    {
+      "from": {
+        "source": "push2",
+        "code": "f107"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f13"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·8d"
+    },
+    {
+      "from": {
+        "source": "push2",
+        "code": "f107"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f27"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·8d"
+    },
+    {
+      "from": {
+        "source": "push2",
+        "code": "f107"
+      },
+      "to": {
+        "source": "push2",
+        "code": "f110"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·8d"
+    },
+    {
+      "from": {
+        "source": "push2",
+        "code": "f110"
+      },
+      "to": {
+        "source": "push2_full",
+        "code": "f107"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·6d"
+    },
+    {
+      "from": {
+        "source": "push2",
+        "code": "f110"
+      },
+      "to": {
+        "source": "push2_full",
+        "code": "f110"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·6d"
+    },
+    {
+      "from": {
+        "source": "push2",
+        "code": "f110"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f13"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·8d"
+    },
+    {
+      "from": {
+        "source": "push2",
+        "code": "f110"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f27"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·8d"
+    },
+    {
+      "from": {
+        "source": "push2",
+        "code": "f110"
+      },
+      "to": {
+        "source": "push2",
+        "code": "f107"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·8d"
+    },
+    {
+      "from": {
+        "source": "push2",
+        "code": "f120"
+      },
+      "to": {
+        "source": "push2_full",
+        "code": "f120"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·6d"
+    },
+    {
+      "from": {
+        "source": "push2",
+        "code": "f120"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f110"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·8d"
+    },
+    {
+      "from": {
+        "source": "push2",
+        "code": "f120"
+      },
+      "to": {
+        "source": "zhb",
+        "code": "change_20d"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·6d"
+    },
+    {
+      "from": {
+        "source": "push2",
+        "code": "f120"
+      },
+      "to": {
+        "source": "zhb",
+        "code": "change_30d"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·6d"
+    },
+    {
+      "from": {
+        "source": "push2",
+        "code": "f120"
+      },
+      "to": {
+        "source": "zhb",
+        "code": "change_20d"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·6d"
+    },
+    {
+      "from": {
+        "source": "push2",
+        "code": "f120"
+      },
+      "to": {
+        "source": "zhb",
+        "code": "change_30d"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·6d"
+    },
+    {
+      "from": {
+        "source": "push2",
+        "code": "f131"
+      },
+      "to": {
+        "source": "push2_full",
+        "code": "f131"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·6d"
+    },
+    {
+      "from": {
+        "source": "push2",
+        "code": "f131"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f145"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·8d"
+    },
+    {
+      "from": {
+        "source": "push2",
+        "code": "f179"
+      },
+      "to": {
+        "source": "em_hot",
+        "code": "price"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·8d"
+    },
+    {
+      "from": {
+        "source": "push2",
+        "code": "f179"
+      },
+      "to": {
+        "source": "fuyao",
+        "code": "last_price"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·8d"
+    },
+    {
+      "from": {
+        "source": "push2",
+        "code": "f179"
+      },
+      "to": {
+        "source": "fuyao",
+        "code": "last_price"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·8d"
+    },
+    {
+      "from": {
+        "source": "push2",
+        "code": "f179"
+      },
+      "to": {
+        "source": "push2_full",
+        "code": "f43"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·6d"
+    },
+    {
+      "from": {
+        "source": "push2",
+        "code": "f179"
+      },
+      "to": {
+        "source": "push2_full",
+        "code": "f179"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·6d"
+    },
+    {
+      "from": {
+        "source": "push2",
+        "code": "f179"
+      },
+      "to": {
+        "source": "sina",
+        "code": "[3]"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·8d"
+    },
+    {
+      "from": {
+        "source": "push2",
+        "code": "f179"
+      },
+      "to": {
+        "source": "tdx",
+        "code": "price"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·8d"
+    },
+    {
+      "from": {
+        "source": "push2",
+        "code": "f179"
+      },
+      "to": {
+        "source": "tencent",
+        "code": "[3]"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·8d"
+    },
+    {
+      "from": {
+        "source": "push2",
+        "code": "f179"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f2"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·8d"
+    },
+    {
+      "from": {
+        "source": "push2",
+        "code": "f179"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f144"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·8d"
+    },
+    {
+      "from": {
+        "source": "push2",
+        "code": "f179"
+      },
+      "to": {
+        "source": "push2",
+        "code": "f43"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·8d"
+    },
+    {
+      "from": {
+        "source": "push2",
+        "code": "f179"
+      },
+      "to": {
+        "source": "eltdx",
+        "code": "last_price"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·7d"
+    },
+    {
+      "from": {
+        "source": "push2",
+        "code": "f250"
+      },
+      "to": {
+        "source": "push2_full",
+        "code": "f250"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·6d"
+    },
+    {
+      "from": {
+        "source": "push2",
+        "code": "f250"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f185"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·8d"
+    },
+    {
+      "from": {
+        "source": "tencent",
+        "code": "[70]"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f110"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.99·9d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f110"
+      },
+      "to": {
+        "source": "tencent",
+        "code": "[70]"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.99·9d"
+    },
+    {
+      "from": {
+        "source": "push2",
+        "code": "f120"
+      },
+      "to": {
+        "source": "tencent",
+        "code": "[70]"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.99·8d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f120"
+      },
+      "to": {
+        "source": "tencent",
+        "code": "[70]"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.99·7d"
+    },
+    {
+      "from": {
+        "source": "tencent",
+        "code": "[70]"
+      },
+      "to": {
+        "source": "push2_full",
+        "code": "f120"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.99·7d"
+    },
+    {
+      "from": {
+        "source": "tencent",
+        "code": "[70]"
+      },
+      "to": {
+        "source": "zhb",
+        "code": "change_20d"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.99·7d"
+    },
+    {
+      "from": {
+        "source": "tencent",
+        "code": "[70]"
+      },
+      "to": {
+        "source": "zhb",
+        "code": "change_30d"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.99·7d"
+    },
+    {
+      "from": {
+        "source": "tencent",
+        "code": "[70]"
+      },
+      "to": {
+        "source": "zhb",
+        "code": "change_20d"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.99·7d"
+    },
+    {
+      "from": {
+        "source": "tencent",
+        "code": "[70]"
+      },
+      "to": {
+        "source": "zhb",
+        "code": "change_30d"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.99·7d"
+    },
+    {
+      "from": {
+        "source": "sina",
+        "code": "[1]"
+      },
+      "to": {
+        "source": "fuyao",
+        "code": "auction_price"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.98·10d"
+    },
+    {
+      "from": {
+        "source": "tencent",
+        "code": "[5]"
+      },
+      "to": {
+        "source": "fuyao",
+        "code": "auction_price"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.98·10d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f17"
+      },
+      "to": {
+        "source": "fuyao",
+        "code": "auction_price"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.98·9d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f46"
+      },
+      "to": {
+        "source": "fuyao",
+        "code": "auction_price"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.98·7d"
+    },
+    {
+      "from": {
+        "source": "push2",
+        "code": "f46"
+      },
+      "to": {
+        "source": "fuyao",
+        "code": "auction_price"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.98·8d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f195"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f196"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.96·9d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f196"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f195"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.96·9d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f186"
+      },
+      "to": {
+        "source": "push2",
+        "code": "f250"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.95·8d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f187"
+      },
+      "to": {
+        "source": "push2",
+        "code": "f250"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.95·8d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f188"
+      },
+      "to": {
+        "source": "push2",
+        "code": "f250"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.95·8d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f189"
+      },
+      "to": {
+        "source": "push2",
+        "code": "f250"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.95·8d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f191"
+      },
+      "to": {
+        "source": "push2",
+        "code": "f250"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.95·8d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f193"
+      },
+      "to": {
+        "source": "push2",
+        "code": "f250"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.95·8d"
+    },
+    {
+      "from": {
+        "source": "push2",
+        "code": "f250"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f186"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.95·8d"
+    },
+    {
+      "from": {
+        "source": "push2",
+        "code": "f250"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f187"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.95·8d"
+    },
+    {
+      "from": {
+        "source": "push2",
+        "code": "f250"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f188"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.95·8d"
+    },
+    {
+      "from": {
+        "source": "push2",
+        "code": "f250"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f189"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.95·8d"
+    },
+    {
+      "from": {
+        "source": "push2",
+        "code": "f250"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f191"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.95·8d"
+    },
+    {
+      "from": {
+        "source": "push2",
+        "code": "f250"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f193"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.95·8d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f250"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f186"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.95·7d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f250"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f187"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.95·7d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f250"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f188"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.95·7d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f250"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f189"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.95·7d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f250"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f191"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.95·7d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f250"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f193"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.95·7d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f185"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f186"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.95·9d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f185"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f187"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.95·9d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f185"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f188"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.95·9d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f185"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f189"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.95·9d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f185"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f191"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.95·9d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f185"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f193"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.95·9d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f186"
+      },
+      "to": {
+        "source": "push2_full",
+        "code": "f250"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.95·7d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f186"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f185"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.95·9d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f186"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f187"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.95·9d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f186"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f188"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.95·9d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f186"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f189"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.95·9d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f186"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f191"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.95·9d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f186"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f193"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.95·9d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f187"
+      },
+      "to": {
+        "source": "push2_full",
+        "code": "f250"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.95·7d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f187"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f185"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.95·9d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f187"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f186"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.95·9d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f187"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f188"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.95·9d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f187"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f189"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.95·9d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f187"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f191"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.95·9d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f187"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f193"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.95·9d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f188"
+      },
+      "to": {
+        "source": "push2_full",
+        "code": "f250"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.95·7d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f188"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f185"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.95·9d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f188"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f186"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.95·9d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f188"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f187"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.95·9d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f188"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f189"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.95·9d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f188"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f191"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.95·9d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f188"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f193"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.95·9d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f189"
+      },
+      "to": {
+        "source": "push2_full",
+        "code": "f250"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.95·7d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f189"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f185"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.95·9d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f189"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f186"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.95·9d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f189"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f187"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.95·9d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f189"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f188"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.95·9d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f189"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f191"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.95·9d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f189"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f193"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.95·9d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f190"
+      },
+      "to": {
+        "source": "tdx",
+        "code": "hgu"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.95·9d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f191"
+      },
+      "to": {
+        "source": "push2_full",
+        "code": "f250"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.95·7d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f191"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f185"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.95·9d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f191"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f186"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.95·9d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f191"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f187"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.95·9d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f191"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f188"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.95·9d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f191"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f189"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.95·9d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f191"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f193"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.95·9d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f193"
+      },
+      "to": {
+        "source": "push2_full",
+        "code": "f250"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.95·7d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f193"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f185"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.95·9d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f193"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f186"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.95·9d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f193"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f187"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.95·9d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f193"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f188"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.95·9d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f193"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f189"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.95·9d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f193"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f191"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.95·9d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f195"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f197"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.95·9d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f195"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f199"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.95·9d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f195"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f201"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.95·9d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f195"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f203"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.95·9d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f196"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f197"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.95·9d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f196"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f199"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.95·9d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f196"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f201"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.95·9d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f196"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f203"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.95·9d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f197"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f195"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.95·9d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f197"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f196"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.95·9d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f197"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f199"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.95·9d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f197"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f201"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.95·9d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f197"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f203"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.95·9d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f199"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f195"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.95·9d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f199"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f196"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.95·9d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f199"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f197"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.95·9d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f199"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f201"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.95·9d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f199"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f203"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.95·9d"
+    },
+    {
+      "from": {
+        "source": "push2ex",
+        "code": "zt_days"
+      },
+      "to": {
+        "source": "zhb",
+        "code": "zt_streak_cycle"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.91·7d"
+    },
+    {
+      "from": {
+        "source": "push2ex",
+        "code": "zt_days"
+      },
+      "to": {
+        "source": "zhb",
+        "code": "zt_streak_cycle"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.91·7d"
+    },
+    {
+      "from": {
+        "source": "push2ex",
+        "code": "zt_continuous"
+      },
+      "to": {
+        "source": "zhb",
+        "code": "zt_count"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.91·7d"
+    },
+    {
+      "from": {
+        "source": "push2ex",
+        "code": "zt_continuous"
+      },
+      "to": {
+        "source": "zhb",
+        "code": "zt_count"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.91·7d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f195"
+      },
+      "to": {
+        "source": "push2",
+        "code": "f250"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.90·8d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f196"
+      },
+      "to": {
+        "source": "push2",
+        "code": "f250"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.90·8d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f197"
+      },
+      "to": {
+        "source": "push2",
+        "code": "f250"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.90·8d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f199"
+      },
+      "to": {
+        "source": "push2",
+        "code": "f250"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.90·8d"
+    },
+    {
+      "from": {
+        "source": "push2",
+        "code": "f250"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f195"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.90·8d"
+    },
+    {
+      "from": {
+        "source": "push2",
+        "code": "f250"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f196"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.90·8d"
+    },
+    {
+      "from": {
+        "source": "push2",
+        "code": "f250"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f197"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.90·8d"
+    },
+    {
+      "from": {
+        "source": "push2",
+        "code": "f250"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f199"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.90·8d"
+    },
+    {
+      "from": {
+        "source": "push2",
+        "code": "f250"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f201"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.90·8d"
+    },
+    {
+      "from": {
+        "source": "push2",
+        "code": "f250"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f203"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.90·8d"
+    },
+    {
+      "from": {
+        "source": "push2",
+        "code": "f250"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f228"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.90·8d"
+    },
+    {
+      "from": {
+        "source": "push2",
+        "code": "f250"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f229"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.90·8d"
+    },
+    {
+      "from": {
+        "source": "push2",
+        "code": "f250"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f230"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.90·8d"
+    },
+    {
+      "from": {
+        "source": "push2",
+        "code": "f250"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f232"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.90·8d"
+    },
+    {
+      "from": {
+        "source": "push2",
+        "code": "f250"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f234"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.90·8d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f250"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f195"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.90·7d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f250"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f196"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.90·7d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f250"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f197"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.90·7d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f250"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f199"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.90·7d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f250"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f201"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.90·7d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f250"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f203"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.90·7d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f250"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f228"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.90·7d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f250"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f229"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.90·7d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f250"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f230"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.90·7d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f250"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f232"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.90·7d"
+    },
+    {
+      "from": {
+        "source": "push2_full",
+        "code": "f250"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f234"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.90·7d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f185"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f195"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.90·9d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f185"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f196"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.90·9d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f185"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f197"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.90·9d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f185"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f199"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.90·9d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f185"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f201"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.90·9d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f185"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f203"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.90·9d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f185"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f228"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.90·9d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f185"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f229"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.90·9d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f185"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f230"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.90·9d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f185"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f232"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.90·9d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f185"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f234"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.90·9d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f186"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f195"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.90·9d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f186"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f196"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.90·9d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f186"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f197"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.90·9d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f186"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f199"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.90·9d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f186"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f201"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.90·9d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f186"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f203"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.90·9d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f186"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f228"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.90·9d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f186"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f229"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.90·9d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f186"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f230"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.90·9d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f186"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f232"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.90·9d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f186"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f234"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.90·9d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f187"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f195"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.90·9d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f187"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f196"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.90·9d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f187"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f197"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.90·9d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f187"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f199"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.90·9d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f187"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f201"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.90·9d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f187"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f203"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.90·9d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f187"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f228"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.90·9d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f187"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f229"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.90·9d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f187"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f230"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.90·9d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f187"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f232"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.90·9d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f187"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f234"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.90·9d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f188"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f195"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.90·9d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f188"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f196"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.90·9d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f188"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f197"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.90·9d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f188"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f199"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.90·9d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f188"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f201"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.90·9d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f188"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f203"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.90·9d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f188"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f228"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.90·9d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f188"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f229"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.90·9d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f188"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f230"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.90·9d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f188"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f232"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.90·9d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f188"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f234"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.90·9d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f189"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f195"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.90·9d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f189"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f196"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.90·9d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f189"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f197"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.90·9d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f189"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f199"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.90·9d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f189"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f201"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.90·9d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f189"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f203"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.90·9d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f189"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f228"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.90·9d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f189"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f229"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.90·9d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f189"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f230"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.90·9d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f189"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f232"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.90·9d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f189"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f234"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.90·9d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f190"
+      },
+      "to": {
+        "source": "tdx",
+        "code": "bgu"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.90·9d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f190"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f200"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.90·9d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f190"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f231"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.90·9d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f191"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f195"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.90·9d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f191"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f196"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.90·9d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f191"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f197"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.90·9d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f191"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f199"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.90·9d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f191"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f201"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.90·9d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f191"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f203"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.90·9d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f191"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f228"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.90·9d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f191"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f229"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.90·9d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f191"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f230"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.90·9d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f191"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f232"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.90·9d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f191"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f234"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.90·9d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f193"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f195"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.90·9d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f193"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f196"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.90·9d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f193"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f197"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.90·9d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f193"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f199"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.90·9d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f193"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f201"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.90·9d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f193"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f203"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.90·9d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f193"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f228"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.90·9d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f193"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f229"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.90·9d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f193"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f230"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.90·9d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f193"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f232"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.90·9d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f193"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f234"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.90·9d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f195"
+      },
+      "to": {
+        "source": "push2_full",
+        "code": "f250"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.90·7d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f195"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f185"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.90·9d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f195"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f186"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.90·9d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f195"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f187"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.90·9d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f195"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f188"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.90·9d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f195"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f189"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.90·9d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f195"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f191"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.90·9d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f195"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f193"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.90·9d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f195"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f228"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.90·9d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f195"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f229"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.90·9d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f195"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f230"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.90·9d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f195"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f232"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.90·9d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f195"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f234"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.90·9d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f196"
+      },
+      "to": {
+        "source": "push2_full",
+        "code": "f250"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.90·7d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f196"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f185"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.90·9d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f196"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f186"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.90·9d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f196"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f187"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.90·9d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f196"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f188"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.90·9d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f196"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f189"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.90·9d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f196"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f191"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.90·9d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f196"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f193"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.90·9d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f196"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f228"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.90·9d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f196"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f229"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.90·9d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f196"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f230"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.90·9d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f196"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f232"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.90·9d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f196"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f234"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.90·9d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f197"
+      },
+      "to": {
+        "source": "push2_full",
+        "code": "f250"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.90·7d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f197"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f185"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.90·9d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f197"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f186"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.90·9d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f197"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f187"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.90·9d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f197"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f188"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.90·9d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f197"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f189"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.90·9d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f197"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f191"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.90·9d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f197"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f193"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.90·9d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f197"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f228"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.90·9d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f197"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f229"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.90·9d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f197"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f230"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.90·9d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f197"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f232"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.90·9d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f197"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f234"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.90·9d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f199"
+      },
+      "to": {
+        "source": "push2_full",
+        "code": "f250"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.90·7d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f199"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f185"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.90·9d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f199"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f186"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.90·9d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f199"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f187"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.90·9d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f199"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f188"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.90·9d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f199"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f189"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.90·9d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f199"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f191"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.90·9d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f199"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f193"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.90·9d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f199"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f228"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.90·9d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f199"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f229"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.90·9d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f199"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f230"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.90·9d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f199"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f232"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.90·9d"
+    },
+    {
+      "from": {
+        "source": "ulist239",
+        "code": "f199"
+      },
+      "to": {
+        "source": "ulist239",
+        "code": "f234"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.90·9d"
     }
   ]
 }

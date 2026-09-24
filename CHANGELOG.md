@@ -9,6 +9,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - **P0 PE 列标反修复（`core/zhb_client.py` `_parse_tdxstat`）**：tdxstat.cfg `[3]`/`[9]` 原误标 `[3]=pe_dynamic`、`[9]=pe_ttm`。经独立实证（000858 五粮液：ZHB `[3]=20.87`≈TDX 实时 TTM `20.67`、`[9]=30.49`≈TDX 实时静态 `30.20`；与 fuyao `pe_ttm` 20/20 吻合）确认实为 **`[3]=TTM`、`[9]=静态LYR`**。现修正解析器字段名：`pe_ttm←col[3]`、`pe_lyr←col[9]`，并移除错误 `pe_dynamic` 键（ZHB tdxstat.cfg 无动态 PE 列，动态 PE 来自 push2 f162，下游 `zhb_dict.get('pe_dynamic')` 自然回落实时源，未崩溃）。顺带修复下游 `data_provider` 取 ZHB 兜底 `pe_ttm` 原误喂 LYR 值的隐性 bug。
 - **`stat.unknown_2`/`stat.unknown_26` 晋级 L2 候选（sanctioned 管线）**：经 `extract_registry → gen_field_dict → parity` 三闸门（`G1`/`G3`/`P1` 全过），`stat.unknown_2` 落定为**贝塔系数(60日)**、`stat.unknown_26` 落定为**年内涨停天数 YearZTDay**。`field_dict.md` §12.1 列 `[2]`/`[26]` 早已定 `BetaValue`/`YearZTDay`（✅），本次在 `stat.*` 汇总表补齐语义并标 **L2 候选**（ihelp.dat L63/L64 官方定义逐字命中 + 慢变特征/事件级Δ实证）。**四铁律**：deepseek 自报命中 82.81% <90%，按本方治理仅定 L2、未越级 L1；待真实指数基准复现 / ≥90% 命中升 L1。
 - **残留待治理**：`field_dict.md` §三 关于 Col[3]/[9] 命名的旧警告（"Col[3]=pe_mrq, Col[9]=pe_ttm"）与本次代码实证相反，系早期由误标代码循环推导所致，需后续 sanctioned 修订（本提交聚焦 P0 代码修复 + unknown_2/26 晋级，未动该段 prose）。
+- **L2 晋级善后（prose 一致性）**：将 §12.1 `tdxstat.cfg` 节内两条旧"候选研判（⚠️，未定案）"块（原假设 `stat.unknown_2`=量比−1/`stat.unknown_26`=概念板块数）标注为"历史假设·已被 2026-09-24 L2 晋级 supersede"，并指向新定案块，消除与 L2 定案的直接矛盾（保留历史假设留痕，不改 registry，G1/G3/P1 全过）。
 - 治理：含 field_dict/registry/verify 改动，G1/G3/P1 闸门全过；`PYTHON=py` 提交；未推送。
 
 ## [V17.4.21] 2026-09-24 — 历史非交易日目录清理 + 盘中→盘后刷新逻辑

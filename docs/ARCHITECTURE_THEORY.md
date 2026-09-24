@@ -157,7 +157,7 @@
 | 债务台账 | `docs/DEBT_LEDGER.md` | 每次"选择不改"时登记 |
 | 架构决策记录 | `docs/adr/NNNN-*.md` | 非显然的架构决策（含"决定不改"） |
 | 自动化闸门 | `scripts/verify_*.py` | 每次提交前 |
-| 项目记忆 | `.workbuddy-ai/memory/MEMORY.md` | 长期事实沉淀 |
+| 项目记忆 | `.workbuddy/memory/MEMORY.md` | 长期事实沉淀（原 `.workbuddy-ai/memory/` 已废弃，统一迁至 `.workbuddy/memory/`） |
 
 ### 3.1 反模式清单（见到即应登记为债）
 

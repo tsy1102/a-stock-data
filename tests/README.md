@@ -53,7 +53,7 @@ tests/
 ```
 
 > **2026-09-12 校正**：本目录结构按实际文件重写并核对。
-> - 共 **32 个测试文件**（不含 `conftest.py` 共享 fixtures），分 data(7) / core(13) / infra(3) / reports(5)
+> - 共 **33 个测试文件**（不含 `conftest.py` 共享 fixtures），分 data(7) / core(13) / infra(3) / reports(5)
 >   四层 + 顶层 4 个专项测试（degradation_contract / sc_ta_core / symbol_norm / seat_db_audit_fix）。
 > - pytest 实际收集约 **561 个测试项**（含参数化展开；具体以 `pytest tests/ --collect-only` 实时为准）。
 > - **reports/ 曾因 `.gitignore:26` 的 `reports/` 规则被误忽略**（该规则本意忽略根级运行时输出目录），导致 5 个报告层

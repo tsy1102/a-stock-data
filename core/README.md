@@ -12,7 +12,7 @@ core/
 ├── _accessors.py      # 【V17.3】跨边界访问器叶子模块(消除 data_provider↔stock_common 导入期循环依赖)
 ├── gd_uploader.py      # Google Drive 上传(google-auth + google-api-python-client)
 ├── stock_cache.py      # 统一缓存层(SQLite + L1 内存 + TTL + cross_verify + CLI)
-├── tdx_client.py       # mootdx/easy_tdx 统一层(K线/F10/资金流/板块, 白名单主机)
+├── tdx_client.py       # eltdx/easy_tdx 统一层(运行时主源 eltdx；mootdx 已于 V17.3.4 退役)
 ├── zhb_client.py       # 通达信 zhb.zip 全局配置总包下载与解析(45 文件)
 └── zhb_sync.py         # ZHB 自动化入库管道(定时/手动/状态, 命令行: python -m core.zhb_sync)
 ```

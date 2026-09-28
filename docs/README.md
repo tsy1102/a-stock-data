@@ -7,6 +7,10 @@
 
 ```
 docs/
+├── PROJECT_CONTEXT.md       # 架构导航、稳定约束与动态项目快照
+├── ARCHITECTURE_THEORY.md   # 统一数据访问架构公理
+├── DEBT_LEDGER.md           # 已知架构偏离与偿还状态
+├── PROJECT_AUDIT_REMEDIATION_20260928.md # 本轮全仓整改计划与最终验收记录
 ├── field_dict.md            # 主字段字典（决策层——字段定义/来源/优先级/破解结论）★唯一权威
 ├── script_data_dict.md      # 脚本应用字典（5 大脚本逐字段获取矩阵/fallback 链）
 ├── architecture.md          # 项目架构与数据流（Mermaid）

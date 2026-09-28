@@ -5,6 +5,7 @@ V17.0 R5 实测结论(2026-08-13): 三脚本(sht/med/lng)渲染章节逐段对�
 - 北向宏观/北向持仓/股东户数/评分明细与档位: 文案**异构**(sht 短线风格 vs med/lng 中线长线
   风格, 单位/符号/结构均不同), 参数化成本 > 去重收益, 按仓库 DRY 纪律保留各脚本本地实现
 """
+
 from __future__ import annotations
 
 from typing import Any, Callable

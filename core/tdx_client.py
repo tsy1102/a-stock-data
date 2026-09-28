@@ -38,7 +38,7 @@ import core._tdx_handshake_patch  # noqa: F401  植入 2026-09 新式动态单�
 
 import time
 from datetime import datetime
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Callable, Dict, List, Optional, Tuple, cast
 
 import requests
 
@@ -47,7 +47,7 @@ from core.stock_cache import cached, make_valid_if, TTL  # V15.2 强化 + V15.5.
 from core.config import TDX_MIN_INTERVAL, MAX_RETRY_COUNT, RETRY_DELAY_SECONDS
 
 # V16.2.13: easy_tdx "声称 N 条但首条即解析失败" 警告 = 标的无 K 线的**正常降级提示**
-#（8/4 老段已适配器拦截；92 个别新股首次换台仍触发，无法预判）→ 精确过滤该消息，
+# （8/4 老段已适配器拦截；92 个别新股首次换台仍触发，无法预判）→ 精确过滤该消息，
 # 不刷屏且不影响 easy_tdx 其他日志（协议错误仍可见）。
 try:
     import logging as _tdx_logging
@@ -172,8 +172,8 @@ _DOMAIN_LIMITS: Dict[str, Dict[str, Any]] = {
     "reportapi.eastmoney.com": {"sleep_ms": 1000, "semaphore": None},
 }
 # V16.3 A3: 已移除 push2.eastmoney.com 条目——本表仅服务 tdx_client 内部 _http_get
-#（实测唯一调用方 _tencent_batch_fallback 打腾讯域）。东财 push2 属 sc_network 风控面
-#（0.4rps/2.5s 共享归一化桶），此前本表 push2=100ms 比 sc_network 严 10 倍松弛，
+# （实测唯一调用方 _tencent_batch_fallback 打腾讯域）。东财 push2 属 sc_network 风控面
+# （0.4rps/2.5s 共享归一化桶），此前本表 push2=100ms 比 sc_network 严 10 倍松弛，
 # 若未来在本表加东财 URL 即成限流旁路（隐藏陷阱）。东财请求一律走 sc_network 入口。
 # 每个域名独立的最后请求时间
 _DOMAIN_LAST_TIME: Dict[str, float] = {}
@@ -191,7 +191,7 @@ def _http_get(
 
     V9.0 新增：线程锁保护 _DOMAIN_LAST_TIME。
     """
-    
+
     # 解析域名
     from urllib.parse import urlparse
 
@@ -221,7 +221,7 @@ def _http_get(
             params=params,
             headers=headers or {"User-Agent": UA},
             timeout=timeout,
-            proxies={"http": None, "https": None},
+            proxies=cast(Any, {"http": None, "https": None}),
         )
     except Exception as _e:
         _debug_log(f"tdx _tdx_http_get error ({url}): {_e}")
@@ -377,7 +377,9 @@ class _EasyTdxAdapter:
             df["last_close"] = df["pre_close"]
         return df
 
-    def price_limits(self, symbol: str, pre_close: float) -> Tuple[Optional[float], Optional[float]]:
+    def price_limits(
+        self, symbol: str, pre_close: float
+    ) -> Tuple[Optional[float], Optional[float]]:
         """V17.2.0 修复: easy_tdx get_price_limits 期望 Market 枚举(非本项目 _easy_market 的 int)，
         适配器在此转换。返回 (涨停价, 跌停价)，失败 (None, None)。
         name 传空串 → compute_price_limits 按普通板(±10%/±20%)处理(ST 等特例降级为标准板)。
@@ -387,7 +389,10 @@ class _EasyTdxAdapter:
         _m = _easy_market(symbol)
         _menum = {1: Market.SH, 0: Market.SZ, 2: Market.BJ}.get(_m, Market.SH)
         try:
-            return self._client.get_price_limits(_menum, symbol, "", pre_close)
+            return cast(
+                Tuple[Optional[float], Optional[float]],
+                self._client.get_price_limits(_menum, symbol, "", pre_close),
+            )
         except Exception as _e:
             _debug_log(f"easy_tdx price_limits error ({symbol}): {_e}")
             return (None, None)
@@ -517,19 +522,22 @@ def _tdx_host_data_complete(client) -> bool:
         # 会无限挂起 → 统一 5s 跨平台超时；超时即判定该主机数据不全，交由上层换台/降级。
         _df = _tdx_call_with_timeout(
             lambda: client.get_security_bars(Market.SH, "600519", KlineCategory.DAY, 0, 5),
-            timeout_s=5, label="tdx bars verify",
+            timeout_s=5,
+            label="tdx bars verify",
         )
         if _df is None or _df.empty:
             return False
         _q = _tdx_call_with_timeout(
             lambda: client.get_security_quotes([(Market.SH, "600519")]),
-            timeout_s=5, label="tdx quotes verify",
+            timeout_s=5,
+            label="tdx quotes verify",
         )
         if _q is None or len(_q) == 0:
             return False
         _f = _tdx_call_with_timeout(
             lambda: client.get_finance_info(Market.SH, "600519"),
-            timeout_s=5, label="tdx finance verify",
+            timeout_s=5,
+            label="tdx finance verify",
         )
         if _f is None or len(_f) == 0:
             return False
@@ -592,7 +600,8 @@ def _create_easy_tdx_adapter():
             # V17.2.x(2026-09-11): from_best_host 内部多主机 ping+连接亦可能挂起，统一 10s 超时
             c = _tdx_call_with_timeout(
                 lambda: TdxClient.from_best_host(hosts=_fallback_hosts, ping_timeout=3.0),
-                timeout_s=10, label="easy_tdx from_best_host",
+                timeout_s=10,
+                label="easy_tdx from_best_host",
             )
             if _tdx_host_data_complete(c):
                 _debug_log("easy_tdx from_best_host connected (full-data verified)")
@@ -914,7 +923,7 @@ def _pre_market_quote_from_kline(code: str) -> Dict[str, Any]:
         return {}
 
 
-_TENCENT_BATCH_CACHE: Dict[str, Dict[str, Dict[str, Any]]] = {}
+_TENCENT_BATCH_CACHE: Dict[str, Dict[str, Any]] = {}
 _TENCENT_BATCH_CACHE_DATE: str = ""
 
 
@@ -925,51 +934,51 @@ _TENCENT_FIELD_INDEX = {
     "price": 3,
     "last_close": 4,
     "open": 5,
-    "volume_hand": 6,      # 成交量(手)
+    "volume_hand": 6,  # 成交量(手)
     "bid1_vol": 10,
     "change_amt": 31,
     "change_pct": 32,
     "high": 33,
     "low": 34,
-    "amount_wan": 37,      # 成交额(万)
-    "turnover_pct": 38,    # 换手率(%)
-    "pe_ttm": 39,          # 市盈率（TTM）
+    "amount_wan": 37,  # 成交额(万)
+    "turnover_pct": 38,  # 换手率(%)
+    "pe_ttm": 39,  # 市盈率（TTM）
     "amplitude_pct": 43,
-    "float_mcap_yi": 44,   # 流通市值(亿)
-    "mcap_yi": 45,         # 总市值(亿)
+    "float_mcap_yi": 44,  # 流通市值(亿)
+    "mcap_yi": 45,  # 总市值(亿)
     "pb": 46,
     "limit_up": 47,
     "limit_down_price": 48,
     "vol_ratio": 49,
     # V16.4.1: 删重复键(原 L880 与 L872 同为 pe_ttm:39, 后者恒生效)
-    "pe_dynamic": 52,      # V16.3.3 修正: [52]=动态PE/MRQ（实测 15.47=push2delay f162=fuyao pe_mrq）
-    "pe_static": 53,       # V16.3.3 修正: [53]=静态PE（实测 20.48=push2delay f163，原误标 52）
+    "pe_dynamic": 52,  # V16.3.3 修正: [52]=动态PE/MRQ（实测 15.47=push2delay f162=fuyao pe_mrq）
+    "pe_static": 53,  # V16.3.3 修正: [53]=静态PE（实测 20.48=push2delay f163，原误标 52）
     # V16.3 O20: 破解确认的新字段（field_dict 12.1）
-    "high_52w": 67,        # 52周最高价(元)
-    "low_52w": 68,         # 52周最低价(元)
+    "high_52w": 67,  # 52周最高价(元)
+    "low_52w": 68,  # 52周最低价(元)
     "dividend_yield": 64,  # 股息率(%)（=push2 f126 同源）
     # V16.3.3 (2026-08-10 字典 12.1/12.15.5 实测): 腾讯未知位破解
-    "roa_ttm": 66,         # V17.0.5 正名: ROA(TTM 滚动%)——~~"年化"~~（银行 TTM≈年报故曾误标；
-                           #   招行 1.12 精确；fuyao 官方 total_assets_net_ratio 同族）
+    "roa_ttm": 66,  # V17.0.5 正名: ROA(TTM 滚动%)——~~"年化"~~（银行 TTM≈年报故曾误标；
+    #   招行 1.12 精确；fuyao 官方 total_assets_net_ratio 同族）
     "roe_deduct_ttm": 65,  # V17.0.5 新增: 扣非加权ROE(TTM 滚动%)——fuyao index_deduct_weighted_avg_roe
-                           #   同族（茅台 32.41 vs 官方 Q1 32.52；披露日跳变天然实验铁证）；
+    #   同族（茅台 32.41 vs 官方 Q1 32.52；披露日跳变天然实验铁证）；
     "change_180td_pct": 75,  # V17.0.7 正名: 近180交易日涨跌幅(%, 前复权)——腾讯独有长窗涨幅
-                             #   ~~"主力净流入(亿)"~~ 证伪(与东财占比族最大差40pp且符号翻转、
-                             #   值可超±100; K线窗口扫描 w=180 显著最优)——严禁再作资金流兜底
+    #   ~~"主力净流入(亿)"~~ 证伪(与东财占比族最大差40pp且符号翻转、
+    #   值可超±100; K线窗口扫描 w=180 显著最优)——严禁再作资金流兜底
     # V17.0.25(2026-09-03)→2026-09-08 round12 + 2026-09-09 专项复核(字典定案): 均价=腾讯[51]+TDX快照
     #   （🔥原腾讯[85] 对均价锚仅 3/20，已撤销其均价候选，回退 L3；主字典 09-08 TDX Average 20/20 精确强锚）
-    "avg_price": 51,       # 均价 / VWAP（元, 腾讯 qt.gtimg [51]；TDX快照 average_price 同义）
-    "beta": 56,            # Beta 族（高置信）——自算 Beta 与 [56] Pearson=0.908；腾讯口径估计值, 非本系统重算
+    "avg_price": 51,  # 均价 / VWAP（元, 腾讯 qt.gtimg [51]；TDX快照 average_price 同义）
+    "beta": 56,  # Beta 族（高置信）——自算 Beta 与 [56] Pearson=0.908；腾讯口径估计值, 非本系统重算
     # V17.0.25(2026-09-03)→2026-09-08 round12(字典定案): 委差=腾讯[50]+push2 f192
     #   （🔥腾讯[86] 非委差: 等值 0/20、与 TDX 委比同号仅 55%, 已撤销[86]候选; [50]为委差强锚）
-    "bid_ask_net": 50,     # 委差（手级带符号量, 腾讯[50]；push2 f192 同义兜底）
+    "bid_ask_net": 50,  # 委差（手级带符号量, 腾讯[50]；push2 f192 同义兜底）
     # V17.2.x(2026-09-10) 统一层接线补全(字典 §12.8.12e canonical 实装):
-    "entrust_ratio": 74,   # 委比%(腾讯[74]；push2 f191 / TDX快照 entrust_ratio 同义)
-    "bid2": 12,            # 买二价(元, 腾讯[12]；tdx bid2 / sina[14] 同义)
-    "ask2": 22,            # 卖二价(元, 腾讯[22]；tdx ask2 / sina[24] 同义)
+    "entrust_ratio": 74,  # 委比%(腾讯[74]；push2 f191 / TDX快照 entrust_ratio 同义)
+    "bid2": 12,  # 买二价(元, 腾讯[12]；tdx bid2 / sina[14] 同义)
+    "ask2": 22,  # 卖二价(元, 腾讯[22]；tdx ask2 / sina[24] 同义)
     # V17.0.12: 腾讯[7]=外盘(主动买)/[8]=内盘(主动卖) 单位随板块(科创板按股, 需÷_tencent_volume_divisor 归手)
-    "s_vol": 8,            # 内盘(主动卖成交量, 手/股随板块) — 统一层键 s_vol（腾讯[8]）
-    "b_vol": 7,            # 外盘(主动买成交量, 手/股随板块) — 统一层键 b_vol（腾讯[7]）
+    "s_vol": 8,  # 内盘(主动卖成交量, 手/股随板块) — 统一层键 s_vol（腾讯[8]）
+    "b_vol": 7,  # 外盘(主动买成交量, 手/股随板块) — 统一层键 b_vol（腾讯[7]）
 }
 _TENCENT_MIN_FIELDS = 69  # V16.3 O22: 覆盖 high_52w=67/low_52w=68/dividend_yield=64 索引（原 53 会 IndexError）  # 协议最小字段数（不足即视为 schema 变化/截断）
 
@@ -998,7 +1007,9 @@ def _tencent_volume_divisor(code: str) -> float:
     return 100.0 if str(code).startswith("688") else 1.0
 
 
-def _tencent_batch_fallback(codes: List[str], use_l2_cache: bool = True) -> Dict[str, Dict[str, Any]]:
+def _tencent_batch_fallback(
+    codes: List[str], use_l2_cache: bool = True
+) -> Dict[str, Dict[str, Any]]:
     """腾讯批量行情 → {code: {name, price, change_pct, ...}}。
 
     V15.5.10: 分批（每批 60 只）——全市场 7957 只拼单 URL（64KB）会被腾讯拒绝。
@@ -1020,6 +1031,7 @@ def _tencent_batch_fallback(codes: List[str], use_l2_cache: bool = True) -> Dict
     if use_l2_cache and missing:
         try:
             from core.stock_cache import read_tencent_batch_l2
+
             _l2_map = read_tencent_batch_l2(missing)
             for _c, _l2 in _l2_map.items():
                 if _c in missing and _l2:
@@ -1030,17 +1042,20 @@ def _tencent_batch_fallback(codes: List[str], use_l2_cache: bool = True) -> Dict
     if missing:
         _BATCH = 60  # 腾讯 qt.gtimg.cn 单次 URL 安全上限（经验值 60-80）
         # V16.2: 腾讯批量接入进程级节流（原批间固定 100ms 无协调，多进程时叠加）——用通用协调锁
+        _wait_interval: Optional[Callable[[], Any]]
         try:
-            from stock_common.sc_network import _gen_wait_process_interval
+            from stock_common.sc_network import (
+                _gen_wait_process_interval as _wait_interval,
+            )
         except Exception:
-            _gen_wait_process_interval = None
+            _wait_interval = None
         for _start in range(0, len(missing), _BATCH):
             _chunk = missing[_start : _start + _BATCH]
             prefixed = [f"{_market_prefix(c)}{c}" for c in _chunk]
             try:
-                if _gen_wait_process_interval is not None:
+                if _wait_interval is not None:
                     try:
-                        _gen_wait_process_interval()
+                        _wait_interval()
                     except Exception:
                         pass
                 r = _http_get("https://qt.gtimg.cn/q=" + ",".join(prefixed), timeout=15)
@@ -1063,8 +1078,16 @@ def _tencent_batch_fallback(codes: List[str], use_l2_cache: bool = True) -> Dict
                     # V16.3 O22: float 解析包进 per-code 保护（原在批级 try 外——
                     # 单只坏字段（如 "--"）丢整批 60 只）
                     try:
-                        _bvol = float(vals[_TENCENT_FIELD_INDEX["volume_hand"]]) if vals[_TENCENT_FIELD_INDEX["volume_hand"]] else 0
-                        _bprice = float(vals[_TENCENT_FIELD_INDEX["price"]]) if vals[_TENCENT_FIELD_INDEX["price"]] else 0
+                        _bvol = (
+                            float(vals[_TENCENT_FIELD_INDEX["volume_hand"]])
+                            if vals[_TENCENT_FIELD_INDEX["volume_hand"]]
+                            else 0
+                        )
+                        _bprice = (
+                            float(vals[_TENCENT_FIELD_INDEX["price"]])
+                            if vals[_TENCENT_FIELD_INDEX["price"]]
+                            else 0
+                        )
                     except (ValueError, TypeError):
                         continue
                     if cv.startswith(("43", "83", "87")) and _bvol == 0 and _bprice > 0:
@@ -1074,33 +1097,101 @@ def _tencent_batch_fallback(codes: List[str], use_l2_cache: bool = True) -> Dict
                         _TENCENT_BATCH_CACHE[cv] = {
                             "name": vals[_TENCENT_FIELD_INDEX["name"]],
                             "price": _bprice,
-                            "change_pct": float(vals[_TENCENT_FIELD_INDEX["change_pct"]]) if vals[_TENCENT_FIELD_INDEX["change_pct"]] else 0,
-                            "mcap_yi": float(vals[_TENCENT_FIELD_INDEX["mcap_yi"]]) if vals[_TENCENT_FIELD_INDEX["mcap_yi"]] else 0,
-                            "pe_ttm": float(vals[_TENCENT_FIELD_INDEX["pe_ttm"]]) if vals[_TENCENT_FIELD_INDEX["pe_ttm"]] else 0,
+                            "change_pct": (
+                                float(vals[_TENCENT_FIELD_INDEX["change_pct"]])
+                                if vals[_TENCENT_FIELD_INDEX["change_pct"]]
+                                else 0
+                            ),
+                            "mcap_yi": (
+                                float(vals[_TENCENT_FIELD_INDEX["mcap_yi"]])
+                                if vals[_TENCENT_FIELD_INDEX["mcap_yi"]]
+                                else 0
+                            ),
+                            "pe_ttm": (
+                                float(vals[_TENCENT_FIELD_INDEX["pe_ttm"]])
+                                if vals[_TENCENT_FIELD_INDEX["pe_ttm"]]
+                                else 0
+                            ),
                             # V17.0.23(2026-09-01): 静态PE(LYR, f163) — 腾讯[53]=f163 实锤(主字典定案),
                             # 供同业对比表静态PE列横向比较(本股 cdata.pe_lyr 同源)。
-                            "pe_lyr": float(vals[_TENCENT_FIELD_INDEX["pe_static"]]) if vals[_TENCENT_FIELD_INDEX["pe_static"]] else 0,
-                            "turnover_pct": float(vals[_TENCENT_FIELD_INDEX["turnover_pct"]]) if vals[_TENCENT_FIELD_INDEX["turnover_pct"]] else 0,
-                        "amount_wan": float(vals[_TENCENT_FIELD_INDEX["amount_wan"]]) if vals[_TENCENT_FIELD_INDEX["amount_wan"]] else 0,
-                        # V17.2.x(2026-09-10) 性能优化: 同一 qt.gtimg 响应已含以下字段, 在此一并抽取
-                        # (零额外请求, 仅多解析已返回字段), 供 val 批量预热 _BATCH_QUOTE_CACHE 短路
-                        # get_canonical_stock_data 的 TDX 实时段(OHLC)与 L490 估值补取, 消除全市场逐股网络。
-                        # 索引均沿用单股 get_tencent_quote 已验证的 _TENCENT_FIELD_INDEX; 键名对齐 canonical。
-                        "open": float(vals[_TENCENT_FIELD_INDEX["open"]]) if vals[_TENCENT_FIELD_INDEX["open"]] else 0,
-                        "high": float(vals[_TENCENT_FIELD_INDEX["high"]]) if vals[_TENCENT_FIELD_INDEX["high"]] else 0,
-                        "low": float(vals[_TENCENT_FIELD_INDEX["low"]]) if vals[_TENCENT_FIELD_INDEX["low"]] else 0,
-                        "last_close": float(vals[_TENCENT_FIELD_INDEX["last_close"]]) if vals[_TENCENT_FIELD_INDEX["last_close"]] else 0,
-                        "pb": float(vals[_TENCENT_FIELD_INDEX["pb"]]) if vals[_TENCENT_FIELD_INDEX["pb"]] else 0,
-                        "limit_up": float(vals[_TENCENT_FIELD_INDEX["limit_up"]]) if vals[_TENCENT_FIELD_INDEX["limit_up"]] else 0,
-                        "limit_down": float(vals[_TENCENT_FIELD_INDEX["limit_down_price"]]) if vals[_TENCENT_FIELD_INDEX["limit_down_price"]] else 0,
-                        "roa": float(vals[_TENCENT_FIELD_INDEX["roa_ttm"]]) if vals[_TENCENT_FIELD_INDEX["roa_ttm"]] else 0,
-                        "roe_deduct_ttm": float(vals[_TENCENT_FIELD_INDEX["roe_deduct_ttm"]]) if vals[_TENCENT_FIELD_INDEX["roe_deduct_ttm"]] else 0,
-                        "dividend_yield": float(vals[_TENCENT_FIELD_INDEX["dividend_yield"]]) if vals[_TENCENT_FIELD_INDEX["dividend_yield"]] else 0,
-                        # V17.2.x(2026-09-10) 性能优化: 动态PE([52]=f162=pe_mrq, 字典实锤) 同属 qt.gtimg 已返回字段,
-                        # 在此一并抽取供 val 批量预热 -> get_canonical_stock_data 命中后 rt_quote 自带 pe_dynamic,
-                        # 使 L640 push2delay 补充块的进入条件部分满足(仅剩 fund_main_today 由 _PD_EXTRA_CACHE 哨兵处理)。
-                        "pe_dynamic": float(vals[_TENCENT_FIELD_INDEX["pe_dynamic"]]) if vals[_TENCENT_FIELD_INDEX["pe_dynamic"]] else 0,
-                    }
+                            "pe_lyr": (
+                                float(vals[_TENCENT_FIELD_INDEX["pe_static"]])
+                                if vals[_TENCENT_FIELD_INDEX["pe_static"]]
+                                else 0
+                            ),
+                            "turnover_pct": (
+                                float(vals[_TENCENT_FIELD_INDEX["turnover_pct"]])
+                                if vals[_TENCENT_FIELD_INDEX["turnover_pct"]]
+                                else 0
+                            ),
+                            "amount_wan": (
+                                float(vals[_TENCENT_FIELD_INDEX["amount_wan"]])
+                                if vals[_TENCENT_FIELD_INDEX["amount_wan"]]
+                                else 0
+                            ),
+                            # V17.2.x(2026-09-10) 性能优化: 同一 qt.gtimg 响应已含以下字段, 在此一并抽取
+                            # (零额外请求, 仅多解析已返回字段), 供 val 批量预热 _BATCH_QUOTE_CACHE 短路
+                            # get_canonical_stock_data 的 TDX 实时段(OHLC)与 L490 估值补取, 消除全市场逐股网络。
+                            # 索引均沿用单股 get_tencent_quote 已验证的 _TENCENT_FIELD_INDEX; 键名对齐 canonical。
+                            "open": (
+                                float(vals[_TENCENT_FIELD_INDEX["open"]])
+                                if vals[_TENCENT_FIELD_INDEX["open"]]
+                                else 0
+                            ),
+                            "high": (
+                                float(vals[_TENCENT_FIELD_INDEX["high"]])
+                                if vals[_TENCENT_FIELD_INDEX["high"]]
+                                else 0
+                            ),
+                            "low": (
+                                float(vals[_TENCENT_FIELD_INDEX["low"]])
+                                if vals[_TENCENT_FIELD_INDEX["low"]]
+                                else 0
+                            ),
+                            "last_close": (
+                                float(vals[_TENCENT_FIELD_INDEX["last_close"]])
+                                if vals[_TENCENT_FIELD_INDEX["last_close"]]
+                                else 0
+                            ),
+                            "pb": (
+                                float(vals[_TENCENT_FIELD_INDEX["pb"]])
+                                if vals[_TENCENT_FIELD_INDEX["pb"]]
+                                else 0
+                            ),
+                            "limit_up": (
+                                float(vals[_TENCENT_FIELD_INDEX["limit_up"]])
+                                if vals[_TENCENT_FIELD_INDEX["limit_up"]]
+                                else 0
+                            ),
+                            "limit_down": (
+                                float(vals[_TENCENT_FIELD_INDEX["limit_down_price"]])
+                                if vals[_TENCENT_FIELD_INDEX["limit_down_price"]]
+                                else 0
+                            ),
+                            "roa": (
+                                float(vals[_TENCENT_FIELD_INDEX["roa_ttm"]])
+                                if vals[_TENCENT_FIELD_INDEX["roa_ttm"]]
+                                else 0
+                            ),
+                            "roe_deduct_ttm": (
+                                float(vals[_TENCENT_FIELD_INDEX["roe_deduct_ttm"]])
+                                if vals[_TENCENT_FIELD_INDEX["roe_deduct_ttm"]]
+                                else 0
+                            ),
+                            "dividend_yield": (
+                                float(vals[_TENCENT_FIELD_INDEX["dividend_yield"]])
+                                if vals[_TENCENT_FIELD_INDEX["dividend_yield"]]
+                                else 0
+                            ),
+                            # V17.2.x(2026-09-10) 性能优化: 动态PE([52]=f162=pe_mrq, 字典实锤) 同属 qt.gtimg 已返回字段,
+                            # 在此一并抽取供 val 批量预热 -> get_canonical_stock_data 命中后 rt_quote 自带 pe_dynamic,
+                            # 使 L640 push2delay 补充块的进入条件部分满足(仅剩 fund_main_today 由 _PD_EXTRA_CACHE 哨兵处理)。
+                            "pe_dynamic": (
+                                float(vals[_TENCENT_FIELD_INDEX["pe_dynamic"]])
+                                if vals[_TENCENT_FIELD_INDEX["pe_dynamic"]]
+                                else 0
+                            ),
+                        }
                     except (ValueError, TypeError):
                         pass
             except Exception as _e:
@@ -1112,6 +1203,7 @@ def _tencent_batch_fallback(codes: List[str], use_l2_cache: bool = True) -> Dict
     # 供后续脚本(尤其 mak)免重打全市场网络。use_l2_cache=False(val)也照常写盘。
     try:
         from core.stock_cache import persist_tencent_batch_l2
+
         _new = {_c: _TENCENT_BATCH_CACHE[_c] for _c in missing if _c in _TENCENT_BATCH_CACHE}
         if _new:
             persist_tencent_batch_l2(_new)
@@ -1128,7 +1220,10 @@ def _tencent_batch_fallback(codes: List[str], use_l2_cache: bool = True) -> Dict
 # 行情 + K线适配器
 # ═══════════════════════════════════════
 
-def _tdx_bars_with_timeout(client, symbol: str, frequency: int, offset: int, timeout_s: float = 5.0):
+
+def _tdx_bars_with_timeout(
+    client, symbol: str, frequency: int, offset: int, timeout_s: float = 5.0
+):
     """跨平台安全调用 client.bars —— 超时抛 TimeoutError（由调用方归一为空结果/不缓存/换台）。
 
     V17.2.x(2026-09-11): 根因修复。原实现仅用 signal.SIGALRM 包裹 client.bars，而 Windows
@@ -1141,16 +1236,21 @@ def _tdx_bars_with_timeout(client, symbol: str, frequency: int, offset: int, tim
     """
     import signal as _signal
 
-    if hasattr(_signal, "SIGALRM"):
+    _alarm_signal = getattr(_signal, "SIGALRM", None)
+    _setitimer = getattr(_signal, "setitimer", None)
+    _real_timer = getattr(_signal, "ITIMER_REAL", None)
+    if _alarm_signal is not None and callable(_setitimer) and _real_timer is not None:
+
         def _alarm_handler(signum, frame):
             raise TimeoutError(f"tdx bars timeout ({timeout_s}s)")
-        _old = _signal.signal(_signal.SIGALRM, _alarm_handler)
-        _signal.alarm(timeout_s)
+
+        _old = _signal.signal(_alarm_signal, _alarm_handler)
+        _setitimer(_real_timer, timeout_s)
         try:
             return client.bars(symbol=symbol, frequency=frequency, start=0, offset=offset)
         finally:
-            _signal.alarm(0)
-            _signal.signal(_signal.SIGALRM, _old)
+            _setitimer(_real_timer, 0.0)
+            _signal.signal(_alarm_signal, _old)
     # Windows / 无 SIGALRM：守护线程 + join 超时
     import threading as _th
 
@@ -1258,7 +1358,7 @@ def tdx_get_security_bars(code: str, count: int = 800) -> Tuple[List[str], List[
                 return [], []
             client = _get_tdx_client()
             if client is None:
-                result = [], []
+                result: Tuple[List[str], List[List[str]]] = ([], [])
                 _TDX_KLINE_CACHE[cache_key] = result
                 return result
             try:
@@ -1280,8 +1380,12 @@ def tdx_get_security_bars(code: str, count: int = 800) -> Tuple[List[str], List[
                     _tdx_inc_empty_streak()
                     result = [], []
                     if code.startswith(("92", "43", "83", "87")) or code[0] in ("8", "4"):
-                        _TDX_KLINE_EMPTY_UNTIL[code] = time.time() + 300  # 5 分钟失败记忆(仅无数据号段)
-                        _TDX_KLINE_CACHE[cache_key] = result  # 无数据号段: 进程内也缓存空, 避免重复换台
+                        _TDX_KLINE_EMPTY_UNTIL[code] = (
+                            time.time() + 300
+                        )  # 5 分钟失败记忆(仅无数据号段)
+                        _TDX_KLINE_CACHE[cache_key] = (
+                            result  # 无数据号段: 进程内也缓存空, 避免重复换台
+                        )
                     # 健康股(6/0/3)瞬断: 不写进程级缓存(与下方连接失败路径一致, 见 V16.2 注释),
                     # 下次调用重新拉取; 上层 @cached valid_if 拒空, 不污染持久缓存。
                     return result
@@ -1340,7 +1444,7 @@ def tdx_get_security_bars(code: str, count: int = 800) -> Tuple[List[str], List[
                     _TDX_AVAILABLE = None
                     break
                 # V16.2.13 修复: 原 _reset_tdx_connections() 在 _TDX_CALL_LOCK 内重入锁
-                #（threading.Lock 不可重入）→ 异常路径死锁隐患；直接置空全局
+                # （threading.Lock 不可重入）→ 异常路径死锁隐患；直接置空全局
                 # V17.0.10c: 全局声明已在函数顶部(987), 此处直接置空即触发换台重试
                 _TDX_CLIENT = None
                 _TDX_AVAILABLE = None
@@ -1394,7 +1498,7 @@ def _get_trading_date_for_quote() -> str:
     if _is_before_market_open():
         from stock_common.stock_calendar import get_last_trading_day
 
-        return get_last_trading_day().strftime("%Y-%m-%d")
+        return str(get_last_trading_day().strftime("%Y-%m-%d"))
     return datetime.now().strftime("%Y-%m-%d")
 
 
@@ -1480,12 +1584,14 @@ def tdx_get_quote_full(code: str) -> Dict[str, Any]:
                     q = quotes.iloc[0]
                     # mootdx 列名 'last_close' = 昨收
                     pre_close = q.get('last_close', 0)
+
                     # 实时字段：盘中覆盖 ZHB，盘前仅补缺
                     def _put(key, val, overwrite=True):
                         if val is None:
                             return
                         if overwrite or key not in result or not result.get(key):
                             result[key] = val
+
                     if q.get('price'):
                         _put('price', q['price'], _is_rt)
                     if pre_close:
@@ -1514,8 +1620,10 @@ def tdx_get_quote_full(code: str) -> Dict[str, Any]:
                         _put('rise_speed', float(q['rise_speed']), _is_rt)
                     # V17.2.x(2026-09-10) 调整 A/C: TDX快照均价/委比（字典 §12.8.12e 列 TDX快照源；
                     #   easy_tdx/mootdx 未暴露该列则 q.get 返回 None 自动跳过，无副作用）
-                    for _snap_k, _cdk in (("average_price", "avg_price"),
-                                          ("entrust_ratio", "entrust_ratio")):
+                    for _snap_k, _cdk in (
+                        ("average_price", "avg_price"),
+                        ("entrust_ratio", "entrust_ratio"),
+                    ):
                         _sv = q.get(_snap_k)
                         if _sv is not None:
                             try:
@@ -1642,7 +1750,9 @@ def tdx_get_index_quote(idx_code: str) -> Dict[str, Any]:
                     _debug_log(f"tdx index_quote 空响应 ({idx_code})，换台重试")
                     client = _get_tdx_client()
                     if client is not None:
-                        bars = client.index_bars(symbol=code, market=m, frequency=9, start=0, offset=2)
+                        bars = client.index_bars(
+                            symbol=code, market=m, frequency=9, start=0, offset=2
+                        )
                 if bars is not None and not bars.empty and len(bars) >= 2:
                     last_c = float(bars.iloc[-1]['close'])
                     prev_c = float(bars.iloc[-2]['close'])
@@ -1672,7 +1782,9 @@ def tdx_get_index_quote(idx_code: str) -> Dict[str, Any]:
         return {}
 
 
-@cached(category="kline", ttl_seconds=TTL["kline"], trading_day=True, valid_if=make_valid_if())  # V16.1: 8000 根 K 线太贵，24h 磁盘缓存
+@cached(
+    category="kline", ttl_seconds=TTL["kline"], trading_day=True, valid_if=make_valid_if()
+)  # V16.1: 8000 根 K 线太贵，24h 磁盘缓存
 def tdx_get_historical_high(code: str) -> Optional[float]:
     """历史最高价（800 根日 K 线内）。
 
@@ -1898,7 +2010,7 @@ def tdx_get_finance_info(code: str) -> Optional[Dict[str, Any]]:
             import math
 
             row = info.iloc[0].to_dict()
-            clean_row = {}
+            clean_row: Dict[str, Any] = {}
             for k, v in row.items():
                 if isinstance(v, float) and math.isnan(v):
                     clean_row[k] = None
@@ -1910,8 +2022,10 @@ def tdx_get_finance_info(code: str) -> Optional[Dict[str, Any]]:
             return None
 
 
-@cached(category="dividend", ttl_seconds=86400, cross_verify=True)  # V16.0: S13 高股息 100 次逐股 xdxr 无缓存 → 补缓存
-def tdx_get_dividend_history(code: str):
+@cached(
+    category="dividend", ttl_seconds=86400, cross_verify=True
+)  # V16.0: S13 高股息 100 次逐股 xdxr 无缓存 → 补缓存
+def tdx_get_dividend_history(code: str) -> Optional[List[Dict[str, Any]]]:
     """V12.0: mootdx xdxr 列为 year/month/day（无 'date' 列），组合成日期字符串。
     V16.2.3: 连接失败返回 None（与"真无分红"[] 区分，报告不再误报"一毛不拔"）。
     V16.2.14: easy_tdx xdxr 用 'date' 列（YYYY-MM-DD HH:MM:SS），mootdx 用 year/month/day —— 双格式兼容。"""
@@ -1923,7 +2037,7 @@ def tdx_get_dividend_history(code: str):
             df = client.xdxr(symbol=code)
             if df is None or df.empty:
                 return []
-            rows = []
+            rows: List[Dict[str, Any]] = []
             for _, row in df.iterrows():
                 cat = int(row.get('category', 0) or 0)
                 if cat != 1:
@@ -1947,7 +2061,7 @@ def tdx_get_dividend_history(code: str):
                         "transfer_ratio": szg,
                     }
                 )
-            rows.sort(key=lambda x: x["date"], reverse=True)
+            rows.sort(key=lambda x: str(x.get("date", "")), reverse=True)
             return rows
         except Exception as _e:
             _debug_log(f"tdx tdx_get_dividend_history error ({code}): {_e}")
@@ -2395,7 +2509,7 @@ def tdx_get_financial_analysis(code: str) -> dict:
         s1 = find_subsection(sections, '主要财务指标')
         if s1:
             tables = parse_tables(s1)
-            merged: dict = {}
+            merged = {}
             for tbl in tables:
                 if not tbl:
                     continue
@@ -2422,7 +2536,7 @@ def tdx_get_financial_analysis(code: str) -> dict:
             s = find_subsection(sections, section_name, aliases)
             if s:
                 tables = parse_tables(s)
-                merged: dict = {}
+                merged = {}
                 for tbl in tables:
                     if not tbl:
                         continue
@@ -2471,7 +2585,7 @@ def tdx_get_financial_analysis(code: str) -> dict:
         s7 = find_subsection(sections, '资产负债表摘要')
         if s7:
             tables = parse_tables(s7)
-            merged: dict = {}
+            merged = {}
             for tbl in tables:
                 if not tbl:
                     continue
@@ -2494,7 +2608,7 @@ def tdx_get_financial_analysis(code: str) -> dict:
             s = find_subsection(sections, section_name)
             if s and '暂无数据' not in s:
                 tables = parse_tables(s)
-                merged: dict = {}
+                merged = {}
                 for tbl in tables:
                     if not tbl:
                         continue
@@ -2696,7 +2810,7 @@ def tdx_get_share_capital(code: str) -> dict:
         s1 = sections.get('股本结构', '')
         if s1 and '暂无数据' not in s1:
             tables = parse_tables(s1)
-            merged: dict = {}
+            merged = {}
             for tbl in tables:
                 if not tbl:
                     continue
@@ -2736,7 +2850,7 @@ def tdx_get_share_capital(code: str) -> dict:
                 key_col = next(iter(tbl[0].keys())) if tbl[0] else ''
                 date_cols = [c for c in tbl[0].keys() if c != key_col]
                 for date_col in date_cols:
-                    entry: dict = {'announce_date': date_col.strip()}
+                    entry = {'announce_date': date_col.strip()}
                     for row in tbl:
                         indicator = (row.get(key_col) or '').strip()
                         if indicator:
@@ -3016,7 +3130,9 @@ def tdx_get_belong_boards(code: str):
         return {}
 
 
-@cached(category="board_list", ttl_seconds=TTL["board_list"], trading_day=True, valid_if=make_valid_if())
+@cached(
+    category="board_list", ttl_seconds=TTL["board_list"], trading_day=True, valid_if=make_valid_if()
+)
 def tdx_get_board_list(board_type: int = 0):
     """获取板块列表（行业/概念/地域等）。
 
@@ -3248,7 +3364,8 @@ def tdx_get_market_abnormal_data():
                     'ret_10d': _safe_float(data.get('change_10d', 0)),
                     'ret_20d': _safe_float(data.get('change_20d', 0)),
                     'ret_60d': _safe_float(data.get('change_60d', 0)),
-                    'main_net_amount': _safe_float(data.get('main_net_buy_amount', 0)) * 10000,  # ⚠️ V17.0 实锤=竞价额(万元→元), 非主力净
+                    'main_net_amount': _safe_float(data.get('main_net_buy_amount', 0))
+                    * 10000,  # ⚠️ V17.0 实锤=竞价额(万元→元), 非主力净
                 }
             )
         return all_stocks

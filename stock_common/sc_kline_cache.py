@@ -25,6 +25,7 @@ V14.3.1 增强（缓存失效机制）：
   # 否则从网络获取后：
   set_cached_kline("D", "600519", 800, (keys, rows))
 """
+
 from __future__ import annotations
 
 import os
@@ -33,7 +34,6 @@ import threading
 import time
 from pathlib import Path
 from typing import Any, Optional, Tuple
-
 
 # ═══════════════════════════════════════
 # 缓存配置
@@ -69,6 +69,7 @@ def _debug_log(msg: str) -> None:
 # 也写进磁盘, 会被后续 24h 内所有调用命中并当作"有效空数据"返回 → 投毒 + 掩盖源故障。
 # 故写入前强制校验非空, 空结果直接丢弃(不写盘, 调用方回退到网络重取)。
 
+
 def _kline_is_non_empty(data: Any) -> bool:
     """K线数据 (keys, rows) 是否可缓存（非空）。"""
     if not isinstance(data, (tuple, list)) or len(data) != 2:
@@ -93,6 +94,7 @@ def _blob_is_non_empty(data: Any) -> bool:
 # 路径与目录
 # ═══════════════════════════════════════
 
+
 def _get_cache_dir() -> Path:
     """获取 K 线缓存目录。
 
@@ -116,6 +118,7 @@ def _cache_path(period: str, code: str, count: int) -> Path:
 # ═══════════════════════════════════════
 # V14.3.1: 启动清理（模块导入时执行一次）
 # ═══════════════════════════════════════
+
 
 def clear_expired() -> int:
     """V14.3.1: 清理过期缓存（mtime > TTL_SECONDS）。
@@ -178,6 +181,7 @@ try:
     _initial_cleared = clear_expired()
     if _initial_cleared > 0:
         import sys
+
         _dbg = "V14.3.1 sc_kline_cache: cleared %d expired files on init" % _initial_cleared
         # 静默清理，仅在 DEBUG 模式可见
         if os.environ.get("STOCK_CACHE_DEBUG"):
@@ -189,6 +193,7 @@ except Exception:
 # ═══════════════════════════════════════
 # 核心接口
 # ═══════════════════════════════════════
+
 
 def get_cached_kline(period: str, code: str, count: int) -> Optional[Tuple[list, list]]:
     """V14.3 P3: 读取跨进程 K 线缓存。
@@ -215,7 +220,13 @@ def get_cached_kline(period: str, code: str, count: int) -> Optional[Tuple[list,
                     pass
                 return None
             with open(p, "rb") as f:
-                return pickle.load(f)
+                data = pickle.load(f)
+            if not isinstance(data, tuple) or len(data) != 2:
+                return None
+            keys, rows = data
+            if not isinstance(keys, list) or not isinstance(rows, list):
+                return None
+            return keys, rows
         except Exception:
             return None
 
@@ -257,6 +268,7 @@ def set_cached_kline(period: str, code: str, count: int, data: Tuple[list, list]
 # ═══════════════════════════════════════
 # V17.0.15: 通用对象缓存（非 K 线数据）
 # ═══════════════════════════════════════
+
 
 def get_cached_blob(period: str, code: str, count: int) -> Optional[Any]:
     """V17.0.15: 通用跨进程缓存读取——**任意可 pickle 对象**（如 CYQ 结果 dict）。

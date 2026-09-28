@@ -45,7 +45,7 @@ ensure_utf8_stdio()
 
 import time, os
 from datetime import date, datetime, timedelta  # V16.1: 策略13 TTM 股息率需 timedelta
-from typing import Any, Dict, Optional  # V16.4.1: 删 List 未使用
+from typing import Any, Dict, Optional, Sequence
 
 _KLINE_PRICE_CACHE: Dict[str, Dict] = {}  # V17.0: bypass 模式 .day 收盘价缓存
 
@@ -56,6 +56,7 @@ _VAL_SNAPSHOT_CACHE: Dict[str, Any] = {}
 _VAL_TENCENT_CACHE: Dict[str, Dict[str, Dict[str, Any]]] = {}
 # 取数成本分桶(P2 并发): 网络/逐股K线/盘后datacenter 类限流到 3, 纯内存/ZHB 类放宽到 8。
 _VAL_NET_HEAVY = {1, 3, 7, 8, 15, 16, 17, 19, 22, 25, 26, 27}
+
 
 def _fast_day_close(code: str) -> Dict:
     """V17.0(2026-08-15): TDX 本机 .day 尾部快速读(零网络毫秒级).
@@ -68,7 +69,11 @@ def _fast_day_close(code: str) -> Dict:
         import os as _os
         import struct as _st
 
-        _mkt = "bj" if code.startswith(("92", "8", "4", "43", "83", "87")) else ("sh" if code.startswith(("6", "9")) else "sz")  # H1 终审修复: 92 北交所先判(9 前缀会被沪市分支吃掉)
+        _mkt = (
+            "bj"
+            if code.startswith(("92", "8", "4", "43", "83", "87"))
+            else ("sh" if code.startswith(("6", "9")) else "sz")
+        )  # H1 终审修复: 92 北交所先判(9 前缀会被沪市分支吃掉)
         _path = _os.path.join(r"C:\new_tdx64\vipdoc", _mkt, "lday", f"{_mkt}{code}.day")
         with open(_path, "rb") as _f:
             _f.seek(-32, 2)
@@ -87,34 +92,43 @@ def _fast_day_close(code: str) -> Dict:
         return {}
 
 
+from core.tdx_client import tdx_get_weekly_bars, tdx_get_all_stocks  # V16.4.1: 删 cleanup_tdx
 
-
-from core.tdx_client import (tdx_get_weekly_bars,
-                         tdx_get_all_stocks)  # V16.4.1: 删 cleanup_tdx
 # V17.0.26(2026-09-03) DEBT-009: 移除 _quick_request / JP_URL 导入。
 #   二者唯一使用处已改用 sc_datasource.get_em_board_members 适配器（公理 A1 数据访问收口）。
 #   保留无用的裸客户端 import 会诱导后人继续直连，故一并清理（UA 为无害常量，保留）。
-from stock_common import (_safe_float,
-                           _load_settings, _load_strategy_config, get_holder_structure,
-                           holder_change, is_limit_up, is_limit_down,
-                           get_recent_dragon_tiger, get_dragon_tiger_board,
-                           BaseReportRunner,  # V16.4.1: 删 _request_with_retry/common_parse_args
-                           save_text_report,  # V17.0 S5: 写尾样板公共函数
-                           get_tencent_quote,
-                           baidu_kline_full as common_baidu_kline_full,
-                           get_dividend_history as common_get_dividend_history,
-                           _debug_log,
-                           cls_telegraph as _cls_telegraph,
-                           get_eastmoney_global_news as _eastmoney_global_news,
-                           is_zhb_data_fresh,
-                           get_zhb_data_date,
-                           calc_mcap_yi as _calc_mcap_yi,
-                           get_financial_report_with_fallback,
-                           get_em_batch_quotes)  # V11.5
-from core.data_provider import (get_market_snapshot_async,
-                           get_turnover_pct_async,
-                           get_main_net_buy)  # V16.1: 策略18 用同步版; V16.4.1: 删 async 版; V17.0: 内部=f137 主力净(f137=超大单f140+大单f143, V17.0.16 重定案不再+f140)
-from stock_common.sc_network import _fallback_logger  # V17.2.x: 策略级超时降级纳入统一 fallback 审计
+from stock_common import (
+    _safe_float,
+    _load_settings,
+    _load_strategy_config,
+    get_holder_structure,
+    holder_change,
+    is_limit_up,
+    is_limit_down,
+    get_recent_dragon_tiger,
+    get_dragon_tiger_board,
+    BaseReportRunner,  # V16.4.1: 删 _request_with_retry/common_parse_args
+    save_text_report,  # V17.0 S5: 写尾样板公共函数
+    get_tencent_quote,
+    baidu_kline_full as common_baidu_kline_full,
+    get_dividend_history as common_get_dividend_history,
+    _debug_log,
+    cls_telegraph as _cls_telegraph,
+    get_eastmoney_global_news as _eastmoney_global_news,
+    is_zhb_data_fresh,
+    get_zhb_data_date,
+    calc_mcap_yi as _calc_mcap_yi,
+    get_financial_report_with_fallback,
+    get_em_batch_quotes,
+)  # V11.5
+from core.data_provider import (
+    get_market_snapshot_async,
+    get_turnover_pct_async,
+    get_main_net_buy,
+)  # V16.1: 策略18 用同步版; V16.4.1: 删 async 版; V17.0: 内部=f137 主力净(f137=超大单f140+大单f143, V17.0.16 重定案不再+f140)
+from stock_common.sc_network import (
+    _fallback_logger,
+)  # V17.2.x: 策略级超时降级纳入统一 fallback 审计
 import asyncio
 import inspect
 
@@ -127,17 +141,20 @@ _SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 
 # ─── 百度股市通 K线（返回全量行） ───
 
+
 def baidu_kline_last(code: str) -> Dict[str, Any]:
     """V4: 最新K线+MA → tdx_client 适配器（本地计算MA5/10/20）"""
     keys, rows = common_baidu_kline_full(code, count=120)
-    if not keys or not rows or not rows[-1]: return {}
+    if not keys or not rows or not rows[-1]:
+        return {}
     idx_map = {k: i for i, k in enumerate(keys)}
     ci = idx_map.get('close', -1)
     # 取最新一行
     last = rows[-1]
     res = {}
     for idx, key in enumerate(keys):
-        if idx < len(last): res[key] = last[idx]
+        if idx < len(last):
+            res[key] = last[idx]
     # V4 fix: TDX 数据无 MA 字段，本地计算
     if 'ma5avgprice' not in res and ci >= 0 and len(rows) >= 20:
         closes = [_safe_float(r[ci]) for r in rows if len(r) > ci]
@@ -148,7 +165,7 @@ def baidu_kline_last(code: str) -> Dict[str, Any]:
     return res
 
 
-def _sma(data: list, n: int) -> Optional[float]:
+def _sma(data: Sequence[float], n: int) -> Optional[float]:
     """简单移动平均（H2: 原 3 处重复的 sma/_sma 嵌套函数提取为模块级）。"""
     if len(data) < n:
         return None
@@ -156,6 +173,7 @@ def _sma(data: list, n: int) -> Optional[float]:
 
 
 # ─── 周线聚合（日K线 → 周K线 + MA计算） — 策略02使用 ───
+
 
 def compute_weekly_ma(code):
     """V4: 周线MA → 优先 TDX 周K线直取，不可用时日线聚合 fallback"""
@@ -174,12 +192,21 @@ def compute_weekly_ma(code):
                 ma30 = _sma(closes, 30)
                 last_close = closes[-1] if closes else 0
                 spreads = [v for v in [ma5, ma10, ma20, ma30] if v is not None and v > 0]
-                cluster_spread = ((max(spreads) - min(spreads)) / min(spreads) * 100) if len(spreads) >= 4 and min(spreads) > 0 else None
+                cluster_spread = (
+                    ((max(spreads) - min(spreads)) / min(spreads) * 100)
+                    if len(spreads) >= 4 and min(spreads) > 0
+                    else None
+                )
                 last_week_date = rows[-1][0] if rows and len(rows[-1]) > 0 else ""
                 return {
-                    "ma5": ma5, "ma10": ma10, "ma20": ma20, "ma30": ma30,
-                    "last_close": last_close, "cluster_spread": cluster_spread,
-                    "week_count": len(rows), "last_week_date": last_week_date,
+                    "ma5": ma5,
+                    "ma10": ma10,
+                    "ma20": ma20,
+                    "ma30": ma30,
+                    "last_close": last_close,
+                    "cluster_spread": cluster_spread,
+                    "week_count": len(rows),
+                    "last_week_date": last_week_date,
                 }
 
     # Fallback: 日K线手动聚合为周K线（TDX 不可用时）
@@ -195,9 +222,11 @@ def compute_weekly_ma(code):
     # 按 ISO 周聚合
     weeks = {}
     for row in rows:
-        if len(row) <= max(ci, ti): continue
+        if len(row) <= max(ci, ti):
+            continue
         date_str = row[ti]
-        if len(date_str) < 10: continue
+        if len(date_str) < 10:
+            continue
         try:
             dt = datetime.strptime(date_str[:10], "%Y-%m-%d")
         except ValueError:
@@ -210,7 +239,8 @@ def compute_weekly_ma(code):
             weeks[week_key] = {"close": close, "date": date_str[:10]}
 
     week_closes = [(k, v["close"], v["date"]) for k, v in sorted(weeks.items())]
-    if len(week_closes) < 10: return {}
+    if len(week_closes) < 10:
+        return {}
 
     closes = [c for _, c, _ in week_closes]
 
@@ -220,16 +250,25 @@ def compute_weekly_ma(code):
     ma30 = _sma(closes, 30)
     last_close = closes[-1] if closes else 0
     spreads = [v for v in [ma5, ma10, ma20, ma30] if v is not None and v > 0]
-    cluster_spread = ((max(spreads) - min(spreads)) / min(spreads) * 100) if len(spreads) >= 4 and min(spreads) > 0 else None
+    cluster_spread = (
+        ((max(spreads) - min(spreads)) / min(spreads) * 100)
+        if len(spreads) >= 4 and min(spreads) > 0
+        else None
+    )
     return {
-        "ma5": ma5, "ma10": ma10, "ma20": ma20, "ma30": ma30,
-        "last_close": last_close, "cluster_spread": cluster_spread,
+        "ma5": ma5,
+        "ma10": ma10,
+        "ma20": ma20,
+        "ma30": ma30,
+        "last_close": last_close,
+        "cluster_spread": cluster_spread,
         "week_count": len(week_closes),
         "last_week_date": week_closes[-1][2] if week_closes else "",
     }
 
 
 # ─── 同花顺热点 ───
+
 
 def ths_hot_reason(date_str=None):
     """同花顺当日强势股归因 — 返回 list[dict]
@@ -245,6 +284,7 @@ def ths_hot_reason(date_str=None):
 
 # ─── 行业板块排名 ───
 
+
 def industry_comparison(top_n=20):
     """V17.2.x(2026-09-10): 已下沉至 `stock_common.sc_datasource.get_industry_ranking`，此处仅薄转发。
 
@@ -258,15 +298,19 @@ def industry_comparison(top_n=20):
 
 # ─── 新闻源 ───
 
+
 def cls_telegraph(page_size=50):
     """财联社电报（全市场实时快讯）— 引用 sc_datasource 统一实现"""
     return _cls_telegraph(page_size)
+
 
 def eastmoney_global_news(page_size=50):
     """东财全球财经资讯（7x24 滚动）— 引用 sc_datasource 统一实现"""
     return _eastmoney_global_news(page_size)
 
+
 # ─── 股东户数变化 ───
+
 
 def holder_num_change(code, page_size=5):
     """V7.5: 股东户数变化 → 东财优先 + 内存缓存"""
@@ -274,6 +318,7 @@ def holder_num_change(code, page_size=5):
 
 
 # ─── 模拟PE百分位 — 策略05使用 ───
+
 
 def estimate_pe_percentile(code, price, total_shares):
     """
@@ -286,7 +331,9 @@ def estimate_pe_percentile(code, price, total_shares):
       2. 亏损季度不再截断为 0（保留负值，真实反映 TTM 利润）
       3. K线锚点用"报告期+60天"近似披露日（原直接用报告期 → 轻微前视）
     """
-    fin = get_financial_report_with_fallback(code, num_periods=12)  # B: 新浪为主源，缺失时 fuyao 利润表兜底
+    fin = get_financial_report_with_fallback(
+        code, num_periods=12
+    )  # B: 新浪为主源，缺失时 fuyao 利润表兜底
     if len(fin) < 4:
         return None
 
@@ -300,8 +347,10 @@ def estimate_pe_percentile(code, price, total_shares):
 
     profits = []
     for f in fin_sorted:
-        try: p = float(f["净利润"])
-        except (ValueError, TypeError, KeyError): p = 0
+        try:
+            p = float(f["净利润"])
+        except (ValueError, TypeError, KeyError):
+            p = 0
         profits.append(p)
 
     if total_shares <= 0 or all(p == 0 for p in profits):
@@ -323,7 +372,7 @@ def estimate_pe_percentile(code, price, total_shares):
     ttm_eps_list = []
     ttm_dates = []
     for i in range(len(sq_profits) - 3):
-        ttm_profit = sum(sq_profits[i:i + 4])
+        ttm_profit = sum(sq_profits[i : i + 4])
         eps = ttm_profit / total_shares
         if eps > 0:
             ttm_eps_list.append(eps)
@@ -341,17 +390,21 @@ def estimate_pe_percentile(code, price, total_shares):
         if k in ("close", "close_price"):
             idx_close = i
             break
-    if idx_close < 0: return None
+    if idx_close < 0:
+        return None
 
     historical_pes = []
     for i, (eps, dt_str) in enumerate(zip(ttm_eps_list, ttm_dates)):
         # V16.1: 披露日近似 = 报告期 + 60 天（A股年报/季报披露窗口）
         try:
-            _anchor = (datetime.strptime(dt_str, "%Y-%m-%d") + timedelta(days=60)).strftime("%Y-%m-%d")
+            _anchor = (datetime.strptime(dt_str, "%Y-%m-%d") + timedelta(days=60)).strftime(
+                "%Y-%m-%d"
+            )
         except (ValueError, TypeError):
             _anchor = dt_str
         for row in reversed(rows):
-            if len(row) <= idx_close: continue
+            if len(row) <= idx_close:
+                continue
             row_date = row[0] if len(row) > 0 else ""
             if row_date[:10] <= _anchor:
                 close_price = _safe_float(row[idx_close])
@@ -387,6 +440,7 @@ def estimate_pe_percentile(code, price, total_shares):
 # ═══════════════════════════════════════════════════
 
 # ─── V9.6 阶段二-2.4: tdxstat 批量初筛 ───
+
 
 def _tdxstat_prescreen(stocks):
     """V9.6: 使用 zhb.tdxstat 对全市场批量初筛，标注数据并过滤停牌股。
@@ -448,9 +502,15 @@ def _tdxstat_prescreen(stocks):
         screened.append(s)
 
     if excluded > 0:
-        print(f"  ⚡ tdxstat初筛: 过滤{excluded}只停牌股，{len(screened)}/{len(stocks)}只进入策略扫描", flush=True)
+        print(
+            f"  ⚡ tdxstat初筛: 过滤{excluded}只停牌股，{len(screened)}/{len(stocks)}只进入策略扫描",
+            flush=True,
+        )
     else:
-        print(f"  ⚡ tdxstat初筛: {len(screened)}/{len(stocks)}只（zhb日期:{zhb_date or '未知'}）", flush=True)
+        print(
+            f"  ⚡ tdxstat初筛: {len(screened)}/{len(stocks)}只（zhb日期:{zhb_date or '未知'}）",
+            flush=True,
+        )
 
     return screened, zhb_date, fresh
 
@@ -471,6 +531,7 @@ def _is_a_stock(code: str) -> bool:
     from stock_common.sc_utils import is_a_stock
 
     return is_a_stock(code)
+
 
 def _zhb_weekly_eligible(stock: dict) -> bool:
     """V14.3 P1: 周线多头策略的 ZHB 前置过滤。
@@ -540,6 +601,7 @@ def _top10_sorted(candidates, key_func, reverse=True):
 
 # ─── V15.5.8: 快速 K 线（TDX 优先，百度 fallback）───
 
+
 def _fast_kline(code: str, count: int = 800):
     """V15.5.8: K 线获取——优先 TDX(eltdx 公网主站 + 磁盘缓存, easy_tdx 兜底; 跨进程持久, 缓存命中零网络),
     失败 fallback 百度。
@@ -576,6 +638,7 @@ def _fast_kline(code: str, count: int = 800):
 
 # ─── 策略01: 龙回头战法 ───
 
+
 async def strategy_01_longhuitou(hot_pool, today_str):
     _sc = _load_strategy_config()
     _ma_dev_mid = _sc.get("technical", {}).get("ma_deviation_mid", 3.0)
@@ -589,15 +652,18 @@ async def strategy_01_longhuitou(hot_pool, today_str):
         if zhangfu < _zhangfu_min:
             continue
         kline = baidu_kline_last(code)
-        if not kline: continue
+        if not kline:
+            continue
         try:
             price = _safe_float(kline.get("close", kline.get("close_price", 0)))
             ma10 = _safe_float(kline.get("ma10avgprice") or kline.get("ma10", 0))
         except (ValueError, IndexError):
             continue
-        if price <= 0 or ma10 <= 0: continue
+        if price <= 0 or ma10 <= 0:
+            continue
         ma10_bias = (price - ma10) / ma10 * 100
-        if abs(ma10_bias) > _ma_dev_mid: continue
+        if abs(ma10_bias) > _ma_dev_mid:
+            continue
         # V17.0.15: 换手率取值次序 = 池内已有实时字段(腾讯批量预加载, V15.5.9) > ZHB 查询。
         # ⚠️ 原实现 `await get_turnover_pct_async(code) or 0` 存在静默缺陷：
         #   get_turnover_pct 只查 ZHB 且**无实时兜底**，交易日 09:30-24:00（最常运行时段）
@@ -611,7 +677,8 @@ async def strategy_01_longhuitou(hot_pool, today_str):
                 turnover = await get_turnover_pct_async(code) or 0
             except Exception:
                 turnover = 0
-        if turnover > _turnover_cap: continue
+        if turnover > _turnover_cap:
+            continue
         if turnover > 0:
             _to_txt = f"换手率仅{turnover:.1f}%，缩量企稳，筹码沉淀充分"
             _to_score = (8 - turnover) * 0.1
@@ -624,12 +691,14 @@ async def strategy_01_longhuitou(hot_pool, today_str):
             f"当前回踩MA10({ma10:.2f}元)，乖离率{ma10_bias:+.2f}%，"
             f"{_to_txt}"
         )
-        result.append({"code": code, "name": name, "reason": reason,
-                       "score": -abs(ma10_bias) + _to_score})
+        result.append(
+            {"code": code, "name": name, "reason": reason, "score": -abs(ma10_bias) + _to_score}
+        )
     return _top10_sorted(result, lambda x: x["score"])
 
 
 # ─── 策略02: 周线级别多均线多头排列（含金叉共振, V17.0.x 合并策略07） ───
+
 
 def strategy_02_weekly_ma(stocks, top_n=None):
     _sc = _load_strategy_config()
@@ -655,19 +724,32 @@ def strategy_02_weekly_ma(stocks, top_n=None):
         if not _zhb_weekly_eligible(s):
             continue
         w = compute_weekly_ma(code)
-        if not w or w.get("week_count", 0) < 25: continue
-        if any(v is None or v <= 0 for v in [w.get("ma5"), w.get("ma10"), w.get("ma20"), w.get("ma30")]): continue
-        if not (w.get("ma5", 0) > w.get("ma10", 0) > w.get("ma20", 0) > w.get("ma30", 0)): continue
-        if w.get("cluster_spread") is None or w.get("cluster_spread") >= _cluster_cap: continue
-        if w.get("last_close", 0) < w.get("ma5", 0): continue
+        if not w or w.get("week_count", 0) < 25:
+            continue
+        if any(
+            v is None or v <= 0 for v in [w.get("ma5"), w.get("ma10"), w.get("ma20"), w.get("ma30")]
+        ):
+            continue
+        if not (w.get("ma5", 0) > w.get("ma10", 0) > w.get("ma20", 0) > w.get("ma30", 0)):
+            continue
+        if w.get("cluster_spread") is None or w.get("cluster_spread") >= _cluster_cap:
+            continue
+        if w.get("last_close", 0) < w.get("ma5", 0):
+            continue
         reason = (
             f"周线MA5/10/20/30在{w.get('last_close', 0):.2f}元附近极度聚合"
             f"(离散度{w.get('cluster_spread', 0):.2f}%)，"
             f"本周{w.get('last_week_date', '')}放量突破MA5，"
             "确认大级别趋势反转信号"
         )
-        result.append({"code": code, "name": s.get("name", ""), "reason": reason,
-                       "score": -w.get("cluster_spread", 0)})
+        result.append(
+            {
+                "code": code,
+                "name": s.get("name", ""),
+                "reason": reason,
+                "score": -w.get("cluster_spread", 0),
+            }
+        )
     return _top10_sorted(result, lambda x: x["score"])
 
 
@@ -675,14 +757,21 @@ def _kline_indices(keys):
     """提取K线数据的关键字段索引"""
     idx = {}
     for i, k in enumerate(keys):
-        if k in ("close", "close_price"): idx["close"] = i
-        elif k == "volume": idx["vol"] = i
-        elif k == "open": idx["open"] = i
-        elif k in ("high", "high_price"): idx["high"] = i
-        elif k in ("low", "low_price"): idx["low"] = i
+        if k in ("close", "close_price"):
+            idx["close"] = i
+        elif k == "volume":
+            idx["vol"] = i
+        elif k == "open":
+            idx["open"] = i
+        elif k in ("high", "high_price"):
+            idx["high"] = i
+        elif k in ("low", "low_price"):
+            idx["low"] = i
     return idx
 
+
 # ─── 策略03: 量价齐升 ───
+
 
 def strategy_03_volume_breakout(hot_pool):
     _sc = _load_strategy_config()
@@ -693,34 +782,42 @@ def strategy_03_volume_breakout(hot_pool):
         code = stock.get("code", "")
         name = stock.get("name", "")
         keys, rows = common_baidu_kline_full(code, count=100)
-        if len(rows) < 65: continue
+        if len(rows) < 65:
+            continue
         idx_close = -1
         idx_vol = -1
         for i, k in enumerate(keys):
-            if k in ("close", "close_price"): idx_close = i
-            if k == "volume": idx_vol = i
-        if idx_close < 0: continue
+            if k in ("close", "close_price"):
+                idx_close = i
+            if k == "volume":
+                idx_vol = i
+        if idx_close < 0:
+            continue
         closes = []
         volumes = []
         for row in rows:
-            if len(row) <= max(idx_close, idx_vol) if idx_vol >= 0 else len(row) <= idx_close: continue
+            if len(row) <= max(idx_close, idx_vol) if idx_vol >= 0 else len(row) <= idx_close:
+                continue
             c = _safe_float(row[idx_close])
             closes.append(c)
             if idx_vol >= 0:
                 v = _safe_float(row[idx_vol])
                 volumes.append(v)
-        if len(closes) < 65: continue
+        if len(closes) < 65:
+            continue
         # V16.1: 箱体上沿用"前60根"（排除现价）— 原 max(closes[-60:]) 含现价，
         # 导致 current_price < box_top*1.01 恒真，策略永不命中
         recent_60 = closes[-61:-1]
         box_top = max(recent_60)
         current_price = closes[-1]
-        if current_price < box_top * _box_factor: continue
+        if current_price < box_top * _box_factor:
+            continue
         if len(volumes) >= 11:
             avg_vol_10 = sum(volumes[-11:-1]) / 10
             today_vol = volumes[-1]
             vol_ratio = today_vol / avg_vol_10 if avg_vol_10 > 0 else 0
-            if vol_ratio < _vol_ratio_cap: continue
+            if vol_ratio < _vol_ratio_cap:
+                continue
         else:
             continue
         reason = (
@@ -729,12 +826,12 @@ def strategy_03_volume_breakout(hot_pool):
             f"成交量放大至{vol_ratio:.1f}倍于10日均量，"
             "阻力位已扫清，上行空间打开"
         )
-        result.append({"code": code, "name": name, "reason": reason,
-                       "score": vol_ratio})
+        result.append({"code": code, "name": name, "reason": reason, "score": vol_ratio})
     return _top10_sorted(result, lambda x: x["score"])
 
 
 # ─── 策略04: 核心资产打折买入 ───
+
 
 async def strategy_04_core_discount(stocks):
     _sc = _load_strategy_config()
@@ -744,11 +841,13 @@ async def strategy_04_core_discount(stocks):
     _mcap_min = _sc.get("strategy", {}).get("mcap_big_cap_min", 100.0)
     _top_n = _sc.get("strategy", {}).get("top_n_cap", 200)
     big_caps = [s for s in stocks if s.get("mcap_yi", 0) >= _mcap_min]
-    if not big_caps: return []
+    if not big_caps:
+        return []
     big_caps = sorted(big_caps, key=lambda x: x.get("mcap_yi", 0), reverse=True)[:_top_n]
     result = []
     # V15.1: 统一接入 get_canonical_stock_data 强类型合约（替代旧的 get_stock_composite_async）
     from core.data_provider import get_canonical_stock_data
+
     for s in big_caps:
         code = s["code"]
         try:
@@ -757,32 +856,44 @@ async def strategy_04_core_discount(stocks):
         except Exception:
             continue
         pe = _safe_float(cdata.pe_ttm)
-        if pe <= 0 or pe > _pe_high: continue
+        if pe <= 0 or pe > _pe_high:
+            continue
         pb = _safe_float(cdata.pb)  # V16.3.7: 口径统一——PB 一律走 canonical（腾讯/push2 除息口径）
-        if pb > _pb_high: continue
+        if pb > _pb_high:
+            continue
         mcap = _safe_float(cdata.mcap_yi)
         price = _safe_float(cdata.price)
-        if mcap <= 0 or price <= 0: continue
+        if mcap <= 0 or price <= 0:
+            continue
         total_shares = int(mcap * 1e8 / price)
         # V16.4.1: PE 分位用实时价(cdata.price)而非 ZHB T-1 价——原混用导致盘中/盘后分位偏差
         pe_data = estimate_pe_percentile(code, price, total_shares)
-        if pe_data is None: continue
+        if pe_data is None:
+            continue
         pe_percentile = _safe_float(pe_data.get("percentile", 100))
-        if pe_percentile > _pe_percentile_warn: continue
+        if pe_percentile > _pe_percentile_warn:
+            continue
         reason = (
             f"当前PE({_safe_float(pe_data.get('pe_current', 0)):.1f}x)处于近3年模拟PE区间低位"
             f"(最低{_safe_float(pe_data.get('pe_min', 0)):.1f}x~最高{_safe_float(pe_data.get('pe_max', 0)):.1f}x)，"
             f"约{pe_percentile:.0f}%分位（基于{pe_data.get('quarters', 0)}期TTM数据估算），"
             "属于非理性折价区间"
         )
-        result.append({"code": code, "name": s.get("name", "") or cdata.name, "reason": reason,
-                       "score": -pe_percentile})
+        result.append(
+            {
+                "code": code,
+                "name": s.get("name", "") or cdata.name,
+                "reason": reason,
+                "score": -pe_percentile,
+            }
+        )
         if len(result) >= 5:
             break
     return _top10_sorted(result, lambda x: x["score"])
 
 
 # ─── 策略05: W底形态 ───
+
 
 def strategy_05_double_bottom(stocks, top_n=None):
     _sc = _load_strategy_config()
@@ -808,29 +919,38 @@ def strategy_05_double_bottom(stocks, top_n=None):
         if not _zhb_pattern_eligible(s, pattern="double_bottom"):
             continue
         keys, rows = _fast_kline(code)
-        if len(rows) < 100: continue
+        if len(rows) < 100:
+            continue
         idx_close = -1
         idx_vol = -1
         for i, k in enumerate(keys):
-            if k in ("close", "close_price"): idx_close = i
-            if k == "volume": idx_vol = i
-        if idx_close < 0: continue
+            if k in ("close", "close_price"):
+                idx_close = i
+            if k == "volume":
+                idx_vol = i
+        if idx_close < 0:
+            continue
         closes = [_safe_float(r[idx_close]) for r in rows[-100:] if len(r) > idx_close]
-        if len(closes) < 60: continue
+        if len(closes) < 60:
+            continue
         recent_60 = closes[-60:]
         min_idx = recent_60.index(min(recent_60))
-        first_third = recent_60[:len(recent_60)//2]
-        if not first_third: continue
+        first_third = recent_60[: len(recent_60) // 2]
+        if not first_third:
+            continue
         second_low = min(first_third)
         second_idx = first_third.index(second_low)
-        if abs(min_idx - second_idx) < 10: continue
+        if abs(min_idx - second_idx) < 10:
+            continue
         low_diff = abs(recent_60[min_idx] - second_low) / max(recent_60[min_idx], second_low) * 100
-        if low_diff > _wbottom_depth: continue
+        if low_diff > _wbottom_depth:
+            continue
         neck_start = min(second_idx, min_idx)
         neck_end = max(second_idx, min_idx)
-        neckline = max(recent_60[neck_start:neck_end+1])
+        neckline = max(recent_60[neck_start : neck_end + 1])
         current_price = closes[-1]
-        if current_price < neckline * _box_factor: continue
+        if current_price < neckline * _box_factor:
+            continue
         if idx_vol >= 0:
             vols = [_safe_float(r[idx_vol]) for r in rows[-10:] if len(r) > idx_vol]
             if len(vols) >= 5:
@@ -847,12 +967,19 @@ def strategy_05_double_bottom(stocks, top_n=None):
             f"突破颈线{neckline:.2f}元至{current_price:.2f}元"
             + ("，成交量放大确认突破有效" if vol_increasing else "")
         )
-        result.append({"code": code, "name": s.get("name", ""), "reason": reason,
-                       "score": current_price / neckline if neckline > 0 else 0})
+        result.append(
+            {
+                "code": code,
+                "name": s.get("name", ""),
+                "reason": reason,
+                "score": current_price / neckline if neckline > 0 else 0,
+            }
+        )
     return _top10_sorted(result, lambda x: x["score"])
 
 
 # ─── 策略06: 红三兵 ───
+
 
 def strategy_06_three_soldiers(stocks, top_n=500):
     # V16.3 O27: 预筛全市场（ZHB 内存）→ 趋势强度排序取 top_n 逐股确认（同策略02/05）
@@ -872,37 +999,74 @@ def strategy_06_three_soldiers(stocks, top_n=500):
         if not _zhb_pattern_eligible(s, pattern="three_soldiers"):
             continue
         keys, rows = _fast_kline(code)
-        if len(rows) < 10: continue
-        idx_open = -1; idx_close = -1; idx_vol = -1
+        if len(rows) < 10:
+            continue
+        idx_open = -1
+        idx_close = -1
+        idx_vol = -1
         for i, k in enumerate(keys):
-            if k in ("close", "close_price"): idx_close = i
-            if k == "open": idx_open = i
-            if k == "volume": idx_vol = i
-        if idx_close < 0 or idx_open < 0: continue
+            if k in ("close", "close_price"):
+                idx_close = i
+            if k == "open":
+                idx_open = i
+            if k == "volume":
+                idx_vol = i
+        if idx_close < 0 or idx_open < 0:
+            continue
         last3 = rows[-3:]
-        if len(last3) < 3: continue
+        if len(last3) < 3:
+            continue
         closes = [_safe_float(r[idx_close]) for r in last3]
         opens = [_safe_float(r[idx_open]) for r in last3]
         vols = [_safe_float(r[idx_vol]) for r in last3] if idx_vol >= 0 else [0, 0, 0]
-        if not all(c > o for c, o in zip(closes, opens)): continue
-        if not (closes[0] < closes[1] < closes[2]): continue
+        if not all(c > o for c, o in zip(closes, opens)):
+            continue
+        if not (closes[0] < closes[1] < closes[2]):
+            continue
         if idx_vol >= 0 and vols[0] > 0 and vols[1] > 0 and vols[2] > 0:
-            if not (vols[0] < vols[1] < vols[2]): continue
+            if not (vols[0] < vols[1] < vols[2]):
+                continue
         reason = (
             f"底部红三兵形态确认：连续三天收阳（{closes[0]:.2f}→{closes[1]:.2f}→{closes[2]:.2f}元），"
             "成交量阶梯放大，低位建仓信号明确"
         )
-        result.append({"code": code, "name": s.get("name", ""), "reason": reason,
-                       "score": closes[2] / closes[0]})
+        result.append(
+            {
+                "code": code,
+                "name": s.get("name", ""),
+                "reason": reason,
+                "score": closes[2] / closes[0],
+            }
+        )
     return _top10_sorted(result, lambda x: x["score"])
 
 
 # ─── 策略07: 政策驱动流（含政策热度图谱, V7.5: 同花顺 reason tags + 新闻 NLP; V17.0.x 合并策略15） ───
 
+
 async def strategy_07_policy_driven(stocks, hot_pool=None):
     _cfg = _load_settings()
-    policy_keywords = _cfg.get("policy_keywords", ["政策", "支持", "资金", "规划", "印发", "发布", "推动", "鼓励",
-                       "十四五", "补贴", "减税", "利好", "振兴", "基建", "消费", "科技"])
+    policy_keywords = _cfg.get(
+        "policy_keywords",
+        [
+            "政策",
+            "支持",
+            "资金",
+            "规划",
+            "印发",
+            "发布",
+            "推动",
+            "鼓励",
+            "十四五",
+            "补贴",
+            "减税",
+            "利好",
+            "振兴",
+            "基建",
+            "消费",
+            "科技",
+        ],
+    )
 
     # 优先：从同花顺热点 reason tags 中匹配政策驱动标的
     if hot_pool:
@@ -916,11 +1080,14 @@ async def strategy_07_policy_driven(stocks, hot_pool=None):
                     # V15.2: 从 _snapshot dict O(1) 读 pe_ttm，避免循环 get_pe_ttm_async 触发 5743 次 zhb_data 缓存
                     pe_ttm = _safe_float(_s.get("pe_ttm", 0))
                     if pe_ttm > 0:
-                        _ths_result.append({
-                            "code": h_code, "name": h.get("name", ""),
-                            "reason": f"同花顺题材归因: {tag[:80]}，市值{_s.get('mcap_yi',0):.1f}亿",
-                            "score": h.get("zhangfu", 0),
-                        })
+                        _ths_result.append(
+                            {
+                                "code": h_code,
+                                "name": h.get("name", ""),
+                                "reason": f"同花顺题材归因: {tag[:80]}，市值{_s.get('mcap_yi',0):.1f}亿",
+                                "score": h.get("zhangfu", 0),
+                            }
+                        )
         if len(_ths_result) >= 3:
             return _top10_sorted(_ths_result, lambda x: x["score"])
 
@@ -928,32 +1095,37 @@ async def strategy_07_policy_driven(stocks, hot_pool=None):
     news_list = await asyncio.to_thread(cls_telegraph, 30)
     if not news_list:
         news_list = eastmoney_global_news(30)
-    if not news_list: return []
+    if not news_list:
+        return []
     all_text = " ".join([n.get("title", "") + " " + n.get("content", "") for n in news_list])
     found_policy = [kw for kw in policy_keywords if kw in all_text]
     if len(found_policy) < 3:
         return []
     candidates = [s for s in (stocks or []) if 5 <= s.get("mcap_yi", 0) <= 50]
-    if not candidates: return []
+    if not candidates:
+        return []
     result = []
     # V15.1: 统一接入 get_canonical_stock_data 强类型合约（替代旧的 get_stock_composite_async）
     for s in candidates[:200]:
         code = s["code"]
         # V16.4.0: 快照 O(1)——原逐股 canonical（200×2.5s≈500s）改为快照 pe_ttm（ZHB 已有）
         pe_ttm = _safe_float(s.get("pe_ttm", 0))
-        if not pe_ttm > 0: continue
+        if not pe_ttm > 0:
+            continue
         mcap_yi = _safe_float(s.get("mcap_yi", 0))
         reason = (
             f"近期新闻出现政策关键词: {", ".join(found_policy[:3])}，"
             f"市值{mcap_yi:.1f}亿（小盘对政策更敏感），"
             f"PE={pe_ttm:.1f}x（低估后备）"
         )
-        result.append({"code": code, "name": s.get("name", "") or "", "reason": reason,
-                       "score": -pe_ttm})
+        result.append(
+            {"code": code, "name": s.get("name", "") or "", "reason": reason, "score": -pe_ttm}
+        )
     return _top10_sorted(result, lambda x: x["score"])
 
 
 # ─── 策略08: 日历效应法 ───
+
 
 def strategy_08_calendar_rotation():
     month = date.today().month
@@ -962,12 +1134,14 @@ def strategy_08_calendar_rotation():
     season_map = {int(k): v for k, v in _raw.items()}  # YAML 键转 int
     target_industries = season_map.get(month, ["银行", "食品饮料", "医药"])
     ind_data = industry_comparison(30)
-    if not ind_data: return []
+    if not ind_data:
+        return []
     matched = []
     for ind in ind_data:
         if any(t in ind.get("name", "") for t in target_industries):
             matched.append(ind)
-    if not matched: return []
+    if not matched:
+        return []
     result = []
     seen_codes = set()
     for ind in matched:
@@ -986,13 +1160,21 @@ def strategy_08_calendar_rotation():
                 f"当前{month}月，日历效应指向{', '.join(target_industries)}板块，"
                 f"行业'{ind.get('name', '')}'涨幅{ind.get('change_pct', 0)}%，为板块领涨股"
             )
-            result.append({"code": leader_code, "name": q.get("name", "") or leader_code,
-                           "reason": reason, "score": _safe_float(ind.get("change_pct", 0))})
+            result.append(
+                {
+                    "code": leader_code,
+                    "name": q.get("name", "") or leader_code,
+                    "reason": reason,
+                    "score": _safe_float(ind.get("change_pct", 0)),
+                }
+            )
     if len(result) < 5:
         for ind in matched:
-            if len(result) >= 5: break
+            if len(result) >= 5:
+                break
             ind_code = ind.get("code", "")
-            if not ind_code: continue
+            if not ind_code:
+                continue
             try:
                 # V17.0.26(2026-09-03) DEBT-009: 改用 sc_datasource 适配器 get_em_board_members（公理 A1 数据访问收口）。
                 #   原实现两处缺陷：
@@ -1001,6 +1183,7 @@ def strategy_08_calendar_rotation():
                 #      日历效应成分股**从未入选**（静默失效、无报错，与 DEBT-008 同类的静默 bug）。
                 #   适配器封装同一接口、键名正确、BK 前缀已规范化，且 f9/f23 的 PE/PB 口径已按 V17.0.15 修正。
                 from stock_common.sc_datasource import get_em_board_members
+
                 for item in get_em_board_members(ind_code)[:20]:
                     if len(result) >= 5:
                         break
@@ -1008,11 +1191,14 @@ def strategy_08_calendar_rotation():
                     if c in seen_codes:
                         continue
                     seen_codes.add(c)
-                    result.append({
-                        "code": c, "name": item.get("name", "") or c,
-                        "reason": f"{month}月日历效应板块'{ind.get('name', '')}'成分股，行业排名第{ind.get('rank', 0)}位",
-                        "score": _safe_float(item.get("change_pct", 0)),
-                    })
+                    result.append(
+                        {
+                            "code": c,
+                            "name": item.get("name", "") or c,
+                            "reason": f"{month}月日历效应板块'{ind.get('name', '')}'成分股，行业排名第{ind.get('rank', 0)}位",
+                            "score": _safe_float(item.get("change_pct", 0)),
+                        }
+                    )
             except Exception as _e:
                 _debug_log(f"val calendar_effect_item: {_e}")
                 continue
@@ -1020,6 +1206,7 @@ def strategy_08_calendar_rotation():
 
 
 # ─── 策略09: 逆向白马流 ───
+
 
 async def strategy_09_contrarian_value(stocks, top_n=300):
     _sc = _load_strategy_config()
@@ -1039,17 +1226,23 @@ async def strategy_09_contrarian_value(stocks, top_n=300):
         except Exception as _e:
             _debug_log(f"val strategy_10 roe error ({code}): {_e}")
             roe = None
-        if roe is None or roe < _roe_good: continue
+        if roe is None or roe < _roe_good:
+            continue
         keys, rows = _fast_kline(code)
-        if len(rows) < 250: continue
-        _ki = _kline_indices(keys); idx_close = _ki.get("close", -1)
-        if idx_close < 0: continue
+        if len(rows) < 250:
+            continue
+        _ki = _kline_indices(keys)
+        idx_close = _ki.get("close", -1)
+        if idx_close < 0:
+            continue
         closes = [_safe_float(r[idx_close]) for r in rows[-250:] if len(r) > idx_close]
-        if not closes: continue
+        if not closes:
+            continue
         high_52w = max(closes[-250:])
         current_price = closes[-1]
         drawdown = (current_price - high_52w) / high_52w * 100
-        if drawdown > -40: continue
+        if drawdown > -40:
+            continue
         # V15.2: 从 s dict O(1) 读 pe_ttm（避免循环 get_pe_ttm_async 触发大量 zhb_data 缓存）
         pe_ttm = _safe_float(s.get("pe_ttm", 0))
         # V17.4.x (#445): 高 PE(>_pe_ceiling)或缺失(<=0)不算"错杀/低估"——高估值标的大跌非价值回归,
@@ -1061,12 +1254,14 @@ async def strategy_09_contrarian_value(stocks, top_n=300):
             f"距52周最高价{high_52w:.2f}元已下跌{abs(drawdown):.0f}%，"
             f"当前PE={pe_ttm:.1f}x，非基本面因素导致的错杀"
         )
-        result.append({"code": code, "name": s.get("name", ""), "reason": reason,
-                       "score": -drawdown})
+        result.append(
+            {"code": code, "name": s.get("name", ""), "reason": reason, "score": -drawdown}
+        )
     return _top10_sorted(result, lambda x: x["score"])
 
 
 # ─── 策略10: 筹码集中 ───
+
 
 def strategy_10_holder_concentration(stocks, top_n=300):
     """V4: 筹码集中 — top_n=300 + 提前终止"""
@@ -1075,18 +1270,25 @@ def strategy_10_holder_concentration(stocks, top_n=300):
     for s in candidates:
         code = s["code"]
         holders = holder_num_change(code, 3)
-        if len(holders) < 2: continue
-        if _safe_float(holders[0].get("change_ratio", 0)) >= -3: continue
-        if _safe_float(holders[1].get("change_ratio", 0)) >= -3: continue
-        avg_shrink = (abs(_safe_float(holders[0].get("change_ratio", 0))) + abs(_safe_float(holders[1].get("change_ratio", 0)))) / 2
+        if len(holders) < 2:
+            continue
+        if _safe_float(holders[0].get("change_ratio", 0)) >= -3:
+            continue
+        if _safe_float(holders[1].get("change_ratio", 0)) >= -3:
+            continue
+        avg_shrink = (
+            abs(_safe_float(holders[0].get("change_ratio", 0)))
+            + abs(_safe_float(holders[1].get("change_ratio", 0)))
+        ) / 2
         reason = (
             f"股东户数连续两季缩减（{holders[1].get('date', '')}: "
             f"{_safe_float(holders[1].get('change_ratio', 0)):.1f}%, "
             f"{holders[0].get('date', '')}: {_safe_float(holders[0].get('change_ratio', 0)):.1f}%），"
             f"平均每季缩减{avg_shrink:.1f}%，筹码集中度持续提升"
         )
-        result.append({"code": code, "name": s.get("name", ""), "reason": reason,
-                       "score": avg_shrink})
+        result.append(
+            {"code": code, "name": s.get("name", ""), "reason": reason, "score": avg_shrink}
+        )
         if len(result) >= 5:
             break
     return _top10_sorted(result, lambda x: x["score"])
@@ -1094,36 +1296,47 @@ def strategy_10_holder_concentration(stocks, top_n=300):
 
 # ─── 策略11: 量价背离防守 ───
 
+
 def strategy_11_divergence_warning(stocks, top_n=300):
     candidates = sorted(stocks, key=lambda x: x.get("mcap_yi", 0), reverse=True)[:top_n]
     result = []
     for s in candidates:
         code = s["code"]
         keys, rows = _fast_kline(code)
-        if len(rows) < 25: continue
-        idx_close = -1; idx_vol = -1
+        if len(rows) < 25:
+            continue
+        idx_close = -1
+        idx_vol = -1
         for i, k in enumerate(keys):
-            if k in ("close", "close_price"): idx_close = i
-            if k == "volume": idx_vol = i
-        if idx_close < 0 or idx_vol < 0: continue
+            if k in ("close", "close_price"):
+                idx_close = i
+            if k == "volume":
+                idx_vol = i
+        if idx_close < 0 or idx_vol < 0:
+            continue
         recent = rows[-20:]
         closes = [_safe_float(r[idx_close]) for r in recent if len(r) > idx_close]
         vols = [_safe_float(r[idx_vol]) for r in recent if len(r) > idx_vol]
-        if len(closes) < 5 or len(vols) < 5: continue
-        if closes[-1] < max(closes): continue
-        if not (vols[-3] > vols[-2] > vols[-1]): continue
+        if len(closes) < 5 or len(vols) < 5:
+            continue
+        if closes[-1] < max(closes):
+            continue
+        if not (vols[-3] > vols[-2] > vols[-1]):
+            continue
         vol_decline_pct = (vols[-3] - vols[-1]) / vols[-3] * 100
         reason = (
             f"⚠️ 危险信号：价格创20日新高{closes[-1]:.2f}元，"
             f"但成交量连续3日萎缩{vol_decline_pct:.0f}%，"
             "【多头陷阱警告】——量价背离，警惕结构性顶部"
         )
-        result.append({"code": code, "name": s.get("name", ""), "reason": reason,
-                       "score": vol_decline_pct})
+        result.append(
+            {"code": code, "name": s.get("name", ""), "reason": reason, "score": vol_decline_pct}
+        )
     return _top10_sorted(result, lambda x: x["score"])
 
 
 # ─── 策略12: 红利低波 ───
+
 
 def strategy_12_dividend_yield(stocks):
     # V14.3.2: 4 天回测推荐 100（100 稳定性 0.57 > 300 稳定性 0.43）
@@ -1132,33 +1345,40 @@ def strategy_12_dividend_yield(stocks):
     for s in candidates:
         code = s["code"]
         price = s.get("price", 0)
-        if price <= 0: continue
+        if price <= 0:
+            continue
         divs = common_get_dividend_history(code)
-        if not divs or len(divs) < 3: continue  # V16.2.3: 兼容 None（TDX 分红接口失败）
+        if not divs or len(divs) < 3:
+            continue  # V16.2.3: 兼容 None（TDX 分红接口失败）
         # V16.1: TTM 股息率 = 近 12 个月累计派息 / 现价（原只用最近一次分红，低估半年报/季报分红公司）
         one_year_ago = (date.today() - timedelta(days=365)).strftime("%Y-%m-%d")
         ttm_bonus = sum(
             _safe_float(d.get("bonus_rmb", 0))
-            for d in divs if str(d.get("date", "")) >= one_year_ago
+            for d in divs
+            if str(d.get("date", "")) >= one_year_ago
         )
         if ttm_bonus <= 0:
             ttm_bonus = _safe_float(divs[0].get("bonus_rmb", 0))
-        if ttm_bonus <= 0: continue
+        if ttm_bonus <= 0:
+            continue
         yield_pct = ttm_bonus / price * 100
-        if yield_pct < 4.0: continue
+        if yield_pct < 4.0:
+            continue
         years_with_div = len([d for d in divs if _safe_float(d.get("bonus_rmb", 0)) > 0])
         reason = (
             f"TTM股息率{yield_pct:.2f}%（近12月累计派息{ttm_bonus:.4f}元/现价{price:.2f}元），"
             f"近{years_with_div}个报告期持续分红，稳定的现金奶牛资产"
         )
-        result.append({"code": code, "name": s.get("name", ""), "reason": reason,
-                       "score": yield_pct})
+        result.append(
+            {"code": code, "name": s.get("name", ""), "reason": reason, "score": yield_pct}
+        )
         if len(result) >= 5:
             break
     return _top10_sorted(result, lambda x: x["score"])
 
 
 # ─── 策略13: 头部资金风向标 ───
+
 
 def strategy_13_liquidity_king(top_liquidity_pool):
     """
@@ -1168,35 +1388,50 @@ def strategy_13_liquidity_king(top_liquidity_pool):
     for s in top_liquidity_pool:
         code = s["code"]
         keys, rows = _fast_kline(code)
-        if len(rows) < 10: continue
-        idx_vol = -1; idx_close = -1
+        if len(rows) < 10:
+            continue
+        idx_vol = -1
+        idx_close = -1
         for i, k in enumerate(keys):
-            if k == "volume": idx_vol = i
-            if k in ("close", "close_price"): idx_close = i
-        if idx_vol < 0 or idx_close < 0: continue
+            if k == "volume":
+                idx_vol = i
+            if k in ("close", "close_price"):
+                idx_close = i
+        if idx_vol < 0 or idx_close < 0:
+            continue
         vols = [_safe_float(r[idx_vol]) for r in rows[-6:] if len(r) > idx_vol]
         closes = [_safe_float(r[idx_close]) for r in rows[-2:] if len(r) > idx_close]
-        if len(vols) < 6 or len(closes) < 2: continue
+        if len(vols) < 6 or len(closes) < 2:
+            continue
         avg_vol_5d = sum(vols[-6:-1]) / 5
         today_vol = vols[-1]
         if avg_vol_5d > 0 and today_vol > avg_vol_5d * 1.5 and closes[-1] >= closes[-2]:
             vol_ratio = today_vol / avg_vol_5d
             # MEDIUM(审查 2026-08-16): amount(万元) 与 amount_yi(亿元) 单位不同——
             # 分键换算统一为亿元: amount/10000 → 亿, amount_yi 原样
-            _amt_yi = _safe_float(s.get("amount", 0)) / 10000 if _safe_float(s.get("amount", 0)) else _safe_float(s.get("amount_yi", 0))
+            _amt_yi = (
+                _safe_float(s.get("amount", 0)) / 10000
+                if _safe_float(s.get("amount", 0))
+                else _safe_float(s.get("amount_yi", 0))
+            )
             reason = (
                 f"位列全市场前5%核心流动性池，今日成交额{_amt_yi:.2f}亿！"
                 f"成交量异常放大至5日均量的{vol_ratio:.1f}倍，"
                 "主力资金高位接盘或强力破局，流动性溢价显著"
             )
-            result.append({
-                "code": code, "name": s.get("name", ""), "reason": reason,
-                "score": _amt_yi * vol_ratio,
-            })
+            result.append(
+                {
+                    "code": code,
+                    "name": s.get("name", ""),
+                    "reason": reason,
+                    "score": _amt_yi * vol_ratio,
+                }
+            )
     return _top10_sorted(result, lambda x: x["score"])
 
 
 # ─── 策略14: 北向持仓 Top30 异动（V7.5 新增） ───
+
 
 def strategy_14_northbound_top(all_stocks, top_n=200):
     """
@@ -1256,10 +1491,14 @@ def strategy_14_northbound_top(all_stocks, top_n=200):
             f"报告期 {report_date}，"
             f"市值 {mcap:.0f}亿，今日涨跌 {change_pct:+.1f}%{trend_text}"
         )
-        results.append({
-            "code": code, "name": stock_name, "reason": reason,
-            "score": nb_ratio,
-        })
+        results.append(
+            {
+                "code": code,
+                "name": stock_name,
+                "reason": reason,
+                "score": nb_ratio,
+            }
+        )
         if len(results) >= 8:  # 多拿一点供排序
             break
 
@@ -1267,6 +1506,7 @@ def strategy_14_northbound_top(all_stocks, top_n=200):
 
 
 # ─── 策略15: 龙虎榜席位活跃度（V7.5 新增） ───
+
 
 def strategy_15_longhu_activity(all_stocks, today_str=None, top_n=200):
     """
@@ -1280,6 +1520,7 @@ def strategy_15_longhu_activity(all_stocks, today_str=None, top_n=200):
     """
     if today_str is None:
         from datetime import date
+
         today_str = date.today().strftime("%Y-%m-%d")
 
     _stock_map = {s["code"]: s for s in (all_stocks or [])}
@@ -1299,6 +1540,7 @@ def strategy_15_longhu_activity(all_stocks, today_str=None, top_n=200):
         # 日期新鲜度：越近得分越高（最近=7分，7天前=0分）
         try:
             from datetime import datetime, date
+
             d = datetime.strptime(info.get("date", ""), "%Y-%m-%d").date()
             days_ago = (date.today() - d).days
             date_score = max(0, 7 - days_ago)
@@ -1308,11 +1550,7 @@ def strategy_15_longhu_activity(all_stocks, today_str=None, top_n=200):
         # 综合评分
         return net_buy * 0.05 + turnover * 2.0 + date_score * 3.0
 
-    pre_ranked = sorted(
-        dt_data.items(),
-        key=lambda x: _preliminary_score(x[0], x[1]),
-        reverse=True
-    )
+    pre_ranked = sorted(dt_data.items(), key=lambda x: _preliminary_score(x[0], x[1]), reverse=True)
     codes_to_check = [code for code, _ in pre_ranked[:20]]
 
     results = []
@@ -1369,13 +1607,13 @@ def strategy_15_longhu_activity(all_stocks, today_str=None, top_n=200):
 
             # 综合评分
             score = (
-                inst_net * 0.05        # 机构净买额（万元，占比权重）
-                + list_days * 1.5      # 连续上榜天数加分
-                + hot_dept_score       # 游资席位识别
+                inst_net * 0.05  # 机构净买额（万元，占比权重）
+                + list_days * 1.5  # 连续上榜天数加分
+                + hot_dept_score  # 游资席位识别
                 + abs(recent_net_sum) * 0.01  # 近期净买总量
-                + turnover_bonus       # 换手率合理区间
-                + inst_buy * 0.03     # 机构买额加分
-                - inst_sell * 0.03    # 机构卖额扣分
+                + turnover_bonus  # 换手率合理区间
+                + inst_buy * 0.03  # 机构买额加分
+                - inst_sell * 0.03  # 机构卖额扣分
             )
 
             if score <= 0:
@@ -1398,13 +1636,17 @@ def strategy_15_longhu_activity(all_stocks, today_str=None, top_n=200):
                 f"机构净买 {inst_net:+.1f}万（买 {inst_buy:+.1f}万 / 卖 {inst_sell:+.1f}万），"
                 f"席位标签: {dept_tag_str}，"
                 f"期间合计净买 {recent_net_sum:+.1f}万"
-                f"{_to_txt}，"          # V17.0.15: 换手率缺失时整句省略，避免伪造 0.0%
+                f"{_to_txt}，"  # V17.0.15: 换手率缺失时整句省略，避免伪造 0.0%
                 f"市值 {mcap:.0f}亿，今日涨跌 {change_pct:+.1f}%{_chg_note}"
             )
-            results.append({
-                "code": code, "name": stock_name, "reason": reason,
-                "score": round(score, 2),
-            })
+            results.append(
+                {
+                    "code": code,
+                    "name": stock_name,
+                    "reason": reason,
+                    "score": round(score, 2),
+                }
+            )
             if len(results) >= 30:
                 break
         except Exception as _e:
@@ -1413,12 +1655,14 @@ def strategy_15_longhu_activity(all_stocks, today_str=None, top_n=200):
 
     return _top10_sorted(results, lambda x: x["score"])
 
+
 # ─── 策略16: 52周位置百分位（V10.3新增）──
+
 
 def strategy_16_52w_position(stocks, top_n=200):
     """V10.3: 52周位置百分位策略。
     利用zhb的high_52w/low_52w，筛选处于52周低位的优质标的。
-    
+
     逻辑:
       1) 计算现价格在52周区间内的位置百分位
       2) 筛选位置百分位<30%（超卖区域）且PE合理的标的
@@ -1445,17 +1689,19 @@ def strategy_16_52w_position(stocks, top_n=200):
             f"52周区间[{low_52w:.2f}, {high_52w:.2f}]（T-1），"
             f"现价{price:.2f}元(实时)，PE={pe_ttm:.1f}x(实时)"
         )
-        result.append({"code": code, "name": s.get("name", ""), "reason": reason,
-                       "score": 100 - position_pct})
+        result.append(
+            {"code": code, "name": s.get("name", ""), "reason": reason, "score": 100 - position_pct}
+        )
     return _top10_sorted(result, lambda x: x["score"])
 
 
 # ─── 策略17: 主力资金占比因子（V10.3新增）──
 
+
 def strategy_17_main_fund_ratio(stocks, top_n=1000):
     """V10.3: 主力资金占比因子策略。
     利用zhb的主力净流入额（T-1），TDX实时资金流作为fallback。
-    
+
     逻辑:
       1) 计算主力净流入额占总成交额的比例
       2) 筛选主力资金占比>3%的标的（主力控盘度高）
@@ -1469,13 +1715,14 @@ def strategy_17_main_fund_ratio(stocks, top_n=1000):
     if use_zhb:
         try:
             from stock_common import get_zhb_market_stat2_snapshot
+
             _zhb_stat2 = get_zhb_market_stat2_snapshot() or {}
         except Exception as _e:
             _debug_log(f"val strategy20 stat2 load: {_e}")
     for s in stocks:
         code = s["code"]
         # V16.3 O21: 资金占比需分子分母同基准——use_zhb 时分母也用 stat2 T-1 amount
-        #（原分母=腾讯 T 日成交额 → 盘中 T-1 资金流 ÷ T 日成交额 时间基准错位）
+        # （原分母=腾讯 T 日成交额 → 盘中 T-1 资金流 ÷ T 日成交额 时间基准错位）
         _s2 = _zhb_stat2.get(code, {}) if use_zhb else {}
         amount_wan = (
             _safe_float(_s2.get("amount", 0))
@@ -1492,7 +1739,7 @@ def strategy_17_main_fund_ratio(stocks, top_n=1000):
             if main_amount:
                 data_source = "ZHB(T-1,同基准)"
             # V16.3 O39 修复: stat2 缺字段（0）→ 不再单股 get_main_net_buy 兜底
-            #（原 73 只 × 东财 2.38s/只限流 = 173s；stat2 全覆盖，缺字段本就不可得）
+            # （原 73 只 × 东财 2.38s/只限流 = 173s；stat2 全覆盖，缺字段本就不可得）
         if not main_amount or main_amount <= 0:
             # V16.3 O39 修复: 净流出/0/缺字段——use_zhb 时直接跳过（原逻辑对 ~4000 只净流出
             # + 99 只缺字段股每次 get_main_net_buy → is_zhb_data_fresh 检查 + 东财 2.36s/只限流
@@ -1519,8 +1766,9 @@ def strategy_17_main_fund_ratio(stocks, top_n=1000):
             f"开盘竞价额{main_amount:+.0f}万元（{data_source}，⚠️竞价额非主力净流入），"
             f"总成交额{amount_wan:.0f}万元"
         )
-        result.append({"code": code, "name": s.get("name", ""), "reason": reason,
-                       "score": fund_ratio})
+        result.append(
+            {"code": code, "name": s.get("name", ""), "reason": reason, "score": fund_ratio}
+        )
     return _top10_sorted(result, lambda x: x["score"])
 
 
@@ -1530,6 +1778,7 @@ def strategy_17_main_fund_ratio(stocks, top_n=1000):
 # 纯 ZHB 数据，无 HTTP fallback
 # ═══════════════════════════════════════════════════════════════
 
+
 def strategy_18_volume_acceleration(stocks, top_n=200):
     """V11.5: 量能三连击策略（纯 ZHB 数据）。
 
@@ -1538,6 +1787,7 @@ def strategy_18_volume_acceleration(stocks, top_n=200):
     原 vol_ratio_5d/turnover_5d 字段不存在 → 策略恒空。
     """
     from core.data_provider import get_volume_acceleration
+
     result = []
     for s in stocks:
         code = s["code"]
@@ -1575,6 +1825,7 @@ def strategy_19_capital_momentum(stocks):
     展示文案以"竞价"口径呈现。
     """
     from core.data_provider import get_capital_momentum
+
     result = []
     for s in stocks:
         code = s["code"]
@@ -1649,12 +1900,28 @@ def strategy_21_earnings_expect(stocks):
     for s in stocks:
         code = s["code"]
         try:
-            ef = get_eps_forecast(code, local_only=True)  # H4 修复: 全市场扫描仅本机数据, 禁止网络兜底
+            ef = get_eps_forecast(
+                code, local_only=True
+            )  # H4 修复: 全市场扫描仅本机数据, 禁止网络兜底
             if ef is None or len(ef) < 2:
                 continue
             rows = ef.to_dict("records")
-            eps_a = next((float(r["均值"]) for r in rows if "2025" in str(r["年度"]) and "A" in str(r["年度"])), 0)
-            eps_e = next((float(r["均值"]) for r in rows if "2026" in str(r["年度"]) and "E" in str(r["年度"])), 0)
+            eps_a = next(
+                (
+                    float(r["均值"])
+                    for r in rows
+                    if "2025" in str(r["年度"]) and "A" in str(r["年度"])
+                ),
+                0,
+            )
+            eps_e = next(
+                (
+                    float(r["均值"])
+                    for r in rows
+                    if "2026" in str(r["年度"]) and "E" in str(r["年度"])
+                ),
+                0,
+            )
             if not eps_a or not eps_e:
                 continue
             # V17.4.x (#445): 近零基数(2025A EPS 过小时)增速%无意义(易出数万%极端值, 如 0.01→2.25 即 22400%),
@@ -1664,7 +1931,9 @@ def strategy_21_earnings_expect(stocks):
             growth = (eps_e / eps_a - 1) * 100
             if growth < 20:
                 continue
-            hc = holder_change(code, local_only=True) or []  # H6 修复: 全市场扫描仅缓存命中判筹码集中
+            hc = (
+                holder_change(code, local_only=True) or []
+            )  # H6 修复: 全市场扫描仅缓存命中判筹码集中
             holder_shr = False
             if len(hc) >= 2:
                 # H3 修复: 契约键为 holder_num(_compute_holder_changes), 非 holder
@@ -1674,11 +1943,15 @@ def strategy_21_earnings_expect(stocks):
                 f"盈利预期: 2026E EPS {eps_e:.2f} vs 2025A {eps_a:.2f} 增速 {growth:.0f}%"
                 f"{' + 股东户数下降(筹码集中)' if holder_shr else ''}"
             )
-            result.append({"code": code, "name": s.get("name", ""), "reason": reason, "score": score})
+            result.append(
+                {"code": code, "name": s.get("name", ""), "reason": reason, "score": score}
+            )
         except Exception as _e:
             _debug_log(f"val strategy23 eps expect {code}: {_e}")
             continue
     return _top10_sorted(result, lambda x: x["score"])
+
+
 def strategy_22_mtd_momentum(stocks):
     """V17.0.5: 月内动量策略（纯 ZHB 数据，零网络——tdxstat2 Col[11] change_mtd）。
 
@@ -1699,6 +1972,8 @@ def strategy_22_mtd_momentum(stocks):
         )
         result.append({"code": code, "name": s.get("name", ""), "reason": reason, "score": score})
     return _top10_sorted(result, lambda x: x["score"])
+
+
 def strategy_23_ps_undervalued(stocks, top_n=500):
     """V17.0.5 P2: PS 低估值策略（fuyao 估值快照批量——市值 top_n 预筛控配额）。
 
@@ -1713,7 +1988,7 @@ def strategy_23_ps_undervalued(stocks, top_n=500):
     pool = sorted(stocks, key=lambda x: _safe_float(x.get("mcap_yi", 0)), reverse=True)[:top_n]
     vals = {}
     for i in range(0, len(pool), 100):
-        batch = [s["code"] for s in pool[i: i + 100]]
+        batch = [s["code"] for s in pool[i : i + 100]]
         try:
             for r in get_fuyao_valuation(batch):
                 vals[str(r.get("ticker"))] = r
@@ -1722,7 +1997,8 @@ def strategy_23_ps_undervalued(stocks, top_n=500):
     if not vals:
         return []
     _ps_sorted = sorted(
-        float(v["ps_ttm"]) for v in vals.values()
+        float(v["ps_ttm"])
+        for v in vals.values()
         if v.get("ps_ttm") is not None and float(v["ps_ttm"]) > 0
     )
     if not _ps_sorted:
@@ -1744,10 +2020,10 @@ def strategy_23_ps_undervalued(stocks, top_n=500):
             f"PS(TTM) {ps:.2f}x ≤ 全市场20分位({_q20:.2f}x)且经营现金流为正"
             f"(PCF {pcf:.1f}x)——收入端低估候选"
         )
-        result.append({"code": s["code"], "name": s.get("name", ""), "reason": reason, "score": score})
+        result.append(
+            {"code": s["code"], "name": s.get("name", ""), "reason": reason, "score": score}
+        )
     return _top10_sorted(result, lambda x: x["score"])
-
-
 
 
 def strategy_24_short_reversal(stocks):
@@ -1769,10 +2045,7 @@ def strategy_24_short_reversal(stocks):
         if mcap < 20.0:
             continue
         score = -ch5
-        reason = (
-            f"近5日回撤 {ch5:.2f}%(短期超卖)——反弹动能候选; "
-            f"市值 {mcap:.0f}亿过滤仙股噪声"
-        )
+        reason = f"近5日回撤 {ch5:.2f}%(短期超卖)——反弹动能候选; " f"市值 {mcap:.0f}亿过滤仙股噪声"
         result.append({"code": code, "name": s.get("name", ""), "reason": reason, "score": score})
     return _top10_sorted(result, lambda x: x["score"])
 
@@ -1792,9 +2065,7 @@ def strategy_25_size_factor(stocks, top_n=300):
         if mcap < 30.0 or mcap > 800.0:
             continue
         score = -mcap
-        reason = (
-            f"总市值 {mcap:.0f}亿(规模因子小盘暴露)——小盘溢价候选"
-        )
+        reason = f"总市值 {mcap:.0f}亿(规模因子小盘暴露)——小盘溢价候选"
         result.append({"code": code, "name": s.get("name", ""), "reason": reason, "score": score})
     return _top10_sorted(result, lambda x: x["score"])
 
@@ -1853,27 +2124,40 @@ def strategy_26_limit_ladder(all_stocks):
                 + (f"·开量比{open_vol:.2f}" if open_vol else "")
             )
             score = ladder_level * 100.0 + seal_ratio
-            picks.append({
-                "code": plain, "name": _name_map.get(plain, ""), "reason": reason, "score": score,
-                "ladder_level": ladder_level, "limit_up_streak_days": streak,
-                "seal_to_float_ratio": seal_ratio, "open_volume_ratio": open_vol,
-                "limit_board_text": board_text,
-            })
+            picks.append(
+                {
+                    "code": plain,
+                    "name": _name_map.get(plain, ""),
+                    "reason": reason,
+                    "score": score,
+                    "ladder_level": ladder_level,
+                    "limit_up_streak_days": streak,
+                    "seal_to_float_ratio": seal_ratio,
+                    "open_volume_ratio": open_vol,
+                    "limit_board_text": board_text,
+                }
+            )
             seen.add(plain)
             continue
         # B. 短线强封(首板/非连板, 封流比显著)
         if streak < 2 and seal_ratio >= 0.5:
-            reason = (
-                f"短线强封·封流比{seal_ratio:.2f}%(封板坚决)"
-                + (f"·开量比{open_vol:.2f}" if open_vol else "")
+            reason = f"短线强封·封流比{seal_ratio:.2f}%(封板坚决)" + (
+                f"·开量比{open_vol:.2f}" if open_vol else ""
             )
             score = seal_ratio  # 非连板: 以封流比为主排序
-            picks.append({
-                "code": plain, "name": _name_map.get(plain, ""), "reason": reason, "score": score,
-                "ladder_level": ladder_level, "limit_up_streak_days": streak,
-                "seal_to_float_ratio": seal_ratio, "open_volume_ratio": open_vol,
-                "limit_board_text": board_text,
-            })
+            picks.append(
+                {
+                    "code": plain,
+                    "name": _name_map.get(plain, ""),
+                    "reason": reason,
+                    "score": score,
+                    "ladder_level": ladder_level,
+                    "limit_up_streak_days": streak,
+                    "seal_to_float_ratio": seal_ratio,
+                    "open_volume_ratio": open_vol,
+                    "limit_board_text": board_text,
+                }
+            )
             seen.add(plain)
 
     picks.sort(key=lambda x: x["score"], reverse=True)
@@ -1937,22 +2221,32 @@ def strategy_27_shortline_fund_strength(all_stocks):
         if not (open_chg > 0 and opening_rush > 0 and auction_vol >= 1.0 and open_amt >= 1.0):
             continue
         turn_z = c.eltdx_open_turnover_z
-        score = (2.0 * _cap(opening_rush, 10)
-                 + 1.0 * _cap(auction_vol, 5)
-                 + 1.0 * _cap(open_amt, 5)
-                 + 0.5 * _cap(open_chg, 10)
-                 + 0.5 * _cap(turn_z, 10))
+        score = (
+            2.0 * _cap(opening_rush, 10)
+            + 1.0 * _cap(auction_vol, 5)
+            + 1.0 * _cap(open_amt, 5)
+            + 0.5 * _cap(open_chg, 10)
+            + 0.5 * _cap(turn_z, 10)
+        )
         reason = (
             f"短线资金抢筹·开盘抢筹{opening_rush:.2f}"
             + f"·竞价量比{auction_vol:.2f}·开盘放量{open_amt:.2f}"
             + (f"·开涨{open_chg:.2f}%" if open_chg else "")
             + (f"·换手Z{turn_z:.2f}" if turn_z else "")
         )
-        picks.append({
-            "code": plain, "name": _name_map.get(plain, ""), "reason": reason, "score": score,
-            "opening_rush": opening_rush, "auction_prev_volume_ratio": auction_vol,
-            "open_prev_amount_ratio": open_amt, "open_change_pct": open_chg, "open_turnover_z": turn_z,
-        })
+        picks.append(
+            {
+                "code": plain,
+                "name": _name_map.get(plain, ""),
+                "reason": reason,
+                "score": score,
+                "opening_rush": opening_rush,
+                "auction_prev_volume_ratio": auction_vol,
+                "open_prev_amount_ratio": open_amt,
+                "open_change_pct": open_chg,
+                "open_turnover_z": turn_z,
+            }
+        )
     picks.sort(key=lambda x: x["score"], reverse=True)
     return picks[:60]
 
@@ -1972,6 +2266,7 @@ def _safe_int(v) -> int:
 # 表头(L1986)与策略数自检断言(L2449)均引用此常量；新增/删除策略须同步 bump，否则断言抛 RuntimeError。
 _STRATEGY_TOTAL = 27
 
+
 def run_discovery(output_path):
     """同步版包装：委托给异步版执行（保留向后兼容）。"""
     return asyncio.run(run_discovery_async(output_path))
@@ -1987,7 +2282,9 @@ async def run_discovery_async(output_path):
     _t_now = datetime.now()
     today_str = _t_now.strftime("%Y-%m-%d")
     lines = []
-    def L(s=""): lines.append(s)
+
+    def L(s=""):
+        lines.append(s)
 
     L("---")
     L(f"  **A 股策略发现报告**  [{today_str} {_t_now.strftime('%H.%M.%S')}]")
@@ -1995,8 +2292,9 @@ async def run_discovery_async(output_path):
     L(f"  市场: A 股 | 策略: {_STRATEGY_TOTAL} | 引擎: asyncio | 并发: 3")
     L("-" * 85)
     L("  预热: 加载市场数据 & 策略配置…")
-    _load_t0 = time.time()  # V17.0.10c(2026-08-28): 加载阶段耗时基；用于把总时长在"加载 vs 扫描"间拆分归因
-
+    _load_t0 = (
+        time.time()
+    )  # V17.0.10c(2026-08-28): 加载阶段耗时基；用于把总时长在"加载 vs 扫描"间拆分归因
 
     # V11.5: 使用 data_provider 统一数据中心层
     # 优先ZHB全量快照，失败fallback到TDX全市场，保持混合分层架构
@@ -2025,6 +2323,7 @@ async def run_discovery_async(output_path):
             # V12.1 休市期旁路优化：仅在非交易日和盘前（9:15前）旁路，其余时段获取T日数据
             # V16.2 修复: 市场状态判断提前 —— 原逻辑先全市场腾讯批量（133 批/8s+）再丢弃，休市纯浪费
             from stock_common import get_market_status
+
             m_status, _ = get_market_status()
             is_bypass = m_status in ("closed", "pre_market")
             # V16.3 O39 修复: is_bypass 时也初始化 _tencent_map（原 else 分支才赋值——
@@ -2032,13 +2331,16 @@ async def run_discovery_async(output_path):
             # 被外层 except 吞 → tdx 兜底失败 → 提前 return → val 假成功不落盘）
             _tencent_map: Dict[str, Dict[str, Any]] = {}
             if is_bypass:
-                L(f"  ⚡ 探测到非盘中时段 ({m_status})，自动旁路实时行情，直接复用 ZHB 昨收快照基准！")
+                L(
+                    f"  ⚡ 探测到非盘中时段 ({m_status})，自动旁路实时行情，直接复用 ZHB 昨收快照基准！"
+                )
                 _price_map = {}
             else:
                 # V15.5.9: 全市场腾讯批量预加载（不封 IP，含 mcap_yi/pe_ttm/turnover_pct）
                 # 替代原逐股 get_em_quote_full（push2 连接级风控 + 1.5s 限流 → 7957 次卡死数小时）
                 try:
                     from core.tdx_client import _tencent_batch_fallback
+
                     _tc_key = f"{_zhb_date_probe}|live"
                     _tencent_map = _VAL_TENCENT_CACHE.get(_tc_key)
                     if _tencent_map is None:
@@ -2048,7 +2350,9 @@ async def run_discovery_async(output_path):
                         _debug_log(f"val tencent batch: {len(_tencent_map)}/{len(all_codes)} 只")
                 except Exception as _e:
                     _debug_log(f"val tencent batch error: {_e}")
-                L(f"  ✅ data_provider全市场: {len(all_codes)}只，腾讯批量行情 {len(_tencent_map)}只…")
+                L(
+                    f"  ✅ data_provider全市场: {len(all_codes)}只，腾讯批量行情 {len(_tencent_map)}只…"
+                )
                 _price_map = _tencent_map
 
                 # V17.2.x(2026-09-10) 性能优化: 用已拉取的全市场腾讯批量行情零网络预热
@@ -2060,6 +2364,7 @@ async def run_discovery_async(output_path):
                 try:
                     import datetime as _dt_mod
                     from core import data_provider as _dp
+
                     _bq_cache = _dp._BATCH_QUOTE_CACHE
                     _pd_extra = _dp._PD_EXTRA_CACHE
                     _today_str = _dt_mod.datetime.now().strftime("%Y%m%d")
@@ -2089,13 +2394,16 @@ async def run_discovery_async(output_path):
                     # 锁定日期, 防止 get_canonical_stock_data 首次调用时 L645 清掉上面的 _PD_EXTRA_CACHE 预热
                     _dp._PD_EXTRA_CACHE_DATE = _today_str
                     if _warmed:
-                        _debug_log(f"val batch-quote prewarm: {_warmed}/{len(_tencent_map)} 只 -> _BATCH_QUOTE_CACHE(+_PD_EXTRA_CACHE 哨兵)")
+                        _debug_log(
+                            f"val batch-quote prewarm: {_warmed}/{len(_tencent_map)} 只 -> _BATCH_QUOTE_CACHE(+_PD_EXTRA_CACHE 哨兵)"
+                        )
                         # V17.3.12: 跨进程共享——把已预热的全市场行情落盘 L2，
                         # 后续 sht/med/lng 经 prefetch_quote_batch 读 L2 即零网络复用。
                         # 仅持久化 _BATCH_QUOTE_CACHE(价/OHLC/涨跌)，不持久化 _PD_EXTRA_CACHE
                         # 哨兵 0（否则会令他脚本主力资金段被误判为"无数据"而空白）。
                         try:
                             from core.stock_cache import persist_quote_batch_l2
+
                             persist_quote_batch_l2(_dp._BATCH_QUOTE_CACHE)
                         except Exception as _pe:
                             _debug_log(f"val L2 persist error: {_pe}")
@@ -2113,11 +2421,11 @@ async def run_discovery_async(output_path):
                 for _k, _v in _stat.items():
                     if _k not in ("market", "date"):
                         _stock[_k] = _v
-                
+
                 # ZHB自带市值预统计
                 if "mcap_yi" in _stock and _stock["mcap_yi"] > 0:
                     _mcap_count += 1
-                    
+
                 _price = _safe_float(_price_map.get(_code, {}).get("price", 0))
                 # V17.2.7(2026-09-07) 修复: 腾讯 T 日涨跌幅覆盖 ZHB T-1（与 mak 一致）。
                 # 原仅覆盖 price, change_pct 仍为 ZHB T-1 → 风控仪表盘涨停/跌停按 9/4 口径计算,
@@ -2147,7 +2455,9 @@ async def run_discovery_async(output_path):
                             except (ValueError, TypeError):
                                 _day_ok = True
                             if not _day_ok:
-                                _debug_log(f"val .day stale ({_code}): {_pk.get('date')} < ZHB-7d {_zhb_date}")
+                                _debug_log(
+                                    f"val .day stale ({_code}): {_pk.get('date')} < ZHB-7d {_zhb_date}"
+                                )
                             else:
                                 _price = _safe_float(_pk["price"])
                                 _price_map.setdefault(_code, {})["price"] = _price
@@ -2219,14 +2529,20 @@ async def run_discovery_async(output_path):
             else:
                 _fresh_tag = "⚠️T-1快照(最新交易日)"
             _basis_date = _zhb_date if (is_bypass or not _tencent_map) else time.strftime("%Y%m%d")
-            L(f"  ✅ data_provider全市场: {len(all_stocks)}只（过滤{_excluded}只停牌股，市值覆盖率{_mcap_count}/{len(all_stocks)}）[{_fresh_tag}]")
+            L(
+                f"  ✅ data_provider全市场: {len(all_stocks)}只（过滤{_excluded}只停牌股，市值覆盖率{_mcap_count}/{len(all_stocks)}）[{_fresh_tag}]"
+            )
             if _basis_date:
-                L(f"  📊 数据日期: {_basis_date}"
-                  f"{'（腾讯T日,与mak同基准）' if _t_day_used else '（ZHB最新交易日快照）'}")
+                L(
+                    f"  📊 数据日期: {_basis_date}"
+                    f"{'（腾讯T日,与mak同基准）' if _t_day_used else '（ZHB最新交易日快照）'}"
+                )
             if is_bypass:
                 L("  📊 数据分层: [纯ZHB横截面] 已完全复用 ZHB 历史数据，无任何实时网络开销")
             else:
-                L("  📊 数据分层: [API实时] price/change_pct/amount/pe_ttm/turnover_pct | [静态层] high_52w/low_52w/pb/dividend_yield/ipo_price/industry_code")
+                L(
+                    "  📊 数据分层: [API实时] price/change_pct/amount/pe_ttm/turnover_pct | [静态层] high_52w/low_52w/pb/dividend_yield/ipo_price/industry_code"
+                )
         else:
             raise ValueError("market snapshot empty")
     except Exception as _e:
@@ -2262,7 +2578,9 @@ async def run_discovery_async(output_path):
     all_stocks = [s for s in all_stocks if _is_a_stock(s.get("code", ""))]
     _filtered = _before - len(all_stocks)
     if _filtered > 0:
-        L(f"  📋 V15.1 A 股过滤: 移除 {_filtered} 只 ETF/LOF/可转债（{_before} → {len(all_stocks)}）")
+        L(
+            f"  📋 V15.1 A 股过滤: 移除 {_filtered} 只 ETF/LOF/可转债（{_before} → {len(all_stocks)}）"
+        )
         _stock_map = {s["code"]: s for s in all_stocks}
     ths_hot_list = ths_hot_reason(today_str)
     if not ths_hot_list:
@@ -2270,11 +2588,17 @@ async def run_discovery_async(output_path):
         # emappdata 独立域 1.0rps，仅失败时触发，封禁风险≈0）
         try:
             from stock_common import em_hot_rank
+
             _hr = em_hot_rank() or []
             ths_hot_list = [
-                {"code": _r.get("code", ""), "name": _r.get("name", ""),
-                 "zhangfu": _safe_float(_r.get("pct", 0)), "reason": ""}
-                for _r in _hr if _r.get("code")
+                {
+                    "code": _r.get("code", ""),
+                    "name": _r.get("name", ""),
+                    "zhangfu": _safe_float(_r.get("pct", 0)),
+                    "reason": "",
+                }
+                for _r in _hr
+                if _r.get("code")
             ]
             if ths_hot_list:
                 L(f"  ⚠ 同花顺强势股获取失败 → 东财人气榜兜底 {len(ths_hot_list)} 只")
@@ -2306,12 +2630,19 @@ async def run_discovery_async(output_path):
                 reverse=True,
             )[:300]
             ths_hot_list = [
-                {"code": s.get("code", ""), "name": s.get("name", ""),
-                 "zhangfu": _safe_float(s.get("change_pct", 0)), "reason": ""}
-                for s in _gainers if s.get("code")
+                {
+                    "code": s.get("code", ""),
+                    "name": s.get("name", ""),
+                    "zhangfu": _safe_float(s.get("change_pct", 0)),
+                    "reason": "",
+                }
+                for s in _gainers
+                if s.get("code")
             ]
             if ths_hot_list:
-                L(f"  ⚠ 同花顺/东财热点源均不可用 → ZHB 内存强势股兜底 {len(ths_hot_list)} 只（涨幅降序 Top300）")
+                L(
+                    f"  ⚠ 同花顺/东财热点源均不可用 → ZHB 内存强势股兜底 {len(ths_hot_list)} 只（涨幅降序 Top300）"
+                )
         except Exception as _e:
             _debug_log(f"val hot pool zhb fallback: {_e}")
     ths_hot_codes = {item.get("code", "") for item in ths_hot_list if item.get("code")}
@@ -2360,10 +2691,18 @@ async def run_discovery_async(output_path):
             L(f"  📋 O27 hot_pool ZHB 预筛: {len(hot_pool)} → {len(_keep)} 只（过滤明显空头）")
             hot_pool = _keep
 
-    top_liquidity_pool = sorted(all_stocks, key=lambda x: _safe_float(x.get("amount", 0) or x.get("amount_yi", 0)), reverse=True)[:500]
+    top_liquidity_pool = sorted(
+        all_stocks,
+        key=lambda x: _safe_float(x.get("amount", 0) or x.get("amount_yi", 0)),
+        reverse=True,
+    )[:500]
 
-    L(f"  ✅ 全市场: {len(all_stocks)} | 热点池(同花顺强势): {len(hot_pool)} | 流动性Top500: {len(top_liquidity_pool)}")
-    L(f"  ⏱ 全市场数据加载完成 @ {datetime.now().strftime('%H.%M.%S')}（耗时 {time.time() - _load_t0:.1f}s）")
+    L(
+        f"  ✅ 全市场: {len(all_stocks)} | 热点池(同花顺强势): {len(hot_pool)} | 流动性Top500: {len(top_liquidity_pool)}"
+    )
+    L(
+        f"  ⏱ 全市场数据加载完成 @ {datetime.now().strftime('%H.%M.%S')}（耗时 {time.time() - _load_t0:.1f}s）"
+    )
 
     all_selections = {}
 
@@ -2436,7 +2775,7 @@ async def run_discovery_async(output_path):
     #     19.9% 命中，80% 控盘股在池外，全市场 136 只全覆盖）
     #   - 02/05/06 预筛全市场（函数内 ZHB 内存先行）→ 趋势强度排序取 top300 逐股确认
     #     （V14.3.2 曾推荐 02→100/05→300；现按趋势优先，弱趋势小市值不再被 mcap 截断）
-    _top_n_large = 300   # 形态类（02/05/06）— O27: 趋势强度排序后 top300 逐股确认
+    _top_n_large = 300  # 形态类（02/05/06）— O27: 趋势强度排序后 top300 逐股确认
     _top_n_medium = 200  # 财务/筹码类（11/12/17）— 回测推荐 200（稳定性提升 26%）
 
     # 策略注册（1-20 为同步函数，用 Semaphore 控制并发）
@@ -2444,33 +2783,109 @@ async def run_discovery_async(output_path):
     # V16.3 O27: 全市场化（19/20/21/22 直接传 all_stocks；02/05/06 函数内预筛+趋势排序）
     _strategy_defs = [
         ("策略01【龙回头】", strategy_01_longhuitou, (hot_pool, today_str)),
-        ("策略02【周线多头】", strategy_02_weekly_ma, (all_stocks, _top_n_large)),  # O27: 预筛全市场+趋势 top300
+        (
+            "策略02【周线多头】",
+            strategy_02_weekly_ma,
+            (all_stocks, _top_n_large),
+        ),  # O27: 预筛全市场+趋势 top300
         ("策略03【量价齐升】", strategy_03_volume_breakout, (hot_pool,)),
         ("策略04【核心打折】", strategy_04_core_discount, (all_stocks,)),  # 内部 200
-        ("策略05【W底形态】", strategy_05_double_bottom, (all_stocks, _top_n_large)),  # O27: 函数内预筛+趋势 top300
-        ("策略06【红三兵】", strategy_06_three_soldiers, (all_stocks, _top_n_large)),  # O27: 函数内预筛+趋势 top300
+        (
+            "策略05【W底形态】",
+            strategy_05_double_bottom,
+            (all_stocks, _top_n_large),
+        ),  # O27: 函数内预筛+趋势 top300
+        (
+            "策略06【红三兵】",
+            strategy_06_three_soldiers,
+            (all_stocks, _top_n_large),
+        ),  # O27: 函数内预筛+趋势 top300
         ("策略07【政策驱动(含热度图谱)】", strategy_07_policy_driven, (all_stocks, hot_pool)),
         ("策略08【日历效应】", strategy_08_calendar_rotation, ()),
-        ("策略09【逆向白马】", strategy_09_contrarian_value,
-         (sorted(all_stocks, key=lambda x: x.get("mcap_yi", 999999), reverse=True)[:_top_n_medium], _top_n_medium)),
-        ("策略10【筹码集中】", strategy_10_holder_concentration, (all_stocks, _top_n_medium)),  # 200（稳定性提升 26%）
+        (
+            "策略09【逆向白马】",
+            strategy_09_contrarian_value,
+            (
+                sorted(all_stocks, key=lambda x: x.get("mcap_yi", 999999), reverse=True)[
+                    :_top_n_medium
+                ],
+                _top_n_medium,
+            ),
+        ),
+        (
+            "策略10【筹码集中】",
+            strategy_10_holder_concentration,
+            (all_stocks, _top_n_medium),
+        ),  # 200（稳定性提升 26%）
         ("策略11【量价信号】", strategy_11_divergence_warning, (all_stocks, _top_n_medium)),  # 200
         ("策略12【高股息】", strategy_12_dividend_yield, (all_stocks,)),  # 内部 300→100
         ("策略13【流动性王】", strategy_13_liquidity_king, (top_liquidity_pool,)),
-        ("策略14【北向Top】", strategy_14_northbound_top, (all_stocks, _top_n_medium)),  # V14.3.2: 150→200
+        (
+            "策略14【北向Top】",
+            strategy_14_northbound_top,
+            (all_stocks, _top_n_medium),
+        ),  # V14.3.2: 150→200
         ("策略15【龙虎榜】", strategy_15_longhu_activity, (all_stocks, today_str)),
-        ("策略16【52周低位】", strategy_16_52w_position, (all_stocks,)),  # O27: 全市场（纯内存毫秒级）
-        ("策略17【竞价额占比】", strategy_17_main_fund_ratio, (all_stocks,)),  # V17.0.x: main_net_buy_amount 实锤=竞价额(非主力净流入), 如实命名
-        ("策略18【竞价额加速】", strategy_18_volume_acceleration, (all_stocks,)),  # V17.0.x: 竞价额三连加速, 非主力净流入
-        ("策略19【竞价动量】", strategy_19_capital_momentum, (all_stocks,)),  # V17.0(2026-08-14)实锤: 竞价额动量
-        ("策略20【业绩预增】", strategy_20_yjyg, (all_stocks,)),  # V17.0: 东财业绩预告(datacenter 单股查询)
-        ("策略21【盈利预期】", strategy_21_earnings_expect, (all_stocks,)),  # V17.0: 本机 ProfitForecast+股东户数
-        ("策略22【月内动量】", strategy_22_mtd_momentum, (all_stocks,)),  # V17.0.5: change_mtd(ZHB Col[11], 零网络)
-        ("策略23【PS低估值】", strategy_23_ps_undervalued, (all_stocks,)),  # V17.0.5 P2: fuyao PS·PCF(市值top500)
-        ("策略24【短期反转】", strategy_24_short_reversal, (all_stocks,)),  # P1(Tier1路线①): change_5d 近5日涨跌幅(零网络)
-        ("策略25【规模因子】", strategy_25_size_factor, (all_stocks,)),  # P1(Tier1路线①): mcap_yi 总市值(零网络)
-        ("策略26【连板梯队·短线封单强度】", strategy_26_limit_ladder, (all_stocks,)),  # V17.2.16: eltdx 7709/7615 实时(连板天梯+封流比)
-        ("策略27【短线资金强度·开盘抢筹】", strategy_27_shortline_fund_strength, (all_stocks,)),  # V17.2.18: eltdx 7709/7615 实时(竞价+开盘资金抢筹)
+        (
+            "策略16【52周低位】",
+            strategy_16_52w_position,
+            (all_stocks,),
+        ),  # O27: 全市场（纯内存毫秒级）
+        (
+            "策略17【竞价额占比】",
+            strategy_17_main_fund_ratio,
+            (all_stocks,),
+        ),  # V17.0.x: main_net_buy_amount 实锤=竞价额(非主力净流入), 如实命名
+        (
+            "策略18【竞价额加速】",
+            strategy_18_volume_acceleration,
+            (all_stocks,),
+        ),  # V17.0.x: 竞价额三连加速, 非主力净流入
+        (
+            "策略19【竞价动量】",
+            strategy_19_capital_momentum,
+            (all_stocks,),
+        ),  # V17.0(2026-08-14)实锤: 竞价额动量
+        (
+            "策略20【业绩预增】",
+            strategy_20_yjyg,
+            (all_stocks,),
+        ),  # V17.0: 东财业绩预告(datacenter 单股查询)
+        (
+            "策略21【盈利预期】",
+            strategy_21_earnings_expect,
+            (all_stocks,),
+        ),  # V17.0: 本机 ProfitForecast+股东户数
+        (
+            "策略22【月内动量】",
+            strategy_22_mtd_momentum,
+            (all_stocks,),
+        ),  # V17.0.5: change_mtd(ZHB Col[11], 零网络)
+        (
+            "策略23【PS低估值】",
+            strategy_23_ps_undervalued,
+            (all_stocks,),
+        ),  # V17.0.5 P2: fuyao PS·PCF(市值top500)
+        (
+            "策略24【短期反转】",
+            strategy_24_short_reversal,
+            (all_stocks,),
+        ),  # P1(Tier1路线①): change_5d 近5日涨跌幅(零网络)
+        (
+            "策略25【规模因子】",
+            strategy_25_size_factor,
+            (all_stocks,),
+        ),  # P1(Tier1路线①): mcap_yi 总市值(零网络)
+        (
+            "策略26【连板梯队·短线封单强度】",
+            strategy_26_limit_ladder,
+            (all_stocks,),
+        ),  # V17.2.16: eltdx 7709/7615 实时(连板天梯+封流比)
+        (
+            "策略27【短线资金强度·开盘抢筹】",
+            strategy_27_shortline_fund_strength,
+            (all_stocks,),
+        ),  # V17.2.18: eltdx 7709/7615 实时(竞价+开盘资金抢筹)
     ]
     # V17.2.25: 策略数自检——注册表条数须与 _STRATEGY_TOTAL 常量一致,
     # 防止表头/正文漂移(曾硬编码 26 ≠ 实际 27)。新增策略须同步 bump 常量。
@@ -2502,12 +2917,17 @@ async def run_discovery_async(output_path):
             _r = _raw
         all_selections[_name] = _r
         # V17.0(2026-08-15): 进度已在 _run_sync_strategy 内实时打印(带耗时)——此处不再重复打印
-    
+
     try:
         print(f"  扫描完成（共 {_scan_total_time:.1f}s）", flush=True)
     except UnicodeEncodeError:
         # V16.3 A4: 原兜底分支重打同一中文串（无 ascii 替换）会二次抛异常崩溃
-        print(f"  [OK] scan done ({_scan_total_time:.1f}s)".encode('ascii', errors='replace').decode('ascii'), flush=True)
+        print(
+            f"  [OK] scan done ({_scan_total_time:.1f}s)".encode('ascii', errors='replace').decode(
+                'ascii'
+            ),
+            flush=True,
+        )
 
     # V15.1: 补充缺失的股票名称（zhb数据源无name字段）
     # 优先用 ZHB unified_name_map（profile.dat + relation.dat + tdxpkmore + pttab，
@@ -2523,6 +2943,7 @@ async def run_discovery_async(output_path):
         _zhb_name_map: Dict[str, str] = {}
         try:
             from core.zhb_client import get_zhb
+
             _zhb_name_map = get_zhb().unified_name_map
         except Exception as _e:
             _debug_log(f"val zhb name map: {_e}")
@@ -2532,7 +2953,11 @@ async def run_discovery_async(output_path):
         # 仅腾讯也未命中的才走东财批量（≤200 只兜底，push2 限流最严）
         _name_map = {}
         if _unmatched:
-            _tencent_hit = {_c: _tencent_map.get(_c, {}) for _c in _unmatched if _tencent_map.get(_c, {}).get("name")}
+            _tencent_hit = {
+                _c: _tencent_map.get(_c, {})
+                for _c in _unmatched
+                if _tencent_map.get(_c, {}).get("name")
+            }
             if _tencent_hit:
                 _name_map.update({_c: {"name": v["name"]} for _c, v in _tencent_hit.items()})
             _still_missing = [_c for _c in _unmatched if _c not in _name_map]
@@ -2548,23 +2973,59 @@ async def run_discovery_async(output_path):
                 _name = _item.get("name", "")
                 if not _name or _name == _item["code"]:
                     # 优先用 ZHB 字典
-                    _nm = _zhb_name_map.get(_item["code"], "") or _name_map.get(_item["code"], {}).get("name", _item["code"])
+                    _nm = _zhb_name_map.get(_item["code"], "") or _name_map.get(
+                        _item["code"], {}
+                    ).get("name", _item["code"])
                     _item["name"] = _nm
                     if _item["code"] in _stock_map:
                         _stock_map[_item["code"]]["name"] = _nm
 
     L("\n" + "=" * 85)
-    L("  扫描结果汇总: " + str(len(all_selections)) + "个策略共产出 " + str(sum(len(v) for v in all_selections.values())) + " 次选择")
+    L(
+        "  扫描结果汇总: "
+        + str(len(all_selections))
+        + "个策略共产出 "
+        + str(sum(len(v) for v in all_selections.values()))
+        + " 次选择"
+    )
     L("---")
 
     # V16.3 J: _sfmt 同步注册表——补 21/22、删已移除的 14、修正 15（流动性王）
-    _sfmt = {"策略01":"01 龙回头", "策略02":"02 周线多头(含金叉)", "策略03":"03 量价齐升", "策略04":"04 核心打折", "策略05":"05 W底形态", "策略06":"06 红三兵", "策略07":"07 政策驱动(含热度图谱)", "策略08":"08 日历效应", "策略09":"09 逆向白马", "策略10":"10 筹码集中", "策略11":"11 量价信号", "策略12":"12 高股息", "策略13":"13 流动性王", "策略14":"14 北向Top", "策略15":"15 龙虎榜", "策略16":"16 52周低位", "策略17":"17 竞价额占比", "策略18":"18 竞价额加速", "策略19":"19 竞价动量", "策略20":"20 业绩预增", "策略21":"21 盈利预期", "策略22":"22 月内动量", "策略23":"23 PS低估值", "策略24":"24 短期反转", "策略25":"25 规模因子", "策略26":"26 连板梯队·短线封单强度", "策略27":"27 短线资金强度·开盘抢筹"}
+    _sfmt = {
+        "策略01": "01 龙回头",
+        "策略02": "02 周线多头(含金叉)",
+        "策略03": "03 量价齐升",
+        "策略04": "04 核心打折",
+        "策略05": "05 W底形态",
+        "策略06": "06 红三兵",
+        "策略07": "07 政策驱动(含热度图谱)",
+        "策略08": "08 日历效应",
+        "策略09": "09 逆向白马",
+        "策略10": "10 筹码集中",
+        "策略11": "11 量价信号",
+        "策略12": "12 高股息",
+        "策略13": "13 流动性王",
+        "策略14": "14 北向Top",
+        "策略15": "15 龙虎榜",
+        "策略16": "16 52周低位",
+        "策略17": "17 竞价额占比",
+        "策略18": "18 竞价额加速",
+        "策略19": "19 竞价动量",
+        "策略20": "20 业绩预增",
+        "策略21": "21 盈利预期",
+        "策略22": "22 月内动量",
+        "策略23": "23 PS低估值",
+        "策略24": "24 短期反转",
+        "策略25": "25 规模因子",
+        "策略26": "26 连板梯队·短线封单强度",
+        "策略27": "27 短线资金强度·开盘抢筹",
+    }
 
     for _st_name in _names_full:
         items = all_selections.get(_st_name, [])
         _k = _st_name[:4] if len(_st_name) >= 4 else _st_name
         _title = _sfmt.get(_k, _st_name)
-        L("\n" + "-"*85)
+        L("\n" + "-" * 85)
         L(f"[{_title}]")
         if items:
             # V17.0.2d(2026-08-17): 用户要求显示全部候选(策略输出上限 10, 原展示截断 5)
@@ -2579,6 +3040,7 @@ async def run_discovery_async(output_path):
                 # [ENRICH] 选股市场分层标注（code 前缀派生，零取数；不改变选股结果）
                 try:
                     from stock_common.enrich_helpers import sec_type_label
+
                     _layer = sec_type_label(item.get("code", ""))
                     if _layer:
                         L(f"     [市场分层] {_layer}")
@@ -2589,6 +3051,7 @@ async def run_discovery_async(output_path):
             if _k == "策略23":
                 try:
                     from stock_common import is_fuyao_enabled
+
                     if not is_fuyao_enabled():
                         L("  ⚠️ 未配置 fuyao 估值源，本策略已跳过（无 Key 时恒空，属预期）")
                 except Exception:
@@ -2600,8 +3063,11 @@ async def run_discovery_async(output_path):
                 # 属"数据源不可用"而非"真实无符合标的"(当日 77 只涨停必有连板/抢筹)。
                 try:
                     from core.eltdx_adapter import is_eltdx_available
+
                     if not is_eltdx_available():
-                        L("  ⚠️ eltdx 数据源不可用（eltdx 包未装 / 公网主站不可达），本策略降级跳过——属数据源缺失，非真实无符合标的")
+                        L(
+                            "  ⚠️ eltdx 数据源不可用（eltdx 包未装 / 公网主站不可达），本策略降级跳过——属数据源缺失，非真实无符合标的"
+                        )
                 except Exception:
                     pass
             L("  (今日无符合该策略阈值的标的)")
@@ -2609,7 +3075,8 @@ async def run_discovery_async(output_path):
     _cf = {}
     for name, items in all_selections.items():
         for item in items:
-            _c = item.get("code", ""); _cf[_c] = _cf.get(_c, 0) + 1
+            _c = item.get("code", "")
+            _cf[_c] = _cf.get(_c, 0) + 1
     _res = [(c, n) for c, n in sorted(_cf.items(), key=lambda x: x[1], reverse=True) if n >= 2]
     L(f"\n{'='*85}")
     L("[多策略共振金股推荐]")
@@ -2620,12 +3087,22 @@ async def run_discovery_async(output_path):
     else:
         L("  今日暂无共振股票")
 
-    _zt = sum(1 for s in all_stocks if is_limit_up(s.get("code", ""), s.get("name", ""), _safe_float(s.get("change_pct", 0))))
-    _dt_total = sum(1 for s in all_stocks if is_limit_down(s.get("code", ""), s.get("name", ""), _safe_float(s.get("change_pct", 0))))
+    _zt = sum(
+        1
+        for s in all_stocks
+        if is_limit_up(s.get("code", ""), s.get("name", ""), _safe_float(s.get("change_pct", 0)))
+    )
+    _dt_total = sum(
+        1
+        for s in all_stocks
+        if is_limit_down(s.get("code", ""), s.get("name", ""), _safe_float(s.get("change_pct", 0)))
+    )
     L(f"\n{'='*85}")
     L("[风控仪表盘 & 仓位管理]")
     L(f"  涨停{_zt} | 跌停{_dt_total}")
-    L("  ℹ️ 涨停/跌停按统一封板口径(is_limit_up/is_limit_down, 含ST与板块阈值)统计于本表全市场扫描样本；与 mak 涨停池为同一判定函数，样本范围不同故绝对数可能差异")
+    L(
+        "  ℹ️ 涨停/跌停按统一封板口径(is_limit_up/is_limit_down, 含ST与板块阈值)统计于本表全市场扫描样本；与 mak 涨停池为同一判定函数，样本范围不同故绝对数可能差异"
+    )
     # V16.1: 删除硬编码策略胜率（"55-65%"等非当前运行计算结果，误导投资决策）
     L("  ℹ️ 策略胜率需前瞻回测验证（当前版本不做历史回测声明）")
     L(f"\n{'='*85}")
@@ -2633,11 +3110,13 @@ async def run_discovery_async(output_path):
     # V17.4.1 吸收层市场级信号附录: 申购日历(抽水压力)/ETF份额/新浪研报/央视新闻联播/上证e互动/ST名单
     try:
         from stock_common.sc_market_signals import render_market_signals_section
+
         for _ms in render_market_signals_section(today_str):
             L(_ms)
     except Exception:
         pass  # 吸收层信号任一源失败不应影响主报告生成(治理铁律: 不把失败伪装成空)
     from stock_common.md_render import render_md_report
+
     output = render_md_report(output_path, lines)
     return output
 
@@ -2650,7 +3129,10 @@ class ValReportRunner(BaseReportRunner):
 
     def execute_pipeline(self) -> str:
         ts = self.report_ts  # V17.0 R1: 基类统一口径(%Y%m%d_%H%M)
-        op = os.path.join(self.args.output, f"get_val_report_{ts}.md")
+        args = self.args
+        if args is None:
+            raise RuntimeError("report arguments have not been initialized")
+        op = os.path.join(args.output, f"get_val_report_{ts}.md")
         try:
             print("  ⏱ 预计运行 3-7 分钟（asyncio 异步模式）", flush=True)
         except UnicodeEncodeError:

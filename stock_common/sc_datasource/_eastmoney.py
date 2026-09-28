@@ -5,8 +5,9 @@
 跨片段符号由各子模块函数体内的局部懒导入（from ._DEFINER import NAME）提供，
 共享可变状态集中于 _shared.py（单实例）。
 """
+
 from __future__ import annotations
-from typing import Any, Dict, List, Optional
+from typing import Any, Awaitable, Callable, Dict, List, Optional, cast
 from datetime import datetime, timedelta
 import asyncio
 import code
@@ -14,12 +15,32 @@ import hashlib
 import json
 import os
 import re
+import requests
 import urllib
 import uuid
-from stock_common.sc_network import DATACENTER_URL, RateLimitBlockedError, UA, _async_request_with_retry, _biz_logger, _debug_log, _gen_wait_process_interval, _http_logger, _quick_request, em_get, requires_push2
+from stock_common.sc_network import (
+    DATACENTER_URL,
+    RateLimitBlockedError,
+    UA,
+    _async_request_with_retry,
+    _biz_logger,
+    _debug_log,
+    _gen_wait_process_interval,
+    _http_logger,
+    _quick_request,
+    em_get,
+    requires_push2,
+)
 from stock_common.sc_utils import _safe_float, em_exchange_prefix, em_secid_prefix
 from core.stock_cache import TTL, cached, make_valid_if
-from ._shared import _DC_PREFETCH_FUTURES, _EM_BATCH_CACHE, _EM_BATCH_CACHE_DATE, _EM_L2_TTL, _FFLOW_HOSTS
+from ._shared import (
+    _DC_PREFETCH_FUTURES,
+    _EM_BATCH_CACHE,
+    _EM_BATCH_CACHE_DATE,
+    _EM_L2_MEMBERS,
+    _EM_L2_TTL,
+    _FFLOW_HOSTS,
+)
 from stock_common.sc_kpl import _f
 
 
@@ -75,8 +96,12 @@ def eastmoney_datacenter(
         if isinstance(d, dict) and d.get("status") == -1:
             _biz_logger.error(f"status=-1 | {report_name} | {code} | {d.get('message', '')}")
             return []
-        if d.get("result") and d["result"].get("data"):
-            return d["result"]["data"]
+        if isinstance(d, dict):
+            result = d.get("result")
+            if isinstance(result, dict):
+                data = result.get("data")
+                if isinstance(data, list):
+                    return [row for row in data if isinstance(row, dict)]
         return []
     except Exception as _e:
         _debug_log(f"eastmoney_datacenter({code}, {report_name}): {_e}")
@@ -141,8 +166,12 @@ async def eastmoney_datacenter_async(
         if isinstance(d, dict) and d.get("status") == -1:
             _biz_logger.error(f"status=-1 | {report_name} | {code} | {d.get('message', '')}")
             return []
-        if d.get("result") and d["result"].get("data"):
-            return d["result"]["data"]
+        if isinstance(d, dict):
+            result = d.get("result")
+            if isinstance(result, dict):
+                data = result.get("data")
+                if isinstance(data, list):
+                    return [row for row in data if isinstance(row, dict)]
         return []
     except Exception as _e:
         _debug_log(f"eastmoney_datacenter_async({code}, {report_name}): {_e}")
@@ -184,6 +213,7 @@ def get_em_batch_quotes(codes: List[str]) -> Dict[str, Dict[str, Any]]:
     # V17.0.1a: 当日缓存命中直接返回(增量)
     global _EM_BATCH_CACHE_DATE
     from datetime import datetime as _dt2
+
     _today2 = _dt2.now().strftime("%Y%m%d")
     if _EM_BATCH_CACHE_DATE != _today2:
         _EM_BATCH_CACHE.clear()
@@ -194,13 +224,15 @@ def get_em_batch_quotes(codes: List[str]) -> Dict[str, Dict[str, Any]]:
 
     # 东财市场代码前缀: 沪市为 1., 深市为 0.
     sh_codes = [f"{em_secid_prefix(c)}{c}" for c in codes if em_secid_prefix(c) == "1."]
-    sz_codes = [f"{em_secid_prefix(c)}{c}" for c in codes if em_secid_prefix(c) == "0."]  # V17.0 S3: 统一前缀
+    sz_codes = [
+        f"{em_secid_prefix(c)}{c}" for c in codes if em_secid_prefix(c) == "0."
+    ]  # V17.0 S3: 统一前缀
     all_formatted_codes = sh_codes + sz_codes
 
     result = {}
 
     @requires_push2
-    def _fetch_batch(code_chunk):
+    def _fetch_batch(code_chunk: List[str]) -> None:
         if not code_chunk:
             return
         fs_str = ",".join(code_chunk)
@@ -225,7 +257,12 @@ def get_em_batch_quotes(codes: List[str]) -> Dict[str, Dict[str, Any]]:
             ),
         }
         try:
-            r = em_get(url, params=params, headers={"User-Agent": UA, "Referer": "https://quote.eastmoney.com/"}, timeout=15)
+            r = em_get(
+                url,
+                params=params,
+                headers={"User-Agent": UA, "Referer": "https://quote.eastmoney.com/"},
+                timeout=15,
+            )
             if r is None:
                 return
             d = r.json()
@@ -293,7 +330,9 @@ def get_em_batch_quotes(codes: List[str]) -> Dict[str, Dict[str, Any]]:
     # ① 未来瞬断不再缓存 ② 已存在的 stale [[],[]] 在读取时 valid_if 失败被当作 miss 重新拉取(自愈合)。
     valid_if=lambda r: isinstance(r, (tuple, list)) and len(r) == 2 and len(r[1] or []) > 0,
 )
-def baidu_kline_full(code, count=800, is_index=False):
+def baidu_kline_full(
+    code: str, count: int = 800, is_index: bool = False
+) -> tuple[List[str], List[List[str]]]:
     """全量K线 → tdx_client 适配器（纯 TDX 日K线）。
 
     V16.3 O16: 修正误导性 docstring——百度 PAE 已无实际调用（v3.1.0 起参考仓库同款
@@ -308,7 +347,7 @@ def baidu_kline_full(code, count=800, is_index=False):
     from core.tdx_client import tdx_get_security_bars, tdx_get_index_bars
 
     if is_index:
-        return tdx_get_index_bars(code)
+        return cast(tuple[List[str], List[List[str]]], tdx_get_index_bars(code))
     return tdx_get_security_bars(code, count=count)
 
 
@@ -420,7 +459,7 @@ def get_northbound_hold(code: str, days: int = 20) -> List[Dict[str, Any]]:
         sort_types="-1",
     )
 
-    rows = []
+    rows: List[Dict[str, Any]] = []
     has_valid_data = False
     for row in data:
         hold_shares = float(row.get("HOLD_SHARES") or 0)
@@ -465,7 +504,7 @@ def _load_northbound_cache(code: str, days: int) -> List[Dict[str, Any]]:
     import os
 
     path = _northbound_cache_path(code)
-    rows = []
+    rows: List[Dict[str, Any]] = []
     if not os.path.exists(path):
         return rows
 
@@ -540,7 +579,9 @@ async def get_northbound_hold_async(
     return rows
 
 
-def start_datacenter_prefetch(codes, session, dragon_kwargs=None) -> int:
+def start_datacenter_prefetch(
+    codes: List[str], session: Any, dragon_kwargs: Optional[Dict[str, Any]] = None
+) -> int:
     """调度五类 datacenter 数据的整批预取(幂等——已调度的 (kind,code) 跳过)。
 
     必须在事件循环内调用(execute_batch_pipeline 的 prefetch_async_fn 钩子)。
@@ -557,13 +598,15 @@ def start_datacenter_prefetch(codes, session, dragon_kwargs=None) -> int:
     dk = dragon_kwargs or {}
     specs = {
         "dragon_tiger": lambda c: get_dragon_tiger_board_async(
-            session, c, days=180,
+            session,
+            c,
+            days=180,
             include_seats=dk.get("include_seats", True),
-            enhance_seats=dk.get("enhance_seats", True)),
+            enhance_seats=dk.get("enhance_seats", True),
+        ),
         "northbound": lambda c: get_northbound_hold_async(session, c, 20),
         "margin": lambda c: get_margin_trading_async(session, c),
-        "lockup": lambda c: get_lockup_expiry_async(
-            session, c, days=90, include_history=True),
+        "lockup": lambda c: get_lockup_expiry_async(session, c, days=90, include_history=True),
         "block_trade": lambda c: get_block_trade_async(session, c),
     }
     loop = _aio.get_event_loop()
@@ -576,7 +619,12 @@ def start_datacenter_prefetch(codes, session, dragon_kwargs=None) -> int:
         # 先注册后执行——消费方随时 await 不竞态
         _DC_PREFETCH_FUTURES.update(futs)
 
-        async def _run(_todo=todo, _futs=futs, _fetch=fetch, _kind=kind):
+        async def _run(
+            _todo: List[str] = todo,
+            _futs: Dict[str, Any] = futs,
+            _fetch: Any = fetch,
+            _kind: str = kind,
+        ) -> None:
             for c in _todo:
                 try:
                     res = await _fetch(c)
@@ -591,7 +639,11 @@ def start_datacenter_prefetch(codes, session, dragon_kwargs=None) -> int:
     return scheduled
 
 
-async def resolve_datacenter(kind: str, code: str, direct_fn=None):
+async def resolve_datacenter(
+    kind: str,
+    code: str,
+    direct_fn: Optional[Callable[[], Awaitable[Any]]] = None,
+) -> Any:
     """取预取结果; 该键未参与预取时回退 direct_fn()(原直调协程工厂)。"""
     fut = _DC_PREFETCH_FUTURES.get((kind, code))
     if fut is not None:
@@ -687,7 +739,13 @@ def get_eastmoney_global_news(page_size: int = 50) -> List[Dict[str, Any]]:
         return []
 
 
-@cached(category="cash_flow", ttl_seconds=TTL["cash_flow"], cross_verify=True, trading_day=True, valid_if=make_valid_if())
+@cached(
+    category="cash_flow",
+    ttl_seconds=TTL["cash_flow"],
+    cross_verify=True,
+    trading_day=True,
+    valid_if=make_valid_if(),
+)
 def get_eastmoney_cash_flow(code: str) -> List[Dict[str, Any]]:
     """获取东财现金流量表（新浪xjllb接口已失效，使用东财数据中心替代）
 
@@ -750,7 +808,10 @@ async def get_eastmoney_cash_flow_async(session: Any, code: str) -> List[Dict[st
 
 
 @cached(
-    category="hsgt_macro_flow", ttl_seconds=TTL["hsgt_macro_flow"], trading_day=True, use_args=False,
+    category="hsgt_macro_flow",
+    ttl_seconds=TTL["hsgt_macro_flow"],
+    trading_day=True,
+    use_args=False,
     valid_if=lambda r: bool(r and r.get("data_quality") != "invalid"),
 )
 def get_hsgt_macro_flow() -> Optional[Dict[str, Any]]:
@@ -787,17 +848,28 @@ def get_hsgt_macro_flow() -> Optional[Dict[str, Any]]:
                 _hgt_real = float(hgt[-1]) if hgt[-1] else 0.0
                 _debug_log(
                     "hsgt_macro_flow: hgt/sgt 长度不一致({}/{})——hgt 判为当日分时(可用), sgt 为历史序列(不可用)".format(
-                        len(hgt), len(sgt)))
+                        len(hgt), len(sgt)
+                    )
+                )
                 return {
-                    "hgt": _hgt_real, "sgt": 0.0, "total": _hgt_real,
+                    "hgt": _hgt_real,
+                    "sgt": 0.0,
+                    "total": _hgt_real,
                     "sgt_valid": False,
                     "data_quality": "partial_hgt_only",
                     "warning": "深股通序列为历史收盘序列(非当日), 本项仅沪股通值可用",
                 }
-            _debug_log("hsgt_macro_flow: hgt/sgt 序列长度不一致({}/{})——数据源字段错位, 拒绝展示".format(len(hgt), len(sgt)))
+            _debug_log(
+                "hsgt_macro_flow: hgt/sgt 序列长度不一致({}/{})——数据源字段错位, 拒绝展示".format(
+                    len(hgt), len(sgt)
+                )
+            )
             return {
-                "hgt": 0.0, "sgt": 0.0, "total": 0.0,
-                "data_quality": "invalid", "warning": "北向数据源 hgt/sgt 序列错位(字段长度不同步), 当日值暂缺",
+                "hgt": 0.0,
+                "sgt": 0.0,
+                "total": 0.0,
+                "data_quality": "invalid",
+                "warning": "北向数据源 hgt/sgt 序列错位(字段长度不同步), 当日值暂缺",
             }
         hgt_val = float(hgt[-1]) if hgt[-1] else 0
         sgt_val = float(sgt[-1]) if sgt[-1] else 0
@@ -864,7 +936,10 @@ def get_board_fund_flow(board_type: str = "industry", top_n: int = 20) -> List[D
     # total 缺失按"不足一页即末页"收敛；提前返空即跳出防死循环。
     _PAGE = 200  # 东财 clist 单页上限
     params_tpl = {
-        "po": "1", "np": "1", "fltt": "2", "invt": "2",
+        "po": "1",
+        "np": "1",
+        "fltt": "2",
+        "invt": "2",
         "fs": fs,
         "fields": "f12,f14,f2,f3,f62,f66,f69,f72,f75,f184",
         "ut": "bd1d9ddb04089700cf9c27f6f7426281",
@@ -875,13 +950,17 @@ def get_board_fund_flow(board_type: str = "industry", top_n: int = 20) -> List[D
         try:
             r = _quick_request(
                 "https://push2.eastmoney.com/api/qt/clist/get",
-                params=params, headers={"User-Agent": UA}, timeout=10,
+                params=params,
+                headers={"User-Agent": UA},
+                timeout=10,
             )
             if r is None:
                 # fallback: 备用域名（83.push2 实测可用）
                 r = _quick_request(
                     "http://83.push2.eastmoney.com/api/qt/clist/get",
-                    params=params, headers={"User-Agent": UA}, timeout=10,
+                    params=params,
+                    headers={"User-Agent": UA},
+                    timeout=10,
                 )
             if r is None:
                 return {}
@@ -1040,8 +1119,11 @@ def get_history_fund_flow_120d(code: str, days: int = 60, prefer: str = "auto") 
     下方 `tdx_get_history_fund_flow` 已委托东财 HTTP，最终仍归东财口径，安全；
     但若 future 改回原生 easy_tdx 资金流，须先评估口径差异，禁止直接当主力净额源。
     """
-    def _norm_ff(data):
+
+    def _norm_ff(data: Any) -> List[Dict[str, Any]]:
         """V16.3 O19: 强制归一为 dict 列表（单位元）——历史遗留 float 列表（万元）自动转 dict(元)。"""
+        if not isinstance(data, list):
+            return []
         if data and isinstance(data[0], (int, float)):
             return [
                 {
@@ -1054,7 +1136,7 @@ def get_history_fund_flow_120d(code: str, days: int = 60, prefer: str = "auto") 
                 }
                 for v in data
             ]
-        return data
+        return [row for row in data if isinstance(row, dict)]
 
     if prefer != "em":
         try:
@@ -1074,7 +1156,7 @@ def get_history_fund_flow_120d(code: str, days: int = 60, prefer: str = "auto") 
     return {"data": [], "error": "资金流数据获取失败"}
 
 
-def _em_l2_load_cached(_json, _os, _now) -> Optional[Dict[str, str]]:
+def _em_l2_load_cached(_json: Any, _os: Any, _now: float) -> Optional[Dict[str, str]]:
     """读磁盘缓存（两级：code→二级名、name→成员）。返回 l2_map 或 None。"""
     _d = _os.path.dirname(_os.path.dirname(_os.path.abspath(__file__)))
     global _EM_L2_MEMBERS
@@ -1090,8 +1172,16 @@ def _em_l2_load_cached(_json, _os, _now) -> Optional[Dict[str, str]]:
         with open(_mb, encoding="utf-8") as _f:
             _mbd = _json.load(_f)
         if isinstance(_m, dict) and isinstance(_mbd, dict):
-            _EM_L2_MEMBERS = {k: list(v) for k, v in _mbd.items()}
-            return _m
+            _EM_L2_MEMBERS = {
+                key: [item for item in value if isinstance(item, str)]
+                for key, value in _mbd.items()
+                if isinstance(key, str) and isinstance(value, list)
+            }
+            return {
+                key: value
+                for key, value in _m.items()
+                if isinstance(key, str) and isinstance(value, str)
+            }
     except Exception as _e:
         _debug_log(f"datasource em_l2 cache read: {_e}")
     return None
@@ -1187,7 +1277,7 @@ def dragon_tiger_backup(trade_date: str) -> Dict[str, Any]:
     import urllib.request
     import ssl
 
-    out = {"date": trade_date, "sse_raw": "", "szse": []}
+    out: Dict[str, Any] = {"date": trade_date, "sse_raw": "", "szse": []}
     _ctx = ssl._create_unverified_context()
 
     # 深交所龙虎榜
@@ -1206,6 +1296,7 @@ def dragon_tiger_backup(trade_date: str) -> Dict[str, Any]:
         # V16.3 C1: 备胎源裸 urlopen 补节流（_DOMAIN_LIMITS 的 szse 域 3.0rps 不覆盖此直连路径）
         try:
             from stock_common.sc_network import _gen_wait_process_interval
+
             _gen_wait_process_interval()
         except Exception:
             pass
@@ -1249,6 +1340,7 @@ def dragon_tiger_backup(trade_date: str) -> Dict[str, Any]:
         # V16.3 C1: 备胎源裸 urlopen 补节流
         try:
             from stock_common.sc_network import _gen_wait_process_interval
+
             _gen_wait_process_interval()
         except Exception:
             pass
@@ -1502,7 +1594,11 @@ def get_recent_dragon_tiger(days: int = 5) -> Dict[str, Any]:
 
 
 async def get_dragon_tiger_board_async(
-    session, code: str, days: int = 30, include_seats: bool = True, enhance_seats: bool = True
+    session: Any,
+    code: str,
+    days: int = 30,
+    include_seats: bool = True,
+    enhance_seats: bool = True,
 ) -> Dict[str, Any]:
     """异步版: 单只股票龙虎榜查询（代理到同步版）。
 
@@ -1511,7 +1607,7 @@ async def get_dragon_tiger_board_async(
     return await asyncio.to_thread(get_dragon_tiger_board, code, days, include_seats, enhance_seats)
 
 
-async def get_recent_dragon_tiger_async(session, days: int = 5) -> Dict[str, Any]:
+async def get_recent_dragon_tiger_async(session: Any, days: int = 5) -> Dict[str, Any]:
     """异步版: 全市场龙虎榜上榜记录（代理到同步版）。"""
     return await asyncio.to_thread(get_recent_dragon_tiger, days)
 
@@ -1539,7 +1635,9 @@ def eastmoney_stock_info_push2(code: str) -> Dict[str, Any]:
     r = None
     for _host in ("push2.eastmoney.com", "push2delay.eastmoney.com"):
         try:
-            r = em_get(f"https://{_host}/api/qt/stock/get", params=params, headers=headers, timeout=10)
+            r = em_get(
+                f"https://{_host}/api/qt/stock/get", params=params, headers=headers, timeout=10
+            )
             if r is not None:
                 break
         except Exception as _e:
@@ -1561,7 +1659,9 @@ def eastmoney_stock_info_push2(code: str) -> Dict[str, Any]:
     }
 
 
-def _em_fflow_request(path: str, params: Dict[str, Any], timeout: int = 10, prefer_his: bool = False):
+def _em_fflow_request(
+    path: str, params: Dict[str, Any], timeout: int = 10, prefer_his: bool = False
+) -> Optional[requests.Response]:
     """V16.2.4: 依次尝试 _FFLOW_HOSTS，返回首个非 None 的 Response（含 403/429 语义由 em_get 处理）。
     V17.0.4(2026-08-19): prefer_his=True(历史资金流) → push2his 全窗口优先——
     原顺序 push2delay 第 1(为 lmt=1 实时设计) 会把 daykline 历史请求截断成单日(8/18 全仓 sht 60日资金流仅 1 天根因)。
@@ -1576,7 +1676,9 @@ def _em_fflow_request(path: str, params: Dict[str, Any], timeout: int = 10, pref
         _rand.shuffle(_hosts[0:2])  # 前两域随机轮换（防固定域持续触发风控）
     for _h in _hosts:
         try:
-            _r = em_get(f"https://{_h}{path}", params=params, headers={"User-Agent": UA}, timeout=timeout)
+            _r = em_get(
+                f"https://{_h}{path}", params=params, headers={"User-Agent": UA}, timeout=timeout
+            )
             if _r is not None:
                 return _r
         except Exception as _e:
@@ -1677,8 +1779,7 @@ def get_index_kline_closes(index_code: str, days: int = 250) -> List[float]:
 
         keys, rows = tdx_get_index_bars(index_code, count=days)
         if keys and rows:
-            ci = next((i for i, k in enumerate(keys)
-                       if k in ("close", "close_price")), -1)
+            ci = next((i for i, k in enumerate(keys) if k in ("close", "close_price")), -1)
             if ci >= 0:
                 closes = [_safe_float(r[ci]) for r in rows if len(r) > ci]
                 if closes:
@@ -1707,8 +1808,7 @@ def get_index_kline_closes(index_code: str, days: int = 250) -> List[float]:
         r = _quick_request(
             "https://money.finance.sina.com.cn/quotes_service/api/json_v2.php/CN_MarketData.getKLineData",
             params={"symbol": index_code, "scale": 240, "ma": 5, "datalen": days},
-            headers={"User-Agent": UA,
-                     "Referer": "https://finance.sina.com.cn"},
+            headers={"User-Agent": UA, "Referer": "https://finance.sina.com.cn"},
             timeout=10,
         )
         if r:
@@ -1724,8 +1824,7 @@ def get_index_kline_closes(index_code: str, days: int = 250) -> List[float]:
         r = _quick_request(
             "https://quotes.sina.cn/cn/api/jsonp_v2.php/var/CN_MarketDataService.getKLineData",
             params={"symbol": index_code, "scale": 240, "ma": 5, "datalen": days},
-            headers={"User-Agent": UA,
-                     "Referer": "https://finance.sina.com.cn"},
+            headers={"User-Agent": UA, "Referer": "https://finance.sina.com.cn"},
             timeout=10,
         )
         if r:
@@ -1794,7 +1893,7 @@ def get_em_history_fund_flow(code: str, days: int = 120) -> List[Dict[str, Any]]
         klines = d.get("data", {}).get("klines", [])
         if not klines:
             return []
-        rows = []
+        rows: List[Dict[str, Any]] = []
         for line in klines:
             parts = line.split(",")
             if len(parts) < 6:

@@ -8,6 +8,7 @@ V12.4 核心框架：
   - 自动 Google Drive (GD) 部署与增量上传 (支持单文件与批处理模式)
   - 统一网络环境清理 (cleanup_tdx, cleanup_gd_proxy)
 """
+
 from __future__ import annotations
 
 import os
@@ -16,32 +17,33 @@ import time
 import argparse
 import asyncio
 from datetime import datetime, date
-from typing import Any, Optional
+from typing import Any, Callable, Coroutine, Optional, cast
 
-from stock_common import (
-    parse_args,
-    clean_codes,
-    create_async_session,
-    _debug_log
-)
+from stock_common import parse_args, clean_codes, create_async_session, _debug_log
 
 try:
     from core.tdx_client import cleanup_tdx
 except ImportError:
     cleanup_tdx = lambda: None
 
+init_gd: Optional[Callable[[str], tuple[Optional[Any], bool, Optional[str], bool]]] = None
+cleanup_gd_proxy: Optional[Callable[[bool], None]] = None
+upload_type_reports: Optional[Callable[[Any, str, str, Any], int]] = None
+upload_stock_report_by_code: Optional[Callable[[Any, str, str, str, str], bool]] = None
 try:
     from core.gd_uploader import (
-        init_gd,
-        cleanup_gd_proxy,
-        upload_type_reports,
-        upload_stock_report_by_code
+        init_gd as _init_gd,
+        cleanup_gd_proxy as _cleanup_gd_proxy,
+        upload_type_reports as _upload_type_reports,
+        upload_stock_report_by_code as _upload_stock_report_by_code,
     )
-except ImportError:
-    init_gd = None
-    cleanup_gd_proxy = None
-    upload_type_reports = None
-    upload_stock_report_by_code = None
+except ImportError as exc:
+    _debug_log(f"Google Drive uploader unavailable: {exc}")
+else:
+    init_gd = _init_gd
+    cleanup_gd_proxy = _cleanup_gd_proxy
+    upload_type_reports = _upload_type_reports
+    upload_stock_report_by_code = _upload_stock_report_by_code
 
 
 class BaseReportRunner:
@@ -89,8 +91,7 @@ class BaseReportRunner:
             # 使 main.py 的 all_ok 真实反映批量失败（收口"假成功"）。
             raise
         finally:
-            if cleanup_tdx:
-                cleanup_tdx()
+            cleanup_tdx()
             elapsed = time.time() - start_time
             self._print_summary(elapsed, results)
 
@@ -118,12 +119,16 @@ class BaseReportRunner:
         """子类必须实现具体计算流水线。"""
         raise NotImplementedError("Subclasses must implement execute_pipeline()")
 
-    def execute_batch_pipeline(self, report_type: str, generator_fn: Any,
-                               gen_kwargs: Optional[dict] = None,
-                               prefetch_fn: Optional[callable] = None,
-                               snapshot_data: Any = None,
-                               pre_gd_init: bool = False,
-                               prefetch_async_fn: Optional[callable] = None) -> dict:
+    def execute_batch_pipeline(
+        self,
+        report_type: str,
+        generator_fn: Any,
+        gen_kwargs: Optional[dict[str, Any]] = None,
+        prefetch_fn: Optional[Callable[[list[str]], Any]] = None,
+        snapshot_data: Any = None,
+        pre_gd_init: bool = False,
+        prefetch_async_fn: Optional[Callable[..., Coroutine[Any, Any, Any]]] = None,
+    ) -> dict[str, Any]:
         """V17.0 R4: 批量流水线骨架(med/lng/sht 原 execute_pipeline 90 行×3 收敛)。
 
         Args:
@@ -140,12 +145,12 @@ class BaseReportRunner:
         返回: {"results": [{code,status,error,path}...], "time_str": ts, "report_type": report_type}
         """
         ts = self.report_ts
-        args = self.args
+        args = cast(argparse.Namespace, self.args)
         gen_kwargs = gen_kwargs or {}
 
         self._gd_per_stock = False
         _gd_drive = _gd_folder = None
-        if pre_gd_init and not getattr(args, "no_upload", False):
+        if pre_gd_init and init_gd is not None and not getattr(args, "no_upload", False):
             try:
                 mod = sys.modules.get(self.__class__.__module__)
                 mod_file = getattr(mod, '__file__', None) if mod else None
@@ -157,13 +162,13 @@ class BaseReportRunner:
             except Exception as _e:
                 _debug_log(f"{self.script_name} early gd init: {_e}")
 
-        async def _main_async():
+        async def _main_async() -> list[dict[str, str]]:
             codes = clean_codes(args.codes, verbose=True)
             if not codes:
                 print("  ❌ 没有有效的股票代码")
                 return []
-            _pre = {}
-            if prefetch_fn:
+            _pre: dict[str, Any] = {}
+            if prefetch_fn is not None:
                 try:
                     _pre = prefetch_fn(codes) or {}
                     print(f"  📡 批量行情预取: {len(_pre)}/{len(codes)} 只命中", flush=True)
@@ -177,13 +182,13 @@ class BaseReportRunner:
 
             _session = await create_async_session()
             _prefetch_task = None
-            _gathered: list = []
+            _gathered: list[dict[str, str]] = []
             try:
                 # M5 修复：prefetch_async_fn 改为后台任务(asyncio.create_task)，
                 # 与 3 条 worker 真正并行推进（原 await 在前置位置导致串行，
                 # 注释"与 worker 并行"与实际行为不符）。它只做 datacenter 预热、
                 # 不产出 _pre，故并行不影响逐股 GD 上传逻辑。
-                if prefetch_async_fn:
+                if prefetch_async_fn is not None:
                     try:
                         _prefetch_task = asyncio.create_task(prefetch_async_fn(_session, codes))
                         print("  📡 datacenter 预取流水线: 已后台启动(与 worker 并行)", flush=True)
@@ -191,7 +196,7 @@ class BaseReportRunner:
                         _debug_log(f"{self.script_name} prefetch_async_fn schedule: {_e}")
                 sem = asyncio.Semaphore(3)
 
-                async def _limited(code):
+                async def _limited(code: str) -> dict[str, str]:
                     async with sem:
                         result_path = os.path.join(args.output, f"{code}_{report_type}_{ts}.md")
                         try:
@@ -205,8 +210,15 @@ class BaseReportRunner:
                                     _up(_gd_drive, _gd_folder, code, _nm, result_path)
                                     print(f"  📎 已上传 GD: {code} ({_nm})", flush=True)
                                 except Exception as _e:
-                                    _debug_log(f"{self.script_name} per-stock gd upload {code}: {_e}")
-                            return {"code": code, "status": "成功", "error": "", "path": result_path}
+                                    _debug_log(
+                                        f"{self.script_name} per-stock gd upload {code}: {_e}"
+                                    )
+                            return {
+                                "code": code,
+                                "status": "成功",
+                                "error": "",
+                                "path": result_path,
+                            }
                         except Exception as e:
                             import traceback as _tb
 
@@ -245,7 +257,8 @@ class BaseReportRunner:
             # 误传 pipeline results（非该形态）会让跨日期背离检测静默成空壳，故校验后保存。
             if _snap is not None and isinstance(_snap, dict):
                 _bad = [
-                    c for c, v in _snap.items()
+                    c
+                    for c, v in _snap.items()
                     if not (isinstance(v, dict) and ("total_score" in v or "score" in v))
                 ]
                 if _bad:
@@ -273,7 +286,7 @@ class BaseReportRunner:
         if self.args and getattr(self.args, 'no_upload', False):
             return
 
-        if not init_gd:
+        if init_gd is None:
             return
 
         drive, gd_proxy_set, gd_parent_folder_id, skip_upload = init_gd(base_dir)
@@ -288,7 +301,7 @@ class BaseReportRunner:
             except UnicodeEncodeError:
                 print(f"  [WARN] GD 上传异常: {e}", flush=True)
         finally:
-            if cleanup_gd_proxy:
+            if cleanup_gd_proxy is not None:
                 cleanup_gd_proxy(gd_proxy_set)
 
     def upload_reports(self, drive: Any, folder_id: str, results: Any) -> None:
@@ -303,7 +316,7 @@ class BaseReportRunner:
         """上传单文件报告 (val/mak/ful 等)。返回是否成功。"""
         if not output_file or not os.path.exists(output_file):
             return False
-        if not upload_type_reports:
+        if upload_type_reports is None:
             return False
         ok = upload_type_reports(drive, folder_id, self.report_type, [output_file])
         if ok <= 0:
@@ -314,8 +327,13 @@ class BaseReportRunner:
             return False
         return True
 
-    def upload_multi_reports(self, drive: Any, folder_id: str, results: dict,
-                             name_resolver: Optional[callable] = None) -> None:
+    def upload_multi_reports(
+        self,
+        drive: Any,
+        folder_id: str,
+        results: dict[str, Any],
+        name_resolver: Optional[Callable[[str], str]] = None,
+    ) -> None:
         """批量上传多文件报告 (sht/med/lng 等)。
 
         Args:
@@ -325,7 +343,7 @@ class BaseReportRunner:
         """
         if not results or not isinstance(results, dict):
             return
-        if not upload_stock_report_by_code:
+        if upload_stock_report_by_code is None:
             return
         ts = results.get("time_str", "")
         report_type = results.get("report_type", self.report_type)
@@ -336,19 +354,16 @@ class BaseReportRunner:
             # V15.3 P0 修复: 原代码 `if self.args else path` 在 self.args=None 时
             # 引用未定义的 path → UnboundLocalError。重构为单步赋值。
             if self.args:
-                default_path = os.path.join(
-                    self.args.output, f"{code}_{report_type}_{ts}.md"
-                )
+                default_path = os.path.join(self.args.output, f"{code}_{report_type}_{ts}.md")
             else:
                 # self.args=None 时用临时目录兜底（仅作为库使用时不传 args 场景）
                 import tempfile
-                default_path = os.path.join(
-                    tempfile.gettempdir(), f"{code}_{report_type}_{ts}.md"
-                )
+
+                default_path = os.path.join(tempfile.gettempdir(), f"{code}_{report_type}_{ts}.md")
             path = r.get("path", default_path) or default_path
             try:
                 q_name = ""
-                if name_resolver:
+                if name_resolver is not None:
                     q_name = name_resolver(code)
                 else:
                     q_name = self._default_resolve_name(code)
@@ -370,21 +385,28 @@ class BaseReportRunner:
         try:
             # V15.3: 优先从 sc_snapshot 查（4 大报告注册单一来源）
             from stock_common import sc_snapshot
+
             snap = sc_snapshot.get(code)
-            if snap and snap.get("name"):
-                return snap["name"]
+            name = snap.get("name") if snap else None
+            if isinstance(name, str) and name:
+                return name
             # 兼容：4 大报告的 _SNAPSHOT_DATA 代理对象也走 sc_snapshot
             snap = globals().get("_SNAPSHOT_DATA")
             if snap is not None:
                 if hasattr(snap, "__contains__") and code in snap:
                     val = snap[code]
-                    if isinstance(val, dict) and val.get("name"):
-                        return val["name"]
+                    if isinstance(val, dict):
+                        name = val.get("name")
+                        if isinstance(name, str) and name:
+                            return name
         except Exception:
             pass
         try:
             from core.tdx_client import tdx_get_quote_full
-            return (tdx_get_quote_full(code) or {}).get("name", "")
+
+            quote = tdx_get_quote_full(code)
+            name = quote.get("name") if isinstance(quote, dict) else None
+            return name if isinstance(name, str) else ""
         except Exception:
             return ""
 

@@ -11,19 +11,21 @@
 注意: 这些函数刻意与 stock_common.sc_utils._safe_float 区分 —— 后者缺值/异常返回 default,
 用于字段治理层; 此处用于取数层契约, 缺值必须显式报错(否则会把"源格式变了"静默写成价格/成交量)。
 """
+
 from __future__ import annotations
 
 import functools
 import math
 import re
 from datetime import date as _date_cls, datetime, timezone
+from typing import Any, Callable, Optional, TypeVar, cast
 
 import pandas as pd
 
 __all__: list[str] = []  # 仅被兄弟模块显式 import; 不进入 sc_datasource 的 import * 表面
 
 
-def _to_num(value):
+def _to_num(value: Any) -> Optional[float]:
     """'1,234.50' → 1234.5; 空/'-'/'--'/None → None; 非数字/布尔/inf → RuntimeError(上游 _v39_num)。"""
     if value is None:
         return None
@@ -43,7 +45,7 @@ def _to_num(value):
     return number if math.isfinite(number) else None
 
 
-def _req_num(value, what):
+def _req_num(value: Any, what: str) -> float:
     """必填数值(价/量/额): 空/NaN/inf 也抛 RuntimeError, 不能当缺失放过(上游 _v39_req_num)。"""
     number = _to_num(value)
     if number is None:
@@ -51,13 +53,13 @@ def _req_num(value, what):
     return number
 
 
-def _fut_price(value):
+def _fut_price(value: Any) -> Optional[float]:
     """期货/期权价格: 0 不是有效价格(无成交时交易所填 0 或空), 统一成 None(上游 _fut_price)。"""
     number = _to_num(value)
     return None if number == 0 else number
 
 
-def _parse_date(value):
+def _parse_date(value: Any) -> str:
     """'2026-09-18' / '20260918' / date 对象 → 'YYYY-MM-DD'; 其他写法抛 ValueError(上游 _v39_date)。"""
     if isinstance(value, datetime):
         return value.date().isoformat()
@@ -68,7 +70,7 @@ def _parse_date(value):
     return datetime.strptime(text, fmt).date().isoformat()
 
 
-def _src_date(value):
+def _src_date(value: Any) -> str:
     """来源返回的日期 → 'YYYY-MM-DD'; 认不出抛 RuntimeError(上游 _v39_src_date)。"""
     try:
         return _parse_date(value)
@@ -76,16 +78,23 @@ def _src_date(value):
         raise RuntimeError(f"来源返回了无法识别的日期 {value!r}") from exc
 
 
-def _rows(value, what):
+def _rows(value: Any, what: str) -> list[dict[str, Any]]:
     """来源里可能整段缺失的行列表: 字段 None 按空处理, 其余必须是对象列表(上游 _v39_rows)。"""
     if value is None:
         return []
     if not isinstance(value, list) or not all(isinstance(row, dict) for row in value):
-        raise RuntimeError(f"{what} 应为对象列表，实际是 {type(value).__name__}: {str(value)[:120]}")
+        raise RuntimeError(
+            f"{what} 应为对象列表，实际是 {type(value).__name__}: {str(value)[:120]}"
+        )
     return value
 
 
-def _frame(rows, source, url, columns=None):
+def _frame(
+    rows: list[dict[str, Any]],
+    source: str,
+    url: str,
+    columns: Optional[list[str]] = None,
+) -> pd.DataFrame:
     """统一出表: 附 source/source_url/fetched_at(上游 _v39_frame)。"""
     frame = pd.DataFrame(rows, columns=columns)
     frame["source"] = source
@@ -94,12 +103,17 @@ def _frame(rows, source, url, columns=None):
     return frame
 
 
-def _contract(func):
+F = TypeVar("F", bound=Callable[..., Any])
+
+
+def _contract(func: F) -> F:
     """统一异常契约: 来源行缺字段时 row['X'] 漏出 KeyError → 转带函数名 RuntimeError(上游 _v39_contract)。"""
+
     @functools.wraps(func)
-    def wrapper(*args, **kwargs):
+    def wrapper(*args: Any, **kwargs: Any) -> Any:
         try:
             return func(*args, **kwargs)
         except KeyError as exc:
             raise RuntimeError(f"{func.__name__}: 来源数据缺少字段 {exc}，格式可能已变") from exc
-    return wrapper
+
+    return cast(F, wrapper)

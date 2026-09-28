@@ -38,6 +38,7 @@ field_dict.md 后由 sanctioned 管线（extract_registry → gen_field_dict →
     python scripts/collide.py --limit 20      # 仅取前 20 个左字段（自测用）
     python scripts/collide.py --min-hit 0.95  # 自定义 L1 命中率阈值（默认 0.9）
 """
+
 from __future__ import annotations
 
 import os
@@ -51,6 +52,7 @@ from datetime import date
 
 try:
     import collision_rules as CR
+
     RULES_OK = True
 except Exception:
     RULES_OK = False
@@ -66,19 +68,19 @@ STATE_PATH = os.path.join(DATA_DIR, "collision_state.json")
 # 样本为 20 股（pool.json: fixed 15 + dynamic 5）。L1 命中率阈值 = HIT_RATE_L1(18)/20 = 0.9；
 # 采用比率而非绝对 18/20，便于样本数变动时阈值自适应（符合四铁律精神）。
 # 注：早期版本曾误记样本为 12 股，实际采集脚本 load_pool() 始终返回 20 只——采集无缩水。
-HIT_RATE_L1_RATIO = (CR.HIT_RATE_L1 / 20.0) if RULES_OK else 0.9   # 0.9
+HIT_RATE_L1_RATIO = (CR.HIT_RATE_L1 / 20.0) if RULES_OK else 0.9  # 0.9
 MULTI_DAY_MIN = CR.MULTI_DAY_MIN if RULES_OK else 3
 RATIO_CV_MAX = CR.RATIO_CV_MAX if RULES_OK else 1e-4
 RATIO_STEPS_SIGNED = set()
 if RULES_OK:
     for k in range(0, 5):
-        RATIO_STEPS_SIGNED.add(10 ** k)
-        RATIO_STEPS_SIGNED.add(10 ** -k)
+        RATIO_STEPS_SIGNED.add(10**k)
+        RATIO_STEPS_SIGNED.add(10**-k)
 else:
     RATIO_STEPS_SIGNED = {1, 10, 100, 1000, 10000, 0.1, 0.01, 0.001, 0.0001}
 
-MIN_PAIR = 8          # 一对字段最少需对齐的 (code,date) 样本数
-HUB_MAX = 6           # 单字段匹配超过此数 → 巧合，降级
+MIN_PAIR = 8  # 一对字段最少需对齐的 (code,date) 样本数
+HUB_MAX = 6  # 单字段匹配超过此数 → 巧合，降级
 CONST_MAX_DISTINCT = 1  # 不同值 ≤1 → 常量，跳过
 ID_SUFFIX_HINTS = ("market", "code", "date", "name", "thscode", "ticker", "url", "host", "secid")
 
@@ -200,7 +202,7 @@ def load_date(date_dir, store):
     cnt = 0
     for fp in sorted(glob.glob(os.path.join(d, "raw_*.json"))):
         base = os.path.basename(fp)
-        src = base[len("raw_"):-len(".json")]
+        src = base[len("raw_") : -len(".json")]
         if src in ("meta", "completeness_audit"):
             continue
         try:
@@ -247,8 +249,13 @@ def load_date(date_dir, store):
                 if not isinstance(rec, dict):
                     continue
                 # 非逐股记录：优先取自身股票/板块标识作为碰撞键
-                _code = (rec.get("zqdm") or rec.get("f12") or rec.get("code")
-                         or rec.get("ticker") or code)
+                _code = (
+                    rec.get("zqdm")
+                    or rec.get("f12")
+                    or rec.get("code")
+                    or rec.get("ticker")
+                    or code
+                )
                 _code = str(_code)
                 pairs = []
                 _flatten(rec, src, scheme, _code, date_dir, pairs)
@@ -266,8 +273,9 @@ def load_date(date_dir, store):
 def classify(store):
     """为每个字段补充 type / n_distinct / is_constant / is_identifier。"""
     for fid, info in store.items():
-        vals = [v for v in info["vals"].values()
-                if v is not None and not isinstance(v, (dict, list))]
+        vals = [
+            v for v in info["vals"].values() if v is not None and not isinstance(v, (dict, list))
+        ]
         nums = [to_num(v) for v in vals]
         nums = [n for n in nums if n is not None]
         n_total = len(vals)
@@ -304,7 +312,7 @@ def collide_pair(L, R):
     if len(common) < MIN_PAIR:
         return None
 
-    day_stat = defaultdict(lambda: [0, 0])   # date -> [hits, total]
+    day_stat = defaultdict(lambda: [0, 0])  # date -> [hits, total]
     ratios = []
     exact_enum = 0
     enum_total = 0
@@ -339,8 +347,13 @@ def collide_pair(L, R):
             ratio_info = med
 
     # 判定
-    l1_ok = (days_ge >= MULTI_DAY_MIN and n_days >= MULTI_DAY_MIN
-             and overall >= HIT_RATE_L1_RATIO and not L["is_constant"] and not R["is_constant"])
+    l1_ok = (
+        days_ge >= MULTI_DAY_MIN
+        and n_days >= MULTI_DAY_MIN
+        and overall >= HIT_RATE_L1_RATIO
+        and not L["is_constant"]
+        and not R["is_constant"]
+    )
     if l1_ok:
         level = "L1-U" if ratio_info else "L1"
     elif overall >= 0.4 and days_ge >= 1:
@@ -352,7 +365,8 @@ def collide_pair(L, R):
         return None
 
     return {
-        "left": None, "right": None,           # 由调用方填
+        "left": None,
+        "right": None,  # 由调用方填
         "level": level,
         "ratio": ratio_info,
         "overall_hit": round(overall, 4),
@@ -381,35 +395,72 @@ def range_overlap(L, R):
 # 显示名 → 规范短键（保证 verified 集合与 raw 字段同源同名）。两路解析到同一规范键即匹配。
 REG_ALIAS = {
     # ── ① 采集器短键（规范键，自映射） ──
-    "zhb": "zhb", "tdx": "tdx", "eltdx": "eltdx", "tencent": "tencent",
-    "push2": "push2", "push2_full": "push2_full", "sina": "sina", "axdata": "axdata",
-    "market_sources": "market_sources", "tdx_f10": "tdx_f10", "fuyao": "fuyao",
-    "em_kline_f61": "em_kline_f61", "em_fund_flow": "em_fund_flow", "ulist239": "ulist239",
-    "push2ex": "push2ex", "em_hot": "em_hot", "cls": "cls", "datacenter": "datacenter",
-    "tdx_f10_more": "tdx_f10_more", "cninfo": "cninfo", "reports": "reports",
-    "ftshare": "ftshare", "baidu": "baidu", "clist": "clist", "slist": "slist",
-    "exchange": "exchange", "tdx_f10": "tdx_f10", "tdx_f10_more": "tdx_f10_more",
+    "zhb": "zhb",
+    "tdx": "tdx",
+    "eltdx": "eltdx",
+    "tencent": "tencent",
+    "push2": "push2",
+    "push2_full": "push2_full",
+    "sina": "sina",
+    "axdata": "axdata",
+    "market_sources": "market_sources",
+    "tdx_f10": "tdx_f10",
+    "fuyao": "fuyao",
+    "em_kline_f61": "em_kline_f61",
+    "em_fund_flow": "em_fund_flow",
+    "ulist239": "ulist239",
+    "push2ex": "push2ex",
+    "em_hot": "em_hot",
+    "cls": "cls",
+    "datacenter": "datacenter",
+    "tdx_f10_more": "tdx_f10_more",
+    "cninfo": "cninfo",
+    "reports": "reports",
+    "ftshare": "ftshare",
+    "baidu": "baidu",
+    "clist": "clist",
+    "slist": "slist",
+    "exchange": "exchange",
+    "tdx_f10": "tdx_f10",
+    "tdx_f10_more": "tdx_f10_more",
     # ── ② 主字典 field_registry.json 显示名 → 规范短键 ──
-    "ZHB": "zhb", "ZHB-tdxstat": "zhb", "ZHB-tdxstat2": "zhb", "ZHB-tipinfo": "zhb",
-    "TDX": "tdx", "TDX(双命名源)": "tdx", "TDX-eltdx(适配层)": "eltdx",
-    "东财-push2": "push2", "东财-push2(stock/get)": "push2",
+    "ZHB": "zhb",
+    "ZHB-tdxstat": "zhb",
+    "ZHB-tdxstat2": "zhb",
+    "ZHB-tipinfo": "zhb",
+    "TDX": "tdx",
+    "TDX(双命名源)": "tdx",
+    "TDX-eltdx(适配层)": "eltdx",
+    "东财-push2": "push2",
+    "东财-push2(stock/get)": "push2",
     "东财-push2_full": "push2_full",
     "东财-资金流(em_fund_flow)": "em_fund_flow",
-    "东财-ulist239": "ulist239", "东财-ulist239(np/get)": "ulist239", "ulist": "ulist239",
-    "东财-push2ex": "push2ex",                      # 旧映射 push2ex→push2 为误，现已订正
+    "东财-ulist239": "ulist239",
+    "东财-ulist239(np/get)": "ulist239",
+    "ulist": "ulist239",
+    "东财-push2ex": "push2ex",  # 旧映射 push2ex→push2 为误，现已订正
     "东财-datacenter(英文键)": "datacenter",
-    "东财-slist": "slist", "东财-clist": "clist",
+    "东财-slist": "slist",
+    "东财-clist": "clist",
     "东财-em_kline_f61": "em_kline_f61",
     "东财-热榜(em_hot)": "em_hot",
-    "腾讯": "tencent", "腾讯(qt.gtimg)": "tencent",
-    "新浪": "sina", "新浪(hq.sinajs)": "sina",
-    "同花顺": "fuyao", "同花顺-fuyao": "fuyao", "thsdk": "fuyao",  # thsdk 已退役, 语义并入 fuyao
+    "腾讯": "tencent",
+    "腾讯(qt.gtimg)": "tencent",
+    "新浪": "sina",
+    "新浪(hq.sinajs)": "sina",
+    "同花顺": "fuyao",
+    "同花顺-fuyao": "fuyao",
+    "thsdk": "fuyao",  # thsdk 已退役, 语义并入 fuyao
     "AxData": "axdata",
-    "FTShare": "ftshare", "levistock(ftshare)": "ftshare",
-    "财联社": "cls", "财联社(cls)": "cls",
-    "巨潮": "cninfo", "巨潮(cninfo)": "cninfo",
+    "FTShare": "ftshare",
+    "levistock(ftshare)": "ftshare",
+    "财联社": "cls",
+    "财联社(cls)": "cls",
+    "巨潮": "cninfo",
+    "巨潮(cninfo)": "cninfo",
     "沪深交易所": "exchange",
-    "百度": "baidu", "百度(baidu)": "baidu",
+    "百度": "baidu",
+    "百度(baidu)": "baidu",
     "市场源(market_sources)": "market_sources",
     "reports": "reports",
 }
@@ -455,7 +506,7 @@ def alias_src(fid):
 
 def code_of(fid):
     if "[" in fid:
-        return fid[fid.index("["):]
+        return fid[fid.index("[") :]
     if "." in fid:
         return fid.rsplit(".", 1)[-1]
     return fid
@@ -485,13 +536,14 @@ def save_state(st):
 def run(args):
     # 1) 收集日期窗口
     all_dates = sorted(
-        d for d in os.listdir(DATA_DIR)
+        d
+        for d in os.listdir(DATA_DIR)
         if os.path.isdir(os.path.join(DATA_DIR, d)) and d[:2] == "20"
     )
     if args.all:
         window_dates = all_dates
     else:
-        window_dates = all_dates[-max(1, args.window):]
+        window_dates = all_dates[-max(1, args.window) :]
 
     # 2) 加载数据
     store = defaultdict(lambda: {"vals": {}, "scheme": None, "src": None})
@@ -499,33 +551,40 @@ def run(args):
     for d in window_dates:
         total += load_date(d, store)
     classify(store)
-    print(f"[collide] 加载 {len(window_dates)} 个日期、{len(store)} 个字段、{total} 条样本值",
-          file=sys.stderr)
+    print(
+        f"[collide] 加载 {len(window_dates)} 个日期、{len(store)} 个字段、{total} 条样本值",
+        file=sys.stderr,
+    )
 
     # 3) registry 状态
     verified, known_maps = load_registry_state()
 
     # 4) 候选左字段 = unverified 且非标识符、非常量、有数值
     left_ids = [
-        fid for fid, info in store.items()
+        fid
+        for fid, info in store.items()
         if not info["is_identifier"]
         and not info["is_constant"]
         and info["type"] in ("num", "enum")
         and not is_verified(fid, verified)
     ]
     # 右字段 = 全部（含 verified 作锚）
-    right_ids = [fid for fid, info in store.items()
-                 if not info["is_identifier"] and not info["is_constant"]
-                 and info["type"] in ("num", "enum")]
+    right_ids = [
+        fid
+        for fid, info in store.items()
+        if not info["is_identifier"] and not info["is_constant"] and info["type"] in ("num", "enum")
+    ]
 
     if args.limit:
-        left_ids = left_ids[:args.limit]
-    print(f"[collide] 主攻目标(left)={len(left_ids)}，锚+未知(right)={len(right_ids)}",
-          file=sys.stderr)
+        left_ids = left_ids[: args.limit]
+    print(
+        f"[collide] 主攻目标(left)={len(left_ids)}，锚+未知(right)={len(right_ids)}",
+        file=sys.stderr,
+    )
 
     # 5) 两两对撞
-    raw_pairs = []          # (left, right, result)
-    guardrail_hits = []     # 命中 REFUTED_CONCLUSIONS 被拦截的伪结论候选
+    raw_pairs = []  # (left, right, result)
+    guardrail_hits = []  # 命中 REFUTED_CONCLUSIONS 被拦截的伪结论候选
     for li in left_ids:
         L = store[li]
         for ri in right_ids:
@@ -540,14 +599,18 @@ def run(args):
             if res:
                 ref = CR.match_refuted(li, ri) if RULES_OK else None
                 if ref is not None:
-                    guardrail_hits.append({
-                        "left": li, "right": ri,
-                        "id": ref["id"], "false_claim": ref["false_claim"],
-                    })
+                    guardrail_hits.append(
+                        {
+                            "left": li,
+                            "right": ri,
+                            "id": ref["id"],
+                            "false_claim": ref["false_claim"],
+                        }
+                    )
                     continue
                 res["left"] = li
                 res["right"] = ri
-                res["same_code"] = (code_of(li) == code_of(ri))
+                res["same_code"] = code_of(li) == code_of(ri)
                 raw_pairs.append(res)
 
     # 6) hub 巧合排除：单字段匹配过多 → 降级
@@ -573,10 +636,13 @@ def run(args):
         key = "||".join(sorted([p["left"], p["right"]]))
         prev = findings.get(key)
         rec = {
-            "left": p["left"], "right": p["right"],
-            "level": p["level"], "ratio": p["ratio"],
+            "left": p["left"],
+            "right": p["right"],
+            "level": p["level"],
+            "ratio": p["ratio"],
             "overall_hit": p["overall_hit"],
-            "n_days": p["n_days"], "n_pairs": p["n_pairs"],
+            "n_days": p["n_days"],
+            "n_pairs": p["n_pairs"],
             "hub_flag": p.get("hub_flag", False),
             "last_seen": today,
         }
@@ -590,8 +656,12 @@ def run(args):
             new_count += 1
         else:
             rec["first_seen"] = prev.get("first_seen", today)
-            rec["status"] = "confirmed" if (prev.get("status") == "confirmed" or rec["in_registry"]) else "repeated"
-        p["in_registry"] = rec["in_registry"]   # 回写供报告读取
+            rec["status"] = (
+                "confirmed"
+                if (prev.get("status") == "confirmed" or rec["in_registry"])
+                else "repeated"
+            )
+        p["in_registry"] = rec["in_registry"]  # 回写供报告读取
         findings[key] = rec
     st["findings"] = findings
     st["updated"] = today
@@ -603,9 +673,18 @@ def run(args):
     l1.sort(key=lambda p: (-p["overall_hit"], -p["n_days"]))
     l4.sort(key=lambda p: -p["overall_hit"])
 
-    report_md = build_report_md(today, window_dates, len(store), total,
-                                left_ids, l1, l4, new_count, verified,
-                                guardrail_hits)
+    report_md = build_report_md(
+        today,
+        window_dates,
+        len(store),
+        total,
+        left_ids,
+        l1,
+        l4,
+        new_count,
+        verified,
+        guardrail_hits,
+    )
     out_dir = os.path.join(DATA_DIR, today)
     os.makedirs(out_dir, exist_ok=True)
     md_path = os.path.join(out_dir, f"{today}_collision_report.md")
@@ -613,24 +692,34 @@ def run(args):
     with open(md_path, "w", encoding="utf-8") as f:
         f.write(report_md)
     with open(json_path, "w", encoding="utf-8") as f:
-        json.dump({"date": today, "window": window_dates, "L1": l1, "L4": l4,
-                   "new_count": new_count}, f, ensure_ascii=False, indent=2)
+        json.dump(
+            {"date": today, "window": window_dates, "L1": l1, "L4": l4, "new_count": new_count},
+            f,
+            ensure_ascii=False,
+            indent=2,
+        )
 
-    print(f"[collide] L1 候选={len(l1)}，L4 候选={len(l4)}，新增定案={new_count}，"
-          f"护栏拦截={len(guardrail_hits)}", file=sys.stderr)
+    print(
+        f"[collide] L1 候选={len(l1)}，L4 候选={len(l4)}，新增定案={new_count}，"
+        f"护栏拦截={len(guardrail_hits)}",
+        file=sys.stderr,
+    )
     print(f"[collide] 报告: {md_path}", file=sys.stderr)
     return md_path, json_path
 
 
 def _l1_row(p):
-    return (f"| `{p['left']}` | `{p['right']}` | {p['level']} | "
-            f"{p['overall_hit']:.2%} | {p['n_days']} | {p['n_pairs']} | "
-            f"{p.get('ratio') or '-'} | {'⚠' if p.get('hub_flag') else ''} | "
-            f"{'✅' if p.get('in_registry') else '—'} |")
+    return (
+        f"| `{p['left']}` | `{p['right']}` | {p['level']} | "
+        f"{p['overall_hit']:.2%} | {p['n_days']} | {p['n_pairs']} | "
+        f"{p.get('ratio') or '-'} | {'⚠' if p.get('hub_flag') else ''} | "
+        f"{'✅' if p.get('in_registry') else '—'} |"
+    )
 
 
-def build_report_md(today, window, nfields, nsamples, left_ids, l1, l4,
-                    new_count, verified, guardrail_hits):
+def build_report_md(
+    today, window, nfields, nsamples, left_ids, l1, l4, new_count, verified, guardrail_hits
+):
     # 拆分：异号同义（跨编号，高价值）优先；同号镜像（同编号）次之
     cross = [p for p in l1 if not p.get("same_code")]
     same = [p for p in l1 if p.get("same_code")]
@@ -639,17 +728,25 @@ def build_report_md(today, window, nfields, nsamples, left_ids, l1, l4,
 
     L = []
     L.append(f"# 全源对撞报告（{today}）\n")
-    L.append(f"> 数据窗口：{window[0]} ~ {window[-1]}（{len(window)} 天）｜"
-             f"字段 {nfields} 个｜样本值 {nsamples} 条")
-    L.append(f"> 主攻目标（unverified）={len(left_ids)}｜新增 L1/L1-U 定案={new_count}｜"
-             f"异号同义 {len(cross)} / 同号镜像 {len(same)}\n")
-    L.append("> **规则**：精度对齐 + 每日命中率≥0.9 + ≥3 独立日 + hub 巧合排除"
-             "（详见 `COLLISION_RULES.md`）。本引擎只发现、不写字典；"
-             "新定案经 field_dict.md 订正后由 sanctioned 管线 ingest。\n")
+    L.append(
+        f"> 数据窗口：{window[0]} ~ {window[-1]}（{len(window)} 天）｜"
+        f"字段 {nfields} 个｜样本值 {nsamples} 条"
+    )
+    L.append(
+        f"> 主攻目标（unverified）={len(left_ids)}｜新增 L1/L1-U 定案={new_count}｜"
+        f"异号同义 {len(cross)} / 同号镜像 {len(same)}\n"
+    )
+    L.append(
+        "> **规则**：精度对齐 + 每日命中率≥0.9 + ≥3 独立日 + hub 巧合排除"
+        "（详见 `COLLISION_RULES.md`）。本引擎只发现、不写字典；"
+        "新定案经 field_dict.md 订正后由 sanctioned 管线 ingest。\n"
+    )
     L.append("---\n")
     L.append(f"## 一、L1 / L1-U 定案候选 — 异号同义（跨编号，高价值）({len(cross)})\n")
     if cross:
-        L.append("| 左字段(unverified) | 右字段 | 等级 | 命中率 | 天数 | 样本 | 比值 | hub | registry |")
+        L.append(
+            "| 左字段(unverified) | 右字段 | 等级 | 命中率 | 天数 | 样本 | 比值 | hub | registry |"
+        )
         L.append("|:--|:--|:--|--:|--:|--:|--:|:--|:--|")
         for p in cross:
             L.append(_l1_row(p))
@@ -668,8 +765,10 @@ def build_report_md(today, window, nfields, nsamples, left_ids, l1, l4,
         L.append("| 左字段 | 右字段 | 命中率 | 天数 | 样本 |")
         L.append("|:--|:--|--:|--:|--:|")
         for p in l4[:60]:
-            L.append(f"| `{p['left']}` | `{p['right']}` | {p['overall_hit']:.2%} | "
-                     f"{p['n_days']} | {p['n_pairs']} |")
+            L.append(
+                f"| `{p['left']}` | `{p['right']}` | {p['overall_hit']:.2%} | "
+                f"{p['n_days']} | {p['n_pairs']} |"
+            )
         if len(l4) > 60:
             L.append(f"\n_（仅显示前 60 / 共 {len(l4)}）_")
     else:

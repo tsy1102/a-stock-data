@@ -50,18 +50,28 @@ def main():
   python scripts/clean_cache.py --stats                    查看统计
 """,
     )
-    parser.add_argument("--category", "-c", default="",
-                        help="缓存分类名（如 dragon_tiger / hsgt / financial / calendar 等）")
-    parser.add_argument("--pattern", "-p", default="",
-                        help="股票代码过滤（仅在指定 --category 时生效）")
-    parser.add_argument("--expired", action="store_true",
-                        help="仅清理已过期的缓存条目")
-    parser.add_argument("--stats", action="store_true",
-                        help="显示缓存统计信息，不执行清理")
-    parser.add_argument("--dry-run", action="store_true",
-                        help="仅显示将要执行的命令，不实际执行（仅与 --stats 配合时直接显示统计）")
-    parser.add_argument("--yes", "-y", action="store_true",
-                        help="确认执行破坏性操作(clear-all / clear-expired)，跳过交互确认")
+    parser.add_argument(
+        "--category",
+        "-c",
+        default="",
+        help="缓存分类名（如 dragon_tiger / hsgt / financial / calendar 等）",
+    )
+    parser.add_argument(
+        "--pattern", "-p", default="", help="股票代码过滤（仅在指定 --category 时生效）"
+    )
+    parser.add_argument("--expired", action="store_true", help="仅清理已过期的缓存条目")
+    parser.add_argument("--stats", action="store_true", help="显示缓存统计信息，不执行清理")
+    parser.add_argument(
+        "--dry-run",
+        action="store_true",
+        help="仅显示将要执行的命令，不实际执行（仅与 --stats 配合时直接显示统计）",
+    )
+    parser.add_argument(
+        "--yes",
+        "-y",
+        action="store_true",
+        help="确认执行破坏性操作(clear-all / clear-expired)，跳过交互确认",
+    )
     args = parser.parse_args()
 
     # 构造传递给 stock_cache.py 的参数
@@ -86,8 +96,10 @@ def main():
     # 非交互环境必须 --yes；交互环境(TTY)则显式询问确认，否则中止。
     if action_args[0] in ("clear-all", "clear-expired") and not args.yes:
         if not sys.stdin.isatty():
-            print(f"⛔ 破坏性操作 '{action_args[0]}' 需要 --yes 确认（非交互环境已拒绝）",
-                  file=sys.stderr)
+            print(
+                f"⛔ 破坏性操作 '{action_args[0]}' 需要 --yes 确认（非交互环境已拒绝）",
+                file=sys.stderr,
+            )
             return 1
         try:
             _ans = input(f"⚠️ 即将执行【{action_args[0]}】清空缓存，确认? [y/N]: ").strip().lower()

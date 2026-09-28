@@ -33,10 +33,15 @@
 用法：python scripts/lint_field_same_number.py
 每日流水线强制阻断模式：python scripts/lint_field_same_number.py --strict-naming（R3 命名缺口升为阻断级 exit≠0；默认 warn 级不阻断）
 """
+
 import json
 import re
 import sys
 from pathlib import Path
+
+for _stream in (sys.stdout, sys.stderr):
+    if hasattr(_stream, "reconfigure"):
+        _stream.reconfigure(encoding="utf-8", errors="replace")
 
 ROOT = Path(__file__).resolve().parent.parent
 DICT = ROOT / "docs" / "field_dict.md"
@@ -51,9 +56,9 @@ import field_registry_api as fra
 # 失败或无条目回退直接解析 ulist_push2_align.md，保证脚本永不因 registry 缺失硬失败。
 align = {}
 try:
-    for m in fra.mappings():
-        frm = m.get("from", {})
-        to = m.get("to", {})
+    for mapping in fra.mappings():
+        frm = mapping.get("from", {})
+        to = mapping.get("to", {})
         if frm.get("source") == "东财-ulist239" and to.get("source") == "东财-push2":
             try:
                 align[int(str(frm["code"]).lstrip("f"))] = int(str(to["code"]).lstrip("f"))
@@ -64,8 +69,8 @@ try:
 except Exception as _e:
     print(f"[lint_field_same_number] registry 读取失败，回退对齐表: {_e}", file=sys.stderr)
     if ALIGN.exists():
-        for line in ALIGN.read_text(encoding="utf-8").splitlines():
-            for mm in re.finditer(r"ulist\s*f(\d{1,3})\s*\|\s*f(\d{1,3})", line):
+        for line_text in ALIGN.read_text(encoding="utf-8").splitlines():
+            for mm in re.finditer(r"ulist\s*f(\d{1,3})\s*\|\s*f(\d{1,3})", line_text):
                 align[int(mm.group(1))] = int(mm.group(2))
 align_same = {u for u, p in align.items() if u == p}
 
@@ -105,7 +110,7 @@ def load_schemes():
             schemes = meta.get("schemes")
             if not isinstance(schemes, dict):
                 continue
-            if d.name > best_date:   # YYYYMMDD 字符串比较 = 取最新目录
+            if d.name > best_date:  # YYYYMMDD 字符串比较 = 取最新目录
                 best_date, best = d.name, schemes
     if best:
         return best, best_date
@@ -141,10 +146,13 @@ def check_scheme_grounded(fn, status, note):
     # 异源体系：必须对齐表存在 ulist.fX → push2.fY 跨号映射实证
     rec = align.get(uX)
     if rec != pY:
-        return ["scheme 护栏：主张 ulist(%s).f%d = push2(%s).f%d，但权威对齐表无此跨号映射实证"
-                "（对齐表记 ulist.f%d → push2.f%s），「同号≠同义」铁律未被满足"
-                % (s_ul, uX, s_pu, pY, uX, ("无" if rec is None else rec))]
+        return [
+            "scheme 护栏：主张 ulist(%s).f%d = push2(%s).f%d，但权威对齐表无此跨号映射实证"
+            "（对齐表记 ulist.f%d → push2.f%s），「同号≠同义」铁律未被满足"
+            % (s_ul, uX, s_pu, pY, uX, ("无" if rec is None else rec))
+        ]
     return []
+
 
 # --- 1d) §12.8.12e 规范字段注册表 + R0–R6 命名仲裁（P1, 2026-09-09）---
 # 落地「云 MCP 命名 Oracle 仲裁规则」：R3（canonical 名 + 全量别名双匹配）、R6（厂商名不可盲信、
@@ -153,8 +161,13 @@ def _extract_source_tokens(text):
     """从一段文本抽取源字段 token（归一化小写），用于 R3 双匹配比对。"""
     toks = set()
     for mm in re.finditer(r"(push2(?:delay|full)?|ulist)\s*f(\d{1,3})", text, re.I):
-        toks.add("%s f%s" % (mm.group(1).lower().replace("push2delay", "push2")
-                              .replace("push2full", "push2"), mm.group(2)))
+        toks.add(
+            "%s f%s"
+            % (
+                mm.group(1).lower().replace("push2delay", "push2").replace("push2full", "push2"),
+                mm.group(2),
+            )
+        )
     for mm in re.finditer(r"(?:腾讯|tx)\s*\[\s*(\d{1,3})\s*\]", text, re.I):
         toks.add("腾讯[%s]" % mm.group(1))
     for mm in re.finditer(r"ths\s*sdk\s*(\d+)", text, re.I):
@@ -171,17 +184,17 @@ def load_canonical_registry():
     """解析 §12.8.12e 规范字段注册表，返回 (KNOWN_TOKENS set, canonical_names set)。"""
     known, cnames = set(), set()
     in_sec = False
-    for ln in DICT.read_text(encoding="utf-8").splitlines():
-        if re.match(r"#+\s*12\.8\.12e", ln):
+    for line_text in DICT.read_text(encoding="utf-8").splitlines():
+        if re.match(r"#+\s*12\.8\.12e", line_text):
             in_sec = True
             continue
-        if in_sec and re.match(r"#+\s", ln):
-            if "云 MCP 命名 Oracle" in ln or "R0" in ln:
+        if in_sec and re.match(r"#+\s", line_text):
+            if "云 MCP 命名 Oracle" in line_text or "R0" in line_text:
                 break
             break
-        if not in_sec or not ln.lstrip().startswith("|"):
+        if not in_sec or not line_text.lstrip().startswith("|"):
             continue
-        cells = [c.strip() for c in ln.split("|")]
+        cells = [c.strip() for c in line_text.split("|")]
         if len(cells) < 4:
             continue
         cnames.add(cells[1].lower())
@@ -205,19 +218,42 @@ def check_naming_registry():
     """
     strict = "--strict-naming" in sys.argv
     warns, vcs = [], []
-    NUM_MARK = ("数值实证", "跨源", "交叉验证", "对撞", "精确", "比值", "L1",
-                "二级复核", "实测", "多日复核", "fuyao锚", "强锚", "数值对撞")
+    NUM_MARK = (
+        "数值实证",
+        "跨源",
+        "交叉验证",
+        "对撞",
+        "精确",
+        "比值",
+        "L1",
+        "二级复核",
+        "实测",
+        "多日复核",
+        "fuyao锚",
+        "强锚",
+        "数值对撞",
+    )
     for ln_no, fn, raw in all_frows:
         if "✅" not in raw:
             continue
         for t in sorted(_extract_source_tokens(raw)):
             if t not in KNOWN_TOKENS and t not in CANONICAL_NAMES:
-                msg = "R3 命名缺口：行%d 定案引用源字段 `%s` 未登记于 §12.8.12e 规范表（canonical/别名双匹配失败），建议补登" % (ln_no, t)
+                msg = "R3 命名缺口：行%d 定案引用源字段 `%s` 未登记于 §12.8.12e 规范表（canonical/别名双匹配失败），建议补登" % (
+                    ln_no,
+                    t,
+                )
                 (vcs if strict else warns).append((ln_no, msg))
         if re.search(r"`[A-Za-z_][A-Za-z0-9_]*`", raw) and any(
-                v in raw for v in ("通达信", "腾讯", "东财", "同花顺", "TDX云", "mx-ds", "妙想")):
+            v in raw for v in ("通达信", "腾讯", "东财", "同花顺", "TDX云", "mx-ds", "妙想")
+        ):
             if not any(m in raw for m in NUM_MARK):
-                warns.append((ln_no, "R6 厂商名盲信风险：行%d 以厂商官方具名字段作命名依据但缺数值二级复核标记" % ln_no))
+                warns.append(
+                    (
+                        ln_no,
+                        "R6 厂商名盲信风险：行%d 以厂商官方具名字段作命名依据但缺数值二级复核标记"
+                        % ln_no,
+                    )
+                )
     return warns, vcs
 
 
@@ -236,16 +272,18 @@ if sec_start is not None:
     for i in range(sec_start + 1, len(lines)):
         if lines[i].lstrip().startswith("#### "):
             break
-        m = re.match(r"\s*\|\s*f(\d{1,3})\s*\|\s*(.*?)\s*\|\s*(.*?)\s*\|\s*$", lines[i])
-        if m:
-            rows_sec.append((i + 1, int(m.group(1)), m.group(2), m.group(3)))
+        row_match = re.match(r"\s*\|\s*f(\d{1,3})\s*\|\s*(.*?)\s*\|\s*(.*?)\s*\|\s*$", lines[i])
+        if row_match:
+            rows_sec.append(
+                (i + 1, int(row_match.group(1)), row_match.group(2), row_match.group(3))
+            )
 
 # --- 3) 全文件所有「f 编号」表格行（用于回归扫描）---
 all_frows = []  # (line_no, ulist_fn, full_row)
-for i, ln in enumerate(lines):
-    m = re.match(r"\s*\|\s*f(\d{1,3})\s*\|(.*)$", ln)
-    if m:
-        all_frows.append((i + 1, int(m.group(1)), ln.rstrip()))
+for i, line_text in enumerate(lines):
+    row_match = re.match(r"\s*\|\s*f(\d{1,3})\s*\|(.*)$", line_text)
+    if row_match:
+        all_frows.append((i + 1, int(row_match.group(1)), line_text.rstrip()))
 
 # --- 4) 违规判定 ---
 viol = []
@@ -260,8 +298,9 @@ def classify(fn, status, note):
     # 跨源对撞实证定案(优先于 VERIFIED): ✅ + 跨源证据标记 + 指明外部具名源字段。
     # 这是「同号即同义」铁律的正确解药——经 tdx/sina/tencent/fuyao/zhb 具名字段数值对撞定案,
     # 而非凭编号相同认定同义。证据标记: 跨源 / 交叉验证 / 第九轮审计 / 第9轮 / 第10轮。
-    if "✅" in status and any(k in text for k in
-                               ("跨源", "交叉验证", "第九轮审计", "第9轮", "第十轮", "第10轮")):
+    if "✅" in status and any(
+        k in text for k in ("跨源", "交叉验证", "第九轮审计", "第9轮", "第十轮", "第10轮")
+    ):
         return "CROSS", None
     if "✅" in status and ("第七轮审计" in text or "数值实证" in text):
         return "VERIFIED", None
@@ -288,7 +327,7 @@ for ln_no, fn, status, note in rows_sec:
         # 统一走 scheme 血缘护栏：ulist239(em.ulist.np) 与 push2(em.stock_get) 是不同字段体系，
         # 故须对齐表存在 ulist.fX → push2.fY 跨号映射实证(Y 即行内声明的 push2 编号，同号时 Y==X)。
         msgs = check_scheme_grounded(fn, status, note)
-        for m in (msgs or []):
+        for m in msgs or []:
             if m.startswith("WARN:"):
                 sys.stderr.write("  ⚠️ %s\n" % m[5:])
             else:
@@ -297,8 +336,16 @@ for ln_no, fn, status, note in rows_sec:
         # 跨源定案必须指明具体外部源(tdx/sina/tencent/fuyao/zhb/axdata 等)的具名字段,
         # 否则证据不足; 且不得夹带裸同号断言(那仍违反铁律)。
         text = "%s %s" % (status, note)
-        if not re.search(r"(tdx|sina|tencent|fuyao|zhb|axdata|push2|东财|通达信|腾讯|同花顺|ZHB)", text, re.I):
-            viol.append((ln_no, "CROSS 跨源定案未指明具体外部源字段，证据不足（须命名 tdx/sina/tencent/fuyao/zhb 等具名字段）", status))
+        if not re.search(
+            r"(tdx|sina|tencent|fuyao|zhb|axdata|push2|东财|通达信|腾讯|同花顺|ZHB)", text, re.I
+        ):
+            viol.append(
+                (
+                    ln_no,
+                    "CROSS 跨源定案未指明具体外部源字段，证据不足（须命名 tdx/sina/tencent/fuyao/zhb 等具名字段）",
+                    status,
+                )
+            )
         m_same = re.search(r"同\s*push2\s*f(\d{1,3})", text)
         if m_same and int(m_same.group(1)) == fn:
             viol.append((ln_no, "CROSS 行仍夹带裸同号即同义断言，违反铁律", status))
@@ -310,10 +357,23 @@ for ln_no, fn, raw in all_frows:
     m_same = re.search(r"同\s*push2\s*f(\d{1,3})", raw)
     if not (m_same and int(m_same.group(1)) == fn):
         continue
-    if ("第七轮审计" in raw or "数值实证" in raw or "已证伪" in raw
-            or "未实证" in raw or "待核实" in raw or "待破解" in raw or "待数值对撞" in raw):
+    if (
+        "第七轮审计" in raw
+        or "数值实证" in raw
+        or "已证伪" in raw
+        or "未实证" in raw
+        or "待核实" in raw
+        or "待破解" in raw
+        or "待数值对撞" in raw
+    ):
         continue
-    viol.append((ln_no, "全文件回归：发现裸「同号即同义」断言（编号相同认定同义，未带证据标记）", raw.strip()[:90]))
+    viol.append(
+        (
+            ln_no,
+            "全文件回归：发现裸「同号即同义」断言（编号相同认定同义，未带证据标记）",
+            raw.strip()[:90],
+        )
+    )
 
 # --- 4c) R0–R6 命名仲裁检查（P1）---
 naming_warn, naming_viol = check_naming_registry()
@@ -323,23 +383,31 @@ viol.extend([(ln, why, "") for ln, why in naming_viol])
 if viol:
     print("❌ 字段字典「同号即同义」检查失败，发现 %d 处违规：" % len(viol))
     print("   对齐表条目数: %d（同号真同义 %d 条）" % (len(align), len(align_same)))
-    print("   scheme 血缘(源=%s): ulist239=%s ↔ push2=%s（异体系→强制跨号映射实证）"
-          % (SCHEME_SRC, scheme_of("ulist239", SCHEMES), scheme_of("push2", SCHEMES)))
+    print(
+        "   scheme 血缘(源=%s): ulist239=%s ↔ push2=%s（异体系→强制跨号映射实证）"
+        % (SCHEME_SRC, scheme_of("ulist239", SCHEMES), scheme_of("push2", SCHEMES))
+    )
     print("   扫描 §12.3.2.3 登记行: %d  全文件 f 编号行: %d" % (len(rows_sec), len(all_frows)))
-    for ln, why, txt in viol[:80]:
-        print("   行%-5d  %s  | %s" % (ln, why, txt))
+    for line_number, why, txt in viol[:80]:
+        print("   行%-5d  %s  | %s" % (line_number, why, txt))
     sys.exit(1)
 
 print("✅ 字段字典「同号即同义」检查通过：")
 print("   对齐表条目数: %d（同号真同义 %d 条，作为唯一实证登记处）" % (len(align), len(align_same)))
-print("   scheme 血缘(源=%s): ulist239=%s ↔ push2=%s（异体系，强制跨号映射实证）"
-      % (SCHEME_SRC, scheme_of("ulist239", SCHEMES), scheme_of("push2", SCHEMES)))
-print("   §12.3.2.3 登记行: %d（所有 push2 映射主张均已对齐表背书或显式标为待核实）" % len(rows_sec))
+print(
+    "   scheme 血缘(源=%s): ulist239=%s ↔ push2=%s（异体系，强制跨号映射实证）"
+    % (SCHEME_SRC, scheme_of("ulist239", SCHEMES), scheme_of("push2", SCHEMES))
+)
+print(
+    "   §12.3.2.3 登记行: %d（所有 push2 映射主张均已对齐表背书或显式标为待核实）" % len(rows_sec)
+)
 print("   全文件 f 编号行: %d（无裸「同号即同义」断言复发）" % len(all_frows))
 if naming_warn:
-    print("   ⚠️ R0–R6 命名仲裁（warn，非阻断）：%d 项缺口/风险（补登 §12.8.12e 规范表或加数值复核即可消解；"
-          "传 --strict-naming 可将 R3 升为阻断）" % len(naming_warn))
-    for ln, why in naming_warn[:40]:
-        print("     行%-5d  %s" % (ln, why))
+    print(
+        "   ⚠️ R0–R6 命名仲裁（warn，非阻断）：%d 项缺口/风险（补登 §12.8.12e 规范表或加数值复核即可消解；"
+        "传 --strict-naming 可将 R3 升为阻断）" % len(naming_warn)
+    )
+    for line_number, why in naming_warn[:40]:
+        print("     行%-5d  %s" % (line_number, why))
 if naming_viol:
     print("   ❌ R3 命名缺口（--strict-naming 阻断）：%d 项" % len(naming_viol))

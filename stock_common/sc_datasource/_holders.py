@@ -5,17 +5,29 @@
 跨片段符号由各子模块函数体内的局部懒导入（from ._DEFINER import NAME）提供，
 共享可变状态集中于 _shared.py（单实例）。
 """
+
 from __future__ import annotations
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, cast
 from datetime import datetime, timedelta
 import asyncio
 import code
 import re
 import time
-from stock_common.sc_network import UA, _async_quick_request, _debug_log, _gen_wait_process_interval, _quick_request
+from stock_common.sc_network import (
+    UA,
+    _async_quick_request,
+    _debug_log,
+    _gen_wait_process_interval,
+    _quick_request,
+)
 from stock_common.sc_utils import _load_settings, _safe_float, em_exchange_prefix
 from core.stock_cache import TTL, cached, get_cache, make_valid_if, set_cache
-from ._shared import _CNINFO_ORGID_CACHE, _HOLDER_CACHE_REFRESH, _HOLDER_CACHE_TTL, _holder_structure_cache
+from ._shared import (
+    _CNINFO_ORGID_CACHE,
+    _HOLDER_CACHE_REFRESH,
+    _HOLDER_CACHE_TTL,
+    _holder_structure_cache,
+)
 
 
 def _holder_fetch_from_sqlite(code: str) -> Optional[Dict[str, Any]]:
@@ -25,7 +37,7 @@ def _holder_fetch_from_sqlite(code: str) -> Optional[Dict[str, Any]]:
 
         cache_key = f"holder_data:{code}"
         cached_data = get_cache("holder", "holder_data", cache_key)
-        if cached_data:
+        if isinstance(cached_data, dict):
             return cached_data
     except Exception as _e:
         _debug_log(f"datasource holder fetch sqlite error: {_e}")
@@ -48,12 +60,13 @@ def _holder_update_sqlite(code: str, records: List[Dict[str, Any]], timestamp: f
 def _holder_fetch_em(code: str, page_size: int) -> List[Dict[str, Any]]:
     """从东财获取股东户数 → 按日期升序的 records 列表。"""
     from ._eastmoney import _em_filter
+
     data = _em_filter(
         code, "RPT_F10_EH_HOLDERNUM", page_size=page_size, sort_columns="END_DATE", sort_types="-1"
     )
     if not data:
         return []
-    records = []
+    records: List[Dict[str, Any]] = []
     for r in data:
         records.append(
             {
@@ -62,7 +75,7 @@ def _holder_fetch_em(code: str, page_size: int) -> List[Dict[str, Any]]:
                 "avg_shares": _safe_float(r.get("AVG_FREE_SHARES")),
             }
         )
-    records.sort(key=lambda x: x["date"])
+    records.sort(key=lambda x: str(x.get("date", "")))
     return records
 
 
@@ -73,7 +86,9 @@ def _holder_fetch_tdx_optimized(code: str, records: List[Dict[str, Any]], now: f
     client = _get_tdx_client()
     if client is None:
         return False
-    info = client.get_finance_info(1 if em_exchange_prefix(code, upper=True) == "SH" else 0, code)  # V17.2.11
+    info = client.get_finance_info(
+        1 if em_exchange_prefix(code, upper=True) == "SH" else 0, code
+    )  # V17.2.11
     if info is None or info.empty:
         return False
     # V15.1: 修正股东户数 key（参考 docs/field_dict.md 第 7 章）
@@ -117,7 +132,7 @@ def holder_change(code: str, local_only: bool = False) -> List[Dict[str, Any]]:
     cache_key = f"holder_data:{code}"
     cached_data = get_cache("holder", "holder_change", cache_key)
 
-    if cached_data is not None:
+    if isinstance(cached_data, list):
         return cached_data
     if local_only:
         return []
@@ -230,7 +245,7 @@ def _holder_fetch_f10(code: str) -> List[Dict[str, Any]]:
         return []
 
 
-async def holder_change_async(session, code: str) -> List[Dict[str, Any]]:
+async def holder_change_async(session: Any, code: str) -> List[Dict[str, Any]]:
     """async 版：股东户数多期变化（代理到同步版）。"""
     return await asyncio.to_thread(holder_change, code)
 
@@ -303,7 +318,7 @@ def _cninfo_get_orgid(code: str) -> str:
                 data = r.json()
                 for item in data:
                     if item.get("code") == code:
-                        orgid = item.get("orgId", fallback)
+                        orgid = str(item.get("orgId") or fallback)
                         _CNINFO_ORGID_CACHE[code] = orgid
                         return orgid
         except Exception as _e:
@@ -316,8 +331,11 @@ def _cninfo_get_orgid(code: str) -> str:
 
 @cached(category="announcements", ttl_seconds=TTL["announcements"])
 def get_strategic_announcements(
-    code: str, page_size: int = 50, days: Optional[int] = None,
-    importance_filter: bool = False, keywords: Optional[List[str]] = None,
+    code: str,
+    page_size: int = 50,
+    days: Optional[int] = None,
+    importance_filter: bool = False,
+    keywords: Optional[List[str]] = None,
 ) -> List[Dict[str, Any]]:
     """巨潮公告查询 → orgId → searchkey → TDX F10 三层兜底（SKILL.md V3.2.2 增强：动态orgId查询）。
 
@@ -392,7 +410,7 @@ def get_strategic_announcements(
     _importance_kw = _cfg.get("announcement_importance_keywords", [])
     try:
         r = _quick_request(url, data=payload, headers=headers, method="POST", timeout=15)
-        anns = []
+        anns: List[Dict[str, Any]] = []
         if r is not None:
             d = r.json()
             anns = d.get("announcements", []) or []
@@ -476,7 +494,7 @@ def get_strategic_announcements(
 
 
 async def get_strategic_announcements_async(
-    session, code: str, page_size: int = 50, days: Optional[int] = None
+    session: Any, code: str, page_size: int = 50, days: Optional[int] = None
 ) -> List[Dict[str, Any]]:
     """async 版：巨潮公告查询
 
@@ -527,8 +545,8 @@ async def get_strategic_announcements_async(
         d = await _async_quick_request(
             session, url, data=payload, headers=headers, method="POST", timeout=15
         )
-        anns = []
-        if d is not None:
+        anns: List[Dict[str, Any]] = []
+        if isinstance(d, dict):
             anns = d.get("announcements", []) or []
 
         if not anns:
@@ -551,7 +569,7 @@ async def get_strategic_announcements_async(
             d2 = await _async_quick_request(
                 session, url, data=payload2, headers=headers, method="POST", timeout=15
             )
-            if d2 is not None:
+            if isinstance(d2, dict):
                 anns2 = d2.get("announcements", []) or []
                 if anns2:
                     anns = anns2
@@ -610,7 +628,13 @@ async def get_strategic_announcements_async(
         return []
 
 
-@cached(category="financial", ttl_seconds=TTL["financial"], cross_verify=True, trading_day=True, valid_if=make_valid_if())
+@cached(
+    category="financial",
+    ttl_seconds=TTL["financial"],
+    cross_verify=True,
+    trading_day=True,
+    valid_if=make_valid_if(),
+)
 def get_holder_structure(code: str) -> List[Dict[str, Any]]:
     """东财 RPT_F10_EH_HOLDERS → 多季度十大流通股东分类统计。
     模块级缓存，同一脚本运行期内不重复调 API。
@@ -621,6 +645,7 @@ def get_holder_structure(code: str) -> List[Dict[str, Any]]:
     V9.1: 移除 F10 优先逻辑（F10 缺持股比例字段，机构持股计算为 0）。
     """
     from ._eastmoney import eastmoney_datacenter
+
     if code in _holder_structure_cache:
         return _holder_structure_cache[code]
 
@@ -640,7 +665,7 @@ def get_holder_structure(code: str) -> List[Dict[str, Any]]:
         return []
 
     # 按报告期分组
-    periods = {}
+    periods: Dict[str, List[Dict[str, Any]]] = {}
     for h in data:
         ed = str(h.get("END_DATE", ""))[:10]
         if ed not in periods:
@@ -722,7 +747,7 @@ def get_holder_structure(code: str) -> List[Dict[str, Any]]:
 
 async def get_holder_structure_async(
     session: Any, code: str, today_str: str = ""
-) -> Dict[str, Any]:
+) -> List[Dict[str, Any]]:
     """异步版 get_holder_structure"""
     import asyncio
 
@@ -749,6 +774,7 @@ def cninfo_irm(code: str, page_size: int = 30, page_num: int = 1) -> List[Dict[s
     # V16.2.3: 巨潮互动易无统一入口（交易所直连），加进程级礼貌限速（每次调用 2 个请求）
     try:
         from stock_common.sc_network import _gen_wait_process_interval
+
         _gen_wait_process_interval()
     except Exception:
         pass
@@ -760,7 +786,7 @@ def cninfo_irm(code: str, page_size: int = 30, page_num: int = 1) -> List[Dict[s
             data={"keyWord": code},
             headers={"User-Agent": UA},
             timeout=10,
-            proxies=_no_proxy,
+            proxies=cast(Dict[str, str], _no_proxy),
         )
         d1 = r1.json().get("data") or []
         if not d1:
@@ -770,7 +796,9 @@ def cninfo_irm(code: str, page_size: int = 30, page_num: int = 1) -> List[Dict[s
         # 多结果且无精确匹配视为跨公司错连, 返回空; 单结果沿用原 d1[0] 行为(不退步)。
         _matched = None
         for _it in d1:
-            if str(_it.get("stockCode") or "") == str(code) or str(_it.get("code") or "") == str(code):
+            if str(_it.get("stockCode") or "") == str(code) or str(_it.get("code") or "") == str(
+                code
+            ):
                 _matched = _it
                 break
         if _matched is None:
@@ -794,7 +822,7 @@ def cninfo_irm(code: str, page_size: int = 30, page_num: int = 1) -> List[Dict[s
             params=params,
             headers={"User-Agent": UA},
             timeout=10,
-            proxies=_no_proxy,
+            proxies=cast(Dict[str, str], _no_proxy),
         )
         rows = r2.json().get("rows") or []
 
@@ -831,6 +859,7 @@ def get_irm_qa(code: str, page_size: int = 30) -> List[Dict[str, Any]]:
     if _digits.startswith(("60", "68", "900")):
         try:
             from stock_common.sc_datasource import sse_e_interaction
+
             _rows = sse_e_interaction(code, kind="answered", page=1, page_size=page_size) or []
             return [
                 {

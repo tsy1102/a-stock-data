@@ -16,6 +16,7 @@
 
 设计约束：**纯离线**——所有策略在空池输入下不触网；`_load_strategy_config()` 读本地 YAML。
 """
+
 from __future__ import annotations
 
 import asyncio
@@ -52,7 +53,8 @@ def _dispatch_source():
     if not m:
         raise AssertionError(
             "未在 get_val_report.py 中找到 _strategy_defs 调度表——"
-            "变量若已改名，请同步更新本测试的定位正则")
+            "变量若已改名，请同步更新本测试的定位正则"
+        )
     return m.group(0)
 
 
@@ -166,16 +168,20 @@ class TestStrategyConfigKeys(unittest.TestCase):
     def test_referenced_strategy_keys_exist(self):
         """扫描 val 源码里 `_sc.get("strategy", {}).get("KEY", ...)` 引用的键名。"""
         src = inspect.getsource(V)
-        refs = set(re.findall(
-            r'_sc\.get\(\s*["\']strategy["\']\s*,\s*\{\s*\}\s*\)\.get\(\s*["\']([A-Za-z0-9_]+)["\']',
-            src))
+        refs = set(
+            re.findall(
+                r'_sc\.get\(\s*["\']strategy["\']\s*,\s*\{\s*\}\s*\)\.get\(\s*["\']([A-Za-z0-9_]+)["\']',
+                src,
+            )
+        )
         self.assertTrue(refs, "未扫描到任何 strategy 配置键引用，正则可能已失效")
         cfg = V._load_strategy_config().get("strategy", {})
         missing = sorted(refs - set(cfg))
         self.assertEqual(
-            missing, [],
-            f"策略引用了配置中不存在的键（会静默走默认值）: {missing}\n"
-            f"  现有键: {sorted(cfg)}")
+            missing,
+            [],
+            f"策略引用了配置中不存在的键（会静默走默认值）: {missing}\n" f"  现有键: {sorted(cfg)}",
+        )
 
 
 if __name__ == "__main__":

@@ -33,6 +33,7 @@ Mock 策略（对重构免疫）:
 
 依赖: pytest（仅 Python API，见 AGENTS.md §2.1.1）。全程离线，无真实网络。
 """
+
 from __future__ import annotations
 
 import pytest
@@ -40,17 +41,31 @@ import pytest
 import stock_common
 from stock_common import sc_network
 
-
 # ── 测试数据：模拟 push2delay ulist.np 返回 ──────────────────────────────
 # 注意：东财真实返回多为**字符串**（含 "-" 表示无数据），故此处保留字符串形态，
 # 以覆盖被测代码的字符串→float 转换路径。
 _FAKE_ROW_MAOTAI = {
-    "f2": "1346.50", "f3": "-0.17", "f4": "-2.36", "f5": "27073",
-    "f6": "3640046368.00", "f8": "0.22", "f12": "600519", "f14": "贵州茅台",
-    "f15": "1352.65", "f16": "1338.00", "f17": "1348.00", "f18": "1348.86",
-    "f20": "1683234875747", "f21": "1683234875747",
+    "f2": "1346.50",
+    "f3": "-0.17",
+    "f4": "-2.36",
+    "f5": "27073",
+    "f6": "3640046368.00",
+    "f8": "0.22",
+    "f12": "600519",
+    "f14": "贵州茅台",
+    "f15": "1352.65",
+    "f16": "1338.00",
+    "f17": "1348.00",
+    "f18": "1348.86",
+    "f20": "1683234875747",
+    "f21": "1683234875747",
     # ulist 实测估值字段不返回（"-"）
-    "f51": "-", "f126": "-", "f162": "-", "f163": "-", "f167": "-", "f174": "-",
+    "f51": "-",
+    "f126": "-",
+    "f162": "-",
+    "f163": "-",
+    "f167": "-",
+    "f174": "-",
 }
 
 
@@ -93,6 +108,7 @@ def _install_fake_http(monkeypatch, handler):
 
 def _make_handler(rows=None, calls=None, exc=None):
     """构造 _quick_request 替身；rows=None 表示返回 None（模拟风控跳过）。"""
+
     def handler(url, params=None, headers=None, timeout=None, **kwargs):
         if calls is not None:
             calls.append({"url": url, "params": params})
@@ -101,6 +117,7 @@ def _make_handler(rows=None, calls=None, exc=None):
         if rows is None:
             return None
         return _FakeResp({"rc": 0, "data": {"diff": rows}})
+
     return handler
 
 
@@ -125,8 +142,8 @@ def test_prefetch_field_mapping(clean_batch_cache, monkeypatch):
     assert d["low"] == pytest.approx(1338.00)
     assert d["open"] == pytest.approx(1348.00)
     assert d["prev_close"] == pytest.approx(1348.86)
-    assert d["amount_wan"] == pytest.approx(3640046368.0 / 1e4)   # 元 → 万
-    assert d["mcap_yi"] == pytest.approx(1683234875747 / 1e8)     # 元 → 亿
+    assert d["amount_wan"] == pytest.approx(3640046368.0 / 1e4)  # 元 → 万
+    assert d["mcap_yi"] == pytest.approx(1683234875747 / 1e8)  # 元 → 亿
     assert d["name"] == "贵州茅台"
     # 估值字段不预取（ulist 不返回）
     assert d.get("pe_ttm") in (None, 0.0)
@@ -147,7 +164,7 @@ def test_prefetch_cache_hit_no_duplicate(clean_batch_cache, monkeypatch):
     _install_fake_http(monkeypatch, _fake_request)
 
     first = dp.prefetch_quote_batch(["600519"])
-    second = dp.prefetch_quote_batch(["600519"])   # 缓存命中
+    second = dp.prefetch_quote_batch(["600519"])  # 缓存命中
     assert call_count["n"] == 1
     assert first == second
 
@@ -166,7 +183,7 @@ def test_prefetch_300_chunk(clean_batch_cache, monkeypatch):
 
     codes = [f"{i:06d}" for i in range(601)]
     dp.prefetch_quote_batch(codes)
-    assert len(calls) == 3   # 300 + 300 + 1
+    assert len(calls) == 3  # 300 + 300 + 1
     assert len(calls[0]["secids"].split(",")) == 300
     assert len(calls[2]["secids"].split(",")) == 1
 
@@ -187,8 +204,20 @@ def test_prefetch_request_params(clean_batch_cache, monkeypatch):
     assert "600519" in call["params"]["secids"]
     # 字段集必须与映射用到的键一一对应（防字段集与映射漂移）
     assert set(call["params"]["fields"].split(",")) == {
-        "f2", "f3", "f4", "f5", "f6", "f8", "f12", "f14",
-        "f15", "f16", "f17", "f18", "f20", "f21",
+        "f2",
+        "f3",
+        "f4",
+        "f5",
+        "f6",
+        "f8",
+        "f12",
+        "f14",
+        "f15",
+        "f16",
+        "f17",
+        "f18",
+        "f20",
+        "f21",
     }
 
 
@@ -205,7 +234,7 @@ def test_prefetch_dash_missing_value_becomes_zero(clean_batch_cache, monkeypatch
 
     assert d["price"] == 0.0
     assert d["mcap_yi"] == 0.0
-    assert d["name"] == "贵州茅台"   # 其他字段不受影响
+    assert d["name"] == "贵州茅台"  # 其他字段不受影响
 
 
 # ── 用例 6（新增）：空 diff / 无 data → 空结果 ───────────────────────────

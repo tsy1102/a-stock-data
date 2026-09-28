@@ -16,13 +16,13 @@
   000001 / sz000001 / 000001.XSHE
   830799 / bj830799 / 830799.BJ / 920002 / 430047
 """
+
 from __future__ import annotations
 
 import re
 from dataclasses import dataclass
 
 from stock_common.sc_utils import em_secid_prefix
-
 
 _BJ_PREFIXES = ("92", "8", "4", "43", "83", "87")  # 北交所（新 92 + 老 43/83/87 + 老三板 8/4）
 _SUFFIX_MARKET = {"XSHG": "SH", "SH": "SH", "XSHE": "SZ", "SZ": "SZ", "BJ": "BJ"}
@@ -77,7 +77,7 @@ _RE_SUFFIX = re.compile(r"^(\d{6})\.(XSHG|XSHE|BJ|SH|SZ)$", re.I)
 _RE_PREFIX = re.compile(r"^(sh|sz|bj)(\d{6})$", re.I)
 
 
-def normalize_symbol(raw) -> Symbol:
+def normalize_symbol(raw: object) -> Symbol:
     """将任意书写格式归一为 `Symbol`（裸 6 位 + 市场）。
 
     Raises:
@@ -93,9 +93,7 @@ def normalize_symbol(raw) -> Symbol:
         derived = market_of(code)
         sfx_mkt = _SUFFIX_MARKET[m.group(2).upper()]
         if sfx_mkt != derived:
-            raise ValueError(
-                f"代码矛盾：{raw!r} 后缀暗示 {sfx_mkt}，但号段规则判定为 {derived}"
-            )
+            raise ValueError(f"代码矛盾：{raw!r} 后缀暗示 {sfx_mkt}，但号段规则判定为 {derived}")
         return Symbol(code, derived)
 
     m = _RE_PREFIX.match(s)
@@ -104,9 +102,7 @@ def normalize_symbol(raw) -> Symbol:
         derived = market_of(code)
         pfx_mkt = _PREFIX_MARKET[m.group(1).upper()]
         if pfx_mkt != derived:
-            raise ValueError(
-                f"代码矛盾：{raw!r} 前缀暗示 {pfx_mkt}，但号段规则判定为 {derived}"
-            )
+            raise ValueError(f"代码矛盾：{raw!r} 前缀暗示 {pfx_mkt}，但号段规则判定为 {derived}")
         return Symbol(code, derived)
 
     if _RE_PLAIN.match(s):

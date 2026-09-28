@@ -5,6 +5,7 @@
   2) 交叉一致性：用 sc_ta_core 原语重建 MACD/RSI/BOLL/KDJ，与 sc_technical 现有
      calc_* 实现比较（同一输入应得同量级结果；BOLL 因同为 ddof=0 应近似精确）。
 """
+
 import math
 
 import numpy as np
@@ -12,16 +13,47 @@ import pandas as pd
 import pytest
 
 from stock_common.sc_ta_core import (
-    REF, DIFF, SUM, STD, HHV, LLV, HHVBARS, LLVBARS, AVEDEV,
-    COUNT, EVERY, EXIST, SMA, EMA, WMA, DMA, SLOPE, FORCAST,
-    BARSLAST, BARSLASTCOUNT, BARSSINCEN, CROSS, LONGCROSS, VALUEWHEN,
-    FILTER, BETWEEN, TOPRANGE, LOWRANGE, CONST, IF, MAX, MIN,
-    ABS, LN, POW, SQRT,
+    REF,
+    DIFF,
+    SUM,
+    STD,
+    HHV,
+    LLV,
+    HHVBARS,
+    LLVBARS,
+    AVEDEV,
+    COUNT,
+    EVERY,
+    EXIST,
+    SMA,
+    EMA,
+    WMA,
+    DMA,
+    SLOPE,
+    FORCAST,
+    BARSLAST,
+    BARSLASTCOUNT,
+    BARSSINCEN,
+    CROSS,
+    LONGCROSS,
+    VALUEWHEN,
+    FILTER,
+    BETWEEN,
+    TOPRANGE,
+    LOWRANGE,
+    CONST,
+    IF,
+    MAX,
+    MIN,
+    ABS,
+    LN,
+    POW,
+    SQRT,
 )
 from stock_common.sc_technical import calc_macd, calc_rsi, calc_bollinger, calc_kdj
 
-
 # ───────────────────────────── 1) 手算基准 ─────────────────────────────
+
 
 def test_ref():
     s = pd.Series([1, 2, 3, 4, 5])
@@ -55,9 +87,7 @@ def test_sma_recursion():
 def test_dma_recursion():
     s = pd.Series([1, 2, 3, 4, 5])
     out = DMA(s, 0.3)
-    np.testing.assert_allclose(
-        out.tolist(), [1.0, 1.3, 1.81, 2.467, 3.2269], rtol=1e-4
-    )
+    np.testing.assert_allclose(out.tolist(), [1.0, 1.3, 1.81, 2.467, 3.2269], rtol=1e-4)
 
 
 def test_cross():
@@ -100,9 +130,7 @@ def test_hhvbars_llvbars():
 def test_valuewhen_forwardfill():
     a = pd.Series([False, True, False, True, False])
     b = pd.Series([0, 10, 0, 20, 0])
-    np.testing.assert_array_equal(
-        VALUEWHEN(a, b).to_numpy(), [np.nan, 10, 10, 20, 20]
-    )
+    np.testing.assert_array_equal(VALUEWHEN(a, b).to_numpy(), [np.nan, 10, 10, 20, 20])
 
 
 def test_toprange_lowrange():
@@ -122,6 +150,7 @@ def test_nan_boundary_no_crash():
 
 
 # ───────────────────────────── 2) 交叉一致性（与 sc_technical） ─────────────────────────────
+
 
 def _seed_close(n=60, start=100.0, step=1.3, seed=7):
     rng = np.random.RandomState(seed)

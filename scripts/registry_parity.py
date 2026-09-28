@@ -11,6 +11,7 @@ field_dict.md 经 audit_field_completeness.registered_field_sets() 抽取出的
 
 退出码：0=通过；1=未通过（不应提交）。
 """
+
 from __future__ import annotations
 
 import io
@@ -87,8 +88,10 @@ def main():
     if sample_bad:
         problems.append(f"多源 token 源集合不一致(抽样): {sample_bad}")
 
-    print(f"parity[native]: registry({reg_fields}/{reg_records}/{reg_multi}) "
-          f"vs baseline({base_fields}/{base_records}/{base_multi})")
+    print(
+        f"parity[native]: registry({reg_fields}/{reg_records}/{reg_multi}) "
+        f"vs baseline({base_fields}/{base_records}/{base_multi})"
+    )
     if problems:
         print("  native FAIL:")
         for p in problems:
@@ -121,8 +124,10 @@ def check_field_matrix(reg: dict) -> list:
     base = {k: sorted(v) for k, v in ns.items()}
     problems = []
     if set(fm) != set(base):
-        problems.append(f"field_matrix 字段集 != 基线 {len(fm)} vs {len(base)}; "
-                        f"缺 {len(set(base) - set(fm))} 多 {len(set(fm) - set(base))}")
+        problems.append(
+            f"field_matrix 字段集 != 基线 {len(fm)} vs {len(base)}; "
+            f"缺 {len(set(base) - set(fm))} 多 {len(set(fm) - set(base))}"
+        )
     bad = []
     for k in set(fm) & set(base):
         if sorted(fm[k]) != base[k]:

@@ -10,13 +10,15 @@ from core.tdx_client import (
     tdx_get_belong_boards,
     tdx_get_board_list,
     tdx_get_board_members,
-    tdx_get_all_stocks
+    tdx_get_all_stocks,
 )
+
 
 @pytest.mark.real_network
 def test_tdx_security_bars():
     keys, rows = tdx_get_security_bars("600519", count=5)
     assert rows is not None
+
 
 @pytest.mark.real_network
 def test_tdx_quote_full():
@@ -24,11 +26,13 @@ def test_tdx_quote_full():
     assert isinstance(data, dict)
     assert "price" in data
 
+
 @pytest.mark.real_network
 def test_tdx_index_quote():
     data = tdx_get_index_quote("sh000001")
     assert isinstance(data, dict)
     assert "price" in data
+
 
 @pytest.mark.real_network
 def test_tdx_fund_flow():
@@ -36,10 +40,12 @@ def test_tdx_fund_flow():
     if data:
         assert "main_net" in data
 
+
 @pytest.mark.real_network
 def test_tdx_history_fund_flow():
     data = tdx_get_history_fund_flow("600519", days=5)
     assert isinstance(data, list)
+
 
 @pytest.mark.real_network
 def test_tdx_dividend_history():
@@ -47,11 +53,13 @@ def test_tdx_dividend_history():
     # V16.2.3: None=接口失败（区别于 [] 真无分红）；list=正常返回
     assert isinstance(data, (list, type(None)))
 
+
 @pytest.mark.real_network
 def test_tdx_eps_from_reports():
     data = tdx_get_eps_from_reports("600519")
     if data:
         assert "eps_cur" in data
+
 
 @pytest.mark.real_network
 def test_tdx_belong_boards():
@@ -59,10 +67,12 @@ def test_tdx_belong_boards():
     sz_data = tdx_get_belong_boards("000001")
     assert isinstance(sh_data, dict) or isinstance(sz_data, dict)
 
+
 @pytest.mark.real_network
 def test_tdx_board_list():
     data = tdx_get_board_list(0)
     assert isinstance(data, list)
+
 
 @pytest.mark.real_network
 def test_tdx_board_members():
@@ -71,6 +81,7 @@ def test_tdx_board_members():
         board_code = boards["industry"][0]["code"]
         members = tdx_get_board_members(board_code)
         assert isinstance(members, list)
+
 
 @pytest.mark.real_network
 def test_tdx_all_stocks():
@@ -98,8 +109,8 @@ import pytest
 
 import core.tdx_client as tc
 
-
 # ── _FREQ_TO_CATEGORY 映射 ──
+
 
 class TestFreqToCategory:
     def test_day_freq9(self):
@@ -120,6 +131,7 @@ class TestFreqToCategory:
 
 
 # ── _easy_market 市场判断 ──
+
 
 class TestEasyMarket:
     def test_sh_stock(self):
@@ -149,11 +161,20 @@ class TestEasyMarket:
 
 # ── _EasyTdxAdapter 字段对齐 ──
 
+
 class _MockClient:
     """mock easy_tdx TdxClient。"""
 
-    def __init__(self, bars_df=None, quotes_df=None, finance_df=None, index_df=None,
-                 raise_on=None, f10_cats_df=None, f10_content=None):
+    def __init__(
+        self,
+        bars_df=None,
+        quotes_df=None,
+        finance_df=None,
+        index_df=None,
+        raise_on=None,
+        f10_cats_df=None,
+        f10_content=None,
+    ):
         self.bars_df = bars_df
         self.quotes_df = quotes_df
         self.finance_df = finance_df
@@ -198,10 +219,19 @@ class _MockClient:
 
 
 def _make_bars_df(vol=5512752.0, amount=7.3e9):
-    return pd.DataFrame([{
-        "date": "2026-07-31", "open": 1330.03, "close": 1350.6,
-        "high": 1355.72, "low": 1325.77, "vol": vol, "amount": amount,
-    }])
+    return pd.DataFrame(
+        [
+            {
+                "date": "2026-07-31",
+                "open": 1330.03,
+                "close": 1350.6,
+                "high": 1355.72,
+                "low": 1325.77,
+                "vol": vol,
+                "amount": amount,
+            }
+        ]
+    )
 
 
 class TestAdapterBars:
@@ -230,8 +260,9 @@ class TestAdapterBars:
 
 class TestAdapterQuotes:
     def test_pre_close_renamed(self):
-        qdf = pd.DataFrame([{"price": 1350.6, "pre_close": 1361.76,
-                             "open": 1330.03, "vol": 55127.52}])
+        qdf = pd.DataFrame(
+            [{"price": 1350.6, "pre_close": 1361.76, "open": 1330.03, "vol": 55127.52}]
+        )
         a = tc._EasyTdxAdapter(_MockClient(quotes_df=qdf))
         q = a.quotes(symbol="600519")
         assert "last_close" in q.columns
@@ -245,8 +276,7 @@ class TestAdapterQuotes:
 
 class TestAdapterFinance:
     def test_columns_underscore_removed(self):
-        fdf = pd.DataFrame([{"zong_guben": 12.5e8, "jing_lirun": 2.7e11,
-                             "liutong_guben": 12.5e8}])
+        fdf = pd.DataFrame([{"zong_guben": 12.5e8, "jing_lirun": 2.7e11, "liutong_guben": 12.5e8}])
         a = tc._EasyTdxAdapter(_MockClient(finance_df=fdf))
         f = a.finance(symbol="600519")
         cols = set(f.columns)
@@ -260,9 +290,19 @@ class TestAdapterFinance:
 
 class TestAdapterIndexBars:
     def test_index_bars_basic(self):
-        idf = pd.DataFrame([{"date": "2026-07-31", "open": 3820.0,
-                             "close": 3832.26, "high": 3840.0, "low": 3810.0,
-                             "vol": 5e8, "amount": 5e11}])
+        idf = pd.DataFrame(
+            [
+                {
+                    "date": "2026-07-31",
+                    "open": 3820.0,
+                    "close": 3832.26,
+                    "high": 3840.0,
+                    "low": 3810.0,
+                    "vol": 5e8,
+                    "amount": 5e11,
+                }
+            ]
+        )
         a = tc._EasyTdxAdapter(_MockClient(index_df=idf))
         df = a.index_bars(symbol="000001", frequency=9)
         assert len(df) == 1
@@ -346,6 +386,7 @@ class TestGrossMarginAndRoeEpsContract:
 
 
 # ── 服务器白名单 ──
+
 
 class TestServerWhitelist:
     def test_primary_host_known(self):

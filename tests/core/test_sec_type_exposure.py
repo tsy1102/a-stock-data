@@ -4,6 +4,7 @@
 「市场板块 + 涨跌幅限制」标签, 供 sht/med/lng 报告露出(A5 孤儿字段消费)。
 阈值复用 limit_pct_for(唯一事实源), 不重复硬编码。
 """
+
 from __future__ import annotations
 
 from stock_common.sc_utils import sec_type_market_label

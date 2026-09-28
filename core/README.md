@@ -1,4 +1,4 @@
-# core/ — 核心模块包(V17.3 目录整理)
+# core/ — 核心模块包
 
 > 定位: 项目核心支撑模块(数据层/传输层/缓存/日历同步/上传/跨边界访问器), 由根目录报告脚本(`get_*_report.py`)、`main.py`、`stock_common/`、`scripts/`、`tests/` 通过 `from core import X` 引用。
 
@@ -10,6 +10,7 @@ core/
 ├── config.py          # 全局配置集中管理(超时/限流/熔断常量)
 ├── data_provider.py   # 统一数据层(canonical 强类型合约 + 字段路由 + 多级 fallback + 估值工具)
 ├── _accessors.py      # 【V17.3】跨边界访问器叶子模块(消除 data_provider↔stock_common 导入期循环依赖)
+├── _tdx_handshake_patch.py # eltdx 握手补丁(通过动态模块适配兼容外部实现)
 ├── gd_uploader.py      # Google Drive 上传(google-auth + google-api-python-client)
 ├── stock_cache.py      # 统一缓存层(SQLite + L1 内存 + TTL + cross_verify + CLI)
 ├── tdx_client.py       # eltdx/easy_tdx 统一层(运行时主源 eltdx；mootdx 已于 V17.3.4 退役)
@@ -24,6 +25,7 @@ core/
 | config.py | 超时/限流/熔断阈值 | HTTP_TIMEOUT_* / TDX_MIN_INTERVAL / MAX_RETRY_COUNT 等常量 |
 | data_provider.py | 报告层统一数据入口, get_canonical_stock_data 强类型合约, 缓存+多源 fallback | get_canonical_stock_data / get_market_snapshot_async 等 |
 | _accessors.py | 【V17.3】跨边界访问器: 概念/股息率/年至今涨跌/成交额/主力净额/连板天数等。顶层仅依赖 `core.stock_cache`(真叶子) + `typing`, **零 `stock_common` 顶层依赖**, 跨引统一在函数体内懒 import | get_concept_from_zhb / get_dividend_yield / get_change_pct / get_change_ytd / get_amount_wan / get_main_net_buy / get_streak_days |
+| _tdx_handshake_patch.py | eltdx/TDX 握手兼容补丁；隔离对外部模块动态 API 的访问 | 由 `tdx_client.py` 内部加载 |
 | gd_uploader.py | GD 上传(凭据在 仓库根/credentials/ 子目录) | init_gd / upload_stock_report_by_code |
 | stock_cache.py | @cached 装饰器 + SQLite 持久化, 全仓 ~70 处使用 | cached / TTL / make_valid_if; CLI: `python -m core.stock_cache stats` |
 | tdx_client.py | 通达信 TCP 客户端封装(MAC 协议板块/行情) | tdx_get_security_bars / tdx_get_quote_full 等 |

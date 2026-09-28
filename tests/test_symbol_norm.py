@@ -4,27 +4,29 @@
 沪深主板 / 创业板 / 科创板 / 北交所(92 新号段 + 43/83/87/8/4 老号段) 全市场段，
 以及“显式前缀/后缀与号段矛盾时显式报错”的纪律（A5：不静默猜测）。
 """
+
 import pytest
 
 from stock_common.symbol_norm import Symbol, market_of, normalize_symbol
 
-
 # ───────────── 裸 6 位：市场段推导 ─────────────
 
+
 def test_market_of_segments():
-    assert market_of("600519") == "SH"   # 沪主板
-    assert market_of("000001") == "SZ"   # 深主板
-    assert market_of("300750") == "SZ"   # 创业板
-    assert market_of("688981") == "SH"   # 科创板
-    assert market_of("830799") == "BJ"   # 北交所 83
-    assert market_of("920002") == "BJ"   # 北交所 92
-    assert market_of("430047") == "BJ"   # 北交所 43（老）
-    assert market_of("870000") == "BJ"   # 北交所 87（老）
-    assert market_of("400000") == "BJ"   # 老三板 4
-    assert market_of("800000") == "BJ"   # 老三板 8
+    assert market_of("600519") == "SH"  # 沪主板
+    assert market_of("000001") == "SZ"  # 深主板
+    assert market_of("300750") == "SZ"  # 创业板
+    assert market_of("688981") == "SH"  # 科创板
+    assert market_of("830799") == "BJ"  # 北交所 83
+    assert market_of("920002") == "BJ"  # 北交所 92
+    assert market_of("430047") == "BJ"  # 北交所 43（老）
+    assert market_of("870000") == "BJ"  # 北交所 87（老）
+    assert market_of("400000") == "BJ"  # 老三板 4
+    assert market_of("800000") == "BJ"  # 老三板 8
 
 
 # ───────────── 裸码归一 ─────────────
+
 
 def test_normalize_plain():
     assert normalize_symbol("600519") == Symbol("600519", "SH")
@@ -33,6 +35,7 @@ def test_normalize_plain():
 
 
 # ───────────── 前缀风格 sh/sz/bj ─────────────
+
 
 def test_normalize_prefix():
     assert normalize_symbol("sh600519") == Symbol("600519", "SH")
@@ -44,6 +47,7 @@ def test_normalize_prefix():
 
 # ───────────── 后缀风格 .XSHG/.XSHE/.BJ/.SH/.SZ ─────────────
 
+
 def test_normalize_suffix():
     assert normalize_symbol("600519.XSHG") == Symbol("600519", "SH")
     assert normalize_symbol("600519.SH") == Symbol("600519", "SH")
@@ -53,6 +57,7 @@ def test_normalize_suffix():
 
 
 # ───────────── 矛盾输入显式报错（不静默猜测） ─────────────
+
 
 def test_contradiction_raises():
     # 前缀 sh 暗示 SH，但 000001 号段为 SZ
@@ -72,6 +77,7 @@ def test_contradiction_raises():
 
 
 # ───────────── 各源格式输出 ─────────────
+
 
 def test_formatters():
     sh = Symbol("600519", "SH")

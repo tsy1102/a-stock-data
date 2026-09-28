@@ -4,18 +4,19 @@
 gen_ulist_subdict.py — 生成 ulist239 镜像分字典 docs/verify/ulist_verify.md
 
 设计契约（用户 2026-09-19 裁定，与 ZHB 镜像同源同构）：
-- 《主字典》field_dict.md §12.3.2.3 的 ulist239 全字段清单（np/get 真实返回 239 字段，
-  f1–f250 含 11 个间隔）是**唯一权威源**。
+- 《主字典》field_dict.md §12.3.2.3 登记 239 个实际返回字段；另保留未返回的 f93
+  编号空位，因此表格有 240 行。主字典是**唯一权威源**。
 - docs/verify/ulist_verify.md 是主字典 ulist239 章的**镜像备份**：逐行复制主字典内容，
   不引入任何主字典之外的字段定名或状态判定，自身不持有独立决策权。
 - 覆盖闸门 verify_sync_check.check_ulist_mirror_coverage 强制：
     ulist_verify.md 的 fN 集合 == 主字典 §12.3.2.3 fN 集合
-  （精确集合相等、完全覆盖、不得越权发明字段；239 个 fN 含间隔，须逐号比对）。
+  （精确集合相等、完全覆盖、不得越权发明字段；实际字段数与文档占位数分别统计）。
 - 每次主字典 ulist239 章改动后，重跑本脚本即可使镜像回到 parity。
 
 本模块 import-safe：verify_sync_check 直接 import 其中的
 extract_main_ulist() / extract_subdict_ulist() 做覆盖比对，无需重新生成文件。
 """
+
 import os
 import re
 import sys
@@ -40,7 +41,7 @@ def _ulist_section(md: str) -> str:
     m = _SECTION_RE.search(md)
     if not m:
         raise RuntimeError("§12.3.2.3 ulist239 section not found in main dict")
-    rest = md[m.end():]
+    rest = md[m.end() :]
     nxt = re.search(r"^#{2,4}\s", rest, re.M)
     end = nxt.start() if nxt else len(rest)
     return rest[:end]
@@ -108,17 +109,27 @@ def _trailing_block(sec: str):
     return blk
 
 
-def extract_main_ulist(main_path: str = MAIN) -> set:
-    """{int fN} from main dict §12.3.2.3 field table (authority)."""
+def extract_main_ulist_details(main_path: str = MAIN) -> tuple[set[int], set[int]]:
+    """Return (documented fN rows, explicitly marked non-returned placeholders)."""
     md = open(main_path, encoding="utf-8").read()
     sec = _ulist_section(md)
     _, rows = _table_block(sec)
-    out = set()
+    fields = set()
+    placeholders = set()
     for ln in rows:
         m = _ROW_RE.match(ln)
         if m:
-            out.add(int(m.group(1)))
-    return out
+            field_number = int(m.group(1))
+            fields.add(field_number)
+            if "恒空占位" in ln or "未返回的编号空位" in ln:
+                placeholders.add(field_number)
+    return fields, placeholders
+
+
+def extract_main_ulist(main_path: str = MAIN) -> set[int]:
+    """Return every documented fN row, including placeholders, for mirror parity."""
+    fields, _ = extract_main_ulist_details(main_path)
+    return fields
 
 
 def extract_subdict_ulist(subdict_path: str = OUT) -> set:
@@ -140,8 +151,9 @@ def extract_subdict_ulist(subdict_path: str = OUT) -> set:
         j += 1
     out = set()
     for ln in lines[j:]:
-        if _ROW_RE.match(ln):
-            out.add(int(_ROW_RE.match(ln).group(1)))
+        match = _ROW_RE.match(ln)
+        if match:
+            out.add(int(match.group(1)))
         else:
             break
     return out
@@ -174,9 +186,7 @@ def build_mirror(main_path: str = MAIN) -> str:
 
     # 字段表（逐行复制主字典，列定义完全一致：fN / 状态 / 备注）
     parts.append("## ulist239 全字段清单（镜像自 §12.3.2.3）\n")
-    parts.append(
-        "> 下表逐行复制主字典 `**| fN | 状态 | 备注 |**` 契约表，列定义与主字典完全一致。"
-    )
+    parts.append("> 下表逐行复制主字典 `**| fN | 状态 | 备注 |**` 契约表，列定义与主字典完全一致。")
     parts.append("")
     parts.append("| fN | 状态 | 备注 |")
     parts.append("| :--: | :--- | :--- |")
@@ -196,11 +206,16 @@ def main():
     os.makedirs(os.path.dirname(OUT), exist_ok=True)
     with open(OUT, "w", encoding="utf-8") as f:
         f.write(content)
-    main_fns = extract_main_ulist()
+    main_fns, placeholders = extract_main_ulist_details()
     sub_fns = extract_subdict_ulist(OUT)
     print(f"wrote {OUT}")
-    print(f"  main ulist239 fN count: {len(main_fns)} (min={min(main_fns)} max={max(main_fns)})")
-    print(f"  sub  ulist239 fN count: {len(sub_fns)}")
+    actual_count = len(main_fns - placeholders)
+    print(
+        f"  main ulist239 rows: {len(main_fns)} "
+        f"({actual_count} returned fields; placeholders={sorted(placeholders)}) "
+        f"(min={min(main_fns)} max={max(main_fns)})"
+    )
+    print(f"  sub  ulist239 documented rows: {len(sub_fns)}")
     miss = sorted(main_fns - sub_fns)
     extra = sorted(sub_fns - main_fns)
     if miss:

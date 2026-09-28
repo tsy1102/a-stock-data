@@ -5,6 +5,7 @@
 跨片段符号由各子模块函数体内的局部懒导入（from ._DEFINER import NAME）提供，
 共享可变状态集中于 _shared.py（单实例）。
 """
+
 from __future__ import annotations
 from typing import Any, Dict, List, Optional
 from datetime import datetime, timedelta
@@ -13,10 +14,25 @@ import code
 import glob
 import json
 import os
-from stock_common.sc_network import EM_SESSION, UA, _debug_log, _em_wait_process_interval, _quick_request, em_get, requires_push2
+from stock_common.sc_network import (
+    EM_SESSION,
+    UA,
+    _debug_log,
+    _em_wait_process_interval,
+    _quick_request,
+    em_get,
+    requires_push2,
+)
 from stock_common.sc_utils import _safe_float, em_exchange_prefix, em_secid_prefix
 from core.stock_cache import TTL, cached, make_valid_if
-from ._shared import _EM_XUANGU_URL, _TDX_QC_TOKEN, _TDX_QC_URL, _THS_HOT_REASON_CACHE, _ULIST_BATCH_FIELDS, _ULIST_BATCH_SIZE
+from ._shared import (
+    _EM_XUANGU_URL,
+    _TDX_QC_TOKEN,
+    _TDX_QC_URL,
+    _THS_HOT_REASON_CACHE,
+    _ULIST_BATCH_FIELDS,
+    _ULIST_BATCH_SIZE,
+)
 from core._accessors import get_concept_from_zhb
 from stock_common.sc_kpl import _f
 from stock_common.sc_schema import DataSource, normalize_at_boundary
@@ -38,7 +54,10 @@ def get_tencent_quote(code: str) -> Dict[str, Any]:
             _TENCENT_MIN_FIELDS,
             _tencent_volume_divisor,  # V17.0.12: 科创板成交量单位换算
         )  # V16.2.4 (B5): 统一字段索引
-        prefix = "sh" if code.startswith("6") else ("bj" if code.startswith(("8", "4", "92")) else "sz")
+
+        prefix = (
+            "sh" if code.startswith("6") else ("bj" if code.startswith(("8", "4", "92")) else "sz")
+        )
         r = _quick_request(f"https://qt.gtimg.cn/q={prefix}{code}", timeout=10)
         if r is None:
             return {}
@@ -48,7 +67,7 @@ def get_tencent_quote(code: str) -> Dict[str, Any]:
             return {}
         vals = text.split('"')[1].split("~")
 
-        def _tv(key, default=0.0):
+        def _tv(key: str, default: float = 0.0) -> float:
             """V17.0.25: 腾讯字段越界安全取值——索引超数组长度(如 [86] 委差)时返回 default,
             避免短数组个股直接下标 IndexError 致整条行情返回 {}（静默丢失兜底源）。"""
             _i = _f.get(key)
@@ -96,7 +115,9 @@ def get_tencent_quote(code: str) -> Dict[str, Any]:
             "change_pct": _safe_float(vals[_f["change_pct"]]),
             "amount_wan": _safe_float(vals[_f["amount_wan"]]),  # 万元
             "turnover_pct": _safe_float(vals[_f["turnover_pct"]]),
-            "vol_ratio": _safe_float(vals[_f["vol_ratio"]]),  # V16.4.0: 量比 v49——val 策略 07 金叉依赖
+            "vol_ratio": _safe_float(
+                vals[_f["vol_ratio"]]
+            ),  # V16.4.0: 量比 v49——val 策略 07 金叉依赖
             "pe_ttm": _safe_float(vals[_f["pe_ttm"]]),
             # V17.0.23(2026-09-01): 静态PE(f163/LYR)——腾讯[53]=pe_static 实锤(主字典§12.8.12e,
             # 茅台 19.73=push2 f163 120/120); 批量路径已接, 逐股现同步, 静态PE完全脱离 push2。
@@ -114,9 +135,11 @@ def get_tencent_quote(code: str) -> Dict[str, Any]:
             "dividend_yield": _safe_float(vals[_f["dividend_yield"]]),
             # V16.3.3 (2026-08-10 字典 12.1/12.15.5): 腾讯未知位破解接入
             # V17.0.5 正名: roa=TTM 滚动口径(~~年化~~)；新增 tx65=扣非加权ROE(TTM)——盈利质量对
-            "roa": _safe_float(vals[_f["roa_ttm"]]),              # ROA(TTM 滚动, %)
+            "roa": _safe_float(vals[_f["roa_ttm"]]),  # ROA(TTM 滚动, %)
             "roe_deduct_ttm": _safe_float(vals[_f["roe_deduct_ttm"]]),  # 扣非加权ROE(TTM, %)
-            "change_180td_pct": _safe_float(vals[_f["change_180td_pct"]]),  # 近180交易日涨跌幅(%) — V17.0.7 定案(tx75, 前复权; ~~主力净流入(亿)~~证伪)
+            "change_180td_pct": _safe_float(
+                vals[_f["change_180td_pct"]]
+            ),  # 近180交易日涨跌幅(%) — V17.0.7 定案(tx75, 前复权; ~~主力净流入(亿)~~证伪)
             # V17.2.x(2026-09-10) 调整 A: 均价源 [85]→[51]（字典 09-08 round12 定案: [85]对均价锚仅3/20已撤销, [51]强锚+TDX快照）
             "avg_price": _tv("avg_price"),  # 均价/VWAP（腾讯[51]；TDX快照 average_price 同义）
             # V17.0.25(2026-09-03): [56] Beta 族（高置信, 腾讯口径 Beta 估计值）
@@ -129,7 +152,9 @@ def get_tencent_quote(code: str) -> Dict[str, Any]:
             "ask2": _tv("ask2"),  # 卖二价(元, 腾讯[22]；tdx ask2 / sina[24] 同义)
             "s_vol": _ssv,  # 内盘(主动卖, 手) — 腾讯[8]（科创板按股已÷_vdiv 归手）
             "b_vol": _bsv,  # 外盘(主动买, 手) — 腾讯[7]（科创板按股已÷_vdiv 归手）
-            "bid1_vol": _safe_float(vals[_f["bid1_vol"]]),          # 买一量(手) — V16.3.4 新增（sht 封单额用）
+            "bid1_vol": _safe_float(
+                vals[_f["bid1_vol"]]
+            ),  # 买一量(手) — V16.3.4 新增（sht 封单额用）
             # V17.0.27(2026-09-07): 涨停/跌停价脱离 push2——腾讯[47]/[48]（字典 12.8.12e 行3082/3083 实锤）
             "limit_up": _safe_float(vals[_f["limit_up"]]),
             "limit_down": _safe_float(vals[_f["limit_down_price"]]),
@@ -138,10 +163,24 @@ def get_tencent_quote(code: str) -> Dict[str, Any]:
         # V16.3.3: normalize 为白名单映射——腾讯独有字段（normalize 未定义）在此透传
         # V17.0.25: 透传列表增补 avg_price/beta/bid_ask_net（[85]/[56]/[86] 09-03 定案字段）
         # V17.2.x(2026-09-10): 透传列表增补 entrust_ratio/bid2/ask2/s_vol/b_vol（调整 C/D 实装字段）
-        for _xk in ("roa", "roe_deduct_ttm", "change_180td_pct", "avg_price", "beta",
-                    "bid_ask_net", "entrust_ratio", "bid2", "ask2", "s_vol", "b_vol",
-                    "bid1_vol", "vol_ratio", "pe_lyr",
-                    "limit_up", "limit_down"):
+        for _xk in (
+            "roa",
+            "roe_deduct_ttm",
+            "change_180td_pct",
+            "avg_price",
+            "beta",
+            "bid_ask_net",
+            "entrust_ratio",
+            "bid2",
+            "ask2",
+            "s_vol",
+            "b_vol",
+            "bid1_vol",
+            "vol_ratio",
+            "pe_lyr",
+            "limit_up",
+            "limit_down",
+        ):
             if raw.get(_xk) not in (None, 0, "", "0", "0.0"):
                 result[_xk] = raw[_xk]
         return result
@@ -219,7 +258,9 @@ def get_ths_hot_raw(date_str: str) -> list:
     try:
         r = _quick_request(
             url,
-            headers={"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36"},
+            headers={
+                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36"
+            },
             timeout=10,
         )
         if r is None:
@@ -294,8 +335,11 @@ def get_em_quote_full_delay(code: str) -> Dict[str, Any]:
     valid_if 拒绝空/全零行情避免投毒。数据_provider 的进程内 _PD_EXTRA_CACHE 仍做单 run 兜底去重。
     """
     from ._official_backup import get_bse_quote_backup
+
     r = _em_quote_full_impl(code, "https://push2delay.eastmoney.com/api/qt/stock/get")
-    if not r and em_exchange_prefix(code, upper=True) == "BJ":  # V17.2.11: 北交所东财封禁 → 官方备份
+    if (
+        not r and em_exchange_prefix(code, upper=True) == "BJ"
+    ):  # V17.2.11: 北交所东财封禁 → 官方备份
         r = get_bse_quote_backup(code) or {}
     return r
 
@@ -319,7 +363,8 @@ def get_em_fund_flow_multiday(code: str) -> Dict[str, Any]:
         r = _quick_request(
             "https://push2delay.eastmoney.com/api/qt/ulist.np/get",
             params={
-                "fltt": "2", "invt": "2",
+                "fltt": "2",
+                "invt": "2",
                 "secids": em_secid_prefix(code) + code,
                 "fields": "f12,f164,f165",
             },
@@ -345,6 +390,7 @@ def get_em_fund_flow_multiday(code: str) -> Dict[str, Any]:
     except Exception as _e:
         _debug_log(f"datasource get_em_fund_flow_multiday({code}): {_e}")
         return {}
+
 
 def get_em_ulist_batch(codes: List[str], fields: str = _ULIST_BATCH_FIELDS) -> List[Dict[str, Any]]:
     """V17.0.26: push2delay ulist.np 批量行情取数，返回**原始 diff 记录列表**。
@@ -396,7 +442,7 @@ def get_em_ulist_batch(codes: List[str], fields: str = _ULIST_BATCH_FIELDS) -> L
                 headers={"Referer": "https://quote.eastmoney.com/"},
                 timeout=10,
             )
-            if r is None:      # 风控/封禁跳过，与 `_quick_request` 的 None 约定一致
+            if r is None:  # 风控/封禁跳过，与 `_quick_request` 的 None 约定一致
                 continue
             diff = (r.json().get("data") or {}).get("diff") or []
             # 东财偶发以 dict（下标→记录）形式返回，统一摊平为 list
@@ -409,7 +455,9 @@ def get_em_ulist_batch(codes: List[str], fields: str = _ULIST_BATCH_FIELDS) -> L
     return rows
 
 
-def _em_quote_full_impl(code: str, host: str = "https://push2delay.eastmoney.com/api/qt/stock/get") -> Dict[str, Any]:
+def _em_quote_full_impl(
+    code: str, host: str = "https://push2delay.eastmoney.com/api/qt/stock/get"
+) -> Dict[str, Any]:
     """内部实现：host 参数化的全字段行情获取（f43-f221，字典 12.9.1）。
 
     ZHB tdxstat.cfg 35 字段中无 price/change_pct/open/high/low/last_close 等行情字段，
@@ -619,10 +667,10 @@ def _em_quote_full_impl(code: str, host: str = "https://push2delay.eastmoney.com
         # V17.2.x(2026-09-10) 调整 B/D: 委差/委比/内盘/外盘（字典 §12.8.12e；push2 stock/get f192/f191/f161/f49）
         #   ⚠️ 跨端点同号异义铁律：f49/f161/f191/f192 仅在本 stock/get 主域/镜像域读取，绝不混入 ulist.np 端点
         for src, dst in [
-            ("f191", "entrust_ratio"),   # 委比%(东财 B14)
-            ("f192", "bid_ask_net"),     # 委差(手, 东财 B13)
-            ("f161", "s_vol"),           # 内盘(主动卖成交量, 手)
-            ("f49", "b_vol"),            # 外盘(主动买成交量, 手)
+            ("f191", "entrust_ratio"),  # 委比%(东财 B14)
+            ("f192", "bid_ask_net"),  # 委差(手, 东财 B13)
+            ("f161", "s_vol"),  # 内盘(主动卖成交量, 手)
+            ("f49", "b_vol"),  # 外盘(主动买成交量, 手)
         ]:
             v = data.get(src)
             if v is not None and v != "-":
@@ -703,19 +751,22 @@ def _em_quote_full_impl(code: str, host: str = "https://push2delay.eastmoney.com
         #
         # 单位: 元
         flow_map = {
-            "f135": ("fund_main_buy", "fund_flow"),      # 主力买入额 = f138 + f141
-            "f136": ("fund_main_sell", "fund_flow"),     # 主力卖出额 = f139 + f142
-            "f137": ("fund_main_today", "fund_flow"),    # 主力净额   = f140 + f143（**不可再加 f140**）
-            "f138": ("fund_super_buy", "fund_flow"),     # 超大单买入额
-            "f139": ("fund_super_sell", "fund_flow"),    # 超大单卖出额
-            "f140": ("fund_super_today", "fund_flow"),   # 超大单净额
-            "f141": ("fund_large_buy", "fund_flow"),     # 大单买入额
-            "f142": ("fund_large_sell", "fund_flow"),    # 大单卖出额
-            "f143": ("fund_large_today", "fund_flow"),   # 大单净额
-            "f144": ("fund_mid_buy", "fund_flow"),       # 中单买入额
-            "f145": ("fund_mid_sell", "fund_flow"),      # 中单卖出额
-            "f146": ("fund_mid_today", "fund_flow"),     # 中单净额
-            "f149": ("fund_small_today", "fund_flow"),   # 小单净额（无买/卖明细）
+            "f135": ("fund_main_buy", "fund_flow"),  # 主力买入额 = f138 + f141
+            "f136": ("fund_main_sell", "fund_flow"),  # 主力卖出额 = f139 + f142
+            "f137": (
+                "fund_main_today",
+                "fund_flow",
+            ),  # 主力净额   = f140 + f143（**不可再加 f140**）
+            "f138": ("fund_super_buy", "fund_flow"),  # 超大单买入额
+            "f139": ("fund_super_sell", "fund_flow"),  # 超大单卖出额
+            "f140": ("fund_super_today", "fund_flow"),  # 超大单净额
+            "f141": ("fund_large_buy", "fund_flow"),  # 大单买入额
+            "f142": ("fund_large_sell", "fund_flow"),  # 大单卖出额
+            "f143": ("fund_large_today", "fund_flow"),  # 大单净额
+            "f144": ("fund_mid_buy", "fund_flow"),  # 中单买入额
+            "f145": ("fund_mid_sell", "fund_flow"),  # 中单卖出额
+            "f146": ("fund_mid_today", "fund_flow"),  # 中单净额
+            "f149": ("fund_small_today", "fund_flow"),  # 小单净额（无买/卖明细）
         }
         for src, (dst, _cat) in flow_map.items():
             v = data.get(src)
@@ -734,7 +785,11 @@ def _em_quote_full_impl(code: str, host: str = "https://push2delay.eastmoney.com
             try:
                 result["fund_5d_array"] = json.loads(v)
                 # V17.0: 5日主力净由 f178 数组聚合(替代原 f141 误读)
-                _s5 = sum(float(x.get("mainNetAmt", 0)) for x in result["fund_5d_array"] if isinstance(x, dict))
+                _s5 = sum(
+                    float(x.get("mainNetAmt", 0))
+                    for x in result["fund_5d_array"]
+                    if isinstance(x, dict)
+                )
                 if _s5:
                     result["fund_main_5d"] = _s5
             except (TypeError, ValueError, json.JSONDecodeError):
@@ -744,13 +799,13 @@ def _em_quote_full_impl(code: str, host: str = "https://push2delay.eastmoney.com
         # fuyao 官方三大报表 5/5 终判 + 报告期切换动态双证——详见
         # docs/field_verification/20260825_cross_analysis.md)
         for src, dst in [
-            ("f103", "ocf_ttm"),            # 经营活动现金流量净额 TTM (元)
-            ("f104", "revenue_ttm"),        # 营业总收入 TTM (元)
+            ("f103", "ocf_ttm"),  # 经营活动现金流量净额 TTM (元)
+            ("f104", "revenue_ttm"),  # 营业总收入 TTM (元)
             ("f105", "net_profit_period"),  # 归母净利润 最新报告期 (元)
-            ("f108", "eps_deduct_ttm"),     # 扣非每股收益 TTM (元/股)
+            ("f108", "eps_deduct_ttm"),  # 扣非每股收益 TTM (元/股)
             ("f109", "net_profit_annual"),  # 归母净利润 最新年报 (元)
-            ("f160", "eps_annual"),         # 年报EPS (=f109/f84) (元/股)
-            ("f190", "undist_profit_ps"),   # 每股未分配利润 (元/股, ≡ulist f48)
+            ("f160", "eps_annual"),  # 年报EPS (=f109/f84) (元/股)
+            ("f190", "undist_profit_ps"),  # 每股未分配利润 (元/股, ≡ulist f48)
         ]:
             v = data.get(src)
             if v is not None and v != "-":
@@ -773,6 +828,7 @@ def get_fupan_zttt() -> Dict[str, Any]:
     """
     try:
         from levistock.stock.stock_fupanla_kph import get_zttt
+
         return get_zttt() or {}
     except Exception as _e:
         _debug_log(f"datasource fupan zttt: {_e}")
@@ -784,6 +840,7 @@ def get_fupan_pmsl() -> Dict[str, Any]:
     """复盘啦盘面梳理（get_pmsl 缓存包装）——List[30] 每条 6 字段（TimeMin/TagID/ZSCode/Detail/TagShuXing/TagName）。"""
     try:
         from levistock.stock.stock_fupanla_kph import get_pmsl
+
         return get_pmsl() or {}
     except Exception as _e:
         _debug_log(f"datasource fupan pmsl: {_e}")
@@ -808,8 +865,11 @@ def get_stock_permanent_info(code: str) -> Dict[str, Any]:
             _mkt = "1" if code.startswith(("6", "9")) else "0"
         r = _quick_request(
             "https://push2delay.eastmoney.com/api/qt/stock/get",
-            params={"secid": f"{_mkt}.{code}", "fields": "f189",
-                    "ut": "f057cbcbce2a86e2866ab8877db1d059"},
+            params={
+                "secid": f"{_mkt}.{code}",
+                "fields": "f189",
+                "ut": "f057cbcbce2a86e2866ab8877db1d059",
+            },
             timeout=10,
         )
         if r is not None and r.status_code == 200:
@@ -818,6 +878,7 @@ def get_stock_permanent_info(code: str) -> Dict[str, Any]:
                 # V17.3.5 修正(报告审查): f189 可能为残缺形态(如 '1998-04-'), 归一化后仅当得到
                 # 完整 YYYY-MM-DD 才采用; 残缺(日缺失)视为缺失, 交由下方 TDX 0x0010 ipo_date 兜底补全。
                 from core._accessors import normalize_list_date
+
                 _ld = normalize_list_date(_d["f189"])
                 if _ld and len(_ld) == 10 and _ld[4] == "-" and _ld[7] == "-":
                     out["list_date"] = _ld
@@ -827,14 +888,17 @@ def get_stock_permanent_info(code: str) -> Dict[str, Any]:
         # TDX 0x0010 兜底（ipo_date 字段——字典 12.14 已录）
         try:
             from core.tdx_client import tdx_get_finance_info
+
             fin = tdx_get_finance_info(code) or {}
             if fin.get("ipo_date"):
                 from core._accessors import normalize_list_date
+
                 out["list_date"] = normalize_list_date(fin["ipo_date"])
         except Exception as _e:
             _debug_log(f"permanent list_date tdx ({code}): {_e}")
     try:
-        from core.zhb_client import get_zhb_single_stock_data
+        from stock_common import get_zhb_single_stock_data
+
         z = get_zhb_single_stock_data(code) or {}
         if z.get("ipo_price"):
             out["ipo_price"] = z["ipo_price"]
@@ -844,6 +908,7 @@ def get_stock_permanent_info(code: str) -> Dict[str, Any]:
     """复盘啦盘面梳理（get_pmsl 缓存包装）——List[30] 每条 6 字段。"""
     try:
         from levistock.stock.stock_fupanla_kph import get_pmsl
+
         return get_pmsl() or {}
     except Exception as _e:
         _debug_log(f"datasource fupan pmsl: {_e}")
@@ -1005,8 +1070,9 @@ def get_stock_changes(change_type: str = "8201") -> List[Dict[str, Any]]:
         from stock_common import UA
         from stock_common.stock_calendar import get_last_trading_day
         from stock_common.sc_network import _em_wait_process_interval
+
         _em_wait_process_interval()
-        _params = {
+        _params: Dict[str, Any] = {
             "type": change_type,
             "ut": "7eea3edcaed734bea9cbfc24409ed989",
             "pageindex": 0,
@@ -1015,10 +1081,12 @@ def get_stock_changes(change_type: str = "8201") -> List[Dict[str, Any]]:
         }
         resp = requests.get(
             "https://push2ex.eastmoney.com/getAllStockChanges",
-            params=_params, headers={"User-Agent": UA}, timeout=10,
+            params=_params,
+            headers={"User-Agent": UA},
+            timeout=10,
         )
         resp.raise_for_status()
-        body = (resp.json().get("data") or {})
+        body = resp.json().get("data") or {}
         items = body.get("allstock", []) or []
         _date = get_last_trading_day().strftime("%m-%d")
         rows = []
@@ -1043,16 +1111,18 @@ def get_stock_changes(change_type: str = "8201") -> List[Dict[str, Any]]:
                     px = float(_parts[1]) if len(_parts) >= 2 else 0.0
                 except (ValueError, IndexError):
                     pass
-            rows.append({
-                "code": code,
-                "name": name,
-                "market": str(item.get("m", "")),
-                "time": tm,
-                "change_pct": chg,
-                "price": px,
-                "change_type": change_type,
-                "date": _date,
-            })
+            rows.append(
+                {
+                    "code": code,
+                    "name": name,
+                    "market": str(item.get("m", "")),
+                    "time": tm,
+                    "change_pct": chg,
+                    "price": px,
+                    "change_type": change_type,
+                    "date": _date,
+                }
+            )
         return rows
     except Exception as _e:
         _debug_log(f"datasource get_stock_changes: {_e}")
@@ -1074,8 +1144,11 @@ def get_shortline_indicators(code: str) -> Dict[str, Any]:
 
     try:
         from axdata_core import request_interface
+
         # 找最新 zhb 包
-        zhb_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "cache", "zhb")
+        zhb_dir = os.path.join(
+            os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "cache", "zhb"
+        )
         zips = sorted(glob.glob(os.path.join(zhb_dir, "zhb_*.zip")))
         if not zips:
             return {}
@@ -1083,7 +1156,9 @@ def get_shortline_indicators(code: str) -> Dict[str, Any]:
         r = request_interface(
             "stock_shortline_indicators_tdx",
             params={"code": code, "stats_root": stats_root},
-            fields=None, persist=False, data_root=None,
+            fields=None,
+            persist=False,
+            data_root=None,
         )
         records = getattr(r, "records", None)
         if records and isinstance(records[0], dict):
@@ -1105,13 +1180,26 @@ def get_tdx_chip_race(period: int = 0, sort: int = 1) -> List[Dict[str, Any]]:
     """
     from stock_common import _quick_request
 
-    payload = json.dumps([{
-        "funcId": 20, "offset": 0, "count": 100,
-        "sort": sort, "period": period, "Token": _TDX_QC_TOKEN,
-        "modname": "JJQC",
-    }])
-    r = _quick_request(_TDX_QC_URL, data=payload, timeout=10, method="POST",
-                       headers={"Content-Type": "application/json; charset=UTF-8"})
+    payload = json.dumps(
+        [
+            {
+                "funcId": 20,
+                "offset": 0,
+                "count": 100,
+                "sort": sort,
+                "period": period,
+                "Token": _TDX_QC_TOKEN,
+                "modname": "JJQC",
+            }
+        ]
+    )
+    r = _quick_request(
+        _TDX_QC_URL,
+        data=payload,
+        timeout=10,
+        method="POST",
+        headers={"Content-Type": "application/json; charset=UTF-8"},
+    )
     if r is None:
         return []
     try:
@@ -1120,29 +1208,32 @@ def get_tdx_chip_race(period: int = 0, sort: int = 1) -> List[Dict[str, Any]]:
             inner = rows[0].get("data") or []
             out = []
             for d in inner:
-                out.append({
-                    "code": d.get("StockCode", ""),
-                    "name": d.get("StockName", ""),
-                    "pre_close": float(d.get("ZSJ", 0)) / 10000,
-                    "open_price": float(d.get("KPJ", 0)) / 10000,
-                    "price": float(d.get("ZJCJG", 0)) / 10000,
-                    "change_rate": float(d.get("ZDF", 0)),
-                    "deal_amount_wan": float(d.get("CJJE", 0)) / 1e4,
-                    "bid_trust_amount_wan": float(d.get("QCWTJE", 0)) / 1e4,
-                    "bid_deal_amount_wan": float(d.get("QCCJJE", 0)) / 1e4,
-                    "bid_rate_pct": float(d.get("QCFD", 0)) * 100,
-                    "bid_ratio_pct": float(d.get("QCZB", 0)) * 100,
-                    "limitup_days": int(d.get("TJZT", 0)),
-                    "limitup_boards": int(d.get("TJQB", 0)),
-                })
+                out.append(
+                    {
+                        "code": d.get("StockCode", ""),
+                        "name": d.get("StockName", ""),
+                        "pre_close": float(d.get("ZSJ", 0)) / 10000,
+                        "open_price": float(d.get("KPJ", 0)) / 10000,
+                        "price": float(d.get("ZJCJG", 0)) / 10000,
+                        "change_rate": float(d.get("ZDF", 0)),
+                        "deal_amount_wan": float(d.get("CJJE", 0)) / 1e4,
+                        "bid_trust_amount_wan": float(d.get("QCWTJE", 0)) / 1e4,
+                        "bid_deal_amount_wan": float(d.get("QCCJJE", 0)) / 1e4,
+                        "bid_rate_pct": float(d.get("QCFD", 0)) * 100,
+                        "bid_ratio_pct": float(d.get("QCZB", 0)) * 100,
+                        "limitup_days": int(d.get("TJZT", 0)),
+                        "limitup_boards": int(d.get("TJQB", 0)),
+                    }
+                )
             return out
     except Exception as _e:
         _debug_log(f"datasource get_tdx_chip_race: {_e}")
     return []
 
 
-def get_em_xuangu(sty_fields: str = "", filter_expr: str = "",
-                  page: int = 1, page_size: int = 50) -> List[Dict[str, Any]]:
+def get_em_xuangu(
+    sty_fields: str = "", filter_expr: str = "", page: int = 1, page_size: int = 50
+) -> List[Dict[str, Any]]:
     """东财选股器服务端筛选（200+ 字段任意组合——来源 myhhub/stock stock_selection.py）。
 
     Args:
@@ -1159,7 +1250,7 @@ def get_em_xuangu(sty_fields: str = "", filter_expr: str = "",
         "User-Agent": UA,
         "Referer": "https://data.eastmoney.com/xuangu/",
     }
-    params = {
+    params: Dict[str, Any] = {
         "sty": sty_fields if sty_fields else "ALL",
         "p": page,
         "ps": page_size,

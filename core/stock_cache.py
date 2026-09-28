@@ -79,7 +79,7 @@ import threading
 import atexit
 import functools
 import logging
-from typing import Any, Callable, Dict, Optional, TypeVar, cast
+from typing import Any, Callable, Collection, Dict, Optional, Type, TypeVar, cast
 from datetime import datetime, time as dtime
 
 _cache_logger = logging.getLogger("stock_cache")
@@ -134,7 +134,7 @@ def _l1_get(key: str, cross_verify: bool = False) -> Optional[Any]:
     return None
 
 
-def _l1_set(key: str, value: Any, ttl_seconds: int, verified: bool = False) -> None:
+def _l1_set(key: str, value: Any, ttl_seconds: float, verified: bool = False) -> None:
     """L1内存缓存写入。
 
     V15.3 LRU: 写入时已存在则刷新 expiry 并移到末尾；
@@ -212,20 +212,21 @@ _DISABLE_CACHE = os.environ.get("STOCK_NOCACHE", "") == "1"
 # 解决"集体过期 → 并发重拉 → 限流/封 IP"（参考仓库: 东财风控，批量任务降频）
 # 适用: HTTP 重负载分类。窗口取 1 个 TTL 周期，过期后数据仍可信（历史数据不变）
 _SOFT_EXPIRY_WINDOW: "Dict[str, int]" = {
-    "dragon_tiger":     7 * 86400,   # 历史数据不变，过期后仍可信
-    "fund_flow":        7 * 86400,
-    "margin_trading":   7 * 86400,
-    "block_trade":      7 * 86400,
-    "lockup_expiry":    7 * 86400,
-    "announcements":    7 * 86400,
-    "northbound":       7 * 86400,
-    "reports":          1 * 86400,
+    "dragon_tiger": 7 * 86400,  # 历史数据不变，过期后仍可信
+    "fund_flow": 7 * 86400,
+    "margin_trading": 7 * 86400,
+    "block_trade": 7 * 86400,
+    "lockup_expiry": 7 * 86400,
+    "lockup_expiry_shares_v2": 7 * 86400,
+    "announcements": 7 * 86400,
+    "northbound": 7 * 86400,
+    "reports": 1 * 86400,
     "industry_reports": 1 * 86400,
-    "stock_news":       6 * 3600,
-    "global_news":      6 * 3600,
-    "news":             6 * 3600,
-    "hot_rank":         2 * 3600,
-    "hot_concept":      2 * 3600,
+    "stock_news": 6 * 3600,
+    "global_news": 6 * 3600,
+    "news": 6 * 3600,
+    "hot_rank": 2 * 3600,
+    "hot_concept": 2 * 3600,
 }
 
 # 软过期命中统计
@@ -265,87 +266,85 @@ def _soft_expiry_allowed(category: str, expires_at: float, now: float) -> bool:
 # ═══════════════════════════════════════
 TTL: Dict[str, int] = {
     # 静态数据（几乎不变）
-    "static_permanent":  3650 * 86400,  # V16.3.3: 绝对不变字段（上市日期/发行价/核心名称/代码/交易所）——10 年
-    "basic_info":       1 * 3600,    # 股票基本信息（含市值/价格等动态字段，V16.3 O24: 1天→1小时）
-    "basic_info_static": 365 * 86400, # 股票静态信息（总股本/上市日期——上市日期永远不变，V16.3 O24: 90天→365天）
-    "share_capital":   90 * 86400,   # 股本数据（总股本、流通股，V10.1新增）
-    "concept_blocks":  30 * 86400,   # 概念板块列表（V10.0: 7天→30天）
-    "board_type":       7 * 86400,   # 沪市/深市/北交所
-    "board_list":       7 * 86400,   # 板块列表（行业排名参照系——T-1 可接受，V16.3 O25 新增，trading_day 覆盖）
-    "board_members":      15 * 60,   # V17.0.26 DEBT-012: 板块成分股（push2 主域降频；消费方只作
-                                     # 「行业内相对排序参照系」(med rank / sc peers / val 日历效应)，
-                                     # 15min 陈旧对相对排序无影响；trading_day=True 保证跨交易日必失效）
-
+    "static_permanent": 3650
+    * 86400,  # V16.3.3: 绝对不变字段（上市日期/发行价/核心名称/代码/交易所）——10 年
+    "basic_info": 1 * 3600,  # 股票基本信息（含市值/价格等动态字段，V16.3 O24: 1天→1小时）
+    "basic_info_static": 365
+    * 86400,  # 股票静态信息（总股本/上市日期——上市日期永远不变，V16.3 O24: 90天→365天）
+    "share_capital": 90 * 86400,  # 股本数据（总股本、流通股，V10.1新增）
+    "concept_blocks": 30 * 86400,  # 概念板块列表（V10.0: 7天→30天）
+    "board_type": 7 * 86400,  # 沪市/深市/北交所
+    "board_list": 7
+    * 86400,  # 板块列表（行业排名参照系——T-1 可接受，V16.3 O25 新增，trading_day 覆盖）
+    "board_members": 15 * 60,  # V17.0.26 DEBT-012: 板块成分股（push2 主域降频；消费方只作
+    # 「行业内相对排序参照系」(med rank / sc peers / val 日历效应)，
+    # 15min 陈旧对相对排序无影响；trading_day=True 保证跨交易日必失效）
     # 财务数据（改为 24 小时或跟随 trading_day，废弃原 90 天静态，防止错位穿透）
-    "financial":        24 * 3600,   # 新浪利润表
-    "balance_sheet":    24 * 3600,   # 新浪资产负债表
-    "cash_flow":        24 * 3600,   # 东财现金流量表（V9.6新增）
-    "eps_forecast":     24 * 3600,   # EPS 预测
-
+    "financial": 24 * 3600,  # 新浪利润表
+    "balance_sheet": 24 * 3600,  # 新浪资产负债表
+    "cash_flow": 24 * 3600,  # 东财现金流量表（V9.6新增）
+    "eps_forecast": 24 * 3600,  # EPS 预测
     # 日频数据（收盘后固定，历史数据不变可延长TTL）
-    "dragon_tiger":     7 * 86400,   # 龙虎榜（历史数据不变，V10.0: 1天→7天）
-    "northbound":      30 * 86400,   # 北向资金持股（历史数据不变，V10.0: 7天→30天）
-    "margin_trading":  14 * 86400,   # 融资融券（历史数据不变，V10.0: 3天→14天）
-    "block_trade":     14 * 86400,   # 大宗交易（历史数据不变，V10.0: 3天→14天）
-    "lockup_expiry":   90 * 86400,   # 限售解禁（日期固定，V10.0: 7天→90天）
-    "announcements":   30 * 86400,   # 巨潮公告（发布后不变，V10.0: 7天→30天）
-    "hsgt_flow":       14 * 86400,   # 沪深港通资金流（历史数据不变，V10.0: 3天→14天）
-    "kline":            7 * 86400,   # K线行情（历史数据不变，V10.0: 1天→7天）
-    "limit_pool":       7 * 86400,   # 打板数据（历史数据不变，V10.0: 1天→7天）
-    "fund_flow":        7 * 86400,   # 资金流数据（历史数据不变，V10.0: 1天→7天）
-
+    "dragon_tiger": 7 * 86400,  # 龙虎榜（历史数据不变，V10.0: 1天→7天）
+    "northbound": 30 * 86400,  # 北向资金持股（历史数据不变，V10.0: 7天→30天）
+    "margin_trading": 14 * 86400,  # 融资融券（历史数据不变，V10.0: 3天→14天）
+    "block_trade": 14 * 86400,  # 大宗交易（历史数据不变，V10.0: 3天→14天）
+    "lockup_expiry": 90 * 86400,  # 限售解禁（日期固定，V10.0: 7天→90天）
+    "lockup_expiry_shares_v2": 90 * 86400,  # 新单位规范化后的独立缓存命名空间
+    "announcements": 30 * 86400,  # 巨潮公告（发布后不变，V10.0: 7天→30天）
+    "hsgt_flow": 14 * 86400,  # 沪深港通资金流（历史数据不变，V10.0: 3天→14天）
+    "kline": 7 * 86400,  # K线行情（历史数据不变，V10.0: 1天→7天）
+    "limit_pool": 7 * 86400,  # 打板数据（历史数据不变，V10.0: 1天→7天）
+    "fund_flow": 7 * 86400,  # 资金流数据（历史数据不变，V10.0: 1天→7天）
     # 舆情互动（V8.9 新增）
-    "hot_rank":         1 * 3600,    # 东财人气榜（小时级变化）
-    "hot_concept":      1 * 3600,    # 概念命中（小时级变化）
-
+    "hot_rank": 1 * 3600,  # 东财人气榜（小时级变化）
+    "hot_concept": 1 * 3600,  # 概念命中（小时级变化）
     # 研报（V16 校准: 3天→1小时，避免新研报滞后；研报非秒级数据，1h 刷新足够）
-    "reports":          1 * 3600,    # 东财研报列表
-    "industry_reports": 1 * 3600,    # 行业研报
-
+    "reports": 1 * 3600,  # 东财研报列表
+    "industry_reports": 1 * 3600,  # 行业研报
     # 新闻舆情（更新频繁）
-    "stock_news":       6 * 3600,    # 个股新闻（6小时）
-    "global_news":      1 * 3600,    # 全球资讯（1小时）
-    "news":             6 * 3600,    # 财联社快讯（V9.6新增，6小时）
-
+    "stock_news": 6 * 3600,  # 个股新闻（6小时）
+    "global_news": 1 * 3600,  # 全球资讯（1小时）
+    "news": 6 * 3600,  # 财联社快讯（V9.6新增，6小时）
     # 行业/概念热度（每日变化，V11.2: 改为交易日模式）
-    "industry_compare":  24 * 3600,   # 行业板块排名（trading_day=True覆盖）
-    "industry_peers_v2": 24 * 3600,   # 行业可比公司（V16.2.16 版本化——trading_day 覆盖）
-    "industry_classification": 90 * 86400,  # V17.1: 个股所属板块分类(行业f127/地域f128, push2降频); 分类变化极慢→季度TTL
-    "ths_hot_reason":   24 * 3600,   # 同花顺热点题材（trading_day=True覆盖）
-    "hsgt_macro_flow":  24 * 3600,   # 北向资金大盘流向（trading_day=True覆盖）
-
+    "industry_compare": 24 * 3600,  # 行业板块排名（trading_day=True覆盖）
+    "industry_peers_v2": 24 * 3600,  # 行业可比公司（V16.2.16 版本化——trading_day 覆盖）
+    "industry_classification": 90
+    * 86400,  # V17.1: 个股所属板块分类(行业f127/地域f128, push2降频); 分类变化极慢→季度TTL
+    "ths_hot_reason": 24 * 3600,  # 同花顺热点题材（trading_day=True覆盖）
+    "hsgt_macro_flow": 24 * 3600,  # 北向资金大盘流向（trading_day=True覆盖）
     # V16.3.3 新源缓存分类（2026-08-10 字典 12.15.5 充实后补充）
-    "market_emotion_multi": 7 * 86400,  # 涨停池三源互校（财联社=KPL=复盘啦——trading_day 覆盖，盘中 6s+ 调用必须缓存）
-    "kpl_sentiment":        7 * 86400,  # KPL 市场情绪（strong/连板/涨停——trading_day 覆盖）
-    "fupan_review":         7 * 86400,  # 复盘啦涨停天梯/盘面（get_zttt/get_pmsl——trading_day 覆盖）
-    "plate_rotation":       7 * 86400,  # 板块轮动 N×天矩阵（duanxianxia——trading_day 覆盖）
-    "fuyao_snapshot":       30 * 60,    # fuyao 行情快照（30min——盘中动态）
-    "fuyao_valuation":      1 * 3600,   # fuyao 估值（1h——pe/pb 随价但低频）
-    "fuyao_ladder":         7 * 86400,  # fuyao 涨停梯队（trading_day 覆盖）
-    "fuyao_auction":        30 * 60,    # fuyao 集合竞价快照（30min；stage=final 终态盘后稳定）
+    "market_emotion_multi": 7
+    * 86400,  # 涨停池三源互校（财联社=KPL=复盘啦——trading_day 覆盖，盘中 6s+ 调用必须缓存）
+    "kpl_sentiment": 7 * 86400,  # KPL 市场情绪（strong/连板/涨停——trading_day 覆盖）
+    "fupan_review": 7 * 86400,  # 复盘啦涨停天梯/盘面（get_zttt/get_pmsl——trading_day 覆盖）
+    "plate_rotation": 7 * 86400,  # 板块轮动 N×天矩阵（duanxianxia——trading_day 覆盖）
+    "fuyao_snapshot": 30 * 60,  # fuyao 行情快照（30min——盘中动态）
+    "fuyao_valuation": 1 * 3600,  # fuyao 估值（1h——pe/pb 随价但低频）
+    "fuyao_ladder": 7 * 86400,  # fuyao 涨停梯队（trading_day 覆盖）
+    "fuyao_auction": 30 * 60,  # fuyao 集合竞价快照（30min；stage=final 终态盘后稳定）
     # V17.0.5: 基金域/财务指标（trading_day 覆盖——报告期/定期披露数据日频足够）
-    "fuyao_fund_holdings":  7 * 86400,  # 基金重仓持仓（lng/med 批量侧证防 N×M 重复请求）
-    "fuyao_indicators":     7 * 86400,  # 五类财务指标（ROE/扣非/ROA 官方口径）
-    "fuyao_seal_map":       30 * 60,    # 涨停池封单映射（30min——盘中封单动态，sht 衰减率用）
+    "fuyao_fund_holdings": 7 * 86400,  # 基金重仓持仓（lng/med 批量侧证防 N×M 重复请求）
+    "fuyao_indicators": 7 * 86400,  # 五类财务指标（ROE/扣非/ROA 官方口径）
+    "fuyao_seal_map": 30 * 60,  # 涨停池封单映射（30min——盘中封单动态，sht 衰减率用）
     # V17.0.26(2026-09-03, 字典 §12.15 缓存硬约束落地): 新增两类缓存分类
-    "fuyao_financials":    7 * 86400,    # fuyao 三大报表序列（trading_day 覆盖——报告期数据日频刷新足够；跨运行去重省官方 REST 配额，连接独立风控域仍限流）
-    "quote_full_delay":    7 * 86400,    # push2delay 单股全字段行情（trading_day 覆盖——15min 延时日级数据；降频防 push2 连接级风控，字典 §12.15.5 优先镜像域）
-
+    "fuyao_financials": 7
+    * 86400,  # fuyao 三大报表序列（trading_day 覆盖——报告期数据日频刷新足够；跨运行去重省官方 REST 配额，连接独立风控域仍限流）
+    "quote_full_delay": 7
+    * 86400,  # push2delay 单股全字段行情（trading_day 覆盖——15min 延时日级数据；降频防 push2 连接级风控，字典 §12.15.5 优先镜像域）
     # 分红历史（公告不频繁）
-    "dividend":         30 * 86400,   # 分红历史
-
+    "dividend": 30 * 86400,  # 分红历史
     # F10 数据（V9.0 新增；V16.3 O25 清理 8 个死分类——现 F10 走 f10_financial 等在用分类）
     # 高频分类（每日更新，休市不变，通过 @cached(trading_day=True) 启用交易日模式）
-    "f10_reminders":       24 * 3600,   # F2 最新提示（交易日模式覆盖此值）
-    "f10_news":            24 * 3600,   # F13 公司报道（交易日模式覆盖此值）
-    "f10_announcements":   24 * 3600,   # F12 公司公告（交易日模式覆盖此值）
-    "f10_fund_flow":       24 * 3600,   # F9 资金动向（交易日模式覆盖此值）
-    "f10_shareholder":      7 * 86400,  # F5 股东研究（季度更新）
-    "f10_share_capital":    7 * 86400,  # F4 股本结构（偶尔更新）
-    "f10_financial":       24 * 3600,  # F3 财务分析（V16.3 O: F10 接入主缓存）
-
+    "f10_reminders": 24 * 3600,  # F2 最新提示（交易日模式覆盖此值）
+    "f10_news": 24 * 3600,  # F13 公司报道（交易日模式覆盖此值）
+    "f10_announcements": 24 * 3600,  # F12 公司公告（交易日模式覆盖此值）
+    "f10_fund_flow": 24 * 3600,  # F9 资金动向（交易日模式覆盖此值）
+    "f10_shareholder": 7 * 86400,  # F5 股东研究（季度更新）
+    "f10_share_capital": 7 * 86400,  # F4 股本结构（偶尔更新）
+    "f10_financial": 24 * 3600,  # F3 财务分析（V16.3 O: F10 接入主缓存）
     # 通用兜底（1 小时）
-    "default":          3600,
+    "default": 3600,
 }
 
 
@@ -399,6 +398,7 @@ def _calc_trading_day_expiry() -> float:
         return time.time() + 24 * 3600
     return ts
 
+
 # ═══════════════════════════════════════
 # SQLite Schema 常量（单点维护）
 # ═══════════════════════════════════════
@@ -419,9 +419,9 @@ _CACHE_INDEX_SQLS = [
     "CREATE INDEX IF NOT EXISTS idx_last_accessed ON cache_entries(last_accessed)",
 ]
 _CACHE_PRAGMAS = [
-    ("PRAGMA journal_mode=DELETE",),    # DELETE 模式，多进程安全
-    ("PRAGMA synchronous=NORMAL",),     # 平衡性能与安全
-    ("PRAGMA cache_size=-8000",),       # 8MB 缓存
+    ("PRAGMA journal_mode=DELETE",),  # DELETE 模式，多进程安全
+    ("PRAGMA synchronous=NORMAL",),  # 平衡性能与安全
+    ("PRAGMA cache_size=-8000",),  # 8MB 缓存
 ]
 
 # ═══════════════════════════════════════
@@ -463,6 +463,7 @@ def _close_db() -> None:
                 except Exception as _e:
                     _cache_logger.debug(f"_close_db error: {_e}")
                 _db = None
+
 
 atexit.register(_close_db)
 
@@ -511,12 +512,16 @@ def _enforce_size_limit() -> None:
         (delete_count,),
     )
     db.commit()
-    print(f"[stock_cache] 缓存超限（{db_size_bytes / 1024 / 1024:.1f}MB），已清理 {delete_count} 条最久未访问条目", flush=True)
+    print(
+        f"[stock_cache] 缓存超限（{db_size_bytes / 1024 / 1024:.1f}MB），已清理 {delete_count} 条最久未访问条目",
+        flush=True,
+    )
 
 
 # ═══════════════════════════════════════
 # 核心缓存 API
 # ═══════════════════════════════════════
+
 
 def _build_key(category: str, func_name: str, *args: Any, **kwargs: Any) -> str:
     """根据函数名+参数生成缓存 key（V17.2.x: 前缀嵌入 CACHE_CONTRACT_VERSION）。"""
@@ -533,8 +538,9 @@ def _build_key(category: str, func_name: str, *args: Any, **kwargs: Any) -> str:
     return raw
 
 
-def get_cache(category: str, func_name: str, *args: Any,
-              cross_verify: bool = False, **kwargs: Any) -> Optional[Any]:
+def get_cache(
+    category: str, func_name: str, *args: Any, cross_verify: bool = False, **kwargs: Any
+) -> Optional[Any]:
     """查询缓存，返回解析后的数据或 None。
     V10.3: L1/L2双级缓存架构 — 优先L1内存缓存，失败fallback到L2 SQLite。
 
@@ -548,13 +554,13 @@ def get_cache(category: str, func_name: str, *args: Any,
         _record_cache_hit(category, False)
         return None
     key = _build_key(category, func_name, *args, **kwargs)
-    
+
     # V10.3: 优先 L1 内存缓存（V16.2: cross_verify 模式 L1 也校验 verified）
     l1_result = _l1_get(key, cross_verify=cross_verify)
     if l1_result is not None:
         _record_cache_hit(category, True)
         return l1_result
-    
+
     now = time.time()
     try:
         db = _get_db()
@@ -562,7 +568,7 @@ def get_cache(category: str, func_name: str, *args: Any,
         cursor.execute(
             "SELECT value, expires_at, hit_count, prev_value, verified "
             "FROM cache_entries WHERE key=?",
-            (key,)
+            (key,),
         )
         row = cursor.fetchone()
         if row is None:
@@ -589,7 +595,7 @@ def get_cache(category: str, func_name: str, *args: Any,
         # V16.0: 去掉每读 commit（原代码每次命中 UPDATE+commit → 万级重访 30-90s）
         cursor.execute(
             "UPDATE cache_entries SET hit_count=hit_count+1, last_accessed=? WHERE key=?",
-            (now, key)
+            (now, key),
         )
         _maybe_commit()
         # V10.3: 将L2结果写入L1，加速后续访问
@@ -607,7 +613,7 @@ def get_cache(category: str, func_name: str, *args: Any,
         return None
 
 
-def _serialize_for_cache(value):
+def _serialize_for_cache(value: Any) -> Any:
     """V13.1: dataclass 透明序列化（写入时把 dataclass 转 dict）
 
     支持：
@@ -624,7 +630,7 @@ def _serialize_for_cache(value):
     return value
 
 
-def _deserialize_from_cache(value, target_cls=None):
+def _deserialize_from_cache(value: Any, target_cls: Optional[Type[Any]] = None) -> Any:
     """V13.1: dataclass 透明反序列化（读取时把 dict 转 dataclass）
 
     Args:
@@ -646,6 +652,7 @@ def _deserialize_from_cache(value, target_cls=None):
 # ═══════════════════════════════════════════════════════════
 # V15.2: 统一 valid_if 工厂函数（替代散落的 r is not None）
 # ═══════════════════════════════════════════════════════════
+
 
 def make_valid_if(check_zeros: bool = True, min_size: int = 0) -> Callable[[Any], bool]:
     """V15.2: 生成通用 valid_if 校验函数。
@@ -671,6 +678,7 @@ def make_valid_if(check_zeros: bool = True, min_size: int = 0) -> Callable[[Any]
         # 纯数据列表：拒绝空 list
         @cached(category="news", valid_if=make_valid_if(check_zeros=False))
     """
+
     def validator(r: Any) -> bool:
         # 1) None 拒绝
         if r is None:
@@ -697,6 +705,7 @@ def make_valid_if(check_zeros: bool = True, min_size: int = 0) -> Callable[[Any]
                         if isinstance(vv, (int, float)) and vv == 0:
                             return False
         return True
+
     return validator
 
 
@@ -711,6 +720,7 @@ def _has_zero_price(value: Any) -> bool:
       - list/tuple 中的 0 值不视为坏数据
       - 字段名以 _ 开头（私有标记）不检查
     """
+
     def _check_recursive(v: Any, depth: int = 0) -> bool:
         if depth > 3:
             return False
@@ -724,12 +734,14 @@ def _has_zero_price(value: Any) -> bool:
                 if _check_recursive(sub_v, depth + 1):
                     return True
         return False
+
     return _check_recursive(value)
 
 
 # ═══════════════════════════════════════════════════════════
 # V15.2: ZHB 交叉验证工具函数（恢复用户历史机制）
 # ═══════════════════════════════════════════════════════════
+
 
 def _cross_verify_with_zhb(code: str, http_value: Any, threshold_pct: float = 50.0) -> bool:
     """V15.2: HTTP 返回值与 ZHB dict 关键字段对比，偏离过大则拒绝。
@@ -751,6 +763,7 @@ def _cross_verify_with_zhb(code: str, http_value: Any, threshold_pct: float = 50
         return True
     try:
         from stock_common import get_zhb_single_stock_data
+
         zhb = get_zhb_single_stock_data(code)
         if not zhb:
             return True  # 无 ZHB 数据时跳过验证
@@ -767,7 +780,10 @@ def _cross_verify_with_zhb(code: str, http_value: Any, threshold_pct: float = 50
                 # 偏离过大，记日志但不抛异常
                 try:
                     from stock_common import _debug_log
-                    _debug_log(f"cross_verify fail: {code} {field} http={v_http} zhb={v_zhb} diff={diff_pct:.1f}%")
+
+                    _debug_log(
+                        f"cross_verify fail: {code} {field} http={v_http} zhb={v_zhb} diff={diff_pct:.1f}%"
+                    )
                 except Exception:
                     pass
                 return False
@@ -792,13 +808,24 @@ def _safe_float(v: Any) -> float:
 # 装饰器仅为接口一致性保留）——非 bug，是有意设计；后续若 data_provider 的
 # get_market_snapshot 等出现真实计算开销，再移出本名单。
 _ZHB_BYPASS_CATEGORIES = {
-    "basic_info_static", "share_capital", "concept_blocks", "board_type",
+    "basic_info_static",
+    "share_capital",
+    "concept_blocks",
+    "board_type",
     "zhb_data",
 }
 
 
-def set_cache(category: str, func_name: str, value: Any, ttl: int, *args: Any,
-              trading_day: bool = False, cross_verify: bool = False, **kwargs: Any) -> None:
+def set_cache(
+    category: str,
+    func_name: str,
+    value: Any,
+    ttl: int,
+    *args: Any,
+    trading_day: bool = False,
+    cross_verify: bool = False,
+    **kwargs: Any,
+) -> None:
     """写入缓存（None/空值/价格为零不写入）。
     V15.0: ZHB 静态分类白名单触发 100% 磁盘旁路，零 SQLite 磁盘写开销。
     V15.2: F10/f10_fund_flow/dragon_tiger 自动调用 _cross_verify_with_zhb。
@@ -816,9 +843,20 @@ def set_cache(category: str, func_name: str, value: Any, ttl: int, *args: Any,
         return
     # V15.2: F10 / f10_fund_flow / dragon_tiger 自动 ZHB 交叉验证
     # 提取股票代码（args[0] 通常是 code）
-    if category in ("f10_fund_flow", "f10_announcements", "f10_reminders",
-                    "f10_financial", "f10_shareholder", "f10_share_capital",
-                    "f10_news", "dragon_tiger") and args:
+    if (
+        category
+        in (
+            "f10_fund_flow",
+            "f10_announcements",
+            "f10_reminders",
+            "f10_financial",
+            "f10_shareholder",
+            "f10_share_capital",
+            "f10_news",
+            "dragon_tiger",
+        )
+        and args
+    ):
         code = args[0] if isinstance(args[0], str) else ""
         if code and not _cross_verify_with_zhb(code, value):
             return  # 偏离 ZHB 过大，拒绝缓存
@@ -841,7 +879,7 @@ def set_cache(category: str, func_name: str, value: Any, ttl: int, *args: Any,
                 "INSERT OR REPLACE INTO cache_entries "
                 "(key, value, created_at, expires_at, hit_count, last_accessed, prev_value, verified) "
                 "VALUES (?, ?, ?, ?, 0, ?, NULL, 0)",
-                (key, value_bytes, now, expires_at, now)
+                (key, value_bytes, now, expires_at, now),
             )
         else:
             # V15.2 真正实现"两次获取一致"语义：
@@ -853,7 +891,7 @@ def set_cache(category: str, func_name: str, value: Any, ttl: int, *args: Any,
             with _db_lock:
                 cursor.execute(
                     "SELECT value, prev_value, verified FROM cache_entries WHERE key=? AND expires_at>?",
-                    (key, now)
+                    (key, now),
                 )
                 row = cursor.fetchone()
                 if row is None:
@@ -862,7 +900,7 @@ def set_cache(category: str, func_name: str, value: Any, ttl: int, *args: Any,
                         "INSERT OR REPLACE INTO cache_entries "
                         "(key, value, created_at, expires_at, hit_count, last_accessed, prev_value, verified) "
                         "VALUES (?, ?, ?, ?, 0, ?, ?, 1)",
-                        (key, value_bytes, now, expires_at, now, value_bytes)
+                        (key, value_bytes, now, expires_at, now, value_bytes),
                     )
                 else:
                     existing_blob, prev_value_blob, verified = row
@@ -871,7 +909,7 @@ def set_cache(category: str, func_name: str, value: Any, ttl: int, *args: Any,
                         cursor.execute(
                             "UPDATE cache_entries SET value=?, verified=1, "
                             "expires_at=?, last_accessed=? WHERE key=?",
-                            (value_bytes, expires_at, now, key)
+                            (value_bytes, expires_at, now, key),
                         )
                     else:
                         # 第二次获取与上次不同：仅更新 prev_value/value，verified 仍 0
@@ -879,13 +917,13 @@ def set_cache(category: str, func_name: str, value: Any, ttl: int, *args: Any,
                         cursor.execute(
                             "UPDATE cache_entries SET value=?, prev_value=?, verified=0, "
                             "created_at=?, expires_at=?, last_accessed=? WHERE key=?",
-                            (value_bytes, existing_blob, now, expires_at, now, key)
+                            (value_bytes, existing_blob, now, expires_at, now, key),
                         )
 
         # V16.0: 写路径去掉每写 commit（原每次 INSERT + commit + 全表清理双 commit）
         _maybe_commit(force=True)  # 写入必须落盘，但用批量化 commit
         _maybe_enforce_size_limit()
-        
+
         # V10.3: 同时写入 L1 内存缓存（V16.2: 带 verified 标记）
         l1_ttl = expires_at - now
         if l1_ttl > 0:
@@ -915,12 +953,12 @@ def invalidate_category(category: str, pattern: str = "") -> int:
         if pattern:
             cursor.execute(
                 "DELETE FROM cache_entries WHERE key LIKE ?",
-                (f"{CACHE_CONTRACT_VERSION}:{category}:%{pattern}%",)
+                (f"{CACHE_CONTRACT_VERSION}:{category}:%{pattern}%",),
             )
         else:
             cursor.execute(
                 "DELETE FROM cache_entries WHERE key LIKE ?",
-                (f"{CACHE_CONTRACT_VERSION}:{category}:%",)
+                (f"{CACHE_CONTRACT_VERSION}:{category}:%",),
             )
         db.commit()
         deleted = cursor.rowcount
@@ -941,7 +979,9 @@ def invalidate_prefix(prefix: str) -> int:
     try:
         db = _get_db()
         cursor = db.cursor()
-        cursor.execute("DELETE FROM cache_entries WHERE key LIKE ?", (f"{CACHE_CONTRACT_VERSION}:{prefix}%",))
+        cursor.execute(
+            "DELETE FROM cache_entries WHERE key LIKE ?", (f"{CACHE_CONTRACT_VERSION}:{prefix}%",)
+        )
         db.commit()
         deleted = cursor.rowcount
         # V12.1: 同步清空 L1 内存缓存，确保一致性
@@ -993,13 +1033,11 @@ def cache_stats() -> Dict[str, Any]:
         # V9.2: 验证状态统计
         now = time.time()
         cursor.execute(
-            "SELECT COUNT(*) FROM cache_entries WHERE expires_at>? AND verified=1",
-            (now,)
+            "SELECT COUNT(*) FROM cache_entries WHERE expires_at>? AND verified=1", (now,)
         )
         verified_valid = cursor.fetchone()[0]
         cursor.execute(
-            "SELECT COUNT(*) FROM cache_entries WHERE expires_at>? AND verified=0",
-            (now,)
+            "SELECT COUNT(*) FROM cache_entries WHERE expires_at>? AND verified=0", (now,)
         )
         unverified_valid = cursor.fetchone()[0]
 
@@ -1008,7 +1046,7 @@ def cache_stats() -> Dict[str, Any]:
             "SELECT SUBSTR(key, 1, INSTR(key, ':') - 1) AS cat, COUNT(*), SUM(hit_count), "
             "SUM(CASE WHEN verified=1 AND expires_at>? THEN 1 ELSE 0 END) AS verified_cnt "
             "FROM cache_entries GROUP BY cat",
-            (now,)
+            (now,),
         )
         by_category = {}
         for cat, cnt, h, v_cnt in cursor.fetchall():
@@ -1062,7 +1100,10 @@ def print_cache_stats() -> None:
     print("  各分类统计（有效条目）：", flush=True)
     for cat, info in sorted(stats.get("by_category", {}).items()):
         v = info.get('verified', 0)
-        print(f"    {cat:<20} 条目: {info['count']:>5}  已验证: {v:>4}  命中: {info['hits']:>6}", flush=True)
+        print(
+            f"    {cat:<20} 条目: {info['count']:>5}  已验证: {v:>4}  命中: {info['hits']:>6}",
+            flush=True,
+        )
     print("=" * 50 + "\n", flush=True)
 
 
@@ -1072,11 +1113,14 @@ def print_cache_stats() -> None:
 F = TypeVar("F", bound=Callable[..., Any])
 
 
-def cached(category: str, ttl_seconds: Optional[int] = None,
-           use_args: bool = True,
-           valid_if: Optional[Callable[[Any], bool]] = None,
-           trading_day: bool = False,
-           cross_verify: bool = False) -> Callable[[F], F]:
+def cached(
+    category: str,
+    ttl_seconds: Optional[int] = None,
+    use_args: bool = True,
+    valid_if: Optional[Callable[[Any], bool]] = None,
+    trading_day: bool = False,
+    cross_verify: bool = False,
+) -> Callable[[F], F]:
     """同步函数缓存装饰器。
 
     用法：
@@ -1112,12 +1156,12 @@ def cached(category: str, ttl_seconds: Optional[int] = None,
                 return func(*args, **kwargs)
             # 提取缓存 key 的参数
             if use_args:
-                cache_value = get_cache(category, func.__name__, *args,
-                                        cross_verify=cross_verify, **kwargs)
+                cache_value = get_cache(
+                    category, func.__name__, *args, cross_verify=cross_verify, **kwargs
+                )
                 sf_key = _build_key(category, func.__name__, *args, **kwargs)
             else:
-                cache_value = get_cache(category, func.__name__,
-                                        cross_verify=cross_verify)
+                cache_value = get_cache(category, func.__name__, cross_verify=cross_verify)
                 sf_key = f"{category}:{func.__name__}"
             if cache_value is not None:
                 # V8.9: 读取时也校验 — 命中但校验不通过视为未命中
@@ -1128,23 +1172,40 @@ def cached(category: str, ttl_seconds: Optional[int] = None,
             # V16.2: single-flight —— 锁内再查一次（双检锁），避免重复上游请求
             _lock = _sf_acquire(sf_key)
             with _lock:
-                cache_value2 = get_cache(category, func.__name__,
-                                         cross_verify=cross_verify, *args, **kwargs) if use_args else get_cache(
-                                             category, func.__name__, cross_verify=cross_verify)
+                cache_value2 = (
+                    get_cache(category, func.__name__, cross_verify=cross_verify, *args, **kwargs)
+                    if use_args
+                    else get_cache(category, func.__name__, cross_verify=cross_verify)
+                )
                 if cache_value2 is not None and (valid_if is None or valid_if(cache_value2)):
                     return cache_value2
                 result = func(*args, **kwargs)
             # valid_if 校验：不通过则不缓存
             if valid_if is None or valid_if(result):
                 if use_args:
-                    set_cache(category, func.__name__, result, _ttl, *args,
-                              trading_day=trading_day, cross_verify=cross_verify, **kwargs)
+                    set_cache(
+                        category,
+                        func.__name__,
+                        result,
+                        _ttl,
+                        *args,
+                        trading_day=trading_day,
+                        cross_verify=cross_verify,
+                        **kwargs,
+                    )
                 else:
-                    set_cache(category, func.__name__, result, _ttl,
-                              trading_day=trading_day, cross_verify=cross_verify)
+                    set_cache(
+                        category,
+                        func.__name__,
+                        result,
+                        _ttl,
+                        trading_day=trading_day,
+                        cross_verify=cross_verify,
+                    )
             return result
 
         return cast(F, wrapper)
+
     return decorator
 
 
@@ -1152,9 +1213,6 @@ def cached(category: str, ttl_seconds: Optional[int] = None,
 # V17.0 S8: @cached_async 从未实现(此前仅注释占位)——实际异步模式为
 # "sync @cached + async 包装委托 sync" (sc_datasource/report 层), 占位 TypeVar AF 一并移除。
 # ═══════════════════════════════════════
-
-
-
 
 
 # 启动清理已移除（V8.9）：改为写入时通过 _enforce_size_limit 处理过期条目
@@ -1174,7 +1232,9 @@ def cached(category: str, ttl_seconds: Optional[int] = None,
 _QUOTE_BATCH_CACHE_TTL = 60 * 60
 
 
-def persist_quote_batch_l2(batch_map, ttl_seconds=_QUOTE_BATCH_CACHE_TTL):
+def persist_quote_batch_l2(
+    batch_map: Dict[str, Dict[str, Any]], ttl_seconds: float = _QUOTE_BATCH_CACHE_TTL
+) -> int:
     """V17.3.12: 把批量行情字典批量落盘到 SQLite L2（跨进程共享）。
 
     设计意图：val 全市场预热时写一次（~5000 只），后续 sht/med/lng/mak 经
@@ -1213,7 +1273,11 @@ def persist_quote_batch_l2(batch_map, ttl_seconds=_QUOTE_BATCH_CACHE_TTL):
         return 0
 
 
-def read_quote_batch_l2(codes, category=QUOTE_BATCH_CACHE_CATEGORY, func_name="prefetch_quote_batch"):
+def read_quote_batch_l2(
+    codes: Collection[str],
+    category: str = QUOTE_BATCH_CACHE_CATEGORY,
+    func_name: str = "prefetch_quote_batch",
+) -> Dict[str, Dict[str, Any]]:
     """V17.3.12: 读取 val/mak 预热写入的批量行情 L2（跨进程共享）。
 
     与 persist_quote_batch_l2 严格对称：同样的 _build_key(category, func_name, code) +
@@ -1239,10 +1303,15 @@ def read_quote_batch_l2(codes, category=QUOTE_BATCH_CACHE_CATEGORY, func_name="p
             if exp is not None and exp <= now and not _soft_expiry_allowed(category, exp, now):
                 continue
             try:
-                data = json.loads(blob.decode("utf-8")) if isinstance(blob, (bytes, bytearray)) else json.loads(blob)
+                data = (
+                    json.loads(blob.decode("utf-8"))
+                    if isinstance(blob, (bytes, bytearray))
+                    else json.loads(blob)
+                )
             except Exception:
                 continue
-            out[code] = data
+            if isinstance(data, dict):
+                out[code] = data
         return out
     except Exception as _e:
         _cache_logger.debug(f"read_quote_batch_l2: {_e}")
@@ -1250,7 +1319,9 @@ def read_quote_batch_l2(codes, category=QUOTE_BATCH_CACHE_CATEGORY, func_name="p
 
 
 # V17.3.13: 腾讯批量原始快照跨进程共享（val 预热 → mak 零网络复用，复活 V16.0 注释中的 val→mak 跨脚本复用意图）
-def persist_tencent_batch_l2(batch_map, ttl_seconds=_QUOTE_BATCH_CACHE_TTL):
+def persist_tencent_batch_l2(
+    batch_map: Dict[str, Dict[str, Any]], ttl_seconds: float = _QUOTE_BATCH_CACHE_TTL
+) -> int:
     """V17.3.13: 把腾讯批量【原始】行情字典批量落盘到 SQLite L2（跨进程共享）。
 
     与 persist_quote_batch_l2 对称，但存的是 _tencent_batch_fallback 返回的【原始】腾讯批量形状
@@ -1288,7 +1359,11 @@ def persist_tencent_batch_l2(batch_map, ttl_seconds=_QUOTE_BATCH_CACHE_TTL):
         return 0
 
 
-def read_tencent_batch_l2(codes, category=TENCENT_BATCH_CACHE_CATEGORY, func_name="tencent_batch_fallback"):
+def read_tencent_batch_l2(
+    codes: Collection[str],
+    category: str = TENCENT_BATCH_CACHE_CATEGORY,
+    func_name: str = "tencent_batch_fallback",
+) -> Dict[str, Dict[str, Any]]:
     """V17.3.13: 读取 val 预热写入的腾讯批量【原始】快照 L2（跨进程共享）。
 
     与 persist_tencent_batch_l2 严格对称：同样的 _build_key(category, func_name, code) +
@@ -1307,7 +1382,7 @@ def read_tencent_batch_l2(codes, category=TENCENT_BATCH_CACHE_CATEGORY, func_nam
         cur = db.cursor()
         _items = list(key_to_code.items())
         for _i in range(0, len(_items), 500):
-            _chunk = _items[_i:_i + 500]
+            _chunk = _items[_i : _i + 500]
             _ph = ",".join("?" for _ in _chunk)
             cur.execute(
                 f"SELECT key, value, expires_at FROM cache_entries WHERE key IN ({_ph})",
@@ -1320,10 +1395,15 @@ def read_tencent_batch_l2(codes, category=TENCENT_BATCH_CACHE_CATEGORY, func_nam
                 if exp is not None and exp <= now and not _soft_expiry_allowed(category, exp, now):
                     continue
                 try:
-                    data = json.loads(blob.decode("utf-8")) if isinstance(blob, (bytes, bytearray)) else json.loads(blob)
+                    data = (
+                        json.loads(blob.decode("utf-8"))
+                        if isinstance(blob, (bytes, bytearray))
+                        else json.loads(blob)
+                    )
                 except Exception:
                     continue
-                out[code] = data
+                if isinstance(data, dict):
+                    out[code] = data
         return out
     except Exception as _e:
         _cache_logger.debug(f"read_tencent_batch_l2: {_e}")
@@ -1342,8 +1422,11 @@ if __name__ == "__main__":
     import argparse
 
     parser = argparse.ArgumentParser(description="stock_cache CLI 工具")
-    parser.add_argument("action", choices=["stats", "clear", "clear-expired", "clear-all"],
-                        help="stats=查看统计 / clear=按分类清理 / clear-expired=清过期 / clear-all=清全部")
+    parser.add_argument(
+        "action",
+        choices=["stats", "clear", "clear-expired", "clear-all"],
+        help="stats=查看统计 / clear=按分类清理 / clear-expired=清过期 / clear-all=清全部",
+    )
     parser.add_argument("--category", "-c", default="", help="分类名（用于 clear 命令）")
     parser.add_argument("--pattern", "-p", default="", help="代码过滤（用于 clear 命令）")
     args = parser.parse_args()

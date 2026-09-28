@@ -44,18 +44,26 @@ for _stream in (sys.stdout, sys.stderr):
 
 try:
     from core.zhb_client import (
-        _download_zhb_zip, _parse_zhb_data, _save_to_cache,
+        _download_zhb_zip,
+        _parse_zhb_data,
+        _save_to_cache,
         _ZHB_CACHE_DIR,
-        _acquire_file_lock, _release_file_lock, _check_disk_space
+        _acquire_file_lock,
+        _release_file_lock,
+        _check_disk_space,
     )
 except ImportError:  # V17.0: 兜底改为根锚定(包化后直接运行 core/zhb_sync.py 场景)
     import sys as _sys
 
     _sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
     from core.zhb_client import (
-        _download_zhb_zip, _parse_zhb_data, _save_to_cache,
+        _download_zhb_zip,
+        _parse_zhb_data,
+        _save_to_cache,
         _ZHB_CACHE_DIR,
-        _acquire_file_lock, _release_file_lock, _check_disk_space,
+        _acquire_file_lock,
+        _release_file_lock,
+        _check_disk_space,
     )
 
 
@@ -77,14 +85,18 @@ _MIN_SYNC_INTERVAL_SECONDS = 3600
 # 状态管理
 # ═══════════════════════════════════════
 
+
 def _load_sync_state() -> Dict[str, Any]:
     """加载同步状态。"""
     if os.path.exists(_SYNC_STATE_FILE):
         try:
             with open(_SYNC_STATE_FILE, "r", encoding="utf-8") as f:
-                return json.load(f)
-        except Exception:
-            pass
+                state = json.load(f)
+            if isinstance(state, dict):
+                return state
+            _log_sync("同步状态 JSON 顶层不是对象，使用默认状态")
+        except (OSError, json.JSONDecodeError, UnicodeError) as exc:
+            _log_sync(f"读取同步状态失败，使用默认状态：{exc}")
     return {
         "last_sync_time": 0,
         "last_sync_date": "",
@@ -121,6 +133,7 @@ def _log_sync(message: str) -> None:
 # ═══════════════════════════════════════
 # 数据校验
 # ═══════════════════════════════════════
+
 
 def _validate_zhb_data(zhb) -> bool:
     """校验 zhb 数据完整性。
@@ -183,6 +196,7 @@ def _validate_zhb_data(zhb) -> bool:
 # ═══════════════════════════════════════
 # 核心同步逻辑
 # ═══════════════════════════════════════
+
 
 def _get_latest_cached_date() -> Optional[str]:
     """获取本地缓存中最新的数据日期。"""
@@ -311,7 +325,10 @@ def sync_once(force: bool = False) -> bool:
 # 定时调度
 # ═══════════════════════════════════════
 
-def _parse_cron(cron_expr: str) -> Optional[tuple]:
+
+def _parse_cron(
+    cron_expr: str,
+) -> Optional[tuple[list[int], list[int], list[int], list[int], list[int]]]:
     """解析简单的 cron 表达式。
 
     支持格式：
@@ -322,11 +339,12 @@ def _parse_cron(cron_expr: str) -> Optional[tuple]:
     Returns:
         (minute, hours, days, months, weekdays) 或 None
     """
-    def _field(raw: str, lo: int, hi: int) -> list:
+
+    def _field(raw: str, lo: int, hi: int) -> list[int]:
         """单字段解析: 支持 * / 逗号列表 / a-b 范围(V16.4.1: 原 "1-5" 抛 ValueError → None)"""
         if raw == "*":
             return list(range(lo, hi + 1))
-        out = []
+        out: list[int] = []
         for seg in raw.split(","):
             if "-" in seg:
                 a, b = seg.split("-", 1)
@@ -349,16 +367,18 @@ def _parse_cron(cron_expr: str) -> Optional[tuple]:
         return None
 
 
-def _should_run_at_time(cron_spec: tuple) -> bool:
+def _should_run_at_time(
+    cron_spec: tuple[list[int], list[int], list[int], list[int], list[int]],
+) -> bool:
     """检查当前时间是否匹配 cron 表达式。"""
     minute_spec, hour_spec, day_spec, month_spec, weekday_spec = cron_spec
     now = datetime.now()
     return (
-        now.minute in minute_spec and
-        now.hour in hour_spec and
-        now.day in day_spec and
-        now.month in month_spec and
-        now.weekday() in weekday_spec
+        now.minute in minute_spec
+        and now.hour in hour_spec
+        and now.day in day_spec
+        and now.month in month_spec
+        and now.weekday() in weekday_spec
     )
 
 
@@ -397,6 +417,7 @@ def run_interval(hours: int) -> None:
 # 命令行接口
 # ═══════════════════════════════════════
 
+
 def main() -> None:
     parser = argparse.ArgumentParser(description="ZHB 自动化入库管道")
     parser.add_argument("--once", action="store_true", help="执行一次同步后退出")
@@ -410,7 +431,9 @@ def main() -> None:
     if args.status:
         state = _load_sync_state()
         print("同步状态:")
-        print(f"  上次同步时间: {datetime.fromtimestamp(state['last_sync_time']).strftime('%Y-%m-%d %H:%M:%S') if state['last_sync_time'] else '从未'}")
+        print(
+            f"  上次同步时间: {datetime.fromtimestamp(state['last_sync_time']).strftime('%Y-%m-%d %H:%M:%S') if state['last_sync_time'] else '从未'}"
+        )
         print(f"  上次同步日期: {state['last_sync_date'] or '无'}")
         print(f"  上次同步成功: {'是' if state['last_sync_success'] else '否'}")
         print(f"  连续失败次数: {state['consecutive_failures']}")

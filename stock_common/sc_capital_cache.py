@@ -11,6 +11,7 @@ V10.1 新增：
     - 被动累积式构建（脚本运行时逐步填充）
     - 市值内存计算（price × total_shares）
 """
+
 from __future__ import annotations
 
 import json
@@ -30,6 +31,7 @@ def _debug_log(msg: str) -> None:
     except Exception:
         pass
 
+
 _CAPITAL_CACHE_FILE = os.path.join(
     os.path.dirname(os.path.abspath(__file__)), "cache", "share_capital.json"
 )
@@ -47,7 +49,9 @@ def _ensure_cache_dir() -> None:
         os.makedirs(d, exist_ok=True)
 
 
-_CAPITAL_SCHEMA_VERSION = 2  # V16.3.10: v2=万股单位规范（v1 旧缓存为"股"单位，版本不符自动失效重建）
+_CAPITAL_SCHEMA_VERSION = (
+    2  # V16.3.10: v2=万股单位规范（v1 旧缓存为"股"单位，版本不符自动失效重建）
+)
 
 
 def _load_capital_cache() -> Dict[str, Dict[str, Any]]:
@@ -112,13 +116,16 @@ def get_share_capital(code: str) -> Dict[str, Any]:
         {"total_shares": float, "float_shares": float, "updated_at": str}
         单位：万股
     """
+
     # V16.3.10 防御：旧版本缓存（V16.2.3 修正前 8-03 批次）total_shares 为"股"单位。
     # 正确万股值上限约 3.6e7（工农中建类）；脏"股"值约 1e11 起。
     # 阈值取 1e9 万股（=1e13 股，远超任何 A 股）：既不误伤大盘股正确值，又能归一脏数据。
     # （旧注释"1e7 / 2e6 万股"少算一个数量级，曾把正确大盘股万股值误当"股"再÷10000，
     #  市值低估~10000×，2026-08-30 修）
-    def _norm(v):
-        return (v / 10000.0) if (v or 0) > 1e9 else v
+    def _norm(v: float | int | None) -> float | int | None:
+        if v is not None and v > 1e9:
+            return v / 10000.0
+        return v
 
     cap_cache = _load_capital_cache()
     cached = cap_cache.get(code)
@@ -126,8 +133,11 @@ def get_share_capital(code: str) -> Dict[str, Any]:
     if cached and cached.get("total_shares", 0) > 0:
         ts, fs = cached.get("total_shares", 0), cached.get("float_shares", 0)
         if ts > 1e9 or fs > 1e9:
-            cached = {"total_shares": _norm(ts), "float_shares": _norm(fs),
-                      "updated_at": cached.get("updated_at", "")}
+            cached = {
+                "total_shares": _norm(ts),
+                "float_shares": _norm(fs),
+                "updated_at": cached.get("updated_at", ""),
+            }
         return cached
 
     result = _fetch_share_capital(code)
@@ -154,6 +164,7 @@ def _fetch_share_capital(code: str) -> Dict[str, Any]:
 
     try:
         from core.tdx_client import tdx_get_finance_info
+
         fin = tdx_get_finance_info(code)
         if fin:
             # V16.2.3 修正: 0x0010 协议 zongguben/liutongguben 实为**股**（easy_tdx 源码
@@ -171,6 +182,7 @@ def _fetch_share_capital(code: str) -> Dict[str, Any]:
     if total == 0:
         try:
             from stock_common.sc_datasource import eastmoney_stock_info_push2
+
             info = eastmoney_stock_info_push2(code)
             if info:
                 total = float(info.get("total_shares", 0) or 0) / 10000.0
@@ -199,7 +211,7 @@ def calc_mcap_yi(code: str, price: float) -> float:
     if not price or price <= 0:
         return 0.0
     cap = get_share_capital(code)
-    total_wan = cap.get("total_shares", 0)
+    total_wan = float(cap.get("total_shares", 0) or 0)
     if not total_wan:
         return 0.0
     return price * total_wan / 10000.0
@@ -218,7 +230,7 @@ def calc_float_mcap_yi(code: str, price: float) -> float:
     if not price or price <= 0:
         return 0.0
     cap = get_share_capital(code)
-    float_wan = cap.get("float_shares", 0)
+    float_wan = float(cap.get("float_shares", 0) or 0)
     if not float_wan:
         return 0.0
     return price * float_wan / 10000.0

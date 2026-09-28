@@ -17,6 +17,7 @@
 
 退出码：0=成功；2=Layer1 与基线不一致（G1 闸门未过，不应提交）。
 """
+
 from __future__ import annotations
 
 import argparse
@@ -49,7 +50,6 @@ sys.path.insert(0, SCRIPT_DIR)
 import gen_field_matrix as gm
 import audit_field_completeness as afc
 
-
 # ---------------------------------------------------------------------------
 # 原生 token 抽取（v2，2026-09-12）：复用 audit_field_completeness.registered_field_sets
 # 的「章节→源→token」逻辑，保证 registry 的 fields[].code 即各源原生 token
@@ -57,24 +57,43 @@ import audit_field_completeness as afc
 # 这样 registry 才能作为 audit_field_completeness 的真相源。
 # ---------------------------------------------------------------------------
 _FCODE_SRC = {
-    "东财-push2(stock/get)", "东财-ulist239(np/get)", "AxData", "东财-push2_full",
-    "东财-资金流(em_fund_flow)", "东财-em_kline_f61",
-    "东财-datacenter(英文键)", "东财-slist", "东财-clist",
+    "东财-push2(stock/get)",
+    "东财-ulist239(np/get)",
+    "AxData",
+    "东财-push2_full",
+    "东财-资金流(em_fund_flow)",
+    "东财-em_kline_f61",
+    "东财-datacenter(英文键)",
+    "东财-slist",
+    "东财-clist",
 }
 # 注意：东财-push2ex 已从 _FCODE_SRC 移除（2026-09-20 复核修正）。
 # push2ex 涨停/炸板池字段为纯英文键（c/n/p/tshare/fund/lbc...），无 f 编号；
 # 原误列入 _FCODE_SRC 导致 cell_token 走 f(\d+) 分支恒返 None、全部短名字段漏挂属性。
 # 现归位 _CAMEL_SRC（line 67 已在列），由 camel 英文键分支正确抽取。
-_INDEX_SRC = {"腾讯(qt.gtimg)", "新浪(hq.sinajs)",
-              "ZHB-tdxstat", "ZHB-tdxstat2", "ZHB-tipinfo"}
-_CAMEL_SRC = {"reports", "同花顺-fuyao", "东财-datacenter(英文键)",
-              "东财-push2ex", "东财-热榜(em_hot)", "市场源(market_sources)",
-              "levistock(ftshare)", "财联社(cls)", "百度(baidu)", "沪深交易所",
-              "巨潮(cninfo)", "TDX(双命名源)", "TDX-F10(双命名源)",
-              # V17.3 (2026-09-18): eltdx 适配层 + ZHB 三组纳入 camel 抽取，
-              # 使其带点 token(quote_snapshot.*/shortline.*/stat.*/stat2.*/tipinfo.*)
-              # 在 Layer2 保留完整带点形态，与 registered_field_sets 收录形态一致，方能回挂 meaning + 标 ✅ verified。
-              "TDX-eltdx(适配层)", "ZHB-tdxstat", "ZHB-tdxstat2", "ZHB-tipinfo"}
+_INDEX_SRC = {"腾讯(qt.gtimg)", "新浪(hq.sinajs)", "ZHB-tdxstat", "ZHB-tdxstat2", "ZHB-tipinfo"}
+_CAMEL_SRC = {
+    "reports",
+    "同花顺-fuyao",
+    "东财-datacenter(英文键)",
+    "东财-push2ex",
+    "东财-热榜(em_hot)",
+    "市场源(market_sources)",
+    "levistock(ftshare)",
+    "财联社(cls)",
+    "百度(baidu)",
+    "沪深交易所",
+    "巨潮(cninfo)",
+    "TDX(双命名源)",
+    "TDX-F10(双命名源)",
+    # V17.3 (2026-09-18): eltdx 适配层 + ZHB 三组纳入 camel 抽取，
+    # 使其带点 token(quote_snapshot.*/shortline.*/stat.*/stat2.*/tipinfo.*)
+    # 在 Layer2 保留完整带点形态，与 registered_field_sets 收录形态一致，方能回挂 meaning + 标 ✅ verified。
+    "TDX-eltdx(适配层)",
+    "ZHB-tdxstat",
+    "ZHB-tdxstat2",
+    "ZHB-tipinfo",
+}
 
 
 def cell_token(cell: str, src: str):
@@ -215,7 +234,15 @@ def normalize_status(raw: str) -> str:
     # 字段自身以 ✅ 标记即权威「已定案」，正文内 "证伪/推翻" 多指「被否决的其它次级主张」
     # （如 shuihoulirun「✅ L1…推翻旧 ❌ 标注」、tipinfo.zt_date_recent「✅…原 ex_date 误标 已证伪」），
     # 不应据此将字段整体判为 disproved。
-    if "✅" in t or "L1" in t or "L2" in t or "定案" in t or "数值实证" in t or "交叉" in t or "跨源" in t:
+    if (
+        "✅" in t
+        or "L1" in t
+        or "L2" in t
+        or "定案" in t
+        or "数值实证" in t
+        or "交叉" in t
+        or "跨源" in t
+    ):
         return "verified"
     # 已证伪（字段自身未标 ✅ 的纯证伪/推翻情境）
     if "证伪" in t or "推翻" in t:
@@ -227,9 +254,17 @@ def normalize_status(raw: str) -> str:
     if "弃用" in t or "未接入" in t or "退役" in t or "deprecated" in t.lower():
         return "deprecated"
     # 显式声明未实证/待核实/待破解/待数值对撞/疑点/常量占位/无信息量
-    if ("未实证" in t or "待核实" in t or "待破解" in t or "待数值" in t
-            or "疑" in t or "常量占位" in t or "无信息量" in t
-            or "未接入" in t or "❌" in t):
+    if (
+        "未实证" in t
+        or "待核实" in t
+        or "待破解" in t
+        or "待数值" in t
+        or "疑" in t
+        or "常量占位" in t
+        or "无信息量" in t
+        or "未接入" in t
+        or "❌" in t
+    ):
         return "unverified"
     # 兜底：含对撞/实测/锚/印证 等正向词 → verified，否则 unverified
     if any(k in t for k in ("对撞", "印证", "锚", "实测", "复核", "确认", "一致")):
@@ -240,9 +275,22 @@ def normalize_status(raw: str) -> str:
 # 通用跨源对齐表(cross_source_align.md)的 id 解析：源前缀(短别名).字段 / 源前缀[索引]
 # -> (source短别名, code)；code 取 collide.code_of 形态(最后一个 '.' 之后 / '[索引]')，
 # 保证 collide.load_registry_state 能据 mappings 标 in_registry(durable 定案)。
-_ALIGN_SRCS = {"fuyao", "tdx", "eltdx", "zhb", "tencent", "push2",
-               "push2_full", "ulist239", "sina",
-               "em_fund_flow", "event_dc", "push2ex", "em_hot", "exchange"}
+_ALIGN_SRCS = {
+    "fuyao",
+    "tdx",
+    "eltdx",
+    "zhb",
+    "tencent",
+    "push2",
+    "push2_full",
+    "ulist239",
+    "sina",
+    "em_fund_flow",
+    "event_dc",
+    "push2ex",
+    "em_hot",
+    "exchange",
+}
 
 
 def _parse_align_id(idstr: str):
@@ -251,9 +299,9 @@ def _parse_align_id(idstr: str):
     if not s:
         return None, None
     if "[" in s:  # tencent[52] / sina[8] -> ('tencent', '[52]')
-        pre = s[:s.index("[")]
-        return pre, s[s.index("["):]
-    if "." in s:   # fuyao.snapshot.price_change -> ('fuyao', 'price_change')
+        pre = s[: s.index("[")]
+        return pre, s[s.index("[") :]
+    if "." in s:  # fuyao.snapshot.price_change -> ('fuyao', 'price_change')
         # 源前缀=首个 '.' 之前(对齐 collide.alias_src); code=末个 '.' 之后(对齐 collide.code_of)
         pre = s.split(".", 1)[0]
         code = s.rsplit(".", 1)[-1]
@@ -262,8 +310,20 @@ def _parse_align_id(idstr: str):
 
 
 # 状态标记（用于行内状态信号定位；⏸ 覆盖 ⏸️ 变体）
-_STATUS_MARKS = ("✅", "❌", "⏸", "证伪", "推翻", "候选", "待核",
-                "弃用", "未接入", "退役", "deprecated")
+_STATUS_MARKS = (
+    "✅",
+    "❌",
+    "⏸",
+    "证伪",
+    "推翻",
+    "候选",
+    "待核",
+    "弃用",
+    "未接入",
+    "退役",
+    "deprecated",
+)
+
 
 def _row_status(row, status_idx):
     """定位行内状态信号：优先 status 列，否则扫描整行首个含状态标记的单元格。
@@ -379,7 +439,10 @@ def extract():
     # 收尾：sources 列表化 + 单源填 source + 覆盖率统计
     out_fields = []
     for f, rec in fields.items():
-        srcs = sorted(rec["sources"], key=lambda s: (gm.SOURCE_ORDER.index(s) if s in gm.SOURCE_ORDER else 99, s))
+        srcs = sorted(
+            rec["sources"],
+            key=lambda s: (gm.SOURCE_ORDER.index(s) if s in gm.SOURCE_ORDER else 99, s),
+        )
         rec["sources"] = srcs
         rec["source"] = srcs[0] if len(srcs) == 1 else None
         # 覆盖率
@@ -396,13 +459,19 @@ def extract():
     # sources 元数据：以 audit_field_completeness.SECTION_MAP 源标签为权威命名空间
     # （与 fields[].sources 完全一致，保证 field_source_map 视图对齐）
     out_sources = []
+    seen_source_labels = set()
     for label, _subs in afc.SECTION_MAP:
-        out_sources.append({
-            "name": label,
-            "verify_file": _AUDIT_VERIFY.get(label),
-            "section_patterns": sorted(section_patterns.get(label, [])),
-            "status": "active",
-        })
+        if label in seen_source_labels:
+            continue
+        seen_source_labels.add(label)
+        out_sources.append(
+            {
+                "name": label,
+                "verify_file": _AUDIT_VERIFY.get(label),
+                "section_patterns": sorted(section_patterns.get(label, [])),
+                "status": "active",
+            }
+        )
 
     # mappings：解析 ulist_push2_align.md（已存在时）
     mappings = []
@@ -418,13 +487,19 @@ def extract():
             ma = re.match(r"ulist\s+(f\d+)", a)
             mb = re.match(r"(f\d+)", b)
             if ma and mb:
-                relation = "same_number_same_meaning" if ("==" in ln or "同义" in ln or "别名" in ln) else "cross_number_diff_meaning"
-                mappings.append({
-                    "from": {"source": "东财-ulist239", "code": ma.group(1)},
-                    "to": {"source": "东财-push2", "code": mb.group(1)},
-                    "relation": relation,
-                    "evidence": "ulist_push2_align.md",
-                })
+                relation = (
+                    "same_number_same_meaning"
+                    if ("==" in ln or "同义" in ln or "别名" in ln)
+                    else "cross_number_diff_meaning"
+                )
+                mappings.append(
+                    {
+                        "from": {"source": "东财-ulist239", "code": ma.group(1)},
+                        "to": {"source": "东财-push2", "code": mb.group(1)},
+                        "relation": relation,
+                        "evidence": "ulist_push2_align.md",
+                    }
+                )
 
     # 通用跨源对齐（非 ulist239↔push2）：cross_source_align.md
     # 承载 fuyao/tdx/eltdx/zhb/tencent/push2/push2_full/sina/em_fund_flow/event_dc/push2ex/em_hot/exchange 任意源对的等价/同义关系，
@@ -441,16 +516,20 @@ def extract():
             # 仅接受已知源前缀（表头/分隔行等非源前缀自动跳过，避免污染 mappings）
             if not (pa and ca and pb and cb and pa in _ALIGN_SRCS and pb in _ALIGN_SRCS):
                 continue
-            relation = ("same_number_same_meaning"
-                        if ("==" in ln or "同义" in ln or "别名" in ln)
-                        else "cross_number_diff_meaning")
+            relation = (
+                "same_number_same_meaning"
+                if ("==" in ln or "同义" in ln or "别名" in ln)
+                else "cross_number_diff_meaning"
+            )
             evidence = cells[4] if len(cells) >= 5 else "cross_source_align.md"
-            mappings.append({
-                "from": {"source": pa, "code": ca},
-                "to": {"source": pb, "code": cb},
-                "relation": relation,
-                "evidence": evidence,
-            })
+            mappings.append(
+                {
+                    "from": {"source": pa, "code": ca},
+                    "to": {"source": pb, "code": cb},
+                    "relation": relation,
+                    "evidence": evidence,
+                }
+            )
 
     # field_matrix：§零·B 投影（clean field-name × source），与 build_matrix_from_md 同构
     # （1156 字段 / 1230 去重记录）。专供 gen_field_matrix 生成 §零·B；原生 token 集
@@ -490,8 +569,11 @@ def extract():
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--out", default=DEFAULT_OUT)
-    ap.add_argument("--check-baseline", action="store_true",
-                    help="抽取后比对 gen_field_matrix.build_matrix() 基线（G1 闸门）")
+    ap.add_argument(
+        "--check-baseline",
+        action="store_true",
+        help="抽取后比对 gen_field_matrix.build_matrix() 基线（G1 闸门）",
+    )
     args = ap.parse_args()
 
     registry, stats = extract()
@@ -501,14 +583,20 @@ def main():
         json.dump(registry, f, ensure_ascii=False, indent=2)
 
     print(f"OK: 写出 {args.out}")
-    print(f"  字段数={stats['field_count']}  记录数={stats['record_count']}  "
-          f"多源={stats['multi_source_count']}  源={stats['source_count']}  对齐={stats['mapping_count']}")
-    print(f"  field_matrix(§零·B投影)={stats['field_matrix_count']} 记录={stats['field_matrix_record_count']}")
-    print(f"  逐字段属性覆盖率(扫描 {stats['attr_scanned_rows']} 行): "
-          f"canonical={stats['attr_coverage']['canonical']}  "
-          f"meaning={stats['attr_coverage']['meaning']}  "
-          f"unit={stats['attr_coverage']['unit']}  "
-          f"status={stats['attr_coverage']['status']}")
+    print(
+        f"  字段数={stats['field_count']}  记录数={stats['record_count']}  "
+        f"多源={stats['multi_source_count']}  源={stats['source_count']}  对齐={stats['mapping_count']}"
+    )
+    print(
+        f"  field_matrix(§零·B投影)={stats['field_matrix_count']} 记录={stats['field_matrix_record_count']}"
+    )
+    print(
+        f"  逐字段属性覆盖率(扫描 {stats['attr_scanned_rows']} 行): "
+        f"canonical={stats['attr_coverage']['canonical']}  "
+        f"meaning={stats['attr_coverage']['meaning']}  "
+        f"unit={stats['attr_coverage']['unit']}  "
+        f"status={stats['attr_coverage']['status']}"
+    )
 
     if args.check_baseline:
         # 基线：audit_field_completeness.registered_field_sets（原生 token），
@@ -522,12 +610,16 @@ def main():
         base_fields = len(base_tokens)
         base_records = sum(len(v) for v in base_reg.values())
         base_multi = sum(1 for s in base_field_sources.values() if len(s) >= 2)
-        ok = (stats["field_count"] == base_fields and
-              stats["record_count"] == base_records and
-              stats["multi_source_count"] == base_multi)
-        print(f"  G1 基线比对(native token): 抽取({stats['field_count']}/{stats['record_count']}/{stats['multi_source_count']}) "
-              f"vs 基线({base_fields}/{base_records}/{base_multi}) -> "
-              f"{'PASS' if ok else 'FAIL'}")
+        ok = (
+            stats["field_count"] == base_fields
+            and stats["record_count"] == base_records
+            and stats["multi_source_count"] == base_multi
+        )
+        print(
+            f"  G1 基线比对(native token): 抽取({stats['field_count']}/{stats['record_count']}/{stats['multi_source_count']}) "
+            f"vs 基线({base_fields}/{base_records}/{base_multi}) -> "
+            f"{'PASS' if ok else 'FAIL'}"
+        )
         if not ok:
             ext_tokens = {r["code"] for r in registry["fields"]}
             miss = base_tokens - ext_tokens

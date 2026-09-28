@@ -15,7 +15,8 @@
 - **统一缓存层**：SQLite + L1 内存 + TTL + `cross_verify` + single-flight + 版本化防污染（口径变更升 category）。
 - **TDX 服务器白名单**：54 台实测收敛为 5 台 FULL 服务器，探测轮换只遍历白名单。
 - **通用框架与工程化**：`BaseReportRunner` 共享骨架、并发下沉线程池、云端同步（GD 上传）、批量并行、mypy 类型安全。
-- **测试体系（防退化守护）**：33 个测试文件 / 545 个测试函数（按 data/core/infra/reports 分层，参数化展开后约 561 项），回归基线以 `pytest tests/ --collect-only` 实时为准，详见 `tests/README.md`。
+- **测试体系（防退化守护）**：43 个测试模块，按 data/core/infra/reports 分层；2026-09-28 验证收集 612 项。测试入口和当前覆盖范围见 `tests/README.md`。
+- **工程质量快照（2026-09-28）**：154 个 Python 源码/测试文件通过 Black 与语法检查；mypy 对配置范围内 140 个源码文件零错误。离线测试 564 passed、1 skipped；real_network 测试 41 passed、6 skipped。
 
 ---
 
@@ -128,12 +129,13 @@ python main.py [选项] 股票代码...
 ```
 a-stock-data/
 ├── main.py                       # 主入口程序（参数分发/子进程调度/超时分级）
-├── VERSION                       # 项目版本号（17.4.17，单一来源）
+├── VERSION                       # 项目版本号（17.4.23，单一来源）
 │
-├── core/                         # V17.0 核心模块包（8 个支撑模块，见 core/README.md）
+├── core/                         # 核心模块包（9 个支撑模块，见 core/README.md）
 │   ├── config.py                 # 全局配置集中管理（超时/限流/熔断）
 │   ├── data_provider.py          # 统一数据层（canonical 合约 + 字段路由 + 多级 fallback）
 │   ├── _accessors.py             # 跨边界访问器叶子模块（get_concept_from_zhb 等 7 个访问器，消除 data_provider↔stock_common 导入期循环依赖）
+│   ├── _tdx_handshake_patch.py   # eltdx 握手兼容补丁
 │   ├── zhb_client.py             # 通达信 zhb.zip 全局配置总包下载与解析（45 文件）
 │   ├── zhb_sync.py               # ZHB 自动化入库管道（python -m core.zhb_sync）
 │   ├── tdx_client.py             # eltdx/easy_tdx 统一层（运行时主源 eltdx；mootdx 已于 V17.3.4 退役）
@@ -141,8 +143,8 @@ a-stock-data/
 │   └── gd_uploader.py            # Google Drive 上传（凭据在 credentials/）
 │
 ├── stock_common/                 # 核心公共包（传输/数据源/评分/报告基类，见 stock_common/README.md）
-│   ├── __init__.py               # 包入口，统一导出接口（__all__ 250+ 项）
-│   ├── sc_datasource/            # 数据源查询包（8 个子模块，138 个函数）
+│   ├── __init__.py               # 包入口，统一导出显式公共接口
+│   ├── sc_datasource/            # 数据源查询包（按数据源与业务职责拆分，见子包 README）
 │   ├── sc_network.py             # 网络请求层（分域限流/令牌桶/封禁冷却/进程文件锁）
 │   ├── sc_report_runner.py       # BaseReportRunner 基类
 │   └── ...                       # 详见 stock_common/README.md
@@ -170,10 +172,14 @@ a-stock-data/
 │   ├── fmt_preview.py            # 零网络格式预览工具（V17.0.3）
 │   ├── check_em_health.py        # 东财接口健康探测（6 域低频）
 │   ├── upload_reports_to_gd.py   # GD 补传（扫描未上传 md）
-│   ├── sync_readme.py            # CHANGELOG → README 自动同步
+│   ├── sync_readme.py            # 旧格式 README 摘要同步工具（维护状态见 scripts/README.md）
 │   └── backup-opencode.ps1       # opencode 配置备份
 │
 ├── docs/                         # 技术文档（见 docs/README.md）
+│   ├── PROJECT_CONTEXT.md        # 架构导航、稳定约束与动态项目快照
+│   ├── ARCHITECTURE_THEORY.md    # 统一数据访问架构公理
+│   ├── DEBT_LEDGER.md            # 已知架构偏离与偿还状态
+│   ├── PROJECT_AUDIT_REMEDIATION_20260928.md # 本轮整改计划与验收记录
 │   ├── architecture.md           # 项目架构与数据流图（Mermaid）
 │   ├── roadmap.md                # 版本路线图 + ADR 决策记录
 │   ├── field_dict.md             # 主字段字典（ZHB 字段索引/破解结论）
@@ -181,7 +187,7 @@ a-stock-data/
 │   ├── script_data_dict.md       # 脚本应用接口与字段来源字典
 │   └── domain_glossary.md        # 领域词汇表（术语口径统一）
 │
-├── tests/                        # pytest 测试（33 个测试文件 / 545 个测试函数，按 data/core/infra/reports 分层，见 tests/README.md）
+├── tests/                        # pytest 测试（43 个测试模块；最近收集 612 项，见 tests/README.md）
 ├── pyproject.toml                # pytest / mypy / black 等工具配置中心
 ├── requirements.txt              # 运行时依赖列表
 ├── requirements-dev.txt          # 开发依赖列表（测试/类型/格式）
@@ -243,7 +249,7 @@ a-stock-data/
 - **`core/data_provider.py`**：唯一数据入口，封装 `CanonicalStockData` 强类型合约（113 字段 frozen 契约；其中 86 个纳入 `sc_schema.FIELD_SPECS` 元数据注册表，另有 12 个 eltdx 实时短线/连板指标字段为可选扩展）+ 字段路由 + 4 级 fallback（L0 东财申万二级 → push2 → TDX → ZHB），每字段带 `field_sources` 溯源；跨边界访问器（概念/分红/连板/涨跌幅等 7 个）已拆至 `core/_accessors.py` 叶子模块，**消除与 `stock_common` 的导入期循环依赖**（直引 `import core.data_provider` 现已可用，不再依赖入口先载 stock_common 的约定）。
 - **`stock_common/sc_network.py`**：分域限流（37 域）、进程文件锁、429 退避、连续封禁 20h 冷却。
   > 注：`core/tdx_client.py::_DOMAIN_LIMITS` 另有 6 域**独立**限流表（TCP 长连接语义，与 HTTP 请求级节流不同，**有意不合并**）。
-- **`stock_common/sc_datasource.py`**：100+ 数据源查询函数。
+- **`stock_common/sc_datasource/`**：按数据源和业务职责组织的查询适配器，模块清单见 [`stock_common/sc_datasource/README.md`](stock_common/sc_datasource/README.md)。
 - **`stock_common/sc_schema.py`**：字段元数据层（`FieldSpec` / `TimeAnchor` / `DataSource` / `Unit`），`normalize_at_boundary` 单位归一。
 - **`core/stock_cache.py`**：SQLite + L1 内存 + TTL + `cross_verify` + single-flight + 版本化防污染。
 - **`stock_common/sc_fault_tolerance.py`**：`TokenBucket` / `CircuitBreaker` / `RandomUAPool`。
@@ -280,8 +286,8 @@ reports/
 # 运行测试（shell 层强制走 run_tests.ps1，禁止直接 pytest）
 .\scripts\run_tests.ps1
 
-# 类型检查
-python -m mypy stock_common/sc_datasource.py get_val_report.py tdx_client.py --ignore-missing-imports
+# 按项目配置检查全部类型范围
+mypy --no-pretty --show-error-codes
 
 # 临时禁用缓存调试
 STOCK_NOCACHE=1 python main.py --sht 600519
@@ -289,7 +295,7 @@ STOCK_NOCACHE=1 python main.py --sht 600519
 
 ### 类型注解与静态检查
 
-项目核心模块已完成类型注解（PEP 484），在 `pyproject.toml` 中集中管理 mypy 配置：
+项目配置范围内的核心模块、脚本与测试已通过 mypy 检查，在 `pyproject.toml` 中集中管理检查范围：
 
 - `[tool.mypy]`：Python 3.10 目标版本，启用 `no_implicit_optional`、`warn_redundant_casts`
 - `[tool.black]`：代码格式化工具配置（line-length=100）
@@ -297,7 +303,7 @@ STOCK_NOCACHE=1 python main.py --sht 600519
 ### 常见调试问题
 
 - **报告数据与最新行情不一致？**：可能是缓存命中了过期数据，执行 `STOCK_NOCACHE=1 python main.py ...` 临时禁用缓存再测一次；或调用 `python -m core.stock_cache clear --category dragon_tiger` 清理对应分类。
-- **类型检查 mypy 报错？**：`third-party library stub missing` 类警告可忽略（已在 `pyproject.toml` 配置 `ignore_missing_imports=true`）。如果是自定义函数参数/返回值类型问题，请直接提交 issue。
+- **类型检查 mypy 报错？**：从仓库根目录运行 `mypy --no-pretty --show-error-codes`，先查看完整诊断再修复；不要通过全局忽略项目错误来隐藏问题。
 - **Google Drive 上传失败？**：检查根目录是否有 `client_secrets.json`（首次使用需浏览器授权），确认授权账号有 `a-stock_data` 文件夹的访问权限。
 - **架构不熟悉？**：详见 [`docs/architecture.md`](docs/architecture.md)，包含 Mermaid 架构图；字段口径见 [`docs/domain_glossary.md`](docs/domain_glossary.md) 领域词汇表。
 
@@ -333,7 +339,7 @@ git push origin master
 .\scripts\run_tests.ps1 -Mode real                             # 仅真网络测试（需 REAL_NETWORK=1）
 ```
 
-入口脚本在 [scripts/run_tests.ps1](scripts/run_tests.ps1)，底层强制走系统 Python 3.12（见 [scripts/run_with_system_python.ps1](scripts/run_with_system_python.ps1)）。
+入口脚本在 [scripts/run_tests.ps1](scripts/run_tests.ps1)，底层使用 Python 3.12：优先显式配置的解释器，其次项目 `.venv`，再探测系统 Python（见 [scripts/run_with_system_python.ps1](scripts/run_with_system_python.ps1)）。
 
 ### 写测试代码（pytest 是 Python 库,正常用）
 

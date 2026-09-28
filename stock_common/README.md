@@ -1,7 +1,7 @@
 # stock_common/ — 核心公共包(V17.3 演进)
 
 > 定位: 报告脚本与 core/ 之上的公共业务模块——网络传输层、数据源查询、评分/风险/技术指标、报告运行基类、日历、工具函数。
-> 报告脚本与 main.py 通过 `from stock_common import X` 引用(包入口统一导出, __all__ 250+ 项)。
+> 报告脚本与 main.py 通过 `from stock_common import X` 引用；公共导出由包入口的 `__all__` 明确列出。
 
 ## 目录结构(按职责分组)
 
@@ -28,6 +28,17 @@
 | sc_datasource/_quotes.py | 实时行情/快照/竞价/概念(含 get_concept_from_zhb, V17.3 改引 core._accessors) |
 | sc_datasource/_zhb.py | ZHB 行情衍生字段(成交额/年至今涨跌/股息率/主力净额/连板天数等, V17.3 改引 core._accessors) |
 | sc_datasource/_misc.py | 其他零散数据源(互动易/新闻/公告等) |
+| sc_datasource/_convertible.py | 可转债条款、转股价值与溢价率 |
+| sc_datasource/_etf.py | ETF 份额数据 |
+| sc_datasource/_events.py | 业绩预告、调研、增减持、质押、新股申购等事件 |
+| sc_datasource/_futures_sina.py | 新浪期货日 K 数据 |
+| sc_datasource/_macro.py | 宏观指标、利率与宏观日历 |
+| sc_datasource/_news_wscn_cctv.py | 华尔街见闻与央视新闻数据 |
+| sc_datasource/_research_sina.py | 新浪研报列表（第二来源） |
+| sc_datasource/_sse_e_interaction.py | 上证 e 互动问答 |
+| sc_datasource/_st_list.py | 全市场 ST / *ST 名单 |
+| sc_datasource/_ticks.py | 腾讯逐笔成交 |
+| sc_datasource/_v39_compat.py | 上游数据适配器共用的兼容 helper |
 | sc_datasource/_official_backup.py | 单文件时代的官方备份片段(参考用, 不主动调用) |
 
 ### 其它数据源/缓存模块(顶层)

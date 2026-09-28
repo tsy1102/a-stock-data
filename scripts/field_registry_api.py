@@ -13,12 +13,13 @@ markdown 解析逻辑。所有函数只读 docs/field_verification/field_registr
   * 任何读取失败（文件缺失 / 格式错 / 缺 key）直接抛异常，由调用方决定是否
     fallback 到 markdown 路径——本模块不静默吞错。
 """
+
 from __future__ import annotations
 
 import json
 import os
 from collections import defaultdict
-from typing import Dict, List, Optional, Set
+from typing import Dict, List, Optional, Set, cast
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 REPO_ROOT = os.path.dirname(SCRIPT_DIR)
@@ -28,7 +29,7 @@ REGISTRY = os.path.join(REPO_ROOT, "docs", "field_verification", "field_registry
 def load_registry(path: str = REGISTRY) -> dict:
     """读取 registry。失败抛异常（不静默兜底）。"""
     with open(path, encoding="utf-8") as f:
-        return json.load(f)
+        return cast(dict, json.load(f))
 
 
 def field_source_map(reg: Optional[dict] = None) -> Dict[str, Set[str]]:
@@ -89,19 +90,19 @@ def field_records(reg: Optional[dict] = None) -> List[dict]:
     """返回完整字段记录列表（含 canonical/meaning/unit/status/status_raw 等）。"""
     if reg is None:
         reg = load_registry()
-    return reg["fields"]
+    return cast(List[dict], reg["fields"])
 
 
 def sources(reg: Optional[dict] = None) -> List[dict]:
     if reg is None:
         reg = load_registry()
-    return reg.get("sources", [])
+    return cast(List[dict], reg.get("sources", []))
 
 
 def mappings(reg: Optional[dict] = None) -> List[dict]:
     if reg is None:
         reg = load_registry()
-    return reg.get("mappings", [])
+    return cast(List[dict], reg.get("mappings", []))
 
 
 def source_by_verify_file(verify_file: str, reg: Optional[dict] = None) -> Optional[dict]:

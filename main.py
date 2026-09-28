@@ -260,8 +260,8 @@ async def _run_script_async(
     """
     script_path = os.path.join(_SCRIPT_DIR, script)
     if not os.path.isfile(script_path):
-        print(f"  [{label}] {script} 文件不存在，跳过", flush=True)
-        return script, 0, 0.0, label
+        print(f"  [{label}] {script} 文件不存在，任务失败", flush=True)
+        return script, 1, 0.0, label
 
     cmd = [sys.executable, script_path]
     # V15.2: 子进程环境变量 — 注入 PYTHONIOENCODING=utf-8 避免子进程继承父进程 GBK 编码
@@ -374,6 +374,13 @@ async def _run_script_async(
         return script, 1, time.time() - t0, label
 
 
+def _all_tasks_succeeded(results_raw: list, expected_count: int) -> bool:
+    """仅当每个计划任务都返回成功结果时，才允许调度器报告成功。"""
+    if len(results_raw) != expected_count:
+        return False
+    return all(not isinstance(item, BaseException) and item[1] == 0 for item in results_raw)
+
+
 async def main_async():
     args = parse_args()
 
@@ -471,7 +478,7 @@ async def main_async():
     total_time = time.time() - total_t0
     results = {}
     for item in results_raw:
-        if isinstance(item, Exception):
+        if isinstance(item, BaseException):
             print(f"  ✖ 任务异常: {item}", flush=True)
             continue
         script, rc, dt, label = item
@@ -489,7 +496,7 @@ async def main_async():
         print(f"  {label}: {status} ({dt:.1f}s)", flush=True)
     print(f"{'=' * 60}", flush=True)
 
-    all_ok = all(v[0] == 0 for v in results.values())
+    all_ok = _all_tasks_succeeded(results_raw, len(tasks_info))
 
     # V7.5 新增：自动运行历史快照分析
     try:

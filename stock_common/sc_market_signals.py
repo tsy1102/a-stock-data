@@ -15,12 +15,13 @@
   render_stock_research_section(code) -> List[str]        # med/lng 个股研报
   render_stock_einteraction_section(code) -> List[str]     # med/lng 个股 e 互动
 """
+
 from __future__ import annotations
 
 import re
 import threading
 from datetime import date, datetime, timedelta
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Tuple
 
 from stock_common import _debug_log
 
@@ -72,8 +73,9 @@ def _backtrack_days(n: int = 10) -> List[str]:
 # ---------------------------------------------------------------------------
 # 1) 申购日历 · 资金抽水压力
 # ---------------------------------------------------------------------------
-def render_ipo_calendar_section(today_str: Optional[str] = None,
-                                lookahead_days: int = 21) -> List[str]:
+def render_ipo_calendar_section(
+    today_str: Optional[str] = None, lookahead_days: int = 21
+) -> List[str]:
     """近期新股申购日历 → 资金分流/抽水压力监测。
 
     抽水压力 = 未来 lookahead_days 日内申购新股数 + 预计募资合计(亿元, 已对撞订正)。
@@ -84,9 +86,12 @@ def render_ipo_calendar_section(today_str: Optional[str] = None,
     out: List[str] = ["## 【G. 近期新股申购日历 · 资金抽水压力监测】", ""]
     try:
         from stock_common.sc_datasource import ipo_calendar_recent
+
         rows = ipo_calendar_recent(40) or []
     except Exception as e:
-        out.append(f"  ⚠️ 申购日历数据暂不可用（东财 datacenter, reportName=RPTA_APP_IPOAPPLY 已对撞校正）: {str(e)[:100]}")
+        out.append(
+            f"  ⚠️ 申购日历数据暂不可用（东财 datacenter, reportName=RPTA_APP_IPOAPPLY 已对撞校正）: {str(e)[:100]}"
+        )
         return out
     if not rows:
         out.append("  （暂无申购日历数据）")
@@ -95,22 +100,40 @@ def render_ipo_calendar_section(today_str: Optional[str] = None,
     today = _parse_date(today_str) or datetime.now()
     horizon = today + timedelta(days=lookahead_days)
 
-    def _ad(r):
+    def _ad(r: Dict[str, Any]) -> Optional[datetime]:
         return _parse_date(r.get("APPLY_DATE"))
 
-    def _rf(r):
+    def _rf(r: Dict[str, Any]) -> Optional[float]:
         # 募资额单位: 亿元(对撞确认, 见模块 docstring)
         return _num(r.get("TOTAL_RAISE_FUNDS")) or _num(r.get("PREDICT_RAISE_FUNDS"))
 
-    upcoming = [r for r in rows if (lambda d: d is not None and d >= today)(_ad(r))]
-    recent = [r for r in rows if _ad(r) and _ad(r) < today]
+    upcoming: List[Dict[str, Any]] = []
+    recent: List[Dict[str, Any]] = []
+    in_horizon: List[Dict[str, Any]] = []
+    for row in rows:
+        apply_date = _ad(row)
+        if apply_date is None:
+            continue
+        if apply_date >= today:
+            upcoming.append(row)
+            if apply_date <= horizon:
+                in_horizon.append(row)
+        else:
+            recent.append(row)
 
-    in_horizon = [r for r in upcoming if _ad(r) <= horizon]
-    total_raise = sum(_rf(r) for r in in_horizon if _rf(r) is not None)
+    total_raise = 0.0
+    for row in in_horizon:
+        raise_amount = _rf(row)
+        if raise_amount is not None:
+            total_raise += raise_amount
 
     out.append(
         f"  💧 **抽水压力(以申购只数计)**: 未来 {lookahead_days} 日内有 **{len(in_horizon)}** 只新股申购"
-        + (f"，预计募资约 **{total_raise:.1f} 亿元**（已定价/预测口径，待定价以预测值占位）" if total_raise > 0 else "")
+        + (
+            f"，预计募资约 **{total_raise:.1f} 亿元**（已定价/预测口径，待定价以预测值占位）"
+            if total_raise > 0
+            else ""
+        )
         + f"（数据来源: 东财 datacenter, reportName=RPTA_APP_IPOAPPLY, 已对撞校正, 单位亿元）。"
     )
     out.append("")
@@ -125,7 +148,8 @@ def render_ipo_calendar_section(today_str: Optional[str] = None,
         rf = _rf(r)
         rf_s = f"{rf:.2f}" if rf is not None else "待定"
         mkt = r.get("TRADE_MARKET") or r.get("MARKET_TYPE_NEW") or ""
-        state = "待申购" if _ad(r) and _ad(r) >= today else "已申购"
+        apply_date = _ad(r)
+        state = "待申购" if apply_date is not None and apply_date >= today else "已申购"
         out.append(
             f"  | {ad} | {code} | {name} | {price if price is not None else '待定'} "
             f"| {rf_s} | {mkt} | {state} |"
@@ -138,8 +162,10 @@ def render_ipo_calendar_section(today_str: Optional[str] = None,
             name = r.get("SECURITY_NAME_ABBR") or ""
             out.append(f"  • {ad} {name}（已申购）")
     out.append("")
-    out.append("  ⚠️ 抽水压力为定性监测指标：申购冻结资金会阶段性抽离二级市场流动性；"
-               "募资额为已定价口径，待定价新股以预测值占位，不构成投资建议。")
+    out.append(
+        "  ⚠️ 抽水压力为定性监测指标：申购冻结资金会阶段性抽离二级市场流动性；"
+        "募资额为已定价口径，待定价新股以预测值占位，不构成投资建议。"
+    )
     return out
 
 
@@ -152,15 +178,19 @@ def render_etf_shares_section(today_str: Optional[str] = None) -> List[str]:
     """
     out: List[str] = ["## 【H. ETF 份额规模（市场资金载体）】", ""]
 
-    def _fetch_etf(exchange: str):
+    def _fetch_etf(
+        exchange: str,
+    ) -> Tuple[Optional[List[Dict[str, Any]]], Optional[str]]:
         """取最近一个有数据的快照。SH 按日归档可回退; SZ 仅最新一日快照(不回退历史日)。"""
         if exchange == "SZ":
             # 深交所仅提供最新一日快照, 单次尝试 + 硬超时(避免受限网络下逐日回退×多主机挂死报告)
-            box: Dict[str, Any] = {}
+            box: Dict[str, Optional[List[Dict[str, Any]]]] = {}
 
-            def _run():
+            def _run() -> None:
                 try:
-                    box["rows"] = etf_shares(today_str[:10] if today_str else date.today().strftime("%Y-%m-%d"), "SZ")
+                    box["rows"] = etf_shares(
+                        today_str[:10] if today_str else date.today().strftime("%Y-%m-%d"), "SZ"
+                    )
                 except Exception:
                     box["rows"] = None
 
@@ -181,6 +211,7 @@ def render_etf_shares_section(today_str: Optional[str] = None) -> List[str]:
 
     try:
         from stock_common.sc_datasource import etf_shares
+
         sh_rows, sh_day = _fetch_etf("SH")
         sz_rows, sz_day = _fetch_etf("SZ")
     except Exception as e:
@@ -196,20 +227,29 @@ def render_etf_shares_section(today_str: Optional[str] = None) -> List[str]:
     sz_rows = sz_rows or []
     sh_total = sum(_num(r.get("shares_10k")) or 0.0 for r in sh_rows)
     sz_total = sum(_num(r.get("shares_10k")) or 0.0 for r in sz_rows)
-    sz_part = (f"深市 {len(sz_rows)} 只(总份额 {sz_total / 1e4:.1f} 亿份"
-               + (f", 截至 {sz_day}" if sz_day else "") + ")"
-               if sz_ok else "深市 ETF 数据暂不可用（深交所接口, 待恢复）")
-    out.append(f"  数据来源: 上交所/深交所（单日快照, 无环比）｜"
-               f"沪市 {len(sh_rows)} 只(总份额 {sh_total / 1e4:.1f} 亿份"
-               + (f", 截至 {sh_day}" if sh_day else "") + ")｜"
-               + sz_part)
+    sz_part = (
+        f"深市 {len(sz_rows)} 只(总份额 {sz_total / 1e4:.1f} 亿份"
+        + (f", 截至 {sz_day}" if sz_day else "")
+        + ")"
+        if sz_ok
+        else "深市 ETF 数据暂不可用（深交所接口, 待恢复）"
+    )
+    out.append(
+        f"  数据来源: 上交所/深交所（单日快照, 无环比）｜"
+        f"沪市 {len(sh_rows)} 只(总份额 {sh_total / 1e4:.1f} 亿份"
+        + (f", 截至 {sh_day}" if sh_day else "")
+        + ")｜"
+        + sz_part
+    )
     out.append("")
     out.append("  **沪市 ETF 份额 TOP10:**")
     out.append("  | 代码 | 名称 | 类型 | 份额(万份) |")
     out.append("  |---|---|---|---|")
     for r in sorted(sh_rows, key=lambda r: _num(r.get("shares_10k")) or 0.0, reverse=True)[:10]:
-        out.append(f"  | {r.get('code')} | {r.get('name')} | {r.get('etf_type') or ''} "
-                   f"| {_num(r.get('shares_10k')) or 0:,.0f} |")
+        out.append(
+            f"  | {r.get('code')} | {r.get('name')} | {r.get('etf_type') or ''} "
+            f"| {_num(r.get('shares_10k')) or 0:,.0f} |"
+        )
     return out
 
 
@@ -221,6 +261,7 @@ def render_sina_research_section(today_str: Optional[str] = None) -> List[str]:
     out: List[str] = ["## 【I. 新浪研报风向（全市场最新）】", ""]
     try:
         from stock_common.sc_datasource import sina_research_reports
+
         rows = sina_research_reports(page=1) or []
     except Exception as e:
         out.append(f"  ⚠️ 新浪研报数据暂不可用: {str(e)[:100]}")
@@ -228,7 +269,9 @@ def render_sina_research_section(today_str: Optional[str] = None) -> List[str]:
     if not rows:
         out.append("  （暂无研报）")
         return out
-    out.append(f"  数据来源: 新浪财经研报（最新 {len(rows)} 条）｜仅展示标题与机构, 字段语义待对撞订正")
+    out.append(
+        f"  数据来源: 新浪财经研报（最新 {len(rows)} 条）｜仅展示标题与机构, 字段语义待对撞订正"
+    )
     out.append("")
     for r in rows[:15]:
         d = (r.get("date") or "")[:10]
@@ -247,6 +290,7 @@ def render_cctv_news_section(today_str: Optional[str] = None) -> List[str]:
     out: List[str] = ["## 【J. 央视《新闻联播》要闻（政策情绪）】", ""]
     try:
         from stock_common.sc_datasource import cctv_news
+
         rows = None
         for day in _backtrack_days(7):
             try:
@@ -278,6 +322,7 @@ def render_sse_e_interaction_section(today_str: Optional[str] = None) -> List[st
     out: List[str] = ["## 【K. 上证e互动 · 市场级问答（投资者关切）】", ""]
     try:
         from stock_common.sc_datasource import sse_e_interaction
+
         rows = sse_e_interaction(kind="answered", page=1, page_size=15) or []
     except Exception as e:
         out.append(f"  ⚠️ 上证e互动数据暂不可用: {str(e)[:100]}")
@@ -307,11 +352,14 @@ def render_st_list_section(today_str: Optional[str] = None) -> List[str]:
     out: List[str] = []
     try:
         from stock_common.sc_datasource import st_stock_list
+
         rows = st_stock_list()
     except Exception as e:
         out.append(f"{_title} · 待源恢复】")
         out.append("")
-        out.append("  ⚠️ ST名单源(东财 push2 clist)当前不可达，本信号**暂缓接入**；源恢复后自动显示（不展示空名单）。")
+        out.append(
+            "  ⚠️ ST名单源(东财 push2 clist)当前不可达，本信号**暂缓接入**；源恢复后自动显示（不展示空名单）。"
+        )
         out.append(f"  （诊断: {str(e)[:90]}）")
         return out
     if not rows:
@@ -322,19 +370,24 @@ def render_st_list_section(today_str: Optional[str] = None) -> List[str]:
     out.append(f"{_title}】")
     out.append("")
     from collections import Counter
+
     c = Counter(r.get("market") for r in rows)
-    out.append(f"  数据来源: 东财风险警示板（沪深）+ 北交所全表按名筛 ｜ 共 {len(rows)} 只: "
-               + ", ".join(f"{k} {v}" for k, v in c.items()))
+    out.append(
+        f"  数据来源: 东财风险警示板（沪深）+ 北交所全表按名筛 ｜ 共 {len(rows)} 只: "
+        + ", ".join(f"{k} {v}" for k, v in c.items())
+    )
     out.append("")
     out.append("  | 代码 | 市场 | 名称 | 类型 | 现价 | 涨跌幅 |")
     out.append("  |---|---|---|---|---|---|")
 
-    def _cell(v):
+    def _cell(v: Any) -> Any:
         return "—" if v is None or v == "" else v
 
     for r in rows[:30]:
-        out.append(f"  | {_cell(r.get('code'))} | {_cell(r.get('market'))} | {_cell(r.get('name'))} | {_cell(r.get('st_type'))} "
-                   f"| {_cell(r.get('price'))} | {_cell(r.get('pct_change'))} |")
+        out.append(
+            f"  | {_cell(r.get('code'))} | {_cell(r.get('market'))} | {_cell(r.get('name'))} | {_cell(r.get('st_type'))} "
+            f"| {_cell(r.get('price'))} | {_cell(r.get('pct_change'))} |"
+        )
     return out
 
 
@@ -369,6 +422,7 @@ def render_stock_research_section(code: str) -> List[str]:
         return out
     try:
         from stock_common.sc_datasource import sina_research_reports
+
         rows = sina_research_reports(code=code, page=1) or []
     except Exception as e:
         out.append(f"  ⚠️ 个股研报数据暂不可用: {str(e)[:100]}")
@@ -394,6 +448,7 @@ def render_stock_einteraction_section(code: str) -> List[str]:
         return out
     try:
         from stock_common.sc_datasource import sse_e_interaction
+
         rows = sse_e_interaction(code=code, kind="answered", page=1, page_size=10) or []
     except Exception as e:
         out.append(f"  ⚠️ 个股e互动数据暂不可用: {str(e)[:100]}")

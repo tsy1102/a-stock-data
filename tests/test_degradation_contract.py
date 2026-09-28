@@ -12,6 +12,7 @@
 
 仅新增测试，不改动任何生产逻辑。
 """
+
 from __future__ import annotations
 
 from unittest import mock
@@ -20,6 +21,7 @@ import pytest
 
 from stock_common.sc_datasource import get_index_kline_closes, _eastmoney
 import stock_common.sc_datasource as sd
+
 # V17.2.18 重构后片段为独立模块: get_index_kline_closes 定义在 _eastmoney, _quick_request 由其
 # 自身命名空间解析; 故补丁须打在 _eastmoney._quick_request (而非包级 re-export 副本) 才能穿透。
 
@@ -64,13 +66,14 @@ def _url_aware(responses: dict):
 
 # ───────────────────────── L1：TDX 指数K线（TCP） ─────────────────────────
 
+
 def test_layer_l1_tdx_contract():
     keys = ["date", "open", "close"]
-    rows = [["2026-09-01", 1.0, 10.0],
-            ["2026-09-02", 1.0, 11.0],
-            ["2026-09-03", 1.0, 12.0]]
-    with mock.patch("core.tdx_client.tdx_get_index_bars", return_value=(keys, rows)), \
-         mock.patch.object(_eastmoney, "_quick_request", mock.Mock(return_value=None)):
+    rows = [["2026-09-01", 1.0, 10.0], ["2026-09-02", 1.0, 11.0], ["2026-09-03", 1.0, 12.0]]
+    with (
+        mock.patch("core.tdx_client.tdx_get_index_bars", return_value=(keys, rows)),
+        mock.patch.object(_eastmoney, "_quick_request", mock.Mock(return_value=None)),
+    ):
         out = get_index_kline_closes("sh000001", days=3)
     _assert_full_contract(out)
     assert out == EXPECTED
@@ -78,11 +81,25 @@ def test_layer_l1_tdx_contract():
 
 # ─────────────────── L2：腾讯 ifzq 前复权日K（完整序列） ───────────────────
 
+
 def test_layer_l2_tencent_fqkline_contract():
-    payload = {"data": {"sh000001": {"qfqday": [
-        ["2026-09-01", 1.0, 10.0], ["2026-09-02", 1.0, 11.0], ["2026-09-03", 1.0, 12.0]]}}}
-    with mock.patch("core.tdx_client.tdx_get_index_bars", side_effect=Exception("no tdx")), \
-         mock.patch.object(_eastmoney, "_quick_request", mock.Mock(return_value=_FakeResp(json_data=payload))):
+    payload = {
+        "data": {
+            "sh000001": {
+                "qfqday": [
+                    ["2026-09-01", 1.0, 10.0],
+                    ["2026-09-02", 1.0, 11.0],
+                    ["2026-09-03", 1.0, 12.0],
+                ]
+            }
+        }
+    }
+    with (
+        mock.patch("core.tdx_client.tdx_get_index_bars", side_effect=Exception("no tdx")),
+        mock.patch.object(
+            _eastmoney, "_quick_request", mock.Mock(return_value=_FakeResp(json_data=payload))
+        ),
+    ):
         out = get_index_kline_closes("sh000001", days=3)
     _assert_full_contract(out)
     assert out == EXPECTED
@@ -90,10 +107,13 @@ def test_layer_l2_tencent_fqkline_contract():
 
 # ─────────────────────── L3：新浪纯 JSON host ───────────────────────
 
+
 def test_layer_l3_sina_json_contract():
     resp = _FakeResp(text='[{"close":"10.0"},{"close":"11.0"},{"close":"12.0"}]')
-    with mock.patch("core.tdx_client.tdx_get_index_bars", side_effect=Exception("no tdx")), \
-         mock.patch.object(_eastmoney, "_quick_request", _url_aware({"json_v2.php": resp})):
+    with (
+        mock.patch("core.tdx_client.tdx_get_index_bars", side_effect=Exception("no tdx")),
+        mock.patch.object(_eastmoney, "_quick_request", _url_aware({"json_v2.php": resp})),
+    ):
         out = get_index_kline_closes("sh000001", days=3)
     _assert_full_contract(out)
     assert out == EXPECTED
@@ -101,10 +121,13 @@ def test_layer_l3_sina_json_contract():
 
 # ─────────────────────── L3b：新浪 jsonp 兜底 ───────────────────────
 
+
 def test_layer_l3b_sina_jsonp_contract():
     resp = _FakeResp(text='var([{"close":"10.0"},{"close":"11.0"},{"close":"12.0"}])')
-    with mock.patch("core.tdx_client.tdx_get_index_bars", side_effect=Exception("no tdx")), \
-         mock.patch.object(_eastmoney, "_quick_request", _url_aware({"jsonp_v2.php": resp})):
+    with (
+        mock.patch("core.tdx_client.tdx_get_index_bars", side_effect=Exception("no tdx")),
+        mock.patch.object(_eastmoney, "_quick_request", _url_aware({"jsonp_v2.php": resp})),
+    ):
         out = get_index_kline_closes("sh000001", days=3)
     _assert_full_contract(out)
     assert out == EXPECTED
@@ -112,11 +135,23 @@ def test_layer_l3b_sina_jsonp_contract():
 
 # ───────────────── 等价性：四层任意主导应产出等价 ─────────────────
 
+
 def test_degradation_equivalence_l1_l2_l3():
-    tdx_payload = (["date", "open", "close"],
-                   [["2026-09-01", 1.0, 10.0], ["2026-09-02", 1.0, 11.0], ["2026-09-03", 1.0, 12.0]])
-    tencent_payload = {"data": {"sh000001": {"qfqday": [
-        ["2026-09-01", 1.0, 10.0], ["2026-09-02", 1.0, 11.0], ["2026-09-03", 1.0, 12.0]]}}}
+    tdx_payload = (
+        ["date", "open", "close"],
+        [["2026-09-01", 1.0, 10.0], ["2026-09-02", 1.0, 11.0], ["2026-09-03", 1.0, 12.0]],
+    )
+    tencent_payload = {
+        "data": {
+            "sh000001": {
+                "qfqday": [
+                    ["2026-09-01", 1.0, 10.0],
+                    ["2026-09-02", 1.0, 11.0],
+                    ["2026-09-03", 1.0, 12.0],
+                ]
+            }
+        }
+    }
     sina_text = '[{"close":"10.0"},{"close":"11.0"},{"close":"12.0"}]'
     sina_jsonp = 'var([{"close":"10.0"},{"close":"11.0"},{"close":"12.0"}])'
     tdx_ok = mock.Mock(return_value=tdx_payload)
@@ -124,8 +159,10 @@ def test_degradation_equivalence_l1_l2_l3():
 
     def run_with(tdx_patch, url, resp):
         responses = {url: resp} if (url and resp) else {}
-        with mock.patch("core.tdx_client.tdx_get_index_bars", tdx_patch), \
-             mock.patch.object(_eastmoney, "_quick_request", _url_aware(responses)):
+        with (
+            mock.patch("core.tdx_client.tdx_get_index_bars", tdx_patch),
+            mock.patch.object(_eastmoney, "_quick_request", _url_aware(responses)),
+        ):
             return get_index_kline_closes("sh000001", days=3)
 
     # L1 主导
@@ -140,12 +177,17 @@ def test_degradation_equivalence_l1_l2_l3():
 
 # ─────────── L4：显式缩减契约（仅 [昨收, 今收] 两值） ───────────
 
+
 def test_layer_l4_reduced_contract():
     # 真实 qt.gtimg.cn 响应形如 v_sh000001="1~...~<close>~<pre_close>~"
     # （函数取 v[3]=close、v[4]=pre_close，返回 [pre_close, close]）
     realtime_text = 'v_sh000001="sh000001~name~x~10.5~11.0~"'
-    with mock.patch("core.tdx_client.tdx_get_index_bars", side_effect=Exception("no tdx")), \
-         mock.patch.object(_eastmoney, "_quick_request", _url_aware({"qt.gtimg.cn": _FakeResp(text=realtime_text)})):
+    with (
+        mock.patch("core.tdx_client.tdx_get_index_bars", side_effect=Exception("no tdx")),
+        mock.patch.object(
+            _eastmoney, "_quick_request", _url_aware({"qt.gtimg.cn": _FakeResp(text=realtime_text)})
+        ),
+    ):
         out = get_index_kline_closes("sh000001", days=3)
     # L4 返回 [pre_close, close]，是显式声明的缩减契约，而非完整序列
     assert isinstance(out, list) and len(out) == 2
@@ -155,14 +197,18 @@ def test_layer_l4_reduced_contract():
 
 # ───────────── 全部失败兜底：返回空序列（不静默造假） ─────────────
 
+
 def test_all_layers_failed_returns_empty():
-    with mock.patch("core.tdx_client.tdx_get_index_bars", side_effect=Exception("no tdx")), \
-         mock.patch.object(_eastmoney, "_quick_request", mock.Mock(return_value=None)):
+    with (
+        mock.patch("core.tdx_client.tdx_get_index_bars", side_effect=Exception("no tdx")),
+        mock.patch.object(_eastmoney, "_quick_request", mock.Mock(return_value=None)),
+    ):
         out = get_index_kline_closes("sh000001", days=3)
     assert out == []
 
 
 # ───────────── 变异检验：契约检查器本身非空洞 ─────────────
+
 
 def test_contract_checker_is_not_vacuous():
     # 降序（非升序）应判失败

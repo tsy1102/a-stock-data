@@ -27,10 +27,10 @@ docs/field_verification/
 ## 采集命令
 
 ```powershell
-python scripts/capture_field_probe.py                 # 采今天(用现有 ZHB 包)
-python scripts/capture_field_probe.py --date 20260812 # 指定日期目录
-python scripts/capture_field_probe.py --dry-run       # 只显示各源可用性,不发请求
-python scripts/capture_field_probe.py --refresh-pool  # 采集前刷新动态层(连板/新股/涨停)写回 pool.json
+.\scripts\run_with_system_python.ps1 scripts\capture_field_probe.py                 # 采今天(用现有 ZHB 包)
+.\scripts\run_with_system_python.ps1 scripts\capture_field_probe.py --date 20260812 # 指定日期目录
+.\scripts\run_with_system_python.ps1 scripts\capture_field_probe.py --dry-run       # 只显示各源可用性,不发请求
+.\scripts\run_with_system_python.ps1 scripts\capture_field_probe.py --refresh-pool  # 采集前刷新动态层(连板/新股/涨停)写回 pool.json
 ```
 
 注意: 东财 push2 为 0.4rps,20 只约 50s;脚本自动走 sc_network 全局限流。
@@ -39,20 +39,20 @@ python scripts/capture_field_probe.py --refresh-pool  # 采集前刷新动态层
 > **动态层每日刷新（V17.2.10）**：`pool.json` 的 `dynamic` 5 只此前静态冻结（自 20260812）。
 > 现由采集脚本 `--refresh-pool` 在采集前自动从涨停池（同花顺 `ths_limit_up_pool`，东财兜底）挑选
 > 5 只连板/新股/涨停写回 `dynamic`（`date=最近交易日`），固定层 15 只不动。
-> 网络不可用时保留旧动态层。建议每日命令：`python scripts/capture_field_probe.py --refresh-pool`。
+> 网络不可用时保留旧动态层。建议每日命令：`.\scripts\run_with_system_python.ps1 scripts\capture_field_probe.py --refresh-pool`。
 
 ## 每日核查流程(固定)
 
 1. 跑采集脚本(约 3-5 分钟,含 ZHB 本地解析 + TDX + 腾讯 + push2)
    ```powershell
-   python scripts/capture_field_probe.py --refresh-pool   # 刷新动态层(连板/新股/涨停)再采集
+   .\scripts\run_with_system_python.ps1 scripts\capture_field_probe.py --refresh-pool   # 刷新动态层(连板/新股/涨停)再采集
    ```
 2. **跑全源对撞(通用引擎, V17.2.9)**——每次运行自动查询对撞四铁律:
    ```powershell
-   python scripts/collide.py                 # 默认近 7 天窗口，全源全字段完整对撞
-   python scripts/collide.py --window 14     # 近 14 天窗口
-   python scripts/collide.py --all           # 全部历史日期
-   python scripts/collide.py --date 20260913 # 指定报告日期戳（默认今天）
+   .\scripts\run_with_system_python.ps1 scripts\collide.py                 # 默认近 7 天窗口，全源全字段完整对撞
+   .\scripts\run_with_system_python.ps1 scripts\collide.py --window 14     # 近 14 天窗口
+   .\scripts\run_with_system_python.ps1 scripts\collide.py --all           # 全部历史日期
+   .\scripts\run_with_system_python.ps1 scripts\collide.py --date 20260913 # 指定报告日期戳（默认今天）
    ```
    产物: `docs/field_verification/<date>/<date>_collision_report.md` + `.json`（仅证据/候选, 不改 `field_dict.md`；新定案经字典订正后由 sanctioned 管线 ingest）。
 3. **⚠️ ZHB T-1 规则(2026-08-27 固化)**: 采集脚本产出的 `raw_zhb.json` 数据日期恒为
@@ -65,7 +65,7 @@ python scripts/capture_field_probe.py --refresh-pool  # 采集前刷新动态层
    - 未知字段观察(如 zhb `unknown_24`)
 5. 用户确认后,把结论回写 `field_dict.md`(状态: ✅实测 / ⚠️推测 / ❓未知 / ❌修正)
 6. **⚠️ 命名仲裁守卫（强制阻断, 2026-09-09 固化）**: 回写 `field_dict.md` 前后均须运行
-   `python scripts/lint_field_same_number.py --strict-naming`。
+   `.\scripts\run_with_system_python.ps1 scripts\lint_field_same_number.py --strict-naming`。
    该模式将 **R3 命名缺口升为阻断级（exit≠0）**；**若报 R3 缺口,禁止回写 field_dict.md**,
    须先补登 §12.8.12e 规范表或加数值二级复核标记,再重跑直到 exit 0。
    （默认不带 `--strict-naming` 为 warn 级、不阻断,用于日常检视。）

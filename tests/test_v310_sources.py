@@ -13,6 +13,7 @@
 
 设计对齐上游错误契约: 参数错/确实无数据 → ValueError; 源格式变 → RuntimeError。
 """
+
 from __future__ import annotations
 
 import os
@@ -69,7 +70,9 @@ class _FakeResp:
     """复现 requests.Response 的最小接口(.content / .url)。"""
 
     def __init__(self, content, url="http://fake.local"):
-        self.content = content if isinstance(content, (bytes, bytearray)) else content.encode("utf-8")
+        self.content = (
+            content if isinstance(content, (bytes, bytearray)) else content.encode("utf-8")
+        )
         self.url = url
         self.status_code = 200
 
@@ -97,8 +100,15 @@ def test_parse_tick_page_ok():
     recs = _parse_tick_page("sh600519", 0, TICK_PAGE_0)
     assert recs is not None
     assert len(recs) == 3
-    assert recs[0] == {"seq": 1, "time": "09:25:00", "price": 1500.0,
-                        "change": 0.0, "volume": 100, "amount": 15000000.0, "side": "B"}
+    assert recs[0] == {
+        "seq": 1,
+        "time": "09:25:00",
+        "price": 1500.0,
+        "change": 0.0,
+        "volume": 100,
+        "amount": 15000000.0,
+        "side": "B",
+    }
     assert recs[2]["side"] == "M"
 
 
@@ -124,8 +134,8 @@ def test_parse_futures_payload_ok():
     assert rows[0]["date"] == "2026-09-18"
     assert rows[0]["open"] == 3500.0
     assert rows[0]["close"] == 3510.0
-    assert rows[0]["settle"] == 3512.0          # 有结算价
-    assert rows[1]["settle"] is None            # s=0 → None
+    assert rows[0]["settle"] == 3512.0  # 有结算价
+    assert rows[1]["settle"] is None  # s=0 → None
     assert rows[1]["open_interest"] == 510000.0
 
 
@@ -152,9 +162,9 @@ def test_tencent_ticks_bj_rejected():
 
 def test_tencent_ticks_index_rejected():
     with pytest.raises(ValueError):
-        tencent_ticks("sh000001")   # 上证指数
+        tencent_ticks("sh000001")  # 上证指数
     with pytest.raises(ValueError):
-        tencent_ticks("399001")     # 深证成指(默认 sz)
+        tencent_ticks("399001")  # 深证成指(默认 sz)
 
 
 def test_futures_code_format_rejected():
@@ -177,15 +187,17 @@ def test_futures_kline_sina_date_filter_and_settle():
         df = futures_kline_sina("RB0", start="2026-09-19")
     assert len(df) == 1
     assert df.iloc[0]["date"] == "2026-09-19"
-    assert df.iloc[0]["settle"] is None          # s=0 → None
+    assert df.iloc[0]["settle"] is None  # s=0 → None
     assert df.iloc[0]["source"] == "sina"
     assert "source_url" in df.columns
 
 
 def test_futures_kline_sina_empty_interval():
     empty = 'var _RB0=([]);'
-    with mock.patch("stock_common.sc_datasource._futures_sina._quick_request",
-                    return_value=_FakeResp(empty.encode("gbk"), SINA_FUT_KLINE_URL.format(code="RB0"))):
+    with mock.patch(
+        "stock_common.sc_datasource._futures_sina._quick_request",
+        return_value=_FakeResp(empty.encode("gbk"), SINA_FUT_KLINE_URL.format(code="RB0")),
+    ):
         with pytest.raises(ValueError):
             futures_kline_sina("RB0", start="1990-01-01", end="1990-12-31")
 

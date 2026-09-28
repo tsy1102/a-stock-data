@@ -42,6 +42,7 @@ API 映射：
   2. access_token + refresh_token 自动保存到 credentials.json
   3. 后续运行会自动刷新 token，无需再次手动授权
 """
+
 from __future__ import annotations
 
 import io
@@ -100,6 +101,7 @@ def _load_saved_credentials(token_path: str):
     """
     try:
         from google.oauth2.credentials import Credentials
+
         if not os.path.exists(token_path):
             return None, None
         creds = Credentials.from_authorized_user_file(token_path, _SCOPES)
@@ -107,6 +109,7 @@ def _load_saved_credentials(token_path: str):
             return creds, None
         if creds and creds.expired and creds.refresh_token:
             from google.auth.transport.requests import Request
+
             try:
                 creds.refresh(Request())
                 with open(token_path, "w", encoding="utf-8") as f:
@@ -135,9 +138,13 @@ def _run_oauth_flow(base_dir: str):
     try:
         import concurrent.futures as _cf
         from google_auth_oauthlib.flow import InstalledAppFlow
+
         secrets_path = os.path.join(base_dir, _CRED_SUBDIR, _CLIENT_SECRETS_FILENAME)
         if not os.path.exists(secrets_path):
-            print(f"  ❌ 缺少 {_CLIENT_SECRETS_FILENAME}，请从 Google Cloud Console 下载：", flush=True)
+            print(
+                f"  ❌ 缺少 {_CLIENT_SECRETS_FILENAME}，请从 Google Cloud Console 下载：",
+                flush=True,
+            )
             print("     https://console.cloud.google.com/apis/credentials", flush=True)
             return None
 
@@ -153,15 +160,29 @@ def _run_oauth_flow(base_dir: str):
                     return flow.run_local_server(port=0)
                 except Exception as _e:
                     _msg = str(_e)
-                    if _attempt < 2 and ("SSL" in _msg or "EOF" in _msg or "timeout" in _msg.lower()
-                                         or "Connection" in _msg or "Max retries" in _msg):
+                    if _attempt < 2 and (
+                        "SSL" in _msg
+                        or "EOF" in _msg
+                        or "timeout" in _msg.lower()
+                        or "Connection" in _msg
+                        or "Max retries" in _msg
+                    ):
                         print(f"  ⏳ 换 token 失败(网络/代理), 重试 {_attempt + 1}/2…", flush=True)
                         _t.sleep(3.0)
                         continue
                     if "SSL" in _msg or "EOF" in _msg:
-                        print("  ⚠️ 换 token 域(oauth2.googleapis.com)连接异常——若浏览器能开授权页", flush=True)
-                        print("     但此处失败, 多为代理规则将该域直连(国内直连 Google 不通)。", flush=True)
-                        print("     请在代理软件中放行 googleapis.com(或切全局模式)后重试。", flush=True)
+                        print(
+                            "  ⚠️ 换 token 域(oauth2.googleapis.com)连接异常——若浏览器能开授权页",
+                            flush=True,
+                        )
+                        print(
+                            "     但此处失败, 多为代理规则将该域直连(国内直连 Google 不通)。",
+                            flush=True,
+                        )
+                        print(
+                            "     请在代理软件中放行 googleapis.com(或切全局模式)后重试。",
+                            flush=True,
+                        )
                     raise
 
         with _cf.ThreadPoolExecutor(max_workers=1) as _ex:
@@ -183,7 +204,7 @@ def _get_or_create_credentials(base_dir: str):
     V17.0.4(2026-08-19): 刷新失败为网络问题时不删除文件(下次再试)、不触发 OAuth——
     原实现误删文件后走 run_local_server 无人值守永久阻塞(卡死根因)。
     """
-    token_path = os.path.join(base_dir, _CRED_SUBDIR, _TOKEN_FILENAME)                       # V17.0: credentials/ 子目录
+    token_path = os.path.join(base_dir, _CRED_SUBDIR, _TOKEN_FILENAME)  # V17.0: credentials/ 子目录
     # 1) 加载现有 token
     creds, err = _load_saved_credentials(token_path)
     if creds:
@@ -234,6 +255,7 @@ def init_google_drive(base_dir: str) -> Tuple[Optional[Any], bool]:
         if creds is None:
             return None, proxy_was_set
         from googleapiclient.discovery import build
+
         service = build("drive", "v3", credentials=creds, cache_discovery=False)
         # 健康检查：拿一次 About
         try:
@@ -248,7 +270,9 @@ def init_google_drive(base_dir: str) -> Tuple[Optional[Any], bool]:
         if "invalid_grant" in msg or "revoked" in msg.lower() or "expired" in msg.lower():
             print("  🔑 GD Token 已过期或已被吊销，清除后请重新运行脚本授权", flush=True)
             try:
-                os.remove(os.path.join(base_dir, _CRED_SUBDIR, _TOKEN_FILENAME))  # V17.0: credentials/ 子目录
+                os.remove(
+                    os.path.join(base_dir, _CRED_SUBDIR, _TOKEN_FILENAME)
+                )  # V17.0: credentials/ 子目录
             except OSError:
                 pass
         else:
@@ -273,7 +297,9 @@ def init_google_drive(base_dir: str) -> Tuple[Optional[Any], bool]:
 # ────────────────────────────────────────────────────────────────
 # 4. 文件夹与文件操作
 # ────────────────────────────────────────────────────────────────
-def get_or_create_drive_folder(service, name: str, parent_id: Optional[str] = None) -> Optional[str]:
+def get_or_create_drive_folder(
+    service, name: str, parent_id: Optional[str] = None
+) -> Optional[str]:
     """查找或创建文件夹，返回其 Drive ID。失败返回 None。
 
     关键规则：
@@ -306,7 +332,11 @@ def get_or_create_drive_folder(service, name: str, parent_id: Optional[str] = No
             # parent_id 为有效 ID，限制在指定父文件夹下搜索
             q += f" and '{parent_id}' in parents"
 
-        resp = service.files().list(q=q, spaces="drive", fields="files(id, name)", pageSize=5).execute()
+        resp = (
+            service.files()
+            .list(q=q, spaces="drive", fields="files(id, name)", pageSize=5)
+            .execute()
+        )
         items = resp.get("files", [])
         if items:
             print(f"  🔍 云盘文件夹已存在：{name}", flush=True)
@@ -330,8 +360,9 @@ def get_or_create_drive_folder(service, name: str, parent_id: Optional[str] = No
         return None
 
 
-def retry_get_folder_interactive(service, name: str, parent_id: Optional[str] = None,
-                                 max_auto_retry: int = 2) -> Optional[str]:
+def retry_get_folder_interactive(
+    service, name: str, parent_id: Optional[str] = None, max_auto_retry: int = 2
+) -> Optional[str]:
     """交互式获取/创建文件夹。
 
     流程：
@@ -406,15 +437,21 @@ def upload_or_update_to_drive(service, local_path: str, parent_id: str, file_nam
     for attempt in range(3):
         try:
             # 1) 查同名文件
-            q = (f"name='{file_name}' and '{parent_id}' in parents "
-                 "and mimeType!='application/vnd.google-apps.folder' and trashed=false")
-            resp = service.files().list(q=q, spaces="drive", fields="files(id)", pageSize=5).execute()
+            q = (
+                f"name='{file_name}' and '{parent_id}' in parents "
+                "and mimeType!='application/vnd.google-apps.folder' and trashed=false"
+            )
+            resp = (
+                service.files().list(q=q, spaces="drive", fields="files(id)", pageSize=5).execute()
+            )
             existing = resp.get("files", [])
 
             # 2) 使用 googleapiclient.http.MediaIoBaseUpload
             from googleapiclient.http import MediaIoBaseUpload
-            media = MediaIoBaseUpload(io.BytesIO(content.encode("utf-8")),
-                                      mimetype=_MIME_TEXT, resumable=True)
+
+            media = MediaIoBaseUpload(
+                io.BytesIO(content.encode("utf-8")), mimetype=_MIME_TEXT, resumable=True
+            )
 
             if existing:
                 fid = existing[0]["id"]
@@ -423,7 +460,9 @@ def upload_or_update_to_drive(service, local_path: str, parent_id: str, file_nam
             else:
                 body = {"name": file_name, "parents": [parent_id]}
                 created = service.files().create(body=body, media_body=media, fields="id").execute()
-                print(f"    📎 已上传：{file_name} (id={created.get('id', '')[:10]}...)", flush=True)
+                print(
+                    f"    📎 已上传：{file_name} (id={created.get('id', '')[:10]}...)", flush=True
+                )
             return True
         except Exception as e:
             print(f"  上传第 {attempt + 1} 次失败：{e}，重试中…", flush=True)
@@ -431,7 +470,9 @@ def upload_or_update_to_drive(service, local_path: str, parent_id: str, file_nam
     return False
 
 
-def upload_report_to_drive(service, local_path: str, parent_id: str, file_name: Optional[str] = None) -> bool:
+def upload_report_to_drive(
+    service, local_path: str, parent_id: str, file_name: Optional[str] = None
+) -> bool:
     """兼容旧接口：与 upload_or_update_to_drive 等价（file_name 默认取文件名）。"""
     if file_name is None:
         file_name = os.path.basename(local_path)
@@ -443,20 +484,20 @@ def upload_report_to_drive(service, local_path: str, parent_id: str, file_name: 
 # ────────────────────────────────────────────────────────────────
 def _make_stock_folder_name(code: str, full_name: str) -> str:
     """构建股票文件夹名称：股票代码-2个中文，跳过ST，无中文则留横线
-    
+
     :param code: 股票代码，例如 "002193"
     :param full_name: 完整股票名称，例如 "ST如意股份" 或 "贵州茅台"
     :return: 文件夹名称，例如 "002193-如意" 或 "600519-" 或 "000001-"
     """
     import re
-    
+
     # 跳过ST前缀
     name_without_st = re.sub(r'^ST', '', full_name)
-    
+
     # 提取中文字符，只取前2个
     chinese_chars = re.findall(r'[\u4e00-\u9fff]', name_without_st)
     chinese_part = ''.join(chinese_chars[:2])
-    
+
     # 如果没有中文字符，保留横线表示问题
     if not chinese_part:
         return f"{code}-"
@@ -469,6 +510,7 @@ def _make_stock_folder_name(code: str, full_name: str) -> str:
 # 6. 统一高层 API —— init_gd / upload_stock_report_by_code / upload_type_reports
 #    供 sht/med/lng/val/mak/full 等所有脚本统一复用
 # ────────────────────────────────────────────────────────────────
+
 
 def init_gd(base_dir: str) -> Tuple[Optional[Any], bool, Optional[str], bool]:
     """统一GD初始化入口：交互式连接 + 获取根文件夹「a-stock-data」。
@@ -496,10 +538,14 @@ def init_gd(base_dir: str) -> Tuple[Optional[Any], bool, Optional[str], bool]:
     if not sys.stdin.isatty():
         import os as _os
 
-        _token_file = _os.path.join(base_dir, _CRED_SUBDIR, "credentials.json")  # V17.0: credentials/ 子目录
+        _token_file = _os.path.join(
+            base_dir, _CRED_SUBDIR, "credentials.json"
+        )  # V17.0: credentials/ 子目录
         _has_token = _os.path.exists(_token_file)
         if not _has_token:
-            print("  ?? 检测到非交互模式（stdin 非 tty）且无 GD token——自动跳过云端上传", flush=True)
+            print(
+                "  ?? 检测到非交互模式（stdin 非 tty）且无 GD token——自动跳过云端上传", flush=True
+            )
             return None, False, None, True
         try:
             drive, proxy_set = init_google_drive(base_dir)
@@ -558,9 +604,9 @@ def init_gd(base_dir: str) -> Tuple[Optional[Any], bool, Optional[str], bool]:
     return drive, proxy_set, root_id, False
 
 
-def upload_stock_report_by_code(drive, parent_folder_id: str,
-                                code: str, stock_name: str,
-                                file_path: str) -> bool:
+def upload_stock_report_by_code(
+    drive, parent_folder_id: str, code: str, stock_name: str, file_path: str
+) -> bool:
     """模式A —— 多股票逐个上传：为单只股票创建独立子文件夹「代码-名称」并上传报告。
 
     适用于 sht/med/lng 等批量分析脚本，每只股票一个独立子文件夹。
@@ -576,7 +622,10 @@ def upload_stock_report_by_code(drive, parent_folder_id: str,
         print(f"  ❌ GD上传失败：drive 未初始化，股票代码：{code}", flush=True)
         return False
     if not parent_folder_id:
-        print(f"  ❌ GD上传失败：parent_folder_id 为空，拒绝上传到根目录，股票代码：{code}", flush=True)
+        print(
+            f"  ❌ GD上传失败：parent_folder_id 为空，拒绝上传到根目录，股票代码：{code}",
+            flush=True,
+        )
         return False
     if not os.path.exists(file_path):
         print(f"  ❌ 本地报告不存在：{file_path}", flush=True)
@@ -602,8 +651,7 @@ def upload_stock_report_by_code(drive, parent_folder_id: str,
     return ok
 
 
-def upload_type_reports(drive, parent_folder_id: str, type_name: str,
-                        file_paths) -> int:
+def upload_type_reports(drive, parent_folder_id: str, type_name: str, file_paths) -> int:
     """模式B —— 统一类型文件夹上传：创建类型子文件夹并批量上传所有报告。
 
     适用于 val/mak/ful 等单类型分析脚本，所有报告放入同一子文件夹。
@@ -644,4 +692,3 @@ def upload_type_reports(drive, parent_folder_id: str, type_name: str,
         else:
             print(f"  ⚠️ {fn} 上传失败", flush=True)
     return success_count
-

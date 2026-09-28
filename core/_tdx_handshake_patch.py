@@ -24,6 +24,8 @@ site-packages 中的 easy_tdx 被重装回静态握手，本项目运行时仍�
 
 import random
 import struct
+from importlib import import_module
+
 
 # 与 V0idk 对齐的新式握手：单条 0x000d 命令、payload 0x01、msg_id 每连接随机。
 def build_handshake_command() -> bytes:
@@ -39,24 +41,25 @@ def apply() -> None:
 
     同时覆盖 setup 模块与已 import 的 transport 模块的绑定引用。
     """
-    import easy_tdx.commands.setup as _setup
+    _setup = import_module("easy_tdx.commands.setup")
 
     if not getattr(_setup, _PATCH_MARK, False):
         # 确保函数存在（即使原包未定义）
         if not hasattr(_setup, "build_handshake_command"):
-            _setup.build_handshake_command = build_handshake_command
+            setattr(_setup, "build_handshake_command", build_handshake_command)
         # 重写握手为单条动态命令（transport 遍历此处、ping/心跳取 [0] 均兼容）
-        _setup.SETUP_COMMANDS = (_setup.build_handshake_command(),)
+        _builder = getattr(_setup, "build_handshake_command")
+        setattr(_setup, "SETUP_COMMANDS", (_builder(),))
         setattr(_setup, _PATCH_MARK, True)
 
     # 回写已绑定的 transport 引用，抗乱序 import
-    _dyn = _setup.SETUP_COMMANDS
+    _dyn = getattr(_setup, "SETUP_COMMANDS")
     for _mod in ("easy_tdx.transport.sync", "easy_tdx.transport.async_"):
         try:
             __import__(_mod)
-            _m = __import__(_mod, fromlist=["_"])
+            _m = import_module(_mod)
             if getattr(_m, "SETUP_COMMANDS", None) is not _dyn:
-                _m.SETUP_COMMANDS = _dyn
+                setattr(_m, "SETUP_COMMANDS", _dyn)
         except Exception:
             # transport 未安装/不可导入时跳过；运行时首次真正使用时仍会走 setup 动态值
             pass

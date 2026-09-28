@@ -1,7 +1,7 @@
 ﻿# ============================================================================
-# run_with_system_python.ps1 - Run commands using system Python 3.12
+# run_with_system_python.ps1 - Run commands using project/system Python 3.12
 # ============================================================================
-# Purpose: Avoid TRAE IDE's built-in Python 3.10 and force system Python 3.12
+# Purpose: Avoid TRAE IDE's built-in Python 3.10 and use a Python 3.12 runtime
 #
 # Usage (PowerShell):
 #   .\scripts\run_with_system_python.ps1 -m pytest tests/test_cache.py
@@ -19,17 +19,27 @@ $ErrorActionPreference = 'Stop'
 $OutputEncoding = [Console]::OutputEncoding
 
 # ────────────────────────────────────────────────────────────────────────────
-# 自动探测系统 Python 3.12（不再硬编码路径——机器/发行版不同会失效）
+# 自动探测 Python 3.12（不再硬编码系统路径——机器/发行版不同会失效）
 # 探测顺序:
 #   1) 环境变量 SYSTEM_PYTHON_EXE 显式指定（优先）
-#   2) py 启动器:  py -3.12 -c "import sys; print(sys.executable)"
-#   3) Windows Store Python 3.12 包目录（AppData 内 shim，随包版本号通配）
-#   4) PATH 上的 python.exe 且 --version 输出 Python 3.12.x
+#   2) 项目虚拟环境 .venv\Scripts\python.exe（仅接受 Python 3.12）
+#   3) py 启动器:  py -3.12 -c "import sys; print(sys.executable)"
+#   4) Windows Store Python 3.12 包目录（AppData 内 shim，随包版本号通配）
+#   5) PATH 上的 python.exe 且 --version 输出 Python 3.12.x
 # ────────────────────────────────────────────────────────────────────────────
 function Find-SystemPython {
     $override = $env:SYSTEM_PYTHON_EXE
     if ($override -and (Test-Path -LiteralPath $override)) {
         return $override
+    }
+
+    $projectRoot = Split-Path -Parent $PSScriptRoot
+    $projectVenvPython = Join-Path $projectRoot '.venv\Scripts\python.exe'
+    if (Test-Path -LiteralPath $projectVenvPython) {
+        $projectVenvVersion = & $projectVenvPython --version 2>$null
+        if ($LASTEXITCODE -eq 0 -and $projectVenvVersion -match 'Python 3\.12') {
+            return $projectVenvPython
+        }
     }
 
     $pyLauncher = Get-Command py.exe -ErrorAction SilentlyContinue

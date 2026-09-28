@@ -11,6 +11,7 @@
 
 ⚠️ 私有 API 风险：非官方公开，接口/字段可能变更；生产勿高依赖
 """
+
 from __future__ import annotations
 
 import json
@@ -22,15 +23,7 @@ import urllib.parse
 import urllib.request
 from typing import Any, Dict, List, Optional
 
-# V16.3.3: KPL 情绪缓存（字典 12.15.5——mak A/B 段高频调用，KPL 收盘后不变）
-# V17.0 S8: 删 _kpl_cached 适配器(与 _fuyao_cached 逐字重复)——直接使用规范 cached;
-# core.stock_cache 是 sc_datasource 硬依赖, ImportError 分支属僵尸防御, 保留守卫结构。
-try:
-    from core.stock_cache import cached
-
-    _HAS_CACHE = True
-except ImportError:  # pragma: no cover
-    _HAS_CACHE = False
+from core.stock_cache import TTL, cached
 
 _logger = logging.getLogger("sc_kpl")
 
@@ -39,10 +32,10 @@ _UA = "Dalvik/2.1.0 (Linux; U; Android 12; ALN-AL00 Build/W528JS)"
 _QUERY_INTERVAL = 0.6
 
 _HOSTS = {
-    "hq": "https://apphq.longhuvip.com/w1/api/index.php",      # 实时
-    "his": "https://apphis.longhuvip.com/w1/api/index.php",    # 历史
+    "hq": "https://apphq.longhuvip.com/w1/api/index.php",  # 实时
+    "his": "https://apphis.longhuvip.com/w1/api/index.php",  # 历史
     "hwhq": "https://apphwhq.longhuvip.com/w1/api/index.php",  # 行情
-    "shhq": "https://apphwshhq.longhuvip.com/w1/api/index.php",# 情绪
+    "shhq": "https://apphwshhq.longhuvip.com/w1/api/index.php",  # 情绪
 }
 
 _last_request = 0.0
@@ -50,7 +43,7 @@ _last_request = 0.0
 _throttle_lock = threading.Lock()
 
 
-def _throttle():
+def _throttle() -> None:
     """连接级限频（0.6s/请求）。"""
     global _last_request
     with _throttle_lock:
@@ -65,14 +58,22 @@ def _post(host: str, params: Dict[str, Any]) -> Dict[str, Any]:
     """POST 请求（form 编码 + Dalvik UA）。"""
     _throttle()
     body = urllib.parse.urlencode(params, doseq=True).encode("utf-8")
-    req = urllib.request.Request(_HOSTS[host], data=body, headers={
-        "User-Agent": _UA,
-        "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
-        "Connection": "Keep-Alive",
-    }, method="POST")
+    req = urllib.request.Request(
+        _HOSTS[host],
+        data=body,
+        headers={
+            "User-Agent": _UA,
+            "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
+            "Connection": "Keep-Alive",
+        },
+        method="POST",
+    )
     try:
         with urllib.request.urlopen(req, timeout=15) as r:
-            return json.loads(r.read().decode("utf-8", errors="ignore"))
+            payload = json.loads(r.read().decode("utf-8", errors="ignore"))
+        if isinstance(payload, dict):
+            return payload
+        return {"_err": "unexpected JSON response shape"}
     except Exception as e:
         _logger.warning(f"kpl {host} {params.get('a')}: {e}")
         return {"_err": str(e)[:120]}
@@ -80,12 +81,15 @@ def _post(host: str, params: Dict[str, Any]) -> Dict[str, Any]:
 
 def _base() -> Dict[str, Any]:
     """基础参数（DeviceID 固定——匿名接口仅需此）。"""
-    return {"PhoneOSNew": 1,
-            "DeviceID": os.environ.get("KPL_DEVICE_ID", "d66474b3-fd78-3a95-a56d-76e29e765ea3"),
-            "VerSion": "5.23.0.4", "apiv": "w44"}
+    return {
+        "PhoneOSNew": 1,
+        "DeviceID": os.environ.get("KPL_DEVICE_ID", "d66474b3-fd78-3a95-a56d-76e29e765ea3"),
+        "VerSion": "5.23.0.4",
+        "apiv": "w44",
+    }
 
 
-@cached("kpl_sentiment", "kpl_sentiment", trading_day=True)
+@cached(category="kpl_sentiment", ttl_seconds=TTL["kpl_sentiment"], trading_day=True)
 def get_kpl_market_sentiment() -> Dict[str, Any]:
     """KPL 市场情绪（ChangeStatistics）——情绪指标 strong(0-100)/连板高度/涨停家数。
 
@@ -140,8 +144,17 @@ def get_kpl_plate_strength(top_n: int = 20) -> List[Dict[str, Any]]:
     ⚠️ 非交易时间需 Date=YYYY-MM-DD
     """
     p = _base()
-    p.update({"a": "RealRankingInfo", "Order": 1, "st": top_n, "Type": 1,
-              "c": "ZhiShuRanking", "Index": 0, "ZSType": 7})
+    p.update(
+        {
+            "a": "RealRankingInfo",
+            "Order": 1,
+            "st": top_n,
+            "Type": 1,
+            "c": "ZhiShuRanking",
+            "Index": 0,
+            "ZSType": 7,
+        }
+    )
     d = _post("hq", p)
     if "_err" in d or d.get("errcode") != "0":
         return []
@@ -149,16 +162,26 @@ def get_kpl_plate_strength(top_n: int = 20) -> List[Dict[str, Any]]:
     for row in d.get("list") or []:
         if len(row) < 17:
             continue
-        out.append({
-            "code": row[0], "name": row[1], "strength": _f(row[2]),
-            "change_pct": _f(row[3]), "speed": _f(row[4]),
-            "amount": _f(row[5]), "main_inflow": _f(row[6]),
-            "main_buy": _f(row[7]), "main_sell": _f(row[8]),
-            "vol_ratio": _f(row[9]), "circulation_value": _f(row[10]),
-            "big_order_300w_net": _f(row[12]), "total_value": _f(row[13]),
-            "institution_add": _f(row[14]),
-            "pe_now": _f(row[15]), "pe_next": _f(row[16]),
-        })
+        out.append(
+            {
+                "code": row[0],
+                "name": row[1],
+                "strength": _f(row[2]),
+                "change_pct": _f(row[3]),
+                "speed": _f(row[4]),
+                "amount": _f(row[5]),
+                "main_inflow": _f(row[6]),
+                "main_buy": _f(row[7]),
+                "main_sell": _f(row[8]),
+                "vol_ratio": _f(row[9]),
+                "circulation_value": _f(row[10]),
+                "big_order_300w_net": _f(row[12]),
+                "total_value": _f(row[13]),
+                "institution_add": _f(row[14]),
+                "pe_now": _f(row[15]),
+                "pe_next": _f(row[16]),
+            }
+        )
     return out
 
 
@@ -170,8 +193,17 @@ def get_kpl_limit_up_detail(pid_type: int = 1, date: Optional[str] = None) -> Li
           主力买入, 主力卖出, 成交额, 板块, 实际流通, 实际换手, 1, 1, 振幅, "", 板块代码, 涨停数量]
     """
     p = _base()
-    p.update({"a": "DailyLimitPerformance", "Order": 0, "st": 2000,
-              "c": "HomeDingPan", "Index": 0, "PidType": pid_type, "Type": 4})
+    p.update(
+        {
+            "a": "DailyLimitPerformance",
+            "Order": 0,
+            "st": 2000,
+            "c": "HomeDingPan",
+            "Index": 0,
+            "PidType": pid_type,
+            "Type": 4,
+        }
+    )
     if date:
         p["Day"] = date
     host = "his" if date else "hwhq"
@@ -185,21 +217,24 @@ def get_kpl_limit_up_detail(pid_type: int = 1, date: Optional[str] = None) -> Li
         for row in rows:
             if not isinstance(row, list) or len(row) < 14:
                 continue
-            out.append({
-                "code": row[0], "name": row[1],
-                "zt_time": row[4] if len(row) > 4 else None,
-                "reason": row[5] if len(row) > 5 else "",
-                "seal_amount": _f(row[6]) if len(row) > 6 else 0,
-                "max_seal": _f(row[7]) if len(row) > 7 else 0,
-                "main_inflow": _f(row[8]) if len(row) > 8 else 0,
-                "main_buy": _f(row[9]) if len(row) > 9 else 0,
-                "main_sell": _f(row[10]) if len(row) > 10 else 0,
-                "amount": _f(row[11]) if len(row) > 11 else 0,
-                "sector": row[12] if len(row) > 12 else "",
-                "turnover_real": _f(row[14]) if len(row) > 14 else 0,
-                "amplitude": _f(row[17]) if len(row) > 17 else 0,
-                "sector_code": row[19] if len(row) > 19 else "",
-            })
+            out.append(
+                {
+                    "code": row[0],
+                    "name": row[1],
+                    "zt_time": row[4] if len(row) > 4 else None,
+                    "reason": row[5] if len(row) > 5 else "",
+                    "seal_amount": _f(row[6]) if len(row) > 6 else 0,
+                    "max_seal": _f(row[7]) if len(row) > 7 else 0,
+                    "main_inflow": _f(row[8]) if len(row) > 8 else 0,
+                    "main_buy": _f(row[9]) if len(row) > 9 else 0,
+                    "main_sell": _f(row[10]) if len(row) > 10 else 0,
+                    "amount": _f(row[11]) if len(row) > 11 else 0,
+                    "sector": row[12] if len(row) > 12 else "",
+                    "turnover_real": _f(row[14]) if len(row) > 14 else 0,
+                    "amplitude": _f(row[17]) if len(row) > 17 else 0,
+                    "sector_code": row[19] if len(row) > 19 else "",
+                }
+            )
     return out
 
 
@@ -218,9 +253,12 @@ def get_kpl_broken_ratio() -> Dict[str, Any]:
     if not isinstance(info, list) or len(info) < 6:
         return {}
     return {
-        "zt": int(info[0]), "dt": int(info[1]),
-        "zt_natural": int(info[2]), "dt_ever": int(info[3]),
-        "broken_ratio": float(info[4]), "broken_num": int(info[5]),
+        "zt": int(info[0]),
+        "dt": int(info[1]),
+        "zt_natural": int(info[2]),
+        "dt_ever": int(info[3]),
+        "broken_ratio": float(info[4]),
+        "broken_num": int(info[5]),
         "date": str(info[6]) if len(info) > 6 else "",
     }
 

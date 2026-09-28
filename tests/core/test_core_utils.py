@@ -1,6 +1,7 @@
 """test_stock_common.py — 公共工具函数单元测试。
 V14.0: 扩充测试覆盖 _safe_float / get_board_type / is_limit_up / clean_codes 全部边界场景。
 """
+
 from __future__ import annotations
 import unittest
 
@@ -18,10 +19,10 @@ from stock_common import (
     clean_codes,
 )
 
-
 # ═══════════════════════════════════════════════════════════════
 # _safe_float 测试
 # ═══════════════════════════════════════════════════════════════
+
 
 class TestSafeFloat:
     """_safe_float 边界场景测试"""
@@ -65,6 +66,7 @@ class TestSafeFloat:
 # get_board_type 测试
 # ═══════════════════════════════════════════════════════════════
 
+
 class TestGetBoardType:
     """get_board_type 板块判断测试"""
 
@@ -103,13 +105,14 @@ class TestGetBoardType:
 # is_limit_up 测试
 # ═══════════════════════════════════════════════════════════════
 
+
 class TestIsLimitUp:
     """is_limit_up 涨停判断测试"""
 
     def test_chi_next_20_percent(self):
         """创业板 20% 涨停阈值"""
         assert is_limit_up("300750", "", 20.0) is True
-        assert is_limit_up("300750", "", 19.5) is True   # 边界
+        assert is_limit_up("300750", "", 19.5) is True  # 边界
         assert is_limit_up("300750", "", 19.4) is False  # 略低
         assert is_limit_up("300750", "", 15.0) is False
 
@@ -122,7 +125,7 @@ class TestIsLimitUp:
     def test_main_board_10_percent(self):
         """主板 10% 涨停阈值"""
         assert is_limit_up("600519", "", 10.0) is True
-        assert is_limit_up("600519", "", 9.5) is True   # 边界
+        assert is_limit_up("600519", "", 9.5) is True  # 边界
         assert is_limit_up("600519", "", 9.4) is False  # 略低
 
     def test_st_10_percent(self):
@@ -131,17 +134,17 @@ class TestIsLimitUp:
         V16.1.7 曾误按旧规则改为 5%（st_5pct）；用户确认最新规则 ST=10%，
         故 ST 与主板同走 9.5 判定阈值。
         """
-        assert is_limit_up("600519", "ST股票", 9.5) is True    # 边界
+        assert is_limit_up("600519", "ST股票", 9.5) is True  # 边界
         assert is_limit_up("600519", "ST股票", 10.0) is True
-        assert is_limit_up("600519", "ST股票", 9.4) is False   # 略低
+        assert is_limit_up("600519", "ST股票", 9.4) is False  # 略低
         assert is_limit_up("600519", "*ST", 9.5) is True
 
     def test_bse_30_percent(self):
         """北交所 30% 涨停阈值（V16.1.7 按字典 §12.12.3 limit_rule 官方 bse_30pct 新增）"""
         assert is_limit_up("920982", "", 30.0) is True
-        assert is_limit_up("920982", "", 29.5) is True   # 边界
+        assert is_limit_up("920982", "", 29.5) is True  # 边界
         assert is_limit_up("920982", "", 29.4) is False  # 略低
-        assert is_limit_up("830001", "", 29.8) is True   # 老号段
+        assert is_limit_up("830001", "", 29.8) is True  # 老号段
 
     def test_zero_change_pct(self):
         """涨跌幅为 0 时不涨停"""
@@ -157,6 +160,7 @@ class TestIsLimitUp:
 # ═══════════════════════════════════════════════════════════════
 # clean_codes 测试
 # ═══════════════════════════════════════════════════════════════
+
 
 class TestCleanCodes:
     """clean_codes 代码清洗测试"""
@@ -194,17 +198,17 @@ class TestCleanCodes:
 
     def test_short_codes_filtered(self):
         """5 位数字被过滤；7 位数字非预期（仅 6 位合法）"""
-        assert clean_codes(["12345"]) == []    # 5 位
-        # 7 位数字：clean_codes 只保留前 6 位（视实现）
-        result = clean_codes(["1234567"])
-        # 接受两种实现：要么为空，要么只保留 6 位
-        assert result == [] or result == ["123456"]
+        assert clean_codes(["12345"]) == []
+        assert clean_codes(["1234567"]) == []
 
     def test_codes_with_other_prefixes(self):
-        """其他前缀的代码（如 8 北交所、4 三板）保留 6 位形式"""
-        result = clean_codes(["830xxx北交所"])
-        # 视实现而定，可能保留或过滤
-        assert isinstance(result, list)
+        """没有完整六位代码的前缀样本不应生成可用代码"""
+        assert clean_codes(["830xxx北交所"]) == []
+
+    def test_exchange_prefix_must_match_code(self):
+        assert clean_codes(["SH600000"]) == ["600000"]
+        assert clean_codes(["SZ600000"]) == []
+        assert clean_codes(["SH600000.SZ"]) == []
 
 
 if __name__ == "__main__":
@@ -216,6 +220,7 @@ class TestSafeCast(unittest.TestCase):
 
     def _cast(self, parts, idx, cast=float):
         from core.zhb_client import _safe_cast
+
         return _safe_cast(parts, idx, cast)
 
     def test_normal(self):
@@ -231,4 +236,3 @@ class TestSafeCast(unittest.TestCase):
 
     def test_cast_failure_returns_raw(self):
         self.assertEqual(self._cast(["a", "not-a-number"], 1), "not-a-number")
-

@@ -15,6 +15,7 @@ v3 修正点 vs v2：
   - 新增 em_fund_flow 专属 SECTION_MAP（§12.3.4），同时保留在 push2 列表（共享 f135-f149）。
   - TDX / TDX-F10 仍标「双命名源」，reg 扫描 snake_case 叶名仅供人工复核参考，不强行 diff。
 """
+
 from __future__ import annotations
 import io, os, re, json, sys, glob
 from collections import defaultdict
@@ -33,13 +34,18 @@ DICT = os.path.join(ROOT, "docs", "field_dict.md")
 #   不带参数则沿用历史默认: CAP=20260904, OUT=20260906
 _args = [a for a in sys.argv[1:] if not a.startswith("-")]
 CAP = os.path.join(ROOT, "docs", "field_verification", _args[0] if _args else "20260904")
-OUTDIR = os.path.join(ROOT, "docs", "field_verification", _args[1] if len(_args) > 1 else "20260906")
+OUTDIR = os.path.join(
+    ROOT, "docs", "field_verification", _args[1] if len(_args) > 1 else "20260906"
+)
+
 
 def loadjson(f):
     return json.load(io.open(os.path.join(CAP, f), encoding="utf-8"))
 
+
 def first_stock(d):
     return next(iter(d["stocks"].values()))
+
 
 def split_sections(text):
     """返回 [(level, title, text)]，按 Markdown 标题切分，level=标题 # 个数。"""
@@ -63,11 +69,23 @@ def split_sections(text):
         secs.append((cur_lv, cur, "\n".join(buf)))
     return secs
 
+
 # 源章节归属（sub 为章节标题子串；一个章节可命中多个源）
 SECTION_MAP = [
-    ("东财-push2(stock/get)", ["12.3.1 单股行情", "12.3.1.1", "12.3.1.2", "12.9.1 push2 stock/get",
-                                "12.9.2", "12.3.3 日K线", "12.8.2 东财 push2 历史",
-                                "12.8.7 东财 push2 资金流", "12.3.4 资金流四档"]),
+    (
+        "东财-push2(stock/get)",
+        [
+            "12.3.1 单股行情",
+            "12.3.1.1",
+            "12.3.1.2",
+            "12.9.1 push2 stock/get",
+            "12.9.2",
+            "12.3.3 日K线",
+            "12.8.2 东财 push2 历史",
+            "12.8.7 东财 push2 资金流",
+            "12.3.4 资金流四档",
+        ],
+    ),
     ("东财-资金流(em_fund_flow)", ["12.3.4 资金流四档", "12.8.7 东财 push2 资金流"]),
     ("东财-ulist239(np/get)", ["12.3.2"]),
     ("东财-push2ex", ["12.8.1 东财 push2ex"]),
@@ -76,21 +94,54 @@ SECTION_MAP = [
     ("东财-clist", ["12.8.6 东财 clist"]),
     ("腾讯(qt.gtimg)", ["12.1 腾讯"]),
     ("新浪(hq.sinajs)", ["12.2 新浪"]),
-    ("同花顺-fuyao", ["12.8.12c", "12.8.12e", "12.8.12d"]),
+    ("新浪(扩展API)", ["12.8.14 新浪"]),
+    (
+        "同花顺-fuyao",
+        [
+            "12.8.12c",
+            "12.8.12e",
+            "12.8.12d",
+            "12.8.12i fuyao 财务报表叶字段补录",
+            "12.8.12f fuyao 财务指标 index_id",
+            "12.8.12g fuyao 黄金锚",
+            "12.8.12k fuyao 网站中文名黄金锚",
+        ],
+    ),
     # V17.2.13 补登：TDX / AxData / push2_full 此前从未进 SECTION_MAP（仅 _CAMEL_SRC/_FCODE_SRC
     # 预留了命名空间），导致 registry/§零·B/field_matrix 长期漏抽这三源——与 capture_field_probe.py
     # 实际采集清单（e63edbd 起即含 tdx/axdata/push2_full）严重脱节。现据主字典正文章节补登。
-    ("TDX(双命名源)", ["零·A TDX F10", "TCP GetFinanceInfo", "TDX tdx_quotes",
-                      "12.8.19 通达信问小达", "12.13.2 财务批量",
-                      # 2026-09-20：补登 §2.1 协议完整 36 字段表（用户称 §2.2 静态股本节）。
-                      # 该节 37 个拼音/英文名 token 早已经 RAW_FIELD_KEYS 注册于本源，
-                      # 但此前 SECTION_MAP 缺登 → section_to_sources 返回 [] → Layer2 永不处理
-                      # → meaning/status 全空。补登后 Layer2 据表头列名（token=col1 字段名、
-                      # meaning=col2 中文含义、status=col7 项目代码使用）回挂属性。
-                      # 0 新增 token（仅激活既有 token 的属性回挂），registered_field_sets 自洽、G1 parity-safe。
-                      "2.1 协议完整 36 字段表"]),
-    ("AxData", ["12.12 AxData 接口全景", "12.12.0 AxData 全量接口目录",
-                "12.12.8 跨源接口实测确认", "12.14 多源字段补齐矩阵"]),
+    (
+        "TDX(双命名源)",
+        [
+            "零·A TDX F10",
+            "TCP GetFinanceInfo",
+            "TDX tdx_quotes",
+            "12.8.19 通达信问小达",
+            "12.13.2 财务批量",
+            "2.2 字段组分类与策略价值",
+            "2.3 项目实际使用情况",
+            "2.4 字段组在策略中的典型应用公式",
+            "2.5 协议调用链路与数据流",
+            "2.6 与 Gemini 核实 18 字段的对比",
+            "12.13.3 除权除息",
+            # 2026-09-20：补登 §2.1 协议完整 36 字段表（用户称 §2.2 静态股本节）。
+            # 该节 37 个拼音/英文名 token 早已经 RAW_FIELD_KEYS 注册于本源，
+            # 但此前 SECTION_MAP 缺登 → section_to_sources 返回 [] → Layer2 永不处理
+            # → meaning/status 全空。补登后 Layer2 据表头列名（token=col1 字段名、
+            # meaning=col2 中文含义、status=col7 项目代码使用）回挂属性。
+            # 0 新增 token（仅激活既有 token 的属性回挂），registered_field_sets 自洽、G1 parity-safe。
+            "2.1 协议完整 36 字段表",
+        ],
+    ),
+    (
+        "AxData",
+        [
+            "12.12 AxData 接口全景",
+            "12.12.0 AxData 全量接口目录",
+            "12.12.8 跨源接口实测确认",
+            "12.14 多源字段补齐矩阵",
+        ],
+    ),
     ("东财-push2_full", ["12.3.1 单股行情"]),
     # 同花顺-thsdk 已于 V17.0.29 从项目删除（sc_ths.py 移除、sc_datasource 不再 import），
     # 属死源，依规退役（12.8.12b 章节保留为历史文档，不再进 registry/§零·B）。
@@ -100,21 +151,51 @@ SECTION_MAP = [
     # V17.3 (2026-09-18): 新增 eltdx 适配层源。此前 eltdx 在 §12.13.10/§12.13.11 有字段章节但
     # 无 SECTION_MAP 条目 → registered_field_sets() 恒产 0 token → 审计/registry 长期漏抽 eltdx。
     # 现据主字典章节补登，使其 quote_snapshot.* / shortline.* 带点 token 与 tdx/zhb 同权 registered + verified。
-    ("TDX-eltdx(适配层)", ["12.13.10", "12.13.11"]),
-    ("财联社(cls)", ["12.8.13 财联社"]),
+    (
+        "TDX-eltdx(适配层)",
+        [
+            "12.13.4 涨跌停限制",
+            "12.13.5 K线",
+            "12.13.6 行情列表",
+            "12.13.7 服务器统计资源",
+            "12.13.10",
+            "12.13.11",
+        ],
+    ),
+    ("财联社(cls)", ["12.8.13 财联社", "12.8.13.1 财联社快讯", "12.10.5 板块轮动与热度"]),
     ("百度(baidu)", ["12.8.16 百度"]),
     ("沪深交易所", ["12.8.17 沪深交易所"]),
     ("巨潮(cninfo)", ["12.8.15 巨潮"]),
     # V17.1.x 补：reports(东财 reportapi) 与 em_kline_f61(日K线端点) 此前无任何 SECTION_MAP 条目，
     # 导致 reg 恒 0、审计永久报「无 raw 捕获」假象——实为工具缺陷，非未采集。
-    ("reports", ["12.8.4 东财 reportapi",
-                 "12.8.4.1 东财 reportapi 全量 51 字段表",   # V17.1.x 全量登记
-                 "12.9.2 其他接口实测发现"]),   # §12.9.2 含「reportapi 研报（实测 51 字段）」全表
+    (
+        "reports",
+        [
+            "12.8.4 东财 reportapi",
+            "12.8.4.1 东财 reportapi 全量 51 字段表",  # V17.1.x 全量登记
+            "12.9.2 其他接口实测发现",
+        ],
+    ),  # §12.9.2 含「reportapi 研报（实测 51 字段）」全表
     ("东财-em_kline_f61", ["12.3.3 日K线"]),
+    ("东财-datacenter(英文键)", ["12.8.3.1 datacenter 北向持股"]),
     ("东财-热榜(em_hot)", ["em_hot", "热榜"]),
     ("市场源(market_sources)", ["market_sources", "市场源", "市场情绪"]),
+    (
+        "开盘啦(kpl)",
+        [
+            "12.17 KPL 开盘啦",
+            "12.17.1 kaipanla-data-parser 补充",
+            "12.21 开盘啦 App 数据解析工具",
+            "12.21.1 ZhiShuStockList_W8",
+            "12.21.2 GetPanKou",
+            "12.21.3 SonPlate_Info",
+            "12.21.4 Socket Protobuf",
+            "12.21.5 无 Token 穷尽实测",
+        ],
+    ),
     ("levistock(ftshare)", ["ftshare", "FTShare", "开盘红", "levistock"]),
 ]
+
 
 def section_to_sources(sec):
     out = []
@@ -124,6 +205,7 @@ def section_to_sources(sec):
                 out.append(label)
                 break
     return out
+
 
 # ---------------------------------------------------------------------------
 # RAW
@@ -145,7 +227,7 @@ def raw_field_sets():
 
     d = loadjson("raw_sina.json")
     n = first_stock(d).get("n_fields") or len(first_stock(d).get("fields", []))
-    raw["新浪(hq.sinajs)"] = {f"[{i}]" for i in range(n)}   # 统一为索引命名
+    raw["新浪(hq.sinajs)"] = {f"[{i}]" for i in range(n)}  # 统一为索引命名
 
     # ZHB 三组 positional [N]（0 索引，与字典表格首列 **[N]** 对齐）
     d = loadjson("raw_zhb.json")
@@ -170,7 +252,9 @@ def raw_field_sets():
     d = loadjson("raw_em_hot.json")
     items = d.get("hot_rank", [])
     if items:
-        raw["东财-热榜(em_hot)"] = set().union(*[set(it.keys()) for it in items if isinstance(it, dict)])
+        raw["东财-热榜(em_hot)"] = set().union(
+            *[set(it.keys()) for it in items if isinstance(it, dict)]
+        )
     d = loadjson("raw_push2ex.json")
     pe = set()
     for k, v in d.items():
@@ -185,6 +269,10 @@ def raw_field_sets():
         elif isinstance(v, dict):
             ms |= {kk for kk in v.keys()}
     raw["市场源(market_sources)"] = ms
+    # KPL 字段目前仅有 API 文档与逆向字段表，尚无本项目采集到的原始响应样本。
+    raw["开盘啦(kpl)"] = set()
+    # 新浪扩展接口（财报/期权）只有文档字段表，未采到对应原始响应。
+    raw["新浪(扩展API)"] = set()
     d = loadjson("raw_ftshare.json")
     # Phase 3 (2026-09-12): 改用叶键命名空间(与 reg_tokens_for_section 新逻辑对齐),
     # 旧版 set(_leaves(...)) 产出的 dotted 路径(stocks.600xxx.high) 与 registry 命名空间错位,
@@ -246,11 +334,11 @@ def raw_field_sets():
     kl = set()
     for _code, _v in (d.get("stocks") or {}).items():
         if isinstance(_v, dict):
-            for _row in (_v.get("klines_all") or _v.get("klines_tail30") or []):
+            for _row in _v.get("klines_all") or _v.get("klines_tail30") or []:
                 if isinstance(_row, str) and _row.strip():
                     _n = len(_row.split(","))
                     kl |= {f"f{51 + i}" for i in range(_n)}
-                    break   # 同一源所有行段数一致，取首行即可
+                    break  # 同一源所有行段数一致，取首行即可
     raw["东财-em_kline_f61"] = kl
 
     # thsdk：TCP 盘后关闸 + 依赖未装时会写 error 字段；无数据则仍为空集（审计标注，不作假闭合）
@@ -264,6 +352,7 @@ def raw_field_sets():
         print(f"   [note] thsdk raw 含 error: {d['error']}  → 依赖已装后需重抓")
     raw["同花顺-thsdk"] = th
     return raw
+
 
 def _leaves(o, pre=""):
     out = []
@@ -280,6 +369,7 @@ def _leaves(o, pre=""):
                 out += _leaves(e, pre)
     return out
 
+
 def _leaf_keys(o):
     """返回对象中所有「叶键」(非容器值的 dict key)。用于 snake 源 raw 真实字段提取。"""
     out = set()
@@ -292,6 +382,7 @@ def _leaf_keys(o):
     elif isinstance(o, list) and o:
         out |= _leaf_keys(o[0])
     return out
+
 
 # ---------------------------------------------------------------------------
 # Phase 3 (2026-09-12): 根治 snake_case 源的「散文过度抽取」污染。
@@ -321,6 +412,8 @@ _RAW_FILE_FOR_SRC = {
     # 聚合 leaf keys 供 snake 路径补全；带点 token(quote_snapshot.*/shortline.*) 另经 §12.13.10/§12.13.11
     # 标准契约表由 _table_codes 抽取，与 fuyao snapshot.* 同机制。
     "TDX-eltdx(适配层)": ["raw_eltdx.json"],
+    # 新浪扩展接口字段仅从 §12.8.14 的字段表登记，当前无 raw capture。
+    "新浪(扩展API)": [],
     # ZHB 三组已走 positional **[N]** 分支注册；此处挂空 list 以启用 snake 路径的 _table_codes，
     # 使标准契约表的带点 token(stat.*/stat2.*/tipinfo.*) 亦能 registered（与 [N] 并存，不冲突）。
     "ZHB-tdxstat": [],
@@ -343,9 +436,11 @@ _CANON_PREFIX_FOR_SRC = {
     "巨潮(cninfo)": [],
     "百度(baidu)": [],
     "TDX(双命名源)": ["TDX快照", "TDX财务"],
+    "新浪(扩展API)": [],
     # TDX-F10 为 F10 报告结构源, §12.8.12e 的 TDX 快照/财务别名属另一语境, 不串入
     "TDX-F10(双命名源)": [],
 }
+
 
 def _agg_raw_leaf_keys(filenames):
     """聚合 docs/field_verification/2026* 下所有 dated 目录的 raw 叶键(真实返回字段)。
@@ -362,8 +457,10 @@ def _agg_raw_leaf_keys(filenames):
             ks |= _leaf_keys(d)
     return {k for k in ks if re.fullmatch(r"[A-Za-z][A-Za-z0-9_]{1,}", k) and k not in _RAW_DENY}
 
+
 def _build_raw_field_keys():
     return {src: _agg_raw_leaf_keys(fns) for src, fns in _RAW_FILE_FOR_SRC.items()}
+
 
 # 跨源串味黑名单: 这些 token 是「源名 / 端点名 / 生成区块产物 / 采集元数据」, 绝非某源的真实字段。
 # _table_codes 扫描对比矩阵/全量字段表时, 单元格常出现其他源名(如 §12.13.8 含 reportapi、
@@ -371,32 +468,87 @@ def _build_raw_field_keys():
 # tdxstat/tdxchain 模块、push2delay 端点), 若不拦截会被错误登记到当前继承源的 registry 下。
 _DENY_TOKENS = {
     # 各源 slug
-    "push2", "push2ex", "push2_full", "ulist", "ulist239", "ulistnp",
-    "tencent", "qt", "gtimg", "sina", "sinajs", "hq",
-    "fuyao", "ths", "thsdk", "sdk",
-    "tdx", "tdx_f10", "tdxquant", "tdxhub", "tqlex",
-    "zhb", "cls", "baidu", "cninfo",
-    "axdata", "datacenter", "slist", "clist",
-    "em_hot", "emappdata", "em_fund_flow", "em_kline", "em_kline_f61",
-    "market_sources", "levistock", "ftshare", "kpl",
-    "eastmoney", "reports", "reportapi", "webstock", "westock", "mx_ds",
+    "push2",
+    "push2ex",
+    "push2_full",
+    "ulist",
+    "ulist239",
+    "ulistnp",
+    "tencent",
+    "qt",
+    "gtimg",
+    "sina",
+    "sinajs",
+    "hq",
+    "fuyao",
+    "ths",
+    "thsdk",
+    "sdk",
+    "tdx",
+    "tdx_f10",
+    "tdxquant",
+    "tdxhub",
+    "tqlex",
+    "zhb",
+    "cls",
+    "baidu",
+    "cninfo",
+    "axdata",
+    "datacenter",
+    "slist",
+    "clist",
+    "em_hot",
+    "emappdata",
+    "em_fund_flow",
+    "em_kline",
+    "em_kline_f61",
+    "market_sources",
+    "levistock",
+    "ftshare",
+    "kpl",
+    "eastmoney",
+    "reports",
+    "reportapi",
+    "webstock",
+    "westock",
+    "mx_ds",
     # 端点 / 模块名(非字段)
-    "push2delay", "tdxstat", "tdxstat2", "tdxchain",
+    "push2delay",
+    "tdxstat",
+    "tdxstat2",
+    "tdxchain",
     # ZHB 字段(previx zhb_) 仅在 ZHB 源登记, 不得经对比矩阵串入 fuyao 等源
-    "zhb_date", "zhb_",
+    "zhb_date",
+    "zhb_",
     # 生成区块产物 / 采集元数据(非市场字段)
-    "subdict", "field_registry", "field_matrix", "gen_field_dict",
-    "scheme", "scheme_grounded",
+    "subdict",
+    "field_registry",
+    "field_matrix",
+    "gen_field_dict",
+    "scheme",
+    "scheme_grounded",
     # 项目模块 / 目录名, 仅经「项目代码正确使用/Bug」表、架构附录串入, 非字段
-    "stock_common", "field_verification",
+    "stock_common",
+    "field_verification",
     # 实现符号(类/模块/布尔), 仅经对比/函数核实表串入, 非字段
-    "true", "false", "action", "controller", "detail", "index",
-    "zscode", "zsname", "apphis", "apphwhq", "apphlb",
+    "true",
+    "false",
+    "action",
+    "controller",
+    "detail",
+    "index",
+    "zscode",
+    "zsname",
+    "apphis",
+    "apphwhq",
+    "apphlb",
+    "cny",
 }
 # 前缀黑名单(源字段命名空间 / Python 函数名 / 代码命名空间, 经对比矩阵串入他源时拦截)
 _DENY_PREFIXES = ("zhb_", "get_", "sc_", "tdx_", "wenda_", "f10_")
 # raw 捕获里的采集元数据键(非市场字段), 仅在聚合 raw 叶键时剔除
 _RAW_DENY = {"scheme"}
+
 
 def _is_denied(tok):
     """token 是否为代码标识符/源名/端点名(非真实市场字段), 须从 registry 抽取中排除。"""
@@ -424,6 +576,7 @@ def _is_denied(tok):
         return True
     return False
 
+
 def _table_codes(stext):
     """从章节表格抽取真实英文代码: 首列(无中文)/全列无中文单元的字段清单/反引号令牌。
 
@@ -434,7 +587,7 @@ def _table_codes(stext):
         s = line.strip()
         if not s.startswith("|"):
             continue
-        if re.match(r"^\|[\s:|-]+\|?\s*$", s):   # 分隔行
+        if re.match(r"^\|[\s:|-]+\|?\s*$", s):  # 分隔行
             continue
         cells = [c.strip() for c in s.strip("|").split("|")]
         if not cells:
@@ -446,8 +599,9 @@ def _table_codes(stext):
                 tok = tok.strip("`*")
                 if _is_denied(tok):
                     continue
-                if re.fullmatch(r"[A-Za-z][A-Za-z0-9_]{1,}", tok) or \
-                   re.fullmatch(r"[A-Za-z][A-Za-z0-9_]*\.[A-Za-z0-9_]+", tok):
+                if re.fullmatch(r"[A-Za-z][A-Za-z0-9_]{1,}", tok) or re.fullmatch(
+                    r"[A-Za-z][A-Za-z0-9_]*\.[A-Za-z0-9_]+", tok
+                ):
                     codes.add(tok)
         # 全列: 无中文的「字段清单」单元(端点全量响应字段列等), 逗号/空格分隔 + 反引号
         for cell in cells:
@@ -463,6 +617,48 @@ def _table_codes(stext):
                 if re.fullmatch(r"[A-Za-z][A-Za-z0-9_]{2,}", tok):
                     codes.add(tok)
     return codes
+
+
+def _kpl_field_tokens(stext):
+    """提取 KPL 文档中字段列，排除接口名和“对应项目字段”列。"""
+    tokens = set()
+    field_col = None
+    for line in stext.splitlines():
+        stripped = line.strip()
+        if stripped.startswith("|"):
+            if re.match(r"^\|[\s:|-]+\|?\s*$", stripped):
+                continue
+            cells = [cell.strip().strip("`") for cell in stripped.strip("|").split("|")]
+            header = any(
+                any(mark in cell for mark in ("关键字段", "实测字段", "字段名")) for cell in cells
+            )
+            if header:
+                field_col = next(
+                    (
+                        i
+                        for i, cell in enumerate(cells)
+                        if any(mark in cell for mark in ("关键字段", "实测字段", "字段名"))
+                    ),
+                    None,
+                )
+                continue
+            if cells and any(mark in cells[0].lower() for mark in ("接口", "action")):
+                field_col = None
+                continue
+            if field_col is None or field_col >= len(cells):
+                continue
+            values = re.findall(
+                r"(?<![A-Za-z0-9_])([A-Za-z][A-Za-z0-9_]{1,})(?![A-Za-z0-9_])", cells[field_col]
+            )
+        else:
+            # Socket-only fields are documented as key=value in prose rather than a table.
+            values = re.findall(r"(?<![A-Za-z0-9_])([A-Za-z][A-Za-z0-9_]{1,})\s*=", line)
+        for value in values:
+            is_camel_case = re.search(r"[a-z][A-Z]", value) is not None
+            if value.lower() not in _DENY_TOKENS and (is_camel_case or not _is_denied(value)):
+                tokens.add(value)
+    return tokens
+
 
 def _build_canon_aliases():
     """扫描 §12.8.12e 规范注册表, 按各源自身前缀抽取其别名令牌。"""
@@ -483,26 +679,45 @@ def _build_canon_aliases():
         out[src] = s
     return out
 
+
 RAW_FIELD_KEYS = _build_raw_field_keys()
 CANON_ALIASES = _build_canon_aliases()
 
 # ---------------------------------------------------------------------------
-# REG（扫描章节全文，按标题层级继承源）
+# REG（扫描章节全文，仅从严格 Markdown 祖先继承源）
 # ---------------------------------------------------------------------------
-INDEXED = ("东财-push2(stock/get)", "东财-ulist239(np/get)", "AxData",
-           "东财-资金流(em_fund_flow)", "腾讯(qt.gtimg)", "新浪(hq.sinajs)",
-           "ZHB-tdxstat", "ZHB-tdxstat2", "ZHB-tipinfo")
+INDEXED = (
+    "东财-push2(stock/get)",
+    "东财-ulist239(np/get)",
+    "AxData",
+    "东财-资金流(em_fund_flow)",
+    "腾讯(qt.gtimg)",
+    "新浪(hq.sinajs)",
+    "ZHB-tdxstat",
+    "ZHB-tdxstat2",
+    "ZHB-tipinfo",
+)
+
 
 def reg_tokens_for_section(src, text):
     toks = set()
+    if src == "开盘啦(kpl)":
+        return _kpl_field_tokens(text)
     # 沪深交易所(§12.8.17): 官方龙虎榜端点为 pinyin+CamelCase 混合命名, 通用 snake_case
     # 抽取会把端点散文(szse/sse/com/api/market/snap/ann/anotice/dragon_tiger_backup/...)当字段
     # 登记 → 污染 registry 核心资产。显式白名单仅取 §12.8.17 字段表登记的真实源字段
     # (沪市全文以 sse_raw 映射名登记), 严格对齐单源真相。
     if src == "沪深交易所":
         return {"zqdm", "zqjc", "cjje", "plyy", "sse_raw"}
-    if src in ("东财-push2(stock/get)", "东财-ulist239(np/get)", "AxData", "东财-资金流(em_fund_flow)",
-               "东财-em_kline_f61", "东财-slist", "东财-clist"):
+    if src in (
+        "东财-push2(stock/get)",
+        "东财-ulist239(np/get)",
+        "AxData",
+        "东财-资金流(em_fund_flow)",
+        "东财-em_kline_f61",
+        "东财-slist",
+        "东财-clist",
+    ):
         for m in re.findall(r"\bf(\d+)\b", text):
             toks.add(f"f{m}")
     if src == "腾讯(qt.gtimg)":
@@ -527,8 +742,10 @@ def reg_tokens_for_section(src, text):
     # 只从「表格首列」与「反引号」精确抽取，避免把正文英文单词当成已登记字段而制造假闭合。
     if src == "reports":
         for line in text.split("\n"):
-            m = re.match(r"^\s*\|\s*([A-Za-z][A-Za-z0-9_]{2,}"
-                         r"(?:\s*/\s*[A-Za-z][A-Za-z0-9_]{2,})*)\s*\|", line)
+            m = re.match(
+                r"^\s*\|\s*([A-Za-z][A-Za-z0-9_]{2,}" r"(?:\s*/\s*[A-Za-z][A-Za-z0-9_]{2,})*)\s*\|",
+                line,
+            )
             if m:
                 for name in re.split(r"\s*/\s*", m.group(1)):
                     toks.add(name)
@@ -545,7 +762,11 @@ def reg_tokens_for_section(src, text):
         toks |= _table_codes(text)
         toks |= CANON_ALIASES.get(src, set())
         toks = {t for t in toks if not re.fullmatch(r"f\d+", t)}
+        if src == "TDX-eltdx(适配层)":
+            # bars.get 的请求参数不是响应字段。
+            toks -= {"adjust", "period"}
     return toks
+
 
 def registered_field_sets():
     text = io.open(DICT, encoding="utf-8").read()
@@ -557,22 +778,18 @@ def registered_field_sets():
     text = re.sub(r"<!-- GEN:.*?-->\n.*?<!-- /GEN:.*?-->\n?", "", text, flags=re.DOTALL)
     secs = split_sections(text)
     reg = defaultdict(set)
-    stack = {}  # level -> [sources]
+    stack = {}  # level -> [sources]; entries are strict Markdown ancestors
     for lv, title, stext in secs:
         for k in list(stack):
-            if k > lv:
+            if k >= lv:
                 del stack[k]
         matched = section_to_sources(title)
-        if matched:
-            stack[lv] = matched
-        eff = None
-        for k in sorted(stack, reverse=True):
-            if k <= lv:
-                eff = stack[k]
-                break
+        eff = matched or next((stack[k] for k in sorted(stack, reverse=True) if k < lv), None)
         if eff:
             for src in eff:
                 reg[src] |= reg_tokens_for_section(src, stext)
+        if matched:
+            stack[lv] = matched
     return reg
 
 
@@ -592,6 +809,7 @@ def registry_field_sets():
         return None
     return reg
 
+
 # ---------------------------------------------------------------------------
 def main():
     raw = raw_field_sets()
@@ -605,7 +823,9 @@ def main():
 
     report = {}
     print("=" * 82)
-    print("主字典字段完整性审计 v3  (REG 按标题层级继承源; ZHB 记号 **[N]**; em_fund_flow 共享 §12.3.4)")
+    print(
+        "主字典字段完整性审计 v3  (REG 按标题层级继承源; ZHB 记号 **[N]**; em_fund_flow 共享 §12.3.4)"
+    )
     print("=" * 82)
     for src in sorted(raw):
         r = raw[src]
@@ -616,9 +836,14 @@ def main():
         else:
             g_eff = g & r
         missing = sorted(r - g_eff, key=lambda x: (len(x), x))
-        report[src] = {"raw_count": len(r), "reg_count": len(g),
-                       "reg_eff_count": len(g_eff), "missing_count": len(missing),
-                       "missing": missing, "has_raw_data": len(r) > 0}
+        report[src] = {
+            "raw_count": len(r),
+            "reg_count": len(g),
+            "reg_eff_count": len(g_eff),
+            "missing_count": len(missing),
+            "missing": missing,
+            "has_raw_data": len(r) > 0,
+        }
         flag = "NO-RawDATA" if not r else ("OK" if not missing else "GAP")
         print(f"\n[{flag}] {src}")
         print(f"   raw={len(r)}  reg(全文)={len(g)}  reg∩raw={len(g_eff)}  missing={len(missing)}")
@@ -626,8 +851,10 @@ def main():
             shown = missing if len(missing) <= 80 else missing[:80] + [f"...+{len(missing)-80}"]
             print("   missing: " + ", ".join(shown))
     io.open(os.path.join(OUTDIR, "completeness_audit.json"), "w", encoding="utf-8").write(
-        json.dumps(report, ensure_ascii=False, indent=2))
+        json.dumps(report, ensure_ascii=False, indent=2)
+    )
     print("\n写出:", os.path.join(OUTDIR, "completeness_audit.json"))
+
 
 if __name__ == "__main__":
     main()

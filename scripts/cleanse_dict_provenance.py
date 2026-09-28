@@ -15,7 +15,9 @@
   python cleanse_dict_provenance.py            # dry-run，打印拟改动摘要
   python cleanse_dict_provenance.py --apply    # 实际改写并生成 PROVENANCE.md
 """
+
 import sys, os, re, json
+
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 import extract_registry as er
@@ -27,10 +29,48 @@ DICT = os.path.join(ROOT, "docs", "field_dict.md")
 PROV = os.path.join(ROOT, "docs", "field_verification", "PROVENANCE.md")
 
 # 过程/猜测指示词：单元格含其一才视为需要净化（避免动干净单元格）
-PROC_KW = ["猜测", "推断", "疑", "可能", "待破解", "待核", "推翻", "证伪", "旧标注",
-           "疑似", "暂定", "待验证", "大概率", "应为", "怀疑", "原注", "原标", "原以为",
-           "旧标", "口径", "实测", "样本", "对撞", "锚", "命中", "留待", "弃用", "未接入",
-           "退役", "deprecated", "→", "＝", "=", "：", ":", "（", "(", "—", "·", "```"]
+PROC_KW = [
+    "猜测",
+    "推断",
+    "疑",
+    "可能",
+    "待破解",
+    "待核",
+    "推翻",
+    "证伪",
+    "旧标注",
+    "疑似",
+    "暂定",
+    "待验证",
+    "大概率",
+    "应为",
+    "怀疑",
+    "原注",
+    "原标",
+    "原以为",
+    "旧标",
+    "口径",
+    "实测",
+    "样本",
+    "对撞",
+    "锚",
+    "命中",
+    "留待",
+    "弃用",
+    "未接入",
+    "退役",
+    "deprecated",
+    "→",
+    "＝",
+    "=",
+    "：",
+    ":",
+    "（",
+    "(",
+    "—",
+    "·",
+    "```",
+]
 # 已定案指示
 DECIDED = ["✅"]
 # 未破解指示（不含 ✅ 时）
@@ -95,13 +135,13 @@ def clean_meaning(raw, decoded):
     mb = re.search(r"\*\*(.+?)\*\*", s2)
     if mb:
         concl = _clean_concl(mb.group(1))
-        rest = (s2[:mb.start()] + s2[mb.end():]).strip().strip("*").strip()
+        rest = (s2[: mb.start()] + s2[mb.end() :]).strip().strip("*").strip()
         if concl:
             return concl, rest
     m = re.search(r"[（(=—·：:、]", s2)
     if m:
-        concl = _clean_concl(s2[:m.start()])
-        rest = s2[m.start():].strip().strip("*").strip()
+        concl = _clean_concl(s2[: m.start()])
+        rest = s2[m.start() :].strip().strip("*").strip()
         if concl:
             return concl, rest
     return _clean_concl(s2), ""
@@ -127,7 +167,7 @@ def iter_table_rows(lines):
                 is_sep = len(sep) >= 2 and all(re.match(r"^:?-{2,}:?$", c or "-") for c in sep)
                 if is_sep:
                     header = block[0][1]
-                    for (ln, row) in block[2:]:
+                    for ln, row in block[2:]:
                         yield (ln, cur_sec, header, row)
             i = j
         else:
@@ -140,7 +180,7 @@ def main():
     prov = {}  # token -> {section -> {"meaning":..., "status":...}}
     changes = []  # (ln, col_type, old, new)
 
-    for (ln, sec, header, row) in iter_table_rows(lines):
+    for ln, sec, header, row in iter_table_rows(lines):
         if any(kw in sec for kw in gm.NON_FIELD_SEC):
             continue
         srcs = afc.section_to_sources(sec)
@@ -180,9 +220,14 @@ def main():
         if m_idx is not None and m_idx < len(row):
             mc = row[m_idx]
             if is_proc(mc):
-                decoded = any(k in (row[s_idx] if s_idx is not None and s_idx < len(row) else "") for k in DECIDED)
+                decoded = any(
+                    k in (row[s_idx] if s_idx is not None and s_idx < len(row) else "")
+                    for k in DECIDED
+                )
                 undecided = (not decoded) and any(
-                    k in (row[s_idx] if s_idx is not None and s_idx < len(row) else "") for k in UNDEC)
+                    k in (row[s_idx] if s_idx is not None and s_idx < len(row) else "")
+                    for k in UNDEC
+                )
                 new_m, mprov = clean_meaning(mc, decoded)
                 if new_m and new_m != mc.strip():
                     orig = parts[m_idx + 1]
@@ -220,14 +265,16 @@ def main():
     with open(DICT, "w", encoding="utf-8") as f:
         f.write("\n".join(lines))
     # 写 PROVENANCE.md
-    out = ["<!-- AUTO-GEN: provenance -->",
-           "# 字段过程/猜测/证伪溯源档案",
-           "",
-           "> 本文件由 `scripts/cleanse_dict_provenance.py` 从 `docs/field_dict.md` 字段表净化迁出。",
-           "> 字段表本身仅保留「结论投影」（含义=中文名 / 状态=标记+层级）；",
-           "> 此处按 (源, 字段) 归档被迁出的碰撞过程、猜测与证伪叙述，供复核与再对撞使用。",
-           "> 内容均为原文迁移，未做删改。",
-           ""]
+    out = [
+        "<!-- AUTO-GEN: provenance -->",
+        "# 字段过程/猜测/证伪溯源档案",
+        "",
+        "> 本文件由 `scripts/cleanse_dict_provenance.py` 从 `docs/field_dict.md` 字段表净化迁出。",
+        "> 字段表本身仅保留「结论投影」（含义=中文名 / 状态=标记+层级）；",
+        "> 此处按 (源, 字段) 归档被迁出的碰撞过程、猜测与证伪叙述，供复核与再对撞使用。",
+        "> 内容均为原文迁移，未做删改。",
+        "",
+    ]
     for tk in sorted(prov.keys()):
         secs = prov[tk]
         out.append(f"## {tk}")

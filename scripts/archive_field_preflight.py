@@ -19,12 +19,20 @@
 
 退出码：有违规 → 1（可挂 pre-commit 闸门）；全过 → 0。
 """
+
 from __future__ import annotations
 
 import argparse
 import os
 import re
 import sys
+
+_stdout_reconfigure = getattr(sys.stdout, "reconfigure", None)
+if _stdout_reconfigure:
+    _stdout_reconfigure(encoding="utf-8")
+_stderr_reconfigure = getattr(sys.stderr, "reconfigure", None)
+if _stderr_reconfigure:
+    _stderr_reconfigure(encoding="utf-8")
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 REPO_ROOT = os.path.dirname(SCRIPT_DIR)
@@ -38,6 +46,7 @@ def _load_section_map():
     try:
         sys.path.insert(0, SCRIPT_DIR)
         import audit_field_completeness as afc  # noqa: F401
+
         return list(afc.SECTION_MAP)
     except Exception as _e:  # pragma: no cover
         print(f"[WARN] 无法 import SECTION_MAP（{_e}），回退空表", file=sys.stderr)
@@ -53,6 +62,7 @@ def _load_verify_mapping():
     try:
         sys.path.insert(0, SCRIPT_DIR)
         import verify_sync_check as vsc  # noqa: F401
+
         return dict(vsc.get_source_mapping())
     except Exception as _e:  # pragma: no cover
         print(f"[WARN] 无法 import get_source_mapping（{_e}），回退空表", file=sys.stderr)

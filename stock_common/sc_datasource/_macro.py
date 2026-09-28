@@ -9,6 +9,7 @@
 设计对齐上游: source/source_url/fetched_at 溯源; 结构错抛 RuntimeError; 多页/多文件完整性校验。
 reportName 常量已 verified=True(取自上游权威仓库); 字段语义仍按治理铁律待本项目 collide 终检。
 """
+
 from __future__ import annotations
 from typing import Any, Dict, List, Optional
 import time
@@ -19,15 +20,17 @@ from stock_common.sc_network import UA, _quick_request, _debug_log
 from stock_common import _debug_log as _dbg
 
 DATACENTER_URL = "https://datacenter-web.eastmoney.com/api/data/v1/get"
-CHINAMONEY_FIXING_URL = "https://www.chinamoney.com.cn/r/cms/www/chinamoney/data/currency/{name}-chrt.csv"
+CHINAMONEY_FIXING_URL = (
+    "https://www.chinamoney.com.cn/r/cms/www/chinamoney/data/currency/{name}-chrt.csv"
+)
 WSCN_MACRO_URL = "https://api-one-wscn.awtmt.com/apiv1/finance/macrodatas"
 _CN_TZ = timezone(timedelta(hours=8))
 
 # V17.4.1: 经上游权威仓库 SKILL.md 对撞校正
 _EM_REPORTS: Dict[str, str] = {
-    "lpr": "RPTA_WEB_RATE",                  # 原误 RPT_LPR_HISTORY
-    "macro_calendar": "WALLSTREETCN",        # 源=华尔街见闻(非东财); 此处仅作溯源标记
-    "repo_fixing": "CHINAMONEY_CSV",         # 源=中国货币网(非东财)
+    "lpr": "RPTA_WEB_RATE",  # 原误 RPT_LPR_HISTORY
+    "macro_calendar": "WALLSTREETCN",  # 源=华尔街见闻(非东财); 此处仅作溯源标记
+    "repo_fixing": "CHINAMONEY_CSV",  # 源=中国货币网(非东财)
 }
 _SOURCE_URLS: Dict[str, str] = {
     "lpr": DATACENTER_URL,
@@ -43,8 +46,16 @@ _VERIFIED = True  # 常量/源取自上游权威仓库; 字段语义待本项目
 #   无需经本项目 f-code collide 终检(无对应 f 编号, 亦不进 field_dict 破解管线)。
 _VERIFIED_FIELD_SOURCES: Dict[str, Dict[str, str]] = {
     # LPR —— 央行授权全国银行间同业拆借中心每月20日公布, 东财 datacenter(RPTA_WEB_RATE) 为聚合源
-    "lpr_1y": {"source": "央行LPR / 东财datacenter(RPTA_WEB_RATE)", "unit": "%", "status": "VERIFIED"},
-    "lpr_5y": {"source": "央行LPR / 东财datacenter(RPTA_WEB_RATE)", "unit": "%", "status": "VERIFIED"},
+    "lpr_1y": {
+        "source": "央行LPR / 东财datacenter(RPTA_WEB_RATE)",
+        "unit": "%",
+        "status": "VERIFIED",
+    },
+    "lpr_5y": {
+        "source": "央行LPR / 东财datacenter(RPTA_WEB_RATE)",
+        "unit": "%",
+        "status": "VERIFIED",
+    },
     # 回购定盘 FR/FDR —— 中国货币网(外汇交易中心)官方 CSV 每日公布
     "FR001": {"source": "中国货币网(外汇交易中心)官方CSV", "unit": "%", "status": "VERIFIED"},
     "FR007": {"source": "中国货币网(外汇交易中心)官方CSV", "unit": "%", "status": "VERIFIED"},
@@ -71,9 +82,14 @@ def _trace(source: str) -> Dict[str, Any]:
 def lpr_history() -> List[Dict[str, Any]]:
     """LPR 全历史(1年/5年)。东财源 RPTA_WEB_RATE。单位 %。"""
     try:
-        rows = eastmoney_datacenter("", _EM_REPORTS["lpr"],
-                                   columns="TRADE_DATE,LPR1Y,LPR5Y",
-                                   sort_columns="TRADE_DATE", sort_types="-1", page_size=200)  # V17.4.4: 降序→首屏即最新200行(原函数升序只取最旧首屏, _lpr[-1]误取历史旧值)
+        rows = eastmoney_datacenter(
+            "",
+            _EM_REPORTS["lpr"],
+            columns="TRADE_DATE,LPR1Y,LPR5Y",
+            sort_columns="TRADE_DATE",
+            sort_types="-1",
+            page_size=200,
+        )  # V17.4.4: 降序→首屏即最新200行(原函数升序只取最旧首屏, _lpr[-1]误取历史旧值)
     except Exception as _e:
         _dbg(f"lpr_history: 取值失败 -> {_e}")
         return []
@@ -82,7 +98,9 @@ def lpr_history() -> List[Dict[str, Any]]:
         _1y = _num(r.get("LPR1Y"))
         if _1y is None:
             continue  # 旧贷款基准利率行(无 LPR 字段)跳过
-        out.append({"date": str(r.get("TRADE_DATE"))[:10], "lpr_1y": _1y, "lpr_5y": _num(r.get("LPR5Y"))})
+        out.append(
+            {"date": str(r.get("TRADE_DATE"))[:10], "lpr_1y": _1y, "lpr_5y": _num(r.get("LPR5Y"))}
+        )
     for r in out:
         r.update(_trace("lpr"))
     return out
@@ -99,8 +117,11 @@ def repo_fixing_rates(kind: str = "FR") -> List[Dict[str, Any]]:
         _dbg(f"repo_fixing_rates: kind 仅支持 FR/FDR, 收到 {kind}")
         return []
     try:
-        r = _quick_request(CHINAMONEY_FIXING_URL.format(name=names[kind]),
-                           headers={"Referer": "https://www.chinamoney.com.cn/chinese/bkfrr/"}, timeout=15)
+        r = _quick_request(
+            CHINAMONEY_FIXING_URL.format(name=names[kind]),
+            headers={"Referer": "https://www.chinamoney.com.cn/chinese/bkfrr/"},
+            timeout=15,
+        )
     except Exception as _e:
         _dbg(f"repo_fixing_rates({kind}): 取值失败 -> {_e}")
         return []
@@ -118,22 +139,31 @@ def repo_fixing_rates(kind: str = "FR") -> List[Dict[str, Any]]:
         if len(parts) != 9 or any(p.strip() for p in parts[1:6]):
             _dbg(f"repo_fixing_rates: 货币网 CSV 格式改变: {line[:60]}")
             return []
-        out.append({"date": parts[0],
-                    f"{kind}001": _num(parts[6]), f"{kind}007": _num(parts[7]), f"{kind}014": _num(parts[8])})
+        out.append(
+            {
+                "date": parts[0],
+                f"{kind}001": _num(parts[6]),
+                f"{kind}007": _num(parts[7]),
+                f"{kind}014": _num(parts[8]),
+            }
+        )
     for row in out:
         row.update(_trace("repo_fixing"))
     return out
 
 
-def macro_calendar(start: str = "", end: str = "", country: str = "中国",
-                   min_importance: int = 1) -> List[Dict[str, Any]]:
+def macro_calendar(
+    start: str = "", end: str = "", country: str = "中国", min_importance: int = 1
+) -> List[Dict[str, Any]]:
     """全球宏观日历(华尔街见闻) — 公布值/预期/前值 + 重要事件。
 
     start/end: 'YYYY-MM-DD'(北京时间, 含两端); 缺省取最近 7 天。接口单次仅允许一周, 内部按 7 天切片。
     importance 1–4(越大越重要); country 过滤国家。
     """
-    def _d(s, default):
+
+    def _d(s: str, default: int) -> str:
         return s or (datetime.now(_CN_TZ) - timedelta(days=default)).strftime("%Y-%m-%d")
+
     first = datetime.strptime(_d(start, 7), "%Y-%m-%d").date()
     last = datetime.strptime(_d(end, 0), "%Y-%m-%d").date() if end else first + timedelta(days=6)
     if first > last or (last - first).days > 91:
@@ -148,7 +178,9 @@ def macro_calendar(start: str = "", end: str = "", country: str = "中国",
     while cursor <= last:
         stop = min(cursor + timedelta(days=6), last)
         begin = int(datetime(cursor.year, cursor.month, cursor.day, tzinfo=_CN_TZ).timestamp())
-        finish = int(datetime(stop.year, stop.month, stop.day, 23, 59, 59, tzinfo=_CN_TZ).timestamp())
+        finish = int(
+            datetime(stop.year, stop.month, stop.day, 23, 59, 59, tzinfo=_CN_TZ).timestamp()
+        )
         try:
             r = _quick_request(WSCN_MACRO_URL, params={"start": begin, "end": finish}, timeout=15)
         except Exception as _e:
@@ -176,8 +208,11 @@ def macro_calendar(start: str = "", end: str = "", country: str = "中国",
                 continue
             rows[item["id"]] = {
                 "time": when.strftime("%Y-%m-%d %H:%M"),
-                "country": item.get("country"), "title": item.get("title"),
-                "kind": {"FD": "data", "FE": "event"}.get(item.get("calendar_type"), item.get("calendar_type")),
+                "country": item.get("country"),
+                "title": item.get("title"),
+                "kind": {"FD": "data", "FE": "event"}.get(
+                    item.get("calendar_type"), item.get("calendar_type")
+                ),
                 "importance": level,
                 "actual": (None if item.get("actual") in (None, "") else item.get("actual")),
                 "forecast": (None if item.get("forecast") in (None, "") else item.get("forecast")),
@@ -210,16 +245,21 @@ def get_macro_context() -> Dict[str, Any]:
     任一子源失败不影响其余; 全部缺失时各字段为空/0。
     """
     ctx: Dict[str, Any] = {
-        "lpr_1y": None, "lpr_5y": None,
-        "repo_fr": None, "repo_fdr": None,
-        "calendar_count": 0, "curve_available": False,
+        "lpr_1y": None,
+        "lpr_5y": None,
+        "repo_fr": None,
+        "repo_fdr": None,
+        "calendar_count": 0,
+        "curve_available": False,
         "source_trace": [],
     }
     try:
         _lpr = lpr_history()
         ctx["source_trace"].append("lpr")
         if _lpr:
-            _last = max(_lpr, key=lambda r: r.get("date", ""))  # 取 TRADE_DATE 最大者=最新(防御性, 不依赖排序假设)
+            _last = max(
+                _lpr, key=lambda r: r.get("date", "")
+            )  # 取 TRADE_DATE 最大者=最新(防御性, 不依赖排序假设)
             ctx["lpr_1y"] = _last.get("lpr_1y")
             ctx["lpr_5y"] = _last.get("lpr_5y")
     except Exception as _e:

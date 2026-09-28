@@ -14,6 +14,8 @@
 
 from __future__ import absolute_import, unicode_literals
 import datetime
+from typing import Any, Optional, Set, Tuple, Union, cast
+
 
 # ==================== Holiday 枚举 ====================
 class Holiday:
@@ -807,14 +809,15 @@ workdays = {
 
 # ==================== 核心函数 ====================
 
-def _wrap_date(date):
+
+def _wrap_date(date: Any) -> Any:
     """将 datetime 转换为 date"""
     if isinstance(date, datetime.datetime):
         return date.date()
     return date
 
 
-def _validate_date(date):
+def _validate_date(date: Any) -> datetime.date:
     """检查日期是否在支持范围内"""
     date = _wrap_date(date)
     if not isinstance(date, datetime.date):
@@ -828,7 +831,7 @@ def _validate_date(date):
     return date
 
 
-def is_workday(date):
+def is_workday(date: Union[datetime.date, datetime.datetime]) -> bool:
     """判断是否为工作日（A股交易日）
 
     V14.0 修复：本地 holidays/workdays 字典作为权威数据，ZHB 仅作为辅助校验。
@@ -864,6 +867,7 @@ def is_workday(date):
         # 3. 辅助校验：ZHB 数据（残缺时不影响本地判断）
         try:
             from core.zhb_client import get_holidays
+
             zhb_holidays = get_holidays()
             if zhb_holidays:
                 date_str = date.strftime("%Y%m%d")
@@ -883,7 +887,8 @@ def is_workday(date):
 # V14.2 新增：ZHB neednote.dat 官方日历补充
 # ═══════════════════════════════════════════════════════════════
 
-def _load_zhb_neednote_supplement():
+
+def _load_zhb_neednote_supplement() -> Tuple[Set[datetime.date], Set[datetime.date]]:
     """V14.2：加载 ZHB neednote.dat 官方休市日+调休补班日作为本地字典的补充。
 
     V14.2.1 改进：预过滤空元素 + 全角空格，避免异常开销。
@@ -894,7 +899,8 @@ def _load_zhb_neednote_supplement():
     """
     try:
         from core.zhb_client import get_zhb_official_holidays, get_zhb_official_jyweek
-        supplement_holidays = set()
+
+        supplement_holidays: Set[datetime.date] = set()
         # V14.2.1: 预过滤空元素和空白字符串
         for d_str in (s for s in get_zhb_official_holidays() if s and s.strip()):
             d_str = d_str.strip()
@@ -905,7 +911,7 @@ def _load_zhb_neednote_supplement():
                 supplement_holidays.add(datetime.date(year, month, day))
             except (ValueError, TypeError, IndexError):
                 continue
-        supplement_workdays = set()
+        supplement_workdays: Set[datetime.date] = set()
         for d_str in (s for s in get_zhb_official_jyweek() if s and s.strip()):
             d_str = d_str.strip()
             try:
@@ -921,14 +927,14 @@ def _load_zhb_neednote_supplement():
 
 
 # V14.2 模块级缓存（一次性加载）
-_zhb_holidays_supplement: set = set()
-_zhb_workdays_supplement: set = set()
+_zhb_holidays_supplement: Set[datetime.date] = set()
+_zhb_workdays_supplement: Set[datetime.date] = set()
 _zhb_supplement_loaded: bool = False
 # V14.2.1: 记录上次加载时的 ZHB 数据日期，检测到变更时自动重载
 _last_zhb_supplement_date: str = ""
 
 
-def _ensure_zhb_supplement_loaded():
+def _ensure_zhb_supplement_loaded() -> None:
     """确保 ZHB 补充数据已加载（V14.2 + V14.2.1 自动重载）。
 
     V14.2.1 改进：当 ZHB 数据日期变更时（如盘后守护进程下载了新 zhb.zip），
@@ -937,6 +943,7 @@ def _ensure_zhb_supplement_loaded():
     global _zhb_holidays_supplement, _zhb_workdays_supplement, _zhb_supplement_loaded, _last_zhb_supplement_date
     try:
         from core.zhb_client import get_zhb
+
         zhb = get_zhb()
         current_date = zhb.date if zhb is not None else ""
         # 已加载且日期未变：直接返回
@@ -965,7 +972,9 @@ def invalidate_zhb_supplement_cache() -> None:
     _last_zhb_supplement_date = ""
 
 
-def is_workday_with_zhb_supplement(date):
+def is_workday_with_zhb_supplement(
+    date: Union[datetime.date, datetime.datetime],
+) -> bool:
     """V14.2：在 is_workday() 基础上叠加 ZHB neednote.dat 补充日历。
 
     优先级：
@@ -998,6 +1007,7 @@ def is_workday_with_zhb_supplement(date):
     # 5. V14.0 ZHB 残缺数据辅助校验
     try:
         from core.zhb_client import get_holidays
+
         zhb_holidays = get_holidays()
         if zhb_holidays:
             date_str = date.strftime("%Y%m%d")
@@ -1024,7 +1034,9 @@ def get_zhb_supplement_count() -> dict:
     }
 
 
-def get_last_trading_day(date=None):
+def get_last_trading_day(
+    date: Optional[Union[datetime.date, datetime.datetime]] = None,
+) -> datetime.date:
     """获取给定日期之前（含）最近的交易日
 
     Args:
@@ -1038,7 +1050,7 @@ def get_last_trading_day(date=None):
     """
     if date is None:
         date = datetime.date.today()
-    date = _wrap_date(date)
+    date = cast(datetime.date, _wrap_date(date))
     # 向前回溯直到找到交易日（最多回溯 30 天）
     for _ in range(30):
         try:
@@ -1054,7 +1066,9 @@ def get_last_trading_day(date=None):
     raise NotImplementedError("no trading day found in the last 30 days")
 
 
-def get_next_trading_day(date=None):
+def get_next_trading_day(
+    date: Optional[Union[datetime.date, datetime.datetime]] = None,
+) -> datetime.date:
     """获取给定日期之后（不含）最近的交易日
 
     Args:
@@ -1068,7 +1082,7 @@ def get_next_trading_day(date=None):
     """
     if date is None:
         date = datetime.date.today()
-    date = _wrap_date(date)
+    date = cast(datetime.date, _wrap_date(date))
     date += datetime.timedelta(days=1)
     # 向后查找直到找到交易日（最多查找 30 天）
     for _ in range(30):
@@ -1095,8 +1109,7 @@ def _cli_update(backup: bool = False, dry_run: bool = False) -> None:
     import os
 
     script_path = os.path.join(
-        os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
-        "scripts", "update_calendar.py"
+        os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "scripts", "update_calendar.py"
     )
     if not os.path.isfile(script_path):
         print(f"错误：找不到更新脚本 {script_path}", file=sys.stderr)
@@ -1114,14 +1127,14 @@ if __name__ == "__main__":
     import argparse
 
     parser = argparse.ArgumentParser(description="A股交易日历（stock_calendar.py）")
-    parser.add_argument("--check", action="store_true",
-                        help="检查当前数据支持的年份范围")
-    parser.add_argument("--update", action="store_true",
-                        help="从 chinese-calendar 库更新数据")
-    parser.add_argument("--backup", action="store_true",
-                        help="更新前自动备份旧文件（配合 --update 使用）")
-    parser.add_argument("--dry-run", action="store_true",
-                        help="仅预览更新内容，不写入文件（配合 --update 使用）")
+    parser.add_argument("--check", action="store_true", help="检查当前数据支持的年份范围")
+    parser.add_argument("--update", action="store_true", help="从 chinese-calendar 库更新数据")
+    parser.add_argument(
+        "--backup", action="store_true", help="更新前自动备份旧文件（配合 --update 使用）"
+    )
+    parser.add_argument(
+        "--dry-run", action="store_true", help="仅预览更新内容，不写入文件（配合 --update 使用）"
+    )
     args = parser.parse_args()
 
     if args.check:

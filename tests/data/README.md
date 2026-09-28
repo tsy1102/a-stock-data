@@ -3,7 +3,7 @@
 > 本目录归并**数据从哪来**的 pytest 用例, 覆盖 ZHB / TDX / 东财 / 网络传输 / 预取等底层数据源, 对应 `stock_common/sc_datasource/` 与 `core/tdx_client.py` / `core/zhb_client.py` / `stock_common/sc_network.py`。
 > 文件清单与逐文件定位见父目录 [`../README.md`](../README.md); 本文件仅作本层速查。
 
-## 文件与职责(7)
+## 文件与职责(10)
 
 | 文件 | 职责 |
 |:---|:---|
@@ -14,10 +14,13 @@
 | test_data_em_fund_flow_tiers.py | 东财资金流四档层级回归(V17.0.16) |
 | test_data_network.py | 令牌桶限流 / 熔断器 / 封禁冷却(核心防线) |
 | test_data_prefetch.py | sht 批量行情预取映射 / 单位换算 / 缓存命中(V16.4.0) |
+| test_data_kpl.py | 开盘啦(KPL) 数据适配器回归 |
+| test_lockup_units.py | 限售解禁股数单位与缓存版本回归 |
+| test_backtest_zhb_snapshot.py | 回测读取 ZHB 快照的解析与失败边界 |
 
 ## 运行
 
 ```powershell
 .\scripts\run_tests.ps1 -Mode module -Path tests/data/test_data_zhb.py
-.\scripts\run_tests.ps1 -Mode real   # 仅真网络测试(需 REAL_NETWORK=1)
+.\scripts\run_tests.ps1 -Mode real   # 仅运行标记为 real_network 的用例
 ```

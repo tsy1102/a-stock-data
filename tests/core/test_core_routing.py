@@ -9,6 +9,7 @@ data_provider.py, plus the helper functions:
 These tests are pure-python, do not touch network, and do not depend on
 ZHB files being installed.
 """
+
 from __future__ import annotations
 
 import os
@@ -25,8 +26,7 @@ class TestRealtimeHttpField(unittest.TestCase):
 
     def test_quote_fields_are_realtime(self):
         """Quote-class fields must be in REQUIRES_REALTIME_HTTP."""
-        for f in ["price", "change_pct", "amount", "volume",
-                  "open", "high", "low", "prev_close"]:
+        for f in ["price", "change_pct", "amount", "volume", "open", "high", "low", "prev_close"]:
             self.assertTrue(
                 dp.is_realtime_http_field(f),
                 f"{f} should be realtime HTTP field",
@@ -34,8 +34,12 @@ class TestRealtimeHttpField(unittest.TestCase):
 
     def test_fund_flow_fields_are_realtime(self):
         """Fund-flow fields must be in REQUIRES_REALTIME_HTTP."""
-        for f in ["main_net_buy_hands", "main_net_buy_amount",
-                  "main_net_buy_hands_1d", "main_net_buy_amount_1d"]:
+        for f in [
+            "main_net_buy_hands",
+            "main_net_buy_amount",
+            "main_net_buy_hands_1d",
+            "main_net_buy_amount_1d",
+        ]:
             self.assertTrue(
                 dp.is_realtime_http_field(f),
                 f"{f} should be realtime HTTP field",
@@ -108,7 +112,8 @@ class TestSetsDisjoint(unittest.TestCase):
     def test_sets_have_no_overlap(self):
         overlap = dp.REQUIRES_REALTIME_HTTP & dp.ZHB_SUFFICIENT
         self.assertEqual(
-            overlap, set(),
+            overlap,
+            set(),
             f"REQUIRES_REALTIME_HTTP and ZHB_SUFFICIENT must be disjoint, "
             f"but overlap = {overlap}",
         )
@@ -116,6 +121,19 @@ class TestSetsDisjoint(unittest.TestCase):
 
 class TestCanonicalDataAPI(unittest.TestCase):
     """V15 Unified Canonical Data API Tests."""
+
+    def test_accessor_uses_canonical_realtime_gate(self):
+        """拆分后的访问器应调用 canonical 路由，且盘中走 TDX fallback。"""
+        from unittest.mock import patch
+
+        from core import _accessors
+        import core.stock_cache as stock_cache
+
+        with patch.object(stock_cache, "_DISABLE_CACHE", True):
+            with patch.object(dp, "_should_use_zhb_for_realtime", return_value=False) as route:
+                with patch("core.tdx_client.tdx_get_quote_full", return_value={"change_pct": 2.5}):
+                    self.assertEqual(_accessors.get_change_pct("600519"), 2.5)
+                route.assert_called_once_with()
 
     def test_get_canonical_stock_data_returns_dataclass(self):
         cdata = dp.get_canonical_stock_data("600519")
@@ -135,8 +153,11 @@ class TestCanonicalDataAPI(unittest.TestCase):
     def test_graceful_circuit_breaker_fallback(self):
         """当 TDX/腾讯/东财全部抛异常时，get_canonical_stock_data 不抛异常并降级为 ZHB。"""
         from unittest.mock import patch
+
         # data_provider 函数内 `from stock_common import get_tencent_quote`，patch 包属性
-        with patch("core.tdx_client.tdx_get_quote_full", side_effect=RuntimeError("Circuit Breaker Open")):
+        with patch(
+            "core.tdx_client.tdx_get_quote_full", side_effect=RuntimeError("Circuit Breaker Open")
+        ):
             with patch("stock_common.get_tencent_quote", return_value={}):
                 with patch("stock_common.sc_datasource.get_em_quote_full_delay", return_value={}):
                     with patch("stock_common.sc_datasource.get_em_quote_full", return_value={}):

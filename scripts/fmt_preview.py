@@ -12,6 +12,7 @@
 
 输出: C:\\Opencode\\reports\\_preview_out.md(可反复覆盖)
 """
+
 import sys, io, os, re
 
 sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8", errors="replace")
@@ -19,7 +20,9 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from stock_common.md_render import text_to_md
 
-OUT = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "reports", "_preview_out.md")
+OUT = os.path.join(
+    os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "reports", "_preview_out.md"
+)
 
 
 def preview_lines(lines):
@@ -41,7 +44,7 @@ def extract_script_lines(path, range_str):
     """从脚本提取 L() 输出行(模拟运行)——匹配 L("...")/L(f"...") 字面量."""
     src = open(path, encoding="utf-8").read()
     a, b = (int(x) for x in range_str.split("-"))
-    lines = src.splitlines()[a - 1:b]
+    lines = src.splitlines()[a - 1 : b]
     out = []
     for ln in lines:
         m = re.search(r'L\((f?)"((?:[^"\\]|\\.)*)"\)', ln)

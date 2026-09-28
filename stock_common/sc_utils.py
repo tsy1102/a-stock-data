@@ -21,7 +21,7 @@ import os
 import math
 import argparse
 from pathlib import Path
-from typing import Any, Dict, Optional
+from typing import Any, Dict, List, Optional, Tuple
 
 
 def get_version() -> str:
@@ -36,6 +36,7 @@ def get_version() -> str:
     except (FileNotFoundError, OSError):
         return "unknown"
 
+
 # 从 sc_network 复用日志和调试工具
 from stock_common.sc_network import _debug_log
 
@@ -47,17 +48,24 @@ from core.stock_cache import cached, TTL
 # ═══════════════════════════════════════
 __all__ = [
     '_safe_float',
-    'ensure_output_dir', 'get_script_dir',
-    'get_board_type', 'is_limit_up', 'is_limit_down',
-    'clean_codes', 'parse_args',
+    'ensure_output_dir',
+    'get_script_dir',
+    'get_board_type',
+    'is_limit_up',
+    'is_limit_down',
+    'clean_codes',
+    'parse_args',
     '_safe_cleanup_tdx',
-    '_load_settings', '_load_strategy_config',
-    '_settings_cache', '_strategy_config_cache',
+    '_load_settings',
+    '_load_strategy_config',
+    '_settings_cache',
+    '_strategy_config_cache',
 ]
 
 # ═══════════════════════════════════════
 # 基础工具函数
 # ═══════════════════════════════════════
+
 
 def _safe_float(val: Any, default: float = 0.0) -> float:
     """安全转换为 float，异常或非有限值返回 default"""
@@ -76,6 +84,7 @@ def _safe_float(val: Any, default: float = 0.0) -> float:
 # ═══════════════════════════════════════
 # 目录工具
 # ═══════════════════════════════════════
+
 
 def ensure_output_dir(output_dir: str) -> str:
     """确保输出目录存在，返回规范化的路径。"""
@@ -135,13 +144,13 @@ def parse_stock_name(raw_name: str) -> tuple:
     # 2. 临时前缀去除（XD/XR/DR 先匹配——更长前缀优先）
     for pfx in ("XD", "XR", "DR"):
         if name_core.startswith(pfx):
-            name_core = name_core[len(pfx):]
+            name_core = name_core[len(pfx) :]
             break
     else:
         for pfx in ("N", "C"):
             if name_core.startswith(pfx):
                 is_new = True
-                name_core = name_core[len(pfx):]
+                name_core = name_core[len(pfx) :]
                 break
         else:
             if name_core.startswith("S") and len(name_core) > 1:
@@ -325,10 +334,12 @@ def is_limit_down(code: str, name: str, change_pct: float, is_st: Optional[bool]
 # TDX 清理
 # ═══════════════════════════════════════
 
+
 def _safe_cleanup_tdx() -> None:
     """安全清理 TDX 连接（忽略异常）。"""
     try:
         from core.tdx_client import cleanup_tdx
+
         cleanup_tdx()
     except Exception as _e:
         _debug_log(f"sc_utils safe_cleanup_tdx: {_e}")
@@ -338,7 +349,40 @@ def _safe_cleanup_tdx() -> None:
 # 命令行工具
 # ═══════════════════════════════════════
 
-def clean_codes(raw_list, verbose=False):
+
+def _parse_stock_code_token(
+    raw: str,
+) -> Tuple[Optional[str], bool, Optional[str]]:
+    """Parse one input token without logging or changing aggregate state.
+
+    Returns the six-digit code, whether the token contains a pasted CLI flag,
+    and an optional suffix explaining a rejected exchange-prefix combination.
+    """
+    flag_warning = "--" in raw and not raw.strip().startswith("--")
+    raw_s = raw.strip().upper()
+    prefix = next((item for item in ("SH", "SZ", "BJ") if raw_s.startswith(item)), None)
+
+    # Reject an exchange prefix that conflicts with an explicit suffix.
+    if prefix and any(suffix in raw_s for suffix in (".SH", ".SZ", ".BJ")):
+        return None, flag_warning, "(前后缀矛盾)"
+
+    digits = "".join(char for char in raw if char.isdigit())
+    if len(digits) != 6:
+        return None, flag_warning, None
+
+    if prefix:
+        matches_exchange = (
+            (prefix == "SH" and em_exchange_prefix(digits, upper=True) == "SH")
+            or (prefix == "SZ" and digits.startswith(("0", "3")))
+            or (prefix == "BJ" and digits.startswith(("92", "8", "4")))
+        )
+        if not matches_exchange:
+            return None, flag_warning, "(前缀与号段矛盾)"
+
+    return digits, flag_warning, None
+
+
+def clean_codes(raw_list: Any, verbose: bool = False) -> List[str]:
     """清洗股票代码列表：提取6位数字、去重、保持顺序、过滤无效项。
 
     支持的输入格式示例:
@@ -358,44 +402,19 @@ def clean_codes(raw_list, verbose=False):
     if not raw_list:
         return []
 
-    seen = set()
-    clean = []
-    skipped = []
-    flag_warnings = []
+    seen: set[str] = set()
+    clean: List[str] = []
+    skipped: List[str] = []
+    flag_warnings: List[str] = []
     for raw in raw_list:
         if not raw or not isinstance(raw, str):
             continue
-        # V11.2: 检测命令行参数粘连（如 "601718际华--all"）
-        if "--" in raw and not raw.strip().startswith("--"):
+        code, has_flag_warning, skip_suffix = _parse_stock_code_token(raw)
+        if has_flag_warning:
             flag_warnings.append(raw)
-        raw_s = raw.strip().upper()
-        # V16.3 O16: 显式前缀提取（sh/sz/bj）
-        prefix = None
-        for _p in ("SH", "SZ", "BJ"):
-            if raw_s.startswith(_p):
-                prefix = _p
-                break
-        # 前后缀矛盾拒绝（SH000001.SZ 自相矛盾——参考仓库 v3.6.0 norm_ticker）
-        if prefix and (".SH" in raw_s or ".SZ" in raw_s or ".BJ" in raw_s):
-            skipped.append(raw + "(前后缀矛盾)")
+        if code is None:
+            skipped.append(raw + (skip_suffix or ""))
             continue
-        # V16.3 O16: 不再截断 7 位数字（6005190 会截成 600519 返回另一只票的数据——参考仓库 v3.6.0）
-        digits = "".join(c for c in raw if c.isdigit())
-        if len(digits) != 6:
-            skipped.append(raw)
-            continue
-        code = digits
-        # V16.3 O16: 显式前缀与号段一致性（sh+6 沪市 / sz+0/3 深市 / bj+92/8/4 北交所；
-        # sh000001 上证指数等 000 号段沪市指数被拒——参考仓库 v3.5.1/v3.6.0）
-        if prefix:
-            ok = (
-                (prefix == "SH" and em_exchange_prefix(code, upper=True) == "SH")  # V17.2.11: 后缀健壮化
-                or (prefix == "SZ" and code.startswith(("0", "3")))
-                or (prefix == "BJ" and code.startswith(("92", "8", "4")))
-            )
-            if not ok:
-                skipped.append(raw + "(前缀与号段矛盾)")
-                continue
         if code in seen:
             skipped.append(raw + "(重复)")
             continue
@@ -403,17 +422,23 @@ def clean_codes(raw_list, verbose=False):
         clean.append(code)
 
     if verbose and flag_warnings:
-        print(f"  ⚠️ 警告: 以下参数可能含命令行flag粘连（请检查空格）: "
-              f"{', '.join(flag_warnings[:5])}", flush=True)
+        print(
+            f"  ⚠️ 警告: 以下参数可能含命令行flag粘连（请检查空格）: "
+            f"{', '.join(flag_warnings[:5])}",
+            flush=True,
+        )
 
     if verbose and skipped:
-        print(f"  🧹 代码清洗: 保留 {len(clean)} 个, 跳过 {len(skipped)} 个 "
-              f"({', '.join(skipped[:5])}{'...' if len(skipped) > 5 else ''})", flush=True)
+        print(
+            f"  🧹 代码清洗: 保留 {len(clean)} 个, 跳过 {len(skipped)} 个 "
+            f"({', '.join(skipped[:5])}{'...' if len(skipped) > 5 else ''})",
+            flush=True,
+        )
 
     return clean
 
 
-def parse_args(report_type="unknown"):
+def parse_args(report_type: str = "unknown") -> argparse.Namespace:
     """命令行参数解析（参数化版本，兼容6个报告脚本）。
 
     V8.5新增：--depth参数，支持lite/medium/deep三档分析深度。
@@ -423,14 +448,25 @@ def parse_args(report_type="unknown"):
     - --depth: 分析深度 (lite=快速30秒/medium=标准5分钟/deep=深度15分钟，默认deep)
     """
     parser = argparse.ArgumentParser(description=report_type)
-    parser.add_argument("codes", nargs="*", default=[],
-                        help="股票代码，支持 1 个或多个（全市场扫描脚本不需要此参数）")
-    parser.add_argument("-o", "--output",
-                        default=os.path.join(get_script_dir(), "reports"),
-                        help="报告输出目录（默认: 脚本目录下的 reports/）")
+    parser.add_argument(
+        "codes",
+        nargs="*",
+        default=[],
+        help="股票代码，支持 1 个或多个（全市场扫描脚本不需要此参数）",
+    )
+    parser.add_argument(
+        "-o",
+        "--output",
+        default=os.path.join(get_script_dir(), "reports"),
+        help="报告输出目录（默认: 脚本目录下的 reports/）",
+    )
     parser.add_argument("--no-upload", action="store_true", help="跳过 Google Drive 上传")
-    parser.add_argument("--depth", choices=["lite", "medium", "deep"], default="deep",
-                        help="分析深度: lite=快速(30秒)/medium=标准(5分钟)/deep=深度(15分钟，默认)")
+    parser.add_argument(
+        "--depth",
+        choices=["lite", "medium", "deep"],
+        default="deep",
+        help="分析深度: lite=快速(30秒)/medium=标准(5分钟)/deep=深度(15分钟，默认)",
+    )
     return parser.parse_args()
 
 
@@ -452,6 +488,7 @@ def _load_settings() -> Dict[str, Any]:
     _path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "keywords_config.yaml")
     try:
         import yaml
+
         with open(_path, 'r', encoding='utf-8') as f:
             _settings_cache = yaml.safe_load(f)
     except Exception as _e:
@@ -480,6 +517,7 @@ def _load_strategy_config() -> Dict[str, Any]:
     _path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "strategy_config.yaml")
     try:
         import yaml
+
         with open(_path, 'r', encoding='utf-8') as f:
             _strategy_config_cache = yaml.safe_load(f)
     except Exception as _e:

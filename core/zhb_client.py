@@ -33,6 +33,7 @@
     V9.6   2026-07-14 - 初始版本：基于 pytdx GetReportFile 下载 zhb.zip
     V16.1.1 2026-08-04 - 下载改用 easy_tdx 首选（get_report_file 实测可用），mootdx/pytdx 降为备胎
 """
+
 from __future__ import annotations
 
 # V17.3.x: eltdx 负责 ZHB 下载主路径 (0x06B9)；easy_tdx 仍作为兜底下载引擎，而其真实上游
@@ -44,7 +45,6 @@ import os
 import io
 import zipfile
 
-
 # V16.4.0: 全市场解析结果持久化——键=zip 日期 + schema 版本
 # marshal 比 pickle 快 5-10 倍（数据全为 dict/float/str/int 内置类型）
 _ZHB_PARSE_SCHEMA = 5  # V17.2.7(2026-09-12): 补抽 tdxstat 8 个遗漏列(Col[2]/[11]/[16]/[22]/[23]/[25]/[26]/[34],含 Col[22]=shape_value 官方L1)——解析缓存失效重解析
@@ -52,8 +52,9 @@ _ZHB_PARSE_SCHEMA = 5  # V17.2.7(2026-09-12): 补抽 tdxstat 8 个遗漏列(Col[
 
 def _zhb_parse_cache_path(name: str, date: str) -> str:
     # V17.0 包化说明: 双 dirname 在模块移入 core/ 后恰好解析到 仓库根/cache/zhb_parsed（原在根时解析到 C:\cache 属历史 bug）; 勿改为单 dirname
-    d = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
-                     "cache", "zhb_parsed")
+    d = os.path.join(
+        os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "cache", "zhb_parsed"
+    )
     os.makedirs(d, exist_ok=True)
     return os.path.join(d, f"{name}_{date}_v{_ZHB_PARSE_SCHEMA}.bin")
 
@@ -88,7 +89,6 @@ def _zhb_parse_save(name: str, date: str, data) -> None:
         pass
 
 
-
 import time
 import threading
 from datetime import date, datetime
@@ -101,26 +101,30 @@ from stock_common import _debug_log
 # ═══════════════════════════════════════
 
 # V17.0 包化: 上提一级到仓库根（模块移入 core/ 后 __file__ 在 core/ 下）
-_ZHB_CACHE_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "cache", "zhb")
+_ZHB_CACHE_DIR = os.path.join(
+    os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "cache", "zhb"
+)
 # V15.1: 自动清理已移除（M3: _cleanup_old_files 随 _KEEP_DAYS 删除），
 # 用户手动维护 cache/zhb 目录（保留历史 ZHB 文件供对比与字段深挖）
 _MIN_DISK_SPACE_MB = 100  # 最小保留磁盘空间（MB）
-_LOCK_FILE = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "cache", "zhb", ".zhb.lock")
+_LOCK_FILE = os.path.join(
+    os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "cache", "zhb", ".zhb.lock"
+)
 
 # 通达信行情节点（优先招商/国信主站，数据更新快）
 # V16.1.1: 前 3 个为 easy_tdx 实测可用主机（2026-08-04 实测 zhb.zip 下载成功）；
 #          其余保留历史招商/国信节点（可能失效，作 fallback 尝试）
 _ZHB_HOSTS = [
-    ("180.153.18.170", 7709),   # easy_tdx 实测可用（V16.1.1 首选）
-    ("150.158.160.2", 7709),    # easy_tdx 实测可用
-    ("124.71.187.122", 7709),   # easy_tdx 实测可用
-    ("119.147.212.81", 7709),   # 招商证券深圳主站
-    ("121.14.110.194", 7709),   # 国信证券深圳主站
-    ("112.74.214.43", 7709),    # 招商深圳
-    ("101.227.73.20", 7709),    # 国信上海
-    ("101.227.77.254", 7709),   # 国信上海
-    ("14.17.75.71", 7709),      # 广东电信
-    ("120.76.152.87", 7709),    # 备用节点
+    ("180.153.18.170", 7709),  # easy_tdx 实测可用（V16.1.1 首选）
+    ("150.158.160.2", 7709),  # easy_tdx 实测可用
+    ("124.71.187.122", 7709),  # easy_tdx 实测可用
+    ("119.147.212.81", 7709),  # 招商证券深圳主站
+    ("121.14.110.194", 7709),  # 国信证券深圳主站
+    ("112.74.214.43", 7709),  # 招商深圳
+    ("101.227.73.20", 7709),  # 国信上海
+    ("101.227.77.254", 7709),  # 国信上海
+    ("14.17.75.71", 7709),  # 广东电信
+    ("120.76.152.87", 7709),  # 备用节点
 ]
 
 # ═══════════════════════════════════════
@@ -134,6 +138,7 @@ _zhb_cache_lock = threading.Lock()
 # ═══════════════════════════════════════
 # 进程安全文件锁
 # ═══════════════════════════════════════
+
 
 def _acquire_file_lock(timeout: float = 30.0) -> bool:
     """获取文件锁（进程安全）。
@@ -192,16 +197,19 @@ def _check_disk_space() -> bool:
     """
     try:
         import shutil
+
         stat = shutil.disk_usage(_ZHB_CACHE_DIR)
         free_mb = stat.free / (1024 * 1024)
         if free_mb < _MIN_DISK_SPACE_MB:
-            _debug_log(f"zhb: disk space low ({free_mb:.1f}MB < {_MIN_DISK_SPACE_MB}MB), cleaning...")
+            _debug_log(
+                f"zhb: disk space low ({free_mb:.1f}MB < {_MIN_DISK_SPACE_MB}MB), cleaning..."
+            )
             # 紧急清理：保留最新的一个文件
             try:
                 files = sorted(
                     [f for f in os.listdir(_ZHB_CACHE_DIR) if f.endswith(".zip")],
                     key=lambda x: os.path.getmtime(os.path.join(_ZHB_CACHE_DIR, x)),
-                    reverse=True
+                    reverse=True,
                 )
                 for f in files[1:]:  # 保留最新的一个
                     try:
@@ -237,6 +245,7 @@ def _safe_cast(parts: list, idx: int, cast: type = float) -> Any:
 # ZhbData 数据类
 # ═══════════════════════════════════════
 
+
 class ZhbData:
     """zhb.zip 解析后的数据容器。"""
 
@@ -267,11 +276,11 @@ class ZhbData:
         self._special_tags: Optional[Dict[str, List[str]]] = None
         self._trading_rules: Optional[Dict[str, Any]] = None
         # V17.3.1 ZHB 深度重排查落实（2026-09-19）
-        self._index_names: Optional[Dict[str, str]] = None          # ilong.dat 跨市场指数名
-        self._block_short_names: Optional[Dict[str, str]] = None    # tdxbk.cfg 板块全称→简称
+        self._index_names: Optional[Dict[str, str]] = None  # ilong.dat 跨市场指数名
+        self._block_short_names: Optional[Dict[str, str]] = None  # tdxbk.cfg 板块全称→简称
         self._bj_stock_metadata: Optional[Dict[str, Dict[str, Any]]] = None  # 北交所元数据(合并)
-        self._concept_tree: Optional[Dict[str, Dict[str, Any]]] = None   # tend_std.cfg 题材概念树
-        self._pinyin_codes: Optional[Dict[str, str]] = None         # hspy.dat 拼音助记码
+        self._concept_tree: Optional[Dict[str, Dict[str, Any]]] = None  # tend_std.cfg 题材概念树
+        self._pinyin_codes: Optional[Dict[str, str]] = None  # hspy.dat 拼音助记码
 
     # ── V14.2 新增：profile.dat 全市场简称 ──
 
@@ -304,11 +313,13 @@ class ZhbData:
         # profile.dat 是 GBK 编码的固定长记录
         try:
             for i in range(0, len(data), record_size):
-                record = data[i:i + record_size]
+                record = data[i : i + record_size]
                 if len(record) < 8:
                     continue
                 # V15.1: 跳过首字节市场标识，从第 1 字节开始取 6 位代码
-                code_bytes = record[1:7].replace(b"\x00", b"").decode("ascii", errors="ignore").strip()
+                code_bytes = (
+                    record[1:7].replace(b"\x00", b"").decode("ascii", errors="ignore").strip()
+                )
                 if not code_bytes or len(code_bytes) != 6:
                     continue
                 # V16.3 D1: 名称段修正为 record[8:16]——实测结构为
@@ -383,6 +394,7 @@ class ZhbData:
           > profile(沪市老股,可能旧名,仅 setdefault 补缺,绝不覆盖更源)
         """
         import re as _re
+
         result: Dict[str, str] = {}
 
         def _norm(name: str) -> str:
@@ -807,10 +819,10 @@ class ZhbData:
             return []
         text = data.decode("gbk", errors="ignore")
         result: List[str] = []
-        
+
         current_year = datetime.now().year
         trustable_years = {current_year - 1, current_year}
-        
+
         for line in text.splitlines():
             line = line.strip()
             if line.startswith("Y") and "=" in line:
@@ -882,24 +894,43 @@ class ZhbData:
                  (K线缓存926只对照中位差1.28；原V16.2.18"日历60日"为误判——
                  c60相关仅0.25排除；change_60d key 已改读本列)
             [21] change_ytd      年初至今涨跌幅(%)
-            [22] shape_value     个股形态/板块代码 ★2026-08-04官方TdxQuant确认(50101/50109)
-            [23] zt_type_code    行情状态/涨跌强度分档码(2026-09-22 全市场定案: 26 码, 高位20/31/70/95→大涨涨停、
+            [22] shape_value     短期形态|中期形态|长期形态 三档复合码 ★V17.4.24(2026-09-24) L1铁证:
+                  文件中以整数存储、前导零剥离(如'70900'='07|09|00'); 补零后三档全落 00-14,
+                  越界 0/312768; 档3=00 ⇒ 日线长度<240根占99.78%、档2=00 ⇒ <120根占98.92%;
+                  与 ihelp.dat #FUNC_ABCol L92-94(短期=近60天/中期=近120天/长期=近240-500天)逐档对齐。
+                  00 = 该周期数据不足; 空值占 2.41%; 档位逐日重算(非慢变标签)
+            [23] zt_type_code    短线多空形态/异动状态码(2026-09-22 全市场定案: 26 码, 高位20/31/70/95→大涨涨停、
                   低位21/51/61/71/2/6→偏空大跌、码0=中性基准; 同值组当日涨幅区间高度一致; 非个股基本面)
+                  ★V17.4.24(2026-09-24) 40包全量重核为 29 码(熵2.522bit):
+                  0/1/2/5/6/10/11/20/21/31/32/33/50/51/52/60/61/70/71/80/81/90/91/92/93/94/95/96/97;
+                  方向轴铁证——(10L,10L+1)成看多/看空对(5日涨幅正比例 20=1.000/21=.000, 50=1.000/51=.000,
+                  80=.978/81=.000, 1=.919/2=.085, 5=.947/6=.055); 已验锚点 95=一字板涨停(振幅0)、
+                  52=缩量横盘(振幅0.016/换手11)、70/71=高换手涨跌族(换手125/150)、94/96=巨量暴涨/暴跌(换手249/214);
+                  证伪: 非板型码、非涨停事件码([23]=0 含263个涨停样本)、不由单一特征决定(仅ma_order增益0.405bit)。
+                  🔴 治理护栏: 维持「禁作定案语义」(TdxW.exe CShortCutPage 词表与数值码映射待定)
             [24] cash_zj         现金总额(元) ★2026-08-04官方TdxQuant确认
             [25] pre_receive_zj  预收资金(万元) ★2026-08-04官方TdxQuant确认
-            [26] unknown_26      年内涨停天数 YearZTDay ★V17.4.22(2026-09-24)晋级L2候选: ihelp.dat L64官方定义+事件级Δ实证; 列[26]=通达信官方YearZTDay已定案(✅)
+            [26] unknown_26      年涨停天 YearZTDay ★V17.4.24(2026-09-24) 升 L1 定案:
+                  窗口 = 个股自身最近 243 个交易日(含当日, 含一字板); ihelp.dat L64官方定义
+                  「近一年内的涨停次数(不包括未开板的涨停)」——「未开板」= 未开板次新股(#FUNC_TDXStatZS L432),
+                  非全部一字板(排除全部一字板反而劣化 0.9068→0.8078)。
+                  最终: 全量 0.9077 / |Δ|≤1 0.9853 / 比值中位 1.000000; 40采集日逐日 0.8866-0.9179。
+                  板块: 科创板0.9615 / 创业板0.9526 / 沪主板0.8870 / 深主板0.8333 / 北交所1.0000。
                   ★V17.0(2026-08-14)排除行业/省份: 全市场按tdxhy行业分组组内同值率
                   仅1%(4/303,均=0)——行业/细分行业在 tdxhy.cfg(T/X码), 不在数值表
             [27] change_5k_bar   近5根K线涨跌幅(交易日口径,%)
             [28] change_5d       近5日涨跌幅(日历日口径,%)
             [29] change_10k_bar  近10根K线涨跌幅(交易日口径,%)
             [30] change_10d      近10日涨跌幅(日历日口径,%)
-            [31] zt_streak_cycle  ⚠️ 近期异动周期计数(非严格连板): 2026-08-25 同日对撞东财池仅
-                  77% 匹配(15/50 ZHB>pool), 由原"连板天数"假设降级; 连板数以 [33] 为准
-            [32] zt_count         ⚠️ 涨停族第二字段(官方 LastZTHzNum; 恒值 002827=6/603580=13;
-                  603221=11=[31]-1; 疑 ztcs1 涨停次数, 待终核)
-            [33] zt_lianban       ✅ 连板数(2026-08-27 涨停天梯 20/20 L1 铁证; 原 ztlx 涨停
-                  类型假设证伪; 当日涨停时与 [31]/[32] 一致, 非涨停日=0
+            [31] zt_streak_cycle  几天(『几天几板』结构之"几天") ★V17.4.24(2026-09-24) L1结构铁证:
+                  ihelp.dat #FUNC_GpJyValue L66「几天几板: 按第一次封板后三个交易日内又出现封板
+                  进行统计来计算几天几板」; 三者齐全 8469 样本违反 [33]≤[32]≤[31] 的 0 例(0.0000)。
+                  非空 14253(与[32]同步), Top组合(几天,几板,连板)=(1,1,1)首板/(2,2,2)2连板/(5,2,1)
+            [32] zt_count         几板(『几天几板』结构之"几板"; 官方 LastZTHzNum) ★V17.4.24 L1结构铁证:
+                  违反 [33]≤[32]≤[31] 的 0 例/8469样本; 分布 0:4680 1:2499 2:665 3:289 4:148 5:75
+            [33] zt_lianban       ✅ 连板天(当前连续涨停天数) ★V17.4.24 L1结构铁证: 违反
+                  [33]≤[32]≤[31] 的 0 例/8469样本; 分布 0:5552 1:2350 2:353 3:118 4:56。
+                  ⚠️ 口径修正: 仅当前处于涨停时填充, 其余为**空**(非0); 空值 5784/14253
             [34] other_qy_jzc    其他权益净资产(元) ★2026-08-04官方TdxQuant确认
         """
         data = self.raw_files.get("tdxstat.cfg", b"")
@@ -1114,7 +1145,8 @@ class ZhbData:
         """获取股票的 T 日特色板块归属代码（V16.2.17：原"行业板块代码"为误标，非行业）。"""
         s2 = self.stock_stats2.get(code)
         if s2:
-            return s2.get("industry_code", "")
+            industry_code = s2.get("industry_code")
+            return "" if industry_code is None else str(industry_code)
         return ""
 
     # ── tipinfo 财报日历 ──
@@ -1217,17 +1249,19 @@ class ZhbData:
             if len(parts) < 5:
                 continue
 
-            result.append({
-                "type": _safe_cast(parts, 0, int),
-                "code": parts[1].strip(),
-                "date": parts[2].strip(),
-                "issue_price": _safe_cast(parts, 3, float),
-                "issue_volume": _safe_cast(parts, 4, float),
-                "online_volume": _safe_cast(parts, 5, float),
-                "name": parts[14].strip() if len(parts) > 14 else "",
-                "buy_price": _safe_cast(parts, 15, float),
-                "list_price": _safe_cast(parts, 16, float),
-            })
+            result.append(
+                {
+                    "type": _safe_cast(parts, 0, int),
+                    "code": parts[1].strip(),
+                    "date": parts[2].strip(),
+                    "issue_price": _safe_cast(parts, 3, float),
+                    "issue_volume": _safe_cast(parts, 4, float),
+                    "online_volume": _safe_cast(parts, 5, float),
+                    "name": parts[14].strip() if len(parts) > 14 else "",
+                    "buy_price": _safe_cast(parts, 15, float),
+                    "list_price": _safe_cast(parts, 16, float),
+                }
+            )
         return result
 
     # ── tdxahrate A+H股比价 ──
@@ -1252,11 +1286,13 @@ class ZhbData:
         for line in text.splitlines():
             parts = line.split("|")
             if len(parts) >= 3:
-                result.append({
-                    "name": parts[0].strip(),
-                    "a_code": parts[1].strip(),
-                    "h_code": parts[2].strip(),
-                })
+                result.append(
+                    {
+                        "name": parts[0].strip(),
+                        "a_code": parts[1].strip(),
+                        "h_code": parts[2].strip(),
+                    }
+                )
         return result
 
     # ── brkcomp 券商名称表 ──
@@ -1342,12 +1378,14 @@ class ZhbData:
         for line in text.splitlines():
             parts = line.split("|")
             if len(parts) >= 4:
-                result.append({
-                    "a_code": parts[0].strip(),
-                    "a_name": parts[1].strip(),
-                    "adr_code": parts[2].strip(),
-                    "adr_name": parts[3].strip(),
-                })
+                result.append(
+                    {
+                        "a_code": parts[0].strip(),
+                        "a_name": parts[1].strip(),
+                        "adr_code": parts[2].strip(),
+                        "adr_name": parts[3].strip(),
+                    }
+                )
         return result
 
     # ── 可转债（othersg.cfg）──
@@ -1369,10 +1407,12 @@ class ZhbData:
         for line in text.splitlines():
             parts = line.split("|")
             if len(parts) >= 2:
-                result.append({
-                    "code": parts[0].strip(),
-                    "name": parts[1].strip() if len(parts) > 1 else "",
-                })
+                result.append(
+                    {
+                        "code": parts[0].strip(),
+                        "name": parts[1].strip() if len(parts) > 1 else "",
+                    }
+                )
         return result
 
     # ── 退市股票对照表（pttab.dat）──
@@ -1558,10 +1598,14 @@ class ZhbData:
                     name = name_field.replace("(已切换)", "").replace("(已转板)", "").strip()
                     if new_code:
                         result.setdefault(new_code, {})
-                        result[new_code].update({
-                            "old_code": old_code, "name": name,
-                            "status": status, "list_date": list_date,
-                        })
+                        result[new_code].update(
+                            {
+                                "old_code": old_code,
+                                "name": name,
+                                "status": status,
+                                "list_date": list_date,
+                            }
+                        )
                 _debug_log(f"_parse_bj_metadata(addedcode_bj): {len(result)} entries")
             except Exception as _e:
                 _debug_log(f"_parse_bj_metadata(addedcode_bj) error: {_e}")
@@ -1682,7 +1726,9 @@ class ZhbData:
             _debug_log(f"_parse_hspy error: {_e}")
         return result
 
+
 # ═══════════════════════════════════════
+
 
 def _download_zhb_zip() -> Optional[bytes]:
     """从通达信服务器下载 zhb.zip 原始二进制数据。
@@ -1696,6 +1742,7 @@ def _download_zhb_zip() -> Optional[bytes]:
     # ── 首选: eltdx (Rust 内核 0x06B9 下载 ZHB, V17.3.1 P0 实施) ──
     try:
         from core.eltdx_adapter import download_eltdx_report_file
+
         _debug_log("zhb: trying eltdx download (0x06B9)")
         data = download_eltdx_report_file(filename)
         if data and len(data) > 0:
@@ -1764,6 +1811,7 @@ def _download_zhb_zip() -> Optional[bytes]:
 # 解析 zhb.zip
 # ═══════════════════════════════════════
 
+
 def _parse_zhb_data(data: bytes) -> Optional[ZhbData]:
     """解析 zhb.zip 二进制数据为 ZhbData 对象。"""
     try:
@@ -1793,6 +1841,7 @@ def _parse_zhb_data(data: bytes) -> Optional[ZhbData]:
 # ═══════════════════════════════════════
 # 缓存管理
 # ═══════════════════════════════════════
+
 
 def _ensure_cache_dir() -> None:
     if not os.path.exists(_ZHB_CACHE_DIR):
@@ -1907,6 +1956,7 @@ def _zhb_needs_download(local_date: str, zhb_local=None) -> bool:
             return False  # 已与最近交易日持平且服务端未更新: 抑制重下
         # 落后于最近交易日: 冷却期内抑制, 期满重探以拾取同日新包
         import time as _t
+
         if (_t.time() - _zhb_last_tried_ts()) < _ZHB_REPROBE_COOLDOWN_SEC:
             return False
         return True
@@ -2027,6 +2077,7 @@ def invalidate_cache() -> None:
 # 便捷函数
 # ═══════════════════════════════════════
 
+
 def get_sp_block(name: str) -> List[str]:
     """获取大板块成分股列表（便捷函数）。"""
     zhb = get_zhb()
@@ -2076,6 +2127,7 @@ def is_industry_code(ic: str) -> bool:
 # ═══════════════════════════════════════
 # 阶段二：B级数据便捷函数
 # ═══════════════════════════════════════
+
 
 def market_stat_snapshot(codes: Optional[List[str]] = None) -> Dict[str, Dict[str, Any]]:
     """全市场（或指定股票）统计快照（tdxstat）。
@@ -2256,6 +2308,7 @@ def is_data_fresh(max_delay_days: int = 3) -> bool:
 # 阶段三：辅助数据便捷函数
 # ═══════════════════════════════════════
 
+
 def get_tip_info(code: str) -> Optional[Dict[str, Any]]:
     """获取指定股票的财报日历信息（便捷函数）。"""
     zhb = get_zhb()
@@ -2291,6 +2344,7 @@ def get_broker_name(broker_id: str) -> str:
 # ═══════════════════════════════════════
 # V10.0 新增便捷函数
 # ═══════════════════════════════════════
+
 
 def get_holidays() -> List[str]:
     """获取节假日列表（1991-2030，便捷函数）。
@@ -2347,7 +2401,6 @@ def get_delisted_stocks() -> Dict[str, str]:
 # ═══════════════════════════════════════
 
 
-
 # ═══════════════════════════════════════════════════════════════
 # V14.2 新增便捷函数 - 6 个新 ZHB 数据集
 # ═══════════════════════════════════════════════════════════════
@@ -2391,7 +2444,7 @@ def normalize_persistent_name(raw: str) -> str:
     # 临时前缀：长前缀优先（XD/XR/DR > N/C/S），仅当其后仍有正文
     for pfx in ("XD", "XR", "DR", "N", "C", "S"):
         if s.startswith(pfx) and len(s) > len(pfx):
-            s = s[len(pfx):]
+            s = s[len(pfx) :]
             break
     s = s.strip()
     return (st_prefix + s) if st_prefix else s
@@ -2504,6 +2557,7 @@ def get_special_tags_from_zhb() -> Dict[str, List[str]]:
 # ═══════════════════════════════════════
 # V17.3.1 ZHB 深度重排查落实（2026-09-19）：新增文件访问入口
 # ═══════════════════════════════════════
+
 
 def get_index_names_from_zhb() -> Dict[str, str]:
     """获取跨市场指数代码→名称字典（ilong.dat）。"""

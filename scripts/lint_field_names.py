@@ -12,57 +12,73 @@
 用法：python scripts/lint_field_names.py
 退出码 1 = 发现违规（可作 CI/提交前检查）。
 """
+
 import io, sys, os
 
 # Phase 2(2026-09-12): 改用 ROOT 绝对路径，消除 CWD 耦合（G0 已标记：原相对路径在 CI 错误 CWD 下直接失败）。
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 PATH = os.path.join(ROOT, "docs", "field_dict.md")
-with io.open(PATH, encoding="utf-8") as f:
-    lines = f.readlines()
 
-# --- 跳过区：规范表+铁律块（从 | 规范中文名 | 到 #### 🔴【PE 口径铁证】）---
-in_reg = False
-skip = set()
-for i, ln in enumerate(lines):
-    if ln.strip().startswith("|") and "规范中文名" in ln and "语义与口径" in ln:
-        in_reg = True
-    if in_reg:
-        skip.add(i)
-    if "#### 🔴【PE 口径铁证】" in ln:
-        in_reg = False
+# Only canonical names are normalized; raw source labels and prose must remain verbatim.
+FORBID = {"当前价", "最新价", "今开价", "昨收价", "封板资金", "封单资金", "52周高", "52周低"}
+PE_HALF_WIDTH_FORBIDDEN = ("市盈率(动)", "市盈率(静)", "市盈率(TTM)")
 
-# --- 代码围栏追踪 ---
-in_fence = False
-viol = []
 
-# 禁用异名（仅在表格行 col1/col2 作为字段名时违规）。
-# 用 unambiguous 旧形态，避免误伤规范名子串（如「昨收」⊂「昨收盘」）。
-FORBID = ["当前价", "最新价", "今开价", "昨收价", "封板资金", "封单资金", "52周高", "52周低"]
+def _find_violations(lines: list[str]) -> list[tuple[int, str, str]]:
+    in_field_table = False
+    in_fence = False
+    violations: list[tuple[int, str, str]] = []
 
-for i, ln in enumerate(lines):
-    s = ln.rstrip("\n")
-    if "```" in s:
-        in_fence = not in_fence
-        continue
-    if in_fence or i in skip:
-        continue
-    if s.strip().startswith("|"):
-        cells = [c.strip() for c in s.split("|")]
-        joined = " ".join(cells[c] for c in (1, 2) if c < len(cells))
-        for f in FORBID:
-            if f in joined:
-                viol.append((i + 1, "禁用异名回归: %s" % f, s.strip()[:80]))
+    for index, raw_line in enumerate(lines):
+        line = raw_line.rstrip("\r\n")
+        if "```" in line:
+            in_fence = not in_fence
+            in_field_table = False
+            continue
+        if in_fence:
+            continue
+        if not line.strip().startswith("|"):
+            in_field_table = False
+            continue
+
+        cells = [cell.strip() for cell in line.split("|")]
+        field_name = cells[1].strip("`*_ ") if len(cells) > 1 else ""
+        if field_name == "规范中文名":
+            in_field_table = True
+            continue
+        if not in_field_table or not field_name:
+            continue
+        if all(char in ":- " for char in field_name):
+            continue
+
+        if field_name in FORBID:
+            violations.append((index + 1, "禁用异名回归: %s" % field_name, line.strip()[:80]))
+        for pattern in PE_HALF_WIDTH_FORBIDDEN:
+            if pattern in field_name:
+                violations.append((index + 1, "PE 半角括号回归: %s" % pattern, line.strip()[:80]))
                 break
-    # PE 半角括号回归（全文件，含描述；规范表已跳过且无）
-    for pat in ("市盈率(动)", "市盈率(静)", "市盈率(TTM)"):
-        if pat in s:
-            viol.append((i + 1, "PE 半角括号回归: %s" % pat, s.strip()[:80]))
-            break
 
-if viol:
-    print("❌ 字段名样式检查失败，发现 %d 处违规：" % len(viol))
-    for ln, why, txt in viol[:60]:
-        print("   行%d  %s  | %s" % (ln, why, txt))
-    sys.exit(1)
+    return violations
 
-print("✅ 字段名样式检查通过：无禁用异名回归、无 PE 半角括号。")
+
+def main() -> int:
+    if hasattr(sys.stdout, "reconfigure"):
+        sys.stdout.reconfigure(encoding="utf-8")
+    if hasattr(sys.stderr, "reconfigure"):
+        sys.stderr.reconfigure(encoding="utf-8")
+
+    with io.open(PATH, encoding="utf-8") as field_file:
+        violations = _find_violations(field_file.readlines())
+
+    if violations:
+        print("❌ 字段名样式检查失败，发现 %d 处违规：" % len(violations))
+        for line_number, reason, text in violations[:60]:
+            print("   行%d  %s  | %s" % (line_number, reason, text))
+        return 1
+
+    print("✅ 字段名样式检查通过：规范名列无禁用异名或 PE 半角括号。")
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

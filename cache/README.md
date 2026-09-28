@@ -37,6 +37,7 @@ cache/
 |:---|:---|:---|:---|
 | `em_industry_map_l2.json`<br>`em_industry_members_l2.json` | `stock_common/sc_datasource/_industry.py` | 东财行业映射与成分，减少重复抓取 | 可（下次运行重建） |
 | `stock_cache.db` | 统一缓存层（`sc_kline_cache.py` / `data_provider` 等） | 跨源字段 / 单位换算 / 版本化缓存中枢 | 可（代价最大，重建耗时） |
+| SQLite 分类 `lockup_expiry_shares_v2` | `stock_common/sc_datasource/_holders.py` | 按股数存储限售解禁数量；版本后缀隔离旧单位缓存 | 可（由数据源重新生成） |
 | `kline/*.pkl` | `stock_common/sc_kline_cache.py` | 个股多周期 K线 + 筹码分布，离线回测 / 技术指标输入 | 可（按 code 惰性重建） |
 | `zhb/zhb_YYYYMMDD.zip` | ZHB 行情同步模块 | 原始日级行情快照，支持断点续传与历史回溯 | 可（归档 / 可重下） |
 | `zhb/.last_download`<br>`zhb/.sync_state.json`<br>`zhb/sync.log` | ZHB 行情同步模块 | 增量同步状态与日志 | 可（同步会重建） |

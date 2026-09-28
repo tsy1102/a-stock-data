@@ -86,9 +86,10 @@ V17.3(2026-09-20) 采集↔字典/对撞同步核验:
   python scripts/capture_field_probe.py --refresh-pool  # 采集前从涨停池刷新动态层(连板/新股/涨停)再采集
   python scripts/capture_field_probe.py --refresh-pool-only   # 仅刷新动态层写回 pool.json, 不采集
 """
+
 import sys, os, json, time, argparse, glob
 from datetime import datetime, time as dt_time
-from typing import Optional  # V17.4.0 fix: _resolve_zhb_name 注解用到, 此前遗漏导入致模块加载即崩
+from typing import Any, Callable, Dict, List, Optional, cast
 
 for _s in (sys.stdout, sys.stderr):
     if _s is not None and hasattr(_s, "reconfigure"):
@@ -106,7 +107,10 @@ if _SCRIPTS not in sys.path:
     sys.path.insert(0, _SCRIPTS)
 
 from stock_common.sc_utils import em_secid_prefix  # V17.0 S3: 统一 secid 前缀
-from core.zhb_client import get_stock_name_from_zhb, _lookup_name_persist  # V17.4.10 修复: 供模块级 _resolve_zhb_name 使用(原仅 collect_zhb 局部导入 → NameError)
+from core.zhb_client import (
+    get_stock_name_from_zhb,
+    _lookup_name_persist,
+)  # V17.4.10 修复: 供模块级 _resolve_zhb_name 使用(原仅 collect_zhb 局部导入 → NameError)
 
 POOL_PATH = os.path.join(_ROOT, "docs", "field_verification", "pool.json")
 OUT_BASE = os.path.join(_ROOT, "docs", "field_verification")
@@ -125,58 +129,67 @@ EM_FULL_FIELDS = ",".join(f"f{i}" for i in range(1, 251))
 # 标注写入每个 raw_{source}.json 顶层 scheme 键 + meta.json(schemes 映射), 供对撞工具
 # 与字典 lint 做血缘校验, 从数据层面固化「同号即同义」陷阱的硬提示。
 SOURCE_SCHEME = {
-    "push2":          "em.stock_get",
-    "em_fund_flow":   "em.stock_get",   # 同样走 push2delay stock/get, 与 push2 同编号族
-    "axdata":         "em.stock_get",    # 复用 EM_FULL_FIELDS 命名(实际短纤指标, 占位同族)
-    "ulist239":       "em.ulist_np",     # 独立 f 编号体系, 与 stock/get 不同号
-    "zhb":            "zhb",
-    "tdx":            "tdx",
-    "eltdx":          "eltdx",         # V17.2.25 补登: eltdx 7709/7615 Rust 客户端, 实时连板/短线指标源; 此前漏登记致 scheme=unknown 被 collide 跳过
-
-    "tencent":        "tencent.qt",
-    "sina":           "sina.hq",
-    "fuyao":          "fuyao",
-    "ftshare":        "ftshare",
-    "em_kline_f61":   "em.kline",
-    "datacenter":     "em.datacenter",
-    "push2ex":        "em.push2ex",
-    "em_hot":         "em.hot",
-    "cls":            "cls",
-    "cninfo":         "cninfo",
-    "reports":        "reports",
+    "push2": "em.stock_get",
+    "em_fund_flow": "em.stock_get",  # 同样走 push2delay stock/get, 与 push2 同编号族
+    "axdata": "em.stock_get",  # 复用 EM_FULL_FIELDS 命名(实际短纤指标, 占位同族)
+    "ulist239": "em.ulist_np",  # 独立 f 编号体系, 与 stock/get 不同号
+    "zhb": "zhb",
+    "tdx": "tdx",
+    "eltdx": "eltdx",  # V17.2.25 补登: eltdx 7709/7615 Rust 客户端, 实时连板/短线指标源; 此前漏登记致 scheme=unknown 被 collide 跳过
+    "tencent": "tencent.qt",
+    "sina": "sina.hq",
+    "fuyao": "fuyao",
+    "ftshare": "ftshare",
+    "em_kline_f61": "em.kline",
+    "datacenter": "em.datacenter",
+    "push2ex": "em.push2ex",
+    "em_hot": "em.hot",
+    "cls": "cls",
+    "cninfo": "cninfo",
+    "reports": "reports",
     "market_sources": "market.mixed",
-    "tdx_f10":        "tdx.f10",
-    "tdx_f10_more":   "tdx.f10",
+    "tdx_f10": "tdx.f10",
+    "tdx_f10_more": "tdx.f10",
     # V17.2.12 主字典对齐: registry 已登记但本脚本暂无 producer 的源(显式标注血缘, 供对撞/lint 校验)
-    "baidu":          "baidu.deprecated",   # §12.8.16 ❌→⏸️ 已废弃(PAE 失效, 改 TDX 适配器); 占位不采集
-    "clist":          "em.clist",           # 东财-clist(板块排名/板块资金流, §12.8.6); V17.2.13 真实 producer 已接入
-    "slist":          "em.slist",           # 东财-slist(个股所属板块/概念归属, §12.8.5); V17.2.13 真实 producer(须 secid, 裸 spt=3→rc:102 已订正)
-    "exchange":       "exchange.official",  # 沪深交易所官方(§12.8.17); V17.2.14 真实 producer 已接入(直连 szse/sse 龙虎榜端点)
+    "baidu": "baidu.deprecated",  # §12.8.16 ❌→⏸️ 已废弃(PAE 失效, 改 TDX 适配器); 占位不采集
+    "clist": "em.clist",  # 东财-clist(板块排名/板块资金流, §12.8.6); V17.2.13 真实 producer 已接入
+    "slist": "em.slist",  # 东财-slist(个股所属板块/概念归属, §12.8.5); V17.2.13 真实 producer(须 secid, 裸 spt=3→rc:102 已订正)
+    "exchange": "exchange.official",  # 沪深交易所官方(§12.8.17); V17.2.14 真实 producer 已接入(直连 szse/sse 龙虎榜端点)
     # V17.4.0: 事件驱动/可转债/宏观层采集(吸收上游 3.9.0 §11/§14/§15) — 复用 em.datacenter scheme 供 collide 读取;
     #          常量 _EM_REPORTS 标 verified=False, 本采集仅作真伪验证占位(治理铁律: 推断走候选、不越级定案)。
-    "event_dc":       "em.datacenter",
-    "macro_dc":       "em.datacenter",
+    "event_dc": "em.datacenter",
+    "macro_dc": "em.datacenter",
     # V17.4.1: 吸收层 5 模块(新源+新字段, 经上游权威仓库对撞校正) — 各标独立 scheme 供 collide 读取
-    "research_sina":  "sina.research",      # 新浪研报(研报第二来源, §2.4)
-    "etf":            "sse/szse.etf_shares", # ETF 份额(万份, §4.7)
-    "news_wscn_cctv": "cctv.news",          # 央视新闻联播(§5.5; WSCN 宏观日历已在 macro_dc)
-    "sse_e_interaction": "sse.e_interaction", # 上证e互动(§10.3)
-    "st_list":        "em.clist",           # ST/*ST 名单(§6.8, 风险警示板过滤)
+    "research_sina": "sina.research",  # 新浪研报(研报第二来源, §2.4)
+    "etf": "sse/szse.etf_shares",  # ETF 份额(万份, §4.7)
+    "news_wscn_cctv": "cctv.news",  # 央视新闻联播(§5.5; WSCN 宏观日历已在 macro_dc)
+    "sse_e_interaction": "sse.e_interaction",  # 上证e互动(§10.3)
+    "st_list": "em.clist",  # ST/*ST 名单(§6.8, 风险警示板过滤)
 }
 
 # 模块文档未改动处见上方 docstring; 输出文件新增 scheme 标注(见 main)。
 
 
-def load_pool() -> list:
+def load_pool() -> List[Dict[str, Any]]:
     with open(POOL_PATH, "r", encoding="utf-8") as f:
         data = json.load(f)
-    return data["fixed"] + data["dynamic"]
+    if not isinstance(data, dict):
+        raise ValueError("pool.json must contain a JSON object")
+    fixed = data.get("fixed")
+    dynamic = data.get("dynamic")
+    if not isinstance(fixed, list) or not isinstance(dynamic, list):
+        raise ValueError("pool.json must contain fixed and dynamic lists")
+    entries = fixed + dynamic
+    if not all(isinstance(item, dict) for item in entries):
+        raise ValueError("pool entries must be JSON objects")
+    return cast(List[Dict[str, Any]], entries)
 
 
 def _last_trading_day_str() -> str:
     """返回最近交易日 YYYYMMDD(涨停池按交易日快照)。"""
     try:
         from stock_common.stock_calendar import get_last_trading_day
+
         return get_last_trading_day().strftime("%Y%m%d")
     except Exception:
         return datetime.now().strftime("%Y%m%d")
@@ -244,12 +257,13 @@ def _parse_consecutive_boards(high_days: str) -> int:
     故此处独立解析 high_days, 不依赖该字段。
     """
     import re
+
     s = str(high_days or "")
     if "首板" in s:
         return 1
-    nums = re.findall(r"(\d+)板", s)        # 取 'M板' 的数字
+    nums = re.findall(r"(\d+)板", s)  # 取 'M板' 的数字
     if not nums:
-        nums = re.findall(r"\d+", s)         # 兜底: 任意数字取末位
+        nums = re.findall(r"\d+", s)  # 兜底: 任意数字取末位
     return int(nums[-1]) if nums else 1
 
 
@@ -277,9 +291,11 @@ def refresh_dynamic_layer(trade_date: str = "", write: bool = True) -> list:
     def _fetch(d: str):
         try:
             from stock_common import ths_limit_up_pool
+
             p = ths_limit_up_pool(d)
             if not p:
                 from stock_common import get_limit_up_pool
+
                 p = get_limit_up_pool(d)
             return p or []
         except Exception as e:
@@ -313,16 +329,31 @@ def refresh_dynamic_layer(trade_date: str = "", write: bool = True) -> list:
         if not code or code in seen or code in fixed_codes:
             continue
         seen.add(code)
-        lc = _parse_consecutive_boards(it.get("high_days")) or int(it.get("limit_count") or it.get("zt_days") or 1)
+        lc = _parse_consecutive_boards(it.get("high_days")) or int(
+            it.get("limit_count") or it.get("zt_days") or 1
+        )
         is_new = bool(it.get("is_new"))
         name = it.get("name") or ""
         is_st = name.startswith("*ST") or name.startswith("ST")
         pct = float(it.get("change_pct") or 0)
-        parsed.append({"code": code, "name": name, "lc": lc, "is_new": is_new,
-                       "is_st": is_st, "pct": pct, "market_type": it.get("market_type", "")})
+        parsed.append(
+            {
+                "code": code,
+                "name": name,
+                "lc": lc,
+                "is_new": is_new,
+                "is_st": is_st,
+                "pct": pct,
+                "market_type": it.get("market_type", ""),
+            }
+        )
 
-    cont = sorted([x for x in parsed if x["lc"] >= 2], key=lambda x: (x["lc"], x["pct"]), reverse=True)
-    newp = sorted([x for x in parsed if x["is_new"]], key=lambda x: (x["lc"], x["pct"]), reverse=True)
+    cont = sorted(
+        [x for x in parsed if x["lc"] >= 2], key=lambda x: (x["lc"], x["pct"]), reverse=True
+    )
+    newp = sorted(
+        [x for x in parsed if x["is_new"]], key=lambda x: (x["lc"], x["pct"]), reverse=True
+    )
     zt = sorted([x for x in parsed if x["lc"] < 2], key=lambda x: x["pct"], reverse=True)
 
     ordered, _seen = [], set()
@@ -357,8 +388,11 @@ def refresh_dynamic_layer(trade_date: str = "", write: bool = True) -> list:
             with open(POOL_PATH, "w", encoding="utf-8") as f:
                 # 沿用 pool.json 原始 1 空格缩进风格, 仅重写 dynamic 块, 避免每次刷新整文件重排(diff 噪声)
                 json.dump(data, f, ensure_ascii=False, indent=1)
-            print(f"  ✔ 动态层刷新成功(交易日 {used_date}, 涨停池 {len(pool)} 只 → 选 {len(picks)} 只): "
-                  + ", ".join(f"{p['code']}/{p['name']}" for p in picks), flush=True)
+            print(
+                f"  ✔ 动态层刷新成功(交易日 {used_date}, 涨停池 {len(pool)} 只 → 选 {len(picks)} 只): "
+                + ", ".join(f"{p['code']}/{p['name']}" for p in picks),
+                flush=True,
+            )
         except Exception as e:
             print(f"  ⚠ 动态层写回失败: {e}; 本次采集仍用内存候选", flush=True)
     return picks
@@ -367,8 +401,13 @@ def refresh_dynamic_layer(trade_date: str = "", write: bool = True) -> list:
 def collect_zhb(pool: list) -> dict:
     """ZHB 全字段(本地,零网络)。"""
     from core.zhb_client import (
-        full_market_snapshot, market_stat_snapshot, market_stat2_snapshot,
-        get_tip_info, get_stock_name_from_zhb, get_zhb, _lookup_name_persist,
+        full_market_snapshot,
+        market_stat_snapshot,
+        market_stat2_snapshot,
+        get_tip_info,
+        get_stock_name_from_zhb,
+        get_zhb,
+        _lookup_name_persist,
     )
 
     zhb = get_zhb()
@@ -376,7 +415,7 @@ def collect_zhb(pool: list) -> dict:
     full = full_market_snapshot([p["code"] for p in pool]) or {}
     stat = market_stat_snapshot([p["code"] for p in pool]) or {}
     stat2 = market_stat2_snapshot([p["code"] for p in pool]) or {}
-    out = {"zhb_date": zhb_date, "stocks": {}}
+    out: Dict[str, Any] = {"zhb_date": zhb_date, "stocks": {}}
     for p in pool:
         c = p["code"]
         tip = get_tip_info(c)
@@ -413,10 +452,10 @@ def collect_tdx(pool: list) -> dict:
     """
     from core.tdx_client import tdx_get_quote_full, tdx_get_finance_info
 
-    out = {"stocks": {}}
+    out: Dict[str, Any] = {"stocks": {}}
     for p in pool:
         c = p["code"]
-        rec = {}
+        rec: Dict[str, Any] = {}
         try:
             rec["quote_full"] = tdx_get_quote_full(c)
         except Exception as e:
@@ -498,7 +537,7 @@ def collect_eltdx(pool: list, lite: bool = False) -> dict:
         return {"stocks": {}, "__error__": f"eltdx import failed: {str(_e)[:200]}"}
 
     client = None
-    out = {"stocks": {}, "global_helpers": {}}
+    out: Dict[str, Any] = {"stocks": {}, "global_helpers": {}}
     try:
         # 默认探测主站(含 2026-09 新式握手); 单客户端复用(连接池)避免逐股重连。
         client = TdxClient(timeout=8)
@@ -514,13 +553,17 @@ def collect_eltdx(pool: list, lite: bool = False) -> dict:
         # 修复: 显式传入本池 ecodes(仅 ~20 只)将工作量降到本池, 秒级完成; eltdx 调用一律主线程直调
         # (线程护栏会死锁非线程安全的客户端, 已废弃)。volume_comparison/buy_sell_strength 是逐股辅助
         # (需 code 参数), 不属于全局, 移除以免报错。
-        for _name, _fn in [
-            ("limit_ladder", lambda e=_a: client.helpers.limit_ladder(codes=e)),
-            ("theme_strength_rank", lambda e=_a: client.helpers.theme_strength_rank(codes=e)),
-            ("stock_theme_strength_rank", lambda e=_a: client.helpers.stock_theme_strength_rank(codes=e)),
+        _global_helpers: List[tuple[str, Callable[[], Any]]] = [
+            ("limit_ladder", lambda: client.helpers.limit_ladder(codes=_a)),
+            ("theme_strength_rank", lambda: client.helpers.theme_strength_rank(codes=_a)),
+            (
+                "stock_theme_strength_rank",
+                lambda: client.helpers.stock_theme_strength_rank(codes=_a),
+            ),
             ("realtime_rank", lambda: client.helpers.realtime_rank()),
             ("market_stat_880005", lambda: client.bars.get("sh880005", period="day", count=1)),
-        ]:
+        ]
+        for _name, _fn in _global_helpers:
             try:
                 _gh[_name] = _jfy(_fn())
             except Exception as _e:
@@ -536,7 +579,7 @@ def collect_eltdx(pool: list, lite: bool = False) -> dict:
                 _sl_one = client.helpers.shortline_indicators([_ec])
                 # shortline_indicators 返回 ShortlineIndicatorTable(非 list); 须取 .rows 迭代,
                 # 否则会遍历 dataclass 字段而非记录, 导致 shortline 永远挂不上。
-                for _rec in (getattr(_sl_one, "rows", None) or []):
+                for _rec in getattr(_sl_one, "rows", None) or []:
                     _recd = _jfy(_rec)
                     # eltdx shortline 记录 code=纯数字(600000), 而逐股循环 ec=全码(sh600000);
                     # 以 full_code 为主键, 使 per-stock 挂载 `if ec in _sl_map` 命中。
@@ -554,7 +597,9 @@ def collect_eltdx(pool: list, lite: bool = False) -> dict:
         if _a:
             try:
                 _batch = client.quotes.get_snapshots(_a)
-                _batch_snaps = getattr(_batch, "snapshots", _batch) if not isinstance(_batch, list) else _batch
+                _batch_snaps = (
+                    getattr(_batch, "snapshots", _batch) if not isinstance(_batch, list) else _batch
+                )
                 if isinstance(_batch_snaps, dict):
                     for _k, _v in _batch_snaps.items():
                         _snap_map[str(_k)] = _v
@@ -580,17 +625,21 @@ def collect_eltdx(pool: list, lite: bool = False) -> dict:
         for p in pool:
             c = p["code"]
             ec = _ecode(c)
-            rec = {}
+            rec: Dict[str, Any] = {}
             # 行情快照(含 tail_raw 原始帧尾) —— 已由批量 _snap_map 预取
             try:
                 if ec in _snap_map:
                     rec["quote_snapshot"] = _jfy(_snap_map[ec])
                 elif _is_bse(ec):
                     # BSE 已在前述逐股分支尝试且预期缺 marker, 不重复调用(避免批量式挂起)
-                    rec["quote_snapshot"] = {"__error__": "BSE code: snapshot marker not available (skipped)"}
+                    rec["quote_snapshot"] = {
+                        "__error__": "BSE code: snapshot marker not available (skipped)"
+                    }
                 else:
                     _snap = client.quotes.get_snapshots([ec])
-                    _snaps = getattr(_snap, "snapshots", _snap) if not isinstance(_snap, list) else _snap
+                    _snaps = (
+                        getattr(_snap, "snapshots", _snap) if not isinstance(_snap, list) else _snap
+                    )
                     rec["quote_snapshot"] = _jfy(_snaps[0]) if _snaps else None
             except Exception as _e:
                 rec["quote_snapshot"] = {"__error__": str(_e)[:200]}
@@ -629,7 +678,9 @@ def collect_eltdx(pool: list, lite: bool = False) -> dict:
         if _ll_rows:
             for _row in _ll_rows:
                 _rc = _row.get("code") or _row.get("full_code")
-                _rc_plain = _rc[2:] if isinstance(_rc, str) and _rc[:2] in ("sh", "sz", "bj") else _rc
+                _rc_plain = (
+                    _rc[2:] if isinstance(_rc, str) and _rc[:2] in ("sh", "sz", "bj") else _rc
+                )
                 if _rc_plain in out["stocks"]:
                     out["stocks"][_rc_plain]["limit_ladder"] = _jfy(_row)
                 elif _rc in out["stocks"]:
@@ -647,13 +698,16 @@ def collect_tencent(pool: list) -> dict:
     """腾讯 qt.gtimg 单股全字段(保存原始 split 数组 + 索引名说明)。"""
     from stock_common import _quick_request
 
-    out = {"stocks": {}}
+    out: Dict[str, Any] = {"stocks": {}}
     for p in pool:
         c = p["code"]
         # V17.0 审查: 原三元 9 先于 92 → 北交所 920 误判 sh(昨日采集 920118/920508 空数据实证);
         # 92 北交所必须先行(与 em_secid_prefix 同口径)
-        market = "bj" if c.startswith(("92", "8", "4", "43", "83", "87")) else (
-            "sh" if c.startswith(("6", "9", "5")) else "sz")
+        market = (
+            "bj"
+            if c.startswith(("92", "8", "4", "43", "83", "87"))
+            else ("sh" if c.startswith(("6", "9", "5")) else "sz")
+        )
         url = f"https://qt.gtimg.cn/q={market}{c}"
         try:
             r = _quick_request(url, timeout=10)
@@ -689,7 +743,9 @@ def collect_push2(pool: list) -> dict:
     一致策略), 主域仅作兜底; 两域字段同构(f1-f250)无损失。used_host 记录实际命中域便于排查。
     """
     from stock_common import _quick_request
-    from stock_common.sc_network import _em_is_banned  # V17.4.10 修复: _em_is_banned 定义在 sc_network, 未由 stock_common 包 __init__ 重导出
+    from stock_common.sc_network import (
+        _em_is_banned,
+    )  # V17.4.10 修复: _em_is_banned 定义在 sc_network, 未由 stock_common 包 __init__ 重导出
 
     # V17.3.2 封禁规律对齐: 跨 33 采集日实证 push2 主域受扰率 80%、push2delay 镜像域
     # 可用率 ~93-97%(独立风控面, 主域被封时仍可用)。故**优先 push2delay 镜像域**,
@@ -699,7 +755,7 @@ def collect_push2(pool: list) -> dict:
     # 被封再回退其他 push2 源)。
     fields = EM_FULL_FIELDS  # f1-f250 显式全字段(与主字典口径对齐)
     delay_fail_streak = 0
-    out = {"stocks": {}}
+    out: Dict[str, Any] = {"stocks": {}}
     for p in pool:
         c = p["code"]
         secid = em_secid_prefix(c) + c  # V17.0 S3: 统一(修复 92 北交所误判 1.)
@@ -710,8 +766,13 @@ def collect_push2(pool: list) -> dict:
             try:
                 r = _quick_request(
                     "https://push2delay.eastmoney.com/api/qt/stock/get",
-                    params={"secid": secid, "fltt": "2", "invt": "2", "fields": fields,
-                            "ut": "fa5fd1943c7b386f172d6893dbfba10b"},
+                    params={
+                        "secid": secid,
+                        "fltt": "2",
+                        "invt": "2",
+                        "fields": fields,
+                        "ut": "fa5fd1943c7b386f172d6893dbfba10b",
+                    },
                     headers={"Referer": "https://quote.eastmoney.com/"},
                     timeout=10,
                 )
@@ -728,8 +789,13 @@ def collect_push2(pool: list) -> dict:
             try:
                 r = _quick_request(
                     "https://push2.eastmoney.com/api/qt/stock/get",
-                    params={"secid": secid, "fltt": "2", "invt": "2", "fields": fields,
-                            "ut": "fa5fd1943c7b386f172d6893dbfba10b"},
+                    params={
+                        "secid": secid,
+                        "fltt": "2",
+                        "invt": "2",
+                        "fields": fields,
+                        "ut": "fa5fd1943c7b386f172d6893dbfba10b",
+                    },
                     headers={"Referer": "https://quote.eastmoney.com/"},
                     timeout=10,
                 )
@@ -756,13 +822,16 @@ def collect_sina(pool: list) -> dict:
     """新浪行情 hq.sinajs 全字段(需 Referer)。"""
     from stock_common import _quick_request, UA
 
-    out = {"stocks": {}}
+    out: Dict[str, Any] = {"stocks": {}}
     for p in pool:
         c = p["code"]
         # M13 修复：原来只把 "6" 判沪市，漏 "5"(沪ETF)/"9"(沪B) → 新浪源误判 sz 污染跨源对照。
         # 与 collect_tencent(:97) 同口径：92/8/4/43/83/87→bj，6/9/5→sh，其余→sz。
-        pre = "bj" if c.startswith(("92", "8", "4", "43", "83", "87")) else (
-            "sh" if c.startswith(("6", "9", "5")) else "sz")
+        pre = (
+            "bj"
+            if c.startswith(("92", "8", "4", "43", "83", "87"))
+            else ("sh" if c.startswith(("6", "9", "5")) else "sz")
+        )
         try:
             r = _quick_request(
                 f"https://hq.sinajs.cn/list={pre}{c}",
@@ -788,7 +857,7 @@ def collect_axdata(pool: list) -> dict:
     """AxData 短线指标 34 字段(零网络,直读项目 zhb.zip,字典 §12.12.1)。"""
     from stock_common import get_shortline_indicators
 
-    out = {"stocks": {}}
+    out: Dict[str, Any] = {"stocks": {}}
     for p in pool:
         c = p["code"]
         try:
@@ -801,17 +870,23 @@ def collect_axdata(pool: list) -> dict:
 
 def collect_market_sources(pool: list) -> dict:
     """市场级源(一次性): 财联社情绪/涨停天梯/盘口异动 + KPL + 板块轮动 + 龙虎榜。"""
-    out = {}
+    out: Dict[str, Any] = {}
     try:
         from stock_common import get_cls_market_emotion, get_kph_limit_ladder, get_stock_changes
+
         out["cls_market_emotion"] = get_cls_market_emotion()
         out["kph_limit_ladder"] = get_kph_limit_ladder()
         out["stock_changes_8201"] = get_stock_changes("8201")
     except Exception as e:
         out["levistock_error"] = str(e)[:200]
     try:
-        from stock_common import (get_kpl_market_sentiment, get_kpl_limit_up_detail,
-                                  get_kpl_broken_ratio, get_kpl_up_down)
+        from stock_common import (
+            get_kpl_market_sentiment,
+            get_kpl_limit_up_detail,
+            get_kpl_broken_ratio,
+            get_kpl_up_down,
+        )
+
         out["kpl_sentiment"] = get_kpl_market_sentiment()
         out["kpl_up_down"] = get_kpl_up_down()
         out["kpl_limit_up_detail"] = get_kpl_limit_up_detail()
@@ -820,15 +895,22 @@ def collect_market_sources(pool: list) -> dict:
         out["kpl_error"] = str(e)[:200]
     try:
         from stock_common import get_plate_rotation_matrix, get_plate_rotation_top
+
         out["plate_rotation_matrix"] = get_plate_rotation_matrix(source="kaipan", days=20, top_n=30)
         out["plate_rotation_top"] = get_plate_rotation_top()
     except Exception as e:
         out["plate_rot_error"] = str(e)[:200]
     try:
         from stock_common import eastmoney_datacenter
+
+        trade_date = _last_completed_trading_day().strftime("%Y-%m-%d")
         r = eastmoney_datacenter(
+            "",
             "RPT_DAILYBILLBOARD_DETAILSNEW",
-            {"SECURITY_CODE": "1"}, page_size=50,
+            filter_str=f"(TRADE_DATE>='{trade_date}')(TRADE_DATE<='{trade_date}')",
+            page_size=50,
+            sort_columns="TRADE_DATE",
+            sort_types="-1",
         )
         out["dragon_tiger_today"] = r
     except Exception as e:
@@ -838,15 +920,21 @@ def collect_market_sources(pool: list) -> dict:
 
 def collect_tdx_f10(pool: list) -> dict:
     """TDX F10 财务九件套补充: 财务分析/股本/分红(TCP,免费)。"""
-    from core.tdx_client import tdx_get_financial_analysis, tdx_get_share_capital, tdx_get_dividend_history
+    from core.tdx_client import (
+        tdx_get_financial_analysis,
+        tdx_get_share_capital,
+        tdx_get_dividend_history,
+    )
 
-    out = {"stocks": {}}
+    out: Dict[str, Any] = {"stocks": {}}
     for p in pool:
         c = p["code"]
-        rec = {}
-        for name, fn in [("financial_analysis", tdx_get_financial_analysis),
-                         ("share_capital", tdx_get_share_capital),
-                         ("dividend_history", tdx_get_dividend_history)]:
+        rec: Dict[str, Any] = {}
+        for name, fn in [
+            ("financial_analysis", tdx_get_financial_analysis),
+            ("share_capital", tdx_get_share_capital),
+            ("dividend_history", tdx_get_dividend_history),
+        ]:
             try:
                 rec[name] = fn(c)
             except Exception as e:
@@ -865,9 +953,12 @@ def collect_baidu(pool: list) -> dict:
     K线/行情已切 TDX 适配器, 状态 ❌→⏸️。registry 仍标 active(与字典不一致)——
     本采集器保留为 deprecated 占位, 明确标注, 不发出任何请求(A8: 不假装成功也不假装失败)。
     """
-    return {"__unwired__": "deprecated", "registry_name": "百度(baidu)",
-            "section": "12.8.16 百度股市通（K线带MA）❌→⏸️",
-            "reason": "百度 PAE 已失效, K线/行情改走 TDX 适配器; 不采集"}
+    return {
+        "__unwired__": "deprecated",
+        "registry_name": "百度(baidu)",
+        "section": "12.8.16 百度股市通（K线带MA）❌→⏸️",
+        "reason": "百度 PAE 已失效, K线/行情改走 TDX 适配器; 不采集",
+    }
 
 
 def collect_clist(pool: list) -> dict:
@@ -881,12 +972,15 @@ def collect_clist(pool: list) -> dict:
     而 push2delay/push2ex 独立可用); push2delay 失败回退 push2 主域。
     """
     from stock_common import _quick_request, UA
+
     # §12.8.6 登记字段全集: 排名(f2/f3/f4/f12/f13/f14/f104/f105/f128/f136/f140/f141/f207)
     # + 资金流今日(f62/f184/f66/f72/f78/f84)/5日(f164/f165/f109/f257)/10日(f174/f175/f160)
-    FIELDS = ("f2,f3,f4,f12,f13,f14,f104,f105,f128,f136,f140,f141,f207,"
-              "f62,f184,f66,f72,f78,f84,f164,f165,f109,f257,f174,f175,f160")
+    FIELDS = (
+        "f2,f3,f4,f12,f13,f14,f104,f105,f128,f136,f140,f141,f207,"
+        "f62,f184,f66,f72,f78,f84,f164,f165,f109,f257,f174,f175,f160"
+    )
     TYPES = [("industry", "m:90+t:2"), ("concept", "m:90+t:3"), ("area", "m:90+t:1")]
-    out = {"records": [], "by_type": {}}
+    out: Dict[str, Any] = {"records": [], "by_type": {}}
     for label, fs in TYPES:
         # V17.2.13 稳健分页: 以服务端 data.total 为权威总数驱动翻页, 避免「单页未满即误判末页」
         # 导致的概念板(400+ 只)被截断为 100 的问题; 另设 50 页硬上限防异常死循环。
@@ -894,16 +988,32 @@ def collect_clist(pool: list) -> dict:
         total = None
         pn = 1
         while pn <= 50:
-            params = {"po": "1", "np": "1", "fltt": "2", "invt": "2", "fs": fs,
-                      "fields": FIELDS, "pz": "200", "pn": str(pn),
-                      "ut": "bd1d9ddb04089700cf9c27f6f7426281"}
+            params = {
+                "po": "1",
+                "np": "1",
+                "fltt": "2",
+                "invt": "2",
+                "fs": fs,
+                "fields": FIELDS,
+                "pz": "200",
+                "pn": str(pn),
+                "ut": "bd1d9ddb04089700cf9c27f6f7426281",
+            }
             hdr = {"User-Agent": UA, "Referer": "https://quote.eastmoney.com/"}
             try:
-                r = _quick_request("https://push2delay.eastmoney.com/api/qt/clist/get",
-                                   params=params, headers=hdr, timeout=10)
+                r = _quick_request(
+                    "https://push2delay.eastmoney.com/api/qt/clist/get",
+                    params=params,
+                    headers=hdr,
+                    timeout=10,
+                )
                 if r is None:
-                    r = _quick_request("https://push2.eastmoney.com/api/qt/clist/get",
-                                       params=params, headers=hdr, timeout=10)
+                    r = _quick_request(
+                        "https://push2.eastmoney.com/api/qt/clist/get",
+                        params=params,
+                        headers=hdr,
+                        timeout=10,
+                    )
                 if r is None:
                     out["by_type"][label] = {"__error__": "request failed (both domains)"}
                     break
@@ -916,7 +1026,8 @@ def collect_clist(pool: list) -> dict:
                 if not diff:
                     break
                 for it in diff:
-                    rec = dict(it); rec["_board_type"] = label
+                    rec = dict(it)
+                    rec["_board_type"] = label
                     all_recs.append(rec)
                 # 终止条件: 已达权威 total / 本页未满(末页) / 硬上限
                 if total is not None and len(all_recs) >= total:
@@ -937,7 +1048,8 @@ def collect_clist(pool: list) -> dict:
             _prev = out["by_type"].get(label, {})
             if "__error__" not in _prev:
                 out["by_type"][label] = {
-                    "n": 0, "total": total,
+                    "n": 0,
+                    "total": total,
                     "__error__": "empty payload (0 records; possible push2 family IP-ban / endpoint anomaly)",
                 }
     return out
@@ -955,21 +1067,38 @@ def collect_slist(pool: list) -> dict:
     逐股请求(20 股), 单股失败记 __error__ 不中断(A8 禁止静默迁就)。
     """
     from stock_common import _quick_request, UA
+
     FIELDS = "f12,f14,f3,f128,f140"  # 板块代码/名/涨跌幅/龙头名/龙头代码
-    out = {"stocks": {}}
+    out: Dict[str, Any] = {"stocks": {}}
     for p in pool:
         c = p["code"]
         secid = em_secid_prefix(c) + c
-        params = {"spt": "3", "np": "1", "fltt": "2", "invt": "2", "secid": secid,
-                  "fields": FIELDS, "pz": "200", "pn": "1",
-                  "ut": "bd1d9ddb04089700cf9c27f6f7426281"}
+        params = {
+            "spt": "3",
+            "np": "1",
+            "fltt": "2",
+            "invt": "2",
+            "secid": secid,
+            "fields": FIELDS,
+            "pz": "200",
+            "pn": "1",
+            "ut": "bd1d9ddb04089700cf9c27f6f7426281",
+        }
         hdr = {"User-Agent": UA, "Referer": "https://quote.eastmoney.com/"}
         try:
-            r = _quick_request("https://push2delay.eastmoney.com/api/qt/slist/get",
-                               params=params, headers=hdr, timeout=10)
+            r = _quick_request(
+                "https://push2delay.eastmoney.com/api/qt/slist/get",
+                params=params,
+                headers=hdr,
+                timeout=10,
+            )
             if r is None:
-                r = _quick_request("https://push2.eastmoney.com/api/qt/slist/get",
-                                   params=params, headers=hdr, timeout=10)
+                r = _quick_request(
+                    "https://push2.eastmoney.com/api/qt/slist/get",
+                    params=params,
+                    headers=hdr,
+                    timeout=10,
+                )
             if r is None:
                 out["stocks"][c] = {"__error__": "request failed (both domains)"}
                 continue
@@ -982,8 +1111,11 @@ def collect_slist(pool: list) -> dict:
             else:
                 # 请求成功但 0 板块(个股恒有归属板块)→ 空载荷异常, 显式标错以免 assess_result
                 # 误判 ok(公理 A8 禁止静默迁就)。
-                out["stocks"][c] = {"secid": secid, "n_boards": 0,
-                                    "__error__": "empty payload (0 boards; possible push2 family IP-ban / endpoint anomaly)"}
+                out["stocks"][c] = {
+                    "secid": secid,
+                    "n_boards": 0,
+                    "__error__": "empty payload (0 boards; possible push2 family IP-ban / endpoint anomaly)",
+                }
         except Exception as e:
             out["stocks"][c] = {"__error__": str(e)[:200]}
     return out
@@ -1001,27 +1133,33 @@ def collect_exchange(pool: list) -> dict:
     """
     import urllib.request, json, ssl
     from stock_common import UA
-    try:
-        from stock_common.sc_network import _gen_wait_process_interval
-    except Exception:
-        _gen_wait_process_interval = lambda: None
+
+    from stock_common.sc_network import _gen_wait_process_interval
 
     trade_date = _last_completed_trading_day().strftime("%Y-%m-%d")
-    out = {"records": [], "sse_raw": "", "szse_keys": [], "n_szse": 0,
-           "trade_date": trade_date}
+    out: Dict[str, Any] = {
+        "records": [],
+        "sse_raw": "",
+        "szse_keys": [],
+        "n_szse": 0,
+        "trade_date": trade_date,
+    }
     _ctx = ssl._create_unverified_context()
 
     # 深交所龙虎榜(结构化 JSON: zqdm/zqjc/cjje/plyy/cjsl/dqrq/bz)
-    su = ("https://www.szse.cn/api/report/ShowReport/data?SHOWTYPE=JSON"
-          f"&CATALOGID=1842_xxpl&TABKEY=tab1&txtStart={trade_date}"
-          f"&txtEnd={trade_date}&random=0.9")
+    su = (
+        "https://www.szse.cn/api/report/ShowReport/data?SHOWTYPE=JSON"
+        f"&CATALOGID=1842_xxpl&TABKEY=tab1&txtStart={trade_date}"
+        f"&txtEnd={trade_date}&random=0.9"
+    )
     try:
-        if _gen_wait_process_interval:
-            _gen_wait_process_interval()
+        _gen_wait_process_interval()
         req = urllib.request.Request(
             su,
-            headers={"User-Agent": UA,
-                     "Referer": "https://www.szse.cn/disclosure/supervision/dealinfo/index.html"},
+            headers={
+                "User-Agent": UA,
+                "Referer": "https://www.szse.cn/disclosure/supervision/dealinfo/index.html",
+            },
         )
         op = urllib.request.build_opener(
             urllib.request.ProxyHandler({}),
@@ -1039,21 +1177,24 @@ def collect_exchange(pool: list) -> dict:
         out["__error_szse__"] = str(e)[:200]
 
     # 上交所龙虎榜(JSONP 全文, 含营业部席位 → sse_raw)
-    eu = ("https://query.sse.com.cn/infodisplay/showTradePublicFile.do?"
-          f"jsonCallBack=cb&isPagination=false&dateTx={trade_date}")
+    eu = (
+        "https://query.sse.com.cn/infodisplay/showTradePublicFile.do?"
+        f"jsonCallBack=cb&isPagination=false&dateTx={trade_date}"
+    )
     try:
-        if _gen_wait_process_interval:
-            _gen_wait_process_interval()
+        _gen_wait_process_interval()
         req = urllib.request.Request(
             eu,
-            headers={"User-Agent": UA,
-                     "Referer": "https://www.sse.com.cn/disclosure/diclosure/public/"},
+            headers={
+                "User-Agent": UA,
+                "Referer": "https://www.sse.com.cn/disclosure/diclosure/public/",
+            },
         )
         op = urllib.request.build_opener(urllib.request.ProxyHandler({}))
         with op.open(req, timeout=15) as r:
             t = r.read().decode("utf-8", "ignore")
         if "(" in t and ")" in t:
-            d2 = json.loads(t[t.index("(") + 1: t.rindex(")")])
+            d2 = json.loads(t[t.index("(") + 1 : t.rindex(")")])
             fc = d2.get("fileContents", []) or []
             out["sse_raw"] = "\n".join(fc)
     except Exception as e:
@@ -1081,10 +1222,16 @@ def collect_fuyao(pool: list) -> dict:
     无 Key 时自动禁用(meta 标记 no_key)；~35 请求 @2rps(sc_network 域限流)。
     """
     from stock_common import (
-        get_fuyao_snapshot, get_fuyao_valuation, get_fuyao_fin_indicators,
-        get_fuyao_auction_snapshot, get_fuyao_auction_benchmark,
-        get_fuyao_limit_pool, get_fuyao_anomaly, get_fuyao_dragon_tiger,
-        get_fuyao_hot_list, is_fuyao_enabled,
+        get_fuyao_snapshot,
+        get_fuyao_valuation,
+        get_fuyao_fin_indicators,
+        get_fuyao_auction_snapshot,
+        get_fuyao_auction_benchmark,
+        get_fuyao_limit_pool,
+        get_fuyao_anomaly,
+        get_fuyao_dragon_tiger,
+        get_fuyao_hot_list,
+        is_fuyao_enabled,
     )
 
     out: dict = {"stocks": {}, "market": {}}
@@ -1102,9 +1249,10 @@ def collect_fuyao(pool: list) -> dict:
     auction = {r.get("ticker"): r for r in (get_fuyao_auction_snapshot(codes, stage="final") or [])}
     # V17.0.24: 三大报表(近 8 期 quarterly + 年报 annual)——财务 TTM 族主源原始锚:
     # f163 静态PE=现价÷f160(年报EPS) 闭环验证 + ocf_ttm/revenue_ttm TTM 重建(R_YTD+FY−H1)
-    finrep = {}
+    finrep: Dict[str, Any] = {}
     try:
         from stock_common.sc_fuyao import get_fuyao_financials as _gff
+
         for p in pool:
             c = p["code"]
             finrep[c] = {
@@ -1119,8 +1267,10 @@ def collect_fuyao(pool: list) -> dict:
         c = p["code"]
         ind = None
         used_report = None
-        for rpt in (_last_completed_trading_day().strftime("%Y") + "-2",
-                    _last_completed_trading_day().strftime("%Y") + "-1"):
+        for rpt in (
+            _last_completed_trading_day().strftime("%Y") + "-2",
+            _last_completed_trading_day().strftime("%Y") + "-1",
+        ):
             ind = get_fuyao_fin_indicators(c, rpt)
             if ind:
                 used_report = rpt
@@ -1181,11 +1331,18 @@ def collect_ftshare(pool: list) -> dict:
     ~126 请求 @2rps(sc_network 域限流 market.ft.tech)；会话自动续期(TTL≈2h)。
     """
     from stock_common.sc_ftshare import (
-        is_ftshare_enabled, get_ft_comment_score_series, get_ft_comment_desire,
-        get_ft_comment_focus, get_ft_comment_org_participate,
-        get_ft_ggmx_changes, get_ft_goodwill_stock_detail,
-        get_ft_pledge_summary, get_ft_dapan_flow, get_ft_market_snapshot,
-        get_ft_suspension_list, get_ft_limit_up_pool_yesterday,
+        is_ftshare_enabled,
+        get_ft_comment_score_series,
+        get_ft_comment_desire,
+        get_ft_comment_focus,
+        get_ft_comment_org_participate,
+        get_ft_ggmx_changes,
+        get_ft_goodwill_stock_detail,
+        get_ft_pledge_summary,
+        get_ft_dapan_flow,
+        get_ft_market_snapshot,
+        get_ft_suspension_list,
+        get_ft_limit_up_pool_yesterday,
         get_ft_unlock_by_date,
     )
 
@@ -1237,17 +1394,23 @@ def collect_em_kline_f61(pool: list) -> dict:
     from stock_common import _quick_request
 
     KLINE_FIELDS2 = "f51,f52,f53,f54,f55,f56,f57,f58,f59,f60,f61"
-    out = {"stocks": {}}
+    out: Dict[str, Any] = {"stocks": {}}
     for p in pool:
         c = p["code"]
         secid = em_secid_prefix(c) + c
         try:
             r = _quick_request(
                 "https://push2his.eastmoney.com/api/qt/stock/kline/get",
-                params={"secid": secid, "fields1": "f1,f2,f3,f4,f5,f6",
-                        "fields2": KLINE_FIELDS2, "klt": "101", "fqt": "0",
-                        "end": "20500101", "lmt": "150",
-                        "ut": "b2884a393a59ad64002292a3e90d46a5"},
+                params={
+                    "secid": secid,
+                    "fields1": "f1,f2,f3,f4,f5,f6",
+                    "fields2": KLINE_FIELDS2,
+                    "klt": "101",
+                    "fqt": "0",
+                    "end": "20500101",
+                    "lmt": "150",
+                    "ut": "b2884a393a59ad64002292a3e90d46a5",
+                },
                 headers={"Referer": "https://quote.eastmoney.com/"},
                 timeout=15,
             )
@@ -1259,11 +1422,14 @@ def collect_em_kline_f61(pool: list) -> dict:
         data = (r.json() or {}).get("data") or {}
         klines = data.get("klines") or []
         dktotal = data.get("dktotal") or 0
-        if dktotal and len(klines) > 0:   # 仅真实窗口才算成功, 杜绝空数据误存
+        if dktotal and len(klines) > 0:  # 仅真实窗口才算成功, 杜绝空数据误存
             out["stocks"][c] = {
-                "secid": secid, "dktotal": dktotal, "n_klines": len(klines),
+                "secid": secid,
+                "dktotal": dktotal,
+                "n_klines": len(klines),
                 "klines_tail30": klines[-30:],
-                "klines_all": klines[:150], "host": "push2his",
+                "klines_all": klines[:150],
+                "host": "push2his",
             }
         else:
             out["stocks"][c] = {"__error__": "push2his empty (dktotal=0)"}
@@ -1280,21 +1446,39 @@ def collect_em_fund_flow(pool: list) -> dict:
     from stock_common import _quick_request
 
     # V17.1.x: 补全 f147/f148(散单买/卖额, 主字典 §12.3.4 已登记)——原列表漏此二项致采集缺失。
-    ff_fields = ",".join(["f135", "f136", "f137",
-                          "f138", "f139", "f140",
-                          "f141", "f142", "f143",
-                          "f144", "f145", "f146",
-                          "f147", "f148",   # 散单(第五档)买/卖额
-                          "f149"])
-    out = {"stocks": {}}
+    ff_fields = ",".join(
+        [
+            "f135",
+            "f136",
+            "f137",
+            "f138",
+            "f139",
+            "f140",
+            "f141",
+            "f142",
+            "f143",
+            "f144",
+            "f145",
+            "f146",
+            "f147",
+            "f148",  # 散单(第五档)买/卖额
+            "f149",
+        ]
+    )
+    out: Dict[str, Any] = {"stocks": {}}
     for p in pool:
         c = p["code"]
         secid = em_secid_prefix(c) + c
         try:
             r = _quick_request(
                 "https://push2delay.eastmoney.com/api/qt/stock/get",
-                params={"secid": secid, "fltt": "2", "invt": "2", "fields": ff_fields,
-                        "ut": "fa5fd1943c7b386f172d6893dbfba10b"},
+                params={
+                    "secid": secid,
+                    "fltt": "2",
+                    "invt": "2",
+                    "fields": ff_fields,
+                    "ut": "fa5fd1943c7b386f172d6893dbfba10b",
+                },
                 headers={"Referer": "https://quote.eastmoney.com/"},
                 timeout=10,
             )
@@ -1323,15 +1507,14 @@ def collect_ulist239(pool: list) -> dict:
     try:
         r = _quick_request(
             "https://push2delay.eastmoney.com/api/qt/ulist.np/get",
-            params={"fltt": "2", "invt": "2", "secids": secids,
-                    "fields": EM_FULL_FIELDS},
+            params={"fltt": "2", "invt": "2", "secids": secids, "fields": EM_FULL_FIELDS},
             headers={"Referer": "https://quote.eastmoney.com/"},
             timeout=15,
         )
         if r is None:
             return {"__error__": "request failed"}
         diff = (r.json() or {}).get("data", {}).get("diff") or []
-        out = {"stocks": {}}
+        out: Dict[str, Any] = {"stocks": {}}
         for item in diff:
             code = str(item.get("f12", ""))
             if code:
@@ -1343,9 +1526,10 @@ def collect_ulist239(pool: list) -> dict:
 
 def collect_push2ex(pool: list) -> dict:
     """push2ex 涨停/跌停/炸板池(市场级,字典 §12.9.2)。"""
-    out = {}
+    out: Dict[str, Any] = {}
     try:
         from stock_common import get_limit_up_pool, get_limit_down_pool, get_limit_broken_pool
+
         out["limit_up_pool"] = get_limit_up_pool()
         out["limit_down_pool"] = get_limit_down_pool()
         out["limit_broken_pool"] = get_limit_broken_pool()
@@ -1358,6 +1542,7 @@ def collect_em_hot(pool: list) -> dict:
     """东财人气榜(市场级,emappdata 域)。"""
     try:
         from stock_common import em_hot_rank
+
         return {"hot_rank": em_hot_rank(top=50)}
     except Exception as e:
         return {"error": str(e)[:200]}
@@ -1367,6 +1552,7 @@ def collect_cls(pool: list) -> dict:
     """财联社快讯(市场级)。"""
     try:
         from stock_common import cls_telegraph
+
         return {"telegraph": cls_telegraph(page_size=50)}
     except Exception as e:
         return {"error": str(e)[:200]}
@@ -1376,13 +1562,16 @@ def collect_datacenter(pool: list) -> dict:
     """东财 datacenter 个股级: 两融/北向/解禁(每只 3 请求,1.0rps)。"""
     from stock_common import get_margin_trading, get_northbound_hold, get_lockup_expiry
 
-    out = {"stocks": {}}
+    out: Dict[str, Any] = {"stocks": {}}
     for p in pool:
         c = p["code"]
-        rec = {}
-        for name, fn in [("margin_trading", get_margin_trading),
-                         ("northbound_hold", get_northbound_hold),
-                         ("lockup_expiry", get_lockup_expiry)]:
+        rec: Dict[str, Any] = {}
+        _dc_functions: List[tuple[str, Callable[[str], Any]]] = [
+            ("margin_trading", get_margin_trading),
+            ("northbound_hold", get_northbound_hold),
+            ("lockup_expiry", get_lockup_expiry),
+        ]
+        for name, fn in _dc_functions:
             try:
                 v = fn(c)
                 rec[name] = v if isinstance(v, (list, dict)) else {"value": v}
@@ -1399,17 +1588,25 @@ def collect_event_dc(pool: list) -> dict:
     仅作采集占位: 取值异常不抛(对撞阶段再钉死常量); 返回 {"stocks": {...}} 供 collide 读取。
     """
     from stock_common.sc_datasource import (
-        earnings_forecast, institution_survey, holder_trades, equity_pledge,
-        ipo_calendar, convertible_bonds,
+        earnings_forecast,
+        institution_survey,
+        holder_trades,
+        equity_pledge,
+        ipo_calendar,
+        convertible_bonds,
     )
-    out = {"stocks": {}}
+
+    out: Dict[str, Any] = {"stocks": {}}
     for p in pool:
         c = p["code"]
-        rec = {}
-        for name, fn in [("earnings_forecast", earnings_forecast),
-                         ("institution_survey", institution_survey),
-                         ("holder_trades", holder_trades),
-                         ("equity_pledge", equity_pledge)]:
+        rec: Dict[str, Any] = {}
+        _event_functions: List[tuple[str, Callable[[str], Any]]] = [
+            ("earnings_forecast", earnings_forecast),
+            ("institution_survey", institution_survey),
+            ("holder_trades", holder_trades),
+            ("equity_pledge", equity_pledge),
+        ]
+        for name, fn in _event_functions:
             try:
                 v = fn(c)
                 rec[name] = v if isinstance(v, (list, dict)) else {"value": v}
@@ -1434,15 +1631,22 @@ def collect_macro_dc(pool: list) -> dict:
     宏观为全市场级(不按个股); 套 stocks 壳以对齐 meta 评估。中债收益率曲线端点待补(返回空占位)。
     """
     from stock_common.sc_datasource import (
-        lpr_history, macro_calendar as _macro_cal, repo_fixing_rates, chinabond_yield_curve,
+        lpr_history,
+        macro_calendar as _macro_cal,
+        repo_fixing_rates,
+        chinabond_yield_curve,
     )
-    out = {"stocks": {}}
-    rec = {}
-    for name, fn in [("lpr_history", lpr_history),
-                     ("macro_calendar", _macro_cal),
-                     ("repo_fixing_fr", lambda: repo_fixing_rates("FR")),
-                     ("repo_fixing_fdr", lambda: repo_fixing_rates("FDR")),
-                     ("chinabond_yield_curve", chinabond_yield_curve)]:
+
+    out: Dict[str, Any] = {"stocks": {}}
+    rec: Dict[str, Any] = {}
+    _macro_functions: List[tuple[str, Callable[[], Any]]] = [
+        ("lpr_history", lpr_history),
+        ("macro_calendar", _macro_cal),
+        ("repo_fixing_fr", lambda: repo_fixing_rates("FR")),
+        ("repo_fixing_fdr", lambda: repo_fixing_rates("FDR")),
+        ("chinabond_yield_curve", chinabond_yield_curve),
+    ]
+    for name, fn in _macro_functions:
         try:
             v = fn()
             rec[name] = v if isinstance(v, (list, dict)) else {"value": v}
@@ -1455,6 +1659,7 @@ def collect_macro_dc(pool: list) -> dict:
 def _recent_trade_days(n: int = 4):
     """返回最近 n 个自然日(YYYY-MM-DD), 用于 ETF/央视等按日快照源回退到最近有数据的日期。"""
     from datetime import datetime, timedelta
+
     d = datetime.now()
     out = []
     for _ in range(n):
@@ -1469,7 +1674,8 @@ def collect_research_sina(pool: list) -> dict:
     市场级(全市场最新一页) + 个股级抽样(前 5 只, 验证 per-stock 路径; 新浪 6s 节流, 不 20× 全量)。
     """
     from stock_common.sc_datasource import sina_research_reports
-    out = {"stocks": {}}
+
+    out: Dict[str, Any] = {"stocks": {}}
     try:
         out["market_latest"] = sina_research_reports()
     except Exception as e:
@@ -1489,9 +1695,10 @@ def collect_etf(pool: list) -> dict:
     取最近 4 个自然日里首个有数据的快照(深交所仅最新一天)。SH+SZ 全市场列表。
     """
     from stock_common.sc_datasource import etf_shares
-    out = {}
+
+    out: Dict[str, Any] = {}
     for ex in ("SH", "SZ"):
-        got = None
+        got: Any = None
         for day in _recent_trade_days(4):
             try:
                 rows = etf_shares(day, ex)
@@ -1500,14 +1707,17 @@ def collect_etf(pool: list) -> dict:
                     break
             except Exception as e:
                 got = {"__error__": f"{day}: {str(e)[:120]}"}
-        out[f"etf_{ex.lower()}"] = got if got is not None else {"__error__": "no data in last 4 days"}
+        out[f"etf_{ex.lower()}"] = (
+            got if got is not None else {"__error__": "no data in last 4 days"}
+        )
     return out
 
 
 def collect_news_wscn_cctv(pool: list) -> dict:
     """V17.4.1 吸收层: 央视《新闻联播》(§5.5, 政策信号文本)。取最近 3 天首个有条目日。"""
     from stock_common.sc_datasource import cctv_news
-    out = {}
+
+    out: Dict[str, Any] = {}
     attempts = []
     got = None
     for day in _recent_trade_days(3):
@@ -1526,7 +1736,8 @@ def collect_news_wscn_cctv(pool: list) -> dict:
 def collect_sse_e_interaction(pool: list) -> dict:
     """V17.4.1 吸收层: 上证e互动(§10.3)。市场级(全市场最新已回复) + 个股级抽样(前 3 只沪市股, uid 解析 ~10-13 请求/股)。"""
     from stock_common.sc_datasource import sse_e_interaction
-    out = {"stocks": {}}
+
+    out: Dict[str, Any] = {"stocks": {}}
     try:
         out["market"] = sse_e_interaction()
     except Exception as e:
@@ -1545,7 +1756,8 @@ def collect_sse_e_interaction(pool: list) -> dict:
 def collect_st_list(pool: list) -> dict:
     """V17.4.1 吸收层: ST/*ST 名单(§6.8, 沪深京风险警示板)。市场级(全市场当日快照)。"""
     from stock_common.sc_datasource import st_stock_list
-    out = {}
+
+    out: Dict[str, Any] = {}
     try:
         out["st_list"] = st_stock_list()
     except Exception as e:
@@ -1555,15 +1767,21 @@ def collect_st_list(pool: list) -> dict:
 
 def collect_tdx_f10_more(pool: list) -> dict:
     """TDX F10 补充: 股东研究/公司新闻/异动提醒(TCP 免费)。"""
-    from core.tdx_client import tdx_get_shareholder_research, tdx_get_company_news_f10, tdx_get_latest_reminders
+    from core.tdx_client import (
+        tdx_get_shareholder_research,
+        tdx_get_company_news_f10,
+        tdx_get_latest_reminders,
+    )
 
-    out = {"stocks": {}}
+    out: Dict[str, Any] = {"stocks": {}}
     for p in pool:
         c = p["code"]
-        rec = {}
-        for name, fn in [("shareholder_research", tdx_get_shareholder_research),
-                         ("company_news", lambda x: tdx_get_company_news_f10(x, count=10)),
-                         ("reminders", tdx_get_latest_reminders)]:
+        rec: Dict[str, Any] = {}
+        for name, fn in [
+            ("shareholder_research", tdx_get_shareholder_research),
+            ("company_news", lambda x: tdx_get_company_news_f10(x, count=10)),
+            ("reminders", tdx_get_latest_reminders),
+        ]:
             try:
                 rec[name] = fn(c)
             except Exception as e:
@@ -1576,7 +1794,7 @@ def collect_cninfo(pool: list) -> dict:
     """巨潮互动易(irm.cninfo,3rps;全 20 只)。"""
     from stock_common import cninfo_irm
 
-    out = {"stocks": {}}
+    out: Dict[str, Any] = {"stocks": {}}
     for p in pool:
         c = p["code"]
         try:
@@ -1590,7 +1808,7 @@ def collect_reports(pool: list) -> dict:
     """东财研报 reportapi(全 20 只,1.0rps)。"""
     from stock_common import get_reports
 
-    out = {"stocks": {}}
+    out: Dict[str, Any] = {"stocks": {}}
     for p in pool:
         c = p["code"]
         try:
@@ -1603,16 +1821,22 @@ def collect_reports(pool: list) -> dict:
 def dry_run(pool: list) -> None:
     print(f"[dry-run] pool={len(pool)} 只")
     from core.zhb_client import get_zhb, is_data_fresh
+
     zhb = get_zhb()
     print(f"  ZHB     : date={zhb.date if zhb else 'N/A'} fresh={is_data_fresh()}")
     from core.tdx_client import _check_tdx
+
     print(f"  TDX     : {_check_tdx()}")
     from stock_common import _quick_request
+
     r = _quick_request("https://qt.gtimg.cn/q=sh600519", timeout=8)
     print(f"  腾讯    : {'OK' if r is not None else 'FAIL'}")
-    r = _quick_request("https://push2.eastmoney.com/api/qt/stock/get",
-                       params={"secid": "1.600519", "fltt": "2", "invt": "2"},
-                       headers={"Referer": "https://quote.eastmoney.com/"}, timeout=8)
+    r = _quick_request(
+        "https://push2.eastmoney.com/api/qt/stock/get",
+        params={"secid": "1.600519", "fltt": "2", "invt": "2"},
+        headers={"Referer": "https://quote.eastmoney.com/"},
+        timeout=8,
+    )
     print(f"  push2   : {'OK' if r is not None else 'FAIL'}")
 
 
@@ -1665,19 +1889,18 @@ def assess_result(data) -> tuple:
             if isinstance(_v, (dict, list)) and len(_v):
                 n_total = len(_v)
                 _items = _v.values() if isinstance(_v, dict) else _v
-                n_dead = sum(1 for it in _items
-                             if isinstance(it, dict) and "__error__" in it)
+                n_dead = sum(1 for it in _items if isinstance(it, dict) and "__error__" in it)
                 break
 
     if n_err == 0:
         return True, {"status": "ok", "n_error": 0}
 
     if isinstance(data, dict) and "__error__" in data:
-        status = "failed"                      # 整个返回物即错误占位
+        status = "failed"  # 整个返回物即错误占位
     elif n_total is not None and n_dead >= n_total:
-        status = "failed"                      # 容器元素全部整体失败
+        status = "failed"  # 容器元素全部整体失败
     else:
-        status = "partial"                     # 字段级失败 / 仅部分元素失败
+        status = "partial"  # 字段级失败 / 仅部分元素失败
 
     info = {"status": status, "n_error": n_err}
     if n_total is not None:
@@ -1693,24 +1916,36 @@ def main() -> None:
     # V17.4.x: 默认数据日=最近交易日(而非运行日) —— 周末/法定节假日运行时自动回退上一交易日,
     # 使文件夹名恒为"实际数据日"(收盘数据所属交易日), 根除"文件夹名是假日但数据是上一交易日"的根因。
     ap.add_argument("--date", default=_last_trading_day_str())
-    ap.add_argument("--overwrite", action="store_true",
-                    help="强制覆盖重采: 清空既有同数据日目标源 raw_*.json 与 meta 记录后重新采集; "
-                         "默认: 盘后→盘后幂等跳过, 盘中→盘后自动刷新为收盘数据, 盘中→盘中跳过")
+    ap.add_argument(
+        "--overwrite",
+        action="store_true",
+        help="强制覆盖重采: 清空既有同数据日目标源 raw_*.json 与 meta 记录后重新采集; "
+        "默认: 盘后→盘后幂等跳过, 盘中→盘后自动刷新为收盘数据, 盘中→盘中跳过",
+    )
     ap.add_argument("--dry-run", action="store_true")
     ap.add_argument("--only", default="", help="只采指定源(逗号分隔: zhb,tdx,tencent,push2)")
-    ap.add_argument("--refresh-pool", action="store_true",
-                    help="采集前刷新动态层(从涨停池选 5 只连板/新股/涨停写回 pool.json)")
-    ap.add_argument("--refresh-pool-only", action="store_true",
-                    help="只刷新动态层并写回 pool.json, 不执行采集")
-    ap.add_argument("--eltdx-lite", action="store_true",
-                    help="eltdx 采集瘦身: 跳过与 tdx 源冗余的 kline_day/finance_batch 及仅能力登记的 f10_news, "
-                         "仅采 quote_snapshot+shortline+连板天梯(对撞真正消费项), 大幅加速每日字段对撞采集")
+    ap.add_argument(
+        "--refresh-pool",
+        action="store_true",
+        help="采集前刷新动态层(从涨停池选 5 只连板/新股/涨停写回 pool.json)",
+    )
+    ap.add_argument(
+        "--refresh-pool-only", action="store_true", help="只刷新动态层并写回 pool.json, 不执行采集"
+    )
+    ap.add_argument(
+        "--eltdx-lite",
+        action="store_true",
+        help="eltdx 采集瘦身: 跳过与 tdx 源冗余的 kline_day/finance_batch 及仅能力登记的 f10_news, "
+        "仅采 quote_snapshot+shortline+连板天梯(对撞真正消费项), 大幅加速每日字段对撞采集",
+    )
     args = ap.parse_args()
 
     if args.refresh_pool_only:
         picks = refresh_dynamic_layer(trade_date=args.date)
         if picks:
-            print("动态层候选:\n" + "\n".join(f"  {p['code']} {p['name']} {p['tags']}" for p in picks))
+            print(
+                "动态层候选:\n" + "\n".join(f"  {p['code']} {p['name']} {p['tags']}" for p in picks)
+            )
         else:
             print("动态层刷新未产生候选(保留旧层)。")
         return
@@ -1724,19 +1959,25 @@ def main() -> None:
         return
 
     t0 = time.time()
-    print(f"▶ 采集开始: 数据日={args.date} (运行日={datetime.now().strftime('%Y%m%d')}) | 股票 {len(pool)} 只 | 源: ZHB/TDX/腾讯/push2", flush=True)
+    print(
+        f"▶ 采集开始: 数据日={args.date} (运行日={datetime.now().strftime('%Y%m%d')}) | 股票 {len(pool)} 只 | 源: ZHB/TDX/腾讯/push2",
+        flush=True,
+    )
 
     out_dir = os.path.join(OUT_BASE, args.date)
     os.makedirs(out_dir, exist_ok=True)
     meta_path = os.path.join(out_dir, "meta.json")
 
     _now = datetime.now()
-    meta = {"date": args.date, "data_date": args.date,
-            "run_date": _now.strftime("%Y%m%d"),
-            "run_datetime": _now.strftime("%Y-%m-%d %H:%M:%S"),
-            "start": _now.strftime("%Y-%m-%d %H:%M:%S"),
-            "market_phase": "closed" if _is_closed_phase_now(args.date) else "intraday",
-            "sources": {}}
+    meta = {
+        "date": args.date,
+        "data_date": args.date,
+        "run_date": _now.strftime("%Y%m%d"),
+        "run_datetime": _now.strftime("%Y-%m-%d %H:%M:%S"),
+        "start": _now.strftime("%Y-%m-%d %H:%M:%S"),
+        "market_phase": "closed" if _is_closed_phase_now(args.date) else "intraday",
+        "sources": {},
+    }
     # V17.2.9 修复: --only 增量采集必须**合并**已有 meta.json, 而非整份覆盖 ——
     # 否则未参与本次采集的源会从元数据中消失(曾致 22 源元数据被单源覆写)。
     if args.only and os.path.isfile(meta_path):
@@ -1756,35 +1997,35 @@ def main() -> None:
             print(f"  ⚠ 已有 meta.json 读取失败, 本次将整份覆盖: {e}", flush=True)
     meta["only"] = args.only or None
 
-    collectors = {
+    collectors: Dict[str, Callable[..., Dict[str, Any]]] = {
         "zhb": collect_zhb,
         "tdx": collect_tdx,
-        "eltdx": collect_eltdx,        # V17.2.15 第24源: eltdx 全字段采集(命名+原始字节双轨)
+        "eltdx": collect_eltdx,  # V17.2.15 第24源: eltdx 全字段采集(命名+原始字节双轨)
         "tencent": collect_tencent,
         "push2": collect_push2,
         # V17.3.1: push2_full 已移出默认采集(与 push2 完全同构、纯冗余负载);
         #          日常改采 push2 即可; 字典侧保留 push2_full 作 fallback 参考(语义等价)。
-        "sina": collect_sina,               # V16.4.1: 新浪行情全字段
-        "axdata": collect_axdata,           # V16.4.1: 短线指标 34 字段(零网络)
+        "sina": collect_sina,  # V16.4.1: 新浪行情全字段
+        "axdata": collect_axdata,  # V16.4.1: 短线指标 34 字段(零网络)
         "market_sources": collect_market_sources,  # V16.4.1: 财联社/KPL/板块轮动/龙虎榜
-        "tdx_f10": collect_tdx_f10,         # V16.4.1: F10 财务/股本/分红
-        "fuyao": collect_fuyao,             # V17.0.5: fuyao 官方 REST(盘后可用——竞价/池/财务指标/估值 PS·PCF); V17.0.24 补三大报表
-        "em_kline_f61": collect_em_kline_f61,   # V17.0.24: 东财日K f61 换手率(CYQ 唯一源, delay 域)
-        "em_fund_flow": collect_em_fund_flow,   # V17.0.24: 资金流四档 f137 族(主力净唯一同口径源, delay 域)
-        "ulist239": collect_ulist239,       # V16.4.1: push2delay ulist 239 字段(批量)
-        "push2ex": collect_push2ex,         # V16.4.1: 涨停/跌停/炸板池
-        "em_hot": collect_em_hot,           # V16.4.1: 人气榜
-        "cls": collect_cls,                 # V16.4.1: 财联社快讯
-        "datacenter": collect_datacenter,   # V16.4.1: 两融/北向/解禁
+        "tdx_f10": collect_tdx_f10,  # V16.4.1: F10 财务/股本/分红
+        "fuyao": collect_fuyao,  # V17.0.5: fuyao 官方 REST(盘后可用——竞价/池/财务指标/估值 PS·PCF); V17.0.24 补三大报表
+        "em_kline_f61": collect_em_kline_f61,  # V17.0.24: 东财日K f61 换手率(CYQ 唯一源, delay 域)
+        "em_fund_flow": collect_em_fund_flow,  # V17.0.24: 资金流四档 f137 族(主力净唯一同口径源, delay 域)
+        "ulist239": collect_ulist239,  # V16.4.1: push2delay ulist 239 字段(批量)
+        "push2ex": collect_push2ex,  # V16.4.1: 涨停/跌停/炸板池
+        "em_hot": collect_em_hot,  # V16.4.1: 人气榜
+        "cls": collect_cls,  # V16.4.1: 财联社快讯
+        "datacenter": collect_datacenter,  # V16.4.1: 两融/北向/解禁
         "tdx_f10_more": collect_tdx_f10_more,  # V16.4.1: 股东/新闻/提醒
-        "cninfo": collect_cninfo,           # V16.4.1: 巨潮互动易
-        "reports": collect_reports,         # V16.4.1: 研报
-        "ftshare": collect_ftshare,         # V17.0.7: FTShare MCP(千股千评/董监高/商誉/质押/解禁/打板池)
+        "cninfo": collect_cninfo,  # V16.4.1: 巨潮互动易
+        "reports": collect_reports,  # V16.4.1: 研报
+        "ftshare": collect_ftshare,  # V17.0.7: FTShare MCP(千股千评/董监高/商誉/质押/解禁/打板池)
         # V17.2.12 主字典对齐: registry 已登记但本脚本暂无 producer(标记 unwired) / 已废弃(deprecated)
-        "baidu": collect_baidu,            # §12.8.16 ❌→⏸️ 已废弃, 占位不采集
-        "clist": collect_clist,            # §12.8.6 东财-clist; 真实 producer(V17.2.13, push2delay 镜像域)
-        "slist": collect_slist,            # §12.8.5 东财-slist; 真实 producer(V17.2.13, push2delay 镜像域)
-        "exchange": collect_exchange,      # §12.8.17 沪深交易所; 真实 producer(V17.2.14, 直连 szse/sse)
+        "baidu": collect_baidu,  # §12.8.16 ❌→⏸️ 已废弃, 占位不采集
+        "clist": collect_clist,  # §12.8.6 东财-clist; 真实 producer(V17.2.13, push2delay 镜像域)
+        "slist": collect_slist,  # §12.8.5 东财-slist; 真实 producer(V17.2.13, push2delay 镜像域)
+        "exchange": collect_exchange,  # §12.8.17 沪深交易所; 真实 producer(V17.2.14, 直连 szse/sse)
         # V17.4.0: 事件驱动/可转债/宏观层采集器(吸收上游 3.9.0 §11/§14/§15); 仅验证 _EM_REPORTS 常量真伪,
         #          取值异常不抛(对撞阶段再钉死常量)。接入报告层见 get_med_report/get_lng_report(已接线)。
         "event_dc": collect_event_dc,
@@ -1797,7 +2038,9 @@ def main() -> None:
         "st_list": collect_st_list,
     }
     if args.only:
-        collectors = {k: v for k, v in collectors.items() if k in [s.strip() for s in args.only.split(",")]}
+        collectors = {
+            k: v for k, v in collectors.items() if k in [s.strip() for s in args.only.split(",")]
+        }
 
     # ── 幂等/覆盖：文件夹名已=数据日(交易日)。
     #    盘后运行发现盘中已采快照 → 默认刷新为收盘数据(覆盖重采); 盘后→盘后默认幂等跳过; 盘中→盘中默认跳过。
@@ -1828,20 +2071,29 @@ def main() -> None:
     if _existing_raws:
         # 仅当「本次全部目标源」均已存在 raw 文件时判定采集物存在, 增量 --only 补采不触发跳过
         _want = set(collectors.keys())
-        _have = {os.path.basename(p)[len("raw_"):-len(".json")] for p in _existing_raws}
+        _have = {os.path.basename(p)[len("raw_") : -len(".json")] for p in _existing_raws}
         if _want.issubset(_have):
             # 完整度判定: 盘中快照(收盘前)应被盘后重采刷新为收盘数据, 避免对撞污染
             _existing_closed = _is_closed_phase_existing(meta_path, args.date)
             _new_closed = _is_closed_phase_now(args.date)
             if _existing_closed and _new_closed:
-                print(f"⏭ 数据日 {args.date} 已存在完整(盘后)采集物 (raw {len(_existing_raws)} 个, 源: {sorted(_have)}), "
-                      f"默认幂等跳过。如需重采请加 --overwrite。", flush=True)
+                print(
+                    f"⏭ 数据日 {args.date} 已存在完整(盘后)采集物 (raw {len(_existing_raws)} 个, 源: {sorted(_have)}), "
+                    f"默认幂等跳过。如需重采请加 --overwrite。",
+                    flush=True,
+                )
                 return
             if (not _existing_closed) and (not _new_closed):
-                print(f"⏭ 数据日 {args.date} 已存在盘中快照且本次仍为盘中运行, 默认幂等跳过。", flush=True)
+                print(
+                    f"⏭ 数据日 {args.date} 已存在盘中快照且本次仍为盘中运行, 默认幂等跳过。",
+                    flush=True,
+                )
                 return
             # 已有=盘中快照, 本次=盘后运行 → 刷新为收盘数据(覆盖重采目标源)
-            print(f"🔄 数据日 {args.date} 现有采集物为盘中快照(非收盘), 本次盘后运行将刷新为收盘数据。", flush=True)
+            print(
+                f"🔄 数据日 {args.date} 现有采集物为盘中快照(非收盘), 本次盘后运行将刷新为收盘数据。",
+                flush=True,
+            )
             _clear_raw = {os.path.join(out_dir, f"raw_{n}.json") for n in collectors}
             for _p in _existing_raws:
                 if _p in _clear_raw:
@@ -1875,7 +2127,8 @@ def main() -> None:
                 _kind = "deprecated" if _uw == "deprecated" else "unwired"
                 meta["sources"][name] = {
                     "scheme": SOURCE_SCHEME.get(name, "unknown"),
-                    "ok": False, "status": _kind,
+                    "ok": False,
+                    "status": _kind,
                     "registry_name": data.get("registry_name"),
                     "section": data.get("section"),
                     "secs": round(time.time() - t1, 1),
@@ -1891,6 +2144,7 @@ def main() -> None:
             _fm = None
             try:
                 from field_meta import field_meta_block
+
                 _fm = field_meta_block(name)
             except Exception:
                 _fm = None
@@ -1903,9 +2157,13 @@ def main() -> None:
             # 旧逻辑只要 fn(pool) 不抛异常就记 ok=True(曾致 em_kline_f61 20/20 全失败仍标 ok)。
             # 现按返回物中 __error__ 的实际数量判定 status: ok / partial / failed。
             _ok, _info = assess_result(data)
-            _entry = {"scheme": _scheme, "ok": _ok,
-                      "field_meta": _fm is not None,
-                      "secs": round(time.time() - t1, 1), "file": path}
+            _entry = {
+                "scheme": _scheme,
+                "ok": _ok,
+                "field_meta": _fm is not None,
+                "secs": round(time.time() - t1, 1),
+                "file": path,
+            }
             _entry.update(_info)
             meta["sources"][name] = _entry
             if _ok:
@@ -1913,27 +2171,36 @@ def main() -> None:
             else:
                 _nt = _entry.get("n_total")
                 _cnt = f"{_entry['n_error']}/{_nt}" if _nt else str(_entry["n_error"])
-                print(f"  ⚠ {name}: {_entry['secs']}s | {_entry['status']} | "
-                      f"{_cnt} 处 __error__ | {_entry.get('error_sample', '')}", flush=True)
+                print(
+                    f"  ⚠ {name}: {_entry['secs']}s | {_entry['status']} | "
+                    f"{_cnt} 处 __error__ | {_entry.get('error_sample', '')}",
+                    flush=True,
+                )
         except Exception as e:
-            meta["sources"][name] = {"scheme": SOURCE_SCHEME.get(name, "unknown"),
-                                     "ok": False, "error": str(e)[:300]}
+            meta["sources"][name] = {
+                "scheme": SOURCE_SCHEME.get(name, "unknown"),
+                "ok": False,
+                "error": str(e)[:300],
+            }
             print(f"  ✖ {name}: {e}", flush=True)
 
     meta["end"] = time.strftime("%Y-%m-%d %H:%M:%S")
     meta["total_secs"] = round(time.time() - t0, 1)
     # A 方案: 本日各源字段体系(scheme)血缘总览, 供对撞工具/lint 直接读取
     # V17.2.9: 与已有 schemes 合并(--only 时不得丢失未采源的血缘标注)
-    meta["schemes"] = {**(meta.get("schemes") or {}),
-                       **{k: SOURCE_SCHEME.get(k, "unknown") for k in collectors}}
+    meta["schemes"] = {
+        **(meta.get("schemes") or {}),
+        **{k: SOURCE_SCHEME.get(k, "unknown") for k in collectors},
+    }
     # V17.0.10: 记录 ZHB 数据日期(T-1 规则)——对撞破解必须先核对此字段再定对撞报告日期
     try:
-        _zhb = json.load(
-            open(os.path.join(out_dir, "raw_zhb.json"), encoding="utf-8")
-        ).get("zhb_date", "")
+        _zhb = json.load(open(os.path.join(out_dir, "raw_zhb.json"), encoding="utf-8")).get(
+            "zhb_date", ""
+        )
         meta["zhb_data_date"] = _zhb or meta.get("zhb_data_date", "")
     except Exception:
         meta.setdefault("zhb_data_date", "")
+
     # V17.2.9: 本次运行的源级健康度汇总(--only 时只统计本次 collectors, 不误报历史源)
     # V17.2.12: unwired/deprecated 为 registry 已登记但无 producer / 已废弃的预期态, 不计入异常源。
     def _is_abnormal(s: dict) -> bool:
@@ -1941,12 +2208,20 @@ def main() -> None:
         if st in ("ok", "unwired", "deprecated"):
             return False
         return not s.get("ok", True)
+
     _bad = [k for k in collectors if _is_abnormal(meta["sources"].get(k, {}))]
-    meta["run"] = {"only": args.only or None, "n_sources": len(collectors),
-                   "n_abnormal": len(_bad), "abnormal": _bad}
+    meta["run"] = {
+        "only": args.only or None,
+        "n_sources": len(collectors),
+        "n_abnormal": len(_bad),
+        "abnormal": _bad,
+    }
     with open(meta_path, "w", encoding="utf-8") as f:
         json.dump(meta, f, ensure_ascii=False, indent=1)
-    print(f"✔ 完成: {out_dir} | 总耗时 {meta['total_secs']}s | ZHB={meta.get('zhb_data_date')}", flush=True)
+    print(
+        f"✔ 完成: {out_dir} | 总耗时 {meta['total_secs']}s | ZHB={meta.get('zhb_data_date')}",
+        flush=True,
+    )
     if _bad:
         print(f"⚠ 本次存在异常源 {len(_bad)}/{len(collectors)}: {', '.join(_bad)}", flush=True)
 

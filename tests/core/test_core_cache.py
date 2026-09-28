@@ -8,6 +8,7 @@
   - cache_stats
   - STOCK_NOCACHE=1 环境变量禁用
 """
+
 from __future__ import annotations
 
 import json
@@ -213,6 +214,7 @@ class FakeDateTime:
 
     def __init__(self, target):
         from datetime import datetime as _real
+
         self._real = _real
         self._target = target
 
@@ -286,9 +288,9 @@ def test_make_valid_if_min_size_boundary(value, min_size, expect):
     import core.stock_cache as sc
 
     validator = sc.make_valid_if(check_zeros=False, min_size=min_size)
-    assert validator(value) is expect, (
-        f"make_valid_if(min_size={min_size})({value!r}) 应返回 {expect}"
-    )
+    assert (
+        validator(value) is expect
+    ), f"make_valid_if(min_size={min_size})({value!r}) 应返回 {expect}"
 
 
 def test_make_valid_if_rejects_all_zero_dict():

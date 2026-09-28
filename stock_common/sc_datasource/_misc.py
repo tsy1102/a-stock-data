@@ -5,8 +5,9 @@
 跨片段符号由各子模块函数体内的局部懒导入（from ._DEFINER import NAME）提供，
 共享可变状态集中于 _shared.py（单实例）。
 """
+
 from __future__ import annotations
-from typing import Any, Dict, Optional
+from typing import Any, Dict, List, Optional
 from datetime import datetime, timedelta
 import code
 import os
@@ -32,8 +33,11 @@ def get_historical_high_qfq(code: str, count: int = 640) -> Optional[float]:
     """
     from stock_common.sc_network import _quick_request
 
-    mkt = "bj" if code.startswith(("92", "8", "4", "43", "83", "87")) else (
-        "sh" if code.startswith(("6", "9", "5")) else "sz")
+    mkt = (
+        "bj"
+        if code.startswith(("92", "8", "4", "43", "83", "87"))
+        else ("sh" if code.startswith(("6", "9", "5")) else "sz")
+    )
     url = "https://web.ifzq.gtimg.cn/appstock/app/fqkline/get"
     try:
         r = _quick_request(
@@ -102,7 +106,11 @@ def get_tdx_day_tail(code: str) -> Dict[str, Any]:
         import os as _os
         import struct as _st
 
-        _mkt = "bj" if code.startswith(("92", "8", "4", "43", "83", "87")) else ("sh" if code.startswith(("6", "9")) else "sz")
+        _mkt = (
+            "bj"
+            if code.startswith(("92", "8", "4", "43", "83", "87"))
+            else ("sh" if code.startswith(("6", "9")) else "sz")
+        )
         _path = _os.path.join(_tdx_root(), "vipdoc", _mkt, "lday", f"{_mkt}{code}.day")
         with open(_path, "rb") as _f:
             _f.seek(-32, 2)
@@ -186,7 +194,7 @@ def calc_float_mcap_yi(code: str, price: float) -> float:
         return 0.0
 
 
-def print_batch_summary(results, total):
+def print_batch_summary(results: List[Dict[str, Any]], total: int) -> None:
     """批量执行结果汇总打印。
 
     Args:
@@ -216,9 +224,11 @@ def get_cls_market_emotion() -> Dict[str, Any]:
     """
     try:
         import levistock as lk
+
         # V16.2: levistock 内部直连东财，绕过统一限流 → 调用前走进程级协调（全局 ≤1 rps）
         try:
             from stock_common.sc_network import _em_wait_process_interval
+
             _em_wait_process_interval()
         except Exception:
             pass

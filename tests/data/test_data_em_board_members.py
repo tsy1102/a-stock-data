@@ -26,6 +26,7 @@
 
 本文件钉死正确映射，任何人把 `"pe"` 改回 f23 都会被这里的断言拦住。
 """
+
 from __future__ import annotations
 
 import os
@@ -37,6 +38,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspa
 
 from stock_common import sc_datasource  # noqa: E402
 from stock_common.sc_datasource import get_em_board_members, _industry  # noqa: E402
+
 # V17.2.18 重构后片段为独立模块: get_em_board_members 定义在 _industry, em_get 由其自身
 # 命名空间解析; 故补丁须打在 _industry.em_get (而非包级 re-export 副本) 才能穿透。
 
@@ -70,12 +72,12 @@ def _item(**over):
         "f14": "贵州茅台",
         "f2": 1297.4,
         "f3": 0.39,
-        "f9": 18.22,          # 市盈率(动态)
+        "f9": 18.22,  # 市盈率(动态)
         "f20": 1621855869137,  # 总市值(元)
         "f21": 1621855869137,  # 流通市值(元)
-        "f23": 6.46,          # 市净率 PB —— 曾长期被误当 PE
-        "f62": 12345678.0,    # 主力净流入额
-        "f184": 0.28,         # 换手率
+        "f23": 6.46,  # 市净率 PB —— 曾长期被误当 PE
+        "f62": 12345678.0,  # 主力净流入额
+        "f184": 0.28,  # 换手率
     }
     base.update(over)
     return base
@@ -98,19 +100,20 @@ class TestEmBoardMembersFieldMapping(unittest.TestCase):
         """回归核心：pe == f9(18.22)，绝不能是 f23(6.46)。"""
         r, _ = _call({"data": {"diff": [_item()]}})
         self.assertEqual(len(r), 1)
-        self.assertAlmostEqual(r[0]["pe"], 18.22, places=4,
-                               msg="pe 必须取 f9=市盈率(动态)，取到 f23 说明回归了旧 bug")
+        self.assertAlmostEqual(
+            r[0]["pe"], 18.22, places=4, msg="pe 必须取 f9=市盈率(动态)，取到 f23 说明回归了旧 bug"
+        )
 
     def test_pb_comes_from_f23(self):
         r, _ = _call({"data": {"diff": [_item()]}})
-        self.assertAlmostEqual(r[0]["pb"], 6.46, places=4,
-                               msg="pb 必须取 f23=市净率")
+        self.assertAlmostEqual(r[0]["pb"], 6.46, places=4, msg="pb 必须取 f23=市净率")
 
     def test_pe_and_pb_are_distinct_values(self):
         """量级守卫：PE 与 PB 必须不同。若两者再次混淆（都取同一字段）则此处转红。"""
         r, _ = _call({"data": {"diff": [_item()]}})
-        self.assertNotAlmostEqual(r[0]["pe"], r[0]["pb"], places=2,
-                                  msg="pe 与 pb 数值相同 → 字段映射又被混用了")
+        self.assertNotAlmostEqual(
+            r[0]["pe"], r[0]["pb"], places=2, msg="pe 与 pb 数值相同 → 字段映射又被混用了"
+        )
 
     def test_request_fields_include_f9_and_f23(self):
         """请求串必须同时含 f9(PE) 与 f23(PB)——缺任一项都会让其中一个字段恒为 0。"""

@@ -12,6 +12,7 @@ import pytest
 
 import sys
 import os
+
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from stock_common.stock_calendar import is_workday, _wrap_date, _validate_date

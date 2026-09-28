@@ -85,7 +85,11 @@ def identify_seat_tier(seat_name: str) -> Tuple[str, str]:
             if alias and (alias in seat_name or seat_name in alias):
                 _matched_alias = alias
                 break
-        if _matched_alias is None and short_name and (short_name in seat_name or seat_name in short_name):
+        if (
+            _matched_alias is None
+            and short_name
+            and (short_name in seat_name or seat_name in short_name)
+        ):
             _matched_alias = short_name
         if _matched_alias is not None:
             details = seat_details.get(short_name, {})
@@ -144,7 +148,7 @@ def get_seat_info(seat_name: str) -> Dict[str, Any]:
             "style": "未知",
             "traits": [],
             "premium": "未知",
-            "winning_rate": "未知"
+            "winning_rate": "未知",
         }
 
     db = _load_seat_db()
@@ -156,7 +160,7 @@ def get_seat_info(seat_name: str) -> Dict[str, Any]:
         "style": details.get("style", "未知"),
         "traits": details.get("traits", []),
         "premium": details.get("premium", "未知"),
-        "winning_rate": details.get("winning_rate", "N/A")
+        "winning_rate": details.get("winning_rate", "N/A"),
     }
 
 
@@ -229,8 +233,14 @@ def enhance_lhb_seats(lhb_data: Dict[str, Any]) -> Dict[str, Any]:
     # V17.0.25(2026-09-02) P1-6 修复: 当龙虎榜席位全部未匹配到已知游资库(_recognized==0)时,
     # 原逻辑恒输出基础分50 + neutral, 是伪精确评分(审计发现22份恒50/恒neutral)。此时评分无意义,
     # 降级为 None / "unknown", 由渲染层标注「席位库未收录, 无法评级」。
-    _recognized = (legend_count + sell_legend_count + positive_count
-                   + sell_positive_count + negative_count + sell_negative_count)
+    _recognized = (
+        legend_count
+        + sell_legend_count
+        + positive_count
+        + sell_positive_count
+        + negative_count
+        + sell_negative_count
+    )
     if _recognized == 0:
         seat_quality_score = None
         premium_signal = "unknown"
@@ -281,7 +291,7 @@ def get_tier_label(tier: str) -> str:
         "new_gen": "新生代",
         "regional": "区域帮派",
         "new_2025": "2025新晋",
-        "unknown": "未知"
+        "unknown": "未知",
     }
     return labels.get(tier, "未知")
 
@@ -297,7 +307,7 @@ if __name__ == "__main__":
         "东方财富拉萨团结路第二证券营业部",
         "华泰成都南一环路第二证券营业部",
         "招商证券福州六一中路证券营业部",
-        "拉萨天团"
+        "拉萨天团",
     ]
 
     print("=== 席位识别测试 ===\n")

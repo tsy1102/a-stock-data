@@ -8,6 +8,7 @@
 
 不需要网络，可在本地直接运行。
 """
+
 from __future__ import annotations
 
 import sys
@@ -27,6 +28,7 @@ for _stream in (sys.stdout, sys.stderr):
 # ────────────────────────────────────────────────────────
 # 数据类对比
 # ────────────────────────────────────────────────────────
+
 
 @dataclass(slots=True, frozen=True)
 class QuoteDC:
@@ -55,6 +57,7 @@ def make_dc(n: int, use_slots: bool = True):
 # Test 1: Memory (sys.getsizeof)
 # ────────────────────────────────────────────────────────
 
+
 def test_memory():
     print("=" * 70)
     print("Test 1: Memory (5000 records, sys.getsizeof)")
@@ -69,7 +72,9 @@ def test_memory():
 
     print(f"  Plain dict             total={s_dict:>10,} bytes  ({s_dict/5000:.0f} B/obj)")
     print(f"  dataclass (slots=True) total={s_dc:>10,} bytes  ({s_dc/5000:.0f} B/obj)")
-    print(f"  dataclass (no slots)   total={s_dc_no_slots:>10,} bytes  ({s_dc_no_slots/5000:.0f} B/obj)")
+    print(
+        f"  dataclass (no slots)   total={s_dc_no_slots:>10,} bytes  ({s_dc_no_slots/5000:.0f} B/obj)"
+    )
 
     if s_dict > 0:
         saved = (1 - s_dc / s_dict) * 100
@@ -79,6 +84,7 @@ def test_memory():
 # ────────────────────────────────────────────────────────
 # Test 2: Field access speed
 # ────────────────────────────────────────────────────────
+
 
 def test_access_speed():
     print()
@@ -113,6 +119,7 @@ def test_access_speed():
 # ────────────────────────────────────────────────────────
 # Test 3: Serialization overhead
 # ────────────────────────────────────────────────────────
+
 
 def test_serialization():
     print()

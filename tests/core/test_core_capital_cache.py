@@ -5,6 +5,7 @@
   - schema 版本不匹配 → 缓存失效重建
   - schema 版本匹配 → 正常读取
 """
+
 from __future__ import annotations
 
 import json
@@ -32,24 +33,40 @@ def _write_cache(path: Path, data: dict) -> None:
 def test_old_unit_cache_self_heal(cap_module):
     """旧单位缓存（股）读取时自动归一为万股。"""
     cc, fake = cap_module
-    _write_cache(fake, {
-        "meta": {"schema_version": 2, "updated_at": "2026-08-03"},
-        "data": {"000001": {"total_shares": 19405918750.0, "float_shares": 19405601250.0,
-                            "updated_at": "2026-08-03"}},
-    })
+    _write_cache(
+        fake,
+        {
+            "meta": {"schema_version": 2, "updated_at": "2026-08-03"},
+            "data": {
+                "000001": {
+                    "total_shares": 19405918750.0,
+                    "float_shares": 19405601250.0,
+                    "updated_at": "2026-08-03",
+                }
+            },
+        },
+    )
     r = cc.get_share_capital("000001")
-    assert r["total_shares"] == pytest.approx(1940591.875)   # 股 → 万股
+    assert r["total_shares"] == pytest.approx(1940591.875)  # 股 → 万股
     assert r["float_shares"] == pytest.approx(1940560.125)
 
 
 def test_schema_mismatch_rebuild(cap_module, monkeypatch):
     """schema 版本不符 → 缓存失效，走 _fetch 重建。"""
     cc, fake = cap_module
-    _write_cache(fake, {
-        "meta": {"schema_version": 1, "updated_at": "2026-08-03"},  # 旧版本
-        "data": {"000001": {"total_shares": 19405918750.0, "float_shares": 19405601250.0,
-                            "updated_at": "2026-08-03"}},
-    })
+    _write_cache(
+        fake,
+        {
+            "meta": {"schema_version": 1, "updated_at": "2026-08-03"},  # 旧版本
+            "data": {
+                "000001": {
+                    "total_shares": 19405918750.0,
+                    "float_shares": 19405601250.0,
+                    "updated_at": "2026-08-03",
+                }
+            },
+        },
+    )
     captured = {}
 
     def _fake_fetch(code):
@@ -58,18 +75,26 @@ def test_schema_mismatch_rebuild(cap_module, monkeypatch):
 
     monkeypatch.setattr(cc, "_fetch_share_capital", _fake_fetch)
     r = cc.get_share_capital("000001")
-    assert captured.get("fetched") == "000001"       # 版本不符 → 重新拉取
+    assert captured.get("fetched") == "000001"  # 版本不符 → 重新拉取
     assert r["total_shares"] == 100.0
 
 
 def test_schema_match_normal(cap_module, monkeypatch):
     """schema 版本匹配 → 直接读缓存（不触发 _fetch）。"""
     cc, fake = cap_module
-    _write_cache(fake, {
-        "meta": {"schema_version": 2, "updated_at": "2026-08-11"},
-        "data": {"000001": {"total_shares": 1940591.875, "float_shares": 1940560.125,
-                            "updated_at": "2026-08-11"}},
-    })
+    _write_cache(
+        fake,
+        {
+            "meta": {"schema_version": 2, "updated_at": "2026-08-11"},
+            "data": {
+                "000001": {
+                    "total_shares": 1940591.875,
+                    "float_shares": 1940560.125,
+                    "updated_at": "2026-08-11",
+                }
+            },
+        },
+    )
     captured = {}
 
     def _fake_fetch(code):

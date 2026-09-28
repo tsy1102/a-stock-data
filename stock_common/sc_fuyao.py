@@ -220,10 +220,15 @@ def _fuyao_raw(
             _debug_log(f"fuyao: HTTP {r.status_code} {path}")
             return None
         d = r.json()
+        if not isinstance(d, dict):
+            _debug_log(f"fuyao: 响应不是 JSON 对象 {path}")
+            return None
         if d.get("code") != 0:
             _debug_log(f"fuyao: code={d.get('code')} msg={d.get('message')} {path}")
             if d.get("code") in (2001, 2003):
-                _debug_log("fuyao: Key 无效——请重新配置（删除 credentials/fuyao_key.txt 或更新环境变量）")
+                _debug_log(
+                    "fuyao: Key 无效——请重新配置（删除 credentials/fuyao_key.txt 或更新环境变量）"
+                )
             return d
         return d
     except Exception as _e:
@@ -343,7 +348,10 @@ def get_fuyao_auction_benchmark(date: Optional[str] = None) -> List[Dict[str, An
 
 
 def get_fuyao_limit_pool(
-    kind: str = "up", page: int = 1, size: int = 100, date_ms: Optional[int] = None,
+    kind: str = "up",
+    page: int = 1,
+    size: int = 100,
+    date_ms: Optional[int] = None,
     sort_field: Optional[str] = None,
 ) -> Optional[Dict[str, Any]]:
     """涨跌停/炸板池（kind: up/down/break）。返回 data 全量（含 pagination/item[]）。
@@ -353,7 +361,9 @@ def get_fuyao_limit_pool(
     up: seal_money/max_seal_money(封单双口径,元)/limit_up_reason/continue_day_text/cnt；
     down: first/last_limit_time；break: open_times(开板次数)。
     """
-    ep = {"up": EP_LIMIT_UP_POOL, "down": EP_LIMIT_DOWN_POOL, "break": EP_LIMIT_BREAK_POOL}.get(kind)
+    ep = {"up": EP_LIMIT_UP_POOL, "down": EP_LIMIT_DOWN_POOL, "break": EP_LIMIT_BREAK_POOL}.get(
+        kind
+    )
     if not ep:
         return None
     params: Dict[str, Any] = {"page": page, "size": size}
@@ -443,7 +453,10 @@ def get_fuyao_fin_indicators(thscode: str, report: str) -> Optional[Dict[str, An
 
 @cached("fuyao_financials", trading_day=True, valid_if=make_valid_if())
 def get_fuyao_financials(
-    kind: str, thscode: str, limit: int = 4, report: Optional[str] = None,
+    kind: str,
+    thscode: str,
+    limit: int = 4,
+    report: Optional[str] = None,
     period: str = "quarterly",
 ) -> List[Dict[str, Any]]:
     """三大报表（kind: income/balance/cashflow；limit 期数或 report 指定单期）。
@@ -465,7 +478,9 @@ def get_fuyao_financials(
     return _items(_fuyao_raw(ep, params))
 
 
-def get_fuyao_trading_days(start: Optional[str] = None, end: Optional[str] = None) -> List[Dict[str, Any]]:
+def get_fuyao_trading_days(
+    start: Optional[str] = None, end: Optional[str] = None
+) -> List[Dict[str, Any]]:
     """交易日序列（date_ms/date）。"""
     params: Dict[str, Any] = {}
     if start:
@@ -560,7 +575,9 @@ def get_fund_watch_evidence(stock_code: str, max_funds: int = 8) -> Optional[Dic
     held: List[Dict[str, Any]] = []
     not_held: List[str] = []
     for f in watch[:max_funds]:
-        ftype = f.get("fund_type") or ("exchange" if f["thscode"].endswith((".SH", ".SZ")) else "otc")
+        ftype = f.get("fund_type") or (
+            "exchange" if f["thscode"].endswith((".SH", ".SZ")) else "otc"
+        )
         data = get_fuyao_fund_holdings(f["thscode"], ftype)
         if not data:
             continue
@@ -568,18 +585,20 @@ def get_fund_watch_evidence(stock_code: str, max_funds: int = 8) -> Optional[Dic
         items = data.get("item") or []
         hit = next((it for it in items if str(it.get("ticker")) == stock_code), None)
         if hit:
-            held.append({
-                "alias": alias,
-                "thscode": f["thscode"],
-                "stock_name": hit.get("stock_name"),
-                "hold_ratio": fnum_local(hit.get("hold_ratio")),
-                "investment_rank": hit.get("investment_rank"),
-                "period_increase_rate_pct": fnum_local(hit.get("period_increase_rate_pct")),
-                "end_date_ms": hit.get("end_date_ms"),
-                "fund_stock_pct": fnum_local(data.get("stock_ratio_pct")),
-                "main_industry": data.get("main_industry"),
-                "concentration_ratio": fnum_local(data.get("concentration_ratio")),
-            })
+            held.append(
+                {
+                    "alias": alias,
+                    "thscode": f["thscode"],
+                    "stock_name": hit.get("stock_name"),
+                    "hold_ratio": fnum_local(hit.get("hold_ratio")),
+                    "investment_rank": hit.get("investment_rank"),
+                    "period_increase_rate_pct": fnum_local(hit.get("period_increase_rate_pct")),
+                    "end_date_ms": hit.get("end_date_ms"),
+                    "fund_stock_pct": fnum_local(data.get("stock_ratio_pct")),
+                    "main_industry": data.get("main_industry"),
+                    "concentration_ratio": fnum_local(data.get("concentration_ratio")),
+                }
+            )
         else:
             not_held.append(alias)
     return {"held": held, "not_held": not_held, "checked": len(held) + len(not_held)}

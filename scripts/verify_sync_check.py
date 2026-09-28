@@ -44,6 +44,8 @@ import datetime
 import os
 import re
 import sys
+from types import ModuleType
+from typing import Optional
 
 # ----------------------------------------------------------------------------
 # 路径解析：脚本位于 <repo>/scripts/verify_sync_check.py
@@ -56,6 +58,7 @@ VERIFY_DIR = os.path.join(REPO_ROOT, "docs", "verify")
 # 单一真相源接入：优先用 field_registry.json 的 sources[].verify_file；
 # 缺失/不可用时回退到下方 MAPPING_HARDCODED（CI 闸门权威配置，须显式可审）。
 # 不静默吞错：registry 读取失败则退化为硬编码，闸门行为不变。
+_fra: Optional[ModuleType]
 try:
     sys.path.insert(0, SCRIPT_DIR)
     import field_registry_api as _fra
@@ -114,6 +117,7 @@ def get_source_mapping():
             pass
     return m
 
+
 # 同步检查配置（best-effort）：对每个 (分字典, 字段 token 正则) 做子集比对。
 # 仅对「附录=完整原始全表」的源启用，避免误报。未列出的源跳过（人工复核）。
 SYNC_CHECKS = [
@@ -131,7 +135,7 @@ SYNC_CHECKS = [
 # 仅对「附录=完整原始全表」的源启用，避免跨源误报。
 STALE_CHECKS = [
     {"file": "tencent_verify.md", "token": r"\[\d{1,3}\]"},
-    {"file": "push2_verify.md",   "token": r"\bf\d{2,3}\b"},
+    {"file": "push2_verify.md", "token": r"\bf\d{2,3}\b"},
 ]
 
 # 主字典中标识「字段结论被升级/重判定」的事件短语（命中即视为该字段有新版结论，分字典须同步）。
@@ -247,13 +251,26 @@ def latest_dates_anywhere(text, token_regex):
 # ----------------------------------------------------------------------------
 SUB_UNRESOLVED_RE = re.compile(r"待确认|未知|疑似|待\s*F10|待终破|待\s*L1|待定|未定案|未实证")
 SUB_RESOLVED_POS = [
-    "L1-U", "L1", "L2", "L3", "L4", "✅", "精确", "定案", "固化", "升格",
-    "恒值占位", "常量占位", "未破解", "固定等级码", "固定占位",
+    "L1-U",
+    "L1",
+    "L2",
+    "L3",
+    "L4",
+    "✅",
+    "精确",
+    "定案",
+    "固化",
+    "升格",
+    "恒值占位",
+    "常量占位",
+    "未破解",
+    "固定等级码",
+    "固定占位",
 ]
 
 CONTRADICTION_CHECKS = [
-    {"file": "push2_verify.md",      "token": r"\bf\d{2,3}\b", "fmt": "std"},
-    {"file": "tencent_verify.md",    "token": r"\[\d{1,3}\]",   "fmt": "std"},
+    {"file": "push2_verify.md", "token": r"\bf\d{2,3}\b", "fmt": "std"},
+    {"file": "tencent_verify.md", "token": r"\[\d{1,3}\]", "fmt": "std"},
     {"file": "ulist_push2_align.md", "token": r"\bf\d{2,3}\b", "fmt": "ulist"},
 ]
 
@@ -334,13 +351,21 @@ def sub_status_map(text, token_regex, fmt):
 # 主流程
 # ----------------------------------------------------------------------------
 def main():
+    if hasattr(sys.stdout, "reconfigure"):
+        sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+    if hasattr(sys.stderr, "reconfigure"):
+        sys.stderr.reconfigure(encoding="utf-8", errors="replace")
+
     ap = argparse.ArgumentParser(description="主字典 ↔ verify 分字典 一致性闸门")
-    ap.add_argument("--strict", action="store_true",
-                    help="将 ADVISORY WARN 升级为 FAIL（退出码 1）")
-    ap.add_argument("--sync", action="store_true",
-                    help="执行字段级同步抽检（best-effort，默认关闭以免跨源误报噪声）")
-    ap.add_argument("--repo", default=REPO_ROOT,
-                    help="仓库根目录（默认自动推断）")
+    ap.add_argument(
+        "--strict", action="store_true", help="将 ADVISORY WARN 升级为 FAIL（退出码 1）"
+    )
+    ap.add_argument(
+        "--sync",
+        action="store_true",
+        help="执行字段级同步抽检（best-effort，默认关闭以免跨源误报噪声）",
+    )
+    ap.add_argument("--repo", default=REPO_ROOT, help="仓库根目录（默认自动推断）")
     args = ap.parse_args()
 
     global FIELD_DICT, VERIFY_DIR
@@ -401,13 +426,15 @@ def main():
     if _fra is not None:
         try:
             reg = _fra.load_registry()
-            reg_map = {s["name"]: s["verify_file"] for s in reg.get("sources", [])
-                       if s.get("verify_file")}
+            reg_map = {
+                s["name"]: s["verify_file"] for s in reg.get("sources", []) if s.get("verify_file")
+            }
             for name, vf in reg_map.items():
                 if name in MAPPING_HARDCODED and MAPPING_HARDCODED[name] != vf:
                     warnings.append(
                         f"映射漂移: 源 {name} registry={vf} 但硬编码基线={MAPPING_HARDCODED[name]}"
-                        f"（建议统一为 registry 单一真相源）")
+                        f"（建议统一为 registry 单一真相源）"
+                    )
         except Exception:  # noqa: BLE001
             pass
 
@@ -449,8 +476,10 @@ def main():
                 stale.append((tok, md, sd))
         if stale:
             for tok, md, sd in stale:
-                msg = (f"陈旧结论: {base} 字段 {tok} 主字典升级 {md} > 分字典 {sd}"
-                       f"（分字典未同步升级，须补同步）")
+                msg = (
+                    f"陈旧结论: {base} 字段 {tok} 主字典升级 {md} > 分字典 {sd}"
+                    f"（分字典未同步升级，须补同步）"
+                )
                 hard_failures.append(msg)
                 print(f"   ✗ {msg}")
         else:
@@ -472,8 +501,10 @@ def main():
                 continue
             m = mmap.get(tok)
             if m and m[0] == "DET":
-                msg = (f"主升分未升: {base} 字段 {tok} 主字典已定案(L1/确定) "
-                       f"但分字典仍「待确认/未知/?」（须补同步）")
+                msg = (
+                    f"主升分未升: {base} 字段 {tok} 主字典已定案(L1/确定) "
+                    f"但分字典仍「待确认/未知/?」（须补同步）"
+                )
                 hard_failures.append(msg)
                 print(f"   ✗ {msg}")
                 found = True
@@ -501,13 +532,17 @@ def main():
                 miss = sorted(mset - sset)
                 extra = sorted(sset - mset)
                 if miss:
-                    msg = (f"ZHB 镜像缺失: {src} 主字典 {len(miss)} 列未在 zhb_verify.md 覆盖"
-                           f"（须重跑 gen_zhb_subdict.py）: {miss[:10]}")
+                    msg = (
+                        f"ZHB 镜像缺失: {src} 主字典 {len(miss)} 列未在 zhb_verify.md 覆盖"
+                        f"（须重跑 gen_zhb_subdict.py）: {miss[:10]}"
+                    )
                     hard_failures.append(msg)
                     print(f"   ✗ {msg}")
                 if extra:
-                    msg = (f"ZHB 镜像越权: {src} zhb_verify.md 含 {len(extra)} 个主字典无的孤儿列"
-                           f"（镜像不得发明字段）: {extra[:10]}")
+                    msg = (
+                        f"ZHB 镜像越权: {src} zhb_verify.md 含 {len(extra)} 个主字典无的孤儿列"
+                        f"（镜像不得发明字段）: {extra[:10]}"
+                    )
                     hard_failures.append(msg)
                     print(f"   ✗ {msg}")
             else:
@@ -517,8 +552,10 @@ def main():
                 zhb_ok = False
                 miss = sorted(mc - sc)
                 if miss:
-                    msg = (f"ZHB 标准契约缺失: {src} 主字典 {len(miss)} 个契约 token 未在镜像"
-                           f"（须重跑 gen_zhb_subdict.py）: {miss[:10]}")
+                    msg = (
+                        f"ZHB 标准契约缺失: {src} 主字典 {len(miss)} 个契约 token 未在镜像"
+                        f"（须重跑 gen_zhb_subdict.py）: {miss[:10]}"
+                    )
                     hard_failures.append(msg)
                     print(f"   ✗ {msg}")
             elif mc:
@@ -546,18 +583,24 @@ def main():
             miss = sorted(main_ul - sub_ul)
             extra = sorted(sub_ul - main_ul)
             if miss:
-                msg = (f"ulist239 镜像缺失: 主字典 {len(miss)} 个 fN 未在 ulist_verify.md 覆盖"
-                       f"（须重跑 gen_ulist_subdict.py）: {miss[:12]}")
+                msg = (
+                    f"ulist239 镜像缺失: 主字典 {len(miss)} 个 fN 未在 ulist_verify.md 覆盖"
+                    f"（须重跑 gen_ulist_subdict.py）: {miss[:12]}"
+                )
                 hard_failures.append(msg)
                 print(f"   ✗ {msg}")
             if extra:
-                msg = (f"ulist239 镜像越权: ulist_verify.md 含 {len(extra)} 个主字典无的孤儿 fN"
-                       f"（镜像不得发明字段）: {extra[:12]}")
+                msg = (
+                    f"ulist239 镜像越权: ulist_verify.md 含 {len(extra)} 个主字典无的孤儿 fN"
+                    f"（镜像不得发明字段）: {extra[:12]}"
+                )
                 hard_failures.append(msg)
                 print(f"   ✗ {msg}")
         else:
-            print(f"   ✓ ulist239 镜像 ulist_verify.md 与主字典 §12.3.2.3 逐字段一致"
-                  f"（fN 集合 {len(main_ul)} 个完全覆盖、无越权）")
+            print(
+                f"   ✓ ulist239 镜像 ulist_verify.md 与主字典 §12.3.2.3 逐字段一致"
+                f"（fN 集合 {len(main_ul)} 个完全覆盖、无越权）"
+            )
     except Exception as e:  # noqa: BLE001
         warnings.append(f"ulist239 镜像覆盖检查跳过（gen_ulist_subdict 导入/解析失败: {e}）")
         print(f"   ⚠ ulist239 镜像覆盖检查跳过: {e}")
@@ -582,9 +625,11 @@ def main():
             continue
         missing = sorted(dict_tokens - appendix_tokens)
         if missing:
-            msg = (f"{base}: 主字典有 {len(missing)} 个字段未出现在分字典"
-                   f"（疑似已破解未同步）: {', '.join(missing[:20])}"
-                   + (" …" if len(missing) > 20 else ""))
+            msg = (
+                f"{base}: 主字典有 {len(missing)} 个字段未出现在分字典"
+                f"（疑似已破解未同步）: {', '.join(missing[:20])}"
+                + (" …" if len(missing) > 20 else "")
+            )
             warnings.append(msg)
             print(f"   ⚠ {msg}")
         else:

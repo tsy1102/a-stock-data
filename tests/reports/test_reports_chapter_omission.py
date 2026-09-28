@@ -20,7 +20,9 @@ from unittest import mock
 
 import get_sht_report as S
 import pandas as pd
-from stock_common import sc_datasource as _scd  # get_cyq_distribution 在生成器内本地导入, 须 patch 此模块
+from stock_common import (
+    sc_datasource as _scd,
+)  # get_cyq_distribution 在生成器内本地导入, 须 patch 此模块
 
 
 class _FakeCData:
@@ -75,7 +77,9 @@ _SYNC_STUBS = {
     "get_fuyao_auction_benchmark": None,
     "get_fuyao_anomaly": None,
     "get_fund_flow_realtime": {"data": []},  # 生成器内 if ff["data"]: 须含 data 键
-    "get_fund_flow_120d": {"data": []},  # ff = get_fund_flow_120d → 生成器内 if ff["data"]: 须含 data 键
+    "get_fund_flow_120d": {
+        "data": []
+    },  # ff = get_fund_flow_120d → 生成器内 if ff["data"]: 须含 data 键
     "get_baidu_kline_with_ma": {},
     "get_shortline_indicators": {},
     "get_dividend_history": [],
@@ -97,17 +101,32 @@ _SYNC_STUBS = {
     "get_zhb_single_stock_data": {},
     "get_hsgt_macro_flow": {},
     "_get_index_quote": {},
-    "baidu_kline_full": ([], []),   # 模拟 K线源故障
-    "get_cyq_distribution": {},     # 模拟 CYQ 源故障
+    "baidu_kline_full": ([], []),  # 模拟 K线源故障
+    "get_cyq_distribution": {},  # 模拟 CYQ 源故障
 }
 _ASYNC_STUBS = {
     "holder_change_async": [
-        {"date": "2026-06-30", "change_ratio": 0.0, "holder_num": 100000, "change_num": 0, "change_pct": 0.0},
-        {"date": "2026-03-31", "change_ratio": 0.0, "holder_num": 100000, "change_num": 0, "change_pct": 0.0},
+        {
+            "date": "2026-06-30",
+            "change_ratio": 0.0,
+            "holder_num": 100000,
+            "change_num": 0,
+            "change_pct": 0.0,
+        },
+        {
+            "date": "2026-03-31",
+            "change_ratio": 0.0,
+            "holder_num": 100000,
+            "change_num": 0,
+            "change_pct": 0.0,
+        },
     ],
     "get_margin_trading_async": [{"rzmre": 0, "rqye": 0, "rzye": 0} for _ in range(6)],
     "get_block_trade_async": [],
-    "get_lockup_expiry_async": {"history": [], "upcoming": []},  # 生成器内 lockup["history"]/["upcoming"]
+    "get_lockup_expiry_async": {
+        "history": [],
+        "upcoming": [],
+    },  # 生成器内 lockup["history"]/["upcoming"]
     "get_northbound_hold_async": [],
     "get_strategic_announcements_async": [],
     "get_ths_hot_reason_async": {},  # if ths_hot: 守卫; 用 dict 更贴近真实结构
@@ -148,6 +167,7 @@ def _render_via_runner(depth: str = "lite") -> str:
         ok = _build_patch_stack(stk)
         assert ok, "关键函数 get_cyq_distribution / baidu_kline_full 未被成功 patch"
         import tempfile, os
+
         _tmp = tempfile.mktemp(suffix=".md")
         try:
             asyncio.run(S.generate_report_async(mock.MagicMock(), "600519", _tmp, depth=depth))
@@ -175,16 +195,21 @@ def test_cyq_and_kline_chapters_survive_source_failure():
 def test_cyq_chapter_renders_data_when_source_ok():
     """源正常时 CYQ 章输出真实字段(验证修复分支未退化成永远告警)。"""
     _good_cyq = {
-        "benefit_pct": 0.6, "avg_cost": 50.0,
-        "concentration_90": 0.15, "concentration_70": 0.08,
-        "cost_90_low": 40.0, "cost_90_high": 60.0,
-        "cost_70_low": 45.0, "cost_70_high": 55.0,
+        "benefit_pct": 0.6,
+        "avg_cost": 50.0,
+        "concentration_90": 0.15,
+        "concentration_70": 0.08,
+        "cost_90_low": 40.0,
+        "cost_90_high": 60.0,
+        "cost_70_low": 45.0,
+        "cost_70_high": 55.0,
         "source": "eastmoney_kline_f61",
     }
     with ExitStack() as stk:
         _build_patch_stack(stk)
         stk.enter_context(mock.patch.object(_scd, "get_cyq_distribution", return_value=_good_cyq))
         import tempfile, os
+
         _tmp = tempfile.mktemp(suffix=".md")
         try:
             asyncio.run(S.generate_report_async(mock.MagicMock(), "600519", _tmp, depth="lite"))

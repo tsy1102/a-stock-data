@@ -22,7 +22,6 @@ from __future__ import annotations
 import re
 from typing import Dict, List, Optional
 
-
 # 表格装饰字符
 _TABLE_BORDER_CHARS = set('┌┬┐├┼┤└┴┘─│━┃｜')
 
@@ -66,8 +65,9 @@ def split_sections(content: str) -> Dict[str, str]:
     return sections
 
 
-def find_subsection(sections: Dict[str, str], name: str,
-                    aliases: Optional[List[str]] = None) -> str:
+def find_subsection(
+    sections: Dict[str, str], name: str, aliases: Optional[List[str]] = None
+) -> str:
     """从 split_sections 结果中查找子栏目，支持嵌套结构（银行股等）。
 
     F10 内容有两种结构：
@@ -219,6 +219,7 @@ def parse_table(text: str) -> List[Dict[str, str]]:
 
 MAX_PARSE_LINES = 2000  # 防御性截断：最多处理前 2000 行，防止 F10 异常大文本卡死
 
+
 def parse_paragraph_blocks(text: str) -> List[Dict[str, str]]:
     """解析用 ───── 分隔的段落块（公告/报道格式）。
 
@@ -269,25 +270,19 @@ def parse_paragraph_blocks(text: str) -> List[Dict[str, str]]:
                 if url_match:
                     url = url_match.group(0)
                     # URL 前面可能有摘要
-                    before_url = next_line[:url_match.start()].strip()
+                    before_url = next_line[: url_match.start()].strip()
                     if before_url:
                         summary_parts.append(before_url)
                 else:
                     summary_parts.append(next_line)
 
             summary = ' '.join(summary_parts)[:300] if summary_parts else ''
-            results.append({
-                "date": date,
-                "title": title[:120],
-                "summary": summary,
-                "url": url
-            })
+            results.append({"date": date, "title": title[:120], "summary": summary, "url": url})
             i = j
         else:
             i += 1
 
     return results
-
 
 
 def parse_key_value_table(text: str) -> Dict[str, str]:
@@ -362,7 +357,7 @@ def parse_tables(text: str) -> List[List[Dict[str, str]]]:
         newline_after = remaining.find('\n', end_idx)
         if newline_after < 0:
             break
-        remaining = remaining[newline_after + 1:]
+        remaining = remaining[newline_after + 1 :]
     return tables
 
 
@@ -491,7 +486,11 @@ def parse_text_table(text: str, min_spaces: int = 2) -> List[Dict[str, str]]:
         header_idx -= 1
     if header_idx < 0:
         return []
-    col_names = [p.strip() for p in re.split(r'\s{' + str(min_spaces) + ',}', lines[header_idx].strip()) if p.strip()]
+    col_names = [
+        p.strip()
+        for p in re.split(r'\s{' + str(min_spaces) + ',}', lines[header_idx].strip())
+        if p.strip()
+    ]
     if not col_names:
         return []
 
@@ -508,10 +507,9 @@ def parse_text_table(text: str, min_spaces: int = 2) -> List[Dict[str, str]]:
             continue
         # 列数匹配或接近匹配时才组装
         if len(parts) >= len(col_names):
-            rows.append(dict(zip(col_names, parts[:len(col_names)])))
+            rows.append(dict(zip(col_names, parts[: len(col_names)])))
         elif len(parts) >= len(col_names) - 1:
             # 最后一列可能缺失，补 ---
             parts_padded = parts + ['---'] * (len(col_names) - len(parts))
             rows.append(dict(zip(col_names, parts_padded)))
     return rows
-

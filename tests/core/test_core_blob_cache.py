@@ -18,6 +18,7 @@
   5. 写入失败静默（不可 pickle 对象不阻塞主流程）
   6. 原子写（不残留 .pkl.tmp）
 """
+
 from __future__ import annotations
 
 import os
@@ -45,7 +46,9 @@ class _TempBlobCache(unittest.TestCase):
         self._tmp = tempfile.TemporaryDirectory()
         self.addCleanup(self._tmp.cleanup)
         self.tmp_dir = self._tmp.name
-        _patcher = patch.object(kc, "_get_cache_dir", lambda: __import__("pathlib").Path(self.tmp_dir))
+        _patcher = patch.object(
+            kc, "_get_cache_dir", lambda: __import__("pathlib").Path(self.tmp_dir)
+        )
         _patcher.start()
         self.addCleanup(_patcher.stop)
 
@@ -98,6 +101,18 @@ class TestBlobNamespaceIsolation(_TempBlobCache):
         kc.set_cached_blob("CYQ", "000651", 240, {"kind": "cyq"})
         # 同一 code/count 但 period="D" 的 K 线槽位应仍为空
         self.assertIsNone(kc.get_cached_kline("D", "000651", 240))
+
+
+class TestKlineCacheShape(_TempBlobCache):
+    """K 线入口拒绝与 (keys, rows) 契约不符的缓存对象。"""
+
+    def test_invalid_payload_shape_returns_none(self):
+        from pathlib import Path
+
+        path = Path(self.tmp_dir) / "D_000652_240_v2.pkl"
+        with path.open("wb") as cache_file:
+            pickle.dump({"kind": "not-kline"}, cache_file)
+        self.assertIsNone(kc.get_cached_kline("D", "000652", 240))
 
 
 class TestBlobTTL(_TempBlobCache):

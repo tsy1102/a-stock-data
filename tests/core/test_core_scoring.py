@@ -9,6 +9,7 @@
   - _score_dividend: 股息率
   - calculate_score 综合评分
 """
+
 from __future__ import annotations
 
 import sys
@@ -31,8 +32,8 @@ from stock_common import (
     calculate_score,
 )
 
-
 # ── 基础数据工厂 ─────────────────────────────────────────
+
 
 def _make_bullish() -> ScoreData:
     """构造一个“技术面看多”的股票数据"""
@@ -71,6 +72,7 @@ def _make_bearish() -> ScoreData:
 
 # ── 技术面评分测试 ───────────────────────────────────────
 
+
 def test_score_technical_bullish_higher_than_bearish():
     bull = _make_bullish()
     bear = _make_bearish()
@@ -105,6 +107,7 @@ def test_score_technical_returns_details():
 
 # ── 基本面评分测试 ───────────────────────────────────────
 
+
 def test_score_fundamental_high_roe():
     d = ScoreData()
     d.roe = 25.0  # 优秀
@@ -134,6 +137,7 @@ def test_score_fundamental_bounded():
 
 # ── 估值面评分测试 ───────────────────────────────────────
 
+
 def test_score_valuation_low_pe():
     d = ScoreData()
     d.pe_ttm = 10.0
@@ -162,6 +166,7 @@ def test_score_valuation_high_pe_not_penalized_by_default():
 
 # ── 资金面评分测试 ───────────────────────────────────────
 
+
 def test_score_flow_net_inflow():
     d = ScoreData()
     d.main_net_inflow = 100000000.0  # 1亿净流入
@@ -180,6 +185,7 @@ def test_score_flow_zero_data():
 
 # ── 筹码面评分测试 ───────────────────────────────────────
 
+
 def test_score_holder_concentration():
     d = ScoreData()
     d.holder_change_ratio = -0.05  # 股东数下降（筹码集中）
@@ -197,6 +203,7 @@ def test_score_holder_no_change():
 
 # ── 分红面评分测试 ───────────────────────────────────────
 
+
 def test_score_dividend_high_yield():
     d = ScoreData()
     d.dividend_yield = 5.0
@@ -212,6 +219,7 @@ def test_score_dividend_no_yield():
 
 
 # ── 综合评分测试 ─────────────────────────────────────────
+
 
 def test_calculate_score_full_structure():
     d = _make_bullish()
@@ -255,6 +263,7 @@ def test_calculate_score_returns_valid_score_for_empty_data():
 
 
 # ── ScoreData 可修改性测试 ───────────────────────────────
+
 
 def test_score_data_mutability():
     d = ScoreData()

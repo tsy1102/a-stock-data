@@ -95,7 +95,10 @@ RAW_HTTP_LIBS = {
 
 # Tier1/Tier2 入口(用于 ADVISORY: 生产脚本应至少引用其一)
 TIER_ENTRYPOINTS = {
-    "data_provider", "sc_datasource", "sc_fuyao", "tdx_client",
+    "data_provider",
+    "sc_datasource",
+    "sc_fuyao",
+    "tdx_client",
     "get_canonical_stock_data",
 }
 
@@ -139,9 +142,7 @@ def _scan_file(path, rel):
     except Exception as e:  # noqa: BLE001
         return [(0, "TOKENIZE_ERROR", path, str(e))], False
 
-    has_tier_ref = any(
-        t.type == tokenize.NAME and t.string in TIER_ENTRYPOINTS for t in toks
-    )
+    has_tier_ref = any(t.type == tokenize.NAME and t.string in TIER_ENTRYPOINTS for t in toks)
     exempt_raw_http = rel in RAW_HTTP_EXEMPT
 
     violations = []
@@ -163,24 +164,28 @@ def _scan_file(path, rel):
                 break
         if not names:
             continue
-        last = names[0]        # 紧邻 ( 的 NAME
-        head = names[-1]       # 调用链头部 NAME
+        last = names[0]  # 紧邻 ( 的 NAME
+        head = names[-1]  # 调用链头部 NAME
         line = tok.start[0]
         if last in FORBIDDEN_RAW_FUNCS:
-            violations.append(
-                (line, "RAW_FUNC", last, FORBIDDEN_RAW_FUNCS[last]))
+            violations.append((line, "RAW_FUNC", last, FORBIDDEN_RAW_FUNCS[last]))
         if head in RAW_HTTP_LIBS and not exempt_raw_http:
-            violations.append(
-                (line, "RAW_HTTP", head, RAW_HTTP_LIBS[head]))
+            violations.append((line, "RAW_HTTP", head, RAW_HTTP_LIBS[head]))
     return violations, has_tier_ref
 
 
 def main():
+    # Windows PowerShell 5.1 may expose a GBK console stream; the report uses
+    # Unicode symbols, so reconfigure CLI output when the stream supports it.
+    for stream in (sys.stdout, sys.stderr):
+        if hasattr(stream, "reconfigure"):
+            stream.reconfigure(encoding="utf-8")
+
     ap = argparse.ArgumentParser(description="公理 A1 数据访问收口闸门")
-    ap.add_argument("--repo", default=REPO_ROOT,
-                    help="仓库根目录（默认自动推断）")
-    ap.add_argument("--strict", action="store_true",
-                    help="将 ADVISORY WARN 升级为 FAIL（退出码 1）")
+    ap.add_argument("--repo", default=REPO_ROOT, help="仓库根目录（默认自动推断）")
+    ap.add_argument(
+        "--strict", action="store_true", help="将 ADVISORY WARN 升级为 FAIL（退出码 1）"
+    )
     args = ap.parse_args()
 
     repo = args.repo
@@ -212,8 +217,10 @@ def main():
         # ADVISORY: 仅根级生产脚本(get_*_report.py 等)须引用 Tier1/Tier2 入口;
         # core/*.py 基础设施模块(配置/缓存/上传器)本就不该直接引用, 不在此告警范围内。
         if rel in PRODUCTION_ROOT_FILES and rel not in TIER_REF_EXEMPT and not has_tier:
-            warn = (f"{rel}: 未引用任何 Tier1/Tier2 入口(data_provider/sc_datasource/"
-                    f"sc_fuyao/tdx_client), 可能绕过统一层")
+            warn = (
+                f"{rel}: 未引用任何 Tier1/Tier2 入口(data_provider/sc_datasource/"
+                f"sc_fuyao/tdx_client), 可能绕过统一层"
+            )
             warnings.append(warn)
             print(f"   ⚠ {warn}")
 

@@ -10,6 +10,7 @@
 
 ⚠️ 私有接口，字段可能变更；HTML 结构变化时解析失效需重试。
 """
+
 from __future__ import annotations
 
 import json
@@ -21,18 +22,14 @@ import urllib.parse
 import urllib.request
 from typing import Any, Dict, List
 
-# V16.3.3: 板块轮动缓存（字典 12.15.5——mak D 段高频，矩阵数据收盘后不变）
-try:
-    from core.stock_cache import cached, TTL
-
-    _HAS_CACHE = True
-except ImportError:  # pragma: no cover
-    _HAS_CACHE = False
+from core.stock_cache import TTL, cached
 
 _logger = logging.getLogger("sc_plate_rot")
 
-_UA = ("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 "
-       "(KHTML, like Gecko) Version/17.0 Safari/605.1.15")
+_UA = (
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 "
+    "(KHTML, like Gecko) Version/17.0 Safari/605.1.15"
+)
 _BASE = "https://duanxianxia.com"
 _QUERY_INTERVAL = 0.6
 
@@ -41,7 +38,7 @@ _last_request = 0.0
 _throttle_lock = threading.Lock()
 
 
-def _throttle():
+def _throttle() -> None:
     global _last_request
     with _throttle_lock:
         now = time.time()
@@ -54,16 +51,24 @@ def _throttle():
 def _post(path: str, params: Dict[str, Any]) -> Dict[str, Any]:
     _throttle()
     body = urllib.parse.urlencode(params, doseq=True).encode("utf-8")
-    req = urllib.request.Request(_BASE + path, data=body, headers={
-        "User-Agent": _UA,
-        "Referer": f"{_BASE}/web/main",
-        "Origin": _BASE,
-        "X-Requested-With": "XMLHttpRequest",
-        "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
-    }, method="POST")
+    req = urllib.request.Request(
+        _BASE + path,
+        data=body,
+        headers={
+            "User-Agent": _UA,
+            "Referer": f"{_BASE}/web/main",
+            "Origin": _BASE,
+            "X-Requested-With": "XMLHttpRequest",
+            "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
+        },
+        method="POST",
+    )
     try:
         with urllib.request.urlopen(req, timeout=15) as r:
-            return json.loads(r.read().decode("utf-8", errors="ignore"))
+            payload = json.loads(r.read().decode("utf-8", errors="ignore"))
+        if isinstance(payload, dict):
+            return payload
+        return {"_err": "unexpected JSON response shape"}
     except Exception as e:
         _logger.warning(f"plate_rot {path}: {e}")
         return {"_err": str(e)[:120]}
@@ -102,7 +107,7 @@ def get_plate_rotation_matrix(
         r".*?<span style='color:(red|green);'>([\d.\-]+%?)</span>",
         re.S,
     )
-    out = []
+    out: List[Dict[str, Any]] = []
     rows = re.split(r"<span class='rank'[^>]*>(\d+)</span>", html)
     for i in range(1, len(rows), 2):
         if len(out) >= top_n:
@@ -114,23 +119,32 @@ def get_plate_rotation_matrix(
             if di >= len(dates):
                 break
             code, name, color, value = m.groups()
-            cells.append({"date": dates[di], "code": code, "name": name,
-                          "value": value, "color": color})
+            cells.append(
+                {"date": dates[di], "code": code, "name": name, "value": value, "color": color}
+            )
         if cells:
             out.append({"rank": rank, "cells": cells})
     return {"dates": dates, "source": source, "plates": out}
 
 
-def get_plate_rotation_top(source: str = "kaipan", days: int = 20,
-                           n: int = 10) -> List[Dict[str, Any]]:
+def get_plate_rotation_top(
+    source: str = "kaipan", days: int = 20, n: int = 10
+) -> List[Dict[str, Any]]:
     """今日 Top N 板块（轻量——只取矩阵第一列 = 当日）。"""
     m = get_plate_rotation_matrix(source=source, days=days, top_n=n)
     out = []
     for p in m.get("plates", []):
         if p["cells"]:
             c = p["cells"][0]
-            out.append({"rank": p["rank"], "code": c["code"], "name": c["name"],
-                        "value": c["value"], "color": c["color"]})
+            out.append(
+                {
+                    "rank": p["rank"],
+                    "code": c["code"],
+                    "name": c["name"],
+                    "value": c["value"],
+                    "color": c["color"],
+                }
+            )
     return out
 
 

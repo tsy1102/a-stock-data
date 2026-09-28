@@ -29,6 +29,7 @@
 
 退出码：0=同步+校验全部通过；非 0=闸门未过（不应提交）。
 """
+
 from __future__ import annotations
 
 import io
@@ -42,14 +43,32 @@ REPO_ROOT = os.path.dirname(SCRIPT_DIR)
 REG = os.path.join(REPO_ROOT, "docs", "field_verification", "field_registry.json")
 
 # 本轮新定案断言清单（用于同步后校验，不从本脚本写入，仅读取验证）
-EXPECT_ZHB_COL22 = "[22]"          # ZHB-tdxstat Col[22] = shape_value
-EXPECT_ULIST_PUSH2_PAIRS = 21      # ulist→push2 跨源异号同义映射数（来自 ulist_push2_align.md）
+EXPECT_ZHB_COL22 = "[22]"  # ZHB-tdxstat Col[22] = shape_value
+EXPECT_ULIST_PUSH2_PAIRS = 21  # ulist→push2 跨源异号同义映射数（来自 ulist_push2_align.md）
 
 # 21 个 ulist L1 候选：ulist code -> push2 anchor（仅用于报告，不写 JSON）
 ULIST_L1 = {
-    "f1": 59, "f3": 170, "f4": 169, "f5": 47, "f6": 48, "f7": 171, "f8": 162,
-    "f9": 162, "f10": 50, "f15": 44, "f16": 45, "f17": 46, "f18": 60, "f19": 111,
-    "f23": 167, "f24": 121, "f25": 122, "f26": 189, "f29": 180, "f33": 191, "f34": 49,
+    "f1": 59,
+    "f3": 170,
+    "f4": 169,
+    "f5": 47,
+    "f6": 48,
+    "f7": 171,
+    "f8": 162,
+    "f9": 162,
+    "f10": 50,
+    "f15": 44,
+    "f16": 45,
+    "f17": 46,
+    "f18": 60,
+    "f19": 111,
+    "f23": 167,
+    "f24": 121,
+    "f25": 122,
+    "f26": 189,
+    "f29": 180,
+    "f33": 191,
+    "f34": 49,
 }
 
 
@@ -79,22 +98,29 @@ def verify_determinations() -> bool:
     ok = True
 
     # 1) ZHB Col[22] 字段存在（由主字典 ZHB tdxstat.cfg 表驱动登记）
-    zhb22 = [f for f in fields
-             if f.get("code") == EXPECT_ZHB_COL22
-             and "ZHB-tdxstat" in f.get("sources", [])]
+    zhb22 = [
+        f
+        for f in fields
+        if f.get("code") == EXPECT_ZHB_COL22 and "ZHB-tdxstat" in f.get("sources", [])
+    ]
     if zhb22:
         f = zhb22[0]
-        print(f"  [✓] ZHB Col[22] 已登记: sources={f.get('sources')} "
-              f"status={f.get('status')} meaning={str(f.get('meaning'))[:24]!r}")
+        print(
+            f"  [✓] ZHB Col[22] 已登记: sources={f.get('sources')} "
+            f"status={f.get('status')} meaning={str(f.get('meaning'))[:24]!r}"
+        )
     else:
         print("  [✗] ZHB Col[22] 未在 registry 找到（主字典 ZHB tdxstat.cfg 表可能缺 Col[22] 行）")
         ok = False
 
     # 2) 21 对 ulist→push2 跨源映射（来自 ulist_push2_align.md，由 extract 解析进 mappings）
-    ulist_push2 = [m for m in mappings
-                   if isinstance(m, dict)
-                   and m.get("from", {}).get("source", "").startswith("东财-ulist")
-                   and m.get("to", {}).get("source", "").startswith("东财-push2")]
+    ulist_push2 = [
+        m
+        for m in mappings
+        if isinstance(m, dict)
+        and m.get("from", {}).get("source", "").startswith("东财-ulist")
+        and m.get("to", {}).get("source", "").startswith("东财-push2")
+    ]
     n = len(ulist_push2)
     if n >= EXPECT_ULIST_PUSH2_PAIRS:
         print(f"  [✓] ulist→push2 跨源映射 = {n} 对（≥ 期望 {EXPECT_ULIST_PUSH2_PAIRS}）")
@@ -115,9 +141,11 @@ def verify_determinations() -> bool:
 
     # 3b) 8 个新破解 ZHB 列已在 registry.fields 以 ZHB-tdxstat 源登记
     new_cols = ["[2]", "[11]", "[16]", "[22]", "[23]", "[25]", "[26]", "[34]"]
-    got = [c for c in new_cols
-           if any(f.get("code") == c and "ZHB-tdxstat" in f.get("sources", [])
-                  for f in fields)]
+    got = [
+        c
+        for c in new_cols
+        if any(f.get("code") == c and "ZHB-tdxstat" in f.get("sources", []) for f in fields)
+    ]
     if len(got) == len(new_cols):
         print(f"  [✓] 8 个新破解 ZHB 列全部登记于 registry.fields: {got}")
     else:

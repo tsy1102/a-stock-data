@@ -13,7 +13,7 @@
 | 通达信 | `tdx_func_fields.md`(字段总表 1924) · `tdx_headers_definition.md`(表头定义) · `tdxhy_x_names.md`(细分行业 X 码 470) |
 | fuyao | `fuyao_api_full.md`(REST 全量字段契约 62 端点) |
 | AxData | `axdata_verify.md`(666 字段补齐矩阵) |
-| FTShare | `ftsare_fields_mirror.md`(85 工具×响应字段镜像) |
+| FTShare | `ftshare_fields_mirror.md`(85 工具×响应字段镜像) |
 | levistock | `levistock_field_verify.md`(26/38 接口实测) |
 | eltdx | `eltdx_verify.md`(本地 TDX 适配层字段) |
 | 跨源 | `cross_source_align.md`(跨源对齐) · `client_fields_enum.md`(客户端字段枚举全景) |

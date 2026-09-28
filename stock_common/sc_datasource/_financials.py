@@ -5,12 +5,14 @@
 跨片段符号由各子模块函数体内的局部懒导入（from ._DEFINER import NAME）提供，
 共享可变状态集中于 _shared.py（单实例）。
 """
+
 from __future__ import annotations
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional, Tuple, Union
 from typing import TYPE_CHECKING
+
 if TYPE_CHECKING:
     import pandas as pd
-from datetime import datetime, timedelta
+from datetime import date, datetime, timedelta
 import asyncio
 import code
 import re
@@ -19,7 +21,15 @@ import sys
 from stock_common.sc_network import UA, _async_quick_request, _debug_log, _quick_request
 from stock_common.sc_utils import _load_settings, _safe_float, em_exchange_prefix
 from core.stock_cache import TTL, cached, get_cache, make_valid_if, set_cache
-from ._shared import _PROFIT_CACHE_LOCK, _PROFIT_FORECAST_CACHE, _PROFIT_FORECAST_INDEX, _PROFIT_FORECAST_INDEX_SHORT, _YJYG_ALL_CACHE, _YJYG_LOCK, _calendar_fallback_warned
+from ._shared import (
+    _PROFIT_CACHE_LOCK,
+    _PROFIT_FORECAST_CACHE,
+    _PROFIT_FORECAST_INDEX,
+    _PROFIT_FORECAST_INDEX_SHORT,
+    _YJYG_ALL_CACHE,
+    _YJYG_LOCK,
+    _calendar_fallback_warned,
+)
 from stock_common.sc_fuyao import get_fuyao_financials
 from stock_common.sc_kpl import _f
 from stock_common.stock_calendar import is_workday
@@ -38,7 +48,8 @@ def get_stock_info(code: str) -> Dict[str, Any]:
     from core.tdx_client import _get_tdx_client, tdx_get_belong_boards
 
     name = industry = list_date = ""
-    total_shares = float_shares = mcap = float_mcap = price = 0
+    total_shares = float_shares = 0.0
+    mcap = float_mcap = price = 0
 
     q = get_tencent_quote(code)
     if q:
@@ -133,7 +144,7 @@ def get_reports(code: str, max_pages: int = 3) -> List[Dict[str, Any]]:
     """
     # Fallback: 东财 HTTP
     api_url = "https://reportapi.eastmoney.com/report/list"
-    all_records = []
+    all_records: List[Dict[str, Any]] = []
     for page in range(1, max_pages + 1):
         params = {
             "pageSize": "50",
@@ -182,10 +193,19 @@ def extract_report_valuation(reports: List[Dict[str, Any]]) -> Dict[str, Any]:
     无数据时返回全默认值 dict。
     """
     out = {
-        "eps_this": 0.0, "eps_next": 0.0, "eps_next2": 0.0,
-        "pe_this": 0.0, "pe_next": 0.0, "pe_next2": 0.0,
-        "rating": "", "rating_last": "", "rating_change": 0,
-        "org_name": "", "publish_date": "", "attach_pages": 0, "attach_size": 0,
+        "eps_this": 0.0,
+        "eps_next": 0.0,
+        "eps_next2": 0.0,
+        "pe_this": 0.0,
+        "pe_next": 0.0,
+        "pe_next2": 0.0,
+        "rating": "",
+        "rating_last": "",
+        "rating_change": 0,
+        "org_name": "",
+        "publish_date": "",
+        "attach_pages": 0,
+        "attach_size": 0,
     }
     if not reports:
         return out
@@ -194,7 +214,7 @@ def extract_report_valuation(reports: List[Dict[str, Any]]) -> Dict[str, Any]:
         if rec.get("publishDate") and rec["publishDate"] > latest.get("publishDate", ""):
             latest = rec
 
-    def _f(x):
+    def _f(x: Any) -> float:
         try:
             return float(x)
         except (TypeError, ValueError):
@@ -222,7 +242,7 @@ async def get_reports_async(session: Any, code: str, max_pages: int = 3) -> List
     V9.4: 原生 aiohttp 实现，移除 asyncio.to_thread 包装。
     """
     api_url = "https://reportapi.eastmoney.com/report/list"
-    all_records = []
+    all_records: List[Dict[str, Any]] = []
     for page in range(1, max_pages + 1):
         params = {
             "pageSize": "50",
@@ -236,19 +256,21 @@ async def get_reports_async(session: Any, code: str, max_pages: int = 3) -> List
         }
         try:
             d = await _async_quick_request(session, api_url, params=params, timeout=30)
-            if d is None:
+            if not isinstance(d, dict):
                 break
             rows = d.get("data") or []
-            if not rows:
+            if not isinstance(rows, list) or not rows:
                 break
-            all_records.extend(rows)
+            all_records.extend(row for row in rows if isinstance(row, dict))
         except Exception as _e:
             _debug_log(f"datasource get_reports_async page {page} ({code}): {_e}")
             break
     return all_records
 
 
-def get_eps_forecast(code: str, local_only: bool = False) -> "pd.DataFrame":  # LOW 修复: 实际返回 DataFrame
+def get_eps_forecast(
+    code: str, local_only: bool = False
+) -> "pd.DataFrame":  # LOW 修复: 实际返回 DataFrame
     """V7.5: 机构一致预期EPS — 同花顺正则提取 + 东财研报兜底.
 
     V17.0(2026-08-15): **本机 ProfitForecast JSON 优先(零网络)**——东财客户端
@@ -277,8 +299,14 @@ def get_eps_forecast(code: str, local_only: bool = False) -> "pd.DataFrame":  # 
                 _e = _r.get(f"EPS{_i}")
                 if _y and _e:
                     _rows.append(
-                        [str(_y) + ("A" if _r.get(f"YEAR_MARK{_i}") == "A" else "E"),
-                         _r.get("RATING_ORG_NUM") or 0, _e, _e, _e, 0]
+                        [
+                            str(_y) + ("A" if _r.get(f"YEAR_MARK{_i}") == "A" else "E"),
+                            _r.get("RATING_ORG_NUM") or 0,
+                            _e,
+                            _e,
+                            _e,
+                            0,
+                        ]
                     )
             if _rows:
                 return _pd.DataFrame(
@@ -341,7 +369,7 @@ def get_eps_forecast(code: str, local_only: bool = False) -> "pd.DataFrame":  # 
     return _pd.DataFrame()
 
 
-async def get_eps_forecast_async(session: Any, code: str) -> Dict[str, Any]:
+async def get_eps_forecast_async(session: Any, code: str) -> "pd.DataFrame":
     """async 版: 机构一致预期EPS — 同花顺正则提取 + TDX兜底"""
     try:
         import re as _re2
@@ -417,12 +445,14 @@ async def resolve_eps_forecast(session: Any, code: str) -> "pd.DataFrame":
     # 主源不可达 → 回退本地 ProfitForecast 快照(仍保证两份报告一致性)
     try:
         import pandas as _pd
+
         _local = await asyncio.to_thread(get_eps_forecast, code)
         if _local is not None and not _local.empty:
             return _local
     except Exception as _e:
         _debug_log(f"resolve_eps_forecast local fallback error: {_e}")
     import pandas as _pd
+
     return _pd.DataFrame()
 
 
@@ -473,6 +503,7 @@ def get_yjyg_all() -> Dict[str, Dict[str, Any]]:
     """
     from ._eastmoney import eastmoney_datacenter
     from ._misc import _today_str
+
     global _YJYG_ALL_CACHE, _YJYG_LOCK
     if _YJYG_LOCK is None:
         import threading as _th
@@ -539,6 +570,7 @@ def get_margin_trading(code: str) -> List[Dict[str, Any]]:
     """
     from ._eastmoney import eastmoney_datacenter
     from ._official_backup import get_margin_trading_backup
+
     # V9.0: 优先使用 F10 最新提示中的融资融券数据
     try:
         from core.tdx_client import tdx_get_latest_reminders
@@ -656,6 +688,7 @@ def get_block_trade(code: str) -> List[Dict[str, Any]]:
           与东财 HTTP 不一致）。保留东财 HTTP 为主力数据源。
     """
     from ._eastmoney import _em_filter
+
     # 东财 HTTP
     data = _em_filter(
         code, "RPT_DATA_BLOCKTRADE", page_size=15, sort_columns="TRADE_DATE", sort_types="-1"
@@ -687,6 +720,7 @@ async def get_block_trade_async(session: Any, code: str) -> List[Dict[str, Any]]
     V17.0.9: data 类型防御——_em_filter_async 偶发返回 dict 时置 [].
     """
     from ._eastmoney import _em_filter_async
+
     data = await _em_filter_async(
         session,
         code,
@@ -696,7 +730,9 @@ async def get_block_trade_async(session: Any, code: str) -> List[Dict[str, Any]]
         sort_types="-1",
     )
     if not isinstance(data, list):
-        _debug_log(f"datasource block_trade_async({code}): 非 list 返回 {type(data).__name__}, 置 []")
+        _debug_log(
+            f"datasource block_trade_async({code}): 非 list 返回 {type(data).__name__}, 置 []"
+        )
         data = []
     rows = []
     for row in data:
@@ -719,21 +755,21 @@ async def get_block_trade_async(session: Any, code: str) -> List[Dict[str, Any]]
 
 
 @cached(category="dividend", ttl_seconds=TTL["dividend"], cross_verify=True)
-def get_dividend_history(code):
+def get_dividend_history(code: str) -> Optional[List[Dict[str, Any]]]:
     """V7.5: 分红历史 → TDX xdxr_info（东财 fallback 已删除）"""
     from core.tdx_client import tdx_get_dividend_history
 
     return tdx_get_dividend_history(code)
 
 
-async def get_dividend_history_async(session: Any, code: str) -> List[Dict[str, Any]]:
+async def get_dividend_history_async(session: Any, code: str) -> Optional[List[Dict[str, Any]]]:
     """异步版 get_dividend_history"""
     import asyncio
 
     return await asyncio.to_thread(get_dividend_history, code)
 
 
-def get_sina_financial_report(code: str, num_periods: int = 12) -> Dict[str, Any]:
+def get_sina_financial_report(code: str, num_periods: int = 12) -> List[Dict[str, Any]]:
     """新浪利润表 — 支持多期数（默认12期 ≈ 3年）
     V13.1: 彻底实现 ZHB 财报事件锁，抛弃 24小时 粗暴刷新。
     将 ZHB 的 report_date 拼入缓存 Key，实现永久缓存 + 瞬间刷新。
@@ -753,7 +789,9 @@ def get_sina_financial_report(code: str, num_periods: int = 12) -> Dict[str, Any
         cross_verify=True,
     )
     if cache_value is not None:
-        return cache_value
+        if isinstance(cache_value, list):
+            return cache_value
+        _debug_log(f"datasource cached financial report has invalid shape ({code})")
 
     # 新浪 HTTP
     # V16.3 O16: 北交所 920 号段走 bj 前缀（此前落 sz 静默查不到财报）
@@ -805,7 +843,7 @@ def get_sina_financial_report(code: str, num_periods: int = 12) -> Dict[str, Any
         return []
 
 
-def get_financial_report_with_fallback(code: str, num_periods: int = 12) -> Dict[str, Any]:
+def get_financial_report_with_fallback(code: str, num_periods: int = 12) -> List[Dict[str, Any]]:
     """B: 新浪利润表为主源；新浪缺失/空 → fuyao 利润表兜底。
 
     返回与 get_sina_financial_report 完全同构的 List[Dict]：
@@ -819,13 +857,18 @@ def get_financial_report_with_fallback(code: str, num_periods: int = 12) -> Dict
         return sina
     try:
         from stock_common.sc_fuyao import get_fuyao_financials
+
         fy = get_fuyao_financials("income", code, limit=num_periods, period="quarterly")
         if not fy:
             return []
         out = []
         for it in fy:
-            rdm = (it.get("report_date_ms") or it.get("report_date")
-                   or it.get("end_date") or it.get("accper"))
+            rdm = (
+                it.get("report_date_ms")
+                or it.get("report_date")
+                or it.get("end_date")
+                or it.get("accper")
+            )
             rdate = ""
             if rdm:
                 try:
@@ -833,27 +876,30 @@ def get_financial_report_with_fallback(code: str, num_periods: int = 12) -> Dict
                     if _ms > 1e12:  # epoch 毫秒
                         _ms /= 1000.0
                     from datetime import datetime
+
                     rdate = datetime.fromtimestamp(_ms).strftime("%Y-%m-%d")
                 except Exception:
                     rdate = str(rdm)
-            ni = it.get("parent_holder_net_profit",
-                        it.get("net_profit", it.get("归属母公司净利润", "0")))
-            rev = it.get("operating_income",
-                         it.get("total_operate_income", it.get("revenue", "0")))
+            ni = it.get(
+                "parent_holder_net_profit", it.get("net_profit", it.get("归属母公司净利润", "0"))
+            )
+            rev = it.get("operating_income", it.get("total_operate_income", it.get("revenue", "0")))
             cost = it.get("operating_cost", it.get("operating_cost_total", "0"))
-            out.append({
-                "报告日": rdate,
-                "营业总收入": _fin_str(rev),
-                "营业成本": _fin_str(cost),
-                "净利润": _fin_str(ni),
-            })
+            out.append(
+                {
+                    "报告日": rdate,
+                    "营业总收入": _fin_str(rev),
+                    "营业成本": _fin_str(cost),
+                    "净利润": _fin_str(ni),
+                }
+            )
         return out
     except Exception as _e:
         _debug_log(f"financial fallback fuyao ({code}): {_e}")
         return []
 
 
-def _fin_str(v) -> str:
+def _fin_str(v: Any) -> str:
     """fuyao 数值(元) → 字符串，保持与新浪一致(下游 float 解析)。"""
     if v is None or isinstance(v, bool):
         return "0"
@@ -862,7 +908,7 @@ def _fin_str(v) -> str:
 
 async def get_sina_financial_report_async(
     session: Any, code: str, num_periods: int = 12
-) -> Dict[str, Any]:
+) -> List[Dict[str, Any]]:
     """async 版: 新浪利润表
 
     V16.1: 委托同步版（复用 @cached SQLite 缓存 + report_date 事件锁），
@@ -873,8 +919,14 @@ async def get_sina_financial_report_async(
     return await asyncio.to_thread(get_sina_financial_report, code, num_periods)
 
 
-@cached(category="balance_sheet", ttl_seconds=TTL["balance_sheet"], cross_verify=True, trading_day=True, valid_if=make_valid_if())
-def get_sina_balance_sheet(code: str) -> List[Dict[str, Any]]:
+@cached(
+    category="balance_sheet",
+    ttl_seconds=TTL["balance_sheet"],
+    cross_verify=True,
+    trading_day=True,
+    valid_if=make_valid_if(),
+)
+def get_sina_balance_sheet(code: str) -> Optional[List[Dict[str, Any]]]:
     """获取新浪资产负债表（fzb）最近5期数据
 
     V9.1: 移除 F10 优先逻辑（F10 是万元单位，与渲染代码按元处理不一致）。
@@ -924,7 +976,7 @@ def get_sina_balance_sheet(code: str) -> List[Dict[str, Any]]:
         return None
 
 
-async def get_sina_balance_sheet_async(session: Any, code: str) -> List[Dict[str, Any]]:
+async def get_sina_balance_sheet_async(session: Any, code: str) -> Optional[List[Dict[str, Any]]]:
     """async 版: 新浪资产负债表
 
     V16.1: 委托同步版（复用 @cached SQLite 缓存），避免 async 直连绕过缓存。
@@ -935,7 +987,7 @@ async def get_sina_balance_sheet_async(session: Any, code: str) -> List[Dict[str
     return await asyncio.to_thread(get_sina_balance_sheet, code)
 
 
-def _normalize_lockup_ratio(v) -> float:
+def _normalize_lockup_ratio(v: Any) -> float:
     """V16.2: 统一解禁比例单位 → 百分数（%）。
     FREE_RATIO/解禁比例 可能为小数(0.05)或百分数(5)；0<值<=1 视为小数转 %。"""
     try:
@@ -947,7 +999,11 @@ def _normalize_lockup_ratio(v) -> float:
         return 0.0
 
 
-@cached(category="lockup_expiry", ttl_seconds=TTL["lockup_expiry"], cross_verify=True)
+@cached(
+    category="lockup_expiry_shares_v2",
+    ttl_seconds=TTL["lockup_expiry_shares_v2"],
+    cross_verify=True,
+)
 def get_lockup_expiry(code: str, days: int = 90, include_history: bool = False) -> Any:
     """限售解禁日历。
 
@@ -960,10 +1016,12 @@ def get_lockup_expiry(code: str, days: int = 90, include_history: bool = False) 
 
     Returns:
         include_history=True: {"history": [...], "upcoming": [...]}
-        include_history=False: [{"date", "type", "shares", "ratio"}, ...]
+        include_history=False: [{"date", "type", "shares", "ratio", "able_shares"}, ...]
+        shares and able_shares are normalized to individual shares; ratio is percent.
     """
     from ._eastmoney import _em_filter
     from ._eastmoney import eastmoney_datacenter
+
     # V10.2: today_str 内部自动计算，不作为函数参数（避免污染缓存 key）
     today_str = datetime.now().strftime("%Y-%m-%d")
     end_str = (datetime.strptime(today_str, "%Y-%m-%d") + timedelta(days=days)).strftime("%Y-%m-%d")
@@ -997,7 +1055,8 @@ def get_lockup_expiry(code: str, days: int = 90, include_history: bool = False) 
                             or r.get('解禁数量')
                             or r.get('数量')
                             or 0
-                        ) * 1e4,
+                        )
+                        * 1e4,
                         "ratio": _normalize_lockup_ratio(
                             r.get('解禁比例(%)') or r.get('解禁比例') or r.get('比例') or 0
                         ),
@@ -1016,7 +1075,8 @@ def get_lockup_expiry(code: str, days: int = 90, include_history: bool = False) 
     except Exception as _e:
         _debug_log(f"datasource tdx share capital lockup f10 error: {_e}")
 
-    # Fallback: 东财 HTTP（V16.2.3 单位修正: FREE_SHARES=**股**原样返回, FREE_RATIO=小数→转百分数）
+    # RPT_LIFT_STAGE 的 FREE_SHARES / ABLE_FREE_SHARES 源单位为万股；本适配器
+    # 与 F10 分支保持一致，统一输出股，供报告按股换算展示。
     if include_history:
         data = _em_filter(
             code, "RPT_LIFT_STAGE", page_size=15, sort_columns="FREE_DATE", sort_types="-1"
@@ -1025,9 +1085,9 @@ def get_lockup_expiry(code: str, days: int = 90, include_history: bool = False) 
             {
                 "date": str(r.get("FREE_DATE", "") or "")[:10],
                 "type": r.get("FREE_SHARES_TYPE", ""),
-                "shares": _safe_float(r.get("FREE_SHARES")),          # 股
+                "shares": _safe_float(r.get("FREE_SHARES")) * 1e4,  # 源万股 → 股
                 "ratio": _normalize_lockup_ratio(r.get("FREE_RATIO")),  # 统一%
-                "able_shares": _safe_float(r.get("ABLE_FREE_SHARES")),  # 股
+                "able_shares": _safe_float(r.get("ABLE_FREE_SHARES")) * 1e4,  # 源万股 → 股
             }
             for r in data
         ]
@@ -1046,12 +1106,9 @@ def get_lockup_expiry(code: str, days: int = 90, include_history: bool = False) 
         {
             "date": str(r.get("FREE_DATE", "") or "")[:10],
             "type": r.get("FREE_SHARES_TYPE", ""),
-            "shares": float(r.get("FREE_SHARES") or 0),               # 股
-            "ratio": _normalize_lockup_ratio(r.get("FREE_RATIO")),     # 统一%
-            # 与 history 分支同表同字段(RPT_LIFT_STAGE.ABLE_FREE_SHARES)，单位一致为"股"；
-            # 原注释误标"万股"造成与 history 分支单位矛盾（两分支均未做除法，实际存同一原始值）。
-            # TODO(2026-08-30): 东财该字段真实单位需实盘采样一次确认(股/万股)，当前与 FREE_SHARES 对齐为"股"。
-            "able_shares": float(r.get("ABLE_FREE_SHARES") or 0),     # 股
+            "shares": _safe_float(r.get("FREE_SHARES")) * 1e4,  # 源万股 → 股
+            "ratio": _normalize_lockup_ratio(r.get("FREE_RATIO")),  # 统一%
+            "able_shares": _safe_float(r.get("ABLE_FREE_SHARES")) * 1e4,  # 源万股 → 股
         }
         for r in data2
     ]
@@ -1074,7 +1131,13 @@ async def get_lockup_expiry_async(
     return await asyncio.to_thread(get_lockup_expiry, code, days, include_history)
 
 
-@cached(category="financial", ttl_seconds=TTL["financial"], cross_verify=True, trading_day=True, valid_if=make_valid_if())
+@cached(
+    category="financial",
+    ttl_seconds=TTL["financial"],
+    cross_verify=True,
+    trading_day=True,
+    valid_if=make_valid_if(),
+)
 def get_roe_trend_series(
     code: str,
     num_periods: int = 8,
@@ -1167,8 +1230,10 @@ def get_roe_trend_series(
 
 def get_gross_margin_and_roe(
     code: str, fin_report: Any = None, bs_data: Any = None
-) -> Dict[str, Any]:
+) -> Optional[Dict[str, Any]]:
     """获取最新年度的毛利率和ROE"""
+    gross_margin: Optional[float] = None
+    roe: Optional[float] = None
     # V9.0: 优先使用 F10 财务分析中的盈利能力指标
     try:
         from core.tdx_client import tdx_get_financial_analysis
@@ -1193,6 +1258,7 @@ def get_gross_margin_and_roe(
         _debug_log(f"datasource tdx financial analysis profitability error: {_e}")
     # Fallback: 新浪 HTTP
     try:
+        item: Optional[Dict[str, Any]]
         if fin_report is None:
             prefix = em_exchange_prefix(code, upper=True)  # V17.2.11: 收敛散点 startswith("6") 路由
             paper_code = f"{prefix}{code}"
@@ -1218,7 +1284,9 @@ def get_gross_margin_and_roe(
             _period_data = _rl[_period] or {}
             # V16.3 O22: report_list[period] 结构是 {"data": [{item_title,item_value},...]}——
             # 必须先构建 item_map（O17 直接 item.get("营业总收入") 取到 None → 假 ROE=0.0）
-            item = {e.get("item_title", ""): e.get("item_value") for e in _period_data.get("data", [])}
+            item = {
+                e.get("item_title", ""): e.get("item_value") for e in _period_data.get("data", [])
+            }
             if not item:
                 return None
         else:
@@ -1256,7 +1324,7 @@ def get_gross_margin_and_roe(
 
 async def get_gross_margin_and_roe_async(
     session: Any, code: str, fin_report: Any = None, bs_data: Any = None
-) -> Dict[str, Any]:
+) -> Optional[Dict[str, Any]]:
     """async 版: 获取最新年度的毛利率和ROE
 
     V9.0: 委托到同步版（已内置 F10 优先逻辑），保留 session/fin_report/bs_data 参数向后兼容。
@@ -1266,7 +1334,7 @@ async def get_gross_margin_and_roe_async(
     return await asyncio.to_thread(get_gross_margin_and_roe, code, fin_report, bs_data)
 
 
-def _try_upgrade_calendar():
+def _try_upgrade_calendar() -> bool:
     """尝试自动升级 chinese-calendar 库
 
     Returns:
@@ -1323,7 +1391,7 @@ def get_valuation_pe_center(industry_name: str = "") -> float:
     return float(val)
 
 
-def is_trading_day(d=None):
+def is_trading_day(d: Optional[Union[date, datetime]] = None) -> bool:
     """判断是否为A股交易日（含节假日+调休检测，自动升级+降级）
 
     Args:
@@ -1356,7 +1424,7 @@ def is_trading_day(d=None):
     try:
         from stock_common import stock_calendar as _local_cal
 
-        return _local_cal.is_workday(d)
+        return bool(_local_cal.is_workday(d))
     except (ImportError, ModuleNotFoundError):
         pass
     except NotImplementedError:
@@ -1366,7 +1434,7 @@ def is_trading_day(d=None):
     try:
         from chinese_calendar import is_workday
 
-        return is_workday(d)
+        return bool(is_workday(d))
     except NotImplementedError as e:
         # 年份超出库范围（>2026），尝试自动升级
         if "no available data" in str(e) or "year" in str(e).lower():
@@ -1375,7 +1443,7 @@ def is_trading_day(d=None):
                 try:
                     from chinese_calendar import is_workday
 
-                    return is_workday(d)
+                    return bool(is_workday(d))
                 except Exception as _e:
                     _debug_log(f"datasource chinese calendar retry error: {_e}")
         # 降级为简单判断（周一到周五）
@@ -1387,7 +1455,7 @@ def is_trading_day(d=None):
             try:
                 from chinese_calendar import is_workday
 
-                return is_workday(d)
+                return bool(is_workday(d))
             except Exception as _e:
                 _debug_log(f"datasource chinese calendar install retry error: {_e}")
         # 降级为简单判断
@@ -1395,7 +1463,7 @@ def is_trading_day(d=None):
         return d.weekday() < 5
 
 
-def get_market_status(now=None):
+def get_market_status(now: Optional[datetime] = None) -> Tuple[str, str]:
     """获取A股市场状态
 
     Args:

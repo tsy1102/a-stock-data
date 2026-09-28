@@ -7,8 +7,9 @@ stocks = u['stocks']
 # unknown set from field_dict parse
 FD = 'C:/Tencent/WorkBuddy/a-stock-data/docs/field_dict.md'
 import re
+
 flines = open(FD, encoding='utf-8').read().split('\n')
-start = next(i for i,l in enumerate(flines) if '12.3.2.3 ulist239' in l)
+start = next(i for i, l in enumerate(flines) if '12.3.2.3 ulist239' in l)
 unknown = []
 i = start
 while i < len(flines):
@@ -20,7 +21,7 @@ while i < len(flines):
         unknown.append(m.group(1))
     i += 1
 
-anchors = ['600519','601288','000568']
+anchors = ['600519', '601288', '000568']
 print("unknown count:", len(unknown))
 for f in sorted(unknown, key=lambda x: int(x[1:])):
     vals = []

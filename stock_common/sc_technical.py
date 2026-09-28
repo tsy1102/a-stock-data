@@ -276,6 +276,7 @@ def analyze_technical(
 # MIT 许可；与通达信一致的经典"三角形分布 + 换手率衰减"模型）
 # ═══════════════════════════════════════════════════════════════
 
+
 def calculate_cyq(
     dates: list,
     opens: list,
@@ -328,8 +329,10 @@ def calculate_cyq(
     w_close = [closes[i] for i in range(start, end)]
     w_high = [highs[i] for i in range(start, end)]
     w_low = [lows[i] for i in range(start, end)]
-    w_turn = [min(t / 100.0, 1.0) if t > 1 else min(t, 1.0)
-              for t in (turnovers[i] for i in range(start, end))]
+    w_turn = [
+        min(t / 100.0, 1.0) if t > 1 else min(t, 1.0)
+        for t in (turnovers[i] for i in range(start, end))
+    ]
     cur_close = closes[idx]
 
     # 价格网格
@@ -355,7 +358,7 @@ def calculate_cyq(
 
         # 旧筹码衰减
         for k2 in range(accuracy_factor):
-            xdata[k2] *= (1 - tr)
+            xdata[k2] *= 1 - tr
 
         # 当日新筹码三角形分布叠加
         if h == l:
@@ -378,7 +381,7 @@ def calculate_cyq(
     if total_chips <= 0:
         return {}
 
-    def _cost_by_chip(target_chip):
+    def _cost_by_chip(target_chip: float) -> float:
         """从低价累计筹码到 target_chip 总量时的价格"""
         cum = 0.0
         for k2 in range(accuracy_factor):
@@ -387,7 +390,7 @@ def calculate_cyq(
                 return yrange[k2]
         return yrange[-1]
 
-    def _benefit_part(price):
+    def _benefit_part(price: float) -> float:
         """现价以下的筹码占比(获利盘比例)"""
         cum = 0.0
         for k2 in range(accuracy_factor):
@@ -398,7 +401,7 @@ def calculate_cyq(
     benefit = _benefit_part(cur_close)
     avg_cost = _cost_by_chip(total_chips * 0.5)
 
-    def _pct_range(pct):
+    def _pct_range(pct: float) -> tuple[float, float, float]:
         lo_p = _cost_by_chip(total_chips * (1 - pct) / 2)
         hi_p = _cost_by_chip(total_chips * (1 + pct) / 2)
         conc = (hi_p - lo_p) / (hi_p + lo_p) if (hi_p + lo_p) > 0 else 0
@@ -440,36 +443,66 @@ def get_kline_patterns(opens: list, highs: list, lows: list, closes: list) -> di
             return {}
 
         _cdl_map = {
-            "two_crows": "CDL2CROWS", "three_black_crows": "CDL3BLACKCROWS",
-            "three_inside_up_down": "CDL3INSIDE", "three_line_strike": "CDL3LINESTRIKE",
-            "three_outside_up_down": "CDL3OUTSIDE", "three_stars_in_the_south": "CDL3STARSINSOUTH",
-            "three_white_soldiers": "CDL3WHITESOLDIERS", "abandoned_baby": "CDLABANDONEDBABY",
-            "advance_block": "CDLADVANCEBLOCK", "belt_hold": "CDLBELTHOLD",
-            "breakaway": "CDLBREAKAWAY", "closing_marubozu": "CDLCLOSINGMARUBOZU",
-            "concealing_baby_swallow": "CDLCONCEALBABYSWALL", "counterattack": "CDLCOUNTERATTACK",
-            "dark_cloud_cover": "CDLDARKCLOUDCOVER", "doji": "CDLDOJI",
-            "doji_star": "CDLDOJISTAR", "dragonfly_doji": "CDLDRAGONFLYDOJI",
-            "engulfing_pattern": "CDLENGULFING", "evening_doji_star": "CDLEVENINGDOJISTAR",
-            "evening_star": "CDLEVENINGSTAR", "up_down_gap": "CDLGAPSIDESIDEWHITE",
-            "gravestone_doji": "CDLGRAVESTONEDOJI", "hammer": "CDLHAMMER",
-            "hanging_man": "CDLHANGINGMAN", "harami_pattern": "CDLHARAMI",
-            "harami_cross_pattern": "CDLHARAMICROSS", "high_wave_candle": "CDLHIGHWAVE",
-            "hikkake_pattern": "CDLHIKKAKE", "modified_hikkake_pattern": "CDLHIKKAKEMOD",
-            "homing_pigeon": "CDLHOMINGPIGEON", "identical_three_crows": "CDLIDENTICAL3CROWS",
-            "in_neck_pattern": "CDLINNECK", "inverted_hammer": "CDLINVERTEDHAMMER",
-            "kicking": "CDLKICKING", "kicking_bull_bear": "CDLKICKINGBYLENGTH",
-            "ladder_bottom": "CDLLADDERBOTTOM", "long_legged_doji": "CDLLONGLEGGEDDOJI",
-            "long_line_candle": "CDLLONGLINE", "marubozu": "CDLMARUBOZU",
-            "matching_low": "CDLMATCHINGLOW", "mat_hold": "CDLMATHOLD",
-            "morning_doji_star": "CDLMORNINGDOJISTAR", "morning_star": "CDLMORNINGSTAR",
-            "on_neck_pattern": "CDLONNECK", "piercing_pattern": "CDLPIERCING",
-            "rickshaw_man": "CDLRICKSHAWMAN", "rising_falling_three": "CDLRISEFALL3METHODS",
-            "separating_lines": "CDLSEPARATINGLINES", "shooting_star": "CDLSHOOTINGSTAR",
-            "short_line_candle": "CDLSHORTLINE", "spinning_top": "CDLSPINNINGTOP",
-            "stalled_pattern": "CDLSTALLEDPATTERN", "stick_sandwich": "CDLSTICKSANDWICH",
-            "takuri": "CDLTAKURI", "tasuki_gap": "CDLTASUKIGAP",
-            "thrusting_pattern": "CDLTHRUSTING", "tristar_pattern": "CDLTRISTAR",
-            "unique_3_river": "CDLUNIQUE3RIVER", "upside_gap_two_crows": "CDLUPSIDEGAP2CROWS",
+            "two_crows": "CDL2CROWS",
+            "three_black_crows": "CDL3BLACKCROWS",
+            "three_inside_up_down": "CDL3INSIDE",
+            "three_line_strike": "CDL3LINESTRIKE",
+            "three_outside_up_down": "CDL3OUTSIDE",
+            "three_stars_in_the_south": "CDL3STARSINSOUTH",
+            "three_white_soldiers": "CDL3WHITESOLDIERS",
+            "abandoned_baby": "CDLABANDONEDBABY",
+            "advance_block": "CDLADVANCEBLOCK",
+            "belt_hold": "CDLBELTHOLD",
+            "breakaway": "CDLBREAKAWAY",
+            "closing_marubozu": "CDLCLOSINGMARUBOZU",
+            "concealing_baby_swallow": "CDLCONCEALBABYSWALL",
+            "counterattack": "CDLCOUNTERATTACK",
+            "dark_cloud_cover": "CDLDARKCLOUDCOVER",
+            "doji": "CDLDOJI",
+            "doji_star": "CDLDOJISTAR",
+            "dragonfly_doji": "CDLDRAGONFLYDOJI",
+            "engulfing_pattern": "CDLENGULFING",
+            "evening_doji_star": "CDLEVENINGDOJISTAR",
+            "evening_star": "CDLEVENINGSTAR",
+            "up_down_gap": "CDLGAPSIDESIDEWHITE",
+            "gravestone_doji": "CDLGRAVESTONEDOJI",
+            "hammer": "CDLHAMMER",
+            "hanging_man": "CDLHANGINGMAN",
+            "harami_pattern": "CDLHARAMI",
+            "harami_cross_pattern": "CDLHARAMICROSS",
+            "high_wave_candle": "CDLHIGHWAVE",
+            "hikkake_pattern": "CDLHIKKAKE",
+            "modified_hikkake_pattern": "CDLHIKKAKEMOD",
+            "homing_pigeon": "CDLHOMINGPIGEON",
+            "identical_three_crows": "CDLIDENTICAL3CROWS",
+            "in_neck_pattern": "CDLINNECK",
+            "inverted_hammer": "CDLINVERTEDHAMMER",
+            "kicking": "CDLKICKING",
+            "kicking_bull_bear": "CDLKICKINGBYLENGTH",
+            "ladder_bottom": "CDLLADDERBOTTOM",
+            "long_legged_doji": "CDLLONGLEGGEDDOJI",
+            "long_line_candle": "CDLLONGLINE",
+            "marubozu": "CDLMARUBOZU",
+            "matching_low": "CDLMATCHINGLOW",
+            "mat_hold": "CDLMATHOLD",
+            "morning_doji_star": "CDLMORNINGDOJISTAR",
+            "morning_star": "CDLMORNINGSTAR",
+            "on_neck_pattern": "CDLONNECK",
+            "piercing_pattern": "CDLPIERCING",
+            "rickshaw_man": "CDLRICKSHAWMAN",
+            "rising_falling_three": "CDLRISEFALL3METHODS",
+            "separating_lines": "CDLSEPARATINGLINES",
+            "shooting_star": "CDLSHOOTINGSTAR",
+            "short_line_candle": "CDLSHORTLINE",
+            "spinning_top": "CDLSPINNINGTOP",
+            "stalled_pattern": "CDLSTALLEDPATTERN",
+            "stick_sandwich": "CDLSTICKSANDWICH",
+            "takuri": "CDLTAKURI",
+            "tasuki_gap": "CDLTASUKIGAP",
+            "thrusting_pattern": "CDLTHRUSTING",
+            "tristar_pattern": "CDLTRISTAR",
+            "unique_3_river": "CDLUNIQUE3RIVER",
+            "upside_gap_two_crows": "CDLUPSIDEGAP2CROWS",
             "up_downside_gap_three": "CDLXSIDEGAP3METHODS",
         }
         for field_name, func_name in _cdl_map.items():

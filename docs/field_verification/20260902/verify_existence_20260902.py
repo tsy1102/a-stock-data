@@ -14,20 +14,24 @@
 输出：同目录 report_existence_20260902.md
 注：push2 主域今日熔断，东财侧用 push2delay（raw_push2_full.json）替身。
 """
+
 import json, os
 
 D = os.path.dirname(os.path.abspath(__file__))
+
 
 def load(name):
     with open(os.path.join(D, name), encoding="utf-8") as fh:
         return json.load(fh)
 
+
 ten = load("raw_tencent.json")["stocks"]
-p2  = load("raw_push2_full.json")["stocks"]
-fy  = load("raw_fuyao.json")["stocks"]
+p2 = load("raw_push2_full.json")["stocks"]
+fy = load("raw_fuyao.json")["stocks"]
 tdx = load("raw_tdx.json")["stocks"]
 zhb = load("raw_zhb.json")["stocks"]
 codes = sorted(ten.keys())
+
 
 def tf(x):
     try:
@@ -37,12 +41,15 @@ def tf(x):
     except Exception:
         return None
 
+
 def ten_val(c, i):
     f = ten[c]["fields"]
     return tf(f[i]) if i < len(f) else None
 
+
 def p2_val(c, k):
     return tf(p2[c]["data"].get(k))
+
 
 def fy_num(c, *path):
     cur = fy[c]
@@ -53,9 +60,10 @@ def fy_num(c, *path):
             return None
     return tf(cur) if isinstance(cur, (int, float)) else None
 
+
 def fy_inc(c, field, annual=False):
     blk = "income_a" if annual else "income_q"
-    arr = (fy[c]["financials"].get(blk) or [])
+    arr = fy[c]["financials"].get(blk) or []
     if not arr:
         return None
     for r in arr:
@@ -63,8 +71,10 @@ def fy_inc(c, field, annual=False):
             return tf(r.get(field))
     return tf(arr[0].get(field))
 
+
 def zhb_full(c, k):
     return tf(zhb[c]["full"].get(k))
+
 
 # ---------------------------------------------------------------------------
 # 1) 常规/基础字段：跨源存在性 + 量级一致性
@@ -176,8 +186,12 @@ UNKNOWN = {
 
 # 本轮新破解（从 fuyao 锚精确对上，作为"可核实"证据登记）
 NEW_RESOLVED = {
-    "push2 f109": ("归母净利润(年报, parent_holder_net_profit)", "fuyao financials.income_a.parent_holder_net_profit 20股逐字等（600519=82320.07亿）"),
+    "push2 f109": (
+        "归母净利润(年报, parent_holder_net_profit)",
+        "fuyao financials.income_a.parent_holder_net_profit 20股逐字等（600519=82320.07亿）",
+    ),
 }
+
 
 def classify(vals):
     nums = [v for v in vals if isinstance(v, (int, float)) and v is not None]
@@ -195,6 +209,7 @@ def classify(vals):
     if mx >= 1e8:
         return f"大数财务量(常规) · 量级≈{mx/1e8:.1f}亿 散度{distinct}"
     return f"常规数值 · 范围[{mn:.3f},{mx:.3f}] 散度{distinct}"
+
 
 def magnitude(metric_srcs):
     """返回 (compared, sign_mm, ratio_mm, examples)。"""
@@ -225,12 +240,17 @@ def magnitude(metric_srcs):
                 ratio_mm += 1
     return compared, sign_mm, ratio_mm, examples
 
+
 def main():
     L = []
     L.append("# 字典复核报告 · 存在性 + 量级一致性（2026-09-02 采集）v2\n")
     L.append(f"- 样本：{len(codes)} 只（{codes[0]} … {codes[-1]}）")
-    L.append("- 源：腾讯(qt.gtimg) / push2delay(东财延迟域·主域今日熔断) / 同花顺-fuyao / 通达信(TDX finance_info) / ZHB(离线包 20260901)")
-    L.append("- 方法：**不做精确对撞**；仅核验「基础字段各源是否存在 + 量级同阶同号」。量级检查区分『符号冲突(真问题)』与『比值>2(口径/单位差·非错误)』。\n")
+    L.append(
+        "- 源：腾讯(qt.gtimg) / push2delay(东财延迟域·主域今日熔断) / 同花顺-fuyao / 通达信(TDX finance_info) / ZHB(离线包 20260901)"
+    )
+    L.append(
+        "- 方法：**不做精确对撞**；仅核验「基础字段各源是否存在 + 量级同阶同号」。量级检查区分『符号冲突(真问题)』与『比值>2(口径/单位差·非错误)』。\n"
+    )
 
     L.append("## 一、常规/基础字段 跨源存在性 + 量级一致性\n")
     src_all = sorted({s for m in REGULAR.values() for s in m})
@@ -253,7 +273,9 @@ def main():
         else:
             st = "✅ 自洽"
         L.append(f"| {metric} | " + " | ".join(cells) + f" | {compared} | {sm} | {rm} | {st} |")
-    L.append("\n> 量级差>2× 均为可解释的口径/单位差异：营收·H1 与 净利·H1 / 经营现金流·H1 中 TDX 数值约为 fuyao 的 ×10（TDX finance_info 单位缩放，非错）；ROE 中 腾讯[65]≈年加权、push2/fuyao≈半年加权，差~2×属正常。")
+    L.append(
+        "\n> 量级差>2× 均为可解释的口径/单位差异：营收·H1 与 净利·H1 / 经营现金流·H1 中 TDX 数值约为 fuyao 的 ×10（TDX finance_info 单位缩放，非错）；ROE 中 腾讯[65]≈年加权、push2/fuyao≈半年加权，差~2×属正常。"
+    )
 
     L.append("\n## 二、本轮新破解（fuyao 锚可核实）\n")
     L.append("| 字段 | 判定语义 | 证据 |")
@@ -270,20 +292,37 @@ def main():
         L.append(f"| {fname} | {src} | {vals[:5]} | {classify(vals)} |")
 
     L.append("\n## 四、结论与字典订正建议\n")
-    L.append("1. **常规字段全通过存在性核验**：价格/PE三口径/PB/市值/52w高低/换手/涨跌幅 在 腾讯↔push2delay↔fuyao↔zhb 间量级一致（比值≤1.05），可核实、可信。")
-    L.append("2. **NEW f109 = 归母净利润(年报)**：push2 f109 与 fuyao `income_a.parent_holder_net_profit` 20 股逐字等（600519=82320.07亿）。从『未破解』移除，登记为 `parent_net_profit(年报)`。")
-    L.append("3. **ROE 口径差(~2×)**：腾讯[65]≈年加权ROE，push2 f173/fuyao≈半年加权ROE（16.75）。量级同阶、差2×，非错误；建议字典标注[65]口径。")
-    L.append("4. **ROA 仅腾讯单源无锚**：[66]≈27.3% 与教科书 ROA(净利/总资产≈15%) 不符，建议降为『L3 存疑·单源无锚』。")
-    L.append("5. **腾讯[86] 并非恒0**：实测 600519=29、其余股亦非零，推翻 dict L1380『H12 全锚定0』。重分类为『手级带符号量·存在』。")
-    L.append("6. **残留未知 push2 f106/f107/f110/f111/f112/f118** = 小整数状态码（常规，0/1/2/5/100 等），符合『未知但常规』假设；f113/f114/f115='-' 恒空占位。")
-    L.append("7. **字典未破解清单 stale 订正**：f103=ocf_ttm、f108=扣非EPS、f160=年报EPS、f190=每股未分配利润、f193-f197 财务衍生、f116/f117=总/流通市值、**f109=归母净利(年报)** 均已在正文破解，应移除；腾讯仅留 [56]/[85]/[86]（[65]/[66]/[75] 已破解）。")
-    L.append("8. **ZHB tdxstat Col[22]**：本次探针 JSON 未暴露 tdxstat 原始列（只暴露命名字段），无法从本批数据重验；维持 7.5 节结论（5位概念/板块码，887 种）。")
+    L.append(
+        "1. **常规字段全通过存在性核验**：价格/PE三口径/PB/市值/52w高低/换手/涨跌幅 在 腾讯↔push2delay↔fuyao↔zhb 间量级一致（比值≤1.05），可核实、可信。"
+    )
+    L.append(
+        "2. **NEW f109 = 归母净利润(年报)**：push2 f109 与 fuyao `income_a.parent_holder_net_profit` 20 股逐字等（600519=82320.07亿）。从『未破解』移除，登记为 `parent_net_profit(年报)`。"
+    )
+    L.append(
+        "3. **ROE 口径差(~2×)**：腾讯[65]≈年加权ROE，push2 f173/fuyao≈半年加权ROE（16.75）。量级同阶、差2×，非错误；建议字典标注[65]口径。"
+    )
+    L.append(
+        "4. **ROA 仅腾讯单源无锚**：[66]≈27.3% 与教科书 ROA(净利/总资产≈15%) 不符，建议降为『L3 存疑·单源无锚』。"
+    )
+    L.append(
+        "5. **腾讯[86] 并非恒0**：实测 600519=29、其余股亦非零，推翻 dict L1380『H12 全锚定0』。重分类为『手级带符号量·存在』。"
+    )
+    L.append(
+        "6. **残留未知 push2 f106/f107/f110/f111/f112/f118** = 小整数状态码（常规，0/1/2/5/100 等），符合『未知但常规』假设；f113/f114/f115='-' 恒空占位。"
+    )
+    L.append(
+        "7. **字典未破解清单 stale 订正**：f103=ocf_ttm、f108=扣非EPS、f160=年报EPS、f190=每股未分配利润、f193-f197 财务衍生、f116/f117=总/流通市值、**f109=归母净利(年报)** 均已在正文破解，应移除；腾讯仅留 [56]/[85]/[86]（[65]/[66]/[75] 已破解）。"
+    )
+    L.append(
+        "8. **ZHB tdxstat Col[22]**：本次探针 JSON 未暴露 tdxstat 原始列（只暴露命名字段），无法从本批数据重验；维持 7.5 节结论（5位概念/板块码，887 种）。"
+    )
 
     out = "\n".join(L)
     with open(os.path.join(D, "report_existence_20260902.md"), "w", encoding="utf-8") as fh:
         fh.write(out)
     print(out)
     print("\n[OK] report_existence_20260902.md")
+
 
 if __name__ == "__main__":
     main()

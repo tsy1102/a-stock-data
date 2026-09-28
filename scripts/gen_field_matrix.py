@@ -4,6 +4,7 @@
 用法: python scripts/gen_field_matrix.py
 幂等: 读取 field_dict.md，替换 <!-- GEN:field-matrix --> 标记区间，原地更新。
 """
+
 from __future__ import annotations
 
 import io
@@ -61,13 +62,25 @@ SOURCE_ORDER = [
 NOT_REAL_SOURCE = ("跨源对照", "其他", "同花顺-thsdk")
 
 # 非字段表过滤
-NON_FIELD_SEC = ("覆盖统计", "文件元信息", "接口分类全景", "已解析并使用", "未被代码解析",
-                 "辅助文件", "域名管理", "策略中的典型应用", "数据流", "调用链路",
-                 "典型应用公式", "字段源状态码",
-                 # 2026-09-19: §12.15.10 治理元表（源→分字典映射手写表 + GEN 自动索引）非字段表，
-                 # 其单元格含 `东财-ulist239(np/get)` 等源名，按 `/` 切分会被 clean_field 误判为伪字段 token；
-                 # 排除后 §零·B 对照基线不再被 §12.15.10 污染（不影响 §零·B 渲染，其读 registry）。
-                 "同步分字典", "分字典索引")
+NON_FIELD_SEC = (
+    "覆盖统计",
+    "文件元信息",
+    "接口分类全景",
+    "已解析并使用",
+    "未被代码解析",
+    "辅助文件",
+    "域名管理",
+    "策略中的典型应用",
+    "数据流",
+    "调用链路",
+    "典型应用公式",
+    "字段源状态码",
+    # 2026-09-19: §12.15.10 治理元表（源→分字典映射手写表 + GEN 自动索引）非字段表，
+    # 其单元格含 `东财-ulist239(np/get)` 等源名，按 `/` 切分会被 clean_field 误判为伪字段 token；
+    # 排除后 §零·B 对照基线不再被 §12.15.10 污染（不影响 §零·B 渲染，其读 registry）。
+    "同步分字典",
+    "分字典索引",
+)
 
 
 def sec_to_source(sec: str) -> str:
@@ -83,8 +96,15 @@ def sec_to_source(sec: str) -> str:
         return "新浪"
     if "tdxstat" in s or "tipinfo" in s or "ZHB" in s or "zhb" in s:
         return "ZHB"
-    if ("push2" in s or "datacenter" in s or "clist" in s or "slist" in s
-            or "12.8" in s or "12.9" in s or "东财" in s):
+    if (
+        "push2" in s
+        or "datacenter" in s
+        or "clist" in s
+        or "slist" in s
+        or "12.8" in s
+        or "12.9" in s
+        or "东财" in s
+    ):
         return "东财"
     if "同花顺" in s:
         return "同花顺"
@@ -100,7 +120,14 @@ def sec_to_source(sec: str) -> str:
         return "AxData"
     if "eltdx" in s or "easy_tdx" in s or "12.13" in s:
         return "TDX-eltdx"
-    if "F10" in s or "0x0010" in s or "协议完整" in s or "Gemini 核实" in s or "2.1" in s or "2.2" in s:
+    if (
+        "F10" in s
+        or "0x0010" in s
+        or "协议完整" in s
+        or "Gemini 核实" in s
+        or "2.1" in s
+        or "2.2" in s
+    ):
         return "TDX-0x0010/F10"
     if "百度" in s:
         return "百度"
@@ -108,7 +135,15 @@ def sec_to_source(sec: str) -> str:
         return "沪深交易所"
     if "levistock" in s or "12.10" in s:
         return "levistock"
-    if "多源" in s or "对照" in s or "优先级" in s or "矩阵" in s or "状态码" in s or "12.5" in s or "12.4" in s:
+    if (
+        "多源" in s
+        or "对照" in s
+        or "优先级" in s
+        or "矩阵" in s
+        or "状态码" in s
+        or "12.5" in s
+        or "12.4" in s
+    ):
         return "跨源对照"
     return "其他"
 
@@ -238,13 +273,17 @@ def render(name_sources, records) -> str:
 
     out = []
     out.append("### 零·B 字段×源总表（自动生成，勿手改）\n")
-    out.append(f"> 生成：`scripts/gen_field_matrix.py`（Phase 2 起从 field_registry.json 单一真相源读取，"
-               f"不再解析 field_dict.md 体积）。共 {len(name_sources)} 个字段 / {records} 条字段×源记录"
-               f"（去重配对口径，取代旧版按行出现的 1412 重复计数）。\n")
-    out.append("> 源排序按易→难（V17.0.7 层级定案；2026-09-07 thsdk 已退役，不再列为活体源）："
-               "ZHB（离线零网络）→ TDX TCP（0x0010/F10/eltdx）→ "
-               "腾讯（不封 IP）→ **同花顺-fuyao（官方 REST，盘后可查+独立风控域，V17.0.7 升为财务 TTM 族主源）** → "
-               "新浪 → 巨潮 → 东财（限流最严）→ 其他。\n")
+    out.append(
+        f"> 生成：`scripts/gen_field_matrix.py`（Phase 2 起从 field_registry.json 单一真相源读取，"
+        f"不再解析 field_dict.md 体积）。共 {len(name_sources)} 个字段 / {records} 条字段×源记录"
+        f"（去重配对口径，取代旧版按行出现的 1412 重复计数）。\n"
+    )
+    out.append(
+        "> 源排序按易→难（V17.0.7 层级定案；2026-09-07 thsdk 已退役，不再列为活体源）："
+        "ZHB（离线零网络）→ TDX TCP（0x0010/F10/eltdx）→ "
+        "腾讯（不封 IP）→ **同花顺-fuyao（官方 REST，盘后可查+独立风控域，V17.0.7 升为财务 TTM 族主源）** → "
+        "新浪 → 巨潮 → 东财（限流最严）→ 其他。\n"
+    )
     out.append("> 字段名基于章节标题分类推断，精确接口见各节；正文修改后重跑本脚本即同步。\n")
     out.append(f"**B.1 多源字段（{len(multi)} 个，fallback 路由表）**\n")
     out.append("| 字段 | 源数 | 源（按易→难） |")
@@ -284,10 +323,17 @@ def _load_baseline() -> int:
 
 def _save_baseline(count: int) -> None:
     import datetime as _dt
+
     with io.open(_ZERO_B_BASELINE, "w", encoding="utf-8") as _fh:
-        json.dump({"count": count, "updated": _dt.date.today().isoformat()},
-                  _fh, ensure_ascii=False, indent=2)
-def update_dict(force: bool = False, use_registry: bool = True) -> None:
+        json.dump(
+            {"count": count, "updated": _dt.date.today().isoformat()},
+            _fh,
+            ensure_ascii=False,
+            indent=2,
+        )
+
+
+def update_dict(force: bool = False, use_registry: bool = True, check: bool = False) -> int:
     # Phase 2: 默认从 registry 读取（单一真相源），不再依赖 markdown 体积。
     # --from-md 时回退 markdown 以做回归对照。
     name_sources, records = build_matrix(use_registry=use_registry)
@@ -308,23 +354,44 @@ def update_dict(force: bool = False, use_registry: bool = True) -> None:
     start = text.find(marker)
     end_marker = "<!-- /GEN:field-matrix -->"
     end = text.find(end_marker)
-    if start == -1:
-        raise SystemExit("field_dict.md 缺少 §零·B 标记，先手动插入占位")
+    if start == -1 or end == -1 or end < start:
+        raise SystemExit("field_dict.md 的 §零·B 起止标记缺失或顺序错误，未写入")
     head = text[: start + len(marker)]
-    tail = text[end:] if end != -1 else text[text.find("\n", start):]
+    tail = text[end:]
     # 保持尾部缩进（marker 后紧跟换行）
-    io.open(DICT, "w", encoding="utf-8").write(head + "\n\n" + content + "\n" + tail)
+    updated = head + "\n\n" + content + "\n" + tail
+    if check:
+        if updated == text:
+            print("OK: §零·B 与当前生成结果一致；未写入文件或基线")
+            return 0
+        print("DIFF: §零·B 与当前生成结果不一致；检查模式未写入文件或基线")
+        return 1
+
+    with io.open(DICT, "w", encoding="utf-8") as f:
+        f.write(updated)
     _save_baseline(new_count)
-    print(f"OK: {len(name_sources)} 字段 / {records} 记录 / 多源 {len([s for s in name_sources.values() if len(s) >= 2])}")
+    print(
+        f"OK: {len(name_sources)} 字段 / {records} 记录 / 多源 {len([s for s in name_sources.values() if len(s) >= 2])}"
+    )
+    return 0
 
 
 if __name__ == "__main__":
     import argparse
 
-    _ap = argparse.ArgumentParser(description="从 field_registry.json 生成 §零·B 字段×源总表（marker 区间原地写回）")
-    _ap.add_argument("--force", action="store_true",
-                     help="忽略 §零·B 写回收缩护栏（仅当确认字段真实下线时使用）")
-    _ap.add_argument("--from-md", action="store_true",
-                     help="回归模式：从 field_dict.md 读取而非 registry（用于 parity 对照）")
+    _ap = argparse.ArgumentParser(
+        description="从 field_registry.json 生成 §零·B 字段×源总表（marker 区间原地写回）"
+    )
+    _ap.add_argument(
+        "--force", action="store_true", help="忽略 §零·B 写回收缩护栏（仅当确认字段真实下线时使用）"
+    )
+    _ap.add_argument(
+        "--check", action="store_true", help="只比较生成结果，不写入 field_dict.md 或基线文件"
+    )
+    _ap.add_argument(
+        "--from-md",
+        action="store_true",
+        help="回归模式：从 field_dict.md 读取而非 registry（用于 parity 对照）",
+    )
     _args = _ap.parse_args()
-    update_dict(force=_args.force, use_registry=not _args.from_md)
+    sys.exit(update_dict(force=_args.force, use_registry=not _args.from_md, check=_args.check))

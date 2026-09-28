@@ -5,6 +5,7 @@
 跨片段符号由各子模块函数体内的局部懒导入（from ._DEFINER import NAME）提供，
 共享可变状态集中于 _shared.py（单实例）。
 """
+
 from __future__ import annotations
 from typing import Any, Dict, List, Optional, Tuple
 import asyncio
@@ -14,7 +15,15 @@ import stat
 from stock_common.sc_network import UA, _debug_log, em_get, requires_push2
 from stock_common.sc_utils import _load_strategy_config, _safe_float, em_secid_prefix
 from core.stock_cache import TTL, cached, make_valid_if
-from ._shared import _EM_BOARD_TYPE_FS_MAP, _EM_INDUSTRY_L1_NAMES, _EM_L2_LOADED_TS, _EM_L2_MAP, _EM_L2_MEMBERS, _EM_L2_TTL, _TDXHY_CACHE
+from ._shared import (
+    _EM_BOARD_TYPE_FS_MAP,
+    _EM_INDUSTRY_L1_NAMES,
+    _EM_L2_LOADED_TS,
+    _EM_L2_MAP,
+    _EM_L2_MEMBERS,
+    _EM_L2_TTL,
+    _TDXHY_CACHE,
+)
 from stock_common.sc_kpl import _f
 
 
@@ -44,7 +53,7 @@ def get_industry_reports(
         - infoCode: 用于拼接PDF下载URL
     """
     api_url = "https://reportapi.eastmoney.com/report/list"
-    all_records = []
+    all_records: List[Dict[str, Any]] = []
     for page in range(1, max_pages + 1):
         params = {
             "industryCode": industry_code,
@@ -124,7 +133,11 @@ def get_industry_peers(
                 _rows = []
                 for _mc in _l2_members:
                     # 过滤 B 股（200xxx/900xxx）与非 A 股代码，避免排行污染
-                    if len(_mc) != 6 or not _mc.isdigit() or _mc[:2] not in ("00", "30", "60", "68", "92"):
+                    if (
+                        len(_mc) != 6
+                        or not _mc.isdigit()
+                        or _mc[:2] not in ("00", "30", "60", "68", "92")
+                    ):
                         continue
                     _q = _tq.get(_mc) or {}
                     _rows.append(
@@ -221,8 +234,11 @@ def get_industry_peers(
             # board_members 返回的 price 有效 → 该分支永不执行, peers 字典根本没有 pe_lyr 键,
             # 同业对比表 PE（静） 整列 N/A(实测 002193/002360/300165/301171 的 peers pe_lyr 均为 None)。
             # 改为: 对缺失/为 0 的 pe_lyr 用腾讯批量(1 次请求, 进程级按日缓存)补静态PE, 不覆盖已有值。
-            _need_lyr = [str(_p.get("code", "")) for _p in peers
-                         if str(_p.get("code", "")) and not (_p.get("pe_lyr") or 0)]
+            _need_lyr = [
+                str(_p.get("code", ""))
+                for _p in peers
+                if str(_p.get("code", "")) and not (_p.get("pe_lyr") or 0)
+            ]
             if _need_lyr:
                 try:
                     from core.tdx_client import _tencent_batch_fallback
@@ -329,7 +345,7 @@ def get_industry_peers(
     return {"industry": "", "my_mcap": 0, "my_rank": 0, "industry_count": 0, "peers": []}
 
 
-async def get_industry_peers_async(session: Any, code: str) -> List[Dict[str, Any]]:
+async def get_industry_peers_async(session: Any, code: str) -> Optional[Dict[str, Any]]:
     """异步版 get_industry_peers"""
     import asyncio
 
@@ -355,7 +371,11 @@ def get_stock_sector_rank(
                 _tq = _tencent_batch_fallback(_l2_members) or {}
                 _rows = []
                 for _mc in _l2_members:
-                    if len(_mc) != 6 or not _mc.isdigit() or _mc[:2] not in ("00", "30", "60", "68", "92"):
+                    if (
+                        len(_mc) != 6
+                        or not _mc.isdigit()
+                        or _mc[:2] not in ("00", "30", "60", "68", "92")
+                    ):
                         continue
                     _q = _tq.get(_mc) or {}
                     _rows.append({"code": _mc, "change_pct": _q.get("change_pct", 0) or 0})
@@ -401,7 +421,7 @@ def get_stock_sector_rank(
     return None
 
 
-async def get_stock_sector_rank_async(session: Any, code: str) -> Dict[str, Any]:
+async def get_stock_sector_rank_async(session: Any, code: str) -> Optional[Dict[str, Any]]:
     """异步版 get_stock_sector_rank"""
     import asyncio
 
@@ -417,6 +437,7 @@ def get_industry_rank_from_zhb(top_n: int = 20) -> List[Dict[str, Any]]:
     leader_name, leader_change, amount_yi, _member_count}]——lng/med/sht 行业排名参照系直用。
     """
     from ._zhb import get_zhb_full_market_snapshot
+
     try:
         from core.zhb_client import get_zhb
 
@@ -424,6 +445,8 @@ def get_industry_rank_from_zhb(top_n: int = 20) -> List[Dict[str, Any]]:
         if not snap:
             return []
         zhb = get_zhb()
+        if zhb is None:
+            return []
         industry_map = zhb.industry_map or {}
         # 申万二级映射（东财 L2 缓存——7 天 JSON，不联网）
         _em_ind_map: Dict[str, str] = {}
@@ -449,8 +472,15 @@ def get_industry_rank_from_zhb(top_n: int = 20) -> List[Dict[str, Any]]:
             amt = (_safe_float(stat.get("amount", 0)) or 0) / 10000.0
             b = buckets.setdefault(
                 ind_code,
-                {"_chgs": [], "_mcaps": [], "_amts": [], "_up": 0, "_down": 0,
-                 "_best_chg": -999.0, "_best_name": ""},
+                {
+                    "_chgs": [],
+                    "_mcaps": [],
+                    "_amts": [],
+                    "_up": 0,
+                    "_down": 0,
+                    "_best_chg": -999.0,
+                    "_best_name": "",
+                },
             )
             b["_chgs"].append(chg)
             b["_mcaps"].append(mcap)
@@ -494,7 +524,12 @@ def get_industry_rank_from_zhb(top_n: int = 20) -> List[Dict[str, Any]]:
         return []
 
 
-@cached(category="industry_compare", ttl_seconds=TTL["industry_compare"], trading_day=True, valid_if=make_valid_if())
+@cached(
+    category="industry_compare",
+    ttl_seconds=TTL["industry_compare"],
+    trading_day=True,
+    valid_if=make_valid_if(),
+)
 def get_industry_ranking(top_n: int = 20, _tag: str = "report") -> List[Dict[str, Any]]:
     """V17.2.x(2026-09-10): 行业排名（**list 返回**）——由 val/lng 本地 `industry_comparison` 下沉合并。
 
@@ -523,7 +558,9 @@ def get_industry_ranking(top_n: int = 20, _tag: str = "report") -> List[Dict[str
         sectors = tdx_get_board_list(0)
         if not sectors:
             return []
-        return sectors
+        if isinstance(sectors, list):
+            return [sector for sector in sectors if isinstance(sector, dict)]
+        return []
     except Exception as _e:
         _debug_log(f"{_tag} industry_rank tdx fallback error: {_e}")
         return []
@@ -651,16 +688,25 @@ def _tdxhy_industry_map() -> Dict[str, str]:
     M4(审查 2026-08-16): 异常时保持 None 不固化——允许下次调用重试(文件修复/路径恢复后生效)。
     """
     from ._misc import _tdx_root
+
     global _TDXHY_CACHE
     if _TDXHY_CACHE is not None:
         return _TDXHY_CACHE
     _m: Dict[str, str] = {}
     try:
         import re as _re
+
         # 1) hy_tree.xml: X码 → 一级名(层级栈: 2位=一级, 其下节点继承)
         _lvl1 = ""
-        _text = open(os.path.join(_tdx_root(), "T0002", "cloud_cfg", "hy_tree.xml"), encoding="gbk", errors="ignore").read()
-        for _mn in _re.finditer(r'<node\s[^>]*caption="([^"]*)"[^>]*blockid="X(\d+)"|<node\s[^>]*blockid="X(\d+)"[^>]*caption="([^"]*)"', _text):
+        _text = open(
+            os.path.join(_tdx_root(), "T0002", "cloud_cfg", "hy_tree.xml"),
+            encoding="gbk",
+            errors="ignore",
+        ).read()
+        for _mn in _re.finditer(
+            r'<node\s[^>]*caption="([^"]*)"[^>]*blockid="X(\d+)"|<node\s[^>]*blockid="X(\d+)"[^>]*caption="([^"]*)"',
+            _text,
+        ):
             _cap = _mn.group(1) or _mn.group(4)
             _xc = _mn.group(2) or _mn.group(3)
             if len(_xc) == 2:
@@ -668,7 +714,11 @@ def _tdxhy_industry_map() -> Dict[str, str]:
             else:
                 _m["X" + _xc] = _lvl1
         # 2) tdxhy.cfg: code → X细分码(已带 X 前缀) → 一级名
-        for _ln in open(os.path.join(_tdx_root(), "T0002", "hq_cache", "tdxhy.cfg"), encoding="gbk", errors="ignore"):
+        for _ln in open(
+            os.path.join(_tdx_root(), "T0002", "hq_cache", "tdxhy.cfg"),
+            encoding="gbk",
+            errors="ignore",
+        ):
             _p = _ln.rstrip("\n").split("|")
             if len(_p) >= 6 and len(_p[1]) == 6 and _p[1].isdigit():
                 _x = _p[5].strip()
@@ -681,7 +731,9 @@ def _tdxhy_industry_map() -> Dict[str, str]:
     return _m
 
 
-def get_em_industry_l2_data(force_refresh: bool = False) -> Tuple[Dict[str, str], Dict[str, List[str]]]:
+def get_em_industry_l2_data(
+    force_refresh: bool = False,
+) -> Tuple[Dict[str, str], Dict[str, List[str]]]:
     """V16.2.17: 东财申万二级行业数据（全市场，一次性拉取缓存）。
 
     返回: (map_l2: {股票代码: 申万二级名}, members_l2: {申万二级名: [成分代码]})
@@ -714,8 +766,10 @@ def get_em_industry_l2_data(force_refresh: bool = False) -> Tuple[Dict[str, str]
         _page = 1
         while True:
             _params = {
-                "reportName": "RPT_EM_BOARD_CONSTITUENT", "columns": "ALL",
-                "pageNumber": str(_page), "pageSize": "5000",
+                "reportName": "RPT_EM_BOARD_CONSTITUENT",
+                "columns": "ALL",
+                "pageNumber": str(_page),
+                "pageSize": "5000",
             }
             _r = em_get(_url, params=_params, headers={"User-Agent": UA}, timeout=30)
             if _r is None:
@@ -750,9 +804,14 @@ def get_em_industry_l2_data(force_refresh: bool = False) -> Tuple[Dict[str, str]
                 _members_l2.setdefault(_l2, []).append(_sc)
         # 写磁盘缓存（版本隔离 _l2 后缀）
         try:
-            _cache_dir = _os.path.join(_os.path.dirname(_os.path.dirname(_os.path.abspath(__file__))), "cache")
+            _cache_dir = _os.path.join(
+                _os.path.dirname(_os.path.dirname(_os.path.abspath(__file__))), "cache"
+            )
             _os.makedirs(_cache_dir, exist_ok=True)
-            for _fn, _obj in (("em_industry_map_l2.json", _map_l2), ("em_industry_members_l2.json", _members_l2)):
+            for _fn, _obj in (
+                ("em_industry_map_l2.json", _map_l2),
+                ("em_industry_members_l2.json", _members_l2),
+            ):
                 _tmp = _os.path.join(_cache_dir, _fn + ".tmp")
                 with open(_tmp, "w", encoding="utf-8") as _f:
                     _json.dump(_obj, _f, ensure_ascii=False)
@@ -849,8 +908,12 @@ def get_em_board_list(board_type: int = 0) -> List[Dict[str, Any]]:
         return []
 
 
-@cached(category="board_members", ttl_seconds=TTL["board_members"], trading_day=True,
-        valid_if=make_valid_if(min_size=1))
+@cached(
+    category="board_members",
+    ttl_seconds=TTL["board_members"],
+    trading_day=True,
+    valid_if=make_valid_if(min_size=1),
+)
 @requires_push2
 def get_em_board_members(board_code: str) -> List[Dict[str, Any]]:
     """V12.0: 获取板块成员列表（替代 TDX MacClient.get_board_members）。

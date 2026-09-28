@@ -25,6 +25,7 @@ AGENTS.md compliance note (see AGENTS.md 2.1.1):
     - 异步测试: `import pytest_asyncio` 然后 `@pytest.mark.asyncio`
 ----------------------------------------------------------------------
 """
+
 from __future__ import annotations
 
 import json
@@ -49,9 +50,11 @@ def _no_real_network(monkeypatch, request):
     if request.node.get_closest_marker("real_network"):
         # V14.0: 检查是否在允许真实网络的环境（显式设置 REAL_NETWORK=1）
         import os
+
         if not os.environ.get("REAL_NETWORK") and not os.environ.get("CI_RUN_REAL_NETWORK"):
             # CI 默认 skip（避免 CI 环境真实网络失败）
             import pytest
+
             if os.environ.get("CI"):  # 仅在 CI 环境 skip，本地仍可跑
                 pytest.skip("real_network test: set REAL_NETWORK=1 to enable")
         return
@@ -93,6 +96,7 @@ def _no_real_network(monkeypatch, request):
         print(f"[conftest] monkeypatch requests failed: {_e}", flush=True)
         # monkeypatch 失败意味着真实网络调用可能泄漏，标记警告
         import warnings
+
         warnings.warn(f"conftest: failed to mock requests, real network calls may leak: {_e}")
 
     # 2) 拦截 urllib.request.urlopen（代理探测会走到这里）
@@ -104,6 +108,7 @@ def _no_real_network(monkeypatch, request):
     except Exception as _e:
         print(f"[conftest] monkeypatch urlopen failed: {_e}", flush=True)
         import warnings
+
         warnings.warn(f"conftest: failed to mock urlopen, real network calls may leak: {_e}")
 
 
@@ -122,7 +127,7 @@ def _probe_url(url: str, timeout: float) -> bool:
 
     try:
         with urllib.request.urlopen(url, timeout=timeout) as resp:
-            return resp.status < 500
+            return bool(resp.status < 500)
     except Exception:
         return False
 
@@ -140,6 +145,7 @@ def skip_if_upstream_down():
     合规说明（A8）：这不是静默迁就——业务断言全部保留，
     上游可用而断言失败照样 FAIL；仅当外部服务不可达时不做无意义判定。
     """
+
     def _check(name: str, url: str, timeout: float = 6.0) -> None:
         if not _probe_url(url, timeout):
             pytest.skip(f"上游 {name} 不可达（{url}）——环境性跳过，非代码回归")
@@ -149,51 +155,55 @@ def skip_if_upstream_down():
 
 # ── 临时工作目录：避免污染真实项目根 ───────────────────────────
 # ── test_em_rate_limit.py 的 endpoint fixture ──────────────────────
-@pytest.fixture(params=[
-    {
-        "name": "datacenter",
-        "url": "https://datacenter-web.eastmoney.com/api/data/v1/get",
-        "params": {
-            "reportName": "RPT_DAILYBILLBOARD_DETAILSNEW",
-            "columns": "SECURITY_CODE,SECURITY_NAME_ABBR",
-            "pageNumber": "1",
-            "pageSize": "1",
-            "sortColumns": "TRADE_DATE",
-            "sortTypes": "-1",
+@pytest.fixture(
+    params=[
+        {
+            "name": "datacenter",
+            "url": "https://datacenter-web.eastmoney.com/api/data/v1/get",
+            "params": {
+                "reportName": "RPT_DAILYBILLBOARD_DETAILSNEW",
+                "columns": "SECURITY_CODE,SECURITY_NAME_ABBR",
+                "pageNumber": "1",
+                "pageSize": "1",
+                "sortColumns": "TRADE_DATE",
+                "sortTypes": "-1",
+            },
+            "check": lambda r: r.get("success", False) is not False
+            and r.get("result", {}).get("data") is not None,
         },
-        "check": lambda r: r.get("success", False) is not False and r.get("result", {}).get("data") is not None,
-    },
-    {
-        "name": "push2",
-        "url": "http://83.push2.eastmoney.com/api/qt/clist/get",
-        "params": {
-            "pn": "1",
-            "pz": "1",
-            "po": "1",
-            "np": "1",
-            "fltt": "2",
-            "invt": "2",
-            "fs": "m:0 t:6,m:0 t:80",
-            "fields": "f12,f14,f2,f3",
+        {
+            "name": "push2",
+            "url": "http://83.push2.eastmoney.com/api/qt/clist/get",
+            "params": {
+                "pn": "1",
+                "pz": "1",
+                "po": "1",
+                "np": "1",
+                "fltt": "2",
+                "invt": "2",
+                "fs": "m:0 t:6,m:0 t:80",
+                "fields": "f12,f14,f2,f3",
+            },
+            "check": lambda r: r.get("data", {}).get("diff") is not None
+            and len(r["data"]["diff"]) > 0,
         },
-        "check": lambda r: r.get("data", {}).get("diff") is not None and len(r["data"]["diff"]) > 0,
-    },
-    {
-        "name": "reportapi",
-        "url": "https://reportapi.eastmoney.com/report/list",
-        "params": {
-            "pageSize": "1",
-            "industry": "*",
-            "rating": "*",
-            "beginTime": "2024-01-01",
-            "endTime": "2030-01-01",
-            "pageNo": "1",
-            "code": "600519",
-            "qType": "0",
+        {
+            "name": "reportapi",
+            "url": "https://reportapi.eastmoney.com/report/list",
+            "params": {
+                "pageSize": "1",
+                "industry": "*",
+                "rating": "*",
+                "beginTime": "2024-01-01",
+                "endTime": "2030-01-01",
+                "pageNo": "1",
+                "code": "600519",
+                "qType": "0",
+            },
+            "check": lambda r: r.get("data") is not None and isinstance(r.get("data"), list),
         },
-        "check": lambda r: r.get("data") is not None and isinstance(r.get("data"), list),
-    },
-])
+    ]
+)
 def endpoint(request):
     """test_em_rate_limit.py 使用的 endpoint fixture，遍历三个东财域名。"""
     return request.param

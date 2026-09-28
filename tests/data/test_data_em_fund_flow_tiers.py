@@ -34,6 +34,7 @@
     f135=2,707,959,200 = f138(1,309,865,344) + f141(1,398,093,856)
     f137=   46,577,744 = f140(  31,916,032)  + f143(  14,661,712)
 """
+
 from __future__ import annotations
 
 import os
@@ -45,6 +46,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspa
 
 from stock_common import sc_datasource  # noqa: E402
 from stock_common.sc_datasource import _em_quote_full_impl, _quotes  # noqa: E402
+
 # V17.2.18 重构后片段为独立模块: _em_quote_full_impl 定义在 _quotes, em_get 由其自身命名空间解析;
 # 故 em_get 补丁须打在 _quotes.em_get (而非包级 re-export 副本) 才能穿透。
 
@@ -63,23 +65,23 @@ def _payload(**over):
         "f57": "600519",
         "f58": "贵州茅台",
         # 主力（合计档 = 超大单 + 大单）
-        "f135": 2707959200.0,   # 主力买入
-        "f136": 2661381456.0,   # 主力卖出
-        "f137": 46577744.0,     # 主力净  = f140 + f143  ← 旧版误标为"特大单净"
+        "f135": 2707959200.0,  # 主力买入
+        "f136": 2661381456.0,  # 主力卖出
+        "f137": 46577744.0,  # 主力净  = f140 + f143  ← 旧版误标为"特大单净"
         # 超大单
-        "f138": 1309865344.0,   # 超大单买入
-        "f139": 1277949312.0,   # 超大单卖出
-        "f140": 31916032.0,     # 超大单净 ← 旧版误标为"大单净"
+        "f138": 1309865344.0,  # 超大单买入
+        "f139": 1277949312.0,  # 超大单卖出
+        "f140": 31916032.0,  # 超大单净 ← 旧版误标为"大单净"
         # 大单
-        "f141": 1398093856.0,   # 大单买入 ← 旧版误标为"中单买入"
-        "f142": 1383432144.0,   # 大单卖出 ← 旧版误标为"中单卖出"
-        "f143": 14661712.0,     # 大单净   ← 旧版误标为"中单净"
+        "f141": 1398093856.0,  # 大单买入 ← 旧版误标为"中单买入"
+        "f142": 1383432144.0,  # 大单卖出 ← 旧版误标为"中单卖出"
+        "f143": 14661712.0,  # 大单净   ← 旧版误标为"中单净"
         # 中单
-        "f144": 1881712464.0,   # 中单买入 ← 旧版误标为"小单买入"
-        "f145": 1928061792.0,   # 中单卖出 ← 旧版误标为"小单卖出"
-        "f146": -46349328.0,    # 中单净   ← 旧版误标为"小单净"
+        "f144": 1881712464.0,  # 中单买入 ← 旧版误标为"小单买入"
+        "f145": 1928061792.0,  # 中单卖出 ← 旧版误标为"小单卖出"
+        "f146": -46349328.0,  # 中单净   ← 旧版误标为"小单净"
         # 小单（f135-f146 段内只有净额，无买卖明细）
-        "f149": -228434.0,      # 小单净 —— V17.0.16 新增
+        "f149": -228434.0,  # 小单净 —— V17.0.16 新增
     }
     base.update(over)
     return {"data": base}
@@ -98,57 +100,93 @@ class TestFundFlowTierMapping(unittest.TestCase):
         """回归核心：fund_main_today 必须 == f137(46,577,744)，
         绝不能是 f137+f140(78,549,776)——旧 bug 会在此转红。"""
         r, _ = _call()
-        self.assertAlmostEqual(r["fund_main_today"], 46577744.0, places=2,
-                               msg="fund_main_today 必须直接取 f137；若为 f137+f140 说明重复计数回归")
+        self.assertAlmostEqual(
+            r["fund_main_today"],
+            46577744.0,
+            places=2,
+            msg="fund_main_today 必须直接取 f137；若为 f137+f140 说明重复计数回归",
+        )
 
     def test_main_net_is_not_double_counted(self):
         """反向钉死：绝不等于 f137 + f140。"""
         r, _ = _call()
-        self.assertNotAlmostEqual(r["fund_main_today"], 46577744.0 + 31916032.0, places=2,
-                                  msg="fund_main_today == f137+f140 → 超大单净被重复计入")
+        self.assertNotAlmostEqual(
+            r["fund_main_today"],
+            46577744.0 + 31916032.0,
+            places=2,
+            msg="fund_main_today == f137+f140 → 超大单净被重复计入",
+        )
 
     def test_super_net_is_f140(self):
         r, _ = _call()
-        self.assertAlmostEqual(r["fund_super_today"], 31916032.0, places=2,
-                               msg="fund_super_today 必须取 f140=超大单净（旧版错取 f137）")
+        self.assertAlmostEqual(
+            r["fund_super_today"],
+            31916032.0,
+            places=2,
+            msg="fund_super_today 必须取 f140=超大单净（旧版错取 f137）",
+        )
 
     def test_large_net_is_f143(self):
         r, _ = _call()
-        self.assertAlmostEqual(r["fund_large_today"], 14661712.0, places=2,
-                               msg="fund_large_today 必须取 f143=大单净（旧版错取 f140）")
+        self.assertAlmostEqual(
+            r["fund_large_today"],
+            14661712.0,
+            places=2,
+            msg="fund_large_today 必须取 f143=大单净（旧版错取 f140）",
+        )
 
     def test_mid_net_is_f146(self):
         r, _ = _call()
-        self.assertAlmostEqual(r["fund_mid_today"], -46349328.0, places=2,
-                               msg="fund_mid_today 必须取 f146=中单净（旧版错取 f143）")
+        self.assertAlmostEqual(
+            r["fund_mid_today"],
+            -46349328.0,
+            places=2,
+            msg="fund_mid_today 必须取 f146=中单净（旧版错取 f143）",
+        )
 
     def test_small_net_is_f149(self):
         """f149 是 V17.0.16 新增的小单净——旧版把 f146 当小单，实为中单。"""
         r, _ = _call()
-        self.assertAlmostEqual(r["fund_small_today"], -228434.0, places=2,
-                               msg="fund_small_today 必须取 f149=小单净（旧版错取 f146=中单净）")
+        self.assertAlmostEqual(
+            r["fund_small_today"],
+            -228434.0,
+            places=2,
+            msg="fund_small_today 必须取 f149=小单净（旧版错取 f146=中单净）",
+        )
 
     def test_main_net_equals_super_plus_large(self):
         """结构不变量：主力净 == 超大单净 + 大单净（实测 169/169，相对差 0.00）。"""
         r, _ = _call()
-        self.assertAlmostEqual(r["fund_main_today"],
-                               r["fund_super_today"] + r["fund_large_today"], places=2,
-                               msg="主力净必须等于 超大单净 + 大单净；不等说明档位映射错位")
+        self.assertAlmostEqual(
+            r["fund_main_today"],
+            r["fund_super_today"] + r["fund_large_today"],
+            places=2,
+            msg="主力净必须等于 超大单净 + 大单净；不等说明档位映射错位",
+        )
 
     def test_super_and_large_are_distinct(self):
         """守卫：超大单净与大单净若相同，说明二者又指向同一字段。"""
         r, _ = _call()
-        self.assertNotAlmostEqual(r["fund_super_today"], r["fund_large_today"], places=2,
-                                  msg="超大单净 == 大单净 → 两档映射被混淆")
+        self.assertNotAlmostEqual(
+            r["fund_super_today"],
+            r["fund_large_today"],
+            places=2,
+            msg="超大单净 == 大单净 → 两档映射被混淆",
+        )
 
     def test_all_four_tiers_are_distinct(self):
         r, _ = _call()
-        vals = [r["fund_super_today"], r["fund_large_today"],
-                r["fund_mid_today"], r["fund_small_today"]]
+        vals = [
+            r["fund_super_today"],
+            r["fund_large_today"],
+            r["fund_mid_today"],
+            r["fund_small_today"],
+        ]
         for i in range(len(vals)):
             for j in range(i + 1, len(vals)):
-                self.assertNotAlmostEqual(vals[i], vals[j], places=2,
-                                          msg=f"第 {i} 档与第 {j} 档净额相同 → 映射错位")
+                self.assertNotAlmostEqual(
+                    vals[i], vals[j], places=2, msg=f"第 {i} 档与第 {j} 档净额相同 → 映射错位"
+                )
 
 
 class TestFundFlowBuySellMapping(unittest.TestCase):
@@ -178,10 +216,12 @@ class TestFundFlowBuySellMapping(unittest.TestCase):
 
     def test_main_buy_equals_super_plus_large(self):
         r, _ = _call()
-        self.assertAlmostEqual(r["fund_main_buy"],
-                               r["fund_super_buy"] + r["fund_large_buy"], places=2)
-        self.assertAlmostEqual(r["fund_main_sell"],
-                               r["fund_super_sell"] + r["fund_large_sell"], places=2)
+        self.assertAlmostEqual(
+            r["fund_main_buy"], r["fund_super_buy"] + r["fund_large_buy"], places=2
+        )
+        self.assertAlmostEqual(
+            r["fund_main_sell"], r["fund_super_sell"] + r["fund_large_sell"], places=2
+        )
 
 
 class TestFundFlowRequestFields(unittest.TestCase):
@@ -195,8 +235,21 @@ class TestFundFlowRequestFields(unittest.TestCase):
     def test_request_covers_all_consumed_fields(self):
         _, m = _call()
         fields = m.call_args.kwargs.get("params", {}).get("fields", "")
-        for k in ("f135", "f136", "f137", "f138", "f139", "f140",
-                  "f141", "f142", "f143", "f144", "f145", "f146", "f149"):
+        for k in (
+            "f135",
+            "f136",
+            "f137",
+            "f138",
+            "f139",
+            "f140",
+            "f141",
+            "f142",
+            "f143",
+            "f144",
+            "f145",
+            "f146",
+            "f149",
+        ):
             self.assertIn(k, fields, f"请求字段缺 {k}")
 
 
@@ -209,8 +262,9 @@ class TestFundFlowRobustness(unittest.TestCase):
         del p["data"]["f149"]
         with mock.patch.object(_quotes, "em_get", return_value=_FakeResp(p)):
             r = _em_quote_full_impl("600519")
-        self.assertIsNone(r.get("fund_small_today"),
-                          "缺失字段应缺席而非填 0——填 0 会让下游误判为'小单净为 0'")
+        self.assertIsNone(
+            r.get("fund_small_today"), "缺失字段应缺席而非填 0——填 0 会让下游误判为'小单净为 0'"
+        )
 
     def test_dash_value_skipped(self):
         r, _ = _call(f149="-")

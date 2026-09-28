@@ -19,6 +19,7 @@
 设计约束：**纯离线**——所有数据源函数与 I/O 一律 mock，不触网、不写仓库目录。
 使用 `tempfile.TemporaryDirectory()` 作为输出目录，测试结束自动清理。
 """
+
 from __future__ import annotations
 
 import argparse
@@ -59,6 +60,7 @@ def _closing_run(exc: BaseException | None = None, after=None):
     抛出 `RuntimeWarning: coroutine ... was never awaited`。替身先 `close()` 掉协程，
     再按需要抛异常或执行副作用。
     """
+
     def _run(coro):
         close = getattr(coro, "close", None)
         if callable(close):
@@ -68,6 +70,7 @@ def _closing_run(exc: BaseException | None = None, after=None):
         if after is not None:
             after()
         return None
+
     return _run
 
 
@@ -110,8 +113,11 @@ class _BatchMixin:
         with contextlib.ExitStack() as st:
             for target, name, ret, _n in self.CACHE_PATCHES:
                 st.enter_context(mock.patch.object(target, name, return_value=ret))
-            bp = st.enter_context(mock.patch.object(
-                BaseReportRunner, "execute_batch_pipeline", return_value="PIPELINE_RESULT"))
+            bp = st.enter_context(
+                mock.patch.object(
+                    BaseReportRunner, "execute_batch_pipeline", return_value="PIPELINE_RESULT"
+                )
+            )
             result = runner.execute_pipeline()
         return runner, result, bp
 
@@ -135,8 +141,7 @@ class _BatchMixin:
     def test_snapshot_proxy_passed_through(self):
         """snapshot_data 必须是模块级 SnapshotProxy，否则快照落盘失效。"""
         _r, _res, bp = self._invoke()
-        self.assertIs(bp.call_args.kwargs.get("snapshot_data"),
-                      getattr(self.MOD, "_SNAPSHOT_DATA"))
+        self.assertIs(bp.call_args.kwargs.get("snapshot_data"), getattr(self.MOD, "_SNAPSHOT_DATA"))
 
     def test_upstream_call_counts_pinned(self):
         """上游数据函数的调用次数必须与装配契约一致。
@@ -149,14 +154,18 @@ class _BatchMixin:
             self.skipTest("本 Runner 无缓存装配")
         runner = self._make_runner()
         with contextlib.ExitStack() as st:
-            spies = [(n, st.enter_context(mock.patch.object(t, n, return_value=r)), exp)
-                     for t, n, r, exp in self.CACHE_PATCHES]
-            st.enter_context(mock.patch.object(
-                BaseReportRunner, "execute_batch_pipeline", return_value=None))
+            spies = [
+                (n, st.enter_context(mock.patch.object(t, n, return_value=r)), exp)
+                for t, n, r, exp in self.CACHE_PATCHES
+            ]
+            st.enter_context(
+                mock.patch.object(BaseReportRunner, "execute_batch_pipeline", return_value=None)
+            )
             runner.execute_pipeline()
         for name, spy, expected in spies:
-            self.assertEqual(spy.call_count, expected,
-                             f"{name} 在单次 execute_pipeline 中应调用 {expected} 次")
+            self.assertEqual(
+                spy.call_count, expected, f"{name} 在单次 execute_pipeline 中应调用 {expected} 次"
+            )
 
     def test_industry_comparison_injected_into_gen_kwargs(self):
         """缓存值必须真的进 gen_kwargs，否则 generate 内部会退化为逐股重拉。"""
@@ -193,13 +202,12 @@ class TestShtRunnerPipeline(_BatchMixin, _RunnerTestBase):
             return None if code == "sz399102" else {"code": code}
 
         with contextlib.ExitStack() as st:
-            st.enter_context(mock.patch.object(S, "get_industry_comparison",
-                                               return_value="IND"))
-            st.enter_context(mock.patch.object(S, "get_hsgt_macro_flow",
-                                               return_value="HSGT"))
+            st.enter_context(mock.patch.object(S, "get_industry_comparison", return_value="IND"))
+            st.enter_context(mock.patch.object(S, "get_hsgt_macro_flow", return_value="HSGT"))
             st.enter_context(mock.patch.object(S, "_get_index_quote", side_effect=_iq))
-            bp = st.enter_context(mock.patch.object(
-                BaseReportRunner, "execute_batch_pipeline", return_value=None))
+            bp = st.enter_context(
+                mock.patch.object(BaseReportRunner, "execute_batch_pipeline", return_value=None)
+            )
             runner.execute_pipeline()
 
         idx_q = bp.call_args.kwargs["gen_kwargs"]["idx_q"]
@@ -224,8 +232,7 @@ class TestShtRunnerPipeline(_BatchMixin, _RunnerTestBase):
         _r, _res, bp = self._invoke()
         fn = bp.call_args.kwargs["prefetch_fn"]
         codes = ["600519", "000001"]
-        with mock.patch.object(data_provider, "prefetch_quote_batch",
-                               return_value="Q") as pq:
+        with mock.patch.object(data_provider, "prefetch_quote_batch", return_value="Q") as pq:
             out = fn(codes)
         self.assertEqual(out, "Q")
         pq.assert_called_once_with(codes)
@@ -235,8 +242,7 @@ class TestShtRunnerPipeline(_BatchMixin, _RunnerTestBase):
         _r, _res, bp = self._invoke()
         fn = bp.call_args.kwargs["prefetch_async_fn"]
         session, codes = object(), ["600519"]
-        with mock.patch.object(sc_datasource, "start_datacenter_prefetch",
-                               return_value="DC") as dc:
+        with mock.patch.object(sc_datasource, "start_datacenter_prefetch", return_value="DC") as dc:
             out = asyncio.run(fn(session, codes))
         self.assertEqual(out, "DC")
         self.assertIs(dc.call_args[0][0], codes)
@@ -247,18 +253,15 @@ class TestShtRunnerPipeline(_BatchMixin, _RunnerTestBase):
     def _dragon_kwargs(self, depth):
         runner = self._make_runner(depth=depth)
         with contextlib.ExitStack() as st:
-            st.enter_context(mock.patch.object(S, "get_industry_comparison",
-                                               return_value="IND"))
-            st.enter_context(mock.patch.object(S, "_get_index_quote",
-                                               return_value={"code": "X"}))
-            st.enter_context(mock.patch.object(S, "get_hsgt_macro_flow",
-                                               return_value="HSGT"))
-            bp = st.enter_context(mock.patch.object(
-                BaseReportRunner, "execute_batch_pipeline", return_value=None))
+            st.enter_context(mock.patch.object(S, "get_industry_comparison", return_value="IND"))
+            st.enter_context(mock.patch.object(S, "_get_index_quote", return_value={"code": "X"}))
+            st.enter_context(mock.patch.object(S, "get_hsgt_macro_flow", return_value="HSGT"))
+            bp = st.enter_context(
+                mock.patch.object(BaseReportRunner, "execute_batch_pipeline", return_value=None)
+            )
             runner.execute_pipeline()
         fn = bp.call_args.kwargs["prefetch_async_fn"]
-        with mock.patch.object(sc_datasource, "start_datacenter_prefetch",
-                               return_value=None) as dc:
+        with mock.patch.object(sc_datasource, "start_datacenter_prefetch", return_value=None) as dc:
             asyncio.run(fn(None, []))
         return dc.call_args.kwargs["dragon_kwargs"]
 
@@ -313,10 +316,10 @@ class TestLngRunnerPipeline(_BatchMixin, _RunnerTestBase):
         # 此处单独确认入参：
         runner = self._make_runner()
         with contextlib.ExitStack() as st:
-            spy = st.enter_context(mock.patch.object(L, "industry_comparison",
-                                                     return_value="X"))
-            st.enter_context(mock.patch.object(
-                BaseReportRunner, "execute_batch_pipeline", return_value=None))
+            spy = st.enter_context(mock.patch.object(L, "industry_comparison", return_value="X"))
+            st.enter_context(
+                mock.patch.object(BaseReportRunner, "execute_batch_pipeline", return_value=None)
+            )
             runner.execute_pipeline()
         self.assertEqual(spy.call_args[0], (20,))
 
@@ -357,10 +360,8 @@ class TestValRunnerPipeline(_SingleFileMixin, _RunnerTestBase):
         runner = self._runner()
         buf = io.StringIO()
         with contextlib.ExitStack() as st:
-            ar = st.enter_context(mock.patch.object(V.asyncio, "run",
-                                                    side_effect=run_replacement))
-            sy = st.enter_context(mock.patch.object(V, "run_discovery",
-                                                    side_effect=sync_side))
+            ar = st.enter_context(mock.patch.object(V.asyncio, "run", side_effect=run_replacement))
+            sy = st.enter_context(mock.patch.object(V, "run_discovery", side_effect=sync_side))
             with redirect_stdout(buf):
                 result = runner.execute_pipeline()
         return runner, result, buf.getvalue(), ar, sy
@@ -380,16 +381,17 @@ class TestValRunnerPipeline(_SingleFileMixin, _RunnerTestBase):
     def test_async_discovery_is_invoked(self):
         """正常路径走 asyncio.run(run_discovery_async(...))。"""
         runner = self._runner()
-        with mock.patch.object(V, "run_discovery_async") as asy, \
-                mock.patch.object(V.asyncio, "run", side_effect=_closing_run()):
+        with (
+            mock.patch.object(V, "run_discovery_async") as asy,
+            mock.patch.object(V.asyncio, "run", side_effect=_closing_run()),
+        ):
             with self._silence():
                 runner.execute_pipeline()
         asy.assert_called_once_with(self._expected_path(runner))
 
     def test_falls_back_to_sync_when_async_fails(self):
         """asyncio 失败必须回退同步 run_discovery —— 否则全市场发现直接空手而归。"""
-        runner, _res, out, _ar, sy = self._run_with(
-            _closing_run(exc=RuntimeError("boom")))
+        runner, _res, out, _ar, sy = self._run_with(_closing_run(exc=RuntimeError("boom")))
         sy.assert_called_once_with(self._expected_path(runner))
         self.assertIn("退回同步模式", out)
 
@@ -404,8 +406,9 @@ class TestValRunnerPipeline(_SingleFileMixin, _RunnerTestBase):
         """对照上一条：文件真实存在时才允许打印「已保存」。"""
         runner = self._runner()
         op = self._expected_path(runner)
-        run_repl = _closing_run(after=lambda: Path(op).write_text(
-            "# val report\n", encoding="utf-8"))
+        run_repl = _closing_run(
+            after=lambda: Path(op).write_text("# val report\n", encoding="utf-8")
+        )
         _r, _res, out, _ar, sy = self._run_with(run_repl)
         self.assertIn("已保存", out)
         sy.assert_not_called()
@@ -413,8 +416,9 @@ class TestValRunnerPipeline(_SingleFileMixin, _RunnerTestBase):
     def test_raises_when_both_paths_fail(self):
         """异步与同步都失败时必须抛出，让 run() 捕获并记录失败。"""
         with self.assertRaises(RuntimeError):
-            self._run_with(_closing_run(exc=RuntimeError("async boom")),
-                           sync_side=RuntimeError("sync boom"))
+            self._run_with(
+                _closing_run(exc=RuntimeError("async boom")), sync_side=RuntimeError("sync boom")
+            )
 
 
 class TestMakRunnerPipeline(_SingleFileMixin, _RunnerTestBase):

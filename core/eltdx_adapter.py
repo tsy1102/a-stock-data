@@ -17,7 +17,7 @@ V17.2.15: 取代 easy_tdx 成为 TDX TCP 主源（core/tdx_client.py 调用）�
 
 from __future__ import annotations
 
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple, cast
 
 from stock_common import _debug_log
 
@@ -42,9 +42,18 @@ _ELTDX_HOSTS = [
 
 # mootdx frequency(int) → eltdx period(str)
 _FREQ_TO_ELTDX = {
-    0: "5min", 1: "15min", 2: "30min", 3: "60min",
-    4: "day", 5: "week", 6: "month", 7: "1min", 8: "1min",
-    9: "day", 10: "quarter", 11: "year",
+    0: "5min",
+    1: "15min",
+    2: "30min",
+    3: "60min",
+    4: "day",
+    5: "week",
+    6: "month",
+    7: "1min",
+    8: "1min",
+    9: "day",
+    10: "quarter",
+    11: "year",
 }
 
 # eltdx FinanceRecord 字段 → (mootdx 列名, 单位换算)
@@ -264,7 +273,10 @@ def create_eltdx_adapter() -> Optional[Any]:
 
         c = TdxClient(hosts=_ELTDX_HOSTS, probe_hosts=False, timeout=8.0)
         _now = time.time()
-        if _ELTDX_PROBE_CACHE["ok"] is None or (_now - _ELTDX_PROBE_CACHE["ts"]) >= _ELTDX_PROBE_TTL:
+        if (
+            _ELTDX_PROBE_CACHE["ok"] is None
+            or (_now - _ELTDX_PROBE_CACHE["ts"]) >= _ELTDX_PROBE_TTL
+        ):
             _ok = _eltdx_fetch_probe(c)
             _ELTDX_PROBE_CACHE["ok"] = _ok
             _ELTDX_PROBE_CACHE["ts"] = _now
@@ -295,6 +307,7 @@ def is_eltdx_available() -> bool:
     """
     try:
         import eltdx  # noqa: F401
+
         return True
     except Exception:
         return False
@@ -310,6 +323,7 @@ def download_eltdx_report_file(filename: str, timeout: float = 8.0) -> Optional[
     """
     try:
         from eltdx import TdxClient
+
         c = TdxClient(hosts=_ELTDX_HOSTS, probe_hosts=False, timeout=timeout)
         try:
             data = c.resources.download_file(filename)
@@ -369,7 +383,7 @@ def get_eltdx_shortline_bundle(all_codes: List[str], timeout: float = 20.0) -> T
     if _cache.get("key") == _ckey and (time.time() - _cache.get("ts", 0.0)) < _SHORTLINE_TTL:
         _cached = _cache.get("val")
         if _cached:
-            return _cached
+            return cast(Tuple[list, dict], _cached)
 
     def _work():
         try:
@@ -395,7 +409,7 @@ def get_eltdx_shortline_bundle(all_codes: List[str], timeout: float = 20.0) -> T
                 _sl = client.helpers.shortline_indicators(ecodes)
                 _sl_rows = getattr(_sl, "rows", None)
                 _sl_iter = _sl_rows if _sl_rows is not None else _sl
-                for _rec in (_sl_iter or []):
+                for _rec in _sl_iter or []:
                     _d = _jfy(_rec)
                     _cc = _d.get("code") or _d.get("full_code")
                     if _cc:
@@ -433,7 +447,7 @@ def get_eltdx_shortline_bundle(all_codes: List[str], timeout: float = 20.0) -> T
     if _t.is_alive():
         _debug_log(f"eltdx shortline bundle: 墙钟超时({timeout}s)降级为空选(无本地TDX/主站不可达)")
         return ([], {})
-    _val = _result["val"]
+    _val = cast(Tuple[list, dict], _result["val"])
     _ladder, _sl = _val
     # 仅缓存有效数据(非降级空选), 避免空选污染缓存导致 300s 内无法重试
     if _ladder or _sl:
@@ -492,6 +506,7 @@ def get_eltdx_limit_ladder(timeout: float = 20.0) -> list:
                 pass
 
     import threading
+
     _result: dict = {"val": []}
 
     def _target():
@@ -507,7 +522,7 @@ def get_eltdx_limit_ladder(timeout: float = 20.0) -> list:
     if _t.is_alive():
         _debug_log(f"eltdx limit_ladder: 墙钟超时({timeout}s)降级为空(无本地TDX/主站不可达)")
         return []
-    return _result["val"]
+    return cast(list, _result["val"])
 
 
 def get_eltdx_shortline_for_code(code: str, timeout: float = 20.0) -> Optional[Dict[str, Any]]:
@@ -549,4 +564,3 @@ def get_eltdx_shortline_for_code(code: str, timeout: float = 20.0) -> Optional[D
                 rec.update(_r)
                 break
     return rec if rec else None
-

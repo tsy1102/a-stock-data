@@ -5,12 +5,19 @@
 跨片段符号由各子模块函数体内的局部懒导入（from ._DEFINER import NAME）提供，
 共享可变状态集中于 _shared.py（单实例）。
 """
+
 from __future__ import annotations
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Union
 from datetime import datetime, timedelta
 import json
 import re
-from stock_common.sc_network import UA, _debug_log, _em_wait_process_interval, _quick_request, requires_push2
+from stock_common.sc_network import (
+    UA,
+    _debug_log,
+    _em_wait_process_interval,
+    _quick_request,
+    requires_push2,
+)
 from stock_common.sc_utils import _safe_float, is_limit_down
 from core.stock_cache import TTL, cached
 from ._shared import _KPL_BASE, _KPL_HEADERS, _KPL_HIS, _KPL_HQ, _KPL_LAST_CALL, _KPL_LHB
@@ -204,8 +211,8 @@ def get_yesterday_limit_pool(date_str: str = "") -> List[Dict[str, Any]]:
                     "change_pct": _safe_float(item.get("zdp")),  # 今日涨幅
                     "turnover_rate": _safe_float(item.get("hs")),
                     "amplitude_pct": _safe_float(item.get("zf")),  # 振幅
-                    "speed": _safe_float(item.get("zs")),          # 涨速
-                    "y_first_seal": str(item.get("yfbt", "")),     # 昨封板时间
+                    "speed": _safe_float(item.get("zs")),  # 涨速
+                    "y_first_seal": str(item.get("yfbt", "")),  # 昨封板时间
                     "y_limit_count": _safe_float(item.get("ylbc")),  # 昨连板数
                     "sector": item.get("hybk", ""),
                     "zt_days": _safe_float(zttj.get("days")) if isinstance(zttj, dict) else 0,
@@ -218,11 +225,20 @@ def get_yesterday_limit_pool(date_str: str = "") -> List[Dict[str, Any]]:
         return []
 
 
-@cached(category="limit_pool_v2", ttl_seconds=TTL["limit_pool"], trading_day=True,
-        valid_if=lambda r: bool(r and isinstance(r, dict) and (
+@cached(
+    category="limit_pool_v2",
+    ttl_seconds=TTL["limit_pool"],
+    trading_day=True,
+    valid_if=lambda r: bool(
+        r
+        and isinstance(r, dict)
+        and (
             (r.get("limit_up_count") or 0) > 0
             or (r.get("limit_down_count") or 0) > 0
-            or (r.get("limit_broken_count") or 0) > 0)))
+            or (r.get("limit_broken_count") or 0) > 0
+        )
+    ),
+)
 @requires_push2  # V17.0.1g: 涨停池同花顺优先, 炸板/跌停池仍走 push2ex → 保留审计
 def get_limit_pool_summary(date_str: str = "") -> Dict[str, Any]:
     """获取打板数据汇总（涨停池+炸板池+跌停池）
@@ -238,6 +254,7 @@ def get_limit_pool_summary(date_str: str = "") -> Dict[str, Any]:
     from ._industry import _tdxhy_industry_map
     from ._zhb import get_zhb_data_date
     from ._zhb import get_zhb_full_market_snapshot
+
     # 涨停池: 同花顺优先(2026-08-16 实测 62 只/1.01s), 东财兜底。
     # 若两者都返回空池，使用财联社/KPL/复盘啦的多源计数兜底；计数可用时
     # 不能再把全市场涨停显示为 0，但因多源接口只提供计数，明细仍保持为空。
@@ -302,7 +319,11 @@ def get_limit_pool_summary(date_str: str = "") -> Dict[str, Any]:
                     from stock_common.sc_kpl import get_kpl_broken_ratio
 
                     _kpl_rf = get_kpl_broken_ratio()
-                    if _kpl_rf and _kpl_rf.get("date") == _target[:4] + "-" + _target[4:6] + "-" + _target[6:]:
+                    if (
+                        _kpl_rf
+                        and _kpl_rf.get("date")
+                        == _target[:4] + "-" + _target[4:6] + "-" + _target[6:]
+                    ):
                         _dt_fb = int(_kpl_rf.get("dt") or 0)
                 except Exception as _e2:
                     _debug_log(f"get_limit_pool_summary kpl dt: {_e2}")
@@ -319,7 +340,11 @@ def get_limit_pool_summary(date_str: str = "") -> Dict[str, Any]:
                             for _c, _d in _snap.items()
                             if _d
                             and isinstance(_d, dict)
-                            and is_limit_down(_c, str(_d.get("name", "") or ""), _safe_float(_d.get("change_pct", 0)))
+                            and is_limit_down(
+                                _c,
+                                str(_d.get("name", "") or ""),
+                                _safe_float(_d.get("change_pct", 0)),
+                            )
                         )
                     else:
                         _debug_log(
@@ -385,6 +410,7 @@ def ths_limit_up_pool(date_str: str = "") -> List[Dict[str, Any]]:
     if not date_str:
         try:
             from stock_common.stock_calendar import get_last_trading_day
+
             date_str = get_last_trading_day().strftime("%Y%m%d")
         except Exception:
             date_str = datetime.now().strftime("%Y%m%d")
@@ -419,6 +445,7 @@ def ths_limit_up_pool(date_str: str = "") -> List[Dict[str, Any]]:
                         _lc = int(_n)
                     except (ValueError, TypeError):
                         _lc = 1
+
             # V17.0.1h: 附加字段(同一次请求已返回, 零额外压力)——打板质量/弹性/风险分层
             # M2(审查 2026-08-16): 时间戳可能为 "0"/None/非数字 → 0 或异常会输出 1970-01-01
             # 或整池吞错; 先 _safe_float 再判 >0(精度 <1s 无影响)
@@ -440,7 +467,9 @@ def ths_limit_up_pool(date_str: str = "") -> List[Dict[str, Any]]:
                     "change_pct": _safe_float(it.get("change_rate")),
                     "reason": it.get("reason_type", ""),
                     "board_type": it.get("limit_up_type", ""),
-                    "seal_rate": _safe_float(it.get("limit_up_suc_rate")),  # 0-1 小数(实测全池 0-1, 1.0=完全封死)
+                    "seal_rate": _safe_float(
+                        it.get("limit_up_suc_rate")
+                    ),  # 0-1 小数(实测全池 0-1, 1.0=完全封死)
                     "break_times": it.get("open_num") or 0,
                     "seal_amount": it.get("order_amount"),
                     "limit_fund": _safe_float(it.get("order_amount", 0)),  # 元, 东财契约同口径
@@ -515,12 +544,23 @@ def em_stock_monitor(only_active: bool = True) -> List[Dict[str, Any]]:
         return []
 
 
-@cached(category="market_emotion_multi", ttl_seconds=TTL["market_emotion_multi"], trading_day=True,
-        valid_if=lambda r: bool(
-            r and isinstance(r, dict)
-            and ((r.get("total") or 0) > 0
-                 or any((v or 0) > 0 for v in (r.get("sources") or {}).values()
-                        if isinstance(v, (int, float))))))
+@cached(
+    category="market_emotion_multi",
+    ttl_seconds=TTL["market_emotion_multi"],
+    trading_day=True,
+    valid_if=lambda r: bool(
+        r
+        and isinstance(r, dict)
+        and (
+            (r.get("total") or 0) > 0
+            or any(
+                (v or 0) > 0
+                for v in (r.get("sources") or {}).values()
+                if isinstance(v, (int, float))
+            )
+        )
+    ),
+)
 def get_limit_pool_multi_source(date: Optional[str] = None) -> Dict[str, Any]:
     """涨停池三源互校——财联社=KPL=复盘啦（2026-08-10 实测 99=99=99 三源一致）。
 
@@ -547,6 +587,7 @@ def get_limit_pool_multi_source(date: Optional[str] = None) -> Dict[str, Any]:
     cls_n = None
     try:
         from stock_common import get_cls_market_emotion
+
         emo = get_cls_market_emotion() or {}
         try:
             cls_n = int(emo.get("up_ratio_num") or 0)
@@ -560,6 +601,7 @@ def get_limit_pool_multi_source(date: Optional[str] = None) -> Dict[str, Any]:
     kpl_n = None
     try:
         from stock_common import get_kpl_market_sentiment
+
         sent = get_kpl_market_sentiment() or {}
         try:
             kpl_n = int(sent.get("ztjs") or 0)
@@ -575,9 +617,10 @@ def get_limit_pool_multi_source(date: Optional[str] = None) -> Dict[str, Any]:
     _time.sleep(2.0)
 
     fupan_n = None
-    fupan_list = []
+    fupan_list: List[Any] = []
     try:
         from levistock.stock.stock_fupanla_kph import get_zttt
+
         z = get_zttt() or {}
         sl = z.get("StockList") or []
         fupan_list = sl
@@ -598,7 +641,8 @@ def get_limit_pool_multi_source(date: Optional[str] = None) -> Dict[str, Any]:
     if cls_n is None and kpl_n is None and fupan_n is None:
         try:
             from stock_common import get_limit_up_pool
-            pool = get_limit_up_pool(date) or []
+
+            pool = get_limit_up_pool(date or "") or []
             push2ex_n = len(pool)
         except Exception as _e:
             _debug_log(f"multi_source push2ex: {_e}")
@@ -629,9 +673,11 @@ def get_kph_limit_ladder(date_str: str = "") -> List[Dict[str, Any]]:
     try:
         import levistock as lk
         from datetime import timedelta
+
         # V16.2: 进程级节流（levistock 直连东财）
         try:
             from stock_common.sc_network import _em_wait_process_interval
+
             _em_wait_process_interval()
         except Exception:
             pass
@@ -650,10 +696,14 @@ def get_kph_limit_ladder(date_str: str = "") -> List[Dict[str, Any]]:
             # 回退日可能仍是休市日(周末) → 向前找首个有数据的日期(最多 7 天)
             for _try in range(7):
                 data = lk.get_zttt(date=date_str)
-                _cnt = len(data.get("StockList") or []) if isinstance(data, dict) else len(data or [])
+                _cnt = (
+                    len(data.get("StockList") or []) if isinstance(data, dict) else len(data or [])
+                )
                 if _cnt > 0:
                     break
-                date_str = (datetime.strptime(date_str, "%Y-%m-%d") - timedelta(days=1)).strftime("%Y-%m-%d")
+                date_str = (datetime.strptime(date_str, "%Y-%m-%d") - timedelta(days=1)).strftime(
+                    "%Y-%m-%d"
+                )
             else:
                 data = lk.get_zttt(date=date_str)
         else:
@@ -668,22 +718,37 @@ def get_kph_limit_ladder(date_str: str = "") -> List[Dict[str, Any]]:
                     rows.append(item)
                 elif isinstance(item, (list, tuple)) and len(item) >= 11:
                     # 开盘红 zttt 返回 list 索引: [0]code [1]name [2]连板 [3]时间戳 [4]板块码 [5]板块名 [6]大单一字 [7]人气 [8]板块涨停数 [9]个股额 [10]板块额
-                    rows.append({
-                        "code": item[0], "name": item[1], "limit_count": item[2],
-                        "limit_time": item[3], "plate_code": item[4], "plate_name": item[5],
-                        "one_word": item[6], "popular": item[7],
-                        "plate_limit_up_count": item[8], "amount": item[9], "plate_amount": item[10],
-                    })
+                    rows.append(
+                        {
+                            "code": item[0],
+                            "name": item[1],
+                            "limit_count": item[2],
+                            "limit_time": item[3],
+                            "plate_code": item[4],
+                            "plate_name": item[5],
+                            "one_word": item[6],
+                            "popular": item[7],
+                            "plate_limit_up_count": item[8],
+                            "amount": item[9],
+                            "plate_amount": item[10],
+                        }
+                    )
             return rows
     except Exception as _e:
         _debug_log(f"datasource get_kph_limit_ladder: {_e}")
     return []
 
 
-def _kpl_post(url: str, action: str, controller: str, extra: dict = None) -> Optional[dict]:
+def _kpl_post(
+    url: str,
+    action: str,
+    controller: str,
+    extra: Optional[Dict[str, Any]] = None,
+) -> Optional[Union[Dict[str, Any], List[Any]]]:
     """KPL 统一 POST（直接 requests.post——必须用 Dalvik UA，_quick_request 会覆盖导致空数据）。
     自行限流 >=200ms。V17.0.7 字典 §12.21.5。"""
     import time as _time
+
     global _KPL_LAST_CALL
     el = _time.time() - _KPL_LAST_CALL
     if el < 0.2:
@@ -700,9 +765,9 @@ def _kpl_post(url: str, action: str, controller: str, extra: dict = None) -> Opt
         body_parts.append(f"{k}={v}")
     body = "&".join(body_parts) + "&"
     import requests as _req_mod
+
     try:
-        r = _req_mod.post(url, data=body.encode("utf-8"),
-                          headers=dict(_KPL_HEADERS), timeout=15)
+        r = _req_mod.post(url, data=body.encode("utf-8"), headers=dict(_KPL_HEADERS), timeout=15)
         if r.status_code != 200:
             return None
         txt = r.text
@@ -712,7 +777,12 @@ def _kpl_post(url: str, action: str, controller: str, extra: dict = None) -> Opt
         if ec != "0":
             _debug_log(f"kpl {action}/{controller}: errcode={ec} {d.get('errmsg','')[:60]}")
             return None
-        return d.get("data") or d
+        payload = d.get("data") or d
+        if isinstance(payload, dict):
+            return payload
+        if isinstance(payload, list):
+            return payload
+        return None
     except Exception as e:
         _debug_log(f"kpl {action}/{controller}: {e}")
         return None
@@ -725,65 +795,97 @@ def kpl_get_market_emotion() -> Optional[Dict[str, Any]]:
         {"ztjs": 涨停数, "df_num": 跌停数, "strong": 强度,
          "lbgd": 连板高度, "Day": 日期}
     """
-    return _kpl_post(_KPL_HQ, "ChangeStatistics", "HomeDingPan")
+    result = _kpl_post(_KPL_HQ, "ChangeStatistics", "HomeDingPan")
+    return result if isinstance(result, dict) else None
 
 
-def kpl_get_rise_fall_analysis() -> Optional[List]:
+def kpl_get_rise_fall_analysis() -> Optional[List[Any]]:
     """涨跌分析 [涨停数,?,跌停数,?,涨跌比%,?,日期]。"""
-    return _kpl_post(_KPL_HQ, "RiseFallAnalysis", "HomeDingPan")
+    result = _kpl_post(_KPL_HQ, "RiseFallAnalysis", "HomeDingPan")
+    return result if isinstance(result, list) else None
 
 
 def kpl_get_stock_zd_num() -> Optional[Dict[str, Any]]:
     """涨跌家数。"""
-    return _kpl_post(_KPL_HQ, "MarketStockZDNum", "HomeDingPan")
+    result = _kpl_post(_KPL_HQ, "MarketStockZDNum", "HomeDingPan")
+    return result if isinstance(result, dict) else None
 
 
 def kpl_get_real_ranking_info(date: str = "", index: int = 0) -> Optional[Dict[str, Any]]:
     """板块排行列表(30只/页, 19列含 code/name/strength/change_pct/speed/
     turnover/main_net/main_buy/main_sell/vol_ratio/circ_mv/big_order_net/
     total_mv/pe_today/pe_next 等)。"""
-    return _kpl_post(_KPL_HIS, "RealRankingInfo", "ZhiShuRanking", {
-        "Type": "1", "ZSType": "7", "Index": str(index), "st": "30",
-        "Date": date, "Order": "1",
-    })
+    result = _kpl_post(
+        _KPL_HIS,
+        "RealRankingInfo",
+        "ZhiShuRanking",
+        {
+            "Type": "1",
+            "ZSType": "7",
+            "Index": str(index),
+            "st": "30",
+            "Date": date,
+            "Order": "1",
+        },
+    )
+    return result if isinstance(result, dict) else None
 
 
-def kpl_get_stock_list_w8(plate_id: str, date: str = "",
-                          stock_type: int = 0) -> Optional[Dict[str, Any]]:
+def kpl_get_stock_list_w8(
+    plate_id: str, date: str = "", stock_type: int = 0
+) -> Optional[Dict[str, Any]]:
     """板块成分股详情(63字段, 需遍历 Type 0~19 合并去重)。
     域名必须用 apphis.longhuvip.com；响应 key 是小写 list。"""
-    return _kpl_post(_KPL_HIS, "ZhiShuStockList_W8", "ZhiShuRanking", {
-        "PlateID": plate_id, "Date": date, "Type": str(stock_type),
-        "Index": "0", "st": "30", "Order": "1", "TSZB": "0",
-        "IsZZ": "0", "TSZB_Type": "0", "filterType": "0", "old": "1",
-    })
+    result = _kpl_post(
+        _KPL_HIS,
+        "ZhiShuStockList_W8",
+        "ZhiShuRanking",
+        {
+            "PlateID": plate_id,
+            "Date": date,
+            "Type": str(stock_type),
+            "Index": "0",
+            "st": "30",
+            "Order": "1",
+            "TSZB": "0",
+            "IsZZ": "0",
+            "TSZB_Type": "0",
+            "filterType": "0",
+            "old": "1",
+        },
+    )
+    return result if isinstance(result, dict) else None
 
 
 def kpl_get_ytfp_bkhx(date: str = "") -> Optional[Dict[str, Any]]:
     """复盘啦板块核心(涨停原因+题材+个股明细)。"""
-    extra = {}
+    extra: Dict[str, Any] = {}
     if date:
         extra["Date"] = date
-    return _kpl_post(_KPL_HIS, "GetYTFP_BKHX", "FuPanLa", extra)
+    result = _kpl_post(_KPL_HIS, "GetYTFP_BKHX", "FuPanLa", extra)
+    return result if isinstance(result, dict) else None
 
 
 def kpl_get_ytfp_sctd(date: str = "") -> Optional[Dict[str, Any]]:
     """复盘啦市场题材(几天几板 Tips，如'3天2板')。"""
-    extra = {}
+    extra: Dict[str, Any] = {}
     if date:
         extra["Date"] = date
-    return _kpl_post(_KPL_HIS, "GetYTFP_SCTD", "FuPanLa", extra)
+    result = _kpl_post(_KPL_HIS, "GetYTFP_SCTD", "FuPanLa", extra)
+    return result if isinstance(result, dict) else None
 
 
 def kpl_get_lhb_stock_list() -> Optional[Dict[str, Any]]:
     """龙虎榜股票列表。"""
-    return _kpl_post(_KPL_LHB, "GetStockList", "LongHuBang")
+    result = _kpl_post(_KPL_LHB, "GetStockList", "LongHuBang")
+    return result if isinstance(result, dict) else None
 
 
 def kpl_get_info() -> Optional[Dict[str, Any]]:
     """首页聚合(ErBanList/JJJYList/TKGKList)。"""
     extra = {"View": "1"}
-    return _kpl_post(_KPL_HQ, "GetInfo", "Index", extra)
+    result = _kpl_post(_KPL_HQ, "GetInfo", "Index", extra)
+    return result if isinstance(result, dict) else None
 
 
 __all__ = [

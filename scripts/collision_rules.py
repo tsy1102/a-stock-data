@@ -24,11 +24,13 @@
         print_active_rules()   # 每次运行自动查询规则
         main()
 """
+
 from __future__ import annotations
 
 import os
 import sys
 from datetime import date
+from typing import TextIO, TypedDict
 
 # ───────────────────────────────────────────────────────────────────────
 # 对撞四铁律（硬阈值，不可在脚本内随意下调）
@@ -36,15 +38,15 @@ from datetime import date
 # 1. 精度对齐
 PRECISION = "|a−b| ≤ max(ulp_a, ulp_b)（舍入感知）；整数/枚举降级为严格 1e-9"
 # 2. 命中率分层
-HIT_RATE_L1 = 18          # 每采样日 ≥18/20 且可解释 → L1 定案
-HIT_RATE_L4 = 8           # 8~17 → L4 候选（存疑）
+HIT_RATE_L1 = 18  # 每采样日 ≥18/20 且可解释 → L1 定案
+HIT_RATE_L4 = 8  # 8~17 → L4 候选（存疑）
 # 3. 比值族（单位换算定案）
-RATIO_CV_MAX = 1e-4       # 变异系数阈值（CV = std/mean）
-RATIO_STEPS = (10, 100, 1000, 10000)   # 合法单位换算比集合
+RATIO_CV_MAX = 1e-4  # 变异系数阈值（CV = std/mean）
+RATIO_STEPS = (10, 100, 1000, 10000)  # 合法单位换算比集合
 # 4. 多日复核
-MULTI_DAY_MIN = 3         # 至少 3 个独立采集日重复方可定案
+MULTI_DAY_MIN = 3  # 至少 3 个独立采集日重复方可定案
 # 5. 相关性仅生成候选
-CORR_SPEARMAN_MIN = 0.6   # |Spearman| 阈值；且需 Pearson+Spearman 同号 + 留一法不翻号
+CORR_SPEARMAN_MIN = 0.6  # |Spearman| 阈值；且需 Pearson+Spearman 同号 + 留一法不翻号
 
 # ───────────────────────────────────────────────────────────────────────
 # 定案状态机 L1~L4（升格路径与含义）
@@ -81,7 +83,16 @@ SKIP_RULES = [
 #   evidence      : 可复现数值证据（采集快照 / 字典行号）
 #   blocked_pairs : 若两 token 相等即代表该伪结论，collide 直接跳过
 #   settled       : 该 token 语义已定，若作为对撞左字段被赋新含义即翻案，判伪
-REFUTED_CONCLUSIONS = [
+class RefutedConclusion(TypedDict):
+    id: str
+    false_claim: str
+    correct: str
+    evidence: str
+    blocked_pairs: list[list[str]]
+    settled: list[str]
+
+
+REFUTED_CONCLUSIONS: list[RefutedConclusion] = [
     {
         "id": "R1_tencent_shares_reversed",
         "false_claim": "tencent[72]=总股本、tencent[73]=流通股本",
@@ -94,11 +105,18 @@ REFUTED_CONCLUSIONS = [
         "id": "R2_tipinfo_unlock_mislabel",
         "false_claim": "tipinfo Col[7~9]/[13~16]=限售解禁(召开日/预告日/净利润/解禁日/股数/前次解禁)",
         "correct": "Col[7]=异动日(未定)、Col[8]=分红日、Col[9]=分红金额(每10股,元)、Col[13]=股权登记日、"
-                   "Col[14]=配股/除权金额(万元)、Col[15]=增发事件日、Col[16]=增发募集金额(万元)",
+        "Col[14]=配股/除权金额(万元)、Col[15]=增发事件日、Col[16]=增发募集金额(万元)",
         "evidence": "field_dict:611-635(TdxQuant实锤+单位万元)；Col[14]=25224.80与字典配股金额逐字一致",
         "blocked_pairs": [],
-        "settled": ["tipinfo.Col[7]", "tipinfo.Col[8]", "tipinfo.Col[9]",
-                    "tipinfo.Col[13]", "tipinfo.Col[14]", "tipinfo.Col[15]", "tipinfo.Col[16]"],
+        "settled": [
+            "tipinfo.Col[7]",
+            "tipinfo.Col[8]",
+            "tipinfo.Col[9]",
+            "tipinfo.Col[13]",
+            "tipinfo.Col[14]",
+            "tipinfo.Col[15]",
+            "tipinfo.Col[16]",
+        ],
     },
     {
         "id": "R3_tdxstat_col22_shape",
@@ -112,9 +130,9 @@ REFUTED_CONCLUSIONS = [
         "id": "R4_finance_info_raw_index_shift",
         "false_claim": "eltdx finance_info_raw 槽位：总股本[1]/EPS[8]/总资产[9]/归母净利润[29] …",
         "correct": "34 槽结构正确但索引偏移+2：总股本[4]/EPS[10]/总资产[11]/归母净利润[30]；"
-                   "field_dict §二 0x0010 财务协议36字段表已正确收录",
+        "field_dict §二 0x0010 财务协议36字段表已正确收录",
         "evidence": "raw_eltdx.json 茅台600519 finance_info_raw 34浮点解析：槽[4]=125008.1562(总本)≠Gemini[1]；"
-                    "槽[30]=44516880(归母)≠Gemini[29]",
+        "槽[30]=44516880(归母)≠Gemini[29]",
         "blocked_pairs": [],
         "settled": [],
     },
@@ -122,7 +140,7 @@ REFUTED_CONCLUSIONS = [
         "id": "R5_tipinfo_col11_not_ipo",
         "false_claim": "tipinfo Col[11]=ipo_date/自由流通股本/配股比例",
         "correct": "Col[11]=最新业绩预告发布日(YYYYMMDD); 跨期跳变实证(002475 20260429->20260825 等); "
-                   "tdxstat Col[11]=free_ltgb 为另一文件, 与 tipinfo 不同源",
+        "tdxstat Col[11]=free_ltgb 为另一文件, 与 tipinfo 不同源",
         "evidence": "20260923_tipinfo_verify.md: 002475/300497/000100 跨期跳变精确命中; 000100 H1 后转空; 非空率 0.7%",
         "blocked_pairs": [],
         "settled": ["tipinfo.Col[11]"],
@@ -162,12 +180,12 @@ REFUTED_CONCLUSIONS = [
 ]
 
 # 语义已定 token 集合（合并各条 settled），左字段若为其中之一且属新主张 → 翻案，判伪
-SETTLED_REFUTED = set()
+SETTLED_REFUTED: set[str] = set()
 for _c in REFUTED_CONCLUSIONS:
     SETTLED_REFUTED.update(_c.get("settled", []))
 
 
-def match_refuted(left: str, right: str):
+def match_refuted(left: str, right: str) -> RefutedConclusion | None:
     """若 (left,right) 命中已证伪结论，返回该结论 dict；否则 None。
 
     命中条件：
@@ -187,7 +205,7 @@ def match_refuted(left: str, right: str):
     return None
 
 
-def print_active_rules(stream=None):
+def print_active_rules(stream: TextIO | None = None) -> TextIO:
     """运行时自动查询并打印当前生效的对撞规则横幅。
 
     默认输出到 stderr，以免污染对撞脚本 stdout 上的 .md 报告。
@@ -199,13 +217,18 @@ def print_active_rules(stream=None):
     print("【对撞四铁律 · 运行时生效规则】每次对撞自动查询", file=out)
     print(bar, file=out)
     print(f"1. 精度对齐 : {PRECISION}", file=out)
-    print(f"2. 命中率分层: 每采样日 ≥{HIT_RATE_L1}/20 且可解释 → L1 定案；"
-          f"{HIT_RATE_L4}~{HIT_RATE_L1 - 1} → L4 候选（存疑）", file=out)
-    print(f"3. 比值族   : CV≤{RATIO_CV_MAX:g} 且比值∈{RATIO_STEPS} → L1-U 单位换算定案",
-          file=out)
+    print(
+        f"2. 命中率分层: 每采样日 ≥{HIT_RATE_L1}/20 且可解释 → L1 定案；"
+        f"{HIT_RATE_L4}~{HIT_RATE_L1 - 1} → L4 候选（存疑）",
+        file=out,
+    )
+    print(f"3. 比值族   : CV≤{RATIO_CV_MAX:g} 且比值∈{RATIO_STEPS} → L1-U 单位换算定案", file=out)
     print(f"4. 多日复核 : ≥{MULTI_DAY_MIN} 个独立采集日重复方可定案；单日快照不够", file=out)
-    print(f"5. 相关性   : 仅 Pearson+Spearman 同号且 |Spearman|≥{CORR_SPEARMAN_MIN} "
-          f"且留一法不翻号 → 候选，绝不定案", file=out)
+    print(
+        f"5. 相关性   : 仅 Pearson+Spearman 同号且 |Spearman|≥{CORR_SPEARMAN_MIN} "
+        f"且留一法不翻号 → 候选，绝不定案",
+        file=out,
+    )
     print("-" * 66, file=out)
     print("定案状态机 L1~L4:", file=out)
     for code, name, desc in LEVELS:
@@ -224,20 +247,28 @@ def emit_markdown(path: str | None = None) -> str:
     """由本模块派生 COLLISION_RULES.md（与代码常量一致，避免双源漂移）。"""
     L = []
     L.append("# 对撞四铁律与定案状态机（运行时规则真相源）\n")
-    L.append(f"> 本文件由 `scripts/collision_rules.py` 自动派生"
-             f"（`python scripts/collision_rules.py --emit`），生成日 {date.today().isoformat()}。\n")
-    L.append("> 对撞脚本运行时自动 `print_active_rules()` 查询本规则；"
-             "以代码常量（`collision_rules.py`）为唯一权威，本文档为其人读镜像。\n")
+    L.append(
+        f"> 本文件由 `scripts/collision_rules.py` 自动派生"
+        f"（`python scripts/collision_rules.py --emit`），生成日 {date.today().isoformat()}。\n"
+    )
+    L.append(
+        "> 对撞脚本运行时自动 `print_active_rules()` 查询本规则；"
+        "以代码常量（`collision_rules.py`）为唯一权威，本文档为其人读镜像。\n"
+    )
     L.append("## 一、对撞四铁律（硬阈值）\n")
     L.append("| # | 铁律 | 阈值 / 判定 |")
     L.append("|:--|:--|:--|")
     L.append(f"| 1 | 精度对齐 | {PRECISION} |")
-    L.append(f"| 2 | 命中率分层 | 每采样日 ≥{HIT_RATE_L1}/20 且可解释 → **L1 定案**；"
-             f"{HIT_RATE_L4}~{HIT_RATE_L1 - 1} → L4 候选（存疑） |")
+    L.append(
+        f"| 2 | 命中率分层 | 每采样日 ≥{HIT_RATE_L1}/20 且可解释 → **L1 定案**；"
+        f"{HIT_RATE_L4}~{HIT_RATE_L1 - 1} → L4 候选（存疑） |"
+    )
     L.append(f"| 3 | 比值族 | CV≤{RATIO_CV_MAX:g} 且比值∈{RATIO_STEPS} → L1-U 单位换算定案 |")
     L.append(f"| 4 | 多日复核 | ≥{MULTI_DAY_MIN} 个独立采集日重复方可定案；单日 20 股快照不够 |")
-    L.append(f"| 5 | 相关性 | 仅 Pearson+Spearman 同号且 |Spearman|≥{CORR_SPEARMAN_MIN} "
-             f"且留一法不翻号 → 候选，绝不定案 |\n")
+    L.append(
+        f"| 5 | 相关性 | 仅 Pearson+Spearman 同号且 |Spearman|≥{CORR_SPEARMAN_MIN} "
+        f"且留一法不翻号 → 候选，绝不定案 |\n"
+    )
     L.append("## 二、定案状态机 L1~L4\n")
     L.append("| 层级 | 名称 | 升格来源 |")
     L.append("|:--|:--|:--|")
@@ -249,18 +280,28 @@ def emit_markdown(path: str | None = None) -> str:
         L.append(f"- {r}")
     L.append("")
     L.append("## 四、对撞 / 不降解撞的判定边界\n")
-    L.append("- **主攻对撞（crack）**：仅对 `FOCUS` 内未定案的 residual unknowns 跑；"
-             "已 **L1** 字段从攻击目标移除。")
-    L.append("- **全历史复核 / 再确认（re-validation）**：全量扫描会顺带扫到已定案字段，"
-             "结果标注「再确认 / 强化现有结论，未改动语义」，作为回归保护。")
-    L.append("- **锁定点 = 升到 L1**：该字段转为对齐锚 / 真值参考，"
-             "用于破解其他未知字段时的核对与跨源一致性校验。")
-    L.append("- **双向可修正**：L1 遇矛盾新证据可降级或重议"
-             "（如 tx[85] 均价候选因锚仅 3/20 回退 L3；tdxstat[31] 对撞东财仅 77% 匹配降级）。\n")
+    L.append(
+        "- **主攻对撞（crack）**：仅对 `FOCUS` 内未定案的 residual unknowns 跑；"
+        "已 **L1** 字段从攻击目标移除。"
+    )
+    L.append(
+        "- **全历史复核 / 再确认（re-validation）**：全量扫描会顺带扫到已定案字段，"
+        "结果标注「再确认 / 强化现有结论，未改动语义」，作为回归保护。"
+    )
+    L.append(
+        "- **锁定点 = 升到 L1**：该字段转为对齐锚 / 真值参考，"
+        "用于破解其他未知字段时的核对与跨源一致性校验。"
+    )
+    L.append(
+        "- **双向可修正**：L1 遇矛盾新证据可降级或重议"
+        "（如 tx[85] 均价候选因锚仅 3/20 回退 L3；tdxstat[31] 对撞东财仅 77% 匹配降级）。\n"
+    )
     L.append("")
     L.append("## 五、已证伪结论护栏（回归反例，2026-09-16 立规）\n")
-    L.append("> 经数值实证推翻的伪结论，固化为对撞反例；`collide.py` 命中即跳过该候选并记入报告，"
-             "防止污染 field_dict.md。护栏只拒绝、不新增字段。\n")
+    L.append(
+        "> 经数值实证推翻的伪结论，固化为对撞反例；`collide.py` 命中即跳过该候选并记入报告，"
+        "防止污染 field_dict.md。护栏只拒绝、不新增字段。\n"
+    )
     for c in REFUTED_CONCLUSIONS:
         L.append(f"- **{c['id']}**｜伪主张：`{c['false_claim']}`")
         L.append(f"  - 真相（L1）：{c['correct']}")
@@ -273,7 +314,9 @@ def emit_markdown(path: str | None = None) -> str:
     if path is None:
         path = os.path.join(
             os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
-            "docs", "field_verification", "COLLISION_RULES.md",
+            "docs",
+            "field_verification",
+            "COLLISION_RULES.md",
         )
     with open(path, "w", encoding="utf-8") as f:
         f.write(text)

@@ -2,19 +2,27 @@
 (A) 从最新 raw_ulist239.json 提取 000568 的 f161-f210 裸值(碰撞靶标)
 (B) CDP 自驱抓取 data.eastmoney.com/zjlx/000568.html 多周期资金流向, 与 (A) 碰撞
 """
+
 import sys, os, json, glob, time, urllib.request, websocket
+
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import cdp_scrape as C
 
 OUT = os.path.dirname(os.path.abspath(__file__)) + "/raw"
 
+
 # ---------- (A) 提取靶标 ----------
 def latest_raw():
-    files = glob.glob(r"C:/Tencent/WorkBuddy/a-stock-data/docs/field_verification/2026*/raw_ulist239.json")
-    files += glob.glob(r"C:/Tencent/WorkBuddy/a-stock-data/docs/field_verification/2026*/raw_ulist239.json")
+    files = glob.glob(
+        r"C:/Tencent/WorkBuddy/a-stock-data/docs/field_verification/2026*/raw_ulist239.json"
+    )
+    files += glob.glob(
+        r"C:/Tencent/WorkBuddy/a-stock-data/docs/field_verification/2026*/raw_ulist239.json"
+    )
     # 按 mtime 取最新
     files = sorted(set(files), key=lambda p: os.path.getmtime(p))
     return files[-1] if files else None
+
 
 raw_path = latest_raw()
 print("RAW:", raw_path)
@@ -24,13 +32,15 @@ entry = None
 if isinstance(data, dict):
     for k, v in data.items():
         if "000568" in str(k):
-            entry = v; break
+            entry = v
+            break
     if entry is None and "items" in data:
         data = data["items"]
 if isinstance(data, list):
     for it in data:
-        if str(it.get("code",""))=="000568" or "000568" in str(it.get("CODE","")):
-            entry = it; break
+        if str(it.get("code", "")) == "000568" or "000568" in str(it.get("CODE", "")):
+            entry = it
+            break
 print("ENTRY keys sample:", list(entry.keys())[:10] if entry else None)
 targets = {}
 for i in range(161, 211):
@@ -58,7 +68,8 @@ try:
         txt = C.get_text(ws) or ""
         open(f"{OUT}/zjlx_000568_{period}.txt", "w", encoding="utf-8").write(txt)
         print(f"  click {period} -> {r} text_len={len(txt)}")
-    ws.close(); b.close()
+    ws.close()
+    b.close()
 except Exception as e:
     print("  zjlx ERR", repr(e))
 print("\nDONE")

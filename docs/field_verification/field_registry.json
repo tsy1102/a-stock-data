@@ -53,7 +53,8 @@
       "name": "东财-datacenter(英文键)",
       "verify_file": null,
       "section_patterns": [
-        "12.8.3 东财 datacenter-web（龙虎榜/两融/大宗/股东/分红/解禁）✅"
+        "12.8.3 东财 datacenter-web（龙虎榜/两融/大宗/股东/分红/解禁）✅",
+        "12.8.3.1 datacenter 北向持股 + 两融衍生字段补录（V17.1.1 全量登记）"
       ],
       "status": "active"
     },
@@ -90,13 +91,25 @@
       "status": "active"
     },
     {
+      "name": "新浪(扩展API)",
+      "verify_file": null,
+      "section_patterns": [
+        "12.8.14 新浪（行情/三表/期权/资金流备胎）✅/⏸️"
+      ],
+      "status": "active"
+    },
+    {
       "name": "同花顺-fuyao",
       "verify_file": "fuyao_api_full.md",
       "section_patterns": [
         "12.8.12c THS 官方金融数据 REST API（fuyao.aicubes.cn，2026-08-10 实测 7 接口 → V17.0.5 契约全量镜像 62 端点）🆕",
         "12.8.12c-z 适配层快照字段契约（20260918 对撞定案）",
         "12.8.12d THS 族替代 push 域能力矩阵（V17.0.7，2026-08-25 实测定案）🆕",
-        "12.8.12e 规范字段注册表（canonical registry，跨源唯一语义名）🆕"
+        "12.8.12e 规范字段注册表（canonical registry，跨源唯一语义名）🆕",
+        "12.8.12f fuyao 财务指标 index_id 完整度与接入分类（2026-09-01）🆕",
+        "12.8.12g fuyao 黄金锚 × 5 源 × 多日 对撞总表（2026-09-01）🆕",
+        "12.8.12i fuyao 财务报表叶字段补录（V17.1.1 全量登记）",
+        "12.8.12k fuyao 网站中文名黄金锚（THS q.10jqka.com.cn 官方中文列名 ↔ 英文字段）"
       ],
       "status": "active"
     },
@@ -105,10 +118,13 @@
       "verify_file": "tdx_func_fields.md",
       "section_patterns": [
         "12.13.2 财务批量（get_finance_batch，0x0010）文档确认",
+        "12.13.3 除权除息（get_gbbq / get_xdxr，0x000f）文档确认",
         "12.8.12j TDX 云 tdx_quotes CwInfo 财务快照字段（TDX tdx_quotes）",
         "12.8.12j2 TDX tdx_quotes 行情快照字段契约（quote_full，20260918 对撞定案）🆕",
         "12.8.19 通达信问小达（wenda）四件套源字段结构（V17.2.7 新增, 2026-09-09）",
         "2.1 协议完整 36 字段表（权威定义）",
+        "2.2 字段组分类与策略价值",
+        "2.6 与 Gemini 核实 18 字段的对比",
         "零·A TDX F10 财务分析字段结构（V16.3 O 实测 000100，2026-08-06）"
       ],
       "status": "active"
@@ -162,7 +178,11 @@
       "section_patterns": [
         "12.13.10 eltdx Helpers 净新增字段破解（V17.2.15 实测，collect_eltdx 采集 + 黄金锚对撞）",
         "12.13.10c eltdx 适配层标准契约表（quote_snapshot / shortline，20260918 对撞定案）🆕",
-        "12.13.11 eltdx 统一层契约字段（cdata.eltdx_*，V17.2.22 接入 canonical）"
+        "12.13.11 eltdx 统一层契约字段（cdata.eltdx_*，V17.2.22 接入 canonical）",
+        "12.13.4 涨跌停限制（limits.special / scan_special，0x0452）文档确认",
+        "12.13.5 K线（bars.get，0x052d）文档确认",
+        "12.13.6 行情列表（quotes.list_by_category，0x054b）文档确认",
+        "12.13.7 服务器统计资源（resources.read_stats，zhb.zip）文档确认 ⚠️重要"
       ],
       "status": "active"
     },
@@ -170,7 +190,9 @@
       "name": "财联社(cls)",
       "verify_file": null,
       "section_patterns": [
-        "12.8.13 财联社快讯（cls.cn v1 API + 本地签名）✅"
+        "12.10.5 板块轮动与热度（财联社 get_sector_rotation / get_sector_heat / market_wind_cls）🆕",
+        "12.8.13 财联社快讯（cls.cn v1 API + 本地签名）✅",
+        "12.8.13.1 财联社快讯 telegraph 原始字段补录（V17.1.1 全量登记）"
       ],
       "status": "active"
     },
@@ -232,6 +254,17 @@
         "12.10.2 财联社市场情绪（market_emotion_cls）🆕",
         "12.10.3 开盘红市场情绪（market_emotion_kph，**含历史**）🆕",
         "12.10.7a 市场源 market_sources 原始字段补录（V17.1.1 全量登记）"
+      ],
+      "status": "active"
+    },
+    {
+      "name": "开盘啦(kpl)",
+      "verify_file": null,
+      "section_patterns": [
+        "12.17 KPL 开盘啦（longhuvip.com 私有 API，2026-08-09 实测 30 接口）🆕",
+        "12.17.1 kaipanla-data-parser 补充（2026-08-09 实测 10 接口 + 63 字段映射验证）🆕",
+        "12.21.1 ZhiShuStockList_W8 个股详情完整 63 字段定义表（最有价值的发现）",
+        "12.21.5 无 Token 穷尽实测（2026-08-26 盘中，jinhao2003 方法验证）✅"
       ],
       "status": "active"
     },
@@ -342,19 +375,6 @@
       "status": "unverified"
     },
     {
-      "code": "CNY",
-      "source": "TDX(双命名源)",
-      "sources": [
-        "TDX(双命名源)"
-      ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "status_raw": "",
-      "status": "unverified"
-    },
-    {
       "code": "CPFZ",
       "source": "TDX(双命名源)",
       "sources": [
@@ -434,9 +454,10 @@
     },
     {
       "code": "Date",
-      "source": "TDX(双命名源)",
+      "source": null,
       "sources": [
-        "TDX(双命名源)"
+        "TDX(双命名源)",
+        "开盘啦(kpl)"
       ],
       "section": "",
       "canonical": "",
@@ -486,19 +507,6 @@
     },
     {
       "code": "EverZTCount",
-      "source": "TDX(双命名源)",
-      "sources": [
-        "TDX(双命名源)"
-      ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "status_raw": "",
-      "status": "unverified"
-    },
-    {
-      "code": "F10",
       "source": "TDX(双命名源)",
       "sources": [
         "TDX(双命名源)"
@@ -1827,19 +1835,6 @@
       "status": "unverified"
     },
     {
-      "code": "adjust",
-      "source": "TDX(双命名源)",
-      "sources": [
-        "TDX(双命名源)"
-      ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "status_raw": "",
-      "status": "unverified"
-    },
-    {
       "code": "amount",
       "source": null,
       "sources": [
@@ -1850,7 +1845,8 @@
         "reports",
         "东财-datacenter(英文键)",
         "东财-push2ex",
-        "市场源(market_sources)"
+        "市场源(market_sources)",
+        "开盘啦(kpl)"
       ],
       "section": "12.8.1 东财 push2ex（涨停/炸板/跌停/昨涨停四池）✅",
       "canonical": "amount",
@@ -1972,48 +1968,6 @@
       "code": "ask5",
       "source": "TDX(双命名源)",
       "sources": [
-        "TDX(双命名源)"
-      ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "status_raw": "",
-      "status": "unverified"
-    },
-    {
-      "code": "auction_turnover_pct",
-      "source": null,
-      "sources": [
-        "同花顺-fuyao",
-        "TDX(双命名源)"
-      ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "status_raw": "",
-      "status": "unverified"
-    },
-    {
-      "code": "auction_volume_ratio",
-      "source": null,
-      "sources": [
-        "同花顺-fuyao",
-        "TDX(双命名源)"
-      ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "status_raw": "",
-      "status": "unverified"
-    },
-    {
-      "code": "auction_yesterday_ratio_pct",
-      "source": null,
-      "sources": [
-        "同花顺-fuyao",
         "TDX(双命名源)"
       ],
       "section": "",
@@ -2168,32 +2122,6 @@
       "status": "unverified"
     },
     {
-      "code": "bps",
-      "source": "TDX(双命名源)",
-      "sources": [
-        "TDX(双命名源)"
-      ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "status_raw": "",
-      "status": "unverified"
-    },
-    {
-      "code": "business_composition",
-      "source": "TDX(双命名源)",
-      "sources": [
-        "TDX(双命名源)"
-      ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "status_raw": "",
-      "status": "unverified"
-    },
-    {
       "code": "bvps",
       "source": "TDX(双命名源)",
       "sources": [
@@ -2269,8 +2197,8 @@
         "ZHB-tdxstat",
         "levistock(ftshare)",
         "东财-push2ex",
-        "东财-热榜(em_hot)",
-        "市场源(market_sources)"
+        "市场源(market_sources)",
+        "开盘啦(kpl)"
       ],
       "section": "12.10.7a 市场源 market_sources 原始字段补录（V17.1.1 全量登记）",
       "canonical": "change_pct",
@@ -2347,23 +2275,6 @@
       "status": "unverified"
     },
     {
-      "code": "close",
-      "source": null,
-      "sources": [
-        "TDX(双命名源)",
-        "TDX-eltdx(适配层)",
-        "东财-datacenter(英文键)",
-        "东财-热榜(em_hot)",
-        "财联社(cls)"
-      ],
-      "section": "12.3.3 日K线 `stock/kline/get`（🆕 V17.0.14 新增——CYQ 筹码分布数据入口）",
-      "canonical": "highs`/`lows` 用 close 近似",
-      "meaning": "收盘价 / 涨跌额",
-      "unit": "",
-      "status_raw": "✅",
-      "status": "verified"
-    },
-    {
       "code": "code",
       "source": null,
       "sources": [
@@ -2372,11 +2283,11 @@
         "ZHB-tdxstat",
         "ZHB-tdxstat2",
         "ZHB-tipinfo",
-        "levistock(ftshare)",
         "东财-push2ex",
         "东财-热榜(em_hot)",
         "巨潮(cninfo)",
         "市场源(market_sources)",
+        "开盘啦(kpl)",
         "财联社(cls)"
       ],
       "section": "2.1 协议完整 36 字段表（权威定义）",
@@ -2385,33 +2296,6 @@
       "unit": "6位字符串",
       "status_raw": "✅",
       "status": "verified"
-    },
-    {
-      "code": "concepts",
-      "source": "TDX(双命名源)",
-      "sources": [
-        "TDX(双命名源)"
-      ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "status_raw": "",
-      "status": "unverified"
-    },
-    {
-      "code": "continue_day_cnt",
-      "source": null,
-      "sources": [
-        "同花顺-fuyao",
-        "TDX(双命名源)"
-      ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "status_raw": "",
-      "status": "unverified"
     },
     {
       "code": "cunhuo",
@@ -2438,7 +2322,8 @@
         "东财-datacenter(英文键)",
         "巨潮(cninfo)",
         "市场源(market_sources)",
-        "财联社(cls)"
+        "开盘啦(kpl)",
+        "新浪(扩展API)"
       ],
       "section": "12.10.7a 市场源 market_sources 原始字段补录（V17.1.1 全量登记）",
       "canonical": "date",
@@ -2446,47 +2331,6 @@
       "unit": "",
       "status_raw": "✅",
       "status": "verified"
-    },
-    {
-      "code": "dividend_financing",
-      "source": "TDX(双命名源)",
-      "sources": [
-        "TDX(双命名源)"
-      ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "status_raw": "",
-      "status": "unverified"
-    },
-    {
-      "code": "dividend_yield",
-      "source": null,
-      "sources": [
-        "TDX(双命名源)",
-        "ZHB-tdxstat"
-      ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "status_raw": "",
-      "status": "unverified"
-    },
-    {
-      "code": "down_count",
-      "source": null,
-      "sources": [
-        "TDX(双命名源)",
-        "TDX-eltdx(适配层)"
-      ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "status_raw": "",
-      "status": "unverified"
     },
     {
       "code": "entrust_ratio",
@@ -2506,26 +2350,12 @@
       "source": null,
       "sources": [
         "TDX(双命名源)",
-        "ZHB-tipinfo",
-        "东财-热榜(em_hot)"
+        "ZHB-tipinfo"
       ],
       "section": "",
       "canonical": "",
       "meaning": "",
       "unit": "",
-      "status_raw": "",
-      "status": "unverified"
-    },
-    {
-      "code": "eps_deduct_ttm",
-      "source": "TDX(双命名源)",
-      "sources": [
-        "TDX(双命名源)"
-      ],
-      "section": "12.8.12c THS 官方金融数据 REST API（fuyao.aicubes.cn，2026-08-10 实测 7 接口 → V17.0.5 契约全量镜像 62 端点）🆕",
-      "canonical": "eps_deduct_ttm(f108)",
-      "meaning": "扣非EPS TTM",
-      "unit": "元/股",
       "status_raw": "",
       "status": "unverified"
     },
@@ -2648,19 +2478,6 @@
       "status": "unverified"
     },
     {
-      "code": "finance_diagnosis",
-      "source": "TDX(双命名源)",
-      "sources": [
-        "TDX(双命名源)"
-      ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "status_raw": "",
-      "status": "unverified"
-    },
-    {
       "code": "float",
       "source": null,
       "sources": [
@@ -2690,20 +2507,6 @@
       "status": "unverified"
     },
     {
-      "code": "float_market_cap",
-      "source": null,
-      "sources": [
-        "同花顺-fuyao",
-        "TDX(双命名源)"
-      ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "status_raw": "",
-      "status": "unverified"
-    },
-    {
       "code": "float_mcap_yi",
       "source": "TDX(双命名源)",
       "sources": [
@@ -2711,20 +2514,6 @@
       ],
       "section": "",
       "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "status_raw": "",
-      "status": "unverified"
-    },
-    {
-      "code": "float_shares",
-      "source": null,
-      "sources": [
-        "TDX(双命名源)",
-        "TDX-eltdx(适配层)"
-      ],
-      "section": "12.13.10 eltdx Helpers 净新增字段破解（V17.2.15 实测，collect_eltdx 采集 + 黄金锚对撞）",
-      "canonical": "float_shares",
       "meaning": "",
       "unit": "",
       "status_raw": "",
@@ -2876,47 +2665,6 @@
       "status": "unverified"
     },
     {
-      "code": "high_price",
-      "source": null,
-      "sources": [
-        "同花顺-fuyao",
-        "TDX(双命名源)",
-        "TDX-eltdx(适配层)"
-      ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "status_raw": "",
-      "status": "unverified"
-    },
-    {
-      "code": "history",
-      "source": "TDX(双命名源)",
-      "sources": [
-        "TDX(双命名源)"
-      ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "status_raw": "",
-      "status": "unverified"
-    },
-    {
-      "code": "hot_topics",
-      "source": "TDX(双命名源)",
-      "sources": [
-        "TDX(双命名源)"
-      ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "status_raw": "",
-      "status": "unverified"
-    },
-    {
       "code": "huobi_zijin",
       "source": "TDX(双命名源)",
       "sources": [
@@ -2931,10 +2679,9 @@
     },
     {
       "code": "industry",
-      "source": null,
+      "source": "TDX(双命名源)",
       "sources": [
-        "TDX(双命名源)",
-        "levistock(ftshare)"
+        "TDX(双命名源)"
       ],
       "section": "2.1 协议完整 36 字段表（权威定义）",
       "canonical": "industry",
@@ -3121,7 +2868,7 @@
       "source": null,
       "sources": [
         "TDX(双命名源)",
-        "财联社(cls)"
+        "新浪(扩展API)"
       ],
       "section": "",
       "canonical": "",
@@ -3132,9 +2879,10 @@
     },
     {
       "code": "limit_down_price",
-      "source": "TDX(双命名源)",
+      "source": null,
       "sources": [
-        "TDX(双命名源)"
+        "TDX(双命名源)",
+        "TDX-eltdx(适配层)"
       ],
       "section": "",
       "canonical": "",
@@ -3148,21 +2896,7 @@
       "source": null,
       "sources": [
         "TDX(双命名源)",
-        "财联社(cls)"
-      ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "status_raw": "",
-      "status": "unverified"
-    },
-    {
-      "code": "limit_up_price",
-      "source": null,
-      "sources": [
-        "TDX(双命名源)",
-        "levistock(ftshare)"
+        "新浪(扩展API)"
       ],
       "section": "",
       "canonical": "",
@@ -3291,9 +3025,10 @@
     },
     {
       "code": "locked_amount",
-      "source": "TDX(双命名源)",
+      "source": null,
       "sources": [
-        "TDX(双命名源)"
+        "TDX(双命名源)",
+        "TDX-eltdx(适配层)"
       ],
       "section": "",
       "canonical": "",
@@ -3317,21 +3052,6 @@
     },
     {
       "code": "low",
-      "source": null,
-      "sources": [
-        "同花顺-fuyao",
-        "TDX(双命名源)",
-        "TDX-eltdx(适配层)"
-      ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "status_raw": "",
-      "status": "unverified"
-    },
-    {
-      "code": "low_price",
       "source": null,
       "sources": [
         "同花顺-fuyao",
@@ -3457,33 +3177,6 @@
       "status": "unverified"
     },
     {
-      "code": "min2_amount",
-      "source": null,
-      "sources": [
-        "TDX(双命名源)",
-        "TDX-eltdx(适配层)"
-      ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "status_raw": "",
-      "status": "unverified"
-    },
-    {
-      "code": "minutes.today",
-      "source": "TDX(双命名源)",
-      "sources": [
-        "TDX(双命名源)"
-      ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "status_raw": "",
-      "status": "unverified"
-    },
-    {
       "code": "more_info",
       "source": "TDX(双命名源)",
       "sources": [
@@ -3507,6 +3200,7 @@
         "东财-push2ex",
         "东财-热榜(em_hot)",
         "市场源(market_sources)",
+        "开盘啦(kpl)",
         "财联社(cls)"
       ],
       "section": "12.8.12 同花顺（热点/北向/涨停揭秘/热榜/EPS）✅",
@@ -3544,58 +3238,16 @@
       "status": "unverified"
     },
     {
-      "code": "northbound_holding",
-      "source": "TDX(双命名源)",
-      "sources": [
-        "TDX(双命名源)"
-      ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "status_raw": "",
-      "status": "unverified"
-    },
-    {
       "code": "open",
       "source": null,
       "sources": [
         "同花顺-fuyao",
         "TDX(双命名源)",
         "TDX-eltdx(适配层)",
-        "财联社(cls)"
+        "新浪(扩展API)"
       ],
       "section": "",
       "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "status_raw": "",
-      "status": "unverified"
-    },
-    {
-      "code": "open_price",
-      "source": null,
-      "sources": [
-        "同花顺-fuyao",
-        "TDX(双命名源)",
-        "TDX-eltdx(适配层)"
-      ],
-      "section": "12.13.10 eltdx Helpers 净新增字段破解（V17.2.15 实测，collect_eltdx 采集 + 黄金锚对撞）",
-      "canonical": "open_price",
-      "meaning": "",
-      "unit": "",
-      "status_raw": "",
-      "status": "unverified"
-    },
-    {
-      "code": "opening_rush",
-      "source": null,
-      "sources": [
-        "TDX(双命名源)",
-        "TDX-eltdx(适配层)"
-      ],
-      "section": "12.13.10 eltdx Helpers 净新增字段破解（V17.2.15 实测，collect_eltdx 采集 + 黄金锚对撞）",
-      "canonical": "opening_rush",
       "meaning": "",
       "unit": "",
       "status_raw": "",
@@ -3619,7 +3271,8 @@
       "source": null,
       "sources": [
         "TDX(双命名源)",
-        "levistock(ftshare)"
+        "levistock(ftshare)",
+        "开盘啦(kpl)"
       ],
       "section": "12.8.12d THS 族替代 push 域能力矩阵（V17.0.7，2026-08-25 实测定案）🆕",
       "canonical": "估值 pe/pb/ps/pcf",
@@ -3629,56 +3282,11 @@
       "status": "verified"
     },
     {
-      "code": "pb_mrq",
-      "source": null,
-      "sources": [
-        "同花顺-fuyao",
-        "TDX(双命名源)"
-      ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "status_raw": "",
-      "status": "unverified"
-    },
-    {
-      "code": "pcf_ttm",
-      "source": null,
-      "sources": [
-        "同花顺-fuyao",
-        "TDX(双命名源)"
-      ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "status_raw": "",
-      "status": "unverified"
-    },
-    {
       "code": "pe_lyr",
       "source": null,
       "sources": [
-        "同花顺-fuyao",
         "TDX(双命名源)",
-        "ZHB-tdxstat",
-        "levistock(ftshare)"
-      ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "status_raw": "",
-      "status": "unverified"
-    },
-    {
-      "code": "pe_mrq",
-      "source": null,
-      "sources": [
-        "同花顺-fuyao",
-        "TDX(双命名源)",
-        "levistock(ftshare)"
+        "ZHB-tdxstat"
       ],
       "section": "",
       "canonical": "",
@@ -3692,7 +3300,8 @@
       "source": null,
       "sources": [
         "TDX(双命名源)",
-        "levistock(ftshare)"
+        "levistock(ftshare)",
+        "开盘啦(kpl)"
       ],
       "section": "",
       "canonical": "",
@@ -3709,7 +3318,8 @@
         "TDX(双命名源)",
         "TDX-eltdx(适配层)",
         "ZHB-tdxstat",
-        "levistock(ftshare)"
+        "levistock(ftshare)",
+        "开盘啦(kpl)"
       ],
       "section": "12.13.10 eltdx Helpers 净新增字段破解（V17.2.15 实测，collect_eltdx 采集 + 黄金锚对撞）",
       "canonical": "pe_ttm",
@@ -3745,20 +3355,6 @@
       "status": "unverified"
     },
     {
-      "code": "period",
-      "source": null,
-      "sources": [
-        "同花顺-fuyao",
-        "TDX(双命名源)"
-      ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "status_raw": "",
-      "status": "unverified"
-    },
-    {
       "code": "pre_close",
       "source": null,
       "sources": [
@@ -3783,7 +3379,8 @@
         "东财-datacenter(英文键)",
         "东财-push2ex",
         "东财-热榜(em_hot)",
-        "市场源(market_sources)"
+        "市场源(market_sources)",
+        "开盘啦(kpl)"
       ],
       "section": "12.8.12h 东财人气榜 em_hot_rank 原始字段补录（V17.1.1 全量登记）",
       "canonical": "price",
@@ -3791,47 +3388,6 @@
       "unit": "元",
       "status_raw": "✅",
       "status": "verified"
-    },
-    {
-      "code": "price_change",
-      "source": null,
-      "sources": [
-        "同花顺-fuyao",
-        "TDX(双命名源)"
-      ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "status_raw": "",
-      "status": "unverified"
-    },
-    {
-      "code": "price_change_ratio_pct",
-      "source": null,
-      "sources": [
-        "同花顺-fuyao",
-        "TDX(双命名源)"
-      ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "status_raw": "",
-      "status": "unverified"
-    },
-    {
-      "code": "profit_forecast",
-      "source": "TDX(双命名源)",
-      "sources": [
-        "TDX(双命名源)"
-      ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "status_raw": "",
-      "status": "unverified"
     },
     {
       "code": "province",
@@ -3845,20 +3401,6 @@
       "unit": "编码值（需查表）",
       "status_raw": "✅",
       "status": "verified"
-    },
-    {
-      "code": "ps_ttm",
-      "source": null,
-      "sources": [
-        "同花顺-fuyao",
-        "TDX(双命名源)"
-      ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "status_raw": "",
-      "status": "unverified"
     },
     {
       "code": "quote_full.amount_1d",
@@ -4160,19 +3702,6 @@
       "status": "verified"
     },
     {
-      "code": "recent",
-      "source": "TDX(双命名源)",
-      "sources": [
-        "TDX(双命名源)"
-      ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "status_raw": "",
-      "status": "unverified"
-    },
-    {
       "code": "reserve2",
       "source": "TDX(双命名源)",
       "sources": [
@@ -4226,34 +3755,6 @@
       "status": "unverified"
     },
     {
-      "code": "seal_money",
-      "source": null,
-      "sources": [
-        "同花顺-fuyao",
-        "TDX(双命名源)",
-        "levistock(ftshare)"
-      ],
-      "section": "12.10.4 开盘红复盘（get_zttt 涨停天梯 / get_pmsl 盘面梳理 / get_his_limit_resumption 历史涨停复盘）🆕",
-      "canonical": "seal_amount / seal_money",
-      "meaning": "待破解",
-      "unit": "",
-      "status_raw": "",
-      "status": "unverified"
-    },
-    {
-      "code": "shareholder_change_plans",
-      "source": "TDX(双命名源)",
-      "sources": [
-        "TDX(双命名源)"
-      ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "status_raw": "",
-      "status": "unverified"
-    },
-    {
       "code": "shiyebianma",
       "source": "TDX(双命名源)",
       "sources": [
@@ -4271,20 +3772,6 @@
       "source": "TDX(双命名源)",
       "sources": [
         "TDX(双命名源)"
-      ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "status_raw": "",
-      "status": "unverified"
-    },
-    {
-      "code": "short_turnover",
-      "source": null,
-      "sources": [
-        "TDX(双命名源)",
-        "TDX-eltdx(适配层)"
       ],
       "section": "",
       "canonical": "",
@@ -4333,68 +3820,11 @@
       "status": "unverified"
     },
     {
-      "code": "stock_score",
-      "source": "TDX(双命名源)",
-      "sources": [
-        "TDX(双命名源)"
-      ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "status_raw": "",
-      "status": "unverified"
-    },
-    {
       "code": "str",
       "source": null,
       "sources": [
         "TDX(双命名源)",
         "TDX-eltdx(适配层)"
-      ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "status_raw": "",
-      "status": "unverified"
-    },
-    {
-      "code": "theme_market",
-      "source": "TDX(双命名源)",
-      "sources": [
-        "TDX(双命名源)"
-      ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "status_raw": "",
-      "status": "unverified"
-    },
-    {
-      "code": "time",
-      "source": null,
-      "sources": [
-        "TDX(双命名源)",
-        "TDX-eltdx(适配层)",
-        "levistock(ftshare)",
-        "东财-热榜(em_hot)",
-        "市场源(market_sources)",
-        "财联社(cls)"
-      ],
-      "section": "12.8.12 同花顺（热点/北向/涨停揭秘/热榜/EPS）✅",
-      "canonical": "time",
-      "meaning": "分钟时间点",
-      "unit": "",
-      "status_raw": "✅",
-      "status": "verified"
-    },
-    {
-      "code": "topic_compare",
-      "source": "TDX(双命名源)",
-      "sources": [
-        "TDX(双命名源)"
       ],
       "section": "",
       "canonical": "",
@@ -4431,9 +3861,10 @@
     },
     {
       "code": "total_shares",
-      "source": "TDX(双命名源)",
+      "source": null,
       "sources": [
-        "TDX(双命名源)"
+        "TDX(双命名源)",
+        "开盘啦(kpl)"
       ],
       "section": "12.13.2 财务批量（get_finance_batch，0x0010）文档确认",
       "canonical": "circulating_shares / total_shares",
@@ -4469,40 +3900,12 @@
       "status": "verified"
     },
     {
-      "code": "trades.today",
-      "source": "TDX(双命名源)",
-      "sources": [
-        "TDX(双命名源)"
-      ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "status_raw": "",
-      "status": "unverified"
-    },
-    {
-      "code": "turnover",
-      "source": null,
-      "sources": [
-        "同花顺-fuyao",
-        "TDX(双命名源)",
-        "levistock(ftshare)",
-        "财联社(cls)"
-      ],
-      "section": "12.10.4 开盘红复盘（get_zttt 涨停天梯 / get_pmsl 盘面梳理 / get_his_limit_resumption 历史涨停复盘）🆕",
-      "canonical": "turnover / turnover_rate",
-      "meaning": "成交额 / 换手率%",
-      "unit": "",
-      "status_raw": "",
-      "status": "unverified"
-    },
-    {
       "code": "turnover_pct",
       "source": null,
       "sources": [
         "TDX(双命名源)",
-        "levistock(ftshare)"
+        "levistock(ftshare)",
+        "开盘啦(kpl)"
       ],
       "section": "",
       "canonical": "",
@@ -4516,20 +3919,6 @@
       "source": "TDX(双命名源)",
       "sources": [
         "TDX(双命名源)"
-      ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "status_raw": "",
-      "status": "unverified"
-    },
-    {
-      "code": "up_count",
-      "source": null,
-      "sources": [
-        "TDX(双命名源)",
-        "TDX-eltdx(适配层)"
       ],
       "section": "",
       "canonical": "",
@@ -4579,38 +3968,12 @@
       "status": "unverified"
     },
     {
-      "code": "valuation",
-      "source": "TDX(双命名源)",
-      "sources": [
-        "TDX(双命名源)"
-      ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "status_raw": "",
-      "status": "unverified"
-    },
-    {
       "code": "vol_ratio",
       "source": null,
       "sources": [
         "TDX(双命名源)",
-        "levistock(ftshare)"
-      ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "status_raw": "",
-      "status": "unverified"
-    },
-    {
-      "code": "vol_rise_speed",
-      "source": null,
-      "sources": [
-        "TDX(双命名源)",
-        "TDX-eltdx(适配层)"
+        "levistock(ftshare)",
+        "开盘啦(kpl)"
       ],
       "section": "",
       "canonical": "",
@@ -4630,20 +3993,6 @@
       ],
       "section": "12.13.10 eltdx Helpers 净新增字段破解（V17.2.15 实测，collect_eltdx 采集 + 黄金锚对撞）",
       "canonical": "volume",
-      "meaning": "",
-      "unit": "",
-      "status_raw": "",
-      "status": "unverified"
-    },
-    {
-      "code": "volume_lots",
-      "source": null,
-      "sources": [
-        "TDX(双命名源)",
-        "TDX-eltdx(适配层)"
-      ],
-      "section": "",
-      "canonical": "",
       "meaning": "",
       "unit": "",
       "status_raw": "",
@@ -5279,7 +4628,7 @@
       "canonical": "[23]",
       "meaning": "待破解",
       "unit": "",
-      "status_raw": "V17.0 补强(2026-08-14): 同值组当日涨跌幅区间高度一致([71]组 -10~-4 大跌/[70]组 +4~+20 大涨/[33]组 -1.2~+0.8 窄幅/[52]组 -3~+1.9)——当日强弱分档非个股基本面; 疑 func 异动类型/行情状态码; 全市场 26 去重值/7997 覆盖(2026-08-27): =0 组 n=4389[-12.1,+57.3]均+0.03 /=10 组 n=1068[-2.78,+20] /=52 组 n=833[-4.92,+3.25] /=31 组 n=467[-4.24,+10.14] /=1 组 n=354[-4.23,+15.09] /=2 组 n=300[-17.24,+5.49] /=11 组 n=145[-10.92,+5.83] /=5 组 n=96[-3.93,+20.01]——同值组涨跌幅聚合, 确证=当日强弱/异动分档码。🔴 20260919 护栏(驳 Gemini 误判): 92 实测 range=-10.04%~+9.99%(含大涨股, 非\"强空跌停\"); 600540 实际跌停日(09-03,-9.96%)Col[23]=0(非92); 涨停日 Col[23]∈{10,31,70,95} 非恒31 → 精确语义\"强多=31/强空=92\"证伪; Col[23] 维持 L4 分档码候选, 禁作定案语义; 🔶 20260919 二进制佐证(TdxW.exe): RVA 0x0021d763 将 Col[23] 以 float32 存于结构体偏移 0x61; 只读段 0x00a355cc 含 `CShortCutPage` 短线形态词表(一字板/T字板/换手板/地天板/天地板/反包板/昨首板/昨连板/昨炸板/大振幅/冲涨停/冲跌停…) → Col[23]=短线多空形态/异动状态分档码, 十进制分组(1x首板/2x分歧/3x连板/7x断板脉冲/9x宽幅)语义成立(具象词与数值码映射待定)",
+      "status_raw": "V17.0 补强(2026-08-14): 同值组当日涨跌幅区间高度一致([71]组 -10~-4 大跌/[70]组 +4~+20 大涨/[33]组 -1.2~+0.8 窄幅/[52]组 -3~+1.9)——当日强弱分档非个股基本面; 疑 func 异动类型/行情状态码; 全市场 26 去重值/7997 覆盖(2026-08-27): =0 组 n=4389[-12.1,+57.3]均+0.03 /=10 组 n=1068[-2.78,+20] /=52 组 n=833[-4.92,+3.25] /=31 组 n=467[-4.24,+10.14] /=1 组 n=354[-4.23,+15.09] /=2 组 n=300[-17.24,+5.49] /=11 组 n=145[-10.92,+5.83] /=5 组 n=96[-3.93,+20.01]——同值组涨跌幅聚合, 确证=当日强弱/异动分档码。🔴 20260919 护栏(驳 Gemini 误判): 92 实测 range=-10.04%~+9.99%(含大涨股, 非\"强空跌停\"); 600540 实际跌停日(09-03,-9.96%)Col[23]=0(非92); 涨停日 Col[23]∈{10,31,70,95} 非恒31 → 精确语义\"强多=31/强空=92\"证伪; Col[23] 维持 L4 分档码候选, 禁作定案语义; 🔶 20260919 二进制佐证(TdxW.exe): RVA 0x0021d763 将 Col[23] 以 float32 存于结构体偏移 0x61; 只读段 0x00a355cc 含 `CShortCutPage` 短线形态词表(一字板/T字板/换手板/地天板/天地板/反包板/昨首板/昨连板/昨炸板/大振幅/冲涨停/冲跌停…) → Col[23]=短线多空形态/异动状态分档码, 十进制分组(1x首板/2x分歧/3x连板/7x断板脉冲/9x宽幅)语义成立(具象词与数值码映射待定) 🔶 V17.4.24(2026-09-24) 40包全量实证(320485样本, 熵2.522bit): 取值 29 个 0/1/2/5/6/10/11/20/21/31/32/33/50/51/52/60/61/70/71/80/81/90/91/92/93/94/95/96/97 (此前记26码, 全量重核为29); 方向轴铁证——(10L,10L+1)成看多/看空对, 5日涨幅正比例: 1=.919/2=.085, 5=.947/6=.055, 10=.678/11=.478, 20=1.000/21=.000, 31=.922/32=.040, 50=1.000/51=.000, 60=.986/61=.059, 70=.923/71=.621, 80=.978/81=.000, 90=1.000, 94=1.000。已验锚点: 95=一字板涨停(涨停100%/一字100%/振幅0.0000/连板非空100%), 52=缩量窄幅横盘(振幅中位0.0160最低/换手11.1最低/自持率57%), 33=低波动(振幅0.0249), 70=涨停族高换手(换手124.6/连板43.7%), 71=跌停族高换手(跌停4.5%/换手150.2), 92=极高换手双向(换手183.8), 94/96=巨量暴涨/暴跌(换手249.0/214.2, 5日涨+17.75/-19.37)。证伪: ①非板型码——每个码跨越多种板型; ②非涨停事件码——[23]=0 含263个涨停样本; ③不由单一可计算特征决定——chg1/5/10/20/60/amp 低条件熵均为分箱过拟合(取值~42000≈样本数), 唯一真实信息量=ma_order(均线次序24值) H=2.117 vs 基线2.522(增益0.405bit)。相邻交易日相同率仅41.5%(31/32/52/92自持率29%/30%/57%/42%)。维持「禁作定案语义」护栏; 官方码表未见于 ihelp.dat",
       "status": "verified"
     },
     {
@@ -5649,11 +4998,9 @@
     },
     {
       "code": "change_5d",
-      "source": null,
+      "source": "ZHB-tdxstat",
       "sources": [
-        "ZHB-tdxstat",
-        "levistock(ftshare)",
-        "东财-热榜(em_hot)"
+        "ZHB-tdxstat"
       ],
       "section": "",
       "canonical": "",
@@ -5703,10 +5050,22 @@
     },
     {
       "code": "change_ytd",
-      "source": null,
+      "source": "ZHB-tdxstat",
       "sources": [
-        "ZHB-tdxstat",
-        "东财-热榜(em_hot)"
+        "ZHB-tdxstat"
+      ],
+      "section": "",
+      "canonical": "",
+      "meaning": "",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified"
+    },
+    {
+      "code": "dividend_yield",
+      "source": "ZHB-tdxstat",
+      "sources": [
+        "ZHB-tdxstat"
       ],
       "section": "",
       "canonical": "",
@@ -5735,21 +5094,6 @@
         "TDX-eltdx(适配层)",
         "ZHB-tdxstat",
         "财联社(cls)"
-      ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "status_raw": "",
-      "status": "unverified"
-    },
-    {
-      "code": "profile.dat",
-      "source": null,
-      "sources": [
-        "ZHB-tdxstat",
-        "ZHB-tdxstat2",
-        "ZHB-tipinfo"
       ],
       "section": "",
       "canonical": "",
@@ -6130,9 +5474,9 @@
       ],
       "section": "1.1 tdxstat.cfg 标准契约表（stat.*，20260918 对撞定案）🆕",
       "canonical": "stat.shape_value",
-      "meaning": "形态值",
+      "meaning": "短期形态|中期形态|长期形态 三档复合码(各档00-14, 00=该周期数据不足)",
       "unit": "-",
-      "status_raw": "✅",
+      "status_raw": "✅ ★V17.4.24(2026-09-24) L1铁证: 文件中以整数存储、前导零剥离(如'70900'='07|09|00'); 补零后三档全落 00-14, 越界 0/312768=0.000000; 档3=00 ⇒ 日线长度<240根占99.78%(<250占100%,max242)、档2=00 ⇒ <120根占98.92%(<130占100%,max127); 与 ihelp.dat #FUNC_ABCol L92-94(短期=近60天/中期=近120天/长期=近240-500天) 逐档对齐。空值 7717/320485=2.41%。注: 档位逐日重算(40日全码0变化仅0.71%)。各档分布见 docs/field_verification/20260924/20260924_unknown_crack_round3.md",
       "status": "verified"
     },
     {
@@ -6156,9 +5500,9 @@
       ],
       "section": "1.1 tdxstat.cfg 标准契约表（stat.*，20260918 对撞定案）🆕",
       "canonical": "stat.unknown_2",
-      "meaning": "贝塔系数(60日)·L2候选(列[2]已定BetaValue: ihelp.dat L63官方定义+慢变特征实证自相关0.91, 待真实指数基准复现升L1)",
+      "meaning": "贝塔系数(60日)·L2候选(列[2]=BetaValue; 口径已唯一确定, 待真实指数序列升L1)",
       "unit": "-",
-      "status_raw": "⚠️ 候选",
+      "status_raw": "⚠️ 候选 ★V17.4.24(2026-09-24) 口径收敛: ihelp.dat #FUNC_ABCol L63官方定义(个股相对大盘波动, 最近60天, 深市对深证成指/沪市对上证指数, 0.5低风险/1.0平均/2.0高风险); #FUNC_HGFX L778-805 β=线性回归斜率, Y=个股/X=大盘, 支持N倍收盘价序列, 按数值或按百分比。全变体网格(40包/42983样本)唯一可行口径=『算术收益率+前复权收盘+W=60』命中0.4421、比值中位1.000014; 对数收益率0.0022、均价口径0.0000(比值2.15)、价格水平0.0000(比值88.6)、W=59/61≈0.004、W=120/250≈0.0002。收益率复权口径: 63个除权样本中 前复权一致59/不复权一致0 → TDX涨跌幅按除权调整后口径(同交易所除权后昨收)。逐股比值: 77只恒等1(A类)/845只恒定偏移CV<2%(B类,低β高股息蓝筹)/162只漂移CV≥2%(C类,β≈0符号翻转)。B类恒定偏移=指数基准差异所致, 非口径错误。升L1需引入真实指数日线回归复现(本轮腾讯fqkline限流未完成)",
       "status": "candidate"
     },
     {
@@ -6169,10 +5513,10 @@
       ],
       "section": "1.1 tdxstat.cfg 标准契约表（stat.*，20260918 对撞定案）🆕",
       "canonical": "stat.unknown_26",
-      "meaning": "年内涨停天数 YearZTDay·L2候选(列[26]已定YearZTDay: ihelp.dat L64官方定义+事件级Δ实证, 待≥90%命中升L1)",
-      "unit": "-",
-      "status_raw": "⚠️ 候选",
-      "status": "candidate"
+      "meaning": "年涨停天 YearZTDay(窗口=个股自身最近243个交易日,含一字板)",
+      "unit": "天",
+      "status_raw": "✅ V17.4.24(2026-09-24) 升 L1 ★V17.4.24 L1定案: ihelp.dat #FUNC_ABCol L64「年涨停天=近一年内的涨停次数(不包括未开板的涨停)」; 「未开板」经 #FUNC_TDXStatZS L432 同源措辞确认为『未开板次新股』而非全部一字板——排除全部一字板反而劣化 0.9068→0.8078、排除开盘即封 0.7522, 证明 TDX 统计一字板。窗口口径: 个股自身最近243个交易日(含当日)最优; 市场交易日243=0.8637、日历365=0.8662、年初至今=0.5556。N尖峰: 240=0.8882/241=0.8977/242=0.9067/243=0.9077/244=0.8965/245=0.8863/247=0.8674。最终(N=243,ST=on): 全量0.9077、|Δ|≤1 0.9853、比值中位1.000000; 40采集日逐日0.8866-0.9179。容差0.006最优(放宽至0.030→0.8709); 前复权与不复权结果完全相同(0.8938/0.8938, 20320样本)。板块: 科创板0.9615/创业板0.9526/沪主板0.8870/深主板0.8333/北交所1.0000。残差: Δ股票级恒定(1023只中799只=78.1%恒定; 753恒0/32恒+1/11恒-1), 属结构性单日检测分歧; 大负值尾(Δ=-12/-24/-28/-60)为主板ST股5%涨停。涨跌幅规则权威源=hqrule.dat(ST10Date=99991231 ⇒ ST仍5%)",
+      "status": "verified"
     },
     {
       "code": "stat.unseal_date",
@@ -6195,9 +5539,9 @@
       ],
       "section": "1.1 tdxstat.cfg 标准契约表（stat.*，20260918 对撞定案）🆕",
       "canonical": "stat.zt_count",
-      "meaning": "涨停次数",
-      "unit": "次",
-      "status_raw": "✅",
+      "meaning": "几板(『几天几板』结构之『几板』; 官方 LastZTHzNum)",
+      "unit": "板",
+      "status_raw": "✅ ★V17.4.24(2026-09-24) L1结构铁证: 同 [31], 违反 [33]≤[32]≤[31] 的 0 例/8469样本; 分布 0:4680 1:2499 2:665 3:289 4:148 5:75…(见 round3 报告)",
       "status": "verified"
     },
     {
@@ -6208,9 +5552,9 @@
       ],
       "section": "1.1 tdxstat.cfg 标准契约表（stat.*，20260918 对撞定案）🆕",
       "canonical": "stat.zt_lianban",
-      "meaning": "连板数",
+      "meaning": "连板天(当前连续涨停天数)",
       "unit": "天",
-      "status_raw": "✅",
+      "status_raw": "✅ ★V17.4.24(2026-09-24) L1结构铁证: 8469样本违反 [33]≤[32]≤[31] 的 0 例; 分布 0:5552 1:2350 2:353 3:118 4:56…; 仅当前处于涨停时填充, 其余为空(非0)",
       "status": "verified"
     },
     {
@@ -6221,9 +5565,9 @@
       ],
       "section": "1.1 tdxstat.cfg 标准契约表（stat.*，20260918 对撞定案）🆕",
       "canonical": "stat.zt_streak_cycle",
-      "meaning": "涨停连板周期",
-      "unit": "-",
-      "status_raw": "✅",
+      "meaning": "几天(『几天几板』结构之『几天』)",
+      "unit": "天",
+      "status_raw": "✅ ★V17.4.24(2026-09-24) L1结构铁证: ihelp.dat #FUNC_GpJyValue L66「几天几板: 按第一次封板后三个交易日内又出现封板进行统计来计算几天几板」。三者齐全样本8469, 违反 [33]≤[32]≤[31] 的 0 例(0.0000)。Top组合(几天,几板,连板): (0,0,0)4680/(1,1,1)2016/(2,2,2)308/(2,1,0)270/(3,1,0)134/(3,3,3)108/(5,2,1)70。非空口径: [31]与[32]同时非空(14253样本), [33]仅当前涨停时填充(8469)",
       "status": "verified"
     },
     {
@@ -6253,67 +5597,10 @@
       "status": "unverified"
     },
     {
-      "code": "tdxstat.cfg",
-      "source": null,
-      "sources": [
-        "ZHB-tdxstat",
-        "ZHB-tdxstat2"
-      ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "status_raw": "",
-      "status": "unverified"
-    },
-    {
-      "code": "tdxstat2.cfg",
-      "source": null,
-      "sources": [
-        "ZHB-tdxstat",
-        "ZHB-tdxstat2"
-      ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "status_raw": "",
-      "status": "unverified"
-    },
-    {
-      "code": "tipinfo.dat",
-      "source": null,
-      "sources": [
-        "ZHB-tdxstat",
-        "ZHB-tdxstat2"
-      ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "status_raw": "",
-      "status": "unverified"
-    },
-    {
       "code": "unseal_date",
       "source": "ZHB-tdxstat",
       "sources": [
         "ZHB-tdxstat"
-      ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "status_raw": "",
-      "status": "unverified"
-    },
-    {
-      "code": "xgsg.cfg",
-      "source": null,
-      "sources": [
-        "ZHB-tdxstat",
-        "ZHB-tdxstat2",
-        "ZHB-tipinfo"
       ],
       "section": "",
       "canonical": "",
@@ -6794,84 +6081,6 @@
       "status": "unverified"
     },
     {
-      "code": "JSON",
-      "source": "ZHB-tipinfo",
-      "sources": [
-        "ZHB-tipinfo"
-      ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "status_raw": "",
-      "status": "unverified"
-    },
-    {
-      "code": "SQLite",
-      "source": "ZHB-tipinfo",
-      "sources": [
-        "ZHB-tipinfo"
-      ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "status_raw": "",
-      "status": "unverified"
-    },
-    {
-      "code": "addedcode_bj.cfg",
-      "source": "ZHB-tipinfo",
-      "sources": [
-        "ZHB-tipinfo"
-      ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "status_raw": "",
-      "status": "unverified"
-    },
-    {
-      "code": "brkcomp.dat",
-      "source": "ZHB-tipinfo",
-      "sources": [
-        "ZHB-tipinfo"
-      ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "status_raw": "",
-      "status": "unverified"
-    },
-    {
-      "code": "brkseat.dat",
-      "source": "ZHB-tipinfo",
-      "sources": [
-        "ZHB-tipinfo"
-      ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "status_raw": "",
-      "status": "unverified"
-    },
-    {
-      "code": "csiblock.dat",
-      "source": "ZHB-tipinfo",
-      "sources": [
-        "ZHB-tipinfo"
-      ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "status_raw": "",
-      "status": "unverified"
-    },
-    {
       "code": "disclose_date",
       "source": "ZHB-tipinfo",
       "sources": [
@@ -6976,188 +6185,6 @@
       "status": "unverified"
     },
     {
-      "code": "hkblock.dat",
-      "source": "ZHB-tipinfo",
-      "sources": [
-        "ZHB-tipinfo"
-      ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "status_raw": "",
-      "status": "unverified"
-    },
-    {
-      "code": "hkzsinfo.cfg",
-      "source": "ZHB-tipinfo",
-      "sources": [
-        "ZHB-tipinfo"
-      ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "status_raw": "",
-      "status": "unverified"
-    },
-    {
-      "code": "hqrule.dat",
-      "source": "ZHB-tipinfo",
-      "sources": [
-        "ZHB-tipinfo"
-      ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "status_raw": "",
-      "status": "unverified"
-    },
-    {
-      "code": "hspy.dat",
-      "source": "ZHB-tipinfo",
-      "sources": [
-        "ZHB-tipinfo"
-      ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "status_raw": "",
-      "status": "unverified"
-    },
-    {
-      "code": "ilong.dat",
-      "source": "ZHB-tipinfo",
-      "sources": [
-        "ZHB-tipinfo"
-      ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "status_raw": "",
-      "status": "unverified"
-    },
-    {
-      "code": "importzs.cfg",
-      "source": "ZHB-tipinfo",
-      "sources": [
-        "ZHB-tipinfo"
-      ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "status_raw": "",
-      "status": "unverified"
-    },
-    {
-      "code": "incon.dat",
-      "source": "ZHB-tipinfo",
-      "sources": [
-        "ZHB-tipinfo"
-      ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "status_raw": "",
-      "status": "unverified"
-    },
-    {
-      "code": "jjblock.dat",
-      "source": "ZHB-tipinfo",
-      "sources": [
-        "ZHB-tipinfo"
-      ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "status_raw": "",
-      "status": "unverified"
-    },
-    {
-      "code": "mgblock.dat",
-      "source": "ZHB-tipinfo",
-      "sources": [
-        "ZHB-tipinfo"
-      ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "status_raw": "",
-      "status": "unverified"
-    },
-    {
-      "code": "needini.dat",
-      "source": "ZHB-tipinfo",
-      "sources": [
-        "ZHB-tipinfo"
-      ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "status_raw": "",
-      "status": "unverified"
-    },
-    {
-      "code": "neednote.dat",
-      "source": "ZHB-tipinfo",
-      "sources": [
-        "ZHB-tipinfo"
-      ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "status_raw": "",
-      "status": "unverified"
-    },
-    {
-      "code": "othersg.cfg",
-      "source": "ZHB-tipinfo",
-      "sources": [
-        "ZHB-tipinfo"
-      ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "status_raw": "",
-      "status": "unverified"
-    },
-    {
-      "code": "pttab.dat",
-      "source": "ZHB-tipinfo",
-      "sources": [
-        "ZHB-tipinfo"
-      ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "status_raw": "",
-      "status": "unverified"
-    },
-    {
-      "code": "relation.dat",
-      "source": "ZHB-tipinfo",
-      "sources": [
-        "ZHB-tipinfo"
-      ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "status_raw": "",
-      "status": "unverified"
-    },
-    {
       "code": "report_period",
       "source": "ZHB-tipinfo",
       "sources": [
@@ -7171,215 +6198,7 @@
       "status": "unverified"
     },
     {
-      "code": "sbblock.dat",
-      "source": "ZHB-tipinfo",
-      "sources": [
-        "ZHB-tipinfo"
-      ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "status_raw": "",
-      "status": "unverified"
-    },
-    {
-      "code": "sgxblock.dat",
-      "source": "ZHB-tipinfo",
-      "sources": [
-        "ZHB-tipinfo"
-      ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "status_raw": "",
-      "status": "unverified"
-    },
-    {
-      "code": "spblock.dat",
-      "source": "ZHB-tipinfo",
-      "sources": [
-        "ZHB-tipinfo"
-      ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "status_raw": "",
-      "status": "unverified"
-    },
-    {
       "code": "suspend_major_event_date",
-      "source": "ZHB-tipinfo",
-      "sources": [
-        "ZHB-tipinfo"
-      ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "status_raw": "",
-      "status": "unverified"
-    },
-    {
-      "code": "tdxadr.cfg",
-      "source": "ZHB-tipinfo",
-      "sources": [
-        "ZHB-tipinfo"
-      ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "status_raw": "",
-      "status": "unverified"
-    },
-    {
-      "code": "tdxahrate.cfg",
-      "source": "ZHB-tipinfo",
-      "sources": [
-        "ZHB-tipinfo"
-      ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "status_raw": "",
-      "status": "unverified"
-    },
-    {
-      "code": "tdxbjmore.cfg",
-      "source": "ZHB-tipinfo",
-      "sources": [
-        "ZHB-tipinfo"
-      ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "status_raw": "",
-      "status": "unverified"
-    },
-    {
-      "code": "tdxchain.cfg",
-      "source": "ZHB-tipinfo",
-      "sources": [
-        "ZHB-tipinfo"
-      ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "status_raw": "",
-      "status": "unverified"
-    },
-    {
-      "code": "tdxdszs.cfg",
-      "source": "ZHB-tipinfo",
-      "sources": [
-        "ZHB-tipinfo"
-      ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "status_raw": "",
-      "status": "unverified"
-    },
-    {
-      "code": "tdxhkag.cfg",
-      "source": "ZHB-tipinfo",
-      "sources": [
-        "ZHB-tipinfo"
-      ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "status_raw": "",
-      "status": "unverified"
-    },
-    {
-      "code": "tdxhy.cfg",
-      "source": "ZHB-tipinfo",
-      "sources": [
-        "ZHB-tipinfo"
-      ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "status_raw": "",
-      "status": "unverified"
-    },
-    {
-      "code": "tdxmgag.cfg",
-      "source": "ZHB-tipinfo",
-      "sources": [
-        "ZHB-tipinfo"
-      ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "status_raw": "",
-      "status": "unverified"
-    },
-    {
-      "code": "tdxpkmore.cfg",
-      "source": "ZHB-tipinfo",
-      "sources": [
-        "ZHB-tipinfo"
-      ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "status_raw": "",
-      "status": "unverified"
-    },
-    {
-      "code": "tdxsbzs.cfg",
-      "source": "ZHB-tipinfo",
-      "sources": [
-        "ZHB-tipinfo"
-      ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "status_raw": "",
-      "status": "unverified"
-    },
-    {
-      "code": "tdxzs.cfg",
-      "source": "ZHB-tipinfo",
-      "sources": [
-        "ZHB-tipinfo"
-      ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "status_raw": "",
-      "status": "unverified"
-    },
-    {
-      "code": "tdxzs3.cfg",
-      "source": "ZHB-tipinfo",
-      "sources": [
-        "ZHB-tipinfo"
-      ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "status_raw": "",
-      "status": "unverified"
-    },
-    {
-      "code": "tend_std.cfg",
       "source": "ZHB-tipinfo",
       "sources": [
         "ZHB-tipinfo"
@@ -7561,32 +6380,6 @@
       "status": "verified"
     },
     {
-      "code": "ukblock.dat",
-      "source": "ZHB-tipinfo",
-      "sources": [
-        "ZHB-tipinfo"
-      ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "status_raw": "",
-      "status": "unverified"
-    },
-    {
-      "code": "zip",
-      "source": "ZHB-tipinfo",
-      "sources": [
-        "ZHB-tipinfo"
-      ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "status_raw": "",
-      "status": "unverified"
-    },
-    {
       "code": "zt_date_recent",
       "source": "ZHB-tipinfo",
       "sources": [
@@ -7627,9 +6420,8 @@
     },
     {
       "code": "[37]",
-      "source": null,
+      "source": "腾讯(qt.gtimg)",
       "sources": [
-        "新浪(hq.sinajs)",
         "腾讯(qt.gtimg)"
       ],
       "section": "12.1 腾讯 qt.gtimg.cn 完整字段字典（88 字段）",
@@ -7641,9 +6433,8 @@
     },
     {
       "code": "[38]",
-      "source": null,
+      "source": "腾讯(qt.gtimg)",
       "sources": [
-        "新浪(hq.sinajs)",
         "腾讯(qt.gtimg)"
       ],
       "section": "12.1 腾讯 qt.gtimg.cn 完整字段字典（88 字段）",
@@ -7655,9 +6446,8 @@
     },
     {
       "code": "[39]",
-      "source": null,
+      "source": "腾讯(qt.gtimg)",
       "sources": [
-        "新浪(hq.sinajs)",
         "腾讯(qt.gtimg)"
       ],
       "section": "12.1 腾讯 qt.gtimg.cn 完整字段字典（88 字段）",
@@ -7675,10 +6465,10 @@
       ],
       "section": "12.1 腾讯 qt.gtimg.cn 完整字段字典（88 字段）",
       "canonical": "[40]",
-      "meaning": "待破解",
+      "meaning": "已到期/退市标记('D'=已到期或退市, 正常标的为空)",
       "unit": "-",
-      "status_raw": "",
-      "status": "unverified"
+      "status_raw": "V17.4.24(2026-09-24) L3 ★V17.4.24: 501000/113050/128036 为 'D'(LOF/转债), 正常A股为空",
+      "status": "verified"
     },
     {
       "code": "[41]",
@@ -7721,9 +6511,8 @@
     },
     {
       "code": "[44]",
-      "source": null,
+      "source": "腾讯(qt.gtimg)",
       "sources": [
-        "新浪(hq.sinajs)",
         "腾讯(qt.gtimg)"
       ],
       "section": "12.1 腾讯 qt.gtimg.cn 完整字段字典（88 字段）",
@@ -7735,9 +6524,8 @@
     },
     {
       "code": "[45]",
-      "source": null,
+      "source": "腾讯(qt.gtimg)",
       "sources": [
-        "新浪(hq.sinajs)",
         "腾讯(qt.gtimg)"
       ],
       "section": "12.1 腾讯 qt.gtimg.cn 完整字段字典（88 字段）",
@@ -7749,9 +6537,8 @@
     },
     {
       "code": "[46]",
-      "source": null,
+      "source": "腾讯(qt.gtimg)",
       "sources": [
-        "新浪(hq.sinajs)",
         "腾讯(qt.gtimg)"
       ],
       "section": "12.1 腾讯 qt.gtimg.cn 完整字段字典（88 字段）",
@@ -7789,9 +6576,8 @@
     },
     {
       "code": "[49]",
-      "source": null,
+      "source": "腾讯(qt.gtimg)",
       "sources": [
-        "新浪(hq.sinajs)",
         "腾讯(qt.gtimg)"
       ],
       "section": "12.1 腾讯 qt.gtimg.cn 完整字段字典（88 字段）",
@@ -7803,9 +6589,8 @@
     },
     {
       "code": "[50]",
-      "source": null,
+      "source": "腾讯(qt.gtimg)",
       "sources": [
-        "新浪(hq.sinajs)",
         "腾讯(qt.gtimg)"
       ],
       "section": "12.1 腾讯 qt.gtimg.cn 完整字段字典（88 字段）",
@@ -7830,9 +6615,8 @@
     },
     {
       "code": "[52]",
-      "source": null,
+      "source": "腾讯(qt.gtimg)",
       "sources": [
-        "新浪(hq.sinajs)",
         "腾讯(qt.gtimg)"
       ],
       "section": "12.1 腾讯 qt.gtimg.cn 完整字段字典（88 字段）",
@@ -7844,9 +6628,8 @@
     },
     {
       "code": "[53]",
-      "source": null,
+      "source": "腾讯(qt.gtimg)",
       "sources": [
-        "新浪(hq.sinajs)",
         "腾讯(qt.gtimg)"
       ],
       "section": "12.1 腾讯 qt.gtimg.cn 完整字段字典（88 字段）",
@@ -7864,10 +6647,10 @@
       ],
       "section": "12.1 腾讯 qt.gtimg.cn 完整字段字典（88 字段）",
       "canonical": "[54]-[55]",
-      "meaning": "未知(恒空)",
+      "meaning": "港股/美股专属占位(A股恒空)",
       "unit": "-",
-      "status_raw": "",
-      "status": "unverified"
+      "status_raw": "V17.4.24(2026-09-24) L3 ★V17.4.24: 15品种横切验证——[54]/[55]仅港股/美股填充, A股恒空; [29]仅港股",
+      "status": "verified"
     },
     {
       "code": "[55]",
@@ -7964,9 +6747,8 @@
     },
     {
       "code": "[62]",
-      "source": null,
+      "source": "腾讯(qt.gtimg)",
       "sources": [
-        "新浪(hq.sinajs)",
         "腾讯(qt.gtimg)"
       ],
       "section": "12.1 腾讯 qt.gtimg.cn 完整字段字典（88 字段）",
@@ -7978,9 +6760,8 @@
     },
     {
       "code": "[63]",
-      "source": null,
+      "source": "腾讯(qt.gtimg)",
       "sources": [
-        "新浪(hq.sinajs)",
         "腾讯(qt.gtimg)"
       ],
       "section": "12.1 腾讯 qt.gtimg.cn 完整字段字典（88 字段）",
@@ -8031,9 +6812,8 @@
     },
     {
       "code": "[67]",
-      "source": null,
+      "source": "腾讯(qt.gtimg)",
       "sources": [
-        "新浪(hq.sinajs)",
         "腾讯(qt.gtimg)"
       ],
       "section": "12.1 腾讯 qt.gtimg.cn 完整字段字典（88 字段）",
@@ -8045,9 +6825,8 @@
     },
     {
       "code": "[68]",
-      "source": null,
+      "source": "腾讯(qt.gtimg)",
       "sources": [
-        "新浪(hq.sinajs)",
         "腾讯(qt.gtimg)"
       ],
       "section": "12.1 腾讯 qt.gtimg.cn 完整字段字典（88 字段）",
@@ -8072,9 +6851,8 @@
     },
     {
       "code": "[70]",
-      "source": null,
+      "source": "腾讯(qt.gtimg)",
       "sources": [
-        "新浪(hq.sinajs)",
         "腾讯(qt.gtimg)"
       ],
       "section": "12.1 腾讯 qt.gtimg.cn 完整字段字典（88 字段）",
@@ -8086,9 +6864,8 @@
     },
     {
       "code": "[71]",
-      "source": null,
+      "source": "腾讯(qt.gtimg)",
       "sources": [
-        "新浪(hq.sinajs)",
         "腾讯(qt.gtimg)"
       ],
       "section": "12.1 腾讯 qt.gtimg.cn 完整字段字典（88 字段）",
@@ -8100,9 +6877,8 @@
     },
     {
       "code": "[72]",
-      "source": null,
+      "source": "腾讯(qt.gtimg)",
       "sources": [
-        "新浪(hq.sinajs)",
         "腾讯(qt.gtimg)"
       ],
       "section": "12.1 腾讯 qt.gtimg.cn 完整字段字典（88 字段）",
@@ -8114,9 +6890,8 @@
     },
     {
       "code": "[73]",
-      "source": null,
+      "source": "腾讯(qt.gtimg)",
       "sources": [
-        "新浪(hq.sinajs)",
         "腾讯(qt.gtimg)"
       ],
       "section": "12.1 腾讯 qt.gtimg.cn 完整字段字典（88 字段）",
@@ -8173,10 +6948,10 @@
       ],
       "section": "12.1 腾讯 qt.gtimg.cn 完整字段字典（88 字段）",
       "canonical": "[77]-[78]",
-      "meaning": "未知(恒空)",
-      "unit": "-",
-      "status_raw": "",
-      "status": "unverified"
+      "meaning": "折溢价率%(ETF=(现价[3]−[78])/[78]×100; LOF/基金=(现价[3]−[81])/[81]×100)",
+      "unit": "%",
+      "status_raw": "✅ V17.4.24(2026-09-24) L1 ★V17.4.24 L1铁证(推翻此前『恒空·无信息量』结论): ETF 27/27 精确、LOF 6/6 精确。样例: sh510300 [3]=4.515 [78]=4.5156 [77]=-0.01 vs 复现-0.0133✓; sh513100纳指ETF [77]=+12.86 vs +12.8576✓; sh513500标普500ETF [77]=+9.08 vs +9.0791✓; sh511880 [78]空/[81]=100.8293 [77]=-0.00 vs -0.0003✓。QDII高溢价(纳指+12.86%/标普+9.08%)构成独立强佐证。填充品种=仅ETF",
+      "status": "verified"
     },
     {
       "code": "[78]",
@@ -8186,10 +6961,10 @@
       ],
       "section": "",
       "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "status_raw": "",
-      "status": "unverified"
+      "meaning": "ETF IOPV 参考净值",
+      "unit": "元",
+      "status_raw": "✅ V17.4.24(2026-09-24) L1 ★V17.4.24: 作为 [77] 的基准, ETF 27/27 精确复现 [77]。填充品种=仅ETF",
+      "status": "verified"
     },
     {
       "code": "[79]",
@@ -8206,9 +6981,8 @@
     },
     {
       "code": "[80]",
-      "source": null,
+      "source": "腾讯(qt.gtimg)",
       "sources": [
-        "新浪(hq.sinajs)",
         "腾讯(qt.gtimg)"
       ],
       "section": "12.1 腾讯 qt.gtimg.cn 完整字段字典（88 字段）",
@@ -8226,10 +7000,10 @@
       ],
       "section": "12.1 腾讯 qt.gtimg.cn 完整字段字典（88 字段）",
       "canonical": "[81]",
-      "meaning": "未知(恒空)",
-      "unit": "-",
-      "status_raw": "",
-      "status": "unverified"
+      "meaning": "LOF/基金 单位净值",
+      "unit": "元",
+      "status_raw": "✅ V17.4.24(2026-09-24) L1 ★V17.4.24: 作为 LOF 的 [77] 基准, LOF 6/6 精确复现。填充品种=LOF/基金",
+      "status": "verified"
     },
     {
       "code": "[82]",
@@ -8252,10 +7026,10 @@
       ],
       "section": "12.1 腾讯 qt.gtimg.cn 完整字段字典（88 字段）",
       "canonical": "[83]",
-      "meaning": "未知(恒0)",
+      "meaning": "恒0保留占位符(无信息量)",
       "unit": "-",
-      "status_raw": "",
-      "status": "unverified"
+      "status_raw": "✅ V17.4.24(2026-09-24) 定案为占位符 ★V17.4.24: 16个品种(ETF/转债/国债/REITs/CDR)全为0, 确认无信息量",
+      "status": "verified"
     },
     {
       "code": "[84]",
@@ -8724,7 +7498,6 @@
       "code": "f127",
       "source": null,
       "sources": [
-        "AxData",
         "东财-push2(stock/get)",
         "东财-ulist239(np/get)"
       ],
@@ -8755,7 +7528,6 @@
       "code": "f129",
       "source": null,
       "sources": [
-        "AxData",
         "东财-push2(stock/get)",
         "东财-ulist239(np/get)"
       ],
@@ -8886,7 +7658,6 @@
       "code": "f137",
       "source": null,
       "sources": [
-        "AxData",
         "东财-push2(stock/get)",
         "东财-ulist239(np/get)",
         "东财-资金流(em_fund_flow)"
@@ -8902,7 +7673,6 @@
       "code": "f138",
       "source": null,
       "sources": [
-        "AxData",
         "东财-push2(stock/get)",
         "东财-ulist239(np/get)",
         "东财-资金流(em_fund_flow)"
@@ -8918,7 +7688,6 @@
       "code": "f139",
       "source": null,
       "sources": [
-        "AxData",
         "东财-push2(stock/get)",
         "东财-ulist239(np/get)",
         "东财-资金流(em_fund_flow)"
@@ -8934,7 +7703,6 @@
       "code": "f140",
       "source": null,
       "sources": [
-        "AxData",
         "东财-clist",
         "东财-push2(stock/get)",
         "东财-slist",
@@ -8952,7 +7720,6 @@
       "code": "f141",
       "source": null,
       "sources": [
-        "AxData",
         "东财-clist",
         "东财-push2(stock/get)",
         "东财-ulist239(np/get)",
@@ -8969,7 +7736,6 @@
       "code": "f142",
       "source": null,
       "sources": [
-        "AxData",
         "东财-push2(stock/get)",
         "东财-ulist239(np/get)",
         "东财-资金流(em_fund_flow)"
@@ -8985,7 +7751,6 @@
       "code": "f143",
       "source": null,
       "sources": [
-        "AxData",
         "东财-push2(stock/get)",
         "东财-ulist239(np/get)",
         "东财-资金流(em_fund_flow)"
@@ -9001,7 +7766,6 @@
       "code": "f144",
       "source": null,
       "sources": [
-        "AxData",
         "东财-push2(stock/get)",
         "东财-ulist239(np/get)",
         "东财-资金流(em_fund_flow)"
@@ -9017,7 +7781,6 @@
       "code": "f145",
       "source": null,
       "sources": [
-        "AxData",
         "东财-push2(stock/get)",
         "东财-ulist239(np/get)",
         "东财-资金流(em_fund_flow)"
@@ -9033,7 +7796,6 @@
       "code": "f146",
       "source": null,
       "sources": [
-        "AxData",
         "东财-push2(stock/get)",
         "东财-ulist239(np/get)",
         "东财-资金流(em_fund_flow)"
@@ -9231,9 +7993,9 @@
       "code": "f162",
       "source": null,
       "sources": [
-        "AxData",
         "东财-push2(stock/get)",
-        "东财-ulist239(np/get)"
+        "东财-ulist239(np/get)",
+        "开盘啦(kpl)"
       ],
       "section": "12.3.1.2 push2 × ulist/tencent 全量对撞再确认（2026-09-04，修复锚池）",
       "canonical": "f162",
@@ -9246,9 +8008,9 @@
       "code": "f163",
       "source": null,
       "sources": [
-        "AxData",
         "东财-push2(stock/get)",
-        "东财-ulist239(np/get)"
+        "东财-ulist239(np/get)",
+        "开盘啦(kpl)"
       ],
       "section": "12.3.1.2 push2 × ulist/tencent 全量对撞再确认（2026-09-04，修复锚池）",
       "canonical": "f163",
@@ -9261,7 +8023,6 @@
       "code": "f164",
       "source": null,
       "sources": [
-        "AxData",
         "东财-clist",
         "东财-push2(stock/get)",
         "东财-ulist239(np/get)"
@@ -9277,7 +8038,6 @@
       "code": "f165",
       "source": null,
       "sources": [
-        "AxData",
         "东财-clist",
         "东财-push2(stock/get)",
         "东财-ulist239(np/get)"
@@ -9293,7 +8053,6 @@
       "code": "f166",
       "source": null,
       "sources": [
-        "AxData",
         "东财-push2(stock/get)",
         "东财-ulist239(np/get)"
       ],
@@ -9308,7 +8067,6 @@
       "code": "f167",
       "source": null,
       "sources": [
-        "AxData",
         "东财-push2(stock/get)",
         "东财-ulist239(np/get)"
       ],
@@ -12929,6 +11687,22 @@
       "status": "unverified"
     },
     {
+      "code": "close",
+      "source": null,
+      "sources": [
+        "TDX-eltdx(适配层)",
+        "东财-datacenter(英文键)",
+        "东财-热榜(em_hot)",
+        "新浪(扩展API)"
+      ],
+      "section": "12.3.3 日K线 `stock/kline/get`（🆕 V17.0.14 新增——CYQ 筹码分布数据入口）",
+      "canonical": "highs`/`lows` 用 close 近似",
+      "meaning": "收盘价 / 涨跌额",
+      "unit": "",
+      "status_raw": "✅",
+      "status": "verified"
+    },
+    {
       "code": "hold_ratio",
       "source": "东财-datacenter(英文键)",
       "sources": [
@@ -13466,9 +12240,10 @@
     },
     {
       "code": "vol",
-      "source": "东财-datacenter(英文键)",
+      "source": null,
       "sources": [
-        "东财-datacenter(英文键)"
+        "东财-datacenter(英文键)",
+        "开盘啦(kpl)"
       ],
       "section": "",
       "canonical": "",
@@ -14776,19 +13551,6 @@
       "status": "unverified"
     },
     {
-      "code": "ID",
-      "source": "东财-热榜(em_hot)",
-      "sources": [
-        "东财-热榜(em_hot)"
-      ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "status_raw": "",
-      "status": "unverified"
-    },
-    {
       "code": "change_rate",
       "source": null,
       "sources": [
@@ -14952,9 +13714,8 @@
       "source": null,
       "sources": [
         "同花顺-fuyao",
-        "TDX-eltdx(适配层)",
-        "levistock(ftshare)",
-        "东财-热榜(em_hot)"
+        "东财-热榜(em_hot)",
+        "财联社(cls)"
       ],
       "section": "12.8.12 同花顺（热点/北向/涨停揭秘/热榜/EPS）✅",
       "canonical": "is_new",
@@ -15100,9 +13861,9 @@
       "sources": [
         "同花顺-fuyao",
         "TDX-eltdx(适配层)",
-        "levistock(ftshare)",
         "东财-热榜(em_hot)",
-        "市场源(market_sources)"
+        "市场源(market_sources)",
+        "财联社(cls)"
       ],
       "section": "12.8.12h 东财人气榜 em_hot_rank 原始字段补录（V17.1.1 全量登记）",
       "canonical": "rank",
@@ -15218,18 +13979,22 @@
       "status": "verified"
     },
     {
-      "code": "tipinfo",
+      "code": "time",
       "source": null,
       "sources": [
         "TDX-eltdx(适配层)",
-        "东财-热榜(em_hot)"
+        "levistock(ftshare)",
+        "东财-热榜(em_hot)",
+        "市场源(market_sources)",
+        "开盘啦(kpl)",
+        "财联社(cls)"
       ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
+      "section": "12.8.12 同花顺（热点/北向/涨停揭秘/热榜/EPS）✅",
+      "canonical": "time",
+      "meaning": "分钟时间点",
       "unit": "",
-      "status_raw": "",
-      "status": "unverified"
+      "status_raw": "✅",
+      "status": "verified"
     },
     {
       "code": "zhangdie",
@@ -15259,44 +14024,16 @@
     },
     {
       "code": "BPS",
-      "source": null,
-      "sources": [
-        "同花顺-fuyao",
-        "levistock(ftshare)"
-      ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "status_raw": "",
-      "status": "unverified"
-    },
-    {
-      "code": "EPS",
-      "source": null,
-      "sources": [
-        "同花顺-fuyao",
-        "levistock(ftshare)"
-      ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "status_raw": "",
-      "status": "unverified"
-    },
-    {
-      "code": "TTM",
       "source": "同花顺-fuyao",
       "sources": [
         "同花顺-fuyao"
       ],
-      "section": "12.8.12e 规范字段注册表（canonical registry，跨源唯一语义名）🆕",
-      "canonical": "市盈率（TTM）",
+      "section": "",
+      "canonical": "",
       "meaning": "",
       "unit": "",
-      "status_raw": "✅",
-      "status": "verified"
+      "status_raw": "",
+      "status": "unverified"
     },
     {
       "code": "accounts_receivable",
@@ -15330,7 +14067,8 @@
       "sources": [
         "同花顺-fuyao",
         "levistock(ftshare)",
-        "市场源(market_sources)"
+        "市场源(market_sources)",
+        "开盘啦(kpl)"
       ],
       "section": "",
       "canonical": "",
@@ -15496,6 +14234,19 @@
       "status": "unverified"
     },
     {
+      "code": "auction_turnover_pct",
+      "source": "同花顺-fuyao",
+      "sources": [
+        "同花顺-fuyao"
+      ],
+      "section": "",
+      "canonical": "",
+      "meaning": "",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified"
+    },
+    {
       "code": "auction_unmatched",
       "source": "同花顺-fuyao",
       "sources": [
@@ -15510,6 +14261,32 @@
     },
     {
       "code": "auction_volume",
+      "source": "同花顺-fuyao",
+      "sources": [
+        "同花顺-fuyao"
+      ],
+      "section": "",
+      "canonical": "",
+      "meaning": "",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified"
+    },
+    {
+      "code": "auction_volume_ratio",
+      "source": "同花顺-fuyao",
+      "sources": [
+        "同花顺-fuyao"
+      ],
+      "section": "",
+      "canonical": "",
+      "meaning": "",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified"
+    },
+    {
+      "code": "auction_yesterday_ratio_pct",
       "source": "同花顺-fuyao",
       "sources": [
         "同花顺-fuyao"
@@ -15712,6 +14489,19 @@
       ],
       "section": "12.8.12c THS 官方金融数据 REST API（fuyao.aicubes.cn，2026-08-10 实测 7 接口 → V17.0.5 契约全量镜像 62 端点）🆕",
       "canonical": "a-share-index/constituents/ths-stock-list",
+      "meaning": "",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified"
+    },
+    {
+      "code": "continue_day_cnt",
+      "source": "同花顺-fuyao",
+      "sources": [
+        "同花顺-fuyao"
+      ],
+      "section": "",
+      "canonical": "",
       "meaning": "",
       "unit": "",
       "status_raw": "",
@@ -16045,6 +14835,19 @@
       "status": "unverified"
     },
     {
+      "code": "float_market_cap",
+      "source": "同花顺-fuyao",
+      "sources": [
+        "同花顺-fuyao"
+      ],
+      "section": "",
+      "canonical": "",
+      "meaning": "",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified"
+    },
+    {
       "code": "fund/companies/detail",
       "source": "同花顺-fuyao",
       "sources": [
@@ -16279,6 +15082,20 @@
       "status": "unverified"
     },
     {
+      "code": "high_price",
+      "source": null,
+      "sources": [
+        "同花顺-fuyao",
+        "TDX-eltdx(适配层)"
+      ],
+      "section": "",
+      "canonical": "",
+      "meaning": "",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified"
+    },
+    {
       "code": "historical",
       "source": "同花顺-fuyao",
       "sources": [
@@ -16423,10 +15240,9 @@
     },
     {
       "code": "is_st",
-      "source": null,
+      "source": "同花顺-fuyao",
       "sources": [
-        "同花顺-fuyao",
-        "TDX-eltdx(适配层)"
+        "同花顺-fuyao"
       ],
       "section": "",
       "canonical": "",
@@ -16505,6 +15321,7 @@
       "source": null,
       "sources": [
         "同花顺-fuyao",
+        "开盘啦(kpl)",
         "财联社(cls)"
       ],
       "section": "12.8.12c THS 官方金融数据 REST API（fuyao.aicubes.cn，2026-08-10 实测 7 接口 → V17.0.5 契约全量镜像 62 端点）🆕",
@@ -16519,6 +15336,20 @@
       "source": "同花顺-fuyao",
       "sources": [
         "同花顺-fuyao"
+      ],
+      "section": "",
+      "canonical": "",
+      "meaning": "",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified"
+    },
+    {
+      "code": "low_price",
+      "source": null,
+      "sources": [
+        "同花顺-fuyao",
+        "TDX-eltdx(适配层)"
       ],
       "section": "",
       "canonical": "",
@@ -16749,6 +15580,20 @@
       "status": "unverified"
     },
     {
+      "code": "open_price",
+      "source": null,
+      "sources": [
+        "同花顺-fuyao",
+        "TDX-eltdx(适配层)"
+      ],
+      "section": "12.13.10 eltdx Helpers 净新增字段破解（V17.2.15 实测，collect_eltdx 采集 + 黄金锚对撞）",
+      "canonical": "open_price",
+      "meaning": "",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified"
+    },
+    {
       "code": "open_times",
       "source": null,
       "sources": [
@@ -16880,6 +15725,45 @@
       "status": "unverified"
     },
     {
+      "code": "pb_mrq",
+      "source": "同花顺-fuyao",
+      "sources": [
+        "同花顺-fuyao"
+      ],
+      "section": "",
+      "canonical": "",
+      "meaning": "",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified"
+    },
+    {
+      "code": "pcf_ttm",
+      "source": "同花顺-fuyao",
+      "sources": [
+        "同花顺-fuyao"
+      ],
+      "section": "",
+      "canonical": "",
+      "meaning": "",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified"
+    },
+    {
+      "code": "pe_mrq",
+      "source": "同花顺-fuyao",
+      "sources": [
+        "同花顺-fuyao"
+      ],
+      "section": "",
+      "canonical": "",
+      "meaning": "",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified"
+    },
+    {
       "code": "per_share_bonus",
       "source": "同花顺-fuyao",
       "sources": [
@@ -16902,6 +15786,19 @@
       "section": "12.10.2 财联社市场情绪（market_emotion_cls）🆕",
       "canonical": "performance",
       "meaning": "昨涨停今表现",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified"
+    },
+    {
+      "code": "period",
+      "source": "同花顺-fuyao",
+      "sources": [
+        "同花顺-fuyao"
+      ],
+      "section": "",
+      "canonical": "",
+      "meaning": "",
       "unit": "",
       "status_raw": "",
       "status": "unverified"
@@ -16935,6 +15832,32 @@
     },
     {
       "code": "prev_price",
+      "source": "同花顺-fuyao",
+      "sources": [
+        "同花顺-fuyao"
+      ],
+      "section": "",
+      "canonical": "",
+      "meaning": "",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified"
+    },
+    {
+      "code": "price_change",
+      "source": "同花顺-fuyao",
+      "sources": [
+        "同花顺-fuyao"
+      ],
+      "section": "",
+      "canonical": "",
+      "meaning": "",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified"
+    },
+    {
+      "code": "price_change_ratio_pct",
       "source": "同花顺-fuyao",
       "sources": [
         "同花顺-fuyao"
@@ -17052,6 +15975,19 @@
       "status": "unverified"
     },
     {
+      "code": "ps_ttm",
+      "source": "同花顺-fuyao",
+      "sources": [
+        "同花顺-fuyao"
+      ],
+      "section": "",
+      "canonical": "",
+      "meaning": "",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified"
+    },
+    {
       "code": "quick_ratio",
       "source": "同花顺-fuyao",
       "sources": [
@@ -17082,7 +16018,7 @@
       "source": null,
       "sources": [
         "同花顺-fuyao",
-        "levistock(ftshare)"
+        "财联社(cls)"
       ],
       "section": "",
       "canonical": "",
@@ -17217,6 +16153,20 @@
       "section": "",
       "canonical": "",
       "meaning": "",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified"
+    },
+    {
+      "code": "seal_money",
+      "source": null,
+      "sources": [
+        "同花顺-fuyao",
+        "levistock(ftshare)"
+      ],
+      "section": "12.10.4 开盘红复盘（get_zttt 涨停天梯 / get_pmsl 盘面梳理 / get_his_limit_resumption 历史涨停复盘）🆕",
+      "canonical": "seal_amount / seal_money",
+      "meaning": "待破解",
       "unit": "",
       "status_raw": "",
       "status": "unverified"
@@ -17421,7 +16371,8 @@
       "source": null,
       "sources": [
         "同花顺-fuyao",
-        "levistock(ftshare)"
+        "levistock(ftshare)",
+        "开盘啦(kpl)"
       ],
       "section": "",
       "canonical": "",
@@ -17574,6 +16525,22 @@
       "status": "unverified"
     },
     {
+      "code": "turnover",
+      "source": null,
+      "sources": [
+        "同花顺-fuyao",
+        "levistock(ftshare)",
+        "开盘啦(kpl)",
+        "新浪(扩展API)"
+      ],
+      "section": "12.10.4 开盘红复盘（get_zttt 涨停天梯 / get_pmsl 盘面梳理 / get_his_limit_resumption 历史涨停复盘）🆕",
+      "canonical": "turnover / turnover_rate",
+      "meaning": "成交额 / 换手率%",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified"
+    },
+    {
       "code": "turnover_ratio_pct",
       "source": "同花顺-fuyao",
       "sources": [
@@ -17691,46 +16658,7 @@
       "status": "unverified"
     },
     {
-      "code": "ask",
-      "source": "财联社(cls)",
-      "sources": [
-        "财联社(cls)"
-      ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "status_raw": "",
-      "status": "unverified"
-    },
-    {
-      "code": "ask_vol",
-      "source": "财联社(cls)",
-      "sources": [
-        "财联社(cls)"
-      ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "status_raw": "",
-      "status": "unverified"
-    },
-    {
-      "code": "bid",
-      "source": "财联社(cls)",
-      "sources": [
-        "财联社(cls)"
-      ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "status_raw": "",
-      "status": "unverified"
-    },
-    {
-      "code": "bid_vol",
+      "code": "catalyst",
       "source": "财联社(cls)",
       "sources": [
         "财联社(cls)"
@@ -17747,6 +16675,7 @@
       "source": null,
       "sources": [
         "levistock(ftshare)",
+        "开盘啦(kpl)",
         "财联社(cls)"
       ],
       "section": "12.8.13 财联社快讯（cls.cn v1 API + 本地签名）✅",
@@ -17770,20 +16699,7 @@
       "status": "verified"
     },
     {
-      "code": "delta",
-      "source": "财联社(cls)",
-      "sources": [
-        "财联社(cls)"
-      ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "status_raw": "",
-      "status": "unverified"
-    },
-    {
-      "code": "gamma",
+      "code": "cur_heat",
       "source": "财联社(cls)",
       "sources": [
         "财联社(cls)"
@@ -17809,10 +16725,147 @@
       "status": "unverified"
     },
     {
-      "code": "item_tongbi",
-      "source": "财联社(cls)",
+      "code": "plate_code",
+      "source": null,
       "sources": [
+        "levistock(ftshare)",
+        "市场源(market_sources)",
         "财联社(cls)"
+      ],
+      "section": "12.10.7a 市场源 market_sources 原始字段补录（V17.1.1 全量登记）",
+      "canonical": "plate_code",
+      "meaning": "板块代码",
+      "unit": "",
+      "status_raw": "✅",
+      "status": "verified"
+    },
+    {
+      "code": "plate_name",
+      "source": null,
+      "sources": [
+        "市场源(market_sources)",
+        "财联社(cls)"
+      ],
+      "section": "12.10.7a 市场源 market_sources 原始字段补录（V17.1.1 全量登记）",
+      "canonical": "plate_name",
+      "meaning": "板块名称",
+      "unit": "",
+      "status_raw": "✅",
+      "status": "verified"
+    },
+    {
+      "code": "plates",
+      "source": null,
+      "sources": [
+        "市场源(market_sources)",
+        "财联社(cls)"
+      ],
+      "section": "12.10.7a 市场源 market_sources 原始字段补录（V17.1.1 全量登记）",
+      "canonical": "plates",
+      "meaning": "相关板块列表",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified"
+    },
+    {
+      "code": "trade_date",
+      "source": null,
+      "sources": [
+        "TDX-eltdx(适配层)",
+        "levistock(ftshare)",
+        "财联社(cls)"
+      ],
+      "section": "",
+      "canonical": "",
+      "meaning": "",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified"
+    },
+    {
+      "code": "ask",
+      "source": "新浪(扩展API)",
+      "sources": [
+        "新浪(扩展API)"
+      ],
+      "section": "",
+      "canonical": "",
+      "meaning": "",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified"
+    },
+    {
+      "code": "ask_vol",
+      "source": "新浪(扩展API)",
+      "sources": [
+        "新浪(扩展API)"
+      ],
+      "section": "",
+      "canonical": "",
+      "meaning": "",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified"
+    },
+    {
+      "code": "bid",
+      "source": null,
+      "sources": [
+        "开盘啦(kpl)",
+        "新浪(扩展API)"
+      ],
+      "section": "",
+      "canonical": "",
+      "meaning": "",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified"
+    },
+    {
+      "code": "bid_vol",
+      "source": "新浪(扩展API)",
+      "sources": [
+        "新浪(扩展API)"
+      ],
+      "section": "",
+      "canonical": "",
+      "meaning": "",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified"
+    },
+    {
+      "code": "delta",
+      "source": "新浪(扩展API)",
+      "sources": [
+        "新浪(扩展API)"
+      ],
+      "section": "",
+      "canonical": "",
+      "meaning": "",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified"
+    },
+    {
+      "code": "gamma",
+      "source": "新浪(扩展API)",
+      "sources": [
+        "新浪(扩展API)"
+      ],
+      "section": "",
+      "canonical": "",
+      "meaning": "",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified"
+    },
+    {
+      "code": "item_tongbi",
+      "source": "新浪(扩展API)",
+      "sources": [
+        "新浪(扩展API)"
       ],
       "section": "",
       "canonical": "",
@@ -17823,9 +16876,9 @@
     },
     {
       "code": "item_value",
-      "source": "财联社(cls)",
+      "source": "新浪(扩展API)",
       "sources": [
-        "财联社(cls)"
+        "新浪(扩展API)"
       ],
       "section": "",
       "canonical": "",
@@ -17836,9 +16889,9 @@
     },
     {
       "code": "iv",
-      "source": "财联社(cls)",
+      "source": "新浪(扩展API)",
       "sources": [
-        "财联社(cls)"
+        "新浪(扩展API)"
       ],
       "section": "",
       "canonical": "",
@@ -17849,9 +16902,9 @@
     },
     {
       "code": "last",
-      "source": "财联社(cls)",
+      "source": "新浪(扩展API)",
       "sources": [
-        "财联社(cls)"
+        "新浪(扩展API)"
       ],
       "section": "",
       "canonical": "",
@@ -17862,9 +16915,9 @@
     },
     {
       "code": "net_amount",
-      "source": "财联社(cls)",
+      "source": "新浪(扩展API)",
       "sources": [
-        "财联社(cls)"
+        "新浪(扩展API)"
       ],
       "section": "",
       "canonical": "",
@@ -17875,9 +16928,9 @@
     },
     {
       "code": "netamount",
-      "source": "财联社(cls)",
+      "source": "新浪(扩展API)",
       "sources": [
-        "财联社(cls)"
+        "新浪(扩展API)"
       ],
       "section": "",
       "canonical": "",
@@ -17888,9 +16941,9 @@
     },
     {
       "code": "open_interest",
-      "source": "财联社(cls)",
+      "source": "新浪(扩展API)",
       "sources": [
-        "财联社(cls)"
+        "新浪(扩展API)"
       ],
       "section": "",
       "canonical": "",
@@ -17901,9 +16954,9 @@
     },
     {
       "code": "opendate",
-      "source": "财联社(cls)",
+      "source": "新浪(扩展API)",
       "sources": [
-        "财联社(cls)"
+        "新浪(扩展API)"
       ],
       "section": "",
       "canonical": "",
@@ -17914,9 +16967,9 @@
     },
     {
       "code": "prev_close",
-      "source": "财联社(cls)",
+      "source": "新浪(扩展API)",
       "sources": [
-        "财联社(cls)"
+        "新浪(扩展API)"
       ],
       "section": "",
       "canonical": "",
@@ -17927,9 +16980,9 @@
     },
     {
       "code": "report_type",
-      "source": "财联社(cls)",
+      "source": "新浪(扩展API)",
       "sources": [
-        "财联社(cls)"
+        "新浪(扩展API)"
       ],
       "section": "",
       "canonical": "",
@@ -17940,9 +16993,9 @@
     },
     {
       "code": "strike",
-      "source": "财联社(cls)",
+      "source": "新浪(扩展API)",
       "sources": [
-        "财联社(cls)"
+        "新浪(扩展API)"
       ],
       "section": "",
       "canonical": "",
@@ -17953,9 +17006,9 @@
     },
     {
       "code": "theory",
-      "source": "财联社(cls)",
+      "source": "新浪(扩展API)",
       "sources": [
-        "财联社(cls)"
+        "新浪(扩展API)"
       ],
       "section": "",
       "canonical": "",
@@ -17966,9 +17019,9 @@
     },
     {
       "code": "theta",
-      "source": "财联社(cls)",
+      "source": "新浪(扩展API)",
       "sources": [
-        "财联社(cls)"
+        "新浪(扩展API)"
       ],
       "section": "",
       "canonical": "",
@@ -17979,9 +17032,9 @@
     },
     {
       "code": "trade",
-      "source": "财联社(cls)",
+      "source": "新浪(扩展API)",
       "sources": [
-        "财联社(cls)"
+        "新浪(扩展API)"
       ],
       "section": "",
       "canonical": "",
@@ -17992,9 +17045,9 @@
     },
     {
       "code": "vega",
-      "source": "财联社(cls)",
+      "source": "新浪(扩展API)",
       "sources": [
-        "财联社(cls)"
+        "新浪(扩展API)"
       ],
       "section": "",
       "canonical": "",
@@ -18186,19 +17239,6 @@
       "status": "verified"
     },
     {
-      "code": "actual_float_mv",
-      "source": "levistock(ftshare)",
-      "sources": [
-        "levistock(ftshare)"
-      ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "status_raw": "",
-      "status": "unverified"
-    },
-    {
       "code": "all",
       "source": "levistock(ftshare)",
       "sources": [
@@ -18210,19 +17250,6 @@
       "unit": "",
       "status_raw": "✅",
       "status": "verified"
-    },
-    {
-      "code": "applhb",
-      "source": "levistock(ftshare)",
-      "sources": [
-        "levistock(ftshare)"
-      ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "status_raw": "",
-      "status": "unverified"
     },
     {
       "code": "avg_change",
@@ -18251,32 +17278,6 @@
       "status": "verified"
     },
     {
-      "code": "big_order_net_3m",
-      "source": "levistock(ftshare)",
-      "sources": [
-        "levistock(ftshare)"
-      ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "status_raw": "",
-      "status": "unverified"
-    },
-    {
-      "code": "board_tag",
-      "source": "levistock(ftshare)",
-      "sources": [
-        "levistock(ftshare)"
-      ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "status_raw": "",
-      "status": "unverified"
-    },
-    {
       "code": "buy_amount",
       "source": "levistock(ftshare)",
       "sources": [
@@ -18285,19 +17286,6 @@
       "section": "12.10.7 开盘红板块排行（sector_ranking_kph）补充字段",
       "canonical": "buy_amount / sell_amount",
       "meaning": "待破解",
-      "unit": "",
-      "status_raw": "",
-      "status": "unverified"
-    },
-    {
-      "code": "catalyst",
-      "source": "levistock(ftshare)",
-      "sources": [
-        "levistock(ftshare)"
-      ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
       "unit": "",
       "status_raw": "",
       "status": "unverified"
@@ -18345,9 +17333,10 @@
     },
     {
       "code": "circ_mv",
-      "source": "levistock(ftshare)",
+      "source": null,
       "sources": [
-        "levistock(ftshare)"
+        "levistock(ftshare)",
+        "开盘啦(kpl)"
       ],
       "section": "",
       "canonical": "",
@@ -18371,9 +17360,10 @@
     },
     {
       "code": "close_seal_amount",
-      "source": "levistock(ftshare)",
+      "source": null,
       "sources": [
-        "levistock(ftshare)"
+        "levistock(ftshare)",
+        "开盘啦(kpl)"
       ],
       "section": "",
       "canonical": "",
@@ -18436,19 +17426,6 @@
     },
     {
       "code": "continuous",
-      "source": "levistock(ftshare)",
-      "sources": [
-        "levistock(ftshare)"
-      ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "status_raw": "",
-      "status": "unverified"
-    },
-    {
-      "code": "cur_heat",
       "source": "levistock(ftshare)",
       "sources": [
         "levistock(ftshare)"
@@ -18764,19 +17741,6 @@
       "status": "unverified"
     },
     {
-      "code": "inst_increase_q1",
-      "source": "levistock(ftshare)",
-      "sources": [
-        "levistock(ftshare)"
-      ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "status_raw": "",
-      "status": "unverified"
-    },
-    {
       "code": "is_trade_day",
       "source": "levistock(ftshare)",
       "sources": [
@@ -18817,9 +17781,10 @@
     },
     {
       "code": "last_px",
-      "source": "levistock(ftshare)",
+      "source": null,
       "sources": [
-        "levistock(ftshare)"
+        "levistock(ftshare)",
+        "开盘啦(kpl)"
       ],
       "section": "",
       "canonical": "",
@@ -18830,32 +17795,6 @@
     },
     {
       "code": "last_zt_time",
-      "source": "levistock(ftshare)",
-      "sources": [
-        "levistock(ftshare)"
-      ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "status_raw": "",
-      "status": "unverified"
-    },
-    {
-      "code": "lead_count",
-      "source": "levistock(ftshare)",
-      "sources": [
-        "levistock(ftshare)"
-      ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "status_raw": "",
-      "status": "unverified"
-    },
-    {
-      "code": "limit_pattern_text",
       "source": "levistock(ftshare)",
       "sources": [
         "levistock(ftshare)"
@@ -18934,11 +17873,11 @@
       "status": "unverified"
     },
     {
-      "code": "main_buy",
+      "code": "limit_up_price",
       "source": null,
       "sources": [
-        "levistock(ftshare)",
-        "市场源(market_sources)"
+        "TDX-eltdx(适配层)",
+        "levistock(ftshare)"
       ],
       "section": "",
       "canonical": "",
@@ -18963,9 +17902,10 @@
     },
     {
       "code": "main_net",
-      "source": "levistock(ftshare)",
+      "source": null,
       "sources": [
-        "levistock(ftshare)"
+        "levistock(ftshare)",
+        "开盘啦(kpl)"
       ],
       "section": "",
       "canonical": "",
@@ -18979,20 +17919,6 @@
       "source": "levistock(ftshare)",
       "sources": [
         "levistock(ftshare)"
-      ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "status_raw": "",
-      "status": "unverified"
-    },
-    {
-      "code": "main_sell",
-      "source": null,
-      "sources": [
-        "levistock(ftshare)",
-        "市场源(market_sources)"
       ],
       "section": "",
       "canonical": "",
@@ -19080,19 +18006,6 @@
       "status": "verified"
     },
     {
-      "code": "max_seal_amount",
-      "source": "levistock(ftshare)",
-      "sources": [
-        "levistock(ftshare)"
-      ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "status_raw": "",
-      "status": "unverified"
-    },
-    {
       "code": "mid_net",
       "source": "levistock(ftshare)",
       "sources": [
@@ -19107,19 +18020,6 @@
     },
     {
       "code": "mid_pct",
-      "source": "levistock(ftshare)",
-      "sources": [
-        "levistock(ftshare)"
-      ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "status_raw": "",
-      "status": "unverified"
-    },
-    {
-      "code": "net_flow_ratio",
       "source": "levistock(ftshare)",
       "sources": [
         "levistock(ftshare)"
@@ -19263,68 +18163,14 @@
     },
     {
       "code": "pe_dynamic",
-      "source": "levistock(ftshare)",
+      "source": null,
       "sources": [
-        "levistock(ftshare)"
+        "levistock(ftshare)",
+        "开盘啦(kpl)"
       ],
       "section": "",
       "canonical": "",
       "meaning": "",
-      "unit": "",
-      "status_raw": "",
-      "status": "unverified"
-    },
-    {
-      "code": "period_change",
-      "source": "levistock(ftshare)",
-      "sources": [
-        "levistock(ftshare)"
-      ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "status_raw": "",
-      "status": "unverified"
-    },
-    {
-      "code": "plate_code",
-      "source": null,
-      "sources": [
-        "levistock(ftshare)",
-        "市场源(market_sources)"
-      ],
-      "section": "12.10.7a 市场源 market_sources 原始字段补录（V17.1.1 全量登记）",
-      "canonical": "plate_code",
-      "meaning": "板块代码",
-      "unit": "",
-      "status_raw": "✅",
-      "status": "verified"
-    },
-    {
-      "code": "plate_name",
-      "source": null,
-      "sources": [
-        "levistock(ftshare)",
-        "市场源(market_sources)"
-      ],
-      "section": "12.10.7a 市场源 market_sources 原始字段补录（V17.1.1 全量登记）",
-      "canonical": "plate_name",
-      "meaning": "板块名称",
-      "unit": "",
-      "status_raw": "✅",
-      "status": "verified"
-    },
-    {
-      "code": "plates",
-      "source": null,
-      "sources": [
-        "levistock(ftshare)",
-        "市场源(market_sources)"
-      ],
-      "section": "12.10.7a 市场源 market_sources 原始字段补录（V17.1.1 全量登记）",
-      "canonical": "plates",
-      "meaning": "相关板块列表",
       "unit": "",
       "status_raw": "",
       "status": "unverified"
@@ -19408,32 +18254,6 @@
       "status": "unverified"
     },
     {
-      "code": "popularity_rank_chg",
-      "source": "levistock(ftshare)",
-      "sources": [
-        "levistock(ftshare)"
-      ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "status_raw": "",
-      "status": "unverified"
-    },
-    {
-      "code": "popularity_value",
-      "source": "levistock(ftshare)",
-      "sources": [
-        "levistock(ftshare)"
-      ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "status_raw": "",
-      "status": "unverified"
-    },
-    {
       "code": "prev_turnover",
       "source": "levistock(ftshare)",
       "sources": [
@@ -19451,7 +18271,8 @@
       "source": null,
       "sources": [
         "levistock(ftshare)",
-        "市场源(market_sources)"
+        "市场源(market_sources)",
+        "开盘啦(kpl)"
       ],
       "section": "12.10.3 开盘红市场情绪（market_emotion_kph，**含历史**）🆕",
       "canonical": "s_zrcs / q_zrcs",
@@ -19465,7 +18286,8 @@
       "source": null,
       "sources": [
         "levistock(ftshare)",
-        "市场源(market_sources)"
+        "市场源(market_sources)",
+        "开盘啦(kpl)"
       ],
       "section": "12.10.3 开盘红市场情绪（market_emotion_kph，**含历史**）🆕",
       "canonical": "szln / qscln",
@@ -19476,19 +18298,6 @@
     },
     {
       "code": "ready",
-      "source": "levistock(ftshare)",
-      "sources": [
-        "levistock(ftshare)"
-      ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "status_raw": "",
-      "status": "unverified"
-    },
-    {
-      "code": "real_turnover_rate",
       "source": "levistock(ftshare)",
       "sources": [
         "levistock(ftshare)"
@@ -19579,19 +18388,6 @@
       "section": "12.10.4 开盘红复盘（get_zttt 涨停天梯 / get_pmsl 盘面梳理 / get_his_limit_resumption 历史涨停复盘）🆕",
       "canonical": "seal_amount / seal_money",
       "meaning": "待破解",
-      "unit": "",
-      "status_raw": "",
-      "status": "unverified"
-    },
-    {
-      "code": "seal_map",
-      "source": "levistock(ftshare)",
-      "sources": [
-        "levistock(ftshare)"
-      ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
       "unit": "",
       "status_raw": "",
       "status": "unverified"
@@ -19701,19 +18497,6 @@
       "status": "unverified"
     },
     {
-      "code": "sell_flow_ratio",
-      "source": "levistock(ftshare)",
-      "sources": [
-        "levistock(ftshare)"
-      ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "status_raw": "",
-      "status": "unverified"
-    },
-    {
       "code": "sh_change_pct",
       "source": "levistock(ftshare)",
       "sources": [
@@ -19809,9 +18592,10 @@
     },
     {
       "code": "speed",
-      "source": "levistock(ftshare)",
+      "source": null,
       "sources": [
-        "levistock(ftshare)"
+        "levistock(ftshare)",
+        "开盘啦(kpl)"
       ],
       "section": "",
       "canonical": "",
@@ -19825,7 +18609,8 @@
       "source": null,
       "sources": [
         "levistock(ftshare)",
-        "市场源(market_sources)"
+        "市场源(market_sources)",
+        "开盘啦(kpl)"
       ],
       "section": "",
       "canonical": "",
@@ -19901,84 +18686,6 @@
       "status": "verified"
     },
     {
-      "code": "stock_fhps_detail_em",
-      "source": "levistock(ftshare)",
-      "sources": [
-        "levistock(ftshare)"
-      ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "status_raw": "",
-      "status": "unverified"
-    },
-    {
-      "code": "stock_financial_abstract",
-      "source": "levistock(ftshare)",
-      "sources": [
-        "levistock(ftshare)"
-      ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "status_raw": "",
-      "status": "unverified"
-    },
-    {
-      "code": "stock_individual_fund_flow",
-      "source": "levistock(ftshare)",
-      "sources": [
-        "levistock(ftshare)"
-      ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "status_raw": "",
-      "status": "unverified"
-    },
-    {
-      "code": "stock_lhb_detail_em",
-      "source": "levistock(ftshare)",
-      "sources": [
-        "levistock(ftshare)"
-      ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "status_raw": "",
-      "status": "unverified"
-    },
-    {
-      "code": "stock_margin_detail_szse",
-      "source": "levistock(ftshare)",
-      "sources": [
-        "levistock(ftshare)"
-      ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "status_raw": "",
-      "status": "unverified"
-    },
-    {
-      "code": "stock_sector_fund_flow_rank",
-      "source": "levistock(ftshare)",
-      "sources": [
-        "levistock(ftshare)"
-      ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "status_raw": "",
-      "status": "unverified"
-    },
-    {
       "code": "stock_strategy_wencai",
       "source": "levistock(ftshare)",
       "sources": [
@@ -20003,19 +18710,6 @@
       "unit": "",
       "status_raw": "✅",
       "status": "verified"
-    },
-    {
-      "code": "stock_zh_a_gdhs_detail_em",
-      "source": "levistock(ftshare)",
-      "sources": [
-        "levistock(ftshare)"
-      ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "status_raw": "",
-      "status": "unverified"
     },
     {
       "code": "stock_zt_pool_em",
@@ -20203,9 +18897,10 @@
     },
     {
       "code": "total_mv",
-      "source": "levistock(ftshare)",
+      "source": null,
       "sources": [
-        "levistock(ftshare)"
+        "levistock(ftshare)",
+        "开盘啦(kpl)"
       ],
       "section": "",
       "canonical": "",
@@ -20228,86 +18923,7 @@
       "status": "unverified"
     },
     {
-      "code": "trade_date",
-      "source": null,
-      "sources": [
-        "TDX-eltdx(适配层)",
-        "levistock(ftshare)"
-      ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "status_raw": "",
-      "status": "unverified"
-    },
-    {
       "code": "ts_code",
-      "source": "levistock(ftshare)",
-      "sources": [
-        "levistock(ftshare)"
-      ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "status_raw": "",
-      "status": "unverified"
-    },
-    {
-      "code": "tx3",
-      "source": "levistock(ftshare)",
-      "sources": [
-        "levistock(ftshare)"
-      ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "status_raw": "",
-      "status": "unverified"
-    },
-    {
-      "code": "tx32",
-      "source": "levistock(ftshare)",
-      "sources": [
-        "levistock(ftshare)"
-      ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "status_raw": "",
-      "status": "unverified"
-    },
-    {
-      "code": "tx37",
-      "source": "levistock(ftshare)",
-      "sources": [
-        "levistock(ftshare)"
-      ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "status_raw": "",
-      "status": "unverified"
-    },
-    {
-      "code": "tx43",
-      "source": "levistock(ftshare)",
-      "sources": [
-        "levistock(ftshare)"
-      ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "status_raw": "",
-      "status": "unverified"
-    },
-    {
-      "code": "tx49",
       "source": "levistock(ftshare)",
       "sources": [
         "levistock(ftshare)"
@@ -20517,9 +19133,10 @@
     },
     {
       "code": "color",
-      "source": "市场源(market_sources)",
+      "source": null,
       "sources": [
-        "市场源(market_sources)"
+        "市场源(market_sources)",
+        "开盘啦(kpl)"
       ],
       "section": "12.10.7a 市场源 market_sources 原始字段补录（V17.1.1 全量登记）",
       "canonical": "color",
@@ -20556,9 +19173,10 @@
     },
     {
       "code": "df_num",
-      "source": "市场源(market_sources)",
+      "source": null,
       "sources": [
-        "市场源(market_sources)"
+        "市场源(market_sources)",
+        "开盘啦(kpl)"
       ],
       "section": "",
       "canonical": "",
@@ -20725,9 +19343,10 @@
     },
     {
       "code": "lbgd",
-      "source": "市场源(market_sources)",
+      "source": null,
       "sources": [
-        "市场源(market_sources)"
+        "市场源(market_sources)",
+        "开盘啦(kpl)"
       ],
       "section": "",
       "canonical": "",
@@ -20745,6 +19364,34 @@
       "section": "12.10.2 财联社市场情绪（market_emotion_cls）🆕",
       "canonical": "limit_up_board",
       "meaning": "待破解",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified"
+    },
+    {
+      "code": "main_buy",
+      "source": null,
+      "sources": [
+        "市场源(market_sources)",
+        "开盘啦(kpl)"
+      ],
+      "section": "",
+      "canonical": "",
+      "meaning": "",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified"
+    },
+    {
+      "code": "main_sell",
+      "source": null,
+      "sources": [
+        "市场源(market_sources)",
+        "开盘啦(kpl)"
+      ],
+      "section": "",
+      "canonical": "",
+      "meaning": "",
       "unit": "",
       "status_raw": "",
       "status": "unverified"
@@ -20947,9 +19594,10 @@
     },
     {
       "code": "strong",
-      "source": "市场源(market_sources)",
+      "source": null,
       "sources": [
-        "市场源(market_sources)"
+        "市场源(market_sources)",
+        "开盘啦(kpl)"
       ],
       "section": "",
       "canonical": "",
@@ -20973,9 +19621,10 @@
     },
     {
       "code": "tip",
-      "source": "市场源(market_sources)",
+      "source": null,
       "sources": [
-        "市场源(market_sources)"
+        "市场源(market_sources)",
+        "开盘啦(kpl)"
       ],
       "section": "",
       "canonical": "",
@@ -21158,7 +19807,8 @@
       "source": null,
       "sources": [
         "TDX-eltdx(适配层)",
-        "市场源(market_sources)"
+        "市场源(market_sources)",
+        "开盘啦(kpl)"
       ],
       "section": "12.10.7a 市场源 market_sources 原始字段补录（V17.1.1 全量登记）",
       "canonical": "value",
@@ -21208,9 +19858,1558 @@
     },
     {
       "code": "ztjs",
-      "source": "市场源(market_sources)",
+      "source": null,
       "sources": [
-        "市场源(market_sources)"
+        "市场源(market_sources)",
+        "开盘啦(kpl)"
+      ],
+      "section": "",
+      "canonical": "",
+      "meaning": "",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified"
+    },
+    {
+      "code": "Ad_x",
+      "source": "开盘啦(kpl)",
+      "sources": [
+        "开盘啦(kpl)"
+      ],
+      "section": "",
+      "canonical": "",
+      "meaning": "",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified"
+    },
+    {
+      "code": "BaceFaceList",
+      "source": "开盘啦(kpl)",
+      "sources": [
+        "开盘啦(kpl)"
+      ],
+      "section": "",
+      "canonical": "",
+      "meaning": "",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified"
+    },
+    {
+      "code": "BoomReason",
+      "source": "开盘啦(kpl)",
+      "sources": [
+        "开盘啦(kpl)"
+      ],
+      "section": "",
+      "canonical": "",
+      "meaning": "",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified"
+    },
+    {
+      "code": "Boom_ZS",
+      "source": "开盘啦(kpl)",
+      "sources": [
+        "开盘啦(kpl)"
+      ],
+      "section": "",
+      "canonical": "",
+      "meaning": "",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified"
+    },
+    {
+      "code": "BuyIn",
+      "source": "开盘啦(kpl)",
+      "sources": [
+        "开盘啦(kpl)"
+      ],
+      "section": "",
+      "canonical": "",
+      "meaning": "",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified"
+    },
+    {
+      "code": "CQ",
+      "source": "开盘啦(kpl)",
+      "sources": [
+        "开盘啦(kpl)"
+      ],
+      "section": "",
+      "canonical": "",
+      "meaning": "",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified"
+    },
+    {
+      "code": "CYWWZS",
+      "source": "开盘啦(kpl)",
+      "sources": [
+        "开盘啦(kpl)"
+      ],
+      "section": "",
+      "canonical": "",
+      "meaning": "",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified"
+    },
+    {
+      "code": "D3",
+      "source": "开盘啦(kpl)",
+      "sources": [
+        "开盘啦(kpl)"
+      ],
+      "section": "",
+      "canonical": "",
+      "meaning": "",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified"
+    },
+    {
+      "code": "DJI",
+      "source": "开盘啦(kpl)",
+      "sources": [
+        "开盘啦(kpl)"
+      ],
+      "section": "",
+      "canonical": "",
+      "meaning": "",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified"
+    },
+    {
+      "code": "DT",
+      "source": "开盘啦(kpl)",
+      "sources": [
+        "开盘啦(kpl)"
+      ],
+      "section": "",
+      "canonical": "",
+      "meaning": "",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified"
+    },
+    {
+      "code": "DTJS",
+      "source": "开盘啦(kpl)",
+      "sources": [
+        "开盘啦(kpl)"
+      ],
+      "section": "",
+      "canonical": "",
+      "meaning": "",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified"
+    },
+    {
+      "code": "Day",
+      "source": "开盘啦(kpl)",
+      "sources": [
+        "开盘啦(kpl)"
+      ],
+      "section": "",
+      "canonical": "",
+      "meaning": "",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified"
+    },
+    {
+      "code": "DongXiang",
+      "source": "开盘啦(kpl)",
+      "sources": [
+        "开盘啦(kpl)"
+      ],
+      "section": "",
+      "canonical": "",
+      "meaning": "",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified"
+    },
+    {
+      "code": "FAIL",
+      "source": "开盘啦(kpl)",
+      "sources": [
+        "开盘啦(kpl)"
+      ],
+      "section": "",
+      "canonical": "",
+      "meaning": "",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified"
+    },
+    {
+      "code": "GNSM",
+      "source": "开盘啦(kpl)",
+      "sources": [
+        "开盘啦(kpl)"
+      ],
+      "section": "",
+      "canonical": "",
+      "meaning": "",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified"
+    },
+    {
+      "code": "ID",
+      "source": "开盘啦(kpl)",
+      "sources": [
+        "开盘啦(kpl)"
+      ],
+      "section": "",
+      "canonical": "",
+      "meaning": "",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified"
+    },
+    {
+      "code": "IncreaseAmount",
+      "source": "开盘啦(kpl)",
+      "sources": [
+        "开盘啦(kpl)"
+      ],
+      "section": "",
+      "canonical": "",
+      "meaning": "",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified"
+    },
+    {
+      "code": "IsBoom",
+      "source": "开盘啦(kpl)",
+      "sources": [
+        "开盘啦(kpl)"
+      ],
+      "section": "",
+      "canonical": "",
+      "meaning": "",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified"
+    },
+    {
+      "code": "Item",
+      "source": "开盘啦(kpl)",
+      "sources": [
+        "开盘啦(kpl)"
+      ],
+      "section": "",
+      "canonical": "",
+      "meaning": "",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified"
+    },
+    {
+      "code": "JoinNum",
+      "source": "开盘啦(kpl)",
+      "sources": [
+        "开盘啦(kpl)"
+      ],
+      "section": "",
+      "canonical": "",
+      "meaning": "",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified"
+    },
+    {
+      "code": "LBstatus",
+      "source": "开盘啦(kpl)",
+      "sources": [
+        "开盘啦(kpl)"
+      ],
+      "section": "",
+      "canonical": "",
+      "meaning": "",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified"
+    },
+    {
+      "code": "LZInfo",
+      "source": "开盘啦(kpl)",
+      "sources": [
+        "开盘啦(kpl)"
+      ],
+      "section": "",
+      "canonical": "",
+      "meaning": "",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified"
+    },
+    {
+      "code": "List",
+      "source": "开盘啦(kpl)",
+      "sources": [
+        "开盘啦(kpl)"
+      ],
+      "section": "",
+      "canonical": "",
+      "meaning": "",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified"
+    },
+    {
+      "code": "List_Special",
+      "source": "开盘啦(kpl)",
+      "sources": [
+        "开盘啦(kpl)"
+      ],
+      "section": "",
+      "canonical": "",
+      "meaning": "",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified"
+    },
+    {
+      "code": "Money",
+      "source": "开盘啦(kpl)",
+      "sources": [
+        "开盘啦(kpl)"
+      ],
+      "section": "",
+      "canonical": "",
+      "meaning": "",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified"
+    },
+    {
+      "code": "Name",
+      "source": "开盘啦(kpl)",
+      "sources": [
+        "开盘啦(kpl)"
+      ],
+      "section": "",
+      "canonical": "",
+      "meaning": "",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified"
+    },
+    {
+      "code": "OHLC",
+      "source": "开盘啦(kpl)",
+      "sources": [
+        "开盘啦(kpl)"
+      ],
+      "section": "",
+      "canonical": "",
+      "meaning": "",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified"
+    },
+    {
+      "code": "PE",
+      "source": "开盘啦(kpl)",
+      "sources": [
+        "开盘啦(kpl)"
+      ],
+      "section": "12.3.2 板块/排行 `ulist.np/get`（本次联网新发现）",
+      "canonical": "动态PE(最新报告期年化)",
+      "meaning": "与 ZHB tdxstat Col[2]=BetaValue / Col[9]=pe_lyr 同语义",
+      "unit": "",
+      "status_raw": "✅ 同语义不同编号（⚠️2026-09-01 二次重裁定：f162=`pe_mrq`=动态，非静态；详见 §12.8.12e 后【PE 口径铁证】）",
+      "status": "verified"
+    },
+    {
+      "code": "PidType",
+      "source": "开盘啦(kpl)",
+      "sources": [
+        "开盘啦(kpl)"
+      ],
+      "section": "",
+      "canonical": "",
+      "meaning": "",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified"
+    },
+    {
+      "code": "PlateID",
+      "source": "开盘啦(kpl)",
+      "sources": [
+        "开盘啦(kpl)"
+      ],
+      "section": "",
+      "canonical": "",
+      "meaning": "",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified"
+    },
+    {
+      "code": "QD",
+      "source": "开盘啦(kpl)",
+      "sources": [
+        "开盘啦(kpl)"
+      ],
+      "section": "",
+      "canonical": "",
+      "meaning": "",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified"
+    },
+    {
+      "code": "Reason",
+      "source": "开盘啦(kpl)",
+      "sources": [
+        "开盘啦(kpl)"
+      ],
+      "section": "",
+      "canonical": "",
+      "meaning": "",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified"
+    },
+    {
+      "code": "SCLT",
+      "source": "开盘啦(kpl)",
+      "sources": [
+        "开盘啦(kpl)"
+      ],
+      "section": "",
+      "canonical": "",
+      "meaning": "",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified"
+    },
+    {
+      "code": "ST",
+      "source": "开盘啦(kpl)",
+      "sources": [
+        "开盘啦(kpl)"
+      ],
+      "section": "",
+      "canonical": "",
+      "meaning": "",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified"
+    },
+    {
+      "code": "SZJS",
+      "source": "开盘啦(kpl)",
+      "sources": [
+        "开盘啦(kpl)"
+      ],
+      "section": "",
+      "canonical": "",
+      "meaning": "",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified"
+    },
+    {
+      "code": "Special",
+      "source": "开盘啦(kpl)",
+      "sources": [
+        "开盘啦(kpl)"
+      ],
+      "section": "",
+      "canonical": "",
+      "meaning": "",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified"
+    },
+    {
+      "code": "TTMPeRate",
+      "source": "开盘啦(kpl)",
+      "sources": [
+        "开盘啦(kpl)"
+      ],
+      "section": "",
+      "canonical": "",
+      "meaning": "",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified"
+    },
+    {
+      "code": "Theme",
+      "source": "开盘啦(kpl)",
+      "sources": [
+        "开盘啦(kpl)"
+      ],
+      "section": "12.17.1 kaipanla-data-parser 补充（2026-08-09 实测 10 接口 + 63 字段映射验证）🆕",
+      "canonical": "Theme/InfoBKR",
+      "meaning": "",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified"
+    },
+    {
+      "code": "Time",
+      "source": "开盘啦(kpl)",
+      "sources": [
+        "开盘啦(kpl)"
+      ],
+      "section": "",
+      "canonical": "",
+      "meaning": "",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified"
+    },
+    {
+      "code": "Title",
+      "source": "开盘啦(kpl)",
+      "sources": [
+        "开盘啦(kpl)"
+      ],
+      "section": "",
+      "canonical": "",
+      "meaning": "",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified"
+    },
+    {
+      "code": "Topic",
+      "source": "开盘啦(kpl)",
+      "sources": [
+        "开盘啦(kpl)"
+      ],
+      "section": "",
+      "canonical": "",
+      "meaning": "",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified"
+    },
+    {
+      "code": "Tur",
+      "source": "开盘啦(kpl)",
+      "sources": [
+        "开盘啦(kpl)"
+      ],
+      "section": "",
+      "canonical": "",
+      "meaning": "",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified"
+    },
+    {
+      "code": "Turnover",
+      "source": "开盘啦(kpl)",
+      "sources": [
+        "开盘啦(kpl)"
+      ],
+      "section": "",
+      "canonical": "",
+      "meaning": "",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified"
+    },
+    {
+      "code": "Vol",
+      "source": "开盘啦(kpl)",
+      "sources": [
+        "开盘啦(kpl)"
+      ],
+      "section": "",
+      "canonical": "",
+      "meaning": "",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified"
+    },
+    {
+      "code": "XDJS",
+      "source": "开盘啦(kpl)",
+      "sources": [
+        "开盘啦(kpl)"
+      ],
+      "section": "",
+      "canonical": "",
+      "meaning": "",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified"
+    },
+    {
+      "code": "ZBL",
+      "source": "开盘啦(kpl)",
+      "sources": [
+        "开盘啦(kpl)"
+      ],
+      "section": "",
+      "canonical": "",
+      "meaning": "",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified"
+    },
+    {
+      "code": "ZT",
+      "source": "开盘啦(kpl)",
+      "sources": [
+        "开盘啦(kpl)"
+      ],
+      "section": "",
+      "canonical": "",
+      "meaning": "",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified"
+    },
+    {
+      "code": "ZTJS",
+      "source": "开盘啦(kpl)",
+      "sources": [
+        "开盘啦(kpl)"
+      ],
+      "section": "",
+      "canonical": "",
+      "meaning": "",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified"
+    },
+    {
+      "code": "ZTNum",
+      "source": "开盘啦(kpl)",
+      "sources": [
+        "开盘啦(kpl)"
+      ],
+      "section": "",
+      "canonical": "",
+      "meaning": "",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified"
+    },
+    {
+      "code": "actual_float_mv",
+      "source": "开盘啦(kpl)",
+      "sources": [
+        "开盘啦(kpl)"
+      ],
+      "section": "",
+      "canonical": "",
+      "meaning": "",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified"
+    },
+    {
+      "code": "actualcirculation_value",
+      "source": "开盘啦(kpl)",
+      "sources": [
+        "开盘啦(kpl)"
+      ],
+      "section": "",
+      "canonical": "",
+      "meaning": "",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified"
+    },
+    {
+      "code": "amount_in",
+      "source": "开盘啦(kpl)",
+      "sources": [
+        "开盘啦(kpl)"
+      ],
+      "section": "",
+      "canonical": "",
+      "meaning": "",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified"
+    },
+    {
+      "code": "apiv",
+      "source": "开盘啦(kpl)",
+      "sources": [
+        "开盘啦(kpl)"
+      ],
+      "section": "",
+      "canonical": "",
+      "meaning": "",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified"
+    },
+    {
+      "code": "avg_px",
+      "source": "开盘啦(kpl)",
+      "sources": [
+        "开盘啦(kpl)"
+      ],
+      "section": "",
+      "canonical": "",
+      "meaning": "",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified"
+    },
+    {
+      "code": "bal",
+      "source": "开盘啦(kpl)",
+      "sources": [
+        "开盘啦(kpl)"
+      ],
+      "section": "",
+      "canonical": "",
+      "meaning": "",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified"
+    },
+    {
+      "code": "big_order_net_3m",
+      "source": "开盘啦(kpl)",
+      "sources": [
+        "开盘啦(kpl)"
+      ],
+      "section": "",
+      "canonical": "",
+      "meaning": "",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified"
+    },
+    {
+      "code": "bl",
+      "source": "开盘啦(kpl)",
+      "sources": [
+        "开盘啦(kpl)"
+      ],
+      "section": "",
+      "canonical": "",
+      "meaning": "",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified"
+    },
+    {
+      "code": "board_tag",
+      "source": "开盘啦(kpl)",
+      "sources": [
+        "开盘啦(kpl)"
+      ],
+      "section": "",
+      "canonical": "",
+      "meaning": "",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified"
+    },
+    {
+      "code": "break_limit_up_times",
+      "source": "开盘啦(kpl)",
+      "sources": [
+        "开盘啦(kpl)"
+      ],
+      "section": "",
+      "canonical": "",
+      "meaning": "",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified"
+    },
+    {
+      "code": "buy_lock_volume_ratio",
+      "source": "开盘啦(kpl)",
+      "sources": [
+        "开盘啦(kpl)"
+      ],
+      "section": "",
+      "canonical": "",
+      "meaning": "",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified"
+    },
+    {
+      "code": "change_percent",
+      "source": "开盘啦(kpl)",
+      "sources": [
+        "开盘啦(kpl)"
+      ],
+      "section": "",
+      "canonical": "",
+      "meaning": "",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified"
+    },
+    {
+      "code": "circulation_amount",
+      "source": "开盘啦(kpl)",
+      "sources": [
+        "开盘啦(kpl)"
+      ],
+      "section": "",
+      "canonical": "",
+      "meaning": "",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified"
+    },
+    {
+      "code": "circulation_value",
+      "source": "开盘啦(kpl)",
+      "sources": [
+        "开盘啦(kpl)"
+      ],
+      "section": "",
+      "canonical": "",
+      "meaning": "",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified"
+    },
+    {
+      "code": "content2",
+      "source": "开盘啦(kpl)",
+      "sources": [
+        "开盘啦(kpl)"
+      ],
+      "section": "",
+      "canonical": "",
+      "meaning": "",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified"
+    },
+    {
+      "code": "cur_price",
+      "source": "开盘啦(kpl)",
+      "sources": [
+        "开盘啦(kpl)"
+      ],
+      "section": "",
+      "canonical": "",
+      "meaning": "",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified"
+    },
+    {
+      "code": "data",
+      "source": "开盘啦(kpl)",
+      "sources": [
+        "开盘啦(kpl)"
+      ],
+      "section": "",
+      "canonical": "",
+      "meaning": "",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified"
+    },
+    {
+      "code": "description",
+      "source": "开盘啦(kpl)",
+      "sources": [
+        "开盘啦(kpl)"
+      ],
+      "section": "",
+      "canonical": "",
+      "meaning": "",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified"
+    },
+    {
+      "code": "down_px",
+      "source": "开盘啦(kpl)",
+      "sources": [
+        "开盘啦(kpl)"
+      ],
+      "section": "",
+      "canonical": "",
+      "meaning": "",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified"
+    },
+    {
+      "code": "dyn_pb_rate",
+      "source": "开盘啦(kpl)",
+      "sources": [
+        "开盘啦(kpl)"
+      ],
+      "section": "",
+      "canonical": "",
+      "meaning": "",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified"
+    },
+    {
+      "code": "entrust_rate",
+      "source": "开盘啦(kpl)",
+      "sources": [
+        "开盘啦(kpl)"
+      ],
+      "section": "",
+      "canonical": "",
+      "meaning": "",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified"
+    },
+    {
+      "code": "errcode",
+      "source": "开盘啦(kpl)",
+      "sources": [
+        "开盘啦(kpl)"
+      ],
+      "section": "",
+      "canonical": "",
+      "meaning": "",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified"
+    },
+    {
+      "code": "fall_count",
+      "source": "开盘啦(kpl)",
+      "sources": [
+        "开盘啦(kpl)"
+      ],
+      "section": "",
+      "canonical": "",
+      "meaning": "",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified"
+    },
+    {
+      "code": "fields",
+      "source": "开盘啦(kpl)",
+      "sources": [
+        "开盘啦(kpl)"
+      ],
+      "section": "",
+      "canonical": "",
+      "meaning": "",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified"
+    },
+    {
+      "code": "hprice",
+      "source": "开盘啦(kpl)",
+      "sources": [
+        "开盘啦(kpl)"
+      ],
+      "section": "",
+      "canonical": "",
+      "meaning": "",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified"
+    },
+    {
+      "code": "info",
+      "source": "开盘啦(kpl)",
+      "sources": [
+        "开盘啦(kpl)"
+      ],
+      "section": "",
+      "canonical": "",
+      "meaning": "",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified"
+    },
+    {
+      "code": "inst_increase_q1",
+      "source": "开盘啦(kpl)",
+      "sources": [
+        "开盘啦(kpl)"
+      ],
+      "section": "",
+      "canonical": "",
+      "meaning": "",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified"
+    },
+    {
+      "code": "institutionIncrease",
+      "source": "开盘啦(kpl)",
+      "sources": [
+        "开盘啦(kpl)"
+      ],
+      "section": "",
+      "canonical": "",
+      "meaning": "",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified"
+    },
+    {
+      "code": "jtPeRate",
+      "source": "开盘啦(kpl)",
+      "sources": [
+        "开盘啦(kpl)"
+      ],
+      "section": "",
+      "canonical": "",
+      "meaning": "",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified"
+    },
+    {
+      "code": "lead_count",
+      "source": "开盘啦(kpl)",
+      "sources": [
+        "开盘啦(kpl)"
+      ],
+      "section": "",
+      "canonical": "",
+      "meaning": "",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified"
+    },
+    {
+      "code": "limit_down_count",
+      "source": "开盘啦(kpl)",
+      "sources": [
+        "开盘啦(kpl)"
+      ],
+      "section": "",
+      "canonical": "",
+      "meaning": "",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified"
+    },
+    {
+      "code": "limit_pattern_text",
+      "source": "开盘啦(kpl)",
+      "sources": [
+        "开盘啦(kpl)"
+      ],
+      "section": "",
+      "canonical": "",
+      "meaning": "",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified"
+    },
+    {
+      "code": "limit_up_broken_count",
+      "source": "开盘啦(kpl)",
+      "sources": [
+        "开盘啦(kpl)"
+      ],
+      "section": "",
+      "canonical": "",
+      "meaning": "",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified"
+    },
+    {
+      "code": "limit_up_count",
+      "source": null,
+      "sources": [
+        "TDX-eltdx(适配层)",
+        "开盘啦(kpl)"
+      ],
+      "section": "12.13.10 eltdx Helpers 净新增字段破解（V17.2.15 实测，collect_eltdx 采集 + 黄金锚对撞）",
+      "canonical": "limit_up_count",
+      "meaning": "",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified"
+    },
+    {
+      "code": "lprice",
+      "source": "开盘啦(kpl)",
+      "sources": [
+        "开盘啦(kpl)"
+      ],
+      "section": "",
+      "canonical": "",
+      "meaning": "",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified"
+    },
+    {
+      "code": "market_temperature",
+      "source": "开盘啦(kpl)",
+      "sources": [
+        "开盘啦(kpl)"
+      ],
+      "section": "",
+      "canonical": "",
+      "meaning": "",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified"
+    },
+    {
+      "code": "market_value",
+      "source": "开盘啦(kpl)",
+      "sources": [
+        "开盘啦(kpl)"
+      ],
+      "section": "",
+      "canonical": "",
+      "meaning": "",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified"
+    },
+    {
+      "code": "max_seal_amount",
+      "source": "开盘啦(kpl)",
+      "sources": [
+        "开盘啦(kpl)"
+      ],
+      "section": "",
+      "canonical": "",
+      "meaning": "",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified"
+    },
+    {
+      "code": "net_flow_ratio",
+      "source": "开盘啦(kpl)",
+      "sources": [
+        "开盘啦(kpl)"
+      ],
+      "section": "",
+      "canonical": "",
+      "meaning": "",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified"
+    },
+    {
+      "code": "nums",
+      "source": "开盘啦(kpl)",
+      "sources": [
+        "开盘啦(kpl)"
+      ],
+      "section": "",
+      "canonical": "",
+      "meaning": "",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified"
+    },
+    {
+      "code": "out",
+      "source": "开盘啦(kpl)",
+      "sources": [
+        "开盘啦(kpl)"
+      ],
+      "section": "",
+      "canonical": "",
+      "meaning": "",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified"
+    },
+    {
+      "code": "pankou",
+      "source": "开盘啦(kpl)",
+      "sources": [
+        "开盘啦(kpl)"
+      ],
+      "section": "",
+      "canonical": "",
+      "meaning": "",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified"
+    },
+    {
+      "code": "pe_rate",
+      "source": "开盘啦(kpl)",
+      "sources": [
+        "开盘啦(kpl)"
+      ],
+      "section": "",
+      "canonical": "",
+      "meaning": "",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified"
+    },
+    {
+      "code": "period_change",
+      "source": "开盘啦(kpl)",
+      "sources": [
+        "开盘啦(kpl)"
+      ],
+      "section": "",
+      "canonical": "",
+      "meaning": "",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified"
+    },
+    {
+      "code": "phcj_volume",
+      "source": "开盘啦(kpl)",
+      "sources": [
+        "开盘啦(kpl)"
+      ],
+      "section": "",
+      "canonical": "",
+      "meaning": "",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified"
+    },
+    {
+      "code": "plate_type",
+      "source": "开盘啦(kpl)",
+      "sources": [
+        "开盘啦(kpl)"
+      ],
+      "section": "",
+      "canonical": "",
+      "meaning": "",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified"
+    },
+    {
+      "code": "popularity_rank_chg",
+      "source": "开盘啦(kpl)",
+      "sources": [
+        "开盘啦(kpl)"
+      ],
+      "section": "",
+      "canonical": "",
+      "meaning": "",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified"
+    },
+    {
+      "code": "popularity_value",
+      "source": "开盘啦(kpl)",
+      "sources": [
+        "开盘啦(kpl)"
+      ],
+      "section": "",
+      "canonical": "",
+      "meaning": "",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified"
+    },
+    {
+      "code": "preclose",
+      "source": "开盘啦(kpl)",
+      "sources": [
+        "开盘啦(kpl)"
+      ],
+      "section": "",
+      "canonical": "",
+      "meaning": "",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified"
+    },
+    {
+      "code": "prod_name",
+      "source": "开盘啦(kpl)",
+      "sources": [
+        "开盘啦(kpl)"
+      ],
+      "section": "",
+      "canonical": "",
+      "meaning": "",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified"
+    },
+    {
+      "code": "px_change",
+      "source": "开盘啦(kpl)",
+      "sources": [
+        "开盘啦(kpl)"
+      ],
+      "section": "",
+      "canonical": "",
+      "meaning": "",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified"
+    },
+    {
+      "code": "px_change_rate",
+      "source": "开盘啦(kpl)",
+      "sources": [
+        "开盘啦(kpl)"
+      ],
+      "section": "",
+      "canonical": "",
+      "meaning": "",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified"
+    },
+    {
+      "code": "real",
+      "source": "开盘啦(kpl)",
+      "sources": [
+        "开盘啦(kpl)"
+      ],
+      "section": "",
+      "canonical": "",
+      "meaning": "",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified"
+    },
+    {
+      "code": "real_turnover_rate",
+      "source": "开盘啦(kpl)",
+      "sources": [
+        "开盘啦(kpl)"
+      ],
+      "section": "",
+      "canonical": "",
+      "meaning": "",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified"
+    },
+    {
+      "code": "rise_count",
+      "source": "开盘啦(kpl)",
+      "sources": [
+        "开盘啦(kpl)"
+      ],
+      "section": "",
+      "canonical": "",
+      "meaning": "",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified"
+    },
+    {
+      "code": "sell_flow_ratio",
+      "source": "开盘啦(kpl)",
+      "sources": [
+        "开盘啦(kpl)"
+      ],
+      "section": "",
+      "canonical": "",
+      "meaning": "",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified"
+    },
+    {
+      "code": "state",
+      "source": "开盘啦(kpl)",
+      "sources": [
+        "开盘啦(kpl)"
+      ],
+      "section": "",
+      "canonical": "",
+      "meaning": "",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified"
+    },
+    {
+      "code": "state1",
+      "source": "开盘啦(kpl)",
+      "sources": [
+        "开盘啦(kpl)"
+      ],
+      "section": "",
+      "canonical": "",
+      "meaning": "",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified"
+    },
+    {
+      "code": "stateZT",
+      "source": "开盘啦(kpl)",
+      "sources": [
+        "开盘啦(kpl)"
+      ],
+      "section": "",
+      "canonical": "",
+      "meaning": "",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified"
+    },
+    {
+      "code": "status_color",
+      "source": "开盘啦(kpl)",
+      "sources": [
+        "开盘啦(kpl)"
+      ],
+      "section": "",
+      "canonical": "",
+      "meaning": "",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified"
+    },
+    {
+      "code": "stockid",
+      "source": "开盘啦(kpl)",
+      "sources": [
+        "开盘啦(kpl)"
+      ],
+      "section": "",
+      "canonical": "",
+      "meaning": "",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified"
+    },
+    {
+      "code": "total_amount",
+      "source": "开盘啦(kpl)",
+      "sources": [
+        "开盘啦(kpl)"
+      ],
+      "section": "",
+      "canonical": "",
+      "meaning": "",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified"
+    },
+    {
+      "code": "total_turnover",
+      "source": "开盘啦(kpl)",
+      "sources": [
+        "开盘啦(kpl)"
+      ],
+      "section": "",
+      "canonical": "",
+      "meaning": "",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified"
+    },
+    {
+      "code": "trend",
+      "source": "开盘啦(kpl)",
+      "sources": [
+        "开盘啦(kpl)"
+      ],
+      "section": "",
+      "canonical": "",
+      "meaning": "",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified"
+    },
+    {
+      "code": "turnover_ratio",
+      "source": "开盘啦(kpl)",
+      "sources": [
+        "开盘啦(kpl)"
+      ],
+      "section": "",
+      "canonical": "",
+      "meaning": "",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified"
+    },
+    {
+      "code": "up_px",
+      "source": "开盘啦(kpl)",
+      "sources": [
+        "开盘啦(kpl)"
+      ],
+      "section": "",
+      "canonical": "",
+      "meaning": "",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified"
+    },
+    {
+      "code": "volRatio",
+      "source": "开盘啦(kpl)",
+      "sources": [
+        "开盘啦(kpl)"
+      ],
+      "section": "",
+      "canonical": "",
+      "meaning": "",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified"
+    },
+    {
+      "code": "weituo",
+      "source": "开盘啦(kpl)",
+      "sources": [
+        "开盘啦(kpl)"
+      ],
+      "section": "",
+      "canonical": "",
+      "meaning": "",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified"
+    },
+    {
+      "code": "yestRase",
+      "source": "开盘啦(kpl)",
+      "sources": [
+        "开盘啦(kpl)"
+      ],
+      "section": "",
+      "canonical": "",
+      "meaning": "",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified"
+    },
+    {
+      "code": "yesterday_limit_up_avg_pcp",
+      "source": "开盘啦(kpl)",
+      "sources": [
+        "开盘啦(kpl)"
       ],
       "section": "",
       "canonical": "",
@@ -21272,59 +21471,7 @@
       "status": "unverified"
     },
     {
-      "code": "MCP",
-      "source": "TDX-eltdx(适配层)",
-      "sources": [
-        "TDX-eltdx(适配层)"
-      ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "status_raw": "",
-      "status": "unverified"
-    },
-    {
-      "code": "PB",
-      "source": "TDX-eltdx(适配层)",
-      "sources": [
-        "TDX-eltdx(适配层)"
-      ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "status_raw": "",
-      "status": "unverified"
-    },
-    {
-      "code": "ROA",
-      "source": "TDX-eltdx(适配层)",
-      "sources": [
-        "TDX-eltdx(适配层)"
-      ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "status_raw": "",
-      "status": "unverified"
-    },
-    {
       "code": "ResultSetKey",
-      "source": "TDX-eltdx(适配层)",
-      "sources": [
-        "TDX-eltdx(适配层)"
-      ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "status_raw": "",
-      "status": "unverified"
-    },
-    {
-      "code": "TCP",
       "source": "TDX-eltdx(适配层)",
       "sources": [
         "TDX-eltdx(适配层)"
@@ -21558,19 +21705,6 @@
       "status": "unverified"
     },
     {
-      "code": "basic_info_static",
-      "source": "TDX-eltdx(适配层)",
-      "sources": [
-        "TDX-eltdx(适配层)"
-      ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "status_raw": "",
-      "status": "unverified"
-    },
-    {
       "code": "beta_60d",
       "source": "TDX-eltdx(适配层)",
       "sources": [
@@ -21598,19 +21732,6 @@
     },
     {
       "code": "bin",
-      "source": "TDX-eltdx(适配层)",
-      "sources": [
-        "TDX-eltdx(适配层)"
-      ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "status_raw": "",
-      "status": "unverified"
-    },
-    {
-      "code": "boards",
       "source": "TDX-eltdx(适配层)",
       "sources": [
         "TDX-eltdx(适配层)"
@@ -21715,6 +21836,19 @@
     },
     {
       "code": "depth",
+      "source": "TDX-eltdx(适配层)",
+      "sources": [
+        "TDX-eltdx(适配层)"
+      ],
+      "section": "",
+      "canonical": "",
+      "meaning": "",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified"
+    },
+    {
+      "code": "down_count",
       "source": "TDX-eltdx(适配层)",
       "sources": [
         "TDX-eltdx(适配层)"
@@ -22000,19 +22134,6 @@
       "status": "unverified"
     },
     {
-      "code": "financial",
-      "source": "TDX-eltdx(适配层)",
-      "sources": [
-        "TDX-eltdx(适配层)"
-      ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "status_raw": "",
-      "status": "unverified"
-    },
-    {
       "code": "float_market_value",
       "source": "TDX-eltdx(适配层)",
       "sources": [
@@ -22020,6 +22141,19 @@
       ],
       "section": "12.13.10 eltdx Helpers 净新增字段破解（V17.2.15 实测，collect_eltdx 采集 + 黄金锚对撞）",
       "canonical": "float_market_value",
+      "meaning": "",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified"
+    },
+    {
+      "code": "float_shares",
+      "source": "TDX-eltdx(适配层)",
+      "sources": [
+        "TDX-eltdx(适配层)"
+      ],
+      "section": "12.13.10 eltdx Helpers 净新增字段破解（V17.2.15 实测，collect_eltdx 采集 + 黄金锚对撞）",
+      "canonical": "float_shares",
       "meaning": "",
       "unit": "",
       "status_raw": "",
@@ -22416,19 +22550,6 @@
       "status": "unverified"
     },
     {
-      "code": "limit_up_count",
-      "source": "TDX-eltdx(适配层)",
-      "sources": [
-        "TDX-eltdx(适配层)"
-      ],
-      "section": "12.13.10 eltdx Helpers 净新增字段破解（V17.2.15 实测，collect_eltdx 采集 + 黄金锚对撞）",
-      "canonical": "limit_up_count",
-      "meaning": "",
-      "unit": "",
-      "status_raw": "",
-      "status": "unverified"
-    },
-    {
       "code": "limit_up_count_in_stat_days",
       "source": "TDX-eltdx(适配层)",
       "sources": [
@@ -22449,19 +22570,6 @@
       ],
       "section": "12.13.10 eltdx Helpers 净新增字段破解（V17.2.15 实测，collect_eltdx 采集 + 黄金锚对撞）",
       "canonical": "limit_up_streak_days",
-      "meaning": "",
-      "unit": "",
-      "status_raw": "",
-      "status": "unverified"
-    },
-    {
-      "code": "line",
-      "source": "TDX-eltdx(适配层)",
-      "sources": [
-        "TDX-eltdx(适配层)"
-      ],
-      "section": "",
-      "canonical": "",
       "meaning": "",
       "unit": "",
       "status_raw": "",
@@ -22533,7 +22641,7 @@
       "status": "unverified"
     },
     {
-      "code": "max_delay_days",
+      "code": "mei_gu_jing_zi_chan_raw_float",
       "source": "TDX-eltdx(适配层)",
       "sources": [
         "TDX-eltdx(适配层)"
@@ -22546,7 +22654,7 @@
       "status": "unverified"
     },
     {
-      "code": "mei_gu_jing_zi_chan_raw_float",
+      "code": "min2_amount",
       "source": "TDX-eltdx(适配层)",
       "sources": [
         "TDX-eltdx(适配层)"
@@ -22566,19 +22674,6 @@
       ],
       "section": "12.13.10 eltdx Helpers 净新增字段破解（V17.2.15 实测，collect_eltdx 采集 + 黄金锚对撞）",
       "canonical": "mode_or_selector_raw",
-      "meaning": "",
-      "unit": "",
-      "status_raw": "",
-      "status": "unverified"
-    },
-    {
-      "code": "name_core",
-      "source": "TDX-eltdx(适配层)",
-      "sources": [
-        "TDX-eltdx(适配层)"
-      ],
-      "section": "",
-      "canonical": "",
       "meaning": "",
       "unit": "",
       "status_raw": "",
@@ -22735,6 +22830,19 @@
       ],
       "section": "12.13.10 eltdx Helpers 净新增字段破解（V17.2.15 实测，collect_eltdx 采集 + 黄金锚对撞）",
       "canonical": "open_volume_ratio",
+      "meaning": "",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified"
+    },
+    {
+      "code": "opening_rush",
+      "source": "TDX-eltdx(适配层)",
+      "sources": [
+        "TDX-eltdx(适配层)"
+      ],
+      "section": "12.13.10 eltdx Helpers 净新增字段破解（V17.2.15 实测，collect_eltdx 采集 + 黄金锚对撞）",
+      "canonical": "opening_rush",
       "meaning": "",
       "unit": "",
       "status_raw": "",
@@ -23456,7 +23564,7 @@
       "status": "unverified"
     },
     {
-      "code": "share_capital",
+      "code": "short_turnover",
       "source": "TDX-eltdx(适配层)",
       "sources": [
         "TDX-eltdx(适配层)"
@@ -24106,19 +24214,6 @@
       "status": "unverified"
     },
     {
-      "code": "static_permanent",
-      "source": "TDX-eltdx(适配层)",
-      "sources": [
-        "TDX-eltdx(适配层)"
-      ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "status_raw": "",
-      "status": "unverified"
-    },
-    {
       "code": "stats_date",
       "source": "TDX-eltdx(适配层)",
       "sources": [
@@ -24379,7 +24474,33 @@
       "status": "unverified"
     },
     {
+      "code": "up_count",
+      "source": "TDX-eltdx(适配层)",
+      "sources": [
+        "TDX-eltdx(适配层)"
+      ],
+      "section": "",
+      "canonical": "",
+      "meaning": "",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified"
+    },
+    {
       "code": "updated_date_raw",
+      "source": "TDX-eltdx(适配层)",
+      "sources": [
+        "TDX-eltdx(适配层)"
+      ],
+      "section": "",
+      "canonical": "",
+      "meaning": "",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified"
+    },
+    {
+      "code": "vol_rise_speed",
       "source": "TDX-eltdx(适配层)",
       "sources": [
         "TDX-eltdx(适配层)"
@@ -24399,6 +24520,19 @@
       ],
       "section": "12.13.10 eltdx Helpers 净新增字段破解（V17.2.15 实测，collect_eltdx 采集 + 黄金锚对撞）",
       "canonical": "volume_hand",
+      "meaning": "",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified"
+    },
+    {
+      "code": "volume_lots",
+      "source": "TDX-eltdx(适配层)",
+      "sources": [
+        "TDX-eltdx(适配层)"
+      ],
+      "section": "",
+      "canonical": "",
       "meaning": "",
       "unit": "",
       "status_raw": "",
@@ -25710,6 +25844,9 @@
       "东财"
     ],
     "营业收入": [
+      "东财"
+    ],
+    "营业总收入（TTM）": [
       "东财"
     ],
     "涨停价": [

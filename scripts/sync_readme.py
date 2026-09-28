@@ -215,7 +215,9 @@ def update_readme(versions, dry_run: bool = False) -> bool:
     new_content = content[:begin_idx] + new_block + "\n" + content[end_idx:].lstrip("\n")
 
     if dry_run:
-        print(f"[sync_readme][dry-run] 将重写 {README} 版本历史块（{len(new_block)} 字符），未实际写入")
+        print(
+            f"[sync_readme][dry-run] 将重写 {README} 版本历史块（{len(new_block)} 字符），未实际写入"
+        )
         return True
 
     # S6 修复：写前备份，防止版本历史归档速览表丢失
@@ -234,8 +236,11 @@ def main():
     import argparse
 
     parser = argparse.ArgumentParser(description="从 CHANGELOG.md 同步 README.md 版本历史块")
-    parser.add_argument("--force", action="store_true",
-                        help="确认执行(会覆盖 README 版本历史块，运行前自动 .bak 备份)")
+    parser.add_argument(
+        "--force",
+        action="store_true",
+        help="确认执行(会覆盖 README 版本历史块，运行前自动 .bak 备份)",
+    )
     parser.add_argument("--dry-run", action="store_true", help="仅预览，不写入文件")
     args = parser.parse_args()
 
@@ -243,7 +248,9 @@ def main():
     # 默认拒绝运行，必须显式 --force 或先 --dry-run 预览。
     if not args.force and not args.dry_run:
         print("⛔ 此脚本会覆盖 README.md 的'版本历史'块(可能丢失历史归档速览表)。", file=sys.stderr)
-        print("   如需保留归档请勿运行；确需同步请加 --force，或先 --dry-run 预览。", file=sys.stderr)
+        print(
+            "   如需保留归档请勿运行；确需同步请加 --force，或先 --dry-run 预览。", file=sys.stderr
+        )
         sys.exit(1)
 
     print(f"[sync_readme] 开始从 {CHANGELOG} 同步到 {README}")

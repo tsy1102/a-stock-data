@@ -10,8 +10,9 @@ reportName 常量: 2026-09-22 经上游权威仓库(simonlin1212/a-stock-data)SK
 RPT_SHARE_HOLDER_INCREASE / RPT_CSDC_LIST / RPTA_APP_IPOAPPLY)。常量已 verified=True(上游权威源),
 但字段语义仍需本项目 collide 对撞终检(治理铁律: 上游真值可引用, 本地字段映射需对撞定案)。
 """
+
 from __future__ import annotations
-from typing import Any, Dict, List
+from typing import Any, Callable, Dict, List
 import time
 
 from ._eastmoney import eastmoney_datacenter
@@ -21,11 +22,11 @@ DATACENTER_URL = "https://datacenter-web.eastmoney.com/api/data/v1/get"
 
 # V17.4.1: 经上游权威仓库 SKILL.md 对撞校正(原候选常量大量错误)
 _EM_REPORTS: Dict[str, str] = {
-    "earnings_forecast": "RPT_PUBLIC_OP_NEWPREDICT",   # 上游权威(原误 RPT_VALUEANALYSIS_DET)
-    "institution_survey": "RPT_ORG_SURVEYNEW",         # 上游权威(原误 RPT_ORG_SURVEY)
-    "holder_trades": "RPT_SHARE_HOLDER_INCREASE",      # 上游权威(原误 RPT_HOLDER_TRADE_DET)
-    "equity_pledge": "RPT_CSDC_LIST",                  # 上游权威(中国结算周度, 原误 RPT_PLEDGE_DET)
-    "ipo_calendar": "RPTA_APP_IPOAPPLY",               # 上游权威(原误 RPT_NEW_STOCK_DT)
+    "earnings_forecast": "RPT_PUBLIC_OP_NEWPREDICT",  # 上游权威(原误 RPT_VALUEANALYSIS_DET)
+    "institution_survey": "RPT_ORG_SURVEYNEW",  # 上游权威(原误 RPT_ORG_SURVEY)
+    "holder_trades": "RPT_SHARE_HOLDER_INCREASE",  # 上游权威(原误 RPT_HOLDER_TRADE_DET)
+    "equity_pledge": "RPT_CSDC_LIST",  # 上游权威(中国结算周度, 原误 RPT_PLEDGE_DET)
+    "ipo_calendar": "RPTA_APP_IPOAPPLY",  # 上游权威(原误 RPT_NEW_STOCK_DT)
 }
 _SOURCE_URLS: Dict[str, str] = {k: DATACENTER_URL for k in _EM_REPORTS}
 _VERIFIED = True  # 常量取自上游权威仓库; 字段语义待本项目 collide 终检
@@ -65,7 +66,9 @@ def holder_trades(code: str, direction: str = "", limit: int = 10) -> List[Dict[
         _f = f'(SECURITY_CODE="{code}")'
         if direction in ("in", "out"):
             _f += f'(DIRECTION="{"1" if direction == "in" else "0"}")'
-        rows = eastmoney_datacenter(code, _EM_REPORTS["holder_trades"], filter_str=_f, page_size=limit)
+        rows = eastmoney_datacenter(
+            code, _EM_REPORTS["holder_trades"], filter_str=_f, page_size=limit
+        )
     except Exception as _e:
         _debug_log(f"holder_trades({code}): 取值失败(待对撞验证) -> {_e}")
         return []
@@ -107,8 +110,12 @@ def ipo_calendar_recent(limit: int = 40) -> List[Dict[str, Any]]:
     """
     try:
         rows = eastmoney_datacenter(
-            "", _EM_REPORTS["ipo_calendar"], filter_str="", page_size=limit,
-            sort_columns="APPLY_DATE", sort_types="-1",
+            "",
+            _EM_REPORTS["ipo_calendar"],
+            filter_str="",
+            page_size=limit,
+            sort_columns="APPLY_DATE",
+            sort_types="-1",
         )
     except Exception as _e:
         _debug_log(f"ipo_calendar_recent: 取值失败 -> {_e}")
@@ -118,14 +125,19 @@ def ipo_calendar_recent(limit: int = 40) -> List[Dict[str, Any]]:
     return rows
 
 
-def render_event_driven_section(code: str, events: tuple = ("业绩预告", "机构调研", "股东增减持", "股权质押"), include_cb: bool = True) -> List[str]:
+def render_event_driven_section(
+    code: str,
+    events: tuple[str, ...] = ("业绩预告", "机构调研", "股东增减持", "股权质押"),
+    include_cb: bool = True,
+) -> List[str]:
     """事件驱动层 markdown 渲染器(med/lng 报告共用) — 业绩预告/机构调研/股东增减持/股权质押; 可选可转债。
 
     东财 datacenter 源; reportName 待对撞验证(治理铁律): 仅展示记录条数+数据溯源, 不呈现未验证字段数值,
     避免把未对撞的字段值当作权威结论。返回 markdown 行列表(可能为空)。
     """
     from ._convertible import convertible_bonds
-    _all = {
+
+    _all: Dict[str, Callable[[str], List[Dict[str, Any]]]] = {
         "业绩预告": earnings_forecast,
         "机构调研": institution_survey,
         "股东增减持": holder_trades,
@@ -136,7 +148,7 @@ def render_event_driven_section(code: str, events: tuple = ("业绩预告", "机
     try:
         for _name in events:
             _fn = _all.get(_name)
-            if not _fn:
+            if _fn is None:
                 continue
             try:
                 _rows = _fn(code)
@@ -145,14 +157,20 @@ def render_event_driven_section(code: str, events: tuple = ("业绩预告", "机
                 continue
             if _rows:
                 _any = True
-                out.append(f"  • {_name}: 取到 {len(_rows)} 条 (东财 datacenter, reportName 待对撞验证)")
+                out.append(
+                    f"  • {_name}: 取到 {len(_rows)} 条 (东财 datacenter, reportName 待对撞验证)"
+                )
         if include_cb:
             try:
                 _cb = convertible_bonds()
-                _has = any(isinstance(_r, dict) and any(str(v) == code for v in _r.values()) for _r in _cb)
+                _has = any(
+                    isinstance(_r, dict) and any(str(v) == code for v in _r.values()) for _r in _cb
+                )
                 if _has:
                     _any = True
-                    out.append(f"  • 可转债: 该标的发行有可转债 (convertible_bonds 已取到 {len(_cb)} 条, 条款/转股价值/溢价率字段待对撞验证)")
+                    out.append(
+                        f"  • 可转债: 该标的发行有可转债 (convertible_bonds 已取到 {len(_cb)} 条, 条款/转股价值/溢价率字段待对撞验证)"
+                    )
             except Exception as _e:
                 _debug_log(f"render_event_driven_section cb({code}) error: {_e}")
     except Exception as _e:
@@ -161,5 +179,7 @@ def render_event_driven_section(code: str, events: tuple = ("业绩预告", "机
     if not _any:
         return []
     out.insert(0, "  事件驱动层(吸收上游 3.9.0 §14/§15, 东财 datacenter):")
-    out.append("  ⚠️ 字段映射待对撞验证(治理铁律): 当前仅展示记录条数与数据溯源, 正式字段解析将在 collide 验证后补全。")
+    out.append(
+        "  ⚠️ 字段映射待对撞验证(治理铁律): 当前仅展示记录条数与数据溯源, 正式字段解析将在 collide 验证后补全。"
+    )
     return out

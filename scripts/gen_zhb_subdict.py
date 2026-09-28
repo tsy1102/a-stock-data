@@ -15,6 +15,7 @@ gen_zhb_subdict.py — 生成 ZHB 镜像分字典 docs/verify/zhb_verify.md
 本模块 import-safe：verify_sync_check 直接 import 其中的
 extract_main_zhb() / extract_subdict_zhb() 做覆盖比对，无需重新生成文件。
 """
+
 import os
 import re
 import sys
@@ -44,7 +45,7 @@ def _zhb_section(md: str) -> str:
     m = re.search(r"^##\s*三、.*ZHB", md, re.M)
     if not m:
         raise RuntimeError("§三 ZHB section not found in main dict")
-    rest = md[m.end():]
+    rest = md[m.end() :]
     nxt = re.search(r"^##\s", rest, re.M)
     end = nxt.start() if nxt else len(rest)
     return rest[:end]
@@ -62,7 +63,7 @@ def _subsection(sec: str, frag: str, boundary_re: str = r"^#{2,4}\s"):
     hm = re.search(frag, sec, re.M)
     if not hm:
         return None
-    lines = sec[hm.start():].splitlines()
+    lines = sec[hm.start() :].splitlines()
     end = len(lines)
     for i, ln in enumerate(lines):
         if i == 0:
@@ -108,7 +109,7 @@ def extract_main_zhb(main_path: str = MAIN) -> dict:
     """{source_key: set(int cols)} from main dict positional tables (authority)."""
     md = open(main_path, encoding="utf-8").read()
     sec = _zhb_section(md)
-    out = {}
+    out: dict[str, set[int]] = {}
     for frag, key, _ in _SOURCES:
         cols = set()
         for ln in _positional_rows(sec, frag):
@@ -123,7 +124,7 @@ def extract_main_contract(main_path: str = MAIN) -> dict:
     """{source_key: set(token)} standard-contract tokens from main dict."""
     md = open(main_path, encoding="utf-8").read()
     sec = _zhb_section(md)
-    out = {}
+    out: dict[str, set[str]] = {}
     for frag, key, _ in _SOURCES:
         toks = set()
         for ln in _contract_rows(sec, frag):
@@ -139,7 +140,7 @@ def extract_subdict_zhb(subdict_path: str = OUT) -> dict:
     if not os.path.exists(subdict_path):
         return {}
     text = open(subdict_path, encoding="utf-8").read()
-    out = {}
+    out: dict[str, set[int]] = {}
     cur = None
     for ln in text.splitlines():
         hm = re.match(r"^#{2,3}\s+(tdxstat|tdxstat2|tipinfo)\b", ln)
@@ -158,7 +159,7 @@ def extract_subdict_contract(subdict_path: str = OUT) -> dict:
     if not os.path.exists(subdict_path):
         return {}
     text = open(subdict_path, encoding="utf-8").read()
-    out = {}
+    out: dict[str, set[str]] = {}
     cur = None
     capture = False
     for ln in text.splitlines():

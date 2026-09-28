@@ -12,10 +12,18 @@
 
 数据来源：通达信 / 多源对撞体系。
 """
+
 import re
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Union
 
 from core.stock_cache import TTL, cached, make_valid_if
+
+
+def _should_use_zhb_for_realtime() -> bool:
+    """延迟读取 canonical 路由，避免 data_provider 与访问器的导入期循环。"""
+    from core.data_provider import _should_use_zhb_for_realtime as should_use_zhb
+
+    return should_use_zhb()
 
 
 def normalize_list_date(raw: Any) -> str:
@@ -48,6 +56,7 @@ def normalize_list_date(raw: Any) -> str:
 
 def get_concept_from_zhb(code: str) -> List[str]:
     from stock_common import _debug_log, _safe_float
+
     """从 ZHB tdxchain.cfg 获取股票所属概念/产业链节点（V14.2 新增）。
 
     Returns:
@@ -60,8 +69,16 @@ def get_concept_from_zhb(code: str) -> List[str]:
     except Exception:
         return []
 
+
+@cached(
+    category="zhb_data",
+    ttl_seconds=TTL["dividend"],
+    trading_day=True,
+    valid_if=make_valid_if(check_zeros=False),
+)
 def get_dividend_yield(code: str) -> Optional[float]:
     from stock_common import _debug_log, _safe_float
+
     """获取股息率。
 
     静态字段：ZHB only（TDX和腾讯都不直接返回股息率，ZHB有完整数据）。
@@ -79,8 +96,11 @@ def get_dividend_yield(code: str) -> Optional[float]:
         pass
     return None
 
+
+@cached(category="stock_quote", ttl_seconds=1800, trading_day=True)
 def get_change_pct(code: str) -> Optional[float]:
     from stock_common import _debug_log, _safe_float
+
     """获取涨跌幅。
 
     优先级：ZHB(盘后) → TDX(TCP+内部缓存) → 腾讯(HTTP fallback)
@@ -122,8 +142,16 @@ def get_change_pct(code: str) -> Optional[float]:
         pass
     return None
 
+
+@cached(
+    category="zhb_data",
+    ttl_seconds=TTL["f10_fund_flow"],
+    trading_day=True,
+    valid_if=make_valid_if(check_zeros=False),
+)
 def get_change_ytd(code: str) -> Optional[float]:
     from stock_common import _debug_log, _safe_float
+
     """获取年初至今涨幅。
 
     静态字段：优先ZHB → K线计算。
@@ -155,8 +183,11 @@ def get_change_ytd(code: str) -> Optional[float]:
         pass
     return None
 
+
+@cached(category="stock_quote", ttl_seconds=1800, trading_day=True)
 def get_amount_wan(code: str) -> Optional[float]:
     from stock_common import _debug_log, _safe_float
+
     """获取成交额（万元）。
 
     V15.1: 优先级 ZHB（T-1）→ 腾讯 HTTP → TDX TCP
@@ -203,8 +234,16 @@ def get_amount_wan(code: str) -> Optional[float]:
         pass
     return None
 
+
+@cached(
+    category="zhb_data",
+    ttl_seconds=TTL["f10_fund_flow"],
+    trading_day=True,
+    valid_if=make_valid_if(),
+)
 def get_main_net_buy(code: str) -> Optional[Dict[str, Any]]:
     from stock_common import _debug_log, _safe_float
+
     """获取主力资金流向。
 
     V17.0 (2026-08-13 字典实锤): 统一口径——优先级 push2delay f137(当日权威, 与 canonical 一致)
@@ -237,7 +276,7 @@ def get_main_net_buy(code: str) -> Optional[Dict[str, Any]]:
         if ff:
             history = tdx_get_history_fund_flow(code, days=5)
             main_net_buy_hands_1d = 0
-            main_net_buy_amount_1d = 0
+            main_net_buy_amount_1d: Union[int, float] = 0
             if history and len(history) >= 2:
                 prev_day = history[1]
                 # H3 修复(2026-08-15 二审): 历史资金流单位=元(东财 get_em_history_fund_flow),
@@ -256,8 +295,16 @@ def get_main_net_buy(code: str) -> Optional[Dict[str, Any]]:
         pass
     return None
 
+
+@cached(
+    category="zhb_data",
+    ttl_seconds=TTL["f10_fund_flow"],
+    trading_day=True,
+    valid_if=make_valid_if(check_zeros=False),
+)
 def get_streak_days(code: str) -> Optional[int]:
     from stock_common import _debug_log, _safe_float
+
     """获取连涨连跌天数。
 
     正=连涨，负=连跌，0=震荡。
@@ -303,4 +350,3 @@ def get_streak_days(code: str) -> Optional[int]:
         _debug_log(f"data_provider error: {_e}")
         pass
     return None
-

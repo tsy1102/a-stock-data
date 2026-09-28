@@ -11,25 +11,29 @@
 注: 期货价格字段非 a-stock f-code 破解字段, 不进 field_dict 治理管线;
     取数层契约经对撞校正, 无需再走 collide 终检。
 """
+
 from __future__ import annotations
 
 import json
 import re
+from typing import Any
 
 import pandas as pd
 
 from stock_common.sc_network import _quick_request
 from ._v39_compat import _fut_price, _to_num, _src_date, _rows, _frame, _contract
 
-SINA_FUT_KLINE_URL = ("https://stock2.finance.sina.com.cn/futures/api/jsonp.php/var%20_{code}="
-                      "/InnerFuturesNewService.getDailyKLine")
+SINA_FUT_KLINE_URL = (
+    "https://stock2.finance.sina.com.cn/futures/api/jsonp.php/var%20_{code}="
+    "/InnerFuturesNewService.getDailyKLine"
+)
 
 # 仅导出公开 API(辅助函数来自 _v39_compat, 不污染 sc_datasource 的 import * 命名空间)
 __all__ = ["futures_kline_sina", "_parse_futures_payload", "SINA_FUT_KLINE_URL"]
 
 
 # ─── 纯解析函数(便于离线测试, 与网络解耦) ───
-def _parse_futures_payload(code, text):
+def _parse_futures_payload(code: str, text: str) -> list[dict[str, Any]]:
     """解析新浪期货日K JSONP 文本 → 行列表(按日期升序, 未做区间过滤)。
 
     返回行字段: date / symbol / open / high / low / close / settle / volume / open_interest。
@@ -40,29 +44,42 @@ def _parse_futures_payload(code, text):
         raise RuntimeError(f"新浪期货日K {code} 的返回不是预期的 JSONP，格式可能已变")
     body = match.group(1).strip()
     if body == "null":
-        raise ValueError(f"新浪没有期货 {code} 的日K：代码不存在，或是约 2022 年以前到期的老合约"
-                         "（郑商所也要写 4 位年月，如 MA2601）")
+        raise ValueError(
+            f"新浪没有期货 {code} 的日K：代码不存在，或是约 2022 年以前到期的老合约"
+            "（郑商所也要写 4 位年月，如 MA2601）"
+        )
     try:
         items = json.loads(body)
     except ValueError as exc:
         raise RuntimeError(f"新浪期货日K {code} 的返回不是 JSON，格式可能已变") from exc
-    rows, seen = [], set()
+    rows: list[dict[str, Any]] = []
+    seen: set[str] = set()
     for r in _rows(items, f"新浪期货日K {code}"):
         day = _src_date(r["d"])
         if day in seen:
             raise RuntimeError(f"新浪期货日K {code} 同一天 {day} 出现两次，结果不可信")
         seen.add(day)
-        rows.append({"date": day, "symbol": code,
-                     "open": _fut_price(r["o"]), "high": _fut_price(r["h"]),
-                     "low": _fut_price(r["l"]), "close": _fut_price(r["c"]),
-                     "settle": _fut_price(r["s"]),        # 新浪没有结算价时给 0 → None
-                     "volume": _to_num(r["v"]), "open_interest": _to_num(r["p"])})
+        rows.append(
+            {
+                "date": day,
+                "symbol": code,
+                "open": _fut_price(r["o"]),
+                "high": _fut_price(r["h"]),
+                "low": _fut_price(r["l"]),
+                "close": _fut_price(r["c"]),
+                "settle": _fut_price(r["s"]),  # 新浪没有结算价时给 0 → None
+                "volume": _to_num(r["v"]),
+                "open_interest": _to_num(r["p"]),
+            }
+        )
     rows.sort(key=lambda row: row["date"])
     return rows
 
 
 @_contract
-def futures_kline_sina(symbol, start=None, end=None):
+def futures_kline_sina(
+    symbol: str, start: str | None = None, end: str | None = None
+) -> pd.DataFrame:
     """国内期货日 K 线（新浪）— 单个合约或主力连续的逐日序列, 覆盖全部六家交易所(含大商所)。
 
     symbol: 'RB0' / 'M0'(主力连续) 或 'RB2601' / 'M2601' / 'IF2612'; 郑商所也写 4 位年月('MA2601'),
@@ -79,8 +96,12 @@ def futures_kline_sina(symbol, start=None, end=None):
     hi = _src_date(end) if end else None
     if lo and hi and lo > hi:
         raise ValueError(f"start {lo} 晚于 end {hi}")
-    response = _quick_request(SINA_FUT_KLINE_URL.format(code=code), params={"symbol": code},
-                              headers={"Referer": "https://finance.sina.com.cn/"}, timeout=15)
+    response = _quick_request(
+        SINA_FUT_KLINE_URL.format(code=code),
+        params={"symbol": code},
+        headers={"Referer": "https://finance.sina.com.cn/"},
+        timeout=15,
+    )
     if response is None:
         raise RuntimeError(f"新浪期货日K {code} 请求失败或被限流")
     rows = _parse_futures_payload(code, response.content.decode("gbk", "replace"))
@@ -88,5 +109,9 @@ def futures_kline_sina(symbol, start=None, end=None):
         rows = [r for r in rows if (not lo or r["date"] >= lo) and (not hi or r["date"] <= hi)]
     if not rows:
         raise ValueError(f"新浪期货 {code} 在所给区间内没有日K（合约当时未上市或已到期）")
-    return _frame(rows, "sina", response.url,
-                  ["date", "symbol", "open", "high", "low", "close", "settle", "volume", "open_interest"])
+    return _frame(
+        rows,
+        "sina",
+        response.url,
+        ["date", "symbol", "open", "high", "low", "close", "settle", "volume", "open_interest"],
+    )

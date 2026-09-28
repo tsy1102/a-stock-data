@@ -20,6 +20,7 @@ registry 为单一真相源，本脚本将其渲染为 field_dict.md 中由标�
 
 幂等: 重复运行对同一 registry 产出一致；§零·B 块与当前 field_dict.md 逐字节一致（G3 闸门）。
 """
+
 from __future__ import annotations
 
 import argparse
@@ -50,8 +51,10 @@ def render_subdict_index(reg: dict) -> str:
     """分字典索引：来自 sources[].verify_file（仅列出有专属分字典的源）。"""
     out = []
     out.append("### 分字典索引（由 field_registry.json 自动生成，勿手改）\n")
-    out.append("> 生成：`scripts/gen_field_dict.py`（Phase 3 起由 field_registry.json 单一真相源读取）。"
-               "本表为「源→分字典」自动索引，权威同步规则见 §12.15.10。\n")
+    out.append(
+        "> 生成：`scripts/gen_field_dict.py`（Phase 3 起由 field_registry.json 单一真相源读取）。"
+        "本表为「源→分字典」自动索引，权威同步规则见 §12.15.10。\n"
+    )
     out.append("| 源 | 分字典（verify/） | 主要章节 |")
     out.append("|:---|:---|:---|")
     n = 0
@@ -64,7 +67,9 @@ def render_subdict_index(reg: dict) -> str:
         out.append(f"| {name} | [{vf}](verify/{vf}) | {sec} |")
         n += 1
     out.append("")
-    out.append(f"> 共 {n} 个源有专属分字典；无分字典的源以主字典自身为权威（见 §12.15.10 强制规则）。\n")
+    out.append(
+        f"> 共 {n} 个源有专属分字典；无分字典的源以主字典自身为权威（见 §12.15.10 强制规则）。\n"
+    )
     return "\n".join(out)
 
 
@@ -103,24 +108,35 @@ def generate(check: bool = False) -> int:
         print("ABORT: field_dict.md 缺少 <!-- GEN:field-matrix --> 标记", file=sys.stderr)
         return 1
     if not ok_subdict:
-        print("[warn] field_dict.md 缺少 <!-- GEN:subdict-index --> 标记，跳过该块"
-              "（请在文档中预置标记区间，详见计划文档 Phase 3）", file=sys.stderr)
+        print(
+            "[warn] field_dict.md 缺少 <!-- GEN:subdict-index --> 标记，跳过该块"
+            "（请在文档中预置标记区间，详见计划文档 Phase 3）",
+            file=sys.stderr,
+        )
 
     if check:
         changed = new_text != text
-        print(f"[check] field-matrix 已写回区={'是' if ok_matrix else '否'}; "
-              f"subdict-index 已写回区={'是' if ok_subdict else '否'}")
-        print(f"[check] 幂等结果: {'一致 ✅（与当前 field_dict.md 无差异）' if not changed else '存在差异（首次生成或 registry 已更新）'}")
+        print(
+            f"[check] field-matrix 已写回区={'是' if ok_matrix else '否'}; "
+            f"subdict-index 已写回区={'是' if ok_subdict else '否'}"
+        )
+        print(
+            f"[check] 幂等结果: {'一致 ✅（与当前 field_dict.md 无差异）' if not changed else '存在差异（首次生成或 registry 已更新）'}"
+        )
         return 0
 
     io.open(DICT, "w", encoding="utf-8").write(new_text)
-    print(f"OK: 写回 field_dict.md（field-matrix={'更新' if ok_matrix else '跳过'}; "
-          f"subdict-index={'更新' if ok_subdict else '跳过'}）")
+    print(
+        f"OK: 写回 field_dict.md（field-matrix={'更新' if ok_matrix else '跳过'}; "
+        f"subdict-index={'更新' if ok_subdict else '跳过'}）"
+    )
     return 0
 
 
 if __name__ == "__main__":
-    _ap = argparse.ArgumentParser(description="由 field_registry.json 生成 field_dict.md 的机器生成区块")
+    _ap = argparse.ArgumentParser(
+        description="由 field_registry.json 生成 field_dict.md 的机器生成区块"
+    )
     _ap.add_argument("--check", action="store_true", help="仅校验幂等（不写回），供 CI 闸门")
     _args = _ap.parse_args()
     sys.exit(generate(check=_args.check))

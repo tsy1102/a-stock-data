@@ -12,11 +12,11 @@ V15.3 修复：
 - sc_report_runner 的 name_resolver 改用 sc_snapshot.get(code)
 - 加 thread lock 防止异步上下文下 race condition
 """
+
 from __future__ import annotations
 
 import threading
-from typing import Any, Dict, Optional
-
+from typing import Any, Dict, ItemsView, Iterator, KeysView, Optional, ValuesView
 
 # 进程内单一股票快照存储
 _snapshot: Dict[str, Dict[str, Any]] = {}
@@ -42,7 +42,7 @@ def get(code: str) -> Optional[Dict[str, Any]]:
         return _snapshot.get(code)
 
 
-def all_codes() -> list:
+def all_codes() -> list[str]:
     """返回所有已注册股票代码列表。"""
     with _lock:
         return list(_snapshot.keys())
@@ -70,31 +70,32 @@ class SnapshotProxy:
         from stock_common.sc_snapshot import SnapshotProxy
         _SNAPSHOT_DATA = SnapshotProxy()  # 模块级单例
     """
-    def __setitem__(self, code, value):
+
+    def __setitem__(self, code: str, value: Dict[str, Any]) -> None:
         register(code, value)
 
-    def __getitem__(self, code):
+    def __getitem__(self, code: str) -> Optional[Dict[str, Any]]:
         return get(code)
 
-    def __contains__(self, code):
+    def __contains__(self, code: str) -> bool:
         return get(code) is not None
 
-    def items(self):
+    def items(self) -> ItemsView[str, Dict[str, Any]]:
         return snapshot_dict().items()
 
-    def keys(self):
+    def keys(self) -> KeysView[str]:
         return snapshot_dict().keys()
 
-    def values(self):
+    def values(self) -> ValuesView[Dict[str, Any]]:
         return snapshot_dict().values()
 
-    def __bool__(self):
+    def __bool__(self) -> bool:
         return bool(snapshot_dict())
 
-    def __iter__(self):
+    def __iter__(self) -> Iterator[str]:
         return iter(snapshot_dict())
 
-    def __len__(self):
+    def __len__(self) -> int:
         return len(snapshot_dict())
 
 

@@ -17,6 +17,7 @@
 设计约束：**纯离线**——create_async_session 被替换为假 session，
 generator_fn 只写本地临时文件；save_snapshot / GD 上传均打桩。
 """
+
 from __future__ import annotations
 
 import argparse
@@ -60,6 +61,7 @@ def _ok_generator_factory(record=None):
             record.append(code)
         with open(path, "w", encoding="utf-8") as f:
             f.write(f"# report {code}\n")
+
     return _gen
 
 
@@ -133,8 +135,7 @@ class TestExecuteBatchPipeline(unittest.TestCase):
         self.assertEqual([x["status"] for x in res["results"]], ["成功", "成功"])
         for item in res["results"]:
             self.assertEqual(item["error"], "")
-            expect = os.path.join(
-                self.out, f"{item['code']}_tst_{r.report_ts}.md")
+            expect = os.path.join(self.out, f"{item['code']}_tst_{r.report_ts}.md")
             self.assertEqual(item["path"], expect)
             self.assertTrue(os.path.exists(item["path"]))
 
@@ -263,10 +264,10 @@ class TestUploadMultiReports(unittest.TestCase):
             "time_str": "20260830_1200",
             "report_type": "tst",
         }
-        with mock.patch.object(sc_report_runner, "upload_stock_report_by_code",
-                               return_value=True) as up:
-            r.upload_multi_reports(object(), "folder", results,
-                                   name_resolver=lambda c: "名字")
+        with mock.patch.object(
+            sc_report_runner, "upload_stock_report_by_code", return_value=True
+        ) as up:
+            r.upload_multi_reports(object(), "folder", results, name_resolver=lambda c: "名字")
         self.assertEqual(up.call_count, 1)
         self.assertEqual(up.call_args[0][2], "600519")
 
@@ -277,10 +278,8 @@ class TestUploadMultiReports(unittest.TestCase):
             "time_str": "20260830_1200",
             "report_type": "tst",
         }
-        with mock.patch.object(sc_report_runner, "upload_stock_report_by_code",
-                               return_value=False):
-            r.upload_multi_reports(object(), "folder", results,
-                                   name_resolver=lambda c: "名字")
+        with mock.patch.object(sc_report_runner, "upload_stock_report_by_code", return_value=False):
+            r.upload_multi_reports(object(), "folder", results, name_resolver=lambda c: "名字")
         self.assertEqual(results["results"][0]["status"], "GD上传失败")
 
     def test_gd_exception_marks_upload_error(self):
@@ -295,8 +294,7 @@ class TestUploadMultiReports(unittest.TestCase):
             raise RuntimeError("GD 炸了")
 
         with mock.patch.object(sc_report_runner, "upload_stock_report_by_code", _boom):
-            r.upload_multi_reports(object(), "folder", results,
-                                   name_resolver=lambda c: "名字")
+            r.upload_multi_reports(object(), "folder", results, name_resolver=lambda c: "名字")
         self.assertEqual(results["results"][0]["status"], "GD上传异常")
 
     def test_non_dict_or_empty_results_is_noop(self):
@@ -316,10 +314,10 @@ class TestUploadMultiReports(unittest.TestCase):
             "time_str": "20260830_1200",
             "report_type": "tst",
         }
-        with mock.patch.object(sc_report_runner, "upload_stock_report_by_code",
-                               return_value=True) as up:
-            r.upload_multi_reports(object(), "folder", results,
-                                   name_resolver=lambda c: "名字")
+        with mock.patch.object(
+            sc_report_runner, "upload_stock_report_by_code", return_value=True
+        ) as up:
+            r.upload_multi_reports(object(), "folder", results, name_resolver=lambda c: "名字")
         self.assertEqual(up.call_count, 1)
         self.assertTrue(up.call_args[0][4].startswith(tempfile.gettempdir()))
 
@@ -329,8 +327,9 @@ class TestDefaultResolveName(unittest.TestCase):
 
     def test_resolves_from_sc_snapshot(self):
         r = _make_runner("/tmp/out")
-        with mock.patch("stock_common.sc_snapshot.get",
-                        return_value={"name": "贵州茅台"}, create=True):
+        with mock.patch(
+            "stock_common.sc_snapshot.get", return_value={"name": "贵州茅台"}, create=True
+        ):
             self.assertEqual(r._default_resolve_name("600519"), "贵州茅台")
 
     def test_falls_back_to_empty_string_on_error(self):

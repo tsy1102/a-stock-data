@@ -37,7 +37,7 @@ norecursedirs = [
 
 # ──────────────────────────────────────────────────────────────────────
 # [2] mypy 配置（静态类型检查器）
-#      - python_version: 最低支持 Python 3.9，myppy target 设为 3.9
+#      - python_version: 最低支持 Python 3.10（sc_schema 使用 dataclass(slots=True)）
 #      - strict = false: 宽松模式
 #      - ignore_missing_imports = true: 忽略未注解的第三方库
 #      - no_implicit_optional = true: 禁止隐式 Optional
@@ -47,7 +47,7 @@ norecursedirs = [
 #      注意：mypy 依赖需手动安装：pip install mypy
 # ──────────────────────────────────────────────────────────────────────
 [tool.mypy]
-python_version = "3.9"
+python_version = "3.10"
 strict = false
 ignore_missing_imports = true
 no_implicit_optional = true
@@ -55,7 +55,7 @@ warn_redundant_casts = true
 warn_return_any = true
 warn_unused_ignores = true
 show_error_codes = true
-files = "*.py"
+files = ["main.py", "get_*_report.py", "core", "stock_common", "scripts", "tests"]
 exclude = [
     "__pycache__",
     "reports",
@@ -66,7 +66,7 @@ exclude = [
 
 # 核心模块更严格（渐进式）
 [[tool.mypy.overrides]]
-module = ["stock_cache", "stock_common.*"]
+module = ["core.stock_cache", "stock_common.*"]
 strict = false
 disallow_untyped_defs = true
 
@@ -76,17 +76,27 @@ module = ["tests.*"]
 disallow_untyped_defs = false
 warn_return_any = false
 
+# These dependencies either require a newer parser target or ship without stubs.
+# Keep third-party internals external while checking against the project's Python 3.10 target.
+[[tool.mypy.overrides]]
+module = ["pytest", "pytest.*", "_pytest", "_pytest.*"]
+follow_imports = "skip"
+
+[[tool.mypy.overrides]]
+module = ["yaml", "yaml.*"]
+follow_imports = "skip"
+
 
 # ──────────────────────────────────────────────────────────────────────
 # [3] black 配置（代码格式化工具）
 #      - line-length: 100 字符（兼顾 readability 与宽屏显示器）
-#      - target-version: 目标 Python 版本 >= 3.9
+#      - target-version: 目标 Python 版本 >= 3.10
 #      - string-normalization: false（保留原引号风格，避免大面积改动）
 #      注意：black 依赖需手动安装：pip install black
 # ──────────────────────────────────────────────────────────────────────
 [tool.black]
 line-length = 100
-target-version = ["py39"]
+target-version = ["py310"]
 skip-string-normalization = true
 include = '\.pyi?$'
 exclude = '''

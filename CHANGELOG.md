@@ -4,6 +4,29 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
+## [Unreleased] 2026-09-28 — 全仓质量整改与验证
+
+### 修复
+
+- 调度器现在会把缺失报告脚本、子进程异常/非零退出和不完整结果正确报告为失败，避免误报成功。
+- 统一限售解禁数量的股数换算，并升级对应缓存类别，防止旧单位缓存继续被当作股数读取。
+- 修复工作日/交易时段边界与 ZHB fallback 处理，并为报告入口增加缺失数据和参数保护。
+- 修正字段采集探针的 Eastmoney 龙虎榜请求参数；恢复该采集器要求的进程间等待，避免请求绕过限速。
+- 修正若干字段登记、生成器、报告和类型边界问题，补充对应回归测试。
+- 收紧主字段字典的来源继承与章节映射，清理重复来源记录；字段登记从 1,820 条增至 1,831 条，字典/矩阵 parity 检查通过。
+
+### 维护
+
+- 按项目 Black 配置统一 154 个源码及测试 Python 文件；修复类型问题后，mypy 对配置范围内的 140 个源码文件零错误。
+- 更新项目上下文、文档索引和测试目录清单，使 Python 目标版本、测试模块数和验证入口与当前仓库状态一致。
+- 未更改公开字段契约、ZHB 列索引或缓存键语义（限售解禁缓存类别升级除外）；项目版本仍为 `17.4.23`，本条记录属于未发布变更。
+
+### 验证
+
+- 离线测试：564 passed、1 skipped、47 deselected；真实网络测试：41 passed、6 skipped、565 deselected。
+- Black：154 个文件通过；mypy：140 个配置范围源码文件、0 errors；`py_compile`：154 个源码/测试文件通过。
+- A1/A7 闸门均为 0 HARD FAIL / 0 WARN；`git diff --check` 通过。
+
 ## [V17.4.23] 2026-09-24 — 报告数据质量修复：ST名单None渲染 + med/lng一致预期源统一
 
 - **问题1 ST名单表 None 字面渲染修复（`stock_common/sc_market_signals.py` `render_st_list_section`）**：val 报告 `【L. 风险警示（ST/*ST）名单】` 节在源可达但个别字段（现价/涨跌幅）为 `None` 时，原代码直接 `r.get('price')`/`r.get('pct_change')` 拼入表格，致渲染出字面 `None`（如 `| 873841 | sz | ST祥盛 | ST | None | None |`），与该节"待源恢复"标题自相矛盾。现新增 `_cell(v)` 辅助：对 `None`/空串统一转义为 `—`；章节标题改为按真实状态动态生成（源异常→`· 待源恢复`+暂缓接入提示；空列表→`· 无数据`；正常→无后缀），消除误导。功能冒烟测试三分支全过。

@@ -34,6 +34,7 @@
   在 **import（收集）阶段**即生效，会把"禁用缓存"泄漏给整个 pytest 会话，
   影响其他用例。现改为 fixture 内 monkeypatch，作用域收束到本文件。
 """
+
 import os
 import sys
 
@@ -78,6 +79,7 @@ async def test_med_report(skip_if_upstream_down):
     """测试中线报告中的 F10 财务深度/股东行为/主营构成章节，以及舆情与互动章节。"""
     _require_fuyao(skip_if_upstream_down)
     from get_med_report import generate_report_async
+
     tmp = tempfile.NamedTemporaryFile(suffix='.txt', delete=False).name
     async with aiohttp.ClientSession() as s:
         r = await generate_report_async(s, '600519', tmp)
@@ -93,6 +95,7 @@ async def test_lng_report(skip_if_upstream_down):
     """测试长线报告中的全部5个F10章节，以及舆情与互动章节。"""
     _require_fuyao(skip_if_upstream_down)
     from get_lng_report import generate_report_async
+
     tmp = tempfile.NamedTemporaryFile(suffix='.txt', delete=False).name
     async with aiohttp.ClientSession() as s:
         r = await generate_report_async(s, '600519', tmp)
@@ -100,7 +103,7 @@ async def test_lng_report(skip_if_upstream_down):
     assert '六、长线筹码沉淀与机构持股倾向' in r, "缺少【长线筹码沉淀与机构持股倾向】章节"
     assert '三、财务健康度排雷' in r, "缺少【财务健康度排雷】章节"
     assert '五、长效股东回报属性' in r, "缺少【长效股东回报属性】章节"
-    assert '四、未来三年机构一致预期' in r, "缺少【未来三年机构一致预期】章节"
+    assert '四、机构一致预期与 PEG 均值回归模型' in r, "缺少【机构一致预期与 PEG 均值回归模型】章节"
     assert '十、舆情与互动' in r, "缺少【十、舆情与互动】章节"
 
 
@@ -110,6 +113,7 @@ async def main():
     print("=" * 60)
 
     from stock_common.sc_fuyao import is_fuyao_enabled
+
     if not is_fuyao_enabled():
         print("跳过：fuyao API Key 未配置，无法验证 F10 实时章节")
         return

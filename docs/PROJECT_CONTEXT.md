@@ -1,90 +1,69 @@
-# 项目静态上下文(PROJECT_CONTEXT)
+# 项目静态上下文（PROJECT_CONTEXT）
 
-> **用途**: 长期不变的项目背景/架构/规范/约束——后续任务**按热/温/冷区分层按需读取**, 不整文档重读。
-> **维护规则**: 仅当出现结构性变化(架构调整/新模块/版本发布)才更新; 字段级/字段字典类变化**不**更新本节(见文档体系)。
-> **更新日期**: 2026-08-17(版本 V17.0.3)
+> **用途**：项目架构、稳定约束与文档索引。任务开始时先按下表读取相关部分，不必重复扫描整份文档。
+> **维护规则**：结构、入口或稳定流程变化时更新；字段语义以主字典为准，运行状态与测试结果以实际检查为准。
+> **更新日期**：2026-09-28（`VERSION`：17.4.23）
 
-## 0. 指引目录(每次任务先查此表, 按需读取)
+## 0. 指引目录
 
-| 任务类型 | 🔥热区(必读) | 🌤️温区(建议) | 🧊冷区(按需才读) |
+| 任务类型 | 热区（必读） | 温区（建议） | 冷区（按需） |
 |---|---|---|---|
-| **字段破解/字典** | AGENTS.md(Shell 规则)+ §5 约束 | §6 文档体系 + CRACKING_METHODOLOGY.md | field_dict 相关节 + verify/ 存档 |
-| **脚本修改/新功能** | AGENTS.md + §3 编码规范 | §2 架构 + script_data_dict(相关字段链) | field_dict 对应源/字段 |
-| **测试/回归** | AGENTS.md §2.1 + §4 测试规则 | 改动的脚本/模块 | 测试文件本身 |
-| **运行/报告核查** | AGENTS.md + §1 背景 | reports/ 最新报告 + session_notes 最新 | 历史报告对比 |
-| **性能/限流** | §2 架构 + §5 限流 | sc_network 相关 | 历史性能记录(session_notes) |
-| **git/发布** | §3 Git 规范 + §5 版本 | CHANGELOG.md + roadmap.md | 历史提交 |
-| **数据采集/验证** | AGENTS.md + §1 | field_verification 当日 + capture_field_probe | 历史采集对比 |
+| 字段破解/字典 | `AGENTS.md` §5、§8 | 文档体系、破解方法 | `field_dict.md`、当日采集归档 |
+| 脚本修改/新功能 | `AGENTS.md` §5、§8 | §2 架构、相关脚本 | 字段字典与缓存契约 |
+| 测试/回归 | `AGENTS.md` §2.1、§9 | 被修改模块 | 对应测试文件 |
+| 运行/报告核查 | `AGENTS.md`、§1 | 最新报告与运行记录 | 历史报告 |
+| 性能/限流 | `AGENTS.md` §8.4 | §2 架构、`sc_network` | 性能记录 |
+| 发布/版本 | `AGENTS.md` §5、§10 | `CHANGELOG.md`、`roadmap.md` | Git 历史 |
+| 数据采集/验证 | `AGENTS.md`、§1 | 当日 `field_verification` 目录 | 历史采集归档 |
 
-**读取原则**: 热区=必须/每次(AGENTS + 本节); 温区=任务相关章节; 冷区=仅该任务需要时才读对应文件。
-**不重复读取**: 完成一次读取后, 同会话内不再重读(除非文件被修改)。
+## 1. 项目目标与运行概况
 
-## 1. 项目背景与目标(🌤️温区: 运行/采集任务)
+- A 股分析项目由 5 个报告入口生成个股与全市场 Markdown 报告：`get_sht_report.py`、`get_med_report.py`、`get_lng_report.py`、`get_val_report.py`、`get_mak_report.py`。
+- `main.py` 负责调度子进程。生产任务按配置顺序执行；报告脚本负责自身流水线与上传。
+- 数据分为离线 ZHB 与实时行情等数据。是否读取 ZHB 或实时源取决于交易日和时段；不能概括成“ZHB 始终优先”。
+- 报告写入 `reports/`，运行缓存位于 `cache/` 或各模块配置的缓存目录；采集原始数据位于 `docs/field_verification/`。
 
-- **A 股盘后分析报告系统**: 5 大脚本生成每日个股/全市场分析报告(markdown), 上传 Google Drive。
-- 运行方式: `python main.py --sht 600519 --med 600519 --lng 600519 --val --mak`(批处理, 每批 1 并发, 三层防封: 线程锁+进程间文件协调+时间戳)。
-- 数据: **ZHB 离线包优先**(T-1, 零网络)→ HTTP/TCP 多源兜底; 休市日=纯 ZHB 横截面(bypass 模式)。
-- 输出: `reports/*.md`(V17.0.1 全量 md 化)+ `snapshots/*.json`; GD 上传。
+## 2. 当前架构与数据路由
 
-## 2. 技术架构(🌤️温区: 脚本/性能/限流任务)
-
-| 层 | 模块 | 说明 |
+| 层 | 入口/模块 | 职责 |
 |---|---|---|
-| 入口 | `main.py`(530 行) | 批处理调度, 输出活性检测(900s 无输出判卡死) |
-| 报告脚本 | `get_sht_report.py`(2014)/`get_med_report.py`(1301)/`get_lng_report.py`(1320)/`get_val_report.py`(2390)/`get_mak_report.py`(1899) | sht=短线 90 日/med=中线 180 日/lng=长线 730 日/val=23 策略全市场/mak=市场全景 A-F 六段 |
-| 核心包 | `core/`(data_provider/tdx_client/zhb_client/zhb_sync/stock_cache) | 统一数据层+协议层+缓存 |
-| 支撑 | `stock_common/`(sc_datasource/sc_network/sc_render/sc_schema/md_render 等) | 数据源/限流/渲染/合约 |
-| 脚本工具 | `scripts/`(run_tests/run_with_system_python/capture_field_probe/sync_readme 等) | 测试/采集/文档同步 |
-| 测试 | `tests/`(**21 文件 / 370 个测试函数**；pytest 实际收集 398 项；**353 passed/45 deselected**) — data 5 文件 113 例 + core 10 文件 179 例 + infra 3 文件 14 例 + reports 3 文件 64 例 | pytest |
+| 调度层 | `main.py` | 解析任务、启动报告子进程、汇总退出结果 |
+| 报告层 | 5 个 `get_*_report.py`、`stock_common/sc_report_runner.py` | 组装分析流程、渲染报告、上传结果 |
+| Tier 1 统一门面 | `core/data_provider.get_canonical_stock_data()` | 核心字段归一化、来源选择、fallback、单位统一与 `field_sources` 溯源 |
+| Tier 2 专项适配器 | `stock_common/sc_datasource`、`sc_fuyao`、`core/tdx_client.py` 等公开函数 | CYQ、F10、涨停梯队、龙虎榜、行业和其他专用数据 |
+| 原始客户端 | `stock_common/`、`core/tdx_client.py` 内部 | HTTP、TCP、SDK 等底层访问；生产报告脚本不得绕过公开门面直连 |
+| 缓存 | `core/stock_cache.py` 及模块适配器 | 按分类 TTL 缓存；数据单位或语义变化时须同步使旧缓存失效 |
 
-**数据源分层**(字典 §12.15 权威): L1 ZHB 静态 → L1.5 THS SDK → L2 TDX TCP → L3 腾讯 → L4 push2delay → L5 push2 → L6 datacenter。批量=push2delay ulist HTTP(secids 参数); 单股 canonical=prefetch→TDX→腾讯→push2delay→push2→ZHB。
+路由要点（以代码为准）：
 
-## 3. 编码规范(🌤️温区: 脚本/git 任务), 详细见 AGENTS.md)
+- 非交易日/节假日以及交易日 09:30 前，`_should_use_zhb_for_realtime()` 允许走 ZHB 路径。
+- 交易日 09:30 起走实时行情路径；盘后仍需实时来源，因为本地 ZHB 快照可能还是 T-1。
+- 单股行情 fallback 顺序由 `core/data_provider.py` 的运行分支实现：TDX → 腾讯 → push2delay → push2。`core/source_priority.py` 中同名顺序只作为测试契约，不能当作运行时路由配置。
+- 字段新鲜度 A/B/C/D 分类由 `sc_datasource.zhb_field_safe()` 控制；字段是否标注“实时”与上述源选择逻辑不是同一概念。
+- 完整架构公理见 `docs/ARCHITECTURE_THEORY.md`，已知偏离见 `docs/DEBT_LEDGER.md`。
 
-- Shell: **仅 Windows PowerShell 5.1**(原生, 不混 bash/cmd); 复杂/中文命令落盘 `.ps1`(UTF-8 with BOM 四行头); **禁止 python 输出接 PS 管道**(分块解码乱码); 外部程序全名+splatting+`$LASTEXITCODE`。
-- Python: 类型注解(公开函数)/`_debug_log`(禁 print)/无裸 except/无可变默认参/`_safe_float` 等; 入口脚本顶部 `ensure_utf8_stdio`。
-- Git: 凭据/密钥不入库(`credentials/*`/通用密钥模式); `cache/`/`reports/`/`raw_*.json`/`meta.json` 忽略。
+## 3. 工程与测试约束
 
-## 4. 测试规则(🌤️温区: 测试任务)
+- 本仓库默认 Windows PowerShell 5.1；Shell、路径、外部程序和验证流程按 `AGENTS.md` 执行。
+- Python 目标版本为 3.10+；项目开发/测试使用 Python 3.12。解释器通过 `scripts/run_with_system_python.ps1` 选择。
+- 运行测试使用 `scripts/run_tests.ps1`，不要从 Shell 直接调用 `pytest`。`real_network` 测试须明确选择。
+- 最近验证快照（2026-09-28）：pytest 收集 612 项；离线模式 564 passed、1 skipped、47 deselected，`real_network` 模式 41 passed、6 skipped、565 deselected。Black 对 154 个源码/测试文件全绿；mypy 对 140 个配置范围源码文件零错误；A1/A7 闸门均为 0 HARD FAIL / 0 WARN。运行状态以当次命令输出为准。
+- 修改后按 `AGENTS.md` §8 做数据契约影响调查，并按 §9 验证；每次改动记录一个可计数指标。
+- `.gitignore` 排除可重建缓存和采集原始数据，同时保留说明文件及明确列出的本地辅助文件。
 
-- 统一入口: `scripts/run_tests.ps1`(禁止直接 `pytest`/`python -m pytest`)。
-- Mode: all(默认)/module+Path/real(需 REAL_NETWORK=1)/skip_real/expression+ExtraArgs。
-- 自定义 marker: `real_network`(需在 pyproject.toml 注册); conftest 自动跳过真网络。
-- 回归基线: **353 passed / 45 deselected, 0 failed**（`skip_real` 模式）。
-  > **基线数字演变（2026-08-30 校正）**：`302`（2026-08-13 V17.0 时点快照，含已随 `ful` 脚本下线的测试）
-  > → `269`（稳定基线，README/CHANGELOG 中的历史条目属**当时真实记录**，不回改）
-  > → `277` = 269 + 8（V17.0.12 新增 `tests/core/test_core_tencent_volume_unit.py` 科创板量纲专项）
-  > → `311` = 277 + 34（报告层第一批：`test_reports_runner.py` 基类骨架 22 + `test_reports_strategy.py` val 策略注册表 12）
-  > → **`353` = 311 + 42**（报告层第二批：`test_reports_pipeline.py` 5 个 Runner 子类 `execute_pipeline` 装配）。
-  > **判回归一律以 353 为准**。
+## 4. 文档索引
 
-## 5. 固定业务约束(🔥热区: 字段/版本相关任务)
-
-- **字段破解纪律**: 每次破解必须遵循 `docs/field_verification/CRACKING_METHODOLOGY.md`(前置→**八大思路**→铁证分级 L1-L4→固化链条)。
-  > ⚠️ 2026-08-30 校正：本节原文写"七大思路"已滞后。方法论于 2026-08-14 增补第 7 条「配置文件直解」
-  > 与第 8 条「多客户端本机文件交叉印证」，2026-08-27 / 08-29 又增补对撞判定标准与多日复核门槛。
-  > **每次破解前必须重读方法论原文**，勿以本节摘要为准。
-- **固化链条**(改字段后强制): ①field_dict → ②矩阵(§12.15/§零·B+gen_field_matrix.py)→ ③5 脚本获取/fallback → ④script_data_dict → ⑤回归。
-- **ZHB 解析缓存版本**: 字段结构变更必须升 `_ZHB_PARSE_SCHEMA`(当前=4; 历史 1→2 加涨停族, 2→3 change_mtd 改名, 3→4 V17.0.9 Col[24] 改名 cash_reserve_wan), 否则旧 pickle 缺新键。
-- **口径铁律**: **主力净额 = f137**（V17.0.16 重定案；旧写 `f137+f140` 属**重复计数**、虚高约 40%——f137 本身已含超大单净 f140 + 大单净 f143；四档为 f140 超大单 / f143 大单 / f146 中单 / **f149 小单**，详见字典 §12.3.4）; ulist 批量侧同理 **主力净 = f62**（不再 +f66）; ZHB main_net_buy_* 键=竞价额/量(非主力); 行业仅认 881 段(880=概念); 交易日口径涨幅; 单位: 万元/元 严格区分。
-- **限流**: push2=0.4rps/push2delay=1.0/datacenter=1.0/腾讯=5.0; 熔断 3 连断→20h; 批量用 push2delay 镜像域。
-- 版本: V17.0.1(CHANGELOG.md 权威); 报告输出 `.md`(md_render.py 渲染层转换)。
-
-## 6. 文档体系(🧊冷区: 字段/文档任务)
-
-| 文档 | 内容 |
+| 文档 | 权威范围 |
 |---|---|
-| `docs/field_dict.md` | **主字段字典**(权威, 3600+ 行: 协议/字段表/矩阵/源优先级) |
-| `docs/script_data_dict.md` | 脚本×源×字段链(双字典对照) |
-| `docs/verify/` | 实证存档(939 指标/682 列 ID/1924 字段/470 X 码/对齐表) |
-| `docs/field_verification/` | 方法论+每日采集产物(analysis 结论入库, raw_*.json/meta.json 忽略) |
-| `docs/session_notes/` | 会话纪要(20260813/20260815/20260816——记忆锚点) |
-| `docs/roadmap.md` | 决策记录(ADR, 破解收官/版本度量) |
-| `docs/domain_glossary.md` | 术语口径 |
+| `docs/field_dict.md` | 字段定义、协议索引与字段来源记录 |
+| `docs/script_data_dict.md` | 报告脚本、字段与数据源的消费关系 |
+| `docs/ARCHITECTURE_THEORY.md` | 架构公理与数据访问边界 |
+| `docs/DEBT_LEDGER.md` | 已知偏离、偿还状态及理由 |
+| `docs/domain_glossary.md` | 项目术语与单位口径 |
+| `docs/field_verification/` | 破解方法、采集数据及字段验证归档 |
+| `docs/roadmap.md`、`CHANGELOG.md` | 决策记录与版本历史 |
+| `docs/PROJECT_AUDIT_REMEDIATION_20260928.md` | 本轮审计整改项目、验收进度与结果 |
 
-## 7. 动态信息(🧊冷区: 每次新读, 不静态化)
+## 5. 动态信息
 
-- 运行日志/报错/测试结果/报告内容(md 质量/数据核查)
-- 采集数据(docs/field_verification/{YYYYMMDD}/)
-- 会话进展(session_notes 每日追加)
-- git 状态/提交历史
+测试结果、Git 状态、采集日期、运行日志和报告质量都可能变化；需要核实时应读取当次命令输出与对应文件，不能沿用历史快照。

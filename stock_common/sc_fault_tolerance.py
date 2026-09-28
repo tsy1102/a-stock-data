@@ -52,7 +52,7 @@ class TokenBucket:
     def __init__(self, requests_per_second: float, max_burst: int = 5):
         self._rate = requests_per_second
         self._max_burst = max_burst
-        self._tokens = max_burst
+        self._tokens: float = max_burst
         self._last_refill = time.time()
         self._lock = threading.Lock()
 
@@ -213,7 +213,7 @@ def exponential_backoff(attempt: int, base: float = 1.0, max_wait: float = 32.0)
     Returns:
         float: 等待时间（秒），带随机抖动
     """
-    wait = base * (2 ** attempt)
+    wait: float = base * (2**attempt)
     wait = min(wait, max_wait)
     jitter = random.uniform(0.5, 1.5)
     return wait * jitter
@@ -237,7 +237,11 @@ def get_domain_circuit_breaker(domain: str) -> CircuitBreaker:
     """获取指定域名的熔断器（懒加载）。"""
     # V16.0: 阈值对齐 config.py（原硬编码 5 vs config 10），避免脱节
     try:
-        from core.config import CIRCUIT_BREAKER_FAILURE_THRESHOLD, CIRCUIT_BREAKER_RESET_TIMEOUT_SECONDS
+        from core.config import (
+            CIRCUIT_BREAKER_FAILURE_THRESHOLD,
+            CIRCUIT_BREAKER_RESET_TIMEOUT_SECONDS,
+        )
+
         _fail_thr = int(CIRCUIT_BREAKER_FAILURE_THRESHOLD)
         _reset_to = float(CIRCUIT_BREAKER_RESET_TIMEOUT_SECONDS)
     except Exception:
@@ -245,8 +249,7 @@ def get_domain_circuit_breaker(domain: str) -> CircuitBreaker:
     with _DOMAIN_FT_LOCK:
         if domain not in _DOMAIN_CIRCUIT_BREAKERS:
             _DOMAIN_CIRCUIT_BREAKERS[domain] = CircuitBreaker(
-                failure_threshold=_fail_thr,
-                reset_timeout=_reset_to
+                failure_threshold=_fail_thr, reset_timeout=_reset_to
             )
         return _DOMAIN_CIRCUIT_BREAKERS[domain]
 

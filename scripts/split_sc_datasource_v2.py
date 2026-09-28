@@ -26,6 +26,7 @@ mock.patch 对包内跨函数调用的生效）不同，本脚本采用「共享
 
 等价性校验：抽取的函数名集合与原文件 162 个 def 名集合完全一致（无遗漏/无重复）。
 """
+
 import ast
 import os
 
@@ -36,8 +37,16 @@ PKG = os.path.join(ROOT, "stock_common", "sc_datasource")
 # 因本脚本仍以该单文件备份作为比对基准，故将文件本身迁至 `docs/backups/` 长期保留。
 BACKUP = os.path.join(ROOT, "docs", "backups", "_sc_datasource_singlefile_backup.py")
 
-BUCKETS = ["_holders", "_eastmoney", "_quotes", "_industry",
-           "_financials", "_pools", "_zhb", "_misc"]
+BUCKETS = [
+    "_holders",
+    "_eastmoney",
+    "_quotes",
+    "_industry",
+    "_financials",
+    "_pools",
+    "_zhb",
+    "_misc",
+]
 
 
 def classify(name: str) -> str:
@@ -46,27 +55,101 @@ def classify(name: str) -> str:
         return "_holders"
     if s.startswith("get_zhb") or s.startswith("zhb_") or s == "is_zhb_data_fresh":
         return "_zhb"
-    if any(k in s for k in ["limit_up", "limit_down", "limit_broken", "yesterday_limit",
-                             "limit_pool", "pool_summary", "stock_monitor", "kpl",
-                             "ths_limit", "limit_ladder"]):
+    if any(
+        k in s
+        for k in [
+            "limit_up",
+            "limit_down",
+            "limit_broken",
+            "yesterday_limit",
+            "limit_pool",
+            "pool_summary",
+            "stock_monitor",
+            "kpl",
+            "ths_limit",
+            "limit_ladder",
+        ]
+    ):
         return "_pools"
-    if any(k in s for k in ["industry", "sector", "peer", "board_list", "board_members",
-                             "belong_board", "em_board"]):
+    if any(
+        k in s
+        for k in [
+            "industry",
+            "sector",
+            "peer",
+            "board_list",
+            "board_members",
+            "belong_board",
+            "em_board",
+        ]
+    ):
         return "_industry"
-    if any(k in s for k in ["tencent", "ths_hot", "concept", "hot_rank", "hot_concept",
-                             "shortline", "chip_race", "fupan", "permanent",
-                             "stock_changes", "em_xuangu", "em_stock_monitor", "ulist",
-                             "quote_full"]):
+    if any(
+        k in s
+        for k in [
+            "tencent",
+            "ths_hot",
+            "concept",
+            "hot_rank",
+            "hot_concept",
+            "shortline",
+            "chip_race",
+            "fupan",
+            "permanent",
+            "stock_changes",
+            "em_xuangu",
+            "em_stock_monitor",
+            "ulist",
+            "quote_full",
+        ]
+    ):
         return "_quotes"
-    if any(k in s for k in ["eastmoney", "em_", "_em_", "dragon", "fund_flow", "fflow",
-                             "cls_telegraph", "datacenter", "prefetch", "northbound",
-                             "hsgt", "cyq", "kline", "baidu"]):
+    if any(
+        k in s
+        for k in [
+            "eastmoney",
+            "em_",
+            "_em_",
+            "dragon",
+            "fund_flow",
+            "fflow",
+            "cls_telegraph",
+            "datacenter",
+            "prefetch",
+            "northbound",
+            "hsgt",
+            "cyq",
+            "kline",
+            "baidu",
+        ]
+    ):
         return "_eastmoney"
-    if any(k in s for k in ["report", "eps", "dividend", "margin", "block_trade",
-                             "sina_financial", "balance", "cash_flow", "lockup", "roe",
-                             "gross_margin", "valuation", "trading_day", "market_status",
-                             "yjyg", "profit_forecast", "news", "calendar",
-                             "stock_info", "get_reports", "extract_report"]):
+    if any(
+        k in s
+        for k in [
+            "report",
+            "eps",
+            "dividend",
+            "margin",
+            "block_trade",
+            "sina_financial",
+            "balance",
+            "cash_flow",
+            "lockup",
+            "roe",
+            "gross_margin",
+            "valuation",
+            "trading_day",
+            "market_status",
+            "yjyg",
+            "profit_forecast",
+            "news",
+            "calendar",
+            "stock_info",
+            "get_reports",
+            "extract_report",
+        ]
+    ):
         return "_financials"
     return "_misc"
 
@@ -78,7 +161,7 @@ def main():
     tree = ast.parse(source)
 
     # 收集全部顶层 def 的覆盖行区间（含装饰器行，避免孤立 @xxx 残留在 __init__）
-    def_spans = []          # (start_line, end_line, name)
+    def_spans = []  # (start_line, end_line, name)
     def_names = []
     for node in tree.body:
         if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
@@ -126,7 +209,7 @@ def main():
     # 域子模块：按 bucket 收集 def 源码（按原文件顺序）
     buckets = {b: [] for b in BUCKETS}
     for start, end, name in sorted(def_spans, key=lambda x: x[0]):
-        seg = "".join(lines[start - 1:end])  # 含装饰器与函数体
+        seg = "".join(lines[start - 1 : end])  # 含装饰器与函数体
         buckets[classify(name)].append(seg)
 
     # 校验：每个 def 名唯一且完整覆盖

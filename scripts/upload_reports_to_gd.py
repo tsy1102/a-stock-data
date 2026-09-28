@@ -11,6 +11,7 @@
 用法:
   python scripts/upload_reports_to_gd.py [--dry-run] [--dir reports]
 """
+
 import sys, os, re, argparse
 
 for _s in (sys.stdout, sys.stderr):
@@ -32,6 +33,7 @@ def _get_stock_name_map():
     """ZHB 全市场 代码→名称(本地,零网络); 缺失时用 code 兜底。"""
     try:
         from core.zhb_client import get_zhb
+
         zhb = get_zhb()
         if zhb is not None:
             return zhb.unified_name_map or {}
@@ -45,10 +47,16 @@ def list_all_files(drive, folder_id):
     names = set()
     page_token = None
     while True:
-        resp = drive.files().list(
-            q=f"'{folder_id}' in parents and mimeType!='application/vnd.google-apps.folder' and trashed=false",
-            fields="nextPageToken, files(name)", pageSize=200, pageToken=page_token,
-        ).execute()
+        resp = (
+            drive.files()
+            .list(
+                q=f"'{folder_id}' in parents and mimeType!='application/vnd.google-apps.folder' and trashed=false",
+                fields="nextPageToken, files(name)",
+                pageSize=200,
+                pageToken=page_token,
+            )
+            .execute()
+        )
         names.update(f["name"] for f in resp.get("files", []))
         page_token = resp.get("nextPageToken")
         if not page_token:
@@ -61,10 +69,16 @@ def list_child_folders(drive, parent_id):
     folders = {}
     page_token = None
     while True:
-        resp = drive.files().list(
-            q=f"'{parent_id}' in parents and mimeType='application/vnd.google-apps.folder' and trashed=false",
-            fields="nextPageToken, files(id, name)", pageSize=100, pageToken=page_token,
-        ).execute()
+        resp = (
+            drive.files()
+            .list(
+                q=f"'{parent_id}' in parents and mimeType='application/vnd.google-apps.folder' and trashed=false",
+                fields="nextPageToken, files(id, name)",
+                pageSize=100,
+                pageToken=page_token,
+            )
+            .execute()
+        )
         for f in resp.get("files", []):
             folders[f["name"]] = f["id"]
         page_token = resp.get("nextPageToken")
@@ -86,8 +100,12 @@ def main():
         return
 
     # 解析目标文件夹
-    from core.gd_uploader import (_make_stock_folder_name, init_gd,
-                             upload_report_to_drive, retry_get_folder_interactive)
+    from core.gd_uploader import (
+        _make_stock_folder_name,
+        init_gd,
+        upload_report_to_drive,
+        retry_get_folder_interactive,
+    )
 
     name_map = _get_stock_name_map()
     targets = {}  # folder_name -> [本地文件名...]
@@ -138,8 +156,9 @@ def main():
         folder_id = existing_folders.get(folder)
         if folder_id is None:
             code_part = folder.split("-")[0]
-            match = [fid for fname, fid in existing_folders.items()
-                     if fname.startswith(code_part + "-")]
+            match = [
+                fid for fname, fid in existing_folders.items() if fname.startswith(code_part + "-")
+            ]
             if match:
                 folder_id = match[0]
                 folder = [fname for fname, fid in existing_folders.items() if fid == folder_id][0]
@@ -177,6 +196,7 @@ def main():
     if proxy_set:
         try:
             from core.gd_uploader import cleanup_gd_proxy
+
             cleanup_gd_proxy(proxy_set)
         except Exception:
             pass

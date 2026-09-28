@@ -16,6 +16,7 @@
   仅东财 push2 kline 的 f61=换手率(%) 是权威口径，故 get_cyq_distribution 走东财。
   若日后有人"改用 TDX 日K 省一次请求"，CYQ 会直接失效——本文件 test_parses_f61_turnover 会拦住。
 """
+
 from __future__ import annotations
 
 import os
@@ -27,6 +28,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspa
 
 import stock_common.sc_datasource as sc_datasource
 from stock_common.sc_datasource import get_cyq_distribution, _eastmoney
+
 # V17.2.18 重构后片段为独立模块: _em_fflow_request 定义在 _eastmoney, get_cyq_distribution 经
 # _eastmoney 命名空间解析; 故补丁须打在 _eastmoney._em_fflow_request (而非包级 re-export 副本)。
 from stock_common.sc_scoring import ScoreData, _score_holder
@@ -56,8 +58,16 @@ class TestCalculateCyq(unittest.TestCase):
     def test_returns_expected_keys(self):
         r = calculate_cyq(*_mk_ohlc())
         self.assertTrue(r, "正常输入应返回非空 dict")
-        for k in ("benefit_pct", "avg_cost", "concentration_90", "concentration_70",
-                  "cost_90_low", "cost_90_high", "cost_70_low", "cost_70_high"):
+        for k in (
+            "benefit_pct",
+            "avg_cost",
+            "concentration_90",
+            "concentration_70",
+            "cost_90_low",
+            "cost_90_high",
+            "cost_70_low",
+            "cost_70_high",
+        ):
             self.assertIn(k, r, f"返回缺少字段 {k}")
 
     def test_ranges_sane(self):
@@ -190,10 +200,12 @@ class TestGetCyqDistribution(_TmpCacheDir):
         self.assertTrue(m.call_args[1].get("prefer_his"))
 
     def test_secid_prefix_multimarket(self):
-        for code, want in (("600519", "1.600519"),   # 沪
-                           ("000001", "0.000001"),   # 深
-                           ("300750", "0.300750"),   # 创业板
-                           ("430047", "0.430047")):  # 北交所(V17.0 S3)
+        for code, want in (
+            ("600519", "1.600519"),  # 沪
+            ("000001", "0.000001"),  # 深
+            ("300750", "0.300750"),  # 创业板
+            ("430047", "0.430047"),
+        ):  # 北交所(V17.0 S3)
             _, m = self._call(_FakeResp({"data": {"klines": _mk_klines()}}), code=code)
             self.assertEqual(m.call_args[0][1]["secid"], want, f"{code} 前缀错误")
 
@@ -202,12 +214,13 @@ class TestGetCyqDistribution(_TmpCacheDir):
 
     def test_returns_empty_on_missing_klines(self):
         for payload in ({}, {"data": None}, {"data": {}}, {"data": {"klines": []}}):
-            self.assertEqual(self._call(_FakeResp(payload))[0], {},
-                             f"payload={payload!r} 应降级返回 {{}}")
+            self.assertEqual(
+                self._call(_FakeResp(payload))[0], {}, f"payload={payload!r} 应降级返回 {{}}"
+            )
 
     def test_skips_malformed_rows(self):
         kl = _mk_klines()
-        kl.insert(0, "bad,row")        # 列数 < 11 → 应跳过
+        kl.insert(0, "bad,row")  # 列数 < 11 → 应跳过
         kl.append("x,y,z")
         r, _ = self._call(_FakeResp({"data": {"klines": kl}}))
         self.assertTrue(r, "跳过坏行后仍应算出 CYQ")
@@ -217,15 +230,18 @@ class TestGetCyqDistribution(_TmpCacheDir):
         self.assertEqual(r, {}, "全部坏行 → 有效收盘 < 2 → {}")
 
     def test_returns_empty_on_exception(self):
-        with mock.patch.object(_eastmoney, "_em_fflow_request",
-                               side_effect=RuntimeError("boom")):
-            self.assertEqual(get_cyq_distribution("600519"), {},
-                             "底层异常应被吞掉并返回 {}（报告不得因 CYQ 中断）")
+        with mock.patch.object(_eastmoney, "_em_fflow_request", side_effect=RuntimeError("boom")):
+            self.assertEqual(
+                get_cyq_distribution("600519"),
+                {},
+                "底层异常应被吞掉并返回 {}（报告不得因 CYQ 中断）",
+            )
 
     def test_returns_empty_on_bad_json(self):
         class _Boom:
             def json(self):
                 raise ValueError("not json")
+
         self.assertEqual(self._call(_Boom())[0], {})
 
 
@@ -271,8 +287,7 @@ class TestCyqDiskCache(_TmpCacheDir):
         self.assertTrue(r, "重取后应得到真实 CYQ")
 
     def test_exception_result_is_not_cached(self):
-        with mock.patch.object(_eastmoney, "_em_fflow_request",
-                               side_effect=RuntimeError("boom")):
+        with mock.patch.object(_eastmoney, "_em_fflow_request", side_effect=RuntimeError("boom")):
             self.assertEqual(get_cyq_distribution("600519"), {})
         _, m = self._call(_FakeResp({"data": {"klines": _mk_klines()}}))
         self.assertEqual(m.call_count, 1, "异常结果不得毒化缓存")
@@ -284,12 +299,15 @@ class TestCyqDiskCache(_TmpCacheDir):
 
     def test_cache_is_per_days(self):
         """days 是缓存键的一部分：240 与 120 的窗口不可混用。"""
-        with mock.patch.object(_eastmoney, "_em_fflow_request",
-                               return_value=_FakeResp({"data": {"klines": _mk_klines()}})) as m:
+        with mock.patch.object(
+            _eastmoney,
+            "_em_fflow_request",
+            return_value=_FakeResp({"data": {"klines": _mk_klines()}}),
+        ) as m:
             get_cyq_distribution("600519", days=240)
-            get_cyq_distribution("600519", days=240)   # 命中缓存
+            get_cyq_distribution("600519", days=240)  # 命中缓存
             self.assertEqual(m.call_count, 1)
-            get_cyq_distribution("600519", days=120)   # 不同窗口 → 必须重新请求
+            get_cyq_distribution("600519", days=120)  # 不同窗口 → 必须重新请求
             self.assertEqual(m.call_count, 2)
 
     def test_cached_payload_keeps_source_marker(self):
@@ -300,12 +318,17 @@ class TestCyqDiskCache(_TmpCacheDir):
 
     def test_cache_failure_does_not_break_cyq(self):
         """缓存层本身不可用（磁盘满/权限）时，CYQ 必须仍能走网络拿到结果。"""
-        with mock.patch.object(_eastmoney, "_em_fflow_request",
-                               return_value=_FakeResp({"data": {"klines": _mk_klines()}})):
-            with mock.patch("stock_common.sc_kline_cache.get_cached_blob",
-                            side_effect=OSError("disk full")):
-                with mock.patch("stock_common.sc_kline_cache.set_cached_blob",
-                                side_effect=OSError("disk full")):
+        with mock.patch.object(
+            _eastmoney,
+            "_em_fflow_request",
+            return_value=_FakeResp({"data": {"klines": _mk_klines()}}),
+        ):
+            with mock.patch(
+                "stock_common.sc_kline_cache.get_cached_blob", side_effect=OSError("disk full")
+            ):
+                with mock.patch(
+                    "stock_common.sc_kline_cache.set_cached_blob", side_effect=OSError("disk full")
+                ):
                     r = get_cyq_distribution("600519")
         self.assertTrue(r, "缓存读写异常应被静默吞掉，CYQ 仍返回结果")
 
@@ -323,8 +346,12 @@ class TestCyqScoring(unittest.TestCase):
 
     def test_scoredata_has_cyq_defaults(self):
         d = _sd()
-        for f in ("cyq_benefit_pct", "cyq_avg_cost",
-                  "cyq_concentration_90", "cyq_concentration_70"):
+        for f in (
+            "cyq_benefit_pct",
+            "cyq_avg_cost",
+            "cyq_concentration_90",
+            "cyq_concentration_70",
+        ):
             self.assertEqual(getattr(d, f), 0.0, f"{f} 缺省应为 0.0")
 
     def test_no_cyq_data_leaves_score_untouched(self):
@@ -363,8 +390,7 @@ class TestCyqScoring(unittest.TestCase):
         self.assertIn("套牢盘较重", details)
 
     def test_combined_cyq_effects(self):
-        score, details = _score_holder(
-            _sd(cyq_concentration_90=0.10, cyq_benefit_pct=0.90))
+        score, details = _score_holder(_sd(cyq_concentration_90=0.10, cyq_benefit_pct=0.90))
         self.assertEqual(score, 66.0, "集中 +12 与获利盘 +4 应叠加")
         self.assertIn("筹码高度集中", details)
         self.assertIn("获利盘丰厚", details)

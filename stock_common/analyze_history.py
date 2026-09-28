@@ -23,7 +23,7 @@
   #
   # 股票数据格式：股票代码: {'name': 名称, 'total_score': 评分, 'price': 价格, 'report_source': 类型}
   #================================================================================
-  
+
   600519: {'name': '贵州茅台', 'total_score': 72.5, 'price': 1680.50, 'report_source': 'ful'}
 
 GD上传功能：
@@ -45,7 +45,13 @@ from stock_common.sc_network import _debug_log
 
 # 导入GD上传相关模块
 try:
-    from core.gd_uploader import init_gd, cleanup_gd_proxy, retry_get_folder_interactive, upload_report_to_drive
+    from core.gd_uploader import (
+        init_gd,
+        cleanup_gd_proxy,
+        retry_get_folder_interactive,
+        upload_report_to_drive,
+    )
+
     GD_AVAILABLE = True
 except ImportError:
     GD_AVAILABLE = False
@@ -138,7 +144,9 @@ def _load_all_snapshots() -> List[Dict[str, Any]]:
     return snapshots
 
 
-def _build_series(snapshots: List[Dict[str, Any]]) -> Dict[Tuple[str, str], List[Tuple[str, float, str]]]:
+def _build_series(
+    snapshots: List[Dict[str, Any]],
+) -> Dict[Tuple[str, str], List[Tuple[str, float, str]]]:
     """按 (股票代码, 报告类型) 分组，收集「日期→评分」序列。
 
     Returns:
@@ -161,8 +169,9 @@ def _build_series(snapshots: List[Dict[str, Any]]) -> Dict[Tuple[str, str], List
     return series
 
 
-def _detect_divergences(series: Dict[Tuple[str, str], List[Tuple[str, float, str]]]
-                        ) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]]]:
+def _detect_divergences(
+    series: Dict[Tuple[str, str], List[Tuple[str, float, str]]],
+) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]]]:
     """检测突变背离与连续趋势。
 
     Returns:
@@ -185,12 +194,18 @@ def _detect_divergences(series: Dict[Tuple[str, str], List[Tuple[str, float, str
             curr_date, curr_score, _ = points[i]
             delta = round(curr_score - prev_score, 1)
             if abs(delta) >= DIVERGENCE_THRESHOLD:
-                divergences.append({
-                    "code": code, "name": name, "type": script_type,
-                    "from_date": prev_date, "to_date": curr_date,
-                    "from_score": prev_score, "to_score": curr_score,
-                    "delta": delta,
-                })
+                divergences.append(
+                    {
+                        "code": code,
+                        "name": name,
+                        "type": script_type,
+                        "from_date": prev_date,
+                        "to_date": curr_date,
+                        "from_score": prev_score,
+                        "to_score": curr_score,
+                        "delta": delta,
+                    }
+                )
 
         # —— 趋势检测：连续同向变化（允许中间小幅波动）——
         if len(points) >= TREND_MIN_DAYS:
@@ -229,13 +244,20 @@ def _detect_divergences(series: Dict[Tuple[str, str], List[Tuple[str, float, str
                 # 总变化幅度需达到显著性门槛才算显著趋势，避免小步累加的噪音
                 if abs(total_delta) >= TREND_SIGNIFICANCE:
                     arrow = "持续上涨📈" if direction > 0 else "持续下跌📉"
-                    trends.append({
-                        "code": code, "name": name, "type": script_type,
-                        "from_date": from_date, "to_date": to_date,
-                        "from_score": from_score, "to_score": to_score,
-                        "delta": total_delta, "days": length + 1,
-                        "arrow": arrow,
-                    })
+                    trends.append(
+                        {
+                            "code": code,
+                            "name": name,
+                            "type": script_type,
+                            "from_date": from_date,
+                            "to_date": to_date,
+                            "from_score": from_score,
+                            "to_score": to_score,
+                            "delta": total_delta,
+                            "days": length + 1,
+                            "arrow": arrow,
+                        }
+                    )
 
     # 突变按变化幅度绝对值降序
     divergences.sort(key=lambda x: abs(x["delta"]), reverse=True)
@@ -276,8 +298,11 @@ def analyze_history(skip_upload: bool = False) -> str:
     for snap in snapshots:
         all_codes.update(snap.get("stocks", {}).keys())
 
-    L(f"  覆盖交易日   : {len(dates)} 天 ({dates[0]} ~ {dates[-1]})" if len(dates) > 1
-      else f"  覆盖交易日   : {dates[0] if dates else '无'}")
+    L(
+        f"  覆盖交易日   : {len(dates)} 天 ({dates[0]} ~ {dates[-1]})"
+        if len(dates) > 1
+        else f"  覆盖交易日   : {dates[0] if dates else '无'}"
+    )
     L(f"  报告类型     : {', '.join(TYPE_LABELS.get(t, t) for t in types)}")
     L(f"  涉及股票数   : {len(all_codes)} 只")
     L("-" * 60)
@@ -313,8 +338,10 @@ def analyze_history(skip_upload: bool = False) -> str:
             score_chg = f"{_fmt_score(d['from_score'])}→{_fmt_score(d['to_score'])}"
             arrow = "↑" if d["delta"] > 0 else "↓"
             delta_str = f"{arrow}{abs(d['delta']):.1f}"
-            L(f"  {d['code']:<8} {d['name'][:8]:<10} {TYPE_LABELS.get(d['type'], d['type']):<6} "
-              f"{date_range:<22} {score_chg:<16} {delta_str:>7}")
+            L(
+                f"  {d['code']:<8} {d['name'][:8]:<10} {TYPE_LABELS.get(d['type'], d['type']):<6} "
+                f"{date_range:<22} {score_chg:<16} {delta_str:>7}"
+            )
         if len(divergences) > 30:
             L(f"  ... 另有 {len(divergences) - 30} 处未展示")
     else:
@@ -332,8 +359,10 @@ def analyze_history(skip_upload: bool = False) -> str:
         for t in trends[:30]:
             date_range = f"{t['from_date']}→{t['to_date']}"
             score_chg = f"{_fmt_score(t['from_score'])}→{_fmt_score(t['to_score'])}({t['days']}日)"
-            L(f"  {t['code']:<8} {t['name'][:8]:<10} {TYPE_LABELS.get(t['type'], t['type']):<6} "
-              f"{date_range:<22} {score_chg:<16} {t['arrow']:<10}")
+            L(
+                f"  {t['code']:<8} {t['name'][:8]:<10} {TYPE_LABELS.get(t['type'], t['type']):<6} "
+                f"{date_range:<22} {score_chg:<16} {t['arrow']:<10}"
+            )
         if len(trends) > 30:
             L(f"  ... 另有 {len(trends) - 30} 个趋势未展示")
     else:
@@ -381,9 +410,9 @@ def _save_analysis_report(content: str) -> str:
 # ────────────────────────────────────────────────────────────────
 def generate_daily_snapshot(script_type: str, stocks: Dict[str, Any]) -> None:
     """生成每日快照（JSON格式）。
-    
+
     每个脚本类型运行完成后调用，生成对应类型的JSON快照文件。
-    
+
     Args:
         script_type: 报告类型（sht/med/lng/ful/val/mak）
         stocks: {股票代码: {name, total_score, price, report_source}} 本次要写入的股票
@@ -392,14 +421,14 @@ def generate_daily_snapshot(script_type: str, stocks: Dict[str, Any]) -> None:
         return
     try:
         os.makedirs(SNAPSHOT_DIR, exist_ok=True)
-        
+
         # 生成日期（使用当天的日期）
         today_str = datetime.now().strftime("%Y%m%d")
         now_ts = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        
+
         # JSON文件名：snapshot_YYYYMMDD_scriptType.json
         json_path = os.path.join(SNAPSHOT_DIR, f"snapshot_{today_str}_{script_type}.json")
-        
+
         # 读取已有数据并合并
         existing_stocks: Dict[str, Any] = {}
         if os.path.exists(json_path):
@@ -422,24 +451,24 @@ def generate_daily_snapshot(script_type: str, stocks: Dict[str, Any]) -> None:
             "stock_count": len(merged_stocks),
             "stocks": merged_stocks,
         }
-        
+
         with open(json_path, "w", encoding="utf-8") as f:
             json.dump(snapshot_data, f, ensure_ascii=False, indent=2)
-        
+
         print(f"  📄 JSON快照已保存: {json_path}")
-        
+
         # 清理旧文件
         cleanup_old_snapshots(script_type, keep_days=4)
-        
+
     except Exception as e:
         print(f"  ⚠️ 快照保存失败: {e}")
 
 
 def cleanup_old_snapshots(script_type: str, keep_days: int = 4) -> None:
     """清理旧的快照文件。
-    
+
     保留每个脚本类型最近 keep_days 个交易日的文件，删除更早的。
-    
+
     Args:
         script_type: 报告类型
         keep_days: 保留的交易日数量
@@ -447,10 +476,10 @@ def cleanup_old_snapshots(script_type: str, keep_days: int = 4) -> None:
     try:
         pattern = os.path.join(SNAPSHOT_DIR, f"snapshot_*_{script_type}.json")
         snapshot_files = glob.glob(pattern)
-        
+
         if len(snapshot_files) <= keep_days:
             return
-        
+
         # 提取日期并排序
         date_files = []
         for file_path in snapshot_files:
@@ -458,12 +487,12 @@ def cleanup_old_snapshots(script_type: str, keep_days: int = 4) -> None:
             # 格式：snapshot_YYYYMMDD_scriptType.json
             date_part = filename.split('_')[1]  # YYYYMMDD
             date_files.append((date_part, file_path))
-        
+
         # 按日期排序，保留最新的 keep_days 个
         date_files.sort(key=lambda x: x[0])
         files_to_keep = date_files[-keep_days:] if len(date_files) > keep_days else date_files
         files_to_delete = [f for f in date_files if f not in files_to_keep]
-        
+
         # 删除旧文件
         for _, file_path in files_to_delete:
             try:
@@ -471,7 +500,7 @@ def cleanup_old_snapshots(script_type: str, keep_days: int = 4) -> None:
                 print(f"  🗑️ 已清理旧文件: {os.path.basename(file_path)}")
             except OSError:
                 pass
-                
+
     except Exception as e:
         print(f"  ⚠️ 清理旧文件失败: {e}")
 

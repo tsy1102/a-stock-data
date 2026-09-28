@@ -20,6 +20,7 @@
   2. 取不到时该判据**不参与**（加分 0.0 + 文本明说"数据缺失"），
      既不伪造利好，也不因此误剔除标的（保持原"缺失不过滤"的宽容度）。
 """
+
 from __future__ import annotations
 
 import asyncio
@@ -63,7 +64,8 @@ class TestStrategy01Turnover(unittest.TestCase):
     def test_uses_pool_realtime_turnover(self):
         # 显式禁止回落 ZHB：若有人改回"只查 ZHB"，此处立刻红而不是静默走网络
         with mock.patch.object(
-            val, "get_turnover_pct_async",
+            val,
+            "get_turnover_pct_async",
             side_effect=AssertionError("池内已有实时值，不得回落 ZHB"),
         ):
             r = _run(val.strategy_01_longhuitou, [_stock(turnover_pct=2.0)], "2026-08-28")
@@ -74,8 +76,7 @@ class TestStrategy01Turnover(unittest.TestCase):
 
     def test_pool_turnover_preferred_over_zhb(self):
         """池内有值时不查 ZHB（ZHB 是 T-1 口径，实时优先）。"""
-        with mock.patch.object(val, "get_turnover_pct_async",
-                               return_value=7.0) as m:
+        with mock.patch.object(val, "get_turnover_pct_async", return_value=7.0) as m:
             r = _run(val.strategy_01_longhuitou, [_stock(turnover_pct=2.0)], "2026-08-28")
         m.assert_not_called()
         self.assertIn("换手率仅2.0%", r[0]["reason"])
@@ -85,6 +86,7 @@ class TestStrategy01Turnover(unittest.TestCase):
     def test_falls_back_to_zhb_when_pool_missing(self):
         async def _zhb(code):
             return 3.0
+
         with mock.patch.object(val, "get_turnover_pct_async", side_effect=_zhb) as m:
             r = _run(val.strategy_01_longhuitou, [_stock()], "2026-08-28")
         m.assert_called_once()
@@ -119,8 +121,7 @@ class TestStrategy01Turnover(unittest.TestCase):
         self.assertEqual([x["code"] for x in r], ["600519"])
 
     def test_zhb_exception_treated_as_missing(self):
-        with mock.patch.object(val, "get_turnover_pct_async",
-                               side_effect=RuntimeError("boom")):
+        with mock.patch.object(val, "get_turnover_pct_async", side_effect=RuntimeError("boom")):
             r = _run(val.strategy_01_longhuitou, [_stock()], "2026-08-28")
         self.assertEqual(len(r), 1)
         self.assertIn("换手率数据缺失", r[0]["reason"])

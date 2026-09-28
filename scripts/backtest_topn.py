@@ -17,6 +17,7 @@
   - mcap_yi 不在 ZHB 中，回测用 amount 作为"活跃度代理"（与排序键一致）
   - 网络策略（02/05/06/17）用 ZHB 近似 K 线
 """
+
 from __future__ import annotations
 
 import csv
@@ -40,7 +41,6 @@ sys.path.insert(0, str(ROOT))
 
 from core.zhb_client import _parse_zhb_data
 
-
 # ═══════════════════════════════════════
 # 配置
 # ═══════════════════════════════════════
@@ -56,13 +56,15 @@ def discover_days() -> List[str]:
     """
     if CACHE_DIR.exists():
         _found = sorted(
-            p.name[len("zhb_"):-len(".zip")]
+            p.name[len("zhb_") : -len(".zip")]
             for p in CACHE_DIR.glob("zhb_*.zip")
             if p.name.startswith("zhb_") and p.name.endswith(".zip")
         )
         if _found:
             return _found
     return list(DAYS)
+
+
 CACHE_DIR = ROOT / "cache" / "zhb"
 OUTPUT_DIR = ROOT / "docs" / "backtest_v1432"
 
@@ -89,6 +91,7 @@ NETWORK_STRATEGIES = {
 # 数据加载
 # ═══════════════════════════════════════
 
+
 def load_zhb_snapshot(day: str) -> Dict[str, Dict[str, Any]]:
     """加载 ZHB zip 包，返回 {code: {字段}} 快照（合并 tdxstat + tdxstat2）。"""
     zip_path = CACHE_DIR / f"zhb_{day}.zip"
@@ -97,6 +100,8 @@ def load_zhb_snapshot(day: str) -> Dict[str, Dict[str, Any]]:
     with open(zip_path, "rb") as f:
         data = f.read()
     zhb = _parse_zhb_data(data)
+    if zhb is None:
+        raise ValueError(f"ZHB 包解析失败: {zip_path}")
     # 合并 tdxstat + tdxstat2
     merged: Dict[str, Dict[str, Any]] = {}
     for code, stat in zhb.stock_stats.items():
@@ -135,6 +140,7 @@ def enrich_stock(stock: Dict[str, Any]) -> Dict[str, Any]:
 # 纯 ZHB 策略模拟
 # ═══════════════════════════════════════
 
+
 def _safe_float(v, default: float = 0.0) -> float:
     try:
         return float(v) if v is not None else default
@@ -170,7 +176,9 @@ def sim_strategy_12(stocks: List[Dict], top_n: int) -> List[str]:
 def sim_strategy_13(stocks: List[Dict], top_n: int) -> List[str]:
     """策略 13: 高股息（mcap_yi >= 50 + dividend_yield 排序）。"""
     candidates = [s for s in stocks if s.get("mcap_yi", 0) >= 50][:top_n]
-    candidates = sorted(candidates, key=lambda x: _safe_float(x.get("dividend_yield", 0)), reverse=True)
+    candidates = sorted(
+        candidates, key=lambda x: _safe_float(x.get("dividend_yield", 0)), reverse=True
+    )
     return [s["code"] for s in candidates[:10]]
 
 
@@ -310,14 +318,16 @@ SIM_STRATEGIES: Dict[str, Callable[[List[Dict], int], List[str]]] = {
 # ═══════════════════════════════════════
 
 
-
 # ═══════════════════════════════════════
 # 主回测流程
 # ═══════════════════════════════════════
 
+
 def main():
     OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
-    print(f"📊 V14.3.2 Top-N 回测验证（{len(DAYS)} 天 × {len(TOP_N_CANDIDATES)} 个 top_n × {len(SIM_STRATEGIES)} 个策略）")
+    print(
+        f"📊 V14.3.2 Top-N 回测验证（{len(DAYS)} 天 × {len(TOP_N_CANDIDATES)} 个 top_n × {len(SIM_STRATEGIES)} 个策略）"
+    )
     print(f"  输出目录: {OUTPUT_DIR.relative_to(ROOT)}")
     print()
 
@@ -361,21 +371,25 @@ def main():
                     cross_day_results[(strategy_name, top_n)].append(selected_set)
                     in_topn = len(selected_set & top_n_stocks)
                     coverage = len(selected_set) / total_universe if total_universe > 0 else 0
-                    results.append({
-                        "day": day,
-                        "top_n": top_n,
-                        "strategy": strategy_name,
-                        "selected_count": len(selected_set),
-                        "hit_in_top_n": in_topn,
-                        "coverage": round(coverage, 4),
-                    })
+                    results.append(
+                        {
+                            "day": day,
+                            "top_n": top_n,
+                            "strategy": strategy_name,
+                            "selected_count": len(selected_set),
+                            "hit_in_top_n": in_topn,
+                            "coverage": round(coverage, 4),
+                        }
+                    )
                 except Exception as e:
                     print(f"  ⚠️ {day} top_n={top_n} {strategy_name} 失败: {e}")
 
     # 3. 输出 daily CSV
     daily_csv = OUTPUT_DIR / "backtest_daily.csv"
     with open(daily_csv, "w", newline="", encoding="utf-8") as f:
-        writer = csv.DictWriter(f, fieldnames=["day", "top_n", "strategy", "selected_count", "hit_in_top_n", "coverage"])
+        writer = csv.DictWriter(
+            f, fieldnames=["day", "top_n", "strategy", "selected_count", "hit_in_top_n", "coverage"]
+        )
         writer.writeheader()
         writer.writerows(results)
     print(f"\n  📄 每日明细: {daily_csv.relative_to(ROOT)}")
@@ -414,7 +428,16 @@ def main():
     summary_csv = OUTPUT_DIR / "backtest_summary.csv"
     with open(summary_csv, "w", newline="", encoding="utf-8") as f:
         writer = csv.writer(f)
-        writer.writerow(["strategy", "top_n", "avg_selected", "avg_hit_in_top_n", "stability_jaccard", "sample_size"])
+        writer.writerow(
+            [
+                "strategy",
+                "top_n",
+                "avg_selected",
+                "avg_hit_in_top_n",
+                "stability_jaccard",
+                "sample_size",
+            ]
+        )
         for strategy in sorted(summary.keys()):
             for top_n in TOP_N_CANDIDATES:
                 if top_n in summary[strategy]:
@@ -422,7 +445,16 @@ def main():
                     avg_sel = d["selected_sum"] / d["count"] if d["count"] else 0
                     avg_hit = d["hit_sum"] / d["count"] if d["count"] else 0
                     stab = _jaccard_stability(cross_day_results.get((strategy, top_n), []))
-                    writer.writerow([strategy, top_n, round(avg_sel, 2), round(avg_hit, 2), round(stab, 4), d["count"]])
+                    writer.writerow(
+                        [
+                            strategy,
+                            top_n,
+                            round(avg_sel, 2),
+                            round(avg_hit, 2),
+                            round(stab, 4),
+                            d["count"],
+                        ]
+                    )
     print(f"  📄 汇总表: {summary_csv.relative_to(ROOT)}")
 
     # 5. 推荐每个策略的最优 top_n（V14.3.2 改进：稳定性优先）
@@ -436,12 +468,20 @@ def main():
         stability_data: Dict[int, float] = {}
         for top_n in TOP_N_CANDIDATES:
             if top_n in summary[strategy]:
-                avg_sel = summary[strategy][top_n]["selected_sum"] / summary[strategy][top_n]["count"]
+                avg_sel = (
+                    summary[strategy][top_n]["selected_sum"] / summary[strategy][top_n]["count"]
+                )
                 saturation_data[top_n] = avg_sel
-                stability_data[top_n] = _jaccard_stability(cross_day_results.get((strategy, top_n), []))
+                stability_data[top_n] = _jaccard_stability(
+                    cross_day_results.get((strategy, top_n), [])
+                )
         # 规则 1：第一个"平均 >= 8 且 Jaccard >= 0.5"的 top_n
         for top_n in TOP_N_CANDIDATES:
-            if top_n in saturation_data and saturation_data[top_n] >= 8 and stability_data[top_n] >= 0.5:
+            if (
+                top_n in saturation_data
+                and saturation_data[top_n] >= 8
+                and stability_data[top_n] >= 0.5
+            ):
                 recommended = top_n
                 break
         # 规则 2：如果都 < 8，取"max selected"的 top_n

@@ -6,6 +6,7 @@
       使沪深名单仍可获取; BJ 始终只能来自东财(治理铁律: 不把源失败伪装成空名单)。
 reportName 常量: 无(clist 过滤, 非 datacenter reportName); _VERIFIED 标记取自上游权威实现(2026-09-22 对撞校正)。
 """
+
 from __future__ import annotations
 import re
 import threading
@@ -17,7 +18,7 @@ from stock_common import _debug_log
 EM_CLIST_HOSTS = ["https://push2.eastmoney.com", "https://push2delay.eastmoney.com"]
 
 
-def _v39_num(value):
+def _v39_num(value: Any) -> Optional[float]:
     if value is None or value == "":
         return None
     t = str(value).replace(",", "").strip()
@@ -37,11 +38,22 @@ def _em_clist_all(fs: str, fields: str, page_size: int = 100) -> Tuple[List[Dict
         rows, page, total = [], 1, None
         try:
             while True:
-                r = _quick_request(url, params={"pn": page, "pz": page_size, "po": 1, "np": 1,
-                                               "fltt": 2, "invt": 2, "fid": "f12",
-                                               "fs": fs, "fields": fields},
-                                  headers={"User-Agent": UA, "Referer": "https://quote.eastmoney.com/"},
-                                  timeout=15)
+                r = _quick_request(
+                    url,
+                    params={
+                        "pn": page,
+                        "pz": page_size,
+                        "po": 1,
+                        "np": 1,
+                        "fltt": 2,
+                        "invt": 2,
+                        "fid": "f12",
+                        "fs": fs,
+                        "fields": fields,
+                    },
+                    headers={"User-Agent": UA, "Referer": "https://quote.eastmoney.com/"},
+                    timeout=15,
+                )
                 if r is None:
                     raise RuntimeError("request_none")
                 try:
@@ -50,15 +62,22 @@ def _em_clist_all(fs: str, fields: str, page_size: int = 100) -> Tuple[List[Dict
                     raise RuntimeError("非 JSON")
                 data = payload.get("data") if isinstance(payload, dict) else None
                 if not isinstance(data, dict) or payload.get("rc") != 0 or not data:
-                    raise RuntimeError(f"东财 clist 返回异常或无数据（fs={fs}）: {str(payload)[:100]}")
-                page_total = int(data.get("total"))
+                    raise RuntimeError(
+                        f"东财 clist 返回异常或无数据（fs={fs}）: {str(payload)[:100]}"
+                    )
+                total_value = data.get("total")
+                if total_value is None:
+                    raise RuntimeError("东财 clist 缺少 total")
+                page_total = int(total_value)
                 diff = data.get("diff") or []
                 if not isinstance(diff, list):
                     diff = list(diff.values())
                 if total is None:
                     total = page_total
                 elif page_total != total:
-                    raise RuntimeError(f"东财 clist 翻页时 total 从 {total} 变成 {page_total}，请重试")
+                    raise RuntimeError(
+                        f"东财 clist 翻页时 total 从 {total} 变成 {page_total}，请重试"
+                    )
                 rows.extend(diff)
                 if not diff or len(rows) >= total:
                     break
@@ -92,9 +111,14 @@ def _parse_st_rec(rec: Dict[str, Any], is_bj: bool) -> Optional[Dict[str, Any]]:
             _debug_log(f"st_stock_list: 认不出的市场号: f12={code} f13={market_id!r}")
             return None
         market = "sh" if market_id == 1 else "sz"
-    return {"code": str(code), "market": market, "name": name,
-            "st_type": "*ST" if name.startswith("*") else "ST",
-            "price": _v39_num(rec.get("f2")), "pct_change": _v39_num(rec.get("f3"))}
+    return {
+        "code": str(code),
+        "market": market,
+        "name": name,
+        "st_type": "*ST" if name.startswith("*") else "ST",
+        "price": _v39_num(rec.get("f2")),
+        "pct_change": _v39_num(rec.get("f3")),
+    }
 
 
 def _st_list_baostock() -> List[Dict[str, Any]]:
@@ -103,7 +127,7 @@ def _st_list_baostock() -> List[Dict[str, Any]]:
     用守护线程 + join 硬超时(20s)包裹, 避免受限网络下 baostock 挂起拖垮整份报告。
     返回与 _parse_st_rec 同形状的记录(无价格/涨跌幅); 未安装/失败/超时返回 []。
     """
-    box: Dict[str, Any] = {}
+    box: Dict[str, List[Dict[str, Any]]] = {}
 
     def _inner() -> List[Dict[str, Any]]:
         try:
@@ -114,7 +138,9 @@ def _st_list_baostock() -> List[Dict[str, Any]]:
         try:
             lg = bs.login(timeout=15)
             if getattr(lg, "error_code", "1") != "0":
-                _debug_log(f"st_stock_list: baostock 登录失败({getattr(lg, 'error_msg', '?')}), 跳过兜底")
+                _debug_log(
+                    f"st_stock_list: baostock 登录失败({getattr(lg, 'error_msg', '?')}), 跳过兜底"
+                )
                 return []
             rs = bs.query_stock_basic()
             rows: List[Dict[str, Any]] = []
@@ -130,9 +156,16 @@ def _st_list_baostock() -> List[Dict[str, Any]]:
                 prefix, c = code_full.split(".", 1)
                 if prefix not in ("sh", "sz"):
                     continue  # baostock 仅 sh/sz, 无 bj(不支持北交所)
-                rows.append({"code": c, "market": prefix, "name": name.strip(),
-                             "st_type": "*ST" if name.startswith("*") else "ST",
-                             "price": None, "pct_change": None})
+                rows.append(
+                    {
+                        "code": c,
+                        "market": prefix,
+                        "name": name.strip(),
+                        "st_type": "*ST" if name.startswith("*") else "ST",
+                        "price": None,
+                        "pct_change": None,
+                    }
+                )
             return rows
         except Exception as exc:
             _debug_log(f"st_stock_list: baostock 兜底异常({exc}), 跳过")
@@ -192,4 +225,4 @@ def st_stock_list() -> List[Dict[str, Any]]:
 
 
 _VERIFIED = True  # 取自上游权威仓库(2026-09-22 对撞校正); V17.4.2 接入 baostock 兜底(仅沪深)
-                # 主源(沪深)不可达时走 baostock 兜底; 北交所仅来自东财(baostock 不支持北交所, 上游 §6.8 已知限制)
+# 主源(沪深)不可达时走 baostock 兜底; 北交所仅来自东财(baostock 不支持北交所, 上游 §6.8 已知限制)

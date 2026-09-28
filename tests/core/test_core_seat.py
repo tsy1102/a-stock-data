@@ -5,6 +5,7 @@
 2. seat_aliases 别名匹配
 3. keywords_map 独有兜底（6 个券商+营业部全称变体）
 """
+
 import unittest
 
 
@@ -13,6 +14,7 @@ class TestIdentifySeatTier(unittest.TestCase):
 
     def _identify(self, seat_name):
         from stock_common.seat_db import identify_seat_tier
+
         return identify_seat_tier(seat_name)
 
     def test_tiers_exact_match(self):

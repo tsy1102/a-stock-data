@@ -76,8 +76,7 @@ def _dict_lines(data: dict, indent: str = "    ") -> list[str]:
     return lines
 
 
-def generate_calendar_file(holidays: dict, workdays: dict,
-                           min_year: int, max_year: int) -> str:
+def generate_calendar_file(holidays: dict, workdays: dict, min_year: int, max_year: int) -> str:
     """生成完整的 stock_calendar.py 文件内容。"""
     hl = "\n".join(_dict_lines(holidays))
     wl = "\n".join(_dict_lines(workdays))
@@ -217,12 +216,9 @@ def data_years() -> tuple:
 
 def main():
     parser = argparse.ArgumentParser(description="更新 stock_calendar.py 日历数据")
-    parser.add_argument("--check", action="store_true",
-                        help="仅检查 chinese-calendar 库的年份范围")
-    parser.add_argument("--backup", action="store_true",
-                        help="更新前自动备份旧文件")
-    parser.add_argument("--dry-run", action="store_true",
-                        help="仅预览生成内容，不写入文件")
+    parser.add_argument("--check", action="store_true", help="仅检查 chinese-calendar 库的年份范围")
+    parser.add_argument("--backup", action="store_true", help="更新前自动备份旧文件")
+    parser.add_argument("--dry-run", action="store_true", help="仅预览生成内容，不写入文件")
     args = parser.parse_args()
 
     holidays, workdays, min_year, max_year = _get_lib_data()

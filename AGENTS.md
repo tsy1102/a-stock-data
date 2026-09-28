@@ -184,7 +184,8 @@ def test_approx():
 
 使用范围(本仓库现状):
 
-- 17 个测试文件已在 `tests/` 跑通(含 `@pytest.fixture`、`@pytest.mark.real_network`、`pytest.skip`、`pytest_asyncio` 等)
+- 截至 2026-09-28，`tests/` 有 43 个测试模块、最近收集 612 个参数化测试项；离线与 `real_network` 验证结果见 `docs/PROJECT_AUDIT_REMEDIATION_20260928.md`。
+- 测试使用 `@pytest.fixture`、`@pytest.mark.real_network`、`pytest.skip`、`pytest_asyncio` 等 pytest API。
 - `tests/conftest.py` 提供 `_no_real_network` autouse fixture 和 `endpoint` 参数化 fixture
 - `pyproject.toml` `[tool.pytest.ini_options]` 集中管 `testpaths` / `addopts` / `markers` / `norecursedirs`
 
@@ -223,14 +224,14 @@ def test_approx():
 .\scripts\run_tests.ps1 -Mode expression -Expression "test_cache"      # 用 -k 表达式
 ```
 
-底层 [run_with_system_python.ps1](scripts/run_with_system_python.ps1) 负责强制使用系统 Python 3.12,
+底层 [run_with_system_python.ps1](scripts/run_with_system_python.ps1) 负责选择 Python 3.12（显式环境变量优先，其次项目 `.venv`，再探测系统 Python），
 `run_tests.ps1` 只负责装配参数 + 透传退出码。
 
 #### 2.1.3 排错清单(测试跑不起来时,按顺序查)
 
 | 现象 | 原因 | 验证命令 |
 |---|---|---|
-| `[ERROR] System Python 3.12 not found` | `run_with_system_python.ps1` 自动探测失败 | 设 `SYSTEM_PYTHON_EXE` 环境变量指向系统 Python 3.12，或安装 Python 3.12 后重试（探测顺序：env > py -3.12 > Windows Store 包 > PATH） |
+| `[ERROR] System Python 3.12 not found` | `run_with_system_python.ps1` 自动探测失败 | 设 `SYSTEM_PYTHON_EXE` 指向 Python 3.12，或安装 Python 3.12 后重试（探测顺序：env > 项目 `.venv` 3.12 > py -3.12 > Windows Store 包 > PATH） |
 | `ModuleNotFoundError: No module named 'pytest'` | dev 依赖没装 | `pip install -r requirements-dev.txt` |
 | `no tests ran` / `collection error` | 工作目录不是仓库根 | `Test-Path -LiteralPath pyproject.toml`(应 True) |
 | 默认 `Mode=all` 一上来就 import error | 某个真网络测试在 collection 阶段炸 | 改用 `.\scripts\run_tests.ps1 -Mode module -Path <单文件>` |

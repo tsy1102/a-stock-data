@@ -6,6 +6,7 @@
 reportName 常量: 2026-09-22 经上游权威仓库 SKILL.md 对撞校正 —— 原候选 RPT_CB_LIST 错误,
 已订正为上游验证过的 RPT_BOND_CB_LIST(verify 终检仍按治理铁律待本项目 collide 确认字段语义)。
 """
+
 from __future__ import annotations
 from typing import Any, Dict, List
 import time
@@ -34,7 +35,9 @@ def convertible_bonds(include_delisted: bool = False) -> List[Dict[str, Any]]:
     V17.4.1: 拉全量后在 Python 侧按 STATUS 过滤(避免错误过滤串掩盖 reportName 真伪, 便于对撞验证)。
     """
     try:
-        rows = eastmoney_datacenter("", _EM_REPORTS["convertible_bonds"], filter_str="", page_size=500)
+        rows = eastmoney_datacenter(
+            "", _EM_REPORTS["convertible_bonds"], filter_str="", page_size=500
+        )
     except Exception as _e:
         _debug_log(f"convertible_bonds: 取值失败 -> {_e}")
         return []

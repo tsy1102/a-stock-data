@@ -5,6 +5,7 @@ V12.2: 将分散在各模块中的硬编码常量集中到此处，便于统一�
 使用方式：
     from core.config import HTTP_TIMEOUT_SECONDS, MAX_RETRY_COUNT
 """
+
 from __future__ import annotations
 
 # ═══════════════════════════════════════

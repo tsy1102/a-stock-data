@@ -20,15 +20,32 @@ import json
 import threading
 import socket
 import logging
-from typing import Any, Dict, Optional, Tuple
+from typing import (
+    Any,
+    Callable,
+    Dict,
+    List,
+    Literal,
+    Optional,
+    ParamSpec,
+    Tuple,
+    TypeVar,
+    Union,
+    cast,
+    overload,
+)
 from urllib.parse import urlparse
 from tempfile import gettempdir as _gettempdir
 
 import requests
 import urllib3
 
+P = ParamSpec("P")
+R = TypeVar("R")
+
 try:
     from core.config import EM_MIN_INTERVAL, HTTP_TIMEOUT_SECONDS
+
     _USE_CONFIG = True
 except ImportError:
     EM_MIN_INTERVAL = 1.0
@@ -37,9 +54,12 @@ except ImportError:
 
 try:
     from stock_common.sc_fault_tolerance import (
-        get_random_ua, get_random_referer, exponential_backoff,
+        get_random_ua,
+        get_random_referer,
+        exponential_backoff,
         get_domain_circuit_breaker,
     )
+
     _HAS_FAULT_TOLERANCE = True
 except ImportError:
     _HAS_FAULT_TOLERANCE = False
@@ -51,26 +71,54 @@ urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 # ═══════════════════════════════════════
 __all__ = [
     # 日志
-    '_LOG_DIR', '_http_logger', '_biz_logger', '_fallback_logger', '_DEBUG', '_debug_log',
+    '_LOG_DIR',
+    '_http_logger',
+    '_biz_logger',
+    '_fallback_logger',
+    '_DEBUG',
+    '_debug_log',
     # 常量
-    'UA', 'DATACENTER_URL', 'JP_URL',
+    'UA',
+    'DATACENTER_URL',
+    'JP_URL',
     # Session
-    'EM_SESSION', 'EM_MIN_INTERVAL', '_EM_LAST_CALL',
+    'EM_SESSION',
+    'EM_MIN_INTERVAL',
+    '_EM_LAST_CALL',
     # 限流
-    '_DOMAIN_LIMITS', '_DOMAIN_LAST_TIME', '_DOMAIN_LAST_TIME_LOCK', '_RL_STATS',
+    '_DOMAIN_LIMITS',
+    '_DOMAIN_LAST_TIME',
+    '_DOMAIN_LAST_TIME_LOCK',
+    '_RL_STATS',
     # 进程间锁
-    '_em_lock_dir', '_em_lock_file', '_gen_lock_file',
-    '_file_lock_acquire', '_file_lock_release',
+    '_em_lock_dir',
+    '_em_lock_file',
+    '_gen_lock_file',
+    '_file_lock_acquire',
+    '_file_lock_release',
     # 同步请求
-    'em_get', '_em_wait_process_interval', '_gen_wait_process_interval',
-    '_request_with_retry', '_quick_request', '_do_request',
-    '_log_rate_limit', 'print_rate_limit_stats', '_market_code',
+    'em_get',
+    '_em_wait_process_interval',
+    '_gen_wait_process_interval',
+    '_request_with_retry',
+    '_quick_request',
+    '_do_request',
+    '_log_rate_limit',
+    'print_rate_limit_stats',
+    '_market_code',
     # 异步请求
-    '_em_async_lock', '_gen_async_lock', '_em_async_last_request',
-    '_gen_async_last_request', '_HAS_ASYNCIO', '_HAS_AIOHTTP',
-    '_ensure_async_locks', '_em_wait_process_interval_async',
-    '_gen_wait_process_interval_async', 'create_async_session',
-    '_async_request_with_retry', '_async_quick_request',
+    '_em_async_lock',
+    '_gen_async_lock',
+    '_em_async_last_request',
+    '_gen_async_last_request',
+    '_HAS_ASYNCIO',
+    '_HAS_AIOHTTP',
+    '_ensure_async_locks',
+    '_em_wait_process_interval_async',
+    '_gen_wait_process_interval_async',
+    'create_async_session',
+    '_async_request_with_retry',
+    '_async_quick_request',
     'requires_push2',
     'RateLimitBlockedError',
 ]
@@ -110,15 +158,19 @@ _fallback_logger.setLevel(logging.INFO)
 # ═══════════════════════════════════════
 _DEBUG = os.environ.get("STOCK_DEBUG", "") == "1"
 
+
 def _debug_log(msg: str) -> None:
     """仅在 _DEBUG 模式下输出到 stderr。"""
     if _DEBUG:
         print(f"[stock_common] {msg}", file=sys.stderr, flush=True)
 
+
 # ═══════════════════════════════════════
 # 常量
 # ═══════════════════════════════════════
-UA: str = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36"
+UA: str = (
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36"
+)
 DATACENTER_URL: str = "https://datacenter-web.eastmoney.com/api/data/v1/get"
 JP_URL: str = "http://83.push2.eastmoney.com/api/qt/clist/get"
 
@@ -130,7 +182,7 @@ JP_URL: str = "http://83.push2.eastmoney.com/api/qt/clist/get"
 EM_SESSION = requests.Session()
 EM_SESSION.headers.update({"User-Agent": UA})
 EM_SESSION.trust_env = False  # 不读取系统代理环境变量
-_EM_LAST_CALL = [0.0]          # 模块级上次请求时间戳（列表实现可变）
+_EM_LAST_CALL = [0.0]  # 模块级上次请求时间戳（列表实现可变）
 
 # V16 增强: 通用 Session（非东财域名也复用 keep-alive，降低 TCP 握手开销）
 _HTTP_SESSION = requests.Session()
@@ -261,7 +313,7 @@ _EM_PUSH2_FAMILY = (
 # V16.2.8: 参考仓库 PR#36 防封铁律（luodada99 实战案例）——
 # 连续 3 次 RemoteDisconnected → 标记该风控面封禁 → 后续请求直接跳过（不浪费请求、不加重封禁）。
 # IP 级封禁实测恢复 **20+ 小时**（远超原文档"30-60 分钟"估计，文案已同步修正）。
-_EM_BAN_STREAK: Dict[str, int] = {}   # 归一化域 → 连续断连次数
+_EM_BAN_STREAK: Dict[str, int] = {}  # 归一化域 → 连续断连次数
 _EM_BANNED_UNTIL: Dict[str, float] = {}  # 归一化域 → 封禁解除时间戳
 _EM_BAN_THRESHOLD = 3
 _EM_BAN_COOLDOWN = 20 * 3600  # 20 小时
@@ -278,8 +330,13 @@ _EM_BANNED_CACHE: Dict[str, Any] = {"ts": 0.0, "data": {}}  # 进程内缓存（
 def _load_banned_file() -> Dict[str, float]:
     """读取跨进程封禁态（带 5s 进程内缓存）。"""
     _now = time.time()
-    if _now - _EM_BANNED_CACHE.get("ts", 0.0) < 5.0 and _EM_BANNED_CACHE.get("data") is not None:
-        return _EM_BANNED_CACHE["data"]
+    cached_data = _EM_BANNED_CACHE.get("data")
+    if _now - _EM_BANNED_CACHE.get("ts", 0.0) < 5.0 and isinstance(cached_data, dict):
+        return {
+            str(key): float(value)
+            for key, value in cached_data.items()
+            if isinstance(value, (int, float))
+        }
     _data: Dict[str, float] = {}
     try:
         if os.path.exists(_EM_BANNED_FILE):
@@ -435,6 +492,7 @@ def _get_eastmoney_cookie() -> str:
     if _EM_COOKIE_LOADED:
         return _EM_COOKIE or ""
     import os as _os
+
     # 1) 环境变量
     val = _os.environ.get("EAST_MONEY_COOKIE", "")
     if val:
@@ -443,8 +501,12 @@ def _get_eastmoney_cookie() -> str:
         return _EM_COOKIE
     # 2) 配置文件（V17.0.13: 凭据集中 credentials/，旧 config/ 路径保留兼容）
     for candidate in (
-        os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "credentials", "eastmoney_cookie.txt"),
-        os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "config", "eastmoney_cookie.txt"),
+        os.path.join(
+            os.path.dirname(os.path.abspath(__file__)), "..", "credentials", "eastmoney_cookie.txt"
+        ),
+        os.path.join(
+            os.path.dirname(os.path.abspath(__file__)), "..", "config", "eastmoney_cookie.txt"
+        ),
         os.path.join(os.path.dirname(os.path.abspath(__file__)), "eastmoney_cookie.txt"),
     ):
         p = os.path.normpath(candidate)
@@ -460,8 +522,13 @@ def _get_eastmoney_cookie() -> str:
     return _EM_COOKIE or ""
 
 
-def em_get(url: str, params: dict | None = None, headers: dict | None = None,
-           timeout: int = 15, **kwargs):
+def em_get(
+    url: str,
+    params: Optional[Dict[str, Any]] = None,
+    headers: Optional[Dict[str, str]] = None,
+    timeout: int = 15,
+    **kwargs: Any,
+) -> Optional[requests.Response]:
     """东财统一请求入口（SKILL.md V3.2 推荐）：自动节流 + 复用session + 默认UA。
 
     V12.1: 集成容错层 - 令牌桶限流 + 熔断器 + 随机UA
@@ -481,9 +548,12 @@ def em_get(url: str, params: dict | None = None, headers: dict | None = None,
     import random as _rand
     from urllib.parse import urlparse
     from stock_common.sc_fault_tolerance import (
-        get_domain_token_bucket, get_domain_circuit_breaker, 
-        get_random_ua, CircuitBreakerError
+        get_domain_token_bucket,
+        get_domain_circuit_breaker,
+        get_random_ua,
+        CircuitBreakerError,
     )
+
     # V17.2.x: _EM_COOKIE_FAIL_COUNT 是模块级全局(151 行初始化), 本函数内 += / = 重绑定,
     # 必须声明 global, 否则 403/429 命中时抛 UnboundLocalError(引用前赋值)。
     global _EM_COOKIE_FAIL_COUNT
@@ -562,8 +632,9 @@ def em_get(url: str, params: dict | None = None, headers: dict | None = None,
         # ConnectionError，使其落入下方连接级 except（_record_em_disconnect→封禁跳过/return None）的兜底路径。
         _resolve_host_with_timeout(_domain)
 
-        _response = EM_SESSION.get(url, params=params, headers=session_headers,
-                                   timeout=timeout, **kwargs)
+        _response = EM_SESSION.get(
+            url, params=params, headers=session_headers, timeout=timeout, **kwargs
+        )
 
         # V16.2 修复: 403/429 统一走失败路径 —— 不再返回响应走"成功"分支（原 403 后仍 _on_success 并返回 403 响应）
         _status = _response.status_code
@@ -581,13 +652,17 @@ def em_get(url: str, params: dict | None = None, headers: dict | None = None,
                         "    2. F12 → Console → 输入 document.cookie → 回车\n"
                         "    3. 复制输出内容，替换 credentials/eastmoney_cookie.txt 文件全文\n"
                         "    4. 或执行: setx EAST_MONEY_COOKIE \"粘贴的内容\" 后重启终端\n"
-                        + "⚠️" * 20 + "\n", flush=True,
+                        + "⚠️" * 20
+                        + "\n",
+                        flush=True,
                     )
                     _EM_COOKIE_FAIL_COUNT = 0  # 只提醒一次，重置计数
             else:
                 _EM_COOKIE_FAIL_COUNT = 0
             _RL_STATS["em_403_count"] += 1 if _status == 403 else 0
-            _RL_STATS["em_429_count"] = _RL_STATS.get("em_429_count", 0) + (1 if _status == 429 else 0)
+            _RL_STATS["em_429_count"] = _RL_STATS.get("em_429_count", 0) + (
+                1 if _status == 429 else 0
+            )
             try:
                 _biz_logger.warning(f"EM {_status} rate-limited: {_domain} {url[:120]}")
             except Exception:
@@ -634,8 +709,9 @@ def em_get(url: str, params: dict | None = None, headers: dict | None = None,
                         _EM_LAST_CALL[0] = time.time()
                     except Exception:
                         pass
-                    _r2 = EM_SESSION.get(url, params=params, headers=session_headers,
-                                         timeout=timeout, **kwargs)
+                    _r2 = EM_SESSION.get(
+                        url, params=params, headers=session_headers, timeout=timeout, **kwargs
+                    )
                     if _r2 is not None and _r2.status_code not in (403, 429):
                         try:
                             get_domain_circuit_breaker(_ft_domain)._on_success()
@@ -664,7 +740,9 @@ def em_get(url: str, params: dict | None = None, headers: dict | None = None,
         except Exception:
             pass
         # V16.2.8: 连接级断连（RemoteDisconnected 等）累计 → 标记封禁跳过（参考仓库 PR#36）
-        if isinstance(_e, (requests.exceptions.ConnectionError, requests.exceptions.ConnectTimeout)):
+        if isinstance(
+            _e, (requests.exceptions.ConnectionError, requests.exceptions.ConnectTimeout)
+        ):
             _record_em_disconnect(_ft_domain)
         raise
     finally:
@@ -674,8 +752,9 @@ def em_get(url: str, params: dict | None = None, headers: dict | None = None,
         _RL_STATS["em_request_count"] += 1
 
 
-def _process_interval_wait(lock_file: str, target_interval: float,
-                           use_lock: bool = False, use_content_ts: bool = False) -> float:
+def _process_interval_wait(
+    lock_file: str, target_interval: float, use_lock: bool = False, use_content_ts: bool = False
+) -> float:
     """V17.0 R2: 进程间协调核心(sync 版)——EM/GEN 原 2 函数收敛。
 
     Args:
@@ -734,23 +813,37 @@ def _process_interval_wait(lock_file: str, target_interval: float,
 def _em_wait_process_interval() -> float:
     """V17.0 R2: EM sync 薄包装(文件锁 + 内容时间戳 + 1.0-1.3s)。"""
     import random as _rand
+
     return _process_interval_wait(
-        _em_lock_file, 1.0 + _rand.uniform(0.10, 0.30), use_lock=True, use_content_ts=True,
+        _em_lock_file,
+        1.0 + _rand.uniform(0.10, 0.30),
+        use_lock=True,
+        use_content_ts=True,
     )
 
 
 def _gen_wait_process_interval() -> float:
     """V17.0 R2: GEN sync 薄包装(无锁 + mtime + 0.2s)。"""
     import random as _rand
+
     return _process_interval_wait(
-        _gen_lock_file, 0.2 + _rand.uniform(0.01, 0.05), use_lock=False, use_content_ts=False,
+        _gen_lock_file,
+        0.2 + _rand.uniform(0.01, 0.05),
+        use_lock=False,
+        use_content_ts=False,
     )
 
 
-def _request_with_retry(url: str, params: Optional[Dict[str, Any]] = None,
-                        headers: Optional[Dict[str, str]] = None, timeout: int = 15,
-                        max_retries: int = 3, data: Optional[Dict[str, Any]] = None,
-                        method: str = "GET", verify: bool = True) -> Optional[requests.Response]:  # V16.2: 默认校验证书
+def _request_with_retry(
+    url: str,
+    params: Optional[Dict[str, Any]] = None,
+    headers: Optional[Dict[str, str]] = None,
+    timeout: int = 15,
+    max_retries: int = 3,
+    data: Optional[Union[Dict[str, Any], str, bytes]] = None,
+    method: str = "GET",
+    verify: bool = True,
+) -> Optional[requests.Response]:  # V16.2: 默认校验证书
     """V17.0 S2: 兼容别名——统一走 _quick_request(封禁跳过 + EM 容错 + 跨进程锁)。
 
     历史: 原独立实现缺 EM 封禁跳过/域容错; V16.2.10 起新代码全部迁移 _quick_request,
@@ -759,10 +852,16 @@ def _request_with_retry(url: str, params: Optional[Dict[str, Any]] = None,
     return _quick_request(url, params, headers, timeout, max_retries, data, method, verify)
 
 
-def _quick_request(url: str, params: Optional[Dict[str, Any]] = None,
-                   headers: Optional[Dict[str, str]] = None, timeout: int = 15,
-                   max_retries: int = 3, data: Optional[Dict[str, Any]] = None,
-                   method: str = "GET", verify: bool = True) -> Optional[requests.Response]:  # V16.2: 默认校验证书
+def _quick_request(
+    url: str,
+    params: Optional[Dict[str, Any]] = None,
+    headers: Optional[Dict[str, str]] = None,
+    timeout: int = 15,
+    max_retries: int = 3,
+    data: Optional[Union[Dict[str, Any], str, bytes]] = None,
+    method: str = "GET",
+    verify: bool = True,
+) -> Optional[requests.Response]:  # V16.2: 默认校验证书
     """通用 HTTP 请求（按域名独立限流）。
 
     V7.5 优化版：按域名独立控制并发和 sleep，不再使用全局 Semaphore。
@@ -786,7 +885,7 @@ def _quick_request(url: str, params: Optional[Dict[str, Any]] = None,
             return None
         # V16.2: 东财域统一走容错层（令牌桶 + 熔断），与 em_get 同口径
         # V16.2.6: 桶/熔断按归一化 key（push2 系共享风控面）；consume() 方法不存在
-        #（原调用每次抛 AttributeError 被吞 → 桶从未生效，只剩 1s 文件锁）→ 改阻塞 acquire()
+        # （原调用每次抛 AttributeError 被吞 → 桶从未生效，只剩 1s 文件锁）→ 改阻塞 acquire()
         try:
             from stock_common.sc_fault_tolerance import (
                 get_domain_token_bucket,
@@ -882,16 +981,21 @@ def _resolve_host_with_timeout(host: str, timeout: float = _DNS_RESOLVE_TIMEOUT)
         )
     if "err" in _res:
         # DNS 解析失败：按连接级错误抛出，复用既有 fallback
-        raise requests.exceptions.ConnectionError(
-            f"DNS resolution failed for {_h}: {_res['err']}"
-        )
+        raise requests.exceptions.ConnectionError(f"DNS resolution failed for {_h}: {_res['err']}")
     with _DNS_CACHE_LOCK:
         _DNS_CACHE[_h] = (_res.get("ip"), _now)
 
 
-def _do_request(url: str, params: Optional[Dict[str, Any]],
-                headers: Optional[Dict[str, str]], timeout: int, max_retries: int,
-                data: Optional[Dict[str, Any]], method: str, verify: bool) -> Optional[requests.Response]:
+def _do_request(
+    url: str,
+    params: Optional[Dict[str, Any]],
+    headers: Optional[Dict[str, str]],
+    timeout: int,
+    max_retries: int,
+    data: Optional[Union[Dict[str, Any], str, bytes]],
+    method: str,
+    verify: bool,
+) -> Optional[requests.Response]:
     """内部：执行 HTTP 请求 + 重试（由 _request_with_retry / _quick_request 调用）。
 
     V9.0 新增：429状态码检测 + 指数退避重试。
@@ -926,13 +1030,24 @@ def _do_request(url: str, params: Optional[Dict[str, Any]],
             _resolve_host_with_timeout(domain)
 
             if method == "POST":
-                r = _HTTP_SESSION.post(url, data=data, params=params,
-                                       headers=_req_headers,
-                                       timeout=timeout, verify=verify, proxies=_no_proxy)
+                r = _HTTP_SESSION.post(
+                    url,
+                    data=data,
+                    params=params,
+                    headers=_req_headers,
+                    timeout=timeout,
+                    verify=verify,
+                    proxies=cast(Dict[str, str], _no_proxy),
+                )
             elif method == "GET":
-                r = _HTTP_SESSION.get(url, params=params,
-                                      headers=_req_headers,
-                                      timeout=timeout, verify=verify, proxies=_no_proxy)
+                r = _HTTP_SESSION.get(
+                    url,
+                    params=params,
+                    headers=_req_headers,
+                    timeout=timeout,
+                    verify=verify,
+                    proxies=cast(Dict[str, str], _no_proxy),
+                )
             else:
                 return None
 
@@ -981,12 +1096,12 @@ def _do_request(url: str, params: Optional[Dict[str, Any]],
                             if _HAS_FAULT_TOLERANCE:
                                 wait_s = exponential_backoff(attempt)
                             else:
-                                wait_s = 1.0 * (2 ** attempt)
+                                wait_s = 1.0 * (2**attempt)
                     else:
                         if _HAS_FAULT_TOLERANCE:
                             wait_s = exponential_backoff(attempt)
                         else:
-                            wait_s = 1.0 * (2 ** attempt)
+                            wait_s = 1.0 * (2**attempt)
                     time.sleep(wait_s)
                     continue
                 return None
@@ -994,16 +1109,18 @@ def _do_request(url: str, params: Optional[Dict[str, Any]],
             if _CONSECUTIVE_403["count"] > 0 and r.status_code < 400:
                 _CONSECUTIVE_403["count"] = 0
             return r
-        except (requests.exceptions.ConnectionError,
-                requests.exceptions.ReadTimeout,
-                requests.exceptions.ConnectTimeout,
-                requests.exceptions.ProxyError):
+        except (
+            requests.exceptions.ConnectionError,
+            requests.exceptions.ReadTimeout,
+            requests.exceptions.ConnectTimeout,
+            requests.exceptions.ProxyError,
+        ):
             if attempt < max_retries - 1:
                 if _HAS_FAULT_TOLERANCE:
                     # V16 增强: HTTP 000 连接被拒 = 间歇风控，长退避等待恢复
                     wait_s = exponential_backoff(attempt, base=1.0, max_wait=60.0)
                 else:
-                    wait_s = 1.0 * (2 ** attempt)
+                    wait_s = 1.0 * (2**attempt)
                 time.sleep(wait_s)
                 continue
             return None
@@ -1044,7 +1161,7 @@ def print_rate_limit_stats() -> None:
     print("=" * 50)
 
 
-def requires_push2(fn):
+def requires_push2(fn: Callable[P, R]) -> Callable[P, R]:
     """V16 审计装饰器: 标记使用 push2 端点的函数。
 
     push2 是东财风控最严的域名（参考仓库 FAQ），每次调用打 WARNING 日志，
@@ -1056,7 +1173,7 @@ def requires_push2(fn):
     import functools
 
     @functools.wraps(fn)
-    def wrapper(*args, **kwargs):
+    def wrapper(*args: P.args, **kwargs: P.kwargs) -> R:
         try:
             _biz_logger.warning(f"PUSH2 used: {fn.__module__}.{fn.__name__}")
         except Exception:
@@ -1085,35 +1202,38 @@ def _market_code(code: str) -> int:
 # 功能: 在异步模式下替代 threading.Lock + requests，实现 2-3x 性能提升
 # ══════════════════════════════════════════════════════════════════════════════
 
-_em_async_lock = None      # asyncio.Semaphore(3) — 测试 45 请求 0 次 429，安全
+_em_async_lock = None  # asyncio.Semaphore(3) — 测试 45 请求 0 次 429，安全
 _gen_async_lock = None
 _em_async_last_request: float = 0.0  # async 版东财时间戳
 _gen_async_last_request: float = 0.0  # async 版通用时间戳
 
 try:
     import asyncio
+
     _HAS_ASYNCIO = True
 except ImportError:
     _HAS_ASYNCIO = False
 
 try:
     import aiohttp
+
     _HAS_AIOHTTP = True
 except ImportError:
     _HAS_AIOHTTP = False
 
 
-def _ensure_async_locks():
+def _ensure_async_locks() -> None:
     """懒加载: 创建 asyncio.Semaphore（统一 Semaphore(3)）。"""
     global _em_async_lock, _gen_async_lock
     if _em_async_lock is None and _HAS_ASYNCIO:
-        _em_async_lock = asyncio.Semaphore(3)   # 东财: 最多 3 并发请求
+        _em_async_lock = asyncio.Semaphore(3)  # 东财: 最多 3 并发请求
     if _gen_async_lock is None and _HAS_ASYNCIO:
         _gen_async_lock = asyncio.Semaphore(3)  # 通用: 与东财保持一致
 
 
-async def _process_interval_wait_async(lock_file: str, target_interval: float,
-                                       use_content_ts: bool = False) -> float:
+async def _process_interval_wait_async(
+    lock_file: str, target_interval: float, use_content_ts: bool = False
+) -> float:
     """V17.0 R2: 进程间协调核心(async 版)——EM/GEN 原 2 函数收敛。
 
     无文件锁(阻塞锁会卡事件循环, 属有意为之); 与同步版共用同一文件。
@@ -1159,20 +1279,26 @@ async def _process_interval_wait_async(lock_file: str, target_interval: float,
 async def _em_wait_process_interval_async() -> float:
     """V17.0 R2: EM async 薄包装(内容时间戳 + 1.0-1.3s, 与同步版共用文件)。"""
     import random as _rand
+
     return await _process_interval_wait_async(
-        _em_lock_file, 1.0 + _rand.uniform(0.10, 0.30), use_content_ts=True,
+        _em_lock_file,
+        1.0 + _rand.uniform(0.10, 0.30),
+        use_content_ts=True,
     )
 
 
 async def _gen_wait_process_interval_async() -> float:
     """V17.0 R2: GEN async 薄包装(mtime + 0.2s, 与同步版共用文件)。"""
     import random as _rand
+
     return await _process_interval_wait_async(
-        _gen_lock_file, 0.2 + _rand.uniform(0.01, 0.05), use_content_ts=False,
+        _gen_lock_file,
+        0.2 + _rand.uniform(0.01, 0.05),
+        use_content_ts=False,
     )
 
 
-async def create_async_session():
+async def create_async_session() -> aiohttp.ClientSession:
     """创建一个 aiohttp ClientSession（调用方负责关闭）。
 
     V9.3.2: 禁用系统代理，数据获取全部直连。
@@ -1183,9 +1309,15 @@ async def create_async_session():
     return aiohttp.ClientSession(headers={"User-Agent": UA}, trust_env=False)
 
 
-async def _async_request_with_retry(session, url: str, params=None,
-                                    headers=None, timeout: int = 15,
-                                    max_retries: int = 3, method: str = "GET"):
+async def _async_request_with_retry(
+    session: aiohttp.ClientSession,
+    url: str,
+    params: Optional[Dict[str, Any]] = None,
+    headers: Optional[Dict[str, str]] = None,
+    timeout: int = 15,
+    max_retries: int = 3,
+    method: str = "GET",
+) -> Optional[Union[Dict[str, Any], List[Any], str]]:
     """V17.0 S2: 兼容别名——统一走 _async_quick_request(其内部已按域名分流 EM/GEN)。
 
     历史: 原独立实现为东财专用(EM 锁+1.0-1.3s 间隔+封禁跳过); V17.0 将 EM 分流
@@ -1193,16 +1325,76 @@ async def _async_request_with_retry(session, url: str, params=None,
     返回: parsed JSON dict 或 None（失败时）
     """
     return await _async_quick_request(
-        session, url, params=params, headers=headers,
-        timeout=timeout, max_retries=max_retries, method=method,
+        session,
+        url,
+        params=params,
+        headers=headers,
+        timeout=timeout,
+        max_retries=max_retries,
+        method=method,
     )
 
 
-async def _async_quick_request(session, url: str, params=None,
-                               headers=None, timeout: int = 15,
-                               max_retries: int = 3,
-                               data=None, method: str = "GET",
-                               is_json: bool = True, encoding=None):
+@overload
+async def _async_quick_request(
+    session: aiohttp.ClientSession,
+    url: str,
+    params: Optional[Dict[str, Any]] = None,
+    headers: Optional[Dict[str, str]] = None,
+    timeout: int = 15,
+    max_retries: int = 3,
+    data: Optional[Union[Dict[str, Any], str, bytes]] = None,
+    method: str = "GET",
+    *,
+    is_json: Literal[False],
+    encoding: Optional[str] = None,
+) -> Optional[str]: ...
+
+
+@overload
+async def _async_quick_request(
+    session: aiohttp.ClientSession,
+    url: str,
+    params: Optional[Dict[str, Any]] = None,
+    headers: Optional[Dict[str, str]] = None,
+    timeout: int = 15,
+    max_retries: int = 3,
+    data: Optional[Union[Dict[str, Any], str, bytes]] = None,
+    method: str = "GET",
+    *,
+    is_json: Literal[True] = True,
+    encoding: Optional[str] = None,
+) -> Optional[Union[Dict[str, Any], List[Any]]]: ...
+
+
+@overload
+async def _async_quick_request(
+    session: aiohttp.ClientSession,
+    url: str,
+    params: Optional[Dict[str, Any]] = None,
+    headers: Optional[Dict[str, str]] = None,
+    timeout: int = 15,
+    max_retries: int = 3,
+    data: Optional[Union[Dict[str, Any], str, bytes]] = None,
+    method: str = "GET",
+    *,
+    is_json: bool,
+    encoding: Optional[str] = None,
+) -> Optional[Union[Dict[str, Any], List[Any], str]]: ...
+
+
+async def _async_quick_request(
+    session: aiohttp.ClientSession,
+    url: str,
+    params: Optional[Dict[str, Any]] = None,
+    headers: Optional[Dict[str, str]] = None,
+    timeout: int = 15,
+    max_retries: int = 3,
+    data: Optional[Union[Dict[str, Any], str, bytes]] = None,
+    method: str = "GET",
+    is_json: bool = True,
+    encoding: Optional[str] = None,
+) -> Optional[Union[Dict[str, Any], List[Any], str]]:
     """异步版: 通用 HTTP 请求（腾讯/新浪/同花顺/巨潮等，Semaphore(3) + 统一间隔保护, EM 域自动分流）。
 
     V7.5.1修复: 在 async with 块内读取完数据再返回，避免 response 连接释放后读取失败。
@@ -1248,7 +1440,10 @@ async def _async_quick_request(session, url: str, params=None,
             _debug_log(f"async quick_request: {_ft_domain} 封禁跳过中（20h 冷却），拒绝 {url[:80]}")
             return None
 
-    async with (_em_async_lock if is_em else _gen_async_lock):
+    request_lock = _em_async_lock if is_em else _gen_async_lock
+    if request_lock is None:
+        return None
+    async with request_lock:
         now = time.time()
         if is_em:
             global _em_async_last_request  # noqa: PLW0603
@@ -1294,18 +1489,19 @@ async def _async_quick_request(session, url: str, params=None,
                 _debug_log(f"Async quick cb init error ({domain}): {_e}")
                 _cb = None
 
-        _result = None
+        _result: Optional[Union[Dict[str, Any], List[Any], str]] = None
         _got_403 = False
         for attempt in range(max_retries):
             try:
                 timeout_obj = aiohttp.ClientTimeout(total=timeout)
                 if method == "POST":
-                    async with session.post(url, data=data, params=params,
-                                            headers=_req_headers,
-                                            timeout=timeout_obj) as response:
+                    async with session.post(
+                        url, data=data, params=params, headers=_req_headers, timeout=timeout_obj
+                    ) as response:
                         if response.status == 200:
                             if is_json:
-                                _result = await response.json(content_type=None)
+                                payload = await response.json(content_type=None)
+                                _result = payload if isinstance(payload, (dict, list)) else None
                             else:
                                 _result = await response.text(encoding=encoding)
                             break
@@ -1316,18 +1512,20 @@ async def _async_quick_request(session, url: str, params=None,
                             if _HAS_FAULT_TOLERANCE:
                                 wait_s = exponential_backoff(attempt)
                             else:
-                                wait_s = 1.0 * (2 ** attempt)
+                                wait_s = 1.0 * (2**attempt)
                             await asyncio.sleep(wait_s)
                             continue
                         # V16.4.1: 403/500 等非 200/429 直接失败——原落下方 sleep 重试循环,
                         # 违反同文件"重试 403 加速封禁"铁律(与 _async_request_with_retry L1055 对齐)
                         break
                 else:
-                    async with session.get(url, params=params, headers=_req_headers,
-                                           timeout=timeout_obj) as response:
+                    async with session.get(
+                        url, params=params, headers=_req_headers, timeout=timeout_obj
+                    ) as response:
                         if response.status == 200:
                             if is_json:
-                                _result = await response.json(content_type=None)
+                                payload = await response.json(content_type=None)
+                                _result = payload if isinstance(payload, (dict, list)) else None
                             else:
                                 _result = await response.text(encoding=encoding)
                             break
@@ -1338,7 +1536,7 @@ async def _async_quick_request(session, url: str, params=None,
                             if _HAS_FAULT_TOLERANCE:
                                 wait_s = exponential_backoff(attempt)
                             else:
-                                wait_s = 1.0 * (2 ** attempt)
+                                wait_s = 1.0 * (2**attempt)
                             await asyncio.sleep(wait_s)
                             continue
                         break

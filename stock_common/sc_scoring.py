@@ -16,17 +16,24 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple, TypedDict
 
 # ═══════════════════════════════════════
 # 导出接口
 # ═══════════════════════════════════════
 __all__ = [
-    'ScoreData', 'ScoreResult',
-    '_score_technical', '_score_fundamental', '_score_valuation',
-    '_score_flow', '_score_holder', '_score_dividend',
-    'calculate_score', 'calculate_score_by_school',
-    'calculate_multi_school_scores', 'format_multi_school_report',
+    'ScoreData',
+    'ScoreResult',
+    '_score_technical',
+    '_score_fundamental',
+    '_score_valuation',
+    '_score_flow',
+    '_score_holder',
+    '_score_dividend',
+    'calculate_score',
+    'calculate_score_by_school',
+    'calculate_multi_school_scores',
+    'format_multi_school_report',
     'SCHOOL_CONFIGS',
 ]
 
@@ -35,9 +42,11 @@ __all__ = [
 # V8.2: 统一评分接口 - 数据结构
 # ═══════════════════════════════════════════════════════════
 
+
 @dataclass
 class ScoreData:
     """评分输入数据结构"""
+
     # 基本信息
     code: str = ""
     name: str = ""
@@ -87,10 +96,10 @@ class ScoreData:
     holder_consecutive_decrease: bool = False
     institution_holding_pct: float = 0.0
     # 筹码分布 CYQ(V17.0.14: 东财 kline f61 → calculate_cyq)
-    cyq_benefit_pct: float = 0.0        # 获利盘比例(0~1)
-    cyq_avg_cost: float = 0.0           # 平均成本价
-    cyq_concentration_90: float = 0.0   # 90%筹码集中度(0~1, 越小越集中)
-    cyq_concentration_70: float = 0.0   # 70%筹码集中度
+    cyq_benefit_pct: float = 0.0  # 获利盘比例(0~1)
+    cyq_avg_cost: float = 0.0  # 平均成本价
+    cyq_concentration_90: float = 0.0  # 90%筹码集中度(0~1, 越小越集中)
+    cyq_concentration_70: float = 0.0  # 70%筹码集中度
 
     # 分红数据
     dividend_yield: float = 0.0
@@ -100,6 +109,7 @@ class ScoreData:
 @dataclass
 class ScoreResult:
     """评分结果数据结构"""
+
     total_score: float = 0.0
     dimensions: Dict[str, float] = field(default_factory=dict)
     details: List[str] = field(default_factory=list)
@@ -109,6 +119,7 @@ class ScoreResult:
 # ═══════════════════════════════════════════════════════════
 # V8.2: 六维度评分函数
 # ═══════════════════════════════════════════════════════════
+
 
 def _score_technical(data: ScoreData, cfg: Optional[Dict] = None) -> tuple:
     """技术面评分（0-100基准，加减分）"""
@@ -364,6 +375,7 @@ def _score_dividend(data: ScoreData, cfg: Optional[Dict] = None) -> tuple:
 # V8.2: 统一评分接口
 # ═══════════════════════════════════════════════════════════
 
+
 def calculate_score(score_type: str, data: ScoreData, cfg: Optional[Dict] = None) -> ScoreResult:
     """
     统一评分接口
@@ -393,7 +405,7 @@ def calculate_score(score_type: str, data: ScoreData, cfg: Optional[Dict] = None
         "valuation": val_score,
         "flow": flow_score,
         "holder": holder_score,
-        "dividend": div_score
+        "dividend": div_score,
     }
 
     # 根据评分类型组合
@@ -401,9 +413,9 @@ def calculate_score(score_type: str, data: ScoreData, cfg: Optional[Dict] = None
         # 短线：技术面 + 资金面 + 筹码面
         _w = sc.get("weights_sht", {}) if sc else {}
         result.total_score = (
-            tech_score * _w.get("technical", 0.4) +
-            flow_score * _w.get("flow", 0.35) +
-            holder_score * _w.get("holder", 0.25)
+            tech_score * _w.get("technical", 0.4)
+            + flow_score * _w.get("flow", 0.35)
+            + holder_score * _w.get("holder", 0.25)
         )
         result.details = tech_details + flow_details + holder_details
 
@@ -411,10 +423,10 @@ def calculate_score(score_type: str, data: ScoreData, cfg: Optional[Dict] = None
         # 中线：基本面 + 估值面 + 资金面 + 筹码面
         _w = sc.get("weights_med", {}) if sc else {}
         result.total_score = (
-            fund_score * _w.get("fundamental", 0.35) +
-            val_score * _w.get("valuation", 0.25) +
-            flow_score * _w.get("flow", 0.2) +
-            holder_score * _w.get("holder", 0.2)
+            fund_score * _w.get("fundamental", 0.35)
+            + val_score * _w.get("valuation", 0.25)
+            + flow_score * _w.get("flow", 0.2)
+            + holder_score * _w.get("holder", 0.2)
         )
         result.details = fund_details + val_details + flow_details + holder_details
 
@@ -422,10 +434,10 @@ def calculate_score(score_type: str, data: ScoreData, cfg: Optional[Dict] = None
         # 长线：基本面 + 估值面 + 分红面 + 筹码面
         _w = sc.get("weights_lng", {}) if sc else {}
         result.total_score = (
-            fund_score * _w.get("fundamental", 0.3) +
-            val_score * _w.get("valuation", 0.3) +
-            div_score * _w.get("dividend", 0.2) +
-            holder_score * _w.get("holder", 0.2)
+            fund_score * _w.get("fundamental", 0.3)
+            + val_score * _w.get("valuation", 0.3)
+            + div_score * _w.get("dividend", 0.2)
+            + holder_score * _w.get("holder", 0.2)
         )
         result.details = fund_details + val_details + div_details + holder_details
 
@@ -442,14 +454,16 @@ def calculate_score(score_type: str, data: ScoreData, cfg: Optional[Dict] = None
             "dividend": (_cfg_weights.get("dividend", 10) / 100),
         }
         result.total_score = (
-            tech_score * weights.get("technical", 0.25) +
-            val_score * weights.get("valuation", 0.20) +
-            fund_score * weights.get("fundamental", 0.20) +
-            flow_score * weights.get("flow", 0.15) +
-            holder_score * weights.get("holder", 0.10) +
-            div_score * weights.get("dividend", 0.10)
+            tech_score * weights.get("technical", 0.25)
+            + val_score * weights.get("valuation", 0.20)
+            + fund_score * weights.get("fundamental", 0.20)
+            + flow_score * weights.get("flow", 0.15)
+            + holder_score * weights.get("holder", 0.10)
+            + div_score * weights.get("dividend", 0.10)
         )
-        result.details = tech_details + fund_details + val_details + flow_details + holder_details + div_details
+        result.details = (
+            tech_details + fund_details + val_details + flow_details + holder_details + div_details
+        )
 
     else:
         result.total_score = 50.0
@@ -461,8 +475,17 @@ def calculate_score(score_type: str, data: ScoreData, cfg: Optional[Dict] = None
 # V8.5: 多评委评审团评分接口
 # ═══════════════════════════════════════════════════════════
 
+
+class SchoolConfig(TypedDict):
+    name: str
+    persona: str
+    weights: Dict[str, float]
+    focus: str
+    keywords: List[str]
+
+
 # 评委派别定义
-SCHOOL_CONFIGS = {
+SCHOOL_CONFIGS: Dict[str, SchoolConfig] = {
     "value": {
         "name": "价值派",
         "persona": "巴菲特式价值投资者",
@@ -475,7 +498,7 @@ SCHOOL_CONFIGS = {
             "flow": 0.00,
         },
         "focus": "低估值、高ROE、稳定分红",
-        "keywords": ["价值投资", "低估", "高ROE", "稳定分红", "长期持有"]
+        "keywords": ["价值投资", "低估", "高ROE", "稳定分红", "长期持有"],
     },
     "growth": {
         "name": "成长派",
@@ -489,7 +512,7 @@ SCHOOL_CONFIGS = {
             "dividend": 0.00,
         },
         "focus": "技术突破、资金流入、筹码集中",
-        "keywords": ["成长股", "技术突破", "资金流入", "赛道股", "高增长"]
+        "keywords": ["成长股", "技术突破", "资金流入", "赛道股", "高增长"],
     },
     "speculator": {
         "name": "游资派",
@@ -503,7 +526,7 @@ SCHOOL_CONFIGS = {
             "dividend": 0.00,
         },
         "focus": "涨停板、游资席位、情绪热度",
-        "keywords": ["涨停", "游资", "龙头", "情绪", "打板", "题材"]
+        "keywords": ["涨停", "游资", "龙头", "情绪", "打板", "题材"],
     },
     "consensus": {
         "name": "综合派",
@@ -517,13 +540,17 @@ SCHOOL_CONFIGS = {
             "dividend": 0.10,
         },
         "focus": "五维均衡",
-        "keywords": ["综合", "均衡", "全面"]
-    }
+        "keywords": ["综合", "均衡", "全面"],
+    },
 }
 
 
-def calculate_score_by_school(school: str, data: ScoreData, cfg: Optional[Dict] = None,
-                              precomputed_dimensions: Optional[Dict[str, Tuple[float, List[str]]]] = None) -> ScoreResult:
+def calculate_score_by_school(
+    school: str,
+    data: ScoreData,
+    cfg: Optional[Dict] = None,
+    precomputed_dimensions: Optional[Dict[str, Tuple[float, List[str]]]] = None,
+) -> ScoreResult:
     """按指定派别计算评分
 
     Args:
@@ -564,17 +591,17 @@ def calculate_score_by_school(school: str, data: ScoreData, cfg: Optional[Dict] 
         "valuation": val_score,
         "flow": flow_score,
         "holder": holder_score,
-        "dividend": div_score
+        "dividend": div_score,
     }
 
     # 计算加权总分
     result.total_score = (
-        tech_score * weights.get("technical", 0) +
-        fund_score * weights.get("fundamental", 0) +
-        val_score * weights.get("valuation", 0) +
-        flow_score * weights.get("flow", 0) +
-        holder_score * weights.get("holder", 0) +
-        div_score * weights.get("dividend", 0)
+        tech_score * weights.get("technical", 0)
+        + fund_score * weights.get("fundamental", 0)
+        + val_score * weights.get("valuation", 0)
+        + flow_score * weights.get("flow", 0)
+        + holder_score * weights.get("holder", 0)
+        + div_score * weights.get("dividend", 0)
     )
 
     # 收集有意义的细节
@@ -642,7 +669,7 @@ def calculate_multi_school_scores(data: ScoreData, cfg: Optional[Dict] = None) -
     if len(scores) > 1:
         mean = consensus_score
         variance = sum((s - mean) ** 2 for s in scores) / len(scores)
-        dispersion = variance ** 0.5
+        dispersion = variance**0.5
     else:
         dispersion = 0
 
@@ -657,7 +684,7 @@ def calculate_multi_school_scores(data: ScoreData, cfg: Optional[Dict] = None) -
             "persona": SCHOOL_CONFIGS[school]["persona"],
             "focus": SCHOOL_CONFIGS[school]["focus"],
             "score": results[school].total_score,
-            "dimensions": results[school].dimensions
+            "dimensions": results[school].dimensions,
         }
         for school in SCHOOL_CONFIGS
     }
@@ -670,11 +697,13 @@ def calculate_multi_school_scores(data: ScoreData, cfg: Optional[Dict] = None) -
         "consensus_score": round(consensus_score, 1),
         "dispersion": round(dispersion, 1),
         "dominant_school": dominant_school,
-        "school_labels": school_labels
+        "school_labels": school_labels,
     }
 
 
-def format_multi_school_report(scores_result: Dict[str, Any], code: str = "", name: str = "") -> str:
+def format_multi_school_report(
+    scores_result: Dict[str, Any], code: str = "", name: str = ""
+) -> str:
     """格式化多评委评审团报告
 
     Args:
@@ -695,12 +724,7 @@ def format_multi_school_report(scores_result: Dict[str, Any], code: str = "", na
     lines.append("\n📊 各派评委评分:")
     lines.append("-" * 40)
 
-    school_emojis = {
-        "value": "💰",
-        "growth": "📈",
-        "speculator": "🔥",
-        "consensus": "⚖️"
-    }
+    school_emojis = {"value": "💰", "growth": "📈", "speculator": "🔥", "consensus": "⚖️"}
 
     for school, label in scores_result["school_labels"].items():
         emoji = school_emojis.get(school, "📊")
@@ -714,7 +738,9 @@ def format_multi_school_report(scores_result: Dict[str, Any], code: str = "", na
     lines.append("-" * 40)
     lines.append(f"\n🎯 综合评分(三派均值): {scores_result['consensus_score']}分")
     lines.append(f"   分歧度: {scores_result['dispersion']:.1f} (越小表示派别分歧越小)")
-    lines.append(f"   主导派别: {school_emojis.get(scores_result['dominant_school'], '')} {scores_result['school_labels'][scores_result['dominant_school']]['name']}")
+    lines.append(
+        f"   主导派别: {school_emojis.get(scores_result['dominant_school'], '')} {scores_result['school_labels'][scores_result['dominant_school']]['name']}"
+    )
 
     # 投资建议
     dominant = scores_result["dominant_school"]

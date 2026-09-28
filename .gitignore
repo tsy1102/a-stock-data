@@ -32,8 +32,10 @@ snapshots/
 
 # ── 本地缓存(不入库, 可安全删除重建) ───────────────────────
 # 根级: stock_cache.db + zhb/ + 行业映射
-cache/*                   # 仅忽略缓存内容(子文件), 目录本身可遍历, 以便用 ! 例外保留 README
-!cache/README.md          # 缓存目录说明文档(与 scratch/README.md 同例, 不随缓存清理删除)
+# 说明必须单独成行；gitignore 不支持行尾注释。
+cache/*
+!cache/README.md
+!cache/_gitrun.py
 # V17.0 补: 股本缓存 share_capital.json(运行时生成)
 stock_common/cache/
 *.db

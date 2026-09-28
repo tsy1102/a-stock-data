@@ -3,6 +3,7 @@
 注意：测试期间所有 HTTP 请求会被 conftest 的 autouse fixture 拦截，
 不会产生真实网络调用。
 """
+
 from __future__ import annotations
 
 import json
@@ -19,9 +20,11 @@ from core.gd_uploader import (
 
 def test_find_working_proxy_no_proxy_available(monkeypatch):
     """真实系统无代理时返回 None。"""
+
     # 拦截所有 opener.open → 全部抛异常
     def fake_open(*args, **kwargs):
         raise OSError("network mock: all blocked")
+
     with monkeypatch.context() as m:
         m.setattr("urllib.request.OpenerDirector.open", fake_open)
         assert _find_working_proxy() is None
@@ -58,7 +61,10 @@ def test_upload_or_update_to_drive_handles_none_service(tmp_path):
 
 def test_upload_or_update_to_drive_missing_local_file():
     fake_service = object()  # 非 None 但无方法
-    assert upload_or_update_to_drive(fake_service, "/nonexistent/path.txt", "fake-id", "x.txt") is False
+    assert (
+        upload_or_update_to_drive(fake_service, "/nonexistent/path.txt", "fake-id", "x.txt")
+        is False
+    )
 
 
 def test_upload_or_update_to_drive_happy_path(tmp_path):
@@ -76,18 +82,21 @@ def test_upload_or_update_to_drive_happy_path(tmp_path):
             class _Exec:
                 def execute(self_inner):
                     return {"files": [{"id": "existing-file-id"}]}
+
             return _Exec()
 
         def update(self, **kwargs):
             class _Exec:
                 def execute(self_inner):
                     return {"id": "existing-file-id"}
+
             return _Exec()
 
         def create(self, **kwargs):
             class _Exec:
                 def execute(self_inner):
                     return {"id": "new-file-id"}
+
             return _Exec()
 
     class _FakeService:

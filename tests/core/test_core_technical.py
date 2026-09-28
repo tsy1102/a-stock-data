@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 """tests/test_sc_technical_risk.py — V16.1 技术/风险引擎测试"""
+
 from __future__ import annotations
 
 import builtins
@@ -11,8 +12,13 @@ from unittest import mock
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from stock_common.sc_technical import (
-    calc_macd, calc_rsi, calc_bollinger, calc_kdj,
-    calc_volume_analysis, calc_ma, analyze_technical,
+    calc_macd,
+    calc_rsi,
+    calc_bollinger,
+    calc_kdj,
+    calc_volume_analysis,
+    calc_ma,
+    analyze_technical,
     get_kline_patterns,
 )
 from stock_common.sc_risk import scan_financial_risk, scan_event_risk, combine_risk
@@ -81,21 +87,35 @@ class TestRiskEngine(unittest.TestCase):
     """V16.1: 风险扫描引擎（从 ful layer_risk 迁移）"""
 
     def test_financial_high_risk(self):
-        items = scan_financial_risk({
-            "debt_ratio": 80.0, "gw_ratio": 35.0, "ar_ratio": 30.0,
-            "inv_ratio": 35.0, "cash_debt_ratio": 0.3, "has_short_loan": True,
-            "roe": 2.0, "profit_yoy": -30.0,
-        })
+        items = scan_financial_risk(
+            {
+                "debt_ratio": 80.0,
+                "gw_ratio": 35.0,
+                "ar_ratio": 30.0,
+                "inv_ratio": 35.0,
+                "cash_debt_ratio": 0.3,
+                "has_short_loan": True,
+                "roe": 2.0,
+                "profit_yoy": -30.0,
+            }
+        )
         levels = [it["level"] for it in items]
         self.assertIn("高", levels)
         self.assertGreaterEqual(sum(it["score"] for it in items), 50)
 
     def test_financial_low_risk(self):
-        items = scan_financial_risk({
-            "debt_ratio": 30.0, "gw_ratio": 5.0, "ar_ratio": 10.0,
-            "inv_ratio": 15.0, "cash_debt_ratio": 3.0, "has_short_loan": True,
-            "roe": 20.0, "profit_yoy": 25.0,
-        })
+        items = scan_financial_risk(
+            {
+                "debt_ratio": 30.0,
+                "gw_ratio": 5.0,
+                "ar_ratio": 10.0,
+                "inv_ratio": 15.0,
+                "cash_debt_ratio": 3.0,
+                "has_short_loan": True,
+                "roe": 20.0,
+                "profit_yoy": 25.0,
+            }
+        )
         self.assertTrue(all(it["level"] == "低" for it in items))
 
     def test_event_risk_pledge(self):
@@ -109,11 +129,18 @@ class TestRiskEngine(unittest.TestCase):
         self.assertEqual(reduce["level"], "高")
 
     def test_combine_risk(self):
-        fin = scan_financial_risk({
-            "debt_ratio": 80.0, "gw_ratio": 5.0, "ar_ratio": 5.0,
-            "inv_ratio": 5.0, "cash_debt_ratio": 3.0, "has_short_loan": False,
-            "roe": 15.0, "profit_yoy": 10.0,
-        })
+        fin = scan_financial_risk(
+            {
+                "debt_ratio": 80.0,
+                "gw_ratio": 5.0,
+                "ar_ratio": 5.0,
+                "inv_ratio": 5.0,
+                "cash_debt_ratio": 3.0,
+                "has_short_loan": False,
+                "roe": 15.0,
+                "profit_yoy": 10.0,
+            }
+        )
         ev = scan_event_risk(lockup={"date": "2026-10-01", "ratio": 12.0}, pledge_hits=0)
         r = combine_risk(fin, ev)
         self.assertGreaterEqual(r["risk_score"], 30)
@@ -185,8 +212,9 @@ class TestAnalyzeTechnicalInputs(unittest.TestCase):
         c, h, l = self._mk()
         real = analyze_technical(c, h, l, [])["kdj"]
         approx = analyze_technical(c, c, c, [])["kdj"]
-        self.assertNotEqual(real, approx,
-                            "真实 high/low 与 close 近似结果相同 → highs/lows 未被真正使用")
+        self.assertNotEqual(
+            real, approx, "真实 high/low 与 close 近似结果相同 → highs/lows 未被真正使用"
+        )
         self.assertNotAlmostEqual(real["k"], approx["k"], places=1)
 
     def test_close_approx_distorts_kdj(self):

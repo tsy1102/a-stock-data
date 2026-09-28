@@ -11,8 +11,9 @@
   3. 仅在 REAL_NETWORK=1 时运行（conftest 约定），CI 自动 skip
 
 运行方式：
-  $env:REAL_NETWORK=1; .\scripts\run_tests.ps1 -Mode real
+  $env:REAL_NETWORK=1; .\\scripts\run_tests.ps1 -Mode real
 """
+
 from __future__ import annotations
 
 import os
@@ -40,8 +41,12 @@ def _get_with_retry(url, params=None, headers=None, timeout=10, retries=3, wait=
     for attempt in range(retries):
         try:
             r = requests.get(
-                url, params=params, headers=headers or _HDRS,
-                timeout=timeout, proxies=_PROXIES, verify=True,
+                url,
+                params=params,
+                headers=headers or _HDRS,
+                timeout=timeout,
+                proxies=_PROXIES,
+                verify=True,
             )
             if r.status_code == 200:
                 return r
@@ -75,9 +80,9 @@ class TestTencentStability:
         assert price > 0 and prev > 0
         chg_calc = (price - prev) / prev * 100
         chg_field = float(m[32])
-        assert abs(chg_calc - chg_field) < 1.0, (
-            f"腾讯 [32] 涨跌幅({chg_field}) 与 计算值({chg_calc:.2f}) 不一致 → 字段索引可能漂移"
-        )
+        assert (
+            abs(chg_calc - chg_field) < 1.0
+        ), f"腾讯 [32] 涨跌幅({chg_field}) 与 计算值({chg_calc:.2f}) 不一致 → 字段索引可能漂移"
         # [44] 流通市值 < [45] 总市值（工行应成立）
         g = rows["601398"]
         assert float(g[44]) < float(g[45]), "腾讯 [44]流通市值 应 < [45]总市值"
@@ -94,7 +99,7 @@ class TestSinaStability:
         """核实新浪字段索引（[0]名称 [3]价 [8]量 [9]额）"""
         r = _get_with_retry(
             "https://hq.sinajs.cn/list=sh600519,sz000001",
-            headers={"Referer": "https://finance.sina.com.cn/", ** _HDRS},
+            headers={"Referer": "https://finance.sina.com.cn/", **_HDRS},
         )
         r.encoding = "gbk"
         text = r.text
@@ -129,13 +134,16 @@ class TestEastMoneyStability:
                 r = requests.get(
                     "https://push2.eastmoney.com/api/qt/ulist.np/get",
                     params={
-                        "fltt": "2", "invt": "2",
+                        "fltt": "2",
+                        "invt": "2",
                         "secids": "1.600519",
                         "fields": "f12,f14,f100,f102,f103,f112,f113",
                         "ut": "f057cbcbce2a86e2866ab8877db1d059",
                     },
                     headers={"Referer": "https://quote.eastmoney.com/", **_HDRS},
-                    timeout=15, proxies=_PROXIES, verify=True,
+                    timeout=15,
+                    proxies=_PROXIES,
+                    verify=True,
                 )
                 if r.status_code == 200:
                     break
@@ -172,7 +180,9 @@ class TestV16NewApis:
         r = _get_with_retry(
             "https://mobappconfig.securities.eastmoney.com/emcfg/stock_monitor.json",
             headers={"Referer": "https://vipmoney.eastmoney.com/", **_HDRS},
-            timeout=15, retries=2, wait=2.0,
+            timeout=15,
+            retries=2,
+            wait=2.0,
         )
         rows = r.json()
         assert isinstance(rows, list) and len(rows) > 0, "重点监控池为空"
@@ -191,13 +201,20 @@ class TestV16NewApis:
                 r = requests.get(
                     "http://83.push2.eastmoney.com/api/qt/clist/get",
                     params={
-                        "pn": "1", "pz": "5", "po": "1", "np": "1",
-                        "fltt": "2", "invt": "2", "fs": "m:90+t:2+f:!50",
+                        "pn": "1",
+                        "pz": "5",
+                        "po": "1",
+                        "np": "1",
+                        "fltt": "2",
+                        "invt": "2",
+                        "fs": "m:90+t:2+f:!50",
                         "fields": "f12,f14,f2,f3,f62",
                         "ut": "bd1d9ddb04089700cf9c27f6f7426281",
                     },
                     headers={"Referer": "https://quote.eastmoney.com/", **_HDRS},
-                    timeout=15, proxies=_PROXIES, verify=True,
+                    timeout=15,
+                    proxies=_PROXIES,
+                    verify=True,
                 )
                 if r.status_code == 200:
                     break

@@ -9,6 +9,7 @@ Validates:
   - stock_cache._serialize_for_cache handles dataclass / dict / list
   - stock_cache._deserialize_from_cache is callable
 """
+
 from __future__ import annotations
 
 import os
@@ -21,10 +22,10 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import stock_common.sc_schema as schema
 import core.stock_cache as sc
 
-
 # ═══════════════════════════════════════════════════
 # V13.0: Schema 元数据测试
 # ═══════════════════════════════════════════════════
+
 
 class TestSchemaImport(unittest.TestCase):
 
@@ -88,6 +89,7 @@ class TestFieldSpecTable(unittest.TestCase):
 # V13.0: NormalizedQuote 骨架测试
 # ═══════════════════════════════════════════════════
 
+
 class TestNormalizedQuote(unittest.TestCase):
 
     def test_dataclass_instantiation(self):
@@ -123,9 +125,12 @@ class TestNormalizedQuote(unittest.TestCase):
     def test_normalize_at_boundary_zhb(self):
         """V16.0: ZHB 源归一化 — amount 已是万元直传，保留规范字段。"""
         raw = {
-            "code": "600519", "name": "贵州茅台",
-            "price": 1500.0, "change_pct": 1.2,
-            "amount": 412922.85, "pe_ttm": 19.58,
+            "code": "600519",
+            "name": "贵州茅台",
+            "price": 1500.0,
+            "change_pct": 1.2,
+            "amount": 412922.85,
+            "pe_ttm": 19.58,
         }
         out = schema.normalize_at_boundary(raw, schema.DataSource.ZHB)
         self.assertEqual(out["code"], "600519")
@@ -146,6 +151,7 @@ class TestNormalizedQuote(unittest.TestCase):
 # ═══════════════════════════════════════════════════
 # V13.1: stock_cache 透明序列化测试
 # ═══════════════════════════════════════════════════
+
 
 @dataclass(slots=True, frozen=True)
 class _SampleQuote:
@@ -228,6 +234,7 @@ class TestCacheRoundTrip(unittest.TestCase):
     def setUp(self):
         # 隔离测试：使用临时数据库
         import tempfile
+
         self._tmp = tempfile.TemporaryDirectory()
         self._orig_db = sc._CACHE_DB
         self._orig_conn = sc._db
@@ -261,6 +268,7 @@ class TestCacheRoundTrip(unittest.TestCase):
 # ═══════════════════════════════════════════════════
 # V16.1: CanonicalStockData 扩展字段测试
 # ═══════════════════════════════════════════════════
+
 
 class TestCanonicalV161ExtendedFields(unittest.TestCase):
     """V16.1: push2 扩展字段（官方 TdxQuant 交叉验证）可实例化 + 默认值。"""
@@ -312,12 +320,14 @@ class TestCanonicalV161ExtendedFields(unittest.TestCase):
 # V16.1: 研报估值提取函数测试
 # ═══════════════════════════════════════════════════
 
+
 class TestExtractReportValuation(unittest.TestCase):
     """V16.1: extract_report_valuation 规范化研报估值/评级字段。"""
 
     def setUp(self):
         sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
         from stock_common.sc_datasource import extract_report_valuation
+
         self._fn = extract_report_valuation
 
     def test_empty_returns_defaults(self):

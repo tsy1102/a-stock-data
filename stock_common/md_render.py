@@ -10,15 +10,20 @@
      表头仅取列名——不再依赖 txt 表头边界(解决表头列宽≠数据列宽错位)
   5. 无法可靠切分 → 原样保留(纯文本, 不产生错误数据)
 """
+
 from __future__ import annotations
 
 import re
 from typing import List
 
-_BORDER_OPEN = re.compile(r"^\s*[┌├└][─┬┼┴\-]+[┐┤┘]?$")  # V17.0.2g: 纯边框线行(无文字)——原含 ├ 把树形装饰(├─ 文字)误当 F10 边框表
+_BORDER_OPEN = re.compile(
+    r"^\s*[┌├└][─┬┼┴\-]+[┐┤┘]?$"
+)  # V17.0.2g: 纯边框线行(无文字)——原含 ├ 把树形装饰(├─ 文字)误当 F10 边框表
 _BORDER_ROW = re.compile(r"^\s*│")
 _LINE_ONLY = re.compile(r"^\s*[─=\-]{8,}\s*$")
-_SECTION_SEP = re.compile(r"^\s*[─=]{8,}\s*$")  # V17.0.2: 全角长线=章节分隔(表格块收集时挡); 半角 - 短横=表内分隔线(允许进块)
+_SECTION_SEP = re.compile(
+    r"^\s*[─=]{8,}\s*$"
+)  # V17.0.2: 全角长线=章节分隔(表格块收集时挡); 半角 - 短横=表内分隔线(允许进块)
 _HEADING = re.compile(r"^\s*【[^】]{1,40}】")
 # V17.0.2h: 放宽——任意整行 [xxx](含无数字前缀的 [多策略共振金股推荐]/[风控仪表盘 & 仓位管理])均转 ## 标题
 _HEADING_BRACKET = re.compile(r"^\s*\[[^\[\]]{1,40}\]\s*$")
@@ -30,7 +35,9 @@ _BORDER_DECOR = re.compile(r"^[─┬┴┼├┌└┤┐┘\s]+$")
 # 单字段值行: 字段名(1-14 字符, 无冒号) + 冒号 + ≥1 空格 + 值(值不含管道)
 # V17.0.2e: 排除行首 emoji/状态符号(✅⚡📊📋⏱ 等日志状态行不转表——用户: 无用 |---|---|)
 _FIELD_VAL = re.compile(r"^ {0,4}\S[^:：]{1,14}[:：]\s{1,}\S[^|]*$")
-_EMOJI_LEAD = re.compile(r"^ {0,4}(?:[\U0001F000-\U0001FAFF\u2600-\u27BF\u2B00-\u2BFF\uFE0F]|[✅⚡📊📋⏱⚠️📌💰🚀🔥📐📈📉💎🟢🟡🔴])")
+_EMOJI_LEAD = re.compile(
+    r"^ {0,4}(?:[\U0001F000-\U0001FAFF\u2600-\u27BF\u2B00-\u2BFF\uFE0F]|[✅⚡📊📋⏱⚠️📌💰🚀🔥📐📈📉💎🟢🟡🔴])"
+)
 
 
 def _split_by_sep(r: str) -> List[str]:
@@ -51,7 +58,7 @@ def _split_by_row_gaps(r: str, max_cols: int) -> List[str]:
     # 按宽度降序取 max_cols-1 个边界(窄间隙=列间分隔, 宽间隙=列宽补齐, 取宽的更稳)
     gaps.sort(key=lambda g: -(g[1] - g[0]))
     bounds = sorted([0] + [g[0] for g in gaps[: max_cols - 1]] + [len(r)])
-    cells = [r[bounds[k]:bounds[k + 1]].strip() for k in range(len(bounds) - 1)]
+    cells = [r[bounds[k] : bounds[k + 1]].strip() for k in range(len(bounds) - 1)]
     return [c for c in cells if c != ""]
 
 
@@ -117,8 +124,12 @@ def _space_table_to_md(block: List[str]) -> "tuple[list, list]":
 def _ensure_tbl_blank(out: List[str]) -> None:
     """V17.0.2k: 表格块输出前补空行(渲染器要求表格前有空行, 否则不渲染).
     上一行若是表格行(| / |---)则无需补(表内连续)."""
-    if out and out[-1].strip() and not out[-1].lstrip().startswith("| ") \
-            and not out[-1].lstrip().startswith("|---"):
+    if (
+        out
+        and out[-1].strip()
+        and not out[-1].lstrip().startswith("| ")
+        and not out[-1].lstrip().startswith("|---")
+    ):
         out.append("")
 
 
@@ -209,10 +220,15 @@ def text_to_md(lines: List[str]) -> List[str]:
             j = i
             # V17.0.2: 章节分隔(全角 ─ 长线)不收集进表格块; 半角 - 表内分隔线允许进块
             # V17.0.2b: 脚本直接输出 md 后, 块边界还需终止: ## 标题行(带前缀)与 ---(3 短横装饰)
-            while j < n and lines[j].strip() and not _HEADING.match(lines[j]) \
-                    and not _BORDER_OPEN.match(lines[j]) and not _SECTION_SEP.match(lines[j]) \
-                    and not lines[j].lstrip().startswith("## ") \
-                    and lines[j].strip() != "---":
+            while (
+                j < n
+                and lines[j].strip()
+                and not _HEADING.match(lines[j])
+                and not _BORDER_OPEN.match(lines[j])
+                and not _SECTION_SEP.match(lines[j])
+                and not lines[j].lstrip().startswith("## ")
+                and lines[j].strip() != "---"
+            ):
                 block.append(lines[j])
                 j += 1
             tbl_rows, rest = _space_table_to_md(block)
@@ -246,13 +262,20 @@ def text_to_md(lines: List[str]) -> List[str]:
             if _t3.endswith("**"):
                 _cleaned = "## " + _t3[:-2]
         # 表格行前补空行(渲染器要求); 分隔行(|---)与数据行(| )均视为表格行, 不补
-        if _cleaned.lstrip().startswith("| ") and out and out[-1].strip() \
-                and not out[-1].lstrip().startswith("| ") \
-                and not out[-1].lstrip().startswith("|---"):
+        if (
+            _cleaned.lstrip().startswith("| ")
+            and out
+            and out[-1].strip()
+            and not out[-1].lstrip().startswith("| ")
+            and not out[-1].lstrip().startswith("|---")
+        ):
             out.append("")
         # V17.0.2l: 表格行后遇文本行也补空行——否则下一标题/提示被 md 渲染并进上一表格
-        if out and out[-1].lstrip().startswith(("| ", "|---")) \
-                and not _cleaned.lstrip().startswith(("| ", "|---")):
+        if (
+            out
+            and out[-1].lstrip().startswith(("| ", "|---"))
+            and not _cleaned.lstrip().startswith(("| ", "|---"))
+        ):
             out.append("")
         out.append(_cleaned)
         i += 1
@@ -272,7 +295,7 @@ def _clean_text_line(ln: str) -> str:
     # E: #N 编号行 → **N.**(原 **#N** 的 # 被部分渲染器高亮为红色)
     m2 = _HASH_NUM.match(ln)
     if m2:
-        return "  **" + m2.group(1) + ".** " + ln[m2.end():].strip()
+        return "  **" + m2.group(1) + ".** " + ln[m2.end() :].strip()
     # C: 去行首 1-4 空格缩进(保留列表语义行如 "  - "/"  1. ")
     stripped = ln.lstrip()
     if stripped.startswith(("- ", "* ", "1. ", "2. ", "> ")):

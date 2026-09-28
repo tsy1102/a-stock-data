@@ -10,6 +10,7 @@
 - 仅消费已在统一层 CanonicalStockData 归一化（已取数、已清洗、已 QC）的字段，
   不新增任何采集。契合项目"轻量优先"铁律。
 """
+
 from __future__ import annotations
 
 from typing import Any, List
@@ -70,12 +71,16 @@ def earnings_quality_lines(cdata: Any) -> List[str]:
         if eps != 0:
             ratio = _safe_div(eps_d, eps)
             tag = "健康" if ratio >= 0.85 else ("⚠️非经常性损益占比偏高" if ratio < 0.7 else "中性")
-            out.append(f"  - 扣非EPS(TTM)={eps_d:.2f}元/股，占归母EPS({eps:.2f})的{ratio*100:.0f}%（{tag}）")
+            out.append(
+                f"  - 扣非EPS(TTM)={eps_d:.2f}元/股，占归母EPS({eps:.2f})的{ratio*100:.0f}%（{tag}）"
+            )
         else:
             out.append(f"  - 扣非EPS(TTM)={eps_d:.2f}元/股（归母EPS缺失，以扣非口径为准）")
         if roe != 0 or roe_d != 0:
             diff = roe - roe_d
-            out.append(f"  - ROE={roe:.1f}% / 扣非ROE={roe_d:.1f}%（差额{diff:+.1f}pt，差额为正=非经常性损益撑净资产收益）")
+            out.append(
+                f"  - ROE={roe:.1f}% / 扣非ROE={roe_d:.1f}%（差额{diff:+.1f}pt，差额为正=非经常性损益撑净资产收益）"
+            )
         return out
     except Exception:
         return []
@@ -92,11 +97,19 @@ def cash_content_lines(cdata: Any) -> List[str]:
         out.append("  💰 **净利现金含量（经营现金流/净利润）**")
         if npf > 0:
             ratio = _safe_div(ocf, npf)
-            tag = "✅真金白银" if ratio >= 0.8 else ("⚠️盈利含金量偏低（赊销/应收注水风险）" if ratio < 0.5 else "中性")
+            tag = (
+                "✅真金白银"
+                if ratio >= 0.8
+                else ("⚠️盈利含金量偏低（赊销/应收注水风险）" if ratio < 0.5 else "中性")
+            )
             # net_profit 单位元；ocf_ttm 单位元，比值无量纲
-            out.append(f"  - OCF(TTM)={ocf/1e8:.2f}亿 / 净利润={npf/1e8:.2f}亿 → 比值{ratio:.2f}（{tag}）")
+            out.append(
+                f"  - OCF(TTM)={ocf/1e8:.2f}亿 / 净利润={npf/1e8:.2f}亿 → 比值{ratio:.2f}（{tag}）"
+            )
         elif npf < 0:
-            out.append(f"  - 净利润为负({npf/1e8:.2f}亿)，OCF(TTM)={ocf/1e8:.2f}亿（关注是否靠经营回款续命）")
+            out.append(
+                f"  - 净利润为负({npf/1e8:.2f}亿)，OCF(TTM)={ocf/1e8:.2f}亿（关注是否靠经营回款续命）"
+            )
         else:
             out.append(f"  - OCF(TTM)={ocf/1e8:.2f}亿（净利润缺失，仅列经营现金流）")
         return out
@@ -120,7 +133,9 @@ def fund_flow_detail_lines(cdata: Any) -> List[str]:
         total = mb + ms
         if total > 0:
             buy_ratio = _safe_div(mb, total) * 100
-            out.append(f"  - 主力买入={mb/1e8:.2f}亿 / 卖出={ms/1e8:.2f}亿 → 主买占比{buy_ratio:.1f}%（>55%为真金做多，≈50%警惕对倒）")
+            out.append(
+                f"  - 主力买入={mb/1e8:.2f}亿 / 卖出={ms/1e8:.2f}亿 → 主买占比{buy_ratio:.1f}%（>55%为真金做多，≈50%警惕对倒）"
+            )
         else:
             out.append(f"  - 主力买入={mb/1e8:.2f}亿 / 卖出={ms/1e8:.2f}亿（净额数据缺失）")
         stotal = sb + ss
@@ -158,10 +173,14 @@ def order_book_lines(cdata: Any) -> List[str]:
             out.append(f"  - 委比={er:.1f}%（{tag}）")
         tot = bv + sv
         if tot > 0:
-            out.append(f"  - 外盘(主动买)={bv/1e4:.1f}万手 / 内盘(主动卖)={sv/1e4:.1f}万手 → 主动买占比{_safe_div(bv,tot)*100:.1f}%")
+            out.append(
+                f"  - 外盘(主动买)={bv/1e4:.1f}万手 / 内盘(主动卖)={sv/1e4:.1f}万手 → 主动买占比{_safe_div(bv,tot)*100:.1f}%"
+            )
         # 买二/卖二 sanity gate：L4 未定案字段, 仅当与现价同量级且买二<=卖二时渲染, 越界隐藏
         if bid2 > 0 and ask2 > 0 and price > 0:
-            _in_band = (price * 0.85 <= bid2 <= price * 1.15) and (price * 0.85 <= ask2 <= price * 1.15)
+            _in_band = (price * 0.85 <= bid2 <= price * 1.15) and (
+                price * 0.85 <= ask2 <= price * 1.15
+            )
             _no_cross = bid2 <= ask2
             if _in_band and _no_cross:
                 out.append(f"  - 买二={bid2:.2f}元 / 卖二={ask2:.2f}元（盘口支撑/压力位）")
@@ -182,7 +201,9 @@ def rotation_context_lines(cdata: Any) -> List[str]:
             return []
         out: List[str] = []
         out.append("  🧭 **中期区间表现（主线识别）**")
-        out.append(f"  - 近20日={_fmt_pct(c20)} | 近60日={_fmt_pct(c60)} | 年初至今={_fmt_pct(cytd)}")
+        out.append(
+            f"  - 近20日={_fmt_pct(c20)} | 近60日={_fmt_pct(c60)} | 年初至今={_fmt_pct(cytd)}"
+        )
         if c60 > 30:
             out.append("  - 60日强势，属中期主线候选；注意高位回撤风险")
         elif c60 < -20:
@@ -250,10 +271,20 @@ def mak_stock_lines(s: dict) -> List[str]:
         mcap = float(s.get("mcap_yi", 0) or 0)
         inflow = float(s.get("main_inflow", 0) or 0)
         code = str(s.get("code", "") or "")
-        if r60 == 0 and r20 == 0 and r10 == 0 and r5 == 0 and turnover == 0 and mcap == 0 and inflow == 0:
+        if (
+            r60 == 0
+            and r20 == 0
+            and r10 == 0
+            and r5 == 0
+            and turnover == 0
+            and mcap == 0
+            and inflow == 0
+        ):
             return []
         out: List[str] = []
-        out.append(f"  区间收益: 5日{_fmt_pct(r5)} | 10日{_fmt_pct(r10)} | 20日{_fmt_pct(r20)} | 60日{_fmt_pct(r60)}")
+        out.append(
+            f"  区间收益: 5日{_fmt_pct(r5)} | 10日{_fmt_pct(r10)} | 20日{_fmt_pct(r20)} | 60日{_fmt_pct(r60)}"
+        )
         if turnover > 0:
             out.append(f"  换手率={turnover:.2f}% | 总市值={mcap:.1f}亿")
         if inflow != 0:

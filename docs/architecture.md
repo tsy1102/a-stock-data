@@ -1,293 +1,120 @@
-# 项目结构与数据流图
+# 项目架构与数据流
 
-本项目采用「**main.py 调度 → 子进程执行报告脚本 → 调用数据源层 → 上传 GD**」的层次化架构。
-下文使用 Mermaid 描述核心模块之间的实际调用关系，便于开发者快速了解系统全景。
+> 本文描述当前代码路径；架构边界的完整依据见 [`ARCHITECTURE_THEORY.md`](ARCHITECTURE_THEORY.md)，字段定义见 [`field_dict.md`](field_dict.md)。最近核对：2026-09-28。
 
-> 📌 **V12.4+ 重要更新**：所有 5 大报告脚本（ful 已删）统一继承 `BaseReportRunner` 基类（V12.4），消除样板代码；V12.5 进一步将 GD 上传逻辑真正落地到基类辅助方法。
-
-## 1. 总体架构
+## 1. 系统结构
 
 ```mermaid
-graph TD
-    User([用户 CLI]) --> Main[main.py<br/>统一入口]
-    Main -- "asyncio.create_subprocess_exec" --> Sht[get_sht_report.py]
-    Main -- "asyncio.create_subprocess_exec" --> Med[get_med_report.py]
-    Main -- "asyncio.create_subprocess_exec" --> Lng[get_lng_report.py]
-    Main -- "asyncio.create_subprocess_exec" --> (sht/med/lng/val/mak)
-    Main -- "asyncio.create_subprocess_exec" --> Val[get_val_report.py]
-    Main -- "asyncio.create_subprocess_exec" --> Mak[get_mak_report.py]
+flowchart TD
+    User[用户或计划任务] --> Main[main.py 调度器]
+    Main -->|子进程| Sht[get_sht_report.py]
+    Main -->|子进程| Med[get_med_report.py]
+    Main -->|子进程| Lng[get_lng_report.py]
+    Main -->|子进程| Val[get_val_report.py]
+    Main -->|子进程| Mak[get_mak_report.py]
 
-    Sht -. "继承" .-> Runner[BaseReportRunner<br/>stock_common/sc_report_runner.py]
-    Med -. "继承" .-> Runner
-    Lng -. "继承" .-> Runner
-    Ful -. "继承" .-> Runner
-    Val -. "继承" .-> Runner
-    Mak -. "继承" .-> Runner
+    Sht --> Runner[BaseReportRunner]
+    Med --> Runner
+    Lng --> Runner
+    Val --> Runner
+    Mak --> Runner
 
-    Sht --> SC[stock_common/<br/>sc_datasource / sc_network / sc_utils / sc_scoring]
-    Med --> SC
-    Lng --> SC
-    Ful --> SC
-    Val --> SC
-    Mak --> SC
-
-    SC -- "sc_datasource 委托" --> Tdx[tdx_client.py<br/>通达信行情]
-    SC -- "aiohttp + aiosqlite" --> Cache[(cache/stock_cache.db<br/>SQLite + L1)]
-    SC -- "requests/aiohttp" --> EastMoney[东方财富 API]
-    SC -- "requests/aiohttp" --> Sina[新浪财经 API]
-    SC -- "requests/aiohttp" --> Ths[同花顺 API]
-
-    Sht --> GD[gd_uploader.py<br/>Google Drive 上传]
-    Med --> GD
-    Lng --> GD
-    Ful --> GD
-    Val --> GD
-    Mak --> GD
-    Runner -- "upload_single_report / upload_multi_reports" --> GD
-    Ful -- "save_snapshot" --> AH[stock_common/analyze_history.py]
-
-    GD -- "google-api-python-client" --> Drive[(Google Drive API<br/>a-stock-data/)]
+    Sht --> Gate[Tier 1: get_canonical_stock_data]
+    Med --> Gate
+    Lng --> Gate
+    Val --> Gate
+    Mak --> Specialty[Tier 2 专项数据适配器]
+    Gate --> Adapters[Tier 2 数据适配器]
+    Adapters --> Cache[SQLite/L1 缓存]
+    Adapters --> Clients[内部原始客户端]
+    Runner --> Render[报告渲染与上传]
+    Render --> Drive[Google Drive]
 ```
 
-## 2. 模块职责
+`main.py` 负责参数与任务调度，不负责字段映射。报告入口使用 `stock_common/sc_report_runner.py` 的 `BaseReportRunner` 管理公共生命周期；`get_mak_report.py` 还会调用全市场扫描所需的专项数据适配器。
 
-| 模块 | 职责 |
-|------|------|
-| **`main.py`** | 统一 CLI 入口；通过 `asyncio.create_subprocess_exec` 串行执行各报告脚本（进程级并发默认 1） |
-| **`get_*.py`** (6 个) | 6 种报告类型的执行入口，**继承 `BaseReportRunner`**；只需实现 `execute_pipeline()` 和 `upload_reports()`，其余样板代码由基类提供 |
-| ├ `get_val_report.py` | 18 策略全市场发现引擎 |
-| ├ `get_sht_report.py` | 短线策略个股分析报告 |
-| ├ `get_med_report.py` | 中线深度投研报告 |
-| ├ `get_lng_report.py` | 长线价投专属深度体检报告 |
-| ├ ~~`get_ful_report.py`~~ | V16.3 O19 已删除（能力并入 sht/med/lng）|
-| └ `get_mak_report.py` | 异动及行业轮动扫描报告 |
-| **`stock_common/sc_report_runner.py`** | V12.4+ **核心基类**：`BaseReportRunner`，统一 CLI 解析 / Banner / Summary / GD 上传模板（`upload_single_report` / `upload_multi_reports`）/ TDX 资源清理 |
-| **`stock_common/`** 包 | 数据源层与公共工具的集合，由各报告脚本统一调用 |
-| ├ `sc_datasource.py` | 数据源适配层（新浪/东财/同花顺），含 `aiohttp` 异步与 `requests` 同步两套实现 |
-| ├ `sc_network.py` | 限流、代理、UA 池、`_debug_log` 日志等基础网络工具；全局异步 Session 单例（V12.2） |
-| ├ `sc_utils.py` | CLI 参数解析、配置加载、字符串清洗等通用工具 |
-| ├ `sc_scoring.py` | 短/中/长线评分权重与计算函数 |
-| ├ `sc_fault_tolerance.py` | 网络容错层：令牌桶限流、熔断器、随机 UA 池（V11.5） |
-| ├ `analyze_history.py` | 快照保存、跨日期评分对比、趋势背离检测 |
-| ├ `stock_calendar.py` | A 股交易日历（含节假日、调休） |
-| └ `f10_parser.py` | 通达信 F10 文本解析器 |
-| **`tdx_client.py`** | 通达信行情接口（实时行情、K 线、F10、财务数据等）；V12.0 移除 easy_tdx 依赖，由 `sc_datasource` 委托调用 |
-| **`stock_cache.py`** | SQLite + TTL + 交叉验证 + L1/L2 双级缓存（`@cached` / `@cached_async`）；V12.5 修复 `_l1_clear()` 拼写错误回归 |
-| **`data_provider.py`** | V11.0+ 统一数据中心层（ZHB 优先 → TCP 直连 → HTTP fallback），防投毒熔断 |
-| **`gd_uploader.py`** | Google Drive 上传业务；提供 `init_gd` / `upload_stock_report_by_code` / `upload_type_reports` |
-| **`config.py`** | V12.2 全局配置集中管理（网络超时、限流参数、防投毒阈值等） |
+## 2. 数据访问层
 
-## 3. 单只股票的处理流程（以 `get_sht_report.py` 为例）
+| 层 | 主要入口 | 职责与边界 |
+|---|---|---|
+| 调度层 | `main.py` | 启动报告子进程并汇总结果；必选脚本缺失、子任务异常或返回失败码都应导致整体失败 |
+| 报告层 | `get_*_report.py`、`BaseReportRunner` | 组织报告工作流、渲染文件、处理上传 |
+| Tier 1 统一门面 | `core/data_provider.get_canonical_stock_data()` | 86 个核心字段的归一化契约、来源选择、fallback、单位归一化和 `field_sources` 溯源 |
+| Tier 2 专项适配器 | `stock_common/sc_datasource`、`sc_fuyao`、`core/tdx_client.py` 的公开接口 | 提供 CYQ、F10、龙虎榜、涨停梯队、行业 L2、资金流、竞价等专用数据 |
+| 原始客户端 | `stock_common/` 与 `core/tdx_client.py` 内部实现 | HTTP、TCP、SDK 等底层连接；生产报告脚本不应绕过 Tier 1/Tier 2 公开入口 |
+| 缓存 | `core/stock_cache.py` 和适配器缓存 | 管理分类 TTL、缓存键和失效；单位或字段语义变化要升级对应缓存类别/版本 |
+
+数据访问规则、公理编号和允许的例外以 `AGENTS.md` §8.4 与 `ARCHITECTURE_THEORY.md` 为准。专用数据属于 Tier 2，不应为追求“统一”而塞进 `CanonicalStockData`。
+
+## 3. 实时与 ZHB 路由
+
+### 3.1 按交易时段选择
+
+`core/data_provider.py` 中的 `_should_use_zhb_for_realtime()` 和 `get_canonical_stock_data()` 共同决定路由：
+
+| 时段 | 行为 |
+|---|---|
+| 非交易日/节假日 | 允许使用本地 ZHB 快照 |
+| 交易日 09:30 前 | 允许使用本地 ZHB 快照 |
+| 交易日 09:30 起（含盘后） | 需要实时行情来源；盘后本地 ZHB 仍可能停留在 T-1 |
+
+`force_realtime`、实时交易时段、盘后状态以及 ZHB 数据是否存在，也会影响 `need_realtime_quote`。不要把路由简化成“某字段属于实时集合就必走 HTTP”：`REQUIRES_REALTIME_HTTP` 与 `ZHB_SUFFICIENT` 是由 `sc_schema.FIELD_SPECS` 生成的测试契约元数据，不是业务运行时的路由开关。
+
+### 3.2 行情 fallback
+
+单股实时行情调用的 fallback 顺序由 `core/data_provider.py` 的分支实际执行，当前行为为：
+
+1. TDX
+2. 腾讯
+3. 东方财富 push2delay
+4. 东方财富 push2
+
+`core/source_priority.py` 保留期望顺序供测试核对，不参与生产路由。修改运行顺序时，应修改 `data_provider.py` 并更新验证实际调用顺序的测试。
+
+字段新鲜度另外按 ABCD 规则由 `sc_datasource.zhb_field_safe()` 判断：A 实时、B 准实时、C 日频、D 静态。新鲜度分类与路由选择是相关但独立的约束。
+
+## 4. 报告运行生命周期
 
 ```mermaid
 sequenceDiagram
-    participant U as 用户
+    participant U as 用户/计划任务
     participant M as main.py
-    participant R as BaseReportRunner<br/>(基类)
-    participant S as get_sht_report.py
-    participant SC as stock_common
-    participant TDX as tdx_client
-    participant Cache as stock_cache.db
-    participant GD as gd_uploader
-    participant Drive as Google Drive
-
-    U->>M: python main.py --sht 600519
-    M->>S: subprocess 启动
-    S->>R: ShtReportRunner().run()
-    R->>R: parse_args() → Banner
-    R->>S: execute_pipeline()
-    S->>SC: 调用 sc_datasource 异步函数
-    SC->>Cache: 查缓存 (L1 → L2)
-    alt 缓存命中
-        Cache-->>SC: 返回缓存值
-    else 缓存未命中
-        SC->>TDX: tdx_get_quote_full / tdx_get_security_bars ...
-        SC->>新浪/东财/同花顺: aiohttp GET
-        SC->>Cache: set_cache (TTL 到期)
-    end
-    SC-->>S: 返回数据 dict
-    S->>S: 渲染报告 (60 多个章节)
-    S-->>R: 返回 PipelineResult
-    R->>R: _handle_gd_upload()
-    R->>S: upload_reports()
-    S->>R: 委托 upload_multi_reports()
-    R->>GD: upload_stock_report_by_code(...)
-    GD->>Drive: files.create / files.update
-    Drive-->>GD: file_id
-    GD-->>S: True / False
-    R->>R: _print_summary() + cleanup_tdx()
-    S-->>M: 退出码
-    M-->>U: 完成提示
+    participant R as 报告入口与 BaseReportRunner
+    participant D as Tier 1/Tier 2 数据层
+    participant C as 缓存
+    participant G as Google Drive
+    U->>M: 选择报告任务
+    M->>R: 启动子进程
+    R->>D: 读取规范字段或专项数据
+    D->>C: 查询/写入缓存
+    D-->>R: 归一化数据
+    R->>R: 生成并保存 Markdown 报告
+    R->>G: 按配置上传
+    R-->>M: 退出码
+    M-->>U: 汇总任务成功/失败
 ```
 
-### 3.1 BaseReportRunner 生命周期（V12.4+）
+运行时网络请求、限流与熔断由网络/数据适配层负责；报告层通过公开接口使用这些能力。调度器检查任务结果数量、异常和退出码，避免遗漏任务或部分失败时仍报告成功。
 
-```mermaid
-graph LR
-    A[Runner().run()] --> B[parse_args CLI 解析]
-    B --> C[_print_banner 启动 Banner]
-    C --> D[execute_pipeline 子类实现]
-    D --> E{成功?}
-    E -- "是" --> F[_handle_gd_upload]
-    F --> G[upload_reports 子类委托]
-    G --> H[upload_single_report 或 upload_multi_reports]
-    E -- "否" --> I[异常捕获 + _debug_log]
-    I --> J[finally: cleanup_tdx + _print_summary]
-    F --> J
-    H --> J
-```
+## 5. 缓存与数据一致性
 
-## 4. 并发与限流策略
+- 缓存由 `core/stock_cache.py` 与适配器上的缓存装饰器/函数管理；具体 TTL 按数据类别设置，不在本文固定列出易变化的数值。
+- 缓存键和类别也是数据契约的一部分。单位变更、解析结构变更或返回语义改变时，检查旧缓存兼容性并升级相应版本/类别。
+- ZHB 解析结构变更检查 `core/zhb_client.py` 的 `_ZHB_PARSE_SCHEMA`；字段级定义以 `field_dict.md` 为准。
 
-```mermaid
-graph LR
-    A[main.py] -- "进程级串行 (concurrency=1)" --> B[get_sht_report.py]
-    A -- "进程级串行" --> C[get_med_report.py]
-    A -- "进程级串行" --> D[get_lng_report.py]
+## 6. 主要目录
 
-    B -- "Semaphore(3) + 1.0s" --> E[东财接口]
-    B -- "Semaphore(5) + 0.2s" --> F[其他接口]
-```
+| 目录/文件 | 内容 |
+|---|---|
+| `main.py` | 报告任务调度 |
+| `get_*_report.py` | 五个报告入口 |
+| `core/` | 统一数据门面、TDX/ZHB 客户端、解析与缓存 |
+| `stock_common/` | Tier 2 适配器、网络控制、渲染、报告 runner 与通用逻辑 |
+| `scripts/` | 测试、字段采集/治理、回测及维护工具 |
+| `tests/` | 单元和集成回归；真实网络测试使用 `real_network` marker |
+| `docs/field_verification/` | 字段采集和验证归档 |
+| `docs/DEBT_LEDGER.md` | 显式记录的架构偏离与偿还状态 |
 
-- **进程级串行**：`main.py` 通过子进程方式一次只跑一个报告脚本，避免东财接口请求叠加导致被封。
-- **脚本级并发**：单个 `get_*.py` 内部用 `asyncio.Semaphore(3)` 并发 3 只股票，配合 1.0s 间隔。
-- **跨进程文件锁**：`stock_cache.py` 使用文件锁协调多进程对 SQLite 缓存的并发写。
+## 7. 本地验证入口
 
-## 5. Google Drive 上传流程
-
-```mermaid
-graph TD
-    A[脚本启动] --> B{是否 --no-upload?}
-    B -- "是" --> C[跳过上传]
-    B -- "否" --> D[init_gd]
-    D --> E{OAuth 凭证有效?}
-    E -- "否" --> F[弹窗 OAuth 授权]
-    F --> G[保存 credentials.json]
-    E -- "是" --> G
-    G --> H[retry_get_folder_interactive<br/>查找/创建 a-stock-data]
-    H --> I{成功获取 root_id?}
-    I -- "否" --> J[用户选择跳过或重试]
-    I -- "是" --> K[upload_stock_report_by_code]
-    K --> L[retry_get_folder_interactive<br/>查找/创建 股票子文件夹]
-    L --> M[upload_or_update_to_drive<br/>files.create / files.update]
-    M --> N[txt 文件已同步至云端]
-```
-
-> **注意**：代码仅会查找/创建文件夹、上传/覆盖文件，**不会移动或删除已有文件夹**。
-> 若根目录出现个股文件夹，根因通常是 Google Drive 桌面客户端的同步冲突，
-> 而非脚本行为。详见 `README.md` FAQ 章节。
-
-## 6. 缓存层设计
-
-```mermaid
-graph LR
-    A[业务函数] -- "@cached('dragon_tiger', ttl=...)" --> B[stock_cache.py]
-    A2[异步业务函数] -- "@cached_async('financial', ...)" --> B
-    B --> C{SQLite cache_entries 表}
-    C -- "命中 + 未过期" --> D[直接返回]
-    C -- "未命中或过期" --> E[调用原始函数]
-    E --> F[写入缓存 (TTL 计算)]
-```
-
-- **TTL 分级**（详见 `stock_cache.py` 顶部说明）：
-  - 静态数据（股票基本信息、概念板块）：7 天
-  - 财务数据（财报、资产负债表）：90 天
-  - 日频数据（龙虎榜、北向、融资融券）：当日有效
-  - 研报：3 天
-  - 行业/概念热度：24 小时
-- **交叉验证**：11 个多天 TTL 分类启用两次获取对比，写入 `prev_value` / `verified` 字段。
-- **CLI**：`python stock_cache.py stats/clear-all/clear --category <name>`。
-
-## 7. 文件清单
-
-| 类别 | 文件 |
-|------|------|
-| 入口 | `main.py` |
-| 报告脚本 | `get_sht_report.py` / `get_med_report.py` / `get_lng_report.py` / `get_val_report.py` / `get_mak_report.py`（ful 已删）|
-| **Runner 框架**（V12.4+） | `stock_common/sc_report_runner.py` |
-| 数据源层 | `tdx_client.py` / `stock_common/sc_datasource.py` / `stock_common/sc_network.py` |
-| 数据中心 | `data_provider.py`（V11.0+ 统一入口） |
-| 容错层 | `stock_common/sc_fault_tolerance.py` |
-| 缓存 | `stock_cache.py` |
-| 上传 | `gd_uploader.py` |
-| 全局配置 | `config.py`（V12.2+） |
-| 工具脚本 | `scripts/update_calendar.py` |
-| 公共模块 | `stock_common/sc_utils.py` / `stock_common/sc_scoring.py` / `stock_common/analyze_history.py` / `stock_common/stock_calendar.py` / `stock_common/f10_parser.py` |
-| 测试 | `tests/test_*.py` / `tests/diag_*.py` / `tests/conftest.py` |
-| 文档 | `README.md` / `CHANGELOG.md` / `CONTRIBUTING.md` / `CODE_OF_CONDUCT.md` / `LICENSE` / `docs/architecture.md` / `docs/roadmap.md` / `docs/field_dict.md` |
-## 8. V12.6 字段路由决策层（基于运行时机 + 字段类型）
-
-V12.6 重塑 `data_provider.py` 的字段获取逻辑，引入两个核心常量：
-
-```python
-REQUIRES_REALTIME_HTTP = frozenset({
-    # 行情类
-    "price", "change_pct", "amount", "volume",
-    "open", "high", "low", "prev_close",
-    # 资金流类
-    "main_net_buy_hands", "main_net_buy_amount",
-})
-
-ZHB_SUFFICIENT = frozenset({
-    # 估值类
-    "pe_ttm", "pb", "dividend_yield", "turnover_pct",
-    # 财务/股本/历史/板块
-    "net_profit", "revenue", "total_shares", "industry",
-    ...
-})
-```
-
-**简化决策规则**：
-```
-if 运行时机 == 盘前:
-    → 所有字段都用 ZHB
-elif 字段 in REQUIRES_REALTIME_HTTP:
-    → HTTP（行情/资金流）
-else:
-    → ZHB（估值/财务/股本/板块）
-```
-
-详见 `docs/field_dict.md` 第 5 节。
-
-## 9. V13.x dataclass Schema 层（opt-in 升级路径）
-
-V13.0 创建 `stock_common/sc_schema.py`，定义：
-
-- 3 个 Enum：`TimeAnchor` / `DataSource` / `Unit`
-- `FieldSpec` dataclass（slots=True, frozen=True）
-- 34 个核心字段的元数据表 `FIELD_SPECS`
-- `NormalizedQuote` 归一化行情快照
-
-V13.1 缓存层透明序列化：
-- `_serialize_for_cache(value)`: dataclass → dict
-- `_deserialize_from_cache(value, target_cls)`: dict → dataclass
-- L1/L2 缓存统一返回 dict（不破坏现有调用）
-
-V13.1 data_provider opt-in 接口：
-- `get_stock_composite_dataclass(code)` → `NormalizedQuote`
-- `get_market_snapshot_dataclass(codes)` → `{code: NormalizedQuote}`
-- `dict_to_normalized_quote(code, raw, source)` 通用工具
-
-> V17.0 S1: 以上三个 dataclass 辅助函数已删除(零调用); 强类型合约统一由
-> `get_canonical_stock_data` + `stock_common.sc_schema.NormalizedQuote` 承担。
-
-V13.2 性能压测（5000 记录，Python 3.12）：
-
-| 指标 | dict | dataclass (slots=True) | 改进 |
-|:---|:---:|:---:|:---:|
-| 内存/对象 | 184 B | 56 B | **-70%** |
-| 字段访问 (1M reads) | 0.066s | 0.054s | **+21% 速度** |
-| json.dumps | 0.005s | 0.012s | -172% |
-
-**结论**：dict 作为默认接口保留，dataclass 作为可选升级（opt-in）。
-
-## 10. 工具脚本（scripts/）
-
-| 脚本 | 用途 |
-|:---|:---|
-| `scripts/run_with_system_python.bat` | 一键使用系统 Python 3.12 运行命令（避免 TRAE 内置 Python 抢占） |
-| `scripts/run_with_system_python.ps1` | PowerShell 版本 |
-| `scripts/test_em_batch_quotes_limit.py` | V12.6 HTTP 批量上限实测（5 阶段 100/500/1000/2000/5000 只股票） |
-| `scripts/perf_compare.py` | V13.2 dataclass vs dict 性能压测 |
-| `scripts/update_calendar.py` | 从 chinese_calendar 库更新交易日历 |
-
+PowerShell 测试统一从 `scripts/run_tests.ps1` 启动。数据访问与字段同步闸门的适用范围、调用方式见 `AGENTS.md` §8.4；脚本目录的工具用途见 [`../scripts/README.md`](../scripts/README.md)。

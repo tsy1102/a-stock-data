@@ -21,14 +21,18 @@ Policy (user-approved 2026-09-21):
   - Genuinely unresolved cells (异索引待数值对撞 / 具体语义待定 / 资金流细分小比率)
     -> meaning collapses to `待破解` (per user rule: too much guessing is harmful).
 
-Dry-run by default; --apply modifies field_dict.md + appends to PROVENANCE.md.
+Dry-run by default; it writes no files unless --plan-output is supplied.
+--apply modifies field_dict.md and appends the original evidence to PROVENANCE.md.
 """
 
+import argparse
 import re
 import sys
+from pathlib import Path
 
-SRC = "docs/field_dict.md"
-PROV = "docs/field_verification/PROVENANCE.md"
+ROOT = Path(__file__).resolve().parents[1]
+SRC = ROOT / "docs/field_dict.md"
+PROV = ROOT / "docs/field_verification/PROVENANCE.md"
 
 MARK_RE = re.compile(r"^[✅❌⏸️⚠️]")
 # markers that indicate a verification-result narrative (not a clean conclusion)
@@ -249,8 +253,20 @@ def propose_status(raw: str):
 
 
 def main():
-    apply = "--apply" in sys.argv
-    lines = open(SRC, encoding="utf-8").read().splitlines()
+    parser = argparse.ArgumentParser(description="清理字段字典结论列中的验证过程叙述")
+    parser.add_argument(
+        "--apply", action="store_true", help="写入字典并将过程证据追加到 PROVENANCE.md"
+    )
+    parser.add_argument(
+        "--plan-output",
+        type=Path,
+        help="将 dry-run 方案写入指定路径；省略时只打印摘要，不写文件",
+    )
+    args = parser.parse_args()
+    if args.apply and args.plan_output:
+        parser.error("--plan-output 仅用于 dry-run，不能与 --apply 同用")
+
+    lines = SRC.read_text(encoding="utf-8").splitlines()
     out = []
     plan = []  # (line_no, token, col, old, new, conf, prov)
     prov_entries = []  # (token, section_hint, col, prov_text)
@@ -317,7 +333,7 @@ def main():
         else:
             out.append(ln)
 
-    if not apply:
+    if not args.apply:
         # ---- DRY RUN: emit review plan ----
         print(
             f"[DRY-RUN] would change {len(plan)} cells "
@@ -325,7 +341,6 @@ def main():
             f"{sum(1 for p in plan if p[2]=='含义')} meaning)"
         )
         print(f"[DRY-RUN] provenance entries to archive: {len(prov_entries)}")
-        # write plan file
         lines_out = ["# 二次分层清理 · 待复核方案（DRY-RUN，未落盘）", ""]
         lines_out.append(
             f"共拟改动 **{len(plan)}** 处单元格（状态 "
@@ -339,28 +354,33 @@ def main():
             "其余为高置信（反引号名 / 未破解→待破解）。"
         )
         lines_out.append("")
-        cur = None
         for ln, tok, col, old, new, conf, prov in plan:
             tag = "" if conf == "HIGH" else f" 【{conf}·⚠️待核】"
             lines_out.append(f"### L{ln} `{tok}` · {col}{tag}")
             lines_out.append(f"- 原: `{old[:160]}`")
             lines_out.append(f"- 拟: `{new[:120]}`")
             lines_out.append("")
-        open("docs/field_verification/SECOND_PASS_PLAN.md", "w", encoding="utf-8").write(
-            "\n".join(lines_out) + "\n"
-        )
-        print("[DRY-RUN] review plan -> docs/field_verification/SECOND_PASS_PLAN.md")
+        if args.plan_output:
+            plan_path = args.plan_output
+            if not plan_path.is_absolute():
+                plan_path = ROOT / plan_path
+            if plan_path.resolve() in {SRC.resolve(), PROV.resolve()}:
+                parser.error("--plan-output 不能覆盖 field_dict.md 或 PROVENANCE.md")
+            plan_path.write_text("\n".join(lines_out) + "\n", encoding="utf-8")
+            print(f"[DRY-RUN] review plan -> {plan_path}")
+        else:
+            print("[DRY-RUN] no files changed; use --plan-output <path> to save the review plan")
         return
 
     # ---- APPLY ----
-    open(SRC, "w", encoding="utf-8").write("\n".join(out) + "\n")
+    SRC.write_text("\n".join(out) + "\n", encoding="utf-8")
     # append provenance section
     block = ["", "## 二次分层清理·验证叙述溯源（自动归档，未做删改）", ""]
     for tok, sec, col, prov in prov_entries:
         block.append(f"### {tok} · {sec}")
         block.append(f"- {col}原过程: {prov}")
         block.append("")
-    with open(PROV, "a", encoding="utf-8") as f:
+    with PROV.open("a", encoding="utf-8") as f:
         f.write("\n".join(block) + "\n")
     print(f"[APPLY] changed {len(plan)} cells; archived {len(prov_entries)} provenance entries")
 

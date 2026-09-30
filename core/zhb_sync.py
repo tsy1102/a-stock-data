@@ -158,8 +158,15 @@ def _validate_zhb_data(zhb) -> bool:
         if data_date > today:
             _log_sync(f"校验失败：数据日期({zhb.date})超过今天")
             return False
-        if (today - data_date).days > 7:
-            _log_sync(f"警告：数据日期({zhb.date})已过期7天以上")
+        try:
+            from stock_common.stock_calendar import trading_day_age
+
+            delay = trading_day_age(data_date, datetime.now())
+        except NotImplementedError:
+            _log_sync(f"警告：数据日期({zhb.date})超出本地交易日历范围，无法准确计算年龄")
+            delay = 0
+        if delay > 7:
+            _log_sync(f"警告：数据日期({zhb.date})已过期7个交易日以上")
     except ValueError:
         _log_sync(f"校验失败：无效的数据日期格式({zhb.date})")
         return False

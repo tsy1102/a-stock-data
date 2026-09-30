@@ -88,7 +88,7 @@ V17.3(2026-09-20) 采集↔字典/对撞同步核验:
 """
 
 import sys, os, json, time, argparse, glob
-from datetime import datetime, time as dt_time
+from datetime import date, datetime, time as dt_time, timedelta
 from typing import Any, Callable, Dict, List, Optional, cast
 
 for _s in (sys.stdout, sys.stderr):
@@ -105,6 +105,8 @@ if _ROOT not in sys.path:
 _SCRIPTS = os.path.dirname(os.path.abspath(__file__))
 if _SCRIPTS not in sys.path:
     sys.path.insert(0, _SCRIPTS)
+
+from collision_dates import EVENT_SOURCES
 
 from stock_common.sc_utils import em_secid_prefix  # V17.0 S3: 统一 secid 前缀
 from core.zhb_client import (
@@ -186,13 +188,38 @@ def load_pool() -> List[Dict[str, Any]]:
 
 
 def _last_trading_day_str() -> str:
-    """返回最近交易日 YYYYMMDD(涨停池按交易日快照)。"""
-    try:
-        from stock_common.stock_calendar import get_last_trading_day
+    """返回最近已收盘交易日 YYYYMMDD(涨停池按交易日快照)。"""
+    return _last_completed_trading_day().strftime("%Y%m%d")
 
-        return get_last_trading_day().strftime("%Y%m%d")
-    except Exception:
-        return datetime.now().strftime("%Y%m%d")
+
+EVENT_ONLY_CAPTURE_SOURCES = EVENT_SOURCES
+
+
+def _validate_capture_data_date(value: str, only_sources=None, session_checker=None):
+    """Validate capture target date according to its data domain."""
+    text = str(value or "").strip()
+    if len(text) != 8 or not text.isdigit():
+        raise ValueError("--date 必须是 YYYYMMDD")
+    try:
+        capture_day = datetime.strptime(text, "%Y%m%d").date()
+    except ValueError as exc:
+        raise ValueError(f"--date 不是有效日期: {text}") from exc
+    if capture_day.strftime("%Y%m%d") != text:
+        raise ValueError(f"--date 不是有效日期: {text}")
+
+    selected = {name.strip() for name in (only_sources or []) if name.strip()}
+    event_only = bool(selected) and selected.issubset(EVENT_ONLY_CAPTURE_SOURCES)
+    if not event_only:
+        if session_checker is None:
+            from stock_common.stock_calendar import is_workday_with_zhb_supplement
+
+            session_checker = is_workday_with_zhb_supplement
+        if not session_checker(capture_day):
+            raise ValueError(
+                f"--date {text} 不是 A 股交易日；行情采集必须使用交易日。"
+                "仅新闻/公告源可在 --only 中单独选择并使用自然日"
+            )
+    return capture_day, "calendar" if event_only else "trading"
 
 
 def _market_close_dt(date_str: str) -> datetime:
@@ -633,7 +660,7 @@ def collect_eltdx(pool: list, lite: bool = False) -> dict:
                 elif _is_bse(ec):
                     # BSE 已在前述逐股分支尝试且预期缺 marker, 不重复调用(避免批量式挂起)
                     rec["quote_snapshot"] = {
-                        "__error__": "BSE code: snapshot marker not available (skipped)"
+                        "__skipped__": "BSE code: snapshot marker not available"
                     }
                 else:
                     _snap = client.quotes.get_snapshots([ec])
@@ -730,6 +757,22 @@ def collect_tencent(pool: list) -> dict:
     return out
 
 
+def _request_failure_summary(label: str, detail: dict) -> str:
+    """Render a compact transport failure without exposing request parameters."""
+    parts = [str(detail.get("kind") or "no_response")]
+    if detail.get("domain"):
+        parts.append(f"domain={detail['domain']}")
+    if detail.get("status_code") is not None:
+        parts.append(f"status={detail['status_code']}")
+    if detail.get("error_type"):
+        parts.append(str(detail["error_type"]))
+    if detail.get("attempts") is not None:
+        parts.append(f"attempts={detail['attempts']}")
+    if detail.get("message"):
+        parts.append(str(detail["message"]).split("?", 1)[0][:160])
+    return f"{label}: " + ", ".join(parts)
+
+
 def collect_push2(pool: list) -> dict:
     """东财 push2 stock/get 显式全字段(f1-f250, EM_FULL_FIELDS)。
 
@@ -761,8 +804,11 @@ def collect_push2(pool: list) -> dict:
         secid = em_secid_prefix(c) + c  # V17.0 S3: 统一(修复 92 北交所误判 1.)
         r = None
         used_host = ""
+        delay_domain = "push2delay.eastmoney.com"
+        delay_error: Dict[str, Any] = {}
+        delay_banned = _em_is_banned(delay_domain)
         # 首选 push2delay 镜像域(独立风控面, 实测可用率 ~95%); 若已被任一进程跨进程标记封禁则跳过
-        if delay_fail_streak < 3 and not _em_is_banned("push2delay.eastmoney.com"):
+        if delay_fail_streak < 3 and not delay_banned:
             try:
                 r = _quick_request(
                     "https://push2delay.eastmoney.com/api/qt/stock/get",
@@ -775,17 +821,34 @@ def collect_push2(pool: list) -> dict:
                     },
                     headers={"Referer": "https://quote.eastmoney.com/"},
                     timeout=10,
+                    max_retries=1,
+                    error_out=delay_error,
                 )
                 if r is not None:
                     used_host = "push2delay"
                     delay_fail_streak = 0
                 else:
                     delay_fail_streak += 1
-            except Exception:
+            except Exception as exc:
                 delay_fail_streak += 1
                 r = None
+                delay_error = {
+                    "kind": "request_exception",
+                    "domain": delay_domain,
+                    "error_type": type(exc).__name__,
+                    "message": str(exc).split("?", 1)[0][:160],
+                }
+        elif delay_banned:
+            delay_error = {"kind": "ip_banned", "domain": delay_domain, "attempts": 0}
+        else:
+            delay_error = {
+                "kind": "suppressed_after_failures",
+                "domain": delay_domain,
+                "attempts": 0,
+            }
         # 镜像域连续失败 → 兜底试 push2 主域(共享风控面; 镜像域若因总封禁同崩则主域亦大概率失败)
         if r is None:
+            primary_error: Dict[str, Any] = {}
             try:
                 r = _quick_request(
                     "https://push2.eastmoney.com/api/qt/stock/get",
@@ -798,13 +861,29 @@ def collect_push2(pool: list) -> dict:
                     },
                     headers={"Referer": "https://quote.eastmoney.com/"},
                     timeout=10,
+                    max_retries=1,
+                    error_out=primary_error,
                 )
                 if r is not None:
                     used_host = "push2"
-            except Exception:
+            except Exception as exc:
                 r = None
+                primary_error = {
+                    "kind": "request_exception",
+                    "domain": "push2.eastmoney.com",
+                    "error_type": type(exc).__name__,
+                    "message": str(exc).split("?", 1)[0][:160],
+                }
         if r is None:
-            out["stocks"][c] = {"__error__": "request failed (push2delay+push2, no retry)"}
+            out["stocks"][c] = {
+                "__error__": (
+                    "request failed ("
+                    + _request_failure_summary("push2delay", delay_error)
+                    + "; "
+                    + _request_failure_summary("push2", primary_error)
+                    + ")"
+                )
+            }
             continue
         data = (r.json() or {}).get("data") or {}
         out["stocks"][c] = {"secid": secid, "host": used_host, "n_fields": len(data), "data": data}
@@ -1000,12 +1079,15 @@ def collect_clist(pool: list) -> dict:
                 "ut": "bd1d9ddb04089700cf9c27f6f7426281",
             }
             hdr = {"User-Agent": UA, "Referer": "https://quote.eastmoney.com/"}
+            delay_error: Dict[str, Any] = {}
+            primary_error: Dict[str, Any] = {}
             try:
                 r = _quick_request(
                     "https://push2delay.eastmoney.com/api/qt/clist/get",
                     params=params,
                     headers=hdr,
                     timeout=10,
+                    error_out=delay_error,
                 )
                 if r is None:
                     r = _quick_request(
@@ -1013,9 +1095,18 @@ def collect_clist(pool: list) -> dict:
                         params=params,
                         headers=hdr,
                         timeout=10,
+                        error_out=primary_error,
                     )
                 if r is None:
-                    out["by_type"][label] = {"__error__": "request failed (both domains)"}
+                    out["by_type"][label] = {
+                        "__error__": (
+                            "request failed ("
+                            + _request_failure_summary("push2delay", delay_error)
+                            + "; "
+                            + _request_failure_summary("push2", primary_error)
+                            + ")"
+                        )
+                    }
                     break
                 d = (r.json() or {}).get("data") or {}
                 if total is None:
@@ -1203,14 +1294,21 @@ def collect_exchange(pool: list) -> dict:
     return out
 
 
-def _last_completed_trading_day():
-    """最近已完成交易日(周末回退周五;节假日不识别——探针用途可接受)。"""
-    import datetime
+def _last_completed_trading_day() -> date:
+    """返回最近已收盘的 A 股交易日，覆盖周末、法定节假日和调休补班周末。"""
+    from stock_common.stock_calendar import is_workday_with_zhb_supplement
 
-    d = datetime.date.today()
-    while d.weekday() >= 5:
-        d -= datetime.timedelta(days=1)
-    return d
+    now = datetime.now()
+    today = now.date()
+    candidate = today
+    include_current = is_workday_with_zhb_supplement(today) and now.time() >= dt_time(15, 0)
+    if not include_current:
+        candidate -= timedelta(days=1)
+    for _ in range(370):
+        if is_workday_with_zhb_supplement(candidate):
+            return candidate
+        candidate -= timedelta(days=1)
+    raise RuntimeError("ZHB 补充日历中无法找到最近已收盘交易日")
 
 
 def collect_fuyao(pool: list) -> dict:
@@ -1398,6 +1496,7 @@ def collect_em_kline_f61(pool: list) -> dict:
     for p in pool:
         c = p["code"]
         secid = em_secid_prefix(c) + c
+        request_error: Dict[str, Any] = {}
         try:
             r = _quick_request(
                 "https://push2his.eastmoney.com/api/qt/stock/kline/get",
@@ -1413,11 +1512,18 @@ def collect_em_kline_f61(pool: list) -> dict:
                 },
                 headers={"Referer": "https://quote.eastmoney.com/"},
                 timeout=15,
+                error_out=request_error,
             )
-        except Exception:
+        except Exception as exc:
             r = None
+            request_error = {
+                "kind": "request_exception",
+                "domain": "push2his.eastmoney.com",
+                "error_type": type(exc).__name__,
+                "message": str(exc).split("?", 1)[0][:160],
+            }
         if r is None:
-            out["stocks"][c] = {"__error__": "push2his request failed/blocked"}
+            out["stocks"][c] = {"__error__": _request_failure_summary("push2his", request_error)}
             continue
         data = (r.json() or {}).get("data") or {}
         klines = data.get("klines") or []
@@ -1469,6 +1575,7 @@ def collect_em_fund_flow(pool: list) -> dict:
     for p in pool:
         c = p["code"]
         secid = em_secid_prefix(c) + c
+        request_error: Dict[str, Any] = {}
         try:
             r = _quick_request(
                 "https://push2delay.eastmoney.com/api/qt/stock/get",
@@ -1481,9 +1588,12 @@ def collect_em_fund_flow(pool: list) -> dict:
                 },
                 headers={"Referer": "https://quote.eastmoney.com/"},
                 timeout=10,
+                error_out=request_error,
             )
             if r is None:
-                out["stocks"][c] = {"__error__": "request failed"}
+                out["stocks"][c] = {
+                    "__error__": _request_failure_summary("push2delay", request_error)
+                }
                 continue
             data = (r.json() or {}).get("data") or {}
             out["stocks"][c] = {"secid": secid, "n_fields": len(data), "data": data}
@@ -1656,16 +1766,23 @@ def collect_macro_dc(pool: list) -> dict:
     return out
 
 
-def _recent_trade_days(n: int = 4):
-    """返回最近 n 个自然日(YYYY-MM-DD), 用于 ETF/央视等按日快照源回退到最近有数据的日期。"""
-    from datetime import datetime, timedelta
+def _recent_calendar_days(n: int = 4, today=None) -> List[str]:
+    """Return the most recent calendar dates, including weekends and holidays."""
+    from datetime import date, timedelta
 
-    d = datetime.now()
-    out = []
-    for _ in range(n):
-        out.append(d.strftime("%Y-%m-%d"))
-        d -= timedelta(days=1)
+    current = today or date.today()
+    out: List[str] = []
+    for _ in range(max(0, n)):
+        out.append(current.strftime("%Y-%m-%d"))
+        current -= timedelta(days=1)
     return out
+
+
+def _recent_trade_days(n: int = 4, today=None) -> List[str]:
+    """Return recent A-share sessions, excluding exchange holidays and make-up weekends."""
+    from stock_common.stock_calendar import recent_trading_dates
+
+    return [day.strftime("%Y-%m-%d") for day in recent_trading_dates(max(0, n), today)]
 
 
 def collect_research_sina(pool: list) -> dict:
@@ -1692,24 +1809,34 @@ def collect_research_sina(pool: list) -> dict:
 def collect_etf(pool: list) -> dict:
     """V17.4.1 吸收层: ETF 份额(万份, §4.7)。上交所按日归档/深交所当前快照。
 
-    取最近 4 个自然日里首个有数据的快照(深交所仅最新一天)。SH+SZ 全市场列表。
+    取最近 4 个市场工作日里首个有数据的快照(深交所仅最新一天)。SH+SZ 全市场列表。
     """
     from stock_common.sc_datasource import etf_shares
 
     out: Dict[str, Any] = {}
     for ex in ("SH", "SZ"):
         got: Any = None
+        attempted = []
+        errors = []
         for day in _recent_trade_days(4):
+            attempted.append(day)
             try:
                 rows = etf_shares(day, ex)
                 if rows:
                     got = rows
                     break
-            except Exception as e:
-                got = {"__error__": f"{day}: {str(e)[:120]}"}
-        out[f"etf_{ex.lower()}"] = (
-            got if got is not None else {"__error__": "no data in last 4 days"}
-        )
+            except Exception as exc:
+                errors.append(f"{day}:{type(exc).__name__}: {str(exc).split('?')[0][:100]}")
+        if got is None:
+            message = f"no ETF rows for market sessions: {', '.join(attempted)}"
+            if errors:
+                message += "; errors: " + "; ".join(errors)
+            out[f"etf_{ex.lower()}"] = {
+                "__error__": message,
+                "attempted_dates": attempted,
+            }
+        else:
+            out[f"etf_{ex.lower()}"] = got
     return out
 
 
@@ -1720,7 +1847,7 @@ def collect_news_wscn_cctv(pool: list) -> dict:
     out: Dict[str, Any] = {}
     attempts = []
     got = None
-    for day in _recent_trade_days(3):
+    for day in _recent_calendar_days(3):
         try:
             rows = cctv_news(day)
             attempts.append(f"{day}:{len(rows)}")
@@ -1848,8 +1975,8 @@ def assess_result(data) -> tuple:
     `ok: True`, 导致 em_kline_f61 遇东财风控 20/20 全失败、push2 主域 20/20 全失败时
     仍被标为成功(触碰公理 A8「禁止静默迁就」)。
 
-    本函数递归统计返回物中 `__error__` 的出现次数, 据此给出三态判定:
-      - "ok"      : 零 __error__
+    本函数递归统计返回物中 `__error__` 的出现次数，并单独统计预期跳过的 `__skipped__`:
+      - "ok"      : 零 __error__（允许存在 __skipped__）
       - "partial" : 存在 __error__(字段级失败, 或仅部分容器元素整体失败)
       - "failed"  : 容器元素全部整体失败, 或整个返回物就是一个错误占位
 
@@ -1857,18 +1984,25 @@ def assess_result(data) -> tuple:
         data: 采集函数返回物(通常形如 {"stocks": {code: {...}}})
 
     Returns:
-        (ok, info); ok = (status == "ok"); info 含 status/n_error[/n_total/error_sample]
+        (ok, info); info 含 status/n_error/n_skipped 和对应样例，容器型结果另含 n_total
     """
     n_err = 0
     sample = None
+    n_skipped = 0
+    skip_sample = None
 
     def walk(o):
-        nonlocal n_err, sample
+        nonlocal n_err, sample, n_skipped, skip_sample
         if isinstance(o, dict):
             if "__error__" in o:
                 n_err += 1
                 if sample is None:
                     sample = str(o["__error__"])[:160]
+                return
+            if "__skipped__" in o:
+                n_skipped += 1
+                if skip_sample is None:
+                    skip_sample = str(o["__skipped__"])[:160]
                 return
             for v in o.values():
                 walk(v)
@@ -1893,7 +2027,11 @@ def assess_result(data) -> tuple:
                 break
 
     if n_err == 0:
-        return True, {"status": "ok", "n_error": 0}
+        info = {"status": "ok", "n_error": 0}
+        if n_skipped:
+            info["n_skipped"] = n_skipped
+            info["skip_sample"] = skip_sample
+        return True, info
 
     if isinstance(data, dict) and "__error__" in data:
         status = "failed"  # 整个返回物即错误占位
@@ -1903,6 +2041,9 @@ def assess_result(data) -> tuple:
         status = "partial"  # 字段级失败 / 仅部分元素失败
 
     info = {"status": status, "n_error": n_err}
+    if n_skipped:
+        info["n_skipped"] = n_skipped
+        info["skip_sample"] = skip_sample
     if n_total is not None:
         info["n_total"] = n_total
         info["n_dead"] = n_dead
@@ -1915,7 +2056,7 @@ def main() -> None:
     ap = argparse.ArgumentParser(description="字段验证采集")
     # V17.4.x: 默认数据日=最近交易日(而非运行日) —— 周末/法定节假日运行时自动回退上一交易日,
     # 使文件夹名恒为"实际数据日"(收盘数据所属交易日), 根除"文件夹名是假日但数据是上一交易日"的根因。
-    ap.add_argument("--date", default=_last_trading_day_str())
+    ap.add_argument("--date", default="", help="数据日期 YYYYMMDD；行情日按交易日校验")
     ap.add_argument(
         "--overwrite",
         action="store_true",
@@ -1939,6 +2080,17 @@ def main() -> None:
         "仅采 quote_snapshot+shortline+连板天梯(对撞真正消费项), 大幅加速每日字段对撞采集",
     )
     args = ap.parse_args()
+
+    date_was_explicit = bool(args.date)
+    if not args.date:
+        args.date = _last_trading_day_str()
+    selected_only = [name.strip() for name in args.only.split(",") if name.strip()]
+    try:
+        _, data_date_domain = _validate_capture_data_date(args.date, selected_only)
+    except ValueError as exc:
+        ap.error(str(exc))
+    if data_date_domain == "calendar" and (args.refresh_pool or args.refresh_pool_only):
+        ap.error("新闻/公告自然日采集不能同时刷新股票池")
 
     if args.refresh_pool_only:
         picks = refresh_dynamic_layer(trade_date=args.date)
@@ -1972,10 +2124,17 @@ def main() -> None:
     meta = {
         "date": args.date,
         "data_date": args.date,
+        "data_date_domain": data_date_domain,
+        "date_selection": "explicit" if date_was_explicit else "latest_completed_session",
+        "capture_date": _now.strftime("%Y%m%d"),
         "run_date": _now.strftime("%Y%m%d"),
         "run_datetime": _now.strftime("%Y-%m-%d %H:%M:%S"),
         "start": _now.strftime("%Y-%m-%d %H:%M:%S"),
-        "market_phase": "closed" if _is_closed_phase_now(args.date) else "intraday",
+        "market_phase": (
+            "calendar"
+            if data_date_domain == "calendar"
+            else "closed" if _is_closed_phase_now(args.date) else "intraday"
+        ),
         "sources": {},
     }
     # V17.2.9 修复: --only 增量采集必须**合并**已有 meta.json, 而非整份覆盖 ——
@@ -1986,6 +2145,26 @@ def main() -> None:
                 _prev = json.load(f)
             if isinstance(_prev.get("sources"), dict):
                 meta["sources"].update(_prev["sources"])
+            previous_source_meta = _prev.get("sources")
+            previous_sources = (
+                set(previous_source_meta) if isinstance(previous_source_meta, dict) else set()
+            )
+            previous_raw_sources = {
+                os.path.basename(path)[len("raw_") : -len(".json")]
+                for path in glob.glob(os.path.join(out_dir, "raw_*.json"))
+            }
+            previous_market_sources = {
+                source
+                for source in previous_sources | previous_raw_sources
+                if source not in EVENT_ONLY_CAPTURE_SOURCES
+            }
+            if data_date_domain == "calendar" and previous_market_sources:
+                previous_data_date = _prev.get("data_date")
+                if previous_data_date:
+                    meta["data_date"] = previous_data_date
+                else:
+                    meta.pop("data_date", None)
+                meta["data_date_domain"] = "mixed"
             if isinstance(_prev.get("schemes"), dict):
                 meta["schemes"] = dict(_prev["schemes"])
             for _k in ("start", "zhb_data_date"):
@@ -2038,9 +2217,23 @@ def main() -> None:
         "st_list": collect_st_list,
     }
     if args.only:
-        collectors = {
-            k: v for k, v in collectors.items() if k in [s.strip() for s in args.only.split(",")]
-        }
+        unknown_sources = set(selected_only) - set(collectors)
+        if unknown_sources:
+            ap.error("--only 含未知源: " + ", ".join(sorted(unknown_sources)))
+        collectors = {k: v for k, v in collectors.items() if k in selected_only}
+    existing_source_names = {
+        os.path.basename(path)[len("raw_") : -len(".json")]
+        for path in glob.glob(os.path.join(out_dir, "raw_*.json"))
+    }
+    combined_source_names = set(meta.get("sources", {})) | existing_source_names | set(collectors)
+    has_event_sources = bool(combined_source_names & EVENT_ONLY_CAPTURE_SOURCES)
+    has_market_sources = bool(combined_source_names - EVENT_ONLY_CAPTURE_SOURCES)
+    if has_event_sources and has_market_sources:
+        meta["data_date_domain"] = "mixed"
+    elif has_event_sources:
+        meta["data_date_domain"] = "calendar"
+    else:
+        meta["data_date_domain"] = "trading"
 
     # ── 幂等/覆盖：文件夹名已=数据日(交易日)。
     #    盘后运行发现盘中已采快照 → 默认刷新为收盘数据(覆盖重采); 盘后→盘后默认幂等跳过; 盘中→盘中默认跳过。
@@ -2073,6 +2266,12 @@ def main() -> None:
         _want = set(collectors.keys())
         _have = {os.path.basename(p)[len("raw_") : -len(".json")] for p in _existing_raws}
         if _want.issubset(_have):
+            if data_date_domain == "calendar":
+                print(
+                    f"⏭ 自然日数据 {args.date} 已有完整源快照，默认幂等跳过；如需重采请加 --overwrite。",
+                    flush=True,
+                )
+                return
             # 完整度判定: 盘中快照(收盘前)应被盘后重采刷新为收盘数据, 避免对撞污染
             _existing_closed = _is_closed_phase_existing(meta_path, args.date)
             _new_closed = _is_closed_phase_now(args.date)
@@ -2153,9 +2352,9 @@ def main() -> None:
             path = os.path.join(out_dir, f"raw_{name}.json")
             with open(path, "w", encoding="utf-8") as f:
                 json.dump(data, f, ensure_ascii=False, indent=1, default=str)
-            # V17.2.9 修复: 采集函数会**内部吞异常**并返回 {"__error__": ...} 占位,
+            # 采集函数会**内部吞异常**并返回 {"__error__": ...} 占位，预期跳过用 __skipped__ 标记，
             # 旧逻辑只要 fn(pool) 不抛异常就记 ok=True(曾致 em_kline_f61 20/20 全失败仍标 ok)。
-            # 现按返回物中 __error__ 的实际数量判定 status: ok / partial / failed。
+            # 现按 __error__ 判定 status，并在元数据/日志中单独报告 __skipped__。
             _ok, _info = assess_result(data)
             _entry = {
                 "scheme": _scheme,
@@ -2166,14 +2365,17 @@ def main() -> None:
             }
             _entry.update(_info)
             meta["sources"][name] = _entry
+            _skip_count = _entry.get("n_skipped", 0)
             if _ok:
-                print(f"  ✔ {name}: {_entry['secs']}s", flush=True)
+                _skip_summary = f" | 跳过 {_skip_count} 处" if _skip_count else ""
+                print(f"  ✔ {name}: {_entry['secs']}s{_skip_summary}", flush=True)
             else:
                 _nt = _entry.get("n_total")
                 _cnt = f"{_entry['n_error']}/{_nt}" if _nt else str(_entry["n_error"])
                 print(
                     f"  ⚠ {name}: {_entry['secs']}s | {_entry['status']} | "
-                    f"{_cnt} 处 __error__ | {_entry.get('error_sample', '')}",
+                    f"{_cnt} 处 __error__ | 跳过 {_skip_count} 处 | "
+                    f"{_entry.get('error_sample', '')}",
                     flush=True,
                 )
         except Exception as e:

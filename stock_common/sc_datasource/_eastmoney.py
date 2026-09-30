@@ -1393,7 +1393,7 @@ def fund_flow_backup(code: str, days: int = 60) -> List[Dict[str, Any]]:
     trading_day=True,
     valid_if=make_valid_if(min_size=1),
 )  # V15.2: 至少 1 条记录才缓存
-def get_dragon_tiger_board(
+def _get_dragon_tiger_board_trading_window(
     code: str, days: int = 30, include_seats: bool = True, enhance_seats: bool = True
 ) -> Dict[str, Any]:
     """V7.5: 统一龙虎榜查询（单只股票）。
@@ -1403,7 +1403,7 @@ def get_dragon_tiger_board(
 
     Args:
         code: 6位股票代码
-        days: 回溯天数（sht默认30，med默认180）
+        days: 回溯交易日数（sht 默认由配置决定，med 默认180）
         include_seats: 是否查询席位详情（默认True，设为False可减少2次API请求）
         enhance_seats: V8.5新增，是否增强席位分析（默认True，添加席位等级/风格/溢价信号）
 
@@ -1422,10 +1422,11 @@ def get_dragon_tiger_board(
     (`TRADE_DATE>='YYYY-MM-DD'`），双引号会报 code=9501。
     """
     # V10.2: today_str 内部自动计算，不作为函数参数（避免污染缓存 key）
-    today_str = datetime.now().strftime("%Y-%m-%d")
-    start_str = (datetime.strptime(today_str, "%Y-%m-%d") - timedelta(days=days)).strftime(
-        "%Y-%m-%d"
-    )
+    from stock_common.stock_calendar import trading_day_window
+
+    start_date, end_date = trading_day_window(max(1, days))
+    start_str = start_date.isoformat()
+    today_str = end_date.isoformat()
     records = []
     data = eastmoney_datacenter(
         code,
@@ -1541,13 +1542,22 @@ def get_dragon_tiger_board(
     return result
 
 
+def get_dragon_tiger_board(
+    code: str, days: int = 30, include_seats: bool = True, enhance_seats: bool = True
+) -> Dict[str, Any]:
+    """查询个股最近 ``days`` 个交易日内的龙虎榜记录。"""
+    return _get_dragon_tiger_board_trading_window(
+        code, days=days, include_seats=include_seats, enhance_seats=enhance_seats
+    )
+
+
 @cached(
     category="dragon_tiger",
     ttl_seconds=TTL["dragon_tiger"],
     trading_day=True,
     valid_if=make_valid_if(min_size=1),
 )  # V15.2: 至少 1 条记录才缓存
-def get_recent_dragon_tiger(days: int = 5) -> Dict[str, Any]:
+def _get_recent_dragon_tiger_trading_window(days: int = 5) -> Dict[str, Any]:
     """V7.5: 全市场龙虎榜上榜记录（用于异动扫描和席位活跃度策略）。
 
     Returns:
@@ -1558,8 +1568,11 @@ def get_recent_dragon_tiger(days: int = 5) -> Dict[str, Any]:
     """
     url = DATACENTER_URL
     try:
-        td = datetime.now().strftime("%Y-%m-%d")
-        sd = (datetime.now() - timedelta(days=days)).strftime("%Y-%m-%d")
+        from stock_common.stock_calendar import trading_day_window
+
+        start_date, end_date = trading_day_window(max(1, days))
+        sd = start_date.isoformat()
+        td = end_date.isoformat()
         params = {
             "reportName": "RPT_DAILYBILLBOARD_DETAILSNEW",
             "columns": "SECURITY_CODE,SECURITY_NAME_ABBR,TRADE_DATE,EXPLANATION,BILLBOARD_NET_AMT,TURNOVERRATE",
@@ -1589,8 +1602,13 @@ def get_recent_dragon_tiger(days: int = 5) -> Dict[str, Any]:
                 }
         return result
     except Exception as _e:
-        _debug_log(f"datasource get_recent_dragon_tiger ({days}d): {_e}")
+        _debug_log(f"datasource get_recent_dragon_tiger ({days} trading days): {_e}")
         return {}
+
+
+def get_recent_dragon_tiger(days: int = 5) -> Dict[str, Any]:
+    """查询全市场最近 ``days`` 个交易日的龙虎榜记录。"""
+    return _get_recent_dragon_tiger_trading_window(days)
 
 
 async def get_dragon_tiger_board_async(

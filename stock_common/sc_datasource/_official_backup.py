@@ -296,17 +296,11 @@ def bse_quote_backup(trade_date: str, code: Optional[str] = None) -> pd.DataFram
 # ── 项目封装（V17.2.11）：降级源入口，供 get_margin_trading / get_em_quote_full* 调用 ──
 
 
-def _recent_trade_dates(max_days: int = 14) -> list[str]:
-    """从今天往前取最近 max_days 个自然日中的工作日（周一~周五），返回 ISO 日期列表。"""
-    out: list[str] = []
-    today = datetime.now().date()
-    for i in range(max_days):
-        d = today - timedelta(days=i)
-        if d.weekday() < 5:  # 0=Mon ... 4=Fri
-            out.append(d.isoformat())
-        if len(out) >= 8:
-            break
-    return out
+def _recent_trade_dates(count: int = 8) -> list[str]:
+    """返回最近 ``count`` 个实际 A 股交易日，供官方数据源逐日回退。"""
+    from stock_common.stock_calendar import recent_trading_dates
+
+    return [day.isoformat() for day in recent_trading_dates(count)]
 
 
 def get_margin_trading_backup(code: str) -> list[dict[str, Any]]:

@@ -136,7 +136,9 @@ def _st_list_baostock() -> List[Dict[str, Any]]:
             _debug_log("st_stock_list: baostock 未安装, 跳过兜底(如需启用: pip install baostock)")
             return []
         try:
-            lg = bs.login(timeout=15)
+            # Baostock's public API is login() without a timeout keyword; the
+            # surrounding daemon thread and 20s join provide the hard wait cap.
+            lg = bs.login()
             if getattr(lg, "error_code", "1") != "0":
                 _debug_log(
                     f"st_stock_list: baostock 登录失败({getattr(lg, 'error_msg', '?')}), 跳过兜底"

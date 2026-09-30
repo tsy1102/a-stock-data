@@ -76,6 +76,30 @@ def _dict_lines(data: dict, indent: str = "    ") -> list[str]:
     return lines
 
 
+def _replace_date_dict(content: str, name: str, data: dict) -> str:
+    """Replace one top-level date dictionary while preserving surrounding calendar logic."""
+    token = f"{name} = {{"
+    if content.count(token) != 1:
+        raise ValueError(f"expected exactly one {name} dictionary in stock_calendar.py")
+    start = content.index(token)
+    line_start = content.rfind("\n", 0, start) + 1
+    close = content.find("\n}", start)
+    if close < 0:
+        raise ValueError(f"could not find the end of {name} dictionary")
+    end = close + 2
+    entries = "\n".join(_dict_lines(data))
+    replacement = f"{name} = {{\n{entries}\n}}"
+    return content[:line_start] + replacement + content[end:]
+
+
+def update_calendar_data(content: str, holidays: dict, workdays: dict) -> str:
+    """Patch only the generated date tables, keeping project-specific functions intact."""
+    if "def is_trading_day(" not in content:
+        raise ValueError("stock_calendar.py lacks the A-share trading-day implementation")
+    updated = _replace_date_dict(content, "holidays", holidays)
+    return _replace_date_dict(updated, "workdays", workdays)
+
+
 def generate_calendar_file(holidays: dict, workdays: dict, min_year: int, max_year: int) -> str:
     """生成完整的 stock_calendar.py 文件内容。"""
     hl = "\n".join(_dict_lines(holidays))
@@ -142,21 +166,94 @@ def _validate_date(date):
     return date
 
 
+def is_trading_day(date):
+    """A-share exchange session; civil make-up weekends remain market holidays."""
+    date = _validate_date(date)
+    return date.weekday() < 5 and date not in holidays
+
+
 def is_workday(date):
-    """判断是否为工作日（A股交易日）
+    """Compatibility alias: this calendar's workday means an A-share session."""
+    return is_trading_day(date)
 
-    Args:
-        date: datetime.date 或 datetime.datetime
 
-    Returns:
-        bool: True=交易日, False=休市日
-    """
-    try:
-        date = _validate_date(date)
-        weekday = date.weekday()
-        return bool(date in workdays or (weekday <= 4 and date not in holidays))
-    except NotImplementedError:
-        raise
+def previous_trading_day(date, include_current=False):
+    date = _validate_date(date)
+    if not include_current:
+        date -= datetime.timedelta(days=1)
+    for _ in range(30):
+        if is_trading_day(date):
+            return date
+        date -= datetime.timedelta(days=1)
+    raise NotImplementedError("no trading day found in the previous 30 days")
+
+
+def add_trading_days(date, offset):
+    date = _validate_date(date)
+    if offset == 0:
+        return date
+    step = 1 if offset > 0 else -1
+    remaining = abs(offset)
+    while remaining:
+        date += datetime.timedelta(days=step)
+        if is_trading_day(date):
+            remaining -= 1
+    return date
+
+
+def trading_days_between(start, end):
+    """Count sessions in (start, end]; a reversed interval returns a negative count."""
+    first = _validate_date(start)
+    last = _validate_date(end)
+    if first == last:
+        return 0
+    if first > last:
+        return -trading_days_between(last, first)
+    count = 0
+    date = first + datetime.timedelta(days=1)
+    while date <= last:
+        if is_trading_day(date):
+            count += 1
+        date += datetime.timedelta(days=1)
+    return count
+
+
+def latest_market_data_date(as_of=None):
+    """Use the prior session before 09:30; use today's session from 09:30 onward."""
+    value = datetime.datetime.now() if as_of is None else as_of
+    if isinstance(value, datetime.datetime):
+        date = _validate_date(value.date())
+        session_started = value.timetz().replace(tzinfo=None) >= datetime.time(9, 30)
+    else:
+        date = _validate_date(value)
+        session_started = True
+    if session_started and is_trading_day(date):
+        return date
+    return previous_trading_day(date, include_current=False)
+
+
+def trading_day_age(data_date, as_of=None):
+    return trading_days_between(data_date, latest_market_data_date(as_of))
+
+
+def trading_day_window(days, as_of=None):
+    if days < 1:
+        raise ValueError("days must be a positive integer")
+    end = latest_market_data_date(as_of)
+    return add_trading_days(end, -(days - 1)), end
+
+
+def recent_trading_dates(count, as_of=None):
+    if count < 0:
+        raise ValueError("count must be non-negative")
+    if count == 0:
+        return []
+    date = latest_market_data_date(as_of)
+    result = [date]
+    for _ in range(count - 1):
+        date = previous_trading_day(date, include_current=False)
+        result.append(date)
+    return result
 
 
 def get_last_trading_day(date=None):
@@ -211,7 +308,7 @@ def data_years() -> tuple:
     """返回当前数据支持的年份范围 (min_year, max_year)"""
     all_dates = list(holidays.keys()) + list(workdays.keys())
     return min(d.year for d in all_dates), max(d.year for d in all_dates)
-'''
+'''.format(min_year=min_year, max_year=max_year, hl=hl, wl=wl)
 
 
 def main():
@@ -230,20 +327,14 @@ def main():
         return
 
     target = Path(__file__).parent.parent / "stock_common" / "stock_calendar.py"
-
-    # V16.4.1 防覆盖保护: 生成模板为 V9.2 时代旧版, 直接覆盖会抹掉 V14.0 ZHB 校验/
-    # V14.2 补充日历/CLI 入口等新逻辑。检测目标含 V14+ 标记则拒绝覆盖。
-    if target.exists():
-        _cur = target.read_text(encoding="utf-8")
-        _v14_markers = ("invalidate_zhb_supplement_cache", "is_workday_with_zhb_supplement")
-        if any(m in _cur for m in _v14_markers):
-            print(f"[BLOCK] {target} 含 V14+ 新逻辑(检测到 {_v14_markers[0]}), 拒绝覆盖!")
-            print("        本脚本模板仍为 V9.2 旧版。请手动更新 generate_calendar_file 模板")
-            print("        为补丁式(仅替换 holidays/workdays 字典段)后再运行。")
-            sys.exit(3)
+    current = target.read_text(encoding="utf-8") if target.exists() else None
 
     if args.dry_run:
-        content = generate_calendar_file(holidays, workdays, min_year, max_year)
+        content = (
+            update_calendar_data(current, holidays, workdays)
+            if current is not None
+            else generate_calendar_file(holidays, workdays, min_year, max_year)
+        )
         sys.stdout.write(content[:3000])
         print(f"\n... (共 {len(content)} 字符)")
         return
@@ -253,7 +344,11 @@ def main():
         shutil.copy2(target, backup_path)
         print(f"已备份旧文件: {backup_path}")
 
-    content = generate_calendar_file(holidays, workdays, min_year, max_year)
+    content = (
+        update_calendar_data(current, holidays, workdays)
+        if current is not None
+        else generate_calendar_file(holidays, workdays, min_year, max_year)
+    )
     target.write_text(content, encoding="utf-8")
     print(f"已更新: {target}")
     print(f"数据范围: {min_year}-{max_year}")

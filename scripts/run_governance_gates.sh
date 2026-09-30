@@ -37,7 +37,7 @@ done
 
 # 仅当相关文件有改动（staged 或 unstaged）时才跑闸门
 RELEVANT="$(git status --porcelain 2>/dev/null | awk '{print $2}' \
-  | grep -E '^(docs/field_dict\.md|docs/field_verification/field_registry\.json|docs/verify/)' || true)"
+  | grep -E '^(docs/field_dict\.md|docs/field_verification/field_registry\.json|docs/verify/.*)$' || true)"
 
 if [ "$FORCE" -eq 0 ] && [ -z "$RELEVANT" ]; then
   echo "[governance-gates] 未检测到 field_dict.md / field_registry.json / docs/verify 改动，跳过闸门。"

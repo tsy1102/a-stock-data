@@ -1,15 +1,13 @@
 ﻿# ============================================================================
 # run_with_system_python.ps1 - Run commands using project/system Python 3.12
 # ============================================================================
-# Purpose: Avoid TRAE IDE's built-in Python 3.10 and use a Python 3.12 runtime
+# Purpose: Select a verified Python 3.12 runtime and forward the command arguments.
 #
 # Usage (PowerShell):
-#   .\scripts\run_with_system_python.ps1 -m pytest tests/test_cache.py
-#   .\scripts\run_with_system_python.ps1 -m unittest tests.test_cache
 #   .\scripts\run_with_system_python.ps1 get_sht_report.py 600519 --no-upload
 #
-# If you hit execution policy error, run once:
-#   Set-ExecutionPolicy -Scope CurrentUser -ExecutionPolicy RemoteSigned
+# If execution policy blocks the script, allow this invocation only:
+#   powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\run_with_system_python.ps1 ...
 # ============================================================================
 
 Set-StrictMode -Version Latest
@@ -27,40 +25,107 @@ $OutputEncoding = [Console]::OutputEncoding
 #   4) Windows Store Python 3.12 包目录（AppData 内 shim，随包版本号通配）
 #   5) PATH 上的 python.exe 且 --version 输出 Python 3.12.x
 # ────────────────────────────────────────────────────────────────────────────
+function Invoke-CapturedProcess {
+    param(
+        [string]$FileName,
+        [string]$Arguments
+    )
+
+    $startInfo = [System.Diagnostics.ProcessStartInfo]::new()
+    $startInfo.FileName = $FileName
+    $startInfo.Arguments = $Arguments
+    $startInfo.UseShellExecute = $false
+    $startInfo.CreateNoWindow = $true
+    $startInfo.RedirectStandardOutput = $true
+    $startInfo.RedirectStandardError = $true
+    $startInfo.StandardOutputEncoding = [System.Text.UTF8Encoding]::new($false)
+    $startInfo.StandardErrorEncoding = [System.Text.UTF8Encoding]::new($false)
+    $startInfo.EnvironmentVariables['PYTHONUTF8'] = '1'
+
+    $process = [System.Diagnostics.Process]::new()
+    $process.StartInfo = $startInfo
+    if (-not $process.Start()) {
+        throw "Failed to start process: $FileName"
+    }
+
+    $stdout = $process.StandardOutput.ReadToEnd()
+    $stderr = $process.StandardError.ReadToEnd()
+    $process.WaitForExit()
+    $result = [pscustomobject]@{
+        ExitCode = $process.ExitCode
+        Output = $stdout
+        Error = $stderr
+    }
+    $process.Dispose()
+    return $result
+}
+
+function Get-PythonVersionProbe {
+    param([string]$Executable)
+
+    if (-not (Test-Path -LiteralPath $Executable -PathType Leaf)) {
+        return [pscustomobject]@{ IsPython312 = $false; Version = 'executable not found' }
+    }
+
+    $result = Invoke-CapturedProcess -FileName $Executable -Arguments '--version'
+    $version = ($result.Output + $result.Error).Trim()
+    $is312 = $result.ExitCode -eq 0 -and $version -match '^Python 3\.12(?:\.\d+)?$'
+    return [pscustomobject]@{ IsPython312 = $is312; Version = $version }
+}
+
 function Find-SystemPython {
     $override = $env:SYSTEM_PYTHON_EXE
-    if ($override -and (Test-Path -LiteralPath $override)) {
+    if (-not [string]::IsNullOrWhiteSpace($override)) {
+        $probe = Get-PythonVersionProbe -Executable $override
+        if (-not $probe.IsPython312) {
+            Write-Host "[ERROR] SYSTEM_PYTHON_EXE must point to Python 3.12: $override ($($probe.Version))" -ForegroundColor Red
+            exit 1
+        }
         return $override
     }
 
     $projectRoot = Split-Path -Parent $PSScriptRoot
     $projectVenvPython = Join-Path $projectRoot '.venv\Scripts\python.exe'
-    if (Test-Path -LiteralPath $projectVenvPython) {
-        $projectVenvVersion = & $projectVenvPython --version 2>$null
-        if ($LASTEXITCODE -eq 0 -and $projectVenvVersion -match 'Python 3\.12') {
-            return $projectVenvPython
-        }
+    if ((Get-PythonVersionProbe -Executable $projectVenvPython).IsPython312) {
+        return $projectVenvPython
     }
 
     $pyLauncher = Get-Command py.exe -ErrorAction SilentlyContinue
     if ($pyLauncher) {
-        $probe = & $pyLauncher.Source -3.12 -c "import sys; print(sys.executable)" 2>$null
-        if ($LASTEXITCODE -eq 0 -and $probe) {
-            $p = ($probe | Select-Object -First 1).Trim()
-            if (Test-Path -LiteralPath $p) { return $p }
+        $launcherArgs = '-3.12 -X utf8 -c "import sys; print(sys.executable)"'
+        $launcherResult = Invoke-CapturedProcess -FileName $pyLauncher.Source -Arguments $launcherArgs
+        $pythonPath = ''
+        foreach ($line in ($launcherResult.Output -split "`r?`n")) {
+            if (-not [string]::IsNullOrWhiteSpace($line)) {
+                $pythonPath = $line.Trim()
+                break
+            }
+        }
+        if ($launcherResult.ExitCode -eq 0 -and (Get-PythonVersionProbe -Executable $pythonPath).IsPython312) {
+            return $pythonPath
         }
     }
 
-    $storeGlob = Join-Path $env:LOCALAPPDATA 'Microsoft\WindowsApps\PythonSoftwareFoundation.Python.3.12_*\python.exe'
-    $storePkg = Get-ChildItem -Path $storeGlob -ErrorAction SilentlyContinue |
-        Sort-Object Name -Descending | Select-Object -First 1
-    if ($storePkg) { return $storePkg.FullName }
-
-    $anyPy = Get-Command python.exe -ErrorAction SilentlyContinue
-    if ($anyPy) {
-        $ver = (& $anyPy.Source --version 2>&1 | Out-String)
-        if ($ver -match 'Python 3\.12') { return $anyPy.Source }
+    if ($env:LOCALAPPDATA) {
+        $storeRoot = Join-Path $env:LOCALAPPDATA 'Microsoft\WindowsApps'
+        if (Test-Path -LiteralPath $storeRoot) {
+            $storePackages = Get-ChildItem -LiteralPath $storeRoot -Directory -ErrorAction SilentlyContinue |
+                Where-Object { $_.Name -like 'PythonSoftwareFoundation.Python.3.12_*' } |
+                Sort-Object Name -Descending
+            foreach ($package in $storePackages) {
+                $storePython = Join-Path $package.FullName 'python.exe'
+                if ((Get-PythonVersionProbe -Executable $storePython).IsPython312) {
+                    return $storePython
+                }
+            }
+        }
     }
+
+    $anyPython = Get-Command python.exe -ErrorAction SilentlyContinue
+    if ($anyPython -and (Get-PythonVersionProbe -Executable $anyPython.Source).IsPython312) {
+        return $anyPython.Source
+    }
+
     return $null
 }
 

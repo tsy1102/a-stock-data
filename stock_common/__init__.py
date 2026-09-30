@@ -181,7 +181,7 @@ __all__ = [
     "get_sina_balance_sheet_async",
     "get_financial_report_with_fallback",
     "get_em_batch_quotes",
-    # V12.0: 东财HTTP替代接口（完全移除easy_tdx）
+    # V12.0: 东财 HTTP 实现替代旧的 easy_tdx 查询路径（不代表项目已移除该引擎）
     "get_em_board_list",
     "get_em_board_members",
     "get_em_belong_boards",
@@ -527,7 +527,7 @@ from stock_common.sc_datasource import (
     get_financial_report_with_fallback,
     # 东财批量行情（V11.5新增，替代TDX）
     get_em_batch_quotes,
-    # V12.0: 东财HTTP替代接口（完全移除easy_tdx）
+    # V12.0: 东财 HTTP 实现替代旧的 easy_tdx 查询路径（不代表项目已移除该引擎）
     get_em_board_list,
     get_em_board_members,
     get_em_belong_boards,

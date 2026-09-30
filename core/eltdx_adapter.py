@@ -6,7 +6,7 @@ V17.2.15: 取代 easy_tdx 成为 TDX TCP 主源（core/tdx_client.py 调用）�
 设计要点:
   - eltdx Rust 握手已含 2026-09 新式单条随机 msg_id → tdx_client 不再需要 _tdx_handshake_patch。
   - 返回结构与 _EasyTdxAdapter 对齐（DataFrame 列名/单位 mootdx 兼容），下游零改动。
-  - FinanceRecord *_raw_float 聚合字段为**万元**口径，映射 mootdx 角口径需 ×100000
+  - FinanceRecord *_raw_float 聚合字段为**千元**口径，映射兼容字段的角口径需 ×10000
     （data_provider 对 zongzichan/jingzichan/jinglirun 按角处理 /10 得元，已用平安银行反推验证）。
   - 北交所(83/87/88/43/46/92)快照 eltdx 偶发解析失败(实测 "snapshot record marker not found") →
     抛异常交上层 HTTP fallback（ZHB/腾讯/东财），与 easy_tdx 降级策略一致。
@@ -319,7 +319,7 @@ def download_eltdx_report_file(filename: str, timeout: float = 8.0) -> Optional[
     ZHB 下载从 easy_tdx 迁移至 eltdx 主源 (zhb_client._download_zhb_zip 调用)。
     - pin _ELTDX_HOSTS 避免冷连接全量探测 (~6min, 同 create_eltdx_adapter 策略)。
     - download_file(path, *, chunk_size=30000, max_bytes=None) -> bytes, 失败时抛异常。
-    成功返回 zip 原始 bytes, 失败/不可用/返回空返回 None (交由上层降级 easy_tdx/mootdx)。
+    成功返回 zip 原始 bytes, 失败/不可用/返回空返回 None (交由上层 easy_tdx 兜底)。
     """
     try:
         from eltdx import TdxClient
@@ -332,8 +332,12 @@ def download_eltdx_report_file(filename: str, timeout: float = 8.0) -> Optional[
                 c.close()
             except Exception:
                 pass
-        if data and len(data) > 0:
-            return data
+        if isinstance(data, (bytes, bytearray, memoryview)):
+            return bytes(data) or None
+        if data is not None:
+            _debug_log(
+                f"eltdx report_file returned unexpected payload type ({type(data).__name__})"
+            )
         return None
     except Exception as _e:
         _debug_log(f"eltdx report_file download error ({filename}): {_e}")

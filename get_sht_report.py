@@ -306,11 +306,10 @@ async def generate_report_async(
     L("=" * 72)
     L("")
 
-    _30d_str = (datetime.now() - timedelta(days=30)).strftime("%Y-%m-%d")
-
     _60d_str = (datetime.now() - timedelta(days=60)).strftime("%Y-%m-%d")
+    from stock_common.stock_calendar import trading_day_window
 
-    _90d_str = (datetime.now() - timedelta(days=90)).strftime("%Y-%m-%d")
+    _30_trade_start_str = trading_day_window(30)[0].isoformat()
 
     _sc = _load_strategy_config()
 
@@ -324,7 +323,10 @@ async def generate_report_async(
 
     _lo_mid = _mkt.get("limit_order_mid", 2.0)
 
-    _recent_days = _trd.get("recent_days", 90)
+    try:
+        _recent_days = max(1, int(_trd.get("recent_days", 90)))
+    except (TypeError, ValueError):
+        _recent_days = 90
 
     _unlock_warn = _hld.get("unlock_warn_days", 90)
 
@@ -1141,15 +1143,19 @@ async def generate_report_async(
 
     if nb:
 
-        # V17.0.7: 标签如实化——北向持股披露为季度频(实测行日期=2026-06-30 季末),
-        # 原"近 N 个交易日"措辞误导; 补数据距今天数
+        # 北向持股披露为季度频；数据年龄仍按 A 股交易日计数，不把周末和休市日计入。
         _nb_latest = str(nb[0].get("date", "")) if isinstance(nb[0], dict) else ""
         try:
-            _nb_age = (datetime.now() - datetime.strptime(_nb_latest, "%Y-%m-%d")).days
-        except (ValueError, TypeError):
+            from stock_common.stock_calendar import trading_day_age
+
+            _nb_age = trading_day_age(datetime.strptime(_nb_latest, "%Y-%m-%d").date())
+        except (ValueError, TypeError, NotImplementedError):
             _nb_age = None
         if _nb_age is not None and _nb_age > 10:
-            L(f"  北向持仓共 {len(nb)} 期（季度频披露, 最新一期 {_nb_latest}, 距今 {_nb_age} 天）:")
+            L(
+                f"  北向持仓共 {len(nb)} 期（季度频披露, 最新一期 {_nb_latest},"
+                f"距今 {_nb_age} 个交易日）:"
+            )
         else:
             L(f"  北向持仓近 {len(nb)} 期:")
 
@@ -1212,7 +1218,7 @@ async def generate_report_async(
         direct_fn=lambda: get_dragon_tiger_board_async(
             session,
             code,
-            days=180,
+            days=_recent_days,
             include_seats=not _dc.get("skip_lhb_detail", False),
             enhance_seats=not _dc.get("skip_lhb_detail", False),
         ),
@@ -1220,7 +1226,7 @@ async def generate_report_async(
 
     if dtb["records"]:
 
-        L(f"  近{_recent_days}日上榜 {len(dtb['records'])} 次:")
+        L(f"  近{_recent_days}个交易日上榜 {len(dtb['records'])} 次:")
         # V17.0.6: 直出 md 表格(原 CJK 对齐空格表依赖脆弱的间隙推断, 常态未转换)
         L("| 日期 | 上榜原因 | 净买入(万) | 换手率 |")
         L("|---|---|---|---|")
@@ -1416,7 +1422,7 @@ async def generate_report_async(
 
     else:
         L(
-            f"  近{_recent_days}日无龙虎榜记录（白马蓝筹或近期未触发异动标准的个股，无龙虎榜属正常现象）"
+            f"  近{_recent_days}个交易日无龙虎榜记录（白马蓝筹或近期未触发异动标准的个股，无龙虎榜属正常现象）"
         )
 
     L("\n" + "---")
@@ -1429,11 +1435,11 @@ async def generate_report_async(
         direct_fn=lambda: get_lockup_expiry_async(session, code, days=90, include_history=True),
     )
 
-    rh = [h for h in lockup["history"] if _30d_str <= h["date"] <= today_str]
+    rh = [h for h in lockup["history"] if _30_trade_start_str <= h["date"] <= today_str]
 
     if rh:
 
-        L(f"  近30天解禁 {len(rh)} 批:")
+        L(f"  近30个交易日解禁 {len(rh)} 批:")
         L(f"  {'日期':<12} {'类型':<30} {'数量':>10} {'占比%':>6}")
         L(f"  {'-'*65}")
 
@@ -1525,11 +1531,11 @@ async def generate_report_async(
         bt = await resolve_datacenter(
             'block_trade', code, direct_fn=lambda: get_block_trade_async(session, code)
         )
-        rbt = [d for d in bt if d["date"] >= _30d_str]
+        rbt = [d for d in bt if d["date"] >= _30_trade_start_str]
 
     if rbt:
 
-        L(f"  近30天共 {len(rbt)} 笔大宗交易:")
+        L(f"  近30个交易日共 {len(rbt)} 笔大宗交易:")
         # V17.0.2m: md 表格 7 列(原空格表"成交量万+买方"1 空格粘连合并列)
         L("| 日期 | 成交价 | 收盘价 | 溢价% | 成交量(万股) | 买方 | 卖方 |")
         L("|---|---|---|---|---|---|---|")
@@ -1539,7 +1545,7 @@ async def generate_report_async(
             )
 
     elif bt:
-        L(f"  近30天内无大宗交易（共 {len(bt)} 笔历史记录，已省略）")
+        L(f"  近30个交易日内无大宗交易（共 {len(bt)} 笔历史记录，已省略）")
 
     else:
         L("  无大宗交易记录")
@@ -1567,11 +1573,14 @@ async def generate_report_async(
 
         ld3 = holders[0]["date"]
 
-        if ld3 < _90d_str:
+        try:
+            from stock_common.stock_calendar import trading_day_age
 
-            do = (datetime.now() - datetime.strptime(ld3, "%Y-%m-%d")).days
-
-            L(f"  ⚠️ 数据距今已 {do} 天，尚未更新至最新报告期")
+            _holder_age = trading_day_age(datetime.strptime(ld3, "%Y-%m-%d").date())
+        except (ValueError, NotImplementedError):
+            _holder_age = None
+        if _holder_age is not None and _holder_age > 90:
+            L(f"  ⚠️ 数据距今已 {_holder_age} 个交易日，尚未更新至最新报告期")
 
         L(f"  {'截止日期':<14} {'股东户数':>7} {'环比变化':>10} {'环比%':>8}")
         L(f"  {'-'*50}")
@@ -2215,11 +2224,7 @@ async def generate_report_async(
 
         tn = sum(r["net_buy"] for r in dtb["records"])
 
-        _rd_label = (
-            '近半年'
-            if _recent_days >= 150
-            else ('近一季度' if _recent_days >= 80 else f'近{_recent_days}日')
-        )
+        _rd_label = f"近{_recent_days}个交易日"
         signals.append(
             f"{_rd_label}龙虎榜净买入合计 {tn:.0f}万元，上榜 {len(dtb['records'])} 次，股性活跃"
         )

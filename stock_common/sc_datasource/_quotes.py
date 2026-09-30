@@ -905,14 +905,6 @@ def get_stock_permanent_info(code: str) -> Dict[str, Any]:
     except Exception as _e:
         _debug_log(f"permanent ipo_price ({code}): {_e}")
     return out
-    """复盘啦盘面梳理（get_pmsl 缓存包装）——List[30] 每条 6 字段。"""
-    try:
-        from levistock.stock.stock_fupanla_kph import get_pmsl
-
-        return get_pmsl() or {}
-    except Exception as _e:
-        _debug_log(f"datasource fupan pmsl: {_e}")
-        return {}
 
 
 @cached(

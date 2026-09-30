@@ -432,7 +432,7 @@ _ULIST_BATCH_SIZE = 300  # 东财 ulist.np 单批上限（实测 >300 返回截�
 
 
 # ═══════════════════════════════════════════════════════════
-# V12.0: 东财 HTTP 替代接口（完全移除 easy_tdx 依赖）
+# V12.0: 此数据查询改由东财 HTTP 提供（不再通过 easy_tdx 查询）
 # ═══════════════════════════════════════════════════════════
 # 这些函数替代原 TDX MacClient 的板块/资金流接口，使用东财 push2/datacenter HTTP 接口。
 # tdx_client.py 中的 tdx_get_board_*/tdx_get_fund_flow 等函数将委托到这些 HTTP 函数。

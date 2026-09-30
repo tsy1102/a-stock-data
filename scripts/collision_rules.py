@@ -40,6 +40,8 @@ PRECISION = "|a−b| ≤ max(ulp_a, ulp_b)（舍入感知）；整数/枚举降�
 # 2. 命中率分层
 HIT_RATE_L1 = 18  # 每采样日 ≥18/20 且可解释 → L1 定案
 HIT_RATE_L4 = 8  # 8~17 → L4 候选（存疑）
+MIN_DAILY_SAMPLES_L1 = 18  # 单日样本不足 18，不参与 L1 日数/命中率
+MIN_DAILY_SAMPLES_L4 = 8  # 少于 8 个配对样本的日子不输出 L4
 # 3. 比值族（单位换算定案）
 RATIO_CV_MAX = 1e-4  # 变异系数阈值（CV = std/mean）
 RATIO_STEPS = (10, 100, 1000, 10000)  # 合法单位换算比集合
@@ -69,7 +71,11 @@ SKIP_RULES = [
     "常量占位字段（f106 恒100 / f123..f134 恒0）：无信息量，登记为占位而非未知语义",
     "20 股 ZHB 锚巧合陷阱：任何新映射若与已确立映射矛盾，判为巧合而非发现，须打印原数据人工核实",
     "相关性（Pearson/Spearman）只生成候选，绝不定案",
-    f"单日 20 股快照不足以定案，须 ≥{MULTI_DAY_MIN} 个独立采集日重复",
+    f"L1 每日有效样本须 ≥{MIN_DAILY_SAMPLES_L1}，且 ≥{MULTI_DAY_MIN} 个独立交易日/自然事件日",
+    "同一原始来源或已知镜像/别名字段不得作为跨源定案证据",
+    "盘中或采集时段未知的行情快照可进入候选分析，但不计入 L1 的日样本与独立日数",
+    "行情日按交易所日历与 ZHB 补充日历校验；新闻/公告按记录自然日对齐",
+    "采集目录名、来源 as_of_date、记录事件日和实际采集时间分别保留；历史目录不自动改名或删除",
 ]
 
 
@@ -265,6 +271,14 @@ def emit_markdown(path: str | None = None) -> str:
     )
     L.append(f"| 3 | 比值族 | CV≤{RATIO_CV_MAX:g} 且比值∈{RATIO_STEPS} → L1-U 单位换算定案 |")
     L.append(f"| 4 | 多日复核 | ≥{MULTI_DAY_MIN} 个独立采集日重复方可定案；单日 20 股快照不够 |")
+    L.append(
+        f"| 4a | 每日样本下限 | L1 每个独立日有效配对样本 ≥{MIN_DAILY_SAMPLES_L1}；"
+        f"L4 每日 ≥{MIN_DAILY_SAMPLES_L4} |"
+    )
+    L.append("| 4b | 来源独立性 | 同源及已知镜像/别名不得作为跨源证据 |")
+    L.append(
+        "| 4c | 日期域 | 行情按交易日历；新闻/公告按自然日事件时间；盘中/时段未知样本不计 L1 |"
+    )
     L.append(
         f"| 5 | 相关性 | 仅 Pearson+Spearman 同号且 |Spearman|≥{CORR_SPEARMAN_MIN} "
         f"且留一法不翻号 → 候选，绝不定案 |\n"

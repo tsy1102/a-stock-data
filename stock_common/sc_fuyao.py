@@ -385,13 +385,17 @@ def get_fuyao_seal_map() -> Dict[str, Dict[str, Any]]:
     d = get_fuyao_limit_pool(kind="up", page=1, size=200)
     items = (d or {}).get("item") or []
     if not items:
-        # 周末/节假日：服务端按"当前自然日"返空 → 回退最近已完成工作日
+        # 休市日：服务端按"当前自然日"返空 → 回退到最近实际交易日。
         try:
             import datetime
+            from stock_common.stock_calendar import get_last_trading_day
 
-            _d = datetime.date.today()
-            while _d.weekday() >= 5:
-                _d -= datetime.timedelta(days=1)
+            _last_trade_day = get_last_trading_day()
+            _d = (
+                _last_trade_day
+                if isinstance(_last_trade_day, datetime.date)
+                else _last_trade_day.date()
+            )
             date_ms = int(datetime.datetime.combine(_d, datetime.time()).timestamp() * 1000)
             d = get_fuyao_limit_pool(kind="up", page=1, size=200, date_ms=date_ms)
             items = (d or {}).get("item") or []

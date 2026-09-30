@@ -184,7 +184,7 @@ def test_approx():
 
 使用范围(本仓库现状):
 
-- 截至 2026-09-28，`tests/` 有 43 个测试模块、最近收集 612 个参数化测试项；离线与 `real_network` 验证结果见 `docs/PROJECT_AUDIT_REMEDIATION_20260928.md`。
+- 截至 2026-09-29，`tests/` 有 51 个测试模块、最近收集 646 个参数化测试项；离线与 `real_network` 验证结果见 `docs/PROJECT_AUDIT_REMEDIATION_20260928.md`。
 - 测试使用 `@pytest.fixture`、`@pytest.mark.real_network`、`pytest.skip`、`pytest_asyncio` 等 pytest API。
 - `tests/conftest.py` 提供 `_no_real_network` autouse fixture 和 `endpoint` 参数化 fixture
 - `pyproject.toml` `[tool.pytest.ini_options]` 集中管 `testpaths` / `addopts` / `markers` / `norecursedirs`
@@ -406,7 +406,7 @@ Write-Output 'unreachable'
 | 文件 | 改前必查项 |
 |---|---|
 | `sc_datasource.py` | ZHB 列索引映射、35 个未知字段、缓存 Key |
-| `tdx_client.py` | 0x0010 协议字段名(mootdx dict key)、限流间隔 |
+| `tdx_client.py` | 0x0010 协议字段名、统一 TDX 适配器输出 key、限流间隔 |
 | `zhb_client.py` | 各解析器列映射、GBK/分隔符约定 |
 | `data_provider.py` | **字段路由真机制**（见下方注记）：`_should_use_zhb_for_realtime()` 时段判定 + `get_canonical_stock_data` 内联 `need_realtime_quote` + `sc_datasource.zhb_field_safe()` 的 ABCD 新鲜度分级 |
 | `stock_common/__init__.py` | 导出是否与实际定义一致(2026-08-10 审计:`__all__` 241 项全部可访问,0 缺失;少数公共函数如 `get_em_quote_full` 未在 `__all__` 重导出,但调用方均直连子模块,无破坏) |
@@ -618,27 +618,13 @@ Overall:  [READY/NOT READY] for commit
 
 > 完成一项即删除对应条目;新会话开始时必须先看本节。
 
-### 12.1 ⏳ thsdk 盘中字段核对（2026-08-11 记录）
+### 12.1 ⏳ 东财 push2 恢复后多主机字段差异复核（2026-08-12 记录）
 
-- **背景**：thsdk 官方 _constants.py 427 个 ID→名称已归档（thsdk_field_verify.md 附录）；
-  其中 160 个 ⏳ 待盘中核对（盘口 6-10 档/港美字段/综合衍生）
-- **盘后结论**：同花顺行情网关非交易时段关闭实时查询（-6 非交易时间）——
-  thsdk 通道仅盘中 9:30-15:00 可用（服务器策略，与客户端版本/账号无关）
-- **待办**：**下次盘中（9:30-15:00）跑一次核对**：
-  1. market_data_cn query_key="汇率" 实测 30 字段全量返回
-  2. 自定义 data_type 拼接（如基础+402/407 股本）是否被 hq.dll 接受
-  3. 盘口 6-10 档字段（买6-10/卖6-10）是否存在
-- **追加**：核对完更新 thsdk_field_verify.md 的 ⏳ 状态为 ✅，删除本条
+- 2026-08-12 健康探测 6/6 OK（push2/83.push2/push2delay/push2his/push2ex/datacenter-web）；当时 `test_data_eastmoney.py` 27/27 通过。
+- 后续采集曾因失败重试触发二次封禁；已修复“失败不重试 + 域级熔断”。
+- **待办**：复核恢复期 5 个主机的字段差异，并归档实测结果；完成后删除本条。
 
-### 12.2 ✅ 东财 push2 系已恢复（2026-08-12 确认）
-
-- 2026-08-12 健康探测 6/6 OK（push2/83.push2/push2delay/push2his/push2ex/datacenter-web）
-- `tests/data/test_data_eastmoney.py` 27/27 通过，无 skip → 原 §12.1 待办删除
-- 恢复后验证（原对照假设）：保持完整 UA + 观察是否再触发封禁（若低量复封 → 坐实 UA 嫌疑）
-- **2026-08-12 晚更新**：采集脚本触发二次封禁(失败连接重试叠加 ~300 次)——
-  已修复"失败不重试 + 域级熔断";push2 恢复期 5 主机字段差异对比待办保留
-
-### 12.3 ✅ f118(≡ulist f107) 身份定案（L1 双确认）· 语义待 pin
+### 12.2 ⏳ f118(≡ulist f107) 身份定案（L1 双确认）· 语义待 pin
 
 - **身份已定案(L1 双确认)**(`ff737f5` + `d49ff95`): `push2 f118 ≡ ulist f107`(ff737f5: 338 stock-days 精确100%; d49ff95: 2026-09-06 全源多日碰撞 18 日·比值族 L1-U·比值≈1) → 等价铁证级; 枚举域 `{2,5}`。
 - **语义待 pin**: f107 的 `{2,5}` 业务含义未知。引擎 `scripts/crack_f118_semantics.py` 首跑(340 单元)结论:

@@ -61,7 +61,6 @@ from stock_common import (
     baidu_kline_full,
     get_dividend_history,
     get_stock_info,
-    get_eps_forecast_async,
     get_reports_async,
     resolve_eps_forecast,
     get_lockup_expiry_async,
@@ -161,6 +160,13 @@ async def _get_eps_from_em_reports_async(session, code):
 
 
 # ==================== 报告生成引擎 ====================
+
+
+def _recent_insider_change_window_start() -> str:
+    """返回最近 180 个交易日窗口的起始日。"""
+    from stock_common.stock_calendar import trading_day_window
+
+    return trading_day_window(180)[0].isoformat()
 
 
 async def generate_report_async(session, code, output_path, ind_comp=None):
@@ -1474,13 +1480,13 @@ async def generate_report_async(session, code, output_path, ind_comp=None):
 
         _ggmx_v7 = await asyncio.to_thread(get_ft_ggmx_changes, code) or []
         if _ggmx_v7:
-            _cut180 = (datetime.now() - timedelta(days=180)).strftime("%Y-%m-%d")
+            _cut180 = _recent_insider_change_window_start()
             _recent = [g for g in _ggmx_v7 if str(g.get("change_date", "")) >= _cut180]
             if _recent:
                 _dec_n = sum(1 for g in _recent if g.get("change_direction") == "减持")
                 _add_n = sum(1 for g in _recent if g.get("change_direction") == "增持")
                 L(
-                    f"\n  🧾 董监高变动(FTShare 结构化, 近180日): 增持 {_add_n} 笔 / 减持 {_dec_n} 笔"
+                    f"\n  🧾 董监高变动(FTShare 结构化, 近180个交易日): 增持 {_add_n} 笔 / 减持 {_dec_n} 笔"
                 )
                 for g in sorted(_recent, key=lambda x: str(x.get("change_date", "")), reverse=True)[
                     :3

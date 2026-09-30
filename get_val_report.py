@@ -54,6 +54,7 @@ _KLINE_PRICE_CACHE: Dict[str, Dict] = {}  # V17.0: bypass 模式 .day 收盘价�
 # 仅进程内有效(新进程必空); ZHB 日期不变则数据不变, 缓存恒有效。
 _VAL_SNAPSHOT_CACHE: Dict[str, Any] = {}
 _VAL_TENCENT_CACHE: Dict[str, Dict[str, Dict[str, Any]]] = {}
+_VAL_EMPTY_SNAPSHOT_MARKER = "❌ 无法获取全市场股票数据"
 # 取数成本分桶(P2 并发): 网络/逐股K线/盘后datacenter 类限流到 3, 纯内存/ZHB 类放宽到 8。
 _VAL_NET_HEAVY = {1, 3, 7, 8, 15, 16, 17, 19, 22, 25, 26, 27}
 
@@ -90,6 +91,12 @@ def _fast_day_close(code: str) -> Dict:
         return {"price": _close, "open": _open, "high": _high, "low": _low, "date": _date}
     except Exception:
         return {}
+
+
+def _is_empty_snapshot_failure_report(path: str) -> bool:
+    """识别已落盘的诊断报告，避免将空市场快照当作成功报告上传。"""
+    with open(path, "r", encoding="utf-8") as report_file:
+        return _VAL_EMPTY_SNAPSHOT_MARKER in report_file.read()
 
 
 from core.tdx_client import tdx_get_weekly_bars, tdx_get_all_stocks  # V16.4.1: 删 cleanup_tdx
@@ -1537,13 +1544,15 @@ def strategy_15_longhu_activity(all_stocks, today_str=None, top_n=200):
     def _preliminary_score(code, info):
         net_buy = abs(_safe_float(info.get("net_buy", 0)))
         turnover = _safe_float(info.get("turnover", 0))
-        # 日期新鲜度：越近得分越高（最近=7分，7天前=0分）
+        # 日期新鲜度按 A 股交易日计分（最近=7分，7个交易日前=0分）。
         try:
-            from datetime import datetime, date
+            from datetime import datetime
+            from stock_common.stock_calendar import trading_day_age
 
             d = datetime.strptime(info.get("date", ""), "%Y-%m-%d").date()
-            days_ago = (date.today() - d).days
-            date_score = max(0, 7 - days_ago)
+            as_of = datetime.strptime(today_str[:10], "%Y-%m-%d").date()
+            trading_days_ago = trading_day_age(d, as_of)
+            date_score = max(0, min(7, 7 - trading_days_ago))
         except Exception as _e:
             _debug_log(f"val northbound_date_parse: {_e}")
             date_score = 0
@@ -2549,7 +2558,7 @@ async def run_discovery_async(output_path):
         _debug_log(f"val data_provider_load: {_e}, fallback to tdx_get_all_stocks")
         all_stocks = tdx_get_all_stocks()
         if not all_stocks:
-            L("  ❌ 无法获取全市场股票数据")
+            L(f"  {_VAL_EMPTY_SNAPSHOT_MARKER}")
             # V16.3 O39 修复: 提前 return 前也落盘（失败报告可见 + 文件存在供 GD 上传）——
             # 原实现空手 return → execute_pipeline 无条件打印"已保存" → 文件不存在 + 无 GD（假成功）
             # 附异常详情（用户可见失败原因——原 _debug_log 日志用户不可见）
@@ -3157,6 +3166,10 @@ class ValReportRunner(BaseReportRunner):
             except Exception as e2:
                 print(f"❌ 报告生成失败: {e2}", flush=True)
                 raise e2
+        if _async_ok and _is_empty_snapshot_failure_report(op):
+            raise RuntimeError(f"市场快照为空；诊断报告已保留在: {op}")
+        if not _async_ok:
+            raise RuntimeError(f"报告未生成（文件不存在: {op}）")
         if _async_ok:
             try:
                 print(f"  ✅ 已保存: {op}", flush=True)

@@ -1447,15 +1447,18 @@ class ZhbData:
     # ── 数据新鲜度 ──
 
     def is_fresh(self, max_delay_days: int = 3) -> bool:
-        """检查数据是否新鲜（延迟在 max_delay_days 天以内）。"""
+        """检查数据是否新鲜（延迟不超过 max_delay_days 个交易日）。"""
         if not self.date:
             return False
         try:
             data_date = datetime.strptime(self.date, "%Y%m%d").date()
-            today = date.today()
-            delay = (today - data_date).days
+            # 延迟按 A 股实际交易日计算；周末、节假日及调休补班周末不增加年龄。
+            # 仅依赖 stock_calendar 的本地纯函数，避免在 get_zhb 下载路径形成循环。
+            from stock_common.stock_calendar import trading_day_age
+
+            delay = trading_day_age(data_date, datetime.now())
             return delay <= max_delay_days
-        except ValueError:
+        except (TypeError, ValueError, NotImplementedError):
             return False
 
     # ── V17.3.1 ZHB 重排查落实: hqrule.dat 交易规则 ──
@@ -1733,9 +1736,9 @@ class ZhbData:
 def _download_zhb_zip() -> Optional[bytes]:
     """从通达信服务器下载 zhb.zip 原始二进制数据。
 
-    V16.1.1: easy_tdx 首选（get_report_file 分块拉取，2026-08-04 实测 180.153.18.170
-    下载 1292315 字节有效 zip），失败逐台换 + from_best_host 健康分兜底；
-    mootdx/pytdx 降为备胎（原 V12.0 路径保留）。
+    当前顺序：优先用 eltdx 下载并校验 ZIP；失败或 ZIP 无效时，逐台尝试
+    easy_tdx 主机，再以 from_best_host 兜底。所有引擎失败时返回 None；
+    mootdx/pytdx 已退出运行路径。
     """
     filename = "zhb.zip"
 

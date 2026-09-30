@@ -6,12 +6,12 @@
 
 | 区域 | 测试模块数 | 覆盖范围 | 详细清单 |
 |:---|---:|:---|:---|
-| `core/` | 15 | 核心门面、缓存、日历、类型契约、fallback、评分和技术指标 | [`core/README.md`](core/README.md) |
+| `core/` | 16 | 核心门面、缓存、日历、类型契约、fallback、评分和技术指标 | [`core/README.md`](core/README.md) |
 | `data/` | 10 | ZHB、TDX、Eastmoney、KPL、网络、解禁单位和回测快照 | [`data/README.md`](data/README.md) |
-| `infra/` | 7 | 调度器、字段完整性/命名、子字典、F10、外部 API 与 GD | [`infra/README.md`](infra/README.md) |
+| `infra/` | 9 | 调度器、字段完整性/命名、依赖预检、dry-run 写入边界、F10、外部 API 与 GD | [`infra/README.md`](infra/README.md) |
 | `reports/` | 5 | 报告 Runner、流水线、策略与章节契约 | [`reports/README.md`](reports/README.md) |
 | 根目录 | 6 | 采集探针、降级契约、技术指标、席位、代码归一化和来源兼容 | 本文件下方列出 |
-| **合计** | **43** | 参数化用例展开前的测试模块数 | — |
+| **合计** | **51** | 参数化用例展开前的测试模块数 | — |
 
 根目录测试：
 
@@ -22,7 +22,7 @@
 - `test_symbol_norm.py`：股票代码归一化。
 - `test_v310_sources.py`：数据源兼容性与回归。
 
-> **验证快照（2026-09-28）**：共收集 612 项。离线模式 564 passed、1 skipped、47 deselected；`real_network` 模式 41 passed、6 skipped、565 deselected。测试集合会随参数化和用例增减而变化，结果以当次运行输出为准。
+> **最近离线验证（2026-09-29）**：共收集 646 项，598 passed、1 skipped、47 deselected。`real_network` 本轮未重跑，最近结果见 [`PROJECT_AUDIT_REMEDIATION_20260928.md`](../docs/PROJECT_AUDIT_REMEDIATION_20260928.md)。测试集合会随参数化和用例增减而变化，结果以当次运行输出为准。
 
 ## 按问题定位
 

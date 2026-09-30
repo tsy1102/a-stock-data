@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
-## [Unreleased] 2026-09-30 — 交易日口径、采集日期与对撞证据治理
+## [V17.4.24] 2026-09-30 — 采集可靠性与交易日对撞证据治理
 
 ### 对撞与采集日期
 
@@ -14,9 +14,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - 通用对撞和专题脚本共用日期与来源规则。L1 要求每日最低样本量、至少三个独立交易日和独立来源族；盘中或阶段未知样本只进入候选。新增语义、公式、时间序列和稳健相关性候选，并保留样本日期与来源证据。
 - 修正治理闸门路径匹配，归档的 `field_registry.json.bak_*` 不再误触发正式注册表 parity 检查。
 
+### 采集器可靠性
+
+- 逐源核验必需结果、应采股票覆盖、错误标记和 deferred 状态；`None` 返回或缺少必需结果不再被当作完整成功。幂等跳过要求上一轮元数据状态和 raw 文件均完整；`--only` 会重新采集指定来源。
+- 市场级子源逐项隔离异常。本轮调整的 Eastmoney 直连请求使用单次尝试并保留传输诊断；push2、clist、slist 在 IP 封禁、403/429 或连续失败后熔断相应域。采集仍按来源串行执行并遵循 `sc_network`/TDX 既有域级与跨进程限流。
+- 将 AxData 的来源 scheme 更正为独立的本地短线指标体系；元数据新增实际采集时段和可确认的来源数据日。
+- 专项回归：`tests/test_capture_field_probe.py` 35 项通过；本次未发起真实数据源请求。
+
 ### 验证
 
-- 离线测试：631 passed、1 skipped、47 deselected；数据访问闸门通过；本轮相关 Python 文件 `py_compile`、Black 与 mypy 检查通过。
+- 离线测试：649 passed、1 skipped、47 deselected；数据访问闸门通过；本轮相关 Python 文件 `py_compile`、Black 与 mypy 检查通过。
 
 ### 既有未发布修复
 
@@ -38,7 +45,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 - 按项目 Black 配置统一 154 个源码及测试 Python 文件；修复类型问题后，mypy 对配置范围内的 140 个源码文件零错误。
 - 更新项目上下文、文档索引和测试目录清单，使 Python 目标版本、测试模块数和验证入口与当前仓库状态一致。
-- 未更改公开字段契约、ZHB 列索引或缓存键语义（限售解禁缓存类别升级除外）；项目版本仍为 `17.4.23`，本条记录属于未发布变更。
+- 未更改公开字段契约、ZHB 列索引或缓存键语义（限售解禁缓存类别升级除外）；项目版本升至 `17.4.24`。
 
 ### 验证
 

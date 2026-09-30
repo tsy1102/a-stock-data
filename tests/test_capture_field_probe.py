@@ -1,5 +1,6 @@
 from datetime import date, datetime
 from importlib.util import module_from_spec, spec_from_file_location
+import json
 from pathlib import Path
 import sys
 from types import ModuleType, SimpleNamespace
@@ -48,6 +49,77 @@ def test_market_sources_queries_latest_dragon_tiger_snapshot(monkeypatch):
     assert kwargs["sort_columns"] == "TRADE_DATE"
 
 
+def test_market_source_failures_do_not_skip_sibling_calls(monkeypatch):
+    def fail_cls():
+        raise RuntimeError("CLS down")
+
+    monkeypatch.setattr(stock_common, "get_cls_market_emotion", fail_cls)
+    monkeypatch.setattr(stock_common, "get_kph_limit_ladder", lambda: ["ladder"])
+    monkeypatch.setattr(stock_common, "get_stock_changes", lambda _code: ["change"])
+    monkeypatch.setattr(stock_common, "get_kpl_market_sentiment", lambda: {})
+    monkeypatch.setattr(stock_common, "get_kpl_limit_up_detail", lambda: [])
+    monkeypatch.setattr(stock_common, "get_kpl_broken_ratio", lambda: {})
+    monkeypatch.setattr(stock_common, "get_kpl_up_down", lambda: {})
+    monkeypatch.setattr(stock_common, "get_plate_rotation_matrix", lambda **_kwargs: [])
+    monkeypatch.setattr(stock_common, "get_plate_rotation_top", lambda: [])
+    monkeypatch.setattr(stock_common, "eastmoney_datacenter", lambda *_args, **_kwargs: [])
+    monkeypatch.setattr(capture_probe, "_last_completed_trading_day", lambda: date(2026, 9, 24))
+
+    result = capture_probe.collect_market_sources([])
+
+    assert result["cls_market_emotion"]["__error__"] == "CLS down"
+    assert result["kph_limit_ladder"] == ["ladder"]
+    assert result["stock_changes_8201"] == ["change"]
+    ok, info = capture_probe.assess_result(
+        result, required_paths=capture_probe.SOURCE_REQUIRED_PATHS["market_sources"]
+    )
+    assert ok is False
+    assert info["status"] == "partial"
+    assert info["n_error"] == 1
+
+
+def test_market_source_none_response_is_an_error(monkeypatch):
+    monkeypatch.setattr(stock_common, "get_cls_market_emotion", lambda: None)
+    monkeypatch.setattr(stock_common, "get_kph_limit_ladder", lambda: [])
+    monkeypatch.setattr(stock_common, "get_stock_changes", lambda _code: [])
+    monkeypatch.setattr(stock_common, "get_kpl_market_sentiment", lambda: {})
+    monkeypatch.setattr(stock_common, "get_kpl_limit_up_detail", lambda: [])
+    monkeypatch.setattr(stock_common, "get_kpl_broken_ratio", lambda: {})
+    monkeypatch.setattr(stock_common, "get_kpl_up_down", lambda: {})
+    monkeypatch.setattr(stock_common, "get_plate_rotation_matrix", lambda **_kwargs: [])
+    monkeypatch.setattr(stock_common, "get_plate_rotation_top", lambda: [])
+    monkeypatch.setattr(stock_common, "eastmoney_datacenter", lambda *_args, **_kwargs: [])
+    monkeypatch.setattr(capture_probe, "_last_completed_trading_day", lambda: date(2026, 9, 24))
+
+    result = capture_probe.collect_market_sources([])
+
+    assert result["cls_market_emotion"] == {"__error__": "collector returned None"}
+    ok, info = capture_probe.assess_result(
+        result, required_paths=capture_probe.SOURCE_REQUIRED_PATHS["market_sources"]
+    )
+    assert ok is False
+    assert info["n_error"] == 1
+
+
+def test_market_source_missing_export_does_not_skip_sibling_calls(monkeypatch):
+    monkeypatch.delattr(stock_common, "get_cls_market_emotion")
+    monkeypatch.setattr(stock_common, "get_kph_limit_ladder", lambda: ["ladder"])
+    monkeypatch.setattr(stock_common, "get_stock_changes", lambda _code: [])
+    monkeypatch.setattr(stock_common, "get_kpl_market_sentiment", lambda: {})
+    monkeypatch.setattr(stock_common, "get_kpl_limit_up_detail", lambda: [])
+    monkeypatch.setattr(stock_common, "get_kpl_broken_ratio", lambda: {})
+    monkeypatch.setattr(stock_common, "get_kpl_up_down", lambda: {})
+    monkeypatch.setattr(stock_common, "get_plate_rotation_matrix", lambda **_kwargs: [])
+    monkeypatch.setattr(stock_common, "get_plate_rotation_top", lambda: [])
+    monkeypatch.setattr(stock_common, "eastmoney_datacenter", lambda *_args, **_kwargs: [])
+    monkeypatch.setattr(capture_probe, "_last_completed_trading_day", lambda: date(2026, 9, 24))
+
+    result = capture_probe.collect_market_sources([])
+
+    assert "get_cls_market_emotion" in result["cls_market_emotion"]["__error__"]
+    assert result["kph_limit_ladder"] == ["ladder"]
+
+
 def test_assess_result_counts_expected_skips_separately():
     ok, info = capture_probe.assess_result(
         {"stocks": {"bj920001": {"quote_snapshot": {"__skipped__": "BSE unsupported"}}}}
@@ -57,7 +129,6 @@ def test_assess_result_counts_expected_skips_separately():
     assert info["status"] == "ok"
     assert info["n_error"] == 0
     assert info["n_skipped"] == 1
-
     ok, info = capture_probe.assess_result(
         {
             "stocks": {
@@ -70,6 +141,96 @@ def test_assess_result_counts_expected_skips_separately():
     assert info["status"] == "partial"
     assert info["n_error"] == 1
     assert info["n_skipped"] == 1
+
+
+def test_assess_result_distinguishes_all_stock_failures_from_partial_failure():
+    all_failed = {
+        "stocks": {
+            "600000": {"quote_snapshot": {"__error__": "blocked"}},
+            "000001": {"shortline": {"error": "unavailable"}},
+        }
+    }
+    ok, failed_info = capture_probe.assess_result(all_failed, expected_symbols=["600000", "000001"])
+
+    assert ok is False
+    assert failed_info["status"] == "failed"
+    assert failed_info["n_dead"] == 2
+
+    partly_failed = {
+        "stocks": {
+            "600000": {"quote_snapshot": {"__error__": "blocked"}},
+            "000001": {"quote_snapshot": {"last_price": 10}},
+        }
+    }
+    ok, partial_info = capture_probe.assess_result(
+        partly_failed, expected_symbols=["600000", "000001"]
+    )
+
+    assert ok is False
+    assert partial_info["status"] == "partial"
+    assert partial_info["n_dead"] == 1
+
+
+def test_assess_result_detects_legacy_markers_deferred_and_missing_contracts():
+    ok, info = capture_probe.assess_result(
+        {
+            "stocks": {"600000": {"quote_snapshot": {"last_price": 1.0}}},
+            "market": {"shortline": {"__skipped__": "deferred: not ready before 09:25"}},
+        },
+        expected_symbols=["600000", "000001"],
+        required_paths=[("records",)],
+    )
+
+    assert ok is False
+    assert info["status"] == "partial"
+    assert info["n_deferred"] == 1
+    assert info["n_missing_stocks"] == 1
+    assert info["n_missing_contracts"] == 1
+
+    ok, legacy = capture_probe.assess_result(
+        {"levistock_error": "blocked", "__error_szse__": "timeout", "error": "disabled"}
+    )
+    assert ok is False
+    assert legacy["status"] == "failed"
+    assert legacy["n_error"] == 3
+
+
+def test_assess_result_treats_null_required_path_as_missing():
+    ok, info = capture_probe.assess_result({"records": None}, required_paths=[("records",)])
+
+    assert ok is False
+    assert info["status"] == "partial"
+    assert info["n_missing_contracts"] == 1
+
+
+def test_capture_market_phase_tracks_actual_session(monkeypatch):
+    checker = lambda _day: True
+
+    assert capture_probe._capture_market_phase(datetime(2026, 9, 30, 8, 50), checker) == "pre_open"
+    assert (
+        capture_probe._capture_market_phase(datetime(2026, 9, 30, 9, 20), checker) == "call_auction"
+    )
+    assert (
+        capture_probe._capture_market_phase(datetime(2026, 9, 30, 12, 0), checker) == "lunch_break"
+    )
+    assert capture_probe._capture_market_phase(datetime(2026, 9, 30, 15, 1), checker) == "closed"
+    assert (
+        capture_probe._capture_market_phase(datetime(2026, 9, 27, 10, 0), lambda _day: False)
+        == "non_trading_day"
+    )
+
+
+def test_source_as_of_date_is_explicit_and_reads_market_metadata():
+    assert capture_probe._source_as_of_date("zhb", {"zhb_date": "2026-09-29"}) == "2026-09-29"
+    assert (
+        capture_probe._source_as_of_date("ftshare", {"market": {"probe_trading_day": "20260929"}})
+        == "20260929"
+    )
+    assert capture_probe._source_as_of_date("push2", {"stocks": {}}) is None
+
+
+def test_axdata_scheme_describes_its_local_shortline_source():
+    assert capture_probe.SOURCE_SCHEME["axdata"] == "axdata.shortline"
 
 
 def test_recent_trade_days_excludes_weekends_and_public_holidays():
@@ -186,17 +347,54 @@ def test_push2_failures_include_domain_and_use_single_attempt(monkeypatch):
     assert "ip_banned" in error
 
 
-def test_clist_failure_reports_both_domains(monkeypatch):
+def test_rate_limit_detection_accepts_string_http_status():
+    assert capture_probe._request_is_rate_limited({"status_code": "403"})
+    assert capture_probe._request_is_rate_limited({"status_code": 429})
+    assert not capture_probe._request_is_rate_limited({"status_code": "503"})
+
+
+def test_push2_opens_local_circuit_after_explicit_ban(monkeypatch):
+    calls = []
+
     def fake_request(url, **kwargs):
+        calls.append((url, kwargs))
+        if "push2delay.eastmoney.com" in url:
+            kwargs["error_out"].update(
+                {"kind": "ip_banned", "domain": "push2delay.eastmoney.com", "attempts": 1}
+            )
+            return None
+        return SimpleNamespace(json=lambda: {"data": {"f1": "1", "f12": "600000"}})
+
+    monkeypatch.setattr(stock_common, "_quick_request", fake_request)
+    monkeypatch.setattr(sc_network, "_em_is_banned", lambda _domain: False)
+
+    result = capture_probe.collect_push2([{"code": "600000"}, {"code": "000001"}])
+
+    delay_calls = [call for call in calls if "push2delay.eastmoney.com" in call[0]]
+    primary_calls = [call for call in calls if "push2.eastmoney.com" in call[0]]
+    assert len(delay_calls) == 1
+    assert len(primary_calls) == 2
+    assert all(kwargs["max_retries"] == 1 for _, kwargs in calls)
+    assert result["stocks"]["600000"]["host"] == "push2"
+
+
+def test_clist_failure_reports_both_domains(monkeypatch):
+    calls = []
+
+    def fake_request(url, **kwargs):
+        calls.append((url, kwargs))
         kwargs["error_out"].update(
             {"kind": "http_403", "domain": url.split("/")[2], "status_code": 403}
         )
         return None
 
     monkeypatch.setattr(stock_common, "_quick_request", fake_request)
+    monkeypatch.setattr(sc_network, "_em_is_banned", lambda _domain: False)
 
     result = capture_probe.collect_clist([])
 
+    assert len(calls) == 2
+    assert all(kwargs["max_retries"] == 1 for _, kwargs in calls)
     for label in ("industry", "concept", "area"):
         error = result["by_type"][label]["__error__"]
         assert "push2delay.eastmoney.com" in error
@@ -204,8 +402,104 @@ def test_clist_failure_reports_both_domains(monkeypatch):
         assert "status=403" in error
 
 
-def test_kline_and_fund_flow_failures_keep_transport_details(monkeypatch):
+def test_slist_preserves_transport_details_and_stops_after_ban(monkeypatch):
+    calls = []
+
     def fake_request(url, **kwargs):
+        calls.append((url, kwargs))
+        kwargs["error_out"].update(
+            {"kind": "http_403", "domain": url.split("/")[2], "status_code": 403}
+        )
+        return None
+
+    monkeypatch.setattr(stock_common, "_quick_request", fake_request)
+    monkeypatch.setattr(sc_network, "_em_is_banned", lambda _domain: False)
+
+    result = capture_probe.collect_slist([{"code": "600000"}, {"code": "000001"}])
+
+    assert len(calls) == 2
+    assert all(kwargs["max_retries"] == 1 for _, kwargs in calls)
+    for code in ("600000", "000001"):
+        error = result["stocks"][code]["__error__"]
+        assert "push2delay.eastmoney.com" in error
+        assert "push2.eastmoney.com" in error
+        assert "status=403" in error
+
+
+def test_ulist_reports_missing_pool_codes_and_limits_request_attempts(monkeypatch):
+    calls = []
+
+    class Response:
+        def json(self):
+            return {"data": {"diff": [{"f12": "600000", "f1": "1"}]}}
+
+    def fake_request(url, **kwargs):
+        calls.append((url, kwargs))
+        return Response()
+
+    monkeypatch.setattr(stock_common, "_quick_request", fake_request)
+    result = capture_probe.collect_ulist239([{"code": "600000"}, {"code": "000001"}])
+
+    assert calls[0][1]["max_retries"] == 1
+    assert "missing" in result["stocks"]["000001"]["__error__"]
+    ok, info = capture_probe.assess_result(result, expected_symbols=["600000", "000001"])
+    assert ok is False
+    assert info["status"] == "partial"
+    assert info["n_error"] == 1
+
+
+def test_eltdx_exposes_preopen_shortline_as_deferred(monkeypatch):
+    readiness_error = RuntimeError("shortline indicators not ready before 09:25")
+
+    class FakeHelpers:
+        def limit_ladder(self, **_kwargs):
+            raise readiness_error
+
+        def theme_strength_rank(self, **_kwargs):
+            raise readiness_error
+
+        def stock_theme_strength_rank(self, **_kwargs):
+            raise readiness_error
+
+        def realtime_rank(self):
+            return []
+
+        def shortline_indicators(self, _codes):
+            raise readiness_error
+
+    client = SimpleNamespace(
+        helpers=FakeHelpers(),
+        quotes=SimpleNamespace(get_snapshots=lambda _codes: {"sh600000": {"last_price": 10.0}}),
+        bars=SimpleNamespace(get=lambda *_args, **_kwargs: []),
+        close=lambda: None,
+    )
+    fake_eltdx = ModuleType("eltdx")
+    fake_eltdx.TdxClient = lambda **_kwargs: client
+    fake_eltdx.F10Client = lambda **_kwargs: None
+    monkeypatch.setitem(sys.modules, "eltdx", fake_eltdx)
+
+    class FixedDateTime:
+        @classmethod
+        def now(cls):
+            return datetime(2026, 9, 30, 8, 50)
+
+    monkeypatch.setattr(capture_probe, "datetime", FixedDateTime)
+    result = capture_probe.collect_eltdx([{"code": "600000"}], lite=True)
+
+    assert result["stocks"]["600000"]["shortline"]["__skipped__"].startswith("deferred:")
+    assert result["global_helpers"]["limit_ladder"]["__skipped__"].startswith("deferred:")
+    ok, info = capture_probe.assess_result(result, expected_symbols=["600000"])
+    assert ok is False
+    assert info["status"] == "partial"
+    assert info["n_error"] == 0
+    assert info["n_deferred"] == 4
+
+
+def test_kline_and_fund_flow_failures_keep_transport_details(monkeypatch):
+    calls = []
+
+    def fake_request(url, **kwargs):
+        calls.append((url, kwargs))
         kwargs["error_out"].update(
             {"kind": "ip_banned", "domain": url.split("/")[2], "attempts": 0}
         )
@@ -221,6 +515,104 @@ def test_kline_and_fund_flow_failures_keep_transport_details(monkeypatch):
     assert "push2his.eastmoney.com" in kline["stocks"]["600000"]["__error__"]
     assert "ip_banned" in flow["stocks"]["600000"]["__error__"]
     assert "push2delay.eastmoney.com" in flow["stocks"]["600000"]["__error__"]
+    assert all(kwargs["max_retries"] == 1 for _, kwargs in calls)
+
+
+def test_failed_raw_snapshot_does_not_pass_idempotency_check(tmp_path):
+    raw_path = tmp_path / "raw_push2.json"
+    pool = [{"code": "600000"}, {"code": "000001"}]
+    collectors = {"push2": capture_probe.collect_push2}
+    meta = {"sources": {"push2": {"ok": True, "status": "ok"}}}
+
+    raw_path.write_text(
+        '{"stocks":{"600000":{"data":{"f1":"1"}}},"scheme":"em.stock_get"}',
+        encoding="utf-8",
+    )
+    assert not capture_probe._has_complete_snapshot(collectors, meta, str(tmp_path), pool)
+
+    raw_path.write_text(
+        '{"stocks":{"600000":{"data":{"f1":"1"}},"000001":{"data":{"f1":"2"}}},'
+        '"scheme":"em.stock_get"}',
+        encoding="utf-8",
+    )
+    assert capture_probe._has_complete_snapshot(collectors, meta, str(tmp_path), pool)
+
+    raw_path.write_text(
+        '{"stocks":{"600000":{"__error__":"ip_banned"},' '"000001":{"__error__":"ip_banned"}}}',
+        encoding="utf-8",
+    )
+    assert not capture_probe._has_complete_snapshot(collectors, meta, str(tmp_path), pool)
+
+
+def test_snapshot_idempotency_requires_prior_source_status(tmp_path):
+    raw_path = tmp_path / "raw_push2.json"
+    raw_path.write_text(
+        '{"stocks":{"600000":{"data":{"f1":"1"}}},"scheme":"em.stock_get"}',
+        encoding="utf-8",
+    )
+    collectors = {"push2": capture_probe.collect_push2}
+    pool = [{"code": "600000"}]
+
+    assert not capture_probe._has_complete_snapshot(collectors, {}, str(tmp_path), pool)
+    assert capture_probe._has_complete_snapshot(
+        collectors,
+        {"sources": {"push2": {"ok": True, "status": "ok"}}},
+        str(tmp_path),
+        pool,
+    )
+
+
+def test_non_raw_source_states_are_complete_without_raw_files(tmp_path):
+    collectors = {"future_source": lambda _pool: {}, "baidu": capture_probe.collect_baidu}
+    meta = {
+        "sources": {
+            "future_source": {"ok": False, "status": "unwired"},
+            "baidu": {"ok": False, "status": "deprecated"},
+        }
+    }
+
+    assert capture_probe._has_complete_snapshot(collectors, meta, str(tmp_path), [])
+
+    meta["sources"]["baidu"]["status"] = "unwired"
+    assert not capture_probe._has_complete_snapshot(collectors, meta, str(tmp_path), [])
+
+
+def test_only_selection_reruns_a_complete_existing_source(tmp_path, monkeypatch):
+    out_dir = tmp_path / "20260929"
+    out_dir.mkdir()
+    (out_dir / "raw_push2.json").write_text(
+        '{"stocks":{"600000":{"data":{"f1":"old"}}},"scheme":"em.stock_get"}',
+        encoding="utf-8",
+    )
+    (out_dir / "meta.json").write_text(
+        '{"date":"20260929","data_date":"20260929","market_phase":"closed",'
+        '"sources":{"push2":{"ok":true,"status":"ok"}}}',
+        encoding="utf-8",
+    )
+    calls = []
+
+    monkeypatch.setattr(capture_probe, "OUT_BASE", str(tmp_path))
+    monkeypatch.setattr(capture_probe, "load_pool", lambda: [{"code": "600000"}])
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        ["capture_field_probe.py", "--date", "20260929", "--only", "push2"],
+    )
+    monkeypatch.setattr(
+        capture_probe, "_validate_capture_data_date", lambda *_args: (date(2026, 9, 29), "trading")
+    )
+    monkeypatch.setattr(capture_probe, "_is_closed_phase_now", lambda *_args: True)
+
+    def fake_push2(pool):
+        calls.append([item["code"] for item in pool])
+        return {"stocks": {"600000": {"data": {"f1": "new"}}}}
+
+    monkeypatch.setattr(capture_probe, "collect_push2", fake_push2)
+    capture_probe.main()
+
+    assert calls == [["600000"]]
+    raw = json.loads((out_dir / "raw_push2.json").read_text(encoding="utf-8"))
+    assert raw["stocks"]["600000"]["data"]["f1"] == "new"
 
 
 def test_network_failure_diagnostics_redact_query_parameters(monkeypatch):

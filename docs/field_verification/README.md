@@ -16,11 +16,8 @@ docs/field_verification/
 ├── pool.json          # 20 股股票池(固定 15 + 动态 5,动态层每日可换)
 ├── README.md          # 本文件
 └── YYYYMMDD/          # 按天归档(自动生成: 由 capture_field_probe.py 每日创建, 按约定不单列 README; 内容见本文件"每日核查流程"与 collide.py 产物)
-    ├── raw_zhb.json       # ZHB full/stat/stat2/tipinfo 全字段(本地,零网络)
-    ├── raw_tdx.json       # TDX TCP 行情/财务快照
-    ├── raw_tencent.json   # 腾讯 qt.gtimg 全字段(~88 位)
-    ├── raw_push2.json     # 东财 push2 stock/get 全字段(f1-f239)
-    ├── meta.json          # 采集时间/各源状态/失败记录
+    ├── raw_<source>.json  # 每个有 producer 的来源各一份原始结果
+    ├── meta.json          # 采集时段、来源状态、覆盖率、错误/deferred 与已知来源数据日
     └── analysis.md        # 当日分析(每日对话产出)
 ```
 
@@ -29,12 +26,18 @@ docs/field_verification/
 ```powershell
 .\scripts\run_with_system_python.ps1 scripts\capture_field_probe.py                 # 采今天(用现有 ZHB 包)
 .\scripts\run_with_system_python.ps1 scripts\capture_field_probe.py --date 20260812 # 指定日期目录
-.\scripts\run_with_system_python.ps1 scripts\capture_field_probe.py --dry-run       # 只显示各源可用性,不发请求
+.\scripts\run_with_system_python.ps1 scripts\capture_field_probe.py --dry-run       # 连通性探测(会发请求,不生成每日 raw 样本)
 .\scripts\run_with_system_python.ps1 scripts\capture_field_probe.py --refresh-pool  # 采集前刷新动态层(连板/新股/涨停)写回 pool.json
 ```
 
-注意: 东财 push2 为 0.4rps,20 只约 50s;脚本自动走 sc_network 全局限流。
-若东财处于封禁冷却(20h),push2 源留空并在 meta.json 标注,不影响其他源。
+`--dry-run` 不是离线模式：它检查 ZHB/TDX，并对腾讯和 Eastmoney 发少量健康探测请求；它不生成每日 raw 样本。ZHB 客户端仍遵循自身缓存与刷新行为。
+
+## 采集请求与限流
+
+- 来源按 `capture_field_probe.py` 的 producer 顺序串行执行，不通过并发扩大请求量。TDX TCP 与 HTTP 数据源分别沿用 `core/tdx_client.py` 和 `stock_common/sc_network.py` 的限流配置。
+- Eastmoney HTTP 请求同时受域级限流和跨进程全局节奏约束。本轮调整的 push2、clist、slist、ulist239、K 线与资金流直连请求均为单次尝试；push2、clist、slist 遇 IP 封禁/HTTP 403/429 或同域连续失败时，本轮熔断该域，只在另一域仍可请求时使用既有备用路径。其他经统一适配器访问的来源继续使用适配器自己的限流和重试策略。
+- 不为补齐样本并发或快速重试失败源。封禁、限流或连续传输失败会保留诊断并停止对受限域追加请求；应先检查 `meta.json`，来源恢复后使用 `--only <source>` 定向重采。`--only` 会实际重新调用所选来源，不会因已有快照跳过。
+- 避免重复启动完整采集进程；不同数据源有各自的域级限流，重复运行会增加不必要的请求。
 
 > **动态层每日刷新（V17.2.10）**：`pool.json` 的 `dynamic` 5 只此前静态冻结（自 20260812）。
 > 现由采集脚本 `--refresh-pool` 在采集前自动从涨停池（同花顺 `ths_limit_up_pool`，东财兜底）挑选
@@ -43,7 +46,7 @@ docs/field_verification/
 
 ## 每日核查流程(固定)
 
-1. 跑采集脚本(约 3-5 分钟,含 ZHB 本地解析 + TDX + 腾讯 + push2)
+1. 跑采集脚本(耗时随股票池、来源响应和限流等待变化；会访问配置的来源)
    ```powershell
    .\scripts\run_with_system_python.ps1 scripts\capture_field_probe.py --refresh-pool   # 刷新动态层(连板/新股/涨停)再采集
    ```
@@ -84,7 +87,9 @@ docs/field_verification/
 | 财联社/KPL/板块轮动 | 3/5rps | 市场级:情绪/涨停天梯/涨停明细/盘口异动 |
 | thsdk | 正式账号 | 仅盘中可用(收盘后服务器拒绝) |
 
-## 源覆盖状态(2026-08-26 更新, 19 raw 文件)
+## 源覆盖状态(历史快照: 2026-08-26, 19 raw 文件)
+
+> 本节记录的是 2026-08-26 的历史采集状态，不代表当前 producer 清单或当前可用性。当前运行结果以对应数据日的 `meta.json` 和 raw 文件为准；逐源状态、错误、deferred、覆盖率与可确认的来源数据日均以 `meta.json` 为准。
 
 - ✅ 已采(19 源): ZHB / TDX(TCP+F10×6) / 腾讯 88 / push2_full(114) / ulist239(239 批量) / 新浪 34 / AxData 34 / 财联社(情绪+快讯) / KPL / 板块轮动 / thsdk(仅盘中) / push2ex 涨停炸板池 / 东财人气榜 / datacenter(两融/北向/解禁) / 巨潮互动易 / 研报 reportapi / 龙虎榜 / fuyao(竞价/池/财务指标/估值) / FTShare(千股千评/董监高/商誉/质押)
   - 已归档日期: 20260812~20260826(工作日连续, 8/16-18 缺采)

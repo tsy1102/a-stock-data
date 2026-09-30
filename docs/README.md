@@ -16,6 +16,7 @@
 
 - [`verify/`](verify/README.md)：按数据源整理的字段契约、样本和交叉核验资料。
 - [`field_verification/`](field_verification/README.md)：采集流程、破解方法和按日期归档的原始数据与分析报告。
+- [采集流水线整改计划](CAPTURE_PIPELINE_REMEDIATION_PLAN_20260930.md)：本轮采集完整度、失败诊断、限流与幂等重采的实施范围和验收项。
 - [`session_notes/`](session_notes/README.md)：按日期保存的会话决策和待办。
 - `PROJECT_AUDIT_REMEDIATION_*.md`、日期命名的核查文档：阶段性审计记录；判断当前状态时以代码和当次验证结果为准。
 

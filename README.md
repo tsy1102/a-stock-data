@@ -8,6 +8,7 @@
 
 - **5 种报告类型**：短线(sht) / 中线(med) / 长线(lng) / 估值选股(val) / 市场状态(mak)（ful 已于 V16.1 下线，能力并入前四类）。
 - **多源字段逆向破解**：ZHB / TDX 0x0010 / 东财 push2 / 腾讯 / 新浪 / 同花顺 fuyao / 巨潮 / FTShare 私有协议字段交叉验证（thsdk 通道已于 V17.0.29 移除），实锤与样本沉淀于 `docs/field_dict.md` 与 `docs/verify/`；主字典只留结论、附录存实证。
+- **日期感知的跨源对撞**：行情按有效交易日对齐，新闻/公告按自然日处理；保留历史休市目录，按实际数据日期择优快照，并让候选证据记录样本日期与来源。方法与规则见 [`CRACKING_METHODOLOGY.md`](docs/field_verification/CRACKING_METHODOLOGY.md)。
 - **统一数据合约**：唯一入口 `get_canonical_stock_data` 返回 `CanonicalStockData` 强类型合约（113 字段 frozen 契约，每字段带 `field_sources` 溯源），消除异构多源冲突。
 - **ZHB-First 离线优先路由**：盘前 / 休市日 100% 走 ZHB 内存秒级提取；交易日盘中盘后强制网络取 T 日真实收盘价。
 - **申万二级行业统一**：东财 datacenter 一次性分页拉取 + 7 天缓存，零逐股请求、零 push2 风控面。
@@ -162,7 +163,7 @@ a-stock-data/
 │
 ├── scripts/                      # 辅助脚本（见 scripts/README.md）
 │   ├── capture_field_probe.py    # 字段实测采集 → docs/field_verification/YYYYMMDD/
-│   ├── collide.py                # 【V17.2.9】全源全字段通用对撞引擎（每日采集后运行；自动查询 collision_rules 四铁律 + 增量状态跟进）
+│   ├── collide.py                # 日期归一化、快照择优、跨源独立性闸门与多方法候选；每日采集后运行
 │   ├── run_tests.ps1             # 测试统一入口（AGENTS.md 强制 shell 层中转）
 │   ├── run_with_system_python.ps1 # Python 3.12 选择与命令转发
 │   ├── update_calendar.py        # 交易日历数据更新（含 V14+ 防覆盖保护）

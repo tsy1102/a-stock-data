@@ -19,7 +19,7 @@ Windows 开发默认使用 PowerShell。`run_with_system_python.ps1` 校验并�
 | 脚本 | 用途 |
 |:---|:---|
 | `capture_field_probe.py` | 采集字段样本至 `docs/field_verification/<日期>/`；会访问数据源并写入采集文件。 |
-| `collide.py`、`collision_rules.py` | 跨源字段对撞与候选规则；对撞结果用于研究，不直接改主字典。 |
+| `collide.py`、`collision_dates.py`、`collision_rules.py` | 共用日期归一化与快照择优；行情窗口按有效交易日、新闻/公告按自然日；L1 检查样本量、独立日期和来源族。盘中/未知阶段仅作候选，语义、公式、时间序列与稳健相关性结果保留日期及来源证据；不直接改主字典。详见 `docs/field_verification/CRACKING_METHODOLOGY.md`。 |
 | `field_meta.py` | 为采集样本补充来源与锚点元数据。 |
 | `crack_push2_status_codes_20260921.py` | Push2 状态码研究脚本。 |
 | `crack_ulist_f88_95_20260921.py` | Ulist 高位字段研究脚本。 |

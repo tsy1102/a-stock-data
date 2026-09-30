@@ -1798,26 +1798,21 @@ def _parse_zhb_date(zhb_date_str: Optional[str]) -> Optional[date]:
 
 
 def _get_zhb_date_offset() -> int:
-    """计算ZHB数据日期相对于今天的交易日偏移。
+    """计算 ZHB 数据日期相对当前有效行情日的交易日偏移。
 
     返回值：
-      0 = ZHB数据就是今天的（只在盘前且当天ZHB已更新时可能）
-      1 = ZHB数据是昨天的（最常见情况）
-      2+ = ZHB数据是更早的（非交易日运行时）
+      0 = ZHB 与当前有效行情日同日
+      1+ = ZHB 落后相应数量的交易日
     """
     try:
         from stock_common import get_zhb_data_date
+        from stock_common.stock_calendar import trading_day_age
 
         zhb_date_str = get_zhb_data_date()
         zhb_date = _parse_zhb_date(zhb_date_str)
         if zhb_date is None:
             return 99
-
-        today = datetime.now().date()
-
-        if zhb_date >= today:
-            return 0
-        return (today - zhb_date).days
+        return max(0, trading_day_age(zhb_date, datetime.now()))
     except Exception:
         return 99
 
@@ -1829,49 +1824,21 @@ def _get_trading_date_offset() -> int:
     - ZHB数据日期（T_zhb）
     - API行情能够获取到的最新交易日期（T_quote）
 
-    返回值（ΔT）：
-      0 = ZHB与API基准同频（周末/盘前/16:30后）
-      1 = ZHB比API慢一天（盘中运行）
-      2+ = ZHB数据严重过期
-
-    时间场景映射：
-      盘前(00:00-09:15): ΔT=0（ZHB和API都是昨天收盘数据）
-      盘中(09:30-15:00): ΔT=1（API是今天实时，ZHB是昨天）
-      盘后(15:00-16:30): ΔT=1（API是今天收盘，ZHB是昨天）
-      盘后(16:30后): ΔT=0（新ZHB已生成）
-      非交易日: ΔT=0（都是上一交易日数据）
+    交易日 9:30 前以最近已完成交易日为基准；9:30 起以当日为基准。
+    周末、法定休市日和周末调休补班日均不增加偏移。
     """
     try:
         from stock_common import get_zhb_data_date
-        from stock_common.stock_calendar import is_workday, get_last_trading_day
+        from stock_common.stock_calendar import latest_market_data_date, trading_days_between
 
         zhb_date_str = get_zhb_data_date()
         zhb_date = _parse_zhb_date(zhb_date_str)
         if zhb_date is None:
             return 99
 
-        today = datetime.now().date()
         now = datetime.now()
-
-        last_td = get_last_trading_day(today)
-
-        if is_workday(today):
-            if now.hour < 9 or (now.hour == 9 and now.minute < 30):
-                if zhb_date >= last_td - timedelta(days=1):
-                    return 0
-                return (last_td - zhb_date).days
-            elif now.hour >= 16:
-                if zhb_date >= last_td:
-                    return 0
-                return (last_td - zhb_date).days
-            else:
-                if zhb_date >= last_td - timedelta(days=1):
-                    return 1
-                return (last_td - zhb_date).days + 1
-        else:
-            if zhb_date >= last_td:
-                return 0
-            return (last_td - zhb_date).days
+        reference_date = latest_market_data_date(now)
+        return max(0, trading_days_between(zhb_date, reference_date))
     except Exception:
         return _get_zhb_date_offset()
 

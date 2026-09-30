@@ -409,7 +409,7 @@ def ths_limit_up_pool(date_str: str = "") -> List[Dict[str, Any]]:
     # V17.0.1g(2026-08-16): 休市日(周末/节假日)传当日返回空 → 自动回退最近交易日
     if not date_str:
         try:
-            from stock_common.stock_calendar import get_last_trading_day
+            from stock_common.stock_calendar import get_last_trading_day, previous_trading_day
 
             date_str = get_last_trading_day().strftime("%Y%m%d")
         except Exception:
@@ -684,16 +684,16 @@ def get_kph_limit_ladder(date_str: str = "") -> List[Dict[str, Any]]:
         if not date_str:
             # V17.0.2g(2026-08-17): 开盘红复盘接口要求"已收盘交易日"(昨天或更早)——
             # 原 今天-1 在周一/节后运行取到休市日 → 接口空 → "涨停天梯获取失败"
-            from stock_common.stock_calendar import get_last_trading_day
+            from stock_common.stock_calendar import get_last_trading_day, previous_trading_day
             from datetime import date as _date
 
             _ltd = get_last_trading_day()
             _d0 = _ltd if isinstance(_ltd, _date) else _ltd.date()
             # 最近交易日是今天(交易日盘中/盘前) → 回退到上一已收盘交易日
             if _d0 == _date.today():
-                _d0 = _d0 - timedelta(days=1)
+                _d0 = previous_trading_day(_d0)
             date_str = _d0.strftime("%Y-%m-%d")
-            # 回退日可能仍是休市日(周末) → 向前找首个有数据的日期(最多 7 天)
+            # 接口可能尚未发布最近交易日数据 → 向前按交易日找首个有数据的日期。
             for _try in range(7):
                 data = lk.get_zttt(date=date_str)
                 _cnt = (
@@ -701,9 +701,8 @@ def get_kph_limit_ladder(date_str: str = "") -> List[Dict[str, Any]]:
                 )
                 if _cnt > 0:
                     break
-                date_str = (datetime.strptime(date_str, "%Y-%m-%d") - timedelta(days=1)).strftime(
-                    "%Y-%m-%d"
-                )
+                _retry_date = datetime.strptime(date_str, "%Y-%m-%d").date()
+                date_str = previous_trading_day(_retry_date).strftime("%Y-%m-%d")
             else:
                 data = lk.get_zttt(date=date_str)
         else:

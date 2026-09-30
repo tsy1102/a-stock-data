@@ -65,7 +65,6 @@ from stock_common import (
     get_industry_comparison,
     get_stock_info,
     get_zhb_tip_info,
-    get_eps_forecast_async,
     resolve_eps_forecast,
     get_reports_async,
     get_northbound_hold_async,
@@ -1242,7 +1241,7 @@ async def generate_report_async(session, code, output_path, ind_comp=None, hsgt=
     L("---")
     dtb = await get_dragon_tiger_board_async(session, code, days=180)
     if dtb and dtb.get("records"):
-        L(f"  近180日上榜 {len(dtb['records'])} 次:")
+        L(f"  近180个交易日上榜 {len(dtb['records'])} 次:")
         # V17.0.6: 直出 md 表格(同 sht)
         L("| 日期 | 上榜原因 | 净买入(万) | 换手率 |")
         L("|---|---|---|---|")
@@ -1272,7 +1271,7 @@ async def generate_report_async(session, code, output_path, ind_comp=None, hsgt=
             L(f"    机构卖出金额: {inst['sell_amt']}万元")
             L(f"    机构净买入: {inst['net_amt']}万元")
     else:
-        L("  近180日无龙虎榜记录（白马蓝筹或近期未触发异动标准的个股，无龙虎榜属正常现象）。")
+        L("  近180个交易日无龙虎榜记录（白马蓝筹或近期未触发异动标准的个股，无龙虎榜属正常现象）。")
 
     # ─── 9. 高股息防御属性 (分红历史) ───
     L("\n## 【十五、高股息防御属性 (近十次分红)】")

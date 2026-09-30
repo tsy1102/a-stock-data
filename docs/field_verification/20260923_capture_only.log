@@ -1,0 +1,5 @@
+▶ 采集开始: 20260923 | 股票 20 只 | 源: ZHB/TDX/腾讯/push2
+  ✔ zhb: 0.8s
+  ⚠ push2: 212.3s | partial | 19/20 处 __error__ | request failed (push2delay+push2, no retry)
+✔ 完成: C:\Tencent\WorkBuddy\a-stock-data\docs\field_verification\20260923 | 总耗时 213.0s | ZHB=20260922
+⚠ 本次存在异常源 1/2: push2

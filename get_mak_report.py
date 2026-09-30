@@ -263,10 +263,7 @@ async def _get_zhb_market_data(tencent_map: Optional[Dict[str, Any]] = None):
         if not snapshot:
             return []
 
-        all_codes = list(snapshot.keys())
-        # V15.3 P0 修复: 原代码重复调用 get_market_snapshot_async(all_codes)，
-        # 第一次已经返回完整 dict，第二次只是浪费一次 ZHB 解析/网络 IO。
-        # 直接复用 snapshot 作为 price_map。
+        # ZHB snapshot 已包含全市场行情，直接复用，避免重复解析和网络 IO。
         price_map = snapshot
 
         result = []
@@ -1177,10 +1174,9 @@ def annotate_technical_pattern(code):
 async def generate_sector_report(output_path):
     _td = date.today()
     if not is_trading_day(_td):
-        for _ in range(7):
-            _td -= timedelta(days=1)
-            if is_trading_day(_td):
-                break
+        from stock_common.stock_calendar import previous_trading_day
+
+        _td = previous_trading_day(_td)
     today_str = _td.strftime("%Y-%m-%d")
     now = datetime.now()
     _mkt_status, _mkt_note = get_market_status(now)
@@ -1678,10 +1674,14 @@ async def generate_sector_report(output_path):
 
             if _f_on():
                 import datetime as _dt_mod
+                from stock_common.stock_calendar import get_last_trading_day
 
-                _d = _dt_mod.date.today()
-                while _d.weekday() >= 5:
-                    _d -= _dt_mod.timedelta(days=1)
+                _last_trade_day = get_last_trading_day()
+                _d = (
+                    _last_trade_day
+                    if isinstance(_last_trade_day, _dt_mod.date)
+                    else _last_trade_day.date()
+                )
                 _dms = int(_dt_mod.datetime.combine(_d, _dt_mod.time()).timestamp() * 1000)
                 _dlp = await asyncio.to_thread(_f_lp, "down", 1, 100, _dms)
                 _dl_items = (_dlp or {}).get("item") or []

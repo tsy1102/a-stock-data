@@ -47,9 +47,9 @@
 - 本仓库默认 Windows PowerShell 5.1；Shell、路径、外部程序和验证流程按 `AGENTS.md` 执行。
 - Python 目标版本为 3.10+；项目开发/测试使用 Python 3.12。解释器通过 `scripts/run_with_system_python.ps1` 选择。
 - 运行测试使用 `scripts/run_tests.ps1`，不要从 Shell 直接调用 `pytest`。`real_network` 测试须明确选择。
-- 最近验证快照（2026-09-28）：pytest 收集 612 项；离线模式 564 passed、1 skipped、47 deselected，`real_network` 模式 41 passed、6 skipped、565 deselected。Black 对 154 个源码/测试文件全绿；mypy 对 140 个配置范围源码文件零错误；A1/A7 闸门均为 0 HARD FAIL / 0 WARN。运行状态以当次命令输出为准。
+- 最近离线复核（2026-09-29）：pytest 有 51 个模块、收集 646 项；离线模式 598 passed、1 skipped、47 deselected。Black 对本轮 25 个 Python 改动文件检查通过；mypy 对 18 个重点源码文件零错误；A1 与 A7 闸门均 0 HARD FAIL / 0 WARN。`real_network` 本轮未重跑。运行状态以当次命令输出为准，完整过程见 `docs/PROJECT_AUDIT_REMEDIATION_20260928.md`。
 - 修改后按 `AGENTS.md` §8 做数据契约影响调查，并按 §9 验证；每次改动记录一个可计数指标。
-- `.gitignore` 排除可重建缓存和采集原始数据，同时保留说明文件及明确列出的本地辅助文件。
+- `.gitignore` 对运行时缓存和采集原始数据按路径规则处理；清理前应保留仍需离线复核的研究证据。
 
 ## 4. 文档索引
 

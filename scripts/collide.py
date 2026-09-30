@@ -31,8 +31,8 @@ field_dict.md 后由 sanctioned 管线（extract_registry → gen_field_dict →
 
 用法
 ----
-    python scripts/collide.py                 # 默认近 7 天窗口，全量对撞
-    python scripts/collide.py --window 14     # 近 14 天
+    python scripts/collide.py                 # 默认近 7 个交易日，事件源按近 7 个自然日
+    python scripts/collide.py --window 14     # 近 14 个交易日 + 14 个自然日事件窗口
     python scripts/collide.py --all           # 全部历史日期
     python scripts/collide.py --date 20260913 # 指定报告日期戳
     python scripts/collide.py --limit 20      # 仅取前 20 个左字段（自测用）
@@ -44,11 +44,55 @@ from __future__ import annotations
 import os
 import sys
 import json
+import hashlib
+import heapq
 import math
-import glob
 import argparse
+import re
 from collections import defaultdict
 from datetime import date
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from scripts.collision_dates import (
+        CALENDAR,
+        EXCLUDED_MARKET_DATES,
+        TRADING,
+        discover_capture_folders,
+        event_record_date,
+        is_calendar_event_source,
+        parse_date,
+        sample_date_key,
+        select_folder_window,
+        select_snapshots,
+    )
+else:
+    try:
+        from collision_dates import (
+            CALENDAR,
+            EXCLUDED_MARKET_DATES,
+            TRADING,
+            discover_capture_folders,
+            event_record_date,
+            is_calendar_event_source,
+            parse_date,
+            sample_date_key,
+            select_folder_window,
+            select_snapshots,
+        )
+    except ImportError:
+        from scripts.collision_dates import (
+            CALENDAR,
+            EXCLUDED_MARKET_DATES,
+            TRADING,
+            discover_capture_folders,
+            event_record_date,
+            is_calendar_event_source,
+            parse_date,
+            sample_date_key,
+            select_folder_window,
+            select_snapshots,
+        )
 
 try:
     import collision_rules as CR
@@ -79,17 +123,25 @@ if RULES_OK:
 else:
     RATIO_STEPS_SIGNED = {1, 10, 100, 1000, 10000, 0.1, 0.01, 0.001, 0.0001}
 
-MIN_PAIR = 8  # 一对字段最少需对齐的 (code,date) 样本数
+MIN_PAIR = 8  # 候选对最少总样本数
+MIN_DAILY_L1 = CR.MIN_DAILY_SAMPLES_L1 if RULES_OK else 18
+MIN_DAILY_L4 = CR.MIN_DAILY_SAMPLES_L4 if RULES_OK else 8
+MIN_CANDIDATE_PAIRS = 12  # 方法候选最少配对样本
+MAX_METHOD_CANDIDATES = 500
 HUB_MAX = 6  # 单字段匹配超过此数 → 巧合，降级
 CONST_MAX_DISTINCT = 1  # 不同值 ≤1 → 常量，跳过
 ID_SUFFIX_HINTS = ("market", "code", "date", "name", "thscode", "ticker", "url", "host", "secid")
+SOURCE_FAMILY_ALIAS = {
+    "push2_full": "push2",
+    "em_fund_flow": "push2",  # shares the same Eastmoney stock/get response family
+}
 
 # 剔除已知异常采集日（数据质量缺陷，不可参与对撞）：
 # - 20260814：盘中快照（采集 start=10:49:53，其余日均为 15:00–17:09 收盘后）→
 #   当日 change_pct 在 19/20 股同时失配（单日全市场同向，是采集时点问题非字段问题）。
 # - 20260815 等周末/节假日目录: 已随 V17.4.21 历史清理被删除(数据回退至真实数据日目录), 不再存在, 故移除。
 #   仅保留 20260814(盘中10:49快照, 无法回溯为收盘数据, 仍剔除避免对撞污染)。
-EXCLUDE_DIRS = {"20260814"}
+EXCLUDE_DIRS = set(EXCLUDED_MARKET_DATES)
 
 
 # ───────────────────────────────────────────────────────────────────────
@@ -139,7 +191,7 @@ def _flatten(rec, source, scheme, code, date, out):
     """把单只股票的原始记录扁平化为 (fid, value) 列表，写入 out。"""
     if not isinstance(rec, dict):
         return
-    if rec.get("__error__"):
+    if rec.get("__error__") or "__skipped__" in rec:
         return
 
     # 形态 A：fN 字典（ulist239 / push2_full / push2）
@@ -148,6 +200,8 @@ def _flatten(rec, source, scheme, code, date, out):
         (isinstance(k, str) and (k.startswith("f") and k[1:].isdigit())) for k in data
     ):
         for k, v in data.items():
+            if k in ("__error__", "__skipped__"):
+                continue
             out.append((f"{source}.{k}", v))
         return
 
@@ -160,11 +214,20 @@ def _flatten(rec, source, scheme, code, date, out):
 
     # 形态 C：嵌套名典 / 标量（zhb full/stat/stat2/tipinfo、tdx quote_full/finance_info、fuyao *、…）
     for sub, subv in rec.items():
-        if sub in ("scheme", "n_fields", "url", "host", "secid", "zhb_date"):
+        if sub in (
+            "scheme",
+            "n_fields",
+            "url",
+            "host",
+            "secid",
+            "zhb_date",
+            "__error__",
+            "__skipped__",
+        ):
             continue
         if isinstance(subv, dict):
             for k, v in subv.items():
-                if isinstance(v, (dict, list)):
+                if k in ("__error__", "__skipped__") or isinstance(v, (dict, list)):
                     continue
                 out.append((f"{source}.{sub}.{k}", v))
         elif isinstance(subv, (int, float, str)) and not isinstance(subv, bool):
@@ -172,99 +235,170 @@ def _flatten(rec, source, scheme, code, date, out):
         # 列表 / None 跳过
 
 
-def load_date(date_dir, store):
-    """加载某个日期目录下的所有 raw_*.json，累加到 store。
+def _record_containers(doc, source=None):
+    """Return supported stock, record, and market-level record containers."""
+    containers = []
+    stocks = doc.get("stocks")
+    if isinstance(stocks, dict):
+        containers.append(stocks)
+        if source and is_calendar_event_source(source):
+            for stock_code, stock_record in stocks.items():
+                if isinstance(stock_record, list):
+                    containers.append(
+                        {
+                            f"{stock_code}#event{index}": record
+                            for index, record in enumerate(stock_record)
+                            if isinstance(record, dict)
+                        }
+                    )
+                elif isinstance(stock_record, dict):
+                    for key in ("records", "items", "announcements", "reports", "news"):
+                        nested = stock_record.get(key)
+                        if isinstance(nested, list):
+                            containers.append(
+                                {
+                                    f"{stock_code}#{key}{index}": record
+                                    for index, record in enumerate(nested)
+                                    if isinstance(record, dict)
+                                }
+                            )
+    records = doc.get("records")
+    if isinstance(records, dict):
+        containers.append(records)
+    elif isinstance(records, list):
+        containers.append({f"__{i}": value for i, value in enumerate(records)})
+    for key, value in doc.items():
+        if key in ("scheme", "field_meta", "zhb_date", "stocks", "records"):
+            continue
+        if (
+            isinstance(value, dict)
+            and value
+            and all(isinstance(item, (dict, list)) for item in value.values())
+        ):
+            containers.append(value)
+        elif isinstance(value, list) and value and all(isinstance(item, dict) for item in value):
+            containers.append({f"__{i}": item for i, item in enumerate(value)})
+    return containers
 
-    V17.3 同步更新（2026-09-20）：除逐股容器 ``stocks`` 外，亦摄入顶层 ``records``
-    （板块/龙虎榜等市场级结构化列表，如 clist / exchange）与其它顶层 dict/list 容器
-    （cls / em_hot / push2ex / market_sources / ftshare.market / eltdx.global_helpers 等），
-    使主字典已登记的 6 个市场级源不再因仅识别 ``stocks`` 而被静默丢弃
-    （旧逻辑曾将 clist/exchange/cls/em_hot/push2ex/market_sources 共 138 注册字段整段漏载）。
-    非逐股记录的 code 取记录自身标识(zqdm/f12/code/ticker)或容器下标，
-    不与逐股 (code,date) 重合，故不会污染逐股对撞，仅作为跨源锚/候选可用。
-    """
-    d = os.path.join(DATA_DIR, date_dir)
-    if not os.path.isdir(d):
-        return 0
-    if date_dir in EXCLUDE_DIRS:
-        return 0
-    # 读取 meta.json 的权威数据日(采集时落盘 data_date), 用于非 ZHB 源碰撞键。
-    # V17.4.x 起采集脚本文件夹名=实际数据日, 并在 meta 记录 data_date(数据日)/run_date(运行日);
-    # 旧版文件夹名=运行日, 此处优先采用 meta.data_date 以对齐到真实数据日(根治假日错位)。
-    _meta_data_date = None
-    _meta_path = os.path.join(d, "meta.json")
-    if os.path.isfile(_meta_path):
-        try:
-            _m = json.load(open(_meta_path, encoding="utf-8"))
-            _meta_data_date = _m.get("data_date") or _m.get("date")
-        except Exception:
-            _meta_data_date = None
-    cnt = 0
-    for fp in sorted(glob.glob(os.path.join(d, "raw_*.json"))):
-        base = os.path.basename(fp)
-        src = base[len("raw_") : -len(".json")]
-        if src in ("meta", "completeness_audit"):
-            continue
-        try:
-            doc = json.load(open(fp, encoding="utf-8"))
-        except Exception:
-            continue
-        if not isinstance(doc, dict):
-            continue
+
+def _event_identity(source, record, container_code, entity_code):
+    """Use a shared title fingerprint or a source-scoped fallback event id."""
+    title = next(
+        (
+            record.get(key)
+            for key in ("title", "announcementTitle", "announcement_title", "headline", "question")
+            if record.get(key) not in (None, "")
+        ),
+        None,
+    )
+    if title is not None:
+        normalized_title = re.sub(r"\s+", " ", str(title)).strip().casefold()
+        if normalized_title:
+            fingerprint = hashlib.sha256(normalized_title.encode("utf-8")).hexdigest()[:20]
+            return f"shared:{entity_code}:{fingerprint}"
+    source_id = (
+        record.get("id")
+        or record.get("announcementId")
+        or record.get("reportId")
+        or record.get("question_id")
+        or record.get("answer_id")
+        or container_code
+    )
+    return f"source:{source}:{source_id}"
+
+
+def load_snapshots(snapshots, store, diagnostics, event_start=None, event_end=None):
+    """Flatten selected source snapshots using domain-qualified sample dates."""
+    total = 0
+    sample_ranks = {}
+    duplicate_count = 0
+    duplicate_examples = []
+    undated_event_counts = defaultdict(int)
+    future_event_counts = defaultdict(int)
+    for snapshot in snapshots:
+        doc = snapshot.document
         scheme = doc.get("scheme")
-        # 数据日判定（V17.4.x 与采集脚本对齐）：
-        # - 非 ZHB 源：优先采用 meta.json 的 data_date(采集时权威数据日); 缺省回落 date_dir(文件夹名, 现已=数据日)。
-        # - ZHB 源：ZHB 包内 zhb_date 为 ZHB 自有"as of"日期, 与文件夹名/运行日均可能差 1 个交易日,
-        #   必须单独用 zhb_date 作碰撞键, 否则与所有外源恒差 1 个交易日(P0-① 修复, 持续有效)。
-        _date_key = date_dir
-        if src == "zhb":
-            zd = doc.get("zhb_date")
-            if zd:
-                _date_key = str(zd)
-        else:
-            if _meta_data_date:
-                _date_key = str(_meta_data_date)
-        # 收集所有可展平的顶层容器（dict-of-rec 或 list-of-rec）
-        containers = []
-        stocks = doc.get("stocks")
-        if isinstance(stocks, dict):
-            containers.append(stocks)
-        records = doc.get("records")
-        if isinstance(records, dict):
-            containers.append(records)
-        elif isinstance(records, list):
-            containers.append({f"__{i}": v for i, v in enumerate(records)})
-        # 其它顶层 dict/list 容器（市场级源：cls/em_hot/push2ex/market_sources/...）
-        for k, v in doc.items():
-            if k in ("scheme", "field_meta", "zhb_date", "stocks", "records"):
-                continue
-            if isinstance(v, dict) and v and all(isinstance(x, (dict, list)) for x in v.values()):
-                containers.append(v)
-            elif isinstance(v, list) and v and all(isinstance(x, dict) for x in v):
-                containers.append({f"__{i}": x for i, x in enumerate(v)})
-        if not containers:
-            continue
-        for cont in containers:
-            for code, rec in cont.items():
+        for container in _record_containers(doc, snapshot.source):
+            for container_code, rec in container.items():
                 if not isinstance(rec, dict):
                     continue
-                # 非逐股记录：优先取自身股票/板块标识作为碰撞键
-                _code = (
+                sample_day = snapshot.sample_date
+                if snapshot.domain == CALENDAR:
+                    event_day = event_record_date(snapshot.source, rec)
+                    if event_day is None:
+                        undated_event_counts[(snapshot.folder, snapshot.source)] += 1
+                        continue
+                    if event_start is not None and event_day < event_start:
+                        continue
+                    if event_end is not None and event_day > event_end:
+                        future_event_counts[(snapshot.folder, snapshot.source)] += 1
+                        continue
+                    sample_day = event_day
+                    day_key = sample_date_key(CALENDAR, event_day)
+                else:
+                    day_key = snapshot.day_key
+
+                raw_code = (
                     rec.get("zqdm")
                     or rec.get("f12")
                     or rec.get("code")
+                    or rec.get("stockCode")
+                    or rec.get("stock_code")
+                    or rec.get("SECURITY_CODE")
                     or rec.get("ticker")
-                    or code
                 )
-                _code = str(_code)
+                code = str(raw_code or container_code)
+                if snapshot.domain == CALENDAR:
+                    entity_code = str(raw_code or "")
+                    if not entity_code and re.fullmatch(r"\d{6,}", str(container_code)):
+                        entity_code = str(container_code)
+                    event_id = _event_identity(snapshot.source, rec, container_code, entity_code)
+                    code = f"{code}#event:{event_id}"
                 pairs = []
-                _flatten(rec, src, scheme, _code, date_dir, pairs)
-                for fid, val in pairs:
-                    store[fid]["vals"][(_code, _date_key)] = val
+                _flatten(rec, snapshot.source, scheme, code, day_key, pairs)
+                for fid, value in pairs:
+                    key = (code, day_key)
+                    rank_key = (fid, key)
+                    previous_rank = sample_ranks.get(rank_key)
+                    if previous_rank is not None and snapshot.rank < previous_rank:
+                        duplicate_count += 1
+                        if len(duplicate_examples) < 10:
+                            duplicate_examples.append(f"{fid}/{code}/{day_key}")
+                        continue
+                    if previous_rank is not None:
+                        duplicate_count += 1
+                        if len(duplicate_examples) < 10:
+                            duplicate_examples.append(f"{fid}/{code}/{day_key}")
+                    store[fid]["vals"][key] = value
+                    store[fid].setdefault("sample_meta", {})[key] = {
+                        "phase": snapshot.phase,
+                        "source": snapshot.source,
+                        "capture_folder": snapshot.folder,
+                        "capture_date": snapshot.capture_date.strftime("%Y%m%d"),
+                        "as_of_date": sample_day.strftime("%Y%m%d"),
+                        "as_of_date_origin": snapshot.date_origin,
+                        "captured_at": (
+                            snapshot.captured_at.isoformat(timespec="seconds")
+                            if snapshot.captured_at
+                            else None
+                        ),
+                        "status": snapshot.status,
+                        "domain": snapshot.domain,
+                    }
                     store[fid]["scheme"] = scheme
-                    store[fid]["src"] = src
-                cnt += len(pairs)
-    return cnt
+                    store[fid]["src"] = snapshot.source
+                    sample_ranks[rank_key] = snapshot.rank
+                    total += 1
+    if duplicate_count:
+        diagnostics.append(
+            f"折叠 {duplicate_count} 条重复字段样本，按快照质量择优；示例: "
+            + ", ".join(duplicate_examples)
+        )
+    for (folder, source), count in sorted(undated_event_counts.items()):
+        diagnostics.append(f"{folder}/{source}: {count} 条事件记录缺少可解析的自然日，已跳过")
+    for (folder, source), count in sorted(future_event_counts.items()):
+        diagnostics.append(f"{folder}/{source}: {count} 条事件记录晚于报告日，已跳过")
+    return total
 
 
 # ───────────────────────────────────────────────────────────────────────
@@ -305,75 +439,375 @@ def classify(store):
 # ───────────────────────────────────────────────────────────────────────
 # 对撞核心
 # ───────────────────────────────────────────────────────────────────────
+def _eligible_for_l1(info, key):
+    sample_meta = info.get("sample_meta", {}).get(key, {})
+    return sample_meta.get("phase") in {"closed", "calendar"}
+
+
+def _median(values):
+    ordered = sorted(values)
+    if not ordered:
+        return None
+    middle = len(ordered) // 2
+    if len(ordered) % 2:
+        return ordered[middle]
+    return (ordered[middle - 1] + ordered[middle]) / 2.0
+
+
+def _ratio_step(value):
+    for step in RATIO_STEPS_SIGNED:
+        if step != 1 and math.isclose(value, step, rel_tol=0.005, abs_tol=1e-9):
+            return step
+    return None
+
+
 def collide_pair(L, R):
-    """对撞两个字段；返回结果 dict 或 None。"""
+    """Compare fields with per-session sample floors and independent-day gates."""
+    left_source = str(L.get("src") or "")
+    right_source = str(R.get("src") or "")
+    independent_sources = bool(left_source and right_source) and are_independent_sources(
+        left_source, right_source
+    )
+    if left_source and right_source and not independent_sources:
+        return None
     lv, rv = L["vals"], R["vals"]
     common = set(lv) & set(rv)
     if len(common) < MIN_PAIR:
         return None
 
-    day_stat = defaultdict(lambda: [0, 0])  # date -> [hits, total]
-    ratios = []
-    exact_enum = 0
-    enum_total = 0
-    for k in common:
-        a, b = lv[k], rv[k]
-        da, db = to_num(a), to_num(b)
-        d = k[1]
-        day_stat[d][1] += 1
-        if da is not None and db is not None:
-            if is_close(da, db):
-                day_stat[d][0] += 1
-            elif da != 0 and db != 0:
-                ratios.append(db / da)
+    exact_all = defaultdict(lambda: [0, 0])
+    exact_l1 = defaultdict(lambda: [0, 0])
+    ratios_by_day = defaultdict(list)
+    for key in common:
+        a, b = lv[key], rv[key]
+        left_num, right_num = to_num(a), to_num(b)
+        day_key = key[1]
+        exact_all[day_key][1] += 1
+        l1_eligible = _eligible_for_l1(L, key) and _eligible_for_l1(R, key)
+        if l1_eligible:
+            exact_l1[day_key][1] += 1
+        if left_num is not None and right_num is not None:
+            matched = is_close(left_num, right_num)
+            if matched:
+                exact_all[day_key][0] += 1
+                if l1_eligible:
+                    exact_l1[day_key][0] += 1
+            if left_num != 0 and right_num != 0:
+                ratios_by_day[day_key].append((right_num / left_num, l1_eligible))
         else:
-            enum_total += 1
-            if str(a) == str(b):
-                day_stat[d][0] += 1
-                exact_enum += 1
+            matched = str(a) == str(b)
+            if matched:
+                exact_all[day_key][0] += 1
+                if l1_eligible:
+                    exact_l1[day_key][0] += 1
 
-    day_rates = [h / t for h, t in day_stat.values() if t > 0]
-    n_days = len(day_rates)
-    days_ge = sum(1 for r in day_rates if r >= HIT_RATE_L1_RATIO)
-    total_h = sum(h for h, _ in day_stat.values())
-    total_t = sum(t for _, t in day_stat.values())
-    overall = (total_h / total_t) if total_t else 0.0
-
-    # 比值族（单位换算）
-    ratio_info = None
-    if ratios:
-        med = sorted(ratios)[len(ratios) // 2]
-        if med in RATIO_STEPS_SIGNED and cv(ratios) <= RATIO_CV_MAX and med != 1:
-            ratio_info = med
-
-    # 判定
-    l1_ok = (
-        days_ge >= MULTI_DAY_MIN
-        and n_days >= MULTI_DAY_MIN
-        and overall >= HIT_RATE_L1_RATIO
+    l1_days = {day: counts for day, counts in exact_l1.items() if counts[1] >= MIN_DAILY_L1}
+    exact_days_ge = sum(hits / total >= HIT_RATE_L1_RATIO for hits, total in l1_days.values())
+    exact_total_hits = sum(hits for hits, _ in l1_days.values())
+    exact_total = sum(total for _, total in l1_days.values())
+    exact_overall = exact_total_hits / exact_total if exact_total else 0.0
+    exact_l1_ok = (
+        len(l1_days) >= MULTI_DAY_MIN
+        and exact_days_ge >= MULTI_DAY_MIN
+        and exact_overall >= HIT_RATE_L1_RATIO
         and not L["is_constant"]
         and not R["is_constant"]
+        and independent_sources
     )
-    if l1_ok:
-        level = "L1-U" if ratio_info else "L1"
-    elif overall >= 0.4 and days_ge >= 1:
-        level = "L4"
-    else:
-        level = None
 
-    if level is None:
-        return None
+    # A unit-ratio conclusion needs enough independent non-zero observations on
+    # every day; exact hits and undefined 0/0 ratios cannot establish a scale.
+    all_ratios = [
+        ratio for values in ratios_by_day.values() for ratio, l1_eligible in values if l1_eligible
+    ]
+    ratio_info = None
+    ratio_days = {}
+    ratio_days_ge = 0
+    ratio_overall = 0.0
+    if all_ratios:
+        median_ratio = _median(all_ratios)
+        ratio_info = _ratio_step(median_ratio)
+        if (
+            ratio_info is not None
+            and len(all_ratios) >= MIN_DAILY_L1 * MULTI_DAY_MIN
+            and cv(all_ratios) <= RATIO_CV_MAX
+        ):
+            for day, observations in ratios_by_day.items():
+                valid_ratios = [ratio for ratio, eligible in observations if eligible]
+                if len(valid_ratios) < MIN_DAILY_L1:
+                    continue
+                hits = sum(
+                    math.isclose(ratio, ratio_info, rel_tol=0.005, abs_tol=1e-9)
+                    for ratio in valid_ratios
+                )
+                ratio_days[day] = (hits, len(valid_ratios))
+            ratio_days_ge = sum(
+                hits / total >= HIT_RATE_L1_RATIO for hits, total in ratio_days.values()
+            )
+            ratio_total_hits = sum(hits for hits, _ in ratio_days.values())
+            ratio_total = sum(total for _, total in ratio_days.values())
+            ratio_overall = ratio_total_hits / ratio_total if ratio_total else 0.0
+            if not (
+                len(ratio_days) >= MULTI_DAY_MIN
+                and ratio_days_ge >= MULTI_DAY_MIN
+                and ratio_overall >= HIT_RATE_L1_RATIO
+            ):
+                ratio_info = None
+        else:
+            ratio_info = None
+
+    if exact_l1_ok:
+        level = "L1"
+        selected_days = l1_days
+        overall = exact_overall
+        days_ge = exact_days_ge
+    elif (
+        ratio_info is not None
+        and not L["is_constant"]
+        and not R["is_constant"]
+        and independent_sources
+    ):
+        level = "L1-U"
+        selected_days = ratio_days
+        overall = ratio_overall
+        days_ge = ratio_days_ge
+    else:
+        l4_days = {day: counts for day, counts in exact_all.items() if counts[1] >= MIN_DAILY_L4}
+        l4_total = sum(total for _, total in l4_days.values())
+        l4_hits = sum(hits for hits, _ in l4_days.values())
+        l4_overall = l4_hits / l4_total if l4_total else 0.0
+        if l4_overall >= 0.4 and l4_days:
+            level = "L4"
+            selected_days = l4_days
+            overall = l4_overall
+            days_ge = sum(hits / total >= HIT_RATE_L1_RATIO for hits, total in l4_days.values())
+        else:
+            return None
 
     return {
         "left": None,
-        "right": None,  # 由调用方填
+        "right": None,
         "level": level,
-        "ratio": ratio_info,
+        "ratio": ratio_info if level == "L1-U" else None,
         "overall_hit": round(overall, 4),
         "days_ge_threshold": days_ge,
-        "n_days": n_days,
-        "n_pairs": total_t,
-        "distinct_days": sorted(day_stat.keys()),
+        "n_days": len(selected_days),
+        "n_pairs": sum(total for _, total in selected_days.values()),
+        "distinct_days": sorted(selected_days),
+        "daily_sample_counts": {day: total for day, (_, total) in selected_days.items()},
+        "excluded_intraday_pairs": sum(
+            1
+            for key in common
+            if L.get("sample_meta", {}).get(key, {}).get("phase") == "intraday"
+            or R.get("sample_meta", {}).get(key, {}).get("phase") == "intraday"
+        ),
+        "excluded_unknown_phase_pairs": sum(
+            1
+            for key in common
+            if L.get("sample_meta", {}).get(key, {}).get("phase") not in {"closed", "calendar"}
+            or R.get("sample_meta", {}).get(key, {}).get("phase") not in {"closed", "calendar"}
+        ),
+    }
+
+
+def _pearson(x_values, y_values):
+    if len(x_values) != len(y_values) or len(x_values) < 3:
+        return None
+    x_mean = sum(x_values) / len(x_values)
+    y_mean = sum(y_values) / len(y_values)
+    x_delta = [value - x_mean for value in x_values]
+    y_delta = [value - y_mean for value in y_values]
+    x_sum = sum(value * value for value in x_delta)
+    y_sum = sum(value * value for value in y_delta)
+    if x_sum <= 0 or y_sum <= 0:
+        return None
+    return sum(a * b for a, b in zip(x_delta, y_delta)) / math.sqrt(x_sum * y_sum)
+
+
+def _ranks(values):
+    order = sorted(range(len(values)), key=values.__getitem__)
+    result = [0.0] * len(values)
+    offset = 0
+    while offset < len(order):
+        end = offset + 1
+        while end < len(order) and values[order[end]] == values[order[offset]]:
+            end += 1
+        rank = ((offset + 1) + end) / 2.0
+        for position in range(offset, end):
+            result[order[position]] = rank
+        offset = end
+    return result
+
+
+def _correlation_metrics(x_values, y_values):
+    pearson = _pearson(x_values, y_values)
+    if pearson is None:
+        return None
+    spearman = _pearson(_ranks(x_values), _ranks(y_values))
+    leave_one_out = []
+    if len(x_values) >= 5:
+        count = len(x_values)
+        x_mean = sum(x_values) / count
+        y_mean = sum(y_values) / count
+        x_delta = [value - x_mean for value in x_values]
+        y_delta = [value - y_mean for value in y_values]
+        covariance = sum(x * y for x, y in zip(x_delta, y_delta))
+        x_variance = sum(x * x for x in x_delta)
+        y_variance = sum(y * y for y in y_delta)
+        multiplier = count / (count - 1)
+        for x, y in zip(x_delta, y_delta):
+            reduced_covariance = covariance - multiplier * x * y
+            reduced_x_variance = x_variance - multiplier * x * x
+            reduced_y_variance = y_variance - multiplier * y * y
+            if reduced_x_variance <= 0 or reduced_y_variance <= 0:
+                continue
+            leave_one_out.append(
+                reduced_covariance / math.sqrt(reduced_x_variance * reduced_y_variance)
+            )
+    sign_stable = (
+        len(leave_one_out) == len(x_values)
+        and pearson != 0
+        and all(value != 0 and (value > 0) == (pearson > 0) for value in leave_one_out)
+    )
+    return {
+        "pearson": pearson,
+        "spearman": spearman,
+        "leave_one_out_sign_stable": sign_stable,
+        "leave_one_out_min": min(leave_one_out) if leave_one_out else None,
+        "leave_one_out_max": max(leave_one_out) if leave_one_out else None,
+    }
+
+
+def _temporal_candidate(common, left_values, right_values):
+    per_code = defaultdict(list)
+    for key in common:
+        code, day_key = key
+        if not str(day_key).startswith("T:"):
+            continue
+        left_num, right_num = to_num(left_values[key]), to_num(right_values[key])
+        if left_num is not None and right_num is not None:
+            per_code[code].append((day_key, left_num, right_num))
+    correlations = []
+    used_days = set()
+    for code, rows in per_code.items():
+        rows.sort(key=lambda item: item[0])
+        if len(rows) < 3:
+            continue
+        value = _pearson([row[1] for row in rows], [row[2] for row in rows])
+        if value is not None:
+            correlations.append((code, value, [row[0] for row in rows]))
+            used_days.update(row[0] for row in rows)
+    if len(correlations) < 3:
+        return None
+    signs = [1 if value > 0 else -1 for _, value, _ in correlations if value != 0]
+    if not signs:
+        return None
+    dominant = 1 if sum(signs) >= 0 else -1
+    sign_consistency = sum(sign == dominant for sign in signs) / len(signs)
+    median_abs = _median([abs(value) for _, value, _ in correlations]) or 0.0
+    if median_abs < 0.7 or sign_consistency < 0.8:
+        return None
+    return {
+        "method": "per_stock_time_series",
+        "median_abs_pearson": round(median_abs, 4),
+        "sign_consistency": round(sign_consistency, 4),
+        "stocks": len(correlations),
+        "stock_correlations": [
+            {"code": code, "pearson": round(value, 4), "dates": dates}
+            for code, value, dates in correlations[:20]
+        ],
+        "sample_dates": sorted(used_days),
+    }
+
+
+def _semantic_tokens(fid):
+    label = code_of(fid).lower()
+    if re.fullmatch(r"(?:f\d+|tx\[\d+\])", label):
+        return set()
+    tokens = set(re.findall(r"[a-z]+|\d+|[\u4e00-\u9fff]+", label))
+    return {token for token in tokens if not token.isdigit()}
+
+
+def method_candidates_for_pair(left_id, right_id, L, R):
+    """Return non-final semantic, formula, temporal, and robust-correlation clues."""
+    common = sorted(set(L["vals"]) & set(R["vals"]), key=lambda item: (item[1], item[0]))
+    if len(common) < MIN_CANDIDATE_PAIRS:
+        return None
+    numeric = []
+    for key in common:
+        left_num = to_num(L["vals"][key])
+        right_num = to_num(R["vals"][key])
+        if left_num is not None and right_num is not None:
+            numeric.append((key, left_num, right_num))
+    if len(numeric) < MIN_CANDIDATE_PAIRS:
+        return None
+
+    x_values = [row[1] for row in numeric]
+    y_values = [row[2] for row in numeric]
+    correlations = _correlation_metrics(x_values, y_values)
+    methods = []
+    if correlations is not None:
+        pearson = correlations["pearson"]
+        spearman = correlations["spearman"]
+        if (
+            spearman is not None
+            and abs(spearman) >= (CR.CORR_SPEARMAN_MIN if RULES_OK else 0.6)
+            and pearson * spearman > 0
+            and correlations["leave_one_out_sign_stable"]
+        ):
+            methods.append(
+                {
+                    "method": "robust_correlation",
+                    **{
+                        key: round(value, 4) if isinstance(value, float) else value
+                        for key, value in correlations.items()
+                    },
+                }
+            )
+        if abs(pearson) >= 0.98:
+            x_mean = sum(x_values) / len(x_values)
+            y_mean = sum(y_values) / len(y_values)
+            x_var = sum((value - x_mean) ** 2 for value in x_values)
+            if x_var > 0:
+                slope = sum((x - x_mean) * (y - y_mean) for x, y in zip(x_values, y_values)) / x_var
+                intercept = y_mean - slope * x_mean
+                methods.append(
+                    {
+                        "method": "affine_formula",
+                        "formula": f"right ≈ {slope:.8g} × left + {intercept:.8g}",
+                        "r_squared": round(pearson * pearson, 6),
+                    }
+                )
+    temporal = _temporal_candidate([row[0] for row in numeric], L["vals"], R["vals"])
+    if temporal is not None:
+        methods.append(temporal)
+
+    left_tokens = _semantic_tokens(left_id)
+    right_tokens = _semantic_tokens(right_id)
+    if left_tokens and right_tokens:
+        overlap = len(left_tokens & right_tokens) / len(left_tokens | right_tokens)
+        if overlap >= 0.5:
+            methods.append(
+                {
+                    "method": "semantic_label",
+                    "shared_tokens": sorted(left_tokens & right_tokens),
+                    "token_jaccard": round(overlap, 4),
+                }
+            )
+    if not methods:
+        return None
+
+    sample_dates = sorted({row[0][1] for row in numeric})
+    evidence_sources = sorted({str(L.get("src") or ""), str(R.get("src") or "")})
+    evidence_sources = [source for source in evidence_sources if source]
+    return {
+        "left": left_id,
+        "right": right_id,
+        "methods": methods,
+        "sample_count": len(numeric),
+        "sample_dates": sample_dates,
+        "evidence_sources": evidence_sources,
+        "sample_codes": sorted({row[0][0] for row in numeric})[:20],
     }
 
 
@@ -504,6 +938,16 @@ def alias_src(fid):
     return REG_ALIAS.get(norm_src_of(fid), norm_src_of(fid))
 
 
+def evidence_source_family(fid):
+    """Return the independent evidence producer behind a field's source alias."""
+    source = alias_src(fid)
+    return SOURCE_FAMILY_ALIAS.get(source, source)
+
+
+def are_independent_sources(left_fid, right_fid):
+    return evidence_source_family(left_fid) != evidence_source_family(right_fid)
+
+
 def code_of(fid):
     if "[" in fid:
         return fid[fid.index("[") :]
@@ -519,10 +963,53 @@ def is_verified(fid, verified):
 def load_state():
     if os.path.exists(STATE_PATH):
         try:
-            return json.load(open(STATE_PATH, encoding="utf-8"))
-        except Exception:
-            pass
-    return {"version": 1, "findings": {}}
+            with open(STATE_PATH, encoding="utf-8") as handle:
+                state = json.load(handle)
+        except (OSError, UnicodeError, json.JSONDecodeError) as exc:
+            return {
+                "version": 2,
+                "findings": {},
+                "warnings": [f"state 读取失败，未覆盖原文件: {exc}"],
+                "read_error": True,
+            }
+        if not isinstance(state, dict):
+            return {
+                "version": 2,
+                "findings": {},
+                "warnings": ["state 顶层不是对象，未覆盖原文件"],
+                "read_error": True,
+            }
+        if not isinstance(state.get("findings", {}), dict):
+            return {
+                "version": 2,
+                "findings": {},
+                "warnings": ["state.findings 格式无效，未覆盖原文件"],
+                "read_error": True,
+            }
+        version = state.get("version", 1)
+        if not isinstance(version, int) or version > 2:
+            return {
+                "version": 2,
+                "findings": {},
+                "warnings": [f"collision_state 版本 {version!r} 不受支持，未覆盖原文件"],
+                "read_error": True,
+            }
+        if version < 2:
+            old_findings = state.get("findings", {})
+            migrated = {
+                "version": 2,
+                "findings": {},
+                "legacy_findings_v1": old_findings,
+                "legacy_state_version": version,
+                "warnings": [
+                    f"collision_state v{version} 已归档到 legacy_findings_v1；旧 L1 不再自动视为当前确认"
+                ],
+            }
+            return migrated
+        state.setdefault("findings", {})
+        state.setdefault("warnings", [])
+        return state
+    return {"version": 2, "findings": {}, "warnings": []}
 
 
 def save_state(st):
@@ -534,25 +1021,59 @@ def save_state(st):
 # 主流程
 # ───────────────────────────────────────────────────────────────────────
 def run(args):
-    # 1) 收集日期窗口
-    all_dates = sorted(
-        d
-        for d in os.listdir(DATA_DIR)
-        if os.path.isdir(os.path.join(DATA_DIR, d)) and d[:2] == "20"
-    )
-    if args.all:
-        window_dates = all_dates
-    else:
-        window_dates = all_dates[-max(1, args.window) :]
+    report_day = parse_date(args.date) if args.date else date.today()
+    if report_day is None:
+        raise ValueError(f"报告日期格式无效: {args.date}")
+    today = report_day.strftime("%Y%m%d")
 
-    # 2) 加载数据
-    store = defaultdict(lambda: {"vals": {}, "scheme": None, "src": None})
-    total = 0
-    for d in window_dates:
-        total += load_date(d, store)
+    # 1) Use distinct source data sessions and a separate natural-day event window.
+    folders, discovery_warnings = discover_capture_folders(DATA_DIR)
+    diagnostics = list(discovery_warnings)
+    folder_window = select_folder_window(
+        folders,
+        args.window,
+        report_day,
+        args.all,
+        excluded_trading_dates=EXCLUDE_DIRS,
+    )
+    diagnostics.extend(folder_window.warnings)
+    snapshots, snapshot_warnings = select_snapshots(
+        folder_window.folders,
+        allowed_trading_folders=folder_window.market_folders,
+        allowed_event_folders=folder_window.event_folders,
+    )
+    diagnostics.extend(snapshot_warnings)
+    usable_snapshots = []
+    for snapshot in snapshots:
+        if snapshot.domain == TRADING and snapshot.sample_date > report_day:
+            diagnostics.append(
+                f"{snapshot.folder}/{snapshot.source}: as_of_date {snapshot.sample_date:%Y%m%d} "
+                f"晚于报告日 {today}，行情快照不纳入本轮"
+            )
+            continue
+        if snapshot.domain == TRADING and snapshot.sample_date.strftime("%Y%m%d") in EXCLUDE_DIRS:
+            diagnostics.append(
+                f"{snapshot.folder}/{snapshot.source}: 异常行情数据日 "
+                f"{snapshot.sample_date:%Y%m%d} 已排除；同目录自然日事件仍可参与"
+            )
+            continue
+        usable_snapshots.append(snapshot)
+    snapshots = usable_snapshots
+
+    # 2) Load only quality-selected source snapshots; sample keys include date domain.
+    store = defaultdict(lambda: {"vals": {}, "scheme": None, "src": None, "sample_meta": {}})
+    total = load_snapshots(
+        snapshots,
+        store,
+        diagnostics,
+        event_start=folder_window.event_start,
+        event_end=folder_window.event_end,
+    )
     classify(store)
     print(
-        f"[collide] 加载 {len(window_dates)} 个日期、{len(store)} 个字段、{total} 条样本值",
+        f"[collide] 加载 {len(folder_window.folders)} 个采集目录、"
+        f"{len(folder_window.trading_dates)} 个有效交易日、{len(store)} 个字段、"
+        f"{total} 条样本值",
         file=sys.stderr,
     )
 
@@ -585,10 +1106,15 @@ def run(args):
     # 5) 两两对撞
     raw_pairs = []  # (left, right, result)
     guardrail_hits = []  # 命中 REFUTED_CONCLUSIONS 被拦截的伪结论候选
+    method_candidate_heap = []
+    method_candidate_count = 0
+    method_candidate_sequence = 0
     for li in left_ids:
         L = store[li]
         for ri in right_ids:
             if li == ri:
+                continue
+            if not are_independent_sources(li, ri):
                 continue
             R = store[ri]
             if L["type"] != R["type"]:
@@ -596,22 +1122,57 @@ def run(args):
             if L["type"] == "num" and not range_overlap(L, R):
                 continue
             res = collide_pair(L, R)
+            refuted = CR.match_refuted(li, ri) if RULES_OK else None
+            if refuted is None:
+                method_candidate = method_candidates_for_pair(li, ri, L, R)
+                if method_candidate is not None:
+                    method_candidate_count += 1
+                    method_candidate_sequence += 1
+                    score = (
+                        len(method_candidate["methods"]),
+                        method_candidate["sample_count"],
+                        method_candidate["left"],
+                        method_candidate["right"],
+                    )
+                    item = (score, method_candidate_sequence, method_candidate)
+                    if len(method_candidate_heap) < MAX_METHOD_CANDIDATES:
+                        heapq.heappush(method_candidate_heap, item)
+                    elif score > method_candidate_heap[0][0]:
+                        heapq.heapreplace(method_candidate_heap, item)
             if res:
-                ref = CR.match_refuted(li, ri) if RULES_OK else None
-                if ref is not None:
+                if refuted is not None:
                     guardrail_hits.append(
                         {
                             "left": li,
                             "right": ri,
-                            "id": ref["id"],
-                            "false_claim": ref["false_claim"],
+                            "id": refuted["id"],
+                            "false_claim": refuted["false_claim"],
                         }
                     )
                     continue
                 res["left"] = li
                 res["right"] = ri
                 res["same_code"] = code_of(li) == code_of(ri)
+                res["evidence_sources"] = sorted(
+                    {evidence_source_family(li), evidence_source_family(ri)}
+                )
                 raw_pairs.append(res)
+
+    method_candidates = [item[2] for item in method_candidate_heap]
+    method_candidates.sort(
+        key=lambda candidate: (
+            len(candidate["methods"]),
+            candidate["sample_count"],
+            candidate["left"],
+            candidate["right"],
+        ),
+        reverse=True,
+    )
+    if method_candidate_count > len(method_candidates):
+        diagnostics.append(
+            f"主动方法候选共 {method_candidate_count} 条，报告保留优先级最高的 "
+            f"{len(method_candidates)} 条"
+        )
 
     # 6) hub 巧合排除：单字段匹配过多 → 降级
     left_count = defaultdict(int)
@@ -627,7 +1188,8 @@ def run(args):
 
     # 7) 增量状态合并
     st = load_state()
-    today = args.date or date.today().strftime("%Y%m%d")
+    diagnostics.extend(st.pop("warnings", []))
+    state_save_allowed = not st.pop("read_error", False)
     findings = st["findings"]
     new_count = 0
     for p in raw_pairs:
@@ -643,6 +1205,10 @@ def run(args):
             "overall_hit": p["overall_hit"],
             "n_days": p["n_days"],
             "n_pairs": p["n_pairs"],
+            "sample_dates": p["distinct_days"],
+            "evidence_sources": sorted(
+                {evidence_source_family(p["left"]), evidence_source_family(p["right"])}
+            ),
             "hub_flag": p.get("hub_flag", False),
             "last_seen": today,
         }
@@ -665,7 +1231,11 @@ def run(args):
         findings[key] = rec
     st["findings"] = findings
     st["updated"] = today
-    save_state(st)
+    if state_save_allowed:
+        save_state(st)
+    else:
+        diagnostics.append("collision_state 未写回：原状态文件格式/读取异常，已保留现场")
+    diagnostics = list(dict.fromkeys(diagnostics))
 
     # 8) 输出报告
     l1 = [p for p in raw_pairs if p["level"] in ("L1", "L1-U")]
@@ -675,7 +1245,7 @@ def run(args):
 
     report_md = build_report_md(
         today,
-        window_dates,
+        list(folder_window.trading_dates),
         len(store),
         total,
         left_ids,
@@ -684,6 +1254,9 @@ def run(args):
         new_count,
         verified,
         guardrail_hits,
+        method_candidates=method_candidates,
+        diagnostics=diagnostics,
+        event_window=(folder_window.event_start, folder_window.event_end),
     )
     out_dir = os.path.join(DATA_DIR, today)
     os.makedirs(out_dir, exist_ok=True)
@@ -693,7 +1266,21 @@ def run(args):
         f.write(report_md)
     with open(json_path, "w", encoding="utf-8") as f:
         json.dump(
-            {"date": today, "window": window_dates, "L1": l1, "L4": l4, "new_count": new_count},
+            {
+                "schema_version": 2,
+                "date": today,
+                "trading_window": list(folder_window.trading_dates),
+                "event_window": {
+                    "start": folder_window.event_start.strftime("%Y%m%d"),
+                    "end": folder_window.event_end.strftime("%Y%m%d"),
+                },
+                "L1": l1,
+                "L4": l4,
+                "method_candidates": method_candidates[:MAX_METHOD_CANDIDATES],
+                "method_candidate_count": method_candidate_count,
+                "diagnostics": list(dict.fromkeys(diagnostics)),
+                "new_count": new_count,
+            },
             f,
             ensure_ascii=False,
             indent=2,
@@ -718,7 +1305,19 @@ def _l1_row(p):
 
 
 def build_report_md(
-    today, window, nfields, nsamples, left_ids, l1, l4, new_count, verified, guardrail_hits
+    today,
+    window,
+    nfields,
+    nsamples,
+    left_ids,
+    l1,
+    l4,
+    new_count,
+    verified,
+    guardrail_hits,
+    method_candidates=None,
+    diagnostics=None,
+    event_window=None,
 ):
     # 拆分：异号同义（跨编号，高价值）优先；同号镜像（同编号）次之
     cross = [p for p in l1 if not p.get("same_code")]
@@ -728,16 +1327,21 @@ def build_report_md(
 
     L = []
     L.append(f"# 全源对撞报告（{today}）\n")
+    trading_window = f"{window[0]} ~ {window[-1]}" if window else "无有效交易日样本"
     L.append(
-        f"> 数据窗口：{window[0]} ~ {window[-1]}（{len(window)} 天）｜"
+        f"> 行情窗口：{trading_window}（{len(window)} 个不同交易日）｜"
         f"字段 {nfields} 个｜样本值 {nsamples} 条"
     )
+    if event_window:
+        L.append(f"> 新闻/公告自然日窗口：{event_window[0]:%Y%m%d} ~ {event_window[1]:%Y%m%d}")
     L.append(
         f"> 主攻目标（unverified）={len(left_ids)}｜新增 L1/L1-U 定案={new_count}｜"
         f"异号同义 {len(cross)} / 同号镜像 {len(same)}\n"
     )
     L.append(
-        "> **规则**：精度对齐 + 每日命中率≥0.9 + ≥3 独立日 + hub 巧合排除"
+        f"> **规则**：每个定案日有效样本≥{MIN_DAILY_L1}，命中率≥{HIT_RATE_L1_RATIO:.0%}，"
+        f"至少 {MULTI_DAY_MIN} 个独立交易日/自然事件日；同一来源族不作为跨源证据；"
+        "盘中快照不计入 L1。"
         "（详见 `COLLISION_RULES.md`）。本引擎只发现、不写字典；"
         "新定案经 field_dict.md 订正后由 sanctioned 管线 ingest。\n"
     )
@@ -782,6 +1386,52 @@ def build_report_md(
         L.append("\n_以上候选因命中 REFUTED_CONCLUSIONS（数值实证推翻）已被自动判伪，未进入 L1。_")
     else:
         L.append("_本轮无护栏命中（未产出与已证伪结论冲突的候选）。_\n")
+    method_candidates = method_candidates or []
+    L.append(f"\n## 五、主动方法候选（不直接定案）（{len(method_candidates)}）\n")
+    L.append(
+        "_候选可能来自稳健相关、仿射公式、逐股时间序列或字段标签线索；"
+        "每项保留样本日期和来源，仍需人工复核并以独立证据终判。_\n"
+    )
+    if method_candidates:
+        L.append("| 左字段 | 右字段 | 方法 | 样本 | 日期 | 来源 | 证据摘要 |")
+        L.append("|:--|:--|:--|--:|:--|:--|:--|")
+        for candidate in method_candidates[:100]:
+            method_names = ", ".join(method["method"] for method in candidate["methods"])
+            dates = ", ".join(candidate["sample_dates"][:6])
+            sources = ", ".join(candidate["evidence_sources"])
+            evidence = candidate["methods"][0]
+            if evidence["method"] == "robust_correlation":
+                summary = (
+                    f"Pearson={evidence['pearson']}, Spearman={evidence['spearman']}, "
+                    f"LOO稳号={evidence['leave_one_out_sign_stable']}"
+                )
+            elif evidence["method"] == "affine_formula":
+                summary = evidence["formula"]
+            elif evidence["method"] == "per_stock_time_series":
+                summary = (
+                    f"逐股相关={evidence['median_abs_pearson']}, "
+                    f"方向一致={evidence['sign_consistency']}"
+                )
+            else:
+                summary = ", ".join(evidence.get("shared_tokens", [])) or "标签线索"
+            L.append(
+                f"| `{candidate['left']}` | `{candidate['right']}` | {method_names} | "
+                f"{candidate['sample_count']} | {dates} | {sources} | {summary} |"
+            )
+        if len(method_candidates) > 100:
+            L.append(f"\n_仅显示前 100 / 共 {len(method_candidates)} 条。_\n")
+    else:
+        L.append("_本轮无达到门槛的主动方法候选。_\n")
+
+    diagnostics = list(dict.fromkeys(diagnostics or []))
+    L.append(f"\n## 六、日期与数据质量告警（{len(diagnostics)}）\n")
+    if diagnostics:
+        for message in diagnostics[:100]:
+            L.append(f"- {message}")
+        if len(diagnostics) > 100:
+            L.append(f"- 另有 {len(diagnostics) - 100} 条告警，详见同名 JSON 报告。")
+    else:
+        L.append("_无日期或数据质量告警。_")
     L.append("\n---\n")
     L.append("> 数据来源：通达信 / 项目字段对撞体系。以上为方法论梳理，不构成投资建议。\n")
     return "\n".join(L)
@@ -791,7 +1441,9 @@ def main():
     if RULES_OK:
         CR.print_active_rules()
     ap = argparse.ArgumentParser(description="全源通用对撞引擎")
-    ap.add_argument("--window", type=int, default=7, help="近 N 天窗口（默认 7）")
+    ap.add_argument(
+        "--window", type=int, default=7, help="近 N 个交易日；新闻/公告另取近 N 个自然日（默认 7）"
+    )
     ap.add_argument("--all", action="store_true", help="使用全部历史日期")
     ap.add_argument("--date", type=str, default="", help="报告日期戳（默认今天）")
     ap.add_argument("--limit", type=int, default=0, help="仅取前 N 个左字段（自测）")

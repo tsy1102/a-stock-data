@@ -61,13 +61,20 @@ def _parse_date(s: Any) -> Optional[datetime]:
     return None
 
 
-def _backtrack_days(n: int = 10) -> List[str]:
-    """最近 n 个自然日 YYYY-MM-DD(含今天, 倒序无意义, 正序返回)。"""
+def _backtrack_calendar_days(n: int = 10) -> List[str]:
+    """返回最近 n 个自然日，含今天；供新闻发布日期回查使用。"""
     out, d = [], date.today()
     for _ in range(n):
         out.append(d.strftime("%Y-%m-%d"))
         d -= timedelta(days=1)
     return out
+
+
+def _backtrack_trading_days(n: int = 10) -> List[str]:
+    """返回最近 n 个 A 股交易日，按从新到旧排列。"""
+    from stock_common.stock_calendar import recent_trading_dates
+
+    return [day.isoformat() for day in recent_trading_dates(n)]
 
 
 # ---------------------------------------------------------------------------
@@ -200,7 +207,7 @@ def render_etf_shares_section(today_str: Optional[str] = None) -> List[str]:
             if t.is_alive():
                 return None, None
             return box.get("rows"), (today_str[:10] if today_str else None)
-        for day in _backtrack_days(10):
+        for day in _backtrack_trading_days(10):
             try:
                 rows = etf_shares(day, exchange)
             except Exception:
@@ -292,7 +299,7 @@ def render_cctv_news_section(today_str: Optional[str] = None) -> List[str]:
         from stock_common.sc_datasource import cctv_news
 
         rows = None
-        for day in _backtrack_days(7):
+        for day in _backtrack_calendar_days(7):
             try:
                 rows = cctv_news(day)
             except Exception:

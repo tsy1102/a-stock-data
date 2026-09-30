@@ -1,4 +1,4 @@
-# stock_common/ — 核心公共包(V17.3 演进)
+# stock_common/ — 公共业务与数据适配层
 
 > 定位: 报告脚本与 core/ 之上的公共业务模块——网络传输层、数据源查询、评分/风险/技术指标、报告运行基类、日历、工具函数。
 > 报告脚本与 main.py 通过 `from stock_common import X` 引用；公共导出由包入口的 `__all__` 明确列出。
@@ -39,7 +39,7 @@
 | sc_datasource/_st_list.py | 全市场 ST / *ST 名单 |
 | sc_datasource/_ticks.py | 腾讯逐笔成交 |
 | sc_datasource/_v39_compat.py | 上游数据适配器共用的兼容 helper |
-| sc_datasource/_official_backup.py | 单文件时代的官方备份片段(参考用, 不主动调用) |
+| sc_datasource/_official_backup.py | 官方数据兜底：沪深两融与北交所行情（由 `_financials.py` / `_quotes.py` 调用） |
 
 ### 其它数据源/缓存模块(顶层)
 | 模块 | 职责 |

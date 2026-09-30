@@ -546,6 +546,7 @@ def em_get(
         requests.Response 对象
     """
     import random as _rand
+
     from urllib.parse import urlparse
     from stock_common.sc_fault_tolerance import (
         get_domain_token_bucket,
@@ -861,6 +862,7 @@ def _quick_request(
     data: Optional[Union[Dict[str, Any], str, bytes]] = None,
     method: str = "GET",
     verify: bool = True,
+    error_out: Optional[Dict[str, Any]] = None,
 ) -> Optional[requests.Response]:  # V16.2: 默认校验证书
     """通用 HTTP 请求（按域名独立限流）。
 
@@ -870,6 +872,9 @@ def _quick_request(
     V16.2 新增：eastmoney 域接入 TokenBucket + CircuitBreaker + 跨进程文件锁（消除限流旁路）。
     """
     import random as _rand
+
+    if error_out is not None:
+        error_out.clear()
 
     # 解析域名
     parsed = urlparse(url)
@@ -882,6 +887,7 @@ def _quick_request(
         if _em_is_banned(_ft_domain):
             _RL_STATS["em_rate_limit_count"] = _RL_STATS.get("em_rate_limit_count", 0) + 1
             _debug_log(f"quick_request: {_ft_domain} 封禁跳过中（20h 冷却），拒绝 {url[:80]}")
+            _record_request_failure(error_out, kind="ip_banned", domain=_ft_domain, attempt=0)
             return None
         # V16.2: 东财域统一走容错层（令牌桶 + 熔断），与 em_get 同口径
         # V16.2.6: 桶/熔断按归一化 key（push2 系共享风控面）；consume() 方法不存在
@@ -897,6 +903,9 @@ def _quick_request(
                 # V16.2: 返回 None 而非抛异常（对齐调用方 `if r is None` 约定，69 处调用方无需全改）
                 _RL_STATS["em_rate_limit_count"] = _RL_STATS.get("em_rate_limit_count", 0) + 1
                 _log_rate_limit(domain, 0.0)
+                _record_request_failure(
+                    error_out, kind="circuit_open", domain=_ft_domain, attempt=0
+                )
                 return None
             _cfg_rps = _DOMAIN_LIMITS.get(domain, {}).get("rps", 1.0)
             try:
@@ -931,7 +940,7 @@ def _quick_request(
     if is_em:
         _RL_STATS["em_request_count"] += 1
 
-    return _do_request(url, params, headers, timeout, max_retries, data, method, verify)
+    return _do_request(url, params, headers, timeout, max_retries, data, method, verify, error_out)
 
 
 # ─── DNS 解析阶段硬超时护栏（根因修复，2026-09-09）───
@@ -986,6 +995,30 @@ def _resolve_host_with_timeout(host: str, timeout: float = _DNS_RESOLVE_TIMEOUT)
         _DNS_CACHE[_h] = (_res.get("ip"), _now)
 
 
+def _record_request_failure(
+    error_out: Optional[Dict[str, Any]],
+    *,
+    kind: str,
+    domain: str,
+    attempt: Optional[int] = None,
+    status_code: Optional[int] = None,
+    error: Optional[BaseException] = None,
+) -> None:
+    """Fill opt-in, query-string-free details for a failed HTTP request."""
+    if error_out is None:
+        return
+    error_out.update({"kind": kind, "domain": domain})
+    if attempt is not None:
+        error_out["attempts"] = attempt
+    if status_code is not None:
+        error_out["status_code"] = status_code
+    if error is not None:
+        error_out["error_type"] = type(error).__name__
+        message = str(error).split("?", 1)[0].strip()
+        if message:
+            error_out["message"] = message[:160]
+
+
 def _do_request(
     url: str,
     params: Optional[Dict[str, Any]],
@@ -995,6 +1028,7 @@ def _do_request(
     data: Optional[Union[Dict[str, Any], str, bytes]],
     method: str,
     verify: bool,
+    error_out: Optional[Dict[str, Any]] = None,
 ) -> Optional[requests.Response]:
     """内部：执行 HTTP 请求 + 重试（由 _request_with_retry / _quick_request 调用）。
 
@@ -1049,6 +1083,9 @@ def _do_request(
                     proxies=cast(Dict[str, str], _no_proxy),
                 )
             else:
+                _record_request_failure(
+                    error_out, kind="invalid_method", domain=domain, attempt=attempt + 1
+                )
                 return None
 
             if r.status_code == 403:
@@ -1082,6 +1119,13 @@ def _do_request(
                     wait_s = exponential_backoff(attempt, base=2.0, max_wait=60.0)
                     time.sleep(wait_s)
                     continue
+                _record_request_failure(
+                    error_out,
+                    kind="http_403",
+                    domain=domain,
+                    attempt=attempt + 1,
+                    status_code=403,
+                )
                 return None
             if r.status_code == 429:
                 if is_em:
@@ -1104,6 +1148,24 @@ def _do_request(
                             wait_s = 1.0 * (2**attempt)
                     time.sleep(wait_s)
                     continue
+                _record_request_failure(
+                    error_out,
+                    kind="http_429",
+                    domain=domain,
+                    attempt=attempt + 1,
+                    status_code=429,
+                )
+                return None
+            # Opt-in diagnostics treat other HTTP errors as failed responses for
+            # collectors, while callers without error_out retain the raw Response.
+            if r.status_code >= 400 and error_out is not None:
+                _record_request_failure(
+                    error_out,
+                    kind="http_error",
+                    domain=domain,
+                    attempt=attempt + 1,
+                    status_code=r.status_code,
+                )
                 return None
             # V16: 成功响应（<400）重置连续 403 计数
             if _CONSECUTIVE_403["count"] > 0 and r.status_code < 400:
@@ -1114,7 +1176,7 @@ def _do_request(
             requests.exceptions.ReadTimeout,
             requests.exceptions.ConnectTimeout,
             requests.exceptions.ProxyError,
-        ):
+        ) as _e:
             if attempt < max_retries - 1:
                 if _HAS_FAULT_TOLERANCE:
                     # V16 增强: HTTP 000 连接被拒 = 间歇风控，长退避等待恢复
@@ -1123,10 +1185,38 @@ def _do_request(
                     wait_s = 1.0 * (2**attempt)
                 time.sleep(wait_s)
                 continue
+            failure_kind = (
+                "timeout"
+                if isinstance(
+                    _e,
+                    (requests.exceptions.ReadTimeout, requests.exceptions.ConnectTimeout),
+                )
+                else "connection_error"
+            )
+            _record_request_failure(
+                error_out,
+                kind=failure_kind,
+                domain=domain,
+                attempt=attempt + 1,
+                error=_e,
+            )
             return None
         except Exception as _e:
+            _record_request_failure(
+                error_out,
+                kind=(
+                    "rate_limited"
+                    if type(_e).__name__ == "RateLimitBlockedError"
+                    else "request_error"
+                ),
+                domain=domain,
+                attempt=attempt + 1,
+                error=_e,
+            )
             _debug_log(f"sc_network _do_request unexpected error ({url}): {_e}")
             return None
+    if error_out is not None and max_retries <= 0:
+        _record_request_failure(error_out, kind="no_attempts", domain=domain, attempt=0)
     return None
 
 

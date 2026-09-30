@@ -35,7 +35,6 @@ snapshots/
 # 说明必须单独成行；gitignore 不支持行尾注释。
 cache/*
 !cache/README.md
-!cache/_gitrun.py
 # V17.0 补: 股本缓存 share_capital.json(运行时生成)
 stock_common/cache/
 *.db

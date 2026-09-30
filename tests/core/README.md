@@ -3,7 +3,7 @@
 > 本目录归并**核心统一层与公共服务**的 pytest 用例, 对应 `core/` 包(`data_provider` / `stock_cache` / `config` / `zhb_*` 等) 与 `stock_common` 的 schema / scoring / technical / risk / utils。
 > 文件清单与逐文件定位见父目录 [`../README.md`](../README.md); 本文件仅作本层速查。
 
-## 文件与职责(15)
+## 文件与职责(16)
 
 | 文件 | 职责 |
 |:---|:---|
@@ -22,6 +22,7 @@
 | test_core_type_contracts.py | 公共类型边界与类型契约回归 |
 | test_quote_fallback_order.py | 行情来源 fallback 顺序契约 |
 | test_sec_type_exposure.py | 证券类型→板块标签(DEBT-016 锁固) |
+| test_eltdx_adapter.py | eltdx 报告包下载返回值类型与空载荷边界 |
 
 ## 运行
 

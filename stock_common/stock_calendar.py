@@ -14,7 +14,7 @@
 
 from __future__ import absolute_import, unicode_literals
 import datetime
-from typing import Any, Optional, Set, Tuple, Union, cast
+from typing import Any, List, Optional, Set, Tuple, Union, cast
 
 
 # ==================== Holiday 枚举 ====================
@@ -831,56 +831,137 @@ def _validate_date(date: Any) -> datetime.date:
     return date
 
 
-def is_workday(date: Union[datetime.date, datetime.datetime]) -> bool:
-    """判断是否为工作日（A股交易日）
+def is_trading_day(date: Union[datetime.date, datetime.datetime]) -> bool:
+    """判断 A 股交易所开市日；周末调休补班日仍按休市处理。
 
-    V14.0 修复：本地 holidays/workdays 字典作为权威数据，ZHB 仅作为辅助校验。
-      之前的 V10.0 实现有 Bug：当 ZHB 残缺（仅 37 条数据）且某个日期在 ZHB 中
-      找不到时，会错误返回 weekday <= 4，导致 2025-1-1/2026-1-1 等节假日
-      被误判为工作日。
-
-    决策顺序（V14.0 修正）：
-      1. 本地 holidays 字典（621 条，2004-2026+ 完整覆盖）→ False
-      2. 本地 workdays 字典（调休工作日）→ True
-      3. ZHB 数据（1991-2030，但实际只有 37 条）作为补充校验 → 命中即 False
-      4. 周末判断（weekday > 4）→ False
-      5. 兜底：weekday <= 4 → True
-
-    Args:
-        date: datetime.date 或 datetime.datetime
-
-    Returns:
-        bool: True=交易日, False=休市日
+    ``workdays`` 保存民用调休补班日，不代表证券交易所开市。该纯本地函数
+    可供 ZHB 加载期间使用，不会反向导入 ZHB。
     """
+    day = _validate_date(date)
+    return day.weekday() < 5 and day not in holidays
+
+
+def is_workday(date: Union[datetime.date, datetime.datetime]) -> bool:
+    """兼容旧名称：判断 A 股交易日，不把周末调休补班日当成交易日。"""
+    day = _validate_date(date)
+    if not is_trading_day(day):
+        return False
+
+    # ZHB 只补充本地表未列出的工作日休市信息；绝不能覆盖周末休市规则。
     try:
-        date = _validate_date(date)
-        weekday = date.weekday()
+        from core.zhb_client import get_holidays
 
-        # 1. 权威数据：本地 holidays（先检查本地，避免 ZHB 残缺导致误判）
-        if date in holidays:
+        zhb_holidays = get_holidays()
+        if zhb_holidays and day.strftime("%Y%m%d") in zhb_holidays:
             return False
+    except Exception:
+        pass
+    return True
 
-        # 2. 权威数据：本地 workdays（调休工作日）
-        if date in workdays:
-            return True
 
-        # 3. 辅助校验：ZHB 数据（残缺时不影响本地判断）
-        try:
-            from core.zhb_client import get_holidays
+def previous_trading_day(
+    date: Union[datetime.date, datetime.datetime], include_current: bool = False
+) -> datetime.date:
+    """获取指定日期之前最近的交易日；``include_current`` 控制是否包含当天。"""
+    day = _validate_date(date)
+    if not include_current:
+        day -= datetime.timedelta(days=1)
+    for _ in range(30):
+        if is_trading_day(day):
+            return day
+        day -= datetime.timedelta(days=1)
+    raise NotImplementedError("no trading day found in the previous 30 days")
 
-            zhb_holidays = get_holidays()
-            if zhb_holidays:
-                date_str = date.strftime("%Y%m%d")
-                if date_str in zhb_holidays:
-                    return False  # ZHB 命中节假日
-        except Exception:
-            pass
 
-        # 4 & 5. 兜底：周末 vs 工作日
-        return weekday <= 4
-    except NotImplementedError:
-        # 年份超出范围，抛出异常供上层处理
-        raise
+def add_trading_days(date: Union[datetime.date, datetime.datetime], offset: int) -> datetime.date:
+    """从给定日期向前或向后移动 ``offset`` 个交易日（起始日不计入偏移）。"""
+    day = _validate_date(date)
+    if offset == 0:
+        return day
+    step = 1 if offset > 0 else -1
+    remaining = abs(offset)
+    while remaining:
+        day += datetime.timedelta(days=step)
+        if is_trading_day(day):
+            remaining -= 1
+    return day
+
+
+def trading_days_between(
+    start: Union[datetime.date, datetime.datetime],
+    end: Union[datetime.date, datetime.datetime],
+) -> int:
+    """返回 ``(start, end]`` 内的交易日数；反向区间返回负数。"""
+    first = _validate_date(start)
+    last = _validate_date(end)
+    if first == last:
+        return 0
+    if first > last:
+        return -trading_days_between(last, first)
+
+    count = 0
+    day = first + datetime.timedelta(days=1)
+    while day <= last:
+        if is_trading_day(day):
+            count += 1
+        day += datetime.timedelta(days=1)
+    return count
+
+
+def latest_market_data_date(
+    as_of: Optional[Union[datetime.date, datetime.datetime]] = None,
+) -> datetime.date:
+    """返回数据年龄的基准交易日：交易日 9:30 前取上一交易日，其后取当天。
+
+    显式传入 ``date`` 时按该日收盘后处理；不传时使用本机当前时间。
+    """
+    value = datetime.datetime.now() if as_of is None else as_of
+    if isinstance(value, datetime.datetime):
+        day = _validate_date(value.date())
+        local_time = value.timetz().replace(tzinfo=None)
+        session_started = local_time >= datetime.time(9, 30)
+    else:
+        day = _validate_date(value)
+        session_started = True
+
+    if session_started and is_trading_day(day):
+        return day
+    return previous_trading_day(day, include_current=False)
+
+
+def trading_day_age(
+    data_date: Union[datetime.date, datetime.datetime],
+    as_of: Optional[Union[datetime.date, datetime.datetime]] = None,
+) -> int:
+    """返回数据日期至当前有效行情日期之间经过的交易日数。"""
+    return trading_days_between(data_date, latest_market_data_date(as_of))
+
+
+def trading_day_window(
+    days: int, as_of: Optional[Union[datetime.date, datetime.datetime]] = None
+) -> Tuple[datetime.date, datetime.date]:
+    """返回最近 ``days`` 个交易日的闭区间日期，末端遵循 9:30 分界。"""
+    if days < 1:
+        raise ValueError("days must be a positive integer")
+    end = latest_market_data_date(as_of)
+    start = add_trading_days(end, -(days - 1))
+    return start, end
+
+
+def recent_trading_dates(
+    count: int, as_of: Optional[Union[datetime.date, datetime.datetime]] = None
+) -> List[datetime.date]:
+    """按从新到旧顺序返回最近 ``count`` 个实际交易日。"""
+    if count < 0:
+        raise ValueError("count must be non-negative")
+    if count == 0:
+        return []
+    day = latest_market_data_date(as_of)
+    result = [day]
+    for _ in range(count - 1):
+        day = previous_trading_day(day, include_current=False)
+        result.append(day)
+    return result
 
 
 # ═══════════════════════════════════════════════════════════════
@@ -975,49 +1056,28 @@ def invalidate_zhb_supplement_cache() -> None:
 def is_workday_with_zhb_supplement(
     date: Union[datetime.date, datetime.datetime],
 ) -> bool:
-    """V14.2：在 is_workday() 基础上叠加 ZHB neednote.dat 补充日历。
+    """在本地交易日历上补充 ZHB neednote.dat 的工作日休市信息。
 
-    优先级：
-      1. 本地 holidays 字典（621 条）→ False
-      2. 本地 workdays 字典（调休工作日）→ True
-      3. ZHB neednote.dat 官方休市日（补充未来日期）→ False
-      4. ZHB neednote.dat 官方调休补班日 → True
-      5. ZHB holidays（残缺数据，仅辅助校验）→ 命中即 False
-      6. 周末判断 → False
-      7. 兜底：weekday <= 4 → True
-
-    本地字典不可用时（如年内日期），ZHB 补充数据可作为兜底。
+    ZHB 补班日属于民用日历信息，不能使周末成为 A 股交易日。
     """
-    date = _validate_date(date)
-    weekday = date.weekday()
-
-    # 1 & 2. 本地字典（V14.0 权威数据）
-    if date in holidays:
+    day = _validate_date(date)
+    if not is_trading_day(day):
         return False
-    if date in workdays:
-        return True
 
-    # 3 & 4. V14.2 新增：ZHB neednote.dat 补充
     _ensure_zhb_supplement_loaded()
-    if date in _zhb_holidays_supplement:
+    if day in _zhb_holidays_supplement:
         return False
-    if date in _zhb_workdays_supplement:
-        return True
 
-    # 5. V14.0 ZHB 残缺数据辅助校验
+    # ZHB holidays 作为本地和 neednote 日历之外的辅助校验。
     try:
         from core.zhb_client import get_holidays
 
         zhb_holidays = get_holidays()
-        if zhb_holidays:
-            date_str = date.strftime("%Y%m%d")
-            if date_str in zhb_holidays:
-                return False
+        if zhb_holidays and day.strftime("%Y%m%d") in zhb_holidays:
+            return False
     except Exception:
         pass
-
-    # 6 & 7. 周末 vs 工作日
-    return weekday <= 4
+    return True
 
 
 def get_zhb_supplement_count() -> dict:

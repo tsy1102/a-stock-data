@@ -3,7 +3,7 @@
 数据源：longhuvip.com 私有 API（Android UA）
 - 匿名接口（无需 UserID/Token）：RiseFallAnalysis / MoodNumCount / ChangeStatistics /
   RealRankingInfo / DailyLimitPerformance
-- Token 接口（可选，从 ths_credentials.json 同款 KPL_TOKEN/KPL_USER_ID 环境变量读）：
+- Token 接口（可选，通过 KPL_TOKEN / KPL_USER_ID 环境变量配置）：
   MorningBiddingList（竞价涨停委买额——独有数据）
 
 限流：实测匿名接口 1s 间隔安全；本适配器内置 QUERY_INTERVAL=0.6s（连接级限频）

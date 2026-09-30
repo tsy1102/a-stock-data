@@ -65,7 +65,6 @@ except Exception:
 # V7.5: 全局调用锁
 # `_TDX_CLIENT` 是单例，多线程并发读写同一个 socket 会导致协议包错乱卡死。
 # 用 RLock 让同一线程可重入。
-# V12.0: 移除 easy_tdx 后，MacClient 相关代码已全部删除，仅保留 mootdx 客户端。
 # ═══════════════════════════════════════
 import threading as _tdx_th
 
@@ -1316,8 +1315,7 @@ def _tdx_connect_with_timeout(host: str, port: int = 7709, timeout_s: float = 5.
 def tdx_get_security_bars(code: str, count: int = 800) -> Tuple[List[str], List[List[str]]]:
     """获取日 K 线 → (keys, rows)，V7.5: 进程内缓存 + 全局锁。
 
-    V12.0: 底层改用 mootdx StdQuotes.bars(frequency=9)。
-    mootdx 返回 DataFrame 列：open/close/high/low/vol/amount/year/month/day/datetime。
+    eltdx/easy_tdx 适配器统一返回 DataFrame；此函数负责保持历史 keys/rows 输出契约。
     """
     global _TDX_CLIENT, _TDX_AVAILABLE, _TDX_SKIP_BARS  # V17.0.10c: 截断重试置空换台; V17.2.x: 超时降级标志
     # V17.2.x(2026-09-11): TDX 已降级（bars 超时）→ 直接返回空，交由调用方百度 fallback 取数，
@@ -1405,7 +1403,7 @@ def tdx_get_security_bars(code: str, count: int = 800) -> Tuple[List[str], List[
                 keys = ['time', 'open', 'close', 'high', 'low', 'volume', 'amount']
                 rows = []
                 for _, row in bars.iterrows():
-                    # mootdx 用 'datetime' 列（'YYYY-MM-DD HH:MM'），取前10位日期
+                    # 统一适配器的 `datetime` 列为 'YYYY-MM-DD HH:MM'，取前 10 位日期。
                     dt = str(row.get('datetime', ''))
                     rows.append(
                         [
@@ -1506,8 +1504,7 @@ def tdx_get_quote_full(code: str) -> Dict[str, Any]:
     """获取个股完整行情（V15.1 重构：ZHB → TDX → 腾讯 HTTP）。
 
     V9.3: 盘前模式（9:30前）使用上一交易日日K线数据，缓存Key包含交易日期
-    V12.0: 底层改用 mootdx StdQuotes.quotes(symbol)。注意 mootdx 列名为
-           'last_close'（对应原 easy_tdx 的 'pre_close'）。
+    TDX 适配器将昨收统一映射为 `last_close`，供原有消费者保持兼容。
     V15.1: 优先级调整 ZHB → TDX → 腾讯 HTTP（与 docs/field_dict.md 一致）：
            - 盘前/盘后：ZHB T-1 数据（无网络）
            - 盘中：ZHB 缺失时走 TDX TCP
@@ -1582,7 +1579,7 @@ def tdx_get_quote_full(code: str) -> Dict[str, Any]:
                 quotes = client.quotes(symbol=code)
                 if quotes is not None and not quotes.empty:
                     q = quotes.iloc[0]
-                    # mootdx 列名 'last_close' = 昨收
+                    # 统一适配器列名 `last_close` 表示昨收。
                     pre_close = q.get('last_close', 0)
 
                     # 实时字段：盘中覆盖 ZHB，盘前仅补缺
@@ -1619,7 +1616,7 @@ def tdx_get_quote_full(code: str) -> Dict[str, Any]:
                     if q.get('rise_speed') is not None:
                         _put('rise_speed', float(q['rise_speed']), _is_rt)
                     # V17.2.x(2026-09-10) 调整 A/C: TDX快照均价/委比（字典 §12.8.12e 列 TDX快照源；
-                    #   easy_tdx/mootdx 未暴露该列则 q.get 返回 None 自动跳过，无副作用）
+                    #   适配器未暴露该列时 q.get 返回 None 并自动跳过。）
                     for _snap_k, _cdk in (
                         ("average_price", "avg_price"),
                         ("entrust_ratio", "entrust_ratio"),
@@ -1732,8 +1729,7 @@ def tdx_get_market_stat() -> Optional[Dict[str, Any]]:
 def tdx_get_index_quote(idx_code: str) -> Dict[str, Any]:
     """获取指数行情（TDX 优先，腾讯兜底）。
 
-    V12.0: mootdx 的 index_bars 直接接受指数代码（如 '000001'），
-           不再需要 market/code 拆分。
+    将指数代码拆分为 market/code 后交给统一适配器查询。
     """
     with _TDX_CALL_LOCK:
         client = _get_tdx_client()
@@ -1788,8 +1784,7 @@ def tdx_get_index_quote(idx_code: str) -> Dict[str, Any]:
 def tdx_get_historical_high(code: str) -> Optional[float]:
     """历史最高价（800 根日 K 线内）。
 
-    V12.0: mootdx bars offset 上限较高，可一次性拉取 8000 根。
-    V16.1: 补 @cached（val/lng 多次调用场景，避免重复 8000 根拉取）。
+    请求最多 8000 根历史日 K 线；V16.1 起通过 `@cached` 避免 val/lng 重复拉取。
     """
     with _TDX_CALL_LOCK:
         client = _get_tdx_client()
@@ -1807,7 +1802,7 @@ def tdx_get_historical_high(code: str) -> Optional[float]:
 
 
 def tdx_get_index_bars(idx_code: str, count: int = 250):
-    """V12.0: mootdx index_bars 直接接受指数代码。"""
+    """获取指数 K 线；按统一适配器契约传入 market/code。"""
     for _retry in range(2):
         with _TDX_CALL_LOCK:
             client = _get_tdx_client()
@@ -1866,7 +1861,7 @@ def tdx_get_index_bars(idx_code: str, count: int = 250):
 
 
 def tdx_get_weekly_bars(code: str, count: int = 100):
-    """V12.0: mootdx bars(frequency=5) 返回周K线。
+    """获取周 K 线；兼容频率值由 TDX 适配器映射到对应引擎。
 
     V14.3 P3: 接入跨进程磁盘缓存。
     """
@@ -2006,7 +2001,7 @@ def tdx_get_finance_info(code: str) -> Optional[Dict[str, Any]]:
             if info is None or info.empty:
                 return None
             # 将 DataFrame 首行转换为纯净的 dict
-            # mootdx 返回的列包含了所有核心财务指标，并把 np.nan 转换为 None，方便后续处理
+            # 适配器返回核心财务指标；这里将 NaN 规范为 None，方便后续处理。
             import math
 
             row = info.iloc[0].to_dict()
@@ -2026,9 +2021,9 @@ def tdx_get_finance_info(code: str) -> Optional[Dict[str, Any]]:
     category="dividend", ttl_seconds=86400, cross_verify=True
 )  # V16.0: S13 高股息 100 次逐股 xdxr 无缓存 → 补缓存
 def tdx_get_dividend_history(code: str) -> Optional[List[Dict[str, Any]]]:
-    """V12.0: mootdx xdxr 列为 year/month/day（无 'date' 列），组合成日期字符串。
+    """解析 TDX 分红除权记录并规范日期字段。
     V16.2.3: 连接失败返回 None（与"真无分红"[] 区分，报告不再误报"一毛不拔"）。
-    V16.2.14: easy_tdx xdxr 用 'date' 列（YYYY-MM-DD HH:MM:SS），mootdx 用 year/month/day —— 双格式兼容。"""
+    日期解析兼容 `date` 与 `year/month/day` 两种历史适配器列结构。"""
     with _TDX_CALL_LOCK:
         client = _get_tdx_client()
         if client is None:
@@ -2045,10 +2040,10 @@ def tdx_get_dividend_history(code: str) -> Optional[List[Dict[str, Any]]]:
                 fh = _safe_float(row.get('fenhong', 0))
                 szg = _safe_float(row.get('songzhuangu', 0))
                 pg = _safe_float(row.get('peigu', 0))
-                # easy_tdx: 'date' 列（'YYYY-MM-DD HH:MM:SS'）→ 取前 10 位
+                # 统一优先读取日期列（可能带时间），只保留日期部分。
                 date_str = str(row.get('date', '') or '').strip()[:10]
                 if not date_str or date_str == 'NaT':
-                    # mootdx: year/month/day 组合
+                    # 兼容仅提供拆分年月日列的适配器结果。
                     y = int(row.get('year', 0) or 0)
                     m = int(row.get('month', 0) or 0)
                     d = int(row.get('day', 0) or 0)
@@ -2115,8 +2110,7 @@ def tdx_get_eps_from_reports(code: str):
 def tdx_get_latest_announcements(code: str, days: int = 7):
     """从 TDX F10 公司公告中获取最新公告列表。
 
-    V12.0: mootdx 用 F10C(symbol) 返回 list[OrderedDict] 取分类元数据，
-           F10(symbol, name) 直接返回完整文本（不需要 filename/start/length）。
+    统一适配器通过 `F10C` 枚举分类，再由 `F10` 返回对应文本内容。
 
     Args:
         code: 股票代码
@@ -2136,13 +2130,12 @@ def tdx_get_latest_announcements(code: str, days: int = 7):
             # 找到「公司公告」分类
             ann_cat = next((c for c in cats if c.get('name') == '公司公告'), None)
             if ann_cat is None:
-                # mootdx 的 F10 数据源不含「公司公告」分类（easy_tdx 特有）
-                # 该函数返回空，调用方应改用巨潮资讯 HTTP 接口（sc_datasource 已有）
-                _debug_log(f"tdx tdx_get_latest_announcements: mootdx 无「公司公告」分类 ({code})")
+                # 当前适配器未提供该分类时返回空，由调用方改用巨潮资讯 HTTP 接口。
+                _debug_log(f"tdx tdx_get_latest_announcements: F10 无「公司公告」分类 ({code})")
                 return []
             _tdx_throttle()
             content = client.F10(symbol=code, name='公司公告')
-            # mootdx 在 name 不存在时返回 dict（所有分类），存在时返回 str
+            # 未指定分类时适配器可能返回分类映射；指定分类时本函数只接受文本。
             if not isinstance(content, str) or not content:
                 return []
             # 解析 F10 公告表格格式（GBK 文本，┌┬┐├┼┤└┴┘ 等分隔符）
@@ -2204,8 +2197,7 @@ def tdx_get_latest_announcements(code: str, days: int = 7):
 def _f10_get_content(code: str, category_name: str) -> str:
     """获取 F10 指定分类的原始文本内容。
 
-    V12.0: mootdx 的 F10(symbol, name) 直接返回完整文本，
-           F10C(symbol) 仅用于校验分类是否存在。
+    先检查适配器是否提供该分类，再读取对应文本。
 
     Args:
         code: 股票代码
@@ -2226,7 +2218,7 @@ def _f10_get_content(code: str, category_name: str) -> str:
                 return ''
             _tdx_throttle()
             content = client.F10(symbol=code, name=category_name)
-        # mootdx 在 name 不存在时返回 dict（所有分类），存在时返回 str
+        # 未指定分类时适配器可能返回分类映射；指定分类时本函数只接受文本。
         if not isinstance(content, str):
             return ''
         return content or ''
@@ -2867,7 +2859,6 @@ def tdx_get_share_capital(code: str) -> dict:
 def tdx_get_company_news_f10(code: str, count: int = 10) -> list:
     """从 TDX F10 公司新闻分类获取列表。
 
-    V12.0: mootdx F10C 无「公司报道」分类，改用语义等价的「公司大事」。
     「公司大事」是表格格式（｜ 日期 ｜ 标题 ｜），与「公司报道」段落格式不同，
     需使用专门的表格解析逻辑。保留对原「公司报道」的 fallback。
 
@@ -2885,7 +2876,7 @@ def tdx_get_company_news_f10(code: str, count: int = 10) -> list:
     from stock_common.f10_parser import parse_paragraph_blocks
 
     with _TDX_CALL_LOCK:
-        # V12.0: 先尝试 mootdx 的「公司大事」（表格格式），再 fallback 到 easy_tdx 的「公司报道」（段落格式）
+        # 先解析「公司大事」表格；无内容时再尝试「公司报道」段落格式。
         content = _f10_get_content(code, '公司大事')
         if content:
             # 「公司大事」表格格式解析：｜   YYYY-MM-DD   ｜标题内容｜

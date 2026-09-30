@@ -141,14 +141,7 @@ _SCRIPT_DIR = get_script_dir()
 
 
 def check_dependencies():
-    """V7.5/15.3: 检查必要依赖是否已安装，缺失时提示用户。
-
-    V15.3 修复: 原代码只检查 5 个包（aiohttp/yaml/google.*×3/requests），
-    但 requirements.txt 列出核心依赖，缺 pytdx / pandas / numpy / easy-tdx /
-    aiosqlite / chinese-calendar 等核心依赖时启动不报错，运行到具体报告才
-    ImportError 崩溃。补全检查（requests/yaml/aiohttp/aiosqlite/pytdx/pandas/
-    numpy/chinese_calendar；easy-tdx 经 git+https 锁定上游单独安装），Google Drive 套件作为可选。
-    """
+    """检查运行时依赖；Google Drive 上传依赖缺失时只提示，不阻止报告运行。"""
     missing = []
     # M12: 9 个 try/except ImportError 批量化为 importlib.util.find_spec（V16.3 E）
     import importlib.util as _ilu
@@ -158,9 +151,11 @@ def check_dependencies():
         ("yaml", "PyYAML"),
         ("aiohttp", "aiohttp"),
         ("aiosqlite", "aiosqlite"),
-        ("pytdx", "pytdx"),
+        ("eltdx", "eltdx"),
+        ("easy_tdx", "easy-tdx"),
         ("pandas", "pandas"),
         ("numpy", "numpy"),
+        ("openpyxl", "openpyxl"),
         ("chinese_calendar", "chinese-calendar"),
     ]
     for _mod, _pkg in _REQUIRED_PKGS:
@@ -175,15 +170,16 @@ def check_dependencies():
     except ImportError:
         optional_missing.append("google-auth google-auth-oauthlib google-api-python-client")
 
+    if optional_missing:
+        print("  ⚠️  可选依赖（仅 GD 上传需要）:", flush=True)
+        for pkg in optional_missing:
+            print(f"     pip install {pkg}", flush=True)
+
     if missing:
         print("=" * 60, flush=True)
         print("  ❌ 缺少必要依赖，请先安装:", flush=True)
         for pkg in missing:
             print(f"     pip install {pkg}", flush=True)
-        if optional_missing:
-            print("  ⚠️  可选依赖（仅 GD 上传需要）:", flush=True)
-            for pkg in optional_missing:
-                print(f"     pip install {pkg}", flush=True)
         print("  💡 一次性安装全部依赖:", flush=True)
         print("     pip install -r requirements.txt", flush=True)
         print("=" * 60, flush=True)

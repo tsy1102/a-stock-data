@@ -1434,7 +1434,8 @@ def is_trading_day(d: Optional[Union[date, datetime]] = None) -> bool:
     try:
         from chinese_calendar import is_workday
 
-        return bool(is_workday(d))
+        # chinese_calendar 的 is_workday 表示民用调休工作日；A 股周末仍休市。
+        return d.weekday() < 5 and bool(is_workday(d))
     except NotImplementedError as e:
         # 年份超出库范围（>2026），尝试自动升级
         if "no available data" in str(e) or "year" in str(e).lower():
@@ -1443,7 +1444,7 @@ def is_trading_day(d: Optional[Union[date, datetime]] = None) -> bool:
                 try:
                     from chinese_calendar import is_workday
 
-                    return bool(is_workday(d))
+                    return d.weekday() < 5 and bool(is_workday(d))
                 except Exception as _e:
                     _debug_log(f"datasource chinese calendar retry error: {_e}")
         # 降级为简单判断（周一到周五）
@@ -1455,7 +1456,7 @@ def is_trading_day(d: Optional[Union[date, datetime]] = None) -> bool:
             try:
                 from chinese_calendar import is_workday
 
-                return bool(is_workday(d))
+                return d.weekday() < 5 and bool(is_workday(d))
             except Exception as _e:
                 _debug_log(f"datasource chinese calendar install retry error: {_e}")
         # 降级为简单判断

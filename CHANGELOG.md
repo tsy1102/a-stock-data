@@ -4,7 +4,9 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
-## [Unreleased] 2026-09-28 — 全仓质量整改与验证
+## [Unreleased] 2026-09-29 — 交易日口径与报告失败状态修复
+
+- FTShare 董监高变动的 `change_date` 现在按 180 个交易日筛选，独立的 `notice_date` 仍表示公告日期。
 
 ### 修复
 
@@ -13,6 +15,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - 修复工作日/交易时段边界与 ZHB fallback 处理，并为报告入口增加缺失数据和参数保护。
 - 修正字段采集探针的 Eastmoney 龙虎榜请求参数；恢复该采集器要求的进程间等待，避免请求绕过限速。
 - 修正若干字段登记、生成器、报告和类型边界问题，补充对应回归测试。
+- 统一 ZHB 数据新鲜度、行情年龄、龙虎榜与近期交易数据查询窗口的交易日口径；日历生成器和行情回退也不再把周末补班日当成 A 股开市日。
+- 修复交易日历生成器未插入节假日/工作日数据表的问题；更新时只替换日期数据，保留项目自定义日历逻辑。
+- val 无法取得全市场快照时仍保留诊断文件，但现在以失败退出且不将空数据报告当成成功上传。
 - 收紧主字段字典的来源继承与章节映射，清理重复来源记录；字段登记从 1,820 条增至 1,831 条，字典/矩阵 parity 检查通过。
 
 ### 维护
@@ -26,6 +31,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - 离线测试：564 passed、1 skipped、47 deselected；真实网络测试：41 passed、6 skipped、565 deselected。
 - Black：154 个文件通过；mypy：140 个配置范围源码文件、0 errors；`py_compile`：154 个源码/测试文件通过。
 - A1/A7 闸门均为 0 HARD FAIL / 0 WARN；`git diff --check` 通过。
+
+### 全仓文件精简复核
+
+- 清理失效的拆分、README 同步与本地临时工具脚本；保留原始采集、缓存、备份和字段研究证据。
+- 修正文档中的过期依赖、TDX/ZHB 下载顺序、缓存清理范围和测试目录清单；为字典清理工具补上无副作用的默认 dry-run。
+- 对 5 个报告入口核实依赖与死代码，移除已确认的未使用导入、局部变量和不可达分支；补齐 SZSE 官方 XLSX 回退所需的 `openpyxl` 运行依赖。
+- 验证：离线测试 621 collected，573 passed、1 skipped、47 deselected；Black/`py_compile` 检查本轮 16 个 Python 文件通过，mypy 137 个配置范围文件 0 errors，A1 为 0 HARD FAIL / 0 WARN。
 
 ## [V17.4.23] 2026-09-24 — 报告数据质量修复：ST名单None渲染 + med/lng一致预期源统一
 
@@ -517,7 +529,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 **等价性已验证**：运行时逐函数 `inspect.getsource` 比对，新包与原单文件备份的 173 个函数对象（162 顶层 + 导入辅助函数）源码字节级一致，无遗漏 / 无重复 / 无多余；且全包无重复定义。
 
-**正确拆包脚本（可重跑）**：`scripts/split_sc_datasource_v2.py`；等价性自检 `scripts/_verify_split.py`。首次尝试产出的缺陷版归档 `stock_common/_ARCHIVED_sc_datasource_split_20260904/` 已被本版取代。
+**历史拆包脚本（已于 2026-09-28 清理）**：`scripts/split_sc_datasource_v2.py`；当时的等价性自检为 `scripts/_verify_split.py`。首次尝试产出的缺陷版归档 `stock_common/_ARCHIVED_sc_datasource_split_20260904/` 已被本版取代。该脚本不再是当前工具。
 
 **V17-3 / V17-4 仍否决**（理由见 `docs/V17.1_REFACTOR_PLAN.md` §2/§3）。
 
@@ -907,7 +919,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - **S3 连涨连跌方向整体反**：`data_provider.get_streak_days` 改从 `closes[-1]`(最新) 向前遍历，上升段记正、下降段记负（:1968 注释更正）。
 - **S4 解禁字段单位自相矛盾**：`get_lockup_expiry` history/upcoming 两分支 `ABLE_FREE_SHARES` 统一按"股"处理（均不除法），删去 upcoming 分支误标的"万股"注释；新增 TODO 标注真实单位待实盘采样一次确认。
 - **S5 资金流总额重复计数**：`get_em_fund_flow` 的 `total_net = main_net + small_net + medium_net`（东财"主力 = 大单 + 超大单"，原五档全加把大/超重复计）；更正原"漏大单"误解注释。
-- **S6 `sync_readme.py` 误丢版本归档**：`update_readme` 新增 `dry_run` 参数、写前自动 `.bak` 备份；`main()` 新增 `--force`/`--dry-run`，**默认拒绝运行**（须显式 `--force` 或先 `--dry-run` 预览）——CI 已禁用。
+- **S6 历史工具 `sync_readme.py`（已于 2026-09-28 清理）误丢版本归档**：当时的 `update_readme` 新增 `dry_run` 参数、写前自动 `.bak` 备份；`main()` 新增 `--force`/`--dry-run`，**默认拒绝运行**（须显式 `--force` 或先 `--dry-run` 预览）——CI 已禁用。该脚本不再是当前工具。
 
 #### 中等级（防护 / 性能 / 接口）
 - **M1 编排层假成功**：`sc_report_runner.run()` 的 `execute_pipeline` 异常不再吞掉，记录后 `raise`，使 `main.py` 的 `all_ok` 真实反映失败。

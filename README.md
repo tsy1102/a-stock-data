@@ -13,10 +13,10 @@
 - **申万二级行业统一**：东财 datacenter 一次性分页拉取 + 7 天缓存，零逐股请求、零 push2 风控面。
 - **东财分域限流与风控**：共享令牌桶 + 全局 1.0s 节流 + 强制直连 + 429 退避 + 连续 3 次断连 20h 冷却；熔断静默降级回退 ZHB T-1 快照。
 - **统一缓存层**：SQLite + L1 内存 + TTL + `cross_verify` + single-flight + 版本化防污染（口径变更升 category）。
-- **TDX 服务器白名单**：54 台实测收敛为 5 台 FULL 服务器，探测轮换只遍历白名单。
+- **TDX 服务器选择**：主源使用已验证主机列表并避免冷启动全量探测，故障时交由兼容适配器降级。
 - **通用框架与工程化**：`BaseReportRunner` 共享骨架、并发下沉线程池、云端同步（GD 上传）、批量并行、mypy 类型安全。
-- **测试体系（防退化守护）**：43 个测试模块，按 data/core/infra/reports 分层；2026-09-28 验证收集 612 项。测试入口和当前覆盖范围见 `tests/README.md`。
-- **工程质量快照（2026-09-28）**：154 个 Python 源码/测试文件通过 Black 与语法检查；mypy 对配置范围内 140 个源码文件零错误。离线测试 564 passed、1 skipped；real_network 测试 41 passed、6 skipped。
+- **测试体系（防退化守护）**：测试按 data/core/infra/reports 分层；当前模块数与用例数见 `tests/README.md`。
+- **工程质量与验证记录**：完整审计范围、最新验证结果和未清理的历史债务见 [`docs/PROJECT_AUDIT_REMEDIATION_20260928.md`](docs/PROJECT_AUDIT_REMEDIATION_20260928.md)。
 
 ---
 
@@ -24,22 +24,22 @@
 
 ### 环境要求
 
-- Python **3.12**（系统 Python，`scripts/run_tests.ps1` 强制；main.py 自动探测）
+- Python **3.12**（`scripts/run_tests.ps1` 会选择并校验解释器；直接运行 `main.py` 时也须使用已安装项目依赖的解释器）
 - Windows / macOS / Linux
 
 ### 新机器部署（复制项目后）
 
-项目全部路径基于脚本自身位置动态定位（`__file__`），**无任何绝对路径硬编码**；复制到任意目录即可运行，首次运行自动创建 `cache/`、`logs/`、`reports/`、`snapshots/` 并下载 ZHB 数据包。
+项目内数据目录按仓库位置解析；首次运行会按需创建 `cache/`、`logs/`、`reports/`、`snapshots/` 并同步 ZHB 数据。部分功能还会读取本机配置或外部行情文件，部署前请按对应功能说明配置。
 
 1. 安装 Python 3.12（任意发行版；Windows Store 版已验证可用）
-2. `pip install -r requirements.txt`（运行时依赖 16 项；`levistock`/`axdata` 为可选增强，缺失自动降级）
+2. `pip install -r requirements.txt`（`levistock`/`axdata` 为可选增强，缺失时对应功能降级）
    > ⚠️ **`thsdk` 已于 V17.0.29(2026-09-07) 随 `stock_common/sc_ths.py` 一同移除**，不再是可选依赖。
-3. `pip install -r requirements-dev.txt`（仅开发需要：pytest/mypy/black）
+3. `pip install -r requirements-dev.txt`（开发环境；自动包含运行时依赖及 pytest/mypy/black）
 4. 首次运行 `python main.py --sht 600519 --no-upload` 冒烟（首只约 5 分钟，含 ZHB 下载+缓存预热）
 
-可选配置（缺失不影响运行）：
-- **Google Drive 上传**：`credentials/client_secrets.json`（V17.0 凭据集中目录），首次运行浏览器 OAuth 生成 `credentials/credentials.json`；国内网络需本地代理（gd_uploader 自动探测 7890/10809/1080 等常见端口）
-- **同花顺增强**：`credentials/ths_credentials.json`（`{"username":..,"password":..,"mac":..}`）或设 `THS_USERNAME/THS_PASSWORD` 环境变量；无凭证时 SDK 游客兜底
+可选配置（缺失不影响核心报告）：
+- **Google Drive 上传**：配置 Google OAuth 凭据；缺失时本地报告仍可生成，但无法上传。
+- **东方财富 Cookie**：需要时可通过 `EAST_MONEY_COOKIE` 或 `credentials/eastmoney_cookie.txt` 配置。
 
 **新电脑 UTF-8 环境初始化（V16.4.0，一次性）**：
 
@@ -64,7 +64,7 @@ chcp 65001 > `$null
 
 ```bash
 pip install -r requirements.txt
-pip install -r requirements-dev.txt   # 开发环境（测试/类型/格式）
+pip install -r requirements-dev.txt   # 开发环境（包含运行时依赖、测试/类型/格式工具）
 ```
 
 ### 基本用法
@@ -158,12 +158,13 @@ a-stock-data/
 ├── credentials/                  # V17.0 凭据集中目录（.gitignore 排除，不入库）
 │   ├── client_secrets.json       # GD OAuth 客户端凭据
 │   ├── credentials.json          # GD OAuth token（自动刷新）
-│   └── ths_credentials.json      # 同花顺 THS SDK 账号
+│   └── eastmoney_cookie.txt      # 可选东方财富 Cookie
 │
 ├── scripts/                      # 辅助脚本（见 scripts/README.md）
-│   ├── capture_field_probe.py    # 字段实测采集（12 股 × 18 源 → docs/field_verification/YYYYMMDD/）
+│   ├── capture_field_probe.py    # 字段实测采集 → docs/field_verification/YYYYMMDD/
 │   ├── collide.py                # 【V17.2.9】全源全字段通用对撞引擎（每日采集后运行；自动查询 collision_rules 四铁律 + 增量状态跟进）
 │   ├── run_tests.ps1             # 测试统一入口（AGENTS.md 强制 shell 层中转）
+│   ├── run_with_system_python.ps1 # Python 3.12 选择与命令转发
 │   ├── update_calendar.py        # 交易日历数据更新（含 V14+ 防覆盖保护）
 │   ├── clean_cache.py            # 缓存清理快捷脚本（封装 python -m core.stock_cache）
 │   ├── backtest_topn.py          # top_n 回测验证
@@ -172,7 +173,6 @@ a-stock-data/
 │   ├── fmt_preview.py            # 零网络格式预览工具（V17.0.3）
 │   ├── check_em_health.py        # 东财接口健康探测（6 域低频）
 │   ├── upload_reports_to_gd.py   # GD 补传（扫描未上传 md）
-│   ├── sync_readme.py            # 旧格式 README 摘要同步工具（维护状态见 scripts/README.md）
 │   └── backup-opencode.ps1       # opencode 配置备份
 │
 ├── docs/                         # 技术文档（见 docs/README.md）
@@ -187,7 +187,7 @@ a-stock-data/
 │   ├── script_data_dict.md       # 脚本应用接口与字段来源字典
 │   └── domain_glossary.md        # 领域词汇表（术语口径统一）
 │
-├── tests/                        # pytest 测试（43 个测试模块；最近收集 612 项，见 tests/README.md）
+├── tests/                        # pytest 测试（模块和用例数见 tests/README.md）
 ├── pyproject.toml                # pytest / mypy / black 等工具配置中心
 ├── requirements.txt              # 运行时依赖列表
 ├── requirements-dev.txt          # 开发依赖列表（测试/类型/格式）
@@ -210,7 +210,7 @@ a-stock-data/
 |:---|:---|:---|
 | `core/` | 核心支撑模块(数据层/传输/缓存/日历同步/上传) | data_provider / tdx_client / stock_cache |
 | `stock_common/` | 公共业务模块(网络层/数据源/评分/报告基类) | sc_network / sc_datasource / sc_report_runner |
-| `credentials/` | 凭据集中目录(不入库) | client_secrets / credentials / ths_credentials |
+| `credentials/` | 可选本地凭据(不入库) | Google OAuth / Eastmoney Cookie |
 | `scripts/` | 可复用运维命令 | run_tests.ps1 / update_calendar / clean_cache |
 | `docs/` | 技术文档(架构/决策/字段字典) | roadmap / field_dict / architecture |
 | `tests/` | pytest 测试(防退化守护) | data/ core/ reports/ infra/ |

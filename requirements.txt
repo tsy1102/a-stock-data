@@ -14,6 +14,8 @@ aiosqlite>=0.20,<1.0
 # ── 数据处理 ─────────────────────────────────────────────
 pandas>=1.0,<3.0
 numpy>=1.20,<2.0
+# pandas 读取深交所官方两融 XLSX 兜底数据所需的引擎
+openpyxl>=3.1,<4.0
 
 # ── 配置解析 ─────────────────────────────────────────────
 PyYAML>=5.4
@@ -25,16 +27,17 @@ PyYAML>=5.4
 #     二次解码可引出更多 f 字段（见 docs/eltdx_smoke_report_20260915.md）。
 #   - 北交所(83/87/88/43/46/92)快照偶发解析失败 → 上层 HTTP(ZHB/腾讯/东财) fallback。
 eltdx>=3.2.2,<4.0
+# ST 名单兜底：东财主源不可用时获取沪深 ST 名单（不含北交所）
+baostock>=0.8.9,<1.0
 # easy-tdx: TDX TCP 行情/财务兜底引擎 + ZHB 报告 ZIP 下载兜底（eltdx 无文件下载能力）。
 #   ★ 真实可维护上游 = github.com/yanwei99521/easy-tdx（PyPI 同名包已停更/404，非同一库）。
 #     本项目锁定其 1.20.8（commit 41e5637）。
 #   - 2026-09-07 起该上游仍发布**静态三握手**，对 2026-09 行情主站「握手有响应、数据请求静默空包」；
 #     必须在 import 前由 core/_tdx_handshake_patch.py 植入动态单握手（已在 tdx_client.py / zhb_client.py 顶部 import）。
 #   - 2026-08-10 实测：1.14.5 及以下 K线解码失败（TdxDecodeError）——必须 >=1.20.4。
-#   ⚠️ 从该上游全新安装需注意：其 pyproject.toml 含 [tool.hatch.build] artifacts=["web-ui/dist/"]，
-#     而 web-ui/dist 未随仓库发布（需 npm 构建、运行时不需要），直接 pip 构建会失败。
-#     安装方式：克隆后先删去该 [tool.hatch.build] 段，再 `pip install .`（本机当前已装 1.20.8）。
-easy-tdx @ git+https://github.com/yanwei99521/easy-tdx@41e56376fafa3abae0f6538f271eafd6af26d27f
+#   ⚠️ 固定提交的 wheel force-include 引用缺失的 web-ui/dist，直接从 Git 安装会构建失败。
+#     vendor wheel 来自该提交；构建时仅移除缺失目录的 force-include，保留 packages 配置。
+./vendor/easy_tdx-1.20.8-py3-none-any.whl
 # mootdx: V17.3.x 已退役（停止维护、且同样受 2026-09 静态握手空包影响）。详见 core/tdx_client.py / core/zhb_client.py。
 
 # ── V16.1.7 新数据源（可选，缺失时对应增强功能自动降级）──────────

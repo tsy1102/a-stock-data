@@ -1,17 +1,10 @@
-# `scripts/` 工具说明
+# `scripts/` 工具索引
 
-> 当前项目版本：`VERSION` 文件中的 17.4.23。本文记录当前维护的脚本入口；具体参数以脚本 `--help` 和 `AGENTS.md` 为准。
+当前版本见仓库根目录 `VERSION`。脚本参数以各自的 `--help` 和本仓库 `AGENTS.md` 为准。
 
-## Python 与 PowerShell 入口
+## 运行入口
 
-仓库以 Windows PowerShell 5.1 为默认 Shell。运行 Python 工具时使用 `run_with_system_python.ps1`，它优先读取 `SYSTEM_PYTHON_EXE`，随后检查项目 `.venv`、`py -3.12`、Windows Store Python 和 PATH 上的解释器，并校验 Python 版本。
-
-```powershell
-.\scripts\run_with_system_python.ps1 scripts\capture_field_probe.py --help
-.\scripts\run_with_system_python.ps1 scripts\gen_field_matrix.py --check
-```
-
-测试统一通过 `run_tests.ps1`：
+Windows 开发默认使用 PowerShell。`run_with_system_python.ps1` 校验并选择 Python 3.12；`SYSTEM_PYTHON_EXE` 可显式指定解释器。测试通过 `run_tests.ps1` 运行：
 
 ```powershell
 .\scripts\run_tests.ps1 -Mode skip_real
@@ -19,58 +12,44 @@
 .\scripts\run_tests.ps1 -Mode expression -Expression "test_cache"
 ```
 
-如执行策略阻止脚本，可对单次运行使用 `powershell.exe -NoProfile -ExecutionPolicy Bypass -File ...`；不需要修改当前用户或系统的永久执行策略。
+`run_with_system_python.bat` 和 `upload_reports_to_gd.bat` 是兼容包装器。`run_governance_gates.sh` 是供 POSIX shell 使用的本地脚本；当前仓库未配置 CI 或 pre-commit 自动调用它。
 
-仓库仍包含 `.bat` 兼容包装器，供旧式 cmd 环境使用。项目默认工作流和本仓库的脚本维护按 PowerShell 版本执行。
+## 字段采集与研究
 
-## 字段采集与破解
+| 脚本 | 用途 |
+|:---|:---|
+| `capture_field_probe.py` | 采集字段样本至 `docs/field_verification/<日期>/`；会访问数据源并写入采集文件。 |
+| `collide.py`、`collision_rules.py` | 跨源字段对撞与候选规则；对撞结果用于研究，不直接改主字典。 |
+| `field_meta.py` | 为采集样本补充来源与锚点元数据。 |
+| `crack_push2_status_codes_20260921.py` | Push2 状态码研究脚本。 |
+| `crack_ulist_f88_95_20260921.py` | Ulist 高位字段研究脚本。 |
+| `crack_zhb_anchored_20260921.py` | 基于锚点样本的 ZHB 字段研究脚本。 |
 
-- `capture_field_probe.py`：采集字段实测数据并写入 `docs/field_verification/<日期>/`。`--help` 列出日期、刷新样本池和 dry-run 选项；原始采集 JSON 属于可重建数据，按 `.gitignore` 规则处理。
-- `collide.py`：读取已保存的跨源采集数据，生成字段对撞报告；只发现候选，不直接改主字典。
-- `collision_rules.py`：对撞阈值与规则的代码定义，可用 `--emit` 生成规则说明。
-- `field_meta.py`：为采集数据写入字段来源和锚点元数据。
+## 字段登记、生成与治理
 
-常用调用：
+| 脚本 | 用途与写入行为 |
+|:---|:---|
+| `extract_registry.py`、`field_registry_api.py` | 从主字典提取登记信息；后者是多个治理脚本共用的内部 API。 |
+| `registry_parity.py` | 检查登记表、主字典投影和字段矩阵一致性。 |
+| `gen_field_dict.py`、`gen_field_matrix.py` | 生成字典/矩阵片段；`--check` 只检查、不写入。 |
+| `gen_ulist_subdict.py`、`gen_zhb_subdict.py` | 生成对应接口的字典子表及镜像。 |
+| `audit_field_completeness.py`、`lint_field_names.py`、`lint_field_same_number.py` | 字段来源完整度、命名和编号检查。 |
+| `archive_field_preflight.py` | 检查字段采集归档的 Markdown 契约。 |
+| `verify_data_access.py`、`verify_sync_check.py` | 分别检查生产数据访问边界和字典/代码同步；同步检查会更新审计报告。 |
+| `cleanse_dict_provenance.py` | 整理字段证据叙述；默认 dry-run，`--apply` 会改写字典并追加溯源记录。 |
+| `cleanse_dict_verif_narrative.py` | 生成字段结论列清理建议；默认 dry-run 不写文件，需显式传 `--plan-output <路径>` 才保存计划；`--apply` 会改写字典并追加溯源记录。 |
 
-```powershell
-.\scripts\run_with_system_python.ps1 scripts\capture_field_probe.py --help
-.\scripts\run_with_system_python.ps1 scripts\collide.py --help
-.\scripts\run_with_system_python.ps1 scripts\collision_rules.py --emit
-```
+## 报告、数据与维护
 
-## 字段登记与治理
+| 脚本 | 用途 |
+|:---|:---|
+| `backtest_topn.py` | 基于本地历史数据回测 Top-N 选股。 |
+| `check_em_health.py` | 低频探测东方财富服务状态；按脚本限频执行。 |
+| `clean_cache.py` | 调用统一缓存清理入口；清理范围以 `--help` 为准。 |
+| `fmt_preview.py` | 离线预览报告 Markdown 渲染。 |
+| `perf_compare.py` | 本地数据结构性能对比。 |
+| `update_calendar.py` | 更新本地交易日历数据。 |
+| `upload_reports_to_gd.py` | 补传 Google Drive 报告；支持先预览待上传项目。 |
+| `backup-opencode.ps1` | 备份本机 OpenCode 配置。 |
 
-- `extract_registry.py`：从主字典构建字段登记表候选。
-- `registry_parity.py`：检查登记表与主字典投影的一致性。
-- `gen_field_dict.py --check`、`gen_field_matrix.py --check`：只读检查生成内容是否漂移。
-- `archive_field_preflight.py`：字段采集归档契约预检。
-- `audit_field_completeness.py`：对照采集源与字段登记，检查来源覆盖。
-- `verify_data_access.py`：检查生产代码是否越过数据访问公开层。
-- `verify_sync_check.py`：检查字段文档与代码同步；此脚本会生成/更新审计报告。
-- `lint_field_same_number.py`、`lint_field_names.py`：字段编号和命名检查。
-
-只读检查可逐项运行：
-
-```powershell
-.\scripts\run_with_system_python.ps1 scripts\registry_parity.py
-.\scripts\run_with_system_python.ps1 scripts\gen_field_dict.py --check
-.\scripts\run_with_system_python.ps1 scripts\gen_field_matrix.py --check
-.\scripts\run_with_system_python.ps1 scripts\archive_field_preflight.py
-.\scripts\run_with_system_python.ps1 scripts\verify_data_access.py
-```
-
-`run_governance_gates.sh` 是 POSIX Shell 的本地编排脚本。当前仓库没有配置 GitHub Actions 工作流或 pre-commit 配置；不要把该脚本描述为 CI/pre-commit 的共享入口。Windows 原生 PowerShell 环境可用上面的 Python 入口分别运行闸门。
-
-## 其他维护工具
-
-- `backtest_topn.py`：基于历史数据运行 Top-N 回测；遇到无效 ZHB ZIP 会给出解析错误。
-- `clean_cache.py`：缓存清理命令封装。
-- `check_em_health.py`：低频探测东方财富服务可用性；遵守脚本给出的请求间隔。
-- `fmt_preview.py`：离线预览报告 Markdown 渲染。
-- `gen_field_matrix.py`：从字段登记表生成主字典中的字段×来源矩阵；不带 `--check` 时会写入生成结果。
-- `sync_readme.py`：旧格式摘要同步工具。当前根 README 不含其目标标记，且当前 CHANGELOG 标题格式不匹配该脚本解析器；不要运行它覆盖 README，版本说明按需手动同步。
-- `update_calendar.py`：更新本地交易日历数据。
-- `upload_reports_to_gd.py`：补传尚未上传到 Google Drive 的报告；先用 `--dry-run` 检查待上传项。
-- `perf_compare.py`：本地数据结构性能对比工具。
-
-执行会改写字典、矩阵、README 或审计报告的脚本前，先确认其写入目标和当前工作区状态。对可重建缓存的清理只影响脚本明确支持的缓存目录，不应借此清理研究归档或用户采集文件。
+会改写字典、矩阵、采集记录或审计报告的工具，先检查其写入目标和工作区状态。`cache/` 里的 SQLite、K 线和 ZHB 快照不是同一种缓存；不要通过删除整个目录来代替有范围的清理。

@@ -7,7 +7,7 @@
 ## 设计约束
 
 - **零导入期环**: 本子包所有跨边界引用（`core.data_provider` / `stock_common.*`）一律**函数体内懒 import**, 不触发 `core↔stock_common` 导入期循环(V17.3 后该循环已在 `core/_accessors.py` 叶子层根治, 但本包仍保持懒引约定)。
-- **依赖方向**: 子模块单向依赖 `_shared`(共享状态/常量) 与上层 `core` / `stock_common`; `_official_backup.py` 为历史片段, **不参与运行时**, 仅供回溯。
+- **依赖方向**: 子模块单向依赖 `_shared`(共享状态/常量) 与上层 `core` / `stock_common`。`_official_backup.py` 是运行时官方兜底适配器：融资融券接口无数据时由 `_financials.py` 调用，北交所行情无数据时由 `_quotes.py` 调用。
 
 ## 各子模块职责
 
@@ -34,7 +34,7 @@
 | `_v39_compat.py` | 上游适配器共用 helper 的本地兼容实现 | `_v39_*` helpers |
 | `_zhb.py` | ZHB 行情衍生字段: 成交额 / 年至今涨跌 / 股息率 / 主力净额 / 连板天数等(V17.3 改引 `core._accessors`) | `get_amount_wan` / `get_dividend_yield` / `get_streak_days` |
 | `_misc.py` | 其他零散数据源: 互动易 / 新闻 / 公告 / 情绪 | `get_cninfo_irm` / `get_news` |
-| `_official_backup.py` | 单文件时代的官方备份片段(**参考用, 不主动调用**) | — |
+| `_official_backup.py` | 上交所/深交所两融、北交所行情官方兜底 | `get_margin_trading_backup` / `get_bse_quote_backup` |
 
 ## 调用约定
 

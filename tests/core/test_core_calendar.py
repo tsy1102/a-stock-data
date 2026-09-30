@@ -15,7 +15,19 @@ import os
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from stock_common.stock_calendar import is_workday, _wrap_date, _validate_date
+from core import zhb_client
+from stock_common.stock_calendar import (
+    _validate_date,
+    _wrap_date,
+    add_trading_days,
+    is_trading_day,
+    is_workday,
+    latest_market_data_date,
+    recent_trading_dates,
+    trading_day_age,
+    trading_day_window,
+    trading_days_between,
+)
 
 
 class TestWrapDate:
@@ -93,48 +105,48 @@ class TestKnownHolidays:
         assert is_workday(datetime.date(2026, 10, 5)) is False
 
 
-class TestKnownWorkdays:
-    """已知调休工作日测试（周末但需上班）"""
+class TestMakeupWeekendsAreNotTradingDays:
+    """民用调休补班日周末仍是证券市场休市日。"""
 
     def test_2025_spring_festival_makeup_jan_26(self):
-        # 2025年春节调休：1月26日（周日）→ 工作日
-        assert is_workday(datetime.date(2025, 1, 26)) is True
+        # 2025年春节调休：1月26日（周日）→ 市场休市
+        assert is_workday(datetime.date(2025, 1, 26)) is False
 
     def test_2025_spring_festival_makeup_feb_8(self):
-        # 2025年春节调休：2月8日（周六）→ 工作日
-        assert is_workday(datetime.date(2025, 2, 8)) is True
+        # 2025年春节调休：2月8日（周六）→ 市场休市
+        assert is_workday(datetime.date(2025, 2, 8)) is False
 
     def test_2025_labour_makeup_apr_27(self):
-        # 2025年劳动节调休：4月27日（周日）→ 工作日
-        assert is_workday(datetime.date(2025, 4, 27)) is True
+        # 2025年劳动节调休：4月27日（周日）→ 市场休市
+        assert is_workday(datetime.date(2025, 4, 27)) is False
 
     def test_2025_national_day_makeup_sep_28(self):
-        # 2025年国庆调休：9月28日（周日）→ 工作日
-        assert is_workday(datetime.date(2025, 9, 28)) is True
+        # 2025年国庆调休：9月28日（周日）→ 市场休市
+        assert is_workday(datetime.date(2025, 9, 28)) is False
 
     def test_2025_national_day_makeup_oct_11(self):
-        # 2025年国庆调休：10月11日（周六）→ 工作日
-        assert is_workday(datetime.date(2025, 10, 11)) is True
+        # 2025年国庆调休：10月11日（周六）→ 市场休市
+        assert is_workday(datetime.date(2025, 10, 11)) is False
 
     def test_2026_spring_festival_makeup_feb_14(self):
-        # 2026年春节调休：2月14日（周六）→ 工作日
-        assert is_workday(datetime.date(2026, 2, 14)) is True
+        # 2026年春节调休：2月14日（周六）→ 市场休市
+        assert is_workday(datetime.date(2026, 2, 14)) is False
 
     def test_2026_spring_festival_makeup_feb_28(self):
-        # 2026年春节调休：2月28日（周六）→ 工作日
-        assert is_workday(datetime.date(2026, 2, 28)) is True
+        # 2026年春节调休：2月28日（周六）→ 市场休市
+        assert is_workday(datetime.date(2026, 2, 28)) is False
 
     def test_2026_labour_makeup_may_9(self):
-        # 2026年劳动节调休：5月9日（周六）→ 工作日
-        assert is_workday(datetime.date(2026, 5, 9)) is True
+        # 交易所 5 月 6 日复市；5 月 9 日周六仍休市
+        assert is_workday(datetime.date(2026, 5, 9)) is False
 
     def test_2026_national_day_makeup_sep_20(self):
-        # 2026年国庆调休：9月20日（周日）→ 工作日
-        assert is_workday(datetime.date(2026, 9, 20)) is True
+        # 2026年国庆调休：9月20日（周日）→ 市场休市
+        assert is_workday(datetime.date(2026, 9, 20)) is False
 
     def test_2026_national_day_makeup_oct_10(self):
-        # 2026年国庆调休：10月10日（周六）→ 工作日
-        assert is_workday(datetime.date(2026, 10, 10)) is True
+        # 2026年国庆调休：10月10日（周六）→ 市场休市
+        assert is_workday(datetime.date(2026, 10, 10)) is False
 
 
 class TestRegularWeekdays:
@@ -179,6 +191,56 @@ class TestWithDatetimeInput:
     def test_datetime_input_weekend(self):
         dt = datetime.datetime(2025, 6, 21, 10, 0, 0)
         assert is_workday(dt) is False
+
+
+class TestTradingDayArithmetic:
+    def test_makeup_weekend_is_closed_and_next_session_skips_it(self):
+        assert is_trading_day(datetime.date(2026, 5, 9)) is False
+        assert add_trading_days(datetime.date(2026, 5, 8), 1) == datetime.date(2026, 5, 11)
+
+    def test_holiday_weekend_age_counts_sessions_not_calendar_days(self):
+        start = datetime.date(2026, 9, 24)
+        end = datetime.date(2026, 9, 28)
+        assert trading_days_between(start, end) == 1
+        assert trading_days_between(end, start) == -1
+
+    def test_market_data_reference_has_0930_boundary(self):
+        before_open = datetime.datetime(2026, 9, 28, 9, 29)
+        at_open = datetime.datetime(2026, 9, 28, 9, 30)
+        assert latest_market_data_date(before_open) == datetime.date(2026, 9, 24)
+        assert latest_market_data_date(at_open) == datetime.date(2026, 9, 28)
+        assert trading_day_age(datetime.date(2026, 9, 24), before_open) == 0
+        assert trading_day_age(datetime.date(2026, 9, 24), at_open) == 1
+
+    def test_trade_day_window_skips_mid_autumn_closure_and_makeup_sunday(self):
+        start, end = trading_day_window(5, datetime.datetime(2026, 9, 28, 9, 30))
+        assert (start, end) == (datetime.date(2026, 9, 21), datetime.date(2026, 9, 28))
+        assert recent_trading_dates(4, datetime.date(2026, 9, 28)) == [
+            datetime.date(2026, 9, 28),
+            datetime.date(2026, 9, 24),
+            datetime.date(2026, 9, 23),
+            datetime.date(2026, 9, 22),
+        ]
+
+    def test_zhb_freshness_uses_trading_day_age(self, monkeypatch):
+        current = [datetime.datetime(2026, 9, 28, 9, 29)]
+
+        class FixedDateTime:
+            @staticmethod
+            def now():
+                return current[0]
+
+            @staticmethod
+            def strptime(value, fmt):
+                return datetime.datetime.strptime(value, fmt)
+
+        monkeypatch.setattr(zhb_client, "datetime", FixedDateTime)
+        fake_zhb = type("FakeZhb", (), {"date": "20260924"})()
+
+        assert zhb_client.ZhbData.is_fresh(fake_zhb, max_delay_days=0) is True
+        current[0] = datetime.datetime(2026, 9, 28, 9, 30)
+        assert zhb_client.ZhbData.is_fresh(fake_zhb, max_delay_days=0) is False
+        assert zhb_client.ZhbData.is_fresh(fake_zhb, max_delay_days=1) is True
 
 
 class TestEdgeCases:

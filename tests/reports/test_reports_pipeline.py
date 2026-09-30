@@ -30,6 +30,7 @@ import os
 import tempfile
 import unittest
 from contextlib import redirect_stdout
+from datetime import date
 from pathlib import Path
 from unittest import mock
 
@@ -306,6 +307,15 @@ class TestLngRunnerPipeline(_BatchMixin, _RunnerTestBase):
     """长线报告：用模块内 industry_comparison(20)，不走公共 get_industry_comparison。"""
 
     MOD, CLS, RTYPE = L, "LngReportRunner", "lng"
+
+    def test_insider_change_window_uses_trading_calendar(self):
+        with mock.patch(
+            "stock_common.stock_calendar.trading_day_window",
+            return_value=(date(2026, 9, 24), date(2026, 9, 28)),
+        ) as trading_window:
+            self.assertEqual(L._recent_insider_change_window_start(), "2026-09-24")
+        trading_window.assert_called_once_with(180)
+
     CACHE_PATCHES = ((L, "industry_comparison", "IND_COMP_20", 1),)
 
     def test_uses_module_level_industry_comparison_with_20(self):
@@ -367,8 +377,18 @@ class TestValRunnerPipeline(_SingleFileMixin, _RunnerTestBase):
         return runner, result, buf.getvalue(), ar, sy
 
     def test_returns_output_path(self):
-        runner, result, _out, _ar, _sy = self._run_with(_closing_run())
-        self.assertEqual(result, self._expected_path(runner))
+        runner = self._runner()
+        expected_path = self._expected_path(runner)
+        run_replacement = _closing_run(
+            after=lambda: Path(expected_path).write_text("# val report\n", encoding="utf-8")
+        )
+        with (
+            mock.patch.object(V.asyncio, "run", side_effect=run_replacement),
+            mock.patch.object(V, "run_discovery"),
+            self._silence(),
+        ):
+            result = runner.execute_pipeline()
+        self.assertEqual(result, expected_path)
 
     def test_output_path_uses_report_ts(self):
         """路径含基类统一的 report_ts（%Y%m%d_%H%M），不能用各脚本自定义口径。"""
@@ -381,24 +401,41 @@ class TestValRunnerPipeline(_SingleFileMixin, _RunnerTestBase):
     def test_async_discovery_is_invoked(self):
         """正常路径走 asyncio.run(run_discovery_async(...))。"""
         runner = self._runner()
+        expected_path = self._expected_path(runner)
+        run_replacement = _closing_run(
+            after=lambda: Path(expected_path).write_text("# val report\n", encoding="utf-8")
+        )
         with (
             mock.patch.object(V, "run_discovery_async") as asy,
-            mock.patch.object(V.asyncio, "run", side_effect=_closing_run()),
+            mock.patch.object(V.asyncio, "run", side_effect=run_replacement),
         ):
             with self._silence():
                 runner.execute_pipeline()
-        asy.assert_called_once_with(self._expected_path(runner))
+        asy.assert_called_once_with(expected_path)
 
     def test_falls_back_to_sync_when_async_fails(self):
         """asyncio 失败必须回退同步 run_discovery —— 否则全市场发现直接空手而归。"""
-        runner, _res, out, _ar, sy = self._run_with(_closing_run(exc=RuntimeError("boom")))
+        sync_side = lambda output: Path(output).write_text("# val report\n", encoding="utf-8")
+        runner, _res, out, _ar, sy = self._run_with(
+            _closing_run(exc=RuntimeError("boom")), sync_side=sync_side
+        )
         sy.assert_called_once_with(self._expected_path(runner))
         self.assertIn("退回同步模式", out)
 
     def test_no_false_success_when_file_missing(self):
         """V16.3 O39 回归守卫：asyncio 成功但文件不存在时，必须报「未生成」而非「已保存」。"""
-        _runner, _res, out, _ar, sy = self._run_with(_closing_run())
-        self.assertIn("报告未生成", out)
+        runner = self._runner()
+        buf = io.StringIO()
+        sy = mock.Mock()
+        with (
+            mock.patch.object(V, "run_discovery_async"),
+            mock.patch.object(V.asyncio, "run", side_effect=_closing_run()),
+            mock.patch.object(V, "run_discovery", sy),
+            redirect_stdout(buf),
+            self.assertRaisesRegex(RuntimeError, "报告未生成"),
+        ):
+            runner.execute_pipeline()
+        out = buf.getvalue()
         self.assertNotIn("已保存", out)
         sy.assert_not_called()
 

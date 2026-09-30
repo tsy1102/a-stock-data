@@ -125,7 +125,7 @@ EM_FULL_FIELDS = ",".join(f"f{i}" for i in range(1, 251))
 # A 方案(V17.2.5, 第九轮后落地): 字段体系(scheme)血缘标注。
 # 东方财富存在两套 f 编号体系, 同号≠同义(铁证 ulist.f62 == push2.f137 主力净):
 #   em.stock_get : push2 / em_fund_flow 走 stock/get 端点, 同一套 f 编号
-#                  (f62=主力净, f164=pe_ttm); axdata 复用其 f 命名, 占位同族。
+#                  (f62=主力净, f164=pe_ttm)。AxData 是本地 ZHB 短线指标, 独立标记。
 #   em.ulist_np  : ulist239 走 ulist.np 端点, 独立 f 编号, 与 stock/get 不同号。
 # 其余源为命名/数组体系(zhb/tdx/tencent/sina/fuyao/ftshare…), 与任何 f 编号天然不可按号对应。
 # 标注写入每个 raw_{source}.json 顶层 scheme 键 + meta.json(schemes 映射), 供对撞工具
@@ -133,7 +133,7 @@ EM_FULL_FIELDS = ",".join(f"f{i}" for i in range(1, 251))
 SOURCE_SCHEME = {
     "push2": "em.stock_get",
     "em_fund_flow": "em.stock_get",  # 同样走 push2delay stock/get, 与 push2 同编号族
-    "axdata": "em.stock_get",  # 复用 EM_FULL_FIELDS 命名(实际短纤指标, 占位同族)
+    "axdata": "axdata.shortline",  # collect_axdata 读取本地 ZHB/AxData 短线指标, 非 Eastmoney
     "ulist239": "em.ulist_np",  # 独立 f 编号体系, 与 stock/get 不同号
     "zhb": "zhb",
     "tdx": "tdx",
@@ -168,6 +168,51 @@ SOURCE_SCHEME = {
     "sse_e_interaction": "sse.e_interaction",  # 上证e互动(§10.3)
     "st_list": "em.clist",  # ST/*ST 名单(§6.8, 风险警示板过滤)
 }
+
+# 逐股采集器的预期覆盖范围。明确抽样的来源只检查实际计划采集的代码；
+# 市场级来源不伪造股票覆盖要求。
+FULL_POOL_STOCK_SOURCES = {
+    "zhb",
+    "tdx",
+    "eltdx",
+    "tencent",
+    "push2",
+    "sina",
+    "axdata",
+    "tdx_f10",
+    "fuyao",
+    "em_kline_f61",
+    "em_fund_flow",
+    "ulist239",
+    "slist",
+    "ftshare",
+    "datacenter",
+    "event_dc",
+    "tdx_f10_more",
+    "cninfo",
+    "reports",
+}
+SOURCE_REQUIRED_PATHS: Dict[str, List[tuple]] = {
+    "market_sources": [
+        ("cls_market_emotion",),
+        ("kph_limit_ladder",),
+        ("stock_changes_8201",),
+        ("kpl_sentiment",),
+        ("kpl_up_down",),
+        ("kpl_limit_up_detail",),
+        ("kpl_broken_ratio",),
+        ("plate_rotation_matrix",),
+        ("plate_rotation_top",),
+        ("dragon_tiger_today",),
+    ],
+    "clist": [("by_type", "industry"), ("by_type", "concept"), ("by_type", "area")],
+    "push2ex": [("limit_up_pool",), ("limit_down_pool",), ("limit_broken_pool",)],
+    "em_hot": [("hot_rank",)],
+    "cls": [("telegraph",)],
+    "etf": [("etf_sh",), ("etf_sz",)],
+    "news_wscn_cctv": [("cctv_xwlb",)],
+}
+NON_RAW_SOURCE_STATUS = {"baidu": "deprecated"}
 
 # 模块文档未改动处见上方 docstring; 输出文件新增 scheme 标注(见 main)。
 
@@ -225,6 +270,35 @@ def _validate_capture_data_date(value: str, only_sources=None, session_checker=N
 def _market_close_dt(date_str: str) -> datetime:
     """数据日 15:00(收盘)时间点; A股收盘后视为完整(收盘)数据。"""
     return datetime(int(date_str[:4]), int(date_str[4:6]), int(date_str[6:8]), 15, 0, 0)
+
+
+def _capture_market_phase(now: Optional[datetime] = None, session_checker=None) -> str:
+    """按实际采集时刻标记交易时段，与 meta.market_phase 的数据完整度口径分开。"""
+    current = now or datetime.now()
+    if session_checker is None:
+        from stock_common.stock_calendar import is_workday_with_zhb_supplement
+
+        session_checker = is_workday_with_zhb_supplement
+    try:
+        if not session_checker(current.date()):
+            return "non_trading_day"
+    except Exception:
+        return "unknown"
+
+    clock = current.time()
+    if clock < dt_time(9, 15):
+        return "pre_open"
+    if clock < dt_time(9, 25):
+        return "call_auction"
+    if clock < dt_time(9, 30):
+        return "pre_open"
+    if clock < dt_time(11, 30):
+        return "morning_session"
+    if clock < dt_time(13, 0):
+        return "lunch_break"
+    if clock < dt_time(15, 0):
+        return "afternoon_session"
+    return "closed"
 
 
 def _is_closed_phase_now(date_str: str) -> bool:
@@ -504,6 +578,28 @@ def collect_tdx(pool: list) -> dict:
     return out
 
 
+def _eltdx_preopen_not_ready(exc: Exception) -> bool:
+    """Recognize the known shortline readiness message only before the 09:25 cut-off."""
+    message = str(exc).lower()
+    not_ready = any(
+        marker in message
+        for marker in (
+            "shortline indicators not ready before 09:25",
+            "shortline indicators not ready before 9:25",
+            "短线指标尚未就绪",
+            "短线指标未就绪",
+        )
+    )
+    return not_ready and datetime.now().time() < dt_time(9, 25)
+
+
+def _eltdx_failure_marker(exc: Exception) -> dict:
+    message = str(exc)[:200]
+    if _eltdx_preopen_not_ready(exc):
+        return {"__skipped__": f"deferred: {message}"}
+    return {"__error__": message}
+
+
 def collect_eltdx(pool: list, lite: bool = False) -> dict:
     """eltdx 全字段采集（V17.2.15, 主字典第 24 源）。
 
@@ -541,7 +637,7 @@ def collect_eltdx(pool: list, lite: bool = False) -> dict:
         return str(o)
 
     def _ecode(code: str) -> str:
-        c = str(code)
+        c = str(code).lower()
         if c.startswith(("sh", "sz", "bj")):
             return c
         if c.startswith(("6", "5", "9", "11", "13")):
@@ -594,11 +690,12 @@ def collect_eltdx(pool: list, lite: bool = False) -> dict:
             try:
                 _gh[_name] = _jfy(_fn())
             except Exception as _e:
-                _gh[_name] = {"__error__": str(_e)[:200]}
+                _gh[_name] = _eltdx_failure_marker(_e)
         # ── 逐股 ──
         # 短线指标(逐股, 41 字段/股) -> 命中映射(_sl_map); 主线程逐股直调
         # (实测 ~1.0s/股, A股与 BSE 均安全, BSE 快速报错不挂)。
         _sl_map = {}
+        _sl_errors: Dict[str, dict] = {}
         # V17.2.28: 批量 shortline_indicators 进后台线程会死锁挂起, 且遇 BSE 坏码整批挂起;
         # 改用主线程逐股直调(实测 ~1.0s/股, A股与 BSE 均安全, BSE 快速报错不挂), 绝无挂起。
         for _ec in ecodes:
@@ -606,15 +703,32 @@ def collect_eltdx(pool: list, lite: bool = False) -> dict:
                 _sl_one = client.helpers.shortline_indicators([_ec])
                 # shortline_indicators 返回 ShortlineIndicatorTable(非 list); 须取 .rows 迭代,
                 # 否则会遍历 dataclass 字段而非记录, 导致 shortline 永远挂不上。
+                _matched = False
                 for _rec in getattr(_sl_one, "rows", None) or []:
                     _recd = _jfy(_rec)
-                    # eltdx shortline 记录 code=纯数字(600000), 而逐股循环 ec=全码(sh600000);
-                    # 以 full_code 为主键, 使 per-stock 挂载 `if ec in _sl_map` 命中。
                     _cc = _recd.get("full_code") or _recd.get("code")
                     if _cc:
-                        _sl_map[_cc] = _recd
-            except Exception:
-                continue
+                        _reported = str(_cc).lower()
+                        _reported_ec = (
+                            _reported
+                            if _reported.startswith(("sh", "sz", "bj"))
+                            else _ecode(_reported)
+                        )
+                        if _reported_ec == _ec:
+                            _sl_map[_ec] = _recd
+                            _matched = True
+                if not _matched:
+                    if _is_bse(_ec):
+                        _sl_errors[_ec] = {
+                            "__skipped__": "BSE code: shortline helper returned no row"
+                        }
+                    else:
+                        _sl_errors[_ec] = {"__error__": "shortline response missing requested code"}
+            except Exception as _e:
+                if _is_bse(_ec) and not _eltdx_preopen_not_ready(_e):
+                    _sl_errors[_ec] = {"__skipped__": "BSE code: shortline helper unsupported"}
+                else:
+                    _sl_errors[_ec] = _eltdx_failure_marker(_e)
         # BSE 股: eltdx 所有 API 对其均挂起/失败(坏码 marker 缺失), 不调用,
         # 逐股循环对 BSE 直接记 skipped, 避免单点调用同样挂起。
         # ── 行情快照(A股批量一次取全部, 避免逐股 RPC 往返) ──
@@ -656,7 +770,12 @@ def collect_eltdx(pool: list, lite: bool = False) -> dict:
             # 行情快照(含 tail_raw 原始帧尾) —— 已由批量 _snap_map 预取
             try:
                 if ec in _snap_map:
-                    rec["quote_snapshot"] = _jfy(_snap_map[ec])
+                    _snapshot = _jfy(_snap_map[ec])
+                    rec["quote_snapshot"] = (
+                        _snapshot
+                        if _snapshot is not None
+                        else {"__error__": "snapshot batch returned an empty record"}
+                    )
                 elif _is_bse(ec):
                     # BSE 已在前述逐股分支尝试且预期缺 marker, 不重复调用(避免批量式挂起)
                     rec["quote_snapshot"] = {
@@ -667,7 +786,11 @@ def collect_eltdx(pool: list, lite: bool = False) -> dict:
                     _snaps = (
                         getattr(_snap, "snapshots", _snap) if not isinstance(_snap, list) else _snap
                     )
-                    rec["quote_snapshot"] = _jfy(_snaps[0]) if _snaps else None
+                    rec["quote_snapshot"] = (
+                        _jfy(_snaps[0])
+                        if _snaps
+                        else {"__error__": "snapshot request returned no record"}
+                    )
             except Exception as _e:
                 rec["quote_snapshot"] = {"__error__": str(_e)[:200]}
             # 日K(最新若干根 + record_hex 原始记录) —— lite 模式跳过(与 tdx 源冗余, 对撞未消费)
@@ -689,6 +812,12 @@ def collect_eltdx(pool: list, lite: bool = False) -> dict:
             # 短线指标(命中)
             if ec in _sl_map:
                 rec["shortline"] = _sl_map[ec]
+            elif ec in _sl_errors:
+                rec["shortline"] = _sl_errors[ec]
+            elif _is_bse(ec):
+                rec["shortline"] = {"__skipped__": "BSE code: shortline helper unsupported"}
+            else:
+                rec["shortline"] = {"__error__": "shortline response missing requested code"}
             # F10 新闻(仅作 eltdx 能力登记; 不替代东财主路径) —— lite 模式跳过
             if (not lite) and (not _is_bse(ec)):
                 try:
@@ -773,6 +902,24 @@ def _request_failure_summary(label: str, detail: dict) -> str:
     return f"{label}: " + ", ".join(parts)
 
 
+def _request_is_rate_limited(detail: dict) -> bool:
+    """Treat explicit IP bans and HTTP 403/429 as a host-level circuit-breaker signal."""
+    kind = str(detail.get("kind") or "").lower()
+    status = detail.get("status_code")
+    status_code: Optional[int] = None
+    if isinstance(status, int):
+        status_code = status
+    elif isinstance(status, str):
+        try:
+            status_code = int(status)
+        except ValueError:
+            status_code = None
+    return kind in {"ip_banned", "http_403", "http_429", "rate_limited"} or status_code in (
+        403,
+        429,
+    )
+
+
 def collect_push2(pool: list) -> dict:
     """东财 push2 stock/get 显式全字段(f1-f250, EM_FULL_FIELDS)。
 
@@ -798,6 +945,9 @@ def collect_push2(pool: list) -> dict:
     # 被封再回退其他 push2 源)。
     fields = EM_FULL_FIELDS  # f1-f250 显式全字段(与主字典口径对齐)
     delay_fail_streak = 0
+    primary_fail_streak = 0
+    delay_circuit_open = False
+    primary_circuit_open = False
     out: Dict[str, Any] = {"stocks": {}}
     for p in pool:
         c = p["code"]
@@ -805,10 +955,12 @@ def collect_push2(pool: list) -> dict:
         r = None
         used_host = ""
         delay_domain = "push2delay.eastmoney.com"
+        primary_domain = "push2.eastmoney.com"
         delay_error: Dict[str, Any] = {}
-        delay_banned = _em_is_banned(delay_domain)
+        primary_error: Dict[str, Any] = {}
+        delay_banned = delay_circuit_open or _em_is_banned(delay_domain)
         # 首选 push2delay 镜像域(独立风控面, 实测可用率 ~95%); 若已被任一进程跨进程标记封禁则跳过
-        if delay_fail_streak < 3 and not delay_banned:
+        if not delay_banned:
             try:
                 r = _quick_request(
                     "https://push2delay.eastmoney.com/api/qt/stock/get",
@@ -829,6 +981,8 @@ def collect_push2(pool: list) -> dict:
                     delay_fail_streak = 0
                 else:
                     delay_fail_streak += 1
+                    if _request_is_rate_limited(delay_error) or delay_fail_streak >= 3:
+                        delay_circuit_open = True
             except Exception as exc:
                 delay_fail_streak += 1
                 r = None
@@ -838,7 +992,9 @@ def collect_push2(pool: list) -> dict:
                     "error_type": type(exc).__name__,
                     "message": str(exc).split("?", 1)[0][:160],
                 }
-        elif delay_banned:
+                if delay_fail_streak >= 3:
+                    delay_circuit_open = True
+        elif _em_is_banned(delay_domain):
             delay_error = {"kind": "ip_banned", "domain": delay_domain, "attempts": 0}
         else:
             delay_error = {
@@ -846,33 +1002,52 @@ def collect_push2(pool: list) -> dict:
                 "domain": delay_domain,
                 "attempts": 0,
             }
-        # 镜像域连续失败 → 兜底试 push2 主域(共享风控面; 镜像域若因总封禁同崩则主域亦大概率失败)
+        # 只有在未触发封禁/失败熔断的域上才走备用请求; 每个股票、每个域最多一次。
         if r is None:
-            primary_error: Dict[str, Any] = {}
-            try:
-                r = _quick_request(
-                    "https://push2.eastmoney.com/api/qt/stock/get",
-                    params={
-                        "secid": secid,
-                        "fltt": "2",
-                        "invt": "2",
-                        "fields": fields,
-                        "ut": "fa5fd1943c7b386f172d6893dbfba10b",
-                    },
-                    headers={"Referer": "https://quote.eastmoney.com/"},
-                    timeout=10,
-                    max_retries=1,
-                    error_out=primary_error,
-                )
-                if r is not None:
-                    used_host = "push2"
-            except Exception as exc:
-                r = None
+            primary_banned = primary_circuit_open or _em_is_banned(primary_domain)
+            if not primary_banned:
+                try:
+                    r = _quick_request(
+                        "https://push2.eastmoney.com/api/qt/stock/get",
+                        params={
+                            "secid": secid,
+                            "fltt": "2",
+                            "invt": "2",
+                            "fields": fields,
+                            "ut": "fa5fd1943c7b386f172d6893dbfba10b",
+                        },
+                        headers={"Referer": "https://quote.eastmoney.com/"},
+                        timeout=10,
+                        max_retries=1,
+                        error_out=primary_error,
+                    )
+                    if r is not None:
+                        used_host = "push2"
+                        primary_fail_streak = 0
+                    else:
+                        primary_fail_streak += 1
+                        if _request_is_rate_limited(primary_error) or primary_fail_streak >= 3:
+                            primary_circuit_open = True
+                except Exception as exc:
+                    primary_fail_streak += 1
+                    r = None
+                    primary_error = {
+                        "kind": "request_exception",
+                        "domain": primary_domain,
+                        "error_type": type(exc).__name__,
+                        "message": str(exc).split("?", 1)[0][:160],
+                    }
+                    if primary_fail_streak >= 3:
+                        primary_circuit_open = True
+            else:
                 primary_error = {
-                    "kind": "request_exception",
-                    "domain": "push2.eastmoney.com",
-                    "error_type": type(exc).__name__,
-                    "message": str(exc).split("?", 1)[0][:160],
+                    "kind": (
+                        "ip_banned"
+                        if _em_is_banned(primary_domain)
+                        else "suppressed_after_failures"
+                    ),
+                    "domain": primary_domain,
+                    "attempts": 0,
                 }
         if r is None:
             out["stocks"][c] = {
@@ -885,7 +1060,15 @@ def collect_push2(pool: list) -> dict:
                 )
             }
             continue
-        data = (r.json() or {}).get("data") or {}
+        try:
+            payload = r.json() or {}
+            data = payload.get("data") or {}
+            if not isinstance(data, dict) or not data:
+                out["stocks"][c] = {"__error__": f"{used_host} empty payload (no stock/get data)"}
+                continue
+        except Exception as exc:
+            out["stocks"][c] = {"__error__": f"{used_host} response parse failed: {str(exc)[:160]}"}
+            continue
         out["stocks"][c] = {"secid": secid, "host": used_host, "n_fields": len(data), "data": data}
     return out
 
@@ -941,7 +1124,10 @@ def collect_axdata(pool: list) -> dict:
         c = p["code"]
         try:
             rec = get_shortline_indicators(c) or {}
-            out["stocks"][c] = {"n_fields": len(rec), "data": rec}
+            if not rec:
+                out["stocks"][c] = {"__error__": "AxData returned no shortline fields"}
+            else:
+                out["stocks"][c] = {"n_fields": len(rec), "data": rec}
         except Exception as e:
             out["stocks"][c] = {"__error__": str(e)[:200]}
     return out
@@ -949,51 +1135,50 @@ def collect_axdata(pool: list) -> dict:
 
 def collect_market_sources(pool: list) -> dict:
     """市场级源(一次性): 财联社情绪/涨停天梯/盘口异动 + KPL + 板块轮动 + 龙虎榜。"""
+    import stock_common
+
     out: Dict[str, Any] = {}
-    try:
-        from stock_common import get_cls_market_emotion, get_kph_limit_ladder, get_stock_changes
 
-        out["cls_market_emotion"] = get_cls_market_emotion()
-        out["kph_limit_ladder"] = get_kph_limit_ladder()
-        out["stock_changes_8201"] = get_stock_changes("8201")
-    except Exception as e:
-        out["levistock_error"] = str(e)[:200]
-    try:
-        from stock_common import (
-            get_kpl_market_sentiment,
-            get_kpl_limit_up_detail,
-            get_kpl_broken_ratio,
-            get_kpl_up_down,
-        )
+    def capture_one(name: str, function_name: str, *args, **kwargs) -> None:
+        try:
+            fn = getattr(stock_common, function_name)
+            result = fn(*args, **kwargs)
+            out[name] = {"__error__": "collector returned None"} if result is None else result
+        except Exception as exc:
+            out[name] = {"__error__": str(exc)[:200]}
 
-        out["kpl_sentiment"] = get_kpl_market_sentiment()
-        out["kpl_up_down"] = get_kpl_up_down()
-        out["kpl_limit_up_detail"] = get_kpl_limit_up_detail()
-        out["kpl_broken_ratio"] = get_kpl_broken_ratio()
-    except Exception as e:
-        out["kpl_error"] = str(e)[:200]
+    capture_one("cls_market_emotion", "get_cls_market_emotion")
+    capture_one("kph_limit_ladder", "get_kph_limit_ladder")
+    capture_one("stock_changes_8201", "get_stock_changes", "8201")
+    capture_one("kpl_sentiment", "get_kpl_market_sentiment")
+    capture_one("kpl_up_down", "get_kpl_up_down")
+    capture_one("kpl_limit_up_detail", "get_kpl_limit_up_detail")
+    capture_one("kpl_broken_ratio", "get_kpl_broken_ratio")
+    capture_one(
+        "plate_rotation_matrix",
+        "get_plate_rotation_matrix",
+        source="kaipan",
+        days=20,
+        top_n=30,
+    )
+    capture_one("plate_rotation_top", "get_plate_rotation_top")
     try:
-        from stock_common import get_plate_rotation_matrix, get_plate_rotation_top
-
-        out["plate_rotation_matrix"] = get_plate_rotation_matrix(source="kaipan", days=20, top_n=30)
-        out["plate_rotation_top"] = get_plate_rotation_top()
-    except Exception as e:
-        out["plate_rot_error"] = str(e)[:200]
-    try:
-        from stock_common import eastmoney_datacenter
-
         trade_date = _last_completed_trading_day().strftime("%Y-%m-%d")
-        r = eastmoney_datacenter(
-            "",
-            "RPT_DAILYBILLBOARD_DETAILSNEW",
-            filter_str=f"(TRADE_DATE>='{trade_date}')(TRADE_DATE<='{trade_date}')",
-            page_size=50,
-            sort_columns="TRADE_DATE",
-            sort_types="-1",
-        )
-        out["dragon_tiger_today"] = r
-    except Exception as e:
-        out["dragon_tiger_error"] = str(e)[:200]
+    except Exception as exc:
+        out["trade_date"] = None
+        out["dragon_tiger_today"] = {"__error__": f"query date unavailable: {str(exc)[:160]}"}
+        return out
+    out["trade_date"] = trade_date
+    capture_one(
+        "dragon_tiger_today",
+        "eastmoney_datacenter",
+        "",
+        "RPT_DAILYBILLBOARD_DETAILSNEW",
+        filter_str=f"(TRADE_DATE>='{trade_date}')(TRADE_DATE<='{trade_date}')",
+        page_size=50,
+        sort_columns="TRADE_DATE",
+        sort_types="-1",
+    )
     return out
 
 
@@ -1051,6 +1236,7 @@ def collect_clist(pool: list) -> dict:
     而 push2delay/push2ex 独立可用); push2delay 失败回退 push2 主域。
     """
     from stock_common import _quick_request, UA
+    from stock_common.sc_network import _em_is_banned
 
     # §12.8.6 登记字段全集: 排名(f2/f3/f4/f12/f13/f14/f104/f105/f128/f136/f140/f141/f207)
     # + 资金流今日(f62/f184/f66/f72/f78/f84)/5日(f164/f165/f109/f257)/10日(f174/f175/f160)
@@ -1060,6 +1246,9 @@ def collect_clist(pool: list) -> dict:
     )
     TYPES = [("industry", "m:90+t:2"), ("concept", "m:90+t:3"), ("area", "m:90+t:1")]
     out: Dict[str, Any] = {"records": [], "by_type": {}}
+    domain_blocked = {"push2delay.eastmoney.com": False, "push2.eastmoney.com": False}
+    domain_failures = {"push2delay.eastmoney.com": 0, "push2.eastmoney.com": 0}
+    domain_errors: Dict[str, Dict[str, Any]] = {}
     for label, fs in TYPES:
         # V17.2.13 稳健分页: 以服务端 data.total 为权威总数驱动翻页, 避免「单页未满即误判末页」
         # 导致的概念板(400+ 只)被截断为 100 的问题; 另设 50 页硬上限防异常死循环。
@@ -1082,21 +1271,65 @@ def collect_clist(pool: list) -> dict:
             delay_error: Dict[str, Any] = {}
             primary_error: Dict[str, Any] = {}
             try:
-                r = _quick_request(
-                    "https://push2delay.eastmoney.com/api/qt/clist/get",
-                    params=params,
-                    headers=hdr,
-                    timeout=10,
-                    error_out=delay_error,
-                )
-                if r is None:
+                delay_domain = "push2delay.eastmoney.com"
+                primary_domain = "push2.eastmoney.com"
+                if domain_blocked[delay_domain]:
+                    delay_error = dict(domain_errors.get(delay_domain) or {})
+                    delay_error.update({"domain": delay_domain, "attempts": 0})
+                    delay_error.setdefault("kind", "suppressed_after_failures")
+                    r = None
+                elif _em_is_banned(delay_domain):
+                    delay_error = {"kind": "ip_banned", "domain": delay_domain, "attempts": 0}
+                    r = None
+                else:
                     r = _quick_request(
-                        "https://push2.eastmoney.com/api/qt/clist/get",
+                        "https://push2delay.eastmoney.com/api/qt/clist/get",
                         params=params,
                         headers=hdr,
                         timeout=10,
-                        error_out=primary_error,
+                        max_retries=1,
+                        error_out=delay_error,
                     )
+                    if r is None:
+                        domain_failures[delay_domain] += 1
+                        domain_errors[delay_domain] = dict(delay_error)
+                        if (
+                            _request_is_rate_limited(delay_error)
+                            or domain_failures[delay_domain] >= 3
+                        ):
+                            domain_blocked[delay_domain] = True
+                    else:
+                        domain_failures[delay_domain] = 0
+                if r is None:
+                    if domain_blocked[primary_domain]:
+                        primary_error = dict(domain_errors.get(primary_domain) or {})
+                        primary_error.update({"domain": primary_domain, "attempts": 0})
+                        primary_error.setdefault("kind", "suppressed_after_failures")
+                    elif _em_is_banned(primary_domain):
+                        primary_error = {
+                            "kind": "ip_banned",
+                            "domain": primary_domain,
+                            "attempts": 0,
+                        }
+                    else:
+                        r = _quick_request(
+                            "https://push2.eastmoney.com/api/qt/clist/get",
+                            params=params,
+                            headers=hdr,
+                            timeout=10,
+                            max_retries=1,
+                            error_out=primary_error,
+                        )
+                        if r is None:
+                            domain_failures[primary_domain] += 1
+                            domain_errors[primary_domain] = dict(primary_error)
+                            if (
+                                _request_is_rate_limited(primary_error)
+                                or domain_failures[primary_domain] >= 3
+                            ):
+                                domain_blocked[primary_domain] = True
+                        else:
+                            domain_failures[primary_domain] = 0
                 if r is None:
                     out["by_type"][label] = {
                         "__error__": (
@@ -1158,9 +1391,13 @@ def collect_slist(pool: list) -> dict:
     逐股请求(20 股), 单股失败记 __error__ 不中断(A8 禁止静默迁就)。
     """
     from stock_common import _quick_request, UA
+    from stock_common.sc_network import _em_is_banned
 
     FIELDS = "f12,f14,f3,f128,f140"  # 板块代码/名/涨跌幅/龙头名/龙头代码
     out: Dict[str, Any] = {"stocks": {}}
+    domain_blocked = {"push2delay.eastmoney.com": False, "push2.eastmoney.com": False}
+    domain_failures = {"push2delay.eastmoney.com": 0, "push2.eastmoney.com": 0}
+    domain_errors: Dict[str, Dict[str, Any]] = {}
     for p in pool:
         c = p["code"]
         secid = em_secid_prefix(c) + c
@@ -1176,22 +1413,71 @@ def collect_slist(pool: list) -> dict:
             "ut": "bd1d9ddb04089700cf9c27f6f7426281",
         }
         hdr = {"User-Agent": UA, "Referer": "https://quote.eastmoney.com/"}
+        delay_error: Dict[str, Any] = {}
+        primary_error: Dict[str, Any] = {}
         try:
-            r = _quick_request(
-                "https://push2delay.eastmoney.com/api/qt/slist/get",
-                params=params,
-                headers=hdr,
-                timeout=10,
-            )
-            if r is None:
+            delay_domain = "push2delay.eastmoney.com"
+            primary_domain = "push2.eastmoney.com"
+            if domain_blocked[delay_domain]:
+                delay_error = dict(domain_errors.get(delay_domain) or {})
+                delay_error.update({"domain": delay_domain, "attempts": 0})
+                delay_error.setdefault("kind", "suppressed_after_failures")
+                r = None
+            elif _em_is_banned(delay_domain):
+                delay_error = {"kind": "ip_banned", "domain": delay_domain, "attempts": 0}
+                r = None
+            else:
                 r = _quick_request(
-                    "https://push2.eastmoney.com/api/qt/slist/get",
+                    "https://push2delay.eastmoney.com/api/qt/slist/get",
                     params=params,
                     headers=hdr,
                     timeout=10,
+                    max_retries=1,
+                    error_out=delay_error,
                 )
+                if r is None:
+                    domain_failures[delay_domain] += 1
+                    domain_errors[delay_domain] = dict(delay_error)
+                    if _request_is_rate_limited(delay_error) or domain_failures[delay_domain] >= 3:
+                        domain_blocked[delay_domain] = True
+                else:
+                    domain_failures[delay_domain] = 0
             if r is None:
-                out["stocks"][c] = {"__error__": "request failed (both domains)"}
+                if domain_blocked[primary_domain]:
+                    primary_error = dict(domain_errors.get(primary_domain) or {})
+                    primary_error.update({"domain": primary_domain, "attempts": 0})
+                    primary_error.setdefault("kind", "suppressed_after_failures")
+                elif _em_is_banned(primary_domain):
+                    primary_error = {"kind": "ip_banned", "domain": primary_domain, "attempts": 0}
+                else:
+                    r = _quick_request(
+                        "https://push2.eastmoney.com/api/qt/slist/get",
+                        params=params,
+                        headers=hdr,
+                        timeout=10,
+                        max_retries=1,
+                        error_out=primary_error,
+                    )
+                    if r is None:
+                        domain_failures[primary_domain] += 1
+                        domain_errors[primary_domain] = dict(primary_error)
+                        if (
+                            _request_is_rate_limited(primary_error)
+                            or domain_failures[primary_domain] >= 3
+                        ):
+                            domain_blocked[primary_domain] = True
+                    else:
+                        domain_failures[primary_domain] = 0
+            if r is None:
+                out["stocks"][c] = {
+                    "__error__": (
+                        "request failed ("
+                        + _request_failure_summary("push2delay", delay_error)
+                        + "; "
+                        + _request_failure_summary("push2", primary_error)
+                        + ")"
+                    )
+                }
                 continue
             d = (r.json() or {}).get("data") or {}
             diff = d.get("diff") or []
@@ -1512,6 +1798,7 @@ def collect_em_kline_f61(pool: list) -> dict:
                 },
                 headers={"Referer": "https://quote.eastmoney.com/"},
                 timeout=15,
+                max_retries=1,
                 error_out=request_error,
             )
         except Exception as exc:
@@ -1525,9 +1812,16 @@ def collect_em_kline_f61(pool: list) -> dict:
         if r is None:
             out["stocks"][c] = {"__error__": _request_failure_summary("push2his", request_error)}
             continue
-        data = (r.json() or {}).get("data") or {}
-        klines = data.get("klines") or []
-        dktotal = data.get("dktotal") or 0
+        try:
+            payload = r.json() or {}
+            data = payload.get("data") or {}
+            if not isinstance(data, dict):
+                raise ValueError("response data is not an object")
+            klines = data.get("klines") or []
+            dktotal = data.get("dktotal") or 0
+        except Exception as exc:
+            out["stocks"][c] = {"__error__": f"push2his response parse failed: {str(exc)[:160]}"}
+            continue
         if dktotal and len(klines) > 0:  # 仅真实窗口才算成功, 杜绝空数据误存
             out["stocks"][c] = {
                 "secid": secid,
@@ -1588,6 +1882,7 @@ def collect_em_fund_flow(pool: list) -> dict:
                 },
                 headers={"Referer": "https://quote.eastmoney.com/"},
                 timeout=10,
+                max_retries=1,
                 error_out=request_error,
             )
             if r is None:
@@ -1595,7 +1890,11 @@ def collect_em_fund_flow(pool: list) -> dict:
                     "__error__": _request_failure_summary("push2delay", request_error)
                 }
                 continue
-            data = (r.json() or {}).get("data") or {}
+            payload = r.json() or {}
+            data = payload.get("data") or {}
+            if not isinstance(data, dict) or not data:
+                out["stocks"][c] = {"__error__": "push2delay empty payload (no stock/get data)"}
+                continue
             out["stocks"][c] = {"secid": secid, "n_fields": len(data), "data": data}
         except Exception as e:
             out["stocks"][c] = {"__error__": str(e)[:200]}
@@ -1614,21 +1913,40 @@ def collect_ulist239(pool: list) -> dict:
         return "0."
 
     secids = ",".join(_mkt(p["code"]) + p["code"] for p in pool)
+    request_error: Dict[str, Any] = {}
     try:
         r = _quick_request(
             "https://push2delay.eastmoney.com/api/qt/ulist.np/get",
             params={"fltt": "2", "invt": "2", "secids": secids, "fields": EM_FULL_FIELDS},
             headers={"Referer": "https://quote.eastmoney.com/"},
             timeout=15,
+            max_retries=1,
+            error_out=request_error,
         )
         if r is None:
-            return {"__error__": "request failed"}
-        diff = (r.json() or {}).get("data", {}).get("diff") or []
+            return {
+                "stocks": {},
+                "__error__": _request_failure_summary("push2delay", request_error),
+            }
+        payload = r.json() or {}
+        response_data = payload.get("data") or {}
+        diff = response_data.get("diff") or []
+        if isinstance(diff, dict):
+            diff = list(diff.values())
         out: Dict[str, Any] = {"stocks": {}}
         for item in diff:
             code = str(item.get("f12", ""))
             if code:
                 out["stocks"][code] = {"n_fields": len(item), "data": item}
+        if not out["stocks"]:
+            return {
+                "stocks": {},
+                "__error__": "push2delay ulist empty payload (0 stock records)",
+            }
+        for item in pool:
+            code = str(item.get("code", ""))
+            if code and code not in out["stocks"]:
+                out["stocks"][code] = {"__error__": "requested code missing from ulist response"}
         return out
     except Exception as e:
         return {"__error__": str(e)[:200]}
@@ -1967,89 +2285,231 @@ def dry_run(pool: list) -> None:
     print(f"  push2   : {'OK' if r is not None else 'FAIL'}")
 
 
-def assess_result(data) -> tuple:
-    """V17.2.9: 判定采集结果的真实健康度。
+def _is_error_marker_key(key: Any) -> bool:
+    text = str(key)
+    return (
+        text == "error"
+        or text.endswith("_error")
+        or (text.startswith("__error_") and text.endswith("__"))
+    )
 
-    背景: 采集函数内部普遍以 try/except 吞掉异常并写入 `{"__error__": ...}` 占位
-    (全脚本 26 处), 因此 `fn(pool)` 正常返回 **不代表采集成功**。旧逻辑据此记
-    `ok: True`, 导致 em_kline_f61 遇东财风控 20/20 全失败、push2 主域 20/20 全失败时
-    仍被标为成功(触碰公理 A8「禁止静默迁就」)。
 
-    本函数递归统计返回物中 `__error__` 的出现次数，并单独统计预期跳过的 `__skipped__`:
-      - "ok"      : 零 __error__（允许存在 __skipped__）
-      - "partial" : 存在 __error__(字段级失败, 或仅部分容器元素整体失败)
-      - "failed"  : 容器元素全部整体失败, 或整个返回物就是一个错误占位
+def _has_error_marker(value: Any) -> bool:
+    if isinstance(value, dict):
+        if any(
+            key == "__error__" or (_is_error_marker_key(key) and bool(marker))
+            for key, marker in value.items()
+        ):
+            return True
+        return any(_has_error_marker(child) for child in value.values())
+    if isinstance(value, list):
+        return any(_has_error_marker(child) for child in value)
+    return False
 
-    Args:
-        data: 采集函数返回物(通常形如 {"stocks": {code: {...}}})
 
-    Returns:
-        (ok, info); info 含 status/n_error/n_skipped 和对应样例，容器型结果另含 n_total
-    """
+def _has_root_error_marker(value: Any) -> bool:
+    return isinstance(value, dict) and any(
+        key == "__error__" or (_is_error_marker_key(key) and bool(marker))
+        for key, marker in value.items()
+    )
+
+
+def _source_expected_codes(source: str, pool: List[Dict[str, Any]]) -> Optional[List[str]]:
+    if source in FULL_POOL_STOCK_SOURCES:
+        return [str(item["code"]) for item in pool if item.get("code")]
+    if source == "research_sina":
+        return [str(item["code"]) for item in pool[:5] if item.get("code")]
+    if source == "sse_e_interaction":
+        return [
+            str(item["code"])
+            for item in pool[:3]
+            if item.get("code") and str(item["code"]).startswith(("60", "68", "900"))
+        ]
+    return None
+
+
+def _path_exists(data: Any, path: tuple) -> bool:
+    current = data
+    for key in path:
+        if not isinstance(current, dict) or key not in current:
+            return False
+        current = current[key]
+    return current is not None
+
+
+def _source_as_of_date(source: str, data: Any) -> Optional[str]:
+    """Return only an explicit source date; never substitute the folder target date."""
+    if not isinstance(data, dict):
+        return None
+    keys = (
+        "zhb_date",
+        "as_of_date",
+        "asof_date",
+        "data_date",
+        "trade_date",
+        "tradeDate",
+        "probe_trading_day",
+    )
+    for key in keys:
+        value = data.get(key)
+        if isinstance(value, (str, date, datetime)) and str(value).strip():
+            return value.strftime("%Y-%m-%d") if isinstance(value, (date, datetime)) else str(value)
+    market = data.get("market")
+    if isinstance(market, dict):
+        for key in keys:
+            value = market.get(key)
+            if isinstance(value, (str, date, datetime)) and str(value).strip():
+                return (
+                    value.strftime("%Y-%m-%d")
+                    if isinstance(value, (date, datetime))
+                    else str(value)
+                )
+    return None
+
+
+def assess_result(
+    data: Any,
+    expected_symbols: Optional[List[str]] = None,
+    required_paths: Optional[List[tuple]] = None,
+) -> tuple:
+    """Assess errors, deferred work, source contract keys and requested stock coverage."""
     n_err = 0
     sample = None
     n_skipped = 0
+    n_deferred = 0
     skip_sample = None
 
-    def walk(o):
-        nonlocal n_err, sample, n_skipped, skip_sample
-        if isinstance(o, dict):
-            if "__error__" in o:
+    def walk(value: Any) -> None:
+        nonlocal n_err, sample, n_skipped, n_deferred, skip_sample
+        if isinstance(value, dict):
+            if "__error__" in value:
                 n_err += 1
                 if sample is None:
-                    sample = str(o["__error__"])[:160]
+                    sample = str(value["__error__"])[:160]
                 return
-            if "__skipped__" in o:
+            if "__skipped__" in value:
                 n_skipped += 1
+                reason = str(value["__skipped__"])
+                if reason.lower().startswith("deferred:"):
+                    n_deferred += 1
                 if skip_sample is None:
-                    skip_sample = str(o["__skipped__"])[:160]
+                    skip_sample = reason[:160]
                 return
-            for v in o.values():
-                walk(v)
-        elif isinstance(o, list):
-            for v in o:
-                walk(v)
+            for key, child in value.items():
+                if _is_error_marker_key(key) and child:
+                    n_err += 1
+                    if sample is None:
+                        sample = str(child)[:160]
+                else:
+                    walk(child)
+        elif isinstance(value, list):
+            for child in value:
+                walk(child)
 
     walk(data)
 
-    # 顶层容器规模 + 其中"整体失败"的元素数(用于区分 partial / failed)。
-    # 注意: n_error 是**字段级**计数, 与容器元素数不同量纲, 不能直接比大小 ——
-    # 一只股票可有多个字段级 __error__, 故须单独统计"整个元素就是错误占位"的数量。
-    n_total = None
+    missing_symbols: List[str] = []
+    n_total: Optional[int] = None
     n_dead = 0
-    if isinstance(data, dict):
-        for _key in ("stocks", "records", "items"):
-            _v = data.get(_key)
-            if isinstance(_v, (dict, list)) and len(_v):
-                n_total = len(_v)
-                _items = _v.values() if isinstance(_v, dict) else _v
-                n_dead = sum(1 for it in _items if isinstance(it, dict) and "__error__" in it)
+    if expected_symbols is not None:
+        expected = {str(code) for code in expected_symbols}
+        stocks = data.get("stocks") if isinstance(data, dict) else None
+        received = set(map(str, stocks)) if isinstance(stocks, dict) else set()
+        missing_symbols = sorted(expected - received)
+        n_total = len(expected)
+        if isinstance(stocks, dict):
+            n_dead = sum(1 for record in stocks.values() if _has_error_marker(record))
+    elif isinstance(data, dict):
+        for key in ("stocks", "records", "items"):
+            container = data.get(key)
+            if isinstance(container, (dict, list)):
+                n_total = len(container)
+                items = container.values() if isinstance(container, dict) else container
+                n_dead = sum(1 for item in items if _has_error_marker(item))
                 break
 
-    if n_err == 0:
-        info = {"status": "ok", "n_error": 0}
-        if n_skipped:
-            info["n_skipped"] = n_skipped
-            info["skip_sample"] = skip_sample
-        return True, info
-
-    if isinstance(data, dict) and "__error__" in data:
-        status = "failed"  # 整个返回物即错误占位
-    elif n_total is not None and n_dead >= n_total:
-        status = "failed"  # 容器元素全部整体失败
+    missing_paths = [path for path in (required_paths or []) if not _path_exists(data, path)]
+    n_missing = len(missing_symbols) + len(missing_paths)
+    complete = n_err == 0 and n_deferred == 0 and n_missing == 0
+    if complete:
+        status = "ok"
+        ok = True
     else:
-        status = "partial"  # 字段级失败 / 仅部分元素失败
+        root_error = _has_root_error_marker(data)
+        no_stock_response = (
+            expected_symbols is not None and n_total and len(missing_symbols) == n_total
+        )
+        if (
+            root_error
+            or no_stock_response
+            or (n_total is not None and n_total > 0 and n_dead >= n_total)
+        ):
+            status = "failed"
+        else:
+            status = "partial"
+        ok = False
 
-    info = {"status": status, "n_error": n_err}
+    info: Dict[str, Any] = {"status": status, "n_error": n_err}
     if n_skipped:
         info["n_skipped"] = n_skipped
         info["skip_sample"] = skip_sample
+    if n_deferred:
+        info["n_deferred"] = n_deferred
     if n_total is not None:
         info["n_total"] = n_total
         info["n_dead"] = n_dead
+    if expected_symbols is not None:
+        info["n_expected"] = n_total
+        info["n_received"] = n_total - len(missing_symbols) if n_total is not None else 0
+        info["n_missing_stocks"] = len(missing_symbols)
+        if missing_symbols:
+            info["missing_stocks_sample"] = missing_symbols[:10]
+    if missing_paths:
+        info["n_missing_contracts"] = len(missing_paths)
+        info["missing_contracts"] = [".".join(map(str, path)) for path in missing_paths]
     if sample:
         info["error_sample"] = sample
-    return False, info
+    return ok, info
+
+
+def _has_complete_snapshot(
+    collectors: Dict[str, Callable[..., Dict[str, Any]]],
+    meta: dict,
+    out_dir: str,
+    pool: List[Dict[str, Any]],
+) -> bool:
+    """Only skip when each requested producer has a complete, assessable snapshot."""
+    source_meta = meta.get("sources") if isinstance(meta.get("sources"), dict) else {}
+    for source in collectors:
+        entry = source_meta.get(source) if isinstance(source_meta, dict) else None
+        if not isinstance(entry, dict):
+            return False
+        status = entry.get("status")
+        expected_non_raw_status = NON_RAW_SOURCE_STATUS.get(source)
+        if expected_non_raw_status:
+            if status != expected_non_raw_status:
+                return False
+            continue
+        if status in {"unwired", "deprecated"}:
+            continue
+        if entry.get("ok") is not True or status not in (None, "ok"):
+            return False
+        raw_path = os.path.join(out_dir, f"raw_{source}.json")
+        if not os.path.isfile(raw_path):
+            return False
+        try:
+            with open(raw_path, encoding="utf-8") as stream:
+                document = json.load(stream)
+        except (OSError, json.JSONDecodeError):
+            return False
+        ok, _ = assess_result(
+            document,
+            expected_symbols=_source_expected_codes(source, pool),
+            required_paths=SOURCE_REQUIRED_PATHS.get(source),
+        )
+        if not ok:
+            return False
+    return True
 
 
 def main() -> None:
@@ -2135,7 +2595,9 @@ def main() -> None:
             if data_date_domain == "calendar"
             else "closed" if _is_closed_phase_now(args.date) else "intraday"
         ),
+        "capture_market_phase": _capture_market_phase(_now),
         "sources": {},
+        "source_as_of_dates": {},
     }
     # V17.2.9 修复: --only 增量采集必须**合并**已有 meta.json, 而非整份覆盖 ——
     # 否则未参与本次采集的源会从元数据中消失(曾致 22 源元数据被单源覆写)。
@@ -2167,6 +2629,8 @@ def main() -> None:
                 meta["data_date_domain"] = "mixed"
             if isinstance(_prev.get("schemes"), dict):
                 meta["schemes"] = dict(_prev["schemes"])
+            if isinstance(_prev.get("source_as_of_dates"), dict):
+                meta["source_as_of_dates"] = dict(_prev["source_as_of_dates"])
             for _k in ("start", "zhb_data_date"):
                 if _prev.get(_k):
                     meta[_k] = _prev[_k]
@@ -2261,11 +2725,22 @@ def main() -> None:
                 except Exception:
                     pass
         _existing_raws = sorted(glob.glob(os.path.join(out_dir, "raw_*.json")))
-    if _existing_raws:
-        # 仅当「本次全部目标源」均已存在 raw 文件时判定采集物存在, 增量 --only 补采不触发跳过
-        _want = set(collectors.keys())
+    if not args.only and (
+        _existing_raws or any(source in NON_RAW_SOURCE_STATUS for source in collectors)
+    ):
         _have = {os.path.basename(p)[len("raw_") : -len(".json")] for p in _existing_raws}
-        if _want.issubset(_have):
+        snapshot_meta = {}
+        if os.path.isfile(meta_path):
+            try:
+                with open(meta_path, encoding="utf-8") as stream:
+                    candidate_meta = json.load(stream)
+                if isinstance(candidate_meta, dict):
+                    snapshot_meta = candidate_meta
+                else:
+                    print("  ⚠ 已有 meta.json 结构异常，将按需重采。", flush=True)
+            except (OSError, json.JSONDecodeError) as exc:
+                print(f"  ⚠ 已有 meta.json 不可读取，将按需重采: {exc}", flush=True)
+        if _has_complete_snapshot(collectors, snapshot_meta, out_dir, pool):
             if data_date_domain == "calendar":
                 print(
                     f"⏭ 自然日数据 {args.date} 已有完整源快照，默认幂等跳过；如需重采请加 --overwrite。",
@@ -2317,6 +2792,7 @@ def main() -> None:
     for name, fn in collectors.items():
         try:
             t1 = time.time()
+            meta["source_as_of_dates"].pop(name, None)
             # V17.2.28: eltdx 瘦身开关——仅 eltdx 支持 lite(跳过冗余/能力登记载荷)
             data = fn(pool, lite=args.eltdx_lite) if name == "eltdx" else fn(pool)
             # V17.2.12 主字典对齐: registry 已登记但本脚本暂无 producer 的源返回 __unwired__ 占位,
@@ -2355,7 +2831,12 @@ def main() -> None:
             # 采集函数会**内部吞异常**并返回 {"__error__": ...} 占位，预期跳过用 __skipped__ 标记，
             # 旧逻辑只要 fn(pool) 不抛异常就记 ok=True(曾致 em_kline_f61 20/20 全失败仍标 ok)。
             # 现按 __error__ 判定 status，并在元数据/日志中单独报告 __skipped__。
-            _ok, _info = assess_result(data)
+            _ok, _info = assess_result(
+                data,
+                expected_symbols=_source_expected_codes(name, pool),
+                required_paths=SOURCE_REQUIRED_PATHS.get(name),
+            )
+            _as_of_date = _source_as_of_date(name, data)
             _entry = {
                 "scheme": _scheme,
                 "ok": _ok,
@@ -2363,6 +2844,9 @@ def main() -> None:
                 "secs": round(time.time() - t1, 1),
                 "file": path,
             }
+            if _as_of_date:
+                _entry["as_of_date"] = _as_of_date
+                meta["source_as_of_dates"][name] = _as_of_date
             _entry.update(_info)
             meta["sources"][name] = _entry
             _skip_count = _entry.get("n_skipped", 0)
@@ -2374,8 +2858,9 @@ def main() -> None:
                 _cnt = f"{_entry['n_error']}/{_nt}" if _nt else str(_entry["n_error"])
                 print(
                     f"  ⚠ {name}: {_entry['secs']}s | {_entry['status']} | "
-                    f"{_cnt} 处 __error__ | 跳过 {_skip_count} 处 | "
-                    f"{_entry.get('error_sample', '')}",
+                    f"{_cnt} 处错误 | 缺股票 {_entry.get('n_missing_stocks', 0)} | "
+                    f"deferred {_entry.get('n_deferred', 0)} | 跳过 {_skip_count} 处 | "
+                    f"{_entry.get('error_sample') or _entry.get('skip_sample') or _entry.get('missing_stocks_sample', '')}",
                     flush=True,
                 )
         except Exception as e:

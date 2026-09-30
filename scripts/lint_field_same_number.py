@@ -81,7 +81,7 @@ BUILTIN_SCHEME = {
     "ulist239": "eastmoney.ulist.np",
     "push2_full": "eastmoney.stock_get",
     "em_fund_flow": "eastmoney.stock_get",
-    "axdata": "eastmoney.stock_get",
+    "axdata": "axdata.shortline",
     "tencent": "tencent.qt.gtimg.array",
     "zhb": "tdx.zhb.named",
     "tdx": "tdx.named",

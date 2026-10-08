@@ -21,13 +21,17 @@ import sys
 from unittest import mock
 
 import pytest
+import requests
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from stock_common.sc_datasource._ticks import (
     tencent_ticks,
     _parse_qt_snapshot,
+    _parse_qt_snapshot_details,
     _parse_tick_page,
+    _read_tencent_response,
+    _tencent_request,
     TENCENT_QT_URL,
     TENCENT_TICK_URL,
 )
@@ -39,11 +43,12 @@ from stock_common.sc_datasource._futures_sina import (
 
 
 # ─── 离线夹具(结构取自 2026-09-22 实测的源返回) ───
-def _make_snapshot(symbol, date14, amount):
-    """构造腾讯行情快照文本: 50 个 ~ 分隔字段, [30]=14位日期, [35]=价/量/额。"""
-    fields = [str(i) for i in range(50)]
+def _make_snapshot(symbol, date14, amount, aftermarket_amount_wan=None):
+    """构造腾讯行情快照；[30]=时间、[35]=价量额、[58]=盘后成交额(万元)。"""
+    fields = [str(i) for i in range(60)]
     fields[30] = date14
     fields[35] = f"10.50/1000000/{amount}"
+    fields[58] = "" if aftermarket_amount_wan is None else str(aftermarket_amount_wan)
     return f'v_{symbol}="' + "~".join(fields) + '"'
 
 
@@ -75,6 +80,10 @@ class _FakeResp:
         )
         self.url = url
         self.status_code = 200
+        self.closed = False
+
+    def close(self):
+        self.closed = True
 
 
 # ─── 1) 纯解析函数离线测试 ───
@@ -83,6 +92,15 @@ def test_parse_qt_snapshot_ok():
     assert day == "2026-09-22"
     assert clock == "150000"
     assert amount == 1500000000.0
+
+
+def test_parse_qt_snapshot_details_converts_aftermarket_wan_to_yuan():
+    snapshot = _make_snapshot("sh600519", "20260922153100", "1500000000", "0.007")
+
+    day, clock, amount, aftermarket_amount = _parse_qt_snapshot_details("sh600519", snapshot)
+
+    assert (day, clock, amount) == ("2026-09-22", "153100", 1500000000.0)
+    assert aftermarket_amount == 70.0
 
 
 def test_parse_qt_snapshot_none_match():
@@ -219,6 +237,7 @@ def test_tencent_ticks_end_to_end():
     assert df.iloc[0]["code"] == "sh600519"
     assert df.iloc[0]["amount"] == 1500000000.0
     assert df.attrs["missing_seq"] == []
+    assert df.attrs["complete"] is None
     assert "source_url" in df.columns
 
 
@@ -238,6 +257,175 @@ def test_tencent_ticks_integrity_mismatch():
     with mock.patch("stock_common.sc_datasource._ticks._quick_request", side_effect=fake_qr):
         with pytest.raises(RuntimeError):
             tencent_ticks("sh600519")
+
+
+def _run_tick_snapshot(snapshot, page_text):
+    def fake_qr(url, **kw):
+        if url.startswith(TENCENT_QT_URL):
+            return _FakeResp(snapshot.encode("gbk"), url)
+        page = (kw.get("params") or {}).get("p")
+        return _FakeResp(page_text.encode("gbk"), url) if page == 0 else _FakeResp(b"", url)
+
+    with mock.patch("stock_common.sc_datasource._ticks._quick_request", side_effect=fake_qr):
+        with mock.patch("stock_common.sc_datasource._ticks.time.sleep"):
+            return tencent_ticks("sh600519")
+
+
+@pytest.mark.parametrize(
+    ("clock", "expected"),
+    [("153059", None), ("153100", True)],
+)
+def test_tencent_ticks_complete_respects_pre_fetch_snapshot_time(clock, expected):
+    snapshot = _make_snapshot("sh600519", f"20260922{clock}", "1500000000", "0.007")
+    page = (
+        'v_detail_data_sh600519=[0,"'
+        "0/09:30:05/1500.00/0.00/100/1500000000.00/B|"
+        '1/15:01:00/1500.00/0.00/1/70.00/B"]'
+    )
+
+    result = _run_tick_snapshot(snapshot, page)
+
+    assert result.attrs["missing_seq"] == []
+    assert result.attrs["complete"] is expected
+
+
+def test_tencent_ticks_complete_false_when_postmarket_sequence_is_missing():
+    snapshot = _make_snapshot("sh600519", "20260922153100", "1500000000", "0.007")
+    page = (
+        'v_detail_data_sh600519=[0,"'
+        "0/09:30:05/1500.00/0.00/100/1500000000.00/B|"
+        '2/15:01:00/1500.00/0.00/1/70.00/B"]'
+    )
+
+    result = _run_tick_snapshot(snapshot, page)
+
+    assert result.attrs["missing_seq"] == [1]
+    assert result.attrs["complete"] is False
+
+
+def test_tencent_ticks_complete_false_when_postmarket_amount_mismatches():
+    snapshot = _make_snapshot("sh600519", "20260922153100", "1500000000", "0.008")
+    page = (
+        'v_detail_data_sh600519=[0,"'
+        "0/09:30:05/1500.00/0.00/100/1500000000.00/B|"
+        '1/15:01:00/1500.00/0.00/1/70.00/B"]'
+    )
+
+    result = _run_tick_snapshot(snapshot, page)
+
+    assert result.attrs["complete"] is False
+
+
+def test_tencent_ticks_complete_unknown_when_aftermarket_amount_is_unavailable():
+    snapshot = _make_snapshot("sh600519", "20260922153100", "1500000000")
+    page = 'v_detail_data_sh600519=[0,"0/09:30:05/1500.00/0.00/100/1500000000.00/B"]'
+
+    result = _run_tick_snapshot(snapshot, page)
+
+    assert result.attrs["complete"] is None
+
+
+def test_tencent_request_retries_5xx_once_and_uses_limited_streaming_session():
+    calls = []
+    response = _FakeResp(b"ok", "https://stock.gtimg.cn/data/index.php")
+
+    def fake_qr(url, **kwargs):
+        calls.append(kwargs.copy())
+        if len(calls) == 1:
+            kwargs["error_out"].update({"kind": "http_error", "status_code": 502})
+            return None
+        return response
+
+    with mock.patch("stock_common.sc_datasource._ticks._quick_request", side_effect=fake_qr):
+        with mock.patch("stock_common.sc_datasource._ticks.time.sleep") as sleep:
+            result = _tencent_request(TENCENT_TICK_URL, purpose="逐笔测试")
+
+    assert result is response
+    assert len(calls) == 2
+    assert all(call["max_retries"] == 1 for call in calls)
+    assert all(call["timeout"] == (5, 15) and call["stream"] is True for call in calls)
+    sleep.assert_called_once_with(0.6)
+
+
+@pytest.mark.parametrize(
+    "transient_error",
+    [
+        {"kind": "timeout"},
+        {"kind": "connection_error"},
+        {"kind": "http_429", "status_code": 429},
+    ],
+)
+def test_tencent_request_retries_transient_failures(transient_error):
+    calls = []
+    response = _FakeResp(b"ok")
+
+    def fake_qr(_url, **kwargs):
+        calls.append(kwargs)
+        if len(calls) == 1:
+            kwargs["error_out"].update(transient_error)
+            return None
+        return response
+
+    with mock.patch("stock_common.sc_datasource._ticks._quick_request", side_effect=fake_qr):
+        with mock.patch("stock_common.sc_datasource._ticks.time.sleep") as sleep:
+            result = _tencent_request(TENCENT_TICK_URL, purpose="逐笔测试")
+
+    assert result is response
+    assert len(calls) == 2
+    sleep.assert_called_once_with(0.6)
+
+
+def test_tencent_request_does_not_retry_403():
+    calls = []
+
+    def fake_qr(_url, **kwargs):
+        calls.append(kwargs)
+        kwargs["error_out"].update({"kind": "http_403", "status_code": 403})
+        return None
+
+    with mock.patch("stock_common.sc_datasource._ticks._quick_request", side_effect=fake_qr):
+        with mock.patch("stock_common.sc_datasource._ticks.time.sleep") as sleep:
+            with pytest.raises(RuntimeError, match="403"):
+                _tencent_request(TENCENT_TICK_URL, purpose="逐笔测试")
+
+    assert len(calls) == 1
+    sleep.assert_not_called()
+
+
+def test_tencent_request_stops_after_four_transient_attempts():
+    calls = []
+
+    def fake_qr(_url, **kwargs):
+        calls.append(kwargs)
+        kwargs["error_out"].update({"kind": "http_error", "status_code": 502})
+        return None
+
+    with mock.patch("stock_common.sc_datasource._ticks._quick_request", side_effect=fake_qr):
+        with mock.patch("stock_common.sc_datasource._ticks.time.sleep") as sleep:
+            with pytest.raises(RuntimeError, match="502"):
+                _tencent_request(TENCENT_TICK_URL, purpose="逐笔测试")
+
+    assert len(calls) == 4
+    assert [call.args[0] for call in sleep.call_args_list] == [0.6, 1.2, 2.4]
+
+
+def test_tencent_response_body_timeout_is_not_retried_and_response_is_closed():
+    class TimeoutResponse:
+        closed = False
+
+        @property
+        def content(self):
+            raise requests.exceptions.ReadTimeout("body timed out")
+
+        def close(self):
+            self.closed = True
+
+    response = TimeoutResponse()
+
+    with pytest.raises(RuntimeError, match="不自动重试"):
+        _read_tencent_response(response, purpose="测试")
+
+    assert response.closed is True
 
 
 # ─── 4) 联网冒烟(受控, 需 REAL_NETWORK=1) ───

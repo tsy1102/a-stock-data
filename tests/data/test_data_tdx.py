@@ -1,4 +1,6 @@
 import pytest
+import pandas as pd
+import core.tdx_client as tdx_client
 from core.tdx_client import (
     tdx_get_security_bars,
     tdx_get_quote_full,
@@ -81,6 +83,40 @@ def test_tdx_board_members():
         board_code = boards["industry"][0]["code"]
         members = tdx_get_board_members(board_code)
         assert isinstance(members, list)
+
+
+def test_tdx_board_members_sort_by_change_is_applied(monkeypatch):
+    class FakeMacClient:
+        def get_board_members(self, _board_code):
+            return pd.DataFrame(
+                [
+                    {"code": "600001", "name": "down", "close": 90, "pre_close": 100},
+                    {"code": "600002", "name": "up", "close": 110, "pre_close": 100},
+                ]
+            )
+
+    monkeypatch.setattr(tdx_client, "_get_mac_client", lambda: FakeMacClient())
+
+    sorted_members = tdx_client.tdx_get_board_members("BK001")
+    source_order = tdx_client.tdx_get_board_members("BK001", sort_by_change=False)
+
+    assert [member["code"] for member in sorted_members] == ["600002", "600001"]
+    assert [member["code"] for member in source_order] == ["600001", "600002"]
+
+
+def test_tdx_board_members_sort_by_change_applies_to_eastmoney_fallback(monkeypatch):
+    source_members = [
+        {"code": "600001", "change_pct": -1.0},
+        {"code": "600002", "change_pct": 2.0},
+    ]
+    monkeypatch.setattr(tdx_client, "_get_mac_client", lambda: None)
+    monkeypatch.setattr(
+        "stock_common.sc_datasource.get_em_board_members", lambda _board_code: source_members
+    )
+
+    result = tdx_client.tdx_get_board_members("BK001")
+
+    assert [member["code"] for member in result] == ["600002", "600001"]
 
 
 @pytest.mark.real_network

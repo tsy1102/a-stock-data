@@ -47,7 +47,8 @@
 ## 3. 工程与测试约束
 
 - 本仓库默认 Windows PowerShell 5.1；Shell、路径、外部程序和验证流程按 `AGENTS.md` 执行。
-- Python 目标版本为 3.10+；项目开发/测试使用 Python 3.12。解释器通过 `scripts/run_with_system_python.ps1` 选择。
+- Python 最低版本为 3.11（AxData 0.1.4 的依赖要求）；项目开发/测试推荐并使用 Python 3.12。解释器通过 `scripts/run_with_system_python.ps1` 选择。
+- `CanonicalStockData` 当前有 113 个 dataclass 属性，其中 12 个是可选 ELTDX 扩展；`FIELD_SPECS` 当前登记 38 项精选源字段元数据，不代表完整契约字段表。Schema 测试锁定这三个计数，变更时应同步更新文档。
 - 运行测试使用 `scripts/run_tests.ps1`，不要从 Shell 直接调用 `pytest`。`real_network` 测试须明确选择。
 - 最近离线复核（2026-10-06）：pytest 收集 736 项，688 passed、1 skipped、47 deselected；本轮 6 个 Python 文件通过 Black 与编译检查，3 个源码文件 mypy 零错误；A1/A7 闸门均 0 HARD FAIL / 0 WARN。`real_network` 按配置未运行。字段逐源身份仍为 2,469 条；元数据清单显示 239 条 verified 记录缺少规范名或含义（207 缺含义、47 缺规范名、15 两者皆缺），详见 `docs/field_metadata_gaps.md`。来源仓库对话确认 7 项，21 项待确认。运行状态以当次命令输出为准。
 - 修改后按 `AGENTS.md` §8 做数据契约影响调查，并按 §9 验证；每次改动记录一个可计数指标。

@@ -10,7 +10,7 @@
 - **多源字段逆向破解**：ZHB / TDX 0x0010 / 东财 push2 / 腾讯 / 新浪 / 同花顺 fuyao / 巨潮 / FTShare 私有协议字段交叉验证（thsdk 通道已于 V17.0.29 移除）。字段状态按源与完整路径保存在机器权威 registry；[`field_dict.md`](docs/field_dict.md) 提供导航，[`unknown_fields.md`](docs/unknown_fields.md) 列出破解队列，[`field_metadata_gaps.md`](docs/field_metadata_gaps.md) 暴露已验证字段的描述缺口，[`field_matrix.md`](docs/field_matrix.md) 和 [`source_repository_map.md`](docs/source_repository_map.md) 分别展示来源矩阵与仓库谱系。碰撞报告只提供候选，人工复核后按 [`定案同步流程`](docs/field_verification/ADJUDICATION_WORKFLOW.md) 更新状态。
 - **日期感知的跨源对撞**：行情按有效交易日对齐，新闻/公告按自然日处理；保留历史休市目录，按实际数据日期择优快照，并让候选证据记录样本日期与来源。方法与规则见 [`CRACKING_METHODOLOGY.md`](docs/field_verification/CRACKING_METHODOLOGY.md)。
 - **上游兼容性复核**：登记仓库、依赖版本差异、实际调用边界与采用结论见 [`UPSTREAM_COMPATIBILITY.md`](docs/UPSTREAM_COMPATIBILITY.md)；本轮适配器核查计划与回归记录见 [`DEPENDENCY_ADAPTER_COMPATIBILITY_PLAN_20261008.md`](docs/DEPENDENCY_ADAPTER_COMPATIBILITY_PLAN_20261008.md)；仓库对应关系见 [`source_repository_map.md`](docs/source_repository_map.md)。
-- **统一数据合约**：唯一入口 `get_canonical_stock_data` 返回 `CanonicalStockData` 强类型合约（113 字段 frozen 契约，每字段带 `field_sources` 溯源），消除异构多源冲突。
+- **统一数据合约**：唯一入口 `get_canonical_stock_data` 返回 `CanonicalStockData` 强类型合约（113 个 dataclass 属性，含 12 个可选 ELTDX 扩展；每只股票通过 `field_sources` 记录来源），消除异构多源冲突。
 - **ZHB-First 离线优先路由**：盘前 / 休市日 100% 走 ZHB 内存秒级提取；交易日盘中盘后强制网络取 T 日真实收盘价。
 - **申万二级行业统一**：东财 datacenter 一次性分页拉取 + 7 天缓存，零逐股请求、零 push2 风控面。
 - **东财分域限流与风控**：共享令牌桶 + 全局 1.0s 节流 + 强制直连 + 429 退避 + 连续 3 次断连 20h 冷却；熔断静默降级回退 ZHB T-1 快照。
@@ -26,16 +26,16 @@
 
 ### 环境要求
 
-- Python **3.12**（`scripts/run_tests.ps1` 会选择并校验解释器；直接运行 `main.py` 时也须使用已安装项目依赖的解释器）
+- Python **3.11+**；推荐 **3.12**（AxData 0.1.4 要求 Python ≥3.11；测试启动器默认选择并校验 Python 3.12）
 - Windows / macOS / Linux
-- 项目临时目录为仓库根 `.tmp/`；Windows 下使用 `scripts/run_with_system_python.ps1`（或兼容入口 `.bat`）启动时，会将 Python 及其子进程的 `TEMP`/`TMP`/`TMPDIR` 指向该目录。测试入口 `scripts/run_tests.ps1` 自动继承此设置。直接调用 `python.exe` 时请改用启动器，或自行将这些变量设为 `.tmp/`。
+- 项目自身的锁文件和报告临时输出写入仓库根 `.tmp/`。Windows 下仍推荐使用 `scripts/run_with_system_python.ps1`（或兼容入口 `.bat`），使 Python 及其子进程的 `TEMP`/`TMP`/`TMPDIR` 均指向该目录；直接执行项目入口时，项目内部临时路径也会落入 `.tmp/`。可通过 `ASTOCK_TEMP_DIR` 显式指定项目临时目录。
 
 ### 新机器部署（复制项目后）
 
 项目内数据目录按仓库位置解析；首次运行会按需创建 `cache/`、`logs/`、`reports/`、`snapshots/` 并同步 ZHB 数据。部分功能还会读取本机配置或外部行情文件，部署前请按对应功能说明配置。
 
-1. 安装 Python 3.12（任意发行版；Windows Store 版已验证可用）
-2. `pip install -r requirements.txt`（包含经离线兼容回归的 `levistock==0.1.8`、`axdata==0.1.4`；如自行省略，相关功能会降级）
+1. 安装 Python 3.12（最低支持 Python 3.11；Windows Store 版已验证可用）
+2. `pip install -r requirements.txt`（包含经离线兼容回归的 `eltdx==3.2.2`、`levistock==0.1.8`、`axdata==0.1.4`；如自行省略，相关功能会降级）
    > ⚠️ **`thsdk` 已于 V17.0.29(2026-09-07) 随 `stock_common/sc_ths.py` 一同移除**，不再是可选依赖。
 3. `pip install -r requirements-dev.txt`（开发环境；自动包含运行时依赖及 pytest/mypy/black）
 4. Windows 首次运行 `.\scripts\run_with_system_python.ps1 main.py --sht 600519 --no-upload` 冒烟（首只约 5 分钟，含 ZHB 下载+缓存预热）
@@ -261,7 +261,7 @@ a-stock-data/
 
 文档完整架构（模块职责 / 数据流 / 并发限流 / 缓存分层 / 字段路由）见 [`docs/architecture.md`](docs/architecture.md)（含 Mermaid 图）。要点速览：
 
-- **`core/data_provider.py`**：唯一数据入口，封装 `CanonicalStockData` 强类型合约（113 字段 frozen 契约；其中 86 个纳入 `sc_schema.FIELD_SPECS` 元数据注册表，另有 12 个 eltdx 实时短线/连板指标字段为可选扩展）+ 字段路由 + 4 级 fallback（L0 东财申万二级 → push2 → TDX → ZHB），每字段带 `field_sources` 溯源；跨边界访问器（概念/分红/连板/涨跌幅等 7 个）已拆至 `core/_accessors.py` 叶子模块，**消除与 `stock_common` 的导入期循环依赖**（直引 `import core.data_provider` 现已可用，不再依赖入口先载 stock_common 的约定）。
+- **`core/data_provider.py`**：唯一数据入口，封装 `CanonicalStockData` 强类型合约（113 个 dataclass 属性，含 12 个可选 ELTDX 扩展；非扩展属性为 101 个；`sc_schema.FIELD_SPECS` 是 38 项精选源字段元数据，不是完整契约字段清单）+ 字段路由 + 4 级 fallback（L0 东财申万二级 → push2 → TDX → ZHB），每只股票带 `field_sources` 溯源；跨边界访问器（概念/分红/连板/涨跌幅等 7 个）已拆至 `core/_accessors.py` 叶子模块，**消除与 `stock_common` 的导入期循环依赖**（直引 `import core.data_provider` 现已可用，不再依赖入口先载 stock_common 的约定）。
 - **`stock_common/sc_network.py`**：分域限流（37 域）、进程文件锁、429 退避、连续封禁 20h 冷却。
   > 注：`core/tdx_client.py::_DOMAIN_LIMITS` 另有 6 域**独立**限流表（TCP 长连接语义，与 HTTP 请求级节流不同，**有意不合并**）。
 - **`stock_common/sc_datasource/`**：按数据源和业务职责组织的查询适配器，模块清单见 [`stock_common/sc_datasource/README.md`](stock_common/sc_datasource/README.md)。
@@ -314,7 +314,7 @@ Remove-Item Env:\STOCK_NOCACHE
 
 项目配置范围内的核心模块、脚本与测试已通过 mypy 检查，在 `pyproject.toml` 中集中管理检查范围：
 
-- `[tool.mypy]`：Python 3.10 目标版本，启用 `no_implicit_optional`、`warn_redundant_casts`
+- `[tool.mypy]`：Python 3.11 目标版本，启用 `no_implicit_optional`、`warn_redundant_casts`
 - `[tool.black]`：代码格式化工具配置（line-length=100）
 
 ### 常见调试问题

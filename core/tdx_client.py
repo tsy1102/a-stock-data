@@ -3152,7 +3152,16 @@ def tdx_get_board_list(board_type: int = 0):
         return []
 
 
-def tdx_get_board_members(board_code: str, sort_by_change: bool = True):
+def _sort_board_members_by_change(
+    members: List[Dict[str, Any]], enabled: bool
+) -> List[Dict[str, Any]]:
+    """Return board members in descending change order when requested."""
+    if not enabled:
+        return members
+    return sorted(members, key=lambda item: _safe_float(item.get("change_pct", 0)), reverse=True)
+
+
+def tdx_get_board_members(board_code: str, sort_by_change: bool = True) -> List[Dict[str, Any]]:
     """获取板块成员列表。
 
     V15.5.2: 恢复 v9.6 MacClient.get_board_members（MAC 协议 TCP，不封 IP）；
@@ -3162,6 +3171,10 @@ def tdx_get_board_members(board_code: str, sort_by_change: bool = True):
         list: [{"code": str, "name": str, "price": float, "change_pct": float,
                 "mcap_yi": float, "turnover": float, "pe": float,
                 "main_net_amount": float}, ...]
+
+    Args:
+        board_code: 板块代码。
+        sort_by_change: True 时按涨跌幅降序排列；False 时保留数据源顺序。
     """
     with _TDX_CALL_LOCK:
         client = _get_mac_client()
@@ -3193,14 +3206,15 @@ def tdx_get_board_members(board_code: str, sort_by_change: bool = True):
                             "main_net_amount": _safe_float(row.get('main_net_amount', 0)),
                         }
                     )
-                return members
+                return _sort_board_members_by_change(members, sort_by_change)
             except Exception as _e:
                 _debug_log(f"tdx_get_board_members mac {board_code}: {_e}")
     # fallback: 东财 push2
     try:
         from stock_common.sc_datasource import get_em_board_members
 
-        return get_em_board_members(board_code)
+        members = get_em_board_members(board_code)
+        return _sort_board_members_by_change(members, sort_by_change)
     except Exception as _e:
         _debug_log(f"tdx_get_board_members {board_code}: {_e}")
         return []

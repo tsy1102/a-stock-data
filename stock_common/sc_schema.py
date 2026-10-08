@@ -83,12 +83,11 @@ class Unit(Enum):
 
 @dataclass(slots=True, frozen=True)
 class FieldSpec:
-    """字段元数据。
+    """精选源字段元数据。
 
-    描述一个数据字段的所有静态属性，用于：
-      - V13.1 数据源路由（决定走 ZHB / HTTP / TDX）
-      - V13.2 归一化函数（统一字段名、单位、时间锚点）
-      - 文档自动化（从元数据生成 markdown 表格）
+    FIELD_SPECS 只登记需要这些元数据的源字段，不是 CanonicalStockData 的完整字段表。
+    `is_real_time` 与 `zhb_t_minus_1_acceptable` 用于测试契约查询，不直接决定运行时路由。
+    `normalize_at_boundary` 等元数据 API 可查询已登记字段的单位与时间锚点。
     """
 
     name: str  # 字段英文名（与 ZHB / HTTP 接口对齐）
@@ -799,7 +798,7 @@ class CanonicalStockData:
 
     # V17.2.22: eltdx 7709/7615 实时短线/连板指标(经统一层 get_canonical_stock_data 暴露)
     # 数据来源: get_eltdx_shortline_bundle 批量预热 -> 模块级缓存 -> 统一层 per-stock 读缓存(非取数)
-    # 默认值=未命中(TDX 源 eltdx 不可用 / 未批量预热) —— 不污染核心 86 字段契约(FIELD_SPECS 不含此组)
+    # 默认值=未命中(TDX 源 eltdx 不可用 / 未批量预热) —— 12 个 ELTDX 扩展不进入非扩展契约字段组。
     eltdx_ladder_level: int = 0  # 连板高度(档位, eltdx limit_ladder.ladder_level)
     eltdx_limit_up_streak_days: int = 0  # 连续涨停天数(ShortlineIndicator.limit_up_streak_days)
     eltdx_limit_board_text: str = ""  # 连板梯队文本(limit_board_text, e.g. "3天3板")

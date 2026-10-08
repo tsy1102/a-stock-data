@@ -26,7 +26,7 @@ PyYAML>=5.4
 #   - 覆盖 quotes/K线/财务(0x0010)/xdxr/limit_ladder 等；原始字节(tail_raw/record_hex/finance_info_raw)
 #     二次解码可引出更多 f 字段（见 docs/eltdx_smoke_report_20260915.md）。
 #   - 北交所(83/87/88/43/46/92)快照偶发解析失败 → 上层 HTTP(ZHB/腾讯/东财) fallback。
-eltdx>=3.2.2,<4.0
+eltdx==3.2.2
 # ST 名单兜底：东财主源不可用时获取沪深 ST 名单（不含北交所）
 baostock>=0.8.9,<1.0
 # easy-tdx: TDX TCP 行情/财务兜底引擎 + ZHB 报告 ZIP 下载兜底（eltdx 无文件下载能力）。

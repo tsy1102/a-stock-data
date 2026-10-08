@@ -357,9 +357,11 @@ class BaseReportRunner:
                 default_path = os.path.join(self.args.output, f"{code}_{report_type}_{ts}.md")
             else:
                 # self.args=None 时用临时目录兜底（仅作为库使用时不传 args 场景）
-                import tempfile
+                from stock_common._temp import configure_project_temp
 
-                default_path = os.path.join(tempfile.gettempdir(), f"{code}_{report_type}_{ts}.md")
+                default_path = os.path.join(
+                    str(configure_project_temp()), f"{code}_{report_type}_{ts}.md"
+                )
             path = r.get("path", default_path) or default_path
             try:
                 q_name = ""

@@ -139,6 +139,14 @@ if (-not $PYTHON_EXE) {
 $PYTHON_DIR = Split-Path -Parent $PYTHON_EXE
 $env:PATH = "$PYTHON_DIR;$PYTHON_DIR\Scripts;" + $env:PATH
 
+# Keep project and child-process temporary files inside the repository.
+$PROJECT_ROOT = Split-Path -Parent $PSScriptRoot
+$PROJECT_TEMP_DIR = Join-Path $PROJECT_ROOT '.tmp'
+$null = [System.IO.Directory]::CreateDirectory($PROJECT_TEMP_DIR)
+$env:TEMP = $PROJECT_TEMP_DIR
+$env:TMP = $PROJECT_TEMP_DIR
+$env:TMPDIR = $PROJECT_TEMP_DIR
+
 # Forward all args to system Python (splatting) and propagate exit code
 & $PYTHON_EXE @args
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }

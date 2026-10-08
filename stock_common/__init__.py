@@ -284,6 +284,7 @@ __all__ = [
     "get_fuyao_dragon_tiger",
     # V17.0.5: fuyao 新端点(竞价/池/异动/财务指标/报表/日历/复权/指数)
     "get_fuyao_auction_snapshot",
+    "get_fuyao_auction_snapshot_envelope",
     "get_fuyao_auction_benchmark",
     "get_fuyao_limit_pool",
     "get_fuyao_anomaly",
@@ -648,6 +649,7 @@ from stock_common.sc_fuyao import (
     get_fuyao_dragon_tiger,
     # V17.0.5: 新端点
     get_fuyao_auction_snapshot,
+    get_fuyao_auction_snapshot_envelope,
     get_fuyao_auction_benchmark,
     get_fuyao_limit_pool,
     get_fuyao_anomaly,

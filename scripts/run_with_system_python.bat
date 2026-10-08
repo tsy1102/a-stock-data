@@ -18,6 +18,20 @@ REM ============================================================================
 
 setlocal
 
+REM Keep temporary files within this checkout for the launcher and its Python child.
+for %%I in ("%~dp0..") do set "PROJECT_ROOT=%%~fI"
+set "PROJECT_TEMP_DIR=%PROJECT_ROOT%\.tmp"
+if not exist "%PROJECT_TEMP_DIR%\" (
+    mkdir "%PROJECT_TEMP_DIR%"
+    if errorlevel 1 (
+        echo [ERROR] Cannot create project temp directory: %PROJECT_TEMP_DIR%
+        exit /b 1
+    )
+)
+set "TEMP=%PROJECT_TEMP_DIR%"
+set "TMP=%PROJECT_TEMP_DIR%"
+set "TMPDIR=%PROJECT_TEMP_DIR%"
+
 REM V16.4.1: 强制 UTF-8 代码页（cmd 老式终端中文输出不乱码；仅影响本进程）
 chcp 65001 >nul
 

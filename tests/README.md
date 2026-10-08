@@ -10,19 +10,20 @@
 | `data/` | 10 | ZHB、TDX、Eastmoney、KPL、网络、解禁单位和回测快照 | [`data/README.md`](data/README.md) |
 | `infra/` | 9 | 调度器、字段完整性/命名、依赖预检、dry-run 写入边界、F10、外部 API 与 GD | [`infra/README.md`](infra/README.md) |
 | `reports/` | 5 | 报告 Runner、流水线、策略与章节契约 | [`reports/README.md`](reports/README.md) |
-| 根目录 | 6 | 采集探针、降级契约、技术指标、席位、代码归一化和来源兼容 | 本文件下方列出 |
-| **合计** | **51** | 参数化用例展开前的测试模块数 | — |
+| 根目录 | 7 | 采集探针、降级契约、技术指标、席位、代码归一化、来源兼容和依赖适配 | 本文件下方列出 |
+| **合计** | **52** | 参数化用例展开前的测试模块数 | — |
 
 根目录测试：
 
 - `test_capture_field_probe.py`：采集源请求参数与调用边界。
+- `test_dependency_adapter_compat.py`：Levistock 实际方法契约与 AxData 本地 ZHB ZIP 读取。
 - `test_degradation_contract.py`：多级数据源降级契约。
 - `test_sc_ta_core.py`：技术指标基础运算。
 - `test_seat_db_audit_fix.py`：龙虎榜席位评分降级。
 - `test_symbol_norm.py`：股票代码归一化。
 - `test_v310_sources.py`：数据源兼容性与回归。
 
-> **最近离线验证（2026-09-29）**：共收集 646 项，598 passed、1 skipped、47 deselected。`real_network` 本轮未重跑，最近结果见 [`PROJECT_AUDIT_REMEDIATION_20260928.md`](../docs/PROJECT_AUDIT_REMEDIATION_20260928.md)。测试集合会随参数化和用例增减而变化，结果以当次运行输出为准。
+> **最近离线验证（2026-10-08）**：共收集 747 项，699 passed、1 skipped、47 deselected（125.89 秒）；`real_network` 未运行。测试集合会随参数化和用例增减而变化，结果以当次运行输出为准。
 
 ## 按问题定位
 

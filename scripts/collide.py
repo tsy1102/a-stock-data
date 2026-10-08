@@ -205,7 +205,7 @@ def _flatten(rec, source, scheme, code, date, out):
         (isinstance(k, str) and (k.startswith("f") and k[1:].isdigit())) for k in data
     ):
         for k, v in data.items():
-            if k in ("__error__", "__skipped__"):
+            if k in ("__error__", "__skipped__", "__source_meta__"):
                 continue
             out.append((f"{source}.{k}", v))
         return
@@ -228,11 +228,18 @@ def _flatten(rec, source, scheme, code, date, out):
             "zhb_date",
             "__error__",
             "__skipped__",
+            "__source_meta__",
+            "auction_snapshot_meta",
         ):
             continue
         if isinstance(subv, dict):
+            source_meta = subv.get("__source_meta__")
+            if isinstance(source_meta, dict) and source_meta.get("collision_eligible") is False:
+                continue
             for k, v in subv.items():
-                if k in ("__error__", "__skipped__") or isinstance(v, (dict, list)):
+                if k in ("__error__", "__skipped__", "__source_meta__") or isinstance(
+                    v, (dict, list)
+                ):
                     continue
                 out.append((f"{source}.{sub}.{k}", v))
         elif isinstance(subv, (int, float, str)) and not isinstance(subv, bool):
@@ -273,7 +280,14 @@ def _record_containers(doc, source=None):
     elif isinstance(records, list):
         containers.append({f"__{i}": value for i, value in enumerate(records)})
     for key, value in doc.items():
-        if key in ("scheme", "field_meta", "zhb_date", "stocks", "records"):
+        if key in (
+            "scheme",
+            "field_meta",
+            "zhb_date",
+            "stocks",
+            "records",
+            "auction_snapshot_meta",
+        ):
             continue
         if (
             isinstance(value, dict)
@@ -323,6 +337,17 @@ def load_snapshots(snapshots, store, diagnostics, event_start=None, event_end=No
     for snapshot in snapshots:
         doc = snapshot.document
         scheme = doc.get("scheme")
+        auction_meta = doc.get("auction_snapshot_meta")
+        if isinstance(auction_meta, dict) and auction_meta.get("collision_eligible") is False:
+            diagnostic = (
+                f"{snapshot.folder}/{snapshot.source}/stocks.*.auction_final: "
+                f"竞价子树已排除；reason={auction_meta.get('exclusion_reason') or 'unspecified'}，"
+                f"data_status={auction_meta.get('data_status')!r}，"
+                f"source_data_date={auction_meta.get('source_data_date')!r}，"
+                f"response_timestamp={auction_meta.get('response_timestamp')!r}，"
+                f"记录数={auction_meta.get('item_count', 0)}"
+            )
+            diagnostics.append(diagnostic)
         for container in _record_containers(doc, snapshot.source):
             for container_code, rec in container.items():
                 if not isinstance(rec, dict):

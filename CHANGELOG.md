@@ -4,6 +4,38 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## [V17.4.29] 2026-10-08 — 项目内临时目录
+
+### 开发环境
+
+- 新增仓库根 `.tmp/` 作为 Agent、测试和项目工具的临时目录；目录内容忽略，仅保留 `.gitkeep`。
+- `run_with_system_python.ps1` 和兼容 `.bat` 入口将 Python 及其子进程的 `TEMP`、`TMP`、`TMPDIR` 设置到 `.tmp/`，解决系统临时目录无访问权限时测试/工具无法创建临时文件的问题。
+- 更新 Agent 规约、部署说明和脚本说明，要求项目临时探针、测试基目录和临时安装产物落在 `.tmp/`。
+
+## [V17.4.28] 2026-10-08 — Levistock/AxData 适配兼容性
+
+### 依赖与适配
+
+- 将 `levistock`、`axdata` 固定到经隔离环境离线回归的 `0.1.8`、`0.1.4`；`requirements-dev.txt` 通过 `-r requirements.txt` 自动继承。
+- 明确并回归 Levistock 实际方法、日期参数和涨停梯队 11 列转换；新版本未改变项目使用的接口。
+- 核实 AxData 的 `stats_root` 接收项目 `stock_common/cache/zhb/` 下的最新 ZHB ZIP；显式路径直接读取 CFG，不刷新/下载统计包。短线指标的行情输入仍可能请求 TDX。
+- 新增离线适配器与本地 ZIP 回归；未调用真实行情源、未更改限流和报告/采集业务逻辑。
+- 验证：适配器回归 3 passed；全量离线测试 699 passed、1 skipped、47 deselected（125.89s）；新增测试通过 py_compile、Black、mypy；A1/A7 闸门 0 HARD FAIL / 0 WARN，`git diff --check` 通过。
+
+## [V17.4.27] 2026-10-08 — Fuyao 竞价日期证据与上游兼容性
+
+### 采集与碰撞
+
+- Fuyao 新增完整信封适配器；采集归档保存信封摘要和逐项 `__source_meta__`。旧 `get_fuyao_auction_snapshot()` 继续返回列表，仍走 `fuyao_auction` 缓存分类和同一请求路径。新缓存键不能复用旧 list-only 缓存，首次相同参数调用可能回源一次；此后两种接口共享缓存。
+- 竞价子树只有在响应成功、状态明确就绪、上游显式提供的数据日期与目标交易日一致时才参与对撞。响应时间不再被误当作行情日期；混合 Fuyao 文件的顶层 `probe_trading_day` 保持原用途。
+- 碰撞器仅跳过明确标记为 `collision_eligible=false` 的子树，并在报告诊断中列出原因和源端元数据；其他 Fuyao 字段及没有新标记的历史 raw 不变。日期窗口、缓存日期与五大报告逻辑均未改变。
+
+### 上游复核与验证
+
+- 新增 [`docs/UPSTREAM_COMPATIBILITY.md`](docs/UPSTREAM_COMPATIBILITY.md)，记录已确认上游关系、近期变化与本项目的采用边界；本轮不升级依赖、不增加请求。
+- 相关模块定向测试 77 passed；全量离线套件 696 passed、1 skipped、47 deselected（124.18s）。9 条既有 `httplib2`/`pyparsing` 弃用警告，无测试失败。
+- 8 个改动 Python 文件通过 `py_compile` 与 Black；5 个改动源码模块 mypy 零错误；A1/A7 数据访问与字典同步闸门均 0 HARD FAIL / 0 WARN，敏感信息扫描和 `git diff --check` 通过。
+
 ## [V17.4.26] 2026-10-06 — 字段定案与来源确认闭环
 
 ### 字段治理

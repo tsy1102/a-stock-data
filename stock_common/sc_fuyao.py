@@ -328,17 +328,28 @@ def get_fuyao_dragon_tiger(trade_date: Optional[str] = None) -> List[Dict[str, A
 
 
 @cached("fuyao_auction")
+def get_fuyao_auction_snapshot_envelope(
+    codes: List[str], stage: str = "final"
+) -> Optional[Dict[str, Any]]:
+    """返回集合竞价快照的完整上游信封，不把响应时间解释为数据日期。"""
+    if not codes:
+        return None
+    ths = ",".join(fuyao_to_thscode(c) for c in codes)
+    return _fuyao_raw(EP_AUCTION_SNAP, {"thscodes": ths, "stage": stage})
+
+
 def get_fuyao_auction_snapshot(codes: List[str], stage: str = "final") -> List[Dict[str, Any]]:
-    """集合竞价快照（stage: live=盘中实时 / final=终态盘后可查）。
+    """集合竞价快照列表（stage: live=盘中实时 / final=终态盘后可查）。
 
     字段: auction_price/auction_pct/auction_volume/auction_amount/auction_unmatched(未匹配量)/
           auction_turnover_pct/auction_yesterday_ratio_pct(昨量比)/auction_volume_ratio(竞价量比)/
           pre_close_price/open_price/last_price/float_market_cap——对照 ZHB tdxstat2 竞价族。
+    保留历史 List[Dict] 返回契约；需要审计信封元数据的调用方应使用
+    get_fuyao_auction_snapshot_envelope()。
     """
     if not codes:
         return []
-    ths = ",".join(fuyao_to_thscode(c) for c in codes)
-    return _items(_fuyao_raw(EP_AUCTION_SNAP, {"thscodes": ths, "stage": stage}))
+    return _items(get_fuyao_auction_snapshot_envelope(codes, stage=stage))
 
 
 def get_fuyao_auction_benchmark(date: Optional[str] = None) -> List[Dict[str, Any]]:

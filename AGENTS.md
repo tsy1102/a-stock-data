@@ -101,6 +101,10 @@ $OutputEncoding = [Console]::OutputEncoding
   $file = Join-Path $root 'backtest_v1432\backtest_summary.csv'
   ```
 
+- 项目内临时目录统一为仓库根 `.tmp/`；临时探针、下载包、临时虚拟环境和测试基目录都放在此目录下，不使用系统 `%TEMP%`。
+- `scripts/run_with_system_python.ps1` 会为 Python 进程及其子进程设置 `TEMP`、`TMP`、`TMPDIR` 到 `.tmp/`；测试通过 `scripts/run_tests.ps1` 进入该启动器。旧 `.bat` 兼容入口也使用 `.tmp/`。
+- `.tmp/` 内容被 Git 忽略，仅跟踪 `.tmp/.gitkeep` 以保留目录。清理时只删除本任务创建的明确路径。
+
 ### 1.4 环境变量
 
 - 读取:`$env:NAME`,不用 `Getenv("NAME")` 这种伪语法
@@ -184,7 +188,7 @@ def test_approx():
 
 使用范围(本仓库现状):
 
-- 截至 2026-09-29，`tests/` 有 51 个测试模块、最近收集 646 个参数化测试项；离线与 `real_network` 验证结果见 `docs/PROJECT_AUDIT_REMEDIATION_20260928.md`。
+- 截至 2026-10-08，`tests/` 有 52 个测试模块；最近完整离线运行收集 747 项，699 passed、1 skipped、47 deselected（`real_network` 未运行）。适配器回归和本次结果见 `docs/DEPENDENCY_ADAPTER_COMPATIBILITY_PLAN_20261008.md`；历史离线与 `real_network` 验证结果见 `docs/PROJECT_AUDIT_REMEDIATION_20260928.md`。
 - 测试使用 `@pytest.fixture`、`@pytest.mark.real_network`、`pytest.skip`、`pytest_asyncio` 等 pytest API。
 - `tests/conftest.py` 提供 `_no_real_network` autouse fixture 和 `endpoint` 参数化 fixture
 - `pyproject.toml` `[tool.pytest.ini_options]` 集中管 `testpaths` / `addopts` / `markers` / `norecursedirs`

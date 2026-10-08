@@ -2,7 +2,7 @@
 
 > **用途**：项目架构、稳定约束与文档索引。任务开始时先按下表读取相关部分，不必重复扫描整份文档。
 > **维护规则**：结构、入口或稳定流程变化时更新；字段语义以主字典为准，运行状态与测试结果以实际检查为准。
-> **更新日期**：2026-10-06（`VERSION`：17.4.26）
+> **更新日期**：2026-10-08（`VERSION`：17.4.29）
 
 ## 0. 指引目录
 
@@ -15,6 +15,8 @@
 | 性能/限流 | `AGENTS.md` §8.4 | §2 架构、`sc_network` | 性能记录 |
 | 发布/版本 | `AGENTS.md` §5、§10 | `CHANGELOG.md`、`roadmap.md` | Git 历史 |
 | 数据采集/验证 | `AGENTS.md`、§1 | 当日 `field_verification` 目录 | 历史采集归档 |
+| 上游/依赖复核 | `AGENTS.md` §8 | `UPSTREAM_COMPATIBILITY.md` | `source_repository_map.md`、requirements |
+| Agent/测试临时目录 | `AGENTS.md` §1.3 | 仓库根 `.tmp/` | `scripts/run_with_system_python.ps1` |
 
 ## 1. 项目目标与运行概况
 
@@ -74,6 +76,8 @@
 | `docs/field_verification/` | 破解方法、采集数据及字段验证归档 |
 | `docs/roadmap.md`、`CHANGELOG.md` | 决策记录与版本历史 |
 | `docs/PROJECT_AUDIT_REMEDIATION_20260928.md` | 本轮审计整改项目、验收进度与结果 |
+| `docs/UPSTREAM_COMPATIBILITY.md` | 上游仓库、依赖版本与项目适配边界 |
+| `docs/DEPENDENCY_ADAPTER_COMPATIBILITY_PLAN_20261008.md` | Levistock/AxData 适配器兼容核验、回归及实施结果 |
 
 ## 5. 动态信息
 

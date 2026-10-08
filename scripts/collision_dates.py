@@ -419,6 +419,8 @@ def _record_count(document: dict[str, Any]) -> int:
         "fetched_at",
         "__error__",
         "__skipped__",
+        "__source_meta__",
+        "auction_snapshot_meta",
     }
 
     def count_node(value: Any) -> int:

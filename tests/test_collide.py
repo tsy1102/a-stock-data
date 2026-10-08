@@ -48,6 +48,85 @@ def test_flatten_ignores_error_and_skip_markers_as_fields():
     ]
 
 
+def test_flatten_skips_only_ineligible_source_subtree_and_hides_metadata():
+    out = []
+    collide._flatten(
+        {
+            "snapshot": {"last_price": 10.0},
+            "auction_final": {
+                "auction_price": 10.2,
+                "__source_meta__": {
+                    "collision_eligible": False,
+                    "exclusion_reason": "source_data_date_unavailable",
+                },
+            },
+            "auction_live": {
+                "auction_price": 10.1,
+                "__source_meta__": {"collision_eligible": True},
+            },
+        },
+        "fuyao",
+        "fuyao",
+        "600000",
+        "T:20260929",
+        out,
+    )
+
+    assert out == [
+        ("fuyao.snapshot.last_price", 10.0),
+        ("fuyao.auction_live.auction_price", 10.1),
+    ]
+
+
+def test_fuyao_ineligible_auction_is_diagnosed_without_dropping_other_fields(tmp_path):
+    folder = tmp_path / "20260929"
+    folder.mkdir()
+    (folder / "meta.json").write_text(
+        '{"data_date":"20260929","capture_date":"20260929"}', encoding="utf-8"
+    )
+    document = {
+        "auction_snapshot_meta": {
+            "collision_eligible": False,
+            "exclusion_reason": "source_data_date_unavailable",
+            "data_status": "ready",
+            "source_data_date": None,
+            "response_timestamp": "2026-09-29T09:25:00",
+            "item_count": 1,
+        },
+        "stocks": {
+            "600000": {
+                "snapshot": {"last_price": 10.0},
+                "auction_final": {
+                    "auction_price": 10.2,
+                    "__source_meta__": {
+                        "collision_eligible": False,
+                        "exclusion_reason": "source_data_date_unavailable",
+                    },
+                },
+            }
+        },
+    }
+    (folder / "raw_fuyao.json").write_text(json.dumps(document), encoding="utf-8")
+    folders, _ = collision_dates.discover_capture_folders(
+        str(tmp_path), lambda day: day.weekday() < 5
+    )
+    snapshots, _ = collision_dates.select_snapshots(folders)
+    store = defaultdict(lambda: {"vals": {}, "sample_meta": {}, "src": None})
+    diagnostics = []
+
+    collide.load_snapshots(snapshots, store, diagnostics)
+
+    assert "fuyao.snapshot.last_price" in store
+    assert "fuyao.auction_final.auction_price" not in store
+    assert any("stocks.*.auction_final" in item for item in diagnostics)
+    assert any("source_data_date_unavailable" in item for item in diagnostics)
+    assert any("response_timestamp" in item for item in diagnostics)
+    report = collide.build_report_md(
+        "20260929", [], len(store), 1, [], [], [], 0, set(), [], diagnostics=diagnostics
+    )
+    assert "source_data_date_unavailable" in report
+
+
 def _field(values, source):
     return {
         "vals": values,

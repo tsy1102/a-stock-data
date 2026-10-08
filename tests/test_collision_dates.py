@@ -37,6 +37,30 @@ def test_record_count_ignores_empty_metadata_but_counts_nested_event_rows():
     assert collision_dates._record_count({"cctv_xwlb": [{"date": "2026-09-29"}]}) == 1
 
 
+def test_record_count_ignores_fuyao_auction_provenance_metadata():
+    document = {
+        "auction_snapshot_meta": {
+            "collision_eligible": False,
+            "response_timestamp": "2026-09-29T09:25:00",
+            "item_count": 1,
+        },
+        "stocks": {
+            "600000": {
+                "auction_final": {
+                    "auction_price": 10.2,
+                    "__source_meta__": {
+                        "collision_eligible": False,
+                        "source_data_date": None,
+                    },
+                }
+            }
+        },
+    }
+
+    assert collision_dates._record_count(document) == 1
+    assert collision_dates._record_count({"stocks": document["stocks"]}) == 1
+
+
 def test_legacy_weekend_folder_maps_to_prior_session_without_rename(tmp_path):
     target = tmp_path / "20260920"
     target.mkdir()

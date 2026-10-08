@@ -1597,6 +1597,95 @@ def _last_completed_trading_day() -> date:
     raise RuntimeError("ZHB 补充日历中无法找到最近已收盘交易日")
 
 
+def _normalize_fuyao_source_date(value: Any) -> Optional[str]:
+    """Normalize a date explicitly labeled as source data date; never parse timestamps."""
+    if isinstance(value, datetime):
+        return value.date().isoformat()
+    if isinstance(value, date):
+        return value.isoformat()
+    if not isinstance(value, str):
+        return None
+    normalized = value.strip()
+    for date_format in ("%Y-%m-%d", "%Y%m%d"):
+        try:
+            return datetime.strptime(normalized, date_format).date().isoformat()
+        except ValueError:
+            continue
+    return None
+
+
+def _fuyao_auction_snapshot_meta(envelope: Any, stage: str, expected_trading_day: date) -> dict:
+    """Build provenance metadata without treating response assembly time as data time."""
+    envelope = envelope if isinstance(envelope, dict) else {}
+    data = envelope.get("data")
+    data = data if isinstance(data, dict) else {}
+
+    def envelope_value(key: str) -> Any:
+        value = envelope.get(key)
+        return data.get(key) if value is None else value
+
+    source_data_date = None
+    for key in ("data_date", "trade_date", "tradeDate", "as_of_date", "asof_date"):
+        source_data_date = _normalize_fuyao_source_date(envelope_value(key))
+        if source_data_date:
+            break
+
+    raw_status = envelope_value("data_status")
+    status = str(raw_status or "").strip().lower().replace("-", "_").replace(" ", "_")
+    response_timestamp = envelope_value("timestamp")
+    auction_phase = envelope_value("auction_phase")
+
+    eligible = False
+    if not envelope:
+        reason = "source_response_missing"
+    elif envelope.get("code") != 0:
+        reason = "source_response_not_successful"
+    elif source_data_date is None:
+        reason = "source_data_date_unavailable"
+    elif status not in {
+        "ready",
+        "complete",
+        "completed",
+        "final",
+        "success",
+        "ok",
+        "available",
+        "done",
+    }:
+        reason = "source_status_not_confirmed_ready"
+    elif source_data_date != expected_trading_day.isoformat():
+        reason = "source_date_differs_from_snapshot_date"
+    else:
+        eligible = True
+        reason = None
+
+    return {
+        "requested_stage": stage,
+        "response_code": envelope.get("code"),
+        "data_status": raw_status,
+        "auction_phase": auction_phase,
+        "response_timestamp": response_timestamp,
+        "source_data_date": source_data_date,
+        "expected_trading_day": expected_trading_day.isoformat(),
+        "collision_eligible": eligible,
+        "exclusion_reason": reason,
+    }
+
+
+def _fuyao_auction_items(envelope: Any) -> list:
+    """Extract auction items from the preserved Fuyao response envelope."""
+    if not isinstance(envelope, dict):
+        return []
+    data = envelope.get("data")
+    if isinstance(data, list):
+        items = data
+    elif isinstance(data, dict):
+        items = data.get("item") or []
+    else:
+        return []
+    return [item for item in items if isinstance(item, dict)] if isinstance(items, list) else []
+
+
 def collect_fuyao(pool: list) -> dict:
     """fuyao 官方 REST 全景采集（V17.0.5 新源——字典 §12.8.12c，全量契约见 verify/fuyao_api_full.md）。
 
@@ -1609,7 +1698,7 @@ def collect_fuyao(pool: list) -> dict:
         get_fuyao_snapshot,
         get_fuyao_valuation,
         get_fuyao_fin_indicators,
-        get_fuyao_auction_snapshot,
+        get_fuyao_auction_snapshot_envelope,
         get_fuyao_auction_benchmark,
         get_fuyao_limit_pool,
         get_fuyao_anomaly,
@@ -1630,7 +1719,16 @@ def collect_fuyao(pool: list) -> dict:
 
     snap = {r.get("ticker"): r for r in (get_fuyao_snapshot(codes) or [])}
     val = {r.get("ticker"): r for r in (get_fuyao_valuation(codes) or [])}
-    auction = {r.get("ticker"): r for r in (get_fuyao_auction_snapshot(codes, stage="final") or [])}
+    auction_envelope = get_fuyao_auction_snapshot_envelope(codes, stage="final")
+    auction_items = _fuyao_auction_items(auction_envelope)
+    auction_meta = _fuyao_auction_snapshot_meta(auction_envelope, "final", td)
+    auction_meta["item_count"] = len(auction_items)
+    out["auction_snapshot_meta"] = auction_meta
+    auction = {}
+    for item in auction_items:
+        enriched_item = dict(item)
+        enriched_item["__source_meta__"] = dict(auction_meta)
+        auction[item.get("ticker")] = enriched_item
     # V17.0.24: 三大报表(近 8 期 quarterly + 年报 annual)——财务 TTM 族主源原始锚:
     # f163 静态PE=现价÷f160(年报EPS) 闭环验证 + ocf_ttm/revenue_ttm TTM 重建(R_YTD+FY−H1)
     finrep: Dict[str, Any] = {}

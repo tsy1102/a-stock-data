@@ -24,6 +24,8 @@ docs/field_verification/
     └── analysis.md        # 可选的人工综合分析
 ```
 
+Fuyao raw 文件额外保留 `auction_snapshot_meta` 信封摘要；有竞价记录时，`auction_final.__source_meta__` 记录源端状态、响应时间、明确的数据日期和碰撞资格。响应 `timestamp` 与采集器的 `probe_trading_day` 都不能替代源端数据日期。只有源明确给出数据日期、与目标交易日相同且状态明确就绪的竞价子树才参与碰撞；其他 Fuyao 字段仍正常处理。历史 raw 没有这些标记时保留原行为。详情见 [`UPSTREAM_COMPATIBILITY.md`](../UPSTREAM_COMPATIBILITY.md)。
+
 ## 采集命令
 
 ```powershell

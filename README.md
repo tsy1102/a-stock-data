@@ -9,6 +9,7 @@
 - **5 种报告类型**：短线(sht) / 中线(med) / 长线(lng) / 估值选股(val) / 市场状态(mak)（ful 已于 V16.1 下线，能力并入前四类）。
 - **多源字段逆向破解**：ZHB / TDX 0x0010 / 东财 push2 / 腾讯 / 新浪 / 同花顺 fuyao / 巨潮 / FTShare 私有协议字段交叉验证（thsdk 通道已于 V17.0.29 移除）。字段状态按源与完整路径保存在机器权威 registry；[`field_dict.md`](docs/field_dict.md) 提供导航，[`unknown_fields.md`](docs/unknown_fields.md) 列出破解队列，[`field_metadata_gaps.md`](docs/field_metadata_gaps.md) 暴露已验证字段的描述缺口，[`field_matrix.md`](docs/field_matrix.md) 和 [`source_repository_map.md`](docs/source_repository_map.md) 分别展示来源矩阵与仓库谱系。碰撞报告只提供候选，人工复核后按 [`定案同步流程`](docs/field_verification/ADJUDICATION_WORKFLOW.md) 更新状态。
 - **日期感知的跨源对撞**：行情按有效交易日对齐，新闻/公告按自然日处理；保留历史休市目录，按实际数据日期择优快照，并让候选证据记录样本日期与来源。方法与规则见 [`CRACKING_METHODOLOGY.md`](docs/field_verification/CRACKING_METHODOLOGY.md)。
+- **上游兼容性复核**：登记仓库、依赖版本差异、实际调用边界与采用结论见 [`UPSTREAM_COMPATIBILITY.md`](docs/UPSTREAM_COMPATIBILITY.md)；本轮适配器核查计划与回归记录见 [`DEPENDENCY_ADAPTER_COMPATIBILITY_PLAN_20261008.md`](docs/DEPENDENCY_ADAPTER_COMPATIBILITY_PLAN_20261008.md)；仓库对应关系见 [`source_repository_map.md`](docs/source_repository_map.md)。
 - **统一数据合约**：唯一入口 `get_canonical_stock_data` 返回 `CanonicalStockData` 强类型合约（113 字段 frozen 契约，每字段带 `field_sources` 溯源），消除异构多源冲突。
 - **ZHB-First 离线优先路由**：盘前 / 休市日 100% 走 ZHB 内存秒级提取；交易日盘中盘后强制网络取 T 日真实收盘价。
 - **申万二级行业统一**：东财 datacenter 一次性分页拉取 + 7 天缓存，零逐股请求、零 push2 风控面。
@@ -27,16 +28,17 @@
 
 - Python **3.12**（`scripts/run_tests.ps1` 会选择并校验解释器；直接运行 `main.py` 时也须使用已安装项目依赖的解释器）
 - Windows / macOS / Linux
+- 项目临时目录为仓库根 `.tmp/`；Windows 下使用 `scripts/run_with_system_python.ps1`（或兼容入口 `.bat`）启动时，会将 Python 及其子进程的 `TEMP`/`TMP`/`TMPDIR` 指向该目录。测试入口 `scripts/run_tests.ps1` 自动继承此设置。直接调用 `python.exe` 时请改用启动器，或自行将这些变量设为 `.tmp/`。
 
 ### 新机器部署（复制项目后）
 
 项目内数据目录按仓库位置解析；首次运行会按需创建 `cache/`、`logs/`、`reports/`、`snapshots/` 并同步 ZHB 数据。部分功能还会读取本机配置或外部行情文件，部署前请按对应功能说明配置。
 
 1. 安装 Python 3.12（任意发行版；Windows Store 版已验证可用）
-2. `pip install -r requirements.txt`（`levistock`/`axdata` 为可选增强，缺失时对应功能降级）
+2. `pip install -r requirements.txt`（包含经离线兼容回归的 `levistock==0.1.8`、`axdata==0.1.4`；如自行省略，相关功能会降级）
    > ⚠️ **`thsdk` 已于 V17.0.29(2026-09-07) 随 `stock_common/sc_ths.py` 一同移除**，不再是可选依赖。
 3. `pip install -r requirements-dev.txt`（开发环境；自动包含运行时依赖及 pytest/mypy/black）
-4. 首次运行 `python main.py --sht 600519 --no-upload` 冒烟（首只约 5 分钟，含 ZHB 下载+缓存预热）
+4. Windows 首次运行 `.\scripts\run_with_system_python.ps1 main.py --sht 600519 --no-upload` 冒烟（首只约 5 分钟，含 ZHB 下载+缓存预热）
 
 可选配置（缺失不影响核心报告）：
 - **Google Drive 上传**：配置 Google OAuth 凭据；缺失时本地报告仍可生成，但无法上传。
@@ -68,21 +70,25 @@ pip install -r requirements.txt
 pip install -r requirements-dev.txt   # 开发环境（包含运行时依赖、测试/类型/格式工具）
 ```
 
+`requirements-dev.txt` 通过 `-r requirements.txt` 继承同一组运行时固定版本。AxData 的 `axdata_core` 模块由 `axdata` 包提供；短线指标使用 `stock_common/cache/zhb/` 中最新的 `zhb_*.zip` 作为统计资源，同时仍会请求 TDX 行情/财务输入。适配器和 ZIP 路径的回归边界见 [`UPSTREAM_COMPATIBILITY.md`](docs/UPSTREAM_COMPATIBILITY.md)。
+
 ### 基本用法
 
-```bash
+```powershell
 # 生成短线报告
-python main.py --sht 600519 000858
+.\scripts\run_with_system_python.ps1 main.py --sht 600519 000858
 
 # 生成中线报告
-python main.py --med 600519 000858
+.\scripts\run_with_system_python.ps1 main.py --med 600519 000858
 
 # 生成多种报告
-python main.py --sht 600519 --med 600519 --lng 600519
+.\scripts\run_with_system_python.ps1 main.py --sht 600519 --med 600519 --lng 600519
 
 # 批量处理
-python main.py --sht 600519 000858 03606 --med 600519 000858
+.\scripts\run_with_system_python.ps1 main.py --sht 600519 000858 03606 --med 600519 000858
 ```
+
+macOS/Linux 可用 `TMPDIR="$PWD/.tmp" python main.py ...`，确保运行时临时文件也落在项目目录。
 
 ---
 
@@ -130,7 +136,8 @@ python main.py [选项] 股票代码...
 ```
 a-stock-data/
 ├── main.py                       # 主入口程序（参数分发/子进程调度/超时分级）
- ├── VERSION                       # 项目版本号（17.4.25，单一来源）
+├── .tmp/                         # 项目临时目录（仅 .gitkeep 入库）
+├── VERSION                       # 项目版本号（17.4.28，单一来源）
 │
 ├── core/                         # 核心模块包（9 个支撑模块，见 core/README.md）
 │   ├── config.py                 # 全局配置集中管理（超时/限流/熔断）
@@ -181,6 +188,8 @@ a-stock-data/
 │   ├── ARCHITECTURE_THEORY.md    # 统一数据访问架构公理
 │   ├── DEBT_LEDGER.md            # 已知架构偏离与偿还状态
 │   ├── PROJECT_AUDIT_REMEDIATION_20260928.md # 本轮整改计划与验收记录
+│   ├── UPSTREAM_COMPATIBILITY.md # 上游仓库、依赖和适配边界复核
+│   ├── DEPENDENCY_ADAPTER_COMPATIBILITY_PLAN_20261008.md # 适配器版本核查与回归计划
 │   ├── architecture.md           # 项目架构与数据流图（Mermaid）
 │   ├── roadmap.md                # 版本路线图 + ADR 决策记录
 │   ├── field_dict.md             # 生成的字段治理入口与链接
@@ -296,7 +305,9 @@ reports/
 mypy --no-pretty --show-error-codes
 
 # 临时禁用缓存调试
-STOCK_NOCACHE=1 python main.py --sht 600519
+$env:STOCK_NOCACHE = '1'
+.\scripts\run_with_system_python.ps1 main.py --sht 600519
+Remove-Item Env:\STOCK_NOCACHE
 ```
 
 ### 类型注解与静态检查
@@ -308,7 +319,7 @@ STOCK_NOCACHE=1 python main.py --sht 600519
 
 ### 常见调试问题
 
-- **报告数据与最新行情不一致？**：可能是缓存命中了过期数据，执行 `STOCK_NOCACHE=1 python main.py ...` 临时禁用缓存再测一次；或调用 `python -m core.stock_cache clear --category dragon_tiger` 清理对应分类。
+- **报告数据与最新行情不一致？**：可能是缓存命中了过期数据；Windows PowerShell 中设置 `$env:STOCK_NOCACHE = '1'` 后通过项目启动器运行，再清除该环境变量；或调用 `.scriptsun_with_system_python.ps1 -m core.stock_cache clear --category dragon_tiger` 清理对应分类。
 - **类型检查 mypy 报错？**：从仓库根目录运行 `mypy --no-pretty --show-error-codes`，先查看完整诊断再修复；不要通过全局忽略项目错误来隐藏问题。
 - **Google Drive 上传失败？**：检查根目录是否有 `client_secrets.json`（首次使用需浏览器授权），确认授权账号有 `a-stock_data` 文件夹的访问权限。
 - **架构不熟悉？**：详见 [`docs/architecture.md`](docs/architecture.md)，包含 Mermaid 架构图；字段口径见 [`docs/domain_glossary.md`](docs/domain_glossary.md) 领域词汇表。

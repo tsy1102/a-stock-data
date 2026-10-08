@@ -4,10 +4,12 @@ import json
 from pathlib import Path
 import sys
 from types import ModuleType, SimpleNamespace
+from uuid import uuid4
 
 import pytest
 
 import stock_common
+from stock_common import sc_fuyao
 from stock_common import sc_network
 from stock_common.sc_datasource import _st_list
 
@@ -227,6 +229,133 @@ def test_source_as_of_date_is_explicit_and_reads_market_metadata():
         == "20260929"
     )
     assert capture_probe._source_as_of_date("push2", {"stocks": {}}) is None
+
+
+def test_fuyao_auction_timestamp_is_not_treated_as_source_data_date():
+    meta = capture_probe._fuyao_auction_snapshot_meta(
+        {
+            "code": 0,
+            "timestamp": "2026-09-29T09:25:00",
+            "data": {"auction_phase": "final", "data_status": "ready", "item": []},
+        },
+        "final",
+        date(2026, 9, 29),
+    )
+
+    assert meta["response_timestamp"] == "2026-09-29T09:25:00"
+    assert meta["source_data_date"] is None
+    assert meta["collision_eligible"] is False
+    assert meta["exclusion_reason"] == "source_data_date_unavailable"
+
+
+def test_fuyao_auction_requires_ready_status_and_matching_explicit_date():
+    eligible = capture_probe._fuyao_auction_snapshot_meta(
+        {
+            "code": 0,
+            "timestamp": "2026-09-29T09:25:00",
+            "data": {
+                "trade_date": "20260929",
+                "auction_phase": "final",
+                "data_status": "ready",
+                "item": [],
+            },
+        },
+        "final",
+        date(2026, 9, 29),
+    )
+    not_ready = capture_probe._fuyao_auction_snapshot_meta(
+        {
+            "code": 0,
+            "data": {"trade_date": "2026-09-29", "data_status": "not_ready", "item": []},
+        },
+        "final",
+        date(2026, 9, 29),
+    )
+    mismatched = capture_probe._fuyao_auction_snapshot_meta(
+        {
+            "code": 0,
+            "data": {"trade_date": "2026-09-30", "data_status": "ready", "item": []},
+        },
+        "final",
+        date(2026, 9, 29),
+    )
+
+    assert eligible["source_data_date"] == "2026-09-29"
+    assert eligible["collision_eligible"] is True
+    assert eligible["exclusion_reason"] is None
+    assert not_ready["collision_eligible"] is False
+    assert not_ready["exclusion_reason"] == "source_status_not_confirmed_ready"
+    assert mismatched["collision_eligible"] is False
+    assert mismatched["exclusion_reason"] == "source_date_differs_from_snapshot_date"
+
+
+def test_fuyao_auction_legacy_api_still_returns_item_list(monkeypatch):
+    items = [{"ticker": "600000.SH", "auction_price": 10.0}]
+    envelope = {"code": 0, "data": {"item": items}}
+    calls = []
+    stage = f"unit_test_{uuid4().hex}"
+
+    def fake_raw(path, params):
+        calls.append((path, params))
+        return envelope
+
+    monkeypatch.setattr(sc_fuyao, "_fuyao_raw", fake_raw)
+    codes = ["600000", "000001"]
+
+    assert stock_common.get_fuyao_auction_snapshot_envelope(codes, stage=stage) == envelope
+    assert stock_common.get_fuyao_auction_snapshot(codes, stage=stage) == items
+    assert calls == [
+        (
+            sc_fuyao.EP_AUCTION_SNAP,
+            {"thscodes": "600000.SH,000001.SZ", "stage": stage},
+        )
+    ]
+    assert callable(stock_common.get_fuyao_auction_snapshot_envelope)
+
+
+def test_collect_fuyao_preserves_auction_envelope_and_tags_rows(monkeypatch):
+    envelope_calls = []
+    auction_item = {"ticker": "600000", "auction_price": 10.2}
+
+    monkeypatch.setattr(capture_probe, "_last_completed_trading_day", lambda: date(2026, 9, 29))
+    monkeypatch.setattr(stock_common, "is_fuyao_enabled", lambda: True)
+    monkeypatch.setattr(stock_common, "get_fuyao_snapshot", lambda _codes: [{"ticker": "600000"}])
+    monkeypatch.setattr(stock_common, "get_fuyao_valuation", lambda _codes: [])
+    monkeypatch.setattr(stock_common, "get_fuyao_fin_indicators", lambda *_args: None)
+
+    def auction_envelope(codes, stage="final"):
+        envelope_calls.append((codes, stage))
+        return {
+            "code": 0,
+            "timestamp": "2026-09-29T09:25:00",
+            "data": {
+                "auction_phase": "final",
+                "data_status": "ready",
+                "item": [auction_item],
+            },
+        }
+
+    monkeypatch.setattr(stock_common, "get_fuyao_auction_snapshot_envelope", auction_envelope)
+    monkeypatch.setattr(stock_common, "get_fuyao_auction_benchmark", lambda _day: [])
+    monkeypatch.setattr(
+        stock_common,
+        "get_fuyao_limit_pool",
+        lambda *_args, **_kwargs: {"item": [], "pagination": {"total": 0}},
+    )
+    monkeypatch.setattr(stock_common, "get_fuyao_anomaly", lambda: [])
+    monkeypatch.setattr(stock_common, "get_fuyao_dragon_tiger", lambda _day: [])
+    monkeypatch.setattr(stock_common, "get_fuyao_hot_list", lambda _period: [])
+    monkeypatch.setattr(sc_fuyao, "get_fuyao_financials", lambda *_args, **_kwargs: [])
+
+    result = capture_probe.collect_fuyao([{"code": "600000"}])
+
+    stock = result["stocks"]["600000"]
+    assert envelope_calls == [(["600000"], "final")]
+    assert result["probe_trading_day"] == "2026-09-29"
+    assert result["auction_snapshot_meta"]["source_data_date"] is None
+    assert stock["snapshot"] == {"ticker": "600000"}
+    assert stock["auction_final"]["auction_price"] == auction_item["auction_price"]
+    assert stock["auction_final"]["__source_meta__"]["collision_eligible"] is False
 
 
 def test_axdata_scheme_describes_its_local_shortline_source():

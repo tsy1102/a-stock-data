@@ -4,6 +4,23 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## [V17.4.30] 2026-10-08 — 项目体检与兼容性修复
+
+### 采集、网络与对撞
+
+- 腾讯逐笔适配上游 v3.10.1 的会话复用、受限重试和完整性判定：连接/握手/响应头超时、429 与 5xx 最多请求 4 次；403 和响应体读取失败不重试；盘后逐笔金额与快照字段核对后写入 `frame.attrs["complete"]` 三态结果。
+- 流式 HTTP 错误响应在重试前关闭，避免连接池资源滞留；通用 HTTP 调用的默认 timeout 改为使用 `HTTP_TIMEOUT_SECONDS`。
+- `tdx_get_board_members(sort_by_change=...)` 现在对 TDX 与 Eastmoney fallback 都按涨跌幅降序，关闭选项时保留源顺序。
+- 碰撞脚本统一使用 `scripts.*` 包导入，并在直接运行时补入仓库根路径；增加 `scripts` 包标记，避免 MyPy 将同一日期模块识别成两个模块。
+
+### 运行环境、测试与文档
+
+- 项目最低 Python 版本统一为 3.11，推荐使用 3.12；ELTDX 固定为已回归的 `3.2.2`，开发依赖增加 PyYAML 类型存根。
+- 项目启动及直接导入时统一使用仓库 `.tmp/`，保留 `ASTOCK_TEMP_DIR` 覆盖；移走 `reports/_preview_out.md` 到临时目录，历史报告保留，并补充生成报告的日期与 Markdown 约定。
+- 校准 113 个 CanonicalStockData 属性、12 个 ELTDX 扩展、101 个非扩展属性和 38 项精选 FieldSpec 元数据的文档口径；测试说明模块数更正为 61。
+- 未显式设置真实网络环境变量时，默认、单模块和表达式测试路径均不访问真实网络；默认全量模式显式排除 `real_network`，`-Mode real` 会在子进程期间临时启用。
+- 验证：默认离线套件 720 passed、1 skipped、47 deselected（共收集 768 项，125.45 秒）；9 条既有 `httplib2`/`pyparsing` 弃用警告。MyPy、Black、语法、A1/A7、字段生成检查和 registry parity 全部通过。最终全量回归未运行真实网络用例或采集；修复测试闸门前，早期定向回归曾意外触发 2 个 `real_network` 只读冒烟测试（腾讯逐笔、新浪期货），均通过，随后修正闸门并复跑全量离线套件。
+
 ## [V17.4.29] 2026-10-08 — 项目内临时目录
 
 ### 开发环境

@@ -188,7 +188,7 @@ def test_approx():
 
 使用范围(本仓库现状):
 
-- 截至 2026-10-08，`tests/` 有 52 个测试模块；最近完整离线运行收集 747 项，699 passed、1 skipped、47 deselected（`real_network` 未运行）。适配器回归和本次结果见 `docs/DEPENDENCY_ADAPTER_COMPATIBILITY_PLAN_20261008.md`；历史离线与 `real_network` 验证结果见 `docs/PROJECT_AUDIT_REMEDIATION_20260928.md`。
+- 截至 2026-10-08，`tests/` 有 61 个测试模块；最新完整离线运行的收集项和结果见 `tests/README.md`。真实网络用例默认跳过，只有显式选择 `-Mode real` 或设置专用环境变量才会运行。历史验证记录见 `docs/PROJECT_AUDIT_REMEDIATION_20260928.md`。
 - 测试使用 `@pytest.fixture`、`@pytest.mark.real_network`、`pytest.skip`、`pytest_asyncio` 等 pytest API。
 - `tests/conftest.py` 提供 `_no_real_network` autouse fixture 和 `endpoint` 参数化 fixture
 - `pyproject.toml` `[tool.pytest.ini_options]` 集中管 `testpaths` / `addopts` / `markers` / `norecursedirs`
@@ -449,7 +449,7 @@ Write-Output 'unreachable'
 
 | 层 | 入口 | 职责 |
 |---|---|---|
-| **Tier1 门面** | `core/data_provider.get_canonical_stock_data()` | 核心 86 字段归一化契约、源选择、fallback、单位归一化、field_sources 溯源 |
+| **Tier1 门面** | `core/data_provider.get_canonical_stock_data()` | `CanonicalStockData` 113 个属性（含 12 个 ELTDX 扩展属性）、源选择、fallback、单位归一化、field_sources 溯源 |
 | **Tier2 适配器** | `sc_datasource.get_*` / `sc_fuyao.get_fuyao_*` / `tdx_client.tdx_get_*` | 专精数据(CYQ / F10 / 涨停梯队 / 龙虎榜 / 行业L2 / 宏观流向 / 竞价),已含 @cached + 归一化 + 令牌桶限流 |
 | **原始客户端** | `_get_tdx_client()` / `sc_network.em_get` / `sc_fuyao._fuyao_raw` / 裸 requests·httpx | **仅允许出现在 `stock_common/` 与 `core/tdx_client.py` 内部** |
 

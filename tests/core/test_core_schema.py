@@ -3,7 +3,7 @@
 
 Validates:
   - stock_common.sc_schema imports successfully
-  - All 34 FieldSpec entries are well-formed
+  - All registered FieldSpec metadata and CanonicalStockData inventory counts are stable
   - field name uniqueness
   - REQUIRES_REALTIME_HTTP / ZHB_SUFFICIENT set compatibility with V12.6
   - stock_cache._serialize_for_cache handles dataclass / dict / list
@@ -45,6 +45,17 @@ class TestSchemaImport(unittest.TestCase):
 
 
 class TestFieldSpecTable(unittest.TestCase):
+
+    def test_documented_schema_inventory_counts(self):
+        from dataclasses import fields
+
+        contract_names = {item.name for item in fields(schema.CanonicalStockData)}
+        extension_names = {name for name in contract_names if name.startswith("eltdx_")}
+
+        self.assertEqual(len(contract_names), 113, "update schema inventory documentation")
+        self.assertEqual(len(extension_names), 12, "update ELTDX extension documentation")
+        self.assertEqual(len(contract_names - extension_names), 101)
+        self.assertEqual(len(schema.FIELD_SPECS), 38, "FIELD_SPECS is a curated metadata registry")
 
     def test_field_specs_not_empty(self):
         self.assertGreater(len(schema.FIELD_SPECS), 20)

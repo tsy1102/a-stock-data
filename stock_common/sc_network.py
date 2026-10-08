@@ -35,10 +35,10 @@ from typing import (
     overload,
 )
 from urllib.parse import urlparse
-from tempfile import gettempdir as _gettempdir
 
 import requests
 import urllib3
+from stock_common._temp import configure_project_temp
 
 P = ParamSpec("P")
 R = TypeVar("R")
@@ -291,7 +291,7 @@ _RL_STATS = {
 # 改用 _DOMAIN_LAST_TIME + _DOMAIN_LAST_TIME_LOCK（线程安全）
 
 # ── 进程间协调: 通过文件 mtime 实现跨进程请求间隔 ──
-_em_lock_dir = os.path.join(_gettempdir(), "a_stock_data_v7")
+_em_lock_dir = os.path.join(str(configure_project_temp()), "a_stock_data_v7")
 try:
     os.makedirs(_em_lock_dir, exist_ok=True)
 except Exception as _e:
@@ -839,7 +839,7 @@ def _request_with_retry(
     url: str,
     params: Optional[Dict[str, Any]] = None,
     headers: Optional[Dict[str, str]] = None,
-    timeout: int = 15,
+    timeout: Union[int, Tuple[float, float]] = HTTP_TIMEOUT_SECONDS,
     max_retries: int = 3,
     data: Optional[Union[Dict[str, Any], str, bytes]] = None,
     method: str = "GET",
@@ -857,12 +857,13 @@ def _quick_request(
     url: str,
     params: Optional[Dict[str, Any]] = None,
     headers: Optional[Dict[str, str]] = None,
-    timeout: int = 15,
+    timeout: Union[int, Tuple[float, float]] = HTTP_TIMEOUT_SECONDS,
     max_retries: int = 3,
     data: Optional[Union[Dict[str, Any], str, bytes]] = None,
     method: str = "GET",
     verify: bool = True,
     error_out: Optional[Dict[str, Any]] = None,
+    stream: bool = False,
 ) -> Optional[requests.Response]:  # V16.2: 默认校验证书
     """通用 HTTP 请求（按域名独立限流）。
 
@@ -940,7 +941,18 @@ def _quick_request(
     if is_em:
         _RL_STATS["em_request_count"] += 1
 
-    return _do_request(url, params, headers, timeout, max_retries, data, method, verify, error_out)
+    return _do_request(
+        url,
+        params,
+        headers,
+        timeout,
+        max_retries,
+        data,
+        method,
+        verify,
+        error_out,
+        stream=stream,
+    )
 
 
 # ─── DNS 解析阶段硬超时护栏（根因修复，2026-09-09）───
@@ -1023,12 +1035,13 @@ def _do_request(
     url: str,
     params: Optional[Dict[str, Any]],
     headers: Optional[Dict[str, str]],
-    timeout: int,
+    timeout: Union[int, Tuple[float, float]],
     max_retries: int,
     data: Optional[Union[Dict[str, Any], str, bytes]],
     method: str,
     verify: bool,
     error_out: Optional[Dict[str, Any]] = None,
+    stream: bool = False,
 ) -> Optional[requests.Response]:
     """内部：执行 HTTP 请求 + 重试（由 _request_with_retry / _quick_request 调用）。
 
@@ -1072,6 +1085,7 @@ def _do_request(
                     timeout=timeout,
                     verify=verify,
                     proxies=cast(Dict[str, str], _no_proxy),
+                    stream=stream,
                 )
             elif method == "GET":
                 r = _HTTP_SESSION.get(
@@ -1081,6 +1095,7 @@ def _do_request(
                     timeout=timeout,
                     verify=verify,
                     proxies=cast(Dict[str, str], _no_proxy),
+                    stream=stream,
                 )
             else:
                 _record_request_failure(
@@ -1088,28 +1103,30 @@ def _do_request(
                 )
                 return None
 
+            if stream and r.status_code >= 400:
+                r.close()
+
             if r.status_code == 403:
-                # V16 增强: 403 = 东财风控明确信号（参考仓库 FAQ: IP 级临时封）
-                # 长指数退避 + 熔断器 Open + 连续计数，避免继续试探加重封禁
+                # Eastmoney 403 is treated as a domain/IP ban signal; unrelated providers
+                # must not increment or reset Eastmoney's shared consecutive-ban counter.
                 if is_em:
                     _RL_STATS["em_403_count"] += 1
                     try:
                         _biz_logger.warning(f"EM 403 rate-limited: {domain} {url[:120]}")
                     except Exception:
                         pass
-                # 连续 403 计数: 达 3 次视为 IP 被封，抛 RateLimitBlockedError
-                _CONSECUTIVE_403["count"] += 1
-                _CONSECUTIVE_403["last_ts"] = time.time()
-                if _CONSECUTIVE_403["count"] >= 3:
-                    # V17.3.17: 403 型 IP 封禁同样跨进程共享
-                    try:
-                        _mark_em_banned(_normalize_em_domain(domain))
-                    except Exception:
-                        pass
-                    raise RateLimitBlockedError(
-                        f"EM 连续 {_CONSECUTIVE_403['count']} 次 403，疑似 IP 被封。"
-                        f"建议: 停止 20+ 小时（参考仓库 PR#36 实测恢复时间）/ 换网络 / 调大 EM_MIN_INTERVAL / 切换备胎源"
-                    )
+                    # 3 consecutive Eastmoney 403s mark the shared Eastmoney domain banned.
+                    _CONSECUTIVE_403["count"] += 1
+                    _CONSECUTIVE_403["last_ts"] = time.time()
+                    if _CONSECUTIVE_403["count"] >= 3:
+                        try:
+                            _mark_em_banned(_normalize_em_domain(domain))
+                        except Exception:
+                            pass
+                        raise RateLimitBlockedError(
+                            f"EM 连续 {_CONSECUTIVE_403['count']} 次 403，疑似 IP 被封。"
+                            f"建议: 停止 20+ 小时（参考仓库 PR#36 实测恢复时间）/ 换网络 / 调大 EM_MIN_INTERVAL / 切换备胎源"
+                        )
                 if _HAS_FAULT_TOLERANCE:
                     try:
                         get_domain_circuit_breaker(domain)._on_failure()
@@ -1168,7 +1185,7 @@ def _do_request(
                 )
                 return None
             # V16: 成功响应（<400）重置连续 403 计数
-            if _CONSECUTIVE_403["count"] > 0 and r.status_code < 400:
+            if is_em and _CONSECUTIVE_403["count"] > 0 and r.status_code < 400:
                 _CONSECUTIVE_403["count"] = 0
             return r
         except (

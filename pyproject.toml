@@ -37,7 +37,7 @@ norecursedirs = [
 
 # ──────────────────────────────────────────────────────────────────────
 # [2] mypy 配置（静态类型检查器）
-#      - python_version: 最低支持 Python 3.10（sc_schema 使用 dataclass(slots=True)）
+#      - python_version: 最低支持 Python 3.11（AxData 0.1.4 要求 Python >=3.11）
 #      - strict = false: 宽松模式
 #      - ignore_missing_imports = true: 忽略未注解的第三方库
 #      - no_implicit_optional = true: 禁止隐式 Optional
@@ -47,7 +47,7 @@ norecursedirs = [
 #      注意：mypy 依赖需手动安装：pip install mypy
 # ──────────────────────────────────────────────────────────────────────
 [tool.mypy]
-python_version = "3.10"
+python_version = "3.11"
 strict = false
 ignore_missing_imports = true
 no_implicit_optional = true
@@ -62,6 +62,9 @@ exclude = [
     "snapshots",
     "logs",
     ".pytest_cache",
+    "crack_push2_status_codes_20260921",
+    "crack_ulist_f88_95_20260921",
+    "crack_zhb_anchored_20260921",
 ]
 
 # 核心模块更严格（渐进式）
@@ -77,7 +80,7 @@ disallow_untyped_defs = false
 warn_return_any = false
 
 # These dependencies either require a newer parser target or ship without stubs.
-# Keep third-party internals external while checking against the project's Python 3.10 target.
+# Keep third-party internals external while checking against the project's Python 3.11 target.
 [[tool.mypy.overrides]]
 module = ["pytest", "pytest.*", "_pytest", "_pytest.*"]
 follow_imports = "skip"
@@ -90,13 +93,13 @@ follow_imports = "skip"
 # ──────────────────────────────────────────────────────────────────────
 # [3] black 配置（代码格式化工具）
 #      - line-length: 100 字符（兼顾 readability 与宽屏显示器）
-#      - target-version: 目标 Python 版本 >= 3.10
+#      - target-version: 目标 Python 版本 >= 3.11
 #      - string-normalization: false（保留原引号风格，避免大面积改动）
 #      注意：black 依赖需手动安装：pip install black
 # ──────────────────────────────────────────────────────────────────────
 [tool.black]
 line-length = 100
-target-version = ["py310"]
+target-version = ["py311"]
 skip-string-normalization = true
 include = '\.pyi?$'
 exclude = '''
@@ -104,8 +107,14 @@ exclude = '''
   /(
       __pycache__
     | \.pytest_cache
+    | \.venv
+    | \.tmp
     | reports
     | snapshots
     | logs
   )/
+  | ^docs/backups/
+  | ^docs/field_verification/20260913_em_ulist_crack/
+  | ^scripts/crack_zhb_anchored_20260921\.py$
 )'''
+force-exclude = 'crack_zhb_anchored_20260921\.py$'

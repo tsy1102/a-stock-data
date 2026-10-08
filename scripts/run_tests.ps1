@@ -48,10 +48,11 @@ if (-not (Test-Path -LiteralPath (Join-Path $PROJECT_ROOT 'pyproject.toml'))) {
 # 装配 pytest 参数（对应 pyproject.toml [tool.pytest.ini_options]）
 # ────────────────────────────────────────────────────────────────────────────
 $pytestArgs = @('-m', 'pytest')
+$enableRealNetwork = $false
 
 switch ($Mode) {
     'all' {
-        $pytestArgs += @('tests/')
+        $pytestArgs += @('tests/', '-m', 'not real_network')
     }
     'module' {
         if ([string]::IsNullOrWhiteSpace($Path)) {
@@ -66,6 +67,7 @@ switch ($Mode) {
     }
     'real' {
         $pytestArgs += @('tests/', '-m', 'real_network')
+        $enableRealNetwork = $true
     }
     'skip_real' {
         $pytestArgs += @('tests/', '-m', 'not real_network')
@@ -89,11 +91,20 @@ if ($ExtraArgs -and $ExtraArgs.Count -gt 0) {
 # ────────────────────────────────────────────────────────────────────────────
 Write-Host "▶ pytest args: $($pytestArgs -join ' ')" -ForegroundColor Cyan
 Push-Location -LiteralPath $PROJECT_ROOT
+$previousRealNetwork = [Environment]::GetEnvironmentVariable('REAL_NETWORK', 'Process')
 try {
+    if ($enableRealNetwork) {
+        $env:REAL_NETWORK = '1'
+    }
     & $RUNNER @pytestArgs
     $code = $LASTEXITCODE
 }
 finally {
+    if ($null -eq $previousRealNetwork) {
+        Remove-Item Env:\REAL_NETWORK -ErrorAction SilentlyContinue
+    } else {
+        $env:REAL_NETWORK = $previousRealNetwork
+    }
     Pop-Location
 }
 

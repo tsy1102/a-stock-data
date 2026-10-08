@@ -814,6 +814,99 @@ def test_network_diagnostics_are_opt_in_for_http_error_responses(monkeypatch):
     assert legacy is response
 
 
+def test_network_stream_option_reaches_requests_session(monkeypatch):
+    captured = {}
+    response = SimpleNamespace(status_code=200, headers={})
+
+    class StreamingSession:
+        def get(self, _url, **kwargs):
+            captured.update(kwargs)
+            return response
+
+    monkeypatch.setattr(sc_network, "_HTTP_SESSION", StreamingSession())
+    monkeypatch.setattr(sc_network, "_resolve_host_with_timeout", lambda _domain: None)
+    monkeypatch.setattr(sc_network, "_em_wait_process_interval", lambda: None)
+
+    result = sc_network._do_request(
+        "https://stock.gtimg.cn/data/index.php",
+        params=None,
+        headers=None,
+        timeout=(5, 15),
+        max_retries=1,
+        data=None,
+        method="GET",
+        verify=True,
+        stream=True,
+    )
+
+    assert result is response
+    assert captured["stream"] is True
+    assert captured["timeout"] == (5, 15)
+
+
+def test_streamed_http_error_closes_response(monkeypatch):
+    closed = []
+    response = SimpleNamespace(status_code=503, headers={}, close=lambda: closed.append(True))
+    detail = {}
+
+    class StreamingSession:
+        def get(self, _url, **_kwargs):
+            return response
+
+    monkeypatch.setattr(sc_network, "_HTTP_SESSION", StreamingSession())
+    monkeypatch.setattr(sc_network, "_resolve_host_with_timeout", lambda _domain: None)
+    monkeypatch.setattr(sc_network, "_em_wait_process_interval", lambda: None)
+
+    result = sc_network._do_request(
+        "https://stock.gtimg.cn/data/index.php",
+        params=None,
+        headers=None,
+        timeout=(5, 15),
+        max_retries=1,
+        data=None,
+        method="GET",
+        verify=True,
+        error_out=detail,
+        stream=True,
+    )
+
+    assert result is None
+    assert closed == [True]
+    assert detail["status_code"] == 503
+
+
+def test_non_eastmoney_403_does_not_touch_eastmoney_ban_counter(monkeypatch):
+    response = SimpleNamespace(status_code=403, headers={})
+
+    class DeniedSession:
+        def get(self, _url, **_kwargs):
+            return response
+
+    monkeypatch.setattr(sc_network, "_HTTP_SESSION", DeniedSession())
+    monkeypatch.setattr(sc_network, "_resolve_host_with_timeout", lambda _domain: None)
+    monkeypatch.setattr(sc_network, "_em_wait_process_interval", lambda: None)
+    monkeypatch.setattr(sc_network, "_HAS_FAULT_TOLERANCE", False)
+    monkeypatch.setitem(sc_network._CONSECUTIVE_403, "count", 0)
+    monkeypatch.setitem(sc_network._CONSECUTIVE_403, "last_ts", 0.0)
+    detail = {}
+
+    result = sc_network._do_request(
+        "https://stock.gtimg.cn/data/index.php",
+        params=None,
+        headers=None,
+        timeout=1,
+        max_retries=1,
+        data=None,
+        method="GET",
+        verify=True,
+        error_out=detail,
+    )
+
+    assert result is None
+    assert detail["kind"] == "http_403"
+    assert sc_network._CONSECUTIVE_403["count"] == 0
+
+
 def test_quick_request_reports_preexisting_ban_without_request(monkeypatch):
     monkeypatch.setattr(sc_network, "_em_is_banned", lambda _domain: True)
     detail = {"stale": "previous request"}

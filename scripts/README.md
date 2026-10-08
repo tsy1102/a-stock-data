@@ -4,7 +4,7 @@
 
 ## 运行入口
 
-Windows 开发默认使用 PowerShell。`run_with_system_python.ps1` 校验并选择 Python 3.12，并将 Python 进程及其子进程的 `TEMP`、`TMP`、`TMPDIR` 指向仓库根 `.tmp/`；兼容入口 `run_with_system_python.bat` 也采用该目录。`SYSTEM_PYTHON_EXE` 可显式指定解释器。测试通过 `run_tests.ps1` 运行：
+Windows 开发默认使用 PowerShell。`run_with_system_python.ps1` 校验并选择 Python 3.12，并将 Python 进程及其子进程的 `TEMP`、`TMP`、`TMPDIR` 指向仓库根 `.tmp/`；兼容入口 `run_with_system_python.bat` 也采用该目录。导入项目 `stock_common` 包时，项目自身的临时目录和进程间锁也会使用 `.tmp/`，直接 `python main.py` 不再依赖系统临时目录。可通过 `ASTOCK_TEMP_DIR` 指定临时目录。`SYSTEM_PYTHON_EXE` 可显式指定解释器。测试通过 `run_tests.ps1` 运行：
 
 ```powershell
 .\scripts\run_tests.ps1 -Mode skip_real
@@ -53,3 +53,10 @@ Windows 开发默认使用 PowerShell。`run_with_system_python.ps1` 校验并�
 | `backup-opencode.ps1` | 备份本机 OpenCode 配置。 |
 
 会改写字典、矩阵、采集记录或审计报告的工具，先检查其写入目标和工作区状态。`cache/` 里的 SQLite、K 线和 ZHB 快照不是同一种缓存；不要通过删除整个目录来代替有范围的清理。
+## 报告 Markdown 约定
+
+- 报告目录保存可追溯的历史快照；不要批量重排或改写历史报告。
+- 每份新报告在开头保留报告类型、股票/范围和生成时间；有可靠来源时另列数据日期或快照日期。生成时间、任务目标日期和来源数据日期是不同概念，不得互相推算或替代。
+- 来源不可用、字段缺失、降级来源和单位口径应在对应章节明确呈现，不以空白内容伪装成功。
+- 使用 Markdown 标题和标准表格，表头标注单位；行尾空格只在确实需要 Markdown 强制换行时保留。
+- 预览、渲染和临时对比文件放在仓库 `.tmp/`，不写入 `reports/` 正式快照目录。

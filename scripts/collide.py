@@ -51,60 +51,33 @@ import argparse
 import re
 from collections import defaultdict
 from datetime import date
-from typing import TYPE_CHECKING
 
-if TYPE_CHECKING:
-    from scripts.collision_dates import (
-        CALENDAR,
-        EXCLUDED_MARKET_DATES,
-        TRADING,
-        discover_capture_folders,
-        event_record_date,
-        is_calendar_event_source,
-        parse_date,
-        sample_date_key,
-        select_folder_window,
-        select_snapshots,
-    )
-else:
-    try:
-        from collision_dates import (
-            CALENDAR,
-            EXCLUDED_MARKET_DATES,
-            TRADING,
-            discover_capture_folders,
-            event_record_date,
-            is_calendar_event_source,
-            parse_date,
-            sample_date_key,
-            select_folder_window,
-            select_snapshots,
-        )
-    except ImportError:
-        from scripts.collision_dates import (
-            CALENDAR,
-            EXCLUDED_MARKET_DATES,
-            TRADING,
-            discover_capture_folders,
-            event_record_date,
-            is_calendar_event_source,
-            parse_date,
-            sample_date_key,
-            select_folder_window,
-            select_snapshots,
-        )
+if __package__ in (None, ""):
+    _project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    if _project_root not in sys.path:
+        sys.path.insert(0, _project_root)
+
+from scripts.collision_dates import (
+    CALENDAR,
+    EXCLUDED_MARKET_DATES,
+    TRADING,
+    discover_capture_folders,
+    event_record_date,
+    is_calendar_event_source,
+    parse_date,
+    sample_date_key,
+    select_folder_window,
+    select_snapshots,
+)
 
 try:
-    import collision_rules as CR
+    from scripts import collision_rules as CR
 
     RULES_OK = True
 except Exception:
     RULES_OK = False
 
-try:
-    import source_lineage_api as SLA
-except ImportError:
-    from scripts import source_lineage_api as SLA
+from scripts import source_lineage_api as SLA
 
 try:
     _SOURCE_LINEAGE = SLA.load_source_lineage()

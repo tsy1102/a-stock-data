@@ -8,7 +8,7 @@
   - sc_schema:    V13.0 字段元数据层（FieldSpec + TimeAnchor/DataSource/Unit Enum + NormalizedQuote）
 
 V13.0 新增 sc_schema.py 作为第 5 个子模块，提供：
-  - 34 个核心字段的元数据表（FIELD_SPECS）
+  - 38 项精选源字段元数据（FIELD_SPECS；不是 CanonicalStockData 的完整字段清单）
   - dataclass(slots=True, frozen=True) FieldSpec
   - 归一化边界函数 normalize_at_boundary() 骨架
   - test_sc_schema.py 23 个单元测试
@@ -26,6 +26,10 @@ V13.0 新增 sc_schema.py 作为第 5 个子模块，提供：
 """
 
 from __future__ import annotations
+
+from ._temp import configure_project_temp
+
+configure_project_temp()
 
 __all__ = [
     # sc_network

@@ -106,7 +106,7 @@ _SCRIPTS = os.path.dirname(os.path.abspath(__file__))
 if _SCRIPTS not in sys.path:
     sys.path.insert(0, _SCRIPTS)
 
-from collision_dates import EVENT_SOURCES
+from scripts.collision_dates import EVENT_SOURCES
 
 from stock_common.sc_utils import em_secid_prefix  # V17.0 S3: 统一 secid 前缀
 from core.zhb_client import (

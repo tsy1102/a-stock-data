@@ -42,7 +42,7 @@
 生产脚本 (main.py / get_*_report.py / sc_report_runner.py)
       │
       ├── Tier1 门面 ─── get_canonical_stock_data()  [core/data_provider.py]
-      │                  · 核心 86 字段归一化契约 CanonicalStockData
+      │                  · CanonicalStockData：113 个属性，其中 12 个 ELTDX 扩展、101 个非扩展属性
       │                  · 源选择 + fallback + 单位归一化 + field_sources 溯源
       │                  · 所有报告/策略引擎共用的"横向数据"
       │
@@ -59,8 +59,10 @@
 ### 1.2 关键边界：不要把专精数据塞进 CanonicalStockData
 
 把 CYQ / F10 / 龙虎榜塞进 `CanonicalStockData` 会造出 **god-object**：
-86 字段契约被 6 个报告 + 策略引擎消费，混入报告特有数据会过度耦合，
+当前 `CanonicalStockData` 有 113 个 dataclass 属性，其中 12 个为可选 ELTDX 扩展；其余 101 个属性组成非扩展契约。混入报告特有数据会过度耦合，
 且 fallback 一致性反而更难做（而这正是统一层要解决的原始问题）。
+
+`sc_schema.FIELD_SPECS` 是 38 项精选源字段元数据，不是完整的 `CanonicalStockData` 字段注册表；其中部分名字对应源字段别名。其实时分类集合仅作为测试契约元数据，不能代替运行时路由判断。
 
 > **Tier2 适配器就是统一层的"专精面"，它不是绕过统一层。**
 > 统一层的价值 = 归一化 + 缓存 + 限流 + 溯源，这四件事 Tier2 都已做。

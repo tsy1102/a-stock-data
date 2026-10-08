@@ -40,7 +40,7 @@ def test_market_sources_queries_latest_dragon_tiger_snapshot(monkeypatch):
     monkeypatch.setattr(stock_common, "eastmoney_datacenter", fake_datacenter)
     monkeypatch.setattr(capture_probe, "_last_completed_trading_day", lambda: date(2026, 9, 24))
 
-    result = capture_probe.collect_market_sources([])
+    result = capture_probe.collect_market_sources([], include_context=True)
 
     assert result["dragon_tiger_today"] == []
     assert len(calls) == 1
@@ -49,6 +49,81 @@ def test_market_sources_queries_latest_dragon_tiger_snapshot(monkeypatch):
     assert kwargs["filter_str"] == "(TRADE_DATE>='2026-09-24')(TRADE_DATE<='2026-09-24')"
     assert kwargs["page_size"] == 50
     assert kwargs["sort_columns"] == "TRADE_DATE"
+
+
+def test_market_sources_skips_dragon_tiger_by_default(monkeypatch):
+    calls = []
+    monkeypatch.setattr(stock_common, "get_cls_market_emotion", lambda: {})
+    monkeypatch.setattr(stock_common, "get_kph_limit_ladder", lambda: [])
+    monkeypatch.setattr(stock_common, "get_stock_changes", lambda _code: [])
+    monkeypatch.setattr(stock_common, "get_kpl_market_sentiment", lambda: {})
+    monkeypatch.setattr(stock_common, "get_kpl_limit_up_detail", lambda: [])
+    monkeypatch.setattr(stock_common, "get_kpl_broken_ratio", lambda: {})
+    monkeypatch.setattr(stock_common, "get_kpl_up_down", lambda: {})
+    monkeypatch.setattr(stock_common, "get_plate_rotation_matrix", lambda **_kwargs: [])
+    monkeypatch.setattr(stock_common, "get_plate_rotation_top", lambda: [])
+    monkeypatch.setattr(
+        stock_common,
+        "eastmoney_datacenter",
+        lambda *_args, **_kwargs: calls.append("requested") or [],
+    )
+
+    result = capture_probe.collect_market_sources([])
+
+    assert "dragon_tiger_today" not in result
+    assert "trade_date" not in result
+    assert calls == []
+
+
+def test_context_paths_are_optional_and_preserved_on_default_refresh(tmp_path):
+    assert ("dragon_tiger_today",) not in capture_probe._source_required_paths("market_sources")
+    assert ("dragon_tiger_today",) in capture_probe._source_required_paths(
+        "market_sources", include_context=True
+    )
+
+    market_path = tmp_path / "raw_market_sources.json"
+    market_path.write_text(
+        json.dumps({"dragon_tiger_today": [{"amount": 1}], "kpl_sentiment": {}}),
+        encoding="utf-8",
+    )
+    market_data = {"kpl_sentiment": {"sentiment": 0.5}}
+    preserved, warnings = capture_probe._preserve_context_paths(
+        "market_sources", market_data, str(tmp_path)
+    )
+    assert preserved == ["dragon_tiger_today"]
+    assert warnings == []
+    assert market_data["dragon_tiger_today"] == [{"amount": 1}]
+
+    fuyao_path = tmp_path / "raw_fuyao.json"
+    fuyao_path.write_text(
+        json.dumps(
+            {
+                "market": {
+                    "dragon_tiger": [{"amount": 2}],
+                    "hot_list_hour": [{"heat": 3}],
+                }
+            }
+        ),
+        encoding="utf-8",
+    )
+    fuyao_data = {"stocks": {}, "market": {"short_term_benchmark": []}}
+    preserved, warnings = capture_probe._preserve_context_paths("fuyao", fuyao_data, str(tmp_path))
+    assert preserved == ["market.dragon_tiger", "market.hot_list_hour"]
+    assert warnings == []
+    assert fuyao_data["market"]["dragon_tiger"] == [{"amount": 2}]
+    assert fuyao_data["market"]["hot_list_hour"] == [{"heat": 3}]
+
+
+def test_context_only_sources_do_not_block_default_snapshot_check(tmp_path):
+    collectors = {"exchange": lambda _pool: {}}
+
+    assert capture_probe._has_complete_snapshot(collectors, {}, str(tmp_path), []) is True
+    assert (
+        capture_probe._has_complete_snapshot(
+            collectors, {}, str(tmp_path), [], include_context=True
+        )
+        is False
+    )
 
 
 def test_market_source_failures_do_not_skip_sibling_calls(monkeypatch):
@@ -313,8 +388,10 @@ def test_fuyao_auction_legacy_api_still_returns_item_list(monkeypatch):
     assert callable(stock_common.get_fuyao_auction_snapshot_envelope)
 
 
-def test_collect_fuyao_preserves_auction_envelope_and_tags_rows(monkeypatch):
+@pytest.mark.parametrize("include_context", [False, True])
+def test_collect_fuyao_preserves_auction_envelope_and_tags_rows(monkeypatch, include_context):
     envelope_calls = []
+    context_calls = []
     auction_item = {"ticker": "600000", "auction_price": 10.2}
 
     monkeypatch.setattr(capture_probe, "_last_completed_trading_day", lambda: date(2026, 9, 29))
@@ -343,11 +420,19 @@ def test_collect_fuyao_preserves_auction_envelope_and_tags_rows(monkeypatch):
         lambda *_args, **_kwargs: {"item": [], "pagination": {"total": 0}},
     )
     monkeypatch.setattr(stock_common, "get_fuyao_anomaly", lambda: [])
-    monkeypatch.setattr(stock_common, "get_fuyao_dragon_tiger", lambda _day: [])
-    monkeypatch.setattr(stock_common, "get_fuyao_hot_list", lambda _period: [])
+    monkeypatch.setattr(
+        stock_common,
+        "get_fuyao_dragon_tiger",
+        lambda _day: context_calls.append("dragon_tiger") or [],
+    )
+    monkeypatch.setattr(
+        stock_common,
+        "get_fuyao_hot_list",
+        lambda _period: context_calls.append("hot_list_hour") or [],
+    )
     monkeypatch.setattr(sc_fuyao, "get_fuyao_financials", lambda *_args, **_kwargs: [])
 
-    result = capture_probe.collect_fuyao([{"code": "600000"}])
+    result = capture_probe.collect_fuyao([{"code": "600000"}], include_context=include_context)
 
     stock = result["stocks"]["600000"]
     assert envelope_calls == [(["600000"], "final")]
@@ -356,6 +441,9 @@ def test_collect_fuyao_preserves_auction_envelope_and_tags_rows(monkeypatch):
     assert stock["snapshot"] == {"ticker": "600000"}
     assert stock["auction_final"]["auction_price"] == auction_item["auction_price"]
     assert stock["auction_final"]["__source_meta__"]["collision_eligible"] is False
+    assert context_calls == (["dragon_tiger", "hot_list_hour"] if include_context else [])
+    assert ("dragon_tiger" in result["market"]) is include_context
+    assert ("hot_list_hour" in result["market"]) is include_context
 
 
 def test_axdata_scheme_describes_its_local_shortline_source():

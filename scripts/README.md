@@ -18,8 +18,9 @@ Windows 开发默认使用 PowerShell。`run_with_system_python.ps1` 校验并�
 
 | 脚本 | 用途 |
 |:---|:---|
-| `capture_field_probe.py` | 按来源分别采集字段样本至 `docs/field_verification/<数据日>/`；串行调用各源，沿用适配器限流，记录逐源错误、缺股、deferred 与来源数据日。Fuyao 竞价保存响应信封摘要和逐项来源元数据；响应时间不作为数据日期。Eastmoney 失败不做盲目重试；完整快照才幂等跳过，`--only` 用于重新采集指定源。 |
-| `collide.py`、`collision_dates.py`、`collision_rules.py` | 共用日期归一化与快照择优；行情窗口按有效交易日、新闻/公告按自然日；L1 检查样本量、独立日期和来源族。只跳过带 `collision_eligible=false` 的子树并在报告诊断中列明原因；无标记历史 raw 保持旧行为。盘中/未知阶段仅作候选，语义、公式、时间序列与稳健相关性结果保留日期及来源证据；不直接改主字典。详见 `docs/field_verification/CRACKING_METHODOLOGY.md`。 |
+| `capture_field_probe.py` | 按来源分别采集字段样本至 `docs/field_verification/<数据日>/`；串行调用各源，沿用适配器限流，记录逐源错误、缺股、deferred 与来源数据日。默认跳过纯上下文的交易所龙虎榜、东财人气榜，并跳过市场源/Fuyao 中的龙虎榜与热股榜子路径；其他字段和 Fuyao 竞价元数据照常采集。历史上下文 raw 在默认重采时保留；需要采集时加 `--include-context`，或通过 `--only exchange` / `--only em_hot` 明确选择。Eastmoney 失败不做盲目重试；完整快照才幂等跳过。 |
+| `collide.py`、`collision_dates.py`、`collision_rules.py` | 共用日期归一化与快照择优；行情窗口按有效交易日、新闻/公告按自然日；L1 检查样本量、独立日期和来源族。默认排除交易所/东财人气榜源及市场源/Fuyao 中的上下文记录，也过滤历史 raw；需纳入研究时加 `--include-context`。其他带 `collision_eligible=false` 的子树仍按来源元数据排除并在报告诊断中说明。盘中/未知阶段仅作候选，语义、公式、时间序列与稳健相关性结果保留日期及来源证据；不直接改主字典。详见 `docs/field_verification/CRACKING_METHODOLOGY.md`。 |
+| `context_policy.py` | 采集与碰撞共用的上下文源及路径策略，避免默认过滤规则漂移。 |
 | `field_meta.py` | 为采集样本补充来源与锚点元数据。 |
 | `crack_push2_status_codes_20260921.py` | Push2 状态码研究脚本。 |
 | `crack_ulist_f88_95_20260921.py` | Ulist 高位字段研究脚本。 |

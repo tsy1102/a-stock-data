@@ -127,6 +127,75 @@ def test_fuyao_ineligible_auction_is_diagnosed_without_dropping_other_fields(tmp
     assert "source_data_date_unavailable" in report
 
 
+def test_context_records_are_excluded_by_default_and_available_on_request(tmp_path):
+    folder = tmp_path / "20260929"
+    folder.mkdir()
+    source_documents = {
+        "market_sources": {
+            "scheme": "market_sources",
+            "kpl_sentiment": [{"code": "600000", "sentiment_metric": 0.5}],
+            "dragon_tiger_today": [{"SECURITY_CODE": "600000", "context_amount": 11.0}],
+        },
+        "exchange": {
+            "scheme": "exchange",
+            "records": [{"zqdm": "600000", "context_amount": 12.0}],
+        },
+        "em_hot": {
+            "scheme": "em_hot",
+            "hot_rank": [{"ticker": "600000", "heat_score": 13.0}],
+        },
+        "fuyao": {
+            "scheme": "fuyao",
+            "stocks": {"600000": {"snapshot": {"last_price": 10.0}}},
+            "market": {
+                "dragon_tiger": [{"ticker": "600000", "context_amount": 14.0}],
+                "hot_list_hour": [{"ticker": "600000", "heat_score": 15.0}],
+                "h1_indicators_ready": True,
+            },
+        },
+    }
+    for source, document in source_documents.items():
+        (folder / f"raw_{source}.json").write_text(json.dumps(document), encoding="utf-8")
+    (folder / "meta.json").write_text(
+        json.dumps(
+            {
+                "capture_date": "20260929",
+                "data_date": "20260929",
+                "sources": {
+                    source: {
+                        "ok": True,
+                        "status": "context_only" if source in {"exchange", "em_hot"} else "ok",
+                        "scheme": source,
+                    }
+                    for source in source_documents
+                },
+            }
+        ),
+        encoding="utf-8",
+    )
+    folders, _ = collision_dates.discover_capture_folders(
+        str(tmp_path), lambda day: day.weekday() < 5
+    )
+    snapshots, _ = collision_dates.select_snapshots(folders)
+
+    default_store = defaultdict(lambda: {"vals": {}, "sample_meta": {}, "src": None})
+    default_diagnostics = []
+    collide.load_snapshots(snapshots, default_store, default_diagnostics)
+
+    assert "fuyao.snapshot.last_price" in default_store
+    assert any(key.endswith("sentiment_metric") for key in default_store)
+    assert not any("context_amount" in key or "heat_score" in key for key in default_store)
+    assert any("exchange" in item and "默认策略排除" in item for item in default_diagnostics)
+    assert any("em_hot" in item and "默认策略排除" in item for item in default_diagnostics)
+    assert any("dragon_tiger_today" in item for item in default_diagnostics)
+
+    context_store = defaultdict(lambda: {"vals": {}, "sample_meta": {}, "src": None})
+    collide.load_snapshots(snapshots, context_store, [], include_context=True)
+
+    assert any("context_amount" in key for key in context_store)
+    assert any("heat_score" in key for key in context_store)
+
+
 def _field(values, source):
     return {
         "vals": values,

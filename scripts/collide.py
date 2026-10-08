@@ -69,6 +69,7 @@ from scripts.collision_dates import (
     select_folder_window,
     select_snapshots,
 )
+from scripts.context_policy import CONTEXT_ONLY_SOURCES, CONTEXT_RECORD_PATHS
 
 try:
     from scripts import collision_rules as CR
@@ -220,7 +221,32 @@ def _flatten(rec, source, scheme, code, date, out):
         # 列表 / None 跳过
 
 
-def _record_containers(doc, source=None):
+def _without_context_records(doc, source):
+    """Return a shallow copy with context-only record paths removed."""
+    paths = CONTEXT_RECORD_PATHS.get(source, [])
+    if not paths or not isinstance(doc, dict):
+        return doc, []
+    sanitized = dict(doc)
+    excluded = []
+    for path in paths:
+        node = sanitized
+        for part in path[:-1]:
+            child = node.get(part) if isinstance(node, dict) else None
+            if not isinstance(child, dict):
+                node = None
+                break
+            child_copy = dict(child)
+            node[part] = child_copy
+            node = child_copy
+        if not isinstance(node, dict) or path[-1] not in node:
+            continue
+        value = node.pop(path[-1])
+        count = len(value) if isinstance(value, (dict, list)) else int(value is not None)
+        excluded.append((".".join(path), count))
+    return sanitized, excluded
+
+
+def _record_containers(doc, source=None, include_context=False):
     """Return supported stock, record, and market-level record containers."""
     containers = []
     stocks = doc.get("stocks")
@@ -270,6 +296,19 @@ def _record_containers(doc, source=None):
             containers.append(value)
         elif isinstance(value, list) and value and all(isinstance(item, dict) for item in value):
             containers.append({f"__{i}": item for i, item in enumerate(value)})
+    if include_context and source == "fuyao":
+        market = doc.get("market")
+        if isinstance(market, dict):
+            for key in ("dragon_tiger", "hot_list_hour"):
+                records = market.get(key)
+                if isinstance(records, list):
+                    containers.append(
+                        {
+                            f"__{key}_{index}": record
+                            for index, record in enumerate(records)
+                            if isinstance(record, dict)
+                        }
+                    )
     return containers
 
 
@@ -299,7 +338,9 @@ def _event_identity(source, record, container_code, entity_code):
     return f"source:{source}:{source_id}"
 
 
-def load_snapshots(snapshots, store, diagnostics, event_start=None, event_end=None):
+def load_snapshots(
+    snapshots, store, diagnostics, event_start=None, event_end=None, include_context=False
+):
     """Flatten selected source snapshots using domain-qualified sample dates."""
     total = 0
     sample_ranks = {}
@@ -308,7 +349,20 @@ def load_snapshots(snapshots, store, diagnostics, event_start=None, event_end=No
     undated_event_counts = defaultdict(int)
     future_event_counts = defaultdict(int)
     for snapshot in snapshots:
+        if snapshot.source in CONTEXT_ONLY_SOURCES and not include_context:
+            diagnostics.append(
+                f"{snapshot.folder}/{snapshot.source}: 纯市场上下文源已按默认策略排除；"
+                "如需研究性碰撞请使用 --include-context"
+            )
+            continue
         doc = snapshot.document
+        if not include_context:
+            doc, excluded_context = _without_context_records(doc, snapshot.source)
+            for path, count in excluded_context:
+                diagnostics.append(
+                    f"{snapshot.folder}/{snapshot.source}/{path}: 默认碰撞已排除上下文记录"
+                    f"（{count} 条）"
+                )
         scheme = doc.get("scheme")
         auction_meta = doc.get("auction_snapshot_meta")
         if isinstance(auction_meta, dict) and auction_meta.get("collision_eligible") is False:
@@ -321,7 +375,7 @@ def load_snapshots(snapshots, store, diagnostics, event_start=None, event_end=No
                 f"记录数={auction_meta.get('item_count', 0)}"
             )
             diagnostics.append(diagnostic)
-        for container in _record_containers(doc, snapshot.source):
+        for container in _record_containers(doc, snapshot.source, include_context=include_context):
             for container_code, rec in container.items():
                 if not isinstance(rec, dict):
                     continue
@@ -1168,6 +1222,7 @@ def run(args):
         diagnostics,
         event_start=folder_window.event_start,
         event_end=folder_window.event_end,
+        include_context=getattr(args, "include_context", False),
     )
     classify(store)
     print(
@@ -1601,6 +1656,11 @@ def main():
     ap.add_argument("--all", action="store_true", help="使用全部历史日期")
     ap.add_argument("--date", type=str, default="", help="报告日期戳（默认今天）")
     ap.add_argument("--limit", type=int, default=0, help="仅取前 N 个左字段（自测）")
+    ap.add_argument(
+        "--include-context",
+        action="store_true",
+        help="将龙虎榜、人气榜等上下文记录加入研究性碰撞；默认排除",
+    )
     ap.add_argument(
         "--exploratory",
         action="store_true",

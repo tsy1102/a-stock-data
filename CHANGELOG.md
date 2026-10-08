@@ -4,6 +4,15 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## [V17.4.31] 2026-10-08 — 字段破解采集去噪
+
+### 采集与碰撞
+
+- 默认采集跳过沪深交易所龙虎榜与东财人气榜；市场指标和 Fuyao 个股、财务、竞价等字段继续采集，只跳过龙虎榜与热股榜子路径。显式 `--include-context` 可恢复上下文采集，单独 `--only exchange` / `--only em_hot` 也视为明确选择。
+- 碰撞默认过滤上述来源和历史 raw 中的龙虎榜/热股榜子路径，并在诊断中记录排除情况；`--include-context` 可将已归档上下文样本加入研究性碰撞。
+- 默认重采保留之前显式采集的上下文 raw 子路径；不删除历史原始文件，不改报告脚本、适配器、缓存键、日期规则或主字典状态。
+- 验证：离线套件 725 passed、1 skipped、47 deselected（125.16 秒）；5 个改动 Python 文件通过语法与 Black 检查，3 个生产模块 MyPy 零错误；A1/A7 闸门均 0 HARD FAIL / 0 WARN，敏感信息扫描与 `git diff --check` 通过。9 条既有 `httplib2`/`pyparsing` 弃用警告。
+
 ## [V17.4.30] 2026-10-08 — 项目体检与兼容性修复
 
 ### 采集、网络与对撞

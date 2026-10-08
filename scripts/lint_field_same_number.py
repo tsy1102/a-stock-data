@@ -44,7 +44,7 @@ for _stream in (sys.stdout, sys.stderr):
         _stream.reconfigure(encoding="utf-8", errors="replace")
 
 ROOT = Path(__file__).resolve().parent.parent
-DICT = ROOT / "docs" / "field_dict.md"
+DICT = ROOT / "docs" / "field_source_reference.md"
 ALIGN = ROOT / "docs" / "verify" / "ulist_push2_align.md"
 
 # Phase 2(2026-09-12): registry 单一真相源访问层（mappings 已吸收 ulist_push2_align.md）。

@@ -2,6 +2,8 @@
 
 import importlib
 
+import pytest
+
 
 def test_unmapped_sibling_isolated_and_markdown_child_inherits(tmp_path, monkeypatch):
     monkeypatch.syspath_prepend("scripts")
@@ -67,3 +69,16 @@ def test_extracted_registry_source_metadata_is_unique(monkeypatch):
     source_names = [source["name"] for source in registry["sources"]]
     assert len(source_names) == len(set(source_names))
     assert source_names.count("东财-datacenter(英文键)") == 1
+
+
+def test_audit_help_does_not_create_a_report(tmp_path, monkeypatch, capsys):
+    monkeypatch.syspath_prepend("scripts")
+    afc = importlib.import_module("audit_field_completeness")
+    monkeypatch.setattr(afc, "ROOT", str(tmp_path))
+
+    with pytest.raises(SystemExit) as exc_info:
+        afc.main(["--help"])
+
+    assert exc_info.value.code == 0
+    assert "--report-output" in capsys.readouterr().out
+    assert not (tmp_path / "docs/field_verification/20260906/completeness_audit.json").exists()

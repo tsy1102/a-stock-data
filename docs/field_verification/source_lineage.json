@@ -1,0 +1,987 @@
+{
+  "schema_version": 1,
+  "updated": "2026-10-08",
+  "description": "Registry source identity to runtime namespace, provider family, and GitHub repository relationships. Unknown relationships are explicit and fail closed for default collision evidence.",
+  "sources": {
+    "东财-push2(stock/get)": {
+      "runtime_aliases": [
+        "push2"
+      ],
+      "provider": "Eastmoney",
+      "independence_family": "eastmoney",
+      "independence_status": "confirmed",
+      "anchor_eligible": true,
+      "anchor_note": "单股行情 stock/get 的原始响应源",
+      "repository_mapping_status": "confirmed",
+      "repositories": [
+        {
+          "url": "https://github.com/fleetinglife/levistock",
+          "relation": "provider_family_reference",
+          "status": "confirmed",
+          "evidence_files": [
+            "scripts/capture_field_probe.py",
+            "stock_common/sc_datasource/_eastmoney.py"
+          ],
+          "note": "按用户确认作为 Eastmoney 来源族的客户端/接口参考；levistock 是多源包装库，不是底层数据提供方，也不据此断言本项目每个端点或字段均源自该仓库。"
+        }
+      ],
+      "dialog_confirmation": {
+        "status": "confirmed",
+        "confirmed_on": "2026-10-08",
+        "basis": "用户于 2026-10-08 明确确认此前列出的第 1–5 组仓库候选关系。",
+        "note": "按用户确认登记仓库关系；具体仓库的关系范围及限制见 repositories.note。"
+      }
+    },
+    "东财-资金流(em_fund_flow)": {
+      "runtime_aliases": [
+        "em_fund_flow"
+      ],
+      "provider": "Eastmoney",
+      "independence_family": "eastmoney",
+      "independence_status": "confirmed",
+      "anchor_eligible": true,
+      "anchor_note": "Eastmoney 资金流接口；与其他 Eastmoney 接口按同一提供方计族",
+      "repository_mapping_status": "confirmed",
+      "repositories": [
+        {
+          "url": "https://github.com/fleetinglife/levistock",
+          "relation": "provider_family_reference",
+          "status": "confirmed",
+          "evidence_files": [
+            "scripts/capture_field_probe.py",
+            "stock_common/sc_datasource/_eastmoney.py"
+          ],
+          "note": "按用户确认作为 Eastmoney 来源族的客户端/接口参考；levistock 是多源包装库，不是底层数据提供方，也不据此断言本项目每个端点或字段均源自该仓库。"
+        }
+      ],
+      "dialog_confirmation": {
+        "status": "confirmed",
+        "confirmed_on": "2026-10-08",
+        "basis": "用户于 2026-10-08 明确确认此前列出的第 1–5 组仓库候选关系。",
+        "note": "按用户确认登记仓库关系；具体仓库的关系范围及限制见 repositories.note。"
+      }
+    },
+    "东财-ulist239(np/get)": {
+      "runtime_aliases": [
+        "ulist239"
+      ],
+      "provider": "Eastmoney",
+      "independence_family": "eastmoney",
+      "independence_status": "confirmed",
+      "anchor_eligible": true,
+      "anchor_note": "Eastmoney ulist.np/get 原始响应",
+      "repository_mapping_status": "confirmed",
+      "repositories": [
+        {
+          "url": "https://github.com/fleetinglife/levistock",
+          "relation": "provider_family_reference",
+          "status": "confirmed",
+          "evidence_files": [
+            "scripts/capture_field_probe.py",
+            "stock_common/sc_datasource/_eastmoney.py"
+          ],
+          "note": "按用户确认作为 Eastmoney 来源族的客户端/接口参考；levistock 是多源包装库，不是底层数据提供方，也不据此断言本项目每个端点或字段均源自该仓库。"
+        }
+      ],
+      "dialog_confirmation": {
+        "status": "confirmed",
+        "confirmed_on": "2026-10-08",
+        "basis": "用户于 2026-10-08 明确确认此前列出的第 1–5 组仓库候选关系。",
+        "note": "按用户确认登记仓库关系；具体仓库的关系范围及限制见 repositories.note。"
+      }
+    },
+    "东财-push2ex": {
+      "runtime_aliases": [
+        "push2ex"
+      ],
+      "provider": "Eastmoney",
+      "independence_family": "eastmoney",
+      "independence_status": "confirmed",
+      "anchor_eligible": true,
+      "anchor_note": "Eastmoney push2ex 原始响应",
+      "repository_mapping_status": "confirmed",
+      "repositories": [
+        {
+          "url": "https://github.com/fleetinglife/levistock",
+          "relation": "provider_family_reference",
+          "status": "confirmed",
+          "evidence_files": [
+            "scripts/capture_field_probe.py",
+            "stock_common/sc_datasource/_eastmoney.py"
+          ],
+          "note": "按用户确认作为 Eastmoney 来源族的客户端/接口参考；levistock 是多源包装库，不是底层数据提供方，也不据此断言本项目每个端点或字段均源自该仓库。"
+        }
+      ],
+      "dialog_confirmation": {
+        "status": "confirmed",
+        "confirmed_on": "2026-10-08",
+        "basis": "用户于 2026-10-08 明确确认此前列出的第 1–5 组仓库候选关系。",
+        "note": "按用户确认登记仓库关系；具体仓库的关系范围及限制见 repositories.note。"
+      }
+    },
+    "东财-datacenter(英文键)": {
+      "runtime_aliases": [
+        "datacenter"
+      ],
+      "provider": "Eastmoney",
+      "independence_family": "eastmoney",
+      "independence_status": "confirmed",
+      "anchor_eligible": true,
+      "anchor_note": "Eastmoney datacenter-web 原始响应",
+      "repository_mapping_status": "confirmed",
+      "repositories": [
+        {
+          "url": "https://github.com/fleetinglife/levistock",
+          "relation": "provider_family_reference",
+          "status": "confirmed",
+          "evidence_files": [
+            "scripts/capture_field_probe.py",
+            "stock_common/sc_datasource/_eastmoney.py"
+          ],
+          "note": "按用户确认作为 Eastmoney 来源族的客户端/接口参考；levistock 是多源包装库，不是底层数据提供方，也不据此断言本项目每个端点或字段均源自该仓库。"
+        }
+      ],
+      "dialog_confirmation": {
+        "status": "confirmed",
+        "confirmed_on": "2026-10-08",
+        "basis": "用户于 2026-10-08 明确确认此前列出的第 1–5 组仓库候选关系。",
+        "note": "按用户确认登记仓库关系；具体仓库的关系范围及限制见 repositories.note。"
+      }
+    },
+    "东财-slist": {
+      "runtime_aliases": [
+        "slist"
+      ],
+      "provider": "Eastmoney",
+      "independence_family": "eastmoney",
+      "independence_status": "confirmed",
+      "anchor_eligible": true,
+      "anchor_note": "Eastmoney slist 原始响应",
+      "repository_mapping_status": "confirmed",
+      "repositories": [
+        {
+          "url": "https://github.com/fleetinglife/levistock",
+          "relation": "provider_family_reference",
+          "status": "confirmed",
+          "evidence_files": [
+            "scripts/capture_field_probe.py",
+            "stock_common/sc_datasource/_eastmoney.py"
+          ],
+          "note": "按用户确认作为 Eastmoney 来源族的客户端/接口参考；levistock 是多源包装库，不是底层数据提供方，也不据此断言本项目每个端点或字段均源自该仓库。"
+        }
+      ],
+      "dialog_confirmation": {
+        "status": "confirmed",
+        "confirmed_on": "2026-10-08",
+        "basis": "用户于 2026-10-08 明确确认此前列出的第 1–5 组仓库候选关系。",
+        "note": "按用户确认登记仓库关系；具体仓库的关系范围及限制见 repositories.note。"
+      }
+    },
+    "东财-clist": {
+      "runtime_aliases": [
+        "clist"
+      ],
+      "provider": "Eastmoney",
+      "independence_family": "eastmoney",
+      "independence_status": "confirmed",
+      "anchor_eligible": true,
+      "anchor_note": "Eastmoney clist 原始响应",
+      "repository_mapping_status": "confirmed",
+      "repositories": [
+        {
+          "url": "https://github.com/fleetinglife/levistock",
+          "relation": "provider_family_reference",
+          "status": "confirmed",
+          "evidence_files": [
+            "scripts/capture_field_probe.py",
+            "stock_common/sc_datasource/_eastmoney.py"
+          ],
+          "note": "按用户确认作为 Eastmoney 来源族的客户端/接口参考；levistock 是多源包装库，不是底层数据提供方，也不据此断言本项目每个端点或字段均源自该仓库。"
+        }
+      ],
+      "dialog_confirmation": {
+        "status": "confirmed",
+        "confirmed_on": "2026-10-08",
+        "basis": "用户于 2026-10-08 明确确认此前列出的第 1–5 组仓库候选关系。",
+        "note": "按用户确认登记仓库关系；具体仓库的关系范围及限制见 repositories.note。"
+      }
+    },
+    "腾讯(qt.gtimg)": {
+      "runtime_aliases": [
+        "tencent"
+      ],
+      "provider": "Tencent",
+      "independence_family": "tencent",
+      "independence_status": "confirmed",
+      "anchor_eligible": true,
+      "anchor_note": "腾讯 qt.gtimg 行情响应",
+      "repository_mapping_status": "confirmed",
+      "repositories": [
+        {
+          "url": "https://github.com/shidenggui/easyquotation",
+          "relation": "realtime_quote_client_reference",
+          "status": "confirmed",
+          "evidence_files": [
+            "scripts/capture_field_probe.py",
+            "core/tdx_client.py"
+          ],
+          "note": "按用户确认作为腾讯 qt.gtimg 实时行情客户端参考；不代表底层数据提供方或完整代码复制关系。"
+        }
+      ],
+      "dialog_confirmation": {
+        "status": "confirmed",
+        "confirmed_on": "2026-10-08",
+        "basis": "用户于 2026-10-08 明确确认此前列出的第 1–5 组仓库候选关系。",
+        "note": "按用户确认登记仓库关系；具体仓库的关系范围及限制见 repositories.note。"
+      }
+    },
+    "新浪(hq.sinajs)": {
+      "runtime_aliases": [
+        "sina"
+      ],
+      "provider": "Sina",
+      "independence_family": "sina",
+      "independence_status": "confirmed",
+      "anchor_eligible": true,
+      "anchor_note": "新浪 hq.sinajs 行情响应",
+      "repository_mapping_status": "confirmed",
+      "repositories": [
+        {
+          "url": "https://github.com/shidenggui/easyquotation",
+          "relation": "realtime_quote_client_reference",
+          "status": "confirmed",
+          "evidence_files": [
+            "scripts/capture_field_probe.py",
+            "stock_common/sc_schema.py"
+          ],
+          "note": "按用户确认作为新浪 hq.sinajs 实时行情客户端参考；不代表底层数据提供方或完整代码复制关系。"
+        }
+      ],
+      "dialog_confirmation": {
+        "status": "confirmed",
+        "confirmed_on": "2026-10-08",
+        "basis": "用户于 2026-10-08 明确确认此前列出的第 1–5 组仓库候选关系。",
+        "note": "按用户确认登记仓库关系；具体仓库的关系范围及限制见 repositories.note。"
+      }
+    },
+    "新浪(扩展API)": {
+      "runtime_aliases": [
+        "sina"
+      ],
+      "provider": "Sina",
+      "independence_family": "sina",
+      "independence_status": "confirmed",
+      "anchor_eligible": true,
+      "anchor_note": "新浪扩展 API；与新浪行情合并为同一提供方族",
+      "repository_mapping_status": "confirmed",
+      "repositories": [
+        {
+          "url": "https://github.com/mpquant/Ashare",
+          "relation": "historical_kline_reference",
+          "status": "confirmed",
+          "evidence_files": [
+            "scripts/capture_field_probe.py"
+          ],
+          "note": "按用户确认作为新浪扩展 API 中历史 K 线部分的参考；不扩展到该来源记录中的其他 API。"
+        }
+      ],
+      "dialog_confirmation": {
+        "status": "confirmed",
+        "confirmed_on": "2026-10-08",
+        "basis": "用户于 2026-10-08 明确确认此前列出的第 1–5 组仓库候选关系。",
+        "note": "按用户确认登记仓库关系；具体仓库的关系范围及限制见 repositories.note。"
+      }
+    },
+    "同花顺-fuyao": {
+      "runtime_aliases": [
+        "fuyao"
+      ],
+      "provider": "Tonghuashun",
+      "independence_family": "tonghuashun",
+      "independence_status": "confirmed",
+      "anchor_eligible": true,
+      "anchor_note": "同花顺 fuyao 官方 REST 服务",
+      "repository_mapping_status": "confirmed",
+      "repositories": [
+        {
+          "url": "https://github.com/HiThink-Tech/Financial-API",
+          "relation": "official_api_contract_and_client",
+          "status": "confirmed",
+          "evidence_files": [
+            "docs/verify/fuyao_api_full.md"
+          ],
+          "note": "本地验证文档将其标注为同花顺官方仓库。"
+        }
+      ],
+      "dialog_confirmation": {
+        "status": "confirmed",
+        "confirmed_on": "2026-10-06",
+        "basis": "用户明确回复：全部按此前列出的五组映射关系确认。",
+        "note": "确认该仓库对应同花顺 fuyao 官方 API 合约/客户端；确认范围不扩展为其他独立数据提供方。"
+      }
+    },
+    "TDX(双命名源)": {
+      "runtime_aliases": [
+        "tdx"
+      ],
+      "provider": "Tongdaxin",
+      "independence_family": "tdx",
+      "independence_status": "confirmed",
+      "anchor_eligible": true,
+      "anchor_note": "通达信协议行情/财务客户端数据",
+      "repository_mapping_status": "confirmed",
+      "repositories": [
+        {
+          "url": "https://github.com/yanwei99521/easy-tdx",
+          "relation": "runtime_client_fork",
+          "status": "confirmed",
+          "evidence_files": [
+            "requirements.txt",
+            "docs/easy_tdx_repo_identity_check_20260916.md"
+          ],
+          "note": "requirements 固定到该仓库提交；本项目 tdx_client 使用 easy_tdx API。"
+        }
+      ],
+      "dialog_confirmation": {
+        "status": "confirmed",
+        "confirmed_on": "2026-10-06",
+        "basis": "用户明确回复：全部按此前列出的五组映射关系确认。",
+        "note": "确认该仓库是本项目使用的 easy-tdx 运行时客户端 fork；上游数据提供方仍是通达信。"
+      }
+    },
+    "AxData": {
+      "runtime_aliases": [
+        "axdata"
+      ],
+      "provider": "AxData",
+      "independence_family": null,
+      "independence_status": "unconfirmed",
+      "anchor_eligible": false,
+      "anchor_note": "本地材料不足以确认其底层数据提供方或独立性",
+      "repository_mapping_status": "confirmed",
+      "repositories": [
+        {
+          "url": "https://github.com/electkismet/AxData",
+          "relation": "runtime_package_repository",
+          "status": "confirmed",
+          "evidence_files": [
+            "requirements.txt",
+            "get_sht_report.py"
+          ],
+          "note": "按用户确认登记 AxData 包的仓库对应关系；这只确认客户端/包仓库，不确认其底层数据来源、独立性或锚点资格。"
+        }
+      ],
+      "dialog_confirmation": {
+        "status": "confirmed",
+        "confirmed_on": "2026-10-08",
+        "basis": "用户于 2026-10-08 明确确认此前列出的第 1–5 组仓库候选关系。",
+        "note": "按用户确认登记仓库关系；具体仓库的关系范围及限制见 repositories.note。"
+      }
+    },
+    "东财-push2_full": {
+      "runtime_aliases": [
+        "push2_full"
+      ],
+      "provider": "Eastmoney",
+      "independence_family": "eastmoney",
+      "independence_status": "confirmed",
+      "anchor_eligible": true,
+      "anchor_note": "push2_full 与 Eastmoney push2 同属同一提供方",
+      "repository_mapping_status": "confirmed",
+      "repositories": [
+        {
+          "url": "https://github.com/fleetinglife/levistock",
+          "relation": "provider_family_reference",
+          "status": "confirmed",
+          "evidence_files": [
+            "scripts/capture_field_probe.py",
+            "stock_common/sc_datasource/_eastmoney.py"
+          ],
+          "note": "按用户确认作为 Eastmoney 来源族的客户端/接口参考；levistock 是多源包装库，不是底层数据提供方，也不据此断言本项目每个端点或字段均源自该仓库。"
+        }
+      ],
+      "dialog_confirmation": {
+        "status": "confirmed",
+        "confirmed_on": "2026-10-08",
+        "basis": "用户于 2026-10-08 明确确认此前列出的第 1–5 组仓库候选关系。",
+        "note": "按用户确认登记仓库关系；具体仓库的关系范围及限制见 repositories.note。"
+      }
+    },
+    "ZHB-tdxstat": {
+      "runtime_aliases": [
+        "zhb"
+      ],
+      "provider": "Tongdaxin",
+      "independence_family": "tdx",
+      "independence_status": "confirmed",
+      "anchor_eligible": true,
+      "anchor_note": "本地 ZHB 缓存中的 TDX tdxstat 数据",
+      "repository_mapping_status": "confirmed",
+      "repositories": [
+        {
+          "url": "https://github.com/yanwei99521/easy-tdx",
+          "relation": "cache_transport_client",
+          "status": "confirmed",
+          "evidence_files": [
+            "requirements.txt",
+            "docs/easy_tdx_repo_identity_check_20260916.md"
+          ],
+          "note": "该客户端用于 ZHB 下载/读取路径；ZHB 数据本体是 TDX 缓存，不是此仓库托管。"
+        }
+      ],
+      "dialog_confirmation": {
+        "status": "confirmed",
+        "confirmed_on": "2026-10-06",
+        "basis": "用户明确回复：全部按此前列出的五组映射关系确认。",
+        "note": "仅确认 easy-tdx 是 ZHB tdxstat 缓存的下载/读取传输客户端；不代表它托管 ZHB 缓存或拥有 TDX 数据本体。"
+      }
+    },
+    "ZHB-tdxstat2": {
+      "runtime_aliases": [
+        "zhb"
+      ],
+      "provider": "Tongdaxin",
+      "independence_family": "tdx",
+      "independence_status": "confirmed",
+      "anchor_eligible": true,
+      "anchor_note": "本地 ZHB 缓存中的 TDX tdxstat2 数据",
+      "repository_mapping_status": "confirmed",
+      "repositories": [
+        {
+          "url": "https://github.com/yanwei99521/easy-tdx",
+          "relation": "cache_transport_client",
+          "status": "confirmed",
+          "evidence_files": [
+            "requirements.txt",
+            "docs/easy_tdx_repo_identity_check_20260916.md"
+          ],
+          "note": "该客户端用于 ZHB 下载/读取路径；ZHB 数据本体是 TDX 缓存，不是此仓库托管。"
+        }
+      ],
+      "dialog_confirmation": {
+        "status": "confirmed",
+        "confirmed_on": "2026-10-06",
+        "basis": "用户明确回复：全部按此前列出的五组映射关系确认。",
+        "note": "仅确认 easy-tdx 是 ZHB tdxstat2 缓存的下载/读取传输客户端；不代表它托管 ZHB 缓存或拥有 TDX 数据本体。"
+      }
+    },
+    "ZHB-tipinfo": {
+      "runtime_aliases": [
+        "zhb"
+      ],
+      "provider": "Tongdaxin",
+      "independence_family": "tdx",
+      "independence_status": "confirmed",
+      "anchor_eligible": true,
+      "anchor_note": "本地 ZHB 缓存中的 TDX tipinfo 数据",
+      "repository_mapping_status": "confirmed",
+      "repositories": [
+        {
+          "url": "https://github.com/yanwei99521/easy-tdx",
+          "relation": "cache_transport_client",
+          "status": "confirmed",
+          "evidence_files": [
+            "requirements.txt",
+            "docs/easy_tdx_repo_identity_check_20260916.md"
+          ],
+          "note": "该客户端用于 ZHB 下载/读取路径；ZHB 数据本体是 TDX 缓存，不是此仓库托管。"
+        }
+      ],
+      "dialog_confirmation": {
+        "status": "confirmed",
+        "confirmed_on": "2026-10-06",
+        "basis": "用户明确回复：全部按此前列出的五组映射关系确认。",
+        "note": "仅确认 easy-tdx 是 ZHB tipinfo 缓存的下载/读取传输客户端；不代表它托管 ZHB 缓存或拥有 TDX 数据本体。"
+      }
+    },
+    "TDX-eltdx(适配层)": {
+      "runtime_aliases": [
+        "eltdx"
+      ],
+      "provider": "Tongdaxin",
+      "independence_family": "tdx",
+      "independence_status": "confirmed",
+      "anchor_eligible": true,
+      "anchor_note": "ELTDX 是通达信协议客户端适配层，不作独立数据源计数",
+      "repository_mapping_status": "confirmed",
+      "repositories": [
+        {
+          "url": "https://github.com/electkismet/eltdx",
+          "relation": "runtime_client",
+          "status": "confirmed",
+          "evidence_files": [
+            "requirements.txt"
+          ],
+          "note": "ELTDX 通达信协议 Python 客户端；仓库 README/pyproject 定义该项目能力。"
+        }
+      ],
+      "dialog_confirmation": {
+        "status": "confirmed",
+        "confirmed_on": "2026-10-06",
+        "basis": "用户明确回复：全部按此前列出的五组映射关系确认。",
+        "note": "确认该仓库对应 ELTDX 通达信协议客户端适配层；不将适配层视作独立行情提供方。"
+      }
+    },
+    "财联社(cls)": {
+      "runtime_aliases": [
+        "cls"
+      ],
+      "provider": "CLS",
+      "independence_family": "cls",
+      "independence_status": "confirmed",
+      "anchor_eligible": true,
+      "anchor_note": "财联社接口原始响应",
+      "repository_mapping_status": "confirmed",
+      "repositories": [
+        {
+          "url": "https://github.com/fleetinglife/levistock",
+          "relation": "api_implementation_reference",
+          "status": "confirmed",
+          "evidence_files": [
+            "scripts/capture_field_probe.py",
+            "stock_common/sc_datasource/_eastmoney.py"
+          ],
+          "note": "按用户确认作为财联社接口实现参考；levistock 为多源包装库，不据此确认独立数据提供方或本项目逐行复制关系。"
+        }
+      ],
+      "dialog_confirmation": {
+        "status": "confirmed",
+        "confirmed_on": "2026-10-08",
+        "basis": "用户于 2026-10-08 明确确认此前列出的第 1–5 组仓库候选关系。",
+        "note": "按用户确认登记仓库关系；具体仓库的关系范围及限制见 repositories.note。"
+      }
+    },
+    "百度(baidu)": {
+      "runtime_aliases": [
+        "baidu"
+      ],
+      "provider": "Baidu",
+      "independence_family": "baidu",
+      "independence_status": "confirmed",
+      "anchor_eligible": true,
+      "anchor_note": "来源名可识别，但运行时字段路径仍须精确匹配",
+      "repository_mapping_status": "unconfirmed",
+      "repositories": [],
+      "dialog_confirmation": {
+        "status": "pending",
+        "note": "截至 2026-10-08，用户未确认该来源的具体 GitHub 上游仓库；项目级早期参考基线另见 project_reference，不作为此来源的映射。"
+      }
+    },
+    "沪深交易所": {
+      "runtime_aliases": [
+        "exchange"
+      ],
+      "provider": "沪深交易所",
+      "independence_family": "exchange",
+      "independence_status": "confirmed",
+      "anchor_eligible": true,
+      "anchor_note": "交易所官方数据合并源",
+      "repository_mapping_status": "unconfirmed",
+      "repositories": [],
+      "dialog_confirmation": {
+        "status": "pending",
+        "note": "截至 2026-10-08，用户未确认该来源的具体 GitHub 上游仓库；项目级早期参考基线另见 project_reference，不作为此来源的映射。"
+      }
+    },
+    "巨潮(cninfo)": {
+      "runtime_aliases": [
+        "cninfo"
+      ],
+      "provider": "CNINFO",
+      "independence_family": "cninfo",
+      "independence_status": "confirmed",
+      "anchor_eligible": true,
+      "anchor_note": "巨潮资讯官方披露数据",
+      "repository_mapping_status": "unconfirmed",
+      "repositories": [],
+      "dialog_confirmation": {
+        "status": "pending",
+        "note": "截至 2026-10-08，用户未确认该来源的具体 GitHub 上游仓库；项目级早期参考基线另见 project_reference，不作为此来源的映射。"
+      }
+    },
+    "reports": {
+      "runtime_aliases": [
+        "reports"
+      ],
+      "provider": "Eastmoney",
+      "independence_family": "eastmoney",
+      "independence_status": "confirmed",
+      "anchor_eligible": true,
+      "anchor_note": "Eastmoney reportapi 原始响应",
+      "repository_mapping_status": "unconfirmed",
+      "repositories": [],
+      "dialog_confirmation": {
+        "status": "pending",
+        "note": "截至 2026-10-08，用户未确认该来源的具体 GitHub 上游仓库；项目级早期参考基线另见 project_reference，不作为此来源的映射。"
+      }
+    },
+    "东财-em_kline_f61": {
+      "runtime_aliases": [
+        "em_kline_f61"
+      ],
+      "provider": "Eastmoney",
+      "independence_family": "eastmoney",
+      "independence_status": "confirmed",
+      "anchor_eligible": true,
+      "anchor_note": "Eastmoney K 线接口原始响应",
+      "repository_mapping_status": "confirmed",
+      "repositories": [
+        {
+          "url": "https://github.com/fleetinglife/levistock",
+          "relation": "provider_family_reference",
+          "status": "confirmed",
+          "evidence_files": [
+            "scripts/capture_field_probe.py",
+            "stock_common/sc_datasource/_eastmoney.py"
+          ],
+          "note": "按用户确认作为 Eastmoney 来源族的客户端/接口参考；levistock 是多源包装库，不是底层数据提供方，也不据此断言本项目每个端点或字段均源自该仓库。"
+        }
+      ],
+      "dialog_confirmation": {
+        "status": "confirmed",
+        "confirmed_on": "2026-10-08",
+        "basis": "用户于 2026-10-08 明确确认此前列出的第 1–5 组仓库候选关系。",
+        "note": "按用户确认登记仓库关系；具体仓库的关系范围及限制见 repositories.note。"
+      }
+    },
+    "东财-热榜(em_hot)": {
+      "runtime_aliases": [
+        "em_hot"
+      ],
+      "provider": "Eastmoney",
+      "independence_family": "eastmoney",
+      "independence_status": "confirmed",
+      "anchor_eligible": true,
+      "anchor_note": "Eastmoney 热榜接口原始响应",
+      "repository_mapping_status": "confirmed",
+      "repositories": [
+        {
+          "url": "https://github.com/fleetinglife/levistock",
+          "relation": "provider_family_reference",
+          "status": "confirmed",
+          "evidence_files": [
+            "scripts/capture_field_probe.py",
+            "stock_common/sc_datasource/_eastmoney.py"
+          ],
+          "note": "按用户确认作为 Eastmoney 来源族的客户端/接口参考；levistock 是多源包装库，不是底层数据提供方，也不据此断言本项目每个端点或字段均源自该仓库。"
+        }
+      ],
+      "dialog_confirmation": {
+        "status": "confirmed",
+        "confirmed_on": "2026-10-08",
+        "basis": "用户于 2026-10-08 明确确认此前列出的第 1–5 组仓库候选关系。",
+        "note": "按用户确认登记仓库关系；具体仓库的关系范围及限制见 repositories.note。"
+      }
+    },
+    "市场源(market_sources)": {
+      "runtime_aliases": [
+        "market_sources"
+      ],
+      "provider": "多源聚合",
+      "independence_family": null,
+      "independence_status": "unconfirmed",
+      "anchor_eligible": false,
+      "anchor_note": "聚合多个接口，不作为独立来源锚点",
+      "repository_mapping_status": "unconfirmed",
+      "repositories": [],
+      "dialog_confirmation": {
+        "status": "pending",
+        "note": "截至 2026-10-08，用户未确认该来源的具体 GitHub 上游仓库；项目级早期参考基线另见 project_reference，不作为此来源的映射。"
+      }
+    },
+    "开盘啦(kpl)": {
+      "runtime_aliases": [
+        "market_sources"
+      ],
+      "provider": "开盘啦",
+      "independence_family": null,
+      "independence_status": "unconfirmed",
+      "anchor_eligible": false,
+      "anchor_note": "采集结果容器已知为 market_sources，但尚不能映射到独立原始数据源或字段路径",
+      "repository_mapping_status": "confirmed",
+      "repositories": [
+        {
+          "url": "https://github.com/LowellLee/kpl",
+          "relation": "parallel_api_reference",
+          "status": "confirmed",
+          "evidence_files": [
+            "stock_common/sc_kpl.py",
+            "get_mak_report.py"
+          ],
+          "note": "按用户确认作为开盘啦/KPL 接口参考之一；与另一个并列确认仓库同时记录，当前证据不指定唯一代码来源。"
+        },
+        {
+          "url": "https://github.com/Rainynitesky/kaipanla-data-parser",
+          "relation": "parallel_api_reference",
+          "status": "confirmed",
+          "evidence_files": [
+            "stock_common/sc_kpl.py",
+            "get_mak_report.py"
+          ],
+          "note": "按用户确认作为开盘啦/KPL 接口参考之一；与另一个并列确认仓库同时记录，当前证据不指定唯一代码来源。"
+        }
+      ],
+      "dialog_confirmation": {
+        "status": "confirmed",
+        "confirmed_on": "2026-10-08",
+        "basis": "用户于 2026-10-08 明确确认此前列出的第 1–5 组仓库候选关系。",
+        "note": "按用户确认登记仓库关系；具体仓库的关系范围及限制见 repositories.note。"
+      }
+    },
+    "levistock(ftshare)": {
+      "runtime_aliases": [
+        "ftshare"
+      ],
+      "provider": "多源客户端包装",
+      "independence_family": null,
+      "independence_status": "unconfirmed",
+      "anchor_eligible": false,
+      "anchor_note": "本地证据显示包装多个提供方，未能逐字段确定底层来源",
+      "repository_mapping_status": "confirmed",
+      "repositories": [
+        {
+          "url": "https://github.com/fleetinglife/levistock",
+          "relation": "multi_provider_client_wrapper",
+          "status": "confirmed",
+          "evidence_files": [
+            "docs/verify/levistock_field_verify.md"
+          ],
+          "note": "本地验证文档说明其封装东财、财联社、同花顺、开盘红与 i问财；因此不可默认视作独立提供方。"
+        }
+      ],
+      "dialog_confirmation": {
+        "status": "confirmed",
+        "confirmed_on": "2026-10-06",
+        "basis": "用户明确回复：全部按此前列出的五组映射关系确认。",
+        "note": "确认该仓库对应 levistock 多源客户端包装库；不将包装库视作独立数据提供方，也不据此确认每个字段的底层来源。"
+      }
+    }
+  },
+  "source_aliases": {
+    "东财-push2(stock/get)": "push2",
+    "东财-资金流(em_fund_flow)": "em_fund_flow",
+    "东财-ulist239(np/get)": "ulist239",
+    "东财-push2ex": "push2ex",
+    "东财-datacenter(英文键)": "datacenter",
+    "东财-slist": "slist",
+    "东财-clist": "clist",
+    "腾讯(qt.gtimg)": "tencent",
+    "新浪(hq.sinajs)": "sina",
+    "新浪(扩展API)": "sina",
+    "同花顺-fuyao": "fuyao",
+    "TDX(双命名源)": "tdx",
+    "AxData": "axdata",
+    "东财-push2_full": "push2_full",
+    "ZHB-tdxstat": "zhb",
+    "ZHB-tdxstat2": "zhb",
+    "ZHB-tipinfo": "zhb",
+    "TDX-eltdx(适配层)": "eltdx",
+    "财联社(cls)": "cls",
+    "百度(baidu)": "baidu",
+    "沪深交易所": "exchange",
+    "巨潮(cninfo)": "cninfo",
+    "reports": "reports",
+    "东财-em_kline_f61": "em_kline_f61",
+    "东财-热榜(em_hot)": "em_hot",
+    "市场源(market_sources)": "market_sources",
+    "开盘啦(kpl)": "market_sources",
+    "levistock(ftshare)": "ftshare",
+    "TDX": "tdx",
+    "ZHB": "zhb",
+    "东财-push2": "push2",
+    "东财-ulist239": "ulist239",
+    "ulist": "ulist239",
+    "新浪": "sina",
+    "腾讯": "tencent",
+    "同花顺": "fuyao",
+    "thsdk": "fuyao",
+    "FTShare": "ftshare",
+    "财联社": "cls",
+    "巨潮": "cninfo",
+    "百度": "baidu"
+  },
+  "runtime_sources": {
+    "push2": {
+      "independence_family": "eastmoney",
+      "independence_status": "confirmed",
+      "note": "Eastmoney 单股行情接口"
+    },
+    "em_fund_flow": {
+      "independence_family": "eastmoney",
+      "independence_status": "confirmed",
+      "note": "Eastmoney 资金流接口"
+    },
+    "ulist239": {
+      "independence_family": "eastmoney",
+      "independence_status": "confirmed",
+      "note": "Eastmoney ulist 接口"
+    },
+    "ulist": {
+      "independence_family": "eastmoney",
+      "independence_status": "confirmed",
+      "note": "Eastmoney ulist legacy alias"
+    },
+    "push2ex": {
+      "independence_family": "eastmoney",
+      "independence_status": "confirmed",
+      "note": "Eastmoney push2ex 接口"
+    },
+    "datacenter": {
+      "independence_family": "eastmoney",
+      "independence_status": "confirmed",
+      "note": "Eastmoney datacenter-web 接口"
+    },
+    "slist": {
+      "independence_family": "eastmoney",
+      "independence_status": "confirmed",
+      "note": "Eastmoney slist 接口"
+    },
+    "clist": {
+      "independence_family": "eastmoney",
+      "independence_status": "confirmed",
+      "note": "Eastmoney clist 接口"
+    },
+    "push2_full": {
+      "independence_family": "eastmoney",
+      "independence_status": "confirmed",
+      "note": "Eastmoney push2_full 接口"
+    },
+    "reports": {
+      "independence_family": "eastmoney",
+      "independence_status": "confirmed",
+      "note": "Eastmoney reportapi 接口"
+    },
+    "em_kline_f61": {
+      "independence_family": "eastmoney",
+      "independence_status": "confirmed",
+      "note": "Eastmoney K 线接口"
+    },
+    "em_hot": {
+      "independence_family": "eastmoney",
+      "independence_status": "confirmed",
+      "note": "Eastmoney 热榜接口"
+    },
+    "tdx": {
+      "independence_family": "tdx",
+      "independence_status": "confirmed",
+      "note": "Tongdaxin protocol source"
+    },
+    "tdx_f10": {
+      "independence_family": "tdx",
+      "independence_status": "confirmed",
+      "note": "Tongdaxin F10 protocol source"
+    },
+    "tdx_f10_more": {
+      "independence_family": "tdx",
+      "independence_status": "confirmed",
+      "note": "Tongdaxin F10 protocol source"
+    },
+    "zhb": {
+      "independence_family": "tdx",
+      "independence_status": "confirmed",
+      "note": "本地缓存的 Tongdaxin 数据"
+    },
+    "eltdx": {
+      "independence_family": "tdx",
+      "independence_status": "confirmed",
+      "note": "ELTDX 客户端访问 Tongdaxin 协议源"
+    },
+    "tencent": {
+      "independence_family": "tencent",
+      "independence_status": "confirmed",
+      "note": "Tencent qt.gtimg endpoint"
+    },
+    "sina": {
+      "independence_family": "sina",
+      "independence_status": "confirmed",
+      "note": "Sina hq.sinajs endpoint"
+    },
+    "fuyao": {
+      "independence_family": "tonghuashun",
+      "independence_status": "confirmed",
+      "note": "Tonghuashun Fuyao service"
+    },
+    "cls": {
+      "independence_family": "cls",
+      "independence_status": "confirmed",
+      "note": "CLS service"
+    },
+    "baidu": {
+      "independence_family": "baidu",
+      "independence_status": "confirmed",
+      "note": "Baidu service"
+    },
+    "exchange": {
+      "independence_family": "exchange",
+      "independence_status": "confirmed",
+      "note": "沪深交易所官方接口"
+    },
+    "cninfo": {
+      "independence_family": "cninfo",
+      "independence_status": "confirmed",
+      "note": "CNINFO service"
+    },
+    "axdata": {
+      "independence_family": null,
+      "independence_status": "unconfirmed",
+      "note": "source implementation is a client/aggregator; provider not confirmed"
+    },
+    "ftshare": {
+      "independence_family": null,
+      "independence_status": "unconfirmed",
+      "note": "levistock wraps multiple providers; field-level lineage unresolved"
+    },
+    "market_sources": {
+      "independence_family": null,
+      "independence_status": "unconfirmed",
+      "note": "composite dataset from multiple sources"
+    },
+    "kpl": {
+      "independence_family": null,
+      "independence_status": "unconfirmed",
+      "note": "capture namespace not confirmed"
+    },
+    "event_dc": {
+      "independence_family": null,
+      "independence_status": "unconfirmed",
+      "note": "provider not confirmed by field-level evidence"
+    },
+    "macro_dc": {
+      "independence_family": null,
+      "independence_status": "unconfirmed",
+      "note": "provider not confirmed by field-level evidence"
+    },
+    "research_sina": {
+      "independence_family": "sina",
+      "independence_status": "confirmed",
+      "note": "Sina-labelled research source; same provider family"
+    },
+    "news_wscn_cctv": {
+      "independence_family": null,
+      "independence_status": "unconfirmed",
+      "note": "mixed WSCN/CCTV data source"
+    },
+    "sse_e_interaction": {
+      "independence_family": null,
+      "independence_status": "unconfirmed",
+      "note": "underlying exchange endpoint not independently verified"
+    },
+    "etf": {
+      "independence_family": null,
+      "independence_status": "unconfirmed",
+      "note": "provider not confirmed by field-level evidence"
+    },
+    "st_list": {
+      "independence_family": null,
+      "independence_status": "unconfirmed",
+      "note": "provider not confirmed by field-level evidence"
+    }
+  },
+  "project_reference": {
+    "url": "https://github.com/simonlin1212/a-stock-data",
+    "relation": "earliest_project_reference",
+    "status": "confirmed",
+    "confirmed_on": "2026-10-08",
+    "note": "用户确认该仓库是编写本项目时最早参考的项目仓库。此项是项目级历史参考基线，不代表任何单独采集源的上游提供方或当前实现来源。"
+  }
+}

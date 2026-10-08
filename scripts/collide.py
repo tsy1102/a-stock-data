@@ -10,10 +10,10 @@
   1. 加载 docs/field_verification/<date>/raw_*.json（默认近 N 天窗口，--all 全历史）
   2. 统一适配各源异构结构（fN 字典 / 位置列表 / 嵌套名典 / 标量），归一为
      ``(source, field_token) -> {(code, date): value}``
-  3. 读取 field_registry.json 的状态（status==verified 即已定案）作为"跟进口碑"：
-     - 已 verified 字段从「主攻目标」剔除，改作对齐锚 / 真值参考
-     - 仅对 unverified（FOCUS）字段跑主攻对撞
-  4. 对所有 (左=unverified, 右=任意源字段) 做两两对撞，严格套用 collision_rules 四铁律：
+   3. 读取 field_registry.json 的逐源状态和来源谱系：
+      - verified 精确路径从主攻目标剔除；只有独立性已确认的 verified 路径可作锚
+      - 默认只对未验证字段与 verified 锚碰撞；未知×未知仅由 --exploratory 显式开启
+   4. 对候选字段与允许的独立来源字段做两两对撞，严格套用 collision_rules 四铁律：
      - 类型感知（数值 / 枚举 / 字符串）
      - 精度对齐（舍入感知容差）
      - 比值族（单位换算 L1-U）：CV≤1e-4 且比值∈{10^k}
@@ -24,10 +24,9 @@
 
 治理约束（重要）
 ----------------
-本引擎 **绝不手改** field_dict.md / field_registry.json（那是单一真相源，
-手工 JSON 注入会被 G1 parity 闸门拦截）。它只负责"发现"，新定案经人工订正
-field_dict.md 后由 sanctioned 管线（extract_registry → gen_field_dict → parity）
-正式 ingest。引擎与治理闸门正交、互补。
+本引擎 **绝不写入** field_registry.json 或生成文档。字段机器权威为 registry；
+field_dict.md、field_matrix.md 与 unknown_fields.md 均由 registry 生成。它只负责"发现"，
+新结论应先核验源、完整路径和证据，再更新逐源 registry 并重生成文档。引擎与治理闸门正交、互补。
 
 用法
 ----
@@ -37,6 +36,7 @@ field_dict.md 后由 sanctioned 管线（extract_registry → gen_field_dict →
     python scripts/collide.py --date 20260913 # 指定报告日期戳
     python scripts/collide.py --limit 20      # 仅取前 20 个左字段（自测用）
     python scripts/collide.py --min-hit 0.95  # 自定义 L1 命中率阈值（默认 0.9）
+    python scripts/collide.py --exploratory  # 额外探索未知字段关系；结果不自动定案
 """
 
 from __future__ import annotations
@@ -101,6 +101,16 @@ try:
 except Exception:
     RULES_OK = False
 
+try:
+    import source_lineage_api as SLA
+except ImportError:
+    from scripts import source_lineage_api as SLA
+
+try:
+    _SOURCE_LINEAGE = SLA.load_source_lineage()
+except (OSError, ValueError, TypeError):
+    _SOURCE_LINEAGE = {"sources": {}, "source_aliases": {}, "runtime_sources": {}}
+
 # ───────────────────────────────────────────────────────────────────────
 # 路径与常量
 # ───────────────────────────────────────────────────────────────────────
@@ -131,11 +141,6 @@ MAX_METHOD_CANDIDATES = 500
 HUB_MAX = 6  # 单字段匹配超过此数 → 巧合，降级
 CONST_MAX_DISTINCT = 1  # 不同值 ≤1 → 常量，跳过
 ID_SUFFIX_HINTS = ("market", "code", "date", "name", "thscode", "ticker", "url", "host", "secid")
-SOURCE_FAMILY_ALIAS = {
-    "push2_full": "push2",
-    "em_fund_flow": "push2",  # shares the same Eastmoney stock/get response family
-}
-
 # 剔除已知异常采集日（数据质量缺陷，不可参与对撞）：
 # - 20260814：盘中快照（采集 start=10:49:53，其余日均为 15:00–17:09 收盘后）→
 #   当日 change_pct 在 19/20 股同时失配（单日全市场同向，是采集时点问题非字段问题）。
@@ -827,103 +832,164 @@ def range_overlap(L, R):
 # 重对撞、且 findings 的 in_registry 标记恒为 False。
 # 本表分两段：① 采集器短键自映射到规范键（保证 raw 字段源名解析一致）；② 主字典
 # 显示名 → 规范短键（保证 verified 集合与 raw 字段同源同名）。两路解析到同一规范键即匹配。
-REG_ALIAS = {
-    # ── ① 采集器短键（规范键，自映射） ──
-    "zhb": "zhb",
-    "tdx": "tdx",
-    "eltdx": "eltdx",
-    "tencent": "tencent",
-    "push2": "push2",
-    "push2_full": "push2_full",
-    "sina": "sina",
-    "axdata": "axdata",
-    "market_sources": "market_sources",
-    "tdx_f10": "tdx_f10",
-    "fuyao": "fuyao",
-    "em_kline_f61": "em_kline_f61",
-    "em_fund_flow": "em_fund_flow",
-    "ulist239": "ulist239",
-    "push2ex": "push2ex",
-    "em_hot": "em_hot",
-    "cls": "cls",
-    "datacenter": "datacenter",
-    "tdx_f10_more": "tdx_f10_more",
-    "cninfo": "cninfo",
-    "reports": "reports",
-    "ftshare": "ftshare",
-    "baidu": "baidu",
-    "clist": "clist",
-    "slist": "slist",
-    "exchange": "exchange",
-    "tdx_f10": "tdx_f10",
-    "tdx_f10_more": "tdx_f10_more",
-    # ── ② 主字典 field_registry.json 显示名 → 规范短键 ──
-    "ZHB": "zhb",
-    "ZHB-tdxstat": "zhb",
-    "ZHB-tdxstat2": "zhb",
-    "ZHB-tipinfo": "zhb",
-    "TDX": "tdx",
-    "TDX(双命名源)": "tdx",
-    "TDX-eltdx(适配层)": "eltdx",
-    "东财-push2": "push2",
-    "东财-push2(stock/get)": "push2",
-    "东财-push2_full": "push2_full",
-    "东财-资金流(em_fund_flow)": "em_fund_flow",
-    "东财-ulist239": "ulist239",
-    "东财-ulist239(np/get)": "ulist239",
-    "ulist": "ulist239",
-    "东财-push2ex": "push2ex",  # 旧映射 push2ex→push2 为误，现已订正
-    "东财-datacenter(英文键)": "datacenter",
-    "东财-slist": "slist",
-    "东财-clist": "clist",
-    "东财-em_kline_f61": "em_kline_f61",
-    "东财-热榜(em_hot)": "em_hot",
-    "腾讯": "tencent",
-    "腾讯(qt.gtimg)": "tencent",
-    "新浪": "sina",
-    "新浪(hq.sinajs)": "sina",
-    "同花顺": "fuyao",
-    "同花顺-fuyao": "fuyao",
-    "thsdk": "fuyao",  # thsdk 已退役, 语义并入 fuyao
-    "AxData": "axdata",
-    "FTShare": "ftshare",
-    "levistock(ftshare)": "ftshare",
-    "财联社": "cls",
-    "财联社(cls)": "cls",
-    "巨潮": "cninfo",
-    "巨潮(cninfo)": "cninfo",
-    "沪深交易所": "exchange",
-    "百度": "baidu",
-    "百度(baidu)": "baidu",
-    "市场源(market_sources)": "market_sources",
-    "reports": "reports",
-}
+def _lineage_aliases(source, lineage):
+    """Resolve an exact registry source to its runtime source identity or identities."""
+    if not isinstance(source, str) or not source:
+        return []
+    runtime_sources = lineage.get("runtime_sources", {})
+    if source in runtime_sources:
+        return [source]
+    aliases = SLA.runtime_aliases_for_source(source, lineage)
+    return [alias for alias in aliases if alias in runtime_sources]
+
+
+def load_registry_context():
+    """Load field status, exact anchors, mappings, lineage and visible diagnostics."""
+    context = {
+        "verified": set(),
+        "disproved": set(),
+        "anchors": set(),
+        "known_mappings": set(),
+        "diagnostics": [],
+        "unmapped_verified": 0,
+        "unconfirmed_verified": 0,
+        "source_fields": 0,
+        "safe_to_run": False,
+    }
+    if not os.path.exists(REG_PATH):
+        context["diagnostics"].append(f"字段注册表不存在：{REG_PATH}；本轮无已知字段锚")
+        return context
+    try:
+        with open(REG_PATH, encoding="utf-8") as handle:
+            registry = json.load(handle)
+    except (OSError, ValueError, TypeError) as exc:
+        context["diagnostics"].append(f"字段注册表读取失败；本轮无已知字段锚：{exc}")
+        return context
+
+    try:
+        lineage = SLA.load_source_lineage(registry=registry)
+        lineage_valid = True
+    except (OSError, ValueError, TypeError) as exc:
+        lineage = {"sources": {}, "source_aliases": {}, "runtime_sources": {}}
+        context["diagnostics"].append(f"来源血缘校验失败；禁止生成已确认锚：{exc}")
+        lineage_valid = False
+    global _SOURCE_LINEAGE
+    _SOURCE_LINEAGE = lineage
+    if not lineage_valid:
+        return context
+
+    source_fields = registry.get("source_fields")
+    if source_fields is None:
+        # Compatibility for old one-source aggregate rows only. A multi-source
+        # aggregate status cannot safely be attributed to any individual source.
+        source_fields = []
+        for field in registry.get("fields", []):
+            sources = field.get("sources", [])
+            source = field.get("source")
+            if not source and len(sources) == 1:
+                source = sources[0]
+            if isinstance(source, str) and source and len(sources or [source]) == 1:
+                source_fields.append({**field, "source": source})
+        context["diagnostics"].append(
+            "注册表没有 source_fields；仅使用可精确归属的单源旧记录，多源汇总状态不分摊"
+        )
+    if not isinstance(source_fields, list):
+        context["diagnostics"].append("注册表 source_fields 格式无效；本轮无已知字段锚")
+        return context
+
+    context["source_fields"] = len(source_fields)
+    seen_source_identities = set()
+    for field in source_fields:
+        if not isinstance(field, dict):
+            context["diagnostics"].append("source_fields 含非对象记录；已禁用本轮字段对撞")
+            return context
+        source = field.get("source")
+        code = field.get("code")
+        if not isinstance(source, str) or not isinstance(code, str) or not code:
+            context["diagnostics"].append("source_fields 含无效来源/完整路径；已禁用本轮字段对撞")
+            return context
+        if field.get("status") not in {
+            "verified",
+            "unverified",
+            "candidate",
+            "conflict",
+            "disproved",
+        }:
+            context["diagnostics"].append(
+                f"source_fields 含未知状态 {source}::{code}；已禁用本轮字段对撞"
+            )
+            return context
+        identity = (source, code)
+        if identity in seen_source_identities:
+            context["diagnostics"].append(
+                f"source_fields 存在重复身份 {source}::{code}；已禁用全部 registry 锚"
+            )
+            context["verified"].clear()
+            context["disproved"].clear()
+            context["anchors"].clear()
+            context["known_mappings"].clear()
+            return context
+        seen_source_identities.add(identity)
+        aliases = _lineage_aliases(source, lineage)
+        if field.get("status") == "disproved":
+            context["disproved"].update((alias, code) for alias in aliases)
+            continue
+        if field.get("status") != "verified":
+            continue
+        if not aliases:
+            context["unmapped_verified"] += 1
+            continue
+        for alias in aliases:
+            identity = (alias, code)
+            context["verified"].add(identity)
+            family = SLA.runtime_family(alias, lineage)
+            source_record = lineage.get("sources", {}).get(source, {})
+            if (
+                source_record.get("anchor_eligible")
+                and source_record.get("independence_status") == "confirmed"
+                and family == source_record.get("independence_family")
+            ):
+                context["anchors"].add(identity)
+            else:
+                context["unconfirmed_verified"] += 1
+
+    for mapping in registry.get("mappings", []):
+        if not isinstance(mapping, dict):
+            continue
+        left = mapping.get("from", {})
+        right = mapping.get("to", {})
+        if not isinstance(left, dict) or not isinstance(right, dict):
+            continue
+        left_aliases = _lineage_aliases(left.get("source"), lineage)
+        right_aliases = _lineage_aliases(right.get("source"), lineage)
+        left_code = left.get("code")
+        right_code = right.get("code")
+        if not isinstance(left_code, str) or not isinstance(right_code, str):
+            continue
+        for left_alias in left_aliases:
+            for right_alias in right_aliases:
+                context["known_mappings"].add((left_alias, left_code, right_alias, right_code))
+                context["known_mappings"].add((right_alias, right_code, left_alias, left_code))
+
+    context["safe_to_run"] = True
+
+    if context["unmapped_verified"]:
+        context["diagnostics"].append(
+            f"{context['unmapped_verified']} 条 verified 源字段无法映射到运行时来源，未作锚"
+        )
+    if context["unconfirmed_verified"]:
+        context["diagnostics"].append(
+            f"{context['unconfirmed_verified']} 条 verified 源字段来源未确认独立性，作为已知字段跳过重解但不作锚"
+        )
+    if not context["anchors"]:
+        context["diagnostics"].append("没有可用的已确认独立锚；默认模式不会把未知字段互相定案")
+    return context
 
 
 def load_registry_state():
-    """返回 (verified_set, known_mapping_pairs)。best-effort，匹配不上则放行。"""
-    verified = set()
-    mappings = set()
-    if not os.path.exists(REG_PATH):
-        return verified, mappings
-    try:
-        reg = json.load(open(REG_PATH, encoding="utf-8"))
-    except Exception:
-        return verified, mappings
-    for f in reg.get("fields", []):
-        if f.get("status") == "verified":
-            src = REG_ALIAS.get(f.get("source", ""), f.get("source", ""))
-            # 与主字典 code 约定对齐：注册表存嵌套点路径(如 quote_snapshot.last_price)，
-            # 而 _flatten 输出 source.sub.k、code_of 仅取末段 last_price；两侧同取末段才对称。
-            verified.add((src, code_of(str(f.get("code", "")))))
-    for m in reg.get("mappings", []):
-        a = m.get("from", {})
-        b = m.get("to", {})
-        sa = REG_ALIAS.get(a.get("source", ""), a.get("source", ""))
-        sb = REG_ALIAS.get(b.get("source", ""), b.get("source", ""))
-        mappings.add((sa, code_of(str(a.get("code", ""))), sb, code_of(str(b.get("code", "")))))
-        mappings.add((sb, code_of(str(b.get("code", ""))), sa, code_of(str(a.get("code", "")))))
-    return verified, mappings
+    """Compatibility contract: return (verified_set, known_mapping_pairs)."""
+    context = load_registry_context()
+    return context["verified"], context["known_mappings"]
 
 
 def norm_src_of(fid):
@@ -935,29 +1001,65 @@ def norm_src_of(fid):
 
 
 def alias_src(fid):
-    return REG_ALIAS.get(norm_src_of(fid), norm_src_of(fid))
+    source = norm_src_of(fid)
+    if source in _SOURCE_LINEAGE.get("runtime_sources", {}):
+        return source
+    aliases = _lineage_aliases(source, _SOURCE_LINEAGE)
+    return aliases[0] if aliases else source
 
 
 def evidence_source_family(fid):
-    """Return the independent evidence producer behind a field's source alias."""
-    source = alias_src(fid)
-    return SOURCE_FAMILY_ALIAS.get(source, source)
+    """Return a confirmed producer family, or None when lineage is unknown."""
+    return SLA.runtime_family(alias_src(fid), _SOURCE_LINEAGE)
 
 
 def are_independent_sources(left_fid, right_fid):
-    return evidence_source_family(left_fid) != evidence_source_family(right_fid)
+    left_family = evidence_source_family(left_fid)
+    right_family = evidence_source_family(right_fid)
+    return left_family is not None and right_family is not None and left_family != right_family
 
 
 def code_of(fid):
     if "[" in fid:
         return fid[fid.index("[") :]
     if "." in fid:
-        return fid.rsplit(".", 1)[-1]
+        return fid.split(".", 1)[1]
     return fid
 
 
 def is_verified(fid, verified):
     return (alias_src(fid), code_of(fid)) in verified
+
+
+def is_disproved(fid, disproved):
+    return (alias_src(fid), code_of(fid)) in disproved
+
+
+def select_collision_fields(store, verified, disproved, anchors, exploratory=False):
+    """Return eligible unknown targets and the allowed right-hand field set."""
+    eligible = [
+        fid
+        for fid, info in store.items()
+        if not info["is_identifier"]
+        and not info["is_constant"]
+        and info["type"] in ("num", "enum")
+        and not is_disproved(fid, disproved)
+    ]
+    left = [fid for fid in eligible if not is_verified(fid, verified)]
+    if exploratory:
+        return left, eligible
+    right = [fid for fid in eligible if (alias_src(fid), code_of(fid)) in anchors]
+    return left, right
+
+
+def mark_exploratory_candidate(result, right_is_anchor):
+    """Keep non-anchor exploratory matches visible without promoting them to L1."""
+    if result is None or right_is_anchor:
+        return False
+    result["exploratory"] = True
+    if result.get("level") in ("L1", "L1-U"):
+        result["level"] = "L4"
+    return True
 
 
 def load_state():
@@ -1077,29 +1179,44 @@ def run(args):
         file=sys.stderr,
     )
 
-    # 3) registry 状态
-    verified, known_maps = load_registry_state()
+    # 3) Registry identities and independently confirmed anchors.
+    registry_context = load_registry_context()
+    verified = registry_context["verified"]
+    disproved = registry_context["disproved"]
+    anchors = registry_context["anchors"]
+    known_maps = registry_context["known_mappings"]
+    diagnostics.extend(registry_context["diagnostics"])
 
-    # 4) 候选左字段 = unverified 且非标识符、非常量、有数值
-    left_ids = [
-        fid
-        for fid, info in store.items()
-        if not info["is_identifier"]
-        and not info["is_constant"]
-        and info["type"] in ("num", "enum")
-        and not is_verified(fid, verified)
-    ]
-    # 右字段 = 全部（含 verified 作锚）
-    right_ids = [
-        fid
-        for fid, info in store.items()
-        if not info["is_identifier"] and not info["is_constant"] and info["type"] in ("num", "enum")
-    ]
+    # 4) Candidate targets exclude verified and explicitly disproved identities.
+    if registry_context["safe_to_run"]:
+        left_ids, safe_right_ids = select_collision_fields(
+            store, verified, disproved, anchors, exploratory=False
+        )
+    else:
+        left_ids, safe_right_ids = [], []
+        diagnostics.append("注册表或来源谱系未通过完整性校验；本轮不执行字段对撞")
+    if args.exploratory and registry_context["safe_to_run"]:
+        # Opt-in only: useful for candidate discovery, but unknown×unknown must
+        # never be mistaken for a verified anchor.
+        _, right_ids = select_collision_fields(
+            store, verified, disproved, anchors, exploratory=True
+        )
+        diagnostics.append("已启用探索模式：未知字段间也会生成候选；须独立复核后才能定案")
+    elif registry_context["safe_to_run"]:
+        right_ids = safe_right_ids
+    else:
+        right_ids = []
+    diagnostics.append(
+        f"对撞模式：{'exploratory' if args.exploratory else 'verified_anchor_only'}；"
+        f"待破解字段={len(left_ids)}，verified 字段={len(verified)}，"
+        f"可用独立锚={len(anchors)}，right 字段={len(right_ids)}"
+    )
 
     if args.limit:
         left_ids = left_ids[: args.limit]
     print(
-        f"[collide] 主攻目标(left)={len(left_ids)}，锚+未知(right)={len(right_ids)}",
+        f"[collide] 主攻目标(left)={len(left_ids)}，"
+        f"{'探索字段(right)' if args.exploratory else '已确认独立锚(right)'}={len(right_ids)}",
         file=sys.stderr,
     )
 
@@ -1109,12 +1226,28 @@ def run(args):
     method_candidate_heap = []
     method_candidate_count = 0
     method_candidate_sequence = 0
+    skipped_same_family = 0
+    skipped_unknown_lineage = 0
+    skipped_duplicate_unknown_pairs = 0
+    exploratory_pair_count = 0
     for li in left_ids:
         L = store[li]
         for ri in right_ids:
             if li == ri:
                 continue
-            if not are_independent_sources(li, ri):
+            right_is_anchor = (alias_src(ri), code_of(ri)) in anchors
+            if not args.exploratory and not right_is_anchor:
+                continue
+            if args.exploratory and not right_is_anchor and ri in left_ids and li > ri:
+                skipped_duplicate_unknown_pairs += 1
+                continue
+            left_family = evidence_source_family(li)
+            right_family = evidence_source_family(ri)
+            if left_family is None or right_family is None:
+                skipped_unknown_lineage += 1
+                continue
+            if left_family == right_family:
+                skipped_same_family += 1
                 continue
             R = store[ri]
             if L["type"] != R["type"]:
@@ -1122,6 +1255,8 @@ def run(args):
             if L["type"] == "num" and not range_overlap(L, R):
                 continue
             res = collide_pair(L, R)
+            if args.exploratory and mark_exploratory_candidate(res, right_is_anchor):
+                exploratory_pair_count += 1
             refuted = CR.match_refuted(li, ri) if RULES_OK else None
             if refuted is None:
                 method_candidate = method_candidates_for_pair(li, ri, L, R)
@@ -1172,6 +1307,16 @@ def run(args):
         diagnostics.append(
             f"主动方法候选共 {method_candidate_count} 条，报告保留优先级最高的 "
             f"{len(method_candidates)} 条"
+        )
+    if skipped_same_family:
+        diagnostics.append(f"跳过同一来源家族字段对：{skipped_same_family}")
+    if skipped_unknown_lineage:
+        diagnostics.append(f"跳过来源独立性未确认的字段对：{skipped_unknown_lineage}")
+    if skipped_duplicate_unknown_pairs:
+        diagnostics.append(f"探索模式去重未知字段对：{skipped_duplicate_unknown_pairs}")
+    if exploratory_pair_count:
+        diagnostics.append(
+            f"探索模式产生非锚候选：{exploratory_pair_count} 对；即使数值高度吻合也降为 L4，不写入定案状态"
         )
 
     # 6) hub 巧合排除：单字段匹配过多 → 降级
@@ -1269,6 +1414,17 @@ def run(args):
             {
                 "schema_version": 2,
                 "date": today,
+                "collision_mode": "exploratory" if args.exploratory else "verified_anchor_only",
+                "target_count": len(left_ids),
+                "verified_identity_count": len(verified),
+                "anchor_identity_count": len(anchors),
+                "right_field_count": len(right_ids),
+                "exploratory_pair_count": exploratory_pair_count,
+                "skipped_pairs": {
+                    "same_family": skipped_same_family,
+                    "unknown_lineage": skipped_unknown_lineage,
+                    "duplicate_unknown_exploration": skipped_duplicate_unknown_pairs,
+                },
                 "trading_window": list(folder_window.trading_dates),
                 "event_window": {
                     "start": folder_window.event_start.strftime("%Y%m%d"),
@@ -1447,6 +1603,11 @@ def main():
     ap.add_argument("--all", action="store_true", help="使用全部历史日期")
     ap.add_argument("--date", type=str, default="", help="报告日期戳（默认今天）")
     ap.add_argument("--limit", type=int, default=0, help="仅取前 N 个左字段（自测）")
+    ap.add_argument(
+        "--exploratory",
+        action="store_true",
+        help="额外探索未知字段之间的候选关系；结果不会因此自动定案",
+    )
     ap.add_argument("--min-hit", type=float, default=0.0, help="自定义 L1 命中率（调试）")
     args = ap.parse_args()
     if args.min_hit:

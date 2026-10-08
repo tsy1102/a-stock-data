@@ -243,9 +243,8 @@ class FakeDateTime:
 def test_calc_trading_day_expiry(tmp_path, monkeypatch, fake_time, expect_date):
     """V16.3 O29 回归：_calc_trading_day_expiry 的 9:30 分界 + 非交易日不过期。
 
-    注意：fake 时间必须用未来日期（真实运行时刻之后），否则 target 早于真实 now，
-    触发内部"expires_at 必须大于 now"安全检查 → fallback +24h（这是正确行为，
-    非测试目标）。本例验证的是分界逻辑本身。
+    同时冻结 datetime.now() 与 time.time()，避免用例随运行日期变化而触发
+    "expires_at 必须大于 now"安全检查的 +24h 兜底。本例只验证分界逻辑。
     """
     from datetime import datetime as real_dt
 
@@ -253,6 +252,13 @@ def test_calc_trading_day_expiry(tmp_path, monkeypatch, fake_time, expect_date):
 
     fake = FakeDateTime(real_dt.strptime(fake_time, "%Y-%m-%d %H:%M:%S"))
     monkeypatch.setattr(sc, "datetime", fake)
+
+    class FakeTime:
+        @staticmethod
+        def time():
+            return fake._target.timestamp()
+
+    monkeypatch.setattr(sc, "time", FakeTime)
 
     expiry = sc._calc_trading_day_expiry()
     expire_dt = real_dt.fromtimestamp(expiry)

@@ -1,8 +1,8 @@
 # ZHB 镜像分字典（zhb_verify.md）
 
-> **治理定位**：本文件是《主字典》`field_dict.md` §三 ZHB 三章的**镜像备份**。
-> - **主字典始终是唯一权威源**；本文件逐字段复制主字典内容，**不引入任何主字典之外的字段定名或状态判定**，自身不持有独立决策权。
-> - 由 `scripts/gen_zhb_subdict.py` 从主字典抽取生成；主字典 ZHB 章改动后须重跑该脚本。
+> **治理定位**：本文件镜像 `field_source_reference.md` 中的 ZHB 列协议索引。
+> - 当前逐源字段状态以 `field_verification/field_registry.json` 为准；本文件只便于按列核查。
+> - 由 `scripts/gen_zhb_subdict.py` 从历史参考文档抽取生成；源协议章节变动后须重跑。
 > - 覆盖闸门 `verify_sync_check.check_zhb_mirror_coverage` 强制本文件 Col[N] 集合与主字典逐字段一致（完全覆盖、不得越权发明字段）。
 > - 字段语义、层级（L1/L2/⚠️/❌）、单位、实测值均以主字典为准，争议以主字典现行条文裁决。
 

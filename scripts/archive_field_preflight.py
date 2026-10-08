@@ -10,7 +10,7 @@
   1. SECTION_MAP 每个源的子串必须能在 docs/ 全树（主字典 ∪ 归档目录 ∪ verify 分字典）
      解析到标题文本；否则该源审计将报「字段未登记」假 GAP —— 即归档未同步 SECTION_MAP 搜索域。
   2. field_dict.md 引用的 docs/verify/*.md 必须真实存在（镜像 verify_sync_check HARD#1 断链）。
-  3. verify_sync_check.get_source_mapping() 每个分字典文件必须存在且被主字典引用（孤儿/缺失，镜像 HARD#2/3）。
+  3. verify_sync_check.get_source_mapping() 每个分字典文件必须存在且被主入口或其明确链接的历史来源参考引用（孤儿/缺失，镜像 HARD#2/3）。
 
 设计要点：
   - 直接 import audit_field_completeness.SECTION_MAP 与 verify_sync_check.get_source_mapping()
@@ -116,18 +116,33 @@ def _check_verify_links():
 
 
 def _check_mapping_coverage():
-    """检查 MAPPING 每个分字典存在且被主字典引用（HARD#2/3 镜像）。"""
+    """检查 MAPPING 分字典存在且被主入口或已链接参考文档引用。"""
     missing = []
     orphan = []
     mapping = _load_verify_mapping()
     dict_text = io_open(FIELD_DICT) if os.path.exists(FIELD_DICT) else ""
+    reference_path = os.path.join(DOCS_DIR, "field_source_reference.md")
+    reference_text = ""
+    link_targets = re.findall(r"\[[^\]]+\]\(([^)]+)\)", dict_text)
+    reference_target = os.path.normcase(os.path.abspath(reference_path))
+    for target in link_targets:
+        target_path = target.split("#", 1)[0].strip().replace("/", os.sep)
+        if not target_path:
+            continue
+        resolved_target = os.path.normcase(
+            os.path.abspath(os.path.join(os.path.dirname(FIELD_DICT), target_path))
+        )
+        if resolved_target == reference_target and os.path.exists(reference_path):
+            reference_text = io_open(reference_path)
+            break
+    searchable_text = dict_text + "\n" + reference_text
     for src, fname in mapping.items():
         fpath = os.path.join(VERIFY_DIR, fname)
         if not os.path.exists(fpath):
             missing.append((src, fname))
         else:
-            # 被引用：主字典中出现该文件名或 verify/ 路径
-            if fname not in dict_text and f"verify/{fname}" not in dict_text:
+            # 被引用：主入口或其明确链接的历史参考中出现文件名或 verify/ 路径。
+            if fname not in searchable_text and f"verify/{fname}" not in searchable_text:
                 orphan.append((src, fname))
     return missing, orphan
 

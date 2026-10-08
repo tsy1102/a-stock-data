@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Second-pass layered cleansing of docs/field_dict.md.
+Second-pass layered cleansing of docs/field_source_reference.md.
 
 The first pass (cleanse_dict_provenance.py, commit c6f976d) only stripped
 guess/inference process words. This pass targets the SECOND category of residue
@@ -22,7 +22,7 @@ Policy (user-approved 2026-09-21):
     -> meaning collapses to `待破解` (per user rule: too much guessing is harmful).
 
 Dry-run by default; it writes no files unless --plan-output is supplied.
---apply modifies field_dict.md and appends the original evidence to PROVENANCE.md.
+--apply writes to an explicitly named output and appends the original evidence to PROVENANCE.md.
 """
 
 import argparse
@@ -31,7 +31,9 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-SRC = ROOT / "docs/field_dict.md"
+SRC = ROOT / "docs/field_source_reference.md"
+GENERATED_DICT = ROOT / "docs/field_dict.md"
+PRE_RESTRUCTURE_BACKUP = ROOT / "docs/backups/field_dict_pre_restructure_20261005.md"
 PROV = ROOT / "docs/field_verification/PROVENANCE.md"
 
 MARK_RE = re.compile(r"^[✅❌⏸️⚠️]")
@@ -255,7 +257,15 @@ def propose_status(raw: str):
 def main():
     parser = argparse.ArgumentParser(description="清理字段字典结论列中的验证过程叙述")
     parser.add_argument(
-        "--apply", action="store_true", help="写入字典并将过程证据追加到 PROVENANCE.md"
+        "--apply",
+        action="store_true",
+        help="写入 --output 指定的新文件并将过程证据追加到 PROVENANCE.md",
+    )
+    parser.add_argument("--source", type=Path, default=SRC, help="输入字段历史参考文件")
+    parser.add_argument(
+        "--output",
+        type=Path,
+        help="--apply 时必填；不得覆盖输入归档、field_dict.md 或重整前备份",
     )
     parser.add_argument(
         "--plan-output",
@@ -265,8 +275,24 @@ def main():
     args = parser.parse_args()
     if args.apply and args.plan_output:
         parser.error("--plan-output 仅用于 dry-run，不能与 --apply 同用")
+    source_path = args.source if args.source.is_absolute() else ROOT / args.source
+    output_path = (
+        args.output if args.output is None or args.output.is_absolute() else ROOT / args.output
+    )
+    if args.apply and output_path is None:
+        parser.error("--apply 必须显式指定 --output；归档源与生成主字典不可直接改写")
+    if args.apply:
+        protected_paths = {
+            source_path.resolve(),
+            SRC.resolve(),
+            GENERATED_DICT.resolve(),
+            PRE_RESTRUCTURE_BACKUP.resolve(),
+            PROV.resolve(),
+        }
+        if output_path.resolve() in protected_paths:
+            parser.error("--output 不得覆盖输入归档、field_dict 或重整前备份")
 
-    lines = SRC.read_text(encoding="utf-8").splitlines()
+    lines = source_path.read_text(encoding="utf-8").splitlines()
     out = []
     plan = []  # (line_no, token, col, old, new, conf, prov)
     prov_entries = []  # (token, section_hint, col, prov_text)
@@ -364,8 +390,15 @@ def main():
             plan_path = args.plan_output
             if not plan_path.is_absolute():
                 plan_path = ROOT / plan_path
-            if plan_path.resolve() in {SRC.resolve(), PROV.resolve()}:
-                parser.error("--plan-output 不能覆盖 field_dict.md 或 PROVENANCE.md")
+            protected_plan_paths = {
+                source_path.resolve(),
+                SRC.resolve(),
+                GENERATED_DICT.resolve(),
+                PRE_RESTRUCTURE_BACKUP.resolve(),
+                PROV.resolve(),
+            }
+            if plan_path.resolve() in protected_plan_paths:
+                parser.error("--plan-output 不能覆盖输入归档或 PROVENANCE.md")
             plan_path.write_text("\n".join(lines_out) + "\n", encoding="utf-8")
             print(f"[DRY-RUN] review plan -> {plan_path}")
         else:
@@ -373,7 +406,9 @@ def main():
         return
 
     # ---- APPLY ----
-    SRC.write_text("\n".join(out) + "\n", encoding="utf-8")
+    assert output_path is not None
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    output_path.write_text("\n".join(out) + "\n", encoding="utf-8")
     # append provenance section
     block = ["", "## 二次分层清理·验证叙述溯源（自动归档，未做删改）", ""]
     for tok, sec, col, prov in prov_entries:
@@ -382,7 +417,10 @@ def main():
         block.append("")
     with PROV.open("a", encoding="utf-8") as f:
         f.write("\n".join(block) + "\n")
-    print(f"[APPLY] changed {len(plan)} cells; archived {len(prov_entries)} provenance entries")
+    print(
+        f"[APPLY] changed {len(plan)} cells; archived {len(prov_entries)} provenance entries; "
+        f"output={output_path}"
+    )
 
 
 if __name__ == "__main__":

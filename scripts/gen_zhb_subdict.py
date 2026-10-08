@@ -4,9 +4,8 @@
 gen_zhb_subdict.py — 生成 ZHB 镜像分字典 docs/verify/zhb_verify.md
 
 设计契约（用户 2026-09-19 裁定）：
-- 《主字典》field_dict.md §三 的 ZHB 三章（tdxstat / tdxstat2 / tipinfo）是**唯一权威源**。
-- docs/verify/zhb_verify.md 是主字典 ZHB 章的**镜像备份**：逐字段复制主字典内容，
-  不引入任何主字典之外的字段定名或状态判定，自身不持有独立决策权。
+- ZHB 列协议索引从 `docs/field_source_reference.md` 的历史章节读取；逐源字段状态以 registry 为准。
+- docs/verify/zhb_verify.md 镜像位置式列名，便于按列核查；不承载逐源字段状态。
 - 覆盖闸门 verify_sync_check.check_zhb_mirror_coverage 强制：
     zhb_verify.md 的 Col[N] 集合 == 主字典 ZHB 位置式契约表 Col[N] 集合
   （完全覆盖、不得越权发明字段）。
@@ -22,7 +21,7 @@ import sys
 
 _HERE = os.path.dirname(os.path.abspath(__file__))
 REPO = os.path.dirname(_HERE)
-MAIN = os.path.join(REPO, "docs", "field_dict.md")
+MAIN = os.path.join(REPO, "docs", "field_source_reference.md")
 OUT = os.path.join(REPO, "docs", "verify", "zhb_verify.md")
 
 # (subsection header regex, source key, human title)
@@ -190,10 +189,9 @@ def build_mirror(main_path: str = MAIN) -> str:
     parts.append(
         "# ZHB 镜像分字典（zhb_verify.md）\n"
         "\n"
-        "> **治理定位**：本文件是《主字典》`field_dict.md` §三 ZHB 三章的**镜像备份**。\n"
-        "> - **主字典始终是唯一权威源**；本文件逐字段复制主字典内容，**不引入任何主字典之外"
-        "的字段定名或状态判定**，自身不持有独立决策权。\n"
-        "> - 由 `scripts/gen_zhb_subdict.py` 从主字典抽取生成；主字典 ZHB 章改动后须重跑该脚本。\n"
+        "> **治理定位**：本文件镜像 `field_source_reference.md` 中的 ZHB 列协议索引。\n"
+        "> - 当前逐源字段状态以 `field_verification/field_registry.json` 为准；本文件只便于按列核查。\n"
+        "> - 由 `scripts/gen_zhb_subdict.py` 从历史参考文档抽取生成；源协议章节变动后须重跑。\n"
         "> - 覆盖闸门 `verify_sync_check.check_zhb_mirror_coverage` 强制本文件 Col[N] 集合"
         "与主字典逐字段一致（完全覆盖、不得越权发明字段）。\n"
         "> - 字段语义、层级（L1/L2/⚠️/❌）、单位、实测值均以主字典为准，争议以主字典现行条文裁决。\n"

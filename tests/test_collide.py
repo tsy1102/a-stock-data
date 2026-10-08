@@ -137,13 +137,103 @@ def test_ratio_family_requires_three_full_days_and_is_l1u():
 
 
 def test_known_mirror_sources_do_not_count_as_independent_evidence():
-    assert collide.evidence_source_family("push2.f43") == "push2"
-    assert collide.evidence_source_family("push2_full.f43") == "push2"
-    assert collide.evidence_source_family("em_fund_flow.f137") == "push2"
+    assert collide.evidence_source_family("push2.f43") == "eastmoney"
+    assert collide.evidence_source_family("push2_full.f43") == "eastmoney"
+    assert collide.evidence_source_family("em_fund_flow.f137") == "eastmoney"
     assert not collide.are_independent_sources("push2.f43", "push2_full.f43")
     assert not collide.are_independent_sources("push2.f137", "em_fund_flow.f137")
     assert collide.are_independent_sources("push2.f43", "tencent[4]")
     assert collide.evidence_source_family("tencent[4]") != "push2"
+
+
+def test_unknown_source_lineage_is_not_independent_evidence():
+    assert collide.evidence_source_family("unregistered_source.some_field") is None
+    assert not collide.are_independent_sources("unregistered_source.some_field", "tencent[4]")
+
+
+def test_registry_verified_identity_keeps_full_nested_code_path():
+    context = collide.load_registry_context()
+    verified = context["verified"]
+    anchors = context["anchors"]
+
+    assert ("tdx", "quote_full.amount_wan") in verified
+    assert ("tdx", "quote_full.amount_wan") in anchors
+    assert collide.is_verified("tdx.quote_full.amount_wan", verified)
+    assert not collide.is_verified("tdx.amount_wan", verified)
+    assert ("zhb", "stat.board_count") in verified
+    assert collide.is_verified("zhb.stat.board_count", verified)
+    assert not collide.is_verified("zhb.board_count", verified)
+
+
+def test_code_of_preserves_full_nested_identity():
+    assert collide.code_of("tdx.quote_full.amount_wan") == "quote_full.amount_wan"
+    assert collide.code_of("zhb.stat.board_count") == "stat.board_count"
+    assert collide.code_of("tencent[4]") == "[4]"
+
+
+def test_default_field_selection_uses_only_verified_independent_anchors():
+    store = {
+        field_id: {
+            "is_identifier": False,
+            "is_constant": False,
+            "type": "num",
+        }
+        for field_id in (
+            "tdx.quote_full.amount_wan",
+            "tdx.amount_wan",
+            "sina.amount_wan",
+            "tdx.disproved_field",
+        )
+    }
+    verified = {("tdx", "quote_full.amount_wan")}
+    anchors = {("tdx", "quote_full.amount_wan")}
+    disproved = {("tdx", "disproved_field")}
+
+    left, right = collide.select_collision_fields(
+        store, verified, disproved, anchors, exploratory=False
+    )
+
+    assert left == ["tdx.amount_wan", "sina.amount_wan"]
+    assert right == ["tdx.quote_full.amount_wan"]
+
+
+def test_exploratory_selection_includes_unknowns_but_does_not_promote_matches():
+    store = {
+        field_id: {"is_identifier": False, "is_constant": False, "type": "num"}
+        for field_id in ("tdx.unknown", "sina.unknown", "tdx.disproved")
+    }
+
+    left, right = collide.select_collision_fields(
+        store,
+        verified=set(),
+        disproved={("tdx", "disproved")},
+        anchors=set(),
+        exploratory=True,
+    )
+    result = {"level": "L1-U"}
+
+    assert left == ["tdx.unknown", "sina.unknown"]
+    assert right == ["tdx.unknown", "sina.unknown"]
+    assert collide.mark_exploratory_candidate(result, right_is_anchor=False)
+    assert result == {"level": "L4", "exploratory": True}
+
+
+def test_verified_anchor_candidate_is_not_downgraded():
+    result = {"level": "L1"}
+
+    assert not collide.mark_exploratory_candidate(result, right_is_anchor=True)
+    assert result == {"level": "L1"}
+
+
+def test_missing_registry_disables_collision_context(monkeypatch, tmp_path):
+    monkeypatch.setattr(collide, "REG_PATH", str(tmp_path / "missing_registry.json"))
+
+    context = collide.load_registry_context()
+
+    assert context["safe_to_run"] is False
+    assert context["verified"] == set()
+    assert context["anchors"] == set()
+    assert context["diagnostics"]
 
 
 def test_collision_gate_rejects_same_source_mirror_fields():

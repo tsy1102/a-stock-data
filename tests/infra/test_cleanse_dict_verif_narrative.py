@@ -19,7 +19,7 @@ def _sample_dictionary() -> str:
 
 def test_dry_run_does_not_write_without_explicit_plan_path(tmp_path, monkeypatch, capsys):
     module = _load_script()
-    source = tmp_path / "field_dict.md"
+    source = tmp_path / "field_source_reference.md"
     provenance = tmp_path / "PROVENANCE.md"
     source.write_text(_sample_dictionary(), encoding="utf-8")
     monkeypatch.setattr(module, "ROOT", tmp_path)
@@ -37,7 +37,7 @@ def test_dry_run_does_not_write_without_explicit_plan_path(tmp_path, monkeypatch
 
 def test_dry_run_writes_only_to_explicit_plan_path(tmp_path, monkeypatch):
     module = _load_script()
-    source = tmp_path / "field_dict.md"
+    source = tmp_path / "field_source_reference.md"
     provenance = tmp_path / "PROVENANCE.md"
     plan = Path("plan.md")
     source.write_text(_sample_dictionary(), encoding="utf-8")
@@ -51,3 +51,41 @@ def test_dry_run_writes_only_to_explicit_plan_path(tmp_path, monkeypatch):
     assert (tmp_path / plan).is_file()
     assert source.read_text(encoding="utf-8") == _sample_dictionary()
     assert not provenance.exists()
+
+
+def test_apply_requires_a_separate_output_file(tmp_path, monkeypatch):
+    module = _load_script()
+    source = tmp_path / "field_source_reference.md"
+    provenance = tmp_path / "PROVENANCE.md"
+    source.write_text(_sample_dictionary(), encoding="utf-8")
+    monkeypatch.setattr(module, "ROOT", tmp_path)
+    monkeypatch.setattr(module, "SRC", source)
+    monkeypatch.setattr(module, "PROV", provenance)
+    monkeypatch.setattr(sys, "argv", [str(SCRIPT_PATH), "--apply"])
+
+    try:
+        module.main()
+    except SystemExit as exc:
+        assert exc.code == 2
+    else:
+        raise AssertionError("--apply without --output must be rejected")
+
+    assert source.read_text(encoding="utf-8") == _sample_dictionary()
+    assert not provenance.exists()
+
+
+def test_apply_writes_only_to_explicit_output(tmp_path, monkeypatch):
+    module = _load_script()
+    source = tmp_path / "field_source_reference.md"
+    output = tmp_path / "cleaned_copy.md"
+    provenance = tmp_path / "PROVENANCE.md"
+    source.write_text(_sample_dictionary(), encoding="utf-8")
+    monkeypatch.setattr(module, "ROOT", tmp_path)
+    monkeypatch.setattr(module, "SRC", source)
+    monkeypatch.setattr(module, "PROV", provenance)
+    monkeypatch.setattr(sys, "argv", [str(SCRIPT_PATH), "--apply", "--output", str(output)])
+
+    module.main()
+
+    assert source.read_text(encoding="utf-8") == _sample_dictionary()
+    assert output.is_file()

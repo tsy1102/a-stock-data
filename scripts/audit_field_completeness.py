@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """audit_field_completeness.py — 主字典字段完整性审计（v3 修正版）。
 
-RAW = 各源最新 raw 捕获(20260904)用「源原生命名」提取的真实返回字段集。
-REG = field_dict.md 各源章节(正文+表格全文)用「同源原生命名」提取的已登记字段集。
-GAP = RAW − (REG ∩ RAW宇宙)  —— 源返回了但主字典没登记的字段 = 历史债务。
+RAW = 指定采集目录中各源用「源原生命名」提取的真实返回字段集。
+REG = 优先读取 registry.source_fields；缺失时从 field_source_reference.md 提取已登记字段集。
+GAP = RAW − (REG ∩ RAW宇宙)  —— 源返回了但字段登记中没有的字段，供人工复核。
 
 v3 修正点 vs v2：
   - split_sections 返回 (level, title, text)；registered_field_sets 按标题层级继承源：
@@ -17,7 +17,13 @@ v3 修正点 vs v2：
 """
 
 from __future__ import annotations
-import io, os, re, json, sys, glob
+
+import argparse
+import io
+import json
+import os
+import re
+import glob
 from collections import defaultdict
 
 # (b) 架构根治：优先从 field_registry.json 单一真相源读取「已登记字段集」，
@@ -26,17 +32,17 @@ from collections import defaultdict
 import field_registry_api as _fra
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-DICT = os.path.join(ROOT, "docs", "field_dict.md")
+DICT = os.path.join(ROOT, "docs", "field_source_reference.md")
 # v3.1 (2026-09-06): CAP/OUT 日期参数化 —— 每次全源采集后必须对「当日 raw」重跑本审计,
 # 否则审计永远停在上一次捕获日, 形成 A7(文档代码同真) 口径漂移。
 # 用法: python scripts/audit_field_completeness.py [CAP_DATE] [OUT_DATE]
-#   例: python scripts/audit_field_completeness.py 20260906   -> 读 20260906 raw, 写 20260906
-#   不带参数则沿用历史默认: CAP=20260904, OUT=20260906
-_args = [a for a in sys.argv[1:] if not a.startswith("-")]
-CAP = os.path.join(ROOT, "docs", "field_verification", _args[0] if _args else "20260904")
-OUTDIR = os.path.join(
-    ROOT, "docs", "field_verification", _args[1] if len(_args) > 1 else "20260906"
-)
+#   例: python scripts/audit_field_completeness.py 20260906 20260906
+#   不带参数则沿用历史默认: CAP=20260904, OUT=20260906。
+# 导入本模块只初始化历史默认值；CLI 参数仅在 main() 中解析，避免污染导入方参数。
+DEFAULT_CAPTURE_DATE = "20260904"
+DEFAULT_OUTPUT_DATE = "20260906"
+CAP = os.path.join(ROOT, "docs", "field_verification", DEFAULT_CAPTURE_DATE)
+OUTDIR = os.path.join(ROOT, "docs", "field_verification", DEFAULT_OUTPUT_DATE)
 
 
 def loadjson(f):
@@ -683,22 +689,11 @@ def _build_canon_aliases():
 RAW_FIELD_KEYS = _build_raw_field_keys()
 CANON_ALIASES = _build_canon_aliases()
 
-# ---------------------------------------------------------------------------
-# REG（扫描章节全文，仅从严格 Markdown 祖先继承源）
-# ---------------------------------------------------------------------------
-INDEXED = (
-    "东财-push2(stock/get)",
-    "东财-ulist239(np/get)",
-    "AxData",
-    "东财-资金流(em_fund_flow)",
-    "腾讯(qt.gtimg)",
-    "新浪(hq.sinajs)",
-    "ZHB-tdxstat",
-    "ZHB-tdxstat2",
-    "ZHB-tipinfo",
-)
 
-
+# ---------------------------------------------------------------------------
+# ---------------------------------------------------------------------------
+# REG（兼容解析器；常规审计优先读取 registry.source_fields）
+# ---------------------------------------------------------------------------
 def reg_tokens_for_section(src, text):
     toks = set()
     if src == "开盘啦(kpl)":
@@ -811,15 +806,36 @@ def registry_field_sets():
 
 
 # ---------------------------------------------------------------------------
-def main():
+def build_argument_parser():
+    parser = argparse.ArgumentParser(description="审计采集字段与字段登记表之间的覆盖差异")
+    parser.add_argument(
+        "capture_date", nargs="?", default=DEFAULT_CAPTURE_DATE, help="采集目录日期 YYYYMMDD"
+    )
+    parser.add_argument(
+        "output_date", nargs="?", default=DEFAULT_OUTPUT_DATE, help="报告目录日期 YYYYMMDD"
+    )
+    parser.add_argument(
+        "--report-output", help="报告 JSON 完整路径（默认写入 output_date/completeness_audit.json）"
+    )
+    return parser
+
+
+def main(argv=None):
+    args = build_argument_parser().parse_args(argv)
+    global CAP, OUTDIR
+    CAP = os.path.join(ROOT, "docs", "field_verification", args.capture_date)
+    OUTDIR = os.path.join(ROOT, "docs", "field_verification", args.output_date)
+    report_path = args.report_output or os.path.join(OUTDIR, "completeness_audit.json")
+    report_path = os.path.abspath(report_path)
+
     raw = raw_field_sets()
     reg = registry_field_sets()
     if reg is None:
         reg = registered_field_sets()
-        print("   [info] reg 数据来源: field_dict.md (registered_field_sets 回退)")
+        print("   [info] reg 数据来源: field_source_reference.md (legacy parser fallback)")
     else:
-        print("   [info] reg 数据来源: field_registry.json (单一真相源)")
-    os.makedirs(OUTDIR, exist_ok=True)
+        print("   [info] reg 数据来源: field_registry.json.source_fields")
+    os.makedirs(os.path.dirname(report_path), exist_ok=True)
 
     report = {}
     print("=" * 82)
@@ -830,11 +846,8 @@ def main():
     for src in sorted(raw):
         r = raw[src]
         g = reg.get(src, set())
-        # 索引源：REG 限制在 RAW 宇宙(去跨源叙述污染)
-        if src in INDEXED:
-            g_eff = g & r
-        else:
-            g_eff = g & r
+        # 仅比较本源 RAW 宇宙，避免其他来源章节中的叙述污染缺口结果。
+        g_eff = g & r
         missing = sorted(r - g_eff, key=lambda x: (len(x), x))
         report[src] = {
             "raw_count": len(r),
@@ -850,10 +863,9 @@ def main():
         if missing:
             shown = missing if len(missing) <= 80 else missing[:80] + [f"...+{len(missing)-80}"]
             print("   missing: " + ", ".join(shown))
-    io.open(os.path.join(OUTDIR, "completeness_audit.json"), "w", encoding="utf-8").write(
-        json.dumps(report, ensure_ascii=False, indent=2)
-    )
-    print("\n写出:", os.path.join(OUTDIR, "completeness_audit.json"))
+    with io.open(report_path, "w", encoding="utf-8") as output:
+        output.write(json.dumps(report, ensure_ascii=False, indent=2))
+    print("\n写出:", report_path)
 
 
 if __name__ == "__main__":

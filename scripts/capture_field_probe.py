@@ -105,6 +105,12 @@ if _ROOT not in sys.path:
 _SCRIPTS = os.path.dirname(os.path.abspath(__file__))
 if _SCRIPTS not in sys.path:
     sys.path.insert(0, _SCRIPTS)
+from scripts.context_policy import (
+    CONTEXT_EXCLUDED_PATHS,
+    CONTEXT_ONLY_SOURCES,
+    CONTEXT_RECORD_PATHS as CONTEXT_RAW_PATHS,
+    CONTEXT_REQUIRED_PATHS,
+)
 
 from scripts.collision_dates import EVENT_SOURCES
 
@@ -203,7 +209,6 @@ SOURCE_REQUIRED_PATHS: Dict[str, List[tuple]] = {
         ("kpl_broken_ratio",),
         ("plate_rotation_matrix",),
         ("plate_rotation_top",),
-        ("dragon_tiger_today",),
     ],
     "clist": [("by_type", "industry"), ("by_type", "concept"), ("by_type", "area")],
     "push2ex": [("limit_up_pool",), ("limit_down_pool",), ("limit_broken_pool",)],
@@ -1133,8 +1138,8 @@ def collect_axdata(pool: list) -> dict:
     return out
 
 
-def collect_market_sources(pool: list) -> dict:
-    """市场级源(一次性): 财联社情绪/涨停天梯/盘口异动 + KPL + 板块轮动 + 龙虎榜。"""
+def collect_market_sources(pool: list, include_context: bool = False) -> dict:
+    """采集市场数值指标；龙虎榜仅在 include_context=True 时请求。"""
     import stock_common
 
     out: Dict[str, Any] = {}
@@ -1162,6 +1167,8 @@ def collect_market_sources(pool: list) -> dict:
         top_n=30,
     )
     capture_one("plate_rotation_top", "get_plate_rotation_top")
+    if not include_context:
+        return out
     try:
         trade_date = _last_completed_trading_day().strftime("%Y-%m-%d")
     except Exception as exc:
@@ -1686,12 +1693,13 @@ def _fuyao_auction_items(envelope: Any) -> list:
     return [item for item in items if isinstance(item, dict)] if isinstance(items, list) else []
 
 
-def collect_fuyao(pool: list) -> dict:
+def collect_fuyao(pool: list, include_context: bool = False) -> dict:
     """fuyao 官方 REST 全景采集（V17.0.5 新源——字典 §12.8.12c，全量契约见 verify/fuyao_api_full.md）。
 
     个股级: 行情快照 / 估值(ps_ttm·pcf_ttm 新维度) / 集合竞价终态 /
             五类财务指标(ROE·扣非ROE·ROA 官方口径——tx65/tx66 对撞终判源)
-    市场级: 短线风向标基准 / 涨跌停炸板池(date_ms 任意交易日回查) / 异动原因 / 龙虎榜
+    市场级: 短线风向标基准 / 涨跌停炸板池(date_ms 任意交易日回查) / 异动原因
+    龙虎榜与热股榜仅在 include_context=True 时请求。
     无 Key 时自动禁用(meta 标记 no_key)；~35 请求 @2rps(sc_network 域限流)。
     """
     from stock_common import (
@@ -1702,8 +1710,6 @@ def collect_fuyao(pool: list) -> dict:
         get_fuyao_auction_benchmark,
         get_fuyao_limit_pool,
         get_fuyao_anomaly,
-        get_fuyao_dragon_tiger,
-        get_fuyao_hot_list,
         is_fuyao_enabled,
     )
 
@@ -1798,8 +1804,11 @@ def collect_fuyao(pool: list) -> dict:
             "item": items,
         }
     mkt["anomaly_list"] = (get_fuyao_anomaly() or [])[:60]
-    mkt["dragon_tiger"] = (get_fuyao_dragon_tiger(td.isoformat()) or [])[:60]
-    mkt["hot_list_hour"] = (get_fuyao_hot_list("hour") or [])[:50]
+    if include_context:
+        from stock_common import get_fuyao_dragon_tiger, get_fuyao_hot_list
+
+        mkt["dragon_tiger"] = (get_fuyao_dragon_tiger(td.isoformat()) or [])[:60]
+        mkt["hot_list_hour"] = (get_fuyao_hot_list("hour") or [])[:50]
     return out
 
 
@@ -2570,15 +2579,69 @@ def assess_result(
     return ok, info
 
 
+def _source_required_paths(source: str, include_context: bool = False) -> Optional[List[tuple]]:
+    required_paths = list(SOURCE_REQUIRED_PATHS.get(source, []))
+    if include_context:
+        required_paths.extend(CONTEXT_REQUIRED_PATHS.get(source, []))
+    return required_paths or None
+
+
+def _preserve_context_paths(
+    source: str, data: Dict[str, Any], out_dir: str
+) -> tuple[List[str], List[str]]:
+    """Carry forward opt-in context subtrees when refreshing a default snapshot."""
+    paths: List[tuple] = list(CONTEXT_RAW_PATHS.get(source, ()))
+    raw_path = os.path.join(out_dir, f"raw_{source}.json")
+    if not paths or not os.path.isfile(raw_path):
+        return [], []
+    try:
+        with open(raw_path, encoding="utf-8") as stream:
+            previous = json.load(stream)
+    except (OSError, json.JSONDecodeError) as exc:
+        return [], [f"{source}: cannot preserve prior context from {raw_path}: {exc}"]
+    if not isinstance(previous, dict):
+        return [], [f"{source}: cannot preserve prior context; previous raw root is not an object"]
+
+    preserved: List[str] = []
+    warnings: List[str] = []
+    for path in paths:
+        old_node: Any = previous
+        new_node: Any = data
+        found = True
+        for part in path[:-1]:
+            if not isinstance(old_node, dict) or not isinstance(old_node.get(part), dict):
+                found = False
+                break
+            old_node = old_node[part]
+            if not isinstance(new_node, dict):
+                found = False
+                break
+            if not isinstance(new_node.get(part), dict):
+                new_node[part] = {}
+            new_node = new_node[part]
+        if not found or not isinstance(old_node, dict) or path[-1] not in old_node:
+            continue
+        if not isinstance(new_node, dict):
+            warnings.append(f"{source}: cannot preserve context path {'.'.join(path)}")
+            continue
+        if path[-1] not in new_node:
+            new_node[path[-1]] = old_node[path[-1]]
+            preserved.append(".".join(path))
+    return preserved, warnings
+
+
 def _has_complete_snapshot(
     collectors: Dict[str, Callable[..., Dict[str, Any]]],
     meta: dict,
     out_dir: str,
     pool: List[Dict[str, Any]],
+    include_context: bool = False,
 ) -> bool:
     """Only skip when each requested producer has a complete, assessable snapshot."""
     source_meta = meta.get("sources") if isinstance(meta.get("sources"), dict) else {}
     for source in collectors:
+        if source in CONTEXT_ONLY_SOURCES and not include_context:
+            continue
         entry = source_meta.get(source) if isinstance(source_meta, dict) else None
         if not isinstance(entry, dict):
             return False
@@ -2603,7 +2666,7 @@ def _has_complete_snapshot(
         ok, _ = assess_result(
             document,
             expected_symbols=_source_expected_codes(source, pool),
-            required_paths=SOURCE_REQUIRED_PATHS.get(source),
+            required_paths=_source_required_paths(source, include_context),
         )
         if not ok:
             return False
@@ -2624,6 +2687,11 @@ def main() -> None:
     ap.add_argument("--dry-run", action="store_true")
     ap.add_argument("--only", default="", help="只采指定源(逗号分隔: zhb,tdx,tencent,push2)")
     ap.add_argument(
+        "--include-context",
+        action="store_true",
+        help="额外采集龙虎榜/人气榜等市场上下文；--only 明确指定 exchange 或 em_hot 时自动启用",
+    )
+    ap.add_argument(
         "--refresh-pool",
         action="store_true",
         help="采集前刷新动态层(从涨停池选 5 只连板/新股/涨停写回 pool.json)",
@@ -2643,6 +2711,7 @@ def main() -> None:
     if not args.date:
         args.date = _last_trading_day_str()
     selected_only = [name.strip() for name in args.only.split(",") if name.strip()]
+    include_context = args.include_context or bool(set(selected_only) & CONTEXT_ONLY_SOURCES)
     try:
         _, data_date_domain = _validate_capture_data_date(args.date, selected_only)
     except ValueError as exc:
@@ -2737,6 +2806,7 @@ def main() -> None:
         except Exception as e:
             print(f"  ⚠ 已有 meta.json 读取失败, 本次将整份覆盖: {e}", flush=True)
     meta["only"] = args.only or None
+    meta["include_context"] = include_context
 
     collectors: Dict[str, Callable[..., Dict[str, Any]]] = {
         "zhb": collect_zhb,
@@ -2783,6 +2853,12 @@ def main() -> None:
         if unknown_sources:
             ap.error("--only 含未知源: " + ", ".join(sorted(unknown_sources)))
         collectors = {k: v for k, v in collectors.items() if k in selected_only}
+    active_source_names = set(collectors)
+    if not include_context:
+        active_source_names.difference_update(CONTEXT_ONLY_SOURCES)
+    raw_clear_source_names = set(active_source_names)
+    if not include_context:
+        raw_clear_source_names.difference_update(CONTEXT_RAW_PATHS)
     existing_source_names = {
         os.path.basename(path)[len("raw_") : -len(".json")]
         for path in glob.glob(os.path.join(out_dir, "raw_*.json"))
@@ -2803,7 +2879,7 @@ def main() -> None:
     _existing_raws = sorted(glob.glob(os.path.join(out_dir, "raw_*.json")))
     if args.overwrite:
         # 仅清空本次将重采源(raw + meta 记录), 保留其他源采集物, 避免误删增量补采之外的数据
-        _clear_raw = {os.path.join(out_dir, f"raw_{n}.json") for n in collectors}
+        _clear_raw = {os.path.join(out_dir, f"raw_{n}.json") for n in raw_clear_source_names}
         for _p in _existing_raws:
             if _p in _clear_raw:
                 try:
@@ -2813,7 +2889,7 @@ def main() -> None:
         if os.path.isfile(meta_path):
             try:
                 _m = json.load(open(meta_path, encoding="utf-8"))
-                for _n in [k for k in _m.get("sources", {}) if k in collectors]:
+                for _n in [k for k in _m.get("sources", {}) if k in active_source_names]:
                     del _m["sources"][_n]
                 with open(meta_path, "w", encoding="utf-8") as _f:
                     json.dump(_m, _f, ensure_ascii=False, indent=1)
@@ -2838,7 +2914,9 @@ def main() -> None:
                     print("  ⚠ 已有 meta.json 结构异常，将按需重采。", flush=True)
             except (OSError, json.JSONDecodeError) as exc:
                 print(f"  ⚠ 已有 meta.json 不可读取，将按需重采: {exc}", flush=True)
-        if _has_complete_snapshot(collectors, snapshot_meta, out_dir, pool):
+        if _has_complete_snapshot(
+            collectors, snapshot_meta, out_dir, pool, include_context=include_context
+        ):
             if data_date_domain == "calendar":
                 print(
                     f"⏭ 自然日数据 {args.date} 已有完整源快照，默认幂等跳过；如需重采请加 --overwrite。",
@@ -2866,7 +2944,7 @@ def main() -> None:
                 f"🔄 数据日 {args.date} 现有采集物为盘中快照(非收盘), 本次盘后运行将刷新为收盘数据。",
                 flush=True,
             )
-            _clear_raw = {os.path.join(out_dir, f"raw_{n}.json") for n in collectors}
+            _clear_raw = {os.path.join(out_dir, f"raw_{n}.json") for n in raw_clear_source_names}
             for _p in _existing_raws:
                 if _p in _clear_raw:
                     try:
@@ -2876,7 +2954,7 @@ def main() -> None:
             if os.path.isfile(meta_path):
                 try:
                     _m = json.load(open(meta_path, encoding="utf-8"))
-                    for _n in [k for k in _m.get("sources", {}) if k in collectors]:
+                    for _n in [k for k in _m.get("sources", {}) if k in active_source_names]:
                         del _m["sources"][_n]
                     with open(meta_path, "w", encoding="utf-8") as _f:
                         json.dump(_m, _f, ensure_ascii=False, indent=1)
@@ -2888,11 +2966,27 @@ def main() -> None:
             # 清空后 fall through 进入采集
 
     for name, fn in collectors.items():
+        if name in CONTEXT_ONLY_SOURCES and not include_context:
+            meta["sources"][name] = {
+                "scheme": SOURCE_SCHEME.get(name, "unknown"),
+                "ok": True,
+                "status": "context_only",
+                "context_excluded_paths": CONTEXT_EXCLUDED_PATHS[name],
+                "reason": "默认字段破解采集不请求纯市场上下文源",
+                "secs": 0.0,
+            }
+            print(f"  ⊘ {name}: context_only (默认跳过)", flush=True)
+            continue
         try:
             t1 = time.time()
             meta["source_as_of_dates"].pop(name, None)
             # V17.2.28: eltdx 瘦身开关——仅 eltdx 支持 lite(跳过冗余/能力登记载荷)
-            data = fn(pool, lite=args.eltdx_lite) if name == "eltdx" else fn(pool)
+            if name == "eltdx":
+                data = fn(pool, lite=args.eltdx_lite)
+            elif name in {"market_sources", "fuyao"}:
+                data = fn(pool, include_context=include_context)
+            else:
+                data = fn(pool)
             # V17.2.12 主字典对齐: registry 已登记但本脚本暂无 producer 的源返回 __unwired__ 占位,
             # 显式记为 unwired/deprecated(区别于 ok/partial/failed), 不写 raw 文件、不计入异常源清单。
             _uw = data.get("__unwired__") if isinstance(data, dict) else None
@@ -2908,6 +3002,13 @@ def main() -> None:
                 }
                 print(f"  ⊘ {name}: {_kind} (registry 已登记, 无 producer)", flush=True)
                 continue
+            preserved_context_paths: List[str] = []
+            if not include_context and name in CONTEXT_RAW_PATHS and isinstance(data, dict):
+                preserved_context_paths, preservation_warnings = _preserve_context_paths(
+                    name, data, out_dir
+                )
+                for warning in preservation_warnings:
+                    print(f"  ⚠ {warning}", flush=True)
             # A 方案: 标注字段体系(scheme)血缘, 写入 raw 文件顶层 + meta, 供对撞工具/lint 校验
             _scheme = SOURCE_SCHEME.get(name, "unknown")
             if isinstance(data, dict):
@@ -2932,7 +3033,7 @@ def main() -> None:
             _ok, _info = assess_result(
                 data,
                 expected_symbols=_source_expected_codes(name, pool),
-                required_paths=SOURCE_REQUIRED_PATHS.get(name),
+                required_paths=_source_required_paths(name, include_context),
             )
             _as_of_date = _source_as_of_date(name, data)
             _entry = {
@@ -2946,6 +3047,10 @@ def main() -> None:
                 _entry["as_of_date"] = _as_of_date
                 meta["source_as_of_dates"][name] = _as_of_date
             _entry.update(_info)
+            if not include_context and name in CONTEXT_EXCLUDED_PATHS:
+                _entry["context_excluded_paths"] = CONTEXT_EXCLUDED_PATHS[name]
+            if preserved_context_paths:
+                _entry["preserved_context_paths"] = preserved_context_paths
             meta["sources"][name] = _entry
             _skip_count = _entry.get("n_skipped", 0)
             if _ok:
@@ -2990,14 +3095,18 @@ def main() -> None:
     # V17.2.12: unwired/deprecated 为 registry 已登记但无 producer / 已废弃的预期态, 不计入异常源。
     def _is_abnormal(s: dict) -> bool:
         st = s.get("status")
-        if st in ("ok", "unwired", "deprecated"):
+        if st in ("ok", "unwired", "deprecated", "context_only"):
             return False
         return not s.get("ok", True)
 
     _bad = [k for k in collectors if _is_abnormal(meta["sources"].get(k, {}))]
     meta["run"] = {
         "only": args.only or None,
+        "include_context": include_context,
         "n_sources": len(collectors),
+        "context_only_sources": [
+            name for name in collectors if name in CONTEXT_ONLY_SOURCES and not include_context
+        ],
         "n_abnormal": len(_bad),
         "abnormal": _bad,
     }

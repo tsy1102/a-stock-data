@@ -8,11 +8,13 @@
 
 | 前置 | 说明 | 来源 |
 |---|---|---|
-| 同刻多源采集 | 20 股池 × 19 源同刻采集(capture_field_probe) | docs/field_verification/{YYYYMMDD}/ |
+| 同刻多源采集 | 20 股池 × 默认字段相关源同刻采集(capture_field_probe)；纯市场上下文需显式开启 | docs/field_verification/{YYYYMMDD}/ |
 | 连续 ZHB 包 | 7/31-8/13 逐日包(时间序列分析必需) | cache/zhb/zhb_YYYYMMDD.zip |
 | 全市场统计 | tdxstat/tdxstat2 全市场 7951 只(分布/占比特征) | 同上 |
 | 通达信客户端文件 | tdxhy.cfg/hy_tree.xml/infoharbor_block.dat/.day K线 | C:\new_tdx64 |
 | 软件表头说明 | 通达信/同花顺/东财官方表头定义(用户提供) | docs/verify/tdx_headers_definition.md |
+
+**默认上下文边界**：字段采集默认不请求沪深交易所龙虎榜与东财人气榜，并跳过 `market_sources.dragon_tiger_today`、`fuyao.market.dragon_tiger` 和 `fuyao.market.hot_list_hour`；市场情绪、涨停梯队、板块轮动、Fuyao 个股与财务等字段仍按原流程采集。碰撞默认过滤这些来源和子路径的历史记录。要研究这些上下文时，采集命令与碰撞命令分别显式添加 `--include-context`。历史 raw 不删除；默认覆盖采集会保留上述子路径中的既有内容。
 
 ### ⚠️ 核心铁律: ZHB 数据日期 = 最近交易日快照（非机械 T-1, 2026-08-27 固化 / 2026-08-27 修正）
 

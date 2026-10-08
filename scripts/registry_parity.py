@@ -18,6 +18,7 @@ import io
 import json
 import os
 import sys
+import argparse
 
 for _s in (sys.stdout, sys.stderr):
     if _s is not None and hasattr(_s, "reconfigure"):
@@ -33,14 +34,18 @@ REGISTRY = os.path.join(REPO_ROOT, "docs", "field_verification", "field_registry
 sys.path.insert(0, SCRIPT_DIR)
 import audit_field_completeness as afc
 import gen_field_matrix as gm
+import field_registry_api as fra
 
 
-def main():
-    if not os.path.exists(REGISTRY):
-        print(f"FAIL: 未找到 registry: {REGISTRY}（先跑 extract_registry.py）")
+def main(argv=None):
+    parser = argparse.ArgumentParser(description="校验逐源字段与历史来源基线 parity")
+    parser.add_argument("--registry", default=REGISTRY, help="待核对的 registry JSON")
+    args = parser.parse_args(argv)
+    if not os.path.exists(args.registry):
+        print(f"FAIL: 未找到 registry: {args.registry}")
         return 1
 
-    with io.open(REGISTRY, encoding="utf-8") as f:
+    with io.open(args.registry, encoding="utf-8") as f:
         reg = json.load(f)
 
     # 基线（原生 token）：audit_field_completeness.registered_field_sets
@@ -54,9 +59,15 @@ def main():
     base_multi = sum(1 for s in base_field_sources.values() if len(s) >= 2)
 
     # registry 视图（原生 token）：code -> set(sources)
-    reg_field_sources = {}
-    for r in reg["fields"]:
-        reg_field_sources.setdefault(r["code"], set()).update(r["sources"])
+    try:
+        source_records = fra.source_field_records(reg)
+        reg_field_sources = fra.field_source_map(reg)
+    except (KeyError, TypeError, ValueError) as exc:
+        print(f"parity[native]: FAIL — source_fields 无效: {exc}")
+        return 1
+    if not source_records:
+        print("parity[native]: FAIL — registry 缺少 source_fields")
+        return 1
     reg_fields = len(reg_field_sources)
     reg_records = sum(len(v) for v in reg_field_sources.values())
     reg_multi = sum(1 for v in reg_field_sources.values() if len(v) >= 2)
@@ -97,7 +108,16 @@ def main():
         for p in problems:
             print("   -", p)
     else:
-        print("  native PASS: 原生 token × 源映射与 field_dict.md 完全一致")
+        print("  native PASS: 原生 token × 源映射与 field_source_reference.md 完全一致")
+
+    aggregate_sources = {}
+    for record in reg.get("fields", []):
+        aggregate_sources.setdefault(record["code"], set()).update(record.get("sources", []))
+    if aggregate_sources != reg_field_sources:
+        problems.append("fields 兼容聚合视图与 source_fields 投影不一致")
+        print("  projection FAIL: fields 与 source_fields 不一致")
+    else:
+        print("  projection PASS: fields 聚合视图与 source_fields 一致")
 
     # ---- field_matrix 投影 parity（§零·B 生成一致性，G3 闸门）----
     fm_problems = check_field_matrix(reg)
@@ -115,7 +135,7 @@ def main():
 def check_field_matrix(reg: dict) -> list:
     """§零·B 投影 parity：registry.field_matrix 须与 gen_field_matrix.build_matrix_from_md 同构。
 
-    这是 G3 闸门的本质——§零·B 块由 field_matrix 渲染，必须与当前 field_dict.md 逐字节一致。
+    field_matrix 必须与只读历史来源文档 field_source_reference.md 解析结果一致。
     """
     if "field_matrix" not in reg:
         return ["registry 缺少 field_matrix 投影（请重跑 extract_registry.py）"]

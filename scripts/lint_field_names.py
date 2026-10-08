@@ -17,7 +17,7 @@ import io, sys, os
 
 # Phase 2(2026-09-12): 改用 ROOT 绝对路径，消除 CWD 耦合（G0 已标记：原相对路径在 CI 错误 CWD 下直接失败）。
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-PATH = os.path.join(ROOT, "docs", "field_dict.md")
+PATH = os.path.join(ROOT, "docs", "field_source_reference.md")
 
 # Only canonical names are normalized; raw source labels and prose must remain verbatim.
 FORBID = {"当前价", "最新价", "今开价", "昨收价", "封板资金", "封单资金", "52周高", "52周低"}

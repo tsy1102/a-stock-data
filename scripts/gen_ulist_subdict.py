@@ -5,9 +5,8 @@ gen_ulist_subdict.py — 生成 ulist239 镜像分字典 docs/verify/ulist_verif
 
 设计契约（用户 2026-09-19 裁定，与 ZHB 镜像同源同构）：
 - 《主字典》field_dict.md §12.3.2.3 登记 239 个实际返回字段；另保留未返回的 f93
-  编号空位，因此表格有 240 行。主字典是**唯一权威源**。
-- docs/verify/ulist_verify.md 是主字典 ulist239 章的**镜像备份**：逐行复制主字典内容，
-  不引入任何主字典之外的字段定名或状态判定，自身不持有独立决策权。
+- 编号空位，因此表格有 240 行。协议索引从 `docs/field_source_reference.md` 的历史章节读取。
+- docs/verify/ulist_verify.md 镜像 fN 与列索引，便于按字段核查；不承载逐源字段状态。
 - 覆盖闸门 verify_sync_check.check_ulist_mirror_coverage 强制：
     ulist_verify.md 的 fN 集合 == 主字典 §12.3.2.3 fN 集合
   （精确集合相等、完全覆盖、不得越权发明字段；实际字段数与文档占位数分别统计）。
@@ -23,7 +22,7 @@ import sys
 
 _HERE = os.path.dirname(os.path.abspath(__file__))
 REPO = os.path.dirname(_HERE)
-MAIN = os.path.join(REPO, "docs", "field_dict.md")
+MAIN = os.path.join(REPO, "docs", "field_source_reference.md")
 OUT = os.path.join(REPO, "docs", "verify", "ulist_verify.md")
 
 # ulist239 章节锚点（匹配整行标题，含末尾（np/get ...）副标题，避免残留到 preface）
@@ -170,10 +169,9 @@ def build_mirror(main_path: str = MAIN) -> str:
     parts.append(
         "# ulist239 镜像分字典（ulist_verify.md）\n"
         "\n"
-        "> **治理定位**：本文件是《主字典》`field_dict.md` §12.3.2.3 ulist239 全字段清单的**镜像备份**。\n"
-        "> - **主字典始终是唯一权威源**；本文件逐行复制主字典内容，**不引入任何主字典之外"
-        "的字段定名或状态判定**，自身不持有独立决策权。\n"
-        "> - 由 `scripts/gen_ulist_subdict.py` 从主字典抽取生成；主字典 ulist239 章改动后须重跑该脚本。\n"
+        "> **治理定位**：本文件镜像 `field_source_reference.md` 中的 ulist239 字段与列索引。\n"
+        "> - 当前逐源字段状态以 `field_verification/field_registry.json` 为准；本文件只便于按字段核查。\n"
+        "> - 由 `scripts/gen_ulist_subdict.py` 从历史参考文档抽取生成；源协议章节变动后须重跑。\n"
         "> - 覆盖闸门 `verify_sync_check.check_ulist_mirror_coverage` 强制本文件 fN 集合"
         "与主字典逐字段一致（精确集合相等、完全覆盖、不得越权发明字段）。\n"
         "> - 字段语义、层级（✅/⚠️/❌）、单位、实测值均以主字典为准，争议以主字典现行条文裁决。\n"

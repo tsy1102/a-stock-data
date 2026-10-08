@@ -41,18 +41,22 @@ def field_source_map(reg: Optional[dict] = None) -> Dict[str, Set[str]]:
     """
     if reg is None:
         reg = load_registry()
-    out: Dict[str, Set[str]] = {}
+    out: Dict[str, Set[str]] = defaultdict(set)
+    source_fields = source_field_records(reg)
+    if "source_fields" in reg:
+        for record in source_fields:
+            out[record["code"]].add(record["source"])
+        return dict(out)
     for r in reg["fields"]:
-        out[r["code"]] = set(r["sources"])
+        out[r["code"]].update(r["sources"])
     return out
 
 
 def field_matrix_map(reg: Optional[dict] = None) -> Dict[str, List[str]]:
-    """§零·B 投影：{clean_field_name: [sources]}，与 gen_field_matrix.build_matrix_from_md() 同构
-    （清洗字段名 × 源，1156 字段 / 1230 去重记录）。
+    """返回字段矩阵投影：{clean_field_name: [sources]}。
 
-    专供 gen_field_matrix 生成 §零·B 字段×源总表——与 field_dict.md 当前 §零·B 逐字节一致。
-    registry 缺失 field_matrix 时抛异常，由调用方回退 markdown。
+    专供 gen_field_matrix 生成独立的 field_matrix.md。registry 缺失 field_matrix 时抛异常，
+    由调用方回退只读历史参考文档。
     """
     if reg is None:
         reg = load_registry()
@@ -66,13 +70,16 @@ def record_count(reg: Optional[dict] = None) -> int:
     """去重 (字段,源) 配对总数 = sum(len(sources)) for each field。"""
     if reg is None:
         reg = load_registry()
+    source_fields = source_field_records(reg)
+    if "source_fields" in reg:
+        return len(source_fields)
     return sum(len(r["sources"]) for r in reg["fields"])
 
 
 def multi_source_count(reg: Optional[dict] = None) -> int:
     if reg is None:
         reg = load_registry()
-    return sum(1 for r in reg["fields"] if len(r["sources"]) >= 2)
+    return sum(1 for source_set in field_source_map(reg).values() if len(source_set) >= 2)
 
 
 def fields_by_source(reg: Optional[dict] = None) -> Dict[str, Set[str]]:
@@ -80,10 +87,43 @@ def fields_by_source(reg: Optional[dict] = None) -> Dict[str, Set[str]]:
     if reg is None:
         reg = load_registry()
     out: Dict[str, Set[str]] = defaultdict(set)
+    source_fields = source_field_records(reg)
+    if "source_fields" in reg:
+        for record in source_fields:
+            out[record["source"]].add(record["code"])
+        return dict(out)
     for r in reg["fields"]:
         for s in r["sources"]:
             out[s].add(r["code"])
     return dict(out)
+
+
+def source_field_records(reg: Optional[dict] = None) -> List[dict]:
+    """Return validated source-specific records keyed by ``(source, full code path)``.
+
+    Older registries do not contain ``source_fields``; in that case an empty list
+    signals callers to use the compatibility aggregate view.
+    """
+    if reg is None:
+        reg = load_registry()
+    if "source_fields" not in reg:
+        return []
+    records = reg.get("source_fields")
+    if not isinstance(records, list):
+        raise TypeError("registry.source_fields must be a list")
+    seen = set()
+    for record in records:
+        if not isinstance(record, dict):
+            raise TypeError("registry.source_fields entries must be objects")
+        source = record.get("source")
+        code = record.get("code")
+        if not isinstance(source, str) or not source or not isinstance(code, str) or not code:
+            raise ValueError("registry.source_fields entries require non-empty source and code")
+        key = (source, code)
+        if key in seen:
+            raise ValueError(f"duplicate registry.source_fields identity: {source}::{code}")
+        seen.add(key)
+    return cast(List[dict], records)
 
 
 def field_records(reg: Optional[dict] = None) -> List[dict]:

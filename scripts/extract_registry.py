@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""extract_registry.py — 从 field_dict.md 反向抽取「字段登记表单一真相源」。
+"""extract_registry.py — 从只读历史字典提取逐源字段证据，用于迁移与 parity。
 
 设计原则（安全优先）：
   * 复用 gen_field_matrix.parse_tables / sec_to_source（已验证可确定性产出 1156 字段映射），
@@ -12,8 +12,8 @@
   * status 归一为枚举，同时保留 raw_status_text 原文（安全底线：不丢信息）。
   * 输出 JSON（YAML 严格子集，零依赖；环境无 pyyaml/ruamel，手写 emitter 风险高）。
 
-用法（影子模式，不改动任何运行时行为）：
-    python scripts/extract_registry.py [--out docs/field_verification/field_registry.json]
+用法（必须显式指定临时输出，不覆盖权威 registry）：
+    python scripts/extract_registry.py --out .codex_tmp/field_reference_extract.json
 
 退出码：0=成功；2=Layer1 与基线不一致（G1 闸门未过，不应提交）。
 """
@@ -39,8 +39,7 @@ for _s in (sys.stdout, sys.stderr):
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 REPO_ROOT = os.path.dirname(SCRIPT_DIR)
-DICT = os.path.join(REPO_ROOT, "docs", "field_dict.md")
-DEFAULT_OUT = os.path.join(REPO_ROOT, "docs", "field_verification", "field_registry.json")
+DICT = os.path.join(REPO_ROOT, "docs", "field_source_reference.md")
 ALIGN = os.path.join(REPO_ROOT, "docs", "verify", "ulist_push2_align.md")
 # 通用跨源对齐表（非 ulist239↔push2 的等价/同义关系统一存储，sanctioned 入库）
 CROSS_ALIGN = os.path.join(REPO_ROOT, "docs", "verify", "cross_source_align.md")
@@ -371,8 +370,21 @@ def extract():
     reg = afc.registered_field_sets()
 
     fields = OrderedDict()
+    source_fields = OrderedDict()
     for src, toks in reg.items():
         for tok in sorted(toks):
+            source_fields[(src, tok)] = {
+                "source": src,
+                "code": tok,
+                "canonical": "",
+                "meaning": "",
+                "unit": "",
+                "status_raw": "",
+                "status": "unverified",
+                "section": "",
+                "sections": [],
+                "evidence": [],
+            }
             rec = fields.get(tok)
             if rec is None:
                 rec = {
@@ -436,6 +448,28 @@ def extract():
                         rec["status"] = normalize_status(sr)
                 scanned += 1
 
+            # Source-scoped pass: never attach one source's table metadata to
+            # another source that happens to share the same bare token.
+            for src in srcs:
+                for tok in extract_tokens_from_cell(tok_cell, [src]):
+                    rec = source_fields.get((src, tok))
+                    if rec is None:
+                        continue
+                    status_raw = _row_status(row, s_idx)
+                    evidence = {
+                        "section": sec,
+                        "canonical": extract_canonical(first_cell=tok_cell),
+                        "meaning": (
+                            clean_text(row[m_idx]) if m_idx is not None and m_idx < len(row) else ""
+                        ),
+                        "unit": (
+                            clean_text(row[u_idx]) if u_idx is not None and u_idx < len(row) else ""
+                        ),
+                        "status_raw": status_raw,
+                        "status": normalize_status(status_raw) if status_raw else "",
+                    }
+                    rec["evidence"].append(evidence)
+
     # 收尾：sources 列表化 + 单源填 source + 覆盖率统计
     out_fields = []
     for f, rec in fields.items():
@@ -455,6 +489,32 @@ def extract():
         if rec["status_raw"]:
             attr_coverage["status"] += 1
         out_fields.append(rec)
+
+    out_source_fields = []
+    for rec in source_fields.values():
+        evidence = rec["evidence"]
+        for key in ("canonical", "meaning", "unit"):
+            values = sorted({item[key] for item in evidence if item.get(key)})
+            rec[key] = values[0] if len(values) == 1 else ""
+            if len(values) > 1:
+                rec.setdefault("attribute_conflicts", {})[key] = values
+        sections = sorted({item["section"] for item in evidence if item.get("section")})
+        rec["sections"] = sections
+        rec["section"] = sections[0] if len(sections) == 1 else ""
+        explicit_statuses = sorted({item["status"] for item in evidence if item.get("status")})
+        raw_statuses = sorted({item["status_raw"] for item in evidence if item.get("status_raw")})
+        rec["reference_statuses"] = explicit_statuses
+        rec["status_raw_values"] = raw_statuses
+        if len(explicit_statuses) == 1:
+            rec["status"] = explicit_statuses[0]
+        elif len(explicit_statuses) > 1:
+            rec["status"] = "conflict"
+            rec["status_resolution"] = "reference_status_conflict"
+        else:
+            rec["status"] = "unverified"
+            rec["status_resolution"] = "reference_status_missing"
+        rec["status_raw"] = raw_statuses[0] if len(raw_statuses) == 1 else ""
+        out_source_fields.append(rec)
 
     # sources 元数据：以 audit_field_completeness.SECTION_MAP 源标签为权威命名空间
     # （与 fields[].sources 完全一致，保证 field_source_map 视图对齐）
@@ -549,11 +609,13 @@ def extract():
     }
     registry["sources"] = out_sources
     registry["fields"] = out_fields
+    registry["source_fields"] = out_source_fields
     registry["field_matrix"] = field_matrix
     registry["mappings"] = mappings
 
     stats = {
         "field_count": len(out_fields),
+        "source_field_count": len(out_source_fields),
         "source_count": len(out_sources),
         "mapping_count": len(mappings),
         "multi_source_count": sum(1 for r in out_fields if len(r["sources"]) >= 2),
@@ -568,7 +630,11 @@ def extract():
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--out", default=DEFAULT_OUT)
+    ap.add_argument(
+        "--out",
+        required=True,
+        help="必填：输出到临时/比较路径；本脚本不直接覆盖权威 field_registry.json",
+    )
     ap.add_argument(
         "--check-baseline",
         action="store_true",

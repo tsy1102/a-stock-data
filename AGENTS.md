@@ -4,7 +4,7 @@
 > 适用范围:本仓库根目录及其全部子目录
 > **静态上下文(分层按需读取, 减少重复探索)**: docs/PROJECT_CONTEXT.md——含§0 指引目录(任务类型→热/温/冷区读取清单);
 > 🔥热区=AGENTS.md+§5 约束(每次必读); 🌤️温区=任务相关章节; 🧊冷区=仅任务需要时读对应文件;
-> 字段类动态细节查 field_dict/script_data_dict(冷区按需)
+> 字段类动态细节按需查 `field_dict.md`（导航）、`unknown_fields.md`、`field_registry.json` 与 `field_source_reference.md`（历史协议原文）
 > 版本:v1.2(V16.4.1 重构:合并落盘规则、清理过时内容与已完成待办)
 
 ---
@@ -410,7 +410,7 @@ Write-Output 'unreachable'
 | `zhb_client.py` | 各解析器列映射、GBK/分隔符约定 |
 | `data_provider.py` | **字段路由真机制**（见下方注记）：`_should_use_zhb_for_realtime()` 时段判定 + `get_canonical_stock_data` 内联 `need_realtime_quote` + `sc_datasource.zhb_field_safe()` 的 ABCD 新鲜度分级 |
 | `stock_common/__init__.py` | 导出是否与实际定义一致(2026-08-10 审计:`__all__` 241 项全部可访问,0 缺失;少数公共函数如 `get_em_quote_full` 未在 `__all__` 重导出,但调用方均直连子模块,无破坏) |
-| `docs/field_dict.md` | 字段索引以最新破解为准：Col[3]=StaticPE_TTM(pe_dynamic 为历史遗留名)、Col[9]=MorePE(2026-08-12 TdxQuant 18/18 实锤);ZHB 列索引变化见文档 §三 头部核实日期 |
+| `docs/field_verification/field_registry.json` | 逐源状态以 `source_fields` 中 `(source, 完整 code path)` 为准；`docs/unknown_fields.md` 是生成队列，旧 ZHB/ulist 列索引见只读归档 `docs/field_source_reference.md` |
 
 > **⚠️ 注记（2026-08-30 校正）：`REQUIRES_REALTIME_HTTP` / `ZHB_SUFFICIENT` 不控制运行时路由**
 >
@@ -432,7 +432,7 @@ Write-Output 'unreachable'
 
 若改动涉及 **dict key / 函数签名 / 返回结构** 变更,必须:
 - 找到并更新**所有**调用点(不允许只改定义)
-- 同步更新 `docs/field_dict.md`(主字段字典,含字段索引)
+- 更新 `docs/field_verification/field_registry.json.source_fields` 中的逐源完整路径与证据；重跑 `gen_field_dict.py`、`gen_field_matrix.py` 并通过 parity。`docs/field_dict.md` 是生成入口，`field_source_reference.md` 是不可覆盖的历史归档。
 - 检查是否有缓存反序列化依赖旧 key
 
 ### 8.4 统一层与数据访问收口 (2026-09-03 新增)
@@ -559,7 +559,7 @@ Overall:  [READY/NOT READY] for commit
 - [ ] 对照原始需求/用户指令,确认改动**确实实现了要求**(而非自创方案)
 - [ ] 对照 `docs/roadmap.md` 最近决策记录(ADR),确认口径/约定一致(如行业统一申万二级)
 - [ ] 对照 `docs/domain_glossary.md` 术语,确认命名/注释未引入新歧义
-- [ ] 涉及数据契约的改动,对照 `docs/field_dict.md` / `docs/script_data_dict.md` 字段索引
+- [ ] 涉及数据契约的改动,对照 `field_registry.json.source_fields`、`unknown_fields.md`、`field_source_reference.md` / `script_data_dict.md`
 - [ ] 涉及缓存,确认缓存版本号(§4)已按口径变更升级
 
 ### 10.3 审批标准
@@ -636,5 +636,5 @@ Overall:  [READY/NOT READY] for commit
   2. **P1 扩样**: 跑完整 239 股 ulist 采集(当前 raw_ulist239.json 实为 20 股采样)暴露 f107 全谱
   3. **P2 状态字段**: 补同日停牌/交易状态(push2 f76 或 volume=0 推停)作最强候选解释
   4. **P3 名单交叉**: 沪深港通/融资融券标的名单与 f107 列联
-  5. **P4 定案/归档**: 任一候选 ≥90% 且 ≥3 日稳定 → 回写 field_dict; 若证为接口级状态量则标 WONT_FIX 关闭
+   5. **P4 定案/归档**: 任一候选 ≥90% 且 ≥3 日稳定 → 更新对应 registry 源字段记录并重生成文档; 若证为接口级状态量则标 WONT_FIX 关闭
 - 完成 P4 后删除本条。

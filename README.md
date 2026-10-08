@@ -7,7 +7,7 @@
 ## 功能特性
 
 - **5 种报告类型**：短线(sht) / 中线(med) / 长线(lng) / 估值选股(val) / 市场状态(mak)（ful 已于 V16.1 下线，能力并入前四类）。
-- **多源字段逆向破解**：ZHB / TDX 0x0010 / 东财 push2 / 腾讯 / 新浪 / 同花顺 fuyao / 巨潮 / FTShare 私有协议字段交叉验证（thsdk 通道已于 V17.0.29 移除），实锤与样本沉淀于 `docs/field_dict.md` 与 `docs/verify/`；主字典只留结论、附录存实证。
+- **多源字段逆向破解**：ZHB / TDX 0x0010 / 东财 push2 / 腾讯 / 新浪 / 同花顺 fuyao / 巨潮 / FTShare 私有协议字段交叉验证（thsdk 通道已于 V17.0.29 移除）。字段状态按源与完整路径保存在机器权威 registry；[`field_dict.md`](docs/field_dict.md) 提供导航，[`unknown_fields.md`](docs/unknown_fields.md) 列出破解队列，[`field_metadata_gaps.md`](docs/field_metadata_gaps.md) 暴露已验证字段的描述缺口，[`field_matrix.md`](docs/field_matrix.md) 和 [`source_repository_map.md`](docs/source_repository_map.md) 分别展示来源矩阵与仓库谱系。碰撞报告只提供候选，人工复核后按 [`定案同步流程`](docs/field_verification/ADJUDICATION_WORKFLOW.md) 更新状态。
 - **日期感知的跨源对撞**：行情按有效交易日对齐，新闻/公告按自然日处理；保留历史休市目录，按实际数据日期择优快照，并让候选证据记录样本日期与来源。方法与规则见 [`CRACKING_METHODOLOGY.md`](docs/field_verification/CRACKING_METHODOLOGY.md)。
 - **统一数据合约**：唯一入口 `get_canonical_stock_data` 返回 `CanonicalStockData` 强类型合约（113 字段 frozen 契约，每字段带 `field_sources` 溯源），消除异构多源冲突。
 - **ZHB-First 离线优先路由**：盘前 / 休市日 100% 走 ZHB 内存秒级提取；交易日盘中盘后强制网络取 T 日真实收盘价。
@@ -130,7 +130,7 @@ python main.py [选项] 股票代码...
 ```
 a-stock-data/
 ├── main.py                       # 主入口程序（参数分发/子进程调度/超时分级）
- ├── VERSION                       # 项目版本号（17.4.24，单一来源）
+ ├── VERSION                       # 项目版本号（17.4.25，单一来源）
 │
 ├── core/                         # 核心模块包（9 个支撑模块，见 core/README.md）
 │   ├── config.py                 # 全局配置集中管理（超时/限流/熔断）
@@ -183,7 +183,12 @@ a-stock-data/
 │   ├── PROJECT_AUDIT_REMEDIATION_20260928.md # 本轮整改计划与验收记录
 │   ├── architecture.md           # 项目架构与数据流图（Mermaid）
 │   ├── roadmap.md                # 版本路线图 + ADR 决策记录
-│   ├── field_dict.md             # 主字段字典（ZHB 字段索引/破解结论）
+│   ├── field_dict.md             # 生成的字段治理入口与链接
+│   ├── field_verification/field_registry.json # 逐源完整路径字段状态（机器权威）
+│   ├── unknown_fields.md         # 未知、候选、冲突与已证伪字段队列
+│   ├── field_matrix.md           # 字段×源矩阵
+│   ├── source_repository_map.md  # 数据源与 GitHub 仓库对应关系
+│   ├── field_source_reference.md # 重整前完整字典原文归档
 │   ├── verify/                   # 字典附录（实测值/样本/破解数据——实证层）
 │   ├── script_data_dict.md       # 脚本应用接口与字段来源字典
 │   └── domain_glossary.md        # 领域词汇表（术语口径统一）
@@ -213,7 +218,7 @@ a-stock-data/
 | `stock_common/` | 公共业务模块(网络层/数据源/评分/报告基类) | sc_network / sc_datasource / sc_report_runner |
 | `credentials/` | 可选本地凭据(不入库) | Google OAuth / Eastmoney Cookie |
 | `scripts/` | 可复用运维命令 | run_tests.ps1 / update_calendar / clean_cache |
-| `docs/` | 技术文档(架构/决策/字段字典) | roadmap / field_dict / architecture |
+| `docs/` | 技术文档(架构/决策/字段治理) | roadmap / field_dict / registry / unknown_fields |
 | `tests/` | pytest 测试(防退化守护) | data/ core/ reports/ infra/ |
 | `reports/` | 报告输出(运行时) | 运行时生成（.gitignore，无专职 README） |
 | `snapshots/` | 评分快照(运行时) | 运行时生成（.gitignore，无专职 README） |

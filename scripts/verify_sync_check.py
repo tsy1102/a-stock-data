@@ -8,12 +8,12 @@ verify_sync_check.py — 主字典 ↔ verify 分字典 一致性闸门（离线
 
 目的:
     防止「破解新字段后未同步分字典」导致主字典(决策层)与 verify/(实证层)割裂。
-    对应文档规则: docs/field_dict.md §12.15.10「破解新字段→同步分字典（强制规则）」。
+    verify 链接取自 docs/field_dict.md；字段状态/历史 token 核查取自 docs/field_source_reference.md。
 
 检查项:
   HARD FAIL (退出码 1) —— 默认即执行，是 CI/commit 前的可靠闸门:
-    1. 断链      : field_dict.md 引用的 docs/verify/*.md 必须真实存在。
-    2. 孤儿      : verify/*.md 必须至少被 field_dict.md 引用一次（避免悬空/失维护附录）。
+    1. 断链      : field_dict.md 或其显式链接的历史参考文档引用的 docs/verify/*.md 必须存在。
+    2. 孤儿      : verify/*.md 必须被当前入口或其历史参考文档引用一次。
     3. 映射一致性: 本脚本内嵌 MAPPING 中每个分字典文件必须存在且被引用。
     4. 陈旧结论  : 主字典某字段有「升级事件」(主动升级/非对撞升级/升级定案方向/→Beta族高置信
                   /→均价-VWAP类价格派生候选强/候选=委差 等) 且日期新于分字典同字段最新日期
@@ -41,6 +41,7 @@ verify_sync_check.py — 主字典 ↔ verify 分字典 一致性闸门（离线
 
 import argparse
 import datetime
+from importlib import import_module
 import os
 import re
 import sys
@@ -53,6 +54,7 @@ from typing import Optional
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 REPO_ROOT = os.path.dirname(SCRIPT_DIR)
 FIELD_DICT = os.path.join(REPO_ROOT, "docs", "field_dict.md")
+FIELD_SOURCE_REFERENCE = os.path.join(REPO_ROOT, "docs", "field_source_reference.md")
 VERIFY_DIR = os.path.join(REPO_ROOT, "docs", "verify")
 
 # 单一真相源接入：优先用 field_registry.json 的 sources[].verify_file；
@@ -61,13 +63,13 @@ VERIFY_DIR = os.path.join(REPO_ROOT, "docs", "verify")
 _fra: Optional[ModuleType]
 try:
     sys.path.insert(0, SCRIPT_DIR)
-    import field_registry_api as _fra
+    _fra = import_module("field_registry_api")
 except Exception:  # noqa: BLE001
     _fra = None
 
 
 # ----------------------------------------------------------------------------
-# 内嵌「源→分字典」映射（★单一权威配置（硬编码基线），须与 field_dict.md §12.15.10 保持同步）
+# 内嵌「源→分字典」映射（硬编码回退基线，须与 registry.sources[].verify_file 保持同步）
 #   key  = 源名（仅作展示/诊断）
 #   file = verify/ 下的分字典文件名（basename）
 # 注：本映射现为 CI 闸门的硬编码基线；get_source_mapping() 会优先用 registry 覆盖，
@@ -366,11 +368,13 @@ def main():
         help="执行字段级同步抽检（best-effort，默认关闭以免跨源误报噪声）",
     )
     ap.add_argument("--repo", default=REPO_ROOT, help="仓库根目录（默认自动推断）")
+    ap.add_argument("--report-output", help="审计报告输出路径（默认写入 docs/field_verification）")
     args = ap.parse_args()
 
-    global FIELD_DICT, VERIFY_DIR
+    global FIELD_DICT, FIELD_SOURCE_REFERENCE, VERIFY_DIR
     if args.repo != REPO_ROOT:
         FIELD_DICT = os.path.join(args.repo, "docs", "field_dict.md")
+        FIELD_SOURCE_REFERENCE = os.path.join(args.repo, "docs", "field_source_reference.md")
         VERIFY_DIR = os.path.join(args.repo, "docs", "verify")
 
     hard_failures = []
@@ -380,12 +384,18 @@ def main():
     if not os.path.isfile(FIELD_DICT):
         print(f"[FATAL] 找不到主字典: {FIELD_DICT}")
         return 1
+    if not os.path.isfile(FIELD_SOURCE_REFERENCE):
+        print(f"[FATAL] 找不到字段历史参考: {FIELD_SOURCE_REFERENCE}")
+        return 1
     if not os.path.isdir(VERIFY_DIR):
         print(f"[FATAL] 找不到 verify 目录: {VERIFY_DIR}")
         return 1
 
     dict_text = read_text(FIELD_DICT)
-    referenced = collect_referenced_basenames(dict_text)
+    reference_text = read_text(FIELD_SOURCE_REFERENCE)
+    referenced = collect_referenced_basenames(dict_text) | collect_referenced_basenames(
+        reference_text
+    )
     existing = collect_verify_md_files()
 
     print("=" * 68)
@@ -460,7 +470,7 @@ def main():
             print(f"   - {base}: 跳过（附录不存在）")
             continue
         appendix_text = read_text(os.path.join(VERIFY_DIR, base))
-        main_up = latest_upgrade_dates(dict_text, cfg["token"])
+        main_up = latest_upgrade_dates(reference_text, cfg["token"])
         if not main_up:
             print(f"   - {base}: 跳过（主字典无该源升级事件 token）")
             continue
@@ -493,7 +503,7 @@ def main():
             print(f"   - {base}: 跳过（附录不存在）")
             continue
         sub_text = read_text(os.path.join(VERIFY_DIR, base))
-        mmap = main_status_map(dict_text, cfg["token"])
+        mmap = main_status_map(reference_text, cfg["token"])
         smap = sub_status_map(sub_text, cfg["token"], cfg["fmt"])
         found = False
         for tok in sorted(smap):
@@ -511,10 +521,9 @@ def main():
         if not found:
             print(f"   ✓ {base}: 无主升分未升矛盾")
 
-    # ---- HARD 5: ZHB 镜像覆盖检查（主字典 §三 ZHB 章 ⇄ zhb_verify.md 镜像备份）----
-    # 设计：zhb_verify.md 是主字典 ZHB 三章的*镜像备份*，主字典始终为唯一权威；
-    # 本检查强制镜像逐字段完全覆盖主字典（不得缺失、亦不得越权发明字段）。
-    print("[HARD] 5. ZHB 镜像覆盖检查（zhb_verify.md 须逐字段完全覆盖主字典 §三 ZHB 章）")
+    # ---- HARD 5: ZHB 列索引覆盖检查（历史来源参考 §三 ⇄ zhb_verify.md）----
+    # 本检查强制镜像逐字段覆盖历史列协议索引；逐源状态仍由 field_registry 管理。
+    print("[HARD] 5. ZHB 列索引覆盖检查（zhb_verify.md 须覆盖历史来源参考 §三）")
     try:
         if SCRIPT_DIR not in sys.path:
             sys.path.insert(0, SCRIPT_DIR)
@@ -566,11 +575,10 @@ def main():
         warnings.append(f"ZHB 镜像覆盖检查跳过（gen_zhb_subdict 导入/解析失败: {e}）")
         print(f"   ⚠ ZHB 镜像覆盖检查跳过: {e}")
 
-    # ---- HARD 6: ulist239 镜像覆盖检查（主字典 §12.3.2.3 ⇄ ulist_verify.md 镜像备份）----
-    # 设计：ulist_verify.md 是主字典 ulist239 章的*镜像备份*，主字典始终为唯一权威；
-    # 本检查强制镜像逐字段（fN 集合，精确集合相等）完全覆盖主字典（239 字段含间隔，
+    # ---- HARD 6: ulist239 列索引覆盖检查（历史来源参考 §12.3.2.3 ⇄ ulist_verify.md）----
+    # 本检查强制镜像逐字段（fN 集合，精确集合相等）覆盖历史来源参考（239 字段含间隔，
     # 须逐号比对；不得缺失、亦不得越权发明字段）。
-    print("[HARD] 6. ulist239 镜像覆盖检查（ulist_verify.md 须逐字段完全覆盖主字典 §12.3.2.3）")
+    print("[HARD] 6. ulist239 列索引覆盖检查（ulist_verify.md 须覆盖历史来源参考 §12.3.2.3）")
     try:
         if SCRIPT_DIR not in sys.path:
             sys.path.insert(0, SCRIPT_DIR)
@@ -619,7 +627,7 @@ def main():
             continue
         appendix_text = read_text(os.path.join(VERIFY_DIR, base))
         appendix_tokens = extract_tokens(appendix_text, cfg["token"])
-        dict_tokens = extract_tokens(dict_text, cfg["token"])
+        dict_tokens = extract_tokens(reference_text, cfg["token"])
         if not appendix_tokens:
             print(f"   - {base}: 跳过（附录无可解析字段 token）")
             continue
@@ -642,9 +650,12 @@ def main():
 
     # ---- 审计报告落盘 ----
     try:
-        rep_dir = os.path.join(REPO_ROOT, "docs", "field_verification")
+        default_report = os.path.join(
+            args.repo, "docs", "field_verification", "20260911_verify_sync_report.md"
+        )
+        rep_path = os.path.abspath(args.report_output or default_report)
+        rep_dir = os.path.dirname(rep_path)
         os.makedirs(rep_dir, exist_ok=True)
-        rep_path = os.path.join(rep_dir, "20260911_verify_sync_report.md")
         with open(rep_path, "w", encoding="utf-8") as rf:
             rf.write(f"# verify_sync_check 审计报告（{datetime.date.today()}）\n\n")
             rf.write(f"- HARD FAIL: {len(hard_failures)}\n")

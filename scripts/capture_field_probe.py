@@ -47,7 +47,7 @@ V17.3.1(2026-09-21) push2_full 去重:
   - 经实证 push2 与 push2_full 两采集函数逐字同构(同端点 push2/push2delay stock/get、同 f1-f250、
     同兜底域), 且二者 114 字段值级 114/114 全相等; registry 中仅依赖 push2_full 而不在 push2 登记的
     字段数 = 0 → 纯冗余负载。故从 collectors 注销 push2_full、删除 collect_push2_full 函数,
-    日常改采 push2 即可。主字典 field_dict.md 保留 push2_full 全部条目作运行时 fallback 参考
+日常采集只请求 push2；push2_full 的历史字段信息保存在 field_source_reference.md，当前状态以 field_registry.json 为准
     (语义与 push2 完全等价, 见 §12.9.1「同源同步治理规则」)。em_fund_flow 保留为 push2 子集韧性备源
     (主域封禁时经 push2delay 补资金流四档)。
 
@@ -1076,7 +1076,7 @@ def collect_push2(pool: list) -> dict:
 # NOTE(V17.3.1): collect_push2_full 已移除——与 collect_push2 逐字同构(同端点 push2/push2delay
 #   stock/get、同 f1-f250、同兜底域), 实测 114 字段值级 114/114 全相等, 属纯冗余负载。
 #   日常采集改走 collect_push2 即可; 如需对撞复核原 push2_full 号段, 用 `--only push2`。
-#   本函数不再保留(避免与 collect_push2 双份维护); 主字典 field_dict.md §12.9.1 保留
+#   本函数不再保留(避免与 collect_push2 双份维护); 历史说明见 field_source_reference.md §12.9.1
 #   push2_full 条目作运行时 fallback 参考(语义等价, 见「同源同步治理规则」)。
 
 

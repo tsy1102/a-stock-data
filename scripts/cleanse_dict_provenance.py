@@ -16,6 +16,7 @@
   python cleanse_dict_provenance.py --apply    # 实际改写并生成 PROVENANCE.md
 """
 
+import argparse
 import sys, os, re, json
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -25,7 +26,11 @@ import gen_field_matrix as gm
 import audit_field_completeness as afc
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-DICT = os.path.join(ROOT, "docs", "field_dict.md")
+DICT = os.path.join(ROOT, "docs", "field_source_reference.md")
+GENERATED_DICT = os.path.join(ROOT, "docs", "field_dict.md")
+PRE_RESTRUCTURE_BACKUP = os.path.join(
+    ROOT, "docs", "backups", "field_dict_pre_restructure_20261005.md"
+)
 PROV = os.path.join(ROOT, "docs", "field_verification", "PROVENANCE.md")
 
 # 过程/猜测指示词：单元格含其一才视为需要净化（避免动干净单元格）
@@ -175,8 +180,27 @@ def iter_table_rows(lines):
 
 
 def main():
-    apply = "--apply" in sys.argv
-    lines = open(DICT, encoding="utf-8").read().split("\n")
+    parser = argparse.ArgumentParser(description="清理字段表过程叙述并保留溯源")
+    parser.add_argument(
+        "--apply", action="store_true", help="写入 --output 指定的新文件并更新 PROVENANCE"
+    )
+    parser.add_argument("--source", default=DICT, help="输入字段历史参考文件")
+    parser.add_argument("--output", help="--apply 时必填；不得覆盖归档源或生成字典")
+    args = parser.parse_args()
+    if args.apply and not args.output:
+        parser.error("--apply 必须显式指定 --output；归档源与生成主字典不可直接改写")
+    source_path = os.path.abspath(args.source)
+    output_path = os.path.abspath(args.output) if args.output else None
+    protected_paths = {
+        source_path,
+        os.path.abspath(DICT),
+        os.path.abspath(GENERATED_DICT),
+        os.path.abspath(PRE_RESTRUCTURE_BACKUP),
+        os.path.abspath(PROV),
+    }
+    if args.apply and output_path in protected_paths:
+        parser.error("--output 不得覆盖 field_source_reference、field_dict 或重整前备份")
+    lines = open(source_path, encoding="utf-8").read().split("\n")
     prov = {}  # token -> {section -> {"meaning":..., "status":...}}
     changes = []  # (ln, col_type, old, new)
 
@@ -244,7 +268,7 @@ def main():
         if changed:
             lines[ln] = "|".join(parts)
 
-    if not apply:
+    if not args.apply:
         print(f"[DRY-RUN] 拟改动单元格数: {len(changes)}；溯源条目(字段): {len(prov)}")
         print("--- 前 50 条改动预览 ---")
         for ln, ctype, old, new in changes[:50]:
@@ -262,14 +286,14 @@ def main():
         return
 
     # apply
-    with open(DICT, "w", encoding="utf-8") as f:
+    with open(output_path, "w", encoding="utf-8") as f:
         f.write("\n".join(lines))
     # 写 PROVENANCE.md
     out = [
         "<!-- AUTO-GEN: provenance -->",
         "# 字段过程/猜测/证伪溯源档案",
         "",
-        "> 本文件由 `scripts/cleanse_dict_provenance.py` 从 `docs/field_dict.md` 字段表净化迁出。",
+        "> 本文件由 `scripts/cleanse_dict_provenance.py` 从 `docs/field_source_reference.md` 字段表净化迁出。",
         "> 字段表本身仅保留「结论投影」（含义=中文名 / 状态=标记+层级）；",
         "> 此处按 (源, 字段) 归档被迁出的碰撞过程、猜测与证伪叙述，供复核与再对撞使用。",
         "> 内容均为原文迁移，未做删改。",
@@ -289,7 +313,7 @@ def main():
     with open(PROV, "w", encoding="utf-8") as f:
         f.write("\n".join(out))
     print(f"[APPLY] 改动单元格: {len(changes)}；溯源条目: {len(prov)}")
-    print(f"[APPLY] 已写回 {DICT}")
+    print(f"[APPLY] 已写入 {output_path}")
     print(f"[APPLY] 已生成 {PROV}")
 
 

@@ -1,0 +1,28 @@
+{
+  "schema_version": 1,
+  "report": "collision_research_YYYYMMDD/verified_anchor_only/YYYYMMDD/YYYYMMDD_collision_report.json",
+  "reviewer": "填写复核人",
+  "reviewed_on": "YYYY-MM-DD",
+  "decisions": [
+    {
+      "id": "YYYYMMDD-descriptive-id",
+      "candidate": {
+        "left": "runtime_alias.full.field.path",
+        "right": "runtime_anchor.field.path"
+      },
+      "target": {
+        "source": "注册表中的目标来源名",
+        "code": "目标完整 code path"
+      },
+      "anchor": {
+        "source": "注册表中的锚来源名",
+        "code": "锚完整 code path"
+      },
+      "action": "verify",
+      "canonical": "稳定规范名",
+      "meaning": "经证据确认的字段含义",
+      "unit": "单位；不适用时留空",
+      "rationale": "说明人工核对了哪些原始值、样本日期或上游定义，以及为何结论成立。"
+    }
+  ]
+}

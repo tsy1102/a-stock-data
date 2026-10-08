@@ -3,6 +3,8 @@
 > V16.4.1 建立。目标: 用固定股票池的**每日实测数据**,定位 `field_dict.md` 中
 > 错误/未知/推测字段,发现统一层未发现的格式与单位错误。
 
+字段破解统一按 [`CRACKING_METHODOLOGY.md`](CRACKING_METHODOLOGY.md) 和 [`COLLISION_RULES.md`](COLLISION_RULES.md) 检查；碰撞候选经人工复核后，按 [`ADJUDICATION_WORKFLOW.md`](ADJUDICATION_WORKFLOW.md) 更新注册表。
+
 ## 原理
 
 同一字段跨 20 只股票 × 多天的实测值呈规律分布(随状态/行业/日期变化);
@@ -18,7 +20,8 @@ docs/field_verification/
 └── YYYYMMDD/          # 按天归档(自动生成: 由 capture_field_probe.py 每日创建, 按约定不单列 README; 内容见本文件"每日核查流程"与 collide.py 产物)
     ├── raw_<source>.json  # 每个有 producer 的来源各一份原始结果
     ├── meta.json          # 采集时段、来源状态、覆盖率、错误/deferred 与已知来源数据日
-    └── analysis.md        # 当日分析(每日对话产出)
+    ├── <date>_collision_report.md/.json  # 碰撞候选及其样本证据
+    └── analysis.md        # 可选的人工综合分析
 ```
 
 ## 采集命令
@@ -50,24 +53,19 @@ docs/field_verification/
    ```powershell
    .\scripts\run_with_system_python.ps1 scripts\capture_field_probe.py --refresh-pool   # 刷新动态层(连板/新股/涨停)再采集
    ```
-2. **跑全源对撞(通用引擎, V17.2.9)**——每次运行自动查询对撞四铁律:
+2. **跑全源对撞(通用引擎)**——每次运行按当前字典状态选择待破解字段和 verified 独立锚:
    ```powershell
    .\scripts\run_with_system_python.ps1 scripts\collide.py                 # 默认近 7 天窗口，全源全字段完整对撞
    .\scripts\run_with_system_python.ps1 scripts\collide.py --window 14     # 近 14 天窗口
    .\scripts\run_with_system_python.ps1 scripts\collide.py --all           # 全部历史日期
    .\scripts\run_with_system_python.ps1 scripts\collide.py --date 20260913 # 指定报告日期戳（默认今天）
    ```
-   产物: `docs/field_verification/<date>/<date>_collision_report.md` + `.json`（仅证据/候选, 不改 `field_dict.md`；新定案经字典订正后由 sanctioned 管线 ingest）。
-3. **⚠️ ZHB T-1 规则(2026-08-27 固化)**: 采集脚本产出的 `raw_zhb.json` 数据日期恒为
-   **T-1(前一日)**。对撞破解时, 严禁拿"当日报告"直接对撞"当日采集的 ZHB"——须用
-   **T-1 当日报告** 或验证字段实时性后对撞当日报告(详见 CRACKING_METHODOLOGY.md 〇节)
-4. Agent 对昨日/今日数据做 diff(字段值变化、异常值、跨股矛盾)
-4. 与 `field_dict.md` 对照,输出 `analysis.md`:
-   - 新证据(实测值确认字段意义)
-   - 疑点(与字典解释矛盾/单位可疑/数值异常)
-   - 未知字段观察(如 zhb `unknown_24`)
-5. 用户确认后,把结论回写 `field_dict.md`(状态: ✅实测 / ⚠️推测 / ❓未知 / ❌修正)
-6. **⚠️ 命名仲裁守卫（强制阻断, 2026-09-09 固化）**: 回写 `field_dict.md` 前后均须运行
+   产物：碰撞报告 `.md` + `.json`，只记录发现，不直接修改注册表或字典状态。
+3. 检查报告使用的交易日/自然日、ZHB 实际数据日期、样本覆盖和来源独立性；日期必须从样本元数据和项目交易日历确认，不能机械地把 ZHB 日期当作运行日的前一自然日。规则见 `collision_dates.py` 与 `CRACKING_METHODOLOGY.md`。
+4. 结合 `CRACKING_METHODOLOGY.md`、上游字段定义和原始样本逐项复核候选。L1/L1-U 只是可审查候选；L4、探索模式和缺少独立锚的结果不得晋级。
+5. 将人工结论记录到 `field_verification/adjudications/`，先运行 `scripts/apply_collision_adjudications.py` 预览；检查字段来源、完整路径、语义、单位和证据后再加 `--apply`。该工具同步 registry 与生成文档，不手改 `field_dict.md`。
+6. 应用后运行注册表 parity、字典同步闸门和对应测试。字段定义冲突须先单独解决，不能用碰撞结果覆盖 `conflict`。
+7. **⚠️ 命名仲裁守卫（强制阻断, 2026-09-09 固化）**: 任何正式字段命名变更前后均须运行
    `.\scripts\run_with_system_python.ps1 scripts\lint_field_same_number.py --strict-naming`。
    该模式将 **R3 命名缺口升为阻断级（exit≠0）**；**若报 R3 缺口,禁止回写 field_dict.md**,
    须先补登 §12.8.12e 规范表或加数值二级复核标记,再重跑直到 exit 0。

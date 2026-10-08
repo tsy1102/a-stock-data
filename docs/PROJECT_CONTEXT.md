@@ -2,13 +2,13 @@
 
 > **用途**：项目架构、稳定约束与文档索引。任务开始时先按下表读取相关部分，不必重复扫描整份文档。
 > **维护规则**：结构、入口或稳定流程变化时更新；字段语义以主字典为准，运行状态与测试结果以实际检查为准。
-> **更新日期**：2026-09-28（`VERSION`：17.4.23）
+> **更新日期**：2026-10-06（`VERSION`：17.4.26）
 
 ## 0. 指引目录
 
 | 任务类型 | 热区（必读） | 温区（建议） | 冷区（按需） |
 |---|---|---|---|
-| 字段破解/字典 | `AGENTS.md` §5、§8 | 文档体系、破解方法 | `field_dict.md`、当日采集归档 |
+| 字段破解/字典 | `AGENTS.md` §5、§8 | 权威顺序与来源谱系 | `field_dict.md`、`unknown_fields.md`、registry、当日采集归档 |
 | 脚本修改/新功能 | `AGENTS.md` §5、§8 | §2 架构、相关脚本 | 字段字典与缓存契约 |
 | 测试/回归 | `AGENTS.md` §2.1、§9 | 被修改模块 | 对应测试文件 |
 | 运行/报告核查 | `AGENTS.md`、§1 | 最新报告与运行记录 | 历史报告 |
@@ -47,7 +47,7 @@
 - 本仓库默认 Windows PowerShell 5.1；Shell、路径、外部程序和验证流程按 `AGENTS.md` 执行。
 - Python 目标版本为 3.10+；项目开发/测试使用 Python 3.12。解释器通过 `scripts/run_with_system_python.ps1` 选择。
 - 运行测试使用 `scripts/run_tests.ps1`，不要从 Shell 直接调用 `pytest`。`real_network` 测试须明确选择。
-- 最近离线复核（2026-09-29）：pytest 有 51 个模块、收集 646 项；离线模式 598 passed、1 skipped、47 deselected。Black 对本轮 25 个 Python 改动文件检查通过；mypy 对 18 个重点源码文件零错误；A1 与 A7 闸门均 0 HARD FAIL / 0 WARN。`real_network` 本轮未重跑。运行状态以当次命令输出为准，完整过程见 `docs/PROJECT_AUDIT_REMEDIATION_20260928.md`。
+- 最近离线复核（2026-10-06）：pytest 收集 736 项，688 passed、1 skipped、47 deselected；本轮 6 个 Python 文件通过 Black 与编译检查，3 个源码文件 mypy 零错误；A1/A7 闸门均 0 HARD FAIL / 0 WARN。`real_network` 按配置未运行。字段逐源身份仍为 2,469 条；元数据清单显示 239 条 verified 记录缺少规范名或含义（207 缺含义、47 缺规范名、15 两者皆缺），详见 `docs/field_metadata_gaps.md`。来源仓库对话确认 7 项，21 项待确认。运行状态以当次命令输出为准。
 - 修改后按 `AGENTS.md` §8 做数据契约影响调查，并按 §9 验证；每次改动记录一个可计数指标。
 - `.gitignore` 对运行时缓存和采集原始数据按路径规则处理；清理前应保留仍需离线复核的研究证据。
 
@@ -55,7 +55,18 @@
 
 | 文档 | 权威范围 |
 |---|---|
-| `docs/field_dict.md` | 字段定义、协议索引与字段来源记录 |
+| `docs/field_dict.md` | 生成的字段治理入口与权威顺序 |
+| `docs/unknown_fields.md` | 按逐源完整路径列出的未验证、候选、冲突和已证伪字段 |
+| `docs/field_metadata_gaps.md` | 已验证字段中缺少规范名或含义的生成式补录清单 |
+| `docs/field_matrix.md` | registry 派生的字段×源矩阵 |
+| `docs/source_repository_map.md` | 数据提供方、独立来源族及有证据的 GitHub 仓库映射 |
+| `docs/field_source_reference.md` | 重整前字典原文的逐字节历史归档；不是当前状态权威 |
+| `docs/field_verification/field_registry.json` | 逐源完整路径的机器权威字段登记表 |
+| `docs/field_verification/ADJUDICATION_WORKFLOW.md` | 碰撞候选人工复核、字段定案和注册表同步流程 |
+| `docs/field_verification/CRACKING_METHODOLOGY.md` | 字段破解方法论和证据要求 |
+| `docs/FIELD_DICTIONARY_RESTRUCTURE_PLAN_20261005.md` | 字段字典、来源谱系与碰撞锚点重整步骤 |
+| `docs/FIELD_DICTIONARY_OPERATIONAL_CLOSURE_20261006.md` | 定案写回闭环及来源对话确认状态 |
+| `docs/FIELD_DICTIONARY_MIGRATION_AUDIT_20261005.md` | 字段身份逐项核对、证据保留、测试与已知覆盖遗留 |
 | `docs/script_data_dict.md` | 报告脚本、字段与数据源的消费关系 |
 | `docs/ARCHITECTURE_THEORY.md` | 架构公理与数据访问边界 |
 | `docs/DEBT_LEDGER.md` | 已知偏离、偿还状态及理由 |

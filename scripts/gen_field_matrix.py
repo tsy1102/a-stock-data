@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
-"""gen_field_matrix.py — 从 field_dict.md 生成 §零·B 字段×源总表（自动生成，勿手改）。
+"""gen_field_matrix.py — 从 registry 生成独立的字段×源矩阵文档。
 
 用法: python scripts/gen_field_matrix.py
-幂等: 读取 field_dict.md，替换 <!-- GEN:field-matrix --> 标记区间，原地更新。
+幂等: 写入 docs/field_matrix.md 的生成区块，不改写字典正文。
 """
 
 from __future__ import annotations
@@ -29,7 +29,8 @@ for _stream in (sys.stdout, sys.stderr):
             pass
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-DICT = os.path.join(ROOT, "docs", "field_dict.md")
+DICT = os.path.join(ROOT, "docs", "field_source_reference.md")
+MATRIX_DOC = os.path.join(ROOT, "docs", "field_matrix.md")
 
 # 源排序（易→难，V16.3 O18 修正——依据参考仓库 v3.2 数据源优先级 + 实测：
 # ZHB 离线零网络 → TDX TCP/腾讯 不封 IP 首选 → 新浪/巨潮 低风险其次 → 同花顺 有 401 反爬史 →
@@ -231,7 +232,7 @@ def build_matrix_from_md():
 
 
 # Phase 2/3(2026-09-12): registry 单一真相源路径（与 build_matrix_from_md 同构：{clean_name: set(sources)}）。
-# 由 field_registry_api.field_matrix_map 提供 §零·B 投影视图（1156 清洗字段名 / 1230 去重记录）；
+# 由 field_registry_api.field_matrix_map 提供清洗字段名 × 来源投影视图；
 # 任何读取失败抛异常交由 build_matrix 回退 markdown。
 def build_matrix_from_registry():
     reg = fra.load_registry()
@@ -333,12 +334,22 @@ def _save_baseline(count: int) -> None:
         )
 
 
+def render_document(name_sources, records) -> str:
+    """Render the generated matrix into its standalone document."""
+    return (
+        "# 字段×源矩阵\n\n"
+        "> 本文件由 `scripts/gen_field_matrix.py` 从字段登记表生成；请修改 registry 后重生成。\n\n"
+        "<!-- GEN:field-matrix -->\n\n"
+        + render(name_sources, records)
+        + "\n<!-- /GEN:field-matrix -->\n"
+    )
+
+
 def update_dict(force: bool = False, use_registry: bool = True, check: bool = False) -> int:
-    # Phase 2: 默认从 registry 读取（单一真相源），不再依赖 markdown 体积。
-    # --from-md 时回退 markdown 以做回归对照。
+    # 默认读取 registry；--from-md 仅以归档来源文档重建对照矩阵。
     name_sources, records = build_matrix(use_registry=use_registry)
-    content = render(name_sources, records)
-    text = io.open(DICT, encoding="utf-8").read()
+    updated = render_document(name_sources, records)
+    text = io.open(MATRIX_DOC, encoding="utf-8").read() if os.path.exists(MATRIX_DOC) else ""
     # ---- P0 护栏 ----
     baseline = _load_baseline()
     new_count = len(name_sources)
@@ -350,24 +361,14 @@ def update_dict(force: bool = False, use_registry: bool = True, check: bool = Fa
             f"  疑似主字典章节被归档/误删导致输入萎缩。若确认系字段真实下线，"
             f"请加 --force 重跑：python scripts/gen_field_matrix.py --force"
         )
-    marker = "<!-- GEN:field-matrix -->"
-    start = text.find(marker)
-    end_marker = "<!-- /GEN:field-matrix -->"
-    end = text.find(end_marker)
-    if start == -1 or end == -1 or end < start:
-        raise SystemExit("field_dict.md 的 §零·B 起止标记缺失或顺序错误，未写入")
-    head = text[: start + len(marker)]
-    tail = text[end:]
-    # 保持尾部缩进（marker 后紧跟换行）
-    updated = head + "\n\n" + content + "\n" + tail
     if check:
         if updated == text:
-            print("OK: §零·B 与当前生成结果一致；未写入文件或基线")
+            print("OK: field_matrix.md 与当前生成结果一致；未写入文件或基线")
             return 0
-        print("DIFF: §零·B 与当前生成结果不一致；检查模式未写入文件或基线")
+        print("DIFF: field_matrix.md 与当前生成结果不一致；检查模式未写入文件或基线")
         return 1
 
-    with io.open(DICT, "w", encoding="utf-8") as f:
+    with io.open(MATRIX_DOC, "w", encoding="utf-8", newline="\n") as f:
         f.write(updated)
     _save_baseline(new_count)
     print(
@@ -379,19 +380,15 @@ def update_dict(force: bool = False, use_registry: bool = True, check: bool = Fa
 if __name__ == "__main__":
     import argparse
 
-    _ap = argparse.ArgumentParser(
-        description="从 field_registry.json 生成 §零·B 字段×源总表（marker 区间原地写回）"
-    )
+    _ap = argparse.ArgumentParser(description="从 field_registry.json 生成 docs/field_matrix.md")
     _ap.add_argument(
         "--force", action="store_true", help="忽略 §零·B 写回收缩护栏（仅当确认字段真实下线时使用）"
     )
-    _ap.add_argument(
-        "--check", action="store_true", help="只比较生成结果，不写入 field_dict.md 或基线文件"
-    )
+    _ap.add_argument("--check", action="store_true", help="只比较生成结果，不写入文件或基线")
     _ap.add_argument(
         "--from-md",
         action="store_true",
-        help="回归模式：从 field_dict.md 读取而非 registry（用于 parity 对照）",
+        help="回归模式：从 field_source_reference.md 读取而非 registry（用于 parity 对照）",
     )
     _args = _ap.parse_args()
     sys.exit(update_dict(force=_args.force, use_registry=not _args.from_md, check=_args.check))

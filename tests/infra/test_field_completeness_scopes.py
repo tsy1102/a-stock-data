@@ -82,3 +82,33 @@ def test_audit_help_does_not_create_a_report(tmp_path, monkeypatch, capsys):
     assert exc_info.value.code == 0
     assert "--report-output" in capsys.readouterr().out
     assert not (tmp_path / "docs/field_verification/20260906/completeness_audit.json").exists()
+
+
+def test_leaf_keys_excludes_capture_metadata_containers(monkeypatch):
+    monkeypatch.syspath_prepend("scripts")
+    afc = importlib.import_module("audit_field_completeness")
+    capture = {
+        "stocks": {
+            "600519": {
+                "auction_final": {
+                    "auction_volume": 1200,
+                    "__source_meta__": {
+                        "auction_phase": "final",
+                        "collision_eligible": True,
+                        "data_status": "final",
+                        "exclusion_reason": None,
+                        "expected_trading_day": "2026-10-08",
+                    },
+                }
+            }
+        },
+        "auction_snapshot_meta": {
+            "item_count": 1,
+            "requested_stage": "final",
+            "response_code": 0,
+            "response_timestamp": 1791446066469,
+            "source_data_date": "2026-10-08",
+        },
+    }
+
+    assert afc._leaf_keys(capture) == {"auction_volume"}

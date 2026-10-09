@@ -152,7 +152,7 @@ CCI=3189D4 / DMI=2609C8 / OBV=2D09C8 / ATR=2109CE / PSY=1489D5 / 筹码分布=20
 | QuoteV2 | hevo-h.10jqka.com.cn | 9601 | 行情 V2 |
 | QuoteV3 | hevo.10jqka.com.cn | 8602 | 行情 V3（calc/stats/supercalc）+ udns/wdcs/otqs/realorder 各端点 |
 | QuoteV4 | hxpns.hexin.cn | 9000 | 个性化推送 |
-| QuoteVice | 172.19.80.115 | 8602 | 备用 |
+| QuoteVice | （私网地址已脱敏） | 8602 | 备用 |
 
 > **与项目关联**：thsdk 连接的行情服务器即此协议族（项目 sc_ths.py 用其 SDK 封装）；
 > "盘面" query_key 失效（2026-08-11 发现）= V3 协议字段集改版，估值字段迁至"扩展1"

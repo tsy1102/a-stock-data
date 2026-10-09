@@ -376,11 +376,16 @@ def _leaves(o, pre=""):
     return out
 
 
+_RAW_METADATA_CONTAINERS = frozenset({"__source_meta__", "auction_snapshot_meta"})
+
+
 def _leaf_keys(o):
-    """返回对象中所有「叶键」(非容器值的 dict key)。用于 snake 源 raw 真实字段提取。"""
+    """提取 raw 叶字段，跳过采集器附加的元数据容器。"""
     out = set()
     if isinstance(o, dict):
         for k, v in o.items():
+            if k in _RAW_METADATA_CONTAINERS:
+                continue
             if isinstance(v, (dict, list)) and v:
                 out |= _leaf_keys(v)
             else:

@@ -4,6 +4,16 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## [V17.4.32] 2026-10-08 — AxData TDX 短线采集诊断
+
+### 采集与来源说明
+
+- 修正 AxData 统计 ZIP 搜索路径，改为读取仓库根目录 `cache/zhb`；之前错误地查找 `stock_common/cache/zhb`，因此即使本地存在缓存也会提前返回空结果。
+- 新增带状态的短线接口结果：区分 ZHB 缓存缺失、接口无可用记录和请求异常；保留旧字段字典接口及交易日缓存契约，失败结果不缓存。
+- 采集 raw 错误明确标注 AxData `stock_shortline_indicators_tdx` 的 TDX 路径；文档说明 AxData 是多提供方框架，当前项目只采集其中这一条接口，且实时输入可能访问 TDX 网络。
+- 修正兼容测试中错误的模块相对缓存路径，并覆盖三类失败诊断与 `stats_date` 保留。
+- 验证：离线套件 731 passed、1 skipped、47 deselected（98.34 秒），新增兼容测试 6 项（总通过数 725 → 731）；4 个改动 Python 文件语法、mypy 与 Black 通过，A1/A7 闸门 0 HARD FAIL / 0 WARN。9 条既有 `httplib2`/`pyparsing` 弃用警告。
+
 ## [V17.4.31] 2026-10-08 — 字段破解采集去噪
 
 ### 采集与碰撞

@@ -17,7 +17,7 @@
 | 新浪(扩展API) | sina | Sina | sina（confirmed） | 是 | confirmed | confirmed（2026-10-08） |
 | 同花顺-fuyao | fuyao | Tonghuashun | tonghuashun（confirmed） | 是 | confirmed | confirmed（2026-10-06） |
 | TDX(双命名源) | tdx | Tongdaxin | tdx（confirmed） | 是 | confirmed | confirmed（2026-10-06） |
-| AxData | axdata | AxData | 未确认（unconfirmed） | 否 | confirmed | confirmed（2026-10-08） |
+| AxData | axdata | AxData multi-provider framework; current shortline interface uses Tongdaxin | 未确认（unconfirmed） | 否 | confirmed | confirmed（2026-10-08） |
 | 东财-push2_full | push2_full | Eastmoney | eastmoney（confirmed） | 是 | confirmed | confirmed（2026-10-08） |
 | ZHB-tdxstat | zhb | Tongdaxin | tdx（confirmed） | 是 | confirmed | confirmed（2026-10-06） |
 | ZHB-tdxstat2 | zhb | Tongdaxin | tdx（confirmed） | 是 | confirmed | confirmed（2026-10-06） |
@@ -126,9 +126,9 @@
 
 ### AxData
 
-- 来源说明：本地材料不足以确认其底层数据提供方或独立性。
+- 来源说明：AxData 是多提供方框架；本项目当前短线采集只调用 stock_shortline_indicators_tdx（通达信路径），不据此推定 AxData 其他接口的提供方或独立性。
 - 对话确认：confirmed（2026-10-08）。按用户确认登记仓库关系；具体仓库的关系范围及限制见 repositories.note。
-- [https://github.com/electkismet/AxData](https://github.com/electkismet/AxData) — runtime_package_repository；confirmed。按用户确认登记 AxData 包的仓库对应关系；这只确认客户端/包仓库，不确认其底层数据来源、独立性或锚点资格。
+- [https://github.com/electkismet/AxData](https://github.com/electkismet/AxData) — runtime_package_repository；confirmed。确认这是 AxData 多提供方框架的运行时包仓库；本项目当前仅使用 stock_shortline_indicators_tdx，仓库关系不能推广到 AxData 的其他接口。
   - 项目内证据：requirements.txt, get_sht_report.py
 
 ### 东财-push2_full

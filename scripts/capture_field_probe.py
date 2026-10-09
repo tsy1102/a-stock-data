@@ -1121,16 +1121,30 @@ def collect_sina(pool: list) -> dict:
 
 
 def collect_axdata(pool: list) -> dict:
-    """AxData 短线指标 34 字段(零网络,直读项目 zhb.zip,字典 §12.12.1)。"""
-    from stock_common import get_shortline_indicators
+    """采集 AxData 的 TDX 短线接口；ZHB 统计文件本地读取，接口仍可能访问网络。"""
+    from stock_common import get_shortline_indicators_result
 
     out: Dict[str, Any] = {"stocks": {}}
     for p in pool:
         c = p["code"]
         try:
-            rec = get_shortline_indicators(c) or {}
-            if not rec:
-                out["stocks"][c] = {"__error__": "AxData returned no shortline fields"}
+            result = get_shortline_indicators_result(c)
+            if result.get("status") != "ok":
+                error = result.get("error") or (
+                    "request_error: AxData stock_shortline_indicators_tdx (TDX) "
+                    f"failed with status {result.get('status', 'unknown')}"
+                )
+                out["stocks"][c] = {"__error__": str(error)[:200]}
+                continue
+
+            rec = result.get("data")
+            if not isinstance(rec, dict) or not rec:
+                out["stocks"][c] = {
+                    "__error__": (
+                        "no_records: AxData stock_shortline_indicators_tdx "
+                        "(TDX) returned no usable records"
+                    )
+                }
             else:
                 out["stocks"][c] = {"n_fields": len(rec), "data": rec}
         except Exception as e:

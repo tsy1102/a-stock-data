@@ -353,11 +353,11 @@
       "runtime_aliases": [
         "axdata"
       ],
-      "provider": "AxData",
+      "provider": "AxData multi-provider framework; current shortline interface uses Tongdaxin",
       "independence_family": null,
       "independence_status": "unconfirmed",
       "anchor_eligible": false,
-      "anchor_note": "本地材料不足以确认其底层数据提供方或独立性",
+      "anchor_note": "AxData 是多提供方框架；本项目当前短线采集只调用 stock_shortline_indicators_tdx（通达信路径），不据此推定 AxData 其他接口的提供方或独立性",
       "repository_mapping_status": "confirmed",
       "repositories": [
         {
@@ -368,7 +368,7 @@
             "requirements.txt",
             "get_sht_report.py"
           ],
-          "note": "按用户确认登记 AxData 包的仓库对应关系；这只确认客户端/包仓库，不确认其底层数据来源、独立性或锚点资格。"
+          "note": "确认这是 AxData 多提供方框架的运行时包仓库；本项目当前仅使用 stock_shortline_indicators_tdx，仓库关系不能推广到 AxData 的其他接口。"
         }
       ],
       "dialog_confirmation": {

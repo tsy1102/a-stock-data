@@ -37,6 +37,27 @@ Fuyao raw 文件额外保留 `auction_snapshot_meta` 信封摘要；有竞价记
 
 `--dry-run` 不是离线模式：它检查 ZHB/TDX，并对腾讯和 Eastmoney 发少量健康探测请求；它不生成每日 raw 样本。ZHB 客户端仍遵循自身缓存与刷新行为。
 
+### 龙虎榜/人气榜上下文（按需）
+
+默认字段采集和碰撞会排除龙虎榜、人气榜等市场上下文。需要采集这些数据时，可显式启用：
+
+```powershell
+.\scripts\run_with_system_python.ps1 scripts\capture_field_probe.py --include-context
+```
+
+采集时单独指定 `--only exchange` 或 `--only em_hot` 也会自动启用对应上下文：
+
+```powershell
+.\scripts\run_with_system_python.ps1 scripts\capture_field_probe.py --only exchange
+.\scripts\run_with_system_python.ps1 scripts\capture_field_probe.py --only em_hot
+```
+
+碰撞不会请求网络；要将已归档的上下文数据纳入分析，运行时添加 `--include-context`：
+
+```powershell
+.\scripts\run_with_system_python.ps1 scripts\collide.py --include-context
+```
+
 ## 采集请求与限流
 
 - 来源按 `capture_field_probe.py` 的 producer 顺序串行执行，不通过并发扩大请求量。TDX TCP 与 HTTP 数据源分别沿用 `core/tdx_client.py` 和 `stock_common/sc_network.py` 的限流配置。

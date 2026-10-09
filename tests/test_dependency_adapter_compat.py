@@ -8,7 +8,7 @@ import os
 from pathlib import Path
 import sys
 from tempfile import TemporaryDirectory
-from types import ModuleType
+from types import ModuleType, SimpleNamespace
 from typing import Any, Callable, Iterator, Mapping, cast
 from zipfile import ZIP_DEFLATED, ZipFile
 
@@ -134,9 +134,9 @@ def test_shortline_adapter_uses_latest_local_zhb_zip_with_axdata(
 
     older = _write_minimal_zhb_zip(local_temp_dir / "zhb_20261006.zip", "20261006")
     latest = _write_minimal_zhb_zip(local_temp_dir / "zhb_20261007.zip", "20261007")
-    expected_pattern = str(
-        Path(_quotes.__file__).resolve().parent.parent / "cache" / "zhb" / "zhb_*.zip"
-    )
+    expected_root = Path(__file__).resolve().parents[1] / "cache" / "zhb"
+    assert Path(_quotes._axdata_zhb_cache_dir()).resolve() == expected_root.resolve()
+    expected_pattern = str(expected_root / "zhb_*.zip")
     original_glob = glob.glob
     seen: dict[str, Any] = {}
 
@@ -173,10 +173,11 @@ def test_shortline_adapter_uses_latest_local_zhb_zip_with_axdata(
     monkeypatch.setattr(glob, "glob", fake_glob)
     monkeypatch.setattr(axdata_core, "request_interface", offline_request)
 
-    result = _uncached(_quotes.get_shortline_indicators)("000001")
+    result = _uncached(_quotes.get_shortline_indicators_result)("000001")
 
-    assert result["symbol"] == "000001"
-    assert result["stats_date"] == "20261007"
+    assert result["status"] == "ok"
+    assert result["data"]["symbol"] == "000001"
+    assert result["data"]["stats_date"] == "20261007"
     assert seen["pattern"] == expected_pattern
     assert seen["interface"] == "stock_shortline_indicators_tdx"
     assert seen["request_options"] == {
@@ -190,3 +191,146 @@ def test_shortline_adapter_uses_latest_local_zhb_zip_with_axdata(
     }
     assert seen["stats_date"] == "20261007"
     assert seen["refreshed"] is False
+
+
+def test_shortline_diagnostics_distinguish_missing_zhb_cache(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    import axdata_core
+
+    def unexpected_request(*args: Any, **kwargs: Any) -> Any:
+        raise AssertionError("AxData request must not run without a local ZHB ZIP")
+
+    monkeypatch.setattr(glob, "glob", lambda *args, **kwargs: [])
+    monkeypatch.setattr(axdata_core, "request_interface", unexpected_request)
+
+    result = _uncached(_quotes.get_shortline_indicators_result)("000001")
+
+    assert result["status"] == "cache_missing"
+    assert "cache/zhb" in result["error"]
+    assert "interface was not called" in result["error"]
+
+
+def test_shortline_diagnostics_distinguish_no_records(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    import axdata_core
+
+    monkeypatch.setattr(glob, "glob", lambda *args, **kwargs: ["zhb_20261007.zip"])
+    monkeypatch.setattr(
+        axdata_core,
+        "request_interface",
+        lambda *args, **kwargs: SimpleNamespace(records=[]),
+    )
+
+    result = _uncached(_quotes.get_shortline_indicators_result)("000001")
+
+    assert result["status"] == "no_records"
+    assert "stock_shortline_indicators_tdx" in result["error"]
+    assert "(TDX)" in result["error"]
+
+
+def test_shortline_diagnostics_distinguish_request_exception(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    import axdata_core
+
+    def failed_request(*args: Any, **kwargs: Any) -> Any:
+        raise TimeoutError("TDX connection timed out")
+
+    monkeypatch.setattr(glob, "glob", lambda *args, **kwargs: ["zhb_20261007.zip"])
+    monkeypatch.setattr(axdata_core, "request_interface", failed_request)
+
+    result = _uncached(_quotes.get_shortline_indicators_result)("000001")
+
+    assert result["status"] == "request_error"
+    assert "TimeoutError" in result["error"]
+    assert "TDX connection timed out" in result["error"]
+
+
+def test_shortline_diagnostic_failures_are_not_cached(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    import axdata_core
+    from core import stock_cache
+
+    request_calls = 0
+    cache_writes: list[tuple[Any, ...]] = []
+
+    def no_records(*args: Any, **kwargs: Any) -> Any:
+        nonlocal request_calls
+        request_calls += 1
+        return SimpleNamespace(records=[])
+
+    monkeypatch.setattr(glob, "glob", lambda *args, **kwargs: ["zhb_20261007.zip"])
+    monkeypatch.setattr(axdata_core, "request_interface", no_records)
+    monkeypatch.setattr(stock_cache, "_DISABLE_CACHE", False)
+    monkeypatch.setattr(stock_cache, "get_cache", lambda *args, **kwargs: None)
+    monkeypatch.setattr(
+        stock_cache,
+        "set_cache",
+        lambda *args, **kwargs: cache_writes.append(args),
+    )
+
+    first = _quotes.get_shortline_indicators_result("000005")
+    second = _quotes.get_shortline_indicators_result("000005")
+
+    assert first["status"] == second["status"] == "no_records"
+    assert request_calls == 2
+    assert cache_writes == []
+
+
+def test_collect_axdata_keeps_stats_date_and_surfaces_diagnostics(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    import stock_common
+    from scripts.capture_field_probe import collect_axdata
+
+    diagnostics = {
+        "000001": {
+            "status": "ok",
+            "data": {"symbol": "000001", "stats_date": "20261007"},
+        },
+        "000002": {
+            "status": "cache_missing",
+            "data": {},
+            "error": "cache_missing: no project ZHB stats ZIP under cache/zhb",
+        },
+        "000003": {
+            "status": "no_records",
+            "data": {},
+            "error": "no_records: AxData TDX returned no usable records",
+        },
+        "000004": {
+            "status": "request_error",
+            "data": {},
+            "error": "request_error: AxData TDX failed: TimeoutError",
+        },
+    }
+    monkeypatch.setattr(
+        stock_common,
+        "get_shortline_indicators_result",
+        lambda code: diagnostics[code],
+    )
+
+    result = collect_axdata([{"code": code} for code in diagnostics])
+
+    assert result["stocks"]["000001"]["data"]["stats_date"] == "20261007"
+    assert result["stocks"]["000002"]["__error__"].startswith("cache_missing:")
+    assert result["stocks"]["000003"]["__error__"].startswith("no_records:")
+    assert result["stocks"]["000004"]["__error__"].startswith("request_error:")
+
+
+def test_shortline_legacy_function_still_returns_field_dict(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    record = {"symbol": "000001", "stats_date": "20261007"}
+    monkeypatch.setattr(
+        _quotes,
+        "get_shortline_indicators_result",
+        lambda code: {"status": "ok", "data": record},
+    )
+
+    result = _uncached(_quotes.get_shortline_indicators)("000001")
+
+    assert result == record

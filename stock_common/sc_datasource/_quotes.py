@@ -1121,43 +1121,96 @@ def get_stock_changes(change_type: str = "8201") -> List[Dict[str, Any]]:
     return []
 
 
-@cached(category="basic_info", ttl_seconds=TTL["basic_info"], trading_day=True)
-def get_shortline_indicators(code: str) -> Dict[str, Any]:
-    """V16.1.7: AxData 短线指标 34 字段（字典 §12.12.1，实测 stats_root 消费项目 zhb.zip）。
+def _axdata_zhb_cache_dir() -> str:
+    """Return the repository-level ZHB cache directory used by AxData."""
+    repo_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+    return os.path.join(repo_root, "cache", "zhb")
 
-    stats_root 用项目 cache/zhb 最新包（零额外下载）。
-    返回: open_volume_ratio(开盘量比)/auction_prev_volume_ratio(竞价昨比)/
-          seal_to_amount_ratio(封成比)/seal_to_float_ratio(封流比)/
-          limit_board_text(几天几板)/limit_up_streak_days(连板)/
-          free_float_shares(自由流通股本Z)/year_limit_up_days 等 34 字段
+
+@cached(
+    category="basic_info",
+    ttl_seconds=TTL["basic_info"],
+    valid_if=lambda result: isinstance(result, dict) and result.get("status") == "ok",
+    trading_day=True,
+)
+def get_shortline_indicators_result(code: str) -> Dict[str, Any]:
+    """Return diagnostic status and data from AxData's TDX shortline interface.
+
+    AxData is a multi-provider framework. This project currently calls only
+    ``stock_shortline_indicators_tdx``. Its historical statistics input comes
+    from the newest project ZHB ZIP, while the interface may still request live
+    TDX data. A successful payload keeps ``stats_date`` inside ``data`` because
+    it describes the statistics baseline, not the overall collection date.
     """
-    import glob
-    import os
-
     try:
         from axdata_core import request_interface
 
-        # 找最新 zhb 包
-        zhb_dir = os.path.join(
-            os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "cache", "zhb"
-        )
+        zhb_dir = _axdata_zhb_cache_dir()
         zips = sorted(glob.glob(os.path.join(zhb_dir, "zhb_*.zip")))
         if not zips:
-            return {}
-        stats_root = zips[-1]
-        r = request_interface(
+            return {
+                "status": "cache_missing",
+                "data": {},
+                "error": (
+                    "cache_missing: no project ZHB stats ZIP under cache/zhb; "
+                    "AxData TDX interface was not called"
+                ),
+            }
+
+        response = request_interface(
             "stock_shortline_indicators_tdx",
-            params={"code": code, "stats_root": stats_root},
+            params={"code": code, "stats_root": zips[-1]},
             fields=None,
             persist=False,
             data_root=None,
         )
-        records = getattr(r, "records", None)
-        if records and isinstance(records[0], dict):
-            return records[0]
-    except Exception as _e:
-        _debug_log(f"datasource get_shortline_indicators ({code}): {_e}")
-    return {}
+        records = getattr(response, "records", None)
+        if isinstance(records, (list, tuple)):
+            for record in records:
+                if isinstance(record, dict) and record:
+                    return {"status": "ok", "data": record}
+
+        response_error = getattr(response, "error", None)
+        if response_error:
+            detail = str(response_error).strip()[:160]
+            return {
+                "status": "request_error",
+                "data": {},
+                "error": (
+                    "request_error: AxData stock_shortline_indicators_tdx "
+                    f"(TDX) failed: {detail}"
+                ),
+            }
+        return {
+            "status": "no_records",
+            "data": {},
+            "error": (
+                "no_records: AxData stock_shortline_indicators_tdx "
+                "(TDX) returned no usable records"
+            ),
+        }
+    except Exception as exc:
+        _debug_log(f"datasource get_shortline_indicators_result ({code}): {exc}")
+        detail = f"{type(exc).__name__}: {exc}".strip()[:160]
+        return {
+            "status": "request_error",
+            "data": {},
+            "error": (
+                "request_error: AxData stock_shortline_indicators_tdx " f"(TDX) failed: {detail}"
+            ),
+        }
+
+
+@cached(category="basic_info", ttl_seconds=TTL["basic_info"], trading_day=True)
+def get_shortline_indicators(code: str) -> Dict[str, Any]:
+    """Return shortline fields from AxData's TDX interface, or an empty dict.
+
+    This compatibility wrapper preserves the existing Tier2 data contract.
+    Use ``get_shortline_indicators_result`` when the caller needs failure details.
+    """
+    result = get_shortline_indicators_result(code)
+    data = result.get("data")
+    return data if result.get("status") == "ok" and isinstance(data, dict) else {}
 
 
 def get_tdx_chip_race(period: int = 0, sort: int = 1) -> List[Dict[str, Any]]:
@@ -1299,6 +1352,7 @@ __all__ = [
     'get_fupan_pmsl',
     'get_fupan_zttt',
     'get_last_trading_day',
+    'get_shortline_indicators_result',
     'get_shortline_indicators',
     'get_stock_changes',
     'get_stock_permanent_info',

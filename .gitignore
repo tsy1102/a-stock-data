@@ -52,12 +52,13 @@ __pycache__/
 *.pyo
 .pytest_cache/
 .mypy_cache/
-# 项目内临时目录：仅保留占位文件，Agent/测试/工具生成内容均不入库
+# 项目内临时目录：运行时按需创建，整个目录不入库
 *.tmp
 *.cache
-!/.tmp/
-.tmp/*
-!.tmp/.gitkeep
+/.tmp/
+
+# 本机凭据，仅保存在开发者环境
+/credentials/
 
 # ── 调研沙盒(仅保留说明文件) ───────────────────────────────
 scratch/*

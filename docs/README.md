@@ -15,8 +15,8 @@
 | 来源与 GitHub 仓库谱系 | [source_repository_map.md](source_repository_map.md) |
 | 重整前完整字段原文 | [field_source_reference.md](field_source_reference.md) |
 | 机器权威字段注册表 | [field_verification/field_registry.json](field_verification/field_registry.json) |
-| 字段字典重整计划与逐项迁移审计 | [FIELD_DICTIONARY_RESTRUCTURE_PLAN_20261005.md](FIELD_DICTIONARY_RESTRUCTURE_PLAN_20261005.md)、[FIELD_DICTIONARY_MIGRATION_AUDIT_20261005.md](FIELD_DICTIONARY_MIGRATION_AUDIT_20261005.md) |
-| 碰撞候选定案、注册表同步与来源确认 | [field_verification/ADJUDICATION_WORKFLOW.md](field_verification/ADJUDICATION_WORKFLOW.md)、[FIELD_DICTIONARY_OPERATIONAL_CLOSURE_20261006.md](FIELD_DICTIONARY_OPERATIONAL_CLOSURE_20261006.md) |
+| 字段字典迁移审计与运营闭环 | [FIELD_DICTIONARY_MIGRATION_AUDIT_20261005.md](FIELD_DICTIONARY_MIGRATION_AUDIT_20261005.md)、[FIELD_DICTIONARY_OPERATIONAL_CLOSURE_20261006.md](FIELD_DICTIONARY_OPERATIONAL_CLOSURE_20261006.md) |
+| 碰撞候选定案、注册表同步与来源确认 | [field_verification/ADJUDICATION_WORKFLOW.md](field_verification/ADJUDICATION_WORKFLOW.md) |
 | 报告脚本的数据字段与 fallback | [script_data_dict.md](script_data_dict.md) |
 | 术语、版本决策和已知偏离 | [domain_glossary.md](domain_glossary.md)、[roadmap.md](roadmap.md)、[DEBT_LEDGER.md](DEBT_LEDGER.md) |
 
@@ -24,9 +24,6 @@
 
 - [`verify/`](verify/README.md)：按数据源整理的字段契约、样本和交叉核验资料。
 - [`field_verification/`](field_verification/README.md)：采集流程、破解方法和按日期归档的原始数据与分析报告。
-- [字段字典重整计划](FIELD_DICTIONARY_RESTRUCTURE_PLAN_20261005.md)与[逐项迁移审计](FIELD_DICTIONARY_MIGRATION_AUDIT_20261005.md)：阶段范围、身份/属性核对、证据保留和验收结果。
-- [字段定案闭环](FIELD_DICTIONARY_OPERATIONAL_CLOSURE_20261006.md)：候选人工复核、registry 写回，以及来源仓库关系的对话确认状态。
-- [采集流水线整改计划](CAPTURE_PIPELINE_REMEDIATION_PLAN_20260930.md)：本轮采集完整度、失败诊断、限流与幂等重采的实施范围和验收项。
 - [`session_notes/`](session_notes/README.md)：按日期保存的会话决策和待办。
 - `PROJECT_AUDIT_REMEDIATION_*.md`、日期命名的核查文档：阶段性审计记录；判断当前状态时以代码和当次验证结果为准。
 

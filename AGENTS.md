@@ -103,7 +103,7 @@ $OutputEncoding = [Console]::OutputEncoding
 
 - 项目内临时目录统一为仓库根 `.tmp/`；临时探针、下载包、临时虚拟环境和测试基目录都放在此目录下，不使用系统 `%TEMP%`。
 - `scripts/run_with_system_python.ps1` 会为 Python 进程及其子进程设置 `TEMP`、`TMP`、`TMPDIR` 到 `.tmp/`；测试通过 `scripts/run_tests.ps1` 进入该启动器。旧 `.bat` 兼容入口也使用 `.tmp/`。
-- `.tmp/` 内容被 Git 忽略，仅跟踪 `.tmp/.gitkeep` 以保留目录。清理时只删除本任务创建的明确路径。
+- `.tmp/` 整个目录被 Git 忽略；启动器或项目代码会在运行时按需创建。清理时只删除本任务创建的明确路径。
 
 ### 1.4 环境变量
 

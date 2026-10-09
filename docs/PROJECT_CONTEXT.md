@@ -67,7 +67,6 @@
 | `docs/field_verification/field_registry.json` | 逐源完整路径的机器权威字段登记表 |
 | `docs/field_verification/ADJUDICATION_WORKFLOW.md` | 碰撞候选人工复核、字段定案和注册表同步流程 |
 | `docs/field_verification/CRACKING_METHODOLOGY.md` | 字段破解方法论和证据要求 |
-| `docs/FIELD_DICTIONARY_RESTRUCTURE_PLAN_20261005.md` | 字段字典、来源谱系与碰撞锚点重整步骤 |
 | `docs/FIELD_DICTIONARY_OPERATIONAL_CLOSURE_20261006.md` | 定案写回闭环及来源对话确认状态 |
 | `docs/FIELD_DICTIONARY_MIGRATION_AUDIT_20261005.md` | 字段身份逐项核对、证据保留、测试与已知覆盖遗留 |
 | `docs/script_data_dict.md` | 报告脚本、字段与数据源的消费关系 |
@@ -78,7 +77,6 @@
 | `docs/roadmap.md`、`CHANGELOG.md` | 决策记录与版本历史 |
 | `docs/PROJECT_AUDIT_REMEDIATION_20260928.md` | 本轮审计整改项目、验收进度与结果 |
 | `docs/UPSTREAM_COMPATIBILITY.md` | 上游仓库、依赖版本与项目适配边界 |
-| `docs/DEPENDENCY_ADAPTER_COMPATIBILITY_PLAN_20261008.md` | Levistock/AxData 适配器兼容核验、回归及实施结果 |
 
 ## 5. 动态信息
 

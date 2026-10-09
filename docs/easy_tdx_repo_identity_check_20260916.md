@@ -41,7 +41,7 @@
    - `Name = easy-tdx`，`Version = 1.32.6`
    - `Summary = "通达信 TCP 协议行情数据客户端，支持在线行情、离线数据读取与写入同步"`
    - README Description 内含：`[![GitHub Repo stars](...)](https://github.com/handsomejustin/easy_tdx)`、`https://pypi.org/project/easy-tdx/`、`deepwiki.com/handsomejustin/easy_tdx`
-   - 安装位置：`C:\Users\tsy11\AppData\Local\Programs\Python\Python312\Lib\site-packages\easy_tdx`
+   - 安装位置：`<USER_HOME>\AppData\Local\Programs\Python\Python312\Lib\site-packages\easy_tdx`
 
 2. **requirements 版本演进吻合**：`requirements.txt:33` 锁定 `easy-tdx>=1.32.6,<2.0`，注释记录的 1.20.4（K线解码修复）→ 1.32.6（新增 `get_price_limits`/`get_market_stat`/`get_security_list_all`、SecurityQuote 直解 `s_vol/b_vol/rise_speed`）与该库活跃开发节奏一致。
 

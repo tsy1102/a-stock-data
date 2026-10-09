@@ -4,6 +4,14 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## [Unreleased]
+
+### 文档与仓库清理
+
+- `.tmp/` 运行时按需创建并整体忽略；移除 Git 占位文件，避免远端显示临时目录。
+- 删除 7 份已完成的一次性计划，文档索引改指向最终审计、闭环和兼容性记录；未完成、待决策及原始字段证据继续保留。
+- 从当前文档中清除本机账号/调试信息、用户目录路径和私网地址；凭据目录明确加入 Git 忽略规则。
+
 ## [V17.4.32] 2026-10-08 — AxData TDX 短线采集诊断
 
 ### 采集与来源说明
@@ -437,7 +445,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   - **统一层跨层同步修复（V17.3，大盘股市值静默错 10000 倍）**：`core/data_provider.py` 内联的 `total_shares_wan` 单位归一守卫阈值误用旧值 `>1e7`（与已订正的 `sc_capital_cache` v2 阈值 `1e9 万股` 直接矛盾——后者注释已实锤 `1e7` 曾把正确大盘股万股值误当"股"再÷10000）。修复：阈值对齐为 `>1e9`；并对 `float_shares_wan`、`float_mcap_yi` 补对称守卫（`float_shares_wan >1e9` 万股→万股、 `float_mcap_yi >1e6` 万元→亿），与既有 `mcap_yi` 守卫一致。实盘复现：修复前 `601398 工商银行` 总股本被误算为 3564 万股（实为 35640624 万股=3564亿股）、总市值 2.87 亿（实为 2.88 万亿）；修复后正确。此前 20260918 批次审计因被测股 000938 为中盘（286008万股<1e7）漏检，**历史大盘股（>1000亿股）sht/med/lng 报告市值曾被静默误算**。
   - **缓存层核查结论（V17.3）**：无需同步更新。`sc_kline_cache.py` 已有 24h TTL + 500MB LRU 自动失效；`sc_capital_cache.py` 已有 schema 版本号（v2）自动失效重建；ZHB 快照 T-1 陈旧为设计预期（用户同步刷新）。字典破解（#257-#261，49 候选）映射的是原始 f 编号语义，由源适配器（sc_datasource/zhb/tdx）消费，统一层合约经适配器自动继承订正，无需新增合约字段暴露（V17.3 脚本修改所用字段 total_shares_wan/float_shares_wan/float_mcap_yi/mcap_yi/price 均在既有 86 字段 frozen 契约内）。
   - **死代码清理（V17.3 续作已执行）**：① `cache/` 目录下 103 个未跟踪临时调试文件（`_dbg_*`/`_fix_*`/`_f821`/`_verify_*`/`audit_*`/`_phase*`/`_probe_*` 等）已清理完毕——保留 `README.md`/`_gitrun.py`(git闸门助手)/`stock_cache.db`(真实缓存库)/`em_industry_*.json`(数据桩)/`zhb`/`zhb_parsed`/`kline`(运行时数据缓存目录)，并清除误留的 `audit_venv/` 虚拟环境（数千文件）。
-  - **循环导入架构级修复（V17.3 续作已执行·修正版 C）**：`core/data_provider.py:64` 顶层 `from stock_common.sc_network import _fallback_logger` 与 `sc_datasource/_quotes.py:20`/`_zhb.py:13` 顶层 `from core.data_provider import (get_concept_from_zhb + 5 ZHB 派生函数)` 构成导入期循环依赖，生产靠入口先载 stock_common 规避、直引 data_provider 即崩。修复：① 新建真叶子模块 `core/_accessors.py`（顶层仅依赖 `core.stock_cache` 叶子 + `typing`，6 个访问器函数体内懒引 `stock_common`/`core.tdx_client`/`core.zhb_client`，**顶层零 `stock_common` 依赖**）；② 将 `get_concept_from_zhb`/`get_dividend_yield`/`get_change_pct`/`get_change_ytd`/`get_amount_wan`/`get_main_net_buy`/`get_streak_days` 从 `core.data_provider` 迁出至 `_accessors`，`data_provider` 经 `from core._accessors import (...)` 保留 API 与 re-export 链；③ `_quotes.py:20`/`_zhb.py:13` 改引 `core._accessors`；④ `data_provider.py:64` 的 `_fallback_logger` 改为 `_debug_log` 函数内懒引（方案 A 同款）。**修复后实盘复现**：正/反向 `import core.data_provider` 与 `import stock_common` 均成功，导入期环彻底消除、import 顺序无关；`get_canonical_stock_data` 与 6 函数行为不变（`get_dividend_yield('000938')=0.2` 等正常返回）。**关键复盘**：原方案 B（改引 `core.zhb_client`）经证伪无效——`zhb_client` 顶层亦引 `stock_common`，仍成环；原"70 处 lazy 断环"系红鲱鱼（函数内调用期导入不构成环，真实环仅 3 条顶层边）。详见 `docs/V17.3_CIRCULAR_IMPORT_PLAN.md` V2。
+  - **循环导入架构级修复（V17.3 续作已执行·修正版 C）**：`core/data_provider.py:64` 顶层 `from stock_common.sc_network import _fallback_logger` 与 `sc_datasource/_quotes.py:20`/`_zhb.py:13` 顶层 `from core.data_provider import (get_concept_from_zhb + 5 ZHB 派生函数)` 构成导入期循环依赖，生产靠入口先载 stock_common 规避、直引 data_provider 即崩。修复：① 新建真叶子模块 `core/_accessors.py`（顶层仅依赖 `core.stock_cache` 叶子 + `typing`，6 个访问器函数体内懒引 `stock_common`/`core.tdx_client`/`core.zhb_client`，**顶层零 `stock_common` 依赖**）；② 将 `get_concept_from_zhb`/`get_dividend_yield`/`get_change_pct`/`get_change_ytd`/`get_amount_wan`/`get_main_net_buy`/`get_streak_days` 从 `core.data_provider` 迁出至 `_accessors`，`data_provider` 经 `from core._accessors import (...)` 保留 API 与 re-export 链；③ `_quotes.py:20`/`_zhb.py:13` 改引 `core._accessors`；④ `data_provider.py:64` 的 `_fallback_logger` 改为 `_debug_log` 函数内懒引（方案 A 同款）。**修复后实盘复现**：正/反向 `import core.data_provider` 与 `import stock_common` 均成功，导入期环彻底消除、import 顺序无关；`get_canonical_stock_data` 与 6 函数行为不变（`get_dividend_yield('000938')=0.2` 等正常返回）。**关键复盘**：原方案 B（改引 `core.zhb_client`）经证伪无效——`zhb_client` 顶层亦引 `stock_common`，仍成环；原"70 处 lazy 断环"系红鲱鱼（函数内调用期导入不构成环，真实环仅 3 条顶层边）。
   - **统一层同义字段"绕过"审查（V17.3 续作）**：回应"sht/med 正常而 lng 错"疑问——**非统一层遗漏字段**（`total_shares_wan` 等已在 `CanonicalStockData` 契约内且正确），根因是脚本绕过统一层直取 `get_stock_info()['total_shares']`（万股）却多处按"股"假设。审查又确证 2 处同类单位 Bug 并修复：`get_lng_report.py:531` 传 `info.total_shares`(万股) 给 `get_roe_trend_series` 新浪兜底 `eps=profit/total_shares`(期望股) → EPS/BPS 错 1e4 倍；`get_sht_report.py:983`/`get_med_report.py:947` 北向占比兜底 `_shares`(股)÷`info.total_shares`(万股) 单位错配(差1e4) 且 sht 无 ×100、med 有 ×100 两脚本口径互不一致(差100倍)。三处统一改为 `cdata.total_shares_wan*1e4`(股) 并 ×100 百分数对齐。建议增强：统一层新增 `total_shares`(股) 便捷字段从源头消灭股/万股陷阱（详见 `docs/REPORT_REVIEW_BYPASS_20260918.md`）。
 
 ## [V17.2.15] 2026-09-15 — TDX 主源切换 eltdx（Rust 客户端接管行情/财务）
@@ -454,7 +462,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ## [V17.2.12] 2026-09-15 — TDX 新式握手修复（A 路线：最小侵入 + 固化）
 
 - **问题**：2026-09 起通达信行情主站强制拒绝旧版三条固定握手（0x1893/0x1894/0x1899），握手有响应但连接上所有 K 线请求静默返回 2 字节空包（0x0320）、市场统计/板块指数快照返回空、`/market/stat` 500——服务器不报错只是不给数据。项目依赖的 `easy-tdx 1.32.6`（上游 `awayings/easy_tdx` 已撤、PyPI 不可装）静态握手全面失效（P0 实证：4 台可达主机 K线全 0 行、market_stat 全报错）。
-- **修复（直接 patch 在用包）**：`easy_tdx/commands/setup.py`（site-packages）的 `SETUP_COMMANDS` 由静态三元组改为单条动态握手 `build_handshake_command()`（`<HIHHH` = 0x010C + 随机 msg_id + 0x0003 + 0x0003 + 0x000D，payload 0x01）。transport 层遍历/ping/心跳下标访问均兼容，业务请求格式零改动。保留 `SETUP_CMD1/2/3` 常量供 `commands/__init__.py` 导入兼容。备份见 `C:/Users/tsy11/AppData/Local/Temp/tdx_test/setup_original_1.32.6.py`。
+- **修复（直接 patch 在用包）**：`easy_tdx/commands/setup.py`（site-packages）的 `SETUP_COMMANDS` 由静态三元组改为单条动态握手 `build_handshake_command()`（`<HIHHH` = 0x010C + 随机 msg_id + 0x0003 + 0x0003 + 0x000D，payload 0x01）。transport 层遍历/ping/心跳下标访问均兼容，业务请求格式零改动。保留 `SETUP_CMD1/2/3` 常量供 `commands/__init__.py` 导入兼容。本机临时备份未纳入仓库。
 - **固化守卫（防重装回退）**：新增 `core/_tdx_handshake_patch.py`，`import` 即把 easy_tdx 握手续命为新式动态单条握手，并回写 `transport.sync` / `transport.async_` 的模块级 `SETUP_COMMANDS` 引用以抗乱序 import；幂等（`_v17212_dynamic_handshake_patched` 标记）。在 `core/tdx_client.py` 与 `core/zhb_client.py` 顶部 `import core._tdx_handshake_patch`（须在 easy_tdx 绑定前；因 easy_tdx 引用均为函数内懒加载，模块顶部即满足）。**不**挂 `core/__init__.py`（其须保持空，防 core↔stock_common 循环依赖）。
 - **实证**：patch 后在用包直连主站成功取到个股/指数日K（各 10 行真实 OHLC）、市场统计（上涨1404/下跌4073/总市值11.26万亿）；守卫模块 E2E 连接取 K线 5 行、transport 引用同步无陈旧、重复 apply 幂等。
 - **影响面**：TDX 备用链（K线/市场统计/板块指数实时）由失效恢复为可用；东财主路径（quote/资金流/板块）不受影响。

@@ -198,10 +198,7 @@ def test_prefetch_tencent_fills_missing_fields_and_keeps_source_metadata(
     assert len(tencent_calls) == 1
     assert tencent_calls[0][0] == ["600519"]
     assert tencent_calls[0][1]["use_l2_cache"] is True
-    assert (
-        tencent_calls[0][1]["cache_category"]
-        == stock_cache.TENCENT_REPORT_BATCH_CACHE_CATEGORY
-    )
+    assert tencent_calls[0][1]["cache_category"] == stock_cache.TENCENT_REPORT_BATCH_CACHE_CATEGORY
 
     field_sources = dp._BATCH_QUOTE_CACHE["600519"]["_field_sources"]
     assert field_sources["price"] == "realtime:push2delay:batch"

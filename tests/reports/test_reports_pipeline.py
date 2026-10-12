@@ -358,7 +358,7 @@ class TestLngRunnerPipeline(_BatchMixin, _RunnerTestBase):
         self.assertEqual(spy.call_args[0], (20,))
 
     def test_prefetch_fn_registered_sync_only(self):
-        """V17.3.10: Lng 对齐 med/sht 注册同步 prefetch_fn（行情 + eltdx 连板天梯批量预取），
+        """V17.4.45: Lng 注册同步行情 prefetch_fn，不预取正文不消费的 ELTDX 短线天梯，
         但不同于 sht 的双钩子，Lng 仅用同步 prefetch_fn、不注册 prefetch_async_fn。"""
         _r, _res, bp = self._invoke()
         self.assertIn("prefetch_fn", bp.call_args.kwargs)

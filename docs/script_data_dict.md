@@ -1,12 +1,30 @@
 # 脚本应用接口与字段来源字典(Script Data Dictionary)
 
 > **创建日期**: 2026-07-28
-> **更新日期**: 2026-08-31(**V17.0.16 资金流四档重定案**——主力净=f137(不+f140)、四档层级订正、ulist 主力净=f62(不+f66); 实测旧口径虚高约 40%) + **非资金流字段离线全量比对**(13:13, 现成采集数据+zhb, 零网络): 估值/财务TTM/量比/市场类型/板块代码等语义全部印证; 补 clist f23=PB 索引
+> **更新日期**: 2026-10-12（V17.4.45：按报告工作负载调整批量取源、逐字段记录来源、移除长线未消费的 ELTDX 预热；保留以下字段实证历史）
 > **基于**: [field_dict.md](../docs/field_dict.md)(§12 多源字典 + §12.15 源优先级矩阵 O37 修订版 + **V17.0 拼音规律破解/口径实锤**)
 > **目的**: 明确每个脚本的**每个字段**从哪个源/接口获取、走哪个中间层函数、**完整 fallback 链**、**跨脚本获取逻辑差异**——与 field_dict 形成"双字典"对照
 > **使用原则**: 脚本调整前必查; 优先采用字典已确定的中间层函数
-> **数据流总览**: 全市场脚本(mak/val)→ ZHB 快照 + 腾讯批量覆盖; 个股脚本(sht/med/lng)→ `get_canonical_stock_data` 强类型合约(TDX→腾讯→push2delay→ZHB + 补取) + 基类 `execute_batch_pipeline` 批量骨架
-> **脚本清单(5 大, ful 已删除)**: mak 1754 行｜val 2226 行｜sht 1722 行｜med 1198 行｜lng 1124 行(2026-08-15 实测)
+> **数据流总览**: 全市场脚本(mak/val)按全市场负载使用 ZHB 快照与受限批量源；个股脚本(sht/med/lng)由 push2delay 批量取基础行情、腾讯批量补充腾讯字段，再由 `get_canonical_stock_data` 对残缺字段逐股降级。
+> **脚本清单(5 大, ful 已删除)**: `mak` / `val` / `sht` / `med` / `lng`。行数不作为接口契约。
+
+---
+
+## 当前运行源路由（2026-10-12，优先于下方历史字段明细）
+
+`field_matrix.md` 是逐字段来源证据矩阵，不是脚本运行时路由表。五大脚本按工作负载选择批量源；源矩阵中的候选关系不自动变成生产 fallback。
+
+| 脚本 | 工作负载与主路径 | 补源与保留规则 |
+|:---|:---|:---|
+| `sht` | 用户指定的约 30 只；push2delay ulist 300/批提供基础行情，腾讯 qt 批量 60/批补估值、财务比率、盘口与涨跌停字段 | ELTDX 天梯/封单包仍保留；不覆盖已有 push2delay 基础值。缺价时仍走 TDX → 腾讯单股 → push2delay 单股 → push2 末级 fallback |
+| `med` | 指定的少量股票；与 sht 共用基础行情 + 腾讯补充批次 | ELTDX 天梯状态在中线报告中实际显示，故保留；共享 L2 缓存命中时不重复打批量接口 |
+| `lng` | 指定的少量股票；与 sht/med 共用基础行情 + 腾讯补充批次 | 长线报告未消费 ELTDX 短线天梯，已取消该无用预热；缺失字段仍由统一层 fallback |
+| `val` | 全市场；腾讯按 60 只/批提供行情快照并预热 Canonical 与 SQLite L2 | 本批来源以 `realtime:tencent:batch` 逐字段标记；闭市/盘前旁路逻辑保持原状 |
+| `mak` | 全市场异常扫描；ZHB 快照为覆盖底，腾讯批量更新行情；候选结果再批量补东财 ulist 资金字段 | 保持其独立全市场路径与现有分域限流；部分 ulist 缺项只对缺失代码增量补取 |
+
+个股批量路由只对缺失字段补值，不做随机轮询：push2delay 的基础行情优先保留；腾讯批次补足其已核实字段。腾讯批次按 60 只切分并经过 `_gen_wait_process_interval` 进程级节流；push2delay 仍由 `sc_network` 共享熔断/限流控制，未向 push2 主域增加批量请求。单股 fallback 链只在批量字段缺失时执行，字段来源标记区分 push2delay 与末级 push2 主域。带来源的 quote L2 与扩展个股 Tencent L2 使用新分类键；MAK/VAL 全市场原始腾讯缓存继续沿用原分类，避免单独运行 MAK 时触发整市场缓存失效。跨进程批量缓存为 60 分钟硬 TTL，适用于一轮串行报告；同一小时内单独重跑可能复用该轮快照。
+
+本次估算的请求变化：30 只股票在五项腾讯补充字段都可用时，原本最多逐股请求约 30 次腾讯行情，改为最多 1 次腾讯批量请求（另保留 1 次 push2delay 基础批量请求）；实际请求数取决于缓存命中和接口缺项。此处是按批次上限计算，不代表当日联网压测结果。
 
 ---
 
@@ -24,7 +42,7 @@
 | **L6 东财 datacenter** | 龙虎榜/股东/北向/解禁/大宗(日期单引号) | 独有数据 |
 | **统一合约** | core/data_provider `get_canonical_stock_data` | sht/med/lng 主入口; **V17.0 补取**: push2delay 估值+资金流无条件补取(进程当天缓存 _PD_EXTRA_CACHE, 空结果不缓存) |
 
-> **V17.0 关键修正**: ①canonical fallback 实际链 = prefetch(push2delay ulist)→ TDX → 腾讯 → push2delay 补取(pe/fund)→ push2 主域 → ZHB 兜底; ②**主力净流入 f137 无条件优先**(盘前/盘后均取最近交易日, 与 get_main_net_buy 同源); ③**行业仅认 881 段**(880 段=概念/风格, 防"股权转让"当行业); ④prefetch 命中跳过 TDX(35 只批量省 35 次 TCP)。
+> **当前行情路由补充(V17.4.45)**: ①个股批量阶段 = push2delay ulist 基础行情 → 腾讯批量补充缺失的腾讯字段；②批量不完整时逐股 fallback = TDX → 腾讯 → push2delay → push2；③各字段通过 `field_sources` 记录真实来源；④主力净流入仍按字典定义使用 push2delay f137，不与竞价字段混用。
 
 ---
 
@@ -32,7 +50,7 @@
 
 | 类别 | 字段示例 | 主源 | 补源 |
 |:---|:---|:---|:---|
-| 行情(实时) | price/change_pct/amount/OHLC | 腾讯批量(全市场)/TDX(单股) | push2delay(补取)/ZHB(盘前) |
+| 行情(实时) | price/change_pct/amount/OHLC | 个股脚本：push2delay 批量基础行情 + 腾讯批量补充；val/mak：全市场腾讯批量覆盖 | 缺失字段按统一层走 TDX/腾讯单股/东财单股 fallback；ZHB 依时段提供可用快照 |
 | 资金流 | main_net_buy(主力净) | **push2delay f137(主力净=超大单+大单, V17.0.16 重定案)** | THS(盘中)/TDX 0x0011(净量兜底); **ZHB 资金流键=竞价族不可作主力** |
 | 估值 | pe_ttm/**pe_dynamic**/pb/dividend_yield | push2delay **f163 静态/f162 动态**(V17.0)/ZHB | 腾讯(pe_ttm/pb)/THS(PB)/fuyao(pe_mrq) |
 | 财务 | net_profit/revenue/roe/eps | TDX F10/0x0010 | THS ROE TTM/新浪三表 |
@@ -47,7 +65,7 @@
 ### 2.1 行情/资金流
 | 字段 | 中间层 | 优先级链(V17.0) |
 |:---|:---|:---|
-| price/change_pct/amount/turnover | get_canonical_stock_data | prefetch → TDX → 腾讯 → push2delay → push2 → ZHB |
+| price/change_pct/amount/turnover | get_canonical_stock_data | push2delay 基础批量 → 腾讯补充批量 → (缺价时) TDX → 腾讯单股 → push2delay 单股 → push2 → ZHB |
 | **main_net_buy** | **get_main_net_buy** | **push2delay f137(主力净=超大单+大单, 无条件) → TDX 0x0011**——ZHB 分支已删(其资金流键=竞价额); ~~腾讯 tx75 兜底~~ V17.0.7 删(证伪=180日涨幅) |
 | main_net_buy_wan(cdata) | get_canonical_stock_data | **f137 /1e4(无条件) → TDX rt_fund**——与 get_main_net_buy 同源; ZHB 兜底已删(竞价额不可作主力); tx75 分支 V17.0.7 删除 |
 | main_net_buy_wan_1d | cdata | **0(缺失)**——ZHB [15]=昨日竞价额(非主力 T-1), 已停用 |
@@ -115,7 +133,7 @@
 
 ---
 
-## 五、5 大报告脚本**逐字段**调用矩阵(2026-08-14 V17.0 重定位)
+## 五、5 大报告脚本**逐字段**调用矩阵（历史字段消费信息，运行源路由以本节前置表为准）
 
 > ⚠️ **V17.0 行号说明**: 全脚本经 core/ 包化 + 批量骨架收敛 + 死代码清理, 行号已大幅漂移——下表行号为当前代码定位, 以 `Select-String` 复核为准。
 
@@ -168,7 +186,7 @@
 ### 5.3 get_sht_report.py(短线, 1718 行)
 | 变化点 | V17.0 |
 |:---|:---|
-| 批量骨架 | **基类 execute_batch_pipeline**(prefetch_fn=push2delay ulist 预取, snapshot_data, **pre_gd_init 已去除→统一上传与 med/lng 一致**) |
+| 批量骨架 | **基类 execute_batch_pipeline**；prefetch_fn 经统一层使用 push2delay 基础行情 + 腾讯批量补充；仍保留 ELTDX 短线章节与 SHT 异步 datacenter 预热 |
 | 主力净流入 | 二章/七章**统一 f137(主力=超大单+大单, V17.0.16 重定案)**; T日主力净买入量=TDX 0x0011(非实时 0 时跳过显示) |
 | PE(动) | cdata.pe_dynamic=push2delay f162(真动态 15.55, 腾讯静态不再覆盖) |
 | 封单 | 盘中实时估算=买一量×涨停价(合理); ZHB 封单额三日滚动为增强候选 |
@@ -179,7 +197,7 @@
 ### 5.4 get_med_report.py(中线, 1198 行)
 | 变化点 | V17.0 |
 |:---|:---|
-| 批量骨架 | 基类 execute_batch_pipeline(gen_kwargs=ind_comp; hsgt=None 误导参数已删) |
+| 批量骨架 | 基类 execute_batch_pipeline；基础行情/腾讯补充共用批量路由；ELTDX 连板状态在报告中消费，继续预热 |
 | 资金流 60 日 | get_history_fund_flow_120d(60 日窗口) |
 | 阶段涨幅 | cdata change_5d/10d/20d/60d(**交易日口径确认**) |
 | 多评委 | sc_render(V17.0) |
@@ -187,7 +205,7 @@
 ### 5.5 get_lng_report.py(长线, 1108 行)
 | 变化点 | V17.0 |
 |:---|:---|
-| 批量骨架 | 基类 execute_batch_pipeline(gen_kwargs=ind_comp) |
+| 批量骨架 | 基类 execute_batch_pipeline；基础行情/腾讯补充共用批量路由；长线正文不消费 ELTDX 短线天梯，故不预热该包 |
 | **综合数据** | **get_stock_composite_async 链已删除(V17.0 R3, 220 行)——统一 get_canonical_stock_data(_dp_composite 由 cdata 构建, 二次获取同步重建)** |
 | 行业 | TDX boards → **ZHB 881 段过滤(V17.0, 防 880 概念污染)** |
 | PE 静态 | `_pe_static = _zhb_pe_dynamic`(ZHB Col[3]=静态 TTM, 口径已知) |

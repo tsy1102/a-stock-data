@@ -1,11 +1,11 @@
-"""test_data_prefetch.py — sht 批量行情预取（V16.4.0 建立，2026-09-03 扩充）。
+"""test_data_prefetch.py — 个股报告批量行情与腾讯补充（V16.4.0 建立，V17.4.45 扩充）。
 
 被测对象：`core.data_provider.prefetch_quote_batch`（sht 批量 35 只热路径）。
 
 覆盖：
-  - 字段映射（f2 价格 / f3 涨跌 / f15-18 OHLC / f20-21 市值）
+  - push2delay 基础字段映射（f2 价格 / f3 涨跌 / f15-18 OHLC / f20-21 市值）
   - 单位换算（f6 元→万、f20/f21 元→亿）
-  - 估值字段不预取（ulist 实测返回 "-"）
+  - ulist 缺少估值字段时，腾讯批量补充接口独立 mock，避免真实网络
   - 进程内缓存命中（二次调用不重复请求）
   - >300 只按 300/批分块
   - [2026-09-03 新增] 请求参数（push2delay 安全域 / fields 集合 / secids）
@@ -92,11 +92,16 @@ def clean_batch_cache(monkeypatch):
 
     monkeypatch.setattr(dp, "_BATCH_QUOTE_CACHE", {})
     monkeypatch.setattr(dp, "_BATCH_QUOTE_DATE", "")
+    monkeypatch.setattr(dp, "_BATCH_QUOTE_TENCENT_ATTEMPTED", set())
     # 隔离跨进程 L2 缓存层：只读返回空、写入 no-op
     # （prefetch_quote_batch 内部 `from core.stock_cache import ...` 函数内导入，
     #  monkeypatch 模块属性即可在调用时生效）
     monkeypatch.setattr(sc, "read_quote_batch_l2", lambda codes, **kw: {})
     monkeypatch.setattr(sc, "persist_quote_batch_l2", lambda *a, **kw: None)
+    # 批量路由测试保持离线；单独用例可按需提供腾讯批量字段。
+    import core.tdx_client as tdx_client
+
+    monkeypatch.setattr(tdx_client, "_tencent_batch_fallback", lambda *a, **kw: {})
     return dp
 
 
@@ -145,10 +150,63 @@ def test_prefetch_field_mapping(clean_batch_cache, monkeypatch):
     assert d["amount_wan"] == pytest.approx(3640046368.0 / 1e4)  # 元 → 万
     assert d["mcap_yi"] == pytest.approx(1683234875747 / 1e8)  # 元 → 亿
     assert d["name"] == "贵州茅台"
-    # 估值字段不预取（ulist 不返回）
+    # 本用例的腾讯批量 mock 为空；真实运行时由该批量源补充 ulist 不返回的估值字段。
     assert d.get("pe_ttm") in (None, 0.0)
     assert d.get("pb") in (None, 0.0)
     assert "ulist.np" in captured["url"]
+
+
+def test_prefetch_tencent_fills_missing_fields_and_keeps_source_metadata(
+    clean_batch_cache, monkeypatch
+):
+    """腾讯只补全缺失字段，公开结果不泄漏内部来源元数据。"""
+    dp = clean_batch_cache
+    import core.stock_cache as stock_cache
+    import core.tdx_client as tdx_client
+
+    tencent_calls = []
+
+    def _fake_tencent(codes, **kwargs):
+        tencent_calls.append((list(codes), kwargs))
+        return {
+            "600519": {
+                "price": 999.0,
+                "pe_ttm": 12.3,
+                "pb": 2.4,
+                "roa": 8.1,
+                "roe_deduct_ttm": 11.1,
+                "limit_up": 1481.35,
+                "limit_down": 1211.85,
+            }
+        }
+
+    monkeypatch.setattr(tdx_client, "_tencent_batch_fallback", _fake_tencent)
+    _install_fake_http(
+        monkeypatch,
+        _make_handler([dict(_FAKE_ROW_MAOTAI)]),
+    )
+
+    first = dp.prefetch_quote_batch(["600519"])
+    second = dp.prefetch_quote_batch(["600519"])
+
+    assert first == second
+    assert "_field_sources" not in first["600519"]
+    assert first["600519"]["price"] == pytest.approx(1346.50)
+    assert first["600519"]["pe_ttm"] == pytest.approx(12.3)
+    assert first["600519"]["roa"] == pytest.approx(8.1)
+    assert first["600519"]["limit_up"] == pytest.approx(1481.35)
+    assert len(tencent_calls) == 1
+    assert tencent_calls[0][0] == ["600519"]
+    assert tencent_calls[0][1]["use_l2_cache"] is True
+    assert (
+        tencent_calls[0][1]["cache_category"]
+        == stock_cache.TENCENT_REPORT_BATCH_CACHE_CATEGORY
+    )
+
+    field_sources = dp._BATCH_QUOTE_CACHE["600519"]["_field_sources"]
+    assert field_sources["price"] == "realtime:push2delay:batch"
+    assert field_sources["pe_ttm"] == "realtime:tencent:batch"
+    assert field_sources["roa"] == "realtime:tencent:batch"
 
 
 # ── 用例 2（V16.4.0 原有）：进程内缓存命中，不重复请求 ───────────────────
@@ -190,14 +248,14 @@ def test_prefetch_300_chunk(clean_batch_cache, monkeypatch):
 
 # ── 用例 4（新增）：请求参数 —— 安全域 + 字段集 + secids ─────────────────
 def test_prefetch_request_params(clean_batch_cache, monkeypatch):
-    """★安全域断言：必须走 push2delay 镜像域，严禁 push2 主域（45000/h 封禁 20h）。"""
+    """★安全域断言：基础行情必须走 push2delay 镜像域，严禁 push2 主域。"""
     dp = clean_batch_cache
     calls = []
     _install_fake_http(monkeypatch, _make_handler([dict(_FAKE_ROW_MAOTAI)], calls))
 
     dp.prefetch_quote_batch(["600519"])
 
-    assert len(calls) == 1, "单只股票应只发 1 次请求"
+    assert len(calls) == 1, "单只股票的 Eastmoney 基础行情应只发 1 次请求"
     call = calls[0]
     assert "push2delay.eastmoney.com" in call["url"], "必须用 push2delay 镜像域，不得打 push2 主域"
     assert "ulist.np" in call["url"]

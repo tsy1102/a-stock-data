@@ -2752,7 +2752,7 @@ class ShtReportRunner(BaseReportRunner):
         # V16.4.1: 缓存值必须传入——否则每只股票重复拉 HSGT, 与 docstring"批量避免重复查询"相悖
 
         def _prefetch(codes):
-            # V16.3.10: 批量行情预取(push2delay ulist 1 次请求拿全部核心行情字段)
+            # V17.4.45: push2delay 基础行情 + 腾讯批量补充；统一层内部按字段记录来源。
             from core.data_provider import prefetch_quote_batch
 
             _ret = prefetch_quote_batch(codes)

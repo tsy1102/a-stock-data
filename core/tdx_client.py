@@ -1007,7 +1007,9 @@ def _tencent_volume_divisor(code: str) -> float:
 
 
 def _tencent_batch_fallback(
-    codes: List[str], use_l2_cache: bool = True
+    codes: List[str],
+    use_l2_cache: bool = True,
+    cache_category: Optional[str] = None,
 ) -> Dict[str, Dict[str, Any]]:
     """腾讯批量行情 → {code: {name, price, change_pct, ...}}。
 
@@ -1029,9 +1031,11 @@ def _tencent_batch_fallback(
     # 命中即免网络；val 自身用 use_l2_cache=False 跳过(保证全市场取数盘中实时，并落盘供 mak 复用)。
     if use_l2_cache and missing:
         try:
-            from core.stock_cache import read_tencent_batch_l2
+            from core.stock_cache import read_tencent_batch_l2, TENCENT_BATCH_CACHE_CATEGORY
 
-            _l2_map = read_tencent_batch_l2(missing)
+            _l2_map = read_tencent_batch_l2(
+                missing, category=cache_category or TENCENT_BATCH_CACHE_CATEGORY
+            )
             for _c, _l2 in _l2_map.items():
                 if _c in missing and _l2:
                     _TENCENT_BATCH_CACHE[_c] = _l2
@@ -1092,6 +1096,16 @@ def _tencent_batch_fallback(
                     if cv.startswith(("43", "83", "87")) and _bvol == 0 and _bprice > 0:
                         _debug_log(f"tdx tencent batch stale (老号段僵尸数据): {cv}")
                         continue
+                    def _field_float(field_name: str) -> float:
+                        index = _TENCENT_FIELD_INDEX.get(field_name)
+                        if index is None or index >= len(vals) or not vals[index]:
+                            return 0.0
+                        try:
+                            return float(vals[index])
+                        except (ValueError, TypeError):
+                            return 0.0
+
+                    _volume_divisor = _tencent_volume_divisor(cv)
                     try:
                         _TENCENT_BATCH_CACHE[cv] = {
                             "name": vals[_TENCENT_FIELD_INDEX["name"]],
@@ -1190,6 +1204,24 @@ def _tencent_batch_fallback(
                                 if vals[_TENCENT_FIELD_INDEX["pe_dynamic"]]
                                 else 0
                             ),
+                            # 与 get_tencent_quote 单股接口保持同一字段口径，供报告批量补全。
+                            "change_amt": _field_float("change_amt"),
+                            "prev_close": _field_float("last_close"),
+                            "volume_hand": _bvol / _volume_divisor if _bvol else 0.0,
+                            "float_mcap_yi": _field_float("float_mcap_yi"),
+                            "vol_ratio": _field_float("vol_ratio"),
+                            "high_52w": _field_float("high_52w"),
+                            "low_52w": _field_float("low_52w"),
+                            "change_180td_pct": _field_float("change_180td_pct"),
+                            "avg_price": _field_float("avg_price"),
+                            "beta": _field_float("beta"),
+                            "bid_ask_net": _field_float("bid_ask_net"),
+                            "entrust_ratio": _field_float("entrust_ratio"),
+                            "bid2": _field_float("bid2"),
+                            "ask2": _field_float("ask2"),
+                            "s_vol": _field_float("s_vol") / _volume_divisor,
+                            "b_vol": _field_float("b_vol") / _volume_divisor,
+                            "bid1_vol": _field_float("bid1_vol"),
                         }
                     except (ValueError, TypeError):
                         pass
@@ -1201,11 +1233,19 @@ def _tencent_batch_fallback(
     # V17.3.13: 落盘 L2 跨进程共享——把本次实际联网取得的子集写回 L2(val 全市场 / mak 仅补缺失)，
     # 供后续脚本(尤其 mak)免重打全市场网络。use_l2_cache=False(val)也照常写盘。
     try:
-        from core.stock_cache import persist_tencent_batch_l2
+        from core.stock_cache import persist_tencent_batch_l2, TENCENT_BATCH_CACHE_CATEGORY
 
-        _new = {_c: _TENCENT_BATCH_CACHE[_c] for _c in missing if _c in _TENCENT_BATCH_CACHE}
+        _category = cache_category or TENCENT_BATCH_CACHE_CATEGORY
+        # Do not refresh TTL for L2 hits: persisting every requested code would make a
+        # previously cached quote slide forward on every report run.
+        _persist_codes = missing
+        _new = {
+            _c: _TENCENT_BATCH_CACHE[_c]
+            for _c in _persist_codes
+            if _c in _TENCENT_BATCH_CACHE
+        }
         if _new:
-            persist_tencent_batch_l2(_new)
+            persist_tencent_batch_l2(_new, category=_category)
     except Exception:
         pass
     # 组装结果（含缓存命中）

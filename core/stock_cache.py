@@ -89,11 +89,13 @@ _cache_logger = logging.getLogger("stock_cache")
 # （TTL 自然回收 / 下次写入覆盖）。版本嵌入缓存 key 前缀，旧 key 自动失效、无需手动清缓存。
 CACHE_CONTRACT_VERSION = "v1"
 
-# V17.3.12: 批量行情跨进程共享缓存分类——val 预热写入，sht/med/lng/mak 经 prefetch_quote_batch 读 L2
-QUOTE_BATCH_CACHE_CATEGORY = "quote_batch"
+# V17.4.45: quote_batch v2 携带逐字段来源，避免把 val 的腾讯快照误标成 push2delay。
+QUOTE_BATCH_CACHE_CATEGORY = "quote_batch_v2"
 # V17.3.13: 腾讯批量【原始】快照分类——val 全市场 _tencent_batch_fallback 预热写入，mak 跨进程零网络复用
 # (复活 V16.0 注释中"val→mak 跨脚本复用"意图；mak 走独立 ZHB+腾讯批量路径，不复用归一化 quote_batch)
 TENCENT_BATCH_CACHE_CATEGORY = "tencent_batch"
+# V17.4.45: 个股报告扩展腾讯字段批次独立版本，不导致 MAK 的全市场旧快照整体失效。
+TENCENT_REPORT_BATCH_CACHE_CATEGORY = "tencent_report_batch_v2"
 
 # ═══════════════════════════════════════
 # L1 内存缓存（V10.3 新增）
@@ -1238,7 +1240,7 @@ def persist_quote_batch_l2(
     """V17.3.12: 把批量行情字典批量落盘到 SQLite L2（跨进程共享）。
 
     设计意图：val 全市场预热时写一次（~5000 只），后续 sht/med/lng/mak 经
-    prefetch_quote_batch 读 L2 即零网络。key = quote_batch:prefetch_quote_batch:<code>，
+    prefetch_quote_batch 读 L2 即零网络。v2 key = quote_batch_v2:prefetch_quote_batch:<code>，
     与 prefetch_quote_batch 的 L2 读写 key 完全一致，故可跨进程命中。
 
     批量 INSERT + 单次 commit，避免逐条 set_cache 的写放大（5000 次单写 ≈ 数秒）。
@@ -1278,7 +1280,7 @@ def read_quote_batch_l2(
     category: str = QUOTE_BATCH_CACHE_CATEGORY,
     func_name: str = "prefetch_quote_batch",
 ) -> Dict[str, Dict[str, Any]]:
-    """V17.3.12: 读取 val/mak 预热写入的批量行情 L2（跨进程共享）。
+    """读取带逐字段来源的批量行情 L2（跨进程共享，v2 缓存分类）。
 
     与 persist_quote_batch_l2 严格对称：同样的 _build_key(category, func_name, code) +
     同样的过期语义，故 key 完全一致、可跨进程命中。返回 {code: data}。
@@ -1320,7 +1322,9 @@ def read_quote_batch_l2(
 
 # V17.3.13: 腾讯批量原始快照跨进程共享（val 预热 → mak 零网络复用，复活 V16.0 注释中的 val→mak 跨脚本复用意图）
 def persist_tencent_batch_l2(
-    batch_map: Dict[str, Dict[str, Any]], ttl_seconds: float = _QUOTE_BATCH_CACHE_TTL
+    batch_map: Dict[str, Dict[str, Any]],
+    ttl_seconds: float = _QUOTE_BATCH_CACHE_TTL,
+    category: str = TENCENT_BATCH_CACHE_CATEGORY,
 ) -> int:
     """V17.3.13: 把腾讯批量【原始】行情字典批量落盘到 SQLite L2（跨进程共享）。
 
@@ -1328,7 +1332,8 @@ def persist_tencent_batch_l2(
     (name/price/change_pct/mcap_yi/pe_ttm/pe_lyr/pe_dynamic/open/high/low/last_close/pb/limit_up/
     limit_down/roa/roe_deduct_ttm/dividend_yield/turnover_pct/amount_wan)，供 mak 直接复用
     (避免 mak 进程内再次全市场腾讯批量拉取 ~60-150s)。key = tencent_batch:tencent_batch_fallback:<code>，
-    与 _tencent_batch_fallback 的 L2 读 key 完全一致，可跨进程命中。批量 INSERT + 单次 commit。
+    与 _tencent_batch_fallback 的 L2 读 key 完全一致，可跨进程命中。`category` 默认服务 VAL/MAK
+    全市场缓存；个股报告可传独立分类保存扩展字段结构。批量 INSERT + 单次 commit。
     """
     if _DISABLE_CACHE or not batch_map:
         return 0
@@ -1342,7 +1347,7 @@ def persist_tencent_batch_l2(
         for code, data in batch_map.items():
             if not data or not isinstance(data, dict) or not data.get("price"):
                 continue
-            key = _build_key(TENCENT_BATCH_CACHE_CATEGORY, "tencent_batch_fallback", code)
+            key = _build_key(category, "tencent_batch_fallback", code)
             blob = json.dumps(_serialize_for_cache(data), ensure_ascii=False).encode("utf-8")
             cur.execute(
                 "INSERT OR REPLACE INTO cache_entries "

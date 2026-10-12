@@ -1,6 +1,6 @@
 # AxData 接口到项目采集器交叉映射
 
-> 核对日期：2026-10-09。此表用于先确认接口与字段覆盖，再决定是否做实时对比或调整采集。
+> 核对日期：2026-10-10。此表用于先确认接口与字段覆盖，再根据受控样本决定是否调整采集。
 > 字段命中按名称精确匹配；它不自动证明语义、单位、复权、日期口径或计算公式等价。
 
 ## 口径与证据
@@ -9,9 +9,9 @@
 - 上游复核到 AxData 仓库提交 [`f8ce3cee9897`](https://github.com/electkismet/AxData/commit/f8ce3cee989717d79c7ad8f73b42f93c6dbd87e8)。上游资产清单将 `source_request` 口径列为 256 个；Web 目录另外展示 1 个 `stock_quote_refresh_tdx` WebSocket 实时流，因此网页口径为 257 项。
 - 上游资产清单明确区分接口目录、可请求能力与默认持久化采集器；“存在接口”不能直接推导为“项目已采集”或“真实源此刻可用”。
 - 本地 catalog 实得 256 个请求接口、3334 个字段出现位置；含实时流共 257 项。
-- 对照主字典 `field_registry.json` 的 2469 条来源字段路径及 `source_lineage.json` 的来源家族。当前旧 AxData 附录解析到 666 个接口-字段补充记录。
+- 对照主字典 `field_registry.json` 的 2469 条来源字段路径及 `source_lineage.json` 的来源家族；这是本页静态映射基线，之后增加的 12 条 KPH/KPL 来源字段路径见末尾实施增补。当前旧 AxData 附录解析到 666 个接口-字段补充记录。
 - 项目采集器映射只表示同提供方家族的候选路线。若未标为“接口 ID 直连”，不能据此认定具体 AxData 接口已被项目采集器替代。
-- 未发起实时 API 请求；这里确认的是目录/代码声明和本项目映射，不确认当前网络可用率。
+- 本页静态映射表反映实施增补前的接口/字段候选基线，覆盖 256 个请求接口及 1 个实时流目录项。静态映射不证明当前网络可用率；双交易日实测与其后的 KPH/KPL 采集、字典增补状态见下方摘要和[详细报告](axdata_field_reconciliation_20261010.md)。
 
 ## 按来源家族汇总
 
@@ -294,13 +294,33 @@
 ## 核查边界与需要据表判断的事项
 
 1. `tdx_ext` 在项目当前来源谱系中没有精确的 `tdx_ext` 家族登记或专用采集器；`collect_etf` 仅列为资产类别相关，不当作接口覆盖。
-2. AxData `kph`（开盘红）没有项目内同家族来源登记/采集器。项目 `开盘啦(kpl)` 是另一来源，不得合并计算成已覆盖。
+2. 在静态映射基线时，AxData `kph`（开盘红）没有项目内同家族来源登记/采集器；项目 `开盘啦(kpl)` 是另一来源，不能据此合并为已覆盖。后续已单独接入 KPH 历史涨停接口，并与 KPL 分别登记来源族。
 3. 东方财富、巨潮、腾讯、新浪、财联社、交易所等存在同家族采集器，但此表只把它们列为候选；每个 AxData 接口是否重复，必须看 JSON 中的接口字段名、项目主字典完整路径和实际采集函数证据，不能只按提供方名称判定。
 4. 当前只有 `stock_shortline_indicators_tdx` 能确认项目实际调用 AxData 的同名接口；项目 ELTDX 短线 helper 是另一实现。其它“同源候选”尚不等于端点级替代。
 5. `cls_market_emotion` 和 `kph_limit_ladder` 在项目 `collect_market_sources` 中分别有 `get_cls_market_emotion`、`get_kph_limit_ladder` 方法路径，经 levistock 调用；这不是 AxData 直连，也尚未用同批样本证明字段值等价。来源实现可核对 [levistock CLS](https://github.com/fleetinglife/levistock/blob/808d8187a6dd2a781dc51efeb1581f35d68e66c7/levistock/market/market_emotion_cls.py) 与 [levistock KPH](https://github.com/fleetinglife/levistock/blob/808d8187a6dd2a781dc51efeb1581f35d68e66c7/levistock/stock/stock_fupanla_kph.py)。
-6. 两个方法的结果在主字典中都归在 `市场源(market_sources)` 聚合路径下，来源谱系的 `independence_family` 仍为空；因此 JSON 把其同名字段命中单列，不能当成已确认 CLS/KPH 同源字段。KPH 与 KPL/开盘啦仍分开。
+6. 在本页静态映射基线中，CLS 市场情绪和 KPH 天梯方法都归在 `市场源(market_sources)` 聚合路径下，来源谱系的 `independence_family` 为空；二者同名字段仍不能仅凭静态路径定案。后续新增的 KPH 历史涨停接口与 KPL 明细则分别登记为 KPH/KPL 来源族，只有双交易日逐股核实的六组字段关系进入 E3，详见末尾实施增补。
 7. 项目 `get_cls_market_emotion` 的注释说 levistock 内部直连东财，但 levistock 当前对应实现使用 `x-quote.cls.cn` 财联社 URL；这是已核实的源码注释冲突，后续应修正注释并复核限流归属。
 8. 字段名称命中只是机械交叉索引。删除/保留决策仍需核验 AxData 描述、主字典 meaning/unit/status、实际数据日期、请求/缓存依赖与采集原始路径。
 9. JSON 保留每个接口的完整 AxData fields/parameters、主字典命中行（含来源、路径、规范名、含义、单位、状态）、旧 AxData 附录命中、项目 collector 候选及源文件行号。
 
 详细机器映射：[`axdata_interface_crosswalk.json`](axdata_interface_crosswalk.json)。
+
+## 2026-10-10 静态基线与实施增补
+
+本页上方保留原始目录候选；完整的逐接口、逐字段关系、证据等级、来源身份反向索引见 [2026-10-10 静态对撞报告](axdata_field_reconciliation_20261010.md) 和本页对应的 JSON。
+
+- 接口：257/257 均已标关系状态；字段：3343/3,343 均已标关系状态与证据等级。
+- 静态映射基线：26 个 `source_fields` 来源身份、35 个计划运行源名、2469 条项目字段路径均已进入映射。名称/路径命中仍只是候选。
+- 后续 KPH/KPL 双交易日实测已把六组逐股对应关系升为 E3；12 条来源字段路径已登记为 verified，并纳入主字典生成投影和独立来源锚。其他接口与字段的静态候选状态不变。
+- 选择性目录 `docs/field_verification/20261009/` 含 ZHB、TDX、ELTDX、AxData；ZHB `as_of_date=20261009`，ELTDX/AxData 短线分别报告 `stats_date=2026-10-09` / `20261009`。不是全项目全源采集；AxData 有 18/20 条可用记录。
+- 短线 AxData/ELTDX 对照：18 只股票、31 个同名字段、558 个值比较；327 个非空完全相同、4 个近似、115 对均空、112 个不同。差异和腾讯 PE 字段索引疑点详见报告。
+- 腾讯、KPH、CNINFO 各有明确目标日期/事件证据的受控样本；CLS 与 TDX 快照响应缺少来源日期，暂只作结构观察。
+- 当前登记：28 个来源身份、36 个运行源名、2481 条项目来源字段路径。KPH/KPL 六组映射和采集边界见下节；该增补不表示 KPH 已覆盖完整涨停名单。
+- 当前运行环境已安装项目约束的 `axdata==0.1.4`。未运行 `--all`，未请求 Eastmoney push2；本轮未观察到 403/429 或封禁。
+- 首次 `--only zhb,tdx` 的控制台摘要仍列出 Tencent/push2，但参数和 `meta.json` 均确认没有请求这些源；这是待修复的状态展示问题，不是实际采集调用。
+
+### KPH/KPL 涨停明细实施增补
+
+- KPL 原有涨停明细从 `market_sources` 拆分为 `raw_kpl.json`，不重复请求；AxData `kph_limit_up_history` 每次单次调用、`persist=False`、不重试，另写 `raw_kph.json`。限流/封禁状态会阻止该次 KPH 历史请求。
+- 两个交易日的 85 只重叠股票中，六项原始值逐项完全一致：`limit_time` ↔ `zt_time`、`seal_amount` ↔ `max_seal`、`seal_money` ↔ `seal_amount`、`net_inflow` ↔ `main_inflow`、`turnover` ↔ `amount`、`turnover_rate` ↔ `turnover_real`。KPH 另补充 5、7 行；仍为补充名单，不替代 KPL。
+- 北交所 `.SH`/`SSE` 上游标识异常保留在告警/观察字段，不参与数值碰撞。KPH raw 保留所有有限数值字段，未定案字段继续作为候选；仅六组已核实关系加入主字典 verified 路径。

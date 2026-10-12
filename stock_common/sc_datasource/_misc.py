@@ -225,19 +225,133 @@ def get_cls_market_emotion() -> Dict[str, Any]:
     try:
         import levistock as lk
 
-        # V16.2: levistock 内部直连东财，绕过统一限流 → 调用前走进程级协调（全局 ≤1 rps）
-        try:
-            from stock_common.sc_network import _em_wait_process_interval
+        # Levistock 直连 CLS host，绕过 sc_network HTTP 客户端，使用 CLS 专属跨进程限流。
+        from stock_common.sc_network import _cls_wait_process_interval
 
-            _em_wait_process_interval()
-        except Exception:
-            pass
+        _cls_wait_process_interval()
         d = lk.market_emotion_cls()
         if isinstance(d, dict) and d:
             return d
     except Exception as _e:
+        try:
+            from stock_common.sc_network import _mark_levistock_provider_block
+
+            _mark_levistock_provider_block("cls", _e)
+        except Exception as _block_error:
+            _debug_log(f"datasource get_cls_market_emotion block-state error: {_block_error}")
         _debug_log(f"datasource get_cls_market_emotion: {_e}")
     return {}
+
+
+class LevistockCandidateRequestError(RuntimeError):
+    """Wrap an upstream failure after the candidate network call has started."""
+
+    request_started = True
+
+    def __init__(self, original_error: Exception) -> None:
+        self.response = getattr(original_error, "response", None)
+        self.status_code = getattr(original_error, "status_code", None)
+        self.original_error = original_error
+        super().__init__(str(original_error))
+
+
+def get_levistock_candidate_sample(
+    candidate_id: str,
+    *,
+    data_date: str,
+    stock_code: Optional[str] = None,
+    expected_family: Optional[str] = None,
+) -> tuple[Any, Dict[str, Any], str]:
+    """Return one uncached, rate-limited raw sample for the bounded Levistock audit.
+
+    Candidate responses remain raw research evidence and are stored outside the
+    production collision sources. The adapter owns the upstream route and the
+    corresponding CLS/KPH process limiter.
+    """
+    from importlib import import_module
+
+    routes = {
+        "cls_sector_industry": (
+            "cls",
+            "levistock.sector.sector_cls",
+            "sector_industry_cls",
+        ),
+        "kph_market_emotion": (
+            "kph",
+            "levistock.market.market_emotion_kph",
+            "market_emotion_kph",
+        ),
+        "cls_sector_heat": ("cls", "levistock.sector.sector_heat_cls", "get_sector_heat"),
+        "kph_sector_ranking": (
+            "kph",
+            "levistock.sector.sector_ranking_kph",
+            "sector_ranking_kph",
+        ),
+        "cls_sector_rotation": (
+            "cls",
+            "levistock.sector.sector_rotation_cls",
+            "get_sector_rotation",
+        ),
+        "cls_stock_kline": (
+            "cls",
+            "levistock.stock.stock_kline_cls",
+            "stock_kline_cls",
+        ),
+        "cls_stock_timeline": (
+            "cls",
+            "levistock.stock.stock_kline_cls",
+            "stock_timeline_cls",
+        ),
+    }
+    route = routes.get(candidate_id)
+    if route is None:
+        raise ValueError(f"unsupported Levistock candidate: {candidate_id}")
+    family, module_name, method_name = route
+    if expected_family is not None and expected_family != family:
+        raise ValueError(f"Levistock candidate family mismatch: {candidate_id}")
+    try:
+        datetime.strptime(data_date, "%Y-%m-%d")
+    except (TypeError, ValueError) as exc:
+        raise ValueError("data_date must be YYYY-MM-DD") from exc
+    if candidate_id in {"cls_stock_kline", "cls_stock_timeline"}:
+        if not isinstance(stock_code, str) or len(stock_code) != 6 or not stock_code.isdigit():
+            raise ValueError(f"{candidate_id} requires a six-digit stock_code")
+
+    from stock_common import sc_network
+
+    if sc_network._levistock_provider_is_blocked(family):
+        raise RuntimeError(f"Levistock {family.upper()} provider family is blocked")
+    limiter = (
+        sc_network._cls_wait_process_interval
+        if family == "cls"
+        else sc_network._kph_wait_process_interval
+    )
+    limiter()
+
+    params: Dict[str, Any] = {}
+    if candidate_id == "kph_market_emotion":
+        params = {"date": data_date}
+    elif candidate_id == "kph_sector_ranking":
+        params = {"date": data_date, "zs_type": "7", "fetch_all": False}
+    elif candidate_id == "cls_sector_rotation":
+        params = {"days": 4}
+    elif candidate_id == "cls_stock_kline":
+        params = {
+            "stock_code": stock_code,
+            "kline_type": "daily",
+            "limit": 5,
+            "offset": 0,
+        }
+    elif candidate_id == "cls_stock_timeline":
+        params = {"stock_code": stock_code}
+
+    module = import_module(module_name)
+    method = getattr(module, method_name)
+    try:
+        payload = method(**params)
+    except Exception as exc:
+        raise LevistockCandidateRequestError(exc) from exc
+    return payload, params, f"{module_name}.{method_name}"
 
 
 __all__ = [
@@ -256,6 +370,8 @@ __all__ = [
     'code',
     'datetime',
     'get_cls_market_emotion',
+    'get_levistock_candidate_sample',
+    'LevistockCandidateRequestError',
     'get_historical_high_qfq',
     'get_share_capital',
     'get_tdx_day_tail',

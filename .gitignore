@@ -44,7 +44,11 @@ stock_common/cache/
 
 # ── 采集产物(可重采, 保留分析结论) ─────────────────────────
 # V17.0 补: 每日 raw_*.json 为可重采数据(2MB/日递增); analysis.md/映射表/pool.json 入库
-docs/field_verification/*/raw_*.json
+docs/field_verification/**/raw_*.json
+# 原始接口响应和完整碰撞 JSON 属于可重建的本地采样产物；提交摘要、字典和研究状态
+docs/field_verification/**/raw/*.txt
+docs/field_verification/**/*candidate_raw.json
+docs/field_verification/**/*collision_report.json
 
 # ── Python & 测试临时缓存 ───────────────────────────────────
 __pycache__/

@@ -50,10 +50,6 @@ from core.stock_cache import invalidate_category  # noqa: E402
 _CACHE_ENABLED = os.environ.get("STOCK_NOCACHE", "") != "1"
 
 
-def setUpModule():
-    invalidate_category("board_members")
-
-
 class _FakeResp:
     """最小响应桩：只需支持 .json()。"""
 

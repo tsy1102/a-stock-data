@@ -48,6 +48,71 @@ def test_flatten_ignores_error_and_skip_markers_as_fields():
     ]
 
 
+def test_kpl_and_kph_raw_files_flatten_as_separate_sources():
+    snapshots = [
+        {
+            "trade_date": "2026-09-29",
+            "scheme": "kph.limit_up_history",
+            "stocks": {"920779": {"limit_time": 1790645140, "seal_money": 200.0}},
+            "identity_observations": [
+                "920779: reported_exchange=SSE; reported_instrument_id=920779.SH"
+            ],
+        },
+        {
+            "trade_date": "2026-09-29",
+            "scheme": "kpl.limit_up_detail",
+            "stocks": {"600000": {"zt_time": 1790645140, "max_seal": 34.0}},
+        },
+    ]
+    flattened = []
+    for source, document in zip(("kph", "kpl"), snapshots):
+        for container in collide._record_containers(document, source=source):
+            for code, record in container.items():
+                collide._flatten(
+                    record,
+                    source,
+                    document["scheme"],
+                    code,
+                    document["trade_date"],
+                    flattened,
+                )
+
+    assert ("kph.limit_time", 1790645140) in flattened
+    assert ("kph.seal_money", 200.0) in flattened
+    assert ("kpl.zt_time", 1790645140) in flattened
+    assert ("kpl.max_seal", 34.0) in flattened
+    assert not any("identity_observations" in field for field, _value in flattened)
+
+
+def test_verified_kph_kpl_dictionary_paths_are_independent_anchors():
+    from scripts import collide
+
+    context = collide.load_registry_context()
+    assert context["safe_to_run"] is True
+    assert {
+        ("kph", code)
+        for code in (
+            "limit_time",
+            "seal_amount",
+            "seal_money",
+            "net_inflow",
+            "turnover",
+            "turnover_rate",
+        )
+    } <= context["anchors"]
+    assert {
+        ("kpl", code)
+        for code in (
+            "zt_time",
+            "max_seal",
+            "seal_amount",
+            "main_inflow",
+            "amount",
+            "turnover_real",
+        )
+    } <= context["anchors"]
+
+
 def test_flatten_skips_only_ineligible_source_subtree_and_hides_metadata():
     out = []
     collide._flatten(
@@ -317,6 +382,66 @@ def test_code_of_preserves_full_nested_identity():
     assert collide.code_of("tdx.quote_full.amount_wan") == "quote_full.amount_wan"
     assert collide.code_of("zhb.stat.board_count") == "stat.board_count"
     assert collide.code_of("tencent[4]") == "[4]"
+    assert collide.code_of("zhb.full.change_5d") == "change_5d"
+    assert collide.code_of("zhb.stat.change_5d") == "stat.change_5d"
+    assert collide.code_of("zhb.stat2.low_52w") == "stat2.low_52w"
+
+
+def test_zhb_merged_field_paths_match_existing_registry_mappings():
+    context = collide.load_registry_context()
+
+    left = (collide.alias_src("zhb.full.change_5d"), collide.code_of("zhb.full.change_5d"))
+    right = (collide.alias_src("ulist239.f109"), collide.code_of("ulist239.f109"))
+
+    assert left == ("zhb", "change_5d")
+    assert (left + right) in context["known_mappings"]
+
+
+def test_duplicate_runtime_alias_code_is_not_used_as_a_verified_anchor(
+    monkeypatch, tmp_path
+):
+    registry_path = tmp_path / "registry.json"
+    registry_path.write_text(
+        json.dumps(
+            {
+                "source_fields": [
+                    {"source": "ZHB-a", "code": "shared", "status": "verified"},
+                    {"source": "ZHB-b", "code": "shared", "status": "unverified"},
+                ],
+                "mappings": [],
+            }
+        ),
+        encoding="utf-8",
+    )
+    lineage = {
+        "sources": {
+            "ZHB-a": {
+                "runtime_aliases": ["zhb"],
+                "anchor_eligible": True,
+                "independence_status": "confirmed",
+                "independence_family": "tdx",
+            },
+            "ZHB-b": {
+                "runtime_aliases": ["zhb"],
+                "anchor_eligible": True,
+                "independence_status": "confirmed",
+                "independence_family": "tdx",
+            },
+        },
+        "runtime_sources": {
+            "zhb": {"independence_status": "confirmed", "independence_family": "tdx"}
+        },
+        "source_aliases": {},
+    }
+    monkeypatch.setattr(collide, "REG_PATH", str(registry_path))
+    monkeypatch.setattr(collide.SLA, "load_source_lineage", lambda registry=None: lineage)
+
+    context = collide.load_registry_context()
+
+    assert context["safe_to_run"] is True
+    assert ("zhb", "shared") not in context["verified"]
+    assert ("zhb", "shared") not in context["anchors"]
+    assert context["ambiguous_verified"] == 1
 
 
 def test_default_field_selection_uses_only_verified_independent_anchors():
@@ -511,3 +636,28 @@ def test_event_snapshots_keep_natural_dates_and_source_scoped_identity(tmp_path)
         .keys()
         .isdisjoint(unmatched_store["cls.title"]["vals"])
     )
+
+
+def test_source_identity_report_stays_outside_field_adjudication():
+    base_report = "## L1 候选\n\n保持原候选内容。"
+    result = {
+        "status": "ok",
+        "minimum_capture_dates": 3,
+        "minimum_symbols_per_date": 18,
+        "recheck_capture_dates": 20,
+        "endpoints": {
+            "ggmx": {
+                "status": "operationally_redundant",
+                "reference_source": "tencent",
+                "evidence_dates": ["20261008", "20261009", "20261012"],
+                "reason": "exact match",
+            }
+        },
+    }
+
+    report = collide.append_source_identity_report(base_report, result)
+
+    assert report.startswith(base_report)
+    assert "来源身份核验（不参与字段语义定案）" in report
+    assert "operationally_redundant" in report
+    assert "20261008, 20261009, 20261012" in report

@@ -93,7 +93,9 @@ def _check_section_map(corpus_texts):
     """检查 SECTION_MAP 每个子串是否能在 docs 全树解析到。返回违规列表。"""
     violations = []
     sec_map = _load_section_map()
-    joined = "\n".join(t for _, t in corpus_texts)
+    # SECTION_MAP anchors describe rendered text; Markdown code spans must not
+    # make a source title such as ``TCP `GetFinanceInfo` `` look absent.
+    joined = "\n".join(re.sub(r"`", "", text) for _, text in corpus_texts)
     for label, subs in sec_map:
         for sub in subs:
             if sub and sub not in joined:

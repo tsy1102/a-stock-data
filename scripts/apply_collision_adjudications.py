@@ -98,7 +98,7 @@ def _runtime_identity(field_id: str, source: str, lineage: dict[str, Any]) -> tu
     alias, code = next(iter(best))
     if not code:
         raise ValueError(f"runtime field has an empty code path: {field_id!r}")
-    return alias, code
+    return alias, sla.normalize_runtime_field_code(alias, code)
 
 
 def _find_l1_candidate(report: dict[str, Any], left: str, right: str) -> dict[str, Any]:
@@ -557,10 +557,10 @@ def main(argv: list[str] | None = None) -> int:
 
         outputs = {
             REGISTRY_PATH: json.dumps(updated, ensure_ascii=False, indent=2) + "\n",
-            FIELD_DICT_PATH: gfd.render_field_dict(updated) + "\n",
-            UNKNOWN_FIELDS_PATH: gfd.render_unknown_fields(updated) + "\n",
-            SOURCE_MAP_PATH: gfd.render_source_repository_map(updated, lineage) + "\n",
-            METADATA_GAPS_PATH: gfd.render_field_metadata_gaps(updated) + "\n",
+            FIELD_DICT_PATH: gfd.render_field_dict(updated),
+            UNKNOWN_FIELDS_PATH: gfd.render_unknown_fields(updated),
+            SOURCE_MAP_PATH: gfd.render_source_repository_map(updated, lineage),
+            METADATA_GAPS_PATH: gfd.render_field_metadata_gaps(updated),
         }
         _atomic_write_batch(outputs)
         print(

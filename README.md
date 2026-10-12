@@ -6,16 +6,21 @@
 
 ## 功能特性
 
+- **FTShare 接口级来源核验**：FTShare 底层来源族仍未确认，因此不作为独立碰撞锚；已登记的六个数值接口会把完整记录与同一有效交易数据日且来源日期一致的已验证独立来源逐项比对。只有三个不同的已完成交易数据日（项目数据日与各源 as_of_date 一致，盘前、周末或节假日采集也可计入）、每日至少 18 只股票且所有记录字段完全匹配时，才将该接口标记为“运行上冗余”并跳过后续日常请求；其他 FTShare 接口继续采集。匹配结果不会改主字典或来源谱系。每累计 20 个后续有效交易数据日复核一次；适配器或字段契约变化会立即恢复采集，并要求三天新证据。状态保存在本机 .tmp/source_identity_state.json，核验或状态读取失败时继续采集。--overwrite 会强制重采已跳过接口。碰撞报告另列核验状态，不把它纳入字段语义定案或锚。
 - **5 种报告类型**：短线(sht) / 中线(med) / 长线(lng) / 估值选股(val) / 市场状态(mak)（ful 已于 V16.1 下线，能力并入前四类）。
-- **多源字段逆向破解**：ZHB / TDX 0x0010 / 东财 push2 / 腾讯 / 新浪 / 同花顺 fuyao / 巨潮 / FTShare 私有协议字段交叉验证（thsdk 通道已于 V17.0.29 移除）。字段状态按源与完整路径保存在机器权威 registry；[`field_dict.md`](docs/field_dict.md) 提供导航，[`unknown_fields.md`](docs/unknown_fields.md) 列出破解队列，[`field_metadata_gaps.md`](docs/field_metadata_gaps.md) 暴露已验证字段的描述缺口，[`field_matrix.md`](docs/field_matrix.md) 和 [`source_repository_map.md`](docs/source_repository_map.md) 分别展示来源矩阵与仓库谱系。碰撞报告只提供候选，人工复核后按 [`定案同步流程`](docs/field_verification/ADJUDICATION_WORKFLOW.md) 更新状态。
-- **日期感知的跨源对撞**：行情按有效交易日对齐，新闻/公告按自然日处理；保留历史休市目录，按实际数据日期择优快照，并让候选证据记录样本日期与来源。字段破解采集和碰撞默认排除龙虎榜、人气榜等市场上下文；其余数值字段照常采集，历史 raw 保留。采集上下文可添加 `--include-context`；采集时单独指定 `--only exchange` 或 `--only em_hot` 也会自动启用对应上下文。碰撞时添加 `--include-context` 可将已归档的上下文数据纳入分析。方法与规则见 [`CRACKING_METHODOLOGY.md`](docs/field_verification/CRACKING_METHODOLOGY.md)。
+- **多源字段逆向破解**：ZHB / TDX 0x0010 / 东财 push2 / 腾讯 / 新浪 / 同花顺 fuyao / 巨潮 / FTShare MCP 服务字段交叉验证（FTShare 底层提供方族待逐工具确认；thsdk 通道已于 V17.0.29 移除）。FTShare MCP 工具名按网关实时工具清单核对，分页接口校验页数和记录总数。字段状态按源与完整路径保存在机器权威 registry；[`field_dict.md`](docs/field_dict.md) 提供导航，[`unknown_fields.md`](docs/unknown_fields.md) 列出破解队列，[`field_metadata_gaps.md`](docs/field_metadata_gaps.md) 暴露已验证字段的描述缺口，[`field_matrix.md`](docs/field_matrix.md) 和 [`source_repository_map.md`](docs/source_repository_map.md) 分别展示来源矩阵与仓库谱系。碰撞报告只提供候选，人工复核后按 [`定案同步流程`](docs/field_verification/ADJUDICATION_WORKFLOW.md) 更新状态。
+- **探索候选持续继承**：碰撞脚本使用 `--exploratory` 时，将 L1、L4 和方法候选按字段对写入 `docs/field_verification/collision_research_state.json`，保留观察日期、报告位置和证据摘要。后续报告会标出历史复现，避免每次从零审阅；同一日期、报告路径、窗口和上下文范围的重跑会替换该次观察，不重复累计。带 `--include-context` 的探索报告单独存放。探索台账只保存研究历史，不自动确认字段；只有人工复核并显式应用的正式决定才会更新主字典。
+- **日期感知的跨源对撞**：行情按有效交易日对齐，新闻/公告按自然日处理；保留历史休市目录，按实际数据日期择优快照，并让候选证据记录样本日期与来源。字段破解采集和碰撞默认排除龙虎榜、人气榜等市场上下文；其余数值字段照常采集，历史 raw 保留。AxData 的 KPH 接口（底层来源族为 KPH）作为 KPL 名单的补充接口，不替代 KPL；六组双交易日对撞确认字段已登记为锚。采集上下文可添加 `--include-context`；采集时单独指定 `--only exchange` 或 `--only em_hot` 也会自动启用对应上下文。采集启动行会显示实际源选择和上下文状态。碰撞时添加 `--include-context` 可将已归档的上下文数据纳入分析。方法与规则见 [`CRACKING_METHODOLOGY.md`](docs/field_verification/CRACKING_METHODOLOGY.md) 和 [`scripts/README.md`](scripts/README.md)。
+- **AxData 日常验证**：完整采集在数据日为最近已完成交易日且该数据日状态为收盘时自动运行；周末和节假日默认以最近交易日作为数据日，因此盘前、周末或节假日运行也可核验上一完整交易日。流程复用当日 AxData 短线/ELTDX 与 KPH/KPL raw，并且每个数据日最多增加一次已核准的 Tencent `tencent_realtime_snapshot` 请求，轮换一只项目已成功采集的股票。它不是对 AxData 257 个接口的每日轮询；其余路由仍在静态交叉表中按价值和风险待审。只有项目与 AxData 报价日期及 `quote_time` 完全匹配时才比较字段；不匹配样本保留日期证据但不进入字段比较。403/429/封禁会暂停对应源族，确认恢复后删除 `.tmp/axdata_daily_validation_state.json` 才恢复。证据写入 `docs/field_verification/<数据日>/axdata_validation.json`，不自动修改主字典。完整快照的同日重跑会跳过主采集但刷新验证摘要；如果此前因对照源暂缺等原因没有发起请求，重跑会重新评估；请求一旦开始，AxData 每日状态和证据会阻止同日重复请求。`--only`、目标日期非最近完整交易日、或目标数据阶段尚未收盘时不会发起额外验证请求。
+- **Levistock 每日来源核验**：完整采集或 `--only market_sources` 会复用已采集的 CLS 情绪与 KPH 天梯，并从 7 个已筛选的数值接口中逐交易日轮换至多一个候选请求；仅在运行版本符合 `requirements.txt` 的 `0.1.8` 固定约束、目标为最近已完成交易日且数据阶段为 `closed` 时探测。周末和节假日默认以最近交易日作为数据日，盘前运行也可以核验该数据日；候选日期可比性仍依据请求日期或响应日期证据判定。调用前走 CLS/KPH 源族限流，403/429/封禁后停止该族并等待人工复核。候选 raw 独立存放，不直接作为碰撞锚；每日核验器本身只读 raw，新增请求数为 0。当前 7 项轮验不代表 Levistock 全部公开 API 均已验证。Eastmoney push2 未确认恢复前排除。完整快照同日重跑会复用 raw、补齐缺失的核验摘要，已保存的候选样本不会重请求；此前因对照源缺失而零请求跳过时，主源通过 `--overwrite` 恢复后可同日重新评估，实际候选请求一旦启动仍会被日级状态去重。详见 [`Levistock 来源核对`](docs/levistock_source_reconciliation_20261010.md)。
 - **上游兼容性复核**：登记仓库、依赖版本差异、实际调用边界与采用结论见 [`UPSTREAM_COMPATIBILITY.md`](docs/UPSTREAM_COMPATIBILITY.md)；仓库对应关系见 [`source_repository_map.md`](docs/source_repository_map.md)。
+- **百度源状态**：项目已停用百度股票接口，采集器只保留零请求 `deprecated` 状态用于快照判定；AxData 当前接口表没有百度接口，FTShare 的 `baidu_financial_calendar` 是财经日历服务方法，不是股票行情源。
 - **统一数据合约**：唯一入口 `get_canonical_stock_data` 返回 `CanonicalStockData` 强类型合约（113 个 dataclass 属性，含 12 个可选 ELTDX 扩展；每只股票通过 `field_sources` 记录来源），消除异构多源冲突。
 - **ZHB-First 离线优先路由**：盘前 / 休市日 100% 走 ZHB 内存秒级提取；交易日盘中盘后强制网络取 T 日真实收盘价。
 - **申万二级行业统一**：东财 datacenter 一次性分页拉取 + 7 天缓存，零逐股请求、零 push2 风控面。
-- **东财分域限流与风控**：共享令牌桶 + 全局 1.0s 节流 + 强制直连 + 429 退避 + 连续 3 次断连 20h 冷却；熔断静默降级回退 ZHB T-1 快照。
+- **东财分域限流与风控**：共享令牌桶 + 全局 1.0s 节流 + 强制直连 + 429 退避 + 连续 3 次断连跨进程 20h 冷却；字段采集在 403、429、已封禁或连续断连时暂停该源后续股票请求。
 - **统一缓存层**：SQLite + L1 内存 + TTL + `cross_verify` + single-flight + 版本化防污染（口径变更升 category）。
-- **TDX 服务器选择**：主源使用已验证主机列表并避免冷启动全量探测，故障时交由兼容适配器降级。
+- **TDX 服务器选择**：主源使用已验证主机列表并避免冷启动全量探测，故障时交由兼容适配器降级。ELTDX 北交所 `92xxxx` 使用 `bj` 市场码；采集与报告适配器按目标代码范围请求，避免误扫全市场。字段采集不再逐股请求未用于破解的 F10 新闻。
 - **通用框架与工程化**：`BaseReportRunner` 共享骨架、并发下沉线程池、云端同步（GD 上传）、批量并行、mypy 类型安全。
 - **测试体系（防退化守护）**：测试按 data/core/infra/reports 分层；当前模块数与用例数见 `tests/README.md`。
 - **工程质量与验证记录**：完整审计范围、最新验证结果和未清理的历史债务见 [`docs/PROJECT_AUDIT_REMEDIATION_20260928.md`](docs/PROJECT_AUDIT_REMEDIATION_20260928.md)。
@@ -70,7 +75,7 @@ pip install -r requirements.txt
 pip install -r requirements-dev.txt   # 开发环境（包含运行时依赖、测试/类型/格式工具）
 ```
 
-`requirements-dev.txt` 通过 `-r requirements.txt` 继承同一组运行时固定版本。AxData 的 `axdata_core` 模块由 `axdata` 包提供；短线指标使用 `stock_common/cache/zhb/` 中最新的 `zhb_*.zip` 作为统计资源，同时仍会请求 TDX 行情/财务输入。适配器和 ZIP 路径的回归边界见 [`UPSTREAM_COMPATIBILITY.md`](docs/UPSTREAM_COMPATIBILITY.md)。
+`requirements-dev.txt` 通过 `-r requirements.txt` 继承同一组运行时固定版本。AxData 的 `axdata_core` 模块由 `axdata` 包提供；短线指标使用仓库根目录 `cache/zhb/` 中最新的 `zhb_*.zip` 作为统计资源，同时仍会请求 TDX 行情/财务输入。适配器和 ZIP 路径的回归边界见 [`UPSTREAM_COMPATIBILITY.md`](docs/UPSTREAM_COMPATIBILITY.md)。
 
 ### 基本用法
 
@@ -137,7 +142,7 @@ python main.py [选项] 股票代码...
 a-stock-data/
 ├── main.py                       # 主入口程序（参数分发/子进程调度/超时分级）
 ├── .tmp/                         # 本机运行时临时目录（Git 忽略，按需创建）
-├── VERSION                       # 项目版本号（17.4.32，单一来源）
+├── VERSION                       # 项目版本号（17.4.41，单一来源）
 │
 ├── core/                         # 核心模块包（9 个支撑模块，见 core/README.md）
 │   ├── config.py                 # 全局配置集中管理（超时/限流/熔断）
@@ -169,8 +174,9 @@ a-stock-data/
 │   └── eastmoney_cookie.txt      # 可选东方财富 Cookie
 │
 ├── scripts/                      # 辅助脚本（见 scripts/README.md）
-│   ├── capture_field_probe.py    # 字段实测采集 → docs/field_verification/YYYYMMDD/
+│   ├── capture_field_probe.py    # 字段实测采集；KPL/KPH 涨停明细独立归档并按实测日对齐
 │   ├── collide.py                # 日期归一化、快照择优、跨源独立性闸门与多方法候选；每日采集后运行
+│   ├── collision_research_state.py  # 探索候选观察台账；按字段对保存证据历史
 │   ├── context_policy.py         # 采集与碰撞共享的可选上下文路径策略
 │   ├── run_tests.ps1             # 测试统一入口（AGENTS.md 强制 shell 层中转）
 │   ├── run_with_system_python.ps1 # Python 3.12 选择与命令转发
@@ -194,6 +200,7 @@ a-stock-data/
 │   ├── roadmap.md                # 版本路线图 + ADR 决策记录
 │   ├── field_dict.md             # 生成的字段治理入口与链接
 │   ├── field_verification/field_registry.json # 逐源完整路径字段状态（机器权威）
+│   ├── field_verification/collision_research_state.json # 探索候选历史（不代表字段定案）
 │   ├── unknown_fields.md         # 未知、候选、冲突与已证伪字段队列
 │   ├── field_matrix.md           # 字段×源矩阵
 │   ├── source_repository_map.md  # 数据源与 GitHub 仓库对应关系
@@ -319,7 +326,7 @@ Remove-Item Env:\STOCK_NOCACHE
 
 ### 常见调试问题
 
-- **报告数据与最新行情不一致？**：可能是缓存命中了过期数据；Windows PowerShell 中设置 `$env:STOCK_NOCACHE = '1'` 后通过项目启动器运行，再清除该环境变量；或调用 `.scriptsun_with_system_python.ps1 -m core.stock_cache clear --category dragon_tiger` 清理对应分类。
+- **报告数据与最新行情不一致？**：可能是缓存命中了过期数据；Windows PowerShell 中设置 `$env:STOCK_NOCACHE = '1'` 后通过项目启动器运行，再清除该环境变量；或调用 `.\scripts\run_with_system_python.ps1 -m core.stock_cache clear --category dragon_tiger` 清理对应分类。
 - **类型检查 mypy 报错？**：从仓库根目录运行 `mypy --no-pretty --show-error-codes`，先查看完整诊断再修复；不要通过全局忽略项目错误来隐藏问题。
 - **Google Drive 上传失败？**：检查根目录是否有 `client_secrets.json`（首次使用需浏览器授权），确认授权账号有 `a-stock_data` 文件夹的访问权限。
 - **架构不熟悉？**：详见 [`docs/architecture.md`](docs/architecture.md)，包含 Mermaid 架构图；字段口径见 [`docs/domain_glossary.md`](docs/domain_glossary.md) 领域词汇表。

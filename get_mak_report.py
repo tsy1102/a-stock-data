@@ -50,7 +50,7 @@ from stock_common import (
     _debug_log,  # V17.0 审查: 删 UA 死导入(getharden 委托 sc_datasource 后无引用)
     _load_strategy_config,
     get_recent_dragon_tiger,
-    baidu_kline_full,
+    baidu_kline_full as _tdx_kline_full,
     BaseReportRunner,  # V16.4.1: 删 _request_with_retry/common_parse_args
     is_trading_day,
     get_market_status,
@@ -401,13 +401,12 @@ MAK_SCAN_WORKERS = 3
 def _mak_kline_raw(code):
     """取该 code 的 60 根日K (keys, rows)，进程内 memo 复用（V17.3.12 去重）。"""
     if code not in _MAK_KLINE_MEMO:
-        _MAK_KLINE_MEMO[code] = baidu_kline_full(code, count=60)
+        _MAK_KLINE_MEMO[code] = _tdx_kline_full(code, count=60)
     return _MAK_KLINE_MEMO[code]
 
 
-def get_baidu_kline(code, days=20):
-    """V4: K线数据 → tdx_client 适配器（TDX日K线，自动fallback百度）。
-    V17.3.12: 统一走 _mak_kline_raw(60 根 memo)，按 days 切片，避免重复 TDX 取数。"""
+def get_tdx_kline(code, days=20):
+    """Return daily TDX bars through the historical ``baidu_kline_full`` compatibility wrapper."""
     keys, rows = _mak_kline_raw(code)
     if not keys or not rows:
         return [], []
@@ -419,6 +418,10 @@ def get_baidu_kline(code, days=20):
     closes = [_safe_float(r[ci]) for r in rows[-days:] if len(r) > ci]
     vols = [_safe_float(r[vi]) for r in rows[-days:] if len(r) > vi and vi >= 0] if vi >= 0 else []
     return closes, vols
+
+
+# Keep the old module-level name for external callers; it has never used a live Baidu endpoint.
+get_baidu_kline = get_tdx_kline
 
 
 def get_index_returns():
@@ -481,7 +484,7 @@ def count_history_deviations(code, index_code, index_closes_pool, days_lookback=
     原实现: si = -(i+4) → abs(si) 后按正索引访问，语义错误（正索引从头部数）。
     修正: 直接用负索引（Python 语义，从尾部数），窗口为 [-(i+4)-2, -(i+4)] 共 3 根。
     """
-    closes, _ = get_baidu_kline(code, days_lookback + 5)
+    closes, _ = get_tdx_kline(code, days_lookback + 5)
     if len(closes) < days_lookback + 3:
         return 0, None
     idx_closes = index_closes_pool.get(index_code, [])
@@ -1148,7 +1151,7 @@ def analyze_top_stocks(top_sectors):
 
 def annotate_technical_pattern(code):
     try:
-        closes, _ = get_baidu_kline(code, 25)
+        closes, _ = get_tdx_kline(code, 25)
         if len(closes) < 20:
             return ""
         p = closes[-1]
@@ -1197,14 +1200,14 @@ async def generate_sector_report(output_path):
     # 过滤为纯 A 股（与 val 的 _is_a_stock 同口径：00/30/60/68/92 前缀）
     _before = len(all_stocks)
     all_stocks = [s for s in all_stocks if _is_a_stock(s.get("code", ""))]
-    # V17.2.24: eltdx 全局连板天梯预热(轻量接口, 仅 limit_ladder 一次调用, 不批量 shortline 防超时)
+    # ELTDX 天梯按本次 A 股代码范围查询；上游 limit_ladder 内部会构建 shortline 指标。
     _eltdx_ladder = []
     try:
         from core.eltdx_adapter import get_eltdx_limit_ladder
 
         _eltdx_ladder = await asyncio.to_thread(
             get_eltdx_limit_ladder,
-            [s.get("code", "") for s in all_stocks if s.get("code")],
+            codes=[s.get("code", "") for s in all_stocks if s.get("code")],
         )
     except Exception as _e:
         _debug_log(f"mak eltdx limit_ladder: {_e}")

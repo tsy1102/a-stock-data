@@ -15,6 +15,7 @@ from __future__ import annotations
 import os
 import sys
 import unittest
+from unittest import mock
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
@@ -136,7 +137,10 @@ class TestCanonicalDataAPI(unittest.TestCase):
                 route.assert_called_once_with()
 
     def test_get_canonical_stock_data_returns_dataclass(self):
-        cdata = dp.get_canonical_stock_data("600519")
+        # The assertion concerns the canonical return contract, not Fuyao's
+        # optional live enrichment path.
+        with mock.patch("stock_common.sc_fuyao.is_fuyao_enabled", return_value=False):
+            cdata = dp.get_canonical_stock_data("600519")
         self.assertEqual(cdata.code, "600519")
         self.assertTrue(hasattr(cdata, "price"))
         self.assertTrue(hasattr(cdata, "pe_ttm"))
@@ -144,7 +148,8 @@ class TestCanonicalDataAPI(unittest.TestCase):
         self.assertTrue(hasattr(cdata, "time_anchor"))
 
     def test_canonical_stock_data_to_dict(self):
-        cdata = dp.get_canonical_stock_data("600519")
+        with mock.patch("stock_common.sc_fuyao.is_fuyao_enabled", return_value=False):
+            cdata = dp.get_canonical_stock_data("600519")
         d = cdata.to_dict()
         self.assertIsInstance(d, dict)
         self.assertEqual(d["code"], "600519")
@@ -155,16 +160,22 @@ class TestCanonicalDataAPI(unittest.TestCase):
         from unittest.mock import patch
 
         # data_provider 函数内 `from stock_common import get_tencent_quote`，patch 包属性
-        with patch(
-            "core.tdx_client.tdx_get_quote_full", side_effect=RuntimeError("Circuit Breaker Open")
-        ):
-            with patch("stock_common.get_tencent_quote", return_value={}):
-                with patch("stock_common.sc_datasource.get_em_quote_full_delay", return_value={}):
-                    with patch("stock_common.sc_datasource.get_em_quote_full", return_value={}):
-                        cdata = dp.get_canonical_stock_data("600519", force_realtime=True)
-                        self.assertIsNotNone(cdata)
-                        self.assertEqual(cdata.code, "600519")
-                        self.assertEqual(cdata.data_source, "zhb")
+        with patch("stock_common.sc_fuyao.is_fuyao_enabled", return_value=False):
+            with patch(
+                "core.tdx_client.tdx_get_quote_full",
+                side_effect=RuntimeError("Circuit Breaker Open"),
+            ):
+                with patch("stock_common.get_tencent_quote", return_value={}):
+                    with patch(
+                        "stock_common.sc_datasource.get_em_quote_full_delay", return_value={}
+                    ):
+                        with patch(
+                            "stock_common.sc_datasource.get_em_quote_full", return_value={}
+                        ):
+                            cdata = dp.get_canonical_stock_data("600519", force_realtime=True)
+                            self.assertIsNotNone(cdata)
+                            self.assertEqual(cdata.code, "600519")
+                            self.assertEqual(cdata.data_source, "zhb")
 
 
 if __name__ == "__main__":

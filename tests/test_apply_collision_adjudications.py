@@ -223,6 +223,25 @@ def test_runtime_id_must_match_explicit_source_and_full_code_path():
         )
 
 
+def test_runtime_id_normalizes_only_the_zhb_full_snapshot_wrapper():
+    from scripts.apply_collision_adjudications import _runtime_identity
+
+    lineage = {
+        "sources": {"ZHB-tdxstat2": {"runtime_aliases": ["zhb"]}},
+        "runtime_sources": {"zhb": {}},
+        "source_aliases": {},
+    }
+
+    assert _runtime_identity("zhb.full.amount", "ZHB-tdxstat2", lineage) == (
+        "zhb",
+        "amount",
+    )
+    assert _runtime_identity("zhb.stat2.low_52w", "ZHB-tdxstat2", lineage) == (
+        "zhb",
+        "stat2.low_52w",
+    )
+
+
 def test_conflict_status_cannot_be_overridden_by_collision_adjudication():
     registry, lineage, document, report = _inputs()
     registry["source_fields"][0]["status"] = "conflict"

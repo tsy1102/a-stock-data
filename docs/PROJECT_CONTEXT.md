@@ -2,7 +2,7 @@
 
 > **用途**：项目架构、稳定约束与文档索引。任务开始时先按下表读取相关部分，不必重复扫描整份文档。
 > **维护规则**：结构、入口或稳定流程变化时更新；字段语义以主字典为准，运行状态与测试结果以实际检查为准。
-> **更新日期**：2026-10-08（`VERSION`：17.4.29）
+> **更新日期**：2026-10-11（`VERSION`：17.4.43）
 
 ## 0. 指引目录
 
@@ -50,7 +50,8 @@
 - Python 最低版本为 3.11（AxData 0.1.4 的依赖要求）；项目开发/测试推荐并使用 Python 3.12。解释器通过 `scripts/run_with_system_python.ps1` 选择。
 - `CanonicalStockData` 当前有 113 个 dataclass 属性，其中 12 个是可选 ELTDX 扩展；`FIELD_SPECS` 当前登记 38 项精选源字段元数据，不代表完整契约字段表。Schema 测试锁定这三个计数，变更时应同步更新文档。
 - 运行测试使用 `scripts/run_tests.ps1`，不要从 Shell 直接调用 `pytest`。`real_network` 测试须明确选择。
-- 最近离线复核（2026-10-06）：pytest 收集 736 项，688 passed、1 skipped、47 deselected；本轮 6 个 Python 文件通过 Black 与编译检查，3 个源码文件 mypy 零错误；A1/A7 闸门均 0 HARD FAIL / 0 WARN。`real_network` 按配置未运行。字段逐源身份仍为 2,469 条；元数据清单显示 239 条 verified 记录缺少规范名或含义（207 缺含义、47 缺规范名、15 两者皆缺），详见 `docs/field_metadata_gaps.md`。来源仓库对话确认 7 项，21 项待确认。运行状态以当次命令输出为准。
+- 最近验证（V17.4.43，2026-10-11）：ZHB 4 项正式定案后，逐源字段 2,481 条，状态为 verified 846、unverified 1,544、conflict 90、candidate 1；研究台账首次写入 870 个唯一探索候选对；旧报告未保存 `--include-context` 标记，该条历史记录已按范围未知单独保留。碰撞/定案/研究台账定向回归 45/45 通过，7 个 Python 文件语法检查、4 个生产脚本 MyPy、registry parity、字段矩阵生成与 A1/A7 闸门通过（0 HARD FAIL / 0 WARN）。全量离线套件收集 884 项，运行至 35% 时在 `tests/data/test_data_em_board_members.py` 出现失败并中断；单项 faulthandler 定位等待在未修改的 `core/stock_cache.py:963` SQLite commit，未获得全量总结。Black 检查 65 秒无输出后停止，未记为通过。
+- 历史验证（V17.4.41，来源身份重分类后）：pytest 收集 865 项；定向回归 `test_capture_field_probe.py` 54 passed、来源范围/身份测试 6 passed、字典生成测试 3 passed。A1/A7、registry parity、field matrix、7 个 Python 文件语法检查与 4 个生产文件 MyPy 均通过；Black 未能在本机执行器中返回结果。两次全量离线尝试均未完成：首次停在 `test_missing_report_script_is_failure`，排除该项后停在 `test_cyq_and_kline_chapters_survive_source_failure`，长时间无输出后中断；未计为全量通过，`real_network` 未运行。字段逐源身份共 2,481 条，状态计数保持 verified 842、unverified 1,548、conflict 90、candidate 1；本次将 33 条 KPH 组件字段与 6 条 FTShare 服务接口字段从 `levistock(ftshare)` 拆出，另将 136 条记录标为历史未归属；详见 `docs/levistock_source_reconciliation_20261010.md` 与生成的 `docs/field_dict.md`。AxData 作为多源框架参考，主注册表无 AxData 字段行。元数据清单显示 239 条 verified 记录缺少规范名或含义（207 缺含义、47 缺规范名、15 两者皆缺），详见 `docs/field_metadata_gaps.md`。来源仓库对话确认 7 项，21 项待确认。运行状态以当次命令输出为准。
 - 修改后按 `AGENTS.md` §8 做数据契约影响调查，并按 §9 验证；每次改动记录一个可计数指标。
 - `.gitignore` 对运行时缓存和采集原始数据按路径规则处理；清理前应保留仍需离线复核的研究证据。
 
@@ -65,6 +66,7 @@
 | `docs/source_repository_map.md` | 数据提供方、独立来源族及有证据的 GitHub 仓库映射 |
 | `docs/field_source_reference.md` | 重整前字典原文的逐字节历史归档；不是当前状态权威 |
 | `docs/field_verification/field_registry.json` | 逐源完整路径的机器权威字段登记表 |
+| `docs/field_verification/collision_research_state.json` | 探索模式候选的持久观察台账，不作为字段定案权威 |
 | `docs/field_verification/ADJUDICATION_WORKFLOW.md` | 碰撞候选人工复核、字段定案和注册表同步流程 |
 | `docs/field_verification/CRACKING_METHODOLOGY.md` | 字段破解方法论和证据要求 |
 | `docs/FIELD_DICTIONARY_OPERATIONAL_CLOSURE_20261006.md` | 定案写回闭环及来源对话确认状态 |

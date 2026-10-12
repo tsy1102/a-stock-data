@@ -620,7 +620,9 @@ def get_limit_pool_multi_source(date: Optional[str] = None) -> Dict[str, Any]:
     fupan_list: List[Any] = []
     try:
         from levistock.stock.stock_fupanla_kph import get_zttt
+        from stock_common.sc_network import _kph_wait_process_interval
 
+        _kph_wait_process_interval()
         z = get_zttt() or {}
         sl = z.get("StockList") or []
         fupan_list = sl
@@ -663,79 +665,91 @@ def get_limit_pool_multi_source(date: Optional[str] = None) -> Dict[str, Any]:
     return out
 
 
-@cached(category="limit_pool", ttl_seconds=TTL["limit_pool"], trading_day=True)
-def get_kph_limit_ladder(date_str: str = "") -> List[Dict[str, Any]]:
-    """V16.1.7: 开盘红涨停天梯（字典 §12.10.4，实测 137 条）。
+def _resolve_kph_trade_date(date_str: str = "") -> str:
+    """Resolve a valid, completed trading date for the Levistock KPH endpoint."""
+    from datetime import time as _time
+    from stock_common.stock_calendar import (
+        get_last_trading_day,
+        is_workday_with_zhb_supplement,
+        previous_trading_day,
+    )
 
-    返回: [{code/name/limit_count(连板)/limit_time/plate_name/
-           one_word(大单一字)/popular(人气)/plate_limit_up_count/amount/plate_amount}]
-    """
+    if date_str:
+        try:
+            target = datetime.strptime(date_str, "%Y-%m-%d").date()
+        except ValueError:
+            target = datetime.strptime(date_str, "%Y%m%d").date()
+        if not is_workday_with_zhb_supplement(target):
+            raise ValueError(f"KPH date is not a trading day: {date_str}")
+        return target.isoformat()
+
+    now = datetime.now()
+    target = get_last_trading_day(now.date())
+    if target == now.date() and now.time() < _time(15, 0):
+        target = previous_trading_day(target)
+    return target.isoformat()
+
+
+@cached(category="limit_pool", ttl_seconds=TTL["limit_pool"], trading_day=True)
+def _get_kph_limit_ladder_for_date(date_str: str) -> List[Dict[str, Any]]:
+    """Fetch one explicitly dated KPH ladder; preserve the public list contract."""
     try:
         import levistock as lk
-        from datetime import timedelta
+        from stock_common.sc_network import _kph_wait_process_interval
 
-        # V16.2: 进程级节流（levistock 直连东财）
-        try:
-            from stock_common.sc_network import _em_wait_process_interval
-
-            _em_wait_process_interval()
-        except Exception:
-            pass
-        if not date_str:
-            # V17.0.2g(2026-08-17): 开盘红复盘接口要求"已收盘交易日"(昨天或更早)——
-            # 原 今天-1 在周一/节后运行取到休市日 → 接口空 → "涨停天梯获取失败"
-            from stock_common.stock_calendar import get_last_trading_day, previous_trading_day
-            from datetime import date as _date
-
-            _ltd = get_last_trading_day()
-            _d0 = _ltd if isinstance(_ltd, _date) else _ltd.date()
-            # 最近交易日是今天(交易日盘中/盘前) → 回退到上一已收盘交易日
-            if _d0 == _date.today():
-                _d0 = previous_trading_day(_d0)
-            date_str = _d0.strftime("%Y-%m-%d")
-            # 接口可能尚未发布最近交易日数据 → 向前按交易日找首个有数据的日期。
-            for _try in range(7):
-                data = lk.get_zttt(date=date_str)
-                _cnt = (
-                    len(data.get("StockList") or []) if isinstance(data, dict) else len(data or [])
-                )
-                if _cnt > 0:
-                    break
-                _retry_date = datetime.strptime(date_str, "%Y-%m-%d").date()
-                date_str = previous_trading_day(_retry_date).strftime("%Y-%m-%d")
-            else:
-                data = lk.get_zttt(date=date_str)
-        else:
-            data = lk.get_zttt(date=date_str)
-        # levistock get_zttt 返回 dict: {"StockList": [...], "ZhuShuList": [...]}
+        _kph_wait_process_interval()
+        data = lk.get_zttt(date=date_str)
+        # Levistock get_zttt returns {"StockList": [...], "ZhuShuList": [...]}.
         if isinstance(data, dict):
             data = data.get("StockList") or []
-        if isinstance(data, list):
-            rows = []
-            for item in data:
-                if isinstance(item, dict):
-                    rows.append(item)
-                elif isinstance(item, (list, tuple)) and len(item) >= 11:
-                    # 开盘红 zttt 返回 list 索引: [0]code [1]name [2]连板 [3]时间戳 [4]板块码 [5]板块名 [6]大单一字 [7]人气 [8]板块涨停数 [9]个股额 [10]板块额
-                    rows.append(
-                        {
-                            "code": item[0],
-                            "name": item[1],
-                            "limit_count": item[2],
-                            "limit_time": item[3],
-                            "plate_code": item[4],
-                            "plate_name": item[5],
-                            "one_word": item[6],
-                            "popular": item[7],
-                            "plate_limit_up_count": item[8],
-                            "amount": item[9],
-                            "plate_amount": item[10],
-                        }
-                    )
-            return rows
+        if not isinstance(data, list):
+            return []
+        rows = []
+        for item in data:
+            if isinstance(item, dict):
+                rows.append(item)
+            elif isinstance(item, (list, tuple)) and len(item) >= 11:
+                # KPH tuple fields: code/name/limit_count/time/plate_code/plate_name/one_word/
+                # popular/plate_limit_up_count/amount/plate_amount.
+                rows.append(
+                    {
+                        "code": item[0],
+                        "name": item[1],
+                        "limit_count": item[2],
+                        "limit_time": item[3],
+                        "plate_code": item[4],
+                        "plate_name": item[5],
+                        "one_word": item[6],
+                        "popular": item[7],
+                        "plate_limit_up_count": item[8],
+                        "amount": item[9],
+                        "plate_amount": item[10],
+                    }
+                )
+        return rows
     except Exception as _e:
+        try:
+            from stock_common.sc_network import _mark_levistock_provider_block
+
+            _mark_levistock_provider_block("kph", _e)
+        except Exception as _block_error:
+            _debug_log(f"datasource get_kph_limit_ladder block-state error: {_block_error}")
         _debug_log(f"datasource get_kph_limit_ladder: {_e}")
-    return []
+        return []
+
+
+def get_kph_limit_ladder(date_str: str = "") -> List[Dict[str, Any]]:
+    """Return the KPH ladder for one trading date using one rate-limited request.
+
+    Historical fallback is disabled so an unavailable requested date stays visible as
+    an empty result instead of silently returning stale rows from an earlier session.
+    """
+    try:
+        target = _resolve_kph_trade_date(date_str)
+        return _get_kph_limit_ladder_for_date(target)
+    except Exception as _e:
+        _debug_log(f"datasource get_kph_limit_ladder date: {_e}")
+        return []
 
 
 def _kpl_post(

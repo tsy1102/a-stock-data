@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import glob
+import importlib
 import inspect
 import os
 from pathlib import Path
@@ -15,7 +16,12 @@ from zipfile import ZIP_DEFLATED, ZipFile
 import pytest
 
 from stock_common import sc_network
-from stock_common.sc_datasource import _misc, _pools, _quotes
+from stock_common.sc_datasource import (
+    _misc,
+    _pools,
+    _quotes,
+    get_levistock_candidate_sample,
+)
 
 
 def _uncached(function: Callable[..., Any]) -> Callable[..., Any]:
@@ -97,10 +103,11 @@ def test_levistock_adapters_call_confirmed_methods_and_normalize_rows(
     monkeypatch.setitem(sys.modules, "levistock", levistock)
     monkeypatch.setitem(sys.modules, "levistock.stock", stock)
     monkeypatch.setitem(sys.modules, "levistock.stock.stock_fupanla_kph", review)
-    monkeypatch.setattr(sc_network, "_em_wait_process_interval", lambda: None)
+    monkeypatch.setattr(sc_network, "_cls_wait_process_interval", lambda: None)
+    monkeypatch.setattr(sc_network, "_kph_wait_process_interval", lambda: None)
 
     assert _uncached(_misc.get_cls_market_emotion)() == emotion
-    assert _uncached(_pools.get_kph_limit_ladder)("2026-10-07") == [
+    assert _uncached(_pools._get_kph_limit_ladder_for_date)("2026-10-09") == [
         {
             "code": "000001",
             "name": "平安银行",
@@ -119,10 +126,25 @@ def test_levistock_adapters_call_confirmed_methods_and_normalize_rows(
     assert _uncached(_quotes.get_fupan_pmsl)() == pmsl
     assert calls == [
         ("market_emotion_cls", None),
-        ("get_zttt", "2026-10-07"),
+        ("get_zttt", "2026-10-09"),
         ("review.get_zttt", None),
         ("get_pmsl", None),
     ]
+
+
+def test_public_kph_adapter_normalizes_and_validates_trade_date(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    calls: list[str] = []
+    monkeypatch.setattr(
+        _pools,
+        "_get_kph_limit_ladder_for_date",
+        lambda trade_date: calls.append(trade_date) or [{"code": "600000"}],
+    )
+
+    assert _pools.get_kph_limit_ladder("20261009") == [{"code": "600000"}]
+    assert _pools.get_kph_limit_ladder("20261010") == []
+    assert calls == ["2026-10-09"]
 
 
 def test_shortline_adapter_uses_latest_local_zhb_zip_with_axdata(
@@ -209,6 +231,29 @@ def test_shortline_diagnostics_distinguish_missing_zhb_cache(
     assert result["status"] == "cache_missing"
     assert "cache/zhb" in result["error"]
     assert "interface was not called" in result["error"]
+
+
+def test_shortline_routes_bse_symbols_with_explicit_market_suffix(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    import axdata_core
+
+    seen: dict[str, Any] = {}
+
+    def capture_request(interface: str, **kwargs: Any) -> Any:
+        seen["interface"] = interface
+        seen["params"] = dict(kwargs["params"])
+        return SimpleNamespace(records=[{"code": kwargs["params"]["code"]}])
+
+    monkeypatch.setattr(glob, "glob", lambda *args, **kwargs: ["zhb_20261007.zip"])
+    monkeypatch.setattr(axdata_core, "request_interface", capture_request)
+
+    result = _uncached(_quotes.get_shortline_indicators_result)("920118")
+
+    assert result == {"status": "ok", "data": {"code": "920118.BJ"}}
+    assert seen["interface"] == "stock_shortline_indicators_tdx"
+    assert seen["params"]["code"] == "920118.BJ"
+    assert seen["params"]["stats_root"] == "zhb_20261007.zip"
 
 
 def test_shortline_diagnostics_distinguish_no_records(
@@ -334,3 +379,146 @@ def test_shortline_legacy_function_still_returns_field_dict(
     result = _uncached(_quotes.get_shortline_indicators)("000001")
 
     assert result == record
+
+
+@pytest.mark.parametrize(
+    "candidate_id,family,module_name,method_name,stock_code,expected_params",
+    [
+        (
+            "cls_sector_industry",
+            "cls",
+            "levistock.sector.sector_cls",
+            "sector_industry_cls",
+            None,
+            {},
+        ),
+        (
+            "kph_market_emotion",
+            "kph",
+            "levistock.market.market_emotion_kph",
+            "market_emotion_kph",
+            None,
+            {"date": "2026-10-09"},
+        ),
+        (
+            "cls_sector_heat",
+            "cls",
+            "levistock.sector.sector_heat_cls",
+            "get_sector_heat",
+            None,
+            {},
+        ),
+        (
+            "kph_sector_ranking",
+            "kph",
+            "levistock.sector.sector_ranking_kph",
+            "sector_ranking_kph",
+            None,
+            {"date": "2026-10-09", "zs_type": "7", "fetch_all": False},
+        ),
+        (
+            "cls_sector_rotation",
+            "cls",
+            "levistock.sector.sector_rotation_cls",
+            "get_sector_rotation",
+            None,
+            {"days": 4},
+        ),
+        (
+            "cls_stock_kline",
+            "cls",
+            "levistock.stock.stock_kline_cls",
+            "stock_kline_cls",
+            "600000",
+            {
+                "stock_code": "600000",
+                "kline_type": "daily",
+                "limit": 5,
+                "offset": 0,
+            },
+        ),
+        (
+            "cls_stock_timeline",
+            "cls",
+            "levistock.stock.stock_kline_cls",
+            "stock_timeline_cls",
+            "600000",
+            {"stock_code": "600000"},
+        ),
+    ],
+)
+def test_levistock_candidate_adapter_routes_and_rate_limits_each_candidate(
+    monkeypatch: pytest.MonkeyPatch,
+    candidate_id: str,
+    family: str,
+    module_name: str,
+    method_name: str,
+    stock_code: str | None,
+    expected_params: dict[str, Any],
+) -> None:
+    events: list[tuple[str, Any]] = []
+
+    def candidate_method(**kwargs):
+        events.append(("request", kwargs))
+        return [{"sample": candidate_id}]
+
+    monkeypatch.setattr(
+        importlib,
+        "import_module",
+        lambda name: (
+            SimpleNamespace(**{method_name: candidate_method})
+            if name == module_name
+            else pytest.fail(f"unexpected upstream module {name}")
+        ),
+    )
+    monkeypatch.setattr(
+        sc_network,
+        "_levistock_provider_is_blocked",
+        lambda checked_family: events.append(("block_check", checked_family)) or False,
+    )
+    monkeypatch.setattr(
+        sc_network,
+        "_cls_wait_process_interval",
+        lambda: events.append(("limit", "cls")),
+    )
+    monkeypatch.setattr(
+        sc_network,
+        "_kph_wait_process_interval",
+        lambda: events.append(("limit", "kph")),
+    )
+
+    payload, params, adapter = get_levistock_candidate_sample(
+        candidate_id,
+        data_date="2026-10-09",
+        stock_code=stock_code,
+        expected_family=family,
+    )
+
+    assert payload == [{"sample": candidate_id}]
+    assert params == expected_params
+    assert adapter == f"{module_name}.{method_name}"
+    assert events == [
+        ("block_check", family),
+        ("limit", family),
+        ("request", expected_params),
+    ]
+
+
+def test_levistock_candidate_adapter_rejects_family_mismatch_before_request(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    calls: list[str] = []
+    monkeypatch.setattr(
+        sc_network,
+        "_levistock_provider_is_blocked",
+        lambda _family: calls.append("block_check") or False,
+    )
+
+    with pytest.raises(ValueError, match="family mismatch"):
+        get_levistock_candidate_sample(
+            "cls_sector_industry",
+            data_date="2026-10-09",
+            expected_family="kph",
+        )
+
+    assert calls == []

@@ -218,7 +218,7 @@ _EM_ASYNC_SESSION_LOCK = threading.Lock()
 # ⚠️ V17.2.x(2026-09-10) 治理说明：本表与 `core/tdx_client.py::_DOMAIN_LIMITS` (6 域)
 # **有意保持独立、不合并**（用户决策 Q5）——本表为 **HTTP 请求级**节流，
 # tdx_client 表为 **TDX TCP 长连接级**节流，语义不同不可统一。
-#   本表 37 域覆盖 HTTP 数据源；tdx_client 的 6 域是其子集（走 TCP 通道）。
+#   本表 40 域覆盖 HTTP 数据源；tdx_client 的 6 域是其子集（走 TCP 通道）。
 #   **新增/调整域名时须两处同步评估**（详见 tdx_client 侧同名说明）。
 _DOMAIN_LIMITS: Dict[str, Dict[str, Any]] = {
     "qt.gtimg.cn": {"sleep_ms": 150, "semaphore": None, "rps": 5.0},
@@ -298,6 +298,13 @@ except Exception as _e:
     _debug_log(f"sc_network makedirs lock_dir: {_e}")
 _em_lock_file = os.path.join(_em_lock_dir, "em_rate_limit")
 _gen_lock_file = os.path.join(_em_lock_dir, "gen_rate_limit")
+_cls_lock_file = os.path.join(_em_lock_dir, "levistock_cls_rate_limit")
+_kph_lock_file = os.path.join(_em_lock_dir, "levistock_kph_rate_limit")
+_cls_state_file = os.path.join(_em_lock_dir, "levistock_cls_last_request")
+_kph_state_file = os.path.join(_em_lock_dir, "levistock_kph_last_request")
+_LEVISTOCK_BLOCK_FILE = os.path.join(_em_lock_dir, "levistock_provider_blocks.json")
+_LEVISTOCK_BLOCK_LOCK_FILE = os.path.join(_em_lock_dir, "levistock_provider_blocks.lock")
+_LEVISTOCK_BLOCKED_LOCAL: set[str] = set()
 
 # V16.2.6: 东财 push2 系共享同一风控面（实测 push2/push2his/83.push2 同时被连接级风控，
 # 而 push2delay/push2ex 独立可用）→ 令牌桶/熔断器必须按风控面归一化共享，
@@ -811,6 +818,38 @@ def _process_interval_wait(
     return _waited
 
 
+def _provider_interval_wait(lock_file: str, state_file: str, target_interval: float) -> float:
+    """Reserve a cross-process request slot for clients that bypass ``_quick_request``.
+
+    The mutex file is removed after each reservation, so the last-start timestamp lives in a
+    separate persistent state file. Reserving the next slot before releasing the mutex keeps
+    concurrent processes from sending these direct-client requests back-to-back.
+    """
+    if not _file_lock_acquire(lock_file, timeout=target_interval + 10.0):
+        raise TimeoutError(f"provider rate-limit lock timed out: {lock_file}")
+    waited = 0.0
+    try:
+        last_started = 0.0
+        try:
+            with open(state_file, "r", encoding="ascii") as state:
+                last_started = float(state.read().strip())
+        except FileNotFoundError:
+            pass
+        except (OSError, ValueError) as exc:
+            _debug_log(f"provider_interval_wait invalid state ({state_file}): {exc}")
+
+        now = time.time()
+        remaining = target_interval - (now - last_started) if last_started > 0 else 0.0
+        if remaining > 0:
+            time.sleep(remaining)
+            waited = remaining
+        with open(state_file, "w", encoding="ascii") as state:
+            state.write(f"{time.time():.6f}")
+    finally:
+        _file_lock_release(lock_file)
+    return waited
+
+
 def _em_wait_process_interval() -> float:
     """V17.0 R2: EM sync 薄包装(文件锁 + 内容时间戳 + 1.0-1.3s)。"""
     import random as _rand
@@ -832,6 +871,116 @@ def _gen_wait_process_interval() -> float:
         0.2 + _rand.uniform(0.01, 0.05),
         use_lock=False,
         use_content_ts=False,
+    )
+
+
+def _levistock_provider_is_blocked(family: str) -> bool:
+    """Fail closed for a Levistock provider family after a confirmed ban signal."""
+    if family in _LEVISTOCK_BLOCKED_LOCAL:
+        return True
+    if family not in {"cls", "kph"}:
+        raise ValueError(f"unknown Levistock provider family: {family}")
+    try:
+        with open(_LEVISTOCK_BLOCK_FILE, "r", encoding="utf-8") as stream:
+            state = json.load(stream)
+    except FileNotFoundError:
+        return False
+    except (OSError, json.JSONDecodeError) as exc:
+        _debug_log(f"Levistock block state unreadable; fail closed: {type(exc).__name__}")
+        return True
+    if not isinstance(state, dict):
+        _debug_log("Levistock block state root invalid; fail closed")
+        return True
+    entry = state.get(family)
+    return isinstance(entry, dict) and entry.get("blocked") is True
+
+
+def _mark_levistock_provider_block(family: str, error: Any) -> bool:
+    """Persist a 403/429 or explicit ban signal until the user verifies recovery."""
+    import re
+
+    if family not in {"cls", "kph"}:
+        raise ValueError(f"unknown Levistock provider family: {family}")
+    response = getattr(error, "response", None)
+    status_values = (getattr(response, "status_code", None), getattr(error, "status_code", None))
+    status_code = None
+    for value in status_values:
+        if value is None:
+            continue
+        try:
+            candidate = int(value)
+        except (TypeError, ValueError):
+            continue
+        if candidate in {403, 429}:
+            status_code = candidate
+            break
+    message = str(error or "")[:300]
+    if status_code is None:
+        match = re.search(r"\b(403|429)\b", message)
+        if match:
+            status_code = int(match.group(1))
+    blocked_signal = status_code in {403, 429} or bool(
+        re.search(r"\b403\b|\b429\b|blocked|banned|rate.?limit|封禁|限流|访问频繁", message, re.I)
+    )
+    if not blocked_signal:
+        return False
+
+    _LEVISTOCK_BLOCKED_LOCAL.add(family)
+    if not _file_lock_acquire(_LEVISTOCK_BLOCK_LOCK_FILE, timeout=3.0):
+        _debug_log(f"Levistock {family} block could not be shared across processes")
+        return True
+    try:
+        try:
+            with open(_LEVISTOCK_BLOCK_FILE, "r", encoding="utf-8") as stream:
+                state = json.load(stream)
+        except FileNotFoundError:
+            state = {}
+        except (OSError, json.JSONDecodeError) as exc:
+            _debug_log(f"Levistock block state unreadable while updating: {type(exc).__name__}")
+            return True
+        if not isinstance(state, dict):
+            _debug_log("Levistock block state root invalid while updating")
+            return True
+        state[family] = {
+            "blocked": True,
+            "status_code": status_code,
+            "blocked_at": time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()),
+            "reason": message,
+        }
+        temporary = f"{_LEVISTOCK_BLOCK_FILE}.{os.getpid()}.tmp"
+        with open(temporary, "w", encoding="utf-8") as stream:
+            json.dump(state, stream, ensure_ascii=False, indent=2)
+        os.replace(temporary, _LEVISTOCK_BLOCK_FILE)
+    except OSError as exc:
+        _debug_log(f"Levistock {family} block persistence failed: {type(exc).__name__}")
+    finally:
+        _file_lock_release(_LEVISTOCK_BLOCK_LOCK_FILE)
+    return True
+
+
+def _cls_wait_process_interval() -> float:
+    """Levistock CLS direct calls: reserve a cross-process slot at 2.5 requests/second."""
+    import random as _rand
+
+    if _levistock_provider_is_blocked("cls"):
+        raise RuntimeError("Levistock CLS provider family is blocked until manual recovery review")
+    return _provider_interval_wait(
+        _cls_lock_file,
+        _cls_state_file,
+        0.4 + _rand.uniform(0.02, 0.10),
+    )
+
+
+def _kph_wait_process_interval() -> float:
+    """Levistock KPH direct calls: reserve at most one request per second across processes."""
+    import random as _rand
+
+    if _levistock_provider_is_blocked("kph"):
+        raise RuntimeError("Levistock KPH provider family is blocked until manual recovery review")
+    return _provider_interval_wait(
+        _kph_lock_file,
+        _kph_state_file,
+        1.0 + _rand.uniform(0.10, 0.25),
     )
 
 
@@ -1061,6 +1210,12 @@ def _do_request(
             # （实测 45000 请求/小时触发 push2 全系列封禁 20+ 小时）——全局节奏保证
             # 任何时间窗口东财总速率 ≤1 req/s，恢复 v9.6 已验证行为。
             if is_em:
+                _ft_domain = _normalize_em_domain(domain)
+                if _em_is_banned(_ft_domain):
+                    _record_request_failure(
+                        error_out, kind="ip_banned", domain=_ft_domain, attempt=attempt
+                    )
+                    return None
                 _em_wait_process_interval()
             _req_headers = headers.copy() if headers else {}
             if not _req_headers.get("User-Agent"):
@@ -1129,7 +1284,9 @@ def _do_request(
                         )
                 if _HAS_FAULT_TOLERANCE:
                     try:
-                        get_domain_circuit_breaker(domain)._on_failure()
+                        get_domain_circuit_breaker(
+                            _normalize_em_domain(domain) if is_em else domain
+                        )._on_failure()
                     except Exception:
                         pass
                 if attempt < max_retries - 1:
@@ -1147,6 +1304,11 @@ def _do_request(
             if r.status_code == 429:
                 if is_em:
                     _RL_STATS["em_429_count"] += 1
+                    if _HAS_FAULT_TOLERANCE:
+                        try:
+                            get_domain_circuit_breaker(_normalize_em_domain(domain))._on_failure()
+                        except Exception:
+                            pass
                 if attempt < max_retries - 1:
                     retry_after = r.headers.get("Retry-After")
                     if retry_after:
@@ -1187,6 +1349,14 @@ def _do_request(
             # V16: 成功响应（<400）重置连续 403 计数
             if is_em and _CONSECUTIVE_403["count"] > 0 and r.status_code < 400:
                 _CONSECUTIVE_403["count"] = 0
+            if is_em and r.status_code < 400:
+                _ft_domain = _normalize_em_domain(domain)
+                _EM_BAN_STREAK.pop(_ft_domain, None)
+                if _HAS_FAULT_TOLERANCE:
+                    try:
+                        get_domain_circuit_breaker(_ft_domain)._on_success()
+                    except Exception:
+                        pass
             return r
         except (
             requests.exceptions.ConnectionError,
@@ -1194,6 +1364,25 @@ def _do_request(
             requests.exceptions.ConnectTimeout,
             requests.exceptions.ProxyError,
         ) as _e:
+            if is_em and _HAS_FAULT_TOLERANCE:
+                try:
+                    get_domain_circuit_breaker(_normalize_em_domain(domain))._on_failure()
+                except Exception:
+                    pass
+            if is_em and isinstance(
+                _e, (requests.exceptions.ConnectionError, requests.exceptions.ConnectTimeout)
+            ):
+                _ft_domain = _normalize_em_domain(domain)
+                _record_em_disconnect(_ft_domain)
+                if _em_is_banned(_ft_domain):
+                    _record_request_failure(
+                        error_out,
+                        kind="ip_banned",
+                        domain=_ft_domain,
+                        attempt=attempt + 1,
+                        error=_e,
+                    )
+                    return None
             if attempt < max_retries - 1:
                 if _HAS_FAULT_TOLERANCE:
                     # V16 增强: HTTP 000 连接被拒 = 间歇风控，长退避等待恢复

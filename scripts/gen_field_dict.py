@@ -36,6 +36,21 @@ def _source_field_counts(records: list[dict[str, Any]]) -> Counter:
     return Counter(record.get("status", "unverified") for record in records)
 
 
+_SOURCE_ROLE_LABELS = {
+    "provider_component": "已映射提供方的接口组件",
+    "service_endpoint": "服务接口（底层来源族未确认）",
+    "framework_reference": "多源框架参考（非独立来源）",
+    "historical_unattributed": "历史未归属（不作来源锚）",
+}
+
+
+def _source_role_label(source: dict[str, Any]) -> str:
+    role = source.get("source_role")
+    if isinstance(role, str) and role in _SOURCE_ROLE_LABELS:
+        return _SOURCE_ROLE_LABELS[role]
+    return "运行时来源身份（独立性按来源谱系判定）"
+
+
 def render_field_dict(registry: dict[str, Any]) -> str:
     records = fra.source_field_records(registry)
     if not records:
@@ -59,8 +74,9 @@ def render_field_dict(registry: dict[str, Any]) -> str:
         "",
         "1. `field_verification/field_registry.json`：逐源字段、完整路径、状态与证据的机器权威。",
         "2. `field_verification/source_lineage.json`：运行时来源别名、独立来源族与仓库关系。",
-        "3. 本页：治理入口；`field_matrix.md` 与 `unknown_fields.md` 是 registry 派生视图。",
-        "4. `field_source_reference.md`：重整前完整原文，逐字节保留作历史证据；不得用它覆盖当前状态。",
+        "3. `field_verification/source_identity_reclassifications.json`：旧混合来源字段在历史档案与当前来源身份之间的显式映射。",
+        "4. 本页：治理入口；`field_matrix.md` 与 `unknown_fields.md` 是 registry 派生视图。",
+        "5. `field_source_reference.md`：重整前完整原文，逐字节保留作历史证据；不得用它覆盖当前状态。",
         "",
         "## 状态与锚点规则",
         "",
@@ -68,10 +84,12 @@ def render_field_dict(registry: dict[str, Any]) -> str:
         "- `unverified`、`candidate` 是默认破解目标；`conflict` 可作为待复核目标但不能作锚，碰撞候选不能替代证据冲突复核。",
         "- `disproved` 单独归档，不进入默认破解队列。",
         "- 未登记来源、路径不完整或来源独立性未确认时，不参与默认 L1 定案。",
+        "- AxData 是多提供方接口框架；当前 `stock_shortline_indicators_tdx` 属于 TDX 来源族。AxData 接口盘点只作框架参考，不能作为独立来源或锚；详见 [`axdata_field_reconciliation_20261010.md`](axdata_field_reconciliation_20261010.md)。",
+        "- Levistock 是多源客户端包装库。已归属的 KPH 记录映射到 KPH 来源族；FTShare MCP 记录归到项目独立接入的 FTShare 服务接口，但其底层来源族未确认，不能作独立锚。其余历史记录保留为未归属证据，不计为 Levistock 数据源；字段映射见 [`source_identity_reclassifications.json`](field_verification/source_identity_reclassifications.json) 与 [`levistock_source_reconciliation_20261010.md`](levistock_source_reconciliation_20261010.md)。",
         "",
         "## 当前覆盖",
         "",
-        f"- 来源：{len(sources)} 个。",
+        f"- 来源身份与参考登记：{len(sources)} 项；是否可作独立锚由来源谱系单独判定。",
         f"- 逐源字段路径：{len(records)} 条；verified {counts['verified']}、unverified {counts['unverified']}、candidate {counts['candidate']}、conflict {counts['conflict']}、disproved {counts['disproved']}。",
         "- 矩阵：[`field_matrix.md`](field_matrix.md)。",
         "- 待破解与状态冲突：[`unknown_fields.md`](unknown_fields.md)。",
@@ -88,16 +106,21 @@ def render_field_dict(registry: dict[str, Any]) -> str:
         "- 对撞结果不会自动定案；人工复核和注册表同步流程见 [`field_verification/ADJUDICATION_WORKFLOW.md`](field_verification/ADJUDICATION_WORKFLOW.md)。",
         "- 来源分组及 GitHub 对应关系以 `field_verification/source_lineage.json` 为准；未确认项明确标为 unconfirmed。",
         "",
-        "## 来源分字典",
+        "## 来源身份与框架参考索引",
         "",
-        "| 来源 | 分字典 | 主要章节 |",
-        "|:--|:--|:--|",
+        "登记类别说明：框架、包装适配器、服务接口与历史未归属记录均明确标注；跨源定案仍按来源谱系的 `independence_family` 和 `anchor_eligible` 判定。",
+        "",
+        "| 来源身份 | 登记性质 | 分字典 | 主要章节 |",
+        "|:--|:--|:--|:--|",
     ]
     for source in verify_sources:
         verify_file = _cell(source.get("verify_file"))
         name = _cell(source.get("name"))
         section = _cell((source.get("section_patterns") or [""])[0])
-        lines.append(f"| {name} | [verify/{verify_file}](verify/{verify_file}) | {section} |")
+        role = _cell(_source_role_label(source))
+        lines.append(
+            f"| {name} | {role} | [verify/{verify_file}](verify/{verify_file}) | {section} |"
+        )
     lines.extend(
         [
             "",

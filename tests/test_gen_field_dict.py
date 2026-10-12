@@ -1,4 +1,8 @@
-from scripts.gen_field_dict import render_field_metadata_gaps, render_source_repository_map
+from scripts.gen_field_dict import (
+    render_field_dict,
+    render_field_metadata_gaps,
+    render_source_repository_map,
+)
 
 
 def test_metadata_gap_report_lists_only_verified_missing_descriptions():
@@ -74,3 +78,45 @@ def test_source_map_displays_project_evidence_separately_from_dialog_confirmatio
     assert "confirmed | confirmed（2026-10-06）" in rendered
     assert "user-confirmed scope" in rendered
     assert "runtime client" in rendered
+
+
+def test_field_dictionary_distinguishes_sources_from_framework_and_historical_references():
+    registry = {
+        "source_fields": [
+            {
+                "source": "FTShare",
+                "code": "comment_score",
+                "status": "verified",
+                "canonical": "comment_score",
+                "meaning": "comment sentiment score",
+            }
+        ],
+        "sources": [
+            {
+                "name": "AxData",
+                "source_role": "framework_reference",
+                "verify_file": "axdata_verify.md",
+                "section_patterns": ["interface inventory"],
+            },
+            {
+                "name": "FTShare",
+                "source_role": "service_endpoint",
+                "verify_file": "ftshare_fields_mirror.md",
+                "section_patterns": ["FTShare MCP fields"],
+            },
+            {
+                "name": "Levistock历史未归属",
+                "source_role": "historical_unattributed",
+                "verify_file": "levistock_field_verify.md",
+                "section_patterns": ["historical evidence"],
+            },
+        ],
+    }
+
+    rendered = render_field_dict(registry)
+
+    assert "来源身份与框架参考索引" in rendered
+    assert "AxData | 多源框架参考（非独立来源）" in rendered
+    assert "FTShare | 服务接口（底层来源族未确认）" in rendered
+    assert "Levistock历史未归属 | 历史未归属（不作来源锚）" in rendered
+    assert "AxData 是多提供方接口框架" in rendered

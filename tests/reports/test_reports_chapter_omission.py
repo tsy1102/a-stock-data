@@ -20,6 +20,9 @@ from unittest import mock
 
 import get_sht_report as S
 import pandas as pd
+import stock_common as _sc
+from core import data_provider as _dp
+from core import tdx_client as _tdx
 from stock_common import (
     sc_datasource as _scd,
 )  # get_cyq_distribution 在生成器内本地导入, 须 patch 此模块
@@ -51,14 +54,22 @@ class _FakeCData:
         self.float_mcap_yi = 0.0
         self.pe_ttm = 0.0
         self.pe_dynamic = 0.0
+        self.pe_lyr = 0.0
         self.pb = 0.0
+        self.dividend_yield = 0.0
         self.change_5d = 0.0
         self.change_10d = 0.0
         self.change_20d = 0.0
         self.change_mtd = 0.0
         self.is_st = False
         self.is_new = False
+        self.list_date = "2001-01-01"
         self.listing_days = 0
+        self.eltdx_ladder_level = 0
+        self.eltdx_limit_up_streak_days = 0
+        self.eltdx_seal_to_float_ratio = 0.0
+        self.eltdx_open_volume_ratio = 0.0
+        self.eltdx_limit_board_text = ""
 
     def to_dict(self):
         return {
@@ -98,6 +109,8 @@ _SYNC_STUBS = {
     "get_ft_limit_up_pool_yesterday": [],
     "get_limit_pool_summary": {},
     "get_yesterday_limit_pool": [],
+    "get_fuyao_auction_snapshot": [],
+    "get_zhb_streak_days": 0,
     "get_zhb_single_stock_data": {},
     "get_hsgt_macro_flow": {},
     "_get_index_quote": {},
@@ -133,21 +146,27 @@ _ASYNC_STUBS = {
     "get_eps_forecast_async": pd.DataFrame(),  # 生成器内用 .empty/.columns, 须返回 DataFrame
     "get_hsgt_macro_flow_async": [],
     "get_main_net_buy_async": {},
-    "get_zhb_streak_days": 0,
 }
 
 
 def _build_patch_stack(stk: ExitStack):
-    """将 S 中所有已知数据源函数 patch 为安全替身; 返回是否成功 patch 了关键函数。"""
+    """Patch report and inline-import data sources to safe values for offline rendering."""
     patched_cyq = patched_kline = False
-    for name, rv in _SYNC_STUBS.items():
-        if hasattr(S, name):
-            stk.enter_context(mock.patch.object(S, name, return_value=rv))
-            if name == "baidu_kline_full":
-                patched_kline = True
+    for module in (S, _sc, _scd, _dp):
+        for name, rv in _SYNC_STUBS.items():
+            if hasattr(module, name):
+                stk.enter_context(mock.patch.object(module, name, return_value=rv))
+                if module is S and name == "baidu_kline_full":
+                    patched_kline = True
     for name, rv in _ASYNC_STUBS.items():
         if hasattr(S, name):
             stk.enter_context(mock.patch.object(S, name, new=mock.AsyncMock(return_value=rv)))
+    if hasattr(_sc, "is_fuyao_enabled"):
+        stk.enter_context(mock.patch.object(_sc, "is_fuyao_enabled", return_value=False))
+    if hasattr(_tdx, "tdx_get_market_abnormal_data"):
+        stk.enter_context(mock.patch.object(_tdx, "tdx_get_market_abnormal_data", return_value=[]))
+    if hasattr(_tdx, "tdx_get_market_stat"):
+        stk.enter_context(mock.patch.object(_tdx, "tdx_get_market_stat", return_value={}))
     # get_cyq_distribution 在生成器内本地导入(from stock_common.sc_datasource) → 须 patch 源模块
     stk.enter_context(mock.patch.object(_scd, "get_cyq_distribution", return_value={}))
     patched_cyq = True

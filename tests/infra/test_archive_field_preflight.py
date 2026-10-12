@@ -40,3 +40,17 @@ def test_mapping_reference_must_be_linked_from_main_entrypoint(
 
     assert missing == []
     assert orphan == expected_orphans
+
+
+def test_section_map_accepts_markdown_code_formatted_source_title(monkeypatch):
+    monkeypatch.syspath_prepend("scripts")
+    preflight = importlib.import_module("archive_field_preflight")
+    monkeypatch.setattr(
+        preflight,
+        "_load_section_map",
+        lambda: [("TDX(双命名源)", ["TCP GetFinanceInfo"])],
+    )
+
+    corpus = [("field_source_reference.md", "## 二、 TCP `GetFinanceInfo` (0x0010)")]
+
+    assert preflight._check_section_map(corpus) == []

@@ -1,0 +1,990 @@
+{
+  "schema_version": 1,
+  "updated": "2026-10-11",
+  "from_source": "levistock(ftshare)",
+  "evidence_file": "docs/field_source_reference.md",
+  "purpose": "Explicitly reclassify legacy field tokens from the Levistock/FTShare mixed wrapper label without changing the archived source text.",
+  "counts": {
+    "FTShare": 6,
+    "Levistock历史未归属": 136,
+    "开盘红(Levistock适配)": 33
+  },
+  "mappings": [
+    {
+      "code": "all",
+      "to_source": "Levistock历史未归属",
+      "basis": "historical_token_only_unattributed"
+    },
+    {
+      "code": "amount",
+      "to_source": "Levistock历史未归属",
+      "basis": "historical_token_only_unattributed"
+    },
+    {
+      "code": "amplitude",
+      "to_source": "Levistock历史未归属",
+      "basis": "historical_token_only_unattributed"
+    },
+    {
+      "code": "avg_change",
+      "to_source": "开盘红(Levistock适配)",
+      "basis": "provider_section_evidence"
+    },
+    {
+      "code": "belong",
+      "to_source": "Levistock历史未归属",
+      "basis": "historical_token_only_unattributed"
+    },
+    {
+      "code": "buy_amount",
+      "to_source": "开盘红(Levistock适配)",
+      "basis": "provider_section_evidence"
+    },
+    {
+      "code": "category",
+      "to_source": "Levistock历史未归属",
+      "basis": "historical_token_only_unattributed"
+    },
+    {
+      "code": "change",
+      "to_source": "Levistock历史未归属",
+      "basis": "historical_token_only_unattributed"
+    },
+    {
+      "code": "change_pct",
+      "to_source": "Levistock历史未归属",
+      "basis": "historical_token_only_unattributed"
+    },
+    {
+      "code": "change_rate",
+      "to_source": "Levistock历史未归属",
+      "basis": "historical_token_only_unattributed"
+    },
+    {
+      "code": "change_type",
+      "to_source": "Levistock历史未归属",
+      "basis": "historical_token_only_unattributed"
+    },
+    {
+      "code": "circ_market",
+      "to_source": "Levistock历史未归属",
+      "basis": "historical_token_only_unattributed"
+    },
+    {
+      "code": "circ_mv",
+      "to_source": "Levistock历史未归属",
+      "basis": "historical_token_only_unattributed"
+    },
+    {
+      "code": "circ_share",
+      "to_source": "Levistock历史未归属",
+      "basis": "historical_token_only_unattributed"
+    },
+    {
+      "code": "close_price",
+      "to_source": "Levistock历史未归属",
+      "basis": "historical_token_only_unattributed"
+    },
+    {
+      "code": "close_seal_amount",
+      "to_source": "Levistock历史未归属",
+      "basis": "historical_token_only_unattributed"
+    },
+    {
+      "code": "comment_desire",
+      "to_source": "FTShare",
+      "basis": "service_section_evidence"
+    },
+    {
+      "code": "comment_focus",
+      "to_source": "FTShare",
+      "basis": "service_section_evidence"
+    },
+    {
+      "code": "comment_org",
+      "to_source": "FTShare",
+      "basis": "service_section_evidence"
+    },
+    {
+      "code": "comment_score",
+      "to_source": "FTShare",
+      "basis": "service_section_evidence"
+    },
+    {
+      "code": "content",
+      "to_source": "Levistock历史未归属",
+      "basis": "historical_token_only_unattributed"
+    },
+    {
+      "code": "continuous",
+      "to_source": "Levistock历史未归属",
+      "basis": "historical_token_only_unattributed"
+    },
+    {
+      "code": "dapan_flow",
+      "to_source": "Levistock历史未归属",
+      "basis": "historical_token_only_unattributed"
+    },
+    {
+      "code": "date",
+      "to_source": "Levistock历史未归属",
+      "basis": "historical_token_only_unattributed"
+    },
+    {
+      "code": "diagnose_date",
+      "to_source": "Levistock历史未归属",
+      "basis": "historical_token_only_unattributed"
+    },
+    {
+      "code": "dict",
+      "to_source": "Levistock历史未归属",
+      "basis": "historical_token_only_unattributed"
+    },
+    {
+      "code": "down_0pct_to_1pct",
+      "to_source": "Levistock历史未归属",
+      "basis": "historical_token_only_unattributed"
+    },
+    {
+      "code": "down_1pct_to_5pct",
+      "to_source": "Levistock历史未归属",
+      "basis": "historical_token_only_unattributed"
+    },
+    {
+      "code": "down_5pct_to_limited",
+      "to_source": "Levistock历史未归属",
+      "basis": "historical_token_only_unattributed"
+    },
+    {
+      "code": "down_limit",
+      "to_source": "Levistock历史未归属",
+      "basis": "historical_token_only_unattributed"
+    },
+    {
+      "code": "down_limited",
+      "to_source": "Levistock历史未归属",
+      "basis": "historical_token_only_unattributed"
+    },
+    {
+      "code": "dt",
+      "to_source": "开盘红(Levistock适配)",
+      "basis": "provider_section_evidence"
+    },
+    {
+      "code": "fall_dist",
+      "to_source": "开盘红(Levistock适配)",
+      "basis": "provider_section_evidence"
+    },
+    {
+      "code": "fall_num",
+      "to_source": "开盘红(Levistock适配)",
+      "basis": "provider_section_evidence"
+    },
+    {
+      "code": "filter_st",
+      "to_source": "Levistock历史未归属",
+      "basis": "historical_token_only_unattributed"
+    },
+    {
+      "code": "first_limit_up_time",
+      "to_source": "Levistock历史未归属",
+      "basis": "historical_token_only_unattributed"
+    },
+    {
+      "code": "first_zt_time",
+      "to_source": "Levistock历史未归属",
+      "basis": "historical_token_only_unattributed"
+    },
+    {
+      "code": "flat",
+      "to_source": "开盘红(Levistock适配)",
+      "basis": "provider_section_evidence"
+    },
+    {
+      "code": "float_mv",
+      "to_source": "Levistock历史未归属",
+      "basis": "historical_token_only_unattributed"
+    },
+    {
+      "code": "ggmx",
+      "to_source": "FTShare",
+      "basis": "service_section_evidence"
+    },
+    {
+      "code": "goodwill_detail",
+      "to_source": "FTShare",
+      "basis": "service_section_evidence"
+    },
+    {
+      "code": "goodwill_scale",
+      "to_source": "Levistock历史未归属",
+      "basis": "historical_token_only_unattributed"
+    },
+    {
+      "code": "goodwill_to_net_assets_ratio",
+      "to_source": "Levistock历史未归属",
+      "basis": "historical_token_only_unattributed"
+    },
+    {
+      "code": "hs300_index",
+      "to_source": "Levistock历史未归属",
+      "basis": "historical_token_only_unattributed"
+    },
+    {
+      "code": "hs300_week_change_ratio",
+      "to_source": "Levistock历史未归属",
+      "basis": "historical_token_only_unattributed"
+    },
+    {
+      "code": "industry_id",
+      "to_source": "开盘红(Levistock适配)",
+      "basis": "provider_section_evidence"
+    },
+    {
+      "code": "industry_zt",
+      "to_source": "开盘红(Levistock适配)",
+      "basis": "provider_section_evidence"
+    },
+    {
+      "code": "is_trade_day",
+      "to_source": "Levistock历史未归属",
+      "basis": "historical_token_only_unattributed"
+    },
+    {
+      "code": "large_net",
+      "to_source": "Levistock历史未归属",
+      "basis": "historical_token_only_unattributed"
+    },
+    {
+      "code": "large_pct",
+      "to_source": "Levistock历史未归属",
+      "basis": "historical_token_only_unattributed"
+    },
+    {
+      "code": "last_px",
+      "to_source": "Levistock历史未归属",
+      "basis": "historical_token_only_unattributed"
+    },
+    {
+      "code": "last_zt_time",
+      "to_source": "Levistock历史未归属",
+      "basis": "historical_token_only_unattributed"
+    },
+    {
+      "code": "limit_count",
+      "to_source": "开盘红(Levistock适配)",
+      "basis": "provider_section_evidence"
+    },
+    {
+      "code": "limit_tag",
+      "to_source": "开盘红(Levistock适配)",
+      "basis": "provider_section_evidence"
+    },
+    {
+      "code": "limit_time",
+      "to_source": "开盘红(Levistock适配)",
+      "basis": "provider_section_evidence"
+    },
+    {
+      "code": "limit_up_break_count",
+      "to_source": "Levistock历史未归属",
+      "basis": "historical_token_only_unattributed"
+    },
+    {
+      "code": "limit_up_his_kph",
+      "to_source": "Levistock历史未归属",
+      "basis": "historical_token_only_unattributed"
+    },
+    {
+      "code": "limit_up_pool_yesterday",
+      "to_source": "Levistock历史未归属",
+      "basis": "historical_token_only_unattributed"
+    },
+    {
+      "code": "limit_up_price",
+      "to_source": "Levistock历史未归属",
+      "basis": "historical_token_only_unattributed"
+    },
+    {
+      "code": "main_inflow",
+      "to_source": "Levistock历史未归属",
+      "basis": "historical_token_only_unattributed"
+    },
+    {
+      "code": "main_net",
+      "to_source": "Levistock历史未归属",
+      "basis": "historical_token_only_unattributed"
+    },
+    {
+      "code": "main_pct",
+      "to_source": "Levistock历史未归属",
+      "basis": "historical_token_only_unattributed"
+    },
+    {
+      "code": "market_cap",
+      "to_source": "Levistock历史未归属",
+      "basis": "historical_token_only_unattributed"
+    },
+    {
+      "code": "market_emotion_kph",
+      "to_source": "Levistock历史未归属",
+      "basis": "historical_token_only_unattributed"
+    },
+    {
+      "code": "market_focus",
+      "to_source": "Levistock历史未归属",
+      "basis": "historical_token_only_unattributed"
+    },
+    {
+      "code": "market_focus_change",
+      "to_source": "Levistock历史未归属",
+      "basis": "historical_token_only_unattributed"
+    },
+    {
+      "code": "market_focus_rank",
+      "to_source": "Levistock历史未归属",
+      "basis": "historical_token_only_unattributed"
+    },
+    {
+      "code": "market_index_all_em",
+      "to_source": "Levistock历史未归属",
+      "basis": "historical_token_only_unattributed"
+    },
+    {
+      "code": "market_index_em",
+      "to_source": "Levistock历史未归属",
+      "basis": "historical_token_only_unattributed"
+    },
+    {
+      "code": "market_snapshot",
+      "to_source": "Levistock历史未归属",
+      "basis": "historical_token_only_unattributed"
+    },
+    {
+      "code": "mid_net",
+      "to_source": "Levistock历史未归属",
+      "basis": "historical_token_only_unattributed"
+    },
+    {
+      "code": "mid_pct",
+      "to_source": "Levistock历史未归属",
+      "basis": "historical_token_only_unattributed"
+    },
+    {
+      "code": "name",
+      "to_source": "Levistock历史未归属",
+      "basis": "historical_token_only_unattributed"
+    },
+    {
+      "code": "net_inflow",
+      "to_source": "开盘红(Levistock适配)",
+      "basis": "provider_section_evidence"
+    },
+    {
+      "code": "net_inflow_5d",
+      "to_source": "开盘红(Levistock适配)",
+      "basis": "provider_section_evidence"
+    },
+    {
+      "code": "net_profit_scale",
+      "to_source": "Levistock历史未归属",
+      "basis": "historical_token_only_unattributed"
+    },
+    {
+      "code": "net_profit_yoy_ratio",
+      "to_source": "Levistock历史未归属",
+      "basis": "historical_token_only_unattributed"
+    },
+    {
+      "code": "open_time",
+      "to_source": "开盘红(Levistock适配)",
+      "basis": "provider_section_evidence"
+    },
+    {
+      "code": "open_times",
+      "to_source": "Levistock历史未归属",
+      "basis": "historical_token_only_unattributed"
+    },
+    {
+      "code": "org_participate",
+      "to_source": "Levistock历史未归属",
+      "basis": "historical_token_only_unattributed"
+    },
+    {
+      "code": "participation_wish",
+      "to_source": "Levistock历史未归属",
+      "basis": "historical_token_only_unattributed"
+    },
+    {
+      "code": "participation_wish_5days",
+      "to_source": "Levistock历史未归属",
+      "basis": "historical_token_only_unattributed"
+    },
+    {
+      "code": "participation_wish_5days_change",
+      "to_source": "Levistock历史未归属",
+      "basis": "historical_token_only_unattributed"
+    },
+    {
+      "code": "participation_wish_change",
+      "to_source": "Levistock历史未归属",
+      "basis": "historical_token_only_unattributed"
+    },
+    {
+      "code": "pb",
+      "to_source": "Levistock历史未归属",
+      "basis": "historical_token_only_unattributed"
+    },
+    {
+      "code": "pe_dynamic",
+      "to_source": "Levistock历史未归属",
+      "basis": "historical_token_only_unattributed"
+    },
+    {
+      "code": "pe_static",
+      "to_source": "Levistock历史未归属",
+      "basis": "historical_token_only_unattributed"
+    },
+    {
+      "code": "pe_ttm",
+      "to_source": "Levistock历史未归属",
+      "basis": "historical_token_only_unattributed"
+    },
+    {
+      "code": "plate_code",
+      "to_source": "Levistock历史未归属",
+      "basis": "historical_token_only_unattributed"
+    },
+    {
+      "code": "pledge_company_count",
+      "to_source": "Levistock历史未归属",
+      "basis": "historical_token_only_unattributed"
+    },
+    {
+      "code": "pledge_deal_count",
+      "to_source": "Levistock历史未归属",
+      "basis": "historical_token_only_unattributed"
+    },
+    {
+      "code": "pledge_summary",
+      "to_source": "Levistock历史未归属",
+      "basis": "historical_token_only_unattributed"
+    },
+    {
+      "code": "pledge_total_market_value",
+      "to_source": "Levistock历史未归属",
+      "basis": "historical_token_only_unattributed"
+    },
+    {
+      "code": "pledge_total_ratio",
+      "to_source": "Levistock历史未归属",
+      "basis": "historical_token_only_unattributed"
+    },
+    {
+      "code": "pledge_total_shares",
+      "to_source": "Levistock历史未归属",
+      "basis": "historical_token_only_unattributed"
+    },
+    {
+      "code": "pre_close",
+      "to_source": "Levistock历史未归属",
+      "basis": "historical_token_only_unattributed"
+    },
+    {
+      "code": "prev_turnover",
+      "to_source": "Levistock历史未归属",
+      "basis": "historical_token_only_unattributed"
+    },
+    {
+      "code": "price",
+      "to_source": "Levistock历史未归属",
+      "basis": "historical_token_only_unattributed"
+    },
+    {
+      "code": "probe_trading_day",
+      "to_source": "Levistock历史未归属",
+      "basis": "historical_token_only_unattributed"
+    },
+    {
+      "code": "q_zrcs",
+      "to_source": "开盘红(Levistock适配)",
+      "basis": "provider_section_evidence"
+    },
+    {
+      "code": "qscln",
+      "to_source": "开盘红(Levistock适配)",
+      "basis": "provider_section_evidence"
+    },
+    {
+      "code": "ready",
+      "to_source": "Levistock历史未归属",
+      "basis": "historical_token_only_unattributed"
+    },
+    {
+      "code": "reason",
+      "to_source": "开盘红(Levistock适配)",
+      "basis": "provider_section_evidence"
+    },
+    {
+      "code": "resume_time",
+      "to_source": "Levistock历史未归属",
+      "basis": "historical_token_only_unattributed"
+    },
+    {
+      "code": "rise_dist",
+      "to_source": "开盘红(Levistock适配)",
+      "basis": "provider_section_evidence"
+    },
+    {
+      "code": "rise_num",
+      "to_source": "开盘红(Levistock适配)",
+      "basis": "provider_section_evidence"
+    },
+    {
+      "code": "rotation",
+      "to_source": "Levistock历史未归属",
+      "basis": "historical_token_only_unattributed"
+    },
+    {
+      "code": "s_zrcs",
+      "to_source": "开盘红(Levistock适配)",
+      "basis": "provider_section_evidence"
+    },
+    {
+      "code": "seal_amount",
+      "to_source": "开盘红(Levistock适配)",
+      "basis": "provider_section_evidence"
+    },
+    {
+      "code": "seal_money",
+      "to_source": "开盘红(Levistock适配)",
+      "basis": "provider_section_evidence"
+    },
+    {
+      "code": "sector",
+      "to_source": "Levistock历史未归属",
+      "basis": "historical_token_only_unattributed"
+    },
+    {
+      "code": "sector_em",
+      "to_source": "Levistock历史未归属",
+      "basis": "historical_token_only_unattributed"
+    },
+    {
+      "code": "sector_ranking_kph",
+      "to_source": "Levistock历史未归属",
+      "basis": "historical_token_only_unattributed"
+    },
+    {
+      "code": "sector_stocks_em",
+      "to_source": "Levistock历史未归属",
+      "basis": "historical_token_only_unattributed"
+    },
+    {
+      "code": "sector_stocks_his_kph",
+      "to_source": "Levistock历史未归属",
+      "basis": "historical_token_only_unattributed"
+    },
+    {
+      "code": "secu_code",
+      "to_source": "Levistock历史未归属",
+      "basis": "historical_token_only_unattributed"
+    },
+    {
+      "code": "secu_name",
+      "to_source": "Levistock历史未归属",
+      "basis": "historical_token_only_unattributed"
+    },
+    {
+      "code": "security_code",
+      "to_source": "Levistock历史未归属",
+      "basis": "historical_token_only_unattributed"
+    },
+    {
+      "code": "sell_amount",
+      "to_source": "开盘红(Levistock适配)",
+      "basis": "provider_section_evidence"
+    },
+    {
+      "code": "sh_change_pct",
+      "to_source": "Levistock历史未归属",
+      "basis": "historical_token_only_unattributed"
+    },
+    {
+      "code": "sh_close",
+      "to_source": "Levistock历史未归属",
+      "basis": "historical_token_only_unattributed"
+    },
+    {
+      "code": "shares",
+      "to_source": "Levistock历史未归属",
+      "basis": "historical_token_only_unattributed"
+    },
+    {
+      "code": "sign",
+      "to_source": "开盘红(Levistock适配)",
+      "basis": "provider_section_evidence"
+    },
+    {
+      "code": "sjdt",
+      "to_source": "开盘红(Levistock适配)",
+      "basis": "provider_section_evidence"
+    },
+    {
+      "code": "sjzt",
+      "to_source": "开盘红(Levistock适配)",
+      "basis": "provider_section_evidence"
+    },
+    {
+      "code": "small_net",
+      "to_source": "Levistock历史未归属",
+      "basis": "historical_token_only_unattributed"
+    },
+    {
+      "code": "small_pct",
+      "to_source": "Levistock历史未归属",
+      "basis": "historical_token_only_unattributed"
+    },
+    {
+      "code": "speed",
+      "to_source": "Levistock历史未归属",
+      "basis": "historical_token_only_unattributed"
+    },
+    {
+      "code": "status",
+      "to_source": "Levistock历史未归属",
+      "basis": "historical_token_only_unattributed"
+    },
+    {
+      "code": "stdt",
+      "to_source": "开盘红(Levistock适配)",
+      "basis": "provider_section_evidence"
+    },
+    {
+      "code": "stock_changes_em",
+      "to_source": "Levistock历史未归属",
+      "basis": "historical_token_only_unattributed"
+    },
+    {
+      "code": "stock_code",
+      "to_source": "Levistock历史未归属",
+      "basis": "historical_token_only_unattributed"
+    },
+    {
+      "code": "stock_count",
+      "to_source": "开盘红(Levistock适配)",
+      "basis": "provider_section_evidence"
+    },
+    {
+      "code": "stock_dt_pool_em",
+      "to_source": "Levistock历史未归属",
+      "basis": "historical_token_only_unattributed"
+    },
+    {
+      "code": "stock_name",
+      "to_source": "Levistock历史未归属",
+      "basis": "historical_token_only_unattributed"
+    },
+    {
+      "code": "stock_strategy_wencai",
+      "to_source": "Levistock历史未归属",
+      "basis": "historical_token_only_unattributed"
+    },
+    {
+      "code": "stock_yesterday_zt_em",
+      "to_source": "Levistock历史未归属",
+      "basis": "historical_token_only_unattributed"
+    },
+    {
+      "code": "stock_zt_pool_em",
+      "to_source": "Levistock历史未归属",
+      "basis": "historical_token_only_unattributed"
+    },
+    {
+      "code": "stocks_all_em",
+      "to_source": "Levistock历史未归属",
+      "basis": "historical_token_only_unattributed"
+    },
+    {
+      "code": "stocks_em",
+      "to_source": "Levistock历史未归属",
+      "basis": "historical_token_only_unattributed"
+    },
+    {
+      "code": "stzt",
+      "to_source": "开盘红(Levistock适配)",
+      "basis": "provider_section_evidence"
+    },
+    {
+      "code": "suspend",
+      "to_source": "Levistock历史未归属",
+      "basis": "historical_token_only_unattributed"
+    },
+    {
+      "code": "suspend_time",
+      "to_source": "Levistock历史未归属",
+      "basis": "historical_token_only_unattributed"
+    },
+    {
+      "code": "suspension_list",
+      "to_source": "Levistock历史未归属",
+      "basis": "historical_token_only_unattributed"
+    },
+    {
+      "code": "suspension_type",
+      "to_source": "Levistock历史未归属",
+      "basis": "historical_token_only_unattributed"
+    },
+    {
+      "code": "symbol",
+      "to_source": "Levistock历史未归属",
+      "basis": "historical_token_only_unattributed"
+    },
+    {
+      "code": "sz_change_pct",
+      "to_source": "Levistock历史未归属",
+      "basis": "historical_token_only_unattributed"
+    },
+    {
+      "code": "sz_close",
+      "to_source": "Levistock历史未归属",
+      "basis": "historical_token_only_unattributed"
+    },
+    {
+      "code": "szln",
+      "to_source": "开盘红(Levistock适配)",
+      "basis": "provider_section_evidence"
+    },
+    {
+      "code": "themes",
+      "to_source": "开盘红(Levistock适配)",
+      "basis": "provider_section_evidence"
+    },
+    {
+      "code": "time",
+      "to_source": "Levistock历史未归属",
+      "basis": "historical_token_only_unattributed"
+    },
+    {
+      "code": "title",
+      "to_source": "Levistock历史未归属",
+      "basis": "historical_token_only_unattributed"
+    },
+    {
+      "code": "total_market",
+      "to_source": "Levistock历史未归属",
+      "basis": "historical_token_only_unattributed"
+    },
+    {
+      "code": "total_mv",
+      "to_source": "Levistock历史未归属",
+      "basis": "historical_token_only_unattributed"
+    },
+    {
+      "code": "total_score",
+      "to_source": "Levistock历史未归属",
+      "basis": "historical_token_only_unattributed"
+    },
+    {
+      "code": "trade_date",
+      "to_source": "Levistock历史未归属",
+      "basis": "historical_token_only_unattributed"
+    },
+    {
+      "code": "ts_code",
+      "to_source": "Levistock历史未归属",
+      "basis": "historical_token_only_unattributed"
+    },
+    {
+      "code": "turnover",
+      "to_source": "开盘红(Levistock适配)",
+      "basis": "provider_section_evidence"
+    },
+    {
+      "code": "turnover_pct",
+      "to_source": "Levistock历史未归属",
+      "basis": "historical_token_only_unattributed"
+    },
+    {
+      "code": "turnover_rate",
+      "to_source": "Levistock历史未归属",
+      "basis": "historical_token_only_unattributed"
+    },
+    {
+      "code": "unlock_by_date",
+      "to_source": "Levistock历史未归属",
+      "basis": "historical_token_only_unattributed"
+    },
+    {
+      "code": "up_0pct_to_1pct",
+      "to_source": "Levistock历史未归属",
+      "basis": "historical_token_only_unattributed"
+    },
+    {
+      "code": "up_1pct_to_5pct",
+      "to_source": "Levistock历史未归属",
+      "basis": "historical_token_only_unattributed"
+    },
+    {
+      "code": "up_5pct_to_limited",
+      "to_source": "Levistock历史未归属",
+      "basis": "historical_token_only_unattributed"
+    },
+    {
+      "code": "up_limit",
+      "to_source": "Levistock历史未归属",
+      "basis": "historical_token_only_unattributed"
+    },
+    {
+      "code": "up_limited",
+      "to_source": "Levistock历史未归属",
+      "basis": "historical_token_only_unattributed"
+    },
+    {
+      "code": "vol_ratio",
+      "to_source": "Levistock历史未归属",
+      "basis": "historical_token_only_unattributed"
+    },
+    {
+      "code": "volume",
+      "to_source": "Levistock历史未归属",
+      "basis": "historical_token_only_unattributed"
+    },
+    {
+      "code": "wind_stocks",
+      "to_source": "Levistock历史未归属",
+      "basis": "historical_token_only_unattributed"
+    },
+    {
+      "code": "wind_vane",
+      "to_source": "Levistock历史未归属",
+      "basis": "historical_token_only_unattributed"
+    },
+    {
+      "code": "xlarge_net",
+      "to_source": "Levistock历史未归属",
+      "basis": "historical_token_only_unattributed"
+    },
+    {
+      "code": "xlarge_pct",
+      "to_source": "Levistock历史未归属",
+      "basis": "historical_token_only_unattributed"
+    },
+    {
+      "code": "zt",
+      "to_source": "开盘红(Levistock适配)",
+      "basis": "provider_section_evidence"
+    },
+    {
+      "code": "zt_count",
+      "to_source": "Levistock历史未归属",
+      "basis": "historical_token_only_unattributed"
+    },
+    {
+      "code": "zt_days",
+      "to_source": "Levistock历史未归属",
+      "basis": "historical_token_only_unattributed"
+    }
+  ],
+  "archive_only_tokens": [
+    "a20Adjchrate",
+    "ableFreeShares",
+    "actualListedShares",
+    "addListingCap",
+    "addListingShares",
+    "avg_price",
+    "b20Adjchrate",
+    "change_amount",
+    "change_date",
+    "change_direction",
+    "change_quantity",
+    "change_ratio",
+    "change_reason",
+    "change_shares",
+    "changer",
+    "crawlDate",
+    "crawl_batch_ts",
+    "crawl_date",
+    "currentFreeShares",
+    "data_time",
+    "executive_name",
+    "freeRatio",
+    "freeSharesType",
+    "goodwill_previous",
+    "holderCount",
+    "holderName",
+    "last_limit_down_time",
+    "liftMarketCap",
+    "limit_down_break",
+    "limit_down_break_count",
+    "limit_down_enter",
+    "limit_down_price",
+    "limit_down_seal_value",
+    "limit_up_seal_value",
+    "lockMonth",
+    "newPrice",
+    "nonFreeShares",
+    "notice_date",
+    "planFeature",
+    "position",
+    "price_change",
+    "quote_change",
+    "quote_price",
+    "register_date",
+    "relation",
+    "residualLimitedShares",
+    "security_name",
+    "seq",
+    "shares_after",
+    "source",
+    "stockCode",
+    "stockName",
+    "totalRatio",
+    "total_share",
+    "trade_board",
+    "unlockDate"
+  ],
+  "archive_only_reason": "These 56 tokens are found by the legacy Markdown parser but have no source_fields record in the pre-migration registry. They remain in the read-only field_source_reference.md archive and are not promoted to current source identities without field-level evidence.",
+  "target_sources": [
+    {
+      "name": "FTShare",
+      "verify_file": "ftshare_fields_mirror.md",
+      "section_patterns": [
+        "12.20.1 FTShare 股吧/评论原始字段补录（V17.1.1 全量登记）"
+      ],
+      "status": "active",
+      "source_role": "service_endpoint"
+    },
+    {
+      "name": "Levistock历史未归属",
+      "verify_file": "levistock_field_verify.md",
+      "section_patterns": [
+        "未能按逐字段证据归属的历史接口记录"
+      ],
+      "status": "historical",
+      "source_role": "historical_unattributed"
+    },
+    {
+      "name": "开盘红(Levistock适配)",
+      "verify_file": "levistock_field_verify.md",
+      "section_patterns": [
+        "12.10.3 开盘红市场情绪（market_emotion_kph，**含历史**）🆕",
+        "12.10.4 开盘红复盘（get_zttt 涨停天梯 / get_pmsl 盘面梳理 / get_his_limit_resumption 历史涨停复盘）🆕",
+        "12.10.7 开盘红板块排行（sector_ranking_kph）补充字段"
+      ],
+      "status": "active",
+      "source_role": "provider_component"
+    },
+    {
+      "name": "AxData",
+      "verify_file": "axdata_verify.md",
+      "section_patterns": [
+        "12.12.8 跨源接口实测确认（2026-08-05，axdata 0.1.3 local 模式）"
+      ],
+      "status": "active",
+      "source_role": "framework_reference"
+    }
+  ],
+  "counts_total": 175,
+  "archive_only_count": 56
+}

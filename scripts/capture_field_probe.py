@@ -87,8 +87,8 @@ V17.3(2026-09-20) 采集↔字典/对撞同步核验:
   python scripts/capture_field_probe.py --refresh-pool-only   # 仅刷新动态层写回 pool.json, 不采集
 """
 
-import sys, os, json, time, argparse, glob
-from datetime import date, datetime, time as dt_time, timedelta
+import sys, os, json, time, argparse, glob, math, re
+from datetime import date, datetime, time as dt_time, timedelta, timezone
 from typing import Any, Callable, Dict, List, Optional, cast
 
 for _s in (sys.stdout, sys.stderr):
@@ -140,6 +140,8 @@ SOURCE_SCHEME = {
     "push2": "em.stock_get",
     "em_fund_flow": "em.stock_get",  # 同样走 push2delay stock/get, 与 push2 同编号族
     "axdata": "axdata.shortline",  # collect_axdata 读取本地 ZHB/AxData 短线指标, 非 Eastmoney
+    "kpl": "kpl.limit_up_detail",  # KPL 个股明细独立落盘，保留接口字段路径和来源日期
+    "kph": "kph.limit_up_history",  # AxData 传输层访问开盘红历史涨停明细
     "ulist239": "em.ulist_np",  # 独立 f 编号体系, 与 stock/get 不同号
     "zhb": "zhb",
     "tdx": "tdx",
@@ -205,11 +207,12 @@ SOURCE_REQUIRED_PATHS: Dict[str, List[tuple]] = {
         ("stock_changes_8201",),
         ("kpl_sentiment",),
         ("kpl_up_down",),
-        ("kpl_limit_up_detail",),
         ("kpl_broken_ratio",),
         ("plate_rotation_matrix",),
         ("plate_rotation_top",),
     ],
+    "kpl": [("stocks",)],
+    "kph": [("stocks",)],
     "clist": [("by_type", "industry"), ("by_type", "concept"), ("by_type", "area")],
     "push2ex": [("limit_up_pool",), ("limit_down_pool",), ("limit_broken_pool",)],
     "em_hot": [("hot_rank",)],
@@ -615,8 +618,8 @@ def collect_eltdx(pool: list, lite: bool = False) -> dict:
     /实时排名)。
     返回「命名字段 + 原始字节」双轨, 供 collide.py 值级对撞 + 原始字节二次解码(见 D 步)。
     源 = 本地 eltdx TCP(非云连接器); 标注 scheme="eltdx" 独立血缘, 不动东财主路径。
-    lite 模式(lite=True, 由 --eltdx-lite 触发): 跳过 kline_day/finance_batch/f10_news
-    (三者对撞均未消费, 且 kline/finance 与 tdx 源冗余、f10 仅能力登记), 仅保留
+    lite 模式(lite=True, 由 --eltdx-lite 触发): 跳过 kline_day/finance_batch
+    (对撞未消费且与 TDX 源冗余), 仅保留
     quote_snapshot + shortline + 连板天梯——即 collide.py 真正消费的 eltdx 字段。
     注: lite 仅省次要载荷(实测 688.1s→668.5s, 约 2.8%); eltdx 采集主瓶颈是逐股
     get_snapshots RPC(≈33s/股), 已通过 L461 起「批量 get_snapshots(ecodes) 一次预取」
@@ -643,24 +646,25 @@ def collect_eltdx(pool: list, lite: bool = False) -> dict:
 
     def _ecode(code: str) -> str:
         c = str(code).lower()
+        if c.startswith("sh92"):
+            return "bj" + c[2:]
         if c.startswith(("sh", "sz", "bj")):
             return c
+        if c.startswith(("92", "8", "4")):
+            return "bj" + c
         if c.startswith(("6", "5", "9", "11", "13")):
             return "sh" + c
-        if c.startswith(("8", "4", "92")):
-            return "bj" + c
         return "sz" + c  # 0/3/2/1 开头
 
     def _is_bse(ec: str) -> bool:
-        # 北交所/BSE 股(92xxx→sh92xxx 及 bj 前缀)常缺 snapshot marker,
-        # 批量 API 遇之会整批挂起 ~660s 才抛异常 → 须剔出批量、单独逐股。
+        # 保留 sh92 识别以兼容旧数据；新请求始终将 92xxxx 映射为 bj 前缀。
         return ec.startswith("bj") or (ec.startswith("sh") and ec[2:].startswith("92"))
 
     # 注意: eltdx 客户端非线程安全, 任何 eltdx 调用放进后台线程都会死锁挂起;
     # 因此全程主线程直调, 不做线程超时护栏(护栏本身即死锁源)。挂起源靠"限定 codes 范围"消除。
 
     try:
-        from eltdx import TdxClient, F10Client
+        from eltdx import TdxClient
     except Exception as _e:
         return {"stocks": {}, "__error__": f"eltdx import failed: {str(_e)[:200]}"}
 
@@ -675,18 +679,18 @@ def collect_eltdx(pool: list, lite: bool = False) -> dict:
         _bse = [e for e in ecodes if _is_bse(e)]
         _a = [e for e in ecodes if e not in _bse]
         _gh = out["global_helpers"]
-        # ── 全局 Helpers(非逐股) ──
+        # ── 全局 Helpers(仅处理本次池内代码) ──
         # V17.2.28 根因修正: limit_ladder/theme_strength_rank/stock_theme_strength_rank 默认 codes=None
         # 会扫描全市场 A 股(~5000 只)的 shortline_indicators + F10 主题查询, 单只 ~50ms 累积→~660s 挂起。
         # 修复: 显式传入本池 ecodes(仅 ~20 只)将工作量降到本池, 秒级完成; eltdx 调用一律主线程直调
         # (线程护栏会死锁非线程安全的客户端, 已废弃)。volume_comparison/buy_sell_strength 是逐股辅助
         # (需 code 参数), 不属于全局, 移除以免报错。
         _global_helpers: List[tuple[str, Callable[[], Any]]] = [
-            ("limit_ladder", lambda: client.helpers.limit_ladder(codes=_a)),
-            ("theme_strength_rank", lambda: client.helpers.theme_strength_rank(codes=_a)),
+            ("limit_ladder", lambda: client.helpers.limit_ladder(codes=ecodes)),
+            ("theme_strength_rank", lambda: client.helpers.theme_strength_rank(codes=ecodes)),
             (
                 "stock_theme_strength_rank",
-                lambda: client.helpers.stock_theme_strength_rank(codes=_a),
+                lambda: client.helpers.stock_theme_strength_rank(codes=ecodes),
             ),
             ("realtime_rank", lambda: client.helpers.realtime_rank()),
             ("market_stat_880005", lambda: client.bars.get("sh880005", period="day", count=1)),
@@ -714,60 +718,73 @@ def collect_eltdx(pool: list, lite: bool = False) -> dict:
                     _cc = _recd.get("full_code") or _recd.get("code")
                     if _cc:
                         _reported = str(_cc).lower()
-                        _reported_ec = (
-                            _reported
-                            if _reported.startswith(("sh", "sz", "bj"))
-                            else _ecode(_reported)
-                        )
+                        _reported_ec = _ecode(_reported)
                         if _reported_ec == _ec:
                             _sl_map[_ec] = _recd
                             _matched = True
                 if not _matched:
-                    if _is_bse(_ec):
-                        _sl_errors[_ec] = {
-                            "__skipped__": "BSE code: shortline helper returned no row"
-                        }
-                    else:
-                        _sl_errors[_ec] = {"__error__": "shortline response missing requested code"}
+                    _sl_errors[_ec] = {"__error__": "shortline response missing requested code"}
             except Exception as _e:
-                if _is_bse(_ec) and not _eltdx_preopen_not_ready(_e):
-                    _sl_errors[_ec] = {"__skipped__": "BSE code: shortline helper unsupported"}
-                else:
-                    _sl_errors[_ec] = _eltdx_failure_marker(_e)
-        # BSE 股: eltdx 所有 API 对其均挂起/失败(坏码 marker 缺失), 不调用,
-        # 逐股循环对 BSE 直接记 skipped, 避免单点调用同样挂起。
+                _sl_errors[_ec] = _eltdx_failure_marker(_e)
         # ── 行情快照(A股批量一次取全部, 避免逐股 RPC 往返) ──
-        # 实测逐股 get_snapshots ~1.5s/股(A股), 批量 A股 0.0s; BSE 批量会整批挂起故已剔出 _a。
+        # A股、北交所分别批量请求：北交所必须使用 bj92xxxx 市场码，避免旧 sh92xxxx marker 错误。
         # 旧采集 688s 真正主因 = global_helpers 默认扫描全市场(~5000 只)→ 已改为限本池 ecodes。
         _snap_map = {}
+
+        def _merge_snapshot_rows(snapshot_result: Any, requested_codes: List[str]) -> None:
+            _batch_snaps = (
+                getattr(snapshot_result, "snapshots", snapshot_result)
+                if not isinstance(snapshot_result, list)
+                else snapshot_result
+            )
+            if isinstance(_batch_snaps, dict):
+                for _key, _value in _batch_snaps.items():
+                    _snap_map[_ecode(str(_key))] = _value
+            elif isinstance(_batch_snaps, (list, tuple)):
+                for _index, _entry in enumerate(_batch_snaps):
+                    _reported_code = (
+                        getattr(_entry, "full_code", None)
+                        or getattr(_entry, "code", None)
+                        or (
+                            _entry.get("full_code") or _entry.get("code")
+                            if isinstance(_entry, dict)
+                            else None
+                        )
+                    )
+                    if _reported_code:
+                        _snap_map[_ecode(str(_reported_code))] = _entry
+                    elif _index < len(requested_codes):
+                        _snap_map[requested_codes[_index]] = _entry
+
         if _a:
             try:
                 _batch = client.quotes.get_snapshots(_a)
-                _batch_snaps = (
-                    getattr(_batch, "snapshots", _batch) if not isinstance(_batch, list) else _batch
-                )
-                if isinstance(_batch_snaps, dict):
-                    for _k, _v in _batch_snaps.items():
-                        _snap_map[str(_k)] = _v
-                elif isinstance(_batch_snaps, (list, tuple)):
-                    for _i, _el in enumerate(_batch_snaps):
-                        _code = getattr(_el, "code", None) or getattr(_el, "full_code", None)
-                        if _code:
-                            _snap_map[str(_code)] = _el
-                        elif _i < len(_a):
-                            _snap_map[_a[_i]] = _el
+                _merge_snapshot_rows(_batch, _a)
             except Exception as _e:
                 # A股批量失败(罕见)→ 降级逐股保住快照(挂起风险已由 BSE 隔离消除)
                 out["snapshot_error"] = f"A-share batch failed, fallback per-code: {str(_e)[:120]}"
                 for _ec in _a:
                     try:
                         _s = client.quotes.get_snapshots([_ec])
-                        _ss = getattr(_s, "snapshots", _s) if not isinstance(_s, list) else _s
-                        if _ss:
-                            _snap_map[_ec] = _ss[0]
-                    except Exception:
-                        continue
-        # BSE 股: 不调用 get_snapshots(坏码单点调用同样挂起); 逐股循环记 skipped。
+                        _merge_snapshot_rows(_s, [_ec])
+                        if _ec not in _snap_map:
+                            _snap_map[_ec] = {"__error__": "snapshot request returned no record"}
+                    except Exception as _single_error:
+                        _snap_map[_ec] = {"__error__": str(_single_error)[:200]}
+        if _bse:
+            try:
+                _bse_batch = client.quotes.get_snapshots(_bse)
+                _merge_snapshot_rows(_bse_batch, _bse)
+            except Exception as _e:
+                out["bse_snapshot_error"] = f"BSE batch failed, fallback per-code: {str(_e)[:120]}"
+                for _ec in _bse:
+                    try:
+                        _snapshot = client.quotes.get_snapshots([_ec])
+                        _merge_snapshot_rows(_snapshot, [_ec])
+                        if _ec not in _snap_map:
+                            _snap_map[_ec] = {"__error__": "snapshot request returned no record"}
+                    except Exception as _single_error:
+                        _snap_map[_ec] = {"__error__": str(_single_error)[:200]}
         for p in pool:
             c = p["code"]
             ec = _ecode(c)
@@ -781,25 +798,21 @@ def collect_eltdx(pool: list, lite: bool = False) -> dict:
                         if _snapshot is not None
                         else {"__error__": "snapshot batch returned an empty record"}
                     )
-                elif _is_bse(ec):
-                    # BSE 已在前述逐股分支尝试且预期缺 marker, 不重复调用(避免批量式挂起)
-                    rec["quote_snapshot"] = {
-                        "__skipped__": "BSE code: snapshot marker not available"
-                    }
                 else:
-                    _snap = client.quotes.get_snapshots([ec])
-                    _snaps = (
-                        getattr(_snap, "snapshots", _snap) if not isinstance(_snap, list) else _snap
-                    )
-                    rec["quote_snapshot"] = (
-                        _jfy(_snaps[0])
-                        if _snaps
-                        else {"__error__": "snapshot request returned no record"}
-                    )
+                    try:
+                        _snap = client.quotes.get_snapshots([ec])
+                        _merge_snapshot_rows(_snap, [ec])
+                        rec["quote_snapshot"] = (
+                            _jfy(_snap_map[ec])
+                            if ec in _snap_map
+                            else {"__error__": "snapshot request returned no record"}
+                        )
+                    except Exception as _e:
+                        rec["quote_snapshot"] = {"__error__": str(_e)[:200]}
             except Exception as _e:
                 rec["quote_snapshot"] = {"__error__": str(_e)[:200]}
             # 日K(最新若干根 + record_hex 原始记录) —— lite 模式跳过(与 tdx 源冗余, 对撞未消费)
-            if (not lite) and (not _is_bse(ec)):
+            if not lite:
                 try:
                     _ks = client.bars.get(ec, period="day", count=5, include_raw=True)
                     _bars = getattr(_ks, "bars", None) or []
@@ -807,7 +820,7 @@ def collect_eltdx(pool: list, lite: bool = False) -> dict:
                 except Exception as _e:
                     rec["kline_day"] = {"__error__": str(_e)[:200]}
             # 0x0010 财务(含 finance_info_raw 原始块) —— lite 模式跳过(与 tdx 源冗余, 对撞未消费)
-            if (not lite) and (not _is_bse(ec)):
+            if not lite:
                 try:
                     _fb = client.corporate.finance_batch(ec, include_raw=True)
                     _recs = getattr(_fb, "records", None) or []
@@ -819,17 +832,8 @@ def collect_eltdx(pool: list, lite: bool = False) -> dict:
                 rec["shortline"] = _sl_map[ec]
             elif ec in _sl_errors:
                 rec["shortline"] = _sl_errors[ec]
-            elif _is_bse(ec):
-                rec["shortline"] = {"__skipped__": "BSE code: shortline helper unsupported"}
             else:
                 rec["shortline"] = {"__error__": "shortline response missing requested code"}
-            # F10 新闻(仅作 eltdx 能力登记; 不替代东财主路径) —— lite 模式跳过
-            if (not lite) and (not _is_bse(ec)):
-                try:
-                    _f10 = F10Client(timeout=3)
-                    rec["f10_news"] = _jfy(_f10.news(ec))
-                except Exception as _e:
-                    rec["f10_news"] = {"__error__": str(_e)[:200]}
             out["stocks"][c] = rec
         # V17.2.25: 全局连板天梯(global_helpers.limit_ladder) 折回逐股结构, 使 collide.py
         # (只读 stocks 逐股) 能消费 eltdx 特有连板字段(ladder_level/limit_up_streak_days/
@@ -908,7 +912,7 @@ def _request_failure_summary(label: str, detail: dict) -> str:
 
 
 def _request_is_rate_limited(detail: dict) -> bool:
-    """Treat explicit IP bans and HTTP 403/429 as a host-level circuit-breaker signal."""
+    """Whether a response means this capture source should stop requesting."""
     kind = str(detail.get("kind") or "").lower()
     status = detail.get("status_code")
     status_code: Optional[int] = None
@@ -919,10 +923,30 @@ def _request_is_rate_limited(detail: dict) -> bool:
             status_code = int(status)
         except ValueError:
             status_code = None
-    return kind in {"ip_banned", "http_403", "http_429", "rate_limited"} or status_code in (
+    return kind in {
+        "ip_banned",
+        "http_403",
+        "http_429",
+        "rate_limited",
+        "circuit_open",
+        "suppressed_after_failures",
+    } or status_code in (
         403,
         429,
     )
+
+
+def _em_capture_pause_reason(
+    label: str, detail: dict, consecutive_disconnects: int
+) -> Optional[str]:
+    """Stop a capture source on throttling, bans, or three consecutive transport failures."""
+    if _request_is_rate_limited(detail):
+        return _request_failure_summary(label, detail)
+    kind = str(detail.get("kind") or "").lower()
+    if kind in {"connection_error", "timeout"} and consecutive_disconnects >= 3:
+        domain = str(detail.get("domain") or label)
+        return f"{domain}: paused after {consecutive_disconnects} consecutive {kind} failures"
+    return None
 
 
 def collect_push2(pool: list) -> dict:
@@ -1152,8 +1176,13 @@ def collect_axdata(pool: list) -> dict:
     return out
 
 
-def collect_market_sources(pool: list, include_context: bool = False) -> dict:
-    """采集市场数值指标；龙虎榜仅在 include_context=True 时请求。"""
+def collect_market_sources(
+    pool: list,
+    include_context: bool = False,
+    include_kpl_detail: bool = True,
+    trade_date: Optional[str] = None,
+) -> dict:
+    """采集市场数值指标；龙虎榜和 KPL 明细均可由调用方单独控制。"""
     import stock_common
 
     out: Dict[str, Any] = {}
@@ -1162,16 +1191,62 @@ def collect_market_sources(pool: list, include_context: bool = False) -> dict:
         try:
             fn = getattr(stock_common, function_name)
             result = fn(*args, **kwargs)
-            out[name] = {"__error__": "collector returned None"} if result is None else result
+            if result is None:
+                out[name] = {"__error__": "collector returned None"}
+            elif (
+                name in {"cls_market_emotion", "kph_limit_ladder"}
+                and isinstance(result, dict)
+                and ("__error__" in result or "__skipped__" in result)
+            ):
+                out[name] = result
+            elif name in {"cls_market_emotion", "kph_limit_ladder"} and not (
+                _has_populated_capture_value(result)
+            ):
+                out[name] = {"__error__": "empty response from Levistock adapter"}
+            else:
+                out[name] = result
         except Exception as exc:
             out[name] = {"__error__": str(exc)[:200]}
 
+    try:
+        if trade_date:
+            try:
+                kph_trade_date = datetime.strptime(trade_date, "%Y%m%d").date().isoformat()
+            except ValueError:
+                kph_trade_date = datetime.strptime(trade_date, "%Y-%m-%d").date().isoformat()
+        else:
+            kph_trade_date = _last_completed_trading_day().isoformat()
+    except Exception as exc:
+        kph_trade_date = None
+        out["kph_limit_ladder"] = {
+            "__error__": f"KPH trade-date selection failed: {str(exc)[:160]}"
+        }
+
+    out["__source_meta__"] = {
+        "cls_market_emotion": {
+            "adapter": "levistock.market_emotion_cls",
+            "provider_family": "cls",
+            "date_domain": "trading_day",
+            "date_evidence": "response_only",
+            "collection_path": "existing_market_sources_call",
+        },
+        "kph_limit_ladder": {
+            "adapter": "levistock.get_zttt",
+            "provider_family": "kph",
+            "date_domain": "trading_day",
+            "requested_trade_date": kph_trade_date,
+            "date_evidence": "request_parameter" if kph_trade_date else "unavailable",
+            "collection_path": "existing_market_sources_call",
+        },
+    }
     capture_one("cls_market_emotion", "get_cls_market_emotion")
-    capture_one("kph_limit_ladder", "get_kph_limit_ladder")
+    if kph_trade_date:
+        capture_one("kph_limit_ladder", "get_kph_limit_ladder", kph_trade_date)
     capture_one("stock_changes_8201", "get_stock_changes", "8201")
     capture_one("kpl_sentiment", "get_kpl_market_sentiment")
     capture_one("kpl_up_down", "get_kpl_up_down")
-    capture_one("kpl_limit_up_detail", "get_kpl_limit_up_detail")
+    if include_kpl_detail:
+        capture_one("kpl_limit_up_detail", "get_kpl_limit_up_detail")
     capture_one("kpl_broken_ratio", "get_kpl_broken_ratio")
     capture_one(
         "plate_rotation_matrix",
@@ -1201,6 +1276,277 @@ def collect_market_sources(pool: list, include_context: bool = False) -> dict:
         sort_types="-1",
     )
     return out
+
+
+def _parse_capture_date(value: Any) -> date:
+    if isinstance(value, datetime):
+        return value.date()
+    if isinstance(value, date):
+        return value
+    if not isinstance(value, str):
+        raise ValueError("capture date must be YYYYMMDD or YYYY-MM-DD")
+    text = value.strip()
+    for date_format in ("%Y%m%d", "%Y-%m-%d"):
+        try:
+            return datetime.strptime(text, date_format).date()
+        except ValueError:
+            continue
+    raise ValueError(f"invalid capture date: {value!r}")
+
+
+def _kph_history_trade_date(capture_date: Any, today: Optional[date] = None) -> date:
+    """Choose a valid trade date strictly before AxData's natural-day cutoff."""
+    from stock_common.stock_calendar import is_workday_with_zhb_supplement
+
+    requested = _parse_capture_date(capture_date)
+    natural_today = today or date.today()
+    if requested > natural_today:
+        raise ValueError(f"KPH capture date {requested} is in the future")
+    candidate = min(requested, natural_today - timedelta(days=1))
+    for _ in range(370):
+        if is_workday_with_zhb_supplement(candidate):
+            return candidate
+        candidate -= timedelta(days=1)
+    raise RuntimeError("ZHB calendar has no previous valid trading day for KPH history")
+
+
+def _kph_ladder_blocks_followup(market_sources: Any) -> bool:
+    """Avoid a second same-family request when the existing KPH sample is unavailable."""
+    if not isinstance(market_sources, dict):
+        return False
+    ladder = market_sources.get("kph_limit_ladder")
+    if not isinstance(ladder, dict):
+        return False
+    if "__error__" in ladder or "__skipped__" in ladder:
+        return True
+    detail = " ".join(str(value) for value in ladder.values()).casefold()
+    return any(
+        marker in detail
+        for marker in (
+            "403",
+            "429",
+            "forbidden",
+            "too many requests",
+            "rate limit",
+            "rate-limit",
+            "banned",
+            "blocked",
+            "封禁",
+            "限流",
+        )
+    )
+
+
+def _six_digit_symbol(row: Dict[str, Any]) -> Optional[str]:
+    raw = row.get("symbol") or row.get("instrument_id") or row.get("code")
+    if raw is None:
+        return None
+    match = re.search(r"(?<!\d)(\d{6})(?!\d)", str(raw).strip())
+    return match.group(1) if match else None
+
+
+def _finite_numeric_fields(row: Dict[str, Any]) -> Dict[str, Any]:
+    values: Dict[str, Any] = {}
+    identifier_keys = {"code", "symbol", "stock_code", "stockcode", "instrument_id", "exchange"}
+    for key, value in row.items():
+        if not isinstance(key, str):
+            continue
+        if key.casefold() in identifier_keys:
+            continue
+        if isinstance(value, bool) or not isinstance(value, (int, float)):
+            continue
+        if isinstance(value, float) and not math.isfinite(value):
+            continue
+        values[key] = value
+    return values
+
+
+def _kpl_timestamp_date(value: Any) -> Optional[date]:
+    if isinstance(value, bool) or not isinstance(value, (int, float)) or value <= 0:
+        return None
+    timestamp = float(value)
+    if timestamp > 100_000_000_000:
+        timestamp /= 1000
+    try:
+        return datetime.fromtimestamp(timestamp, tz=timezone(timedelta(hours=8))).date()
+    except (OverflowError, OSError, ValueError):
+        return None
+
+
+def collect_kpl_detail(capture_date: Any) -> dict:
+    """Collect the existing KPL detail response with stock and date provenance."""
+    import stock_common
+
+    try:
+        rows = stock_common.get_kpl_limit_up_detail()
+    except Exception as exc:
+        return {"stocks": {}, "__error__": str(exc)[:300]}
+    if rows is None:
+        return {"stocks": {}, "__error__": "KPL detail collector returned None"}
+    if not isinstance(rows, list):
+        return {"stocks": {}, "__error__": "KPL detail response is not a list"}
+    if not rows:
+        return {"stocks": {}, "__error__": "KPL detail response is empty"}
+
+    dated_rows = []
+    trade_dates = set()
+    for row in rows:
+        if not isinstance(row, dict):
+            continue
+        row_date = _kpl_timestamp_date(row.get("zt_time"))
+        if row_date is not None:
+            trade_dates.add(row_date)
+            dated_rows.append((row, row_date))
+    if len(trade_dates) != 1:
+        return {
+            "stocks": {},
+            "capture_date": _parse_capture_date(capture_date).isoformat(),
+            "__error__": (
+                "KPL detail must contain exactly one date derived from zt_time; "
+                f"observed {sorted(day.isoformat() for day in trade_dates)}"
+            ),
+        }
+
+    trade_date = next(iter(trade_dates))
+    stocks: Dict[str, Any] = {}
+    warnings = []
+    missing_date_rows = len(rows) - len(dated_rows)
+    if missing_date_rows:
+        warnings.append(f"excluded {missing_date_rows} KPL rows without a valid zt_time")
+    for row, row_date in dated_rows:
+        if row_date != trade_date:
+            continue
+        symbol = _six_digit_symbol(row)
+        if symbol is None:
+            warnings.append("excluded a KPL row without a six-digit stock code")
+            continue
+        numeric = _finite_numeric_fields(row)
+        if not numeric:
+            warnings.append(f"excluded KPL row {symbol} without numeric fields")
+            continue
+        if symbol in stocks:
+            warnings.append(f"duplicate KPL stock code {symbol}; preserved first row")
+            continue
+        stocks[symbol] = numeric
+
+    return {
+        "trade_date": trade_date.isoformat(),
+        "capture_date": _parse_capture_date(capture_date).isoformat(),
+        "stocks": stocks,
+        "row_count": len(stocks),
+        "warnings": warnings,
+    }
+
+
+def collect_kph_history(capture_date: Any, prior_market_sources: Any = None) -> dict:
+    """Request one AxData KPH historical batch; never retry or persist it."""
+    try:
+        trade_date = _kph_history_trade_date(capture_date)
+    except Exception as exc:
+        return {"stocks": {}, "__error__": f"KPH date selection failed: {str(exc)[:240]}"}
+
+    if _kph_ladder_blocks_followup(prior_market_sources):
+        return {
+            "trade_date": trade_date.isoformat(),
+            "stocks": {},
+            "__skipped__": (
+                "KPH history skipped because the same-run Levistock sample was "
+                "empty, failed, or throttled"
+            ),
+        }
+
+    try:
+        from stock_common.sc_datasource import get_axdata_records
+
+        records = get_axdata_records(
+            "kph_limit_up_history",
+            params={"trade_date": trade_date.isoformat()},
+        )
+    except Exception as exc:
+        return {
+            "trade_date": trade_date.isoformat(),
+            "stocks": {},
+            "__error__": f"KPH history request failed: {type(exc).__name__}: {str(exc)[:240]}",
+        }
+    if not records:
+        return {
+            "trade_date": trade_date.isoformat(),
+            "stocks": {},
+            "__error__": f"KPH history returned no records for {trade_date.isoformat()}",
+        }
+
+    stocks: Dict[str, Any] = {}
+    identity_observations: List[str] = []
+    warnings = []
+    response_dates = set()
+    for row in records:
+        raw_date = row.get("trade_date")
+        if raw_date is not None:
+            try:
+                response_dates.add(_parse_capture_date(str(raw_date)).isoformat())
+            except ValueError:
+                warnings.append(f"unparseable KPH row trade_date: {raw_date!r}")
+        symbol = _six_digit_symbol(row)
+        if symbol is None:
+            warnings.append("excluded KPH row without a six-digit stock code")
+            continue
+        if row.get("exchange") is not None and symbol.startswith("92"):
+            exchange = str(row.get("exchange")).strip().upper()
+            instrument_id = str(row.get("instrument_id") or "")
+            if exchange in {"SSE", "SH", "SHSE", "SHANGHAI"} or instrument_id.upper().endswith(
+                ".SH"
+            ):
+                identity_observations.append(
+                    f"{symbol}: reported_exchange={row.get('exchange')}; "
+                    f"reported_instrument_id={row.get('instrument_id')}"
+                )
+                warnings.append(
+                    f"KPH reports Beijing code {symbol} as Shanghai; raw identity preserved separately"
+                )
+        # Preserve every finite numeric source field for future cracking. Only
+        # the six E3-aligned paths are verified in the dictionary; extra fields
+        # remain raw candidates until separately evidenced.
+        numeric = _finite_numeric_fields(row)
+        if symbol in stocks:
+            warnings.append(f"duplicate KPH stock code {symbol}; preserved first row")
+            continue
+        stocks[symbol] = numeric
+
+    if response_dates and response_dates != {trade_date.isoformat()}:
+        return {
+            "trade_date": trade_date.isoformat(),
+            "stocks": {},
+            "__error__": (
+                f"KPH response trade dates {sorted(response_dates)} do not match "
+                f"requested {trade_date.isoformat()}"
+            ),
+            "warnings": warnings,
+        }
+    if not stocks:
+        return {
+            "trade_date": trade_date.isoformat(),
+            "stocks": {},
+            "__error__": f"KPH response had no usable stock records for {trade_date.isoformat()}",
+            "warnings": warnings,
+            "identity_observations": identity_observations,
+        }
+
+    output = {
+        "trade_date": trade_date.isoformat(),
+        "requested_trade_date": trade_date.isoformat(),
+        "capture_date": _parse_capture_date(capture_date).isoformat(),
+        "stocks": stocks,
+        "row_count": len(stocks),
+        "warnings": warnings,
+    }
+    if identity_observations:
+        output["identity_observations"] = identity_observations
+    if trade_date != _parse_capture_date(capture_date):
+        output["date_selection_note"] = (
+            "AxData KPH history requires a date before the natural current day; "
+            "the source trade date is recorded explicitly."
+        )
+    return output
 
 
 def collect_tdx_f10(pool: list) -> dict:
@@ -1826,17 +2172,39 @@ def collect_fuyao(pool: list, include_context: bool = False) -> dict:
     return out
 
 
-def collect_ftshare(pool: list) -> dict:
+def _has_populated_capture_value(value: Any, key: str = "") -> bool:
+    """Treat zero/False as data but ignore empty containers and capture metadata."""
+    if key in {
+        "probe_trading_day",
+        "scheme",
+        "field_meta",
+        "__source_meta__",
+        "__error__",
+        "__skipped__",
+    }:
+        return False
+    if isinstance(value, dict):
+        return any(
+            _has_populated_capture_value(child, child_key) for child_key, child in value.items()
+        )
+    if isinstance(value, list):
+        return any(_has_populated_capture_value(child) for child in value)
+    return value is not None and value != ""
+
+
+def collect_ftshare(pool: list, *, data_date: str = "", force_reprobe: bool = False) -> dict:
     """FTShare MCP 全景采集（V17.0.7 新源——字典 §12.20，全字段镜像见 verify/ftshare_fields_mirror.md）。
 
     个股级: 千股千评四族（评分日序列/参与意愿/关注度/机构参与度）/
             董监高变动明细(26字段) / 商誉个股明细
     市场级: 大盘资金流 / DAEC 涨跌分布聚合 / 停牌列表 /
             昨日涨停池(炸板回封时间数组) / 限售解禁按日 / 股权质押汇总
-    ~126 请求 @2rps(sc_network 域限流 market.ft.tech)；会话自动续期(TTL≈2h)。
+    逐请求至少间隔 500ms；遇到 403/429 或连续三次错误立即熔断，诊断写入 __error__。
     """
     from stock_common.sc_ftshare import (
         is_ftshare_enabled,
+        _clear_diagnostics,
+        _ftshare_diagnostics_summary,
         get_ft_comment_score_series,
         get_ft_comment_desire,
         get_ft_comment_focus,
@@ -1851,32 +2219,110 @@ def collect_ftshare(pool: list) -> dict:
         get_ft_unlock_by_date,
     )
 
+    try:
+        try:
+            from scripts.source_identity_reconciliation import get_ftshare_identity_plan
+        except ModuleNotFoundError:
+            from source_identity_reconciliation import (  # type: ignore[no-redef]
+                get_ftshare_identity_plan,
+            )
+
+        identity_plan = get_ftshare_identity_plan(data_date=data_date, force_reprobe=force_reprobe)
+    except Exception as exc:
+        # Identity suppression is auxiliary. If its evidence cannot be read,
+        # sample all FTShare endpoints and keep the primary capture available.
+        identity_plan = {
+            "skip": {},
+            "recheck": [],
+            "status": "failed_open",
+            "reason": f"{type(exc).__name__}: {exc}",
+        }
+
+    identity_skips = identity_plan.get("skip", {})
+    if not isinstance(identity_skips, dict):
+        identity_skips = {}
+    identity_rechecks = identity_plan.get("recheck", [])
+    if not isinstance(identity_rechecks, list):
+        identity_rechecks = []
+    identity_sampled = [
+        key
+        for key in (
+            "comment_score",
+            "comment_desire",
+            "comment_focus",
+            "comment_org",
+            "ggmx",
+            "goodwill_detail",
+        )
+        if key not in identity_skips
+    ]
     out: dict = {"stocks": {}, "market": {}}
     if not is_ftshare_enabled():
-        out["error"] = "disabled"
+        out["__error__"] = "FTShare MCP is disabled"
         return out
+    _clear_diagnostics()
 
     for p in pool:
         c = p["code"]
         # V17.1.x: 去截断, 采全集(评分日序列/董监高变动/商誉明细全量), 方法轮与对撞铁律需完整经验。
         out["stocks"][c] = {
-            "comment_score": get_ft_comment_score_series(c) or [],
-            "comment_desire": get_ft_comment_desire(c),
-            "comment_focus": get_ft_comment_focus(c),
-            "comment_org": get_ft_comment_org_participate(c),
-            "ggmx": get_ft_ggmx_changes(c) or [],
-            "goodwill_detail": get_ft_goodwill_stock_detail(c) or [],
+            "comment_score": (
+                [] if "comment_score" in identity_skips else get_ft_comment_score_series(c) or []
+            ),
+            "comment_desire": (
+                None if "comment_desire" in identity_skips else get_ft_comment_desire(c)
+            ),
+            "comment_focus": (
+                None if "comment_focus" in identity_skips else get_ft_comment_focus(c)
+            ),
+            "comment_org": (
+                None if "comment_org" in identity_skips else get_ft_comment_org_participate(c)
+            ),
+            "ggmx": [] if "ggmx" in identity_skips else get_ft_ggmx_changes(c) or [],
+            "goodwill_detail": (
+                [] if "goodwill_detail" in identity_skips else get_ft_goodwill_stock_detail(c) or []
+            ),
         }
 
+    if identity_skips or identity_sampled or identity_plan.get("status") != "ready":
+        out["__source_meta__"] = {
+            "identity_skipped_endpoints": {
+                key: {
+                    "status": "redundant",
+                    "reference_source": value.get("reference_source"),
+                    "reference_family": value.get("reference_family"),
+                    "evidence_dates": value.get("evidence_dates", []),
+                }
+                for key, value in identity_skips.items()
+                if isinstance(value, dict)
+            },
+            "identity_sampled_endpoints": identity_sampled,
+            "identity_recheck_endpoints": identity_rechecks,
+            "identity_contract_fingerprints": (
+                identity_plan.get("contract_fingerprints", {})
+                if isinstance(identity_plan.get("contract_fingerprints"), dict)
+                else {}
+            ),
+            "identity_plan_status": identity_plan.get("status", "failed_open"),
+        }
+        if identity_plan.get("reason"):
+            out["__source_meta__"]["identity_plan_reason"] = str(identity_plan["reason"])[:240]
+
     mkt = out["market"]
-    mkt["dapan_flow"] = get_ft_dapan_flow()
-    mkt["market_snapshot"] = get_ft_market_snapshot()
-    mkt["suspension_list"] = (get_ft_suspension_list() or [])[:50]
-    mkt["limit_up_pool_yesterday"] = get_ft_limit_up_pool_yesterday()
     td = _last_completed_trading_day().strftime("%Y%m%d")
+    mkt["dapan_flow"] = get_ft_dapan_flow(td)
+    mkt["market_snapshot"] = get_ft_market_snapshot()
+    mkt["suspension_list"] = (get_ft_suspension_list(td) or [])[:50]
+    mkt["limit_up_pool_yesterday"] = get_ft_limit_up_pool_yesterday(td)
     mkt["unlock_by_date"] = (get_ft_unlock_by_date(td) or [])[:80]
     mkt["pledge_summary"] = get_ft_pledge_summary()
     mkt["probe_trading_day"] = td
+    diagnostics = _ftshare_diagnostics_summary()
+    if diagnostics:
+        out["__error__"] = f"FTShare MCP errors: {diagnostics}"
+    if not _has_populated_capture_value(out):
+        empty_error = "FTShare returned no populated data fields"
+        out["__error__"] = f"{empty_error}; {out['__error__']}" if diagnostics else empty_error
     return out
 
 
@@ -1900,8 +2346,13 @@ def collect_em_kline_f61(pool: list) -> dict:
 
     KLINE_FIELDS2 = "f51,f52,f53,f54,f55,f56,f57,f58,f59,f60,f61"
     out: Dict[str, Any] = {"stocks": {}}
+    pause_reason: Optional[str] = None
+    consecutive_disconnects = 0
     for p in pool:
         c = p["code"]
+        if pause_reason:
+            out["stocks"][c] = {"__skipped__": f"source paused after {pause_reason}"}
+            continue
         secid = em_secid_prefix(c) + c
         request_error: Dict[str, Any] = {}
         try:
@@ -1932,7 +2383,15 @@ def collect_em_kline_f61(pool: list) -> dict:
             }
         if r is None:
             out["stocks"][c] = {"__error__": _request_failure_summary("push2his", request_error)}
+            _kind = str(request_error.get("kind") or "").lower()
+            consecutive_disconnects = (
+                consecutive_disconnects + 1 if _kind in {"connection_error", "timeout"} else 0
+            )
+            pause_reason = _em_capture_pause_reason(
+                "push2his", request_error, consecutive_disconnects
+            )
             continue
+        consecutive_disconnects = 0
         try:
             payload = r.json() or {}
             data = payload.get("data") or {}
@@ -1987,8 +2446,13 @@ def collect_em_fund_flow(pool: list) -> dict:
         ]
     )
     out: Dict[str, Any] = {"stocks": {}}
+    pause_reason: Optional[str] = None
+    consecutive_disconnects = 0
     for p in pool:
         c = p["code"]
+        if pause_reason:
+            out["stocks"][c] = {"__skipped__": f"source paused after {pause_reason}"}
+            continue
         secid = em_secid_prefix(c) + c
         request_error: Dict[str, Any] = {}
         try:
@@ -2010,7 +2474,15 @@ def collect_em_fund_flow(pool: list) -> dict:
                 out["stocks"][c] = {
                     "__error__": _request_failure_summary("push2delay", request_error)
                 }
+                _kind = str(request_error.get("kind") or "").lower()
+                consecutive_disconnects = (
+                    consecutive_disconnects + 1 if _kind in {"connection_error", "timeout"} else 0
+                )
+                pause_reason = _em_capture_pause_reason(
+                    "push2delay", request_error, consecutive_disconnects
+                )
                 continue
+            consecutive_disconnects = 0
             payload = r.json() or {}
             data = payload.get("data") or {}
             if not isinstance(data, dict) or not data:
@@ -2687,6 +3159,111 @@ def _has_complete_snapshot(
     return True
 
 
+def _refresh_closed_snapshot_validations(
+    *, out_dir: str, data_date: str, pool: List[Dict[str, Any]], snapshot_meta: Dict[str, Any]
+) -> None:
+    """Refresh daily evidence from a complete snapshot without recapturing sources."""
+    market_path = os.path.join(out_dir, "raw_market_sources.json")
+    market_data: Optional[Dict[str, Any]] = None
+    try:
+        with open(market_path, encoding="utf-8") as stream:
+            loaded_market_data = json.load(stream)
+        if isinstance(loaded_market_data, dict):
+            market_data = loaded_market_data
+    except (OSError, json.JSONDecodeError) as exc:
+        print(f"  ⚠ 已有市场源 raw 不可读取，跳过 Levistock 候选请求: {exc}", flush=True)
+
+    try:
+        try:
+            from axdata_daily_validation import run_axdata_daily_validation
+        except ModuleNotFoundError:
+            from scripts.axdata_daily_validation import run_axdata_daily_validation
+
+        snapshot_meta["axdata_validation"] = run_axdata_daily_validation(
+            data_date=data_date,
+            data_date_domain=snapshot_meta.get("data_date_domain", "trading"),
+            market_phase=snapshot_meta.get("market_phase", "unknown"),
+            latest_completed_trade_date=_last_trading_day_str(),
+            only="",
+            out_dir=out_dir,
+            pool=pool,
+            source_meta=snapshot_meta.get("sources", {}),
+        )
+    except Exception as exc:
+        snapshot_meta["axdata_validation"] = {
+            "status": "failed_open",
+            "error": str(exc)[:300],
+            "request_count": 0,
+        }
+        print(f"  ⚠ AxData 每日验证刷新失败: {exc}", flush=True)
+
+    if market_data is not None:
+        try:
+            try:
+                from levistock_daily_probe import run_levistock_daily_probe
+            except ModuleNotFoundError:
+                from scripts.levistock_daily_probe import run_levistock_daily_probe
+
+            probe = run_levistock_daily_probe(
+                out_dir=out_dir,
+                data_date=data_date,
+                latest_completed_trade_date=_last_trading_day_str(),
+                # This is a trading-date market source even when the full meta is mixed
+                # with natural-day news/announcement sources.
+                data_date_domain="trading",
+                market_phase=snapshot_meta.get("market_phase", "unknown"),
+                only=None,
+                market_data=market_data,
+                pool=pool,
+            )
+            snapshot_meta["levistock_daily_candidate"] = {
+                key: value for key, value in probe.items() if key != "payload"
+            }
+        except Exception as exc:
+            snapshot_meta["levistock_daily_candidate"] = {
+                "status": "failed_open",
+                "reason": f"probe_integration_error:{type(exc).__name__}",
+                "request_count": 0,
+            }
+            print(f"  ⚠ Levistock 每日候选刷新失败: {exc}", flush=True)
+
+    try:
+        try:
+            from levistock_daily_validation import run_levistock_daily_validation
+        except ModuleNotFoundError:
+            from scripts.levistock_daily_validation import run_levistock_daily_validation
+
+        snapshot_meta["levistock_validation"] = run_levistock_daily_validation(
+            out_dir=out_dir,
+            data_date=data_date,
+            latest_completed_trade_date=_last_trading_day_str(),
+            data_date_domain="trading",
+            market_phase=snapshot_meta.get("market_phase", "unknown"),
+            only=None,
+            source_meta=snapshot_meta.get("sources", {}),
+            candidate_probe_meta=snapshot_meta.get("levistock_daily_candidate"),
+        )
+    except Exception as exc:
+        snapshot_meta["levistock_validation"] = {
+            "status": "failed_open",
+            "error": str(exc)[:300],
+            "network_requests_added": 0,
+        }
+        print(f"  ⚠ Levistock 离线验证刷新失败: {exc}", flush=True)
+
+    try:
+        with open(os.path.join(out_dir, "meta.json"), "w", encoding="utf-8") as stream:
+            json.dump(snapshot_meta, stream, ensure_ascii=False, indent=1)
+    except OSError as exc:
+        print(f"  ⚠ 每日验证摘要未能更新到 meta.json: {exc}", flush=True)
+
+
+def _startup_scope_label(selected_sources: list[str], include_context: bool) -> str:
+    source_scope = f"--only {','.join(selected_sources)}" if selected_sources else "默认源集合"
+    context_scope = "启用" if include_context else "跳过"
+    return f"源范围: {source_scope} | 市场上下文: {context_scope}"
+
+
 def main() -> None:
     ap = argparse.ArgumentParser(description="字段验证采集")
     # V17.4.x: 默认数据日=最近交易日(而非运行日) —— 周末/法定节假日运行时自动回退上一交易日,
@@ -2699,7 +3276,11 @@ def main() -> None:
         "默认: 盘后→盘后幂等跳过, 盘中→盘后自动刷新为收盘数据, 盘中→盘中跳过",
     )
     ap.add_argument("--dry-run", action="store_true")
-    ap.add_argument("--only", default="", help="只采指定源(逗号分隔: zhb,tdx,tencent,push2)")
+    ap.add_argument(
+        "--only",
+        default="",
+        help="只采指定源(逗号分隔: zhb,tdx,tencent,push2,kpl,kph)",
+    )
     ap.add_argument(
         "--include-context",
         action="store_true",
@@ -2716,7 +3297,7 @@ def main() -> None:
     ap.add_argument(
         "--eltdx-lite",
         action="store_true",
-        help="eltdx 采集瘦身: 跳过与 tdx 源冗余的 kline_day/finance_batch 及仅能力登记的 f10_news, "
+        help="eltdx 采集瘦身: 跳过与 tdx 源冗余的 kline_day/finance_batch, "
         "仅采 quote_snapshot+shortline+连板天梯(对撞真正消费项), 大幅加速每日字段对撞采集",
     )
     args = ap.parse_args()
@@ -2752,8 +3333,9 @@ def main() -> None:
         return
 
     t0 = time.time()
+    startup_scope = _startup_scope_label(selected_only, include_context)
     print(
-        f"▶ 采集开始: 数据日={args.date} (运行日={datetime.now().strftime('%Y%m%d')}) | 股票 {len(pool)} 只 | 源: ZHB/TDX/腾讯/push2",
+        f"▶ 采集开始: 数据日={args.date} (运行日={datetime.now().strftime('%Y%m%d')}) | 股票 {len(pool)} 只 | {startup_scope}",
         flush=True,
     )
 
@@ -2812,7 +3394,9 @@ def main() -> None:
                 meta["schemes"] = dict(_prev["schemes"])
             if isinstance(_prev.get("source_as_of_dates"), dict):
                 meta["source_as_of_dates"] = dict(_prev["source_as_of_dates"])
-            for _k in ("start", "zhb_data_date"):
+            if isinstance(_prev.get("axdata_validation"), dict):
+                meta["axdata_validation"] = _prev["axdata_validation"]
+            for _k in ("start", "zhb_data_date", "levistock_validation"):
                 if _prev.get(_k):
                     meta[_k] = _prev[_k]
             if _prev.get("end"):
@@ -2833,6 +3417,8 @@ def main() -> None:
         "sina": collect_sina,  # V16.4.1: 新浪行情全字段
         "axdata": collect_axdata,  # V16.4.1: 短线指标 34 字段(零网络)
         "market_sources": collect_market_sources,  # V16.4.1: 财联社/KPL/板块轮动/龙虎榜
+        "kpl": collect_kpl_detail,  # KPL 逐股明细独立落盘，保留端点路径和来源交易日
+        "kph": collect_kph_history,  # AxData KPH 历史涨停明细，单次限量批量请求
         "tdx_f10": collect_tdx_f10,  # V16.4.1: F10 财务/股本/分红
         "fuyao": collect_fuyao,  # V17.0.5: fuyao 官方 REST(盘后可用——竞价/池/财务指标/估值 PS·PCF); V17.0.24 补三大报表
         "em_kline_f61": collect_em_kline_f61,  # V17.0.24: 东财日K f61 换手率(CYQ 唯一源, delay 域)
@@ -2941,9 +3527,15 @@ def main() -> None:
             _existing_closed = _is_closed_phase_existing(meta_path, args.date)
             _new_closed = _is_closed_phase_now(args.date)
             if _existing_closed and _new_closed:
+                _refresh_closed_snapshot_validations(
+                    out_dir=out_dir,
+                    data_date=args.date,
+                    pool=pool,
+                    snapshot_meta=snapshot_meta,
+                )
                 print(
                     f"⏭ 数据日 {args.date} 已存在完整(盘后)采集物 (raw {len(_existing_raws)} 个, 源: {sorted(_have)}), "
-                    f"默认幂等跳过。如需重采请加 --overwrite。",
+                    f"主采集幂等跳过；只刷新每日验证摘要，已有候选样本不会重复请求。",
                     flush=True,
                 )
                 return
@@ -2979,6 +3571,7 @@ def main() -> None:
                         pass
             # 清空后 fall through 进入采集
 
+    collected_data: Dict[str, Any] = {}
     for name, fn in collectors.items():
         if name in CONTEXT_ONLY_SOURCES and not include_context:
             meta["sources"][name] = {
@@ -2997,10 +3590,72 @@ def main() -> None:
             # V17.2.28: eltdx 瘦身开关——仅 eltdx 支持 lite(跳过冗余/能力登记载荷)
             if name == "eltdx":
                 data = fn(pool, lite=args.eltdx_lite)
-            elif name in {"market_sources", "fuyao"}:
+            elif name == "market_sources":
+                data = fn(
+                    pool,
+                    include_context=include_context,
+                    include_kpl_detail=False,
+                    trade_date=args.date,
+                )
+                try:
+                    try:
+                        from levistock_daily_probe import run_levistock_daily_probe
+                    except ModuleNotFoundError:
+                        from scripts.levistock_daily_probe import run_levistock_daily_probe
+
+                    _levistock_probe = run_levistock_daily_probe(
+                        out_dir=out_dir,
+                        data_date=args.date,
+                        latest_completed_trade_date=_last_trading_day_str(),
+                        # market_sources contains trading-date data even when full
+                        # meta is mixed with natural-day event sources.
+                        data_date_domain="trading",
+                        market_phase=meta.get("market_phase", "unknown"),
+                        only=args.only or None,
+                        market_data=data,
+                        pool=pool,
+                    )
+                    meta["levistock_daily_candidate"] = {
+                        key: value for key, value in _levistock_probe.items() if key != "payload"
+                    }
+                    if isinstance(data, dict):
+                        _source_meta = data.setdefault("__source_meta__", {})
+                        if isinstance(_source_meta, dict):
+                            _source_meta["levistock_daily_candidate"] = {
+                                key: value
+                                for key, value in _levistock_probe.items()
+                                if key != "payload"
+                            }
+                except Exception as exc:
+                    # Candidate verification is auxiliary; it cannot invalidate the primary capture.
+                    if isinstance(data, dict):
+                        _source_meta = data.setdefault("__source_meta__", {})
+                        if isinstance(_source_meta, dict):
+                            _source_meta["levistock_daily_candidate"] = {
+                                "status": "failed_open",
+                                "reason": f"probe_integration_error:{type(exc).__name__}",
+                                "request_count": 0,
+                            }
+                    print(f"  ⚠ Levistock 候选核验失败，不影响市场源采集: {exc}", flush=True)
+            elif name == "kpl":
+                data = fn(capture_date=args.date)
+            elif name == "kph":
+                data = fn(
+                    capture_date=args.date,
+                    prior_market_sources=collected_data.get("market_sources"),
+                )
+            elif name == "fuyao":
                 data = fn(pool, include_context=include_context)
+            elif name == "ftshare":
+                data = fn(
+                    pool,
+                    data_date=args.date,
+                    force_reprobe=args.overwrite,
+                )
             else:
                 data = fn(pool)
+            if isinstance(data, dict):
+                collected_data[name] = data
             # V17.2.12 主字典对齐: registry 已登记但本脚本暂无 producer 的源返回 __unwired__ 占位,
             # 显式记为 unwired/deprecated(区别于 ok/partial/failed), 不写 raw 文件、不计入异常源清单。
             _uw = data.get("__unwired__") if isinstance(data, dict) else None
@@ -3061,6 +3716,18 @@ def main() -> None:
                 _entry["as_of_date"] = _as_of_date
                 meta["source_as_of_dates"][name] = _as_of_date
             _entry.update(_info)
+            if name == "ftshare" and isinstance(data, dict):
+                _identity = data.get("__source_meta__")
+                if isinstance(_identity, dict):
+                    for _identity_key in (
+                        "identity_skipped_endpoints",
+                        "identity_sampled_endpoints",
+                        "identity_recheck_endpoints",
+                        "identity_contract_fingerprints",
+                        "identity_plan_status",
+                    ):
+                        if _identity_key in _identity:
+                            _entry[_identity_key] = _identity[_identity_key]
             if not include_context and name in CONTEXT_EXCLUDED_PATHS:
                 _entry["context_excluded_paths"] = CONTEXT_EXCLUDED_PATHS[name]
             if preserved_context_paths:
@@ -3087,6 +3754,95 @@ def main() -> None:
                 "error": str(e)[:300],
             }
             print(f"  ✖ {name}: {e}", flush=True)
+
+    # AxData reconciliation stays inside the daily capture loop. It reuses
+    # today's raw records and, only for a complete latest-day close capture,
+    # may make one whitelisted request. It never updates dictionary status.
+    try:
+        try:
+            from axdata_daily_validation import run_axdata_daily_validation
+        except ModuleNotFoundError:
+            from scripts.axdata_daily_validation import run_axdata_daily_validation
+
+        meta["axdata_validation"] = run_axdata_daily_validation(
+            data_date=args.date,
+            data_date_domain=meta.get("data_date_domain", data_date_domain),
+            market_phase=meta.get("market_phase", "unknown"),
+            latest_completed_trade_date=_last_trading_day_str(),
+            only=args.only,
+            out_dir=out_dir,
+            pool=pool,
+            source_meta=meta.get("sources", {}),
+        )
+        _validation_status = meta["axdata_validation"].get("status")
+        if _validation_status != "not_eligible":
+            _validation_probe = meta["axdata_validation"].get("probe", {})
+            _validation_fields = _validation_probe.get("compared_fields")
+            _validation_comparison = (
+                f" | 字段相等 {_validation_probe.get('equal_fields', 0)}/" f"{_validation_fields}"
+                if _validation_fields is not None
+                else ""
+            )
+            print(
+                f"  AxData 验证: {_validation_status} | "
+                f"接口 {_validation_probe.get('interface_id') or '—'} | "
+                f"代码 {_validation_probe.get('code') or '—'}"
+                f"{_validation_comparison} | "
+                f"{meta['axdata_validation'].get('file') or ''}",
+                flush=True,
+            )
+    except Exception as exc:
+        # Reconciliation is auxiliary: an error must not discard otherwise
+        # successful daily captures or prevent their metadata from being saved.
+        meta["axdata_validation"] = {
+            "status": "failed_open",
+            "error": str(exc)[:300],
+        }
+        print(f"  ⚠ AxData 验证流程失败，不影响原始采集: {exc}", flush=True)
+
+    # Levistock is a multi-provider client, not an independent source family. The
+    # validator reuses captured CLS/KPH data; the bounded candidate probe is recorded
+    # separately and never changes dictionary status.
+    if not args.only or "market_sources" in selected_only:
+        try:
+            try:
+                from levistock_daily_validation import run_levistock_daily_validation
+            except ModuleNotFoundError:
+                from scripts.levistock_daily_validation import run_levistock_daily_validation
+
+            meta["levistock_validation"] = run_levistock_daily_validation(
+                out_dir=out_dir,
+                data_date=args.date,
+                latest_completed_trade_date=_last_trading_day_str(),
+                data_date_domain="trading",
+                market_phase=meta.get("market_phase", "unknown"),
+                only=args.only or None,
+                source_meta=meta.get("sources", {}),
+                candidate_probe_meta=meta.get("levistock_daily_candidate"),
+            )
+            _levistock_validation = meta["levistock_validation"]
+            _levistock_methods = _levistock_validation.get("methods", {})
+            _levistock_fields = sum(
+                int(item.get("field_count", 0))
+                for item in _levistock_methods.values()
+                if isinstance(item, dict)
+            )
+            print(
+                f"  Levistock 核验: {_levistock_validation.get('status')} | "
+                f"字段 {_levistock_fields} | "
+                f"核验器请求 {_levistock_validation.get('network_requests_added', 0)} | "
+                f"轮换请求 {_levistock_validation.get('capture_probe_request_count', 0)} | "
+                f"{_levistock_validation.get('file') or ''}",
+                flush=True,
+            )
+        except Exception as exc:
+            # Evidence generation must never discard successfully captured raw data.
+            meta["levistock_validation"] = {
+                "status": "failed_open",
+                "error": str(exc)[:300],
+                "network_requests_added": 0,
+            }
+            print(f"  ⚠ Levistock 核验流程失败，不影响原始采集: {exc}", flush=True)
 
     meta["end"] = time.strftime("%Y-%m-%d %H:%M:%S")
     meta["total_secs"] = round(time.time() - t0, 1)
@@ -3124,6 +3880,21 @@ def main() -> None:
         "n_abnormal": len(_bad),
         "abnormal": _bad,
     }
+    try:
+        try:
+            from scripts.source_identity_reconciliation import reconcile_source_identity
+        except ModuleNotFoundError:
+            from source_identity_reconciliation import (  # type: ignore[no-redef]
+                reconcile_source_identity,
+            )
+
+        meta["source_identity_reconciliation"] = reconcile_source_identity(current_meta=meta)
+    except Exception as exc:
+        meta["source_identity_reconciliation"] = {
+            "status": "failed_open",
+            "reason": f"{type(exc).__name__}: {exc}"[:300],
+        }
+        print(f"  ⚠ 来源身份核验失败，不影响原始采集: {exc}", flush=True)
     with open(meta_path, "w", encoding="utf-8") as f:
         json.dump(meta, f, ensure_ascii=False, indent=1)
     print(

@@ -414,7 +414,8 @@ def extract():
         if not srcs:
             continue
         for src in srcs:
-            section_patterns[src].add(sec)
+            if src != afc.source_identity_reclassification()["from_source"]:
+                section_patterns[src].add(sec)
         # 表头驱动列定位：兼容标准 4 列表 & §2.1/§12.8.1/§12.8.17 非标准表
         t_idx, m_idx, u_idx, s_idx = locate_columns(header)
         if t_idx is None:
@@ -452,9 +453,13 @@ def extract():
             # another source that happens to share the same bare token.
             for src in srcs:
                 for tok in extract_tokens_from_cell(tok_cell, [src]):
-                    rec = source_fields.get((src, tok))
+                    reclassified_src = afc.reclassified_source_for_token(src, tok)
+                    if reclassified_src is None:
+                        continue
+                    rec = source_fields.get((reclassified_src, tok))
                     if rec is None:
                         continue
+                    section_patterns[reclassified_src].add(sec)
                     status_raw = _row_status(row, s_idx)
                     evidence = {
                         "section": sec,
@@ -520,18 +525,37 @@ def extract():
     # （与 fields[].sources 完全一致，保证 field_source_map 视图对齐）
     out_sources = []
     seen_source_labels = set()
+    reclassification = afc.source_identity_reclassification()
+    target_metadata = {
+        source["name"]: source for source in reclassification.get("target_sources", [])
+    }
+    legacy_source = reclassification["from_source"]
+    source_labels = []
     for label, _subs in afc.SECTION_MAP:
+        if label == legacy_source:
+            continue
         if label in seen_source_labels:
             continue
         seen_source_labels.add(label)
-        out_sources.append(
-            {
-                "name": label,
-                "verify_file": _AUDIT_VERIFY.get(label),
-                "section_patterns": sorted(section_patterns.get(label, [])),
-                "status": "active",
-            }
-        )
+        source_labels.append(label)
+    for label in target_metadata:
+        if label not in seen_source_labels:
+            seen_source_labels.add(label)
+            source_labels.append(label)
+    for label in source_labels:
+        metadata = target_metadata.get(label, {})
+        source_section_patterns = sorted(section_patterns.get(label, []))
+        if not source_section_patterns:
+            source_section_patterns = metadata.get("section_patterns", [])
+        source_record = {
+            "name": label,
+            "verify_file": metadata.get("verify_file") or _AUDIT_VERIFY.get(label),
+            "section_patterns": source_section_patterns,
+            "status": metadata.get("status", "active"),
+        }
+        if metadata.get("source_role"):
+            source_record["source_role"] = metadata["source_role"]
+        out_sources.append(source_record)
 
     # mappings：解析 ulist_push2_align.md（已存在时）
     mappings = []

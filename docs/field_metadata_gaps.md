@@ -7,6 +7,24 @@
 
 | 来源 | 完整 code path | 规范名 | 含义 | 单位 | 证据章节 |
 |:--|:--|:--|:--|:--|:--|
+| Levistock历史未归属 | `all` | market_index_em / all | — | — | 12.10.9 levistock 全接口字段核实（2026-08-09 复测，**38/38 全部实测**）🆕 |
+| Levistock历史未归属 | `belong` | sector_stocks_em / belong | — | — | 12.10.9 levistock 全接口字段核实（2026-08-09 复测，**38/38 全部实测**）🆕 |
+| Levistock历史未归属 | `is_trade_day` | is_trade_day / get_trade_days | — | — | 12.10.9 levistock 全接口字段核实（2026-08-09 复测，**38/38 全部实测**）🆕 |
+| Levistock历史未归属 | `limit_up_his_kph` | limit_up_his_kph / wind_vane | — | — | 12.10.9 levistock 全接口字段核实（2026-08-09 复测，**38/38 全部实测**）🆕 |
+| Levistock历史未归属 | `market_emotion_kph` | market_emotion_kph | — | — | 12.10.9 levistock 全接口字段核实（2026-08-09 复测，**38/38 全部实测**）🆕 |
+| Levistock历史未归属 | `market_index_em` | market_index_em / all | — | — | 12.10.9 levistock 全接口字段核实（2026-08-09 复测，**38/38 全部实测**）🆕 |
+| Levistock历史未归属 | `rotation` | get_sector_heat / rotation | — | — | 12.10.9 levistock 全接口字段核实（2026-08-09 复测，**38/38 全部实测**）🆕 |
+| Levistock历史未归属 | `sector_em` | sector_em | — | — | 12.10.9 levistock 全接口字段核实（2026-08-09 复测，**38/38 全部实测**）🆕 |
+| Levistock历史未归属 | `sector_stocks_em` | sector_stocks_em / belong | — | — | 12.10.9 levistock 全接口字段核实（2026-08-09 复测，**38/38 全部实测**）🆕 |
+| Levistock历史未归属 | `stock_changes_em` | stock_changes_em | — | — | 12.10.9 levistock 全接口字段核实（2026-08-09 复测，**38/38 全部实测**）🆕 |
+| Levistock历史未归属 | `stock_dt_pool_em` | stock_dt_pool_em | — | — | 12.10.9 levistock 全接口字段核实（2026-08-09 复测，**38/38 全部实测**）🆕 |
+| Levistock历史未归属 | `stock_strategy_wencai` | stock_strategy_wencai | — | — | 12.10.9 levistock 全接口字段核实（2026-08-09 复测，**38/38 全部实测**）🆕 |
+| Levistock历史未归属 | `stock_yesterday_zt_em` | stock_yesterday_zt_em | — | — | 12.10.9 levistock 全接口字段核实（2026-08-09 复测，**38/38 全部实测**）🆕 |
+| Levistock历史未归属 | `stock_zt_pool_em` | stock_zt_pool_em | — | — | 12.10.9 levistock 全接口字段核实（2026-08-09 复测，**38/38 全部实测**）🆕 |
+| Levistock历史未归属 | `stocks_all_em` | stocks_em / stocks_all_em | — | — | 12.10.9 levistock 全接口字段核实（2026-08-09 复测，**38/38 全部实测**）🆕 |
+| Levistock历史未归属 | `stocks_em` | stocks_em / stocks_all_em | — | — | 12.10.9 levistock 全接口字段核实（2026-08-09 复测，**38/38 全部实测**）🆕 |
+| Levistock历史未归属 | `wind_stocks` | market_wind_cls / wind_stocks | — | — | 12.10.9 levistock 全接口字段核实（2026-08-09 复测，**38/38 全部实测**）🆕 |
+| Levistock历史未归属 | `wind_vane` | limit_up_his_kph / wind_vane | — | — | 12.10.9 levistock 全接口字段核实（2026-08-09 复测，**38/38 全部实测**）🆕 |
 | TDX(双命名源) | `changqifuzhai` | — | 长期负债 | 角 | 2.1 协议完整 36 字段表（权威定义）；2.6 与 Gemini 核实 18 字段的对比 |
 | TDX(双命名源) | `cunhuo` | — | 存货 | 角 | 2.1 协议完整 36 字段表（权威定义）；2.6 与 Gemini 核实 18 字段的对比 |
 | TDX(双命名源) | `gudongrenshu` | — | 股东户数 | 户 | 2.1 协议完整 36 字段表（权威定义）；2.6 与 Gemini 核实 18 字段的对比 |
@@ -26,24 +44,6 @@
 | TDX(双命名源) | `zibengongjijin` | — | 资本公积金 | 角 | 2.1 协议完整 36 字段表（权威定义）；2.6 与 Gemini 核实 18 字段的对比 |
 | TDX(双命名源) | `zongguben` | — | 总股本 | 万股 | 2.1 协议完整 36 字段表（权威定义）；2.6 与 Gemini 核实 18 字段的对比 |
 | TDX(双命名源) | `zongzichan` | — | 总资产 | 角（→元需角(/10得元)） | 2.1 协议完整 36 字段表（权威定义）；2.6 与 Gemini 核实 18 字段的对比 |
-| levistock(ftshare) | `all` | market_index_em / all | — | — | 12.10.9 levistock 全接口字段核实（2026-08-09 复测，**38/38 全部实测**）🆕 |
-| levistock(ftshare) | `belong` | sector_stocks_em / belong | — | — | 12.10.9 levistock 全接口字段核实（2026-08-09 复测，**38/38 全部实测**）🆕 |
-| levistock(ftshare) | `is_trade_day` | is_trade_day / get_trade_days | — | — | 12.10.9 levistock 全接口字段核实（2026-08-09 复测，**38/38 全部实测**）🆕 |
-| levistock(ftshare) | `limit_up_his_kph` | limit_up_his_kph / wind_vane | — | — | 12.10.9 levistock 全接口字段核实（2026-08-09 复测，**38/38 全部实测**）🆕 |
-| levistock(ftshare) | `market_emotion_kph` | market_emotion_kph | — | — | 12.10.9 levistock 全接口字段核实（2026-08-09 复测，**38/38 全部实测**）🆕 |
-| levistock(ftshare) | `market_index_em` | market_index_em / all | — | — | 12.10.9 levistock 全接口字段核实（2026-08-09 复测，**38/38 全部实测**）🆕 |
-| levistock(ftshare) | `rotation` | get_sector_heat / rotation | — | — | 12.10.9 levistock 全接口字段核实（2026-08-09 复测，**38/38 全部实测**）🆕 |
-| levistock(ftshare) | `sector_em` | sector_em | — | — | 12.10.9 levistock 全接口字段核实（2026-08-09 复测，**38/38 全部实测**）🆕 |
-| levistock(ftshare) | `sector_stocks_em` | sector_stocks_em / belong | — | — | 12.10.9 levistock 全接口字段核实（2026-08-09 复测，**38/38 全部实测**）🆕 |
-| levistock(ftshare) | `stock_changes_em` | stock_changes_em | — | — | 12.10.9 levistock 全接口字段核实（2026-08-09 复测，**38/38 全部实测**）🆕 |
-| levistock(ftshare) | `stock_dt_pool_em` | stock_dt_pool_em | — | — | 12.10.9 levistock 全接口字段核实（2026-08-09 复测，**38/38 全部实测**）🆕 |
-| levistock(ftshare) | `stock_strategy_wencai` | stock_strategy_wencai | — | — | 12.10.9 levistock 全接口字段核实（2026-08-09 复测，**38/38 全部实测**）🆕 |
-| levistock(ftshare) | `stock_yesterday_zt_em` | stock_yesterday_zt_em | — | — | 12.10.9 levistock 全接口字段核实（2026-08-09 复测，**38/38 全部实测**）🆕 |
-| levistock(ftshare) | `stock_zt_pool_em` | stock_zt_pool_em | — | — | 12.10.9 levistock 全接口字段核实（2026-08-09 复测，**38/38 全部实测**）🆕 |
-| levistock(ftshare) | `stocks_all_em` | stocks_em / stocks_all_em | — | — | 12.10.9 levistock 全接口字段核实（2026-08-09 复测，**38/38 全部实测**）🆕 |
-| levistock(ftshare) | `stocks_em` | stocks_em / stocks_all_em | — | — | 12.10.9 levistock 全接口字段核实（2026-08-09 复测，**38/38 全部实测**）🆕 |
-| levistock(ftshare) | `wind_stocks` | market_wind_cls / wind_stocks | — | — | 12.10.9 levistock 全接口字段核实（2026-08-09 复测，**38/38 全部实测**）🆕 |
-| levistock(ftshare) | `wind_vane` | limit_up_his_kph / wind_vane | — | — | 12.10.9 levistock 全接口字段核实（2026-08-09 复测，**38/38 全部实测**）🆕 |
 | reports | `emRatingName` | emRatingName | — | — | 12.8.4 东财 reportapi（个股/行业研报 + PDF）✅；12.8.4.1 东财 reportapi 全量 51 字段表（V17.1.x 全量登记） |
 | reports | `industryCode` | — | — | — | 12.8.4 东财 reportapi（个股/行业研报 + PDF）✅；12.8.4.1 东财 reportapi 全量 51 字段表（V17.1.x 全量登记） |
 | reports | `industryName` | — | — | — | 12.8.4 东财 reportapi（个股/行业研报 + PDF）✅；12.8.4.1 东财 reportapi 全量 51 字段表（V17.1.x 全量登记） |

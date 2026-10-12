@@ -199,3 +199,16 @@ def runtime_aliases_for_source(source: str, lineage: dict[str, Any]) -> list[str
         return list(aliases)
     alias = lineage.get("source_aliases", {}).get(source)
     return [alias] if isinstance(alias, str) and alias in lineage.get("runtime_sources", {}) else []
+
+
+def normalize_runtime_field_code(alias: str, code: str) -> str:
+    """Remove known runtime-only wrappers while preserving nested field paths.
+
+    ZHB ``full`` is a merged view of ``stat`` and ``stat2``. Its field names
+    correspond to the underlying endpoint code, so ``zhb.full.amount`` maps to
+    registry code ``amount``. The dedicated ``stat``, ``stat2`` and ``tipinfo``
+    paths remain intact.
+    """
+    if alias == "zhb" and code.startswith("full."):
+        return code[len("full.") :]
+    return code

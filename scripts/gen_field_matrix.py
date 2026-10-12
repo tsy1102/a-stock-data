@@ -48,6 +48,7 @@ SOURCE_ORDER = [
     "巨潮",
     "同花顺",
     "财联社",
+    "开盘啦(kpl)",
     "开盘红",
     "akshare",
     "levistock",

@@ -827,10 +827,18 @@ def get_fupan_zttt() -> Dict[str, Any]:
     字典 12.10.4：涨停天梯；2026-08-10 实测 99 只与财联社/KPL 三源一致。
     """
     try:
+        from stock_common.sc_network import _kph_wait_process_interval
         from levistock.stock.stock_fupanla_kph import get_zttt
 
+        _kph_wait_process_interval()
         return get_zttt() or {}
     except Exception as _e:
+        try:
+            from stock_common.sc_network import _mark_levistock_provider_block
+
+            _mark_levistock_provider_block("kph", _e)
+        except Exception as _block_error:
+            _debug_log(f"datasource fupan zttt block-state error: {_block_error}")
         _debug_log(f"datasource fupan zttt: {_e}")
         return {}
 
@@ -839,10 +847,18 @@ def get_fupan_zttt() -> Dict[str, Any]:
 def get_fupan_pmsl() -> Dict[str, Any]:
     """复盘啦盘面梳理（get_pmsl 缓存包装）——List[30] 每条 6 字段（TimeMin/TagID/ZSCode/Detail/TagShuXing/TagName）。"""
     try:
+        from stock_common.sc_network import _kph_wait_process_interval
         from levistock.stock.stock_fupanla_kph import get_pmsl
 
+        _kph_wait_process_interval()
         return get_pmsl() or {}
     except Exception as _e:
+        try:
+            from stock_common.sc_network import _mark_levistock_provider_block
+
+            _mark_levistock_provider_block("kph", _e)
+        except Exception as _block_error:
+            _debug_log(f"datasource fupan pmsl block-state error: {_block_error}")
         _debug_log(f"datasource fupan pmsl: {_e}")
         return {}
 
@@ -1157,9 +1173,18 @@ def get_shortline_indicators_result(code: str) -> Dict[str, Any]:
                 ),
             }
 
+        request_code = code
+        from stock_common.symbol_norm import normalize_symbol
+
+        symbol = normalize_symbol(code)
+        if symbol.market == "BJ":
+            # AxData 0.1.4 checks the Shanghai ``9`` prefix before its BSE
+            # ``92`` range. The explicit suffix avoids routing BSE symbols to SH.
+            request_code = symbol.upper_suffix()
+
         response = request_interface(
             "stock_shortline_indicators_tdx",
-            params={"code": code, "stats_root": zips[-1]},
+            params={"code": request_code, "stats_root": zips[-1]},
             fields=None,
             persist=False,
             data_root=None,

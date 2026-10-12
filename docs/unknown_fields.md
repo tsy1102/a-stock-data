@@ -4,7 +4,7 @@
 > 修改状态必须先核对 `reference_evidence` 与 `registry_aggregate`，并保留证据来源。
 > 碰撞候选须人工复核后使用 `apply_collision_adjudications.py` 同步状态；流程见 `field_verification/ADJUDICATION_WORKFLOW.md`。
 
-> 总字段路径 2469；unverified 1548、candidate 1、conflict 90、disproved 0。
+> 总字段路径 2481；unverified 1544、candidate 1、conflict 90、disproved 0。
 
 ## 一、状态冲突（禁止作为锚点，优先复核）（90）
 
@@ -107,10 +107,128 @@
 |:--|:--|:--|:--|:--|:--|:--|
 | ZHB-tdxstat | `stat.unknown_2` | stat.unknown_2 | 贝塔系数(60日)·L2候选(列[2]已定BetaValue: ihelp.dat L63官方定义+慢变特征实证自相关0.91, 待真实指数基准复现升L1) | - | matched | 1.1 tdxstat.cfg 标准契约表（stat.*，20260918 对撞定案）🆕 |
 
-## 三、待破解字段（1548）
+## 三、待破解字段（1544）
 
 | 来源 | 完整 code path | 规范名 | 含义 | 单位 | 状态判定 | 证据章节 |
 |:--|:--|:--|:--|:--|:--|:--|
+| Levistock历史未归属 | `amount` | — | — | — | aggregate_status_scope_unresolved | — |
+| Levistock历史未归属 | `amplitude` | — | — | — | aggregate_status_scope_unresolved | — |
+| Levistock历史未归属 | `category` | — | — | — | aggregate_status_scope_unresolved | — |
+| Levistock历史未归属 | `change` | — | — | — | aggregate_status_scope_unresolved | — |
+| Levistock历史未归属 | `change_pct` | — | — | — | aggregate_status_scope_unresolved | — |
+| Levistock历史未归属 | `change_rate` | — | — | — | aggregate_status_scope_unresolved | — |
+| Levistock历史未归属 | `change_type` | — | — | — | aggregate_status_scope_unresolved | — |
+| Levistock历史未归属 | `circ_market` | — | — | — | registry_status_only_single_source | — |
+| Levistock历史未归属 | `circ_mv` | — | — | — | aggregate_status_scope_unresolved | — |
+| Levistock历史未归属 | `circ_share` | — | — | — | registry_status_only_single_source | — |
+| Levistock历史未归属 | `close_price` | — | — | — | aggregate_status_scope_unresolved | — |
+| Levistock历史未归属 | `close_seal_amount` | — | — | — | aggregate_status_scope_unresolved | — |
+| Levistock历史未归属 | `content` | — | — | — | aggregate_status_scope_unresolved | — |
+| Levistock历史未归属 | `continuous` | — | — | — | registry_status_only_single_source | — |
+| Levistock历史未归属 | `dapan_flow` | — | — | — | registry_status_only_single_source | — |
+| Levistock历史未归属 | `date` | — | — | — | aggregate_status_scope_unresolved | — |
+| Levistock历史未归属 | `diagnose_date` | — | — | — | registry_status_only_single_source | — |
+| Levistock历史未归属 | `dict` | — | — | — | registry_status_only_single_source | — |
+| Levistock历史未归属 | `down_0pct_to_1pct` | — | — | — | registry_status_only_single_source | — |
+| Levistock历史未归属 | `down_1pct_to_5pct` | — | — | — | registry_status_only_single_source | — |
+| Levistock历史未归属 | `down_5pct_to_limited` | — | — | — | registry_status_only_single_source | — |
+| Levistock历史未归属 | `down_limit` | — | — | — | registry_status_only_single_source | — |
+| Levistock历史未归属 | `down_limited` | — | — | — | registry_status_only_single_source | — |
+| Levistock历史未归属 | `filter_st` | — | — | — | registry_status_only_single_source | — |
+| Levistock历史未归属 | `first_limit_up_time` | — | — | — | aggregate_status_scope_unresolved | — |
+| Levistock历史未归属 | `first_zt_time` | — | — | — | registry_status_only_single_source | — |
+| Levistock历史未归属 | `float_mv` | — | — | — | registry_status_only_single_source | — |
+| Levistock历史未归属 | `goodwill_scale` | — | — | — | registry_status_only_single_source | — |
+| Levistock历史未归属 | `goodwill_to_net_assets_ratio` | — | — | — | registry_status_only_single_source | — |
+| Levistock历史未归属 | `hs300_index` | — | — | — | registry_status_only_single_source | — |
+| Levistock历史未归属 | `hs300_week_change_ratio` | — | — | — | registry_status_only_single_source | — |
+| Levistock历史未归属 | `large_net` | — | — | — | registry_status_only_single_source | — |
+| Levistock历史未归属 | `large_pct` | — | — | — | registry_status_only_single_source | — |
+| Levistock历史未归属 | `last_px` | — | — | — | aggregate_status_scope_unresolved | — |
+| Levistock历史未归属 | `last_zt_time` | — | — | — | registry_status_only_single_source | — |
+| Levistock历史未归属 | `limit_up_break_count` | — | — | — | registry_status_only_single_source | — |
+| Levistock历史未归属 | `limit_up_pool_yesterday` | — | — | — | registry_status_only_single_source | — |
+| Levistock历史未归属 | `limit_up_price` | — | — | — | aggregate_status_scope_unresolved | — |
+| Levistock历史未归属 | `main_inflow` | — | — | — | aggregate_status_scope_unresolved | — |
+| Levistock历史未归属 | `main_net` | — | — | — | aggregate_status_scope_unresolved | — |
+| Levistock历史未归属 | `main_pct` | — | — | — | registry_status_only_single_source | — |
+| Levistock历史未归属 | `market_cap` | — | — | — | aggregate_status_scope_unresolved | 12.10.4 开盘红复盘（get_zttt 涨停天梯 / get_pmsl 盘面梳理 / get_his_limit_resumption 历史涨停复盘）🆕；12.10.7 开盘红板块排行（sector_ranking_kph）补充字段 |
+| Levistock历史未归属 | `market_focus` | — | — | — | registry_status_only_single_source | — |
+| Levistock历史未归属 | `market_focus_change` | — | — | — | registry_status_only_single_source | — |
+| Levistock历史未归属 | `market_focus_rank` | — | — | — | registry_status_only_single_source | — |
+| Levistock历史未归属 | `market_index_all_em` | — | — | — | registry_status_only_single_source | — |
+| Levistock历史未归属 | `market_snapshot` | — | — | — | aggregate_status_scope_unresolved | — |
+| Levistock历史未归属 | `mid_net` | — | — | — | registry_status_only_single_source | — |
+| Levistock历史未归属 | `mid_pct` | — | — | — | registry_status_only_single_source | — |
+| Levistock历史未归属 | `name` | — | — | — | aggregate_status_scope_unresolved | — |
+| Levistock历史未归属 | `net_profit_scale` | — | — | — | registry_status_only_single_source | — |
+| Levistock历史未归属 | `net_profit_yoy_ratio` | — | — | — | registry_status_only_single_source | — |
+| Levistock历史未归属 | `open_times` | — | — | — | aggregate_status_scope_unresolved | — |
+| Levistock历史未归属 | `org_participate` | — | — | — | registry_status_only_single_source | — |
+| Levistock历史未归属 | `participation_wish` | — | — | — | registry_status_only_single_source | — |
+| Levistock历史未归属 | `participation_wish_5days` | — | — | — | registry_status_only_single_source | — |
+| Levistock历史未归属 | `participation_wish_5days_change` | — | — | — | registry_status_only_single_source | — |
+| Levistock历史未归属 | `participation_wish_change` | — | — | — | registry_status_only_single_source | — |
+| Levistock历史未归属 | `pb` | — | — | — | aggregate_status_scope_unresolved | — |
+| Levistock历史未归属 | `pe_dynamic` | — | — | — | aggregate_status_scope_unresolved | — |
+| Levistock历史未归属 | `pe_static` | — | — | — | aggregate_status_scope_unresolved | — |
+| Levistock历史未归属 | `pe_ttm` | — | — | — | aggregate_status_scope_unresolved | — |
+| Levistock历史未归属 | `plate_code` | — | — | — | aggregate_status_scope_unresolved | — |
+| Levistock历史未归属 | `pledge_company_count` | — | — | — | registry_status_only_single_source | — |
+| Levistock历史未归属 | `pledge_deal_count` | — | — | — | registry_status_only_single_source | — |
+| Levistock历史未归属 | `pledge_summary` | — | — | — | registry_status_only_single_source | — |
+| Levistock历史未归属 | `pledge_total_market_value` | — | — | — | registry_status_only_single_source | — |
+| Levistock历史未归属 | `pledge_total_ratio` | — | — | — | registry_status_only_single_source | — |
+| Levistock历史未归属 | `pledge_total_shares` | — | — | — | registry_status_only_single_source | — |
+| Levistock历史未归属 | `pre_close` | — | — | — | aggregate_status_scope_unresolved | — |
+| Levistock历史未归属 | `prev_turnover` | — | — | — | registry_status_only_single_source | — |
+| Levistock历史未归属 | `price` | — | — | — | aggregate_status_scope_unresolved | — |
+| Levistock历史未归属 | `probe_trading_day` | — | — | — | aggregate_status_scope_unresolved | — |
+| Levistock历史未归属 | `ready` | — | — | — | registry_status_only_single_source | — |
+| Levistock历史未归属 | `resume_time` | — | — | — | registry_status_only_single_source | — |
+| Levistock历史未归属 | `sector` | — | — | — | aggregate_status_scope_unresolved | — |
+| Levistock历史未归属 | `sector_ranking_kph` | sector_ranking_kph | — | — | registry_status_only_single_source | 12.10.9 levistock 全接口字段核实（2026-08-09 复测，**38/38 全部实测**）🆕 |
+| Levistock历史未归属 | `sector_stocks_his_kph` | sector_stocks_his_kph | — | — | registry_status_only_single_source | 12.10.9 levistock 全接口字段核实（2026-08-09 复测，**38/38 全部实测**）🆕 |
+| Levistock历史未归属 | `secu_code` | — | — | — | registry_status_only_single_source | — |
+| Levistock历史未归属 | `secu_name` | — | — | — | registry_status_only_single_source | — |
+| Levistock历史未归属 | `security_code` | — | — | — | registry_status_only_single_source | — |
+| Levistock历史未归属 | `sh_change_pct` | — | — | — | registry_status_only_single_source | — |
+| Levistock历史未归属 | `sh_close` | — | — | — | registry_status_only_single_source | — |
+| Levistock历史未归属 | `shares` | — | — | — | aggregate_status_scope_unresolved | — |
+| Levistock历史未归属 | `small_net` | — | — | — | registry_status_only_single_source | — |
+| Levistock历史未归属 | `small_pct` | — | — | — | registry_status_only_single_source | — |
+| Levistock历史未归属 | `speed` | — | — | — | aggregate_status_scope_unresolved | — |
+| Levistock历史未归属 | `status` | — | — | — | aggregate_status_scope_unresolved | — |
+| Levistock历史未归属 | `stock_code` | — | — | — | registry_status_only_single_source | — |
+| Levistock历史未归属 | `stock_name` | — | — | — | aggregate_status_scope_unresolved | — |
+| Levistock历史未归属 | `suspend` | — | — | — | registry_status_only_single_source | — |
+| Levistock历史未归属 | `suspend_time` | — | — | — | registry_status_only_single_source | — |
+| Levistock历史未归属 | `suspension_list` | — | — | — | registry_status_only_single_source | — |
+| Levistock历史未归属 | `suspension_type` | — | — | — | registry_status_only_single_source | — |
+| Levistock历史未归属 | `symbol` | — | — | — | registry_status_only_single_source | — |
+| Levistock历史未归属 | `sz_change_pct` | — | — | — | registry_status_only_single_source | — |
+| Levistock历史未归属 | `sz_close` | — | — | — | registry_status_only_single_source | — |
+| Levistock历史未归属 | `time` | — | — | — | aggregate_status_scope_unresolved | — |
+| Levistock历史未归属 | `title` | — | — | — | aggregate_status_scope_unresolved | — |
+| Levistock历史未归属 | `total_market` | — | — | — | registry_status_only_single_source | — |
+| Levistock历史未归属 | `total_mv` | — | — | — | aggregate_status_scope_unresolved | — |
+| Levistock历史未归属 | `total_score` | — | — | — | registry_status_only_single_source | — |
+| Levistock历史未归属 | `trade_date` | — | — | — | aggregate_status_scope_unresolved | — |
+| Levistock历史未归属 | `ts_code` | — | — | — | registry_status_only_single_source | — |
+| Levistock历史未归属 | `turnover_pct` | — | — | — | aggregate_status_scope_unresolved | — |
+| Levistock历史未归属 | `turnover_rate` | — | — | — | aggregate_status_scope_unresolved | 12.10.4 开盘红复盘（get_zttt 涨停天梯 / get_pmsl 盘面梳理 / get_his_limit_resumption 历史涨停复盘）🆕；12.10.7 开盘红板块排行（sector_ranking_kph）补充字段 |
+| Levistock历史未归属 | `unlock_by_date` | — | — | — | registry_status_only_single_source | — |
+| Levistock历史未归属 | `up_0pct_to_1pct` | — | — | — | registry_status_only_single_source | — |
+| Levistock历史未归属 | `up_1pct_to_5pct` | — | — | — | registry_status_only_single_source | — |
+| Levistock历史未归属 | `up_5pct_to_limited` | — | — | — | registry_status_only_single_source | — |
+| Levistock历史未归属 | `up_limit` | — | — | — | registry_status_only_single_source | — |
+| Levistock历史未归属 | `up_limited` | — | — | — | registry_status_only_single_source | — |
+| Levistock历史未归属 | `vol_ratio` | — | — | — | aggregate_status_scope_unresolved | — |
+| Levistock历史未归属 | `volume` | — | — | — | aggregate_status_scope_unresolved | — |
+| Levistock历史未归属 | `xlarge_net` | — | — | — | registry_status_only_single_source | — |
+| Levistock历史未归属 | `xlarge_pct` | — | — | — | registry_status_only_single_source | — |
+| Levistock历史未归属 | `zt_count` | — | — | — | registry_status_only_single_source | — |
+| Levistock历史未归属 | `zt_days` | — | — | — | aggregate_status_scope_unresolved | — |
 | TDX(双命名源) | `Amount` | — | — | — | registry_status_only_single_source | — |
 | TDX(双命名源) | `Average` | — | — | — | registry_status_only_single_source | — |
 | TDX(双命名源) | `BCancel` | — | — | — | registry_status_only_single_source | — |
@@ -583,11 +701,9 @@
 | ZHB-tdxstat | `[31]` | [31] | 连板类计数(口径待终核: 当日涨停时==[33]连板数, 非涨停日保留历史高位值>count) | — | aggregate_status_scope_unresolved | 1. `tdxstat.cfg` (个股综合统计快照，35 个字段，7,951 行) |
 | ZHB-tdxstat | `[32]` | [32] | 待破解 | — | aggregate_status_scope_unresolved | 1. `tdxstat.cfg` (个股综合统计快照，35 个字段，7,951 行) |
 | ZHB-tdxstat | `board_count` | — | — | — | registry_status_only_single_source | — |
-| ZHB-tdxstat | `change_10d` | — | — | — | registry_status_only_single_source | — |
 | ZHB-tdxstat | `change_10k_bar` | — | — | — | registry_status_only_single_source | — |
 | ZHB-tdxstat | `change_20d` | — | — | — | registry_status_only_single_source | — |
 | ZHB-tdxstat | `change_30d` | — | — | — | registry_status_only_single_source | — |
-| ZHB-tdxstat | `change_5d` | — | — | — | registry_status_only_single_source | — |
 | ZHB-tdxstat | `change_5k_bar` | — | — | — | registry_status_only_single_source | — |
 | ZHB-tdxstat | `change_60d` | — | — | — | registry_status_only_single_source | — |
 | ZHB-tdxstat | `change_60d_alt` | — | — | — | registry_status_only_single_source | — |
@@ -611,7 +727,6 @@
 | ZHB-tdxstat2 | `[14]` | [14] | 待破解 | 万元 | aggregate_status_scope_unresolved | 2. `tdxstat2.cfg` (成交与资金流向表，21 个字段，7,951 行) |
 | ZHB-tdxstat2 | `[15]` | [15] | 待破解 | 万元 | aggregate_status_scope_unresolved | 2. `tdxstat2.cfg` (成交与资金流向表，21 个字段，7,951 行) |
 | ZHB-tdxstat2 | `[9]` | [9] | 待破解 | 手 | aggregate_status_scope_unresolved | 2. `tdxstat2.cfg` (成交与资金流向表，21 个字段，7,951 行) |
-| ZHB-tdxstat2 | `amount` | — | — | — | aggregate_status_scope_unresolved | — |
 | ZHB-tdxstat2 | `amount_1d` | — | — | — | aggregate_status_scope_unresolved | — |
 | ZHB-tdxstat2 | `amount_2d` | — | — | — | aggregate_status_scope_unresolved | — |
 | ZHB-tdxstat2 | `change_250k_bar` | — | — | — | registry_status_only_single_source | — |
@@ -624,7 +739,6 @@
 | ZHB-tdxstat2 | `high_52w` | — | — | — | registry_status_only_single_source | — |
 | ZHB-tdxstat2 | `industry_code` | — | — | — | registry_status_only_single_source | — |
 | ZHB-tdxstat2 | `ipo_price` | — | — | — | registry_status_only_single_source | — |
-| ZHB-tdxstat2 | `low_52w` | — | — | — | registry_status_only_single_source | — |
 | ZHB-tdxstat2 | `main_net_buy_amount` | — | — | — | registry_status_only_single_source | — |
 | ZHB-tdxstat2 | `main_net_buy_amount_1d` | — | — | — | registry_status_only_single_source | — |
 | ZHB-tdxstat2 | `main_net_buy_hands` | — | — | — | aggregate_status_scope_unresolved | — |
@@ -650,157 +764,6 @@
 | ZHB-tipinfo | `report_period` | — | — | — | registry_status_only_single_source | — |
 | ZHB-tipinfo | `suspend_major_event_date` | — | — | — | registry_status_only_single_source | — |
 | ZHB-tipinfo | `zt_date_recent` | — | — | — | registry_status_only_single_source | — |
-| levistock(ftshare) | `amount` | — | — | — | aggregate_status_scope_unresolved | — |
-| levistock(ftshare) | `amplitude` | — | — | — | aggregate_status_scope_unresolved | — |
-| levistock(ftshare) | `avg_change` | avg_change | 待破解 | — | registry_status_only_single_source | 12.10.7 开盘红板块排行（sector_ranking_kph）补充字段 |
-| levistock(ftshare) | `buy_amount` | buy_amount / sell_amount | 待破解 | — | registry_status_only_single_source | 12.10.7 开盘红板块排行（sector_ranking_kph）补充字段 |
-| levistock(ftshare) | `category` | — | — | — | aggregate_status_scope_unresolved | — |
-| levistock(ftshare) | `change` | — | — | — | aggregate_status_scope_unresolved | — |
-| levistock(ftshare) | `change_pct` | — | — | — | aggregate_status_scope_unresolved | — |
-| levistock(ftshare) | `change_rate` | — | — | — | aggregate_status_scope_unresolved | — |
-| levistock(ftshare) | `change_type` | — | — | — | aggregate_status_scope_unresolved | — |
-| levistock(ftshare) | `circ_market` | — | — | — | registry_status_only_single_source | — |
-| levistock(ftshare) | `circ_mv` | — | — | — | aggregate_status_scope_unresolved | — |
-| levistock(ftshare) | `circ_share` | — | — | — | registry_status_only_single_source | — |
-| levistock(ftshare) | `close_price` | — | — | — | aggregate_status_scope_unresolved | — |
-| levistock(ftshare) | `close_seal_amount` | — | — | — | aggregate_status_scope_unresolved | — |
-| levistock(ftshare) | `content` | — | — | — | aggregate_status_scope_unresolved | — |
-| levistock(ftshare) | `continuous` | — | — | — | registry_status_only_single_source | — |
-| levistock(ftshare) | `dapan_flow` | — | — | — | registry_status_only_single_source | — |
-| levistock(ftshare) | `date` | — | — | — | aggregate_status_scope_unresolved | — |
-| levistock(ftshare) | `diagnose_date` | — | — | — | registry_status_only_single_source | — |
-| levistock(ftshare) | `dict` | — | — | — | registry_status_only_single_source | — |
-| levistock(ftshare) | `down_0pct_to_1pct` | — | — | — | registry_status_only_single_source | — |
-| levistock(ftshare) | `down_1pct_to_5pct` | — | — | — | registry_status_only_single_source | — |
-| levistock(ftshare) | `down_5pct_to_limited` | — | — | — | registry_status_only_single_source | — |
-| levistock(ftshare) | `down_limit` | — | — | — | registry_status_only_single_source | — |
-| levistock(ftshare) | `down_limited` | — | — | — | registry_status_only_single_source | — |
-| levistock(ftshare) | `dt` | zt / dt | 涨停 / 跌停总数 | — | aggregate_status_scope_unresolved | 12.10.3 开盘红市场情绪（market_emotion_kph，**含历史**）🆕 |
-| levistock(ftshare) | `fall_dist` | rise_dist / fall_dist | 待破解 | — | aggregate_status_scope_unresolved | 12.10.3 开盘红市场情绪（market_emotion_kph，**含历史**）🆕 |
-| levistock(ftshare) | `fall_num` | rise_num / fall_num / flat | 上涨 / 下跌 / 平盘家数 | — | aggregate_status_scope_unresolved | 12.10.3 开盘红市场情绪（market_emotion_kph，**含历史**）🆕 |
-| levistock(ftshare) | `filter_st` | — | — | — | registry_status_only_single_source | — |
-| levistock(ftshare) | `first_limit_up_time` | — | — | — | aggregate_status_scope_unresolved | — |
-| levistock(ftshare) | `first_zt_time` | — | — | — | registry_status_only_single_source | — |
-| levistock(ftshare) | `flat` | rise_num / fall_num / flat | 上涨 / 下跌 / 平盘家数 | — | aggregate_status_scope_unresolved | 12.10.3 开盘红市场情绪（market_emotion_kph，**含历史**）🆕 |
-| levistock(ftshare) | `float_mv` | — | — | — | registry_status_only_single_source | — |
-| levistock(ftshare) | `goodwill_scale` | — | — | — | registry_status_only_single_source | — |
-| levistock(ftshare) | `goodwill_to_net_assets_ratio` | — | — | — | registry_status_only_single_source | — |
-| levistock(ftshare) | `hs300_index` | — | — | — | registry_status_only_single_source | — |
-| levistock(ftshare) | `hs300_week_change_ratio` | — | — | — | registry_status_only_single_source | — |
-| levistock(ftshare) | `industry_id` | industry_id / industry_zt | 行业 ID / 同行业涨停数 | — | registry_status_only_single_source | 12.10.4 开盘红复盘（get_zttt 涨停天梯 / get_pmsl 盘面梳理 / get_his_limit_resumption 历史涨停复盘）🆕 |
-| levistock(ftshare) | `industry_zt` | industry_id / industry_zt | 行业 ID / 同行业涨停数 | — | registry_status_only_single_source | 12.10.4 开盘红复盘（get_zttt 涨停天梯 / get_pmsl 盘面梳理 / get_his_limit_resumption 历史涨停复盘）🆕 |
-| levistock(ftshare) | `large_net` | — | — | — | registry_status_only_single_source | — |
-| levistock(ftshare) | `large_pct` | — | — | — | registry_status_only_single_source | — |
-| levistock(ftshare) | `last_px` | — | — | — | aggregate_status_scope_unresolved | — |
-| levistock(ftshare) | `last_zt_time` | — | — | — | registry_status_only_single_source | — |
-| levistock(ftshare) | `limit_count` | limit_tag / limit_count | 待破解 | — | aggregate_status_scope_unresolved | 12.10.4 开盘红复盘（get_zttt 涨停天梯 / get_pmsl 盘面梳理 / get_his_limit_resumption 历史涨停复盘）🆕 |
-| levistock(ftshare) | `limit_tag` | limit_tag / limit_count | 待破解 | — | registry_status_only_single_source | 12.10.4 开盘红复盘（get_zttt 涨停天梯 / get_pmsl 盘面梳理 / get_his_limit_resumption 历史涨停复盘）🆕 |
-| levistock(ftshare) | `limit_time` | limit_time / open_time | 待破解 | — | aggregate_status_scope_unresolved | 12.10.4 开盘红复盘（get_zttt 涨停天梯 / get_pmsl 盘面梳理 / get_his_limit_resumption 历史涨停复盘）🆕 |
-| levistock(ftshare) | `limit_up_break_count` | — | — | — | registry_status_only_single_source | — |
-| levistock(ftshare) | `limit_up_pool_yesterday` | — | — | — | registry_status_only_single_source | — |
-| levistock(ftshare) | `limit_up_price` | — | — | — | aggregate_status_scope_unresolved | — |
-| levistock(ftshare) | `main_inflow` | — | — | — | aggregate_status_scope_unresolved | — |
-| levistock(ftshare) | `main_net` | — | — | — | aggregate_status_scope_unresolved | — |
-| levistock(ftshare) | `main_pct` | — | — | — | registry_status_only_single_source | — |
-| levistock(ftshare) | `market_cap` | — | — | — | aggregate_status_scope_unresolved | 12.10.4 开盘红复盘（get_zttt 涨停天梯 / get_pmsl 盘面梳理 / get_his_limit_resumption 历史涨停复盘）🆕；12.10.7 开盘红板块排行（sector_ranking_kph）补充字段 |
-| levistock(ftshare) | `market_focus` | — | — | — | registry_status_only_single_source | — |
-| levistock(ftshare) | `market_focus_change` | — | — | — | registry_status_only_single_source | — |
-| levistock(ftshare) | `market_focus_rank` | — | — | — | registry_status_only_single_source | — |
-| levistock(ftshare) | `market_index_all_em` | — | — | — | registry_status_only_single_source | — |
-| levistock(ftshare) | `market_snapshot` | — | — | — | aggregate_status_scope_unresolved | — |
-| levistock(ftshare) | `mid_net` | — | — | — | registry_status_only_single_source | — |
-| levistock(ftshare) | `mid_pct` | — | — | — | registry_status_only_single_source | — |
-| levistock(ftshare) | `name` | — | — | — | aggregate_status_scope_unresolved | — |
-| levistock(ftshare) | `net_inflow` | net_inflow / market_cap | 待破解 | — | registry_status_only_single_source | 12.10.4 开盘红复盘（get_zttt 涨停天梯 / get_pmsl 盘面梳理 / get_his_limit_resumption 历史涨停复盘）🆕 |
-| levistock(ftshare) | `net_inflow_5d` | net_inflow_5d | 待破解 | — | registry_status_only_single_source | 12.10.7 开盘红板块排行（sector_ranking_kph）补充字段 |
-| levistock(ftshare) | `net_profit_scale` | — | — | — | registry_status_only_single_source | — |
-| levistock(ftshare) | `net_profit_yoy_ratio` | — | — | — | registry_status_only_single_source | — |
-| levistock(ftshare) | `open_time` | limit_time / open_time | 待破解 | — | registry_status_only_single_source | 12.10.4 开盘红复盘（get_zttt 涨停天梯 / get_pmsl 盘面梳理 / get_his_limit_resumption 历史涨停复盘）🆕 |
-| levistock(ftshare) | `open_times` | — | — | — | aggregate_status_scope_unresolved | — |
-| levistock(ftshare) | `org_participate` | — | — | — | registry_status_only_single_source | — |
-| levistock(ftshare) | `participation_wish` | — | — | — | registry_status_only_single_source | — |
-| levistock(ftshare) | `participation_wish_5days` | — | — | — | registry_status_only_single_source | — |
-| levistock(ftshare) | `participation_wish_5days_change` | — | — | — | registry_status_only_single_source | — |
-| levistock(ftshare) | `participation_wish_change` | — | — | — | registry_status_only_single_source | — |
-| levistock(ftshare) | `pb` | — | — | — | aggregate_status_scope_unresolved | — |
-| levistock(ftshare) | `pe_dynamic` | — | — | — | aggregate_status_scope_unresolved | — |
-| levistock(ftshare) | `pe_static` | — | — | — | aggregate_status_scope_unresolved | — |
-| levistock(ftshare) | `pe_ttm` | — | — | — | aggregate_status_scope_unresolved | — |
-| levistock(ftshare) | `plate_code` | — | — | — | aggregate_status_scope_unresolved | — |
-| levistock(ftshare) | `pledge_company_count` | — | — | — | registry_status_only_single_source | — |
-| levistock(ftshare) | `pledge_deal_count` | — | — | — | registry_status_only_single_source | — |
-| levistock(ftshare) | `pledge_summary` | — | — | — | registry_status_only_single_source | — |
-| levistock(ftshare) | `pledge_total_market_value` | — | — | — | registry_status_only_single_source | — |
-| levistock(ftshare) | `pledge_total_ratio` | — | — | — | registry_status_only_single_source | — |
-| levistock(ftshare) | `pledge_total_shares` | — | — | — | registry_status_only_single_source | — |
-| levistock(ftshare) | `pre_close` | — | — | — | aggregate_status_scope_unresolved | — |
-| levistock(ftshare) | `prev_turnover` | — | — | — | registry_status_only_single_source | — |
-| levistock(ftshare) | `price` | — | — | — | aggregate_status_scope_unresolved | — |
-| levistock(ftshare) | `probe_trading_day` | — | — | — | aggregate_status_scope_unresolved | — |
-| levistock(ftshare) | `q_zrcs` | s_zrcs / q_zrcs | 昨日沪市 / 昨日全市成交额 | — | aggregate_status_scope_unresolved | 12.10.3 开盘红市场情绪（market_emotion_kph，**含历史**）🆕 |
-| levistock(ftshare) | `qscln` | szln / qscln | 待破解 | — | aggregate_status_scope_unresolved | 12.10.3 开盘红市场情绪（market_emotion_kph，**含历史**）🆕 |
-| levistock(ftshare) | `ready` | — | — | — | registry_status_only_single_source | — |
-| levistock(ftshare) | `reason` | reason | 涨停原因 | — | aggregate_status_scope_unresolved | 12.10.4 开盘红复盘（get_zttt 涨停天梯 / get_pmsl 盘面梳理 / get_his_limit_resumption 历史涨停复盘）🆕 |
-| levistock(ftshare) | `resume_time` | — | — | — | registry_status_only_single_source | — |
-| levistock(ftshare) | `rise_dist` | rise_dist / fall_dist | 待破解 | — | aggregate_status_scope_unresolved | 12.10.3 开盘红市场情绪（market_emotion_kph，**含历史**）🆕 |
-| levistock(ftshare) | `rise_num` | rise_num / fall_num / flat | 上涨 / 下跌 / 平盘家数 | — | aggregate_status_scope_unresolved | 12.10.3 开盘红市场情绪（market_emotion_kph，**含历史**）🆕 |
-| levistock(ftshare) | `s_zrcs` | s_zrcs / q_zrcs | 昨日沪市 / 昨日全市成交额 | — | aggregate_status_scope_unresolved | 12.10.3 开盘红市场情绪（market_emotion_kph，**含历史**）🆕 |
-| levistock(ftshare) | `seal_amount` | seal_amount / seal_money | 待破解 | — | aggregate_status_scope_unresolved | 12.10.4 开盘红复盘（get_zttt 涨停天梯 / get_pmsl 盘面梳理 / get_his_limit_resumption 历史涨停复盘）🆕 |
-| levistock(ftshare) | `seal_money` | seal_amount / seal_money | 待破解 | — | aggregate_status_scope_unresolved | 12.10.4 开盘红复盘（get_zttt 涨停天梯 / get_pmsl 盘面梳理 / get_his_limit_resumption 历史涨停复盘）🆕 |
-| levistock(ftshare) | `sector` | — | — | — | aggregate_status_scope_unresolved | — |
-| levistock(ftshare) | `sector_ranking_kph` | sector_ranking_kph | — | — | registry_status_only_single_source | 12.10.9 levistock 全接口字段核实（2026-08-09 复测，**38/38 全部实测**）🆕 |
-| levistock(ftshare) | `sector_stocks_his_kph` | sector_stocks_his_kph | — | — | registry_status_only_single_source | 12.10.9 levistock 全接口字段核实（2026-08-09 复测，**38/38 全部实测**）🆕 |
-| levistock(ftshare) | `secu_code` | — | — | — | registry_status_only_single_source | — |
-| levistock(ftshare) | `secu_name` | — | — | — | registry_status_only_single_source | — |
-| levistock(ftshare) | `security_code` | — | — | — | registry_status_only_single_source | — |
-| levistock(ftshare) | `sell_amount` | buy_amount / sell_amount | 待破解 | — | registry_status_only_single_source | 12.10.7 开盘红板块排行（sector_ranking_kph）补充字段 |
-| levistock(ftshare) | `sh_change_pct` | — | — | — | registry_status_only_single_source | — |
-| levistock(ftshare) | `sh_close` | — | — | — | registry_status_only_single_source | — |
-| levistock(ftshare) | `shares` | — | — | — | aggregate_status_scope_unresolved | — |
-| levistock(ftshare) | `sign` | sign | 市场人气判断文字 | — | aggregate_status_scope_unresolved | 12.10.3 开盘红市场情绪（market_emotion_kph，**含历史**）🆕 |
-| levistock(ftshare) | `sjdt` | sjzt / sjdt | 待破解 | — | aggregate_status_scope_unresolved | 12.10.3 开盘红市场情绪（market_emotion_kph，**含历史**）🆕 |
-| levistock(ftshare) | `sjzt` | sjzt / sjdt | 待破解 | — | aggregate_status_scope_unresolved | 12.10.3 开盘红市场情绪（market_emotion_kph，**含历史**）🆕 |
-| levistock(ftshare) | `small_net` | — | — | — | registry_status_only_single_source | — |
-| levistock(ftshare) | `small_pct` | — | — | — | registry_status_only_single_source | — |
-| levistock(ftshare) | `speed` | — | — | — | aggregate_status_scope_unresolved | — |
-| levistock(ftshare) | `status` | — | — | — | aggregate_status_scope_unresolved | — |
-| levistock(ftshare) | `stdt` | stzt / stdt | ST 涨停 / 跌停 | — | aggregate_status_scope_unresolved | 12.10.3 开盘红市场情绪（market_emotion_kph，**含历史**）🆕 |
-| levistock(ftshare) | `stock_code` | — | — | — | registry_status_only_single_source | — |
-| levistock(ftshare) | `stock_count` | stock_count | 成分股数量 | — | registry_status_only_single_source | 12.10.7 开盘红板块排行（sector_ranking_kph）补充字段 |
-| levistock(ftshare) | `stock_name` | — | — | — | aggregate_status_scope_unresolved | — |
-| levistock(ftshare) | `stzt` | stzt / stdt | ST 涨停 / 跌停 | — | aggregate_status_scope_unresolved | 12.10.3 开盘红市场情绪（market_emotion_kph，**含历史**）🆕 |
-| levistock(ftshare) | `suspend` | — | — | — | registry_status_only_single_source | — |
-| levistock(ftshare) | `suspend_time` | — | — | — | registry_status_only_single_source | — |
-| levistock(ftshare) | `suspension_list` | — | — | — | registry_status_only_single_source | — |
-| levistock(ftshare) | `suspension_type` | — | — | — | registry_status_only_single_source | — |
-| levistock(ftshare) | `symbol` | — | — | — | registry_status_only_single_source | — |
-| levistock(ftshare) | `sz_change_pct` | — | — | — | registry_status_only_single_source | — |
-| levistock(ftshare) | `sz_close` | — | — | — | registry_status_only_single_source | — |
-| levistock(ftshare) | `szln` | szln / qscln | 待破解 | — | aggregate_status_scope_unresolved | 12.10.3 开盘红市场情绪（market_emotion_kph，**含历史**）🆕 |
-| levistock(ftshare) | `themes` | themes | 题材 | — | registry_status_only_single_source | 12.10.4 开盘红复盘（get_zttt 涨停天梯 / get_pmsl 盘面梳理 / get_his_limit_resumption 历史涨停复盘）🆕 |
-| levistock(ftshare) | `time` | — | — | — | aggregate_status_scope_unresolved | — |
-| levistock(ftshare) | `title` | — | — | — | aggregate_status_scope_unresolved | — |
-| levistock(ftshare) | `total_market` | — | — | — | registry_status_only_single_source | — |
-| levistock(ftshare) | `total_mv` | — | — | — | aggregate_status_scope_unresolved | — |
-| levistock(ftshare) | `total_score` | — | — | — | registry_status_only_single_source | — |
-| levistock(ftshare) | `trade_date` | — | — | — | aggregate_status_scope_unresolved | — |
-| levistock(ftshare) | `ts_code` | — | — | — | registry_status_only_single_source | — |
-| levistock(ftshare) | `turnover` | turnover / turnover_rate | 成交额 / 换手率% | — | aggregate_status_scope_unresolved | 12.10.4 开盘红复盘（get_zttt 涨停天梯 / get_pmsl 盘面梳理 / get_his_limit_resumption 历史涨停复盘）🆕 |
-| levistock(ftshare) | `turnover_pct` | — | — | — | aggregate_status_scope_unresolved | — |
-| levistock(ftshare) | `turnover_rate` | — | — | — | aggregate_status_scope_unresolved | 12.10.4 开盘红复盘（get_zttt 涨停天梯 / get_pmsl 盘面梳理 / get_his_limit_resumption 历史涨停复盘）🆕；12.10.7 开盘红板块排行（sector_ranking_kph）补充字段 |
-| levistock(ftshare) | `unlock_by_date` | — | — | — | registry_status_only_single_source | — |
-| levistock(ftshare) | `up_0pct_to_1pct` | — | — | — | registry_status_only_single_source | — |
-| levistock(ftshare) | `up_1pct_to_5pct` | — | — | — | registry_status_only_single_source | — |
-| levistock(ftshare) | `up_5pct_to_limited` | — | — | — | registry_status_only_single_source | — |
-| levistock(ftshare) | `up_limit` | — | — | — | registry_status_only_single_source | — |
-| levistock(ftshare) | `up_limited` | — | — | — | registry_status_only_single_source | — |
-| levistock(ftshare) | `vol_ratio` | — | — | — | aggregate_status_scope_unresolved | — |
-| levistock(ftshare) | `volume` | — | — | — | aggregate_status_scope_unresolved | — |
-| levistock(ftshare) | `xlarge_net` | — | — | — | registry_status_only_single_source | — |
-| levistock(ftshare) | `xlarge_pct` | — | — | — | registry_status_only_single_source | — |
-| levistock(ftshare) | `zt` | zt / dt | 涨停 / 跌停总数 | — | aggregate_status_scope_unresolved | 12.10.3 开盘红市场情绪（market_emotion_kph，**含历史**）🆕 |
-| levistock(ftshare) | `zt_count` | — | — | — | registry_status_only_single_source | — |
-| levistock(ftshare) | `zt_days` | — | — | — | aggregate_status_scope_unresolved | — |
 | reports | `ACCUM_AMOUNT` | ACCUM_AMOUNT | 累计成交额 | — | matched | 12.9.2 其他接口实测发现 |
 | reports | `AP202608211828244348` | — | — | — | registry_status_only_single_source | — |
 | reports | `BEIJING` | — | — | — | registry_status_only_single_source | — |
@@ -1574,6 +1537,39 @@
 | 开盘啦(kpl) | `yestRase` | — | — | — | registry_status_only_single_source | — |
 | 开盘啦(kpl) | `yesterday_limit_up_avg_pcp` | — | — | — | registry_status_only_single_source | — |
 | 开盘啦(kpl) | `ztjs` | — | — | — | aggregate_status_scope_unresolved | — |
+| 开盘红(Levistock适配) | `avg_change` | avg_change | 待破解 | — | registry_status_only_single_source | 12.10.7 开盘红板块排行（sector_ranking_kph）补充字段 |
+| 开盘红(Levistock适配) | `buy_amount` | buy_amount / sell_amount | 待破解 | — | registry_status_only_single_source | 12.10.7 开盘红板块排行（sector_ranking_kph）补充字段 |
+| 开盘红(Levistock适配) | `dt` | zt / dt | 涨停 / 跌停总数 | — | aggregate_status_scope_unresolved | 12.10.3 开盘红市场情绪（market_emotion_kph，**含历史**）🆕 |
+| 开盘红(Levistock适配) | `fall_dist` | rise_dist / fall_dist | 待破解 | — | aggregate_status_scope_unresolved | 12.10.3 开盘红市场情绪（market_emotion_kph，**含历史**）🆕 |
+| 开盘红(Levistock适配) | `fall_num` | rise_num / fall_num / flat | 上涨 / 下跌 / 平盘家数 | — | aggregate_status_scope_unresolved | 12.10.3 开盘红市场情绪（market_emotion_kph，**含历史**）🆕 |
+| 开盘红(Levistock适配) | `flat` | rise_num / fall_num / flat | 上涨 / 下跌 / 平盘家数 | — | aggregate_status_scope_unresolved | 12.10.3 开盘红市场情绪（market_emotion_kph，**含历史**）🆕 |
+| 开盘红(Levistock适配) | `industry_id` | industry_id / industry_zt | 行业 ID / 同行业涨停数 | — | registry_status_only_single_source | 12.10.4 开盘红复盘（get_zttt 涨停天梯 / get_pmsl 盘面梳理 / get_his_limit_resumption 历史涨停复盘）🆕 |
+| 开盘红(Levistock适配) | `industry_zt` | industry_id / industry_zt | 行业 ID / 同行业涨停数 | — | registry_status_only_single_source | 12.10.4 开盘红复盘（get_zttt 涨停天梯 / get_pmsl 盘面梳理 / get_his_limit_resumption 历史涨停复盘）🆕 |
+| 开盘红(Levistock适配) | `limit_count` | limit_tag / limit_count | 待破解 | — | aggregate_status_scope_unresolved | 12.10.4 开盘红复盘（get_zttt 涨停天梯 / get_pmsl 盘面梳理 / get_his_limit_resumption 历史涨停复盘）🆕 |
+| 开盘红(Levistock适配) | `limit_tag` | limit_tag / limit_count | 待破解 | — | registry_status_only_single_source | 12.10.4 开盘红复盘（get_zttt 涨停天梯 / get_pmsl 盘面梳理 / get_his_limit_resumption 历史涨停复盘）🆕 |
+| 开盘红(Levistock适配) | `limit_time` | limit_time / open_time | 待破解 | — | aggregate_status_scope_unresolved | 12.10.4 开盘红复盘（get_zttt 涨停天梯 / get_pmsl 盘面梳理 / get_his_limit_resumption 历史涨停复盘）🆕 |
+| 开盘红(Levistock适配) | `net_inflow` | net_inflow / market_cap | 待破解 | — | registry_status_only_single_source | 12.10.4 开盘红复盘（get_zttt 涨停天梯 / get_pmsl 盘面梳理 / get_his_limit_resumption 历史涨停复盘）🆕 |
+| 开盘红(Levistock适配) | `net_inflow_5d` | net_inflow_5d | 待破解 | — | registry_status_only_single_source | 12.10.7 开盘红板块排行（sector_ranking_kph）补充字段 |
+| 开盘红(Levistock适配) | `open_time` | limit_time / open_time | 待破解 | — | registry_status_only_single_source | 12.10.4 开盘红复盘（get_zttt 涨停天梯 / get_pmsl 盘面梳理 / get_his_limit_resumption 历史涨停复盘）🆕 |
+| 开盘红(Levistock适配) | `q_zrcs` | s_zrcs / q_zrcs | 昨日沪市 / 昨日全市成交额 | — | aggregate_status_scope_unresolved | 12.10.3 开盘红市场情绪（market_emotion_kph，**含历史**）🆕 |
+| 开盘红(Levistock适配) | `qscln` | szln / qscln | 待破解 | — | aggregate_status_scope_unresolved | 12.10.3 开盘红市场情绪（market_emotion_kph，**含历史**）🆕 |
+| 开盘红(Levistock适配) | `reason` | reason | 涨停原因 | — | aggregate_status_scope_unresolved | 12.10.4 开盘红复盘（get_zttt 涨停天梯 / get_pmsl 盘面梳理 / get_his_limit_resumption 历史涨停复盘）🆕 |
+| 开盘红(Levistock适配) | `rise_dist` | rise_dist / fall_dist | 待破解 | — | aggregate_status_scope_unresolved | 12.10.3 开盘红市场情绪（market_emotion_kph，**含历史**）🆕 |
+| 开盘红(Levistock适配) | `rise_num` | rise_num / fall_num / flat | 上涨 / 下跌 / 平盘家数 | — | aggregate_status_scope_unresolved | 12.10.3 开盘红市场情绪（market_emotion_kph，**含历史**）🆕 |
+| 开盘红(Levistock适配) | `s_zrcs` | s_zrcs / q_zrcs | 昨日沪市 / 昨日全市成交额 | — | aggregate_status_scope_unresolved | 12.10.3 开盘红市场情绪（market_emotion_kph，**含历史**）🆕 |
+| 开盘红(Levistock适配) | `seal_amount` | seal_amount / seal_money | 待破解 | — | aggregate_status_scope_unresolved | 12.10.4 开盘红复盘（get_zttt 涨停天梯 / get_pmsl 盘面梳理 / get_his_limit_resumption 历史涨停复盘）🆕 |
+| 开盘红(Levistock适配) | `seal_money` | seal_amount / seal_money | 待破解 | — | aggregate_status_scope_unresolved | 12.10.4 开盘红复盘（get_zttt 涨停天梯 / get_pmsl 盘面梳理 / get_his_limit_resumption 历史涨停复盘）🆕 |
+| 开盘红(Levistock适配) | `sell_amount` | buy_amount / sell_amount | 待破解 | — | registry_status_only_single_source | 12.10.7 开盘红板块排行（sector_ranking_kph）补充字段 |
+| 开盘红(Levistock适配) | `sign` | sign | 市场人气判断文字 | — | aggregate_status_scope_unresolved | 12.10.3 开盘红市场情绪（market_emotion_kph，**含历史**）🆕 |
+| 开盘红(Levistock适配) | `sjdt` | sjzt / sjdt | 待破解 | — | aggregate_status_scope_unresolved | 12.10.3 开盘红市场情绪（market_emotion_kph，**含历史**）🆕 |
+| 开盘红(Levistock适配) | `sjzt` | sjzt / sjdt | 待破解 | — | aggregate_status_scope_unresolved | 12.10.3 开盘红市场情绪（market_emotion_kph，**含历史**）🆕 |
+| 开盘红(Levistock适配) | `stdt` | stzt / stdt | ST 涨停 / 跌停 | — | aggregate_status_scope_unresolved | 12.10.3 开盘红市场情绪（market_emotion_kph，**含历史**）🆕 |
+| 开盘红(Levistock适配) | `stock_count` | stock_count | 成分股数量 | — | registry_status_only_single_source | 12.10.7 开盘红板块排行（sector_ranking_kph）补充字段 |
+| 开盘红(Levistock适配) | `stzt` | stzt / stdt | ST 涨停 / 跌停 | — | aggregate_status_scope_unresolved | 12.10.3 开盘红市场情绪（market_emotion_kph，**含历史**）🆕 |
+| 开盘红(Levistock适配) | `szln` | szln / qscln | 待破解 | — | aggregate_status_scope_unresolved | 12.10.3 开盘红市场情绪（market_emotion_kph，**含历史**）🆕 |
+| 开盘红(Levistock适配) | `themes` | themes | 题材 | — | registry_status_only_single_source | 12.10.4 开盘红复盘（get_zttt 涨停天梯 / get_pmsl 盘面梳理 / get_his_limit_resumption 历史涨停复盘）🆕 |
+| 开盘红(Levistock适配) | `turnover` | turnover / turnover_rate | 成交额 / 换手率% | — | aggregate_status_scope_unresolved | 12.10.4 开盘红复盘（get_zttt 涨停天梯 / get_pmsl 盘面梳理 / get_his_limit_resumption 历史涨停复盘）🆕 |
+| 开盘红(Levistock适配) | `zt` | zt / dt | 涨停 / 跌停总数 | — | aggregate_status_scope_unresolved | 12.10.3 开盘红市场情绪（market_emotion_kph，**含历史**）🆕 |
 | 新浪(hq.sinajs) | `[11]` | [11] | 待破解 | 元 | aggregate_status_scope_unresolved | 12.2 新浪 hq.sinajs.cn 完整字段字典（33-34 字段） |
 | 新浪(hq.sinajs) | `[13]` | — | — | — | aggregate_status_scope_unresolved | — |
 | 新浪(hq.sinajs) | `[14]` | — | — | — | aggregate_status_scope_unresolved | — |

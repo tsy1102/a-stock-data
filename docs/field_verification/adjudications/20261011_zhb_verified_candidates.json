@@ -1,0 +1,88 @@
+{
+  "schema_version": 1,
+  "report": "20261011/20261011_collision_report.json",
+  "reviewer": "Codex（依用户授权复核）",
+  "reviewed_on": "2026-10-11",
+  "decisions": [
+    {
+      "id": "20261011-zhb-amount",
+      "candidate": {
+        "left": "zhb.full.amount",
+        "right": "sina[9]"
+      },
+      "target": {
+        "source": "ZHB-tdxstat2",
+        "code": "amount"
+      },
+      "anchor": {
+        "source": "新浪(hq.sinajs)",
+        "code": "[9]"
+      },
+      "action": "verify",
+      "canonical": "amount",
+      "meaning": "T日总成交额",
+      "unit": "万元",
+      "rationale": "核对 core/zhb_client.py 中 tdxstat2.cfg Col[3] 的定义为今日总成交额（万元），以及采集器 full_market_snapshot 对 tdxstat 与 tdxstat2 的合并路径。正式报告显示 zhb.full.amount 与新浪 [9] 在 24 个独立交易日、479 个股票日样本上 100% 命中固定比值 10000；另与 Fuyao snapshot.turnover 在 20 日、400 个样本上同为 10000。数值比例与源定义及单位一致。"
+    },
+    {
+      "id": "20261011-zhb-low-52w",
+      "candidate": {
+        "left": "zhb.full.low_52w",
+        "right": "tencent[68]"
+      },
+      "target": {
+        "source": "ZHB-tdxstat2",
+        "code": "low_52w"
+      },
+      "anchor": {
+        "source": "腾讯(qt.gtimg)",
+        "code": "[68]"
+      },
+      "action": "verify",
+      "canonical": "low_52w",
+      "meaning": "52周最低价",
+      "unit": "元",
+      "rationale": "核对 core/zhb_client.py 中 tdxstat2.cfg Col[18] 的定义为 52 周最低价；同端点已验证的 stat2.low_52w 也记录相同含义和元单位。正式报告显示 zhb.full.low_52w 与腾讯 [68] 在 24 个独立交易日、477 个股票日样本上 100% 命中。"
+    },
+    {
+      "id": "20261011-zhb-change-5d",
+      "candidate": {
+        "left": "zhb.full.change_5d",
+        "right": "tencent[63]"
+      },
+      "target": {
+        "source": "ZHB-tdxstat",
+        "code": "change_5d"
+      },
+      "anchor": {
+        "source": "腾讯(qt.gtimg)",
+        "code": "[63]"
+      },
+      "action": "verify",
+      "canonical": "change_5d",
+      "meaning": "5日涨跌幅",
+      "unit": "%",
+      "rationale": "核对 core/zhb_client.py 的 tdxstat 字段定义与 full_market_snapshot 合并路径。正式报告中该字段与腾讯 [63] 在 24 个独立交易日、477 个股票日样本上命中 99.37%；与已验证的 Ulist239 f109 在 22 日、440 个样本上命中 100%。独立来源交叉证据一致支持 5 日涨跌幅，未扩展声明复权或交易日窗口口径。"
+    },
+    {
+      "id": "20261011-zhb-change-10d",
+      "candidate": {
+        "left": "zhb.full.change_10d",
+        "right": "tencent[69]"
+      },
+      "target": {
+        "source": "ZHB-tdxstat",
+        "code": "change_10d"
+      },
+      "anchor": {
+        "source": "腾讯(qt.gtimg)",
+        "code": "[69]"
+      },
+      "action": "verify",
+      "canonical": "change_10d",
+      "meaning": "10日涨跌幅",
+      "unit": "%",
+      "rationale": "核对 core/zhb_client.py 的 tdxstat 字段定义与 full_market_snapshot 合并路径。正式报告中该字段与腾讯 [69] 在 24 个独立交易日、477 个股票日样本上命中 98.95%；与已验证的 Ulist239 f160 在 22 日、440 个样本上命中 100%。腾讯与 Ulist239 的字段说明互相印证 10 日涨跌幅；目标含义不额外声明复权口径。"
+    }
+  ]
+}

@@ -70,6 +70,7 @@ from scripts.collision_dates import (
     select_snapshots,
 )
 from scripts.context_policy import CONTEXT_ONLY_SOURCES, CONTEXT_RECORD_PATHS
+from scripts import collision_research_state as CRS
 
 try:
     from scripts import collision_rules as CR
@@ -92,6 +93,7 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DATA_DIR = os.path.join(ROOT, "docs", "field_verification")
 REG_PATH = os.path.join(DATA_DIR, "field_registry.json")
 STATE_PATH = os.path.join(DATA_DIR, "collision_state.json")
+RESEARCH_STATE_PATH = os.path.join(DATA_DIR, "collision_research_state.json")
 
 # 样本为 20 股（pool.json: fixed 15 + dynamic 5）。L1 命中率阈值 = HIT_RATE_L1(18)/20 = 0.9；
 # 采用比率而非绝对 18/20，便于样本数变动时阈值自适应（符合四铁律精神）。
@@ -905,6 +907,7 @@ def load_registry_context():
         "diagnostics": [],
         "unmapped_verified": 0,
         "unconfirmed_verified": 0,
+        "ambiguous_verified": 0,
         "source_fields": 0,
         "safe_to_run": False,
     }
@@ -950,6 +953,17 @@ def load_registry_context():
         return context
 
     context["source_fields"] = len(source_fields)
+    alias_identity_owners = defaultdict(set)
+    for candidate in source_fields:
+        if not isinstance(candidate, dict):
+            continue
+        candidate_source = candidate.get("source")
+        candidate_code = candidate.get("code")
+        if not isinstance(candidate_source, str) or not isinstance(candidate_code, str):
+            continue
+        for alias in _lineage_aliases(candidate_source, lineage):
+            alias_identity_owners[(alias, candidate_code)].add((candidate_source, candidate_code))
+
     seen_source_identities = set()
     for field in source_fields:
         if not isinstance(field, dict):
@@ -984,7 +998,9 @@ def load_registry_context():
         seen_source_identities.add(identity)
         aliases = _lineage_aliases(source, lineage)
         if field.get("status") == "disproved":
-            context["disproved"].update((alias, code) for alias in aliases)
+            for alias in aliases:
+                if alias != "zhb" or len(alias_identity_owners[(alias, code)]) == 1:
+                    context["disproved"].add((alias, code))
             continue
         if field.get("status") != "verified":
             continue
@@ -992,6 +1008,9 @@ def load_registry_context():
             context["unmapped_verified"] += 1
             continue
         for alias in aliases:
+            if alias == "zhb" and len(alias_identity_owners[(alias, code)]) != 1:
+                context["ambiguous_verified"] += 1
+                continue
             identity = (alias, code)
             context["verified"].add(identity)
             family = SLA.runtime_family(alias, lineage)
@@ -1020,8 +1039,22 @@ def load_registry_context():
             continue
         for left_alias in left_aliases:
             for right_alias in right_aliases:
-                context["known_mappings"].add((left_alias, left_code, right_alias, right_code))
-                context["known_mappings"].add((right_alias, right_code, left_alias, left_code))
+                normalized_left_code = SLA.normalize_runtime_field_code(left_alias, left_code)
+                normalized_right_code = SLA.normalize_runtime_field_code(right_alias, right_code)
+                if left_alias == "zhb" and len(
+                    alias_identity_owners[(left_alias, normalized_left_code)]
+                ) != 1:
+                    continue
+                if right_alias == "zhb" and len(
+                    alias_identity_owners[(right_alias, normalized_right_code)]
+                ) != 1:
+                    continue
+                context["known_mappings"].add(
+                    (left_alias, normalized_left_code, right_alias, normalized_right_code)
+                )
+                context["known_mappings"].add(
+                    (right_alias, normalized_right_code, left_alias, normalized_left_code)
+                )
 
     context["safe_to_run"] = True
 
@@ -1032,6 +1065,10 @@ def load_registry_context():
     if context["unconfirmed_verified"]:
         context["diagnostics"].append(
             f"{context['unconfirmed_verified']} 条 verified 源字段来源未确认独立性，作为已知字段跳过重解但不作锚"
+        )
+    if context["ambiguous_verified"]:
+        context["diagnostics"].append(
+            f"{context['ambiguous_verified']} 条 verified 源字段映射到重复运行时身份，未作为已知字段或锚"
         )
     if not context["anchors"]:
         context["diagnostics"].append("没有可用的已确认独立锚；默认模式不会把未知字段互相定案")
@@ -1073,10 +1110,12 @@ def are_independent_sources(left_fid, right_fid):
 
 def code_of(fid):
     if "[" in fid:
-        return fid[fid.index("[") :]
-    if "." in fid:
-        return fid.split(".", 1)[1]
-    return fid
+        code = fid[fid.index("[") :]
+    elif "." in fid:
+        code = fid.split(".", 1)[1]
+    else:
+        return fid
+    return SLA.normalize_runtime_field_code(norm_src_of(fid), code)
 
 
 def is_verified(fid, verified):
@@ -1440,60 +1479,136 @@ def run(args):
     l4 = [p for p in raw_pairs if p["level"] == "L4"]
     l1.sort(key=lambda p: (-p["overall_hit"], -p["n_days"]))
     l4.sort(key=lambda p: -p["overall_hit"])
+    try:
+        try:
+            from scripts.source_identity_reconciliation import reconcile_source_identity
+        except ModuleNotFoundError:
+            from source_identity_reconciliation import reconcile_source_identity
 
-    report_md = build_report_md(
-        today,
-        list(folder_window.trading_dates),
-        len(store),
-        total,
-        left_ids,
-        l1,
-        l4,
-        new_count,
-        verified,
-        guardrail_hits,
-        method_candidates=method_candidates,
-        diagnostics=diagnostics,
-        event_window=(folder_window.event_start, folder_window.event_end),
+        source_identity = reconcile_source_identity()
+    except Exception as exc:
+        source_identity = {
+            "status": "failed_open",
+            "reason": f"{type(exc).__name__}: {exc}"[:300],
+            "endpoints": {},
+        }
+    diagnostics.append(
+        "来源身份核验单独使用完整记录匹配；结果不会进入字段语义定案或独立锚"
     )
-    out_dir = os.path.join(DATA_DIR, today)
+
+    collision_mode = "exploratory" if args.exploratory else "verified_anchor_only"
+    if args.exploratory:
+        research_scope = "exploratory_with_context" if args.include_context else "exploratory"
+        out_dir = os.path.join(DATA_DIR, f"collision_research_{today}", research_scope, today)
+    else:
+        out_dir = os.path.join(DATA_DIR, today)
     os.makedirs(out_dir, exist_ok=True)
     md_path = os.path.join(out_dir, f"{today}_collision_report.md")
     json_path = os.path.join(out_dir, f"{today}_collision_report.json")
-    with open(md_path, "w", encoding="utf-8") as f:
-        f.write(report_md)
-    with open(json_path, "w", encoding="utf-8") as f:
-        json.dump(
-            {
-                "schema_version": 2,
-                "date": today,
-                "collision_mode": "exploratory" if args.exploratory else "verified_anchor_only",
-                "target_count": len(left_ids),
-                "verified_identity_count": len(verified),
-                "anchor_identity_count": len(anchors),
-                "right_field_count": len(right_ids),
-                "exploratory_pair_count": exploratory_pair_count,
-                "skipped_pairs": {
-                    "same_family": skipped_same_family,
-                    "unknown_lineage": skipped_unknown_lineage,
-                    "duplicate_unknown_exploration": skipped_duplicate_unknown_pairs,
-                },
-                "trading_window": list(folder_window.trading_dates),
-                "event_window": {
-                    "start": folder_window.event_start.strftime("%Y%m%d"),
-                    "end": folder_window.event_end.strftime("%Y%m%d"),
-                },
-                "L1": l1,
-                "L4": l4,
-                "method_candidates": method_candidates[:MAX_METHOD_CANDIDATES],
-                "method_candidate_count": method_candidate_count,
-                "diagnostics": list(dict.fromkeys(diagnostics)),
-                "new_count": new_count,
-            },
-            f,
-            ensure_ascii=False,
-            indent=2,
+    report_relative_path = os.path.relpath(json_path, DATA_DIR).replace("\\", "/")
+    report_data = {
+        "schema_version": 2,
+        "date": today,
+        "collision_mode": collision_mode,
+        "include_context": bool(args.include_context),
+        "target_count": len(left_ids),
+        "verified_identity_count": len(verified),
+        "anchor_identity_count": len(anchors),
+        "right_field_count": len(right_ids),
+        "exploratory_pair_count": exploratory_pair_count,
+        "skipped_pairs": {
+            "same_family": skipped_same_family,
+            "unknown_lineage": skipped_unknown_lineage,
+            "duplicate_unknown_exploration": skipped_duplicate_unknown_pairs,
+        },
+        "trading_window": list(folder_window.trading_dates),
+        "event_window": {
+            "start": folder_window.event_start.strftime("%Y%m%d"),
+            "end": folder_window.event_end.strftime("%Y%m%d"),
+        },
+        "L1": l1,
+        "L4": l4,
+        "method_candidates": method_candidates[:MAX_METHOD_CANDIDATES],
+        "method_candidate_count": method_candidate_count,
+        "diagnostics": list(dict.fromkeys(diagnostics)),
+        "new_count": new_count,
+        "source_identity_reconciliation": source_identity,
+    }
+
+    research_state, research_warnings, research_state_writable = CRS.load_state(
+        RESEARCH_STATE_PATH
+    )
+    diagnostics.extend(research_warnings)
+    research_run_id = None
+    research_update = None
+    if args.exploratory and research_state_writable:
+        research_state, research_run_id, research_update = CRS.update_state(
+            research_state, report_data, report_relative_path
         )
+    matched_research_pairs = CRS.annotate_report(
+        report_data, research_state, research_run_id
+    )
+    current_candidate_pairs = CRS.candidate_pair_count(report_data)
+    if research_update is None:
+        research_update = {
+            "current_candidate_pairs": current_candidate_pairs,
+            "new_candidate_pairs": 0,
+            "previously_tracked_pairs": matched_research_pairs,
+            "total_candidate_pairs": len(research_state.get("candidates", {})),
+        }
+    report_data["research_state"] = {
+        "schema_version": CRS.SCHEMA_VERSION,
+        "path": "collision_research_state.json",
+        "available": research_state_writable,
+        "tracked_candidate_pairs": research_update["total_candidate_pairs"],
+        "current_candidate_pairs": research_update["current_candidate_pairs"],
+        "new_candidate_pairs": research_update["new_candidate_pairs"],
+        "previously_tracked_pairs": research_update["previously_tracked_pairs"],
+        "persisted": None,
+    }
+    report_data["diagnostics"] = list(dict.fromkeys(diagnostics))
+
+    def render_report() -> str:
+        rendered = build_report_md(
+            today,
+            list(folder_window.trading_dates),
+            len(store),
+            total,
+            left_ids,
+            l1,
+            l4,
+            new_count,
+            verified,
+            guardrail_hits,
+            method_candidates=method_candidates,
+            diagnostics=report_data["diagnostics"],
+            event_window=(folder_window.event_start, folder_window.event_end),
+        )
+        rendered = append_source_identity_report(rendered, source_identity)
+        return append_research_state_report(rendered, report_data["research_state"])
+
+    def write_report() -> None:
+        with open(md_path, "w", encoding="utf-8") as handle:
+            handle.write(render_report())
+        with open(json_path, "w", encoding="utf-8") as handle:
+            json.dump(report_data, handle, ensure_ascii=False, indent=2)
+
+    write_report()
+    if args.exploratory and research_state_writable:
+        try:
+            CRS.save_state(research_state, RESEARCH_STATE_PATH)
+            report_data["research_state"]["persisted"] = True
+        except (OSError, TypeError, ValueError) as exc:
+            warning = f"探索研究台账写入失败；本轮报告已保留，后续可重试：{exc}"
+            report_data["diagnostics"].append(warning)
+            report_data["diagnostics"] = list(dict.fromkeys(report_data["diagnostics"]))
+            diagnostics.append(warning)
+            report_data["research_state"]["persisted"] = False
+    elif args.exploratory:
+        report_data["research_state"]["persisted"] = False
+    else:
+        report_data["research_state"]["persisted"] = None
+    write_report()
 
     print(
         f"[collide] L1 候选={len(l1)}，L4 候选={len(l4)}，新增定案={new_count}，"
@@ -1502,6 +1617,65 @@ def run(args):
     )
     print(f"[collide] 报告: {md_path}", file=sys.stderr)
     return md_path, json_path
+
+
+def append_source_identity_report(report_md, result):
+    """Append the separate endpoint identity lane without changing field L1s."""
+    lines = [report_md.rstrip(), "", "## 来源身份核验（不参与字段语义定案）", ""]
+    if not isinstance(result, dict) or not isinstance(result.get("endpoints"), dict):
+        lines.append("_本轮未生成来源身份结果。_")
+        return "\n".join(lines) + "\n"
+    if result.get("status") == "failed_open":
+        lines.append(f"_核验失败开放：{result.get('warning') or result.get('reason', '未知原因')}_")
+        return "\n".join(lines) + "\n"
+    if result.get("status") == "not_eligible" and not result["endpoints"]:
+        lines.append(f"_本轮未运行接口停采核验：{result.get('reason', '来源不符合候选核验条件')}_")
+        return "\n".join(lines) + "\n"
+    lines.append(
+        f"> 仅核验已登记的 FTShare 接口。需 {result.get('minimum_capture_dates', 3)} 个"
+        f"不同的已完成交易数据日、每日至少 {result.get('minimum_symbols_per_date', 18)} 只股票的"
+        "完整记录逐项匹配；项目数据日和各来源 as_of_date 必须一致，盘前、周末或节假日采集也可计入；"
+        "结果不会改变主字典或确认 FTShare 来源独立性。"
+    )
+    lines.append("")
+    lines.append(
+        f"运行上冗余的接口每累计 {result.get('recheck_capture_dates', 20)} 个后续有效交易数据日复核一次；"
+        "字段或适配器契约变化会恢复采集，需重新积累完整证据。"
+    )
+    lines.append("")
+    lines.append("| 字段接口 | 状态 | 对照来源 | 证据交易日 | 说明 |")
+    lines.append("|:--|:--|:--|:--|:--|")
+    for code, item in sorted(result["endpoints"].items()):
+        if not isinstance(item, dict):
+            continue
+        dates = ", ".join(item.get("evidence_dates", []))
+        reason = str(item.get("reason", "")).replace("|", "\\|").replace("\n", " ")
+        lines.append(
+            f"| {code} | {item.get('status', 'unknown')} | "
+            f"{item.get('reference_source') or '—'} | {dates or '—'} | {reason} |"
+        )
+    lines.append("")
+    return "\n".join(lines) + "\n"
+
+
+def append_research_state_report(report_md: str, state_summary: dict) -> str:
+    """Show research carry-forward status without promoting candidates."""
+    lines = [report_md.rstrip(), "", "## 探索候选持续跟踪", ""]
+    lines.append(
+        f"研究台账：`{state_summary.get('path', 'collision_research_state.json')}`；"
+        f"累计候选对 {state_summary.get('tracked_candidate_pairs', 0)}，"
+        f"本报告候选对 {state_summary.get('current_candidate_pairs', 0)}，"
+        f"历史复现 {state_summary.get('previously_tracked_pairs', 0)}，"
+        f"新发现 {state_summary.get('new_candidate_pairs', 0)}。"
+    )
+    lines.append(
+        "台账保留报告引用、证据交易日、来源和碰撞指标；仅供后续研究回看，"
+        "不会自动改变字段状态、碰撞锚或主字典。"
+    )
+    if state_summary.get("persisted") is False:
+        lines.append("_本轮台账没有写入；请查看诊断，已有台账保持原样。_")
+    lines.append("")
+    return "\n".join(lines) + "\n"
 
 
 def _l1_row(p):

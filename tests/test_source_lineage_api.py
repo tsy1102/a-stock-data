@@ -18,6 +18,8 @@ def test_lineage_covers_registered_sources_and_runtime_aliases():
         not record["anchor_eligible"] or record["independence_status"] == "confirmed"
         for record in lineage["sources"].values()
     )
+    assert lineage["source_aliases"]["levistock(ftshare)"] is None
+    assert lineage_api.runtime_aliases_for_source("levistock(ftshare)", lineage) == []
 
 
 def test_repository_evidence_and_dialog_confirmation_are_separate_states():
@@ -29,13 +31,15 @@ def test_repository_evidence_and_dialog_confirmation_are_separate_states():
     }
 
     assert confirmed == {
+        "开盘啦(kpl_limit_up_detail)",
         "同花顺-fuyao",
         "TDX(双命名源)",
         "ZHB-tdxstat",
         "ZHB-tdxstat2",
         "ZHB-tipinfo",
         "TDX-eltdx(适配层)",
-        "levistock(ftshare)",
+        "Levistock历史未归属",
+        "开盘红(Levistock适配)",
         "东财-push2(stock/get)",
         "东财-资金流(em_fund_flow)",
         "东财-ulist239(np/get)",
@@ -57,16 +61,26 @@ def test_repository_evidence_and_dialog_confirmation_are_separate_states():
         lineage["sources"][source]["repository_mapping_status"] == "confirmed"
         for source in confirmed
     )
-    assert (
-        sum(
-            record.get("dialog_confirmation", {}).get("status") == "pending"
-            for record in lineage["sources"].values()
-        )
-        == 5
-    )
+    pending = {
+        source
+        for source, record in lineage["sources"].items()
+        if record.get("dialog_confirmation", {}).get("status") == "pending"
+    }
+    assert pending == {
+        "reports",
+        "巨潮(cninfo)",
+        "市场源(market_sources)",
+        "开盘红",
+        "沪深交易所",
+        "百度(baidu)",
+        "FTShare",
+    }
     assert lineage["project_reference"]["url"] == "https://github.com/simonlin1212/a-stock-data"
     assert lineage["sources"]["AxData"]["anchor_eligible"] is False
     assert lineage["sources"]["AxData"]["independence_status"] == "unconfirmed"
+    assert lineage["sources"]["Levistock历史未归属"]["runtime_aliases"] == []
+    assert lineage["sources"]["Levistock历史未归属"]["anchor_eligible"] is False
+    assert lineage["sources"]["开盘红(Levistock适配)"]["runtime_aliases"] == ["kph"]
     assert (
         "不代表它托管 ZHB 缓存" in lineage["sources"]["ZHB-tipinfo"]["dialog_confirmation"]["note"]
     )

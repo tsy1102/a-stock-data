@@ -1,5 +1,7 @@
 # AxData 666 字段补齐矩阵（附录——主字典 12.14 的详细实证层）
 
+> 来源口径更新（2026-10-11）：本附录是 AxData 多提供方框架的接口/字段候选盘点，不代表 AxData 是独立数据源。当前项目实际采集的 `stock_shortline_indicators_tdx` 属于 TDX 来源族；候选字段须按真实接口提供方逐项归属。最新交叉核对见 [`axdata_field_reconciliation_20261010.md`](../axdata_field_reconciliation_20261010.md)。
+
 > 2026-08-10 从主字典迁移（字典架构重构：主字典=决策层，附录=实证层）
 > 内容：AxData 256 接口揭示、字典未记录的 666 个字段，按源组织（通达信/扩展/东财/巨潮/腾讯/新浪/财联社/开盘红/交易所）
 > 每字段含：来源接口 + 含义（axdata RequestField.description）

@@ -16,15 +16,25 @@ Windows 开发默认使用 PowerShell。`run_with_system_python.ps1` 校验并�
 
 ## 字段采集与研究
 
+当 `capture_field_probe.py` 的数据日是最近已完成交易日且数据阶段为 `closed` 时，会调用 `axdata_daily_validation.py`：对 AxData 短线/ELTDX 和 KPH/KPL 现有 raw 做有日期门槛的离线逐字段统计；每个数据日最多再请求一次已核准的 Tencent `tencent_realtime_snapshot`，仅在双方 `quote_time` 相同且属于目标交易日时比较字段。周末和节假日默认把数据日设为最近交易日，因此盘前、周末或节假日运行均可核验上一完整交易日；实际采集时刻不再设置 15:30 门槛。它轮换的是样本股票，不是 AxData 的 257 个接口；其他接口仍按交叉表候选待审。样本与结果写入对应数据日的 `axdata_validation.json`，进度状态留在本机 `.tmp/axdata_daily_validation_state.json`。`--only`、非最近交易日、目标数据阶段未收盘或项目对照源失败时不发出额外请求；如果零请求跳过后数据恢复，同日重跑会重新评估；已发起的实际请求仍受每日状态限制而不会重复。Eastmoney push2 不在白名单中。403/429/封禁立即暂停 Tencent 探针，连续两次空响应也会暂停。超过 30 分钟的残留日锁会原子回收；该流程只记录证据，不更新主字典。
+
+`capture_field_probe.py` 同时调用 `levistock_daily_probe.py` 与 `levistock_daily_validation.py`。完整采集或 `--only market_sources` 在目标数据日为最近已完成交易日且数据阶段为 `closed` 时，每个数据日最多从 7 个数值候选接口中轮换一个额外请求；盘前、周末和节假日运行可沿用最近完整交易日作为数据日。请求经 `stock_common.sc_datasource.get_levistock_candidate_sample` Tier 2 适配器执行，要求安装版本符合 `requirements.txt` 中的 `levistock==0.1.8`；候选可比性由明确的请求交易日或响应交易日证据判断。适配器按 CLS/KPH 源族限流，遇到 403/429/封禁即持久暂停对应源族。候选响应写入独立的 `levistock_candidate_raw.json`，不自动并入碰撞锚；离线核验器复用 `raw_market_sources.json` 并生成 `levistock_validation.json`。完整快照同日重跑会跳过主源请求、检查/补齐每日核验；候选 raw、AxData 证据和每日状态保留，同日不重复探测。若之前因对照源缺失而零请求跳过，使用 `--overwrite` 恢复主源后可在同日重新评估；实际候选请求一旦启动仍会由每日状态阻止重复。详见 `docs/levistock_source_reconciliation_20261010.md`。
+
+FTShare 的 MCP 客户端按网关当前 `tools/list` 使用有效工具名，兼容 JSON 与 SSE；历史接口按最近已完成交易日请求。董监高变动、涨停池和全市场商誉详情会完整翻页，并核对页数与记录总数，发现截断时丢弃部分结果并写入 `__error__`。商誉结果按股票代码恢复原有个股返回结构，进程内复用成功的全市场快照。HTTP、JSON-RPC 和工具错误摘要写入采集 raw 的 `__error__`，避免空数据掩盖失败；可通过 `FTSHARE_API_KEY` 环境变量设置可选请求头，仓库不保存密钥。所有 POST 至少间隔 500ms；收到 403/429 后本进程立即停止该源请求，连续三次请求或工具错误也会熔断。AxData TDX 短线接口对北交所代码显式传入 `.BJ` 后缀，避免上游转换器将 `92` 开头代码误路由到上海市场。
+
+FTShare 六个已登记数值接口分别参与来源身份核验：仅比较同一有效交易数据日且项目数据日与各源 as_of_date 一致的完整记录（盘前、周末或节假日采集也可计入）；至少三个不同的已完成交易数据日、每日至少 18 只股票且每条候选记录的非空字段全部匹配到一个已验证独立来源后，才暂停该接口的日常请求。其他 FTShare 接口继续采集。核验不确认 FTShare 的底层来源族、不修改主字典，也不把 FTShare 提升为碰撞锚。每 20 个后续有效交易数据日复核；适配器或字段契约变化后重新积累三天证据。状态保存在仓库 .tmp/source_identity_state.json；核验失败或状态损坏时继续采集。--overwrite 强制重采此前跳过的接口。collide.py 的独立报告段展示核验状态和证据日期，不混入 L1/L1-U 字段结论。
+
 | 脚本 | 用途 |
 |:---|:---|
-| `capture_field_probe.py` | 按来源分别采集字段样本至 `docs/field_verification/<数据日>/`；串行调用各源，沿用适配器限流，记录逐源错误、缺股、deferred 与来源数据日。默认跳过纯上下文的交易所龙虎榜、东财人气榜，并跳过市场源/Fuyao 中的龙虎榜与热股榜子路径；其他字段和 Fuyao 竞价元数据照常采集。历史上下文 raw 在默认重采时保留；需要采集时加 `--include-context`，或通过 `--only exchange` / `--only em_hot` 明确选择。Eastmoney 失败不做盲目重试；完整快照才幂等跳过。 |
+| `capture_field_probe.py` | 按来源分别采集字段样本至 `docs/field_verification/<数据日>/`；串行调用各源，沿用适配器限流，记录逐源错误、缺股、deferred 与来源数据日。KPL 既有涨停明细独立写入 `raw_kpl.json`，不重复请求；新增 AxData `kph_limit_up_history` 每次最多一次、无缓存和重试，另写 `raw_kph.json`，按明确交易日与 KPL 对撞。可用 `--only kpl` 或 `--only kph` 单独补采。KPH 遇到限流/封禁标志时跳过该历史请求；保留原始交易所异常告警，并采集未定案的有限数值字段供后续验证。该补充不替代 KPL 完整名单，也不调用 Eastmoney push2。默认仍跳过纯上下文的交易所龙虎榜、东财人气榜和市场源/Fuyao 中的龙虎榜与热股榜子路径；上下文可用 `--include-context` 恢复，或通过 `--only exchange` / `--only em_hot` 明确选择。 |
 | `collide.py`、`collision_dates.py`、`collision_rules.py` | 共用日期归一化与快照择优；行情窗口按有效交易日、新闻/公告按自然日；L1 检查样本量、独立日期和来源族。默认排除交易所/东财人气榜源及市场源/Fuyao 中的上下文记录，也过滤历史 raw；需纳入研究时加 `--include-context`。其他带 `collision_eligible=false` 的子树仍按来源元数据排除并在报告诊断中说明。盘中/未知阶段仅作候选，语义、公式、时间序列与稳健相关性结果保留日期及来源证据；不直接改主字典。详见 `docs/field_verification/CRACKING_METHODOLOGY.md`。 |
 | `context_policy.py` | 采集与碰撞共用的上下文源及路径策略，避免默认过滤规则漂移。 |
 | `field_meta.py` | 为采集样本补充来源与锚点元数据。 |
 | `crack_push2_status_codes_20260921.py` | Push2 状态码研究脚本。 |
 | `crack_ulist_f88_95_20260921.py` | Ulist 高位字段研究脚本。 |
 | `crack_zhb_anchored_20260921.py` | 基于锚点样本的 ZHB 字段研究脚本。 |
+
+采集启动行会显示 `--only` 中实际选择的源，未指定时显示“默认源集合”，并单独标明市场上下文是“启用”还是“跳过”。
 
 ## 字段登记、生成与治理
 

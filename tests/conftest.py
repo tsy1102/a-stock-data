@@ -28,14 +28,94 @@ AGENTS.md compliance note (see AGENTS.md 2.1.1):
 
 from __future__ import annotations
 
+import errno
+import ipaddress
 import json
 import os
+import shutil
+import socket
 import tempfile
+from copy import deepcopy
+from pathlib import Path
 from unittest import mock
 
 import pytest
 
 pytest_plugins = ["pytest_asyncio"]
+
+
+def _is_local_host(host) -> bool:
+    """Return whether an address is loopback or a local wildcard address."""
+    if host is None:
+        return True
+    if isinstance(host, bytes):
+        host = host.decode("ascii", errors="ignore")
+    if not isinstance(host, str):
+        return False
+    normalized = host.strip("[]").split("%", 1)[0].lower()
+    if normalized == "localhost" or normalized.endswith(".localhost"):
+        return True
+    try:
+        address = ipaddress.ip_address(normalized)
+        return address.is_loopback or address.is_unspecified
+    except ValueError:
+        return False
+
+
+@pytest.fixture(scope="module", autouse=True)
+def _isolated_test_cache_db():
+    """Use a per-module SQLite cache so tests never mutate the project cache."""
+    import core.stock_cache as stock_cache
+
+    project_root = Path(__file__).resolve().parents[1]
+    temp_root = project_root / ".tmp"
+    temp_root.mkdir(parents=True, exist_ok=True)
+    cache_dir = Path(tempfile.mkdtemp(prefix="pytest_cache_", dir=temp_root)).resolve()
+    if cache_dir.parent != temp_root.resolve():
+        raise RuntimeError(f"test cache directory escaped project .tmp: {cache_dir}")
+
+    with stock_cache._db_lock:
+        original_db_path = stock_cache._CACHE_DB
+        original_db = stock_cache._db
+        original_pending_commits = stock_cache._pending_commit_count
+        original_write_count = stock_cache._write_count_since_cleanup
+        with stock_cache._L1_CACHE_LOCK:
+            original_l1_cache = stock_cache._L1_CACHE.copy()
+            stock_cache._L1_CACHE.clear()
+        with stock_cache._STATS_LOCK:
+            original_cache_stats = deepcopy(stock_cache._CACHE_STATS)
+            stock_cache._CACHE_STATS.update(
+                {"total_get": 0, "total_hit": 0, "category_stats": {}}
+            )
+        original_soft_stats = deepcopy(stock_cache._SOFT_STATS)
+        stock_cache._SOFT_STATS.update({"soft_hit_count": 0, "hard_miss_count": 0})
+        stock_cache._CACHE_DB = str(cache_dir / "stock_cache.db")
+        stock_cache._db = None
+        stock_cache._pending_commit_count = 0
+        stock_cache._write_count_since_cleanup = 0
+
+    try:
+        yield
+    finally:
+        test_db = stock_cache._db
+        try:
+            if test_db is not None:
+                test_db.close()
+        finally:
+            with stock_cache._db_lock:
+                stock_cache._CACHE_DB = original_db_path
+                stock_cache._db = original_db
+                stock_cache._pending_commit_count = original_pending_commits
+                stock_cache._write_count_since_cleanup = original_write_count
+                with stock_cache._L1_CACHE_LOCK:
+                    stock_cache._L1_CACHE.clear()
+                    stock_cache._L1_CACHE.update(original_l1_cache)
+                with stock_cache._STATS_LOCK:
+                    stock_cache._CACHE_STATS.clear()
+                    stock_cache._CACHE_STATS.update(original_cache_stats)
+                stock_cache._SOFT_STATS.clear()
+                stock_cache._SOFT_STATS.update(original_soft_stats)
+            shutil.rmtree(cache_dir)
 
 
 # ── 网络 mock：在所有测试里自动生效（scope="session"）──────────
@@ -87,6 +167,7 @@ def _no_real_network(monkeypatch, request):
 
         monkeypatch.setattr(_requests.Session, "get", fake_get)
         monkeypatch.setattr(_requests.Session, "post", fake_post)
+        monkeypatch.setattr(_requests.Session, "request", fake_get)
     except Exception as _e:
         print(f"[conftest] monkeypatch requests failed: {_e}", flush=True)
         # monkeypatch 失败意味着真实网络调用可能泄漏，标记警告
@@ -105,6 +186,41 @@ def _no_real_network(monkeypatch, request):
         import warnings
 
         warnings.warn(f"conftest: failed to mock urlopen, real network calls may leak: {_e}")
+
+    # sc_network does a DNS preflight before its mocked Session.get/post call.
+    # Return loopback immediately so offline tests never wait on the OS resolver.
+    def fake_gethostbyname(_host):
+        return "127.0.0.1"
+
+    monkeypatch.setattr(socket, "gethostbyname", fake_gethostbyname)
+
+    # Fail external name resolution and raw TCP/UDP connections immediately.
+    # Keep loopback available for tests that use a local HTTP server.
+    original_getaddrinfo = socket.getaddrinfo
+    original_connect = socket.socket.connect
+    original_connect_ex = socket.socket.connect_ex
+    unix_socket_family = getattr(socket, "AF_UNIX", None)
+
+    def guarded_getaddrinfo(host, port, family=0, type=0, proto=0, flags=0):
+        if not _is_local_host(host):
+            raise socket.gaierror("network mock: external DNS disabled")
+        return original_getaddrinfo(host, port, family, type, proto, flags)
+
+    def guarded_connect(sock, address):
+        host = address[0] if isinstance(address, tuple) and address else address
+        if sock.family != unix_socket_family and not _is_local_host(host):
+            raise OSError("network mock: external socket connections disabled")
+        return original_connect(sock, address)
+
+    def guarded_connect_ex(sock, address):
+        host = address[0] if isinstance(address, tuple) and address else address
+        if sock.family != unix_socket_family and not _is_local_host(host):
+            return errno.EACCES
+        return original_connect_ex(sock, address)
+
+    monkeypatch.setattr(socket, "getaddrinfo", guarded_getaddrinfo)
+    monkeypatch.setattr(socket.socket, "connect", guarded_connect)
+    monkeypatch.setattr(socket.socket, "connect_ex", guarded_connect_ex)
 
 
 # ── real_network 测试的环境守卫 ───────────────────────────────────

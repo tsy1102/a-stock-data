@@ -129,3 +129,67 @@ class TestEmBanCooldown(unittest.TestCase):
             self.sn._record_em_disconnect("push2.eastmoney.com")
         self.assertTrue(self.sn._em_is_banned("push2.eastmoney.com"))
         self.assertFalse(self.sn._em_is_banned("datacenter-web.eastmoney.com"))
+
+    def test_quick_request_path_records_connection_ban(self):
+        import requests
+        import unittest.mock as _mock
+
+        circuit = _mock.Mock()
+        circuit.state = "closed"
+
+        def _disconnect(*_args, **_kwargs):
+            raise requests.exceptions.ConnectionError("remote disconnected")
+
+        with (
+            _mock.patch.object(self.sn, "_resolve_host_with_timeout"),
+            _mock.patch.object(self.sn, "_em_wait_process_interval"),
+            _mock.patch.object(self.sn._HTTP_SESSION, "get", side_effect=_disconnect) as request,
+            _mock.patch.object(self.sn, "get_domain_circuit_breaker", return_value=circuit),
+        ):
+            for _ in range(3):
+                error = {}
+                self.sn._do_request(
+                    "https://push2his.eastmoney.com/api/qt/stock/kline/get",
+                    None,
+                    None,
+                    1,
+                    1,
+                    None,
+                    "GET",
+                    True,
+                    error,
+                )
+
+        self.assertEqual(request.call_count, 3)
+        self.assertTrue(self.sn._em_is_banned("push2.eastmoney.com"))
+        self.assertEqual(error["kind"], "ip_banned")
+        self.assertGreaterEqual(circuit._on_failure.call_count, 3)
+
+    def test_quick_request_success_resets_disconnect_streak(self):
+        import unittest.mock as _mock
+
+        circuit = _mock.Mock()
+        circuit.state = "closed"
+        self.sn._EM_BAN_STREAK["push2.eastmoney.com"] = 2
+        response = _mock.Mock(status_code=200)
+
+        with (
+            _mock.patch.object(self.sn, "_resolve_host_with_timeout"),
+            _mock.patch.object(self.sn, "_em_wait_process_interval"),
+            _mock.patch.object(self.sn._HTTP_SESSION, "get", return_value=response),
+            _mock.patch.object(self.sn, "get_domain_circuit_breaker", return_value=circuit),
+        ):
+            result = self.sn._do_request(
+                "https://push2his.eastmoney.com/api/qt/stock/kline/get",
+                None,
+                None,
+                1,
+                1,
+                None,
+                "GET",
+                True,
+            )
+
+        self.assertIs(result, response)
+        self.assertNotIn("push2.eastmoney.com", self.sn._EM_BAN_STREAK)
+        circuit._on_success.assert_called_once_with()

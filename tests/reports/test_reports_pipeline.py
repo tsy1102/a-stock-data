@@ -233,10 +233,34 @@ class TestShtRunnerPipeline(_BatchMixin, _RunnerTestBase):
         _r, _res, bp = self._invoke()
         fn = bp.call_args.kwargs["prefetch_fn"]
         codes = ["600519", "000001"]
-        with mock.patch.object(data_provider, "prefetch_quote_batch", return_value="Q") as pq:
+        with (
+            mock.patch.object(data_provider, "prefetch_quote_batch", return_value="Q") as pq,
+            mock.patch(
+                "core.eltdx_adapter.get_eltdx_shortline_bundle", return_value=([], {})
+            ) as eltdx_bundle,
+        ):
             out = fn(codes)
         self.assertEqual(out, "Q")
         pq.assert_called_once_with(codes)
+        eltdx_bundle.assert_called_once_with(codes)
+
+    def test_prefetch_logs_eltdx_failure_and_keeps_quote_result(self):
+        """ELTDX 预热失败要留诊断，不能丢弃已成功的行情预取。"""
+        _r, _res, bp = self._invoke()
+        fn = bp.call_args.kwargs["prefetch_fn"]
+        codes = ["600519"]
+        with (
+            mock.patch.object(data_provider, "prefetch_quote_batch", return_value="Q") as pq,
+            mock.patch(
+                "core.eltdx_adapter.get_eltdx_shortline_bundle",
+                side_effect=RuntimeError("test connection failure"),
+            ),
+            mock.patch.object(S, "_debug_log") as debug_log,
+        ):
+            out = fn(codes)
+        self.assertEqual(out, "Q")
+        pq.assert_called_once_with(codes)
+        debug_log.assert_called_once_with("sht eltdx prefetch: test connection failure")
 
     def test_prefetch_async_fn_delegates_to_datacenter(self):
         """异步预取必须走 datacenter 五类流水线，并透传 session 与 codes。"""

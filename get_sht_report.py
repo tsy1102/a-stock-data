@@ -2762,8 +2762,8 @@ class ShtReportRunner(BaseReportRunner):
                 from core.eltdx_adapter import get_eltdx_shortline_bundle
 
                 get_eltdx_shortline_bundle(list(codes))
-            except Exception:
-                pass
+            except Exception as _e:
+                _debug_log(f"sht eltdx prefetch: {_e}")
             return _ret
 
         # V17.0.7: datacenter 五类(龙虎榜/两融/北向/解禁/大宗)批量预取流水线钩子

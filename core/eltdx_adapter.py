@@ -8,8 +8,7 @@ V17.2.15: 取代 easy_tdx 成为 TDX TCP 主源（core/tdx_client.py 调用）�
   - 返回结构与 _EasyTdxAdapter 对齐（DataFrame 列名/单位 mootdx 兼容），下游零改动。
   - FinanceRecord *_raw_float 聚合字段为**千元**口径，映射兼容字段的角口径需 ×10000
     （data_provider 对 zongzichan/jingzichan/jinglirun 按角处理 /10 得元，已用平安银行反推验证）。
-  - 北交所(83/87/88/43/46/92)快照 eltdx 偶发解析失败(实测 "snapshot record marker not found") →
-    抛异常交上层 HTTP fallback（ZHB/腾讯/东财），与 easy_tdx 降级策略一致。
+  - 北交所代码统一使用 bj 前缀(尤其 92xxxx)；快照与短线指标按代码池请求，避免错误市场码。
   - 主站固定: pin 白名单 FULL 主机 + probe_hosts=False，避免冷连接全量探测（~6min）。
   - F10 二进制分类(0x02CF/0x02D0) eltdx 无等价实现 → F10C/F10 返回空，F10 函数走东财 fallback。
   - xdxr(分红除权) eltdx capital_changes 映射待补 → 返回空 DataFrame，分红历史走其他源。
@@ -39,6 +38,21 @@ _ELTDX_HOSTS = [
     "159.75.55.232:7709",
     "120.76.152.87:7709",
 ]
+
+
+def _normalize_eltdx_code(code: str) -> str:
+    """Normalize a plain stock code to the exchange prefix expected by eltdx."""
+    normalized = str(code).strip().lower()
+    if normalized.startswith("sh92"):
+        return "bj" + normalized[2:]
+    if normalized.startswith(("sh", "sz", "bj")):
+        return normalized
+    if normalized.startswith(("92", "8", "4")):
+        return "bj" + normalized
+    if normalized.startswith(("6", "5", "9", "11", "13")):
+        return "sh" + normalized
+    return "sz" + normalized
+
 
 # mootdx frequency(int) → eltdx period(str)
 _FREQ_TO_ELTDX = {
@@ -352,7 +366,7 @@ def get_eltdx_shortline_bundle(all_codes: List[str], timeout: float = 20.0) -> T
           不依赖本地通达信安装; eltdx 包缺失 / 公网主站不可达 / 上游异常 / 卡死(墙钟超时)
           → 返回 ([], {}) 降级为空选, 不阻断其余策略。
     返回: (ladder_list, shortline_map)
-      ladder_list:  list[dict]  —— limit_ladder() 全局连板天梯(rows)
+      ladder_list:  list[dict]  —— limit_ladder(ecodes) 代码池内连板天梯(rows)
       shortline_map: {ecode: dict} —— shortline_indicators(ecodes) 批量命中(ShortlineIndicator 41 字段)
     """
     from dataclasses import asdict, is_dataclass
@@ -370,18 +384,8 @@ def get_eltdx_shortline_bundle(all_codes: List[str], timeout: float = 20.0) -> T
             return o
         return str(o)
 
-    def _ecode(code: str) -> str:
-        c = str(code)
-        if c.startswith(("sh", "sz", "bj")):
-            return c
-        if c.startswith(("6", "5", "9", "11", "13")):
-            return "sh" + c
-        if c.startswith(("8", "4", "92")):
-            return "bj" + c
-        return "sz" + c  # 0/3/2/1 开头
-
     # 模块级缓存: 同进程同 codes 集合 300s 内复用 bundle, 避免 val 多策略/统一层重复连接 eltdx
-    _ecodes = [_ecode(c) for c in all_codes]
+    _ecodes = [_normalize_eltdx_code(c) for c in all_codes]
     _ckey = frozenset(_ecodes)
     _cache = _SHORTLINE_BUNDLE_CACHE
     if _cache.get("key") == _ckey and (time.time() - _cache.get("ts", 0.0)) < _SHORTLINE_TTL:
@@ -398,16 +402,16 @@ def get_eltdx_shortline_bundle(all_codes: List[str], timeout: float = 20.0) -> T
         client = None
         try:
             client = TdxClient(hosts=_ELTDX_HOSTS, probe_hosts=False, timeout=8.0)
-            # ── 连板天梯(全局, 一次调用) ──
+            # ── 连板天梯(限定传入代码, 一次调用) ──
             ladder: list = []
             try:
-                _ll = client.helpers.limit_ladder()
+                _ll = client.helpers.limit_ladder(codes=_ecodes)
                 _rows = getattr(_ll, "rows", None) or []
                 ladder = [_jfy(r) for r in _rows]
             except Exception as _e:
                 _debug_log(f"eltdx limit_ladder: {_e}")
             # ── 批量短线指标(按代码, 一次批量) ──
-            ecodes = [_ecode(c) for c in all_codes]
+            ecodes = _ecodes
             sl_map: dict = {}
             try:
                 _sl = client.helpers.shortline_indicators(ecodes)
@@ -461,11 +465,11 @@ def get_eltdx_shortline_bundle(all_codes: List[str], timeout: float = 20.0) -> T
     return _val
 
 
-def get_eltdx_limit_ladder(timeout: float = 20.0) -> list:
+def get_eltdx_limit_ladder(timeout: float = 20.0, *, codes: Optional[List[str]] = None) -> list:
     """eltdx 全局连板天梯(limit_ladder) —— 独立轻量接口，供市场级扫描(mak)使用。
 
-    V17.2.24: 仅取全局梯队(一次调用)，不做 per-stock 批量 shortline_indicators
-              （避免 mak 对全市场 5000+ 代码触发超时/拖慢整批）。
+    仅请求 limit_ladder；上游会用 shortline_indicators 生成结果，因此生产调用应显式传入代码范围。
+    给出 codes 时只扫描指定代码；省略 codes 时保留上游全市场默认行为(可能耗时较长)。
     数据: TDX 公网主站 7709/7615 实时(TCP)(包内 tdx_server.json 的 45 台公网主站, 与 mootdx 同源);
           不依赖本地通达信安装; eltdx 包缺失 / 公网主站不可达 / 上游异常 / 卡死(墙钟超时)
           → 返回 [] 降级, 不阻断报告。
@@ -496,7 +500,10 @@ def get_eltdx_limit_ladder(timeout: float = 20.0) -> list:
         client = None
         try:
             client = TdxClient(hosts=_ELTDX_HOSTS, probe_hosts=False, timeout=8.0)
-            _ll = client.helpers.limit_ladder()
+            _ecodes = None if codes is None else [_normalize_eltdx_code(c) for c in codes]
+            if _ecodes == []:
+                return []
+            _ll = client.helpers.limit_ladder(codes=_ecodes)
             _rows = getattr(_ll, "rows", None) or []
             return [_jfy(r) for r in _rows]
         except Exception as _e:
@@ -540,14 +547,7 @@ def get_eltdx_shortline_for_code(code: str, timeout: float = 20.0) -> Optional[D
     open_prev_amount_ratio / open_change_pct / open_turnover_z (ShortlineIndicator schema)。
     """
     c = str(code)
-    if c.startswith(("sh", "sz", "bj")):
-        ek = c
-    elif c.startswith(("6", "5", "9", "11", "13")):
-        ek = "sh" + c
-    elif c.startswith(("8", "4", "92")):
-        ek = "bj" + c
-    else:
-        ek = "sz" + c
+    ek = _normalize_eltdx_code(c)
     _cache = _SHORTLINE_BUNDLE_CACHE
     if _cache.get("key") is None or (time.time() - _cache.get("ts", 0.0)) >= _SHORTLINE_TTL:
         return None

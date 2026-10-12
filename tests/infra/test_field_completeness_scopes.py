@@ -60,6 +60,32 @@ def test_known_same_level_field_sections_have_explicit_source_maps(monkeypatch):
     assert not {"adjust", "period"} & eltdx_tokens
 
 
+def test_levistock_legacy_identity_is_reclassified_without_promoting_archive_only_tokens(monkeypatch):
+    import json
+    from collections import Counter
+    from pathlib import Path
+
+    monkeypatch.syspath_prepend("scripts")
+    afc = importlib.import_module("audit_field_completeness")
+    manifest_path = Path(afc.ROOT) / "docs/field_verification/source_identity_reclassifications.json"
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+
+    registered = afc.registered_field_sets()
+
+    expected = {row["code"]: row["to_source"] for row in manifest["mappings"]}
+    observed = {
+        code: source
+        for source, codes in registered.items()
+        for code in codes
+        if source in manifest["counts"]
+    }
+    assert observed == expected
+    assert Counter(observed.values()) == Counter(manifest["counts"])
+    assert manifest["counts_total"] == len(expected) == 175
+    assert manifest["archive_only_count"] == len(manifest["archive_only_tokens"]) == 56
+    assert manifest["from_source"] not in registered
+
+
 def test_extracted_registry_source_metadata_is_unique(monkeypatch):
     monkeypatch.syspath_prepend("scripts")
     extractor = importlib.import_module("extract_registry")
@@ -69,6 +95,18 @@ def test_extracted_registry_source_metadata_is_unique(monkeypatch):
     source_names = [source["name"] for source in registry["sources"]]
     assert len(source_names) == len(set(source_names))
     assert source_names.count("东财-datacenter(英文键)") == 1
+    assert "levistock(ftshare)" not in source_names
+    metadata = {source["name"]: source for source in registry["sources"]}
+    assert metadata["AxData"]["source_role"] == "framework_reference"
+    assert metadata["FTShare"]["source_role"] == "service_endpoint"
+    assert metadata["Levistock历史未归属"]["source_role"] == "historical_unattributed"
+    assert metadata["开盘红(Levistock适配)"]["source_role"] == "provider_component"
+    source_counts = {}
+    for row in registry["source_fields"]:
+        source_counts[row["source"]] = source_counts.get(row["source"], 0) + 1
+    assert source_counts["Levistock历史未归属"] == 136
+    assert source_counts["开盘红(Levistock适配)"] == 33
+    assert source_counts["FTShare"] == 6
 
 
 def test_audit_help_does_not_create_a_report(tmp_path, monkeypatch, capsys):

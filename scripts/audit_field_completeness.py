@@ -24,6 +24,7 @@ import json
 import os
 import re
 import glob
+from functools import lru_cache
 from collections import defaultdict
 
 # (b) 架构根治：优先从 field_registry.json 单一真相源读取「已登记字段集」，
@@ -33,6 +34,9 @@ import field_registry_api as _fra
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DICT = os.path.join(ROOT, "docs", "field_source_reference.md")
+SOURCE_IDENTITY_RECLASSIFICATIONS = os.path.join(
+    ROOT, "docs", "field_verification", "source_identity_reclassifications.json"
+)
 # v3.1 (2026-09-06): CAP/OUT 日期参数化 —— 每次全源采集后必须对「当日 raw」重跑本审计,
 # 否则审计永远停在上一次捕获日, 形成 A7(文档代码同真) 口径漂移。
 # 用法: python scripts/audit_field_completeness.py [CAP_DATE] [OUT_DATE]
@@ -199,6 +203,8 @@ SECTION_MAP = [
             "12.21.5 无 Token 穷尽实测",
         ],
     ),
+    # 历史原文是只读档案，仍按旧混合标题解析；registered_field_sets 在解析后
+    # 通过 source_identity_reclassifications.json 显式映射到当前来源身份。
     ("levistock(ftshare)", ["ftshare", "FTShare", "开盘红", "levistock"]),
 ]
 
@@ -211,6 +217,26 @@ def section_to_sources(sec):
                 out.append(label)
                 break
     return out
+
+
+@lru_cache(maxsize=1)
+def source_identity_reclassification():
+    """Load the explicit migration map for the immutable legacy source archive."""
+    with io.open(SOURCE_IDENTITY_RECLASSIFICATIONS, encoding="utf-8") as f:
+        return json.load(f)
+
+
+def reclassified_source_for_token(source, token):
+    """Return the current source identity for an archived source/token pair.
+
+    `None` means the legacy parser found an archive-only token that was never part
+    of the structured registry and must not be promoted automatically.
+    """
+    spec = source_identity_reclassification()
+    if source != spec["from_source"]:
+        return source
+    mapping = {row["code"]: row["to_source"] for row in spec["mappings"]}
+    return mapping.get(token)
 
 
 # ---------------------------------------------------------------------------
@@ -283,7 +309,7 @@ def raw_field_sets():
     # Phase 3 (2026-09-12): 改用叶键命名空间(与 reg_tokens_for_section 新逻辑对齐),
     # 旧版 set(_leaves(...)) 产出的 dotted 路径(stocks.600xxx.high) 与 registry 命名空间错位,
     # 会令 gap 审计产生假缺口。叶键(high/low/open/...)才是 ftshare 真实字段名。
-    raw["levistock(ftshare)"] = _leaf_keys(first_stock(d))
+    raw["FTShare"] = _leaf_keys(first_stock(d))
 
     # datacenter / axdata / em_fund_flow / tdx 双命名源
     d = loadjson("raw_datacenter.json")
@@ -790,6 +816,29 @@ def registered_field_sets():
                 reg[src] |= reg_tokens_for_section(src, stext)
         if matched:
             stack[lv] = matched
+
+    # The historical reference combines several API identities under one label.
+    # Re-key only field/token pairs explicitly present in the pre-migration
+    # registry; archive-only parser tokens remain in the read-only reference.
+    spec = source_identity_reclassification()
+    old_source = spec["from_source"]
+    if old_source not in reg:
+        return reg
+    old_tokens = reg.pop(old_source, set())
+    mapping = {row["code"]: row["to_source"] for row in spec["mappings"]}
+    mapped_tokens = set(mapping)
+    archive_only = set(spec.get("archive_only_tokens", []))
+    if mapped_tokens - old_tokens:
+        raise ValueError(
+            "Source identity manifest contains tokens absent from the archived parser: "
+            + ", ".join(sorted(mapped_tokens - old_tokens))
+        )
+    if old_tokens - mapped_tokens != archive_only:
+        raise ValueError(
+            "Legacy archive parser token set changed; review source_identity_reclassifications.json"
+        )
+    for token, target_source in mapping.items():
+        reg[target_source].add(token)
     return reg
 
 

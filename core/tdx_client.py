@@ -1096,6 +1096,7 @@ def _tencent_batch_fallback(
                     if cv.startswith(("43", "83", "87")) and _bvol == 0 and _bprice > 0:
                         _debug_log(f"tdx tencent batch stale (老号段僵尸数据): {cv}")
                         continue
+
                     def _field_float(field_name: str) -> float:
                         index = _TENCENT_FIELD_INDEX.get(field_name)
                         if index is None or index >= len(vals) or not vals[index]:
@@ -1239,11 +1240,7 @@ def _tencent_batch_fallback(
         # Do not refresh TTL for L2 hits: persisting every requested code would make a
         # previously cached quote slide forward on every report run.
         _persist_codes = missing
-        _new = {
-            _c: _TENCENT_BATCH_CACHE[_c]
-            for _c in _persist_codes
-            if _c in _TENCENT_BATCH_CACHE
-        }
+        _new = {_c: _TENCENT_BATCH_CACHE[_c] for _c in _persist_codes if _c in _TENCENT_BATCH_CACHE}
         if _new:
             persist_tencent_batch_l2(_new, category=_category)
     except Exception:

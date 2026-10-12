@@ -6,6 +6,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+### Changed
+
+- 调整五大报告脚本的批量行情路由：SHT/MED/LNG 先取 push2delay 基础行情，再用腾讯 60/批接口补充 canonical 腾讯字段；VAL 保留全市场腾讯批量，MAK 保留其 ZHB/腾讯/东财分工。扩展腾讯批量解析以覆盖现有单股接口的重要盘口和技术字段，减少逐股补取，并保持来源分域限流。
+- 为批量快照增加逐字段来源元数据，修复 VAL 的腾讯批量缓存被误记为 push2delay，并区分东财 push2delay 与末级 push2 主域的来源标签；quote_batch 升级缓存分类键，扩展后的个股腾讯批次使用独立缓存分类，保留 MAK/VAL 全市场 Tencent L2 复用。长线报告停止预热未消费的 ELTDX 短线天梯。
+
 ### Fixed
 
 - 完整离线测试不再触碰项目真实 SQLite 缓存：每个测试模块在项目 `.tmp/` 下使用独立缓存库，结束后恢复缓存全局状态并清理本次目录。

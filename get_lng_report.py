@@ -1760,22 +1760,15 @@ class LngReportRunner(BaseReportRunner):
         # V17.0 R4: 批量骨架收敛到基类 execute_batch_pipeline(原 90 行本地实现删除)
         _cached_ind_comp = industry_comparison(20)
 
-        # V17.3.10: 批量预取(与 med/sht 对齐) —— 行情(push2delay ulist) + eltdx 连板天梯,
-        # 避免长线报告盘中逐股回退 push2/TDX 取数; 预取走 push2delay 安全域(1rps), 限流安全
+        # V17.4.45: 仅预取长线实际消费的基础行情；长线正文不读取 ELTDX 短线天梯，避免无用连接。
         def _prefetch(codes):
             _ret = {}
             try:
                 from core.data_provider import prefetch_quote_batch
 
                 _ret = prefetch_quote_batch(list(codes)) or {}
-            except Exception:
-                pass
-            try:
-                from core.eltdx_adapter import get_eltdx_shortline_bundle
-
-                get_eltdx_shortline_bundle(list(codes))
-            except Exception:
-                pass
+            except Exception as _e:
+                _debug_log(f"lng quote prefetch: {_e}")
             return _ret
 
         return self.execute_batch_pipeline(

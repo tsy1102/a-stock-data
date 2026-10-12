@@ -16,6 +16,7 @@
 - **上游兼容性复核**：登记仓库、依赖版本差异、实际调用边界与采用结论见 [`UPSTREAM_COMPATIBILITY.md`](docs/UPSTREAM_COMPATIBILITY.md)；仓库对应关系见 [`source_repository_map.md`](docs/source_repository_map.md)。
 - **百度源状态**：项目已停用百度股票接口，采集器只保留零请求 `deprecated` 状态用于快照判定；AxData 当前接口表没有百度接口，FTShare 的 `baidu_financial_calendar` 是财经日历服务方法，不是股票行情源。
 - **统一数据合约**：唯一入口 `get_canonical_stock_data` 返回 `CanonicalStockData` 强类型合约（113 个 dataclass 属性，含 12 个可选 ELTDX 扩展；每只股票通过 `field_sources` 记录来源），消除异构多源冲突。
+- **按工作负载批量取源**：SHT/MED/LNG 先用 push2delay 批量行情，再用腾讯 60 只/批接口补齐估值、财务比率、盘口和涨跌停字段；VAL 保留全市场腾讯批量，MAK 保留 ZHB 快照、腾讯行情覆盖和东财资金字段批次。每字段记录实际来源，缺项仍保留单股 fallback。长线正文不消费 ELTDX 短线天梯，因此不再为长线请求该数据。
 - **ZHB-First 离线优先路由**：盘前 / 休市日 100% 走 ZHB 内存秒级提取；交易日盘中盘后强制网络取 T 日真实收盘价。
 - **申万二级行业统一**：东财 datacenter 一次性分页拉取 + 7 天缓存，零逐股请求、零 push2 风控面。
 - **东财分域限流与风控**：共享令牌桶 + 全局 1.0s 节流 + 强制直连 + 429 退避 + 连续 3 次断连跨进程 20h 冷却；字段采集在 403、429、已封禁或连续断连时暂停该源后续股票请求。
@@ -268,7 +269,7 @@ a-stock-data/
 
 文档完整架构（模块职责 / 数据流 / 并发限流 / 缓存分层 / 字段路由）见 [`docs/architecture.md`](docs/architecture.md)（含 Mermaid 图）。要点速览：
 
-- **`core/data_provider.py`**：唯一数据入口，封装 `CanonicalStockData` 强类型合约（113 个 dataclass 属性，含 12 个可选 ELTDX 扩展；非扩展属性为 101 个；`sc_schema.FIELD_SPECS` 是 38 项精选源字段元数据，不是完整契约字段清单）+ 字段路由 + 4 级 fallback（L0 东财申万二级 → push2 → TDX → ZHB），每只股票带 `field_sources` 溯源；跨边界访问器（概念/分红/连板/涨跌幅等 7 个）已拆至 `core/_accessors.py` 叶子模块，**消除与 `stock_common` 的导入期循环依赖**（直引 `import core.data_provider` 现已可用，不再依赖入口先载 stock_common 的约定）。
+- **`core/data_provider.py`**：个股数据统一入口，封装 `CanonicalStockData` 强类型合约（113 个 dataclass 属性，含 12 个可选 ELTDX 扩展；非扩展属性为 101 个；`sc_schema.FIELD_SPECS` 是 38 项精选源字段元数据，不是完整契约字段清单）。报告批量路由为 push2delay 基础行情 + 腾讯补充字段；批量缺价时单股 fallback 为 TDX → 腾讯 → push2delay → push2，并按时段使用 ZHB 快照。每只股票通过 `field_sources` 留存来源；跨边界访问器已拆至 `core/_accessors.py`，消除与 `stock_common` 的导入期循环依赖。
 - **`stock_common/sc_network.py`**：分域限流（37 域）、进程文件锁、429 退避、连续封禁 20h 冷却。
   > 注：`core/tdx_client.py::_DOMAIN_LIMITS` 另有 6 域**独立**限流表（TCP 长连接语义，与 HTTP 请求级节流不同，**有意不合并**）。
 - **`stock_common/sc_datasource/`**：按数据源和业务职责组织的查询适配器，模块清单见 [`stock_common/sc_datasource/README.md`](stock_common/sc_datasource/README.md)。

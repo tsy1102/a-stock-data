@@ -100,13 +100,15 @@ def _safe_float(v) -> float:
 
 
 # ─────────────────────────────────────────────────────────────
-# V16.3.10: 批量行情预取（push2delay ulist——多股单请求全字段）
-# 场景：sht 批量 30 只核心行情（现状 30×canonical 逐股）→ 1-2 次请求预取
-# 数据源：push2delay ulist.np（延时镜像域，避免 push2 主域风控；300 只/批）
-# 命中后 canonical 实时段跳过 TDX/腾讯单股/push2 逐股（rt_quote 已全字段）
+# V17.4.45: 报告个股批量路由——push2delay 基础行情 (300/批) + 腾讯补充字段 (60/批)
+# SHT/MED/LNG 通常由每只股票的串行腾讯补取压缩为每组代码一次腾讯批量请求；
+# L2 保存逐字段来源，canonical 不会把腾讯预热字段误标成 push2delay。
 # ─────────────────────────────────────────────────────────────
 _BATCH_QUOTE_CACHE: Dict[str, Dict[str, Any]] = {}
 _BATCH_QUOTE_DATE: str = ""
+_BATCH_QUOTE_TENCENT_ATTEMPTED: set[str] = set()
+_BATCH_QUOTE_FIELD_SOURCES_KEY = "_field_sources"
+_BATCH_QUOTE_UNKNOWN_SOURCE = "realtime:batch:source_unknown"
 # V17.0: push2delay 估值/资金流补取进程缓存(当天)——sht 批量 35 只免重复请求
 _PD_EXTRA_CACHE: Dict[str, Dict[str, Any]] = {}
 _PD_EXTRA_CACHE_DATE: str = ""
@@ -115,89 +117,148 @@ _PD_EXTRA_CACHE_DATE: str = ""
 _FY_TTM_CACHE: Dict[Any, Dict[str, Any]] = {}
 
 
-def prefetch_quote_batch(codes: List[str]) -> Dict[str, Dict[str, Any]]:
-    """批量预取行情（push2delay ulist，300/批），结果缓存到进程内。
+def _quote_has_value(value: Any) -> bool:
+    return value not in (None, 0, "", "0", "0.0")
 
-    字段映射基于字典 12.9.1 破解表（f2 价/f3 涨跌/f15-18 OHLC/f20-21 市值/
-    f51-52 涨跌停/f55 EPS/f71 均价/f84-85 股本/f126 股息率/f162-167 估值/f174-175 52周）。
+
+def _public_quote_batch_result(codes: List[str]) -> Dict[str, Dict[str, Any]]:
+    """去除缓存内部元数据，维持批量预取对调用方的业务字段视图。"""
+    result: Dict[str, Dict[str, Any]] = {}
+    for code in codes:
+        quote = _BATCH_QUOTE_CACHE.get(code)
+        if quote:
+            result[code] = {key: value for key, value in quote.items() if not key.startswith("_")}
+    return result
+
+
+def prefetch_quote_batch(codes: List[str]) -> Dict[str, Dict[str, Any]]:
+    """批量准备个股行情：东财 push2delay 行情 + 腾讯批量补充字段。
+
+    东财负责优先提供基础行情；腾讯批量仅补齐基础行情中没有的估值、财务比率、
+    涨跌停和盘口字段。两者均按批获取，单只缺失时仍由统一层的逐股 fallback 兜底。
+    内部缓存同时保留逐字段来源，公开返回值不暴露缓存元数据。
     """
+    if not codes:
+        return {}
+
     global _BATCH_QUOTE_DATE
     from datetime import datetime as _dt
 
     _today = _dt.now().strftime("%Y%m%d")
     if _BATCH_QUOTE_DATE != _today:
         _BATCH_QUOTE_CACHE.clear()
+        _BATCH_QUOTE_TENCENT_ATTEMPTED.clear()
         _BATCH_QUOTE_DATE = _today
 
     missing = [c for c in codes if c not in _BATCH_QUOTE_CACHE]
-    # V17.3.12: 跨进程共享——先查 SQLite L2（val 预热已写入则零网络，限 15min 有效避免陈旧）
+    # 版本化 L2 只读含逐字段来源的快照，旧格式由缓存键升级自然失效。
     if missing:
         try:
             from core.stock_cache import read_quote_batch_l2
 
             _l2_map = read_quote_batch_l2(missing)
             for c, _l2 in _l2_map.items():
-                if c in missing:
-                    _BATCH_QUOTE_CACHE[c] = _l2
-                    missing.remove(c)
-        except Exception:
-            pass
-    if not missing:
-        return {c: _BATCH_QUOTE_CACHE[c] for c in codes}
+                if c in missing and isinstance(_l2, dict) and _l2:
+                    _BATCH_QUOTE_CACHE[c] = dict(_l2)
+            missing = [c for c in missing if c not in _BATCH_QUOTE_CACHE]
+        except Exception as _e:
+            _debug_log(f"prefetch_quote_batch L2 read: {_e}")
 
+    # push2delay 按 300/批返回基础行情；估值空缺由下面的腾讯批量路由补齐。
     to_fetch = list(missing)
-    try:
-        # V17.0.26(2026-09-03) DEBT-011: 取数下沉到 sc_datasource 适配器 get_em_ulist_batch
-        #   （公理 A1 数据访问收口）。本函数(Tier1 门面)只保留"字段码→业务语义"映射与单位换算
-        #   —— 分层约定：取数在适配器、语义在门面。
-        #   适配器内部已完成：push2delay 安全域、300/批分批、secid 前缀规范化(92 北交所)、
-        #   diff 摊平(list/dict 通吃)、单批失败跳过(不冒泡)。
-        from stock_common.sc_datasource import get_em_ulist_batch
+    if missing:
+        try:
+            from stock_common.sc_datasource import get_em_ulist_batch
 
-        for item in get_em_ulist_batch(missing):
-            code = str(item.get("f12", ""))
-            if not code:
-                continue
+            for item in get_em_ulist_batch(missing):
+                code = str(item.get("f12", ""))
+                if not code:
+                    continue
 
-            def _f(key, div=1.0):
-                v = item.get(key)
-                try:
-                    return float(v) / div if v not in (None, "-", "") else 0.0
-                except (ValueError, TypeError):
-                    return 0.0
+                def _f(key: str, div: float = 1.0) -> float:
+                    value = item.get(key)
+                    try:
+                        return float(value) / div if value not in (None, "-", "") else 0.0
+                    except (ValueError, TypeError):
+                        return 0.0
 
-            # V16.3.10 实测：ulist 批量接口仅返回行情字段（f2-f21），
-            # 估值类（f162 PE/f167 PB/f174-175 52周/f126 股息率）返回 "-"——
-            # 与 stock/get 单股接口字段语义不同，PE/PB/52周留待 TDX/腾讯单股补齐
-            _BATCH_QUOTE_CACHE[code] = {
-                "price": _f("f2"),
-                "change_pct": _f("f3"),
-                "change_amt": _f("f4"),
-                "volume_hand": _f("f5"),
-                "amount_wan": _f("f6", 1e4),
-                "turnover_pct": _f("f8"),
-                "name": item.get("f14", ""),
-                "high": _f("f15"),
-                "low": _f("f16"),
-                "open": _f("f17"),
-                "prev_close": _f("f18"),
-                "mcap_yi": _f("f20", 1e8),
-                "float_mcap_yi": _f("f21", 1e8),
-            }
-    except Exception as _e:
-        _debug_log(f"prefetch_quote_batch error: {_e}")
+                quote: Dict[str, Any] = {
+                    "price": _f("f2"),
+                    "change_pct": _f("f3"),
+                    "change_amt": _f("f4"),
+                    "volume_hand": _f("f5"),
+                    "amount_wan": _f("f6", 1e4),
+                    "turnover_pct": _f("f8"),
+                    "name": item.get("f14", ""),
+                    "high": _f("f15"),
+                    "low": _f("f16"),
+                    "open": _f("f17"),
+                    "prev_close": _f("f18"),
+                    "mcap_yi": _f("f20", 1e8),
+                    "float_mcap_yi": _f("f21", 1e8),
+                }
+                quote[_BATCH_QUOTE_FIELD_SOURCES_KEY] = {
+                    key: "realtime:push2delay:batch"
+                    for key, value in quote.items()
+                    if _quote_has_value(value)
+                }
+                _BATCH_QUOTE_CACHE[code] = quote
+        except Exception as _e:
+            _debug_log(f"prefetch_quote_batch push2delay error: {_e}")
 
-    # V17.3.12: 落盘 L2 跨进程共享——val 首跑预热后，其余脚本(子进程)免重打网络
+    # 腾讯 qt.gtimg.cn 的 60/批返回包含 canonical 单股腾讯接口的主要补充字段。
+    # 通常的逐股腾讯补取因而压缩为一批；不覆盖已有的 push2delay 基础行情。
+    _tencent_required = ("roa", "pe_ttm", "roe_deduct_ttm", "limit_up", "limit_down")
+    tencent_codes = [
+        code
+        for code in codes
+        if code not in _BATCH_QUOTE_TENCENT_ATTEMPTED
+        and any(
+            not _quote_has_value(_BATCH_QUOTE_CACHE.get(code, {}).get(field))
+            for field in _tencent_required
+        )
+    ]
+    if tencent_codes:
+        _BATCH_QUOTE_TENCENT_ATTEMPTED.update(tencent_codes)
+        try:
+            from core.tdx_client import _tencent_batch_fallback
+            from core.stock_cache import TENCENT_REPORT_BATCH_CACHE_CATEGORY
+
+            tencent_map = _tencent_batch_fallback(
+                tencent_codes,
+                use_l2_cache=True,
+                cache_category=TENCENT_REPORT_BATCH_CACHE_CATEGORY,
+            )
+            for code, tencent_quote in tencent_map.items():
+                if code not in tencent_codes or not isinstance(tencent_quote, dict):
+                    continue
+                quote = _BATCH_QUOTE_CACHE.setdefault(code, {})
+                source_map = quote.get(_BATCH_QUOTE_FIELD_SOURCES_KEY)
+                if not isinstance(source_map, dict):
+                    source_map = {}
+                for field, value in tencent_quote.items():
+                    if field.startswith("_") or not _quote_has_value(value):
+                        continue
+                    if not _quote_has_value(quote.get(field)):
+                        quote[field] = value
+                        source_map[field] = "realtime:tencent:batch"
+                    elif field not in source_map:
+                        source_map[field] = _BATCH_QUOTE_UNKNOWN_SOURCE
+                quote[_BATCH_QUOTE_FIELD_SOURCES_KEY] = source_map
+        except Exception as _e:
+            _debug_log(f"prefetch_quote_batch tencent batch: {_e}")
+
+    # 落盘新版快照，供后续个股脚本跨进程复用。
     try:
         from core.stock_cache import persist_quote_batch_l2
 
         persist_quote_batch_l2(
             {c: _BATCH_QUOTE_CACHE[c] for c in to_fetch if c in _BATCH_QUOTE_CACHE}
         )
-    except Exception:
-        pass
+    except Exception as _e:
+        _debug_log(f"prefetch_quote_batch L2 write: {_e}")
 
-    return {c: _BATCH_QUOTE_CACHE[c] for c in codes if c in _BATCH_QUOTE_CACHE}
+    return _public_quote_batch_result(codes)
 
 
 # V12.6: field routing classification (run-time + field type)
@@ -430,16 +491,21 @@ def get_canonical_stock_data(code: str, force_realtime: bool = False) -> Any:
     em_quote_raw: Dict[str, Any] = {}  # push2 原始字段 (f43/f44/...)
 
     if need_realtime_quote:
-        # V16.3.10: 批量预取命中（sht 批量场景 1-2 次请求预取 30 只全字段）——
-        # 命中后直接填充 rt_quote，跳过 TDX/腾讯单股/push2 逐股段（price 已有值自动短路）
+        # V17.4.45: 批量预取包含来源分明的 push2delay 基础行情与腾讯补充字段。
+        # 命中后逐字段填充 rt_quote；仍保留 OHLC、微观结构和缺失字段的单股补源。
         _batch_hit = False
         _bq = _BATCH_QUOTE_CACHE.get(code_str)
         if _bq and _bq.get("price"):
             _batch_hit = True
+            _batch_sources = _bq.get(_BATCH_QUOTE_FIELD_SOURCES_KEY)
+            if not isinstance(_batch_sources, dict):
+                _batch_sources = {}
             for _k, _v in _bq.items():
+                if _k.startswith("_"):
+                    continue
                 if _v not in (None, 0, "", "0", "0.0"):
                     rt_quote[_k] = _v
-                    field_sources[_k] = "realtime:push2delay:batch"
+                    field_sources[_k] = _batch_sources.get(_k) or _BATCH_QUOTE_UNKNOWN_SOURCE
             _debug_log(f"get_canonical_stock_data batch prefetch hit ({code_str})")
         # 行情 fallback 顺序由下方内联分支实现，并由
         # tests/core/test_quote_fallback_order.py 对实际调用顺序做回归验证。
@@ -485,10 +551,13 @@ def get_canonical_stock_data(code: str, force_realtime: bool = False) -> Any:
         # push2 主域仅作最后兜底（风控最严，独有数据才用）
         if not rt_quote.get("price"):
             em_quote_raw = {}
+            _em_source = ""
             try:
                 from stock_common.sc_datasource import get_em_quote_full_delay
 
                 em_quote_raw = get_em_quote_full_delay(code_str) or {}
+                if em_quote_raw:
+                    _em_source = "realtime:push2delay"
             except Exception as _e:
                 _debug_log(f"get_canonical_stock_data push2delay error ({code_str}): {_e}")
             if not em_quote_raw:
@@ -496,6 +565,8 @@ def get_canonical_stock_data(code: str, force_realtime: bool = False) -> Any:
                     from stock_common.sc_datasource import get_em_quote_full
 
                     em_quote_raw = get_em_quote_full(code_str) or {}
+                    if em_quote_raw:
+                        _em_source = "realtime:push2"
                 except Exception as _e:
                     _debug_log(f"get_canonical_stock_data push2 error ({code_str}): {_e}")
             if em_quote_raw:
@@ -504,7 +575,7 @@ def get_canonical_stock_data(code: str, force_realtime: bool = False) -> Any:
                 for f_cdata, _v in em_quote_raw.items():
                     if f_cdata in ("name", "industry", "board", "list_date", "data_date"):
                         rt_quote[f_cdata] = _v
-                        field_sources[f_cdata] = "realtime:push2delay"
+                        field_sources[f_cdata] = _em_source
                         continue
                     if _v not in (None, 0, '', '0', '0.0'):
                         # 数值字段转 float（push2 数值可能为字符串）
@@ -513,7 +584,7 @@ def get_canonical_stock_data(code: str, force_realtime: bool = False) -> Any:
                             rt_quote[f_cdata] = float(_v) if isinstance(_v, str) else _v
                         except (ValueError, TypeError):
                             rt_quote[f_cdata] = _v
-                        field_sources[f_cdata] = "realtime:push2delay"
+                        field_sources[f_cdata] = _em_source
                 if rt_quote.get("price"):
                     _debug_log(
                         f"get_canonical_stock_data push2delay fallback OK ({code_str}) — {len(rt_quote)} fields mapped"

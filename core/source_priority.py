@@ -1,7 +1,8 @@
-"""Expected quote fallback order for regression tests.
+"""Regression contract for the per-stock quote fallback after batch prefetch.
 
-The runtime route stays explicit in ``core.data_provider.get_canonical_stock_data``.
-This tuple is a test contract, not a runtime routing source of truth.
+Report batch routing is a separate stage: push2delay supplies shared market fields,
+then the Tencent batch supplies missing canonical fields. This tuple covers only the
+per-stock fallback when those batch stages do not provide a valid quote.
 """
 
 from typing import Tuple

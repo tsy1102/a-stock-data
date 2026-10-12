@@ -40,7 +40,8 @@
 
 - 非交易日/节假日以及交易日 09:30 前，`_should_use_zhb_for_realtime()` 允许走 ZHB 路径。
 - 交易日 09:30 起走实时行情路径；盘后仍需实时来源，因为本地 ZHB 快照可能还是 T-1。
-- 单股行情 fallback 顺序由 `core/data_provider.py` 的运行分支实现：TDX → 腾讯 → push2delay → push2。`core/source_priority.py` 中同名顺序只作为测试契约，不能当作运行时路由配置。
+- 报告脚本先按工作负载走批量行情路由：SHT/MED/LNG 为 push2delay 基础行情（300/批）+ 腾讯字段补充（60/批）；VAL 使用全市场腾讯批量；MAK 使用 ZHB 快照 + 腾讯行情覆盖 + 东财批量资金字段。个股批量缓存逐字段记录来源。
+- 批量源不足时，单股行情 fallback 顺序由 `core/data_provider.py` 实现：TDX → 腾讯 → push2delay → push2；`core/source_priority.py` 锁定的只是这个单股 fallback 测试契约。长线报告不预热未消费的 ELTDX 短线包；短线与中线因正文消费该数据而保留。
 - 字段新鲜度 A/B/C/D 分类由 `sc_datasource.zhb_field_safe()` 控制；字段是否标注“实时”与上述源选择逻辑不是同一概念。
 - 完整架构公理见 `docs/ARCHITECTURE_THEORY.md`，已知偏离见 `docs/DEBT_LEDGER.md`。
 

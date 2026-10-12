@@ -2384,7 +2384,13 @@ async def run_discovery_async(output_path):
                             # core.data_provider._BATCH_QUOTE_CACHE —— get_canonical_stock_data 命中后跳过
                             # TDX/腾讯单股/push2 逐股网络(L399 批量命中短路, OHLC 已含故不再回退 TDX,
                             # 估值字段 roa/roe_deduct_ttm/limit_up/limit_down/pb 已含故 L490 估值补取短路)。
-                            _bq_cache[_c] = dict(_m)
+                            _batch_quote = dict(_m)
+                            _batch_quote["_field_sources"] = {
+                                _field: "realtime:tencent:batch"
+                                for _field, _value in _m.items()
+                                if _value not in (None, 0, "", "0", "0.0")
+                            }
+                            _bq_cache[_c] = _batch_quote
                             # V17.2.x(2026-09-10) 性能优化: val 不消费 pe_dynamic/fund_main_today/财务TTM族,
                             # 但 get_canonical_stock_data 的 L640 push2delay 补充块会因这两字段缺失而对每只股票
                             # 打 1 次被全局 ~1.2s 文件锁串行的 get_em_quote_full_delay —— 全市场 5000+ 只即数千秒瓶颈。

@@ -50,6 +50,10 @@ docs/field_verification/**/raw/*.txt
 docs/field_verification/**/*candidate_raw.json
 docs/field_verification/**/*collision_report.json
 
+# Generated diagnostics and plain-text capture output are local artifacts.
+*.log
+docs/field_verification/**/*.txt
+
 # ── Python & 测试临时缓存 ───────────────────────────────────
 __pycache__/
 *.pyc
@@ -59,7 +63,7 @@ __pycache__/
 # 项目内临时目录：运行时按需创建，整个目录不入库
 *.tmp
 *.cache
-/.tmp/
+/.tmp*/
 
 # 本机凭据，仅保存在开发者环境
 /credentials/

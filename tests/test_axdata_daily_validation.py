@@ -10,10 +10,10 @@ import pytest
 from scripts import axdata_daily_validation as validation
 
 
-def _project_fields(quote_time: str = "20261009161459") -> list[str]:
+def _project_fields(quote_time: str = "20261009161459", code: str = "600519") -> list[str]:
     fields = [""] * 88
     values = {
-        "symbol": "600519",
+        "symbol": code,
         "name": "贵州茅台",
         "quote_time": quote_time,
         "last_price": "1263.00",
@@ -39,9 +39,11 @@ def _project_fields(quote_time: str = "20261009161459") -> list[str]:
     return fields
 
 
-def _axdata_record(quote_time: str = "20261009161459") -> dict[str, object]:
+def _axdata_record(
+    quote_time: str = "20261009161459", code: str = "600519"
+) -> dict[str, object]:
     return {
-        "symbol": "600519",
+        "symbol": code,
         "name": "贵州茅台",
         "quote_time": quote_time,
         "last_price": 1263.0,
@@ -63,15 +65,22 @@ def _axdata_record(quote_time: str = "20261009161459") -> dict[str, object]:
     }
 
 
-def _capture_dir(tmp_path, data_date="20261009"):
+def _capture_dir(tmp_path, data_date="20261009", codes=None):
     output = tmp_path / data_date
     output.mkdir()
-    payload = {"stocks": {"600519": {"fields": _project_fields()}}}
+    codes = codes or ["600519"]
+    payload = {
+        "stocks": {
+            code: {"fields": _project_fields(f"{data_date}161459", code)} for code in codes
+        }
+    }
     (output / "raw_tencent.json").write_text(json.dumps(payload), encoding="utf-8")
     return output
 
 
-def _run_validation(output, *, data_date="20261009", only="", source_meta=None, now=None):
+def _run_validation(
+    output, *, data_date="20261009", only="", source_meta=None, now=None, pool=None
+):
     parsed_date = datetime.strptime(data_date, "%Y%m%d")
     return validation.run_axdata_daily_validation(
         data_date=data_date,
@@ -80,7 +89,7 @@ def _run_validation(output, *, data_date="20261009", only="", source_meta=None, 
         latest_completed_trade_date=data_date,
         only=only,
         out_dir=output,
-        pool=[{"code": "600519"}],
+        pool=pool or [{"code": "600519"}],
         source_meta=source_meta or {"tencent": {"ok": True, "status": "ok"}},
         now=now or parsed_date.replace(hour=16),
     )
@@ -350,3 +359,233 @@ def test_daily_lock_reclaims_stale_file_and_rejects_a_live_lock(tmp_path, monkey
     assert validation._create_daily_lock("2026-10-09") is None
     validation._remove_daily_lock(acquired)
     assert validation._create_daily_lock("2026-10-09") == stale_lock
+
+
+def test_confirmed_tencent_endpoint_is_suppressed_until_periodic_recheck(tmp_path, monkeypatch):
+    codes = ["600519", "000001", "601138"]
+    dates = ["20261009", "20261012", "20261013"]
+    outputs = [_capture_dir(tmp_path, data_date, codes) for data_date in dates]
+    monkeypatch.setattr(validation, "STATE_PATH", tmp_path / "state.json")
+    monkeypatch.setattr(validation, "_static_queue_summary", lambda: {"status": "test"})
+    monkeypatch.setattr(validation, "_dynamic_pe_index", lambda: 52)
+    monkeypatch.setattr(validation.time, "sleep", lambda _seconds: None)
+    calls = []
+
+    def fake_request(interface, params):
+        code = params["code"][0].split(".")[0]
+        calls.append((interface, code))
+        return [_axdata_record(f"{dates[len(calls) - 1]}161459", code)]
+
+    monkeypatch.setattr(validation, "_request_records", fake_request)
+    pool = [{"code": code} for code in codes]
+    results = [
+        _run_validation(output, data_date=data_date, pool=pool)
+        for output, data_date in zip(outputs, dates)
+    ]
+
+    identity = results[-1]["probe"]["source_identity"]
+    assert identity["status"] == "partially_redundant"
+    assert identity["matched_data_dates"] == 3
+    assert identity["matched_symbols"] == 3
+    assert identity["semantic_unresolved_fields"] == ["pe_dynamic"]
+    assert len(calls) == 3
+
+    next_date = "20261014"
+    next_output = _capture_dir(tmp_path, next_date, codes)
+    skipped = _run_validation(next_output, data_date=next_date, pool=pool)
+    assert skipped["probe"]["status"] == "endpoint_redundant_until_scheduled_recheck"
+    assert skipped["probe"]["request_count"] == 0
+    assert skipped["probe"]["source_identity"]["next_recheck_in_data_dates"] == 19
+    assert len(calls) == 3
+
+
+def test_periodic_identity_recheck_requires_three_new_exact_samples(tmp_path, monkeypatch):
+    codes = ["600519", "000001", "601138"]
+    monkeypatch.setattr(validation, "STATE_PATH", tmp_path / "state.json")
+    monkeypatch.setattr(validation, "_static_queue_summary", lambda: {"status": "test"})
+    monkeypatch.setattr(validation, "_dynamic_pe_index", lambda: 52)
+    monkeypatch.setattr(validation, "IDENTITY_RECHECK_DATA_DATES", 2)
+    monkeypatch.setattr(validation.time, "sleep", lambda _seconds: None)
+    pool = [{"code": code} for code in codes]
+    calls = []
+
+    def fake_request(interface, params):
+        code = params["code"][0].split(".")[0]
+        calls.append(code)
+        data_date = current_date[0]
+        return [_axdata_record(f"{data_date}161459", code)]
+
+    monkeypatch.setattr(validation, "_request_records", fake_request)
+    current_date = [""]
+    for data_date in ("20261009", "20261012", "20261013"):
+        current_date[0] = data_date
+        _run_validation(_capture_dir(tmp_path, data_date, codes), data_date=data_date, pool=pool)
+
+    current_date[0] = "20261014"
+    first_wait = _run_validation(
+        _capture_dir(tmp_path, "20261014", codes), data_date="20261014", pool=pool
+    )
+    assert first_wait["probe"]["status"] == "endpoint_redundant_until_scheduled_recheck"
+
+    current_date[0] = "20261015"
+    first_recheck = _run_validation(
+        _capture_dir(tmp_path, "20261015", codes), data_date="20261015", pool=pool
+    )
+    assert first_recheck["probe"]["source_identity"]["status"] == "rechecking"
+    assert first_recheck["probe"]["source_identity"]["recheck_samples_collected"] == 1
+
+    current_date[0] = "20261016"
+    second_recheck = _run_validation(
+        _capture_dir(tmp_path, "20261016", codes), data_date="20261016", pool=pool
+    )
+    assert second_recheck["probe"]["source_identity"]["status"] == "rechecking"
+
+    current_date[0] = "20261019"
+    final_recheck = _run_validation(
+        _capture_dir(tmp_path, "20261019", codes), data_date="20261019", pool=pool
+    )
+    assert final_recheck["probe"]["source_identity"]["status"] == "partially_redundant"
+    assert set(final_recheck["probe"]["source_identity"]["evidence_dates"]) == {
+        "2026-10-15",
+        "2026-10-16",
+        "2026-10-19",
+    }
+    assert len(calls) == 6
+
+
+def test_identity_mismatch_reopens_daily_sampling(tmp_path, monkeypatch):
+    codes = ["600519", "000001", "601138"]
+    monkeypatch.setattr(validation, "STATE_PATH", tmp_path / "state.json")
+    monkeypatch.setattr(validation, "_static_queue_summary", lambda: {"status": "test"})
+    monkeypatch.setattr(validation, "_dynamic_pe_index", lambda: 52)
+    monkeypatch.setattr(validation, "IDENTITY_RECHECK_DATA_DATES", 1)
+    monkeypatch.setattr(validation.time, "sleep", lambda _seconds: None)
+    pool = [{"code": code} for code in codes]
+    calls = []
+    current_date = [""]
+    mismatch = [False]
+
+    def fake_request(interface, params):
+        code = params["code"][0].split(".")[0]
+        calls.append(code)
+        record = _axdata_record(f"{current_date[0]}161459", code)
+        if mismatch[0]:
+            record["last_price"] = 9999.0
+        return [record]
+
+    monkeypatch.setattr(validation, "_request_records", fake_request)
+    for data_date in ("20261009", "20261012", "20261013"):
+        current_date[0] = data_date
+        _run_validation(_capture_dir(tmp_path, data_date, codes), data_date=data_date, pool=pool)
+
+    current_date[0] = "20261014"
+    _run_validation(_capture_dir(tmp_path, "20261014", codes), data_date="20261014", pool=pool)
+    current_date[0] = "20261015"
+    mismatch[0] = True
+    reopened = _run_validation(
+        _capture_dir(tmp_path, "20261015", codes), data_date="20261015", pool=pool
+    )
+    assert reopened["probe"]["source_identity"]["status"] == "observing"
+    assert reopened["probe"]["source_identity"]["reason"] == "value_mismatch_reopened"
+    assert reopened["probe"]["source_identity"]["last_mismatch"]["fields"] == ["last_price"]
+
+    current_date[0] = "20261016"
+    mismatch[0] = False
+    resumed = _run_validation(
+        _capture_dir(tmp_path, "20261016", codes), data_date="20261016", pool=pool
+    )
+    assert resumed["probe"]["status"] == "sampled"
+    assert len(calls) == 6
+
+
+def test_unreadable_state_blocks_probe_until_manual_review(tmp_path, monkeypatch):
+    output = _capture_dir(tmp_path)
+    state_path = tmp_path / "state.json"
+    state_path.write_text("{invalid json", encoding="utf-8")
+    monkeypatch.setattr(validation, "STATE_PATH", state_path)
+    monkeypatch.setattr(validation, "_static_queue_summary", lambda: {"status": "test"})
+    calls = []
+    monkeypatch.setattr(
+        validation,
+        "_request_records",
+        lambda *_args: calls.append(1) or [_axdata_record()],
+    )
+
+    result = _run_validation(output)
+
+    assert result["status"] == "blocked_until_manual_review"
+    assert result["probe"]["status"] == "state_unreadable_until_manual_review"
+    assert result["probe"]["source_identity"]["status"] == "state_unreadable_manual_review_required"
+    assert calls == []
+
+
+def test_identity_contract_change_reopens_daily_probe(tmp_path, monkeypatch):
+    codes = ["600519", "000001", "601138"]
+    monkeypatch.setattr(validation, "STATE_PATH", tmp_path / "state.json")
+    monkeypatch.setattr(validation, "_static_queue_summary", lambda: {"status": "test"})
+    monkeypatch.setattr(validation, "_dynamic_pe_index", lambda: 52)
+    monkeypatch.setattr(validation.time, "sleep", lambda _seconds: None)
+    pool = [{"code": code} for code in codes]
+    current_date = [""]
+    calls = []
+
+    def fake_request(interface, params):
+        code = params["code"][0].split(".")[0]
+        calls.append(code)
+        return [_axdata_record(f"{current_date[0]}161459", code)]
+
+    monkeypatch.setattr(validation, "_request_records", fake_request)
+    for data_date in ("20261009", "20261012", "20261013"):
+        current_date[0] = data_date
+        result = _run_validation(
+            _capture_dir(tmp_path, data_date, codes), data_date=data_date, pool=pool
+        )
+    assert result["probe"]["source_identity"]["status"] == "partially_redundant"
+
+    monkeypatch.setattr(validation, "_dynamic_pe_index", lambda: 53)
+    current_date[0] = "20261014"
+    reopened = _run_validation(
+        _capture_dir(tmp_path, "20261014", codes), data_date="20261014", pool=pool
+    )
+
+    assert reopened["probe"]["status"] == "sampled"
+    assert reopened["probe"]["source_identity"]["status"] == "observing"
+    assert reopened["probe"]["source_identity"]["reason"] == "contract_changed_reopened"
+    assert reopened["probe"]["source_identity"]["matched_data_dates"] == 1
+    assert len(calls) == 4
+
+
+def test_response_schema_change_reopens_daily_probe(tmp_path, monkeypatch):
+    codes = ["600519", "000001", "601138"]
+    monkeypatch.setattr(validation, "STATE_PATH", tmp_path / "state.json")
+    monkeypatch.setattr(validation, "_static_queue_summary", lambda: {"status": "test"})
+    monkeypatch.setattr(validation, "_dynamic_pe_index", lambda: 52)
+    monkeypatch.setattr(validation, "IDENTITY_RECHECK_DATA_DATES", 1)
+    monkeypatch.setattr(validation.time, "sleep", lambda _seconds: None)
+    pool = [{"code": code} for code in codes]
+    current_date = [""]
+    calls = []
+
+    def fake_request(interface, params):
+        code = params["code"][0].split(".")[0]
+        calls.append(code)
+        record = _axdata_record(f"{current_date[0]}161459", code)
+        if current_date[0] == "20261014":
+            record["new_field"] = 1
+        return [record]
+
+    monkeypatch.setattr(validation, "_request_records", fake_request)
+    for data_date in ("20261009", "20261012", "20261013"):
+        current_date[0] = data_date
+        _run_validation(_capture_dir(tmp_path, data_date, codes), data_date=data_date, pool=pool)
+
+    current_date[0] = "20261014"
+    _run_validation(_capture_dir(tmp_path, "20261014", codes), data_date="20261014", pool=pool)
+    current_date[0] = "20261015"
+    reopened = _run_validation(
+        _capture_dir(tmp_path, "20261015", codes), data_date="20261015", pool=pool
+    )
+
+    assert reopened["probe"]["source_identity"]["status"] == "observing"
+    assert reopened["probe"]["source_identity"]["reason"] == "response_schema_changed_reopened"
+    assert len(calls) == 5

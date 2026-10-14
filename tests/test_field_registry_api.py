@@ -51,3 +51,82 @@ def test_legacy_registry_without_source_fields_keeps_aggregate_fallback():
 
     assert registry_api.field_source_map(registry) == {"value": {"tdx", "sina"}}
     assert registry_api.fields_by_source(registry) == {"tdx": {"value"}, "sina": {"value"}}
+
+
+def test_aggregate_projection_marks_same_code_different_meanings_as_ambiguous():
+    source_fields = [
+        {
+            "source": "eastmoney.stock_get",
+            "code": "f44",
+            "canonical": "high_price",
+            "meaning": "最高价",
+            "unit": "元",
+            "status": "verified",
+            "status_evidence": {"reference_status_raw": ["✅"]},
+        },
+        {
+            "source": "eastmoney.ulist_np",
+            "code": "f44",
+            "canonical": "total_profit",
+            "meaning": "利润总额",
+            "unit": "元",
+            "status": "verified",
+            "status_evidence": {"reference_status_raw": ["✅"]},
+        },
+    ]
+
+    aggregate = registry_api.build_aggregate_fields(source_fields)[0]
+
+    assert aggregate["source"] is None
+    assert aggregate["sources"] == ["eastmoney.stock_get", "eastmoney.ulist_np"]
+    assert aggregate["canonical"] == ""
+    assert aggregate["meaning"] == ""
+    assert aggregate["status"] == "conflict"
+    assert aggregate["source_statuses"] == {
+        "eastmoney.stock_get": "verified",
+        "eastmoney.ulist_np": "verified",
+    }
+    assert aggregate["aggregation_status"] == "ambiguous"
+    assert aggregate["aggregation_issues"] == ["canonical_differs", "meaning_differs"]
+    assert {row["status"] for row in source_fields} == {"verified"}
+
+
+def test_aggregate_projection_does_not_label_verified_blank_metadata_as_verified():
+    aggregate = registry_api.build_aggregate_fields(
+        [
+            {
+                "source": "source-a",
+                "code": "missing.meaning",
+                "canonical": "",
+                "meaning": "",
+                "unit": "",
+                "status": "verified",
+            }
+        ]
+    )[0]
+
+    assert aggregate["status"] == "unverified"
+    assert aggregate["aggregation_status"] == "incomplete"
+    assert aggregate["aggregation_issues"] == ["canonical_incomplete", "meaning_incomplete"]
+
+
+def test_aggregate_projection_preserves_consistent_verified_meaning():
+    aggregate = registry_api.build_aggregate_fields(
+        [
+            {
+                "source": source,
+                "code": "same.meaning",
+                "canonical": "last_price",
+                "meaning": "最新价",
+                "unit": "元",
+                "status": "verified",
+            }
+            for source in ("source-a", "source-b")
+        ]
+    )[0]
+
+    assert aggregate["canonical"] == "last_price"
+    assert aggregate["meaning"] == "最新价"
+    assert aggregate["status"] == "verified"
+    assert aggregate["aggregation_status"] == "consistent"
+    assert aggregate["aggregation_issues"] == []

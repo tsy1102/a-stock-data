@@ -115,6 +115,12 @@ def main(argv=None):
         print("  projection FAIL: fields 与 source_fields 不一致")
     else:
         print("  projection PASS: fields 聚合视图与 source_fields 一致")
+    expected_aggregates = fra.build_aggregate_fields(source_records)
+    if reg.get("fields") != expected_aggregates:
+        problems.append("fields 聚合语义/状态与 source_fields 重建结果不一致")
+        print("  aggregate semantics FAIL: fields 不是安全的 source_fields 聚合投影")
+    else:
+        print("  aggregate semantics PASS: fields 的定义、状态和歧义标记与 source_fields 一致")
 
     # ---- field_matrix 投影 parity（§零·B 生成一致性，G3 闸门）----
     fm_problems = check_field_matrix(reg, matrix_addenda)

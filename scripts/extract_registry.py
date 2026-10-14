@@ -46,6 +46,7 @@ CROSS_ALIGN = os.path.join(REPO_ROOT, "docs", "verify", "cross_source_align.md")
 
 # 复用已验证的解析基座
 sys.path.insert(0, SCRIPT_DIR)
+import field_registry_api as fra
 import gen_field_matrix as gm
 import audit_field_completeness as afc
 
@@ -632,7 +633,7 @@ def extract():
         "format_note": "JSON（YAML 严格子集，零依赖）。原计划 YAML 因环境无 pyyaml/ruamel 改 JSON。",
     }
     registry["sources"] = out_sources
-    registry["fields"] = out_fields
+    registry["fields"] = fra.build_aggregate_fields(out_source_fields)
     registry["source_fields"] = out_source_fields
     registry["field_matrix"] = field_matrix
     registry["mappings"] = mappings

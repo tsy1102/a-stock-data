@@ -983,8 +983,14 @@ def test_only_selection_reruns_a_complete_existing_source(tmp_path, monkeypatch)
         encoding="utf-8",
     )
     calls = []
+    coverage_calls = []
 
     monkeypatch.setattr(capture_probe, "OUT_BASE", str(tmp_path))
+    monkeypatch.setattr(
+        capture_probe,
+        "_refresh_field_evidence_coverage",
+        lambda path, metadata: coverage_calls.append((path, metadata.get("data_date"))),
+    )
     monkeypatch.setattr(capture_probe, "load_pool", lambda: [{"code": "600000"}])
     monkeypatch.setattr(
         sys,
@@ -1004,8 +1010,63 @@ def test_only_selection_reruns_a_complete_existing_source(tmp_path, monkeypatch)
     capture_probe.main()
 
     assert calls == [["600000"]]
+    assert coverage_calls == [(str(out_dir), "20260929")]
     raw = json.loads((out_dir / "raw_push2.json").read_text(encoding="utf-8"))
     assert raw["stocks"]["600000"]["data"]["f1"] == "new"
+
+
+def test_field_evidence_coverage_hook_is_fail_open_and_does_not_change_dates_or_raw(
+    tmp_path, monkeypatch
+):
+    from types import ModuleType
+
+    out_dir = tmp_path / "20261014"
+    out_dir.mkdir()
+    raw_path = out_dir / "raw_push2.json"
+    raw_path.write_text('{"scheme":"em.stock_get","stocks":{}}', encoding="utf-8")
+    calls = []
+    coverage_module = ModuleType("field_evidence_coverage")
+
+    def fake_refresh(path, metadata, *, data_dir):
+        calls.append((path, metadata["data_date"], data_dir))
+        return {"status": "ok", "pending_source_fields": 10, "targets_observed": 2}
+
+    coverage_module.refresh_daily_coverage = fake_refresh
+    monkeypatch.setitem(sys.modules, "field_evidence_coverage", coverage_module)
+    monkeypatch.setattr(capture_probe, "OUT_BASE", str(tmp_path))
+    snapshot_meta = {"data_date": "20261014", "source_as_of_dates": {"push2": "20261014"}}
+
+    capture_probe._refresh_field_evidence_coverage(str(out_dir), snapshot_meta)
+
+    assert calls == [(str(out_dir), "20261014", str(tmp_path))]
+    assert snapshot_meta["data_date"] == "20261014"
+    assert snapshot_meta["source_as_of_dates"] == {"push2": "20261014"}
+    assert snapshot_meta["field_evidence_coverage"]["status"] == "ok"
+    assert raw_path.read_text(encoding="utf-8") == '{"scheme":"em.stock_get","stocks":{}}'
+    saved_meta = json.loads((out_dir / "meta.json").read_text(encoding="utf-8"))
+    assert saved_meta["field_evidence_coverage"]["pending_source_fields"] == 10
+
+
+def test_field_evidence_coverage_failure_does_not_abort_capture(tmp_path, monkeypatch):
+    from types import ModuleType
+
+    out_dir = tmp_path / "20261014"
+    out_dir.mkdir()
+    raw_path = out_dir / "raw_push2.json"
+    raw_path.write_text('{"stocks":{}}', encoding="utf-8")
+    coverage_module = ModuleType("field_evidence_coverage")
+
+    def fail_refresh(*_args, **_kwargs):
+        raise OSError("offline index unavailable")
+
+    coverage_module.refresh_daily_coverage = fail_refresh
+    monkeypatch.setitem(sys.modules, "field_evidence_coverage", coverage_module)
+    capture_probe._refresh_field_evidence_coverage(str(out_dir), {"data_date": "20261014"})
+
+    assert raw_path.read_text(encoding="utf-8") == '{"stocks":{}}'
+    saved_meta = json.loads((out_dir / "meta.json").read_text(encoding="utf-8"))
+    assert saved_meta["field_evidence_coverage"]["status"] == "failed_open"
+    assert "offline index unavailable" in saved_meta["field_evidence_coverage"]["reason"]
 
 
 def test_network_failure_diagnostics_redact_query_parameters(monkeypatch):

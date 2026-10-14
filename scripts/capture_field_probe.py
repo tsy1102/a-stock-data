@@ -923,6 +923,9 @@ def _request_is_rate_limited(detail: dict) -> bool:
             status_code = int(status)
         except ValueError:
             status_code = None
+    message = " ".join(
+        str(detail.get(key) or "") for key in ("message", "error", "status")
+    )
     return kind in {
         "ip_banned",
         "http_403",
@@ -933,6 +936,12 @@ def _request_is_rate_limited(detail: dict) -> bool:
     } or status_code in (
         403,
         429,
+    ) or bool(
+        re.search(
+            r"\b403\b|\b429\b|blocked|banned|rate.?limit|封禁|限流|访问频繁",
+            message,
+            re.I,
+        )
     )
 
 
@@ -1144,12 +1153,42 @@ def collect_sina(pool: list) -> dict:
     return out
 
 
-def collect_axdata(pool: list) -> dict:
+def _defer_axdata_codes(
+    output: dict[str, Any], pool: list[dict[str, Any]], next_index: int, stopped_code: str
+) -> None:
+    deferred = pool[next_index:]
+    reason = "deferred after AxData HTTP 403/429 or ban signal"
+    for item in deferred:
+        output["stocks"][item["code"]] = {"__skipped__": reason}
+    output["__source_meta__"] = {
+        "rate_limited": True,
+        "interface_id": "stock_shortline_indicators_tdx",
+        "stopped_after_code": stopped_code,
+        "deferred_codes": [item["code"] for item in deferred],
+    }
+
+
+def collect_axdata(pool: list, identity_policy: Optional[dict] = None) -> dict:
     """采集 AxData 的 TDX 短线接口；ZHB 统计文件本地读取，接口仍可能访问网络。"""
+    if isinstance(identity_policy, dict) and identity_policy.get("action") == "skip":
+        reason = str(identity_policy.get("reason") or "endpoint_redundant")
+        interface_id = identity_policy.get("identity", {}).get("interface_id")
+        return {
+            "stocks": {item["code"]: {"__skipped__": reason} for item in pool},
+            "__source_meta__": {
+                "identity_suppression": {
+                    "status": identity_policy.get("identity", {}).get("status"),
+                    "interface_id": interface_id,
+                    "reference_source": identity_policy.get("reference_source"),
+                    "reason": reason,
+                    "evidence_dates": identity_policy.get("identity", {}).get("evidence_dates", []),
+                }
+            },
+        }
     from stock_common import get_shortline_indicators_result
 
     out: Dict[str, Any] = {"stocks": {}}
-    for p in pool:
+    for index, p in enumerate(pool):
         c = p["code"]
         try:
             result = get_shortline_indicators_result(c)
@@ -1159,6 +1198,14 @@ def collect_axdata(pool: list) -> dict:
                     f"failed with status {result.get('status', 'unknown')}"
                 )
                 out["stocks"][c] = {"__error__": str(error)[:200]}
+                detail = {
+                    "kind": result.get("kind") or result.get("status"),
+                    "status_code": result.get("status_code") or result.get("http_status"),
+                    "message": str(error),
+                }
+                if _request_is_rate_limited(detail):
+                    _defer_axdata_codes(out, pool, index + 1, c)
+                    break
                 continue
 
             rec = result.get("data")
@@ -1173,6 +1220,11 @@ def collect_axdata(pool: list) -> dict:
                 out["stocks"][c] = {"n_fields": len(rec), "data": rec}
         except Exception as e:
             out["stocks"][c] = {"__error__": str(e)[:200]}
+            if _request_is_rate_limited(
+                {"kind": type(e).__name__, "message": str(e)}
+            ):
+                _defer_axdata_codes(out, pool, index + 1, c)
+                break
     return out
 
 
@@ -1438,12 +1490,34 @@ def collect_kpl_detail(capture_date: Any) -> dict:
     }
 
 
-def collect_kph_history(capture_date: Any, prior_market_sources: Any = None) -> dict:
+def collect_kph_history(
+    capture_date: Any,
+    prior_market_sources: Any = None,
+    identity_policy: Optional[dict] = None,
+) -> dict:
     """Request one AxData KPH historical batch; never retry or persist it."""
     try:
         trade_date = _kph_history_trade_date(capture_date)
     except Exception as exc:
         return {"stocks": {}, "__error__": f"KPH date selection failed: {str(exc)[:240]}"}
+
+    if isinstance(identity_policy, dict) and identity_policy.get("action") == "skip":
+        reason = str(identity_policy.get("reason") or "endpoint_redundant")
+        return {
+            "trade_date": trade_date.isoformat(),
+            "requested_trade_date": trade_date.isoformat(),
+            "stocks": {},
+            "__skipped__": reason,
+            "__source_meta__": {
+                "identity_suppression": {
+                    "status": identity_policy.get("identity", {}).get("status"),
+                    "interface_id": identity_policy.get("identity", {}).get("interface_id"),
+                    "reference_source": identity_policy.get("reference_source"),
+                    "reason": reason,
+                    "evidence_dates": identity_policy.get("identity", {}).get("evidence_dates", []),
+                }
+            },
+        }
 
     if _kph_ladder_blocks_followup(prior_market_sources):
         return {
@@ -3258,6 +3332,38 @@ def _refresh_closed_snapshot_validations(
         print(f"  ⚠ 每日验证摘要未能更新到 meta.json: {exc}", flush=True)
 
 
+def _refresh_field_evidence_coverage(out_dir: str, snapshot_meta: dict) -> None:
+    """Refresh local unresolved-field coverage from archived raw snapshots only."""
+    try:
+        try:
+            from field_evidence_coverage import refresh_daily_coverage
+        except ModuleNotFoundError:
+            from scripts.field_evidence_coverage import refresh_daily_coverage
+
+        coverage = refresh_daily_coverage(out_dir, snapshot_meta, data_dir=OUT_BASE)
+        snapshot_meta["field_evidence_coverage"] = coverage
+        print(
+            "  字段证据覆盖: "
+            f"目标 {coverage.get('pending_source_fields', 0)} | "
+            f"有样本 {coverage.get('targets_observed', 0)} | "
+            f"精确来源日期覆盖≥3日 {coverage.get('targets_with_3_source_as_of_days', 0)} | "
+            f"文件 {coverage.get('file', coverage.get('status', 'unavailable'))}",
+            flush=True,
+        )
+    except Exception as exc:
+        snapshot_meta["field_evidence_coverage"] = {
+            "status": "failed_open",
+            "reason": f"{type(exc).__name__}: {exc}"[:300],
+        }
+        print(f"  ⚠ 字段证据覆盖刷新失败，不影响已采集 raw: {exc}", flush=True)
+
+    try:
+        with open(os.path.join(out_dir, "meta.json"), "w", encoding="utf-8") as stream:
+            json.dump(snapshot_meta, stream, ensure_ascii=False, indent=1)
+    except OSError as exc:
+        print(f"  ⚠ 字段证据覆盖摘要未能更新到 meta.json: {exc}", flush=True)
+
+
 def _startup_scope_label(selected_sources: list[str], include_context: bool) -> str:
     source_scope = f"--only {','.join(selected_sources)}" if selected_sources else "默认源集合"
     context_scope = "启用" if include_context else "跳过"
@@ -3518,6 +3624,7 @@ def main() -> None:
             collectors, snapshot_meta, out_dir, pool, include_context=include_context
         ):
             if data_date_domain == "calendar":
+                _refresh_field_evidence_coverage(out_dir, snapshot_meta)
                 print(
                     f"⏭ 自然日数据 {args.date} 已有完整源快照，默认幂等跳过；如需重采请加 --overwrite。",
                     flush=True,
@@ -3533,6 +3640,7 @@ def main() -> None:
                     pool=pool,
                     snapshot_meta=snapshot_meta,
                 )
+                _refresh_field_evidence_coverage(out_dir, snapshot_meta)
                 print(
                     f"⏭ 数据日 {args.date} 已存在完整(盘后)采集物 (raw {len(_existing_raws)} 个, 源: {sorted(_have)}), "
                     f"主采集幂等跳过；只刷新每日验证摘要，已有候选样本不会重复请求。",
@@ -3540,6 +3648,7 @@ def main() -> None:
                 )
                 return
             if (not _existing_closed) and (not _new_closed):
+                _refresh_field_evidence_coverage(out_dir, snapshot_meta)
                 print(
                     f"⏭ 数据日 {args.date} 已存在盘中快照且本次仍为盘中运行, 默认幂等跳过。",
                     flush=True,
@@ -3570,6 +3679,31 @@ def main() -> None:
                     except Exception:
                         pass
             # 清空后 fall through 进入采集
+
+    axdata_identity_plan: dict[str, Any] = {"status": "not_requested", "endpoints": {}}
+    if {"axdata", "kph"} & set(collectors):
+        try:
+            try:
+                from axdata_daily_validation import get_axdata_capture_identity_plan
+            except ModuleNotFoundError:
+                from scripts.axdata_daily_validation import get_axdata_capture_identity_plan
+
+            axdata_identity_plan = get_axdata_capture_identity_plan(
+                args.date,
+                force_reprobe=args.overwrite,
+            )
+        except Exception as exc:
+            # An unexpected policy error must not silently suppress production data.
+            axdata_identity_plan = {
+                "status": "failed_open",
+                "reason": f"{type(exc).__name__}: {exc}"[:240],
+                "endpoints": {},
+            }
+        meta["axdata_capture_identity_plan"] = axdata_identity_plan
+    axdata_identity_endpoints: dict[str, Any] = {}
+    endpoint_candidates = axdata_identity_plan.get("endpoints")
+    if isinstance(endpoint_candidates, dict):
+        axdata_identity_endpoints = endpoint_candidates
 
     collected_data: Dict[str, Any] = {}
     for name, fn in collectors.items():
@@ -3643,6 +3777,14 @@ def main() -> None:
                 data = fn(
                     capture_date=args.date,
                     prior_market_sources=collected_data.get("market_sources"),
+                    identity_policy=axdata_identity_endpoints.get("kph_limit_up_history"),
+                )
+            elif name == "axdata":
+                data = fn(
+                    pool,
+                    identity_policy=axdata_identity_endpoints.get(
+                        "stock_shortline_indicators_tdx"
+                    ),
                 )
             elif name == "fuyao":
                 data = fn(pool, include_context=include_context)
@@ -3728,6 +3870,12 @@ def main() -> None:
                     ):
                         if _identity_key in _identity:
                             _entry[_identity_key] = _identity[_identity_key]
+            if name in {"axdata", "kph"} and isinstance(data, dict):
+                _identity = data.get("__source_meta__")
+                if isinstance(_identity, dict) and isinstance(
+                    _identity.get("identity_suppression"), dict
+                ):
+                    _entry["identity_suppression"] = _identity["identity_suppression"]
             if not include_context and name in CONTEXT_EXCLUDED_PATHS:
                 _entry["context_excluded_paths"] = CONTEXT_EXCLUDED_PATHS[name]
             if preserved_context_paths:
@@ -3754,6 +3902,28 @@ def main() -> None:
                 "error": str(e)[:300],
             }
             print(f"  ✖ {name}: {e}", flush=True)
+
+    # Persist AxData route bans independently of the daily validation eligibility
+    # gate, so partial `--only` runs cannot forget a 403/429 observation.
+    if {"axdata", "kph"} & set(collectors):
+        try:
+            try:
+                from axdata_daily_validation import record_axdata_capture_rate_limits
+            except ModuleNotFoundError:
+                from scripts.axdata_daily_validation import record_axdata_capture_rate_limits
+
+            meta["axdata_capture_endpoint_identities"] = record_axdata_capture_rate_limits(
+                data_date=args.date,
+                source_meta=meta.get("sources", {}),
+                collected_data=collected_data,
+                requested_sources=set(collectors),
+            )
+        except Exception as exc:
+            meta["axdata_capture_endpoint_identities"] = {
+                "status": "failed_open",
+                "reason": f"{type(exc).__name__}: {exc}"[:240],
+            }
+            print(f"  ⚠ AxData 路由状态记录失败: {exc}", flush=True)
 
     # AxData reconciliation stays inside the daily capture loop. It reuses
     # today's raw records and, only for a complete latest-day close capture,
@@ -3783,11 +3953,19 @@ def main() -> None:
                 if _validation_fields is not None
                 else ""
             )
+            _validation_identity = _validation_probe.get("source_identity")
+            if not isinstance(_validation_identity, dict):
+                _validation_identity = {}
+            _identity_status = _validation_identity.get("status", "未确认")
+            _identity_recheck = _validation_identity.get("next_recheck_in_data_dates")
+            _identity_label = f" | 来源身份 {_identity_status}"
+            if _identity_recheck is not None:
+                _identity_label += f"（{_identity_recheck} 个数据日后复验）"
             print(
                 f"  AxData 验证: {_validation_status} | "
                 f"接口 {_validation_probe.get('interface_id') or '—'} | "
                 f"代码 {_validation_probe.get('code') or '—'}"
-                f"{_validation_comparison} | "
+                f"{_validation_comparison}{_identity_label} | "
                 f"{meta['axdata_validation'].get('file') or ''}",
                 flush=True,
             )
@@ -3897,6 +4075,7 @@ def main() -> None:
         print(f"  ⚠ 来源身份核验失败，不影响原始采集: {exc}", flush=True)
     with open(meta_path, "w", encoding="utf-8") as f:
         json.dump(meta, f, ensure_ascii=False, indent=1)
+    _refresh_field_evidence_coverage(out_dir, meta)
     print(
         f"✔ 完成: {out_dir} | 总耗时 {meta['total_secs']}s | ZHB={meta.get('zhb_data_date')}",
         flush=True,

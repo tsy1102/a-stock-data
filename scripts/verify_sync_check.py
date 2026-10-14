@@ -4,7 +4,7 @@
 verify_sync_check.py — 主字典 ↔ verify 分字典 一致性闸门（离线，零网络）
 
 用法:
-    python scripts/verify_sync_check.py [--strict] [--sync] [--repo DIR]
+    python scripts/verify_sync_check.py [--strict] [--sync] [--repo DIR] [--report-output FILE]
 
 目的:
     防止「破解新字段后未同步分字典」导致主字典(决策层)与 verify/(实证层)割裂。
@@ -368,7 +368,10 @@ def main():
         help="执行字段级同步抽检（best-effort，默认关闭以免跨源误报噪声）",
     )
     ap.add_argument("--repo", default=REPO_ROOT, help="仓库根目录（默认自动推断）")
-    ap.add_argument("--report-output", help="审计报告输出路径（默认写入 docs/field_verification）")
+    ap.add_argument(
+        "--report-output",
+        help="审计报告输出路径（默认按运行时间写入 docs/field_verification/sync_check_reports）",
+    )
     args = ap.parse_args()
 
     global FIELD_DICT, FIELD_SOURCE_REFERENCE, VERIFY_DIR
@@ -650,13 +653,24 @@ def main():
 
     # ---- 审计报告落盘 ----
     try:
-        default_report = os.path.join(
-            args.repo, "docs", "field_verification", "20260911_verify_sync_report.md"
-        )
-        rep_path = os.path.abspath(args.report_output or default_report)
+        if args.report_output:
+            rep_path = os.path.abspath(args.report_output)
+            report_mode = "w"
+        else:
+            timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S_%f")
+            rep_path = os.path.abspath(
+                os.path.join(
+                    args.repo,
+                    "docs",
+                    "field_verification",
+                    "sync_check_reports",
+                    f"{timestamp}_verify_sync_report.md",
+                )
+            )
+            report_mode = "x"
         rep_dir = os.path.dirname(rep_path)
         os.makedirs(rep_dir, exist_ok=True)
-        with open(rep_path, "w", encoding="utf-8") as rf:
+        with open(rep_path, report_mode, encoding="utf-8") as rf:
             rf.write(f"# verify_sync_check 审计报告（{datetime.date.today()}）\n\n")
             rf.write(f"- HARD FAIL: {len(hard_failures)}\n")
             rf.write(f"- WARN: {len(warnings)}\n\n")

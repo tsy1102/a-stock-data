@@ -101,7 +101,7 @@ _FIN_MAP = [
     ("zong_xian_jin_liu_raw_float", "zongxianjinliu", "qy2jiao"),
     ("cun_huo_raw_float", "cunhuo", "qy2jiao"),
     ("li_run_zong_he_raw_float", "lirunzonghe", "qy2jiao"),
-    ("shui_hou_li_run_raw_float", "shuihouli run", "qy2jiao"),
+    ("shui_hou_li_run_raw_float", "shuihoulirun", "qy2jiao"),
     ("jing_li_run_raw_float", "jinglirun", "qy2jiao"),
     ("wei_fen_li_run_raw_float", "weifenlirun", "qy2jiao"),
     ("mei_gu_jing_zi_chan_raw_float", "meigujingzichan", "yuan"),

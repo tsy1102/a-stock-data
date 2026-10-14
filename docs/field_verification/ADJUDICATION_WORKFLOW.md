@@ -12,15 +12,19 @@
 
 - 报告必须是 `collision_mode: verified_anchor_only`，且 `exploratory_pair_count` 为 0。
 - 仅接受报告 `L1` 列表中的 `L1` 或 `L1-U` 候选；L4、方法候选和未知字段互撞结果不能直接晋级。
-- `target` 必须精确对应报告 `left` 的运行时别名和完整字段路径，状态只能是 `unverified` 或 `candidate`。
-- `anchor` 必须精确对应报告 `right`，并且注册表状态为 `verified`、来源谱系确认独立且允许作锚。若运行时别名映射到多个字典来源，决策文件必须明确指出正确的来源名。
-- `conflict`、`disproved` 和现有 `verified` 字段不能由这条流程覆盖；状态冲突需要单独复核。
+- `target` 与 `anchor` 必须各自精确对应报告中的一个端点，允许它们与报告 `left` / `right` 的顺序相反；运行时别名必须能唯一解析到注册表中的完整路径。若运行时别名映射到多个字典来源，决策文件必须明确指出正确的来源名。
+- `action: verify` 只接受状态为 `unverified` 或 `candidate` 的目标字段，并将其升级为 `verified`。
+- 当 `verify` 所选锚字段缺少规范名、含义或单位时，必须同时提供 `external_evidence` HTTPS 链接；碰撞证据只用于交叉确认数值对应，独立文档才用于确定字段语义。外部链接会写入定案记录和逐源 `reference_evidence`。
+- `action: enrich_metadata` 用于主字典中已验证、但规范名/含义/单位有缺口的字段。决策必须提供 `previous` 元数据快照；当前值必须与该快照完全相同，且工具只允许补缺或替换占位规范名，不会覆盖已存在的有效语义。
+- `action: link_verified` 用于两个已验证且元数据完整的字段。它只写入 `same_number_same_meaning` 映射和审计证据，不改动任一字段的状态或元数据。
+- 可选 `anchor_metadata_correction` 用于证据确认锚字段的现有元数据有误时。必须提交精确的 `previous` / `updated` 快照、理由及 HTTPS 上游证据；工具会同时保留锚字段的旧值、新值与修正记录。
+- `conflict` 与 `disproved` 字段不能由这条流程覆盖；`verify` 也不能覆盖完整的 `verified` 字段。已验证字段只能按上述受限的 `enrich_metadata` 或 `link_verified` 操作处理。
 
 ## 准备决策文件
 
 复制 `docs/field_verification/adjudications/template.json` 到同目录的新文件。填写碰撞报告路径、复核人、复核日期和决定。报告路径相对于 `docs/field_verification/`；`target` / `anchor` 的 `code` 使用注册表中的完整路径。
 
-工具目前只接受 `verify`：必须填写稳定的 `canonical`、明确的 `meaning` 和复核理由；`unit` 可为空，但不能猜测。只有确认目标与锚字段语义等价后才提交决定。无法证明等价时，不提交定案；目标字段保持原状态。单个碰撞对不等价不代表目标字段本身已被证伪。
+`verify` / `enrich_metadata` 必须填写稳定的 `canonical`、明确的 `meaning` 和复核理由；`unit` 可为空，但不能猜测。`enrich_metadata` 还必须填写定案前的 `previous` 快照。`link_verified` 不需要新的字段定义，但理由必须解释数值比例、单位换算以及为什么已有语义确实等价。只有确认目标与锚字段语义等价后才提交决定。无法证明等价时，不提交定案；目标字段保持原状态。单个碰撞对不等价不代表目标字段本身已被证伪。
 
 ## 预览和应用
 
@@ -36,7 +40,7 @@ python.exe scripts\apply_collision_adjudications.py --decisions docs\field_verif
 python.exe scripts\apply_collision_adjudications.py --decisions docs\field_verification\adjudications\YYYYMMDD_review.json --apply
 ```
 
-应用会以事务式写入更新 `field_registry.json`、兼容聚合字段状态和 `meta.source_field_stats`，并重生成 `field_dict.md`、`unknown_fields.md`、`source_repository_map.md`、`field_metadata_gaps.md`。验证记录会保留报告路径、样本日期、命中情况、复核人、决定理由和唯一决定 ID。确认等价的字段对还会写入 `mappings`，供后续碰撞跳过已定案关系；使用现有关系值 `same_number_same_meaning`。
+应用会以事务式写入更新 `field_registry.json`、兼容聚合字段状态和 `meta.source_field_stats`，并重生成 `field_dict.md`、`unknown_fields.md`、`source_repository_map.md`、`field_metadata_gaps.md`。验证记录会保留报告路径、样本日期、命中情况、复核人、决定理由、外部证据、变更前后值和唯一决定 ID。确认等价的字段对还会写入 `mappings`，供后续碰撞跳过已定案关系；使用现有关系值 `same_number_same_meaning`。兼容聚合视图仅在所有逐源记录对某元数据项均为相同非空值时才展示该项；数值代码相同但来源定义不同或任一来源缺少定义时，聚合语义留空，避免把某源的 `fNN` 含义误投射到另一源。
 
 `field_matrix.md` 表达字段和来源的覆盖关系，状态/语义变更不改变该投影。应用后仍应运行 `registry_parity.py`、`verify_sync_check.py` 和对应测试。
 

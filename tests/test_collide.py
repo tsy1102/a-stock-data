@@ -294,6 +294,42 @@ def test_l1_requires_minimum_samples_on_each_independent_day():
     assert result["level"] == "L1"
     assert result["n_days"] == 3
     assert set(result["daily_sample_counts"].values()) == {18}
+    assert set(result["daily_informative_sample_counts"].values()) == {18}
+
+
+def test_l1_zero_and_missing_coincidences_do_not_meet_informative_floor():
+    left, right = _daily_fields(["20260924", "20260928", "20260929"], codes=20)
+    for key in left["vals"]:
+        code_index = int(key[0])
+        if code_index < 16:
+            left["vals"][key] = 0
+            right["vals"][key] = 0
+        elif code_index == 16:
+            left["vals"][key] = None
+            right["vals"][key] = None
+
+    result = collide.collide_pair(left, right)
+
+    assert result is not None
+    assert result["level"] == "L4"
+    assert set(result["daily_sample_counts"].values()) == {20}
+    assert set(result["daily_informative_sample_counts"].values()) == {3}
+
+
+def test_l1_uses_informative_hit_rate_after_daily_sample_floor():
+    left, right = _daily_fields(["20260924", "20260928", "20260929"], codes=20)
+    for key in left["vals"]:
+        if int(key[0]) < 15:
+            left["vals"][key] = 0
+            right["vals"][key] = 0
+
+    result = collide.collide_pair(left, right)
+
+    assert result["level"] == "L1"
+    assert set(result["daily_sample_counts"].values()) == {20}
+    assert set(result["daily_informative_sample_counts"].values()) == {5}
+    assert result["n_pairs"] == 60
+    assert result["n_informative_pairs"] == 15
 
 
 def test_below_daily_sample_floor_cannot_reach_l1():

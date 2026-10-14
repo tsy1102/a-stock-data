@@ -39,6 +39,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - 修正 ELTDX `92xxxx` 被误映射为 `sh92xxxx` 的问题；恢复北交所快照、短线、日 K 与财务批次采集，并将报告适配器的天梯请求限定到调用方代码集。移除不参与字段破解且历史上逐股触发 TQLEX 403 的 F10 新闻采集。
 - 确认 AxData 接口清单没有百度接口；FTShare 的 `baidu_financial_calendar` 是服务层财经日历，不是百度股票行情源。百度采集器保留零请求 `deprecated` 状态，供完整快照判定使用。
 - 更正市场报告的旧注释与内部函数名：K 线实际走 TDX；保留 `get_baidu_kline` 兼容别名，避免历史调用方断裂。
+- 修正 SHT 指数代码与 TDX 异常值：科创综指改用 000680；指数点位低于 100、非有限或涨跌幅异常时触发腾讯兜底，并在兜底值仍异常时隐藏该项。
+- 修正 MAK 空行业名被模糊匹配成“酿酒行业”的问题，空值、空白字符串和非字符串统一归入“其他”。
+- 修正解禁报告的数量口径：Eastmoney 提供 `ABLE_FREE_SHARES` 时显示实际可流通量，并保留 `FREE_SHARES` 公告量；TDX F10 或实际数量缺失时明确标记为公告解禁数量。按当前日期重分类并过滤解禁日，拒绝已过期的未来日历缓存；缓存类别升级至 v4。
 
 ### Validation
 
@@ -50,6 +53,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - AxData 路由身份闭环新增定向回归：生产接口逐股熔断、`--only` 限流状态持久化、未知 KPH 字段阻止退出、三交易日复验和碰撞过滤结果由离线回归覆盖；本轮未运行公网采集。
 - AxData/FTShare 封锁与退出闭环补充验证：AxData 身份单模块 9 项通过；AxData/FTShare 身份、采集、碰撞与辅助证据联合选择 194 项通过、764 项未选。回归覆盖人工封锁在契约变化及有效快照更新后的持续性、冗余接口退出、三交易日复验与碰撞过滤。
 - 本次全量离线套件尝试收集 957 项、选择 910 项，在 `tests/infra/test_main_scheduler.py::test_missing_report_script_is_failure` 长时间无输出后停止，未计为全量通过。Python 3.12 语法编译 5 个文件通过；MyPy 2 个生产模块零错误；A1/A7 闸门均为 0 HARD FAIL / 0 WARN；`git diff --check` 通过（仅有既存换行符转换提示）。真实网络未运行；Black 因此前同类无响应未重复执行。
+- 本次五大报告脚本缺陷修复定向回归 14 项通过（解禁 4、指数校验 3、空行业归类 5、SHT 指数装配 2）；11 个 Python 文件语法编译通过，7 个生产文件 MyPy 零错误，A1/A7 闸门均为 0 HARD FAIL / 0 WARN，改动文件 `git diff --check` 通过。全量离线套件此前在无输出的调度器/报告用例处停滞，未记为全量通过；Black 检查在 60 秒无输出后中止，未记为通过；未运行真实网络。
+- 全量离线套件随后在允许 Windows asyncio 使用本机 TCP 回环后完成：968 项收集，920 passed、1 skipped、47 deselected、0 failed（41.84 秒）；此前停滞由执行沙盒阻断回环连接导致，非项目测试逻辑故障。真实网络用例未运行。
 
 ## [V17.4.43] 2026-10-11 — 修复 ZHB 字段身份并持久化探索候选
 

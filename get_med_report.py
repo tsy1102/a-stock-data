@@ -1030,11 +1030,25 @@ async def generate_report_async(session, code, output_path, ind_comp=None, hsgt=
         else:
             L("    (暂无已披露近期事件)")
     if lockup:
-        total_upcoming = sum(h["shares"] for h in lockup)
         L("\n  ➤ 解禁抛压预警 (未来180天):")
-        L(f"    ⚠️ 待解禁总计: {total_upcoming/1e4:.1f}万股")
+        actual_rows = [h for h in lockup if h.get("shares_is_actual") is True]
+        reported_rows = [h for h in lockup if h.get("shares_is_actual") is not True]
+        actual_total = sum(h["shares"] for h in actual_rows)
+        reported_total = sum(h["shares"] for h in reported_rows)
+        if reported_rows:
+            if actual_rows:
+                L(f"    已知实际可流通: {actual_total/1e4:.1f}万股")
+            L(f"    公告解禁数量: {reported_total/1e4:.1f}万股（实际可售量未提供）")
+        else:
+            L(f"    ⚠️ 实际可流通总计: {actual_total/1e4:.1f}万股")
         for h in lockup:
-            L(f"    - {h['date']}: {h['type']} ({h['shares']/1e4:.1f}万股, 占 {h['ratio']:.2f}%)")
+            amount_label = (
+                "实际可流通" if h.get("shares_is_actual") is True else "公告解禁数量（实际可售量未知）"
+            )
+            L(
+                f"    - {h['date']}: {h['type']} ({amount_label} {h['shares']/1e4:.1f}万股,"
+                f" 来源占比 {h['ratio']:.2f}%)"
+            )
     else:
         L("\n  ➤ 解禁抛压预警: 未来半年内无解禁压力 ✅")
 

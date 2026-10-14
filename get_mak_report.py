@@ -688,6 +688,9 @@ _INDUSTRY_ALIASES = {
 
 
 def normalize_industry(bk_name):
+    if not isinstance(bk_name, str) or not bk_name.strip():
+        return "其他"
+    bk_name = bk_name.strip()
     if bk_name in _INDUSTRY_ALIASES:
         return _INDUSTRY_ALIASES[bk_name]
     for kw, target in _INDUSTRY_ALIASES.items():

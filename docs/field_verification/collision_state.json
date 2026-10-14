@@ -8725,14 +8725,15 @@
       "right": "tencent[32]",
       "level": "L1",
       "ratio": null,
-      "overall_hit": 1.0,
-      "n_days": 4,
-      "n_pairs": 80,
+      "overall_hit": 0.9898,
+      "n_days": 5,
+      "n_pairs": 100,
       "sample_dates": [
         "T:20260929",
         "T:20260930",
         "T:20261009",
-        "T:20261012"
+        "T:20261012",
+        "T:20261013"
       ],
       "evidence_sources": [
         "tdx",
@@ -10074,14 +10075,15 @@
       "right": "tencent[39]",
       "level": "L1",
       "ratio": null,
-      "overall_hit": 0.9625,
-      "n_days": 4,
-      "n_pairs": 80,
+      "overall_hit": 0.97,
+      "n_days": 5,
+      "n_pairs": 100,
       "sample_dates": [
         "T:20260929",
         "T:20260930",
         "T:20261009",
-        "T:20261012"
+        "T:20261012",
+        "T:20261013"
       ],
       "evidence_sources": [
         "tdx",
@@ -10099,13 +10101,14 @@
       "level": "L1",
       "ratio": null,
       "overall_hit": 1.0,
-      "n_days": 4,
-      "n_pairs": 80,
+      "n_days": 5,
+      "n_pairs": 100,
       "sample_dates": [
         "T:20260929",
         "T:20260930",
         "T:20261009",
-        "T:20261012"
+        "T:20261012",
+        "T:20261013"
       ],
       "evidence_sources": [
         "tdx",
@@ -10123,13 +10126,14 @@
       "level": "L1",
       "ratio": null,
       "overall_hit": 1.0,
-      "n_days": 4,
-      "n_pairs": 80,
+      "n_days": 5,
+      "n_pairs": 100,
       "sample_dates": [
         "T:20260929",
         "T:20260930",
         "T:20261009",
-        "T:20261012"
+        "T:20261012",
+        "T:20261013"
       ],
       "evidence_sources": [
         "tdx",
@@ -10279,13 +10283,14 @@
       "level": "L1",
       "ratio": null,
       "overall_hit": 0.95,
-      "n_days": 4,
-      "n_pairs": 80,
+      "n_days": 5,
+      "n_pairs": 100,
       "sample_dates": [
         "T:20260929",
         "T:20260930",
         "T:20261009",
-        "T:20261012"
+        "T:20261012",
+        "T:20261013"
       ],
       "evidence_sources": [
         "tdx",

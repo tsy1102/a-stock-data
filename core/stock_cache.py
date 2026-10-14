@@ -219,7 +219,7 @@ _SOFT_EXPIRY_WINDOW: "Dict[str, int]" = {
     "margin_trading": 7 * 86400,
     "block_trade": 7 * 86400,
     "lockup_expiry": 7 * 86400,
-    "lockup_expiry_shares_v2": 7 * 86400,
+    "lockup_expiry_shares_v4": 7 * 86400,
     "announcements": 7 * 86400,
     "northbound": 7 * 86400,
     "reports": 1 * 86400,
@@ -292,7 +292,7 @@ TTL: Dict[str, int] = {
     "margin_trading": 14 * 86400,  # 融资融券（历史数据不变，V10.0: 3天→14天）
     "block_trade": 14 * 86400,  # 大宗交易（历史数据不变，V10.0: 3天→14天）
     "lockup_expiry": 90 * 86400,  # 限售解禁（日期固定，V10.0: 7天→90天）
-    "lockup_expiry_shares_v2": 90 * 86400,  # 新单位规范化后的独立缓存命名空间
+    "lockup_expiry_shares_v4": 90 * 86400,  # 实际数量来源标记 + 未来日期有效性校验
     "announcements": 30 * 86400,  # 巨潮公告（发布后不变，V10.0: 7天→30天）
     "hsgt_flow": 14 * 86400,  # 沪深港通资金流（历史数据不变，V10.0: 3天→14天）
     "kline": 7 * 86400,  # K线行情（历史数据不变，V10.0: 1天→7天）

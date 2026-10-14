@@ -1318,18 +1318,30 @@ async def generate_report_async(session, code, output_path, ind_comp=None):
     L("---")
     lockup = await get_lockup_expiry_async(session, code, days=730)
     if lockup:
-        total_upcoming = sum(h["shares"] for h in lockup)
-        L(f"  ⚠️ 未来 2 年内待解禁总计: {total_upcoming/1e4:.1f} 万股")
+        actual_rows = [h for h in lockup if h.get("shares_is_actual") is True]
+        reported_rows = [h for h in lockup if h.get("shares_is_actual") is not True]
+        actual_total = sum(h["shares"] for h in actual_rows)
+        reported_total = sum(h["shares"] for h in reported_rows)
+        if reported_rows:
+            if actual_rows:
+                L(f"  未来 2 年内已知实际可流通: {actual_total/1e4:.1f} 万股")
+            L(f"  未来 2 年内公告解禁数量: {reported_total/1e4:.1f} 万股（实际可售量未提供）")
+        else:
+            L(f"  ⚠️ 未来 2 年内实际可流通总计: {actual_total/1e4:.1f} 万股")
         _price = q.get("price", 0) if q else 0
         _fmc = q.get("float_mcap_yi", 1) if q else 1
         for h in lockup:
-            # V16.2.3: shares 单位=股；解禁市值(亿) = 股 × 价格 / 1e8
+            # shares 是实际可流通量或源报告解禁量；估算市值按该数量口径计算。
             _jiejin_mc = (h['shares'] * _price / 1e8) if _price > 0 else 0
             _jiejin_pct = _jiejin_mc / _fmc * 100 if _fmc > 0 else 0
             _jiejin_tag = "🔴" if _jiejin_pct > 5 else ("🟡" if _jiejin_pct > 1 else "🟢")
+            amount_label = (
+                "实际可流通" if h.get("shares_is_actual") is True else "公告解禁数量（实际可售量未知）"
+            )
             # V17.0.8: 明细保留一位小数(原 .0f 四舍五入致 1.4万股显示 1 → 明细合计≠总计)
             L(
-                f"    - {h['date']}: {h['type']} ({h['shares']/1e4:.1f}万股, 解禁市值{_jiejin_mc:.1f}亿 占流通{_jiejin_pct:.1f}% {_jiejin_tag})"
+                f"    - {h['date']}: {h['type']} ({amount_label} {h['shares']/1e4:.1f}万股,"
+                f" 按该数量估算市值{_jiejin_mc:.1f}亿 占流通{_jiejin_pct:.1f}% {_jiejin_tag})"
             )
         L("\n  💡 长线避雷：警惕首发原股东或巨额定向增发的集中解禁潮。")
     else:

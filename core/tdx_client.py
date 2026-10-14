@@ -36,6 +36,7 @@ from __future__ import annotations
 # 并回写已绑定的 transport.sync / transport.async_ 的 SETUP_COMMANDS 引用。
 import core._tdx_handshake_patch  # noqa: F401  植入 2026-09 新式动态单握手（修复空数据）
 
+import math
 import time
 from datetime import datetime
 from typing import Any, Callable, Dict, List, Optional, Tuple, cast
@@ -1763,6 +1764,16 @@ def tdx_get_market_stat() -> Optional[Dict[str, Any]]:
         return None
 
 
+def _is_valid_index_quote(price: float, open_price: float, change_pct: float) -> bool:
+    """Reject stock-like prices and malformed values returned for broad A-share indexes."""
+    return (
+        all(math.isfinite(value) for value in (price, open_price, change_pct))
+        and price >= 100
+        and open_price >= 100
+        and abs(change_pct) <= 30
+    )
+
+
 def tdx_get_index_quote(idx_code: str) -> Dict[str, Any]:
     """获取指数行情（TDX 优先，腾讯兜底）。
 
@@ -1791,11 +1802,16 @@ def tdx_get_index_quote(idx_code: str) -> Dict[str, Any]:
                     prev_c = float(bars.iloc[-2]['close'])
                     last_o = float(bars.iloc[-1]['open'])
                     chg = (last_c - prev_c) / prev_c * 100 if prev_c > 0 else 0
-                    return {
-                        "price": round(last_c, 2),
-                        "open": round(last_o, 2),
-                        "change_pct": round(chg, 2),
-                    }
+                    if _is_valid_index_quote(last_c, last_o, chg):
+                        return {
+                            "price": round(last_c, 2),
+                            "open": round(last_o, 2),
+                            "change_pct": round(chg, 2),
+                        }
+                    _debug_log(
+                        f"tdx index_quote implausible values ({idx_code}): "
+                        f"{last_c}, {last_o}, {chg}"
+                    )
             except Exception as _e:
                 _debug_log(f"tdx index_quote error: {_e}")
     try:
@@ -1805,11 +1821,16 @@ def tdx_get_index_quote(idx_code: str) -> Dict[str, Any]:
             return {}
         r.encoding = "gbk"
         v = r.text.split('"')[1].split("~")
-        return {
-            "price": _safe_float(v[3]),
-            "open": _safe_float(v[5]),
-            "change_pct": _safe_float(v[32]),
-        }
+        price = _safe_float(v[3])
+        open_price = _safe_float(v[5])
+        change_pct = _safe_float(v[32])
+        if not _is_valid_index_quote(price, open_price, change_pct):
+            _debug_log(
+                f"tdx index_quote Tencent values invalid ({idx_code}): "
+                f"{price}, {open_price}, {change_pct}"
+            )
+            return {}
+        return {"price": price, "open": open_price, "change_pct": change_pct}
     except Exception as _e:
         _debug_log(f"tdx tdx_get_index_quote error ({idx_code}): {_e}")
         return {}

@@ -44,7 +44,7 @@ from stock_common import sc_datasource
 from stock_common.sc_report_runner import BaseReportRunner
 
 # sht 在 execute_pipeline 里逐个拉取的指数（顺序即源码中的顺序）
-SHT_INDEXES = ("sh000001", "sz399106", "sz399102", "sh000688")
+SHT_INDEXES = ("sh000001", "sz399106", "sz399102", "sh000680")
 
 
 def _args(output: str, **kw) -> argparse.Namespace:

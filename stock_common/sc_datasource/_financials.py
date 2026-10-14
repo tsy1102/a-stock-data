@@ -15,6 +15,7 @@ if TYPE_CHECKING:
 from datetime import date, datetime, timedelta
 import asyncio
 import code
+import math
 import re
 import subprocess
 import sys
@@ -999,9 +1000,38 @@ def _normalize_lockup_ratio(v: Any) -> float:
         return 0.0
 
 
+def _parse_lockup_date(value: Any) -> Optional[date]:
+    """Parse a source lockup date, discarding timestamps and malformed values."""
+    raw = str(value or "").strip()[:10]
+    try:
+        return date.fromisoformat(raw)
+    except ValueError:
+        return None
+
+
+def _lockup_cache_is_current(value: Any) -> bool:
+    """Reject cached calendars whose upcoming section contains dates that have passed."""
+    if isinstance(value, dict):
+        upcoming = value.get("upcoming")
+    elif isinstance(value, list):
+        upcoming = value
+    else:
+        return False
+    if not isinstance(upcoming, list):
+        return False
+    today = datetime.now().date()
+    return all(
+        isinstance(item, dict)
+        and (event_date := _parse_lockup_date(item.get("date"))) is not None
+        and event_date >= today
+        for item in upcoming
+    )
+
+
 @cached(
-    category="lockup_expiry_shares_v2",
-    ttl_seconds=TTL["lockup_expiry_shares_v2"],
+    category="lockup_expiry_shares_v4",
+    ttl_seconds=TTL["lockup_expiry_shares_v4"],
+    valid_if=_lockup_cache_is_current,
     cross_verify=True,
 )
 def get_lockup_expiry(code: str, days: int = 90, include_history: bool = False) -> Any:
@@ -1016,15 +1046,21 @@ def get_lockup_expiry(code: str, days: int = 90, include_history: bool = False) 
 
     Returns:
         include_history=True: {"history": [...], "upcoming": [...]}
-        include_history=False: [{"date", "type", "shares", "ratio", "able_shares"}, ...]
+        include_history=False: [{"date", "type", "shares", "ratio", "able_shares",
+                                 "free_shares", "shares_is_actual"}, ...]
         shares and able_shares are normalized to individual shares; ratio is percent.
+        shares is the actual tradable amount only when supplied; otherwise it is the reported
+        unlock amount. shares_is_actual distinguishes these cases, and free_shares preserves
+        the reported unlock amount.
     """
     from ._eastmoney import _em_filter
     from ._eastmoney import eastmoney_datacenter
 
     # V10.2: today_str 内部自动计算，不作为函数参数（避免污染缓存 key）
-    today_str = datetime.now().strftime("%Y-%m-%d")
-    end_str = (datetime.strptime(today_str, "%Y-%m-%d") + timedelta(days=days)).strftime("%Y-%m-%d")
+    today = datetime.now().date()
+    today_str = today.isoformat()
+    end_date = today + timedelta(days=days)
+    end_str = end_date.isoformat()
 
     # V9.0: 优先使用 F10 股本结构中的限售解禁数据
     try:
@@ -1038,32 +1074,35 @@ def get_lockup_expiry(code: str, days: int = 90, include_history: bool = False) 
                 upcoming: List[Dict[str, Any]] = []
                 for r in raw_list:
                     # F10 字段名可能为 解禁日期/公告日期，解禁类型/类型，解禁股数/数量，解禁比例/比例
-                    date_str = (
-                        r.get('解禁日期') or r.get('公告日期') or r.get('日期') or ''
-                    ).strip()
-                    if not date_str:
+                    event_date = _parse_lockup_date(
+                        r.get('解禁日期') or r.get('公告日期') or r.get('日期')
+                    )
+                    if event_date is None:
                         continue
-                    date_str = str(date_str)[:10]
-                    # MEDIUM(审查 2026-08-16): F10 解禁数量单位为**万**, 东财 FREE_SHARES 为**股**——
-                    # 统一 ×1e4 转股(下游按股处理: sht/med /1e4 显示万股, lng /1e8 算市值)
+                    date_str = event_date.isoformat()
+                    # F10 的解禁数量及 Eastmoney RPT_LIFT_STAGE 的 FREE_SHARES / ABLE_FREE_SHARES
+                    # 均按万股返回；统一转换为股。F10 不提供实际可售数量时明确标为未知。
+                    lockup_shares = _safe_float(
+                        r.get('解禁数量(万)')
+                        or r.get('解禁股数')
+                        or r.get('解禁数量')
+                        or r.get('数量')
+                        or 0
+                    ) * 1e4
                     entry = {
                         "date": date_str,
                         "type": (r.get('解禁类型') or r.get('类型') or '').strip(),
-                        "shares": _safe_float(
-                            r.get('解禁数量(万)')
-                            or r.get('解禁股数')
-                            or r.get('解禁数量')
-                            or r.get('数量')
-                            or 0
-                        )
-                        * 1e4,
+                        "shares": lockup_shares,
                         "ratio": _normalize_lockup_ratio(
                             r.get('解禁比例(%)') or r.get('解禁比例') or r.get('比例') or 0
                         ),
+                        "able_shares": None,
+                        "free_shares": lockup_shares,
+                        "shares_is_actual": False,
                     }
-                    if date_str < today_str:
+                    if event_date < today:
                         history.append(entry)
-                    elif today_str <= date_str <= end_str:
+                    elif event_date <= end_date:
                         upcoming.append(entry)
                 # 仅当 F10 解析出有效条目时才返回，否则继续走 HTTP fallback
                 if history or upcoming:
@@ -1075,22 +1114,43 @@ def get_lockup_expiry(code: str, days: int = 90, include_history: bool = False) 
     except Exception as _e:
         _debug_log(f"datasource tdx share capital lockup f10 error: {_e}")
 
-    # RPT_LIFT_STAGE 的 FREE_SHARES / ABLE_FREE_SHARES 源单位为万股；本适配器
-    # 与 F10 分支保持一致，统一输出股，供报告按股换算展示。
+    # RPT_LIFT_STAGE 的 FREE_SHARES / ABLE_FREE_SHARES 源单位为万股。
+    # 报告的 shares 表示实际可流通解禁量；free_shares 保留总解禁量供核对。
+    def _eastmoney_entry(row: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+        event_date = _parse_lockup_date(row.get("FREE_DATE"))
+        if event_date is None:
+            return None
+        free_shares = _safe_float(row.get("FREE_SHARES")) * 1e4
+        able_raw = row.get("ABLE_FREE_SHARES")
+        if able_raw is None:
+            able_value = float("nan")
+        else:
+            try:
+                able_value = float(able_raw)
+            except (TypeError, ValueError):
+                able_value = float("nan")
+        shares_is_actual = math.isfinite(able_value) and able_value >= 0
+        able_shares = able_value * 1e4 if shares_is_actual else None
+        return {
+            "date": event_date.isoformat(),
+            "type": row.get("FREE_SHARES_TYPE", ""),
+            "shares": able_shares if shares_is_actual else free_shares,
+            "ratio": _normalize_lockup_ratio(row.get("FREE_RATIO")),
+            "able_shares": able_shares,
+            "free_shares": free_shares,
+            "shares_is_actual": shares_is_actual,
+        }
+
     if include_history:
         data = _em_filter(
             code, "RPT_LIFT_STAGE", page_size=15, sort_columns="FREE_DATE", sort_types="-1"
         )
-        history = [
-            {
-                "date": str(r.get("FREE_DATE", "") or "")[:10],
-                "type": r.get("FREE_SHARES_TYPE", ""),
-                "shares": _safe_float(r.get("FREE_SHARES")) * 1e4,  # 源万股 → 股
-                "ratio": _normalize_lockup_ratio(r.get("FREE_RATIO")),  # 统一%
-                "able_shares": _safe_float(r.get("ABLE_FREE_SHARES")) * 1e4,  # 源万股 → 股
-            }
-            for r in data
-        ]
+        history = []
+        for row in data:
+            em_entry = _eastmoney_entry(row)
+            if em_entry and (event_date := _parse_lockup_date(em_entry["date"])) is not None:
+                if event_date < today:
+                    history.append(em_entry)
     else:
         history = []
 
@@ -1102,16 +1162,14 @@ def get_lockup_expiry(code: str, days: int = 90, include_history: bool = False) 
         sort_columns="FREE_DATE",
         sort_types="1",
     )
-    upcoming = [
-        {
-            "date": str(r.get("FREE_DATE", "") or "")[:10],
-            "type": r.get("FREE_SHARES_TYPE", ""),
-            "shares": _safe_float(r.get("FREE_SHARES")) * 1e4,  # 源万股 → 股
-            "ratio": _normalize_lockup_ratio(r.get("FREE_RATIO")),  # 统一%
-            "able_shares": _safe_float(r.get("ABLE_FREE_SHARES")) * 1e4,  # 源万股 → 股
-        }
-        for r in data2
-    ]
+    upcoming = []
+    for row in data2:
+        em_entry = _eastmoney_entry(row)
+        if em_entry and (event_date := _parse_lockup_date(em_entry["date"])) is not None:
+            if today <= event_date <= end_date:
+                upcoming.append(em_entry)
+    history.sort(key=lambda item: item["date"], reverse=True)
+    upcoming.sort(key=lambda item: item["date"])
 
     if include_history:
         return {"history": history, "upcoming": upcoming}

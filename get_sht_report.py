@@ -484,11 +484,11 @@ async def generate_report_async(
         ("sh000001", "上证指数"),
         ("sz399106", "深证综指"),
         ("sz399102", "创业综指"),
-        ("sh000688", "科创综指"),
+        ("sh000680", "科创综指"),
     ]
 
     if code.startswith("688"):
-        bi = "sh000688"
+        bi = "sh000680"
 
     elif code.startswith(("300", "301")):
         bi = "sz399102"
@@ -1440,12 +1440,14 @@ async def generate_report_async(
     if rh:
 
         L(f"  近30个交易日解禁 {len(rh)} 批:")
-        L(f"  {'日期':<12} {'类型':<30} {'数量':>10} {'占比%':>6}")
+        L(f"  {'日期':<12} {'类型':<30} {'数量类型及数量':>22} {'来源占比%':>9}")
         L(f"  {'-'*65}")
 
         for h in rh:
+            amount_label = "实际可流通" if h.get("shares_is_actual") is True else "公告解禁量"
             L(
-                f"  {h['date']:<12} {str(h['type'])[:30]:<30} {h['shares']/1e4:>12.0f}万 {h['ratio']:>7.2f}% {'🔴' if h['ratio']>_unlock_ratio_warn else ('🟡' if h['ratio']>1 else '🟢')}{'高' if h['ratio']>_unlock_ratio_warn else ('中' if h['ratio']>1 else '低')}"
+                f"  {h['date']:<12} {str(h['type'])[:30]:<30} {amount_label} {h['shares']/1e4:>8.0f}万股"
+                f" {h['ratio']:>8.2f}% {'🔴' if h['ratio']>_unlock_ratio_warn else ('🟡' if h['ratio']>1 else '🟢')}"
             )
 
     elif lockup["history"]:
@@ -1459,8 +1461,10 @@ async def generate_report_async(
         L(f"\n  未来{_unlock_warn}天待解禁 {len(lockup['upcoming'])} 批: ⚠️")
 
         for h in lockup["upcoming"]:
+            amount_label = "实际可流通" if h.get("shares_is_actual") is True else "公告解禁量"
             L(
-                f"    {h['date']}: {str(h['type'])} 数量={h['shares']/1e4:.0f}万 占比={h['ratio']:.2f}% 压力:{'🔴高' if h['ratio']>_unlock_ratio_warn else ('🟡中' if h['ratio']>1 else '🟢低')}"
+                f"    {h['date']}: {str(h['type'])} {amount_label}={h['shares']/1e4:.0f}万股"
+                f" 来源占比={h['ratio']:.2f}% 压力:{'🔴高' if h['ratio']>_unlock_ratio_warn else ('🟡中' if h['ratio']>1 else '🟢低')}"
             )
 
     else:
@@ -2744,7 +2748,7 @@ class ShtReportRunner(BaseReportRunner):
         # 缓存构建/prefetch 钩子/逐只 GD 上传钩子(pre_gd_init)全部参数化, 原 110 行本地实现删除
         _cached_ind_comp = get_industry_comparison()
         _cached_idx_q = {}
-        for ic in ("sh000001", "sz399106", "sz399102", "sh000688"):
+        for ic in ("sh000001", "sz399106", "sz399102", "sh000680"):
             _iq = _get_index_quote(ic)
             if _iq:
                 _cached_idx_q[ic] = _iq

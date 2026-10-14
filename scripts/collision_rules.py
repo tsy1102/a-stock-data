@@ -38,9 +38,10 @@ from typing import TextIO, TypedDict
 # 1. 精度对齐
 PRECISION = "|a−b| ≤ max(ulp_a, ulp_b)（舍入感知）；整数/枚举降级为严格 1e-9"
 # 2. 命中率分层
-HIT_RATE_L1 = 18  # 每采样日 ≥18/20 且可解释 → L1 定案
+HIT_RATE_L1 = 18  # 18/20 的门槛换算为信息配对命中率 ≥90% → L1 定案
 HIT_RATE_L4 = 8  # 8~17 → L4 候选（存疑）
 MIN_DAILY_SAMPLES_L1 = 18  # 单日样本不足 18，不参与 L1 日数/命中率
+MIN_INFORMATIVE_SAMPLES_L1 = 5  # 同日还需至少 5 个非 0/0、非双方缺失配对
 MIN_DAILY_SAMPLES_L4 = 8  # 少于 8 个配对样本的日子不输出 L4
 # 3. 比值族（单位换算定案）
 RATIO_CV_MAX = 1e-4  # 变异系数阈值（CV = std/mean）
@@ -74,6 +75,7 @@ SKIP_RULES = [
     f"L1 每日有效样本须 ≥{MIN_DAILY_SAMPLES_L1}，且 ≥{MULTI_DAY_MIN} 个独立交易日/自然事件日",
     "同一原始来源或已知镜像/别名字段不得作为跨源定案证据",
     "盘中或采集时段未知的行情快照可进入候选分析，但不计入 L1 的日样本与独立日数",
+    f"L1 每日须有 ≥{MIN_INFORMATIVE_SAMPLES_L1} 个信息配对；双方同时为 0 或同时缺失不计信息配对",
     "行情日按交易所日历与 ZHB 补充日历校验；新闻/公告按记录自然日对齐",
     "采集目录名、来源 as_of_date、记录事件日和实际采集时间分别保留；历史目录不自动改名或删除",
 ]
@@ -266,7 +268,7 @@ def emit_markdown(path: str | None = None) -> str:
     L.append("|:--|:--|:--|")
     L.append(f"| 1 | 精度对齐 | {PRECISION} |")
     L.append(
-        f"| 2 | 命中率分层 | 每采样日 ≥{HIT_RATE_L1}/20 且可解释 → **L1 定案**；"
+        f"| 2 | 命中率分层 | 信息配对每采样日命中率 ≥{HIT_RATE_L1 / 20:.0%} → **L1 定案**；"
         f"{HIT_RATE_L4}~{HIT_RATE_L1 - 1} → L4 候选（存疑） |"
     )
     L.append(f"| 3 | 比值族 | CV≤{RATIO_CV_MAX:g} 且比值∈{RATIO_STEPS} → L1-U 单位换算定案 |")
@@ -274,6 +276,10 @@ def emit_markdown(path: str | None = None) -> str:
     L.append(
         f"| 4a | 每日样本下限 | L1 每个独立日有效配对样本 ≥{MIN_DAILY_SAMPLES_L1}；"
         f"L4 每日 ≥{MIN_DAILY_SAMPLES_L4} |"
+    )
+    L.append(
+        f"| 4a-1 | 信息样本下限 | L1 每日还需 ≥{MIN_INFORMATIVE_SAMPLES_L1} 个信息配对；"
+        "双方同为 0 或双方缺失不参与精确命中率 |"
     )
     L.append("| 4b | 来源独立性 | 同源及已知镜像/别名不得作为跨源证据 |")
     L.append(

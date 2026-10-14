@@ -103,6 +103,24 @@ def test_exact_source_evidence_preserves_verification_and_exposes_conflict():
     assert migrated["fields"][0]["status"] == "conflict"
 
 
+def test_aggregate_metadata_is_blank_when_any_source_row_is_blank():
+    first = _reference("src-a", "f44")
+    first.update({"canonical": "profit.total", "meaning": "利润总额", "unit": "元"})
+    second = _reference("src-b", "f44")
+    second.update({"canonical": "", "meaning": "", "unit": ""})
+    migrated, _ = reconcile_registry(
+        {"meta": {}, "fields": [], "mappings": []},
+        {"source_fields": [first, second]},
+    )
+
+    aggregate = next(row for row in migrated["fields"] if row["code"] == "f44")
+    assert aggregate["source"] is None
+    assert aggregate["sources"] == ["src-a", "src-b"]
+    assert aggregate["canonical"] == ""
+    assert aggregate["meaning"] == ""
+    assert aggregate["unit"] == ""
+
+
 def test_conflicting_reference_rows_remain_conflict_without_guessing():
     current = {"meta": {}, "fields": [], "mappings": []}
     extracted = {"source_fields": [_reference("src-a", "value", ["verified", "unverified"])]}

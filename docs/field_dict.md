@@ -24,11 +24,12 @@
 ## 当前覆盖
 
 - 来源身份与参考登记：32 项；是否可作独立锚由来源谱系单独判定。
-- 逐源字段路径：2481 条；verified 846、unverified 1544、candidate 1、conflict 90、disproved 0。
+- 逐源字段路径：2481 条；verified 847、unverified 1543、candidate 1、conflict 90、disproved 0。
 - 矩阵：[`field_matrix.md`](field_matrix.md)。
 - 待破解与状态冲突：[`unknown_fields.md`](unknown_fields.md)。
 - 来源与 GitHub 仓库映射：[`source_repository_map.md`](source_repository_map.md)。
-- 已验证字段描述缺口：207 条缺少含义、47 条缺少规范名，见 [`field_metadata_gaps.md`](field_metadata_gaps.md)；缺口本身不自动改变状态。
+- 已验证字段描述缺口：198 条缺少含义、45 条缺少规范名，见 [`field_metadata_gaps.md`](field_metadata_gaps.md)；缺口本身不自动改变状态。
+- 同短 code 的聚合歧义、缺失定义和疑似合并文本单独列在 [`field_aggregate_review.md`](field_aggregate_review.md)；该清单不覆盖逐源定义，也不自动拆分字段。
 - 完整历史正文：[`field_source_reference.md`](field_source_reference.md)。
 
 ## 规则和方法
@@ -65,8 +66,9 @@
 ## 维护命令
 
 ```powershell
-python.exe scripts\gen_field_dict.py
-python.exe scripts\gen_field_matrix.py
-python.exe scripts\verify_sync_check.py
-python.exe scripts\registry_parity.py
+.\scripts\run_with_system_python.ps1 scripts\gen_field_dict.py
+.\scripts\run_with_system_python.ps1 scripts\gen_field_matrix.py
+.\scripts\run_with_system_python.ps1 scripts\verify_sync_check.py
+.\scripts\run_with_system_python.ps1 scripts\registry_parity.py
+.\scripts\run_with_system_python.ps1 scripts\refresh_field_registry_projection.py --check
 ```

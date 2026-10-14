@@ -6,6 +6,7 @@ from __future__ import annotations
 
 import argparse
 import os
+import re
 import sys
 from collections import Counter, defaultdict
 from typing import Any
@@ -21,6 +22,7 @@ DICT = os.path.join(DOCS_DIR, "field_dict.md")
 UNKNOWN = os.path.join(DOCS_DIR, "unknown_fields.md")
 SOURCE_MAP = os.path.join(DOCS_DIR, "source_repository_map.md")
 METADATA_GAPS = os.path.join(DOCS_DIR, "field_metadata_gaps.md")
+AGGREGATE_REVIEW = os.path.join(DOCS_DIR, "field_aggregate_review.md")
 
 sys.path.insert(0, SCRIPT_DIR)
 import field_registry_api as fra
@@ -95,6 +97,7 @@ def render_field_dict(registry: dict[str, Any]) -> str:
         "- 待破解与状态冲突：[`unknown_fields.md`](unknown_fields.md)。",
         "- 来源与 GitHub 仓库映射：[`source_repository_map.md`](source_repository_map.md)。",
         f"- 已验证字段描述缺口：{missing_meaning} 条缺少含义、{missing_canonical} 条缺少规范名，见 [`field_metadata_gaps.md`](field_metadata_gaps.md)；缺口本身不自动改变状态。",
+        "- 同短 code 的聚合歧义、缺失定义和疑似合并文本单独列在 [`field_aggregate_review.md`](field_aggregate_review.md)；该清单不覆盖逐源定义，也不自动拆分字段。",
         "- 完整历史正文：[`field_source_reference.md`](field_source_reference.md)。",
         "",
         "## 规则和方法",
@@ -127,10 +130,11 @@ def render_field_dict(registry: dict[str, Any]) -> str:
             "## 维护命令",
             "",
             "```powershell",
-            "python.exe scripts\\gen_field_dict.py",
-            "python.exe scripts\\gen_field_matrix.py",
-            "python.exe scripts\\verify_sync_check.py",
-            "python.exe scripts\\registry_parity.py",
+            ".\\scripts\\run_with_system_python.ps1 scripts\\gen_field_dict.py",
+            ".\\scripts\\run_with_system_python.ps1 scripts\\gen_field_matrix.py",
+            ".\\scripts\\run_with_system_python.ps1 scripts\\verify_sync_check.py",
+            ".\\scripts\\run_with_system_python.ps1 scripts\\registry_parity.py",
+            ".\\scripts\\run_with_system_python.ps1 scripts\\refresh_field_registry_projection.py --check",
             "```",
             "",
         ]
@@ -157,6 +161,7 @@ def render_unknown_fields(registry: dict[str, Any]) -> str:
         "> 由 `field_registry.json.source_fields` 自动生成；每行身份是来源加完整 code path。",
         "> 修改状态必须先核对 `reference_evidence` 与 `registry_aggregate`，并保留证据来源。",
         "> 碰撞候选须人工复核后使用 `apply_collision_adjudications.py` 同步状态；流程见 `field_verification/ADJUDICATION_WORKFLOW.md`。",
+        "> 聚合层的同码异义与定义缺口见 [`field_aggregate_review.md`](field_aggregate_review.md)，不代表逐源记录状态冲突。",
         "",
         f"> 总字段路径 {len(records)}；unverified {counts['unverified']}、candidate {counts['candidate']}、conflict {counts['conflict']}、disproved {counts['disproved']}。",
     ]
@@ -192,6 +197,107 @@ def render_unknown_fields(registry: dict[str, Any]) -> str:
                     resolution=_cell(record.get("status_resolution")),
                     section=_cell("；".join(sections)),
                 )
+            )
+    lines.append("")
+    return "\n".join(lines)
+
+
+def render_field_aggregate_review(registry: dict[str, Any]) -> str:
+    """Render aggregate-only ambiguity and composite-text candidates."""
+    records = fra.source_field_records(registry)
+    if not records:
+        raise ValueError("registry.source_fields is empty; refusing to generate aggregate review")
+    groups: dict[str, list[dict[str, Any]]] = defaultdict(list)
+    for record in records:
+        groups[record["code"]].append(record)
+    aggregates = {row["code"]: row for row in fra.build_aggregate_fields(records)}
+    review_groups = []
+    for code in sorted(groups):
+        aggregate = aggregates[code]
+        source_rows = groups[code]
+        multi_source = len({row["source"] for row in source_rows}) > 1
+        has_any_metadata = any(
+            str(row.get(key) or "").strip()
+            for row in source_rows
+            for key in ("canonical", "meaning", "unit")
+        )
+        issues = set(aggregate["aggregation_issues"])
+        if (
+            aggregate["aggregation_status"] == "ambiguous"
+            or "source_statuses_differ" in issues
+            or "source_status_conflict" in issues
+            or (
+                multi_source
+                and aggregate["aggregation_status"] == "incomplete"
+                and has_any_metadata
+            )
+        ):
+            review_groups.append(aggregate)
+    composite_pattern = re.compile(r"[/／+＋、;；]|(?:或|兼)")
+    composites = [
+        row
+        for row in records
+        if composite_pattern.search(
+            " ".join(str(row.get(key) or "") for key in ("canonical", "meaning"))
+        )
+    ]
+    ambiguous = sum(row["aggregation_status"] == "ambiguous" for row in review_groups)
+    incomplete = sum(row["aggregation_status"] == "incomplete" for row in review_groups)
+    lines = [
+        "# 字段聚合歧义与待拆分复核",
+        "",
+        "> 本文由 `field_registry.json.source_fields` 生成。逐源完整路径记录是权威定义；本文只揭示按短 code 聚合时无法安全呈现的差异。",
+        "> `aggregation_status` 只描述兼容聚合视图，不会改写逐源 `status`。疑似合并文本由分隔符启发式识别，仅供人工检查，不自动拆字段或定案。",
+        "> 本文统计的定义缺口仅限列出的复核组；单来源或全空的定义缺口仍见 [元数据缺口](field_metadata_gaps.md) 与 [未知字段队列](unknown_fields.md)。",
+        "",
+        f"> 聚合歧义 {ambiguous} 个 code；聚合定义不完整 {incomplete} 个 code；疑似合并文本 {len(composites)} 条逐源记录。",
+        "",
+        "## 同码聚合存在差异或定义缺口",
+        "",
+    ]
+    if not review_groups:
+        lines.append("_无记录。_")
+    for aggregate in review_groups:
+        code = aggregate["code"]
+        lines.extend(
+            [
+                f"### `{code}` — {aggregate['aggregation_status']}",
+                "",
+                f"聚合问题：{_cell('；'.join(aggregate['aggregation_issues']))}；聚合状态：`{aggregate['status']}`。",
+                "",
+                "| 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |",
+                "|:--|:--|:--|:--|:--|",
+            ]
+        )
+        for record in sorted(groups[code], key=lambda item: (item["source"], item["code"])):
+            lines.append(
+                f"| {_cell(record['source'])} · `{_cell(record['code'])}` | "
+                f"{_cell(record.get('canonical'))} | {_cell(record.get('meaning'))} | "
+                f"{_cell(record.get('unit'))} | `{_cell(record.get('status'))}` |"
+            )
+        lines.append("")
+    lines.extend(
+        [
+            "## 疑似合并文本（启发式候选）",
+            "",
+            "下列规范名或含义包含 `/`、`+`、`、`、分号、`或` 或 `兼`。分隔符可能只是正常描述格式，需结合原始路径和证据判断。",
+            "",
+        ]
+    )
+    if not composites:
+        lines.append("_无记录。_")
+    else:
+        lines.extend(
+            [
+                "| 来源身份 | 完整 code path | 规范名 | 含义 | 状态 |",
+                "|:--|:--|:--|:--|:--|",
+            ]
+        )
+        for record in sorted(composites, key=lambda item: (item["source"], item["code"])):
+            lines.append(
+                f"| {_cell(record['source'])} | `{_cell(record['code'])}` | "
+                f"{_cell(record.get('canonical'))} | {_cell(record.get('meaning'))} | "
+                f"`{_cell(record.get('status'))}` |"
             )
     lines.append("")
     return "\n".join(lines)
@@ -367,6 +473,7 @@ def generate(check: bool = False) -> int:
         UNKNOWN: render_unknown_fields(registry),
         SOURCE_MAP: render_source_repository_map(registry, lineage),
         METADATA_GAPS: render_field_metadata_gaps(registry),
+        AGGREGATE_REVIEW: render_field_aggregate_review(registry),
     }
     changed = []
     for path, content in outputs.items():
@@ -376,9 +483,7 @@ def generate(check: bool = False) -> int:
         if changed:
             print("DIFF: 生成文档过期: " + ", ".join(changed))
             return 1
-        print(
-            "OK: field_dict.md、unknown_fields.md、source_repository_map.md 与 field_metadata_gaps.md 均为最新生成结果"
-        )
+        print("OK: 字段导航、待破解队列、来源映射、元数据缺口和聚合复核文档均为最新生成结果")
         return 0
     print("OK: 已生成 " + ", ".join(os.path.relpath(path, REPO_ROOT) for path in outputs))
     return 0

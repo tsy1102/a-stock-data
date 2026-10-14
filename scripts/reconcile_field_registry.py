@@ -10,11 +10,11 @@ from __future__ import annotations
 
 import argparse
 import copy
+from collections import defaultdict
 import datetime as dt
 import json
 import os
 import sys
-from collections import defaultdict
 from typing import Any
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -27,6 +27,7 @@ for stream in (sys.stdout, sys.stderr):
 
 sys.path.insert(0, SCRIPT_DIR)
 import extract_registry as er
+import field_registry_api as fra
 
 VALID_STATUSES = {"verified", "unverified", "candidate", "disproved", "conflict"}
 
@@ -140,45 +141,7 @@ def reconcile_registry(
         counts.add(source_field)
 
     source_fields.sort(key=lambda record: (record["source"], record["code"]))
-    by_code: dict[str, list[dict[str, Any]]] = defaultdict(list)
-    for record in source_fields:
-        by_code[record["code"]].append(record)
-
-    fields: list[dict[str, Any]] = []
-    for code in sorted(by_code):
-        records = by_code[code]
-        sources = sorted({record["source"] for record in records})
-        statuses = {record["status"] for record in records}
-        if "conflict" in statuses:
-            aggregate_status = "conflict"
-        elif len(statuses) == 1:
-            aggregate_status = next(iter(statuses))
-        else:
-            aggregate_status = "unverified"
-
-        def common_value(key: str) -> str:
-            values = {record.get(key, "") for record in records if record.get(key, "")}
-            return next(iter(values)) if len(values) == 1 else ""
-
-        raw_statuses = {
-            raw
-            for record in records
-            for raw in record["status_evidence"].get("reference_status_raw", [])
-        }
-        fields.append(
-            {
-                "code": code,
-                "source": sources[0] if len(sources) == 1 else None,
-                "sources": sources,
-                "section": common_value("section"),
-                "canonical": common_value("canonical"),
-                "meaning": common_value("meaning"),
-                "unit": common_value("unit"),
-                "status_raw": next(iter(raw_statuses)) if len(raw_statuses) == 1 else "",
-                "status": aggregate_status,
-                "source_statuses": {record["source"]: record["status"] for record in records},
-            }
-        )
+    fields = fra.build_aggregate_fields(source_fields)
 
     migrated = copy.deepcopy(current)
     migrated["meta"] = copy.deepcopy(current.get("meta", {}))

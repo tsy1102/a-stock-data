@@ -18,6 +18,7 @@ import tempfile
 from collections import Counter, defaultdict
 from pathlib import Path
 from typing import Any
+from urllib.parse import urlsplit
 
 for _stream in (sys.stdout, sys.stderr):
     if _stream is not None and hasattr(_stream, "reconfigure"):
@@ -38,7 +39,7 @@ import field_registry_api as fra
 import gen_field_dict as gfd
 import source_lineage_api as sla
 
-VALID_ACTIONS = {"verify"}
+VALID_ACTIONS = {"verify", "enrich_metadata", "link_verified"}
 VALID_LEVELS = {"L1", "L1-U"}
 SAME_MEANING_RELATION = "same_number_same_meaning"
 
@@ -99,6 +100,88 @@ def _runtime_identity(field_id: str, source: str, lineage: dict[str, Any]) -> tu
     if not code:
         raise ValueError(f"runtime field has an empty code path: {field_id!r}")
     return alias, sla.normalize_runtime_field_code(alias, code)
+
+
+def _candidate_identity_for_source(
+    candidate_ids: tuple[str, str],
+    source_field: tuple[str, str],
+    lineage: dict[str, Any],
+    label: str,
+) -> tuple[str, str]:
+    """Resolve a registered identity to either endpoint of a symmetric pair."""
+    source, expected_code = source_field
+    aliases = sla.runtime_aliases_for_source(source, lineage)
+    matches: list[tuple[str, str]] = []
+    for field_id in candidate_ids:
+        if not any(
+            field_id.startswith(alias + ".") or field_id.startswith(alias + "[")
+            for alias in aliases
+        ):
+            continue
+        alias, code = _runtime_identity(field_id, source, lineage)
+        if code == expected_code:
+            matches.append((field_id, alias))
+    if len(matches) != 1:
+        raise ValueError(
+            f"{label} {source}::{expected_code} does not match report field endpoint exactly once; "
+            f"matched {len(matches)}"
+        )
+    return matches[0]
+
+
+def _metadata_snapshot(value: Any, label: str) -> dict[str, str]:
+    snapshot = _require_object(value, label)
+    if set(snapshot) != {"canonical", "meaning", "unit"}:
+        raise ValueError(f"{label} must contain exactly canonical, meaning, and unit")
+    if any(not isinstance(snapshot[key], str) for key in snapshot):
+        raise TypeError(f"{label} values must be strings")
+    return {key: snapshot[key].strip() for key in ("canonical", "meaning", "unit")}
+
+
+def _metadata(record: dict[str, Any]) -> dict[str, str]:
+    return {key: str(record.get(key, "") or "").strip() for key in ("canonical", "meaning", "unit")}
+
+
+def _validate_external_evidence(value: Any, label: str) -> list[str] | None:
+    if value is None:
+        return None
+    if not isinstance(value, list) or not value:
+        raise ValueError(f"{label} must be a non-empty URL list")
+    if any(not isinstance(item, str) or not item.strip() for item in value):
+        raise ValueError(f"{label} entries must be HTTPS URLs")
+    urls = [item.strip() for item in value]
+    if any(
+        urlsplit(item).scheme != "https"
+        or not urlsplit(item).hostname
+        or urlsplit(item).username is not None
+        for item in urls
+    ):
+        raise ValueError(f"{label} entries must be HTTPS URLs with a hostname")
+    return urls
+
+
+def _validate_anchor_metadata_correction(
+    value: Any, label: str = "anchor_metadata_correction"
+) -> dict[str, Any] | None:
+    if value is None:
+        return None
+    correction = _require_object(value, label)
+    previous = _metadata_snapshot(correction.get("previous"), f"{label}.previous")
+    updated = _metadata_snapshot(correction.get("updated"), f"{label}.updated")
+    rationale = _non_empty_string(correction.get("rationale"), f"{label}.rationale")
+    external_evidence = _validate_external_evidence(
+        correction.get("external_evidence"), f"{label}.external_evidence"
+    )
+    if external_evidence is None:
+        raise ValueError(f"{label}.external_evidence must be a non-empty URL list")
+    if previous == updated:
+        raise ValueError(f"{label} must change at least one metadata value")
+    return {
+        "previous": previous,
+        "updated": updated,
+        "rationale": rationale,
+        "external_evidence": list(external_evidence),
+    }
 
 
 def _find_l1_candidate(report: dict[str, Any], left: str, right: str) -> dict[str, Any]:
@@ -182,17 +265,20 @@ def _append_adjudication_evidence(field: dict[str, Any], adjudication: dict[str,
     reference_evidence = field.setdefault("reference_evidence", [])
     if not isinstance(reference_evidence, list):
         raise TypeError("source field reference_evidence must be a list")
-    reference_evidence.append(
-        {
-            "section": adjudication["report"],
-            "canonical": field.get("canonical", ""),
-            "meaning": field.get("meaning", ""),
-            "unit": field.get("unit", ""),
-            "status_raw": f"人工复核 {adjudication['reviewed_on']}：{adjudication['id']}",
-            "status": adjudication["status"],
-            "adjudication_id": adjudication["id"],
-        }
-    )
+    evidence_record = {
+        "section": adjudication["report"],
+        "canonical": field.get("canonical", ""),
+        "meaning": field.get("meaning", ""),
+        "unit": field.get("unit", ""),
+        "status_raw": f"人工复核 {adjudication['reviewed_on']}：{adjudication['id']}",
+        "status": adjudication["status"],
+        "adjudication_id": adjudication["id"],
+    }
+    if "metadata_change" in adjudication:
+        evidence_record["metadata_change"] = copy.deepcopy(adjudication["metadata_change"])
+    if "external_evidence" in adjudication:
+        evidence_record["external_evidence"] = copy.deepcopy(adjudication["external_evidence"])
+    reference_evidence.append(evidence_record)
     sections = field.setdefault("sections", [])
     if not isinstance(sections, list):
         raise TypeError("source field sections must be a list")
@@ -216,10 +302,11 @@ def _refresh_aggregate_projection(registry: dict[str, Any], affected_codes: set[
     if not isinstance(fields, list):
         raise TypeError("registry.fields must be a list")
     source_fields = fra.source_field_records(registry)
-    by_code: dict[str, list[dict[str, Any]]] = defaultdict(list)
-    for record in source_fields:
-        if record["code"] in affected_codes:
-            by_code[record["code"]].append(record)
+    projected = {
+        record["code"]: record
+        for record in fra.build_aggregate_fields(source_fields)
+        if record["code"] in affected_codes
+    }
 
     for code in affected_codes:
         aggregates = [record for record in fields if record.get("code") == code]
@@ -227,45 +314,11 @@ def _refresh_aggregate_projection(registry: dict[str, Any], affected_codes: set[
             raise ValueError(
                 f"expected one compatibility aggregate for code {code!r}; found {len(aggregates)}"
             )
-        records = by_code.get(code, [])
-        if not records:
+        aggregate = projected.get(code)
+        if aggregate is None:
             raise ValueError(f"no source_fields remain for aggregate code {code!r}")
-        sources = sorted({record["source"] for record in records})
-        statuses = {record.get("status", "unverified") for record in records}
-        if "conflict" in statuses:
-            aggregate_status = "conflict"
-        elif len(statuses) == 1:
-            aggregate_status = next(iter(statuses))
-        else:
-            aggregate_status = "unverified"
-
-        def common_value(key: str) -> str:
-            values = {str(record.get(key, "")).strip() for record in records}
-            values.discard("")
-            return next(iter(values)) if len(values) == 1 else ""
-
-        raw_statuses = {
-            raw
-            for record in records
-            for raw in record.get("status_evidence", {}).get("reference_status_raw", [])
-            if isinstance(raw, str) and raw
-        }
-        aggregate = aggregates[0]
-        aggregate.update(
-            {
-                "source": sources[0] if len(sources) == 1 else None,
-                "sources": sources,
-                "section": common_value("section"),
-                "canonical": common_value("canonical"),
-                "meaning": common_value("meaning"),
-                "unit": common_value("unit"),
-                "status_raw": next(iter(raw_statuses)) if len(raw_statuses) == 1 else "",
-                "status": aggregate_status,
-                "source_statuses": {
-                    record["source"]: record.get("status", "unverified") for record in records
-                },
-            }
-        )
+        aggregates[0].clear()
+        aggregates[0].update(aggregate)
 
     meta = registry.setdefault("meta", {})
     if not isinstance(meta, dict):
@@ -308,7 +361,14 @@ def apply_adjudications(
     seen_ids: set[str] = set()
     seen_targets: set[tuple[str, str]] = set()
     affected_codes: set[str] = set()
-    stats = {"verified": 0, "already_applied": 0, "mappings_added": 0}
+    stats = {
+        "verified": 0,
+        "metadata_enriched": 0,
+        "linked": 0,
+        "anchor_metadata_corrected": 0,
+        "already_applied": 0,
+        "mappings_added": 0,
+    }
 
     for raw_decision in decisions:
         decision = _require_object(raw_decision, "decision")
@@ -334,16 +394,15 @@ def apply_adjudications(
             _non_empty_string(anchor_obj.get("source"), "anchor.source"),
             _non_empty_string(anchor_obj.get("code"), "anchor.code"),
         )
-        _target_alias, target_code = _runtime_identity(left_id, target[0], lineage)
-        if target_code != target[1]:
-            raise ValueError(
-                f"target {target[0]}::{target[1]} does not match report field {left_id!r}"
-            )
-        anchor_alias, anchor_code = _runtime_identity(right_id, anchor[0], lineage)
-        if anchor_code != anchor[1]:
-            raise ValueError(
-                f"anchor {anchor[0]}::{anchor[1]} does not match report field {right_id!r}"
-            )
+        candidate_ids = (left_id, right_id)
+        _target_field_id, _target_alias = _candidate_identity_for_source(
+            candidate_ids, target, lineage, "target"
+        )
+        _anchor_field_id, anchor_alias = _candidate_identity_for_source(
+            candidate_ids, anchor, lineage, "anchor"
+        )
+        if _target_field_id == _anchor_field_id:
+            raise ValueError("target and anchor resolve to the same collision endpoint")
         if target not in by_identity:
             raise ValueError(f"unknown target source field: {target[0]}::{target[1]}")
         if anchor not in by_identity:
@@ -369,11 +428,67 @@ def apply_adjudications(
                 f"unsupported adjudication action: {action!r}; only verified semantic conclusions can be written"
             )
         rationale = _non_empty_string(decision.get("rationale"), "decision.rationale")
+        external_evidence = _validate_external_evidence(
+            decision.get("external_evidence"), "decision.external_evidence"
+        )
         current_status = target_record.get("status", "unverified")
         if target in seen_targets:
             raise ValueError(f"multiple decisions target the same field: {target}")
         seen_targets.add(target)
 
+        if action == "link_verified":
+            canonical = ""
+            meaning = ""
+            unit = ""
+        else:
+            canonical = _non_empty_string(decision.get("canonical"), "decision.canonical")
+            meaning = _non_empty_string(decision.get("meaning"), "decision.meaning")
+            unit = decision.get("unit", "")
+            if not isinstance(unit, str):
+                raise TypeError("decision.unit must be a string")
+            unit = unit.strip()
+
+        previous_metadata: dict[str, str] | None = None
+        if action == "enrich_metadata":
+            previous_metadata = _metadata_snapshot(decision.get("previous"), "decision.previous")
+            after_metadata = {"canonical": canonical, "meaning": meaning, "unit": unit}
+            if current_status != "verified":
+                raise ValueError(
+                    f"enrich_metadata requires an already verified target: {target[0]}::{target[1]}"
+                )
+            if previous_metadata == after_metadata:
+                raise ValueError("enrich_metadata must add or correct at least one metadata value")
+        elif action == "verify" and current_status not in {"unverified", "candidate"}:
+            target_history = target_record.get("adjudications", [])
+            already_recorded = isinstance(target_history, list) and any(
+                isinstance(item, dict) and item.get("id") == decision_id for item in target_history
+            )
+            if current_status != "verified" or not already_recorded:
+                raise ValueError(
+                    f"target status {current_status!r} requires separate conflict review: {target}"
+                )
+        elif action == "verify" and not all(_metadata(anchor_record).values()):
+            if not external_evidence:
+                raise ValueError(
+                    "verify requires external_evidence when the selected anchor metadata is incomplete"
+                )
+        elif action == "link_verified":
+            if current_status != "verified":
+                raise ValueError(
+                    f"link_verified requires verified target and anchor records: {target}"
+                )
+            if not all(_metadata(target_record).values()):
+                raise ValueError(
+                    f"link_verified requires complete target metadata: {target[0]}::{target[1]}"
+                )
+            if not all(_metadata(anchor_record).values()):
+                raise ValueError(
+                    f"link_verified requires complete anchor metadata: {anchor[0]}::{anchor[1]}"
+                )
+
+        anchor_correction = _validate_anchor_metadata_correction(
+            decision.get("anchor_metadata_correction")
+        )
         adjudication_status = "verified"
         adjudication = {
             "id": decision_id,
@@ -400,6 +515,18 @@ def apply_adjudications(
                 if key in candidate
             },
         }
+        if action == "enrich_metadata":
+            adjudication["metadata_change"] = {
+                "before": previous_metadata,
+                "after": {"canonical": canonical, "meaning": meaning, "unit": unit},
+            }
+        if anchor_correction:
+            adjudication["anchor_metadata_correction"] = copy.deepcopy(anchor_correction)
+        if action == "link_verified":
+            adjudication["target"] = {"source": target[0], "code": target[1]}
+            adjudication["anchor"] = {"source": anchor[0], "code": anchor[1]}
+        if external_evidence:
+            adjudication["external_evidence"] = external_evidence
 
         history = target_record.get("adjudications", [])
         if not isinstance(history, list):
@@ -413,49 +540,106 @@ def apply_adjudications(
                 raise ValueError(
                     f"decision id already exists with different content: {decision_id}"
                 )
-            canonical = _non_empty_string(decision.get("canonical"), "decision.canonical")
-            meaning = _non_empty_string(decision.get("meaning"), "decision.meaning")
-            unit = decision.get("unit", "")
-            if not isinstance(unit, str):
-                raise TypeError("decision.unit must be a string")
-            if (
+            if action != "link_verified" and (
                 target_record.get("canonical") != canonical
                 or target_record.get("meaning") != meaning
-                or target_record.get("unit", "") != unit.strip()
+                or target_record.get("unit", "") != unit
             ):
                 raise ValueError(f"decision id reuses different field attributes: {decision_id}")
+            if anchor_correction:
+                anchor_id = f"{decision_id}-anchor"
+                anchor_history = anchor_record.get("adjudications", [])
+                anchor_prior = (
+                    next(
+                        (
+                            item
+                            for item in anchor_history
+                            if isinstance(item, dict) and item.get("id") == anchor_id
+                        ),
+                        None,
+                    )
+                    if isinstance(anchor_history, list)
+                    else None
+                )
+                expected_anchor_metadata = anchor_correction["updated"]
+                if (
+                    anchor_prior is None
+                    or anchor_prior.get("metadata_change")
+                    != {
+                        "before": anchor_correction["previous"],
+                        "after": expected_anchor_metadata,
+                    }
+                    or _metadata(anchor_record) != expected_anchor_metadata
+                ):
+                    raise ValueError(
+                        f"anchor metadata correction is partially applied or differs: {anchor}"
+                    )
             evidence = f"adjudication:{decision_path}#{decision_id};report:{report_path}"
             if _add_verified_mapping(updated, target, anchor, evidence):
                 stats["mappings_added"] += 1
             stats["already_applied"] += 1
             continue
 
-        if current_status not in {"unverified", "candidate"}:
-            raise ValueError(
-                f"target status {current_status!r} requires separate conflict review: {target}"
+        if action == "enrich_metadata":
+            current_metadata = _metadata(target_record)
+            if current_metadata != previous_metadata:
+                raise ValueError(f"target metadata changed since review: {target[0]}::{target[1]}")
+            if (
+                current_metadata["canonical"] not in {"", target[1], canonical}
+                or current_metadata["meaning"] not in {"", meaning}
+                or current_metadata["unit"] not in {"", unit}
+            ):
+                raise ValueError(
+                    f"enrich_metadata cannot overwrite established metadata: {target[0]}::{target[1]}"
+                )
+            target_record.update({"canonical": canonical, "meaning": meaning, "unit": unit})
+            stats["metadata_enriched"] += 1
+        elif action == "link_verified":
+            stats["linked"] += 1
+        else:
+            target_record.update(
+                {
+                    "canonical": canonical,
+                    "meaning": meaning,
+                    "unit": unit,
+                    "status": "verified",
+                    "status_resolution": "manual_collision_adjudication",
+                }
             )
-
-        canonical = _non_empty_string(decision.get("canonical"), "decision.canonical")
-        meaning = _non_empty_string(decision.get("meaning"), "decision.meaning")
-        unit = decision.get("unit", "")
-        if not isinstance(unit, str):
-            raise TypeError("decision.unit must be a string")
-        target_record.update(
-            {
-                "canonical": canonical,
-                "meaning": meaning,
-                "unit": unit.strip(),
-                "status": "verified",
-                "status_resolution": "manual_collision_adjudication",
-            }
-        )
+            stats["verified"] += 1
         evidence = f"adjudication:{decision_path}#{decision_id};report:{report_path}"
         if _add_verified_mapping(updated, target, anchor, evidence):
             stats["mappings_added"] += 1
-        stats["verified"] += 1
-        affected_codes.add(target[1])
+        if action != "link_verified":
+            affected_codes.add(target[1])
 
         _append_adjudication_evidence(target_record, adjudication)
+
+        if anchor_correction:
+            if _metadata(anchor_record) != anchor_correction["previous"]:
+                raise ValueError(f"anchor metadata changed since review: {anchor[0]}::{anchor[1]}")
+            anchor_id = f"{decision_id}-anchor"
+            anchor_adjudication = {
+                "id": anchor_id,
+                "action": "correct_metadata",
+                "status": anchor_record.get("status", "verified"),
+                "reviewer": reviewer,
+                "reviewed_on": reviewed_on,
+                "report": report_path,
+                "decision_file": decision_path,
+                "candidate": {"left": left_id, "right": right_id},
+                "level": candidate["level"],
+                "rationale": anchor_correction["rationale"],
+                "metadata_change": {
+                    "before": anchor_correction["previous"],
+                    "after": anchor_correction["updated"],
+                },
+                "external_evidence": anchor_correction["external_evidence"],
+            }
+            anchor_record.update(anchor_correction["updated"])
+            _append_adjudication_evidence(anchor_record, anchor_adjudication)
+            stats["anchor_metadata_corrected"] += 1
+            affected_codes.add(anchor[1])
 
     if affected_codes:
         _refresh_aggregate_projection(updated, affected_codes)
@@ -551,7 +735,16 @@ def main(argv: list[str] | None = None) -> int:
         if not args.apply:
             print("Preview only. Re-run with --apply after reviewing the proposed decisions.")
             return 0
-        if stats["verified"] == 0 and stats["mappings_added"] == 0:
+        if not any(
+            stats[key]
+            for key in (
+                "verified",
+                "metadata_enriched",
+                "linked",
+                "anchor_metadata_corrected",
+                "mappings_added",
+            )
+        ):
             print("All decisions were already applied; no files changed.")
             return 0
 

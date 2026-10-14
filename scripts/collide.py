@@ -70,7 +70,9 @@ from scripts.collision_dates import (
     select_snapshots,
 )
 from scripts.context_policy import CONTEXT_ONLY_SOURCES, CONTEXT_RECORD_PATHS
+from scripts import collision_auxiliary_evidence as CAE
 from scripts import collision_research_state as CRS
+from scripts import field_name_candidates as FNC
 
 try:
     from scripts import collision_rules as CR
@@ -111,6 +113,7 @@ else:
 
 MIN_PAIR = 8  # 候选对最少总样本数
 MIN_DAILY_L1 = CR.MIN_DAILY_SAMPLES_L1 if RULES_OK else 18
+MIN_INFORMATIVE_DAILY_L1 = CR.MIN_INFORMATIVE_SAMPLES_L1 if RULES_OK else 5
 MIN_DAILY_L4 = CR.MIN_DAILY_SAMPLES_L4 if RULES_OK else 8
 MIN_CANDIDATE_PAIRS = 12  # 方法候选最少配对样本
 MAX_METHOD_CANDIDATES = 500
@@ -341,7 +344,14 @@ def _event_identity(source, record, container_code, entity_code):
 
 
 def load_snapshots(
-    snapshots, store, diagnostics, event_start=None, event_end=None, include_context=False
+    snapshots,
+    store,
+    diagnostics,
+    event_start=None,
+    event_end=None,
+    include_context=False,
+    excluded_sources=None,
+    excluded_fields_by_source=None,
 ):
     """Flatten selected source snapshots using domain-qualified sample dates."""
     total = 0
@@ -351,6 +361,13 @@ def load_snapshots(
     undated_event_counts = defaultdict(int)
     future_event_counts = defaultdict(int)
     for snapshot in snapshots:
+        if isinstance(excluded_sources, dict) and snapshot.source in excluded_sources:
+            identity = excluded_sources[snapshot.source]
+            interface_id = identity.get("interface_id") if isinstance(identity, dict) else identity
+            diagnostics.append(
+                f"{snapshot.folder}/{snapshot.source}: 日常碰撞已排除已确认冗余接口 {interface_id or 'unknown'}"
+            )
+            continue
         if snapshot.source in CONTEXT_ONLY_SOURCES and not include_context:
             diagnostics.append(
                 f"{snapshot.folder}/{snapshot.source}: 纯市场上下文源已按默认策略排除；"
@@ -358,6 +375,17 @@ def load_snapshots(
             )
             continue
         doc = snapshot.document
+        suppressed_fields = (
+            excluded_fields_by_source.get(snapshot.source, set())
+            if isinstance(excluded_fields_by_source, dict)
+            else set()
+        )
+        if suppressed_fields and snapshot.source == "ftshare":
+            doc, removed = _without_identity_fields(doc, suppressed_fields)
+            if removed:
+                diagnostics.append(
+                    f"{snapshot.folder}/{snapshot.source}: 已排除 {removed} 个已确认冗余的 FTShare 接口字段"
+                )
         if not include_context:
             doc, excluded_context = _without_context_records(doc, snapshot.source)
             for path, count in excluded_context:
@@ -460,6 +488,26 @@ def load_snapshots(
     return total
 
 
+def _without_identity_fields(document, fields):
+    """Drop only confirmed FTShare endpoint keys from in-memory stock records."""
+    if not isinstance(document, dict) or not isinstance(document.get("stocks"), dict):
+        return document, 0
+    stocks = {}
+    removed = 0
+    for code, record in document["stocks"].items():
+        if not isinstance(record, dict):
+            stocks[code] = record
+            continue
+        filtered = {key: value for key, value in record.items() if key not in fields}
+        removed += len(record) - len(filtered)
+        stocks[code] = filtered
+    if not removed:
+        return document, 0
+    sanitized = dict(document)
+    sanitized["stocks"] = stocks
+    return sanitized, removed
+
+
 # ───────────────────────────────────────────────────────────────────────
 # 字段分类（数值 / 枚举 / 字符串 / 常量 / 标识符）
 # ───────────────────────────────────────────────────────────────────────
@@ -513,6 +561,17 @@ def _median(values):
     return (ordered[middle - 1] + ordered[middle]) / 2.0
 
 
+def _informative_pair(a, b, left_num, right_num):
+    """Ignore jointly missing and 0/0 pairs when exact matches could be coincidental."""
+    left_missing = a is None or (isinstance(a, str) and not a.strip())
+    right_missing = b is None or (isinstance(b, str) and not b.strip())
+    if left_missing and right_missing:
+        return False
+    if left_num == 0 and right_num == 0:
+        return False
+    return True
+
+
 def _ratio_step(value):
     for step in RATIO_STEPS_SIGNED:
         if step != 1 and math.isclose(value, step, rel_tol=0.005, abs_tol=1e-9):
@@ -536,6 +595,7 @@ def collide_pair(L, R):
 
     exact_all = defaultdict(lambda: [0, 0])
     exact_l1 = defaultdict(lambda: [0, 0])
+    informative_l1 = defaultdict(lambda: [0, 0])
     ratios_by_day = defaultdict(list)
     for key in common:
         a, b = lv[key], rv[key]
@@ -543,14 +603,19 @@ def collide_pair(L, R):
         day_key = key[1]
         exact_all[day_key][1] += 1
         l1_eligible = _eligible_for_l1(L, key) and _eligible_for_l1(R, key)
+        informative = _informative_pair(a, b, left_num, right_num)
         if l1_eligible:
             exact_l1[day_key][1] += 1
+            if informative:
+                informative_l1[day_key][1] += 1
         if left_num is not None and right_num is not None:
             matched = is_close(left_num, right_num)
             if matched:
                 exact_all[day_key][0] += 1
                 if l1_eligible:
                     exact_l1[day_key][0] += 1
+                    if informative:
+                        informative_l1[day_key][0] += 1
             if left_num != 0 and right_num != 0:
                 ratios_by_day[day_key].append((right_num / left_num, l1_eligible))
         else:
@@ -559,11 +624,19 @@ def collide_pair(L, R):
                 exact_all[day_key][0] += 1
                 if l1_eligible:
                     exact_l1[day_key][0] += 1
+                    if informative:
+                        informative_l1[day_key][0] += 1
 
-    l1_days = {day: counts for day, counts in exact_l1.items() if counts[1] >= MIN_DAILY_L1}
-    exact_days_ge = sum(hits / total >= HIT_RATE_L1_RATIO for hits, total in l1_days.values())
-    exact_total_hits = sum(hits for hits, _ in l1_days.values())
-    exact_total = sum(total for _, total in l1_days.values())
+    l1_days = {
+        day: counts
+        for day, counts in exact_l1.items()
+        if counts[1] >= MIN_DAILY_L1 and informative_l1[day][1] >= MIN_INFORMATIVE_DAILY_L1
+    }
+    exact_days_ge = sum(
+        informative_l1[day][0] / informative_l1[day][1] >= HIT_RATE_L1_RATIO for day in l1_days
+    )
+    exact_total_hits = sum(informative_l1[day][0] for day in l1_days)
+    exact_total = sum(informative_l1[day][1] for day in l1_days)
     exact_overall = exact_total_hits / exact_total if exact_total else 0.0
     exact_l1_ok = (
         len(l1_days) >= MULTI_DAY_MIN
@@ -618,6 +691,7 @@ def collide_pair(L, R):
     if exact_l1_ok:
         level = "L1"
         selected_days = l1_days
+        selected_evidence_days = informative_l1
         overall = exact_overall
         days_ge = exact_days_ge
     elif (
@@ -643,6 +717,16 @@ def collide_pair(L, R):
         else:
             return None
 
+    if level == "L1":
+        informative_report_days = informative_l1
+        n_informative_pairs = sum(total for _, total in selected_evidence_days.values())
+    elif level == "L1-U":
+        informative_report_days = ratio_days
+        n_informative_pairs = None
+    else:
+        informative_report_days = informative_l1
+        n_informative_pairs = None
+
     return {
         "left": None,
         "right": None,
@@ -652,8 +736,19 @@ def collide_pair(L, R):
         "days_ge_threshold": days_ge,
         "n_days": len(selected_days),
         "n_pairs": sum(total for _, total in selected_days.values()),
+        "n_informative_pairs": n_informative_pairs,
         "distinct_days": sorted(selected_days),
         "daily_sample_counts": {day: total for day, (_, total) in selected_days.items()},
+        "daily_informative_sample_counts": {
+            day: informative_report_days[day][1]
+            for day in selected_days
+            if day in informative_report_days
+        },
+        "daily_informative_hit_counts": {
+            day: informative_report_days[day][0]
+            for day in selected_days
+            if day in informative_report_days
+        },
         "excluded_intraday_pairs": sum(
             1
             for key in common
@@ -1041,13 +1136,15 @@ def load_registry_context():
             for right_alias in right_aliases:
                 normalized_left_code = SLA.normalize_runtime_field_code(left_alias, left_code)
                 normalized_right_code = SLA.normalize_runtime_field_code(right_alias, right_code)
-                if left_alias == "zhb" and len(
-                    alias_identity_owners[(left_alias, normalized_left_code)]
-                ) != 1:
+                if (
+                    left_alias == "zhb"
+                    and len(alias_identity_owners[(left_alias, normalized_left_code)]) != 1
+                ):
                     continue
-                if right_alias == "zhb" and len(
-                    alias_identity_owners[(right_alias, normalized_right_code)]
-                ) != 1:
+                if (
+                    right_alias == "zhb"
+                    and len(alias_identity_owners[(right_alias, normalized_right_code)]) != 1
+                ):
                     continue
                 context["known_mappings"].add(
                     (left_alias, normalized_left_code, right_alias, normalized_right_code)
@@ -1253,6 +1350,47 @@ def run(args):
         usable_snapshots.append(snapshot)
     snapshots = usable_snapshots
 
+    routine_suppression = {"sources": {}, "fields_by_source": {}}
+    if not args.all and not args.exploratory:
+        try:
+            try:
+                from scripts.axdata_daily_validation import get_axdata_collision_suppressions
+            except ModuleNotFoundError:
+                from axdata_daily_validation import get_axdata_collision_suppressions
+
+            routine_suppression["sources"].update(get_axdata_collision_suppressions())
+        except Exception as exc:
+            diagnostics.append(
+                f"AxData 日常碰撞排除状态读取失败，保留所有样本: {type(exc).__name__}: {exc}"
+            )
+        try:
+            try:
+                from scripts.source_identity_reconciliation import get_ftshare_identity_plan
+            except ModuleNotFoundError:
+                from source_identity_reconciliation import get_ftshare_identity_plan
+
+            ftshare_plan = get_ftshare_identity_plan(data_date=today)
+            ftshare_skips = ftshare_plan.get("skip", {})
+            if isinstance(ftshare_skips, dict) and ftshare_skips:
+                routine_suppression["fields_by_source"]["ftshare"] = set(ftshare_skips)
+        except Exception as exc:
+            diagnostics.append(
+                f"FTShare 日常碰撞排除状态读取失败，保留所有样本: {type(exc).__name__}: {exc}"
+            )
+    if routine_suppression["sources"]:
+        diagnostics.append(
+            "日常碰撞排除已确认冗余的 AxData 路由: "
+            + ", ".join(
+                f"{source}={identity.get('interface_id', 'unknown')}"
+                for source, identity in sorted(routine_suppression["sources"].items())
+            )
+        )
+    if routine_suppression["fields_by_source"].get("ftshare"):
+        diagnostics.append(
+            "日常碰撞排除已确认冗余的 FTShare 字段: "
+            + ", ".join(sorted(routine_suppression["fields_by_source"]["ftshare"]))
+        )
+
     # 2) Load only quality-selected source snapshots; sample keys include date domain.
     store = defaultdict(lambda: {"vals": {}, "scheme": None, "src": None, "sample_meta": {}})
     total = load_snapshots(
@@ -1262,6 +1400,8 @@ def run(args):
         event_start=folder_window.event_start,
         event_end=folder_window.event_end,
         include_context=getattr(args, "include_context", False),
+        excluded_sources=routine_suppression["sources"],
+        excluded_fields_by_source=routine_suppression["fields_by_source"],
     )
     classify(store)
     print(
@@ -1492,11 +1632,21 @@ def run(args):
             "reason": f"{type(exc).__name__}: {exc}"[:300],
             "endpoints": {},
         }
-    diagnostics.append(
-        "来源身份核验单独使用完整记录匹配；结果不会进入字段语义定案或独立锚"
+    diagnostics.append("来源身份核验单独使用完整记录匹配；结果不会进入字段语义定案或独立锚")
+    daily_aggregate_evidence = CAE.build_daily_aggregate_evidence(
+        folder_window.folders, folder_window.trading_dates
     )
+    name_candidate_report = FNC.build_field_name_candidates(
+        store, list(store), REG_PATH, _SOURCE_LINEAGE
+    )
+    diagnostics.extend(daily_aggregate_evidence.get("diagnostics", []))
+    diagnostics.extend(name_candidate_report.get("diagnostics", []))
 
     collision_mode = "exploratory" if args.exploratory else "verified_anchor_only"
+    window_selection = {
+        "mode": "all_history" if args.all else "trading_days",
+        "requested_trading_days": None if args.all else args.window,
+    }
     if args.exploratory:
         research_scope = "exploratory_with_context" if args.include_context else "exploratory"
         out_dir = os.path.join(DATA_DIR, f"collision_research_{today}", research_scope, today)
@@ -1511,6 +1661,7 @@ def run(args):
         "date": today,
         "collision_mode": collision_mode,
         "include_context": bool(args.include_context),
+        "window_selection": window_selection,
         "target_count": len(left_ids),
         "verified_identity_count": len(verified),
         "anchor_identity_count": len(anchors),
@@ -1520,6 +1671,13 @@ def run(args):
             "same_family": skipped_same_family,
             "unknown_lineage": skipped_unknown_lineage,
             "duplicate_unknown_exploration": skipped_duplicate_unknown_pairs,
+        },
+        "routine_collision_suppression": {
+            "sources": routine_suppression["sources"],
+            "fields_by_source": {
+                source: sorted(fields)
+                for source, fields in routine_suppression["fields_by_source"].items()
+            },
         },
         "trading_window": list(folder_window.trading_dates),
         "event_window": {
@@ -1531,13 +1689,15 @@ def run(args):
         "method_candidates": method_candidates[:MAX_METHOD_CANDIDATES],
         "method_candidate_count": method_candidate_count,
         "diagnostics": list(dict.fromkeys(diagnostics)),
+        "new_candidate_pair_count": new_count,
+        # Backward-compatible alias; this counts first-seen candidate pairs, not confirmed semantics.
         "new_count": new_count,
         "source_identity_reconciliation": source_identity,
+        "daily_aggregate_evidence": daily_aggregate_evidence,
+        "field_name_candidates": name_candidate_report,
     }
 
-    research_state, research_warnings, research_state_writable = CRS.load_state(
-        RESEARCH_STATE_PATH
-    )
+    research_state, research_warnings, research_state_writable = CRS.load_state(RESEARCH_STATE_PATH)
     diagnostics.extend(research_warnings)
     research_run_id = None
     research_update = None
@@ -1545,9 +1705,7 @@ def run(args):
         research_state, research_run_id, research_update = CRS.update_state(
             research_state, report_data, report_relative_path
         )
-    matched_research_pairs = CRS.annotate_report(
-        report_data, research_state, research_run_id
-    )
+    matched_research_pairs = CRS.annotate_report(report_data, research_state, research_run_id)
     current_candidate_pairs = CRS.candidate_pair_count(report_data)
     if research_update is None:
         research_update = {
@@ -1583,8 +1741,11 @@ def run(args):
             method_candidates=method_candidates,
             diagnostics=report_data["diagnostics"],
             event_window=(folder_window.event_start, folder_window.event_end),
+            window_selection=window_selection,
         )
         rendered = append_source_identity_report(rendered, source_identity)
+        rendered = CAE.append_daily_aggregate_report(rendered, daily_aggregate_evidence)
+        rendered = FNC.append_field_name_candidate_report(rendered, name_candidate_report)
         return append_research_state_report(rendered, report_data["research_state"])
 
     def write_report() -> None:
@@ -1611,7 +1772,7 @@ def run(args):
     write_report()
 
     print(
-        f"[collide] L1 候选={len(l1)}，L4 候选={len(l4)}，新增定案={new_count}，"
+        f"[collide] L1 候选={len(l1)}，L4 候选={len(l4)}，首次发现候选对={new_count}，"
         f"护栏拦截={len(guardrail_hits)}",
         file=sys.stderr,
     )
@@ -1682,6 +1843,7 @@ def _l1_row(p):
     return (
         f"| `{p['left']}` | `{p['right']}` | {p['level']} | "
         f"{p['overall_hit']:.2%} | {p['n_days']} | {p['n_pairs']} | "
+        f"{p.get('n_informative_pairs') if p.get('n_informative_pairs') is not None else '—'} | "
         f"{p.get('ratio') or '-'} | {'⚠' if p.get('hub_flag') else ''} | "
         f"{'✅' if p.get('in_registry') else '—'} |"
     )
@@ -1701,6 +1863,7 @@ def build_report_md(
     method_candidates=None,
     diagnostics=None,
     event_window=None,
+    window_selection=None,
 ):
     # 拆分：异号同义（跨编号，高价值）优先；同号镜像（同编号）次之
     cross = [p for p in l1 if not p.get("same_code")]
@@ -1710,6 +1873,12 @@ def build_report_md(
 
     L = []
     L.append(f"# 全源对撞报告（{today}）\n")
+    if window_selection:
+        if window_selection.get("mode") == "all_history":
+            L.append("> 交易数据窗口配置：全部历史日期（`--all`）")
+        else:
+            requested_days = window_selection.get("requested_trading_days")
+            L.append(f"> 交易数据窗口配置：近 {requested_days} 个交易日（`--window`）")
     trading_window = f"{window[0]} ~ {window[-1]}" if window else "无有效交易日样本"
     L.append(
         f"> 行情窗口：{trading_window}（{len(window)} 个不同交易日）｜"
@@ -1718,13 +1887,16 @@ def build_report_md(
     if event_window:
         L.append(f"> 新闻/公告自然日窗口：{event_window[0]:%Y%m%d} ~ {event_window[1]:%Y%m%d}")
     L.append(
-        f"> 主攻目标（unverified）={len(left_ids)}｜新增 L1/L1-U 定案={new_count}｜"
+        f"> 主攻目标（unverified）={len(left_ids)}｜首次发现 L1/L1-U 候选对={new_count}｜"
         f"异号同义 {len(cross)} / 同号镜像 {len(same)}\n"
     )
     L.append(
-        f"> **规则**：每个定案日有效样本≥{MIN_DAILY_L1}，命中率≥{HIT_RATE_L1_RATIO:.0%}，"
-        f"至少 {MULTI_DAY_MIN} 个独立交易日/自然事件日；同一来源族不作为跨源证据；"
-        "盘中快照不计入 L1。"
+        f"> **规则**：L1 每日需≥{MIN_DAILY_L1} 组有效配对，并至少有"
+        f"{MIN_INFORMATIVE_DAILY_L1} 组信息配对；双方同时为 0 或同时缺失不计命中率，"
+        f"一侧为 0、另一侧非 0 按失配计。信息配对命中率≥{HIT_RATE_L1_RATIO:.0%}，"
+        f"且覆盖至少 {MULTI_DAY_MIN} 个独立交易日/自然事件日；同一来源族不作为跨源证据；"
+        "盘中快照不计入 L1。JSON `daily_sample_counts` 与 `daily_informative_sample_counts`"
+        "分别保留每日有效配对数和 L1 信息配对数。"
         "（详见 `COLLISION_RULES.md`）。本引擎只发现、不写字典；"
         "新定案经 field_dict.md 订正后由 sanctioned 管线 ingest。\n"
     )
@@ -1732,17 +1904,19 @@ def build_report_md(
     L.append(f"## 一、L1 / L1-U 定案候选 — 异号同义（跨编号，高价值）({len(cross)})\n")
     if cross:
         L.append(
-            "| 左字段(unverified) | 右字段 | 等级 | 命中率 | 天数 | 样本 | 比值 | hub | registry |"
+            "| 左字段(unverified) | 右字段 | 等级 | 命中率 | 天数 | 样本 | 信息样本 | 比值 | hub | registry |"
         )
-        L.append("|:--|:--|:--|--:|--:|--:|--:|:--|:--|")
+        L.append("|:--|:--|:--|--:|--:|--:|--:|--:|:--|:--|")
         for p in cross:
             L.append(_l1_row(p))
     else:
         L.append("_本轮无异号同义候选。_\n")
     L.append(f"\n## 二、L1 / L1-U 定案候选 — 同号镜像（同编号，低优先级）({len(same)})\n")
     if same:
-        L.append("| 左字段 | 右字段 | 等级 | 命中率 | 天数 | 样本 | 比值 | hub | registry |")
-        L.append("|:--|:--|:--|--:|--:|--:|--:|:--|:--|")
+        L.append(
+            "| 左字段 | 右字段 | 等级 | 命中率 | 天数 | 样本 | 信息样本 | 比值 | hub | registry |"
+        )
+        L.append("|:--|:--|:--|--:|--:|--:|--:|--:|:--|:--|")
         for p in same:
             L.append(_l1_row(p))
     else:

@@ -7,6 +7,8 @@ files, then may add one Tencent snapshot request with an explicit quote time.
 from __future__ import annotations
 
 from datetime import date, datetime
+import hashlib
+from importlib.metadata import PackageNotFoundError, version as package_version
 import json
 import logging
 import math
@@ -45,6 +47,17 @@ TENCENT_RAW_INDEXES = {
     "limit_down_price": 48,
     "amount": 57,
 }
+IDENTITY_MIN_CAPTURE_DATES = 3
+IDENTITY_MIN_DISTINCT_SYMBOLS = 3
+IDENTITY_MIN_INFORMATION_FIELDS = 5
+IDENTITY_RECHECK_DATA_DATES = 20
+IDENTITY_VALUE_MATCH_STATUSES = {"equal", "value_equal_with_dictionary_semantic_conflict"}
+IDENTITY_INFORMATION_FIELDS = frozenset(TENCENT_RAW_INDEXES) - {
+    "symbol",
+    "name",
+    "quote_time",
+}
+IDENTITY_REDUNDANT_STATUSES = {"partially_redundant", "operationally_redundant"}
 SHORTLINE_META_FIELDS = {"stats_date", "trade_date", "as_of_date", "exchange"}
 KPH_KPL_FIELD_PAIRS = {
     "limit_time": "zt_time",
@@ -53,6 +66,41 @@ KPH_KPL_FIELD_PAIRS = {
     "net_inflow": "main_inflow",
     "turnover": "amount",
     "turnover_rate": "turnover_real",
+}
+CAPTURE_SHORTLINE_META_FIELDS = SHORTLINE_META_FIELDS | {
+    "code",
+    "symbol",
+    "name",
+    "quote_time",
+    "question_time",
+    "update_time",
+    "source",
+}
+CAPTURE_IDENTITY_MIN_DATES = 3
+CAPTURE_IDENTITY_MIN_SYMBOLS_PER_DATE = 18
+CAPTURE_IDENTITY_MIN_FIELDS = 5
+CAPTURE_IDENTITY_RECHECK_DATES = 20
+CAPTURE_ENDPOINTS = {
+    "stock_shortline_indicators_tdx": {
+        "source": "axdata",
+        "reference_source": "eltdx",
+        "source_aliases": ["axdata"],
+        "contract": {
+            "adapter": "stock_common.get_shortline_indicators_result",
+            "reference_path": "eltdx.stocks.*.shortline",
+            "meta_fields": sorted(SHORTLINE_META_FIELDS),
+        },
+    },
+    "kph_limit_up_history": {
+        "source": "kph",
+        "reference_source": "kpl",
+        "source_aliases": ["kph"],
+        "contract": {
+            "adapter": "stock_common.sc_datasource.get_axdata_records",
+            "reference_path": "kpl.stocks.*",
+            "field_pairs": KPH_KPL_FIELD_PAIRS,
+        },
+    },
 }
 
 
@@ -113,6 +161,584 @@ def _capture_stocks(out_dir: Path, source: str) -> dict[str, Any]:
     payload = _read_json(out_dir / f"raw_{source}.json") or {}
     stocks = payload.get("stocks")
     return stocks if isinstance(stocks, dict) else {}
+
+
+def _capture_identity_contract_fingerprint(interface_id: str) -> str:
+    endpoint = CAPTURE_ENDPOINTS[interface_id]
+    try:
+        installed_axdata_version = package_version("axdata")
+    except PackageNotFoundError:
+        installed_axdata_version = "not_installed"
+    contract = {
+        "interface_id": interface_id,
+        "axdata_package_version": installed_axdata_version,
+        "source": endpoint["source"],
+        "reference_source": endpoint["reference_source"],
+        "contract": endpoint["contract"],
+        "minimum_data_dates": CAPTURE_IDENTITY_MIN_DATES,
+        "minimum_symbols_per_date": CAPTURE_IDENTITY_MIN_SYMBOLS_PER_DATE,
+        "minimum_fields": CAPTURE_IDENTITY_MIN_FIELDS,
+        "recheck_data_dates": CAPTURE_IDENTITY_RECHECK_DATES,
+    }
+    payload = json.dumps(contract, ensure_ascii=True, sort_keys=True, separators=(",", ":"))
+    return hashlib.sha256(payload.encode("utf-8")).hexdigest()
+
+
+def _new_capture_identity(interface_id: str, reason: str) -> dict[str, Any]:
+    endpoint = CAPTURE_ENDPOINTS[interface_id]
+    return {
+        "status": "observing",
+        "interface_id": interface_id,
+        "reference_source": endpoint["reference_source"],
+        "contract_fingerprint": _capture_identity_contract_fingerprint(interface_id),
+        "schema_fingerprint": None,
+        "samples": [],
+        "recheck_samples": [],
+        "evidence_dates": [],
+        "confirmed_fields": [],
+        "unresolved_fields": [],
+        "last_probe_data_date": None,
+        "last_counted_data_date": None,
+        "eligible_data_dates_since_probe": 0,
+        "reason": reason,
+    }
+
+
+def _load_validation_state() -> tuple[Optional[dict[str, Any]], Optional[str]]:
+    if not STATE_PATH.exists():
+        return {}, None
+    state = _read_json(STATE_PATH)
+    if state is None:
+        return None, "local AxData state is unreadable; manual review is required"
+    return state, None
+
+
+def _capture_identity_state(
+    state: dict[str, Any], interface_id: str
+) -> tuple[dict[str, Any], bool]:
+    identities = state.get("capture_endpoint_identities")
+    if not isinstance(identities, dict):
+        identities = {}
+        state["capture_endpoint_identities"] = identities
+    current = identities.get(interface_id)
+    fingerprint = _capture_identity_contract_fingerprint(interface_id)
+    if isinstance(current, dict) and current.get("contract_fingerprint") == fingerprint:
+        return current, False
+    reason = "contract_changed_reopened" if isinstance(current, dict) else "collecting_exact_samples"
+    identity = _new_capture_identity(interface_id, reason)
+    if isinstance(current, dict) and current.get("status") == "blocked_until_manual_review":
+        identity["status"] = "blocked_until_manual_review"
+        identity["reason"] = "rate_limit_block_preserved_after_contract_change"
+        if current.get("rate_limit_observed_data_date"):
+            identity["rate_limit_observed_data_date"] = current["rate_limit_observed_data_date"]
+    identities[interface_id] = identity
+    return identity, isinstance(current, dict)
+
+
+def _capture_identity_summary(identity: dict[str, Any]) -> dict[str, Any]:
+    status = str(identity.get("status") or "observing")
+    samples = identity.get("recheck_samples") if status == "rechecking" else identity.get("samples")
+    samples = samples if isinstance(samples, list) else []
+    summary = {
+        key: identity.get(key)
+        for key in (
+            "status",
+            "interface_id",
+            "reference_source",
+            "evidence_dates",
+            "confirmed_fields",
+            "unresolved_fields",
+            "last_probe_data_date",
+            "last_mismatch",
+            "reason",
+        )
+        if identity.get(key) is not None
+    }
+    matched_symbols = []
+    for item in samples:
+        if not isinstance(item, dict):
+            continue
+        try:
+            matched_symbols.append(max(0, int(item.get("matched_symbols", 0))))
+        except (TypeError, ValueError, OverflowError):
+            continue
+    summary.update(
+        {
+            "minimum_data_dates": CAPTURE_IDENTITY_MIN_DATES,
+            "minimum_symbols_per_date": CAPTURE_IDENTITY_MIN_SYMBOLS_PER_DATE,
+            "minimum_fields": CAPTURE_IDENTITY_MIN_FIELDS,
+            "matched_data_dates": len({item.get("date") for item in samples if isinstance(item, dict)}),
+            "minimum_matched_symbols": min(matched_symbols, default=0),
+        }
+    )
+    if status == "operationally_redundant":
+        elapsed = _capture_identity_days_since_probe(identity)
+        summary["next_recheck_in_data_dates"] = max(0, CAPTURE_IDENTITY_RECHECK_DATES - elapsed)
+    if status == "rechecking":
+        summary["recheck_samples_collected"] = len(samples)
+    return summary
+
+
+def _capture_identity_days_since_probe(identity: dict[str, Any]) -> int:
+    try:
+        return max(0, int(identity.get("eligible_data_dates_since_probe", 0)))
+    except (TypeError, ValueError, OverflowError):
+        return CAPTURE_IDENTITY_RECHECK_DATES
+
+
+def _route_identity_summary_map(state: Optional[dict[str, Any]]) -> dict[str, dict[str, Any]]:
+    if not isinstance(state, dict):
+        return {
+            interface_id: {
+                "status": "state_unreadable_manual_review_required",
+                "interface_id": interface_id,
+                "reason": "local AxData state is unreadable; manual review is required",
+            }
+            for interface_id in CAPTURE_ENDPOINTS
+        }
+    result = {}
+    for interface_id in CAPTURE_ENDPOINTS:
+        identity, _ = _capture_identity_state(state, interface_id)
+        result[interface_id] = _capture_identity_summary(identity)
+    return result
+
+
+def get_axdata_capture_identity_plan(
+    data_date: str, *, force_reprobe: bool = False
+) -> dict[str, Any]:
+    """Choose bounded daily capture actions for AxData routes already in production."""
+    state, error = _load_validation_state()
+    if error:
+        return {
+            "status": "blocked_until_manual_review",
+            "reason": error,
+            "endpoints": {
+                interface_id: {
+                    "action": "skip",
+                    "reason": "state_unreadable_manual_review_required",
+                    "identity": {
+                        "status": "state_unreadable_manual_review_required",
+                        "interface_id": interface_id,
+                    },
+                }
+                for interface_id in CAPTURE_ENDPOINTS
+            },
+        }
+    assert state is not None
+    target_date = _date_key(data_date) or data_date
+    endpoints: dict[str, dict[str, Any]] = {}
+    changed = False
+    for interface_id, endpoint in CAPTURE_ENDPOINTS.items():
+        identity, contract_changed = _capture_identity_state(state, interface_id)
+        changed = changed or contract_changed
+        status = identity.get("status")
+        action, reason = "collect", "identity_not_yet_confirmed"
+        last_probe = _date_key(identity.get("last_probe_data_date"))
+        if status == "blocked_until_manual_review":
+            action, reason = "skip", "blocked_until_manual_review"
+        elif status == "operationally_redundant":
+            if last_probe and target_date <= last_probe:
+                action, reason = "skip", "data_date_already_confirmed"
+            elif force_reprobe or _capture_identity_days_since_probe(identity) >= CAPTURE_IDENTITY_RECHECK_DATES:
+                identity["status"] = "rechecking"
+                identity["recheck_samples"] = []
+                identity["reason"] = "manual_recheck_requested" if force_reprobe else "scheduled_recheck_due"
+                changed = True
+                reason = identity["reason"]
+            else:
+                action, reason = "skip", "endpoint_redundant_until_scheduled_recheck"
+        endpoints[interface_id] = {
+            "action": action,
+            "source": endpoint["source"],
+            "reference_source": endpoint["reference_source"],
+            "reason": reason,
+            "identity": _capture_identity_summary(identity),
+        }
+    if changed:
+        _write_json(STATE_PATH, state)
+    return {"status": "ready", "endpoints": endpoints}
+
+
+def get_axdata_collision_suppressions() -> dict[str, dict[str, Any]]:
+    """Return only fully confirmed routes safe to omit from routine collisions."""
+    state, error = _load_validation_state()
+    if error or not isinstance(state, dict):
+        return {}
+    suppressions: dict[str, dict[str, Any]] = {}
+    for interface_id, endpoint in CAPTURE_ENDPOINTS.items():
+        identities = state.get("capture_endpoint_identities")
+        identity = identities.get(interface_id) if isinstance(identities, dict) else None
+        if not isinstance(identity, dict):
+            continue
+        if identity.get("contract_fingerprint") != _capture_identity_contract_fingerprint(interface_id):
+            continue
+        status = identity.get("status")
+        if status == "blocked_until_manual_review":
+            status = identity.get("status_before_block")
+        if status not in {"operationally_redundant", "rechecking"}:
+            continue
+        for source in endpoint["source_aliases"]:
+            suppressions[source] = _capture_identity_summary(identity)
+    return suppressions
+
+
+def _schema_fingerprint(fields: set[str]) -> str:
+    payload = json.dumps(sorted(fields), ensure_ascii=True, separators=(",", ":"))
+    return hashlib.sha256(payload.encode("utf-8")).hexdigest()
+
+
+def _shortline_capture_sample(out_dir: Path, target_date: str) -> Optional[dict[str, Any]]:
+    axdata = _capture_stocks(out_dir, "axdata")
+    eltdx = _capture_stocks(out_dir, "eltdx")
+    paired: list[tuple[str, dict[str, Any], dict[str, Any]]] = []
+    ax_fields: set[str] = set()
+    reference_fields: set[str] = set()
+    for code in sorted(set(axdata) & set(eltdx)):
+        ax_row = axdata[code]
+        el_row = eltdx[code]
+        ax_record = ax_row.get("data") if isinstance(ax_row, dict) else None
+        el_record = el_row.get("shortline") if isinstance(el_row, dict) else None
+        if not isinstance(ax_record, dict) or not isinstance(el_record, dict):
+            continue
+        if _record_date(ax_record) != target_date or _record_date(el_record) != target_date:
+            continue
+        ax_fields.update(set(ax_record) - CAPTURE_SHORTLINE_META_FIELDS)
+        reference_fields.update(set(el_record) - CAPTURE_SHORTLINE_META_FIELDS)
+        paired.append((str(code), ax_record, el_record))
+    if not paired or not ax_fields:
+        return None
+
+    confirmed_fields = []
+    different_fields = []
+    for field in sorted(ax_fields):
+        equal = 0
+        different = 0
+        missing = 0
+        for _, ax_record, el_record in paired:
+            left, right = ax_record.get(field), el_record.get(field)
+            if left is None and right is None:
+                missing += 1
+            elif left is None or right is None:
+                different += 1
+            elif _value_equal(left, right):
+                equal += 1
+            else:
+                different += 1
+        if different:
+            different_fields.append(field)
+        if equal >= CAPTURE_IDENTITY_MIN_SYMBOLS_PER_DATE and different == 0 and missing == 0:
+            confirmed_fields.append(field)
+
+    unresolved_fields = sorted(ax_fields - set(confirmed_fields))
+    reference_only = sorted(reference_fields - ax_fields)
+    valid = (
+        len(paired) >= CAPTURE_IDENTITY_MIN_SYMBOLS_PER_DATE
+        and len(confirmed_fields) >= CAPTURE_IDENTITY_MIN_FIELDS
+        and not unresolved_fields
+    )
+    reason = (
+        "exact_full_route_match"
+        if valid
+        else "field_value_mismatch"
+        if different_fields
+        else "axdata_fields_not_fully_confirmed"
+        if unresolved_fields
+        else "insufficient_matched_symbols_or_fields"
+    )
+    return {
+        "date": target_date,
+        "schema_fingerprint": _schema_fingerprint(ax_fields),
+        "matched_symbols": len(paired),
+        "confirmed_fields": confirmed_fields,
+        "unresolved_fields": unresolved_fields,
+        "reference_only_fields": reference_only,
+        "different_fields": different_fields,
+        "qualifies": valid,
+        "reason": reason,
+    }
+
+
+def _kph_capture_sample(out_dir: Path, target_date: str) -> Optional[dict[str, Any]]:
+    kph = _read_json(out_dir / "raw_kph.json") or {}
+    kpl = _read_json(out_dir / "raw_kpl.json") or {}
+    kph_stocks = kph.get("stocks")
+    kpl_stocks = kpl.get("stocks")
+    if (
+        _date_key(kph.get("trade_date")) != target_date
+        or _date_key(kpl.get("trade_date")) != target_date
+        or not isinstance(kph_stocks, dict)
+        or not isinstance(kpl_stocks, dict)
+    ):
+        return None
+    paired_codes = sorted(
+        code
+        for code in set(kph_stocks) & set(kpl_stocks)
+        if isinstance(kph_stocks[code], dict) and isinstance(kpl_stocks[code], dict)
+    )
+    if not paired_codes:
+        return None
+    ax_fields = {
+        field
+        for row in kph_stocks.values()
+        if isinstance(row, dict)
+        for field in row
+    }
+    field_pairs = {}
+    for ax_field, reference_field in KPH_KPL_FIELD_PAIRS.items():
+        equal = different = missing = 0
+        for code in paired_codes:
+            left = kph_stocks[code].get(ax_field)
+            right = kpl_stocks[code].get(reference_field)
+            if left is None or right is None:
+                missing += 1
+            elif _value_equal(left, right):
+                equal += 1
+            else:
+                different += 1
+        field_pairs[ax_field] = {"equal": equal, "different": different, "missing": missing}
+
+    confirmed_fields = sorted(
+        field
+        for field, counts in field_pairs.items()
+        if counts["equal"] >= CAPTURE_IDENTITY_MIN_SYMBOLS_PER_DATE
+        and counts["different"] == 0
+        and counts["missing"] == 0
+    )
+    unresolved_fields = sorted(ax_fields - set(confirmed_fields))
+    different_fields = sorted(
+        field for field, counts in field_pairs.items() if counts["different"]
+    )
+    valid = (
+        len(paired_codes) >= CAPTURE_IDENTITY_MIN_SYMBOLS_PER_DATE
+        and len(confirmed_fields) >= CAPTURE_IDENTITY_MIN_FIELDS
+        and not unresolved_fields
+    )
+    reason = (
+        "exact_full_route_match"
+        if valid
+        else "field_value_mismatch"
+        if different_fields
+        else "unmapped_or_incomplete_axdata_fields"
+        if unresolved_fields
+        else "insufficient_matched_symbols_or_fields"
+    )
+    return {
+        "date": target_date,
+        "schema_fingerprint": _schema_fingerprint(ax_fields),
+        "matched_symbols": len(paired_codes),
+        "confirmed_fields": confirmed_fields,
+        "unresolved_fields": unresolved_fields,
+        "different_fields": different_fields,
+        "qualifies": valid,
+        "reason": reason,
+    }
+
+
+def _finish_capture_identity(identity: dict[str, Any], samples: list[dict[str, Any]]) -> None:
+    was_rechecking = identity.get("status") == "rechecking" or bool(
+        identity.get("status_before_recheck")
+    )
+    evidence_dates = sorted({sample["date"] for sample in samples if sample.get("date")})
+    confirmed_fields = set(samples[0].get("confirmed_fields", [])) if samples else set()
+    for sample in samples[1:]:
+        confirmed_fields.intersection_update(sample.get("confirmed_fields", []))
+    unresolved_fields = set().union(
+        *(set(sample.get("unresolved_fields", [])) for sample in samples)
+    ) if samples else set()
+    if unresolved_fields or not confirmed_fields:
+        identity["status"] = "observing"
+        identity["reason"] = "samples_do_not_cover_full_axdata_schema"
+        return
+    identity["status"] = "operationally_redundant"
+    if was_rechecking:
+        identity.setdefault("initial_evidence_dates", identity.get("evidence_dates", []))
+        identity["samples"] = samples[-CAPTURE_IDENTITY_MIN_DATES:]
+    identity["confirmed_fields"] = sorted(confirmed_fields)
+    identity["unresolved_fields"] = []
+    identity["evidence_dates"] = evidence_dates[-CAPTURE_IDENTITY_MIN_DATES:]
+    identity["last_probe_data_date"] = evidence_dates[-1]
+    identity["last_counted_data_date"] = evidence_dates[-1]
+    identity["eligible_data_dates_since_probe"] = 0
+    identity["reason"] = "scheduled_recheck_matched" if was_rechecking else "minimum_exact_samples_matched"
+    identity.pop("status_before_recheck", None)
+    identity["recheck_samples"] = []
+
+
+def _record_capture_identity_sample(
+    identity: dict[str, Any], sample: Optional[dict[str, Any]]
+) -> None:
+    if sample is None:
+        identity["last_sample_issue"] = "same_dated_comparison_unavailable"
+        return
+    prior_schema = identity.get("schema_fingerprint")
+    if prior_schema and prior_schema != sample["schema_fingerprint"]:
+        prior_status = identity.get("status")
+        identity.update(_new_capture_identity(identity["interface_id"], "response_schema_changed_reopened"))
+        identity["schema_fingerprint"] = sample["schema_fingerprint"]
+        if prior_status in {"operationally_redundant", "rechecking"}:
+            identity["status"] = "observing"
+            identity["reason"] = "response_schema_changed_reopened"
+    identity["schema_fingerprint"] = sample["schema_fingerprint"]
+    if sample.get("different_fields"):
+        identity["last_mismatch"] = {
+            "data_date": sample.get("date"),
+            "fields": sample["different_fields"],
+            "reason": sample.get("reason"),
+        }
+        if identity.get("status") in {"operationally_redundant", "rechecking"}:
+            identity["status"] = "observing"
+            identity["samples"] = []
+            identity["recheck_samples"] = []
+            identity["evidence_dates"] = []
+            identity["confirmed_fields"] = []
+            identity["unresolved_fields"] = sample.get("unresolved_fields", [])
+            identity["reason"] = "value_mismatch_reopened"
+        else:
+            identity["reason"] = "value_mismatch_observed"
+        return
+    if not sample.get("qualifies"):
+        identity["unresolved_fields"] = sample.get("unresolved_fields", [])
+        identity["last_sample_issue"] = {
+            "data_date": sample.get("date"),
+            "reason": sample.get("reason"),
+            "matched_symbols": sample.get("matched_symbols", 0),
+            "unresolved_fields": sample.get("unresolved_fields", []),
+        }
+        return
+    is_rechecking = identity.get("status") == "rechecking"
+    key = "recheck_samples" if is_rechecking else "samples"
+    samples = identity.get(key)
+    samples = samples if isinstance(samples, list) else []
+    samples = [item for item in samples if not isinstance(item, dict) or item.get("date") != sample["date"]]
+    samples.append(sample)
+    identity[key] = samples[-CAPTURE_IDENTITY_MIN_DATES:]
+    identity["last_probe_data_date"] = sample["date"]
+    identity["last_counted_data_date"] = sample["date"]
+    distinct_dates = {item.get("date") for item in samples if isinstance(item, dict)}
+    if len(distinct_dates) >= CAPTURE_IDENTITY_MIN_DATES:
+        if is_rechecking:
+            identity["status_before_recheck"] = "rechecking"
+        _finish_capture_identity(identity, samples)
+    else:
+        identity["reason"] = (
+            "collecting_recheck_samples" if is_rechecking else "collecting_exact_samples"
+        )
+
+
+def update_axdata_capture_identities(
+    *, out_dir: str | Path, data_date: str, source_meta: Optional[dict[str, Any]]
+) -> dict[str, dict[str, Any]]:
+    """Update route identity only from eligible, explicitly same-dated captures."""
+    state, error = _load_validation_state()
+    if error or not isinstance(state, dict):
+        return _route_identity_summary_map(None)
+    target_date = _date_key(data_date) or data_date
+    output_dir = Path(out_dir)
+    source_meta = source_meta if isinstance(source_meta, dict) else {}
+    changed = False
+    for interface_id, endpoint in CAPTURE_ENDPOINTS.items():
+        identity, contract_changed = _capture_identity_state(state, interface_id)
+        changed = changed or contract_changed
+        source = str(endpoint["source"])
+        reference_source = str(endpoint["reference_source"])
+        source_state = source_meta.get(source)
+        reference_state = source_meta.get(reference_source)
+        if not isinstance(source_state, dict) or not isinstance(reference_state, dict):
+            continue
+        payload = _read_json(output_dir / f"raw_{source}.json") or {}
+        if _source_has_rate_limit(source_state) or _payload_has_rate_limit(payload):
+            if identity.get("status") in {"operationally_redundant", "rechecking"}:
+                identity["status_before_block"] = identity["status"]
+            identity["status"] = "blocked_until_manual_review"
+            identity["reason"] = "rate_limit_or_ban_observed"
+            changed = True
+            continue
+        if identity.get("status") == "blocked_until_manual_review":
+            continue
+        if source_state.get("ok") is not True or reference_state.get("ok") is not True:
+            continue
+        source_meta_block = payload.get("__source_meta__")
+        suppressed = (
+            isinstance(source_meta_block, dict)
+            and isinstance(source_meta_block.get("identity_suppression"), dict)
+        )
+        if identity.get("status") == "operationally_redundant" and suppressed:
+            last_counted = _date_key(identity.get("last_counted_data_date"))
+            if target_date and target_date != last_counted and (
+                last_counted is None or target_date > last_counted
+            ):
+                identity["eligible_data_dates_since_probe"] = (
+                    _capture_identity_days_since_probe(identity) + 1
+                )
+                identity["last_counted_data_date"] = target_date
+                changed = True
+            continue
+        sample = (
+            _shortline_capture_sample(output_dir, target_date)
+            if interface_id == "stock_shortline_indicators_tdx"
+            else _kph_capture_sample(output_dir, target_date)
+        )
+        previous = json.dumps(identity, ensure_ascii=True, sort_keys=True, default=str)
+        _record_capture_identity_sample(identity, sample)
+        changed = changed or previous != json.dumps(identity, ensure_ascii=True, sort_keys=True, default=str)
+    if changed:
+        _write_json(STATE_PATH, state)
+    return _route_identity_summary_map(state)
+
+
+def record_axdata_capture_rate_limits(
+    *,
+    data_date: str,
+    source_meta: Optional[dict[str, Any]],
+    collected_data: Optional[dict[str, Any]],
+    requested_sources: set[str],
+) -> dict[str, dict[str, Any]]:
+    """Persist route blocks even when capture used --only and validation is ineligible."""
+    state, error = _load_validation_state()
+    if error or not isinstance(state, dict):
+        return _route_identity_summary_map(None)
+    source_meta = source_meta if isinstance(source_meta, dict) else {}
+    collected_data = collected_data if isinstance(collected_data, dict) else {}
+    changed = False
+    observed_date = _date_key(data_date)
+    for interface_id, endpoint in CAPTURE_ENDPOINTS.items():
+        source = str(endpoint["source"])
+        if source not in requested_sources:
+            continue
+        source_state = source_meta.get(source)
+        payload = collected_data.get(source)
+        has_rate_limit = (
+            isinstance(source_state, dict) and _source_has_rate_limit(source_state)
+        ) or _payload_has_rate_limit(payload)
+        if not has_rate_limit:
+            continue
+        identity, contract_changed = _capture_identity_state(state, interface_id)
+        previous = json.dumps(identity, ensure_ascii=True, sort_keys=True, default=str)
+        if identity.get("status") in {"operationally_redundant", "rechecking"}:
+            identity["status_before_block"] = identity["status"]
+        identity["status"] = "blocked_until_manual_review"
+        identity["reason"] = "rate_limit_or_ban_observed"
+        identity["rate_limit_observed_data_date"] = observed_date
+        changed = changed or contract_changed or previous != json.dumps(
+            identity, ensure_ascii=True, sort_keys=True, default=str
+        )
+    if changed:
+        _write_json(STATE_PATH, state)
+    return _route_identity_summary_map(state)
+
+
+def _payload_has_rate_limit(payload: Any) -> bool:
+    if isinstance(payload, dict):
+        for key, value in payload.items():
+            if key in {"__error__", "error", "error_sample"} and _source_has_rate_limit(
+                {"error_sample": value}
+            ):
+                return True
+            if _payload_has_rate_limit(value):
+                return True
+    elif isinstance(payload, list):
+        return any(_payload_has_rate_limit(value) for value in payload)
+    return False
 
 
 def _shortline_passive_evidence(out_dir: Path, target_date: str) -> dict[str, Any]:
@@ -425,6 +1051,333 @@ def _compare_dictionary_dynamic_pe(
     }
 
 
+def _identity_contract_fingerprint() -> str:
+    contract = {
+        "interface": ACTIVE_INTERFACE,
+        "raw_indexes": TENCENT_RAW_INDEXES,
+        "dynamic_pe_index": _dynamic_pe_index(),
+        "amount_normalization": "AxData yuan divided by 10000",
+    }
+    serialized = json.dumps(contract, ensure_ascii=True, sort_keys=True, separators=(",", ":"))
+    return hashlib.sha256(serialized.encode("utf-8")).hexdigest()
+
+
+def _new_endpoint_identity(reason: str = "collecting_exact_date_samples") -> dict[str, Any]:
+    return {
+        "status": "observing",
+        "contract_fingerprint": _identity_contract_fingerprint(),
+        "schema_fingerprint": None,
+        "samples": [],
+        "recheck_samples": [],
+        "value_equivalent_fields": [],
+        "semantic_unresolved_fields": [],
+        "unresolved_fields": sorted(IDENTITY_INFORMATION_FIELDS),
+        "evidence_dates": [],
+        "distinct_symbols": [],
+        "last_probe_data_date": None,
+        "last_counted_data_date": None,
+        "eligible_data_dates_since_probe": 0,
+        "reason": reason,
+    }
+
+
+def _endpoint_identity_state(state: dict[str, Any]) -> tuple[dict[str, Any], bool]:
+    fingerprint = _identity_contract_fingerprint()
+    current = state.get("endpoint_identity")
+    if isinstance(current, dict) and current.get("contract_fingerprint") == fingerprint:
+        return current, False
+    reopened = isinstance(current, dict)
+    reason = "contract_changed_reopened" if reopened else "collecting_exact_date_samples"
+    identity = _new_endpoint_identity(reason)
+    state["endpoint_identity"] = identity
+    return identity, reopened
+
+
+def _identity_value_present(value: Any) -> bool:
+    if value is None:
+        return False
+    if isinstance(value, str) and value.strip().lower() in {"", "none", "null", "nan"}:
+        return False
+    number = _number(value)
+    return math.isfinite(number) if number is not None else bool(str(value).strip())
+
+
+def _identity_days_since_probe(identity: dict[str, Any]) -> int:
+    try:
+        return max(0, int(identity.get("eligible_data_dates_since_probe", 0)))
+    except (TypeError, ValueError, OverflowError):
+        return IDENTITY_RECHECK_DATA_DATES
+
+
+def _identity_field_observations(
+    comparison: dict[str, Any],
+) -> tuple[list[str], list[str], list[str], list[str]]:
+    field_results = comparison.get("field_comparisons")
+    field_results = field_results if isinstance(field_results, dict) else {}
+    different_fields = []
+    incomplete_fields = []
+    value_fields = []
+    semantic_fields = []
+    for field in TENCENT_RAW_INDEXES:
+        item = field_results.get(field)
+        status = item.get("status") if isinstance(item, dict) else None
+        if status == "different":
+            different_fields.append(field)
+        elif status not in IDENTITY_VALUE_MATCH_STATUSES:
+            incomplete_fields.append(field)
+        if field not in IDENTITY_INFORMATION_FIELDS or not isinstance(item, dict):
+            continue
+        if not _identity_value_present(item.get("axdata_value")) or not _identity_value_present(
+            item.get("project_value")
+        ):
+            continue
+        if status in IDENTITY_VALUE_MATCH_STATUSES:
+            value_fields.append(field)
+        if status == "value_equal_with_dictionary_semantic_conflict":
+            semantic_fields.append(field)
+
+    dynamic_check = comparison.get("dictionary_dynamic_pe_check")
+    if isinstance(dynamic_check, dict) and dynamic_check.get("status") != "equal":
+        semantic_fields.append("pe_dynamic")
+    return (
+        sorted(set(different_fields)),
+        sorted(set(incomplete_fields)),
+        sorted(set(value_fields)),
+        sorted(set(semantic_fields)),
+    )
+
+
+def _identity_sample_details(
+    record: dict[str, Any], comparison: dict[str, Any], code: str, data_date: str
+) -> dict[str, Any]:
+    different_fields, incomplete_fields, value_fields, semantic_fields = (
+        _identity_field_observations(comparison)
+    )
+    information_match_count = len(set(value_fields) - {"pe_dynamic"})
+    same_dated = comparison.get("status") == "compared"
+    qualifies = (
+        same_dated
+        and not different_fields
+        and not incomplete_fields
+        and information_match_count >= IDENTITY_MIN_INFORMATION_FIELDS
+    )
+    if not same_dated:
+        reason = "not_same_dated_snapshot"
+    elif different_fields:
+        reason = "value_mismatch"
+    elif incomplete_fields:
+        reason = "comparison_fields_incomplete"
+    elif information_match_count < IDENTITY_MIN_INFORMATION_FIELDS:
+        reason = "insufficient_nonempty_information_fields"
+    else:
+        reason = "exact_value_sample"
+    schema = json.dumps(sorted(str(key) for key in record), ensure_ascii=True, separators=(",", ":"))
+    schema_fingerprint = hashlib.sha256(schema.encode("utf-8")).hexdigest()
+    return {
+        "qualifies": qualifies,
+        "reason": reason,
+        "date": _date_key(data_date),
+        "code": code,
+        "schema_fingerprint": schema_fingerprint,
+        "value_fields": value_fields,
+        "semantic_fields": semantic_fields,
+        "different_fields": different_fields,
+        "information_match_count": information_match_count,
+    }
+
+
+def _reset_identity_after_mismatch(
+    identity: dict[str, Any], details: dict[str, Any], reason: str
+) -> None:
+    identity.update(_new_endpoint_identity(reason))
+    identity["schema_fingerprint"] = details.get("schema_fingerprint")
+    identity["last_probe_data_date"] = details.get("date")
+    identity["last_counted_data_date"] = details.get("date")
+    identity["last_mismatch"] = {
+        "data_date": details.get("date"),
+        "code": details.get("code"),
+        "fields": details.get("different_fields", []),
+        "reason": details.get("reason"),
+    }
+
+
+def _identity_has_confirmation(samples: list[dict[str, Any]]) -> bool:
+    dates = {sample.get("date") for sample in samples if sample.get("date")}
+    codes = {sample.get("code") for sample in samples if sample.get("code")}
+    return (
+        len(dates) >= IDENTITY_MIN_CAPTURE_DATES
+        and len(codes) >= IDENTITY_MIN_DISTINCT_SYMBOLS
+        and all(
+            int(sample.get("information_match_count", 0)) >= IDENTITY_MIN_INFORMATION_FIELDS
+            for sample in samples
+        )
+    )
+
+
+def _finish_endpoint_identity(identity: dict[str, Any], samples: list[dict[str, Any]]) -> None:
+    dates = sorted({sample["date"] for sample in samples if sample.get("date")})
+    symbols = sorted({sample["code"] for sample in samples if sample.get("code")})
+    semantic_fields = set().union(
+        *(set(sample.get("semantic_fields", [])) for sample in samples)
+    ) if samples else set()
+    value_equivalent_fields = []
+    for field in sorted(IDENTITY_INFORMATION_FIELDS):
+        field_samples = [sample for sample in samples if field in sample.get("value_fields", [])]
+        field_dates = {sample.get("date") for sample in field_samples}
+        field_symbols = {sample.get("code") for sample in field_samples}
+        if (
+            len(field_dates) >= IDENTITY_MIN_CAPTURE_DATES
+            and len(field_symbols) >= IDENTITY_MIN_DISTINCT_SYMBOLS
+        ):
+            value_equivalent_fields.append(field)
+    confirmed_fields = sorted(set(value_equivalent_fields) - semantic_fields)
+    unresolved = (set(IDENTITY_INFORMATION_FIELDS) - set(confirmed_fields)) | semantic_fields
+    identity["status"] = "partially_redundant" if unresolved else "operationally_redundant"
+    identity["value_equivalent_fields"] = value_equivalent_fields
+    identity["confirmed_fields"] = confirmed_fields
+    identity["semantic_unresolved_fields"] = sorted(semantic_fields)
+    identity["unresolved_fields"] = sorted(unresolved)
+    identity["evidence_dates"] = dates[-IDENTITY_MIN_CAPTURE_DATES:]
+    identity["distinct_symbols"] = symbols
+    identity["last_probe_data_date"] = dates[-1] if dates else None
+    identity["last_counted_data_date"] = identity["last_probe_data_date"]
+    identity["eligible_data_dates_since_probe"] = 0
+    identity["samples"] = []
+    identity["recheck_samples"] = []
+    identity["reason"] = (
+        "scheduled_recheck_matched"
+        if identity.get("status_before_recheck")
+        else "minimum_exact_samples_matched"
+    )
+    identity.pop("status_before_recheck", None)
+
+
+def _record_endpoint_identity_sample(
+    state: dict[str, Any],
+    record: dict[str, Any],
+    comparison: dict[str, Any],
+    code: str,
+    data_date: str,
+) -> dict[str, Any]:
+    identity, _contract_changed = _endpoint_identity_state(state)
+    details = _identity_sample_details(record, comparison, code, data_date)
+    old_schema = identity.get("schema_fingerprint")
+    schema_changed = bool(old_schema and old_schema != details["schema_fingerprint"])
+    if schema_changed:
+        prior_status = identity.get("status")
+        _reset_identity_after_mismatch(identity, details, "response_schema_changed_reopened")
+        identity["status"] = "observing"
+        identity["schema_fingerprint"] = details["schema_fingerprint"]
+        if prior_status in IDENTITY_REDUNDANT_STATUSES or prior_status == "rechecking":
+            identity["reason"] = "response_schema_changed_reopened"
+    if details["different_fields"]:
+        _reset_identity_after_mismatch(identity, details, "value_mismatch_reopened")
+        return _identity_summary(identity)
+    if not details["qualifies"]:
+        identity["last_sample_issue"] = {
+            "data_date": details["date"],
+            "code": code,
+            "reason": details["reason"],
+        }
+        return _identity_summary(identity)
+
+    identity["schema_fingerprint"] = details["schema_fingerprint"]
+    sample = {key: details[key] for key in ("date", "code", "value_fields", "semantic_fields", "information_match_count")}
+    _append_identity_sample(identity, sample)
+    identity["last_probe_data_date"] = details["date"]
+    return _identity_summary(identity)
+
+
+def _append_identity_sample(identity: dict[str, Any], sample: dict[str, Any]) -> None:
+    rechecking = identity.get("status") == "rechecking"
+    sample_key = "recheck_samples" if rechecking else "samples"
+    samples = identity.get(sample_key)
+    samples = samples if isinstance(samples, list) else []
+    if not any(item.get("date") == sample["date"] for item in samples if isinstance(item, dict)):
+        samples.append(sample)
+    identity[sample_key] = samples[-30:]
+    if _identity_has_confirmation(identity[sample_key]):
+        if rechecking:
+            identity["status_before_recheck"] = "rechecking"
+        _finish_endpoint_identity(identity, identity[sample_key])
+        return
+    identity["last_sample_issue"] = None
+    if identity.get("reason") not in {
+        "contract_changed_reopened",
+        "response_schema_changed_reopened",
+    }:
+        identity["reason"] = (
+            "rechecking_exact_samples" if rechecking else "collecting_exact_date_samples"
+        )
+
+
+def _identity_summary(identity: dict[str, Any]) -> dict[str, Any]:
+    status = str(identity.get("status") or "observing")
+    samples = identity.get("recheck_samples") if status == "rechecking" else identity.get("samples")
+    samples = samples if isinstance(samples, list) else []
+    summary = {
+        "status": status,
+        "interface_id": ACTIVE_INTERFACE,
+        "reference_source": "project_tencent",
+        "minimum_data_dates": IDENTITY_MIN_CAPTURE_DATES,
+        "minimum_distinct_symbols": IDENTITY_MIN_DISTINCT_SYMBOLS,
+        "minimum_information_fields_per_sample": IDENTITY_MIN_INFORMATION_FIELDS,
+        "matched_data_dates": (
+            len(identity.get("evidence_dates", []))
+            if status in IDENTITY_REDUNDANT_STATUSES
+            else len({item.get("date") for item in samples if isinstance(item, dict)})
+        ),
+        "matched_symbols": (
+            len(identity.get("distinct_symbols", []))
+            if status in IDENTITY_REDUNDANT_STATUSES
+            else len({item.get("code") for item in samples if isinstance(item, dict)})
+        ),
+        "evidence_dates": identity.get("evidence_dates", []),
+        "value_equivalent_fields": identity.get("value_equivalent_fields", []),
+        "confirmed_fields": identity.get("confirmed_fields", []),
+        "semantic_unresolved_fields": identity.get("semantic_unresolved_fields", []),
+        "unresolved_fields": identity.get("unresolved_fields", []),
+        "last_probe_data_date": identity.get("last_probe_data_date"),
+        "last_mismatch": identity.get("last_mismatch"),
+        "reason": identity.get("reason"),
+    }
+    if status in IDENTITY_REDUNDANT_STATUSES:
+        summary["next_recheck_in_data_dates"] = max(
+            0,
+            IDENTITY_RECHECK_DATA_DATES - _identity_days_since_probe(identity),
+        )
+    elif status == "rechecking":
+        summary["recheck_samples_collected"] = len(samples)
+    return summary
+
+
+def _identity_should_probe(identity: dict[str, Any], data_date: str) -> bool:
+    status = identity.get("status")
+    date_key = _date_key(data_date)
+    last_probe = _date_key(identity.get("last_probe_data_date"))
+    last_counted = _date_key(identity.get("last_counted_data_date"))
+    if status in IDENTITY_REDUNDANT_STATUSES or status == "rechecking":
+        if status in IDENTITY_REDUNDANT_STATUSES and last_probe is None:
+            identity["status_before_recheck"] = status
+            identity["status"] = "rechecking"
+            identity["recheck_samples"] = []
+            identity["reason"] = "confirmed_state_missing_probe_date_rechecking"
+            status = "rechecking"
+        if date_key and date_key != last_counted and (last_probe is None or date_key > last_probe):
+            identity["eligible_data_dates_since_probe"] = _identity_days_since_probe(identity) + 1
+            identity["last_counted_data_date"] = date_key
+        if (
+            status in IDENTITY_REDUNDANT_STATUSES
+            and _identity_days_since_probe(identity) >= IDENTITY_RECHECK_DATA_DATES
+        ):
+            identity["status_before_recheck"] = status
+            identity["status"] = "rechecking"
+            identity["recheck_samples"] = []
+            identity["reason"] = "scheduled_recheck_due"
+            status = "rechecking"
+    return status not in IDENTITY_REDUNDANT_STATUSES
+
+
 def _request_records(interface: str, params: dict[str, Any]) -> list[dict[str, Any]]:
     from stock_common.sc_datasource import get_axdata_records
 
@@ -511,6 +1464,7 @@ def _handle_tencent_request_error(
         "collected_at": collected_at,
         "http_status": _http_status(exc),
         "error": _safe_error(exc),
+        "source_identity": _identity_summary(state.get("endpoint_identity", {})),
     }, state
 
 
@@ -533,6 +1487,7 @@ def _handle_unmatched_tencent_response(
         "request_count": 1,
         "returned_records": len(records),
         "collected_at": collected_at,
+        "source_identity": _identity_summary(state.get("endpoint_identity", {})),
     }, state
 
 
@@ -544,6 +1499,10 @@ def _handle_matched_tencent_response(
     collected_at: str,
     state: dict[str, Any],
 ) -> tuple[dict[str, Any], dict[str, Any]]:
+    comparison = _compare_tencent_record(record, project_fields, data_date)
+    identity_summary = _record_endpoint_identity_sample(
+        state, record, comparison, code, data_date
+    )
     state["empty_response_streak"] = 0
     state["last_outcome"] = "sampled"
     state.pop("last_error", None)
@@ -563,7 +1522,8 @@ def _handle_matched_tencent_response(
         "project_raw_file": "raw_tencent.json",
         "field_mapping_basis": "AxData reconciliation E2 sample plus current Tencent raw index registry",
         "project_source_as_of_date": project_date,
-        "comparison": _compare_tencent_record(record, project_fields, data_date),
+        "comparison": comparison,
+        "source_identity": identity_summary,
         "project_sample": {"n_fields": len(project_fields), "fields": project_fields},
         "axdata_record": record,
     }, state
@@ -609,6 +1569,9 @@ def _summary(evidence: dict[str, Any], path: Optional[Path] = None) -> dict[str,
         for key in ("status", "interface_id", "family", "code", "request_count", "error")
         if probe.get(key) is not None
     }
+    identity = probe.get("source_identity")
+    if isinstance(identity, dict):
+        probe_summary["source_identity"] = identity
     if comparison:
         probe_summary.update(
             {
@@ -635,6 +1598,7 @@ def _summary(evidence: dict[str, Any], path: Optional[Path] = None) -> dict[str,
         "data_date": evidence.get("data_date"),
         "probe": probe_summary,
         "passive_evidence": evidence.get("passive_evidence", {}),
+        "endpoint_identities": evidence.get("endpoint_identities", {}),
         "queue": evidence.get("queue", {}),
     }
 
@@ -659,7 +1623,7 @@ def _base_evidence(
     else:
         passive = {"status": "not_run", "reason": reason, "requests_added": 0}
     return {
-        "schema_version": "1.0",
+        "schema_version": "1.1",
         "status": "not_eligible" if reason else "eligible",
         "data_date": target_date,
         "data_date_domain": data_date_domain,
@@ -668,8 +1632,14 @@ def _base_evidence(
         "eligibility_reason": reason,
         "queue": queue,
         "passive_evidence": passive,
+        "endpoint_identities": _current_capture_identity_summaries(),
         "probe": {"status": "not_run", "request_count": 0},
     }
+
+
+def _current_capture_identity_summaries() -> dict[str, dict[str, Any]]:
+    state, error = _load_validation_state()
+    return _route_identity_summary_map(None if error else state)
 
 
 def _set_probe_policy_skip(evidence: dict[str, Any], status: str, **details: Any) -> None:
@@ -718,7 +1688,25 @@ def _apply_probe_policy(
     pool: list[dict[str, Any]],
     source_meta: Optional[dict[str, Any]],
 ) -> None:
-    state = _read_json(STATE_PATH) or {}
+    loaded_state = _read_json(STATE_PATH)
+    if STATE_PATH.exists() and loaded_state is None:
+        evidence["status"] = "blocked_until_manual_review"
+        evidence["probe"] = {
+            "status": "state_unreadable_until_manual_review",
+            "interface_id": ACTIVE_INTERFACE,
+            "family": ACTIVE_FAMILY,
+            "request_count": 0,
+            "source_identity": {
+                "status": "state_unreadable_manual_review_required",
+                "interface_id": ACTIVE_INTERFACE,
+                "reason": "local AxData state is unreadable; inspect or explicitly reset it after recovery review",
+            },
+        }
+        return
+    state = loaded_state or {}
+    identity, _contract_changed = _endpoint_identity_state(state)
+    should_probe = _identity_should_probe(identity, target_date)
+    _write_json(STATE_PATH, state)
     if _date_key(state.get("last_attempted_data_date")) == target_date:
         _set_probe_policy_skip(
             evidence,
@@ -727,6 +1715,7 @@ def _apply_probe_policy(
             family=ACTIVE_FAMILY,
             code=state.get("last_code"),
         )
+        evidence["probe"]["source_identity"] = _identity_summary(identity)
         return
     if ACTIVE_FAMILY in state.get("blocked_families", []):
         _set_probe_policy_skip(
@@ -735,10 +1724,25 @@ def _apply_probe_policy(
             family=ACTIVE_FAMILY,
             reason="previous 403/429/ban or consecutive empty responses; clear local state only after independent recovery check",
         )
+        evidence["probe"]["source_identity"] = _identity_summary(identity)
+        return
+    if not should_probe:
+        _set_probe_policy_skip(
+            evidence,
+            "endpoint_redundant_until_scheduled_recheck",
+            interface_id=ACTIVE_INTERFACE,
+            family=ACTIVE_FAMILY,
+            request_count=0,
+        )
+        evidence["probe"]["source_identity"] = _identity_summary(identity)
         return
     if not _apply_counterpart_gate(evidence, source_meta, state):
+        evidence["probe"]["source_identity"] = _identity_summary(identity)
         return
-    probe, _updated_state = _run_tencent_probe(target_date, output_dir, pool, state)
+    probe, updated_state = _run_tencent_probe(target_date, output_dir, pool, state)
+    updated_identity = updated_state.get("endpoint_identity")
+    if isinstance(updated_identity, dict):
+        probe["source_identity"] = _identity_summary(updated_identity)
     evidence["probe"] = probe
     evidence["status"] = probe.get("status", "sampled")
 
@@ -846,6 +1850,11 @@ def _run_eligible_validation(
         _set_probe_policy_skip(evidence, "another_run_holds_daily_lock")
         return _summary(evidence)
     try:
+        evidence["endpoint_identities"] = update_axdata_capture_identities(
+            out_dir=output_dir,
+            data_date=target_date,
+            source_meta=source_meta,
+        )
         _apply_probe_policy(evidence, target_date, output_dir, pool, source_meta)
         _write_json(evidence_path, evidence)
         return _summary(evidence, evidence_path)

@@ -1,0 +1,169 @@
+{
+  "schema_version": 1,
+  "report": "20261014/20261014_collision_report.json",
+  "reviewer": "Codex（用户授权复核）",
+  "reviewed_on": "2026-10-14",
+  "decisions": [
+    {
+      "id": "20261014-tdx-weifenlirun-definition",
+      "candidate": {"left": "tdx.finance_info.weifenlirun", "right": "ulist239.f47"},
+      "target": {"source": "TDX(双命名源)", "code": "weifenlirun"},
+      "anchor": {"source": "东财-ulist239(np/get)", "code": "f47"},
+      "action": "verify",
+      "canonical": "weifenlirun",
+      "meaning": "未分配利润",
+      "unit": "角",
+      "external_evidence": [
+        "https://pkg.go.dev/github.com/injoyai/tdx/protocol",
+        "https://help.tdx.com.cn/gspt/docs/markdown/redword/functionlist.html"
+      ],
+      "rationale": "协议类型将 WeiFenLiRun 明确定义为未分配利润，通达信 FINANCE(31) 也定义为未分配利润；三日原始碰撞进一步确认 TDX 返回值与 Ulist f47 稳定相差 10 倍。由于 Ulist f47 尚无语义元数据，本次定案依赖独立协议定义作为语义证据，碰撞只作数值对应的交叉印证。"
+    },
+    {
+      "id": "20261014-ulist-f39-float-shares",
+      "candidate": {"left": "tdx.finance_info.liutongguben", "right": "ulist239.f39"},
+      "target": {"source": "东财-ulist239(np/get)", "code": "f39"},
+      "anchor": {"source": "TDX(双命名源)", "code": "liutongguben"},
+      "action": "enrich_metadata",
+      "previous": {"canonical": "f39", "meaning": "", "unit": ""},
+      "canonical": "liutongguben",
+      "meaning": "流通股本",
+      "unit": "股",
+      "rationale": "三笔独立交易日、每日至少 20 只股票、60 组配对均满足稳定比例 10000；TDX 字段单位为万股，Ulist 返回股。2026-10-08 贵州茅台样本分别为 125008.15625 与 1250081601，比例与单位换算吻合。",
+      "anchor_metadata_correction": {
+        "previous": {"canonical": "", "meaning": "流通股本", "unit": "万股"},
+        "updated": {"canonical": "liutongguben", "meaning": "流通股本", "unit": "万股"},
+        "rationale": "TDX 协议 FinanceInfo 将 LiuTongGuBen 定义为流通股本；将既有空 canonical 补为稳定字段代码，保持含义和单位不变。",
+        "external_evidence": [
+          "https://pkg.go.dev/github.com/injoyai/tdx/protocol",
+          "https://help.tdx.com.cn/quant/docs/markdown/mindoc-1ctuhthaq5qmg/mindoc-1h10jj7r7jol4.html"
+        ]
+      }
+    },
+    {
+      "id": "20261014-ulist-f50-total-assets",
+      "candidate": {"left": "tdx.finance_info.zongzichan", "right": "ulist239.f50"},
+      "target": {"source": "东财-ulist239(np/get)", "code": "f50"},
+      "anchor": {"source": "TDX(双命名源)", "code": "zongzichan"},
+      "action": "enrich_metadata",
+      "previous": {"canonical": "f50", "meaning": "", "unit": ""},
+      "canonical": "zongzichan",
+      "meaning": "总资产",
+      "unit": "元",
+      "rationale": "三笔独立交易日、每日至少 20 只股票、60 组配对均满足稳定比例 0.1；TDX 0x0010 为角口径，Ulist 为元。2026-10-08 贵州茅台样本为 3090507840000 角与 309050784569.31 元。"
+    },
+    {
+      "id": "20261014-ulist-f51-current-assets",
+      "candidate": {"left": "tdx.finance_info.liudongzichan", "right": "ulist239.f51"},
+      "target": {"source": "东财-ulist239(np/get)", "code": "f51"},
+      "anchor": {"source": "TDX(双命名源)", "code": "liudongzichan"},
+      "action": "enrich_metadata",
+      "previous": {"canonical": "f51", "meaning": "", "unit": ""},
+      "canonical": "liudongzichan",
+      "meaning": "流动资产",
+      "unit": "元",
+      "rationale": "三笔独立交易日、每日至少 19 只股票、57 组配对均满足稳定比例 0.1；TDX 0x0010 为角口径，Ulist 为元。"
+    },
+    {
+      "id": "20261014-ulist-f52-fixed-assets",
+      "candidate": {"left": "tdx.finance_info.gudingzichan", "right": "ulist239.f52"},
+      "target": {"source": "东财-ulist239(np/get)", "code": "f52"},
+      "anchor": {"source": "TDX(双命名源)", "code": "gudingzichan"},
+      "action": "enrich_metadata",
+      "previous": {"canonical": "f52", "meaning": "", "unit": ""},
+      "canonical": "gudingzichan",
+      "meaning": "固定资产",
+      "unit": "元",
+      "rationale": "三笔独立交易日、每日至少 20 只股票、60 组配对均满足稳定比例 0.1；TDX 0x0010 为角口径，Ulist 为元。"
+    },
+    {
+      "id": "20261014-ulist-f55-current-liabilities",
+      "candidate": {"left": "tdx.finance_info.liudongfuzhai", "right": "ulist239.f55"},
+      "target": {"source": "东财-ulist239(np/get)", "code": "f55"},
+      "anchor": {"source": "TDX(双命名源)", "code": "liudongfuzhai"},
+      "action": "enrich_metadata",
+      "previous": {"canonical": "f55", "meaning": "", "unit": ""},
+      "canonical": "liudongfuzhai",
+      "meaning": "流动负债",
+      "unit": "元",
+      "rationale": "三笔独立交易日、每日至少 19 只股票、57 组配对均满足稳定比例 0.1；TDX 0x0010 为角口径，Ulist 为元。"
+    },
+    {
+      "id": "20261014-ulist-f60-capital-reserve",
+      "candidate": {"left": "tdx.finance_info.zibengongjijin", "right": "ulist239.f60"},
+      "target": {"source": "东财-ulist239(np/get)", "code": "f60"},
+      "anchor": {"source": "TDX(双命名源)", "code": "zibengongjijin"},
+      "action": "enrich_metadata",
+      "previous": {"canonical": "f60", "meaning": "", "unit": ""},
+      "canonical": "zibengongjijin",
+      "meaning": "资本公积金",
+      "unit": "元",
+      "rationale": "三笔独立交易日、每日至少 20 只股票、60 组配对均满足稳定比例 0.1；TDX 0x0010 为角口径，Ulist 为元。"
+    },
+    {
+      "id": "20261014-ulist-f42-operating-profit",
+      "candidate": {"left": "tdx.finance_info.yingyelirun", "right": "ulist239.f42"},
+      "target": {"source": "东财-ulist239(np/get)", "code": "f42"},
+      "anchor": {"source": "TDX(双命名源)", "code": "yingyelirun"},
+      "action": "enrich_metadata",
+      "previous": {"canonical": "f42", "meaning": "", "unit": ""},
+      "canonical": "yingyelirun",
+      "meaning": "营业利润",
+      "unit": "元",
+      "rationale": "三笔独立交易日、每日至少 20 只股票、60 组配对均满足稳定比例 0.1；TDX 0x0010 为角口径，Ulist 为元。"
+    },
+    {
+      "id": "20261014-ulist-f44-total-profit",
+      "candidate": {"left": "tdx.finance_info.lirunzonghe", "right": "ulist239.f44"},
+      "target": {"source": "东财-ulist239(np/get)", "code": "f44"},
+      "anchor": {"source": "TDX(双命名源)", "code": "lirunzonghe"},
+      "action": "enrich_metadata",
+      "previous": {"canonical": "f44", "meaning": "", "unit": ""},
+      "canonical": "lirunzonghe",
+      "meaning": "利润总额",
+      "unit": "元",
+      "rationale": "三笔独立交易日、每日至少 20 只股票、60 组配对均满足稳定比例 0.1；TDX 0x0010 为角口径，Ulist 为元。通达信 FINANCE(28) 与协议字段定义均将该项定义为利润总额。",
+      "anchor_metadata_correction": {
+        "previous": {"canonical": "lirunzonghe", "meaning": "利润总和", "unit": "角"},
+        "updated": {"canonical": "lirunzonghe", "meaning": "利润总额", "unit": "角"},
+        "rationale": "字段拼音字面拆分是“利润总和”，但通达信财务指标及协议语义为“利润总额”；保留历史原文，只纠正当前权威 registry 的语义标签。",
+        "external_evidence": [
+          "https://help.tdx.com.cn/gspt/docs/markdown/redword/functionlist.html",
+          "https://pkg.go.dev/github.com/injoyai/tdx/protocol"
+        ]
+      }
+    },
+    {
+      "id": "20261014-ulist-f47-undistributed-profit",
+      "candidate": {"left": "tdx.finance_info.weifenlirun", "right": "ulist239.f47"},
+      "target": {"source": "东财-ulist239(np/get)", "code": "f47"},
+      "anchor": {"source": "TDX(双命名源)", "code": "weifenlirun"},
+      "action": "enrich_metadata",
+      "previous": {"canonical": "f47", "meaning": "", "unit": ""},
+      "canonical": "weifenlirun",
+      "meaning": "未分配利润",
+      "unit": "元",
+      "rationale": "三笔独立交易日、每日至少 20 只股票、60 组配对均满足稳定比例 0.1；TDX 0x0010 为角口径，Ulist 为元。"
+    },
+    {
+      "id": "20261014-tencent-72-float-shares",
+      "candidate": {"left": "tdx.finance_info.liutongguben", "right": "tencent[72]"},
+      "target": {"source": "腾讯(qt.gtimg)", "code": "[72]"},
+      "anchor": {"source": "TDX(双命名源)", "code": "liutongguben"},
+      "action": "link_verified",
+      "rationale": "该字段已在主字典定义为 A 股流通股本、单位股。六个独立交易日共 120 组配对均稳定为 TDX 万股与腾讯股数之比 10000；登记字段对齐关系，不改写既有腾讯定义。"
+    },
+    {
+      "id": "20261014-tencent-76-float-shares-alias",
+      "candidate": {"left": "tdx.finance_info.liutongguben", "right": "tencent[76]"},
+      "target": {"source": "腾讯(qt.gtimg)", "code": "[76]"},
+      "anchor": {"source": "TDX(双命名源)", "code": "liutongguben"},
+      "action": "enrich_metadata",
+      "previous": {"canonical": "", "meaning": "A股流通股本（= [72]）", "unit": "股"},
+      "canonical": "[72]",
+      "meaning": "A股流通股本（= [72]）",
+      "unit": "股",
+      "rationale": "该字段已在主字典定义为 A 股流通股本（= 腾讯 [72]）、单位股。六个独立交易日共 120 组配对均稳定为 TDX 万股与腾讯股数之比 10000；仅补齐 canonical 到已定义的 [72]，保留原含义和单位。"
+    }
+  ]
+}

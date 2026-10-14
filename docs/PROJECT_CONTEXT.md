@@ -2,7 +2,7 @@
 
 > **用途**：项目架构、稳定约束与文档索引。任务开始时先按下表读取相关部分，不必重复扫描整份文档。
 > **维护规则**：结构、入口或稳定流程变化时更新；字段语义以主字典为准，运行状态与测试结果以实际检查为准。
-> **更新日期**：2026-10-11（`VERSION`：17.4.43）
+> **更新日期**：2026-10-14（`VERSION`：17.4.50）
 
 ## 0. 指引目录
 
@@ -43,6 +43,8 @@
 - 报告脚本先按工作负载走批量行情路由：SHT/MED/LNG 为 push2delay 基础行情（300/批）+ 腾讯字段补充（60/批）；VAL 使用全市场腾讯批量；MAK 使用 ZHB 快照 + 腾讯行情覆盖 + 东财批量资金字段。个股批量缓存逐字段记录来源。
 - 批量源不足时，单股行情 fallback 顺序由 `core/data_provider.py` 实现：TDX → 腾讯 → push2delay → push2；`core/source_priority.py` 锁定的只是这个单股 fallback 测试契约。长线报告不预热未消费的 ELTDX 短线包；短线与中线因正文消费该数据而保留。
 - 字段新鲜度 A/B/C/D 分类由 `sc_datasource.zhb_field_safe()` 控制；字段是否标注“实时”与上述源选择逻辑不是同一概念。
+- AxData 日轮仅对白名单中的 Tencent 快照接口做最多每日一次的精确日期对照。三个不同交易数据日、三个不同股票且每样本至少五个非空信息字段匹配后，标记接口为运行上冗余并停止日常探测；每 20 个后续有效数据日启动三样本复验，数值差异、接口映射指纹或返回结构变化会重新开启探测。未决字段和状态写入日轮证据与碰撞辅助报告，不作为字典定案或独立来源锚；状态文件位于 `.tmp/axdata_daily_validation_state.json`。
+- 两个实际生产 AxData 路由另有逐接口退出：TDX 短线与 ELTDX 同日对照，KPH 历史与 KPL 同日对照。每条路由至少收集三个不同交易数据日、每日至少 18 只匹配股票；短线至少五个信息字段全值匹配，KPH 六个已知字段映射全部匹配且没有未识别数值字段后，才停止该路由的日常采集。已确认路由从默认碰撞中排除，复验期间保持排除；20 个后续有效数据日后收集三个新数据日，失配或响应结构变化即恢复采集与碰撞。403/429/封禁立即停止本轮短线余下请求，并持久标记人工复核；该封禁优先于契约变化，成功快照也不能自动解除，须确认源恢复后手动清除本机状态。状态同样位于 `.tmp/axdata_daily_validation_state.json`。FTShare 已确认冗余的字段路径也从默认碰撞排除，未确认字段继续参与；`--all` / `--exploratory` 用于包括历史冗余记录的研究。
 - 完整架构公理见 `docs/ARCHITECTURE_THEORY.md`，已知偏离见 `docs/DEBT_LEDGER.md`。
 
 ## 3. 工程与测试约束
@@ -51,7 +53,7 @@
 - Python 最低版本为 3.11（AxData 0.1.4 的依赖要求）；项目开发/测试推荐并使用 Python 3.12。解释器通过 `scripts/run_with_system_python.ps1` 选择。
 - `CanonicalStockData` 当前有 113 个 dataclass 属性，其中 12 个是可选 ELTDX 扩展；`FIELD_SPECS` 当前登记 38 项精选源字段元数据，不代表完整契约字段表。Schema 测试锁定这三个计数，变更时应同步更新文档。
 - 运行测试使用 `scripts/run_tests.ps1`，不要从 Shell 直接调用 `pytest`。`real_network` 测试须明确选择。
-- 最近验证（V17.4.43，2026-10-11）：ZHB 4 项正式定案后，逐源字段 2,481 条，状态为 verified 846、unverified 1,544、conflict 90、candidate 1；研究台账首次写入 870 个唯一探索候选对；旧报告未保存 `--include-context` 标记，该条历史记录已按范围未知单独保留。碰撞/定案/研究台账定向回归 45/45 通过，7 个 Python 文件语法检查、4 个生产脚本 MyPy、registry parity、字段矩阵生成与 A1/A7 闸门通过（0 HARD FAIL / 0 WARN）。全量离线套件收集 884 项，运行至 35% 时在 `tests/data/test_data_em_board_members.py` 出现失败并中断；单项 faulthandler 定位等待在未修改的 `core/stock_cache.py:963` SQLite commit，未获得全量总结。Black 检查 65 秒无输出后停止，未记为通过。
+- 最近验证（V17.4.52，2026-10-14）：AxData 路由封锁对契约变化和成功快照保持粘滞，只有人工确认恢复并清理本机身份状态后才恢复限量采样；单路线身份回归 9 项通过，AxData/FTShare 身份、采集、碰撞与辅助证据联合选择 194 项通过、764 项未选。全量离线套件本轮未完成：收集 957 项、选择 910 项后停在既有调度器用例无输出；没有计作全量通过。语法编译 5 个文件通过，MyPy 2 个生产模块零错误，A1/A7 无硬错误或警告，`git diff --check` 通过；真实网络和 Black 未运行。
 - 历史验证（V17.4.41，来源身份重分类后）：pytest 收集 865 项；定向回归 `test_capture_field_probe.py` 54 passed、来源范围/身份测试 6 passed、字典生成测试 3 passed。A1/A7、registry parity、field matrix、7 个 Python 文件语法检查与 4 个生产文件 MyPy 均通过；Black 未能在本机执行器中返回结果。两次全量离线尝试均未完成：首次停在 `test_missing_report_script_is_failure`，排除该项后停在 `test_cyq_and_kline_chapters_survive_source_failure`，长时间无输出后中断；未计为全量通过，`real_network` 未运行。字段逐源身份共 2,481 条，状态计数保持 verified 842、unverified 1,548、conflict 90、candidate 1；本次将 33 条 KPH 组件字段与 6 条 FTShare 服务接口字段从 `levistock(ftshare)` 拆出，另将 136 条记录标为历史未归属；详见 `docs/levistock_source_reconciliation_20261010.md` 与生成的 `docs/field_dict.md`。AxData 作为多源框架参考，主注册表无 AxData 字段行。元数据清单显示 239 条 verified 记录缺少规范名或含义（207 缺含义、47 缺规范名、15 两者皆缺），详见 `docs/field_metadata_gaps.md`。来源仓库对话确认 7 项，21 项待确认。运行状态以当次命令输出为准。
 - 修改后按 `AGENTS.md` §8 做数据契约影响调查，并按 §9 验证；每次改动记录一个可计数指标。
 - `.gitignore` 对运行时缓存和采集原始数据按路径规则处理；清理前应保留仍需离线复核的研究证据。
@@ -62,6 +64,7 @@
 |---|---|
 | `docs/field_dict.md` | 生成的字段治理入口与权威顺序 |
 | `docs/unknown_fields.md` | 按逐源完整路径列出的未验证、候选、冲突和已证伪字段 |
+| `docs/field_aggregate_review.md` | 同短 code 聚合歧义、定义缺口与疑似复合文本的生成式复核清单 |
 | `docs/field_metadata_gaps.md` | 已验证字段中缺少规范名或含义的生成式补录清单 |
 | `docs/field_matrix.md` | registry 派生的字段×源矩阵 |
 | `docs/source_repository_map.md` | 数据提供方、独立来源族及有证据的 GitHub 仓库映射 |
@@ -70,6 +73,7 @@
 | `docs/field_verification/collision_research_state.json` | 探索模式候选的持久观察台账，不作为字段定案权威 |
 | `docs/field_verification/ADJUDICATION_WORKFLOW.md` | 碰撞候选人工复核、字段定案和注册表同步流程 |
 | `docs/field_verification/CRACKING_METHODOLOGY.md` | 字段破解方法论和证据要求 |
+| `docs/field_verification/EVIDENCE_COVERAGE.md` | 每日采样覆盖生成、来源身份和日期资格规则 |
 | `docs/FIELD_DICTIONARY_OPERATIONAL_CLOSURE_20261006.md` | 定案写回闭环及来源对话确认状态 |
 | `docs/FIELD_DICTIONARY_MIGRATION_AUDIT_20261005.md` | 字段身份逐项核对、证据保留、测试与已知覆盖遗留 |
 | `docs/script_data_dict.md` | 报告脚本、字段与数据源的消费关系 |

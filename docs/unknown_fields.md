@@ -3,8 +3,9 @@
 > 由 `field_registry.json.source_fields` 自动生成；每行身份是来源加完整 code path。
 > 修改状态必须先核对 `reference_evidence` 与 `registry_aggregate`，并保留证据来源。
 > 碰撞候选须人工复核后使用 `apply_collision_adjudications.py` 同步状态；流程见 `field_verification/ADJUDICATION_WORKFLOW.md`。
+> 聚合层的同码异义与定义缺口见 [`field_aggregate_review.md`](field_aggregate_review.md)，不代表逐源记录状态冲突。
 
-> 总字段路径 2481；unverified 1544、candidate 1、conflict 90、disproved 0。
+> 总字段路径 2481；unverified 1543、candidate 1、conflict 90、disproved 0。
 
 ## 一、状态冲突（禁止作为锚点，优先复核）（90）
 
@@ -107,7 +108,7 @@
 |:--|:--|:--|:--|:--|:--|:--|
 | ZHB-tdxstat | `stat.unknown_2` | stat.unknown_2 | 贝塔系数(60日)·L2候选(列[2]已定BetaValue: ihelp.dat L63官方定义+慢变特征实证自相关0.91, 待真实指数基准复现升L1) | - | matched | 1.1 tdxstat.cfg 标准契约表（stat.*，20260918 对撞定案）🆕 |
 
-## 三、待破解字段（1544）
+## 三、待破解字段（1543）
 
 | 来源 | 完整 code path | 规范名 | 含义 | 单位 | 状态判定 | 证据章节 |
 |:--|:--|:--|:--|:--|:--|:--|
@@ -376,10 +377,10 @@
 | TDX(双命名源) | `eps_raw` | eps_raw | 每股收益原始值 | - | aggregate_status_scope_unresolved | 12.13.2 财务批量（get_finance_batch，0x0010）文档确认 |
 | TDX(双命名源) | `fHSL` | — | — | — | registry_status_only_single_source | — |
 | TDX(双命名源) | `fLianB` | — | — | — | registry_status_only_single_source | — |
-| TDX(双命名源) | `fajirenfarengu` | — | — | — | registry_status_only_single_source | — |
+| TDX(双命名源) | `fajirenfarengu` | — | 发起人法人股（项目输出键拼写为 fajirenfarengu） | — | registry_status_only_single_source | — |
 | TDX(双命名源) | `faqiren_faren_gu` | — | — | — | registry_status_only_single_source | — |
 | TDX(双命名源) | `faren_gu` | — | — | — | registry_status_only_single_source | — |
-| TDX(双命名源) | `fenhong` | fenhong / peigujia | 分红 / 配股价（XdxrRecord） | — | registry_status_only_single_source | 12.13.3 除权除息（get_gbbq / get_xdxr，0x000f）文档确认 |
+| TDX(双命名源) | `fenhong` | — | 每股现金分红（XDXR category=1） | 元/股 | registry_status_only_single_source | 12.13.3 除权除息（get_gbbq / get_xdxr，0x000f）文档确认 |
 | TDX(双命名源) | `float` | — | — | — | aggregate_status_scope_unresolved | — |
 | TDX(双命名源) | `float_capital` | — | — | — | registry_status_only_single_source | — |
 | TDX(双命名源) | `float_mcap_yi` | — | — | — | registry_status_only_single_source | — |
@@ -427,8 +428,8 @@
 | TDX(双命名源) | `pe_lyr` | — | — | — | aggregate_status_scope_unresolved | — |
 | TDX(双命名源) | `pe_static` | — | — | — | aggregate_status_scope_unresolved | — |
 | TDX(双命名源) | `pe_ttm` | — | — | — | aggregate_status_scope_unresolved | — |
-| TDX(双命名源) | `peigu` | songzhuangu / peigu | 送转股 / 配股（XdxrRecord） | — | registry_status_only_single_source | 12.13.3 除权除息（get_gbbq / get_xdxr，0x000f）文档确认 |
-| TDX(双命名源) | `peigujia` | fenhong / peigujia | 分红 / 配股价（XdxrRecord） | — | registry_status_only_single_source | 12.13.3 除权除息（get_gbbq / get_xdxr，0x000f）文档确认 |
+| TDX(双命名源) | `peigu` | — | 每股配股比例（XDXR category=1） | 股/股 | registry_status_only_single_source | 12.13.3 除权除息（get_gbbq / get_xdxr，0x000f）文档确认 |
+| TDX(双命名源) | `peigujia` | — | 配股价（XDXR category=1） | 元/股 | registry_status_only_single_source | 12.13.3 除权除息（get_gbbq / get_xdxr，0x000f）文档确认 |
 | TDX(双命名源) | `pre_close` | — | — | — | aggregate_status_scope_unresolved | — |
 | TDX(双命名源) | `price` | — | — | — | aggregate_status_scope_unresolved | — |
 | TDX(双命名源) | `reserve2` | — | — | — | registry_status_only_single_source | — |
@@ -438,7 +439,7 @@
 | TDX(双命名源) | `shiyebianma` | — | — | — | registry_status_only_single_source | — |
 | TDX(双命名源) | `short_term_debt` | — | — | — | registry_status_only_single_source | — |
 | TDX(双命名源) | `shuihou_lirun` | — | — | — | registry_status_only_single_source | — |
-| TDX(双命名源) | `songzhuangu` | songzhuangu / peigu | 送转股 / 配股（XdxrRecord） | — | registry_status_only_single_source | 12.13.3 除权除息（get_gbbq / get_xdxr，0x000f）文档确认 |
+| TDX(双命名源) | `songzhuangu` | — | 每股送转股比例（XDXR category=1） | 股/股 | registry_status_only_single_source | 12.13.3 除权除息（get_gbbq / get_xdxr，0x000f）文档确认 |
 | TDX(双命名源) | `str` | — | — | — | aggregate_status_scope_unresolved | — |
 | TDX(双命名源) | `total_assets_yuan` | total_assets_yuan / net_profit_yuan | 待破解 | 元 | registry_status_only_single_source | 12.13.2 财务批量（get_finance_batch，0x0010）文档确认 |
 | TDX(双命名源) | `total_capital` | — | — | — | registry_status_only_single_source | — |
@@ -450,14 +451,13 @@
 | TDX(双命名源) | `ushort` | — | — | — | registry_status_only_single_source | — |
 | TDX(双命名源) | `vol_ratio` | — | — | — | aggregate_status_scope_unresolved | — |
 | TDX(双命名源) | `volume` | — | — | — | aggregate_status_scope_unresolved | — |
-| TDX(双命名源) | `vzangsu` | — | — | — | registry_status_only_single_source | — |
+| TDX(双命名源) | `vzangsu` | — | 量涨速（具体计算窗口待确认） | % | registry_status_only_single_source | — |
 | TDX(双命名源) | `weifen_lirun` | — | — | — | registry_status_only_single_source | — |
-| TDX(双命名源) | `weifenlirun` | — | — | — | registry_status_only_single_source | — |
 | TDX(双命名源) | `wuxing_zichan` | — | — | — | registry_status_only_single_source | — |
 | TDX(双命名源) | `yingshou_zhangkuan` | — | — | — | registry_status_only_single_source | — |
 | TDX(双命名源) | `yingye_lirun` | — | — | — | registry_status_only_single_source | — |
 | TDX(双命名源) | `zhigong_gu` | — | — | — | registry_status_only_single_source | — |
-| TDX(双命名源) | `zhongguben` | — | — | — | registry_status_only_single_source | — |
+| TDX(双命名源) | `zhongguben` | — | 总股本（TDX finance_info 键名拼写为 zhongguben） | 万股 | registry_status_only_single_source | — |
 | TDX(双命名源) | `zhuying_lirun` | — | — | — | registry_status_only_single_source | — |
 | TDX(双命名源) | `zhuying_shouru` | — | — | — | registry_status_only_single_source | — |
 | TDX(双命名源) | `zhuyinglyrun` | — | — | — | registry_status_only_single_source | — |

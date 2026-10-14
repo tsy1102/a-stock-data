@@ -104,3 +104,13 @@ def test_limit_ladder_accepts_scoped_codes_and_timeout(monkeypatch: pytest.Monke
 
     assert calls == [["bj920118"]]
     assert result == [{"full_code": "bj920118", "ladder_level": 2}]
+
+
+def test_finance_map_uses_canonical_after_tax_profit_key() -> None:
+    mapping = {
+        attribute: output_key
+        for attribute, output_key, _scale in eltdx_adapter._FIN_MAP
+    }
+
+    assert mapping["shui_hou_li_run_raw_float"] == "shuihoulirun"
+    assert "shuihouli run" not in mapping.values()

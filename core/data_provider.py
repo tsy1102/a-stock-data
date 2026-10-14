@@ -13,12 +13,13 @@ data_provider.py — 统一数据中心层 - V11.5正式启用
    - V13.x: 字段路由简化 + sc_schema 元数据层
    - V12.6: REQUIRES_REALTIME_HTTP / ZHB_SUFFICIENT 字段分类
 
-核心架构设计：
-  - ZHB优先原则：所有能从ZHB获取的数据，优先使用ZHB本地快照
-  - 实时类数据 → 盘中TDX(或腾讯)优先，盘前/盘后优先ZHB（延迟1-2交易日）
-  - T-1类数据 → 优先ZHB本地读取，失败fallback到API
-  - 静态/财务数据 → 优先ZHB本地基础库，失败fallback到腾讯HTTP
-  - 市值动态计算：总股本(本地静态) × 实时价格(API)
+核心路由概览（精确行为以 _should_use_zhb_for_realtime、
+get_canonical_stock_data、sc_schema.FIELD_SPECS 与 zhb_field_safe 为准）：
+  - ZHB 路由由交易日/时段和逐字段新鲜度共同决定，不存在“所有字段全局 ZHB 优先”规则。
+  - 非交易日和盘前优先复用满足新鲜度要求的本地快照；交易日 09:30 起（含盘后）
+    实时行情字段按当前代码路径要求网络/TDX 快照，以取得当日盘中或收盘数据。
+  - 其他字段按字段规格和专用 Tier2 适配器选择来源；实际字段来源写入 field_sources。
+  - 实时字段、日频字段与静态字段使用不同新鲜度上限，不能用统一自然日阈值替代交易日语义。
 
 ZHB时间体系说明：
   - ZHB文件次日更新机制：今日运行脚本，获取的是昨日(或上一交易日)的数据
@@ -29,16 +30,11 @@ ZHB时间体系说明：
   - amount_1d/main_net_buy_amount_1d: 基准日前一交易日数据
   - amount_2d: 基准日前两交易日数据
 
-接口优先级原则（按字段TDX支持情况分级）：
-  - 实时字段（price/change_pct/amount）：ZHB(盘后)→TDX(盘中)→腾讯(fallback)
-    * TDX TCP原生支持这些字段，真正高效
-    * tdx_get_quote_full内部已含缓存+腾讯兜底补强
-  - 估值字段（pe_ttm/pb/turnover_pct）：ZHB→腾讯
-    * TDX TCP不返回这些字段，无需TDX中间层
-  - 股息率：ZHB only
-    * TDX和腾讯都不直接返回，ZHB有完整数据
-  - 量能/资金因子（get_volume_acceleration/get_capital_momentum）：纯ZHB数据
-    * 无需实时T数据，仅使用ZHB内部的amount/amount_1d/amount_2d等字段
+路由维护约束：
+  - 调整字段是否实时，应修改 sc_schema.FIELD_SPECS；不要把测试契约集合当作运行时开关。
+  - 调整 ZHB/HTTP/TDX 的时段行为，应核对 _should_use_zhb_for_realtime 与
+    get_canonical_stock_data 中 need_realtime_quote 的联合判定。
+  - 调整某字段可接受的本地快照延迟，应核对 sc_datasource.zhb_field_safe 的 ABCD 分级。
 
 核心特性：
   - 全函数缓存装饰器（基于 stock_cache，按字段变化频率分级TTL）

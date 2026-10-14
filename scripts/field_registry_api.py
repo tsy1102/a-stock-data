@@ -126,6 +126,106 @@ def source_field_records(reg: Optional[dict] = None) -> List[dict]:
     return cast(List[dict], records)
 
 
+def build_aggregate_fields(source_records: List[dict]) -> List[dict]:
+    """Build the legacy-by-code view without erasing source-level distinctions.
+
+    ``source_fields`` remains authoritative. The compatibility ``fields`` view
+    groups rows by their short code, so this function marks semantic divergence
+    and incomplete metadata explicitly and never reports an ambiguous aggregate
+    as verified.
+    """
+    by_code: Dict[str, List[dict]] = defaultdict(list)
+    for record in source_records:
+        source = record.get("source")
+        code = record.get("code")
+        if not isinstance(source, str) or not source or not isinstance(code, str) or not code:
+            raise ValueError("source records require non-empty source and code")
+        by_code[code].append(record)
+
+    aggregates: List[dict] = []
+    for code in sorted(by_code):
+        records = by_code[code]
+        sources = sorted({record["source"] for record in records})
+        statuses = {record.get("status", "unverified") for record in records}
+
+        def values_for(key: str) -> List[str]:
+            return sorted(
+                {
+                    str(record.get(key) or "").strip()
+                    for record in records
+                    if str(record.get(key) or "").strip()
+                }
+            )
+
+        def common_value(key: str) -> str:
+            values = {str(record.get(key) or "").strip() for record in records}
+            return next(iter(values)) if len(values) == 1 and "" not in values else ""
+
+        issues: List[str] = []
+        for key in ("canonical", "meaning", "unit"):
+            values = values_for(key)
+            if len(values) > 1:
+                issues.append(f"{key}_differs")
+            if any(not str(record.get(key) or "").strip() for record in records):
+                if key in {"canonical", "meaning"} or values:
+                    issues.append(f"{key}_incomplete")
+
+        if len(statuses) > 1:
+            issues.append("source_statuses_differ")
+        if any(record.get("status") == "conflict" for record in records):
+            issues.append("source_status_conflict")
+
+        semantic_divergence = any(
+            len(values_for(key)) > 1 for key in ("canonical", "meaning", "unit")
+        )
+        semantic_incomplete = any(
+            issue in issues
+            for issue in ("canonical_incomplete", "meaning_incomplete", "unit_incomplete")
+        )
+        aggregation_status = (
+            "ambiguous"
+            if semantic_divergence
+            else "incomplete" if semantic_incomplete else "consistent"
+        )
+
+        if "conflict" in statuses or semantic_divergence:
+            aggregate_status = "conflict"
+        elif len(statuses) > 1:
+            aggregate_status = "unverified"
+        elif semantic_incomplete and statuses == {"verified"}:
+            aggregate_status = "unverified"
+        else:
+            aggregate_status = next(iter(statuses), "unverified")
+
+        raw_statuses: set[str] = set()
+        for record in records:
+            evidence = record.get("status_evidence")
+            if not isinstance(evidence, dict):
+                continue
+            raw_values = evidence.get("reference_status_raw", [])
+            if isinstance(raw_values, list):
+                raw_statuses.update(raw for raw in raw_values if isinstance(raw, str) and raw)
+        aggregates.append(
+            {
+                "code": code,
+                "source": sources[0] if len(sources) == 1 else None,
+                "sources": sources,
+                "section": common_value("section"),
+                "canonical": common_value("canonical"),
+                "meaning": common_value("meaning"),
+                "unit": common_value("unit"),
+                "status_raw": next(iter(raw_statuses)) if len(raw_statuses) == 1 else "",
+                "status": aggregate_status,
+                "source_statuses": {
+                    record["source"]: record.get("status", "unverified") for record in records
+                },
+                "aggregation_status": aggregation_status,
+                "aggregation_issues": sorted(set(issues)),
+            }
+        )
+    return aggregates
+
+
 def field_records(reg: Optional[dict] = None) -> List[dict]:
     """返回完整字段记录列表（含 canonical/meaning/unit/status/status_raw 等）。"""
     if reg is None:

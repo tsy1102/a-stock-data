@@ -207,8 +207,11 @@ def normalize_runtime_field_code(alias: str, code: str) -> str:
     ZHB ``full`` is a merged view of ``stat`` and ``stat2``. Its field names
     correspond to the underlying endpoint code, so ``zhb.full.amount`` maps to
     registry code ``amount``. The dedicated ``stat``, ``stat2`` and ``tipinfo``
-    paths remain intact.
+    paths remain intact. TDX finance reports wrap protocol field names in
+    ``finance_info``; the registry records those protocol names directly.
     """
     if alias == "zhb" and code.startswith("full."):
         return code[len("full.") :]
+    if alias == "tdx" and code.startswith("finance_info."):
+        return code[len("finance_info.") :]
     return code

@@ -409,7 +409,7 @@ def ths_limit_up_pool(date_str: str = "") -> List[Dict[str, Any]]:
     # V17.0.1g(2026-08-16): 休市日(周末/节假日)传当日返回空 → 自动回退最近交易日
     if not date_str:
         try:
-            from stock_common.stock_calendar import get_last_trading_day, previous_trading_day
+            from stock_common.stock_calendar import get_last_trading_day
 
             date_str = get_last_trading_day().strftime("%Y%m%d")
         except Exception:

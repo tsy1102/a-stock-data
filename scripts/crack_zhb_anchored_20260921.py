@@ -9,7 +9,7 @@ ZHB-T1 铁律: 休市日 ZHB 日期=报告数据日; 本机 ZHB 未同步今日�
 输出: docs/field_verification/20260921/zhb_anchored_crack.md
 不改 field_dict.md（仅产证据）。
 """
-import json, os, math, statistics
+import json, statistics
 FV = "docs/field_verification"
 DATE = "20260918"          # 全采集锚定日(tencent/push2_full/ulist239 均有效)
 ZHB_DIR = "20260921"       # 今日(20260921)采集的 ZHB(=20260918)

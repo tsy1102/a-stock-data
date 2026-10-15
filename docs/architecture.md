@@ -1,6 +1,6 @@
 # 项目架构与数据流
 
-> 本文描述当前代码路径；架构边界的完整依据见 [`ARCHITECTURE_THEORY.md`](ARCHITECTURE_THEORY.md)，字段定义见 [`field_dict.md`](field_dict.md)。最近核对：2026-09-28。
+> 本文描述当前代码路径；架构边界的完整依据见 [`ARCHITECTURE_THEORY.md`](ARCHITECTURE_THEORY.md)，字段定义见 [`field_dict.md`](field_dict.md)。最近核对：2026-10-15。
 
 ## 1. 系统结构
 
@@ -39,7 +39,7 @@ flowchart TD
 |---|---|---|
 | 调度层 | `main.py` | 启动报告子进程并汇总结果；必选脚本缺失、子任务异常或返回失败码都应导致整体失败 |
 | 报告层 | `get_*_report.py`、`BaseReportRunner` | 组织报告工作流、渲染文件、处理上传 |
-| Tier 1 统一门面 | `core/data_provider.get_canonical_stock_data()` | 86 个核心字段的归一化契约、来源选择、fallback、单位归一化和 `field_sources` 溯源 |
+| Tier 1 统一门面 | `core/data_provider.get_canonical_stock_data()` | 113 个 dataclass 属性（101 个基础属性、12 个 ELTDX 扩展）的归一化契约、来源选择、fallback、单位归一化和 `field_sources` 溯源 |
 | Tier 2 专项适配器 | `stock_common/sc_datasource`、`sc_fuyao`、`core/tdx_client.py` 的公开接口 | 提供 CYQ、F10、龙虎榜、涨停梯队、行业 L2、资金流、竞价等专用数据 |
 | 原始客户端 | `stock_common/` 与 `core/tdx_client.py` 内部实现 | HTTP、TCP、SDK 等底层连接；生产报告脚本不应绕过 Tier 1/Tier 2 公开入口 |
 | 缓存 | `core/stock_cache.py` 和适配器缓存 | 管理分类 TTL、缓存键和失效；单位或字段语义变化要升级对应缓存类别/版本 |

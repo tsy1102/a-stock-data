@@ -31,7 +31,7 @@ ensure_utf8_stdio()
 
 import time, os, math, warnings, asyncio, re  # V17.0.4: +re/json(新浪指数 K 兜底); V17.0.25: +math(连板对数估算)
 from typing import Any, Dict, List, Optional
-from datetime import date, datetime, timedelta
+from datetime import date, datetime
 from concurrent.futures import ThreadPoolExecutor, as_completed  # V16.4.1: 删 Counter
 
 # H1/H2 修复(2026-08-15 二审): 全市场 ulist 主力净额(元, 带符号)模块级共享——_get_zhb_market_data 填充, 板块聚合/A 段读取

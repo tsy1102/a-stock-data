@@ -23,7 +23,6 @@ import threading
 from datetime import date, datetime, timedelta
 from typing import Any, Dict, List, Optional, Tuple
 
-from stock_common import _debug_log
 
 
 # ---------------------------------------------------------------------------

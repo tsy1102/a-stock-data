@@ -6,10 +6,11 @@
 
 | 文件 | 说明 |
 |:---|:---|
-| `_sc_datasource_singlefile_backup.py` (~330KB) | **V17.2 拆包前** `stock_common/sc_datasource.py` 单文件完整备份。V17.2 已将其按数据源拆分为 `stock_common/sc_datasource/` 子包(见 `stock_common/sc_datasource/README.md`)。此备份仅用于回溯拆分前的函数实现, 切勿在新代码中引用。 |
+| `_sc_datasource_singlefile_backup.py` | `stock_common/sc_datasource.py` 拆包前的单文件快照；只用于历史实现比对，不参与运行。 |
+| `unified_layer_20260901_2045/` | 2026-09-01 统一层快照，包含 `data_provider.py`、`sc_datasource.py`、`sc_schema.py`、`tdx_client.py`，用于回溯当时的统一层结构。 |
 
 ## 维护约定
 
-- 重大重构(包拆分 / 字段治理批次)前, 可在此归档旧实现快照, 命名 `<module>_singlefile_backup.py` 或 `<module>_<date>_backup.py`。
+- 重大重构前可在此归档旧实现快照，目录名或文件名应包含模块名和日期。
 - 备份为只读参考; 生产代码一律引用当前 `stock_common/sc_datasource/` 子包。
-- 过期备份(超过 2 个主版本)可整体删除, 不影响运行。
+- 备份不会参与生产运行。清理前须检查是否仍有独有实现、字段身份或历史决策，并确认其他归档已保留所需证据；不能仅按版本年龄删除。

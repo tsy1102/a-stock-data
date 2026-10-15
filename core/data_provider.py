@@ -1,81 +1,37 @@
-#!/usr/bin/env python3
-"""
-data_provider.py — 统一数据中心层 - V11.5正式启用
+"""统一报告数据门面与字段路由。
 
-版本日期：2026-07-28 (V15.2)
-   - V15.2: P0 崩溃修复 - get_canonical_stock_data 中 board 变量初始化；12 个 zhb_data 函数补 valid_if；tdx_get_quote_full 重构为 ZHB→TDX→HTTP
-   - V15.1: industry 字段改用 TDX boards；get_amount_wan 优先级 ZHB→腾讯→TDX；启用 change_30d 字段
-   - V15.0: 标准化数据合约 CanonicalStockData + ZHB 时空路由矩阵 + 熔断静默降级
-   - V14.2: ZHB 数据集深度集成 - profile.dat/concept_chain/neednote/xgsg/brkseat/special_tags
-          新增 get_stock_basic_info_from_zhb / get_concept_from_zhb /
-          get_new_share_calendar_from_zhb / get_special_tags_from_zhb
-   - V14.0: is_workday() 修复由上游 stock_calendar 提供；ANTI_POISON_DEVIATION_THRESHOLD 标记废弃
-   - V13.x: 字段路由简化 + sc_schema 元数据层
-   - V12.6: REQUIRES_REALTIME_HTTP / ZHB_SUFFICIENT 字段分类
+``get_canonical_stock_data`` 返回 ``CanonicalStockData``，负责字段归一化、来源选择、
+fallback 和逐字段 ``field_sources`` 溯源。ZHB 是否可用由交易时段和字段新鲜度共同决定；
+不能把整层概括为全局 ZHB 优先。精确路由规则见 ``docs/architecture.md``。
 
-核心路由概览（精确行为以 _should_use_zhb_for_realtime、
-get_canonical_stock_data、sc_schema.FIELD_SPECS 与 zhb_field_safe 为准）：
-  - ZHB 路由由交易日/时段和逐字段新鲜度共同决定，不存在“所有字段全局 ZHB 优先”规则。
-  - 非交易日和盘前优先复用满足新鲜度要求的本地快照；交易日 09:30 起（含盘后）
-    实时行情字段按当前代码路径要求网络/TDX 快照，以取得当日盘中或收盘数据。
-  - 其他字段按字段规格和专用 Tier2 适配器选择来源；实际字段来源写入 field_sources。
-  - 实时字段、日频字段与静态字段使用不同新鲜度上限，不能用统一自然日阈值替代交易日语义。
+路由维护时需要共同检查：
+- ``sc_schema.FIELD_SPECS`` 中字段的实时性元数据；
+- ``_should_use_zhb_for_realtime`` 与 ``get_canonical_stock_data`` 的实时行情判定；
+- ``sc_datasource.zhb_field_safe`` 的逐字段快照延迟分级。
 
-ZHB时间体系说明：
-  - ZHB文件次日更新机制：今日运行脚本，获取的是昨日(或上一交易日)的数据
-  - 例如：7月17日运行 → zhb_20260716（7月16日数据）
-  - 非交易日运行：获取最近一个交易日的数据
-  - ZHB中的"基准日" = ZHB文件名日期
-  - amount/main_net_buy_amount: 基准日数据
-  - amount_1d/main_net_buy_amount_1d: 基准日前一交易日数据
-  - amount_2d: 基准日前两交易日数据
-
-路由维护约束：
-  - 调整字段是否实时，应修改 sc_schema.FIELD_SPECS；不要把测试契约集合当作运行时开关。
-  - 调整 ZHB/HTTP/TDX 的时段行为，应核对 _should_use_zhb_for_realtime 与
-    get_canonical_stock_data 中 need_realtime_quote 的联合判定。
-  - 调整某字段可接受的本地快照延迟，应核对 sc_datasource.zhb_field_safe 的 ABCD 分级。
-
-核心特性：
-  - 全函数缓存装饰器（基于 stock_cache，按字段变化频率分级TTL）
-  - 交易状态感知（盘前/盘中/盘后自动切换数据源策略）
-  - 同步/异步双版本接口
-  - ZHB全量数据预取优化（减少重复调用）
-  - 按TDX支持情况分级的fallback机制
-  - 量能三连击因子和资金动量加速因子（纯ZHB数据，时间维度完全对齐）
-
-TTL分级策略：
-  - 实时层（price/change_pct/amount）：30分钟 + 交易日模式
-  - 日变层（pe_ttm/pb/turnover_pct/main_net_buy/streak_days）：24小时 + 交易日模式
-  - 周变层（52w_range）：7天
-  - 季度层（total_shares/industry）：90天
-  - 月变层（dividend_yield）：30天
+ZHB 文件名日期表示数据日期，不是采集时间。多日字段以各自的有效交易日偏移表示；
+新闻和公告等自然日信息由对应专项适配器负责。缓存、专用字段和原始客户端边界
+遵循 ``docs/ARCHITECTURE_THEORY.md`` 与 ``AGENTS.md``。
 """
 
 from typing import Any, Dict, Optional, List
-from core._accessors import (
+# Compatibility exports are consumed through core.data_provider by legacy adapters.
+from core._accessors import (  # noqa: F401
     get_concept_from_zhb,
-    get_dividend_yield,
+    get_dividend_yield as get_dividend_yield,
     get_change_pct,
-    get_change_ytd,
-    get_amount_wan,
+    get_change_ytd as get_change_ytd,
+    get_amount_wan as get_amount_wan,
     get_main_net_buy,
-    get_streak_days,
+    get_streak_days as get_streak_days,
 )
 import math
-from datetime import (
-    date,
-    datetime,
-    timedelta,
-)  # timedelta 供 _get_trading_date_offset 使用（M14 注释修正）
+from datetime import date, datetime
 
 from core.stock_cache import (  # V15.2: 强化 valid_if
     cached,
     TTL,
     make_valid_if,
-    get_cache,
-    set_cache,
-    QUOTE_BATCH_CACHE_CATEGORY,  # V17.3.12: 跨进程批量行情共享
 )
 
 

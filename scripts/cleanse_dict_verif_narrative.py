@@ -27,7 +27,6 @@ Dry-run by default; it writes no files unless --plan-output is supplied.
 
 import argparse
 import re
-import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]

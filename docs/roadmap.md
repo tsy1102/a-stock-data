@@ -157,7 +157,7 @@ TTL 以「数据交易日」为界：**9:30 分界**（9:30 前=上一交易日�
 
 ---
 
-## V17.0 全盘重构（已完成，2026-08-13，详见 [V17.0_REFACTOR_PLAN.md](V17.0_REFACTOR_PLAN.md)）
+## V17.0 全盘重构（已完成，2026-08-13；实施记录见 [CHANGELOG.md](../CHANGELOG.md)）
 
 - **目录整理**：7 支撑模块包化 `core/`（全仓 ~150 import 统一 `from core.X`，`__init__.py` 空防循环）；`credentials/` 凭据归位；v9.6 遗产全清（目录/SKILL.md/3 工具/孤儿 db）；README 体系（core/stock_common/tests/运行时+根树）。
 - **代码重构**：S1 死代码 ~1000 行（21 zhb 转发+sc_zhb+12 dp 包装，__all__ 255→230）；S2 传输层统一（retry→quick 别名+async EM/GEN 分流）；S3 em_secid_prefix 新增（**修 92 北交所 secid bug**）+is_a_stock 下沉；S4 getharden 三版合一（探针实测）+cninfo 下沉（keywords 参数）；S5 写尾/ST 标注样板收敛；S8 缓存适配器删除。

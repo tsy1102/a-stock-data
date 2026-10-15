@@ -24,7 +24,7 @@ import csv
 import json
 import sys
 from pathlib import Path
-from typing import Any, Callable, Dict, List, Set
+from typing import Any, Callable, Dict, List, Set, Tuple
 
 # V16.4.1: 强制 UTF-8 输出（下沉到代码自身——任何 agent/机器/直接运行均 UTF-8，
 # 不依赖系统代码页/环境变量/Profile；纯标准库，幂等）

@@ -2,7 +2,7 @@
 
 > **用途**：项目架构、稳定约束与文档索引。任务开始时先按下表读取相关部分，不必重复扫描整份文档。
 > **维护规则**：结构、入口或稳定流程变化时更新；字段语义以主字典为准，运行状态与测试结果以实际检查为准。
-> **更新日期**：2026-10-14（`VERSION`：17.4.50）
+> **更新日期**：2026-10-15（`VERSION`：17.4.53）
 
 ## 0. 指引目录
 
@@ -53,7 +53,7 @@
 - Python 最低版本为 3.11（AxData 0.1.4 的依赖要求）；项目开发/测试推荐并使用 Python 3.12。解释器通过 `scripts/run_with_system_python.ps1` 选择。
 - `CanonicalStockData` 当前有 113 个 dataclass 属性，其中 12 个是可选 ELTDX 扩展；`FIELD_SPECS` 当前登记 38 项精选源字段元数据，不代表完整契约字段表。Schema 测试锁定这三个计数，变更时应同步更新文档。
 - 运行测试使用 `scripts/run_tests.ps1`，不要从 Shell 直接调用 `pytest`。`real_network` 测试须明确选择。
-- 最近验证（V17.4.52，2026-10-14）：AxData 路由封锁对契约变化和成功快照保持粘滞，只有人工确认恢复并清理本机身份状态后才恢复限量采样；单路线身份回归 9 项通过，AxData/FTShare 身份、采集、碰撞与辅助证据联合选择 194 项通过、764 项未选。全量离线套件本轮未完成：收集 957 项、选择 910 项后停在既有调度器用例无输出；没有计作全量通过。语法编译 5 个文件通过，MyPy 2 个生产模块零错误，A1/A7 无硬错误或警告，`git diff --check` 通过；真实网络和 Black 未运行。
+- 最近验证（V17.4.53，2026-10-15）：Python 3.12.10；全量离线套件收集 973 项，925 通过、1 跳过、47 个 `real_network` 用例排除，耗时 91.54 秒。5 个 MyPy 源文件零错误，21 个变更 Python 文件语法检查、Flake8 F401/F821、A1/A7 闸门通过；Vulture 只提示公开弃用兼容 API `get_fund_flow_weighted` 的未使用参数 `tdx_data`。Black 本轮未完成（先前检查 60 秒无输出）；真实网络用例未运行。详细结论见 `docs/PROJECT_AUDIT_20261015.md` 与 `CHANGELOG.md`。
 - 历史验证（V17.4.41，来源身份重分类后）：pytest 收集 865 项；定向回归 `test_capture_field_probe.py` 54 passed、来源范围/身份测试 6 passed、字典生成测试 3 passed。A1/A7、registry parity、field matrix、7 个 Python 文件语法检查与 4 个生产文件 MyPy 均通过；Black 未能在本机执行器中返回结果。两次全量离线尝试均未完成：首次停在 `test_missing_report_script_is_failure`，排除该项后停在 `test_cyq_and_kline_chapters_survive_source_failure`，长时间无输出后中断；未计为全量通过，`real_network` 未运行。字段逐源身份共 2,481 条，状态计数保持 verified 842、unverified 1,548、conflict 90、candidate 1；本次将 33 条 KPH 组件字段与 6 条 FTShare 服务接口字段从 `levistock(ftshare)` 拆出，另将 136 条记录标为历史未归属；详见 `docs/levistock_source_reconciliation_20261010.md` 与生成的 `docs/field_dict.md`。AxData 作为多源框架参考，主注册表无 AxData 字段行。元数据清单显示 239 条 verified 记录缺少规范名或含义（207 缺含义、47 缺规范名、15 两者皆缺），详见 `docs/field_metadata_gaps.md`。来源仓库对话确认 7 项，21 项待确认。运行状态以当次命令输出为准。
 - 修改后按 `AGENTS.md` §8 做数据契约影响调查，并按 §9 验证；每次改动记录一个可计数指标。
 - `.gitignore` 对运行时缓存和采集原始数据按路径规则处理；清理前应保留仍需离线复核的研究证据。
@@ -83,6 +83,7 @@
 | `docs/field_verification/` | 破解方法、采集数据及字段验证归档 |
 | `docs/roadmap.md`、`CHANGELOG.md` | 决策记录与版本历史 |
 | `docs/PROJECT_AUDIT_REMEDIATION_20260928.md` | 本轮审计整改项目、验收进度与结果 |
+| `docs/PROJECT_AUDIT_20261015.md` | 最新全仓体检结论、修复范围、验证结果与剩余建议 |
 | `docs/UPSTREAM_COMPATIBILITY.md` | 上游仓库、依赖版本与项目适配边界 |
 
 ## 5. 动态信息

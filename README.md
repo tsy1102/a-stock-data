@@ -21,14 +21,14 @@
 - **百度源状态**：项目已停用百度股票接口，采集器只保留零请求 `deprecated` 状态用于快照判定；AxData 当前接口表没有百度接口，FTShare 的 `baidu_financial_calendar` 是财经日历服务方法，不是股票行情源。
 - **统一数据合约**：唯一入口 `get_canonical_stock_data` 返回 `CanonicalStockData` 强类型合约（113 个 dataclass 属性，含 12 个可选 ELTDX 扩展；每只股票通过 `field_sources` 记录来源），消除异构多源冲突。
 - **按工作负载批量取源**：SHT/MED/LNG 先用 push2delay 批量行情，再用腾讯 60 只/批接口补齐估值、财务比率、盘口和涨跌停字段；VAL 保留全市场腾讯批量，MAK 保留 ZHB 快照、腾讯行情覆盖和东财资金字段批次。每字段记录实际来源，缺项仍保留单股 fallback。长线正文不消费 ELTDX 短线天梯，因此不再为长线请求该数据。
-- **ZHB-First 离线优先路由**：盘前 / 休市日 100% 走 ZHB 内存秒级提取；交易日盘中盘后强制网络取 T 日真实收盘价。
-- **申万二级行业统一**：东财 datacenter 一次性分页拉取 + 7 天缓存，零逐股请求、零 push2 风控面。
+- **按时段与新鲜度选择行情**：盘前和休市日可复用满足逐字段新鲜度要求的 ZHB 快照；交易日 09:30 起，实时行情按当前路由获取当日数据。路由和来源标注见 [`架构说明`](docs/architecture.md)。
+- **申万二级行业统一**：东财 datacenter 一次性分页拉取 + 90 天缓存，零逐股请求、零 push2 风控面。
 - **东财分域限流与风控**：共享令牌桶 + 全局 1.0s 节流 + 强制直连 + 429 退避 + 连续 3 次断连跨进程 20h 冷却；字段采集在 403、429、已封禁或连续断连时暂停该源后续股票请求。
 - **统一缓存层**：SQLite + L1 内存 + TTL + `cross_verify` + single-flight + 版本化防污染（口径变更升 category）。
 - **TDX 服务器选择**：主源使用已验证主机列表并避免冷启动全量探测，故障时交由兼容适配器降级。ELTDX 北交所 `92xxxx` 使用 `bj` 市场码；采集与报告适配器按目标代码范围请求，避免误扫全市场。字段采集不再逐股请求未用于破解的 F10 新闻。
 - **通用框架与工程化**：`BaseReportRunner` 共享骨架、并发下沉线程池、云端同步（GD 上传）、批量并行、mypy 类型安全。
 - **测试体系（防退化守护）**：测试按 data/core/infra/reports 分层；当前模块数与用例数见 `tests/README.md`。
-- **工程质量与验证记录**：完整审计范围、最新验证结果和未清理的历史债务见 [`docs/PROJECT_AUDIT_REMEDIATION_20260928.md`](docs/PROJECT_AUDIT_REMEDIATION_20260928.md)。
+- **工程质量与验证记录**：本轮审计结论见 [`docs/PROJECT_AUDIT_20261015.md`](docs/PROJECT_AUDIT_20261015.md)；持续验证结果见 [`tests/README.md`](tests/README.md) 与 [`CHANGELOG.md`](CHANGELOG.md)。
 
 ---
 
@@ -41,7 +41,7 @@
 ### 环境要求
 
 - Python **3.11+**；推荐 **3.12**（AxData 0.1.4 要求 Python ≥3.11；测试启动器默认选择并校验 Python 3.12）
-- Windows / macOS / Linux
+- 已验证环境：Windows + Python 3.12（PowerShell）；代码最低支持 Python 3.11。其他系统尚未按本仓库的标准启动器完整验证。
 - 项目自身的锁文件和报告临时输出写入仓库根 `.tmp/`。Windows 下仍推荐使用 `scripts/run_with_system_python.ps1`（或兼容入口 `.bat`），使 Python 及其子进程的 `TEMP`/`TMP`/`TMPDIR` 均指向该目录；直接执行项目入口时，项目内部临时路径也会落入 `.tmp/`。可通过 `ASTOCK_TEMP_DIR` 显式指定项目临时目录。
 
 ### 新机器部署（复制项目后）
@@ -58,30 +58,13 @@
 - **Google Drive 上传**：配置 Google OAuth 凭据；缺失时本地报告仍可生成，但无法上传。
 - **东方财富 Cookie**：需要时可通过 `EAST_MONEY_COOKIE` 或 `credentials/eastmoney_cookie.txt` 配置。
 
-**新电脑 UTF-8 环境初始化（V16.4.0，一次性）**：
-
-```powershell
-# 1. Python 全局 UTF-8（解决 python 输出/参数中文乱码）
-setx PYTHONUTF8 1
-
-# 2. PowerShell UTF-8（解决控制台/管道中文乱码——Profile 内容见下）
-Set-ExecutionPolicy -Scope CurrentUser RemoteSigned -Force
-New-Item -ItemType Directory -Force "$HOME\Documents\WindowsPowerShell" | Out-Null
-@"
-# UTF-8 environment init
-[Console]::OutputEncoding = [System.Text.Encoding]::UTF8
-`$OutputEncoding = [Console]::OutputEncoding
-chcp 65001 > `$null
-"@ | Set-Content -Path "$HOME\Documents\WindowsPowerShell\Microsoft.PowerShell_profile.ps1" -Encoding UTF8
-```
-
-> 完成后**注销重登**（setx 环境变量对新进程生效）。项目内文件统一 UTF-8；脚本文件避免在命令行内嵌中文（用脚本文件方式）。
+项目入口会将 Python 标准输出设为 UTF-8，启动器会把临时目录指向仓库 `.tmp/`。无需修改系统级环境变量、PowerShell Profile 或全局执行策略；测试和 Python 命令按下方入口运行。
 
 ### 安装依赖
 
-```bash
-pip install -r requirements.txt
-pip install -r requirements-dev.txt   # 开发环境（包含运行时依赖、测试/类型/格式工具）
+```powershell
+.\scripts\run_with_system_python.ps1 -m pip install -r requirements.txt
+.\scripts\run_with_system_python.ps1 -m pip install -r requirements-dev.txt   # 开发环境
 ```
 
 `requirements-dev.txt` 通过 `-r requirements.txt` 继承同一组运行时固定版本。AxData 的 `axdata_core` 模块由 `axdata` 包提供；短线指标使用仓库根目录 `cache/zhb/` 中最新的 `zhb_*.zip` 作为统计资源，同时仍会请求 TDX 行情/财务输入。适配器和 ZIP 路径的回归边界见 [`UPSTREAM_COMPATIBILITY.md`](docs/UPSTREAM_COMPATIBILITY.md)。
@@ -102,7 +85,7 @@ pip install -r requirements-dev.txt   # 开发环境（包含运行时依赖、�
 .\scripts\run_with_system_python.ps1 main.py --sht 600519 000858 03606 --med 600519 000858
 ```
 
-macOS/Linux 可用 `TMPDIR="$PWD/.tmp" python main.py ...`，确保运行时临时文件也落在项目目录。
+项目当前的标准启动和测试流程以 Windows PowerShell 为准；跨平台支持尚未作为验证承诺。
 
 ---
 
@@ -151,7 +134,7 @@ python main.py [选项] 股票代码...
 a-stock-data/
 ├── main.py                       # 主入口程序（参数分发/子进程调度/超时分级）
 ├── .tmp/                         # 本机运行时临时目录（Git 忽略，按需创建）
-├── VERSION                       # 项目版本号（17.4.41，单一来源）
+├── VERSION                       # 项目版本号（见文件，单一来源）
 │
 ├── core/                         # 核心模块包（9 个支撑模块，见 core/README.md）
 │   ├── config.py                 # 全局配置集中管理（超时/限流/熔断）
@@ -307,98 +290,33 @@ reports/
 完整版本历史（含全部字段破解实锤与回归基线演进）见 [CHANGELOG.md](CHANGELOG.md)。本文档不再重复版本明细。
 
 ---
-## 开发指南
+## 开发与验证
 
-### 本地开发
+开发环境和临时目录约定见上方「快速开始」及 [`scripts/README.md`](scripts/README.md)。仓库级约束见 [`AGENTS.md`](AGENTS.md)。
 
-环境部署（克隆 / 安装依赖 / UTF-8 初始化）见上方「快速开始」。开发常用命令：
-
-```bash
-# 运行测试（shell 层强制走 run_tests.ps1，禁止直接 pytest）
-.\scripts\run_tests.ps1
-
-# 按项目配置检查全部类型范围
-mypy --no-pretty --show-error-codes
-
-# 临时禁用缓存调试
-$env:STOCK_NOCACHE = '1'
-.\scripts\run_with_system_python.ps1 main.py --sht 600519
-Remove-Item Env:\STOCK_NOCACHE
-```
-
-### 类型注解与静态检查
-
-项目配置范围内的核心模块、脚本与测试已通过 mypy 检查，在 `pyproject.toml` 中集中管理检查范围：
-
-- `[tool.mypy]`：Python 3.11 目标版本，启用 `no_implicit_optional`、`warn_redundant_casts`
-- `[tool.black]`：代码格式化工具配置（line-length=100）
-
-### 常见调试问题
-
-- **报告数据与最新行情不一致？**：可能是缓存命中了过期数据；Windows PowerShell 中设置 `$env:STOCK_NOCACHE = '1'` 后通过项目启动器运行，再清除该环境变量；或调用 `.\scripts\run_with_system_python.ps1 -m core.stock_cache clear --category dragon_tiger` 清理对应分类。
-- **类型检查 mypy 报错？**：从仓库根目录运行 `mypy --no-pretty --show-error-codes`，先查看完整诊断再修复；不要通过全局忽略项目错误来隐藏问题。
-- **Google Drive 上传失败？**：检查根目录是否有 `client_secrets.json`（首次使用需浏览器授权），确认授权账号有 `a-stock_data` 文件夹的访问权限。
-- **架构不熟悉？**：详见 [`docs/architecture.md`](docs/architecture.md)，包含 Mermaid 架构图；字段口径见 [`docs/domain_glossary.md`](docs/domain_glossary.md) 领域词汇表。
-
-### 提交代码
-
-```bash
-git add .
-git commit -m "feat: 新功能描述"
-git push origin master
-```
-
-提交信息规范：
-- `feat:` 新功能
-- `fix:` 修复bug
-- `docs:` 文档更新
-- `refactor:` 代码重构
-- `chore:` 杂项修改
-
----
-
-## 开发与测试
-
-> 详见 [AGENTS.md](AGENTS.md)。这里只列最常用的入口。
-
-### 测试入口(强制 PowerShell 中转)
-
-**不要**在 shell 里直接敲 `pytest ...` / `python -m pytest ...`。一律走：
+### 离线测试
 
 ```powershell
-.\scripts\run_tests.ps1                                       # 全部离线测试
-.\scripts\run_tests.ps1 -Mode module -Path tests/test_calendar.py     # 单个文件
-.\scripts\run_tests.ps1 -Mode skip_real -ExtraArgs '--maxfail=1','-x' # 跳过 real_network + 失败即停
-.\scripts\run_tests.ps1 -Mode real                             # 仅真网络测试（需 REAL_NETWORK=1）
+.\scripts\run_tests.ps1 -Mode skip_real
+.\scripts\run_tests.ps1 -Mode module -Path tests\core\test_core_routing.py
 ```
 
-入口脚本在 [scripts/run_tests.ps1](scripts/run_tests.ps1)，底层使用 Python 3.12：优先显式配置的解释器，其次项目 `.venv`，再探测系统 Python（见 [scripts/run_with_system_python.ps1](scripts/run_with_system_python.ps1)）。
+默认不触发真实网络；需要真实网络的测试必须标记 `real_network`，并显式使用 `-Mode real`。当前测试模块清单和最近完整结果见 [`tests/README.md`](tests/README.md)。
 
-### 写测试代码（pytest 是 Python 库,正常用）
+### 静态检查与架构闸门
 
-```python
-import pytest
-from pytest import approx
-
-@pytest.fixture
-def tmp_project(tmp_path): ...
-
-@pytest.mark.real_network   # 触发外部网络前必须加这个 marker
-def test_em(endpoint): ...
-
-@pytest.mark.parametrize('a,b,exp', [(1,1,2),(2,3,5)])
-def test_add(a, b, exp): ...
-
-def test_raises():
-    with pytest.raises(ValueError):
-        int('not a number')
-
-def test_approx():
-    assert 0.1 + 0.2 == approx(0.3)
+```powershell
+.\scripts\run_with_system_python.ps1 -m black --check core\_accessors.py
+.\scripts\run_with_system_python.ps1 -m mypy core\_accessors.py
+.\scripts\run_with_system_python.ps1 scripts\verify_data_access.py
+.\scripts\run_with_system_python.ps1 scripts\verify_sync_check.py
 ```
 
-新增自定义 marker 先在 `pyproject.toml` `[tool.pytest.ini_options] markers` 注册，避免 `PytestUnknownMarkWarning`。
-详见 [tests/conftest.py](tests/conftest.py) 顶部的 compliance note 与 [AGENTS.md 2.1](AGENTS.md) 节。
+按实际改动范围运行格式和类型检查；数据访问或字段同步相关修改还需通过 A1/A7 闸门。完整验收要求见 [`AGENTS.md`](AGENTS.md) §9。
+
+### 文档与版本
+
+改动行为后同步更新 [`CHANGELOG.md`](CHANGELOG.md)；版本号以根目录 [`VERSION`](VERSION) 为准。架构和数据口径分别见 [`docs/architecture.md`](docs/architecture.md) 与 [`docs/domain_glossary.md`](docs/domain_glossary.md)。
 
 ---
 

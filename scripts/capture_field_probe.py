@@ -514,9 +514,7 @@ def collect_zhb(pool: list) -> dict:
         market_stat_snapshot,
         market_stat2_snapshot,
         get_tip_info,
-        get_stock_name_from_zhb,
         get_zhb,
-        _lookup_name_persist,
     )
 
     zhb = get_zhb()

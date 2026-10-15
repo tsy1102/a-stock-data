@@ -1278,7 +1278,7 @@ def _tdx_bars_with_timeout(
     _real_timer = getattr(_signal, "ITIMER_REAL", None)
     if _alarm_signal is not None and callable(_setitimer) and _real_timer is not None:
 
-        def _alarm_handler(signum, frame):
+        def _alarm_handler(_signum, frame):
             raise TimeoutError(f"tdx bars timeout ({timeout_s}s)")
 
         _old = _signal.signal(_alarm_signal, _alarm_handler)

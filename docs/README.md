@@ -25,7 +25,10 @@
 - [`verify/`](verify/README.md)：按数据源整理的字段契约、样本和交叉核验资料。
 - [`field_verification/`](field_verification/README.md)：采集流程、破解方法和按日期归档的原始数据与分析报告。
 - [`session_notes/`](session_notes/README.md)：按日期保存的会话决策和待办。
-- `PROJECT_AUDIT_REMEDIATION_*.md`、日期命名的核查文档：阶段性审计记录；判断当前状态时以代码和当次验证结果为准。
+- [`PROJECT_AUDIT_20261015.md`](PROJECT_AUDIT_20261015.md)：本轮全仓审计范围、修复结果、验证和保留事项。
+- `PROJECT_AUDIT_REMEDIATION_*.md`、日期命名的核查文档：历史阶段记录；判断当前状态时以代码和当次验证结果为准。
+- [`field_verification/_upstream_SKILL_v310.md`](field_verification/_upstream_SKILL_v310.md)：上游项目公开 Skill 的历史快照，仅作来源核对资料，不是当前运行契约。
+- [`field_verification/field_registry.json.bak_round3`](field_verification/field_registry.json.bak_round3) 与 [`_reg_tmp_test.json`](field_verification/_reg_tmp_test.json)：2026-09-24 的旧注册表快照，不是当前权威状态；因含有未映射到现行逐源结构的历史记录而保留。
 
 ## 常用查阅路径
 

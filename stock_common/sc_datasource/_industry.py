@@ -3,7 +3,7 @@
 本文件现为独立可导入子模块（不再经 exec 注入）。
 由 stock_common/sc_datasource/__init__.py 通过  显式 re-export 到包命名空间；
 跨片段符号由各子模块函数体内的局部懒导入（from ._DEFINER import NAME）提供，
-共享可变状态集中于 _shared.py（单实例）。
+跨模块共享状态集中于 _shared.py；本模块重绑的行业缓存状态由本模块持有。
 """
 
 from __future__ import annotations
@@ -18,13 +18,14 @@ from core.stock_cache import TTL, cached, make_valid_if
 from ._shared import (
     _EM_BOARD_TYPE_FS_MAP,
     _EM_INDUSTRY_L1_NAMES,
-    _EM_L2_LOADED_TS,
-    _EM_L2_MAP,
-    _EM_L2_MEMBERS,
     _EM_L2_TTL,
     _TDXHY_CACHE,
 )
 from stock_common.sc_kpl import _f
+
+_EM_L2_MAP: Optional[Dict[str, str]] = None
+_EM_L2_MEMBERS: Optional[Dict[str, List[str]]] = None
+_EM_L2_LOADED_TS = 0.0
 
 
 @cached(category="industry_reports", ttl_seconds=TTL["reports"])
@@ -753,7 +754,7 @@ def get_em_industry_l2_data(
 
     _cached = _em_l2_load_cached(_json, _os, _now)
     if not force_refresh and _cached is not None:
-        _EM_L2_MAP = _cached
+        _EM_L2_MAP, _EM_L2_MEMBERS = _cached
         _EM_L2_LOADED_TS = _now
         return _EM_L2_MAP, (_EM_L2_MEMBERS or {})
 

@@ -818,24 +818,31 @@ def registered_field_sets():
             stack[lv] = matched
 
     # The historical reference combines several API identities under one label.
-    # Re-key only field/token pairs explicitly present in the pre-migration
-    # registry; archive-only parser tokens remain in the read-only reference.
+    # The migration manifest preserves the pre-migration registry pairs. The
+    # legacy Markdown parser is intentionally lossy, so it cannot be used to
+    # require every mapped token to still be discoverable in the archive text.
+    # It can still detect newly extracted tokens that need explicit review.
     spec = source_identity_reclassification()
     old_source = spec["from_source"]
     if old_source not in reg:
         return reg
     old_tokens = reg.pop(old_source, set())
-    mapping = {row["code"]: row["to_source"] for row in spec["mappings"]}
+    mapping_rows = spec["mappings"]
+    mapping = {row["code"]: row["to_source"] for row in mapping_rows}
+    if len(mapping) != len(mapping_rows):
+        raise ValueError("Source identity manifest contains duplicate field tokens")
     mapped_tokens = set(mapping)
     archive_only = set(spec.get("archive_only_tokens", []))
-    if mapped_tokens - old_tokens:
+    if mapped_tokens & archive_only:
         raise ValueError(
-            "Source identity manifest contains tokens absent from the archived parser: "
-            + ", ".join(sorted(mapped_tokens - old_tokens))
+            "Source identity manifest marks fields as both mapped and archive-only: "
+            + ", ".join(sorted(mapped_tokens & archive_only))
         )
-    if old_tokens - mapped_tokens != archive_only:
+    unexpected_tokens = old_tokens - mapped_tokens - archive_only
+    if unexpected_tokens:
         raise ValueError(
-            "Legacy archive parser token set changed; review source_identity_reclassifications.json"
+            "Legacy archive parser found tokens missing from the source identity manifest: "
+            + ", ".join(sorted(unexpected_tokens))
         )
     for token, target_source in mapping.items():
         reg[target_source].add(token)

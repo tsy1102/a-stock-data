@@ -1082,13 +1082,16 @@ def get_lockup_expiry(code: str, days: int = 90, include_history: bool = False) 
                     date_str = event_date.isoformat()
                     # F10 的解禁数量及 Eastmoney RPT_LIFT_STAGE 的 FREE_SHARES / ABLE_FREE_SHARES
                     # 均按万股返回；统一转换为股。F10 不提供实际可售数量时明确标为未知。
-                    lockup_shares = _safe_float(
-                        r.get('解禁数量(万)')
-                        or r.get('解禁股数')
-                        or r.get('解禁数量')
-                        or r.get('数量')
-                        or 0
-                    ) * 1e4
+                    lockup_shares = (
+                        _safe_float(
+                            r.get('解禁数量(万)')
+                            or r.get('解禁股数')
+                            or r.get('解禁数量')
+                            or r.get('数量')
+                            or 0
+                        )
+                        * 1e4
+                    )
                     entry = {
                         "date": date_str,
                         "type": (r.get('解禁类型') or r.get('类型') or '').strip(),

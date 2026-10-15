@@ -188,7 +188,7 @@ def test_approx():
 
 使用范围(本仓库现状):
 
-- 截至 2026-10-15，`tests/` 有 78 个测试模块；最新完整离线运行的收集项和结果见 `tests/README.md` 与 `CHANGELOG.md`。真实网络用例默认跳过，只有显式选择 `-Mode real` 或设置专用环境变量才会运行。
+- 截至 2026-10-15，`tests/` 有 79 个测试模块；最新完整离线运行的收集项和结果见 `tests/README.md` 与 `CHANGELOG.md`。真实网络用例默认跳过，只有显式选择 `-Mode real` 或设置专用环境变量才会运行。
 - 测试使用 `@pytest.fixture`、`@pytest.mark.real_network`、`pytest.skip`、`pytest_asyncio` 等 pytest API。
 - `tests/conftest.py` 提供 `_no_real_network` autouse fixture 和 `endpoint` 参数化 fixture
 - `pyproject.toml` `[tool.pytest.ini_options]` 集中管 `testpaths` / `addopts` / `markers` / `norecursedirs`

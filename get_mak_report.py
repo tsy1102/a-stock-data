@@ -112,13 +112,13 @@ INDEX_MAP = {
     "sz399102": "创业板综指",
     "sz399106": "深证综指",
     "sz399006": "创业板指",
-    "sh000688": "科创综指",
+    "sh000680": "科创综指",
 }
 
 
 def get_stock_index(code):
     if code.startswith("688"):
-        return "sh000688"
+        return "sh000680"
     elif code.startswith(("300", "301")):
         return "sz399102"
     elif code.startswith("6"):

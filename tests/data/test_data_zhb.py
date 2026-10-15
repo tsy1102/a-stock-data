@@ -32,6 +32,7 @@ from stock_common.sc_datasource import (
 )  # V17.0 S1: 21 个 zhb 死转发已删, 测试同步清理
 
 
+@pytest.mark.real_network
 def test_zhb_client_download():
     invalidate_cache()
     zhb = get_zhb()
@@ -39,6 +40,7 @@ def test_zhb_client_download():
     assert len(zhb.raw_files) > 0
 
 
+@pytest.mark.real_network
 def test_zhb_spblock():
     blocks = list_sp_blocks()
     assert len(blocks) > 0
@@ -47,16 +49,19 @@ def test_zhb_spblock():
         assert isinstance(codes, list)
 
 
+@pytest.mark.real_network
 def test_zhb_sw_industries():
     sw = get_sw_industries()
     assert len(sw) > 0
 
 
+@pytest.mark.real_network
 def test_zhb_industry_map():
     ind_map = get_industry_map()
     assert len(ind_map) > 0
 
 
+@pytest.mark.real_network
 def test_zhb_tdxstat_snapshot():
     snapshot = market_stat_snapshot()
     assert len(snapshot) > 0

@@ -15,6 +15,7 @@ ZHB 文件名日期表示数据日期，不是采集时间。多日字段以各�
 """
 
 from typing import Any, Dict, Optional, List
+
 # Compatibility exports are consumed through core.data_provider by legacy adapters.
 from core._accessors import (  # noqa: F401
     get_concept_from_zhb,
@@ -129,8 +130,10 @@ def prefetch_quote_batch(codes: List[str]) -> Dict[str, Dict[str, Any]]:
 
                 def _f(key: str, div: float = 1.0) -> float:
                     value = item.get(key)
+                    if value is None or value in ("-", ""):
+                        return 0.0
                     try:
-                        return float(value) / div if value not in (None, "-", "") else 0.0
+                        return float(value) / div
                     except (ValueError, TypeError):
                         return 0.0
 

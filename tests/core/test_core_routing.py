@@ -15,11 +15,50 @@ from __future__ import annotations
 import os
 import sys
 import unittest
+from contextlib import ExitStack, contextmanager
 from unittest import mock
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 import core.data_provider as dp
+
+
+@contextmanager
+def _offline_canonical_sources():
+    """Keep canonical assembly tests independent of ZHB files and live providers."""
+    patches = {
+        "stock_common.stock_calendar.is_workday": False,
+        "stock_common.get_zhb_single_stock_data": {},
+        "core.zhb_client.get_zhb": None,
+        "core.zhb_client.get_stock_name_from_zhb": None,
+        "core.zhb_client.get_stock_name_from_zhb_offline_only": None,
+        "core.zhb_client.cache_stock_name_from_network": None,
+        "core.tdx_client.tdx_get_quote_full": {},
+        "core.tdx_client.tdx_get_fund_flow": {},
+        "core.tdx_client.tdx_get_finance_info": {},
+        "core.tdx_client.tdx_get_belong_boards": {},
+        "core.tdx_client.tdx_get_share_capital": {},
+        "stock_common.get_tencent_quote": {},
+        "stock_common.get_em_industry_l2": "",
+        "stock_common.sc_datasource.get_em_quote_full_delay": {},
+        "stock_common.sc_datasource.get_em_quote_full": {},
+        "stock_common.sc_datasource.get_em_fund_flow_multiday": {},
+        "stock_common.sc_datasource.get_gross_margin_and_roe": {},
+        "stock_common.sc_datasource.get_sina_financial_report": [],
+        "stock_common.sc_datasource.get_tdx_day_tail": {},
+        "stock_common.sc_datasource.get_stock_permanent_info": {},
+        "stock_common.sc_capital_cache.get_share_capital": {},
+        "core.eltdx_adapter.get_eltdx_shortline_for_code": {},
+        "stock_common.sc_network._quick_request": None,
+        "stock_common.sc_network._do_request": None,
+    }
+    with ExitStack() as stack:
+        for target, result in patches.items():
+            stack.enter_context(mock.patch(target, return_value=result))
+        stack.enter_context(mock.patch.object(dp, "get_stock_basic_info_from_zhb", return_value={}))
+        stack.enter_context(mock.patch.object(dp, "get_stock_price", return_value=0))
+        stack.enter_context(mock.patch("stock_common._quick_request", return_value=None))
+        yield
 
 
 class TestRealtimeHttpField(unittest.TestCase):
@@ -137,10 +176,9 @@ class TestCanonicalDataAPI(unittest.TestCase):
                 route.assert_called_once_with()
 
     def test_get_canonical_stock_data_returns_dataclass(self):
-        # The assertion concerns the canonical return contract, not Fuyao's
-        # optional live enrichment path.
-        with mock.patch("stock_common.sc_fuyao.is_fuyao_enabled", return_value=False):
-            cdata = dp.get_canonical_stock_data("600519")
+        with _offline_canonical_sources():
+            with mock.patch("stock_common.sc_fuyao.is_fuyao_enabled", return_value=False):
+                cdata = dp.get_canonical_stock_data("600519")
         self.assertEqual(cdata.code, "600519")
         self.assertTrue(hasattr(cdata, "price"))
         self.assertTrue(hasattr(cdata, "pe_ttm"))
@@ -148,8 +186,9 @@ class TestCanonicalDataAPI(unittest.TestCase):
         self.assertTrue(hasattr(cdata, "time_anchor"))
 
     def test_canonical_stock_data_to_dict(self):
-        with mock.patch("stock_common.sc_fuyao.is_fuyao_enabled", return_value=False):
-            cdata = dp.get_canonical_stock_data("600519")
+        with _offline_canonical_sources():
+            with mock.patch("stock_common.sc_fuyao.is_fuyao_enabled", return_value=False):
+                cdata = dp.get_canonical_stock_data("600519")
         d = cdata.to_dict()
         self.assertIsInstance(d, dict)
         self.assertEqual(d["code"], "600519")
@@ -160,22 +199,23 @@ class TestCanonicalDataAPI(unittest.TestCase):
         from unittest.mock import patch
 
         # data_provider 函数内 `from stock_common import get_tencent_quote`，patch 包属性
-        with patch("stock_common.sc_fuyao.is_fuyao_enabled", return_value=False):
-            with patch(
-                "core.tdx_client.tdx_get_quote_full",
-                side_effect=RuntimeError("Circuit Breaker Open"),
-            ):
-                with patch("stock_common.get_tencent_quote", return_value={}):
-                    with patch(
-                        "stock_common.sc_datasource.get_em_quote_full_delay", return_value={}
-                    ):
+        with _offline_canonical_sources():
+            with patch("stock_common.sc_fuyao.is_fuyao_enabled", return_value=False):
+                with patch(
+                    "core.tdx_client.tdx_get_quote_full",
+                    side_effect=RuntimeError("Circuit Breaker Open"),
+                ):
+                    with patch("stock_common.get_tencent_quote", return_value={}):
                         with patch(
-                            "stock_common.sc_datasource.get_em_quote_full", return_value={}
+                            "stock_common.sc_datasource.get_em_quote_full_delay", return_value={}
                         ):
-                            cdata = dp.get_canonical_stock_data("600519", force_realtime=True)
-                            self.assertIsNotNone(cdata)
-                            self.assertEqual(cdata.code, "600519")
-                            self.assertEqual(cdata.data_source, "zhb")
+                            with patch(
+                                "stock_common.sc_datasource.get_em_quote_full", return_value={}
+                            ):
+                                cdata = dp.get_canonical_stock_data("600519", force_realtime=True)
+                                self.assertIsNotNone(cdata)
+                                self.assertEqual(cdata.code, "600519")
+                                self.assertEqual(cdata.data_source, "zhb")
 
 
 if __name__ == "__main__":

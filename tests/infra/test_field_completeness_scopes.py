@@ -60,14 +60,18 @@ def test_known_same_level_field_sections_have_explicit_source_maps(monkeypatch):
     assert not {"adjust", "period"} & eltdx_tokens
 
 
-def test_levistock_legacy_identity_is_reclassified_without_promoting_archive_only_tokens(monkeypatch):
+def test_levistock_legacy_identity_is_reclassified_without_promoting_archive_only_tokens(
+    monkeypatch,
+):
     import json
     from collections import Counter
     from pathlib import Path
 
     monkeypatch.syspath_prepend("scripts")
     afc = importlib.import_module("audit_field_completeness")
-    manifest_path = Path(afc.ROOT) / "docs/field_verification/source_identity_reclassifications.json"
+    manifest_path = (
+        Path(afc.ROOT) / "docs/field_verification/source_identity_reclassifications.json"
+    )
     manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
 
     registered = afc.registered_field_sets()
@@ -83,6 +87,8 @@ def test_levistock_legacy_identity_is_reclassified_without_promoting_archive_onl
     assert Counter(observed.values()) == Counter(manifest["counts"])
     assert manifest["counts_total"] == len(expected) == 175
     assert manifest["archive_only_count"] == len(manifest["archive_only_tokens"]) == 56
+    for source in manifest["counts"]:
+        assert not set(manifest["archive_only_tokens"]) & registered.get(source, set())
     assert manifest["from_source"] not in registered
 
 

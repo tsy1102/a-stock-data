@@ -48,6 +48,29 @@ def test_tdx_index_quote_rejects_stock_like_values_and_uses_tencent(monkeypatch)
     assert result == {"price": 3767.23, "open": 3790.63, "change_pct": -0.62}
 
 
+def test_tdx_index_quote_falls_back_when_previous_close_is_invalid(monkeypatch):
+    _install_tdx_mocks(
+        monkeypatch,
+        pd.DataFrame(
+            [
+                {"close": 0, "open": 3790.63},
+                {"close": 3767.23, "open": 3790.63},
+            ]
+        ),
+    )
+    monkeypatch.setattr(
+        tdx_client,
+        "_quick_request",
+        lambda *_args, **_kwargs: _FakeResponse(3767.23, 3790.63, -0.62),
+    )
+
+    assert tdx_client.tdx_get_index_quote("sh000001") == {
+        "price": 3767.23,
+        "open": 3790.63,
+        "change_pct": -0.62,
+    }
+
+
 def test_tdx_index_quote_rejects_invalid_values_from_both_sources(monkeypatch):
     _install_tdx_mocks(
         monkeypatch,

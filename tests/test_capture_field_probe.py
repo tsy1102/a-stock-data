@@ -487,6 +487,11 @@ def test_last_completed_trading_day_respects_close_and_exchange_holidays(monkeyp
             return cls.value
 
     monkeypatch.setattr(capture_probe, "datetime", FixedDateTime)
+    known_trading_days = {date(2026, 9, 24), date(2026, 9, 28), date(2026, 10, 9)}
+    monkeypatch.setattr(
+        "stock_common.stock_calendar.is_workday_with_zhb_supplement",
+        lambda value: value in known_trading_days,
+    )
     assert capture_probe._last_completed_trading_day() == date(2026, 9, 24)
 
     FixedDateTime.value = datetime(2026, 9, 28, 15, 0)
@@ -1001,6 +1006,16 @@ def test_only_selection_reruns_a_complete_existing_source(tmp_path, monkeypatch)
         capture_probe, "_validate_capture_data_date", lambda *_args: (date(2026, 9, 29), "trading")
     )
     monkeypatch.setattr(capture_probe, "_is_closed_phase_now", lambda *_args: True)
+    monkeypatch.setattr(capture_probe, "_capture_market_phase", lambda *_args: "closed")
+    monkeypatch.setattr(capture_probe, "_last_trading_day_str", lambda: "20260929")
+    axdata_validation = ModuleType("axdata_daily_validation")
+    axdata_validation.run_axdata_daily_validation = lambda **_kwargs: {"status": "not_eligible"}
+    monkeypatch.setitem(sys.modules, "axdata_daily_validation", axdata_validation)
+    monkeypatch.setitem(sys.modules, "scripts.axdata_daily_validation", axdata_validation)
+    source_identity = ModuleType("source_identity_reconciliation")
+    source_identity.reconcile_source_identity = lambda **_kwargs: {"status": "ok"}
+    monkeypatch.setitem(sys.modules, "source_identity_reconciliation", source_identity)
+    monkeypatch.setitem(sys.modules, "scripts.source_identity_reconciliation", source_identity)
 
     def fake_push2(pool):
         calls.append([item["code"] for item in pool])

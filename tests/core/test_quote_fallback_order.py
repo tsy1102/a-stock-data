@@ -55,6 +55,25 @@ def test_canonical_quote_fallback_order_matches_runtime_calls():
         stack.enter_context(patch("stock_common.stock_calendar.is_workday", return_value=True))
         stack.enter_context(patch("stock_common.get_zhb_single_stock_data", return_value={}))
         stack.enter_context(patch.object(dp, "_BATCH_QUOTE_CACHE", {}))
+        stack.enter_context(patch("core.tdx_client.tdx_get_belong_boards", return_value={}))
+        stack.enter_context(patch("core.tdx_client.tdx_get_fund_flow", return_value={}))
+        stack.enter_context(patch("core.tdx_client.tdx_get_finance_info", return_value={}))
+        stack.enter_context(patch("core.tdx_client.tdx_get_share_capital", return_value={}))
+        stack.enter_context(patch("core.zhb_client.get_zhb", return_value=None))
+        stack.enter_context(patch("stock_common.get_em_industry_l2", return_value=""))
+        stack.enter_context(
+            patch("stock_common.sc_datasource.get_gross_margin_and_roe", return_value={})
+        )
+        stack.enter_context(
+            patch("stock_common.sc_datasource.get_sina_financial_report", return_value=[])
+        )
+        stack.enter_context(
+            patch("stock_common.sc_datasource.get_stock_permanent_info", return_value={})
+        )
+        stack.enter_context(patch("stock_common.sc_datasource.get_tdx_day_tail", return_value={}))
+        stack.enter_context(
+            patch("stock_common.sc_capital_cache.get_share_capital", return_value={})
+        )
         stack.enter_context(
             patch("core.tdx_client.tdx_get_quote_full", side_effect=empty_quote("tdx"))
         )

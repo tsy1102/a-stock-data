@@ -47,9 +47,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - 修正 ELTDX `92xxxx` 被误映射为 `sh92xxxx` 的问题；恢复北交所快照、短线、日 K 与财务批次采集，并将报告适配器的天梯请求限定到调用方代码集。移除不参与字段破解且历史上逐股触发 TQLEX 403 的 F10 新闻采集。
 - 确认 AxData 接口清单没有百度接口；FTShare 的 `baidu_financial_calendar` 是服务层财经日历，不是百度股票行情源。百度采集器保留零请求 `deprecated` 状态，供完整快照判定使用。
 - 更正市场报告的旧注释与内部函数名：K 线实际走 TDX；保留 `get_baidu_kline` 兼容别名，避免历史调用方断裂。
-- 修正 SHT 指数代码与 TDX 异常值：科创综指改用 000680；指数点位低于 100、非有限或涨跌幅异常时触发腾讯兜底，并在兜底值仍异常时隐藏该项。
+- 修正 SHT/MAK 指数代码与 TDX 异常值：科创综指统一使用 000680；无效前收盘价不再伪造 0% 涨跌幅，指数点位低于 100、非有限或涨跌幅异常时触发腾讯兜底，并在兜底值仍异常时隐藏该项。字段审计的历史来源重分类改用显式迁移清单恢复旧注册表配对，只把清单外解析 token 作为人工复核项。
 - 修正 MAK 空行业名被模糊匹配成“酿酒行业”的问题，空值、空白字符串和非字符串统一归入“其他”。
 - 修正解禁报告的数量口径：Eastmoney 提供 `ABLE_FREE_SHARES` 时显示实际可流通量，并保留 `FREE_SHARES` 公告量；TDX F10 或实际数量缺失时明确标记为公告解禁数量。按当前日期重分类并过滤解禁日，拒绝已过期的未来日历缓存；缓存类别升级至 v4。
+- 将 5 个依赖真实 ZHB 数据的集成冒烟用例显式标记为 `real_network`，保持默认离线测试不依赖云端或桌面机器上的本地快照。
 
 ### Validation
 
@@ -64,6 +65,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - 本次五大报告脚本缺陷修复定向回归 14 项通过（解禁 4、指数校验 3、空行业归类 5、SHT 指数装配 2）；11 个 Python 文件语法编译通过，7 个生产文件 MyPy 零错误，A1/A7 闸门均为 0 HARD FAIL / 0 WARN，改动文件 `git diff --check` 通过。全量离线套件此前在无输出的调度器/报告用例处停滞，未记为全量通过；Black 检查在 60 秒无输出后中止，未记为通过；未运行真实网络。
 - 全量离线套件随后在允许 Windows asyncio 使用本机 TCP 回环后完成：968 项收集，920 passed、1 skipped、47 deselected、0 failed（41.84 秒）；此前停滞由执行沙盒阻断回环连接导致，非项目测试逻辑故障。真实网络用例未运行。
 - 项目体检后全量离线套件在 Python 3.12.10 完成：973 项收集，925 passed、1 skipped、47 个 `real_network` 用例排除，9 条第三方弃用警告，91.54 秒；缓存修复模块 17 项全部通过。21 个修改的 Python 文件语法编译、MyPy（5 个源文件）、Flake8 F401/F821、A1/A7 闸门与 84 个文档本地链接检查通过；Vulture 仅报告已导出的弃用兼容 API `get_fund_flow_weighted` 未使用参数 `tdx_data`。Black 检查此前在隔离执行中无输出超过 60 秒，本轮未记为通过；真实网络用例未运行。
+- 云端复核：Python 3.12.14 下收集 975 项，922 passed、1 skipped、52 个 `real_network` 用例排除，467.35 秒。12 个修改 Python 文件语法编译与 Black 检查通过，MyPy 对 5 个生产源文件使用 Windows 目标平台零错误；A1/A7 闸门通过。真实网络测试未运行。Registry parity 仍报告 1,852/2,481/367 对比基线加 E3 的 1,495/2,042/306；投影视图与 field matrix 通过，主字典和注册表未改，等待 AxData 交叉核对。
 
 ## [V17.4.43] 2026-10-11 — 修复 ZHB 字段身份并持久化探索候选
 

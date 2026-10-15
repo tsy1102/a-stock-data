@@ -1801,7 +1801,11 @@ def tdx_get_index_quote(idx_code: str) -> Dict[str, Any]:
                     last_c = float(bars.iloc[-1]['close'])
                     prev_c = float(bars.iloc[-2]['close'])
                     last_o = float(bars.iloc[-1]['open'])
-                    chg = (last_c - prev_c) / prev_c * 100 if prev_c > 0 else 0
+                    chg = (
+                        (last_c - prev_c) / prev_c * 100
+                        if math.isfinite(prev_c) and prev_c > 0
+                        else float("nan")
+                    )
                     if _is_valid_index_quote(last_c, last_o, chg):
                         return {
                             "price": round(last_c, 2),

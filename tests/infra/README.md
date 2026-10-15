@@ -3,7 +3,7 @@
 > 本目录覆盖调度器、外部 API/Google Drive、字段工具、入口依赖预检与脚本写入边界等基础设施契约。
 > 文件清单与逐文件定位见父目录 [`../README.md`](../README.md); 本文件仅作本层速查。
 
-## 文件与职责(9)
+## 文件与职责(12)
 
 | 文件 | 职责 |
 |:---|:---|
@@ -16,6 +16,9 @@
 | test_main_dependencies.py | 必选 TDX 依赖与可选 Google Drive 依赖预检 |
 | test_cleanse_dict_verif_narrative.py | dry-run 默认无写入、显式计划路径才生成文件 |
 | test_ulist_subdict.py | ulist 子字典生成与占位索引回归 |
+| test_archive_field_preflight.py | 采集归档目标路径和字段前置校验 |
+| test_lhb_trading_day_window.py | 龙虎榜窗口按有效交易日计算 |
+| test_update_calendar.py | 交易日历更新、日期解析与失败边界 |
 
 ## 运行
 

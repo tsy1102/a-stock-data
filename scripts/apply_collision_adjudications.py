@@ -15,7 +15,7 @@ import os
 import re
 import sys
 import tempfile
-from collections import Counter, defaultdict
+from collections import Counter
 from pathlib import Path
 from typing import Any
 from urllib.parse import urlsplit

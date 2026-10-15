@@ -16,7 +16,7 @@ import time
 from datetime import datetime, timedelta, timezone
 
 from ._eastmoney import eastmoney_datacenter
-from stock_common.sc_network import UA, _quick_request, _debug_log
+from stock_common.sc_network import _quick_request
 from stock_common import _debug_log as _dbg
 
 DATACENTER_URL = "https://datacenter-web.eastmoney.com/api/data/v1/get"
@@ -234,7 +234,7 @@ def chinabond_yield_curve(curve: str = "all") -> List[Dict[str, Any]]:
 
     注: 中债官网端点需补充(见 _SOURCE_URLS['chinabond']), 当前管线占位返回 [], 待源端点确定后经对撞验证接入。
     """
-    _dbg("chinabond_yield_curve: 中债官网端点待补, 返回空(管线占位, 待对撞验证)")
+    _dbg(f"chinabond_yield_curve({curve}): 中债官网端点待补, 返回空(管线占位, 待对撞验证)")
     return []
 
 

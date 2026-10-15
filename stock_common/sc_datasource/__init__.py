@@ -49,7 +49,7 @@ V9.1 更新：
 
 # ═════════════════════════════════════════════════════════
 # V17.2 重构: 跨片段共享状态已抽取至 _shared.py(单实例, 见该模块)
-from ._shared import *
+from ._shared import *  # noqa: F401 - package re-exports
 
 # ═══════════════════════════════════════════════════════════
 # 东财数据中心核心函数
@@ -367,27 +367,27 @@ from ._shared import *
 # V17.2 维护性拆包: 各 _*.py 现为独立可导入子模块, 此处显式 re-export 其公开 API.
 # 跨片段符号由各子模块内部函数级懒导入解决(见各片段函数体内 from ._X import ...).
 # ═══════════════════════════════════════════════
-from ._holders import *
-from ._official_backup import *
-from ._eastmoney import *
-from ._quotes import *
-from ._industry import *
-from ._financials import *
-from ._pools import *
-from ._zhb import *
-from ._misc import *
-from ._macro import *  # V17.4: 宏观与利率层(吸收上游 3.9.0 §11)
-from ._events import *  # V17.4: 事件驱动层(吸收上游 3.9.0 §14)
-from ._convertible import *  # V17.4: 可转债层(吸收上游 3.9.0 §15)
+from ._holders import *  # noqa: F401 - package re-exports
+from ._official_backup import *  # noqa: F401 - package re-exports
+from ._eastmoney import *  # noqa: F401 - package re-exports
+from ._quotes import *  # noqa: F401 - package re-exports
+from ._industry import *  # noqa: F401 - package re-exports
+from ._financials import *  # noqa: F401 - package re-exports
+from ._pools import *  # noqa: F401 - package re-exports
+from ._zhb import *  # noqa: F401 - package re-exports
+from ._misc import *  # noqa: F401 - package re-exports
+from ._macro import *  # noqa: F401 - package re-exports; V17.4: 宏观与利率层(吸收上游 3.9.0 §11)
+from ._events import *  # noqa: F401 - package re-exports; V17.4: 事件驱动层(吸收上游 3.9.0 §14)
+from ._convertible import *  # noqa: F401 - package re-exports; V17.4: 可转债层(吸收上游 3.9.0 §15)
 
 # V17.4.1: 吸收层 5 模块(新源+新字段, 经上游权威仓库对撞校正)
-from ._research_sina import *  # 新浪研报(研报第二来源, §2.4)
-from ._etf import *  # ETF 份额(万份, §4.7)
-from ._news_wscn_cctv import *  # 央视新闻联播(§5.5; WSCN 宏观日历已在 _macro)
-from ._sse_e_interaction import *  # 上证e互动(§10.3)
-from ._st_list import *  # ST/*ST 名单(§6.8)
+from ._research_sina import *  # noqa: F401 - package re-exports; 新浪研报(研报第二来源, §2.4)
+from ._etf import *  # noqa: F401 - package re-exports; ETF 份额(万份, §4.7)
+from ._news_wscn_cctv import *  # noqa: F401 - package re-exports; 央视新闻联播(§5.5; WSCN 宏观日历已在 _macro)
+from ._sse_e_interaction import *  # noqa: F401 - package re-exports; 上证e互动(§10.3)
+from ._st_list import *  # noqa: F401 - package re-exports; ST/*ST 名单(§6.8)
 
 # V17.4.7: 吸收上游 3.10.0 两个新取数能力(经用户授权采纳, 取数层新增, 不涉字段字典晋升)
-from ._ticks import *  # 腾讯逐笔成交(§1.4, 替代失效 mootdx transaction)
-from ._futures_sina import *  # 新浪期货日K(§13.7, 补大商所历史日线)
-from ._axdata import *  # AxData 接口请求适配器(只读、无缓存、无重试)
+from ._ticks import *  # noqa: F401 - package re-exports; 腾讯逐笔成交(§1.4, 替代失效 mootdx transaction)
+from ._futures_sina import *  # noqa: F401 - package re-exports; 新浪期货日K(§13.7, 补大商所历史日线)
+from ._axdata import *  # noqa: F401 - package re-exports; AxData 接口请求适配器(只读、无缓存、无重试)

@@ -10,7 +10,7 @@ from __future__ import annotations
 import html as _html
 import re
 import time
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List
 
 from stock_common.sc_network import _quick_request, UA
 from stock_common import _debug_log

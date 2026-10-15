@@ -21,9 +21,9 @@ python_classes = "Test*"
 # 注意：诊断脚本已重命名为 diag_*.py 前缀，不会被 pytest 自动收集
 addopts = "-v --tb=short"
 # 注册自定义 mark，消除 PytestUnknownMarkWarning
-# real_network: 标记需要真实网络请求的测试（conftest._no_real_network 会放行）
+# real_network: 仅在显式启用 REAL_NETWORK/CI_RUN_REAL_NETWORK 时运行；默认跳过
 markers = [
-    "real_network: 标记需要真实网络请求的集成测试（conftest._no_real_network 会自动放行）",
+    "real_network: 需要真实网络的集成测试；默认跳过，需通过 run_tests.ps1 -Mode real 显式启用",
 ]
 norecursedirs = [
     "__pycache__",

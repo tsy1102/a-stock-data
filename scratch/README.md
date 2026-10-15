@@ -19,8 +19,8 @@
 ## 历史清理记录
 
 - 2026-08-05：13 个子目录 + 39 个字段破解实验产物删除（结论已落库 field_dict V16.3 D2）
-- 2026-08-06：早期调研脚本（get_real_data/parse_zhb/query_tipinfo/sample_all/search_mcap，引用已删路径）与审计过程产物（bug_scan*）删除；审计结论见 `docs/CODE_AUDIT_REPORT.md`
-- 2026-09-12：清空 `scratch/` 下全部 **227 个** gitignored 实验产物（203 `.py` + 13 `.txt` + 3 `.json` + 6 `.md` + 2 子目录 `verify_20260825/`、`__pycache__`），**仅保留本 README.md**。审计依据：① `.gitignore:55-56` 确认 `scratch/*` 均被忽略、无版本保护；② grep 全仓确认无任何 live 代码 import scratch 模块（零运行时依赖）；③ 研究结论已全量落库 `docs/field_dict.md`（含对撞/PE/字段破解溯源引用），`DEBT-LEDGER.md` 中 DEBT-002 所引 6 个直连探针亦随之清除，该债务可关闭。
+- 2026-08-06：早期调研脚本（get_real_data/parse_zhb/query_tipinfo/sample_all/search_mcap，引用已删路径）与审计过程产物（bug_scan*）删除；该次清理范围和理由记录于本 README 的历史清理记录。
+- 2026-09-12：清空 `scratch/` 下全部 **227 个** gitignored 实验产物（203 `.py` + 13 `.txt` + 3 `.json` + 6 `.md` + 2 子目录 `verify_20260825/`、`__pycache__`），**仅保留本 README.md**。当时的审计依据：① `.gitignore` 确认 `scratch/*` 均被忽略、无版本保护；② 全仓扫描未发现 live 代码导入 scratch 模块；③ 研究结论已归入 `docs/field_dict.md`；`docs/DEBT_LEDGER.md` 中 DEBT-002 所引 6 个直连探针随之清除，该债务在当时关闭。
 
 ## 何时可以删除整个目录
 

@@ -1,7 +1,7 @@
 # 字段实测验证流水线(Field Verification)
 
-> V16.4.1 建立。目标: 用固定股票池的**每日实测数据**,定位 `field_dict.md` 中
-> 错误/未知/推测字段,发现统一层未发现的格式与单位错误。
+> V16.4.1 引入。目标: 用固定股票池的**每日实测数据**,定位 `field_dict.md` 中
+> 错误、未知或推测字段,发现统一层未发现的格式与单位问题。当前采集器和碰撞器状态以代码及当日归档为准。
 
 字段破解统一按 [`CRACKING_METHODOLOGY.md`](CRACKING_METHODOLOGY.md) 和 [`COLLISION_RULES.md`](COLLISION_RULES.md) 检查；碰撞候选经人工复核后，按 [`ADJUDICATION_WORKFLOW.md`](ADJUDICATION_WORKFLOW.md) 更新注册表。
 
@@ -17,7 +17,7 @@
 docs/field_verification/
 ├── pool.json          # 20 股股票池(固定 15 + 动态 5,动态层每日可换)
 ├── README.md          # 本文件
-└── YYYYMMDD/          # 按天归档(自动生成: 由 capture_field_probe.py 每日创建, 按约定不单列 README; 内容见本文件"每日核查流程"与 collide.py 产物)
+└── YYYYMMDD/          # 按目标数据日命名(自动生成；不是实际运行日；内容见本文件"每日核查流程"与 collide.py 产物)
     ├── raw_<source>.json  # 每个有 producer 的来源各一份原始结果
     ├── meta.json          # 采集时段、来源状态、覆盖率、错误/deferred 与已知来源数据日
     ├── <date>_collision_report.md/.json  # 碰撞候选及其样本证据
@@ -29,13 +29,15 @@ Fuyao raw 文件额外保留 `auction_snapshot_meta` 信封摘要；有竞价记
 ## 采集命令
 
 ```powershell
-.\scripts\run_with_system_python.ps1 scripts\capture_field_probe.py                 # 采今天(用现有 ZHB 包)
-.\scripts\run_with_system_python.ps1 scripts\capture_field_probe.py --date 20260812 # 指定日期目录
+.\scripts\run_with_system_python.ps1 scripts\capture_field_probe.py                 # 采最近有效交易日(目录按数据日命名)
+.\scripts\run_with_system_python.ps1 scripts\capture_field_probe.py --date 20261009 # 指定数据日目录
 .\scripts\run_with_system_python.ps1 scripts\capture_field_probe.py --dry-run       # 连通性探测(会发请求,不生成每日 raw 样本)
 .\scripts\run_with_system_python.ps1 scripts\capture_field_probe.py --refresh-pool  # 采集前刷新动态层(连板/新股/涨停)写回 pool.json
 ```
 
 `--dry-run` 不是离线模式：它检查 ZHB/TDX，并对腾讯和 Eastmoney 发少量健康探测请求；它不生成每日 raw 样本。ZHB 客户端仍遵循自身缓存与刷新行为。
+
+同一数据日重复运行时，已有完整收盘快照默认幂等跳过；盘中快照可在收盘后更新为收盘数据。`--overwrite` 用于明确要求重采，`--only <source>` 会重新调用指定源。覆盖前先核对现有 `meta.json`；AxData、FTShare 与 levistock 另有各自的每日去重和持久核验状态，详见 [`scripts/README.md`](../../scripts/README.md)。
 
 ### 龙虎榜/人气榜上下文（按需）
 
@@ -70,7 +72,7 @@ Fuyao raw 文件额外保留 `auction_snapshot_meta` 信封摘要；有竞价记
 > 5 只连板/新股/涨停写回 `dynamic`（`date=最近交易日`），固定层 15 只不动。
 > 网络不可用时保留旧动态层。建议每日命令：`.\scripts\run_with_system_python.ps1 scripts\capture_field_probe.py --refresh-pool`。
 
-## 每日核查流程(固定)
+## 每日核查流程
 
 1. 跑采集脚本(耗时随股票池、来源响应和限流等待变化；会访问配置的来源)
    ```powershell
@@ -78,35 +80,35 @@ Fuyao raw 文件额外保留 `auction_snapshot_meta` 信封摘要；有竞价记
    ```
 2. **跑全源对撞(通用引擎)**——每次运行按当前字典状态选择待破解字段和 verified 独立锚:
    ```powershell
-   .\scripts\run_with_system_python.ps1 scripts\collide.py                 # 默认近 7 天窗口，全源全字段完整对撞
-   .\scripts\run_with_system_python.ps1 scripts\collide.py --window 14     # 近 14 天窗口
+   .\scripts\run_with_system_python.ps1 scripts\collide.py                 # 默认近 7 个有效交易日
+   .\scripts\run_with_system_python.ps1 scripts\collide.py --window 14     # 近 14 个有效交易日
    .\scripts\run_with_system_python.ps1 scripts\collide.py --all           # 全部历史日期
-   .\scripts\run_with_system_python.ps1 scripts\collide.py --date 20260913 # 指定报告日期戳（默认今天）
+   .\scripts\run_with_system_python.ps1 scripts\collide.py --date 20261009 # 指定报告日期戳，不改变样本筛选窗口
    ```
-   产物：碰撞报告 `.md` + `.json`，只记录发现，不直接修改注册表或字典状态。
+   产物：碰撞报告 `.md` + `.json`，只记录发现，不直接修改注册表或字典状态。交易行情按有效交易日计窗口；新闻和公告按自然日处理。重复采集目录按有效数据日去重。
 3. 检查报告使用的交易日/自然日、ZHB 实际数据日期、样本覆盖和来源独立性；日期必须从样本元数据和项目交易日历确认，不能机械地把 ZHB 日期当作运行日的前一自然日。规则见 `collision_dates.py` 与 `CRACKING_METHODOLOGY.md`。
 4. 结合 `CRACKING_METHODOLOGY.md`、上游字段定义和原始样本逐项复核候选。L1/L1-U 只是可审查候选；L4、探索模式和缺少独立锚的结果不得晋级。
 5. 将人工结论记录到 `field_verification/adjudications/`，先运行 `scripts/apply_collision_adjudications.py` 预览；检查字段来源、完整路径、语义、单位和证据后再加 `--apply`。该工具同步 registry 与生成文档，不手改 `field_dict.md`。
 6. 应用后运行注册表 parity、字典同步闸门和对应测试。字段定义冲突须先单独解决，不能用碰撞结果覆盖 `conflict`。
-7. **⚠️ 命名仲裁守卫（强制阻断, 2026-09-09 固化）**: 任何正式字段命名变更前后均须运行
+7. **命名仲裁守卫**: 正式字段命名变更前后均须运行
    `.\scripts\run_with_system_python.ps1 scripts\lint_field_same_number.py --strict-naming`。
-   该模式将 **R3 命名缺口升为阻断级（exit≠0）**；**若报 R3 缺口,禁止回写 field_dict.md**,
-   须先补登 §12.8.12e 规范表或加数值二级复核标记,再重跑直到 exit 0。
-   （默认不带 `--strict-naming` 为 warn 级、不阻断,用于日常检视。）
+   该模式将 R3 命名缺口升为阻断级；若发现缺口，先按 [`field_dict.md`](../field_dict.md) 和
+   [`ADJUDICATION_WORKFLOW.md`](ADJUDICATION_WORKFLOW.md) 补齐证据与登记，再重跑直到通过。
+   默认不带 `--strict-naming` 时为日常提示模式。
 
-## 源与限流(依据 sc_network._DOMAIN_LIMITS)
+## 源请求与限流
 
-| 源 | 限流 | 备注 |
-|---|---|---|
-| ZHB | 本地解析 | tdxstat 35 字段/tdxstat2 21 字段/tipinfo 22 字段 |
-| TDX TCP | 100ms | 5 台 FULL 白名单 |
-| TDX F10 | 100ms | 财务分析/股本/分红(V16.4.1 起) |
-| 腾讯 qt.gtimg | 5rps | 批量 60 只/请求,单股 88 字段 |
-| 东财 push2/push2delay | 0.4/1.0rps | 全字段 114 字段(f1-f250 显式,push2delay 兜底) |
-| 新浪 hq.sinajs | 5rps | 34 字段,需 Referer |
-| AxData | 零网络 | 短线指标 34 字段,直读项目 zhb.zip |
-| 财联社/KPL/板块轮动 | 3/5rps | 市场级:情绪/涨停天梯/涨停明细/盘口异动 |
-| thsdk | 正式账号 | 仅盘中可用(收盘后服务器拒绝) |
+采集器按来源串行执行，各源限流、熔断和重试由当前适配器实现。不要在此处复制固定请求速率；维护限流时以 `core/config.py`、`stock_common/sc_network.py`、对应适配器配置和 `capture_field_probe.py` 为准。每次运行的成功、错误、deferred、覆盖率及来源数据日以对应归档的 `meta.json` 为准。
+
+| 来源类型 | 数据路径与约束 |
+|---|---|
+| ZHB | 本地解析项目缓存包；`as_of_date` 以包内日期和采集元数据为准 |
+| TDX / ELTDX | 统一适配器负责 TCP 连接、主机选择、短线批量接口和限流 |
+| HTTP / 市场接口 | 经来源适配器访问；每次采集的限流或熔断结果写入 `meta.json` |
+| AxData / FTShare / levistock | 按核验状态执行限量日轮或被动比较；规则、复验与退出状态见 [`scripts/README.md`](../../scripts/README.md) |
+| 龙虎榜 / 人气榜等上下文 | 默认不采集、不参与字段碰撞；显式使用 `--include-context` 或对应 `--only` 选项 |
+
+完整采集会把符合日期和阶段条件的 AxData、FTShare、levistock 核验接入每日流程；结果写入当天归档，碰撞器读取这些证据但不会把框架或包装库升为独立字段锚。实际请求范围、退出条件和复验周期见 [`scripts/README.md`](../../scripts/README.md)。
 
 ## 源覆盖状态(历史快照: 2026-08-26, 19 raw 文件)
 
@@ -121,6 +123,8 @@ Fuyao raw 文件额外保留 `auction_snapshot_meta` 信封摘要；有竞价记
   - **ZHB 盘后**: 数据日期恒为 T-1(20260826 采集时=20260825), 需盘后强制同步才刷新
 
 ## 破解里程碑
+
+> 以下是 2026-08 的历史研究摘要，用于追溯当时的判断和撤回；当前字段状态以 `field_dict.md`、`field_registry.json` 及其后续定案记录为准。
 
 - **2026-08-29 (完整复破解轮)**: 2 项旧假设证伪 + 1 项新结论 + 1 项**自我撤回**（数据 `zhb_20260828` + `20260828/` 19 源）
   - ❌ **腾讯[86]: 恢复 ❓未知**——"主力净买/大单净量(手)"**证伪**(符号∝涨跌仅 40%; \|[86]\|/总手 0.0011);
@@ -148,7 +152,9 @@ Fuyao raw 文件额外保留 `auction_snapshot_meta` 信封摘要；有竞价记
   - 同步: zhb_client 正名 / data_provider·tdx_client 注释 / test_data_zhb 断言 / field_dict 7.3 节+P0-1 关闭
   - 详情: `20260826/analysis.md`
 
-## 已确认待办
+## 历史待核查记录（截至 2026-08-29）
+
+> 以下是当时的待办快照，不代表当前状态。当前活跃事项请先看仓库 [`AGENTS.md`](../../AGENTS.md) §12，并核对最新采集 `meta.json`。
 
 - [x] 2026-08-12 首次采集(20 股,4 源;push2 半恢复 8/20,见当日 analysis.md)
 - [x] 2026-08-12 源补强(10 源: +push2_full 114 字段/新浪/AxData/财联社/KPL/板块轮动/TDX-F10)

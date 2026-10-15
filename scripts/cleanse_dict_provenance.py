@@ -17,7 +17,7 @@
 """
 
 import argparse
-import sys, os, re, json
+import sys, os, re
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 

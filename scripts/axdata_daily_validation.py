@@ -6,7 +6,7 @@ files, then may add one Tencent snapshot request with an explicit quote time.
 
 from __future__ import annotations
 
-from datetime import date, datetime
+from datetime import datetime
 import hashlib
 from importlib.metadata import PackageNotFoundError, version as package_version
 import json

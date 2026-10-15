@@ -1,7 +1,7 @@
 """core/_accessors.py — 跨边界访问器叶子模块（V17.3 架构级循环导入修复）。
 
-将原本定义在 core/data_provider.py 中、被 stock_common 顶层引用的 6 个访问器
-（get_concept_from_zhb + 5 个 ZHB 派生函数）迁出至本叶子模块。
+将原本定义在 core/data_provider.py 中、被 stock_common 顶层引用的 7 个访问器
+（get_concept_from_zhb + 6 个 ZHB 派生函数）迁出至本叶子模块。
 
 设计约束（确保无导入期环）：
 - 本模块顶层仅依赖 core.stock_cache（真叶子，不引 stock_common/core）与
@@ -55,18 +55,19 @@ def normalize_list_date(raw: Any) -> str:
 
 
 def get_concept_from_zhb(code: str) -> List[str]:
-    from stock_common import _debug_log, _safe_float
-
     """从 ZHB tdxchain.cfg 获取股票所属概念/产业链节点（V14.2 新增）。
 
     Returns:
         概念名称列表（如 ["5G", "白酒", "MSCI"]），ZHB 缺失时返回空列表
     """
+    from stock_common import _debug_log
+
     try:
         from core.zhb_client import get_stock_concepts_from_zhb
 
         return get_stock_concepts_from_zhb(code)
-    except Exception:
+    except Exception as exc:
+        _debug_log(f"get_concept_from_zhb error ({code}): {exc}")
         return []
 
 
@@ -77,35 +78,34 @@ def get_concept_from_zhb(code: str) -> List[str]:
     valid_if=make_valid_if(check_zeros=False),
 )
 def get_dividend_yield(code: str) -> Optional[float]:
-    from stock_common import _debug_log, _safe_float
-
     """获取股息率。
 
     静态字段：ZHB only（TDX和腾讯都不直接返回股息率，ZHB有完整数据）。
     TTL：30天（分红半年才变，价格驱动日变但30天足够）。
     """
+    from stock_common import _debug_log
+
     try:
         from stock_common import get_zhb_dividend_yield, is_zhb_data_fresh
 
         if is_zhb_data_fresh(max_delay_days=3):
             yield_val = get_zhb_dividend_yield(code)
-            if yield_val:
+            if yield_val is not None:
                 return yield_val
     except Exception as _e:
         _debug_log(f"data_provider error: {_e}")
-        pass
     return None
 
 
 @cached(category="stock_quote", ttl_seconds=1800, trading_day=True)
 def get_change_pct(code: str) -> Optional[float]:
-    from stock_common import _debug_log, _safe_float
-
     """获取涨跌幅。
 
     优先级：ZHB(盘后) → TDX(TCP+内部缓存) → 腾讯(HTTP fallback)
     TTL：30分钟 + 交易日模式
     """
+    from stock_common import _debug_log, _safe_float
+
     if _should_use_zhb_for_realtime():
         try:
             from stock_common import get_zhb_single_stock_data, is_zhb_data_fresh
@@ -118,7 +118,6 @@ def get_change_pct(code: str) -> Optional[float]:
                         return change_pct
         except Exception as _e:
             _debug_log(f"data_provider error: {_e}")
-            pass
 
     # TDX优先（TCP协议，内部含缓存+腾讯兜底补强）
     try:
@@ -129,7 +128,6 @@ def get_change_pct(code: str) -> Optional[float]:
             return _safe_float(q.get("change_pct", 0))
     except Exception as _e:
         _debug_log(f"data_provider error: {_e}")
-        pass
     # 腾讯HTTP最后兜底
     try:
         from stock_common import get_tencent_quote
@@ -150,12 +148,12 @@ def get_change_pct(code: str) -> Optional[float]:
     valid_if=make_valid_if(check_zeros=False),
 )
 def get_change_ytd(code: str) -> Optional[float]:
-    from stock_common import _debug_log, _safe_float
-
     """获取年初至今涨幅。
 
     静态字段：优先ZHB → K线计算。
     """
+    from stock_common import _debug_log, _safe_float
+
     try:
         from stock_common import get_zhb_change_ytd, is_zhb_data_fresh
 
@@ -163,7 +161,6 @@ def get_change_ytd(code: str) -> Optional[float]:
             return get_zhb_change_ytd(code)
     except Exception as _e:
         _debug_log(f"data_provider error: {_e}")
-        pass
     # Fallback：从TDX K线数据近似计算年初至今涨幅
     try:
         from core.tdx_client import tdx_get_security_bars
@@ -180,14 +177,11 @@ def get_change_ytd(code: str) -> Optional[float]:
                     return (current_price - year_start_price) / year_start_price * 100
     except Exception as _e:
         _debug_log(f"data_provider error: {_e}")
-        pass
     return None
 
 
 @cached(category="stock_quote", ttl_seconds=1800, trading_day=True)
 def get_amount_wan(code: str) -> Optional[float]:
-    from stock_common import _debug_log, _safe_float
-
     """获取成交额（万元）。
 
     V15.1: 优先级 ZHB（T-1）→ 腾讯 HTTP → TDX TCP
@@ -195,6 +189,8 @@ def get_amount_wan(code: str) -> Optional[float]:
     ZHB 缺失时降级到腾讯/TDX 实时数据。
     TTL：30分钟 + 交易日模式
     """
+    from stock_common import _debug_log, _safe_float
+
     # 优先级 1：ZHB（T-1 数据，1 天延迟可接受；V16.3 M: A 类仅盘前/非交易日可用——
     # 9:30-24:00 含盘后 ZHB 仍为 T-1，不接受当日成交额用 T-1）
     try:
@@ -206,7 +202,6 @@ def get_amount_wan(code: str) -> Optional[float]:
                 return amount
     except Exception as _e:
         _debug_log(f"data_provider error: {_e}")
-        pass
 
     # Fallback 1：腾讯 HTTP（实时，但仅盘中使用）
     try:
@@ -221,7 +216,6 @@ def get_amount_wan(code: str) -> Optional[float]:
                 return amt
     except Exception as _e:
         _debug_log(f"data_provider error: {_e}")
-        pass
     # Fallback 2：TDX TCP
     try:
         from core.tdx_client import tdx_get_quote_full
@@ -231,7 +225,6 @@ def get_amount_wan(code: str) -> Optional[float]:
             return _safe_float(q.get("amount_wan", 0))
     except Exception as _e:
         _debug_log(f"data_provider error: {_e}")
-        pass
     return None
 
 
@@ -242,14 +235,14 @@ def get_amount_wan(code: str) -> Optional[float]:
     valid_if=make_valid_if(),
 )
 def get_main_net_buy(code: str) -> Optional[Dict[str, Any]]:
-    from stock_common import _debug_log, _safe_float
-
     """获取主力资金流向。
 
     V17.0 (2026-08-13 字典实锤): 统一口径——优先级 push2delay f137(当日权威, 与 canonical 一致)
     → ZHB T-1 → TDX 0x0011(实时兜底)。原"ZHB 优先"导致 sht 二章(本函数)与七章(canonical)
     显示不同日期/口径(实测 600276: 二章 2162万[8/12 ZHB] vs 七章 -22272万[8/13 f137])。
     """
+    from stock_common import _debug_log, _safe_float
+
     # L1: 东财 f137(今日权威, 与 canonical.main_net_buy_wan 同源)——盘后=当日最终, 盘中=15 分钟延时累计
     try:
         from stock_common.sc_datasource import get_em_quote_full_delay
@@ -292,7 +285,6 @@ def get_main_net_buy(code: str) -> Optional[Dict[str, Any]]:
             }
     except Exception as _e:
         _debug_log(f"data_provider error: {_e}")
-        pass
     return None
 
 
@@ -303,13 +295,13 @@ def get_main_net_buy(code: str) -> Optional[Dict[str, Any]]:
     valid_if=make_valid_if(check_zeros=False),
 )
 def get_streak_days(code: str) -> Optional[int]:
-    from stock_common import _debug_log, _safe_float
-
     """获取连涨连跌天数。
 
     正=连涨，负=连跌，0=震荡。
     准实时字段：优先ZHB → K线计算。
     """
+    from stock_common import _debug_log, _safe_float
+
     try:
         from stock_common import get_zhb_streak_days, is_zhb_data_fresh
 
@@ -317,7 +309,6 @@ def get_streak_days(code: str) -> Optional[int]:
             return get_zhb_streak_days(code)
     except Exception as _e:
         _debug_log(f"data_provider error: {_e}")
-        pass
     # Fallback：从TDX K线数据计算连涨连跌天数
     try:
         from core.tdx_client import tdx_get_security_bars
@@ -348,5 +339,4 @@ def get_streak_days(code: str) -> Optional[int]:
                 return 0  # 平盘：无连涨连跌
     except Exception as _e:
         _debug_log(f"data_provider error: {_e}")
-        pass
     return None

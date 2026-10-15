@@ -380,6 +380,48 @@ class TestDataProviderZhbFunctions:
         assert isinstance(result, bool)
 
 
+class TestAccessorRegressions:
+    def test_accessors_keep_function_docstrings(self):
+        from core import _accessors
+
+        names = (
+            "get_concept_from_zhb",
+            "get_dividend_yield",
+            "get_change_pct",
+            "get_change_ytd",
+            "get_amount_wan",
+            "get_main_net_buy",
+            "get_streak_days",
+        )
+        assert all(getattr(_accessors, name).__doc__ for name in names)
+
+    def test_get_concept_from_zhb_logs_unexpected_failure(self, monkeypatch):
+        from unittest.mock import Mock
+
+        import core.zhb_client as zhb_client
+        import stock_common
+        from core._accessors import get_concept_from_zhb
+
+        def fail_lookup(_code):
+            raise RuntimeError("lookup failed")
+
+        logger = Mock()
+        monkeypatch.setattr(zhb_client, "get_stock_concepts_from_zhb", fail_lookup)
+        monkeypatch.setattr(stock_common, "_debug_log", logger)
+
+        assert get_concept_from_zhb("600519") == []
+        logger.assert_called_once()
+
+    def test_get_dividend_yield_preserves_zero(self, monkeypatch):
+        import stock_common
+        from core._accessors import get_dividend_yield
+
+        monkeypatch.setattr(stock_common, "is_zhb_data_fresh", lambda **_kwargs: True)
+        monkeypatch.setattr(stock_common, "get_zhb_dividend_yield", lambda _code: 0.0)
+
+        assert get_dividend_yield("ZERO_YIELD_TEST") == 0.0
+
+
 # ═══════════════════════════════════════════════════════════════
 # 3. stock_calendar V14.2 ZHB 补充日历
 # ═══════════════════════════════════════════════════════════════

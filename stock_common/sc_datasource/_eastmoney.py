@@ -7,7 +7,7 @@
 """
 
 from __future__ import annotations
-from typing import Any, Awaitable, Callable, Dict, List, Optional, cast
+from typing import Any, Awaitable, Callable, Dict, List, Optional, Tuple, cast
 from datetime import datetime, timedelta
 import asyncio
 import code
@@ -37,7 +37,6 @@ from ._shared import (
     _DC_PREFETCH_FUTURES,
     _EM_BATCH_CACHE,
     _EM_BATCH_CACHE_DATE,
-    _EM_L2_MEMBERS,
     _EM_L2_TTL,
     _FFLOW_HOSTS,
 )
@@ -1156,10 +1155,11 @@ def get_history_fund_flow_120d(code: str, days: int = 60, prefer: str = "auto") 
     return {"data": [], "error": "资金流数据获取失败"}
 
 
-def _em_l2_load_cached(_json: Any, _os: Any, _now: float) -> Optional[Dict[str, str]]:
-    """读磁盘缓存（两级：code→二级名、name→成员）。返回 l2_map 或 None。"""
+def _em_l2_load_cached(
+    _json: Any, _os: Any, _now: float
+) -> Optional[Tuple[Dict[str, str], Dict[str, List[str]]]]:
+    """读取有效的行业映射与成员映射磁盘缓存；缓存缺失或过期时返回 None。"""
     _d = _os.path.dirname(_os.path.dirname(_os.path.abspath(__file__)))
-    global _EM_L2_MEMBERS
     _mp = _os.path.join(_d, "cache", "em_industry_map_l2.json")
     _mb = _os.path.join(_d, "cache", "em_industry_members_l2.json")
     if not (_os.path.exists(_mp) and _os.path.exists(_mb)):
@@ -1172,16 +1172,17 @@ def _em_l2_load_cached(_json: Any, _os: Any, _now: float) -> Optional[Dict[str, 
         with open(_mb, encoding="utf-8") as _f:
             _mbd = _json.load(_f)
         if isinstance(_m, dict) and isinstance(_mbd, dict):
-            _EM_L2_MEMBERS = {
+            _members = {
                 key: [item for item in value if isinstance(item, str)]
                 for key, value in _mbd.items()
                 if isinstance(key, str) and isinstance(value, list)
             }
-            return {
+            _map = {
                 key: value
                 for key, value in _m.items()
                 if isinstance(key, str) and isinstance(value, str)
             }
+            return _map, _members
     except Exception as _e:
         _debug_log(f"datasource em_l2 cache read: {_e}")
     return None

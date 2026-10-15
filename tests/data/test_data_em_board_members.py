@@ -29,6 +29,8 @@
 
 from __future__ import annotations
 
+import io
+import json
 import os
 import sys
 import unittest
@@ -37,7 +39,7 @@ from unittest import mock
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 
 from stock_common import sc_datasource  # noqa: E402
-from stock_common.sc_datasource import get_em_board_members, _industry  # noqa: E402
+from stock_common.sc_datasource import get_em_board_members, _eastmoney, _industry  # noqa: E402
 
 # V17.2.18 重构后片段为独立模块: get_em_board_members 定义在 _industry, em_get 由其自身
 # 命名空间解析; 故补丁须打在 _industry.em_get (而非包级 re-export 副本) 才能穿透。
@@ -221,6 +223,82 @@ class TestEmBoardMembersCache(unittest.TestCase):
             get_em_board_members("BK0447")
             get_em_board_members("BK0448")
         self.assertEqual(m.call_count, 2)
+
+
+class TestEmIndustryL2DiskCache(unittest.TestCase):
+    """磁盘缓存命中时，行业映射和成员映射必须一起恢复。"""
+
+    def setUp(self):
+        self._cache_state = mock.patch.multiple(
+            _industry,
+            _EM_L2_MAP=None,
+            _EM_L2_MEMBERS=None,
+            _EM_L2_LOADED_TS=0.0,
+        )
+        self._cache_state.start()
+        self.addCleanup(self._cache_state.stop)
+
+    def test_loader_returns_both_disk_mappings(self):
+        now = 1_000_000.0
+        map_json = json.dumps({"600519": "白酒Ⅱ", "bad": 123})
+        members_json = json.dumps({"白酒Ⅱ": ["600519", 123], "bad": "invalid"})
+
+        class _FakePath:
+            @staticmethod
+            def abspath(path):
+                return path
+
+            @staticmethod
+            def dirname(_path):
+                return "cache-root"
+
+            @staticmethod
+            def join(*parts):
+                return "/".join(parts)
+
+            @staticmethod
+            def exists(_path):
+                return True
+
+            @staticmethod
+            def getmtime(_path):
+                return now
+
+        class _FakeOs:
+            path = _FakePath
+
+        with mock.patch(
+            "builtins.open",
+            side_effect=[io.StringIO(map_json), io.StringIO(members_json)],
+        ):
+            result = _eastmoney._em_l2_load_cached(json, _FakeOs, now)
+
+        self.assertEqual(
+            result,
+            ({"600519": "白酒Ⅱ"}, {"白酒Ⅱ": ["600519"]}),
+        )
+
+    def test_public_read_restores_members_without_network(self):
+        cached_map = {"600519": "白酒Ⅱ"}
+        cached_members = {"白酒Ⅱ": ["600519"]}
+        with (
+            mock.patch.object(
+                _eastmoney,
+                "_em_l2_load_cached",
+                return_value=(cached_map, cached_members),
+            ),
+            mock.patch.object(
+                _industry,
+                "em_get",
+                side_effect=AssertionError("valid disk cache must prevent network access"),
+            ) as network,
+        ):
+            self.assertEqual(
+                _industry.get_em_industry_l2_data(),
+                (cached_map, cached_members),
+            )
+            self.assertEqual(_industry.get_em_industry_members_l2("白酒Ⅱ"), ["600519"])
+            network.assert_not_called()
 
 
 if __name__ == "__main__":

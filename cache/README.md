@@ -12,6 +12,8 @@
 | `zhb_parsed/` | ZHB 解析后的二进制快照 | ZHB 解析模块 |
 | `em_industry_*.json` | 东财行业与成分映射缓存 | `stock_common/sc_datasource/_industry.py` |
 
+`cache/` 保存可复用的业务缓存与行情数据。临时文件、测试 SQLite 数据库、跨进程锁和来源轮验状态统一放在仓库根 `.tmp/`；`.tmp/` 已加入 Git 忽略，不能把它当作本目录的持久缓存备份。
+
 ## 清理
 
 - `scripts/clean_cache.py` 管理统一 SQLite 缓存；使用前先查看 `--help`，确认清理类别和确认参数。

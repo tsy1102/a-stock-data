@@ -2,7 +2,7 @@
 """tdx_client.py — 通达信共享行情模块。
 
 提供统一的 easy-tdx 数据访问接口，所有适配器函数返回格式与 V3 完全兼容。
-当 TDX 服务器不可达时自动回退到原始 HTTP 源（百度K线/腾讯行情）。
+报价接口按各自路径回退到 ZHB 或腾讯 HTTP；K 线超时则标记本进程 bars 暂停并返回空，由上层处理。此模块不提供百度 HTTP K 线回退。
 
 版本信息:
     V15.2  2026-07-28 - 8 个 F10 函数 valid_if 强化（用 make_valid_if 替代 r is not None）；tdx_get_quote_full 重构为 ZHB→TDX→HTTP 优先级
@@ -80,7 +80,7 @@ _TDX_MIN_INTERVAL: float = TDX_MIN_INTERVAL
 _TDX_CALL_LOCK = _tdx_th.RLock()
 # V17.2.x(2026-09-11): TDX 数据取数"降级"标志。一旦 client.bars() 触发跨平台 5s 超时
 # （说明行情服务器在盘后/弱网环境卡顿），置位后本进程内所有 tdx_get_security_bars /
-# tdx_get_weekly_bars 直接返回空，交由调用方既有的百度 HTTP fallback 取数，避免单只挂起
+# 日线与周线超时后直接返回空，由调用方决定如何处理缺失数据；本模块没有百度 HTTP K 线 fallback。
 # 叠加 _TDX_CALL_LOCK 全局串行 + 每次超时重建适配器(32s) 击穿 val 720s 硬墙。
 _TDX_SKIP_BARS: bool = False
 # V17.2.x(2026-09-11): 已验证(全量数据+连接成功)的 easy_tdx 适配器单例缓存。
@@ -1356,7 +1356,7 @@ def tdx_get_security_bars(code: str, count: int = 800) -> Tuple[List[str], List[
     eltdx/easy_tdx 适配器统一返回 DataFrame；此函数负责保持历史 keys/rows 输出契约。
     """
     global _TDX_CLIENT, _TDX_AVAILABLE, _TDX_SKIP_BARS  # V17.0.10c: 截断重试置空换台; V17.2.x: 超时降级标志
-    # V17.2.x(2026-09-11): TDX 已降级（bars 超时）→ 直接返回空，交由调用方百度 fallback 取数，
+    # V17.2.x(2026-09-11): TDX 已降级（bars 超时）→ 直接返回空，由调用方处理缺失数据，
     # 不再触碰 _TDX_CALL_LOCK / 重建适配器（避免 5s 超时 + 32s 重建 的 per-stock 级联击穿 720s 硬墙）。
     if _TDX_SKIP_BARS:
         return [], []
@@ -1470,12 +1470,12 @@ def tdx_get_security_bars(code: str, count: int = 800) -> Tuple[List[str], List[
                 if 'Decode' in _err_name or '数据不足' in str(_e):
                     _debug_log(f"tdx K线解码失败: {_e}")
                 # V17.2.x(2026-09-11): 跨平台 5s 超时(bars) 命中 → 行情服务器盘后/弱网卡顿，
-                # 置位 _TDX_SKIP_BARS 全局降级，本进程后续所有 bars 调用直接返回空(走百度 fallback)，
+                # 置位 _TDX_SKIP_BARS 全局降级，本进程后续所有 bars 调用直接返回空，由调用方处理，
                 # 杜绝"超时→置空客户端→32s 重建适配器"的 per-stock 级联击穿 720s 硬墙。
                 if isinstance(_e, TimeoutError):
                     _TDX_SKIP_BARS = True
-                    _debug_log(f"tdx K线取数超时降级({code})：后续 bars 走百度 fallback")
-                    # 已降级，本只无需再重试(避免再浪费一次 5s 超时)；循环外统一返回空走百度 fallback
+                    _debug_log(f"tdx K线取数超时降级({code})：本进程后续 bars 返回空")
+                    # 已降级，本只无需再重试(避免再浪费一次 5s 超时)；循环外统一返回空
                     _TDX_CLIENT = None
                     _TDX_AVAILABLE = None
                     break
@@ -1928,7 +1928,7 @@ def tdx_get_weekly_bars(code: str, count: int = 100):
     V14.3 P3: 接入跨进程磁盘缓存。
     """
     global _TDX_SKIP_BARS  # V17.2.x(2026-09-11): 超时降级标志（与日线对称）
-    # V17.2.x(2026-09-11): 与日线对称——TDX 降级后直接返回空，走调用方百度 fallback。
+    # V17.2.x(2026-09-11): 与日线对称——TDX 降级后直接返回空，由调用方处理缺失数据。
     if _TDX_SKIP_BARS:
         return [], []
     cache_key = f"W:{code}:{count}"
@@ -1989,10 +1989,10 @@ def tdx_get_weekly_bars(code: str, count: int = 100):
         except Exception as _e:
             if 'Decode' in type(_e).__name__ or '数据不足' in str(_e):
                 _debug_log(f"tdx 周K线解码失败: {_e}")
-            # V17.2.x(2026-09-11): bars 超时 → 全局降级，后续 bars 走百度 fallback（与日线对称）
+            # V17.2.x(2026-09-11): bars 超时 → 全局降级，本进程后续 bars 调用返回空（与日线对称）
             if isinstance(_e, TimeoutError):
                 _TDX_SKIP_BARS = True
-                _debug_log(f"tdx 周K线取数超时降级({code})：后续 bars 走百度 fallback")
+                _debug_log(f"tdx 周K线取数超时降级({code})：本进程后续 bars 返回空")
             result = ([], [])
             # V16.2 修复: 失败结果不写进程级缓存（与日线一致，避免永久负缓存）
             # V17.2.x(2026-09-11): 失败/超时同样置空客户端强制换台（与日线对称，

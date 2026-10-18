@@ -55,6 +55,14 @@ def test_name_candidates_use_exact_identity_and_current_registry_status(tmp_path
                         "meaning": "",
                         "unit": "",
                     },
+                    {
+                        "source": "TDX",
+                        "code": "change_30d",
+                        "status": "disproved",
+                        "canonical": "change_20d",
+                        "meaning": "旧兼容键，与 change_20d 重复",
+                        "unit": "%",
+                    },
                 ]
             }
         ),
@@ -88,12 +96,21 @@ def test_name_candidates_use_exact_identity_and_current_registry_status(tmp_path
                 "lexical_tokens": "wrong source",
                 "lexical_token_hint_not_meaning": "错误映射",
             },
+            {
+                "source": "TDX",
+                "path": "change_30d",
+                "code": "change_30d",
+                "name_form": "snake_case_abbreviation",
+                "lexical_tokens": "change 30d",
+                "lexical_token_hint_not_meaning": "30-day change (historical tokenization only)",
+            },
         ],
     )
     store = {
         "tdx.lirunzonghe": {"vals": {("600519", "T:20261012"): 3.5}},
         "tdx.returnOnEquity": {"vals": {("600519", "T:20261013"): 0.2}},
         "tdx.f13": {"vals": {("600519", "T:20261013"): 1}},
+        "tdx.change_30d": {"vals": {("600519", "T:20261013"): 1.7}},
     }
     lineage = {
         "sources": {"TDX": {"runtime_aliases": ["tdx"]}},

@@ -10,15 +10,21 @@ def _write_snapshot(
     shortline_mismatch=False,
     kph_extra=False,
     shortline_schema_change=False,
+    shortline_data_date=None,
+    kph_data_date=None,
+    kpl_data_date=None,
 ):
+    shortline_data_date = shortline_data_date or data_date
+    kph_data_date = kph_data_date or data_date
+    kpl_data_date = kpl_data_date or data_date
     codes = [f"{index:06d}" for index in range(1, 21)]
     axdata_stocks = {}
     eltdx_stocks = {}
     kph_stocks = {}
     kpl_stocks = {}
     for code_index, code in enumerate(codes, start=1):
-        shortline = {"stats_date": data_date}
-        reference_shortline = {"stats_date": data_date}
+        shortline = {"stats_date": shortline_data_date}
+        reference_shortline = {"stats_date": shortline_data_date}
         for field_index in range(1, 7):
             key = f"indicator_{field_index}"
             value = code_index * 10 + field_index
@@ -56,15 +62,12 @@ def _write_snapshot(
     documents = {
         "raw_axdata.json": {"stocks": axdata_stocks},
         "raw_eltdx.json": {"stocks": eltdx_stocks},
-        "raw_kph.json": {"trade_date": data_date, "stocks": kph_stocks},
-        "raw_kpl.json": {"trade_date": data_date, "stocks": kpl_stocks},
+        "raw_kph.json": {"trade_date": kph_data_date, "stocks": kph_stocks},
+        "raw_kpl.json": {"trade_date": kpl_data_date, "stocks": kpl_stocks},
     }
     for filename, document in documents.items():
         (output_dir / filename).write_text(json.dumps(document), encoding="utf-8")
-    return {
-        source: {"ok": True, "status": "ok"}
-        for source in ("axdata", "eltdx", "kph", "kpl")
-    }
+    return {source: {"ok": True, "status": "ok"} for source in ("axdata", "eltdx", "kph", "kpl")}
 
 
 def _confirm_both_routes(tmp_path, monkeypatch):
@@ -210,6 +213,91 @@ def test_repeated_same_data_date_does_not_add_an_identity_sample(tmp_path, monke
     assert summaries["stock_shortline_indicators_tdx"]["matched_data_dates"] == 2
 
 
+def test_shared_effective_trade_date_is_used_when_capture_date_is_newer(tmp_path, monkeypatch):
+    state_path = tmp_path / ".tmp" / "axdata_state.json"
+    output_dir = tmp_path / "20261014"
+    monkeypatch.setattr(validation, "STATE_PATH", state_path)
+    monkeypatch.setattr(validation, "_is_trading_date", lambda _value: True)
+    source_meta = _write_snapshot(
+        output_dir,
+        "2026-10-14",
+        shortline_data_date="2026-10-13",
+        kph_data_date="2026-10-13",
+        kpl_data_date="2026-10-14",
+    )
+
+    shortline_sample = validation._shortline_capture_sample(output_dir, "2026-10-14")
+    passive = validation._shortline_passive_evidence(
+        output_dir,
+        "2026-10-14",
+        source_meta=source_meta,
+        requested_sources={"axdata", "eltdx"},
+    )
+    summaries = validation.update_axdata_capture_identities(
+        out_dir=output_dir,
+        data_date="2026-10-14",
+        source_meta=source_meta,
+        requested_sources={"axdata", "eltdx", "kph", "kpl"},
+    )
+
+    assert shortline_sample is not None
+    assert shortline_sample["date"] == "2026-10-13"
+    assert shortline_sample["latest_allowed_data_date"] == "2026-10-14"
+    assert shortline_sample["qualifies"] is True
+    assert passive["status"] == "compared"
+    assert passive["matched_trade_date"] == "2026-10-13"
+    assert passive["paired_stocks"] == 20
+    assert validation._kph_capture_sample(output_dir, "2026-10-14") is None
+    state = json.loads(state_path.read_text(encoding="utf-8"))
+    samples = state["capture_endpoint_identities"]["stock_shortline_indicators_tdx"]["samples"]
+    assert [sample["date"] for sample in samples] == ["2026-10-13"]
+    assert summaries["kph_limit_up_history"]["matched_data_dates"] == 0
+
+
+def test_partial_source_pair_updates_passive_evidence_without_active_probe(tmp_path, monkeypatch):
+    state_path = tmp_path / ".tmp" / "axdata_state.json"
+    output_dir = tmp_path / "20261014"
+    monkeypatch.setattr(validation, "STATE_PATH", state_path)
+    monkeypatch.setattr(validation, "_static_queue_summary", lambda: {"status": "test"})
+    monkeypatch.setattr(validation, "_is_trading_date", lambda _value: True)
+    requests = []
+    monkeypatch.setattr(validation, "_request_records", lambda *_args: requests.append(1) or [])
+    source_meta = _write_snapshot(
+        output_dir,
+        "2026-10-14",
+        shortline_data_date="2026-10-13",
+    )
+
+    result = validation.run_axdata_daily_validation(
+        data_date="2026-10-14",
+        data_date_domain="trading",
+        market_phase="closed",
+        latest_completed_trade_date="2026-10-14",
+        only="axdata,eltdx",
+        out_dir=output_dir,
+        pool=[{"code": "000001"}],
+        source_meta=source_meta,
+        requested_sources={"axdata", "eltdx"},
+    )
+
+    assert result["status"] == "not_eligible"
+    assert result["passive_evidence"]["axdata_shortline_vs_eltdx"]["status"] == ("compared")
+    assert result["passive_evidence"]["axdata_shortline_vs_eltdx"]["matched_trade_date"] == (
+        "2026-10-13"
+    )
+    assert (
+        result["endpoint_identities"]["stock_shortline_indicators_tdx"]["matched_data_dates"] == 1
+    )
+    evidence_path = output_dir / validation.EVIDENCE_FILENAME
+    assert evidence_path.is_file()
+    persisted = json.loads(evidence_path.read_text(encoding="utf-8"))
+    assert (
+        persisted["passive_evidence"]["axdata_shortline_vs_eltdx"]["matched_trade_date"]
+        == "2026-10-13"
+    )
+    assert requests == []
+
+
 def test_unreadable_identity_state_fails_closed_for_capture_and_open_for_collision(
     tmp_path, monkeypatch
 ):
@@ -235,12 +323,8 @@ def test_partial_capture_rate_limit_blocks_only_the_route_that_ran(tmp_path, mon
         requested_sources={"axdata"},
     )
 
-    assert summaries["stock_shortline_indicators_tdx"]["status"] == (
-        "blocked_until_manual_review"
-    )
-    assert summaries["stock_shortline_indicators_tdx"]["reason"] == (
-        "rate_limit_or_ban_observed"
-    )
+    assert summaries["stock_shortline_indicators_tdx"]["status"] == ("blocked_until_manual_review")
+    assert summaries["stock_shortline_indicators_tdx"]["reason"] == ("rate_limit_or_ban_observed")
     assert summaries["kph_limit_up_history"]["status"] == "observing"
     plan = validation.get_axdata_capture_identity_plan("2026-10-14")
     assert plan["endpoints"]["stock_shortline_indicators_tdx"]["action"] == "skip"
@@ -258,9 +342,7 @@ def test_rate_limit_block_survives_contract_change_and_keeps_prior_collision_exi
         requested_sources={"axdata"},
     )
 
-    assert summaries["stock_shortline_indicators_tdx"]["status"] == (
-        "blocked_until_manual_review"
-    )
+    assert summaries["stock_shortline_indicators_tdx"]["status"] == ("blocked_until_manual_review")
     assert validation.get_axdata_collision_suppressions().keys() == {"axdata", "kph"}
 
     state = json.loads(state_path.read_text(encoding="utf-8"))
@@ -281,7 +363,29 @@ def test_rate_limit_block_survives_contract_change_and_keeps_prior_collision_exi
         data_date="2026-10-14",
         source_meta={"axdata": source_meta["axdata"], "eltdx": source_meta["eltdx"]},
     )
-    assert summaries["stock_shortline_indicators_tdx"]["status"] == (
-        "blocked_until_manual_review"
-    )
+    assert summaries["stock_shortline_indicators_tdx"]["status"] == ("blocked_until_manual_review")
     assert validation.get_axdata_collision_suppressions().keys() == {"kph"}
+
+
+def test_partial_capture_does_not_reopen_unselected_endpoint_on_contract_change(
+    tmp_path, monkeypatch
+):
+    state_path, _ = _confirm_both_routes(tmp_path, monkeypatch)
+    state = json.loads(state_path.read_text(encoding="utf-8"))
+    unselected = state["capture_endpoint_identities"]["kph_limit_up_history"]
+    unselected["contract_fingerprint"] = "stale-contract"
+    state_path.write_text(json.dumps(state), encoding="utf-8")
+
+    output_dir = tmp_path / "20261012"
+    source_meta = _write_snapshot(output_dir, "2026-10-12")
+    validation.update_axdata_capture_identities(
+        out_dir=output_dir,
+        data_date="2026-10-12",
+        source_meta=source_meta,
+        requested_sources={"axdata", "eltdx"},
+    )
+
+    updated = json.loads(state_path.read_text(encoding="utf-8"))
+    unselected_after = updated["capture_endpoint_identities"]["kph_limit_up_history"]
+    assert unselected_after["contract_fingerprint"] == "stale-contract"
+    assert unselected_after["status"] == "operationally_redundant"

@@ -610,37 +610,31 @@ def _top10_sorted(candidates, key_func, reverse=True):
 
 
 def _fast_kline(code: str, count: int = 800):
-    """V15.5.8: K 线获取——优先 TDX(eltdx 公网主站 + 磁盘缓存, easy_tdx 兜底; 跨进程持久, 缓存命中零网络),
-    失败 fallback 百度。
+    """取 TDX 日 K 线；短样本时可扩展到 800 根，不再重复请求同一适配器。
 
-    V17.0.4(2026-08-19): 修复注释与代码不符——原实现只调 common_baidu_kline_full(百度 HTTP,
-    每只 0.9s 冷+网络波动) → 形态类策略(05/06/12)命中随网络波动(凌晨全 0)。
-    TDX 磁盘缓存(sc_kline_cache)命中后稳定且零网络。
+    历史兼容函数 ``common_baidu_kline_full`` 也只转调 TDX，不是真正的百度 HTTP 备用源。
+    ``tdx_get_security_bars`` 自己负责进程缓存、磁盘缓存和服务器重试。
     """
     try:
         from core.tdx_client import tdx_get_security_bars
+    except Exception as _e:
+        _debug_log(f"val _fast_kline import tdx adapter ({code}): {_e}")
+        return [], []
 
-        _k, _r = tdx_get_security_bars(code, count)
-        if _r and len(_r) >= 65:
-            return _k, _r
+    try:
+        keys, rows = tdx_get_security_bars(code, count)
     except Exception as _e:
         _debug_log(f"val _fast_kline tdx ({code}): {_e}")
-    try:
-        _k, _r = common_baidu_kline_full(code, count=count)
-        if _r and len(_r) >= 65:
-            # V17.0.10c(2026-08-28): 百度 fallback 结果也落盘, 使后续运行命中磁盘缓存(零网络/零
-            # TDX 锁), 避免 TDX 常年 <65 行的标的每次运行都重复 0.9~15s 百度请求(总时长"越来越长"根因)。
-            # 落盘键与 tdx_get_security_bars 读取键一致("D", code, count), 下次运行 tdx 入口直接命中。
-            try:
-                from stock_common.sc_kline_cache import set_cached_kline
+        keys, rows = [], []
 
-                set_cached_kline("D", code, count, (_k, _r))
-            except Exception:
-                pass
-            return _k, _r
-    except Exception as _e:
-        _debug_log(f"val _fast_kline baidu ({code}): {_e}")
-    return common_baidu_kline_full(code)
+    # Extend a deliberately smaller sample once when it is insufficient. All current
+    # production call sites request the full 800-bar sample.
+    if count != 800 and len(rows) < 65:
+        try:
+            return tdx_get_security_bars(code, 800)
+        except Exception as _e:
+            _debug_log(f"val _fast_kline tdx extended history ({code}): {_e}")
+    return keys, rows
 
 
 # ─── 策略01: 龙回头战法 ───
@@ -874,7 +868,7 @@ async def strategy_04_core_discount(stocks):
             continue
         total_shares = int(mcap * 1e8 / price)
         # V16.4.1: PE 分位用实时价(cdata.price)而非 ZHB T-1 价——原混用导致盘中/盘后分位偏差
-        pe_data = estimate_pe_percentile(code, price, total_shares)
+        pe_data = await asyncio.to_thread(estimate_pe_percentile, code, price, total_shares)
         if pe_data is None:
             continue
         pe_percentile = _safe_float(pe_data.get("percentile", 100))
@@ -1423,8 +1417,8 @@ def strategy_13_liquidity_king(top_liquidity_pool):
             )
             reason = (
                 f"位列全市场前5%核心流动性池，今日成交额{_amt_yi:.2f}亿！"
-                f"成交量异常放大至5日均量的{vol_ratio:.1f}倍，"
-                "主力资金高位接盘或强力破局，流动性溢价显著"
+                f"成交量为5日均量的{vol_ratio:.1f}倍，收盘价不低于前一交易日；"
+                "成交活跃度上升，仅凭量价无法判断资金主体或后续方向。"
             )
             result.append(
                 {

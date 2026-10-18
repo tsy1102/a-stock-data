@@ -1,0 +1,28 @@
+{
+  "schema_version": 1,
+  "report": "20261018/20261018_collision_report.json",
+  "reviewer": "Codex（按项目所有者授权复核）",
+  "reviewed_on": "2026-10-18",
+  "decisions": [
+    {
+      "id": "20261018-zhb-pe-ttm-tencent-39",
+      "candidate": {
+        "left": "zhb.full.pe_ttm",
+        "right": "tencent[39]"
+      },
+      "target": {
+        "source": "ZHB-tdxstat",
+        "code": "pe_ttm"
+      },
+      "anchor": {
+        "source": "腾讯(qt.gtimg)",
+        "code": "[39]"
+      },
+      "action": "verify",
+      "canonical": "pe_ttm",
+      "meaning": "市盈率（TTM）",
+      "unit": "倍",
+      "rationale": "正式 verified_anchor_only 报告在 2026-10-09、10-12、10-13、10-14、10-16 五个有效交易日，以实际来源日期（ZHB zhb_date、腾讯行情时间戳）对齐后得到 100 组样本、97 组精确匹配，各日均满足 18/20 门槛。3 组差异均仅为 0.01：10-12 股票 000007 为 -890.01/-890.02、600309 为 13.16/13.15；10-14 股票 601288 为 8.44/8.43。注册表中腾讯(qt.gtimg)::[39] 已有 verified 定义 PE(TTM)、单位为倍。跨日样本与已定义锚共同确认 ZHB-tdxstat::pe_ttm 的语义。该决定只确认 ZHB 这一逐源身份；聚合字段 pe_ttm 仍有其他来源冲突，不据此消除其余来源状态。"
+    }
+  ]
+}

@@ -1,0 +1,28 @@
+{
+  "schema_version": 1,
+  "report": "20261017/20261017_collision_report.json",
+  "reviewer": "Codex",
+  "reviewed_on": "2026-10-17",
+  "decisions": [
+    {
+      "id": "20261017-zhb-change20d-tencent70",
+      "candidate": {
+        "left": "zhb.full.change_20d",
+        "right": "tencent[70]"
+      },
+      "target": {
+        "source": "ZHB-tdxstat",
+        "code": "change_20d"
+      },
+      "anchor": {
+        "source": "腾讯(qt.gtimg)",
+        "code": "[70]"
+      },
+      "action": "verify",
+      "canonical": "change_20d",
+      "meaning": "20日涨跌幅",
+      "unit": "%",
+      "rationale": "已核对 core/zhb_client.py 的 tdxstat 列映射：change_20d 读取 Col[18]；该路径在正式 verified_anchor_only 碰撞报告中与已验证的腾讯 qt.gtimg [70]（20日涨跌幅，%）跨 5 个不同交易日、每日 20 只股票共 100/100 精确匹配，来源独立性已由 source_lineage.json 确认。ZHB 最新可用来源日期为 2026-10-15；没有把 2026-10-17 采集目录误当成新来源日期。"
+    }
+  ]
+}

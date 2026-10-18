@@ -1,24 +1,26 @@
 {
   "meta": {
     "version": 2,
-    "updated": "2026-10-14",
+    "updated": "2026-10-18",
     "source_of_truth": "field_registry.json",
-    "generated_by": "scripts/reconcile_field_registry.py + source_field_addenda",
+    "generated_by": "manual empirical correction; see docs/field_verification/change_30d_adjudication_20261017.md",
     "note": "source_fields 是逐源完整路径权威记录；fields 是兼容聚合视图。Levistock 历史混合身份的 175 条结构化记录已按逐字段映射重分类。历史原文中额外解析到的 56 个 token 不在迁移前的结构化注册表中，继续保留在只读档案，不提升为当前字段记录。状态冲突与历史证据保存在 source_fields。source_field_addenda 只允许有 E3 文件证据且经 parity 校验的增补，不覆盖 field_source_reference.md 历史原文。",
     "format_note": "JSON（YAML 严格子集，零依赖）。原计划 YAML 因环境无 pyyaml/ruamel 改 JSON。",
     "source_field_stats": {
-      "aggregate_status_scope_unresolved": 511,
+      "aggregate_status_scope_unresolved": 510,
       "candidate": 1,
       "conflict": 90,
-      "manual_collision_adjudication": 5,
-      "matched": 884,
+      "disproved": 2,
+      "empirical_duplicate_alias": 2,
+      "manual_collision_adjudication": 7,
+      "matched": 883,
       "reference_status_conflict": 22,
-      "registry_status_only_single_source": 934,
+      "registry_status_only_single_source": 932,
       "resolved_by_multiday_independent_cross_source_l1": 2,
       "status_conflict": 68,
       "status_missing": 43,
-      "unverified": 1543,
-      "verified": 847,
+      "unverified": 1540,
+      "verified": 848,
       "verified_by_empirical_addendum": 12
     }
   },
@@ -10473,20 +10475,17 @@
       "sources": [
         "ZHB-tdxstat"
       ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
+      "section": "20261017/20261017_collision_report.json",
+      "canonical": "change_20d",
+      "meaning": "20日涨跌幅",
+      "unit": "%",
       "status_raw": "",
-      "status": "unverified",
+      "status": "verified",
       "source_statuses": {
-        "ZHB-tdxstat": "unverified"
+        "ZHB-tdxstat": "verified"
       },
-      "aggregation_status": "incomplete",
-      "aggregation_issues": [
-        "canonical_incomplete",
-        "meaning_incomplete"
-      ]
+      "aggregation_status": "consistent",
+      "aggregation_issues": []
     },
     {
       "code": "change_250k_bar",
@@ -10515,20 +10514,17 @@
       "sources": [
         "ZHB-tdxstat"
       ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
+      "section": "2026-10-17 change_30d 纠错审计",
+      "canonical": "change_20d",
+      "meaning": "与同来源同路径 change_20d 完全重复的历史兼容键，不是独立的 30 日涨跌幅",
+      "unit": "%",
       "status_raw": "",
-      "status": "unverified",
+      "status": "disproved",
       "source_statuses": {
-        "ZHB-tdxstat": "unverified"
+        "ZHB-tdxstat": "disproved"
       },
-      "aggregation_status": "incomplete",
-      "aggregation_issues": [
-        "canonical_incomplete",
-        "meaning_incomplete"
-      ]
+      "aggregation_status": "consistent",
+      "aggregation_issues": []
     },
     {
       "code": "change_30k_bar",
@@ -27486,14 +27482,15 @@
       "source_statuses": {
         "TDX(双命名源)": "unverified",
         "TDX-eltdx(适配层)": "unverified",
-        "ZHB-tdxstat": "unverified",
+        "ZHB-tdxstat": "verified",
         "Levistock历史未归属": "unverified",
         "同花顺-fuyao": "unverified",
         "开盘啦(kpl)": "conflict"
       },
-      "aggregation_status": "incomplete",
+      "aggregation_status": "ambiguous",
       "aggregation_issues": [
         "canonical_incomplete",
+        "meaning_differs",
         "meaning_incomplete",
         "source_status_conflict",
         "source_statuses_differ",
@@ -33461,14 +33458,14 @@
       "sources": [
         "ZHB-tdxstat"
       ],
-      "section": "1.1 tdxstat.cfg 标准契约表（stat.*，20260918 对撞定案）🆕",
-      "canonical": "stat.change_30d",
-      "meaning": "30日涨跌幅",
+      "section": "2026-10-17 change_30d 纠错审计",
+      "canonical": "stat.change_20d",
+      "meaning": "与同来源同路径 stat.change_20d 完全重复的历史兼容键，不是独立的 30 日涨跌幅",
       "unit": "%",
       "status_raw": "✅",
-      "status": "verified",
+      "status": "disproved",
       "source_statuses": {
-        "ZHB-tdxstat": "verified"
+        "ZHB-tdxstat": "disproved"
       },
       "aggregation_status": "consistent",
       "aggregation_issues": []
@@ -50349,31 +50346,7 @@
       },
       "to": {
         "source": "zhb",
-        "code": "change_30d"
-      },
-      "relation": "same_number_same_meaning",
-      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·6d"
-    },
-    {
-      "from": {
-        "source": "push2_full",
-        "code": "f120"
-      },
-      "to": {
-        "source": "zhb",
         "code": "change_20d"
-      },
-      "relation": "same_number_same_meaning",
-      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·6d"
-    },
-    {
-      "from": {
-        "source": "push2_full",
-        "code": "f120"
-      },
-      "to": {
-        "source": "zhb",
-        "code": "change_30d"
       },
       "relation": "same_number_same_meaning",
       "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·6d"
@@ -52401,31 +52374,7 @@
       },
       "to": {
         "source": "zhb",
-        "code": "change_30d"
-      },
-      "relation": "same_number_same_meaning",
-      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·7d"
-    },
-    {
-      "from": {
-        "source": "ulist239",
-        "code": "f110"
-      },
-      "to": {
-        "source": "zhb",
         "code": "change_20d"
-      },
-      "relation": "same_number_same_meaning",
-      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·7d"
-    },
-    {
-      "from": {
-        "source": "ulist239",
-        "code": "f110"
-      },
-      "to": {
-        "source": "zhb",
-        "code": "change_30d"
       },
       "relation": "same_number_same_meaning",
       "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·7d"
@@ -53433,31 +53382,7 @@
       },
       "to": {
         "source": "zhb",
-        "code": "change_30d"
-      },
-      "relation": "same_number_same_meaning",
-      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·6d"
-    },
-    {
-      "from": {
-        "source": "push2",
-        "code": "f120"
-      },
-      "to": {
-        "source": "zhb",
         "code": "change_20d"
-      },
-      "relation": "same_number_same_meaning",
-      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·6d"
-    },
-    {
-      "from": {
-        "source": "push2",
-        "code": "f120"
-      },
-      "to": {
-        "source": "zhb",
-        "code": "change_30d"
       },
       "relation": "same_number_same_meaning",
       "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=1.00·6d"
@@ -53733,31 +53658,7 @@
       },
       "to": {
         "source": "zhb",
-        "code": "change_30d"
-      },
-      "relation": "same_number_same_meaning",
-      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.99·7d"
-    },
-    {
-      "from": {
-        "source": "tencent",
-        "code": "[70]"
-      },
-      "to": {
-        "source": "zhb",
         "code": "change_20d"
-      },
-      "relation": "same_number_same_meaning",
-      "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.99·7d"
-    },
-    {
-      "from": {
-        "source": "tencent",
-        "code": "[70]"
-      },
-      "to": {
-        "source": "zhb",
-        "code": "change_30d"
       },
       "relation": "same_number_same_meaning",
       "evidence": "20260924 对撞 L1等价(hub误伤复议)·hit=0.99·7d"
@@ -57085,6 +56986,30 @@
       },
       "relation": "same_number_same_meaning",
       "evidence": "adjudication:adjudications/20261014_finance_fields.json#20261014-tencent-76-float-shares-alias;report:20261014/20261014_collision_report.json"
+    },
+    {
+      "from": {
+        "source": "ZHB-tdxstat",
+        "code": "change_20d"
+      },
+      "to": {
+        "source": "腾讯(qt.gtimg)",
+        "code": "[70]"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "adjudication:adjudications/20261017_zhb_change_20d.json#20261017-zhb-change20d-tencent70;report:20261017/20261017_collision_report.json"
+    },
+    {
+      "from": {
+        "source": "ZHB-tdxstat",
+        "code": "pe_ttm"
+      },
+      "to": {
+        "source": "腾讯(qt.gtimg)",
+        "code": "[39]"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "adjudication:adjudications/20261018_pe_ttm_tencent.json#20261018-zhb-pe-ttm-tencent-39;report:20261018/20261018_collision_report.json"
     }
   ],
   "source_fields": [
@@ -86646,13 +86571,15 @@
       "code": "change_20d",
       "identity": "ZHB-tdxstat::change_20d",
       "path": "change_20d",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "section": "",
-      "sections": [],
-      "status": "unverified",
-      "status_resolution": "registry_status_only_single_source",
+      "canonical": "change_20d",
+      "meaning": "20日涨跌幅",
+      "unit": "%",
+      "section": "20261017/20261017_collision_report.json",
+      "sections": [
+        "20261017/20261017_collision_report.json"
+      ],
+      "status": "verified",
+      "status_resolution": "manual_collision_adjudication",
       "status_evidence": {
         "reference_statuses": [],
         "reference_status_raw": [],
@@ -86662,9 +86589,22 @@
         ],
         "values": [
           "unverified"
+        ],
+        "adjudication_ids": [
+          "20261017-zhb-change20d-tencent70"
         ]
       },
-      "reference_evidence": [],
+      "reference_evidence": [
+        {
+          "section": "20261017/20261017_collision_report.json",
+          "canonical": "change_20d",
+          "meaning": "20日涨跌幅",
+          "unit": "%",
+          "status_raw": "人工复核 2026-10-17：20261017-zhb-change20d-tencent70",
+          "status": "verified",
+          "adjudication_id": "20261017-zhb-change20d-tencent70"
+        }
+      ],
       "attribute_conflicts": {},
       "registry_aggregate": {
         "code": "change_20d",
@@ -86677,21 +86617,90 @@
         "meaning": "",
         "unit": "",
         "section": ""
-      }
+      },
+      "adjudications": [
+        {
+          "id": "20261017-zhb-change20d-tencent70",
+          "action": "verify",
+          "status": "verified",
+          "reviewer": "Codex",
+          "reviewed_on": "2026-10-17",
+          "report": "20261017/20261017_collision_report.json",
+          "decision_file": "adjudications/20261017_zhb_change_20d.json",
+          "candidate": {
+            "left": "zhb.full.change_20d",
+            "right": "tencent[70]"
+          },
+          "level": "L1",
+          "rationale": "已核对 core/zhb_client.py 的 tdxstat 列映射：change_20d 读取 Col[18]；该路径在正式 verified_anchor_only 碰撞报告中与已验证的腾讯 qt.gtimg [70]（20日涨跌幅，%）跨 5 个不同交易日、每日 20 只股票共 100/100 精确匹配，来源独立性已由 source_lineage.json 确认。ZHB 最新可用来源日期为 2026-10-15；没有把 2026-10-17 采集目录误当成新来源日期。",
+          "evidence": {
+            "ratio": null,
+            "overall_hit": 1.0,
+            "n_days": 5,
+            "n_pairs": 100,
+            "distinct_days": [
+              "T:20261009",
+              "T:20261012",
+              "T:20261013",
+              "T:20261014",
+              "T:20261015"
+            ],
+            "daily_sample_counts": {
+              "T:20261012": 20,
+              "T:20261009": 20,
+              "T:20261013": 20,
+              "T:20261015": 20,
+              "T:20261014": 20
+            },
+            "evidence_sources": [
+              "tdx",
+              "tencent"
+            ]
+          }
+        }
+      ]
     },
     {
       "source": "ZHB-tdxstat",
       "code": "change_30d",
       "identity": "ZHB-tdxstat::change_30d",
       "path": "change_30d",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "section": "",
-      "sections": [],
-      "status": "unverified",
-      "status_resolution": "registry_status_only_single_source",
+      "canonical": "change_20d",
+      "meaning": "与同来源同路径 change_20d 完全重复的历史兼容键，不是独立的 30 日涨跌幅",
+      "unit": "%",
+      "section": "2026-10-17 change_30d 纠错审计",
+      "sections": [
+        "2026-10-17 change_30d 纠错审计"
+      ],
+      "status": "disproved",
+      "status_resolution": "empirical_duplicate_alias",
       "status_evidence": {
+        "reference_statuses": [],
+        "reference_status_raw": [],
+        "registry_aggregate_status": "disproved",
+        "registry_aggregate_sources": [
+          "ZHB-tdxstat"
+        ],
+        "values": [
+          "empirical_duplicate_alias"
+        ],
+        "adjudication_evidence_id": "zhb-change-30d-retraction-20261017:change_30d"
+      },
+      "reference_evidence": [],
+      "attribute_conflicts": {},
+      "registry_aggregate": {
+        "code": "change_30d",
+        "sources": [
+          "ZHB-tdxstat"
+        ],
+        "status": "disproved",
+        "status_raw": "",
+        "canonical": "change_20d",
+        "meaning": "与同来源同路径 change_20d 完全重复的历史兼容键，不是独立的 30 日涨跌幅",
+        "unit": "%",
+        "section": "2026-10-17 change_30d 纠错审计"
+      },
+      "superseded_status_evidence": {
         "reference_statuses": [],
         "reference_status_raw": [],
         "registry_aggregate_status": "unverified",
@@ -86702,19 +86711,29 @@
           "unverified"
         ]
       },
-      "reference_evidence": [],
-      "attribute_conflicts": {},
-      "registry_aggregate": {
-        "code": "change_30d",
-        "sources": [
-          "ZHB-tdxstat"
+      "adjudication_evidence": {
+        "id": "zhb-change-30d-retraction-20261017:change_30d",
+        "decision": "disproved",
+        "decision_date": "2026-10-17",
+        "reason": "同一来源映射 change_20d 与历史键到 tdxstat.cfg Col[18]；跨六个不同 ZHB 来源日期、每日期 20 只股票，两条路径均 120/120 相等。",
+        "sample_as_of_dates": [
+          "20260930",
+          "20261009",
+          "20261012",
+          "20261013",
+          "20261014",
+          "20261015"
         ],
-        "status": "unverified",
-        "status_raw": "",
-        "canonical": "",
-        "meaning": "",
-        "unit": "",
-        "section": ""
+        "sample_count_per_path": 120,
+        "evidence_files": [
+          "docs/field_verification/20261008/raw_zhb.json",
+          "docs/field_verification/20261009/raw_zhb.json",
+          "docs/field_verification/20261012/raw_zhb.json",
+          "docs/field_verification/20261014/raw_zhb.json",
+          "docs/field_verification/20261015/raw_zhb.json",
+          "docs/field_verification/20261016/raw_zhb.json"
+        ],
+        "decision_note": "docs/field_verification/change_30d_adjudication_20261017.md"
       }
     },
     {
@@ -87502,13 +87521,15 @@
       "code": "pe_ttm",
       "identity": "ZHB-tdxstat::pe_ttm",
       "path": "pe_ttm",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "section": "",
-      "sections": [],
-      "status": "unverified",
-      "status_resolution": "aggregate_status_scope_unresolved",
+      "canonical": "pe_ttm",
+      "meaning": "市盈率（TTM）",
+      "unit": "倍",
+      "section": "20261018/20261018_collision_report.json",
+      "sections": [
+        "20261018/20261018_collision_report.json"
+      ],
+      "status": "verified",
+      "status_resolution": "manual_collision_adjudication",
       "status_evidence": {
         "reference_statuses": [],
         "reference_status_raw": [],
@@ -87523,9 +87544,22 @@
         ],
         "values": [
           "unverified"
+        ],
+        "adjudication_ids": [
+          "20261018-zhb-pe-ttm-tencent-39"
         ]
       },
-      "reference_evidence": [],
+      "reference_evidence": [
+        {
+          "section": "20261018/20261018_collision_report.json",
+          "canonical": "pe_ttm",
+          "meaning": "市盈率（TTM）",
+          "unit": "倍",
+          "status_raw": "人工复核 2026-10-18：20261018-zhb-pe-ttm-tencent-39",
+          "status": "verified",
+          "adjudication_id": "20261018-zhb-pe-ttm-tencent-39"
+        }
+      ],
       "attribute_conflicts": {},
       "registry_aggregate": {
         "code": "pe_ttm",
@@ -87543,7 +87577,48 @@
         "meaning": "",
         "unit": "",
         "section": "12.13.10 eltdx Helpers 净新增字段破解（V17.2.15 实测，collect_eltdx 采集 + 黄金锚对撞）"
-      }
+      },
+      "adjudications": [
+        {
+          "id": "20261018-zhb-pe-ttm-tencent-39",
+          "action": "verify",
+          "status": "verified",
+          "reviewer": "Codex（按项目所有者授权复核）",
+          "reviewed_on": "2026-10-18",
+          "report": "20261018/20261018_collision_report.json",
+          "decision_file": "adjudications/20261018_pe_ttm_tencent.json",
+          "candidate": {
+            "left": "zhb.full.pe_ttm",
+            "right": "tencent[39]"
+          },
+          "level": "L1",
+          "rationale": "正式 verified_anchor_only 报告在 2026-10-09、10-12、10-13、10-14、10-16 五个有效交易日，以实际来源日期（ZHB zhb_date、腾讯行情时间戳）对齐后得到 100 组样本、97 组精确匹配，各日均满足 18/20 门槛。3 组差异均仅为 0.01：10-12 股票 000007 为 -890.01/-890.02、600309 为 13.16/13.15；10-14 股票 601288 为 8.44/8.43。注册表中腾讯(qt.gtimg)::[39] 已有 verified 定义 PE(TTM)、单位为倍。跨日样本与已定义锚共同确认 ZHB-tdxstat::pe_ttm 的语义。该决定只确认 ZHB 这一逐源身份；聚合字段 pe_ttm 仍有其他来源冲突，不据此消除其余来源状态。",
+          "evidence": {
+            "ratio": null,
+            "overall_hit": 0.97,
+            "n_days": 5,
+            "n_pairs": 100,
+            "distinct_days": [
+              "T:20261009",
+              "T:20261012",
+              "T:20261013",
+              "T:20261014",
+              "T:20261016"
+            ],
+            "daily_sample_counts": {
+              "T:20261014": 20,
+              "T:20261016": 20,
+              "T:20261012": 20,
+              "T:20261009": 20,
+              "T:20261013": 20
+            },
+            "evidence_sources": [
+              "tdx",
+              "tencent"
+            ]
+          }
+        }
+      ]
     },
     {
       "source": "ZHB-tdxstat",
@@ -87868,15 +87943,15 @@
       "code": "stat.change_30d",
       "identity": "ZHB-tdxstat::stat.change_30d",
       "path": "stat.change_30d",
-      "canonical": "stat.change_30d",
-      "meaning": "30日涨跌幅",
+      "canonical": "stat.change_20d",
+      "meaning": "与同来源同路径 stat.change_20d 完全重复的历史兼容键，不是独立的 30 日涨跌幅",
       "unit": "%",
-      "section": "1.1 tdxstat.cfg 标准契约表（stat.*，20260918 对撞定案）🆕",
+      "section": "2026-10-17 change_30d 纠错审计",
       "sections": [
-        "1.1 tdxstat.cfg 标准契约表（stat.*，20260918 对撞定案）🆕"
+        "2026-10-17 change_30d 纠错审计"
       ],
-      "status": "verified",
-      "status_resolution": "matched",
+      "status": "disproved",
+      "status_resolution": "empirical_duplicate_alias",
       "status_evidence": {
         "reference_statuses": [
           "verified"
@@ -87884,13 +87959,14 @@
         "reference_status_raw": [
           "✅"
         ],
-        "registry_aggregate_status": "verified",
+        "registry_aggregate_status": "disproved",
         "registry_aggregate_sources": [
           "ZHB-tdxstat"
         ],
         "values": [
-          "verified"
-        ]
+          "empirical_duplicate_alias"
+        ],
+        "adjudication_evidence_id": "zhb-change-30d-retraction-20261017:stat.change_30d"
       },
       "reference_evidence": [
         {
@@ -87908,12 +87984,51 @@
         "sources": [
           "ZHB-tdxstat"
         ],
-        "status": "verified",
+        "status": "disproved",
         "status_raw": "✅",
-        "canonical": "stat.change_30d",
-        "meaning": "30日涨跌幅",
+        "canonical": "stat.change_20d",
+        "meaning": "与同来源同路径 stat.change_20d 完全重复的历史兼容键，不是独立的 30 日涨跌幅",
         "unit": "%",
-        "section": "1.1 tdxstat.cfg 标准契约表（stat.*，20260918 对撞定案）🆕"
+        "section": "2026-10-17 change_30d 纠错审计"
+      },
+      "superseded_status_evidence": {
+        "reference_statuses": [
+          "verified"
+        ],
+        "reference_status_raw": [
+          "✅"
+        ],
+        "registry_aggregate_status": "verified",
+        "registry_aggregate_sources": [
+          "ZHB-tdxstat"
+        ],
+        "values": [
+          "verified"
+        ]
+      },
+      "adjudication_evidence": {
+        "id": "zhb-change-30d-retraction-20261017:stat.change_30d",
+        "decision": "disproved",
+        "decision_date": "2026-10-17",
+        "reason": "同一来源映射 stat.change_20d 与历史键到 tdxstat.cfg Col[18]；跨六个不同 ZHB 来源日期、每日期 20 只股票，两条路径均 120/120 相等。",
+        "sample_as_of_dates": [
+          "20260930",
+          "20261009",
+          "20261012",
+          "20261013",
+          "20261014",
+          "20261015"
+        ],
+        "sample_count_per_path": 120,
+        "evidence_files": [
+          "docs/field_verification/20261008/raw_zhb.json",
+          "docs/field_verification/20261009/raw_zhb.json",
+          "docs/field_verification/20261012/raw_zhb.json",
+          "docs/field_verification/20261014/raw_zhb.json",
+          "docs/field_verification/20261015/raw_zhb.json",
+          "docs/field_verification/20261016/raw_zhb.json"
+        ],
+        "decision_note": "docs/field_verification/change_30d_adjudication_20261017.md"
       }
     },
     {

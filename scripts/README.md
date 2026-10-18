@@ -12,19 +12,19 @@ Windows 开发默认使用 PowerShell。`run_with_system_python.ps1` 校验并�
 .\scripts\run_tests.ps1 -Mode expression -Expression "test_cache"
 ```
 
-`run_with_system_python.bat` 和 `upload_reports_to_gd.bat` 是兼容包装器。`run_governance_gates.sh` 是供 POSIX shell 使用的本地脚本；当前仓库未配置 CI 或 pre-commit 自动调用它。
+`run_with_system_python.bat` 和 `upload_reports_to_gd.bat` 是兼容包装器。`run_governance_gates.sh` 是供 POSIX shell 使用的本地门禁运行器；仓库没有版本化 CI 或 hook 安装配置，具体克隆是否在 `.git/hooks/pre-commit` 中调用它取决于本地设置。门禁只按暂存内容判断是否触发；相关路径若同时有未暂存或未跟踪文件，会拒绝检查，避免结果与提交快照不一致。
 
 ## 字段采集与研究
 
-当 `capture_field_probe.py` 的数据日是最近已完成交易日且数据阶段为 `closed` 时，会调用 `axdata_daily_validation.py`：对 AxData 短线/ELTDX 和 KPH/KPL 现有 raw 做有日期门槛的离线逐字段统计；每个数据日最多再请求一次已核准的 Tencent `tencent_realtime_snapshot`，仅在双方 `quote_time` 相同且属于目标交易日时比较字段。周末和节假日默认把数据日设为最近交易日，因此盘前、周末或节假日运行均可核验上一完整交易日；实际采集时刻不设 15:30 门槛。它轮换的是样本股票，不是 AxData 的 257 个接口；其他接口仍按交叉表候选待审。至少 3 个不同交易数据日、3 只不同股票且每份样本至少 5 个非空信息字段匹配、没有数值失配后，接口标记为运行上（部分）冗余并停止每日探测；未决/语义冲突字段继续展示。每 20 个后续有效数据日启动复验，需 3 个新有效样本；映射指纹、返回字段结构变化或复验差异会恢复日常探测。状态保存在本机 `.tmp/axdata_daily_validation_state.json`，每日证据写入数据日目录的 `axdata_validation.json`；碰撞报告显示状态和未决字段，但不把 AxData 当独立锚或自动更新主字典。`--only`、非最近交易日、目标数据阶段未收盘或项目对照源失败时不发额外请求；零请求跳过后可同日重评，已发请求同日不会重复。Eastmoney push2 不在白名单中。403/429/封禁立即暂停 Tencent 探针，连续两次空响应也暂停。超过 30 分钟的残留日锁会原子回收。
+当 `capture_field_probe.py` 的数据日为最近已完成交易日时，`closed`、`pre_open` 与 `non_trading_day` 阶段可调用 `axdata_daily_validation.py`；盘中和集合竞价阶段不主动探测。允许完整采集，或 `--only` 明确选中 AxData 与 Tencent 两个主动探测必要源；项目 Tencent 对照失败时不发请求。每个有效数据日最多请求一次已核准的 Tencent `tencent_realtime_snapshot`，仅在双方 `quote_time` 与日期完全相同时比较字段。周末和节假日默认把数据日设为最近交易日，因此可核验上一完整交易日；实际采集时刻不设 15:30 门槛。被动短线/ELTDX 与 KPH/KPL 对照按双方共同有效交易日配对，不以采集目录日替代来源数据日；只有相关源对本次均被选中且成功时才更新对应身份样本。该日轮换的是样本股票，不是 AxData 的 257 个接口；其他接口仍按交叉表候选待审。至少 3 个不同交易数据日、3 只不同股票且每份样本至少 5 个非空信息字段匹配、没有数值失配后，接口标记为运行上（部分）冗余并停止每日探测；未决/语义冲突字段继续展示。每 20 个后续有效数据日启动复验，需 3 个新有效样本；映射指纹、返回字段结构变化或复验差异会恢复日常探测。状态保存在本机 `.tmp/axdata_daily_validation_state.json`，每日证据写入数据日目录的 `axdata_validation.json`；碰撞报告显示状态和未决字段，但不把 AxData 当独立锚或自动更新主字典。非最近数据日、盘中或集合竞价阶段、必要源未选中或对照源失败时不发主动请求；零请求跳过后可同日重评，已发请求同日不会重复。Eastmoney push2 不在白名单中。403/429/封禁立即暂停 Tencent 探针，连续两次空响应也暂停。超过 30 分钟的残留日锁会原子回收。
 
-实际生产路由另有独立退出状态：`stock_shortline_indicators_tdx` 与 `eltdx.stocks.*.shortline` 比较，`kph_limit_up_history` 与 KPL 比较。每条路由至少要求 3 个不同交易数据日、每日至少 18 只配对股票；短线至少 5 个信息字段逐值全匹配，KPH 的六个已知字段全部匹配且没有额外未识别数值字段，才会暂停该接口的日常采集。每累计 20 个后续有效数据日，接口恢复采集并收集 3 个新交易日的复验样本；在复验期间仍从默认碰撞中排除，直到失配或结构变化将状态重开。未识别字段使路由保持采集并在证据中列出。短线请求收到 403、429 或封禁信号时立即停止该轮剩余股票请求，并将该路由持久标记为 `blocked_until_manual_review`；即使通过 `--only axdata` 或 `--only kph` 运行也会记录。人工复核封禁优先于契约变化，不会自动重试；成功快照也不能解除封锁。确认源恢复后，删除 `.tmp/axdata_daily_validation_state.json` 可清除该文件中的路由决策并从限量采样重新开始。状态损坏时不会自动覆盖。AxData 身份结果进入碰撞辅助报告，但不是碰撞锚。
+实际生产路由另有独立退出状态：`stock_shortline_indicators_tdx` 与 `eltdx.stocks.*.shortline` 比较，`kph_limit_up_history` 与 KPL 比较。每条路由至少要求 3 个不同有效交易数据日、每日至少 18 只配对股票；短线至少 5 个信息字段逐值全匹配，KPH 的六个已知字段全部匹配且没有额外未识别数值字段，才会暂停该接口的日常采集。双方来源日期相同且不晚于最近已完成交易日即可成为样本；来源日不同、源未被本次选择或源采集失败时不累计。每累计 20 个后续有效数据日，接口恢复采集并收集 3 个新交易日的复验样本；在复验期间仍从默认碰撞中排除，直到失配或结构变化将状态重开。未识别字段使路由保持采集并在证据中列出。短线请求收到 403、429 或封禁信号时立即停止该轮剩余股票请求，并将该路由持久标记为 `blocked_until_manual_review`；即使通过 `--only axdata` 或 `--only kph` 运行也会记录。人工复核封禁优先于契约变化，不会自动重试；成功快照也不能解除封锁。确认源恢复后，删除 `.tmp/axdata_daily_validation_state.json` 可清除该文件中的路由决策并从限量采样重新开始。状态损坏时不会自动覆盖。AxData 身份结果进入碰撞辅助报告，但不是碰撞锚。
 
 `capture_field_probe.py` 同时调用 `levistock_daily_probe.py` 与 `levistock_daily_validation.py`。完整采集或 `--only market_sources` 在目标数据日为最近已完成交易日且数据阶段为 `closed` 时，每个数据日最多从 7 个数值候选接口中轮换一个额外请求；盘前、周末和节假日运行可沿用最近完整交易日作为数据日。请求经 `stock_common.sc_datasource.get_levistock_candidate_sample` Tier 2 适配器执行，要求安装版本符合 `requirements.txt` 中的 `levistock==0.1.8`；候选可比性由明确的请求交易日或响应交易日证据判断。适配器按 CLS/KPH 源族限流，遇到 403/429/封禁即持久暂停对应源族。候选响应写入独立的 `levistock_candidate_raw.json`，不自动并入碰撞锚；离线核验器复用 `raw_market_sources.json` 并生成 `levistock_validation.json`。完整快照同日重跑会跳过主源请求、检查/补齐每日核验；候选 raw、AxData 证据和每日状态保留，同日不重复探测。若之前因对照源缺失而零请求跳过，使用 `--overwrite` 恢复主源后可在同日重新评估；实际候选请求一旦启动仍会由每日状态阻止重复。详见 `docs/levistock_source_reconciliation_20261010.md`。
 
 FTShare 的 MCP 客户端按网关当前 `tools/list` 使用有效工具名，兼容 JSON 与 SSE；历史接口按最近已完成交易日请求。董监高变动、涨停池和全市场商誉详情会完整翻页，并核对页数与记录总数，发现截断时丢弃部分结果并写入 `__error__`。商誉结果按股票代码恢复原有个股返回结构，进程内复用成功的全市场快照。HTTP、JSON-RPC 和工具错误摘要写入采集 raw 的 `__error__`，避免空数据掩盖失败；可通过 `FTSHARE_API_KEY` 环境变量设置可选请求头，仓库不保存密钥。所有 POST 至少间隔 500ms；收到 403/429 后本进程立即停止该源请求，连续三次请求或工具错误也会熔断。FTShare 已确认冗余的接口会停止日常请求，默认碰撞只移除这些接口的逐字段路径；未确认接口继续采集和碰撞。每 20 个有效交易数据日复验，复验期间仍排除，失配/契约变化会重新开放。AxData TDX 短线接口对北交所代码显式传入 `.BJ` 后缀，避免上游转换器将 `92` 开头代码误路由到上海市场。
 
-FTShare 六个已登记数值接口分别参与来源身份核验：仅比较同一有效交易数据日且项目数据日与各源 as_of_date 一致的完整记录（盘前、周末或节假日采集也可计入）；至少三个不同的已完成交易数据日、每日至少 18 只股票且每条候选记录的非空字段全部匹配到一个已验证独立来源后，才暂停该接口的日常请求。其他 FTShare 接口继续采集。核验不确认 FTShare 的底层来源族、不修改主字典，也不把 FTShare 提升为碰撞锚。每 20 个后续有效交易数据日复核；适配器或字段契约变化后重新积累三天证据。状态保存在仓库 .tmp/source_identity_state.json；核验失败或状态损坏时继续采集。--overwrite 强制重采此前跳过的接口。collide.py 的独立报告段展示核验状态和证据日期，不混入 L1/L1-U 字段结论。
+FTShare 六个已登记数值接口分别参与来源身份核验：仅比较同一有效交易数据日且项目数据日与各源 `as_of_date` 一致的完整记录（盘前、周末或节假日采集也可计入）；至少三个不同的已完成交易数据日、每日至少 18 只股票且每条候选记录的非空字段全部匹配到一个已验证独立来源后，才暂停该接口的日常请求。其他 FTShare 接口继续采集。核验不确认 FTShare 的底层来源族、不修改主字典，也不把 FTShare 提升为碰撞锚。每 20 个后续有效交易数据日复核；该计数只接受 FTShare 状态成功且目录日与来源日期一致的采集快照，失败或错日数据不会触发复验。适配器或字段契约变化后重新积累三天证据。状态保存在仓库 `.tmp/source_identity_state.json`；核验失败或状态损坏时继续采集。`--overwrite` 强制重采此前跳过的接口。`collide.py` 的独立报告段展示核验状态和证据日期，不混入 L1/L1-U 字段结论。
 
 采集与碰撞是两个独立步骤：采集器每天保存 AxData `axdata_validation.json` 与 FTShare `meta.json` 核验结果；随后运行 `collide.py` 会读取所选交易日窗口中的归档，并在 JSON/Markdown 报告中展示逐日状态、被动比较计数、静态 AxData 接口队列及 FTShare 身份核验记录。相同有效数据日的重复采集目录只计一次。默认碰撞排除已确认冗余的 AxData 生产路由及 FTShare 逐字段路径，仍保留所有未确认字段；`--all` 与 `--exploratory` 可恢复这些历史数据以供研究。AxData 其余 257 项仍是静态候选，不因路由复验而自动联网采样。碰撞不会替代接口安全审定或增加请求，AxData/FTShare 结果不作为独立字段锚。
 
@@ -47,7 +47,7 @@ FTShare 六个已登记数值接口分别参与来源身份核验：仅比较同
 | 脚本 | 用途与写入行为 |
 |:---|:---|
 | `extract_registry.py`、`field_registry_api.py` | 从主字典提取登记信息；后者是多个治理脚本共用的内部 API。 |
-| `registry_parity.py` | 检查登记表、主字典投影和字段矩阵一致性。 |
+| `registry_parity.py` | 默认严格检查登记表、主字典投影和字段矩阵；治理运行器可传入已审定差异清单，仅接受清单与当前缺失配对完全一致的状态。 |
 | `gen_field_dict.py`、`gen_field_matrix.py` | 生成字典/矩阵片段；`--check` 只检查、不写入。 |
 | `gen_ulist_subdict.py`、`gen_zhb_subdict.py` | 生成对应接口的字典子表及镜像。 |
 | `audit_field_completeness.py`、`lint_field_names.py`、`lint_field_same_number.py` | 字段来源完整度、命名和编号检查。 |

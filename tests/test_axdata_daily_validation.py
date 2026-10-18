@@ -39,9 +39,7 @@ def _project_fields(quote_time: str = "20261009161459", code: str = "600519") ->
     return fields
 
 
-def _axdata_record(
-    quote_time: str = "20261009161459", code: str = "600519"
-) -> dict[str, object]:
+def _axdata_record(quote_time: str = "20261009161459", code: str = "600519") -> dict[str, object]:
     return {
         "symbol": code,
         "name": "贵州茅台",
@@ -70,22 +68,27 @@ def _capture_dir(tmp_path, data_date="20261009", codes=None):
     output.mkdir()
     codes = codes or ["600519"]
     payload = {
-        "stocks": {
-            code: {"fields": _project_fields(f"{data_date}161459", code)} for code in codes
-        }
+        "stocks": {code: {"fields": _project_fields(f"{data_date}161459", code)} for code in codes}
     }
     (output / "raw_tencent.json").write_text(json.dumps(payload), encoding="utf-8")
     return output
 
 
 def _run_validation(
-    output, *, data_date="20261009", only="", source_meta=None, now=None, pool=None
+    output,
+    *,
+    data_date="20261009",
+    only="",
+    source_meta=None,
+    now=None,
+    pool=None,
+    market_phase="closed",
 ):
     parsed_date = datetime.strptime(data_date, "%Y%m%d")
     return validation.run_axdata_daily_validation(
         data_date=data_date,
         data_date_domain="mixed",
-        market_phase="closed",
+        market_phase=market_phase,
         latest_completed_trade_date=data_date,
         only=only,
         out_dir=output,
@@ -95,7 +98,7 @@ def _run_validation(
     )
 
 
-def test_validation_requires_complete_latest_market_close(tmp_path, monkeypatch):
+def test_validation_requires_latest_trade_date_and_required_sources(tmp_path, monkeypatch):
     output = _capture_dir(tmp_path)
     monkeypatch.setattr(validation, "STATE_PATH", tmp_path / "state.json")
     monkeypatch.setattr(validation, "_static_queue_summary", lambda: {"status": "test"})
@@ -116,7 +119,12 @@ def test_validation_requires_complete_latest_market_close(tmp_path, monkeypatch)
     [
         ("2026-10-09", "trading", "closed", None),
         ("2026-10-09", "calendar", "closed", "not_trading_date_capture"),
-        ("2026-10-09", "trading", "intraday", "capture_not_marked_closed"),
+        (
+            "2026-10-09",
+            "trading",
+            "intraday",
+            "capture_not_in_stable_data_window",
+        ),
         (
             "2026-10-08",
             "trading",
@@ -139,6 +147,34 @@ def test_eligibility_uses_latest_trade_date_and_capture_phase(data_date, domain,
     )
 
 
+def test_probe_selection_accepts_only_required_sources():
+    assert (
+        validation._eligible_reason("20261009", "trading", "closed", "20261009", "tencent")
+        == "required_sources_not_selected"
+    )
+    assert (
+        validation._eligible_reason("20261009", "trading", "closed", "20261009", "axdata,tencent")
+        is None
+    )
+
+
+@pytest.mark.parametrize(
+    ("phase", "expected"),
+    [
+        ("closed", None),
+        ("pre_open", None),
+        ("non_trading_day", None),
+        ("call_auction", "capture_not_in_stable_data_window"),
+        ("morning_session", "capture_not_in_stable_data_window"),
+    ],
+)
+def test_probe_window_uses_completed_data_date_not_1530_clock_gate(phase, expected):
+    assert (
+        validation._eligible_reason("20261009", "trading", phase, "20261009", "axdata,tencent")
+        == expected
+    )
+
+
 @pytest.mark.parametrize(
     "run_at",
     [datetime(2026, 10, 10, 8, 30), datetime(2026, 10, 12, 8, 30)],
@@ -157,8 +193,9 @@ def test_probe_allows_latest_trade_date_on_holiday_or_before_open(tmp_path, monk
         return [_axdata_record()]
 
     monkeypatch.setattr(validation, "_request_records", fake_request)
-    first = _run_validation(output, now=run_at)
-    second = _run_validation(output, now=run_at)
+    phase = "non_trading_day" if run_at.weekday() == 5 else "pre_open"
+    first = _run_validation(output, now=run_at, market_phase=phase)
+    second = _run_validation(output, now=run_at, market_phase=phase)
 
     assert first["status"] == "sampled"
     assert first["probe"]["request_count"] == 1

@@ -157,6 +157,21 @@ def _record_date(record: dict[str, Any]) -> Optional[str]:
     return None
 
 
+def _is_trading_date(value: Optional[str]) -> bool:
+    date_key = _date_key(value)
+    if date_key is None:
+        return False
+    try:
+        parsed = datetime.strptime(re.sub(r"\D", "", date_key)[:8], "%Y%m%d").date()
+    except ValueError:
+        return False
+    try:
+        from scripts.collision_dates import is_trading_session
+    except ModuleNotFoundError:
+        from collision_dates import is_trading_session  # type: ignore[no-redef]
+    return bool(is_trading_session(parsed))
+
+
 def _capture_stocks(out_dir: Path, source: str) -> dict[str, Any]:
     payload = _read_json(out_dir / f"raw_{source}.json") or {}
     stocks = payload.get("stocks")
@@ -224,7 +239,9 @@ def _capture_identity_state(
     fingerprint = _capture_identity_contract_fingerprint(interface_id)
     if isinstance(current, dict) and current.get("contract_fingerprint") == fingerprint:
         return current, False
-    reason = "contract_changed_reopened" if isinstance(current, dict) else "collecting_exact_samples"
+    reason = (
+        "contract_changed_reopened" if isinstance(current, dict) else "collecting_exact_samples"
+    )
     identity = _new_capture_identity(interface_id, reason)
     if isinstance(current, dict) and current.get("status") == "blocked_until_manual_review":
         identity["status"] = "blocked_until_manual_review"
@@ -267,7 +284,9 @@ def _capture_identity_summary(identity: dict[str, Any]) -> dict[str, Any]:
             "minimum_data_dates": CAPTURE_IDENTITY_MIN_DATES,
             "minimum_symbols_per_date": CAPTURE_IDENTITY_MIN_SYMBOLS_PER_DATE,
             "minimum_fields": CAPTURE_IDENTITY_MIN_FIELDS,
-            "matched_data_dates": len({item.get("date") for item in samples if isinstance(item, dict)}),
+            "matched_data_dates": len(
+                {item.get("date") for item in samples if isinstance(item, dict)}
+            ),
             "minimum_matched_symbols": min(matched_symbols, default=0),
         }
     )
@@ -339,10 +358,15 @@ def get_axdata_capture_identity_plan(
         elif status == "operationally_redundant":
             if last_probe and target_date <= last_probe:
                 action, reason = "skip", "data_date_already_confirmed"
-            elif force_reprobe or _capture_identity_days_since_probe(identity) >= CAPTURE_IDENTITY_RECHECK_DATES:
+            elif (
+                force_reprobe
+                or _capture_identity_days_since_probe(identity) >= CAPTURE_IDENTITY_RECHECK_DATES
+            ):
                 identity["status"] = "rechecking"
                 identity["recheck_samples"] = []
-                identity["reason"] = "manual_recheck_requested" if force_reprobe else "scheduled_recheck_due"
+                identity["reason"] = (
+                    "manual_recheck_requested" if force_reprobe else "scheduled_recheck_due"
+                )
                 changed = True
                 reason = identity["reason"]
             else:
@@ -370,7 +394,9 @@ def get_axdata_collision_suppressions() -> dict[str, dict[str, Any]]:
         identity = identities.get(interface_id) if isinstance(identities, dict) else None
         if not isinstance(identity, dict):
             continue
-        if identity.get("contract_fingerprint") != _capture_identity_contract_fingerprint(interface_id):
+        if identity.get("contract_fingerprint") != _capture_identity_contract_fingerprint(
+            interface_id
+        ):
             continue
         status = identity.get("status")
         if status == "blocked_until_manual_review":
@@ -387,12 +413,15 @@ def _schema_fingerprint(fields: set[str]) -> str:
     return hashlib.sha256(payload.encode("utf-8")).hexdigest()
 
 
-def _shortline_capture_sample(out_dir: Path, target_date: str) -> Optional[dict[str, Any]]:
+def _latest_shortline_pairs(
+    out_dir: Path, latest_allowed_date: str
+) -> tuple[Optional[str], list[tuple[str, dict[str, Any], dict[str, Any]]], set[str], set[str]]:
     axdata = _capture_stocks(out_dir, "axdata")
     eltdx = _capture_stocks(out_dir, "eltdx")
-    paired: list[tuple[str, dict[str, Any], dict[str, Any]]] = []
-    ax_fields: set[str] = set()
-    reference_fields: set[str] = set()
+    cutoff = _date_key(latest_allowed_date) or latest_allowed_date
+    by_date: dict[str, list[tuple[str, dict[str, Any], dict[str, Any]]]] = {}
+    dates_ax: set[str] = set()
+    dates_eltdx: set[str] = set()
     for code in sorted(set(axdata) & set(eltdx)):
         ax_row = axdata[code]
         el_row = eltdx[code]
@@ -400,11 +429,31 @@ def _shortline_capture_sample(out_dir: Path, target_date: str) -> Optional[dict[
         el_record = el_row.get("shortline") if isinstance(el_row, dict) else None
         if not isinstance(ax_record, dict) or not isinstance(el_record, dict):
             continue
-        if _record_date(ax_record) != target_date or _record_date(el_record) != target_date:
+        ax_date = _record_date(ax_record)
+        el_date = _record_date(el_record)
+        if ax_date:
+            dates_ax.add(ax_date)
+        if el_date:
+            dates_eltdx.add(el_date)
+        if not ax_date or ax_date != el_date or ax_date > cutoff or not _is_trading_date(ax_date):
             continue
+        by_date.setdefault(ax_date, []).append((str(code), ax_record, el_record))
+    if not by_date:
+        return None, [], dates_ax, dates_eltdx
+    effective_date = max(by_date)
+    return effective_date, by_date[effective_date], dates_ax, dates_eltdx
+
+
+def _shortline_capture_sample(out_dir: Path, latest_allowed_date: str) -> Optional[dict[str, Any]]:
+    effective_date, paired, _, _ = _latest_shortline_pairs(out_dir, latest_allowed_date)
+    if effective_date is None or not paired:
+        return None
+    cutoff = _date_key(latest_allowed_date) or latest_allowed_date
+    ax_fields: set[str] = set()
+    reference_fields: set[str] = set()
+    for _, ax_record, el_record in paired:
         ax_fields.update(set(ax_record) - CAPTURE_SHORTLINE_META_FIELDS)
         reference_fields.update(set(el_record) - CAPTURE_SHORTLINE_META_FIELDS)
-        paired.append((str(code), ax_record, el_record))
     if not paired or not ax_fields:
         return None
 
@@ -439,14 +488,19 @@ def _shortline_capture_sample(out_dir: Path, target_date: str) -> Optional[dict[
     reason = (
         "exact_full_route_match"
         if valid
-        else "field_value_mismatch"
-        if different_fields
-        else "axdata_fields_not_fully_confirmed"
-        if unresolved_fields
-        else "insufficient_matched_symbols_or_fields"
+        else (
+            "field_value_mismatch"
+            if different_fields
+            else (
+                "axdata_fields_not_fully_confirmed"
+                if unresolved_fields
+                else "insufficient_matched_symbols_or_fields"
+            )
+        )
     )
     return {
-        "date": target_date,
+        "date": effective_date,
+        "latest_allowed_data_date": cutoff,
         "schema_fingerprint": _schema_fingerprint(ax_fields),
         "matched_symbols": len(paired),
         "confirmed_fields": confirmed_fields,
@@ -458,14 +512,19 @@ def _shortline_capture_sample(out_dir: Path, target_date: str) -> Optional[dict[
     }
 
 
-def _kph_capture_sample(out_dir: Path, target_date: str) -> Optional[dict[str, Any]]:
+def _kph_capture_sample(out_dir: Path, latest_allowed_date: str) -> Optional[dict[str, Any]]:
     kph = _read_json(out_dir / "raw_kph.json") or {}
     kpl = _read_json(out_dir / "raw_kpl.json") or {}
+    kph_date = _date_key(kph.get("trade_date"))
+    kpl_date = _date_key(kpl.get("trade_date"))
+    cutoff = _date_key(latest_allowed_date) or latest_allowed_date
     kph_stocks = kph.get("stocks")
     kpl_stocks = kpl.get("stocks")
     if (
-        _date_key(kph.get("trade_date")) != target_date
-        or _date_key(kpl.get("trade_date")) != target_date
+        not kph_date
+        or kph_date != kpl_date
+        or kph_date > cutoff
+        or not _is_trading_date(kph_date)
         or not isinstance(kph_stocks, dict)
         or not isinstance(kpl_stocks, dict)
     ):
@@ -477,12 +536,7 @@ def _kph_capture_sample(out_dir: Path, target_date: str) -> Optional[dict[str, A
     )
     if not paired_codes:
         return None
-    ax_fields = {
-        field
-        for row in kph_stocks.values()
-        if isinstance(row, dict)
-        for field in row
-    }
+    ax_fields = {field for row in kph_stocks.values() if isinstance(row, dict) for field in row}
     field_pairs = {}
     for ax_field, reference_field in KPH_KPL_FIELD_PAIRS.items():
         equal = different = missing = 0
@@ -505,9 +559,7 @@ def _kph_capture_sample(out_dir: Path, target_date: str) -> Optional[dict[str, A
         and counts["missing"] == 0
     )
     unresolved_fields = sorted(ax_fields - set(confirmed_fields))
-    different_fields = sorted(
-        field for field, counts in field_pairs.items() if counts["different"]
-    )
+    different_fields = sorted(field for field, counts in field_pairs.items() if counts["different"])
     valid = (
         len(paired_codes) >= CAPTURE_IDENTITY_MIN_SYMBOLS_PER_DATE
         and len(confirmed_fields) >= CAPTURE_IDENTITY_MIN_FIELDS
@@ -516,14 +568,19 @@ def _kph_capture_sample(out_dir: Path, target_date: str) -> Optional[dict[str, A
     reason = (
         "exact_full_route_match"
         if valid
-        else "field_value_mismatch"
-        if different_fields
-        else "unmapped_or_incomplete_axdata_fields"
-        if unresolved_fields
-        else "insufficient_matched_symbols_or_fields"
+        else (
+            "field_value_mismatch"
+            if different_fields
+            else (
+                "unmapped_or_incomplete_axdata_fields"
+                if unresolved_fields
+                else "insufficient_matched_symbols_or_fields"
+            )
+        )
     )
     return {
-        "date": target_date,
+        "date": kph_date,
+        "latest_allowed_data_date": cutoff,
         "schema_fingerprint": _schema_fingerprint(ax_fields),
         "matched_symbols": len(paired_codes),
         "confirmed_fields": confirmed_fields,
@@ -542,9 +599,11 @@ def _finish_capture_identity(identity: dict[str, Any], samples: list[dict[str, A
     confirmed_fields = set(samples[0].get("confirmed_fields", [])) if samples else set()
     for sample in samples[1:]:
         confirmed_fields.intersection_update(sample.get("confirmed_fields", []))
-    unresolved_fields = set().union(
-        *(set(sample.get("unresolved_fields", [])) for sample in samples)
-    ) if samples else set()
+    unresolved_fields = (
+        set().union(*(set(sample.get("unresolved_fields", [])) for sample in samples))
+        if samples
+        else set()
+    )
     if unresolved_fields or not confirmed_fields:
         identity["status"] = "observing"
         identity["reason"] = "samples_do_not_cover_full_axdata_schema"
@@ -559,7 +618,9 @@ def _finish_capture_identity(identity: dict[str, Any], samples: list[dict[str, A
     identity["last_probe_data_date"] = evidence_dates[-1]
     identity["last_counted_data_date"] = evidence_dates[-1]
     identity["eligible_data_dates_since_probe"] = 0
-    identity["reason"] = "scheduled_recheck_matched" if was_rechecking else "minimum_exact_samples_matched"
+    identity["reason"] = (
+        "scheduled_recheck_matched" if was_rechecking else "minimum_exact_samples_matched"
+    )
     identity.pop("status_before_recheck", None)
     identity["recheck_samples"] = []
 
@@ -573,7 +634,9 @@ def _record_capture_identity_sample(
     prior_schema = identity.get("schema_fingerprint")
     if prior_schema and prior_schema != sample["schema_fingerprint"]:
         prior_status = identity.get("status")
-        identity.update(_new_capture_identity(identity["interface_id"], "response_schema_changed_reopened"))
+        identity.update(
+            _new_capture_identity(identity["interface_id"], "response_schema_changed_reopened")
+        )
         identity["schema_fingerprint"] = sample["schema_fingerprint"]
         if prior_status in {"operationally_redundant", "rechecking"}:
             identity["status"] = "observing"
@@ -609,7 +672,9 @@ def _record_capture_identity_sample(
     key = "recheck_samples" if is_rechecking else "samples"
     samples = identity.get(key)
     samples = samples if isinstance(samples, list) else []
-    samples = [item for item in samples if not isinstance(item, dict) or item.get("date") != sample["date"]]
+    samples = [
+        item for item in samples if not isinstance(item, dict) or item.get("date") != sample["date"]
+    ]
     samples.append(sample)
     identity[key] = samples[-CAPTURE_IDENTITY_MIN_DATES:]
     identity["last_probe_data_date"] = sample["date"]
@@ -626,9 +691,13 @@ def _record_capture_identity_sample(
 
 
 def update_axdata_capture_identities(
-    *, out_dir: str | Path, data_date: str, source_meta: Optional[dict[str, Any]]
+    *,
+    out_dir: str | Path,
+    data_date: str,
+    source_meta: Optional[dict[str, Any]],
+    requested_sources: Optional[set[str]] = None,
 ) -> dict[str, dict[str, Any]]:
-    """Update route identity only from eligible, explicitly same-dated captures."""
+    """Update identities only from successful routes selected in this capture."""
     state, error = _load_validation_state()
     if error or not isinstance(state, dict):
         return _route_identity_summary_map(None)
@@ -637,10 +706,14 @@ def update_axdata_capture_identities(
     source_meta = source_meta if isinstance(source_meta, dict) else {}
     changed = False
     for interface_id, endpoint in CAPTURE_ENDPOINTS.items():
-        identity, contract_changed = _capture_identity_state(state, interface_id)
-        changed = changed or contract_changed
         source = str(endpoint["source"])
         reference_source = str(endpoint["reference_source"])
+        if requested_sources is not None and not {source, reference_source}.issubset(
+            requested_sources
+        ):
+            continue
+        identity, contract_changed = _capture_identity_state(state, interface_id)
+        changed = changed or contract_changed
         source_state = source_meta.get(source)
         reference_state = source_meta.get(reference_source)
         if not isinstance(source_state, dict) or not isinstance(reference_state, dict):
@@ -658,14 +731,15 @@ def update_axdata_capture_identities(
         if source_state.get("ok") is not True or reference_state.get("ok") is not True:
             continue
         source_meta_block = payload.get("__source_meta__")
-        suppressed = (
-            isinstance(source_meta_block, dict)
-            and isinstance(source_meta_block.get("identity_suppression"), dict)
+        suppressed = isinstance(source_meta_block, dict) and isinstance(
+            source_meta_block.get("identity_suppression"), dict
         )
         if identity.get("status") == "operationally_redundant" and suppressed:
             last_counted = _date_key(identity.get("last_counted_data_date"))
-            if target_date and target_date != last_counted and (
-                last_counted is None or target_date > last_counted
+            if (
+                target_date
+                and target_date != last_counted
+                and (last_counted is None or target_date > last_counted)
             ):
                 identity["eligible_data_dates_since_probe"] = (
                     _capture_identity_days_since_probe(identity) + 1
@@ -680,7 +754,9 @@ def update_axdata_capture_identities(
         )
         previous = json.dumps(identity, ensure_ascii=True, sort_keys=True, default=str)
         _record_capture_identity_sample(identity, sample)
-        changed = changed or previous != json.dumps(identity, ensure_ascii=True, sort_keys=True, default=str)
+        changed = changed or previous != json.dumps(
+            identity, ensure_ascii=True, sort_keys=True, default=str
+        )
     if changed:
         _write_json(STATE_PATH, state)
     return _route_identity_summary_map(state)
@@ -719,8 +795,10 @@ def record_axdata_capture_rate_limits(
         identity["status"] = "blocked_until_manual_review"
         identity["reason"] = "rate_limit_or_ban_observed"
         identity["rate_limit_observed_data_date"] = observed_date
-        changed = changed or contract_changed or previous != json.dumps(
-            identity, ensure_ascii=True, sort_keys=True, default=str
+        changed = (
+            changed
+            or contract_changed
+            or previous != json.dumps(identity, ensure_ascii=True, sort_keys=True, default=str)
         )
     if changed:
         _write_json(STATE_PATH, state)
@@ -741,29 +819,47 @@ def _payload_has_rate_limit(payload: Any) -> bool:
     return False
 
 
-def _shortline_passive_evidence(out_dir: Path, target_date: str) -> dict[str, Any]:
-    axdata = _capture_stocks(out_dir, "axdata")
-    eltdx = _capture_stocks(out_dir, "eltdx")
+def _passive_capture_issue(
+    required_sources: set[str],
+    source_meta: Optional[dict[str, Any]],
+    requested_sources: Optional[set[str]],
+    market_phase: Optional[str],
+) -> Optional[str]:
+    if market_phase is not None and market_phase not in {
+        "closed",
+        "pre_open",
+        "non_trading_day",
+    }:
+        return "capture_not_in_stable_data_window"
+    if requested_sources is not None and not required_sources.issubset(requested_sources):
+        return "required_sources_not_selected"
+    if source_meta is not None:
+        for source in sorted(required_sources):
+            source_state = source_meta.get(source)
+            if not isinstance(source_state, dict) or source_state.get("ok") is not True:
+                return f"required_source_not_successful:{source}"
+    return None
+
+
+def _shortline_passive_evidence(
+    out_dir: Path,
+    latest_allowed_date: str,
+    *,
+    source_meta: Optional[dict[str, Any]] = None,
+    requested_sources: Optional[set[str]] = None,
+    market_phase: Optional[str] = None,
+) -> dict[str, Any]:
+    issue = _passive_capture_issue(
+        {"axdata", "eltdx"}, source_meta, requested_sources, market_phase
+    )
+    if issue:
+        return {"status": "not_run", "reason": issue, "requests_added": 0}
+    effective_date, paired, dates_ax, dates_eltdx = _latest_shortline_pairs(
+        out_dir, latest_allowed_date
+    )
     field_stats: dict[str, dict[str, int]] = {}
     paired_codes: list[str] = []
-    dates_ax: set[str] = set()
-    dates_eltdx: set[str] = set()
-
-    for code in sorted(set(axdata) & set(eltdx)):
-        ax_row = axdata[code]
-        el_row = eltdx[code]
-        ax_record = ax_row.get("data") if isinstance(ax_row, dict) else None
-        el_record = el_row.get("shortline") if isinstance(el_row, dict) else None
-        if not isinstance(ax_record, dict) or not isinstance(el_record, dict):
-            continue
-        ax_date = _record_date(ax_record)
-        el_date = _record_date(el_record)
-        if ax_date:
-            dates_ax.add(ax_date)
-        if el_date:
-            dates_eltdx.add(el_date)
-        if ax_date != target_date or el_date != target_date:
-            continue
+    for code, ax_record, el_record in paired:
         paired_codes.append(code)
         for field in sorted(set(ax_record) | set(el_record)):
             if field in SHORTLINE_META_FIELDS:
@@ -780,7 +876,8 @@ def _shortline_passive_evidence(out_dir: Path, target_date: str) -> dict[str, An
     status = "compared" if paired_codes else "date_or_sample_unavailable"
     return {
         "status": status,
-        "target_trade_date": target_date,
+        "target_trade_date": _date_key(latest_allowed_date) or latest_allowed_date,
+        "matched_trade_date": effective_date,
         "axdata_observed_dates": sorted(dates_ax),
         "eltdx_observed_dates": sorted(dates_eltdx),
         "paired_stocks": len(paired_codes),
@@ -790,22 +887,35 @@ def _shortline_passive_evidence(out_dir: Path, target_date: str) -> dict[str, An
     }
 
 
-def _kph_kpl_passive_evidence(out_dir: Path, target_date: str) -> dict[str, Any]:
+def _kph_kpl_passive_evidence(
+    out_dir: Path,
+    latest_allowed_date: str,
+    *,
+    source_meta: Optional[dict[str, Any]] = None,
+    requested_sources: Optional[set[str]] = None,
+    market_phase: Optional[str] = None,
+) -> dict[str, Any]:
+    issue = _passive_capture_issue({"kph", "kpl"}, source_meta, requested_sources, market_phase)
+    if issue:
+        return {"status": "not_run", "reason": issue, "requests_added": 0}
     kph_payload = _read_json(out_dir / "raw_kph.json") or {}
     kpl_payload = _read_json(out_dir / "raw_kpl.json") or {}
     kph_date = _date_key(kph_payload.get("trade_date"))
     kpl_date = _date_key(kpl_payload.get("trade_date"))
+    cutoff = _date_key(latest_allowed_date) or latest_allowed_date
     kph_stocks = kph_payload.get("stocks")
     kpl_stocks = kpl_payload.get("stocks")
     if (
-        kph_date != target_date
-        or kpl_date != target_date
+        not kph_date
+        or kph_date != kpl_date
+        or kph_date > cutoff
+        or not _is_trading_date(kph_date)
         or not isinstance(kph_stocks, dict)
         or not isinstance(kpl_stocks, dict)
     ):
         return {
             "status": "date_or_sample_unavailable",
-            "target_trade_date": target_date,
+            "target_trade_date": cutoff,
             "kph_trade_date": kph_date,
             "kpl_trade_date": kpl_date,
             "requests_added": 0,
@@ -829,7 +939,8 @@ def _kph_kpl_passive_evidence(out_dir: Path, target_date: str) -> dict[str, Any]
                 stats[kph_field]["different"] += 1
     return {
         "status": "compared",
-        "target_trade_date": target_date,
+        "target_trade_date": cutoff,
+        "matched_trade_date": kph_date,
         "kph_trade_date": kph_date,
         "kpl_trade_date": kpl_date,
         "kph_rows": len(kph_stocks),
@@ -1171,7 +1282,9 @@ def _identity_sample_details(
         reason = "insufficient_nonempty_information_fields"
     else:
         reason = "exact_value_sample"
-    schema = json.dumps(sorted(str(key) for key in record), ensure_ascii=True, separators=(",", ":"))
+    schema = json.dumps(
+        sorted(str(key) for key in record), ensure_ascii=True, separators=(",", ":")
+    )
     schema_fingerprint = hashlib.sha256(schema.encode("utf-8")).hexdigest()
     return {
         "qualifies": qualifies,
@@ -1217,9 +1330,11 @@ def _identity_has_confirmation(samples: list[dict[str, Any]]) -> bool:
 def _finish_endpoint_identity(identity: dict[str, Any], samples: list[dict[str, Any]]) -> None:
     dates = sorted({sample["date"] for sample in samples if sample.get("date")})
     symbols = sorted({sample["code"] for sample in samples if sample.get("code")})
-    semantic_fields = set().union(
-        *(set(sample.get("semantic_fields", [])) for sample in samples)
-    ) if samples else set()
+    semantic_fields = (
+        set().union(*(set(sample.get("semantic_fields", [])) for sample in samples))
+        if samples
+        else set()
+    )
     value_equivalent_fields = []
     for field in sorted(IDENTITY_INFORMATION_FIELDS):
         field_samples = [sample for sample in samples if field in sample.get("value_fields", [])]
@@ -1282,7 +1397,10 @@ def _record_endpoint_identity_sample(
         return _identity_summary(identity)
 
     identity["schema_fingerprint"] = details["schema_fingerprint"]
-    sample = {key: details[key] for key in ("date", "code", "value_fields", "semantic_fields", "information_match_count")}
+    sample = {
+        key: details[key]
+        for key in ("date", "code", "value_fields", "semantic_fields", "information_match_count")
+    }
     _append_identity_sample(identity, sample)
     identity["last_probe_data_date"] = details["date"]
     return _identity_summary(identity)
@@ -1384,19 +1502,33 @@ def _request_records(interface: str, params: dict[str, Any]) -> list[dict[str, A
     return get_axdata_records(interface, params=params)
 
 
+def _selected_source_names(only: Any, requested_sources: Optional[set[str]]) -> Optional[set[str]]:
+    if requested_sources is not None:
+        return {str(source).strip() for source in requested_sources if str(source).strip()}
+    if isinstance(only, str):
+        selected = {part.strip() for part in only.split(",") if part.strip()}
+    elif isinstance(only, (list, tuple, set)):
+        selected = {str(part).strip() for part in only if str(part).strip()}
+    else:
+        selected = set()
+    return selected or None
+
+
 def _eligible_reason(
     data_date: str,
     data_date_domain: str,
     market_phase: str,
     latest_completed_trade_date: str,
-    only: str,
+    only: Any,
+    requested_sources: Optional[set[str]] = None,
 ) -> Optional[str]:
-    if only:
-        return "partial_source_selection"
+    selected = _selected_source_names(only, requested_sources)
+    if selected is not None and not {"axdata", "tencent"}.issubset(selected):
+        return "required_sources_not_selected"
     if data_date_domain not in {"trading", "mixed"}:
         return "not_trading_date_capture"
-    if market_phase != "closed":
-        return "capture_not_marked_closed"
+    if market_phase not in {"closed", "pre_open", "non_trading_day"}:
+        return "capture_not_in_stable_data_window"
     if _date_key(data_date) != _date_key(latest_completed_trade_date):
         return "not_latest_completed_trade_date"
     return None
@@ -1500,9 +1632,7 @@ def _handle_matched_tencent_response(
     state: dict[str, Any],
 ) -> tuple[dict[str, Any], dict[str, Any]]:
     comparison = _compare_tencent_record(record, project_fields, data_date)
-    identity_summary = _record_endpoint_identity_sample(
-        state, record, comparison, code, data_date
-    )
+    identity_summary = _record_endpoint_identity_sample(state, record, comparison, code, data_date)
     state["empty_response_streak"] = 0
     state["last_outcome"] = "sampled"
     state.pop("last_error", None)
@@ -1596,6 +1726,8 @@ def _summary(evidence: dict[str, Any], path: Optional[Path] = None) -> dict[str,
         "status": evidence.get("status"),
         "file": path.name if path else None,
         "data_date": evidence.get("data_date"),
+        "capture_directory_date": evidence.get("capture_directory_date"),
+        "latest_completed_trade_date": evidence.get("latest_completed_trade_date"),
         "probe": probe_summary,
         "passive_evidence": evidence.get("passive_evidence", {}),
         "endpoint_identities": evidence.get("endpoint_identities", {}),
@@ -1605,27 +1737,39 @@ def _summary(evidence: dict[str, Any], path: Optional[Path] = None) -> dict[str,
 
 def _base_evidence(
     target_date: str,
+    latest_completed_trade_date: str,
     data_date_domain: str,
     market_phase: str,
     reason: Optional[str],
     output_dir: Path,
     queue: dict[str, Any],
     evaluated_at: datetime,
+    source_meta: Optional[dict[str, Any]],
+    requested_sources: Optional[set[str]],
 ) -> dict[str, Any]:
-    passive: dict[str, Any]
-    if reason is None:
-        passive = {
-            "axdata_shortline_vs_eltdx": _shortline_passive_evidence(output_dir, target_date),
-            "kph_limit_up_history_vs_kpl_detail": _kph_kpl_passive_evidence(
-                output_dir, target_date
-            ),
-        }
-    else:
-        passive = {"status": "not_run", "reason": reason, "requests_added": 0}
+    passive = {
+        "axdata_shortline_vs_eltdx": _shortline_passive_evidence(
+            output_dir,
+            latest_completed_trade_date,
+            source_meta=source_meta,
+            requested_sources=requested_sources,
+            market_phase=market_phase,
+        ),
+        "kph_limit_up_history_vs_kpl_detail": _kph_kpl_passive_evidence(
+            output_dir,
+            latest_completed_trade_date,
+            source_meta=source_meta,
+            requested_sources=requested_sources,
+            market_phase=market_phase,
+        ),
+    }
     return {
-        "schema_version": "1.1",
+        "schema_version": "1.2",
         "status": "not_eligible" if reason else "eligible",
         "data_date": target_date,
+        "capture_directory_date": target_date,
+        "latest_completed_trade_date": _date_key(latest_completed_trade_date)
+        or latest_completed_trade_date,
         "data_date_domain": data_date_domain,
         "market_phase": market_phase,
         "evaluated_at": evaluated_at.isoformat(timespec="seconds"),
@@ -1819,7 +1963,8 @@ def _validation_context(
     data_date_domain: str,
     market_phase: str,
     latest_completed_trade_date: str,
-    only: str,
+    only: Any,
+    requested_sources: Optional[set[str]],
     out_dir: str | Path,
     now: Optional[datetime],
 ) -> tuple[str, Path, dict[str, Any], datetime, Optional[str]]:
@@ -1833,6 +1978,7 @@ def _validation_context(
         market_phase,
         latest_completed_trade_date,
         only,
+        requested_sources,
     )
     return target_date, output_dir, queue, evaluated_at, reason
 
@@ -1850,11 +1996,6 @@ def _run_eligible_validation(
         _set_probe_policy_skip(evidence, "another_run_holds_daily_lock")
         return _summary(evidence)
     try:
-        evidence["endpoint_identities"] = update_axdata_capture_identities(
-            out_dir=output_dir,
-            data_date=target_date,
-            source_meta=source_meta,
-        )
         _apply_probe_policy(evidence, target_date, output_dir, pool, source_meta)
         _write_json(evidence_path, evidence)
         return _summary(evidence, evidence_path)
@@ -1870,22 +2011,49 @@ def run_axdata_daily_validation(
     data_date_domain: str,
     market_phase: str,
     latest_completed_trade_date: str,
-    only: str,
+    only: Any,
     out_dir: str | Path,
     pool: list[dict[str, Any]],
     source_meta: Optional[dict[str, Any]] = None,
+    requested_sources: Optional[set[str]] = None,
     now: Optional[datetime] = None,
 ) -> dict[str, Any]:
     """Summarize passive evidence and run at most one eligible AxData probe."""
+    normalized_meta = source_meta if isinstance(source_meta, dict) else {}
+    selected_sources = _selected_source_names(only, requested_sources)
     target_date, output_dir, queue, evaluated_at, reason = _validation_context(
         data_date,
         data_date_domain,
         market_phase,
         latest_completed_trade_date,
         only,
+        selected_sources,
         out_dir,
         now,
     )
+    stable_phase = market_phase in {"closed", "pre_open", "non_trading_day"}
+    if stable_phase:
+        endpoint_identities = update_axdata_capture_identities(
+            out_dir=output_dir,
+            data_date=latest_completed_trade_date,
+            source_meta=normalized_meta,
+            requested_sources=selected_sources,
+        )
+    else:
+        endpoint_identities = _current_capture_identity_summaries()
+    evidence = _base_evidence(
+        target_date,
+        latest_completed_trade_date,
+        data_date_domain,
+        market_phase,
+        reason,
+        output_dir,
+        queue,
+        evaluated_at,
+        normalized_meta,
+        selected_sources,
+    )
+    evidence["endpoint_identities"] = endpoint_identities
     evidence_path = output_dir / EVIDENCE_FILENAME
     existing = _read_json(evidence_path) if evidence_path.exists() else None
     normalized_target_date = _date_key(target_date)
@@ -1901,17 +2069,19 @@ def run_axdata_daily_validation(
         if request_already_made:
             existing["status"] = "already_recorded"
             existing["queue"] = queue
+            existing["capture_directory_date"] = target_date
+            existing["latest_completed_trade_date"] = evidence["latest_completed_trade_date"]
+            existing["passive_evidence"] = evidence["passive_evidence"]
+            existing["endpoint_identities"] = endpoint_identities
+            _write_json(evidence_path, existing)
             return _summary(existing, evidence_path)
 
-    evidence = _base_evidence(
-        target_date,
-        data_date_domain,
-        market_phase,
-        reason,
-        output_dir,
-        queue,
-        evaluated_at,
-    )
     if reason:
+        if any(
+            isinstance(item, dict) and item.get("status") == "compared"
+            for item in evidence["passive_evidence"].values()
+        ):
+            _write_json(evidence_path, evidence)
+            return _summary(evidence, evidence_path)
         return _summary(evidence)
-    return _run_eligible_validation(evidence, target_date, output_dir, pool, source_meta)
+    return _run_eligible_validation(evidence, target_date, output_dir, pool, normalized_meta)

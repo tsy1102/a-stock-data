@@ -26,20 +26,24 @@ def _sse_text(fragment: str) -> str:
     return _html.unescape(re.sub(r"<[^>]+>", "", fragment)).strip()
 
 
-def _sse_time(text: str) -> Optional[str]:
-    """问答时间解析: 支持绝对(YYYY年MM月DD日 HH:MM)与相对(刚刚/X分钟前/X小时前/X天前)两种格式。
+def _sse_time(text: str, now: Optional[datetime] = None) -> Optional[str]:
+    """问答时间解析: 支持绝对时间和刚刚/X秒前/X分钟前/X小时前/X天前等相对格式。
 
     V17.4.1 健壮性补强: 上游严格正则仅认绝对时间, 实测近期问答返回「4分钟前」等相对时间,
-    致 _sse_required_time 抛错(把「时间格式变了」误判); 此处归一为绝对时间戳, 与绝对格式统一输出。
+    致 _sse_required_time 抛错(把「时间格式变了」误判); 此处统一归一为绝对时间戳。
+    ``now`` 供同一页面解析和测试使用，避免每条相对时间使用不同参考时刻。
     """
     if not text:
         return None
     match = re.search(r"(\d{4})年(\d{2})月(\d{2})日\s*(\d{2}:\d{2})", text)
     if match:
         return f"{match.group(1)}-{match.group(2)}-{match.group(3)} {match.group(4)}"
-    now = datetime.now()
+    now = now or datetime.now()
     if "刚刚" in text:
         return now.strftime("%Y-%m-%d %H:%M")
+    ss = re.search(r"(\d+)\s*秒前", text)
+    if ss:
+        return (now - timedelta(seconds=int(ss.group(1)))).strftime("%Y-%m-%d %H:%M")
     mm = re.search(r"(\d+)\s*分钟前", text)
     if mm:
         return (now - timedelta(minutes=int(mm.group(1)))).strftime("%Y-%m-%d %H:%M")
@@ -66,8 +70,8 @@ def _sse_time(text: str) -> Optional[str]:
     return None
 
 
-def _sse_required_time(item_id: str, text: str) -> str:
-    when = _sse_time(text)
+def _sse_required_time(item_id: str, text: str, now: Optional[datetime] = None) -> str:
+    when = _sse_time(text, now=now)
     if when is None:
         raise RuntimeError(f"上证e互动第 {item_id} 条的提问时间认不出: {text!r}")
     return when
@@ -133,6 +137,7 @@ def _sse_company_uid(code: str) -> str:
 def _sse_parse_feed(text: str) -> List[Dict[str, Any]]:
     """「最新回复」与「最新提问」两种列表标记不同, 以回复块 class 为界切问题段和回复段。"""
     rows: List[Dict[str, Any]] = []
+    reference_time = datetime.now()
     for chunk in re.split(r'<div class="m_feed_item[^"]*" id="item-', text)[1:]:
         numbered = re.match(r"(\d+)", chunk)
         if not numbered:
@@ -154,7 +159,9 @@ def _sse_parse_feed(text: str) -> List[Dict[str, Any]]:
             when = re.search(r'<div class="m_feed_from"[^>]*>\s*<span>([^<]+)</span>', answer_part)
             if not body or not when:
                 raise RuntimeError(f"上证e互动第 {item_id} 条有回复块但解析不出回复内容或回复时间")
-            answer, answer_time = _sse_text(body.group(1)), _sse_time(when.group(1))
+            answer, answer_time = _sse_text(body.group(1)), _sse_time(
+                when.group(1), now=reference_time
+            )
             if answer_time is None:
                 raise RuntimeError(f"上证e互动第 {item_id} 条的回复时间认不出: {when.group(1)!r}")
         rows.append(
@@ -164,7 +171,7 @@ def _sse_parse_feed(text: str) -> List[Dict[str, Any]]:
                 "name": _sse_text(question.group(1)),
                 "asker": asker.group(1) if asker else None,
                 "question": _sse_text(question.group(3)),
-                "question_time": _sse_required_time(item_id, ask_time.group(1)),
+                "question_time": _sse_required_time(item_id, ask_time.group(1), now=reference_time),
                 "answer": answer,
                 "answer_time": answer_time,
             }

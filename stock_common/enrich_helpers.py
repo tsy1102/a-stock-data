@@ -13,11 +13,14 @@
 
 from __future__ import annotations
 
+from datetime import datetime
 from typing import Any, List
 
 __all__ = [
     "earnings_quality_lines",
     "cash_content_lines",
+    "fuyao_report_period_candidates",
+    "tdx_snapshot_period_context",
     "fund_flow_detail_lines",
     "order_book_lines",
     "rotation_context_lines",
@@ -57,8 +60,63 @@ def _safe_div(a: float, b: float) -> float:
         return 0.0
 
 
+def _report_period_label(cdata: Any) -> str:
+    raw = (
+        cdata.get("report_period", "")
+        if isinstance(cdata, dict)
+        else getattr(cdata, "report_period", "")
+    )
+    digits = "".join(char for char in str(raw or "") if char.isdigit())
+    if len(digits) >= 8:
+        try:
+            report_date = datetime.strptime(digits[:8], "%Y%m%d")
+        except ValueError:
+            return "未标注"
+        return report_date.strftime("%Y-%m-%d")
+    return "未标注"
+
+
+def fuyao_report_period_candidates(report_period: Any, limit: int = 2) -> List[str]:
+    """按统一层最新财报日期生成 Fuyao 季度查询键，最多回退到前一季度。"""
+    try:
+        digits = "".join(char for char in str(report_period or "") if char.isdigit())
+        if len(digits) < 8:
+            return []
+        report_date = datetime.strptime(digits[:8], "%Y%m%d")
+        if report_date.month not in (3, 6, 9, 12):
+            return []
+        candidate_count = max(0, min(int(limit), 4))
+        if candidate_count == 0:
+            return []
+        year = report_date.year
+        quarter = (report_date.month - 1) // 3 + 1
+        candidates: List[str] = []
+        for _ in range(candidate_count):
+            candidates.append(f"{year}-{quarter}")
+            quarter -= 1
+            if quarter == 0:
+                year -= 1
+                quarter = 4
+        return candidates
+    except (TypeError, ValueError, OverflowError):
+        return []
+
+
+def tdx_snapshot_period_context(report_period: Any, disclosure_date: Any = "") -> str:
+    """明确区分统一层财报期参考值与 TDX 0x0010 快照自身的期别信息。"""
+    canonical_period = _report_period_label({"report_period": report_period})
+    if canonical_period == "未标注":
+        context = "TDX 快照报告期未由接口字段确认"
+    else:
+        context = f"统一层参考报告期 {canonical_period}（TDX 未独立确认期别）"
+    raw_disclosure_date = str(disclosure_date or "").strip()
+    if raw_disclosure_date:
+        context += f"，TDX 披露日 {raw_disclosure_date}"
+    return context
+
+
 def earnings_quality_lines(cdata: Any) -> List[str]:
-    """盈利质量（扣非 vs 归母、ROE 扣非）。med/lng 排雷用。"""
+    """列示盈利质量字段；期间不一致或缺失时不计算虚假的质量比值。"""
     try:
         eps = _v(cdata, "eps")
         eps_d = _v(cdata, "eps_deduct_ttm")
@@ -67,51 +125,51 @@ def earnings_quality_lines(cdata: Any) -> List[str]:
         if eps == 0 and eps_d == 0 and roe == 0 and roe_d == 0:
             return []
         out: List[str] = []
-        out.append("  📊 **盈利质量（扣非口径排雷）**")
+        report_period = _report_period_label(cdata)
+        out.append("  📊 **盈利质量字段核对**")
         if eps != 0:
-            ratio = _safe_div(eps_d, eps)
-            tag = "健康" if ratio >= 0.85 else ("⚠️非经常性损益占比偏高" if ratio < 0.7 else "中性")
-            out.append(
-                f"  - 扣非EPS(TTM)={eps_d:.2f}元/股，占归母EPS({eps:.2f})的{ratio*100:.0f}%（{tag}）"
-            )
+            out.append(f"  - 归母EPS(统一层字段)={eps:.2f}元/股（报告期 {report_period}）")
         else:
-            out.append(f"  - 扣非EPS(TTM)={eps_d:.2f}元/股（归母EPS缺失，以扣非口径为准）")
-        if roe != 0 or roe_d != 0:
-            diff = roe - roe_d
-            out.append(
-                f"  - ROE={roe:.1f}% / 扣非ROE={roe_d:.1f}%（差额{diff:+.1f}pt，差额为正=非经常性损益撑净资产收益）"
-            )
+            out.append("  - 归母EPS(统一层字段)未取到")
+        if eps_d != 0:
+            out.append(f"  - 扣非EPS(TTM)={eps_d:.2f}元/股")
+        else:
+            out.append("  - 扣非EPS(TTM)未取到")
+        if eps != 0 or eps_d != 0:
+            out.append("  - ℹ️ 归母EPS字段与扣非EPS(TTM)期间未确认一致，不计算占比。")
+        if roe != 0:
+            out.append(f"  - ROE(报告期 {report_period})={roe:.1f}%")
+        if roe_d != 0:
+            out.append(f"  - 扣非ROE(TTM)={roe_d:.1f}%")
+        if roe != 0 and roe_d != 0:
+            out.append("  - ℹ️ ROE 与扣非ROE统计期间不同，不以差额推断非经常性损益影响。")
         return out
     except Exception:
         return []
 
 
 def cash_content_lines(cdata: Any) -> List[str]:
-    """净利现金含量（OCF/净利润）。中线排雷核心。"""
+    """列示现金流与净利润；未确认同期间前不计算现金含量比。"""
     try:
         ocf = _v(cdata, "ocf_ttm")
         npf = _v(cdata, "net_profit")
         if ocf == 0 and npf == 0:
             return []
         out: List[str] = []
-        out.append("  💰 **净利现金含量（经营现金流/净利润）**")
-        if npf > 0:
-            ratio = _safe_div(ocf, npf)
-            tag = (
-                "✅真金白银"
-                if ratio >= 0.8
-                else ("⚠️盈利含金量偏低（赊销/应收注水风险）" if ratio < 0.5 else "中性")
-            )
-            # net_profit 单位元；ocf_ttm 单位元，比值无量纲
-            out.append(
-                f"  - OCF(TTM)={ocf/1e8:.2f}亿 / 净利润={npf/1e8:.2f}亿 → 比值{ratio:.2f}（{tag}）"
-            )
-        elif npf < 0:
-            out.append(
-                f"  - 净利润为负({npf/1e8:.2f}亿)，OCF(TTM)={ocf/1e8:.2f}亿（关注是否靠经营回款续命）"
-            )
+        out.append("  💰 **现金流与净利润期间核对**")
+        report_period = _report_period_label(cdata)
+        ocf_label = (
+            f"经营现金流净额(TTM)={ocf/1e8:.2f}亿" if ocf != 0 else "经营现金流净额(TTM)未取到"
+        )
+        if npf != 0:
+            np_label = f"净利润(报告期 {report_period})={npf/1e8:.2f}亿"
         else:
-            out.append(f"  - OCF(TTM)={ocf/1e8:.2f}亿（净利润缺失，仅列经营现金流）")
+            np_label = f"净利润(报告期 {report_period})未取到"
+        out.append(f"  - {ocf_label}；{np_label}")
+        if ocf != 0 and npf != 0:
+            out.append("  - ℹ️ TTM现金流与最新报告期净利润期间不同，不计算现金含量比。")
+        elif report_period == "未标注":
+            out.append("  - ℹ️ 净利润报告期未标注，无法确认期间匹配，不计算现金含量比。")
         return out
     except Exception:
         return []

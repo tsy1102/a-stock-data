@@ -4,7 +4,7 @@
 > `aggregation_status` 只描述兼容聚合视图，不会改写逐源 `status`。疑似合并文本由分隔符启发式识别，仅供人工检查，不自动拆字段或定案。
 > 本文统计的定义缺口仅限列出的复核组；单来源或全空的定义缺口仍见 [元数据缺口](field_metadata_gaps.md) 与 [未知字段队列](unknown_fields.md)。
 
-> 聚合歧义 86 个 code；聚合定义不完整 255 个 code；疑似合并文本 234 条逐源记录。
+> 聚合歧义 87 个 code；聚合定义不完整 254 个 code；疑似合并文本 236 条逐源记录。
 
 ## 同码聚合存在差异或定义缺口
 
@@ -2986,16 +2986,16 @@
 | TDX(双命名源) · `pe_static` | — | — | — | `unverified` |
 | 开盘啦(kpl) · `pe_static` | pe_static | 静态PE（上年度年报 LYR） | 倍 | `conflict` |
 
-### `pe_ttm` — incomplete
+### `pe_ttm` — ambiguous
 
-聚合问题：canonical_incomplete；meaning_incomplete；source_status_conflict；source_statuses_differ；unit_incomplete；聚合状态：`conflict`。
+聚合问题：canonical_incomplete；meaning_differs；meaning_incomplete；source_status_conflict；source_statuses_differ；unit_incomplete；聚合状态：`conflict`。
 
 | 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
 |:--|:--|:--|:--|:--|
 | Levistock历史未归属 · `pe_ttm` | — | — | — | `unverified` |
 | TDX(双命名源) · `pe_ttm` | — | — | — | `unverified` |
 | TDX-eltdx(适配层) · `pe_ttm` | pe_ttm | — | — | `unverified` |
-| ZHB-tdxstat · `pe_ttm` | — | — | — | `unverified` |
+| ZHB-tdxstat · `pe_ttm` | pe_ttm | 市盈率（TTM） | 倍 | `verified` |
 | 同花顺-fuyao · `pe_ttm` | — | — | — | `unverified` |
 | 开盘啦(kpl) · `pe_ttm` | pe_ttm | PE(TTM) | 倍 | `conflict` |
 
@@ -3569,6 +3569,8 @@
 | ZHB-tdxstat | `[22]` | [22] | 形态/板块代码 ShapeValue | `verified` |
 | ZHB-tdxstat | `[5]` | [5] | 连涨/连跌天数 | `verified` |
 | ZHB-tdxstat | `[9]` | [9] | 市盈率（静态/LYR） | `verified` |
+| ZHB-tdxstat | `change_30d` | change_20d | 与同来源同路径 change_20d 完全重复的历史兼容键，不是独立的 30 日涨跌幅 | `disproved` |
+| ZHB-tdxstat | `stat.change_30d` | stat.change_20d | 与同来源同路径 stat.change_20d 完全重复的历史兼容键，不是独立的 30 日涨跌幅 | `disproved` |
 | ZHB-tdxstat | `stat.unknown_2` | stat.unknown_2 | 贝塔系数(60日)·L2候选(列[2]已定BetaValue: ihelp.dat L63官方定义+慢变特征实证自相关0.91, 待真实指数基准复现升L1) | `candidate` |
 | ZHB-tdxstat | `stat.unknown_26` | stat.unknown_26 | 年内涨停天数 YearZTDay·L2候选(列[26]已定YearZTDay: ihelp.dat L64官方定义+事件级Δ实证, 待≥90%命中升L1) | `conflict` |
 | ZHB-tdxstat | `stat.zt_type_code` | stat.zt_type_code | 行情状态/涨跌强度分档码 | `verified` |

@@ -65,9 +65,8 @@ from stock_common import (
     resolve_eps_forecast,
     get_lockup_expiry_async,
     get_industry_peers,
-    get_sina_financial_report_async,
+    get_financial_report_with_fallback_async,
     get_sina_balance_sheet_async,
-    get_financial_report_with_fallback,  # B: 新浪缺失 → fuyao 利润表兜底
     get_market_status,
     get_zhb_single_stock_data,
     is_zhb_data_fresh,
@@ -546,8 +545,9 @@ async def generate_report_async(session, code, output_path, ind_comp=None):
         _pe = _dp_pe
         # V17.0.17(2026-09-01) 据主字典定案修正: 动态PE=canonical pe_dynamic(f162);
         # 静态PE（LYR）=canonical pe_lyr(f163, 本次新增透传)。原 _pe_static 误用 pe_dynamic(动态) 当静态, 已纠正。
-        _pe_dyn = float(getattr(_cdata, "pe_dynamic", 0) or 0) if _cdata else 0
-        _pe_lyr = float(getattr(_cdata, "pe_lyr", 0) or 0) if _cdata else 0
+        # 首次 canonical 获取失败而重试成功时，必须读取已解析的 cdata；动态PE缺失再回落ZHB。
+        _pe_dyn = _safe_float(getattr(cdata, "pe_dynamic", 0)) or _safe_float(_zhb_pe_dynamic)
+        _pe_lyr = _safe_float(getattr(cdata, "pe_lyr", 0))
     elif _zhb_pe_ttm and _zhb_pe_ttm > 0:
         _pe = _zhb_pe_ttm
         _pe_dyn = _zhb_pe_dynamic
@@ -556,7 +556,7 @@ async def generate_report_async(session, code, output_path, ind_comp=None):
         _pe = q.get('pe_ttm', 0)
         # V16.4.1: q 无 pe_dynamic 键 → else 分支 PE(动态) 可能 N/A; 用 ZHB 动态口径兜底
         _pe_dyn = _zhb_pe_dynamic or q.get('pe_dynamic', 0)
-        _pe_lyr = float(getattr(_cdata, "pe_lyr", 0) or 0) if _cdata else 0
+        _pe_lyr = _safe_float(getattr(cdata, "pe_lyr", 0))
     if _pe > 0:
         _ey = f"{100/_pe:.2f}%"
         # V16.4.1: 标注 PE 来源口径(ZHB pe_ttm 基于最近年报/季报净利, 可能与
@@ -601,7 +601,7 @@ async def generate_report_async(session, code, output_path, ind_comp=None):
     L(
         f"    静态市盈率 PE（LYR）: {_pe_lyr:.2f}x"
         if _pe > 0 and _pe_lyr > 0
-        else "    静态市盈率 PE（LYR）: N/A（无静态口径）"
+        else "    静态市盈率 PE（LYR）: N/A（本次未取到；ZHB不提供静态PE）"
     )
     # V17.0.26(2026-09-03) DEBT-008: 删除假的 PE(MorePE) 交叉验证展示行（与 med 报告同源问题）。
     #   原注释称"pe_more 与 pe_ttm 口径略有差异，偏差大→提示异常"，但二者同源 f164，
@@ -647,9 +647,7 @@ async def generate_report_async(session, code, output_path, ind_comp=None):
 
     L("\n## 【二、跨期财务纵深与长效业绩验证 (近8个报告期)】")
     L("---")
-    financials = await get_sina_financial_report_async(session, code, num_periods=8)
-    if not financials:  # B: 新浪缺失 → fuyao 利润表兜底
-        financials = get_financial_report_with_fallback(code, num_periods=8)
+    financials = await get_financial_report_with_fallback_async(code, num_periods=8)
     if financials:
         L(f"  {'报告期':<12} {'营业总收入(亿)':>10} {'净利润(亿)':>13}")
         L(f"  {'-'*45}")
@@ -729,12 +727,9 @@ async def generate_report_async(session, code, output_path, ind_comp=None):
             L(
                 f"\n  ⚖️ ROE 双口径对照: 报告期加权 {_rep_roe:.2f}% vs 扣非TTM {_rdt:.2f}%（差 {_gap:+.2f}pp）"
             )
-            if _gap > 5:
-                L("  ⚠️ 报告期 ROE 显著高于扣非 TTM——利润或含大额非经常性损益，核查扣非明细")
-            elif _gap < -5:
-                L("  ✅ 扣非 TTM 高于报告期——常态化盈利强于表观，质量偏好")
-            else:
-                L("  ✅ 双口径基本一致，盈利质量扎实")
+            L(
+                "  ℹ️ 报告期ROE与扣非ROE(TTM)期间不同；差值仅作并列参考，不据此判断非经常性损益或盈利质量。"
+            )
 
     if financials and len(financials) >= 2:
         gm_rows = []
@@ -818,6 +813,7 @@ async def generate_report_async(session, code, output_path, ind_comp=None):
     #    故单期 OCF/NPL 必须取自 TDX 0x0010 快照(jingyingxianjinliu / 净利润字段)，不可删除。
     _tdx_ocf = 0.0
     _tdx_np = 0.0
+    _tdx_disclosure_date = ""
     # V16.1: 0x0010 财务快照存局部变量，供下方"核心财务指标"复用（避免重复 TCP 请求）
     _tdx_fi_snapshot = None
     try:
@@ -826,6 +822,7 @@ async def generate_report_async(session, code, output_path, ind_comp=None):
         fi = tdx_get_finance_info(code)
         if fi is not None:
             _tdx_fi_snapshot = fi
+            _tdx_disclosure_date = str(fi.get("updated_date") or "").strip()
             # V15.1: 修正 0x0010 协议 key（参考 docs/field_dict.md 第 7 章）
             # 正确 key: jingyingxianjinliu / jinglirun（无下划线）
             # V16.3 O19: 0x0010 金额字段单位=角（field_dict §零 O 实测）——/10 得元
@@ -883,28 +880,44 @@ async def generate_report_async(session, code, output_path, ind_comp=None):
                 L(f"    经营现金流/有息负债: {_cov:.2f}倍 ⚠️ 偿债压力较大")
     else:
         L("  (资产负债表数据获取失败)")
+    from stock_common.enrich_helpers import tdx_snapshot_period_context
+
+    _tdx_period_context = tdx_snapshot_period_context(
+        getattr(cdata, "report_period", ""), _tdx_disclosure_date
+    )
     if _tdx_ocf != 0 and _tdx_np != 0:
         ocf_yi = _tdx_ocf / 1e8
         np_yi = _tdx_np / 1e8
         if _tdx_np > 0:
             cash_ratio = _tdx_ocf / _tdx_np * 100
             L(
-                f"\n  经营现金流: {ocf_yi:.2f}亿元 | 净利润: {np_yi:.2f}亿元 | 现金/利润比: {cash_ratio:.1f}%"
+                f"\n  经营现金流（{_tdx_period_context}）: {ocf_yi:.2f}亿元 | 净利润: {np_yi:.2f}亿元 | 现金/利润比: {cash_ratio:.1f}%"
             )
             if cash_ratio < 80:
-                L(
-                    f"  ⚠️ 警惕：经营现金流仅为净利润的 {cash_ratio:.1f}%，存在利润造假或严重压货风险，现金含量不足！"
-                )
+                if _tdx_ocf < 0:
+                    L(
+                        "  ⚠️ 本报告期经营现金流为负，现金回收承压；应结合去年同期、季节性及应收账款/存货变化复核，单期指标不能单独证明造假或压货。"
+                    )
+                else:
+                    L(
+                        f"  ⚠️ 本报告期现金流低于净利润的80%参考线；请结合去年同期、营运资本变化及TTM判断，不能单凭该比例判断利润造假或压货。"
+                    )
             else:
-                L("  ✅ 经营现金流覆盖净利润充足 (> 80%)，利润含金量高。")
+                L(
+                    "  ✅ 本报告期现金流覆盖超过80%参考线；该单期/累计指标仍需结合TTM与历史同期判断。"
+                )
         elif _tdx_np < 0 and _tdx_ocf < 0:
             L(
-                f"\n  经营现金流: {ocf_yi:.2f}亿元 | 净利润: {np_yi:.2f}亿元 (均为负值，持续失血状态)"
+                f"\n  经营现金流（{_tdx_period_context}）: {ocf_yi:.2f}亿元 | 净利润: {np_yi:.2f}亿元 (均为负值，持续失血状态)"
             )
         else:
-            L(f"\n  经营现金流: {ocf_yi:.2f}亿元 | 净利润: {np_yi:.2f}亿元")
+            L(
+                f"\n  经营现金流（{_tdx_period_context}）: {ocf_yi:.2f}亿元 | 净利润: {np_yi:.2f}亿元"
+            )
     elif _tdx_ocf != 0:
-        L(f"  经营现金流: {_tdx_ocf/1e8:.2f}亿元 (财务数据不足，无法计算现金/利润比)")
+        L(
+            f"  经营现金流（{_tdx_period_context}）: {_tdx_ocf/1e8:.2f}亿元 (财务数据不足，无法计算现金/利润比)"
+        )
     else:
         L("  (经营现金流数据获取失败)")
     parts = []
@@ -944,37 +957,53 @@ async def generate_report_async(session, code, output_path, ind_comp=None):
     # V17.0.5 P0: 现金流官方指标交叉核验(fuyao 五类指标 cash-flow 族)
     try:
         from stock_common import get_fuyao_fin_indicators, is_fuyao_enabled
+        from stock_common.enrich_helpers import fuyao_report_period_candidates
 
         if is_fuyao_enabled():
-            _yy = date.today().year
-            for _rp in (f"{_yy}-1", f"{_yy - 1}-4"):
-                _fi = await asyncio.to_thread(get_fuyao_fin_indicators, code, _rp)
-                if _fi:
-                    _cf = _fi.get("cash-flow") or {}
+            _report_periods = fuyao_report_period_candidates(getattr(cdata, "report_period", ""))
+            _fuyao_cash_found = False
+            if not _report_periods:
+                L("  ⚠️ Fuyao 现金流交叉核验跳过：统一层未提供有效的最新财报期。")
+            else:
+                for _rp in _report_periods:
+                    _fi = await asyncio.to_thread(get_fuyao_fin_indicators, code, _rp)
+                    _cf = (_fi or {}).get("cash-flow") or {}
                     _npc = _cf.get("net_profit_cash_content")
                     _coi = _cf.get("cash_operating_index")
-                    if _npc is not None or _coi is not None:
-                        L(f"\n  🔬 现金流官方指标交叉(fuyao, 报告期 {_rp.replace('-', 'Q')}):")
-                        if _npc is not None:
-                            _v = float(_npc)
-                            _tag = (
-                                "✅ 含金量充足"
-                                if _v >= 100
-                                else ("⚠️ 偏低" if _v >= 60 else "🚨 严重不足")
-                            )
-                            L(f"    净利润现金含量: {_v:.1f}% {_tag}(报告期口径)")
-                        if _coi is not None:
-                            _v2 = float(_coi)
-                            _tag2 = (
-                                "✅" if _v2 >= 1.0 else ("⚠️" if _v2 >= 0.9 else "🚨 利润粉饰嫌疑")
-                            )
-                            L(f"    现金营运指数: {_v2:.2f} {_tag2}")
-                        # V17.0.7: 加口径注——fuyao 指标为报告期累计(非TTM)，
-                        # 茅台等下半年回款型企业的 H1 现金含量天然偏低，与下方 TTM 对照不矛盾
-                        L("    ℹ️ 口径注: 以上为报告期(H1/Q1)单期数据; TTM 口径见下方双源对照")
-                        break
+                    if _npc is None and _coi is None:
+                        continue
+                    _fuyao_cash_found = True
+                    L(f"\n  🔬 现金流官方指标交叉(fuyao, 报告期 {_rp.replace('-', 'Q')}):")
+                    if _npc is not None:
+                        _v = float(_npc)
+                        _tag = (
+                            "✅ 含金量充足"
+                            if _v >= 100
+                            else ("⚠️ 偏低" if _v >= 60 else "🚨 严重不足")
+                        )
+                        L(f"    净利润现金含量: {_v:.1f}% {_tag}(报告期口径)")
+                    if _coi is not None:
+                        _v2 = float(_coi)
+                        _tag2 = "✅" if _v2 >= 1.0 else ("⚠️" if _v2 >= 0.9 else "🚨 利润粉饰嫌疑")
+                        L(f"    现金营运指数: {_v2:.2f} {_tag2}")
+                    if _rp != _report_periods[0]:
+                        L(
+                            f"    ⚠️ 未取得最新财报期 {_report_periods[0]} 的 Fuyao 指标；当前为较早期间，只作历史参考，不与 TDX 最新期直接比较。"
+                        )
+                    else:
+                        L(
+                            f"    ℹ️ 口径注: Fuyao 为报告期 {_rp} 累计值；TDX 0x0010 {_tdx_period_context}。两者期别未由接口独立确认对齐，不能直接据此作同期间比较；TTM 指标见下方。"
+                        )
+                    break
+                if not _fuyao_cash_found:
+                    L(
+                        f"  ⚠️ Fuyao 未返回可用现金流指标（已查询 {_report_periods[0]} 等候选期），本次未完成双源核验。"
+                    )
+        else:
+            L("  ℹ️ Fuyao 现金流交叉核验未启用。")
     except Exception as _e:
         _debug_log(f"lng fuyao cashflow cross: {_e}")
+        L("  ⚠️ Fuyao 现金流交叉核验请求失败，本报告未形成对应结论。")
     # V17.0.7: 现金流双源对照——push2 f103(TTM 口径, 随 push2delay 补取零额外请求)
     # vs 上方 0x0010(最新报告期)。两口径互补非等值; 滚动现金含量跨两财年为粗算参考。
     try:
@@ -985,7 +1014,7 @@ async def generate_report_async(session, code, output_path, ind_comp=None):
             L("\n  🔬 现金流双源对照(push2delay f103 族, V17.0.7 字典终破口径):")
             _base = f"    经营现金流净额(TTM): {_ocf_ttm_v7/1e8:.2f}亿元"
             if _tdx_ocf:
-                _base += f" | 0x0010 最新报告期: {_tdx_ocf/1e8:.2f}亿元"
+                _base += f" | TDX 0x0010 快照（{_tdx_period_context}）: {_tdx_ocf/1e8:.2f}亿元"
             L(_base)
             if _rev_ttm_v7:
                 L(
@@ -1336,7 +1365,9 @@ async def generate_report_async(session, code, output_path, ind_comp=None):
             _jiejin_pct = _jiejin_mc / _fmc * 100 if _fmc > 0 else 0
             _jiejin_tag = "🔴" if _jiejin_pct > 5 else ("🟡" if _jiejin_pct > 1 else "🟢")
             amount_label = (
-                "实际可流通" if h.get("shares_is_actual") is True else "公告解禁数量（实际可售量未知）"
+                "实际可流通"
+                if h.get("shares_is_actual") is True
+                else "公告解禁数量（实际可售量未知）"
             )
             # V17.0.8: 明细保留一位小数(原 .0f 四舍五入致 1.4万股显示 1 → 明细合计≠总计)
             L(

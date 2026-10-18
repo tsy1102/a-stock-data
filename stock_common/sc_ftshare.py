@@ -4,12 +4,16 @@
 接入形态：公共网关 MCP Streamable HTTP(JSON-RPC)，兼容无鉴权会话和可选环境变量 API Key。
 支持有状态与无状态会话，90 分钟续期；HTTP/JSON-RPC/工具错误保留诊断。
 限流：模块级所有 POST 至少间隔 500ms；403/429 或连续三次错误时停止请求。
+服务端明确返回匿名额度等待时立即停止请求，并将冷却截止时间保存在 Git 忽略的项目 .tmp/；配置 API Key 可绕过匿名额度冷却。
 """
 
 from typing import Any, Dict, List, Optional, cast
 from datetime import date
 import json
+import logging
+import math
 import os
+from pathlib import Path
 import re
 import threading
 import time
@@ -31,6 +35,13 @@ _RPC_LOCK = threading.RLock()
 _DIAGNOSTICS: List[Dict[str, Any]] = []
 _CONSECUTIVE_ERRORS = 0
 _BLOCKED_REASON: Optional[str] = None
+_BLOCKED_UNTIL: Optional[float] = None
+_BLOCKED_REQUIRES_API_KEY = False
+_RATE_LIMIT_STATE_PATH = Path(__file__).resolve().parents[1] / ".tmp" / "ftshare_rate_limit.json"
+_LOGGER = logging.getLogger(__name__)
+_RATE_LIMIT_WAIT = re.compile(
+    r"请等待\s*(?:(\d+)\s*天)?\s*(?:(\d+)\s*小时)?\s*(?:(\d+)\s*分钟)?\s*(?:(\d+)\s*秒)?\s*后再试"
+)
 _GOODWILL_LOCK = threading.Lock()
 _GOODWILL_BY_CODE: Dict[str, List[Dict[str, Any]]] = {}
 _GOODWILL_CACHE_EXPIRES_AT = 0.0
@@ -42,6 +53,129 @@ _GGMX_PAGE_SIZE = 200
 _LIMIT_LIST_PAGE_SIZE = 100
 
 
+def _parse_upstream_retry_after(message: str) -> Optional[int]:
+    """Extract an explicit wait from a quota/rate-limit response, in seconds."""
+    lowered = message.casefold()
+    quota_markers = ("最多访问", "访问额度", "限流", "rate limit", "quota")
+    if not any(marker in lowered for marker in quota_markers):
+        return None
+    match = _RATE_LIMIT_WAIT.search(message)
+    if match is None:
+        return None
+    days, hours, minutes, seconds = (int(value or 0) for value in match.groups())
+    wait_seconds = days * 86400 + hours * 3600 + minutes * 60 + seconds
+    return wait_seconds if wait_seconds > 0 else None
+
+
+def _write_rate_limit_state(blocked_until: float, requires_api_key: bool) -> None:
+    """Persist only anonymous-quota cooldown metadata under the ignored project temp dir."""
+    path = _RATE_LIMIT_STATE_PATH
+    temp_path = path.with_name(f"{path.name}.{os.getpid()}.tmp")
+    payload = {
+        "version": 1,
+        "blocked_until_epoch": blocked_until,
+        "requires_api_key": requires_api_key,
+    }
+    try:
+        path.parent.mkdir(parents=True, exist_ok=True)
+        with temp_path.open("w", encoding="utf-8", newline="\n") as stream:
+            json.dump(payload, stream, ensure_ascii=False)
+            stream.flush()
+            os.fsync(stream.fileno())
+        os.replace(temp_path, path)
+    except OSError as exc:
+        _LOGGER.warning("Could not persist FTShare cooldown state at %s: %s", path, exc)
+        try:
+            temp_path.unlink(missing_ok=True)
+        except OSError as cleanup_exc:
+            _LOGGER.warning(
+                "Could not remove partial FTShare cooldown file %s: %s", temp_path, cleanup_exc
+            )
+
+
+def _remove_rate_limit_state() -> None:
+    try:
+        _RATE_LIMIT_STATE_PATH.unlink(missing_ok=True)
+    except OSError as exc:
+        _LOGGER.warning(
+            "Could not remove expired FTShare cooldown state at %s: %s",
+            _RATE_LIMIT_STATE_PATH,
+            exc,
+        )
+
+
+def _rate_limit_active() -> bool:
+    """Return true when an in-process or persisted upstream cooldown blocks requests."""
+    global _BLOCKED_REASON, _BLOCKED_UNTIL, _BLOCKED_REQUIRES_API_KEY
+    global _CONSECUTIVE_ERRORS, _SESSION_READY, _SID
+    with _RPC_LOCK:
+        api_key_present = bool(os.environ.get("FTSHARE_API_KEY", "").strip())
+        now = time.time()
+        if _BLOCKED_UNTIL is not None:
+            if _BLOCKED_REQUIRES_API_KEY and api_key_present:
+                _BLOCKED_REASON = None
+                _BLOCKED_UNTIL = None
+                _BLOCKED_REQUIRES_API_KEY = False
+                _CONSECUTIVE_ERRORS = 0
+                _SID = None
+                _SESSION_READY = False
+                return False
+            if _BLOCKED_UNTIL > now:
+                return True
+            _BLOCKED_REASON = None
+            _BLOCKED_UNTIL = None
+            _BLOCKED_REQUIRES_API_KEY = False
+            _CONSECUTIVE_ERRORS = 0
+            _SID = None
+            _SESSION_READY = False
+            _remove_rate_limit_state()
+        elif _BLOCKED_REASON:
+            return True
+
+        try:
+            state = json.loads(_RATE_LIMIT_STATE_PATH.read_text(encoding="utf-8"))
+        except FileNotFoundError:
+            return False
+        except (OSError, UnicodeError, json.JSONDecodeError) as exc:
+            _BLOCKED_REASON = "persisted FTShare cooldown state is unreadable; inspect .tmp/ftshare_rate_limit.json"
+            _SESSION_READY = False
+            _LOGGER.error(
+                "Cannot read FTShare cooldown state at %s: %s", _RATE_LIMIT_STATE_PATH, exc
+            )
+            return True
+
+        if not isinstance(state, dict) or state.get("version") != 1:
+            _BLOCKED_REASON = "persisted FTShare cooldown state has an unsupported format; inspect .tmp/ftshare_rate_limit.json"
+            _SESSION_READY = False
+            _LOGGER.error("Unsupported FTShare cooldown state format at %s", _RATE_LIMIT_STATE_PATH)
+            return True
+        try:
+            blocked_until = float(state["blocked_until_epoch"])
+        except (KeyError, TypeError, ValueError):
+            _BLOCKED_REASON = "persisted FTShare cooldown state has no valid expiry; inspect .tmp/ftshare_rate_limit.json"
+            _SESSION_READY = False
+            _LOGGER.error("Invalid FTShare cooldown expiry at %s", _RATE_LIMIT_STATE_PATH)
+            return True
+        if not math.isfinite(blocked_until):
+            _BLOCKED_REASON = "persisted FTShare cooldown expiry is not finite; inspect .tmp/ftshare_rate_limit.json"
+            _SESSION_READY = False
+            _LOGGER.error("Non-finite FTShare cooldown expiry at %s", _RATE_LIMIT_STATE_PATH)
+            return True
+
+        requires_api_key = bool(state.get("requires_api_key"))
+        if requires_api_key and api_key_present:
+            return False
+        if blocked_until <= now:
+            _remove_rate_limit_state()
+            return False
+        _BLOCKED_UNTIL = blocked_until
+        _BLOCKED_REQUIRES_API_KEY = requires_api_key
+        remaining = max(1, int(blocked_until - now))
+        _BLOCKED_REASON = f"upstream quota cooldown active; retry in about {remaining}s"
+        _SESSION_READY = False
+        return True
+
+
 def is_ftshare_enabled() -> bool:
     import os
 
@@ -51,11 +185,7 @@ def is_ftshare_enabled() -> bool:
 def _parse(r: requests.Response) -> Optional[Dict[str, Any]]:
     """Parse one JSON-RPC response from either JSON or an SSE event stream."""
     content = getattr(r, "content", b"")
-    txt = (
-        content.decode("utf-8", errors="replace")
-        if isinstance(content, bytes)
-        else str(content)
-    )
+    txt = content.decode("utf-8", errors="replace") if isinstance(content, bytes) else str(content)
     try:
         obj = json.loads(txt)
         if isinstance(obj, dict) and ("result" in obj or "error" in obj):
@@ -90,8 +220,10 @@ def _record_failure(
     message: str,
     status: Optional[int] = None,
     tool: Optional[str] = None,
+    retry_after_seconds: Optional[int] = None,
 ) -> None:
-    global _CONSECUTIVE_ERRORS, _BLOCKED_REASON, _SESSION_READY
+    global _CONSECUTIVE_ERRORS, _BLOCKED_REASON, _BLOCKED_UNTIL
+    global _BLOCKED_REQUIRES_API_KEY, _SESSION_READY
     with _RPC_LOCK:
         entry: Dict[str, Any] = {"stage": stage, "message": str(message).strip()[:180]}
         if status is not None:
@@ -104,6 +236,15 @@ def _record_failure(
         if status in (403, 429):
             _BLOCKED_REASON = f"HTTP {status} at {stage}; further FTShare requests paused"
             _SESSION_READY = False
+        elif retry_after_seconds is not None and retry_after_seconds > 0:
+            _BLOCKED_UNTIL = time.time() + retry_after_seconds
+            _BLOCKED_REQUIRES_API_KEY = not bool(os.environ.get("FTSHARE_API_KEY", "").strip())
+            _BLOCKED_REASON = (
+                f"upstream quota exhausted; retry after approximately {retry_after_seconds}s"
+            )
+            _SESSION_READY = False
+            if _BLOCKED_REQUIRES_API_KEY:
+                _write_rate_limit_state(_BLOCKED_UNTIL, requires_api_key=True)
         elif _CONSECUTIVE_ERRORS >= _MAX_CONSECUTIVE_ERRORS:
             _BLOCKED_REASON = (
                 f"circuit breaker opened after {_CONSECUTIVE_ERRORS} consecutive failures"
@@ -195,7 +336,20 @@ def _handle_response(
         return None
     if "error" in obj:
         error = obj.get("error")
-        _record_failure(stage, f"JSON-RPC error: {str(error)[:140]}", tool=tool)
+        if isinstance(error, dict):
+            error_code = str(error.get("code", "JSON-RPC error"))
+            error_message = str(error.get("message", error_code))
+            error_detail = f"{error_code}: {error_message}"
+        else:
+            error_message = str(error)
+            error_detail = f"JSON-RPC error: {error_message}"
+        retry_after_seconds = _parse_upstream_retry_after(error_message)
+        _record_failure(
+            stage,
+            error_detail,
+            tool=tool,
+            retry_after_seconds=retry_after_seconds,
+        )
         return obj
     if stage == "initialize":
         new_sid = getattr(response, "headers", {}).get("Mcp-Session-Id")
@@ -214,7 +368,7 @@ def _post(
     global _SID, _SESSION_READY
     stage, tool = _request_stage(body)
     with _RPC_LOCK:
-        if _BLOCKED_REASON:
+        if _rate_limit_active():
             return None
         _wait_for_rate_limit()
         headers = dict(_HEADERS)
@@ -260,12 +414,15 @@ def _reinit() -> bool:
             return False
 
         notification = {"jsonrpc": "2.0", "method": "notifications/initialized"}
-        if _post(
-            notification,
-            timeout=15,
-            include_session=True,
-            expect_empty_response=True,
-        ) is None:
+        if (
+            _post(
+                notification,
+                timeout=15,
+                include_session=True,
+                expect_empty_response=True,
+            )
+            is None
+        ):
             return False
         _SESSION_READY = True
         _LAST_INIT = time.monotonic()
@@ -275,7 +432,7 @@ def _reinit() -> bool:
 
 def _ensure_session() -> bool:
     with _RPC_LOCK:
-        if _BLOCKED_REASON:
+        if _rate_limit_active():
             return False
         expired = time.monotonic() - _LAST_INIT > _SESSION_TTL
         if not _SESSION_READY or expired:
@@ -316,6 +473,27 @@ def _content_text(result: Dict[str, Any]) -> str:
     )[:180]
 
 
+def _record_tool_failure(stage: str, detail: str, tool: Optional[str] = None) -> None:
+    """Record an MCP tool error, including upstream errors encoded as text JSON."""
+    message = detail
+    diagnostic = detail
+    try:
+        payload = json.loads(detail)
+    except json.JSONDecodeError:
+        payload = None
+    if isinstance(payload, dict) and isinstance(payload.get("error"), dict):
+        error = payload["error"]
+        message = str(error.get("message", detail))
+        code = str(error.get("code", "")).strip()
+        diagnostic = f"{code}: {message}" if code else message
+    _record_failure(
+        stage,
+        diagnostic,
+        tool=tool,
+        retry_after_seconds=_parse_upstream_retry_after(message),
+    )
+
+
 def _call_payload(tool: str, args: Optional[Dict[str, Any]] = None) -> Optional[Dict[str, Any]]:
     """Return the full structured MCP payload, including pagination metadata."""
     obj = _rpc("tools/call", {"name": tool, "arguments": args or {}})
@@ -327,7 +505,7 @@ def _call_payload(tool: str, args: Optional[Dict[str, Any]] = None) -> Optional[
         return None
     if result.get("isError"):
         detail = _content_text(result) or "tool reported isError"
-        _record_failure("tools/call", detail, tool=tool)
+        _record_tool_failure("tools/call", detail, tool=tool)
         return None
 
     structured = result.get("structuredContent")
@@ -655,9 +833,13 @@ def _load_goodwill_cache() -> None:
         total = first_page.get("metadata", {}).get("total")
         failed = False
         for page in range(1, page_count + 1):
-            payload = first_page if page == 1 else _call_payload(
-                "ft_v1_goodwill_stock_detail",
-                {"date": report_date, "page": page, "page_size": _GOODWILL_PAGE_SIZE},
+            payload = (
+                first_page
+                if page == 1
+                else _call_payload(
+                    "ft_v1_goodwill_stock_detail",
+                    {"date": report_date, "page": page, "page_size": _GOODWILL_PAGE_SIZE},
+                )
             )
             if payload is None:
                 records = {}

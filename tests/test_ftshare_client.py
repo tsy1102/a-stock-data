@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 from datetime import date
+from pathlib import Path
 from types import SimpleNamespace
 from typing import Any
 
@@ -27,11 +28,16 @@ def _reset_client_state(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(sc_ftshare, "_LAST_POST", 0.0)
     monkeypatch.setattr(sc_ftshare, "_CONSECUTIVE_ERRORS", 0)
     monkeypatch.setattr(sc_ftshare, "_BLOCKED_REASON", None)
+    monkeypatch.setattr(sc_ftshare, "_BLOCKED_UNTIL", None)
+    monkeypatch.setattr(sc_ftshare, "_BLOCKED_REQUIRES_API_KEY", False)
     monkeypatch.setattr(sc_ftshare, "_DIAGNOSTICS", [])
     monkeypatch.setattr(sc_ftshare, "_GOODWILL_BY_CODE", {})
     monkeypatch.setattr(sc_ftshare, "_GOODWILL_CACHE_EXPIRES_AT", 0.0)
     monkeypatch.delenv("FTSHARE_API_KEY", raising=False)
     monkeypatch.setattr(sc_ftshare.time, "sleep", lambda _: None)
+    test_state_path = Path(__file__).resolve().parents[1] / ".tmp" / "ftshare_test_rate_limit.json"
+    test_state_path.unlink(missing_ok=True)
+    monkeypatch.setattr(sc_ftshare, "_RATE_LIMIT_STATE_PATH", test_state_path)
 
 
 def test_parse_accepts_json_and_multiline_sse() -> None:
@@ -102,6 +108,101 @@ def test_optional_api_key_is_sent_only_as_request_header(monkeypatch: pytest.Mon
     assert "test-only-key" not in sc_ftshare._ftshare_diagnostics_summary()
 
 
+def test_quota_wait_message_is_parsed_to_seconds() -> None:
+    message = "最近 1 天最多访问 500 次；请等待 15 小时 36 分钟 41 秒后再试"
+
+    assert sc_ftshare._parse_upstream_retry_after(message) == 56201
+    assert sc_ftshare._parse_upstream_retry_after("temporarily unavailable") is None
+
+
+def test_anonymous_quota_response_opens_persistent_circuit(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    _reset_client_state(monkeypatch)
+    state_path = tmp_path / "ftshare_rate_limit.json"
+    monkeypatch.setattr(sc_ftshare, "_RATE_LIMIT_STATE_PATH", state_path)
+    responses = [
+        _response(
+            json.dumps(
+                {
+                    "jsonrpc": "2.0",
+                    "id": "init",
+                    "result": {"protocolVersion": "2025-03-26"},
+                }
+            )
+        ),
+        _response(status=202),
+        _response(
+            json.dumps(
+                {
+                    "jsonrpc": "2.0",
+                    "id": "call",
+                    "result": {
+                        "isError": True,
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": json.dumps(
+                                    {
+                                        "error": {
+                                            "code": "UPSTREAM_UNAVAILABLE",
+                                            "message": "匿名额度最近 1 天最多访问 500 次；请等待 15 小时 36 分钟 41 秒后再试",
+                                        }
+                                    },
+                                    ensure_ascii=False,
+                                ),
+                            }
+                        ],
+                    },
+                }
+            )
+        ),
+    ]
+    requests_seen: list[dict[str, Any]] = []
+
+    def fake_post(url: str, **kwargs: Any) -> SimpleNamespace:
+        requests_seen.append(kwargs)
+        return responses.pop(0)
+
+    monkeypatch.setattr(sc_ftshare.requests, "post", fake_post)
+
+    assert sc_ftshare._call("first_tool") is None
+    assert len(requests_seen) == 3
+    assert state_path.exists()
+    assert "upstream quota exhausted" in str(sc_ftshare._BLOCKED_REASON)
+
+    # Simulate a new process: the persisted server cooldown must prevent another request.
+    monkeypatch.setattr(sc_ftshare, "_BLOCKED_REASON", None)
+    monkeypatch.setattr(sc_ftshare, "_BLOCKED_UNTIL", None)
+    monkeypatch.setattr(sc_ftshare, "_BLOCKED_REQUIRES_API_KEY", False)
+    monkeypatch.setattr(sc_ftshare, "_SESSION_READY", False)
+    assert sc_ftshare._call("second_tool") is None
+    assert len(requests_seen) == 3
+    assert "cooldown active" in str(sc_ftshare._BLOCKED_REASON)
+
+
+def test_api_key_bypasses_persisted_anonymous_quota_cooldown(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    _reset_client_state(monkeypatch)
+    state_path = tmp_path / "ftshare_rate_limit.json"
+    state_path.write_text(
+        json.dumps(
+            {
+                "version": 1,
+                "blocked_until_epoch": sc_ftshare.time.time() + 3600,
+                "requires_api_key": True,
+            }
+        ),
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(sc_ftshare, "_RATE_LIMIT_STATE_PATH", state_path)
+    monkeypatch.setenv("FTSHARE_API_KEY", "test-only-key")
+
+    assert sc_ftshare._rate_limit_active() is False
+    assert sc_ftshare._BLOCKED_REASON is None
+
+
 def test_current_live_tool_names_and_date_arguments(monkeypatch: pytest.MonkeyPatch) -> None:
     _reset_client_state(monkeypatch)
     calls: list[tuple[str, dict[str, Any]]] = []
@@ -147,9 +248,7 @@ def test_paginated_getters_fetch_every_page(monkeypatch: pytest.MonkeyPatch) -> 
     _reset_client_state(monkeypatch)
     calls: list[tuple[str, dict[str, Any]]] = []
 
-    def fake_payload(
-        tool: str, args: dict[str, Any] | None = None
-    ) -> dict[str, Any]:
+    def fake_payload(tool: str, args: dict[str, Any] | None = None) -> dict[str, Any]:
         arguments = args or {}
         calls.append((tool, arguments))
         page = arguments["page"]
@@ -408,7 +507,7 @@ def test_json_text_content_is_decoded_and_tool_errors_are_visible(
         sc_ftshare,
         "_rpc",
         lambda *args, **kwargs: {
-            "result": {"content": [{"type": "text", "text": "[{\"value\": 9}]"}]}
+            "result": {"content": [{"type": "text", "text": '[{"value": 9}]'}]}
         },
     )
 

@@ -7,21 +7,21 @@
 | 区域 | 测试模块数 | 覆盖范围 | 详细清单 |
 |:---|---:|:---|:---|
 | `core/` | 16 | 核心门面、缓存、日历、类型契约、fallback、评分和技术指标 | [`core/README.md`](core/README.md) |
-| `data/` | 12 | ZHB、TDX、Eastmoney、KPL、网络、解禁单位、指数和财务日历 | [`data/README.md`](data/README.md) |
+| `data/` | 13 | ZHB、TDX、Eastmoney、KPL、网络、解禁单位、指数、财务日历和异步财报兜底 | [`data/README.md`](data/README.md) |
 | `infra/` | 12 | 调度器、字段完整性/命名、依赖预检、dry-run 写入边界、F10、外部 API 与 GD | [`infra/README.md`](infra/README.md) |
-| `reports/` | 8 | 报告 Runner、流水线、策略、章节契约、指数映射和快照失败处理 | `reports/` 测试目录 |
-| 根目录 | 31 | 碰撞/字段登记、采集探针、来源身份核验、依赖适配、网络与临时目录隔离 | 本文件下方列出 |
-| **合计** | **79** | 参数化用例展开前的测试模块数 | — |
+| `reports/` | 11 | 报告 Runner、流水线、策略、章节契约、正文辅助逻辑、指数映射和快照失败处理 | [`reports/README.md`](reports/README.md) |
+| 根目录 | 33 | 碰撞/字段登记、采集探针、来源身份核验、依赖适配、网络与临时目录隔离 | 本文件下方列出 |
+| **合计** | **85** | 参数化用例展开前的测试模块数 | — |
 
 ## 最近完整执行
 
-2026-10-15（云端 Python 3.12.14）：收集 975 项，922 通过、1 跳过、52 个 `real_network` 用例按默认策略排除，耗时 467.35 秒。真实网络测试未运行；完整输出包含 9 条第三方弃用警告。5 个依赖真实 ZHB 数据的冒烟用例已标为 `real_network`，避免默认离线运行依赖本地快照。
+2026-10-17（本机 Python 3.12.10）：收集 1006 项，953 通过、1 跳过、52 个 `real_network` 用例按默认策略排除，耗时 47.27 秒。真实网络测试未运行；本次输出未显示弃用警告汇总。5 个依赖真实 ZHB 数据的冒烟用例已标为 `real_network`，避免默认离线运行依赖本地快照。
 
 根目录测试：
 
 - 来源身份核验回归：test_source_identity_reconciliation.py，覆盖匹配阈值、逐接口跳过、日期资格与契约变化重验。
 - `test_apply_collision_adjudications.py`、`test_collide.py`、`test_collision_dates.py`、`test_collision_topic_scripts.py`：碰撞候选、日期口径、专题脚本与人工定案。
-- `test_field_registry_api.py`、`test_gen_field_dict.py`、`test_reconcile_field_registry.py`、`test_source_lineage_api.py`：字段登记、生成视图、状态同步与来源谱系。
+- `test_field_registry_api.py`、`test_registry_parity.py`、`test_gen_field_dict.py`、`test_reconcile_field_registry.py`、`test_source_lineage_api.py`：字段登记、严格/已接受差异 parity、生成视图、状态同步与来源谱系。
 - `test_refresh_field_registry_projection.py`、`test_field_evidence_coverage.py`：生成视图 parity 与每日证据覆盖。
 - `test_capture_field_probe.py`：采集源请求参数、日期校验、状态和调用边界。
 - `test_dependency_adapter_compat.py`：Levistock 实际方法契约与 AxData 本地 ZHB ZIP 读取。
@@ -34,6 +34,7 @@
 - `test_network_isolation.py`：离线网络边界与测试 SQLite 缓存隔离。
 - `test_degradation_contract.py`：多级数据源降级契约。
 - `test_project_temp.py`：项目临时目录默认位置与显式覆盖。
+- `data/test_financial_report_fallback_async.py`：异步财报主源/兜底只调用一次，并在线程中执行。
 - `test_sc_ta_core.py`、`test_seat_db_audit_fix.py`、`test_symbol_norm.py`：技术指标、龙虎榜席位与代码归一化。
 - `test_v310_sources.py`：数据源兼容性、完整性与重试回归。
 

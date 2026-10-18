@@ -40,6 +40,10 @@ import field_registry_api as fra
 def main(argv=None):
     parser = argparse.ArgumentParser(description="校验逐源字段与历史来源基线 parity")
     parser.add_argument("--registry", default=REGISTRY, help="待核对的 registry JSON")
+    parser.add_argument(
+        "--accepted-debt-manifest",
+        help="本地治理门禁使用的已接受缺失配对清单；默认仍执行严格 parity",
+    )
     args = parser.parse_args(argv)
     if not os.path.exists(args.registry):
         print(f"FAIL: 未找到 registry: {args.registry}")
@@ -71,41 +75,50 @@ def main(argv=None):
     )
     actual_pairs = {(record["source"], record["code"]) for record in source_records}
     expected_pairs = base_pairs | addenda_pairs
-    expected_field_sources = _pairs_to_field_sources(expected_pairs)
+    accepted_missing_pairs = None
+    debt_problems = []
+    if args.accepted_debt_manifest:
+        manifest_path = os.path.join(REPO_ROOT, args.accepted_debt_manifest)
+        accepted_missing_pairs, debt_problems = _load_accepted_debt_manifest(manifest_path)
     reg_fields = len(reg_field_sources)
     reg_records = len(actual_pairs)
     reg_multi = sum(1 for v in reg_field_sources.values() if len(v) >= 2)
+
+    missing_pairs, extra_pairs, pair_problems, pair_warnings = _native_pair_problems(
+        expected_pairs, actual_pairs, accepted_missing_pairs
+    )
+    problems = list(addenda_problems) + debt_problems + pair_problems
+    parity_expected_pairs = expected_pairs - missing_pairs
+    expected_field_sources = _pairs_to_field_sources(parity_expected_pairs)
     expected_fields = len(expected_field_sources)
     expected_multi = sum(1 for v in expected_field_sources.values() if len(v) >= 2)
-
-    problems = list(addenda_problems)
-    missing_pairs = expected_pairs - actual_pairs
-    extra_pairs = actual_pairs - expected_pairs
-    if missing_pairs:
-        problems.append(
-            f"基线或证据补录有而 registry 缺 {len(missing_pairs)}: {sorted(missing_pairs)[:10]}"
-        )
-    if extra_pairs:
-        problems.append(
-            f"registry 多出于基线及声明补录 {len(extra_pairs)}: {sorted(extra_pairs)[:10]}"
-        )
     if reg_fields != expected_fields:
-        problems.append(f"字段数 {reg_fields} != 基线加 E3 补录 {expected_fields}")
-    if reg_records != len(expected_pairs):
-        problems.append(f"配对总数 {reg_records} != 基线加 E3 补录 {len(expected_pairs)}")
+        problems.append(f"字段数 {reg_fields} != parity 预期 {expected_fields}")
+    if reg_records != len(parity_expected_pairs):
+        problems.append(f"配对总数 {reg_records} != parity 预期 {len(parity_expected_pairs)}")
     if reg_multi != expected_multi:
-        problems.append(f"多源数 {reg_multi} != 基线加 E3 补录 {expected_multi}")
+        problems.append(f"多源数 {reg_multi} != parity 预期 {expected_multi}")
 
+    expected_label = "baseline+E3-addenda"
+    if accepted_missing_pairs is not None:
+        expected_label += "-accepted-debt-adjusted"
     print(
         f"parity[native]: registry({reg_fields}/{reg_records}/{reg_multi}) "
-        f"vs baseline+E3-addenda({expected_fields}/{len(expected_pairs)}/{expected_multi})"
+        f"vs {expected_label}({expected_fields}/{len(parity_expected_pairs)}/{expected_multi})"
     )
     if problems:
         print("  native FAIL:")
         for p in problems:
             print("   -", p)
+    elif accepted_missing_pairs is not None:
+        print(
+            "  native PASS: 当前缺失配对均在已登记的接受清单中 "
+            f"({len(missing_pairs)}/{len(accepted_missing_pairs)} 个)"
+        )
     else:
         print("  native PASS: 历史原文映射完整，且仅含具备 E3 证据的显式补录")
+    for warning in pair_warnings:
+        print(f"  native WARN: {warning}")
 
     aggregate_sources = {}
     for record in reg.get("fields", []):
@@ -140,6 +153,96 @@ def _pairs_to_field_sources(pairs: set[tuple[str, str]]) -> dict[str, set[str]]:
     for source, code in pairs:
         out.setdefault(code, set()).add(source)
     return out
+
+
+def _native_pair_problems(
+    expected_pairs: set[tuple[str, str]],
+    actual_pairs: set[tuple[str, str]],
+    accepted_missing_pairs: set[tuple[str, str]] | None = None,
+) -> tuple[set[tuple[str, str]], set[tuple[str, str]], list[str], list[str]]:
+    """Compare source/code pairs, optionally allowing only documented missing pairs."""
+    missing_pairs = expected_pairs - actual_pairs
+    extra_pairs = actual_pairs - expected_pairs
+    problems = []
+    warnings = []
+
+    if accepted_missing_pairs is None:
+        if missing_pairs:
+            problems.append(
+                f"基线或证据补录有而 registry 缺 {len(missing_pairs)}: "
+                f"{sorted(missing_pairs)[:10]}"
+            )
+    else:
+        stale_debt = accepted_missing_pairs - expected_pairs
+        new_missing = missing_pairs - accepted_missing_pairs
+        resolved_debt = accepted_missing_pairs - missing_pairs
+        if stale_debt:
+            problems.append(f"接受清单包含不再属于基线的配对: {sorted(stale_debt)[:10]}")
+        if new_missing:
+            problems.append(
+                f"出现未登记的新缺失配对 {len(new_missing)}: {sorted(new_missing)[:10]}"
+            )
+        if resolved_debt:
+            warnings.append(
+                "部分接受差异已补齐；建议从清单移除，避免以后回退时仍被视为已接受: "
+                f"{sorted(resolved_debt)[:10]}"
+            )
+
+    if extra_pairs:
+        problems.append(
+            f"registry 多出于基线及声明补录 {len(extra_pairs)}: {sorted(extra_pairs)[:10]}"
+        )
+    return missing_pairs, extra_pairs, problems, warnings
+
+
+def _load_accepted_debt_manifest(
+    manifest_path: str,
+) -> tuple[set[tuple[str, str]] | None, list[str]]:
+    """Load a repository-local, reviewable exception for the exact open parity delta."""
+    if not _repo_file_exists(manifest_path):
+        return None, [f"接受差异清单不存在或位于仓库外: {manifest_path}"]
+    try:
+        with io.open(manifest_path, encoding="utf-8") as f:
+            manifest = json.load(f)
+    except (OSError, UnicodeDecodeError, json.JSONDecodeError) as exc:
+        return None, [f"接受差异清单无法读取: {exc}"]
+    return _validate_accepted_debt_manifest(manifest)
+
+
+def _validate_accepted_debt_manifest(
+    manifest: object,
+) -> tuple[set[tuple[str, str]] | None, list[str]]:
+    """Validate the manifest structure without reading repository files."""
+    if not isinstance(manifest, dict):
+        return None, ["接受差异清单必须是 JSON 对象"]
+    if type(manifest.get("schema_version")) is not int or manifest["schema_version"] != 1:
+        return None, ["接受差异清单 schema_version 必须为 1"]
+    for key in ("debt_id", "reason", "review_trigger"):
+        if not isinstance(manifest.get(key), str) or not manifest[key].strip():
+            return None, [f"接受差异清单缺少非空 {key}"]
+    entries = manifest.get("accepted_missing_pairs")
+    if not isinstance(entries, list):
+        return None, ["accepted_missing_pairs 必须是数组"]
+
+    pairs: set[tuple[str, str]] = set()
+    problems = []
+    for index, entry in enumerate(entries):
+        if not isinstance(entry, dict) or set(entry) != {"source", "code"}:
+            problems.append(f"accepted_missing_pairs[{index}] 必须仅包含 source/code")
+            continue
+        source, code = entry.get("source"), entry.get("code")
+        if not isinstance(source, str) or not source.strip():
+            problems.append(f"accepted_missing_pairs[{index}].source 必须是非空字符串")
+            continue
+        if not isinstance(code, str) or not code.strip():
+            problems.append(f"accepted_missing_pairs[{index}].code 必须是非空字符串")
+            continue
+        pair = (source, code)
+        if pair in pairs:
+            problems.append(f"接受差异清单包含重复配对: {source}::{code}")
+            continue
+        pairs.add(pair)
+    return (pairs if not problems else None), problems
 
 
 def _repo_file_exists(relative_path: str) -> bool:

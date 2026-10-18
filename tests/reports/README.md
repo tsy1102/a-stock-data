@@ -3,7 +3,7 @@
 > 本目录归并**5 大报告生成脚本**(`get_sht/med/lng/mak/val_report.py`)的 pytest 用例, 覆盖 `BaseReportRunner` 基类契约 / 批量流水线骨架 / val 策略注册表 / 章节缺失检测 / 换手率语义。
 > 文件清单与逐文件定位见父目录 [`../README.md`](../README.md); 本文件仅作本层速查。
 
-## 文件与职责(7)
+## 文件与职责(11)
 
 | 文件 | 职责 |
 |:---|:---|
@@ -13,7 +13,11 @@
 | test_reports_chapter_omission.py | 回归锁固「源空→可见告警而非静默缺章」反模式 |
 | test_reports_val_turnover.py | V17.0.15 换手率缺失值语义 |
 | test_mak_industry_normalization.py | MAK 空值行业归类和名称归一化 |
+| test_mak_index_mapping.py | MAK 指数代码映射回归 |
+| test_report_enrichment.py | 财报期候选、现金含量和 TDX 快照期别标注 |
 | test_val_snapshot_failure.py | VAL 快照失败时的报告降级与告警 |
+| test_val_fast_kline.py | VAL TDX 快速 K 线样本不足与失败边界 |
+| test_val_report_content.py | VAL 报告措辞与异步估值计算线程边界 |
 
 > ⚠️ **剩余缺口**(见父 README): 仅剩**报告正文渲染结果**(生成 md 章节内容/措辞/数据呈现)无专职测试——修改报告正文渲染时仍勿假设已有保护。
 

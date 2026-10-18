@@ -8725,22 +8725,22 @@
       "right": "tencent[32]",
       "level": "L1",
       "ratio": null,
-      "overall_hit": 0.9898,
+      "overall_hit": 0.9798,
       "n_days": 5,
       "n_pairs": 100,
       "sample_dates": [
-        "T:20260929",
-        "T:20260930",
         "T:20261009",
         "T:20261012",
-        "T:20261013"
+        "T:20261013",
+        "T:20261014",
+        "T:20261016"
       ],
       "evidence_sources": [
         "tdx",
         "tencent"
       ],
       "hub_flag": false,
-      "last_seen": "20261014",
+      "last_seen": "20261018",
       "in_registry": true,
       "first_seen": "20261005",
       "status": "confirmed"
@@ -10079,18 +10079,18 @@
       "n_days": 5,
       "n_pairs": 100,
       "sample_dates": [
-        "T:20260929",
-        "T:20260930",
         "T:20261009",
         "T:20261012",
-        "T:20261013"
+        "T:20261013",
+        "T:20261014",
+        "T:20261016"
       ],
       "evidence_sources": [
         "tdx",
         "tencent"
       ],
       "hub_flag": false,
-      "last_seen": "20261014",
+      "last_seen": "20261018",
       "in_registry": false,
       "first_seen": "20261008",
       "status": "repeated"
@@ -10104,18 +10104,18 @@
       "n_days": 5,
       "n_pairs": 100,
       "sample_dates": [
-        "T:20260929",
-        "T:20260930",
         "T:20261009",
         "T:20261012",
-        "T:20261013"
+        "T:20261013",
+        "T:20261014",
+        "T:20261015"
       ],
       "evidence_sources": [
         "tdx",
         "tencent"
       ],
       "hub_flag": false,
-      "last_seen": "20261014",
+      "last_seen": "20261017",
       "in_registry": true,
       "first_seen": "20261008",
       "status": "confirmed"
@@ -10129,18 +10129,18 @@
       "n_days": 5,
       "n_pairs": 100,
       "sample_dates": [
-        "T:20260929",
-        "T:20260930",
         "T:20261009",
         "T:20261012",
-        "T:20261013"
+        "T:20261013",
+        "T:20261014",
+        "T:20261015"
       ],
       "evidence_sources": [
         "tdx",
         "tencent"
       ],
       "hub_flag": false,
-      "last_seen": "20261014",
+      "last_seen": "20261016",
       "in_registry": true,
       "first_seen": "20261008",
       "status": "confirmed"
@@ -10286,18 +10286,18 @@
       "n_days": 5,
       "n_pairs": 100,
       "sample_dates": [
-        "T:20260929",
-        "T:20260930",
         "T:20261009",
         "T:20261012",
-        "T:20261013"
+        "T:20261013",
+        "T:20261014",
+        "T:20261016"
       ],
       "evidence_sources": [
         "tdx",
         "tencent"
       ],
       "hub_flag": false,
-      "last_seen": "20261014",
+      "last_seen": "20261018",
       "in_registry": true,
       "first_seen": "20261008",
       "status": "confirmed"
@@ -11953,6 +11953,31 @@
       "in_registry": false,
       "first_seen": "20261011",
       "status": "new"
+    },
+    "tencent[71]||zhb.full.change_60d": {
+      "left": "zhb.full.change_60d",
+      "right": "tencent[71]",
+      "level": "L1",
+      "ratio": null,
+      "overall_hit": 0.9,
+      "n_days": 5,
+      "n_pairs": 100,
+      "sample_dates": [
+        "T:20261009",
+        "T:20261012",
+        "T:20261013",
+        "T:20261014",
+        "T:20261016"
+      ],
+      "evidence_sources": [
+        "tdx",
+        "tencent"
+      ],
+      "hub_flag": false,
+      "last_seen": "20261018",
+      "in_registry": false,
+      "first_seen": "20261016",
+      "status": "repeated"
     }
   },
   "legacy_findings_v1": {
@@ -21940,5 +21965,5 @@
     }
   },
   "legacy_state_version": 1,
-  "updated": "20261014"
+  "updated": "20261018"
 }

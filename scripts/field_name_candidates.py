@@ -85,7 +85,10 @@ def _read_inventory(path: Path) -> tuple[dict[tuple[str, str], dict[str, str]], 
 
 
 def _metadata_needs_review(record: dict[str, Any]) -> bool:
-    if record.get("status") != "verified":
+    status = record.get("status")
+    if status == "disproved":
+        return False
+    if status != "verified":
         return True
     return any(not str(record.get(key) or "").strip() for key in ("canonical", "meaning", "unit"))
 

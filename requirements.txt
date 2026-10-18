@@ -65,7 +65,7 @@ axdata==0.1.4
 google-auth>=2.0
 google-auth-oauthlib>=1.0
 google-api-python-client>=2.0
-httplib2==0.22.0      # ← 固定 0.22.0：0.30.2 的 socks 模块损坏导致 GD 代理失效
+httplib2==0.32.0      # 兼容 Pyparsing 3.3，避免旧版调用已弃用的解析器 API
                        #   （2026-08-11 实测 10060 直连超时，降级 0.22.0 恢复）
 # pydrive2>=1.10    # ← V4 旧版，如需兼容可手动安装
 

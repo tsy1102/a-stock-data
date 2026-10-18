@@ -321,6 +321,205 @@ def test_source_as_of_date_is_explicit_and_reads_market_metadata():
     assert capture_probe._source_as_of_date("push2", {"stocks": {}}) is None
 
 
+def test_zhb_freshness_uses_latest_trade_date_for_weekend_target():
+    ok, info = capture_probe._apply_zhb_freshness(
+        True,
+        {"status": "ok", "n_error": 0, "n_received": 20},
+        {"zhb_date": "20261016"},
+        "20261017",
+    )
+
+    assert ok is True
+    assert info["status"] == "ok"
+    assert info["freshness"] == {
+        "status": "current",
+        "expected_as_of_date": "20261016",
+        "actual_as_of_date": "20261016",
+        "matches_expected_date": True,
+        "reason": None,
+    }
+
+
+def test_zhb_stale_cache_is_partial_even_when_all_stocks_loaded(monkeypatch):
+    from datetime import date
+
+    from stock_common import stock_calendar
+
+    monkeypatch.setattr(
+        stock_calendar,
+        "latest_market_data_date",
+        lambda _target: date(2026, 10, 16),
+    )
+    ok, info = capture_probe._apply_zhb_freshness(
+        True,
+        {"status": "ok", "n_error": 0, "n_received": 20},
+        {"zhb_date": "20261015"},
+        "20261017",
+    )
+
+    assert ok is False
+    assert info["status"] == "partial"
+    assert info["n_error"] == 0
+    assert info["freshness"]["status"] == "stale"
+    assert info["freshness"]["expected_as_of_date"] == "20261016"
+    assert info["freshness"]["actual_as_of_date"] == "20261015"
+    assert "20261015" in info["freshness_issue"]
+
+
+def test_zhb_future_or_missing_date_cannot_report_current(monkeypatch):
+    from datetime import date
+
+    from stock_common import stock_calendar
+
+    monkeypatch.setattr(
+        stock_calendar,
+        "latest_market_data_date",
+        lambda _target: date(2026, 10, 15),
+    )
+    ok, future = capture_probe._apply_zhb_freshness(
+        True, {"status": "ok"}, {"zhb_date": "20261016"}, "20261015"
+    )
+    assert ok is False
+    assert future["status"] == "partial"
+    assert future["freshness"]["status"] == "future"
+
+    ok, missing = capture_probe._apply_zhb_freshness(
+        True, {"status": "ok"}, {"stocks": {}}, "20261017"
+    )
+    assert ok is False
+    assert missing["status"] == "partial"
+    assert missing["freshness"]["status"] == "unknown"
+
+
+def test_zhb_calendar_failure_is_visible_and_fails_closed(monkeypatch):
+    from stock_common import stock_calendar
+
+    def unavailable(_target):
+        raise RuntimeError("calendar unavailable")
+
+    monkeypatch.setattr(stock_calendar, "latest_market_data_date", unavailable)
+    ok, info = capture_probe._apply_zhb_freshness(
+        True, {"status": "ok"}, {"zhb_date": "20261016"}, "20261017"
+    )
+
+    assert ok is False
+    assert info["status"] == "partial"
+    assert info["freshness"]["status"] == "unverified"
+    assert "calendar unavailable" in info["freshness_issue"]
+
+
+def test_stale_zhb_rerun_preserves_existing_current_snapshot(tmp_path, monkeypatch):
+    from datetime import date
+
+    from stock_common import stock_calendar
+
+    monkeypatch.setattr(
+        stock_calendar,
+        "latest_market_data_date",
+        lambda _target: date(2026, 10, 16),
+    )
+    path = tmp_path / "raw_zhb.json"
+    existing_text = '{"zhb_date":"20261016","stocks":{"600000":{"full":{"x":1}}}}'
+    path.write_text(existing_text, encoding="utf-8")
+    attempted = {"zhb_date": "20261015", "stocks": {"600000": {"full": {"x": 0}}}}
+
+    selected, write_raw, note = capture_probe._retain_current_zhb_snapshot(
+        attempted, str(path), "20261017"
+    )
+
+    assert selected["zhb_date"] == "20261016"
+    assert write_raw is False
+    assert note["status"] == "noncurrent_refresh_rejected"
+    assert note["attempted_freshness"]["status"] == "stale"
+    assert note["retained_as_of_date"] == "20261016"
+    assert path.read_text(encoding="utf-8") == existing_text
+
+
+def test_older_stale_zhb_refresh_does_not_regress_existing_snapshot(tmp_path, monkeypatch):
+    from datetime import date
+
+    from stock_common import stock_calendar
+
+    monkeypatch.setattr(
+        stock_calendar,
+        "latest_market_data_date",
+        lambda _target: date(2026, 10, 16),
+    )
+    path = tmp_path / "raw_zhb.json"
+    existing_text = '{"zhb_date":"20261015","stocks":{"600000":{"full":{"x":1}}}}'
+    path.write_text(existing_text, encoding="utf-8")
+    attempted = {"zhb_date": "20261014", "stocks": {"600000": {"full": {"x": 0}}}}
+
+    selected, write_raw, note = capture_probe._retain_current_zhb_snapshot(
+        attempted, str(path), "20261017"
+    )
+
+    assert selected["zhb_date"] == "20261015"
+    assert write_raw is False
+    assert note["status"] == "older_refresh_rejected"
+    assert note["retained_as_of_date"] == "20261015"
+    assert path.read_text(encoding="utf-8") == existing_text
+
+
+def test_stale_zhb_rerun_does_not_overwrite_unreadable_snapshot(tmp_path, monkeypatch):
+    from datetime import date
+
+    from stock_common import stock_calendar
+
+    monkeypatch.setattr(
+        stock_calendar,
+        "latest_market_data_date",
+        lambda _target: date(2026, 10, 16),
+    )
+    path = tmp_path / "raw_zhb.json"
+    path.write_text("unreadable", encoding="utf-8")
+    attempted = {"zhb_date": "20261015", "stocks": {}}
+
+    selected, write_raw, note = capture_probe._retain_current_zhb_snapshot(
+        attempted, str(path), "20261017"
+    )
+
+    assert selected is attempted
+    assert write_raw is False
+    assert note["status"] == "existing_snapshot_unreadable"
+    assert path.read_text(encoding="utf-8") == "unreadable"
+
+
+def test_unverified_zhb_refresh_preserves_existing_snapshot(tmp_path, monkeypatch):
+    from stock_common import stock_calendar
+
+    def unavailable(_target):
+        raise RuntimeError("calendar unavailable")
+
+    monkeypatch.setattr(stock_calendar, "latest_market_data_date", unavailable)
+    path = tmp_path / "raw_zhb.json"
+    existing_text = '{"zhb_date":"20261016","stocks":{"600000":{"full":{"x":1}}}}'
+    path.write_text(existing_text, encoding="utf-8")
+    attempted = {"zhb_date": "20261015", "stocks": {"600000": {"full": {"x": 0}}}}
+
+    selected, write_raw, note = capture_probe._retain_current_zhb_snapshot(
+        attempted, str(path), "20261017"
+    )
+
+    assert selected["zhb_date"] == "20261016"
+    assert write_raw is False
+    assert note["status"] == "freshness_unverified"
+    assert path.read_text(encoding="utf-8") == existing_text
+
+
+def test_current_zhb_result_is_writable_when_no_snapshot_exists(tmp_path):
+    path = tmp_path / "raw_zhb.json"
+    current = {"zhb_date": "20261016", "stocks": {}}
+
+    selected, write_raw, note = capture_probe._retain_current_zhb_snapshot(
+        current, str(path), "20261017"
+    )
+
+    assert selected is current
+    assert write_raw is True
+    assert note is None
+
+
 def test_fuyao_auction_timestamp_is_not_treated_as_source_data_date():
     meta = capture_probe._fuyao_auction_snapshot_meta(
         {

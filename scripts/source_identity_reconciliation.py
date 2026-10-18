@@ -55,29 +55,67 @@ FTSHARE_ENDPOINTS = (
 )
 
 _META_KEYS = {
-    "crawl_batch_ts", "crawl_date", "fetch_time", "fetched_at", "request_id",
-    "request_time", "url", "host", "secid", "seq", "sequence",
-    "page", "page_no", "page_number", "rownum",
+    "crawl_batch_ts",
+    "crawl_date",
+    "fetch_time",
+    "fetched_at",
+    "request_id",
+    "request_time",
+    "url",
+    "host",
+    "secid",
+    "seq",
+    "sequence",
+    "page",
+    "page_no",
+    "page_number",
+    "rownum",
 }
 _IDENTITY_KEYS = {
-    "code", "f12", "secucode", "security_code", "stock_code", "symbol",
-    "ticker", "ts_code", "seq",
+    "code",
+    "f12",
+    "secucode",
+    "security_code",
+    "stock_code",
+    "symbol",
+    "ticker",
+    "ts_code",
+    "seq",
 }
 _DATE_KEYS = {
-    "as_of_date", "date", "diagnose_date", "change_date", "notice_date",
-    "report_date", "report_period", "trade_date", "tradedate",
+    "as_of_date",
+    "date",
+    "diagnose_date",
+    "change_date",
+    "notice_date",
+    "report_date",
+    "report_period",
+    "trade_date",
+    "tradedate",
 }
 _STOCK_CODE_KEYS = (
-    "zqdm", "f12", "code", "stockcode", "stock_code", "security_code",
-    "securitycode", "ticker", "ts_code",
+    "zqdm",
+    "f12",
+    "code",
+    "stockcode",
+    "stock_code",
+    "security_code",
+    "securitycode",
+    "ticker",
+    "ts_code",
 )
 _STOCK_VALUE_KEYS = {
-    "code", "f12", "secucode", "security_code", "stock_code", "stockcode",
-    "securitycode", "ticker", "ts_code",
+    "code",
+    "f12",
+    "secucode",
+    "security_code",
+    "stock_code",
+    "stockcode",
+    "securitycode",
+    "ticker",
+    "ts_code",
 }
-_STOCK_CODE_PATTERN = re.compile(
-    r"(?i)(?:SH|SZ|BJ)?(\d{6})(?:\.(?:SH|SZ|BJ))?"
-)
+_STOCK_CODE_PATTERN = re.compile(r"(?i)(?:SH|SZ|BJ)?(\d{6})(?:\.(?:SH|SZ|BJ))?")
 
 
 def _load_json(path: Path) -> Any:
@@ -166,9 +204,7 @@ def _anchor_records_for_symbol(document: Any, symbol: str) -> list[dict[str, Any
     def walk(node: Any, inherited_symbol: Optional[str] = None) -> None:
         if isinstance(node, dict):
             current_symbol = inherited_symbol
-            normalized_keys = {
-                str(key).strip().casefold(): value for key, value in node.items()
-            }
+            normalized_keys = {str(key).strip().casefold(): value for key, value in node.items()}
             for key in _STOCK_CODE_KEYS:
                 if key in normalized_keys:
                     explicit = _stock_code(normalized_keys[key])
@@ -326,9 +362,7 @@ def _load_policy_context(
         if endpoint.field_code in rows
     }
     missing = [
-        endpoint.field_code
-        for endpoint in FTSHARE_ENDPOINTS
-        if endpoint.field_code not in rows
+        endpoint.field_code for endpoint in FTSHARE_ENDPOINTS if endpoint.field_code not in rows
     ]
     if missing:
         reason = "FTShare registry is missing verified fields: " + ", ".join(missing)
@@ -377,8 +411,11 @@ def _contract_fingerprint(
         "lineage": {
             key: source_record.get(key)
             for key in (
-                "runtime_aliases", "provider", "independence_family",
-                "independence_status", "anchor_eligible",
+                "runtime_aliases",
+                "provider",
+                "independence_family",
+                "independence_status",
+                "anchor_eligible",
             )
         },
         "adapter_sha256": adapter_hash,
@@ -490,10 +527,7 @@ def _read_snapshot(
     except (OSError, ValueError, TypeError):
         return None
     ftshare_meta = _source_entry(meta, "ftshare")
-    if (
-        ftshare_meta.get("ok") is not True
-        or ftshare_meta.get("status") not in (None, "ok")
-    ):
+    if ftshare_meta.get("ok") is not True or ftshare_meta.get("status") not in (None, "ok"):
         return None
     try:
         document = _load_json(raw_path)
@@ -559,9 +593,7 @@ def _endpoint_observations(
             continue
         if not _endpoint_sampled(endpoint, document, source_meta):
             continue
-        if not _endpoint_contract_matches(
-            endpoint, document, source_meta, contract_fingerprint
-        ):
+        if not _endpoint_contract_matches(endpoint, document, source_meta, contract_fingerprint):
             continue
         values = _symbol_endpoint_values(document, endpoint)
         schema = _schema_fingerprint(values)
@@ -592,9 +624,7 @@ def _endpoint_observations(
                 "candidate_symbols": len(values),
                 "references": references,
                 "sample_attempted": True,
-                "recheck_requested": _endpoint_recheck_requested(
-                    endpoint, document, source_meta
-                ),
+                "recheck_requested": _endpoint_recheck_requested(endpoint, document, source_meta),
             }
         )
     return observations
@@ -633,8 +663,11 @@ def _best_reference_run(observations: list[dict[str, Any]]) -> Optional[dict[str
                         **{
                             key: item["references"][alias][key]
                             for key in (
-                                "nonempty_symbols", "matched_symbols",
-                                "candidate_records", "matched_records", "record_match_rate",
+                                "nonempty_symbols",
+                                "matched_symbols",
+                                "candidate_records",
+                                "matched_records",
+                                "record_match_rate",
                             )
                         },
                     }
@@ -687,20 +720,10 @@ def _trading_capture_dates(data_dir: Path, last_probe_date: str) -> set[str]:
         capture_date = _date_folder(folder)
         if capture_date is None or capture_date <= last_probe_date:
             continue
-        try:
-            meta = _load_json(folder / "meta.json")
-        except (OSError, ValueError, TypeError):
+        snapshot = _read_snapshot(folder)
+        if snapshot is None or _source_date(snapshot["meta"], "ftshare") != capture_date:
             continue
-        if (
-            isinstance(meta, dict)
-            and meta.get("data_date_domain") in {"trading", "mixed"}
-            and _normalize_date(meta.get("data_date")) == capture_date
-        ):
-            try:
-                if _is_project_trading_date(capture_date):
-                    result.add(capture_date)
-            except (OSError, ValueError, TypeError):
-                continue
+        result.add(capture_date)
     return result
 
 
@@ -743,13 +766,9 @@ def get_ftshare_identity_plan(
     try:
         registry, lineage, rows, policy_error = _load_policy_context()
         if policy_error:
-            return {
-                "skip": {}, "recheck": [], "status": "not_eligible", "reason": policy_error
-            }
+            return {"skip": {}, "recheck": [], "status": "not_eligible", "reason": policy_error}
         fingerprints = {
-            endpoint.field_code: _contract_fingerprint(
-                endpoint, rows[endpoint.field_code], lineage
-            )
+            endpoint.field_code: _contract_fingerprint(endpoint, rows[endpoint.field_code], lineage)
             for endpoint in FTSHARE_ENDPOINTS
         }
         state, warning = _load_state(STATE_PATH)
@@ -763,7 +782,9 @@ def get_ftshare_identity_plan(
         return plan
     except (OSError, ValueError, TypeError, KeyError) as exc:
         return {
-            "skip": {}, "recheck": [], "status": "failed_open",
+            "skip": {},
+            "recheck": [],
+            "status": "failed_open",
             "reason": f"{type(exc).__name__}: {exc}",
         }
 
@@ -792,20 +813,11 @@ def _endpoint_report(
         return report, None
 
     record_state = old_record if isinstance(old_record, dict) else {}
-    old_proven = bool(
-        record_state.get("status") in {"operationally_redundant", "redundant"}
-    )
-    old_resolved = bool(
-        old_proven
-        and record_state.get("contract_fingerprint") == fingerprint
-    )
+    old_proven = bool(record_state.get("status") in {"operationally_redundant", "redundant"})
+    old_resolved = bool(old_proven and record_state.get("contract_fingerprint") == fingerprint)
     old_probe_date = _normalize_date(record_state.get("last_probe_date"))
-    contract_changed = bool(
-        old_proven and record_state.get("contract_fingerprint") != fingerprint
-    )
-    revalidation_after = _normalize_date(
-        record_state.get("revalidation_after_date")
-    )
+    contract_changed = bool(old_proven and record_state.get("contract_fingerprint") != fingerprint)
+    revalidation_after = _normalize_date(record_state.get("revalidation_after_date"))
     if contract_changed:
         revalidation_after = old_probe_date
     attempted_after_old = [
@@ -824,8 +836,7 @@ def _endpoint_report(
             {
                 "status": "operationally_redundant",
                 "reason": (
-                    "previous exact-match evidence remains valid; "
-                    "endpoint probe is suppressed"
+                    "previous exact-match evidence remains valid; " "endpoint probe is suppressed"
                 ),
                 "reference_source": record_state.get("reference_source"),
                 "reference_family": record_state.get("reference_family"),
@@ -862,8 +873,7 @@ def _endpoint_report(
             {
                 "status": "reopened",
                 "reason": (
-                    "scheduled recheck changed schema or did not match; "
-                    "daily sampling resumes"
+                    "scheduled recheck changed schema or did not match; " "daily sampling resumes"
                 ),
                 "last_probe_date": latest["date"],
             }

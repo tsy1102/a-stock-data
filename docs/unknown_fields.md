@@ -5,7 +5,7 @@
 > 碰撞候选须人工复核后使用 `apply_collision_adjudications.py` 同步状态；流程见 `field_verification/ADJUDICATION_WORKFLOW.md`。
 > 聚合层的同码异义与定义缺口见 [`field_aggregate_review.md`](field_aggregate_review.md)，不代表逐源记录状态冲突。
 
-> 总字段路径 2481；unverified 1543、candidate 1、conflict 90、disproved 0。
+> 总字段路径 2481；unverified 1540、candidate 1、conflict 90、disproved 2。
 
 ## 一、状态冲突（禁止作为锚点，优先复核）（90）
 
@@ -108,7 +108,7 @@
 |:--|:--|:--|:--|:--|:--|:--|
 | ZHB-tdxstat | `stat.unknown_2` | stat.unknown_2 | 贝塔系数(60日)·L2候选(列[2]已定BetaValue: ihelp.dat L63官方定义+慢变特征实证自相关0.91, 待真实指数基准复现升L1) | - | matched | 1.1 tdxstat.cfg 标准契约表（stat.*，20260918 对撞定案）🆕 |
 
-## 三、待破解字段（1543）
+## 三、待破解字段（1540）
 
 | 来源 | 完整 code path | 规范名 | 含义 | 单位 | 状态判定 | 证据章节 |
 |:--|:--|:--|:--|:--|:--|:--|
@@ -702,8 +702,6 @@
 | ZHB-tdxstat | `[32]` | [32] | 待破解 | — | aggregate_status_scope_unresolved | 1. `tdxstat.cfg` (个股综合统计快照，35 个字段，7,951 行) |
 | ZHB-tdxstat | `board_count` | — | — | — | registry_status_only_single_source | — |
 | ZHB-tdxstat | `change_10k_bar` | — | — | — | registry_status_only_single_source | — |
-| ZHB-tdxstat | `change_20d` | — | — | — | registry_status_only_single_source | — |
-| ZHB-tdxstat | `change_30d` | — | — | — | registry_status_only_single_source | — |
 | ZHB-tdxstat | `change_5k_bar` | — | — | — | registry_status_only_single_source | — |
 | ZHB-tdxstat | `change_60d` | — | — | — | registry_status_only_single_source | — |
 | ZHB-tdxstat | `change_60d_alt` | — | — | — | registry_status_only_single_source | — |
@@ -719,7 +717,6 @@
 | ZHB-tdxstat | `int` | — | — | — | aggregate_status_scope_unresolved | — |
 | ZHB-tdxstat | `market` | — | — | — | aggregate_status_scope_unresolved | — |
 | ZHB-tdxstat | `pe_lyr` | — | — | — | aggregate_status_scope_unresolved | — |
-| ZHB-tdxstat | `pe_ttm` | — | — | — | aggregate_status_scope_unresolved | — |
 | ZHB-tdxstat | `streak_days` | — | — | — | registry_status_only_single_source | — |
 | ZHB-tdxstat | `unseal_date` | — | — | — | registry_status_only_single_source | — |
 | ZHB-tdxstat2 | `YYYYMMDD` | — | — | — | aggregate_status_scope_unresolved | — |
@@ -1656,6 +1653,9 @@
 | 财联社(cls) | `time` | — | — | — | aggregate_status_scope_unresolved | — |
 | 财联社(cls) | `trade_date` | trade_date / plates | 轮动日期 / 当日 top10 板块列表 | — | aggregate_status_scope_unresolved | 12.10.5 板块轮动与热度（财联社 get_sector_rotation / get_sector_heat / market_wind_cls）🆕 |
 
-## 四、已证伪（默认不重复破解）（0）
+## 四、已证伪（默认不重复破解）（2）
 
-_无记录。_
+| 来源 | 完整 code path | 规范名 | 含义 | 单位 | 状态判定 | 证据章节 |
+|:--|:--|:--|:--|:--|:--|:--|
+| ZHB-tdxstat | `change_30d` | change_20d | 与同来源同路径 change_20d 完全重复的历史兼容键，不是独立的 30 日涨跌幅 | % | empirical_duplicate_alias | 2026-10-17 change_30d 纠错审计 |
+| ZHB-tdxstat | `stat.change_30d` | stat.change_20d | 与同来源同路径 stat.change_20d 完全重复的历史兼容键，不是独立的 30 日涨跌幅 | % | empirical_duplicate_alias | 2026-10-17 change_30d 纠错审计 |

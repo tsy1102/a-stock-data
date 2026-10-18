@@ -73,8 +73,7 @@ from stock_common import (
     get_lockup_expiry_async,
     get_gross_margin_and_roe_async,
     get_industry_peers,
-    get_sina_financial_report_async,
-    get_financial_report_with_fallback,
+    get_financial_report_with_fallback_async,
     get_sina_balance_sheet_async,
     get_hsgt_macro_flow_async,
     get_market_status,
@@ -445,51 +444,66 @@ async def generate_report_async(session, code, output_path, ind_comp=None, hsgt=
     # V17.0.5 P1: 财务兑现双源核验(fuyao 五类指标 growth 族——营收/净利同比官方口径)
     try:
         from stock_common import get_fuyao_fin_indicators as _f_fi, is_fuyao_enabled as _f_en
+        from stock_common.enrich_helpers import fuyao_report_period_candidates
 
         if _f_en():
-            _yy = date.today().year
-            _fi = None
+            _report_periods = fuyao_report_period_candidates(getattr(cdata, "report_period", ""))
+            _rows = []
             _used_rp = ""
-            for _rp in (f"{_yy}-1", f"{_yy - 1}-4"):
-                _fi = await asyncio.to_thread(_f_fi, code, _rp)
-                if _fi:
-                    _used_rp = _rp
-                    break
-            if _fi:
-                _gw = _fi.get("growth") or {}
-                _pairs = [
-                    (
-                        "营业收入同比",
-                        "calculate_operating_income_yoy_growth_ratio",
-                        "operating_income_yoy_growth_ratio",
-                    ),
-                    (
-                        "净利润同比",
-                        "calculate_parent_holder_net_profit_yoy_growth_ratio",
-                        "net_profit_yoy_growth_ratio",
-                    ),
-                    (
-                        "营业利润同比",
-                        "calculate_operating_profit_yoy_growth_ratio",
-                        "operating_profit_yoy_growth_ratio",
-                    ),
-                ]
-                _rows = []
-                for _label, _id1, _id2 in _pairs:
-                    _v = _gw.get(_id1, _gw.get(_id2))
-                    if _v is not None:
-                        _rows.append((_label, float(_v)))
+            _pairs = [
+                (
+                    "营业收入同比",
+                    "calculate_operating_income_yoy_growth_ratio",
+                    "operating_income_yoy_growth_ratio",
+                ),
+                (
+                    "净利润同比",
+                    "calculate_parent_holder_net_profit_yoy_growth_ratio",
+                    "net_profit_yoy_growth_ratio",
+                ),
+                (
+                    "营业利润同比",
+                    "calculate_operating_profit_yoy_growth_ratio",
+                    "operating_profit_yoy_growth_ratio",
+                ),
+            ]
+            if not _report_periods:
+                L("  ⚠️ Fuyao 双源核验跳过：统一层未提供有效的最新财报期。")
+            else:
+                for _rp in _report_periods:
+                    _fi = await asyncio.to_thread(_f_fi, code, _rp)
+                    _gw = (_fi or {}).get("growth") or {}
+                    _rows = []
+                    for _label, _id1, _id2 in _pairs:
+                        _v = _gw.get(_id1, _gw.get(_id2))
+                        if _v is not None:
+                            _rows.append((_label, float(_v)))
+                    if _rows:
+                        _used_rp = _rp
+                        break
                 if _rows:
-                    L(f"\n  [双源核验] fuyao 官方口径(报告期 {_used_rp}, 同花顺 Arsenal):")
+                    L(f"\n  [Fuyao 财务指标] 官方口径(报告期 {_used_rp}, 同花顺 Arsenal):")
                     for _label, _v in _rows:
                         L(f"    {_label}: {_v:+.2f}%")
-                    L("    （与上表 F10 口径互为独立源——偏差>2pp 时以财报原文为准）")
+                    if _used_rp != _report_periods[0]:
+                        L(
+                            f"    ⚠️ 未取得统一层最新期 {_report_periods[0]} 的 Fuyao 指标；当前为较早期间，只作历史参考，不与最新利润表直接对比。"
+                        )
+                    else:
+                        L(
+                            "    （按统一层报告期候选查询；利润表可能由 Fuyao 兜底，未确认两者为独立来源或同报告期，不据此作双源定案。）"
+                        )
+                else:
+                    L(
+                        f"  ⚠️ Fuyao 未返回可用增长指标（已查询 {_report_periods[0]} 等候选期），本次未完成双源核验。"
+                    )
+        else:
+            L("  ℹ️ Fuyao 双源核验未启用。")
     except Exception as _e:
         _debug_log(f"med fuyao growth cross: {_e}")
+        L("  ⚠️ Fuyao 双源核验请求失败，本报告未形成对应结论。")
 
-    financials = await get_sina_financial_report_async(session, code)
-    if not financials:  # B: 新浪缺失 → fuyao 利润表兜底
-        financials = get_financial_report_with_fallback(code)
+    financials = await get_financial_report_with_fallback_async(code)
     if financials:
         L(f"  {'报告期':<12} {'营业总收入':>11} {'净利润':>13} {'净利率':>8}")
         L(f"  {'-'*60}")
@@ -1043,7 +1057,9 @@ async def generate_report_async(session, code, output_path, ind_comp=None, hsgt=
             L(f"    ⚠️ 实际可流通总计: {actual_total/1e4:.1f}万股")
         for h in lockup:
             amount_label = (
-                "实际可流通" if h.get("shares_is_actual") is True else "公告解禁数量（实际可售量未知）"
+                "实际可流通"
+                if h.get("shares_is_actual") is True
+                else "公告解禁数量（实际可售量未知）"
             )
             L(
                 f"    - {h['date']}: {h['type']} ({amount_label} {h['shares']/1e4:.1f}万股,"

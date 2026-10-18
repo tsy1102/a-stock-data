@@ -900,6 +900,15 @@ def get_financial_report_with_fallback(code: str, num_periods: int = 12) -> List
         return []
 
 
+async def get_financial_report_with_fallback_async(
+    code: str, num_periods: int = 12
+) -> List[Dict[str, Any]]:
+    """Async facade for the synchronous Sina → Fuyao financial-report fallback chain."""
+    import asyncio
+
+    return await asyncio.to_thread(get_financial_report_with_fallback, code, num_periods)
+
+
 def _fin_str(v: Any) -> str:
     """fuyao 数值(元) → 字符串，保持与新浪一致(下游 float 解析)。"""
     if v is None or isinstance(v, bool):
@@ -1623,6 +1632,7 @@ __all__ = [
     'get_eps_forecast_async',
     'resolve_eps_forecast',
     'get_financial_report_with_fallback',
+    'get_financial_report_with_fallback_async',
     'get_fuyao_financials',
     'get_gross_margin_and_roe',
     'get_gross_margin_and_roe_async',

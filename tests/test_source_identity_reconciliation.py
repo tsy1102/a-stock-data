@@ -52,9 +52,7 @@ def identity_fixture(tmp_path, monkeypatch):
                 "category": "A",
             }
             stock_record = {
-                endpoint.output_key: [
-                    dict(record) for _ in endpoint_values[endpoint.field_code]
-                ]
+                endpoint.output_key: [dict(record) for _ in endpoint_values[endpoint.field_code]]
                 for endpoint in identity.FTSHARE_ENDPOINTS
                 if endpoint.field_code in endpoint_values
             }
@@ -79,9 +77,7 @@ def identity_fixture(tmp_path, monkeypatch):
                 "tencent": {"ok": True, "status": "ok", "as_of_date": day},
             },
         }
-        (folder / "raw_ftshare.json").write_text(
-            json.dumps(raw), encoding="utf-8"
-        )
+        (folder / "raw_ftshare.json").write_text(json.dumps(raw), encoding="utf-8")
         (folder / "raw_tencent.json").write_text(
             json.dumps({"stocks": reference_stocks}), encoding="utf-8"
         )
@@ -142,12 +138,29 @@ def test_exact_endpoint_match_suppresses_only_that_endpoint(identity_fixture, mo
     assert set(plan["skip"]) == {"ggmx"}
 
 
+def test_recheck_counter_ignores_failed_or_misdated_ftshare_captures(identity_fixture):
+    fixture = identity_fixture
+    fixture["write_day"]("20261008", _ggmx_values())
+    fixture["write_day"](
+        "20261009",
+        _ggmx_values(),
+        ftshare_meta={"ok": False, "status": "failed"},
+    )
+    fixture["write_day"](
+        "20261012",
+        _ggmx_values(),
+        ftshare_meta={"as_of_date": "20261009"},
+    )
+
+    dates = identity._trading_capture_dates(fixture["data_dir"], "20261007")
+
+    assert dates == {"20261008"}
+
+
 def test_one_mismatched_stock_prevents_endpoint_suppression(identity_fixture):
     fixture = identity_fixture
     for day in ("20261008", "20261009", "20261012"):
-        fixture["write_day"](
-            day, _ggmx_values(), mismatch_symbol="000018"
-        )
+        fixture["write_day"](day, _ggmx_values(), mismatch_symbol="000018")
 
     result = fixture["reconcile"](persist=False)
     endpoint = result["endpoints"]["ggmx"]
@@ -163,9 +176,7 @@ def test_skipped_endpoint_is_not_used_as_identity_evidence(identity_fixture):
             day,
             {},
             ftshare_meta={
-                "identity_skipped_endpoints": {
-                    "ggmx": {"status": "operationally_redundant"}
-                }
+                "identity_skipped_endpoints": {"ggmx": {"status": "operationally_redundant"}}
             },
         )
 
@@ -228,18 +239,7 @@ def test_periodic_recheck_waits_for_twenty_distinct_trading_data_dates(
     start = date(2026, 10, 13)
     for offset in range(19):
         day = (start + timedelta(days=offset)).strftime("%Y%m%d")
-        folder = fixture["data_dir"] / day
-        folder.mkdir(parents=True, exist_ok=True)
-        (folder / "meta.json").write_text(
-            json.dumps(
-                {
-                    "data_date": day,
-                    "data_date_domain": "trading",
-                    "market_phase": "pre_open",
-                }
-            ),
-            encoding="utf-8",
-        )
+        fixture["write_day"](day, _ggmx_values())
 
     state = {
         "schema_version": 1,
@@ -252,28 +252,13 @@ def test_periodic_recheck_waits_for_twenty_distinct_trading_data_dates(
         },
     }
     fingerprints = {"ggmx": "contract-v1"}
-    plan = identity._plan_from_state(
-        state, fingerprints, fixture["data_dir"], "20261201", False
-    )
+    plan = identity._plan_from_state(state, fingerprints, fixture["data_dir"], "20261201", False)
     assert "ggmx" in plan["skip"]
     assert "ggmx" not in plan["recheck"]
 
     day = (start + timedelta(days=19)).strftime("%Y%m%d")
-    folder = fixture["data_dir"] / day
-    folder.mkdir(parents=True, exist_ok=True)
-    (folder / "meta.json").write_text(
-        json.dumps(
-            {
-                "data_date": day,
-                "data_date_domain": "trading",
-                "market_phase": "non_trading_day",
-            }
-        ),
-        encoding="utf-8",
-    )
-    plan = identity._plan_from_state(
-        state, fingerprints, fixture["data_dir"], "20261201", False
-    )
+    fixture["write_day"](day, _ggmx_values())
+    plan = identity._plan_from_state(state, fingerprints, fixture["data_dir"], "20261201", False)
     assert "ggmx" not in plan["skip"]
     assert "ggmx" in plan["recheck"]
 
@@ -315,6 +300,4 @@ def test_pre_open_capture_is_eligible_when_data_dates_match(identity_fixture):
 
     result = fixture["reconcile"](persist=False)
     assert result["endpoints"]["ggmx"]["status"] == "pending"
-    assert [item["date"] for item in result["endpoints"]["ggmx"]["observations"]] == [
-        "20261012"
-    ]
+    assert [item["date"] for item in result["endpoints"]["ggmx"]["observations"]] == ["20261012"]

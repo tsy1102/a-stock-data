@@ -1,0 +1,116 @@
+{
+  "schema_version": "1.1",
+  "status": "probe_skipped",
+  "data_date": "2026-10-15",
+  "data_date_domain": "mixed",
+  "market_phase": "closed",
+  "evaluated_at": "2026-10-15T16:15:17+08:00",
+  "eligibility_reason": null,
+  "queue": {
+    "status": "ok",
+    "interface_count": 257,
+    "field_occurrence_count": 3343,
+    "field_occurrences_below_e3": 3343,
+    "interface_relation_status_counts": {
+      "no_project_route": 141,
+      "same_endpoint_candidate": 21,
+      "same_provider_different_endpoint": 5,
+      "family_candidate_only": 88,
+      "stream_only": 1,
+      "direct_call": 1
+    },
+    "active_probe_allowlist": [
+      "tencent_realtime_snapshot"
+    ],
+    "other_candidates": "static review only until route, parameters, date basis, and request safety are approved"
+  },
+  "passive_evidence": {
+    "axdata_shortline_vs_eltdx": {
+      "status": "date_or_sample_unavailable",
+      "target_trade_date": "2026-10-15",
+      "axdata_observed_dates": [],
+      "eltdx_observed_dates": [],
+      "paired_stocks": 0,
+      "paired_codes": [],
+      "field_comparisons": {},
+      "requests_added": 0
+    },
+    "kph_limit_up_history_vs_kpl_detail": {
+      "status": "date_or_sample_unavailable",
+      "target_trade_date": "2026-10-15",
+      "kph_trade_date": "2026-10-14",
+      "kpl_trade_date": null,
+      "requests_added": 0
+    }
+  },
+  "endpoint_identities": {
+    "stock_shortline_indicators_tdx": {
+      "status": "observing",
+      "interface_id": "stock_shortline_indicators_tdx",
+      "reference_source": "eltdx",
+      "evidence_dates": [],
+      "confirmed_fields": [],
+      "unresolved_fields": [],
+      "reason": "collecting_exact_samples",
+      "minimum_data_dates": 3,
+      "minimum_symbols_per_date": 18,
+      "minimum_fields": 5,
+      "matched_data_dates": 0,
+      "minimum_matched_symbols": 0
+    },
+    "kph_limit_up_history": {
+      "status": "observing",
+      "interface_id": "kph_limit_up_history",
+      "reference_source": "kpl",
+      "evidence_dates": [],
+      "confirmed_fields": [],
+      "unresolved_fields": [],
+      "reason": "collecting_exact_samples",
+      "minimum_data_dates": 3,
+      "minimum_symbols_per_date": 18,
+      "minimum_fields": 5,
+      "matched_data_dates": 0,
+      "minimum_matched_symbols": 0
+    }
+  },
+  "probe": {
+    "status": "skipped_project_counterpart_failed",
+    "request_count": 0,
+    "family": "tencent",
+    "source_identity": {
+      "status": "observing",
+      "interface_id": "tencent_realtime_snapshot",
+      "reference_source": "project_tencent",
+      "minimum_data_dates": 3,
+      "minimum_distinct_symbols": 3,
+      "minimum_information_fields_per_sample": 5,
+      "matched_data_dates": 1,
+      "matched_symbols": 1,
+      "evidence_dates": [],
+      "value_equivalent_fields": [],
+      "confirmed_fields": [],
+      "semantic_unresolved_fields": [],
+      "unresolved_fields": [
+        "amount",
+        "change",
+        "change_pct",
+        "float_market_value",
+        "high",
+        "last_price",
+        "limit_down_price",
+        "limit_up_price",
+        "low",
+        "open",
+        "pb",
+        "pe_dynamic",
+        "pre_close",
+        "total_market_value",
+        "turnover_rate",
+        "volume"
+      ],
+      "last_probe_data_date": "2026-10-14",
+      "last_mismatch": null,
+      "reason": "collecting_exact_date_samples"
+    }
+  }
+}

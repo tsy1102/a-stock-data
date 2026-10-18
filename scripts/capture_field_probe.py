@@ -508,7 +508,7 @@ def refresh_dynamic_layer(trade_date: str = "", write: bool = True) -> list:
 
 
 def collect_zhb(pool: list) -> dict:
-    """ZHB 全字段(本地,零网络)。"""
+    """读取 ZHB 全字段；本地缓存过期时由 get_zhb 按其规则尝试刷新。"""
     from core.zhb_client import (
         full_market_snapshot,
         market_stat_snapshot,
@@ -921,24 +921,28 @@ def _request_is_rate_limited(detail: dict) -> bool:
             status_code = int(status)
         except ValueError:
             status_code = None
-    message = " ".join(
-        str(detail.get(key) or "") for key in ("message", "error", "status")
-    )
-    return kind in {
-        "ip_banned",
-        "http_403",
-        "http_429",
-        "rate_limited",
-        "circuit_open",
-        "suppressed_after_failures",
-    } or status_code in (
-        403,
-        429,
-    ) or bool(
-        re.search(
-            r"\b403\b|\b429\b|blocked|banned|rate.?limit|封禁|限流|访问频繁",
-            message,
-            re.I,
+    message = " ".join(str(detail.get(key) or "") for key in ("message", "error", "status"))
+    return (
+        kind
+        in {
+            "ip_banned",
+            "http_403",
+            "http_429",
+            "rate_limited",
+            "circuit_open",
+            "suppressed_after_failures",
+        }
+        or status_code
+        in (
+            403,
+            429,
+        )
+        or bool(
+            re.search(
+                r"\b403\b|\b429\b|blocked|banned|rate.?limit|封禁|限流|访问频繁",
+                message,
+                re.I,
+            )
         )
     )
 
@@ -1218,9 +1222,7 @@ def collect_axdata(pool: list, identity_policy: Optional[dict] = None) -> dict:
                 out["stocks"][c] = {"n_fields": len(rec), "data": rec}
         except Exception as e:
             out["stocks"][c] = {"__error__": str(e)[:200]}
-            if _request_is_rate_limited(
-                {"kind": type(e).__name__, "message": str(e)}
-            ):
+            if _request_is_rate_limited({"kind": type(e).__name__, "message": str(e)}):
                 _defer_axdata_codes(out, pool, index + 1, c)
                 break
     return out
@@ -3032,6 +3034,167 @@ def _source_as_of_date(source: str, data: Any) -> Optional[str]:
     return None
 
 
+def _assess_zhb_freshness(data: Any, target_date: str) -> Dict[str, Any]:
+    """Compare a ZHB package date with the latest market date on/before the target day."""
+    actual_raw = _source_as_of_date("zhb", data)
+    actual_day = None
+    if actual_raw:
+        for date_format in ("%Y%m%d", "%Y-%m-%d", "%Y-%m-%d %H:%M:%S"):
+            try:
+                actual_day = datetime.strptime(actual_raw, date_format).date()
+                break
+            except ValueError:
+                continue
+
+    try:
+        target_day = datetime.strptime(str(target_date), "%Y%m%d").date()
+        from stock_common.stock_calendar import latest_market_data_date
+
+        expected_day = latest_market_data_date(target_day)
+    except Exception as exc:
+        return {
+            "status": "unverified",
+            "expected_as_of_date": None,
+            "actual_as_of_date": actual_day.strftime("%Y%m%d") if actual_day else actual_raw,
+            "matches_expected_date": False,
+            "reason": f"无法校验 ZHB 来源日期: {type(exc).__name__}: {str(exc)[:160]}",
+        }
+
+    expected = expected_day.strftime("%Y%m%d")
+    actual = actual_day.strftime("%Y%m%d") if actual_day else None
+    if actual_day is None:
+        status = "unknown"
+        reason = f"ZHB 未提供可识别的数据日期；目标交易日为 {expected}"
+    elif actual_day < expected_day:
+        status = "stale"
+        reason = f"ZHB 数据日期 {actual} 落后目标交易日 {expected}；数据已保留但不视为最新"
+    elif actual_day > expected_day:
+        status = "future"
+        reason = f"ZHB 数据日期 {actual} 晚于目标交易日 {expected}；该样本不能与目标日对齐"
+    else:
+        status = "current"
+        reason = None
+    return {
+        "status": status,
+        "expected_as_of_date": expected,
+        "actual_as_of_date": actual,
+        "matches_expected_date": status == "current",
+        "reason": reason,
+    }
+
+
+def _apply_zhb_freshness(
+    ok: bool, info: Dict[str, Any], data: Any, target_date: str
+) -> tuple[bool, Dict[str, Any]]:
+    """Keep cached ZHB rows, but prevent a date-mismatched package from reporting ok."""
+    result = dict(info)
+    freshness = _assess_zhb_freshness(data, target_date)
+    result["freshness"] = freshness
+    if freshness["status"] != "current":
+        result["freshness_issue"] = freshness["reason"]
+        if result.get("status") == "ok":
+            result["status"] = "partial"
+        ok = False
+    return ok, result
+
+
+def _retain_current_zhb_snapshot(
+    data: Any, path: str, target_date: str
+) -> tuple[Any, bool, Optional[Dict[str, Any]]]:
+    """Prevent a non-current or older refresh from replacing an existing ZHB snapshot."""
+    attempted_freshness = _assess_zhb_freshness(data, target_date)
+    if attempted_freshness["status"] == "current" or not os.path.exists(path):
+        return data, True, None
+
+    try:
+        with open(path, "r", encoding="utf-8") as f:
+            existing = json.load(f)
+    except (OSError, UnicodeDecodeError, json.JSONDecodeError) as exc:
+        return (
+            data,
+            False,
+            {
+                "status": "existing_snapshot_unreadable",
+                "attempted_freshness": attempted_freshness,
+                "reason": (
+                    f"现有 ZHB 快照无法安全比较，已保留原文件: "
+                    f"{type(exc).__name__}: {str(exc)[:120]}"
+                ),
+            },
+        )
+
+    if not isinstance(existing, dict):
+        return (
+            data,
+            False,
+            {
+                "status": "existing_snapshot_unreadable",
+                "attempted_freshness": attempted_freshness,
+                "reason": "现有 ZHB 快照不是对象，已保留原文件",
+            },
+        )
+
+    existing_freshness = _assess_zhb_freshness(existing, target_date)
+    if existing_freshness["status"] == "current":
+        return (
+            existing,
+            False,
+            {
+                "status": "noncurrent_refresh_rejected",
+                "attempted_freshness": attempted_freshness,
+                "retained_as_of_date": existing_freshness["actual_as_of_date"],
+                "reason": attempted_freshness["reason"],
+            },
+        )
+    if attempted_freshness["status"] in {"unknown", "unverified", "future"}:
+        refresh_status = (
+            "future_refresh_rejected"
+            if attempted_freshness["status"] == "future"
+            else "freshness_unverified"
+        )
+        return (
+            existing,
+            False,
+            {
+                "status": refresh_status,
+                "attempted_freshness": attempted_freshness,
+                "retained_as_of_date": existing_freshness["actual_as_of_date"],
+                "reason": (f"{attempted_freshness['reason']}；为避免覆盖现有证据，已保留原文件"),
+            },
+        )
+    if existing_freshness["status"] in {"unknown", "unverified"}:
+        return (
+            existing,
+            False,
+            {
+                "status": "existing_freshness_unverified",
+                "attempted_freshness": attempted_freshness,
+                "retained_as_of_date": existing_freshness["actual_as_of_date"],
+                "reason": (f"{existing_freshness['reason']}；为避免覆盖现有证据，已保留原文件"),
+            },
+        )
+    if (
+        existing_freshness["status"] == "stale"
+        and existing_freshness["actual_as_of_date"]
+        and attempted_freshness["actual_as_of_date"]
+        and existing_freshness["actual_as_of_date"] > attempted_freshness["actual_as_of_date"]
+    ):
+        return (
+            existing,
+            False,
+            {
+                "status": "older_refresh_rejected",
+                "attempted_freshness": attempted_freshness,
+                "retained_as_of_date": existing_freshness["actual_as_of_date"],
+                "reason": (
+                    f"重采数据日 {attempted_freshness['actual_as_of_date']} "
+                    f"早于现有数据日 {existing_freshness['actual_as_of_date']}，已保留原文件"
+                ),
+            },
+        )
+    return data, True, None
+
+
 def assess_result(
     data: Any,
     expected_symbols: Optional[List[str]] = None,
@@ -3780,9 +3943,7 @@ def main() -> None:
             elif name == "axdata":
                 data = fn(
                     pool,
-                    identity_policy=axdata_identity_endpoints.get(
-                        "stock_shortline_indicators_tdx"
-                    ),
+                    identity_policy=axdata_identity_endpoints.get("stock_shortline_indicators_tdx"),
                 )
             elif name == "fuyao":
                 data = fn(pool, include_context=include_context)
@@ -3834,8 +3995,17 @@ def main() -> None:
             if _fm is not None and isinstance(data, dict):
                 data["field_meta"] = _fm
             path = os.path.join(out_dir, f"raw_{name}.json")
-            with open(path, "w", encoding="utf-8") as f:
-                json.dump(data, f, ensure_ascii=False, indent=1, default=str)
+            _zhb_refresh_note = None
+            _write_raw = True
+            if name == "zhb":
+                data, _write_raw, _zhb_refresh_note = _retain_current_zhb_snapshot(
+                    data, path, args.date
+                )
+                if isinstance(data, dict):
+                    collected_data[name] = data
+            if _write_raw:
+                with open(path, "w", encoding="utf-8") as f:
+                    json.dump(data, f, ensure_ascii=False, indent=1, default=str)
             # 采集函数会**内部吞异常**并返回 {"__error__": ...} 占位，预期跳过用 __skipped__ 标记，
             # 旧逻辑只要 fn(pool) 不抛异常就记 ok=True(曾致 em_kline_f61 20/20 全失败仍标 ok)。
             # 现按 __error__ 判定 status，并在元数据/日志中单独报告 __skipped__。
@@ -3844,6 +4014,10 @@ def main() -> None:
                 expected_symbols=_source_expected_codes(name, pool),
                 required_paths=_source_required_paths(name, include_context),
             )
+            if name == "zhb":
+                _ok, _info = _apply_zhb_freshness(_ok, _info, data, args.date)
+                if _zhb_refresh_note is not None:
+                    _info["refresh_attempt"] = _zhb_refresh_note
             _as_of_date = _source_as_of_date(name, data)
             _entry = {
                 "scheme": _scheme,
@@ -3880,9 +4054,31 @@ def main() -> None:
                 _entry["preserved_context_paths"] = preserved_context_paths
             meta["sources"][name] = _entry
             _skip_count = _entry.get("n_skipped", 0)
-            if _ok:
+            _refresh_attempt = _entry.get("refresh_attempt")
+            if _refresh_attempt:
+                if _refresh_attempt["status"] == "noncurrent_refresh_rejected":
+                    _refresh_message = (
+                        f"非最新回退未写入，保留现有 ZHB 数据 "
+                        f"{_refresh_attempt['retained_as_of_date']}"
+                    )
+                else:
+                    _refresh_message = _refresh_attempt["reason"]
+                print(
+                    f"  ⚠ {name}: {_entry['secs']}s | {_entry['status']} | "
+                    f"{_refresh_message} | 错误 {_entry['n_error']} | "
+                    f"缺股票 {_entry.get('n_missing_stocks', 0)}",
+                    flush=True,
+                )
+            elif _ok:
                 _skip_summary = f" | 跳过 {_skip_count} 处" if _skip_count else ""
                 print(f"  ✔ {name}: {_entry['secs']}s{_skip_summary}", flush=True)
+            elif _entry.get("freshness_issue"):
+                print(
+                    f"  ⚠ {name}: {_entry['secs']}s | {_entry['status']} | "
+                    f"{_entry['freshness_issue']} | 错误 {_entry['n_error']} | "
+                    f"缺股票 {_entry.get('n_missing_stocks', 0)}",
+                    flush=True,
+                )
             else:
                 _nt = _entry.get("n_total")
                 _cnt = f"{_entry['n_error']}/{_nt}" if _nt else str(_entry["n_error"])
@@ -3923,9 +4119,10 @@ def main() -> None:
             }
             print(f"  ⚠ AxData 路由状态记录失败: {exc}", flush=True)
 
-    # AxData reconciliation stays inside the daily capture loop. It reuses
-    # today's raw records and, only for a complete latest-day close capture,
-    # may make one whitelisted request. It never updates dictionary status.
+    # AxData reconciliation stays inside the daily capture loop. Passive route
+    # checks use successful, explicitly selected source pairs and their shared
+    # effective trade date. The whitelisted active probe runs at most once per
+    # latest completed data date in a stable window. It never updates dictionary status.
     try:
         try:
             from axdata_daily_validation import run_axdata_daily_validation
@@ -3941,6 +4138,7 @@ def main() -> None:
             out_dir=out_dir,
             pool=pool,
             source_meta=meta.get("sources", {}),
+            requested_sources=set(collectors),
         )
         _validation_status = meta["axdata_validation"].get("status")
         if _validation_status != "not_eligible":

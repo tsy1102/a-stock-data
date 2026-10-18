@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
-"""Apply explicitly reviewed collision decisions to the field registry.
+"""Apply explicitly reviewed collision or source-contract decisions.
 
-Collision reports remain discovery-only. This command defaults to preview and
-requires ``--apply`` before it updates the registry and generated dictionary views.
+Collision reports remain discovery-only. Source-contract decisions use a separate
+evidence route and never create cross-source mappings. This command defaults to
+preview and requires ``--apply`` before updating the registry and generated views.
 """
 
 from __future__ import annotations
@@ -160,6 +161,113 @@ def _validate_external_evidence(value: Any, label: str) -> list[str] | None:
     return urls
 
 
+def _validate_source_contract(value: Any, label: str) -> dict[str, str]:
+    contract = _require_object(value, label)
+    required = {"authority", "revision", "path", "locator", "url"}
+    if set(contract) != required:
+        raise ValueError(f"{label} must contain exactly {', '.join(sorted(required))}")
+    normalized = {
+        key: _non_empty_string(contract.get(key), f"{label}.{key}")
+        for key in ("authority", "revision", "path", "locator")
+    }
+    revision_key = normalized["revision"].casefold()
+    if revision_key in {"main", "master", "latest", "current", "head"}:
+        raise ValueError(f"{label}.revision must identify a pinned version or dated document")
+    urls = _validate_external_evidence([contract.get("url")], f"{label}.url")
+    if urls is None:
+        raise ValueError(f"{label}.url must be an HTTPS evidence URL")
+    normalized["url"] = urls[0]
+    return normalized
+
+
+def _is_registry_aggregate_status_conflict(record: dict[str, Any]) -> bool:
+    """Identify a status-only conflict caused by the aggregate registry projection."""
+    evidence = record.get("status_evidence")
+    if not isinstance(evidence, dict):
+        return False
+    reference_statuses = evidence.get("reference_statuses")
+    values = evidence.get("values")
+    if not isinstance(reference_statuses, list) or any(
+        not isinstance(status, str) for status in reference_statuses
+    ):
+        return False
+    if set(reference_statuses) != {"verified"}:
+        return False
+    if not isinstance(values, list) or any(not isinstance(status, str) for status in values):
+        return False
+    if set(values) != {"verified", "unverified"}:
+        return False
+    if evidence.get("registry_aggregate_status") != "unverified":
+        return False
+    attribute_conflicts = record.get("attribute_conflicts")
+    if attribute_conflicts not in (None, {}, []):
+        return False
+    reference_evidence = record.get("reference_evidence")
+    if not isinstance(reference_evidence, list) or not reference_evidence:
+        return False
+    reference_evidence_statuses: set[str] = set()
+    for item in reference_evidence:
+        if not isinstance(item, dict):
+            return False
+        status = item.get("status")
+        if not isinstance(status, str) or not status:
+            return False
+        reference_evidence_statuses.add(status)
+    return reference_evidence_statuses == {"verified"}
+
+
+def _validate_source_contract_metadata_correction(
+    value: Any,
+    previous: dict[str, str],
+    updated: dict[str, str],
+) -> dict[str, Any] | None:
+    if value is None:
+        return None
+    correction = _require_object(value, "metadata_correction")
+    if set(correction) != {"previous", "updated", "rationale"}:
+        raise ValueError(
+            "metadata_correction must contain exactly previous, updated, and rationale"
+        )
+    correction_previous = _metadata_snapshot(
+        correction.get("previous"), "metadata_correction.previous"
+    )
+    correction_updated = _metadata_snapshot(
+        correction.get("updated"), "metadata_correction.updated"
+    )
+    rationale = _non_empty_string(correction.get("rationale"), "metadata_correction.rationale")
+    if correction_previous != previous or correction_updated != updated:
+        raise ValueError("metadata_correction must exactly match the decision metadata snapshots")
+    if correction_previous == correction_updated:
+        raise ValueError("metadata_correction must change at least one established value")
+    return {
+        "previous": correction_previous,
+        "updated": correction_updated,
+        "rationale": rationale,
+    }
+
+
+def _is_placeholder_metadata(value: str, key: str, code: str) -> bool:
+    normalized = value.strip()
+    if not normalized:
+        return True
+    if key == "canonical" and normalized == code:
+        return True
+    return normalized.casefold() in {
+        "待破解",
+        "待确认",
+        "待验证",
+        "未验证",
+        "未定义",
+        "未知",
+        "unknown",
+        "tbd",
+        "n/a",
+        "na",
+        "—",
+        "-",
+    }
+
+
 def _validate_anchor_metadata_correction(
     value: Any, label: str = "anchor_metadata_correction"
 ) -> dict[str, Any] | None:
@@ -185,9 +293,9 @@ def _validate_anchor_metadata_correction(
 
 
 def _find_l1_candidate(report: dict[str, Any], left: str, right: str) -> dict[str, Any]:
-    candidates = report.get("L1")
+    candidates = report.get("actionable_L1", report.get("L1"))
     if not isinstance(candidates, list):
-        raise TypeError("collision report L1 must be a list")
+        raise TypeError("collision report actionable_L1/L1 must be a list")
     matches = [
         candidate
         for candidate in candidates
@@ -202,6 +310,10 @@ def _find_l1_candidate(report: dict[str, Any], left: str, right: str) -> dict[st
     candidate = matches[0]
     if candidate.get("level") not in VALID_LEVELS:
         raise ValueError("only L1 and L1-U findings can be adjudicated")
+    if candidate.get("in_registry"):
+        raise ValueError(
+            "registered mappings are revalidation evidence, not new adjudication candidates"
+        )
     if candidate.get("hub_flag"):
         raise ValueError("hub-flagged collision candidates cannot be adjudicated")
     if int(candidate.get("n_days", 0)) < 3:
@@ -646,6 +758,224 @@ def apply_adjudications(
     return updated, stats
 
 
+def apply_source_contract_adjudications(
+    registry: dict[str, Any], decision_document: dict[str, Any], decision_path: str
+) -> tuple[dict[str, Any], dict[str, int]]:
+    """Verify individual field contracts without asserting cross-source equivalence."""
+    if decision_document.get("schema_version") != 1:
+        raise ValueError("unsupported source-contract adjudication schema_version")
+    if decision_document.get("evidence_basis") != "source_contract":
+        raise ValueError("source-contract decisions require evidence_basis='source_contract'")
+    if decision_document.get("report"):
+        raise ValueError("source-contract decisions cannot include a collision report")
+
+    reviewer = _non_empty_string(decision_document.get("reviewer"), "reviewer")
+    reviewed_on = _validate_iso_date(decision_document.get("reviewed_on"), "reviewed_on")
+    decisions = decision_document.get("decisions")
+    if not isinstance(decisions, list) or not decisions:
+        raise ValueError("decisions must be a non-empty list")
+
+    updated = copy.deepcopy(registry)
+    source_fields = fra.source_field_records(updated)
+    by_identity = {(record["source"], record["code"]): record for record in source_fields}
+    seen_ids: set[str] = set()
+    seen_targets: set[tuple[str, str]] = set()
+    affected_codes: set[str] = set()
+    stats = {
+        "source_contract_verified": 0,
+        "status_conflicts_resolved": 0,
+        "metadata_corrected": 0,
+        "already_applied": 0,
+        "mappings_added": 0,
+    }
+
+    for raw_decision in decisions:
+        decision = _require_object(raw_decision, "decision")
+        decision_id = _non_empty_string(decision.get("id"), "decision.id")
+        if not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9._-]{2,127}", decision_id):
+            raise ValueError(f"decision.id contains unsupported characters: {decision_id!r}")
+        if decision_id in seen_ids:
+            raise ValueError(f"duplicate decision id: {decision_id}")
+        seen_ids.add(decision_id)
+        if decision.get("action") != "verify_source_contract":
+            raise ValueError(
+                "source-contract workflow only accepts action='verify_source_contract'"
+            )
+
+        target_obj = _require_object(decision.get("target"), "decision.target")
+        target = (
+            _non_empty_string(target_obj.get("source"), "target.source"),
+            _non_empty_string(target_obj.get("code"), "target.code"),
+        )
+        if target in seen_targets:
+            raise ValueError(f"multiple decisions target the same field: {target}")
+        seen_targets.add(target)
+        target_record = by_identity.get(target)
+        if target_record is None:
+            raise ValueError(f"unknown target source field: {target[0]}::{target[1]}")
+
+        previous_status = _non_empty_string(
+            decision.get("previous_status"), "decision.previous_status"
+        )
+        if previous_status not in {"unverified", "candidate", "conflict"}:
+            raise ValueError(
+                "source-contract verification only accepts unverified, candidate, "
+                "or resolvable status-conflict fields"
+            )
+        previous_resolution = _non_empty_string(
+            decision.get("previous_status_resolution"), "decision.previous_status_resolution"
+        )
+        previous_metadata = _metadata_snapshot(decision.get("previous"), "decision.previous")
+        canonical = _non_empty_string(decision.get("canonical"), "decision.canonical")
+        meaning = _non_empty_string(decision.get("meaning"), "decision.meaning")
+        unit = decision.get("unit", "")
+        if not isinstance(unit, str):
+            raise TypeError("decision.unit must be a string")
+        unit = unit.strip()
+        rationale = _non_empty_string(decision.get("rationale"), "decision.rationale")
+        source_contract = _validate_source_contract(
+            decision.get("source_contract"), "decision.source_contract"
+        )
+        after_metadata = {"canonical": canonical, "meaning": meaning, "unit": unit}
+        metadata_correction = _validate_source_contract_metadata_correction(
+            decision.get("metadata_correction"), previous_metadata, after_metadata
+        )
+        section = (
+            f"source contract: {source_contract['authority']} · {source_contract['path']}"
+            f"#{source_contract['locator']} @ {source_contract['revision']}"
+        )
+        adjudication = {
+            "id": decision_id,
+            "action": "verify_source_contract",
+            "status": "verified",
+            "reviewer": reviewer,
+            "reviewed_on": reviewed_on,
+            "decision_file": decision_path,
+            "evidence_basis": "authoritative_source_contract",
+            "previous_status": previous_status,
+            "status_resolution_change": {
+                "before": previous_resolution,
+                "after": "verified_by_source_contract",
+            },
+            "metadata_change": {"before": previous_metadata, "after": after_metadata},
+            "rationale": rationale,
+            "source_contract": source_contract,
+        }
+        if metadata_correction is not None:
+            adjudication["metadata_correction"] = copy.deepcopy(metadata_correction)
+
+        history = target_record.get("adjudications", [])
+        if not isinstance(history, list):
+            raise TypeError("source field adjudications must be a list")
+        prior = next(
+            (item for item in history if isinstance(item, dict) and item.get("id") == decision_id),
+            None,
+        )
+        if prior is not None:
+            if (
+                prior != adjudication
+                or target_record.get("status") != "verified"
+                or _metadata(target_record) != after_metadata
+                or target_record.get("status_resolution") != "verified_by_source_contract"
+            ):
+                raise ValueError(
+                    f"decision id already exists with different content: {decision_id}"
+                )
+            stats["already_applied"] += 1
+            continue
+
+        current_status = target_record.get("status", "unverified")
+        current_resolution = target_record.get("status_resolution") or "status_missing"
+        if current_status != previous_status or current_resolution != previous_resolution:
+            raise ValueError(f"target status changed since review: {target[0]}::{target[1]}")
+        if previous_status == "conflict":
+            if (
+                previous_resolution != "status_conflict"
+                or not _is_registry_aggregate_status_conflict(target_record)
+            ):
+                raise ValueError(
+                    "source-contract verification cannot resolve semantic or attribute conflicts"
+                )
+        if _metadata(target_record) != previous_metadata:
+            raise ValueError(f"target metadata changed since review: {target[0]}::{target[1]}")
+        requires_correction = False
+        for key, new_value in after_metadata.items():
+            old_value = previous_metadata[key]
+            if old_value != new_value and not _is_placeholder_metadata(old_value, key, target[1]):
+                requires_correction = True
+        if requires_correction and metadata_correction is None:
+            changed_keys = [
+                key
+                for key, new_value in after_metadata.items()
+                if previous_metadata[key] != new_value
+                and not _is_placeholder_metadata(previous_metadata[key], key, target[1])
+            ]
+            raise ValueError(
+                "source-contract verification cannot overwrite established "
+                f"{', '.join(changed_keys)} without an explicit metadata_correction"
+            )
+        if not requires_correction and metadata_correction is not None:
+            raise ValueError(
+                "metadata_correction is only valid when correcting established metadata"
+            )
+
+        target_record.update(after_metadata)
+        target_record["status"] = "verified"
+        target_record["status_resolution"] = "verified_by_source_contract"
+        target_record.setdefault("adjudications", []).append(copy.deepcopy(adjudication))
+
+        reference_evidence = target_record.setdefault("reference_evidence", [])
+        if not isinstance(reference_evidence, list):
+            raise TypeError("source field reference_evidence must be a list")
+        reference_evidence.append(
+            {
+                "section": section,
+                **after_metadata,
+                "status_raw": f"人工核验上游契约 {reviewed_on}：{decision_id}",
+                "status": "verified",
+                "adjudication_id": decision_id,
+                "evidence_basis": "authoritative_source_contract",
+                "source_contract": copy.deepcopy(source_contract),
+                "metadata_change": copy.deepcopy(adjudication["metadata_change"]),
+            }
+        )
+        sections = target_record.setdefault("sections", [])
+        if not isinstance(sections, list):
+            raise TypeError("source field sections must be a list")
+        if section not in sections:
+            sections.append(section)
+            sections.sort()
+        if not target_record.get("section"):
+            target_record["section"] = section
+
+        status_evidence = target_record.setdefault("status_evidence", {})
+        if not isinstance(status_evidence, dict):
+            raise TypeError("source field status_evidence must be an object")
+        adjudication_ids = status_evidence.setdefault("adjudication_ids", [])
+        if not isinstance(adjudication_ids, list):
+            raise TypeError("source field status_evidence.adjudication_ids must be a list")
+        if decision_id not in adjudication_ids:
+            adjudication_ids.append(decision_id)
+        contract_ids = status_evidence.setdefault("source_contract_adjudication_ids", [])
+        if not isinstance(contract_ids, list):
+            raise TypeError(
+                "source field status_evidence.source_contract_adjudication_ids must be a list"
+            )
+        if decision_id not in contract_ids:
+            contract_ids.append(decision_id)
+
+        affected_codes.add(target[1])
+        stats["source_contract_verified"] += 1
+        if previous_status == "conflict":
+            stats["status_conflicts_resolved"] += 1
+        if metadata_correction is not None:
+            stats["metadata_corrected"] += 1
+
+    if affected_codes:
+        _refresh_aggregate_projection(updated, affected_codes)
+    return updated, stats
+
+
 def _atomic_write_batch(outputs: dict[Path, str]) -> None:
     originals = {path: path.read_bytes() if path.exists() else None for path in outputs}
     staged: dict[Path, str] = {}
@@ -700,7 +1030,7 @@ def _load_json(path: Path, label: str) -> dict[str, Any]:
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description="人工复核碰撞候选并同步字段注册表")
+    parser = argparse.ArgumentParser(description="复核跨源碰撞或单源上游契约并同步字段注册表")
     parser.add_argument("--decisions", required=True, help="docs/field_verification 下的决策 JSON")
     parser.add_argument(
         "--apply", action="store_true", help="应用决策并原子更新 registry 与生成文档"
@@ -709,36 +1039,46 @@ def main(argv: list[str] | None = None) -> int:
 
     try:
         decision_path, decision_rel = _inside_verification_dir(args.decisions, "decision file")
-        decision_document = _load_json(decision_path, "decision document")
-        report_value = _non_empty_string(
-            decision_document.get("report"), "decision document.report"
-        )
-        report_path, report_rel = _inside_verification_dir(
-            report_value, "collision report", relative_base=VERIFY_DIR
-        )
-        if not report_path.is_file():
-            raise FileNotFoundError(f"collision report not found: {report_rel}")
         if not decision_path.is_file():
             raise FileNotFoundError(f"decision file not found: {decision_rel}")
-        report = _load_json(report_path, "collision report")
+        decision_document = _load_json(decision_path, "decision document")
         registry = fra.load_registry(str(REGISTRY_PATH))
-        lineage = sla.load_source_lineage(str(LINEAGE_PATH), registry=registry)
-        updated, stats = apply_adjudications(
-            registry,
-            lineage,
-            decision_document,
-            report,
-            report_rel,
-            decision_rel,
-        )
+        evidence_basis = decision_document.get("evidence_basis")
+        lineage: dict[str, Any] | None = None
+        if evidence_basis == "source_contract":
+            updated, stats = apply_source_contract_adjudications(
+                registry, decision_document, decision_rel
+            )
+        elif evidence_basis is None:
+            lineage = sla.load_source_lineage(str(LINEAGE_PATH), registry=registry)
+            report_value = _non_empty_string(
+                decision_document.get("report"), "decision document.report"
+            )
+            report_path, report_rel = _inside_verification_dir(
+                report_value, "collision report", relative_base=VERIFY_DIR
+            )
+            if not report_path.is_file():
+                raise FileNotFoundError(f"collision report not found: {report_rel}")
+            report = _load_json(report_path, "collision report")
+            updated, stats = apply_adjudications(
+                registry,
+                lineage,
+                decision_document,
+                report,
+                report_rel,
+                decision_rel,
+            )
+        else:
+            raise ValueError(f"unsupported adjudication evidence_basis: {evidence_basis!r}")
         print(json.dumps(stats, ensure_ascii=False, sort_keys=True))
         if not args.apply:
             print("Preview only. Re-run with --apply after reviewing the proposed decisions.")
             return 0
         if not any(
-            stats[key]
+            stats.get(key, 0)
             for key in (
                 "verified",
+                "source_contract_verified",
                 "metadata_enriched",
                 "linked",
                 "anchor_metadata_corrected",
@@ -748,6 +1088,8 @@ def main(argv: list[str] | None = None) -> int:
             print("All decisions were already applied; no files changed.")
             return 0
 
+        if lineage is None:
+            lineage = sla.load_source_lineage(str(LINEAGE_PATH), registry=registry)
         outputs = {
             REGISTRY_PATH: json.dumps(updated, ensure_ascii=False, indent=2) + "\n",
             FIELD_DICT_PATH: gfd.render_field_dict(updated),

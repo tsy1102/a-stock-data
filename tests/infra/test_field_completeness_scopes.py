@@ -156,3 +156,30 @@ def test_leaf_keys_excludes_capture_metadata_containers(monkeypatch):
     }
 
     assert afc._leaf_keys(capture) == {"auction_volume"}
+
+
+def test_capture_envelopes_are_not_registered_as_fields_but_leaf_paths_are_kept():
+    import importlib
+
+    afc = importlib.import_module("audit_field_completeness")
+    registered = afc.registered_field_sets()
+    capture_envelopes = {
+        "TDX(双命名源)": {"finance_info", "quote_full"},
+        "同花顺-fuyao": {
+            "auction_final",
+            "balance_q",
+            "cashflow_q",
+            "fin_indicators",
+            "income_a",
+            "income_q",
+            "short_term_benchmark",
+            "valuation",
+        },
+        "财联社(cls)": {"telegraph"},
+    }
+
+    for source, tokens in capture_envelopes.items():
+        assert not tokens & registered.get(source, set())
+    assert "quote_full.price" in registered["TDX(双命名源)"]
+    assert "valuation.pe_ttm" in registered["同花顺-fuyao"]
+    assert {"title", "content", "time"} <= registered["财联社(cls)"]

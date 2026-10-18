@@ -1,0 +1,34 @@
+{
+  "schema_version": 1,
+  "evidence_basis": "source_contract",
+  "reviewer": "填写复核人",
+  "reviewed_on": "YYYY-MM-DD",
+  "decisions": [
+    {
+      "id": "YYYYMMDD-source-contract-field-id",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "注册表中的精确来源名",
+        "code": "注册表中的完整 code path"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "从当前注册表复制 status_resolution",
+      "previous": {
+        "canonical": "从当前注册表复制",
+        "meaning": "从当前注册表复制",
+        "unit": "从当前注册表复制"
+      },
+      "canonical": "由上游契约支持的稳定规范名",
+      "meaning": "由上游契约支持的字段含义",
+      "unit": "由契约支持的单位；未知时留空",
+      "rationale": "说明如何从项目运行字段追溯到该上游字段，以及契约为何支持该定义。",
+      "source_contract": {
+        "authority": "具体提供方及接口/协议名称",
+        "revision": "固定提交、版本号或有日期的文档版本",
+        "path": "上游文件路径或文档标题",
+        "locator": "符号名、字段键、表格行或段落定位",
+        "url": "https://上游定义的精确链接"
+      }
+    }
+  ]
+}

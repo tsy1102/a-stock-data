@@ -4,7 +4,7 @@
 > `aggregation_status` 只描述兼容聚合视图，不会改写逐源 `status`。疑似合并文本由分隔符启发式识别，仅供人工检查，不自动拆字段或定案。
 > 本文统计的定义缺口仅限列出的复核组；单来源或全空的定义缺口仍见 [元数据缺口](field_metadata_gaps.md) 与 [未知字段队列](unknown_fields.md)。
 
-> 聚合歧义 87 个 code；聚合定义不完整 254 个 code；疑似合并文本 236 条逐源记录。
+> 聚合歧义 88 个 code；聚合定义不完整 256 个 code；疑似合并文本 246 条逐源记录。
 
 ## 同码聚合存在差异或定义缺口
 
@@ -615,14 +615,6 @@
 | 新浪(hq.sinajs) · `[9]` | [9] | 成交额 | 元 | `verified` |
 | 腾讯(qt.gtimg) · `[9]` | [9]-[18] | 买一~买五 价/量 | 元/手 | `verified` |
 
-### `accounts_receivable` — consistent
-
-聚合问题：source_status_conflict；聚合状态：`conflict`。
-
-| 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
-|:--|:--|:--|:--|:--|
-| 同花顺-fuyao · `accounts_receivable` | accounts_receivable | 应收账款 | YSZK（应收账款） | `conflict` |
-
 ### `amount` — ambiguous
 
 聚合问题：canonical_incomplete；meaning_differs；meaning_incomplete；source_statuses_differ；unit_differs；unit_incomplete；聚合状态：`conflict`。
@@ -667,22 +659,6 @@
 |:--|:--|:--|:--|:--|
 | reports · `attachSize` | — | — | — | `conflict` |
 
-### `auction.float_market_cap` — incomplete
-
-聚合问题：meaning_incomplete；source_status_conflict；聚合状态：`conflict`。
-
-| 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
-|:--|:--|:--|:--|:--|
-| 同花顺-fuyao · `auction.float_market_cap` | auction.float_market_cap | — | — | `conflict` |
-
-### `auction.pre_close_price` — incomplete
-
-聚合问题：meaning_incomplete；source_status_conflict；聚合状态：`conflict`。
-
-| 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
-|:--|:--|:--|:--|:--|
-| 同花顺-fuyao · `auction.pre_close_price` | snapshot.prev_price` = `auction.pre_close_price | — | — | `conflict` |
-
 ### `author` — incomplete
 
 聚合问题：canonical_incomplete；meaning_incomplete；source_status_conflict；聚合状态：`conflict`。
@@ -709,13 +685,15 @@
 | reports · `brief` | brief | 摘要 | — | `verified` |
 | 财联社(cls) · `brief` | title / brief | 标题 / 摘要 | — | `verified` |
 
-### `cash_equivalents_net_addition` — consistent
+### `change` — incomplete
 
-聚合问题：source_status_conflict；聚合状态：`conflict`。
+聚合问题：canonical_incomplete；meaning_incomplete；source_statuses_differ；unit_incomplete；聚合状态：`unverified`。
 
 | 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
 |:--|:--|:--|:--|:--|
-| 同花顺-fuyao · `cash_equivalents_net_addition` | cash_equivalents_net_addition | 现金及等价物净增加额 | ZXJL（现金及等价物净增加额） | `conflict` |
+| Levistock历史未归属 · `change` | — | — | — | `unverified` |
+| TDX(双命名源) · `change` | — | — | — | `unverified` |
+| 同花顺-fuyao · `change` | change | 当日涨跌幅，小数形式。 | 比例（小数） | `verified` |
 
 ### `change_pct` — ambiguous
 
@@ -2424,6 +2402,15 @@
 | 东财-push2(stock/get) · `f92` | f92 | — | — | `verified` |
 | 东财-ulist239(np/get) · `f92` | f92 | — | — | `verified` |
 
+### `first_limit_time` — incomplete
+
+聚合问题：canonical_incomplete；meaning_incomplete；source_statuses_differ；unit_incomplete；聚合状态：`unverified`。
+
+| 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
+|:--|:--|:--|:--|:--|
+| 东财-push2ex · `first_limit_time` | — | — | — | `unverified` |
+| 同花顺-fuyao · `first_limit_time` | first_limit_time | 首次与最后跌停时间，上海时区 `HH:mm`。 | HH:mm | `verified` |
+
 ### `first_limit_up_time` — incomplete
 
 聚合问题：canonical_incomplete；meaning_incomplete；source_statuses_differ；聚合状态：`unverified`。
@@ -2432,14 +2419,6 @@
 |:--|:--|:--|:--|:--|
 | Levistock历史未归属 · `first_limit_up_time` | — | — | — | `unverified` |
 | 东财-热榜(em_hot) · `first_limit_up_time` | first_limit_up_time | Unix 秒时间戳 | — | `verified` |
-
-### `float_market_cap` — incomplete
-
-聚合问题：meaning_incomplete；source_status_conflict；聚合状态：`conflict`。
-
-| 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
-|:--|:--|:--|:--|:--|
-| 同花顺-fuyao · `float_market_cap` | 派生 `float_market_cap × (总股本÷流通股本) | — | — | `conflict` |
 
 ### `fund` — incomplete
 
@@ -2484,13 +2463,14 @@
 | TDX-eltdx(适配层) · `high` | time / open / high / low / close | 时间 / OHLC | — | `unverified` |
 | 同花顺-fuyao · `high` | — | — | — | `unverified` |
 
-### `holder_equity_total` — consistent
+### `hot_rank` — incomplete
 
-聚合问题：source_status_conflict；聚合状态：`conflict`。
+聚合问题：canonical_incomplete；meaning_incomplete；source_statuses_differ；聚合状态：`unverified`。
 
 | 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
 |:--|:--|:--|:--|:--|
-| 同花顺-fuyao · `holder_equity_total` | holder_equity_total | 股东权益合计 | JZC（净资产/股东权益） | `conflict` |
+| 东财-热榜(em_hot) · `hot_rank` | — | — | — | `unverified` |
+| 同花顺-fuyao · `hot_rank` | hot_rank | 同花顺人气排名，数值越小越靠前。 | — | `verified` |
 
 ### `ipo_date` — incomplete
 
@@ -2503,12 +2483,12 @@
 
 ### `is_new` — ambiguous
 
-聚合问题：canonical_incomplete；meaning_differs；meaning_incomplete；source_statuses_differ；聚合状态：`conflict`。
+聚合问题：meaning_differs；source_statuses_differ；unit_incomplete；聚合状态：`conflict`。
 
 | 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
 |:--|:--|:--|:--|:--|
 | 东财-热榜(em_hot) · `is_new` | is_new | 是否新股 | — | `verified` |
-| 同花顺-fuyao · `is_new` | — | — | — | `unverified` |
+| 同花顺-fuyao · `is_new` | is_new | 是否未开板新股，仅展示。 | 布尔值 | `verified` |
 | 财联社(cls) · `is_new` | is_new | 是否新上榜（1=是） | — | `unverified` |
 
 ### `item_tongbi` — consistent
@@ -2543,6 +2523,15 @@
 | 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
 |:--|:--|:--|:--|:--|
 | reports · `lastEmRatingName` | lastEmRatingName | — | — | `conflict` |
+
+### `last_limit_time` — incomplete
+
+聚合问题：canonical_incomplete；meaning_incomplete；source_statuses_differ；unit_incomplete；聚合状态：`unverified`。
+
+| 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
+|:--|:--|:--|:--|:--|
+| 东财-push2ex · `last_limit_time` | — | — | — | `unverified` |
+| 同花顺-fuyao · `last_limit_time` | last_limit_time | 首次与最后跌停时间，上海时区 `HH:mm`。 | HH:mm | `verified` |
 
 ### `last_price` — ambiguous
 
@@ -2932,6 +2921,15 @@
 | TDX-eltdx(适配层) · `open_price` | open_price | — | — | `unverified` |
 | 同花顺-fuyao · `open_price` | — | — | — | `unverified` |
 
+### `open_times` — incomplete
+
+聚合问题：canonical_incomplete；meaning_incomplete；source_statuses_differ；unit_incomplete；聚合状态：`unverified`。
+
+| 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
+|:--|:--|:--|:--|:--|
+| Levistock历史未归属 · `open_times` | — | — | — | `unverified` |
+| 同花顺-fuyao · `open_times` | open_times | 开板次数。 | 次 | `verified` |
+
 ### `opendate` — consistent
 
 聚合问题：source_status_conflict；聚合状态：`conflict`。
@@ -2939,14 +2937,6 @@
 | 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
 |:--|:--|:--|:--|:--|
 | 新浪(扩展API) · `opendate` | opendate | 日期 | — | `conflict` |
-
-### `operating_profit` — consistent
-
-聚合问题：source_status_conflict；聚合状态：`conflict`。
-
-| 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
-|:--|:--|:--|:--|:--|
-| 同花顺-fuyao · `operating_profit` | operating_profit | 营业利润 | YYLR（营业利润） | `conflict` |
 
 ### `pb` — incomplete
 
@@ -3046,6 +3036,15 @@
 | TDX(双命名源) · `pre_close` | — | — | — | `unverified` |
 | TDX-eltdx(适配层) · `pre_close` | pre_close | — | — | `unverified` |
 
+### `pre_close_price` — incomplete
+
+聚合问题：canonical_incomplete；meaning_incomplete；source_statuses_differ；聚合状态：`unverified`。
+
+| 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
+|:--|:--|:--|:--|:--|
+| TDX-eltdx(适配层) · `pre_close_price` | — | — | — | `unverified` |
+| 同花顺-fuyao · `pre_close_price` | pre_close_price | 集合竞价快照中的前收盘价。 | — | `verified` |
+
 ### `predictNextTwoYearPe` — incomplete
 
 聚合问题：canonical_incomplete；meaning_incomplete；source_status_conflict；聚合状态：`conflict`。
@@ -3092,14 +3091,6 @@
 | 东财-热榜(em_hot) · `price` | price | 现价 | 元 | `verified` |
 | 市场源(market_sources) · `price` | price | 现价 | — | `verified` |
 | 开盘啦(kpl) · `price` | price | 现价 | 元 | `unverified` |
-
-### `profit_total` — consistent
-
-聚合问题：source_status_conflict；聚合状态：`conflict`。
-
-| 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
-|:--|:--|:--|:--|:--|
-| 同花顺-fuyao · `profit_total` | profit_total | 利润总额 | LYZE（利润总额） | `conflict` |
 
 ### `profitability` — incomplete
 
@@ -3165,13 +3156,13 @@
 | 市场源(market_sources) · `rank` | rank | 排名 | — | `verified` |
 | 财联社(cls) · `rank` | rank / cur_heat | 当前热度排名 / 热度值 | — | `unverified` |
 
-### `rank_change` — incomplete
+### `rank_change` — ambiguous
 
-聚合问题：canonical_incomplete；meaning_incomplete；聚合状态：`unverified`。
+聚合问题：meaning_differs；source_statuses_differ；聚合状态：`conflict`。
 
 | 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
 |:--|:--|:--|:--|:--|
-| 同花顺-fuyao · `rank_change` | — | — | — | `unverified` |
+| 同花顺-fuyao · `rank_change` | rank_change | 排名变化，正数表示上升，负数表示下降；上游缺失时为 `null`。 | — | `verified` |
 | 财联社(cls) · `rank_change` | rank_change | 排名变化（正=上升，负=下降） | — | `unverified` |
 
 ### `reading_num` — ambiguous
@@ -3232,11 +3223,11 @@
 
 ### `seal_money` — ambiguous
 
-聚合问题：canonical_differs；canonical_incomplete；meaning_differs；meaning_incomplete；source_statuses_differ；unit_incomplete；聚合状态：`conflict`。
+聚合问题：canonical_differs；meaning_differs；source_statuses_differ；unit_incomplete；聚合状态：`conflict`。
 
 | 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
 |:--|:--|:--|:--|:--|
-| 同花顺-fuyao · `seal_money` | — | — | — | `unverified` |
+| 同花顺-fuyao · `seal_money` | seal_money | 当前封单额，单位元。 | 元 | `verified` |
 | 开盘红 · `seal_money` | seal_amount | 封单金额；与 KPL seal_amount 两日逐值一致 | 元 | `verified` |
 | 开盘红(Levistock适配) · `seal_money` | seal_amount / seal_money | 待破解 | — | `unverified` |
 
@@ -3324,14 +3315,6 @@
 | reports · `title` | title | 研报标题 | — | `verified` |
 | 巨潮(cninfo) · `title` | — | — | — | `unverified` |
 | 财联社(cls) · `title` | title / brief | 标题 / 摘要 | — | `verified` |
-
-### `total_debt` — consistent
-
-聚合问题：source_status_conflict；聚合状态：`conflict`。
-
-| 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
-|:--|:--|:--|:--|:--|
-| 同花顺-fuyao · `total_debt` | total_debt | 总债务(=总负债) | LDFZ（流动负债）+CPFZ（长期负债） | `conflict` |
 
 ### `total_mv` — incomplete
 
@@ -3653,14 +3636,24 @@
 | 东财-热榜(em_hot) | `sgt` | hgt / sgt | 沪/深股通累计净买入 | `verified` |
 | 东财-热榜(em_hot) | `zhangdie` | close / zhangdie | 收盘价 / 涨跌额 | `verified` |
 | 东财-热榜(em_hot) | `zhangfu` | zhangfu / huanshou | 涨跌幅% / 换手率% | `verified` |
+| 同花顺-fuyao | `basic_eps` | basic_eps | 基本每股收益（元/股）。 | `verified` |
 | 同花顺-fuyao | `calendar` | a-share/calendar/trading-days | — | `unverified` |
 | 同花顺-fuyao | `catalog` | a-share-index/catalog/ths-index-list | — | `unverified` |
 | 同花顺-fuyao | `constituents` | a-share-index/constituents/ths-stock-list | — | `unverified` |
+| 同花顺-fuyao | `continue_day_text` | continue_day_text | 连板文本，例如 `首板`、`5天4板`。 | `verified` |
 | 同花顺-fuyao | `dump` | dump/market-dumps/{daily-k,daily-k-10d,adjustment-factors}/download-url | — | `unverified` |
+| 同花顺-fuyao | `ex_date_ms` | ex_date_ms | 除权除息日，Asia/Shanghai 00:00:00 毫秒 Unix 时间戳。 | `verified` |
+| 同花顺-fuyao | `fiscal_period` | fiscal_period | `FY` / `Q1` / `Q2` / `Q3` / `Q4`。 | `verified` |
 | 同花顺-fuyao | `indicators` | a-share/financials/indicators | — | `unverified` |
+| 同花顺-fuyao | `keyword_list` | keyword_list | 关键词列表；无关键词时返回空数组。 | `verified` |
+| 同花顺-fuyao | `limit_up_reason` | limit_up_reason | 涨停原因；上游空字符串会标准化为 `null`。 | `verified` |
 | 同花顺-fuyao | `list` | meta/tickers/list | — | `unverified` |
 | 同花顺-fuyao | `market` | dump/market-dumps/{daily-k,daily-k-10d,adjustment-factors}/download-url | — | `unverified` |
-| 同花顺-fuyao | `pay_dividends_profits_interest_cash` | pay_dividends_profits_interest_cash | 分红/利息现金支出 | `unverified` |
+| 同花顺-fuyao | `pay_dividends_profits_interest_cash` | pay_dividends_profits_interest_cash | 分配股利、利润或偿付利息支付的现金（原币元）。 | `verified` |
+| 同花顺-fuyao | `pay_fixed_assets_etc_cash` | pay_fixed_assets_etc_cash | 购建固定资产、无形资产和其他长期资产支付的现金（原币元）。 | `verified` |
+| 同花顺-fuyao | `period_end_ms` | period_end_ms | 报告期末（Asia/Shanghai 零点毫秒戳）。 | `verified` |
+| 同花顺-fuyao | `rank_change` | rank_change | 排名变化，正数表示上升，负数表示下降；上游缺失时为 `null`。 | `verified` |
+| 同花顺-fuyao | `rank_trend` | rank_trend | 排名趋势：`up` / `down` / `flat` / `unknown`。 | `verified` |
 | 同花顺-fuyao | `revenue_ttm` | — | 营业总收入 TTM（push2 f104）；富耀 operating_income 回算口径约差 1.8%，仅近似兜底 | `unverified` |
 | 同花顺-fuyao | `search` | meta/tickers/search | — | `unverified` |
 | 同花顺-fuyao | `valuation.pcf_ttm` | valuation.pcf_ttm | 市现率 PCF_TTM（总市值 / 经营现金流 TTM） | `verified` |

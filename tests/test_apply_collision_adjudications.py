@@ -1,12 +1,15 @@
 import copy
+import json
 
 import pytest
 
+from scripts import apply_collision_adjudications as adjudication_module
 from scripts.apply_collision_adjudications import (
     REPO_ROOT,
     VERIFY_DIR,
     _inside_verification_dir,
     apply_adjudications,
+    apply_source_contract_adjudications,
 )
 
 
@@ -386,6 +389,305 @@ def test_link_verified_records_relation_without_changing_field_metadata():
     }
 
 
+def _source_contract_inputs():
+    registry, _, _, _ = _inputs()
+    decision_document = {
+        "schema_version": 1,
+        "evidence_basis": "source_contract",
+        "reviewer": "reviewer",
+        "reviewed_on": "2026-10-18",
+        "decisions": [
+            {
+                "id": "20261018-source-contract",
+                "action": "verify_source_contract",
+                "target": {"source": "target-source", "code": "unknown.value"},
+                "previous_status": "unverified",
+                "previous_status_resolution": "registry_status_only_single_source",
+                "previous": {"canonical": "", "meaning": "", "unit": ""},
+                "canonical": "market.metric",
+                "meaning": "由上游接口契约确认的字段含义",
+                "unit": "元",
+                "rationale": "已核对该运行字段到接口响应键的实际映射和上游契约。",
+                "source_contract": {
+                    "authority": "官方数据接口",
+                    "revision": "接口文档 2026-10-10",
+                    "path": "行情接口字段表",
+                    "locator": "响应字段 unknown.value",
+                    "url": "https://example.com/field-spec",
+                },
+            }
+        ],
+    }
+    return registry, decision_document
+
+
+def test_source_contract_verifies_one_field_without_creating_cross_source_mapping():
+    registry, document = _source_contract_inputs()
+
+    updated, stats = apply_source_contract_adjudications(
+        registry, document, "adjudications/source_contract_review.json"
+    )
+
+    target = next(row for row in updated["source_fields"] if row["source"] == "target-source")
+    assert target["status"] == "verified"
+    assert target["status_resolution"] == "verified_by_source_contract"
+    assert target["canonical"] == "market.metric"
+    assert target["meaning"] == "由上游接口契约确认的字段含义"
+    assert target["adjudications"][0]["evidence_basis"] == "authoritative_source_contract"
+    assert target["reference_evidence"][-1]["source_contract"]["revision"] == (
+        "接口文档 2026-10-10"
+    )
+    assert updated["mappings"] == []
+    assert stats == {
+        "source_contract_verified": 1,
+        "status_conflicts_resolved": 0,
+        "metadata_corrected": 0,
+        "already_applied": 0,
+        "mappings_added": 0,
+    }
+
+
+def test_source_contract_decision_is_idempotent():
+    registry, document = _source_contract_inputs()
+    once, _ = apply_source_contract_adjudications(
+        registry, document, "adjudications/source_contract_review.json"
+    )
+
+    twice, stats = apply_source_contract_adjudications(
+        once, document, "adjudications/source_contract_review.json"
+    )
+
+    assert twice == once
+    assert stats == {
+        "source_contract_verified": 0,
+        "status_conflicts_resolved": 0,
+        "metadata_corrected": 0,
+        "already_applied": 1,
+        "mappings_added": 0,
+    }
+
+
+def _set_status_only_conflict(registry, document):
+    target = registry["source_fields"][0]
+    target.update(
+        {
+            "status": "conflict",
+            "status_resolution": "status_conflict",
+            "status_evidence": {
+                "reference_statuses": ["verified"],
+                "reference_status_raw": ["已确认"],
+                "registry_aggregate_status": "unverified",
+                "registry_aggregate_sources": ["target-source"],
+                "values": ["verified", "unverified"],
+            },
+            "reference_evidence": [
+                {
+                    "status": "verified",
+                    "canonical": "",
+                    "meaning": "",
+                    "unit": "",
+                }
+            ],
+            "attribute_conflicts": {},
+        }
+    )
+    decision = document["decisions"][0]
+    decision["previous_status"] = "conflict"
+    decision["previous_status_resolution"] = "status_conflict"
+    return target, decision
+
+
+def test_source_contract_resolves_only_registry_aggregate_status_conflict():
+    registry, document = _source_contract_inputs()
+    _set_status_only_conflict(registry, document)
+
+    updated, stats = apply_source_contract_adjudications(
+        registry, document, "adjudications/source_contract_review.json"
+    )
+
+    target = next(row for row in updated["source_fields"] if row["source"] == "target-source")
+    assert target["status"] == "verified"
+    assert target["status_resolution"] == "verified_by_source_contract"
+    assert updated["mappings"] == []
+    assert stats == {
+        "source_contract_verified": 1,
+        "status_conflicts_resolved": 1,
+        "metadata_corrected": 0,
+        "already_applied": 0,
+        "mappings_added": 0,
+    }
+
+
+@pytest.mark.parametrize(
+    "change",
+    [
+        lambda target: target.update(attribute_conflicts={"meaning": ["甲", "乙"]}),
+        lambda target: target["status_evidence"].update(
+            reference_statuses=["verified", "unverified"]
+        ),
+        lambda target: target["status_evidence"].update(registry_aggregate_status="conflict"),
+        lambda target: target["reference_evidence"][0].update(status=[]),
+        lambda target: target.update(reference_evidence=["verified"]),
+    ],
+)
+def test_source_contract_rejects_real_or_unclassified_status_conflict(change):
+    registry, document = _source_contract_inputs()
+    target, _ = _set_status_only_conflict(registry, document)
+    change(target)
+
+    with pytest.raises(ValueError, match="cannot resolve semantic or attribute conflicts"):
+        apply_source_contract_adjudications(
+            registry, document, "adjudications/source_contract_review.json"
+        )
+
+
+def test_source_contract_corrects_established_metadata_only_with_explicit_snapshot():
+    registry, document = _source_contract_inputs()
+    target = registry["source_fields"][0]
+    target["meaning"] = "旧登记释义"
+    decision = document["decisions"][0]
+    decision["previous"]["meaning"] = "旧登记释义"
+    decision["metadata_correction"] = {
+        "previous": {"canonical": "", "meaning": "旧登记释义", "unit": ""},
+        "updated": {
+            "canonical": "market.metric",
+            "meaning": "由上游接口契约确认的字段含义",
+            "unit": "元",
+        },
+        "rationale": "官方字段表纠正历史释义，并逐项记录了变更前后值。",
+    }
+
+    updated, stats = apply_source_contract_adjudications(
+        registry, document, "adjudications/source_contract_review.json"
+    )
+
+    target = next(row for row in updated["source_fields"] if row["source"] == "target-source")
+    assert target["meaning"] == "由上游接口契约确认的字段含义"
+    assert target["adjudications"][0]["metadata_correction"]["previous"]["meaning"] == (
+        "旧登记释义"
+    )
+    assert stats["metadata_corrected"] == 1
+
+
+def test_cli_previews_source_contract_without_collision_report_or_file_changes(
+    tmp_path, monkeypatch, capsys
+):
+    registry, document = _source_contract_inputs()
+    verify_dir = tmp_path / "docs" / "field_verification"
+    decisions_dir = verify_dir / "adjudications"
+    decisions_dir.mkdir(parents=True)
+    registry_path = verify_dir / "field_registry.json"
+    registry_path.write_text(json.dumps(registry), encoding="utf-8")
+    decision_path = decisions_dir / "source_contract.json"
+    decision_path.write_text(json.dumps(document), encoding="utf-8")
+
+    monkeypatch.setattr(adjudication_module, "REPO_ROOT", tmp_path)
+    monkeypatch.setattr(adjudication_module, "VERIFY_DIR", verify_dir)
+    monkeypatch.setattr(adjudication_module, "REGISTRY_PATH", registry_path)
+    monkeypatch.setattr(adjudication_module, "LINEAGE_PATH", verify_dir / "source_lineage.json")
+    monkeypatch.setattr(
+        adjudication_module.sla,
+        "load_source_lineage",
+        lambda *args, **kwargs: pytest.fail("source-contract preview must not load lineage"),
+    )
+    original_registry = registry_path.read_bytes()
+
+    result = adjudication_module.main(["--decisions", str(decision_path)])
+
+    assert result == 0
+    assert '"source_contract_verified": 1' in capsys.readouterr().out
+    assert registry_path.read_bytes() == original_registry
+
+
+def test_cli_applies_source_contract_and_loads_lineage_for_generated_view(tmp_path, monkeypatch):
+    registry, document = _source_contract_inputs()
+    verify_dir = tmp_path / "docs" / "field_verification"
+    decisions_dir = verify_dir / "adjudications"
+    decisions_dir.mkdir(parents=True)
+    registry_path = verify_dir / "field_registry.json"
+    registry_path.write_text(json.dumps(registry), encoding="utf-8")
+    decision_path = decisions_dir / "source_contract.json"
+    decision_path.write_text(json.dumps(document), encoding="utf-8")
+    monkeypatch.setattr(adjudication_module, "REPO_ROOT", tmp_path)
+    monkeypatch.setattr(adjudication_module, "VERIFY_DIR", verify_dir)
+    monkeypatch.setattr(adjudication_module, "REGISTRY_PATH", registry_path)
+    monkeypatch.setattr(adjudication_module, "LINEAGE_PATH", verify_dir / "source_lineage.json")
+    lineage = {"sources": {}}
+    lineage_calls = []
+
+    def load_lineage(*args, **kwargs):
+        lineage_calls.append((args, kwargs))
+        return lineage
+
+    captured_outputs = {}
+    monkeypatch.setattr(adjudication_module.sla, "load_source_lineage", load_lineage)
+    monkeypatch.setattr(adjudication_module.gfd, "render_field_dict", lambda _registry: "dict\n")
+    monkeypatch.setattr(
+        adjudication_module.gfd, "render_unknown_fields", lambda _registry: "unknown\n"
+    )
+    monkeypatch.setattr(
+        adjudication_module.gfd,
+        "render_source_repository_map",
+        lambda _registry, rendered_lineage: (
+            "source map\n" if rendered_lineage is lineage else pytest.fail("wrong lineage")
+        ),
+    )
+    monkeypatch.setattr(
+        adjudication_module.gfd,
+        "render_field_metadata_gaps",
+        lambda _registry: "metadata gaps\n",
+    )
+    monkeypatch.setattr(adjudication_module, "_atomic_write_batch", captured_outputs.update)
+
+    result = adjudication_module.main(["--decisions", str(decision_path), "--apply"])
+
+    assert result == 0
+    assert len(lineage_calls) == 1
+    updated = json.loads(captured_outputs[registry_path])
+    target = next(row for row in updated["source_fields"] if row["source"] == "target-source")
+    assert target["status"] == "verified"
+    assert captured_outputs[adjudication_module.SOURCE_MAP_PATH] == "source map\n"
+
+
+@pytest.mark.parametrize(
+    "change,match",
+    [
+        (
+            lambda d: d["decisions"][0]["source_contract"].update(revision="latest"),
+            "pinned version",
+        ),
+        (
+            lambda d: d["decisions"][0]["source_contract"].update(url="http://example.com/spec"),
+            "HTTPS",
+        ),
+        (
+            lambda d: d["decisions"][0].update(previous_status="conflict"),
+            "target status changed since review",
+        ),
+    ],
+)
+def test_source_contract_rejects_unpinned_weak_or_conflicting_decisions(change, match):
+    registry, document = _source_contract_inputs()
+    change(document)
+
+    with pytest.raises(ValueError, match=match):
+        apply_source_contract_adjudications(
+            registry, document, "adjudications/source_contract_review.json"
+        )
+
+
+def test_source_contract_cannot_overwrite_an_existing_meaning():
+    registry, document = _source_contract_inputs()
+    target = registry["source_fields"][0]
+    target["meaning"] = "已经登记的有效含义"
+    document["decisions"][0]["previous"]["meaning"] = "已经登记的有效含义"
+
+    with pytest.raises(ValueError, match="cannot overwrite established meaning"):
+        apply_source_contract_adjudications(
+            registry, document, "adjudications/source_contract_review.json"
+        )
+
+
 def test_pair_disproof_cannot_disprove_the_entire_target_field():
     registry, lineage, document, report = _inputs(action="disprove")
 
@@ -411,6 +713,17 @@ def test_non_default_or_missing_candidates_are_rejected(report_change, match):
     report.update(copy.deepcopy(report_change))
 
     with pytest.raises(ValueError, match=match):
+        apply_adjudications(
+            registry, lineage, document, report, "sample_report.json", "adjudications/review.json"
+        )
+
+
+def test_registered_mapping_revalidation_is_not_an_actionable_adjudication_candidate():
+    registry, lineage, document, report = _inputs()
+    report["L1"][0]["in_registry"] = True
+    report["actionable_L1"] = []
+
+    with pytest.raises(ValueError, match="found 0"):
         apply_adjudications(
             registry, lineage, document, report, "sample_report.json", "adjudications/review.json"
         )

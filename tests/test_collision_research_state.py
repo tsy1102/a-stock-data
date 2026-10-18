@@ -94,6 +94,31 @@ def test_later_report_inherits_prior_pair_history_even_if_orientation_changes():
     assert candidate["last_seen"] == "20261012"
 
 
+def test_registered_l1_revalidation_is_not_added_as_an_actionable_research_candidate():
+    first, _run_id, _stats = research.update_state(
+        research.empty_state(),
+        _report("20261011"),
+        "collision_research_20261011/exploratory/report.json",
+    )
+    mapped_report = _report("20261012")
+    mapped_report["L1"][0]["in_registry"] = True
+    mapped_report["actionable_L1"] = []
+    mapped_report["mapped_pair_revalidations"] = mapped_report["L1"]
+    mapped_report["L4"] = []
+    mapped_report["method_candidates"] = []
+
+    updated, run_id, stats = research.update_state(
+        first, mapped_report, "collision_research_20261012/exploratory/report.json"
+    )
+    matched = research.annotate_report(mapped_report, updated, run_id)
+
+    assert stats["current_candidate_pairs"] == 0
+    assert stats["previously_tracked_pairs"] == 0
+    assert matched == 0
+    assert "research_history" not in mapped_report["L1"][0]
+    assert len(updated["candidates"]) == 1  # historical observation is preserved
+
+
 def test_rerun_removing_a_pair_recomputes_retained_history_summary():
     first, _run_id, _stats = research.update_state(
         research.empty_state(),
@@ -133,9 +158,7 @@ def test_out_of_order_report_keeps_latest_date_and_report_reference():
         research.empty_state(), _report("20261012", hit=0.99), latest_path
     )
     older_path = "collision_research_20261011/exploratory/older.json"
-    state, _run_id, _stats = research.update_state(
-        state, _report("20261011", hit=0.75), older_path
-    )
+    state, _run_id, _stats = research.update_state(state, _report("20261011", hit=0.75), older_path)
     later_report = _report("20261013")
 
     matched = research.annotate_report(later_report, state, "new-current-run")

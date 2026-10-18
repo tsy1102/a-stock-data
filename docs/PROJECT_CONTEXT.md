@@ -2,7 +2,7 @@
 
 > **用途**：项目架构、稳定约束与文档索引。任务开始时先按下表读取相关部分，不必重复扫描整份文档。
 > **维护规则**：结构、入口或稳定流程变化时更新；字段语义以主字典为准，运行状态与测试结果以实际检查为准。
-> **更新日期**：2026-10-18（`VERSION`：17.4.54）
+> **更新日期**：2026-10-18（`VERSION`：17.4.55）
 
 ## 0. 指引目录
 
@@ -63,7 +63,7 @@
 | 文档 | 权威范围 |
 |---|---|
 | `docs/field_dict.md` | 生成的字段治理入口与权威顺序 |
-| `docs/unknown_fields.md` | 按逐源完整路径列出的未验证、候选、冲突和已证伪字段 |
+| `docs/unknown_fields.md` | 按逐源完整路径列出的未验证、候选、冲突和已证伪字段；未验证部分将含义文本与历史状态解析分维度展示 |
 | `docs/field_aggregate_review.md` | 同短 code 聚合歧义、定义缺口与疑似复合文本的生成式复核清单 |
 | `docs/field_metadata_gaps.md` | 已验证字段中缺少规范名或含义的生成式补录清单 |
 | `docs/field_matrix.md` | registry 派生的字段×源矩阵 |
@@ -71,7 +71,7 @@
 | `docs/field_source_reference.md` | 重整前字典原文的逐字节历史归档；不是当前状态权威 |
 | `docs/field_verification/field_registry.json` | 逐源完整路径的机器权威字段登记表 |
 | `docs/field_verification/collision_research_state.json` | 探索模式候选的持久观察台账，不作为字段定案权威 |
-| `docs/field_verification/ADJUDICATION_WORKFLOW.md` | 碰撞候选人工复核、字段定案和注册表同步流程 |
+| `docs/field_verification/ADJUDICATION_WORKFLOW.md` | L1 跨源碰撞裁决、单源上游契约核验和注册表同步流程；两类证据不会互相冒充 |
 | `docs/field_verification/CRACKING_METHODOLOGY.md` | 字段破解方法论和证据要求 |
 | `docs/field_verification/EVIDENCE_COVERAGE.md` | 每日采样覆盖生成、来源身份和日期资格规则 |
 | `docs/FIELD_DICTIONARY_OPERATIONAL_CLOSURE_20261006.md` | 定案写回闭环及来源对话确认状态 |

@@ -1,0 +1,1971 @@
+{
+  "schema_version": 1,
+  "evidence_basis": "source_contract",
+  "reviewer": "Codex source-contract review",
+  "reviewed_on": "2026-10-18",
+  "decisions": [
+    {
+      "id": "20261018-fuyao-accounts_receivable",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "同花顺-fuyao",
+        "code": "accounts_receivable"
+      },
+      "previous_status": "conflict",
+      "previous_status_resolution": "status_conflict",
+      "previous": {
+        "canonical": "accounts_receivable",
+        "meaning": "应收账款",
+        "unit": "YSZK（应收账款）"
+      },
+      "canonical": "accounts_receivable",
+      "meaning": "应收账款（原币元）。",
+      "unit": "原币元",
+      "rationale": "适配器将该来源字段作为 /api/a-share/financials/balance-sheets 响应项读取；官方契约快照对键 accounts_receivable 给出唯一含义。此裁定只确认 同花顺-fuyao::accounts_receivable 的来源内语义，不声明其他来源与之等价，也不新增 mappings。",
+      "source_contract": {
+        "authority": "同花顺 Fuyao 官方 API（Financial-API）",
+        "revision": "official full-contract snapshot captured 2026-08-22",
+        "path": "docs/verify/fuyao_api_full.md",
+        "locator": "/api/a-share/financials/balance-sheets response field `accounts_receivable`; snapshot line 336",
+        "url": "https://fuyao.aicubes.cn/llms-full.txt"
+      },
+      "metadata_correction": {
+        "previous": {
+          "canonical": "accounts_receivable",
+          "meaning": "应收账款",
+          "unit": "YSZK（应收账款）"
+        },
+        "updated": {
+          "canonical": "accounts_receivable",
+          "meaning": "应收账款（原币元）。",
+          "unit": "原币元"
+        },
+        "rationale": "保留原值快照，并依据该完整响应路径的官方字段说明纠正旧的字段名、释义或非物理单位标注。"
+      }
+    },
+    {
+      "id": "20261018-fuyao-act_cash_flow_net",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "同花顺-fuyao",
+        "code": "act_cash_flow_net"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "act_cash_flow_net",
+      "meaning": "经营活动产生的现金流量净额（原币元）。",
+      "unit": "原币元",
+      "rationale": "适配器将该来源字段作为 /api/a-share/financials/cash-flow-statements 响应项读取；官方契约快照对键 act_cash_flow_net 给出唯一含义。此裁定只确认 同花顺-fuyao::act_cash_flow_net 的来源内语义，不声明其他来源与之等价，也不新增 mappings。",
+      "source_contract": {
+        "authority": "同花顺 Fuyao 官方 API（Financial-API）",
+        "revision": "official full-contract snapshot captured 2026-08-22",
+        "path": "docs/verify/fuyao_api_full.md",
+        "locator": "/api/a-share/financials/cash-flow-statements response field `act_cash_flow_net`; snapshot line 354",
+        "url": "https://fuyao.aicubes.cn/llms-full.txt"
+      }
+    },
+    {
+      "id": "20261018-fuyao-analysis_content",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "同花顺-fuyao",
+        "code": "analysis_content"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "analysis_content",
+      "meaning": "异动解读内容。",
+      "unit": "",
+      "rationale": "适配器将该来源字段作为 /api/a-share/special-data/anomaly-analysis-list 响应项读取；官方契约快照对键 analysis_content 给出唯一含义。此裁定只确认 同花顺-fuyao::analysis_content 的来源内语义，不声明其他来源与之等价，也不新增 mappings。",
+      "source_contract": {
+        "authority": "同花顺 Fuyao 官方 API（Financial-API）",
+        "revision": "official full-contract snapshot captured 2026-08-22",
+        "path": "docs/verify/fuyao_api_full.md",
+        "locator": "/api/a-share/special-data/anomaly-analysis-list response field `analysis_content`; snapshot line 526",
+        "url": "https://fuyao.aicubes.cn/llms-full.txt"
+      }
+    },
+    {
+      "id": "20261018-fuyao-assets_total",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "同花顺-fuyao",
+        "code": "assets_total"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "assets_total",
+      "meaning": "资产总计（原币元）。",
+      "unit": "原币元",
+      "rationale": "适配器将该来源字段作为 /api/a-share/financials/balance-sheets 响应项读取；官方契约快照对键 assets_total 给出唯一含义。此裁定只确认 同花顺-fuyao::assets_total 的来源内语义，不声明其他来源与之等价，也不新增 mappings。",
+      "source_contract": {
+        "authority": "同花顺 Fuyao 官方 API（Financial-API）",
+        "revision": "official full-contract snapshot captured 2026-08-22",
+        "path": "docs/verify/fuyao_api_full.md",
+        "locator": "/api/a-share/financials/balance-sheets response field `assets_total`; snapshot line 332",
+        "url": "https://fuyao.aicubes.cn/llms-full.txt"
+      }
+    },
+    {
+      "id": "20261018-fuyao-auction.float_market_cap",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "同花顺-fuyao",
+        "code": "auction.float_market_cap"
+      },
+      "previous_status": "conflict",
+      "previous_status_resolution": "status_conflict",
+      "previous": {
+        "canonical": "auction.float_market_cap",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "auction.float_market_cap",
+      "meaning": "集合竞价快照中的流通市值。",
+      "unit": "",
+      "rationale": "适配器将该来源字段作为 /api/a-share/auction/snapshot 响应项读取；官方契约快照对键 float_market_cap 给出唯一含义。此裁定只确认 同花顺-fuyao::auction.float_market_cap 的来源内语义，不声明其他来源与之等价，也不新增 mappings。",
+      "source_contract": {
+        "authority": "同花顺 Fuyao 官方 API（Financial-API）",
+        "revision": "official full-contract snapshot captured 2026-08-22",
+        "path": "docs/verify/fuyao_api_full.md",
+        "locator": "/api/a-share/auction/snapshot response field `float_market_cap`; snapshot line 587",
+        "url": "https://fuyao.aicubes.cn/llms-full.txt"
+      }
+    },
+    {
+      "id": "20261018-fuyao-auction.pre_close_price",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "同花顺-fuyao",
+        "code": "auction.pre_close_price"
+      },
+      "previous_status": "conflict",
+      "previous_status_resolution": "status_conflict",
+      "previous": {
+        "canonical": "snapshot.prev_price` = `auction.pre_close_price",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "auction.pre_close_price",
+      "meaning": "集合竞价快照中的前收盘价。",
+      "unit": "",
+      "rationale": "适配器将该来源字段作为 /api/a-share/auction/snapshot 响应项读取；官方契约快照对键 pre_close_price 给出唯一含义。此裁定只确认 同花顺-fuyao::auction.pre_close_price 的来源内语义，不声明其他来源与之等价，也不新增 mappings。",
+      "source_contract": {
+        "authority": "同花顺 Fuyao 官方 API（Financial-API）",
+        "revision": "official full-contract snapshot captured 2026-08-22",
+        "path": "docs/verify/fuyao_api_full.md",
+        "locator": "/api/a-share/auction/snapshot response field `pre_close_price`; snapshot line 586",
+        "url": "https://fuyao.aicubes.cn/llms-full.txt"
+      },
+      "metadata_correction": {
+        "previous": {
+          "canonical": "snapshot.prev_price` = `auction.pre_close_price",
+          "meaning": "",
+          "unit": ""
+        },
+        "updated": {
+          "canonical": "auction.pre_close_price",
+          "meaning": "集合竞价快照中的前收盘价。",
+          "unit": ""
+        },
+        "rationale": "保留原值快照，并依据该完整响应路径的官方字段说明纠正旧的字段名、释义或非物理单位标注。"
+      }
+    },
+    {
+      "id": "20261018-fuyao-auction_amount",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "同花顺-fuyao",
+        "code": "auction_amount"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "auction_amount",
+      "meaning": "集合竞价成交额。",
+      "unit": "",
+      "rationale": "适配器将该来源字段作为 /api/a-share/auction/snapshot 响应项读取；官方契约快照对键 auction_amount 给出唯一含义。此裁定只确认 同花顺-fuyao::auction_amount 的来源内语义，不声明其他来源与之等价，也不新增 mappings。",
+      "source_contract": {
+        "authority": "同花顺 Fuyao 官方 API（Financial-API）",
+        "revision": "official full-contract snapshot captured 2026-08-22",
+        "path": "docs/verify/fuyao_api_full.md",
+        "locator": "/api/a-share/auction/snapshot response field `auction_amount`; snapshot line 584",
+        "url": "https://fuyao.aicubes.cn/llms-full.txt"
+      }
+    },
+    {
+      "id": "20261018-fuyao-auction_price",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "同花顺-fuyao",
+        "code": "auction_price"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "auction_price",
+      "meaning": "集合竞价价格。",
+      "unit": "",
+      "rationale": "适配器将该来源字段作为 /api/a-share/auction/snapshot 响应项读取；官方契约快照对键 auction_price 给出唯一含义。此裁定只确认 同花顺-fuyao::auction_price 的来源内语义，不声明其他来源与之等价，也不新增 mappings。",
+      "source_contract": {
+        "authority": "同花顺 Fuyao 官方 API（Financial-API）",
+        "revision": "official full-contract snapshot captured 2026-08-22",
+        "path": "docs/verify/fuyao_api_full.md",
+        "locator": "/api/a-share/auction/snapshot response field `auction_price`; snapshot line 583",
+        "url": "https://fuyao.aicubes.cn/llms-full.txt"
+      }
+    },
+    {
+      "id": "20261018-fuyao-auction_turnover_pct",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "同花顺-fuyao",
+        "code": "auction_turnover_pct"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "auction_turnover_pct",
+      "meaning": "集合竞价换手率。",
+      "unit": "",
+      "rationale": "适配器将该来源字段作为 /api/a-share/auction/snapshot 响应项读取；官方契约快照对键 auction_turnover_pct 给出唯一含义。此裁定只确认 同花顺-fuyao::auction_turnover_pct 的来源内语义，不声明其他来源与之等价，也不新增 mappings。",
+      "source_contract": {
+        "authority": "同花顺 Fuyao 官方 API（Financial-API）",
+        "revision": "official full-contract snapshot captured 2026-08-22",
+        "path": "docs/verify/fuyao_api_full.md",
+        "locator": "/api/a-share/auction/snapshot response field `auction_turnover_pct`; snapshot line 585",
+        "url": "https://fuyao.aicubes.cn/llms-full.txt"
+      }
+    },
+    {
+      "id": "20261018-fuyao-auction_unmatched",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "同花顺-fuyao",
+        "code": "auction_unmatched"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "auction_unmatched",
+      "meaning": "集合竞价未匹配量。",
+      "unit": "",
+      "rationale": "适配器将该来源字段作为 /api/a-share/auction/snapshot 响应项读取；官方契约快照对键 auction_unmatched 给出唯一含义。此裁定只确认 同花顺-fuyao::auction_unmatched 的来源内语义，不声明其他来源与之等价，也不新增 mappings。",
+      "source_contract": {
+        "authority": "同花顺 Fuyao 官方 API（Financial-API）",
+        "revision": "official full-contract snapshot captured 2026-08-22",
+        "path": "docs/verify/fuyao_api_full.md",
+        "locator": "/api/a-share/auction/snapshot response field `auction_unmatched`; snapshot line 584",
+        "url": "https://fuyao.aicubes.cn/llms-full.txt"
+      }
+    },
+    {
+      "id": "20261018-fuyao-auction_volume",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "同花顺-fuyao",
+        "code": "auction_volume"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "auction_volume",
+      "meaning": "集合竞价成交量。",
+      "unit": "",
+      "rationale": "适配器将该来源字段作为 /api/a-share/auction/snapshot 响应项读取；官方契约快照对键 auction_volume 给出唯一含义。此裁定只确认 同花顺-fuyao::auction_volume 的来源内语义，不声明其他来源与之等价，也不新增 mappings。",
+      "source_contract": {
+        "authority": "同花顺 Fuyao 官方 API（Financial-API）",
+        "revision": "official full-contract snapshot captured 2026-08-22",
+        "path": "docs/verify/fuyao_api_full.md",
+        "locator": "/api/a-share/auction/snapshot response field `auction_volume`; snapshot line 584",
+        "url": "https://fuyao.aicubes.cn/llms-full.txt"
+      }
+    },
+    {
+      "id": "20261018-fuyao-auction_volume_ratio",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "同花顺-fuyao",
+        "code": "auction_volume_ratio"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "auction_volume_ratio",
+      "meaning": "集合竞价量比。",
+      "unit": "",
+      "rationale": "适配器将该来源字段作为 /api/a-share/auction/snapshot 响应项读取；官方契约快照对键 auction_volume_ratio 给出唯一含义。此裁定只确认 同花顺-fuyao::auction_volume_ratio 的来源内语义，不声明其他来源与之等价，也不新增 mappings。",
+      "source_contract": {
+        "authority": "同花顺 Fuyao 官方 API（Financial-API）",
+        "revision": "official full-contract snapshot captured 2026-08-22",
+        "path": "docs/verify/fuyao_api_full.md",
+        "locator": "/api/a-share/auction/snapshot response field `auction_volume_ratio`; snapshot line 585",
+        "url": "https://fuyao.aicubes.cn/llms-full.txt"
+      }
+    },
+    {
+      "id": "20261018-fuyao-auction_yesterday_ratio_pct",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "同花顺-fuyao",
+        "code": "auction_yesterday_ratio_pct"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "auction_yesterday_ratio_pct",
+      "meaning": "集合竞价量相对昨日成交量的比例。",
+      "unit": "",
+      "rationale": "适配器将该来源字段作为 /api/a-share/auction/snapshot 响应项读取；官方契约快照对键 auction_yesterday_ratio_pct 给出唯一含义。此裁定只确认 同花顺-fuyao::auction_yesterday_ratio_pct 的来源内语义，不声明其他来源与之等价，也不新增 mappings。",
+      "source_contract": {
+        "authority": "同花顺 Fuyao 官方 API（Financial-API）",
+        "revision": "official full-contract snapshot captured 2026-08-22",
+        "path": "docs/verify/fuyao_api_full.md",
+        "locator": "/api/a-share/auction/snapshot response field `auction_yesterday_ratio_pct`; snapshot line 585",
+        "url": "https://fuyao.aicubes.cn/llms-full.txt"
+      }
+    },
+    {
+      "id": "20261018-fuyao-basic_eps",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "同花顺-fuyao",
+        "code": "basic_eps"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "basic_eps",
+      "meaning": "基本每股收益（元/股）。",
+      "unit": "元/股",
+      "rationale": "适配器将该来源字段作为 /api/a-share/financials/income-statements 响应项读取；官方契约快照对键 basic_eps 给出唯一含义。此裁定只确认 同花顺-fuyao::basic_eps 的来源内语义，不声明其他来源与之等价，也不新增 mappings。",
+      "source_contract": {
+        "authority": "同花顺 Fuyao 官方 API（Financial-API）",
+        "revision": "official full-contract snapshot captured 2026-08-22",
+        "path": "docs/verify/fuyao_api_full.md",
+        "locator": "/api/a-share/financials/income-statements response field `basic_eps`; snapshot line 316",
+        "url": "https://fuyao.aicubes.cn/llms-full.txt"
+      }
+    },
+    {
+      "id": "20261018-fuyao-buy_value",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "同花顺-fuyao",
+        "code": "buy_value"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "buy_value",
+      "meaning": "买方金额，单位元。",
+      "unit": "元",
+      "rationale": "适配器将该来源字段作为 /api/a-share/special-data/dragon-tiger-list 响应项读取；官方契约快照对键 buy_value 给出唯一含义。此裁定只确认 同花顺-fuyao::buy_value 的来源内语义，不声明其他来源与之等价，也不新增 mappings。",
+      "source_contract": {
+        "authority": "同花顺 Fuyao 官方 API（Financial-API）",
+        "revision": "official full-contract snapshot captured 2026-08-22",
+        "path": "docs/verify/fuyao_api_full.md",
+        "locator": "/api/a-share/special-data/dragon-tiger-list response field `buy_value`; snapshot line 656",
+        "url": "https://fuyao.aicubes.cn/llms-full.txt"
+      }
+    },
+    {
+      "id": "20261018-fuyao-cash",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "同花顺-fuyao",
+        "code": "cash"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "cash",
+      "meaning": "货币资金（原币元）。",
+      "unit": "原币元",
+      "rationale": "适配器将该来源字段作为 /api/a-share/financials/balance-sheets 响应项读取；官方契约快照对键 cash 给出唯一含义。此裁定只确认 同花顺-fuyao::cash 的来源内语义，不声明其他来源与之等价，也不新增 mappings。",
+      "source_contract": {
+        "authority": "同花顺 Fuyao 官方 API（Financial-API）",
+        "revision": "official full-contract snapshot captured 2026-08-22",
+        "path": "docs/verify/fuyao_api_full.md",
+        "locator": "/api/a-share/financials/balance-sheets response field `cash`; snapshot line 335",
+        "url": "https://fuyao.aicubes.cn/llms-full.txt"
+      }
+    },
+    {
+      "id": "20261018-fuyao-cash_equivalents_net_addition",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "同花顺-fuyao",
+        "code": "cash_equivalents_net_addition"
+      },
+      "previous_status": "conflict",
+      "previous_status_resolution": "status_conflict",
+      "previous": {
+        "canonical": "cash_equivalents_net_addition",
+        "meaning": "现金及等价物净增加额",
+        "unit": "ZXJL（现金及等价物净增加额）"
+      },
+      "canonical": "cash_equivalents_net_addition",
+      "meaning": "现金及现金等价物净增加额（原币元）。",
+      "unit": "原币元",
+      "rationale": "适配器将该来源字段作为 /api/a-share/financials/cash-flow-statements 响应项读取；官方契约快照对键 cash_equivalents_net_addition 给出唯一含义。此裁定只确认 同花顺-fuyao::cash_equivalents_net_addition 的来源内语义，不声明其他来源与之等价，也不新增 mappings。",
+      "source_contract": {
+        "authority": "同花顺 Fuyao 官方 API（Financial-API）",
+        "revision": "official full-contract snapshot captured 2026-08-22",
+        "path": "docs/verify/fuyao_api_full.md",
+        "locator": "/api/a-share/financials/cash-flow-statements response field `cash_equivalents_net_addition`; snapshot line 359",
+        "url": "https://fuyao.aicubes.cn/llms-full.txt"
+      },
+      "metadata_correction": {
+        "previous": {
+          "canonical": "cash_equivalents_net_addition",
+          "meaning": "现金及等价物净增加额",
+          "unit": "ZXJL（现金及等价物净增加额）"
+        },
+        "updated": {
+          "canonical": "cash_equivalents_net_addition",
+          "meaning": "现金及现金等价物净增加额（原币元）。",
+          "unit": "原币元"
+        },
+        "rationale": "保留原值快照，并依据该完整响应路径的官方字段说明纠正旧的字段名、释义或非物理单位标注。"
+      }
+    },
+    {
+      "id": "20261018-fuyao-change",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "同花顺-fuyao",
+        "code": "change"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "aggregate_status_scope_unresolved",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "change",
+      "meaning": "当日涨跌幅，小数形式。",
+      "unit": "比例（小数）",
+      "rationale": "适配器将该来源字段作为 /api/a-share/special-data/dragon-tiger-list 响应项读取；官方契约快照对键 change 给出唯一含义。此裁定只确认 同花顺-fuyao::change 的来源内语义，不声明其他来源与之等价，也不新增 mappings。",
+      "source_contract": {
+        "authority": "同花顺 Fuyao 官方 API（Financial-API）",
+        "revision": "official full-contract snapshot captured 2026-08-22",
+        "path": "docs/verify/fuyao_api_full.md",
+        "locator": "/api/a-share/special-data/dragon-tiger-list response field `change`; snapshot line 652",
+        "url": "https://fuyao.aicubes.cn/llms-full.txt"
+      }
+    },
+    {
+      "id": "20261018-fuyao-continue_day_cnt",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "同花顺-fuyao",
+        "code": "continue_day_cnt"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "continue_day_cnt",
+      "meaning": "连板计数。",
+      "unit": "次",
+      "rationale": "适配器将该来源字段作为 /api/a-share/special-data/limit-up-pool 响应项读取；官方契约快照对键 continue_day_cnt 给出唯一含义。此裁定只确认 同花顺-fuyao::continue_day_cnt 的来源内语义，不声明其他来源与之等价，也不新增 mappings。",
+      "source_contract": {
+        "authority": "同花顺 Fuyao 官方 API（Financial-API）",
+        "revision": "official full-contract snapshot captured 2026-08-22",
+        "path": "docs/verify/fuyao_api_full.md",
+        "locator": "/api/a-share/special-data/limit-up-pool response field `continue_day_cnt`; snapshot line 927",
+        "url": "https://fuyao.aicubes.cn/llms-full.txt"
+      }
+    },
+    {
+      "id": "20261018-fuyao-continue_day_text",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "同花顺-fuyao",
+        "code": "continue_day_text"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "continue_day_text",
+      "meaning": "连板文本，例如 `首板`、`5天4板`。",
+      "unit": "",
+      "rationale": "适配器将该来源字段作为 /api/a-share/special-data/limit-up-pool 响应项读取；官方契约快照对键 continue_day_text 给出唯一含义。此裁定只确认 同花顺-fuyao::continue_day_text 的来源内语义，不声明其他来源与之等价，也不新增 mappings。",
+      "source_contract": {
+        "authority": "同花顺 Fuyao 官方 API（Financial-API）",
+        "revision": "official full-contract snapshot captured 2026-08-22",
+        "path": "docs/verify/fuyao_api_full.md",
+        "locator": "/api/a-share/special-data/limit-up-pool response field `continue_day_text`; snapshot line 926",
+        "url": "https://fuyao.aicubes.cn/llms-full.txt"
+      }
+    },
+    {
+      "id": "20261018-fuyao-dividend_per_share",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "同花顺-fuyao",
+        "code": "dividend_per_share"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "dividend_per_share",
+      "meaning": "每股现金分红（税前，原始货币）。非现金事件为 `0`。",
+      "unit": "原币/股",
+      "rationale": "适配器将该来源字段作为 /api/a-share/corporate-actions/adjustment-factors 响应项读取；官方契约快照对键 dividend_per_share 给出唯一含义。此裁定只确认 同花顺-fuyao::dividend_per_share 的来源内语义，不声明其他来源与之等价，也不新增 mappings。",
+      "source_contract": {
+        "authority": "同花顺 Fuyao 官方 API（Financial-API）",
+        "revision": "official full-contract snapshot captured 2026-08-22",
+        "path": "docs/verify/fuyao_api_full.md",
+        "locator": "/api/a-share/corporate-actions/adjustment-factors response field `dividend_per_share`; snapshot line 244",
+        "url": "https://fuyao.aicubes.cn/llms-full.txt"
+      }
+    },
+    {
+      "id": "20261018-fuyao-ex_date_ms",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "同花顺-fuyao",
+        "code": "ex_date_ms"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "ex_date_ms",
+      "meaning": "除权除息日，Asia/Shanghai 00:00:00 毫秒 Unix 时间戳。",
+      "unit": "毫秒时间戳",
+      "rationale": "适配器将该来源字段作为 /api/a-share/corporate-actions/adjustment-factors 响应项读取；官方契约快照对键 ex_date_ms 给出唯一含义。此裁定只确认 同花顺-fuyao::ex_date_ms 的来源内语义，不声明其他来源与之等价，也不新增 mappings。",
+      "source_contract": {
+        "authority": "同花顺 Fuyao 官方 API（Financial-API）",
+        "revision": "official full-contract snapshot captured 2026-08-22",
+        "path": "docs/verify/fuyao_api_full.md",
+        "locator": "/api/a-share/corporate-actions/adjustment-factors response field `ex_date_ms`; snapshot line 243",
+        "url": "https://fuyao.aicubes.cn/llms-full.txt"
+      }
+    },
+    {
+      "id": "20261018-fuyao-financing_cash_flow_net",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "同花顺-fuyao",
+        "code": "financing_cash_flow_net"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "financing_cash_flow_net",
+      "meaning": "筹资活动产生的现金流量净额（原币元）。",
+      "unit": "原币元",
+      "rationale": "适配器将该来源字段作为 /api/a-share/financials/cash-flow-statements 响应项读取；官方契约快照对键 financing_cash_flow_net 给出唯一含义。此裁定只确认 同花顺-fuyao::financing_cash_flow_net 的来源内语义，不声明其他来源与之等价，也不新增 mappings。",
+      "source_contract": {
+        "authority": "同花顺 Fuyao 官方 API（Financial-API）",
+        "revision": "official full-contract snapshot captured 2026-08-22",
+        "path": "docs/verify/fuyao_api_full.md",
+        "locator": "/api/a-share/financials/cash-flow-statements response field `financing_cash_flow_net`; snapshot line 356",
+        "url": "https://fuyao.aicubes.cn/llms-full.txt"
+      }
+    },
+    {
+      "id": "20261018-fuyao-first_limit_time",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "同花顺-fuyao",
+        "code": "first_limit_time"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "aggregate_status_scope_unresolved",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "first_limit_time",
+      "meaning": "首次与最后跌停时间，上海时区 `HH:mm`。",
+      "unit": "HH:mm",
+      "rationale": "适配器将该来源字段作为 /api/a-share/special-data/limit-down-pool 响应项读取；官方契约快照对键 first_limit_time 给出唯一含义。此裁定只确认 同花顺-fuyao::first_limit_time 的来源内语义，不声明其他来源与之等价，也不新增 mappings。",
+      "source_contract": {
+        "authority": "同花顺 Fuyao 官方 API（Financial-API）",
+        "revision": "official full-contract snapshot captured 2026-08-22",
+        "path": "docs/verify/fuyao_api_full.md",
+        "locator": "/api/a-share/special-data/limit-down-pool response field `first_limit_time`; snapshot line 952",
+        "url": "https://fuyao.aicubes.cn/llms-full.txt"
+      }
+    },
+    {
+      "id": "20261018-fuyao-fiscal_period",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "同花顺-fuyao",
+        "code": "fiscal_period"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "fiscal_period",
+      "meaning": "`FY` / `Q1` / `Q2` / `Q3` / `Q4`。",
+      "unit": "",
+      "rationale": "适配器将该来源字段作为 /api/a-share/corporate-actions/adjustment-factors 响应项读取；官方契约快照对键 fiscal_period 给出唯一含义。此裁定只确认 同花顺-fuyao::fiscal_period 的来源内语义，不声明其他来源与之等价，也不新增 mappings。",
+      "source_contract": {
+        "authority": "同花顺 Fuyao 官方 API（Financial-API）",
+        "revision": "official full-contract snapshot captured 2026-08-22",
+        "path": "docs/verify/fuyao_api_full.md",
+        "locator": "/api/a-share/corporate-actions/adjustment-factors response field `fiscal_period`; snapshot line 285",
+        "url": "https://fuyao.aicubes.cn/llms-full.txt"
+      }
+    },
+    {
+      "id": "20261018-fuyao-fiscal_year",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "同花顺-fuyao",
+        "code": "fiscal_year"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "fiscal_year",
+      "meaning": "财年（自然年）。",
+      "unit": "年",
+      "rationale": "适配器将该来源字段作为 /api/a-share/corporate-actions/adjustment-factors 响应项读取；官方契约快照对键 fiscal_year 给出唯一含义。此裁定只确认 同花顺-fuyao::fiscal_year 的来源内语义，不声明其他来源与之等价，也不新增 mappings。",
+      "source_contract": {
+        "authority": "同花顺 Fuyao 官方 API（Financial-API）",
+        "revision": "official full-contract snapshot captured 2026-08-22",
+        "path": "docs/verify/fuyao_api_full.md",
+        "locator": "/api/a-share/corporate-actions/adjustment-factors response field `fiscal_year`; snapshot line 284",
+        "url": "https://fuyao.aicubes.cn/llms-full.txt"
+      }
+    },
+    {
+      "id": "20261018-fuyao-float_market_cap",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "同花顺-fuyao",
+        "code": "float_market_cap"
+      },
+      "previous_status": "conflict",
+      "previous_status_resolution": "status_conflict",
+      "previous": {
+        "canonical": "派生 `float_market_cap × (总股本÷流通股本)",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "float_market_cap",
+      "meaning": "集合竞价快照中的流通市值。",
+      "unit": "",
+      "rationale": "适配器将该来源字段作为 /api/a-share/auction/snapshot 响应项读取；官方契约快照对键 float_market_cap 给出唯一含义。此裁定只确认 同花顺-fuyao::float_market_cap 的来源内语义，不声明其他来源与之等价，也不新增 mappings。",
+      "source_contract": {
+        "authority": "同花顺 Fuyao 官方 API（Financial-API）",
+        "revision": "official full-contract snapshot captured 2026-08-22",
+        "path": "docs/verify/fuyao_api_full.md",
+        "locator": "/api/a-share/auction/snapshot response field `float_market_cap`; snapshot line 587",
+        "url": "https://fuyao.aicubes.cn/llms-full.txt"
+      },
+      "metadata_correction": {
+        "previous": {
+          "canonical": "派生 `float_market_cap × (总股本÷流通股本)",
+          "meaning": "",
+          "unit": ""
+        },
+        "updated": {
+          "canonical": "float_market_cap",
+          "meaning": "集合竞价快照中的流通市值。",
+          "unit": ""
+        },
+        "rationale": "保留原值快照，并依据该完整响应路径的官方字段说明纠正旧的字段名、释义或非物理单位标注。"
+      }
+    },
+    {
+      "id": "20261018-fuyao-heat",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "同花顺-fuyao",
+        "code": "heat"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "heat",
+      "meaning": "热度值，保留上游原始字符串。",
+      "unit": "",
+      "rationale": "适配器将该来源字段作为 /api/a-share/special-data/skyrocket-list 响应项读取；官方契约快照对键 heat 给出唯一含义。此裁定只确认 同花顺-fuyao::heat 的来源内语义，不声明其他来源与之等价，也不新增 mappings。",
+      "source_contract": {
+        "authority": "同花顺 Fuyao 官方 API（Financial-API）",
+        "revision": "official full-contract snapshot captured 2026-08-22",
+        "path": "docs/verify/fuyao_api_full.md",
+        "locator": "/api/a-share/special-data/skyrocket-list response field `heat`; snapshot line 805",
+        "url": "https://fuyao.aicubes.cn/llms-full.txt"
+      }
+    },
+    {
+      "id": "20261018-fuyao-holder_equity_total",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "同花顺-fuyao",
+        "code": "holder_equity_total"
+      },
+      "previous_status": "conflict",
+      "previous_status_resolution": "status_conflict",
+      "previous": {
+        "canonical": "holder_equity_total",
+        "meaning": "股东权益合计",
+        "unit": "JZC（净资产/股东权益）"
+      },
+      "canonical": "holder_equity_total",
+      "meaning": "所有者权益（股东权益）合计（原币元）。",
+      "unit": "原币元",
+      "rationale": "适配器将该来源字段作为 /api/a-share/financials/balance-sheets 响应项读取；官方契约快照对键 holder_equity_total 给出唯一含义。此裁定只确认 同花顺-fuyao::holder_equity_total 的来源内语义，不声明其他来源与之等价，也不新增 mappings。",
+      "source_contract": {
+        "authority": "同花顺 Fuyao 官方 API（Financial-API）",
+        "revision": "official full-contract snapshot captured 2026-08-22",
+        "path": "docs/verify/fuyao_api_full.md",
+        "locator": "/api/a-share/financials/balance-sheets response field `holder_equity_total`; snapshot line 338",
+        "url": "https://fuyao.aicubes.cn/llms-full.txt"
+      },
+      "metadata_correction": {
+        "previous": {
+          "canonical": "holder_equity_total",
+          "meaning": "股东权益合计",
+          "unit": "JZC（净资产/股东权益）"
+        },
+        "updated": {
+          "canonical": "holder_equity_total",
+          "meaning": "所有者权益（股东权益）合计（原币元）。",
+          "unit": "原币元"
+        },
+        "rationale": "保留原值快照，并依据该完整响应路径的官方字段说明纠正旧的字段名、释义或非物理单位标注。"
+      }
+    },
+    {
+      "id": "20261018-fuyao-hot_rank",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "同花顺-fuyao",
+        "code": "hot_rank"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "aggregate_status_scope_unresolved",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "hot_rank",
+      "meaning": "同花顺人气排名，数值越小越靠前。",
+      "unit": "",
+      "rationale": "适配器将该来源字段作为 /api/a-share/special-data/dragon-tiger-list 响应项读取；官方契约快照对键 hot_rank 给出唯一含义。此裁定只确认 同花顺-fuyao::hot_rank 的来源内语义，不声明其他来源与之等价，也不新增 mappings。",
+      "source_contract": {
+        "authority": "同花顺 Fuyao 官方 API（Financial-API）",
+        "revision": "official full-contract snapshot captured 2026-08-22",
+        "path": "docs/verify/fuyao_api_full.md",
+        "locator": "/api/a-share/special-data/dragon-tiger-list response field `hot_rank`; snapshot line 655",
+        "url": "https://fuyao.aicubes.cn/llms-full.txt"
+      }
+    },
+    {
+      "id": "20261018-fuyao-income_tax_expense",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "同花顺-fuyao",
+        "code": "income_tax_expense"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "matched",
+      "previous": {
+        "canonical": "income_tax_expense",
+        "meaning": "所得税费用",
+        "unit": "—（云不暴露; F10 利润表）"
+      },
+      "canonical": "income_tax_expense",
+      "meaning": "所得税费用（原币元）。",
+      "unit": "原币元",
+      "rationale": "适配器将该来源字段作为 /api/a-share/financials/income-statements 响应项读取；官方契约快照对键 income_tax_expense 给出唯一含义。此裁定只确认 同花顺-fuyao::income_tax_expense 的来源内语义，不声明其他来源与之等价，也不新增 mappings。",
+      "source_contract": {
+        "authority": "同花顺 Fuyao 官方 API（Financial-API）",
+        "revision": "official full-contract snapshot captured 2026-08-22",
+        "path": "docs/verify/fuyao_api_full.md",
+        "locator": "/api/a-share/financials/income-statements response field `income_tax_expense`; snapshot line 313",
+        "url": "https://fuyao.aicubes.cn/llms-full.txt"
+      },
+      "metadata_correction": {
+        "previous": {
+          "canonical": "income_tax_expense",
+          "meaning": "所得税费用",
+          "unit": "—（云不暴露; F10 利润表）"
+        },
+        "updated": {
+          "canonical": "income_tax_expense",
+          "meaning": "所得税费用（原币元）。",
+          "unit": "原币元"
+        },
+        "rationale": "保留原值快照，并依据该完整响应路径的官方字段说明纠正旧的字段名、释义或非物理单位标注。"
+      }
+    },
+    {
+      "id": "20261018-fuyao-interest_expenses",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "同花顺-fuyao",
+        "code": "interest_expenses"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "matched",
+      "previous": {
+        "canonical": "interest_expenses",
+        "meaning": "利息支出",
+        "unit": "—（云不暴露; F10 利润表财务费用内含）"
+      },
+      "canonical": "interest_expenses",
+      "meaning": "利息费用（原币元）。",
+      "unit": "原币元",
+      "rationale": "适配器将该来源字段作为 /api/a-share/financials/income-statements 响应项读取；官方契约快照对键 interest_expenses 给出唯一含义。此裁定只确认 同花顺-fuyao::interest_expenses 的来源内语义，不声明其他来源与之等价，也不新增 mappings。",
+      "source_contract": {
+        "authority": "同花顺 Fuyao 官方 API（Financial-API）",
+        "revision": "official full-contract snapshot captured 2026-08-22",
+        "path": "docs/verify/fuyao_api_full.md",
+        "locator": "/api/a-share/financials/income-statements response field `interest_expenses`; snapshot line 311",
+        "url": "https://fuyao.aicubes.cn/llms-full.txt"
+      },
+      "metadata_correction": {
+        "previous": {
+          "canonical": "interest_expenses",
+          "meaning": "利息支出",
+          "unit": "—（云不暴露; F10 利润表财务费用内含）"
+        },
+        "updated": {
+          "canonical": "interest_expenses",
+          "meaning": "利息费用（原币元）。",
+          "unit": "原币元"
+        },
+        "rationale": "保留原值快照，并依据该完整响应路径的官方字段说明纠正旧的字段名、释义或非物理单位标注。"
+      }
+    },
+    {
+      "id": "20261018-fuyao-invest_cash_flow_net",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "同花顺-fuyao",
+        "code": "invest_cash_flow_net"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "invest_cash_flow_net",
+      "meaning": "投资活动产生的现金流量净额（原币元）。",
+      "unit": "原币元",
+      "rationale": "适配器将该来源字段作为 /api/a-share/financials/cash-flow-statements 响应项读取；官方契约快照对键 invest_cash_flow_net 给出唯一含义。此裁定只确认 同花顺-fuyao::invest_cash_flow_net 的来源内语义，不声明其他来源与之等价，也不新增 mappings。",
+      "source_contract": {
+        "authority": "同花顺 Fuyao 官方 API（Financial-API）",
+        "revision": "official full-contract snapshot captured 2026-08-22",
+        "path": "docs/verify/fuyao_api_full.md",
+        "locator": "/api/a-share/financials/cash-flow-statements response field `invest_cash_flow_net`; snapshot line 355",
+        "url": "https://fuyao.aicubes.cn/llms-full.txt"
+      }
+    },
+    {
+      "id": "20261018-fuyao-is_new",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "同花顺-fuyao",
+        "code": "is_new"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "aggregate_status_scope_unresolved",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "is_new",
+      "meaning": "是否未开板新股，仅展示。",
+      "unit": "布尔值",
+      "rationale": "适配器将该来源字段作为 /api/a-share/special-data/limit-up-pool 响应项读取；官方契约快照对键 is_new 给出唯一含义。此裁定只确认 同花顺-fuyao::is_new 的来源内语义，不声明其他来源与之等价，也不新增 mappings。",
+      "source_contract": {
+        "authority": "同花顺 Fuyao 官方 API（Financial-API）",
+        "revision": "official full-contract snapshot captured 2026-08-22",
+        "path": "docs/verify/fuyao_api_full.md",
+        "locator": "/api/a-share/special-data/limit-up-pool response field `is_new`; snapshot line 921",
+        "url": "https://fuyao.aicubes.cn/llms-full.txt"
+      }
+    },
+    {
+      "id": "20261018-fuyao-is_st",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "同花顺-fuyao",
+        "code": "is_st"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "is_st",
+      "meaning": "是否 ST，仅展示，不作为筛选入参。",
+      "unit": "布尔值",
+      "rationale": "适配器将该来源字段作为 /api/a-share/special-data/limit-up-pool 响应项读取；官方契约快照对键 is_st 给出唯一含义。此裁定只确认 同花顺-fuyao::is_st 的来源内语义，不声明其他来源与之等价，也不新增 mappings。",
+      "source_contract": {
+        "authority": "同花顺 Fuyao 官方 API（Financial-API）",
+        "revision": "official full-contract snapshot captured 2026-08-22",
+        "path": "docs/verify/fuyao_api_full.md",
+        "locator": "/api/a-share/special-data/limit-up-pool response field `is_st`; snapshot line 920",
+        "url": "https://fuyao.aicubes.cn/llms-full.txt"
+      }
+    },
+    {
+      "id": "20261018-fuyao-keyword_list",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "同花顺-fuyao",
+        "code": "keyword_list"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "keyword_list",
+      "meaning": "关键词列表；无关键词时返回空数组。",
+      "unit": "",
+      "rationale": "适配器将该来源字段作为 /api/a-share/special-data/anomaly-analysis-list 响应项读取；官方契约快照对键 keyword_list 给出唯一含义。此裁定只确认 同花顺-fuyao::keyword_list 的来源内语义，不声明其他来源与之等价，也不新增 mappings。",
+      "source_contract": {
+        "authority": "同花顺 Fuyao 官方 API（Financial-API）",
+        "revision": "official full-contract snapshot captured 2026-08-22",
+        "path": "docs/verify/fuyao_api_full.md",
+        "locator": "/api/a-share/special-data/anomaly-analysis-list response field `keyword_list`; snapshot line 527",
+        "url": "https://fuyao.aicubes.cn/llms-full.txt"
+      }
+    },
+    {
+      "id": "20261018-fuyao-last_limit_time",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "同花顺-fuyao",
+        "code": "last_limit_time"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "aggregate_status_scope_unresolved",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "last_limit_time",
+      "meaning": "首次与最后跌停时间，上海时区 `HH:mm`。",
+      "unit": "HH:mm",
+      "rationale": "适配器将该来源字段作为 /api/a-share/special-data/limit-down-pool 响应项读取；官方契约快照对键 last_limit_time 给出唯一含义。此裁定只确认 同花顺-fuyao::last_limit_time 的来源内语义，不声明其他来源与之等价，也不新增 mappings。",
+      "source_contract": {
+        "authority": "同花顺 Fuyao 官方 API（Financial-API）",
+        "revision": "official full-contract snapshot captured 2026-08-22",
+        "path": "docs/verify/fuyao_api_full.md",
+        "locator": "/api/a-share/special-data/limit-down-pool response field `last_limit_time`; snapshot line 952",
+        "url": "https://fuyao.aicubes.cn/llms-full.txt"
+      }
+    },
+    {
+      "id": "20261018-fuyao-limit_reason",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "同花顺-fuyao",
+        "code": "limit_reason"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "limit_reason",
+      "meaning": "涨跌停原因。",
+      "unit": "",
+      "rationale": "适配器将该来源字段作为 /api/a-share/special-data/dragon-tiger-list 响应项读取；官方契约快照对键 limit_reason 给出唯一含义。此裁定只确认 同花顺-fuyao::limit_reason 的来源内语义，不声明其他来源与之等价，也不新增 mappings。",
+      "source_contract": {
+        "authority": "同花顺 Fuyao 官方 API（Financial-API）",
+        "revision": "official full-contract snapshot captured 2026-08-22",
+        "path": "docs/verify/fuyao_api_full.md",
+        "locator": "/api/a-share/special-data/dragon-tiger-list response field `limit_reason`; snapshot line 658",
+        "url": "https://fuyao.aicubes.cn/llms-full.txt"
+      }
+    },
+    {
+      "id": "20261018-fuyao-limit_up_reason",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "同花顺-fuyao",
+        "code": "limit_up_reason"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "limit_up_reason",
+      "meaning": "涨停原因；上游空字符串会标准化为 `null`。",
+      "unit": "",
+      "rationale": "适配器将该来源字段作为 /api/a-share/special-data/limit-up-pool 响应项读取；官方契约快照对键 limit_up_reason 给出唯一含义。此裁定只确认 同花顺-fuyao::limit_up_reason 的来源内语义，不声明其他来源与之等价，也不新增 mappings。",
+      "source_contract": {
+        "authority": "同花顺 Fuyao 官方 API（Financial-API）",
+        "revision": "official full-contract snapshot captured 2026-08-22",
+        "path": "docs/verify/fuyao_api_full.md",
+        "locator": "/api/a-share/special-data/limit-up-pool response field `limit_up_reason`; snapshot line 925",
+        "url": "https://fuyao.aicubes.cn/llms-full.txt"
+      }
+    },
+    {
+      "id": "20261018-fuyao-limit_up_time",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "同花顺-fuyao",
+        "code": "limit_up_time"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "limit_up_time",
+      "meaning": "涨停时间，格式 `HH:MM`。",
+      "unit": "HH:mm",
+      "rationale": "适配器将该来源字段作为 /api/a-share/special-data/limit-up-pool 响应项读取；官方契约快照对键 limit_up_time 给出唯一含义。此裁定只确认 同花顺-fuyao::limit_up_time 的来源内语义，不声明其他来源与之等价，也不新增 mappings。",
+      "source_contract": {
+        "authority": "同花顺 Fuyao 官方 API（Financial-API）",
+        "revision": "official full-contract snapshot captured 2026-08-22",
+        "path": "docs/verify/fuyao_api_full.md",
+        "locator": "/api/a-share/special-data/limit-up-pool response field `limit_up_time`; snapshot line 924",
+        "url": "https://fuyao.aicubes.cn/llms-full.txt"
+      }
+    },
+    {
+      "id": "20261018-fuyao-manage_fee",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "同花顺-fuyao",
+        "code": "manage_fee"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "matched",
+      "previous": {
+        "canonical": "manage_fee",
+        "meaning": "管理费用",
+        "unit": "—（云不暴露; TDX F10 利润表 line 98）"
+      },
+      "canonical": "manage_fee",
+      "meaning": "管理费用（原币元）。",
+      "unit": "原币元",
+      "rationale": "适配器将该来源字段作为 /api/a-share/financials/income-statements 响应项读取；官方契约快照对键 manage_fee 给出唯一含义。此裁定只确认 同花顺-fuyao::manage_fee 的来源内语义，不声明其他来源与之等价，也不新增 mappings。",
+      "source_contract": {
+        "authority": "同花顺 Fuyao 官方 API（Financial-API）",
+        "revision": "official full-contract snapshot captured 2026-08-22",
+        "path": "docs/verify/fuyao_api_full.md",
+        "locator": "/api/a-share/financials/income-statements response field `manage_fee`; snapshot line 308",
+        "url": "https://fuyao.aicubes.cn/llms-full.txt"
+      },
+      "metadata_correction": {
+        "previous": {
+          "canonical": "manage_fee",
+          "meaning": "管理费用",
+          "unit": "—（云不暴露; TDX F10 利润表 line 98）"
+        },
+        "updated": {
+          "canonical": "manage_fee",
+          "meaning": "管理费用（原币元）。",
+          "unit": "原币元"
+        },
+        "rationale": "保留原值快照，并依据该完整响应路径的官方字段说明纠正旧的字段名、释义或非物理单位标注。"
+      }
+    },
+    {
+      "id": "20261018-fuyao-max_seal_money",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "同花顺-fuyao",
+        "code": "max_seal_money"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "max_seal_money",
+      "meaning": "峰值封单额，单位元。",
+      "unit": "元",
+      "rationale": "适配器将该来源字段作为 /api/a-share/special-data/limit-up-pool 响应项读取；官方契约快照对键 max_seal_money 给出唯一含义。此裁定只确认 同花顺-fuyao::max_seal_money 的来源内语义，不声明其他来源与之等价，也不新增 mappings。",
+      "source_contract": {
+        "authority": "同花顺 Fuyao 官方 API（Financial-API）",
+        "revision": "official full-contract snapshot captured 2026-08-22",
+        "path": "docs/verify/fuyao_api_full.md",
+        "locator": "/api/a-share/special-data/limit-up-pool response field `max_seal_money`; snapshot line 929",
+        "url": "https://fuyao.aicubes.cn/llms-full.txt"
+      }
+    },
+    {
+      "id": "20261018-fuyao-net_rate",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "同花顺-fuyao",
+        "code": "net_rate"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "net_rate",
+      "meaning": "龙虎榜净买入占比，小数形式。",
+      "unit": "比例（小数）",
+      "rationale": "适配器将该来源字段作为 /api/a-share/special-data/dragon-tiger-list 响应项读取；官方契约快照对键 net_rate 给出唯一含义。此裁定只确认 同花顺-fuyao::net_rate 的来源内语义，不声明其他来源与之等价，也不新增 mappings。",
+      "source_contract": {
+        "authority": "同花顺 Fuyao 官方 API（Financial-API）",
+        "revision": "official full-contract snapshot captured 2026-08-22",
+        "path": "docs/verify/fuyao_api_full.md",
+        "locator": "/api/a-share/special-data/dragon-tiger-list response field `net_rate`; snapshot line 654",
+        "url": "https://fuyao.aicubes.cn/llms-full.txt"
+      }
+    },
+    {
+      "id": "20261018-fuyao-net_value",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "同花顺-fuyao",
+        "code": "net_value"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "net_value",
+      "meaning": "龙虎榜净买入金额，单位元。",
+      "unit": "元",
+      "rationale": "适配器将该来源字段作为 /api/a-share/special-data/dragon-tiger-list 响应项读取；官方契约快照对键 net_value 给出唯一含义。此裁定只确认 同花顺-fuyao::net_value 的来源内语义，不声明其他来源与之等价，也不新增 mappings。",
+      "source_contract": {
+        "authority": "同花顺 Fuyao 官方 API（Financial-API）",
+        "revision": "official full-contract snapshot captured 2026-08-22",
+        "path": "docs/verify/fuyao_api_full.md",
+        "locator": "/api/a-share/special-data/dragon-tiger-list response field `net_value`; snapshot line 653",
+        "url": "https://fuyao.aicubes.cn/llms-full.txt"
+      }
+    },
+    {
+      "id": "20261018-fuyao-non_current_nets_total",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "同花顺-fuyao",
+        "code": "non_current_nets_total"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "non_current_nets_total",
+      "meaning": "非流动资产合计（原币元）。",
+      "unit": "原币元",
+      "rationale": "适配器将该来源字段作为 /api/a-share/financials/balance-sheets 响应项读取；官方契约快照对键 non_current_nets_total 给出唯一含义。此裁定只确认 同花顺-fuyao::non_current_nets_total 的来源内语义，不声明其他来源与之等价，也不新增 mappings。",
+      "source_contract": {
+        "authority": "同花顺 Fuyao 官方 API（Financial-API）",
+        "revision": "official full-contract snapshot captured 2026-08-22",
+        "path": "docs/verify/fuyao_api_full.md",
+        "locator": "/api/a-share/financials/balance-sheets response field `non_current_nets_total`; snapshot line 334",
+        "url": "https://fuyao.aicubes.cn/llms-full.txt"
+      }
+    },
+    {
+      "id": "20261018-fuyao-open_times",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "同花顺-fuyao",
+        "code": "open_times"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "aggregate_status_scope_unresolved",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "open_times",
+      "meaning": "开板次数。",
+      "unit": "次",
+      "rationale": "适配器将该来源字段作为 /api/a-share/special-data/limit-break-pool 响应项读取；官方契约快照对键 open_times 给出唯一含义。此裁定只确认 同花顺-fuyao::open_times 的来源内语义，不声明其他来源与之等价，也不新增 mappings。",
+      "source_contract": {
+        "authority": "同花顺 Fuyao 官方 API（Financial-API）",
+        "revision": "official full-contract snapshot captured 2026-08-22",
+        "path": "docs/verify/fuyao_api_full.md",
+        "locator": "/api/a-share/special-data/limit-break-pool response field `open_times`; snapshot line 976",
+        "url": "https://fuyao.aicubes.cn/llms-full.txt"
+      }
+    },
+    {
+      "id": "20261018-fuyao-operating_costs",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "同花顺-fuyao",
+        "code": "operating_costs"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "operating_costs",
+      "meaning": "营业成本（原币元）。",
+      "unit": "原币元",
+      "rationale": "适配器将该来源字段作为 /api/a-share/financials/income-statements 响应项读取；官方契约快照对键 operating_costs 给出唯一含义。此裁定只确认 同花顺-fuyao::operating_costs 的来源内语义，不声明其他来源与之等价，也不新增 mappings。",
+      "source_contract": {
+        "authority": "同花顺 Fuyao 官方 API（Financial-API）",
+        "revision": "official full-contract snapshot captured 2026-08-22",
+        "path": "docs/verify/fuyao_api_full.md",
+        "locator": "/api/a-share/financials/income-statements response field `operating_costs`; snapshot line 305",
+        "url": "https://fuyao.aicubes.cn/llms-full.txt"
+      }
+    },
+    {
+      "id": "20261018-fuyao-operating_expenses",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "同花顺-fuyao",
+        "code": "operating_expenses"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "operating_expenses",
+      "meaning": "营业总成本（原币元）。",
+      "unit": "原币元",
+      "rationale": "适配器将该来源字段作为 /api/a-share/financials/income-statements 响应项读取；官方契约快照对键 operating_expenses 给出唯一含义。此裁定只确认 同花顺-fuyao::operating_expenses 的来源内语义，不声明其他来源与之等价，也不新增 mappings。",
+      "source_contract": {
+        "authority": "同花顺 Fuyao 官方 API（Financial-API）",
+        "revision": "official full-contract snapshot captured 2026-08-22",
+        "path": "docs/verify/fuyao_api_full.md",
+        "locator": "/api/a-share/financials/income-statements response field `operating_expenses`; snapshot line 306",
+        "url": "https://fuyao.aicubes.cn/llms-full.txt"
+      }
+    },
+    {
+      "id": "20261018-fuyao-operating_income",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "同花顺-fuyao",
+        "code": "operating_income"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "operating_income",
+      "meaning": "营业收入（原币元）。",
+      "unit": "原币元",
+      "rationale": "适配器将该来源字段作为 /api/a-share/financials/income-statements 响应项读取；官方契约快照对键 operating_income 给出唯一含义。此裁定只确认 同花顺-fuyao::operating_income 的来源内语义，不声明其他来源与之等价，也不新增 mappings。",
+      "source_contract": {
+        "authority": "同花顺 Fuyao 官方 API（Financial-API）",
+        "revision": "official full-contract snapshot captured 2026-08-22",
+        "path": "docs/verify/fuyao_api_full.md",
+        "locator": "/api/a-share/financials/income-statements response field `operating_income`; snapshot line 304",
+        "url": "https://fuyao.aicubes.cn/llms-full.txt"
+      }
+    },
+    {
+      "id": "20261018-fuyao-operating_profit",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "同花顺-fuyao",
+        "code": "operating_profit"
+      },
+      "previous_status": "conflict",
+      "previous_status_resolution": "status_conflict",
+      "previous": {
+        "canonical": "operating_profit",
+        "meaning": "营业利润",
+        "unit": "YYLR（营业利润）"
+      },
+      "canonical": "operating_profit",
+      "meaning": "营业利润（原币元）。",
+      "unit": "原币元",
+      "rationale": "适配器将该来源字段作为 /api/a-share/financials/income-statements 响应项读取；官方契约快照对键 operating_profit 给出唯一含义。此裁定只确认 同花顺-fuyao::operating_profit 的来源内语义，不声明其他来源与之等价，也不新增 mappings。",
+      "source_contract": {
+        "authority": "同花顺 Fuyao 官方 API（Financial-API）",
+        "revision": "official full-contract snapshot captured 2026-08-22",
+        "path": "docs/verify/fuyao_api_full.md",
+        "locator": "/api/a-share/financials/income-statements response field `operating_profit`; snapshot line 310",
+        "url": "https://fuyao.aicubes.cn/llms-full.txt"
+      },
+      "metadata_correction": {
+        "previous": {
+          "canonical": "operating_profit",
+          "meaning": "营业利润",
+          "unit": "YYLR（营业利润）"
+        },
+        "updated": {
+          "canonical": "operating_profit",
+          "meaning": "营业利润（原币元）。",
+          "unit": "原币元"
+        },
+        "rationale": "保留原值快照，并依据该完整响应路径的官方字段说明纠正旧的字段名、释义或非物理单位标注。"
+      }
+    },
+    {
+      "id": "20261018-fuyao-parent_holder_net_profit",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "同花顺-fuyao",
+        "code": "parent_holder_net_profit"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "parent_holder_net_profit",
+      "meaning": "归属于母公司股东的净利润（原币元）。",
+      "unit": "原币元",
+      "rationale": "适配器将该来源字段作为 /api/a-share/financials/income-statements 响应项读取；官方契约快照对键 parent_holder_net_profit 给出唯一含义。此裁定只确认 同花顺-fuyao::parent_holder_net_profit 的来源内语义，不声明其他来源与之等价，也不新增 mappings。",
+      "source_contract": {
+        "authority": "同花顺 Fuyao 官方 API（Financial-API）",
+        "revision": "official full-contract snapshot captured 2026-08-22",
+        "path": "docs/verify/fuyao_api_full.md",
+        "locator": "/api/a-share/financials/income-statements response field `parent_holder_net_profit`; snapshot line 315",
+        "url": "https://fuyao.aicubes.cn/llms-full.txt"
+      }
+    },
+    {
+      "id": "20261018-fuyao-pay_dividends_profits_interest_cash",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "同花顺-fuyao",
+        "code": "pay_dividends_profits_interest_cash"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "matched",
+      "previous": {
+        "canonical": "pay_dividends_profits_interest_cash",
+        "meaning": "分红/利息现金支出",
+        "unit": "—（云不暴露; F10 现金流量表）"
+      },
+      "canonical": "pay_dividends_profits_interest_cash",
+      "meaning": "分配股利、利润或偿付利息支付的现金（原币元）。",
+      "unit": "原币元",
+      "rationale": "适配器将该来源字段作为 /api/a-share/financials/cash-flow-statements 响应项读取；官方契约快照对键 pay_dividends_profits_interest_cash 给出唯一含义。此裁定只确认 同花顺-fuyao::pay_dividends_profits_interest_cash 的来源内语义，不声明其他来源与之等价，也不新增 mappings。",
+      "source_contract": {
+        "authority": "同花顺 Fuyao 官方 API（Financial-API）",
+        "revision": "official full-contract snapshot captured 2026-08-22",
+        "path": "docs/verify/fuyao_api_full.md",
+        "locator": "/api/a-share/financials/cash-flow-statements response field `pay_dividends_profits_interest_cash`; snapshot line 358",
+        "url": "https://fuyao.aicubes.cn/llms-full.txt"
+      },
+      "metadata_correction": {
+        "previous": {
+          "canonical": "pay_dividends_profits_interest_cash",
+          "meaning": "分红/利息现金支出",
+          "unit": "—（云不暴露; F10 现金流量表）"
+        },
+        "updated": {
+          "canonical": "pay_dividends_profits_interest_cash",
+          "meaning": "分配股利、利润或偿付利息支付的现金（原币元）。",
+          "unit": "原币元"
+        },
+        "rationale": "保留原值快照，并依据该完整响应路径的官方字段说明纠正旧的字段名、释义或非物理单位标注。"
+      }
+    },
+    {
+      "id": "20261018-fuyao-pay_fixed_assets_etc_cash",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "同花顺-fuyao",
+        "code": "pay_fixed_assets_etc_cash"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "pay_fixed_assets_etc_cash",
+      "meaning": "购建固定资产、无形资产和其他长期资产支付的现金（原币元）。",
+      "unit": "原币元",
+      "rationale": "适配器将该来源字段作为 /api/a-share/financials/cash-flow-statements 响应项读取；官方契约快照对键 pay_fixed_assets_etc_cash 给出唯一含义。此裁定只确认 同花顺-fuyao::pay_fixed_assets_etc_cash 的来源内语义，不声明其他来源与之等价，也不新增 mappings。",
+      "source_contract": {
+        "authority": "同花顺 Fuyao 官方 API（Financial-API）",
+        "revision": "official full-contract snapshot captured 2026-08-22",
+        "path": "docs/verify/fuyao_api_full.md",
+        "locator": "/api/a-share/financials/cash-flow-statements response field `pay_fixed_assets_etc_cash`; snapshot line 357",
+        "url": "https://fuyao.aicubes.cn/llms-full.txt"
+      }
+    },
+    {
+      "id": "20261018-fuyao-per_share_bonus",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "同花顺-fuyao",
+        "code": "per_share_bonus"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "per_share_bonus",
+      "meaning": "每股送股比例（如 `0.1` 表示 10 送 1）。纯现金分红事件为 `0`。",
+      "unit": "",
+      "rationale": "适配器将该来源字段作为 /api/a-share/corporate-actions/adjustment-factors 响应项读取；官方契约快照对键 per_share_bonus 给出唯一含义。此裁定只确认 同花顺-fuyao::per_share_bonus 的来源内语义，不声明其他来源与之等价，也不新增 mappings。",
+      "source_contract": {
+        "authority": "同花顺 Fuyao 官方 API（Financial-API）",
+        "revision": "official full-contract snapshot captured 2026-08-22",
+        "path": "docs/verify/fuyao_api_full.md",
+        "locator": "/api/a-share/corporate-actions/adjustment-factors response field `per_share_bonus`; snapshot line 245",
+        "url": "https://fuyao.aicubes.cn/llms-full.txt"
+      }
+    },
+    {
+      "id": "20261018-fuyao-period_end_ms",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "同花顺-fuyao",
+        "code": "period_end_ms"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "period_end_ms",
+      "meaning": "报告期末（Asia/Shanghai 零点毫秒戳）。",
+      "unit": "毫秒时间戳",
+      "rationale": "适配器将该来源字段作为 /api/a-share/corporate-actions/adjustment-factors 响应项读取；官方契约快照对键 period_end_ms 给出唯一含义。此裁定只确认 同花顺-fuyao::period_end_ms 的来源内语义，不声明其他来源与之等价，也不新增 mappings。",
+      "source_contract": {
+        "authority": "同花顺 Fuyao 官方 API（Financial-API）",
+        "revision": "official full-contract snapshot captured 2026-08-22",
+        "path": "docs/verify/fuyao_api_full.md",
+        "locator": "/api/a-share/corporate-actions/adjustment-factors response field `period_end_ms`; snapshot line 287",
+        "url": "https://fuyao.aicubes.cn/llms-full.txt"
+      }
+    },
+    {
+      "id": "20261018-fuyao-pre_close_price",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "同花顺-fuyao",
+        "code": "pre_close_price"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "aggregate_status_scope_unresolved",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "pre_close_price",
+      "meaning": "集合竞价快照中的前收盘价。",
+      "unit": "",
+      "rationale": "适配器将该来源字段作为 /api/a-share/auction/snapshot 响应项读取；官方契约快照对键 pre_close_price 给出唯一含义。此裁定只确认 同花顺-fuyao::pre_close_price 的来源内语义，不声明其他来源与之等价，也不新增 mappings。",
+      "source_contract": {
+        "authority": "同花顺 Fuyao 官方 API（Financial-API）",
+        "revision": "official full-contract snapshot captured 2026-08-22",
+        "path": "docs/verify/fuyao_api_full.md",
+        "locator": "/api/a-share/auction/snapshot response field `pre_close_price`; snapshot line 586",
+        "url": "https://fuyao.aicubes.cn/llms-full.txt"
+      }
+    },
+    {
+      "id": "20261018-fuyao-profit_total",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "同花顺-fuyao",
+        "code": "profit_total"
+      },
+      "previous_status": "conflict",
+      "previous_status_resolution": "status_conflict",
+      "previous": {
+        "canonical": "profit_total",
+        "meaning": "利润总额",
+        "unit": "LYZE（利润总额）"
+      },
+      "canonical": "profit_total",
+      "meaning": "利润总额（原币元）。",
+      "unit": "原币元",
+      "rationale": "适配器将该来源字段作为 /api/a-share/financials/income-statements 响应项读取；官方契约快照对键 profit_total 给出唯一含义。此裁定只确认 同花顺-fuyao::profit_total 的来源内语义，不声明其他来源与之等价，也不新增 mappings。",
+      "source_contract": {
+        "authority": "同花顺 Fuyao 官方 API（Financial-API）",
+        "revision": "official full-contract snapshot captured 2026-08-22",
+        "path": "docs/verify/fuyao_api_full.md",
+        "locator": "/api/a-share/financials/income-statements response field `profit_total`; snapshot line 312",
+        "url": "https://fuyao.aicubes.cn/llms-full.txt"
+      },
+      "metadata_correction": {
+        "previous": {
+          "canonical": "profit_total",
+          "meaning": "利润总额",
+          "unit": "LYZE（利润总额）"
+        },
+        "updated": {
+          "canonical": "profit_total",
+          "meaning": "利润总额（原币元）。",
+          "unit": "原币元"
+        },
+        "rationale": "保留原值快照，并依据该完整响应路径的官方字段说明纠正旧的字段名、释义或非物理单位标注。"
+      }
+    },
+    {
+      "id": "20261018-fuyao-range_days",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "同花顺-fuyao",
+        "code": "range_days"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "range_days",
+      "meaning": "上榜区间天数，`1` 为当日榜，`3` 为 3 日榜。",
+      "unit": "天",
+      "rationale": "适配器将该来源字段作为 /api/a-share/special-data/dragon-tiger-list 响应项读取；官方契约快照对键 range_days 给出唯一含义。此裁定只确认 同花顺-fuyao::range_days 的来源内语义，不声明其他来源与之等价，也不新增 mappings。",
+      "source_contract": {
+        "authority": "同花顺 Fuyao 官方 API（Financial-API）",
+        "revision": "official full-contract snapshot captured 2026-08-22",
+        "path": "docs/verify/fuyao_api_full.md",
+        "locator": "/api/a-share/special-data/dragon-tiger-list response field `range_days`; snapshot line 659",
+        "url": "https://fuyao.aicubes.cn/llms-full.txt"
+      }
+    },
+    {
+      "id": "20261018-fuyao-rank_change",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "同花顺-fuyao",
+        "code": "rank_change"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "aggregate_status_scope_unresolved",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "rank_change",
+      "meaning": "排名变化，正数表示上升，负数表示下降；上游缺失时为 `null`。",
+      "unit": "",
+      "rationale": "适配器将该来源字段作为 /api/a-share/special-data/skyrocket-list 响应项读取；官方契约快照对键 rank_change 给出唯一含义。此裁定只确认 同花顺-fuyao::rank_change 的来源内语义，不声明其他来源与之等价，也不新增 mappings。",
+      "source_contract": {
+        "authority": "同花顺 Fuyao 官方 API（Financial-API）",
+        "revision": "official full-contract snapshot captured 2026-08-22",
+        "path": "docs/verify/fuyao_api_full.md",
+        "locator": "/api/a-share/special-data/skyrocket-list response field `rank_change`; snapshot line 806",
+        "url": "https://fuyao.aicubes.cn/llms-full.txt"
+      }
+    },
+    {
+      "id": "20261018-fuyao-rank_trend",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "同花顺-fuyao",
+        "code": "rank_trend"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "rank_trend",
+      "meaning": "排名趋势：`up` / `down` / `flat` / `unknown`。",
+      "unit": "",
+      "rationale": "适配器将该来源字段作为 /api/a-share/special-data/skyrocket-list 响应项读取；官方契约快照对键 rank_trend 给出唯一含义。此裁定只确认 同花顺-fuyao::rank_trend 的来源内语义，不声明其他来源与之等价，也不新增 mappings。",
+      "source_contract": {
+        "authority": "同花顺 Fuyao 官方 API（Financial-API）",
+        "revision": "official full-contract snapshot captured 2026-08-22",
+        "path": "docs/verify/fuyao_api_full.md",
+        "locator": "/api/a-share/special-data/skyrocket-list response field `rank_trend`; snapshot line 807",
+        "url": "https://fuyao.aicubes.cn/llms-full.txt"
+      }
+    },
+    {
+      "id": "20261018-fuyao-research_and_development_expenses",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "同花顺-fuyao",
+        "code": "research_and_development_expenses"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "matched",
+      "previous": {
+        "canonical": "research_and_development_expenses",
+        "meaning": "研发费用",
+        "unit": "—（云不暴露; F10 利润表）"
+      },
+      "canonical": "research_and_development_expenses",
+      "meaning": "研发费用（原币元）。",
+      "unit": "原币元",
+      "rationale": "适配器将该来源字段作为 /api/a-share/financials/income-statements 响应项读取；官方契约快照对键 research_and_development_expenses 给出唯一含义。此裁定只确认 同花顺-fuyao::research_and_development_expenses 的来源内语义，不声明其他来源与之等价，也不新增 mappings。",
+      "source_contract": {
+        "authority": "同花顺 Fuyao 官方 API（Financial-API）",
+        "revision": "official full-contract snapshot captured 2026-08-22",
+        "path": "docs/verify/fuyao_api_full.md",
+        "locator": "/api/a-share/financials/income-statements response field `research_and_development_expenses`; snapshot line 309",
+        "url": "https://fuyao.aicubes.cn/llms-full.txt"
+      },
+      "metadata_correction": {
+        "previous": {
+          "canonical": "research_and_development_expenses",
+          "meaning": "研发费用",
+          "unit": "—（云不暴露; F10 利润表）"
+        },
+        "updated": {
+          "canonical": "research_and_development_expenses",
+          "meaning": "研发费用（原币元）。",
+          "unit": "原币元"
+        },
+        "rationale": "保留原值快照，并依据该完整响应路径的官方字段说明纠正旧的字段名、释义或非物理单位标注。"
+      }
+    },
+    {
+      "id": "20261018-fuyao-sales_fee",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "同花顺-fuyao",
+        "code": "sales_fee"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "sales_fee",
+      "meaning": "销售费用（原币元）。",
+      "unit": "原币元",
+      "rationale": "适配器将该来源字段作为 /api/a-share/financials/income-statements 响应项读取；官方契约快照对键 sales_fee 给出唯一含义。此裁定只确认 同花顺-fuyao::sales_fee 的来源内语义，不声明其他来源与之等价，也不新增 mappings。",
+      "source_contract": {
+        "authority": "同花顺 Fuyao 官方 API（Financial-API）",
+        "revision": "official full-contract snapshot captured 2026-08-22",
+        "path": "docs/verify/fuyao_api_full.md",
+        "locator": "/api/a-share/financials/income-statements response field `sales_fee`; snapshot line 307",
+        "url": "https://fuyao.aicubes.cn/llms-full.txt"
+      }
+    },
+    {
+      "id": "20261018-fuyao-seal_money",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "同花顺-fuyao",
+        "code": "seal_money"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "aggregate_status_scope_unresolved",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "seal_money",
+      "meaning": "当前封单额，单位元。",
+      "unit": "元",
+      "rationale": "适配器将该来源字段作为 /api/a-share/special-data/limit-up-pool 响应项读取；官方契约快照对键 seal_money 给出唯一含义。此裁定只确认 同花顺-fuyao::seal_money 的来源内语义，不声明其他来源与之等价，也不新增 mappings。",
+      "source_contract": {
+        "authority": "同花顺 Fuyao 官方 API（Financial-API）",
+        "revision": "official full-contract snapshot captured 2026-08-22",
+        "path": "docs/verify/fuyao_api_full.md",
+        "locator": "/api/a-share/special-data/limit-up-pool response field `seal_money`; snapshot line 928",
+        "url": "https://fuyao.aicubes.cn/llms-full.txt"
+      }
+    },
+    {
+      "id": "20261018-fuyao-sell_value",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "同花顺-fuyao",
+        "code": "sell_value"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "sell_value",
+      "meaning": "卖方金额，单位元。",
+      "unit": "元",
+      "rationale": "适配器将该来源字段作为 /api/a-share/special-data/dragon-tiger-list 响应项读取；官方契约快照对键 sell_value 给出唯一含义。此裁定只确认 同花顺-fuyao::sell_value 的来源内语义，不声明其他来源与之等价，也不新增 mappings。",
+      "source_contract": {
+        "authority": "同花顺 Fuyao 官方 API（Financial-API）",
+        "revision": "official full-contract snapshot captured 2026-08-22",
+        "path": "docs/verify/fuyao_api_full.md",
+        "locator": "/api/a-share/special-data/dragon-tiger-list response field `sell_value`; snapshot line 657",
+        "url": "https://fuyao.aicubes.cn/llms-full.txt"
+      }
+    },
+    {
+      "id": "20261018-fuyao-tag_name",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "同花顺-fuyao",
+        "code": "tag_name"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "tag_name",
+      "meaning": "异动标签展示名。",
+      "unit": "",
+      "rationale": "适配器将该来源字段作为 /api/a-share/special-data/anomaly-analysis-list 响应项读取；官方契约快照对键 tag_name 给出唯一含义。此裁定只确认 同花顺-fuyao::tag_name 的来源内语义，不声明其他来源与之等价，也不新增 mappings。",
+      "source_contract": {
+        "authority": "同花顺 Fuyao 官方 API（Financial-API）",
+        "revision": "official full-contract snapshot captured 2026-08-22",
+        "path": "docs/verify/fuyao_api_full.md",
+        "locator": "/api/a-share/special-data/anomaly-analysis-list response field `tag_name`; snapshot line 529",
+        "url": "https://fuyao.aicubes.cn/llms-full.txt"
+      }
+    },
+    {
+      "id": "20261018-fuyao-top",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "同花顺-fuyao",
+        "code": "top"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "top",
+      "meaning": "是否置顶。",
+      "unit": "布尔值",
+      "rationale": "适配器将该来源字段作为 /api/fund/news/article-list 响应项读取；官方契约快照对键 top 给出唯一含义。此裁定只确认 同花顺-fuyao::top 的来源内语义，不声明其他来源与之等价，也不新增 mappings。",
+      "source_contract": {
+        "authority": "同花顺 Fuyao 官方 API（Financial-API）",
+        "revision": "official full-contract snapshot captured 2026-08-22",
+        "path": "docs/verify/fuyao_api_full.md",
+        "locator": "/api/fund/news/article-list response field `top`; snapshot line 1834",
+        "url": "https://fuyao.aicubes.cn/llms-full.txt"
+      }
+    },
+    {
+      "id": "20261018-fuyao-total_current_assets",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "同花顺-fuyao",
+        "code": "total_current_assets"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "total_current_assets",
+      "meaning": "流动资产合计（原币元）。",
+      "unit": "原币元",
+      "rationale": "适配器将该来源字段作为 /api/a-share/financials/balance-sheets 响应项读取；官方契约快照对键 total_current_assets 给出唯一含义。此裁定只确认 同花顺-fuyao::total_current_assets 的来源内语义，不声明其他来源与之等价，也不新增 mappings。",
+      "source_contract": {
+        "authority": "同花顺 Fuyao 官方 API（Financial-API）",
+        "revision": "official full-contract snapshot captured 2026-08-22",
+        "path": "docs/verify/fuyao_api_full.md",
+        "locator": "/api/a-share/financials/balance-sheets response field `total_current_assets`; snapshot line 333",
+        "url": "https://fuyao.aicubes.cn/llms-full.txt"
+      }
+    },
+    {
+      "id": "20261018-fuyao-total_debt",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "同花顺-fuyao",
+        "code": "total_debt"
+      },
+      "previous_status": "conflict",
+      "previous_status_resolution": "status_conflict",
+      "previous": {
+        "canonical": "total_debt",
+        "meaning": "总债务(=总负债)",
+        "unit": "LDFZ（流动负债）+CPFZ（长期负债）"
+      },
+      "canonical": "total_debt",
+      "meaning": "负债合计（原币元）。",
+      "unit": "原币元",
+      "rationale": "适配器将该来源字段作为 /api/a-share/financials/balance-sheets 响应项读取；官方契约快照对键 total_debt 给出唯一含义。此裁定只确认 同花顺-fuyao::total_debt 的来源内语义，不声明其他来源与之等价，也不新增 mappings。",
+      "source_contract": {
+        "authority": "同花顺 Fuyao 官方 API（Financial-API）",
+        "revision": "official full-contract snapshot captured 2026-08-22",
+        "path": "docs/verify/fuyao_api_full.md",
+        "locator": "/api/a-share/financials/balance-sheets response field `total_debt`; snapshot line 337",
+        "url": "https://fuyao.aicubes.cn/llms-full.txt"
+      },
+      "metadata_correction": {
+        "previous": {
+          "canonical": "total_debt",
+          "meaning": "总债务(=总负债)",
+          "unit": "LDFZ（流动负债）+CPFZ（长期负债）"
+        },
+        "updated": {
+          "canonical": "total_debt",
+          "meaning": "负债合计（原币元）。",
+          "unit": "原币元"
+        },
+        "rationale": "保留原值快照，并依据该完整响应路径的官方字段说明纠正旧的字段名、释义或非物理单位标注。"
+      }
+    },
+    {
+      "id": "20261018-fuyao-week",
+      "action": "verify_source_contract",
+      "target": {
+        "source": "同花顺-fuyao",
+        "code": "week"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "registry_status_only_single_source",
+      "previous": {
+        "canonical": "",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "week",
+      "meaning": "近一周最大回撤。",
+      "unit": "",
+      "rationale": "适配器将该来源字段作为 /api/fund/performance/drawdowns 响应项读取；官方契约快照对键 week 给出唯一含义。此裁定只确认 同花顺-fuyao::week 的来源内语义，不声明其他来源与之等价，也不新增 mappings。",
+      "source_contract": {
+        "authority": "同花顺 Fuyao 官方 API（Financial-API）",
+        "revision": "official full-contract snapshot captured 2026-08-22",
+        "path": "docs/verify/fuyao_api_full.md",
+        "locator": "/api/fund/performance/drawdowns response field `week`; snapshot line 1941",
+        "url": "https://fuyao.aicubes.cn/llms-full.txt"
+      }
+    }
+  ]
+}

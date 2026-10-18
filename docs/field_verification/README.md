@@ -5,6 +5,8 @@
 
 字段破解统一按 [`CRACKING_METHODOLOGY.md`](CRACKING_METHODOLOGY.md) 和 [`COLLISION_RULES.md`](COLLISION_RULES.md) 检查；碰撞候选经人工复核后，按 [`ADJUDICATION_WORKFLOW.md`](ADJUDICATION_WORKFLOW.md) 更新注册表。
 
+Fuyao 官方接口契约与 223 条逐源路径的逐项核对、已确认项和保留原因见 [`fuyao_contract_reconciliation_20261018.md`](fuyao_contract_reconciliation_20261018.md)；完整逐路径结果在关联 CSV 与 source-contract 决策文件中。
+
 ## 原理
 
 同一字段跨 20 只股票 × 多天的实测值呈规律分布(随状态/行业/日期变化);
@@ -89,6 +91,8 @@ Fuyao raw 文件额外保留 `auction_snapshot_meta` 信封摘要；有竞价记
 3. 检查报告使用的交易日/自然日、ZHB 实际数据日期、样本覆盖和来源独立性；日期必须从样本元数据和项目交易日历确认，不能机械地把 ZHB 日期当作运行日的前一自然日。规则见 `collision_dates.py` 与 `CRACKING_METHODOLOGY.md`。
 4. 结合 `CRACKING_METHODOLOGY.md`、上游字段定义和原始样本逐项复核候选。L1/L1-U 只是可审查候选；L4、探索模式和缺少独立锚的结果不得晋级。
 5. 将人工结论记录到 `field_verification/adjudications/`，先运行 `scripts/apply_collision_adjudications.py` 预览；检查字段来源、完整路径、语义、单位和证据后再加 `--apply`。该工具同步 registry 与生成文档，不手改 `field_dict.md`。
+   - 跨源等价仍须来自符合 L1/L1-U 门槛的碰撞候选，只有人工确认语义等价后才登记 `mappings`。
+   - 对没有独立锚的单源字段，若已核对官方接口/协议契约及项目适配器映射，可使用 `adjudications/source_contract_template.json` 记录固定版本/日期、精确定位和 HTTPS 证据；该路径只确认逐源字段定义，不创建跨源映射或来源锚。详情见 [`ADJUDICATION_WORKFLOW.md`](ADJUDICATION_WORKFLOW.md)。
 6. 应用后运行注册表 parity、字典同步闸门和对应测试。字段定义冲突须先单独解决，不能用碰撞结果覆盖 `conflict`。
 7. **命名仲裁守卫**: 正式字段命名变更前后均须运行
    `.\scripts\run_with_system_python.ps1 scripts\lint_field_same_number.py --strict-naming`。

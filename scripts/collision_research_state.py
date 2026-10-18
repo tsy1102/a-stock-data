@@ -46,7 +46,11 @@ def load_state(path: str | Path = STATE_PATH) -> tuple[dict[str, Any], list[str]
             return empty_state(), ["研究台账候选记录格式无效，保留原文件且本轮不写回"], False
         observations = candidate.get("observations")
         if not isinstance(observations, list):
-            return empty_state(), ["研究台账候选 observations 格式无效，保留原文件且本轮不写回"], False
+            return (
+                empty_state(),
+                ["研究台账候选 observations 格式无效，保留原文件且本轮不写回"],
+                False,
+            )
         if any(
             not isinstance(item, dict)
             or not isinstance(item.get("run_id"), str)
@@ -56,7 +60,11 @@ def load_state(path: str | Path = STATE_PATH) -> tuple[dict[str, Any], list[str]
             or not isinstance(item.get("sections"), dict)
             for item in observations
         ):
-            return empty_state(), ["研究台账 observation 字段格式无效，保留原文件且本轮不写回"], False
+            return (
+                empty_state(),
+                ["研究台账 observation 字段格式无效，保留原文件且本轮不写回"],
+                False,
+            )
     return state, [], True
 
 
@@ -99,10 +107,16 @@ def _evidence_summary(candidate: dict[str, Any]) -> dict[str, Any]:
     return {key: candidate[key] for key in keys if key in candidate}
 
 
+def _report_rows(report: dict[str, Any], section: str) -> Any:
+    if section == "L1" and "actionable_L1" in report:
+        return report.get("actionable_L1")
+    return report.get(section, [])
+
+
 def _candidate_groups(report: dict[str, Any]) -> dict[str, dict[str, Any]]:
     grouped: dict[str, dict[str, Any]] = {}
     for section in REPORT_SECTIONS:
-        rows = report.get(section, [])
+        rows = _report_rows(report, section)
         if not isinstance(rows, list):
             continue
         for row in rows:
@@ -160,9 +174,11 @@ def update_state(
     updated["runs"][run_id] = {
         "date": report_date,
         "mode": "exploratory",
-        "include_context": report.get("include_context")
-        if isinstance(report.get("include_context"), bool)
-        else None,
+        "include_context": (
+            report.get("include_context")
+            if isinstance(report.get("include_context"), bool)
+            else None
+        ),
         "report_path": report_path.replace("\\", "/"),
         "trading_window": report.get("trading_window", []),
         "event_window": report.get("event_window", {}),
@@ -177,12 +193,16 @@ def update_state(
     updated["updated"] = max(last_updated, report_date)
     newly_tracked = len(set(groups) - historical_keys - existing_run_keys)
     previously_tracked = len(set(groups) & historical_keys)
-    return updated, run_id, {
-        "current_candidate_pairs": len(groups),
-        "new_candidate_pairs": newly_tracked,
-        "previously_tracked_pairs": previously_tracked,
-        "total_candidate_pairs": len(candidates),
-    }
+    return (
+        updated,
+        run_id,
+        {
+            "current_candidate_pairs": len(groups),
+            "new_candidate_pairs": newly_tracked,
+            "previously_tracked_pairs": previously_tracked,
+            "total_candidate_pairs": len(candidates),
+        },
+    )
 
 
 def _remove_run_observations(candidates: dict[str, Any], run_id: str) -> None:
@@ -256,7 +276,7 @@ def annotate_report(
     candidates = state.get("candidates", {})
     matched: set[str] = set()
     for section in REPORT_SECTIONS:
-        rows = report.get(section, [])
+        rows = _report_rows(report, section)
         if not isinstance(rows, list):
             continue
         for row in rows:

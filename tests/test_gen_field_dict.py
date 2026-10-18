@@ -3,6 +3,7 @@ from scripts.gen_field_dict import (
     render_field_dict,
     render_field_metadata_gaps,
     render_source_repository_map,
+    render_unknown_fields,
 )
 
 
@@ -41,6 +42,50 @@ def test_metadata_gap_report_lists_only_verified_missing_descriptions():
     assert "source-a" in rendered and "verified.missing" in rendered
     assert "source-c" not in rendered
     assert "不改变字段状态或锚点资格" in rendered
+
+
+def test_unknown_queue_separates_meaning_annotations_from_status_resolution():
+    registry = {
+        "source_fields": [
+            {
+                "source": "source-a",
+                "code": "field.empty",
+                "canonical": "field.empty",
+                "meaning": "",
+                "unit": "",
+                "status": "unverified",
+                "status_resolution": "aggregate_status_scope_unresolved",
+            },
+            {
+                "source": "source-b",
+                "code": "field.annotated",
+                "canonical": "field.annotated",
+                "meaning": "来源说明文字",
+                "unit": "元",
+                "status": "unverified",
+                "status_resolution": "matched",
+            },
+            {
+                "source": "source-c",
+                "code": "field.verified",
+                "canonical": "field.verified",
+                "meaning": "已核验含义",
+                "unit": "元",
+                "status": "verified",
+                "status_resolution": "matched",
+            },
+        ]
+    }
+
+    rendered = render_unknown_fields(registry)
+
+    assert "含义栏为空/占位 | 1" in rendered
+    assert "含义栏有文本（仍未验证） | 1" in rendered
+    assert "aggregate_status_scope_unresolved` | 1" in rendered
+    assert "含义栏提示" in rendered
+    assert "含义栏有文本（仍未验证）" in rendered
+    assert "不代表语义正确" in rendered
+    assert "field.verified" not in rendered
 
 
 def test_source_map_displays_project_evidence_separately_from_dialog_confirmation():

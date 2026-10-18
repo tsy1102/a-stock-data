@@ -192,6 +192,48 @@ def test_fuyao_ineligible_auction_is_diagnosed_without_dropping_other_fields(tmp
     assert "source_data_date_unavailable" in report
 
 
+def test_report_separates_registered_mapping_revalidations_from_new_candidates():
+    actionable = {
+        "left": "zhb.full.new_metric",
+        "right": "tencent[99]",
+        "level": "L1",
+        "overall_hit": 0.95,
+        "n_days": 3,
+        "n_pairs": 60,
+        "n_informative_pairs": 54,
+        "ratio": None,
+        "hub_flag": False,
+        "in_registry": False,
+        "same_code": False,
+    }
+    mapped = {
+        **actionable,
+        "left": "zhb.full.known_metric",
+        "right": "tencent[41]",
+        "in_registry": True,
+    }
+
+    report = collide.build_report_md(
+        "20261018",
+        ["20261016", "20261017", "20261018"],
+        2,
+        60,
+        [actionable["left"]],
+        [actionable, mapped],
+        [],
+        1,
+        set(),
+        [],
+    )
+
+    assert "可审定新候选=1" in report
+    assert "首次发现新候选对=1" in report
+    assert "已登记关系复验=1" in report
+    assert "`zhb.full.new_metric`" in report
+    assert "## 三、已登记映射的本窗口复验（1）" in report
+    assert report.index("zhb.full.known_metric") > report.index("## 三、已登记映射的本窗口复验")
+
+
 def test_context_records_are_excluded_by_default_and_available_on_request(tmp_path):
     folder = tmp_path / "20260929"
     folder.mkdir()
@@ -433,9 +475,7 @@ def test_zhb_merged_field_paths_match_existing_registry_mappings():
     assert (left + right) in context["known_mappings"]
 
 
-def test_duplicate_runtime_alias_code_is_not_used_as_a_verified_anchor(
-    monkeypatch, tmp_path
-):
+def test_duplicate_runtime_alias_code_is_not_used_as_a_verified_anchor(monkeypatch, tmp_path):
     registry_path = tmp_path / "registry.json"
     registry_path.write_text(
         json.dumps(

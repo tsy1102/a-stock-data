@@ -1,8 +1,9 @@
 """registry_parity.py — 字段登记表 parity 闸门（registry ↔ markdown 原生 token）。
 
-校验 docs/field_verification/field_registry.json（单一真相源影子）与
-field_dict.md 经 audit_field_completeness.registered_field_sets() 抽取出的
-「原生 token × 源」集合完全一致。用于 CI / 提交前闸门。
+校验 docs/field_verification/field_registry.json 与
+field_source_reference.md 经 audit_field_completeness.registered_field_sets() 抽取出的
+「原生 token × 源」集合完全一致。后者是只读历史来源档案，不是生成视图 field_dict.md。
+用于 CI / 提交前闸门。
 
 判定（G1）：
   * 字段数、去重 (token,源) 配对总数、多源 token 数 三者须与
@@ -52,7 +53,7 @@ def main(argv=None):
     with io.open(args.registry, encoding="utf-8") as f:
         reg = json.load(f)
 
-    # 基线（原生 token）：audit_field_completeness.registered_field_sets
+    # 基线（只读历史来源档案中的原生 token）：audit_field_completeness.registered_field_sets
     base_reg = afc.registered_field_sets()
     base_field_sources = {}
     for src, toks in base_reg.items():

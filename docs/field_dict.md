@@ -24,7 +24,7 @@
 ## 当前覆盖
 
 - 来源身份与参考登记：32 项；是否可作独立锚由来源谱系单独判定。
-- 逐源字段路径：2481 条；verified 848、unverified 1540、candidate 1、conflict 90、disproved 2。
+- 逐源字段路径：2481 条；verified 917、unverified 1480、candidate 1、conflict 81、disproved 2。
 - 矩阵：[`field_matrix.md`](field_matrix.md)。
 - 待破解与状态冲突：[`unknown_fields.md`](unknown_fields.md)。
 - 来源与 GitHub 仓库映射：[`source_repository_map.md`](source_repository_map.md)。
@@ -39,6 +39,7 @@
 - 字段验证记录：[`field_verification/`](field_verification/)。每条结论须保留日期、样本、来源和证据。
 - 已验证字段描述缺口：[`field_metadata_gaps.md`](field_metadata_gaps.md)。
 - 对撞结果不会自动定案；人工复核和注册表同步流程见 [`field_verification/ADJUDICATION_WORKFLOW.md`](field_verification/ADJUDICATION_WORKFLOW.md)。
+- 无独立数值锚但有权威单源接口/协议定义的字段，可按上游契约流程核验；该结论不建立跨源映射或来源锚。
 - 来源分组及 GitHub 对应关系以 `field_verification/source_lineage.json` 为准；未确认项明确标为 unconfirmed。
 
 ## 来源身份与框架参考索引

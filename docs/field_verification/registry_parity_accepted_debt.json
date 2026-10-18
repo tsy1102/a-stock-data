@@ -1,52 +1,7 @@
 {
   "schema_version": 1,
   "debt_id": "DEBT-020",
-  "reason": "此前决定在完成 AxData 交叉核对前保留这组历史字段登记差异；直接补写可能错误归属来源或掩盖证据状态。",
-  "review_trigger": "AxData 与本项目相关来源的逐项交叉核对完成后，复审并修复或移除此清单。",
-  "accepted_missing_pairs": [
-    {
-      "source": "TDX(双命名源)",
-      "code": "finance_info"
-    },
-    {
-      "source": "TDX(双命名源)",
-      "code": "quote_full"
-    },
-    {
-      "source": "同花顺-fuyao",
-      "code": "auction_final"
-    },
-    {
-      "source": "同花顺-fuyao",
-      "code": "balance_q"
-    },
-    {
-      "source": "同花顺-fuyao",
-      "code": "cashflow_q"
-    },
-    {
-      "source": "同花顺-fuyao",
-      "code": "fin_indicators"
-    },
-    {
-      "source": "同花顺-fuyao",
-      "code": "income_a"
-    },
-    {
-      "source": "同花顺-fuyao",
-      "code": "income_q"
-    },
-    {
-      "source": "同花顺-fuyao",
-      "code": "short_term_benchmark"
-    },
-    {
-      "source": "同花顺-fuyao",
-      "code": "valuation"
-    },
-    {
-      "source": "财联社(cls)",
-      "code": "telegraph"
-    }
-  ]
+  "reason": "此前接受的 11 个历史配对经源级复核均为容器或包装路径造成的基线误计；当前严格 parity 无缺失或多余配对，不再接受任何差异。",
+  "review_trigger": "若后续基线与注册表出现新差异，先核实来源身份及完整路径，再仅登记经过证据审查的例外。",
+  "accepted_missing_pairs": []
 }

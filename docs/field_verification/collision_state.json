@@ -1502,10 +1502,10 @@
         "tdx"
       ],
       "hub_flag": false,
-      "last_seen": "20261011",
-      "in_registry": false,
+      "last_seen": "20261018",
+      "in_registry": true,
       "first_seen": "20261005",
-      "status": "repeated"
+      "status": "confirmed"
     },
     "push2.f121||zhb.stat.change_60d": {
       "left": "push2.f121",
@@ -1562,7 +1562,7 @@
       "right": "push2.f122",
       "level": "L1",
       "ratio": null,
-      "overall_hit": 0.95,
+      "overall_hit": 0.9494,
       "n_days": 4,
       "n_pairs": 80,
       "sample_dates": [
@@ -1576,10 +1576,10 @@
         "tdx"
       ],
       "hub_flag": false,
-      "last_seen": "20261011",
-      "in_registry": false,
+      "last_seen": "20261018",
+      "in_registry": true,
       "first_seen": "20261005",
-      "status": "repeated"
+      "status": "confirmed"
     },
     "push2.f122||zhb.stat.change_ytd": {
       "left": "push2.f122",
@@ -2144,7 +2144,7 @@
         "tdx"
       ],
       "hub_flag": false,
-      "last_seen": "20261011",
+      "last_seen": "20261018",
       "in_registry": false,
       "first_seen": "20261005",
       "status": "repeated"
@@ -2452,10 +2452,10 @@
         "tdx"
       ],
       "hub_flag": false,
-      "last_seen": "20261011",
-      "in_registry": false,
+      "last_seen": "20261018",
+      "in_registry": true,
       "first_seen": "20261005",
-      "status": "repeated"
+      "status": "confirmed"
     },
     "push2.f170||zhb.stat.change_pct": {
       "left": "push2.f170",
@@ -3094,7 +3094,7 @@
         "tdx"
       ],
       "hub_flag": false,
-      "last_seen": "20261011",
+      "last_seen": "20261018",
       "in_registry": false,
       "first_seen": "20261005",
       "status": "repeated"
@@ -3133,7 +3133,7 @@
         "tonghuashun"
       ],
       "hub_flag": false,
-      "last_seen": "20261011",
+      "last_seen": "20261018",
       "in_registry": false,
       "first_seen": "20261005",
       "status": "repeated"
@@ -3177,7 +3177,7 @@
         "sina"
       ],
       "hub_flag": false,
-      "last_seen": "20261011",
+      "last_seen": "20261018",
       "in_registry": true,
       "first_seen": "20261005",
       "status": "confirmed"
@@ -3309,7 +3309,7 @@
         "tencent"
       ],
       "hub_flag": false,
-      "last_seen": "20261011",
+      "last_seen": "20261018",
       "in_registry": true,
       "first_seen": "20261005",
       "status": "confirmed"
@@ -3428,7 +3428,7 @@
         "tencent"
       ],
       "hub_flag": false,
-      "last_seen": "20261011",
+      "last_seen": "20261018",
       "in_registry": true,
       "first_seen": "20261005",
       "status": "confirmed"
@@ -3525,7 +3525,7 @@
         "tencent"
       ],
       "hub_flag": false,
-      "last_seen": "20261011",
+      "last_seen": "20261018",
       "in_registry": true,
       "first_seen": "20261005",
       "status": "confirmed"
@@ -3613,7 +3613,7 @@
         "tencent"
       ],
       "hub_flag": false,
-      "last_seen": "20261011",
+      "last_seen": "20261018",
       "in_registry": true,
       "first_seen": "20261005",
       "status": "confirmed"
@@ -3701,7 +3701,7 @@
         "tencent"
       ],
       "hub_flag": false,
-      "last_seen": "20261011",
+      "last_seen": "20261018",
       "in_registry": true,
       "first_seen": "20261005",
       "status": "confirmed"
@@ -4141,7 +4141,7 @@
         "tencent"
       ],
       "hub_flag": false,
-      "last_seen": "20261011",
+      "last_seen": "20261018",
       "in_registry": true,
       "first_seen": "20261005",
       "status": "confirmed"
@@ -4221,14 +4221,14 @@
         "T:20260917"
       ],
       "evidence_sources": [
-        "push2",
-        "zhb"
+        "eastmoney",
+        "tdx"
       ],
       "hub_flag": false,
-      "last_seen": "20261005",
+      "last_seen": "20261018",
       "in_registry": true,
       "first_seen": "20261005",
-      "status": "new"
+      "status": "confirmed"
     },
     "push2_full.f119||zhb.stat.change_5d": {
       "left": "push2_full.f119",
@@ -4265,7 +4265,7 @@
         "tdx"
       ],
       "hub_flag": false,
-      "last_seen": "20261011",
+      "last_seen": "20261018",
       "in_registry": false,
       "first_seen": "20261005",
       "status": "repeated"
@@ -4275,7 +4275,7 @@
       "right": "tencent[70]",
       "level": "L1",
       "ratio": null,
-      "overall_hit": 0.9644,
+      "overall_hit": 0.9643,
       "n_days": 24,
       "n_pairs": 477,
       "sample_dates": [
@@ -4309,7 +4309,7 @@
         "tencent"
       ],
       "hub_flag": false,
-      "last_seen": "20261011",
+      "last_seen": "20261018",
       "in_registry": true,
       "first_seen": "20261005",
       "status": "confirmed"
@@ -4389,14 +4389,14 @@
         "T:20260917"
       ],
       "evidence_sources": [
-        "push2",
-        "zhb"
+        "eastmoney",
+        "tdx"
       ],
       "hub_flag": false,
-      "last_seen": "20261005",
+      "last_seen": "20261018",
       "in_registry": true,
       "first_seen": "20261005",
-      "status": "new"
+      "status": "confirmed"
     },
     "push2_full.f120||zhb.full.change_30d": {
       "left": "push2_full.f120",
@@ -4473,7 +4473,7 @@
         "tdx"
       ],
       "hub_flag": false,
-      "last_seen": "20261011",
+      "last_seen": "20261018",
       "in_registry": false,
       "first_seen": "20261005",
       "status": "repeated"
@@ -4607,7 +4607,7 @@
       "right": "zhb.stat.change_60d",
       "level": "L1",
       "ratio": null,
-      "overall_hit": 0.9623,
+      "overall_hit": 0.962,
       "n_days": 20,
       "n_pairs": 398,
       "sample_dates": [
@@ -4637,7 +4637,7 @@
         "tdx"
       ],
       "hub_flag": false,
-      "last_seen": "20261011",
+      "last_seen": "20261018",
       "in_registry": false,
       "first_seen": "20261005",
       "status": "repeated"
@@ -4731,7 +4731,7 @@
       "right": "zhb.stat.change_ytd",
       "level": "L1",
       "ratio": null,
-      "overall_hit": 0.9497,
+      "overall_hit": 0.9496,
       "n_days": 20,
       "n_pairs": 398,
       "sample_dates": [
@@ -4761,7 +4761,7 @@
         "tdx"
       ],
       "hub_flag": false,
-      "last_seen": "20261011",
+      "last_seen": "20261018",
       "in_registry": false,
       "first_seen": "20261005",
       "status": "repeated"
@@ -5421,7 +5421,7 @@
         "tencent"
       ],
       "hub_flag": false,
-      "last_seen": "20261011",
+      "last_seen": "20261018",
       "in_registry": true,
       "first_seen": "20261005",
       "status": "confirmed"
@@ -5533,7 +5533,7 @@
         "tencent"
       ],
       "hub_flag": false,
-      "last_seen": "20261011",
+      "last_seen": "20261018",
       "in_registry": true,
       "first_seen": "20261005",
       "status": "confirmed"
@@ -5621,7 +5621,7 @@
         "tencent"
       ],
       "hub_flag": false,
-      "last_seen": "20261011",
+      "last_seen": "20261018",
       "in_registry": true,
       "first_seen": "20261005",
       "status": "confirmed"
@@ -5745,7 +5745,7 @@
         "tdx"
       ],
       "hub_flag": false,
-      "last_seen": "20261011",
+      "last_seen": "20261018",
       "in_registry": false,
       "first_seen": "20261005",
       "status": "repeated"
@@ -5789,7 +5789,7 @@
         "tencent"
       ],
       "hub_flag": false,
-      "last_seen": "20261011",
+      "last_seen": "20261018",
       "in_registry": true,
       "first_seen": "20261005",
       "status": "confirmed"
@@ -5877,7 +5877,7 @@
         "tencent"
       ],
       "hub_flag": false,
-      "last_seen": "20261011",
+      "last_seen": "20261018",
       "in_registry": true,
       "first_seen": "20261005",
       "status": "confirmed"
@@ -5960,7 +5960,7 @@
         "tonghuashun"
       ],
       "hub_flag": false,
-      "last_seen": "20261011",
+      "last_seen": "20261018",
       "in_registry": false,
       "first_seen": "20261005",
       "status": "repeated"
@@ -5970,7 +5970,7 @@
       "right": "tdx.quote_full.change_amt",
       "level": "L1",
       "ratio": null,
-      "overall_hit": 0.9603,
+      "overall_hit": 0.9597,
       "n_days": 24,
       "n_pairs": 478,
       "sample_dates": [
@@ -6004,7 +6004,7 @@
         "tdx"
       ],
       "hub_flag": false,
-      "last_seen": "20261011",
+      "last_seen": "20261018",
       "in_registry": false,
       "first_seen": "20261005",
       "status": "repeated"
@@ -6014,7 +6014,7 @@
       "right": "tencent[31]",
       "level": "L1",
       "ratio": null,
-      "overall_hit": 0.9958,
+      "overall_hit": 0.9957,
       "n_days": 24,
       "n_pairs": 477,
       "sample_dates": [
@@ -6048,7 +6048,7 @@
         "tencent"
       ],
       "hub_flag": false,
-      "last_seen": "20261011",
+      "last_seen": "20261018",
       "in_registry": true,
       "first_seen": "20261005",
       "status": "confirmed"
@@ -6102,7 +6102,7 @@
       "right": "tencent[32]",
       "level": "L1",
       "ratio": null,
-      "overall_hit": 0.9958,
+      "overall_hit": 0.9957,
       "n_days": 24,
       "n_pairs": 477,
       "sample_dates": [
@@ -6136,7 +6136,7 @@
         "tencent"
       ],
       "hub_flag": false,
-      "last_seen": "20261011",
+      "last_seen": "20261018",
       "in_registry": true,
       "first_seen": "20261005",
       "status": "confirmed"
@@ -6230,7 +6230,7 @@
       "right": "zhb.stat.change_pct",
       "level": "L1",
       "ratio": null,
-      "overall_hit": 0.9975,
+      "overall_hit": 0.9974,
       "n_days": 20,
       "n_pairs": 398,
       "sample_dates": [
@@ -6260,7 +6260,7 @@
         "tdx"
       ],
       "hub_flag": false,
-      "last_seen": "20261011",
+      "last_seen": "20261018",
       "in_registry": false,
       "first_seen": "20261005",
       "status": "repeated"
@@ -6331,7 +6331,7 @@
         "tencent"
       ],
       "hub_flag": false,
-      "last_seen": "20261011",
+      "last_seen": "20261018",
       "in_registry": true,
       "first_seen": "20261005",
       "status": "confirmed"
@@ -6463,7 +6463,7 @@
         "tencent"
       ],
       "hub_flag": false,
-      "last_seen": "20261011",
+      "last_seen": "20261018",
       "in_registry": false,
       "first_seen": "20261005",
       "status": "repeated"
@@ -6507,7 +6507,7 @@
         "tencent"
       ],
       "hub_flag": false,
-      "last_seen": "20261011",
+      "last_seen": "20261018",
       "in_registry": true,
       "first_seen": "20261005",
       "status": "confirmed"
@@ -6543,14 +6543,14 @@
         "T:20260917"
       ],
       "evidence_sources": [
-        "push2",
-        "zhb"
+        "eastmoney",
+        "tdx"
       ],
       "hub_flag": false,
-      "last_seen": "20261005",
+      "last_seen": "20261018",
       "in_registry": true,
       "first_seen": "20261005",
-      "status": "new"
+      "status": "confirmed"
     },
     "push2_full.f175||zhb.stat2.low_52w": {
       "left": "push2_full.f175",
@@ -6587,7 +6587,7 @@
         "tdx"
       ],
       "hub_flag": false,
-      "last_seen": "20261011",
+      "last_seen": "20261018",
       "in_registry": false,
       "first_seen": "20261005",
       "status": "repeated"
@@ -7452,7 +7452,7 @@
         "sina"
       ],
       "hub_flag": false,
-      "last_seen": "20261011",
+      "last_seen": "20261018",
       "in_registry": false,
       "first_seen": "20261005",
       "status": "repeated"
@@ -8006,7 +8006,7 @@
       "right": "tencent[43]",
       "level": "L1",
       "ratio": null,
-      "overall_hit": 0.9775,
+      "overall_hit": 0.977,
       "n_days": 9,
       "n_pairs": 178,
       "sample_dates": [
@@ -8025,7 +8025,7 @@
         "tencent"
       ],
       "hub_flag": false,
-      "last_seen": "20261011",
+      "last_seen": "20261018",
       "in_registry": false,
       "first_seen": "20261005",
       "status": "repeated"
@@ -8035,7 +8035,7 @@
       "right": "ulist239.f7",
       "level": "L1",
       "ratio": null,
-      "overall_hit": 0.9688,
+      "overall_hit": 0.9684,
       "n_days": 8,
       "n_pairs": 160,
       "sample_dates": [
@@ -8053,7 +8053,7 @@
         "tdx"
       ],
       "hub_flag": false,
-      "last_seen": "20261011",
+      "last_seen": "20261018",
       "in_registry": false,
       "first_seen": "20261005",
       "status": "repeated"
@@ -8082,7 +8082,7 @@
         "tencent"
       ],
       "hub_flag": false,
-      "last_seen": "20261011",
+      "last_seen": "20261018",
       "in_registry": false,
       "first_seen": "20261005",
       "status": "repeated"
@@ -8111,7 +8111,7 @@
         "tencent"
       ],
       "hub_flag": false,
-      "last_seen": "20261011",
+      "last_seen": "20261018",
       "in_registry": false,
       "first_seen": "20261005",
       "status": "repeated"
@@ -8140,7 +8140,7 @@
         "tencent"
       ],
       "hub_flag": false,
-      "last_seen": "20261011",
+      "last_seen": "20261018",
       "in_registry": false,
       "first_seen": "20261005",
       "status": "repeated"
@@ -8173,7 +8173,7 @@
         "tencent"
       ],
       "hub_flag": false,
-      "last_seen": "20261011",
+      "last_seen": "20261018",
       "in_registry": false,
       "first_seen": "20261005",
       "status": "repeated"
@@ -8202,7 +8202,7 @@
         "tencent"
       ],
       "hub_flag": false,
-      "last_seen": "20261011",
+      "last_seen": "20261018",
       "in_registry": false,
       "first_seen": "20261005",
       "status": "repeated"
@@ -8212,7 +8212,7 @@
       "right": "tencent[49]",
       "level": "L1",
       "ratio": null,
-      "overall_hit": 0.9101,
+      "overall_hit": 0.9096,
       "n_days": 9,
       "n_pairs": 178,
       "sample_dates": [
@@ -8231,7 +8231,7 @@
         "tencent"
       ],
       "hub_flag": false,
-      "last_seen": "20261011",
+      "last_seen": "20261018",
       "in_registry": false,
       "first_seen": "20261005",
       "status": "repeated"
@@ -8255,7 +8255,7 @@
         "tencent"
       ],
       "hub_flag": false,
-      "last_seen": "20261011",
+      "last_seen": "20261018",
       "in_registry": false,
       "first_seen": "20261005",
       "status": "repeated"
@@ -8279,7 +8279,7 @@
         "tdx"
       ],
       "hub_flag": false,
-      "last_seen": "20261011",
+      "last_seen": "20261018",
       "in_registry": false,
       "first_seen": "20261005",
       "status": "repeated"
@@ -8305,7 +8305,7 @@
         "tencent"
       ],
       "hub_flag": false,
-      "last_seen": "20261011",
+      "last_seen": "20261018",
       "in_registry": false,
       "first_seen": "20261005",
       "status": "repeated"
@@ -8363,10 +8363,36 @@
       "right": "ulist239.f211",
       "level": "L1",
       "ratio": null,
-      "overall_hit": 1.0,
-      "n_days": 3,
-      "n_pairs": 60,
+      "overall_hit": 0.9376,
+      "n_days": 29,
+      "n_pairs": 577,
       "sample_dates": [
+        "T:20260812",
+        "T:20260813",
+        "T:20260819",
+        "T:20260820",
+        "T:20260821",
+        "T:20260824",
+        "T:20260825",
+        "T:20260826",
+        "T:20260827",
+        "T:20260828",
+        "T:20260831",
+        "T:20260902",
+        "T:20260903",
+        "T:20260904",
+        "T:20260907",
+        "T:20260908",
+        "T:20260909",
+        "T:20260910",
+        "T:20260911",
+        "T:20260914",
+        "T:20260915",
+        "T:20260916",
+        "T:20260917",
+        "T:20260918",
+        "T:20260923",
+        "T:20260924",
         "T:20260928",
         "T:20260930",
         "T:20261008"
@@ -8376,7 +8402,7 @@
         "tencent"
       ],
       "hub_flag": false,
-      "last_seen": "20261014",
+      "last_seen": "20261018",
       "in_registry": true,
       "first_seen": "20261005",
       "status": "confirmed"
@@ -8725,10 +8751,33 @@
       "right": "tencent[32]",
       "level": "L1",
       "ratio": null,
-      "overall_hit": 0.9798,
-      "n_days": 5,
-      "n_pairs": 100,
+      "overall_hit": 0.9945,
+      "n_days": 28,
+      "n_pairs": 557,
       "sample_dates": [
+        "T:20260812",
+        "T:20260819",
+        "T:20260821",
+        "T:20260824",
+        "T:20260825",
+        "T:20260826",
+        "T:20260827",
+        "T:20260828",
+        "T:20260831",
+        "T:20260902",
+        "T:20260903",
+        "T:20260904",
+        "T:20260907",
+        "T:20260908",
+        "T:20260909",
+        "T:20260910",
+        "T:20260914",
+        "T:20260915",
+        "T:20260916",
+        "T:20260917",
+        "T:20260923",
+        "T:20260929",
+        "T:20260930",
         "T:20261009",
         "T:20261012",
         "T:20261013",
@@ -8825,10 +8874,10 @@
         "tdx"
       ],
       "hub_flag": false,
-      "last_seen": "20261011",
-      "in_registry": false,
+      "last_seen": "20261018",
+      "in_registry": true,
       "first_seen": "20261005",
-      "status": "repeated"
+      "status": "confirmed"
     },
     "ulist239.f3||zhb.stat.change_pct": {
       "left": "ulist239.f3",
@@ -9208,7 +9257,7 @@
       "right": "ulist239.f24",
       "level": "L1",
       "ratio": null,
-      "overall_hit": 0.9636,
+      "overall_hit": 0.9634,
       "n_days": 22,
       "n_pairs": 440,
       "sample_dates": [
@@ -9240,10 +9289,10 @@
         "tdx"
       ],
       "hub_flag": false,
-      "last_seen": "20261011",
-      "in_registry": false,
+      "last_seen": "20261018",
+      "in_registry": true,
       "first_seen": "20261005",
-      "status": "repeated"
+      "status": "confirmed"
     },
     "ulist239.f24||zhb.stat.change_60d": {
       "left": "ulist239.f24",
@@ -9292,7 +9341,7 @@
       "right": "ulist239.f25",
       "level": "L1",
       "ratio": null,
-      "overall_hit": 0.9455,
+      "overall_hit": 0.9453,
       "n_days": 22,
       "n_pairs": 440,
       "sample_dates": [
@@ -9324,10 +9373,10 @@
         "tdx"
       ],
       "hub_flag": false,
-      "last_seen": "20261011",
-      "in_registry": false,
+      "last_seen": "20261018",
+      "in_registry": true,
       "first_seen": "20261005",
-      "status": "repeated"
+      "status": "confirmed"
     },
     "ulist239.f25||zhb.stat.change_ytd": {
       "left": "ulist239.f25",
@@ -9634,7 +9683,7 @@
         "tdx"
       ],
       "hub_flag": false,
-      "last_seen": "20261011",
+      "last_seen": "20261018",
       "in_registry": false,
       "first_seen": "20261005",
       "status": "repeated"
@@ -10282,10 +10331,33 @@
       "right": "tencent[67]",
       "level": "L1",
       "ratio": null,
-      "overall_hit": 0.95,
-      "n_days": 5,
-      "n_pairs": 100,
+      "overall_hit": 0.9497,
+      "n_days": 28,
+      "n_pairs": 557,
       "sample_dates": [
+        "T:20260812",
+        "T:20260819",
+        "T:20260821",
+        "T:20260824",
+        "T:20260825",
+        "T:20260826",
+        "T:20260827",
+        "T:20260828",
+        "T:20260831",
+        "T:20260902",
+        "T:20260903",
+        "T:20260904",
+        "T:20260907",
+        "T:20260908",
+        "T:20260909",
+        "T:20260910",
+        "T:20260914",
+        "T:20260915",
+        "T:20260916",
+        "T:20260917",
+        "T:20260923",
+        "T:20260929",
+        "T:20260930",
         "T:20261009",
         "T:20261012",
         "T:20261013",
@@ -10365,10 +10437,10 @@
         "tdx"
       ],
       "hub_flag": false,
-      "last_seen": "20261011",
+      "last_seen": "20261018",
       "in_registry": false,
       "first_seen": "20261011",
-      "status": "new"
+      "status": "repeated"
     },
     "fuyao.snapshot.high_price||push2_full.f44": {
       "left": "push2_full.f44",
@@ -10404,10 +10476,10 @@
         "tonghuashun"
       ],
       "hub_flag": false,
-      "last_seen": "20261011",
+      "last_seen": "20261018",
       "in_registry": false,
       "first_seen": "20261011",
-      "status": "new"
+      "status": "repeated"
     },
     "push2_full.f44||sina[4]": {
       "left": "push2_full.f44",
@@ -10448,10 +10520,10 @@
         "sina"
       ],
       "hub_flag": false,
-      "last_seen": "20261011",
+      "last_seen": "20261018",
       "in_registry": true,
       "first_seen": "20261011",
-      "status": "new"
+      "status": "confirmed"
     },
     "push2_full.f44||tdx.quote_full.high": {
       "left": "push2_full.f44",
@@ -10492,10 +10564,10 @@
         "tdx"
       ],
       "hub_flag": false,
-      "last_seen": "20261011",
+      "last_seen": "20261018",
       "in_registry": false,
       "first_seen": "20261011",
-      "status": "new"
+      "status": "repeated"
     },
     "push2_full.f44||tencent[33]": {
       "left": "push2_full.f44",
@@ -10536,10 +10608,10 @@
         "tencent"
       ],
       "hub_flag": false,
-      "last_seen": "20261011",
+      "last_seen": "20261018",
       "in_registry": true,
       "first_seen": "20261011",
-      "status": "new"
+      "status": "confirmed"
     },
     "push2_full.f44||tencent[41]": {
       "left": "push2_full.f44",
@@ -10580,10 +10652,10 @@
         "tencent"
       ],
       "hub_flag": false,
-      "last_seen": "20261011",
+      "last_seen": "20261018",
       "in_registry": true,
       "first_seen": "20261011",
-      "status": "new"
+      "status": "confirmed"
     },
     "eltdx.quote_snapshot.low_price||push2_full.f45": {
       "left": "push2_full.f45",
@@ -10604,10 +10676,10 @@
         "tdx"
       ],
       "hub_flag": false,
-      "last_seen": "20261011",
+      "last_seen": "20261018",
       "in_registry": false,
       "first_seen": "20261011",
-      "status": "new"
+      "status": "repeated"
     },
     "fuyao.snapshot.low_price||push2_full.f45": {
       "left": "push2_full.f45",
@@ -10643,10 +10715,10 @@
         "tonghuashun"
       ],
       "hub_flag": false,
-      "last_seen": "20261011",
+      "last_seen": "20261018",
       "in_registry": false,
       "first_seen": "20261011",
-      "status": "new"
+      "status": "repeated"
     },
     "push2_full.f45||sina[5]": {
       "left": "push2_full.f45",
@@ -10687,10 +10759,10 @@
         "sina"
       ],
       "hub_flag": false,
-      "last_seen": "20261011",
+      "last_seen": "20261018",
       "in_registry": true,
       "first_seen": "20261011",
-      "status": "new"
+      "status": "confirmed"
     },
     "push2_full.f45||tdx.quote_full.low": {
       "left": "push2_full.f45",
@@ -10731,10 +10803,10 @@
         "tdx"
       ],
       "hub_flag": false,
-      "last_seen": "20261011",
+      "last_seen": "20261018",
       "in_registry": false,
       "first_seen": "20261011",
-      "status": "new"
+      "status": "repeated"
     },
     "push2_full.f45||tencent[34]": {
       "left": "push2_full.f45",
@@ -10775,10 +10847,10 @@
         "tencent"
       ],
       "hub_flag": false,
-      "last_seen": "20261011",
+      "last_seen": "20261018",
       "in_registry": true,
       "first_seen": "20261011",
-      "status": "new"
+      "status": "confirmed"
     },
     "push2_full.f45||tencent[42]": {
       "left": "push2_full.f45",
@@ -10819,10 +10891,10 @@
         "tencent"
       ],
       "hub_flag": false,
-      "last_seen": "20261011",
+      "last_seen": "20261018",
       "in_registry": true,
       "first_seen": "20261011",
-      "status": "new"
+      "status": "confirmed"
     },
     "eltdx.quote_snapshot.open_price||push2_full.f46": {
       "left": "push2_full.f46",
@@ -10843,10 +10915,10 @@
         "tdx"
       ],
       "hub_flag": false,
-      "last_seen": "20261011",
+      "last_seen": "20261018",
       "in_registry": false,
       "first_seen": "20261011",
-      "status": "new"
+      "status": "repeated"
     },
     "fuyao.snapshot.open_price||push2_full.f46": {
       "left": "push2_full.f46",
@@ -10882,10 +10954,10 @@
         "tonghuashun"
       ],
       "hub_flag": false,
-      "last_seen": "20261011",
+      "last_seen": "20261018",
       "in_registry": false,
       "first_seen": "20261011",
-      "status": "new"
+      "status": "repeated"
     },
     "push2_full.f46||sina[1]": {
       "left": "push2_full.f46",
@@ -10926,10 +10998,10 @@
         "sina"
       ],
       "hub_flag": false,
-      "last_seen": "20261011",
+      "last_seen": "20261018",
       "in_registry": true,
       "first_seen": "20261011",
-      "status": "new"
+      "status": "confirmed"
     },
     "push2_full.f46||tdx.quote_full.open": {
       "left": "push2_full.f46",
@@ -10970,10 +11042,10 @@
         "tdx"
       ],
       "hub_flag": false,
-      "last_seen": "20261011",
+      "last_seen": "20261018",
       "in_registry": false,
       "first_seen": "20261011",
-      "status": "new"
+      "status": "repeated"
     },
     "push2_full.f46||tencent[5]": {
       "left": "push2_full.f46",
@@ -11014,10 +11086,10 @@
         "tencent"
       ],
       "hub_flag": false,
-      "last_seen": "20261011",
+      "last_seen": "20261018",
       "in_registry": true,
       "first_seen": "20261011",
-      "status": "new"
+      "status": "confirmed"
     },
     "fuyao.snapshot.volume||push2_full.f47": {
       "left": "push2_full.f47",
@@ -11053,10 +11125,10 @@
         "tonghuashun"
       ],
       "hub_flag": false,
-      "last_seen": "20261011",
+      "last_seen": "20261018",
       "in_registry": false,
       "first_seen": "20261011",
-      "status": "new"
+      "status": "repeated"
     },
     "eltdx.quote_snapshot.pre_close_price||push2_full.f60": {
       "left": "push2_full.f60",
@@ -11077,10 +11149,10 @@
         "tdx"
       ],
       "hub_flag": false,
-      "last_seen": "20261011",
+      "last_seen": "20261018",
       "in_registry": false,
       "first_seen": "20261011",
-      "status": "new"
+      "status": "repeated"
     },
     "fuyao.snapshot.prev_price||push2_full.f60": {
       "left": "push2_full.f60",
@@ -11116,10 +11188,10 @@
         "tonghuashun"
       ],
       "hub_flag": false,
-      "last_seen": "20261011",
+      "last_seen": "20261018",
       "in_registry": false,
       "first_seen": "20261011",
-      "status": "new"
+      "status": "repeated"
     },
     "push2_full.f60||sina[2]": {
       "left": "push2_full.f60",
@@ -11160,10 +11232,10 @@
         "sina"
       ],
       "hub_flag": false,
-      "last_seen": "20261011",
+      "last_seen": "20261018",
       "in_registry": true,
       "first_seen": "20261011",
-      "status": "new"
+      "status": "confirmed"
     },
     "push2_full.f60||tdx.quote_full.last_close": {
       "left": "push2_full.f60",
@@ -11204,10 +11276,10 @@
         "tdx"
       ],
       "hub_flag": false,
-      "last_seen": "20261011",
+      "last_seen": "20261018",
       "in_registry": false,
       "first_seen": "20261011",
-      "status": "new"
+      "status": "repeated"
     },
     "push2_full.f60||tencent[4]": {
       "left": "push2_full.f60",
@@ -11248,10 +11320,10 @@
         "tencent"
       ],
       "hub_flag": false,
-      "last_seen": "20261011",
+      "last_seen": "20261018",
       "in_registry": true,
       "first_seen": "20261011",
-      "status": "new"
+      "status": "confirmed"
     },
     "push2_full.f84||tencent[73]": {
       "left": "push2_full.f84",
@@ -11729,10 +11801,10 @@
         "tencent"
       ],
       "hub_flag": false,
-      "last_seen": "20261011",
+      "last_seen": "20261018",
       "in_registry": false,
       "first_seen": "20261011",
-      "status": "new"
+      "status": "repeated"
     },
     "ulist239.f110||zhb.full.change_20d": {
       "left": "zhb.full.change_20d",

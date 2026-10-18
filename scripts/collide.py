@@ -1595,8 +1595,11 @@ def run(args):
         rec["in_registry"] = (lv + rv in known_maps) or (rv + lv in known_maps)
         if prev is None:
             rec["first_seen"] = today
-            rec["status"] = "new"
-            new_count += 1
+            if rec["in_registry"]:
+                rec["status"] = "confirmed"
+            else:
+                rec["status"] = "new"
+                new_count += 1
         else:
             rec["first_seen"] = prev.get("first_seen", today)
             rec["status"] = (
@@ -1616,6 +1619,8 @@ def run(args):
 
     # 8) 输出报告
     l1 = [p for p in raw_pairs if p["level"] in ("L1", "L1-U")]
+    actionable_l1 = [p for p in l1 if not p.get("in_registry", False)]
+    mapped_pair_revalidations = [p for p in l1 if p.get("in_registry", False)]
     l4 = [p for p in raw_pairs if p["level"] == "L4"]
     l1.sort(key=lambda p: (-p["overall_hit"], -p["n_days"]))
     l4.sort(key=lambda p: -p["overall_hit"])
@@ -1685,6 +1690,8 @@ def run(args):
             "end": folder_window.event_end.strftime("%Y%m%d"),
         },
         "L1": l1,
+        "actionable_L1": actionable_l1,
+        "mapped_pair_revalidations": mapped_pair_revalidations,
         "L4": l4,
         "method_candidates": method_candidates[:MAX_METHOD_CANDIDATES],
         "method_candidate_count": method_candidate_count,
@@ -1824,14 +1831,15 @@ def append_research_state_report(report_md: str, state_summary: dict) -> str:
     lines = [report_md.rstrip(), "", "## 探索候选持续跟踪", ""]
     lines.append(
         f"研究台账：`{state_summary.get('path', 'collision_research_state.json')}`；"
-        f"累计候选对 {state_summary.get('tracked_candidate_pairs', 0)}，"
+        f"累计历史跟踪候选对 {state_summary.get('tracked_candidate_pairs', 0)}，"
         f"本报告候选对 {state_summary.get('current_candidate_pairs', 0)}，"
         f"历史复现 {state_summary.get('previously_tracked_pairs', 0)}，"
         f"新发现 {state_summary.get('new_candidate_pairs', 0)}。"
     )
     lines.append(
         "台账保留报告引用、证据交易日、来源和碰撞指标；仅供后续研究回看，"
-        "不会自动改变字段状态、碰撞锚或主字典。"
+        "不会自动改变字段状态、碰撞锚或主字典。新报告只将 `actionable_L1`、L4 和主动方法候选"
+        "写入待研究队列；已登记关系的复验单独展示，历史跟踪记录不会被删除。"
     )
     if state_summary.get("persisted") is False:
         lines.append("_本轮台账没有写入；请查看诊断，已有台账保持原样。_")
@@ -1865,11 +1873,14 @@ def build_report_md(
     event_window=None,
     window_selection=None,
 ):
-    # 拆分：异号同义（跨编号，高价值）优先；同号镜像（同编号）次之
-    cross = [p for p in l1 if not p.get("same_code")]
-    same = [p for p in l1 if p.get("same_code")]
-    cross.sort(key=lambda p: (not p.get("in_registry", False), -p["overall_hit"], -p["n_days"]))
-    same.sort(key=lambda p: (not p.get("in_registry", False), -p["overall_hit"], -p["n_days"]))
+    # Keep already-registered pairs visible for revalidation, outside the new-candidate queue.
+    revalidations = [p for p in l1 if p.get("in_registry", False)]
+    actionable = [p for p in l1 if not p.get("in_registry", False)]
+    cross = [p for p in actionable if not p.get("same_code")]
+    same = [p for p in actionable if p.get("same_code")]
+    cross.sort(key=lambda p: (-p["overall_hit"], -p["n_days"]))
+    same.sort(key=lambda p: (-p["overall_hit"], -p["n_days"]))
+    revalidations.sort(key=lambda p: (-p["overall_hit"], -p["n_days"]))
 
     L = []
     L.append(f"# 全源对撞报告（{today}）\n")
@@ -1887,7 +1898,8 @@ def build_report_md(
     if event_window:
         L.append(f"> 新闻/公告自然日窗口：{event_window[0]:%Y%m%d} ~ {event_window[1]:%Y%m%d}")
     L.append(
-        f"> 主攻目标（unverified）={len(left_ids)}｜首次发现 L1/L1-U 候选对={new_count}｜"
+        f"> 主攻目标（unverified）={len(left_ids)}｜可审定新候选={len(actionable)}｜"
+        f"首次发现新候选对={new_count}｜已登记关系复验={len(revalidations)}｜"
         f"异号同义 {len(cross)} / 同号镜像 {len(same)}\n"
     )
     L.append(
@@ -1901,7 +1913,7 @@ def build_report_md(
         "新定案经 field_dict.md 订正后由 sanctioned 管线 ingest。\n"
     )
     L.append("---\n")
-    L.append(f"## 一、L1 / L1-U 定案候选 — 异号同义（跨编号，高价值）({len(cross)})\n")
+    L.append(f"## 一、L1 / L1-U 新候选 — 异号同义（跨编号，高价值）({len(cross)})\n")
     if cross:
         L.append(
             "| 左字段(unverified) | 右字段 | 等级 | 命中率 | 天数 | 样本 | 信息样本 | 比值 | hub | registry |"
@@ -1911,7 +1923,7 @@ def build_report_md(
             L.append(_l1_row(p))
     else:
         L.append("_本轮无异号同义候选。_\n")
-    L.append(f"\n## 二、L1 / L1-U 定案候选 — 同号镜像（同编号，低优先级）({len(same)})\n")
+    L.append(f"\n## 二、L1 / L1-U 新候选 — 同号镜像（同编号，低优先级）({len(same)})\n")
     if same:
         L.append(
             "| 左字段 | 右字段 | 等级 | 命中率 | 天数 | 样本 | 信息样本 | 比值 | hub | registry |"
@@ -1921,7 +1933,21 @@ def build_report_md(
             L.append(_l1_row(p))
     else:
         L.append("_本轮无同号镜像候选。_\n")
-    L.append("\n## 三、L4 存疑候选（{0}）\n".format(len(l4)))
+    L.append(f"\n## 三、已登记映射的本窗口复验（{len(revalidations)}）\n")
+    L.append(
+        "_这些关系已在主注册表登记，只用于观察当前样本是否仍支持既有映射；"
+        "它们不是新的未知字段候选，也不能再次提交为新定案。_\n"
+    )
+    if revalidations:
+        L.append(
+            "| 左字段 | 右字段 | 等级 | 命中率 | 天数 | 样本 | 信息样本 | 比值 | hub | registry |"
+        )
+        L.append("|:--|:--|:--|--:|--:|--:|--:|--:|:--|:--|")
+        for pair in revalidations:
+            L.append(_l1_row(pair))
+    else:
+        L.append("_本轮没有已登记关系进入复验窗口。_\n")
+    L.append("\n## 四、L4 存疑候选（{0}）\n".format(len(l4)))
     if l4:
         L.append("| 左字段 | 右字段 | 命中率 | 天数 | 样本 |")
         L.append("|:--|:--|--:|--:|--:|")
@@ -1934,7 +1960,7 @@ def build_report_md(
             L.append(f"\n_（仅显示前 60 / 共 {len(l4)}）_")
     else:
         L.append("_本轮无 L4 候选。_\n")
-    L.append("\n## 四、已证伪护栏命中（被拦截的伪结论候选）（{0}）\n".format(len(guardrail_hits)))
+    L.append("\n## 五、已证伪护栏命中（被拦截的伪结论候选）（{0}）\n".format(len(guardrail_hits)))
     if guardrail_hits:
         L.append("| 左字段 | 右字段 | 命中护栏ID | 伪主张 |")
         L.append("|:--|:--|:--|:--|")
@@ -1944,7 +1970,7 @@ def build_report_md(
     else:
         L.append("_本轮无护栏命中（未产出与已证伪结论冲突的候选）。_\n")
     method_candidates = method_candidates or []
-    L.append(f"\n## 五、主动方法候选（不直接定案）（{len(method_candidates)}）\n")
+    L.append(f"\n## 六、主动方法候选（不直接定案）（{len(method_candidates)}）\n")
     L.append(
         "_候选可能来自稳健相关、仿射公式、逐股时间序列或字段标签线索；"
         "每项保留样本日期和来源，仍需人工复核并以独立证据终判。_\n"
@@ -1981,7 +2007,7 @@ def build_report_md(
         L.append("_本轮无达到门槛的主动方法候选。_\n")
 
     diagnostics = list(dict.fromkeys(diagnostics or []))
-    L.append(f"\n## 六、日期与数据质量告警（{len(diagnostics)}）\n")
+    L.append(f"\n## 七、日期与数据质量告警（{len(diagnostics)}）\n")
     if diagnostics:
         for message in diagnostics[:100]:
             L.append(f"- {message}")

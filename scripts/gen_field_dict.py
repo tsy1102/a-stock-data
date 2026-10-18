@@ -38,6 +38,41 @@ def _source_field_counts(records: list[dict[str, Any]]) -> Counter:
     return Counter(record.get("status", "unverified") for record in records)
 
 
+_UNRESOLVED_MEANING_MARKERS = {
+    "待破解",
+    "待确认",
+    "待验证",
+    "未验证",
+    "未定义",
+    "未知",
+    "unknown",
+    "tbd",
+    "n/a",
+    "na",
+    "—",
+    "-",
+}
+
+_STATUS_RESOLUTION_NOTES = {
+    "registry_status_only_single_source": "只有来源自身状态，历史聚合信息不足以进一步归属",
+    "aggregate_status_scope_unresolved": "历史聚合状态尚不能可靠映射到逐源身份",
+    "matched": "历史逐源状态与聚合状态一致，但仍未定案",
+    "status_missing": "缺少可用的历史状态记录",
+}
+
+
+def _meaning_annotation_state(record: dict[str, Any]) -> str:
+    """Describe whether a meaning annotation exists; this is not a truth claim."""
+    meaning = str(record.get("meaning") or "").strip()
+    if not meaning or meaning.casefold() in _UNRESOLVED_MEANING_MARKERS:
+        return "含义栏为空/占位"
+    return "含义栏有文本（仍未验证）"
+
+
+def _status_resolution(record: dict[str, Any]) -> str:
+    return str(record.get("status_resolution") or "status_missing")
+
+
 _SOURCE_ROLE_LABELS = {
     "provider_component": "已映射提供方的接口组件",
     "service_endpoint": "服务接口（底层来源族未确认）",
@@ -107,6 +142,7 @@ def render_field_dict(registry: dict[str, Any]) -> str:
         "- 字段验证记录：[`field_verification/`](field_verification/)。每条结论须保留日期、样本、来源和证据。",
         "- 已验证字段描述缺口：[`field_metadata_gaps.md`](field_metadata_gaps.md)。",
         "- 对撞结果不会自动定案；人工复核和注册表同步流程见 [`field_verification/ADJUDICATION_WORKFLOW.md`](field_verification/ADJUDICATION_WORKFLOW.md)。",
+        "- 无独立数值锚但有权威单源接口/协议定义的字段，可按上游契约流程核验；该结论不建立跨源映射或来源锚。",
         "- 来源分组及 GitHub 对应关系以 `field_verification/source_lineage.json` 为准；未确认项明确标为 unconfirmed。",
         "",
         "## 来源身份与框架参考索引",
@@ -154,6 +190,9 @@ def render_unknown_fields(registry: dict[str, Any]) -> str:
         status = record.get("status", "unverified")
         if status in {"unverified", "candidate", "conflict", "disproved"}:
             groups[status].append(record)
+    unverified = groups["unverified"]
+    meaning_counts = Counter(_meaning_annotation_state(record) for record in unverified)
+    resolution_counts = Counter(_status_resolution(record) for record in unverified)
 
     lines = [
         "# 未知字段与状态冲突队列",
@@ -164,7 +203,29 @@ def render_unknown_fields(registry: dict[str, Any]) -> str:
         "> 聚合层的同码异义与定义缺口见 [`field_aggregate_review.md`](field_aggregate_review.md)，不代表逐源记录状态冲突。",
         "",
         f"> 总字段路径 {len(records)}；unverified {counts['unverified']}、candidate {counts['candidate']}、conflict {counts['conflict']}、disproved {counts['disproved']}。",
+        "> 以下两组未验证字段统计是不同维度，不能相加：含义栏文本只表示存在文字，不代表语义正确；状态判定反映旧字典状态证据能否映射到逐源身份。",
+        "",
+        "## 未验证字段的复核分层",
+        "",
+        "### 含义栏状态（仅表示文字是否存在）",
+        "",
+        "| 分类 | 数量 |",
+        "|:--|--:|",
     ]
+    for label in ("含义栏为空/占位", "含义栏有文本（仍未验证）"):
+        lines.append(f"| {label} | {meaning_counts[label]} |")
+    lines.extend(
+        [
+            "",
+            "### 历史状态证据的解析结果",
+            "",
+            "| 状态判定 | 数量 | 说明 |",
+            "|:--|--:|:--|",
+        ]
+    )
+    for resolution, count in sorted(resolution_counts.items()):
+        note = _STATUS_RESOLUTION_NOTES.get(resolution, "按注册表原始状态判定代码保留")
+        lines.append(f"| `{_cell(resolution)}` | {count} | {_cell(note)} |")
     headings = [
         ("conflict", "一、状态冲突（禁止作为锚点，优先复核）"),
         ("candidate", "二、候选字段"),
@@ -179,8 +240,8 @@ def render_unknown_fields(registry: dict[str, Any]) -> str:
             continue
         lines.extend(
             [
-                "| 来源 | 完整 code path | 规范名 | 含义 | 单位 | 状态判定 | 证据章节 |",
-                "|:--|:--|:--|:--|:--|:--|:--|",
+                "| 来源 | 完整 code path | 规范名 | 含义 | 单位 | 含义栏提示 | 状态判定 | 证据章节 |",
+                "|:--|:--|:--|:--|:--|:--|:--|:--|",
             ]
         )
         for record in group:
@@ -188,13 +249,14 @@ def render_unknown_fields(registry: dict[str, Any]) -> str:
                 [record.get("section")] if record.get("section") else []
             )
             lines.append(
-                "| {source} | `{code}` | {canonical} | {meaning} | {unit} | {resolution} | {section} |".format(
+                "| {source} | `{code}` | {canonical} | {meaning} | {unit} | {meaning_state} | {resolution} | {section} |".format(
                     source=_cell(record.get("source")),
                     code=str(record.get("code", "")).replace("`", "\\`"),
                     canonical=_cell(record.get("canonical")),
                     meaning=_cell(record.get("meaning")),
                     unit=_cell(record.get("unit")),
-                    resolution=_cell(record.get("status_resolution")),
+                    meaning_state=_meaning_annotation_state(record),
+                    resolution=_cell(_status_resolution(record)),
                     section=_cell("；".join(sections)),
                 )
             )

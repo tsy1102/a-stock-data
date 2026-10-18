@@ -478,6 +478,25 @@ _CANON_PREFIX_FOR_SRC = {
     "TDX-F10(双命名源)": [],
 }
 
+# Capture-envelope / dataset-container keys, not source response fields. Some
+# archived probes store these as None or empty containers on failed/empty fetches;
+# _leaf_keys intentionally preserves null/empty leaves, so exclude the known
+# wrapper names at the source-aware token boundary instead of weakening leaf extraction.
+_CAPTURE_CONTAINER_TOKENS = {
+    "TDX(双命名源)": {"finance_info", "quote_full"},
+    "同花顺-fuyao": {
+        "auction_final",
+        "balance_q",
+        "cashflow_q",
+        "fin_indicators",
+        "income_a",
+        "income_q",
+        "short_term_benchmark",
+        "valuation",
+    },
+    "财联社(cls)": {"telegraph"},
+}
+
 
 def _agg_raw_leaf_keys(filenames):
     """聚合 docs/field_verification/2026* 下所有 dated 目录的 raw 叶键(真实返回字段)。
@@ -791,6 +810,7 @@ def reg_tokens_for_section(src, text):
         if src == "TDX-eltdx(适配层)":
             # bars.get 的请求参数不是响应字段。
             toks -= {"adjust", "period"}
+    toks -= _CAPTURE_CONTAINER_TOKENS.get(src, set())
     return toks
 
 

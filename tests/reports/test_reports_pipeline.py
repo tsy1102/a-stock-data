@@ -32,6 +32,7 @@ import unittest
 from contextlib import redirect_stdout
 from datetime import date
 from pathlib import Path
+from typing import Any
 from unittest import mock
 
 import get_lng_report as L
@@ -75,6 +76,16 @@ def _closing_run(exc: BaseException | None = None, after=None):
     return _run
 
 
+def _complete_without_event_loop(coroutine):
+    """Run an async wrapper that must complete without suspending or creating a loop."""
+    try:
+        coroutine.send(None)
+    except StopIteration as completed:
+        return completed.value
+    coroutine.close()
+    raise AssertionError("coroutine unexpectedly suspended")
+
+
 class _RunnerTestBase(unittest.TestCase):
     def setUp(self):
         self._tmp = tempfile.TemporaryDirectory()
@@ -90,13 +101,13 @@ class _RunnerTestBase(unittest.TestCase):
 class _BatchMixin:
     """批量型（sht/med/lng）公共装配契约。子类需给出 MOD / CLS / RTYPE。"""
 
-    MOD = None
-    CLS = ""
-    RTYPE = ""
+    MOD: Any = None
+    CLS: str = ""
+    RTYPE: str = ""
     # [(patch目标, 属性名, 返回值, 期望调用次数), ...]
     # 期望次数把"批量共享数据只拉一次"这条契约钉死——V16.4.1 修过缓存值未传入导致
     # 逐股重复拉取的 bug；而指数行情是按 4 个指数循环拉的，本就该 4 次。
-    CACHE_PATCHES = ()
+    CACHE_PATCHES: tuple[tuple[Any, str, Any, int], ...] = ()
 
     def _make_runner(self, **arg_kw):
         """构造 runner 并补齐 args 默认值（sht 必须有 depth，否则装配时 AttributeError）。
@@ -268,7 +279,7 @@ class TestShtRunnerPipeline(_BatchMixin, _RunnerTestBase):
         fn = bp.call_args.kwargs["prefetch_async_fn"]
         session, codes = object(), ["600519"]
         with mock.patch.object(sc_datasource, "start_datacenter_prefetch", return_value="DC") as dc:
-            out = asyncio.run(fn(session, codes))
+            out = _complete_without_event_loop(fn(session, codes))
         self.assertEqual(out, "DC")
         self.assertIs(dc.call_args[0][0], codes)
         self.assertIs(dc.call_args[0][1], session)
@@ -287,7 +298,7 @@ class TestShtRunnerPipeline(_BatchMixin, _RunnerTestBase):
             runner.execute_pipeline()
         fn = bp.call_args.kwargs["prefetch_async_fn"]
         with mock.patch.object(sc_datasource, "start_datacenter_prefetch", return_value=None) as dc:
-            asyncio.run(fn(None, []))
+            _complete_without_event_loop(fn(None, []))
         return dc.call_args.kwargs["dragon_kwargs"]
 
     def test_depth_deep_enables_seats(self):
@@ -369,8 +380,8 @@ class TestLngRunnerPipeline(_BatchMixin, _RunnerTestBase):
 class _SingleFileMixin:
     """单文件型（val/mak）公共契约：生成单份 md 并返回路径。"""
 
-    MOD = None
-    CLS = ""
+    MOD: Any = None
+    CLS: str = ""
 
     def _runner(self):
         r = getattr(self.MOD, self.CLS)()

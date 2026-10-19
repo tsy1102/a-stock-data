@@ -1,6 +1,6 @@
 # 项目架构与数据流
 
-> 本文描述当前代码路径；架构边界的完整依据见 [`ARCHITECTURE_THEORY.md`](ARCHITECTURE_THEORY.md)，字段定义见 [`field_dict.md`](field_dict.md)。最近核对：2026-10-15。
+> 本文描述当前代码路径；架构边界的完整依据见 [`ARCHITECTURE_THEORY.md`](ARCHITECTURE_THEORY.md)，字段定义见 [`field_dict.md`](field_dict.md)。最近核对：2026-10-19。
 
 ## 1. 系统结构
 
@@ -39,7 +39,7 @@ flowchart TD
 |---|---|---|
 | 调度层 | `main.py` | 启动报告子进程并汇总结果；必选脚本缺失、子任务异常或返回失败码都应导致整体失败 |
 | 报告层 | `get_*_report.py`、`BaseReportRunner` | 组织报告工作流、渲染文件、处理上传 |
-| Tier 1 统一门面 | `core/data_provider.get_canonical_stock_data()` | 113 个 dataclass 属性（101 个基础属性、12 个 ELTDX 扩展）的归一化契约、来源选择、fallback、单位归一化和 `field_sources` 溯源 |
+| Tier 1 统一门面 | `core/data_provider.get_canonical_stock_data()` | 115 个 dataclass 属性（103 个非 ELTDX 属性、12 个 ELTDX 扩展）的归一化契约、来源选择、fallback、单位归一化、逐字段来源和有效日期 |
 | Tier 2 专项适配器 | `stock_common/sc_datasource`、`sc_fuyao`、`core/tdx_client.py` 的公开接口 | 提供 CYQ、F10、龙虎榜、涨停梯队、行业 L2、资金流、竞价等专用数据 |
 | 原始客户端 | `stock_common/` 与 `core/tdx_client.py` 内部实现 | HTTP、TCP、SDK 等底层连接；生产报告脚本不应绕过 Tier 1/Tier 2 公开入口 |
 | 缓存 | `core/stock_cache.py` 和适配器缓存 | 管理分类 TTL、缓存键和失效；单位或字段语义变化要升级对应缓存类别/版本 |
@@ -58,7 +58,9 @@ flowchart TD
 | 交易日 09:30 前 | 允许使用本地 ZHB 快照 |
 | 交易日 09:30 起（含盘后） | 需要实时行情来源；盘后本地 ZHB 仍可能停留在 T-1 |
 
-`force_realtime`、实时交易时段、盘后状态以及 ZHB 数据是否存在，也会影响 `need_realtime_quote`。不要把路由简化成“某字段属于实时集合就必走 HTTP”：`REQUIRES_REALTIME_HTTP` 与 `ZHB_SUFFICIENT` 是由 `sc_schema.FIELD_SPECS` 生成的测试契约元数据，不是业务运行时的路由开关。
+`force_realtime`、实时交易时段、盘后状态、ZHB 数据是否存在，以及 ZHB A 类行情字段是否过期，也会影响 `need_realtime_quote`。ZHB 快照先按每个字段的 ABCD 最大交易日延迟过滤；仅剩其他新鲜字段时，不会让过期的现价/涨跌幅挡住行情回退。TDX 行情缓存日期使用 `latest_market_data_date()`，盘前、周末和节假日均按项目交易日历对齐。
+
+不要把路由简化成“某字段属于实时集合就必走 HTTP”：`REQUIRES_REALTIME_HTTP` 与 `ZHB_SUFFICIENT` 是由 `sc_schema.FIELD_SPECS` 生成的测试契约元数据，不是业务运行时的路由开关。
 
 ### 3.2 行情 fallback
 
@@ -72,6 +74,14 @@ flowchart TD
 `core/source_priority.py` 保留期望顺序供测试核对，不参与生产路由。修改运行顺序时，应修改 `data_provider.py` 并更新验证实际调用顺序的测试。
 
 字段新鲜度另外按 ABCD 规则由 `sc_datasource.zhb_field_safe()` 判断：A 实时、B 准实时、C 日频、D 静态。新鲜度分类与路由选择是相关但独立的约束。
+
+### 3.3 字段来源与日期元数据
+
+- `field_sources` 记录每个字段实际填值路径；TDX 混合行情适配器通过带来源 sidecar 的新接口提供来源，原 `tdx_get_quote_full()` 字典接口保持兼容。
+- `field_as_of_dates` 只记录明确上游有效日期或 ZHB 包日期。来源返回的 `data_date` 若是本机采集日期，不作为字段有效日。
+- `quote_date` 是价格字段的有效日期；日期未知时为空，`time_anchor` 为 `unknown`。`collected_at` 单独记录本机组装数据对象的 ISO 8601 时间。
+- SHT/MED 遇到 `t-1` 会注明上一交易日口径；遇到 `unknown` 会提示日期未核实。来源或有效日期不确定时不推断为 T 日。
+- VAL 批量行情通过 `prewarm_canonical_quote_cache()` 进入统一层；报告脚本不直接写 `_BATCH_QUOTE_CACHE` / `_PD_EXTRA_CACHE`。VAL 的跳过哨兵只留在当前进程内存，不写入 L2。
 
 ## 4. 报告运行生命周期
 

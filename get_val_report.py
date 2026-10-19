@@ -128,6 +128,7 @@ from stock_common import (
     get_financial_report_with_fallback,
     get_em_batch_quotes,
 )  # V11.5
+from stock_common.sc_report_runner import classify_price_range
 from core.data_provider import (
     get_market_snapshot_async,
     get_turnover_pct_async,
@@ -324,13 +325,43 @@ def holder_num_change(code, page_size=5):
     return holder_change(code)
 
 
-# ─── 模拟PE百分位 — 策略05使用 ───
+# ─── 模拟历史PE区间位置 ───
 
 
-def estimate_pe_percentile(code, price, total_shares):
+def _historical_close_on_or_before(
+    rows: Sequence[Sequence[Any]], close_index: int, cutoff_date: str
+) -> Optional[float]:
+    """Pick the latest positive close at or before a date, regardless of K-line row order."""
+    try:
+        cutoff = date.fromisoformat(str(cutoff_date)[:10])
+    except (TypeError, ValueError):
+        return None
+
+    latest_date = None
+    latest_close = None
+    for row in rows:
+        if len(row) <= close_index:
+            continue
+        try:
+            row_date = date.fromisoformat(str(row[0])[:10])
+            close_price = _safe_float(row[close_index])
+        except (TypeError, ValueError):
+            continue
+        if (
+            close_price > 0
+            and row_date <= cutoff
+            and (latest_date is None or row_date > latest_date)
+        ):
+            latest_date = row_date
+            latest_close = close_price
+    return latest_close
+
+
+def estimate_pe_range_position(code, price, total_shares):
     """
-    基于新浪12期财报 + 历史日K线，估算近3年模拟PE百分位。
-    返回: {percentile, pe_min, pe_max, pe_current, quarters}
+    基于历史财报期末附近价格和当前股本估算PE历史区间位置。
+    该值是 min/max 区间位置，不是经验分位；历史股本与披露日均为近似口径。
+    返回: {position_pct, pe_min, pe_max, pe_current, observations, financial_periods}
 
     V16.1 修复：
       1. 财报按报告日排序（旧→新）后再拆季度——原逻辑假设 profits 旧→新，
@@ -378,14 +409,16 @@ def estimate_pe_percentile(code, price, total_shares):
 
     ttm_eps_list = []
     ttm_dates = []
+    latest_ttm_eps = None
     for i in range(len(sq_profits) - 3):
         ttm_profit = sum(sq_profits[i : i + 4])
         eps = ttm_profit / total_shares
+        latest_ttm_eps = eps
         if eps > 0:
             ttm_eps_list.append(eps)
             ttm_dates.append(fin_sorted[i + 3]["报告日"])
 
-    if not ttm_eps_list:
+    if not ttm_eps_list or latest_ttm_eps is None or latest_ttm_eps <= 0:
         return None
 
     keys, rows = _fast_kline(code)
@@ -409,36 +442,31 @@ def estimate_pe_percentile(code, price, total_shares):
             )
         except (ValueError, TypeError):
             _anchor = dt_str
-        for row in reversed(rows):
-            if len(row) <= idx_close:
-                continue
-            row_date = row[0] if len(row) > 0 else ""
-            if row_date[:10] <= _anchor:
-                close_price = _safe_float(row[idx_close])
-                if close_price > 0:
-                    historical_pes.append(close_price / eps)
-                break
+        close_price = _historical_close_on_or_before(rows, idx_close, _anchor)
+        if close_price is not None:
+            historical_pes.append(close_price / eps)
 
     if len(historical_pes) < 2:
         return None
 
-    current_pe = price / ttm_eps_list[-1] if ttm_eps_list[-1] > 0 else 0
+    current_pe = price / latest_ttm_eps
     if current_pe <= 0:
         return None
 
     pe_min = min(historical_pes)
     pe_max = max(historical_pes)
     if pe_max == pe_min:
-        percentile = 50.0
+        position_pct = 50.0
     else:
-        percentile = (current_pe - pe_min) / (pe_max - pe_min) * 100
+        position_pct = (current_pe - pe_min) / (pe_max - pe_min) * 100
 
     return {
-        "percentile": percentile,
+        "position_pct": position_pct,
         "pe_current": current_pe,
         "pe_min": pe_min,
         "pe_max": pe_max,
-        "quarters": len(ttm_eps_list),
+        "observations": len(historical_pes),
+        "financial_periods": len(ttm_eps_list),
     }
 
 
@@ -831,14 +859,16 @@ def strategy_03_volume_breakout(hot_pool):
     return _top10_sorted(result, lambda x: x["score"])
 
 
-# ─── 策略04: 核心资产打折买入 ───
+# ─── 策略04: 估算历史PE区间偏低候选 ───
 
 
 async def strategy_04_core_discount(stocks):
     _sc = _load_strategy_config()
     _pe_high = _sc.get("valuation", {}).get("pe_high", 50.0)
     _pb_high = _sc.get("valuation", {}).get("pb_high", 8.0)
-    _pe_percentile_warn = _sc.get("strategy", {}).get("pe_percentile_warn", 15.0)
+    # Config key is retained for compatibility; value is a historical range-position threshold,
+    # not a statistical percentile.
+    _pe_range_position_warn = _sc.get("strategy", {}).get("pe_percentile_warn", 15.0)
     _mcap_min = _sc.get("strategy", {}).get("mcap_big_cap_min", 100.0)
     _top_n = _sc.get("strategy", {}).get("top_n_cap", 200)
     big_caps = [s for s in stocks if s.get("mcap_yi", 0) >= _mcap_min]
@@ -867,25 +897,35 @@ async def strategy_04_core_discount(stocks):
         if mcap <= 0 or price <= 0:
             continue
         total_shares = int(mcap * 1e8 / price)
-        # V16.4.1: PE 分位用实时价(cdata.price)而非 ZHB T-1 价——原混用导致盘中/盘后分位偏差
-        pe_data = await asyncio.to_thread(estimate_pe_percentile, code, price, total_shares)
+        # PE 区间位置用统一层实时价(cdata.price)估算；它不是统计分位，且沿用当前股本口径。
+        pe_data = await asyncio.to_thread(estimate_pe_range_position, code, price, total_shares)
         if pe_data is None:
             continue
-        pe_percentile = _safe_float(pe_data.get("percentile", 100))
-        if pe_percentile > _pe_percentile_warn:
+        pe_position = _safe_float(pe_data.get("position_pct", 100))
+        if pe_position > _pe_range_position_warn:
             continue
-        reason = (
-            f"当前PE({_safe_float(pe_data.get('pe_current', 0)):.1f}x)处于近3年模拟PE区间低位"
-            f"(最低{_safe_float(pe_data.get('pe_min', 0)):.1f}x~最高{_safe_float(pe_data.get('pe_max', 0)):.1f}x)，"
-            f"约{pe_percentile:.0f}%分位（基于{pe_data.get('quarters', 0)}期TTM数据估算），"
-            "属于非理性折价区间"
-        )
+        pe_current = _safe_float(pe_data.get("pe_current", 0))
+        pe_min = _safe_float(pe_data.get("pe_min", 0))
+        pe_max = _safe_float(pe_data.get("pe_max", 0))
+        observations = int(pe_data.get("observations", 0) or 0)
+        if pe_position < 0:
+            reason = (
+                f"估算当前PE {pe_current:.1f}x 低于估算历史PE区间下沿 {pe_min:.1f}x；"
+                f"样本 {observations} 个（报告期+60自然日近似披露日、沿用当前股本），"
+                "需核对盈利与股本变化，不据此确认低估"
+            )
+        else:
+            reason = (
+                f"估算当前PE {pe_current:.1f}x 位于近3年模拟历史区间 {pe_min:.1f}x–{pe_max:.1f}x 的"
+                f"{pe_position:.0f}%位置；样本 {observations} 个（报告期+60自然日近似披露日、"
+                "沿用当前股本），仅作相对估值筛选"
+            )
         result.append(
             {
                 "code": code,
                 "name": s.get("name", "") or cdata.name,
                 "reason": reason,
-                "score": -pe_percentile,
+                "score": min(100.0, max(0.0, 100.0 - pe_position)),
             }
         )
         if len(result) >= 5:
@@ -1027,9 +1067,13 @@ def strategy_06_three_soldiers(stocks, top_n=500):
         if idx_vol >= 0 and vols[0] > 0 and vols[1] > 0 and vols[2] > 0:
             if not (vols[0] < vols[1] < vols[2]):
                 continue
+        volume_confirmed = False
+        if idx_vol >= 0 and all(volume > 0 for volume in vols):
+            volume_confirmed = vols[0] < vols[1] < vols[2]
+        volume_note = "成交量呈阶梯放大" if volume_confirmed else "成交量数据不足，未作量能确认"
         reason = (
-            f"底部红三兵形态确认：连续三天收阳（{closes[0]:.2f}→{closes[1]:.2f}→{closes[2]:.2f}元），"
-            "成交量阶梯放大，低位建仓信号明确"
+            f"连续三日收阳且收盘价递增（{closes[0]:.2f}→{closes[1]:.2f}→{closes[2]:.2f}元）；"
+            f"{volume_note}，仅为形态筛选候选"
         )
         result.append(
             {
@@ -1117,7 +1161,7 @@ async def strategy_07_policy_driven(stocks, hot_pool=None):
         reason = (
             f"近期新闻出现政策关键词: {", ".join(found_policy[:3])}，"
             f"市值{mcap_yi:.1f}亿（小盘对政策更敏感），"
-            f"PE={pe_ttm:.1f}x（低估后备）"
+            f"PE={pe_ttm:.1f}x（仅作为估值条件，未与行业或历史区间比较）"
         )
         result.append(
             {"code": code, "name": s.get("name", "") or "", "reason": reason, "score": -pe_ttm}
@@ -1213,7 +1257,11 @@ async def strategy_09_contrarian_value(stocks, top_n=300):
     _sc = _load_strategy_config()
     _roe_good = _sc.get("fundamental", {}).get("roe_good", 15.0)
     _pe_ceiling = _sc.get("fundamental", {}).get("pe_ceiling", 60.0)
-    candidates = [s for s in stocks if s.get("mcap_yi", 0) >= 50][:top_n]
+    candidates = sorted(
+        (s for s in stocks if _safe_float(s.get("mcap_yi", 0)) >= 50),
+        key=lambda item: _safe_float(item.get("mcap_yi", 0)),
+        reverse=True,
+    )[:top_n]
     result = []
     for s in candidates:
         code = s["code"]
@@ -1251,9 +1299,9 @@ async def strategy_09_contrarian_value(stocks, top_n=300):
         if pe_ttm <= 0 or pe_ttm > _pe_ceiling:
             continue
         reason = (
-            f"最新ROE={roe:.1f}%≥15%（优质白马），"
+            f"最新可用ROE={roe:.1f}%≥{_roe_good:.1f}%（数据期见来源），"
             f"距52周最高价{high_52w:.2f}元已下跌{abs(drawdown):.0f}%，"
-            f"当前PE={pe_ttm:.1f}x，非基本面因素导致的错杀"
+            f"当前PE={pe_ttm:.1f}x；高ROE与回撤条件不证明跌因或低估，需核查盈利预期和公告"
         )
         result.append(
             {"code": code, "name": s.get("name", ""), "reason": reason, "score": -drawdown}
@@ -1659,18 +1707,11 @@ def strategy_15_longhu_activity(all_stocks, today_str=None, top_n=200):
     return _top10_sorted(results, lambda x: x["score"])
 
 
-# ─── 策略16: 52周位置百分位（V10.3新增）──
+# ─── 策略16: 52周区间偏低位置筛选 ──
 
 
-def strategy_16_52w_position(stocks, top_n=200):
-    """V10.3: 52周位置百分位策略。
-    利用zhb的high_52w/low_52w，筛选处于52周低位的优质标的。
-
-    逻辑:
-      1) 计算现价格在52周区间内的位置百分位
-      2) 筛选位置百分位<30%（超卖区域）且PE合理的标的
-      3) 评分: 位置百分位越低越好
-    """
+def strategy_16_52w_position(stocks):
+    """筛选价格位于有效 52 周参考区间低端的候选；不把区间位置解释为超卖。"""
     result = []
     for s in stocks:
         code = s["code"]
@@ -1678,22 +1719,23 @@ def strategy_16_52w_position(stocks, top_n=200):
         low_52w = _safe_float(s.get("low_52w", 0))
         price = _safe_float(s.get("price", 0))
         pe_ttm = _safe_float(s.get("pe_ttm", 0))
-        if not high_52w or not low_52w or not price:
+        relation, position_pct, _outside_pct = classify_price_range(price, low_52w, high_52w)
+        if relation != "within" or position_pct is None or position_pct > 30:
             continue
-        if high_52w <= low_52w:
-            continue
-        position_pct = (price - low_52w) / (high_52w - low_52w) * 100
-        if position_pct > 30:
-            continue
-        if pe_ttm > 50:
+        if pe_ttm <= 0 or pe_ttm > 50:
             continue
         reason = (
-            f"52周位置百分位={position_pct:.0f}%（低位超卖），"
-            f"52周区间[{low_52w:.2f}, {high_52w:.2f}]（T-1），"
-            f"现价{price:.2f}元(实时)，PE={pe_ttm:.1f}x(实时)"
+            f"现价{price:.2f}元位于52周参考区间[{low_52w:.2f}, {high_52w:.2f}]内的"
+            f"{position_pct:.0f}%位置（区间数据日见报告头）；PE={pe_ttm:.1f}x（快照估值）。"
+            "区间位置不等同于超卖或反转信号。"
         )
         result.append(
-            {"code": code, "name": s.get("name", ""), "reason": reason, "score": 100 - position_pct}
+            {
+                "code": code,
+                "name": s.get("name", ""),
+                "reason": reason,
+                "score": 100 - position_pct,
+            }
         )
     return _top10_sorted(result, lambda x: x["score"])
 
@@ -2021,7 +2063,7 @@ def strategy_23_ps_undervalued(stocks, top_n=500):
         score = (_q20 / ps) * 10
         reason = (
             f"PS(TTM) {ps:.2f}x ≤ 全市场20分位({_q20:.2f}x)且经营现金流为正"
-            f"(PCF {pcf:.1f}x)——收入端低估候选"
+            f"(PCF {pcf:.1f}x)——收入端估值筛选候选（未调整行业和增长差异）"
         )
         result.append(
             {"code": s["code"], "name": s.get("name", ""), "reason": reason, "score": score}
@@ -2030,13 +2072,10 @@ def strategy_23_ps_undervalued(stocks, top_n=500):
 
 
 def strategy_24_short_reversal(stocks):
-    """P1 (Tier1 路线①): 短期反转策略——纯 ZHB 快照派生, 零网络 (change_5d 近5日涨跌幅%)。
+    """近 5 日回撤筛选——纯 ZHB 快照派生，不推断反转概率。
 
-    因子: Alpha#002 短期反转。近5日温和回撤的标的存在超卖反弹动能。
-    入选: -12% <= change_5d <= -0.5% (近期回调但未崩盘; >0 为上行趋势非反转,
-          ==0 为停牌/数据缺失); 排除 mcap_yi<20亿 以过滤仙股噪声。
-    评分: score = -change_5d (回撤越深、反弹动能越强); TOP10 取最强反转信号。
-    与策略18/19(量能/竞价动量)、策略22(月内动量)正交: 短周期反向维度。
+    入选: -12% <= change_5d <= -0.5%；排除 mcap_yi<20 亿。
+    排序: score = -change_5d，TOP10 按区间内回撤幅度排序，不代表预期收益或反转信号。
     """
     result = []
     for s in stocks:
@@ -2048,7 +2087,10 @@ def strategy_24_short_reversal(stocks):
         if mcap < 20.0:
             continue
         score = -ch5
-        reason = f"近5日回撤 {ch5:.2f}%(短期超卖)——反弹动能候选; " f"市值 {mcap:.0f}亿过滤仙股噪声"
+        reason = (
+            f"近5日回撤 {ch5:.2f}%（回撤筛选，不代表超卖或反弹概率）；"
+            f"市值 {mcap:.0f}亿，满足本策略流动性过滤条件"
+        )
         result.append({"code": code, "name": s.get("name", ""), "reason": reason, "score": score})
     return _top10_sorted(result, lambda x: x["score"])
 
@@ -2293,6 +2335,7 @@ async def run_discovery_async(output_path):
     L(f"  **A 股策略发现报告**  [{today_str} {_t_now.strftime('%H.%M.%S')}]")
     L("---")
     L(f"  市场: A 股 | 策略: {_STRATEGY_TOTAL} | 引擎: asyncio | 并发: 3")
+    L("  说明：策略结果是条件筛选候选；PE区间位置、回撤和技术形态本身不证明低估、超卖或反转。")
     L("-" * 85)
     L("  预热: 加载市场数据 & 策略配置…")
     _load_t0 = (
@@ -2358,64 +2401,17 @@ async def run_discovery_async(output_path):
                 )
                 _price_map = _tencent_map
 
-                # V17.2.x(2026-09-10) 性能优化: 用已拉取的全市场腾讯批量行情零网络预热
-                # core.data_provider._BATCH_QUOTE_CACHE。get_canonical_stock_data 命中后跳过 TDX/腾讯
-                # 单股/EM 逐股网络(L399 批量命中短路, 且本批已含 open/high/low/last_close 使 OHLC 需求满足
-                # 不再回退 TDX), 且本批已含 roa/roe_deduct_ttm/limit_up/limit_down/pb → L490 估值补取亦短路。
-                # val 全市场逐股扫描(策略04/07 各 5000+ 只)由"数千次串行网络"降为"纯内存命中"。
-                # 零额外请求(复用管道已发生的同一批量拉取, 防封三层机制不变); 仅 val 进程内映射一次。
+                # V17.4.64: 通过统一层公开入口预热行情，避免 VAL 写入统一层私有缓存。
                 try:
-                    import datetime as _dt_mod
-                    from core import data_provider as _dp
+                    from core.data_provider import prewarm_canonical_quote_cache
 
-                    _bq_cache = _dp._BATCH_QUOTE_CACHE
-                    _pd_extra = _dp._PD_EXTRA_CACHE
-                    _today_str = _dt_mod.datetime.now().strftime("%Y%m%d")
-                    _warmed = 0
-                    for _c, _m in _tencent_map.items():
-                        if _m and _m.get("price"):
-                            # V17.2.x(2026-09-10) 性能优化: 把已拉取的全市场腾讯批量行情零网络预热进
-                            # core.data_provider._BATCH_QUOTE_CACHE —— get_canonical_stock_data 命中后跳过
-                            # TDX/腾讯单股/push2 逐股网络(L399 批量命中短路, OHLC 已含故不再回退 TDX,
-                            # 估值字段 roa/roe_deduct_ttm/limit_up/limit_down/pb 已含故 L490 估值补取短路)。
-                            _batch_quote = dict(_m)
-                            _batch_quote["_field_sources"] = {
-                                _field: "realtime:tencent:batch"
-                                for _field, _value in _m.items()
-                                if _value not in (None, 0, "", "0", "0.0")
-                            }
-                            _bq_cache[_c] = _batch_quote
-                            # V17.2.x(2026-09-10) 性能优化: val 不消费 pe_dynamic/fund_main_today/财务TTM族,
-                            # 但 get_canonical_stock_data 的 L640 push2delay 补充块会因这两字段缺失而对每只股票
-                            # 打 1 次被全局 ~1.2s 文件锁串行的 get_em_quote_full_delay —— 全市场 5000+ 只即数千秒瓶颈。
-                            # 用哨兵 0 预填 _PD_EXTRA_CACHE 使 L648 缓存命中、L653 push2 跳过
-                            # (L659/L669 对 0 值排除, 不污染 rt_quote)。仅 val 进程作用域, 不影响其它报告。
-                            _pd_extra[_c] = {
-                                "pe_dynamic": float(_m.get("pe_dynamic") or 0),
-                                "fund_main_today": 0.0,
-                                "fund_main_5d": 0.0,
-                                "fund_super_today": 0.0,
-                                "fund_large_today": 0.0,
-                                "fund_mid_today": 0.0,
-                                "fund_small_today": 0.0,
-                            }
-                            _warmed += 1
-                    # 锁定日期, 防止 get_canonical_stock_data 首次调用时 L645 清掉上面的 _PD_EXTRA_CACHE 预热
-                    _dp._PD_EXTRA_CACHE_DATE = _today_str
+                    _warmed = prewarm_canonical_quote_cache(
+                        _tencent_map,
+                        source_label="realtime:tencent:batch",
+                        skip_realtime_extras=True,
+                    )
                     if _warmed:
-                        _debug_log(
-                            f"val batch-quote prewarm: {_warmed}/{len(_tencent_map)} 只 -> _BATCH_QUOTE_CACHE(+_PD_EXTRA_CACHE 哨兵)"
-                        )
-                        # V17.3.12: 跨进程共享——把已预热的全市场行情落盘 L2，
-                        # 后续 sht/med/lng 经 prefetch_quote_batch 读 L2 即零网络复用。
-                        # 仅持久化 _BATCH_QUOTE_CACHE(价/OHLC/涨跌)，不持久化 _PD_EXTRA_CACHE
-                        # 哨兵 0（否则会令他脚本主力资金段被误判为"无数据"而空白）。
-                        try:
-                            from core.stock_cache import persist_quote_batch_l2
-
-                            persist_quote_batch_l2(_dp._BATCH_QUOTE_CACHE)
-                        except Exception as _pe:
-                            _debug_log(f"val L2 persist error: {_pe}")
+                        _debug_log(f"val batch-quote prewarm: {_warmed}/{len(_tencent_map)} 只")
                 except Exception as _e:
                     _debug_log(f"val batch-quote prewarm error: {_e}")
 
@@ -2527,30 +2523,29 @@ async def run_discovery_async(output_path):
                     if _amount_wan > 0:
                         _stock["amount_yi"] = _amount_wan / 10000.0
                 all_stocks.append(_stock)
-            # V17.2.7(2026-09-07) 修复: 数据基准标签如实反映实际取数路径, 消除"✅新鲜"误导。
-            # 盘后/盘中: 腾讯 T 日行情已生效 → 基准=今日, 与 mak 同口径;
-            # 盘前/休市旁路: 仅 ZHB T-1 可用 → 基准=最新交易日(标注 T-1 快照)。
-            _t_day_used = (not is_bypass) and bool(_tencent_map)
-            if m_status in ("morning", "afternoon", "post_market"):
-                _fresh_tag = "✅T日实时"
-            elif m_status == "post_close":
-                _fresh_tag = "✅T日收盘"
+            # 行情有效日必须来自来源响应；报告生成日期或市场时段不能替代 as_of_date。
+            _basis_date = _zhb_date or "未确认"
+            if is_bypass:
+                _fresh_tag = "ZHB最近可用交易日快照"
+            elif _tencent_map:
+                _fresh_tag = "腾讯批量行情已返回；源响应未提供逐股有效日期"
             else:
-                _fresh_tag = "⚠️T-1快照(最新交易日)"
-            _basis_date = _zhb_date if (is_bypass or not _tencent_map) else time.strftime("%Y%m%d")
+                _fresh_tag = "腾讯实时行情未返回；基于ZHB快照，日期见下方"
             L(
                 f"  ✅ data_provider全市场: {len(all_stocks)}只（过滤{_excluded}只停牌股，市值覆盖率{_mcap_count}/{len(all_stocks)}）[{_fresh_tag}]"
             )
-            if _basis_date:
+            L(f"  📊 ZHB基础快照日期: {_basis_date}（这是快照日期，不代表所有实时覆盖字段的日期）")
+            if _tencent_map:
                 L(
-                    f"  📊 数据日期: {_basis_date}"
-                    f"{'（腾讯T日,与mak同基准）' if _t_day_used else '（ZHB最新交易日快照）'}"
+                    f"  📊 腾讯批量行情覆盖: {len(_tencent_map)}/{len(all_codes)}只；"
+                    "当前响应未带有效日期元数据，不能据报告生成时段标成T日行情"
                 )
             if is_bypass:
                 L("  📊 数据分层: [纯ZHB横截面] 已完全复用 ZHB 历史数据，无任何实时网络开销")
             else:
                 L(
-                    "  📊 数据分层: [API实时] price/change_pct/amount/pe_ttm/turnover_pct | [静态层] high_52w/low_52w/pb/dividend_yield/ipo_price/industry_code"
+                    "  📊 数据分层: [腾讯批量覆盖] price/change_pct/amount/pe_ttm/turnover_pct（日期未由响应确认）"
+                    " | [ZHB/静态层] high_52w/low_52w/pb/dividend_yield/ipo_price/industry_code"
                 )
         else:
             raise ValueError("market snapshot empty")
@@ -2576,6 +2571,9 @@ async def run_discovery_async(output_path):
             except Exception as _we:
                 _debug_log(f"val failure report write error: {_we}")
                 return ""
+        L(
+            "  ⚠️ 主快照路径失败，已降级到 TDX 全市场数据；仅使用响应中明确给出的行情日期，不按生成日期推断。"
+        )
         # fallback时仍做初筛
         all_stocks, _zhb_date, _zhb_fresh = _tdxstat_prescreen(all_stocks)
 
@@ -2798,7 +2796,7 @@ async def run_discovery_async(output_path):
             (all_stocks, _top_n_large),
         ),  # O27: 预筛全市场+趋势 top300
         ("策略03【量价齐升】", strategy_03_volume_breakout, (hot_pool,)),
-        ("策略04【核心打折】", strategy_04_core_discount, (all_stocks,)),  # 内部 200
+        ("策略04【历史PE区间偏低候选】", strategy_04_core_discount, (all_stocks,)),  # 内部 200
         (
             "策略05【W底形态】",
             strategy_05_double_bottom,
@@ -2815,9 +2813,7 @@ async def run_discovery_async(output_path):
             "策略09【逆向白马】",
             strategy_09_contrarian_value,
             (
-                sorted(all_stocks, key=lambda x: x.get("mcap_yi", 999999), reverse=True)[
-                    :_top_n_medium
-                ],
+                all_stocks,
                 _top_n_medium,
             ),
         ),
@@ -2836,7 +2832,7 @@ async def run_discovery_async(output_path):
         ),  # V14.3.2: 150→200
         ("策略15【龙虎榜】", strategy_15_longhu_activity, (all_stocks, today_str)),
         (
-            "策略16【52周低位】",
+            "策略16【52周区间偏低】",
             strategy_16_52w_position,
             (all_stocks,),
         ),  # O27: 全市场（纯内存毫秒级）
@@ -3004,7 +3000,7 @@ async def run_discovery_async(output_path):
         "策略01": "01 龙回头",
         "策略02": "02 周线多头(含金叉)",
         "策略03": "03 量价齐升",
-        "策略04": "04 核心打折",
+        "策略04": "04 估算历史PE区间偏低候选",
         "策略05": "05 W底形态",
         "策略06": "06 红三兵",
         "策略07": "07 政策驱动(含热度图谱)",
@@ -3016,7 +3012,7 @@ async def run_discovery_async(output_path):
         "策略13": "13 流动性王",
         "策略14": "14 北向Top",
         "策略15": "15 龙虎榜",
-        "策略16": "16 52周低位",
+        "策略16": "16 52周区间偏低",
         "策略17": "17 竞价额占比",
         "策略18": "18 竞价额加速",
         "策略19": "19 竞价动量",
@@ -3024,7 +3020,7 @@ async def run_discovery_async(output_path):
         "策略21": "21 盈利预期",
         "策略22": "22 月内动量",
         "策略23": "23 PS低估值",
-        "策略24": "24 短期反转",
+        "策略24": "24 近5日回撤筛选",
         "策略25": "25 规模因子",
         "策略26": "26 连板梯队·短线封单强度",
         "策略27": "27 短线资金强度·开盘抢筹",
@@ -3088,13 +3084,14 @@ async def run_discovery_async(output_path):
             _cf[_c] = _cf.get(_c, 0) + 1
     _res = [(c, n) for c, n in sorted(_cf.items(), key=lambda x: x[1], reverse=True) if n >= 2]
     L(f"\n{'='*85}")
-    L("[多策略共振金股推荐]")
+    L("[多策略共现观察名单]")
+    L("  按筛选结果的重复命中次数整理；策略可能共享输入数据，不视作独立投票、评级或买入建议。")
     if _res:
         for code, cnt in _res[:10]:
             _nm = _stock_map.get(code, {}).get("name", code)
-            L(f"  **{_nm}({code})**: {cnt}个策略")
+            L(f"  **{_nm}({code})**: {cnt} 项策略筛选命中")
     else:
-        L("  今日暂无共振股票")
+        L("  当前扫描暂无重复入选标的")
 
     _zt = sum(
         1
@@ -3107,11 +3104,12 @@ async def run_discovery_async(output_path):
         if is_limit_down(s.get("code", ""), s.get("name", ""), _safe_float(s.get("change_pct", 0)))
     )
     L(f"\n{'='*85}")
-    L("[风控仪表盘 & 仓位管理]")
+    L("[市场风险统计]")
     L(f"  涨停{_zt} | 跌停{_dt_total}")
     L(
         "  ℹ️ 涨停/跌停按统一封板口径(is_limit_up/is_limit_down, 含ST与板块阈值)统计于本表全市场扫描样本；与 mak 涨停池为同一判定函数，样本范围不同故绝对数可能差异"
     )
+    L("  ℹ️ 本节是市场统计，不含账户持仓和组合约束，不提供个性化仓位配置。")
     # V16.1: 删除硬编码策略胜率（"55-65%"等非当前运行计算结果，误导投资决策）
     L("  ℹ️ 策略胜率需前瞻回测验证（当前版本不做历史回测声明）")
     L(f"\n{'='*85}")

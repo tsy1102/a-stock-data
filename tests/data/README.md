@@ -3,7 +3,7 @@
 > 本目录归并**数据从哪来**的 pytest 用例, 覆盖 ZHB / TDX / 东财 / 网络传输 / 预取等底层数据源, 对应 `stock_common/sc_datasource/` 与 `core/tdx_client.py` / `core/zhb_client.py` / `stock_common/sc_network.py`。
 > 文件清单与逐文件定位见父目录 [`../README.md`](../README.md); 本文件仅作本层速查。
 
-## 文件与职责(14)
+## 文件与职责(15)
 
 | 文件 | 职责 |
 |:---|:---|
@@ -11,6 +11,7 @@
 | test_data_tdx.py | TDX TCP / 适配器 / 服务器白名单(None=接口失败 vs []=真无分红) |
 | test_data_eltdx_adapter.py | ELTDX 适配器返回结构与来源字段身份回归 |
 | test_data_eastmoney.py | 东财接口按域名健康度矩阵(全 real_network) |
+| test_data_eps_forecast_cache.py | EPS 预测非空按日缓存与 DataFrame 返回结构 |
 | test_data_em_board_members.py | 东财 clist 板块成分字段与申万二级磁盘缓存回归 |
 | test_data_em_fund_flow_tiers.py | 东财资金流四档层级回归(V17.0.16) |
 | test_data_network.py | 令牌桶限流 / 熔断器 / 封禁冷却(核心防线) |

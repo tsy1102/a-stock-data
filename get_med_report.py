@@ -82,6 +82,7 @@ from stock_common import (
     get_irm_qa,
     sec_type_market_label,  # V17.0.32(2026-09-06): DEBT-016 报告露出 sec_type
 )  # V10.3
+from stock_common.sc_report_runner import format_52w_reference, format_quote_provenance
 
 _SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 
@@ -202,7 +203,7 @@ async def generate_report_async(session, code, output_path, ind_comp=None, hsgt=
     elif _mkt_status == "post_market":
         note = "⚠️ 盘后结算时段：部分数据（龙虎榜约16:30后）尚在更新中"
     elif _mkt_status == "post_close":
-        note = "ℹ️ 盘后收盘：数据为今日收盘快照，龙虎榜/融资融券为今日已发布数据"
+        note = "ℹ️ 报告在盘后时段生成；行情有效日期见下方统一层元数据，龙虎榜/融资融券以各源实际发布日期为准"
     else:
         note = ""
     if note:
@@ -272,6 +273,7 @@ async def generate_report_async(session, code, output_path, ind_comp=None, hsgt=
     cdata = await asyncio.to_thread(get_canonical_stock_data, code)
     price_today = cdata.price
     q = cdata.to_dict()
+    L(f"  {format_quote_provenance(cdata)}")
 
     info = await asyncio.to_thread(
         get_stock_info, code
@@ -319,15 +321,16 @@ async def generate_report_async(session, code, output_path, ind_comp=None, hsgt=
         L(f"  [本月至今] {_mtd:+.2f}%（{_mtd_tag}）——持有期动量参考")
 
     # 52周区间与 IPO 破发度分析 (cdata 统一提供)
-    if cdata.high_52w > 0 and cdata.low_52w > 0 and cdata.price > 0:
-        _52w_pos = (
-            (cdata.price - cdata.low_52w) / (cdata.high_52w - cdata.low_52w) * 100
-            if cdata.high_52w != cdata.low_52w
-            else 50
-        )
-        L(
-            f"  [52周区间] 最高: {cdata.high_52w:.2f}元 | 最低: {cdata.low_52w:.2f}元 | 当前位置: {_52w_pos:.0f}%"
-        )
+    _52w_dates = getattr(cdata, "field_as_of_dates", {}) or {}
+    _52w_line = format_52w_reference(
+        cdata.price,
+        cdata.low_52w,
+        cdata.high_52w,
+        low_date=_52w_dates.get("low_52w", ""),
+        high_date=_52w_dates.get("high_52w", ""),
+    )
+    if _52w_line:
+        L(f"  [{_52w_line}]")
 
     # ── V17.0.27(2026-09-04) DEBT-007: Beta 中线波动风险档（契约孤儿字段消费，公理 A5）──
     #   源: 腾讯 qt.gtimg [56]，置信度 **高**（887 只 800 日K线自构等权市场代理，
@@ -419,9 +422,7 @@ async def generate_report_async(session, code, output_path, ind_comp=None, hsgt=
         )
 
     L(f"  总市值:   {cdata.mcap_yi:.2f}亿元 (流通股本 {cdata.float_shares_wan/1e4:.2f}亿股)")
-    if cdata.time_anchor == "t-1":
-        L("  ⚠️ 盘前模式（9:30前），以下行情数据基于上一交易日收盘数据")
-    L(f"  现价:   {cdata.price:.2f}元  (今日涨跌: {cdata.change_pct:.2f}%)")
+    L(f"  现价:   {cdata.price:.2f}元  (对应行情涨跌幅: {cdata.change_pct:.2f}%)")
     _pe_s = f"{cdata.pe_dynamic:.2f}x" if cdata.pe_dynamic > 0 else "N/A（亏损）"
     _pe_ttm_str = f"{cdata.pe_ttm:.2f}x" if cdata.pe_ttm > 0 else "N/A"
     _pe_lyr_str = f"{cdata.pe_lyr:.2f}x" if cdata.pe_lyr > 0 else "N/A"
@@ -766,11 +767,11 @@ async def generate_report_async(session, code, output_path, ind_comp=None, hsgt=
             if peg == float("inf"):
                 eval_str = "无法计算"
             elif peg < _peg_good:
-                eval_str = "偏低估 (合理区间之下)"
+                eval_str = "低于经验参考阈值（不单独构成低估判断）"
             elif peg <= _peg_rational:
-                eval_str = "估值合理"
+                eval_str = "处于经验参考区间"
             else:
-                eval_str = "偏高估 (存在透支预期风险)"
+                eval_str = "高于经验参考区间（需关注预期兑现）"
             L(f"  ➤ 核心 PEG 指标: {peg:.2f} → {eval_str}")
         _sk_m, _sr_m = await asyncio.to_thread(baidu_kline_full, code)
         if len(_sr_m) >= 26:
@@ -799,6 +800,7 @@ async def generate_report_async(session, code, output_path, ind_comp=None, hsgt=
                     _lo_m = [_safe_float(rr[_lo_i]) for rr in _rows_m] if _lo_i >= 0 else _cls_m[:]
                     _vol_m = [_safe_float(rr[_vol_i]) for rr in _rows_m] if _vol_i >= 0 else []
                     _tech = analyze_technical(_cls_m, _hi_m, _lo_m, _vol_m)
+                    L("  技术指标基于最近可取得的日线样本；超买/超卖区间是技术参考，不保证反转。")
                     _macd = _tech.get("macd", {})
                     if _macd:
                         _dif = _macd.get("dif", 0)
@@ -834,7 +836,9 @@ async def generate_report_async(session, code, output_path, ind_comp=None, hsgt=
                             _kdj_sig = "⚠️死叉"
                         else:
                             _kdj_sig = ""
-                        _kdj_zone = "（超买）" if _k > 80 else ("（超卖）" if _k < 20 else "")
+                        _kdj_zone = (
+                            "（高位参考）" if _k > 80 else ("（低位参考）" if _k < 20 else "")
+                        )
                         L(
                             f"  [KDJ] K={_k:.1f} D={_d:.1f} J={_kdj.get('j', 0):.1f}{_kdj_zone} {_kdj_sig}".rstrip()
                         )
@@ -845,13 +849,15 @@ async def generate_report_async(session, code, output_path, ind_comp=None, hsgt=
                         _vt = _vol.get("trend_pct", 0.0)
                         _vt_s = "放量" if _vt > 20 else ("缩量" if _vt < -20 else "量能平稳")
                         L(
-                            f"  [量能] 今日 {_vol.get('today_wan', 0):.1f}万手 "
+                            f"  [量能] 最新日线 {_vol.get('today_wan', 0):.1f}万手 "
                             f"(5日均 {_vol.get('ma5_wan', 0):.1f}万) 量比={_vr:.2f} "
                             f"近5日较前5日 {_vt:+.1f}% → {_vt_s}"
                         )
             if pe_fwd > _pe_mid and cagr > 0:
                 digest = math.log(pe_fwd / _pe_mid) / math.log(1 + cagr)
-                L(f"  ➤ 估值消化到30x需: {digest:.1f} 年")
+                L(
+                    f"  ➤ 按预测增速推算，PE降至{_pe_mid:.0f}x需: {digest:.1f} 年（情景估算，不是收益预测）"
+                )
             try:
                 _sk_p, _sr_p = await asyncio.to_thread(baidu_kline_full, code)
                 _ci_p = next((i for i, k in enumerate(_sk_p) if k in ("close", "close_price")), -1)
@@ -862,7 +868,7 @@ async def generate_report_async(session, code, output_path, ind_comp=None, hsgt=
                         if _hpe:
                             _pc = sum(1 for p in _hpe if p < pe_fwd) / len(_hpe) * 100
                             L(
-                                f"  PE历史分位: {_pc:.0f}%（当前PE高于{_pc:.0f}%的历史时间，数值越高越贵）"
+                                f"  历史日线价格样本位置: {_pc:.0f}%（用本年度一致预期EPS固定回算时，计算上等同于价格分位；不是历史实际PE分位）"
                             )
             except Exception as _e:
                 _debug_log(f"med pe_percentile error: {_e}")
@@ -870,7 +876,9 @@ async def generate_report_async(session, code, output_path, ind_comp=None, hsgt=
         has_black_horse = False
         _st_name = info.get("name", "")
         if "ST" in _st_name or "*ST" in _st_name or "退" in _st_name:
-            L("  ⚠️ 该股为ST/风险警示股，不具备黑马潜质，中线严禁左侧建仓！")
+            L(
+                "  ⚠️ 该股为ST/风险警示股，退市与财务风险较高；本报告不据常规成长筛选判断其为黑马，需优先核查公告与财务状况。"
+            )
         elif financials and len(financials) >= 2:
             try:
                 p1, p2 = _safe_float(financials[-1]["净利润"]), _safe_float(
@@ -1066,7 +1074,7 @@ async def generate_report_async(session, code, output_path, ind_comp=None, hsgt=
                 f" 来源占比 {h['ratio']:.2f}%)"
             )
     else:
-        L("\n  ➤ 解禁抛压预警: 未来半年内无解禁压力 ✅")
+        L("\n  ➤ 解禁抛压预警: 当前查询未返回未来180天解禁记录；空结果不能确认无解禁压力。")
 
     # ─── 北向资金持仓动态 ───
     L("\n## **九、北向资金持仓动态**")
@@ -1499,8 +1507,9 @@ async def generate_report_async(session, code, output_path, ind_comp=None, hsgt=
         L("  ZHB tipinfo 暂无本股回购预案结构化记录（Col[19]/[20] 为空）。")
 
     L("\n" + "---")
-    L("## **仓位管理建议**")
+    L("## **综合评分与风险管理参考**")
     L("---")
+    L("  以下为个股模型评分，不包含账户持仓、风险承受能力或组合约束，不构成个性化仓位配置。")
 
     # V8.2: 使用统一评分接口
     from stock_common import ScoreData, calculate_score

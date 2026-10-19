@@ -52,9 +52,9 @@ class TestFieldSpecTable(unittest.TestCase):
         contract_names = {item.name for item in fields(schema.CanonicalStockData)}
         extension_names = {name for name in contract_names if name.startswith("eltdx_")}
 
-        self.assertEqual(len(contract_names), 113, "update schema inventory documentation")
+        self.assertEqual(len(contract_names), 115, "update schema inventory documentation")
         self.assertEqual(len(extension_names), 12, "update ELTDX extension documentation")
-        self.assertEqual(len(contract_names - extension_names), 101)
+        self.assertEqual(len(contract_names - extension_names), 103)
         self.assertEqual(len(schema.FIELD_SPECS), 38, "FIELD_SPECS is a curated metadata registry")
 
     def test_field_specs_not_empty(self):
@@ -292,6 +292,10 @@ class TestCanonicalV161ExtendedFields(unittest.TestCase):
         self.assertEqual(d.industry_code_push2, "")
         self.assertEqual(d.report_period, "")
         self.assertEqual(d.quote_date, "")
+        self.assertEqual(d.time_anchor, "unknown")
+        self.assertEqual(d.collected_at, "")
+        self.assertEqual(d.field_sources, {})
+        self.assertEqual(d.field_as_of_dates, {})
         self.assertEqual(d.fund_main_today, 0.0)
         self.assertEqual(d.fund_main_5d, 0.0)
         self.assertEqual(d.fund_super_today, 0.0)

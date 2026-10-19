@@ -15,6 +15,7 @@ if TYPE_CHECKING:
 from datetime import date, datetime, timedelta
 import asyncio
 import code
+import json
 import math
 import re
 import subprocess
@@ -269,7 +270,29 @@ async def get_reports_async(session: Any, code: str, max_pages: int = 3) -> List
     return all_records
 
 
-def get_eps_forecast(
+def get_eps_forecast(code: str, local_only: bool = False) -> "pd.DataFrame":
+    """获取 EPS 预测；联网路径按股票和自然日缓存非空 DataFrame。"""
+    import pandas as _pd
+
+    if local_only:
+        return _fetch_eps_forecast(code, local_only=True)
+
+    cache_args = (code, datetime.now().strftime("%Y-%m-%d"))
+    payload = get_cache("eps_forecast", "get_eps_forecast", *cache_args)
+    cached_frame = _eps_forecast_from_cache(payload)
+    if cached_frame is not None:
+        return cached_frame
+
+    frame = _fetch_eps_forecast(code, local_only=False)
+    cache_payload = _eps_forecast_cache_payload(frame)
+    if cache_payload is not None:
+        set_cache(
+            "eps_forecast", "get_eps_forecast", cache_payload, TTL["eps_forecast"], *cache_args
+        )
+    return frame if isinstance(frame, _pd.DataFrame) else _pd.DataFrame()
+
+
+def _fetch_eps_forecast(
     code: str, local_only: bool = False
 ) -> "pd.DataFrame":  # LOW 修复: 实际返回 DataFrame
     """V7.5: 机构一致预期EPS — 同花顺正则提取 + 东财研报兜底.
@@ -370,7 +393,60 @@ def get_eps_forecast(
     return _pd.DataFrame()
 
 
+def _eps_forecast_cache_payload(frame: Any) -> Optional[Dict[str, Any]]:
+    """把非空 EPS 预测 DataFrame 转成 stock_cache 可安全 JSON 序列化的结构。"""
+    import pandas as _pd
+
+    if not isinstance(frame, _pd.DataFrame) or frame.empty:
+        return None
+    try:
+        rows = json.loads(frame.to_json(orient="values", force_ascii=False, double_precision=15))
+    except (TypeError, ValueError):
+        return None
+    return {"columns": [str(column) for column in frame.columns], "rows": rows}
+
+
+def _eps_forecast_from_cache(payload: Any) -> Optional[Any]:
+    """按 EPS 预测 DataFrame 的公开列契约恢复缓存值。"""
+    import pandas as _pd
+
+    if not isinstance(payload, dict):
+        return None
+    columns = payload.get("columns")
+    rows = payload.get("rows")
+    if not isinstance(columns, list) or not columns or not isinstance(rows, list) or not rows:
+        return None
+    try:
+        frame = _pd.DataFrame(rows, columns=columns)
+    except (TypeError, ValueError):
+        return None
+    return frame if not frame.empty else None
+
+
 async def get_eps_forecast_async(session: Any, code: str) -> "pd.DataFrame":
+    """同花顺一致预期主源 + TDX 兜底，按股票和自然日共享非空快照。"""
+    import pandas as _pd
+
+    cache_args = (code, datetime.now().strftime("%Y-%m-%d"))
+    payload = get_cache("eps_forecast", "get_eps_forecast_async", *cache_args)
+    cached_frame = _eps_forecast_from_cache(payload)
+    if cached_frame is not None:
+        return cached_frame
+
+    frame = await _fetch_eps_forecast_async(session, code)
+    cache_payload = _eps_forecast_cache_payload(frame)
+    if cache_payload is not None:
+        set_cache(
+            "eps_forecast",
+            "get_eps_forecast_async",
+            cache_payload,
+            TTL["eps_forecast"],
+            *cache_args,
+        )
+    return frame if isinstance(frame, _pd.DataFrame) else _pd.DataFrame()
+
+
+async def _fetch_eps_forecast_async(session: Any, code: str) -> "pd.DataFrame":
     """async 版: 机构一致预期EPS — 同花顺正则提取 + TDX兜底"""
     try:
         import re as _re2

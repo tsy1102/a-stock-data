@@ -206,6 +206,46 @@ def test_prefetch_tencent_fills_missing_fields_and_keeps_source_metadata(
     assert field_sources["roa"] == "realtime:tencent:batch"
 
 
+def test_public_prewarm_api_keeps_skip_sentinels_out_of_l2(clean_batch_cache, monkeypatch):
+    dp = clean_batch_cache
+    import core.stock_cache as stock_cache
+
+    persisted = []
+    monkeypatch.setattr(
+        stock_cache,
+        "persist_quote_batch_l2",
+        lambda batch_map, **kwargs: persisted.append((batch_map, kwargs)) or len(batch_map),
+    )
+
+    warmed = dp.prewarm_canonical_quote_cache(
+        {
+            "600519": {
+                "price": 1346.5,
+                "pe_dynamic": 12.3,
+                "roa": 8.1,
+            }
+        },
+        source_label="realtime:tencent:batch",
+        skip_realtime_extras=True,
+    )
+
+    assert warmed == 1
+    assert dp._BATCH_QUOTE_CACHE["600519"]["price"] == 1346.5
+    assert dp._BATCH_QUOTE_CACHE["600519"]["_field_sources"] == {
+        "price": "realtime:tencent:batch",
+        "pe_dynamic": "realtime:tencent:batch",
+        "roa": "realtime:tencent:batch",
+    }
+    assert dp._PD_EXTRA_CACHE["600519"]["fund_main_today"] == 0.0
+    assert len(persisted) == 1
+    persisted_map, _kwargs = persisted[0]
+    assert (
+        persisted_map["600519"]["_field_sources"]
+        == dp._BATCH_QUOTE_CACHE["600519"]["_field_sources"]
+    )
+    assert "fund_main_today" not in persisted_map["600519"]
+
+
 # ── 用例 2（V16.4.0 原有）：进程内缓存命中，不重复请求 ───────────────────
 def test_prefetch_cache_hit_no_duplicate(clean_batch_cache, monkeypatch):
     """二次调用命中缓存，不再发请求。"""

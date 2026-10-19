@@ -307,6 +307,7 @@ _ZHB_REALTIME_FIELDS = frozenset(
         "amount_1d",
         "amount_2d",
         "price",
+        "turnover_pct",
         "open",
         "high",
         "low",

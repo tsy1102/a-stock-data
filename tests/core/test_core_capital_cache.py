@@ -9,6 +9,7 @@
 from __future__ import annotations
 
 import json
+from datetime import date, timedelta
 from pathlib import Path
 
 import pytest
@@ -30,18 +31,22 @@ def _write_cache(path: Path, data: dict) -> None:
     path.write_text(json.dumps(data, ensure_ascii=False), encoding="utf-8")
 
 
+def _days_ago(days: int) -> str:
+    return (date.today() - timedelta(days=days)).strftime("%Y-%m-%d")
+
+
 def test_old_unit_cache_self_heal(cap_module):
     """旧单位缓存（股）读取时自动归一为万股。"""
     cc, fake = cap_module
     _write_cache(
         fake,
         {
-            "meta": {"schema_version": 2, "updated_at": "2026-08-03"},
+            "meta": {"schema_version": 2, "updated_at": _days_ago(1)},
             "data": {
                 "000001": {
                     "total_shares": 19405918750.0,
                     "float_shares": 19405601250.0,
-                    "updated_at": "2026-08-03",
+                    "updated_at": _days_ago(1),
                 }
             },
         },
@@ -85,12 +90,12 @@ def test_schema_match_normal(cap_module, monkeypatch):
     _write_cache(
         fake,
         {
-            "meta": {"schema_version": 2, "updated_at": "2026-08-11"},
+            "meta": {"schema_version": 2, "updated_at": _days_ago(1)},
             "data": {
                 "000001": {
                     "total_shares": 1940591.875,
                     "float_shares": 1940560.125,
-                    "updated_at": "2026-08-11",
+                    "updated_at": _days_ago(1),
                 }
             },
         },
@@ -117,3 +122,114 @@ def test_save_writes_schema_version(cap_module):
     saved = json.loads(fake.read_text(encoding="utf-8"))
     assert saved["meta"]["schema_version"] == cc._CAPITAL_SCHEMA_VERSION == 2
     assert saved["data"]["000001"]["total_shares"] == 100.0
+
+
+def test_stale_json_entry_is_refreshed(cap_module, monkeypatch):
+    cc, fake = cap_module
+    stale_date = _days_ago(cc._CAPITAL_TTL_DAYS)
+    _write_cache(
+        fake,
+        {
+            "meta": {"schema_version": cc._CAPITAL_SCHEMA_VERSION},
+            "data": {
+                "000001": {
+                    "total_shares": 100.0,
+                    "float_shares": 50.0,
+                    "updated_at": stale_date,
+                }
+            },
+        },
+    )
+    monkeypatch.setattr(
+        cc,
+        "_fetch_share_capital",
+        lambda code: {
+            "total_shares": 200.0,
+            "float_shares": 100.0,
+            "updated_at": date.today().strftime("%Y-%m-%d"),
+        },
+    )
+
+    result = cc.get_share_capital("000001")
+
+    assert result["total_shares"] == 200.0
+    assert cc._capital_memory_cache["000001"]["updated_at"] == date.today().strftime("%Y-%m-%d")
+
+
+def test_capital_validator_rejects_stale_and_non_finite_values(cap_module):
+    cc, _ = cap_module
+    stale = {
+        "total_shares": 100.0,
+        "float_shares": 50.0,
+        "updated_at": _days_ago(cc._CAPITAL_TTL_DAYS),
+    }
+    non_finite = {
+        "total_shares": float("inf"),
+        "float_shares": 50.0,
+        "updated_at": _days_ago(1),
+    }
+
+    assert not cc._valid_capital_result(stale)
+    assert not cc._valid_capital_result(non_finite)
+
+
+def test_malformed_share_count_is_treated_as_cache_miss(cap_module, monkeypatch):
+    cc, fake = cap_module
+    _write_cache(
+        fake,
+        {
+            "meta": {"schema_version": cc._CAPITAL_SCHEMA_VERSION},
+            "data": {
+                "000001": {
+                    "total_shares": "not-a-number",
+                    "float_shares": 0,
+                    "updated_at": _days_ago(1),
+                }
+            },
+        },
+    )
+    monkeypatch.setattr(
+        cc,
+        "_fetch_share_capital",
+        lambda code: {
+            "total_shares": 200.0,
+            "float_shares": 100.0,
+            "updated_at": date.today().strftime("%Y-%m-%d"),
+        },
+    )
+
+    result = cc.get_share_capital("000001")
+
+    assert result["total_shares"] == 200.0
+
+
+def test_zero_share_fetch_is_not_persisted(cap_module, tmp_path, monkeypatch):
+    cc, _ = cap_module
+    import core.stock_cache as cache
+    import core.tdx_client as tdx_client
+    import stock_common.sc_datasource as datasource
+
+    monkeypatch.setattr(cache, "_CACHE_DB", str(tmp_path / "stock_cache.db"))
+    monkeypatch.setattr(cache, "_db", None)
+    monkeypatch.setattr(cache, "_DISABLE_CACHE", False)
+    tdx_calls = []
+    eastmoney_calls = []
+
+    def fake_tdx(code):
+        tdx_calls.append(code)
+        return {"zongguben": 0, "liutongguben": 0}
+
+    def fake_eastmoney(code):
+        eastmoney_calls.append(code)
+        return {"total_shares": 0, "float_shares": 0}
+
+    monkeypatch.setattr(tdx_client, "tdx_get_finance_info", fake_tdx)
+    monkeypatch.setattr(datasource, "eastmoney_stock_info_push2", fake_eastmoney)
+
+    first = cc._fetch_share_capital("000001")
+    second = cc._fetch_share_capital("000001")
+
+    assert first["total_shares"] == second["total_shares"] == 0
+    assert tdx_calls == ["000001", "000001"]
+    assert eastmoney_calls == ["000001", "000001"]
+    assert cache.get_cache("share_capital", "_fetch_share_capital", "000001") is None

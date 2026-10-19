@@ -80,6 +80,48 @@ class _FakeCData:
         }
 
 
+class _ImmediateAwaitable:
+    def __init__(self, value):
+        self.value = value
+
+    def __await__(self):
+        if False:
+            yield None
+        return self.value
+
+
+def _complete_without_event_loop(awaitable):
+    iterator = awaitable.__await__()
+    try:
+        next(iterator)
+    except StopIteration as completed:
+        return completed.value
+    iterator.close()
+    raise AssertionError("report coroutine unexpectedly suspended on an unmocked awaitable")
+
+
+def _fake_to_thread(function, /, *args, **kwargs):
+    if not isinstance(function, mock.Mock):
+        raise AssertionError(f"unmocked threaded data function: {function!r}")
+    return _ImmediateAwaitable(function(*args, **kwargs))
+
+
+def _fake_sleep(_delay, result=None):
+    return _ImmediateAwaitable(result)
+
+
+def _fake_gather(*awaitables, return_exceptions=False):
+    results = []
+    for awaitable in awaitables:
+        try:
+            results.append(_complete_without_event_loop(awaitable))
+        except Exception as exc:
+            if not return_exceptions:
+                raise
+            results.append(exc)
+    return _ImmediateAwaitable(results)
+
+
 # (name, async?, return_value) —— 仅 patch 确实存在于 S 命名空间的数据源函数
 _SYNC_STUBS = {
     "get_canonical_stock_data": _FakeCData(),
@@ -118,6 +160,12 @@ _SYNC_STUBS = {
     "get_cyq_distribution": {},  # 模拟 CYQ 源故障
 }
 _ASYNC_STUBS = {
+    "get_dragon_tiger_board_async": {
+        "records": [],
+        "seats": {"buy": [], "sell": []},
+        "institution": {"net_amt": 0},
+        "seat_analysis": {},
+    },
     "holder_change_async": [
         {
             "date": "2026-06-30",
@@ -151,6 +199,9 @@ _ASYNC_STUBS = {
 
 def _build_patch_stack(stk: ExitStack):
     """Patch report and inline-import data sources to safe values for offline rendering."""
+    stk.enter_context(mock.patch.object(asyncio, "to_thread", new=_fake_to_thread))
+    stk.enter_context(mock.patch.object(asyncio, "gather", new=_fake_gather))
+    stk.enter_context(mock.patch.object(asyncio, "sleep", new=_fake_sleep))
     patched_cyq = patched_kline = False
     for module in (S, _sc, _scd, _dp):
         for name, rv in _SYNC_STUBS.items():
@@ -180,16 +231,25 @@ def _build_patch_stack(stk: ExitStack):
     return patched_cyq and patched_kline
 
 
-def _render_via_runner(depth: str = "lite") -> str:
+def _render_via_runner(depth: str = "lite", *, time_anchor: str = "t-1") -> str:
     """直接调用 generate_report_async(其末尾经 render_md_report 写盘 output_path), 读回 markdown。"""
     with ExitStack() as stk:
         ok = _build_patch_stack(stk)
         assert ok, "关键函数 get_cyq_distribution / baidu_kline_full 未被成功 patch"
+        if time_anchor != "t-1":
+            cdata = _FakeCData()
+            cdata.time_anchor = time_anchor
+            cdata.price = 10.0
+            stk.enter_context(
+                mock.patch.object(_dp, "get_canonical_stock_data", return_value=cdata)
+            )
         import tempfile, os
 
         _tmp = tempfile.mktemp(suffix=".md")
         try:
-            asyncio.run(S.generate_report_async(mock.MagicMock(), "600519", _tmp, depth=depth))
+            _complete_without_event_loop(
+                S.generate_report_async(mock.MagicMock(), "600519", _tmp, depth=depth)
+            )
             with open(_tmp, encoding="utf-8") as fh:
                 return fh.read()
         finally:
@@ -209,6 +269,12 @@ def test_cyq_and_kline_chapters_survive_source_failure():
     # 十七 K线形态: 标题必须在, 且源空时显式告警
     assert "十七、K线形态识别（TA-Lib 61 形态）" in text, "K线形态章节标题缺失(静默跳过未修复)"
     assert "K线数据源暂不可用" in text, "K线形态源空时应渲染可见告警占位"
+
+
+def test_unknown_quote_date_is_visible_in_report():
+    text = _render_via_runner("lite", time_anchor="unknown")
+
+    assert "行情有效日期未核实" in text
 
 
 def test_cyq_chapter_renders_data_when_source_ok():
@@ -231,7 +297,9 @@ def test_cyq_chapter_renders_data_when_source_ok():
 
         _tmp = tempfile.mktemp(suffix=".md")
         try:
-            asyncio.run(S.generate_report_async(mock.MagicMock(), "600519", _tmp, depth="lite"))
+            _complete_without_event_loop(
+                S.generate_report_async(mock.MagicMock(), "600519", _tmp, depth="lite")
+            )
             with open(_tmp, encoding="utf-8") as fh:
                 text = fh.read()
         finally:

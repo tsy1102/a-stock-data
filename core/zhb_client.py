@@ -1448,7 +1448,7 @@ class ZhbData:
 
     def is_fresh(self, max_delay_days: int = 3) -> bool:
         """检查数据是否新鲜（延迟不超过 max_delay_days 个交易日）。"""
-        if not self.date:
+        if not self.date or max_delay_days < 0:
             return False
         try:
             data_date = datetime.strptime(self.date, "%Y%m%d").date()
@@ -1457,7 +1457,7 @@ class ZhbData:
             from stock_common.stock_calendar import trading_day_age
 
             delay = trading_day_age(data_date, datetime.now())
-            return delay <= max_delay_days
+            return 0 <= delay <= max_delay_days
         except (TypeError, ValueError, NotImplementedError):
             return False
 

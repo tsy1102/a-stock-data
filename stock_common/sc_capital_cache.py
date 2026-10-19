@@ -15,10 +15,11 @@ V10.1 新增：
 from __future__ import annotations
 
 import json
+import math
 import os
 import threading
 from typing import Any, Dict, Optional
-from datetime import datetime
+from datetime import date, datetime
 
 from core.stock_cache import cached
 
@@ -40,7 +41,7 @@ _CAPITAL_TTL_DAYS = 90
 
 _capital_memory_cache: Optional[Dict[str, Dict[str, Any]]] = None
 _capital_cache_meta: Dict[str, Any] = {}
-_cache_lock = threading.Lock()
+_cache_lock = threading.RLock()
 
 
 def _ensure_cache_dir() -> None:
@@ -90,23 +91,70 @@ def _load_capital_cache() -> Dict[str, Dict[str, Any]]:
 
 def _save_capital_cache() -> None:
     """保存全局股本缓存到磁盘。"""
-    _ensure_cache_dir()
-    data = {
-        "meta": {
-            "updated_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-            "schema_version": _CAPITAL_SCHEMA_VERSION,
-            "ttl_days": _CAPITAL_TTL_DAYS,
-            "count": len(_capital_memory_cache or {}),
-        },
-        "data": _capital_memory_cache or {},
-    }
+    with _cache_lock:
+        _ensure_cache_dir()
+        data = {
+            "meta": {
+                "updated_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                "schema_version": _CAPITAL_SCHEMA_VERSION,
+                "ttl_days": _CAPITAL_TTL_DAYS,
+                "count": len(_capital_memory_cache or {}),
+            },
+            "data": _capital_memory_cache or {},
+        }
+        tmp_path = f"{_CAPITAL_CACHE_FILE}.{os.getpid()}.{threading.get_ident()}.tmp"
+        try:
+            with open(tmp_path, "w", encoding="utf-8") as f:
+                json.dump(data, f, ensure_ascii=False, indent=2)
+            os.replace(tmp_path, _CAPITAL_CACHE_FILE)
+        except OSError as _e:
+            _debug_log(f"capital cache save error: {_e}")
+            try:
+                os.unlink(tmp_path)
+            except FileNotFoundError:
+                pass
+
+
+def _capital_cache_is_fresh(cached: Dict[str, Any], today: Optional[date] = None) -> bool:
+    """按每条记录的采集日期执行配置的自然日 TTL。"""
+    updated_at = cached.get("updated_at")
     try:
-        tmp_path = _CAPITAL_CACHE_FILE + ".tmp"
-        with open(tmp_path, "w", encoding="utf-8") as f:
-            json.dump(data, f, ensure_ascii=False, indent=2)
-        os.replace(tmp_path, _CAPITAL_CACHE_FILE)
-    except OSError:
-        pass
+        cached_date = datetime.strptime(str(updated_at), "%Y-%m-%d").date()
+    except (TypeError, ValueError):
+        return False
+    reference_date = today or datetime.now().date()
+    age_days = (reference_date - cached_date).days
+    return 0 <= age_days < _CAPITAL_TTL_DAYS
+
+
+def _normalize_capital_record(cached: Dict[str, Any]) -> Dict[str, Any]:
+    """将历史单位错误值规范为万股，并保留采集日期。"""
+
+    def normalize(value: Any) -> float:
+        try:
+            number = float(value or 0)
+        except (TypeError, ValueError):
+            return 0.0
+        if not math.isfinite(number) or number < 0:
+            return 0.0
+        return number / 10000.0 if number > 1e9 else number
+
+    return {
+        "total_shares": normalize(cached.get("total_shares")),
+        "float_shares": normalize(cached.get("float_shares")),
+        "updated_at": str(cached.get("updated_at", "")),
+    }
+
+
+def _valid_capital_result(value: Any) -> bool:
+    """只缓存日期有效且有正总股本的结果；零值代表源失败或数据尚未就绪。"""
+    if not isinstance(value, dict):
+        return False
+    try:
+        shares = float(value.get("total_shares") or 0)
+        return math.isfinite(shares) and shares > 0 and _capital_cache_is_fresh(value)
+    except (TypeError, ValueError):
+        return False
 
 
 def get_share_capital(code: str) -> Dict[str, Any]:
@@ -117,32 +165,16 @@ def get_share_capital(code: str) -> Dict[str, Any]:
         单位：万股
     """
 
-    # V16.3.10 防御：旧版本缓存（V16.2.3 修正前 8-03 批次）total_shares 为"股"单位。
-    # 正确万股值上限约 3.6e7（工农中建类）；脏"股"值约 1e11 起。
-    # 阈值取 1e9 万股（=1e13 股，远超任何 A 股）：既不误伤大盘股正确值，又能归一脏数据。
-    # （旧注释"1e7 / 2e6 万股"少算一个数量级，曾把正确大盘股万股值误当"股"再÷10000，
-    #  市值低估~10000×，2026-08-30 修）
-    def _norm(v: float | int | None) -> float | int | None:
-        if v is not None and v > 1e9:
-            return v / 10000.0
-        return v
-
     cap_cache = _load_capital_cache()
-    cached = cap_cache.get(code)
+    with _cache_lock:
+        cached = cap_cache.get(code)
     # V15.2 P0 修复: 脏数据保护 —— 缓存里 total_shares=0 时也视为未命中，重新拉取
-    if cached and cached.get("total_shares", 0) > 0:
-        ts, fs = cached.get("total_shares", 0), cached.get("float_shares", 0)
-        if ts > 1e9 or fs > 1e9:
-            cached = {
-                "total_shares": _norm(ts),
-                "float_shares": _norm(fs),
-                "updated_at": cached.get("updated_at", ""),
-            }
-        return cached
+    if isinstance(cached, dict) and _valid_capital_result(cached):
+        return _normalize_capital_record(cached)
 
-    result = _fetch_share_capital(code)
+    result = _normalize_capital_record(_fetch_share_capital(code) or {})
     # V15.2 P0 修复: 只有 total_shares > 0 才写入缓存（避免脏数据污染）
-    if result and result.get("total_shares", 0) > 0:
+    if _valid_capital_result(result):
         with _cache_lock:
             cap_cache[code] = result
         _save_capital_cache()
@@ -151,7 +183,11 @@ def get_share_capital(code: str) -> Dict[str, Any]:
     return {"total_shares": 0, "float_shares": 0, "updated_at": ""}
 
 
-@cached(category="share_capital", ttl_seconds=90 * 86400)
+@cached(
+    category="share_capital",
+    ttl_seconds=_CAPITAL_TTL_DAYS * 86400,
+    valid_if=_valid_capital_result,
+)
 def _fetch_share_capital(code: str) -> Dict[str, Any]:
     """从数据源获取股本数据（带SQLite缓存）。
 

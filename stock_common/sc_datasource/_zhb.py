@@ -8,6 +8,7 @@
 
 from __future__ import annotations
 from typing import Any, Dict, List, Optional
+from datetime import date as _date, datetime as _datetime
 import code
 from stock_common.sc_network import _debug_log
 from ._shared import _ZHB_NEAR_REALTIME_FIELDS, _ZHB_REALTIME_FIELDS, _ZHB_STATIC_FIELDS
@@ -58,21 +59,77 @@ def get_zhb_market_snapshot(codes: Optional[List[str]] = None) -> Dict[str, Dict
         return {}
 
 
-def is_zhb_data_fresh(max_delay_days: int = 3) -> bool:
-    """检查 ZHB 数据是否新鲜（延迟不超过指定交易日数）。
+def _parse_zhb_date(value: Any) -> Optional[_date]:
+    if isinstance(value, _datetime):
+        return value.date()
+    if isinstance(value, _date):
+        return value
+    if not isinstance(value, str):
+        return None
+    text = value.strip()
+    for candidate, fmt in ((text, "%Y%m%d"), (text[:10], "%Y-%m-%d")):
+        try:
+            return _datetime.strptime(candidate, fmt).date()
+        except ValueError:
+            continue
+    return None
+
+
+def is_zhb_data_fresh(
+    max_delay_days: int = 3,
+    data_date: Any = None,
+    as_of: Optional[_datetime] = None,
+) -> bool:
+    """检查 ZHB 数据是否新鲜，年龄按有效交易日计算。
 
     数据过旧时调用方应降级到原有HTTP/TCP接口。
+    传入 ``data_date`` 时检查已读取的那份快照，避免检查到另一份缓存日期。
     """
     try:
-        from core.zhb_client import is_data_fresh
+        if max_delay_days < 0:
+            return False
+        if data_date is None and as_of is None:
+            from core.zhb_client import is_data_fresh
 
-        return is_data_fresh(max_delay_days)
+            return is_data_fresh(max_delay_days)
+
+        if data_date is None:
+            from core.zhb_client import get_zhb
+
+            zhb = get_zhb()
+            data_date = zhb.date if zhb is not None else None
+        snapshot_date = _parse_zhb_date(data_date)
+        if snapshot_date is None:
+            return False
+
+        from stock_common.stock_calendar import latest_market_data_date, trading_days_between
+
+        latest_date = latest_market_data_date(as_of)
+        if snapshot_date > latest_date:
+            return False
+        age = trading_days_between(snapshot_date, latest_date)
+        return 0 <= age <= max_delay_days
     except Exception as _e:
         _debug_log(f"datasource zhb is_fresh: {_e}")
         return False
 
 
-def zhb_field_safe(field_name: str) -> bool:
+def zhb_field_max_delay_days(field_name: str) -> int:
+    """返回 ZHB 字段对应的 ABCD 最大交易日延迟。"""
+    if field_name in _ZHB_REALTIME_FIELDS:
+        return 0
+    if field_name in _ZHB_NEAR_REALTIME_FIELDS:
+        return 1
+    if field_name in _ZHB_STATIC_FIELDS:
+        return 90
+    return 3
+
+
+def zhb_field_safe(
+    field_name: str,
+    data_date: Any = None,
+    as_of: Optional[_datetime] = None,
+) -> bool:
     """V10.2: 判断 zhb 指定字段在当前数据滞后状态下是否安全可用。
     V10.3: 新增准实时字段分类（max_delay_days=1）。
     V16.3.3: ABCD 四级缓存分级正式化（字典 12.15.6 缓存维度）：
@@ -87,17 +144,11 @@ def zhb_field_safe(field_name: str) -> bool:
     Returns:
         True=该字段当前可安全使用 zhb 数据，False=应 fallback 原接口
     """
-    if field_name in _ZHB_REALTIME_FIELDS:
-        # A 实时字段：zhb 日期必须是当日有效行情日（max_delay_days=0）
-        return is_zhb_data_fresh(max_delay_days=0)
-    if field_name in _ZHB_NEAR_REALTIME_FIELDS:
-        # B 准实时字段：1个交易日延迟可接受（max_delay_days=1）
-        return is_zhb_data_fresh(max_delay_days=1)
-    if field_name in _ZHB_STATIC_FIELDS:
-        # D 静态字段：90个交易日延迟可接受（max_delay_days=90）——恒定数据长假容忍
-        return is_zhb_data_fresh(max_delay_days=90)
-    # C 日频字段：3个交易日延迟可接受（max_delay_days=3）
-    return is_zhb_data_fresh(max_delay_days=3)
+    return is_zhb_data_fresh(
+        max_delay_days=zhb_field_max_delay_days(field_name),
+        data_date=data_date,
+        as_of=as_of,
+    )
 
 
 def get_zhb_tip_info(code: str) -> Optional[Dict[str, Any]]:
@@ -260,5 +311,6 @@ __all__ = [
     'get_zhb_streak_days',
     'get_zhb_tip_info',
     'is_zhb_data_fresh',
+    'zhb_field_max_delay_days',
     'zhb_field_safe',
 ]

@@ -4,10 +4,11 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
-## [Unreleased]
+## [17.5] - 2026-10-19
 
 ### Added
 
+- 统一层按 ZHB 字段的 ABCD 等级和有效交易日筛除过期快照；新增 Canonical 的 `quote_date`、`collected_at`、逐字段有效日期与可信来源标签，TDX 休市/盘前缓存日期改用项目交易日历。VAL 批量行情预热改走统一层公开 API，避免报告脚本直接写私有缓存；新增离线契约闸门及对应回归覆盖。版本升至 17.4.64。
 - KPL 每日采集补入板块强度接口，并将涨停明细扩为 `PidType=1…5` 五个梯队；保留各接口完整原始字段、行列值及 pid_type 身份。字段覆盖审计增加 Levistock 候选 raw 的独立观察组，只读有效 payload，记录 candidate_id/provider_family 且不作为独立碰撞锚。版本升至 17.4.61。
 - 新增只读来源质量审计 `audit_field_source_quality.py` 与 2026-10-18 全源报告；按 source/path 列出 `verified` 记录中的空/占位含义、含义或单位冲突及字段对齐歧义，同时单列 canonical 别名差异。质量问题不自动改写主注册表。
 - 新增字段解析分组对齐、语义锚点资格、来源质量审计和字段归档缺失处理回归用例；2026-10-18 全量离线套件收集 1,102 项，1,049 通过、1 跳过、52 个真实网络用例按默认策略排除，耗时 51.81 秒。
@@ -23,6 +24,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - 碰撞报告增加字母字段名候选区，按逐源完整路径匹配拼音、英文、缩写和混合拆词线索，并附当前注册状态与采样日期；这些线索只用于检索和人工复核。
 
 ### Changed
+
+- 短线/中线/长线报告显式展示统一层行情有效日期、来源和时间锚；52 周参考区间按逐字段日期标注，区间外价格不再产生负百分位。估值选股报告把 PE 统计分位改称模拟区间位置，历史 K 线取价不再依赖行序，最新 TTM 亏损时不沿用过期正 EPS，并修正候选排序、重复策略命中表述和过强投资结论；市场脚本严格区分 ZHB 竞价金额代理与 ulist f62 主力净额，避免代理值进入个股/行业资金流结论，并按有效 f62 字段统计覆盖、避免低覆盖时立即重复整批请求。补充报告层精度回归用例。
+- EPS 预测的同步与异步网络路径启用按股票和自然日的非空缓存；本地快照读取继续绕过持久缓存。移除无运行调用方的 `hsgt_flow` TTL 项，保留仍承担跨进程复用的行情、K 线/CYQ 与股本缓存。
+- 股本 JSON 缓存执行逐条 90 个自然日过期；股本缓存同时拒绝零值、非有限值和错误单位数据，SQLite 旧坏值在验证失败后精确清除。缓存统计按实际分类归组，并只把未过期条目列入分类计数；版本升至 17.4.65。
 
 - 将碰撞研究台账迁移为 gzip 格式，保留每条 observation 的完整证据和全部运行元数据；从存储副本移除可由最新 observation 重建的 `latest_evidence`。兼容读取旧 JSON，下一次探索运行保存为压缩文件；版本升至 17.4.63。
 
@@ -55,7 +60,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Fixed
 
-- 修复两项受执行沙箱 Windows loopback `socketpair` 限制影响而挂起的离线测试；更新最近全量离线验证记录：1,110 项收集，1,057 通过、1 跳过、52 个真实网络用例排除。
+- 修复长参数缓存键漏掉契约版本、缓存统计把版本号误当分类、跨契约版本的失效操作漏删、相同键并发 miss 在写入前重复请求，以及 validator 拒绝的旧缓存反复触发上游请求的问题；SQLite 共享连接操作统一受锁保护。
+- K 线与 CYQ 文件缓存的有效期改按项目交易日历封套记录，数据按下一数据交易日 09:30 失效；缓存格式升级为 v3，长周末的有效快照继续可用。
+
+- 更新离线验证记录：2026-10-19 排除受执行沙箱 Windows loopback `socketpair` 限制影响的 `tests/reports/test_reports_runner.py` 后，收集 1,121 项，1,068 通过、1 跳过、52 个真实网络用例按默认策略排除。完整套件仍会在该模块的 Proactor 事件循环启动时挂起，因此未将该模块计入通过结果。
 
 - 补齐注册表 parity 缺失的 35 条实采来源配对：34 条市场源键逐路径追溯到 `20261016/raw_market_sources.json`，1 条 TDX `ask1_vol` 追溯到 `20261016/raw_tdx.json`。新增记录均保持 `unverified` 且含义/单位留空；source_fields 从 2,483 增至 2,518，唯一 code 从 1,854 增至 1,878，field matrix 不变。修复严格 parity 汇总先扣除缺项而掩盖数量差异的问题，并按 code 统计投影变更，避免把排序位移误报成大量变更。逐路径证据见 `docs/field_verification/20261018/registry_parity_reconciliation.md`。
 - 修正采集字段覆盖审计未读取独立 `levistock_candidate_raw.json` 的问题；仅当候选状态为 observed 时提取 payload 字段，避免探针元数据污染或将候选误当作独立来源。

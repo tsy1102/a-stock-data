@@ -14,7 +14,9 @@ from __future__ import annotations
 import json
 import os
 import sqlite3
+import threading
 import time
+from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
 import pytest
@@ -94,6 +96,38 @@ def test_invalidate_category(tmp_path, monkeypatch):
     assert sc.get_cache("cat_B", "f3", "code-3") == {"v": 3}
 
 
+def test_invalidate_category_clears_older_contract_versions(tmp_path, monkeypatch):
+    import core.stock_cache as sc
+
+    fake_cache_db = tmp_path / "stock_cache.db"
+    monkeypatch.setattr(sc, "_CACHE_DB", str(fake_cache_db))
+    monkeypatch.setattr(sc, "_db", None)
+    monkeypatch.setattr(sc, "_DISABLE_CACHE", False)
+
+    sc.set_cache("cat_A", "current", {"v": 1}, 3600, "code-1")
+    now = time.time()
+    with sc._db_lock:
+        db = sc._get_db()
+        db.execute(
+            "INSERT INTO cache_entries "
+            "(key, value, created_at, expires_at, hit_count, last_accessed, prev_value, verified) "
+            "VALUES (?, ?, ?, ?, 0, ?, NULL, 0)",
+            ("v2:cat_A:legacy:code-2", b'{"v":2}', now, now + 3600, now),
+        )
+        db.commit()
+
+    assert sc.invalidate_category("cat_A") == 2
+    assert sc.get_cache("cat_A", "current", "code-1") is None
+    with sc._db_lock:
+        db = sc._get_db()
+        assert (
+            db.execute(
+                "SELECT 1 FROM cache_entries WHERE key=?", ("v2:cat_A:legacy:code-2",)
+            ).fetchone()
+            is None
+        )
+
+
 def test_invalidate_prefix(tmp_path, monkeypatch):
     """按 key 前缀批量删除（V12.1+ 自动同步清空 L1 内存缓存）。"""
     import core.stock_cache as sc
@@ -129,6 +163,8 @@ def test_cache_stats(tmp_path, monkeypatch):
 
     sc.set_cache("stats_test", "f1", {"x": 1}, 3600)
     sc.set_cache("stats_test", "f2", {"x": 2}, 3600)
+    sc.set_cache("stats_expired", "f1", {"x": 3}, -1)
+    sc.set_cache("stats_test", "long_key", {"x": 4}, 3600, "x" * 250)
 
     stats = sc.cache_stats()
     assert isinstance(stats, dict)
@@ -136,6 +172,9 @@ def test_cache_stats(tmp_path, monkeypatch):
     assert stats["total_entries"] >= 2
     assert "db_size_bytes" in stats
     assert "by_category" in stats
+    assert stats["by_category"]["stats_test"]["count"] == 3
+    assert "v1" not in stats["by_category"]
+    assert "stats_expired" not in stats["by_category"]
 
 
 def test_cached_decorator_sync(tmp_path, monkeypatch):
@@ -207,6 +246,77 @@ def test_build_key(tmp_path, monkeypatch):
     assert k1 == k2
     assert k1 != k3
     assert isinstance(k1, str) and len(k1) > 0
+
+
+def test_build_key_long_arguments_keep_contract_version(monkeypatch):
+    import core.stock_cache as sc
+
+    monkeypatch.setattr(sc, "CACHE_CONTRACT_VERSION", "v1")
+    old_key = sc._build_key("cat", "func", "x" * 250)
+    monkeypatch.setattr(sc, "CACHE_CONTRACT_VERSION", "v2")
+    new_key = sc._build_key("cat", "func", "x" * 250)
+
+    assert old_key.startswith("v1:cat:func:")
+    assert new_key.startswith("v2:cat:func:")
+    assert old_key != new_key
+
+
+def test_cache_key_category_supports_versioned_and_legacy_keys():
+    import core.stock_cache as sc
+
+    assert sc._cache_key_category("v1:financial:fn:hash") == "financial"
+    assert sc._cache_key_category("financial:fn:hash") == "financial"
+
+
+def test_cached_single_flight_holds_lock_through_cache_write(tmp_path, monkeypatch):
+    import core.stock_cache as sc
+
+    fake_cache_db = tmp_path / "stock_cache.db"
+    monkeypatch.setattr(sc, "_CACHE_DB", str(fake_cache_db))
+    monkeypatch.setattr(sc, "_db", None)
+    monkeypatch.setattr(sc, "_DISABLE_CACHE", False)
+
+    write_started = threading.Event()
+    allow_write = threading.Event()
+    second_initial_miss = threading.Event()
+    call_count = [0]
+    get_count = [0]
+    get_count_lock = threading.Lock()
+    original_get_cache = sc.get_cache
+    original_set_cache = sc.set_cache
+
+    def observed_get_cache(*args, **kwargs):
+        result = original_get_cache(*args, **kwargs)
+        with get_count_lock:
+            get_count[0] += 1
+            if get_count[0] == 3:
+                second_initial_miss.set()
+        return result
+
+    def paused_set_cache(*args, **kwargs):
+        write_started.set()
+        if not allow_write.wait(timeout=5):
+            raise TimeoutError("test did not release the cache writer")
+        return original_set_cache(*args, **kwargs)
+
+    monkeypatch.setattr(sc, "get_cache", observed_get_cache)
+    monkeypatch.setattr(sc, "set_cache", paused_set_cache)
+
+    @sc.cached(category="single_flight", ttl_seconds=3600)
+    def fetch(code: str):
+        call_count[0] += 1
+        return {"code": code, "value": 42}
+
+    with ThreadPoolExecutor(max_workers=2) as executor:
+        first = executor.submit(fetch, "600519")
+        assert write_started.wait(timeout=5)
+        second = executor.submit(fetch, "600519")
+        assert second_initial_miss.wait(timeout=5)
+        allow_write.set()
+        assert first.result(timeout=5) == {"code": "600519", "value": 42}
+        assert second.result(timeout=5) == {"code": "600519", "value": 42}
+
+    assert call_count[0] == 1
 
 
 class FakeDateTime:
@@ -307,3 +417,32 @@ def test_make_valid_if_rejects_all_zero_dict():
     assert v({"a": 0, "b": 0}) is False
     assert v({"a": 1, "b": 0}) is False  # 含任一 0 即拒绝（V15.2 原语义，不改变）
     assert v({"a": 1, "b": 2}) is True
+
+
+def test_cached_evicts_invalid_entry_without_deleting_prefix_sibling(tmp_path, monkeypatch):
+    import core.stock_cache as sc
+
+    fake_cache_db = tmp_path / "stock_cache.db"
+    monkeypatch.setattr(sc, "_CACHE_DB", str(fake_cache_db))
+    monkeypatch.setattr(sc, "_db", None)
+    monkeypatch.setattr(sc, "_DISABLE_CACHE", False)
+
+    sc.set_cache("validator_test", "fetch", {"valid": False}, 3600, "600519")
+    sc.set_cache("validator_test", "fetch", {"valid": "sibling"}, 3600, "6005191")
+    calls = []
+
+    @sc.cached(
+        category="validator_test",
+        ttl_seconds=3600,
+        valid_if=lambda value: isinstance(value, dict) and value.get("valid") is True,
+    )
+    def fetch(code: str):
+        calls.append(code)
+        return {"valid": True, "code": code}
+
+    result = fetch("600519")
+
+    assert result == {"valid": True, "code": "600519"}
+    assert calls == ["600519"]
+    assert sc.get_cache("validator_test", "fetch", "600519") == result
+    assert sc.get_cache("validator_test", "fetch", "6005191") == {"valid": "sibling"}

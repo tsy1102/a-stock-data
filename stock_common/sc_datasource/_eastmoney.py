@@ -383,11 +383,11 @@ def get_cyq_distribution(code: str, days: int = 240) -> Dict[str, Any]:
         "ut": "b2884a393a59ad64002292a3e90d46a5",
         "end": "20500101",
     }
-    # V17.0.15: 24h 磁盘缓存（审查发现的关键风险）
+    # V17.0.15: 跨进程磁盘缓存（按下一数据交易日 09:30 失效；审查发现的关键风险）
     #   em_get 只有**令牌桶限流 + 熔断**，**没有任何数据缓存** → 未加缓存前，全仓扫描时
     #   sht/med/lng 三脚本各调一次 = **3N 次东财请求**。而东财 push2 系属**连接级风控**
     #   （RemoteDisconnected，字典 §12.3 实测恢复 20+ 小时），一旦触发会连带影响资金流/行情等
-    #   同域接口。CYQ 依赖的 240 根日K+换手率属 T+1 稳定数据，与 K 线同性质 → 沿用同一 TTL。
+    #   同域接口。CYQ 依赖的 240 根日K+换手率属 T+1 稳定数据，与 K 线同性质 → 沿用同一交易日有效期。
     try:
         from stock_common.sc_kline_cache import get_cached_blob
 

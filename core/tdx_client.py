@@ -110,6 +110,7 @@ _TDX_KLINE_CACHE: Dict[str, Tuple[List[str], List[List[str]]]] = {}
 _TDX_KLINE_EMPTY_UNTIL: Dict[str, float] = {}
 _TDX_WKLINE_CACHE: Dict[str, Tuple[List[str], List[List[str]]]] = {}
 _TDX_QUOTE_CACHE: Dict[str, Dict[str, Any]] = {}
+_TDX_QUOTE_FIELD_SOURCES_CACHE: Dict[str, Dict[str, str]] = {}
 
 
 # ═══════════════════════════════════════
@@ -1519,23 +1520,21 @@ def tdx_get_latest_bar_with_ma(code: str):
     return result
 
 
-def _is_before_market_open() -> bool:
-    """判断当前是否为盘前时段（9:30之前）。"""
-    now = datetime.now()
+def _is_before_market_open(now: Optional[datetime] = None) -> bool:
+    """判断市场当前是否尚未开盘；休市日也按非实时行情处理。"""
+    now = now or datetime.now()
+    from stock_common.stock_calendar import is_trading_day
+
+    if not is_trading_day(now.date()):
+        return True
     return now.hour < 9 or (now.hour == 9 and now.minute < 30)
 
 
-def _get_trading_date_for_quote() -> str:
-    """获取当前行情数据对应的交易日期。
+def _get_trading_date_for_quote(now: Optional[datetime] = None) -> str:
+    """获取行情应对齐的有效交易日，使用项目交易日历处理盘前与休市日。"""
+    from stock_common.stock_calendar import latest_market_data_date
 
-    盘前（<9:30）：使用上一交易日日期
-    盘中（>=9:30）：使用今日日期
-    """
-    if _is_before_market_open():
-        from stock_common.stock_calendar import get_last_trading_day
-
-        return str(get_last_trading_day().strftime("%Y-%m-%d"))
-    return datetime.now().strftime("%Y-%m-%d")
+    return latest_market_data_date(now or datetime.now()).isoformat()
 
 
 def tdx_get_quote_full(code: str) -> Dict[str, Any]:
@@ -1548,64 +1547,63 @@ def tdx_get_quote_full(code: str) -> Dict[str, Any]:
            - 盘中：ZHB 缺失时走 TDX TCP
            - TDX 失败/缺失：降级到腾讯 HTTP
     """
-    trading_date = _get_trading_date_for_quote()
+    now = datetime.now()
+    trading_date = _get_trading_date_for_quote(now)
     cache_key = f"Q:{code}:{trading_date}"
     cached = _TDX_QUOTE_CACHE.get(cache_key)
     if cached is not None:
         return cached
     result: Dict[str, Any] = {}
+    field_sources: Dict[str, str] = {}
 
     # 优先级 1：ZHB 本地（盘前/盘后/周末/16:30后用 T-1 数据）
     try:
-        from stock_common import get_zhb_single_stock_data, is_zhb_data_fresh
+        from stock_common import get_zhb_single_stock_data
+        from stock_common.sc_datasource import get_zhb_data_date, zhb_field_safe
 
-        if is_zhb_data_fresh(max_delay_days=1):
-            zhb = get_zhb_single_stock_data(code)
-            if zhb:
-                _safe = lambda k: zhb.get(k, 0)
-                if _safe("price"):
-                    result["price"] = zhb["price"]
-                if _safe("change_pct") is not None:
-                    result["change_pct"] = zhb["change_pct"]
-                if _safe("open"):
-                    result["open"] = zhb["open"]
-                if _safe("high"):
-                    result["high"] = zhb["high"]
-                if _safe("low"):
-                    result["low"] = zhb["low"]
-                if _safe("last_close"):
-                    result["last_close"] = zhb["last_close"]
-                # V16.0: ZHB tdxstat2 Col[3] amount 已是万元（zhb_client.py:797），去掉二次 /10000
-                # 之前误除导致 ZHB 新鲜时 amount_wan 缩小 1 万倍
-                if _safe("amount"):
-                    result["amount_wan"] = zhb["amount"]
-                # V16.0: 移除 ZHB volume 注入 — Col[24] 曾误映射为 volume(成交量)，
-                # V17.0.9: Col[24] 已破解正名为 cash_reserve_wan(货币资金/万元)。
-                # 真实成交量只能来自 TDX/腾讯行情（下方 TDX TCP 分支填充）。
-                # if _safe("volume"): result["volume_hand"] = zhb["volume"]
-                if _safe("pe_ttm"):
-                    result["pe_ttm"] = zhb["pe_ttm"]
-                if _safe("pb"):
-                    result["pb"] = zhb["pb"]
-                if _safe("turnover_pct"):
-                    result["turnover_pct"] = zhb["turnover_pct"]
-                if _safe("change_pct_1d") is not None:
-                    result["change_pct_1d"] = zhb["change_pct_1d"]
-                if _safe("change_pct_2d") is not None:
-                    result["change_pct_2d"] = zhb["change_pct_2d"]
-                if _safe("amount_1d"):
-                    result["amount_1d"] = zhb["amount_1d"]
-                if _safe("amount_2d"):
-                    result["amount_2d"] = zhb["amount_2d"]
-                if zhb.get("industry"):
-                    result["industry"] = zhb["industry"]
+        zhb_data_date = get_zhb_data_date()
+        zhb = get_zhb_single_stock_data(code)
+        if zhb:
+
+            def _put_zhb(
+                source_key: str,
+                output_key: str,
+                safe_key: Optional[str] = None,
+                allow_zero: bool = False,
+            ) -> None:
+                value = zhb.get(source_key)
+                if value in (None, "", "-"):
+                    return
+                if not allow_zero and value in (0, 0.0, "0", "0.0"):
+                    return
+                if zhb_field_safe(safe_key or source_key, data_date=zhb_data_date):
+                    result[output_key] = value
+                    field_sources[output_key] = "zhb:cache"
+
+            _put_zhb("price", "price")
+            _put_zhb("change_pct", "change_pct", allow_zero=True)
+            _put_zhb("open", "open")
+            _put_zhb("high", "high")
+            _put_zhb("low", "low")
+            _put_zhb("last_close", "last_close", safe_key="prev_close")
+            # ZHB amount 已是万元；不再进行单位换算。
+            _put_zhb("amount", "amount_wan")
+            # ZHB 不提供可靠成交量；该字段只来自实时行情源。
+            _put_zhb("pe_ttm", "pe_ttm")
+            _put_zhb("pb", "pb")
+            _put_zhb("turnover_pct", "turnover_pct")
+            _put_zhb("change_pct_1d", "change_pct_1d", allow_zero=True)
+            _put_zhb("change_pct_2d", "change_pct_2d", allow_zero=True)
+            _put_zhb("amount_1d", "amount_1d")
+            _put_zhb("amount_2d", "amount_2d")
+            _put_zhb("industry", "industry")
     except Exception as _e:
         _debug_log(f"tdx zhb quote fallback error ({code}): {_e}")
 
     # 优先级 2：TDX TCP（盘中实时补强）
     # V16.2 修复: 盘中/盘后 TDX 实时值**覆盖** ZHB T-1（price/change_pct/open/high/low/amount 等实时字段），
     # 防止 T-1 数据被标记为实时。盘前(_is_before_market_open)仍保留 ZHB。
-    _is_rt = not _is_before_market_open()
+    _is_rt = not _is_before_market_open(now)
     with _TDX_CALL_LOCK:
         cached = _TDX_QUOTE_CACHE.get(cache_key)
         if cached is not None:
@@ -1621,11 +1619,12 @@ def tdx_get_quote_full(code: str) -> Dict[str, Any]:
                     pre_close = q.get('last_close', 0)
 
                     # 实时字段：盘中覆盖 ZHB，盘前仅补缺
-                    def _put(key, val, overwrite=True):
+                    def _put(key, val, overwrite=True, source="realtime:tdx"):
                         if val is None:
                             return
                         if overwrite or key not in result or not result.get(key):
                             result[key] = val
+                            field_sources[key] = source
 
                     if q.get('price'):
                         _put('price', q['price'], _is_rt)
@@ -1670,9 +1669,9 @@ def tdx_get_quote_full(code: str) -> Dict[str, Any]:
                     if pre_close and pre_close > 0:
                         _lu, _ld = tdx_get_price_limits(code, pre_close)
                         if _lu:
-                            _put('limit_up', _lu, _is_rt)
+                            _put('limit_up', _lu, _is_rt, source="calculated:tdx_price_limits")
                         if _ld:
-                            _put('limit_down', _ld, _is_rt)
+                            _put('limit_down', _ld, _is_rt, source="calculated:tdx_price_limits")
             except Exception as _e:
                 _debug_log(f"tdx quote supplement error: {_e}")
 
@@ -1684,6 +1683,7 @@ def tdx_get_quote_full(code: str) -> Dict[str, Any]:
             for k, v in http_result.items():
                 if k not in result or not result.get(k):
                     result[k] = v
+                    field_sources[k] = "realtime:tencent"
 
     # V8.9: 兜底仍无 pe_ttm → 返回空字典（让 if q: 保护生效）
     # V16.1.7 修正: 缺 pe_ttm 不应整体置空——TDX 的 price/change_pct 仍有效，
@@ -1691,10 +1691,24 @@ def tdx_get_quote_full(code: str) -> Dict[str, Any]:
     if result and "pe_ttm" not in result:
         if not any(result.get(k) for k in ("price", "change_pct", "amount_wan", "turnover_pct")):
             result = {}
+            field_sources = {}
         else:
             result["pe_ttm"] = 0.0
+            field_sources.setdefault("pe_ttm", "missing")
     _TDX_QUOTE_CACHE[cache_key] = result
+    _TDX_QUOTE_FIELD_SOURCES_CACHE[cache_key] = field_sources
     return result
+
+
+def tdx_get_quote_full_with_sources(code: str) -> Tuple[Dict[str, Any], Dict[str, str]]:
+    """返回 quote 与逐字段来源，兼容保留 ``tdx_get_quote_full`` 的原始 dict 接口。
+
+    日期键仍使用原 ``Q:<code>:<trading_date>`` 约定。来源信息保存在独立进程缓存，
+    不会泄漏到既有调用方的 quote 字典。
+    """
+    quote = tdx_get_quote_full(code)
+    cache_key = f"Q:{code}:{_get_trading_date_for_quote()}"
+    return quote, dict(_TDX_QUOTE_FIELD_SOURCES_CACHE.get(cache_key, {}))
 
 
 def tdx_get_quote_raw(code: str) -> Optional[Dict[str, Any]]:

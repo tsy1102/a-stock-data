@@ -227,7 +227,7 @@ $OutputEncoding = [Console]::OutputEncoding
 | `sc_datasource.py` | ZHB 列索引映射、35 个未知字段、缓存 Key |
 | `tdx_client.py` | 0x0010 协议字段名、统一 TDX 适配器输出 key、限流间隔 |
 | `zhb_client.py` | 各解析器列映射、GBK/分隔符约定 |
-| `data_provider.py` | **字段路由真机制**（见下方注记）：`_should_use_zhb_for_realtime()` 时段判定 + `get_canonical_stock_data` 内联 `need_realtime_quote` + `sc_datasource.zhb_field_safe()` 的 ABCD 新鲜度分级 |
+| `data_provider.py` | **字段路由与元数据真机制**（见下方注记）：交易时段/交易日历、`need_realtime_quote`、ZHB ABCD 字段新鲜度、逐字段来源与有效日期 |
 | `stock_common/__init__.py` | 导出是否与实际定义一致(2026-08-10 审计:`__all__` 241 项全部可访问,0 缺失;少数公共函数如 `get_em_quote_full` 未在 `__all__` 重导出,但调用方均直连子模块,无破坏) |
 | `docs/field_verification/field_registry.json` | 逐源状态以 `source_fields` 中 `(source, 完整 code path)` 为准；`docs/unknown_fields.md` 是生成队列，旧 ZHB/ulist 列索引见只读归档 `docs/field_source_reference.md` |
 
@@ -238,14 +238,13 @@ $OutputEncoding = [Console]::OutputEncoding
 > - **消费方**：仅 `tests/core/test_core_routing.py`（14 例）与 `test_core_schema.py` 通过
 >   `is_realtime_http_field()` / `is_zhb_sufficient_field()` 查询——**业务代码零调用**（全仓 grep 证实）。
 > - **因此它们是"测试契约元数据"而非死代码**：删除会破坏 14 个回归用例，**禁止删除**。
-> - **真正决定走 ZHB 还是 HTTP 的三处**：
->   1. `_should_use_zhb_for_realtime()`（`data_provider.py:1394`）——非交易日/盘前 `t<9:30` → True 走 ZHB；
->      交易日 `t≥9:30`（含盘中+盘后）→ False 强制 HTTP/TDX（因盘后磁盘 ZHB 仍是 T-1）。
->   2. `get_canonical_stock_data` 内联三态（`data_provider.py:365-383`）——
->      `need_realtime_quote = force_realtime or 盘中 or 盘后 or not zhb_dict`。
->   3. `sc_datasource.zhb_field_safe(field)` 的 **ABCD 新鲜度分级**——A 实时 `max_delay=0`／
->      B 准实时 `=1`（资金流、streak_days）／C 日频 `=3`（默认）／D 静态 `=90`（ipo_price、股本、行业、list_date）。
-> - 改路由行为请动上述三处；改字段的"是否实时"分类请动 `sc_schema.FIELD_SPECS`（会自动同步到两个集合）。
+> - **真正决定走 ZHB 还是 HTTP 的机制**：
+>   1. `_should_use_zhb_for_realtime()` 根据交易日历与 9:30 分界处理盘前、休市日、盘中和盘后。
+>   2. `get_canonical_stock_data` 的 `need_realtime_quote` 综合强制实时、时段、ZHB 快照是否存在及 A 类行情字段是否过期。
+>   3. `sc_datasource.zhb_field_safe(field)` 使用明确的 ZHB 包日期，按 A/B/C/D 交易日延迟过滤：A 实时 `=0`／B 准实时 `=1`／C 日频 `=3`／D 静态 `=90`。
+>   4. `CanonicalStockData.quote_date` 与 `time_anchor` 依据价格字段的有效日期；日期未知则 `time_anchor="unknown"`。`collected_at` 是本机组装时间，不能作为上游有效日期。逐字段日期见 `field_as_of_dates`。
+>   5. TDX 行情缓存日期使用 `latest_market_data_date()`，不能按自然日把周末/节假日当作有效行情日。
+> - 改路由行为时检查以上路径；改字段的"是否实时"分类请动 `sc_schema.FIELD_SPECS`（会同步测试契约集合）。
 
 ### 8.3 字段/签名变更时的连带检查
 
@@ -264,7 +263,7 @@ $OutputEncoding = [Console]::OutputEncoding
 
 | 层 | 入口 | 职责 |
 |---|---|---|
-| **Tier1 门面** | `core/data_provider.get_canonical_stock_data()` | `CanonicalStockData` 113 个属性（含 12 个 ELTDX 扩展属性）、源选择、fallback、单位归一化、field_sources 溯源 |
+| **Tier1 门面** | `core/data_provider.get_canonical_stock_data()` | `CanonicalStockData` 115 个属性（含 12 个 ELTDX 扩展属性）、源选择、fallback、单位归一化、逐字段来源和有效日期溯源 |
 | **Tier2 适配器** | `sc_datasource.get_*` / `sc_fuyao.get_fuyao_*` / `tdx_client.tdx_get_*` | 专精数据(CYQ / F10 / 涨停梯队 / 龙虎榜 / 行业L2 / 宏观流向 / 竞价),已含 @cached + 归一化 + 令牌桶限流 |
 | **原始客户端** | `_get_tdx_client()` / `sc_network.em_get` / `sc_fuyao._fuyao_raw` / 裸 requests·httpx | **仅允许出现在 `stock_common/` 与 `core/tdx_client.py` 内部** |
 
@@ -280,6 +279,7 @@ $OutputEncoding = [Console]::OutputEncoding
 ```powershell
 python.exe scripts\verify_data_access.py     # 公理 A1: 数据访问收口(禁止生产脚本直连原始客户端)
 python.exe scripts\verify_sync_check.py      # 公理 A7: 字典 ↔ 代码 同步
+python.exe scripts\verify_canonical_contract.py  # Tier 1: 属性、日期、来源与缓存边界
 ```
 
 > 闸门已用 `tokenize` 剥离注释与字符串,故文档中引用违规符号的说明性注释不会误报。

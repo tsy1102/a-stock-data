@@ -655,7 +655,7 @@ class CanonicalStockData:
         0.0  # 主力净买额(万元) ≡ fund_main_today/1e4(主) 或 rt_fund(兜底); 非独立指标
     )
     main_net_buy_hands: float = (
-        0.0  # 主力净买量(手) —— 独立源: 东财 rt_fund['main_net_hands'](仅实时路径)
+        0.0  # 主力净买量(手) —— TDX 0x0011 `rt_fund['main_net_hands']`(仅实时路径)
     )
     main_net_buy_wan_1d: float = (
         0.0  # T-1 主力净买额(万元) —— ⚠️ 当前恒 0: ZHB 该键实为昨日竞价额(已实锤不可用), 无 T-1 源接入, 保留占位
@@ -714,9 +714,7 @@ class CanonicalStockData:
         default_factory=tuple
     )  # 交易时段数组 — push2 f80
     report_period: str = ""  # 最新报告期 (YYYYMMDD) — push2 f221 / ulist f221
-    quote_date: str = (
-        ""  # 行情快照日期 (YYYY-MM-DD) — push2 data_date（⚠️ 有单测断言 tests/core/test_core_schema.py:275, 勿删）
-    )
+    quote_date: str = ""  # 价格字段有效日期 (YYYY-MM-DD)；来源未明确日期时为空，不等于采集日期
     bid1_vol: float = (
         0.0  # 买一量 (手) ← 腾讯协议 v10（2026-08-11: 新增——sht 封单额/信号/预警依赖）
     )
@@ -776,8 +774,9 @@ class CanonicalStockData:
     # V17.2.x(2026-09-10) 审计决策 Q6: is_valid 由"恒 True 空壳"升级为**真实质量门禁**
     #   (此前 data_provider 硬编码 is_valid=True 且全仓零引用 = 数据质量不可观测)。
     #   规则: code 非空 且 价格类字段至少一项有效(price>0 或 prev_close>0)。
-    data_source: str = "zhb"  # 数据来源 (zhb / tdx / http)
-    time_anchor: str = "t-1"  # 时效锚点 (t_day / t-1)
+    data_source: str = "zhb"  # 数据来源 (zhb / tdx / http / unknown)
+    time_anchor: str = "unknown"  # 有效日期锚点 (t_day / t-1 / unknown)
+    collected_at: str = ""  # 本机组装此对象的 ISO 8601 时间；不是上游数据有效日期
     is_valid: bool = True  # 数据合法校验结果(真实 QC, 非恒 True)
 
     # V15.4: per-field source label (方案 C)
@@ -785,16 +784,17 @@ class CanonicalStockData:
     # 字典 value = 数据来源标签 (e.g. "realtime:push2", "realtime:tencent", "calculated", "missing")
     # 上层用 cdata.field_sources.get("price") 可知道这个 price 是 push2 实时还是 TDX 还是 ZHB 兜底
     # 状态码定义:
-    #   realtime:push2      - 推算实时价 (hq.sinajs.cn) 100% 准确
+    #   realtime:push2      - 东方财富 push2 接口字段
+    #   realtime:push2delay - 东方财富 push2delay 镜像接口字段
     #   realtime:tencent    - 腾讯行情实时
     #   realtime:tdx        - TDX 实时
-    #   closing:tdx         - TDX 收盘价
-    #   closing:push2       - 推算收盘价
-    #   zhb:t-1             - ZHB T-1 静态
-    #   zhb:t-0             - ZHB T 日盘后
+    #   realtime:*:batch    - 批量行情对应的实际来源族
+    #   source:unknown      - 有值但无法证明具体来源
     #   calculated          - 公式推算 (e.g. mcap = total_shares × price)
     #   missing             - 完全没拿到
     field_sources: Dict[str, str] = field(default_factory=dict)
+    # 仅记录上游或本地数据包能明确证明的有效日期；缺 key 表示有效日期未知。
+    field_as_of_dates: Dict[str, str] = field(default_factory=dict)
 
     # V17.2.22: eltdx 7709/7615 实时短线/连板指标(经统一层 get_canonical_stock_data 暴露)
     # 数据来源: get_eltdx_shortline_bundle 批量预热 -> 模块级缓存 -> 统一层 per-stock 读缓存(非取数)

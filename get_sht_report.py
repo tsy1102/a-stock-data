@@ -94,6 +94,7 @@ from stock_common import (
     sec_type_market_label,
     limit_pct_for,
 )  # V10.3, V16.2: 统一涨跌停阈值
+from stock_common.sc_report_runner import format_52w_reference, format_quote_provenance
 
 from core.data_provider import get_main_net_buy_async  # V16.4.1: 删 9 个未使用 async 包装
 
@@ -340,14 +341,7 @@ async def generate_report_async(
 
     _mkt_status, _mkt_note = get_market_status()
 
-    if _mkt_status == "closed":
-        L("  ⚠️ 休市日：数据为最近交易日快照，短线技术指标已标注")
-    elif _mkt_status == "lunch":
-        L("  ⚠️ 午休时段（11:30-13:00）：行情暂停，技术指标基于盘中快照")
-    elif _mkt_status in ("post_market", "pre_market"):
-        L("  ⚠️ 非交易时段：数据为最近交易日快照，短线技术指标已标注")
-    elif _mkt_status == "post_close":
-        L("  ℹ️ 盘后收盘：数据为今日收盘快照，短线技术指标基于收盘价")
+    L(f"  报告生成时段：{_mkt_note}；实际行情日期以统一层元数据为准。")
     L("\n" + "---")
     L("## **一、个股基本信息**")
     L("---")
@@ -409,20 +403,20 @@ async def generate_report_async(
     L("## 【二、实时行情、估值与短线趋势】")
     L("---")
 
-    # 52周高低位（cdata 统一提供）
-    if cdata.high_52w > 0 and cdata.low_52w > 0 and cdata.price > 0:
-        _52w_pos = (
-            (cdata.price - cdata.low_52w) / (cdata.high_52w - cdata.low_52w) * 100
-            if cdata.high_52w != cdata.low_52w
-            else 50
-        )
-        L(
-            f"  [52周区间] 最高: {cdata.high_52w:.2f}元 | 最低: {cdata.low_52w:.2f}元 | 当前位置: {_52w_pos:.0f}%"
-        )
+    # 52周区间位置仅在价格和区间数据可比时展示；区间外价格显示与边界的距离。
+    _52w_dates = getattr(cdata, "field_as_of_dates", {}) or {}
+    _52w_line = format_52w_reference(
+        cdata.price,
+        cdata.low_52w,
+        cdata.high_52w,
+        low_date=_52w_dates.get("low_52w", ""),
+        high_date=_52w_dates.get("high_52w", ""),
+    )
+    if _52w_line:
+        L(f"  [{_52w_line}]")
 
+    L(f"  {format_quote_provenance(cdata)}")
     if cdata.price > 0 or cdata.change_pct != 0:
-        if cdata.time_anchor == "t-1":
-            L("  ⚠️ 盘前/休市模式，以下行情数据基于上一交易日收盘数据")
         # V17.0.1e: 撤销 V17.0.1b 表格化, 恢复原"字段: 值"竖排(基本信息/行情不适用表格)
         L(f"  现价:   {cdata.price:.2f} 元")
         L(f"  涨跌幅:   {cdata.change_pct:.2f}%")
@@ -1054,9 +1048,13 @@ async def generate_report_async(
             streak = 0
     if streak:
         if streak > 0:
-            L(f"\n  ➤ 连涨天数: {streak}天 {'🔥 情绪过热预警' if streak >= 5 else ''}")
+            L(
+                f"\n  ➤ 连涨天数: {streak}天 {'⚠️ 连涨时间较长，注意波动风险' if streak >= 5 else ''}"
+            )
         elif streak < 0:
-            L(f"\n  ➤ 连跌天数: {abs(streak)}天 {'🧊 超卖信号' if abs(streak) >= 5 else ''}")
+            L(
+                f"\n  ➤ 连跌天数: {abs(streak)}天 {'⚠️ 连跌时间较长；连跌不等同于超卖' if abs(streak) >= 5 else ''}"
+            )
 
     if ff["data"]:
 
@@ -1451,10 +1449,10 @@ async def generate_report_async(
             )
 
     elif lockup["history"]:
-        L(f"  近30天内无解禁（共 {len(lockup['history'])} 批历史记录，已省略）")
+        L(f"  近30个交易日内无解禁（共 {len(lockup['history'])} 批历史记录，已省略）")
 
     else:
-        L("  无历史解禁记录")
+        L("  当前查询未返回历史解禁记录；不能据此确认近期不存在解禁。")
 
     if lockup["upcoming"]:
 
@@ -1468,7 +1466,7 @@ async def generate_report_async(
             )
 
     else:
-        L(f"\n  未来{_unlock_warn}天无待解禁")
+        L(f"\n  当前查询未返回未来{_unlock_warn}天解禁记录；空结果不等于确认没有解禁压力。")
 
     L("\n" + "---")
     L("## 【十一、融资融券（两融数据）】")
@@ -1604,13 +1602,13 @@ async def generate_report_async(
             ph = holders[1]
 
             if lh["change_ratio"] < 0 and ph["change_ratio"] < 0:
-                sig = "连续减少 = 筹码持续集中，主力吸筹信号"
+                sig = "股东户数连续下降；持股分布可能趋于集中，但无法识别买方主体，不代表主力吸筹"
 
             elif lh["change_ratio"] < 0:
-                sig = "筹码趋于集中"
+                sig = "股东户数下降；仅说明持有人数量减少，不据此判断资金主体"
 
             else:
-                sig = "筹码松动/散户化"
+                sig = "股东户数上升；仅说明持有人数量增加，不据此判断散户化或卖压"
 
             L(f"\n  ➤ 信号: {sig}")
 
@@ -2528,8 +2526,9 @@ async def generate_report_async(
         L("  ZHB tipinfo 暂无本股回购预案结构化记录（Col[19]/[20] 为空）。")
 
     L("\n" + "---")
-    L("## **仓位管理建议**")
+    L("## **综合评分与交易风险参考**")
     L("---")
+    L("  以下为个股模型评分，不包含账户持仓、风险承受能力或组合约束，不构成个性化仓位配置。")
 
     # V8.2: 使用统一评分接口
     from stock_common import calculate_score

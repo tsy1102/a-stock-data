@@ -16,6 +16,7 @@ import sys
 import time
 import argparse
 import asyncio
+import math
 from datetime import datetime, date
 from typing import Any, Callable, Coroutine, Optional, cast
 
@@ -44,6 +45,104 @@ else:
     cleanup_gd_proxy = _cleanup_gd_proxy
     upload_type_reports = _upload_type_reports
     upload_stock_report_by_code = _upload_stock_report_by_code
+
+
+def classify_price_range(
+    price: Any, low: Any, high: Any
+) -> tuple[str, Optional[float], Optional[float]]:
+    """Classify a price against a positive reference interval.
+
+    Returns ``(relation, position_pct, outside_pct)``. A position is reported
+    only when the price is inside the interval; out-of-range prices are
+    described as distances from a boundary instead of negative/>100% positions.
+    """
+    try:
+        current = float(price)
+        lower = float(low)
+        upper = float(high)
+    except (TypeError, ValueError):
+        return "invalid", None, None
+
+    if not all(math.isfinite(value) and value > 0 for value in (current, lower, upper)):
+        return "invalid", None, None
+    if upper <= lower:
+        return "invalid", None, None
+    if current < lower:
+        return "below", None, (lower - current) / lower * 100.0
+    if current > upper:
+        return "above", None, (current - upper) / upper * 100.0
+    return "within", (current - lower) / (upper - lower) * 100.0, None
+
+
+def format_quote_provenance(cdata: Any) -> str:
+    """Render the canonical price's confirmed as-of date and source."""
+    field_as_of_dates = getattr(cdata, "field_as_of_dates", {}) or {}
+    field_sources = getattr(cdata, "field_sources", {}) or {}
+    quote_date = getattr(cdata, "quote_date", "") or field_as_of_dates.get("price", "")
+    quote_date = str(quote_date).strip() if quote_date else ""
+
+    raw_source = str(field_sources.get("price", "") or "").strip()
+    source = "未确认"
+    if raw_source.startswith("realtime:tencent"):
+        source = "腾讯财经"
+    elif raw_source.startswith("realtime:push2delay"):
+        source = "东财 push2delay"
+    elif raw_source.startswith(("realtime:tdx", "tdx:")):
+        source = "通达信 TDX"
+    elif raw_source.startswith(("zhb:", "static:zhb")) or raw_source == "zhb":
+        source = "ZHB"
+    elif raw_source.startswith("realtime:") and not any(
+        marker in raw_source for marker in ("unknown", "batch")
+    ):
+        source = raw_source.removeprefix("realtime:").split(":", 1)[0] or "未确认"
+    elif raw_source and not any(marker in raw_source for marker in ("unknown", "missing", "batch")):
+        source = raw_source
+
+    anchor = str(getattr(cdata, "time_anchor", "unknown") or "unknown")
+    if anchor == "t_day":
+        anchor_text = "T日"
+    elif anchor == "t-1":
+        anchor_text = "上一交易日"
+    elif quote_date:
+        anchor_text = "有效日期已记录，交易日关系未确认"
+    else:
+        anchor_text = "日期关系未确认"
+
+    date_text = f"行情有效日期：{quote_date}" if quote_date else "行情有效日期未核实"
+    return f"{date_text} | 价格来源：{source} | 时间锚：{anchor_text}"
+
+
+def format_52w_reference(
+    price: Any,
+    low: Any,
+    high: Any,
+    *,
+    low_date: Any = "",
+    high_date: Any = "",
+) -> str:
+    """Describe 52-week reference bounds without extrapolating a percentile."""
+    relation, position_pct, outside_pct = classify_price_range(price, low, high)
+    if relation == "invalid":
+        return ""
+
+    current = float(price)
+    lower = float(low)
+    upper = float(high)
+    lower_date = str(low_date or "未确认").strip()
+    upper_date = str(high_date or "未确认").strip()
+    if lower_date == upper_date:
+        date_text = lower_date
+    else:
+        date_text = f"高点 {upper_date} / 低点 {lower_date}"
+
+    line = f"52周参考区间 [{lower:.2f}, {upper:.2f}] 元（数据日：{date_text}）"
+    if relation == "within" and position_pct is not None:
+        return f"{line} | 现价在区间内位置 {position_pct:.1f}%"
+    if relation == "below" and outside_pct is not None:
+        return f"{line} | 现价低于区间下沿 {outside_pct:.1f}%（区间外，不计算区间位置）"
+    if relation == "above" and outside_pct is not None:
+        return f"{line} | 现价高于区间上沿 {outside_pct:.1f}%（区间外，不计算区间位置）"
+    return ""
 
 
 class BaseReportRunner:

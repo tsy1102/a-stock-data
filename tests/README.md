@@ -7,11 +7,11 @@
 | 区域 | 测试模块数 | 覆盖范围 | 详细清单 |
 |:---|---:|:---|:---|
 | `core/` | 16 | 核心门面、缓存、日历、类型契约、fallback、评分和技术指标 | [`core/README.md`](core/README.md) |
-| `data/` | 14 | ZHB、TDX/ELTDX、Eastmoney、KPL、网络、解禁单位、指数、财务日历和异步财报兜底 | [`data/README.md`](data/README.md) |
+| `data/` | 15 | ZHB、TDX/ELTDX、Eastmoney、KPL、网络、解禁单位、指数、EPS 预测缓存、财务日历和异步财报兜底 | [`data/README.md`](data/README.md) |
 | `infra/` | 12 | 调度器、字段完整性/命名、依赖预检、dry-run 写入边界、F10、外部 API 与 GD | [`infra/README.md`](infra/README.md) |
-| `reports/` | 11 | 报告 Runner、流水线、策略、章节契约、正文辅助逻辑、指数映射和快照失败处理 | [`reports/README.md`](reports/README.md) |
+| `reports/` | 12 | 报告 Runner、流水线、策略、章节契约、财务精度、正文辅助逻辑、指数映射和快照失败处理 | [`reports/README.md`](reports/README.md) |
 | 根目录 | 40 | 碰撞/字段登记、采集探针、来源身份核验、来源语义质量、依赖适配、网络与临时目录隔离 | 本文件下方列出 |
-| **合计** | **93** | 参数化用例展开前的测试模块数 | — |
+| **合计** | **95** | 参数化用例展开前的测试模块数 | — |
 
 ## 最近完整执行
 
@@ -50,6 +50,7 @@
 | 字段登记与命名守护 | `infra/test_field_completeness_scopes.py`、`infra/test_lint_field_names.py`、`infra/test_ulist_subdict.py` |
 | 子进程调度结果 | `infra/test_main_scheduler.py` |
 | 报告流水线与缺章 | `reports/test_reports_pipeline.py`、`reports/test_reports_chapter_omission.py` |
+| 报告数值与来源口径 | `reports/test_reports_financial_precision.py` |
 
 报告正文渲染输出仍没有专门的端到端快照测试；修改正文时应检查对应渲染逻辑与现有章节契约用例。
 
@@ -64,3 +65,7 @@
 ```
 
 测试文件命名为 `test_<层>_<主题>.py`，按 `data/`、`core/`、`infra/`、`reports/` 归类；新增自定义 marker 前先在 `pyproject.toml` 注册。真实网络测试必须标记 `@pytest.mark.real_network`。默认、单模块和表达式模式均不启用真实网络；`-Mode real` 会临时设置 `REAL_NETWORK=1`，只运行带标记的用例，结束后恢复调用环境。
+
+## 最近一次离线验证
+
+2026-10-19 排除 `tests/reports/test_reports_runner.py` 后，离线套件收集 1,121 项，1,068 通过、1 跳过；52 个 `real_network` 用例按默认策略排除。完整套件在该模块启动 Windows Proactor 事件循环时卡于 `socket.socketpair()` 的 loopback fallback，受当前执行沙箱限制，故本次未将该模块计为通过。

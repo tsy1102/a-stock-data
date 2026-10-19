@@ -50,7 +50,7 @@
 | sc_capital_cache.py | 全局股本缓存(90 天 TTL, schema 版本校验) |
 | md_render.py | 报告 Markdown 转换器：标题、分隔线、F10 边框表与空格表切分 |
 | sc_render.py | 报告共享片段渲染器，集中复用多评委评分等报告输出 |
-| sc_kline_cache.py | K线与筹码分布本地缓存(内存 + `cache/kline/` 磁盘文件) |
+| sc_kline_cache.py | K 线与筹码分布跨进程文件缓存；按交易日历在下一数据交易日 09:30 失效，日历不可用时回退 24 小时 |
 | stock_calendar.py | 交易日历(holidays/workdays 字典 + ZHB 补充, 含 CLI 更新入口) |
 | seat_db.py / seats.json | 龙虎榜营业部席位数据库 |
 | _temp.py | 配置仓库 `.tmp/` 为项目进程及子进程临时目录，支持 `ASTOCK_TEMP_DIR` 覆盖 |

@@ -200,22 +200,31 @@ class TestCanonicalDataAPI(unittest.TestCase):
 
         # data_provider 函数内 `from stock_common import get_tencent_quote`，patch 包属性
         with _offline_canonical_sources():
-            with patch("stock_common.sc_fuyao.is_fuyao_enabled", return_value=False):
-                with patch(
-                    "core.tdx_client.tdx_get_quote_full",
-                    side_effect=RuntimeError("Circuit Breaker Open"),
-                ):
-                    with patch("stock_common.get_tencent_quote", return_value={}):
-                        with patch(
-                            "stock_common.sc_datasource.get_em_quote_full_delay", return_value={}
-                        ):
-                            with patch(
-                                "stock_common.sc_datasource.get_em_quote_full", return_value={}
-                            ):
-                                cdata = dp.get_canonical_stock_data("600519", force_realtime=True)
-                                self.assertIsNotNone(cdata)
-                                self.assertEqual(cdata.code, "600519")
-                                self.assertEqual(cdata.data_source, "zhb")
+            with patch("stock_common.get_zhb_single_stock_data", return_value={"price": 100.0}):
+                with patch("stock_common.sc_datasource.get_zhb_data_date", return_value="20261019"):
+                    with patch("stock_common.sc_datasource.zhb_field_safe", return_value=True):
+                        self._assert_circuit_breaker_falls_back_to_zhb(patch)
+
+    def _assert_circuit_breaker_falls_back_to_zhb(self, patch):
+        with patch("stock_common.sc_fuyao.is_fuyao_enabled", return_value=False):
+            with patch(
+                "core.tdx_client.tdx_get_quote_full",
+                side_effect=RuntimeError("Circuit Breaker Open"),
+            ):
+                with patch("stock_common.get_tencent_quote", return_value={}):
+                    with patch(
+                        "stock_common.sc_datasource.get_em_quote_full_delay", return_value={}
+                    ):
+                        with patch("stock_common.sc_datasource.get_em_quote_full", return_value={}):
+                            cdata = dp.get_canonical_stock_data("600519", force_realtime=True)
+                            self.assertIsNotNone(cdata)
+                            self.assertEqual(cdata.code, "600519")
+                            self.assertEqual(cdata.data_source, "zhb")
+                            self.assertEqual(cdata.quote_date, "2026-10-19")
+                            self.assertEqual(cdata.field_as_of_dates["price"], "2026-10-19")
+                            self.assertEqual(cdata.time_anchor, "t_day")
+                            self.assertTrue(cdata.collected_at)
+                            self.assertEqual(cdata.field_sources["price"], "zhb:cache")
 
 
 if __name__ == "__main__":

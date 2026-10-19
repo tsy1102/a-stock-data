@@ -23,7 +23,6 @@
 
 from __future__ import annotations
 
-import asyncio
 import inspect
 import os
 import sys
@@ -46,8 +45,14 @@ def _stock(**kw):
 
 
 def _run(fn, *a, **kw):
-    """同步协程（asyncio.run 每次新事件循环，避免跨用例污染）。"""
-    return asyncio.run(fn(*a, **kw))
+    """同步执行不需事件循环的 mock 策略协程。"""
+    coroutine = fn(*a, **kw)
+    try:
+        coroutine.send(None)
+    except StopIteration as completed:
+        return completed.value
+    coroutine.close()
+    raise AssertionError("mock strategy unexpectedly suspended")
 
 
 class TestStrategy01Turnover(unittest.TestCase):

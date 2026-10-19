@@ -36,6 +36,8 @@ from concurrent.futures import ThreadPoolExecutor, as_completed  # V16.4.1: 删 
 
 # H1/H2 修复(2026-08-15 二审): 全市场 ulist 主力净额(元, 带符号)模块级共享——_get_zhb_market_data 填充, 板块聚合/A 段读取
 _MAIN_NET_MAP_GLOBAL: Dict[str, float] = {}
+_MAIN_NET_REQUESTED_COUNT = 0
+_MAIN_NET_RETURNED_COUNT = 0
 
 warnings.filterwarnings('ignore')
 from core.data_provider import get_market_snapshot_async
@@ -149,6 +151,68 @@ def calc_official_deviation(stock_ret, index_ret):
     return round((s_val / i_val - 1) * 100, 2)
 
 
+def _market_breadth_display(up_count: int, down_count: int) -> tuple[str, str]:
+    """Format breadth without turning a zero-down denominator into an artificial ratio."""
+    if up_count <= 0 and down_count <= 0:
+        return "N/A", "无有效涨跌方向样本"
+    if down_count <= 0:
+        return "∞", "上涨样本中无下跌"
+    ratio = up_count / down_count
+    if up_count <= 0:
+        sentiment = "偏空"
+    elif ratio > 1.5:
+        sentiment = "偏多"
+    elif ratio < 0.67:
+        sentiment = "偏空"
+    else:
+        sentiment = "均衡"
+    return f"{ratio:.2f}", sentiment
+
+
+def _verified_main_net_amount(code: str) -> float:
+    """Return only the valid ulist f62 value; ZHB's similarly named field is auction amount."""
+    value = _MAIN_NET_MAP_GLOBAL.get(str(code), 0.0)
+    return value if math.isfinite(value) else 0.0
+
+
+def _main_flow_summary_lines(
+    flow_values: Dict[str, float],
+    requested_count: int,
+    returned_count: int,
+    *,
+    zhb_auction_amount_wan: float = 0.0,
+    zhb_data_date: str = "",
+) -> List[str]:
+    """Render main-flow and auction amount as separate, correctly labeled measures."""
+    if flow_values:
+        total_yi = sum(_safe_float(value) for value in flow_values.values()) / 1e8
+        complete = requested_count > 0 and returned_count >= requested_count
+        status = "全样本返回" if complete else "覆盖不完整"
+        lines = [
+            f"  ulist f62 主力净额覆盖：{returned_count}/{requested_count} 条扫描样本；未返回项不代表零净流。",
+            f"  💰 本次扫描样本主力净额合计：{total_yi:+.2f}亿元（ulist f62，{status}）",
+        ]
+        if complete and total_yi > 50:
+            lines.append("    🟢 完整扫描样本主力净额超过 +50 亿元参考阈值")
+        elif complete and total_yi < -50:
+            lines.append("    🔴 完整扫描样本主力净额低于 -50 亿元参考阈值")
+        elif not complete:
+            lines.append("    ⚠️ 覆盖不完整，不据样本合计推断全市场资金方向")
+        return lines
+
+    lines = [
+        f"  ulist f62 主力净额覆盖：{returned_count}/{requested_count} 条扫描样本；未返回项不代表零净流。",
+        "  💰 主力净流入：暂缺（ulist f62 未返回有效样本），不作资金方向判断。",
+    ]
+    if zhb_auction_amount_wan > 0:
+        auction_yi = zhb_auction_amount_wan / 1e4
+        as_of = zhb_data_date or "未确认"
+        lines.append(
+            f"  ZHB竞价金额代理：{auction_yi:.2f}亿元（数据日 {as_of}；不是主力净流入，不用于多空判断）"
+        )
+    return lines
+
+
 async def get_market_abnormal_data():
     """V7: 全市场 + 多周期涨幅 → TDX MAC 协议（push2 fallback 已删除）
     V10.1: 优先使用zhb全市场快照，零网络请求，失败时回退到TDX
@@ -159,6 +223,11 @@ async def get_market_abnormal_data():
           （3000+ 股票），保留批量入口 get_market_snapshot_async 而非逐只调用，避免性能回退。
           对应的 dataclass 形式由 _canonicalize_snapshot 转换层提供（V15.1）。
     """
+    global _MAIN_NET_MAP_GLOBAL, _MAIN_NET_REQUESTED_COUNT, _MAIN_NET_RETURNED_COUNT
+    _MAIN_NET_MAP_GLOBAL = {}
+    _MAIN_NET_REQUESTED_COUNT = 0
+    _MAIN_NET_RETURNED_COUNT = 0
+
     # V10.2: change_pct是实时字段，zhb日期必须是今天才能用
     # V17.3.11: 腾讯批量实时覆盖改为**单次获取并共享**——先取全 ZHB 宇宙 codes 拉一次批量，
     # 既供 _get_zhb_market_data 构建今日 price/change_pct/ret_3d，也供 TDX fallback 路径覆盖，
@@ -198,9 +267,7 @@ async def get_market_abnormal_data():
             except Exception as _e:
                 _debug_log(f"mak tencent batch: {_e}")
             _apply_tencent_cover(data, _tencent_map)
-    # V17.0.2g(2026-08-17): 主力净额批量(ulist f62)必须在**两条路径**都执行——
-    # 原批量段在 _get_zhb_market_data 内, 盘中 zhb 非今日走 TDX 路径时永不执行
-    # → _MAIN_NET_MAP_GLOBAL 空 → 兜底竞价额(恒正) → F 段虚涨判定恒空
+    # 主力净额批量(ulist f62)必须在两条行情路径后统一执行；每轮先清空模块状态，避免复用上轮样本。
     if data:
         try:
             _bq_codes = [str(d.get("code", "")) for d in data if d.get("code")]
@@ -208,15 +275,21 @@ async def get_market_abnormal_data():
                 from stock_common.sc_datasource import get_em_batch_quotes
 
                 _bq = await asyncio.to_thread(get_em_batch_quotes, _bq_codes) or {}
-                if len(_bq) < len(_bq_codes) * 0.5:
-                    _bq2 = await asyncio.to_thread(get_em_batch_quotes, _bq_codes) or {}
-                    if len(_bq2) > len(_bq):
-                        _bq = _bq2
-                global _MAIN_NET_MAP_GLOBAL
+                _MAIN_NET_REQUESTED_COUNT = len(_bq_codes)
                 _MAIN_NET_MAP_GLOBAL = {
-                    code: (q.get("main_net_inflow_wan", 0.0) or 0.0) * 1e4
+                    str(code): _safe_float(q.get("main_net_inflow_wan")) * 1e4
                     for code, q in _bq.items()
+                    if isinstance(q, dict)
+                    and q.get("main_net_inflow_wan") not in (None, "")
+                    and math.isfinite(_safe_float(q.get("main_net_inflow_wan")))
                 }
+                _MAIN_NET_RETURNED_COUNT = len(_MAIN_NET_MAP_GLOBAL)
+                if _MAIN_NET_RETURNED_COUNT < _MAIN_NET_REQUESTED_COUNT * 0.5:
+                    _debug_log(
+                        "mak ulist f62 coverage below 50%: "
+                        f"{_MAIN_NET_RETURNED_COUNT}/{_MAIN_NET_REQUESTED_COUNT}; "
+                        "skip immediate full-batch retry"
+                    )
         except Exception as _e:
             _debug_log(f"mak ulist main_net batch (unified): {_e}")
     # V17.3.11: 腾讯实时覆盖已改为单次获取并共享（ZHB 路径内层构建 / TDX 路径 _apply_tencent_cover），
@@ -338,12 +411,8 @@ async def _get_zhb_market_data(tencent_map: Optional[Dict[str, Any]] = None):
                     # (创业板/科创板新股前 5 日无涨跌幅限制, 首日 +662% 等极端值会让偏离判定失真)
                     "change_pct_1d": stat.get("change_pct_1d", ""),
                     "change_pct_2d": stat.get("change_pct_2d", ""),
-                    # V17.0(2026-08-15): 主力净额=ulist 批量 f62(元口径, H1/M5 修复: 统一元+0值不误回退)
-                    "main_net_amount": (
-                        _MAIN_NET_MAP_GLOBAL[code]
-                        if code in _MAIN_NET_MAP_GLOBAL
-                        else (_safe_float(stat.get("main_net_buy_amount", 0)) or 0) * 1e4
-                    ),
+                    # ZHB main_net_buy_amount 实为竞价金额，不能回退填入主力净额字段。
+                    "main_net_amount": _verified_main_net_amount(code),
                     # V16.2.16: Col[13] 大量为风格/概念（微盘股/近已解禁等）→ 只保留行业段
                     # （8803xx/8804xx 通达信行业、881xxx 申万版），其余置空避免伪行业聚合
                     "industry_code": (
@@ -1069,13 +1138,14 @@ def analyze_top_stocks(top_sectors):
                                 else 0
                             )
                         ),
-                        "main_net_amount": _safe_float(_st.get("main_net_buy_amount", 0)) * 1e4,
-                        # [ENRICH] 区间收益 + 主力净流入(取自 ZHB 全市场快照 _st, 零新增取数)
+                        # 仅使用 ulist f62；ZHB main_net_buy_amount 是竞价金额代理，不是主力净额。
+                        "main_net_amount": _verified_main_net_amount(_c),
+                        # [ENRICH] 区间收益 + 已验证的 ulist f62 主力净额(零新增取数)
                         "ret_5d": _safe_float(_st.get("change_5d", 0)),
                         "ret_10d": _safe_float(_st.get("change_10d", 0)),
                         "ret_20d": _safe_float(_st.get("change_20d", 0)),
                         "ret_60d": _safe_float(_st.get("change_60d", 0)),
-                        "main_inflow": _safe_float(_st.get("main_net_buy_amount", 0)) * 1e4,
+                        "main_inflow": _verified_main_net_amount(_c),
                     }
                 )
             _zhb_member_stocks_cache[key] = stocks
@@ -1194,7 +1264,7 @@ async def generate_sector_report(output_path):
     L("=" * 90)
     # V17.0.2i: 头部拆分(报告名/时间+时段分行)——原一行过长
     L("  **📊 A股异动及行业轮动扫描报告**")
-    L(f"  ⏱ {today_str} {now.strftime('%H.%M.%S')} | {_mkt_note}")
+    L(f"  ⏱ 生成时间 {now.strftime('%Y-%m-%d %H.%M.%S')} | {_mkt_note}")
     L("=" * 90)
     print("[数据装载] 获取全市场多日数据与指数基准...", flush=True)
     _t0 = time.time()
@@ -1223,10 +1293,16 @@ async def generate_sector_report(output_path):
     _zhb_fresh = is_zhb_data_fresh(max_delay_days=3)
     if _zhb_date:
         _fresh_tag = "✅新鲜" if _zhb_fresh else "⚠️延迟"
+        L(f"  ZHB全市场快照数据日：{_zhb_date}（{_fresh_tag}）")
         print(
             f"  ⚡ zhb全市场: {len(all_stocks)}只（{_zhb_date} {_fresh_tag}），耗时{time.time()-_t0:.2f}s",
             flush=True,
         )
+    else:
+        L("  ZHB全市场快照数据日：未确认")
+    L(
+        "  行情口径：实时字段优先按腾讯/TDX路由覆盖；缺失项可能保留快照值，市场汇总不保证逐股同一时点。"
+    )
     idx_rets, index_closes_pool = get_index_returns()
     for ic, nm in INDEX_MAP.items():
         r = idx_rets.get(ic, {})
@@ -1275,6 +1351,9 @@ async def generate_sector_report(output_path):
     L(f"\n{'='*90}")
     L("## 【A. 全市场情绪监测看板】")
     L(f"{'---'}")
+    L(
+        "  说明：广度、情绪阈值和样本资金流用于描述当日样本，不单独预测次日方向，也不是个性化仓位指令。"
+    )
     # V17.0.7: FTShare 开盘红涨跌分布(10档——字典 §12.10.10 独有维度)
     try:
         from stock_common.sc_ftshare import _ft_call
@@ -1330,15 +1409,18 @@ async def generate_sector_report(output_path):
             L("  🌐 北向资金: (数据获取失败)")
     except Exception as _e:
         _debug_log(f"mak hsgt macro: {_e}")
-    _up_cnt = sum(1 for s in all_stocks if s.get("change_pct", 0) > 0)
-    _down_cnt = sum(1 for s in all_stocks if s.get("change_pct", 0) < 0)
-    _ud_ratio = _up_cnt / max(_down_cnt, 1)
+    _up_cnt = sum(1 for s in all_stocks if _safe_float(s.get("change_pct", 0)) > 0)
+    _down_cnt = sum(1 for s in all_stocks if _safe_float(s.get("change_pct", 0)) < 0)
+    _ratio_text, _breadth_sentiment = _market_breadth_display(_up_cnt, _down_cnt)
+    _directional_samples = _up_cnt + _down_cnt
+    _unclassified_samples = max(0, len(all_stocks) - _directional_samples)
     L(
         f"  🌡️ 短线情绪(样本内·剔除ST/退): 涨停{_zt_count} | 跌停{_dt_count} | 异动触发{total_abnormal}只"
         f"（涨跌幅口径;与B段涨停池/通达信全市场口径不同,三者不可直接相加比较）"
     )
     L(
-        f"  📊 市场广度: 上涨{_up_cnt}/下跌{_down_cnt} | 涨跌比{_ud_ratio:.2f} | {'偏多' if _ud_ratio>1.5 else '偏空' if _ud_ratio<0.67 else '均衡'}"
+        f"  📊 市场广度: 上涨{_up_cnt}/下跌{_down_cnt} | 涨跌比{_ratio_text} | {_breadth_sentiment}"
+        f" | 非零涨跌幅样本{_directional_samples}/{len(all_stocks)}；其余{_unclassified_samples}只涨跌幅为0或缺失"
     )
     # V17.2.0: 全市场广度(通达信统计指数 880005/880001/880006) 交叉校验样本广度
     try:
@@ -1346,12 +1428,14 @@ async def generate_sector_report(output_path):
 
         _ms = await asyncio.to_thread(tdx_get_market_stat)
         if _ms:
-            _ms_ud = _ms["up_count"] / max(_ms["down_count"], 1)
+            _ms_ud, _ms_sentiment = _market_breadth_display(
+                int(_ms.get("up_count", 0) or 0), int(_ms.get("down_count", 0) or 0)
+            )
             L(
                 f"  📊 全市场(通达信·含ST/退/北交所): 上涨{_ms['up_count']}/下跌{_ms['down_count']}"
                 f" | 涨停{_ms['limit_up_count']}/跌停{_ms['limit_down_count']}"
                 f" | 平{_ms['neutral_count']}/停牌{_ms['suspended_count']}"
-                f" | 涨跌比{_ms_ud:.2f} | 总市值{_ms['total_market_cap']/1e12:.2f}万亿"
+                f" | 涨跌比{_ms_ud}（{_ms_sentiment}）| 总市值{_ms['total_market_cap']/1e12:.2f}万亿"
                 f"（全市场口径,涨停含ST/退/北交所故多于样本内{_zt_count}只;跌停按主板10%口径,故少于样本内{_dt_count}只）"
             )
     except Exception as _e:
@@ -1447,39 +1531,23 @@ async def generate_sector_report(output_path):
     except Exception as _e:
         _debug_log(f"mak cls_market_emotion: {_e}")
 
-    # V10.3: 全市场主力净买入总量
-    # V17.0.16: 改用 ulist 批量 f62 主力净额(带符号)——原 ZHB main_net_buy_amount
-    # ZHB 竞价额仅作为批量源不可用时的显式非主力兜底。
-    _total_main_net_buy = 0
-    _main_net_buy_count = 0
-    if _MAIN_NET_MAP_GLOBAL:
-        for _code, _mna in _MAIN_NET_MAP_GLOBAL.items():
-            _total_main_net_buy += _mna
-            if _mna > 0:
-                _main_net_buy_count += 1
-    _main_net_src_label = "ulist f62 口径"
+    # V10.3: 汇总本次扫描样本的主力净额；ZHB 竞价金额单独展示，不混作主力资金方向。
+    _auction_amount_wan = 0.0
     if not _MAIN_NET_MAP_GLOBAL:
-        # 批量主力净额不可用时，使用 ZHB 竞价额兜底，并明确标注为非主力口径。
         _stat2_snapshot = get_zhb_market_stat2_snapshot()
         if _stat2_snapshot:
-            for _code, _stat in _stat2_snapshot.items():
-                _mna = _safe_float(_stat.get("main_net_buy_amount", 0))
-                if _mna:
-                    _total_main_net_buy += _mna
-                    if _mna > 0:
-                        _main_net_buy_count += 1
-        _total_main_net_buy_yi = _total_main_net_buy / 1e4
-        _main_net_src_label = "ZHB 竞价额兜底口径(⚠️非主力)"
-    else:
-        _total_main_net_buy_yi = _total_main_net_buy / 1e8
-    L(
-        f"  💰 主力资金: 全市场主力净流入{_total_main_net_buy_yi:+.2f}亿元"
-        f"（{_main_net_buy_count}只净流入，{_main_net_src_label}）"
-    )
-    if _total_main_net_buy_yi > 50:
-        L("    🟢 主力资金大幅净流入，市场资金面偏多")
-    elif _total_main_net_buy_yi < -50:
-        L("    🔴 主力资金大幅净流出，市场资金面偏空")
+            _auction_amount_wan = sum(
+                _safe_float(_stat.get("main_net_buy_amount", 0))
+                for _stat in _stat2_snapshot.values()
+            )
+    for _flow_line in _main_flow_summary_lines(
+        _MAIN_NET_MAP_GLOBAL,
+        _MAIN_NET_REQUESTED_COUNT,
+        _MAIN_NET_RETURNED_COUNT,
+        zhb_auction_amount_wan=_auction_amount_wan,
+        zhb_data_date=get_zhb_data_date() or "",
+    ):
+        L(_flow_line)
     if _lbp > 80:
         L(f"    🔥 涨停{_lbp}家 > 80，情绪极度亢奋，警惕分化回落")
     if total_abnormal > 40 and _lbp > 60:
@@ -2159,21 +2227,27 @@ async def generate_sector_report(output_path):
         if _items:
             L(f"    龙头: {' | '.join(_items)}")
     L(f"\n{'='*90}")
-    L("## 【F. 资金流验证：真金白银 vs 虚涨】")
+    L("## 【F. 行业资金流样本核验】")
     L(f"{'---'}")
+    if _MAIN_NET_MAP_GLOBAL:
+        L(
+            f"  ulist f62 返回 {_MAIN_NET_RETURNED_COUNT}/{_MAIN_NET_REQUESTED_COUNT} 条扫描样本；"
+            "行业汇总只累计已返回字段，缺项不代表净流为零或净流出。"
+        )
+    else:
+        L("  ulist f62 无可用样本；本节不判定行业主力资金方向。")
     # V16.4.0: 按评分筛选（原 sectors[:50] 前 50 高评分板块可能全为净流入 → 虚涨段恒空）
     _scored = [s for s in sectors if s.get("score", 0) >= 30] or sectors
-    # V17.4.x (#443): 主力净流全为 0 → 资金流源失效, 显式标注, 不再把"数据缺失"误渲染为"净流0.00"
+    # 全部行业均无非零合计时，只报告无法判断，不把空值当作真实零流量。
     _has_flow = any((s.get("main_inflow", 0) or 0) != 0 for s in _scored)
     if not _has_flow:
-        L("  ⚠️ 资金流验证失效：全市场行业主力净流入均为 0（资金流数据源未返回有效数据），")
-        L("     本节无法判断「真金白银 vs 虚涨」，表格暂缺。")
+        L("  ⚠️ 未形成非零行业净额汇总；真实零值与来源缺项无法仅凭此处区分，不作方向判断。")
     else:
         with_money = [s for s in _scored if s.get("main_inflow", 0) > 0]
-        without_money = [s for s in _scored if s.get("main_inflow", 0) <= 0]
+        without_money = [s for s in _scored if s.get("main_inflow", 0) < 0]
         if with_money:
             # V17.0.2f: md 表格
-            L("  ✅ 真金白银: 高评分且主力净流入:")
+            L("  主力净流入样本:")
             L("| 板块 | 评分 | 涨跌幅 | 主力净流入(亿) |")
             L("|---|---|---|---|")
             _sorted_in = sorted(with_money, key=lambda x: x.get('main_inflow', 0), reverse=True)
@@ -2183,24 +2257,24 @@ async def generate_sector_report(output_path):
                 )
         if without_money:
             # V17.0.2f: md 表格
-            L("  ⚠️ 虚涨（主力净流出）:")
+            L("  ⚠️ 涨幅与已观测主力净流出同时出现（样本提示）:")
             L("| 板块 | 评分 | 涨跌幅 | 主力净流出(亿) |")
             L("|---|---|---|---|")
-            _sorted_out = sorted(without_money, key=lambda x: x.get('main_inflow', 0), reverse=True)
+            _sorted_out = sorted(without_money, key=lambda x: x.get('main_inflow', 0))
             for s in _sorted_out[:10]:
                 L(
                     f"| {normalize_industry(s['name'])} | {s.get('score',0):.1f} | {s['change_pct']:+.2f}% | {round(abs(s['main_inflow'])/1e8,2):.2f} |"
                 )
         else:
             # 批量主力净额缺失时，虚涨段无法判断，避免用恒正的 ZHB 竞价额伪造净流出结论。
-            L("  ℹ️ 无主力净流出的高分板块（需有 ulist f62 批量数据才能判断）")
+            L("  ℹ️ 本次筛选未发现主力净流出板块。")
     _lurking = [
         s for s in sectors if s.get("main_inflow", 0) > 3e8 and 1 <= s.get("change_pct", 0) <= 5
     ]
     _lurking.sort(key=lambda x: x.get("main_inflow", 0), reverse=True)
     if _lurking:
         # V17.0.2f: md 表格
-        L("\n  🕵️ 潜伏信号（主力大幅流入但涨幅不大，可能正在建仓）:")
+        L("\n  🕵️ 主力净流入且涨幅不高的板块样本（供观察，不据此判断建仓）:")
         L("| 板块 | 涨跌幅 | 主力净流入(亿) |")
         L("|---|---|---|")
         for _l in _lurking[:5]:

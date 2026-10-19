@@ -1,9 +1,29 @@
-import asyncio
+from concurrent.futures import ThreadPoolExecutor
 from threading import get_ident
 from types import SimpleNamespace
 
 import core.data_provider as data_provider
 import get_val_report
+
+
+class _ImmediateAwaitable:
+    def __init__(self, value):
+        self.value = value
+
+    def __await__(self):
+        if False:
+            yield None
+        return self.value
+
+
+def _complete_without_event_loop(coroutine):
+    iterator = coroutine.__await__()
+    try:
+        next(iterator)
+    except StopIteration as completed:
+        return completed.value
+    iterator.close()
+    raise AssertionError("test coroutine unexpectedly suspended")
 
 
 def test_liquidity_king_does_not_infer_money_flow_from_volume(monkeypatch):
@@ -27,7 +47,7 @@ def test_liquidity_king_does_not_infer_money_flow_from_volume(monkeypatch):
     assert "流动性溢价" not in reason
 
 
-def test_core_discount_offloads_financial_percentile_work(monkeypatch):
+def test_core_discount_offloads_pe_range_position_work(monkeypatch):
     caller_thread = get_ident()
     worker_threads = []
     monkeypatch.setattr(
@@ -51,15 +71,23 @@ def test_core_discount_offloads_financial_percentile_work(monkeypatch):
     def fake_estimate(_code, _price, _total_shares):
         worker_threads.append(get_ident())
         return {
-            "percentile": 5.0,
+            "position_pct": 5.0,
             "pe_current": 10.0,
             "pe_min": 5.0,
             "pe_max": 20.0,
-            "quarters": 12,
+            "observations": 12,
+            "financial_periods": 12,
         }
 
-    monkeypatch.setattr(get_val_report, "estimate_pe_percentile", fake_estimate)
-    result = asyncio.run(
+    monkeypatch.setattr(get_val_report, "estimate_pe_range_position", fake_estimate)
+
+    def fake_to_thread(function, /, *args, **kwargs):
+        with ThreadPoolExecutor(max_workers=1) as executor:
+            result = executor.submit(function, *args, **kwargs).result()
+        return _ImmediateAwaitable(result)
+
+    monkeypatch.setattr(get_val_report.asyncio, "to_thread", fake_to_thread)
+    result = _complete_without_event_loop(
         get_val_report.strategy_04_core_discount(
             [{"code": "600519", "name": "测试", "mcap_yi": 1000.0}]
         )

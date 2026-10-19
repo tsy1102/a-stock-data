@@ -294,7 +294,6 @@ TTL: Dict[str, int] = {
     "lockup_expiry": 90 * 86400,  # 限售解禁（日期固定，V10.0: 7天→90天）
     "lockup_expiry_shares_v4": 90 * 86400,  # 实际数量来源标记 + 未来日期有效性校验
     "announcements": 30 * 86400,  # 巨潮公告（发布后不变，V10.0: 7天→30天）
-    "hsgt_flow": 14 * 86400,  # 沪深港通资金流（历史数据不变，V10.0: 3天→14天）
     "kline": 7 * 86400,  # K线行情（历史数据不变，V10.0: 1天→7天）
     "limit_pool": 7 * 86400,  # 打板数据（历史数据不变，V10.0: 1天→7天）
     "fund_flow": 7 * 86400,  # 资金流数据（历史数据不变，V10.0: 1天→7天）
@@ -536,8 +535,22 @@ def _build_key(category: str, func_name: str, *args: Any, **kwargs: Any) -> str:
     # key 过长时用 MD5 压缩
     if len(raw) > 200:
         h = hashlib.md5(raw.encode("utf-8")).hexdigest()
-        return f"{category}:{func_name}:{h}"
+        return f"{CACHE_CONTRACT_VERSION}:{category}:{func_name}:{h}"
     return raw
+
+
+def _cache_key_body(key: str) -> str:
+    """移除可选契约版本前缀，返回稳定的 category:function:args 部分。"""
+    version, separator, body = key.partition(":")
+    if separator and version.startswith("v") and version[1:].isdigit():
+        return body
+    return key
+
+
+def _cache_key_category(key: str) -> str:
+    """提取任意版本键或旧版未版本化键的缓存分类。"""
+    category = _cache_key_body(key).partition(":")[0]
+    return category or "unknown"
 
 
 def get_cache(
@@ -565,18 +578,18 @@ def get_cache(
 
     now = time.time()
     try:
-        db = _get_db()
-        cursor = db.cursor()
-        cursor.execute(
-            "SELECT value, expires_at, hit_count, prev_value, verified "
-            "FROM cache_entries WHERE key=?",
-            (key,),
-        )
-        row = cursor.fetchone()
+        with _db_lock:
+            db = _get_db()
+            cursor = db.cursor()
+            cursor.execute(
+                "SELECT value, expires_at, verified FROM cache_entries WHERE key=?",
+                (key,),
+            )
+            row = cursor.fetchone()
         if row is None:
             _record_cache_hit(category, False)
             return None
-        value_blob, expires_at, hit_count, prev_value_blob, verified = row
+        value_blob, expires_at, verified = row
         # V16 软过期三态判断: 新鲜 / 软过期(stale) / 硬过期
         if expires_at <= now:
             if _soft_expiry_allowed(category, expires_at, now):
@@ -595,11 +608,12 @@ def get_cache(
             return None
         # 更新访问时间 + 命中计数
         # V16.0: 去掉每读 commit（原代码每次命中 UPDATE+commit → 万级重访 30-90s）
-        cursor.execute(
-            "UPDATE cache_entries SET hit_count=hit_count+1, last_accessed=? WHERE key=?",
-            (now, key),
-        )
-        _maybe_commit()
+        with _db_lock:
+            db.execute(
+                "UPDATE cache_entries SET hit_count=hit_count+1, last_accessed=? WHERE key=?",
+                (now, key),
+            )
+            _maybe_commit()
         # V10.3: 将L2结果写入L1，加速后续访问
         value = json.loads(value_blob.decode("utf-8"))
         # V13.1: dataclass 自动反序列化暂不启用，由调用方按需调用 _deserialize_from_cache()
@@ -871,26 +885,29 @@ def set_cache(
     if trading_day:
         expires_at = min(expires_at, now + ttl)
     try:
-        db = _get_db()
-        value_bytes = json.dumps(_serialize_for_cache(value), ensure_ascii=False).encode("utf-8")
-        cursor = db.cursor()
-
-        if not cross_verify:
-            # 普通模式：直接写入，不验证
-            cursor.execute(
-                "INSERT OR REPLACE INTO cache_entries "
-                "(key, value, created_at, expires_at, hit_count, last_accessed, prev_value, verified) "
-                "VALUES (?, ?, ?, ?, 0, ?, NULL, 0)",
-                (key, value_bytes, now, expires_at, now),
+        with _db_lock:
+            db = _get_db()
+            value_bytes = json.dumps(_serialize_for_cache(value), ensure_ascii=False).encode(
+                "utf-8"
             )
-        else:
-            # V15.2 真正实现"两次获取一致"语义：
-            #   - 第一次写入：verified=1（V16.0: 信任调用方 valid_if 校验，避免冷启动双拉）
-            #   - 第二次相同数据：prev_value == value_bytes，verified=1
-            #   - 第二次不同数据：prev_value != value_bytes，verified 降为 0
-            #   - get_cache cross_verify=True 时返回 verified=1 的缓存
-            #   - 冷启动首次命中即返回（V16.0 修复原逻辑首写 verified=0 → 每次冷 run 双拉）
-            with _db_lock:
+            cursor = db.cursor()
+
+            if not cross_verify:
+                # 普通模式：直接写入，不验证
+                cursor.execute(
+                    "INSERT OR REPLACE INTO cache_entries "
+                    "(key, value, created_at, expires_at, hit_count, last_accessed, prev_value, verified) "
+                    "VALUES (?, ?, ?, ?, 0, ?, NULL, 0)",
+                    (key, value_bytes, now, expires_at, now),
+                )
+                verified = False
+            else:
+                # V15.2 真正实现"两次获取一致"语义：
+                #   - 第一次写入：verified=1（V16.0: 信任调用方 valid_if 校验，避免冷启动双拉）
+                #   - 第二次相同数据：prev_value == value_bytes，verified=1
+                #   - 第二次不同数据：prev_value != value_bytes，verified 降为 0
+                #   - get_cache cross_verify=True 时返回 verified=1 的缓存
+                #   - 冷启动首次命中即返回（V16.0 修复原逻辑首写 verified=0 → 每次冷 run 双拉）
                 cursor.execute(
                     "SELECT value, prev_value, verified FROM cache_entries WHERE key=? AND expires_at>?",
                     (key, now),
@@ -904,6 +921,7 @@ def set_cache(
                         "VALUES (?, ?, ?, ?, 0, ?, ?, 1)",
                         (key, value_bytes, now, expires_at, now, value_bytes),
                     )
+                    verified = True
                 else:
                     existing_blob, prev_value_blob, verified = row
                     if prev_value_blob == value_bytes:
@@ -913,6 +931,7 @@ def set_cache(
                             "expires_at=?, last_accessed=? WHERE key=?",
                             (value_bytes, expires_at, now, key),
                         )
+                        verified = True
                     else:
                         # 第二次获取与上次不同：仅更新 prev_value/value，verified 仍 0
                         # 等待下一次获取再验证
@@ -921,18 +940,16 @@ def set_cache(
                             "created_at=?, expires_at=?, last_accessed=? WHERE key=?",
                             (value_bytes, existing_blob, now, expires_at, now, key),
                         )
+                        verified = False
 
-        # V16.0: 写路径去掉每写 commit（原每次 INSERT + commit + 全表清理双 commit）
-        _maybe_commit(force=True)  # 写入必须落盘，但用批量化 commit
-        _maybe_enforce_size_limit()
+            # V16.0: 写路径去掉每写 commit（原每次 INSERT + commit + 全表清理双 commit）
+            _maybe_commit(force=True)  # 写入必须落盘，但用批量化 commit
+            _maybe_enforce_size_limit()
 
-        # V10.3: 同时写入 L1 内存缓存（V16.2: 带 verified 标记）
-        l1_ttl = expires_at - now
-        if l1_ttl > 0:
-            # V16.4.1: row is None(首次插入)分支走 else 前的 INSERT, `verified` 从未定义 →
-            # 原 NameError 被外层 except 吞掉, L1 永不写入(6 个 cross_verify 分类每次冷写都丢 L1)
-            _l1_verified = bool(verified) if cross_verify and "verified" in locals() else False
-            _l1_set(key, value, l1_ttl, verified=_l1_verified)
+            # V10.3: 同时写入 L1 内存缓存（V16.2: 带 verified 标记）
+            l1_ttl = expires_at - now
+            if l1_ttl > 0:
+                _l1_set(key, value, l1_ttl, verified=bool(verified))
     except Exception as _e:
         _cache_logger.debug(f"set_cache: {_e}")
 
@@ -950,20 +967,21 @@ def invalidate_category(category: str, pattern: str = "") -> int:
     V12.1: 同步清空 L1 内存缓存，防止 L1/L2 数据不一致。
     """
     try:
-        db = _get_db()
-        cursor = db.cursor()
-        if pattern:
-            cursor.execute(
-                "DELETE FROM cache_entries WHERE key LIKE ?",
-                (f"{CACHE_CONTRACT_VERSION}:{category}:%{pattern}%",),
-            )
-        else:
-            cursor.execute(
-                "DELETE FROM cache_entries WHERE key LIKE ?",
-                (f"{CACHE_CONTRACT_VERSION}:{category}:%",),
-            )
-        db.commit()
-        deleted = cursor.rowcount
+        with _db_lock:
+            db = _get_db()
+            keys = [row[0] for row in db.execute("SELECT key FROM cache_entries").fetchall()]
+            selected = [
+                key
+                for key in keys
+                if _cache_key_category(str(key)) == category
+                and (not pattern or pattern in _cache_key_body(str(key)))
+            ]
+            if selected:
+                db.executemany(
+                    "DELETE FROM cache_entries WHERE key=?", ((key,) for key in selected)
+                )
+                db.commit()
+            deleted = len(selected)
         # V12.1: 同步清空 L1 内存缓存，确保一致性
         # V12.5 修复: 函数名错误 _l1_cache_clear → _l1_clear (V12.1 引入的回归 bug)
         _l1_clear()
@@ -973,19 +991,35 @@ def invalidate_category(category: str, pattern: str = "") -> int:
         return 0
 
 
+def _invalidate_cache_key(key: str) -> None:
+    """精确删除单条缓存，供 valid_if 拒绝持久化旧值时使用。"""
+    try:
+        with _db_lock:
+            db = _get_db()
+            db.execute("DELETE FROM cache_entries WHERE key=?", (key,))
+            db.commit()
+        with _L1_CACHE_LOCK:
+            _L1_CACHE.pop(key, None)
+    except Exception as _e:
+        _cache_logger.debug(f"invalidate cache key error ({key}): {_e}")
+
+
 def invalidate_prefix(prefix: str) -> int:
     """按 key 前缀批量删除（如 "holder:600519"）。
 
     V12.1: 同步清空 L1 内存缓存，防止 L1/L2 数据不一致。
     """
     try:
-        db = _get_db()
-        cursor = db.cursor()
-        cursor.execute(
-            "DELETE FROM cache_entries WHERE key LIKE ?", (f"{CACHE_CONTRACT_VERSION}:{prefix}%",)
-        )
-        db.commit()
-        deleted = cursor.rowcount
+        with _db_lock:
+            db = _get_db()
+            keys = [row[0] for row in db.execute("SELECT key FROM cache_entries").fetchall()]
+            selected = [key for key in keys if _cache_key_body(str(key)).startswith(prefix)]
+            if selected:
+                db.executemany(
+                    "DELETE FROM cache_entries WHERE key=?", ((key,) for key in selected)
+                )
+                db.commit()
+            deleted = len(selected)
         # V12.1: 同步清空 L1 内存缓存，确保一致性
         # V12.5 修复: 函数名错误 _l1_cache_clear → _l1_clear
         _l1_clear()
@@ -1000,11 +1034,12 @@ def clear_expired() -> int:
     V16.2: 同时清理 L1 中已过期条目（原 L1 残留导致 clear 后仍返回旧值）。"""
     _l1_clear()  # L1 无法精确按 key 过期，直接整体清（进程级，成本低）
     try:
-        db = _get_db()
-        cursor = db.cursor()
-        cursor.execute("DELETE FROM cache_entries WHERE expires_at<?", (time.time(),))
-        db.commit()
-        return cursor.rowcount
+        with _db_lock:
+            db = _get_db()
+            cursor = db.cursor()
+            cursor.execute("DELETE FROM cache_entries WHERE expires_at<?", (time.time(),))
+            db.commit()
+            return cursor.rowcount
     except Exception as _e:
         _cache_logger.debug(f"clear_expired error: {_e}")
         return 0
@@ -1014,9 +1049,10 @@ def clear_all() -> None:
     """清空所有缓存。V16.2: 同时清空 L1（原只清 SQLite，同进程仍返回旧值）。"""
     _l1_clear()
     try:
-        db = _get_db()
-        db.execute("DELETE FROM cache_entries")
-        db.commit()
+        with _db_lock:
+            db = _get_db()
+            db.execute("DELETE FROM cache_entries")
+            db.commit()
     except Exception as _e:
         _cache_logger.debug(f"clear_cache: {_e}")
 
@@ -1024,39 +1060,38 @@ def clear_all() -> None:
 def cache_stats() -> Dict[str, Any]:
     """返回缓存统计信息（供调试和 CLI 使用）。"""
     try:
-        db = _get_db()
-        cursor = db.cursor()
-        cursor.execute("SELECT COUNT(*), SUM(hit_count), SUM(LENGTH(value)) FROM cache_entries")
-        row = cursor.fetchone()
-        count, hits, size_bytes = row
-        cursor.execute("SELECT COUNT(*) FROM cache_entries WHERE expires_at<?", (time.time(),))
-        expired = cursor.fetchone()[0]
+        with _db_lock:
+            db = _get_db()
+            cursor = db.cursor()
+            cursor.execute("SELECT COUNT(*), SUM(hit_count) FROM cache_entries")
+            row = cursor.fetchone()
+            count, hits = row
+            now = time.time()
+            cursor.execute("SELECT COUNT(*) FROM cache_entries WHERE expires_at<=?", (now,))
+            expired = cursor.fetchone()[0]
 
-        # V9.2: 验证状态统计
-        now = time.time()
-        cursor.execute(
-            "SELECT COUNT(*) FROM cache_entries WHERE expires_at>? AND verified=1", (now,)
-        )
-        verified_valid = cursor.fetchone()[0]
-        cursor.execute(
-            "SELECT COUNT(*) FROM cache_entries WHERE expires_at>? AND verified=0", (now,)
-        )
-        unverified_valid = cursor.fetchone()[0]
+            # V9.2: 验证状态统计
+            cursor.execute(
+                "SELECT COUNT(*) FROM cache_entries WHERE expires_at>? AND verified=1", (now,)
+            )
+            verified_valid = cursor.fetchone()[0]
+            cursor.execute(
+                "SELECT COUNT(*) FROM cache_entries WHERE expires_at>? AND verified=0", (now,)
+            )
+            unverified_valid = cursor.fetchone()[0]
 
-        # 按分类统计（含验证状态）
-        cursor.execute(
-            "SELECT SUBSTR(key, 1, INSTR(key, ':') - 1) AS cat, COUNT(*), SUM(hit_count), "
-            "SUM(CASE WHEN verified=1 AND expires_at>? THEN 1 ELSE 0 END) AS verified_cnt "
-            "FROM cache_entries GROUP BY cat",
-            (now,),
-        )
-        by_category = {}
-        for cat, cnt, h, v_cnt in cursor.fetchall():
-            by_category[cat or "unknown"] = {
-                "count": cnt,
-                "hits": h or 0,
-                "verified": v_cnt or 0,
-            }
+            # 按分类统计有效缓存。旧键可能未带版本前缀，使用同一解析器兼容两种格式。
+            cursor.execute("SELECT key, hit_count, verified, expires_at FROM cache_entries")
+            by_category: Dict[str, Dict[str, int]] = {}
+            for key, hit_count, is_verified, expires_at in cursor.fetchall():
+                if expires_at <= now:
+                    continue
+                cat = _cache_key_category(str(key))
+                counts = by_category.setdefault(cat, {"count": 0, "hits": 0, "verified": 0})
+                counts["count"] += 1
+                counts["hits"] += hit_count or 0
+                if is_verified:
+                    counts["verified"] += 1
 
         # 文件大小
         db_file_size = os.path.getsize(_CACHE_DB) if os.path.exists(_CACHE_DB) else 0
@@ -1164,7 +1199,7 @@ def cached(
                 sf_key = _build_key(category, func.__name__, *args, **kwargs)
             else:
                 cache_value = get_cache(category, func.__name__, cross_verify=cross_verify)
-                sf_key = f"{category}:{func.__name__}"
+                sf_key = _build_key(category, func.__name__)
             if cache_value is not None:
                 # V8.9: 读取时也校验 — 命中但校验不通过视为未命中
                 if valid_if is None or valid_if(cache_value):
@@ -1179,31 +1214,36 @@ def cached(
                     if use_args
                     else get_cache(category, func.__name__, cross_verify=cross_verify)
                 )
-                if cache_value2 is not None and (valid_if is None or valid_if(cache_value2)):
-                    return cache_value2
+                if cache_value2 is not None:
+                    if valid_if is None or valid_if(cache_value2):
+                        return cache_value2
+                    # 已有缓存违反当前返回值契约；精确清除后再请求，避免每次都
+                    # 命中同一条坏值并重复打上游。放在 single-flight 锁内避免
+                    # 删除另一个并发调用刚写入的新值。
+                    _invalidate_cache_key(sf_key)
                 result = func(*args, **kwargs)
-            # valid_if 校验：不通过则不缓存
-            if valid_if is None or valid_if(result):
-                if use_args:
-                    set_cache(
-                        category,
-                        func.__name__,
-                        result,
-                        _ttl,
-                        *args,
-                        trading_day=trading_day,
-                        cross_verify=cross_verify,
-                        **kwargs,
-                    )
-                else:
-                    set_cache(
-                        category,
-                        func.__name__,
-                        result,
-                        _ttl,
-                        trading_day=trading_day,
-                        cross_verify=cross_verify,
-                    )
+                # 保持 per-key 锁直到缓存写入完成；否则等待者可在此间隙再次 miss 并重复请求。
+                if valid_if is None or valid_if(result):
+                    if use_args:
+                        set_cache(
+                            category,
+                            func.__name__,
+                            result,
+                            _ttl,
+                            *args,
+                            trading_day=trading_day,
+                            cross_verify=cross_verify,
+                            **kwargs,
+                        )
+                    else:
+                        set_cache(
+                            category,
+                            func.__name__,
+                            result,
+                            _ttl,
+                            trading_day=trading_day,
+                            cross_verify=cross_verify,
+                        )
             return result
 
         return cast(F, wrapper)
@@ -1249,25 +1289,26 @@ def persist_quote_batch_l2(
     if _DISABLE_CACHE or not batch_map:
         return 0
     try:
-        db = _get_db()
-        cur = db.cursor()
-        now = time.time()
-        exp = _calc_trading_day_expiry()
-        exp = min(exp, now + ttl_seconds)
-        n = 0
-        for code, data in batch_map.items():
-            if not data or not isinstance(data, dict) or not data.get("price"):
-                continue
-            key = _build_key(QUOTE_BATCH_CACHE_CATEGORY, "prefetch_quote_batch", code)
-            blob = json.dumps(_serialize_for_cache(data), ensure_ascii=False).encode("utf-8")
-            cur.execute(
-                "INSERT OR REPLACE INTO cache_entries "
-                "(key, value, created_at, expires_at, hit_count, last_accessed, prev_value, verified) "
-                "VALUES (?, ?, ?, ?, 0, ?, NULL, 0)",
-                (key, blob, now, exp, now),
-            )
-            n += 1
-        db.commit()
+        with _db_lock:
+            db = _get_db()
+            cur = db.cursor()
+            now = time.time()
+            exp = _calc_trading_day_expiry()
+            exp = min(exp, now + ttl_seconds)
+            n = 0
+            for code, data in batch_map.items():
+                if not data or not isinstance(data, dict) or not data.get("price"):
+                    continue
+                key = _build_key(QUOTE_BATCH_CACHE_CATEGORY, "prefetch_quote_batch", code)
+                blob = json.dumps(_serialize_for_cache(data), ensure_ascii=False).encode("utf-8")
+                cur.execute(
+                    "INSERT OR REPLACE INTO cache_entries "
+                    "(key, value, created_at, expires_at, hit_count, last_accessed, prev_value, verified) "
+                    "VALUES (?, ?, ?, ?, 0, ?, NULL, 0)",
+                    (key, blob, now, exp, now),
+                )
+                n += 1
+            db.commit()
         _cache_logger.debug(f"persist_quote_batch_l2: {n} entries -> L2")
         return n
     except Exception as _e:
@@ -1290,30 +1331,31 @@ def read_quote_batch_l2(
     out: Dict[str, Any] = {}
     try:
         now = time.time()
-        db = _get_db()
-        cur = db.cursor()
-        for code in codes:
-            key = _build_key(category, func_name, code)
-            cur.execute(
-                "SELECT value, expires_at FROM cache_entries WHERE key=?",
-                (key,),
-            )
-            row = cur.fetchone()
-            if row is None:
-                continue
-            blob, exp = row
-            if exp is not None and exp <= now and not _soft_expiry_allowed(category, exp, now):
-                continue
-            try:
-                data = (
-                    json.loads(blob.decode("utf-8"))
-                    if isinstance(blob, (bytes, bytearray))
-                    else json.loads(blob)
+        with _db_lock:
+            db = _get_db()
+            cur = db.cursor()
+            for code in codes:
+                key = _build_key(category, func_name, code)
+                cur.execute(
+                    "SELECT value, expires_at FROM cache_entries WHERE key=?",
+                    (key,),
                 )
-            except Exception:
-                continue
-            if isinstance(data, dict):
-                out[code] = data
+                row = cur.fetchone()
+                if row is None:
+                    continue
+                blob, exp = row
+                if exp is not None and exp <= now and not _soft_expiry_allowed(category, exp, now):
+                    continue
+                try:
+                    data = (
+                        json.loads(blob.decode("utf-8"))
+                        if isinstance(blob, (bytes, bytearray))
+                        else json.loads(blob)
+                    )
+                except Exception:
+                    continue
+                if isinstance(data, dict):
+                    out[code] = data
         return out
     except Exception as _e:
         _cache_logger.debug(f"read_quote_batch_l2: {_e}")
@@ -1338,25 +1380,26 @@ def persist_tencent_batch_l2(
     if _DISABLE_CACHE or not batch_map:
         return 0
     try:
-        db = _get_db()
-        cur = db.cursor()
-        now = time.time()
-        exp = _calc_trading_day_expiry()
-        exp = min(exp, now + ttl_seconds)
-        n = 0
-        for code, data in batch_map.items():
-            if not data or not isinstance(data, dict) or not data.get("price"):
-                continue
-            key = _build_key(category, "tencent_batch_fallback", code)
-            blob = json.dumps(_serialize_for_cache(data), ensure_ascii=False).encode("utf-8")
-            cur.execute(
-                "INSERT OR REPLACE INTO cache_entries "
-                "(key, value, created_at, expires_at, hit_count, last_accessed, prev_value, verified) "
-                "VALUES (?, ?, ?, ?, 0, ?, NULL, 0)",
-                (key, blob, now, exp, now),
-            )
-            n += 1
-        db.commit()
+        with _db_lock:
+            db = _get_db()
+            cur = db.cursor()
+            now = time.time()
+            exp = _calc_trading_day_expiry()
+            exp = min(exp, now + ttl_seconds)
+            n = 0
+            for code, data in batch_map.items():
+                if not data or not isinstance(data, dict) or not data.get("price"):
+                    continue
+                key = _build_key(category, "tencent_batch_fallback", code)
+                blob = json.dumps(_serialize_for_cache(data), ensure_ascii=False).encode("utf-8")
+                cur.execute(
+                    "INSERT OR REPLACE INTO cache_entries "
+                    "(key, value, created_at, expires_at, hit_count, last_accessed, prev_value, verified) "
+                    "VALUES (?, ?, ?, ?, 0, ?, NULL, 0)",
+                    (key, blob, now, exp, now),
+                )
+                n += 1
+            db.commit()
         _cache_logger.debug(f"persist_tencent_batch_l2: {n} entries -> L2")
         return n
     except Exception as _e:
@@ -1383,32 +1426,37 @@ def read_tencent_batch_l2(
         key_to_code = {_build_key(category, func_name, c): c for c in codes}
         if not key_to_code:
             return out
-        db = _get_db()
-        cur = db.cursor()
-        _items = list(key_to_code.items())
-        for _i in range(0, len(_items), 500):
-            _chunk = _items[_i : _i + 500]
-            _ph = ",".join("?" for _ in _chunk)
-            cur.execute(
-                f"SELECT key, value, expires_at FROM cache_entries WHERE key IN ({_ph})",
-                tuple(k for k, _ in _chunk),
-            )
-            for key, blob, exp in cur.fetchall():
-                code = key_to_code.get(key)
-                if code is None:
-                    continue
-                if exp is not None and exp <= now and not _soft_expiry_allowed(category, exp, now):
-                    continue
-                try:
-                    data = (
-                        json.loads(blob.decode("utf-8"))
-                        if isinstance(blob, (bytes, bytearray))
-                        else json.loads(blob)
-                    )
-                except Exception:
-                    continue
-                if isinstance(data, dict):
-                    out[code] = data
+        with _db_lock:
+            db = _get_db()
+            cur = db.cursor()
+            _items = list(key_to_code.items())
+            for _i in range(0, len(_items), 500):
+                _chunk = _items[_i : _i + 500]
+                _ph = ",".join("?" for _ in _chunk)
+                cur.execute(
+                    f"SELECT key, value, expires_at FROM cache_entries WHERE key IN ({_ph})",
+                    tuple(k for k, _ in _chunk),
+                )
+                for key, blob, exp in cur.fetchall():
+                    code = key_to_code.get(key)
+                    if code is None:
+                        continue
+                    if (
+                        exp is not None
+                        and exp <= now
+                        and not _soft_expiry_allowed(category, exp, now)
+                    ):
+                        continue
+                    try:
+                        data = (
+                            json.loads(blob.decode("utf-8"))
+                            if isinstance(blob, (bytes, bytearray))
+                            else json.loads(blob)
+                        )
+                    except Exception:
+                        continue
+                    if isinstance(data, dict):
+                        out[code] = data
         return out
     except Exception as _e:
         _cache_logger.debug(f"read_tencent_batch_l2: {_e}")

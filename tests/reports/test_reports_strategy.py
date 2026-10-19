@@ -19,10 +19,10 @@
 
 from __future__ import annotations
 
-import asyncio
 import inspect
 import re
 import unittest
+from unittest import mock
 
 import get_val_report as V
 
@@ -69,9 +69,41 @@ def _call_empty_pool(fn):
             args.append([])
         else:
             break
-    if inspect.iscoroutinefunction(fn):
-        return asyncio.run(fn(*args))
-    return fn(*args)
+    with (
+        mock.patch.object(V, "cls_telegraph", return_value=[]),
+        mock.patch.object(V, "eastmoney_global_news", return_value=[]),
+        mock.patch.object(V, "industry_comparison", return_value=[]),
+        mock.patch.object(V.asyncio, "to_thread", new=_fake_to_thread),
+    ):
+        if inspect.iscoroutinefunction(fn):
+            coroutine = fn(*args)
+            return _complete_without_event_loop(coroutine)
+        return fn(*args)
+
+
+class _ImmediateAwaitable:
+    def __init__(self, value):
+        self.value = value
+
+    def __await__(self):
+        if False:
+            yield None
+        return self.value
+
+
+def _complete_without_event_loop(coroutine):
+    try:
+        coroutine.send(None)
+    except StopIteration as completed:
+        return completed.value
+    coroutine.close()
+    raise AssertionError("empty-pool strategy unexpectedly suspended")
+
+
+def _fake_to_thread(function, /, *args, **kwargs):
+    if not isinstance(function, mock.Mock):
+        raise AssertionError(f"unmocked threaded data function: {function!r}")
+    return _ImmediateAwaitable(function(*args, **kwargs))
 
 
 class TestStrategyRegistry(unittest.TestCase):

@@ -8,7 +8,7 @@
   （RemoteDisconnected，字典 §12.3 实测恢复 20+ 小时），会连带打挂资金流/行情。
 
   故 V17.0.15 在 sc_kline_cache 增加一对类型无关的 `get_cached_blob` /
-  `set_cached_blob`（复用同一 TTL 24h / LRU 500MB / 原子写 / 锁），CYQ 走这对接口。
+  `set_cached_blob`（复用交易日过期 / LRU 500MB / 原子写 / 锁），CYQ 走这对接口。
 
 本文件验证**缓存层机制本身**（不依赖网络）：
   1. 往返一致性（任意 pickle 对象）
@@ -24,7 +24,6 @@ from __future__ import annotations
 import os
 import pickle
 import sys
-import time
 import unittest
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -107,28 +106,65 @@ class TestKlineCacheShape(_TempBlobCache):
     """K 线入口拒绝与 (keys, rows) 契约不符的缓存对象。"""
 
     def test_invalid_payload_shape_returns_none(self):
-        from pathlib import Path
-
-        path = Path(self.tmp_dir) / "D_000652_240_v2.pkl"
+        path = kc._cache_path("D", "000652", 240)
         with path.open("wb") as cache_file:
             pickle.dump({"kind": "not-kline"}, cache_file)
         self.assertIsNone(kc.get_cached_kline("D", "000652", 240))
 
 
 class TestBlobTTL(_TempBlobCache):
-    """3. TTL 过期失效（默认 24h）。"""
+    """3. 按交易日绝对过期时间失效，并保留休市期间有效项。"""
 
     def test_expired_entry_returns_none_and_is_deleted(self):
-        from pathlib import Path
+        from unittest.mock import patch
 
-        kc.set_cached_blob("CYQ", "600036", 240, {"v": 1})
-        p = Path(self.tmp_dir) / "CYQ_600036_240_v2.pkl"
+        now = 1_000_000.0
+        with (
+            patch.object(kc.time, "time", return_value=now),
+            patch.object(kc, "_cache_expiry", return_value=now + 10),
+        ):
+            kc.set_cached_blob("CYQ", "600036", 240, {"v": 1})
+        p = kc._cache_path("CYQ", "600036", 240)
         self.assertTrue(p.exists())
-        # 把 mtime 回拨到 TTL 之外
-        old = time.time() - (kc.CACHE_TTL_SECONDS + 60)
-        os.utime(p, (old, old))
-        self.assertIsNone(kc.get_cached_blob("CYQ", "600036", 240))
+        with patch.object(kc.time, "time", return_value=now + 11):
+            self.assertIsNone(kc.get_cached_blob("CYQ", "600036", 240))
         self.assertFalse(p.exists(), "过期文件应被主动删除，而不是留在盘上占 LRU 额度")
+
+    def test_clear_expired_keeps_valid_long_weekend_entry(self):
+        from unittest.mock import patch
+
+        written_at = 1_000_000.0
+        now = written_at + (3 * 86400)
+        expiry = written_at + (4 * 86400)
+        with (
+            patch.object(kc.time, "time", return_value=written_at),
+            patch.object(kc, "_cache_expiry", return_value=expiry),
+        ):
+            kc.set_cached_blob("CYQ", "600036", 240, {"v": 1})
+        path = kc._cache_path("CYQ", "600036", 240)
+        os.utime(path, (written_at, written_at))
+
+        with patch.object(kc.time, "time", return_value=now):
+            self.assertEqual(kc.clear_expired(), 0)
+            self.assertEqual(kc.get_cached_blob("CYQ", "600036", 240), {"v": 1})
+        self.assertTrue(path.exists())
+
+    def test_clear_expired_removes_entry_after_market_expiry(self):
+        from unittest.mock import patch
+
+        written_at = 1_000_000.0
+        now = written_at + kc.CACHE_TTL_SECONDS + 30
+        with (
+            patch.object(kc.time, "time", return_value=written_at),
+            patch.object(kc, "_cache_expiry", return_value=written_at + 10),
+        ):
+            kc.set_cached_blob("CYQ", "600036", 240, {"v": 1})
+        path = kc._cache_path("CYQ", "600036", 240)
+        os.utime(path, (written_at, written_at))
+
+        with patch.object(kc.time, "time", return_value=now):
+            self.assertEqual(kc.clear_expired(), 1)
+        self.assertFalse(path.exists())
 
     def test_fresh_entry_survives(self):
         kc.set_cached_blob("CYQ", "600036", 240, {"v": 1})
@@ -147,9 +183,7 @@ class TestBlobRobustness(_TempBlobCache):
     """4-6. 鲁棒性：损坏文件 / 不可 pickle / 原子写。"""
 
     def test_corrupted_file_returns_none(self):
-        from pathlib import Path
-
-        p = Path(self.tmp_dir) / "CYQ_601318_240_v2.pkl"
+        p = kc._cache_path("CYQ", "601318", 240)
         p.write_bytes(b"\x00\x01not-a-pickle\xff")
         # 不得抛异常——调用方要能回退到网络请求
         self.assertIsNone(kc.get_cached_blob("CYQ", "601318", 240))

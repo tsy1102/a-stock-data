@@ -78,6 +78,7 @@ from stock_common import (
     get_irm_qa,
     sec_type_market_label,
 )  # V10.3, V16.2.3; V17.0.32 DEBT-016 露出 sec_type
+from stock_common.sc_report_runner import format_52w_reference, format_quote_provenance
 
 _SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 
@@ -185,14 +186,7 @@ async def generate_report_async(session, code, output_path, ind_comp=None):
     L("")
 
     _mkt_status, _mkt_note = get_market_status()
-    if _mkt_status == "closed":
-        L("  ⚠️ 休市日：数据为最近交易日快照，基本面数据不受影响")
-    elif _mkt_status == "lunch":
-        L("  ⚠️ 午休时段（11:30-13:00）：行情暂停但基本面数据正常")
-    elif _mkt_status in ("post_market", "pre_market"):
-        L("  ⚠️ 非交易时段：数据为最近交易日快照，基本面数据不受影响")
-    elif _mkt_status == "post_close":
-        L("  ℹ️ 盘后收盘：数据为今日收盘快照，基本面数据不受影响")
+    L(f"  报告生成时段：{_mkt_note}；行情有效日期以统一层元数据为准。")
     L("")
 
     # V17.4: 宏观利率层接入(吸收上游 3.9.0 §11) —— 长线视角: 利率/货币/政策环境
@@ -337,6 +331,7 @@ async def generate_report_async(session, code, output_path, ind_comp=None):
     }
     q = _quote
     price_today = cdata.price
+    L(f"  {format_quote_provenance(cdata)}")
 
     L(f"  企业名称: {info.get('name', 'N/A')} ({info.get('code', code)})")
     # V17.0.32(2026-09-06) DEBT-016: 露出 sec_type（与 board 地域字段正交）→ 市场板块 + 涨跌幅限制
@@ -447,15 +442,16 @@ async def generate_report_async(session, code, output_path, ind_comp=None):
     _show_low_52w = (
         _dp_low_52w if _dp_low_52w > 0 else (_zhb_data.get("low_52w", 0) if _zhb_data else 0)
     )
-    if _show_high_52w > 0 and _show_low_52w > 0 and price_today > 0:
-        _52w_pos = (
-            (price_today - _show_low_52w) / (_show_high_52w - _show_low_52w) * 100
-            if _show_high_52w != _show_low_52w
-            else 50
-        )
-        L(
-            f"  [52周区间] 最高: {_show_high_52w:.2f}元 | 最低: {_show_low_52w:.2f}元 | 当前位置: {_52w_pos:.0f}%"
-        )
+    _52w_dates = getattr(cdata, "field_as_of_dates", {}) or {}
+    _52w_line = format_52w_reference(
+        price_today,
+        _show_low_52w,
+        _show_high_52w,
+        low_date=_52w_dates.get("low_52w") or _zhb_date,
+        high_date=_52w_dates.get("high_52w") or _zhb_date,
+    )
+    if _52w_line:
+        L(f"  [{_52w_line}]")
 
     _zhb_employee_count = _zhb_data.get("employee_count", 0) if _zhb_data else 0
     if _zhb_employee_count > 0:
@@ -1098,7 +1094,7 @@ async def generate_report_async(session, code, output_path, ind_comp=None):
             else:
                 # V16.4.1: 跨期口径标注——pe_fwd 用本年 EPS, 增速用明年 EPS(向前 PEG)
                 L(
-                    f"    PEG (市盈率相对盈利增长比率): {peg:.2f} (长线买入参考: <1低估, 1-1.5合理) [PE本年/增速明年,跨期口径]"
+                    f"    PEG (市盈率相对盈利增长比率): {peg:.2f}（经验阈值参考，不构成买入或低估结论）[PE本年/增速明年，跨期口径]"
                 )
             if cagr > 0:
                 digest_25 = math.log(pe_fwd / 25) / math.log(1 + cagr) if pe_fwd > 25 else 0
@@ -1114,14 +1110,19 @@ async def generate_report_async(session, code, output_path, ind_comp=None):
                             if _hpe:
                                 _pc = sum(1 for p in _hpe if p < pe_fwd) / len(_hpe) * 100
                                 L(
-                                    f"  PE历史分位: {_pc:.0f}%（当前PE高于{_pc:.0f}%的历史时间，数值越高越贵）"
+                                    f"  按当前EPS回算的历史日线价格样本位置: {_pc:.0f}%"
+                                    "（不是历史实际PE分位；样本区间与当前价口径受行情源影响）"
                                 )
                 except Exception as _e:
-                    _debug_log(f"lng pe_percentile error: {_e}")
+                    _debug_log(f"lng historical price sample position error: {_e}")
                 if digest_25 > 0:
-                    L(f"    模型测算：当前估值消化至 25 倍合理市盈率约需 {digest_25:.1f} 年")
+                    L(
+                        f"    情景测算：若预测复合增长率持续实现且股价不变，PE降至25倍参考阈值约需 {digest_25:.1f} 年；结果对盈利预测敏感。"
+                    )
                 else:
-                    L("    模型测算：当前估值已低于/等于 25 倍合理水位线，具备长线配置的安全垫。")
+                    L(
+                        "    当前模型PE不高于25倍参考阈值；该阈值不代表合理价值或安全边际，结论仍取决于盈利预测与数据口径。"
+                    )
     else:
         L("  无足够机构覆盖（冷门标的，长线投研需完全依赖自主财务尽调）。")
 
@@ -1181,7 +1182,9 @@ async def generate_report_async(session, code, output_path, ind_comp=None):
                     else:
                         break
                 if _consec >= 5:
-                    L(f"  🏆 分红连续性: 连续分红 {_consec} 年（含当年），长线股东回报稳定")
+                    L(
+                        f"  🏆 分红连续性: 连续分红 {_consec} 个年度（最近一次 {_sorted_years[-1]} 年），供长线观察"
+                    )
                 elif _consec >= 3:
                     L(f"  ✅ 分红连续性: 连续分红 {_consec} 年")
                 elif _consec >= 1:
@@ -1211,10 +1214,10 @@ async def generate_report_async(session, code, output_path, ind_comp=None):
             L(
                 "  分红数据获取失败（TDX 接口暂不可用），未能确认分红历史。"
                 if div is None
-                else "  暂无任何分红派息记录 (一毛不拔，纯博弈型或极早期成长型企业，长线防御力弱)。"
+                else "  当前查询未返回分红派息明细；空记录不能单独证明长期无分红，请结合公告与报告期核实。"
             )
 
-    L("\n## 【六、长线筹码沉淀与机构持股倾向】")
+    L("\n## 【六、长期股东结构与持股集中度】")
     L("---")
     st = await asyncio.to_thread(get_holder_structure, code)
     # V17.0.14: 筹码分布 CYQ —— 提前获取(东财 kline f61 → calculate_cyq), 供章节+评分复用
@@ -1229,7 +1232,7 @@ async def generate_report_async(session, code, output_path, ind_comp=None):
         L(f"  数据来源: 十大流通股东季报（最近 {len(st)} 期）")
         L("")
         _header = (
-            f"  {'截止':<12} {'北向':>6}  {'外资':>8}  {'境内机构':>8}  {'个人':>6}  {'Top10':>6}"
+            f"  {'截止':<12} {'北向':>6}  {'外资':>8}  {'境内法人等':>8}  {'个人':>6}  {'Top10':>6}"
         )
         L(_header)
         L(f"  {'-'*60}")
@@ -1248,29 +1251,29 @@ async def generate_report_async(session, code, output_path, ind_comp=None):
             _lock = sum(v for v in _dd.values()) + st[0].get("northbound", 0)
             if _lock >= 60:
                 L(
-                    f"  🔒 筹码锁定度: {_lock:.1f}%（含北向），流通盘高度锁定，稍有题材风口即易拉长阳"
+                    f"  ℹ️ 前十大流通股东中可识别的境内机构与北向持股合计 {_lock:.1f}%；持股比例不等同于锁定筹码，也不据此推断上涨空间。"
                 )
         L("")
 
         latest = st[0]
         if latest['total'] >= 60:
-            L(f"  持股集中度: {latest['total']:.1f}% → 筹码高度集中，机构控盘")
+            L(f"  前十大流通股东合计持股: {latest['total']:.1f}%（比例较高；不等同于机构控盘）")
         elif latest['total'] >= 40:
-            L(f"  持股集中度: {latest['total']:.1f}% → 筹码适中")
+            L(f"  前十大流通股东合计持股: {latest['total']:.1f}%（中间区间）")
         else:
-            L(f"  持股集中度: {latest['total']:.1f}% → 筹码分散，散户化程度高")
+            L(f"  前十大流通股东合计持股: {latest['total']:.1f}%（该比例不能单独证明散户主导）")
 
         if latest['foreign'] > 30:
             L(
-                f"  🔍 外资机构合计持股 {latest['foreign']:.1f}%，话语权极强，关注国际资本动向及汇率风险。"
+                f"  🔍 前十大流通股东中按名称识别的外资持股合计 {latest['foreign']:.1f}%；该统计不代表全体外资持仓。"
             )
         if latest['northbound'] > 10:
             L(
-                f"  🔍 北向资金持股 {latest['northbound']:.1f}% > 10%，外资通过陆股通深度介入，为重要边际定价力量。"
+                f"  🔍 前十大流通股东中识别到的北向持股为 {latest['northbound']:.1f}%；持仓名单为定期披露数据。"
             )
         if latest['individual'] > 10:
             L(
-                f"  🔍 个人大股东合计持股 {latest['individual']:.1f}%，创始人/高管利益深度绑定，与中小股东利益一致。"
+                f"  🔍 前十大流通股东中按名称识别的个人股东持股合计 {latest['individual']:.1f}%；不能据此推断其身份或与中小股东利益一致。"
             )
 
         if len(st) >= 2:
@@ -1279,14 +1282,14 @@ async def generate_report_async(session, code, output_path, ind_comp=None):
             if abs(chg) >= 1:
                 _dir = "↑" if chg > 0 else "↓"
                 L(
-                    f"\n  持股集中度变化: {prv['total']:.1f}% → {latest['total']:.1f}% ({_dir}{abs(chg):.1f}个百分点)"
+                    f"\n  前十大流通股东合计持股变化: {prv['total']:.1f}% → {latest['total']:.1f}% ({_dir}{abs(chg):.1f}个百分点)"
                 )
                 if chg > 1:
-                    L("    ✅ 筹码趋于集中，主力资金持续吸筹")
+                    L("    持股集中度上升；披露名单变化不等同于主力资金流入。")
                 elif chg < -1:
-                    L("    ⚠️ 筹码趋于分散，主力可能在出货")
+                    L("    持股集中度下降；披露名单变化不等同于主力资金流出。")
     else:
-        L("  机构持股数据获取失败。")
+        L("  前十大流通股东数据获取失败。")
 
     # V17.0.14: 筹码分布 CYQ 章节(东财 kline f61 → calculate_cyq)
     if _cyq_dict:
@@ -1343,7 +1346,7 @@ async def generate_report_async(session, code, output_path, ind_comp=None):
             L("    所列自选基金最新报告期均未重仓本股")
         L("    （持仓来自定期披露非实时；清单维护见 credentials/fund_watch.example.json）")
 
-    L("\n## 【七、达摩克利斯之剑：长周期限售股解禁压力】")
+    L("\n## 【七、限售股解禁信息（未来两年）】")
     L("---")
     lockup = await get_lockup_expiry_async(session, code, days=730)
     if lockup:
@@ -1376,7 +1379,7 @@ async def generate_report_async(session, code, output_path, ind_comp=None):
             )
         L("\n  💡 长线避雷：警惕首发原股东或巨额定向增发的集中解禁潮。")
     else:
-        L("  ✅ 未来 2 年内无解禁压力，全流通或结构稳定。")
+        L("  ⚠️ 当前查询未返回未来两年解禁记录；空结果不能确认无解禁压力，请结合交易所公告核对。")
 
     L("\n## 【八、战略级别重大公告 (回购/增持/员工持股/年报)】")
     L("---")
@@ -1390,7 +1393,16 @@ async def generate_report_async(session, code, output_path, ind_comp=None):
             L(
                 f"\n  ⚠️ 减持预警：近期有 {reduce_count} 条减持相关公告，请仔细甄别是否为实控人/大额减持。"
             )
-        L("\n  💡 长线催化：密集的回购、高管真金白银增持，通常是长线底部的明确信号。")
+        _positive_event_count = sum(
+            1
+            for a in anns
+            if "减持" not in str(a.get("title", ""))
+            and any(keyword in str(a.get("title", "")) for keyword in ("回购", "增持", "员工持股"))
+        )
+        if _positive_event_count:
+            L(
+                "\n  ℹ️ 检测到回购/增持/员工持股相关公告，作为潜在事件线索；需核对方案状态、实施进度和资金来源，不能据此确认底部。"
+            )
     else:
         L("  近期无过滤后的战略级别重大公告。")
 
@@ -1638,8 +1650,9 @@ async def generate_report_async(session, code, output_path, ind_comp=None):
         L("  ZHB tipinfo 暂无本股回购预案结构化记录（Col[19]/[20] 为空）。")
 
     L("\n" + "---")
-    L("## **仓位管理建议**")
+    L("## **综合评分与风险管理参考**")
     L("---")
+    L("  以下评分基于个股可用指标，不包含账户持仓、风险承受能力或组合约束，不构成个性化仓位配置。")
 
     # V8.2: 使用统一评分接口
     from stock_common import ScoreData, calculate_score
@@ -1683,11 +1696,14 @@ async def generate_report_async(session, code, output_path, ind_comp=None):
             if _ta > 0:
                 score_data.asset_liability_ratio = (_st + _lt) / _ta
 
-    # M3 修复：复用前文【六、长线筹码沉淀与机构持股倾向】已拉取的股东结构，避免重复网络调用
+    # 复用前文已拉取的前十大流通股东结构，避免重复网络调用。
     _inst = st
     if _inst:
-        score_data.institution_holding_pct = _inst[0].get("domestic", 0) + _inst[0].get(
-            "northbound", 0
+        # 仅计入名称可明确识别的公募、险资、社保、证金/汇金；前十大合计、HKSCC代持和泛境内法人不等同机构持仓。
+        _inst_detail = _inst[0].get("dm_detail") or {}
+        score_data.institution_holding_pct = sum(
+            _safe_float(_inst_detail.get(category, 0))
+            for category in ("公募", "险资", "社保", "证金汇金")
         )
 
     # V17.0.14: 筹码分布 CYQ(复用前文已拉取的 _cyq_dict, 避免重复网络调用)

@@ -96,7 +96,7 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DATA_DIR = os.path.join(ROOT, "docs", "field_verification")
 REG_PATH = os.path.join(DATA_DIR, "field_registry.json")
 STATE_PATH = os.path.join(DATA_DIR, "collision_state.json")
-RESEARCH_STATE_PATH = os.path.join(DATA_DIR, "collision_research_state.json")
+RESEARCH_STATE_PATH = os.path.join(DATA_DIR, "collision_research_state.json.gz")
 
 # 样本为 20 股（pool.json: fixed 15 + dynamic 5）。L1 命中率阈值 = HIT_RATE_L1(18)/20 = 0.9；
 # 采用比率而非绝对 18/20，便于样本数变动时阈值自适应（符合四铁律精神）。
@@ -1877,7 +1877,7 @@ def run(args):
         }
     report_data["research_state"] = {
         "schema_version": CRS.SCHEMA_VERSION,
-        "path": "collision_research_state.json",
+        "path": "collision_research_state.json.gz",
         "available": research_state_writable,
         "tracked_candidate_pairs": research_update["total_candidate_pairs"],
         "current_candidate_pairs": research_update["current_candidate_pairs"],
@@ -1984,7 +1984,7 @@ def append_research_state_report(report_md: str, state_summary: dict) -> str:
     """Show research carry-forward status without promoting candidates."""
     lines = [report_md.rstrip(), "", "## 探索候选持续跟踪", ""]
     lines.append(
-        f"研究台账：`{state_summary.get('path', 'collision_research_state.json')}`；"
+        f"研究台账：`{state_summary.get('path', 'collision_research_state.json.gz')}`；"
         f"累计历史跟踪候选对 {state_summary.get('tracked_candidate_pairs', 0)}，"
         f"本报告候选对 {state_summary.get('current_candidate_pairs', 0)}，"
         f"历史复现 {state_summary.get('previously_tracked_pairs', 0)}，"

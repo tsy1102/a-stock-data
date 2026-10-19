@@ -4,7 +4,7 @@
 
 - 命令：`.\scripts\run_with_system_python.ps1 scripts\collide.py --date 20261018 --window 7 --exploratory`
 - 七个有效交易日：2026-10-08、10-09、10-12、10-13、10-14、10-15、10-16；事件数据仍按自然日处理。
-- 最近报告：[`20261018_collision_report.md`](20261018_collision_report.md)；候选跨次跟踪写入 `docs/field_verification/collision_research_state.json`。
+- 最近报告：[`20261018_collision_report.md`](20261018_collision_report.md)；候选跨次跟踪写入 `docs/field_verification/collision_research_state.json.gz`。
 - 本轮处理 1,174 个字段、352,312 条样本值；478 个破解目标、636 个锚字段、809 个探索字段。共计算 6,548 个主动方法候选，报告保留优先级最高的 500 条。
 
 ## 可疑但未定案的 L1 候选

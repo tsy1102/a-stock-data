@@ -27,7 +27,7 @@
   - TDX `finance_info.liutongguben` ↔ `tencent[72]` / `tencent[76]`：7 日、140 个样本，报告显示比例为 10,000；仍需确认字段位置和单位。
   - `zhb.full.pe_ttm` ↔ `tencent[39]`：3 日、60 个样本，98.33% 匹配。
 
-这些配对是待复核的数值证据，尚不足以单独确认字段语义、单位或来源独立性。详细候选与告警见[碰撞报告](../collision_research_20261012/exploratory/20261012/20261012_collision_report.md)。持久探索台账和碰撞状态已由本次运行更新：[collision_research_state.json](../collision_research_state.json)、[collision_state.json](../collision_state.json)。
+这些配对是待复核的数值证据，尚不足以单独确认字段语义、单位或来源独立性。详细候选与告警见[碰撞报告](../collision_research_20261012/exploratory/20261012/20261012_collision_report.md)。持久探索台账和碰撞状态已由本次运行更新：[collision_research_state.json.gz](../collision_research_state.json.gz)、[collision_state.json](../collision_state.json)。
 
 ## 未确定来源的核验状态
 

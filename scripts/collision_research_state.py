@@ -2,7 +2,9 @@
 
 from __future__ import annotations
 
+import gzip
 import hashlib
+import io
 import json
 import os
 import re
@@ -10,13 +12,13 @@ import tempfile
 from pathlib import Path
 from typing import Any
 
-SCHEMA_VERSION = 1
+SCHEMA_VERSION = 2
 REPORT_SECTIONS = ("L1", "L4", "method_candidates")
 STATE_PATH = (
     Path(__file__).resolve().parents[1]
     / "docs"
     / "field_verification"
-    / "collision_research_state.json"
+    / "collision_research_state.json.gz"
 )
 TEMP_DIR = Path(__file__).resolve().parents[1] / ".tmp"
 
@@ -28,16 +30,25 @@ def empty_state() -> dict[str, Any]:
 def load_state(path: str | Path = STATE_PATH) -> tuple[dict[str, Any], list[str], bool]:
     """Load the ledger; malformed or newer state is never eligible for overwrite."""
     state_path = Path(path)
-    if not state_path.exists():
+    read_path = state_path
+    legacy_path = state_path.with_suffix("") if state_path.name.endswith(".json.gz") else None
+    if not read_path.is_file() and legacy_path is not None and legacy_path.is_file():
+        read_path = legacy_path
+    if not read_path.is_file():
         return empty_state(), [], True
     try:
-        with state_path.open("r", encoding="utf-8") as handle:
-            state = json.load(handle)
-    except (OSError, UnicodeError, json.JSONDecodeError) as exc:
+        if read_path.suffix == ".gz":
+            with gzip.open(read_path, "rt", encoding="utf-8") as handle:
+                state = json.load(handle)
+        else:
+            with read_path.open("r", encoding="utf-8") as handle:
+                state = json.load(handle)
+    except (OSError, EOFError, UnicodeError, json.JSONDecodeError) as exc:
         return empty_state(), [f"研究台账读取失败，保留原文件且本轮不写回：{exc}"], False
     if not isinstance(state, dict):
         return empty_state(), ["研究台账顶层不是对象，保留原文件且本轮不写回"], False
-    if state.get("schema_version") != SCHEMA_VERSION:
+    schema_version = state.get("schema_version")
+    if type(schema_version) is not int or schema_version not in (1, SCHEMA_VERSION):
         return empty_state(), ["研究台账版本不受当前脚本支持，保留原文件且本轮不写回"], False
     if not isinstance(state.get("runs"), dict) or not isinstance(state.get("candidates"), dict):
         return empty_state(), ["研究台账 runs/candidates 格式无效，保留原文件且本轮不写回"], False
@@ -65,7 +76,13 @@ def load_state(path: str | Path = STATE_PATH) -> tuple[dict[str, Any], list[str]
                 ["研究台账 observation 字段格式无效，保留原文件且本轮不写回"],
                 False,
             )
-    return state, [], True
+    state["schema_version"] = SCHEMA_VERSION
+    for candidate in state["candidates"].values():
+        _refresh_candidate_summary(candidate)
+    warnings = []
+    if read_path != state_path or schema_version != SCHEMA_VERSION:
+        warnings.append("研究台账已从旧 JSON 格式读取；下次探索运行会写入压缩格式")
+    return state, warnings, True
 
 
 def _pair_key(left: str, right: str) -> str:
@@ -310,17 +327,39 @@ def annotate_report(
 
 
 def save_state(state: dict[str, Any], path: str | Path = STATE_PATH) -> None:
-    """Atomically write the ledger using the repository's ignored .tmp directory."""
+    """Atomically write a compact gzip ledger using the repository's ignored .tmp directory."""
     target = Path(path)
     target.parent.mkdir(parents=True, exist_ok=True)
     TEMP_DIR.mkdir(parents=True, exist_ok=True)
+    serialized_state = {
+        "schema_version": SCHEMA_VERSION,
+        "updated": state.get("updated", ""),
+        "runs": state.get("runs", {}),
+        "candidates": {
+            key: {name: value for name, value in candidate.items() if name != "latest_evidence"}
+            for key, candidate in state.get("candidates", {}).items()
+        },
+    }
     descriptor, temporary = tempfile.mkstemp(
         prefix="collision_research_", suffix=".tmp", dir=TEMP_DIR
     )
     try:
-        with os.fdopen(descriptor, "w", encoding="utf-8", newline="\n") as handle:
-            json.dump(state, handle, ensure_ascii=False, indent=2)
-            handle.write("\n")
+        if target.suffix == ".gz":
+            with os.fdopen(descriptor, "wb") as raw_handle:
+                compressed = gzip.GzipFile(
+                    fileobj=raw_handle,
+                    mode="wb",
+                    filename="",
+                    compresslevel=9,
+                    mtime=0,
+                )
+                with io.TextIOWrapper(compressed, encoding="utf-8", newline="\n") as handle:
+                    json.dump(serialized_state, handle, ensure_ascii=False, indent=2)
+                    handle.write("\n")
+        else:
+            with os.fdopen(descriptor, "w", encoding="utf-8", newline="\n") as handle:
+                json.dump(serialized_state, handle, ensure_ascii=False, indent=2)
+                handle.write("\n")
         os.replace(temporary, target)
     finally:
         if os.path.exists(temporary):

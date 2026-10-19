@@ -2,7 +2,7 @@
 
 > 用途：提供稳定架构、关键约束与文档路由；任务开始时按 §0 读取相关文件，不重复加载全仓历史。
 > 维护：结构、入口或稳定流程变化时更新。字段语义以 registry/裁决证据为准；运行结果以当次产物为准。
-> 更新日期：2026-10-19（`VERSION`：17.4.62）
+> 更新日期：2026-10-19（`VERSION`：17.4.63）
 
 ## 0. 任务路由
 
@@ -17,7 +17,7 @@
 | 架构边界/偏离 | [`ARCHITECTURE_THEORY.md`](ARCHITECTURE_THEORY.md) | [`DEBT_LEDGER.md`](DEBT_LEDGER.md)、对应调用方 |
 | 临时目录/启动器 | `AGENTS.md` §1.3 | 仓库根 `.tmp/`、`scripts/run_with_system_python.ps1` |
 
-**读取策略**：主字典导航与待审队列可按字段筛选；不要将 `field_registry.json`、`unknown_fields.md`、`collision_research_state.json` 或 raw 全量灌入上下文。先定位具体 `(source, 完整 code path)`，再读相关样本和来源证据。
+**读取策略**：主字典导航与待审队列可按字段筛选；不要将 `field_registry.json`、`unknown_fields.md`、`collision_research_state.json.gz` 或 raw 全量灌入上下文。先定位具体 `(source, 完整 code path)`，再读相关样本和来源证据。
 
 ## 1. 项目与架构
 

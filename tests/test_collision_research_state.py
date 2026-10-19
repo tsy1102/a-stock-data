@@ -1,3 +1,4 @@
+import gzip
 import json
 
 from scripts import collision_research_state as research
@@ -194,24 +195,73 @@ def test_context_scope_is_a_distinct_research_run():
     assert candidate["observation_count"] == 2
 
 
-def test_research_state_round_trips_and_invalid_state_is_not_writable(tmp_path):
-    path = tmp_path / "collision_research_state.json"
+def test_research_state_gzip_round_trips_without_duplicate_latest_evidence(tmp_path):
+    path = tmp_path / "collision_research_state.json.gz"
     state, _run_id, _stats = research.update_state(
         research.empty_state(),
         _report("20261011"),
         "collision_research_20261011/exploratory/report.json",
     )
     research.save_state(state, path)
+    with gzip.open(path, "rt", encoding="utf-8") as handle:
+        persisted = json.load(handle)
+    persisted_candidate = next(iter(persisted["candidates"].values()))
+    assert persisted["schema_version"] == research.SCHEMA_VERSION
+    assert "latest_evidence" not in persisted_candidate
+    assert (
+        persisted_candidate["observations"][0]["sections"]
+        == state["candidates"][next(iter(state["candidates"]))]["latest_evidence"]
+    )
+
     loaded, warnings, writable = research.load_state(path)
 
     assert warnings == []
     assert writable is True
     assert loaded == state
 
-    path.write_text(json.dumps({"schema_version": 99}), encoding="utf-8")
-    invalid, warnings, writable = research.load_state(path)
+    invalid_path = tmp_path / "invalid_research_state.json"
+    invalid_text = json.dumps({"schema_version": 99})
+    invalid_path.write_text(invalid_text, encoding="utf-8")
+    invalid, warnings, writable = research.load_state(invalid_path)
 
     assert invalid["candidates"] == {}
     assert warnings
     assert writable is False
-    assert json.loads(path.read_text(encoding="utf-8"))["schema_version"] == 99
+    assert invalid_path.read_text(encoding="utf-8") == invalid_text
+
+    boolean_schema_path = tmp_path / "boolean_schema_research_state.json"
+    boolean_schema_text = json.dumps({"schema_version": True, "runs": {}, "candidates": {}})
+    boolean_schema_path.write_text(boolean_schema_text, encoding="utf-8")
+    invalid, warnings, writable = research.load_state(boolean_schema_path)
+
+    assert invalid["candidates"] == {}
+    assert warnings
+    assert writable is False
+    assert boolean_schema_path.read_text(encoding="utf-8") == boolean_schema_text
+
+
+def test_legacy_json_migrates_in_memory_and_writes_gzip_on_next_save(tmp_path):
+    legacy_path = tmp_path / "collision_research_state.json"
+    compressed_path = tmp_path / "collision_research_state.json.gz"
+    state, _run_id, _stats = research.update_state(
+        research.empty_state(),
+        _report("20261011"),
+        "collision_research_20261011/exploratory/report.json",
+    )
+    state["schema_version"] = 1
+    legacy_path.write_text(json.dumps(state), encoding="utf-8")
+
+    loaded, warnings, writable = research.load_state(compressed_path)
+
+    assert writable is True
+    assert warnings
+    assert loaded["schema_version"] == research.SCHEMA_VERSION
+    assert loaded == {**state, "schema_version": research.SCHEMA_VERSION}
+    assert legacy_path.is_file()
+
+    research.save_state(loaded, compressed_path)
+    restored, warnings, writable = research.load_state(compressed_path)
+
+    assert warnings == []
+    assert writable is True
+    assert restored == loaded

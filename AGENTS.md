@@ -2,10 +2,10 @@
 
 > 适用于:Windows 桌面版 Agent(原生执行 PowerShell)
 > 适用范围:本仓库根目录及其全部子目录
-> **静态上下文(分层按需读取, 减少重复探索)**: docs/PROJECT_CONTEXT.md——含§0 指引目录(任务类型→热/温/冷区读取清单);
-> 🔥热区=AGENTS.md+§5 约束(每次必读); 🌤️温区=任务相关章节; 🧊冷区=仅任务需要时读对应文件;
-> 字段类动态细节按需查 `field_dict.md`（导航）、`unknown_fields.md`、`field_registry.json` 与 `field_source_reference.md`（历史协议原文）
-> 版本:v1.2(V16.4.1 重构:合并落盘规则、清理过时内容与已完成待办)
+> **静态上下文（按任务分层读取）**：`docs/PROJECT_CONTEXT.md` §0 是任务路由索引；常规任务只读相关热区，字段破解不默认加载整份方法论文档或大体积 JSON。
+> 🔥热区：本文件 §5；🌤️温区：任务所需章节；🧊冷区：只在遇到具体候选/问题时按路径取证。日常采集与碰撞流程见 `docs/field_verification/DAILY_RUNBOOK.md`。
+> 字段身份以 `field_registry.json` 的 `(source, 完整 code path)` 为准；先用生成的 `field_dict.md` / `unknown_fields.md` 导航，历史协议原文按需查 `field_source_reference.md`。
+> 版本:v1.3（压缩重复常驻规则，保留原有数据安全约束）
 
 ---
 
@@ -22,11 +22,10 @@ Get-Command pwsh -ErrorAction SilentlyContinue
 本仓库的预期环境:
 
 - OS:Windows(原生 Agent,不在 WSL/容器中)
-- Shell:**Windows PowerShell 5.1**(Desktop edition)
-- 仓库路径:项目根目录(即本文件所在目录,用 `$PSScriptRoot` 获取;Windows 文件系统,统一使用 `C:\...`,**禁止** `/mnt/c/...`)
-- 不需要 `pwsh`;若检测到 PowerShell 7,仍按 PowerShell 兼容语法编写
+- Shell:Windows 原生 PowerShell；默认按 5.1 兼容。当前工作区已获用户明确授权使用 PowerShell 7，仍须保持脚本可由 5.1 解析。
+- 路径:以本文件目录/`$PSScriptRoot` 为根，使用 Windows 盘符路径；禁止 `/mnt/c/...`。
 
-如果实际环境与上述不符,**先停手报差异**,不直接执行。
+若环境不同于默认值，仅在本工作区已明确批准的 PowerShell 7 例外内继续；其他差异先报告，不直接执行。
 
 ---
 
@@ -120,6 +119,7 @@ $OutputEncoding = [Console]::OutputEncoding
   & git @gitArgs
   ```
 - **必须**检查 `$LASTEXITCODE`;非零立即停止并把 stderr 上报,不要吞错
+- `$LASTEXITCODE` 仅在直接执行外部程序后读取；若经过 PowerShell 管道或需要捕获退出码，使用 `System.Diagnostics.Process.ExitCode`。
 - PowerShell 5.1 **没有** `&&` / `||`;`$LASTEXITCODE` 是唯一可靠的依赖手段
 
 ### 1.6 错误处理
@@ -144,246 +144,61 @@ $OutputEncoding = [Console]::OutputEncoding
 
 ## 2. 任务分类与执行路径
 
-| 场景 | Shell | 路径 | 备注 |
-|---|---|---|---|
-| Windows/.NET / Python / 原生 Python 工具链 | **PowerShell** | `C:\...` | 本仓库默认 |
-| Bash / Docker / Linux-only 工具链 | WSL2 | `/mnt/c/...` | 仅当项目确实需要才切,需先告知用户 |
+- Windows/Python 任务使用原生 PowerShell；只有确需 Linux-only 工具时才考虑 WSL，并先说明原因。
+- 任务文档按 `docs/PROJECT_CONTEXT.md` §0 路由；采集与碰撞按 `docs/field_verification/DAILY_RUNBOOK.md`。
 
-只跑 Python 项目时,**不切 WSL**,保持原生 Agent。
+### 2.1 测试
 
-### 2.1 测试(pytest 是 Python 库,不是 shell 命令)
+- 测试代码可以正常 `import pytest`；测试文件放在 `tests/test_*.py`，marker 先登记在 `pyproject.toml`。
+- 真实网络测试必须标记 `real_network`；默认离线测试会拦截或排除它们。未经用户明确要求，不主动发真实网络测试请求。
+- Agent/CI 运行测试统一使用 `scripts/run_tests.ps1`；禁止从 Shell 直接调用 `pytest` 或 `python -m pytest`。解释器由 `scripts/run_with_system_python.ps1` 选择，优先 Python 3.12。
+- 模式、模块定位和排错方式见 [`tests/README.md`](tests/README.md)。
 
-pytest 作为 **Python 第三方库**(通过 `pip install pytest` 安装)的用法跟 shell 完全无关。
-在写测试代码 / 在 IDE 里运行时,可以并且应该直接 import。下面把"测试代码"和"测试运行"分清楚。
+### 2.2 外部程序
 
-#### 2.1.1 测试代码(写代码时,正常 import 即可)
-
-✅ **应当且必须**使用 pytest 的 Python API:
-
-```python
-import pytest                       # 库 API,跟 shell 调用无关
-from pytest import approx           # 用于浮点容差比较
-import pytest_asyncio               # 异步测试
-
-@pytest.fixture                     # 装饰器,Python 语言特性
-def tmp_project(tmp_path): ...
-
-@pytest.mark.real_network           # 自定义 marker,已在 conftest.py 注册
-def test_em_endpoint(endpoint): ...
-
-@pytest.mark.parametrize('a,b,exp', [(1,1,2),(2,3,5)])
-def test_add(a, b, exp): ...
-
-def test_raises():
-    with pytest.raises(ValueError):
-        int('not a number')
-
-def test_skip():
-    if not network_up():
-        pytest.skip('no network')
-
-def test_approx():
-    assert 0.1 + 0.2 == approx(0.3)
-```
-
-使用范围(本仓库现状):
-
-- 截至 2026-10-15，`tests/` 有 79 个测试模块；最新完整离线运行的收集项和结果见 `tests/README.md` 与 `CHANGELOG.md`。真实网络用例默认跳过，只有显式选择 `-Mode real` 或设置专用环境变量才会运行。
-- 测试使用 `@pytest.fixture`、`@pytest.mark.real_network`、`pytest.skip`、`pytest_asyncio` 等 pytest API。
-- `tests/conftest.py` 提供 `_no_real_network` autouse fixture 和 `endpoint` 参数化 fixture
-- `pyproject.toml` `[tool.pytest.ini_options]` 集中管 `testpaths` / `addopts` / `markers` / `norecursedirs`
-
-写测试时的硬性约束:
-
-- 测试文件命名:`tests/test_*.py`(已被 `pyproject.toml` 收集规则限制)
-- 自定义 marker 先在 `pyproject.toml` `markers` 注册,避免 `PytestUnknownMarkWarning`
-- 真要触发外部网络的测试,**必须**加 `@pytest.mark.real_network`(否则会被 `conftest._no_real_network` 拦截)
-
-#### 2.1.2 测试运行(Agent 调用 shell 时,强制走 `.ps1` 中转)
-
-只有当 Agent / CI / 开发者本人**主动触发一次完整测试套件**时才进这一节。
-此时 `.ps1` 中转解决的是 shell 转义 + 路径 + 退出码,不解决 pytest 用法。
-
-**禁止**的直接调用:
-
-- `pytest tests/` / `pytest tests/test_xxx.py`(bash 一行块、路径未走 `-LiteralPath`、无可重入)
-- `python -m pytest ...`(同上,且 `python` 在 PS 里不可靠)
-- `pwsh` / `powershell.exe -Command "pytest ..."`(嵌套 shell)
-
-**统一入口**:[scripts/run_tests.ps1](scripts/run_tests.ps1),支持:
-
-| Mode | 行为 | 对应 pytest 原生命令 |
-|---|---|---|
-| `all` (默认) | 跑全部测试(conftest 自动跳过 real_network) | `pytest tests/` |
-| `module` + `-Path <file>` | 跑单个测试文件 | `pytest tests/test_xxx.py` |
-| `real` | 仅 `@pytest.mark.real_network` | `pytest tests/ -m real_network` |
-| `skip_real` | 全部但跳过 real_network | `pytest tests/ -m "not real_network"` |
-| `expression` + `-Expression "<expr>"` | 用 `-k` 表达式筛选 | `pytest tests/ -k <expr>` |
-| `-ExtraArgs <string[]>` | 透传额外 pytest 参数 | 直接追加 |
-
-```powershell
-.\scripts\run_tests.ps1                                                # 全部
-.\scripts\run_tests.ps1 -Mode module -Path tests/test_calendar.py      # 单文件
-.\scripts\run_tests.ps1 -Mode skip_real -ExtraArgs '--maxfail=1','-x' # 离线 + 失败即停
-.\scripts\run_tests.ps1 -Mode expression -Expression "test_cache"      # 用 -k 表达式
-```
-
-底层 [run_with_system_python.ps1](scripts/run_with_system_python.ps1) 负责选择 Python 3.12（显式环境变量优先，其次项目 `.venv`，再探测系统 Python），
-`run_tests.ps1` 只负责装配参数 + 透传退出码。
-
-#### 2.1.3 排错清单(测试跑不起来时,按顺序查)
-
-| 现象 | 原因 | 验证命令 |
-|---|---|---|
-| `[ERROR] System Python 3.12 not found` | `run_with_system_python.ps1` 自动探测失败 | 设 `SYSTEM_PYTHON_EXE` 指向 Python 3.12，或安装 Python 3.12 后重试（探测顺序：env > 项目 `.venv` 3.12 > py -3.12 > Windows Store 包 > PATH） |
-| `ModuleNotFoundError: No module named 'pytest'` | dev 依赖没装 | `pip install -r requirements-dev.txt` |
-| `no tests ran` / `collection error` | 工作目录不是仓库根 | `Test-Path -LiteralPath pyproject.toml`(应 True) |
-| 默认 `Mode=all` 一上来就 import error | 某个真网络测试在 collection 阶段炸 | 改用 `.\scripts\run_tests.ps1 -Mode module -Path <单文件>` |
-| Agent 拒绝写 `import pytest` | 这是旧措辞的副作用;按 2.1.1 节,**可以并且必须** import | 在 prompt 中显式重申"测试代码按 2.1.1 写;测试运行按 2.1.2 走" |
-
-### 2.2 git / 其他外部命令
-
-略,与本文档其他章节一致。
+使用完整可执行文件名和参数数组；依赖前一步结果的命令必须检查退出码。详细规则见 §1.5。
 
 ---
 
-## 3. Codex / Agent 调用模板
+## 3. Agent 调用模板
 
-> 复制下面这段贴在 Codex 对话开头,可强制上述规则生效:
-
-```
-先检测当前 Agent 是 Windows native 还是 WSL,并报告 PowerShell 版本。
-原生环境只使用 PowerShell,不混用 Bash/cmd,不嵌套 powershell -Command。
-复杂命令或含中文输出的命令改写为 .ps1(首四行含 UTF-8 强制);路径使用 -LiteralPath,外部程序检查 $LASTEXITCODE。
-同一错误不要盲目重试。
-```
+不需每轮复制通用模板。先按 §0 确定相关上下文；运行采集/碰撞时按 `DAILY_RUNBOOK.md` 逐步核对日期、状态和结果。
 
 ---
 
-## 4. 验收测试(规则生效判定)
+## 4. Shell 规则验收
 
-三项全部通过,才算"Shell 规则已生效"。任意一项失败 → 立刻修复,不要往下走。
-
-### 4.1 读取带空格和 `[]` 的路径
-
-```powershell
-# V17.0: v9.6/SKILL.md 已删除, 验收路径改为真实存在文件（要点是 -LiteralPath 防通配符）
-$path = Join-Path $PSScriptRoot 'docs\domain_glossary.md'
-if (Test-Path -LiteralPath $path) {
-    Get-Content -Raw -LiteralPath $path | Select-Object -First 1
-} else { Write-Warning "not found: $path" }
-```
-
-要点:`Test-Path -LiteralPath` + `Get-Content -LiteralPath`,**不能用** `-Path`。
-
-### 4.2 读取一个环境变量
-
-```powershell
-$env:TEST_AGENT_VAR = 'hello-agent'
-Write-Output "TEST_AGENT_VAR=$($env:TEST_AGENT_VAR)"
-Remove-Item Env:\TEST_AGENT_VAR
-```
-
-要点:用 `$env:NAME`,**不能用** `$NAME` 或 `GetEnvironmentVariable('NAME')` 的伪语法。
-
-### 4.3 运行会返回非零退出码的命令,确认立即停止并报告 stderr
-
-```powershell
-Set-StrictMode -Version Latest
-$ErrorActionPreference = 'Stop'
-
-$exe = 'git.exe'
-$args = @('--bogus-flag-for-test-12345')
-
-# 任何 `| Out-String` / `| Out-Null` 都会把 $LASTEXITCODE 重写成管道末端的 0,
-# 因此对外部命令统一用 System.Diagnostics.Process 直接取 ExitCode,不要靠 $LASTEXITCODE。
-$psi = New-Object System.Diagnostics.ProcessStartInfo
-$psi.FileName = $exe
-$psi.Arguments = [string]::Join(' ', $args)
-$psi.RedirectStandardError = $true
-$psi.RedirectStandardOutput = $true
-$psi.UseShellExecute = $false
-$p = [System.Diagnostics.Process]::Start($psi)
-$combined = $p.StandardOutput.ReadToEnd() + $p.StandardError.ReadToEnd()
-$p.WaitForExit()
-$code = $p.ExitCode
-
-if ($code -eq 0) { throw 'expected non-zero, got 0' }
-if ([string]::IsNullOrWhiteSpace($combined)) { throw 'no stderr/stdout captured' }
-Write-Output 'unreachable'
-```
-
-要点:
-- `Set-StrictMode -Version Latest` + `$ErrorActionPreference = 'Stop'` 让 cmdlet 错停
-- 外部程序用 `System.Diagnostics.ProcessStartInfo`,从 `Process.ExitCode` 取退出码
-- 期望 `throw` 被触发,**不**是 `unreachable`
-
-> **PowerShell 5.1 gotcha:`$LASTEXITCODE` 在管道末尾必被改写,不要靠它判外部命令**。
-> 只有在**完全没有** `| ...` 的纯 `&` 调用紧接读,才可信——但组合复杂命令时极易踩坑,
-> 因此统一推荐 `System.Diagnostics.Process`。
+不在每项任务中重复运行环境验收样例；仅在 Shell、编码或执行环境变更后验证。日常操作遵从 §1 与 §5。
 
 ---
 
-## 5. 速查(踩过的坑)
+## 5. 速查
 
-| 反面 | 正确 |
+| 约束 | 执行方式 |
 |---|---|
-| `Test-Path -Path $path` | `Test-Path -LiteralPath $path` |
-| `Get-Content $path` | `Get-Content -Raw -LiteralPath $path` |
-| `git status --short` (字符串拼) | `$a=@('status','--short'); & git @a` |
-| `cmd && echo ok` | 检查 `$LASTEXITCODE -eq 0` |
-| `curl https://...`(PowerShell 里) | `curl.exe https://...` |
-| `powershell -Command "..."` 嵌一层 | 写成 `.ps1`,`powershell -File .\x.ps1` |
-| 失败重试 N 次碰运气 | 第 2 次仍失败就停手、报差异 |
-| 全局 `Set-ExecutionPolicy Bypass` | 用 `-ExecutionPolicy Bypass -File` 单次放行 |
-| `$LASTEXITCODE = 0` 写在 `&` 之前 | `& <cmd>; if ($LASTEXITCODE -ne 0) { ... }` (或更稳:`System.Diagnostics.Process` 取 `ExitCode`) |
-| 复杂命令或管道后用 `$LASTEXITCODE` 判外部命令 | `System.Diagnostics.ProcessStartInfo` 拿 `Process.ExitCode` |
-| `try { } catch { }`(空 catch) | `catch { Write-Warning "..."; throw }` |
-| `$psi.ArgumentList.Add(...)` (.NET Framework 4.x 不存在) | 用 `$psi.Arguments = [string]::Join(' ', $args)` |
-| 双引号字符串里直接放 `` `r `n `` | 用 `[char]10` / `[char]13` 字面量,或单引号 here-string |
-| `function Foo($a) { param([string]$a) ... }` | `function Foo { param([string]$a) ... }` |
-| `New-Object Foo` 后立刻 `$f.X = ...` 在某些宿主下"变量未定义" | `[Foo]::new()` 然后赋值 |
-| `$a = 'x'; Write-Output "$a"` 单引号字符串里 `$a` 想被插值 | 用双引号 `$("a:" + $a)`,或字符串拼接 `+` |
-| 嵌套 `try { try {} catch {} } catch {}` 在 PS 5.1 解析器里有时报 Unexpected '}' | 把失败分支抬到上一层用 `if (-not …)`,避免嵌套 try |
-| `pytest tests/ -v`(shell 层 bash 一行) / `python -m pytest ...` | `.\scripts\run_tests.ps1`(本仓库 shell 层强制入口);`import pytest` 写测试代码完全 OK |
-| 顶层就 `Set-StrictMode -Version Latest` + 紧跟 `param(...)` 段 | 解析顺序错了会让参数"未初始化";要么砍 param,要么先抓 $args 手解,再 Set-StrictMode |
-| `param([string[]]$ExtraArgs)` 数组类型标记 | 偶发兼容错,简写为 `param($ExtraArgs)` 即可,内部 if 兜底 |
-| opencode 单行命令中文乱码(子进程不加载 Profile,系统代码页 936) | **落盘 .ps1(四行头部)或 Python 探针**;单行仅限无中文输出(2026-08-12 实测"加前缀"约定易漏) |
-| **python 输出接 PowerShell 管道后乱码**(`\| Select-Object` / `\| Out-File \| Get-Content`) | **禁止管道接 python**——PS 5.1 分块解码破坏多字节字符,与 python 输出无关;无管道直跑 100% 正常(2026-08-12 二度实测) |
-| 项目 Python 脚本输出乱码(GBK 字节被 UTF-8 解码) | 入口脚本顶部统一强制 UTF-8(`ensure_utf8_stdio` / 内联 reconfigure 块,V16.4.1 已全量接入) |
-| `.ps1` 被工具 edit/write 后中文乱码(无 BOM 被 PS 5.1 按 GBK 解析) | 必须重写为 UTF-8 with BOM(`[System.IO.File]` 读 UTF-8 + `UTF8Encoding($true)` 写回) |
-| 在 `zhb_client.get_zhb` 下载判定里 import `stock_calendar` | ❌ 循环依赖: `stock_calendar.is_workday` 反向调 `get_holidays`→`get_zhb` → 递归爆栈,下载永不执行(2026-08-12 实测) |
+| 路径含通配符/空格 | `Join-Path`、`-LiteralPath` |
+| 复杂命令或中文 PowerShell 输出 | 落盘 `.ps1`；固定 UTF-8 头部，UTF-8 BOM |
+| Python 输出含中文 | 用 Python 探针并直接运行；禁止接 PowerShell 管道 |
+| 外部程序 | 完整 `.exe` 名、参数数组/splatting；检查退出码 |
+| 临时文件 | 仓库根 `.tmp/`；只清理本任务创建的明确路径 |
+| pytest | `scripts/run_tests.ps1`；不从 Shell 直跑 pytest |
+| 兼容性 | PowerShell 7 是当前工作区批准例外；仍写 PowerShell 5.1 兼容语法 |
 
 ---
 
 ## 6. 例外与豁免
 
-以下情况经用户明确确认后可放宽,默认不豁免:
-
-1. 调用某个只接受 Bash 的外部 SDK 时 → 改用 `wsl --exec ...` 而不是写 bash 一行
-2. PowerShell 7 已安装且用户明确选用 → 用 `pwsh -File`,本规则同样适用
-3. CI / Dockerfile 等已定义 Shell 的场景 → 沿用其声明,不强制
-
-任何豁免必须在当次回复里写明"已豁免:原因"。
+当前工作区已由用户明确允许 PowerShell 7；该例外只放宽执行宿主，不放宽语法兼容、路径、编码或退出码规则。其他豁免须有当次明确授权，并在回复中说明原因。
 
 ---
 
-## 7. 自检清单(Copy 到任何 PR / 任务前)
+## 7. 自检清单
 
-- [ ] 当前 Shell 是 Windows PowerShell,不是 Bash
-- [ ] 没有 `powershell.exe -Command` 嵌套
-- [ ] 复杂命令都在 `.ps1` 文件里,文件首四行是 `Set-StrictMode` + `$ErrorActionPreference` + `[Console]::OutputEncoding=UTF8` + `$OutputEncoding=UTF8`
-- [ ] **凡输出含中文的命令(含调试模式 Select-String→Out-File→Get-Content)已落盘 .ps1 或改 Python 探针**——未落盘的单行命令只用于无中文输出场景
-- [ ] **没有 `python ... |` 管道接 PS**(禁止模式;python 输出直跑或脚本内自截断)
-- [ ] `.ps1` 文件是 UTF-8 with BOM(`Format-Hex` 头三字节 `EF BB BF`;工具修改后必须重写带 BOM)
-- [ ] 新建/修改的 Python 入口脚本顶部有 UTF-8 强制(`ensure_utf8_stdio` 或内联 reconfigure 块)
-- [ ] 所有路径走 `-LiteralPath`
-- [ ] 外部程序走 splatting + `$LASTEXITCODE` 检查
-- [ ] 同一错误没有重试第 3 次
-- [ ] 主动跑测试(shell 层)走 `.\scripts\run_tests.ps1`,不是直接 `pytest ...`;写测试代码时 `import pytest` 是 OK 的
-- [ ] 验证报告(9.2)填了 `度量` 行(改动前后可数对比,见 11.1)
-
-不满足,先补再执行。
+- [ ] PowerShell 原生执行，路径使用 Windows 盘符与 `-LiteralPath`。
+- [ ] 复杂命令按 §1.2 落盘；`.ps1` 为带 BOM 的 UTF-8；无 Python→PowerShell 管道。
+- [ ] 临时产物位于 `.tmp/`；外部程序使用完整名称并检查退出码。
+- [ ] 测试运行走 `scripts/run_tests.ps1`；真实网络仅在用户明确授权时运行。
+- [ ] 代码改动完成后按 §9 验证；文档改动检查链接、规则一致性和 diff。
 
 ---
 

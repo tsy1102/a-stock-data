@@ -1,16 +1,19 @@
 """Regression coverage for scheduler success/failure reporting."""
 
-import asyncio
-
 import main
 
 
 def test_missing_report_script_is_failure(tmp_path, monkeypatch):
     monkeypatch.setattr(main, "_SCRIPT_DIR", str(tmp_path))
 
-    result = asyncio.run(
-        main._run_script_async("missing_report.py", [], str(tmp_path), True, "短线")
-    )
+    coroutine = main._run_script_async("missing_report.py", [], str(tmp_path), True, "短线")
+    try:
+        coroutine.send(None)
+    except StopIteration as completed:
+        result = completed.value
+    else:
+        coroutine.close()
+        raise AssertionError("missing-script branch unexpectedly suspended")
 
     assert result == ("missing_report.py", 1, 0.0, "短线")
 

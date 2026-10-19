@@ -7,15 +7,15 @@
 | 区域 | 测试模块数 | 覆盖范围 | 详细清单 |
 |:---|---:|:---|:---|
 | `core/` | 16 | 核心门面、缓存、日历、类型契约、fallback、评分和技术指标 | [`core/README.md`](core/README.md) |
-| `data/` | 13 | ZHB、TDX、Eastmoney、KPL、网络、解禁单位、指数、财务日历和异步财报兜底 | [`data/README.md`](data/README.md) |
+| `data/` | 14 | ZHB、TDX/ELTDX、Eastmoney、KPL、网络、解禁单位、指数、财务日历和异步财报兜底 | [`data/README.md`](data/README.md) |
 | `infra/` | 12 | 调度器、字段完整性/命名、依赖预检、dry-run 写入边界、F10、外部 API 与 GD | [`infra/README.md`](infra/README.md) |
 | `reports/` | 11 | 报告 Runner、流水线、策略、章节契约、正文辅助逻辑、指数映射和快照失败处理 | [`reports/README.md`](reports/README.md) |
 | 根目录 | 40 | 碰撞/字段登记、采集探针、来源身份核验、来源语义质量、依赖适配、网络与临时目录隔离 | 本文件下方列出 |
-| **合计** | **92** | 参数化用例展开前的测试模块数 | — |
+| **合计** | **93** | 参数化用例展开前的测试模块数 | — |
 
 ## 最近完整执行
 
-2026-10-18（本机 Python 3.12.10）：收集 1107 项，1054 通过、1 跳过、52 个 `real_network` 用例按默认策略排除，耗时 52.35 秒。真实网络测试未运行；默认离线套件通过。5 个依赖真实 ZHB 数据的冒烟用例已标为 `real_network`，避免默认离线运行依赖本地快照。
+2026-10-19（本机 Python 3.12）：收集 1,110 项，1,057 通过、1 跳过、52 个 `real_network` 用例按默认策略排除，耗时约 52.5 秒。真实网络测试未运行；默认离线套件通过。5 个依赖真实 ZHB 数据的冒烟用例已标为 `real_network`，避免默认离线运行依赖本地快照。
 
 根目录测试：
 
@@ -35,7 +35,6 @@
 - `test_network_isolation.py`：离线网络边界与测试 SQLite 缓存隔离。
 - `test_degradation_contract.py`：多级数据源降级契约。
 - `test_project_temp.py`：项目临时目录默认位置与显式覆盖。
-- `data/test_financial_report_fallback_async.py`：异步财报主源/兜底只调用一次，并在线程中执行。
 - `test_sc_ta_core.py`、`test_seat_db_audit_fix.py`、`test_symbol_norm.py`：技术指标、龙虎榜席位与代码归一化。
 - `test_v310_sources.py`：数据源兼容性、完整性与重试回归。
 

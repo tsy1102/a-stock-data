@@ -33,16 +33,16 @@ def rebuild_projection(registry: dict[str, Any]) -> tuple[dict[str, Any], dict[s
     updated["fields"] = fra.build_aggregate_fields(source_fields)
     if updated["source_fields"] != source_fields:
         raise AssertionError("source_fields changed while rebuilding aggregate projection")
+    before_by_code = {row["code"]: row for row in registry.get("fields", [])}
+    after_by_code = {row["code"]: row for row in updated["fields"]}
     stats = {
         "source_fields": len(source_fields),
         "aggregate_fields_before": len(registry.get("fields", [])),
         "aggregate_fields_after": len(updated["fields"]),
         "changed_aggregates": sum(
-            1
-            for before, after in zip(registry.get("fields", []), updated["fields"])
-            if before != after
-        )
-        + abs(len(registry.get("fields", [])) - len(updated["fields"])),
+            before_by_code.get(code) != after_by_code.get(code)
+            for code in set(before_by_code) | set(after_by_code)
+        ),
         "ambiguous_aggregates": sum(
             row["aggregation_status"] == "ambiguous" for row in updated["fields"]
         ),

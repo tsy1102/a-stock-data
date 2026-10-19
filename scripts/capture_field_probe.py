@@ -13,8 +13,8 @@
     东财-clist(§12.8.6, V17.2.13)/ 东财-slist(§12.8.5, V17.2.13)
   已登记但暂无 producer(标记 unwired, 写 meta 不进异常清单):
     沪深交易所(§12.8.17, 龙虎榜已被 fuyao 覆盖; 官方行情/公告端点待 probing)
-  已废弃不采集(标记 deprecated):
-    百度(baidu, §12.8.16 ❌→⏸️, PAE 失效改走 TDX 适配器)
+  默认待验证、仅显式 --only 请求(标记 pending_validation):
+    百度 K 线(§12.8.16；getrelatedblock 失效与 K 线端点状态分开处理)
   真实可用, 已于 V17.2.13 补登 registry(此前 SECTION_MAP 漏登记, 属治理抽取债):
     TDX(行情+F10) / axdata
   已从项目彻底移除, 采集器同步删除(§12.8.12b 章节保留为退役追溯):
@@ -148,6 +148,7 @@ SOURCE_SCHEME = {
     "eltdx": "eltdx",  # V17.2.25 补登: eltdx 7709/7615 Rust 客户端, 实时连板/短线指标源; 此前漏登记致 scheme=unknown 被 collide 跳过
     "tencent": "tencent.qt",
     "sina": "sina.hq",
+    "sina_extended": "sina.extended",
     "fuyao": "fuyao",
     "ftshare": "ftshare",
     "em_kline_f61": "em.kline",
@@ -160,8 +161,8 @@ SOURCE_SCHEME = {
     "market_sources": "market.mixed",
     "tdx_f10": "tdx.f10",
     "tdx_f10_more": "tdx.f10",
-    # V17.2.12 主字典对齐: registry 已登记但本脚本暂无 producer 的源(显式标注血缘, 供对撞/lint 校验)
-    "baidu": "baidu.deprecated",  # §12.8.16 ❌→⏸️ 已废弃(PAE 失效, 改 TDX 适配器); 占位不采集
+    # 百度 K 线仅在 --only baidu 时做单次限量验证；默认不触发未经确认的网络请求。
+    "baidu": "baidu.kline_probe",
     "clist": "em.clist",  # 东财-clist(板块排名/板块资金流, §12.8.6); V17.2.13 真实 producer 已接入
     "slist": "em.slist",  # 东财-slist(个股所属板块/概念归属, §12.8.5); V17.2.13 真实 producer(须 secid, 裸 spt=3→rc:102 已订正)
     "exchange": "exchange.official",  # 沪深交易所官方(§12.8.17); V17.2.14 真实 producer 已接入(直连 szse/sse 龙虎榜端点)
@@ -186,6 +187,8 @@ FULL_POOL_STOCK_SOURCES = {
     "tencent",
     "push2",
     "sina",
+    "sina_extended",
+    "baidu",
     "axdata",
     "tdx_f10",
     "fuyao",
@@ -207,6 +210,7 @@ SOURCE_REQUIRED_PATHS: Dict[str, List[tuple]] = {
         ("stock_changes_8201",),
         ("kpl_sentiment",),
         ("kpl_up_down",),
+        ("kpl_plate_strength",),
         ("kpl_broken_ratio",),
         ("plate_rotation_matrix",),
         ("plate_rotation_top",),
@@ -219,8 +223,11 @@ SOURCE_REQUIRED_PATHS: Dict[str, List[tuple]] = {
     "cls": [("telegraph",)],
     "etf": [("etf_sh",), ("etf_sz",)],
     "news_wscn_cctv": [("cctv_xwlb",)],
+    "sina_extended": [("stocks",)],
 }
-NON_RAW_SOURCE_STATUS = {"baidu": "deprecated"}
+# No field-status check is allowed to remove a source collector. These states
+# describe endpoint lifecycle only; verified fields continue to be captured.
+NON_RAW_SOURCE_STATUS = {"baidu": "pending_validation"}
 
 # 模块文档未改动处见上方 docstring; 输出文件新增 scheme 标注(见 main)。
 
@@ -549,28 +556,96 @@ def _resolve_zhb_name(code: str) -> Optional[str]:
     return _lookup_name_persist(code)
 
 
+def _capture_float(value: Any) -> Optional[float]:
+    """Convert one optional wire value to float without leaking type errors."""
+    if not isinstance(value, (int, float, str)):
+        return None
+    try:
+        return float(value)
+    except (ValueError, OverflowError):
+        return None
+
+
+def _normalize_tdx_capture_quote(raw_quote: Any) -> Optional[Dict[str, Any]]:
+    """Expose stable TDX quote paths while keeping the adapter's raw row separately."""
+    if not isinstance(raw_quote, dict):
+        return None
+
+    result: Dict[str, Any] = {}
+    aliases = {
+        "price": ("price",),
+        "last_close": ("last_close", "pre_close"),
+        "open": ("open",),
+        "high": ("high",),
+        "low": ("low",),
+        "s_vol": ("s_vol",),
+        "b_vol": ("b_vol",),
+        "rise_speed": ("rise_speed",),
+        "avg_price": ("avg_price", "average_price"),
+        "entrust_ratio": ("entrust_ratio",),
+        "pe_ttm": ("pe_ttm",),
+        "pb": ("pb",),
+        "turnover_pct": ("turnover_pct",),
+    }
+    for target, candidates in aliases.items():
+        for source_key in candidates:
+            value = raw_quote.get(source_key)
+            if value is not None and value != "":
+                result[target] = value
+                break
+
+    for level in range(1, 6):
+        for side in ("bid", "ask"):
+            for suffix in ("", "_vol"):
+                key = f"{side}{level}{suffix}"
+                value = raw_quote.get(key)
+                if value is not None and value != "":
+                    result[key] = value
+
+    amount = raw_quote.get("amount")
+    if amount is not None and amount != "":
+        try:
+            result["amount_wan"] = float(amount) / 10000.0
+        except (TypeError, ValueError, OverflowError):
+            pass
+
+    last_close_value = raw_quote.get("last_close")
+    if last_close_value is None or last_close_value == "":
+        last_close_value = raw_quote.get("pre_close")
+    price = _capture_float(raw_quote.get("price"))
+    last_close = _capture_float(last_close_value)
+    if last_close is not None and price is not None and last_close > 0 and price > 0:
+        result["change_pct"] = (price - last_close) / last_close * 100.0
+        result["change_amt"] = price - last_close
+
+    return result or None
+
+
 def collect_tdx(pool: list) -> dict:
     """TDX 行情快照 + 财务(失败标的记 None,不中断)。
 
-    血缘: 经 core.tdx_client.tdx_get_quote_full / tdx_get_finance_info →
-    _get_verified_adapter()(V17.2.15: eltdx 优先 / easy_tdx 兜底) → eltdx
-    Rust 7709/7615 客户端。即采集 tdx 源与运行时 get_canonical_stock_data 同源
-    (eltdx), 采集血缘已与运行时一致; 非云连接器。
+    字段探针使用 tdx_get_quote_raw，直接读取 TDX adapter 行情，不走
+    tdx_get_quote_full 的 ZHB/Tencent 降级，也不复用其合成缓存；adapter
+    顺序为 eltdx 优先、easy_tdx 兜底。财务数据仍经既有
+    tdx_get_finance_info 读取。两项均为空时给该股票增加错误标记，避免
+    把空响应计为成功采集。
     """
-    from core.tdx_client import tdx_get_quote_full, tdx_get_finance_info
+    from core.tdx_client import tdx_get_quote_raw, tdx_get_finance_info
 
     out: Dict[str, Any] = {"stocks": {}}
     for p in pool:
         c = p["code"]
         rec: Dict[str, Any] = {}
+        missing_components = []
         try:
-            rec["quote_full"] = tdx_get_quote_full(c)
+            rec["quote_raw"] = tdx_get_quote_raw(c)
         except Exception as e:
-            rec["quote_full"] = {"__error__": str(e)[:200]}
-        # V17.2.0 增补: 显式暴露 TDX 协议直解字段(内盘/外盘/涨速)为顶层键,
-        # 便于碰撞脚本纵向串联, 无需钻 quote_full 嵌套。源=本地 eltdx TCP(经 core.tdx_client
-        # V17.2.15: eltdx 优先 / easy_tdx 兜底, 与运行时血缘一致); 非云连接器。
-        # limit_up/limit_down 已随同次改动落入 quote_full, 碰撞脚本按需从 quote_full 读取。
+            rec["quote_raw"] = {"__error__": str(e)[:200]}
+        rec["quote_full"] = _normalize_tdx_capture_quote(rec["quote_raw"])
+        if not _has_populated_capture_value(rec["quote_full"]):
+            missing_components.append("quote_full")
+        # 显式暴露 TDX 快照直解字段(内盘/外盘/涨速)为顶层键，便于碰撞脚本纵向串联。
+        # quote_full 只含 TDX adapter 返回值及其可复算行情量，不混入 ZHB/Tencent 回退值。
         _qf = rec["quote_full"]
         if isinstance(_qf, dict) and "__error__" not in _qf:
             for _k in ("s_vol", "b_vol", "rise_speed"):
@@ -580,6 +655,12 @@ def collect_tdx(pool: list) -> dict:
             rec["finance_info"] = tdx_get_finance_info(c)
         except Exception as e:
             rec["finance_info"] = {"__error__": str(e)[:200]}
+        if not _has_populated_capture_value(rec["finance_info"]):
+            missing_components.append("finance_info")
+        if missing_components:
+            rec["__error__"] = "TDX returned no populated source fields for: " + ", ".join(
+                missing_components
+            )
         out["stocks"][c] = rec
     return out
 
@@ -1155,6 +1236,134 @@ def collect_sina(pool: list) -> dict:
     return out
 
 
+SINA_PAUSED_OPTION_FIELDS = (
+    "ask",
+    "ask_vol",
+    "bid",
+    "bid_vol",
+    "delta",
+    "gamma",
+    "iv",
+    "last",
+    "limit_down",
+    "limit_up",
+    "open",
+    "open_interest",
+    "prev_close",
+    "strike",
+    "theory",
+    "theta",
+    "vega",
+)
+SINA_CAPTURED_FIELD_CODES = (
+    "item_tongbi",
+    "item_value",
+    "netamount",
+    "opendate",
+    "report_type",
+    "trade",
+    "turnover",
+)
+SINA_REQUIRED_FLOW_FIELDS = ("opendate", "trade", "netamount", "turnover")
+SINA_UNRESOLVED_FIELD_CODES = ("close", "date", "net_amount")
+BAIDU_PENDING_FIELD_CODES = ("ma5avgprice", "ma10avgprice", "ma20avgprice")
+
+
+def collect_sina_extended(pool: list) -> dict:
+    """Capture Sina's three statement endpoints and per-stock money-flow rows.
+
+    Structured statement rows stay attached to report type, period and item title;
+    only the latest money-flow row is also lifted to scalar fields for safe matching.
+    Option fields remain explicitly paused because the capture pool has no option
+    contract identifiers.
+    """
+    from stock_common import get_sina_financial_report_raw, get_sina_stock_fund_flow_raw
+
+    report_types = ("fzb", "lrb", "llb")
+    output: Dict[str, Any] = {
+        "stocks": {},
+        "__source_meta__": {
+            "structured_paths_archived_only": ["financial_reports.*.report_list.*.data[]"],
+            "paused_fields": {
+                "codes": list(SINA_PAUSED_OPTION_FIELDS),
+                "reason": "requires an option-contract universe; stock pool entries are not option contracts",
+            },
+            "captured_registry_codes": list(SINA_CAPTURED_FIELD_CODES),
+            "unresolved_registry_codes": {
+                "codes": list(SINA_UNRESOLVED_FIELD_CODES),
+                "reason": "no source-specific endpoint path is documented; do not infer aliases",
+            },
+            "row_identity_keys": ["item_title", "report period", "report_type"],
+            "request_policy": "one attempt per endpoint; stop that endpoint family after first failure",
+        },
+    }
+    finance_available = True
+    flow_available = True
+
+    for item in pool:
+        code = item["code"]
+        record: Dict[str, Any] = {"financial_reports": {}}
+
+        if finance_available:
+            for index, report_type in enumerate(report_types):
+                report = get_sina_financial_report_raw(code, report_type, num_periods=1)
+                if report is None:
+                    record["financial_reports"][report_type] = {
+                        "__error__": "Sina financial report request or response failed"
+                    }
+                    finance_available = False
+                    for pending_type in report_types[index + 1 :]:
+                        record["financial_reports"][pending_type] = {
+                            "__skipped__": "deferred: Sina financial endpoint stopped after first failure"
+                        }
+                    break
+                record["financial_reports"][report_type] = report
+        else:
+            record["financial_reports"] = {
+                report_type: {
+                    "__skipped__": "deferred: Sina financial endpoint stopped after first failure"
+                }
+                for report_type in report_types
+            }
+
+        if flow_available:
+            rows = get_sina_stock_fund_flow_raw(code, days=1)
+            if rows is None or not rows:
+                record["money_flow"] = {
+                    "__error__": "Sina per-stock money-flow request returned no rows"
+                }
+                flow_available = False
+            else:
+                record["money_flow"] = rows
+                latest = max(
+                    rows,
+                    key=lambda row: str(row.get("opendate", "")) if isinstance(row, dict) else "",
+                )
+                missing_fields = (
+                    set(SINA_REQUIRED_FLOW_FIELDS) - set(latest)
+                    if isinstance(latest, dict)
+                    else set(SINA_REQUIRED_FLOW_FIELDS)
+                )
+                if missing_fields:
+                    # Preserve evidence, but do not report a successful field capture
+                    # when the upstream contract omitted a registered value.
+                    record["__error__"] = (
+                        "Sina money-flow response missing registered fields: "
+                        + ", ".join(sorted(missing_fields))
+                    )
+                    flow_available = False
+                else:
+                    for key in SINA_REQUIRED_FLOW_FIELDS:
+                        record[key] = latest[key]
+        else:
+            record["money_flow"] = {
+                "__skipped__": "deferred: Sina money-flow endpoint stopped after first failure"
+            }
+
+        output["stocks"][code] = record
+    return output
+
+
 def _defer_axdata_codes(
     output: dict[str, Any], pool: list[dict[str, Any]], next_index: int, stopped_code: str
 ) -> None:
@@ -1162,34 +1371,87 @@ def _defer_axdata_codes(
     reason = "deferred after AxData HTTP 403/429 or ban signal"
     for item in deferred:
         output["stocks"][item["code"]] = {"__skipped__": reason}
-    output["__source_meta__"] = {
-        "rate_limited": True,
-        "interface_id": "stock_shortline_indicators_tdx",
-        "stopped_after_code": stopped_code,
-        "deferred_codes": [item["code"] for item in deferred],
+    source_meta = output.setdefault("__source_meta__", {})
+    source_meta.update(
+        {
+            "rate_limited": True,
+            "interface_id": "stock_shortline_indicators_tdx",
+            "stopped_after_code": stopped_code,
+            "deferred_codes": [item["code"] for item in deferred],
+        }
+    )
+
+
+def _identity_capture_block_reason(identity_policy: Optional[dict]) -> Optional[str]:
+    """Return a reason only when policy explicitly blocks the network request.
+
+    Redundant identity suppressions affect collision/validation scope, not capture.
+    """
+    if not isinstance(identity_policy, dict) or identity_policy.get("action") != "skip":
+        return None
+    identity = identity_policy.get("identity")
+    identity = identity if isinstance(identity, dict) else {}
+    status = identity.get("status")
+    reason = str(identity_policy.get("reason") or "capture_policy_skip")
+    validation_action = identity_policy.get("identity_validation_action")
+    if validation_action == "suppress" or status in {
+        "operationally_redundant",
+        "partially_redundant",
+    }:
+        return None
+    return reason
+
+
+def _identity_validation_suppression(identity_policy: Optional[dict]) -> Optional[dict[str, Any]]:
+    if not isinstance(identity_policy, dict):
+        return None
+    identity = identity_policy.get("identity")
+    identity = identity if isinstance(identity, dict) else {}
+    if identity_policy.get("identity_validation_action") != "suppress" and identity.get(
+        "status"
+    ) not in {"operationally_redundant", "partially_redundant"}:
+        return None
+    return {
+        "status": identity.get("status"),
+        "interface_id": identity.get("interface_id"),
+        "reference_source": identity_policy.get("reference_source"),
+        "reason": str(identity_policy.get("reason") or "identity_already_confirmed"),
+        "evidence_dates": identity.get("evidence_dates", []),
+        "capture_performed": True,
     }
+
+
+def _attach_identity_validation_suppression(
+    output: dict[str, Any], identity_policy: Optional[dict]
+) -> None:
+    suppression = _identity_validation_suppression(identity_policy)
+    if suppression is not None:
+        output.setdefault("__source_meta__", {})["identity_validation_suppression"] = suppression
 
 
 def collect_axdata(pool: list, identity_policy: Optional[dict] = None) -> dict:
     """采集 AxData 的 TDX 短线接口；ZHB 统计文件本地读取，接口仍可能访问网络。"""
-    if isinstance(identity_policy, dict) and identity_policy.get("action") == "skip":
-        reason = str(identity_policy.get("reason") or "endpoint_redundant")
-        interface_id = identity_policy.get("identity", {}).get("interface_id")
+    policy = identity_policy if isinstance(identity_policy, dict) else {}
+    block_reason = _identity_capture_block_reason(policy)
+    if block_reason:
+        reason = str(policy.get("reason") or "endpoint_redundant")
+        identity = policy.get("identity")
+        identity = identity if isinstance(identity, dict) else {}
+        interface_id = identity.get("interface_id")
         return {
             "stocks": {item["code"]: {"__skipped__": reason} for item in pool},
             "__source_meta__": {
-                "identity_suppression": {
-                    "status": identity_policy.get("identity", {}).get("status"),
+                "capture_block": {
+                    "status": identity.get("status"),
                     "interface_id": interface_id,
-                    "reference_source": identity_policy.get("reference_source"),
                     "reason": reason,
-                    "evidence_dates": identity_policy.get("identity", {}).get("evidence_dates", []),
                 }
             },
         }
     from stock_common import get_shortline_indicators_result
 
     out: Dict[str, Any] = {"stocks": {}}
+    _attach_identity_validation_suppression(out, identity_policy)
     for index, p in enumerate(pool):
         c = p["code"]
         try:
@@ -1246,15 +1508,30 @@ def collect_market_sources(
             if result is None:
                 out[name] = {"__error__": "collector returned None"}
             elif (
-                name in {"cls_market_emotion", "kph_limit_ladder"}
+                name
+                in {
+                    "cls_market_emotion",
+                    "kph_limit_ladder",
+                    "kpl_sentiment",
+                    "kpl_up_down",
+                    "kpl_plate_strength",
+                    "kpl_broken_ratio",
+                    "kpl_limit_up_detail",
+                }
                 and isinstance(result, dict)
                 and ("__error__" in result or "__skipped__" in result)
             ):
                 out[name] = result
-            elif name in {"cls_market_emotion", "kph_limit_ladder"} and not (
-                _has_populated_capture_value(result)
-            ):
-                out[name] = {"__error__": "empty response from Levistock adapter"}
+            elif name in {
+                "cls_market_emotion",
+                "kph_limit_ladder",
+                "kpl_sentiment",
+                "kpl_up_down",
+                "kpl_plate_strength",
+                "kpl_broken_ratio",
+                "kpl_limit_up_detail",
+            } and not (_has_populated_capture_value(result)):
+                out[name] = {"__error__": f"empty response from {name} adapter"}
             else:
                 out[name] = result
         except Exception as exc:
@@ -1295,11 +1572,15 @@ def collect_market_sources(
     if kph_trade_date:
         capture_one("kph_limit_ladder", "get_kph_limit_ladder", kph_trade_date)
     capture_one("stock_changes_8201", "get_stock_changes", "8201")
-    capture_one("kpl_sentiment", "get_kpl_market_sentiment")
-    capture_one("kpl_up_down", "get_kpl_up_down")
+    capture_one("kpl_sentiment", "get_kpl_market_sentiment", capture_raw=True)
+    capture_one("kpl_up_down", "get_kpl_up_down", capture_raw=True)
+    capture_one("kpl_plate_strength", "get_kpl_plate_strength", capture_raw=True)
     if include_kpl_detail:
-        capture_one("kpl_limit_up_detail", "get_kpl_limit_up_detail")
-    capture_one("kpl_broken_ratio", "get_kpl_broken_ratio")
+        try:
+            out["kpl_limit_up_detail"] = collect_kpl_detail(trade_date or datetime.now().date())
+        except Exception as exc:
+            out["kpl_limit_up_detail"] = {"__error__": str(exc)[:200]}
+    capture_one("kpl_broken_ratio", "get_kpl_broken_ratio", capture_raw=True)
     capture_one(
         "plate_rotation_matrix",
         "get_plate_rotation_matrix",
@@ -1397,20 +1678,45 @@ def _six_digit_symbol(row: Dict[str, Any]) -> Optional[str]:
     return match.group(1) if match else None
 
 
-def _finite_numeric_fields(row: Dict[str, Any]) -> Dict[str, Any]:
-    values: Dict[str, Any] = {}
-    identifier_keys = {"code", "symbol", "stock_code", "stockcode", "instrument_id", "exchange"}
+_SOURCE_IDENTITY_FIELDS = frozenset(
+    {
+        "code",
+        "id",
+        "symbol",
+        "stock_code",
+        "stockcode",
+        "instrument_id",
+        "pid_type",
+        "exchange",
+        "trade_date",
+    }
+)
+
+
+def _json_safe_source_value(value: Any) -> Any:
+    """Preserve a source value in JSON form without dropping non-numeric fields."""
+    if value is None or isinstance(value, (str, bool, int)):
+        return value
+    if isinstance(value, float):
+        return value if math.isfinite(value) else str(value)
+    if isinstance(value, dict):
+        return {str(key): _json_safe_source_value(child) for key, child in value.items()}
+    if isinstance(value, (list, tuple)):
+        return [_json_safe_source_value(child) for child in value]
+    return str(value)
+
+
+def _capture_source_fields(row: Dict[str, Any]) -> Dict[str, Any]:
+    """Keep all response fields and retain row identity under a non-field key."""
+    fields: Dict[str, Any] = {}
+    identity: Dict[str, Any] = {}
     for key, value in row.items():
-        if not isinstance(key, str):
-            continue
-        if key.casefold() in identifier_keys:
-            continue
-        if isinstance(value, bool) or not isinstance(value, (int, float)):
-            continue
-        if isinstance(value, float) and not math.isfinite(value):
-            continue
-        values[key] = value
-    return values
+        field_name = str(key)
+        target = identity if field_name.casefold() in _SOURCE_IDENTITY_FIELDS else fields
+        target[field_name] = _json_safe_source_value(value)
+    if identity:
+        fields["__identity__"] = identity
+    return fields
 
 
 def _kpl_timestamp_date(value: Any) -> Optional[date]:
@@ -1426,19 +1732,39 @@ def _kpl_timestamp_date(value: Any) -> Optional[date]:
 
 
 def collect_kpl_detail(capture_date: Any) -> dict:
-    """Collect the existing KPL detail response with stock and date provenance."""
+    """Collect all five KPL limit-up ladders with source and date provenance."""
     import stock_common
 
-    try:
-        rows = stock_common.get_kpl_limit_up_detail()
-    except Exception as exc:
-        return {"stocks": {}, "__error__": str(exc)[:300]}
-    if rows is None:
-        return {"stocks": {}, "__error__": "KPL detail collector returned None"}
-    if not isinstance(rows, list):
-        return {"stocks": {}, "__error__": "KPL detail response is not a list"}
+    rows = []
+    warnings = []
+    pid_type_counts = {}
+    for pid_type in range(1, 6):
+        try:
+            ladder_rows = stock_common.get_kpl_limit_up_detail(pid_type=pid_type, capture_raw=True)
+        except Exception as exc:
+            warnings.append(f"PidType={pid_type} request failed: {str(exc)[:160]}")
+            continue
+        if ladder_rows is None or not isinstance(ladder_rows, list):
+            warnings.append(f"PidType={pid_type} returned an invalid response")
+            continue
+        if len(ladder_rows) == 1 and isinstance(ladder_rows[0], dict):
+            error = ladder_rows[0].get("__error__")
+            if error:
+                warnings.append(f"PidType={pid_type} request failed: {str(error)[:160]}")
+                continue
+        pid_type_counts[str(pid_type)] = len(ladder_rows)
+        for row in ladder_rows:
+            if isinstance(row, dict):
+                row.setdefault("pid_type", pid_type)
+                rows.append(row)
     if not rows:
-        return {"stocks": {}, "__error__": "KPL detail response is empty"}
+        return {
+            "stocks": {},
+            "capture_date": _parse_capture_date(capture_date).isoformat(),
+            "pid_type_counts": pid_type_counts,
+            "warnings": warnings,
+            "__error__": "KPL detail returned no rows across PidType=1..5",
+        }
 
     dated_rows = []
     trade_dates = set()
@@ -1461,7 +1787,7 @@ def collect_kpl_detail(capture_date: Any) -> dict:
 
     trade_date = next(iter(trade_dates))
     stocks: Dict[str, Any] = {}
-    warnings = []
+    duplicate_rows = []
     missing_date_rows = len(rows) - len(dated_rows)
     if missing_date_rows:
         warnings.append(f"excluded {missing_date_rows} KPL rows without a valid zt_time")
@@ -1472,20 +1798,22 @@ def collect_kpl_detail(capture_date: Any) -> dict:
         if symbol is None:
             warnings.append("excluded a KPL row without a six-digit stock code")
             continue
-        numeric = _finite_numeric_fields(row)
-        if not numeric:
-            warnings.append(f"excluded KPL row {symbol} without numeric fields")
-            continue
+        captured_fields = _capture_source_fields(row)
         if symbol in stocks:
             warnings.append(f"duplicate KPL stock code {symbol}; preserved first row")
+            duplicate_rows.append({"symbol": symbol, "fields": captured_fields})
             continue
-        stocks[symbol] = numeric
+        stocks[symbol] = captured_fields
 
     return {
         "trade_date": trade_date.isoformat(),
         "capture_date": _parse_capture_date(capture_date).isoformat(),
         "stocks": stocks,
         "row_count": len(stocks),
+        "raw_row_count": len(dated_rows),
+        "duplicate_row_count": len(duplicate_rows),
+        "duplicate_rows": duplicate_rows,
+        "pid_type_counts": pid_type_counts,
         "warnings": warnings,
     }
 
@@ -1501,20 +1829,22 @@ def collect_kph_history(
     except Exception as exc:
         return {"stocks": {}, "__error__": f"KPH date selection failed: {str(exc)[:240]}"}
 
-    if isinstance(identity_policy, dict) and identity_policy.get("action") == "skip":
-        reason = str(identity_policy.get("reason") or "endpoint_redundant")
+    policy = identity_policy if isinstance(identity_policy, dict) else {}
+    block_reason = _identity_capture_block_reason(policy)
+    if block_reason:
+        reason = str(policy.get("reason") or "endpoint_redundant")
+        identity = policy.get("identity")
+        identity = identity if isinstance(identity, dict) else {}
         return {
             "trade_date": trade_date.isoformat(),
             "requested_trade_date": trade_date.isoformat(),
             "stocks": {},
             "__skipped__": reason,
             "__source_meta__": {
-                "identity_suppression": {
-                    "status": identity_policy.get("identity", {}).get("status"),
-                    "interface_id": identity_policy.get("identity", {}).get("interface_id"),
-                    "reference_source": identity_policy.get("reference_source"),
+                "capture_block": {
+                    "status": identity.get("status"),
+                    "interface_id": identity.get("interface_id"),
                     "reason": reason,
-                    "evidence_dates": identity_policy.get("identity", {}).get("evidence_dates", []),
                 }
             },
         }
@@ -1577,14 +1907,14 @@ def collect_kph_history(
                 warnings.append(
                     f"KPH reports Beijing code {symbol} as Shanghai; raw identity preserved separately"
                 )
-        # Preserve every finite numeric source field for future cracking. Only
-        # the six E3-aligned paths are verified in the dictionary; extra fields
-        # remain raw candidates until separately evidenced.
-        numeric = _finite_numeric_fields(row)
+        # Keep every JSON-safe source field, including text, flags, and arrays.
+        # Identity/date metadata remains available under __identity__ but is not
+        # exposed as a candidate metric by the collision flattener.
+        captured_fields = _capture_source_fields(row)
         if symbol in stocks:
             warnings.append(f"duplicate KPH stock code {symbol}; preserved first row")
             continue
-        stocks[symbol] = numeric
+        stocks[symbol] = captured_fields
 
     if response_dates and response_dates != {trade_date.isoformat()}:
         return {
@@ -1613,6 +1943,7 @@ def collect_kph_history(
         "row_count": len(stocks),
         "warnings": warnings,
     }
+    _attach_identity_validation_suppression(output, identity_policy)
     if identity_observations:
         output["identity_observations"] = identity_observations
     if trade_date != _parse_capture_date(capture_date):
@@ -1648,22 +1979,111 @@ def collect_tdx_f10(pool: list) -> dict:
     return out
 
 
-# ── V17.2.12 主字典对齐: registry 已登记但本脚本暂无 producer 的源 ──
-# 这些采集器返回 {"__unwired__": ...} 占位, 由 main() 识别为 unwired/deprecated 状态
-# (写 meta、不写 raw 文件、不计入异常源清单), 使脚本采集清单与主字典 26 源一一对应。
-def collect_baidu(pool: list) -> dict:
-    """百度股市通(已废弃占位, 不采集)。
-
-    字典 §12.8.16: 百度 PAE `getrelatedblock` 已失效(ResultCode 10003),
-    K线/行情已切 TDX 适配器, 状态 ❌→⏸️。registry 仍标 active(与字典不一致)——
-    本采集器保留为 deprecated 占位, 明确标注, 不发出任何请求(A8: 不假装成功也不假装失败)。
-    """
-    return {
-        "__unwired__": "deprecated",
-        "registry_name": "百度(baidu)",
-        "section": "12.8.16 百度股市通（K线带MA）❌→⏸️",
-        "reason": "百度 PAE 已失效, K线/行情改走 TDX 适配器; 不采集",
+def _parse_baidu_kline_probe(payload: Any) -> Optional[Dict[str, Any]]:
+    """Validate and retain Baidu's raw K-line shape, exposing its three MA values."""
+    if not isinstance(payload, dict):
+        return None
+    result = payload.get("Result")
+    market = result.get("newMarketData") if isinstance(result, dict) else None
+    if not isinstance(market, dict):
+        return None
+    keys = market.get("keys")
+    market_data = market.get("marketData")
+    if not isinstance(keys, list) or not isinstance(market_data, str):
+        return None
+    required_ma = set(BAIDU_PENDING_FIELD_CODES)
+    if not required_ma.issubset({key for key in keys if isinstance(key, str)}):
+        return None
+    rows = [row for row in market_data.split(";") if row.strip()]
+    if not rows:
+        return None
+    values = rows[-1].split(",")
+    record: Dict[str, Any] = {
+        "newMarketData": market,
+        "keys": keys,
+        "marketData": market_data,
+        "rows": rows,
     }
+    for key, value in zip(keys, values):
+        if key in required_ma:
+            record[key] = value
+    if not required_ma.issubset(record):
+        return None
+    return record
+
+
+def collect_baidu(pool: list, probe: bool = False) -> dict:
+    """Keep Baidu pending by default; explicit ``--only baidu`` enables one probe.
+
+    The dead ``getrelatedblock`` concept endpoint is unrelated to this K-line URL.
+    This collector makes at most one request per code and opens a local circuit after
+    the first request/shape failure, marking remaining codes as deferred.
+    """
+    if not probe:
+        return {
+            "__unwired__": "pending_validation",
+            "registry_name": "百度(baidu)",
+            "section": "12.8.16 百度股市通（K线带MA）❌→⏸️",
+            "pending_field_codes": list(BAIDU_PENDING_FIELD_CODES),
+            "reason": (
+                "K线端点当前无法在本机验证；默认不请求。显式运行 --only baidu 可限量复核；"
+                "getrelatedblock 失效不作为 K 线失效证据"
+            ),
+        }
+
+    from stock_common import _quick_request, UA
+
+    url = "https://finance.pae.baidu.com/selfselect/getstockquotation"
+    headers = {
+        "User-Agent": UA,
+        "Accept": "application/vnd.finance-web.v1+json",
+        "Origin": "https://gushitong.baidu.com",
+        "Referer": "https://gushitong.baidu.com/",
+    }
+    output: Dict[str, Any] = {
+        "stocks": {},
+        "__source_meta__": {"probe_mode": "explicit_only", "request_count": 0},
+    }
+    stopped = False
+    for item in pool:
+        code = item["code"]
+        if stopped:
+            output["stocks"][code] = {
+                "__skipped__": "deferred: Baidu probe stopped after first request or contract failure"
+            }
+            continue
+        params = {
+            "all": "1",
+            "isIndex": "false",
+            "isBk": "false",
+            "isBlock": "false",
+            "isFutures": "false",
+            "isStock": "true",
+            "newFormat": "1",
+            "group": "quotation_kline_ab",
+            "finClientType": "pc",
+            "code": code,
+            "start_time": "",
+            "ktype": "1",
+        }
+        output["__source_meta__"]["request_count"] += 1
+        try:
+            response = _quick_request(
+                url, params=params, headers=headers, timeout=10, max_retries=1
+            )
+            record = _parse_baidu_kline_probe(response.json()) if response is not None else None
+        except Exception as exc:
+            record = None
+            output["__source_meta__"]["failure_sample"] = f"{type(exc).__name__}: {exc}"[:200]
+        if record is None:
+            output["stocks"][code] = {
+                "__error__": "Baidu K-line request failed or response contract is incomplete"
+            }
+            output["__source_meta__"]["stopped_after_code"] = code
+            stopped = True
+        else:
+            output["stocks"][code] = record
+    return output
 
 
 def collect_clist(pool: list) -> dict:
@@ -2318,7 +2738,7 @@ def collect_ftshare(pool: list, *, data_date: str = "", force_reprobe: bool = Fa
     identity_rechecks = identity_plan.get("recheck", [])
     if not isinstance(identity_rechecks, list):
         identity_rechecks = []
-    identity_sampled = [
+    identity_validation_sampled = [
         key
         for key in (
             "comment_score",
@@ -2340,37 +2760,28 @@ def collect_ftshare(pool: list, *, data_date: str = "", force_reprobe: bool = Fa
         c = p["code"]
         # V17.1.x: 去截断, 采全集(评分日序列/董监高变动/商誉明细全量), 方法轮与对撞铁律需完整经验。
         out["stocks"][c] = {
-            "comment_score": (
-                [] if "comment_score" in identity_skips else get_ft_comment_score_series(c) or []
-            ),
-            "comment_desire": (
-                None if "comment_desire" in identity_skips else get_ft_comment_desire(c)
-            ),
-            "comment_focus": (
-                None if "comment_focus" in identity_skips else get_ft_comment_focus(c)
-            ),
-            "comment_org": (
-                None if "comment_org" in identity_skips else get_ft_comment_org_participate(c)
-            ),
-            "ggmx": [] if "ggmx" in identity_skips else get_ft_ggmx_changes(c) or [],
-            "goodwill_detail": (
-                [] if "goodwill_detail" in identity_skips else get_ft_goodwill_stock_detail(c) or []
-            ),
+            "comment_score": get_ft_comment_score_series(c) or [],
+            "comment_desire": get_ft_comment_desire(c),
+            "comment_focus": get_ft_comment_focus(c),
+            "comment_org": get_ft_comment_org_participate(c),
+            "ggmx": get_ft_ggmx_changes(c) or [],
+            "goodwill_detail": get_ft_goodwill_stock_detail(c) or [],
         }
 
-    if identity_skips or identity_sampled or identity_plan.get("status") != "ready":
+    if identity_skips or identity_validation_sampled or identity_plan.get("status") != "ready":
         out["__source_meta__"] = {
-            "identity_skipped_endpoints": {
+            "identity_validation_suppressed_endpoints": {
                 key: {
                     "status": "redundant",
                     "reference_source": value.get("reference_source"),
                     "reference_family": value.get("reference_family"),
                     "evidence_dates": value.get("evidence_dates", []),
+                    "capture_performed": True,
                 }
                 for key, value in identity_skips.items()
                 if isinstance(value, dict)
             },
-            "identity_sampled_endpoints": identity_sampled,
+            "identity_sampled_endpoints": identity_validation_sampled,
             "identity_recheck_endpoints": identity_rechecks,
             "identity_contract_fingerprints": (
                 identity_plan.get("contract_fingerprints", {})
@@ -3531,6 +3942,51 @@ def _startup_scope_label(selected_sources: list[str], include_context: bool) -> 
     return f"源范围: {source_scope} | 市场上下文: {context_scope}"
 
 
+def build_collectors() -> Dict[str, Callable[..., Dict[str, Any]]]:
+    """Return the single runtime source-to-collector map.
+
+    Collector registration is source-level and independent of field semantic status.
+    A verified field remains collected; field status controls collision targeting only.
+    """
+    return {
+        "zhb": collect_zhb,
+        "tdx": collect_tdx,
+        "eltdx": collect_eltdx,
+        "tencent": collect_tencent,
+        "push2": collect_push2,
+        "sina": collect_sina,
+        "sina_extended": collect_sina_extended,
+        "axdata": collect_axdata,
+        "market_sources": collect_market_sources,
+        "kpl": collect_kpl_detail,
+        "kph": collect_kph_history,
+        "tdx_f10": collect_tdx_f10,
+        "fuyao": collect_fuyao,
+        "em_kline_f61": collect_em_kline_f61,
+        "em_fund_flow": collect_em_fund_flow,
+        "ulist239": collect_ulist239,
+        "push2ex": collect_push2ex,
+        "em_hot": collect_em_hot,
+        "cls": collect_cls,
+        "datacenter": collect_datacenter,
+        "tdx_f10_more": collect_tdx_f10_more,
+        "cninfo": collect_cninfo,
+        "reports": collect_reports,
+        "ftshare": collect_ftshare,
+        "baidu": collect_baidu,
+        "clist": collect_clist,
+        "slist": collect_slist,
+        "exchange": collect_exchange,
+        "event_dc": collect_event_dc,
+        "macro_dc": collect_macro_dc,
+        "research_sina": collect_research_sina,
+        "etf": collect_etf,
+        "news_wscn_cctv": collect_news_wscn_cctv,
+        "sse_e_interaction": collect_sse_e_interaction,
+        "st_list": collect_st_list,
+    }
+
+
 def main() -> None:
     ap = argparse.ArgumentParser(description="字段验证采集")
     # V17.4.x: 默认数据日=最近交易日(而非运行日) —— 周末/法定节假日运行时自动回退上一交易日,
@@ -3546,7 +4002,7 @@ def main() -> None:
     ap.add_argument(
         "--only",
         default="",
-        help="只采指定源(逗号分隔: zhb,tdx,tencent,push2,kpl,kph)",
+        help="只采指定源(逗号分隔；可显式选择 pending_validation 源进行限量验证)",
     )
     ap.add_argument(
         "--include-context",
@@ -3673,48 +4129,7 @@ def main() -> None:
     meta["only"] = args.only or None
     meta["include_context"] = include_context
 
-    collectors: Dict[str, Callable[..., Dict[str, Any]]] = {
-        "zhb": collect_zhb,
-        "tdx": collect_tdx,
-        "eltdx": collect_eltdx,  # V17.2.15 第24源: eltdx 全字段采集(命名+原始字节双轨)
-        "tencent": collect_tencent,
-        "push2": collect_push2,
-        # V17.3.1: push2_full 已移出默认采集(与 push2 完全同构、纯冗余负载);
-        #          日常改采 push2 即可; 字典侧保留 push2_full 作 fallback 参考(语义等价)。
-        "sina": collect_sina,  # V16.4.1: 新浪行情全字段
-        "axdata": collect_axdata,  # V16.4.1: 短线指标 34 字段(零网络)
-        "market_sources": collect_market_sources,  # V16.4.1: 财联社/KPL/板块轮动/龙虎榜
-        "kpl": collect_kpl_detail,  # KPL 逐股明细独立落盘，保留端点路径和来源交易日
-        "kph": collect_kph_history,  # AxData KPH 历史涨停明细，单次限量批量请求
-        "tdx_f10": collect_tdx_f10,  # V16.4.1: F10 财务/股本/分红
-        "fuyao": collect_fuyao,  # V17.0.5: fuyao 官方 REST(盘后可用——竞价/池/财务指标/估值 PS·PCF); V17.0.24 补三大报表
-        "em_kline_f61": collect_em_kline_f61,  # V17.0.24: 东财日K f61 换手率(CYQ 唯一源, delay 域)
-        "em_fund_flow": collect_em_fund_flow,  # V17.0.24: 资金流四档 f137 族(主力净唯一同口径源, delay 域)
-        "ulist239": collect_ulist239,  # V16.4.1: push2delay ulist 239 字段(批量)
-        "push2ex": collect_push2ex,  # V16.4.1: 涨停/跌停/炸板池
-        "em_hot": collect_em_hot,  # V16.4.1: 人气榜
-        "cls": collect_cls,  # V16.4.1: 财联社快讯
-        "datacenter": collect_datacenter,  # V16.4.1: 两融/北向/解禁
-        "tdx_f10_more": collect_tdx_f10_more,  # V16.4.1: 股东/新闻/提醒
-        "cninfo": collect_cninfo,  # V16.4.1: 巨潮互动易
-        "reports": collect_reports,  # V16.4.1: 研报
-        "ftshare": collect_ftshare,  # V17.0.7: FTShare MCP(千股千评/董监高/商誉/质押/解禁/打板池)
-        # V17.2.12 主字典对齐: registry 已登记但本脚本暂无 producer(标记 unwired) / 已废弃(deprecated)
-        "baidu": collect_baidu,  # §12.8.16 ❌→⏸️ 已废弃, 占位不采集
-        "clist": collect_clist,  # §12.8.6 东财-clist; 真实 producer(V17.2.13, push2delay 镜像域)
-        "slist": collect_slist,  # §12.8.5 东财-slist; 真实 producer(V17.2.13, push2delay 镜像域)
-        "exchange": collect_exchange,  # §12.8.17 沪深交易所; 真实 producer(V17.2.14, 直连 szse/sse)
-        # V17.4.0: 事件驱动/可转债/宏观层采集器(吸收上游 3.9.0 §11/§14/§15); 仅验证 _EM_REPORTS 常量真伪,
-        #          取值异常不抛(对撞阶段再钉死常量)。接入报告层见 get_med_report/get_lng_report(已接线)。
-        "event_dc": collect_event_dc,
-        "macro_dc": collect_macro_dc,
-        # V17.4.1: 吸收层 5 模块(新源+新字段) — 先更新采集脚本、再采集验证真实性(治理铁律: 接入报告层须在对撞验证后)
-        "research_sina": collect_research_sina,
-        "etf": collect_etf,
-        "news_wscn_cctv": collect_news_wscn_cctv,
-        "sse_e_interaction": collect_sse_e_interaction,
-        "st_list": collect_st_list,
-    }
+    collectors = build_collectors()
     if args.only:
         unknown_sources = set(selected_only) - set(collectors)
         if unknown_sources:
@@ -3723,7 +4138,12 @@ def main() -> None:
     active_source_names = set(collectors)
     if not include_context:
         active_source_names.difference_update(CONTEXT_ONLY_SOURCES)
-    raw_clear_source_names = set(active_source_names)
+    source_names_to_refresh = set(active_source_names)
+    if not args.only:
+        # Pending endpoint probes are not part of the default network pass; preserve
+        # any prior explicit probe file and its evidence when refreshing other sources.
+        source_names_to_refresh.difference_update(NON_RAW_SOURCE_STATUS)
+    raw_clear_source_names = set(source_names_to_refresh)
     if not include_context:
         raw_clear_source_names.difference_update(CONTEXT_RAW_PATHS)
     existing_source_names = {
@@ -3756,7 +4176,7 @@ def main() -> None:
         if os.path.isfile(meta_path):
             try:
                 _m = json.load(open(meta_path, encoding="utf-8"))
-                for _n in [k for k in _m.get("sources", {}) if k in active_source_names]:
+                for _n in [k for k in _m.get("sources", {}) if k in source_names_to_refresh]:
                     del _m["sources"][_n]
                 with open(meta_path, "w", encoding="utf-8") as _f:
                     json.dump(_m, _f, ensure_ascii=False, indent=1)
@@ -3830,7 +4250,7 @@ def main() -> None:
             if os.path.isfile(meta_path):
                 try:
                     _m = json.load(open(meta_path, encoding="utf-8"))
-                    for _n in [k for k in _m.get("sources", {}) if k in active_source_names]:
+                    for _n in [k for k in _m.get("sources", {}) if k in source_names_to_refresh]:
                         del _m["sources"][_n]
                     with open(meta_path, "w", encoding="utf-8") as _f:
                         json.dump(_m, _f, ensure_ascii=False, indent=1)
@@ -3953,6 +4373,10 @@ def main() -> None:
                     data_date=args.date,
                     force_reprobe=args.overwrite,
                 )
+            elif name == "baidu":
+                # The Baidu endpoint is pending validation and is probed only when
+                # the caller explicitly selects it with --only baidu.
+                data = fn(pool, probe="baidu" in selected_only)
             else:
                 data = fn(pool)
             if isinstance(data, dict):
@@ -3961,16 +4385,21 @@ def main() -> None:
             # 显式记为 unwired/deprecated(区别于 ok/partial/failed), 不写 raw 文件、不计入异常源清单。
             _uw = data.get("__unwired__") if isinstance(data, dict) else None
             if _uw:
-                _kind = "deprecated" if _uw == "deprecated" else "unwired"
+                _kind = _uw if _uw in {"deprecated", "pending_validation"} else "unwired"
                 meta["sources"][name] = {
                     "scheme": SOURCE_SCHEME.get(name, "unknown"),
                     "ok": False,
                     "status": _kind,
                     "registry_name": data.get("registry_name"),
                     "section": data.get("section"),
+                    "reason": data.get("reason"),
+                    "previous_probe_snapshot_preserved": (
+                        _kind == "pending_validation"
+                        and os.path.isfile(os.path.join(out_dir, f"raw_{name}.json"))
+                    ),
                     "secs": round(time.time() - t1, 1),
                 }
-                print(f"  ⊘ {name}: {_kind} (registry 已登记, 无 producer)", flush=True)
+                print(f"  ⊘ {name}: {_kind} (按来源生命周期策略不发默认请求)", flush=True)
                 continue
             preserved_context_paths: List[str] = []
             if not include_context and name in CONTEXT_RAW_PATHS and isinstance(data, dict):
@@ -4034,6 +4463,7 @@ def main() -> None:
                 _identity = data.get("__source_meta__")
                 if isinstance(_identity, dict):
                     for _identity_key in (
+                        "identity_validation_suppressed_endpoints",
                         "identity_skipped_endpoints",
                         "identity_sampled_endpoints",
                         "identity_recheck_endpoints",
@@ -4045,9 +4475,11 @@ def main() -> None:
             if name in {"axdata", "kph"} and isinstance(data, dict):
                 _identity = data.get("__source_meta__")
                 if isinstance(_identity, dict) and isinstance(
-                    _identity.get("identity_suppression"), dict
+                    _identity.get("identity_validation_suppression"), dict
                 ):
-                    _entry["identity_suppression"] = _identity["identity_suppression"]
+                    _entry["identity_validation_suppression"] = _identity[
+                        "identity_validation_suppression"
+                    ]
             if not include_context and name in CONTEXT_EXCLUDED_PATHS:
                 _entry["context_excluded_paths"] = CONTEXT_EXCLUDED_PATHS[name]
             if preserved_context_paths:

@@ -73,6 +73,7 @@ from scripts.context_policy import CONTEXT_ONLY_SOURCES, CONTEXT_RECORD_PATHS
 from scripts import collision_auxiliary_evidence as CAE
 from scripts import collision_research_state as CRS
 from scripts import field_name_candidates as FNC
+from scripts import field_registry_api as FRA
 
 try:
     from scripts import collision_rules as CR
@@ -171,7 +172,25 @@ def cv(xs):
 # ───────────────────────────────────────────────────────────────────────
 # 原始数据加载与字段扁平化
 # ───────────────────────────────────────────────────────────────────────
-def _flatten(rec, source, scheme, code, date, out):
+def _collision_value(value, *, include_structured=False):
+    """Convert JSON source values into stable values the pair matcher can compare."""
+    if value is None:
+        return None
+    if isinstance(value, bool):
+        return "true" if value else "false"
+    if isinstance(value, float) and not math.isfinite(value):
+        return None
+    if isinstance(value, (int, float, str)):
+        return value
+    if include_structured and isinstance(value, (list, dict)):
+        try:
+            return json.dumps(value, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
+        except (TypeError, ValueError):
+            return None
+    return None
+
+
+def _flatten(rec, source, scheme, code, date, out, *, include_structured_values=False):
     """把单只股票的原始记录扁平化为 (fid, value) 列表，写入 out。"""
     if not isinstance(rec, dict):
         return
@@ -184,31 +203,40 @@ def _flatten(rec, source, scheme, code, date, out):
         (isinstance(k, str) and (k.startswith("f") and k[1:].isdigit())) for k in data
     ):
         for k, v in data.items():
-            if k in ("__error__", "__skipped__", "__source_meta__"):
+            if not isinstance(k, str) or k.startswith("__"):
                 continue
-            out.append((f"{source}.{k}", v))
+            value = _collision_value(v, include_structured=include_structured_values)
+            if value is not None:
+                out.append((f"{source}.{k}", value))
         return
 
     # 形态 B：位置列表（tencent / sina）
     flds = rec.get("fields")
     if isinstance(flds, list):
         for i, v in enumerate(flds):
-            out.append((f"{source}[{i}]", v))
+            value = _collision_value(v, include_structured=include_structured_values)
+            if value is not None:
+                out.append((f"{source}[{i}]", value))
         return
 
     # 形态 C：嵌套名典 / 标量（zhb full/stat/stat2/tipinfo、tdx quote_full/finance_info、fuyao *、…）
     for sub, subv in rec.items():
-        if sub in (
-            "scheme",
-            "n_fields",
-            "url",
-            "host",
-            "secid",
-            "zhb_date",
-            "__error__",
-            "__skipped__",
-            "__source_meta__",
-            "auction_snapshot_meta",
+        if (
+            not isinstance(sub, str)
+            or sub.startswith("__")
+            or sub
+            in (
+                "scheme",
+                "n_fields",
+                "url",
+                "host",
+                "secid",
+                "zhb_date",
+                "__error__",
+                "__skipped__",
+                "__source_meta__",
+                "auction_snapshot_meta",
+            )
         ):
             continue
         if isinstance(subv, dict):
@@ -216,14 +244,46 @@ def _flatten(rec, source, scheme, code, date, out):
             if isinstance(source_meta, dict) and source_meta.get("collision_eligible") is False:
                 continue
             for k, v in subv.items():
-                if k in ("__error__", "__skipped__", "__source_meta__") or isinstance(
-                    v, (dict, list)
-                ):
+                if not isinstance(k, str) or k.startswith("__"):
                     continue
-                out.append((f"{source}.{sub}.{k}", v))
-        elif isinstance(subv, (int, float, str)) and not isinstance(subv, bool):
-            out.append((f"{source}.{sub}", subv))
-        # 列表 / None 跳过
+                value = _collision_value(v, include_structured=include_structured_values)
+                if value is not None:
+                    out.append((f"{source}.{sub}.{k}", value))
+        else:
+            value = _collision_value(subv, include_structured=include_structured_values)
+            if value is not None:
+                out.append((f"{source}.{sub}", value))
+
+
+def _is_ftshare_limit_up_record(source, container_code):
+    return source == "ftshare" and str(container_code).startswith(
+        "__market_limit_up_pool_yesterday_"
+    )
+
+
+def _ftshare_limit_up_trade_date(source, container_code, record):
+    if not _is_ftshare_limit_up_record(source, container_code) or not isinstance(record, dict):
+        return None
+    return parse_date(record.get("trade_date"))
+
+
+def _record_code(record, container_code, source=None):
+    raw_code = (
+        record.get("zqdm")
+        or record.get("f12")
+        or record.get("code")
+        or record.get("stockCode")
+        or record.get("stock_code")
+        or record.get("SECURITY_CODE")
+        or record.get("ticker")
+        or record.get("symbol")
+    )
+    code = str(raw_code or container_code)
+    if source == "ftshare" and _is_ftshare_limit_up_record(source, container_code):
+        match = re.fullmatch(r"(?i)(\d{6})(?:\.[a-z]+)?", code)
+        if match:
+            return match.group(1)
+    return code
 
 
 def _without_context_records(doc, source):
@@ -293,6 +353,8 @@ def _record_containers(doc, source=None, include_context=False):
             "auction_snapshot_meta",
         ):
             continue
+        if source == "ftshare" and key == "market":
+            continue
         if (
             isinstance(value, dict)
             and value
@@ -314,6 +376,17 @@ def _record_containers(doc, source=None, include_context=False):
                             if isinstance(record, dict)
                         }
                     )
+    if include_context and source == "ftshare":
+        market = doc.get("market")
+        records = market.get("limit_up_pool_yesterday") if isinstance(market, dict) else None
+        if isinstance(records, list):
+            containers.append(
+                {
+                    f"__market_limit_up_pool_yesterday_{index}": record
+                    for index, record in enumerate(records)
+                    if isinstance(record, dict)
+                }
+            )
     return containers
 
 
@@ -352,6 +425,7 @@ def load_snapshots(
     include_context=False,
     excluded_sources=None,
     excluded_fields_by_source=None,
+    allowed_trading_dates=None,
 ):
     """Flatten selected source snapshots using domain-qualified sample dates."""
     total = 0
@@ -360,6 +434,16 @@ def load_snapshots(
     duplicate_examples = []
     undated_event_counts = defaultdict(int)
     future_event_counts = defaultdict(int)
+    undated_market_counts = defaultdict(int)
+    out_of_window_market_counts = defaultdict(int)
+    allowed_trading_dates = (
+        {
+            day.strftime("%Y%m%d") if isinstance(day, date) else str(day).replace("-", "")
+            for day in allowed_trading_dates
+        }
+        if allowed_trading_dates is not None
+        else None
+    )
     for snapshot in snapshots:
         if isinstance(excluded_sources, dict) and snapshot.source in excluded_sources:
             identity = excluded_sources[snapshot.source]
@@ -422,8 +506,28 @@ def load_snapshots(
                         continue
                     sample_day = event_day
                     day_key = sample_date_key(CALENDAR, event_day)
+                    sample_date_origin = "record.event_date"
                 else:
-                    day_key = snapshot.day_key
+                    ftshare_trade_day = _ftshare_limit_up_trade_date(
+                        snapshot.source, container_code, rec
+                    )
+                    if _is_ftshare_limit_up_record(snapshot.source, container_code):
+                        if ftshare_trade_day is None:
+                            undated_market_counts[(snapshot.folder, snapshot.source)] += 1
+                            continue
+                        trade_day_text = ftshare_trade_day.strftime("%Y%m%d")
+                        if ftshare_trade_day > snapshot.sample_date or (
+                            allowed_trading_dates is not None
+                            and trade_day_text not in allowed_trading_dates
+                        ):
+                            out_of_window_market_counts[(snapshot.folder, snapshot.source)] += 1
+                            continue
+                        sample_day = ftshare_trade_day
+                        day_key = sample_date_key(TRADING, ftshare_trade_day)
+                        sample_date_origin = "record.trade_date"
+                    else:
+                        day_key = snapshot.day_key
+                        sample_date_origin = snapshot.date_origin
 
                 raw_code = (
                     rec.get("zqdm")
@@ -434,7 +538,11 @@ def load_snapshots(
                     or rec.get("SECURITY_CODE")
                     or rec.get("ticker")
                 )
-                code = str(raw_code or container_code)
+                code = (
+                    str(raw_code or container_code)
+                    if snapshot.domain == CALENDAR
+                    else _record_code(rec, container_code, source=snapshot.source)
+                )
                 if snapshot.domain == CALENDAR:
                     entity_code = str(raw_code or "")
                     if not entity_code and re.fullmatch(r"\d{6,}", str(container_code)):
@@ -442,7 +550,17 @@ def load_snapshots(
                     event_id = _event_identity(snapshot.source, rec, container_code, entity_code)
                     code = f"{code}#event:{event_id}"
                 pairs = []
-                _flatten(rec, snapshot.source, scheme, code, day_key, pairs)
+                _flatten(
+                    rec,
+                    snapshot.source,
+                    scheme,
+                    code,
+                    day_key,
+                    pairs,
+                    include_structured_values=_is_ftshare_limit_up_record(
+                        snapshot.source, container_code
+                    ),
+                )
                 for fid, value in pairs:
                     key = (code, day_key)
                     rank_key = (fid, key)
@@ -463,7 +581,7 @@ def load_snapshots(
                         "capture_folder": snapshot.folder,
                         "capture_date": snapshot.capture_date.strftime("%Y%m%d"),
                         "as_of_date": sample_day.strftime("%Y%m%d"),
-                        "as_of_date_origin": snapshot.date_origin,
+                        "as_of_date_origin": sample_date_origin,
                         "captured_at": (
                             snapshot.captured_at.isoformat(timespec="seconds")
                             if snapshot.captured_at
@@ -485,6 +603,10 @@ def load_snapshots(
         diagnostics.append(f"{folder}/{source}: {count} 条事件记录缺少可解析的自然日，已跳过")
     for (folder, source), count in sorted(future_event_counts.items()):
         diagnostics.append(f"{folder}/{source}: {count} 条事件记录晚于报告日，已跳过")
+    for (folder, source), count in sorted(undated_market_counts.items()):
+        diagnostics.append(f"{folder}/{source}: {count} 条市场记录缺少可解析的来源交易日，已跳过")
+    for (folder, source), count in sorted(out_of_window_market_counts.items()):
+        diagnostics.append(f"{folder}/{source}: {count} 条市场记录不在所选交易日窗口内，已跳过")
     return total
 
 
@@ -1003,6 +1125,8 @@ def load_registry_context():
         "unmapped_verified": 0,
         "unconfirmed_verified": 0,
         "ambiguous_verified": 0,
+        "unresolved_verified_metadata": 0,
+        "unresolved_verified_metadata_by_issue": {},
         "source_fields": 0,
         "safe_to_run": False,
     }
@@ -1099,6 +1223,13 @@ def load_registry_context():
             continue
         if field.get("status") != "verified":
             continue
+        metadata_issues = FRA.source_field_semantic_issues(field)
+        if metadata_issues:
+            context["unresolved_verified_metadata"] += 1
+            for issue in metadata_issues:
+                issue_counts = context["unresolved_verified_metadata_by_issue"]
+                issue_counts[issue] = issue_counts.get(issue, 0) + 1
+            continue
         if not aliases:
             context["unmapped_verified"] += 1
             continue
@@ -1167,6 +1298,22 @@ def load_registry_context():
         context["diagnostics"].append(
             f"{context['ambiguous_verified']} 条 verified 源字段映射到重复运行时身份，未作为已知字段或锚"
         )
+    if context["unresolved_verified_metadata"]:
+        issue_labels = {
+            "meaning_missing": "缺义/占位",
+            "meaning_conflict": "含义冲突",
+            "unit_conflict": "单位冲突",
+            "meaning_alignment_ambiguous": "含义分组待对齐",
+            "unit_alignment_ambiguous": "单位分组待对齐",
+        }
+        issue_summary = "、".join(
+            f"{issue_labels.get(issue, issue)} {count} 条"
+            for issue, count in sorted(context["unresolved_verified_metadata_by_issue"].items())
+        )
+        context["diagnostics"].append(
+            f"{context['unresolved_verified_metadata']} 条 verified 源字段元数据未达锚点条件"
+            f"（{issue_summary}），已重新纳入待破解目标且不作碰撞锚"
+        )
     if not context["anchors"]:
         context["diagnostics"].append("没有可用的已确认独立锚；默认模式不会把未知字段互相定案")
     return context
@@ -1224,7 +1371,12 @@ def is_disproved(fid, disproved):
 
 
 def select_collision_fields(store, verified, disproved, anchors, exploratory=False):
-    """Return eligible unknown targets and the allowed right-hand field set."""
+    """Return unknown cracking targets and the allowed comparison field set.
+
+    Verified status removes an identity only from the left-hand cracking targets.
+    Independently confirmed verified fields remain on the right as anchors; capture
+    routing is source-level and never consults this field status.
+    """
     eligible = [
         fid
         for fid, info in store.items()
@@ -1331,6 +1483,7 @@ def run(args):
         folder_window.folders,
         allowed_trading_folders=folder_window.market_folders,
         allowed_event_folders=folder_window.event_folders,
+        allowed_trading_dates=frozenset(folder_window.trading_dates),
     )
     diagnostics.extend(snapshot_warnings)
     usable_snapshots = []
@@ -1402,6 +1555,7 @@ def run(args):
         include_context=getattr(args, "include_context", False),
         excluded_sources=routine_suppression["sources"],
         excluded_fields_by_source=routine_suppression["fields_by_source"],
+        allowed_trading_dates=folder_window.trading_dates,
     )
     classify(store)
     print(

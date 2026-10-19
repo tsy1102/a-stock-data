@@ -43,6 +43,18 @@ DICT = os.path.join(REPO_ROOT, "docs", "field_source_reference.md")
 ALIGN = os.path.join(REPO_ROOT, "docs", "verify", "ulist_push2_align.md")
 # 通用跨源对齐表（非 ulist239↔push2 的等价/同义关系统一存储，sanctioned 入库）
 CROSS_ALIGN = os.path.join(REPO_ROOT, "docs", "verify", "cross_source_align.md")
+_RETIRED_SOURCE_REPLACEMENTS = {
+    "东财-push2_full": "东财-push2(stock/get)",
+}
+_SOURCE_STATUS_OVERRIDES = {
+    "百度(baidu)": {
+        "status": "pending_validation",
+        "status_note": (
+            "百度 K 线端点当前未能在本机验证；默认不请求，显式 --only baidu 才做限量探测。"
+            "getrelatedblock 概念接口失效不作为 K 线端点失效证据。"
+        ),
+    }
+}
 
 # 复用已验证的解析基座
 sys.path.insert(0, SCRIPT_DIR)
@@ -358,6 +370,156 @@ def extract_canonical(first_cell: str) -> str:
     return clean_text(first_cell)
 
 
+_UNRESOLVED_ATTRIBUTE_MARKERS = frozenset(
+    {
+        "待破解",
+        "待确认",
+        "待验证",
+        "未验证",
+        "未定义",
+        "未知",
+        "unknown",
+        "tbd",
+        "n/a",
+        "na",
+        "—",
+        "-",
+    }
+)
+
+
+def _is_unresolved_attribute(value: str) -> bool:
+    return clean_text(value).casefold() in _UNRESOLVED_ATTRIBUTE_MARKERS
+
+
+def _split_parallel_attribute(value: str, count: int, *, allow_compact: bool = False):
+    """Split an explicitly parallel cell only when every field has one value.
+
+    Spaced ASCII slashes and full-width slashes are list separators. Compact ASCII
+    slashes are opt-in for meanings whose segment count exactly matches the field
+    count. Canonical labels use the stricter token-equality check below; units never
+    split on compact slashes, avoiding errors such as ``元/股``.
+    """
+    value = clean_text(value)
+    if count <= 1 or not value:
+        return None
+    parts = re.split(r"\s+/\s+|／", value)
+    if len(parts) == count and all(part.strip() for part in parts):
+        return [clean_text(part) for part in parts]
+    if allow_compact:
+        compact_parts = [clean_text(part) for part in value.split("/")]
+        if len(compact_parts) == count and all(compact_parts):
+            return compact_parts
+    return None
+
+
+def _registered_row_tokens(cell: str, source: str, source_fields: dict):
+    """Return only registered source tokens from a field cell.
+
+    A slash in an API path (for example ``a-share/prices/snapshot``) is not a
+    multi-field row. It is treated as such only when every slash-delimited part
+    resolves to a distinct registered field for this source.
+    """
+    cell = re.sub(r"\*\*", "", cell.strip().strip("`").strip())
+    parts = [part.strip().strip("`").strip() for part in re.split(r"[/／]", cell)]
+    if not parts or any(not part for part in parts):
+        return []
+    tokens = []
+    for part in parts:
+        token = cell_token(part, source)
+        if not token:
+            return []
+        registry_source = afc.reclassified_source_for_token(source, token)
+        if not registry_source or (registry_source, token) not in source_fields:
+            return []
+        tokens.append(token)
+    if len(tokens) != len(set(tokens)):
+        return []
+    return tokens
+
+
+def _row_attributes(first_cell: str, row, meaning_idx, unit_idx, tokens: list[str], index: int):
+    """Map attributes to one field, refusing ambiguous multi-field propagation."""
+    count = len(tokens)
+    raw_attributes = {
+        "canonical": extract_canonical(first_cell),
+        "meaning": (
+            clean_text(row[meaning_idx])
+            if meaning_idx is not None and meaning_idx < len(row)
+            else ""
+        ),
+        "unit": clean_text(row[unit_idx]) if unit_idx is not None and unit_idx < len(row) else "",
+    }
+    if count <= 1:
+        return raw_attributes, {}
+
+    bold_canonicals = [clean_text(value) for value in re.findall(r"\*\*(.+?)\*\*", first_cell)]
+    if len(bold_canonicals) == count:
+        canonical_values = bold_canonicals
+    else:
+        canonical_values = _split_parallel_attribute(
+            re.sub(r"\*\*", "", first_cell), count, allow_compact=True
+        )
+        if canonical_values and [value.casefold() for value in canonical_values] != [
+            token.casefold() for token in tokens
+        ]:
+            # Spaced slash pairs may name canonical labels distinct from raw tokens.
+            has_spaced_separator = bool(re.search(r"\s+/\s+|／", first_cell))
+            if not has_spaced_separator:
+                canonical_values = None
+
+    mapped = {}
+    ambiguities = {}
+    for key, value in raw_attributes.items():
+        if key == "canonical":
+            parts = canonical_values
+        elif key == "meaning":
+            parts = _split_parallel_attribute(value, count, allow_compact=True)
+        else:
+            parts = _split_parallel_attribute(value, count)
+        if parts and len(parts) == count:
+            mapped[key] = parts[index]
+        elif _is_unresolved_attribute(value):
+            # Preserve a row-wide placeholder without turning it into a semantic conflict.
+            mapped[key] = value
+        elif key == "unit" and value and not re.search(r"\s+/\s+|／", value):
+            # Composite units such as 元/股 are scalar; only spaced slashes delimit a list.
+            mapped[key] = value
+        elif value:
+            mapped[key] = ""
+            ambiguities[key] = value
+        else:
+            mapped[key] = ""
+    return mapped, ambiguities
+
+
+def _resolve_evidence_attributes(evidence: list[dict]):
+    """Resolve attributes from direct evidence and retain unresolved alignments."""
+    resolved = {}
+    conflicts = {}
+    ambiguities = defaultdict(set)
+    for item in evidence:
+        for key, value in item.get("attribute_ambiguities", {}).items():
+            if value:
+                ambiguities[key].add(value)
+    for key in ("canonical", "meaning", "unit"):
+        all_values = {item[key] for item in evidence if item.get(key)}
+        semantic_values = {value for value in all_values if not _is_unresolved_attribute(value)}
+        values = sorted(semantic_values) if semantic_values else sorted(all_values)[:1]
+        resolved[key] = values[0] if len(values) == 1 else ""
+        if len(values) > 1:
+            conflicts[key] = values
+        # A precise value resolves this property even if a separate broad/group row
+        # could not be aligned. Keep the ambiguity only when no direct value exists.
+        if semantic_values or not ambiguities.get(key):
+            ambiguities.pop(key, None)
+    return (
+        resolved,
+        conflicts,
+        {key: sorted(values) for key, values in sorted(ambiguities.items()) if values},
+    )
+
+
 # ---------------------------------------------------------------------------
 # Layer1 + Layer2 主抽取
 # ---------------------------------------------------------------------------
@@ -369,6 +531,12 @@ def extract():
     # 产出「源标签 → 原生 token 集合」（f144 / [1] / stockName ...）。
     # 直接作为 registry fields[].code，保证与 audit_field_completeness 的 REG 集合逐集合一致。
     reg = afc.registered_field_sets()
+    reclassification = afc.source_identity_reclassification()
+    reclassified_paths = {
+        (row["to_source"], row["code"]): row["path"]
+        for row in reclassification.get("mappings", [])
+        if isinstance(row, dict) and row.get("path")
+    }
 
     fields = OrderedDict()
     source_fields = OrderedDict()
@@ -377,6 +545,8 @@ def extract():
             source_fields[(src, tok)] = {
                 "source": src,
                 "code": tok,
+                "identity": f"{src}::{tok}",
+                "path": reclassified_paths.get((src, tok), tok),
                 "canonical": "",
                 "meaning": "",
                 "unit": "",
@@ -428,53 +598,47 @@ def extract():
             # 跳过表头残留 / 分隔行关键字（按字段列判定）
             if tok_cell in ("字段", "索引", "含义", "---", "协议偏移", "原始字段"):
                 continue
-            # 首列/`/` 分隔的多字段（zqdm/zqjc、zttj.days/zttj.ct、yfbt/ylbc）逐 token 回挂同一属性
-            for tok in extract_tokens_from_cell(tok_cell, srcs):
-                if not tok:
-                    continue
-                rec = fields.get(tok)
-                if rec is None:
-                    continue  # 仅对 Layer1 已登记的字段补属性，不引入新字段
-                if not rec["section"]:
-                    rec["section"] = sec
-                if not rec["canonical"]:
-                    rec["canonical"] = extract_canonical(first_cell=tok_cell)
-                if m_idx is not None and m_idx < len(row) and not rec["meaning"]:
-                    rec["meaning"] = clean_text(row[m_idx])
-                if u_idx is not None and u_idx < len(row) and not rec["unit"]:
-                    rec["unit"] = clean_text(row[u_idx])
-                if not rec["status_raw"]:
-                    sr = _row_status(row, s_idx)
-                    if sr:
-                        rec["status_raw"] = sr
-                        rec["status"] = normalize_status(sr)
-                scanned += 1
-
-            # Source-scoped pass: never attach one source's table metadata to
-            # another source that happens to share the same bare token.
+            # Source-scoped pass: bind a row's attributes only to registered
+            # source tokens; slash-group values must align one-to-one.
             for src in srcs:
-                for tok in extract_tokens_from_cell(tok_cell, [src]):
+                tokens = _registered_row_tokens(tok_cell, src, source_fields)
+                if not tokens:
+                    continue
+                for index, tok in enumerate(tokens):
                     reclassified_src = afc.reclassified_source_for_token(src, tok)
-                    if reclassified_src is None:
-                        continue
                     rec = source_fields.get((reclassified_src, tok))
                     if rec is None:
                         continue
                     section_patterns[reclassified_src].add(sec)
                     status_raw = _row_status(row, s_idx)
+                    attributes, ambiguities = _row_attributes(
+                        tok_cell, row, m_idx, u_idx, tokens, index
+                    )
                     evidence = {
                         "section": sec,
-                        "canonical": extract_canonical(first_cell=tok_cell),
-                        "meaning": (
-                            clean_text(row[m_idx]) if m_idx is not None and m_idx < len(row) else ""
-                        ),
-                        "unit": (
-                            clean_text(row[u_idx]) if u_idx is not None and u_idx < len(row) else ""
-                        ),
+                        **attributes,
                         "status_raw": status_raw,
                         "status": normalize_status(status_raw) if status_raw else "",
                     }
+                    if len(tokens) > 1:
+                        evidence["group_tokens"] = tokens
+                    if ambiguities:
+                        evidence["attribute_ambiguities"] = ambiguities
                     rec["evidence"].append(evidence)
+                    scanned += 1
+
+                    # Maintain the legacy-by-code extraction for migration
+                    # consumers, without copying a grouped string onto each code.
+                    field_record = fields.get(tok)
+                    if field_record is not None:
+                        if not field_record["section"]:
+                            field_record["section"] = sec
+                        for key in ("canonical", "meaning", "unit"):
+                            if attributes[key] and not field_record[key]:
+                                field_record[key] = attributes[key]
+                        if not field_record["status_raw"] and status_raw:
+                            field_record["status_raw"] = status_raw
+                            field_record["status"] = normalize_status(status_raw)
 
     # 收尾：sources 列表化 + 单源填 source + 覆盖率统计
     out_fields = []
@@ -499,11 +663,12 @@ def extract():
     out_source_fields = []
     for rec in source_fields.values():
         evidence = rec["evidence"]
-        for key in ("canonical", "meaning", "unit"):
-            values = sorted({item[key] for item in evidence if item.get(key)})
-            rec[key] = values[0] if len(values) == 1 else ""
-            if len(values) > 1:
-                rec.setdefault("attribute_conflicts", {})[key] = values
+        attributes, conflicts, attribute_ambiguities = _resolve_evidence_attributes(evidence)
+        rec.update(attributes)
+        if conflicts:
+            rec["attribute_conflicts"] = conflicts
+        if attribute_ambiguities:
+            rec["attribute_ambiguities"] = attribute_ambiguities
         sections = sorted({item["section"] for item in evidence if item.get("section")})
         rec["sections"] = sections
         rec["section"] = sections[0] if len(sections) == 1 else ""
@@ -511,11 +676,20 @@ def extract():
         raw_statuses = sorted({item["status_raw"] for item in evidence if item.get("status_raw")})
         rec["reference_statuses"] = explicit_statuses
         rec["status_raw_values"] = raw_statuses
-        if len(explicit_statuses) == 1:
-            rec["status"] = explicit_statuses[0]
-        elif len(explicit_statuses) > 1:
+        if len(explicit_statuses) > 1:
             rec["status"] = "conflict"
             rec["status_resolution"] = "reference_status_conflict"
+        elif set(rec.get("attribute_conflicts", {})) & {"meaning", "unit"}:
+            rec["status"] = "conflict"
+            rec["status_resolution"] = "reference_semantic_attribute_conflict"
+        elif rec.get("attribute_conflicts"):
+            rec["status"] = explicit_statuses[0] if explicit_statuses else "unverified"
+            rec["status_resolution"] = "reference_canonical_alias_conflict"
+        elif attribute_ambiguities:
+            rec["status"] = explicit_statuses[0] if explicit_statuses else "unverified"
+            rec["status_resolution"] = "reference_attribute_alignment_ambiguous"
+        elif len(explicit_statuses) == 1:
+            rec["status"] = explicit_statuses[0]
         else:
             rec["status"] = "unverified"
             rec["status_resolution"] = "reference_status_missing"
@@ -526,7 +700,6 @@ def extract():
     # （与 fields[].sources 完全一致，保证 field_source_map 视图对齐）
     out_sources = []
     seen_source_labels = set()
-    reclassification = afc.source_identity_reclassification()
     target_metadata = {
         source["name"]: source for source in reclassification.get("target_sources", [])
     }
@@ -554,6 +727,13 @@ def extract():
             "section_patterns": source_section_patterns,
             "status": metadata.get("status", "active"),
         }
+        if label in _RETIRED_SOURCE_REPLACEMENTS:
+            source_record["status"] = "retired_duplicate"
+            source_record["replacement_source"] = _RETIRED_SOURCE_REPLACEMENTS[label]
+            source_record["status_note"] = (
+                "独立 push2_full 采集器已移除；历史记录保留，当前 stock/get 由 push2delay 优先并在失败时回退 push2。"
+            )
+        source_record.update(_SOURCE_STATUS_OVERRIDES.get(label, {}))
         if metadata.get("source_role"):
             source_record["source_role"] = metadata["source_role"]
         out_sources.append(source_record)

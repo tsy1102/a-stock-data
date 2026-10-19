@@ -31,6 +31,7 @@ for _s in (sys.stdout, sys.stderr):
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 REPO_ROOT = os.path.dirname(SCRIPT_DIR)
 REGISTRY = os.path.join(REPO_ROOT, "docs", "field_verification", "field_registry.json")
+SCOPE_MANIFEST = os.path.join(REPO_ROOT, "docs", "field_verification", "registry_parity_scope.json")
 
 sys.path.insert(0, SCRIPT_DIR)
 import audit_field_completeness as afc
@@ -44,6 +45,11 @@ def main(argv=None):
     parser.add_argument(
         "--accepted-debt-manifest",
         help="本地治理门禁使用的已接受缺失配对清单；默认仍执行严格 parity",
+    )
+    parser.add_argument(
+        "--scope-manifest",
+        default=SCOPE_MANIFEST,
+        help="历史基线中非当前生产字段的逐项范围处置清单",
     )
     args = parser.parse_args(argv)
     if not os.path.exists(args.registry):
@@ -75,7 +81,26 @@ def main(argv=None):
         reg, source_records, base_pairs
     )
     actual_pairs = {(record["source"], record["code"]) for record in source_records}
-    expected_pairs = base_pairs | addenda_pairs
+    scope_entries, scope_problems = _load_scope_manifest(args.scope_manifest)
+    if scope_entries is None:
+        scope_entries = {}
+    scope_pairs = set(scope_entries)
+    stale_scope_pairs = scope_pairs - base_pairs
+    registered_scope_pairs = scope_pairs & actual_pairs
+    addenda_scope_pairs = scope_pairs & addenda_pairs
+    if stale_scope_pairs:
+        scope_problems.append(
+            f"范围清单包含不再属于历史基线的配对: {sorted(stale_scope_pairs)[:10]}"
+        )
+    if registered_scope_pairs:
+        scope_problems.append(
+            f"范围清单排除项已登记在 registry 中: {sorted(registered_scope_pairs)[:10]}"
+        )
+    if addenda_scope_pairs:
+        scope_problems.append(
+            f"范围清单排除项与 source_field_addenda 重叠: {sorted(addenda_scope_pairs)[:10]}"
+        )
+    expected_pairs = (base_pairs - scope_pairs) | addenda_pairs
     accepted_missing_pairs = None
     debt_problems = []
     if args.accepted_debt_manifest:
@@ -88,8 +113,10 @@ def main(argv=None):
     missing_pairs, extra_pairs, pair_problems, pair_warnings = _native_pair_problems(
         expected_pairs, actual_pairs, accepted_missing_pairs
     )
-    problems = list(addenda_problems) + debt_problems + pair_problems
-    parity_expected_pairs = expected_pairs - missing_pairs
+    problems = list(addenda_problems) + scope_problems + debt_problems + pair_problems
+    parity_expected_pairs = _pairs_for_count_check(
+        expected_pairs, missing_pairs, accepted_missing_pairs
+    )
     expected_field_sources = _pairs_to_field_sources(parity_expected_pairs)
     expected_fields = len(expected_field_sources)
     expected_multi = sum(1 for v in expected_field_sources.values() if len(v) >= 2)
@@ -100,13 +127,21 @@ def main(argv=None):
     if reg_multi != expected_multi:
         problems.append(f"多源数 {reg_multi} != parity 预期 {expected_multi}")
 
-    expected_label = "baseline+E3-addenda"
+    expected_label = "baseline-scope-adjusted+E3-addenda"
     if accepted_missing_pairs is not None:
         expected_label += "-accepted-debt-adjusted"
     print(
         f"parity[native]: registry({reg_fields}/{reg_records}/{reg_multi}) "
         f"vs {expected_label}({expected_fields}/{len(parity_expected_pairs)}/{expected_multi})"
     )
+    disposition_counts = {}
+    for entry in scope_entries.values():
+        disposition = entry["disposition"]
+        disposition_counts[disposition] = disposition_counts.get(disposition, 0) + 1
+    scope_state = "PASS" if not scope_problems else "FAIL"
+    print(f"parity[scope]: {scope_state} {len(scope_pairs)} 项范围处置 " f"({disposition_counts})")
+    for problem in scope_problems:
+        print("  scope FAIL:", problem)
     if problems:
         print("  native FAIL:")
         for p in problems:
@@ -154,6 +189,109 @@ def _pairs_to_field_sources(pairs: set[tuple[str, str]]) -> dict[str, set[str]]:
     for source, code in pairs:
         out.setdefault(code, set()).add(source)
     return out
+
+
+def _pairs_for_count_check(
+    expected_pairs: set[tuple[str, str]],
+    missing_pairs: set[tuple[str, str]],
+    accepted_missing_pairs: set[tuple[str, str]] | None,
+) -> set[tuple[str, str]]:
+    """Keep strict parity counts against the full baseline; adjust only declared debt."""
+    if accepted_missing_pairs is not None:
+        return expected_pairs - missing_pairs
+    return expected_pairs
+
+
+def _load_scope_manifest(
+    manifest_path: str,
+) -> tuple[dict[tuple[str, str], dict] | None, list[str]]:
+    """Load and validate the explicit distinction between archival and runtime scope."""
+    if not _repo_file_exists(manifest_path):
+        return None, [f"范围处置清单不存在或位于仓库外: {manifest_path}"]
+    try:
+        with io.open(manifest_path, encoding="utf-8") as f:
+            manifest = json.load(f)
+    except (OSError, UnicodeDecodeError, json.JSONDecodeError) as exc:
+        return None, [f"范围处置清单无法读取: {exc}"]
+    entries, problems = _validate_scope_manifest(manifest)
+    if entries is None:
+        return None, problems
+    for pair, entry in entries.items():
+        for evidence_file in entry["evidence_files"]:
+            if not _repo_file_exists(evidence_file):
+                problems.append(
+                    f"范围处置项 {pair[0]}::{pair[1]} 的证据文件不存在或位于仓库外: "
+                    f"{evidence_file}"
+                )
+    return (entries if not problems else None), problems
+
+
+def _validate_scope_manifest(
+    manifest: object,
+) -> tuple[dict[tuple[str, str], dict] | None, list[str]]:
+    """Validate explicit field-scope dispositions without repository I/O."""
+    if not isinstance(manifest, dict):
+        return None, ["范围处置清单必须是 JSON 对象"]
+    if set(manifest) != {"schema_version", "purpose", "entries"}:
+        return None, ["范围处置清单只允许 schema_version/purpose/entries"]
+    if type(manifest.get("schema_version")) is not int or manifest["schema_version"] != 1:
+        return None, ["范围处置清单 schema_version 必须为 1"]
+    if not isinstance(manifest.get("purpose"), str) or not manifest["purpose"].strip():
+        return None, ["范围处置清单缺少非空 purpose"]
+    raw_entries = manifest.get("entries")
+    if not isinstance(raw_entries, list):
+        return None, ["范围处置清单 entries 必须是数组"]
+
+    entries: dict[tuple[str, str], dict] = {}
+    problems = []
+    required = {"source", "code", "disposition", "reason", "evidence_files", "capture_path"}
+    allowed_dispositions = {"archive_only", "captured_context", "captured_runtime"}
+    for index, entry in enumerate(raw_entries):
+        if not isinstance(entry, dict) or set(entry) != required:
+            problems.append(
+                f"entries[{index}] 必须包含且仅包含 "
+                "source/code/disposition/reason/evidence_files/capture_path"
+            )
+            continue
+        source, code = entry.get("source"), entry.get("code")
+        if not isinstance(source, str) or not source.strip():
+            problems.append(f"entries[{index}].source 必须是非空字符串")
+            continue
+        if not isinstance(code, str) or not code.strip():
+            problems.append(f"entries[{index}].code 必须是非空字符串")
+            continue
+        pair = (source, code)
+        if pair in entries:
+            problems.append(f"范围处置清单包含重复配对: {source}::{code}")
+            continue
+        disposition = entry.get("disposition")
+        if disposition not in allowed_dispositions:
+            problems.append(
+                f"entries[{index}].disposition 必须为 archive_only、captured_context 或 captured_runtime"
+            )
+            continue
+        if not isinstance(entry.get("reason"), str) or not entry["reason"].strip():
+            problems.append(f"entries[{index}].reason 必须是非空字符串")
+            continue
+        evidence_files = entry.get("evidence_files")
+        if (
+            not isinstance(evidence_files, list)
+            or not evidence_files
+            or any(not isinstance(path, str) or not path.strip() for path in evidence_files)
+            or len(evidence_files) != len(set(evidence_files))
+        ):
+            problems.append(f"entries[{index}].evidence_files 必须是非空且不重复的路径数组")
+            continue
+        capture_path = entry.get("capture_path")
+        if disposition in {"captured_context", "captured_runtime"}:
+            if not isinstance(capture_path, str) or not capture_path.strip():
+                problems.append(f"entries[{index}] {disposition} 必须声明 capture_path")
+                continue
+        elif capture_path is not None:
+            problems.append(f"entries[{index}] archive_only 的 capture_path 必须为 null")
+            continue
+        entries[pair] = entry
+    return (entries if not problems else None), problems
 
 
 def _native_pair_problems(

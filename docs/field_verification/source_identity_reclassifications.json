@@ -1,12 +1,12 @@
 {
   "schema_version": 1,
-  "updated": "2026-10-11",
+  "updated": "2026-10-18",
   "from_source": "levistock(ftshare)",
   "evidence_file": "docs/field_source_reference.md",
   "purpose": "Explicitly reclassify legacy field tokens from the Levistock/FTShare mixed wrapper label without changing the archived source text.",
   "counts": {
-    "FTShare": 6,
-    "Levistock历史未归属": 136,
+    "FTShare": 15,
+    "Levistock历史未归属": 129,
     "开盘红(Levistock适配)": 33
   },
   "mappings": [
@@ -187,8 +187,9 @@
     },
     {
       "code": "first_limit_up_time",
-      "to_source": "Levistock历史未归属",
-      "basis": "historical_token_only_unattributed"
+      "to_source": "FTShare",
+      "basis": "service_section_evidence",
+      "path": "market.limit_up_pool_yesterday[].first_limit_up_time"
     },
     {
       "code": "first_zt_time",
@@ -286,9 +287,22 @@
       "basis": "provider_section_evidence"
     },
     {
+      "code": "limit_up_break",
+      "to_source": "FTShare",
+      "basis": "service_section_evidence",
+      "path": "market.limit_up_pool_yesterday[].limit_up_break"
+    },
+    {
       "code": "limit_up_break_count",
-      "to_source": "Levistock历史未归属",
-      "basis": "historical_token_only_unattributed"
+      "to_source": "FTShare",
+      "basis": "service_section_evidence",
+      "path": "market.limit_up_pool_yesterday[].limit_up_break_count"
+    },
+    {
+      "code": "limit_up_enter",
+      "to_source": "FTShare",
+      "basis": "service_section_evidence",
+      "path": "market.limit_up_pool_yesterday[].limit_up_enter"
     },
     {
       "code": "limit_up_his_kph",
@@ -302,8 +316,9 @@
     },
     {
       "code": "limit_up_price",
-      "to_source": "Levistock历史未归属",
-      "basis": "historical_token_only_unattributed"
+      "to_source": "FTShare",
+      "basis": "service_section_evidence",
+      "path": "market.limit_up_pool_yesterday[].limit_up_price"
     },
     {
       "code": "main_inflow",
@@ -517,8 +532,9 @@
     },
     {
       "code": "ready",
-      "to_source": "Levistock历史未归属",
-      "basis": "historical_token_only_unattributed"
+      "to_source": "FTShare",
+      "basis": "service_section_evidence",
+      "path": "market.limit_up_pool_yesterday[].ready"
     },
     {
       "code": "reason",
@@ -652,8 +668,9 @@
     },
     {
       "code": "status",
-      "to_source": "Levistock历史未归属",
-      "basis": "historical_token_only_unattributed"
+      "to_source": "FTShare",
+      "basis": "service_section_evidence",
+      "path": "market.limit_up_pool_yesterday[].status"
     },
     {
       "code": "stdt",
@@ -737,8 +754,9 @@
     },
     {
       "code": "symbol",
-      "to_source": "Levistock历史未归属",
-      "basis": "historical_token_only_unattributed"
+      "to_source": "FTShare",
+      "basis": "service_section_evidence",
+      "path": "market.limit_up_pool_yesterday[].symbol"
     },
     {
       "code": "sz_change_pct",
@@ -787,8 +805,9 @@
     },
     {
       "code": "trade_date",
-      "to_source": "Levistock历史未归属",
-      "basis": "historical_token_only_unattributed"
+      "to_source": "FTShare",
+      "basis": "service_section_evidence",
+      "path": "market.limit_up_pool_yesterday[].trade_date"
     },
     {
       "code": "ts_code",
@@ -985,6 +1004,6 @@
       "source_role": "framework_reference"
     }
   ],
-  "counts_total": 175,
+  "counts_total": 177,
   "archive_only_count": 56
 }

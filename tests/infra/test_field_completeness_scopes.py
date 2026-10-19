@@ -85,7 +85,7 @@ def test_levistock_legacy_identity_is_reclassified_without_promoting_archive_onl
     }
     assert observed == expected
     assert Counter(observed.values()) == Counter(manifest["counts"])
-    assert manifest["counts_total"] == len(expected) == 175
+    assert manifest["counts_total"] == len(expected) == 177
     assert manifest["archive_only_count"] == len(manifest["archive_only_tokens"]) == 56
     for source in manifest["counts"]:
         assert not set(manifest["archive_only_tokens"]) & registered.get(source, set())
@@ -110,9 +110,24 @@ def test_extracted_registry_source_metadata_is_unique(monkeypatch):
     source_counts = {}
     for row in registry["source_fields"]:
         source_counts[row["source"]] = source_counts.get(row["source"], 0) + 1
-    assert source_counts["Levistock历史未归属"] == 136
+    assert source_counts["Levistock历史未归属"] == 129
     assert source_counts["开盘红(Levistock适配)"] == 33
-    assert source_counts["FTShare"] == 6
+    assert source_counts["FTShare"] == 15
+    ftshare_paths = {
+        row["code"]: row["path"] for row in registry["source_fields"] if row["source"] == "FTShare"
+    }
+    for code in (
+        "first_limit_up_time",
+        "limit_up_break",
+        "limit_up_break_count",
+        "limit_up_enter",
+        "limit_up_price",
+        "ready",
+        "status",
+        "symbol",
+        "trade_date",
+    ):
+        assert ftshare_paths[code] == f"market.limit_up_pool_yesterday[].{code}"
 
 
 def test_audit_help_does_not_create_a_report(tmp_path, monkeypatch, capsys):

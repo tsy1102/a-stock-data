@@ -255,6 +255,31 @@ def test_source_as_of_date_after_capture_date_is_skipped(tmp_path):
     assert any("晚于采集日" in warning for warning in warnings)
 
 
+def test_source_as_of_date_outside_selected_trading_window_is_skipped(tmp_path):
+    _write_capture(
+        tmp_path,
+        "20260929",
+        {
+            "data_date": "20260929",
+            "capture_date": "20260929",
+            "start": "2026-09-29 16:00:00",
+            "market_phase": "closed",
+        },
+        "push2",
+        {"as_of_date": "20260928", "stocks": {"600000": {"data": {"f1": 1}}}},
+    )
+    folders, _ = collision_dates.discover_capture_folders(str(tmp_path), _weekday)
+
+    snapshots, warnings = collision_dates.select_snapshots(
+        folders,
+        checker=_weekday,
+        allowed_trading_dates={"20260929"},
+    )
+
+    assert snapshots == []
+    assert any("有效交易日 20260928 不在本轮行情交易日窗口" in warning for warning in warnings)
+
+
 def test_event_record_keeps_natural_date_domain_on_weekend():
     event_day = collision_dates.event_record_date(
         "news_wscn_cctv", {"date": "2026-09-27", "title": "example"}

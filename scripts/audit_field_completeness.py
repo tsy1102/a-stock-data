@@ -1,10 +1,15 @@
 #!/usr/bin/env python3
-"""audit_field_completeness.py — 主字典字段完整性审计（v3 修正版）。
+"""audit_field_completeness.py — 主字典字段完整性审计（v4 双向覆盖）。
 
 RAW = 指定采集目录中各源用「源原生命名」提取的真实返回字段集。
 REG = 优先读取 registry.source_fields；缺失时从 field_source_reference.md 提取已登记字段集。
-GAP = RAW − (REG ∩ RAW宇宙)  —— 源返回了但字段登记中没有的字段，供人工复核。
+RAW-only = RAW − REG —— 源返回了但字段登记中没有的字段，供人工复核。
+REG-only = REG − RAW —— 本次归档未观察到的登记字段，可能是未采源、请求失败、稀疏字段或采集覆盖缺口。
 
+v4 修正点：
+  - 每个字段集合合并采样目录中所有成功或部分成功股票，并遍历列表全部行，避免首股/首行缺字段造成漏报。
+  - 报告双向差异；RAW-only 与 REG-only 分栏，REG-only 不直接定性为采集器错误。
+  - 失败/跳过记录中仍有有效字段时保留部分证据，纯错误占位记录仍排除。
 v3 修正点 vs v2：
   - split_sections 返回 (level, title, text)；registered_field_sets 按标题层级继承源：
     子章节(如 #### 12.10.1)若自身标题不匹配任何源关键词，则继承最近祖先标题匹配的源
@@ -50,11 +55,82 @@ OUTDIR = os.path.join(ROOT, "docs", "field_verification", DEFAULT_OUTPUT_DATE)
 
 
 def loadjson(f):
-    return json.load(io.open(os.path.join(CAP, f), encoding="utf-8"))
+    path = os.path.join(CAP, f)
+    try:
+        with io.open(path, encoding="utf-8") as handle:
+            return json.load(handle)
+    except FileNotFoundError:
+        return {}
+
+
+_CAPTURE_METADATA_KEYS = frozenset(
+    {
+        "__error__",
+        "__skipped__",
+        "__unwired__",
+        "__source_meta__",
+        "__identity__",
+        "auction_snapshot_meta",
+        "field_meta",
+        "scheme",
+    }
+)
+
+
+def _has_capture_value(value):
+    if isinstance(value, dict):
+        return any(
+            key not in _CAPTURE_METADATA_KEYS and _has_capture_value(child)
+            for key, child in value.items()
+        )
+    if isinstance(value, list):
+        return any(_has_capture_value(child) for child in value)
+    return value is not None and value != ""
+
+
+def _stock_records(document):
+    stocks = document.get("stocks") if isinstance(document, dict) else None
+    if not isinstance(stocks, dict):
+        return []
+    return [
+        record
+        for record in stocks.values()
+        if isinstance(record, dict) and _has_capture_value(record)
+    ]
 
 
 def first_stock(d):
-    return next(iter(d["stocks"].values()))
+    return next(iter(_stock_records(d)), {})
+
+
+def all_stock_leaves(document):
+    """Return the union of observed leaf keys across all usable stock records."""
+    fields = set()
+    for record in _stock_records(document):
+        fields.update(_leaf_keys(record))
+    return fields
+
+
+def compare_field_sets(raw_fields, registered_fields):
+    """Split observed-unregistered and registered-unobserved names explicitly."""
+    raw_set = set(raw_fields)
+    registered_set = set(registered_fields)
+    return {
+        "matched": raw_set & registered_set,
+        "unregistered_raw": raw_set - registered_set,
+        "registered_not_observed": registered_set - raw_set,
+    }
+
+
+def _field_union_from_captures(filenames, container="data", pattern=r"f\d+"):
+    fields = set()
+    for filename in filenames:
+        document = loadjson(filename)
+        for record in _stock_records(document):
+            values = record.get(container)
+            if isinstance(values, dict):
+                fields.update(key for key in values if re.fullmatch(pattern, key))
+    return fields
 
 
 def split_sections(text):
@@ -245,36 +321,43 @@ def reclassified_source_for_token(source, token):
 def raw_field_sets():
     raw = {}
 
-    d = loadjson("raw_push2_full.json")
-    data = first_stock(d)["data"]
-    raw["东财-push2(stock/get)"] = {k for k in data.keys() if re.fullmatch(r"f\d+", k)}
+    # Current collector is raw_push2.json; raw_push2_full.json is retained only as
+    # a legacy capture name. Both represent the same stock/get contract.
+    raw["东财-push2(stock/get)"] = _field_union_from_captures(
+        ("raw_push2.json", "raw_push2_full.json")
+    )
 
     d = loadjson("raw_ulist239.json")
-    data = first_stock(d)["data"]
-    raw["东财-ulist239(np/get)"] = {k for k in data.keys() if re.fullmatch(r"f\d+", k)}
+    raw["东财-ulist239(np/get)"] = _field_union_from_captures(("raw_ulist239.json",))
 
     d = loadjson("raw_tencent.json")
-    n = first_stock(d).get("n_fields") or len(first_stock(d).get("fields", []))
+    tencent_records = _stock_records(d)
+    n = max(
+        (record.get("n_fields") or len(record.get("fields", [])) for record in tencent_records),
+        default=0,
+    )
     raw["腾讯(qt.gtimg)"] = {f"[{i}]" for i in range(n)}
 
     d = loadjson("raw_sina.json")
-    n = first_stock(d).get("n_fields") or len(first_stock(d).get("fields", []))
+    sina_records = _stock_records(d)
+    n = max(
+        (record.get("n_fields") or len(record.get("fields", [])) for record in sina_records),
+        default=0,
+    )
     raw["新浪(hq.sinajs)"] = {f"[{i}]" for i in range(n)}  # 统一为索引命名
 
     # ZHB 三组 positional [N]（0 索引，与字典表格首列 **[N]** 对齐）
     d = loadjson("raw_zhb.json")
-    stocks = d.get("stocks", {})
-    if isinstance(stocks, dict) and stocks:
-        sk = next(iter(stocks.values()))
-        for grp, key in (("tdxstat", "stat"), ("tdxstat2", "stat2"), ("tipinfo", "tipinfo")):
-            obj = sk.get(key)
-            if isinstance(obj, (list, dict)):
-                L = len(obj)
-                raw[f"ZHB-{grp}"] = {f"[{i}]" for i in range(L)}
+    stocks = _stock_records(d)
+    for grp, key in (("tdxstat", "stat"), ("tdxstat2", "stat2"), ("tipinfo", "tipinfo")):
+        indexes = [
+            len(record[key]) for record in stocks if isinstance(record.get(key), (list, dict))
+        ]
+        raw[f"ZHB-{grp}"] = {f"[{i}]" for i in range(max(indexes, default=0))}
 
     # fuyao 叶名末段
     d = loadjson("raw_fuyao.json")
-    raw["同花顺-fuyao"] = {x.split(".")[-1] for x in _leaves(first_stock(d))}
+    raw["同花顺-fuyao"] = {x.split(".")[-1] for x in _all_stock_dotted_leaves(d)}
 
     # 财联社 / 热榜 / push2ex / 市场源 —— 列表项英文键
     d = loadjson("raw_cls.json")
@@ -301,39 +384,83 @@ def raw_field_sets():
         elif isinstance(v, dict):
             ms |= {kk for kk in v.keys()}
     raw["市场源(market_sources)"] = ms
-    # KPL 字段目前仅有 API 文档与逆向字段表，尚无本项目采集到的原始响应样本。
-    raw["开盘啦(kpl)"] = set()
-    # 新浪扩展接口（财报/期权）只有文档字段表，未采到对应原始响应。
-    raw["新浪(扩展API)"] = set()
+    # market_sources 是聚合容器；将已知 KPL 子接口和 Levistock 的 KPH
+    # 天梯分别映射到各自的注册身份，避免“有 raw 文件却显示零字段”。
+    kpl_market_fields = set()
+    for key in ("kpl_sentiment", "kpl_up_down", "kpl_broken_ratio"):
+        value = d.get(key) if isinstance(d, dict) else None
+        if isinstance(value, (dict, list)):
+            kpl_market_fields |= _leaf_keys(value)
+    raw["开盘啦(kpl)"] = kpl_market_fields
+    kph_ladder = d.get("kph_limit_ladder") if isinstance(d, dict) else None
+    raw["开盘红(Levistock适配)"] = _leaf_keys(kph_ladder)
+    # 独立 KPL/KPH 明细适配器保存逐股行；将其全量字段叶键计入双向审计。
+    raw["开盘啦(kpl_limit_up_detail)"] = all_stock_leaves(loadjson("raw_kpl.json"))
+    raw["开盘红"] = all_stock_leaves(loadjson("raw_kph.json"))
+    # 新浪扩展接口保留结构化三表/资金流原始响应；期权字段仍因无合约池暂停。
+    d = loadjson("raw_sina_extended.json")
+    raw["新浪(扩展API)"] = all_stock_leaves(d) - _CAPTURE_CONTAINER_TOKENS.get(
+        "新浪(扩展API)", set()
+    )
     d = loadjson("raw_ftshare.json")
     # Phase 3 (2026-09-12): 改用叶键命名空间(与 reg_tokens_for_section 新逻辑对齐),
     # 旧版 set(_leaves(...)) 产出的 dotted 路径(stocks.600xxx.high) 与 registry 命名空间错位,
-    # 会令 gap 审计产生假缺口。叶键(high/low/open/...)才是 ftshare 真实字段名。
-    raw["FTShare"] = _leaf_keys(first_stock(d))
+    # 会令 gap 审计产生假缺口。除个股字段外，FTShare 的 market.* 也是采集器真实保留的
+    # 接口响应；将其纳入同一来源集合，防止市场级字段被完整性审计静默漏掉。采集器自加的
+    # probe_trading_day 仅是日期元数据，不作为上游字段。
+    ftshare_fields = all_stock_leaves(d)
+    if isinstance(d.get("stocks"), dict):
+        for record in _stock_records(d):
+            ftshare_fields |= {key for key in record if key not in _CAPTURE_METADATA_KEYS}
+    market_payload = d.get("market") if isinstance(d, dict) else None
+    if isinstance(market_payload, dict):
+        ftshare_fields |= _leaf_keys(market_payload) - {"probe_trading_day"}
+    raw["FTShare"] = ftshare_fields
+
+    # Levistock candidate probes are stored separately from source captures. Keep
+    # observed candidate payload fields visible without assigning them to the
+    # CLS registry identity or treating the wrapper as an independent anchor.
+    candidate_doc = loadjson("levistock_candidate_raw.json")
+    candidate_probe = candidate_doc.get("probe") if isinstance(candidate_doc, dict) else None
+    if (
+        isinstance(candidate_probe, dict)
+        and candidate_probe.get("status") == "observed"
+        and candidate_probe.get("candidate_id")
+    ):
+        candidate_id = str(candidate_probe["candidate_id"])
+        candidate_family = str(candidate_probe.get("provider_family") or "unknown").strip()
+        candidate_label = f"Levistock候选({candidate_id}; 来源族={candidate_family},非独立锚)"
+        raw[candidate_label] = _leaf_keys(candidate_doc.get("payload"))
 
     # datacenter / axdata / em_fund_flow / tdx 双命名源
     d = loadjson("raw_datacenter.json")
     # raw 用 dotted 叶路径(margin_trading.rqjmg)，REG 抽 bare 令牌 → 取末段对齐
-    raw["东财-datacenter(英文键)"] = {x.split(".")[-1] for x in _leaves(first_stock(d))}
+    raw["东财-datacenter(英文键)"] = {x.split(".")[-1] for x in _all_stock_dotted_leaves(d)}
     d = loadjson("raw_axdata.json")
-    data = first_stock(d).get("data")
-    if isinstance(data, dict):
-        raw["AxData"] = {k for k in data.keys() if re.fullmatch(r"f\d+", k)}
+    axdata_fields = set()
+    for record in _stock_records(d):
+        data = record.get("data")
+        if isinstance(data, dict):
+            axdata_fields.update(k for k in data if re.fullmatch(r"f\d+", k))
+    raw["AxData"] = axdata_fields
     d = loadjson("raw_em_fund_flow.json")
-    data = first_stock(d).get("data")
-    if isinstance(data, dict):
-        raw["东财-资金流(em_fund_flow)"] = {k for k in data.keys() if re.fullmatch(r"f\d+", k)}
+    fund_flow_fields = set()
+    for record in _stock_records(d):
+        data = record.get("data")
+        if isinstance(data, dict):
+            fund_flow_fields.update(k for k in data if re.fullmatch(r"f\d+", k))
+    raw["东财-资金流(em_fund_flow)"] = fund_flow_fields
 
     # 双命名源（手工复核，不强行 diff）
     d = loadjson("raw_tdx.json")
-    stk = first_stock(d)
     tdx = set()
-    for grp in ("finance_info", "quote_full"):
-        if isinstance(stk.get(grp), dict):
-            tdx |= {f"{grp}.{k}" for k in stk[grp].keys()}
+    for stock in _stock_records(d):
+        for grp in ("finance_info", "quote_full", "quote_raw"):
+            if isinstance(stock.get(grp), dict):
+                tdx |= {f"{grp}.{k}" for k in stock[grp].keys()}
     raw["TDX(双命名源)"] = tdx
     d = loadjson("raw_tdx_f10.json")
-    raw["TDX-F10(双命名源)"] = set(_leaves(first_stock(d)))
+    raw["TDX-F10(双命名源)"] = set(_all_stock_dotted_leaves(d))
 
     # ------------------------------------------------------------------
     # V17.1.x (2026-09-06): 以下三源此前被硬编码为 set()（"无 raw 捕获"假象），
@@ -390,19 +517,28 @@ def _leaves(o, pre=""):
     out = []
     if isinstance(o, dict):
         for k, v in o.items():
+            if k in _CAPTURE_METADATA_KEYS:
+                continue
             p = f"{pre}.{k}" if pre else k
             if isinstance(v, (dict, list)) and v:
                 out += _leaves(v, p)
             else:
                 out.append(p)
     elif isinstance(o, list) and o:
-        for e in o[:1]:
+        for e in o:
             if isinstance(e, (dict, list)):
                 out += _leaves(e, pre)
     return out
 
 
-_RAW_METADATA_CONTAINERS = frozenset({"__source_meta__", "auction_snapshot_meta"})
+def _all_stock_dotted_leaves(document):
+    fields = set()
+    for record in _stock_records(document):
+        fields.update(_leaves(record))
+    return fields
+
+
+_RAW_METADATA_CONTAINERS = _CAPTURE_METADATA_KEYS
 
 
 def _leaf_keys(o):
@@ -412,12 +548,15 @@ def _leaf_keys(o):
         for k, v in o.items():
             if k in _RAW_METADATA_CONTAINERS:
                 continue
-            if isinstance(v, (dict, list)) and v:
+            if isinstance(v, list) and v and not any(isinstance(item, (dict, list)) for item in v):
+                out.add(k)
+            elif isinstance(v, (dict, list)) and v:
                 out |= _leaf_keys(v)
             else:
                 out.add(k)
     elif isinstance(o, list) and o:
-        out |= _leaf_keys(o[0])
+        for item in o:
+            out |= _leaf_keys(item)
     return out
 
 
@@ -449,15 +588,15 @@ _RAW_FILE_FOR_SRC = {
     # 聚合 leaf keys 供 snake 路径补全；带点 token(quote_snapshot.*/shortline.*) 另经 §12.13.10/§12.13.11
     # 标准契约表由 _table_codes 抽取，与 fuyao snapshot.* 同机制。
     "TDX-eltdx(适配层)": ["raw_eltdx.json"],
-    # 新浪扩展接口字段仅从 §12.8.14 的字段表登记，当前无 raw capture。
-    "新浪(扩展API)": [],
+    # 新浪三表与个股资金流原始载荷；期权合约路径仍不采集。
+    "新浪(扩展API)": ["raw_sina_extended.json"],
     # ZHB 三组已走 positional **[N]** 分支注册；此处挂空 list 以启用 snake 路径的 _table_codes，
     # 使标准契约表的带点 token(stat.*/stat2.*/tipinfo.*) 亦能 registered（与 [N] 并存，不冲突）。
     "ZHB-tdxstat": [],
     "ZHB-tdxstat2": [],
     "ZHB-tipinfo": [],
-    # 百度(baidu): 无 raw 捕获文件, 仅依赖 §12.8.16 表格 + 反引号令牌
-    "百度(baidu)": [],
+    # 百度 K 线仅在显式 --only baidu 探针成功时产生 raw。
+    "百度(baidu)": ["raw_baidu.json"],
 }
 # §12.8.12e「各源字段对照」列中各 snake 源的真实前缀(仅本源, 绝不含其他源别名)。
 # datacenter/em_hot/market_sources/cls/cninfo/baidu 在 §12.8.12e 无自身价格类别名
@@ -495,6 +634,24 @@ _CAPTURE_CONTAINER_TOKENS = {
         "valuation",
     },
     "财联社(cls)": {"telegraph"},
+    "新浪(扩展API)": {
+        "financial_reports",
+        "report_list",
+        "data",
+        "item_title",
+        "item_field",
+        "item_display_type",
+        "item_display",
+        "item_precision",
+        "item_group_no",
+        "item_source",
+        "money_flow",
+        "newMarketData",
+        "marketData",
+        "keys",
+        "rows",
+    },
+    "百度(baidu)": {"newMarketData", "marketData", "keys", "rows"},
 }
 
 
@@ -916,34 +1073,62 @@ def main(argv=None):
         print("   [info] reg 数据来源: field_source_reference.md (legacy parser fallback)")
     else:
         print("   [info] reg 数据来源: field_registry.json.source_fields")
+    # Keep registry-only sources visible as NO-RawDATA instead of silently omitting
+    # them from this capture's completeness report.
+    for source in reg:
+        raw.setdefault(source, set())
     os.makedirs(os.path.dirname(report_path), exist_ok=True)
 
     report = {}
     print("=" * 82)
-    print(
-        "主字典字段完整性审计 v3  (REG 按标题层级继承源; ZHB 记号 **[N]**; em_fund_flow 共享 §12.3.4)"
-    )
+    print("主字典字段双向覆盖审计 v4  (所有成功样本并集; REG-only 仅表示本次未观察到)")
     print("=" * 82)
     for src in sorted(raw):
         r = raw[src]
         g = reg.get(src, set())
-        # 仅比较本源 RAW 宇宙，避免其他来源章节中的叙述污染缺口结果。
-        g_eff = g & r
-        missing = sorted(r - g_eff, key=lambda x: (len(x), x))
+        differences = compare_field_sets(r, g)
+        matched = differences["matched"]
+        unregistered_raw = sorted(differences["unregistered_raw"], key=lambda x: (len(x), x))
+        registered_not_observed = sorted(
+            differences["registered_not_observed"], key=lambda x: (len(x), x)
+        )
+        if not r:
+            flag = "NO-RawDATA"
+        elif unregistered_raw and registered_not_observed:
+            flag = "BIDIRECTIONAL-GAP"
+        elif unregistered_raw:
+            flag = "RAW-UNREGISTERED"
+        elif registered_not_observed:
+            flag = "REGISTERED-UNOBSERVED"
+        else:
+            flag = "OK"
         report[src] = {
             "raw_count": len(r),
             "reg_count": len(g),
-            "reg_eff_count": len(g_eff),
-            "missing_count": len(missing),
-            "missing": missing,
+            "matched_count": len(matched),
+            "unregistered_raw_count": len(unregistered_raw),
+            "unregistered_raw_fields": unregistered_raw,
+            "registered_not_observed_count": len(registered_not_observed),
+            "registered_not_observed_fields": registered_not_observed,
+            # Compatibility aliases: "missing" historically meant RAW − REG.
+            "reg_eff_count": len(matched),
+            "missing_count": len(unregistered_raw),
+            "missing": unregistered_raw,
             "has_raw_data": len(r) > 0,
+            "status": flag,
         }
-        flag = "NO-RawDATA" if not r else ("OK" if not missing else "GAP")
         print(f"\n[{flag}] {src}")
-        print(f"   raw={len(r)}  reg(全文)={len(g)}  reg∩raw={len(g_eff)}  missing={len(missing)}")
-        if missing:
-            shown = missing if len(missing) <= 80 else missing[:80] + [f"...+{len(missing)-80}"]
-            print("   missing: " + ", ".join(shown))
+        print(
+            f"   raw={len(r)}  reg={len(g)}  matched={len(matched)}  "
+            f"raw_only={len(unregistered_raw)}  reg_only={len(registered_not_observed)}"
+        )
+        for label, fields in (
+            ("raw not registered", unregistered_raw),
+            ("registered not observed", registered_not_observed if r else []),
+        ):
+            if fields:
+                shown = fields if len(fields) <= 80 else fields[:80] + [f"...+{len(fields)-80}"]
+                print(f"   {label}: " + ", ".join(shown))
     with io.open(report_path, "w", encoding="utf-8") as output:
         output.write(json.dumps(report, ensure_ascii=False, indent=2))
     print("\n写出:", report_path)

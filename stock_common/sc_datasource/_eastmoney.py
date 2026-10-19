@@ -1359,33 +1359,46 @@ def dragon_tiger_backup(trade_date: str) -> Dict[str, Any]:
     return out
 
 
-def fund_flow_backup(code: str, days: int = 60) -> List[Dict[str, Any]]:
-    """个股资金流备用源（东财被封时用）：新浪，日度四档单净额。
-
-    Args:
-        code: 股票代码
-        days: 获取天数，默认60天
-
-    Returns:
-        资金流列表，包含日期、主力/大单/中单/小单净流入
-    """
-    # V16.3 O16: 北交所 920/8/4 号段走 bj 前缀（此 URL 当前未用 prefix，保留统一口径）
+def get_sina_stock_fund_flow_raw(code: str, days: int = 60) -> Optional[List[Dict[str, Any]]]:
+    """Fetch Sina's per-stock money-flow rows without caching or retries."""
+    if not code.isdigit() or len(code) != 6 or days < 1:
+        return None
+    market_code = f"{em_exchange_prefix(code)}{code}"
     url = (
-        "https://vip.stock.finance.sina.com.cn/quotes_service/api/json_v2.php/MoneyFlow.ssl_bkzj_bk"
+        "https://vip.stock.finance.sina.com.cn/quotes_service/api/json_v2.php/"
+        "MoneyFlow.ssl_qsfx_zjlrqs"
     )
-    params = {"page": "1", "num": str(days), "sort": "netamount", "asc": "0", "fenlei": "1"}
-
+    params = {
+        "page": "1",
+        "num": str(days),
+        "sort": "opendate",
+        "asc": "0",
+        "daima": market_code,
+    }
     try:
-        r = _quick_request(url, params=params, headers={"User-Agent": UA}, timeout=10)
-        if r is None:
-            return []
-        d = r.json()
-        if isinstance(d, list):
-            return d
-        return []
-    except Exception as _e:
-        _debug_log(f"datasource fund_flow_backup ({code}): {_e}")
-        return []
+        response = _quick_request(
+            url,
+            params=params,
+            headers={
+                "User-Agent": UA,
+                "Referer": "https://finance.sina.com.cn/",
+            },
+            timeout=10,
+            max_retries=1,
+        )
+        if response is None:
+            return None
+        rows = response.json()
+        return rows if isinstance(rows, list) else None
+    except Exception as exc:
+        _debug_log(f"datasource get_sina_stock_fund_flow_raw ({code}): {exc}")
+        return None
+
+
+def fund_flow_backup(code: str, days: int = 60) -> List[Dict[str, Any]]:
+    """Sina per-stock money-flow backup; retain the historical list return contract."""
+    rows = get_sina_stock_fund_flow_raw(code, days)
+    return rows if rows is not None else []
 
 
 @cached(
@@ -1979,6 +1992,7 @@ __all__ = [
     'em_get',
     'em_secid_prefix',
     'fund_flow_backup',
+    'get_sina_stock_fund_flow_raw',
     'get_board_fund_flow',
     'get_cyq_distribution',
     'get_dragon_tiger_board',

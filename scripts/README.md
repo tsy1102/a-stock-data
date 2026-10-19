@@ -32,8 +32,8 @@ FTShare 六个已登记数值接口分别参与来源身份核验：仅比较同
 
 | 脚本 | 用途 |
 |:---|:---|
-| `capture_field_probe.py` | 按来源分别采集字段样本至 `docs/field_verification/<数据日>/`；串行调用各源，沿用适配器限流，记录逐源错误、缺股、deferred 与来源数据日。KPL 既有涨停明细独立写入 `raw_kpl.json`，新增 AxData `kph_limit_up_history` 单次批量写入 `raw_kph.json`，不缓存、不重试，并与 KPL 对撞；短线 TDX 路由与 ELTDX 逐股比较。两条 AxData 实际路由各自满足三交易日、每日 18 只配对股票及全字段规则后停止日常采集，20 个后续有效数据日后用三个新数据日复验；确认路由也从默认碰撞排除，复验期间仍排除，失配/结构变化即重新纳入。未知数值字段保持路由活跃。403/429/封禁立即停止 AxData 短线剩余请求并持久暂停相应路由；单独 `--only` 也记录状态。可用 `--only kpl` 或 `--only kph` 单独补采。该补充不替代 KPL 完整名单，也不调用 Eastmoney push2。默认仍跳过纯上下文的交易所龙虎榜、东财人气榜和市场源/Fuyao 中的龙虎榜与热股榜子路径；上下文可用 `--include-context` 恢复，或通过 `--only exchange` / `--only em_hot` 明确选择。 |
-| `collide.py`、`collision_dates.py`、`collision_rules.py` | 共用日期归一化与快照择优；行情窗口按有效交易日、新闻/公告按自然日；L1 检查样本量、独立日期和来源族。默认排除交易所/东财人气榜源及市场源/Fuyao 中的上下文记录，也过滤历史 raw；需纳入研究时加 `--include-context`。其他带 `collision_eligible=false` 的子树仍按来源元数据排除并在报告诊断中说明。盘中/未知阶段仅作候选，语义、公式、时间序列与稳健相关性结果保留日期及来源证据；不直接改主字典。详见 `docs/field_verification/CRACKING_METHODOLOGY.md`。 |
+| `capture_field_probe.py` | 按来源分别采集字段样本至 `docs/field_verification/<数据日>/`；串行调用各源，沿用适配器限流，记录逐源错误、缺股、deferred 与来源数据日。东财 `push2` 样本先请求 `push2delay`，只有某只股票的 delay 请求失败才逐股回退主域 `push2`；不会在 delay 成功后再重复请求主域，也不单独运行已退役的 `push2_full` 全量采集器。KPL 市场接口保存原始响应字段，新增板块强度源；涨停明细按 `PidType=1…5` 分层采集，保存原始列与层级身份，复用 1 秒请求间隔。AxData `kph_limit_up_history` 单次批量写入 `raw_kph.json`，不缓存、不重试，并与 KPL 对撞；短线 TDX 路由与 ELTDX 逐股比较，原始快照保留 bid/ask 五档价格及对应 `_vol` 数值，不改写源单位。两条 AxData 实际路由各自满足三交易日、每日 18 只配对股票及全字段规则后停止日常采集，20 个后续有效数据日后用三个新数据日复验；确认路由也从默认碰撞排除，复验期间仍排除，失配/结构变化即重新纳入。未知数值字段保持路由活跃。403/429/封禁立即停止 AxData 短线剩余请求并持久暂停相应路由；单独 `--only` 也记录状态。可用 `--only kpl` 或 `--only kph` 单独补采。该补充不替代 KPL 完整名单，也不增加独立 Eastmoney push2 采集。默认仍跳过纯上下文的交易所龙虎榜、东财人气榜和市场源/Fuyao 中的龙虎榜与热股榜子路径；上下文可用 `--include-context` 恢复，或通过 `--only exchange` / `--only em_hot` 明确选择。 |
+| `collide.py`、`collision_dates.py`、`collision_rules.py` | 共用日期归一化与快照择优；行情窗口按有效交易日，`as_of_date` 不在所选交易日窗口内的行情快照会排除并记诊断；新闻/公告按自然日。L1 检查样本量、独立日期和来源族。默认排除交易所/东财人气榜源及市场源/Fuyao 中的上下文记录，也过滤历史 raw；需纳入研究时加 `--include-context`。其他带 `collision_eligible=false` 的子树仍按来源元数据排除并在报告诊断中说明。盘中/未知阶段仅作候选，语义、公式、时间序列与稳健相关性结果保留日期及来源证据；不直接改主字典。详见 `docs/field_verification/CRACKING_METHODOLOGY.md`。 |
 | `context_policy.py` | 采集与碰撞共用的上下文源及路径策略，避免默认过滤规则漂移。 |
 | `field_meta.py` | 为采集样本补充来源与锚点元数据。 |
 | `crack_push2_status_codes_20260921.py` | Push2 状态码研究脚本。 |
@@ -42,15 +42,25 @@ FTShare 六个已登记数值接口分别参与来源身份核验：仅比较同
 
 采集启动行会显示 `--only` 中实际选择的源，未指定时显示“默认源集合”，并单独标明市场上下文是“启用”还是“跳过”。
 
+### 字段采集覆盖与生命周期
+
+主字典字段变为 `verified` 后，碰撞脚本只将它从“待破解目标”中移除，仍保留为独立锚点；采集器不读取字段状态，因此已定案字段会继续进入每日样本，用于复核和漂移监测。接口因来源身份重复而暂停请求是另一项独立的源级决定，不由字段定案触发。
+
+采集覆盖回归遍历本轮注册表中的 2,483 条 `source_fields` 记录，逐条检查来源身份能解析到日常采集器，只有已退役重复源与历史未归属记录使用明确例外。该回归证明字段记录没有因 `verified`/`unverified` 状态而失去来源路由；它是静态源级路由检查，不代表每个接口字段在某次样本中都实际返回。实际 raw 与登记字段的双向差异由 `audit_field_completeness.py` 检查，并结合 `meta.json` 区分未选源、请求失败、稀疏字段和采集遗漏。新浪扩展 API 的 27 项拆为 7 项可采集字段、17 项因缺少期权合约池而暂停、3 项无可靠接口路径而待补证；三类状态都由采集 raw 的 `__source_meta__` 记录。百度 K 线 3 个 MA 字段默认保持 `pending_validation`，仅 `--only baidu` 时限量请求；首次请求或响应契约失败即停止本轮剩余代码，避免对不稳定接口批量施压。
+
+字段语义定案与采集生命周期相互独立：已验证字段继续每日采集，只作为锚点退出未知字段的重复破解。TDX 字段采集保存原始 adapter 快照于 `quote_raw`，并从其直接计算 `quote_full` 行情路径；不会把 ZHB/Tencent 回退值标作 TDX。空行情或财务结果会留下逐股错误标记，防止空数据被统计为成功。`audit_field_completeness.py` 同时报告采到但未登记、登记但本次未观察到两类差异；后者还需结合采集范围、来源状态和字段稀疏性判断，不能直接等同于漏采。
+
+`audit_field_completeness.py <采集目录日期> <报告日期>` 会把全部成功或部分成功的股票记录、列表响应中的全部行与登记字段做双向比较：`raw not registered` 是采到但字典未登记的候选，`registered not observed` 是本目录没有观察到的登记字段。另将 `levistock_candidate_raw.json` 中 `status=observed` 的 payload 按 candidate_id 和 provider_family 单列；探针元数据不当作字段，候选也不并入任何来源的独立碰撞锚。后者可能来自源未选择、请求失败、字段稀疏或明确暂停，不能单独判为采集器遗漏；需结合 `meta.json`、源状态和字段处置说明判断。报告 JSON 同时保留两类差异，不会把空目录误报为完整。
+
 ## 字段登记、生成与治理
 
 | 脚本 | 用途与写入行为 |
 |:---|:---|
 | `extract_registry.py`、`field_registry_api.py` | 从主字典提取登记信息；后者是多个治理脚本共用的内部 API。 |
-| `registry_parity.py` | 默认严格检查登记表、主字典投影和字段矩阵；治理运行器可传入已审定差异清单，仅接受清单与当前缺失配对完全一致的状态。 |
+| `registry_parity.py` | 校验登记表、主字典投影和字段矩阵；历史 TDX 五档 token 与当前 bid/ask 原始路径、以及仍采集的 Fuyao 上下文标签通过 `registry_parity_scope.json` 逐项注明证据和采集范围。未列入清单的新差异仍会失败；治理运行器的接受差异清单只用于另行审定的 parity debt。 |
 | `gen_field_dict.py`、`gen_field_matrix.py` | 生成字典/矩阵片段；`--check` 只检查、不写入。 |
 | `gen_ulist_subdict.py`、`gen_zhb_subdict.py` | 生成对应接口的字典子表及镜像。 |
-| `audit_field_completeness.py`、`lint_field_names.py`、`lint_field_same_number.py` | 字段来源完整度、命名和编号检查。 |
+| `audit_field_completeness.py`、`audit_field_source_quality.py`、`lint_field_names.py`、`lint_field_same_number.py` | 分别审查归档样本字段覆盖、已验证登记的语义元数据质量，以及命名和编号；质量审计只读 registry，不会自动改状态。 |
 | `archive_field_preflight.py` | 检查字段采集归档的 Markdown 契约。 |
 | `verify_data_access.py`、`verify_sync_check.py` | 分别检查生产数据访问边界和字典/代码同步；同步检查会更新审计报告。 |
 | `cleanse_dict_provenance.py` | 整理字段证据叙述；默认 dry-run，`--apply` 会改写字典并追加溯源记录。 |

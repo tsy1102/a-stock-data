@@ -180,6 +180,7 @@ __all__ = [
     "get_eastmoney_stock_news",
     "get_eastmoney_global_news",
     "get_sina_financial_report",
+    "get_sina_financial_report_raw",
     "get_sina_financial_report_async",
     "get_sina_balance_sheet",
     "get_sina_balance_sheet_async",
@@ -242,6 +243,7 @@ __all__ = [
     "get_em_industry_members_l2",
     "dragon_tiger_backup",
     "fund_flow_backup",
+    "get_sina_stock_fund_flow_raw",
     "cninfo_irm",
     "get_irm_qa",
     # zhb A级数据（V9.6）—— V17.0 S1: 删 21 个零调用死转发, 保留有调用方项
@@ -528,6 +530,7 @@ from stock_common.sc_datasource import (
     get_eastmoney_global_news,
     # 新浪财报
     get_sina_financial_report,
+    get_sina_financial_report_raw,
     get_sina_financial_report_async,
     get_sina_balance_sheet,
     get_sina_balance_sheet_async,
@@ -602,6 +605,7 @@ from stock_common.sc_datasource import (
     get_em_industry_members_l2,
     dragon_tiger_backup,
     fund_flow_backup,
+    get_sina_stock_fund_flow_raw,
     cninfo_irm,
     get_irm_qa,
     # zhb A级数据（V9.6）—— V17.0 S1: 删 21 个零调用死转发

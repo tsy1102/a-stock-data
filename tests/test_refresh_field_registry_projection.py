@@ -44,6 +44,23 @@ def test_rebuild_projection_changes_only_aggregate_fields_and_preserves_source_r
     assert stats["changed_aggregates"] == 1
 
 
+def test_changed_aggregate_count_is_keyed_by_code_not_sorted_position():
+    source_fields = [
+        {"source": "source-a", "code": code, "status": "unverified"}
+        for code in ("a-field", "b-field", "c-field")
+    ]
+    registry = {
+        "fields": projection.fra.build_aggregate_fields(source_fields[1:]),
+        "source_fields": source_fields,
+    }
+
+    _, stats = rebuild_projection(registry)
+
+    assert stats["aggregate_fields_before"] == 2
+    assert stats["aggregate_fields_after"] == 3
+    assert stats["changed_aggregates"] == 1
+
+
 def test_atomic_write_preserves_source_fields_and_uses_two_space_json(tmp_path, monkeypatch):
     registry = {
         "meta": {"version": 2},

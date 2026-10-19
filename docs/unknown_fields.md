@@ -5,7 +5,8 @@
 > 碰撞候选须人工复核后使用 `apply_collision_adjudications.py` 同步状态；流程见 `field_verification/ADJUDICATION_WORKFLOW.md`。
 > 聚合层的同码异义与定义缺口见 [`field_aggregate_review.md`](field_aggregate_review.md)，不代表逐源记录状态冲突。
 
-> 总字段路径 2481；unverified 1480、candidate 1、conflict 81、disproved 2。
+> 总字段路径 2518；unverified 1516、candidate 1、conflict 81、disproved 2。
+> 另有 203 条虽标 verified、但含义/单位元数据未达到碰撞锚条件；这些记录会重新进入碰撞目标，详见 [字段元数据复核](field_metadata_gaps.md)。
 > 以下两组未验证字段统计是不同维度，不能相加：含义栏文本只表示存在文字，不代表语义正确；状态判定反映旧字典状态证据能否映射到逐源身份。
 
 ## 未验证字段的复核分层
@@ -14,16 +15,18 @@
 
 | 分类 | 数量 |
 |:--|--:|
-| 含义栏为空/占位 | 1295 |
+| 含义栏为空/占位 | 1331 |
 | 含义栏有文本（仍未验证） | 185 |
 
 ### 历史状态证据的解析结果
 
 | 状态判定 | 数量 | 说明 |
 |:--|--:|:--|
-| `aggregate_status_scope_unresolved` | 501 | 历史聚合状态尚不能可靠映射到逐源身份 |
+| `aggregate_status_scope_unresolved` | 497 | 历史聚合状态尚不能可靠映射到逐源身份 |
+| `identity_reclassified_pending` | 9 | 按注册表原始状态判定代码保留 |
 | `matched` | 59 | 历史逐源状态与聚合状态一致，但仍未定案 |
-| `registry_status_only_single_source` | 877 | 只有来源自身状态，历史聚合信息不足以进一步归属 |
+| `reference_status_missing` | 35 | 按注册表原始状态判定代码保留 |
+| `registry_status_only_single_source` | 873 | 只有来源自身状态，历史聚合信息不足以进一步归属 |
 | `status_missing` | 43 | 缺少可用的历史状态记录 |
 
 ## 一、状态冲突（禁止作为锚点，优先复核）（81）
@@ -118,10 +121,19 @@
 |:--|:--|:--|:--|:--|:--|:--|:--|
 | ZHB-tdxstat | `stat.unknown_2` | stat.unknown_2 | 贝塔系数(60日)·L2候选(列[2]已定BetaValue: ihelp.dat L63官方定义+慢变特征实证自相关0.91, 待真实指数基准复现升L1) | - | 含义栏有文本（仍未验证） | matched | 1.1 tdxstat.cfg 标准契约表（stat.*，20260918 对撞定案）🆕 |
 
-## 三、待破解字段（1480）
+## 三、待破解字段（1516）
 
 | 来源 | 完整 code path | 规范名 | 含义 | 单位 | 含义栏提示 | 状态判定 | 证据章节 |
 |:--|:--|:--|:--|:--|:--|:--|:--|
+| FTShare | `first_limit_up_time` | — | — | — | 含义栏为空/占位 | identity_reclassified_pending | — |
+| FTShare | `limit_up_break` | — | — | — | 含义栏为空/占位 | identity_reclassified_pending | — |
+| FTShare | `limit_up_break_count` | — | — | — | 含义栏为空/占位 | identity_reclassified_pending | — |
+| FTShare | `limit_up_enter` | — | — | — | 含义栏为空/占位 | identity_reclassified_pending | — |
+| FTShare | `limit_up_price` | — | — | — | 含义栏为空/占位 | identity_reclassified_pending | — |
+| FTShare | `ready` | — | — | — | 含义栏为空/占位 | identity_reclassified_pending | — |
+| FTShare | `status` | — | — | — | 含义栏为空/占位 | identity_reclassified_pending | — |
+| FTShare | `symbol` | — | — | — | 含义栏为空/占位 | identity_reclassified_pending | — |
+| FTShare | `trade_date` | — | — | — | 含义栏为空/占位 | identity_reclassified_pending | — |
 | Levistock历史未归属 | `amount` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
 | Levistock历史未归属 | `amplitude` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
 | Levistock历史未归属 | `category` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
@@ -146,7 +158,6 @@
 | Levistock历史未归属 | `down_limit` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
 | Levistock历史未归属 | `down_limited` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
 | Levistock历史未归属 | `filter_st` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| Levistock历史未归属 | `first_limit_up_time` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
 | Levistock历史未归属 | `first_zt_time` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
 | Levistock历史未归属 | `float_mv` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
 | Levistock历史未归属 | `goodwill_scale` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
@@ -157,9 +168,7 @@
 | Levistock历史未归属 | `large_pct` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
 | Levistock历史未归属 | `last_px` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
 | Levistock历史未归属 | `last_zt_time` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| Levistock历史未归属 | `limit_up_break_count` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
 | Levistock历史未归属 | `limit_up_pool_yesterday` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| Levistock历史未归属 | `limit_up_price` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
 | Levistock历史未归属 | `main_inflow` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
 | Levistock历史未归属 | `main_net` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
 | Levistock历史未归属 | `main_pct` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
@@ -195,7 +204,6 @@
 | Levistock历史未归属 | `prev_turnover` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
 | Levistock历史未归属 | `price` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
 | Levistock历史未归属 | `probe_trading_day` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
-| Levistock历史未归属 | `ready` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
 | Levistock历史未归属 | `resume_time` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
 | Levistock历史未归属 | `sector` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
 | Levistock历史未归属 | `sector_ranking_kph` | sector_ranking_kph | — | — | 含义栏为空/占位 | registry_status_only_single_source | 12.10.9 levistock 全接口字段核实（2026-08-09 复测，**38/38 全部实测**）🆕 |
@@ -209,14 +217,12 @@
 | Levistock历史未归属 | `small_net` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
 | Levistock历史未归属 | `small_pct` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
 | Levistock历史未归属 | `speed` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
-| Levistock历史未归属 | `status` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
 | Levistock历史未归属 | `stock_code` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
 | Levistock历史未归属 | `stock_name` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
 | Levistock历史未归属 | `suspend` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
 | Levistock历史未归属 | `suspend_time` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
 | Levistock历史未归属 | `suspension_list` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
 | Levistock历史未归属 | `suspension_type` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| Levistock历史未归属 | `symbol` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
 | Levistock历史未归属 | `sz_change_pct` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
 | Levistock历史未归属 | `sz_close` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
 | Levistock历史未归属 | `time` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
@@ -224,7 +230,6 @@
 | Levistock历史未归属 | `total_market` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
 | Levistock历史未归属 | `total_mv` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
 | Levistock历史未归属 | `total_score` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| Levistock历史未归属 | `trade_date` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
 | Levistock历史未归属 | `ts_code` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
 | Levistock历史未归属 | `turnover_pct` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
 | Levistock历史未归属 | `turnover_rate` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | 12.10.4 开盘红复盘（get_zttt 涨停天梯 / get_pmsl 盘面梳理 / get_his_limit_resumption 历史涨停复盘）🆕；12.10.7 开盘红板块排行（sector_ranking_kph）补充字段 |
@@ -357,6 +362,7 @@
 | TDX(双命名源) | `amount_wan` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
 | TDX(双命名源) | `amplitude_pct` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
 | TDX(双命名源) | `ask1` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
+| TDX(双命名源) | `ask1_vol` | — | — | — | 含义栏为空/占位 | reference_status_missing | — |
 | TDX(双命名源) | `ask2` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
 | TDX(双命名源) | `ask3` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
 | TDX(双命名源) | `ask4` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
@@ -713,7 +719,6 @@
 | ZHB-tdxstat | `board_count` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
 | ZHB-tdxstat | `change_10k_bar` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
 | ZHB-tdxstat | `change_5k_bar` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| ZHB-tdxstat | `change_60d` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
 | ZHB-tdxstat | `change_60d_alt` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
 | ZHB-tdxstat | `change_pct` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
 | ZHB-tdxstat | `change_pct_1d` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
@@ -1222,6 +1227,8 @@
 | 市场源(market_sources) | `D5_CLOSE_ADJCHRATE` | — | — | — | 含义栏为空/占位 | status_missing | — |
 | 市场源(market_sources) | `DEAL_AMOUNT_RATIO` | — | — | — | 含义栏为空/占位 | status_missing | — |
 | 市场源(market_sources) | `DEAL_NET_RATIO` | — | — | — | 含义栏为空/占位 | status_missing | — |
+| 市场源(market_sources) | `DTJS` | — | — | — | 含义栏为空/占位 | reference_status_missing | — |
+| 市场源(market_sources) | `Day` | — | — | — | 含义栏为空/占位 | reference_status_missing | — |
 | 市场源(market_sources) | `EXPLAIN` | — | — | — | 含义栏为空/占位 | status_missing | — |
 | 市场源(market_sources) | `EXPLANATION` | — | — | — | 含义栏为空/占位 | status_missing | — |
 | 市场源(market_sources) | `FREE_MARKET_CAP` | — | — | — | 含义栏为空/占位 | status_missing | — |
@@ -1237,15 +1244,38 @@
 | 市场源(market_sources) | `SELL_SEAT_NEW` | — | — | — | 含义栏为空/占位 | status_missing | — |
 | 市场源(market_sources) | `SUM_BUY_AMT` | — | — | — | 含义栏为空/占位 | status_missing | — |
 | 市场源(market_sources) | `SUM_SELL_AMT` | — | — | — | 含义栏为空/占位 | status_missing | — |
+| 市场源(market_sources) | `SZJS` | — | — | — | 含义栏为空/占位 | reference_status_missing | — |
 | 市场源(market_sources) | `TRADE_DATE` | — | — | — | 含义栏为空/占位 | status_missing | — |
 | 市场源(market_sources) | `TRADE_ID` | — | — | — | 含义栏为空/占位 | status_missing | — |
 | 市场源(market_sources) | `TRADE_MARKET` | — | — | — | 含义栏为空/占位 | status_missing | — |
 | 市场源(market_sources) | `TRADE_MARKET_CODE` | — | — | — | 含义栏为空/占位 | status_missing | — |
 | 市场源(market_sources) | `TURNOVERRATE` | — | — | — | 含义栏为空/占位 | status_missing | — |
+| 市场源(market_sources) | `XDJS` | — | — | — | 含义栏为空/占位 | reference_status_missing | — |
+| 市场源(market_sources) | `ZTJS` | — | — | — | 含义栏为空/占位 | reference_status_missing | — |
 | 市场源(market_sources) | `amplitude` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
+| 市场源(market_sources) | `big_order_300w_net` | — | — | — | 含义栏为空/占位 | reference_status_missing | — |
+| 市场源(market_sources) | `bl` | — | — | — | 含义栏为空/占位 | reference_status_missing | — |
 | 市场源(market_sources) | `broken_num` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
 | 市场源(market_sources) | `broken_ratio` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
 | 市场源(market_sources) | `change_type` | change_type | 变动类型 | — | 含义栏有文本（仍未验证） | aggregate_status_scope_unresolved | 12.10.7a 市场源 market_sources 原始字段补录（V17.1.1 全量登记） |
+| 市场源(market_sources) | `circulation_value` | — | — | — | 含义栏为空/占位 | reference_status_missing | — |
+| 市场源(market_sources) | `col_02` | — | — | — | 含义栏为空/占位 | reference_status_missing | — |
+| 市场源(market_sources) | `col_03` | — | — | — | 含义栏为空/占位 | reference_status_missing | — |
+| 市场源(market_sources) | `col_04` | — | — | — | 含义栏为空/占位 | reference_status_missing | — |
+| 市场源(market_sources) | `col_05` | — | — | — | 含义栏为空/占位 | reference_status_missing | — |
+| 市场源(market_sources) | `col_06` | — | — | — | 含义栏为空/占位 | reference_status_missing | — |
+| 市场源(market_sources) | `col_07` | — | — | — | 含义栏为空/占位 | reference_status_missing | — |
+| 市场源(market_sources) | `col_08` | — | — | — | 含义栏为空/占位 | reference_status_missing | — |
+| 市场源(market_sources) | `col_09` | — | — | — | 含义栏为空/占位 | reference_status_missing | — |
+| 市场源(market_sources) | `col_10` | — | — | — | 含义栏为空/占位 | reference_status_missing | — |
+| 市场源(market_sources) | `col_11` | — | — | — | 含义栏为空/占位 | reference_status_missing | — |
+| 市场源(market_sources) | `col_12` | — | — | — | 含义栏为空/占位 | reference_status_missing | — |
+| 市场源(market_sources) | `col_13` | — | — | — | 含义栏为空/占位 | reference_status_missing | — |
+| 市场源(market_sources) | `col_14` | — | — | — | 含义栏为空/占位 | reference_status_missing | — |
+| 市场源(market_sources) | `col_15` | — | — | — | 含义栏为空/占位 | reference_status_missing | — |
+| 市场源(market_sources) | `col_16` | — | — | — | 含义栏为空/占位 | reference_status_missing | — |
+| 市场源(market_sources) | `col_17` | — | — | — | 含义栏为空/占位 | reference_status_missing | — |
+| 市场源(market_sources) | `col_18` | — | — | — | 含义栏为空/占位 | reference_status_missing | — |
 | 市场源(market_sources) | `color` | color | 待破解 | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | 12.10.7a 市场源 market_sources 原始字段补录（V17.1.1 全量登记） |
 | 市场源(market_sources) | `continuous_rate` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
 | 市场源(market_sources) | `count` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
@@ -1262,10 +1292,12 @@
 | 市场源(market_sources) | `dt` | zt / dt | 涨停 / 跌停总数 | — | 含义栏有文本（仍未验证） | aggregate_status_scope_unresolved | 12.10.3 开盘红市场情绪（market_emotion_kph，**含历史**）🆕 |
 | 市场源(market_sources) | `dt_ever` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
 | 市场源(market_sources) | `dt_num` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
+| 市场源(market_sources) | `errcode` | — | — | — | 含义栏为空/占位 | reference_status_missing | — |
 | 市场源(market_sources) | `fall_dist` | rise_dist / fall_dist | 待破解 | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | 12.10.3 开盘红市场情绪（market_emotion_kph，**含历史**）🆕 |
 | 市场源(market_sources) | `fall_num` | rise_num / fall_num / flat | 上涨 / 下跌 / 平盘家数 | — | 含义栏有文本（仍未验证） | aggregate_status_scope_unresolved | 12.10.3 开盘红市场情绪（market_emotion_kph，**含历史**）🆕 |
 | 市场源(market_sources) | `flat` | rise_num / fall_num / flat | 上涨 / 下跌 / 平盘家数 | — | 含义栏有文本（仍未验证） | aggregate_status_scope_unresolved | 12.10.3 开盘红市场情绪（market_emotion_kph，**含历史**）🆕 |
 | 市场源(market_sources) | `flat_num` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
+| 市场源(market_sources) | `institution_add` | — | — | — | 含义栏为空/占位 | reference_status_missing | — |
 | 市场源(market_sources) | `kpl_error` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
 | 市场源(market_sources) | `lbgd` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
 | 市场源(market_sources) | `limit_time` | limit_time | 涨停时间 | — | 含义栏有文本（仍未验证） | aggregate_status_scope_unresolved | 12.10.7a 市场源 market_sources 原始字段补录（V17.1.1 全量登记） |
@@ -1276,6 +1308,8 @@
 | 市场源(market_sources) | `market_degree` | market_degree | 待破解 | — | 含义栏为空/占位 | registry_status_only_single_source | 12.10.2 财联社市场情绪（market_emotion_cls）🆕 |
 | 市场源(market_sources) | `max_seal` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
 | 市场源(market_sources) | `one_word` | one_word | 一句话点评 | — | 含义栏有文本（仍未验证） | registry_status_only_single_source | 12.10.7a 市场源 market_sources 原始字段补录（V17.1.1 全量登记） |
+| 市场源(market_sources) | `pe_next` | — | — | — | 含义栏为空/占位 | reference_status_missing | — |
+| 市场源(market_sources) | `pe_now` | — | — | — | 含义栏为空/占位 | reference_status_missing | — |
 | 市场源(market_sources) | `performance` | performance | 昨涨停今表现 | — | 含义栏有文本（仍未验证） | aggregate_status_scope_unresolved | 12.10.2 财联社市场情绪（market_emotion_cls）🆕 |
 | 市场源(market_sources) | `plate_rotation_top` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
 | 市场源(market_sources) | `plates` | plates | 相关板块列表 | — | 含义栏有文本（仍未验证） | aggregate_status_scope_unresolved | 12.10.7a 市场源 market_sources 原始字段补录（V17.1.1 全量登记） |
@@ -1299,16 +1333,20 @@
 | 市场源(market_sources) | `sjdt` | sjzt / sjdt | 待破解 | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | 12.10.3 开盘红市场情绪（market_emotion_kph，**含历史**）🆕 |
 | 市场源(market_sources) | `sjzt` | sjzt / sjdt | 待破解 | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | 12.10.3 开盘红市场情绪（market_emotion_kph，**含历史**）🆕 |
 | 市场源(market_sources) | `source` | source | 数据来源标识 | — | 含义栏有文本（仍未验证） | aggregate_status_scope_unresolved | 12.10.7a 市场源 market_sources 原始字段补录（V17.1.1 全量登记） |
+| 市场源(market_sources) | `speed` | — | — | — | 含义栏为空/占位 | reference_status_missing | — |
 | 市场源(market_sources) | `status` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
 | 市场源(market_sources) | `stdt` | stzt / stdt | ST 涨停 / 跌停 | — | 含义栏有文本（仍未验证） | aggregate_status_scope_unresolved | 12.10.3 开盘红市场情绪（market_emotion_kph，**含历史**）🆕 |
 | 市场源(market_sources) | `stock_changes_8201` | — | — | — | 含义栏为空/占位 | status_missing | — |
+| 市场源(market_sources) | `strength` | — | — | — | 含义栏为空/占位 | reference_status_missing | — |
 | 市场源(market_sources) | `strong` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
 | 市场源(market_sources) | `stzt` | stzt / stdt | ST 涨停 / 跌停 | — | 含义栏有文本（仍未验证） | aggregate_status_scope_unresolved | 12.10.3 开盘红市场情绪（market_emotion_kph，**含历史**）🆕 |
 | 市场源(market_sources) | `suspend_num` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
 | 市场源(market_sources) | `szln` | szln / qscln | 待破解 | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | 12.10.3 开盘红市场情绪（market_emotion_kph，**含历史**）🆕 |
 | 市场源(market_sources) | `tip` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
 | 市场源(market_sources) | `total_amount_wan` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
+| 市场源(market_sources) | `total_value` | — | — | — | 含义栏为空/占位 | reference_status_missing | — |
 | 市场源(market_sources) | `trade_date` | — | — | — | 含义栏为空/占位 | status_missing | — |
+| 市场源(market_sources) | `ttag` | — | — | — | 含义栏为空/占位 | reference_status_missing | — |
 | 市场源(market_sources) | `turnover_real` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
 | 市场源(market_sources) | `up_10` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
 | 市场源(market_sources) | `up_2` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
@@ -1322,6 +1360,7 @@
 | 市场源(market_sources) | `up_ratio` | up_ratio / up_ratio_num | 封板率 / 封板数量 | — | 含义栏有文本（仍未验证） | registry_status_only_single_source | 12.10.2 财联社市场情绪（market_emotion_cls）🆕 |
 | 市场源(market_sources) | `up_ratio_num` | up_ratio / up_ratio_num | 封板率 / 封板数量 | — | 含义栏有文本（仍未验证） | registry_status_only_single_source | 12.10.2 财联社市场情绪（market_emotion_cls）🆕 |
 | 市场源(market_sources) | `value` | value | 待破解 | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | 12.10.7a 市场源 market_sources 原始字段补录（V17.1.1 全量登记） |
+| 市场源(market_sources) | `vol_ratio` | — | — | — | 含义栏为空/占位 | reference_status_missing | — |
 | 市场源(market_sources) | `zt` | zt / dt | 涨停 / 跌停总数 | — | 含义栏有文本（仍未验证） | aggregate_status_scope_unresolved | 12.10.3 开盘红市场情绪（market_emotion_kph，**含历史**）🆕 |
 | 市场源(market_sources) | `zt_natural` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
 | 市场源(market_sources) | `zt_num` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |

@@ -86,10 +86,12 @@ def test_exact_source_evidence_preserves_verification_and_exposes_conflict():
         ],
         "mappings": [],
     }
+    verified_reference = _reference("src-b", "value", ["verified"])
+    verified_reference["meaning"] = "verified meaning"
     extracted = {
         "source_fields": [
             _reference("src-a", "value", ["unverified"]),
-            _reference("src-b", "value", ["verified"]),
+            verified_reference,
         ]
     }
 

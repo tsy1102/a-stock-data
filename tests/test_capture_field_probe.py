@@ -20,6 +20,12 @@ capture_probe = module_from_spec(_probe_spec)
 _probe_spec.loader.exec_module(capture_probe)
 
 
+def _fake_kpl_detail(pid_type=1, capture_raw=False):
+    if pid_type != 1:
+        return []
+    return [{"code": "600000", "zt_time": 1790645140, "seal_amount": 1.0}]
+
+
 def test_startup_scope_label_shows_selected_sources_and_context_mode():
     assert (
         capture_probe._startup_scope_label(["ftshare", "kph"], True)
@@ -34,10 +40,13 @@ def test_market_sources_queries_latest_dragon_tiger_snapshot(monkeypatch):
     monkeypatch.setattr(stock_common, "get_cls_market_emotion", lambda: {})
     monkeypatch.setattr(stock_common, "get_kph_limit_ladder", lambda *_args: [])
     monkeypatch.setattr(stock_common, "get_stock_changes", lambda _code: [])
-    monkeypatch.setattr(stock_common, "get_kpl_market_sentiment", lambda: {})
-    monkeypatch.setattr(stock_common, "get_kpl_limit_up_detail", lambda: [])
-    monkeypatch.setattr(stock_common, "get_kpl_broken_ratio", lambda: {})
-    monkeypatch.setattr(stock_common, "get_kpl_up_down", lambda: {})
+    monkeypatch.setattr(stock_common, "get_kpl_market_sentiment", lambda **_kwargs: {"strong": 1})
+    monkeypatch.setattr(stock_common, "get_kpl_limit_up_detail", _fake_kpl_detail)
+    monkeypatch.setattr(stock_common, "get_kpl_broken_ratio", lambda **_kwargs: {"zt": 1})
+    monkeypatch.setattr(stock_common, "get_kpl_up_down", lambda **_kwargs: {"rise_num": 1})
+    monkeypatch.setattr(
+        stock_common, "get_kpl_plate_strength", lambda **_kwargs: [{"code": "BK0001"}]
+    )
     monkeypatch.setattr(stock_common, "get_plate_rotation_matrix", lambda **_kwargs: [])
     monkeypatch.setattr(stock_common, "get_plate_rotation_top", lambda: [])
 
@@ -69,10 +78,13 @@ def test_market_sources_skips_dragon_tiger_by_default(monkeypatch):
         lambda trade_date="": kph_dates.append(trade_date) or [],
     )
     monkeypatch.setattr(stock_common, "get_stock_changes", lambda _code: [])
-    monkeypatch.setattr(stock_common, "get_kpl_market_sentiment", lambda: {})
-    monkeypatch.setattr(stock_common, "get_kpl_limit_up_detail", lambda: [])
-    monkeypatch.setattr(stock_common, "get_kpl_broken_ratio", lambda: {})
-    monkeypatch.setattr(stock_common, "get_kpl_up_down", lambda: {})
+    monkeypatch.setattr(stock_common, "get_kpl_market_sentiment", lambda **_kwargs: {"strong": 1})
+    monkeypatch.setattr(stock_common, "get_kpl_limit_up_detail", _fake_kpl_detail)
+    monkeypatch.setattr(stock_common, "get_kpl_broken_ratio", lambda **_kwargs: {"zt": 1})
+    monkeypatch.setattr(stock_common, "get_kpl_up_down", lambda **_kwargs: {"rise_num": 1})
+    monkeypatch.setattr(
+        stock_common, "get_kpl_plate_strength", lambda **_kwargs: [{"code": "BK0001"}]
+    )
     monkeypatch.setattr(stock_common, "get_plate_rotation_matrix", lambda **_kwargs: [])
     monkeypatch.setattr(stock_common, "get_plate_rotation_top", lambda: [])
     monkeypatch.setattr(
@@ -148,10 +160,13 @@ def test_market_source_failures_do_not_skip_sibling_calls(monkeypatch):
     monkeypatch.setattr(stock_common, "get_cls_market_emotion", fail_cls)
     monkeypatch.setattr(stock_common, "get_kph_limit_ladder", lambda *_args: ["ladder"])
     monkeypatch.setattr(stock_common, "get_stock_changes", lambda _code: ["change"])
-    monkeypatch.setattr(stock_common, "get_kpl_market_sentiment", lambda: {})
-    monkeypatch.setattr(stock_common, "get_kpl_limit_up_detail", lambda: [])
-    monkeypatch.setattr(stock_common, "get_kpl_broken_ratio", lambda: {})
-    monkeypatch.setattr(stock_common, "get_kpl_up_down", lambda: {})
+    monkeypatch.setattr(stock_common, "get_kpl_market_sentiment", lambda **_kwargs: {"strong": 1})
+    monkeypatch.setattr(stock_common, "get_kpl_limit_up_detail", _fake_kpl_detail)
+    monkeypatch.setattr(stock_common, "get_kpl_broken_ratio", lambda **_kwargs: {"zt": 1})
+    monkeypatch.setattr(stock_common, "get_kpl_up_down", lambda **_kwargs: {"rise_num": 1})
+    monkeypatch.setattr(
+        stock_common, "get_kpl_plate_strength", lambda **_kwargs: [{"code": "BK0001"}]
+    )
     monkeypatch.setattr(stock_common, "get_plate_rotation_matrix", lambda **_kwargs: [])
     monkeypatch.setattr(stock_common, "get_plate_rotation_top", lambda: [])
     monkeypatch.setattr(stock_common, "eastmoney_datacenter", lambda *_args, **_kwargs: [])
@@ -174,10 +189,13 @@ def test_market_source_none_response_is_an_error(monkeypatch):
     monkeypatch.setattr(stock_common, "get_cls_market_emotion", lambda: None)
     monkeypatch.setattr(stock_common, "get_kph_limit_ladder", lambda *_args: [])
     monkeypatch.setattr(stock_common, "get_stock_changes", lambda _code: [])
-    monkeypatch.setattr(stock_common, "get_kpl_market_sentiment", lambda: {})
-    monkeypatch.setattr(stock_common, "get_kpl_limit_up_detail", lambda: [])
-    monkeypatch.setattr(stock_common, "get_kpl_broken_ratio", lambda: {})
-    monkeypatch.setattr(stock_common, "get_kpl_up_down", lambda: {})
+    monkeypatch.setattr(stock_common, "get_kpl_market_sentiment", lambda **_kwargs: {"strong": 1})
+    monkeypatch.setattr(stock_common, "get_kpl_limit_up_detail", _fake_kpl_detail)
+    monkeypatch.setattr(stock_common, "get_kpl_broken_ratio", lambda **_kwargs: {"zt": 1})
+    monkeypatch.setattr(stock_common, "get_kpl_up_down", lambda **_kwargs: {"rise_num": 1})
+    monkeypatch.setattr(
+        stock_common, "get_kpl_plate_strength", lambda **_kwargs: [{"code": "BK0001"}]
+    )
     monkeypatch.setattr(stock_common, "get_plate_rotation_matrix", lambda **_kwargs: [])
     monkeypatch.setattr(stock_common, "get_plate_rotation_top", lambda: [])
     monkeypatch.setattr(stock_common, "eastmoney_datacenter", lambda *_args, **_kwargs: [])
@@ -197,10 +215,13 @@ def test_market_source_missing_export_does_not_skip_sibling_calls(monkeypatch):
     monkeypatch.delattr(stock_common, "get_cls_market_emotion")
     monkeypatch.setattr(stock_common, "get_kph_limit_ladder", lambda *_args: ["ladder"])
     monkeypatch.setattr(stock_common, "get_stock_changes", lambda _code: [])
-    monkeypatch.setattr(stock_common, "get_kpl_market_sentiment", lambda: {})
-    monkeypatch.setattr(stock_common, "get_kpl_limit_up_detail", lambda: [])
-    monkeypatch.setattr(stock_common, "get_kpl_broken_ratio", lambda: {})
-    monkeypatch.setattr(stock_common, "get_kpl_up_down", lambda: {})
+    monkeypatch.setattr(stock_common, "get_kpl_market_sentiment", lambda **_kwargs: {"strong": 1})
+    monkeypatch.setattr(stock_common, "get_kpl_limit_up_detail", _fake_kpl_detail)
+    monkeypatch.setattr(stock_common, "get_kpl_broken_ratio", lambda **_kwargs: {"zt": 1})
+    monkeypatch.setattr(stock_common, "get_kpl_up_down", lambda **_kwargs: {"rise_num": 1})
+    monkeypatch.setattr(
+        stock_common, "get_kpl_plate_strength", lambda **_kwargs: [{"code": "BK0001"}]
+    )
     monkeypatch.setattr(stock_common, "get_plate_rotation_matrix", lambda **_kwargs: [])
     monkeypatch.setattr(stock_common, "get_plate_rotation_top", lambda: [])
     monkeypatch.setattr(stock_common, "eastmoney_datacenter", lambda *_args, **_kwargs: [])
@@ -1164,7 +1185,7 @@ def test_non_raw_source_states_are_complete_without_raw_files(tmp_path):
     meta = {
         "sources": {
             "future_source": {"ok": False, "status": "unwired"},
-            "baidu": {"ok": False, "status": "deprecated"},
+            "baidu": {"ok": False, "status": "pending_validation"},
         }
     }
 
@@ -1529,38 +1550,67 @@ def test_kph_history_date_uses_trading_calendar_and_stays_before_today(monkeypat
         capture_probe._kph_history_trade_date("20261001", today=date(2026, 9, 30))
 
 
-def test_collect_kpl_detail_records_timestamp_date_and_numeric_fields(monkeypatch):
-    rows = [
-        {
-            "code": "600000",
-            "name": "浦发银行",
-            "zt_time": 1790645140,
-            "seal_amount": 12.0,
-            "max_seal": 34.0,
-            "main_inflow": 56.0,
-            "amount": 78.0,
-            "turnover_real": 0.37,
-            "reason": "文字概念",
-        }
-    ]
-    monkeypatch.setattr(stock_common, "get_kpl_limit_up_detail", lambda: rows)
+def test_collect_kpl_detail_preserves_all_source_fields_and_row_identity(monkeypatch):
+    rows_by_pid_type = {
+        1: [
+            {
+                "code": "600000",
+                "name": "浦发银行",
+                "zt_time": 1790645140,
+                "seal_amount": 12.0,
+                "max_seal": 34.0,
+                "main_inflow": 56.0,
+                "amount": 78.0,
+                "turnover_real": 0.37,
+                "reason": "文字概念",
+                "ready": False,
+                "break_times": ["09:32:45", "09:33:15"],
+                "detail": {"source_flag": "raw"},
+            }
+        ],
+        2: [{"code": "000001", "name": "平安银行", "zt_time": 1790645140, "reason": "二板"}],
+        3: [{"code": "600000", "name": "浦发银行", "zt_time": 1790645140, "reason": "重复接口行"}],
+    }
+    calls = []
+
+    def fake_kpl_detail(pid_type=1, capture_raw=False):
+        calls.append(pid_type)
+        return rows_by_pid_type.get(pid_type, [])
+
+    monkeypatch.setattr(stock_common, "get_kpl_limit_up_detail", fake_kpl_detail)
 
     result = capture_probe.collect_kpl_detail("20260929")
 
+    assert calls == [1, 2, 3, 4, 5]
     assert result["trade_date"] == "2026-09-29"
     assert result["capture_date"] == "2026-09-29"
+    assert result["pid_type_counts"] == {"1": 1, "2": 1, "3": 1, "4": 0, "5": 0}
+    assert result["row_count"] == 2
+    assert result["raw_row_count"] == 3
+    assert result["duplicate_row_count"] == 1
+    assert result["duplicate_rows"][0]["symbol"] == "600000"
+    assert result["duplicate_rows"][0]["fields"]["__identity__"]["pid_type"] == 3
     assert result["stocks"]["600000"] == {
+        "name": "浦发银行",
         "zt_time": 1790645140,
         "seal_amount": 12.0,
         "max_seal": 34.0,
         "main_inflow": 56.0,
         "amount": 78.0,
         "turnover_real": 0.37,
+        "reason": "文字概念",
+        "ready": False,
+        "break_times": ["09:32:45", "09:33:15"],
+        "detail": {"source_flag": "raw"},
+        "__identity__": {"code": "600000", "pid_type": 1},
     }
-    assert "reason" not in result["stocks"]["600000"]
+    assert result["stocks"]["000001"]["__identity__"] == {
+        "code": "000001",
+        "pid_type": 2,
+    }
 
 
-def test_collect_kph_history_keeps_numeric_data_and_separates_bad_exchange(monkeypatch):
+def test_collect_kph_history_preserves_all_source_fields_and_separates_identity(monkeypatch):
     from stock_common import sc_datasource
 
     monkeypatch.setattr(
@@ -1603,6 +1653,14 @@ def test_collect_kph_history_keeps_numeric_data_and_separates_bad_exchange(monke
         "turnover": 400.0,
         "turnover_rate": 0.5,
         "future_numeric_candidate": 12.5,
+        "name": "示例证券",
+        "reason": "文本原因",
+        "__identity__": {
+            "trade_date": "20260929",
+            "symbol": "920779",
+            "instrument_id": "920779.SH",
+            "exchange": "SSE",
+        },
     }
     assert result["identity_observations"] == [
         "920779: reported_exchange=SSE; reported_instrument_id=920779.SH"
@@ -1639,14 +1697,17 @@ def test_market_sources_can_omit_kpl_detail_when_collected_separately(monkeypatc
     monkeypatch.setattr(stock_common, "get_cls_market_emotion", lambda: {})
     monkeypatch.setattr(stock_common, "get_kph_limit_ladder", lambda *_args: [])
     monkeypatch.setattr(stock_common, "get_stock_changes", lambda _code: [])
-    monkeypatch.setattr(stock_common, "get_kpl_market_sentiment", lambda: {})
-    monkeypatch.setattr(stock_common, "get_kpl_up_down", lambda: {})
+    monkeypatch.setattr(stock_common, "get_kpl_market_sentiment", lambda **_kwargs: {"strong": 1})
+    monkeypatch.setattr(stock_common, "get_kpl_up_down", lambda **_kwargs: {"rise_num": 1})
     monkeypatch.setattr(
         stock_common,
         "get_kpl_limit_up_detail",
-        lambda: pytest.fail("KPL detail must be requested only by its own collector"),
+        lambda **_kwargs: pytest.fail("KPL detail must be requested only by its own collector"),
     )
-    monkeypatch.setattr(stock_common, "get_kpl_broken_ratio", lambda: {})
+    monkeypatch.setattr(stock_common, "get_kpl_broken_ratio", lambda **_kwargs: {"zt": 1})
+    monkeypatch.setattr(
+        stock_common, "get_kpl_plate_strength", lambda **_kwargs: [{"code": "BK0001"}]
+    )
     monkeypatch.setattr(stock_common, "get_plate_rotation_matrix", lambda **_kwargs: [])
     monkeypatch.setattr(stock_common, "get_plate_rotation_top", lambda: [])
 
@@ -1750,7 +1811,7 @@ def test_closed_snapshot_validation_refresh_reuses_raw_without_relabeling_mixed_
     assert persisted["levistock_validation"]["status"] == "partial"
 
 
-def test_ftshare_capture_skips_only_confirmed_redundant_endpoint(monkeypatch):
+def test_ftshare_capture_keeps_confirmed_redundant_endpoint_values(monkeypatch):
     from scripts import source_identity_reconciliation
     from stock_common import sc_ftshare
 
@@ -1786,14 +1847,31 @@ def test_ftshare_capture_skips_only_confirmed_redundant_endpoint(monkeypatch):
     monkeypatch.setattr(sc_ftshare, "get_ft_comment_desire", getter("comment_desire", {}))
     monkeypatch.setattr(sc_ftshare, "get_ft_comment_focus", getter("comment_focus", {}))
     monkeypatch.setattr(sc_ftshare, "get_ft_comment_org_participate", getter("comment_org", {}))
-    monkeypatch.setattr(sc_ftshare, "get_ft_ggmx_changes", getter("ggmx", []))
+    monkeypatch.setattr(sc_ftshare, "get_ft_ggmx_changes", getter("ggmx", [{"amount": 10}]))
     monkeypatch.setattr(sc_ftshare, "get_ft_goodwill_stock_detail", getter("goodwill_detail", []))
-    monkeypatch.setattr(sc_ftshare, "get_ft_dapan_flow", lambda *_args: {})
-    monkeypatch.setattr(sc_ftshare, "get_ft_market_snapshot", lambda: {})
-    monkeypatch.setattr(sc_ftshare, "get_ft_suspension_list", lambda *_args: [])
-    monkeypatch.setattr(sc_ftshare, "get_ft_limit_up_pool_yesterday", lambda *_args: [])
-    monkeypatch.setattr(sc_ftshare, "get_ft_unlock_by_date", lambda *_args: [])
-    monkeypatch.setattr(sc_ftshare, "get_ft_pledge_summary", lambda: {})
+    monkeypatch.setattr(sc_ftshare, "get_ft_dapan_flow", getter("dapan_flow", [{"main_net": 12.5}]))
+    monkeypatch.setattr(
+        sc_ftshare, "get_ft_market_snapshot", getter("market_snapshot", {"change_rate": 1.2})
+    )
+    monkeypatch.setattr(
+        sc_ftshare,
+        "get_ft_suspension_list",
+        getter("suspension_list", [{"symbol": "600000.XSHG"}]),
+    )
+    monkeypatch.setattr(
+        sc_ftshare,
+        "get_ft_limit_up_pool_yesterday",
+        getter(
+            "limit_up_pool_yesterday",
+            [{"symbol": "600000.XSHG", "limit_up_break_count": 1}],
+        ),
+    )
+    monkeypatch.setattr(
+        sc_ftshare, "get_ft_unlock_by_date", getter("unlock_by_date", [{"stockCode": "600000"}])
+    )
+    monkeypatch.setattr(
+        sc_ftshare, "get_ft_pledge_summary", getter("pledge_summary", {"pledge_total_ratio": 0})
+    )
     monkeypatch.setattr(capture_probe, "_last_completed_trading_day", lambda: date(2026, 10, 12))
 
     result = capture_probe.collect_ftshare([{"code": "600000"}], data_date="20261012")
@@ -1803,10 +1881,55 @@ def test_ftshare_capture_skips_only_confirmed_redundant_endpoint(monkeypatch):
         "comment_desire",
         "comment_focus",
         "comment_org",
+        "ggmx",
         "goodwill_detail",
+        "dapan_flow",
+        "market_snapshot",
+        "suspension_list",
+        "limit_up_pool_yesterday",
+        "unlock_by_date",
+        "pledge_summary",
     ]
-    assert result["stocks"]["600000"]["ggmx"] == []
+    assert result["stocks"]["600000"]["ggmx"] == [{"amount": 10}]
+    assert result["market"]["dapan_flow"] == [{"main_net": 12.5}]
+    assert result["market"]["market_snapshot"] == {"change_rate": 1.2}
+    assert result["market"]["limit_up_pool_yesterday"] == [
+        {"symbol": "600000.XSHG", "limit_up_break_count": 1}
+    ]
+    assert result["market"]["pledge_summary"] == {"pledge_total_ratio": 0}
     metadata = result["__source_meta__"]
-    assert set(metadata["identity_skipped_endpoints"]) == {"ggmx"}
+    assert set(metadata["identity_validation_suppressed_endpoints"]) == {"ggmx"}
+    assert metadata["identity_validation_suppressed_endpoints"]["ggmx"]["capture_performed"] is True
     assert "ggmx" not in metadata["identity_sampled_endpoints"]
     assert metadata["identity_contract_fingerprints"] == {"ggmx": "contract-v1"}
+
+
+def test_tdx_capture_quote_normalization_handles_nullable_wire_values():
+    from scripts.capture_field_probe import _normalize_tdx_capture_quote
+
+    assert (
+        _normalize_tdx_capture_quote(
+            {"price": None, "last_close": None, "pre_close": None, "bid1": None}
+        )
+        is None
+    )
+
+    normalized = _normalize_tdx_capture_quote(
+        {
+            "price": "101",
+            "pre_close": 100,
+            "bid1": 100.9,
+            "bid1_vol": 10,
+            "ask1_vol": 20,
+        }
+    )
+
+    assert normalized == {
+        "price": "101",
+        "last_close": 100,
+        "bid1": 100.9,
+        "bid1_vol": 10,
+        "ask1_vol": 20,
+        "change_pct": 1.0,
+        "change_amt": 1.0,
+    }

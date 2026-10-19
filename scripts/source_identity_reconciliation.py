@@ -454,9 +454,13 @@ def _endpoint_skipped(
     endpoint: IdentityEndpoint, document: Any, source_meta: dict[str, Any]
 ) -> bool:
     for metadata in (_identity_meta(document), source_meta):
-        skipped = metadata.get("identity_skipped_endpoints")
-        if isinstance(skipped, dict) and endpoint.field_code in skipped:
-            return True
+        for key in (
+            "identity_validation_suppressed_endpoints",
+            "identity_skipped_endpoints",  # Backward compatibility for older snapshots.
+        ):
+            skipped = metadata.get(key)
+            if isinstance(skipped, dict) and endpoint.field_code in skipped:
+                return True
     return False
 
 

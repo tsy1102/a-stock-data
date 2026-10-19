@@ -1,35 +1,71 @@
 # 全源对撞报告（20261018）
 
 > 交易数据窗口配置：近 7 个交易日（`--window`）
-> 行情窗口：20261008 ~ 20261016（7 个不同交易日）｜字段 1174 个｜样本值 354790 条
+> 行情窗口：20261008 ~ 20261016（7 个不同交易日）｜字段 1243 个｜样本值 352934 条
 > 新闻/公告自然日窗口：20261012 ~ 20261018
-> 主攻目标（unverified）=324｜首次发现 L1/L1-U 候选对=0｜异号同义 4 / 同号镜像 0
+> 主攻目标（unverified）=515｜可审定新候选=1｜首次发现新候选对=0｜已登记关系复验=2｜异号同义 1 / 同号镜像 0
 
 > **规则**：L1 每日需≥18 组有效配对，并至少有5 组信息配对；双方同时为 0 或同时缺失不计命中率，一侧为 0、另一侧非 0 按失配计。信息配对命中率≥90%，且覆盖至少 3 个独立交易日/自然事件日；同一来源族不作为跨源证据；盘中快照不计入 L1。JSON `daily_sample_counts` 与 `daily_informative_sample_counts`分别保留每日有效配对数和 L1 信息配对数。（详见 `COLLISION_RULES.md`）。本引擎只发现、不写字典；新定案经 field_dict.md 订正后由 sanctioned 管线 ingest。
 
 ---
 
-## 一、L1 / L1-U 定案候选 — 异号同义（跨编号，高价值）(4)
+## 一、L1 / L1-U 新候选 — 异号同义（跨编号，高价值）(1)
 
 | 左字段(unverified) | 右字段 | 等级 | 命中率 | 天数 | 样本 | 信息样本 | 比值 | hub | registry |
 |:--|:--|:--|--:|--:|--:|--:|--:|:--|:--|
-| `zhb.full.change_pct` | `tencent[32]` | L1 | 97.98% | 5 | 100 | 99 | - |  | ✅ |
-| `zhb.full.high_52w` | `tencent[67]` | L1 | 95.00% | 5 | 100 | 100 | - |  | ✅ |
-| `zhb.full.pe_ttm` | `tencent[39]` | L1 | 97.00% | 5 | 100 | 100 | - |  | — |
 | `zhb.full.change_60d` | `tencent[71]` | L1 | 90.00% | 5 | 100 | 100 | - |  | — |
 
-## 二、L1 / L1-U 定案候选 — 同号镜像（同编号，低优先级）(0)
+## 二、L1 / L1-U 新候选 — 同号镜像（同编号，低优先级）(0)
 
 _本轮无同号镜像候选。_
 
 
-## 三、L4 存疑候选（86）
+## 三、已登记映射的本窗口复验（2）
+
+_这些关系已在主注册表登记，只用于观察当前样本是否仍支持既有映射；它们不是新的未知字段候选，也不能再次提交为新定案。_
+
+| 左字段 | 右字段 | 等级 | 命中率 | 天数 | 样本 | 信息样本 | 比值 | hub | registry |
+|:--|:--|:--|--:|--:|--:|--:|--:|:--|:--|
+| `zhb.full.change_pct` | `tencent[32]` | L1 | 97.98% | 5 | 100 | 99 | - |  | ✅ |
+| `zhb.full.high_52w` | `tencent[67]` | L1 | 95.00% | 5 | 100 | 100 | - |  | ✅ |
+
+## 四、L4 存疑候选（195）
 
 | 左字段 | 右字段 | 命中率 | 天数 | 样本 |
 |:--|:--|--:|--:|--:|
+| `kpl.raw_columns.col_04` | `kph.limit_time` | 100.00% | 1 | 50 |
+| `kpl.raw_columns.col_06` | `kph.seal_amount` | 100.00% | 1 | 50 |
+| `kpl.raw_columns.col_06` | `push2ex.limit_fund` | 100.00% | 1 | 61 |
+| `kpl.raw_columns.col_07` | `kph.seal_money` | 100.00% | 1 | 50 |
+| `kpl.raw_columns.col_08` | `kph.net_inflow` | 100.00% | 1 | 50 |
+| `kpl.raw_columns.col_11` | `kph.turnover` | 100.00% | 1 | 50 |
+| `kpl.raw_columns.col_11` | `push2ex.amount` | 100.00% | 1 | 61 |
+| `kpl.raw_columns.col_14` | `kph.turnover_rate` | 100.00% | 1 | 50 |
+| `kpl.raw_columns.col_15` | `push2ex.limit_count` | 100.00% | 1 | 61 |
+| `push2.f57` | `tencent[2]` | 100.00% | 2 | 24 |
+| `push2.f58` | `tencent[1]` | 100.00% | 2 | 24 |
+| `push2.f60` | `eltdx.quote_snapshot.pre_close_price` | 100.00% | 2 | 24 |
+| `push2.f60` | `eltdx.shortline.pre_close` | 100.00% | 2 | 24 |
+| `push2.f60` | `fuyao.snapshot.prev_price` | 100.00% | 1 | 12 |
+| `push2.f60` | `sina[2]` | 100.00% | 2 | 24 |
+| `push2.f60` | `tdx.quote_full.last_close` | 100.00% | 2 | 24 |
+| `push2.f60` | `tencent[4]` | 100.00% | 2 | 24 |
+| `push2.f71` | `tencent[51]` | 100.00% | 2 | 24 |
+| `push2.f119` | `tencent[63]` | 100.00% | 2 | 24 |
+| `push2.f119` | `zhb.full.change_5d` | 100.00% | 1 | 12 |
+| `push2.f119` | `zhb.stat.change_5d` | 100.00% | 1 | 12 |
+| `push2.f120` | `tencent[70]` | 100.00% | 2 | 24 |
+| `push2.f120` | `zhb.full.change_20d` | 100.00% | 1 | 12 |
+| `push2.f120` | `zhb.stat.change_20d` | 100.00% | 1 | 12 |
+| `push2.f162` | `tencent[52]` | 100.00% | 2 | 24 |
+| `push2.f163` | `tencent[53]` | 100.00% | 2 | 24 |
+| `push2.f175` | `tencent[68]` | 100.00% | 2 | 24 |
+| `push2.f175` | `zhb.full.low_52w` | 100.00% | 1 | 12 |
+| `push2.f175` | `zhb.stat2.low_52w` | 100.00% | 1 | 12 |
 | `push2ex.limit_fund` | `kph.seal_amount` | 100.00% | 1 | 50 |
-| `push2ex.limit_fund` | `kpl.seal_amount` | 100.00% | 2 | 75 |
-| `sina[11]` | `tdx.quote_full.bid1` | 100.00% | 4 | 80 |
+| `push2ex.limit_fund` | `kpl.seal_amount` | 100.00% | 2 | 82 |
+| `sina[11]` | `tdx.quote_full.bid1` | 100.00% | 5 | 100 |
+| `sina[11]` | `tdx.quote_raw.bid1` | 100.00% | 1 | 20 |
 | `sina[11]` | `tencent[9]` | 100.00% | 7 | 140 |
 | `sina[11]` | `ulist239.f31` | 100.00% | 1 | 20 |
 | `sina[13]` | `tencent[11]` | 100.00% | 7 | 140 |
@@ -41,61 +77,31 @@ _本轮无同号镜像候选。_
 | `sina[25]` | `tencent[23]` | 100.00% | 7 | 140 |
 | `sina[27]` | `tencent[25]` | 100.00% | 7 | 140 |
 | `sina[29]` | `tencent[27]` | 100.00% | 7 | 140 |
-| `tencent[10]` | `ulist239.f211` | 100.00% | 1 | 20 |
-| `tencent[11]` | `ulist239.f142` | 100.00% | 1 | 20 |
-| `ulist239.f144` | `eltdx.quote_snapshot.last_price` | 100.00% | 1 | 18 |
-| `ulist239.f144` | `fuyao.snapshot.last_price` | 100.00% | 1 | 20 |
-| `ulist239.f144` | `sina[3]` | 100.00% | 1 | 20 |
-| `ulist239.f144` | `tdx.quote_full.price` | 100.00% | 1 | 20 |
-| `ulist239.f144` | `tencent[3]` | 100.00% | 1 | 20 |
-| `zhb.full.change_pct` | `push2.f170` | 100.00% | 1 | 12 |
-| `zhb.full.change_60d` | `push2.f121` | 100.00% | 1 | 12 |
-| `kph.limit_count` | `push2ex.limit_count` | 96.00% | 1 | 50 |
-| `sina[32]` | `ulist239.f190` | 95.00% | 1 | 20 |
-| `sina[32]` | `ulist239.f231` | 95.00% | 1 | 20 |
-| `kph.limit_count` | `push2ex.zt_continuous` | 94.00% | 1 | 50 |
-| `sina[32]` | `tdx.finance_info.hgu` | 93.00% | 5 | 100 |
-| `kph.limit_count` | `push2ex.zt_days` | 92.00% | 1 | 50 |
-| `zhb.full.pe_ttm` | `push2.f164` | 91.67% | 1 | 12 |
-| `zhb.full.change_ytd` | `push2.f122` | 91.67% | 1 | 12 |
-| `sina[32]` | `eltdx.quote_snapshot.unknown_after_outer_raw` | 91.38% | 6 | 116 |
-| `sina[23]` | `ulist239.f143` | 90.00% | 1 | 20 |
-| `sina[32]` | `ulist239.f200` | 90.00% | 1 | 20 |
-| `tencent[20]` | `ulist239.f212` | 90.00% | 1 | 20 |
-| `tencent[21]` | `ulist239.f143` | 90.00% | 1 | 20 |
-| `sina[32]` | `tdx.finance_info.bgu` | 88.00% | 5 | 100 |
-| `sina[32]` | `zhb.full.other_qy_jzc` | 88.00% | 5 | 100 |
-| `sina[32]` | `zhb.stat.other_qy_jzc` | 88.00% | 5 | 100 |
-| `push2.f192` | `tencent[50]` | 87.50% | 2 | 24 |
-| `fuyao.valuation.ps_ttm` | `ulist239.f130` | 85.00% | 1 | 20 |
-| `push2.f49` | `tencent[7]` | 83.33% | 2 | 24 |
-| `push2.f161` | `tencent[8]` | 83.33% | 2 | 24 |
-| `push2.f174` | `tencent[67]` | 83.33% | 2 | 24 |
-| `push2.f174` | `zhb.full.high_52w` | 83.33% | 1 | 12 |
-| `push2.f174` | `zhb.stat2.high_52w` | 83.33% | 1 | 12 |
-| `push2.f126` | `zhb.full.dividend_yield` | 75.00% | 1 | 12 |
-| `push2.f126` | `zhb.stat.dividend_yield` | 75.00% | 1 | 12 |
-| `tencent[8]` | `ulist239.f35` | 75.00% | 1 | 20 |
-| `ulist239.f11` | `tencent[80]` | 75.00% | 1 | 20 |
-| `zhb.full.dividend_yield` | `tencent[64]` | 75.00% | 5 | 100 |
-| `zhb.full.change_ytd` | `tencent[62]` | 74.00% | 5 | 100 |
-| `sina[11]` | `ulist239.f2` | 70.00% | 1 | 20 |
-| `sina[11]` | `ulist239.f144` | 70.00% | 1 | 20 |
-| `sina[32]` | `ulist239.f97` | 70.00% | 1 | 20 |
-| `tencent[7]` | `ulist239.f34` | 70.00% | 1 | 20 |
-| `ulist239.f144` | `sina[6]` | 70.00% | 1 | 20 |
-| `ulist239.f144` | `tdx.quote_full.bid1` | 70.00% | 1 | 20 |
-| `ulist239.f144` | `tencent[9]` | 70.00% | 1 | 20 |
-| `zhb.full.change_250k_bar` | `tencent[79]` | 69.00% | 5 | 100 |
+| `tdx.quote_raw.price` | `fuyao.snapshot.last_price` | 100.00% | 1 | 20 |
+| `tdx.quote_raw.price` | `sina[3]` | 100.00% | 1 | 20 |
+| `tdx.quote_raw.price` | `tencent[3]` | 100.00% | 1 | 20 |
+| `tdx.quote_raw.last_close` | `fuyao.snapshot.prev_price` | 100.00% | 1 | 20 |
+| `tdx.quote_raw.last_close` | `sina[2]` | 100.00% | 1 | 20 |
+| `tdx.quote_raw.last_close` | `tencent[4]` | 100.00% | 1 | 20 |
+| `tdx.quote_raw.open` | `fuyao.snapshot.open_price` | 100.00% | 1 | 20 |
+| `tdx.quote_raw.open` | `sina[1]` | 100.00% | 1 | 20 |
+| `tdx.quote_raw.open` | `tencent[5]` | 100.00% | 1 | 20 |
+| `tdx.quote_raw.high` | `fuyao.snapshot.high_price` | 100.00% | 1 | 20 |
+| `tdx.quote_raw.high` | `sina[4]` | 100.00% | 1 | 20 |
+| `tdx.quote_raw.high` | `tencent[33]` | 100.00% | 1 | 20 |
+| `tdx.quote_raw.high` | `tencent[41]` | 100.00% | 1 | 20 |
+| `tdx.quote_raw.low` | `fuyao.snapshot.low_price` | 100.00% | 1 | 20 |
+| `tdx.quote_raw.low` | `sina[5]` | 100.00% | 1 | 20 |
+| `tdx.quote_raw.low` | `tencent[34]` | 100.00% | 1 | 20 |
 
-_（仅显示前 60 / 共 86）_
+_（仅显示前 60 / 共 195）_
 
-## 四、已证伪护栏命中（被拦截的伪结论候选）（0）
+## 五、已证伪护栏命中（被拦截的伪结论候选）（0）
 
 _本轮无护栏命中（未产出与已证伪结论冲突的候选）。_
 
 
-## 五、主动方法候选（不直接定案）（500）
+## 六、主动方法候选（不直接定案）（500）
 
 _候选可能来自稳健相关、仿射公式、逐股时间序列或字段标签线索；每项保留样本日期和来源，仍需人工复核并以独立证据终判。_
 
@@ -205,12 +211,13 @@ _候选可能来自稳健相关、仿射公式、逐股时间序列或字段标�
 _仅显示前 100 / 共 500 条。_
 
 
-## 六、日期与数据质量告警（129）
+## 七、日期与数据质量告警（134）
 
 - 20260920: 旧式非交易日目录按前一交易日 20260918 归并；目录未改名
 - 20261005: 旧式非交易日目录按前一交易日 20260930 归并；目录未改名
 - 20261011: 旧式非交易日目录按前一交易日 20261009 归并；目录未改名
 - 20261017: 旧式非交易日目录按前一交易日 20261016 归并；目录未改名
+- 20261018: 旧式非交易日目录按前一交易日 20261016 归并；目录未改名
 - 20260814: 行情数据日 20260814 属于配置的异常日，行情快照排除
 - 20261008/push2: 采集状态 partial
 - 20261008/axdata: 采集状态 failed
@@ -222,6 +229,7 @@ _仅显示前 100 / 共 500 条。_
 - 20261008/push2: 来源状态为 partial，样本按部分快照参与
 - 20261008/tdx_f10: 没有可用记录，快照跳过
 - 20261008/tdx_f10_more: 没有可用记录，快照跳过
+- 20261008/zhb: 来源有效交易日 20260930 不在本轮行情交易日窗口，快照跳过
 - 20261009/tdx_f10: 没有可用记录，快照跳过
 - 20261009/tdx_f10_more: 没有可用记录，快照跳过
 - 20261012/sse_e_interaction: 采集状态 partial
@@ -305,9 +313,7 @@ _仅显示前 100 / 共 500 条。_
 - 20261016/sse_e_interaction: 来源状态为 partial，样本按部分快照参与
 - 20261016/tdx_f10_more: 没有可用记录，快照跳过
 - 重复快照 kph/20261009: 选择 20261012，忽略 20261009
-- 重复快照 cls/20261014: 选择 20261013，忽略 20261012
-- 重复快照 cninfo/20261014: 选择 20261013，忽略 20261012
-- 另有 29 条告警，详见同名 JSON 报告。
+- 另有 34 条告警，详见同名 JSON 报告。
 
 ---
 
@@ -345,35 +351,14 @@ _仅显示前 100 / 共 500 条。_
 | 20261013 | not_eligible | not_run / 0 (字段相同/不同 0/0) | 未记录 | — | — | meta_summary |
 | 20261014 | sampled | sampled / 1 (字段相同/不同 18/0) | kph_limit_up_history: observing；stock_shortline_indicators_tdx: observing；tencent_realtime_snapshot: observing；待核 16 字段 | 0 | — | full |
 | 20261015 | probe_skipped | skipped_project_counterpart_failed / 0 (字段相同/不同 0/0) | kph_limit_up_history: observing；stock_shortline_indicators_tdx: observing；tencent_realtime_snapshot: observing；待核 16 字段 | 0 | — | full |
-| 20261016 | sampled | sampled / 1 (字段相同/不同 16/2) | kph_limit_up_history: observing；stock_shortline_indicators_tdx: observing；tencent_realtime_snapshot: observing；待核 16 字段 | 20 | 47 | full |
+| 20261016 | already_recorded | sampled / 1 (字段相同/不同 16/2) | kph_limit_up_history: observing；stock_shortline_indicators_tdx: observing；tencent_realtime_snapshot: observing；待核 16 字段 | — | 50 | full |
 
 被动逐字段比较中的差异计数（跨本窗口唯一数据日累加，不含原始值）：
 
 | 比较路径 | 相同 | 不同 | 缺失/双方空值 |
 |:--|--:|--:|--:|
-| `kph_limit_up_history_vs_kpl_detail:seal_amount` | 0 | 47 | 0 |
-| `kph_limit_up_history_vs_kpl_detail:seal_money` | 0 | 47 | 0 |
-| `axdata_shortline_vs_eltdx:alignment_status` | 0 | 20 | 0 |
-| `axdata_shortline_vs_eltdx:beta_60d` | 0 | 20 | 0 |
-| `axdata_shortline_vs_eltdx:code` | 0 | 20 | 0 |
-| `axdata_shortline_vs_eltdx:full_code` | 0 | 20 | 0 |
-| `axdata_shortline_vs_eltdx:instrument_id` | 0 | 20 | 0 |
-| `axdata_shortline_vs_eltdx:limit_status` | 0 | 20 | 0 |
-| `axdata_shortline_vs_eltdx:market_id` | 0 | 20 | 0 |
-| `axdata_shortline_vs_eltdx:opening_rush` | 0 | 20 | 0 |
-| `axdata_shortline_vs_eltdx:pe_ttm` | 0 | 20 | 0 |
-| `axdata_shortline_vs_eltdx:previous_trade_date` | 0 | 20 | 0 |
-| `axdata_shortline_vs_eltdx:symbol` | 0 | 20 | 0 |
-| `axdata_shortline_vs_eltdx:target_trade_date` | 0 | 20 | 0 |
-| `axdata_shortline_vs_eltdx:tdx_code` | 0 | 20 | 0 |
-| `axdata_shortline_vs_eltdx:open_amount` | 5 | 15 | 0 |
-| `axdata_shortline_vs_eltdx:open_volume_hand` | 5 | 15 | 0 |
-| `axdata_shortline_vs_eltdx:open_volume_ratio` | 5 | 15 | 0 |
-| `axdata_shortline_vs_eltdx:open_prev_amount_ratio` | 6 | 14 | 0 |
-| `axdata_shortline_vs_eltdx:auction_prev_volume_ratio` | 7 | 13 | 0 |
-| `axdata_shortline_vs_eltdx:open_turnover_z` | 12 | 8 | 0 |
-| `axdata_shortline_vs_eltdx:ladder_level` | 0 | 2 | 18 |
-| `axdata_shortline_vs_eltdx:open_prev_seal_ratio` | 0 | 1 | 19 |
+| `kph_limit_up_history_vs_kpl_detail:seal_amount` | 0 | 50 | 0 |
+| `kph_limit_up_history_vs_kpl_detail:seal_money` | 0 | 50 | 0 |
 
 ### FTShare 每日身份核验记录
 
@@ -389,7 +374,7 @@ _仅显示前 100 / 共 500 条。_
 
 ## 字母字段名语义提示（仅候选）
 
-窗口内观察到 119 条需审阅的字母字段路径：含词义线索 43 条，仅拆词 76 条。
+窗口内观察到 125 条需审阅的字母字段路径：含词义线索 43 条，仅拆词 82 条。
 完整逐条记录保存在碰撞 JSON；名称线索清单：`docs/field_verification/20261014/20261014_alphabetic_field_name_inventory.csv`。
 > 拼音、英文、缩写和混合拆词只用于检索候选；必须结合原始值、接口定义和独立来源复核，不得据此定案或改写主字典。
 
@@ -410,33 +395,33 @@ _仅显示前 100 / 共 500 条。_
 | `东财-push2ex::total_value` | unverified / unverified_semantics | snake_case_or_mixed: total value | 总 + 值 | T:20261008, T:20261014, T:20261016 |
 | `开盘红(Levistock适配)::limit_count` | unverified / unverified_semantics | snake_case_or_mixed: limit count | 涨跌停限制 + 数量/次数 | T:20261009, T:20261013, T:20261016 |
 | `开盘红(Levistock适配)::open_time` | unverified / unverified_semantics | snake_case_or_mixed: open time | 开盘 + 时间 | T:20261009, T:20261013, T:20261016 |
-| `ZHB-tdxstat::change_pct` | unverified / unverified_semantics | recognized_english_word_candidate: change pct | 变化/涨跌 + 百分比 | T:20260930, T:20261009, T:20261012, T:20261013, T:20261014, T:20261016 |
-| `ZHB-tdxstat::change_pct_1d` | unverified / unverified_semantics | snake_case_or_mixed: change pct 1 d | 变化/涨跌 + 百分比 | T:20260930, T:20261009, T:20261012, T:20261013, T:20261014, T:20261016 |
-| `ZHB-tdxstat::change_pct_2d` | unverified / unverified_semantics | snake_case_or_mixed: change pct 2 d | 变化/涨跌 + 百分比 | T:20260930, T:20261009, T:20261012, T:20261013, T:20261014, T:20261016 |
-| `ZHB-tdxstat::pe_ttm` | unverified / unverified_semantics | snake_case_or_mixed: pe ttm | 市盈率 + 滚动十二个月 | T:20260930, T:20261009, T:20261012, T:20261013, T:20261014, T:20261016 |
-| `ZHB-tdxstat2::main_net_buy_amount` | unverified / unverified_semantics | snake_case_or_mixed: main net buy amount | 净 + 金额/成交额（需看接口） | T:20260930, T:20261009, T:20261012, T:20261013, T:20261014, T:20261016 |
-| `ZHB-tdxstat2::main_net_buy_amount_1d` | unverified / unverified_semantics | snake_case_or_mixed: main net buy amount 1 d | 净 + 金额/成交额（需看接口） | T:20260930, T:20261009, T:20261012, T:20261013, T:20261014, T:20261016 |
-| `TDX(双命名源)::changqifuzhai` | verified / verified_metadata_gap | recognized_pinyin_phrase_candidate: changqifuzhai | 长期负债 | T:20261008, T:20261009, T:20261012, T:20261014, T:20261015 |
-| `TDX(双命名源)::cunhuo` | verified / verified_metadata_gap | recognized_pinyin_phrase_candidate: cunhuo | 存货 | T:20261008, T:20261009, T:20261012, T:20261014, T:20261015 |
-| `TDX(双命名源)::eps` | unverified / unverified_semantics | recognized_english_word_candidate: eps | 每股收益 | T:20261008, T:20261009, T:20261012, T:20261014, T:20261015 |
-| `TDX(双命名源)::fajirenfarengu` | unverified / unverified_semantics | recognized_pinyin_phrase_candidate: fajirenfarengu | 疑似 faqirenfarengu 的拼写变体；含义未证实 | T:20261008, T:20261009, T:20261012, T:20261014, T:20261015 |
-| `TDX(双命名源)::gudongrenshu` | verified / verified_metadata_gap | recognized_pinyin_phrase_candidate: gudongrenshu | 股东人数 | T:20261008, T:20261009, T:20261012, T:20261014, T:20261015 |
-| `TDX(双命名源)::ipodate` | unverified / unverified_semantics | recognized_english_phrase_candidate: ipodate | IPO/上市日期（字段语境候选） | T:20261008, T:20261009, T:20261012, T:20261014, T:20261015 |
-| `TDX(双命名源)::jinglirun` | verified / verified_metadata_gap | recognized_pinyin_phrase_candidate: jinglirun | 净利润 | T:20261008, T:20261009, T:20261012, T:20261014, T:20261015 |
-| `TDX(双命名源)::jingyingxianjinliu` | verified / verified_metadata_gap | recognized_pinyin_phrase_candidate: jingyingxianjinliu | 经营现金流 | T:20261008, T:20261009, T:20261012, T:20261014, T:20261015 |
-| `TDX(双命名源)::jingzichan` | verified / verified_metadata_gap | recognized_pinyin_phrase_candidate: jingzichan | 净资产 | T:20261008, T:20261009, T:20261012, T:20261014, T:20261015 |
-| `TDX(双命名源)::liudongfuzhai` | verified / verified_metadata_gap | recognized_pinyin_phrase_candidate: liudongfuzhai | 流动负债 | T:20261008, T:20261009, T:20261012, T:20261014, T:20261015 |
-| `TDX(双命名源)::meigujingzichan` | verified / verified_metadata_gap | recognized_pinyin_phrase_candidate: meigujingzichan | 每股净资产 | T:20261008, T:20261009, T:20261012, T:20261014, T:20261015 |
-| `TDX(双命名源)::yingshouzhangkuan` | verified / verified_metadata_gap | recognized_pinyin_phrase_candidate: yingshouzhangkuan | 应收账款 | T:20261008, T:20261009, T:20261012, T:20261014, T:20261015 |
-| `TDX(双命名源)::zhongguben` | unverified / unverified_semantics | recognized_pinyin_phrase_candidate: zhongguben | 疑似 zongguben 的拼写差异；含义未证实 | T:20261008, T:20261009, T:20261012, T:20261014, T:20261015 |
-| `TDX(双命名源)::zhuyingshouru` | verified / verified_metadata_gap | recognized_pinyin_phrase_candidate: zhuyingshouru | 主营收入 | T:20261008, T:20261009, T:20261012, T:20261014, T:20261015 |
-| `TDX(双命名源)::zibengongjijin` | verified / verified_metadata_gap | recognized_pinyin_phrase_candidate: zibengongjijin | 资本公积金 | T:20261008, T:20261009, T:20261012, T:20261014, T:20261015 |
-| `TDX(双命名源)::zongzichan` | verified / verified_metadata_gap | recognized_pinyin_phrase_candidate: zongzichan | 总资产 | T:20261008, T:20261009, T:20261012, T:20261014, T:20261015 |
+| `TDX(双命名源)::changqifuzhai` | verified / verified_metadata_gap | recognized_pinyin_phrase_candidate: changqifuzhai | 长期负债 | T:20261008, T:20261009, T:20261012, T:20261014, T:20261015, T:20261016 |
+| `TDX(双命名源)::cunhuo` | verified / verified_metadata_gap | recognized_pinyin_phrase_candidate: cunhuo | 存货 | T:20261008, T:20261009, T:20261012, T:20261014, T:20261015, T:20261016 |
+| `TDX(双命名源)::eps` | unverified / unverified_semantics | recognized_english_word_candidate: eps | 每股收益 | T:20261008, T:20261009, T:20261012, T:20261014, T:20261015, T:20261016 |
+| `TDX(双命名源)::fajirenfarengu` | unverified / unverified_semantics | recognized_pinyin_phrase_candidate: fajirenfarengu | 疑似 faqirenfarengu 的拼写变体；含义未证实 | T:20261008, T:20261009, T:20261012, T:20261014, T:20261015, T:20261016 |
+| `TDX(双命名源)::gudongrenshu` | verified / verified_metadata_gap | recognized_pinyin_phrase_candidate: gudongrenshu | 股东人数 | T:20261008, T:20261009, T:20261012, T:20261014, T:20261015, T:20261016 |
+| `TDX(双命名源)::ipodate` | unverified / unverified_semantics | recognized_english_phrase_candidate: ipodate | IPO/上市日期（字段语境候选） | T:20261008, T:20261009, T:20261012, T:20261014, T:20261015, T:20261016 |
+| `TDX(双命名源)::jinglirun` | verified / verified_metadata_gap | recognized_pinyin_phrase_candidate: jinglirun | 净利润 | T:20261008, T:20261009, T:20261012, T:20261014, T:20261015, T:20261016 |
+| `TDX(双命名源)::jingyingxianjinliu` | verified / verified_metadata_gap | recognized_pinyin_phrase_candidate: jingyingxianjinliu | 经营现金流 | T:20261008, T:20261009, T:20261012, T:20261014, T:20261015, T:20261016 |
+| `TDX(双命名源)::jingzichan` | verified / verified_metadata_gap | recognized_pinyin_phrase_candidate: jingzichan | 净资产 | T:20261008, T:20261009, T:20261012, T:20261014, T:20261015, T:20261016 |
+| `TDX(双命名源)::liudongfuzhai` | verified / verified_metadata_gap | recognized_pinyin_phrase_candidate: liudongfuzhai | 流动负债 | T:20261008, T:20261009, T:20261012, T:20261014, T:20261015, T:20261016 |
+| `TDX(双命名源)::meigujingzichan` | verified / verified_metadata_gap | recognized_pinyin_phrase_candidate: meigujingzichan | 每股净资产 | T:20261008, T:20261009, T:20261012, T:20261014, T:20261015, T:20261016 |
+| `TDX(双命名源)::yingshouzhangkuan` | verified / verified_metadata_gap | recognized_pinyin_phrase_candidate: yingshouzhangkuan | 应收账款 | T:20261008, T:20261009, T:20261012, T:20261014, T:20261015, T:20261016 |
+| `TDX(双命名源)::zhongguben` | unverified / unverified_semantics | recognized_pinyin_phrase_candidate: zhongguben | 疑似 zongguben 的拼写差异；含义未证实 | T:20261008, T:20261009, T:20261012, T:20261014, T:20261015, T:20261016 |
+| `TDX(双命名源)::zhuyingshouru` | verified / verified_metadata_gap | recognized_pinyin_phrase_candidate: zhuyingshouru | 主营收入 | T:20261008, T:20261009, T:20261012, T:20261014, T:20261015, T:20261016 |
+| `TDX(双命名源)::zibengongjijin` | verified / verified_metadata_gap | recognized_pinyin_phrase_candidate: zibengongjijin | 资本公积金 | T:20261008, T:20261009, T:20261012, T:20261014, T:20261015, T:20261016 |
+| `TDX(双命名源)::zongzichan` | verified / verified_metadata_gap | recognized_pinyin_phrase_candidate: zongzichan | 总资产 | T:20261008, T:20261009, T:20261012, T:20261014, T:20261015, T:20261016 |
+| `ZHB-tdxstat::change_pct` | unverified / unverified_semantics | recognized_english_word_candidate: change pct | 变化/涨跌 + 百分比 | T:20261009, T:20261012, T:20261013, T:20261014, T:20261016 |
+| `ZHB-tdxstat::change_pct_1d` | unverified / unverified_semantics | snake_case_or_mixed: change pct 1 d | 变化/涨跌 + 百分比 | T:20261009, T:20261012, T:20261013, T:20261014, T:20261016 |
+| `ZHB-tdxstat::change_pct_2d` | unverified / unverified_semantics | snake_case_or_mixed: change pct 2 d | 变化/涨跌 + 百分比 | T:20261009, T:20261012, T:20261013, T:20261014, T:20261016 |
+| `ZHB-tdxstat2::main_net_buy_amount_1d` | unverified / unverified_semantics | snake_case_or_mixed: main net buy amount 1 d | 净 + 金额/成交额（需看接口） | T:20261009, T:20261012, T:20261013, T:20261014, T:20261016 |
 | `财联社(cls)::time` | unverified / unverified_semantics | recognized_english_word_candidate: time | 时间 | C:20261014, C:20261016 |
-| `同花顺-fuyao::snapshot.open_price` | verified / verified_metadata_gap | snake_case_or_mixed: snapshot open price | 开盘 + 价格 | T:20261008, T:20261009, T:20261014, T:20261016 |
+| `ZHB-tdxstat2::main_net_buy_amount` | unverified / unverified_semantics | snake_case_or_mixed: main net buy amount | 净 + 金额/成交额（需看接口） | T:20261009, T:20261012, T:20261013, T:20261014, T:20261016 |
 | `同花顺-fuyao::valuation.pb_mrq` | conflict / unverified_semantics | snake_case_or_mixed: valuation pb mrq | 市净率 + 最近报告期 | T:20261008, T:20261009, T:20261014, T:20261016 |
 | `同花顺-fuyao::valuation.pe_mrq` | conflict / unverified_semantics | snake_case_or_mixed: valuation pe mrq | 市盈率 + 最近报告期 | T:20261008, T:20261009, T:20261014, T:20261016 |
 | `同花顺-fuyao::valuation.pe_ttm` | conflict / unverified_semantics | snake_case_or_mixed: valuation pe ttm | 市盈率 + 滚动十二个月 | T:20261008, T:20261009, T:20261014, T:20261016 |
+| `同花顺-fuyao::snapshot.open_price` | verified / verified_metadata_gap | snake_case_or_mixed: snapshot open price | 开盘 + 价格 | T:20261008, T:20261009, T:20261014, T:20261016 |
+| `开盘啦(kpl)::vol_ratio` | unverified / unverified_semantics | snake_case_or_mixed: vol ratio | 量 + 比率 | T:20261016 |
 | `TDX-eltdx(适配层)::code` | unverified / unverified_semantics | recognized_english_word_candidate: code | 代码 | T:20261008, T:20261009, T:20261012, T:20261014, T:20261015, T:20261016 |
 | `市场源(market_sources)::one_word` | unverified / unverified_semantics | snake_case_or_mixed: one word | — | T:20261008, T:20261009, T:20261012, T:20261014, T:20261015, T:20261016 |
 | `市场源(market_sources)::plate_amount` | verified / verified_metadata_gap | snake_case_or_mixed: plate amount | — | T:20261008, T:20261009, T:20261012, T:20261014, T:20261015, T:20261016 |
@@ -451,54 +436,54 @@ _仅显示前 100 / 共 500 条。_
 | `东财-push2ex::turnover_rate` | unverified / unverified_semantics | snake_case_or_mixed: turnover rate | — | T:20261008, T:20261014, T:20261016 |
 | `东财-push2ex::zt_continuous` | unverified / unverified_semantics | snake_case_or_mixed: zt continuous | — | T:20261008, T:20261014, T:20261016 |
 | `东财-push2ex::zt_days` | unverified / unverified_semantics | snake_case_or_mixed: zt days | — | T:20261008, T:20261014, T:20261016 |
-| `ZHB-tdxstat::board_count` | unverified / unverified_semantics | snake_case_or_mixed: board count | — | T:20260930, T:20261009, T:20261012, T:20261013, T:20261014, T:20261016 |
-| `ZHB-tdxstat::change_10k_bar` | unverified / unverified_semantics | snake_case_or_mixed: change 10 k bar | — | T:20260930, T:20261009, T:20261012, T:20261013, T:20261014, T:20261016 |
-| `ZHB-tdxstat::change_5k_bar` | unverified / unverified_semantics | snake_case_or_mixed: change 5 k bar | — | T:20260930, T:20261009, T:20261012, T:20261013, T:20261014, T:20261016 |
-| `ZHB-tdxstat::change_60d` | unverified / unverified_semantics | snake_case_or_mixed: change 60 d | — | T:20260930, T:20261009, T:20261012, T:20261013, T:20261014, T:20261016 |
-| `ZHB-tdxstat::change_ytd` | unverified / unverified_semantics | snake_case_or_mixed: change ytd | — | T:20260930, T:20261009, T:20261012, T:20261013, T:20261014, T:20261016 |
-| `ZHB-tdxstat::dividend_yield` | unverified / unverified_semantics | snake_case_or_mixed: dividend yield | — | T:20260930, T:20261009, T:20261012, T:20261013, T:20261014, T:20261016 |
-| `ZHB-tdxstat::employee_count` | unverified / unverified_semantics | snake_case_or_mixed: employee count | — | T:20260930, T:20261009, T:20261012, T:20261013, T:20261014, T:20261016 |
-| `ZHB-tdxstat::pe_lyr` | unverified / unverified_semantics | snake_case_or_mixed: pe lyr | — | T:20260930, T:20261009, T:20261012, T:20261013, T:20261014, T:20261016 |
-| `ZHB-tdxstat::stat.unknown_2` | candidate / unverified_semantics | snake_case_or_mixed: stat unknown 2 | — | T:20260930, T:20261009, T:20261012, T:20261013, T:20261014, T:20261016 |
-| `ZHB-tdxstat::stat.unknown_26` | conflict / unverified_semantics | snake_case_or_mixed: stat unknown 26 | — | T:20260930, T:20261009, T:20261012, T:20261013, T:20261014, T:20261016 |
-| `ZHB-tdxstat::streak_days` | unverified / unverified_semantics | snake_case_or_mixed: streak days | — | T:20260930, T:20261009, T:20261012, T:20261013, T:20261014, T:20261016 |
-| `ZHB-tdxstat::unseal_date` | unverified / unverified_semantics | snake_case_or_mixed: unseal date | — | T:20260930, T:20261009, T:20261012, T:20261013, T:20261014, T:20261016 |
-| `ZHB-tdxstat2::amount_1d` | unverified / unverified_semantics | snake_case_or_mixed: amount 1 d | — | T:20260930, T:20261009, T:20261012, T:20261013, T:20261014, T:20261016 |
-| `ZHB-tdxstat2::amount_2d` | unverified / unverified_semantics | snake_case_or_mixed: amount 2 d | — | T:20260930, T:20261009, T:20261012, T:20261013, T:20261014, T:20261016 |
-| `ZHB-tdxstat2::change_250k_bar` | unverified / unverified_semantics | snake_case_or_mixed: change 250 k bar | — | T:20260930, T:20261009, T:20261012, T:20261013, T:20261014, T:20261016 |
-| `ZHB-tdxstat2::change_30k_bar` | unverified / unverified_semantics | snake_case_or_mixed: change 30 k bar | — | T:20260930, T:20261009, T:20261012, T:20261013, T:20261014, T:20261016 |
-| `ZHB-tdxstat2::change_30k_bar_ref` | unverified / unverified_semantics | snake_case_or_mixed: change 30 k bar ref | — | T:20260930, T:20261009, T:20261012, T:20261013, T:20261014, T:20261016 |
-| `ZHB-tdxstat2::change_mtd` | unverified / unverified_semantics | snake_case_or_mixed: change mtd | — | T:20260930, T:20261009, T:20261012, T:20261013, T:20261014, T:20261016 |
-| `ZHB-tdxstat2::high_52w` | unverified / unverified_semantics | snake_case_or_mixed: high 52 w | — | T:20260930, T:20261009, T:20261012, T:20261013, T:20261014, T:20261016 |
-| `ZHB-tdxstat2::industry_code` | unverified / unverified_semantics | snake_case_or_mixed: industry code | — | T:20260930, T:20261009, T:20261012, T:20261013, T:20261014, T:20261016 |
-| `ZHB-tdxstat2::ipo_price` | unverified / unverified_semantics | snake_case_or_mixed: ipo price | — | T:20260930, T:20261009, T:20261012, T:20261013, T:20261014, T:20261016 |
-| `ZHB-tdxstat2::main_net_buy_hands` | unverified / unverified_semantics | snake_case_or_mixed: main net buy hands | — | T:20260930, T:20261009, T:20261012, T:20261013, T:20261014, T:20261016 |
-| `ZHB-tdxstat2::main_net_buy_hands_1d` | unverified / unverified_semantics | snake_case_or_mixed: main net buy hands 1 d | — | T:20260930, T:20261009, T:20261012, T:20261013, T:20261014, T:20261016 |
-| `ZHB-tdxstat2::zt_seal_amount` | unverified / unverified_semantics | snake_case_or_mixed: zt seal amount | — | T:20260930, T:20261009, T:20261012, T:20261013, T:20261014, T:20261016 |
-| `ZHB-tdxstat2::zt_seal_amount_1d` | unverified / unverified_semantics | snake_case_or_mixed: zt seal amount 1 d | — | T:20260930, T:20261009, T:20261012, T:20261013, T:20261014, T:20261016 |
-| `ZHB-tdxstat2::zt_seal_amount_2d` | unverified / unverified_semantics | snake_case_or_mixed: zt seal amount 2 d | — | T:20260930, T:20261009, T:20261012, T:20261013, T:20261014, T:20261016 |
-| `TDX(双命名源)::baoliu2` | unverified / unverified_semantics | mixed_alphanumeric: baoliu 2 | — | T:20261008, T:20261009, T:20261012, T:20261014, T:20261015 |
-| `TDX(双命名源)::ipo_date` | verified / verified_metadata_gap | snake_case_or_mixed: ipo date | — | T:20261008, T:20261009, T:20261012, T:20261014, T:20261015 |
-| `TDX(双命名源)::updated_date` | verified / verified_metadata_gap | snake_case_or_mixed: updated date | — | T:20261008, T:20261009, T:20261012, T:20261014, T:20261015 |
-| `TDX(双命名源)::updateddate` | unverified / unverified_semantics | unsegmented_latin_pinyin_or_word: updateddate | — | T:20261008, T:20261009, T:20261012, T:20261014, T:20261015 |
-| `TDX(双命名源)::zhuyinglyrun` | unverified / unverified_semantics | unsegmented_latin_pinyin_or_word: zhuyinglyrun | — | T:20261008, T:20261009, T:20261012, T:20261014, T:20261015 |
+| `TDX(双命名源)::baoliu2` | unverified / unverified_semantics | mixed_alphanumeric: baoliu 2 | — | T:20261008, T:20261009, T:20261012, T:20261014, T:20261015, T:20261016 |
+| `TDX(双命名源)::ipo_date` | verified / verified_metadata_gap | snake_case_or_mixed: ipo date | — | T:20261008, T:20261009, T:20261012, T:20261014, T:20261015, T:20261016 |
+| `TDX(双命名源)::updated_date` | verified / verified_metadata_gap | snake_case_or_mixed: updated date | — | T:20261008, T:20261009, T:20261012, T:20261014, T:20261015, T:20261016 |
+| `TDX(双命名源)::updateddate` | unverified / unverified_semantics | unsegmented_latin_pinyin_or_word: updateddate | — | T:20261008, T:20261009, T:20261012, T:20261014, T:20261015, T:20261016 |
+| `TDX(双命名源)::zhuyinglyrun` | unverified / unverified_semantics | unsegmented_latin_pinyin_or_word: zhuyinglyrun | — | T:20261008, T:20261009, T:20261012, T:20261014, T:20261015, T:20261016 |
+| `TDX(双命名源)::b_vol` | unverified / unverified_semantics | snake_case_or_mixed: b vol | — | T:20261008, T:20261009, T:20261012, T:20261014, T:20261016 |
+| `TDX(双命名源)::s_vol` | unverified / unverified_semantics | snake_case_or_mixed: s vol | — | T:20261008, T:20261009, T:20261012, T:20261014, T:20261016 |
+| `ZHB-tdxstat::change_10k_bar` | unverified / unverified_semantics | snake_case_or_mixed: change 10 k bar | — | T:20261009, T:20261012, T:20261013, T:20261014, T:20261016 |
+| `ZHB-tdxstat::change_5k_bar` | unverified / unverified_semantics | snake_case_or_mixed: change 5 k bar | — | T:20261009, T:20261012, T:20261013, T:20261014, T:20261016 |
+| `ZHB-tdxstat::change_60d` | unverified / unverified_semantics | snake_case_or_mixed: change 60 d | — | T:20261009, T:20261012, T:20261013, T:20261014, T:20261016 |
+| `ZHB-tdxstat::change_ytd` | unverified / unverified_semantics | snake_case_or_mixed: change ytd | — | T:20261009, T:20261012, T:20261013, T:20261014, T:20261016 |
+| `ZHB-tdxstat::dividend_yield` | unverified / unverified_semantics | snake_case_or_mixed: dividend yield | — | T:20261009, T:20261012, T:20261013, T:20261014, T:20261016 |
+| `ZHB-tdxstat::employee_count` | unverified / unverified_semantics | snake_case_or_mixed: employee count | — | T:20261009, T:20261012, T:20261013, T:20261014, T:20261016 |
+| `ZHB-tdxstat::pe_lyr` | unverified / unverified_semantics | snake_case_or_mixed: pe lyr | — | T:20261009, T:20261012, T:20261013, T:20261014, T:20261016 |
+| `ZHB-tdxstat::stat.unknown_2` | candidate / unverified_semantics | snake_case_or_mixed: stat unknown 2 | — | T:20261009, T:20261012, T:20261013, T:20261014, T:20261016 |
+| `ZHB-tdxstat::stat.unknown_26` | conflict / unverified_semantics | snake_case_or_mixed: stat unknown 26 | — | T:20261009, T:20261012, T:20261013, T:20261014, T:20261016 |
+| `ZHB-tdxstat::streak_days` | unverified / unverified_semantics | snake_case_or_mixed: streak days | — | T:20261009, T:20261012, T:20261013, T:20261014, T:20261016 |
+| `ZHB-tdxstat::unseal_date` | unverified / unverified_semantics | snake_case_or_mixed: unseal date | — | T:20261009, T:20261012, T:20261013, T:20261014, T:20261016 |
+| `ZHB-tdxstat2::amount_1d` | unverified / unverified_semantics | snake_case_or_mixed: amount 1 d | — | T:20261009, T:20261012, T:20261013, T:20261014, T:20261016 |
+| `ZHB-tdxstat2::amount_2d` | unverified / unverified_semantics | snake_case_or_mixed: amount 2 d | — | T:20261009, T:20261012, T:20261013, T:20261014, T:20261016 |
+| `ZHB-tdxstat2::change_250k_bar` | unverified / unverified_semantics | snake_case_or_mixed: change 250 k bar | — | T:20261009, T:20261012, T:20261013, T:20261014, T:20261016 |
+| `ZHB-tdxstat2::change_30k_bar` | unverified / unverified_semantics | snake_case_or_mixed: change 30 k bar | — | T:20261009, T:20261012, T:20261013, T:20261014, T:20261016 |
+| `ZHB-tdxstat2::change_30k_bar_ref` | unverified / unverified_semantics | snake_case_or_mixed: change 30 k bar ref | — | T:20261009, T:20261012, T:20261013, T:20261014, T:20261016 |
+| `ZHB-tdxstat2::change_mtd` | unverified / unverified_semantics | snake_case_or_mixed: change mtd | — | T:20261009, T:20261012, T:20261013, T:20261014, T:20261016 |
+| `ZHB-tdxstat2::high_52w` | unverified / unverified_semantics | snake_case_or_mixed: high 52 w | — | T:20261009, T:20261012, T:20261013, T:20261014, T:20261016 |
+| `ZHB-tdxstat2::industry_code` | unverified / unverified_semantics | snake_case_or_mixed: industry code | — | T:20261009, T:20261012, T:20261013, T:20261014, T:20261016 |
+| `ZHB-tdxstat2::ipo_price` | unverified / unverified_semantics | snake_case_or_mixed: ipo price | — | T:20261009, T:20261012, T:20261013, T:20261014, T:20261016 |
+| `ZHB-tdxstat2::main_net_buy_hands_1d` | unverified / unverified_semantics | snake_case_or_mixed: main net buy hands 1 d | — | T:20261009, T:20261012, T:20261013, T:20261014, T:20261016 |
 | `财联社(cls)::content` | verified / verified_metadata_gap | unsegmented_latin_pinyin_or_word: content | — | C:20261014, C:20261016 |
 | `财联社(cls)::level` | unverified / unverified_semantics | unsegmented_latin_pinyin_or_word: level | — | C:20261014, C:20261016 |
 | `财联社(cls)::reading_num` | unverified / unverified_semantics | snake_case_or_mixed: reading num | — | C:20261014, C:20261016 |
 | `财联社(cls)::title` | verified / verified_metadata_gap | unsegmented_latin_pinyin_or_word: title | — | C:20261014, C:20261016 |
-| `TDX(双命名源)::b_vol` | unverified / unverified_semantics | snake_case_or_mixed: b vol | — | T:20261008, T:20261009, T:20261012, T:20261014 |
-| `TDX(双命名源)::s_vol` | unverified / unverified_semantics | snake_case_or_mixed: s vol | — | T:20261008, T:20261009, T:20261012, T:20261014 |
+| `ZHB-tdxstat2::main_net_buy_hands` | unverified / unverified_semantics | snake_case_or_mixed: main net buy hands | — | T:20261009, T:20261012, T:20261013, T:20261014, T:20261016 |
 | `同花顺-fuyao::fin_report` | unverified / unverified_semantics | snake_case_or_mixed: fin report | — | T:20261008, T:20261009, T:20261014, T:20261016 |
 | `同花顺-fuyao::snapshot.prev_price` | verified / verified_metadata_gap | snake_case_or_mixed: snapshot prev price | — | T:20261008, T:20261009, T:20261014, T:20261016 |
 | `同花顺-fuyao::valuation.ps_ttm` | conflict / unverified_semantics | snake_case_or_mixed: valuation ps ttm | — | T:20261008, T:20261009, T:20261014, T:20261016 |
+| `市场源(market_sources)::main_inflow` | unverified / unverified_semantics | snake_case_or_mixed: main inflow | — | T:20261008, T:20261016 |
+| `开盘红(Levistock适配)::industry_id` | unverified / unverified_semantics | snake_case_or_mixed: industry id | — | T:20261016 |
+| `开盘红(Levistock适配)::limit_tag` | unverified / unverified_semantics | snake_case_or_mixed: limit tag | — | T:20261016 |
+| `开盘红(Levistock适配)::reason` | unverified / unverified_semantics | unsegmented_latin_pinyin_or_word: reason | — | T:20261016 |
+| `开盘红(Levistock适配)::themes` | unverified / unverified_semantics | unsegmented_latin_pinyin_or_word: themes | — | T:20261016 |
 | `市场源(market_sources)::rank` | verified / verified_metadata_gap | unsegmented_latin_pinyin_or_word: rank | — | T:20261008, T:20261009, T:20261012, T:20261014 |
-| `市场源(market_sources)::main_inflow` | unverified / unverified_semantics | snake_case_or_mixed: main inflow | — | T:20261008 |
+| `市场源(market_sources)::reason` | unverified / unverified_semantics | unsegmented_latin_pinyin_or_word: reason | — | T:20261008, T:20261016 |
 | `市场源(market_sources)::max_seal` | unverified / unverified_semantics | snake_case_or_mixed: max seal | — | T:20261008 |
-| `市场源(market_sources)::reason` | unverified / unverified_semantics | unsegmented_latin_pinyin_or_word: reason | — | T:20261008 |
 
-Markdown 显示前 100 条；其余 19 条完整保留在 JSON。
+Markdown 显示前 100 条；其余 25 条完整保留在 JSON。
 
 ## 探索候选持续跟踪
 
-研究台账：`collision_research_state.json`；累计候选对 1501，本报告候选对 572，历史复现 567，新发现 5。
-台账保留报告引用、证据交易日、来源和碰撞指标；仅供后续研究回看，不会自动改变字段状态、碰撞锚或主字典。
+研究台账：`collision_research_state.json`；累计历史跟踪候选对 1663，本报告候选对 680，历史复现 558，新发现 0。
+台账保留报告引用、证据交易日、来源和碰撞指标；仅供后续研究回看，不会自动改变字段状态、碰撞锚或主字典。新报告只将 `actionable_L1`、L4 和主动方法候选写入待研究队列；已登记关系的复验单独展示，历史跟踪记录不会被删除。

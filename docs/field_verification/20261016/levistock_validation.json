@@ -5,7 +5,7 @@
   "latest_completed_trade_date": "2026-10-16",
   "data_date_domain": "trading",
   "market_phase": "closed",
-  "evaluated_at": "2026-10-16T16:34:31+08:00",
+  "evaluated_at": "2026-10-18T20:48:19+08:00",
   "eligibility_reason": null,
   "client": {
     "package": "levistock",

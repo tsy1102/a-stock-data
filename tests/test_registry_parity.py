@@ -1,4 +1,14 @@
+from pathlib import Path
+
 from scripts import registry_parity
+
+
+def test_strict_parity_count_target_keeps_missing_pairs_visible():
+    expected = {("source-a", "field-a"), ("source-b", "field-b")}
+    missing = {("source-a", "field-a")}
+
+    assert registry_parity._pairs_for_count_check(expected, missing, None) == expected
+    assert registry_parity._pairs_for_count_check(expected, missing, missing) == expected - missing
 
 
 def test_native_parity_remains_strict_without_accepted_debt():
@@ -105,3 +115,112 @@ def test_accepted_debt_manifest_rejects_duplicate_pairs():
 
     assert pairs is None
     assert any("重复配对" in problem for problem in problems)
+
+
+def test_scope_manifest_accepts_archive_only_and_captured_context_entries():
+    manifest = {
+        "schema_version": 1,
+        "purpose": "Test source-scope distinctions.",
+        "entries": [
+            {
+                "source": "source-a",
+                "code": "archived-field",
+                "disposition": "archive_only",
+                "reason": "Archived protocol is outside runtime scope.",
+                "evidence_files": ["docs/example.md"],
+                "capture_path": None,
+            },
+            {
+                "source": "source-b",
+                "code": "context-tags",
+                "disposition": "captured_context",
+                "reason": "Kept in raw context but excluded from cracking registry.",
+                "evidence_files": ["docs/example.md"],
+                "capture_path": "raw.json:market.items[*].tags",
+            },
+        ],
+    }
+
+    entries, problems = registry_parity._validate_scope_manifest(manifest)
+
+    assert problems == []
+    assert entries is not None
+    assert set(entries) == {("source-a", "archived-field"), ("source-b", "context-tags")}
+
+
+def test_scope_manifest_rejects_duplicate_pairs_and_invalid_runtime_contract():
+    entry = {
+        "source": "source-a",
+        "code": "field-a",
+        "disposition": "archive_only",
+        "reason": "Explicitly archival.",
+        "evidence_files": ["docs/example.md"],
+        "capture_path": None,
+    }
+    manifest = {
+        "schema_version": 1,
+        "purpose": "Test duplicate checking.",
+        "entries": [entry, dict(entry)],
+    }
+
+    entries, problems = registry_parity._validate_scope_manifest(manifest)
+
+    assert entries is None
+    assert any("重复配对" in problem for problem in problems)
+
+    invalid_context = dict(entry, disposition="captured_context")
+    entries, problems = registry_parity._validate_scope_manifest(
+        {"schema_version": 1, "purpose": "Test path requirement.", "entries": [invalid_context]}
+    )
+
+    assert entries is None
+    assert any("必须声明 capture_path" in problem for problem in problems)
+
+
+def test_repository_scope_manifest_matches_only_the_five_reviewed_baseline_pairs():
+    entries, problems = registry_parity._load_scope_manifest(registry_parity.SCOPE_MANIFEST)
+
+    assert problems == []
+    assert entries is not None
+    expected = {
+        ("TDX(双命名源)", "Buyp"),
+        ("TDX(双命名源)", "Buyv"),
+        ("TDX(双命名源)", "Sellp"),
+        ("TDX(双命名源)", "Sellv"),
+        ("同花顺-fuyao", "tags"),
+    }
+    assert set(entries) == expected
+
+    base = registry_parity.afc.registered_field_sets()
+    baseline_pairs = {(source, code) for source, codes in base.items() for code in codes}
+    assert set(entries) <= baseline_pairs
+
+    with open(registry_parity.REGISTRY, encoding="utf-8") as handle:
+        registry = registry_parity.json.load(handle)
+    current_pairs = {
+        (record["source"], record["code"])
+        for record in registry_parity.fra.source_field_records(registry)
+    }
+    assert set(entries).isdisjoint(current_pairs)
+    for code in ("Buyp", "Buyv", "Sellp", "Sellv"):
+        assert entries[("TDX(双命名源)", code)]["disposition"] == "captured_runtime"
+    assert entries[("同花顺-fuyao", "tags")]["disposition"] == "captured_context"
+    assert entries[("同花顺-fuyao", "tags")]["capture_path"] == (
+        "raw_fuyao.json:market.short_term_benchmark[*].tags"
+    )
+
+
+def test_reconciled_capture_pairs_stay_unverified_and_traceable():
+    registry = registry_parity.fra.load_registry()
+    captured = [row for row in registry["source_fields"] if "capture_evidence" in row]
+
+    assert len(captured) == 35
+    for row in captured:
+        assert row["status"] == "unverified"
+        assert not row["canonical"]
+        assert not row["meaning"]
+        assert not row["unit"]
+        assert row["capture_evidence"]
+        for evidence in row["capture_evidence"]:
+            assert set(evidence) == {"file", "path"}
+            assert (Path(registry_parity.REPO_ROOT) / evidence["file"]).is_file()

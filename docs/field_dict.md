@@ -14,7 +14,8 @@
 
 ## 状态与锚点规则
 
-- `verified` 表示字段语义已经确认。只有来源谱系可确认、运行时来源匹配且完整路径精确相同时，才可作为碰撞锚点。
+- `verified` 表示字段语义已经确认。作为碰撞锚还要求含义非空且非占位、含义/单位无冲突或对齐歧义、来源独立性已确认，并且运行时来源与完整路径精确匹配。
+- 规范名的别名差异不会单独阻止碰撞；字段含义缺失/占位或含义/单位存在冲突时，碰撞器会将该 verified 路径重新纳入待破解目标，并排除为锚。
 - `unverified`、`candidate` 是默认破解目标；`conflict` 可作为待复核目标但不能作锚，碰撞候选不能替代证据冲突复核。
 - `disproved` 单独归档，不进入默认破解队列。
 - 未登记来源、路径不完整或来源独立性未确认时，不参与默认 L1 定案。
@@ -24,11 +25,11 @@
 ## 当前覆盖
 
 - 来源身份与参考登记：32 项；是否可作独立锚由来源谱系单独判定。
-- 逐源字段路径：2481 条；verified 917、unverified 1480、candidate 1、conflict 81、disproved 2。
+- 逐源字段路径：2518 条；verified 918、unverified 1516、candidate 1、conflict 81、disproved 2。
 - 矩阵：[`field_matrix.md`](field_matrix.md)。
 - 待破解与状态冲突：[`unknown_fields.md`](unknown_fields.md)。
 - 来源与 GitHub 仓库映射：[`source_repository_map.md`](source_repository_map.md)。
-- 已验证字段描述缺口：198 条缺少含义、45 条缺少规范名，见 [`field_metadata_gaps.md`](field_metadata_gaps.md)；缺口本身不自动改变状态。
+- 已验证字段描述缺口：202 条含义为空/占位、45 条缺少规范名，见 [`field_metadata_gaps.md`](field_metadata_gaps.md)；质量问题会阻止其作为碰撞锚。
 - 同短 code 的聚合歧义、缺失定义和疑似合并文本单独列在 [`field_aggregate_review.md`](field_aggregate_review.md)；该清单不覆盖逐源定义，也不自动拆分字段。
 - 完整历史正文：[`field_source_reference.md`](field_source_reference.md)。
 
@@ -57,7 +58,7 @@
 | Levistock历史未归属 | 历史未归属（不作来源锚） | [verify/levistock_field_verify.md](verify/levistock_field_verify.md) | 未能按逐字段证据归属的历史接口记录 |
 | 开盘红(Levistock适配) | 已映射提供方的接口组件 | [verify/levistock_field_verify.md](verify/levistock_field_verify.md) | 12.10.3 开盘红市场情绪（market_emotion_kph，**含历史**）🆕 |
 | 东财-push2(stock/get) | 运行时来源身份（独立性按来源谱系判定） | [verify/push2_verify.md](verify/push2_verify.md) | 12.3.1 单股行情 `stock/get`（已由 get_em_quote_full 验证） |
-| 东财-push2_full | 运行时来源身份（独立性按来源谱系判定） | [verify/push2_verify.md](verify/push2_verify.md) | 12.3.1 单股行情 `stock/get`（已由 get_em_quote_full 验证） |
+| 东财-push2_full | 已停用的重复采集入口（历史身份；由 东财-push2(stock/get) 覆盖） | [verify/push2_verify.md](verify/push2_verify.md) | 12.3.1 单股行情 `stock/get`（已由 get_em_quote_full 验证） |
 | 东财-资金流(em_fund_flow) | 运行时来源身份（独立性按来源谱系判定） | [verify/push2_verify.md](verify/push2_verify.md) | 12.3.4 资金流四档层级 `stock/get` f135\~f149 **全量**（🆕 V17.0.16 **重定案** / V17.1.x **补登 f147/f148**） |
 | 同花顺-fuyao | 运行时来源身份（独立性按来源谱系判定） | [verify/fuyao_api_full.md](verify/fuyao_api_full.md) | 12.8.12c THS 官方金融数据 REST API（fuyao.aicubes.cn，2026-08-10 实测 7 接口 → V17.0.5 契约全量镜像 62 端点）🆕 |
 | 开盘啦(kpl_limit_up_detail) | 运行时来源身份（独立性按来源谱系判定） | [verify/kph_kpl_history_verify.md](verify/kph_kpl_history_verify.md) | KPH 与 KPL 涨停明细核验（2026-09-29/30 双交易日） |

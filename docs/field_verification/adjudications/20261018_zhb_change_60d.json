@@ -1,0 +1,28 @@
+{
+  "schema_version": 1,
+  "report": "20261018/20261018_collision_report.json",
+  "reviewer": "Codex (user-authorized review)",
+  "reviewed_on": "2026-10-18",
+  "decisions": [
+    {
+      "id": "20261018-zhb-change-60d-tencent-71",
+      "candidate": {
+        "left": "zhb.full.change_60d",
+        "right": "tencent[71]"
+      },
+      "target": {
+        "source": "ZHB-tdxstat",
+        "code": "change_60d"
+      },
+      "anchor": {
+        "source": "腾讯(qt.gtimg)",
+        "code": "[71]"
+      },
+      "action": "verify",
+      "canonical": "change_60d",
+      "meaning": "近60个交易日涨跌幅",
+      "unit": "%",
+      "rationale": "在 verified_anchor_only 报告中人工复核此候选：2026-10-09、10-12、10-13、10-14、10-16 共5个独立交易日，每日20组有效样本且18组命中，总命中率90%；满足项目L1门槛（至少3个独立交易日，且每日至少18/20命中）。来源谱系确认ZHB属于TDX族、腾讯qt.gtimg属于Tencent族，二者为独立来源。锚字段腾讯[71]已验证为近60交易日涨跌幅，单位为%；历史字段协议记录也将ZHB tdxstat [19]解释为近60根K线涨跌幅，交易日口径。综合数值证据、独立来源和已有语义记录，将ZHB-tdxstat::change_60d核定为近60个交易日涨跌幅。"
+    }
+  ]
+}

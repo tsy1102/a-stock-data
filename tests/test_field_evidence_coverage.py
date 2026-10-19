@@ -165,6 +165,74 @@ def test_source_as_of_date_and_closed_phase_count_as_qualified_coverage():
     assert result["fields"][0]["source_as_of_sample_counts"] == {"T:20261014": 1}
 
 
+def test_ftshare_context_fields_are_covered_by_explicit_record_trade_date():
+    codes = (
+        "first_limit_up_time",
+        "limit_up_break",
+        "limit_up_break_count",
+        "limit_up_enter",
+        "limit_up_price",
+        "ready",
+        "status",
+        "symbol",
+        "trade_date",
+    )
+    registry = {
+        "source_fields": [
+            {
+                "source": "FTShare",
+                "code": code,
+                "canonical": "",
+                "meaning": "",
+                "status": "unverified",
+            }
+            for code in codes
+        ]
+    }
+    lineage = _lineage(("FTShare", "ftshare"))
+    snapshot = _snapshot(
+        "ftshare",
+        {
+            "scheme": "ftshare",
+            "stocks": {},
+            "market": {
+                "limit_up_pool_yesterday": [
+                    {
+                        "symbol": "000017.XSHE",
+                        "trade_date": "20261013",
+                        "first_limit_up_time": "09:32:24",
+                        "limit_up_break": ["09:32:45"],
+                        "limit_up_break_count": 1,
+                        "limit_up_enter": [],
+                        "limit_up_price": "10.4100",
+                        "ready": False,
+                        "status": "limit_up",
+                    }
+                ]
+            },
+        },
+        origin="meta_data_date",
+    )
+    snapshot.sample_date = dt.date(2026, 10, 14)
+
+    result = coverage.build_field_coverage(
+        [snapshot],
+        registry,
+        lineage,
+        dt.date(2026, 10, 14),
+        trading_window_dates=[dt.date(2026, 10, 13)],
+    )
+
+    assert result["summary"]["targets_observed"] == len(codes)
+    assert result["summary"]["targets_with_3_source_as_of_days"] == 0
+    for row in result["fields"]:
+        assert row["candidate_days"] == ["T:20261013"]
+        assert row["source_as_of_days"] == ["T:20261013"]
+        assert row["candidate_sample_counts"] == {"T:20261013": 1}
+        assert row["date_origins"] == ["record.trade_date"]
+    assert "10.4100" not in json.dumps(result, ensure_ascii=False)
+
+
 def test_daily_refresh_merges_tuple_window_warnings_and_writes_local_index(tmp_path, monkeypatch):
     report_day = dt.date(2026, 10, 14)
     registry = {

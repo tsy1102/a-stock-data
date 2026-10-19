@@ -171,12 +171,22 @@ def test_one_mismatched_stock_prevents_endpoint_suppression(identity_fixture):
 
 def test_skipped_endpoint_is_not_used_as_identity_evidence(identity_fixture):
     fixture = identity_fixture
-    for day in ("20261008", "20261009", "20261012"):
+    metadata_keys = (
+        "identity_validation_suppressed_endpoints",
+        "identity_skipped_endpoints",  # Legacy archive schema remains readable.
+        "identity_validation_suppressed_endpoints",
+    )
+    for day, metadata_key in zip(("20261008", "20261009", "20261012"), metadata_keys):
         fixture["write_day"](
             day,
             {},
             ftshare_meta={
-                "identity_skipped_endpoints": {"ggmx": {"status": "operationally_redundant"}}
+                metadata_key: {
+                    "ggmx": {
+                        "status": "operationally_redundant",
+                        "capture_performed": True,
+                    }
+                }
             },
         )
 

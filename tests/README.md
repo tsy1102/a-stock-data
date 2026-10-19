@@ -10,20 +10,21 @@
 | `data/` | 13 | ZHB、TDX、Eastmoney、KPL、网络、解禁单位、指数、财务日历和异步财报兜底 | [`data/README.md`](data/README.md) |
 | `infra/` | 12 | 调度器、字段完整性/命名、依赖预检、dry-run 写入边界、F10、外部 API 与 GD | [`infra/README.md`](infra/README.md) |
 | `reports/` | 11 | 报告 Runner、流水线、策略、章节契约、正文辅助逻辑、指数映射和快照失败处理 | [`reports/README.md`](reports/README.md) |
-| 根目录 | 33 | 碰撞/字段登记、采集探针、来源身份核验、依赖适配、网络与临时目录隔离 | 本文件下方列出 |
-| **合计** | **85** | 参数化用例展开前的测试模块数 | — |
+| 根目录 | 40 | 碰撞/字段登记、采集探针、来源身份核验、来源语义质量、依赖适配、网络与临时目录隔离 | 本文件下方列出 |
+| **合计** | **92** | 参数化用例展开前的测试模块数 | — |
 
 ## 最近完整执行
 
-2026-10-17（本机 Python 3.12.10）：收集 1006 项，953 通过、1 跳过、52 个 `real_network` 用例按默认策略排除，耗时 47.27 秒。真实网络测试未运行；本次输出未显示弃用警告汇总。5 个依赖真实 ZHB 数据的冒烟用例已标为 `real_network`，避免默认离线运行依赖本地快照。
+2026-10-18（本机 Python 3.12.10）：收集 1107 项，1054 通过、1 跳过、52 个 `real_network` 用例按默认策略排除，耗时 52.35 秒。真实网络测试未运行；默认离线套件通过。5 个依赖真实 ZHB 数据的冒烟用例已标为 `real_network`，避免默认离线运行依赖本地快照。
 
 根目录测试：
 
 - 来源身份核验回归：test_source_identity_reconciliation.py，覆盖匹配阈值、逐接口跳过、日期资格与契约变化重验。
 - `test_apply_collision_adjudications.py`、`test_collide.py`、`test_collision_dates.py`、`test_collision_topic_scripts.py`：碰撞候选、日期口径、专题脚本与人工定案。
-- `test_field_registry_api.py`、`test_registry_parity.py`、`test_gen_field_dict.py`、`test_reconcile_field_registry.py`、`test_source_lineage_api.py`：字段登记、严格/已接受差异 parity、生成视图、状态同步与来源谱系。
+- `test_field_registry_api.py`、`test_registry_parity.py`、`test_gen_field_dict.py`、`test_reconcile_field_registry.py`、`test_reconcile_field_registry_quality.py`、`test_field_registry_semantic_quality.py`、`test_field_source_quality_audit.py`、`test_source_lineage_api.py`：字段登记、严格 parity、语义质量门、元数据审计、状态同步与来源谱系。
 - `test_refresh_field_registry_projection.py`、`test_field_evidence_coverage.py`：生成视图 parity 与每日证据覆盖。
-- `test_capture_field_probe.py`：采集源请求参数、日期校验、状态和调用边界。
+- `test_capture_field_probe.py`、`test_capture_source_coverage.py`、`test_sina_raw_adapters.py`、`test_audit_field_completeness_inputs.py`：采集源路由与字段生命周期覆盖、Sina 扩展适配、日期校验、状态/调用边界，以及全样本双向字段归档审计。
+- `test_extract_registry_alignment.py`：逐源字段解析中的分组对齐、组合单位和证据优先级。
 - `test_dependency_adapter_compat.py`：Levistock 实际方法契约与 AxData 本地 ZHB ZIP 读取。
 - `test_axdata_daily_validation.py`、`test_levistock_daily_probe.py`、`test_levistock_daily_validation.py`、`test_levistock_rate_limit.py`：候选源每日核验、日期/数据阶段、熔断与限流。
 - `test_axdata_capture_identity.py`、`test_axdata_capture_policy.py`、`test_axdata_collision_suppression.py`：AxData 生产路由退出、三交易日复验、限流熔断与默认碰撞过滤。

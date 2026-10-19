@@ -38,10 +38,11 @@ def test_metadata_gap_report_lists_only_verified_missing_descriptions():
 
     rendered = render_field_metadata_gaps(registry)
 
-    assert "缺口记录 1 条；缺少含义 1 条；缺少规范名 1 条。" in rendered
+    assert "复核记录 1 条；含义为空/占位 1 条；规范名为空 1 条。" in rendered
     assert "source-a" in rendered and "verified.missing" in rendered
     assert "source-c" not in rendered
-    assert "不改变字段状态或锚点资格" in rendered
+    assert "逐源状态仍保留原始登记" in rendered
+    assert "下表记录不会作为碰撞锚" in rendered
 
 
 def test_unknown_queue_separates_meaning_annotations_from_status_resolution():

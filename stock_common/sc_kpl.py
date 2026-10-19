@@ -6,7 +6,7 @@
 - Token 接口（可选，通过 KPL_TOKEN / KPL_USER_ID 环境变量配置）：
   MorningBiddingList（竞价涨停委买额——独有数据）
 
-限流：实测匿名接口 1s 间隔安全；本适配器内置 QUERY_INTERVAL=0.6s（连接级限频）
+限流：匿名接口实测 1s 间隔安全；本适配器按 1.0s/请求限频
 缓存：@cached（market_emotion 5 分钟盘中 / plate_strength 1h——KPL 数据收盘后不变）
 
 ⚠️ 私有 API 风险：非官方公开，接口/字段可能变更；生产勿高依赖
@@ -29,7 +29,7 @@ _logger = logging.getLogger("sc_kpl")
 
 # Android UA 必须（非 Dalvik 返回 errcode=0 但 List=[]）
 _UA = "Dalvik/2.1.0 (Linux; U; Android 12; ALN-AL00 Build/W528JS)"
-_QUERY_INTERVAL = 0.6
+_QUERY_INTERVAL = 1.0
 
 _HOSTS = {
     "hq": "https://apphq.longhuvip.com/w1/api/index.php",  # 实时
@@ -89,8 +89,38 @@ def _base() -> Dict[str, Any]:
     }
 
 
+def _raw_response_fields(value: Any, prefix: str = "") -> Dict[str, Any]:
+    """Expose scalar leaves from a raw JSON response under stable dotted paths."""
+    fields: Dict[str, Any] = {}
+    if isinstance(value, dict):
+        for key, child in value.items():
+            path = f"{prefix}.{key}" if prefix else str(key)
+            fields.update(_raw_response_fields(child, path))
+    elif isinstance(value, list):
+        for index, child in enumerate(value):
+            path = f"{prefix}[{index}]" if prefix else f"[{index}]"
+            fields.update(_raw_response_fields(child, path))
+    elif prefix and value is not None:
+        fields[f"raw_response:{prefix}"] = value
+    return fields
+
+
+def _include_raw_response(
+    result: Dict[str, Any], payload: Dict[str, Any], capture_raw: bool
+) -> Dict[str, Any]:
+    if not capture_raw:
+        return result
+    captured = dict(result)
+    captured["__raw_response__"] = payload
+    if "_err" in payload or payload.get("errcode") != "0":
+        error = payload.get("_err") or f"KPL response errcode={payload.get('errcode')!r}"
+        captured["__error__"] = str(error)[:200]
+    captured.update(_raw_response_fields(payload))
+    return captured
+
+
 @cached(category="kpl_sentiment", ttl_seconds=TTL["kpl_sentiment"], trading_day=True)
-def get_kpl_market_sentiment() -> Dict[str, Any]:
+def get_kpl_market_sentiment(capture_raw: bool = False) -> Dict[str, Any]:
     """KPL 市场情绪（ChangeStatistics）——情绪指标 strong(0-100)/连板高度/涨停家数。
 
     字典 §12.17：info=[ztjs 涨停家数, Day, df_num 大幅回撤, strong 情绪指标, lbgd 连板高度] + tip 提示
@@ -100,19 +130,23 @@ def get_kpl_market_sentiment() -> Dict[str, Any]:
     p.update({"a": "ChangeStatistics", "st": 10, "c": "HomeDingPan"})
     d = _post("hq", p)
     if "_err" in d or d.get("errcode") != "0":
-        return {}
+        return _include_raw_response({}, d, capture_raw)
     info = (d.get("info") or [{}])[0]
-    return {
-        "ztjs": int(info.get("ztjs") or 0),
-        "df_num": int(info.get("df_num") or 0),
-        "strong": int(info.get("strong") or 0),
-        "lbgd": int(info.get("lbgd") or 0),
-        "day": info.get("Day", ""),
-        "tip": d.get("tip", ""),
-    }
+    return _include_raw_response(
+        {
+            "ztjs": int(info.get("ztjs") or 0),
+            "df_num": int(info.get("df_num") or 0),
+            "strong": int(info.get("strong") or 0),
+            "lbgd": int(info.get("lbgd") or 0),
+            "day": info.get("Day", ""),
+            "tip": d.get("tip", ""),
+        },
+        d,
+        capture_raw,
+    )
 
 
-def get_kpl_up_down() -> Dict[str, Any]:
+def get_kpl_up_down(capture_raw: bool = False) -> Dict[str, Any]:
     """KPL 涨跌家数（MoodNumCount）——涨跌家数/涨停跌停/全市场量能。
 
     字典 §12.17：list={SZJS 上涨, XDJS 下跌, ZTJS 涨停, DTJS 跌停, qscln 全市场量能(万), q_zrcs 昨日, bl 破板率, color}
@@ -121,20 +155,24 @@ def get_kpl_up_down() -> Dict[str, Any]:
     p.update({"a": "MoodNumCount", "c": "MarketMood"})
     d = _post("shhq", p)
     if "_err" in d or d.get("errcode") != "0":
-        return {}
+        return _include_raw_response({}, d, capture_raw)
     lst = d.get("list") or {}
-    return {
-        "rise_num": int(lst.get("SZJS") or 0),
-        "fall_num": int(lst.get("XDJS") or 0),
-        "zt_num": int(lst.get("ZTJS") or 0),
-        "dt_num": int(lst.get("DTJS") or 0),
-        "total_amount_wan": int(lst.get("qscln") or 0),  # 万
-        "prev_amount_wan": int(lst.get("q_zrcs") or 0),
-        "broken_ratio": float(lst.get("bl") or 0),
-    }
+    return _include_raw_response(
+        {
+            "rise_num": int(lst.get("SZJS") or 0),
+            "fall_num": int(lst.get("XDJS") or 0),
+            "zt_num": int(lst.get("ZTJS") or 0),
+            "dt_num": int(lst.get("DTJS") or 0),
+            "total_amount_wan": int(lst.get("qscln") or 0),  # 万
+            "prev_amount_wan": int(lst.get("q_zrcs") or 0),
+            "broken_ratio": float(lst.get("bl") or 0),
+        },
+        d,
+        capture_raw,
+    )
 
 
-def get_kpl_plate_strength(top_n: int = 20) -> List[Dict[str, Any]]:
+def get_kpl_plate_strength(top_n: int = 20, capture_raw: bool = False) -> List[Dict[str, Any]]:
     """KPL 精选板块强度（RealRankingInfo ZSType=7）——强度/涨幅/主力净额/今明 PE。
 
     字典 §12.17：list 19 元素数组：
@@ -162,30 +200,36 @@ def get_kpl_plate_strength(top_n: int = 20) -> List[Dict[str, Any]]:
     for row in d.get("list") or []:
         if len(row) < 17:
             continue
-        out.append(
-            {
-                "code": row[0],
-                "name": row[1],
-                "strength": _f(row[2]),
-                "change_pct": _f(row[3]),
-                "speed": _f(row[4]),
-                "amount": _f(row[5]),
-                "main_inflow": _f(row[6]),
-                "main_buy": _f(row[7]),
-                "main_sell": _f(row[8]),
-                "vol_ratio": _f(row[9]),
-                "circulation_value": _f(row[10]),
-                "big_order_300w_net": _f(row[12]),
-                "total_value": _f(row[13]),
-                "institution_add": _f(row[14]),
-                "pe_now": _f(row[15]),
-                "pe_next": _f(row[16]),
+        result = {
+            "code": row[0],
+            "name": row[1],
+            "strength": _f(row[2]),
+            "change_pct": _f(row[3]),
+            "speed": _f(row[4]),
+            "amount": _f(row[5]),
+            "main_inflow": _f(row[6]),
+            "main_buy": _f(row[7]),
+            "main_sell": _f(row[8]),
+            "vol_ratio": _f(row[9]),
+            "circulation_value": _f(row[10]),
+            "big_order_300w_net": _f(row[12]),
+            "total_value": _f(row[13]),
+            "institution_add": _f(row[14]),
+            "pe_now": _f(row[15]),
+            "pe_next": _f(row[16]),
+        }
+        if capture_raw:
+            result["raw_columns"] = {
+                f"col_{index:02d}": value for index, value in enumerate(row) if index not in (0, 1)
             }
-        )
+            result["__raw_row__"] = row
+        out.append(result)
     return out
 
 
-def get_kpl_limit_up_detail(pid_type: int = 1, date: Optional[str] = None) -> List[Dict[str, Any]]:
+def get_kpl_limit_up_detail(
+    pid_type: int = 1, date: Optional[str] = None, capture_raw: bool = False
+) -> List[Dict[str, Any]]:
     """KPL 连板梯队（DailyLimitPerformance）——涨停股明细（涨停原因/封单/主力）。
 
     字典 §12.17：PidType=1 首板 / 2 二板 / 3 三板 / 4 四板 / 5 更高
@@ -209,6 +253,16 @@ def get_kpl_limit_up_detail(pid_type: int = 1, date: Optional[str] = None) -> Li
     host = "his" if date else "hwhq"
     d = _post(host, p)
     if "_err" in d or d.get("errcode") != "0":
+        if capture_raw:
+            return [
+                {
+                    "__error__": str(d.get("_err") or f"KPL response errcode={d.get('errcode')!r}")[
+                        :200
+                    ],
+                    "__identity__": {"pid_type": pid_type},
+                    "__raw_response__": d,
+                }
+            ]
         return []
     out = []
     for grp in d.get("info") or []:
@@ -217,28 +271,35 @@ def get_kpl_limit_up_detail(pid_type: int = 1, date: Optional[str] = None) -> Li
         for row in rows:
             if not isinstance(row, list) or len(row) < 14:
                 continue
-            out.append(
-                {
-                    "code": row[0],
-                    "name": row[1],
-                    "zt_time": row[4] if len(row) > 4 else None,
-                    "reason": row[5] if len(row) > 5 else "",
-                    "seal_amount": _f(row[6]) if len(row) > 6 else 0,
-                    "max_seal": _f(row[7]) if len(row) > 7 else 0,
-                    "main_inflow": _f(row[8]) if len(row) > 8 else 0,
-                    "main_buy": _f(row[9]) if len(row) > 9 else 0,
-                    "main_sell": _f(row[10]) if len(row) > 10 else 0,
-                    "amount": _f(row[11]) if len(row) > 11 else 0,
-                    "sector": row[12] if len(row) > 12 else "",
-                    "turnover_real": _f(row[14]) if len(row) > 14 else 0,
-                    "amplitude": _f(row[17]) if len(row) > 17 else 0,
-                    "sector_code": row[19] if len(row) > 19 else "",
+            result = {
+                "code": row[0],
+                "name": row[1],
+                "zt_time": row[4] if len(row) > 4 else None,
+                "reason": row[5] if len(row) > 5 else "",
+                "seal_amount": _f(row[6]) if len(row) > 6 else 0,
+                "max_seal": _f(row[7]) if len(row) > 7 else 0,
+                "main_inflow": _f(row[8]) if len(row) > 8 else 0,
+                "main_buy": _f(row[9]) if len(row) > 9 else 0,
+                "main_sell": _f(row[10]) if len(row) > 10 else 0,
+                "amount": _f(row[11]) if len(row) > 11 else 0,
+                "sector": row[12] if len(row) > 12 else "",
+                "turnover_real": _f(row[14]) if len(row) > 14 else 0,
+                "amplitude": _f(row[17]) if len(row) > 17 else 0,
+                "sector_code": row[19] if len(row) > 19 else "",
+            }
+            if capture_raw:
+                result["pid_type"] = pid_type
+                result["raw_columns"] = {
+                    f"col_{index:02d}": value
+                    for index, value in enumerate(row)
+                    if index not in (0, 1)
                 }
-            )
+                result["__raw_row__"] = row
+            out.append(result)
     return out
 
 
-def get_kpl_broken_ratio() -> Dict[str, Any]:
+def get_kpl_broken_ratio(capture_raw: bool = False) -> Dict[str, Any]:
     """KPL 涨跌停情绪（RiseFallAnalysis）——涨停/跌停/自然涨停/破板率/炸板。
 
     字典 §12.17：info=[[涨停, 跌停, 自然涨停, 曾跌停, 破板率, 炸板, 日期]]
@@ -248,19 +309,23 @@ def get_kpl_broken_ratio() -> Dict[str, Any]:
     p.update({"a": "RiseFallAnalysis", "c": "HomeDingPan"})
     d = _post("shhq", p)
     if "_err" in d or d.get("errcode") != "0":
-        return {}
+        return _include_raw_response({}, d, capture_raw)
     info = (d.get("info") or [[]])[0]
     if not isinstance(info, list) or len(info) < 6:
-        return {}
-    return {
-        "zt": int(info[0]),
-        "dt": int(info[1]),
-        "zt_natural": int(info[2]),
-        "dt_ever": int(info[3]),
-        "broken_ratio": float(info[4]),
-        "broken_num": int(info[5]),
-        "date": str(info[6]) if len(info) > 6 else "",
-    }
+        return _include_raw_response({}, d, capture_raw)
+    return _include_raw_response(
+        {
+            "zt": int(info[0]),
+            "dt": int(info[1]),
+            "zt_natural": int(info[2]),
+            "dt_ever": int(info[3]),
+            "broken_ratio": float(info[4]),
+            "broken_num": int(info[5]),
+            "date": str(info[6]) if len(info) > 6 else "",
+        },
+        d,
+        capture_raw,
+    )
 
 
 def _f(v: Any) -> float:

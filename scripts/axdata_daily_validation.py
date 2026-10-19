@@ -325,7 +325,12 @@ def _route_identity_summary_map(state: Optional[dict[str, Any]]) -> dict[str, di
 def get_axdata_capture_identity_plan(
     data_date: str, *, force_reprobe: bool = False
 ) -> dict[str, Any]:
-    """Choose bounded daily capture actions for AxData routes already in production."""
+    """Keep raw capture active while scheduling separate identity-evidence checks.
+
+    A confirmed redundant route continues producing raw snapshots. Its values are
+    excluded from repeated identity checks and routine collisions until a scheduled
+    recheck. Capture is skipped only for a same-date duplicate or a manual block.
+    """
     state, error = _load_validation_state()
     if error:
         return {
@@ -334,6 +339,7 @@ def get_axdata_capture_identity_plan(
             "endpoints": {
                 interface_id: {
                     "action": "skip",
+                    "identity_validation_action": "blocked",
                     "reason": "state_unreadable_manual_review_required",
                     "identity": {
                         "status": "state_unreadable_manual_review_required",
@@ -352,12 +358,15 @@ def get_axdata_capture_identity_plan(
         changed = changed or contract_changed
         status = identity.get("status")
         action, reason = "collect", "identity_not_yet_confirmed"
+        identity_validation_action = "sample"
         last_probe = _date_key(identity.get("last_probe_data_date"))
         if status == "blocked_until_manual_review":
             action, reason = "skip", "blocked_until_manual_review"
+            identity_validation_action = "blocked"
         elif status == "operationally_redundant":
             if last_probe and target_date <= last_probe:
-                action, reason = "skip", "data_date_already_confirmed"
+                action, reason = "collect", "identity_validation_already_confirmed_for_date"
+                identity_validation_action = "suppress"
             elif (
                 force_reprobe
                 or _capture_identity_days_since_probe(identity) >= CAPTURE_IDENTITY_RECHECK_DATES
@@ -370,9 +379,11 @@ def get_axdata_capture_identity_plan(
                 changed = True
                 reason = identity["reason"]
             else:
-                action, reason = "skip", "endpoint_redundant_until_scheduled_recheck"
+                action, reason = "collect", "endpoint_redundant_until_scheduled_recheck"
+                identity_validation_action = "suppress"
         endpoints[interface_id] = {
             "action": action,
+            "identity_validation_action": identity_validation_action,
             "source": endpoint["source"],
             "reference_source": endpoint["reference_source"],
             "reason": reason,
@@ -731,10 +742,13 @@ def update_axdata_capture_identities(
         if source_state.get("ok") is not True or reference_state.get("ok") is not True:
             continue
         source_meta_block = payload.get("__source_meta__")
-        suppressed = isinstance(source_meta_block, dict) and isinstance(
-            source_meta_block.get("identity_suppression"), dict
+        suppressed = isinstance(source_meta_block, dict) and (
+            isinstance(source_meta_block.get("identity_validation_suppression"), dict)
+            or isinstance(source_meta_block.get("identity_suppression"), dict)
         )
         if identity.get("status") == "operationally_redundant" and suppressed:
+            # The raw response is still captured and retained for future use. This
+            # marker only excludes it from today's identity proof / routine cracking.
             last_counted = _date_key(identity.get("last_counted_data_date"))
             if (
                 target_date

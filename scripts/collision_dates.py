@@ -585,8 +585,14 @@ def select_snapshots(
     allowed_trading_folders: set[str] | frozenset[str] | None = None,
     allowed_event_folders: set[str] | frozenset[str] | None = None,
     checker: Callable[[date], bool] | None = None,
+    allowed_trading_dates: set[str] | frozenset[str] | None = None,
 ) -> tuple[list[Snapshot], list[str]]:
-    """Load, validate, and deterministically deduplicate per-source snapshots."""
+    """Load, validate, and deterministically deduplicate per-source snapshots.
+
+    When supplied, ``allowed_trading_dates`` limits market snapshots to the
+    effective trading dates selected for the current analysis window. Calendar
+    event snapshots continue to use their natural-date window.
+    """
     candidates: list[Snapshot] = []
     warnings: list[str] = []
     for folder in folders:
@@ -636,6 +642,16 @@ def select_snapshots(
             snapshot, problems = build_snapshot(folder, source, path, document, checker)
             warnings.extend(problems)
             if snapshot is not None:
+                if (
+                    snapshot.domain == TRADING
+                    and allowed_trading_dates is not None
+                    and snapshot.sample_date.strftime("%Y%m%d") not in allowed_trading_dates
+                ):
+                    warnings.append(
+                        f"{folder.name}/{source}: 来源有效交易日 "
+                        f"{snapshot.sample_date:%Y%m%d} 不在本轮行情交易日窗口，快照跳过"
+                    )
+                    continue
                 candidates.append(snapshot)
 
     chosen: dict[tuple[str, str, str], Snapshot] = {}

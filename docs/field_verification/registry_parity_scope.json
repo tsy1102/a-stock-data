@@ -1,0 +1,75 @@
+{
+  "schema_version": 1,
+  "purpose": "明确只读历史来源档案中不属于当前未知字段注册范围的配对，区分运行时原始采集路径与仍在采集的上下文数据。",
+  "entries": [
+    {
+      "source": "TDX(双命名源)",
+      "code": "Buyp",
+      "disposition": "captured_runtime",
+      "reason": "历史 BspInfo token 表示五档买价；当前 ELTDX 行情快照以 bid1 至 bid5 的逐档键写入 TDX 原始响应。保留为运行时原始字段，不将旧协议 token 直接登记为新字典路径。",
+      "evidence_files": [
+        "docs/field_source_reference.md",
+        "core/eltdx_adapter.py",
+        "core/tdx_client.py",
+        "scripts/capture_field_probe.py",
+        "tests/data/test_data_eltdx_adapter.py"
+      ],
+      "capture_path": "raw_tdx.json:stocks[*].quote_raw.bid{1..5}"
+    },
+    {
+      "source": "TDX(双命名源)",
+      "code": "Buyv",
+      "disposition": "captured_runtime",
+      "reason": "历史 BspInfo token 表示五档买量；当前 ELTDX QuoteLevel 同时提供 price 和 volume，适配器已将逐档 volume 原值写入 TDX 原始响应。单位未在此处重判，不直接登记旧协议字段含义。",
+      "evidence_files": [
+        "docs/field_source_reference.md",
+        "core/eltdx_adapter.py",
+        "core/tdx_client.py",
+        "scripts/capture_field_probe.py",
+        "tests/data/test_data_eltdx_adapter.py"
+      ],
+      "capture_path": "raw_tdx.json:stocks[*].quote_raw.bid{1..5}_vol"
+    },
+    {
+      "source": "TDX(双命名源)",
+      "code": "Sellp",
+      "disposition": "captured_runtime",
+      "reason": "历史 BspInfo token 表示五档卖价；当前 ELTDX 行情快照以 ask1 至 ask5 的逐档键写入 TDX 原始响应。保留为运行时原始字段，不将旧协议 token 直接登记为新字典路径。",
+      "evidence_files": [
+        "docs/field_source_reference.md",
+        "core/eltdx_adapter.py",
+        "core/tdx_client.py",
+        "scripts/capture_field_probe.py",
+        "tests/data/test_data_eltdx_adapter.py"
+      ],
+      "capture_path": "raw_tdx.json:stocks[*].quote_raw.ask{1..5}"
+    },
+    {
+      "source": "TDX(双命名源)",
+      "code": "Sellv",
+      "disposition": "captured_runtime",
+      "reason": "历史 BspInfo token 表示五档卖量；当前 ELTDX QuoteLevel 同时提供 price 和 volume，适配器已将逐档 volume 原值写入 TDX 原始响应。单位未在此处重判，不直接登记旧协议字段含义。",
+      "evidence_files": [
+        "docs/field_source_reference.md",
+        "core/eltdx_adapter.py",
+        "core/tdx_client.py",
+        "scripts/capture_field_probe.py",
+        "tests/data/test_data_eltdx_adapter.py"
+      ],
+      "capture_path": "raw_tdx.json:stocks[*].quote_raw.ask{1..5}_vol"
+    },
+    {
+      "source": "同花顺-fuyao",
+      "code": "tags",
+      "disposition": "captured_context",
+      "reason": "tags 是短线基准响应中的文字分类标签，未列入未知字段破解注册表；它并未停采，Fuyao 日常采集仍保存 short_term_benchmark 的完整原始响应，供上下文审阅。",
+      "evidence_files": [
+        "docs/field_source_reference.md",
+        "stock_common/sc_fuyao.py",
+        "scripts/capture_field_probe.py",
+        "docs/field_verification/20261016/raw_fuyao.json"
+      ],
+      "capture_path": "raw_fuyao.json:market.short_term_benchmark[*].tags"
+    }
+  ]
+}

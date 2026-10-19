@@ -38,6 +38,7 @@ done
 RELEVANT="$(git diff --cached --name-only -- \
   docs/field_dict.md \
   docs/field_verification/field_registry.json \
+  docs/field_verification/registry_parity_scope.json \
   docs/field_verification/registry_parity_accepted_debt.json \
   docs/verify 2>/dev/null || true)"
 
@@ -58,6 +59,7 @@ fi
 if [ -n "$RELEVANT" ] && ! git diff --quiet -- \
   docs/field_dict.md \
   docs/field_verification/field_registry.json \
+  docs/field_verification/registry_parity_scope.json \
   docs/field_verification/registry_parity_accepted_debt.json \
   docs/verify; then
   echo "[governance-gates] 相关文件存在未暂存改动；请先 git add，使工作树与提交快照一致。" >&2
@@ -67,6 +69,7 @@ fi
 UNTRACKED_RELEVANT="$(git ls-files --others --exclude-standard -- \
   docs/field_dict.md \
   docs/field_verification/field_registry.json \
+  docs/field_verification/registry_parity_scope.json \
   docs/field_verification/registry_parity_accepted_debt.json \
   docs/verify 2>/dev/null || true)"
 if [ -n "$RELEVANT" ] && [ -n "$UNTRACKED_RELEVANT" ]; then

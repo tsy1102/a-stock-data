@@ -3,40 +3,40 @@
 > 由 `field_verification/source_lineage.json` 自动生成。只记录有项目内或上游证据的关系；
 > 项目证据状态与对话确认状态分列；确认某客户端仓库不等于确认它是底层数据提供方。
 
-| 字典来源 | 运行时命名空间 | 数据提供方 | 独立来源族 | 可作锚 | 项目证据 | 对话确认 |
-|:--|:--|:--|:--|:--:|:--|:--|
-| AxData | axdata | AxData multi-provider framework; current shortline interface uses Tongdaxin | 未确认（unconfirmed） | 否 | confirmed | confirmed（2026-10-08） |
-| TDX(双命名源) | tdx | Tongdaxin | tdx（confirmed） | 是 | confirmed | confirmed（2026-10-06） |
-| TDX-eltdx(适配层) | eltdx | Tongdaxin | tdx（confirmed） | 是 | confirmed | confirmed（2026-10-06） |
-| ZHB-tdxstat | zhb | Tongdaxin | tdx（confirmed） | 是 | confirmed | confirmed（2026-10-06） |
-| ZHB-tdxstat2 | zhb | Tongdaxin | tdx（confirmed） | 是 | confirmed | confirmed（2026-10-06） |
-| ZHB-tipinfo | zhb | Tongdaxin | tdx（confirmed） | 是 | confirmed | confirmed（2026-10-06） |
-| FTShare | ftshare | FTShare hosted MCP service at market.ft.tech | 未确认（unconfirmed） | 否 | confirmed | pending |
-| Levistock历史未归属 | 未确认 | Levistock 多源客户端包装库的历史未归属字段记录 | 未确认（unconfirmed） | 否 | confirmed | confirmed（2026-10-06） |
-| 开盘红(Levistock适配) | kph | KPH / 开盘红（通过 Levistock 的历史方法路径） | kph（confirmed） | 是 | confirmed | confirmed（2026-10-06） |
-| reports | reports | Eastmoney | eastmoney（confirmed） | 是 | unconfirmed | pending |
-| 东财-clist | clist | Eastmoney | eastmoney（confirmed） | 是 | confirmed | confirmed（2026-10-08） |
-| 东财-datacenter(英文键) | datacenter | Eastmoney | eastmoney（confirmed） | 是 | confirmed | confirmed（2026-10-08） |
-| 东财-em_kline_f61 | em_kline_f61 | Eastmoney | eastmoney（confirmed） | 是 | confirmed | confirmed（2026-10-08） |
-| 东财-push2(stock/get) | push2 | Eastmoney | eastmoney（confirmed） | 是 | confirmed | confirmed（2026-10-08） |
-| 东财-push2_full | push2_full | Eastmoney | eastmoney（confirmed） | 是 | confirmed | confirmed（2026-10-08） |
-| 东财-push2ex | push2ex | Eastmoney | eastmoney（confirmed） | 是 | confirmed | confirmed（2026-10-08） |
-| 东财-slist | slist | Eastmoney | eastmoney（confirmed） | 是 | confirmed | confirmed（2026-10-08） |
-| 东财-ulist239(np/get) | ulist239 | Eastmoney | eastmoney（confirmed） | 是 | confirmed | confirmed（2026-10-08） |
-| 东财-热榜(em_hot) | em_hot | Eastmoney | eastmoney（confirmed） | 是 | confirmed | confirmed（2026-10-08） |
-| 东财-资金流(em_fund_flow) | em_fund_flow | Eastmoney | eastmoney（confirmed） | 是 | confirmed | confirmed（2026-10-08） |
-| 同花顺-fuyao | fuyao | Tonghuashun | tonghuashun（confirmed） | 是 | confirmed | confirmed（2026-10-06） |
-| 巨潮(cninfo) | cninfo | CNINFO | cninfo（confirmed） | 是 | unconfirmed | pending |
-| 市场源(market_sources) | market_sources | 多源聚合 | 未确认（unconfirmed） | 否 | unconfirmed | pending |
-| 开盘啦(kpl) | market_sources | 开盘啦 | 未确认（unconfirmed） | 否 | confirmed | confirmed（2026-10-08） |
-| 开盘啦(kpl_limit_up_detail) | kpl | 开盘啦 | kpl（confirmed） | 是 | confirmed | confirmed（2026-10-08） |
-| 开盘红 | kph | KPH / 开盘红（AxData source_code=kph） | kph（confirmed） | 是 | unconfirmed | pending |
-| 新浪(hq.sinajs) | sina | Sina | sina（confirmed） | 是 | confirmed | confirmed（2026-10-08） |
-| 新浪(扩展API) | sina | Sina | sina（confirmed） | 是 | confirmed | confirmed（2026-10-08） |
-| 沪深交易所 | exchange | 沪深交易所 | exchange（confirmed） | 是 | unconfirmed | pending |
-| 百度(baidu) | baidu | Baidu | baidu（confirmed） | 是 | unconfirmed | pending |
-| 腾讯(qt.gtimg) | tencent | Tencent | tencent（confirmed） | 是 | confirmed | confirmed（2026-10-08） |
-| 财联社(cls) | cls | CLS | cls（confirmed） | 是 | confirmed | confirmed（2026-10-08） |
+| 字典来源 | 采集器状态 | 运行时命名空间 | 数据提供方 | 独立来源族 | 可作锚 | 项目证据 | 对话确认 |
+|:--|:--|:--|:--|:--|:--:|:--|:--|
+| AxData | active | axdata | AxData multi-provider framework; current shortline interface uses Tongdaxin | 未确认（unconfirmed） | 否 | confirmed | confirmed（2026-10-08） |
+| TDX(双命名源) | active | tdx | Tongdaxin | tdx（confirmed） | 是 | confirmed | confirmed（2026-10-06） |
+| TDX-eltdx(适配层) | active | eltdx | Tongdaxin | tdx（confirmed） | 是 | confirmed | confirmed（2026-10-06） |
+| ZHB-tdxstat | active | zhb | Tongdaxin | tdx（confirmed） | 是 | confirmed | confirmed（2026-10-06） |
+| ZHB-tdxstat2 | active | zhb | Tongdaxin | tdx（confirmed） | 是 | confirmed | confirmed（2026-10-06） |
+| ZHB-tipinfo | active | zhb | Tongdaxin | tdx（confirmed） | 是 | confirmed | confirmed（2026-10-06） |
+| FTShare | active | ftshare | FTShare hosted MCP service at market.ft.tech | 未确认（unconfirmed） | 否 | confirmed | pending |
+| Levistock历史未归属 | historical | 未确认 | Levistock 多源客户端包装库的历史未归属字段记录 | 未确认（unconfirmed） | 否 | confirmed | confirmed（2026-10-06） |
+| 开盘红(Levistock适配) | active | kph | KPH / 开盘红（通过 Levistock 的历史方法路径） | kph（confirmed） | 是 | confirmed | confirmed（2026-10-06） |
+| reports | active | reports | Eastmoney | eastmoney（confirmed） | 是 | unconfirmed | pending |
+| 东财-clist | active | clist | Eastmoney | eastmoney（confirmed） | 是 | confirmed | confirmed（2026-10-08） |
+| 东财-datacenter(英文键) | active | datacenter | Eastmoney | eastmoney（confirmed） | 是 | confirmed | confirmed（2026-10-08） |
+| 东财-em_kline_f61 | active | em_kline_f61 | Eastmoney | eastmoney（confirmed） | 是 | confirmed | confirmed（2026-10-08） |
+| 东财-push2(stock/get) | active | push2 | Eastmoney | eastmoney（confirmed） | 是 | confirmed | confirmed（2026-10-08） |
+| 东财-push2_full | retired_duplicate → 东财-push2(stock/get) | push2_full | Eastmoney | eastmoney（confirmed） | 否 | confirmed | confirmed（2026-10-08） |
+| 东财-push2ex | active | push2ex | Eastmoney | eastmoney（confirmed） | 是 | confirmed | confirmed（2026-10-08） |
+| 东财-slist | active | slist | Eastmoney | eastmoney（confirmed） | 是 | confirmed | confirmed（2026-10-08） |
+| 东财-ulist239(np/get) | active | ulist239 | Eastmoney | eastmoney（confirmed） | 是 | confirmed | confirmed（2026-10-08） |
+| 东财-热榜(em_hot) | active | em_hot | Eastmoney | eastmoney（confirmed） | 是 | confirmed | confirmed（2026-10-08） |
+| 东财-资金流(em_fund_flow) | active | em_fund_flow | Eastmoney | eastmoney（confirmed） | 是 | confirmed | confirmed（2026-10-08） |
+| 同花顺-fuyao | active | fuyao | Tonghuashun | tonghuashun（confirmed） | 是 | confirmed | confirmed（2026-10-06） |
+| 巨潮(cninfo) | active | cninfo | CNINFO | cninfo（confirmed） | 是 | unconfirmed | pending |
+| 市场源(market_sources) | active | market_sources | 多源聚合 | 未确认（unconfirmed） | 否 | unconfirmed | pending |
+| 开盘啦(kpl) | active | market_sources | 开盘啦 | 未确认（unconfirmed） | 否 | confirmed | confirmed（2026-10-08） |
+| 开盘啦(kpl_limit_up_detail) | active | kpl | 开盘啦 | kpl（confirmed） | 是 | confirmed | confirmed（2026-10-08） |
+| 开盘红 | active | kph | KPH / 开盘红（AxData source_code=kph） | kph（confirmed） | 是 | unconfirmed | pending |
+| 新浪(hq.sinajs) | active | sina | Sina | sina（confirmed） | 是 | confirmed | confirmed（2026-10-08） |
+| 新浪(扩展API) | active | sina_extended | Sina | sina（confirmed） | 是 | confirmed | confirmed（2026-10-08） |
+| 沪深交易所 | active | exchange | 沪深交易所 | exchange（confirmed） | 是 | unconfirmed | pending |
+| 百度(baidu) | pending_validation | baidu | Baidu | baidu（confirmed） | 是 | unconfirmed | pending |
+| 腾讯(qt.gtimg) | active | tencent | Tencent | tencent（confirmed） | 是 | confirmed | confirmed（2026-10-08） |
+| 财联社(cls) | active | cls | CLS | cls（confirmed） | 是 | confirmed | confirmed（2026-10-08） |
 
 ## 项目级历史参考基线
 
@@ -143,7 +143,7 @@
 
 ### 东财-push2_full
 
-- 来源说明：push2_full 与 Eastmoney push2 同属同一提供方。
+- 来源说明：仅保留旧 push2_full 原始快照的历史运行身份；该重复采集器已停用，不作独立碰撞锚。
 - 对话确认：confirmed（2026-10-08）。按用户确认登记仓库关系；具体仓库的关系范围及限制见 repositories.note。
 - [https://github.com/fleetinglife/levistock](https://github.com/fleetinglife/levistock) — provider_family_reference；confirmed。按用户确认作为 Eastmoney 来源族的客户端/接口参考；levistock 是多源包装库，不是底层数据提供方，也不据此断言本项目每个端点或字段均源自该仓库。
   - 项目内证据：scripts/capture_field_probe.py, stock_common/sc_datasource/_eastmoney.py
@@ -271,5 +271,5 @@
 
 - GitHub 仓库可能是客户端、SDK、镜像或上游 API 契约仓库，不自动等同于数据提供方。
 - `独立来源族` 用于碰撞证据去重；同一提供方的不同接口不能互相充当独立 L1 证据。
-- `可作锚` 还要求字段状态 verified 且完整 code path 与运行时字段精确匹配。
+- `可作锚` 还要求字段状态 verified、含义/单位没有质量问题，且完整 code path 与运行时字段精确匹配。
 - 未确认的来源族在默认碰撞中 fail closed；确认后更新 JSON 并重生成本页。

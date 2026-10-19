@@ -1,6 +1,6 @@
 {
   "schema_version": "1.2",
-  "status": "sampled",
+  "status": "already_recorded",
   "data_date": "2026-10-16",
   "capture_directory_date": "2026-10-16",
   "latest_completed_trade_date": "2026-10-16",
@@ -28,250 +28,8 @@
   },
   "passive_evidence": {
     "axdata_shortline_vs_eltdx": {
-      "status": "compared",
-      "target_trade_date": "2026-10-16",
-      "matched_trade_date": "2026-10-16",
-      "axdata_observed_dates": [
-        "2026-10-16"
-      ],
-      "eltdx_observed_dates": [
-        "2026-10-16"
-      ],
-      "paired_stocks": 20,
-      "paired_codes": [
-        "000007",
-        "000011",
-        "000037",
-        "000568",
-        "000678",
-        "002034",
-        "002242",
-        "300031",
-        "300788",
-        "301190",
-        "600309",
-        "600519",
-        "600675",
-        "600825",
-        "601288",
-        "688327",
-        "688553",
-        "688589",
-        "920118",
-        "920508"
-      ],
-      "field_comparisons": {
-        "alignment_status": {
-          "equal": 0,
-          "different": 20,
-          "both_null": 0
-        },
-        "auction_prev_volume_ratio": {
-          "equal": 7,
-          "different": 13,
-          "both_null": 0
-        },
-        "beta_60d": {
-          "equal": 0,
-          "different": 20,
-          "both_null": 0
-        },
-        "code": {
-          "equal": 0,
-          "different": 20,
-          "both_null": 0
-        },
-        "float_market_value": {
-          "equal": 20,
-          "different": 0,
-          "both_null": 0
-        },
-        "float_shares": {
-          "equal": 20,
-          "different": 0,
-          "both_null": 0
-        },
-        "free_float_market_value": {
-          "equal": 20,
-          "different": 0,
-          "both_null": 0
-        },
-        "free_float_shares": {
-          "equal": 20,
-          "different": 0,
-          "both_null": 0
-        },
-        "full_code": {
-          "equal": 0,
-          "different": 20,
-          "both_null": 0
-        },
-        "instrument_id": {
-          "equal": 0,
-          "different": 20,
-          "both_null": 0
-        },
-        "ladder_level": {
-          "equal": 0,
-          "different": 2,
-          "both_null": 18
-        },
-        "limit_board_text": {
-          "equal": 1,
-          "different": 0,
-          "both_null": 19
-        },
-        "limit_stat_days": {
-          "equal": 3,
-          "different": 0,
-          "both_null": 17
-        },
-        "limit_status": {
-          "equal": 0,
-          "different": 20,
-          "both_null": 0
-        },
-        "limit_up_count_in_stat_days": {
-          "equal": 3,
-          "different": 0,
-          "both_null": 17
-        },
-        "limit_up_streak_days": {
-          "equal": 3,
-          "different": 0,
-          "both_null": 17
-        },
-        "market_id": {
-          "equal": 0,
-          "different": 20,
-          "both_null": 0
-        },
-        "open_amount": {
-          "equal": 5,
-          "different": 15,
-          "both_null": 0
-        },
-        "open_change_pct": {
-          "equal": 20,
-          "different": 0,
-          "both_null": 0
-        },
-        "open_prev_amount_ratio": {
-          "equal": 6,
-          "different": 14,
-          "both_null": 0
-        },
-        "open_prev_seal_ratio": {
-          "equal": 0,
-          "different": 1,
-          "both_null": 19
-        },
-        "open_price": {
-          "equal": 20,
-          "different": 0,
-          "both_null": 0
-        },
-        "open_turnover_z": {
-          "equal": 12,
-          "different": 8,
-          "both_null": 0
-        },
-        "open_volume_hand": {
-          "equal": 5,
-          "different": 15,
-          "both_null": 0
-        },
-        "open_volume_ratio": {
-          "equal": 5,
-          "different": 15,
-          "both_null": 0
-        },
-        "opening_rush": {
-          "equal": 0,
-          "different": 20,
-          "both_null": 0
-        },
-        "pe_ttm": {
-          "equal": 0,
-          "different": 20,
-          "both_null": 0
-        },
-        "pre_close": {
-          "equal": 20,
-          "different": 0,
-          "both_null": 0
-        },
-        "prev2_seal_amount": {
-          "equal": 1,
-          "different": 0,
-          "both_null": 19
-        },
-        "prev_amount": {
-          "equal": 20,
-          "different": 0,
-          "both_null": 0
-        },
-        "prev_open_amount": {
-          "equal": 20,
-          "different": 0,
-          "both_null": 0
-        },
-        "prev_open_volume_hand": {
-          "equal": 20,
-          "different": 0,
-          "both_null": 0
-        },
-        "prev_seal_amount": {
-          "equal": 1,
-          "different": 0,
-          "both_null": 19
-        },
-        "previous_trade_date": {
-          "equal": 0,
-          "different": 20,
-          "both_null": 0
-        },
-        "seal_amount": {
-          "equal": 20,
-          "different": 0,
-          "both_null": 0
-        },
-        "seal_prev_ratio": {
-          "equal": 1,
-          "different": 0,
-          "both_null": 19
-        },
-        "seal_to_amount_ratio": {
-          "equal": 20,
-          "different": 0,
-          "both_null": 0
-        },
-        "seal_to_float_ratio": {
-          "equal": 20,
-          "different": 0,
-          "both_null": 0
-        },
-        "symbol": {
-          "equal": 0,
-          "different": 20,
-          "both_null": 0
-        },
-        "target_trade_date": {
-          "equal": 0,
-          "different": 20,
-          "both_null": 0
-        },
-        "tdx_code": {
-          "equal": 0,
-          "different": 20,
-          "both_null": 0
-        },
-        "year_limit_up_days": {
-          "equal": 20,
-          "different": 0,
-          "both_null": 0
-        }
-      },
+      "status": "not_run",
+      "reason": "required_sources_not_selected",
       "requests_added": 0
     },
     "kph_limit_up_history_vs_kpl_detail": {
@@ -281,36 +39,36 @@
       "kph_trade_date": "2026-10-16",
       "kpl_trade_date": "2026-10-16",
       "kph_rows": 50,
-      "kpl_rows": 54,
-      "paired_stocks": 47,
+      "kpl_rows": 61,
+      "paired_stocks": 50,
       "field_comparisons": {
         "limit_time": {
-          "equal": 47,
+          "equal": 50,
           "different": 0,
           "missing": 0
         },
         "seal_amount": {
           "equal": 0,
-          "different": 47,
+          "different": 50,
           "missing": 0
         },
         "seal_money": {
           "equal": 0,
-          "different": 47,
+          "different": 50,
           "missing": 0
         },
         "net_inflow": {
-          "equal": 47,
+          "equal": 50,
           "different": 0,
           "missing": 0
         },
         "turnover": {
-          "equal": 47,
+          "equal": 50,
           "different": 0,
           "missing": 0
         },
         "turnover_rate": {
-          "equal": 47,
+          "equal": 50,
           "different": 0,
           "missing": 0
         }

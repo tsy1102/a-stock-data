@@ -2417,7 +2417,7 @@
 
 | 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
 |:--|:--|:--|:--|:--|
-| Levistock历史未归属 · `first_limit_up_time` | — | — | — | `unverified` |
+| FTShare · `first_limit_up_time` | — | — | — | `unverified` |
 | 东财-热榜(em_hot) · `first_limit_up_time` | first_limit_up_time | Unix 秒时间戳 | — | `verified` |
 
 ### `fund` — incomplete
@@ -2614,7 +2614,7 @@
 
 | 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
 |:--|:--|:--|:--|:--|
-| Levistock历史未归属 · `limit_up_price` | — | — | — | `unverified` |
+| FTShare · `limit_up_price` | — | — | — | `unverified` |
 | TDX-eltdx(适配层) · `limit_up_price` | limit_up_price / limit_down_price | 涨停价 / 跌停价 | — | `unverified` |
 
 ### `list` — incomplete
@@ -3263,6 +3263,7 @@
 | 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
 |:--|:--|:--|:--|:--|
 | Levistock历史未归属 · `speed` | — | — | — | `unverified` |
+| 市场源(market_sources) · `speed` | — | — | — | `unverified` |
 | 开盘啦(kpl) · `speed` | speed | 涨速 | — | `unverified` |
 
 ### `stat.unknown_26` — consistent
@@ -3348,7 +3349,7 @@
 
 | 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
 |:--|:--|:--|:--|:--|
-| Levistock历史未归属 · `trade_date` | — | — | — | `unverified` |
+| FTShare · `trade_date` | — | — | — | `unverified` |
 | TDX-eltdx(适配层) · `trade_date` | — | — | — | `unverified` |
 | 市场源(market_sources) · `trade_date` | — | — | — | `unverified` |
 | 财联社(cls) · `trade_date` | trade_date / plates | 轮动日期 / 当日 top10 板块列表 | — | `unverified` |
@@ -3463,6 +3464,7 @@
 |:--|:--|:--|:--|:--|
 | Levistock历史未归属 · `vol_ratio` | — | — | — | `unverified` |
 | TDX(双命名源) · `vol_ratio` | — | — | — | `unverified` |
+| 市场源(market_sources) · `vol_ratio` | — | — | — | `unverified` |
 | 开盘啦(kpl) · `vol_ratio` | vol_ratio | 量比 | — | `unverified` |
 
 ### `volume` — incomplete

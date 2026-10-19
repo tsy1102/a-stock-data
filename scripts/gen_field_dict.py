@@ -38,33 +38,19 @@ def _source_field_counts(records: list[dict[str, Any]]) -> Counter:
     return Counter(record.get("status", "unverified") for record in records)
 
 
-_UNRESOLVED_MEANING_MARKERS = {
-    "待破解",
-    "待确认",
-    "待验证",
-    "未验证",
-    "未定义",
-    "未知",
-    "unknown",
-    "tbd",
-    "n/a",
-    "na",
-    "—",
-    "-",
-}
-
 _STATUS_RESOLUTION_NOTES = {
     "registry_status_only_single_source": "只有来源自身状态，历史聚合信息不足以进一步归属",
     "aggregate_status_scope_unresolved": "历史聚合状态尚不能可靠映射到逐源身份",
     "matched": "历史逐源状态与聚合状态一致，但仍未定案",
     "status_missing": "缺少可用的历史状态记录",
+    "reference_meaning_unresolved": "含义缺失或属性未能对齐，不能作为已定语义",
+    "reference_semantic_attribute_conflict": "来源参考记录中的含义或单位互相冲突",
 }
 
 
 def _meaning_annotation_state(record: dict[str, Any]) -> str:
     """Describe whether a meaning annotation exists; this is not a truth claim."""
-    meaning = str(record.get("meaning") or "").strip()
-    if not meaning or meaning.casefold() in _UNRESOLVED_MEANING_MARKERS:
+    if "meaning_missing" in fra.source_field_semantic_issues(record):
         return "含义栏为空/占位"
     return "含义栏有文本（仍未验证）"
 
@@ -82,6 +68,11 @@ _SOURCE_ROLE_LABELS = {
 
 
 def _source_role_label(source: dict[str, Any]) -> str:
+    if source.get("status") == "retired_duplicate":
+        replacement = source.get("replacement_source")
+        if replacement:
+            return f"已停用的重复采集入口（历史身份；由 {replacement} 覆盖）"
+        return "已停用的重复采集入口（仅留历史身份）"
     role = source.get("source_role")
     if isinstance(role, str) and role in _SOURCE_ROLE_LABELS:
         return _SOURCE_ROLE_LABELS[role]
@@ -96,7 +87,9 @@ def render_field_dict(registry: dict[str, Any]) -> str:
         )
     counts = _source_field_counts(records)
     verified_records = [record for record in records if record.get("status") == "verified"]
-    missing_meaning = sum(not record.get("meaning") for record in verified_records)
+    missing_meaning = sum(
+        "meaning_missing" in fra.source_field_semantic_issues(record) for record in verified_records
+    )
     missing_canonical = sum(not record.get("canonical") for record in verified_records)
     sources = registry.get("sources", [])
     verify_sources = [source for source in sources if source.get("verify_file")]
@@ -117,7 +110,8 @@ def render_field_dict(registry: dict[str, Any]) -> str:
         "",
         "## 状态与锚点规则",
         "",
-        "- `verified` 表示字段语义已经确认。只有来源谱系可确认、运行时来源匹配且完整路径精确相同时，才可作为碰撞锚点。",
+        "- `verified` 表示字段语义已经确认。作为碰撞锚还要求含义非空且非占位、含义/单位无冲突或对齐歧义、来源独立性已确认，并且运行时来源与完整路径精确匹配。",
+        "- 规范名的别名差异不会单独阻止碰撞；字段含义缺失/占位或含义/单位存在冲突时，碰撞器会将该 verified 路径重新纳入待破解目标，并排除为锚。",
         "- `unverified`、`candidate` 是默认破解目标；`conflict` 可作为待复核目标但不能作锚，碰撞候选不能替代证据冲突复核。",
         "- `disproved` 单独归档，不进入默认破解队列。",
         "- 未登记来源、路径不完整或来源独立性未确认时，不参与默认 L1 定案。",
@@ -131,7 +125,7 @@ def render_field_dict(registry: dict[str, Any]) -> str:
         "- 矩阵：[`field_matrix.md`](field_matrix.md)。",
         "- 待破解与状态冲突：[`unknown_fields.md`](unknown_fields.md)。",
         "- 来源与 GitHub 仓库映射：[`source_repository_map.md`](source_repository_map.md)。",
-        f"- 已验证字段描述缺口：{missing_meaning} 条缺少含义、{missing_canonical} 条缺少规范名，见 [`field_metadata_gaps.md`](field_metadata_gaps.md)；缺口本身不自动改变状态。",
+        f"- 已验证字段描述缺口：{missing_meaning} 条含义为空/占位、{missing_canonical} 条缺少规范名，见 [`field_metadata_gaps.md`](field_metadata_gaps.md)；质量问题会阻止其作为碰撞锚。",
         "- 同短 code 的聚合歧义、缺失定义和疑似合并文本单独列在 [`field_aggregate_review.md`](field_aggregate_review.md)；该清单不覆盖逐源定义，也不自动拆分字段。",
         "- 完整历史正文：[`field_source_reference.md`](field_source_reference.md)。",
         "",
@@ -190,6 +184,11 @@ def render_unknown_fields(registry: dict[str, Any]) -> str:
         status = record.get("status", "unverified")
         if status in {"unverified", "candidate", "conflict", "disproved"}:
             groups[status].append(record)
+    verified_quality_review = [
+        record
+        for record in records
+        if record.get("status") == "verified" and fra.source_field_semantic_issues(record)
+    ]
     unverified = groups["unverified"]
     meaning_counts = Counter(_meaning_annotation_state(record) for record in unverified)
     resolution_counts = Counter(_status_resolution(record) for record in unverified)
@@ -203,6 +202,7 @@ def render_unknown_fields(registry: dict[str, Any]) -> str:
         "> 聚合层的同码异义与定义缺口见 [`field_aggregate_review.md`](field_aggregate_review.md)，不代表逐源记录状态冲突。",
         "",
         f"> 总字段路径 {len(records)}；unverified {counts['unverified']}、candidate {counts['candidate']}、conflict {counts['conflict']}、disproved {counts['disproved']}。",
+        f"> 另有 {len(verified_quality_review)} 条虽标 verified、但含义/单位元数据未达到碰撞锚条件；这些记录会重新进入碰撞目标，详见 [字段元数据复核](field_metadata_gaps.md)。",
         "> 以下两组未验证字段统计是不同维度，不能相加：含义栏文本只表示存在文字，不代表语义正确；状态判定反映旧字典状态证据能否映射到逐源身份。",
         "",
         "## 未验证字段的复核分层",
@@ -373,39 +373,65 @@ def render_field_metadata_gaps(registry: dict[str, Any]) -> str:
         record
         for record in records
         if record.get("status") == "verified"
-        and (not record.get("meaning") or not record.get("canonical"))
+        and (
+            not str(record.get("canonical") or "").strip()
+            or fra.source_field_semantic_issues(record)
+        )
     ]
-    missing_meaning = sum(not record.get("meaning") for record in gaps)
-    missing_canonical = sum(not record.get("canonical") for record in gaps)
+    missing_meaning = sum(
+        "meaning_missing" in fra.source_field_semantic_issues(record) for record in gaps
+    )
+    missing_canonical = sum(not str(record.get("canonical") or "").strip() for record in gaps)
+    issue_counts = Counter(
+        issue for record in gaps for issue in fra.source_field_semantic_issues(record)
+    )
+    issue_labels = {
+        "meaning_missing": "含义为空/占位",
+        "meaning_conflict": "含义冲突",
+        "unit_conflict": "单位冲突",
+        "meaning_alignment_ambiguous": "含义分组未能逐字段对齐",
+        "unit_alignment_ambiguous": "单位分组未能逐字段对齐",
+    }
     lines = [
-        "# 已验证字段的描述缺口",
+        "# 已验证字段的元数据与锚点复核",
         "",
-        "> 由 `field_registry.json.source_fields` 自动生成；本表只发现缺失的展示元数据，不改变字段状态或锚点资格。",
-        "> 请依据来源定义、原始样本和已存证据逐条补充，禁止按相邻字段或字段代码猜测含义。",
+        "> 由 `field_registry.json.source_fields` 自动生成；逐源状态仍保留原始登记，但下表记录不会作为碰撞锚，且会重新进入待破解目标。",
+        "> 规范名别名差异单独审查，不自动阻止锚；含义/单位冲突、无法对齐或含义为空/占位会阻止锚。",
+        "> 请依据来源定义、原始样本和已存证据逐条复核，禁止按相邻字段或字段代码猜测含义。",
         "",
-        f"> 缺口记录 {len(gaps)} 条；缺少含义 {missing_meaning} 条；缺少规范名 {missing_canonical} 条。",
+        f"> 复核记录 {len(gaps)} 条；含义为空/占位 {missing_meaning} 条；规范名为空 {missing_canonical} 条。",
+        "> 语义问题："
+        + "；".join(
+            f"{issue_labels.get(issue, issue)} {count} 条"
+            for issue, count in sorted(issue_counts.items())
+        ),
         "",
     ]
     if not gaps:
-        lines.append("_没有缺少规范名或含义的 verified 字段。_")
+        lines.append("_没有需复核锚点元数据的 verified 字段。_")
         return "\n".join(lines) + "\n"
     lines.extend(
         [
-            "| 来源 | 完整 code path | 规范名 | 含义 | 单位 | 证据章节 |",
-            "|:--|:--|:--|:--|:--|:--|",
+            "| 来源 | 完整 code path | 规范名 | 含义 | 单位 | 复核原因 | 证据章节 |",
+            "|:--|:--|:--|:--|:--|:--|:--|",
         ]
     )
     for record in sorted(gaps, key=lambda item: (item["source"], item["code"])):
         sections = record.get("sections") or (
             [record.get("section")] if record.get("section") else []
         )
+        issues = fra.source_field_semantic_issues(record)
+        if not str(record.get("canonical") or "").strip():
+            issues = ["canonical_missing", *issues]
+        reason_labels = {"canonical_missing": "规范名为空", **issue_labels}
         lines.append(
-            "| {source} | `{code}` | {canonical} | {meaning} | {unit} | {section} |".format(
+            "| {source} | `{code}` | {canonical} | {meaning} | {unit} | {reason} | {section} |".format(
                 source=_cell(record.get("source")),
                 code=str(record.get("code", "")).replace("`", "\\`"),
                 canonical=_cell(record.get("canonical")),
                 meaning=_cell(record.get("meaning")),
                 unit=_cell(record.get("unit")),
+                reason=_cell("；".join(reason_labels.get(issue, issue) for issue in issues)),
                 section=_cell("；".join(sections)),
             )
         )
@@ -422,8 +448,8 @@ def render_source_repository_map(registry: dict[str, Any], lineage: dict[str, An
         "> 由 `field_verification/source_lineage.json` 自动生成。只记录有项目内或上游证据的关系；",
         "> 项目证据状态与对话确认状态分列；确认某客户端仓库不等于确认它是底层数据提供方。",
         "",
-        "| 字典来源 | 运行时命名空间 | 数据提供方 | 独立来源族 | 可作锚 | 项目证据 | 对话确认 |",
-        "|:--|:--|:--|:--|:--:|:--|:--|",
+        "| 字典来源 | 采集器状态 | 运行时命名空间 | 数据提供方 | 独立来源族 | 可作锚 | 项目证据 | 对话确认 |",
+        "|:--|:--|:--|:--|:--|:--:|:--|:--|",
     ]
     for source in sources:
         name = source["name"]
@@ -431,14 +457,19 @@ def render_source_repository_map(registry: dict[str, Any], lineage: dict[str, An
         aliases = ", ".join(record.get("runtime_aliases", [])) or "未确认"
         family = record.get("independence_family") or "未确认"
         anchor = "是" if record.get("anchor_eligible") else "否"
+        collection_status = _cell(source.get("status", "active"))
+        replacement = source.get("replacement_source")
+        if replacement:
+            collection_status += " → " + _cell(replacement)
         repo_status = record.get("repository_mapping_status", "unconfirmed")
         dialog = record.get("dialog_confirmation", {"status": "pending"})
         dialog_status = _cell(dialog.get("status", "pending"))
         if dialog.get("confirmed_on"):
             dialog_status += "（" + _cell(dialog["confirmed_on"]) + "）"
         lines.append(
-            "| {name} | {aliases} | {provider} | {family}（{family_status}） | {anchor} | {repo_status} | {dialog_status} |".format(
+            "| {name} | {collection_status} | {aliases} | {provider} | {family}（{family_status}） | {anchor} | {repo_status} | {dialog_status} |".format(
                 name=_cell(name),
+                collection_status=collection_status,
                 aliases=_cell(aliases),
                 provider=_cell(record.get("provider")),
                 family=_cell(family),
@@ -505,7 +536,7 @@ def render_source_repository_map(registry: dict[str, Any], lineage: dict[str, An
             "",
             "- GitHub 仓库可能是客户端、SDK、镜像或上游 API 契约仓库，不自动等同于数据提供方。",
             "- `独立来源族` 用于碰撞证据去重；同一提供方的不同接口不能互相充当独立 L1 证据。",
-            "- `可作锚` 还要求字段状态 verified 且完整 code path 与运行时字段精确匹配。",
+            "- `可作锚` 还要求字段状态 verified、含义/单位没有质量问题，且完整 code path 与运行时字段精确匹配。",
             "- 未确认的来源族在默认碰撞中 fail closed；确认后更新 JSON 并重生成本页。",
             "",
         ]

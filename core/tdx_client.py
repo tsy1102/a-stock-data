@@ -1697,6 +1697,43 @@ def tdx_get_quote_full(code: str) -> Dict[str, Any]:
     return result
 
 
+def tdx_get_quote_raw(code: str) -> Optional[Dict[str, Any]]:
+    """Return one TDX adapter quote row without ZHB/Tencent fallback or caching.
+
+    Field-probe captures need TDX-adapter-only evidence. The public canonical quote
+    function above intentionally falls back across providers, so it cannot be used
+    to attribute values to this adapter. This accessor has no result cache and uses
+    the shared TDX call lock and throttle.
+    """
+    if not str(code or "").strip():
+        return None
+
+    with _TDX_CALL_LOCK:
+        client = _get_tdx_client()
+        if client is None:
+            return None
+        try:
+            _tdx_throttle()
+            quotes = client.quotes(symbol=str(code).strip())
+            if quotes is None or quotes.empty:
+                return None
+
+            import math
+
+            row = quotes.iloc[0].to_dict()
+            result: Dict[str, Any] = {}
+            for key, value in row.items():
+                if hasattr(value, "item"):
+                    value = value.item()
+                if isinstance(value, float) and math.isnan(value):
+                    value = None
+                result[str(key)] = value
+            return result or None
+        except Exception as exc:
+            _debug_log(f"tdx tdx_get_quote_raw error ({code}): {exc}")
+            return None
+
+
 def tdx_get_price_limits(code: str, pre_close: float) -> Tuple[Optional[float], Optional[float]]:
     """V17.2.0: 用 easy_tdx get_price_limits 按昨收规则计算涨跌停价（源无关, 盘前/盘后稳）。
 

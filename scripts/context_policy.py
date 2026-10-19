@@ -4,6 +4,7 @@ CONTEXT_ONLY_SOURCES = frozenset({"exchange", "em_hot"})
 CONTEXT_RECORD_PATHS = {
     "market_sources": (("dragon_tiger_today",),),
     "fuyao": (("market", "dragon_tiger"), ("market", "hot_list_hour")),
+    "ftshare": (("market", "limit_up_pool_yesterday"),),
 }
 CONTEXT_REQUIRED_PATHS = {
     "market_sources": [("dragon_tiger_today",)],

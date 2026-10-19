@@ -844,6 +844,52 @@ def get_sina_financial_report(code: str, num_periods: int = 12) -> List[Dict[str
         return []
 
 
+def get_sina_financial_report_raw(
+    code: str, report_type: str, num_periods: int = 1
+) -> Optional[Dict[str, Any]]:
+    """Fetch one Sina statement type without normalization or persistent caching.
+
+    This is the evidence-capture adapter for the three raw statement contracts.
+    The report date and ``item_title`` keys must remain attached to each item;
+    callers should not flatten the numeric values into an unkeyed stock scalar.
+    """
+    if not code.isdigit() or len(code) != 6:
+        return None
+    if report_type not in {"fzb", "lrb", "llb"}:
+        raise ValueError("report_type must be one of: fzb, lrb, llb")
+    if not 1 <= num_periods <= 100:
+        raise ValueError("num_periods must be between 1 and 100")
+
+    paper_code = f"{em_exchange_prefix(code)}{code}"
+    url = "https://quotes.sina.cn/cn/api/openapi.php/CompanyFinanceService.getFinanceReport2022"
+    params = {
+        "paperCode": paper_code,
+        "source": report_type,
+        "type": "0",
+        "page": "1",
+        "num": str(num_periods),
+    }
+    try:
+        response = _quick_request(
+            url,
+            params=params,
+            headers={"User-Agent": UA},
+            timeout=15,
+            max_retries=1,
+        )
+        if response is None:
+            return None
+        payload = response.json()
+        result_data = ((payload or {}).get("result") or {}).get("data") or {}
+        report_list = result_data.get("report_list")
+        if not isinstance(report_list, dict):
+            return None
+        return {"report_type": report_type, "report_list": report_list}
+    except Exception as exc:
+        _debug_log(f"datasource get_sina_financial_report_raw ({code}, {report_type}): {exc}")
+        return None
+
+
 def get_financial_report_with_fallback(code: str, num_periods: int = 12) -> List[Dict[str, Any]]:
     """B: 新浪利润表为主源；新浪缺失/空 → fuyao 利润表兜底。
 
@@ -1647,6 +1693,7 @@ __all__ = [
     'get_sina_balance_sheet',
     'get_sina_balance_sheet_async',
     'get_sina_financial_report',
+    'get_sina_financial_report_raw',
     'get_sina_financial_report_async',
     'get_stock_info',
     'get_stock_info_async',

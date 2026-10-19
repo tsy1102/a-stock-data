@@ -25,6 +25,23 @@ SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 REPO_ROOT = os.path.dirname(SCRIPT_DIR)
 REGISTRY = os.path.join(REPO_ROOT, "docs", "field_verification", "field_registry.json")
 
+UNRESOLVED_MEANING_MARKERS = frozenset(
+    {
+        "待破解",
+        "待确认",
+        "待验证",
+        "未验证",
+        "未定义",
+        "未知",
+        "unknown",
+        "tbd",
+        "n/a",
+        "na",
+        "—",
+        "-",
+    }
+)
+
 
 def load_registry(path: str = REGISTRY) -> dict:
     """读取 registry。失败抛异常（不静默兜底）。"""
@@ -124,6 +141,32 @@ def source_field_records(reg: Optional[dict] = None) -> List[dict]:
             raise ValueError(f"duplicate registry.source_fields identity: {source}::{code}")
         seen.add(key)
     return cast(List[dict], records)
+
+
+def source_field_semantic_issues(record: dict) -> List[str]:
+    """Return metadata issues that make a verified field unsafe as a semantic anchor.
+
+    Canonical-name variants are intentionally excluded: aliases do not invalidate a
+    clear meaning. Missing/placeholder meaning and conflicting or unaligned meaning
+    or units do invalidate anchor eligibility.
+    """
+    issues = set()
+    meaning = str(record.get("meaning") or "").strip()
+    if not meaning or meaning.casefold() in UNRESOLVED_MEANING_MARKERS:
+        issues.add("meaning_missing")
+
+    conflicts = record.get("attribute_conflicts")
+    if isinstance(conflicts, dict):
+        for attribute in ("meaning", "unit"):
+            if conflicts.get(attribute):
+                issues.add(f"{attribute}_conflict")
+
+    ambiguities = record.get("attribute_ambiguities")
+    if isinstance(ambiguities, dict):
+        for attribute in ("meaning", "unit"):
+            if ambiguities.get(attribute):
+                issues.add(f"{attribute}_alignment_ambiguous")
+    return sorted(issues)
 
 
 def build_aggregate_fields(source_records: List[dict]) -> List[dict]:

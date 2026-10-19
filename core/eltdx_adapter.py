@@ -144,8 +144,10 @@ class _EltdxAdapter:
         }
         for i, lv in enumerate(s.buy_levels[:5], 1):
             row[f"bid{i}"] = lv.price
+            row[f"bid{i}_vol"] = lv.volume
         for i, lv in enumerate(s.sell_levels[:5], 1):
             row[f"ask{i}"] = lv.price
+            row[f"ask{i}_vol"] = lv.volume
         return _pd.DataFrame([row])
 
     # ── K 线 ───────────────────────────────────────────────────────

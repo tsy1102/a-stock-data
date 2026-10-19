@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "updated": "2026-10-11",
+  "updated": "2026-10-18",
   "description": "运行时来源别名、提供方独立性、客户端/服务仓库关系与锚点资格；AxData/Levistock 框架和包装关系不等同于底层独立数据源。",
   "sources": {
     "AxData": {
@@ -315,8 +315,8 @@
       "provider": "Eastmoney",
       "independence_family": "eastmoney",
       "independence_status": "confirmed",
-      "anchor_eligible": true,
-      "anchor_note": "push2_full 与 Eastmoney push2 同属同一提供方",
+      "anchor_eligible": false,
+      "anchor_note": "仅保留旧 push2_full 原始快照的历史运行身份；该重复采集器已停用，不作独立碰撞锚",
       "repository_mapping_status": "confirmed",
       "repositories": [
         {
@@ -678,7 +678,7 @@
     },
     "新浪(扩展API)": {
       "runtime_aliases": [
-        "sina"
+        "sina_extended"
       ],
       "provider": "Sina",
       "independence_family": "sina",
@@ -914,7 +914,7 @@
     "开盘红": "kph",
     "新浪": "sina",
     "新浪(hq.sinajs)": "sina",
-    "新浪(扩展API)": "sina",
+    "新浪(扩展API)": "sina_extended",
     "沪深交易所": "exchange",
     "百度": "baidu",
     "百度(baidu)": "baidu",
@@ -1034,7 +1034,7 @@
     "push2_full": {
       "independence_family": "eastmoney",
       "independence_status": "confirmed",
-      "note": "Eastmoney push2_full 接口"
+      "note": "历史 push2_full 快照别名；与 push2 同属 Eastmoney 来源族，不是每日独立采集路线。"
     },
     "push2ex": {
       "independence_family": "eastmoney",
@@ -1055,6 +1055,11 @@
       "independence_family": "sina",
       "independence_status": "confirmed",
       "note": "Sina hq.sinajs endpoint"
+    },
+    "sina_extended": {
+      "independence_family": "sina",
+      "independence_status": "confirmed",
+      "note": "Sina financial statement and per-stock money-flow endpoints; same provider family as hq.sinajs"
     },
     "slist": {
       "independence_family": "eastmoney",

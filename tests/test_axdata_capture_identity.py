@@ -85,15 +85,27 @@ def _confirm_both_routes(tmp_path, monkeypatch):
     return state_path, dates
 
 
-def test_proven_axdata_capture_routes_are_skipped_and_excluded_from_routine_collisions(
+def test_proven_axdata_routes_keep_capture_and_are_excluded_from_routine_collisions(
     tmp_path, monkeypatch
 ):
     _confirm_both_routes(tmp_path, monkeypatch)
 
     plan = validation.get_axdata_capture_identity_plan("2026-10-13")
-    assert plan["endpoints"]["stock_shortline_indicators_tdx"]["action"] == "skip"
-    assert plan["endpoints"]["kph_limit_up_history"]["action"] == "skip"
+    for endpoint in plan["endpoints"].values():
+        assert endpoint["action"] == "collect"
+        assert endpoint["identity_validation_action"] == "suppress"
     assert validation.get_axdata_collision_suppressions().keys() == {"axdata", "kph"}
+
+
+def test_confirmed_identity_for_same_or_older_date_still_collects_raw_data(tmp_path, monkeypatch):
+    _confirm_both_routes(tmp_path, monkeypatch)
+
+    plan = validation.get_axdata_capture_identity_plan("2026-10-12")
+
+    for endpoint in plan["endpoints"].values():
+        assert endpoint["action"] == "collect"
+        assert endpoint["identity_validation_action"] == "suppress"
+        assert endpoint["reason"] == "identity_validation_already_confirmed_for_date"
 
 
 def test_kph_unknown_fields_keep_the_route_active(tmp_path, monkeypatch):
@@ -113,8 +125,13 @@ def test_kph_unknown_fields_keep_the_route_active(tmp_path, monkeypatch):
     assert summaries["kph_limit_up_history"]["status"] == "observing"
     assert "unmapped_candidate" in summaries["kph_limit_up_history"]["unresolved_fields"]
     plan = validation.get_axdata_capture_identity_plan("2026-10-13")
-    assert plan["endpoints"]["stock_shortline_indicators_tdx"]["action"] == "skip"
+    assert plan["endpoints"]["stock_shortline_indicators_tdx"]["action"] == "collect"
+    assert (
+        plan["endpoints"]["stock_shortline_indicators_tdx"]["identity_validation_action"]
+        == "suppress"
+    )
     assert plan["endpoints"]["kph_limit_up_history"]["action"] == "collect"
+    assert plan["endpoints"]["kph_limit_up_history"]["identity_validation_action"] == "sample"
     assert validation.get_axdata_collision_suppressions().keys() == {"axdata"}
 
 

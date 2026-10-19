@@ -48,6 +48,52 @@ def test_flatten_ignores_error_and_skip_markers_as_fields():
     ]
 
 
+def test_flatten_preserves_booleans_but_keeps_structured_values_opt_in():
+    out = []
+    collide._flatten(
+        {
+            "ready": False,
+            "break_times": ["09:32:45", "09:33:15"],
+            "empty_values": [],
+            "details": {"flag": True, "values": [1, 2]},
+            "__identity__": {"symbol": "000001"},
+        },
+        "ftshare",
+        "ftshare",
+        "000001",
+        "T:20260827",
+        out,
+    )
+
+    assert out == [
+        ("ftshare.ready", "false"),
+        ("ftshare.details.flag", "true"),
+    ]
+
+    structured = []
+    collide._flatten(
+        {
+            "break_times": ["09:32:45", "09:33:15"],
+            "empty_values": [],
+            "details": {"flag": True, "values": [1, 2]},
+            "__identity__": {"symbol": "000001"},
+        },
+        "ftshare",
+        "ftshare",
+        "000001",
+        "T:20260827",
+        structured,
+        include_structured_values=True,
+    )
+
+    assert structured == [
+        ("ftshare.break_times", '["09:32:45","09:33:15"]'),
+        ("ftshare.empty_values", "[]"),
+        ("ftshare.details.flag", "true"),
+        ("ftshare.details.values", "[1,2]"),
+    ]
+
+
 def test_kpl_and_kph_raw_files_flatten_as_separate_sources():
     snapshots = [
         {
@@ -303,6 +349,72 @@ def test_context_records_are_excluded_by_default_and_available_on_request(tmp_pa
     assert any("heat_score" in key for key in context_store)
 
 
+def test_ftshare_limit_up_context_uses_record_trade_date_and_stock_symbol(tmp_path):
+    folder = tmp_path / "20260828"
+    folder.mkdir()
+    document = {
+        "scheme": "ftshare",
+        "stocks": {},
+        "market": {
+            "limit_up_pool_yesterday": [
+                {
+                    "symbol": "000017.XSHE",
+                    "trade_date": "20260827",
+                    "limit_up_break": ["09:32:45"],
+                    "limit_up_enter": [],
+                    "ready": True,
+                },
+                {
+                    "symbol": "000018.XSHE",
+                    "trade_date": "20260826",
+                    "limit_up_break": ["09:33:15"],
+                    "limit_up_enter": [],
+                    "ready": False,
+                },
+            ]
+        },
+    }
+    (folder / "raw_ftshare.json").write_text(json.dumps(document), encoding="utf-8")
+    (folder / "meta.json").write_text(
+        json.dumps(
+            {
+                "capture_date": "20260828",
+                "data_date": "20260828",
+                "sources": {"ftshare": {"ok": True, "status": "ok", "scheme": "ftshare"}},
+            }
+        ),
+        encoding="utf-8",
+    )
+    folders, _ = collision_dates.discover_capture_folders(
+        str(tmp_path), lambda day: day.weekday() < 5
+    )
+    snapshots, _ = collision_dates.select_snapshots(folders)
+
+    default_store = defaultdict(lambda: {"vals": {}, "sample_meta": {}, "src": None})
+    collide.load_snapshots(snapshots, default_store, [])
+    assert not any(key.startswith("ftshare.") for key in default_store)
+
+    context_store = defaultdict(lambda: {"vals": {}, "sample_meta": {}, "src": None})
+    diagnostics = []
+    collide.load_snapshots(
+        snapshots,
+        context_store,
+        diagnostics,
+        include_context=True,
+        allowed_trading_dates={"20260827"},
+    )
+
+    field = context_store["ftshare.limit_up_break"]
+    key = ("000017", "T:20260827")
+    assert field["vals"][key] == '["09:32:45"]'
+    assert context_store["ftshare.limit_up_enter"]["vals"][key] == "[]"
+    assert context_store["ftshare.ready"]["vals"][key] == "true"
+    assert field["sample_meta"][key]["as_of_date"] == "20260827"
+    assert field["sample_meta"][key]["as_of_date_origin"] == "record.trade_date"
+    assert not any(("000018", "T:20260826") in row["vals"] for row in context_store.values())
+    assert any("市场记录不在所选交易日窗口内" in item for item in diagnostics)
+
+
 def _field(values, source):
     return {
         "vals": values,
@@ -481,8 +593,18 @@ def test_duplicate_runtime_alias_code_is_not_used_as_a_verified_anchor(monkeypat
         json.dumps(
             {
                 "source_fields": [
-                    {"source": "ZHB-a", "code": "shared", "status": "verified"},
-                    {"source": "ZHB-b", "code": "shared", "status": "unverified"},
+                    {
+                        "source": "ZHB-a",
+                        "code": "shared",
+                        "status": "verified",
+                        "meaning": "shared field",
+                    },
+                    {
+                        "source": "ZHB-b",
+                        "code": "shared",
+                        "status": "unverified",
+                        "meaning": "shared field",
+                    },
                 ],
                 "mappings": [],
             }
@@ -518,6 +640,95 @@ def test_duplicate_runtime_alias_code_is_not_used_as_a_verified_anchor(monkeypat
     assert ("zhb", "shared") not in context["verified"]
     assert ("zhb", "shared") not in context["anchors"]
     assert context["ambiguous_verified"] == 1
+
+
+def test_verified_fields_with_unresolved_semantics_are_not_known_or_anchors(monkeypatch, tmp_path):
+    registry_path = tmp_path / "registry.json"
+    registry_path.write_text(
+        json.dumps(
+            {
+                "source_fields": [
+                    {
+                        "source": "ZHB-test",
+                        "code": "clear",
+                        "status": "verified",
+                        "meaning": "清晰含义",
+                    },
+                    {"source": "ZHB-test", "code": "missing", "status": "verified"},
+                    {
+                        "source": "ZHB-test",
+                        "code": "placeholder",
+                        "status": "verified",
+                        "meaning": "待破解",
+                    },
+                    {
+                        "source": "ZHB-test",
+                        "code": "meaning_conflict",
+                        "status": "verified",
+                        "meaning": "含义甲",
+                        "attribute_conflicts": {"meaning": ["含义甲", "含义乙"]},
+                    },
+                    {
+                        "source": "ZHB-test",
+                        "code": "unit_conflict",
+                        "status": "verified",
+                        "meaning": "明确含义",
+                        "attribute_conflicts": {"unit": ["元", "万元"]},
+                    },
+                    {
+                        "source": "ZHB-test",
+                        "code": "alignment_ambiguity",
+                        "status": "verified",
+                        "meaning": "",
+                        "attribute_ambiguities": {"meaning": ["字段甲/字段乙"]},
+                    },
+                    {
+                        "source": "ZHB-test",
+                        "code": "canonical_alias_only",
+                        "status": "verified",
+                        "meaning": "明确含义",
+                        "attribute_conflicts": {"canonical": ["alias_a", "alias_b"]},
+                    },
+                ],
+                "mappings": [],
+            }
+        ),
+        encoding="utf-8",
+    )
+    lineage = {
+        "sources": {
+            "ZHB-test": {
+                "runtime_aliases": ["zhb"],
+                "anchor_eligible": True,
+                "independence_status": "confirmed",
+                "independence_family": "tdx",
+            }
+        },
+        "runtime_sources": {
+            "zhb": {"independence_status": "confirmed", "independence_family": "tdx"}
+        },
+        "source_aliases": {},
+    }
+    monkeypatch.setattr(collide, "REG_PATH", str(registry_path))
+    monkeypatch.setattr(collide.SLA, "load_source_lineage", lambda registry=None: lineage)
+
+    context = collide.load_registry_context()
+
+    assert context["safe_to_run"] is True
+    assert ("zhb", "clear") in context["verified"]
+    assert ("zhb", "clear") in context["anchors"]
+    assert ("zhb", "canonical_alias_only") in context["verified"]
+    assert ("zhb", "canonical_alias_only") in context["anchors"]
+    for code in (
+        "missing",
+        "placeholder",
+        "meaning_conflict",
+        "unit_conflict",
+        "alignment_ambiguity",
+    ):
+        assert ("zhb", code) not in context["verified"]
+        assert ("zhb", code) not in context["anchors"]
+    assert context["unresolved_verified_metadata"] == 5
 
 
 def test_default_field_selection_uses_only_verified_independent_anchors():

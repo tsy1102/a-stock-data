@@ -122,12 +122,16 @@ def _resolve_runtime_identity(
 
 
 def _has_value(value: Any) -> bool:
-    if value is None or isinstance(value, bool):
+    if value is None:
         return False
+    if isinstance(value, bool):
+        return True
     if isinstance(value, str):
         return bool(value.strip())
     if isinstance(value, (int, float)):
         return math.isfinite(float(value))
+    if isinstance(value, (list, dict)):
+        return True
     return False
 
 
@@ -193,14 +197,17 @@ def build_field_coverage(
 
     path_diagnostics: dict[tuple[str, str, str], set[str]] = defaultdict(set)
     missing_event_dates = 0
+    missing_market_dates = 0
+    out_of_window_market_dates = 0
     scheme_mismatches = 0
     snapshots_seen = 0
+    trading_window_set = set(trading_window_dates)
     for snapshot in snapshots:
         document = snapshot.document
         if not isinstance(document, dict):
             continue
         snapshots_seen += 1
-        include_context = bool(snapshot.meta.get("include_context"))
+        include_context = bool(snapshot.meta.get("include_context")) or snapshot.source == "ftshare"
         if snapshot.source in collide.CONTEXT_ONLY_SOURCES and not include_context:
             continue
         if not include_context:
@@ -237,14 +244,39 @@ def build_field_coverage(
                         continue
                     if event_end is not None and sample_day > event_end:
                         continue
+                    sample_date_origin = "record.event_date"
                 else:
-                    sample_day = snapshot.sample_date
+                    market_trade_day = collide._ftshare_limit_up_trade_date(
+                        snapshot.source, container_code, record
+                    )
+                    if collide._is_ftshare_limit_up_record(snapshot.source, container_code):
+                        if market_trade_day is None:
+                            missing_market_dates += 1
+                            continue
+                        if (
+                            market_trade_day not in trading_window_set
+                            or market_trade_day > report_date
+                            or market_trade_day > snapshot.sample_date
+                        ):
+                            out_of_window_market_dates += 1
+                            continue
+                        sample_day = market_trade_day
+                        sample_date_origin = "record.trade_date"
+                    else:
+                        sample_day = snapshot.sample_date
+                        sample_date_origin = snapshot.date_origin
                 if sample_day > report_date:
                     continue
                 day_key = cdates.sample_date_key(snapshot.domain, sample_day)
                 pairs: list[tuple[str, Any]] = []
                 collide._flatten(
-                    record, snapshot.source, scheme, str(container_code), day_key, pairs
+                    record,
+                    snapshot.source,
+                    scheme,
+                    str(container_code),
+                    day_key,
+                    pairs,
+                    include_structured_values=True,
                 )
                 for fid, value in pairs:
                     if not _has_value(value):
@@ -260,23 +292,29 @@ def build_field_coverage(
                     target = targets.get(runtime_identity)
                     if target is None:
                         continue
-                    target["candidate_samples"][day_key].add(str(container_code))
-                    target["date_origins"].add(snapshot.date_origin)
+                    entity_code = collide._record_code(
+                        record, container_code, source=snapshot.source
+                    )
+                    target["candidate_samples"][day_key].add(entity_code)
+                    target["date_origins"].add(sample_date_origin)
                     target["phases"].add(snapshot.phase)
                     target["source_statuses"].add(snapshot.status)
                     event_date_is_explicit = event_source
                     closed_snapshot = event_source or snapshot.phase == "closed"
-                    source_date_is_explicit = snapshot.date_origin == "source_as_of"
+                    source_date_is_explicit = (
+                        snapshot.date_origin == "source_as_of"
+                        or sample_date_origin == "record.trade_date"
+                    )
                     status_is_usable = snapshot.status in {"ok", "partial"}
                     if scheme_ok and status_is_usable and event_date_is_explicit:
-                        target["event_record_samples"][day_key].add(str(container_code))
+                        target["event_record_samples"][day_key].add(entity_code)
                     elif (
                         scheme_ok
                         and status_is_usable
                         and closed_snapshot
                         and source_date_is_explicit
                     ):
-                        target["source_as_of_samples"][day_key].add(str(container_code))
+                        target["source_as_of_samples"][day_key].add(entity_code)
 
     field_rows = []
     for identity in sorted(targets):
@@ -348,6 +386,8 @@ def build_field_coverage(
             if reason not in {"exact_runtime_identity", "mapped_by_explicit_branch"}
         ),
         "missing_event_date_records": missing_event_dates,
+        "missing_market_record_trade_dates": missing_market_dates,
+        "market_records_outside_trading_window": out_of_window_market_dates,
         "scheme_mismatches": scheme_mismatches,
     }
     diagnostics = list(selection_warnings or [])

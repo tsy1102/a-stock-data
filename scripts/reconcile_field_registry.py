@@ -46,11 +46,18 @@ def _effective_status(
     reference_statuses = sorted(set((ref or {}).get("reference_statuses", [])))
     registry_status = (current or {}).get("status")
     evidence: list[str] = []
+    reference = ref or {}
+    semantic_issues = set(fra.source_field_semantic_issues(reference))
 
     if len(reference_statuses) > 1:
         return "conflict", "reference_status_conflict", reference_statuses
 
     reference_status = reference_statuses[0] if reference_statuses else None
+    semantic_conflicts = semantic_issues & {"meaning_conflict", "unit_conflict"}
+    if reference_status == "verified" and semantic_conflicts:
+        return "conflict", "reference_semantic_attribute_conflict", reference_statuses
+    if reference_status == "verified" and semantic_issues:
+        return "unverified", "reference_meaning_unresolved", reference_statuses
     if reference_status and registry_status:
         if reference_status == registry_status:
             return reference_status, "matched", [reference_status]
@@ -115,6 +122,7 @@ def reconcile_registry(
             },
             "reference_evidence": (reference or {}).get("evidence", []),
             "attribute_conflicts": (reference or {}).get("attribute_conflicts", {}),
+            "attribute_ambiguities": (reference or {}).get("attribute_ambiguities", {}),
             "registry_aggregate": (
                 {
                     key: copy.deepcopy(aggregate.get(key))

@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": 2,
-    "updated": "2026-10-18",
+    "updated": "2026-10-19",
     "source_of_truth": "field_registry.json",
     "generated_by": "manual source-identity reconciliation; see source_identity_reclassifications.json",
     "note": "source_fields 是逐源完整路径权威记录；fields 是兼容聚合视图。Levistock 历史混合身份的 175 条结构化记录已按逐字段映射重分类。历史原文中额外解析到的 56 个 token 不在迁移前的结构化注册表中，继续保留在只读档案，不提升为当前字段记录。状态冲突与历史证据保存在 source_fields。source_field_addenda 只允许有 E3 文件证据且经 parity 校验的增补，不覆盖 field_source_reference.md 历史原文。",
@@ -13,16 +13,16 @@
       "disproved": 2,
       "empirical_duplicate_alias": 2,
       "identity_reclassified_pending": 9,
-      "manual_collision_adjudication": 8,
+      "manual_collision_adjudication": 16,
       "matched": 878,
       "reference_status_conflict": 22,
       "reference_status_missing": 35,
-      "registry_status_only_single_source": 882,
+      "registry_status_only_single_source": 874,
       "resolved_by_multiday_independent_cross_source_l1": 2,
       "status_conflict": 59,
       "status_missing": 43,
-      "unverified": 1516,
-      "verified": 918,
+      "unverified": 1508,
+      "verified": 926,
       "verified_by_empirical_addendum": 12,
       "verified_by_source_contract": 69
     }
@@ -14272,10 +14272,8 @@
       "aggregation_issues": [
         "canonical_differs",
         "meaning_differs",
-        "meaning_incomplete",
         "source_statuses_differ",
-        "unit_differs",
-        "unit_incomplete"
+        "unit_differs"
       ]
     },
     {
@@ -14306,19 +14304,20 @@
         "东财-ulist239(np/get)"
       ],
       "section": "",
-      "canonical": "f110",
+      "canonical": "",
       "meaning": "",
       "unit": "",
       "status_raw": "",
-      "status": "unverified",
+      "status": "conflict",
       "source_statuses": {
         "东财-push2(stock/get)": "verified",
         "东财-ulist239(np/get)": "verified"
       },
-      "aggregation_status": "incomplete",
+      "aggregation_status": "ambiguous",
       "aggregation_issues": [
-        "meaning_incomplete",
-        "unit_incomplete"
+        "canonical_differs",
+        "meaning_differs",
+        "unit_differs"
       ]
     },
     {
@@ -15617,10 +15616,8 @@
       "aggregation_issues": [
         "canonical_differs",
         "meaning_differs",
-        "meaning_incomplete",
         "source_statuses_differ",
-        "unit_differs",
-        "unit_incomplete"
+        "unit_differs"
       ]
     },
     {
@@ -21087,20 +21084,17 @@
       "sources": [
         "TDX(双命名源)"
       ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
+      "section": "collision_research_20261019/verified_anchor_only/20260914/20260914_collision_report.json",
+      "canonical": "gudingzichan",
+      "meaning": "固定资产",
+      "unit": "角",
       "status_raw": "",
-      "status": "unverified",
+      "status": "verified",
       "source_statuses": {
-        "TDX(双命名源)": "unverified"
+        "TDX(双命名源)": "verified"
       },
-      "aggregation_status": "incomplete",
-      "aggregation_issues": [
-        "canonical_incomplete",
-        "meaning_incomplete"
-      ]
+      "aggregation_status": "consistent",
+      "aggregation_issues": []
     },
     {
       "code": "gudingzichan",
@@ -24260,20 +24254,17 @@
       "sources": [
         "TDX(双命名源)"
       ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
+      "section": "collision_research_20261019/verified_anchor_only/20260914/20260914_collision_report.json",
+      "canonical": "lirunzonghe",
+      "meaning": "利润总额",
+      "unit": "角",
       "status_raw": "",
-      "status": "unverified",
+      "status": "verified",
       "source_statuses": {
-        "TDX(双命名源)": "unverified"
+        "TDX(双命名源)": "verified"
       },
-      "aggregation_status": "incomplete",
-      "aggregation_issues": [
-        "canonical_incomplete",
-        "meaning_incomplete"
-      ]
+      "aggregation_status": "consistent",
+      "aggregation_issues": []
     },
     {
       "code": "lirunzonghe",
@@ -24390,20 +24381,17 @@
       "sources": [
         "TDX(双命名源)"
       ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
+      "section": "collision_research_20261019/verified_anchor_only/20260914/20260914_collision_report.json",
+      "canonical": "liudongfuzhai",
+      "meaning": "流动负债",
+      "unit": "角",
       "status_raw": "",
-      "status": "unverified",
+      "status": "verified",
       "source_statuses": {
-        "TDX(双命名源)": "unverified"
+        "TDX(双命名源)": "verified"
       },
-      "aggregation_status": "incomplete",
-      "aggregation_issues": [
-        "canonical_incomplete",
-        "meaning_incomplete"
-      ]
+      "aggregation_status": "consistent",
+      "aggregation_issues": []
     },
     {
       "code": "liudong_zichan",
@@ -24411,20 +24399,17 @@
       "sources": [
         "TDX(双命名源)"
       ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
+      "section": "collision_research_20261019/verified_anchor_only/20260914/20260914_collision_report.json",
+      "canonical": "liudongzichan",
+      "meaning": "流动资产",
+      "unit": "角",
       "status_raw": "",
-      "status": "unverified",
+      "status": "verified",
       "source_statuses": {
-        "TDX(双命名源)": "unverified"
+        "TDX(双命名源)": "verified"
       },
-      "aggregation_status": "incomplete",
-      "aggregation_issues": [
-        "canonical_incomplete",
-        "meaning_incomplete"
-      ]
+      "aggregation_status": "consistent",
+      "aggregation_issues": []
     },
     {
       "code": "liudongfuzhai",
@@ -38191,20 +38176,17 @@
       "sources": [
         "TDX(双命名源)"
       ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
+      "section": "collision_research_20261019/verified_anchor_only/20260914/20260914_collision_report.json",
+      "canonical": "weifenlirun",
+      "meaning": "未分配利润",
+      "unit": "角",
       "status_raw": "",
-      "status": "unverified",
+      "status": "verified",
       "source_statuses": {
-        "TDX(双命名源)": "unverified"
+        "TDX(双命名源)": "verified"
       },
-      "aggregation_status": "incomplete",
-      "aggregation_issues": [
-        "canonical_incomplete",
-        "meaning_incomplete"
-      ]
+      "aggregation_status": "consistent",
+      "aggregation_issues": []
     },
     {
       "code": "weifenlirun",
@@ -38660,20 +38642,17 @@
       "sources": [
         "TDX(双命名源)"
       ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
+      "section": "collision_research_20261019/verified_anchor_only/20260914/20260914_collision_report.json",
+      "canonical": "yingyelirun",
+      "meaning": "营业利润",
+      "unit": "角",
       "status_raw": "",
-      "status": "unverified",
+      "status": "verified",
       "source_statuses": {
-        "TDX(双命名源)": "unverified"
+        "TDX(双命名源)": "verified"
       },
-      "aggregation_status": "incomplete",
-      "aggregation_issues": [
-        "canonical_incomplete",
-        "meaning_incomplete"
-      ]
+      "aggregation_status": "consistent",
+      "aggregation_issues": []
     },
     {
       "code": "yingyelirun",
@@ -39030,20 +39009,17 @@
       "sources": [
         "TDX(双命名源)"
       ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
+      "section": "collision_research_20261019/verified_anchor_only/20260914/20260914_collision_report.json",
+      "canonical": "zibengongjijin",
+      "meaning": "资本公积金",
+      "unit": "角",
       "status_raw": "",
-      "status": "unverified",
+      "status": "verified",
       "source_statuses": {
-        "TDX(双命名源)": "unverified"
+        "TDX(双命名源)": "verified"
       },
-      "aggregation_status": "incomplete",
-      "aggregation_issues": [
-        "canonical_incomplete",
-        "meaning_incomplete"
-      ]
+      "aggregation_status": "consistent",
+      "aggregation_issues": []
     },
     {
       "code": "zibengongjijin",
@@ -39182,20 +39158,17 @@
       "sources": [
         "TDX(双命名源)"
       ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
+      "section": "collision_research_20261019/verified_anchor_only/20260914/20260914_collision_report.json",
+      "canonical": "zongzichan",
+      "meaning": "总资产",
+      "unit": "角",
       "status_raw": "",
-      "status": "unverified",
+      "status": "verified",
       "source_statuses": {
-        "TDX(双命名源)": "unverified"
+        "TDX(双命名源)": "verified"
       },
-      "aggregation_status": "incomplete",
-      "aggregation_issues": [
-        "canonical_incomplete",
-        "meaning_incomplete"
-      ]
+      "aggregation_status": "consistent",
+      "aggregation_issues": []
     },
     {
       "code": "zongguben",
@@ -57441,6 +57414,138 @@
       },
       "relation": "same_number_same_meaning",
       "evidence": "adjudication:adjudications/20261018_zhb_change_60d.json#20261018-zhb-change-60d-tencent-71;report:20261018/20261018_collision_report.json"
+    },
+    {
+      "from": {
+        "source": "TDX(双命名源)",
+        "code": "lirun_zonghe"
+      },
+      "to": {
+        "source": "东财-ulist239(np/get)",
+        "code": "f44"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "adjudication:adjudications/20261019_historical_field_candidates.json#20261019-tdx-lirun-zonghe-verify;report:collision_research_20261019/verified_anchor_only/20260914/20260914_collision_report.json"
+    },
+    {
+      "from": {
+        "source": "TDX(双命名源)",
+        "code": "yingye_lirun"
+      },
+      "to": {
+        "source": "东财-ulist239(np/get)",
+        "code": "f42"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "adjudication:adjudications/20261019_historical_field_candidates.json#20261019-tdx-yingye-lirun-verify;report:collision_research_20261019/verified_anchor_only/20260914/20260914_collision_report.json"
+    },
+    {
+      "from": {
+        "source": "TDX(双命名源)",
+        "code": "weifen_lirun"
+      },
+      "to": {
+        "source": "东财-ulist239(np/get)",
+        "code": "f47"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "adjudication:adjudications/20261019_historical_field_candidates.json#20261019-tdx-weifen-lirun-verify;report:collision_research_20261019/verified_anchor_only/20260914/20260914_collision_report.json"
+    },
+    {
+      "from": {
+        "source": "TDX(双命名源)",
+        "code": "zong_zichan"
+      },
+      "to": {
+        "source": "东财-ulist239(np/get)",
+        "code": "f50"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "adjudication:adjudications/20261019_historical_field_candidates.json#20261019-tdx-zong-zichan-verify;report:collision_research_20261019/verified_anchor_only/20260914/20260914_collision_report.json"
+    },
+    {
+      "from": {
+        "source": "TDX(双命名源)",
+        "code": "liudong_zichan"
+      },
+      "to": {
+        "source": "东财-ulist239(np/get)",
+        "code": "f51"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "adjudication:adjudications/20261019_historical_field_candidates.json#20261019-tdx-liudong-zichan-verify;report:collision_research_20261019/verified_anchor_only/20260914/20260914_collision_report.json"
+    },
+    {
+      "from": {
+        "source": "TDX(双命名源)",
+        "code": "guding_zichan"
+      },
+      "to": {
+        "source": "东财-ulist239(np/get)",
+        "code": "f52"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "adjudication:adjudications/20261019_historical_field_candidates.json#20261019-tdx-guding-zichan-verify;report:collision_research_20261019/verified_anchor_only/20260914/20260914_collision_report.json"
+    },
+    {
+      "from": {
+        "source": "TDX(双命名源)",
+        "code": "liudong_fuzhai"
+      },
+      "to": {
+        "source": "东财-ulist239(np/get)",
+        "code": "f55"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "adjudication:adjudications/20261019_historical_field_candidates.json#20261019-tdx-liudong-fuzhai-verify;report:collision_research_20261019/verified_anchor_only/20260914/20260914_collision_report.json"
+    },
+    {
+      "from": {
+        "source": "TDX(双命名源)",
+        "code": "ziben_gongjijin"
+      },
+      "to": {
+        "source": "东财-ulist239(np/get)",
+        "code": "f60"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "adjudication:adjudications/20261019_historical_field_candidates.json#20261019-tdx-ziben-gongjijin-verify;report:collision_research_20261019/verified_anchor_only/20260914/20260914_collision_report.json"
+    },
+    {
+      "from": {
+        "source": "东财-ulist239(np/get)",
+        "code": "f109"
+      },
+      "to": {
+        "source": "ZHB-tdxstat",
+        "code": "stat.change_5d"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "adjudication:adjudications/20261019_historical_field_candidates.json#20261019-ulist-f109-change-5d;report:collision_research_20261019/verified_anchor_only/20260914/20260914_collision_report.json"
+    },
+    {
+      "from": {
+        "source": "东财-ulist239(np/get)",
+        "code": "f110"
+      },
+      "to": {
+        "source": "ZHB-tdxstat",
+        "code": "stat.change_20d"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "adjudication:adjudications/20261019_historical_field_candidates.json#20261019-ulist-f110-change-20d;report:collision_research_20261019/verified_anchor_only/20260914/20260914_collision_report.json"
+    },
+    {
+      "from": {
+        "source": "东财-ulist239(np/get)",
+        "code": "f160"
+      },
+      "to": {
+        "source": "ZHB-tdxstat",
+        "code": "stat.change_10d"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "adjudication:adjudications/20261019_historical_field_candidates.json#20261019-ulist-f160-change-10d;report:collision_research_20261019/verified_anchor_only/20260914/20260914_collision_report.json"
     }
   ],
   "source_fields": [
@@ -70416,13 +70521,15 @@
       "code": "guding_zichan",
       "identity": "TDX(双命名源)::guding_zichan",
       "path": "guding_zichan",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "section": "",
-      "sections": [],
-      "status": "unverified",
-      "status_resolution": "registry_status_only_single_source",
+      "canonical": "gudingzichan",
+      "meaning": "固定资产",
+      "unit": "角",
+      "section": "collision_research_20261019/verified_anchor_only/20260914/20260914_collision_report.json",
+      "sections": [
+        "collision_research_20261019/verified_anchor_only/20260914/20260914_collision_report.json"
+      ],
+      "status": "verified",
+      "status_resolution": "manual_collision_adjudication",
       "status_evidence": {
         "reference_statuses": [],
         "reference_status_raw": [],
@@ -70432,9 +70539,22 @@
         ],
         "values": [
           "unverified"
+        ],
+        "adjudication_ids": [
+          "20261019-tdx-guding-zichan-verify"
         ]
       },
-      "reference_evidence": [],
+      "reference_evidence": [
+        {
+          "section": "collision_research_20261019/verified_anchor_only/20260914/20260914_collision_report.json",
+          "canonical": "gudingzichan",
+          "meaning": "固定资产",
+          "unit": "角",
+          "status_raw": "人工复核 2026-10-19：20261019-tdx-guding-zichan-verify",
+          "status": "verified",
+          "adjudication_id": "20261019-tdx-guding-zichan-verify"
+        }
+      ],
       "attribute_conflicts": {},
       "registry_aggregate": {
         "code": "guding_zichan",
@@ -70447,7 +70567,52 @@
         "meaning": "",
         "unit": "",
         "section": ""
-      }
+      },
+      "adjudications": [
+        {
+          "id": "20261019-tdx-guding-zichan-verify",
+          "action": "verify",
+          "status": "verified",
+          "reviewer": "Codex（用户授权定案复核）",
+          "reviewed_on": "2026-10-19",
+          "report": "collision_research_20261019/verified_anchor_only/20260914/20260914_collision_report.json",
+          "decision_file": "adjudications/20261019_historical_field_candidates.json",
+          "candidate": {
+            "left": "tdx.finance_info.guding_zichan",
+            "right": "ulist239.f52"
+          },
+          "level": "L1-U",
+          "rationale": "2026-09-14 正式 verified_anchor_only 报告覆盖连续 7 个项目交易日（2026-09-04 至 2026-09-14），此关系在 7 个有效交易日、140 组有效配对中命中率为 100%，right/left 固定比例为 0.1。锚字段 f52 已登记为已验证的“固定资产”，单位为元；TDX 完整路径 guding_zichan 与 Eastmoney Ulist239 属不同来源族，逐日比例支持 TDX 原始单位为角。该结论仅登记此完整来源路径，不按拼写相似度扩展至其他路径。",
+          "evidence": {
+            "ratio": 0.1,
+            "overall_hit": 1.0,
+            "n_days": 7,
+            "n_pairs": 140,
+            "distinct_days": [
+              "T:20260904",
+              "T:20260907",
+              "T:20260908",
+              "T:20260909",
+              "T:20260910",
+              "T:20260911",
+              "T:20260914"
+            ],
+            "daily_sample_counts": {
+              "T:20260914": 20,
+              "T:20260907": 20,
+              "T:20260910": 20,
+              "T:20260904": 20,
+              "T:20260909": 20,
+              "T:20260911": 20,
+              "T:20260908": 20
+            },
+            "evidence_sources": [
+              "eastmoney",
+              "tdx"
+            ]
+          }
+        }
+      ]
     },
     {
       "source": "TDX(双命名源)",
@@ -71752,13 +71917,15 @@
       "code": "lirun_zonghe",
       "identity": "TDX(双命名源)::lirun_zonghe",
       "path": "lirun_zonghe",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "section": "",
-      "sections": [],
-      "status": "unverified",
-      "status_resolution": "registry_status_only_single_source",
+      "canonical": "lirunzonghe",
+      "meaning": "利润总额",
+      "unit": "角",
+      "section": "collision_research_20261019/verified_anchor_only/20260914/20260914_collision_report.json",
+      "sections": [
+        "collision_research_20261019/verified_anchor_only/20260914/20260914_collision_report.json"
+      ],
+      "status": "verified",
+      "status_resolution": "manual_collision_adjudication",
       "status_evidence": {
         "reference_statuses": [],
         "reference_status_raw": [],
@@ -71768,9 +71935,22 @@
         ],
         "values": [
           "unverified"
+        ],
+        "adjudication_ids": [
+          "20261019-tdx-lirun-zonghe-verify"
         ]
       },
-      "reference_evidence": [],
+      "reference_evidence": [
+        {
+          "section": "collision_research_20261019/verified_anchor_only/20260914/20260914_collision_report.json",
+          "canonical": "lirunzonghe",
+          "meaning": "利润总额",
+          "unit": "角",
+          "status_raw": "人工复核 2026-10-19：20261019-tdx-lirun-zonghe-verify",
+          "status": "verified",
+          "adjudication_id": "20261019-tdx-lirun-zonghe-verify"
+        }
+      ],
       "attribute_conflicts": {},
       "registry_aggregate": {
         "code": "lirun_zonghe",
@@ -71783,7 +71963,52 @@
         "meaning": "",
         "unit": "",
         "section": ""
-      }
+      },
+      "adjudications": [
+        {
+          "id": "20261019-tdx-lirun-zonghe-verify",
+          "action": "verify",
+          "status": "verified",
+          "reviewer": "Codex（用户授权定案复核）",
+          "reviewed_on": "2026-10-19",
+          "report": "collision_research_20261019/verified_anchor_only/20260914/20260914_collision_report.json",
+          "decision_file": "adjudications/20261019_historical_field_candidates.json",
+          "candidate": {
+            "left": "tdx.finance_info.lirun_zonghe",
+            "right": "ulist239.f44"
+          },
+          "level": "L1-U",
+          "rationale": "2026-09-14 正式 verified_anchor_only 报告覆盖连续 7 个项目交易日（2026-09-04 至 2026-09-14），此关系在 7 个有效交易日、140 组有效配对中命中率为 100%，right/left 固定比例为 0.1。锚字段 f44 已登记为已验证的“利润总额”，单位为元；TDX 完整路径 lirun_zonghe 与 Eastmoney Ulist239 属不同来源族，逐日比例支持 TDX 原始单位为角。该结论仅登记此完整来源路径，不按拼写相似度扩展至其他路径。",
+          "evidence": {
+            "ratio": 0.1,
+            "overall_hit": 1.0,
+            "n_days": 7,
+            "n_pairs": 140,
+            "distinct_days": [
+              "T:20260904",
+              "T:20260907",
+              "T:20260908",
+              "T:20260909",
+              "T:20260910",
+              "T:20260911",
+              "T:20260914"
+            ],
+            "daily_sample_counts": {
+              "T:20260914": 20,
+              "T:20260907": 20,
+              "T:20260910": 20,
+              "T:20260904": 20,
+              "T:20260909": 20,
+              "T:20260911": 20,
+              "T:20260908": 20
+            },
+            "evidence_sources": [
+              "eastmoney",
+              "tdx"
+            ]
+          }
+        }
+      ]
     },
     {
       "source": "TDX(双命名源)",
@@ -71956,13 +72181,15 @@
       "code": "liudong_fuzhai",
       "identity": "TDX(双命名源)::liudong_fuzhai",
       "path": "liudong_fuzhai",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "section": "",
-      "sections": [],
-      "status": "unverified",
-      "status_resolution": "registry_status_only_single_source",
+      "canonical": "liudongfuzhai",
+      "meaning": "流动负债",
+      "unit": "角",
+      "section": "collision_research_20261019/verified_anchor_only/20260914/20260914_collision_report.json",
+      "sections": [
+        "collision_research_20261019/verified_anchor_only/20260914/20260914_collision_report.json"
+      ],
+      "status": "verified",
+      "status_resolution": "manual_collision_adjudication",
       "status_evidence": {
         "reference_statuses": [],
         "reference_status_raw": [],
@@ -71972,9 +72199,22 @@
         ],
         "values": [
           "unverified"
+        ],
+        "adjudication_ids": [
+          "20261019-tdx-liudong-fuzhai-verify"
         ]
       },
-      "reference_evidence": [],
+      "reference_evidence": [
+        {
+          "section": "collision_research_20261019/verified_anchor_only/20260914/20260914_collision_report.json",
+          "canonical": "liudongfuzhai",
+          "meaning": "流动负债",
+          "unit": "角",
+          "status_raw": "人工复核 2026-10-19：20261019-tdx-liudong-fuzhai-verify",
+          "status": "verified",
+          "adjudication_id": "20261019-tdx-liudong-fuzhai-verify"
+        }
+      ],
       "attribute_conflicts": {},
       "registry_aggregate": {
         "code": "liudong_fuzhai",
@@ -71987,20 +72227,67 @@
         "meaning": "",
         "unit": "",
         "section": ""
-      }
+      },
+      "adjudications": [
+        {
+          "id": "20261019-tdx-liudong-fuzhai-verify",
+          "action": "verify",
+          "status": "verified",
+          "reviewer": "Codex（用户授权定案复核）",
+          "reviewed_on": "2026-10-19",
+          "report": "collision_research_20261019/verified_anchor_only/20260914/20260914_collision_report.json",
+          "decision_file": "adjudications/20261019_historical_field_candidates.json",
+          "candidate": {
+            "left": "tdx.finance_info.liudong_fuzhai",
+            "right": "ulist239.f55"
+          },
+          "level": "L1-U",
+          "rationale": "2026-09-14 正式 verified_anchor_only 报告覆盖连续 7 个项目交易日（2026-09-04 至 2026-09-14），此关系在 7 个有效交易日、133 组有效配对中命中率为 100%，right/left 固定比例为 0.1。锚字段 f55 已登记为已验证的“流动负债”，单位为元；TDX 完整路径 liudong_fuzhai 与 Eastmoney Ulist239 属不同来源族，逐日比例支持 TDX 原始单位为角。该结论仅登记此完整来源路径，不按拼写相似度扩展至其他路径。",
+          "evidence": {
+            "ratio": 0.1,
+            "overall_hit": 1.0,
+            "n_days": 7,
+            "n_pairs": 133,
+            "distinct_days": [
+              "T:20260904",
+              "T:20260907",
+              "T:20260908",
+              "T:20260909",
+              "T:20260910",
+              "T:20260911",
+              "T:20260914"
+            ],
+            "daily_sample_counts": {
+              "T:20260914": 19,
+              "T:20260907": 19,
+              "T:20260904": 19,
+              "T:20260910": 19,
+              "T:20260909": 19,
+              "T:20260911": 19,
+              "T:20260908": 19
+            },
+            "evidence_sources": [
+              "eastmoney",
+              "tdx"
+            ]
+          }
+        }
+      ]
     },
     {
       "source": "TDX(双命名源)",
       "code": "liudong_zichan",
       "identity": "TDX(双命名源)::liudong_zichan",
       "path": "liudong_zichan",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "section": "",
-      "sections": [],
-      "status": "unverified",
-      "status_resolution": "registry_status_only_single_source",
+      "canonical": "liudongzichan",
+      "meaning": "流动资产",
+      "unit": "角",
+      "section": "collision_research_20261019/verified_anchor_only/20260914/20260914_collision_report.json",
+      "sections": [
+        "collision_research_20261019/verified_anchor_only/20260914/20260914_collision_report.json"
+      ],
+      "status": "verified",
+      "status_resolution": "manual_collision_adjudication",
       "status_evidence": {
         "reference_statuses": [],
         "reference_status_raw": [],
@@ -72010,9 +72297,22 @@
         ],
         "values": [
           "unverified"
+        ],
+        "adjudication_ids": [
+          "20261019-tdx-liudong-zichan-verify"
         ]
       },
-      "reference_evidence": [],
+      "reference_evidence": [
+        {
+          "section": "collision_research_20261019/verified_anchor_only/20260914/20260914_collision_report.json",
+          "canonical": "liudongzichan",
+          "meaning": "流动资产",
+          "unit": "角",
+          "status_raw": "人工复核 2026-10-19：20261019-tdx-liudong-zichan-verify",
+          "status": "verified",
+          "adjudication_id": "20261019-tdx-liudong-zichan-verify"
+        }
+      ],
       "attribute_conflicts": {},
       "registry_aggregate": {
         "code": "liudong_zichan",
@@ -72025,7 +72325,52 @@
         "meaning": "",
         "unit": "",
         "section": ""
-      }
+      },
+      "adjudications": [
+        {
+          "id": "20261019-tdx-liudong-zichan-verify",
+          "action": "verify",
+          "status": "verified",
+          "reviewer": "Codex（用户授权定案复核）",
+          "reviewed_on": "2026-10-19",
+          "report": "collision_research_20261019/verified_anchor_only/20260914/20260914_collision_report.json",
+          "decision_file": "adjudications/20261019_historical_field_candidates.json",
+          "candidate": {
+            "left": "tdx.finance_info.liudong_zichan",
+            "right": "ulist239.f51"
+          },
+          "level": "L1-U",
+          "rationale": "2026-09-14 正式 verified_anchor_only 报告覆盖连续 7 个项目交易日（2026-09-04 至 2026-09-14），此关系在 7 个有效交易日、133 组有效配对中命中率为 100%，right/left 固定比例为 0.1。锚字段 f51 已登记为已验证的“流动资产”，单位为元；TDX 完整路径 liudong_zichan 与 Eastmoney Ulist239 属不同来源族，逐日比例支持 TDX 原始单位为角。该结论仅登记此完整来源路径，不按拼写相似度扩展至其他路径。",
+          "evidence": {
+            "ratio": 0.1,
+            "overall_hit": 1.0,
+            "n_days": 7,
+            "n_pairs": 133,
+            "distinct_days": [
+              "T:20260904",
+              "T:20260907",
+              "T:20260908",
+              "T:20260909",
+              "T:20260910",
+              "T:20260911",
+              "T:20260914"
+            ],
+            "daily_sample_counts": {
+              "T:20260914": 19,
+              "T:20260907": 19,
+              "T:20260904": 19,
+              "T:20260910": 19,
+              "T:20260909": 19,
+              "T:20260911": 19,
+              "T:20260908": 19
+            },
+            "evidence_sources": [
+              "eastmoney",
+              "tdx"
+            ]
+          }
+        }
+      ]
     },
     {
       "source": "TDX(双命名源)",
@@ -75729,13 +76074,15 @@
       "code": "weifen_lirun",
       "identity": "TDX(双命名源)::weifen_lirun",
       "path": "weifen_lirun",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "section": "",
-      "sections": [],
-      "status": "unverified",
-      "status_resolution": "registry_status_only_single_source",
+      "canonical": "weifenlirun",
+      "meaning": "未分配利润",
+      "unit": "角",
+      "section": "collision_research_20261019/verified_anchor_only/20260914/20260914_collision_report.json",
+      "sections": [
+        "collision_research_20261019/verified_anchor_only/20260914/20260914_collision_report.json"
+      ],
+      "status": "verified",
+      "status_resolution": "manual_collision_adjudication",
       "status_evidence": {
         "reference_statuses": [],
         "reference_status_raw": [],
@@ -75745,9 +76092,22 @@
         ],
         "values": [
           "unverified"
+        ],
+        "adjudication_ids": [
+          "20261019-tdx-weifen-lirun-verify"
         ]
       },
-      "reference_evidence": [],
+      "reference_evidence": [
+        {
+          "section": "collision_research_20261019/verified_anchor_only/20260914/20260914_collision_report.json",
+          "canonical": "weifenlirun",
+          "meaning": "未分配利润",
+          "unit": "角",
+          "status_raw": "人工复核 2026-10-19：20261019-tdx-weifen-lirun-verify",
+          "status": "verified",
+          "adjudication_id": "20261019-tdx-weifen-lirun-verify"
+        }
+      ],
       "attribute_conflicts": {},
       "registry_aggregate": {
         "code": "weifen_lirun",
@@ -75760,7 +76120,52 @@
         "meaning": "",
         "unit": "",
         "section": ""
-      }
+      },
+      "adjudications": [
+        {
+          "id": "20261019-tdx-weifen-lirun-verify",
+          "action": "verify",
+          "status": "verified",
+          "reviewer": "Codex（用户授权定案复核）",
+          "reviewed_on": "2026-10-19",
+          "report": "collision_research_20261019/verified_anchor_only/20260914/20260914_collision_report.json",
+          "decision_file": "adjudications/20261019_historical_field_candidates.json",
+          "candidate": {
+            "left": "tdx.finance_info.weifen_lirun",
+            "right": "ulist239.f47"
+          },
+          "level": "L1-U",
+          "rationale": "2026-09-14 正式 verified_anchor_only 报告覆盖连续 7 个项目交易日（2026-09-04 至 2026-09-14），此关系在 7 个有效交易日、140 组有效配对中命中率为 100%，right/left 固定比例为 0.1。锚字段 f47 已登记为已验证的“未分配利润”，单位为元；TDX 完整路径 weifen_lirun 与 Eastmoney Ulist239 属不同来源族，逐日比例支持 TDX 原始单位为角。该结论仅登记此完整来源路径，不按拼写相似度扩展至其他路径。",
+          "evidence": {
+            "ratio": 0.1,
+            "overall_hit": 1.0,
+            "n_days": 7,
+            "n_pairs": 140,
+            "distinct_days": [
+              "T:20260904",
+              "T:20260907",
+              "T:20260908",
+              "T:20260909",
+              "T:20260910",
+              "T:20260911",
+              "T:20260914"
+            ],
+            "daily_sample_counts": {
+              "T:20260914": 20,
+              "T:20260907": 20,
+              "T:20260910": 20,
+              "T:20260904": 20,
+              "T:20260909": 20,
+              "T:20260911": 20,
+              "T:20260908": 20
+            },
+            "evidence_sources": [
+              "eastmoney",
+              "tdx"
+            ]
+          }
+        }
+      ]
     },
     {
       "source": "TDX(双命名源)",
@@ -76130,13 +76535,15 @@
       "code": "yingye_lirun",
       "identity": "TDX(双命名源)::yingye_lirun",
       "path": "yingye_lirun",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "section": "",
-      "sections": [],
-      "status": "unverified",
-      "status_resolution": "registry_status_only_single_source",
+      "canonical": "yingyelirun",
+      "meaning": "营业利润",
+      "unit": "角",
+      "section": "collision_research_20261019/verified_anchor_only/20260914/20260914_collision_report.json",
+      "sections": [
+        "collision_research_20261019/verified_anchor_only/20260914/20260914_collision_report.json"
+      ],
+      "status": "verified",
+      "status_resolution": "manual_collision_adjudication",
       "status_evidence": {
         "reference_statuses": [],
         "reference_status_raw": [],
@@ -76146,9 +76553,22 @@
         ],
         "values": [
           "unverified"
+        ],
+        "adjudication_ids": [
+          "20261019-tdx-yingye-lirun-verify"
         ]
       },
-      "reference_evidence": [],
+      "reference_evidence": [
+        {
+          "section": "collision_research_20261019/verified_anchor_only/20260914/20260914_collision_report.json",
+          "canonical": "yingyelirun",
+          "meaning": "营业利润",
+          "unit": "角",
+          "status_raw": "人工复核 2026-10-19：20261019-tdx-yingye-lirun-verify",
+          "status": "verified",
+          "adjudication_id": "20261019-tdx-yingye-lirun-verify"
+        }
+      ],
       "attribute_conflicts": {},
       "registry_aggregate": {
         "code": "yingye_lirun",
@@ -76161,7 +76581,52 @@
         "meaning": "",
         "unit": "",
         "section": ""
-      }
+      },
+      "adjudications": [
+        {
+          "id": "20261019-tdx-yingye-lirun-verify",
+          "action": "verify",
+          "status": "verified",
+          "reviewer": "Codex（用户授权定案复核）",
+          "reviewed_on": "2026-10-19",
+          "report": "collision_research_20261019/verified_anchor_only/20260914/20260914_collision_report.json",
+          "decision_file": "adjudications/20261019_historical_field_candidates.json",
+          "candidate": {
+            "left": "tdx.finance_info.yingye_lirun",
+            "right": "ulist239.f42"
+          },
+          "level": "L1-U",
+          "rationale": "2026-09-14 正式 verified_anchor_only 报告覆盖连续 7 个项目交易日（2026-09-04 至 2026-09-14），此关系在 7 个有效交易日、140 组有效配对中命中率为 100%，right/left 固定比例为 0.1。锚字段 f42 已登记为已验证的“营业利润”，单位为元；TDX 完整路径 yingye_lirun 与 Eastmoney Ulist239 属不同来源族，逐日比例支持 TDX 原始单位为角。该结论仅登记此完整来源路径，不按拼写相似度扩展至其他路径。",
+          "evidence": {
+            "ratio": 0.1,
+            "overall_hit": 1.0,
+            "n_days": 7,
+            "n_pairs": 140,
+            "distinct_days": [
+              "T:20260904",
+              "T:20260907",
+              "T:20260908",
+              "T:20260909",
+              "T:20260910",
+              "T:20260911",
+              "T:20260914"
+            ],
+            "daily_sample_counts": {
+              "T:20260914": 20,
+              "T:20260907": 20,
+              "T:20260910": 20,
+              "T:20260904": 20,
+              "T:20260909": 20,
+              "T:20260911": 20,
+              "T:20260908": 20
+            },
+            "evidence_sources": [
+              "eastmoney",
+              "tdx"
+            ]
+          }
+        }
+      ]
     },
     {
       "source": "TDX(双命名源)",
@@ -76586,13 +77051,15 @@
       "code": "ziben_gongjijin",
       "identity": "TDX(双命名源)::ziben_gongjijin",
       "path": "ziben_gongjijin",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "section": "",
-      "sections": [],
-      "status": "unverified",
-      "status_resolution": "registry_status_only_single_source",
+      "canonical": "zibengongjijin",
+      "meaning": "资本公积金",
+      "unit": "角",
+      "section": "collision_research_20261019/verified_anchor_only/20260914/20260914_collision_report.json",
+      "sections": [
+        "collision_research_20261019/verified_anchor_only/20260914/20260914_collision_report.json"
+      ],
+      "status": "verified",
+      "status_resolution": "manual_collision_adjudication",
       "status_evidence": {
         "reference_statuses": [],
         "reference_status_raw": [],
@@ -76602,9 +77069,22 @@
         ],
         "values": [
           "unverified"
+        ],
+        "adjudication_ids": [
+          "20261019-tdx-ziben-gongjijin-verify"
         ]
       },
-      "reference_evidence": [],
+      "reference_evidence": [
+        {
+          "section": "collision_research_20261019/verified_anchor_only/20260914/20260914_collision_report.json",
+          "canonical": "zibengongjijin",
+          "meaning": "资本公积金",
+          "unit": "角",
+          "status_raw": "人工复核 2026-10-19：20261019-tdx-ziben-gongjijin-verify",
+          "status": "verified",
+          "adjudication_id": "20261019-tdx-ziben-gongjijin-verify"
+        }
+      ],
       "attribute_conflicts": {},
       "registry_aggregate": {
         "code": "ziben_gongjijin",
@@ -76617,7 +77097,52 @@
         "meaning": "",
         "unit": "",
         "section": ""
-      }
+      },
+      "adjudications": [
+        {
+          "id": "20261019-tdx-ziben-gongjijin-verify",
+          "action": "verify",
+          "status": "verified",
+          "reviewer": "Codex（用户授权定案复核）",
+          "reviewed_on": "2026-10-19",
+          "report": "collision_research_20261019/verified_anchor_only/20260914/20260914_collision_report.json",
+          "decision_file": "adjudications/20261019_historical_field_candidates.json",
+          "candidate": {
+            "left": "tdx.finance_info.ziben_gongjijin",
+            "right": "ulist239.f60"
+          },
+          "level": "L1-U",
+          "rationale": "2026-09-14 正式 verified_anchor_only 报告覆盖连续 7 个项目交易日（2026-09-04 至 2026-09-14），此关系在 7 个有效交易日、140 组有效配对中命中率为 100%，right/left 固定比例为 0.1。锚字段 f60 已登记为已验证的“资本公积金”，单位为元；TDX 完整路径 ziben_gongjijin 与 Eastmoney Ulist239 属不同来源族，逐日比例支持 TDX 原始单位为角。该结论仅登记此完整来源路径，不按拼写相似度扩展至其他路径。",
+          "evidence": {
+            "ratio": 0.1,
+            "overall_hit": 1.0,
+            "n_days": 7,
+            "n_pairs": 140,
+            "distinct_days": [
+              "T:20260904",
+              "T:20260907",
+              "T:20260908",
+              "T:20260909",
+              "T:20260910",
+              "T:20260911",
+              "T:20260914"
+            ],
+            "daily_sample_counts": {
+              "T:20260914": 20,
+              "T:20260907": 20,
+              "T:20260910": 20,
+              "T:20260904": 20,
+              "T:20260909": 20,
+              "T:20260911": 20,
+              "T:20260908": 20
+            },
+            "evidence_sources": [
+              "eastmoney",
+              "tdx"
+            ]
+          }
+        }
+      ]
     },
     {
       "source": "TDX(双命名源)",
@@ -76870,13 +77395,15 @@
       "code": "zong_zichan",
       "identity": "TDX(双命名源)::zong_zichan",
       "path": "zong_zichan",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "section": "",
-      "sections": [],
-      "status": "unverified",
-      "status_resolution": "registry_status_only_single_source",
+      "canonical": "zongzichan",
+      "meaning": "总资产",
+      "unit": "角",
+      "section": "collision_research_20261019/verified_anchor_only/20260914/20260914_collision_report.json",
+      "sections": [
+        "collision_research_20261019/verified_anchor_only/20260914/20260914_collision_report.json"
+      ],
+      "status": "verified",
+      "status_resolution": "manual_collision_adjudication",
       "status_evidence": {
         "reference_statuses": [],
         "reference_status_raw": [],
@@ -76886,9 +77413,22 @@
         ],
         "values": [
           "unverified"
+        ],
+        "adjudication_ids": [
+          "20261019-tdx-zong-zichan-verify"
         ]
       },
-      "reference_evidence": [],
+      "reference_evidence": [
+        {
+          "section": "collision_research_20261019/verified_anchor_only/20260914/20260914_collision_report.json",
+          "canonical": "zongzichan",
+          "meaning": "总资产",
+          "unit": "角",
+          "status_raw": "人工复核 2026-10-19：20261019-tdx-zong-zichan-verify",
+          "status": "verified",
+          "adjudication_id": "20261019-tdx-zong-zichan-verify"
+        }
+      ],
       "attribute_conflicts": {},
       "registry_aggregate": {
         "code": "zong_zichan",
@@ -76901,7 +77441,52 @@
         "meaning": "",
         "unit": "",
         "section": ""
-      }
+      },
+      "adjudications": [
+        {
+          "id": "20261019-tdx-zong-zichan-verify",
+          "action": "verify",
+          "status": "verified",
+          "reviewer": "Codex（用户授权定案复核）",
+          "reviewed_on": "2026-10-19",
+          "report": "collision_research_20261019/verified_anchor_only/20260914/20260914_collision_report.json",
+          "decision_file": "adjudications/20261019_historical_field_candidates.json",
+          "candidate": {
+            "left": "tdx.finance_info.zong_zichan",
+            "right": "ulist239.f50"
+          },
+          "level": "L1-U",
+          "rationale": "2026-09-14 正式 verified_anchor_only 报告覆盖连续 7 个项目交易日（2026-09-04 至 2026-09-14），此关系在 7 个有效交易日、140 组有效配对中命中率为 100%，right/left 固定比例为 0.1。锚字段 f50 已登记为已验证的“总资产”，单位为元；TDX 完整路径 zong_zichan 与 Eastmoney Ulist239 属不同来源族，逐日比例支持 TDX 原始单位为角。该结论仅登记此完整来源路径，不按拼写相似度扩展至其他路径。",
+          "evidence": {
+            "ratio": 0.1,
+            "overall_hit": 1.0,
+            "n_days": 7,
+            "n_pairs": 140,
+            "distinct_days": [
+              "T:20260904",
+              "T:20260907",
+              "T:20260908",
+              "T:20260909",
+              "T:20260910",
+              "T:20260911",
+              "T:20260914"
+            ],
+            "daily_sample_counts": {
+              "T:20260914": 20,
+              "T:20260907": 20,
+              "T:20260910": 20,
+              "T:20260904": 20,
+              "T:20260909": 20,
+              "T:20260911": 20,
+              "T:20260908": 20
+            },
+            "evidence_sources": [
+              "eastmoney",
+              "tdx"
+            ]
+          }
+        }
+      ]
     },
     {
       "source": "TDX(双命名源)",
@@ -126658,12 +127243,13 @@
       "code": "f109",
       "identity": "东财-ulist239(np/get)::f109",
       "path": "f109",
-      "canonical": "f109",
-      "meaning": "",
-      "unit": "",
+      "canonical": "change_5d",
+      "meaning": "5日涨跌幅",
+      "unit": "%",
       "section": "12.3.2.3 ulist239 全字段清单（np/get 真实返回 239 字段，V17.1.1 全量登记）",
       "sections": [
-        "12.3.2.3 ulist239 全字段清单（np/get 真实返回 239 字段，V17.1.1 全量登记）"
+        "12.3.2.3 ulist239 全字段清单（np/get 真实返回 239 字段，V17.1.1 全量登记）",
+        "collision_research_20261019/verified_anchor_only/20260914/20260914_collision_report.json"
       ],
       "status": "verified",
       "status_resolution": "matched",
@@ -126682,6 +127268,9 @@
         ],
         "values": [
           "verified"
+        ],
+        "adjudication_ids": [
+          "20261019-ulist-f109-change-5d"
         ]
       },
       "reference_evidence": [
@@ -126692,6 +127281,27 @@
           "unit": "",
           "status_raw": "✅",
           "status": "verified"
+        },
+        {
+          "section": "collision_research_20261019/verified_anchor_only/20260914/20260914_collision_report.json",
+          "canonical": "change_5d",
+          "meaning": "5日涨跌幅",
+          "unit": "%",
+          "status_raw": "人工复核 2026-10-19：20261019-ulist-f109-change-5d",
+          "status": "verified",
+          "adjudication_id": "20261019-ulist-f109-change-5d",
+          "metadata_change": {
+            "before": {
+              "canonical": "f109",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "change_5d",
+              "meaning": "5日涨跌幅",
+              "unit": "%"
+            }
+          }
         }
       ],
       "attribute_conflicts": {},
@@ -126708,7 +127318,60 @@
         "meaning": "涨跌幅",
         "unit": "%",
         "section": "12.3.2.3 ulist239 全字段清单（np/get 真实返回 239 字段，V17.1.1 全量登记）"
-      }
+      },
+      "adjudications": [
+        {
+          "id": "20261019-ulist-f109-change-5d",
+          "action": "enrich_metadata",
+          "status": "verified",
+          "reviewer": "Codex（用户授权定案复核）",
+          "reviewed_on": "2026-10-19",
+          "report": "collision_research_20261019/verified_anchor_only/20260914/20260914_collision_report.json",
+          "decision_file": "adjudications/20261019_historical_field_candidates.json",
+          "candidate": {
+            "left": "ulist239.f109",
+            "right": "zhb.stat.change_5d"
+          },
+          "level": "L1",
+          "rationale": "2026-09-14 正式 verified_anchor_only 报告中，该 Ulist239 字段与已验证的 TDX ZHB 锚 在 5 个不同交易日、100 组有效配对中直接精确命中，命中率为 100%，无比例换算。目标字段状态已验证但此前语义/单位为空；按锚字段 stat.change_5d 的已验证元数据补齐为“5日涨跌幅”（%）。",
+          "evidence": {
+            "ratio": null,
+            "overall_hit": 1.0,
+            "n_days": 5,
+            "n_pairs": 100,
+            "distinct_days": [
+              "T:20260904",
+              "T:20260907",
+              "T:20260908",
+              "T:20260909",
+              "T:20260910"
+            ],
+            "daily_sample_counts": {
+              "T:20260907": 20,
+              "T:20260910": 20,
+              "T:20260904": 20,
+              "T:20260909": 20,
+              "T:20260908": 20
+            },
+            "evidence_sources": [
+              "eastmoney",
+              "tdx"
+            ]
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "f109",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "change_5d",
+              "meaning": "5日涨跌幅",
+              "unit": "%"
+            }
+          }
+        }
+      ]
     },
     {
       "source": "东财-ulist239(np/get)",
@@ -126764,12 +127427,13 @@
       "code": "f110",
       "identity": "东财-ulist239(np/get)::f110",
       "path": "f110",
-      "canonical": "f110",
-      "meaning": "",
-      "unit": "",
+      "canonical": "change_20d",
+      "meaning": "20日涨跌幅",
+      "unit": "%",
       "section": "12.3.2.3 ulist239 全字段清单（np/get 真实返回 239 字段，V17.1.1 全量登记）",
       "sections": [
-        "12.3.2.3 ulist239 全字段清单（np/get 真实返回 239 字段，V17.1.1 全量登记）"
+        "12.3.2.3 ulist239 全字段清单（np/get 真实返回 239 字段，V17.1.1 全量登记）",
+        "collision_research_20261019/verified_anchor_only/20260914/20260914_collision_report.json"
       ],
       "status": "verified",
       "status_resolution": "matched",
@@ -126787,6 +127451,9 @@
         ],
         "values": [
           "verified"
+        ],
+        "adjudication_ids": [
+          "20261019-ulist-f110-change-20d"
         ]
       },
       "reference_evidence": [
@@ -126797,6 +127464,27 @@
           "unit": "",
           "status_raw": "✅",
           "status": "verified"
+        },
+        {
+          "section": "collision_research_20261019/verified_anchor_only/20260914/20260914_collision_report.json",
+          "canonical": "change_20d",
+          "meaning": "20日涨跌幅",
+          "unit": "%",
+          "status_raw": "人工复核 2026-10-19：20261019-ulist-f110-change-20d",
+          "status": "verified",
+          "adjudication_id": "20261019-ulist-f110-change-20d",
+          "metadata_change": {
+            "before": {
+              "canonical": "f110",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "change_20d",
+              "meaning": "20日涨跌幅",
+              "unit": "%"
+            }
+          }
         }
       ],
       "attribute_conflicts": {},
@@ -126812,7 +127500,60 @@
         "meaning": "市场标记（布尔 0/1，北交=0）",
         "unit": "-",
         "section": "12.3.1 单股行情 `stock/get`（已由 get_em_quote_full 验证）"
-      }
+      },
+      "adjudications": [
+        {
+          "id": "20261019-ulist-f110-change-20d",
+          "action": "enrich_metadata",
+          "status": "verified",
+          "reviewer": "Codex（用户授权定案复核）",
+          "reviewed_on": "2026-10-19",
+          "report": "collision_research_20261019/verified_anchor_only/20260914/20260914_collision_report.json",
+          "decision_file": "adjudications/20261019_historical_field_candidates.json",
+          "candidate": {
+            "left": "ulist239.f110",
+            "right": "zhb.stat.change_20d"
+          },
+          "level": "L1",
+          "rationale": "2026-09-14 正式 verified_anchor_only 报告中，该 Ulist239 字段与已验证的 TDX ZHB 锚 在 5 个不同交易日、100 组有效配对中直接精确命中，命中率为 100%，无比例换算。目标字段状态已验证但此前语义/单位为空；按锚字段 stat.change_20d 的已验证元数据补齐为“20日涨跌幅”（%）。",
+          "evidence": {
+            "ratio": null,
+            "overall_hit": 1.0,
+            "n_days": 5,
+            "n_pairs": 100,
+            "distinct_days": [
+              "T:20260904",
+              "T:20260907",
+              "T:20260908",
+              "T:20260909",
+              "T:20260910"
+            ],
+            "daily_sample_counts": {
+              "T:20260907": 20,
+              "T:20260910": 20,
+              "T:20260904": 20,
+              "T:20260909": 20,
+              "T:20260908": 20
+            },
+            "evidence_sources": [
+              "eastmoney",
+              "tdx"
+            ]
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "f110",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "change_20d",
+              "meaning": "20日涨跌幅",
+              "unit": "%"
+            }
+          }
+        }
+      ]
     },
     {
       "source": "东财-ulist239(np/get)",
@@ -129759,12 +130500,13 @@
       "code": "f160",
       "identity": "东财-ulist239(np/get)::f160",
       "path": "f160",
-      "canonical": "f160",
-      "meaning": "",
-      "unit": "",
+      "canonical": "change_10d",
+      "meaning": "10日涨跌幅",
+      "unit": "%",
       "section": "12.3.2.3 ulist239 全字段清单（np/get 真实返回 239 字段，V17.1.1 全量登记）",
       "sections": [
-        "12.3.2.3 ulist239 全字段清单（np/get 真实返回 239 字段，V17.1.1 全量登记）"
+        "12.3.2.3 ulist239 全字段清单（np/get 真实返回 239 字段，V17.1.1 全量登记）",
+        "collision_research_20261019/verified_anchor_only/20260914/20260914_collision_report.json"
       ],
       "status": "verified",
       "status_resolution": "matched",
@@ -129783,6 +130525,9 @@
         ],
         "values": [
           "verified"
+        ],
+        "adjudication_ids": [
+          "20261019-ulist-f160-change-10d"
         ]
       },
       "reference_evidence": [
@@ -129793,6 +130538,27 @@
           "unit": "",
           "status_raw": "✅",
           "status": "verified"
+        },
+        {
+          "section": "collision_research_20261019/verified_anchor_only/20260914/20260914_collision_report.json",
+          "canonical": "change_10d",
+          "meaning": "10日涨跌幅",
+          "unit": "%",
+          "status_raw": "人工复核 2026-10-19：20261019-ulist-f160-change-10d",
+          "status": "verified",
+          "adjudication_id": "20261019-ulist-f160-change-10d",
+          "metadata_change": {
+            "before": {
+              "canonical": "f160",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "change_10d",
+              "meaning": "10日涨跌幅",
+              "unit": "%"
+            }
+          }
         }
       ],
       "attribute_conflicts": {},
@@ -129809,7 +130575,60 @@
         "meaning": "涨跌幅",
         "unit": "%",
         "section": "12.3.2.3 ulist239 全字段清单（np/get 真实返回 239 字段，V17.1.1 全量登记）"
-      }
+      },
+      "adjudications": [
+        {
+          "id": "20261019-ulist-f160-change-10d",
+          "action": "enrich_metadata",
+          "status": "verified",
+          "reviewer": "Codex（用户授权定案复核）",
+          "reviewed_on": "2026-10-19",
+          "report": "collision_research_20261019/verified_anchor_only/20260914/20260914_collision_report.json",
+          "decision_file": "adjudications/20261019_historical_field_candidates.json",
+          "candidate": {
+            "left": "ulist239.f160",
+            "right": "zhb.stat.change_10d"
+          },
+          "level": "L1",
+          "rationale": "2026-09-14 正式 verified_anchor_only 报告中，该 Ulist239 字段与已验证的 TDX ZHB 锚 在 5 个不同交易日、100 组有效配对中直接精确命中，命中率为 100%，无比例换算。目标字段状态已验证但此前语义/单位为空；按锚字段 stat.change_10d 的已验证元数据补齐为“10日涨跌幅”（%）。",
+          "evidence": {
+            "ratio": null,
+            "overall_hit": 1.0,
+            "n_days": 5,
+            "n_pairs": 100,
+            "distinct_days": [
+              "T:20260904",
+              "T:20260907",
+              "T:20260908",
+              "T:20260909",
+              "T:20260910"
+            ],
+            "daily_sample_counts": {
+              "T:20260907": 20,
+              "T:20260910": 20,
+              "T:20260904": 20,
+              "T:20260909": 20,
+              "T:20260908": 20
+            },
+            "evidence_sources": [
+              "eastmoney",
+              "tdx"
+            ]
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "f160",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "change_10d",
+              "meaning": "10日涨跌幅",
+              "unit": "%"
+            }
+          }
+        }
+      ]
     },
     {
       "source": "东财-ulist239(np/get)",

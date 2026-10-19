@@ -4,7 +4,7 @@
 > `aggregation_status` 只描述兼容聚合视图，不会改写逐源 `status`。疑似合并文本由分隔符启发式识别，仅供人工检查，不自动拆字段或定案。
 > 本文统计的定义缺口仅限列出的复核组；单来源或全空的定义缺口仍见 [元数据缺口](field_metadata_gaps.md) 与 [未知字段队列](unknown_fields.md)。
 
-> 聚合歧义 88 个 code；聚合定义不完整 256 个 code；疑似合并文本 246 条逐源记录。
+> 聚合歧义 89 个 code；聚合定义不完整 255 个 code；疑似合并文本 246 条逐源记录。
 
 ## 同码聚合存在差异或定义缺口
 
@@ -955,22 +955,22 @@
 
 ### `f109` — ambiguous
 
-聚合问题：canonical_differs；meaning_differs；meaning_incomplete；source_statuses_differ；unit_differs；unit_incomplete；聚合状态：`conflict`。
+聚合问题：canonical_differs；meaning_differs；source_statuses_differ；unit_differs；聚合状态：`conflict`。
 
 | 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
 |:--|:--|:--|:--|:--|
 | 东财-clist · `f109` | f109 / f160 | 涨跌幅 | % | `verified` |
 | 东财-push2(stock/get) · `f109` | net_profit_annual(f109) | 归母净利润 最新年报 | 元 | `unverified` |
-| 东财-ulist239(np/get) · `f109` | f109 | — | — | `verified` |
+| 东财-ulist239(np/get) · `f109` | change_5d | 5日涨跌幅 | % | `verified` |
 
-### `f110` — incomplete
+### `f110` — ambiguous
 
-聚合问题：meaning_incomplete；unit_incomplete；聚合状态：`unverified`。
+聚合问题：canonical_differs；meaning_differs；unit_differs；聚合状态：`conflict`。
 
 | 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
 |:--|:--|:--|:--|:--|
 | 东财-push2(stock/get) · `f110` | f110 | 市场标记（布尔 0/1，北交=0） | - | `verified` |
-| 东财-ulist239(np/get) · `f110` | f110 | — | — | `verified` |
+| 东财-ulist239(np/get) · `f110` | change_20d | 20日涨跌幅 | % | `verified` |
 
 ### `f111` — incomplete
 
@@ -1413,13 +1413,13 @@
 
 ### `f160` — ambiguous
 
-聚合问题：canonical_differs；meaning_differs；meaning_incomplete；source_statuses_differ；unit_differs；unit_incomplete；聚合状态：`conflict`。
+聚合问题：canonical_differs；meaning_differs；source_statuses_differ；unit_differs；聚合状态：`conflict`。
 
 | 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
 |:--|:--|:--|:--|:--|
 | 东财-clist · `f160` | f109 / f160 | 涨跌幅 | % | `verified` |
 | 东财-push2(stock/get) · `f160` | eps_annual(f160) | 待破解 | 元/股 | `unverified` |
-| 东财-ulist239(np/get) · `f160` | f160 | — | — | `verified` |
+| 东财-ulist239(np/get) · `f160` | change_10d | 10日涨跌幅 | % | `verified` |
 
 ### `f161` — incomplete
 

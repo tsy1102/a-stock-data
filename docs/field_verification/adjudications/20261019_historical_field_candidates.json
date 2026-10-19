@@ -1,0 +1,243 @@
+{
+  "schema_version": 1,
+  "report": "collision_research_20261019/verified_anchor_only/20260914/20260914_collision_report.json",
+  "reviewer": "Codex（用户授权定案复核）",
+  "reviewed_on": "2026-10-19",
+  "decisions": [
+    {
+      "id": "20261019-tdx-lirun-zonghe-verify",
+      "candidate": {
+        "left": "tdx.finance_info.lirun_zonghe",
+        "right": "ulist239.f44"
+      },
+      "target": {
+        "source": "TDX(双命名源)",
+        "code": "lirun_zonghe"
+      },
+      "anchor": {
+        "source": "东财-ulist239(np/get)",
+        "code": "f44"
+      },
+      "action": "verify",
+      "canonical": "lirunzonghe",
+      "meaning": "利润总额",
+      "unit": "角",
+      "rationale": "2026-09-14 正式 verified_anchor_only 报告覆盖连续 7 个项目交易日（2026-09-04 至 2026-09-14），此关系在 7 个有效交易日、140 组有效配对中命中率为 100%，right/left 固定比例为 0.1。锚字段 f44 已登记为已验证的“利润总额”，单位为元；TDX 完整路径 lirun_zonghe 与 Eastmoney Ulist239 属不同来源族，逐日比例支持 TDX 原始单位为角。该结论仅登记此完整来源路径，不按拼写相似度扩展至其他路径。"
+    },
+    {
+      "id": "20261019-tdx-yingye-lirun-verify",
+      "candidate": {
+        "left": "tdx.finance_info.yingye_lirun",
+        "right": "ulist239.f42"
+      },
+      "target": {
+        "source": "TDX(双命名源)",
+        "code": "yingye_lirun"
+      },
+      "anchor": {
+        "source": "东财-ulist239(np/get)",
+        "code": "f42"
+      },
+      "action": "verify",
+      "canonical": "yingyelirun",
+      "meaning": "营业利润",
+      "unit": "角",
+      "rationale": "2026-09-14 正式 verified_anchor_only 报告覆盖连续 7 个项目交易日（2026-09-04 至 2026-09-14），此关系在 7 个有效交易日、140 组有效配对中命中率为 100%，right/left 固定比例为 0.1。锚字段 f42 已登记为已验证的“营业利润”，单位为元；TDX 完整路径 yingye_lirun 与 Eastmoney Ulist239 属不同来源族，逐日比例支持 TDX 原始单位为角。该结论仅登记此完整来源路径，不按拼写相似度扩展至其他路径。"
+    },
+    {
+      "id": "20261019-tdx-weifen-lirun-verify",
+      "candidate": {
+        "left": "tdx.finance_info.weifen_lirun",
+        "right": "ulist239.f47"
+      },
+      "target": {
+        "source": "TDX(双命名源)",
+        "code": "weifen_lirun"
+      },
+      "anchor": {
+        "source": "东财-ulist239(np/get)",
+        "code": "f47"
+      },
+      "action": "verify",
+      "canonical": "weifenlirun",
+      "meaning": "未分配利润",
+      "unit": "角",
+      "rationale": "2026-09-14 正式 verified_anchor_only 报告覆盖连续 7 个项目交易日（2026-09-04 至 2026-09-14），此关系在 7 个有效交易日、140 组有效配对中命中率为 100%，right/left 固定比例为 0.1。锚字段 f47 已登记为已验证的“未分配利润”，单位为元；TDX 完整路径 weifen_lirun 与 Eastmoney Ulist239 属不同来源族，逐日比例支持 TDX 原始单位为角。该结论仅登记此完整来源路径，不按拼写相似度扩展至其他路径。"
+    },
+    {
+      "id": "20261019-tdx-zong-zichan-verify",
+      "candidate": {
+        "left": "tdx.finance_info.zong_zichan",
+        "right": "ulist239.f50"
+      },
+      "target": {
+        "source": "TDX(双命名源)",
+        "code": "zong_zichan"
+      },
+      "anchor": {
+        "source": "东财-ulist239(np/get)",
+        "code": "f50"
+      },
+      "action": "verify",
+      "canonical": "zongzichan",
+      "meaning": "总资产",
+      "unit": "角",
+      "rationale": "2026-09-14 正式 verified_anchor_only 报告覆盖连续 7 个项目交易日（2026-09-04 至 2026-09-14），此关系在 7 个有效交易日、140 组有效配对中命中率为 100%，right/left 固定比例为 0.1。锚字段 f50 已登记为已验证的“总资产”，单位为元；TDX 完整路径 zong_zichan 与 Eastmoney Ulist239 属不同来源族，逐日比例支持 TDX 原始单位为角。该结论仅登记此完整来源路径，不按拼写相似度扩展至其他路径。"
+    },
+    {
+      "id": "20261019-tdx-liudong-zichan-verify",
+      "candidate": {
+        "left": "tdx.finance_info.liudong_zichan",
+        "right": "ulist239.f51"
+      },
+      "target": {
+        "source": "TDX(双命名源)",
+        "code": "liudong_zichan"
+      },
+      "anchor": {
+        "source": "东财-ulist239(np/get)",
+        "code": "f51"
+      },
+      "action": "verify",
+      "canonical": "liudongzichan",
+      "meaning": "流动资产",
+      "unit": "角",
+      "rationale": "2026-09-14 正式 verified_anchor_only 报告覆盖连续 7 个项目交易日（2026-09-04 至 2026-09-14），此关系在 7 个有效交易日、133 组有效配对中命中率为 100%，right/left 固定比例为 0.1。锚字段 f51 已登记为已验证的“流动资产”，单位为元；TDX 完整路径 liudong_zichan 与 Eastmoney Ulist239 属不同来源族，逐日比例支持 TDX 原始单位为角。该结论仅登记此完整来源路径，不按拼写相似度扩展至其他路径。"
+    },
+    {
+      "id": "20261019-tdx-guding-zichan-verify",
+      "candidate": {
+        "left": "tdx.finance_info.guding_zichan",
+        "right": "ulist239.f52"
+      },
+      "target": {
+        "source": "TDX(双命名源)",
+        "code": "guding_zichan"
+      },
+      "anchor": {
+        "source": "东财-ulist239(np/get)",
+        "code": "f52"
+      },
+      "action": "verify",
+      "canonical": "gudingzichan",
+      "meaning": "固定资产",
+      "unit": "角",
+      "rationale": "2026-09-14 正式 verified_anchor_only 报告覆盖连续 7 个项目交易日（2026-09-04 至 2026-09-14），此关系在 7 个有效交易日、140 组有效配对中命中率为 100%，right/left 固定比例为 0.1。锚字段 f52 已登记为已验证的“固定资产”，单位为元；TDX 完整路径 guding_zichan 与 Eastmoney Ulist239 属不同来源族，逐日比例支持 TDX 原始单位为角。该结论仅登记此完整来源路径，不按拼写相似度扩展至其他路径。"
+    },
+    {
+      "id": "20261019-tdx-liudong-fuzhai-verify",
+      "candidate": {
+        "left": "tdx.finance_info.liudong_fuzhai",
+        "right": "ulist239.f55"
+      },
+      "target": {
+        "source": "TDX(双命名源)",
+        "code": "liudong_fuzhai"
+      },
+      "anchor": {
+        "source": "东财-ulist239(np/get)",
+        "code": "f55"
+      },
+      "action": "verify",
+      "canonical": "liudongfuzhai",
+      "meaning": "流动负债",
+      "unit": "角",
+      "rationale": "2026-09-14 正式 verified_anchor_only 报告覆盖连续 7 个项目交易日（2026-09-04 至 2026-09-14），此关系在 7 个有效交易日、133 组有效配对中命中率为 100%，right/left 固定比例为 0.1。锚字段 f55 已登记为已验证的“流动负债”，单位为元；TDX 完整路径 liudong_fuzhai 与 Eastmoney Ulist239 属不同来源族，逐日比例支持 TDX 原始单位为角。该结论仅登记此完整来源路径，不按拼写相似度扩展至其他路径。"
+    },
+    {
+      "id": "20261019-tdx-ziben-gongjijin-verify",
+      "candidate": {
+        "left": "tdx.finance_info.ziben_gongjijin",
+        "right": "ulist239.f60"
+      },
+      "target": {
+        "source": "TDX(双命名源)",
+        "code": "ziben_gongjijin"
+      },
+      "anchor": {
+        "source": "东财-ulist239(np/get)",
+        "code": "f60"
+      },
+      "action": "verify",
+      "canonical": "zibengongjijin",
+      "meaning": "资本公积金",
+      "unit": "角",
+      "rationale": "2026-09-14 正式 verified_anchor_only 报告覆盖连续 7 个项目交易日（2026-09-04 至 2026-09-14），此关系在 7 个有效交易日、140 组有效配对中命中率为 100%，right/left 固定比例为 0.1。锚字段 f60 已登记为已验证的“资本公积金”，单位为元；TDX 完整路径 ziben_gongjijin 与 Eastmoney Ulist239 属不同来源族，逐日比例支持 TDX 原始单位为角。该结论仅登记此完整来源路径，不按拼写相似度扩展至其他路径。"
+    },
+    {
+      "id": "20261019-ulist-f109-change-5d",
+      "candidate": {
+        "left": "ulist239.f109",
+        "right": "zhb.stat.change_5d"
+      },
+      "target": {
+        "source": "东财-ulist239(np/get)",
+        "code": "f109"
+      },
+      "anchor": {
+        "source": "ZHB-tdxstat",
+        "code": "stat.change_5d"
+      },
+      "action": "enrich_metadata",
+      "previous": {
+        "canonical": "f109",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "change_5d",
+      "meaning": "5日涨跌幅",
+      "unit": "%",
+      "rationale": "2026-09-14 正式 verified_anchor_only 报告中，该 Ulist239 字段与已验证的 TDX ZHB 锚 在 5 个不同交易日、100 组有效配对中直接精确命中，命中率为 100%，无比例换算。目标字段状态已验证但此前语义/单位为空；按锚字段 stat.change_5d 的已验证元数据补齐为“5日涨跌幅”（%）。"
+    },
+    {
+      "id": "20261019-ulist-f110-change-20d",
+      "candidate": {
+        "left": "ulist239.f110",
+        "right": "zhb.stat.change_20d"
+      },
+      "target": {
+        "source": "东财-ulist239(np/get)",
+        "code": "f110"
+      },
+      "anchor": {
+        "source": "ZHB-tdxstat",
+        "code": "stat.change_20d"
+      },
+      "action": "enrich_metadata",
+      "previous": {
+        "canonical": "f110",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "change_20d",
+      "meaning": "20日涨跌幅",
+      "unit": "%",
+      "rationale": "2026-09-14 正式 verified_anchor_only 报告中，该 Ulist239 字段与已验证的 TDX ZHB 锚 在 5 个不同交易日、100 组有效配对中直接精确命中，命中率为 100%，无比例换算。目标字段状态已验证但此前语义/单位为空；按锚字段 stat.change_20d 的已验证元数据补齐为“20日涨跌幅”（%）。"
+    },
+    {
+      "id": "20261019-ulist-f160-change-10d",
+      "candidate": {
+        "left": "ulist239.f160",
+        "right": "zhb.stat.change_10d"
+      },
+      "target": {
+        "source": "东财-ulist239(np/get)",
+        "code": "f160"
+      },
+      "anchor": {
+        "source": "ZHB-tdxstat",
+        "code": "stat.change_10d"
+      },
+      "action": "enrich_metadata",
+      "previous": {
+        "canonical": "f160",
+        "meaning": "",
+        "unit": ""
+      },
+      "canonical": "change_10d",
+      "meaning": "10日涨跌幅",
+      "unit": "%",
+      "rationale": "2026-09-14 正式 verified_anchor_only 报告中，该 Ulist239 字段与已验证的 TDX ZHB 锚 在 5 个不同交易日、100 组有效配对中直接精确命中，命中率为 100%，无比例换算。目标字段状态已验证但此前语义/单位为空；按锚字段 stat.change_10d 的已验证元数据补齐为“10日涨跌幅”（%）。"
+    }
+  ]
+}

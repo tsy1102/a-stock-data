@@ -5,8 +5,8 @@
 > 碰撞候选须人工复核后使用 `apply_collision_adjudications.py` 同步状态；流程见 `field_verification/ADJUDICATION_WORKFLOW.md`。
 > 聚合层的同码异义与定义缺口见 [`field_aggregate_review.md`](field_aggregate_review.md)，不代表逐源记录状态冲突。
 
-> 总字段路径 2518；unverified 1516、candidate 1、conflict 81、disproved 2。
-> 另有 203 条虽标 verified、但含义/单位元数据未达到碰撞锚条件；这些记录会重新进入碰撞目标，详见 [字段元数据复核](field_metadata_gaps.md)。
+> 总字段路径 2518；unverified 1508、candidate 1、conflict 81、disproved 2。
+> 另有 200 条虽标 verified、但含义/单位元数据未达到碰撞锚条件；这些记录会重新进入碰撞目标，详见 [字段元数据复核](field_metadata_gaps.md)。
 > 以下两组未验证字段统计是不同维度，不能相加：含义栏文本只表示存在文字，不代表语义正确；状态判定反映旧字典状态证据能否映射到逐源身份。
 
 ## 未验证字段的复核分层
@@ -15,7 +15,7 @@
 
 | 分类 | 数量 |
 |:--|--:|
-| 含义栏为空/占位 | 1331 |
+| 含义栏为空/占位 | 1323 |
 | 含义栏有文本（仍未验证） | 185 |
 
 ### 历史状态证据的解析结果
@@ -26,7 +26,7 @@
 | `identity_reclassified_pending` | 9 | 按注册表原始状态判定代码保留 |
 | `matched` | 59 | 历史逐源状态与聚合状态一致，但仍未定案 |
 | `reference_status_missing` | 35 | 按注册表原始状态判定代码保留 |
-| `registry_status_only_single_source` | 873 | 只有来源自身状态，历史聚合信息不足以进一步归属 |
+| `registry_status_only_single_source` | 865 | 只有来源自身状态，历史聚合信息不足以进一步归属 |
 | `status_missing` | 43 | 缺少可用的历史状态记录 |
 
 ## 一、状态冲突（禁止作为锚点，优先复核）（81）
@@ -121,7 +121,7 @@
 |:--|:--|:--|:--|:--|:--|:--|:--|
 | ZHB-tdxstat | `stat.unknown_2` | stat.unknown_2 | 贝塔系数(60日)·L2候选(列[2]已定BetaValue: ihelp.dat L63官方定义+慢变特征实证自相关0.91, 待真实指数基准复现升L1) | - | 含义栏有文本（仍未验证） | matched | 1.1 tdxstat.cfg 标准契约表（stat.*，20260918 对撞定案）🆕 |
 
-## 三、待破解字段（1516）
+## 三、待破解字段（1508）
 
 | 来源 | 完整 code path | 规范名 | 含义 | 单位 | 含义栏提示 | 状态判定 | 证据章节 |
 |:--|:--|:--|:--|:--|:--|:--|:--|
@@ -401,7 +401,6 @@
 | TDX(双命名源) | `float_capital` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
 | TDX(双命名源) | `float_mcap_yi` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
 | TDX(双命名源) | `gross_margin` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| TDX(双命名源) | `guding_zichan` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
 | TDX(双命名源) | `gudong_renshu` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
 | TDX(双命名源) | `gudongrenshu/zongzichan/liudongfuzhai/changqifuzhai/jingzichan/zhuyingshouru/jinglirun/jingyingxianjinliu/ipo_date/liutongguben/zongguben/meigujingzichan/cunhuo/yingshouzhangkuan/zibengongjijin/weifenpeilirun/updated_date/province/industry` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
 | TDX(双命名源) | `guojia_gu` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
@@ -420,10 +419,7 @@
 | TDX(双命名源) | `limit_down` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
 | TDX(双命名源) | `limit_down_price` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
 | TDX(双命名源) | `limit_up` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
-| TDX(双命名源) | `lirun_zonghe` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
 | TDX(双命名源) | `liu_tong_gu_ben_raw_float` | liu_tong_gu_ben_raw_float | 流通股本原始值 | 万股 | 含义栏有文本（仍未验证） | aggregate_status_scope_unresolved | 12.13.2 财务批量（get_finance_batch，0x0010）文档确认 |
-| TDX(双命名源) | `liudong_fuzhai` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| TDX(双命名源) | `liudong_zichan` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
 | TDX(双命名源) | `liutong_guben` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
 | TDX(双命名源) | `locked_amount` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
 | TDX(双命名源) | `long_term_debt` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
@@ -468,21 +464,17 @@
 | TDX(双命名源) | `vol_ratio` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
 | TDX(双命名源) | `volume` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
 | TDX(双命名源) | `vzangsu` | — | 量涨速（具体计算窗口待确认） | % | 含义栏有文本（仍未验证） | registry_status_only_single_source | — |
-| TDX(双命名源) | `weifen_lirun` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
 | TDX(双命名源) | `wuxing_zichan` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
 | TDX(双命名源) | `yingshou_zhangkuan` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| TDX(双命名源) | `yingye_lirun` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
 | TDX(双命名源) | `zhigong_gu` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
 | TDX(双命名源) | `zhongguben` | — | 总股本（TDX finance_info 键名拼写为 zhongguben） | 万股 | 含义栏有文本（仍未验证） | registry_status_only_single_source | — |
 | TDX(双命名源) | `zhuying_lirun` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
 | TDX(双命名源) | `zhuying_shouru` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
 | TDX(双命名源) | `zhuyinglyrun` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| TDX(双命名源) | `ziben_gongjijin` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
 | TDX(双命名源) | `zong_gu_ben_raw_float` | zong_gu_ben_raw_float | 总股本原始值 | 万股 | 含义栏有文本（仍未验证） | aggregate_status_scope_unresolved | 12.13.2 财务批量（get_finance_batch，0x0010）文档确认 |
 | TDX(双命名源) | `zong_guben` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
 | TDX(双命名源) | `zong_xianjinliu` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
 | TDX(双命名源) | `zong_zi_chan_raw_float` | zong_zi_chan_raw_float | 总资产原始值 | 千元 | 含义栏有文本（仍未验证） | aggregate_status_scope_unresolved | 12.13.2 财务批量（get_finance_batch，0x0010）文档确认 |
-| TDX(双命名源) | `zong_zichan` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
 | TDX-eltdx(适配层) | `ColName` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
 | TDX-eltdx(适配层) | `Content` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
 | TDX-eltdx(适配层) | `Count` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |

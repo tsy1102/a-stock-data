@@ -1,0 +1,7348 @@
+{
+  "report_date": "20261019",
+  "analysis_range": [
+    "20260812",
+    "20261016"
+  ],
+  "calendar": {
+    "source": "scripts/collision_dates project calendar",
+    "official_session_count": 42,
+    "consecutive_seven_session_window_count": 36
+  },
+  "method": {
+    "window_rule": "all consecutive 7-session windows over the local project calendar",
+    "deduplication": "field pairs and effective trading dates are deduplicated across overlapping windows",
+    "candidate_observations_across_windows": 1421,
+    "unique_actionable_l1_or_l1u_pairs": 107,
+    "limitations": [
+      "Overlapping windows are repeated views of shared source snapshots, not independent replications.",
+      "Early windows have incomplete source coverage; intraday and unknown-phase samples were excluded from L1 adjudication.",
+      "Every row remains an exploratory candidate until a verified_anchor_only report and human semantic review support an explicit decision."
+    ]
+  },
+  "windows": [
+    {
+      "start": "20260812",
+      "end": "20260820",
+      "expected_seven_sessions": [
+        "20260812",
+        "20260813",
+        "20260814",
+        "20260817",
+        "20260818",
+        "20260819",
+        "20260820"
+      ],
+      "sampled_source_dates": [
+        "20260812",
+        "20260813",
+        "20260819",
+        "20260820"
+      ],
+      "missing_sample_dates": [
+        "20260814",
+        "20260817",
+        "20260818"
+      ],
+      "actionable_l1_count": 17,
+      "l1_count": 50,
+      "l4_count": 501,
+      "method_candidate_count": 5842,
+      "elapsed_seconds": 36.72
+    },
+    {
+      "start": "20260813",
+      "end": "20260821",
+      "expected_seven_sessions": [
+        "20260813",
+        "20260814",
+        "20260817",
+        "20260818",
+        "20260819",
+        "20260820",
+        "20260821"
+      ],
+      "sampled_source_dates": [
+        "20260813",
+        "20260819",
+        "20260820",
+        "20260821"
+      ],
+      "missing_sample_dates": [
+        "20260814",
+        "20260817",
+        "20260818"
+      ],
+      "actionable_l1_count": 30,
+      "l1_count": 64,
+      "l4_count": 242,
+      "method_candidate_count": 6099,
+      "elapsed_seconds": 37.34
+    },
+    {
+      "start": "20260814",
+      "end": "20260824",
+      "expected_seven_sessions": [
+        "20260814",
+        "20260817",
+        "20260818",
+        "20260819",
+        "20260820",
+        "20260821",
+        "20260824"
+      ],
+      "sampled_source_dates": [
+        "20260819",
+        "20260820",
+        "20260821",
+        "20260824"
+      ],
+      "missing_sample_dates": [
+        "20260814",
+        "20260817",
+        "20260818"
+      ],
+      "actionable_l1_count": 32,
+      "l1_count": 65,
+      "l4_count": 262,
+      "method_candidate_count": 8051,
+      "elapsed_seconds": 35.69
+    },
+    {
+      "start": "20260817",
+      "end": "20260825",
+      "expected_seven_sessions": [
+        "20260817",
+        "20260818",
+        "20260819",
+        "20260820",
+        "20260821",
+        "20260824",
+        "20260825"
+      ],
+      "sampled_source_dates": [
+        "20260819",
+        "20260820",
+        "20260821",
+        "20260824",
+        "20260825"
+      ],
+      "missing_sample_dates": [
+        "20260817",
+        "20260818"
+      ],
+      "actionable_l1_count": 45,
+      "l1_count": 89,
+      "l4_count": 236,
+      "method_candidate_count": 8196,
+      "elapsed_seconds": 48.91
+    },
+    {
+      "start": "20260818",
+      "end": "20260826",
+      "expected_seven_sessions": [
+        "20260818",
+        "20260819",
+        "20260820",
+        "20260821",
+        "20260824",
+        "20260825",
+        "20260826"
+      ],
+      "sampled_source_dates": [
+        "20260819",
+        "20260820",
+        "20260821",
+        "20260824",
+        "20260825",
+        "20260826"
+      ],
+      "missing_sample_dates": [
+        "20260818"
+      ],
+      "actionable_l1_count": 66,
+      "l1_count": 113,
+      "l4_count": 185,
+      "method_candidate_count": 8181,
+      "elapsed_seconds": 57.3
+    },
+    {
+      "start": "20260819",
+      "end": "20260827",
+      "expected_seven_sessions": [
+        "20260819",
+        "20260820",
+        "20260821",
+        "20260824",
+        "20260825",
+        "20260826",
+        "20260827"
+      ],
+      "sampled_source_dates": [
+        "20260819",
+        "20260820",
+        "20260821",
+        "20260824",
+        "20260825",
+        "20260826",
+        "20260827"
+      ],
+      "missing_sample_dates": [],
+      "actionable_l1_count": 67,
+      "l1_count": 114,
+      "l4_count": 191,
+      "method_candidate_count": 11278,
+      "elapsed_seconds": 66.33
+    },
+    {
+      "start": "20260820",
+      "end": "20260828",
+      "expected_seven_sessions": [
+        "20260820",
+        "20260821",
+        "20260824",
+        "20260825",
+        "20260826",
+        "20260827",
+        "20260828"
+      ],
+      "sampled_source_dates": [
+        "20260820",
+        "20260821",
+        "20260824",
+        "20260825",
+        "20260826",
+        "20260827",
+        "20260828"
+      ],
+      "missing_sample_dates": [],
+      "actionable_l1_count": 67,
+      "l1_count": 118,
+      "l4_count": 176,
+      "method_candidate_count": 11335,
+      "elapsed_seconds": 69.06
+    },
+    {
+      "start": "20260821",
+      "end": "20260831",
+      "expected_seven_sessions": [
+        "20260821",
+        "20260824",
+        "20260825",
+        "20260826",
+        "20260827",
+        "20260828",
+        "20260831"
+      ],
+      "sampled_source_dates": [
+        "20260821",
+        "20260824",
+        "20260825",
+        "20260826",
+        "20260827",
+        "20260828",
+        "20260831"
+      ],
+      "missing_sample_dates": [],
+      "actionable_l1_count": 68,
+      "l1_count": 119,
+      "l4_count": 175,
+      "method_candidate_count": 12131,
+      "elapsed_seconds": 70.47
+    },
+    {
+      "start": "20260824",
+      "end": "20260901",
+      "expected_seven_sessions": [
+        "20260824",
+        "20260825",
+        "20260826",
+        "20260827",
+        "20260828",
+        "20260831",
+        "20260901"
+      ],
+      "sampled_source_dates": [
+        "20260824",
+        "20260825",
+        "20260826",
+        "20260827",
+        "20260828",
+        "20260831",
+        "20260901"
+      ],
+      "missing_sample_dates": [],
+      "actionable_l1_count": 67,
+      "l1_count": 115,
+      "l4_count": 196,
+      "method_candidate_count": 12551,
+      "elapsed_seconds": 74.56
+    },
+    {
+      "start": "20260825",
+      "end": "20260902",
+      "expected_seven_sessions": [
+        "20260825",
+        "20260826",
+        "20260827",
+        "20260828",
+        "20260831",
+        "20260901",
+        "20260902"
+      ],
+      "sampled_source_dates": [
+        "20260825",
+        "20260826",
+        "20260827",
+        "20260828",
+        "20260831",
+        "20260901",
+        "20260902"
+      ],
+      "missing_sample_dates": [],
+      "actionable_l1_count": 66,
+      "l1_count": 114,
+      "l4_count": 197,
+      "method_candidate_count": 11864,
+      "elapsed_seconds": 75.59
+    },
+    {
+      "start": "20260826",
+      "end": "20260903",
+      "expected_seven_sessions": [
+        "20260826",
+        "20260827",
+        "20260828",
+        "20260831",
+        "20260901",
+        "20260902",
+        "20260903"
+      ],
+      "sampled_source_dates": [
+        "20260826",
+        "20260827",
+        "20260828",
+        "20260831",
+        "20260901",
+        "20260902",
+        "20260903"
+      ],
+      "missing_sample_dates": [],
+      "actionable_l1_count": 69,
+      "l1_count": 117,
+      "l4_count": 194,
+      "method_candidate_count": 11796,
+      "elapsed_seconds": 72.73
+    },
+    {
+      "start": "20260827",
+      "end": "20260904",
+      "expected_seven_sessions": [
+        "20260827",
+        "20260828",
+        "20260831",
+        "20260901",
+        "20260902",
+        "20260903",
+        "20260904"
+      ],
+      "sampled_source_dates": [
+        "20260827",
+        "20260828",
+        "20260831",
+        "20260901",
+        "20260902",
+        "20260903",
+        "20260904"
+      ],
+      "missing_sample_dates": [],
+      "actionable_l1_count": 69,
+      "l1_count": 117,
+      "l4_count": 190,
+      "method_candidate_count": 11547,
+      "elapsed_seconds": 73.83
+    },
+    {
+      "start": "20260828",
+      "end": "20260907",
+      "expected_seven_sessions": [
+        "20260828",
+        "20260831",
+        "20260901",
+        "20260902",
+        "20260903",
+        "20260904",
+        "20260907"
+      ],
+      "sampled_source_dates": [
+        "20260828",
+        "20260831",
+        "20260901",
+        "20260902",
+        "20260903",
+        "20260904",
+        "20260907"
+      ],
+      "missing_sample_dates": [],
+      "actionable_l1_count": 47,
+      "l1_count": 92,
+      "l4_count": 216,
+      "method_candidate_count": 9025,
+      "elapsed_seconds": 73.66
+    },
+    {
+      "start": "20260831",
+      "end": "20260908",
+      "expected_seven_sessions": [
+        "20260831",
+        "20260901",
+        "20260902",
+        "20260903",
+        "20260904",
+        "20260907",
+        "20260908"
+      ],
+      "sampled_source_dates": [
+        "20260831",
+        "20260901",
+        "20260902",
+        "20260903",
+        "20260904",
+        "20260907",
+        "20260908"
+      ],
+      "missing_sample_dates": [],
+      "actionable_l1_count": 59,
+      "l1_count": 104,
+      "l4_count": 216,
+      "method_candidate_count": 9251,
+      "elapsed_seconds": 72.22
+    },
+    {
+      "start": "20260901",
+      "end": "20260909",
+      "expected_seven_sessions": [
+        "20260901",
+        "20260902",
+        "20260903",
+        "20260904",
+        "20260907",
+        "20260908",
+        "20260909"
+      ],
+      "sampled_source_dates": [
+        "20260901",
+        "20260902",
+        "20260903",
+        "20260904",
+        "20260907",
+        "20260908",
+        "20260909"
+      ],
+      "missing_sample_dates": [],
+      "actionable_l1_count": 59,
+      "l1_count": 107,
+      "l4_count": 182,
+      "method_candidate_count": 9049,
+      "elapsed_seconds": 73.14
+    },
+    {
+      "start": "20260902",
+      "end": "20260910",
+      "expected_seven_sessions": [
+        "20260902",
+        "20260903",
+        "20260904",
+        "20260907",
+        "20260908",
+        "20260909",
+        "20260910"
+      ],
+      "sampled_source_dates": [
+        "20260902",
+        "20260903",
+        "20260904",
+        "20260907",
+        "20260908",
+        "20260909",
+        "20260910"
+      ],
+      "missing_sample_dates": [],
+      "actionable_l1_count": 59,
+      "l1_count": 107,
+      "l4_count": 184,
+      "method_candidate_count": 9308,
+      "elapsed_seconds": 73.31
+    },
+    {
+      "start": "20260903",
+      "end": "20260911",
+      "expected_seven_sessions": [
+        "20260903",
+        "20260904",
+        "20260907",
+        "20260908",
+        "20260909",
+        "20260910",
+        "20260911"
+      ],
+      "sampled_source_dates": [
+        "20260903",
+        "20260904",
+        "20260907",
+        "20260908",
+        "20260909",
+        "20260910",
+        "20260911"
+      ],
+      "missing_sample_dates": [],
+      "actionable_l1_count": 59,
+      "l1_count": 107,
+      "l4_count": 186,
+      "method_candidate_count": 10426,
+      "elapsed_seconds": 71.22
+    },
+    {
+      "start": "20260904",
+      "end": "20260914",
+      "expected_seven_sessions": [
+        "20260904",
+        "20260907",
+        "20260908",
+        "20260909",
+        "20260910",
+        "20260911",
+        "20260914"
+      ],
+      "sampled_source_dates": [
+        "20260904",
+        "20260907",
+        "20260908",
+        "20260909",
+        "20260910",
+        "20260911",
+        "20260914"
+      ],
+      "missing_sample_dates": [],
+      "actionable_l1_count": 55,
+      "l1_count": 103,
+      "l4_count": 282,
+      "method_candidate_count": 12271,
+      "elapsed_seconds": 78.72
+    },
+    {
+      "start": "20260907",
+      "end": "20260915",
+      "expected_seven_sessions": [
+        "20260907",
+        "20260908",
+        "20260909",
+        "20260910",
+        "20260911",
+        "20260914",
+        "20260915"
+      ],
+      "sampled_source_dates": [
+        "20260907",
+        "20260908",
+        "20260909",
+        "20260910",
+        "20260911",
+        "20260914",
+        "20260915"
+      ],
+      "missing_sample_dates": [],
+      "actionable_l1_count": 44,
+      "l1_count": 93,
+      "l4_count": 310,
+      "method_candidate_count": 12644,
+      "elapsed_seconds": 81.45
+    },
+    {
+      "start": "20260908",
+      "end": "20260916",
+      "expected_seven_sessions": [
+        "20260908",
+        "20260909",
+        "20260910",
+        "20260911",
+        "20260914",
+        "20260915",
+        "20260916"
+      ],
+      "sampled_source_dates": [
+        "20260908",
+        "20260909",
+        "20260910",
+        "20260911",
+        "20260914",
+        "20260915",
+        "20260916"
+      ],
+      "missing_sample_dates": [],
+      "actionable_l1_count": 50,
+      "l1_count": 110,
+      "l4_count": 291,
+      "method_candidate_count": 12984,
+      "elapsed_seconds": 80.41
+    },
+    {
+      "start": "20260909",
+      "end": "20260917",
+      "expected_seven_sessions": [
+        "20260909",
+        "20260910",
+        "20260911",
+        "20260914",
+        "20260915",
+        "20260916",
+        "20260917"
+      ],
+      "sampled_source_dates": [
+        "20260909",
+        "20260910",
+        "20260911",
+        "20260914",
+        "20260915",
+        "20260916",
+        "20260917"
+      ],
+      "missing_sample_dates": [],
+      "actionable_l1_count": 59,
+      "l1_count": 121,
+      "l4_count": 297,
+      "method_candidate_count": 12913,
+      "elapsed_seconds": 77.62
+    },
+    {
+      "start": "20260910",
+      "end": "20260918",
+      "expected_seven_sessions": [
+        "20260910",
+        "20260911",
+        "20260914",
+        "20260915",
+        "20260916",
+        "20260917",
+        "20260918"
+      ],
+      "sampled_source_dates": [
+        "20260910",
+        "20260911",
+        "20260914",
+        "20260915",
+        "20260916",
+        "20260917",
+        "20260918"
+      ],
+      "missing_sample_dates": [],
+      "actionable_l1_count": 55,
+      "l1_count": 116,
+      "l4_count": 313,
+      "method_candidate_count": 13084,
+      "elapsed_seconds": 83.77
+    },
+    {
+      "start": "20260911",
+      "end": "20260921",
+      "expected_seven_sessions": [
+        "20260911",
+        "20260914",
+        "20260915",
+        "20260916",
+        "20260917",
+        "20260918",
+        "20260921"
+      ],
+      "sampled_source_dates": [
+        "20260911",
+        "20260914",
+        "20260915",
+        "20260916",
+        "20260917",
+        "20260918",
+        "20260921"
+      ],
+      "missing_sample_dates": [],
+      "actionable_l1_count": 51,
+      "l1_count": 114,
+      "l4_count": 320,
+      "method_candidate_count": 13471,
+      "elapsed_seconds": 76.56
+    },
+    {
+      "start": "20260914",
+      "end": "20260922",
+      "expected_seven_sessions": [
+        "20260914",
+        "20260915",
+        "20260916",
+        "20260917",
+        "20260918",
+        "20260921",
+        "20260922"
+      ],
+      "sampled_source_dates": [
+        "20260914",
+        "20260915",
+        "20260916",
+        "20260917",
+        "20260918",
+        "20260921",
+        "20260922"
+      ],
+      "missing_sample_dates": [],
+      "actionable_l1_count": 53,
+      "l1_count": 116,
+      "l4_count": 338,
+      "method_candidate_count": 13699,
+      "elapsed_seconds": 67.75
+    },
+    {
+      "start": "20260915",
+      "end": "20260923",
+      "expected_seven_sessions": [
+        "20260915",
+        "20260916",
+        "20260917",
+        "20260918",
+        "20260921",
+        "20260922",
+        "20260923"
+      ],
+      "sampled_source_dates": [
+        "20260915",
+        "20260916",
+        "20260917",
+        "20260918",
+        "20260921",
+        "20260922",
+        "20260923"
+      ],
+      "missing_sample_dates": [],
+      "actionable_l1_count": 45,
+      "l1_count": 111,
+      "l4_count": 235,
+      "method_candidate_count": 12710,
+      "elapsed_seconds": 60.33
+    },
+    {
+      "start": "20260916",
+      "end": "20260924",
+      "expected_seven_sessions": [
+        "20260916",
+        "20260917",
+        "20260918",
+        "20260921",
+        "20260922",
+        "20260923",
+        "20260924"
+      ],
+      "sampled_source_dates": [
+        "20260916",
+        "20260917",
+        "20260918",
+        "20260921",
+        "20260922",
+        "20260923",
+        "20260924"
+      ],
+      "missing_sample_dates": [],
+      "actionable_l1_count": 32,
+      "l1_count": 89,
+      "l4_count": 258,
+      "method_candidate_count": 12956,
+      "elapsed_seconds": 60.83
+    },
+    {
+      "start": "20260917",
+      "end": "20260928",
+      "expected_seven_sessions": [
+        "20260917",
+        "20260918",
+        "20260921",
+        "20260922",
+        "20260923",
+        "20260924",
+        "20260928"
+      ],
+      "sampled_source_dates": [
+        "20260917",
+        "20260918",
+        "20260921",
+        "20260922",
+        "20260923",
+        "20260924",
+        "20260928"
+      ],
+      "missing_sample_dates": [],
+      "actionable_l1_count": 15,
+      "l1_count": 34,
+      "l4_count": 312,
+      "method_candidate_count": 11782,
+      "elapsed_seconds": 51.77
+    },
+    {
+      "start": "20260918",
+      "end": "20260929",
+      "expected_seven_sessions": [
+        "20260918",
+        "20260921",
+        "20260922",
+        "20260923",
+        "20260924",
+        "20260928",
+        "20260929"
+      ],
+      "sampled_source_dates": [
+        "20260918",
+        "20260921",
+        "20260922",
+        "20260923",
+        "20260924",
+        "20260928",
+        "20260929"
+      ],
+      "missing_sample_dates": [],
+      "actionable_l1_count": 11,
+      "l1_count": 19,
+      "l4_count": 334,
+      "method_candidate_count": 12484,
+      "elapsed_seconds": 45.06
+    },
+    {
+      "start": "20260921",
+      "end": "20260930",
+      "expected_seven_sessions": [
+        "20260921",
+        "20260922",
+        "20260923",
+        "20260924",
+        "20260928",
+        "20260929",
+        "20260930"
+      ],
+      "sampled_source_dates": [
+        "20260921",
+        "20260922",
+        "20260923",
+        "20260924",
+        "20260928",
+        "20260929",
+        "20260930"
+      ],
+      "missing_sample_dates": [],
+      "actionable_l1_count": 1,
+      "l1_count": 10,
+      "l4_count": 200,
+      "method_candidate_count": 9481,
+      "elapsed_seconds": 40.64
+    },
+    {
+      "start": "20260922",
+      "end": "20261008",
+      "expected_seven_sessions": [
+        "20260922",
+        "20260923",
+        "20260924",
+        "20260928",
+        "20260929",
+        "20260930",
+        "20261008"
+      ],
+      "sampled_source_dates": [
+        "20260922",
+        "20260923",
+        "20260924",
+        "20260928",
+        "20260929",
+        "20260930",
+        "20261008"
+      ],
+      "missing_sample_dates": [],
+      "actionable_l1_count": 1,
+      "l1_count": 10,
+      "l4_count": 196,
+      "method_candidate_count": 10036,
+      "elapsed_seconds": 44.88
+    },
+    {
+      "start": "20260923",
+      "end": "20261009",
+      "expected_seven_sessions": [
+        "20260923",
+        "20260924",
+        "20260928",
+        "20260929",
+        "20260930",
+        "20261008",
+        "20261009"
+      ],
+      "sampled_source_dates": [
+        "20260923",
+        "20260924",
+        "20260928",
+        "20260929",
+        "20260930",
+        "20261008",
+        "20261009"
+      ],
+      "missing_sample_dates": [],
+      "actionable_l1_count": 1,
+      "l1_count": 10,
+      "l4_count": 196,
+      "method_candidate_count": 10086,
+      "elapsed_seconds": 47.27
+    },
+    {
+      "start": "20260924",
+      "end": "20261012",
+      "expected_seven_sessions": [
+        "20260924",
+        "20260928",
+        "20260929",
+        "20260930",
+        "20261008",
+        "20261009",
+        "20261012"
+      ],
+      "sampled_source_dates": [
+        "20260924",
+        "20260928",
+        "20260929",
+        "20260930",
+        "20261008",
+        "20261009",
+        "20261012"
+      ],
+      "missing_sample_dates": [],
+      "actionable_l1_count": 1,
+      "l1_count": 10,
+      "l4_count": 197,
+      "method_candidate_count": 9677,
+      "elapsed_seconds": 43.67
+    },
+    {
+      "start": "20260928",
+      "end": "20261013",
+      "expected_seven_sessions": [
+        "20260928",
+        "20260929",
+        "20260930",
+        "20261008",
+        "20261009",
+        "20261012",
+        "20261013"
+      ],
+      "sampled_source_dates": [
+        "20260928",
+        "20260929",
+        "20260930",
+        "20261008",
+        "20261009",
+        "20261012",
+        "20261013"
+      ],
+      "missing_sample_dates": [],
+      "actionable_l1_count": 1,
+      "l1_count": 10,
+      "l4_count": 209,
+      "method_candidate_count": 10604,
+      "elapsed_seconds": 35.7
+    },
+    {
+      "start": "20260929",
+      "end": "20261014",
+      "expected_seven_sessions": [
+        "20260929",
+        "20260930",
+        "20261008",
+        "20261009",
+        "20261012",
+        "20261013",
+        "20261014"
+      ],
+      "sampled_source_dates": [
+        "20260929",
+        "20260930",
+        "20261008",
+        "20261009",
+        "20261012",
+        "20261013",
+        "20261014"
+      ],
+      "missing_sample_dates": [],
+      "actionable_l1_count": 0,
+      "l1_count": 2,
+      "l4_count": 194,
+      "method_candidate_count": 7757,
+      "elapsed_seconds": 30.05
+    },
+    {
+      "start": "20260930",
+      "end": "20261015",
+      "expected_seven_sessions": [
+        "20260930",
+        "20261008",
+        "20261009",
+        "20261012",
+        "20261013",
+        "20261014",
+        "20261015"
+      ],
+      "sampled_source_dates": [
+        "20260930",
+        "20261008",
+        "20261009",
+        "20261012",
+        "20261013",
+        "20261014",
+        "20261015"
+      ],
+      "missing_sample_dates": [],
+      "actionable_l1_count": 0,
+      "l1_count": 2,
+      "l4_count": 192,
+      "method_candidate_count": 8003,
+      "elapsed_seconds": 29.47
+    },
+    {
+      "start": "20261008",
+      "end": "20261016",
+      "expected_seven_sessions": [
+        "20261008",
+        "20261009",
+        "20261012",
+        "20261013",
+        "20261014",
+        "20261015",
+        "20261016"
+      ],
+      "sampled_source_dates": [
+        "20261008",
+        "20261009",
+        "20261012",
+        "20261013",
+        "20261014",
+        "20261015",
+        "20261016"
+      ],
+      "missing_sample_dates": [],
+      "actionable_l1_count": 0,
+      "l1_count": 2,
+      "l4_count": 194,
+      "method_candidate_count": 6883,
+      "elapsed_seconds": 25.62
+    }
+  ],
+  "unique_actionable_candidates": [
+    {
+      "left": "fuyao.auction_final.auction_price",
+      "right": "sina[1]",
+      "levels": [
+        "L1"
+      ],
+      "ratios_right_over_left": [],
+      "window_count": 14,
+      "window_ends": [
+        "20260826",
+        "20260827",
+        "20260828",
+        "20260831",
+        "20260901",
+        "20260902",
+        "20260903",
+        "20260904",
+        "20260907",
+        "20260908",
+        "20260909",
+        "20260910",
+        "20260911",
+        "20260914"
+      ],
+      "effective_dates": [
+        "T:20260824",
+        "T:20260825",
+        "T:20260826",
+        "T:20260827",
+        "T:20260828",
+        "T:20260831",
+        "T:20260902",
+        "T:20260903",
+        "T:20260904",
+        "T:20260907",
+        "T:20260908",
+        "T:20260909",
+        "T:20260910",
+        "T:20260911",
+        "T:20260914"
+      ],
+      "effective_date_count": 15,
+      "source_groups": [
+        "sina",
+        "tonghuashun"
+      ],
+      "overall_hit_range": [
+        0.9825,
+        1.0
+      ],
+      "minimum_daily_hit_rate_seen": 0.947368,
+      "max_informative_samples_on_one_date": 20,
+      "informative_pairs_range_by_window": [
+        57,
+        134
+      ],
+      "in_registry_values": [
+        false
+      ],
+      "evidence_scope": "exploratory; not an adjudication or registry update"
+    },
+    {
+      "left": "fuyao.auction_final.auction_price",
+      "right": "tdx.quote_full.open",
+      "levels": [
+        "L1"
+      ],
+      "ratios_right_over_left": [],
+      "window_count": 14,
+      "window_ends": [
+        "20260826",
+        "20260827",
+        "20260828",
+        "20260831",
+        "20260901",
+        "20260902",
+        "20260903",
+        "20260904",
+        "20260907",
+        "20260908",
+        "20260909",
+        "20260910",
+        "20260911",
+        "20260914"
+      ],
+      "effective_dates": [
+        "T:20260824",
+        "T:20260825",
+        "T:20260826",
+        "T:20260827",
+        "T:20260828",
+        "T:20260831",
+        "T:20260902",
+        "T:20260903",
+        "T:20260904",
+        "T:20260907",
+        "T:20260908",
+        "T:20260909",
+        "T:20260910",
+        "T:20260911",
+        "T:20260914"
+      ],
+      "effective_date_count": 15,
+      "source_groups": [
+        "tdx",
+        "tonghuashun"
+      ],
+      "overall_hit_range": [
+        0.9825,
+        1.0
+      ],
+      "minimum_daily_hit_rate_seen": 0.947368,
+      "max_informative_samples_on_one_date": 20,
+      "informative_pairs_range_by_window": [
+        57,
+        134
+      ],
+      "in_registry_values": [
+        false
+      ],
+      "evidence_scope": "exploratory; not an adjudication or registry update"
+    },
+    {
+      "left": "fuyao.auction_final.auction_price",
+      "right": "tencent[5]",
+      "levels": [
+        "L1"
+      ],
+      "ratios_right_over_left": [],
+      "window_count": 14,
+      "window_ends": [
+        "20260826",
+        "20260827",
+        "20260828",
+        "20260831",
+        "20260901",
+        "20260902",
+        "20260903",
+        "20260904",
+        "20260907",
+        "20260908",
+        "20260909",
+        "20260910",
+        "20260911",
+        "20260914"
+      ],
+      "effective_dates": [
+        "T:20260824",
+        "T:20260825",
+        "T:20260826",
+        "T:20260827",
+        "T:20260828",
+        "T:20260831",
+        "T:20260902",
+        "T:20260903",
+        "T:20260904",
+        "T:20260907",
+        "T:20260908",
+        "T:20260909",
+        "T:20260910",
+        "T:20260911",
+        "T:20260914"
+      ],
+      "effective_date_count": 15,
+      "source_groups": [
+        "tencent",
+        "tonghuashun"
+      ],
+      "overall_hit_range": [
+        0.9825,
+        1.0
+      ],
+      "minimum_daily_hit_rate_seen": 0.947368,
+      "max_informative_samples_on_one_date": 20,
+      "informative_pairs_range_by_window": [
+        57,
+        134
+      ],
+      "in_registry_values": [
+        false
+      ],
+      "evidence_scope": "exploratory; not an adjudication or registry update"
+    },
+    {
+      "left": "fuyao.auction_final.auction_price",
+      "right": "ulist239.f17",
+      "levels": [
+        "L1"
+      ],
+      "ratios_right_over_left": [],
+      "window_count": 14,
+      "window_ends": [
+        "20260826",
+        "20260827",
+        "20260828",
+        "20260831",
+        "20260901",
+        "20260902",
+        "20260903",
+        "20260904",
+        "20260907",
+        "20260908",
+        "20260909",
+        "20260910",
+        "20260911",
+        "20260914"
+      ],
+      "effective_dates": [
+        "T:20260824",
+        "T:20260825",
+        "T:20260826",
+        "T:20260827",
+        "T:20260828",
+        "T:20260831",
+        "T:20260902",
+        "T:20260903",
+        "T:20260904",
+        "T:20260907",
+        "T:20260908",
+        "T:20260909",
+        "T:20260910",
+        "T:20260911",
+        "T:20260914"
+      ],
+      "effective_date_count": 15,
+      "source_groups": [
+        "eastmoney",
+        "tonghuashun"
+      ],
+      "overall_hit_range": [
+        0.9825,
+        1.0
+      ],
+      "minimum_daily_hit_rate_seen": 0.947368,
+      "max_informative_samples_on_one_date": 20,
+      "informative_pairs_range_by_window": [
+        57,
+        134
+      ],
+      "in_registry_values": [
+        false
+      ],
+      "evidence_scope": "exploratory; not an adjudication or registry update"
+    },
+    {
+      "left": "fuyao.auction_final.open_price",
+      "right": "sina[1]",
+      "levels": [
+        "L1"
+      ],
+      "ratios_right_over_left": [],
+      "window_count": 14,
+      "window_ends": [
+        "20260826",
+        "20260827",
+        "20260828",
+        "20260831",
+        "20260901",
+        "20260902",
+        "20260903",
+        "20260904",
+        "20260907",
+        "20260908",
+        "20260909",
+        "20260910",
+        "20260911",
+        "20260914"
+      ],
+      "effective_dates": [
+        "T:20260824",
+        "T:20260825",
+        "T:20260826",
+        "T:20260827",
+        "T:20260828",
+        "T:20260831",
+        "T:20260902",
+        "T:20260903",
+        "T:20260904",
+        "T:20260907",
+        "T:20260908",
+        "T:20260909",
+        "T:20260910",
+        "T:20260911",
+        "T:20260914"
+      ],
+      "effective_date_count": 15,
+      "source_groups": [
+        "sina",
+        "tonghuashun"
+      ],
+      "overall_hit_range": [
+        1.0,
+        1.0
+      ],
+      "minimum_daily_hit_rate_seen": 1.0,
+      "max_informative_samples_on_one_date": 20,
+      "informative_pairs_range_by_window": [
+        60,
+        140
+      ],
+      "in_registry_values": [
+        false
+      ],
+      "evidence_scope": "exploratory; not an adjudication or registry update"
+    },
+    {
+      "left": "fuyao.auction_final.open_price",
+      "right": "tdx.quote_full.open",
+      "levels": [
+        "L1"
+      ],
+      "ratios_right_over_left": [],
+      "window_count": 14,
+      "window_ends": [
+        "20260826",
+        "20260827",
+        "20260828",
+        "20260831",
+        "20260901",
+        "20260902",
+        "20260903",
+        "20260904",
+        "20260907",
+        "20260908",
+        "20260909",
+        "20260910",
+        "20260911",
+        "20260914"
+      ],
+      "effective_dates": [
+        "T:20260824",
+        "T:20260825",
+        "T:20260826",
+        "T:20260827",
+        "T:20260828",
+        "T:20260831",
+        "T:20260902",
+        "T:20260903",
+        "T:20260904",
+        "T:20260907",
+        "T:20260908",
+        "T:20260909",
+        "T:20260910",
+        "T:20260911",
+        "T:20260914"
+      ],
+      "effective_date_count": 15,
+      "source_groups": [
+        "tdx",
+        "tonghuashun"
+      ],
+      "overall_hit_range": [
+        1.0,
+        1.0
+      ],
+      "minimum_daily_hit_rate_seen": 1.0,
+      "max_informative_samples_on_one_date": 20,
+      "informative_pairs_range_by_window": [
+        60,
+        140
+      ],
+      "in_registry_values": [
+        false
+      ],
+      "evidence_scope": "exploratory; not an adjudication or registry update"
+    },
+    {
+      "left": "fuyao.auction_final.open_price",
+      "right": "tencent[5]",
+      "levels": [
+        "L1"
+      ],
+      "ratios_right_over_left": [],
+      "window_count": 14,
+      "window_ends": [
+        "20260826",
+        "20260827",
+        "20260828",
+        "20260831",
+        "20260901",
+        "20260902",
+        "20260903",
+        "20260904",
+        "20260907",
+        "20260908",
+        "20260909",
+        "20260910",
+        "20260911",
+        "20260914"
+      ],
+      "effective_dates": [
+        "T:20260824",
+        "T:20260825",
+        "T:20260826",
+        "T:20260827",
+        "T:20260828",
+        "T:20260831",
+        "T:20260902",
+        "T:20260903",
+        "T:20260904",
+        "T:20260907",
+        "T:20260908",
+        "T:20260909",
+        "T:20260910",
+        "T:20260911",
+        "T:20260914"
+      ],
+      "effective_date_count": 15,
+      "source_groups": [
+        "tencent",
+        "tonghuashun"
+      ],
+      "overall_hit_range": [
+        1.0,
+        1.0
+      ],
+      "minimum_daily_hit_rate_seen": 1.0,
+      "max_informative_samples_on_one_date": 20,
+      "informative_pairs_range_by_window": [
+        60,
+        140
+      ],
+      "in_registry_values": [
+        false
+      ],
+      "evidence_scope": "exploratory; not an adjudication or registry update"
+    },
+    {
+      "left": "fuyao.auction_final.open_price",
+      "right": "ulist239.f17",
+      "levels": [
+        "L1"
+      ],
+      "ratios_right_over_left": [],
+      "window_count": 14,
+      "window_ends": [
+        "20260826",
+        "20260827",
+        "20260828",
+        "20260831",
+        "20260901",
+        "20260902",
+        "20260903",
+        "20260904",
+        "20260907",
+        "20260908",
+        "20260909",
+        "20260910",
+        "20260911",
+        "20260914"
+      ],
+      "effective_dates": [
+        "T:20260824",
+        "T:20260825",
+        "T:20260826",
+        "T:20260827",
+        "T:20260828",
+        "T:20260831",
+        "T:20260902",
+        "T:20260903",
+        "T:20260904",
+        "T:20260907",
+        "T:20260908",
+        "T:20260909",
+        "T:20260910",
+        "T:20260911",
+        "T:20260914"
+      ],
+      "effective_date_count": 15,
+      "source_groups": [
+        "eastmoney",
+        "tonghuashun"
+      ],
+      "overall_hit_range": [
+        1.0,
+        1.0
+      ],
+      "minimum_daily_hit_rate_seen": 1.0,
+      "max_informative_samples_on_one_date": 20,
+      "informative_pairs_range_by_window": [
+        60,
+        140
+      ],
+      "in_registry_values": [
+        false
+      ],
+      "evidence_scope": "exploratory; not an adjudication or registry update"
+    },
+    {
+      "left": "fuyao.auction_final.pre_close_price",
+      "right": "sina[2]",
+      "levels": [
+        "L1"
+      ],
+      "ratios_right_over_left": [],
+      "window_count": 14,
+      "window_ends": [
+        "20260826",
+        "20260827",
+        "20260828",
+        "20260831",
+        "20260901",
+        "20260902",
+        "20260903",
+        "20260904",
+        "20260907",
+        "20260908",
+        "20260909",
+        "20260910",
+        "20260911",
+        "20260914"
+      ],
+      "effective_dates": [
+        "T:20260824",
+        "T:20260825",
+        "T:20260826",
+        "T:20260827",
+        "T:20260828",
+        "T:20260831",
+        "T:20260902",
+        "T:20260903",
+        "T:20260904",
+        "T:20260907",
+        "T:20260908",
+        "T:20260909",
+        "T:20260910",
+        "T:20260911",
+        "T:20260914"
+      ],
+      "effective_date_count": 15,
+      "source_groups": [
+        "sina",
+        "tonghuashun"
+      ],
+      "overall_hit_range": [
+        1.0,
+        1.0
+      ],
+      "minimum_daily_hit_rate_seen": 1.0,
+      "max_informative_samples_on_one_date": 20,
+      "informative_pairs_range_by_window": [
+        60,
+        140
+      ],
+      "in_registry_values": [
+        false
+      ],
+      "evidence_scope": "exploratory; not an adjudication or registry update"
+    },
+    {
+      "left": "fuyao.auction_final.pre_close_price",
+      "right": "tdx.quote_full.last_close",
+      "levels": [
+        "L1"
+      ],
+      "ratios_right_over_left": [],
+      "window_count": 14,
+      "window_ends": [
+        "20260826",
+        "20260827",
+        "20260828",
+        "20260831",
+        "20260901",
+        "20260902",
+        "20260903",
+        "20260904",
+        "20260907",
+        "20260908",
+        "20260909",
+        "20260910",
+        "20260911",
+        "20260914"
+      ],
+      "effective_dates": [
+        "T:20260824",
+        "T:20260825",
+        "T:20260826",
+        "T:20260827",
+        "T:20260828",
+        "T:20260831",
+        "T:20260902",
+        "T:20260903",
+        "T:20260904",
+        "T:20260907",
+        "T:20260908",
+        "T:20260909",
+        "T:20260910",
+        "T:20260911",
+        "T:20260914"
+      ],
+      "effective_date_count": 15,
+      "source_groups": [
+        "tdx",
+        "tonghuashun"
+      ],
+      "overall_hit_range": [
+        1.0,
+        1.0
+      ],
+      "minimum_daily_hit_rate_seen": 1.0,
+      "max_informative_samples_on_one_date": 20,
+      "informative_pairs_range_by_window": [
+        60,
+        140
+      ],
+      "in_registry_values": [
+        false
+      ],
+      "evidence_scope": "exploratory; not an adjudication or registry update"
+    },
+    {
+      "left": "fuyao.auction_final.pre_close_price",
+      "right": "tencent[4]",
+      "levels": [
+        "L1"
+      ],
+      "ratios_right_over_left": [],
+      "window_count": 14,
+      "window_ends": [
+        "20260826",
+        "20260827",
+        "20260828",
+        "20260831",
+        "20260901",
+        "20260902",
+        "20260903",
+        "20260904",
+        "20260907",
+        "20260908",
+        "20260909",
+        "20260910",
+        "20260911",
+        "20260914"
+      ],
+      "effective_dates": [
+        "T:20260824",
+        "T:20260825",
+        "T:20260826",
+        "T:20260827",
+        "T:20260828",
+        "T:20260831",
+        "T:20260902",
+        "T:20260903",
+        "T:20260904",
+        "T:20260907",
+        "T:20260908",
+        "T:20260909",
+        "T:20260910",
+        "T:20260911",
+        "T:20260914"
+      ],
+      "effective_date_count": 15,
+      "source_groups": [
+        "tencent",
+        "tonghuashun"
+      ],
+      "overall_hit_range": [
+        1.0,
+        1.0
+      ],
+      "minimum_daily_hit_rate_seen": 1.0,
+      "max_informative_samples_on_one_date": 20,
+      "informative_pairs_range_by_window": [
+        60,
+        140
+      ],
+      "in_registry_values": [
+        false
+      ],
+      "evidence_scope": "exploratory; not an adjudication or registry update"
+    },
+    {
+      "left": "fuyao.auction_final.pre_close_price",
+      "right": "ulist239.f18",
+      "levels": [
+        "L1"
+      ],
+      "ratios_right_over_left": [],
+      "window_count": 14,
+      "window_ends": [
+        "20260826",
+        "20260827",
+        "20260828",
+        "20260831",
+        "20260901",
+        "20260902",
+        "20260903",
+        "20260904",
+        "20260907",
+        "20260908",
+        "20260909",
+        "20260910",
+        "20260911",
+        "20260914"
+      ],
+      "effective_dates": [
+        "T:20260824",
+        "T:20260825",
+        "T:20260826",
+        "T:20260827",
+        "T:20260828",
+        "T:20260831",
+        "T:20260902",
+        "T:20260903",
+        "T:20260904",
+        "T:20260907",
+        "T:20260908",
+        "T:20260909",
+        "T:20260910",
+        "T:20260911",
+        "T:20260914"
+      ],
+      "effective_date_count": 15,
+      "source_groups": [
+        "eastmoney",
+        "tonghuashun"
+      ],
+      "overall_hit_range": [
+        1.0,
+        1.0
+      ],
+      "minimum_daily_hit_rate_seen": 1.0,
+      "max_informative_samples_on_one_date": 20,
+      "informative_pairs_range_by_window": [
+        60,
+        140
+      ],
+      "in_registry_values": [
+        false
+      ],
+      "evidence_scope": "exploratory; not an adjudication or registry update"
+    },
+    {
+      "left": "fuyao.valuation.ps_ttm",
+      "right": "ulist239.f130",
+      "levels": [
+        "L1"
+      ],
+      "ratios_right_over_left": [],
+      "window_count": 24,
+      "window_ends": [
+        "20260826",
+        "20260827",
+        "20260828",
+        "20260831",
+        "20260901",
+        "20260902",
+        "20260903",
+        "20260904",
+        "20260907",
+        "20260908",
+        "20260909",
+        "20260910",
+        "20260911",
+        "20260914",
+        "20260915",
+        "20260916",
+        "20260917",
+        "20260918",
+        "20260921",
+        "20260922",
+        "20260923",
+        "20260924",
+        "20260928",
+        "20260929"
+      ],
+      "effective_dates": [
+        "T:20260824",
+        "T:20260825",
+        "T:20260826",
+        "T:20260827",
+        "T:20260828",
+        "T:20260831",
+        "T:20260902",
+        "T:20260903",
+        "T:20260904",
+        "T:20260907",
+        "T:20260908",
+        "T:20260909",
+        "T:20260910",
+        "T:20260911",
+        "T:20260914",
+        "T:20260915",
+        "T:20260916",
+        "T:20260917",
+        "T:20260918",
+        "T:20260923",
+        "T:20260924",
+        "T:20260928"
+      ],
+      "effective_date_count": 22,
+      "source_groups": [
+        "eastmoney",
+        "tonghuashun"
+      ],
+      "overall_hit_range": [
+        0.9,
+        0.9
+      ],
+      "minimum_daily_hit_rate_seen": 0.9,
+      "max_informative_samples_on_one_date": 20,
+      "informative_pairs_range_by_window": [
+        60,
+        140
+      ],
+      "in_registry_values": [
+        false
+      ],
+      "evidence_scope": "exploratory; not an adjudication or registry update"
+    },
+    {
+      "left": "push2.f119",
+      "right": "zhb.stat.change_5d",
+      "levels": [
+        "L1"
+      ],
+      "ratios_right_over_left": [],
+      "window_count": 5,
+      "window_ends": [
+        "20260917",
+        "20260918",
+        "20260921",
+        "20260922",
+        "20260923"
+      ],
+      "effective_dates": [
+        "T:20260914",
+        "T:20260915",
+        "T:20260916",
+        "T:20260917",
+        "T:20260918"
+      ],
+      "effective_date_count": 5,
+      "source_groups": [
+        "eastmoney",
+        "tdx"
+      ],
+      "overall_hit_range": [
+        1.0,
+        1.0
+      ],
+      "minimum_daily_hit_rate_seen": 1.0,
+      "max_informative_samples_on_one_date": 20,
+      "informative_pairs_range_by_window": [
+        60,
+        100
+      ],
+      "in_registry_values": [
+        false
+      ],
+      "evidence_scope": "exploratory; not an adjudication or registry update"
+    },
+    {
+      "left": "push2.f120",
+      "right": "zhb.stat.change_20d",
+      "levels": [
+        "L1"
+      ],
+      "ratios_right_over_left": [],
+      "window_count": 5,
+      "window_ends": [
+        "20260917",
+        "20260918",
+        "20260921",
+        "20260922",
+        "20260923"
+      ],
+      "effective_dates": [
+        "T:20260914",
+        "T:20260915",
+        "T:20260916",
+        "T:20260917",
+        "T:20260918"
+      ],
+      "effective_date_count": 5,
+      "source_groups": [
+        "eastmoney",
+        "tdx"
+      ],
+      "overall_hit_range": [
+        1.0,
+        1.0
+      ],
+      "minimum_daily_hit_rate_seen": 1.0,
+      "max_informative_samples_on_one_date": 20,
+      "informative_pairs_range_by_window": [
+        60,
+        100
+      ],
+      "in_registry_values": [
+        false
+      ],
+      "evidence_scope": "exploratory; not an adjudication or registry update"
+    },
+    {
+      "left": "push2.f164",
+      "right": "zhb.stat.pe_dynamic",
+      "levels": [
+        "L1"
+      ],
+      "ratios_right_over_left": [],
+      "window_count": 5,
+      "window_ends": [
+        "20260917",
+        "20260918",
+        "20260921",
+        "20260922",
+        "20260923"
+      ],
+      "effective_dates": [
+        "T:20260914",
+        "T:20260915",
+        "T:20260916",
+        "T:20260917",
+        "T:20260918"
+      ],
+      "effective_date_count": 5,
+      "source_groups": [
+        "eastmoney",
+        "tdx"
+      ],
+      "overall_hit_range": [
+        0.975,
+        0.9833
+      ],
+      "minimum_daily_hit_rate_seen": 0.95,
+      "max_informative_samples_on_one_date": 20,
+      "informative_pairs_range_by_window": [
+        60,
+        100
+      ],
+      "in_registry_values": [
+        false
+      ],
+      "evidence_scope": "exploratory; not an adjudication or registry update"
+    },
+    {
+      "left": "push2.f174",
+      "right": "tencent[67]",
+      "levels": [
+        "L1"
+      ],
+      "ratios_right_over_left": [],
+      "window_count": 2,
+      "window_ends": [
+        "20260916",
+        "20260917"
+      ],
+      "effective_dates": [
+        "T:20260914",
+        "T:20260915",
+        "T:20260916",
+        "T:20260917"
+      ],
+      "effective_date_count": 4,
+      "source_groups": [
+        "eastmoney",
+        "tencent"
+      ],
+      "overall_hit_range": [
+        0.925,
+        0.9333
+      ],
+      "minimum_daily_hit_rate_seen": 0.9,
+      "max_informative_samples_on_one_date": 20,
+      "informative_pairs_range_by_window": [
+        60,
+        80
+      ],
+      "in_registry_values": [
+        false
+      ],
+      "evidence_scope": "exploratory; not an adjudication or registry update"
+    },
+    {
+      "left": "push2.f175",
+      "right": "zhb.stat2.low_52w",
+      "levels": [
+        "L1"
+      ],
+      "ratios_right_over_left": [],
+      "window_count": 5,
+      "window_ends": [
+        "20260917",
+        "20260918",
+        "20260921",
+        "20260922",
+        "20260923"
+      ],
+      "effective_dates": [
+        "T:20260914",
+        "T:20260915",
+        "T:20260916",
+        "T:20260917",
+        "T:20260918"
+      ],
+      "effective_date_count": 5,
+      "source_groups": [
+        "eastmoney",
+        "tdx"
+      ],
+      "overall_hit_range": [
+        1.0,
+        1.0
+      ],
+      "minimum_daily_hit_rate_seen": 1.0,
+      "max_informative_samples_on_one_date": 20,
+      "informative_pairs_range_by_window": [
+        60,
+        100
+      ],
+      "in_registry_values": [
+        false
+      ],
+      "evidence_scope": "exploratory; not an adjudication or registry update"
+    },
+    {
+      "left": "push2.f58",
+      "right": "sina[0]",
+      "levels": [
+        "L1"
+      ],
+      "ratios_right_over_left": [],
+      "window_count": 2,
+      "window_ends": [
+        "20260916",
+        "20260917"
+      ],
+      "effective_dates": [
+        "T:20260914",
+        "T:20260915",
+        "T:20260916",
+        "T:20260917"
+      ],
+      "effective_date_count": 4,
+      "source_groups": [
+        "eastmoney",
+        "sina"
+      ],
+      "overall_hit_range": [
+        0.9,
+        0.9
+      ],
+      "minimum_daily_hit_rate_seen": 0.9,
+      "max_informative_samples_on_one_date": 20,
+      "informative_pairs_range_by_window": [
+        60,
+        80
+      ],
+      "in_registry_values": [
+        false
+      ],
+      "evidence_scope": "exploratory; not an adjudication or registry update"
+    },
+    {
+      "left": "push2.f58",
+      "right": "tencent[1]",
+      "levels": [
+        "L1"
+      ],
+      "ratios_right_over_left": [],
+      "window_count": 7,
+      "window_ends": [
+        "20260916",
+        "20260917",
+        "20260918",
+        "20260922",
+        "20260923",
+        "20260924",
+        "20260928"
+      ],
+      "effective_dates": [
+        "T:20260914",
+        "T:20260915",
+        "T:20260916",
+        "T:20260917",
+        "T:20260918",
+        "T:20260924"
+      ],
+      "effective_date_count": 6,
+      "source_groups": [
+        "eastmoney",
+        "tencent"
+      ],
+      "overall_hit_range": [
+        1.0,
+        1.0
+      ],
+      "minimum_daily_hit_rate_seen": 1.0,
+      "max_informative_samples_on_one_date": 20,
+      "informative_pairs_range_by_window": [
+        60,
+        100
+      ],
+      "in_registry_values": [
+        false
+      ],
+      "evidence_scope": "exploratory; not an adjudication or registry update"
+    },
+    {
+      "left": "push2.f60",
+      "right": "eltdx.quote_snapshot.pre_close_price",
+      "levels": [
+        "L1"
+      ],
+      "ratios_right_over_left": [],
+      "window_count": 7,
+      "window_ends": [
+        "20260917",
+        "20260918",
+        "20260921",
+        "20260922",
+        "20260923",
+        "20260924",
+        "20260928"
+      ],
+      "effective_dates": [
+        "T:20260915",
+        "T:20260916",
+        "T:20260917",
+        "T:20260918",
+        "T:20260924"
+      ],
+      "effective_date_count": 5,
+      "source_groups": [
+        "eastmoney",
+        "tdx"
+      ],
+      "overall_hit_range": [
+        1.0,
+        1.0
+      ],
+      "minimum_daily_hit_rate_seen": 1.0,
+      "max_informative_samples_on_one_date": 18,
+      "informative_pairs_range_by_window": [
+        54,
+        73
+      ],
+      "in_registry_values": [
+        false
+      ],
+      "evidence_scope": "exploratory; not an adjudication or registry update"
+    },
+    {
+      "left": "push2.f60",
+      "right": "fuyao.snapshot.prev_price",
+      "levels": [
+        "L1"
+      ],
+      "ratios_right_over_left": [],
+      "window_count": 8,
+      "window_ends": [
+        "20260916",
+        "20260917",
+        "20260918",
+        "20260921",
+        "20260922",
+        "20260923",
+        "20260924",
+        "20260928"
+      ],
+      "effective_dates": [
+        "T:20260914",
+        "T:20260915",
+        "T:20260916",
+        "T:20260917",
+        "T:20260918",
+        "T:20260924"
+      ],
+      "effective_date_count": 6,
+      "source_groups": [
+        "eastmoney",
+        "tonghuashun"
+      ],
+      "overall_hit_range": [
+        1.0,
+        1.0
+      ],
+      "minimum_daily_hit_rate_seen": 1.0,
+      "max_informative_samples_on_one_date": 20,
+      "informative_pairs_range_by_window": [
+        60,
+        100
+      ],
+      "in_registry_values": [
+        false
+      ],
+      "evidence_scope": "exploratory; not an adjudication or registry update"
+    },
+    {
+      "left": "push2.f60",
+      "right": "tdx.quote_full.last_close",
+      "levels": [
+        "L1"
+      ],
+      "ratios_right_over_left": [],
+      "window_count": 8,
+      "window_ends": [
+        "20260916",
+        "20260917",
+        "20260918",
+        "20260921",
+        "20260922",
+        "20260923",
+        "20260924",
+        "20260928"
+      ],
+      "effective_dates": [
+        "T:20260914",
+        "T:20260915",
+        "T:20260916",
+        "T:20260917",
+        "T:20260918",
+        "T:20260924"
+      ],
+      "effective_date_count": 6,
+      "source_groups": [
+        "eastmoney",
+        "tdx"
+      ],
+      "overall_hit_range": [
+        1.0,
+        1.0
+      ],
+      "minimum_daily_hit_rate_seen": 1.0,
+      "max_informative_samples_on_one_date": 20,
+      "informative_pairs_range_by_window": [
+        60,
+        100
+      ],
+      "in_registry_values": [
+        false
+      ],
+      "evidence_scope": "exploratory; not an adjudication or registry update"
+    },
+    {
+      "left": "push2_full.f105",
+      "right": "tdx.finance_info.jinglirun",
+      "levels": [
+        "L1-U"
+      ],
+      "ratios_right_over_left": [
+        10
+      ],
+      "window_count": 13,
+      "window_ends": [
+        "20260908",
+        "20260909",
+        "20260910",
+        "20260911",
+        "20260914",
+        "20260915",
+        "20260916",
+        "20260917",
+        "20260918",
+        "20260921",
+        "20260922",
+        "20260923",
+        "20260924"
+      ],
+      "effective_dates": [
+        "T:20260831",
+        "T:20260902",
+        "T:20260903",
+        "T:20260904",
+        "T:20260907",
+        "T:20260908",
+        "T:20260909",
+        "T:20260910",
+        "T:20260911",
+        "T:20260914",
+        "T:20260915",
+        "T:20260916",
+        "T:20260917",
+        "T:20260918"
+      ],
+      "effective_date_count": 14,
+      "source_groups": [
+        "eastmoney",
+        "tdx"
+      ],
+      "overall_hit_range": [
+        1.0,
+        1.0
+      ],
+      "minimum_daily_hit_rate_seen": 1.0,
+      "max_informative_samples_on_one_date": 20,
+      "informative_pairs_range_by_window": [
+        60,
+        140
+      ],
+      "in_registry_values": [
+        false
+      ],
+      "evidence_scope": "exploratory; not an adjudication or registry update"
+    },
+    {
+      "left": "push2_full.f119",
+      "right": "zhb.stat.change_5d",
+      "levels": [
+        "L1"
+      ],
+      "ratios_right_over_left": [],
+      "window_count": 22,
+      "window_ends": [
+        "20260825",
+        "20260826",
+        "20260827",
+        "20260828",
+        "20260831",
+        "20260901",
+        "20260902",
+        "20260903",
+        "20260904",
+        "20260907",
+        "20260908",
+        "20260909",
+        "20260910",
+        "20260911",
+        "20260914",
+        "20260915",
+        "20260916",
+        "20260917",
+        "20260918",
+        "20260921",
+        "20260922",
+        "20260923"
+      ],
+      "effective_dates": [
+        "T:20260819",
+        "T:20260821",
+        "T:20260824",
+        "T:20260825",
+        "T:20260826",
+        "T:20260827",
+        "T:20260828",
+        "T:20260831",
+        "T:20260902",
+        "T:20260903",
+        "T:20260904",
+        "T:20260907",
+        "T:20260908",
+        "T:20260909",
+        "T:20260910",
+        "T:20260914",
+        "T:20260915",
+        "T:20260916",
+        "T:20260917",
+        "T:20260918"
+      ],
+      "effective_date_count": 20,
+      "source_groups": [
+        "eastmoney",
+        "tdx"
+      ],
+      "overall_hit_range": [
+        1.0,
+        1.0
+      ],
+      "minimum_daily_hit_rate_seen": 1.0,
+      "max_informative_samples_on_one_date": 20,
+      "informative_pairs_range_by_window": [
+        60,
+        134
+      ],
+      "in_registry_values": [
+        false
+      ],
+      "evidence_scope": "exploratory; not an adjudication or registry update"
+    },
+    {
+      "left": "push2_full.f120",
+      "right": "zhb.stat.change_20d",
+      "levels": [
+        "L1"
+      ],
+      "ratios_right_over_left": [],
+      "window_count": 22,
+      "window_ends": [
+        "20260825",
+        "20260826",
+        "20260827",
+        "20260828",
+        "20260831",
+        "20260901",
+        "20260902",
+        "20260903",
+        "20260904",
+        "20260907",
+        "20260908",
+        "20260909",
+        "20260910",
+        "20260911",
+        "20260914",
+        "20260915",
+        "20260916",
+        "20260917",
+        "20260918",
+        "20260921",
+        "20260922",
+        "20260923"
+      ],
+      "effective_dates": [
+        "T:20260819",
+        "T:20260821",
+        "T:20260824",
+        "T:20260825",
+        "T:20260826",
+        "T:20260827",
+        "T:20260828",
+        "T:20260831",
+        "T:20260902",
+        "T:20260903",
+        "T:20260904",
+        "T:20260907",
+        "T:20260908",
+        "T:20260909",
+        "T:20260910",
+        "T:20260914",
+        "T:20260915",
+        "T:20260916",
+        "T:20260917",
+        "T:20260918"
+      ],
+      "effective_date_count": 20,
+      "source_groups": [
+        "eastmoney",
+        "tdx"
+      ],
+      "overall_hit_range": [
+        1.0,
+        1.0
+      ],
+      "minimum_daily_hit_rate_seen": 1.0,
+      "max_informative_samples_on_one_date": 20,
+      "informative_pairs_range_by_window": [
+        60,
+        135
+      ],
+      "in_registry_values": [
+        false
+      ],
+      "evidence_scope": "exploratory; not an adjudication or registry update"
+    },
+    {
+      "left": "push2_full.f121",
+      "right": "zhb.stat.change_60d",
+      "levels": [
+        "L1"
+      ],
+      "ratios_right_over_left": [],
+      "window_count": 22,
+      "window_ends": [
+        "20260825",
+        "20260826",
+        "20260827",
+        "20260828",
+        "20260831",
+        "20260901",
+        "20260902",
+        "20260903",
+        "20260904",
+        "20260907",
+        "20260908",
+        "20260909",
+        "20260910",
+        "20260911",
+        "20260914",
+        "20260915",
+        "20260916",
+        "20260917",
+        "20260918",
+        "20260921",
+        "20260922",
+        "20260923"
+      ],
+      "effective_dates": [
+        "T:20260819",
+        "T:20260821",
+        "T:20260824",
+        "T:20260825",
+        "T:20260826",
+        "T:20260827",
+        "T:20260828",
+        "T:20260831",
+        "T:20260902",
+        "T:20260903",
+        "T:20260904",
+        "T:20260907",
+        "T:20260908",
+        "T:20260909",
+        "T:20260910",
+        "T:20260914",
+        "T:20260915",
+        "T:20260916",
+        "T:20260917",
+        "T:20260918"
+      ],
+      "effective_date_count": 20,
+      "source_groups": [
+        "eastmoney",
+        "tdx"
+      ],
+      "overall_hit_range": [
+        0.949,
+        1.0
+      ],
+      "minimum_daily_hit_rate_seen": 0.947368,
+      "max_informative_samples_on_one_date": 20,
+      "informative_pairs_range_by_window": [
+        60,
+        134
+      ],
+      "in_registry_values": [
+        false
+      ],
+      "evidence_scope": "exploratory; not an adjudication or registry update"
+    },
+    {
+      "left": "push2_full.f122",
+      "right": "zhb.stat.change_ytd",
+      "levels": [
+        "L1"
+      ],
+      "ratios_right_over_left": [],
+      "window_count": 22,
+      "window_ends": [
+        "20260825",
+        "20260826",
+        "20260827",
+        "20260828",
+        "20260831",
+        "20260901",
+        "20260902",
+        "20260903",
+        "20260904",
+        "20260907",
+        "20260908",
+        "20260909",
+        "20260910",
+        "20260911",
+        "20260914",
+        "20260915",
+        "20260916",
+        "20260917",
+        "20260918",
+        "20260921",
+        "20260922",
+        "20260923"
+      ],
+      "effective_dates": [
+        "T:20260819",
+        "T:20260821",
+        "T:20260824",
+        "T:20260825",
+        "T:20260826",
+        "T:20260827",
+        "T:20260828",
+        "T:20260831",
+        "T:20260902",
+        "T:20260903",
+        "T:20260904",
+        "T:20260907",
+        "T:20260908",
+        "T:20260909",
+        "T:20260910",
+        "T:20260914",
+        "T:20260915",
+        "T:20260916",
+        "T:20260917",
+        "T:20260918"
+      ],
+      "effective_date_count": 20,
+      "source_groups": [
+        "eastmoney",
+        "tdx"
+      ],
+      "overall_hit_range": [
+        0.9494,
+        0.95
+      ],
+      "minimum_daily_hit_rate_seen": 0.947368,
+      "max_informative_samples_on_one_date": 20,
+      "informative_pairs_range_by_window": [
+        60,
+        134
+      ],
+      "in_registry_values": [
+        false
+      ],
+      "evidence_scope": "exploratory; not an adjudication or registry update"
+    },
+    {
+      "left": "push2_full.f164",
+      "right": "zhb.stat.pe_dynamic",
+      "levels": [
+        "L1"
+      ],
+      "ratios_right_over_left": [],
+      "window_count": 15,
+      "window_ends": [
+        "20260903",
+        "20260904",
+        "20260907",
+        "20260908",
+        "20260909",
+        "20260910",
+        "20260911",
+        "20260914",
+        "20260915",
+        "20260916",
+        "20260917",
+        "20260918",
+        "20260921",
+        "20260922",
+        "20260923"
+      ],
+      "effective_dates": [
+        "T:20260826",
+        "T:20260827",
+        "T:20260828",
+        "T:20260831",
+        "T:20260902",
+        "T:20260903",
+        "T:20260904",
+        "T:20260907",
+        "T:20260908",
+        "T:20260909",
+        "T:20260910",
+        "T:20260914",
+        "T:20260915",
+        "T:20260916",
+        "T:20260917",
+        "T:20260918"
+      ],
+      "effective_date_count": 16,
+      "source_groups": [
+        "eastmoney",
+        "tdx"
+      ],
+      "overall_hit_range": [
+        0.93,
+        0.99
+      ],
+      "minimum_daily_hit_rate_seen": 0.85,
+      "max_informative_samples_on_one_date": 20,
+      "informative_pairs_range_by_window": [
+        75,
+        135
+      ],
+      "in_registry_values": [
+        false
+      ],
+      "evidence_scope": "exploratory; not an adjudication or registry update"
+    },
+    {
+      "left": "push2_full.f169",
+      "right": "fuyao.snapshot.price_change",
+      "levels": [
+        "L1"
+      ],
+      "ratios_right_over_left": [],
+      "window_count": 22,
+      "window_ends": [
+        "20260826",
+        "20260827",
+        "20260828",
+        "20260831",
+        "20260901",
+        "20260902",
+        "20260903",
+        "20260904",
+        "20260907",
+        "20260908",
+        "20260909",
+        "20260910",
+        "20260911",
+        "20260914",
+        "20260915",
+        "20260916",
+        "20260917",
+        "20260918",
+        "20260921",
+        "20260922",
+        "20260923",
+        "20260924"
+      ],
+      "effective_dates": [
+        "T:20260824",
+        "T:20260825",
+        "T:20260826",
+        "T:20260827",
+        "T:20260828",
+        "T:20260831",
+        "T:20260902",
+        "T:20260903",
+        "T:20260904",
+        "T:20260907",
+        "T:20260908",
+        "T:20260909",
+        "T:20260910",
+        "T:20260911",
+        "T:20260914",
+        "T:20260915",
+        "T:20260916",
+        "T:20260917",
+        "T:20260918"
+      ],
+      "effective_date_count": 19,
+      "source_groups": [
+        "eastmoney",
+        "tonghuashun"
+      ],
+      "overall_hit_range": [
+        1.0,
+        1.0
+      ],
+      "minimum_daily_hit_rate_seen": 1.0,
+      "max_informative_samples_on_one_date": 20,
+      "informative_pairs_range_by_window": [
+        60,
+        139
+      ],
+      "in_registry_values": [
+        false
+      ],
+      "evidence_scope": "exploratory; not an adjudication or registry update"
+    },
+    {
+      "left": "push2_full.f169",
+      "right": "tdx.quote_full.change_amt",
+      "levels": [
+        "L1"
+      ],
+      "ratios_right_over_left": [],
+      "window_count": 19,
+      "window_ends": [
+        "20260820",
+        "20260821",
+        "20260824",
+        "20260825",
+        "20260826",
+        "20260827",
+        "20260828",
+        "20260831",
+        "20260901",
+        "20260902",
+        "20260903",
+        "20260904",
+        "20260916",
+        "20260917",
+        "20260918",
+        "20260921",
+        "20260922",
+        "20260923",
+        "20260924"
+      ],
+      "effective_dates": [
+        "T:20260812",
+        "T:20260813",
+        "T:20260819",
+        "T:20260820",
+        "T:20260821",
+        "T:20260824",
+        "T:20260825",
+        "T:20260826",
+        "T:20260827",
+        "T:20260828",
+        "T:20260831",
+        "T:20260902",
+        "T:20260903",
+        "T:20260904",
+        "T:20260908",
+        "T:20260909",
+        "T:20260910",
+        "T:20260911",
+        "T:20260914",
+        "T:20260915",
+        "T:20260916",
+        "T:20260917",
+        "T:20260918"
+      ],
+      "effective_date_count": 23,
+      "source_groups": [
+        "eastmoney",
+        "tdx"
+      ],
+      "overall_hit_range": [
+        0.974,
+        1.0
+      ],
+      "minimum_daily_hit_rate_seen": 0.944444,
+      "max_informative_samples_on_one_date": 20,
+      "informative_pairs_range_by_window": [
+        60,
+        140
+      ],
+      "in_registry_values": [
+        false
+      ],
+      "evidence_scope": "exploratory; not an adjudication or registry update"
+    },
+    {
+      "left": "push2_full.f170",
+      "right": "zhb.stat.change_pct",
+      "levels": [
+        "L1"
+      ],
+      "ratios_right_over_left": [],
+      "window_count": 22,
+      "window_ends": [
+        "20260825",
+        "20260826",
+        "20260827",
+        "20260828",
+        "20260831",
+        "20260901",
+        "20260902",
+        "20260903",
+        "20260904",
+        "20260907",
+        "20260908",
+        "20260909",
+        "20260910",
+        "20260911",
+        "20260914",
+        "20260915",
+        "20260916",
+        "20260917",
+        "20260918",
+        "20260921",
+        "20260922",
+        "20260923"
+      ],
+      "effective_dates": [
+        "T:20260819",
+        "T:20260821",
+        "T:20260824",
+        "T:20260825",
+        "T:20260826",
+        "T:20260827",
+        "T:20260828",
+        "T:20260831",
+        "T:20260902",
+        "T:20260903",
+        "T:20260904",
+        "T:20260907",
+        "T:20260908",
+        "T:20260909",
+        "T:20260910",
+        "T:20260914",
+        "T:20260915",
+        "T:20260916",
+        "T:20260917",
+        "T:20260918"
+      ],
+      "effective_date_count": 20,
+      "source_groups": [
+        "eastmoney",
+        "tdx"
+      ],
+      "overall_hit_range": [
+        1.0,
+        1.0
+      ],
+      "minimum_daily_hit_rate_seen": 1.0,
+      "max_informative_samples_on_one_date": 20,
+      "informative_pairs_range_by_window": [
+        60,
+        133
+      ],
+      "in_registry_values": [
+        false
+      ],
+      "evidence_scope": "exploratory; not an adjudication or registry update"
+    },
+    {
+      "left": "push2_full.f174",
+      "right": "tencent[67]",
+      "levels": [
+        "L1"
+      ],
+      "ratios_right_over_left": [],
+      "window_count": 18,
+      "window_ends": [
+        "20260820",
+        "20260821",
+        "20260824",
+        "20260825",
+        "20260826",
+        "20260827",
+        "20260831",
+        "20260901",
+        "20260902",
+        "20260903",
+        "20260904",
+        "20260907",
+        "20260908",
+        "20260909",
+        "20260910",
+        "20260911",
+        "20260914",
+        "20260915"
+      ],
+      "effective_dates": [
+        "T:20260812",
+        "T:20260813",
+        "T:20260819",
+        "T:20260820",
+        "T:20260821",
+        "T:20260824",
+        "T:20260825",
+        "T:20260826",
+        "T:20260827",
+        "T:20260828",
+        "T:20260831",
+        "T:20260902",
+        "T:20260903",
+        "T:20260904",
+        "T:20260907",
+        "T:20260908",
+        "T:20260909",
+        "T:20260910",
+        "T:20260911",
+        "T:20260914",
+        "T:20260915"
+      ],
+      "effective_date_count": 21,
+      "source_groups": [
+        "eastmoney",
+        "tencent"
+      ],
+      "overall_hit_range": [
+        0.9,
+        0.9417
+      ],
+      "minimum_daily_hit_rate_seen": 0.85,
+      "max_informative_samples_on_one_date": 20,
+      "informative_pairs_range_by_window": [
+        78,
+        140
+      ],
+      "in_registry_values": [
+        false
+      ],
+      "evidence_scope": "exploratory; not an adjudication or registry update"
+    },
+    {
+      "left": "push2_full.f174",
+      "right": "zhb.stat2.high_52w",
+      "levels": [
+        "L1"
+      ],
+      "ratios_right_over_left": [],
+      "window_count": 7,
+      "window_ends": [
+        "20260825",
+        "20260826",
+        "20260827",
+        "20260828",
+        "20260831",
+        "20260901",
+        "20260908"
+      ],
+      "effective_dates": [
+        "T:20260819",
+        "T:20260821",
+        "T:20260824",
+        "T:20260825",
+        "T:20260826",
+        "T:20260827",
+        "T:20260828",
+        "T:20260831",
+        "T:20260902",
+        "T:20260903",
+        "T:20260904",
+        "T:20260907"
+      ],
+      "effective_date_count": 12,
+      "source_groups": [
+        "eastmoney",
+        "tdx"
+      ],
+      "overall_hit_range": [
+        0.9,
+        0.95
+      ],
+      "minimum_daily_hit_rate_seen": 0.85,
+      "max_informative_samples_on_one_date": 20,
+      "informative_pairs_range_by_window": [
+        60,
+        120
+      ],
+      "in_registry_values": [
+        false
+      ],
+      "evidence_scope": "exploratory; not an adjudication or registry update"
+    },
+    {
+      "left": "push2_full.f175",
+      "right": "zhb.stat2.low_52w",
+      "levels": [
+        "L1"
+      ],
+      "ratios_right_over_left": [],
+      "window_count": 22,
+      "window_ends": [
+        "20260825",
+        "20260826",
+        "20260827",
+        "20260828",
+        "20260831",
+        "20260901",
+        "20260902",
+        "20260903",
+        "20260904",
+        "20260907",
+        "20260908",
+        "20260909",
+        "20260910",
+        "20260911",
+        "20260914",
+        "20260915",
+        "20260916",
+        "20260917",
+        "20260918",
+        "20260921",
+        "20260922",
+        "20260923"
+      ],
+      "effective_dates": [
+        "T:20260819",
+        "T:20260821",
+        "T:20260824",
+        "T:20260825",
+        "T:20260826",
+        "T:20260827",
+        "T:20260828",
+        "T:20260831",
+        "T:20260902",
+        "T:20260903",
+        "T:20260904",
+        "T:20260907",
+        "T:20260908",
+        "T:20260909",
+        "T:20260910",
+        "T:20260914",
+        "T:20260915",
+        "T:20260916",
+        "T:20260917",
+        "T:20260918"
+      ],
+      "effective_date_count": 20,
+      "source_groups": [
+        "eastmoney",
+        "tdx"
+      ],
+      "overall_hit_range": [
+        1.0,
+        1.0
+      ],
+      "minimum_daily_hit_rate_seen": 1.0,
+      "max_informative_samples_on_one_date": 20,
+      "informative_pairs_range_by_window": [
+        60,
+        135
+      ],
+      "in_registry_values": [
+        false
+      ],
+      "evidence_scope": "exploratory; not an adjudication or registry update"
+    },
+    {
+      "left": "push2_full.f44",
+      "right": "eltdx.quote_snapshot.high_price",
+      "levels": [
+        "L1"
+      ],
+      "ratios_right_over_left": [],
+      "window_count": 6,
+      "window_ends": [
+        "20260917",
+        "20260918",
+        "20260921",
+        "20260922",
+        "20260923",
+        "20260924"
+      ],
+      "effective_dates": [
+        "T:20260915",
+        "T:20260916",
+        "T:20260917",
+        "T:20260918"
+      ],
+      "effective_date_count": 4,
+      "source_groups": [
+        "eastmoney",
+        "tdx"
+      ],
+      "overall_hit_range": [
+        1.0,
+        1.0
+      ],
+      "minimum_daily_hit_rate_seen": 1.0,
+      "max_informative_samples_on_one_date": 18,
+      "informative_pairs_range_by_window": [
+        54,
+        72
+      ],
+      "in_registry_values": [
+        false
+      ],
+      "evidence_scope": "exploratory; not an adjudication or registry update"
+    },
+    {
+      "left": "push2_full.f44",
+      "right": "fuyao.snapshot.high_price",
+      "levels": [
+        "L1"
+      ],
+      "ratios_right_over_left": [],
+      "window_count": 22,
+      "window_ends": [
+        "20260826",
+        "20260827",
+        "20260828",
+        "20260831",
+        "20260901",
+        "20260902",
+        "20260903",
+        "20260904",
+        "20260907",
+        "20260908",
+        "20260909",
+        "20260910",
+        "20260911",
+        "20260914",
+        "20260915",
+        "20260916",
+        "20260917",
+        "20260918",
+        "20260921",
+        "20260922",
+        "20260923",
+        "20260924"
+      ],
+      "effective_dates": [
+        "T:20260824",
+        "T:20260825",
+        "T:20260826",
+        "T:20260827",
+        "T:20260828",
+        "T:20260831",
+        "T:20260902",
+        "T:20260903",
+        "T:20260904",
+        "T:20260907",
+        "T:20260908",
+        "T:20260909",
+        "T:20260910",
+        "T:20260911",
+        "T:20260914",
+        "T:20260915",
+        "T:20260916",
+        "T:20260917",
+        "T:20260918"
+      ],
+      "effective_date_count": 19,
+      "source_groups": [
+        "eastmoney",
+        "tonghuashun"
+      ],
+      "overall_hit_range": [
+        1.0,
+        1.0
+      ],
+      "minimum_daily_hit_rate_seen": 1.0,
+      "max_informative_samples_on_one_date": 20,
+      "informative_pairs_range_by_window": [
+        60,
+        140
+      ],
+      "in_registry_values": [
+        false
+      ],
+      "evidence_scope": "exploratory; not an adjudication or registry update"
+    },
+    {
+      "left": "push2_full.f44",
+      "right": "tdx.quote_full.high",
+      "levels": [
+        "L1"
+      ],
+      "ratios_right_over_left": [],
+      "window_count": 26,
+      "window_ends": [
+        "20260820",
+        "20260821",
+        "20260824",
+        "20260825",
+        "20260826",
+        "20260827",
+        "20260828",
+        "20260831",
+        "20260901",
+        "20260902",
+        "20260903",
+        "20260904",
+        "20260907",
+        "20260908",
+        "20260909",
+        "20260910",
+        "20260911",
+        "20260914",
+        "20260915",
+        "20260916",
+        "20260917",
+        "20260918",
+        "20260921",
+        "20260922",
+        "20260923",
+        "20260924"
+      ],
+      "effective_dates": [
+        "T:20260812",
+        "T:20260813",
+        "T:20260819",
+        "T:20260820",
+        "T:20260821",
+        "T:20260824",
+        "T:20260825",
+        "T:20260826",
+        "T:20260827",
+        "T:20260828",
+        "T:20260831",
+        "T:20260902",
+        "T:20260903",
+        "T:20260904",
+        "T:20260907",
+        "T:20260908",
+        "T:20260909",
+        "T:20260910",
+        "T:20260911",
+        "T:20260914",
+        "T:20260915",
+        "T:20260916",
+        "T:20260917",
+        "T:20260918"
+      ],
+      "effective_date_count": 24,
+      "source_groups": [
+        "eastmoney",
+        "tdx"
+      ],
+      "overall_hit_range": [
+        0.987,
+        1.0
+      ],
+      "minimum_daily_hit_rate_seen": 0.944444,
+      "max_informative_samples_on_one_date": 20,
+      "informative_pairs_range_by_window": [
+        60,
+        140
+      ],
+      "in_registry_values": [
+        false
+      ],
+      "evidence_scope": "exploratory; not an adjudication or registry update"
+    },
+    {
+      "left": "push2_full.f45",
+      "right": "eltdx.quote_snapshot.low_price",
+      "levels": [
+        "L1"
+      ],
+      "ratios_right_over_left": [],
+      "window_count": 6,
+      "window_ends": [
+        "20260917",
+        "20260918",
+        "20260921",
+        "20260922",
+        "20260923",
+        "20260924"
+      ],
+      "effective_dates": [
+        "T:20260915",
+        "T:20260916",
+        "T:20260917",
+        "T:20260918"
+      ],
+      "effective_date_count": 4,
+      "source_groups": [
+        "eastmoney",
+        "tdx"
+      ],
+      "overall_hit_range": [
+        1.0,
+        1.0
+      ],
+      "minimum_daily_hit_rate_seen": 1.0,
+      "max_informative_samples_on_one_date": 18,
+      "informative_pairs_range_by_window": [
+        54,
+        72
+      ],
+      "in_registry_values": [
+        false
+      ],
+      "evidence_scope": "exploratory; not an adjudication or registry update"
+    },
+    {
+      "left": "push2_full.f45",
+      "right": "fuyao.snapshot.low_price",
+      "levels": [
+        "L1"
+      ],
+      "ratios_right_over_left": [],
+      "window_count": 22,
+      "window_ends": [
+        "20260826",
+        "20260827",
+        "20260828",
+        "20260831",
+        "20260901",
+        "20260902",
+        "20260903",
+        "20260904",
+        "20260907",
+        "20260908",
+        "20260909",
+        "20260910",
+        "20260911",
+        "20260914",
+        "20260915",
+        "20260916",
+        "20260917",
+        "20260918",
+        "20260921",
+        "20260922",
+        "20260923",
+        "20260924"
+      ],
+      "effective_dates": [
+        "T:20260824",
+        "T:20260825",
+        "T:20260826",
+        "T:20260827",
+        "T:20260828",
+        "T:20260831",
+        "T:20260902",
+        "T:20260903",
+        "T:20260904",
+        "T:20260907",
+        "T:20260908",
+        "T:20260909",
+        "T:20260910",
+        "T:20260911",
+        "T:20260914",
+        "T:20260915",
+        "T:20260916",
+        "T:20260917",
+        "T:20260918"
+      ],
+      "effective_date_count": 19,
+      "source_groups": [
+        "eastmoney",
+        "tonghuashun"
+      ],
+      "overall_hit_range": [
+        1.0,
+        1.0
+      ],
+      "minimum_daily_hit_rate_seen": 1.0,
+      "max_informative_samples_on_one_date": 20,
+      "informative_pairs_range_by_window": [
+        60,
+        140
+      ],
+      "in_registry_values": [
+        false
+      ],
+      "evidence_scope": "exploratory; not an adjudication or registry update"
+    },
+    {
+      "left": "push2_full.f45",
+      "right": "tdx.quote_full.low",
+      "levels": [
+        "L1"
+      ],
+      "ratios_right_over_left": [],
+      "window_count": 26,
+      "window_ends": [
+        "20260820",
+        "20260821",
+        "20260824",
+        "20260825",
+        "20260826",
+        "20260827",
+        "20260828",
+        "20260831",
+        "20260901",
+        "20260902",
+        "20260903",
+        "20260904",
+        "20260907",
+        "20260908",
+        "20260909",
+        "20260910",
+        "20260911",
+        "20260914",
+        "20260915",
+        "20260916",
+        "20260917",
+        "20260918",
+        "20260921",
+        "20260922",
+        "20260923",
+        "20260924"
+      ],
+      "effective_dates": [
+        "T:20260812",
+        "T:20260813",
+        "T:20260819",
+        "T:20260820",
+        "T:20260821",
+        "T:20260824",
+        "T:20260825",
+        "T:20260826",
+        "T:20260827",
+        "T:20260828",
+        "T:20260831",
+        "T:20260902",
+        "T:20260903",
+        "T:20260904",
+        "T:20260907",
+        "T:20260908",
+        "T:20260909",
+        "T:20260910",
+        "T:20260911",
+        "T:20260914",
+        "T:20260915",
+        "T:20260916",
+        "T:20260917",
+        "T:20260918"
+      ],
+      "effective_date_count": 24,
+      "source_groups": [
+        "eastmoney",
+        "tdx"
+      ],
+      "overall_hit_range": [
+        0.975,
+        1.0
+      ],
+      "minimum_daily_hit_rate_seen": 0.85,
+      "max_informative_samples_on_one_date": 20,
+      "informative_pairs_range_by_window": [
+        60,
+        140
+      ],
+      "in_registry_values": [
+        false
+      ],
+      "evidence_scope": "exploratory; not an adjudication or registry update"
+    },
+    {
+      "left": "push2_full.f46",
+      "right": "eltdx.quote_snapshot.open_price",
+      "levels": [
+        "L1"
+      ],
+      "ratios_right_over_left": [],
+      "window_count": 6,
+      "window_ends": [
+        "20260917",
+        "20260918",
+        "20260921",
+        "20260922",
+        "20260923",
+        "20260924"
+      ],
+      "effective_dates": [
+        "T:20260915",
+        "T:20260916",
+        "T:20260917",
+        "T:20260918"
+      ],
+      "effective_date_count": 4,
+      "source_groups": [
+        "eastmoney",
+        "tdx"
+      ],
+      "overall_hit_range": [
+        1.0,
+        1.0
+      ],
+      "minimum_daily_hit_rate_seen": 1.0,
+      "max_informative_samples_on_one_date": 18,
+      "informative_pairs_range_by_window": [
+        54,
+        72
+      ],
+      "in_registry_values": [
+        false
+      ],
+      "evidence_scope": "exploratory; not an adjudication or registry update"
+    },
+    {
+      "left": "push2_full.f46",
+      "right": "fuyao.snapshot.open_price",
+      "levels": [
+        "L1"
+      ],
+      "ratios_right_over_left": [],
+      "window_count": 22,
+      "window_ends": [
+        "20260826",
+        "20260827",
+        "20260828",
+        "20260831",
+        "20260901",
+        "20260902",
+        "20260903",
+        "20260904",
+        "20260907",
+        "20260908",
+        "20260909",
+        "20260910",
+        "20260911",
+        "20260914",
+        "20260915",
+        "20260916",
+        "20260917",
+        "20260918",
+        "20260921",
+        "20260922",
+        "20260923",
+        "20260924"
+      ],
+      "effective_dates": [
+        "T:20260824",
+        "T:20260825",
+        "T:20260826",
+        "T:20260827",
+        "T:20260828",
+        "T:20260831",
+        "T:20260902",
+        "T:20260903",
+        "T:20260904",
+        "T:20260907",
+        "T:20260908",
+        "T:20260909",
+        "T:20260910",
+        "T:20260911",
+        "T:20260914",
+        "T:20260915",
+        "T:20260916",
+        "T:20260917",
+        "T:20260918"
+      ],
+      "effective_date_count": 19,
+      "source_groups": [
+        "eastmoney",
+        "tonghuashun"
+      ],
+      "overall_hit_range": [
+        1.0,
+        1.0
+      ],
+      "minimum_daily_hit_rate_seen": 1.0,
+      "max_informative_samples_on_one_date": 20,
+      "informative_pairs_range_by_window": [
+        60,
+        140
+      ],
+      "in_registry_values": [
+        false
+      ],
+      "evidence_scope": "exploratory; not an adjudication or registry update"
+    },
+    {
+      "left": "push2_full.f46",
+      "right": "tdx.quote_full.open",
+      "levels": [
+        "L1"
+      ],
+      "ratios_right_over_left": [],
+      "window_count": 26,
+      "window_ends": [
+        "20260820",
+        "20260821",
+        "20260824",
+        "20260825",
+        "20260826",
+        "20260827",
+        "20260828",
+        "20260831",
+        "20260901",
+        "20260902",
+        "20260903",
+        "20260904",
+        "20260907",
+        "20260908",
+        "20260909",
+        "20260910",
+        "20260911",
+        "20260914",
+        "20260915",
+        "20260916",
+        "20260917",
+        "20260918",
+        "20260921",
+        "20260922",
+        "20260923",
+        "20260924"
+      ],
+      "effective_dates": [
+        "T:20260812",
+        "T:20260813",
+        "T:20260819",
+        "T:20260820",
+        "T:20260821",
+        "T:20260824",
+        "T:20260825",
+        "T:20260826",
+        "T:20260827",
+        "T:20260828",
+        "T:20260831",
+        "T:20260902",
+        "T:20260903",
+        "T:20260904",
+        "T:20260907",
+        "T:20260908",
+        "T:20260909",
+        "T:20260910",
+        "T:20260911",
+        "T:20260914",
+        "T:20260915",
+        "T:20260916",
+        "T:20260917",
+        "T:20260918"
+      ],
+      "effective_date_count": 24,
+      "source_groups": [
+        "eastmoney",
+        "tdx"
+      ],
+      "overall_hit_range": [
+        0.987,
+        1.0
+      ],
+      "minimum_daily_hit_rate_seen": 0.944444,
+      "max_informative_samples_on_one_date": 20,
+      "informative_pairs_range_by_window": [
+        60,
+        140
+      ],
+      "in_registry_values": [
+        false
+      ],
+      "evidence_scope": "exploratory; not an adjudication or registry update"
+    },
+    {
+      "left": "push2_full.f47",
+      "right": "fuyao.snapshot.volume",
+      "levels": [
+        "L1-U"
+      ],
+      "ratios_right_over_left": [
+        100
+      ],
+      "window_count": 22,
+      "window_ends": [
+        "20260826",
+        "20260827",
+        "20260828",
+        "20260831",
+        "20260901",
+        "20260902",
+        "20260903",
+        "20260904",
+        "20260907",
+        "20260908",
+        "20260909",
+        "20260910",
+        "20260911",
+        "20260914",
+        "20260915",
+        "20260916",
+        "20260917",
+        "20260918",
+        "20260921",
+        "20260922",
+        "20260923",
+        "20260924"
+      ],
+      "effective_dates": [
+        "T:20260824",
+        "T:20260825",
+        "T:20260826",
+        "T:20260827",
+        "T:20260828",
+        "T:20260831",
+        "T:20260902",
+        "T:20260903",
+        "T:20260904",
+        "T:20260907",
+        "T:20260908",
+        "T:20260909",
+        "T:20260910",
+        "T:20260911",
+        "T:20260914",
+        "T:20260915",
+        "T:20260916",
+        "T:20260917",
+        "T:20260918"
+      ],
+      "effective_date_count": 19,
+      "source_groups": [
+        "eastmoney",
+        "tonghuashun"
+      ],
+      "overall_hit_range": [
+        1.0,
+        1.0
+      ],
+      "minimum_daily_hit_rate_seen": 1.0,
+      "max_informative_samples_on_one_date": 20,
+      "informative_pairs_range_by_window": [
+        60,
+        140
+      ],
+      "in_registry_values": [
+        false
+      ],
+      "evidence_scope": "exploratory; not an adjudication or registry update"
+    },
+    {
+      "left": "push2_full.f47",
+      "right": "sina[8]",
+      "levels": [
+        "L1-U"
+      ],
+      "ratios_right_over_left": [
+        100
+      ],
+      "window_count": 26,
+      "window_ends": [
+        "20260820",
+        "20260821",
+        "20260824",
+        "20260825",
+        "20260826",
+        "20260827",
+        "20260828",
+        "20260831",
+        "20260901",
+        "20260902",
+        "20260903",
+        "20260904",
+        "20260907",
+        "20260908",
+        "20260909",
+        "20260910",
+        "20260911",
+        "20260914",
+        "20260915",
+        "20260916",
+        "20260917",
+        "20260918",
+        "20260921",
+        "20260922",
+        "20260923",
+        "20260924"
+      ],
+      "effective_dates": [
+        "T:20260813",
+        "T:20260819",
+        "T:20260820",
+        "T:20260821",
+        "T:20260824",
+        "T:20260825",
+        "T:20260826",
+        "T:20260827",
+        "T:20260828",
+        "T:20260831",
+        "T:20260902",
+        "T:20260903",
+        "T:20260904",
+        "T:20260907",
+        "T:20260908",
+        "T:20260909",
+        "T:20260910",
+        "T:20260911",
+        "T:20260914",
+        "T:20260915",
+        "T:20260916",
+        "T:20260917",
+        "T:20260918"
+      ],
+      "effective_date_count": 23,
+      "source_groups": [
+        "eastmoney",
+        "sina"
+      ],
+      "overall_hit_range": [
+        1.0,
+        1.0
+      ],
+      "minimum_daily_hit_rate_seen": 1.0,
+      "max_informative_samples_on_one_date": 20,
+      "informative_pairs_range_by_window": [
+        59,
+        140
+      ],
+      "in_registry_values": [
+        false
+      ],
+      "evidence_scope": "exploratory; not an adjudication or registry update"
+    },
+    {
+      "left": "push2_full.f48",
+      "right": "eltdx.quote_snapshot.amount",
+      "levels": [
+        "L1"
+      ],
+      "ratios_right_over_left": [],
+      "window_count": 6,
+      "window_ends": [
+        "20260917",
+        "20260918",
+        "20260921",
+        "20260922",
+        "20260923",
+        "20260924"
+      ],
+      "effective_dates": [
+        "T:20260915",
+        "T:20260916",
+        "T:20260917",
+        "T:20260918"
+      ],
+      "effective_date_count": 4,
+      "source_groups": [
+        "eastmoney",
+        "tdx"
+      ],
+      "overall_hit_range": [
+        1.0,
+        1.0
+      ],
+      "minimum_daily_hit_rate_seen": 1.0,
+      "max_informative_samples_on_one_date": 18,
+      "informative_pairs_range_by_window": [
+        54,
+        72
+      ],
+      "in_registry_values": [
+        false
+      ],
+      "evidence_scope": "exploratory; not an adjudication or registry update"
+    },
+    {
+      "left": "push2_full.f48",
+      "right": "fuyao.snapshot.turnover",
+      "levels": [
+        "L1"
+      ],
+      "ratios_right_over_left": [],
+      "window_count": 22,
+      "window_ends": [
+        "20260826",
+        "20260827",
+        "20260828",
+        "20260831",
+        "20260901",
+        "20260902",
+        "20260903",
+        "20260904",
+        "20260907",
+        "20260908",
+        "20260909",
+        "20260910",
+        "20260911",
+        "20260914",
+        "20260915",
+        "20260916",
+        "20260917",
+        "20260918",
+        "20260921",
+        "20260922",
+        "20260923",
+        "20260924"
+      ],
+      "effective_dates": [
+        "T:20260824",
+        "T:20260825",
+        "T:20260826",
+        "T:20260827",
+        "T:20260828",
+        "T:20260831",
+        "T:20260902",
+        "T:20260903",
+        "T:20260904",
+        "T:20260907",
+        "T:20260908",
+        "T:20260909",
+        "T:20260910",
+        "T:20260911",
+        "T:20260914",
+        "T:20260915",
+        "T:20260916",
+        "T:20260917",
+        "T:20260918"
+      ],
+      "effective_date_count": 19,
+      "source_groups": [
+        "eastmoney",
+        "tonghuashun"
+      ],
+      "overall_hit_range": [
+        1.0,
+        1.0
+      ],
+      "minimum_daily_hit_rate_seen": 1.0,
+      "max_informative_samples_on_one_date": 20,
+      "informative_pairs_range_by_window": [
+        60,
+        140
+      ],
+      "in_registry_values": [
+        false
+      ],
+      "evidence_scope": "exploratory; not an adjudication or registry update"
+    },
+    {
+      "left": "push2_full.f58",
+      "right": "sina[0]",
+      "levels": [
+        "L1"
+      ],
+      "ratios_right_over_left": [],
+      "window_count": 20,
+      "window_ends": [
+        "20260821",
+        "20260824",
+        "20260825",
+        "20260826",
+        "20260827",
+        "20260828",
+        "20260831",
+        "20260901",
+        "20260902",
+        "20260903",
+        "20260904",
+        "20260907",
+        "20260908",
+        "20260909",
+        "20260910",
+        "20260911",
+        "20260914",
+        "20260915",
+        "20260916",
+        "20260917"
+      ],
+      "effective_dates": [
+        "T:20260813",
+        "T:20260819",
+        "T:20260820",
+        "T:20260821",
+        "T:20260824",
+        "T:20260825",
+        "T:20260826",
+        "T:20260827",
+        "T:20260828",
+        "T:20260831",
+        "T:20260902",
+        "T:20260903",
+        "T:20260904",
+        "T:20260907",
+        "T:20260908",
+        "T:20260909",
+        "T:20260910",
+        "T:20260911",
+        "T:20260914",
+        "T:20260915",
+        "T:20260916",
+        "T:20260917"
+      ],
+      "effective_date_count": 22,
+      "source_groups": [
+        "eastmoney",
+        "sina"
+      ],
+      "overall_hit_range": [
+        0.9,
+        0.9
+      ],
+      "minimum_daily_hit_rate_seen": 0.9,
+      "max_informative_samples_on_one_date": 20,
+      "informative_pairs_range_by_window": [
+        80,
+        140
+      ],
+      "in_registry_values": [
+        false
+      ],
+      "evidence_scope": "exploratory; not an adjudication or registry update"
+    },
+    {
+      "left": "push2_full.f58",
+      "right": "tencent[1]",
+      "levels": [
+        "L1"
+      ],
+      "ratios_right_over_left": [],
+      "window_count": 25,
+      "window_ends": [
+        "20260820",
+        "20260821",
+        "20260824",
+        "20260825",
+        "20260826",
+        "20260827",
+        "20260828",
+        "20260831",
+        "20260901",
+        "20260902",
+        "20260903",
+        "20260904",
+        "20260907",
+        "20260908",
+        "20260909",
+        "20260910",
+        "20260911",
+        "20260914",
+        "20260915",
+        "20260916",
+        "20260917",
+        "20260918",
+        "20260922",
+        "20260923",
+        "20260924"
+      ],
+      "effective_dates": [
+        "T:20260812",
+        "T:20260813",
+        "T:20260819",
+        "T:20260820",
+        "T:20260821",
+        "T:20260824",
+        "T:20260825",
+        "T:20260826",
+        "T:20260827",
+        "T:20260828",
+        "T:20260831",
+        "T:20260902",
+        "T:20260903",
+        "T:20260904",
+        "T:20260907",
+        "T:20260908",
+        "T:20260909",
+        "T:20260910",
+        "T:20260911",
+        "T:20260914",
+        "T:20260915",
+        "T:20260916",
+        "T:20260917",
+        "T:20260918"
+      ],
+      "effective_date_count": 24,
+      "source_groups": [
+        "eastmoney",
+        "tencent"
+      ],
+      "overall_hit_range": [
+        1.0,
+        1.0
+      ],
+      "minimum_daily_hit_rate_seen": 1.0,
+      "max_informative_samples_on_one_date": 20,
+      "informative_pairs_range_by_window": [
+        60,
+        140
+      ],
+      "in_registry_values": [
+        false
+      ],
+      "evidence_scope": "exploratory; not an adjudication or registry update"
+    },
+    {
+      "left": "push2_full.f60",
+      "right": "eltdx.quote_snapshot.pre_close_price",
+      "levels": [
+        "L1"
+      ],
+      "ratios_right_over_left": [],
+      "window_count": 6,
+      "window_ends": [
+        "20260917",
+        "20260918",
+        "20260921",
+        "20260922",
+        "20260923",
+        "20260924"
+      ],
+      "effective_dates": [
+        "T:20260915",
+        "T:20260916",
+        "T:20260917",
+        "T:20260918"
+      ],
+      "effective_date_count": 4,
+      "source_groups": [
+        "eastmoney",
+        "tdx"
+      ],
+      "overall_hit_range": [
+        1.0,
+        1.0
+      ],
+      "minimum_daily_hit_rate_seen": 1.0,
+      "max_informative_samples_on_one_date": 18,
+      "informative_pairs_range_by_window": [
+        54,
+        72
+      ],
+      "in_registry_values": [
+        false
+      ],
+      "evidence_scope": "exploratory; not an adjudication or registry update"
+    },
+    {
+      "left": "push2_full.f60",
+      "right": "fuyao.snapshot.prev_price",
+      "levels": [
+        "L1"
+      ],
+      "ratios_right_over_left": [],
+      "window_count": 22,
+      "window_ends": [
+        "20260826",
+        "20260827",
+        "20260828",
+        "20260831",
+        "20260901",
+        "20260902",
+        "20260903",
+        "20260904",
+        "20260907",
+        "20260908",
+        "20260909",
+        "20260910",
+        "20260911",
+        "20260914",
+        "20260915",
+        "20260916",
+        "20260917",
+        "20260918",
+        "20260921",
+        "20260922",
+        "20260923",
+        "20260924"
+      ],
+      "effective_dates": [
+        "T:20260824",
+        "T:20260825",
+        "T:20260826",
+        "T:20260827",
+        "T:20260828",
+        "T:20260831",
+        "T:20260902",
+        "T:20260903",
+        "T:20260904",
+        "T:20260907",
+        "T:20260908",
+        "T:20260909",
+        "T:20260910",
+        "T:20260911",
+        "T:20260914",
+        "T:20260915",
+        "T:20260916",
+        "T:20260917",
+        "T:20260918"
+      ],
+      "effective_date_count": 19,
+      "source_groups": [
+        "eastmoney",
+        "tonghuashun"
+      ],
+      "overall_hit_range": [
+        1.0,
+        1.0
+      ],
+      "minimum_daily_hit_rate_seen": 1.0,
+      "max_informative_samples_on_one_date": 20,
+      "informative_pairs_range_by_window": [
+        60,
+        140
+      ],
+      "in_registry_values": [
+        false
+      ],
+      "evidence_scope": "exploratory; not an adjudication or registry update"
+    },
+    {
+      "left": "push2_full.f60",
+      "right": "tdx.quote_full.last_close",
+      "levels": [
+        "L1"
+      ],
+      "ratios_right_over_left": [],
+      "window_count": 26,
+      "window_ends": [
+        "20260820",
+        "20260821",
+        "20260824",
+        "20260825",
+        "20260826",
+        "20260827",
+        "20260828",
+        "20260831",
+        "20260901",
+        "20260902",
+        "20260903",
+        "20260904",
+        "20260907",
+        "20260908",
+        "20260909",
+        "20260910",
+        "20260911",
+        "20260914",
+        "20260915",
+        "20260916",
+        "20260917",
+        "20260918",
+        "20260921",
+        "20260922",
+        "20260923",
+        "20260924"
+      ],
+      "effective_dates": [
+        "T:20260812",
+        "T:20260813",
+        "T:20260819",
+        "T:20260820",
+        "T:20260821",
+        "T:20260824",
+        "T:20260825",
+        "T:20260826",
+        "T:20260827",
+        "T:20260828",
+        "T:20260831",
+        "T:20260902",
+        "T:20260903",
+        "T:20260904",
+        "T:20260907",
+        "T:20260908",
+        "T:20260909",
+        "T:20260910",
+        "T:20260911",
+        "T:20260914",
+        "T:20260915",
+        "T:20260916",
+        "T:20260917",
+        "T:20260918"
+      ],
+      "effective_date_count": 24,
+      "source_groups": [
+        "eastmoney",
+        "tdx"
+      ],
+      "overall_hit_range": [
+        1.0,
+        1.0
+      ],
+      "minimum_daily_hit_rate_seen": 1.0,
+      "max_informative_samples_on_one_date": 20,
+      "informative_pairs_range_by_window": [
+        60,
+        140
+      ],
+      "in_registry_values": [
+        false
+      ],
+      "evidence_scope": "exploratory; not an adjudication or registry update"
+    },
+    {
+      "left": "push2_full.f84",
+      "right": "tdx.finance_info.zongguben",
+      "levels": [
+        "L1"
+      ],
+      "ratios_right_over_left": [],
+      "window_count": 10,
+      "window_ends": [
+        "20260827",
+        "20260828",
+        "20260831",
+        "20260901",
+        "20260902",
+        "20260903",
+        "20260904",
+        "20260915",
+        "20260916",
+        "20260917"
+      ],
+      "effective_dates": [
+        "T:20260819",
+        "T:20260820",
+        "T:20260821",
+        "T:20260824",
+        "T:20260825",
+        "T:20260826",
+        "T:20260827",
+        "T:20260828",
+        "T:20260831",
+        "T:20260902",
+        "T:20260903",
+        "T:20260904",
+        "T:20260907",
+        "T:20260908",
+        "T:20260909",
+        "T:20260910",
+        "T:20260911",
+        "T:20260914"
+      ],
+      "effective_date_count": 18,
+      "source_groups": [
+        "eastmoney",
+        "tdx"
+      ],
+      "overall_hit_range": [
+        1.0,
+        1.0
+      ],
+      "minimum_daily_hit_rate_seen": 1.0,
+      "max_informative_samples_on_one_date": 20,
+      "informative_pairs_range_by_window": [
+        80,
+        140
+      ],
+      "in_registry_values": [
+        false
+      ],
+      "evidence_scope": "exploratory; not an adjudication or registry update"
+    },
+    {
+      "left": "push2_full.f85",
+      "right": "tdx.finance_info.liutongguben",
+      "levels": [
+        "L1"
+      ],
+      "ratios_right_over_left": [],
+      "window_count": 7,
+      "window_ends": [
+        "20260827",
+        "20260828",
+        "20260831",
+        "20260901",
+        "20260902",
+        "20260903",
+        "20260904"
+      ],
+      "effective_dates": [
+        "T:20260819",
+        "T:20260820",
+        "T:20260821",
+        "T:20260824",
+        "T:20260825",
+        "T:20260826",
+        "T:20260827",
+        "T:20260828",
+        "T:20260831",
+        "T:20260902",
+        "T:20260903",
+        "T:20260904"
+      ],
+      "effective_date_count": 12,
+      "source_groups": [
+        "eastmoney",
+        "tdx"
+      ],
+      "overall_hit_range": [
+        0.9917,
+        1.0
+      ],
+      "minimum_daily_hit_rate_seen": 0.95,
+      "max_informative_samples_on_one_date": 20,
+      "informative_pairs_range_by_window": [
+        120,
+        140
+      ],
+      "in_registry_values": [
+        false
+      ],
+      "evidence_scope": "exploratory; not an adjudication or registry update"
+    },
+    {
+      "left": "push2_full.f85",
+      "right": "tdx.finance_info.liutongguben",
+      "levels": [
+        "L1-U"
+      ],
+      "ratios_right_over_left": [
+        0.0001
+      ],
+      "window_count": 2,
+      "window_ends": [
+        "20260923",
+        "20260924"
+      ],
+      "effective_dates": [
+        "T:20260915",
+        "T:20260916",
+        "T:20260917",
+        "T:20260918"
+      ],
+      "effective_date_count": 4,
+      "source_groups": [
+        "eastmoney",
+        "tdx"
+      ],
+      "overall_hit_range": [
+        1.0,
+        1.0
+      ],
+      "minimum_daily_hit_rate_seen": 1.0,
+      "max_informative_samples_on_one_date": 20,
+      "informative_pairs_range_by_window": [
+        60,
+        80
+      ],
+      "in_registry_values": [
+        false
+      ],
+      "evidence_scope": "exploratory; not an adjudication or registry update"
+    },
+    {
+      "left": "sina[13]",
+      "right": "tdx.quote_full.bid2",
+      "levels": [
+        "L1"
+      ],
+      "ratios_right_over_left": [],
+      "window_count": 12,
+      "window_ends": [
+        "20260820",
+        "20260821",
+        "20260824",
+        "20260825",
+        "20260826",
+        "20260827",
+        "20260828",
+        "20260831",
+        "20260901",
+        "20260902",
+        "20260903",
+        "20260904"
+      ],
+      "effective_dates": [
+        "T:20260812",
+        "T:20260819",
+        "T:20260820",
+        "T:20260821",
+        "T:20260824",
+        "T:20260825",
+        "T:20260826",
+        "T:20260827",
+        "T:20260828",
+        "T:20260831",
+        "T:20260902",
+        "T:20260903",
+        "T:20260904"
+      ],
+      "effective_date_count": 13,
+      "source_groups": [
+        "sina",
+        "tdx"
+      ],
+      "overall_hit_range": [
+        1.0,
+        1.0
+      ],
+      "minimum_daily_hit_rate_seen": 1.0,
+      "max_informative_samples_on_one_date": 20,
+      "informative_pairs_range_by_window": [
+        61,
+        140
+      ],
+      "in_registry_values": [
+        false
+      ],
+      "evidence_scope": "exploratory; not an adjudication or registry update"
+    },
+    {
+      "left": "sina[15]",
+      "right": "tdx.quote_full.bid3",
+      "levels": [
+        "L1"
+      ],
+      "ratios_right_over_left": [],
+      "window_count": 12,
+      "window_ends": [
+        "20260820",
+        "20260821",
+        "20260824",
+        "20260825",
+        "20260826",
+        "20260827",
+        "20260828",
+        "20260831",
+        "20260901",
+        "20260902",
+        "20260903",
+        "20260904"
+      ],
+      "effective_dates": [
+        "T:20260812",
+        "T:20260819",
+        "T:20260820",
+        "T:20260821",
+        "T:20260824",
+        "T:20260825",
+        "T:20260826",
+        "T:20260827",
+        "T:20260828",
+        "T:20260831",
+        "T:20260902",
+        "T:20260903",
+        "T:20260904"
+      ],
+      "effective_date_count": 13,
+      "source_groups": [
+        "sina",
+        "tdx"
+      ],
+      "overall_hit_range": [
+        1.0,
+        1.0
+      ],
+      "minimum_daily_hit_rate_seen": 1.0,
+      "max_informative_samples_on_one_date": 20,
+      "informative_pairs_range_by_window": [
+        61,
+        140
+      ],
+      "in_registry_values": [
+        false
+      ],
+      "evidence_scope": "exploratory; not an adjudication or registry update"
+    },
+    {
+      "left": "sina[17]",
+      "right": "tdx.quote_full.bid4",
+      "levels": [
+        "L1"
+      ],
+      "ratios_right_over_left": [],
+      "window_count": 12,
+      "window_ends": [
+        "20260820",
+        "20260821",
+        "20260824",
+        "20260825",
+        "20260826",
+        "20260827",
+        "20260828",
+        "20260831",
+        "20260901",
+        "20260902",
+        "20260903",
+        "20260904"
+      ],
+      "effective_dates": [
+        "T:20260812",
+        "T:20260819",
+        "T:20260820",
+        "T:20260821",
+        "T:20260824",
+        "T:20260825",
+        "T:20260826",
+        "T:20260827",
+        "T:20260828",
+        "T:20260831",
+        "T:20260902",
+        "T:20260903",
+        "T:20260904"
+      ],
+      "effective_date_count": 13,
+      "source_groups": [
+        "sina",
+        "tdx"
+      ],
+      "overall_hit_range": [
+        1.0,
+        1.0
+      ],
+      "minimum_daily_hit_rate_seen": 1.0,
+      "max_informative_samples_on_one_date": 20,
+      "informative_pairs_range_by_window": [
+        61,
+        140
+      ],
+      "in_registry_values": [
+        false
+      ],
+      "evidence_scope": "exploratory; not an adjudication or registry update"
+    },
+    {
+      "left": "sina[19]",
+      "right": "tdx.quote_full.bid5",
+      "levels": [
+        "L1"
+      ],
+      "ratios_right_over_left": [],
+      "window_count": 12,
+      "window_ends": [
+        "20260820",
+        "20260821",
+        "20260824",
+        "20260825",
+        "20260826",
+        "20260827",
+        "20260828",
+        "20260831",
+        "20260901",
+        "20260902",
+        "20260903",
+        "20260904"
+      ],
+      "effective_dates": [
+        "T:20260812",
+        "T:20260819",
+        "T:20260820",
+        "T:20260821",
+        "T:20260824",
+        "T:20260825",
+        "T:20260826",
+        "T:20260827",
+        "T:20260828",
+        "T:20260831",
+        "T:20260902",
+        "T:20260903",
+        "T:20260904"
+      ],
+      "effective_date_count": 13,
+      "source_groups": [
+        "sina",
+        "tdx"
+      ],
+      "overall_hit_range": [
+        1.0,
+        1.0
+      ],
+      "minimum_daily_hit_rate_seen": 1.0,
+      "max_informative_samples_on_one_date": 20,
+      "informative_pairs_range_by_window": [
+        61,
+        140
+      ],
+      "in_registry_values": [
+        false
+      ],
+      "evidence_scope": "exploratory; not an adjudication or registry update"
+    },
+    {
+      "left": "sina[23]",
+      "right": "tdx.quote_full.ask2",
+      "levels": [
+        "L1"
+      ],
+      "ratios_right_over_left": [],
+      "window_count": 12,
+      "window_ends": [
+        "20260820",
+        "20260821",
+        "20260824",
+        "20260825",
+        "20260826",
+        "20260827",
+        "20260828",
+        "20260831",
+        "20260901",
+        "20260902",
+        "20260903",
+        "20260904"
+      ],
+      "effective_dates": [
+        "T:20260812",
+        "T:20260819",
+        "T:20260820",
+        "T:20260821",
+        "T:20260824",
+        "T:20260825",
+        "T:20260826",
+        "T:20260827",
+        "T:20260828",
+        "T:20260831",
+        "T:20260902",
+        "T:20260903",
+        "T:20260904"
+      ],
+      "effective_date_count": 13,
+      "source_groups": [
+        "sina",
+        "tdx"
+      ],
+      "overall_hit_range": [
+        1.0,
+        1.0
+      ],
+      "minimum_daily_hit_rate_seen": 1.0,
+      "max_informative_samples_on_one_date": 20,
+      "informative_pairs_range_by_window": [
+        60,
+        140
+      ],
+      "in_registry_values": [
+        false
+      ],
+      "evidence_scope": "exploratory; not an adjudication or registry update"
+    },
+    {
+      "left": "sina[25]",
+      "right": "tdx.quote_full.ask3",
+      "levels": [
+        "L1"
+      ],
+      "ratios_right_over_left": [],
+      "window_count": 12,
+      "window_ends": [
+        "20260820",
+        "20260821",
+        "20260824",
+        "20260825",
+        "20260826",
+        "20260827",
+        "20260828",
+        "20260831",
+        "20260901",
+        "20260902",
+        "20260903",
+        "20260904"
+      ],
+      "effective_dates": [
+        "T:20260812",
+        "T:20260819",
+        "T:20260820",
+        "T:20260821",
+        "T:20260824",
+        "T:20260825",
+        "T:20260826",
+        "T:20260827",
+        "T:20260828",
+        "T:20260831",
+        "T:20260902",
+        "T:20260903",
+        "T:20260904"
+      ],
+      "effective_date_count": 13,
+      "source_groups": [
+        "sina",
+        "tdx"
+      ],
+      "overall_hit_range": [
+        1.0,
+        1.0
+      ],
+      "minimum_daily_hit_rate_seen": 1.0,
+      "max_informative_samples_on_one_date": 20,
+      "informative_pairs_range_by_window": [
+        60,
+        140
+      ],
+      "in_registry_values": [
+        false
+      ],
+      "evidence_scope": "exploratory; not an adjudication or registry update"
+    },
+    {
+      "left": "sina[27]",
+      "right": "tdx.quote_full.ask4",
+      "levels": [
+        "L1"
+      ],
+      "ratios_right_over_left": [],
+      "window_count": 12,
+      "window_ends": [
+        "20260820",
+        "20260821",
+        "20260824",
+        "20260825",
+        "20260826",
+        "20260827",
+        "20260828",
+        "20260831",
+        "20260901",
+        "20260902",
+        "20260903",
+        "20260904"
+      ],
+      "effective_dates": [
+        "T:20260812",
+        "T:20260819",
+        "T:20260820",
+        "T:20260821",
+        "T:20260824",
+        "T:20260825",
+        "T:20260826",
+        "T:20260827",
+        "T:20260828",
+        "T:20260831",
+        "T:20260902",
+        "T:20260903",
+        "T:20260904"
+      ],
+      "effective_date_count": 13,
+      "source_groups": [
+        "sina",
+        "tdx"
+      ],
+      "overall_hit_range": [
+        1.0,
+        1.0
+      ],
+      "minimum_daily_hit_rate_seen": 1.0,
+      "max_informative_samples_on_one_date": 20,
+      "informative_pairs_range_by_window": [
+        60,
+        140
+      ],
+      "in_registry_values": [
+        false
+      ],
+      "evidence_scope": "exploratory; not an adjudication or registry update"
+    },
+    {
+      "left": "sina[29]",
+      "right": "tdx.quote_full.ask5",
+      "levels": [
+        "L1"
+      ],
+      "ratios_right_over_left": [],
+      "window_count": 12,
+      "window_ends": [
+        "20260820",
+        "20260821",
+        "20260824",
+        "20260825",
+        "20260826",
+        "20260827",
+        "20260828",
+        "20260831",
+        "20260901",
+        "20260902",
+        "20260903",
+        "20260904"
+      ],
+      "effective_dates": [
+        "T:20260812",
+        "T:20260819",
+        "T:20260820",
+        "T:20260821",
+        "T:20260824",
+        "T:20260825",
+        "T:20260826",
+        "T:20260827",
+        "T:20260828",
+        "T:20260831",
+        "T:20260902",
+        "T:20260903",
+        "T:20260904"
+      ],
+      "effective_date_count": 13,
+      "source_groups": [
+        "sina",
+        "tdx"
+      ],
+      "overall_hit_range": [
+        1.0,
+        1.0
+      ],
+      "minimum_daily_hit_rate_seen": 1.0,
+      "max_informative_samples_on_one_date": 20,
+      "informative_pairs_range_by_window": [
+        60,
+        140
+      ],
+      "in_registry_values": [
+        false
+      ],
+      "evidence_scope": "exploratory; not an adjudication or registry update"
+    },
+    {
+      "left": "tdx.finance_info.guding_zichan",
+      "right": "ulist239.f52",
+      "levels": [
+        "L1-U"
+      ],
+      "ratios_right_over_left": [
+        0.1
+      ],
+      "window_count": 9,
+      "window_ends": [
+        "20260908",
+        "20260909",
+        "20260910",
+        "20260911",
+        "20260914",
+        "20260915",
+        "20260916",
+        "20260917",
+        "20260918"
+      ],
+      "effective_dates": [
+        "T:20260831",
+        "T:20260902",
+        "T:20260903",
+        "T:20260904",
+        "T:20260907",
+        "T:20260908",
+        "T:20260909",
+        "T:20260910",
+        "T:20260911",
+        "T:20260914"
+      ],
+      "effective_date_count": 10,
+      "source_groups": [
+        "eastmoney",
+        "tdx"
+      ],
+      "overall_hit_range": [
+        1.0,
+        1.0
+      ],
+      "minimum_daily_hit_rate_seen": 1.0,
+      "max_informative_samples_on_one_date": 20,
+      "informative_pairs_range_by_window": [
+        60,
+        140
+      ],
+      "in_registry_values": [
+        false
+      ],
+      "evidence_scope": "exploratory; not an adjudication or registry update"
+    },
+    {
+      "left": "tdx.finance_info.lirun_zonghe",
+      "right": "ulist239.f44",
+      "levels": [
+        "L1-U"
+      ],
+      "ratios_right_over_left": [
+        0.1
+      ],
+      "window_count": 9,
+      "window_ends": [
+        "20260908",
+        "20260909",
+        "20260910",
+        "20260911",
+        "20260914",
+        "20260915",
+        "20260916",
+        "20260917",
+        "20260918"
+      ],
+      "effective_dates": [
+        "T:20260831",
+        "T:20260902",
+        "T:20260903",
+        "T:20260904",
+        "T:20260907",
+        "T:20260908",
+        "T:20260909",
+        "T:20260910",
+        "T:20260911",
+        "T:20260914"
+      ],
+      "effective_date_count": 10,
+      "source_groups": [
+        "eastmoney",
+        "tdx"
+      ],
+      "overall_hit_range": [
+        1.0,
+        1.0
+      ],
+      "minimum_daily_hit_rate_seen": 1.0,
+      "max_informative_samples_on_one_date": 20,
+      "informative_pairs_range_by_window": [
+        60,
+        140
+      ],
+      "in_registry_values": [
+        false
+      ],
+      "evidence_scope": "exploratory; not an adjudication or registry update"
+    },
+    {
+      "left": "tdx.finance_info.liudong_fuzhai",
+      "right": "ulist239.f55",
+      "levels": [
+        "L1-U"
+      ],
+      "ratios_right_over_left": [
+        0.1
+      ],
+      "window_count": 9,
+      "window_ends": [
+        "20260908",
+        "20260909",
+        "20260910",
+        "20260911",
+        "20260914",
+        "20260915",
+        "20260916",
+        "20260917",
+        "20260918"
+      ],
+      "effective_dates": [
+        "T:20260831",
+        "T:20260902",
+        "T:20260903",
+        "T:20260904",
+        "T:20260907",
+        "T:20260908",
+        "T:20260909",
+        "T:20260910",
+        "T:20260911",
+        "T:20260914"
+      ],
+      "effective_date_count": 10,
+      "source_groups": [
+        "eastmoney",
+        "tdx"
+      ],
+      "overall_hit_range": [
+        1.0,
+        1.0
+      ],
+      "minimum_daily_hit_rate_seen": 1.0,
+      "max_informative_samples_on_one_date": 19,
+      "informative_pairs_range_by_window": [
+        57,
+        133
+      ],
+      "in_registry_values": [
+        false
+      ],
+      "evidence_scope": "exploratory; not an adjudication or registry update"
+    },
+    {
+      "left": "tdx.finance_info.liudong_zichan",
+      "right": "ulist239.f51",
+      "levels": [
+        "L1-U"
+      ],
+      "ratios_right_over_left": [
+        0.1
+      ],
+      "window_count": 9,
+      "window_ends": [
+        "20260908",
+        "20260909",
+        "20260910",
+        "20260911",
+        "20260914",
+        "20260915",
+        "20260916",
+        "20260917",
+        "20260918"
+      ],
+      "effective_dates": [
+        "T:20260831",
+        "T:20260902",
+        "T:20260903",
+        "T:20260904",
+        "T:20260907",
+        "T:20260908",
+        "T:20260909",
+        "T:20260910",
+        "T:20260911",
+        "T:20260914"
+      ],
+      "effective_date_count": 10,
+      "source_groups": [
+        "eastmoney",
+        "tdx"
+      ],
+      "overall_hit_range": [
+        1.0,
+        1.0
+      ],
+      "minimum_daily_hit_rate_seen": 1.0,
+      "max_informative_samples_on_one_date": 19,
+      "informative_pairs_range_by_window": [
+        57,
+        133
+      ],
+      "in_registry_values": [
+        false
+      ],
+      "evidence_scope": "exploratory; not an adjudication or registry update"
+    },
+    {
+      "left": "tdx.finance_info.liutong_guben",
+      "right": "tencent[72]",
+      "levels": [
+        "L1"
+      ],
+      "ratios_right_over_left": [],
+      "window_count": 16,
+      "window_ends": [
+        "20260821",
+        "20260824",
+        "20260825",
+        "20260826",
+        "20260827",
+        "20260828",
+        "20260831",
+        "20260901",
+        "20260902",
+        "20260903",
+        "20260904",
+        "20260907",
+        "20260908",
+        "20260909",
+        "20260910",
+        "20260911"
+      ],
+      "effective_dates": [
+        "T:20260813",
+        "T:20260819",
+        "T:20260820",
+        "T:20260821",
+        "T:20260824",
+        "T:20260825",
+        "T:20260826",
+        "T:20260827",
+        "T:20260828",
+        "T:20260831",
+        "T:20260902",
+        "T:20260903",
+        "T:20260904",
+        "T:20260907",
+        "T:20260908",
+        "T:20260909",
+        "T:20260910",
+        "T:20260911"
+      ],
+      "effective_date_count": 18,
+      "source_groups": [
+        "tdx",
+        "tencent"
+      ],
+      "overall_hit_range": [
+        0.9916,
+        1.0
+      ],
+      "minimum_daily_hit_rate_seen": 0.95,
+      "max_informative_samples_on_one_date": 20,
+      "informative_pairs_range_by_window": [
+        80,
+        140
+      ],
+      "in_registry_values": [
+        false
+      ],
+      "evidence_scope": "exploratory; not an adjudication or registry update"
+    },
+    {
+      "left": "tdx.finance_info.liutong_guben",
+      "right": "tencent[76]",
+      "levels": [
+        "L1"
+      ],
+      "ratios_right_over_left": [],
+      "window_count": 16,
+      "window_ends": [
+        "20260821",
+        "20260824",
+        "20260825",
+        "20260826",
+        "20260827",
+        "20260828",
+        "20260831",
+        "20260901",
+        "20260902",
+        "20260903",
+        "20260904",
+        "20260907",
+        "20260908",
+        "20260909",
+        "20260910",
+        "20260911"
+      ],
+      "effective_dates": [
+        "T:20260813",
+        "T:20260819",
+        "T:20260820",
+        "T:20260821",
+        "T:20260824",
+        "T:20260825",
+        "T:20260826",
+        "T:20260827",
+        "T:20260828",
+        "T:20260831",
+        "T:20260902",
+        "T:20260903",
+        "T:20260904",
+        "T:20260907",
+        "T:20260908",
+        "T:20260909",
+        "T:20260910",
+        "T:20260911"
+      ],
+      "effective_date_count": 18,
+      "source_groups": [
+        "tdx",
+        "tencent"
+      ],
+      "overall_hit_range": [
+        0.9916,
+        1.0
+      ],
+      "minimum_daily_hit_rate_seen": 0.95,
+      "max_informative_samples_on_one_date": 20,
+      "informative_pairs_range_by_window": [
+        80,
+        140
+      ],
+      "in_registry_values": [
+        false
+      ],
+      "evidence_scope": "exploratory; not an adjudication or registry update"
+    },
+    {
+      "left": "tdx.finance_info.liutong_guben",
+      "right": "ulist239.f39",
+      "levels": [
+        "L1"
+      ],
+      "ratios_right_over_left": [],
+      "window_count": 16,
+      "window_ends": [
+        "20260821",
+        "20260824",
+        "20260825",
+        "20260826",
+        "20260827",
+        "20260828",
+        "20260831",
+        "20260901",
+        "20260902",
+        "20260903",
+        "20260904",
+        "20260907",
+        "20260908",
+        "20260909",
+        "20260910",
+        "20260911"
+      ],
+      "effective_dates": [
+        "T:20260813",
+        "T:20260819",
+        "T:20260820",
+        "T:20260821",
+        "T:20260824",
+        "T:20260825",
+        "T:20260826",
+        "T:20260827",
+        "T:20260828",
+        "T:20260831",
+        "T:20260902",
+        "T:20260903",
+        "T:20260904",
+        "T:20260907",
+        "T:20260908",
+        "T:20260909",
+        "T:20260910",
+        "T:20260911"
+      ],
+      "effective_date_count": 18,
+      "source_groups": [
+        "eastmoney",
+        "tdx"
+      ],
+      "overall_hit_range": [
+        0.9917,
+        1.0
+      ],
+      "minimum_daily_hit_rate_seen": 0.95,
+      "max_informative_samples_on_one_date": 20,
+      "informative_pairs_range_by_window": [
+        80,
+        140
+      ],
+      "in_registry_values": [
+        false
+      ],
+      "evidence_scope": "exploratory; not an adjudication or registry update"
+    },
+    {
+      "left": "tdx.finance_info.weifen_lirun",
+      "right": "ulist239.f47",
+      "levels": [
+        "L1-U"
+      ],
+      "ratios_right_over_left": [
+        0.1
+      ],
+      "window_count": 9,
+      "window_ends": [
+        "20260908",
+        "20260909",
+        "20260910",
+        "20260911",
+        "20260914",
+        "20260915",
+        "20260916",
+        "20260917",
+        "20260918"
+      ],
+      "effective_dates": [
+        "T:20260831",
+        "T:20260902",
+        "T:20260903",
+        "T:20260904",
+        "T:20260907",
+        "T:20260908",
+        "T:20260909",
+        "T:20260910",
+        "T:20260911",
+        "T:20260914"
+      ],
+      "effective_date_count": 10,
+      "source_groups": [
+        "eastmoney",
+        "tdx"
+      ],
+      "overall_hit_range": [
+        1.0,
+        1.0
+      ],
+      "minimum_daily_hit_rate_seen": 1.0,
+      "max_informative_samples_on_one_date": 20,
+      "informative_pairs_range_by_window": [
+        60,
+        140
+      ],
+      "in_registry_values": [
+        false
+      ],
+      "evidence_scope": "exploratory; not an adjudication or registry update"
+    },
+    {
+      "left": "tdx.finance_info.yingye_lirun",
+      "right": "ulist239.f42",
+      "levels": [
+        "L1-U"
+      ],
+      "ratios_right_over_left": [
+        0.1
+      ],
+      "window_count": 9,
+      "window_ends": [
+        "20260908",
+        "20260909",
+        "20260910",
+        "20260911",
+        "20260914",
+        "20260915",
+        "20260916",
+        "20260917",
+        "20260918"
+      ],
+      "effective_dates": [
+        "T:20260831",
+        "T:20260902",
+        "T:20260903",
+        "T:20260904",
+        "T:20260907",
+        "T:20260908",
+        "T:20260909",
+        "T:20260910",
+        "T:20260911",
+        "T:20260914"
+      ],
+      "effective_date_count": 10,
+      "source_groups": [
+        "eastmoney",
+        "tdx"
+      ],
+      "overall_hit_range": [
+        1.0,
+        1.0
+      ],
+      "minimum_daily_hit_rate_seen": 1.0,
+      "max_informative_samples_on_one_date": 20,
+      "informative_pairs_range_by_window": [
+        60,
+        140
+      ],
+      "in_registry_values": [
+        false
+      ],
+      "evidence_scope": "exploratory; not an adjudication or registry update"
+    },
+    {
+      "left": "tdx.finance_info.ziben_gongjijin",
+      "right": "ulist239.f60",
+      "levels": [
+        "L1-U"
+      ],
+      "ratios_right_over_left": [
+        0.1
+      ],
+      "window_count": 9,
+      "window_ends": [
+        "20260908",
+        "20260909",
+        "20260910",
+        "20260911",
+        "20260914",
+        "20260915",
+        "20260916",
+        "20260917",
+        "20260918"
+      ],
+      "effective_dates": [
+        "T:20260831",
+        "T:20260902",
+        "T:20260903",
+        "T:20260904",
+        "T:20260907",
+        "T:20260908",
+        "T:20260909",
+        "T:20260910",
+        "T:20260911",
+        "T:20260914"
+      ],
+      "effective_date_count": 10,
+      "source_groups": [
+        "eastmoney",
+        "tdx"
+      ],
+      "overall_hit_range": [
+        1.0,
+        1.0
+      ],
+      "minimum_daily_hit_rate_seen": 1.0,
+      "max_informative_samples_on_one_date": 20,
+      "informative_pairs_range_by_window": [
+        60,
+        140
+      ],
+      "in_registry_values": [
+        false
+      ],
+      "evidence_scope": "exploratory; not an adjudication or registry update"
+    },
+    {
+      "left": "tdx.finance_info.zong_guben",
+      "right": "tencent[73]",
+      "levels": [
+        "L1"
+      ],
+      "ratios_right_over_left": [],
+      "window_count": 16,
+      "window_ends": [
+        "20260821",
+        "20260824",
+        "20260825",
+        "20260826",
+        "20260827",
+        "20260828",
+        "20260831",
+        "20260901",
+        "20260902",
+        "20260903",
+        "20260904",
+        "20260907",
+        "20260908",
+        "20260909",
+        "20260910",
+        "20260911"
+      ],
+      "effective_dates": [
+        "T:20260813",
+        "T:20260819",
+        "T:20260820",
+        "T:20260821",
+        "T:20260824",
+        "T:20260825",
+        "T:20260826",
+        "T:20260827",
+        "T:20260828",
+        "T:20260831",
+        "T:20260902",
+        "T:20260903",
+        "T:20260904",
+        "T:20260907",
+        "T:20260908",
+        "T:20260909",
+        "T:20260910",
+        "T:20260911"
+      ],
+      "effective_date_count": 18,
+      "source_groups": [
+        "tdx",
+        "tencent"
+      ],
+      "overall_hit_range": [
+        1.0,
+        1.0
+      ],
+      "minimum_daily_hit_rate_seen": 1.0,
+      "max_informative_samples_on_one_date": 20,
+      "informative_pairs_range_by_window": [
+        80,
+        140
+      ],
+      "in_registry_values": [
+        false
+      ],
+      "evidence_scope": "exploratory; not an adjudication or registry update"
+    },
+    {
+      "left": "tdx.finance_info.zong_zichan",
+      "right": "ulist239.f50",
+      "levels": [
+        "L1-U"
+      ],
+      "ratios_right_over_left": [
+        0.1
+      ],
+      "window_count": 9,
+      "window_ends": [
+        "20260908",
+        "20260909",
+        "20260910",
+        "20260911",
+        "20260914",
+        "20260915",
+        "20260916",
+        "20260917",
+        "20260918"
+      ],
+      "effective_dates": [
+        "T:20260831",
+        "T:20260902",
+        "T:20260903",
+        "T:20260904",
+        "T:20260907",
+        "T:20260908",
+        "T:20260909",
+        "T:20260910",
+        "T:20260911",
+        "T:20260914"
+      ],
+      "effective_date_count": 10,
+      "source_groups": [
+        "eastmoney",
+        "tdx"
+      ],
+      "overall_hit_range": [
+        1.0,
+        1.0
+      ],
+      "minimum_daily_hit_rate_seen": 1.0,
+      "max_informative_samples_on_one_date": 20,
+      "informative_pairs_range_by_window": [
+        60,
+        140
+      ],
+      "in_registry_values": [
+        false
+      ],
+      "evidence_scope": "exploratory; not an adjudication or registry update"
+    },
+    {
+      "left": "tdx.quote_full.amplitude_pct",
+      "right": "tencent[43]",
+      "levels": [
+        "L1"
+      ],
+      "ratios_right_over_left": [],
+      "window_count": 4,
+      "window_ends": [
+        "20260921",
+        "20260922",
+        "20260928",
+        "20260929"
+      ],
+      "effective_dates": [
+        "T:20260914",
+        "T:20260918",
+        "T:20260921",
+        "T:20260928"
+      ],
+      "effective_date_count": 4,
+      "source_groups": [
+        "tdx",
+        "tencent"
+      ],
+      "overall_hit_range": [
+        1.0,
+        1.0
+      ],
+      "minimum_daily_hit_rate_seen": 1.0,
+      "max_informative_samples_on_one_date": 20,
+      "informative_pairs_range_by_window": [
+        58,
+        59
+      ],
+      "in_registry_values": [
+        false
+      ],
+      "evidence_scope": "exploratory; not an adjudication or registry update"
+    },
+    {
+      "left": "tdx.quote_full.float_mcap_yi",
+      "right": "tencent[44]",
+      "levels": [
+        "L1"
+      ],
+      "ratios_right_over_left": [],
+      "window_count": 4,
+      "window_ends": [
+        "20260921",
+        "20260922",
+        "20260928",
+        "20260929"
+      ],
+      "effective_dates": [
+        "T:20260914",
+        "T:20260918",
+        "T:20260921",
+        "T:20260928"
+      ],
+      "effective_date_count": 4,
+      "source_groups": [
+        "tdx",
+        "tencent"
+      ],
+      "overall_hit_range": [
+        1.0,
+        1.0
+      ],
+      "minimum_daily_hit_rate_seen": 1.0,
+      "max_informative_samples_on_one_date": 20,
+      "informative_pairs_range_by_window": [
+        60,
+        60
+      ],
+      "in_registry_values": [
+        false
+      ],
+      "evidence_scope": "exploratory; not an adjudication or registry update"
+    },
+    {
+      "left": "tdx.quote_full.limit_down",
+      "right": "tencent[48]",
+      "levels": [
+        "L1"
+      ],
+      "ratios_right_over_left": [],
+      "window_count": 8,
+      "window_ends": [
+        "20260909",
+        "20260910",
+        "20260911",
+        "20260914",
+        "20260915",
+        "20260916",
+        "20260917",
+        "20260918"
+      ],
+      "effective_dates": [
+        "T:20260907",
+        "T:20260908",
+        "T:20260909",
+        "T:20260910",
+        "T:20260911",
+        "T:20260914"
+      ],
+      "effective_date_count": 6,
+      "source_groups": [
+        "tdx",
+        "tencent"
+      ],
+      "overall_hit_range": [
+        0.9667,
+        0.9833
+      ],
+      "minimum_daily_hit_rate_seen": 0.95,
+      "max_informative_samples_on_one_date": 20,
+      "informative_pairs_range_by_window": [
+        60,
+        120
+      ],
+      "in_registry_values": [
+        false
+      ],
+      "evidence_scope": "exploratory; not an adjudication or registry update"
+    },
+    {
+      "left": "tdx.quote_full.limit_down_price",
+      "right": "tencent[48]",
+      "levels": [
+        "L1"
+      ],
+      "ratios_right_over_left": [],
+      "window_count": 4,
+      "window_ends": [
+        "20260921",
+        "20260922",
+        "20260928",
+        "20260929"
+      ],
+      "effective_dates": [
+        "T:20260914",
+        "T:20260918",
+        "T:20260921",
+        "T:20260928"
+      ],
+      "effective_date_count": 4,
+      "source_groups": [
+        "tdx",
+        "tencent"
+      ],
+      "overall_hit_range": [
+        1.0,
+        1.0
+      ],
+      "minimum_daily_hit_rate_seen": 1.0,
+      "max_informative_samples_on_one_date": 20,
+      "informative_pairs_range_by_window": [
+        60,
+        60
+      ],
+      "in_registry_values": [
+        false
+      ],
+      "evidence_scope": "exploratory; not an adjudication or registry update"
+    },
+    {
+      "left": "tdx.quote_full.limit_up",
+      "right": "tencent[47]",
+      "levels": [
+        "L1"
+      ],
+      "ratios_right_over_left": [],
+      "window_count": 13,
+      "window_ends": [
+        "20260908",
+        "20260909",
+        "20260910",
+        "20260911",
+        "20260914",
+        "20260915",
+        "20260916",
+        "20260917",
+        "20260918",
+        "20260921",
+        "20260922",
+        "20260928",
+        "20260929"
+      ],
+      "effective_dates": [
+        "T:20260831",
+        "T:20260907",
+        "T:20260908",
+        "T:20260909",
+        "T:20260910",
+        "T:20260911",
+        "T:20260914",
+        "T:20260918",
+        "T:20260921",
+        "T:20260928"
+      ],
+      "effective_date_count": 10,
+      "source_groups": [
+        "tdx",
+        "tencent"
+      ],
+      "overall_hit_range": [
+        0.9625,
+        1.0
+      ],
+      "minimum_daily_hit_rate_seen": 0.95,
+      "max_informative_samples_on_one_date": 20,
+      "informative_pairs_range_by_window": [
+        60,
+        120
+      ],
+      "in_registry_values": [
+        false
+      ],
+      "evidence_scope": "exploratory; not an adjudication or registry update"
+    },
+    {
+      "left": "tdx.quote_full.mcap_yi",
+      "right": "tencent[45]",
+      "levels": [
+        "L1"
+      ],
+      "ratios_right_over_left": [],
+      "window_count": 4,
+      "window_ends": [
+        "20260921",
+        "20260922",
+        "20260928",
+        "20260929"
+      ],
+      "effective_dates": [
+        "T:20260914",
+        "T:20260918",
+        "T:20260921",
+        "T:20260928"
+      ],
+      "effective_date_count": 4,
+      "source_groups": [
+        "tdx",
+        "tencent"
+      ],
+      "overall_hit_range": [
+        1.0,
+        1.0
+      ],
+      "minimum_daily_hit_rate_seen": 1.0,
+      "max_informative_samples_on_one_date": 20,
+      "informative_pairs_range_by_window": [
+        60,
+        60
+      ],
+      "in_registry_values": [
+        false
+      ],
+      "evidence_scope": "exploratory; not an adjudication or registry update"
+    },
+    {
+      "left": "tdx.quote_full.pb",
+      "right": "tencent[46]",
+      "levels": [
+        "L1"
+      ],
+      "ratios_right_over_left": [],
+      "window_count": 4,
+      "window_ends": [
+        "20260921",
+        "20260922",
+        "20260928",
+        "20260929"
+      ],
+      "effective_dates": [
+        "T:20260914",
+        "T:20260918",
+        "T:20260921",
+        "T:20260928"
+      ],
+      "effective_date_count": 4,
+      "source_groups": [
+        "tdx",
+        "tencent"
+      ],
+      "overall_hit_range": [
+        1.0,
+        1.0
+      ],
+      "minimum_daily_hit_rate_seen": 1.0,
+      "max_informative_samples_on_one_date": 20,
+      "informative_pairs_range_by_window": [
+        60,
+        60
+      ],
+      "in_registry_values": [
+        false
+      ],
+      "evidence_scope": "exploratory; not an adjudication or registry update"
+    },
+    {
+      "left": "tdx.quote_full.pe_lyr",
+      "right": "tencent[53]",
+      "levels": [
+        "L1"
+      ],
+      "ratios_right_over_left": [],
+      "window_count": 4,
+      "window_ends": [
+        "20260921",
+        "20260922",
+        "20260928",
+        "20260929"
+      ],
+      "effective_dates": [
+        "T:20260914",
+        "T:20260918",
+        "T:20260921",
+        "T:20260928"
+      ],
+      "effective_date_count": 4,
+      "source_groups": [
+        "tdx",
+        "tencent"
+      ],
+      "overall_hit_range": [
+        1.0,
+        1.0
+      ],
+      "minimum_daily_hit_rate_seen": 1.0,
+      "max_informative_samples_on_one_date": 20,
+      "informative_pairs_range_by_window": [
+        60,
+        60
+      ],
+      "in_registry_values": [
+        false
+      ],
+      "evidence_scope": "exploratory; not an adjudication or registry update"
+    },
+    {
+      "left": "tdx.quote_full.turnover_pct",
+      "right": "tencent[38]",
+      "levels": [
+        "L1"
+      ],
+      "ratios_right_over_left": [],
+      "window_count": 4,
+      "window_ends": [
+        "20260921",
+        "20260922",
+        "20260928",
+        "20260929"
+      ],
+      "effective_dates": [
+        "T:20260914",
+        "T:20260918",
+        "T:20260921",
+        "T:20260928"
+      ],
+      "effective_date_count": 4,
+      "source_groups": [
+        "tdx",
+        "tencent"
+      ],
+      "overall_hit_range": [
+        1.0,
+        1.0
+      ],
+      "minimum_daily_hit_rate_seen": 1.0,
+      "max_informative_samples_on_one_date": 20,
+      "informative_pairs_range_by_window": [
+        60,
+        60
+      ],
+      "in_registry_values": [
+        false
+      ],
+      "evidence_scope": "exploratory; not an adjudication or registry update"
+    },
+    {
+      "left": "tdx.quote_full.vol_ratio",
+      "right": "tencent[49]",
+      "levels": [
+        "L1"
+      ],
+      "ratios_right_over_left": [],
+      "window_count": 4,
+      "window_ends": [
+        "20260921",
+        "20260922",
+        "20260928",
+        "20260929"
+      ],
+      "effective_dates": [
+        "T:20260914",
+        "T:20260918",
+        "T:20260921",
+        "T:20260928"
+      ],
+      "effective_date_count": 4,
+      "source_groups": [
+        "tdx",
+        "tencent"
+      ],
+      "overall_hit_range": [
+        1.0,
+        1.0
+      ],
+      "minimum_daily_hit_rate_seen": 1.0,
+      "max_informative_samples_on_one_date": 20,
+      "informative_pairs_range_by_window": [
+        60,
+        60
+      ],
+      "in_registry_values": [
+        false
+      ],
+      "evidence_scope": "exploratory; not an adjudication or registry update"
+    },
+    {
+      "left": "tencent[11]",
+      "right": "tdx.quote_full.bid2",
+      "levels": [
+        "L1"
+      ],
+      "ratios_right_over_left": [],
+      "window_count": 11,
+      "window_ends": [
+        "20260821",
+        "20260824",
+        "20260825",
+        "20260826",
+        "20260827",
+        "20260828",
+        "20260831",
+        "20260901",
+        "20260902",
+        "20260903",
+        "20260904"
+      ],
+      "effective_dates": [
+        "T:20260819",
+        "T:20260820",
+        "T:20260821",
+        "T:20260824",
+        "T:20260825",
+        "T:20260826",
+        "T:20260827",
+        "T:20260828",
+        "T:20260831",
+        "T:20260902",
+        "T:20260903",
+        "T:20260904"
+      ],
+      "effective_date_count": 12,
+      "source_groups": [
+        "tdx",
+        "tencent"
+      ],
+      "overall_hit_range": [
+        1.0,
+        1.0
+      ],
+      "minimum_daily_hit_rate_seen": 1.0,
+      "max_informative_samples_on_one_date": 20,
+      "informative_pairs_range_by_window": [
+        61,
+        139
+      ],
+      "in_registry_values": [
+        false
+      ],
+      "evidence_scope": "exploratory; not an adjudication or registry update"
+    },
+    {
+      "left": "tencent[13]",
+      "right": "tdx.quote_full.bid3",
+      "levels": [
+        "L1"
+      ],
+      "ratios_right_over_left": [],
+      "window_count": 11,
+      "window_ends": [
+        "20260821",
+        "20260824",
+        "20260825",
+        "20260826",
+        "20260827",
+        "20260828",
+        "20260831",
+        "20260901",
+        "20260902",
+        "20260903",
+        "20260904"
+      ],
+      "effective_dates": [
+        "T:20260819",
+        "T:20260820",
+        "T:20260821",
+        "T:20260824",
+        "T:20260825",
+        "T:20260826",
+        "T:20260827",
+        "T:20260828",
+        "T:20260831",
+        "T:20260902",
+        "T:20260903",
+        "T:20260904"
+      ],
+      "effective_date_count": 12,
+      "source_groups": [
+        "tdx",
+        "tencent"
+      ],
+      "overall_hit_range": [
+        1.0,
+        1.0
+      ],
+      "minimum_daily_hit_rate_seen": 1.0,
+      "max_informative_samples_on_one_date": 20,
+      "informative_pairs_range_by_window": [
+        61,
+        139
+      ],
+      "in_registry_values": [
+        false
+      ],
+      "evidence_scope": "exploratory; not an adjudication or registry update"
+    },
+    {
+      "left": "tencent[15]",
+      "right": "tdx.quote_full.bid4",
+      "levels": [
+        "L1"
+      ],
+      "ratios_right_over_left": [],
+      "window_count": 11,
+      "window_ends": [
+        "20260821",
+        "20260824",
+        "20260825",
+        "20260826",
+        "20260827",
+        "20260828",
+        "20260831",
+        "20260901",
+        "20260902",
+        "20260903",
+        "20260904"
+      ],
+      "effective_dates": [
+        "T:20260819",
+        "T:20260820",
+        "T:20260821",
+        "T:20260824",
+        "T:20260825",
+        "T:20260826",
+        "T:20260827",
+        "T:20260828",
+        "T:20260831",
+        "T:20260902",
+        "T:20260903",
+        "T:20260904"
+      ],
+      "effective_date_count": 12,
+      "source_groups": [
+        "tdx",
+        "tencent"
+      ],
+      "overall_hit_range": [
+        1.0,
+        1.0
+      ],
+      "minimum_daily_hit_rate_seen": 1.0,
+      "max_informative_samples_on_one_date": 20,
+      "informative_pairs_range_by_window": [
+        61,
+        139
+      ],
+      "in_registry_values": [
+        false
+      ],
+      "evidence_scope": "exploratory; not an adjudication or registry update"
+    },
+    {
+      "left": "tencent[17]",
+      "right": "tdx.quote_full.bid5",
+      "levels": [
+        "L1"
+      ],
+      "ratios_right_over_left": [],
+      "window_count": 11,
+      "window_ends": [
+        "20260821",
+        "20260824",
+        "20260825",
+        "20260826",
+        "20260827",
+        "20260828",
+        "20260831",
+        "20260901",
+        "20260902",
+        "20260903",
+        "20260904"
+      ],
+      "effective_dates": [
+        "T:20260819",
+        "T:20260820",
+        "T:20260821",
+        "T:20260824",
+        "T:20260825",
+        "T:20260826",
+        "T:20260827",
+        "T:20260828",
+        "T:20260831",
+        "T:20260902",
+        "T:20260903",
+        "T:20260904"
+      ],
+      "effective_date_count": 12,
+      "source_groups": [
+        "tdx",
+        "tencent"
+      ],
+      "overall_hit_range": [
+        1.0,
+        1.0
+      ],
+      "minimum_daily_hit_rate_seen": 1.0,
+      "max_informative_samples_on_one_date": 20,
+      "informative_pairs_range_by_window": [
+        61,
+        139
+      ],
+      "in_registry_values": [
+        false
+      ],
+      "evidence_scope": "exploratory; not an adjudication or registry update"
+    },
+    {
+      "left": "tencent[21]",
+      "right": "tdx.quote_full.ask2",
+      "levels": [
+        "L1"
+      ],
+      "ratios_right_over_left": [],
+      "window_count": 11,
+      "window_ends": [
+        "20260821",
+        "20260824",
+        "20260825",
+        "20260826",
+        "20260827",
+        "20260828",
+        "20260831",
+        "20260901",
+        "20260902",
+        "20260903",
+        "20260904"
+      ],
+      "effective_dates": [
+        "T:20260819",
+        "T:20260820",
+        "T:20260821",
+        "T:20260824",
+        "T:20260825",
+        "T:20260826",
+        "T:20260827",
+        "T:20260828",
+        "T:20260831",
+        "T:20260902",
+        "T:20260903",
+        "T:20260904"
+      ],
+      "effective_date_count": 12,
+      "source_groups": [
+        "tdx",
+        "tencent"
+      ],
+      "overall_hit_range": [
+        1.0,
+        1.0
+      ],
+      "minimum_daily_hit_rate_seen": 1.0,
+      "max_informative_samples_on_one_date": 20,
+      "informative_pairs_range_by_window": [
+        60,
+        139
+      ],
+      "in_registry_values": [
+        false
+      ],
+      "evidence_scope": "exploratory; not an adjudication or registry update"
+    },
+    {
+      "left": "tencent[23]",
+      "right": "tdx.quote_full.ask3",
+      "levels": [
+        "L1"
+      ],
+      "ratios_right_over_left": [],
+      "window_count": 11,
+      "window_ends": [
+        "20260821",
+        "20260824",
+        "20260825",
+        "20260826",
+        "20260827",
+        "20260828",
+        "20260831",
+        "20260901",
+        "20260902",
+        "20260903",
+        "20260904"
+      ],
+      "effective_dates": [
+        "T:20260819",
+        "T:20260820",
+        "T:20260821",
+        "T:20260824",
+        "T:20260825",
+        "T:20260826",
+        "T:20260827",
+        "T:20260828",
+        "T:20260831",
+        "T:20260902",
+        "T:20260903",
+        "T:20260904"
+      ],
+      "effective_date_count": 12,
+      "source_groups": [
+        "tdx",
+        "tencent"
+      ],
+      "overall_hit_range": [
+        1.0,
+        1.0
+      ],
+      "minimum_daily_hit_rate_seen": 1.0,
+      "max_informative_samples_on_one_date": 20,
+      "informative_pairs_range_by_window": [
+        60,
+        139
+      ],
+      "in_registry_values": [
+        false
+      ],
+      "evidence_scope": "exploratory; not an adjudication or registry update"
+    },
+    {
+      "left": "tencent[25]",
+      "right": "tdx.quote_full.ask4",
+      "levels": [
+        "L1"
+      ],
+      "ratios_right_over_left": [],
+      "window_count": 11,
+      "window_ends": [
+        "20260821",
+        "20260824",
+        "20260825",
+        "20260826",
+        "20260827",
+        "20260828",
+        "20260831",
+        "20260901",
+        "20260902",
+        "20260903",
+        "20260904"
+      ],
+      "effective_dates": [
+        "T:20260819",
+        "T:20260820",
+        "T:20260821",
+        "T:20260824",
+        "T:20260825",
+        "T:20260826",
+        "T:20260827",
+        "T:20260828",
+        "T:20260831",
+        "T:20260902",
+        "T:20260903",
+        "T:20260904"
+      ],
+      "effective_date_count": 12,
+      "source_groups": [
+        "tdx",
+        "tencent"
+      ],
+      "overall_hit_range": [
+        1.0,
+        1.0
+      ],
+      "minimum_daily_hit_rate_seen": 1.0,
+      "max_informative_samples_on_one_date": 20,
+      "informative_pairs_range_by_window": [
+        60,
+        139
+      ],
+      "in_registry_values": [
+        false
+      ],
+      "evidence_scope": "exploratory; not an adjudication or registry update"
+    },
+    {
+      "left": "tencent[27]",
+      "right": "tdx.quote_full.ask5",
+      "levels": [
+        "L1"
+      ],
+      "ratios_right_over_left": [],
+      "window_count": 11,
+      "window_ends": [
+        "20260821",
+        "20260824",
+        "20260825",
+        "20260826",
+        "20260827",
+        "20260828",
+        "20260831",
+        "20260901",
+        "20260902",
+        "20260903",
+        "20260904"
+      ],
+      "effective_dates": [
+        "T:20260819",
+        "T:20260820",
+        "T:20260821",
+        "T:20260824",
+        "T:20260825",
+        "T:20260826",
+        "T:20260827",
+        "T:20260828",
+        "T:20260831",
+        "T:20260902",
+        "T:20260903",
+        "T:20260904"
+      ],
+      "effective_date_count": 12,
+      "source_groups": [
+        "tdx",
+        "tencent"
+      ],
+      "overall_hit_range": [
+        1.0,
+        1.0
+      ],
+      "minimum_daily_hit_rate_seen": 1.0,
+      "max_informative_samples_on_one_date": 20,
+      "informative_pairs_range_by_window": [
+        60,
+        139
+      ],
+      "in_registry_values": [
+        false
+      ],
+      "evidence_scope": "exploratory; not an adjudication or registry update"
+    },
+    {
+      "left": "ulist239.f109",
+      "right": "zhb.stat.change_5d",
+      "levels": [
+        "L1"
+      ],
+      "ratios_right_over_left": [],
+      "window_count": 23,
+      "window_ends": [
+        "20260825",
+        "20260826",
+        "20260827",
+        "20260828",
+        "20260831",
+        "20260901",
+        "20260902",
+        "20260903",
+        "20260904",
+        "20260907",
+        "20260908",
+        "20260909",
+        "20260910",
+        "20260911",
+        "20260914",
+        "20260915",
+        "20260916",
+        "20260917",
+        "20260918",
+        "20260921",
+        "20260922",
+        "20260923",
+        "20260924"
+      ],
+      "effective_dates": [
+        "T:20260819",
+        "T:20260821",
+        "T:20260824",
+        "T:20260825",
+        "T:20260826",
+        "T:20260827",
+        "T:20260828",
+        "T:20260831",
+        "T:20260902",
+        "T:20260903",
+        "T:20260904",
+        "T:20260907",
+        "T:20260908",
+        "T:20260909",
+        "T:20260910",
+        "T:20260914",
+        "T:20260915",
+        "T:20260916",
+        "T:20260917",
+        "T:20260918",
+        "T:20260923"
+      ],
+      "effective_date_count": 21,
+      "source_groups": [
+        "eastmoney",
+        "tdx"
+      ],
+      "overall_hit_range": [
+        1.0,
+        1.0
+      ],
+      "minimum_daily_hit_rate_seen": 1.0,
+      "max_informative_samples_on_one_date": 20,
+      "informative_pairs_range_by_window": [
+        60,
+        134
+      ],
+      "in_registry_values": [
+        false
+      ],
+      "evidence_scope": "exploratory; not an adjudication or registry update"
+    },
+    {
+      "left": "ulist239.f110",
+      "right": "zhb.stat.change_20d",
+      "levels": [
+        "L1"
+      ],
+      "ratios_right_over_left": [],
+      "window_count": 23,
+      "window_ends": [
+        "20260825",
+        "20260826",
+        "20260827",
+        "20260828",
+        "20260831",
+        "20260901",
+        "20260902",
+        "20260903",
+        "20260904",
+        "20260907",
+        "20260908",
+        "20260909",
+        "20260910",
+        "20260911",
+        "20260914",
+        "20260915",
+        "20260916",
+        "20260917",
+        "20260918",
+        "20260921",
+        "20260922",
+        "20260923",
+        "20260924"
+      ],
+      "effective_dates": [
+        "T:20260819",
+        "T:20260821",
+        "T:20260824",
+        "T:20260825",
+        "T:20260826",
+        "T:20260827",
+        "T:20260828",
+        "T:20260831",
+        "T:20260902",
+        "T:20260903",
+        "T:20260904",
+        "T:20260907",
+        "T:20260908",
+        "T:20260909",
+        "T:20260910",
+        "T:20260914",
+        "T:20260915",
+        "T:20260916",
+        "T:20260917",
+        "T:20260918",
+        "T:20260923"
+      ],
+      "effective_date_count": 21,
+      "source_groups": [
+        "eastmoney",
+        "tdx"
+      ],
+      "overall_hit_range": [
+        1.0,
+        1.0
+      ],
+      "minimum_daily_hit_rate_seen": 1.0,
+      "max_informative_samples_on_one_date": 20,
+      "informative_pairs_range_by_window": [
+        60,
+        135
+      ],
+      "in_registry_values": [
+        false
+      ],
+      "evidence_scope": "exploratory; not an adjudication or registry update"
+    },
+    {
+      "left": "ulist239.f142",
+      "right": "tdx.quote_full.bid2",
+      "levels": [
+        "L1"
+      ],
+      "ratios_right_over_left": [],
+      "window_count": 10,
+      "window_ends": [
+        "20260824",
+        "20260825",
+        "20260826",
+        "20260827",
+        "20260828",
+        "20260831",
+        "20260901",
+        "20260902",
+        "20260903",
+        "20260904"
+      ],
+      "effective_dates": [
+        "T:20260819",
+        "T:20260820",
+        "T:20260821",
+        "T:20260824",
+        "T:20260825",
+        "T:20260826",
+        "T:20260827",
+        "T:20260828",
+        "T:20260831",
+        "T:20260902",
+        "T:20260903",
+        "T:20260904"
+      ],
+      "effective_date_count": 12,
+      "source_groups": [
+        "eastmoney",
+        "tdx"
+      ],
+      "overall_hit_range": [
+        0.9875,
+        1.0
+      ],
+      "minimum_daily_hit_rate_seen": 0.95,
+      "max_informative_samples_on_one_date": 20,
+      "informative_pairs_range_by_window": [
+        80,
+        140
+      ],
+      "in_registry_values": [
+        false
+      ],
+      "evidence_scope": "exploratory; not an adjudication or registry update"
+    },
+    {
+      "left": "ulist239.f143",
+      "right": "tdx.quote_full.ask2",
+      "levels": [
+        "L1"
+      ],
+      "ratios_right_over_left": [],
+      "window_count": 10,
+      "window_ends": [
+        "20260824",
+        "20260825",
+        "20260826",
+        "20260827",
+        "20260828",
+        "20260831",
+        "20260901",
+        "20260902",
+        "20260903",
+        "20260904"
+      ],
+      "effective_dates": [
+        "T:20260819",
+        "T:20260820",
+        "T:20260821",
+        "T:20260824",
+        "T:20260825",
+        "T:20260826",
+        "T:20260827",
+        "T:20260828",
+        "T:20260831",
+        "T:20260902",
+        "T:20260903",
+        "T:20260904"
+      ],
+      "effective_date_count": 12,
+      "source_groups": [
+        "eastmoney",
+        "tdx"
+      ],
+      "overall_hit_range": [
+        0.975,
+        1.0
+      ],
+      "minimum_daily_hit_rate_seen": 0.9,
+      "max_informative_samples_on_one_date": 20,
+      "informative_pairs_range_by_window": [
+        80,
+        140
+      ],
+      "in_registry_values": [
+        false
+      ],
+      "evidence_scope": "exploratory; not an adjudication or registry update"
+    },
+    {
+      "left": "ulist239.f160",
+      "right": "zhb.stat.change_10d",
+      "levels": [
+        "L1"
+      ],
+      "ratios_right_over_left": [],
+      "window_count": 23,
+      "window_ends": [
+        "20260825",
+        "20260826",
+        "20260827",
+        "20260828",
+        "20260831",
+        "20260901",
+        "20260902",
+        "20260903",
+        "20260904",
+        "20260907",
+        "20260908",
+        "20260909",
+        "20260910",
+        "20260911",
+        "20260914",
+        "20260915",
+        "20260916",
+        "20260917",
+        "20260918",
+        "20260921",
+        "20260922",
+        "20260923",
+        "20260924"
+      ],
+      "effective_dates": [
+        "T:20260819",
+        "T:20260821",
+        "T:20260824",
+        "T:20260825",
+        "T:20260826",
+        "T:20260827",
+        "T:20260828",
+        "T:20260831",
+        "T:20260902",
+        "T:20260903",
+        "T:20260904",
+        "T:20260907",
+        "T:20260908",
+        "T:20260909",
+        "T:20260910",
+        "T:20260914",
+        "T:20260915",
+        "T:20260916",
+        "T:20260917",
+        "T:20260918",
+        "T:20260923"
+      ],
+      "effective_date_count": 21,
+      "source_groups": [
+        "eastmoney",
+        "tdx"
+      ],
+      "overall_hit_range": [
+        1.0,
+        1.0
+      ],
+      "minimum_daily_hit_rate_seen": 1.0,
+      "max_informative_samples_on_one_date": 20,
+      "informative_pairs_range_by_window": [
+        58,
+        134
+      ],
+      "in_registry_values": [
+        false
+      ],
+      "evidence_scope": "exploratory; not an adjudication or registry update"
+    },
+    {
+      "left": "ulist239.f221",
+      "right": "zhb.tipinfo.report_period",
+      "levels": [
+        "L1"
+      ],
+      "ratios_right_over_left": [],
+      "window_count": 9,
+      "window_ends": [
+        "20260825",
+        "20260826",
+        "20260827",
+        "20260828",
+        "20260831",
+        "20260901",
+        "20260902",
+        "20260903",
+        "20260904"
+      ],
+      "effective_dates": [
+        "T:20260819",
+        "T:20260821",
+        "T:20260824",
+        "T:20260825",
+        "T:20260826",
+        "T:20260827",
+        "T:20260828",
+        "T:20260831",
+        "T:20260902",
+        "T:20260903"
+      ],
+      "effective_date_count": 10,
+      "source_groups": [
+        "eastmoney",
+        "tdx"
+      ],
+      "overall_hit_range": [
+        0.95,
+        1.0
+      ],
+      "minimum_daily_hit_rate_seen": 0.9,
+      "max_informative_samples_on_one_date": 20,
+      "informative_pairs_range_by_window": [
+        60,
+        120
+      ],
+      "in_registry_values": [
+        false
+      ],
+      "evidence_scope": "exploratory; not an adjudication or registry update"
+    },
+    {
+      "left": "ulist239.f24",
+      "right": "zhb.stat.change_60d",
+      "levels": [
+        "L1"
+      ],
+      "ratios_right_over_left": [],
+      "window_count": 23,
+      "window_ends": [
+        "20260825",
+        "20260826",
+        "20260827",
+        "20260828",
+        "20260831",
+        "20260901",
+        "20260902",
+        "20260903",
+        "20260904",
+        "20260907",
+        "20260908",
+        "20260909",
+        "20260910",
+        "20260911",
+        "20260914",
+        "20260915",
+        "20260916",
+        "20260917",
+        "20260918",
+        "20260921",
+        "20260922",
+        "20260923",
+        "20260924"
+      ],
+      "effective_dates": [
+        "T:20260819",
+        "T:20260821",
+        "T:20260824",
+        "T:20260825",
+        "T:20260826",
+        "T:20260827",
+        "T:20260828",
+        "T:20260831",
+        "T:20260902",
+        "T:20260903",
+        "T:20260904",
+        "T:20260907",
+        "T:20260908",
+        "T:20260909",
+        "T:20260910",
+        "T:20260914",
+        "T:20260915",
+        "T:20260916",
+        "T:20260917",
+        "T:20260918",
+        "T:20260923"
+      ],
+      "effective_date_count": 21,
+      "source_groups": [
+        "eastmoney",
+        "tdx"
+      ],
+      "overall_hit_range": [
+        0.949,
+        1.0
+      ],
+      "minimum_daily_hit_rate_seen": 0.947368,
+      "max_informative_samples_on_one_date": 20,
+      "informative_pairs_range_by_window": [
+        60,
+        134
+      ],
+      "in_registry_values": [
+        false
+      ],
+      "evidence_scope": "exploratory; not an adjudication or registry update"
+    },
+    {
+      "left": "ulist239.f25",
+      "right": "zhb.stat.change_ytd",
+      "levels": [
+        "L1"
+      ],
+      "ratios_right_over_left": [],
+      "window_count": 23,
+      "window_ends": [
+        "20260825",
+        "20260826",
+        "20260827",
+        "20260828",
+        "20260831",
+        "20260901",
+        "20260902",
+        "20260903",
+        "20260904",
+        "20260907",
+        "20260908",
+        "20260909",
+        "20260910",
+        "20260911",
+        "20260914",
+        "20260915",
+        "20260916",
+        "20260917",
+        "20260918",
+        "20260921",
+        "20260922",
+        "20260923",
+        "20260924"
+      ],
+      "effective_dates": [
+        "T:20260819",
+        "T:20260821",
+        "T:20260824",
+        "T:20260825",
+        "T:20260826",
+        "T:20260827",
+        "T:20260828",
+        "T:20260831",
+        "T:20260902",
+        "T:20260903",
+        "T:20260904",
+        "T:20260907",
+        "T:20260908",
+        "T:20260909",
+        "T:20260910",
+        "T:20260914",
+        "T:20260915",
+        "T:20260916",
+        "T:20260917",
+        "T:20260918",
+        "T:20260923"
+      ],
+      "effective_date_count": 21,
+      "source_groups": [
+        "eastmoney",
+        "tdx"
+      ],
+      "overall_hit_range": [
+        0.9333,
+        0.95
+      ],
+      "minimum_daily_hit_rate_seen": 0.9,
+      "max_informative_samples_on_one_date": 20,
+      "informative_pairs_range_by_window": [
+        60,
+        134
+      ],
+      "in_registry_values": [
+        false
+      ],
+      "evidence_scope": "exploratory; not an adjudication or registry update"
+    },
+    {
+      "left": "ulist239.f32",
+      "right": "tdx.quote_full.ask1",
+      "levels": [
+        "L1"
+      ],
+      "ratios_right_over_left": [],
+      "window_count": 4,
+      "window_ends": [
+        "20260826",
+        "20260828",
+        "20260831",
+        "20260916"
+      ],
+      "effective_dates": [
+        "T:20260819",
+        "T:20260820",
+        "T:20260821",
+        "T:20260824",
+        "T:20260825",
+        "T:20260826",
+        "T:20260827",
+        "T:20260828",
+        "T:20260831",
+        "T:20260908",
+        "T:20260909",
+        "T:20260910",
+        "T:20260911",
+        "T:20260914",
+        "T:20260915",
+        "T:20260916"
+      ],
+      "effective_date_count": 16,
+      "source_groups": [
+        "eastmoney",
+        "tdx"
+      ],
+      "overall_hit_range": [
+        0.9571,
+        1.0
+      ],
+      "minimum_daily_hit_rate_seen": 0.85,
+      "max_informative_samples_on_one_date": 20,
+      "informative_pairs_range_by_window": [
+        120,
+        140
+      ],
+      "in_registry_values": [
+        false
+      ],
+      "evidence_scope": "exploratory; not an adjudication or registry update"
+    },
+    {
+      "left": "ulist239.f38",
+      "right": "tdx.finance_info.zongguben",
+      "levels": [
+        "L1"
+      ],
+      "ratios_right_over_left": [],
+      "window_count": 22,
+      "window_ends": [
+        "20260820",
+        "20260821",
+        "20260824",
+        "20260825",
+        "20260826",
+        "20260827",
+        "20260828",
+        "20260831",
+        "20260901",
+        "20260902",
+        "20260903",
+        "20260904",
+        "20260907",
+        "20260908",
+        "20260909",
+        "20260910",
+        "20260911",
+        "20260914",
+        "20260915",
+        "20260916",
+        "20260917",
+        "20260918"
+      ],
+      "effective_dates": [
+        "T:20260812",
+        "T:20260813",
+        "T:20260819",
+        "T:20260820",
+        "T:20260821",
+        "T:20260824",
+        "T:20260825",
+        "T:20260826",
+        "T:20260827",
+        "T:20260828",
+        "T:20260831",
+        "T:20260902",
+        "T:20260903",
+        "T:20260904",
+        "T:20260907",
+        "T:20260908",
+        "T:20260909",
+        "T:20260910",
+        "T:20260911",
+        "T:20260914"
+      ],
+      "effective_date_count": 20,
+      "source_groups": [
+        "eastmoney",
+        "tdx"
+      ],
+      "overall_hit_range": [
+        1.0,
+        1.0
+      ],
+      "minimum_daily_hit_rate_seen": 1.0,
+      "max_informative_samples_on_one_date": 20,
+      "informative_pairs_range_by_window": [
+        60,
+        140
+      ],
+      "in_registry_values": [
+        false
+      ],
+      "evidence_scope": "exploratory; not an adjudication or registry update"
+    },
+    {
+      "left": "ulist239.f45",
+      "right": "tdx.finance_info.jinglirun",
+      "levels": [
+        "L1-U"
+      ],
+      "ratios_right_over_left": [
+        10
+      ],
+      "window_count": 20,
+      "window_ends": [
+        "20260908",
+        "20260909",
+        "20260910",
+        "20260911",
+        "20260914",
+        "20260915",
+        "20260916",
+        "20260917",
+        "20260918",
+        "20260921",
+        "20260922",
+        "20260923",
+        "20260924",
+        "20260928",
+        "20260929",
+        "20260930",
+        "20261008",
+        "20261009",
+        "20261012",
+        "20261013"
+      ],
+      "effective_dates": [
+        "T:20260831",
+        "T:20260902",
+        "T:20260903",
+        "T:20260904",
+        "T:20260907",
+        "T:20260908",
+        "T:20260909",
+        "T:20260910",
+        "T:20260911",
+        "T:20260914",
+        "T:20260915",
+        "T:20260916",
+        "T:20260917",
+        "T:20260918",
+        "T:20260923",
+        "T:20260924",
+        "T:20260928",
+        "T:20260930",
+        "T:20261008"
+      ],
+      "effective_date_count": 19,
+      "source_groups": [
+        "eastmoney",
+        "tdx"
+      ],
+      "overall_hit_range": [
+        1.0,
+        1.0
+      ],
+      "minimum_daily_hit_rate_seen": 1.0,
+      "max_informative_samples_on_one_date": 20,
+      "informative_pairs_range_by_window": [
+        60,
+        140
+      ],
+      "in_registry_values": [
+        false
+      ],
+      "evidence_scope": "exploratory; not an adjudication or registry update"
+    },
+    {
+      "left": "zhb.full.pe_dynamic",
+      "right": "tencent[39]",
+      "levels": [
+        "L1"
+      ],
+      "ratios_right_over_left": [],
+      "window_count": 15,
+      "window_ends": [
+        "20260903",
+        "20260904",
+        "20260907",
+        "20260908",
+        "20260909",
+        "20260910",
+        "20260911",
+        "20260914",
+        "20260915",
+        "20260916",
+        "20260917",
+        "20260918",
+        "20260921",
+        "20260922",
+        "20260923"
+      ],
+      "effective_dates": [
+        "T:20260826",
+        "T:20260827",
+        "T:20260828",
+        "T:20260831",
+        "T:20260902",
+        "T:20260903",
+        "T:20260904",
+        "T:20260907",
+        "T:20260908",
+        "T:20260909",
+        "T:20260910",
+        "T:20260914",
+        "T:20260915",
+        "T:20260916",
+        "T:20260917",
+        "T:20260918"
+      ],
+      "effective_date_count": 16,
+      "source_groups": [
+        "tdx",
+        "tencent"
+      ],
+      "overall_hit_range": [
+        0.9394,
+        1.0
+      ],
+      "minimum_daily_hit_rate_seen": 0.9,
+      "max_informative_samples_on_one_date": 20,
+      "informative_pairs_range_by_window": [
+        75,
+        135
+      ],
+      "in_registry_values": [
+        false
+      ],
+      "evidence_scope": "exploratory; not an adjudication or registry update"
+    },
+    {
+      "left": "zhb.full.pe_dynamic",
+      "right": "ulist239.f115",
+      "levels": [
+        "L1"
+      ],
+      "ratios_right_over_left": [],
+      "window_count": 15,
+      "window_ends": [
+        "20260903",
+        "20260904",
+        "20260907",
+        "20260908",
+        "20260909",
+        "20260910",
+        "20260911",
+        "20260914",
+        "20260915",
+        "20260916",
+        "20260917",
+        "20260918",
+        "20260921",
+        "20260922",
+        "20260923"
+      ],
+      "effective_dates": [
+        "T:20260826",
+        "T:20260827",
+        "T:20260828",
+        "T:20260831",
+        "T:20260902",
+        "T:20260903",
+        "T:20260904",
+        "T:20260907",
+        "T:20260908",
+        "T:20260909",
+        "T:20260910",
+        "T:20260914",
+        "T:20260915",
+        "T:20260916",
+        "T:20260917",
+        "T:20260918"
+      ],
+      "effective_date_count": 16,
+      "source_groups": [
+        "eastmoney",
+        "tdx"
+      ],
+      "overall_hit_range": [
+        0.93,
+        0.99
+      ],
+      "minimum_daily_hit_rate_seen": 0.85,
+      "max_informative_samples_on_one_date": 20,
+      "informative_pairs_range_by_window": [
+        75,
+        135
+      ],
+      "in_registry_values": [
+        false
+      ],
+      "evidence_scope": "exploratory; not an adjudication or registry update"
+    }
+  ]
+}

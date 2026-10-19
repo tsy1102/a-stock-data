@@ -4,6 +4,16 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## [17.5.1] - 2026-10-19
+
+### Added
+
+- 在碰撞与上游契约两条路径基础上，新增第 3 条公式关系定案路径：要求目标与输入来源族独立、输入字段已有明确验证、引用固定到具体版本/日期，并从仓库内 CSV 逐行用 Decimal 复算；记录日期覆盖、命中率、误差和引用，不创建跨字段映射。补充可复制模板与单位/时间对齐说明。
+
+### Fixed
+
+- 修复公式定案重复预览/应用时先检查旧状态快照、导致已应用决定不能幂等重放的问题；允许目标与输入共用同一有效日期列，同时拒绝值列或股票标识列冲突。
+
 ## [17.5] - 2026-10-19
 
 ### Added

@@ -2,7 +2,7 @@
 
 > 用途：提供稳定架构、关键约束与文档路由；任务开始时按 §0 读取相关文件，不重复加载全仓历史。
 > 维护：结构、入口或稳定流程变化时更新。字段语义以 registry/裁决证据为准；运行结果以当次产物为准。
-> 更新日期：2026-10-19（`VERSION`：17.4.65）
+> 更新日期：2026-10-19（`VERSION`：17.5.1）
 
 ## 0. 任务路由
 
@@ -63,7 +63,7 @@
 | [`unknown_fields.md`](unknown_fields.md) | 未验证/候选/冲突/证伪字段的生成队列 |
 | [`field_verification/COLLISION_RULES.md`](field_verification/COLLISION_RULES.md) | 由运行时代码生成的碰撞阈值与状态机镜像；代码常量为执行真源 |
 | [`field_verification/CRACKING_METHODOLOGY.md`](field_verification/CRACKING_METHODOLOGY.md) | 候选生成、数据分析与常见误判；按需读相关章节 |
-| [`field_verification/ADJUDICATION_WORKFLOW.md`](field_verification/ADJUDICATION_WORKFLOW.md) | 跨源碰撞和单源上游契约裁决、注册表写回 |
+| [`field_verification/ADJUDICATION_WORKFLOW.md`](field_verification/ADJUDICATION_WORKFLOW.md) | 跨源碰撞、单源上游契约与公式实证裁决、注册表写回 |
 | [`field_verification/EVIDENCE_COVERAGE.md`](field_verification/EVIDENCE_COVERAGE.md) | 每日证据覆盖、日期资格和来源身份口径 |
 | [`source_repository_map.md`](source_repository_map.md) | 上游仓库、包装关系和独立来源族证据 |
 | [`script_data_dict.md`](script_data_dict.md) | 报告脚本实际消费的字段与来源 |

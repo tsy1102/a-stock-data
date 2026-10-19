@@ -59,7 +59,7 @@ class ScoreData:
     ma20: float = 0.0
     macd_dif: float = 0.0
     macd_dea: float = 0.0
-    rsi14: float = 50.0
+    rsi14: Optional[float] = None
     kdj_k: float = 50.0
     kdj_d: float = 50.0
     kdj_j: float = 50.0
@@ -158,14 +158,15 @@ def _score_technical(data: ScoreData, cfg: Optional[Dict] = None) -> tuple:
     elif data.macd_dif < data.macd_dea < 0:
         score += tc.get("macd_bear", -8)
 
-    # RSI
-    if 40 <= data.rsi14 <= 70:
-        score += tc.get("rsi_optimal", 5)
-    elif data.rsi14 < 30:
-        score += tc.get("rsi_oversold", 3)
-        details.append("RSI超卖")
-    elif data.rsi14 > 80:
-        score += tc.get("rsi_overbought", -4)
+    # RSI：未提供时不套用默认中性值，也不产生隐含加分。
+    if data.rsi14 is not None:
+        if 40 <= data.rsi14 <= 70:
+            score += tc.get("rsi_optimal", 5)
+        elif data.rsi14 < 30:
+            score += tc.get("rsi_oversold", 3)
+            details.append("RSI超卖")
+        elif data.rsi14 > 80:
+            score += tc.get("rsi_overbought", -4)
 
     # KDJ
     if data.kdj_k > data.kdj_d and data.kdj_k < 80:

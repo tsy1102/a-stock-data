@@ -619,7 +619,8 @@ async def generate_report_async(session, code, output_path, ind_comp=None):
     _zhb_div_yield = _zhb_data.get("dividend_yield", 0) if _zhb_data else 0
     _show_div_yield = _dp_div if _dp_div and _dp_div > 0 else _zhb_div_yield
     if _show_div_yield > 0:
-        L(f"    股息率:        {_show_div_yield:.2f}%")
+        _div_yield_source = "统一层" if _dp_div and _dp_div > 0 else "ZHB"
+        L(f"    股息率:        {_show_div_yield:.2f}%（{_div_yield_source}）")
 
     if peer_data_lng.get("my_rank", 0) > 0 and peer_data_lng.get("industry_count", 0) > 0:
         L(
@@ -1133,7 +1134,8 @@ async def generate_report_async(session, code, output_path, ind_comp=None):
     _dp_div_yield_5 = _dp_composite.get("dividend_yield", 0) if _dp_composite else 0
     _show_div_5 = _dp_div_yield_5 if _dp_div_yield_5 and _dp_div_yield_5 > 0 else _zhb_div_yield_5
     if _show_div_5 > 0:
-        L(f"  当前股息率: {_show_div_5:.2f}%（zhb数据）")
+        _div_yield_5_source = "统一层" if _dp_div_yield_5 and _dp_div_yield_5 > 0 else "ZHB"
+        L(f"  当前股息率: {_show_div_5:.2f}%（{_div_yield_5_source}）")
     # V17.0.7: 每股未分配利润——分红能力池子(push2 f190, ≡ulist f48, 随行情补取零额外请求)
     try:
         _upp_v7 = float(getattr(cdata, "undist_profit_ps", 0) or 0)
@@ -1148,18 +1150,23 @@ async def generate_report_async(session, code, output_path, ind_comp=None):
     except Exception as _e:
         _debug_log(f"lng undist_profit_ps: {_e}")
     div = await asyncio.to_thread(get_dividend_history, code)
+    total_div_12m = 0.0
+    one_year_ago = (datetime.now() - timedelta(days=365)).strftime("%Y-%m-%d")
     if div:
         L("  近5次分红除息记录:")
         L(f"  {'除权除息日':<14} {'每股派息(元)':>8} {'折算对应股价股息率参考'}")
         L(f"  {'-'*55}")
-        total_div_12m = 0.0
-        one_year_ago = (datetime.now() - timedelta(days=365)).strftime("%Y-%m-%d")
+        total_div_12m = sum(
+            _safe_float(row.get("bonus_rmb"))
+            for row in div
+            if isinstance(row, dict)
+            and str(row.get("date", ""))[:10] >= one_year_ago
+            and _safe_float(row.get("bonus_rmb")) > 0
+        )
 
         for d in div[:5]:
             yield_str = f"{(d['bonus_rmb'] / price_today) * 100:.2f}%" if price_today > 0 else "N/A"
             L(f"  {d['date']:<14} {d['bonus_rmb']:>12.4f}  约 {yield_str} (按现价计)")
-            if d['date'] >= one_year_ago:
-                total_div_12m += d['bonus_rmb']
 
         if price_today > 0 and total_div_12m > 0:
             L(f"\n  ➤ 核心防御指标：近 12 个月累计派息 {total_div_12m:.4f} 元/股")
@@ -1201,20 +1208,18 @@ async def generate_report_async(session, code, output_path, ind_comp=None):
         except Exception as _de:
             _debug_log(f"lng dividend continuity: {_de}")
     else:
-        # V17.3.5 修正(报告审查 #363): 若股息率>0 已证实有分红, 绝不输出"一毛不拔"——
-        # get_dividend_history 返回空只代表明细接口失败/空窗, 与股息率矛盾时以股息率为准。
+        # 股息率是独立快照指标，不能替代分红明细；接口空结果也不足以证明历史上未分红。
         if _show_div_yield and _show_div_yield > 0:
             L(
-                "  分红明细获取为空，但股息率显示该股有分红，明细数据可能存在缺口。"
+                "  分红历史明细未取得；当前股息率是独立快照指标，不能替代派息日期和金额记录。"
                 if div is None
-                else "  分红历史明细为空，但股息率显示该股有分红，建议以股息率为准。"
+                else "  本次未返回分红历史明细；空结果不证明历史上未分红，股息率也不能替代明细。"
             )
         else:
-            # V16.2.3: 区分"接口失败"与"真无分红"（tdx_get_dividend_history 失败返回 None）
             L(
-                "  分红数据获取失败（TDX 接口暂不可用），未能确认分红历史。"
+                "  TDX 分红历史接口未提供可用明细，尚不能核实分红历史。"
                 if div is None
-                else "  当前查询未返回分红派息明细；空记录不能单独证明长期无分红，请结合公告与报告期核实。"
+                else "  本次未返回分红派息明细；空结果不证明历史上未分红，请结合公告与报告期核实。"
             )
 
     L("\n## 【六、长期股东结构与持股集中度】")
@@ -1317,6 +1322,8 @@ async def generate_report_async(session, code, output_path, ind_comp=None):
             else ("套牢盘较重，长线建仓成本区偏上方" if _ben < 0.25 else "成本结构均衡")
         )
         L(f"    ➤ 研判: 筹码{_cflag}；{_pflag}")
+    else:
+        L("  ⚠️ 未取得可计算的K线/CYQ数据，筹码分布维度暂缺；不能据此判断成本集中度。")
 
     # ─── V17.0.5: 基金持仓侧证(自选基金清单门控——credentials/fund_watch.json, 缺失零请求) ───
     try:
@@ -1652,7 +1659,10 @@ async def generate_report_async(session, code, output_path, ind_comp=None):
     L("\n" + "---")
     L("## **综合评分与风险管理参考**")
     L("---")
-    L("  以下评分基于个股可用指标，不包含账户持仓、风险承受能力或组合约束，不构成个性化仓位配置。")
+    L(
+        "  长线单项评分与多评委共识分使用不同指标和权重；方向不一致时应视为模型分歧。"
+        "评分及下方仓位参数仅供参考，不构成个性化配置。"
+    )
 
     # V8.2: 使用统一评分接口
     from stock_common import ScoreData, calculate_score
@@ -1662,6 +1672,7 @@ async def generate_report_async(session, code, output_path, ind_comp=None):
         code=code,
         name=info.get('name', ''),
         price=price_today,
+        change_pct=cdata.change_pct,
     )
 
     # ROE数据
@@ -1676,12 +1687,24 @@ async def generate_report_async(session, code, output_path, ind_comp=None):
     if ext_high_price and price_today > 0 and ext_high_price > 0:
         score_data.drawdown_from_high = (price_today / ext_high_price - 1) * 100
 
-    # 分红数据
-    if div and len(div) > 0:
-        _bonus = div[0].get("bonus_rmb", 0)
-        if price_today > 0:
-            score_data.dividend_yield = _bonus / price_today * 100
-        score_data.consecutive_dividend_years = len([d for d in div if d.get("bonus_rmb", 0) > 0])
+    # 分红评分使用当前股息率快照；历史连续年数按不同除息年份统计，不按派息笔数计数。
+    if _show_div_5 and _show_div_5 > 0:
+        score_data.dividend_yield = _safe_float(_show_div_5)
+    elif total_div_12m > 0 and price_today > 0:
+        score_data.dividend_yield = total_div_12m / price_today * 100
+    _dividend_years = {
+        int(str(row.get("date", ""))[:4])
+        for row in (div or [])
+        if isinstance(row, dict)
+        and _safe_float(row.get("bonus_rmb")) > 0
+        and str(row.get("date", ""))[:4].isdigit()
+    }
+    # 最近派息年度已落后两年以上时，不把旧的连续区间当成当前连续分红能力。
+    if _dividend_years and date.today().year - max(_dividend_years) <= 1:
+        _year = max(_dividend_years)
+        while _year in _dividend_years:
+            score_data.consecutive_dividend_years += 1
+            _year -= 1
 
     # 现金流和负债
     if _tdx_ocf != 0 and financials:
@@ -1713,6 +1736,25 @@ async def generate_report_async(session, code, output_path, ind_comp=None):
         score_data.cyq_concentration_90 = _cyq_dict.get("concentration_90", 0.0) or 0.0
         score_data.cyq_concentration_70 = _cyq_dict.get("concentration_70", 0.0) or 0.0
 
+    _lng_score_input_gaps = []
+    if not ext_roe_data:
+        _lng_score_input_gaps.append("ROE趋势")
+    if not eps_has_data or not eps_cur:
+        _lng_score_input_gaps.append("前向EPS/PE")
+    if not ext_high_price:
+        _lng_score_input_gaps.append("历史高点回撤")
+    if not financials or not bs_data:
+        _lng_score_input_gaps.append("部分财务指标")
+    if not div:
+        _lng_score_input_gaps.append("分红历史连续性")
+    elif score_data.consecutive_dividend_years <= 0:
+        _lng_score_input_gaps.append("当前连续分红年数（最新派息年度较旧或记录无效）")
+    if not (_show_div_5 and _show_div_5 > 0) and total_div_12m <= 0:
+        _lng_score_input_gaps.append("股息率/TTM派息")
+    if not st:
+        _lng_score_input_gaps.append("前十大股东结构")
+    if not _cyq_dict:
+        _lng_score_input_gaps.append("CYQ筹码分布")
     # 计算评分
     # V16.1: 传入 strategy_config.yaml 的 scoring_lng 权重（此前未传 cfg → 用硬编码默认）
     _score_cfg = _load_strategy_config() or {}
@@ -1722,19 +1764,27 @@ async def generate_report_async(session, code, output_path, ind_comp=None):
     _details = result.details
 
     L(f"  评分明细: {' | '.join(_details[:6])}" if _details else None)
+    if _lng_score_input_gaps:
+        L(
+            "  ⚠️ 评分输入不完整："
+            + "、".join(_lng_score_input_gaps)
+            + "；缺失项按模型默认值处理，评分档位不代表完整信号。"
+        )
+    L("  仓位百分比是模型参数示例，不是个人化投资指令。")
     if _ps >= 70:
-        L(f"  长线评分: {_ps:.0f}/100 → 优质长线标的，仓位50%")
+        L(f"  长线模型评分: {_ps:.0f}/100 → 高分档，模型仓位参数参考50%")
     elif _ps >= 45:
-        L(f"  长线评分: {_ps:.0f}/100 → 可配置，仓位30%")
+        L(f"  长线模型评分: {_ps:.0f}/100 → 中高分档，模型仓位参数参考30%")
     elif _ps >= 20:
-        L(f"  长线评分: {_ps:.0f}/100 → 观察仓，仓位15%")
+        L(f"  长线模型评分: {_ps:.0f}/100 → 观察档，模型仓位参数参考15%")
     else:
-        L(f"  长线评分: {_ps:.0f}/100 → 暂不建议，等待更好的安全边际")
+        L(f"  长线模型评分: {_ps:.0f}/100 → 低分档，等待更好的安全边际")
 
     # V17.0 R5: 多评委评审团评分渲染统一走 sc_render(原 12 行逐字重复已收敛)
     from stock_common.sc_render import render_multi_school_scores
 
     multi_scores = render_multi_school_scores(L, score_data)
+    L("  ℹ️ 多评委技术面仅使用当日涨跌幅；均线、MACD、RSI、KDJ及20日收益等技术指标本次未纳入。")
 
     # 综合投资建议
     try:

@@ -16,7 +16,7 @@
 | 重整前完整字段原文 | [field_source_reference.md](field_source_reference.md) |
 | 机器权威字段注册表 | [field_verification/field_registry.json](field_verification/field_registry.json) |
 | 字段字典迁移审计与运营闭环 | [FIELD_DICTIONARY_MIGRATION_AUDIT_20261005.md](FIELD_DICTIONARY_MIGRATION_AUDIT_20261005.md)、[FIELD_DICTIONARY_OPERATIONAL_CLOSURE_20261006.md](FIELD_DICTIONARY_OPERATIONAL_CLOSURE_20261006.md) |
-| 碰撞候选定案、注册表同步与来源确认 | [field_verification/ADJUDICATION_WORKFLOW.md](field_verification/ADJUDICATION_WORKFLOW.md) |
+| 碰撞、上游契约和公式证据定案 | [field_verification/ADJUDICATION_WORKFLOW.md](field_verification/ADJUDICATION_WORKFLOW.md) |
 | 报告脚本的数据字段与 fallback | [script_data_dict.md](script_data_dict.md) |
 | 术语、版本决策和已知偏离 | [domain_glossary.md](domain_glossary.md)、[roadmap.md](roadmap.md)、[DEBT_LEDGER.md](DEBT_LEDGER.md) |
 

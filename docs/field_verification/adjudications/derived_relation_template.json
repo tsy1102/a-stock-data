@@ -1,0 +1,80 @@
+{
+  "schema_version": 1,
+  "evidence_basis": "derived_relation",
+  "reviewer": "填写复核人",
+  "reviewed_on": "YYYY-MM-DD",
+  "decisions": [
+    {
+      "id": "YYYYMMDD-derived-relation-field-id",
+      "action": "verify_derived_relation",
+      "target": {
+        "source": "注册表中的精确来源名",
+        "code": "注册表中的完整 code path"
+      },
+      "previous_status": "unverified",
+      "previous_status_resolution": "从当前注册表复制 status_resolution",
+      "previous": {
+        "canonical": "从当前注册表复制",
+        "meaning": "从当前注册表复制",
+        "unit": "从当前注册表复制"
+      },
+      "canonical": "待确认",
+      "meaning": "待确认",
+      "unit": "待确认",
+      "rationale": "填写独立来源、日期/期间对齐、单位换算和排除循环推导的依据。",
+      "formula_evidence": {
+        "expression": "market_value * 10000 / price",
+        "date_domain": "trading_day",
+        "sample_file": "derived_evidence/YYYYMMDD_total_shares.csv",
+        "target_columns": {
+          "symbol": "symbol",
+          "date": "date",
+          "value": "target_value"
+        },
+        "inputs": [
+          {
+            "term": "market_value",
+            "source": "已验证输入字段的来源名",
+            "code": "已验证输入字段的完整 code path",
+            "unit": "亿元",
+            "date_column": "date",
+            "value_column": "market_value"
+          },
+          {
+            "term": "price",
+            "source": "已验证输入字段的来源名",
+            "code": "已验证输入字段的完整 code path",
+            "unit": "元",
+            "date_column": "date",
+            "value_column": "price"
+          }
+        ],
+        "tolerance": {
+          "absolute": "0",
+          "relative": "0.01"
+        },
+        "references": [
+          {
+            "kind": "formula_definition",
+            "authority": "定义公式与单位换算的权威来源",
+            "url": "https://example.invalid/formula",
+            "revision": "固定提交、版本号或有日期的文档版本",
+            "locator": "精确章节、表格行或公式编号",
+            "accessed_on": "YYYY-MM-DD",
+            "claim": "该来源支持的具体公式或单位换算"
+          },
+          {
+            "kind": "target_source_path",
+            "authority": "目标字段的实际数据提供方",
+            "url": "https://example.invalid/target-field",
+            "revision": "固定提交、版本号或有日期的接口文档版本",
+            "locator": "项目字段到上游响应路径的精确位置",
+            "accessed_on": "YYYY-MM-DD",
+            "claim": "该上游路径返回决策目标中的观测值及其单位"
+          }
+        ],
+        "independence_rationale": "填写目标与输入来源族独立的证据，并说明输入并非由目标字段或同一底层快照循环计算。"
+      }
+    }
+  ]
+}

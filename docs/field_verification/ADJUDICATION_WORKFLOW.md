@@ -45,6 +45,34 @@
 
 该决策文件使用顶层 `evidence_basis: "source_contract"`，不填写碰撞报告；不可把它与 L1 候选决定混在同一文件。应用仍以事务方式更新注册表并重生成字段治理文档。
 
+## 公式/恒等关系实证定案（没有同字段锚时）
+
+没有已验证的同义字段作为锚，并不意味着目标字段永远无法确认。若一个未确认字段能由已有已验证字段和独立来源数据通过公开定义的公式复算，可使用 `derived_relation` 路径确认目标字段本身。它与跨源碰撞、上游契约各自解决不同问题：碰撞确认两个字段是否同义；上游契约解释一个来源路径；公式证据验证目标值是否符合一个可复现关系。
+
+- 每个输入必须是注册表中状态为 `verified`、元数据完整且无属性冲突的精确 `(source, 完整 code path)`；声明单位必须与注册表逐字一致。目标来源族必须已在 `source_lineage.json` 确认为独立，且不能与任何输入的来源族相同。
+- 决策需提供目标当前的 `status`、`status_resolution` 和完整元数据快照，以及新的规范名、含义、单位和解释。只接受 `unverified` / `candidate`；已定义元数据不会被静默覆盖；`conflict`、`disproved` 和已验证字段须走其他处置路径。
+- 公式只允许变量、数字常量、括号、`+`、`-`、`*`、`/` 和一元正负号；程序用 Decimal 逐行复算 CSV，不执行任意代码。单位量纲无法由程序通用推断，复核人必须在公式中写明换算常数，并用权威引用证明输入单位、输出单位与换算关系。
+- CSV 必须保存在 `docs/field_verification/derived_evidence/`，不超过 10 MB / 50,000 行。每行需有股票代码、目标值、目标日期和各输入值/日期；日期列可以共用，目标与所有输入日期必须完全相同。`trading_day` 按项目交易日历校验，`report_period` 要求至少两个不同报告期，其他日期域按自然日处理。公式样本不得晚于复核日。
+- 最低覆盖为 10 行、5 行非全零信息样本、3 只股票；行情/自然日样本至少 3 个不同日期，财报样本至少 2 个报告期。至少 95% 的信息样本须在容差内；相对容差不得高于 1%，绝对容差不得高于信息样本典型值的 1%，避免用过宽绝对误差掩盖不匹配。阈值只判断数值关系，不替代对字段含义和来源独立性的人工判断。
+- `references` 必须包含带固定版本/日期、定位和具体主张的 HTTPS `formula_definition`，并至少包含 `target_source_path` 或 `official_data`。工具不联网打开链接；复核人需先实际核对引用内容。数据日相同不保证盘中时点相同：若字段可能盘中变化，只有能确认相同阶段/时点时才能使用；否则限制为收盘或同一报告期样本。
+- 公式证据只确认目标路径的定义，不意味着它与输入字段含义相同，因此不会创建 `mappings`。应用后记录 `status_resolution: verified_by_derived_relation`、输入身份、公式、引用、样本覆盖和误差摘要；目标在来源质量和谱系规则允许时可成为后续碰撞锚。字段状态变化只影响破解队列，不会停止采集。
+
+例如，若总市值单位为“亿元”、股价为“元”、目标总股本单位为“万股”，关系可写为 `market_value * 10000 / price`。这只有在目标总股本、总市值和股价来自足够独立的来源、使用同一有效日期/阶段且不存在循环复用时，才是有效交叉验证。**股价加流通股本不能单独推出总股本**；还需要总市值、总股本比例等额外独立信息。公式结果与目标数值吻合，只证明关系和观测值相容；上游路径、单位和来源独立性仍须由引用与样本证据支持。
+
+复制 [`derived_relation_template.json`](adjudications/derived_relation_template.json) 填写决定，并将 CSV 样本放在 `derived_evidence/` 下。先预览，再检查输出和引用：
+
+```powershell
+.\scripts\run_with_system_python.ps1 scripts\apply_collision_adjudications.py --decisions docs\field_verification\adjudications\YYYYMMDD_derived_relation.json
+```
+
+检查无误后显式应用：
+
+```powershell
+.\scripts\run_with_system_python.ps1 scripts\apply_collision_adjudications.py --decisions docs\field_verification\adjudications\YYYYMMDD_derived_relation.json --apply
+```
+
+顶层使用 `evidence_basis: "derived_relation"`，不填写碰撞报告，也不能与其他证据路径混在一个决策文件中。每日采集与碰撞不会自动访问网络或运行这些公式；它们读取人工核验后留档的定义和 CSV，避免将临时网页、未核验语义或重复请求自动升级为主字典结论。
+
 ## 准备决策文件
 
 对于跨源碰撞决定，复制 `docs/field_verification/adjudications/template.json` 到同目录的新文件。填写碰撞报告路径、复核人、复核日期和决定。报告路径相对于 `docs/field_verification/`；`target` / `anchor` 的 `code` 使用注册表中的完整路径。单源上游契约核验使用上节的独立模板和证据路径。

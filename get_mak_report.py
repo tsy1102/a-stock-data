@@ -1789,11 +1789,21 @@ async def generate_sector_report(output_path):
         # 涨停板块分布
         sector_stats = pool.get("sector_stats", {})
         if sector_stats:
+            _missing_sector_count = sector_stats.get("板块信息未提供", sector_stats.get("其他", 0))
+            _known_sector_stats = [
+                (sec, cnt)
+                for sec, cnt in sector_stats.items()
+                if sec not in ("板块信息未提供", "其他")
+            ]
             L("\n  涨停板块分布（TOP10）:")
-            for sec, cnt in list(sector_stats.items())[:10]:
+            for sec, cnt in _known_sector_stats[:10]:
                 # V17.0.2l: 无冒号格式——原 "化工: 4 只" 被字段值块转表(表头强制加粗), 用户: 竖排
                 # V17.2.27(2026-09-18) P2: 板块名统一走 normalize_industry, 与 C/D/E/F 段粒度一致
                 L(f"    {normalize_industry(sec)}({cnt} 只)")
+            if _missing_sector_count:
+                L(f"    行业分类未取得: {_missing_sector_count} 只（不计入板块分布）")
+            if not _known_sector_stats and not _missing_sector_count:
+                L("    暂无可用的涨停行业分类")
 
         # 涨停明细(V17.0.2f: 直接 md 表格 7 列; V17.2.x: 按封板时间升序排序并渲染为表格,
         # 截断注移至表后——避免引用块插在分隔行与数据行之间破坏 md 表格结构, 与炸板明细一致)
@@ -1837,7 +1847,7 @@ async def generate_sector_report(output_path):
                 else:
                     fbt_fmt = str(fbt_raw)
                 L(
-                    f"| {item.get('code','')} | {item.get('name','')}{_name_mark(item.get('name',''))} | {item.get('change_pct',0):+.2f}% | {item.get('limit_count',0):.0f} | {fbt_fmt} | {fund_yi:+.2f} | {normalize_industry(item.get('sector',''))} |"
+                    f"| {item.get('code','')} | {item.get('name','')}{_name_mark(item.get('name',''))} | {item.get('change_pct',0):+.2f}% | {item.get('limit_count',0):.0f} | {fbt_fmt} | {fund_yi:+.2f} | {normalize_industry(item.get('sector') or '板块信息未提供')} |"
                 )
             if len(zt_list) > 30:
                 # V17.0.8: 明细截断注明(原 43 只只显 30 行, 读者误以为总数=表行数); 置于表后不破坏表格
@@ -1851,7 +1861,7 @@ async def generate_sector_report(output_path):
             L("|---|---|---|---|---|")
             for item in zb_list[:15]:
                 L(
-                    f"| {item.get('code','')} | {item.get('name','')}{_name_mark(item.get('name',''))} | {item.get('change_pct',0):+.2f}% | {item.get('broken_count',0):.0f} | {normalize_industry(item.get('sector',''))} |"
+                    f"| {item.get('code','')} | {item.get('name','')}{_name_mark(item.get('name',''))} | {item.get('change_pct',0):+.2f}% | {item.get('broken_count',0):.0f} | {normalize_industry(item.get('sector') or '板块信息未提供')} |"
                 )
     except Exception as _e:
         _debug_log(f"mak limit_pool: {_e}")

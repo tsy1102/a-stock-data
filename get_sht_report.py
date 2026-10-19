@@ -103,6 +103,29 @@ from core.data_provider import get_main_net_buy_async  # V16.4.1: 删 9 个未�
 # ═══════════════════════════════════════════
 
 
+def _unique_trading_flow_rows(rows):
+    """保留有明确交易日、且日历确认开市的资金流记录，按日期从新到旧排序。"""
+    from stock_common.stock_calendar import is_trading_day
+
+    dated_rows = {}
+    for row in rows or []:
+        if not isinstance(row, dict):
+            continue
+        raw_date = str(row.get("date") or row.get("trade_date") or "")[:10]
+        try:
+            trade_date = date.fromisoformat(raw_date)
+            if not is_trading_day(trade_date):
+                continue
+        except (TypeError, ValueError, NotImplementedError):
+            continue
+        previous = dated_rows.get(trade_date)
+        if previous is None or (
+            previous.get("main_net") is None and row.get("main_net") is not None
+        ):
+            dated_rows[trade_date] = row
+    return [dated_rows[day] for day in sorted(dated_rows, reverse=True)]
+
+
 def _get_index_quote(idx_code):
     """V4: 指数行情 → tdx_client 适配器（TDX指数K线，自动fallback腾讯）"""
 
@@ -126,8 +149,12 @@ def get_fund_flow_realtime(code, ff_120d=None):
         from core.data_provider import get_main_net_buy
 
         mnb = get_main_net_buy(code)
-        if mnb and mnb.get("main_net_buy_amount"):
-            return {"data": [mnb["main_net_buy_amount"]], "detail": mnb, "source": "unified"}
+        if mnb and mnb.get("main_net_buy_amount") is not None:
+            return {
+                "data": [_safe_float(mnb["main_net_buy_amount"])],
+                "detail": mnb,
+                "source": mnb.get("source") or "unified",
+            }
     except Exception as _e:
         _debug_log(f"sht get_main_net_buy error: {_e}")
 
@@ -137,20 +164,30 @@ def get_fund_flow_realtime(code, ff_120d=None):
 
     if ff_120d and ff_120d.get("data") and len(ff_120d["data"]) > 0:
         # V16.1: 数据"最新在前"，[:5] 取最近 5 日（原 [-5:] 取最旧）
-        recent_data = ff_120d["data"][:5]
-        if recent_data:
-            if isinstance(recent_data[0], dict):
-                avg_flow = sum(d.get("main_net", 0) for d in recent_data) / len(recent_data)
-            else:
-                avg_flow = sum(recent_data) / len(recent_data)
-        else:
-            avg_flow = 0
-        if avg_flow != 0:
+        recent_data = _unique_trading_flow_rows(ff_120d["data"])[:5]
+        flow_values = []
+        valid_rows = []
+        for row in recent_data:
+            raw_value = row.get("main_net") if isinstance(row, dict) else row
+            if raw_value is not None:
+                flow_values.append(_safe_float(raw_value))
+                valid_rows.append(row)
+        if flow_values:
+            # 历史接口 main_net 单位为元；报告展示单位为万元。
+            avg_flow_wan = sum(flow_values) / len(flow_values) / 1e4
+            dates = [
+                str(row.get("date") or row.get("trade_date") or "")[:10]
+                for row in valid_rows
+                if isinstance(row, dict) and (row.get("date") or row.get("trade_date"))
+            ]
             return {
-                "data": [avg_flow],
+                "data": [avg_flow_wan],
                 "detail": {},
                 "source": "history_avg",
-                "note": "使用近5日平均",
+                "sample_count": len(flow_values),
+                "note": f"使用近{len(flow_values)}个有效交易日平均",
+                "date_start": dates[-1] if dates else "",
+                "date_end": dates[0] if dates else "",
             }
     return None
 
@@ -557,34 +594,49 @@ async def generate_report_async(
                 L("  ⚠️ 北向资金数据源存疑(异常波动), 仅供参考")
 
     # V15.4.2: 资金流同步调用包 to_thread，避免阻塞事件循环
-    ff = await asyncio.to_thread(get_fund_flow_120d, code)
+    ff = dict(await asyncio.to_thread(get_fund_flow_120d, code) or {})
+    _raw_flow_rows = ff.get("data") or []
+    ff["data"] = _unique_trading_flow_rows(_raw_flow_rows)
+    ff["unverified_date_count"] = max(0, len(_raw_flow_rows) - len(ff["data"]))
     rf = await asyncio.to_thread(
         get_fund_flow_realtime, code, ff_120d=ff
     )  # V9.3.3: 复用 ff_120d 避免重复调用
 
-    if rf and rf.get("data") and len(rf["data"]) > 0:
-        _fd = rf["data"]
-        # V17.0.2: 金额单单位展示(≥1亿→亿, 否则万), 去掉双单位冗余
-        _main_wan = _fd[0]
+    if rf and rf.get("data"):
+        _main_wan = _safe_float(rf["data"][0])
         _main_txt = f"{_main_wan/1e4:.2f}亿" if abs(_main_wan) >= 1e4 else f"{_main_wan:.0f}万"
-        L(f"  💰 今日主力净流入: {_main_txt}")
-    else:
-        if ff and ff.get("data") and len(ff["data"]) > 0:
-            # 2026-08-11: 统一层 O19 已归一 dict(元)——直接读最新一条（数据"最新在前"）
-            _d0 = ff["data"][0]
-            last_day_flow = (_safe_float(_d0.get("main_net", 0)) or 0) / 1e4
-            if last_day_flow != 0:
-                # V17.0.2: 单单位
-                _t = (
-                    f"{last_day_flow/1e4:.2f}亿"
-                    if abs(last_day_flow) >= 1e4
-                    else f"{last_day_flow:.0f}万"
-                )
-                L(f"  ▲ 昨日主力净流入: {_t}")
+        if rf.get("source") == "history_avg":
+            _period = ""
+            if rf.get("date_start") and rf.get("date_end"):
+                _period = f"（{rf['date_start']} 至 {rf['date_end']}）"
+            _sample_count = max(1, int(rf.get("sample_count", 1) or 1))
+            if _sample_count == 1:
+                L(f"  💰 最近有效交易日主力净流入{_period}: {_main_txt}")
             else:
-                L("\n  [资金流向] 今日主力净流入(实时): 暂无数据")
+                L(f"  💰 近{_sample_count}个有效交易日平均主力净流入{_period}: {_main_txt}")
         else:
-            L("\n  [资金流向] 今日主力净流入(实时): 暂无数据")
+            L(f"  💰 最新有效交易日主力净流入: {_main_txt}")
+    elif ff and ff.get("data"):
+        # 历史资金流为“最新在前”，报告按来源有效交易日标记，不用自然日“昨日”。
+        _d0 = ff["data"][0]
+        _raw_flow = _d0.get("main_net") if isinstance(_d0, dict) else None
+        if _raw_flow is not None:
+            _latest_wan = _safe_float(_raw_flow) / 1e4
+            _latest_txt = (
+                f"{_latest_wan/1e4:.2f}亿" if abs(_latest_wan) >= 1e4 else f"{_latest_wan:.0f}万"
+            )
+            _latest_date = str(_d0.get("date") or _d0.get("trade_date") or "")[:10]
+            _date_label = f"（{_latest_date}）" if _latest_date else "（日期未提供）"
+            L(f"  ▲ 最近交易日{_date_label}主力净流入: {_latest_txt}")
+        else:
+            L("  ⚠️ 资金流历史记录未包含有效主力净额，本项暂缺，不按 0 处理")
+    elif ff.get("unverified_date_count"):
+        L(
+            f"  ⚠️ 资金流返回 {ff['unverified_date_count']} 条记录，但日期缺失、重复或非交易日；"
+            "不能计入有效交易日窗口，也不据此推断资金方向"
+        )
+    else:
+        L("  ⚠️ 主力资金流未取得有效数据；本项暂缺，不按 0 推断资金方向")
 
     # V17.2.24: eltdx 连板梯队与封单强度（统一层 cdata.eltdx_*，源自 TDX 7709/7615 实时）
     if getattr(cdata, "eltdx_has_shortline", False):
@@ -614,11 +666,10 @@ async def generate_report_async(
         L("\n" + "---")
         L("## 【二·附、连板梯队与封单强度（通达信 eltdx 实时）】")
         L("---")
+        L("  ⚠️ 本次未取得 eltdx 连板梯队与封单强度的有效数据。")
         L(
-            "  ⚠️ 数据源不可用：连板梯队与封单强度为通达信 eltdx（TDX 公网主站 7709/7615）专属实时能力，"
-        )
-        L(
-            "     当前 eltdx 后端不可达或未返回数据；该维度无等价后备通道（easy-tdx/mootdx 无对应接口），本节暂缺。"
+            "     盘后/非竞价时段可能没有实时样本，也可能是后端未返回；仅凭空结果无法区分。"
+            "该专属维度无等价后备通道，本节暂缺，不能据此判断当日没有连板或封单。"
         )
 
     L("\n" + "---")
@@ -997,44 +1048,93 @@ async def generate_report_async(
     # V15.2 修复: 改名 _composite → q (cdata.to_dict() 的标准变量名)
     # 同时把 cdata 的字段名转换为 zhb_main_net dict 格式（向后兼容下游 print 逻辑）
     zhb_main_net = None
-    if q and (q.get("main_net_buy_wan") or q.get("main_net_buy_hands")):
+    _q_field_sources = q.get("field_sources") or {} if q else {}
+    _q_flow_source = _q_field_sources.get("main_net_buy_wan")
+    _q_hands_source = _q_field_sources.get("main_net_buy_hands")
+    _has_q_flow = (
+        bool(q)
+        and bool(_q_flow_source)
+        and str(_q_flow_source).lower() != "missing"
+        and q.get("main_net_buy_wan") is not None
+    )
+    _has_q_hands = (
+        bool(q)
+        and bool(_q_hands_source)
+        and str(_q_hands_source).lower() != "missing"
+        and q.get("main_net_buy_hands") is not None
+    )
+    _q_flow_1d_source = _q_field_sources.get("main_net_buy_wan_1d")
+    _has_q_flow_1d = (
+        bool(q)
+        and _has_q_flow
+        and bool(_q_flow_1d_source)
+        and str(_q_flow_1d_source).lower() != "missing"
+        and q.get("main_net_buy_wan_1d") is not None
+    )
+    if q and (_has_q_flow or _has_q_hands):
         zhb_main_net = {
-            "main_net_buy_hands": q.get("main_net_buy_hands", 0),
-            "main_net_buy_hands_1d": 0,
-            "main_net_buy_hands_2d": 0,
-            "main_net_buy_amount": q.get("main_net_buy_wan", 0),
-            "main_net_buy_amount_1d": q.get("main_net_buy_wan_1d", 0),
-            "main_net_buy_amount_2d": 0,
+            "main_net_buy_hands": q.get("main_net_buy_hands") if _has_q_hands else None,
+            "main_net_buy_hands_1d": None,
+            "main_net_buy_hands_2d": None,
+            "main_net_buy_amount": q.get("main_net_buy_wan") if _has_q_flow else None,
+            "main_net_buy_amount_1d": q.get("main_net_buy_wan_1d") if _has_q_flow_1d else None,
+            "main_net_buy_amount_2d": None,
         }
-    if not zhb_main_net:
+    if not _has_q_flow:
         try:
-            zhb_main_net = await get_main_net_buy_async(code, session)
+            _fallback_main_net = await get_main_net_buy_async(code, session)
+            if _fallback_main_net:
+                if not zhb_main_net:
+                    zhb_main_net = {}
+                if _fallback_main_net.get("main_net_buy_amount") is not None:
+                    zhb_main_net["main_net_buy_amount"] = _fallback_main_net["main_net_buy_amount"]
+                zhb_main_net["source"] = _fallback_main_net.get("source")
         except Exception as _e:
             _debug_log(f"get_main_net_buy_async error ({code}): {_e}")
     if zhb_main_net:
-        zhb_date = get_zhb_data_date()
-        # V16.4.1: 标签修正——数据来自 canonical(盘中/盘后走东财实时), 不总是 ZHB
+        # 来源以字段元数据/实际适配器为准；get_main_net_buy 不再从 ZHB 同名竞价字段回退。
         _flow_src = (
-            "canonical(东财实时)" if (q and q.get("main_net_buy_wan")) else f"ZHB({zhb_date})"
+            _q_flow_source
+            if _has_q_flow
+            else zhb_main_net.get("source")
+            or (_q_hands_source if _has_q_hands else "东财资金流兼容接口")
         )
         L(f"\n  ➤ 主力资金流向 ({_flow_src}):")
-        if zhb_main_net['main_net_buy_hands']:
+        if _has_q_hands and zhb_main_net.get("main_net_buy_hands") is not None:
             L(
-                f"    T日主力净买入量: {zhb_main_net['main_net_buy_hands']:.0f}手"
+                f"    最新有效交易日主力净买入量: {zhb_main_net['main_net_buy_hands']:.0f}手"
             )  # V17.0: 仅 TDX 0x0011 实时有值
-        _amt = zhb_main_net['main_net_buy_amount']
-        L(f"    T日主力净流入额: {_amt:+.0f}万元")
-        if zhb_main_net['main_net_buy_amount_1d']:
-            L(f"    T-1日主力净流入额: {zhb_main_net['main_net_buy_amount_1d']:+.0f}万元")
-        _amt_wan = q.get('amount_wan', 0) if q else 0
-        # V16.4.1: 占比保留符号(原 abs 把净流出显示成正占比, 222% 即由此+源数据异常);
-        # 净额绝对值超成交额 = 源数据存疑, 显式标注
-        flow_ratio = _amt / _amt_wan * 100 if _amt_wan else 0
-        _flow_note = ""
-        if abs(flow_ratio) > 100:
-            _flow_note = " ⚠️ 异常:净流入额超成交额(源数据存疑)"
-        L(f"    主力资金占比: {flow_ratio:+.2f}%{_flow_note}")
-        L(f"    信号: {'🟢 主力资金净流入' if _amt > 0 else '🔴 主力资金净流出'}")
+        _amount_value = zhb_main_net.get("main_net_buy_amount")
+        if _amount_value is not None:
+            _amt = _safe_float(_amount_value)
+            L(f"    最新有效交易日主力净流入额: {_amt:+.0f}万元")
+            if _has_q_flow_1d:
+                L(
+                    f"    前一有效交易日主力净流入额: "
+                    f"{_safe_float(zhb_main_net['main_net_buy_amount_1d']):+.0f}万元"
+                )
+            _amt_wan = q.get('amount_wan', 0) if q else 0
+            # V16.4.1: 占比保留符号(原 abs 把净流出显示成正占比, 222% 即由此+源数据异常);
+            # 净额绝对值超成交额 = 源数据存疑, 显式标注
+            if _amt_wan > 0:
+                flow_ratio = _amt / _amt_wan * 100
+                _flow_note = (
+                    " ⚠️ 异常:净流入额超成交额(源数据存疑)" if abs(flow_ratio) > 100 else ""
+                )
+                L(f"    主力资金占比: {flow_ratio:+.2f}%{_flow_note}")
+            else:
+                L("    主力资金占比: N/A（成交额缺失）")
+            if _amt > 0:
+                _flow_signal = "🟢 主力资金净流入"
+            elif _amt < 0:
+                _flow_signal = "🔴 主力资金净流出"
+            else:
+                _flow_signal = "⚪ 主力资金净额为零"
+            L(f"    信号: {_flow_signal}")
+        else:
+            L("    主力净流入额: N/A（来源未提供，不能按 0 推断）")
+    else:
+        L("\n  ⚠️ 主力资金流数据未返回有效字段；本项不按 0 或 ZHB 竞价额推断方向")
 
     # V15.2 修复: 改名 _composite → q
     streak = None
@@ -1063,10 +1163,7 @@ async def generate_report_async(
         # V16.1: lite 模式跳过资金流历史明细（_dc["skip_fund_flow_120d"]）
         if _dc.get("skip_fund_flow_120d"):
             L("\n  ➤ 资金流监控: (lite 模式跳过历史明细，仅显示当日)")
-            if isinstance(ff["data"][0], dict):
-                L(f"    主力净流入(最新): {ff['data'][0].get('main_net', 0)/1e4:+.0f}万元")
-            else:
-                L(f"    主力净流入(最新): {ff['data'][0]:+.0f}万元")
+            L(f"    主力净流入(最新): {ff['data'][0].get('main_net', 0)/1e4:+.0f}万元")
         else:
             # V17.0.7: 标题按实际数据量自适应(2026-08-24 全批实测 push2his 连接封锁+
             # push2delay daykline 返回空 klines, 上游退化后仅剩 TDX 单日——
@@ -1081,23 +1178,14 @@ async def generate_report_async(
 
             _recent = ff["data"][:10]
 
-            # 兼容 float 列表（东财回退，单位万元）和 dict 列表（TDX，单位元）两种格式
-            _is_dict = bool(_recent) and isinstance(_recent[0], dict)
-
-            if _is_dict:
+            L(
+                f"  {'日期':<12} {'主力净流入(万)':>12} {'超大单(万)':>10} {'大单(万)':>10} {'中单(万)':>10} {'小单(万)':>10}"
+            )
+            L(f"  {'-'*70}")
+            for d in reversed(_recent):
                 L(
-                    f"  {'日期':<12} {'主力净流入(万)':>12} {'超大单(万)':>10} {'大单(万)':>10} {'中单(万)':>10} {'小单(万)':>10}"
+                    f"  {d['date']:<12} {d['main_net']/1e4:>+12.0f} {d['super_net']/1e4:>+10.0f} {d['large_net']/1e4:>+10.0f} {d['mid_net']/1e4:>+10.0f} {d['small_net']/1e4:>+10.0f}"
                 )
-                L(f"  {'-'*70}")
-                for d in reversed(_recent):
-                    L(
-                        f"  {d['date']:<12} {d['main_net']/1e4:>+12.0f} {d['super_net']/1e4:>+10.0f} {d['large_net']/1e4:>+10.0f} {d['mid_net']/1e4:>+10.0f} {d['small_net']/1e4:>+10.0f}"
-                    )
-            else:
-                L(f"  {'主力净流入(万)':>12}")
-                L(f"  {'-'*30}")
-                for d in reversed(_recent):
-                    L(f"  {d:>+12.0f}")
 
             r20 = ff["data"][:20]
             # V17.0.7: 数据不足 5 日时跳过误导性统计(原"近20日统计: 0/1天"无信息量),
@@ -1106,27 +1194,26 @@ async def generate_report_async(
                 L(
                     "\n  ⚠️ 历史资金流窗口数据受限(<5 日), 趋势统计已跳过; 请以上方单日值结合龙虎榜/两融综合判断"
                 )
-            elif _is_dict:
+            else:
                 tmain = sum(d["main_net"] for d in r20)
                 tdays = sum(1 for d in r20 if d["main_net"] > 0)
                 # V16.2.4: 延时镜像域可能只有当日 → 按实际条数标注
                 L(
                     f"\n  近20日统计:\n    主力累计净流入: {tmain/1e4:.0f}万元\n    主力净流入天数: {tdays}/{len(r20)}天（实有数据）"
                 )
-            else:
-                tmain = sum(r20)
-                tdays = sum(1 for d in r20 if d > 0)
-                L(
-                    f"\n  近20日统计:\n    主力累计净流入: {tmain:.0f}万元\n    主力净流入天数: {tdays}/{len(r20)}天（实有数据）"
-                )
-
             if len(r20) >= 5:
-                L(
-                    f"  信号: {'主力资金近期净流入 → 偏多' if tmain>0 else '主力资金近期净流出 → 偏空'}"
-                )
+                if tmain > 0:
+                    L("  信号: 主力资金近期净流入 → 偏多")
+                elif tmain < 0:
+                    L("  信号: 主力资金近期净流出 → 偏空")
+                else:
+                    L("  信号: 近20日主力资金累计净额为零 → 中性")
 
     else:
-        L("  (资金流数据获取失败)")
+        if ff.get("unverified_date_count"):
+            L("  ⚠️ 返回的历史资金流记录未通过日期或交易日校验，历史窗口不展示")
+        else:
+            L("  (资金流数据获取失败)")
 
     L("\n" + "---")
     L("## **八、北向资金持仓动态**")
@@ -1645,8 +1732,8 @@ async def generate_report_async(
         )
         L(f"  ➤ 研判: 筹码{_cflag}；{_pflag}")
     else:
-        # 源抓取失败(东财 push2his kline/get 返回空/异常) → 可见告警, 不再静默消失
-        L("  ⚠️ 东财 K线/CYQ 数据源暂不可用（kline/get 抓取失败或返回空），本章成本集中度数据暂缺")
+        # 返回空也可能由样本不足等原因导致；不将其直接归因为源故障。
+        L("  ⚠️ 未取得可计算的K线/CYQ数据，成本集中度维度暂缺；不能据此判断筹码分布。")
 
     L("\n" + "---")
     L("## **十五、短线情绪与事件催化**")
@@ -1887,22 +1974,33 @@ async def generate_report_async(
                     _lf_txt = f"{_lf/1e4:.0f}万"
                 else:
                     _lf_txt = f"{_lf:.0f}"
+                _sector_name = item.get("sector") or "板块信息未提供"
                 L(
-                    f"    📌 当前股票在涨停池中！连板{item.get('limit_count',0)} 板块:{item.get('sector','')} 封单额:{_lf_txt}元{_extra}"
+                    f"    📌 当前股票在涨停池中！连板{item.get('limit_count',0)} 板块:{_sector_name} 封单额:{_lf_txt}元{_extra}"
                 )
                 break
         for item in pool.get("limit_broken_list", []):
             if item.get("code") == code:
-                L(
-                    f"    ⚠️ 当前股票炸板！炸板次数:{item.get('broken_count',0)} 板块:{item.get('sector','')}"
-                )
+                _sector_name = item.get("sector") or "板块信息未提供"
+                L(f"    ⚠️ 当前股票炸板！炸板次数:{item.get('broken_count',0)} 板块:{_sector_name}")
                 break
 
         # 涨停板块分布（前5）
         sector_stats = pool.get("sector_stats", {})
         if sector_stats:
-            top_sectors = list(sector_stats.items())[:5]
-            L(f"    涨停板块分布: {' | '.join(f'{k}({v})' for k,v in top_sectors)}")
+            _missing_sector_count = sector_stats.get("板块信息未提供", sector_stats.get("其他", 0))
+            top_sectors = [
+                (name, count)
+                for name, count in sector_stats.items()
+                if name not in ("板块信息未提供", "其他")
+            ][:5]
+            if top_sectors:
+                L(f"    涨停板块分布: {' | '.join(f'{k}({v})' for k,v in top_sectors)}")
+            if _missing_sector_count:
+                if top_sectors:
+                    L(f"    行业分类未取得: {_missing_sector_count} 只（不计入板块分布）")
+                else:
+                    L(f"    涨停板块分布暂缺: {_missing_sector_count} 只涨停股的上游行业字段未提供")
 
         # V16.1: 昨日涨停池晋级率/赚钱效应（push2ex getYesterdayZTPool）
         # MEDIUM(审查 2026-08-16): 同步 HTTP 包 to_thread
@@ -2029,9 +2127,26 @@ async def generate_report_async(
             _ano = await asyncio.to_thread(_f_ano, code)
             if _ano:
                 _a0 = _ano[0]
-                _content = str(_a0.get("analysis_content", ""))[:120]
+                _raw_content = " ".join(str(_a0.get("analysis_content", "")).split())
+                _body_end = len(_raw_content)
+                for _marker in (
+                    "免责声明",
+                    "以上内容仅供参考",
+                    "仅供参考，不构成投资建议",
+                    "仅供参考",
+                ):
+                    _marker_pos = _raw_content.find(_marker)
+                    if _marker_pos >= 0:
+                        _body_end = min(_body_end, _marker_pos)
+                _content = _raw_content[:_body_end].strip()
+                if len(_content) > 300:
+                    _content = _content[:300].rstrip() + "…"
                 L(f"\n  🔍 异动解读(fuyao AI, 标签:{_a0.get('tag_name', '')}):")
-                L(f"    {_content}")
+                if _content:
+                    L(f"    {_content}")
+                else:
+                    L("    （上游未提供可展示的解读正文）")
+                L("    ℹ️ AI 整理内容仅供参考，不构成投资建议；事实以公司公告为准。")
                 if _a0.get("keyword_list"):
                     L(f"    关键词: {'、'.join(str(k) for k in _a0['keyword_list'][:6])}")
     except Exception as _e:
@@ -2272,20 +2387,24 @@ async def generate_report_async(
 
         for d in rbt[:3]:
 
-            if d["premium_pct"] >= 0:
+            _premium_pct = _safe_float(d.get("premium_pct"))
+            if round(_premium_pct, 2) > 0:
 
                 signals.append(
-                    f"💎 场外抢筹：{d['date']}发生溢价大宗（溢价{d['premium_pct']:.1f}%），买方溢价接盘，主力抢筹意图明显"
+                    f"场外溢价成交：{d['date']}大宗交易溢价{_premium_pct:+.2f}%；"
+                    "该价格差异不能单独证明买方身份或主力抢筹意图"
                 )
 
                 break
 
         for d in rbt[:3]:
 
-            if d["premium_pct"] < -8:
+            _premium_pct = _safe_float(d.get("premium_pct"))
+            if round(_premium_pct, 2) < -8:
 
                 signals.append(
-                    f"❌ 折价套现：{d['date']}发生折价{abs(d['premium_pct']):.1f}%大宗交易，场外廉价倒手，对二级市场价格有压制"
+                    f"大宗交易折价：{d['date']}折价{abs(_premium_pct):.2f}%；"
+                    "折价幅度反映成交价格差异，后续影响仍需结合成交双方与市场情况判断"
                 )
 
                 break
@@ -2528,7 +2647,10 @@ async def generate_report_async(
     L("\n" + "---")
     L("## **综合评分与交易风险参考**")
     L("---")
-    L("  以下为个股模型评分，不包含账户持仓、风险承受能力或组合约束，不构成个性化仓位配置。")
+    L(
+        "  短线模型分与多评委共识分使用不同指标和权重；两者方向不一致时应视为模型分歧。"
+        "评分及下方仓位参数仅供参考，不构成个性化配置。"
+    )
 
     # V8.2: 使用统一评分接口
     from stock_common import calculate_score
@@ -2551,19 +2673,16 @@ async def generate_report_async(
     if q and q.get('change_pct', 0) >= 9.5 and price_today >= q.get("limit_up", 0) * 0.99:
         score_data.is_limit_up = True
 
-    # 资金流向（V16.1: 数据"最新在前"，[:20] 取最近 20 日）
-    if ff["data"] and len(ff["data"]) >= 20:
-        _ff_data = ff["data"][:20]
-        if _ff_data and isinstance(_ff_data[0], dict):
-            score_data.main_net_inflow = sum(d.get("main_net", 0) for d in _ff_data)
-            score_data.consecutive_inflow_days = sum(
-                1 for d in _ff_data if d.get("main_net", 0) > 0
-            )
-        else:
-            score_data.main_net_inflow = sum(_ff_data) if _ff_data else 0
-            score_data.consecutive_inflow_days = (
-                sum(1 for d in _ff_data if d > 0) if _ff_data else 0
-            )
+    # 资金流向：使用最近 20 个有效交易日；“连续流入天数”按最新日期起连续统计。
+    _score_flow_data = ff.get("data") or []
+    _score_flow_sample_count = min(len(_score_flow_data), 20)
+    if _score_flow_sample_count >= 20:
+        _ff_data = _score_flow_data[:20]
+        score_data.main_net_inflow = sum(_safe_float(row.get("main_net")) for row in _ff_data)
+        for _flow_day in _ff_data:
+            if _safe_float(_flow_day.get("main_net")) <= 0:
+                break
+            score_data.consecutive_inflow_days += 1
 
     # 筹码数据
     if holders and len(holders) >= 2:
@@ -2608,27 +2727,45 @@ async def generate_report_async(
     _seal_warn = any("封单预警" in s or "弱势烂板" in s for s in signals)
 
     L(f"  评分明细: {' | '.join(_details[:8])}" if _details else None)
+    _score_input_gaps = []
+    if not ma_data or "ma5avgprice" not in ma_data:
+        _score_input_gaps.append("均线数据")
+    if score_data.rsi14 is None:
+        _score_input_gaps.append("RSI技术指标")
+    if _score_flow_sample_count < 20:
+        _score_input_gaps.append(f"20个有效交易日的资金流样本（当前{_score_flow_sample_count}日）")
+    if not holders or len(holders) < 2:
+        _score_input_gaps.append("股东户数变化")
+    if not _cyq_dict:
+        _score_input_gaps.append("CYQ筹码分布")
+    if _score_input_gaps:
+        L(
+            "  ⚠️ 评分输入不完整："
+            + "、".join(_score_input_gaps)
+            + "；缺失项按模型默认值处理，评分档位不代表完整信号。"
+        )
+    L("  仓位与止损百分比是模型参数示例，不是个人化投资指令。")
 
     if _seal_warn:
         # 封单弱时仓位降级：原仓位建议减半
         # V17.0.25(2026-09-02) P2-9 修复: 显示用 int() 截断(非四舍五入), 与档位判定(_ps>=50/30/15)一致 —
         # 49.6 原 .0f 显示50却落30-49档, 读者误判。int(非负)即 floor。
         if _ps >= 50:
-            L(f"  短线评分: {int(_ps)}/100 → 封单偏弱，仓位降至20%，止损-5% ⚠️")
+            L(f"  短线模型评分: {int(_ps)}/100 → 封单偏弱，模型仓位参数参考20%，止损参数参考-5% ⚠️")
         elif _ps >= 30:
-            L(f"  短线评分: {int(_ps)}/100 → 封单偏弱，仓位降至12%，止损-5% ⚠️")
+            L(f"  短线模型评分: {int(_ps)}/100 → 封单偏弱，模型仓位参数参考12%，止损参数参考-5% ⚠️")
         elif _ps >= 15:
-            L(f"  短线评分: {int(_ps)}/100 → 封单偏弱，仓位降至5%，止损-3% ⚠️")
+            L(f"  短线模型评分: {int(_ps)}/100 → 封单偏弱，模型仓位参数参考5%，止损参数参考-3% ⚠️")
         else:
-            L(f"  短线评分: {int(_ps)}/100 → 封单偏弱，观望为主，仓位2% ⚠️")
+            L(f"  短线模型评分: {int(_ps)}/100 → 封单偏弱，模型仓位参数参考2%，以观望为主 ⚠️")
     elif _ps >= 50:
-        L(f"  短线评分: {int(_ps)}/100 → 强烈参与，仓位40%，止损-5%")
+        L(f"  短线模型评分: {int(_ps)}/100 → 高分档，模型仓位参数参考40%，止损参数参考-5%")
     elif _ps >= 30:
-        L(f"  短线评分: {int(_ps)}/100 → 可参与，仓位25%，止损-5%")
+        L(f"  短线模型评分: {int(_ps)}/100 → 中高分档，模型仓位参数参考25%，止损参数参考-5%")
     elif _ps >= 15:
-        L(f"  短线评分: {int(_ps)}/100 → 轻仓试探，仓位10%，止损-3%")
+        L(f"  短线模型评分: {int(_ps)}/100 → 低分档，模型仓位参数参考10%，止损参数参考-3%")
     else:
-        L(f"  短线评分: {int(_ps)}/100 → 观望，仓位5%试水")
+        L(f"  短线模型评分: {int(_ps)}/100 → 低分档，模型仓位参数参考5%，保持观望")
 
     # V17.0 R5: 多评委评审团评分渲染统一走 sc_render(原 12 行逐字重复已收敛)
     from stock_common.sc_render import render_multi_school_scores

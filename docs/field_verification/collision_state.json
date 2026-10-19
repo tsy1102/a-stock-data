@@ -8766,7 +8766,7 @@
         "tencent"
       ],
       "hub_flag": false,
-      "last_seen": "20261018",
+      "last_seen": "20261019",
       "in_registry": true,
       "first_seen": "20261005",
       "status": "confirmed"
@@ -10323,7 +10323,7 @@
         "tencent"
       ],
       "hub_flag": false,
-      "last_seen": "20261018",
+      "last_seen": "20261019",
       "in_registry": true,
       "first_seen": "20261008",
       "status": "confirmed"
@@ -12004,6 +12004,29 @@
       "in_registry": false,
       "first_seen": "20261016",
       "status": "repeated"
+    },
+    "kpl.seal_amount||push2ex.limit_fund": {
+      "left": "push2ex.limit_fund",
+      "right": "kpl.seal_amount",
+      "level": "L1",
+      "ratio": null,
+      "overall_hit": 1.0,
+      "n_days": 3,
+      "n_pairs": 128,
+      "sample_dates": [
+        "T:20261014",
+        "T:20261016",
+        "T:20261019"
+      ],
+      "evidence_sources": [
+        "eastmoney",
+        "kpl"
+      ],
+      "hub_flag": false,
+      "last_seen": "20261019",
+      "in_registry": false,
+      "first_seen": "20261019",
+      "status": "new"
     }
   },
   "legacy_findings_v1": {
@@ -21991,5 +22014,5 @@
     }
   },
   "legacy_state_version": 1,
-  "updated": "20261018"
+  "updated": "20261019"
 }

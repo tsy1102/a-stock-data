@@ -291,21 +291,22 @@ def long_term_return_lines(cdata: Any) -> List[str]:
 
 
 def quality_gate_lines(cdata: Any) -> List[str]:
-    """数据质量门禁：is_valid + 关键字段来源标注。"""
+    """核心行情有效性与关键字段来源；is_valid 不代表报告各章节数据完整。"""
     try:
         is_valid = getattr(cdata, "is_valid", True)
         fs = getattr(cdata, "field_sources", None) or {}
         price_src = fs.get("price", "")
         pe_src = fs.get("pe_ttm", "")
         out: List[str] = []
-        out.append("  🔎 **数据质量门禁**")
-        out.append(f"  - 数据合法性(is_valid)={is_valid}")
+        out.append("  🔎 **核心行情有效性**")
+        out.append(f"  - 现价/昨收校验(is_valid)={'通过' if is_valid else '未通过'}")
+        out.append("  - 校验范围仅限证券代码与现价/昨收，不代表资金流、筹码等章节完整")
         if price_src:
             out.append(f"  - 价格来源={price_src}（实时路径优先，缺失回落兜底）")
         if pe_src:
             out.append(f"  - PE(TTM)来源={pe_src}")
         if not is_valid:
-            out.append("  - ⚠️ 本标的快照合法性校验未通过，以上数值仅供参考")
+            out.append("  - ⚠️ 核心行情校验未通过，价格相关结论仅供参考")
         return out
     except Exception:
         return []

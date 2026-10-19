@@ -358,10 +358,10 @@ def get_limit_pool_summary(date_str: str = "") -> Dict[str, Any]:
             _debug_log(f"get_limit_pool_summary dt fallback: {_e}")
             _dt_fb = 0
 
-    # 按板块统计涨停分布(M4: 空 sector 归"其他", 不产生空键)
+    # 按板块统计涨停分布。缺失行业字段不等于真实“其他行业”，单独标识以免伪造板块归属。
     sector_stats: Dict[str, int] = {}
     for item in zt:
-        sec = item.get("sector") or "其他"
+        sec = str(item.get("sector") or "").strip() or "板块信息未提供"
         sector_stats[sec] = sector_stats.get(sec, 0) + 1
 
     # 封板成功率：多源仅提供计数时，用互校涨停数作为分子；若炸板池可用，

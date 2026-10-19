@@ -232,14 +232,15 @@ def get_amount_wan(code: str) -> Optional[float]:
     category="zhb_data",
     ttl_seconds=TTL["f10_fund_flow"],
     trading_day=True,
-    valid_if=make_valid_if(),
+    # 资金流记录包含有意置零的“不提供手数”字段。默认校验会因任一数值为 0 拒绝缓存，
+    # 导致同一报告内的第二次读取重复请求；空结果仍由 make_valid_if 拒绝。
+    valid_if=make_valid_if(check_zeros=False),
 )
 def get_main_net_buy(code: str) -> Optional[Dict[str, Any]]:
     """获取主力资金流向。
 
-    V17.0 (2026-08-13 字典实锤): 统一口径——优先级 push2delay f137(当日权威, 与 canonical 一致)
-    → ZHB T-1 → TDX 0x0011(实时兜底)。原"ZHB 优先"导致 sht 二章(本函数)与七章(canonical)
-    显示不同日期/口径(实测 600276: 二章 2162万[8/12 ZHB] vs 七章 -22272万[8/13 f137])。
+    统一口径：优先 push2delay f137；缺失时回退到通过 TDX 兼容层调用的东财资金流。
+    ZHB 的同名字段已证实是竞价额，不作为主力净流入回退值。
     """
     from stock_common import _debug_log, _safe_float
 
@@ -248,7 +249,8 @@ def get_main_net_buy(code: str) -> Optional[Dict[str, Any]]:
         from stock_common.sc_datasource import get_em_quote_full_delay
 
         _ed = get_em_quote_full_delay(code) or {}
-        if _ed.get("fund_main_today") not in (None, 0, '', '0', '0.0'):
+        # _em_quote_full_impl 仅在上游实际返回 f137 时才写入该键；0 是有效净流值，不能当缺失。
+        if "fund_main_today" in _ed and _ed.get("fund_main_today") is not None:
             return {
                 "main_net_buy_hands": 0,  # L5 终审修复: get_em_quote_full_delay 无 fund_main_hands 键, 恒 0
                 "main_net_buy_hands_1d": 0,
@@ -266,7 +268,7 @@ def get_main_net_buy(code: str) -> Optional[Dict[str, Any]]:
         from core.tdx_client import tdx_get_fund_flow, tdx_get_history_fund_flow
 
         ff = tdx_get_fund_flow(code)
-        if ff:
+        if isinstance(ff, dict) and ff.get("main_net_wan") is not None:
             history = tdx_get_history_fund_flow(code, days=5)
             main_net_buy_hands_1d = 0
             main_net_buy_amount_1d: Union[int, float] = 0
@@ -282,6 +284,7 @@ def get_main_net_buy(code: str) -> Optional[Dict[str, Any]]:
                 "main_net_buy_amount": _safe_float(ff.get("main_net_wan", 0)),
                 "main_net_buy_amount_1d": main_net_buy_amount_1d,
                 "main_net_buy_amount_2d": 0,
+                "source": "eastmoney:fund_flow",
             }
     except Exception as _e:
         _debug_log(f"data_provider error: {_e}")

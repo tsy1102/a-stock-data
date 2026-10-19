@@ -58,6 +58,8 @@ FTShare 六个已登记数值接口分别参与来源身份核验：仅比较同
 |:---|:---|
 | `extract_registry.py`、`field_registry_api.py` | 从主字典提取登记信息；后者是多个治理脚本共用的内部 API。 |
 | `registry_parity.py` | 校验登记表、主字典投影和字段矩阵；历史 TDX 五档 token 与当前 bid/ask 原始路径、以及仍采集的 Fuyao 上下文标签通过 `registry_parity_scope.json` 逐项注明证据和采集范围。未列入清单的新差异仍会失败；治理运行器的接受差异清单只用于另行审定的 parity debt。 |
+| `apply_collision_adjudications.py` | 默认预览，显式 `--apply` 后才写 registry 和生成视图；支持 L1 碰撞、固定版本的单源上游契约，以及有来源独立性检查和 CSV 复算的公式关系定案。公式样本留档于 `docs/field_verification/derived_evidence/`，不自动联网、不建立输入字段映射。 |
+| `derived_relation_evidence.py` | 定案器调用的公式证据校验模块；限制算术语法与本地样本范围，核验来源族、已验证输入、有效日期和样本误差。 |
 | `gen_field_dict.py`、`gen_field_matrix.py` | 生成字典/矩阵片段；`--check` 只检查、不写入。 |
 | `gen_ulist_subdict.py`、`gen_zhb_subdict.py` | 生成对应接口的字典子表及镜像。 |
 | `audit_field_completeness.py`、`audit_field_source_quality.py`、`lint_field_names.py`、`lint_field_same_number.py` | 分别审查归档样本字段覆盖、已验证登记的语义元数据质量，以及命名和编号；质量审计只读 registry，不会自动改状态。 |

@@ -322,7 +322,13 @@ def get_em_quote_full(code: str) -> Dict[str, Any]:
     return _em_quote_full_impl(code, "https://push2.eastmoney.com/api/qt/stock/get")
 
 
-@cached(category="quote_full_delay", trading_day=True, valid_if=make_valid_if())
+@cached(
+    category="quote_full_delay",
+    trading_day=True,
+    # 完整行情包含大量可合法为 0 的字段（资金流/PE 等）；按任一字段为 0 拒绝缓存会造成重复请求。
+    # 价格必须为正才接受缓存，空响应与无有效行情仍不会进入缓存。
+    valid_if=lambda result: isinstance(result, dict) and _safe_float(result.get("price")) > 0,
+)
 def get_em_quote_full_delay(code: str) -> Dict[str, Any]:
     """V16.3.3 (2026-08-10 字典 12.15.5): push2delay 镜像域版全字段行情。
 

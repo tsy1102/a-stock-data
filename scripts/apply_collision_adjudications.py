@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
-"""Apply explicitly reviewed collision or source-contract decisions.
+"""Apply explicitly reviewed collision, source-contract, or formula decisions.
 
-Collision reports remain discovery-only. Source-contract decisions use a separate
-evidence route and never create cross-source mappings. This command defaults to
-preview and requires ``--apply`` before updating the registry and generated views.
+Collision reports remain discovery-only. Source-contract and derived-relation
+decisions use separate evidence routes and never create cross-source mappings.
+This command defaults to preview and requires ``--apply`` before updating the
+registry and generated views.
 """
 
 from __future__ import annotations
@@ -37,6 +38,7 @@ METADATA_GAPS_PATH = REPO_ROOT / "docs" / "field_metadata_gaps.md"
 sys.path.insert(0, str(SCRIPT_DIR))
 
 import field_registry_api as fra
+import derived_relation_evidence as dre
 import gen_field_dict as gfd
 import source_lineage_api as sla
 
@@ -976,6 +978,208 @@ def apply_source_contract_adjudications(
     return updated, stats
 
 
+def _prepare_derived_relation_decision(
+    raw_decision: Any,
+    reviewer: str,
+    reviewed_on: str,
+    decision_path: str,
+    by_identity: dict[tuple[str, str], dict[str, Any]],
+    lineage: dict[str, Any],
+) -> dict[str, Any]:
+    decision = _require_object(raw_decision, "decision")
+    if any(marker in reviewer.casefold() for marker in ("填写", "占位", "待确认", "待验证")):
+        raise ValueError("reviewer must replace the template placeholder")
+    decision_id = _non_empty_string(decision.get("id"), "decision.id")
+    if not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9._-]{2,127}", decision_id):
+        raise ValueError(f"decision.id contains unsupported characters: {decision_id!r}")
+    if decision.get("action") != "verify_derived_relation":
+        raise ValueError("derived-relation decisions require action='verify_derived_relation'")
+    target_obj = _require_object(decision.get("target"), "decision.target")
+    target = (
+        _non_empty_string(target_obj.get("source"), "target.source"),
+        _non_empty_string(target_obj.get("code"), "target.code"),
+    )
+    target_record = by_identity.get(target)
+    if target_record is None:
+        raise ValueError(f"unknown target source field: {target[0]}::{target[1]}")
+    previous_status = _non_empty_string(decision.get("previous_status"), "decision.previous_status")
+    if previous_status not in {"unverified", "candidate"}:
+        raise ValueError(
+            "derived-relation verification only accepts unverified or candidate fields"
+        )
+    previous_resolution = _non_empty_string(
+        decision.get("previous_status_resolution"), "decision.previous_status_resolution"
+    )
+    previous_metadata = _metadata_snapshot(decision.get("previous"), "decision.previous")
+    after_metadata = {
+        key: _non_empty_string(decision.get(key), f"decision.{key}")
+        for key in ("canonical", "meaning", "unit")
+    }
+    for key, new_value in after_metadata.items():
+        if _is_placeholder_metadata(new_value, key, target[1]):
+            raise ValueError(f"derived-relation evidence requires a concrete {key}")
+        old_value = previous_metadata[key]
+        if old_value != new_value and not _is_placeholder_metadata(old_value, key, target[1]):
+            raise ValueError(f"derived-relation evidence cannot overwrite established {key}")
+    rationale = _non_empty_string(decision.get("rationale"), "decision.rationale")
+    if any(marker in rationale.casefold() for marker in ("填写", "占位", "待确认", "待验证")):
+        raise ValueError("decision.rationale must replace the template placeholder")
+    formula_evidence = dre.validate_derived_relation(
+        decision.get("formula_evidence"), target, by_identity, lineage, VERIFY_DIR, reviewed_on
+    )
+    section = (
+        f"derived relation: {formula_evidence['expression']} · {formula_evidence['sample_file']}"
+    )
+    adjudication = {
+        "id": decision_id,
+        "action": "verify_derived_relation",
+        "status": "verified",
+        "reviewer": reviewer,
+        "reviewed_on": reviewed_on,
+        "decision_file": decision_path,
+        "evidence_basis": "derived_relation",
+        "previous_status": previous_status,
+        "status_resolution_change": {
+            "before": previous_resolution,
+            "after": "verified_by_derived_relation",
+        },
+        "metadata_change": {"before": previous_metadata, "after": after_metadata},
+        "rationale": rationale,
+        "formula_evidence": formula_evidence,
+    }
+    return {
+        "id": decision_id,
+        "target": target,
+        "record": target_record,
+        "previous_status": previous_status,
+        "previous_status_resolution": previous_resolution,
+        "previous_metadata": previous_metadata,
+        "after_metadata": after_metadata,
+        "adjudication": adjudication,
+        "section": section,
+    }
+
+
+def _append_derived_relation_decision(payload: dict[str, Any]) -> bool:
+    target_record = payload["record"]
+    adjudication = payload["adjudication"]
+    decision_id = payload["id"]
+    after_metadata = payload["after_metadata"]
+    history = target_record.get("adjudications", [])
+    if not isinstance(history, list):
+        raise TypeError("source field adjudications must be a list")
+    prior = next(
+        (item for item in history if isinstance(item, dict) and item.get("id") == decision_id),
+        None,
+    )
+    if prior is not None:
+        if (
+            prior != adjudication
+            or target_record.get("status") != "verified"
+            or _metadata(target_record) != after_metadata
+            or target_record.get("status_resolution") != "verified_by_derived_relation"
+        ):
+            raise ValueError(f"decision id already exists with different content: {decision_id}")
+        return False
+
+    if target_record.get("status", "unverified") != payload["previous_status"]:
+        raise ValueError(f"target status changed since review: {payload['target']}")
+    if (target_record.get("status_resolution") or "status_missing") != payload[
+        "previous_status_resolution"
+    ]:
+        raise ValueError(f"target status resolution changed since review: {payload['target']}")
+    if _metadata(target_record) != payload["previous_metadata"]:
+        raise ValueError(f"target metadata changed since review: {payload['target']}")
+
+    target_record.update(after_metadata)
+    target_record["status"] = "verified"
+    target_record["status_resolution"] = "verified_by_derived_relation"
+    target_record.setdefault("adjudications", []).append(copy.deepcopy(adjudication))
+    reference_evidence = target_record.setdefault("reference_evidence", [])
+    if not isinstance(reference_evidence, list):
+        raise TypeError("source field reference_evidence must be a list")
+    reference_evidence.append(
+        {
+            "section": payload["section"],
+            **after_metadata,
+            "status_raw": f"人工复核公式关系 {adjudication['reviewed_on']}：{decision_id}",
+            "status": "verified",
+            "adjudication_id": decision_id,
+            "evidence_basis": "derived_relation",
+            "formula_evidence": copy.deepcopy(adjudication["formula_evidence"]),
+            "metadata_change": copy.deepcopy(adjudication["metadata_change"]),
+        }
+    )
+    sections = target_record.setdefault("sections", [])
+    if not isinstance(sections, list):
+        raise TypeError("source field sections must be a list")
+    if payload["section"] not in sections:
+        sections.append(payload["section"])
+        sections.sort()
+    if not target_record.get("section"):
+        target_record["section"] = payload["section"]
+
+    status_evidence = target_record.setdefault("status_evidence", {})
+    if not isinstance(status_evidence, dict):
+        raise TypeError("source field status_evidence must be an object")
+    for key in ("adjudication_ids", "derived_relation_adjudication_ids"):
+        ids = status_evidence.setdefault(key, [])
+        if not isinstance(ids, list):
+            raise TypeError(f"source field status_evidence.{key} must be a list")
+        if decision_id not in ids:
+            ids.append(decision_id)
+    return True
+
+
+def apply_derived_relation_adjudications(
+    registry: dict[str, Any],
+    lineage: dict[str, Any],
+    decision_document: dict[str, Any],
+    decision_path: str,
+) -> tuple[dict[str, Any], dict[str, int]]:
+    """Verify unknown fields through independently sourced, replayable equations."""
+    if decision_document.get("schema_version") != 1:
+        raise ValueError("unsupported derived-relation schema_version")
+    if decision_document.get("evidence_basis") != "derived_relation":
+        raise ValueError("derived-relation decisions require evidence_basis='derived_relation'")
+    if decision_document.get("report"):
+        raise ValueError("derived-relation decisions cannot include a collision report")
+    reviewer = _non_empty_string(decision_document.get("reviewer"), "reviewer")
+    reviewed_on = _validate_iso_date(decision_document.get("reviewed_on"), "reviewed_on")
+    decisions = decision_document.get("decisions")
+    if not isinstance(decisions, list) or not decisions:
+        raise ValueError("decisions must be a non-empty list")
+
+    updated = copy.deepcopy(registry)
+    by_identity = {
+        (record["source"], record["code"]): record for record in fra.source_field_records(updated)
+    }
+    seen_ids: set[str] = set()
+    seen_targets: set[tuple[str, str]] = set()
+    affected_codes: set[str] = set()
+    stats = {"derived_relation_verified": 0, "already_applied": 0, "mappings_added": 0}
+    for raw_decision in decisions:
+        payload = _prepare_derived_relation_decision(
+            raw_decision, reviewer, reviewed_on, decision_path, by_identity, lineage
+        )
+        decision_id = payload["id"]
+        target = payload["target"]
+        if decision_id in seen_ids:
+            raise ValueError(f"duplicate decision id: {decision_id}")
+        if target in seen_targets:
+            raise ValueError(f"multiple decisions target the same field: {target}")
+        seen_ids.add(decision_id)
+        seen_targets.add(target)
+        if _append_derived_relation_decision(payload):
+            stats["derived_relation_verified"] += 1
+            affected_codes.add(target[1])
+        else:
+            stats["already_applied"] += 1
+    if affected_codes:
+        _refresh_aggregate_projection(updated, affected_codes)
+    return updated, stats
+
+
 def _atomic_write_batch(outputs: dict[Path, str]) -> None:
     originals = {path: path.read_bytes() if path.exists() else None for path in outputs}
     staged: dict[Path, str] = {}
@@ -1030,7 +1234,7 @@ def _load_json(path: Path, label: str) -> dict[str, Any]:
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description="复核跨源碰撞或单源上游契约并同步字段注册表")
+    parser = argparse.ArgumentParser(description="复核字段证据并同步字段注册表")
     parser.add_argument("--decisions", required=True, help="docs/field_verification 下的决策 JSON")
     parser.add_argument(
         "--apply", action="store_true", help="应用决策并原子更新 registry 与生成文档"
@@ -1048,6 +1252,11 @@ def main(argv: list[str] | None = None) -> int:
         if evidence_basis == "source_contract":
             updated, stats = apply_source_contract_adjudications(
                 registry, decision_document, decision_rel
+            )
+        elif evidence_basis == "derived_relation":
+            lineage = sla.load_source_lineage(str(LINEAGE_PATH), registry=registry)
+            updated, stats = apply_derived_relation_adjudications(
+                registry, lineage, decision_document, decision_rel
             )
         elif evidence_basis is None:
             lineage = sla.load_source_lineage(str(LINEAGE_PATH), registry=registry)
@@ -1079,6 +1288,7 @@ def main(argv: list[str] | None = None) -> int:
             for key in (
                 "verified",
                 "source_contract_verified",
+                "derived_relation_verified",
                 "metadata_enriched",
                 "linked",
                 "anchor_metadata_corrected",

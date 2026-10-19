@@ -164,6 +164,29 @@ async def get_stock_sector_rank_async(code, info=None):
 # ==================== 报告生成引擎 ====================
 
 
+def _unique_trading_flow_rows(rows):
+    """返回有明确日期且日历确认开市的资金流记录，按日期从新到旧去重。"""
+    from stock_common.stock_calendar import is_trading_day
+
+    dated_rows = {}
+    for row in rows or []:
+        if not isinstance(row, dict):
+            continue
+        raw_date = str(row.get("date") or row.get("trade_date") or "")[:10]
+        try:
+            trade_date = date.fromisoformat(raw_date)
+            if not is_trading_day(trade_date):
+                continue
+        except (TypeError, ValueError, NotImplementedError):
+            continue
+        previous = dated_rows.get(trade_date)
+        if previous is None or (
+            previous.get("main_net") is None and row.get("main_net") is not None
+        ):
+            dated_rows[trade_date] = row
+    return [dated_rows[day] for day in sorted(dated_rows, reverse=True)]
+
+
 async def generate_report_async(session, code, output_path, ind_comp=None, hsgt=None):
     """async 版: 支持 ind_comp/hsgt 外部缓存，批量模式下避免重复查询"""
     today_str = date.today().strftime("%Y-%m-%d")
@@ -757,6 +780,9 @@ async def generate_report_async(session, code, output_path, ind_comp=None, hsgt=
                 L(f"  {label_cur:<14} {eps_cur:.3f}")
             if eps_next:
                 L(f"  {label_next:<14} {eps_next:.3f}")
+    # 评分阶段无论一致预期是否可用，都会读取技术指标结果；先初始化避免
+    # 前向 EPS 缺失时在评分段触发 UnboundLocalError。
+    _tech = {}
     if eps_has_data and price_today and eps_cur and eps_cur > 0:
         pe_fwd = price_today / eps_cur
         L(f"\n  ➤ 前向市盈率 (预测今年): {pe_fwd:.2f}x")
@@ -1039,6 +1065,8 @@ async def generate_report_async(session, code, output_path, ind_comp=None, hsgt=
             else ("套牢盘较重，反弹承压" if _ben < 0.25 else "成本结构均衡")
         )
         L(f"    ➤ 研判: 筹码{_cflag}；{_pflag}")
+    else:
+        L("  ⚠️ 未取得可计算的K线/CYQ数据，筹码分布维度暂缺；不能据此判断成本集中度。")
 
     lockup = await get_lockup_expiry_async(session, code, days=180)
     if lockup:
@@ -1320,10 +1348,22 @@ async def generate_report_async(session, code, output_path, ind_comp=None, hsgt=
         L(f"  当前股息率: {_zhb_div_yield:.2f}%")
     div = await asyncio.to_thread(get_dividend_history, code)
     if div and len(div) >= 3:
-        _dy = len(set(d["date"][:4] for d in div if d.get("bonus_rmb", 0) > 0))
-        L(f"  📊 分红持续性: 连续{_dy}年分红")
-        if _dy >= 5:
-            L("    💎 连续5年以上分红，具备稳定防御属性")
+        _div_years = {
+            int(str(row.get("date", ""))[:4])
+            for row in div
+            if isinstance(row, dict)
+            and _safe_float(row.get("bonus_rmb")) > 0
+            and str(row.get("date", ""))[:4].isdigit()
+        }
+        _dy = 0
+        _year = max(_div_years) if _div_years else 0
+        while _year and _year in _div_years:
+            _dy += 1
+            _year -= 1
+        if _dy:
+            L(f"  📊 分红持续性: 连续{_dy}年分红")
+            if _dy >= 5:
+                L("    💎 连续5年以上分红，具备稳定防御属性")
     if div:
         L("  近5次分红除息记录:")
         # V17.0.2i: md 表格(原空格表无分隔线行 → 未转)
@@ -1333,20 +1373,18 @@ async def generate_report_async(session, code, output_path, ind_comp=None, hsgt=
             yield_str = f"{(d['bonus_rmb'] / price_today) * 100:.2f}%" if price_today > 0 else "N/A"
             L(f"| {d['date']} | {d['bonus_rmb']:.4f} | 约 {yield_str} (按现价计) |")
     else:
-        # V17.3.5 修正(报告审查 #363): 若 ZHB 股息率>0 已证实有分红, 绝不输出"暂无分红记录"——
-        # 此时 get_dividend_history 返回空只代表明细接口失败/空窗, 与股息率矛盾时以股息率为准。
+        # 股息率是独立快照指标，不能替代分红明细；接口空结果也不足以证明历史上未分红。
         if _zhb_div_yield > 0:
             L(
-                "  分红明细获取为空，但 ZHB 股息率显示该股有分红，明细数据可能存在缺口。"
+                "  分红历史明细未取得；当前股息率是独立快照指标，不能替代派息日期和金额记录。"
                 if div is None
-                else "  分红历史明细为空，但 ZHB 股息率显示该股有分红，建议以股息率为准。"
+                else "  本次未返回分红历史明细；空结果不证明历史上未分红，股息率也不能替代明细。"
             )
         else:
-            # V16.2.3: 区分"接口失败"与"真无分红"
             L(
-                "  分红数据获取失败（TDX 接口暂不可用）。"
+                "  TDX 分红历史接口未提供可用明细，尚不能核实分红历史。"
                 if div is None
-                else "  暂无分红记录（非防御型收息标的）。"
+                else "  本次未返回分红派息明细；空结果不证明历史上未分红。"
             )
 
     # ─── 16. 十大流通股东机构动向 ───
@@ -1509,7 +1547,10 @@ async def generate_report_async(session, code, output_path, ind_comp=None, hsgt=
     L("\n" + "---")
     L("## **综合评分与风险管理参考**")
     L("---")
-    L("  以下为个股模型评分，不包含账户持仓、风险承受能力或组合约束，不构成个性化仓位配置。")
+    L(
+        "  中线单项评分与多评委共识分使用不同指标和权重；方向不一致时应视为模型分歧。"
+        "评分及下方仓位参数仅供参考，不构成个性化配置。"
+    )
 
     # V8.2: 使用统一评分接口
     from stock_common import ScoreData, calculate_score
@@ -1519,7 +1560,26 @@ async def generate_report_async(session, code, output_path, ind_comp=None, hsgt=
         code=code,
         name=info.get('name', ''),
         price=price_today,
+        change_pct=cdata.change_pct,
     )
+
+    # 前文已计算的日线技术指标供评审团技术面复用，不重复取数。
+    _tech_ma = _tech.get("ma") or {}
+    for _attr, _key in (("ma5", "ma5"), ("ma10", "ma10"), ("ma20", "ma20")):
+        if _tech_ma.get(_key) is not None:
+            setattr(score_data, _attr, _safe_float(_tech_ma[_key]))
+    _tech_macd = _tech.get("macd") or {}
+    score_data.macd_dif = _safe_float(_tech_macd.get("dif"))
+    score_data.macd_dea = _safe_float(_tech_macd.get("dea"))
+    _tech_rsi = (_tech.get("rsi") or {}).get("rsi14")
+    if _tech_rsi is not None:
+        score_data.rsi14 = _safe_float(_tech_rsi)
+    _tech_kdj = _tech.get("kdj") or {}
+    for _attr, _key in (("kdj_k", "k"), ("kdj_d", "d"), ("kdj_j", "j")):
+        if _tech_kdj.get(_key) is not None:
+            setattr(score_data, _attr, _safe_float(_tech_kdj[_key]))
+    score_data.ret_20d = _safe_float(_tech.get("ret_20d"))
+    score_data.high_120d = _safe_float(_tech.get("high_120d"))
 
     # 基本面数据
     if fin_metrics:
@@ -1551,6 +1611,28 @@ async def generate_report_async(session, code, output_path, ind_comp=None, hsgt=
     if nb and len(nb) >= 2:
         score_data.northbound_change = nb[0]["hold_shares"] - nb[-1]["hold_shares"]
 
+    # 资金面以已展示的历史数据为输入；要求 20 个有效交易日，连续流入按最新日起连续统计。
+    _med_flow_data = _unique_trading_flow_rows(fund_flow.get("data") or [])
+    _med_flow_sample_count = min(len(_med_flow_data), 20)
+    if _med_flow_sample_count >= 20:
+        _med_flow_rows = _med_flow_data[:20]
+        score_data.main_net_inflow = sum(
+            _safe_float(row.get("main_net")) for row in _med_flow_rows if isinstance(row, dict)
+        )
+        for _flow_day in _med_flow_rows:
+            if not isinstance(_flow_day, dict) or _safe_float(_flow_day.get("main_net")) <= 0:
+                break
+            score_data.consecutive_inflow_days += 1
+
+    if dtb and _safe_float(dtb.get("institution", {}).get("net_amt")) > 0:
+        score_data.institution_net_buy = _safe_float(dtb["institution"]["net_amt"])
+
+    if margin and len(margin) >= 3:
+        if all(row.get("rqye") is not None for row in margin[:3]):
+            _rqye_values = [_safe_float(row.get("rqye")) for row in margin[:3]]
+            if all(_rqye_values[index] <= _rqye_values[index + 1] for index in range(2)):
+                score_data.margin_short_decline = True
+
     # M3 修复：复用前文【十六、十大流通股东机构动向】已拉取的股东结构，避免重复网络调用
     _st = st
     if _st:
@@ -1567,6 +1649,37 @@ async def generate_report_async(session, code, output_path, ind_comp=None, hsgt=
         score_data.cyq_concentration_90 = _cyq_dict.get("concentration_90", 0.0) or 0.0
         score_data.cyq_concentration_70 = _cyq_dict.get("concentration_70", 0.0) or 0.0
 
+    _med_score_input_gaps = []
+    if not fin_metrics or not financials or not bs_data:
+        _med_score_input_gaps.append("部分财务指标")
+    if not peer_data or not peer_data.get("peers"):
+        _med_score_input_gaps.append("行业估值样本")
+    if _med_flow_sample_count < 20:
+        _med_score_input_gaps.append(
+            f"20个有效交易日的资金流样本（当前{_med_flow_sample_count}日）"
+        )
+    if not nb or len(nb) < 2:
+        _med_score_input_gaps.append("北向资金变化")
+    if not holders or len(holders) < 2:
+        _med_score_input_gaps.append("股东户数变化")
+    if not _cyq_dict:
+        _med_score_input_gaps.append("CYQ筹码分布")
+    _med_technical_gaps = [
+        label
+        for key, label in (
+            ("ma", "均线"),
+            ("macd", "MACD"),
+            ("rsi", "RSI"),
+            ("kdj", "KDJ"),
+        )
+        if not _tech.get(key)
+    ]
+    for key, label in (("ret_20d", "20日收益"), ("high_120d", "120日高点")):
+        if _tech.get(key) is None:
+            _med_technical_gaps.append(label)
+    if _med_technical_gaps:
+        _med_score_input_gaps.append("评审团技术指标（" + "、".join(_med_technical_gaps) + "）")
+
     # 计算评分
     # V16.1: 传入 strategy_config.yaml 的 scoring_med 权重（此前未传 cfg → 用硬编码默认）
     _score_cfg = _load_strategy_config() or {}
@@ -1576,14 +1689,21 @@ async def generate_report_async(session, code, output_path, ind_comp=None, hsgt=
     _details = result.details
 
     L(f"  评分明细: {' | '.join(_details[:6])}" if _details else None)
+    if _med_score_input_gaps:
+        L(
+            "  ⚠️ 评分输入不完整："
+            + "、".join(_med_score_input_gaps)
+            + "；缺失项按模型默认值处理，评分档位不代表完整信号。"
+        )
+    L("  仓位百分比是模型参数示例，不是个人化投资指令。")
     if _ps >= 70:
-        L(f"  中线评分: {_ps:.0f}/100 → 强烈推荐，仓位40%")
+        L(f"  中线模型评分: {_ps:.0f}/100 → 高分档，模型仓位参数参考40%")
     elif _ps >= 45:
-        L(f"  中线评分: {_ps:.0f}/100 → 建议配置，仓位25%")
+        L(f"  中线模型评分: {_ps:.0f}/100 → 中高分档，模型仓位参数参考25%")
     elif _ps >= 20:
-        L(f"  中线评分: {_ps:.0f}/100 → 观察仓，仓位10%")
+        L(f"  中线模型评分: {_ps:.0f}/100 → 观察档，模型仓位参数参考10%")
     else:
-        L(f"  中线评分: {_ps:.0f}/100 → 暂不建议，等待基本面拐点")
+        L(f"  中线模型评分: {_ps:.0f}/100 → 低分档，等待基本面拐点信号")
     L("  核心驱动: 基本面拐点 / 估值 PEG / 筹码结构 / 重大事件")
 
     # V17.0 R5: 多评委评审团评分渲染统一走 sc_render(原 12 行逐字重复已收敛)

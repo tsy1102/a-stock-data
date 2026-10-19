@@ -869,7 +869,7 @@ def get_canonical_stock_data(code: str, force_realtime: bool = False) -> Any:
     # **V17.0.7 层级**: 本块降为财务 TTM 族**兜底**——pe_dynamic/fund_* 维持无条件覆盖
     # (push2delay 唯一源), 财务四键仅在 fuyao 未填时补(不再覆盖 fuyao 主源值);
     # eps_deduct_ttm/undist_profit_ps 无 fuyao 对应, 仍由本块提供(push 独有字段)
-    if not rt_quote.get("pe_dynamic") or not rt_quote.get("fund_main_today"):
+    if not rt_quote.get("pe_dynamic") or rt_quote.get("fund_main_today") is None:
         _ed = _PD_EXTRA_CACHE.get(code_str)
         if _ed is None:
             try:
@@ -905,20 +905,21 @@ def get_canonical_stock_data(code: str, force_realtime: bool = False) -> Any:
             "fund_mid_buy",
             "fund_mid_sell",
         ):
-            if _ed.get(_fk) not in (None, 0, '', '0', '0.0'):
+            # 资金流字段的 0 是有效净额，不代表源缺失；解析器只在上游实际给出字段时写入 key。
+            if _fk in _ed and _ed.get(_fk) is not None:
                 rt_quote[_fk] = _ed[_fk]
                 field_sources[_fk] = "realtime:push2delay"
         # V17.2.1: 近5日主力净兜底 —— f178 数组聚合缺失时, 改用 ulist.np 端点 f164/f165。
         #   ⚠️ 口径铁律: 主域 stock/get 的 f164 = pe_ttm(估值), **绝不可取**;
         #      仅 ulist.np 端点的 f164 才是多日主力净(东财跨端点复用 f 编号)。
-        if not rt_quote.get("fund_main_5d"):
+        if rt_quote.get("fund_main_5d") is None:
             try:
                 from stock_common.sc_datasource import get_em_fund_flow_multiday
 
                 _mm = get_em_fund_flow_multiday(code_str) or {}
                 _record_source_as_of_date("push2delay", _mm)
                 for _mk in ("fund_main_5d", "fund_main_5d_pct"):
-                    if _mm.get(_mk) not in (None, 0, '', '0', '0.0'):
+                    if _mk in _mm and _mm.get(_mk) is not None:
                         rt_quote[_mk] = _mm[_mk]
                         field_sources[_mk] = "realtime:push2delay-ulist"
             except Exception as _e2:
@@ -1226,11 +1227,12 @@ def get_canonical_stock_data(code: str, force_realtime: bool = False) -> Any:
     # (603221 134.52 → +13.45亿假流入); "方向相反"旧观察即此错位的表现
     # 元(主力净 = push2 f137；V17.0.16 重定案: f137 本身已是 超大单净(f140) + 大单净(f143)，
     # 旧版再 +f140 属重复计数，虚高约 40%。详见字典 §12.3.3)
-    pd_main = _safe_float(rt_quote.get('fund_main_today') or 0)
+    pd_main = _safe_float(rt_quote.get("fund_main_today"))
+    _pd_main_source = field_sources.get("fund_main_today")
     # V17.0: 无条件 f137 优先(日级动态字段, 盘前/盘后均取最近交易日)——与 get_main_net_buy 同源
     # ⚠️ 2026-08-14 实锤: ZHB main_net_buy_amount 实为**开盘金额(竞价额)**(19/19 恒正+占比<5%),
     # 不可作主力净流入——ZHB 分支已移除
-    if pd_main:
+    if rt_quote.get("fund_main_today") is not None and _pd_main_source not in (None, "", "missing"):
         # V17.2.x(2026-09-10) 审计决策 Q1: 明确 main_net_buy_wan 与 fund_main_today 的主从关系——
         #   主: fund_main_today(push2 f137, 元)/1e4; 兜底: 下方 rt_fund['main_net_wan'](东财)。
         #   二者为同一指标的不同单位, 禁止再为其单独取数(双写会导致两值分叉)。

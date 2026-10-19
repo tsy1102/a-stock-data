@@ -1290,12 +1290,39 @@ async def generate_sector_report(output_path):
             flush=True,
         )
     _zhb_date = get_zhb_data_date()
-    _zhb_fresh = is_zhb_data_fresh(max_delay_days=3)
+    _zhb_check_as_of = datetime.now()
+    _zhb_fresh = is_zhb_data_fresh(
+        max_delay_days=3, data_date=_zhb_date, as_of=_zhb_check_as_of
+    )
+    _zhb_age = None
     if _zhb_date:
-        _fresh_tag = "✅新鲜" if _zhb_fresh else "⚠️延迟"
-        L(f"  ZHB全市场快照数据日：{_zhb_date}（{_fresh_tag}）")
+        try:
+            from stock_common.stock_calendar import trading_day_age
+
+            _zhb_age = trading_day_age(
+                date.fromisoformat(_zhb_date), as_of=_zhb_check_as_of
+            )
+        except (TypeError, ValueError, NotImplementedError) as _e:
+            _debug_log(f"mak zhb snapshot age ({_zhb_date}): {_e}")
+    if _zhb_date:
+        if _zhb_age is None:
+            _fresh_tag = "有效交易日龄无法核实"
+        elif _zhb_age < 0:
+            _fresh_tag = "日期晚于当前行情基准日，需复核"
+        elif _zhb_age == 0:
+            _fresh_tag = "与当前行情基准日一致"
+        else:
+            _fresh_tag = f"滞后 {_zhb_age} 个有效交易日"
+        if _zhb_age is None or _zhb_age < 0:
+            _tolerance_tag = "容限状态无法核实"
+        elif _zhb_fresh:
+            _tolerance_tag = "在3个交易日容限内"
+        else:
+            _tolerance_tag = "超出3个交易日容限"
+        L(f"  ZHB全市场快照数据日：{_zhb_date}（{_fresh_tag}；{_tolerance_tag}）")
         print(
-            f"  ⚡ zhb全市场: {len(all_stocks)}只（{_zhb_date} {_fresh_tag}），耗时{time.time()-_t0:.2f}s",
+            f"  ⚡ zhb全市场: {len(all_stocks)}只（{_zhb_date}；{_fresh_tag}；{_tolerance_tag}），"
+            f"耗时{time.time()-_t0:.2f}s",
             flush=True,
         )
     else:
@@ -2000,16 +2027,18 @@ async def generate_sector_report(output_path):
                 _ind = normalize_industry(_r.get("industry") or _r.get("sector") or "")
                 L(f"| {_plain} | {_nm} | {_ll}连板 | {_streak} | {_seal:.2f} | {_ind} |")
         else:
-            L("  （当日无 ≥2 板连板标的 / eltdx 数据源不可用，eltdx 未返回数据）")
+            L(
+                f"  eltdx 返回 {len(_eltdx_ladder)} 条记录，但其中没有可展示的 ≥2 板天梯记录。"
+            )
         L("")
     else:
-        # V17.4.x (#442): eltdx 不可用时显式占位, 不静默缺章; 连板天梯为 eltdx 专属实时能力,
-        # easy-tdx/mootdx 无对应接口, 故无等价后备通道(详见 core/eltdx_adapter.py 文档).
+        # 适配器将空响应、异常和超时统一降级为空列表，故报告不能仅凭空结果断言源不可用。
         L("## 【B++. 连板天梯（通达信 eltdx 实时核验）】")
-        L("  ⚠️ 数据源不可用：连板天梯为通达信 eltdx（TDX 公网主站 7709/7615）专属实时能力，")
         L(
-            "     当前 eltdx 后端不可达或未返回数据；该维度无等价后备通道（easy-tdx/mootdx 无对应接口），本节暂缺。"
+            "  ⚠️ 本次未取得可用天梯记录；适配器会将空响应、异常或超时统一降级为空列表，"
+            "因此无法据此区分数据源故障与当日无符合记录。"
         )
+        L("     该维度无等价后备通道，本节暂缺；不能据此判断市场没有连板股。")
         L("")
 
     L("## 【C. 板块-异动集中度分析】")

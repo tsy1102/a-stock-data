@@ -1034,10 +1034,19 @@ async def generate_report_async(session, code, output_path, ind_comp=None, hsgt=
             _cr_flag = " ⚠️" if abs(_cr) > 500 else ""
             L(f"| {h['date']} | {h['holder_num']:,} | {_cr_disp:+.2f}%{_cr_flag} |")
         latest = holders[0]
-        if latest["change_ratio"] <= -3:
-            L("    ✅ 结论: 筹码正在集中，利好中线。")
-        elif latest["change_ratio"] >= 3:
-            L("    ⚠️ 结论: 筹码趋于分散，散户增多，注意风险。")
+        _latest_holder_change = _safe_float(latest.get("change_ratio"))
+        if abs(_latest_holder_change) > 500:
+            L("    ⚠️ 最新户数变动率超出有效显示范围；不据此生成趋势结论。")
+        elif _latest_holder_change <= -3:
+            L(
+                f"    观察：最新披露期股东户数环比下降 {abs(_latest_holder_change):.1f}%；"
+                "户数变化不能单独证明筹码集中、买方身份或中线方向。"
+            )
+        elif _latest_holder_change >= 3:
+            L(
+                f"    观察：最新披露期股东户数环比上升 {_latest_holder_change:.1f}%；"
+                "户数变化不能单独证明散户增加、筹码分散或风险方向。"
+            )
 
     # V17.0.14: 筹码分布 CYQ 章节(东财 kline f61 → calculate_cyq)
     if _cyq_dict:
@@ -1452,7 +1461,9 @@ async def generate_report_async(session, code, output_path, ind_comp=None, hsgt=
     if holders and len(holders) >= 2:
         _hd_chg = holders[0].get("change_ratio", 0)
         if _hd_chg < -3:
-            _bt_items.append(f"股东户数减少{abs(_hd_chg):.1f}%（历史类似信号后中线偏多）")
+            _bt_items.append(
+                f"股东户数最新披露环比变化 {_hd_chg:.1f}%（仅为户数观察，不作为方向信号）"
+            )
     if nb and len(nb) >= 5:
         _nb_s = _safe_float(nb[-1].get("hold_shares", 0))
         _nb_e = _safe_float(nb[0].get("hold_shares", 0))
@@ -1460,7 +1471,7 @@ async def generate_report_async(session, code, output_path, ind_comp=None, hsgt=
             _nb_chg = (_nb_e - _nb_s) / _nb_s * 100
             _bt_items.append(f"北向近{len(nb)}日持仓{_nb_chg:+.1f}%")
     if _bt_items:
-        L("## **回测参考**")
+        L("## **辅助观察指标**")
         for _bi in _bt_items:
             L(f"  📊 {_bi}")
 

@@ -1460,11 +1460,14 @@ async def generate_report_async(session, code, output_path, ind_comp=None):
                     title = r.get("summary", "")[:50] if r.get("summary") else "无标题"
                 L(f"  {pub_date:<12} {org:<16} {str(rating):<10} {title}")
         if len(org_set) > 10:
-            L("\n  ✅ 结论：该股受到主流外脑机构的广泛覆盖，基本面透明度高，财务造假阻力大。")
+            L(
+                f"\n  研报样本涉及 {len(org_set)} 家不同机构；该数量只描述本次取得的研报覆盖，"
+                "不单独证明基本面透明度或财务可靠性。"
+            )
         elif len(org_set) == 0:
-            L("  ⚠️ 结论：机构荒漠，散户主导的冷门股，长线重仓需谨慎。")
+            L("  本次研报样本未识别到机构名称；不能据此判断持有人结构或机构覆盖情况。")
     else:
-        L("  暂无任何研报覆盖数据。")
+        L("  本次未取得有效研报样本；不能据此判断该股没有机构覆盖。")
 
     # V16.1: 风险引擎（sc_risk）— 事件类风险（解禁/减持/质押）
     try:

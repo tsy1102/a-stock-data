@@ -690,6 +690,10 @@ async def strategy_01_longhuitou(hot_pool, today_str):
             continue
         if price <= 0 or ma10 <= 0:
             continue
+        _kline_date = str(kline.get("date") or kline.get("trade_date") or "").strip()[:10]
+        if len(_kline_date) == 8 and _kline_date.isdigit():
+            _kline_date = f"{_kline_date[:4]}-{_kline_date[4:6]}-{_kline_date[6:8]}"
+        _kline_date_label = _kline_date or "日期未标注"
         ma10_bias = (price - ma10) / ma10 * 100
         if abs(ma10_bias) > _ma_dev_mid:
             continue
@@ -709,15 +713,18 @@ async def strategy_01_longhuitou(hot_pool, today_str):
         if turnover > _turnover_cap:
             continue
         if turnover > 0:
-            _to_txt = f"换手率仅{turnover:.1f}%，缩量企稳，筹码沉淀充分"
+            _to_txt = (
+                f"换手率{turnover:.1f}%（来源有效日未核实，按策略上限/权重处理；"
+                "单日值不能证明缩量趋势）"
+            )
             _to_score = (8 - turnover) * 0.1
         else:
             # 取不到换手率 → 该判据**不参与**：既不伪造利好，也不因此误剔除标的
             _to_txt = "换手率数据缺失(未参与缩量判据)"
             _to_score = 0.0
         reason = (
-            f"前期强势股(涨幅{zhangfu:.1f}%)，"
-            f"当前回踩MA10({ma10:.2f}元)，乖离率{ma10_bias:+.2f}%，"
+            f"热点池涨幅{zhangfu:.1f}%；最近日K（{_kline_date_label}）收盘价{price:.2f}元，"
+            f"MA10为{ma10:.2f}元，偏离{ma10_bias:+.2f}%（入选范围±{_ma_dev_mid:.1f}%），"
             f"{_to_txt}"
         )
         result.append(
@@ -1309,11 +1316,11 @@ async def strategy_09_contrarian_value(stocks, top_n=300):
     return _top10_sorted(result, lambda x: x["score"])
 
 
-# ─── 策略10: 筹码集中 ───
+# ─── 策略10: 股东户数下降观察 ───
 
 
 def strategy_10_holder_concentration(stocks, top_n=300):
-    """V4: 筹码集中 — top_n=300 + 提前终止"""
+    """以最近两个披露期股东户数均下降作为观察条件，不推断持股集中或买方身份。"""
     candidates = sorted(stocks, key=lambda x: x.get("mcap_yi", 0), reverse=True)[:top_n]
     result = []
     for s in candidates:
@@ -1330,10 +1337,10 @@ def strategy_10_holder_concentration(stocks, top_n=300):
             + abs(_safe_float(holders[1].get("change_ratio", 0)))
         ) / 2
         reason = (
-            f"股东户数连续两季缩减（{holders[1].get('date', '')}: "
+            f"股东户数最近两个披露期均下降（{holders[1].get('date', '')}: "
             f"{_safe_float(holders[1].get('change_ratio', 0)):.1f}%, "
             f"{holders[0].get('date', '')}: {_safe_float(holders[0].get('change_ratio', 0)):.1f}%），"
-            f"平均每季缩减{avg_shrink:.1f}%，筹码集中度持续提升"
+            f"平均环比下降{avg_shrink:.1f}%；该变化不能单独证明持股集中或识别买方主体"
         )
         result.append(
             {"code": code, "name": s.get("name", ""), "reason": reason, "score": avg_shrink}
@@ -1935,9 +1942,10 @@ def strategy_20_yjyg(stocks):
 
 
 def strategy_21_earnings_expect(stocks):
-    """V17.0(2026-08-15): 盈利预期策略 — 本机 ProfitForecast(零网络)预测 EPS 增速 + 股东户数筹码集中.
+    """V17.0(2026-08-15): 预测 EPS 增长与股东户数变化辅助观察。
 
-    预测 EPS 同比增速(2026E vs 2025A)>=20% 且股东户数下降(筹码集中)为候选。
+    预测 EPS 同比增速(2026E vs 2025A)>=20% 为候选；股东户数下降仅影响辅助评分，
+    不作为持股集中或买方身份的证明。
     """
     from stock_common.sc_datasource import get_eps_forecast, holder_change
 
@@ -1978,7 +1986,7 @@ def strategy_21_earnings_expect(stocks):
                 continue
             hc = (
                 holder_change(code, local_only=True) or []
-            )  # H6 修复: 全市场扫描仅缓存命中判筹码集中
+            )  # H6 修复: 全市场扫描仅缓存命中计算户数变化辅助分
             holder_shr = False
             if len(hc) >= 2:
                 # H3 修复: 契约键为 holder_num(_compute_holder_changes), 非 holder
@@ -1986,7 +1994,7 @@ def strategy_21_earnings_expect(stocks):
             score = growth * 0.8 + (30 if holder_shr else 0)
             reason = (
                 f"盈利预期: 2026E EPS {eps_e:.2f} vs 2025A {eps_a:.2f} 增速 {growth:.0f}%"
-                f"{' + 股东户数下降(筹码集中)' if holder_shr else ''}"
+                f"{' + 股东户数较上期减少(仅作辅助评分，不代表筹码集中)' if holder_shr else ''}"
             )
             result.append(
                 {"code": code, "name": s.get("name", ""), "reason": reason, "score": score}
@@ -2683,7 +2691,7 @@ async def run_discovery_async(output_path):
         hot_pool.append(_merged)
 
     # V16.3 O27: hot_pool ZHB 预筛（缩小 01/03/07 的逐股 K 线量——ZHB 内存零成本，
-    # 只过滤明显空头股；回调中的 01 龙回头候选不受影响）
+    # 只过滤明显空头股；策略01的 MA10 邻近候选不受影响）
     if hot_pool:
         _zs_map = {_s["code"]: _s for _s in all_stocks}
         _keep = []
@@ -2789,7 +2797,7 @@ async def run_discovery_async(output_path):
     # V14.3.2: 基于 4 天 ZHB 回测（docs/backtest_v1432/）差异化 top_n
     # V16.3 O27: 全市场化（19/20/21/22 直接传 all_stocks；02/05/06 函数内预筛+趋势排序）
     _strategy_defs = [
-        ("策略01【龙回头】", strategy_01_longhuitou, (hot_pool, today_str)),
+        ("策略01【热点股MA10邻近】", strategy_01_longhuitou, (hot_pool, today_str)),
         (
             "策略02【周线多头】",
             strategy_02_weekly_ma,
@@ -2818,7 +2826,7 @@ async def run_discovery_async(output_path):
             ),
         ),
         (
-            "策略10【筹码集中】",
+            "策略10【股东户数下降】",
             strategy_10_holder_concentration,
             (all_stocks, _top_n_medium),
         ),  # 200（稳定性提升 26%）
@@ -2997,7 +3005,7 @@ async def run_discovery_async(output_path):
 
     # V16.3 J: _sfmt 同步注册表——补 21/22、删已移除的 14、修正 15（流动性王）
     _sfmt = {
-        "策略01": "01 龙回头",
+        "策略01": "01 热点股MA10邻近",
         "策略02": "02 周线多头(含金叉)",
         "策略03": "03 量价齐升",
         "策略04": "04 估算历史PE区间偏低候选",
@@ -3006,7 +3014,7 @@ async def run_discovery_async(output_path):
         "策略07": "07 政策驱动(含热度图谱)",
         "策略08": "08 日历效应",
         "策略09": "09 逆向白马",
-        "策略10": "10 筹码集中",
+        "策略10": "10 股东户数下降",
         "策略11": "11 量价信号",
         "策略12": "12 高股息",
         "策略13": "13 流动性王",

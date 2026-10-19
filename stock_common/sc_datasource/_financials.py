@@ -1678,20 +1678,20 @@ def get_market_status(now: Optional[datetime] = None) -> Tuple[str, str]:
     t = now.hour * 100 + now.minute
 
     if not is_trading_day(d):
-        return "closed", "（休市日，数据为最近交易日快照）"
+        return "closed", "（休市日；各数据源有效日期以对应字段或章节标注为准）"
     if t < 915:
-        return "pre_market", "当前为盘前时段，行情数据/北向资金为上交易日值"
+        return "pre_market", "当前为盘前时段；各数据源有效日期可能不同，以对应字段元数据为准"
     elif t < 1130:
-        return "morning", "当前为盘中（上午）时段，行情数据实时跳动"
+        return "morning", "当前为盘中（上午）时段；行情是否实时以对应来源的有效日期为准"
     elif t < 1300:
-        return "lunch", "当前为午休时段（11:30-13:00），行情暂停"
+        return "lunch", "当前为午休时段（11:30-13:00）；各数据源有效日期以对应字段元数据为准"
     elif t < 1500:
-        return "afternoon", "当前为盘中（下午）时段，行情数据实时跳动"
+        return "afternoon", "当前为盘中（下午）时段；行情是否实时以对应来源的有效日期为准"
     elif t < 1630:
-        return "post_market", "当前为盘后结算时段，龙虎榜/融资融券约16:30后更新"
+        return "post_market", "当前为盘后结算时段；龙虎榜、两融等数据的更新时间因来源而异"
     else:
         # V10.2: 交易日16:30后为盘后收盘，不再是"closed"（避免误显示"休市日"）
-        return "post_close", "当前为盘后收盘时段，数据为今日收盘快照"
+        return "post_close", "当前为盘后时段；各数据源有效日期以对应字段元数据为准"
 
 
 def news_matches_stock(title: str, code: str, name: str = "") -> bool:

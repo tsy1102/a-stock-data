@@ -1448,7 +1448,8 @@ async def generate_report_async(
         if _lhasa_count + _lhasa_sell > 0:
 
             L(
-                f"  ⚠️  拉萨散户席位: 买{_lhasa_count}家 / 卖{_lhasa_sell}家（散户聚集，注意追高风险）"
+                f"  龙虎榜席位名称匹配“东方财富证券拉萨”：买{_lhasa_count}家 / 卖{_lhasa_sell}家；"
+                "此名称标签不能确认账户身份或交易动机。"
             )
 
         _inst_net = inst.get("net_amt", 0) if inst else 0
@@ -1472,7 +1473,10 @@ async def generate_report_async(
 
         elif _lhasa_count + _lhasa_sell > 3:
 
-            L("  ⚠️ 综合判断: 散户席位占主导，短期波动较大")
+            L(
+                f"  龙虎榜出现 {_lhasa_count + _lhasa_sell} 个拉萨名称标签；"
+                "仅为席位名称分类，不能据此判断散户占主导或短期波动。"
+            )
 
         # V8.5新增：席位增强分析
         if dtb.get("seat_analysis"):
@@ -1571,7 +1575,25 @@ async def generate_report_async(
         # V17.0.9: isinstance 防御——批量预取偶发返回 dict(非 list)时跳过
         # (300475 2026-08-27 批量实测 TypeError: string indices must be integers)
 
-        L(f"  最近 {len(margin)} 个交易日数据:")
+        _latest_margin = margin[0] if isinstance(margin[0], dict) else {}
+        _latest_margin_date = str(_latest_margin.get("date") or "").strip()[:10]
+        _margin_age_note = "有效日期未确认"
+        if _latest_margin_date:
+            try:
+                from stock_common.stock_calendar import trading_day_age
+
+                _margin_age = trading_day_age(date.fromisoformat(_latest_margin_date))
+                if _margin_age == 0:
+                    _margin_age_note = "与当前行情基准日一致"
+                elif _margin_age > 0:
+                    _margin_age_note = f"滞后 {_margin_age} 个交易日"
+                else:
+                    _margin_age_note = "晚于当前行情基准日，需复核"
+            except (TypeError, ValueError, NotImplementedError) as _e:
+                _debug_log(f"sht margin date age ({code}): {_e}")
+        L(
+            f"  最近 {len(margin)} 条两融记录（最新日期 {_latest_margin_date or '未提供'}；{_margin_age_note}）:"
+        )
         L(
             f"  {'日期':<12} {'融资余额(万)':>10} {'融资买入(万)':>10} {'融资偿还(万)':>10} {'融券余额(万)':>10}"
         )
@@ -1583,30 +1605,44 @@ async def generate_report_async(
                 f"  {d['date']:<12} {d['rzye']/1e4:>14.0f} {d['rzmre']/1e4:>14.0f} {d['rzche']/1e4:>14.0f} {d['rqye']/1e4:>14.0f}"
             )
 
-        _amt = q.get("amount_wan", 0) * 1e4 if q else 0
+        _amt = _safe_float(q.get("amount_wan")) * 1e4 if q else 0
+        _latest_rzmre = _safe_float(_latest_margin.get("rzmre"))
+        _quote_date = str(
+            (q.get("quote_date") if q else "") or getattr(cdata, "quote_date", "") or ""
+        ).strip()[:10]
+        _quote_date_key = _quote_date.replace("-", "")[:8]
+        _margin_date_key = _latest_margin_date.replace("-", "")[:8]
 
-        if _amt > 0 and margin[0]["rzmre"] > 0:
-
-            _rz_ratio = margin[0]["rzmre"] / _amt * 100
-
-            if _rz_ratio > 20:
-
-                L(f"  🔥 融资买入占当日成交额 {_rz_ratio:.1f}%（>{20}%），杠杆资金疯狂涌入！")
+        if _amt > 0 and _latest_rzmre > 0:
+            if _quote_date_key and _quote_date_key == _margin_date_key:
+                _rz_ratio = _latest_rzmre / _amt * 100
+                if _rz_ratio > 20:
+                    L(
+                        f"  融资买入额占同日成交额 {_rz_ratio:.1f}%（仅作成交额占比观察，"
+                        "不代表资金主体或价格方向）"
+                    )
+            else:
+                L(
+                    "  未计算融资买入额/成交额：两融样本日期 "
+                    f"{_latest_margin_date or '未提供'} 与行情有效日期 {_quote_date or '未确认'} 未匹配。"
+                )
 
         if len(margin) >= 3:
-
+            _rq_comparisons = min(3, len(margin) - 1)
             _rq_up = sum(
                 1
-                for i in range(3)
-                if i + 1 < len(margin) and margin[i]["rqye"] > margin[i + 1]["rqye"]
+                for i in range(_rq_comparisons)
+                if _safe_float(margin[i].get("rqye"))
+                > _safe_float(margin[i + 1].get("rqye"))
             )
-
             if _rq_up >= 2:
-
-                L("  ⚠️ 融券余额连续上升，做空筹码在暗中积累，警惕高位融券砸盘")
+                L(
+                    f"  融券余额在最近 {_rq_comparisons} 次相邻样本比较中上升 {_rq_up} 次；"
+                    "余额变化不能单独证明新增做空或未来抛压。"
+                )
 
     else:
-        L("  该股无融资融券数据（可能不是两融标的）")
+        L("  本次未取得有效两融样本；无法据此判断该股是否为两融标的。")
 
     L("\n" + "---")
     L("## **十二、大宗交易**")
@@ -2314,14 +2350,11 @@ async def generate_report_async(
         _rqye_trend = sum(1 for i in range(4) if margin[i]["rqye"] > margin[i + 1]["rqye"])
 
         if _rzye_trend >= 3 and _rqye_trend <= 1:
-
             signals.append(
-                "🔥 两融多头共振：融资余额持续飙升而融券受压，杠杆资金锁仓强推，多头逼空动能强劲"
+                "两融余额观察：近5条样本中融资余额环比上升 "
+                f"{_rzye_trend}/4 次、融券余额环比上升 {_rqye_trend}/4 次；"
+                "仅描述余额变化，不据此推断逼空、参与者身份或后续走势。"
             )
-
-        if q and abs(q.get("change_pct", 0)) < 3 and _rzye_trend >= 3:
-
-            signals.append("⚠️ 两融风险预警：股价滞涨而融资余额创新高，散户杠杆接盘筹码松动")
 
     if rr and len(rr) >= 3 and q and abs(q.get("change_pct", 0)) > 5:
 
@@ -2353,7 +2386,8 @@ async def generate_report_async(
         if _lhasa >= 3:
 
             signals.append(
-                f"❌ 筹码散户化：买方出现{_lhasa}席拉萨天团，纯散户跟风对倒，筹码极度松动"
+                f"龙虎榜买方有 {_lhasa} 个席位名称匹配“东方财富证券拉萨”；"
+                "该名称分类不能证明纯散户交易、对倒或筹码松动。"
             )
 
         if inst2 and inst2.get("net_amt", 0) > 0:
@@ -2361,17 +2395,20 @@ async def generate_report_async(
 
     if holders and len(holders) >= 2 and holders[0]["change_ratio"] < 0:
 
-        signals.append(f"股东户数环比减少 {abs(holders[0]['change_ratio']):.1f}%，筹码集中")
+        signals.append(
+            f"股东户数环比减少 {abs(holders[0]['change_ratio']):.1f}%；"
+            "仅为披露户数变化，不能单独判定筹码集中或买方主体。"
+        )
 
     if nb and len(nb) >= 2:
 
         rc2 = nb[0]["hold_ratio"] - nb[-1]["hold_ratio"]
 
         if rc2 > 0.01:
-            signals.append(f"北向资金近{len(nb)}日持股比例 +{rc2:.3f}%，外资增持信号")
+            signals.append(f"北向披露持股比例近{len(nb)}条样本变化 +{rc2:.3f}%")
 
         elif rc2 < -0.01:
-            signals.append(f"北向资金近{len(nb)}日持股比例 {rc2:.3f}%，外资减持信号")
+            signals.append(f"北向披露持股比例近{len(nb)}条样本变化 {rc2:.3f}%")
 
     if peer_data and peer_data["peers"] and "note" not in peer_data["peers"][0]:
 

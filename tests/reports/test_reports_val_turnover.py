@@ -75,7 +75,7 @@ class TestStrategy01Turnover(unittest.TestCase):
         ):
             r = _run(val.strategy_01_longhuitou, [_stock(turnover_pct=2.0)], "2026-08-28")
         self.assertEqual(len(r), 1)
-        self.assertIn("换手率仅2.0%，缩量企稳", r[0]["reason"])
+        self.assertIn("换手率2.0%（来源有效日未核实", r[0]["reason"])
         # 加分 (8-2)*0.1 = 0.6；乖离 0 → 总分 0.6
         self.assertAlmostEqual(r[0]["score"], 0.6, places=6)
 
@@ -84,7 +84,7 @@ class TestStrategy01Turnover(unittest.TestCase):
         with mock.patch.object(val, "get_turnover_pct_async", return_value=7.0) as m:
             r = _run(val.strategy_01_longhuitou, [_stock(turnover_pct=2.0)], "2026-08-28")
         m.assert_not_called()
-        self.assertIn("换手率仅2.0%", r[0]["reason"])
+        self.assertIn("换手率2.0%（来源有效日未核实", r[0]["reason"])
 
     # ── 情形 2：池内无值 → 回退 ZHB ───────────────────────────────────────
 
@@ -95,7 +95,7 @@ class TestStrategy01Turnover(unittest.TestCase):
         with mock.patch.object(val, "get_turnover_pct_async", side_effect=_zhb) as m:
             r = _run(val.strategy_01_longhuitou, [_stock()], "2026-08-28")
         m.assert_called_once()
-        self.assertIn("换手率仅3.0%，缩量企稳", r[0]["reason"])
+        self.assertIn("换手率3.0%（来源有效日未核实", r[0]["reason"])
         self.assertAlmostEqual(r[0]["score"], 0.5, places=6)  # (8-3)*0.1
 
     # ── 情形 3：全部取不到 → 判据不参与（核心回归点）─────────────────────

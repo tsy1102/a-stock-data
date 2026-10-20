@@ -4339,6 +4339,11 @@ def main() -> None:
                 # The Baidu endpoint is pending validation and is probed only when
                 # the caller explicitly selects it with --only baidu.
                 data = fn(pool, probe="baidu" in selected_only)
+            elif name == "ftshare_rest":
+                # This live-snapshot contract must validate against the selected
+                # effective trading date; calling it with only the pool always fails
+                # before sending a request.
+                data = fn(pool, data_date=args.date)
             else:
                 data = fn(pool)
             if isinstance(data, dict):

@@ -82,7 +82,11 @@ from stock_common import (
     get_irm_qa,
     sec_type_market_label,  # V17.0.32(2026-09-06): DEBT-016 报告露出 sec_type
 )  # V10.3
-from stock_common.sc_report_runner import format_52w_reference, format_quote_provenance
+from stock_common.sc_report_runner import (
+    format_52w_reference,
+    format_quote_provenance,
+    non_quarter_end_dates,
+)
 
 _SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 
@@ -409,12 +413,15 @@ async def generate_report_async(session, code, output_path, ind_comp=None, hsgt=
         _ind_all = ind_comp.get("all", ind_comp)
         for row in _ind_all:
             if stock_ind in row["name"] or row["name"] in stock_ind:
-                L(f"  板块排名: 当日全市场第 {row['rank']} 名 (涨跌幅 {row['change_pct']}%)")
+                L(
+                    f"  板块行情快照排名（有效日期未核实）: 全市场第 {row['rank']} 名 (涨跌幅 {row['change_pct']}%)"
+                )
                 try:
                     _rank_info = await get_stock_sector_rank_async(code, info=info)
                     if _rank_info:
                         L(
-                            f"  本股今日{_rank_info['change_pct']:+.2f}%，板块内排名第{_rank_info['rank']}/{_rank_info['total']}名"
+                            f"  本股行情涨跌幅{_rank_info['change_pct']:+.2f}%（有效日期未核实），"
+                            f"板块内排名第{_rank_info['rank']}/{_rank_info['total']}名"
                         )
                 except Exception as _e:
                     _debug_log(f"med sector_rank error: {_e}")
@@ -462,8 +469,11 @@ async def generate_report_async(session, code, output_path, ind_comp=None, hsgt=
         L(_div_str)
 
     # ─── 2. 财务业绩兑现追踪 ───
-    L("\n## 【三、历史财务业绩兑现追踪 (近5季度)】")
+    L("\n## 【三、历史财务业绩兑现追踪（近5个报告期）】")
     L("---")
+    L(
+        "ℹ️ 营业总收入与净利润按报告期披露的累计口径展示：一季报为年初至一季度末，半年报和三季报为年初累计，年报为全年值；不能把各行直接当作单季度值。"
+    )
 
     # V17.0.5 P1: 财务兑现双源核验(fuyao 五类指标 growth 族——营收/净利同比官方口径)
     try:
@@ -1401,10 +1411,15 @@ async def generate_report_async(session, code, output_path, ind_comp=None, hsgt=
     L("---")
     st = await asyncio.to_thread(get_holder_structure, code)
     if st:
-        L(f"  数据来源: 十大流通股东季报（最近 {len(st)} 期）")
+        L(f"  数据来源: 东财前十大流通股东统计，按上游 END_DATE 分组（最近 {len(st)} 个日期）")
+        _non_quarter_dates = non_quarter_end_dates(st)
+        if _non_quarter_dates:
+            L(
+                f"  ⚠️ 非季末 END_DATE: {'、'.join(_non_quarter_dates)}；保留上游日期，但不按标准季度末数据解读。"
+            )
         L("")
         _header = (
-            f"  {'截止':<12} {'北向':>6}  {'外资':>8}  {'境内机构':>8}  {'个人':>6}  {'Top10':>6}"
+            f"  {'上游截止日':<12} {'北向':>6}  {'外资':>8}  {'境内机构':>8}  {'个人':>6}  {'Top10':>6}"
         )
         L(_header)
         L(f"  {'-'*60}")

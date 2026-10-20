@@ -4,6 +4,17 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## [17.5.10] - 2026-10-20
+
+### Fixed
+
+- FTShare REST 单源采集现在传入明确的数据日期，避免有效交易日被判为日期无效并跳过。
+- 碰撞身份归一化识别 TDX `quote_raw` 包装和 KPL 已映射的原始列路径，避免已注册字段以包装路径重复进入未知字段队列。
+
+### Verified
+
+- 根据 2026-10-16、2026-10-19、2026-10-20 三个交易日的 60 组跨源精确样本，定案 TDX `last_close`、`open`、`high`、`low`、`amount` 五项，并与 Fuyao 对应字段登记同值同义映射。
+
 ## [17.5.9] - 2026-10-20
 
 ### Added

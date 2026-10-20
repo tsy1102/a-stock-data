@@ -8755,18 +8755,18 @@
       "n_days": 5,
       "n_pairs": 100,
       "sample_dates": [
-        "T:20261009",
         "T:20261012",
         "T:20261013",
         "T:20261014",
-        "T:20261016"
+        "T:20261016",
+        "T:20261019"
       ],
       "evidence_sources": [
         "tdx",
         "tencent"
       ],
       "hub_flag": false,
-      "last_seen": "20261019",
+      "last_seen": "20261020",
       "in_registry": true,
       "first_seen": "20261005",
       "status": "confirmed"
@@ -10312,18 +10312,18 @@
       "n_days": 5,
       "n_pairs": 100,
       "sample_dates": [
-        "T:20261009",
         "T:20261012",
         "T:20261013",
         "T:20261014",
-        "T:20261016"
+        "T:20261016",
+        "T:20261019"
       ],
       "evidence_sources": [
         "tdx",
         "tencent"
       ],
       "hub_flag": false,
-      "last_seen": "20261019",
+      "last_seen": "20261020",
       "in_registry": true,
       "first_seen": "20261008",
       "status": "confirmed"
@@ -12053,6 +12053,466 @@
       "in_registry": false,
       "first_seen": "20261019",
       "status": "new"
+    },
+    "kpl.raw_columns.col_06||push2ex.limit_fund": {
+      "left": "kpl.raw_columns.col_06",
+      "right": "push2ex.limit_fund",
+      "level": "L1",
+      "ratio": null,
+      "overall_hit": 1.0,
+      "n_days": 3,
+      "n_pairs": 161,
+      "sample_dates": [
+        "T:20261016",
+        "T:20261019",
+        "T:20261020"
+      ],
+      "evidence_sources": [
+        "eastmoney",
+        "kpl"
+      ],
+      "hub_flag": false,
+      "last_seen": "20261020",
+      "in_registry": false,
+      "first_seen": "20261020",
+      "status": "repeated"
+    },
+    "kpl.raw_columns.col_11||push2ex.amount": {
+      "left": "kpl.raw_columns.col_11",
+      "right": "push2ex.amount",
+      "level": "L1",
+      "ratio": null,
+      "overall_hit": 1.0,
+      "n_days": 3,
+      "n_pairs": 161,
+      "sample_dates": [
+        "T:20261016",
+        "T:20261019",
+        "T:20261020"
+      ],
+      "evidence_sources": [
+        "eastmoney",
+        "kpl"
+      ],
+      "hub_flag": false,
+      "last_seen": "20261020",
+      "in_registry": false,
+      "first_seen": "20261020",
+      "status": "repeated"
+    },
+    "fuyao.snapshot.prev_price||tdx.quote_raw.last_close": {
+      "left": "tdx.quote_raw.last_close",
+      "right": "fuyao.snapshot.prev_price",
+      "level": "L1",
+      "ratio": null,
+      "overall_hit": 1.0,
+      "n_days": 3,
+      "n_pairs": 60,
+      "sample_dates": [
+        "T:20261016",
+        "T:20261019",
+        "T:20261020"
+      ],
+      "evidence_sources": [
+        "tdx",
+        "tonghuashun"
+      ],
+      "hub_flag": false,
+      "last_seen": "20261020",
+      "in_registry": false,
+      "first_seen": "20261020",
+      "status": "repeated"
+    },
+    "sina[2]||tdx.quote_raw.last_close": {
+      "left": "tdx.quote_raw.last_close",
+      "right": "sina[2]",
+      "level": "L1",
+      "ratio": null,
+      "overall_hit": 1.0,
+      "n_days": 3,
+      "n_pairs": 60,
+      "sample_dates": [
+        "T:20261016",
+        "T:20261019",
+        "T:20261020"
+      ],
+      "evidence_sources": [
+        "sina",
+        "tdx"
+      ],
+      "hub_flag": false,
+      "last_seen": "20261020",
+      "in_registry": true,
+      "first_seen": "20261020",
+      "status": "confirmed"
+    },
+    "tdx.quote_raw.last_close||tencent[4]": {
+      "left": "tdx.quote_raw.last_close",
+      "right": "tencent[4]",
+      "level": "L1",
+      "ratio": null,
+      "overall_hit": 1.0,
+      "n_days": 3,
+      "n_pairs": 60,
+      "sample_dates": [
+        "T:20261016",
+        "T:20261019",
+        "T:20261020"
+      ],
+      "evidence_sources": [
+        "tdx",
+        "tencent"
+      ],
+      "hub_flag": false,
+      "last_seen": "20261020",
+      "in_registry": true,
+      "first_seen": "20261020",
+      "status": "confirmed"
+    },
+    "fuyao.snapshot.open_price||tdx.quote_raw.open": {
+      "left": "tdx.quote_raw.open",
+      "right": "fuyao.snapshot.open_price",
+      "level": "L1",
+      "ratio": null,
+      "overall_hit": 1.0,
+      "n_days": 3,
+      "n_pairs": 60,
+      "sample_dates": [
+        "T:20261016",
+        "T:20261019",
+        "T:20261020"
+      ],
+      "evidence_sources": [
+        "tdx",
+        "tonghuashun"
+      ],
+      "hub_flag": false,
+      "last_seen": "20261020",
+      "in_registry": false,
+      "first_seen": "20261020",
+      "status": "repeated"
+    },
+    "sina[1]||tdx.quote_raw.open": {
+      "left": "tdx.quote_raw.open",
+      "right": "sina[1]",
+      "level": "L1",
+      "ratio": null,
+      "overall_hit": 1.0,
+      "n_days": 3,
+      "n_pairs": 60,
+      "sample_dates": [
+        "T:20261016",
+        "T:20261019",
+        "T:20261020"
+      ],
+      "evidence_sources": [
+        "sina",
+        "tdx"
+      ],
+      "hub_flag": false,
+      "last_seen": "20261020",
+      "in_registry": true,
+      "first_seen": "20261020",
+      "status": "confirmed"
+    },
+    "tdx.quote_raw.open||tencent[5]": {
+      "left": "tdx.quote_raw.open",
+      "right": "tencent[5]",
+      "level": "L1",
+      "ratio": null,
+      "overall_hit": 1.0,
+      "n_days": 3,
+      "n_pairs": 60,
+      "sample_dates": [
+        "T:20261016",
+        "T:20261019",
+        "T:20261020"
+      ],
+      "evidence_sources": [
+        "tdx",
+        "tencent"
+      ],
+      "hub_flag": false,
+      "last_seen": "20261020",
+      "in_registry": true,
+      "first_seen": "20261020",
+      "status": "confirmed"
+    },
+    "fuyao.snapshot.high_price||tdx.quote_raw.high": {
+      "left": "tdx.quote_raw.high",
+      "right": "fuyao.snapshot.high_price",
+      "level": "L1",
+      "ratio": null,
+      "overall_hit": 1.0,
+      "n_days": 3,
+      "n_pairs": 60,
+      "sample_dates": [
+        "T:20261016",
+        "T:20261019",
+        "T:20261020"
+      ],
+      "evidence_sources": [
+        "tdx",
+        "tonghuashun"
+      ],
+      "hub_flag": false,
+      "last_seen": "20261020",
+      "in_registry": false,
+      "first_seen": "20261020",
+      "status": "repeated"
+    },
+    "sina[4]||tdx.quote_raw.high": {
+      "left": "tdx.quote_raw.high",
+      "right": "sina[4]",
+      "level": "L1",
+      "ratio": null,
+      "overall_hit": 1.0,
+      "n_days": 3,
+      "n_pairs": 60,
+      "sample_dates": [
+        "T:20261016",
+        "T:20261019",
+        "T:20261020"
+      ],
+      "evidence_sources": [
+        "sina",
+        "tdx"
+      ],
+      "hub_flag": false,
+      "last_seen": "20261020",
+      "in_registry": true,
+      "first_seen": "20261020",
+      "status": "confirmed"
+    },
+    "tdx.quote_raw.high||tencent[33]": {
+      "left": "tdx.quote_raw.high",
+      "right": "tencent[33]",
+      "level": "L1",
+      "ratio": null,
+      "overall_hit": 1.0,
+      "n_days": 3,
+      "n_pairs": 60,
+      "sample_dates": [
+        "T:20261016",
+        "T:20261019",
+        "T:20261020"
+      ],
+      "evidence_sources": [
+        "tdx",
+        "tencent"
+      ],
+      "hub_flag": false,
+      "last_seen": "20261020",
+      "in_registry": true,
+      "first_seen": "20261020",
+      "status": "confirmed"
+    },
+    "tdx.quote_raw.high||tencent[41]": {
+      "left": "tdx.quote_raw.high",
+      "right": "tencent[41]",
+      "level": "L1",
+      "ratio": null,
+      "overall_hit": 1.0,
+      "n_days": 3,
+      "n_pairs": 60,
+      "sample_dates": [
+        "T:20261016",
+        "T:20261019",
+        "T:20261020"
+      ],
+      "evidence_sources": [
+        "tdx",
+        "tencent"
+      ],
+      "hub_flag": false,
+      "last_seen": "20261020",
+      "in_registry": false,
+      "first_seen": "20261020",
+      "status": "repeated"
+    },
+    "fuyao.snapshot.low_price||tdx.quote_raw.low": {
+      "left": "tdx.quote_raw.low",
+      "right": "fuyao.snapshot.low_price",
+      "level": "L1",
+      "ratio": null,
+      "overall_hit": 1.0,
+      "n_days": 3,
+      "n_pairs": 60,
+      "sample_dates": [
+        "T:20261016",
+        "T:20261019",
+        "T:20261020"
+      ],
+      "evidence_sources": [
+        "tdx",
+        "tonghuashun"
+      ],
+      "hub_flag": false,
+      "last_seen": "20261020",
+      "in_registry": false,
+      "first_seen": "20261020",
+      "status": "repeated"
+    },
+    "sina[5]||tdx.quote_raw.low": {
+      "left": "tdx.quote_raw.low",
+      "right": "sina[5]",
+      "level": "L1",
+      "ratio": null,
+      "overall_hit": 1.0,
+      "n_days": 3,
+      "n_pairs": 60,
+      "sample_dates": [
+        "T:20261016",
+        "T:20261019",
+        "T:20261020"
+      ],
+      "evidence_sources": [
+        "sina",
+        "tdx"
+      ],
+      "hub_flag": false,
+      "last_seen": "20261020",
+      "in_registry": true,
+      "first_seen": "20261020",
+      "status": "confirmed"
+    },
+    "tdx.quote_raw.low||tencent[34]": {
+      "left": "tdx.quote_raw.low",
+      "right": "tencent[34]",
+      "level": "L1",
+      "ratio": null,
+      "overall_hit": 1.0,
+      "n_days": 3,
+      "n_pairs": 60,
+      "sample_dates": [
+        "T:20261016",
+        "T:20261019",
+        "T:20261020"
+      ],
+      "evidence_sources": [
+        "tdx",
+        "tencent"
+      ],
+      "hub_flag": false,
+      "last_seen": "20261020",
+      "in_registry": true,
+      "first_seen": "20261020",
+      "status": "confirmed"
+    },
+    "tdx.quote_raw.low||tencent[42]": {
+      "left": "tdx.quote_raw.low",
+      "right": "tencent[42]",
+      "level": "L1",
+      "ratio": null,
+      "overall_hit": 1.0,
+      "n_days": 3,
+      "n_pairs": 60,
+      "sample_dates": [
+        "T:20261016",
+        "T:20261019",
+        "T:20261020"
+      ],
+      "evidence_sources": [
+        "tdx",
+        "tencent"
+      ],
+      "hub_flag": false,
+      "last_seen": "20261020",
+      "in_registry": false,
+      "first_seen": "20261020",
+      "status": "repeated"
+    },
+    "fuyao.snapshot.turnover||tdx.quote_raw.amount": {
+      "left": "tdx.quote_raw.amount",
+      "right": "fuyao.snapshot.turnover",
+      "level": "L1",
+      "ratio": null,
+      "overall_hit": 1.0,
+      "n_days": 3,
+      "n_pairs": 60,
+      "sample_dates": [
+        "T:20261016",
+        "T:20261019",
+        "T:20261020"
+      ],
+      "evidence_sources": [
+        "tdx",
+        "tonghuashun"
+      ],
+      "hub_flag": false,
+      "last_seen": "20261020",
+      "in_registry": false,
+      "first_seen": "20261020",
+      "status": "repeated"
+    },
+    "sina[9]||tdx.quote_raw.amount": {
+      "left": "tdx.quote_raw.amount",
+      "right": "sina[9]",
+      "level": "L1",
+      "ratio": null,
+      "overall_hit": 1.0,
+      "n_days": 3,
+      "n_pairs": 60,
+      "sample_dates": [
+        "T:20261016",
+        "T:20261019",
+        "T:20261020"
+      ],
+      "evidence_sources": [
+        "sina",
+        "tdx"
+      ],
+      "hub_flag": false,
+      "last_seen": "20261020",
+      "in_registry": false,
+      "first_seen": "20261020",
+      "status": "repeated"
+    },
+    "tdx.quote_raw.amount||tencent[37]": {
+      "left": "tdx.quote_raw.amount",
+      "right": "tencent[37]",
+      "level": "L1-U",
+      "ratio": 0.0001,
+      "overall_hit": 1.0,
+      "n_days": 3,
+      "n_pairs": 60,
+      "sample_dates": [
+        "T:20261016",
+        "T:20261019",
+        "T:20261020"
+      ],
+      "evidence_sources": [
+        "tdx",
+        "tencent"
+      ],
+      "hub_flag": false,
+      "last_seen": "20261020",
+      "in_registry": false,
+      "first_seen": "20261020",
+      "status": "repeated"
+    },
+    "tdx.quote_raw.amount||tencent[57]": {
+      "left": "tdx.quote_raw.amount",
+      "right": "tencent[57]",
+      "level": "L1-U",
+      "ratio": 0.0001,
+      "overall_hit": 1.0,
+      "n_days": 3,
+      "n_pairs": 60,
+      "sample_dates": [
+        "T:20261016",
+        "T:20261019",
+        "T:20261020"
+      ],
+      "evidence_sources": [
+        "tdx",
+        "tencent"
+      ],
+      "hub_flag": false,
+      "last_seen": "20261020",
+      "in_registry": false,
+      "first_seen": "20261020",
+      "status": "repeated"
     }
   },
   "legacy_findings_v1": {
@@ -22040,5 +22500,5 @@
     }
   },
   "legacy_state_version": 1,
-  "updated": "20261019"
+  "updated": "20261020"
 }

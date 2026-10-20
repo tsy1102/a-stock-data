@@ -132,6 +132,24 @@ def test_runtime_alias_resolution_includes_non_anchor_sources():
     assert lineage_api.source_aliases("开盘啦(kpl)", lineage) == []
 
 
+@pytest.mark.parametrize(
+    ("alias", "code", "expected"),
+    [
+        ("tdx", "quote_raw.last_close", "last_close"),
+        ("tdx", "quote_raw.open", "open"),
+        ("tdx", "quote_raw.amount", "amount"),
+        ("tdx", "finance_info.LYZE", "LYZE"),
+        ("kpl", "raw_columns.col_06", "seal_amount"),
+        ("kpl", "raw_columns.col_11", "amount"),
+        ("kpl", "raw_columns.col_07", "raw_columns.col_07"),
+        ("zhb", "full.amount", "amount"),
+        ("sina", "[9]", "[9]"),
+    ],
+)
+def test_runtime_field_code_normalization_maps_only_known_wrappers(alias, code, expected):
+    assert lineage_api.normalize_runtime_field_code(alias, code) == expected
+
+
 def test_load_lineage_rejects_non_object_json_root(tmp_path):
     malformed = tmp_path / "lineage.json"
     malformed.write_text("[]", encoding="utf-8")

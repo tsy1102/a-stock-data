@@ -7,22 +7,24 @@
     "note": "source_fields 是逐源完整路径权威记录；fields 是兼容聚合视图。Levistock 历史混合身份的 175 条结构化记录已按逐字段映射重分类。历史原文中额外解析到的 56 个 token 不在迁移前的结构化注册表中，继续保留在只读档案，不提升为当前字段记录。状态冲突与历史证据保存在 source_fields。source_field_addenda 只允许有 E3 文件证据且经 parity 校验的增补，不覆盖 field_source_reference.md 历史原文。",
     "format_note": "JSON（YAML 严格子集，零依赖）。原计划 YAML 因环境无 pyyaml/ruamel 改 JSON。",
     "source_field_stats": {
-      "aggregate_status_scope_unresolved": 497,
+      "aggregate_status_scope_unresolved": 493,
       "candidate": 1,
       "conflict": 81,
       "disproved": 2,
       "empirical_duplicate_alias": 2,
       "identity_reclassified_pending": 9,
-      "manual_collision_adjudication": 18,
+      "live_observed_not_documented": 1,
+      "manual_collision_adjudication": 23,
       "matched": 878,
+      "official_contract": 31,
       "reference_status_conflict": 22,
       "reference_status_missing": 35,
-      "registry_status_only_single_source": 872,
+      "registry_status_only_single_source": 871,
       "resolved_by_multiday_independent_cross_source_l1": 2,
       "status_conflict": 59,
       "status_missing": 43,
-      "unverified": 1506,
-      "verified": 928,
+      "unverified": 1502,
+      "verified": 964,
       "verified_by_empirical_addendum": 12,
       "verified_by_source_contract": 69
     }
@@ -8191,7 +8193,7 @@
       "status": "conflict",
       "source_statuses": {
         "Levistock历史未归属": "unverified",
-        "TDX(双命名源)": "unverified",
+        "TDX(双命名源)": "verified",
         "TDX-eltdx(适配层)": "unverified",
         "ZHB-tdxstat2": "verified",
         "reports": "verified",
@@ -21638,7 +21640,7 @@
       "status_raw": "",
       "status": "conflict",
       "source_statuses": {
-        "TDX(双命名源)": "unverified",
+        "TDX(双命名源)": "verified",
         "TDX-eltdx(适配层)": "unverified",
         "同花顺-fuyao": "unverified",
         "FTShare REST": "verified"
@@ -21650,6 +21652,7 @@
         "meaning_differs",
         "meaning_incomplete",
         "source_statuses_differ",
+        "unit_differs",
         "unit_incomplete"
       ]
     },
@@ -23426,20 +23429,17 @@
       "sources": [
         "TDX(双命名源)"
       ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
+      "section": "20261020/20261020_collision_report.json",
+      "canonical": "last_close",
+      "meaning": "昨收价",
+      "unit": "元",
       "status_raw": "",
-      "status": "unverified",
+      "status": "verified",
       "source_statuses": {
-        "TDX(双命名源)": "unverified"
+        "TDX(双命名源)": "verified"
       },
-      "aggregation_status": "incomplete",
-      "aggregation_issues": [
-        "canonical_incomplete",
-        "meaning_incomplete"
-      ]
+      "aggregation_status": "consistent",
+      "aggregation_issues": []
     },
     {
       "code": "last_close_price_milli",
@@ -24817,7 +24817,7 @@
       "status_raw": "",
       "status": "conflict",
       "source_statuses": {
-        "TDX(双命名源)": "unverified",
+        "TDX(双命名源)": "verified",
         "TDX-eltdx(适配层)": "unverified",
         "同花顺-fuyao": "unverified",
         "FTShare REST": "verified"
@@ -24829,6 +24829,7 @@
         "meaning_differs",
         "meaning_incomplete",
         "source_statuses_differ",
+        "unit_differs",
         "unit_incomplete"
       ]
     },
@@ -26902,7 +26903,7 @@
       "status_raw": "⏸️",
       "status": "conflict",
       "source_statuses": {
-        "TDX(双命名源)": "unverified",
+        "TDX(双命名源)": "verified",
         "TDX-eltdx(适配层)": "unverified",
         "同花顺-fuyao": "unverified",
         "新浪(扩展API)": "unverified",
@@ -26915,6 +26916,7 @@
         "meaning_differs",
         "meaning_incomplete",
         "source_statuses_differ",
+        "unit_differs",
         "unit_incomplete"
       ]
     },
@@ -57982,6 +57984,66 @@
       },
       "relation": "same_number_same_meaning",
       "evidence": "adjudication:adjudications/20261020_20261019_l1.json#20261020-tdx-zhongguben-tencent-73;report:20261019/20261019_collision_report.json"
+    },
+    {
+      "from": {
+        "source": "TDX(双命名源)",
+        "code": "last_close"
+      },
+      "to": {
+        "source": "同花顺-fuyao",
+        "code": "snapshot.prev_price"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "adjudication:adjudications/20261020_tdx_quote_l1.json#20261020-tdx-last-close;report:20261020/20261020_collision_report.json"
+    },
+    {
+      "from": {
+        "source": "TDX(双命名源)",
+        "code": "open"
+      },
+      "to": {
+        "source": "同花顺-fuyao",
+        "code": "snapshot.open_price"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "adjudication:adjudications/20261020_tdx_quote_l1.json#20261020-tdx-open;report:20261020/20261020_collision_report.json"
+    },
+    {
+      "from": {
+        "source": "TDX(双命名源)",
+        "code": "high"
+      },
+      "to": {
+        "source": "同花顺-fuyao",
+        "code": "snapshot.high_price"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "adjudication:adjudications/20261020_tdx_quote_l1.json#20261020-tdx-high;report:20261020/20261020_collision_report.json"
+    },
+    {
+      "from": {
+        "source": "TDX(双命名源)",
+        "code": "low"
+      },
+      "to": {
+        "source": "同花顺-fuyao",
+        "code": "snapshot.low_price"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "adjudication:adjudications/20261020_tdx_quote_l1.json#20261020-tdx-low;report:20261020/20261020_collision_report.json"
+    },
+    {
+      "from": {
+        "source": "TDX(双命名源)",
+        "code": "amount"
+      },
+      "to": {
+        "source": "同花顺-fuyao",
+        "code": "snapshot.turnover"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "adjudication:adjudications/20261020_tdx_quote_l1.json#20261020-tdx-amount;report:20261020/20261020_collision_report.json"
     }
   ],
   "source_fields": [
@@ -68739,13 +68801,15 @@
       "code": "amount",
       "identity": "TDX(双命名源)::amount",
       "path": "amount",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "section": "",
-      "sections": [],
-      "status": "unverified",
-      "status_resolution": "aggregate_status_scope_unresolved",
+      "canonical": "amount",
+      "meaning": "成交额",
+      "unit": "元",
+      "section": "20261020/20261020_collision_report.json",
+      "sections": [
+        "20261020/20261020_collision_report.json"
+      ],
+      "status": "verified",
+      "status_resolution": "manual_collision_adjudication",
       "status_evidence": {
         "reference_statuses": [],
         "reference_status_raw": [],
@@ -68763,9 +68827,26 @@
         ],
         "values": [
           "verified"
+        ],
+        "adjudication_ids": [
+          "20261020-tdx-amount"
         ]
       },
-      "reference_evidence": [],
+      "reference_evidence": [
+        {
+          "section": "20261020/20261020_collision_report.json",
+          "canonical": "amount",
+          "meaning": "成交额",
+          "unit": "元",
+          "status_raw": "人工复核 2026-10-20：20261020-tdx-amount",
+          "status": "verified",
+          "adjudication_id": "20261020-tdx-amount",
+          "external_evidence": [
+            "https://github.com/yanwei99521/easy-tdx",
+            "https://github.com/rainx/pytdx/issues/112"
+          ]
+        }
+      ],
       "attribute_conflicts": {},
       "registry_aggregate": {
         "code": "amount",
@@ -68786,7 +68867,48 @@
         "meaning": "成交额",
         "unit": "元",
         "section": "12.8.1 东财 push2ex（涨停/炸板/跌停/昨涨停四池）✅"
-      }
+      },
+      "adjudications": [
+        {
+          "id": "20261020-tdx-amount",
+          "action": "verify",
+          "status": "verified",
+          "reviewer": "Codex evidence review",
+          "reviewed_on": "2026-10-20",
+          "report": "20261020/20261020_collision_report.json",
+          "decision_file": "adjudications/20261020_tdx_quote_l1.json",
+          "candidate": {
+            "left": "tdx.quote_raw.amount",
+            "right": "fuyao.snapshot.turnover"
+          },
+          "level": "L1",
+          "rationale": "报告中的 L1 候选显示，TDX 原始协议字段与独立同花顺快照成交额在 2026-10-16、2026-10-19、2026-10-20 三个有效交易日各 20 组样本中全部精确相等（60/60，100%）；无盘中或时段未知样本。上游 TDX 客户端公开字段表包含 amount；项目已验证的同花顺字段定义为成交额、单位元；这与另一个 TDX 适配字段 quote_full.amount_wan 的万元口径不同。",
+          "evidence": {
+            "ratio": null,
+            "overall_hit": 1.0,
+            "n_days": 3,
+            "n_pairs": 60,
+            "distinct_days": [
+              "T:20261016",
+              "T:20261019",
+              "T:20261020"
+            ],
+            "daily_sample_counts": {
+              "T:20261019": 20,
+              "T:20261016": 20,
+              "T:20261020": 20
+            },
+            "evidence_sources": [
+              "tdx",
+              "tonghuashun"
+            ]
+          },
+          "external_evidence": [
+            "https://github.com/yanwei99521/easy-tdx",
+            "https://github.com/rainx/pytdx/issues/112"
+          ]
+        }
+      ]
     },
     {
       "source": "TDX(双命名源)",
@@ -71434,13 +71556,15 @@
       "code": "high",
       "identity": "TDX(双命名源)::high",
       "path": "high",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "section": "",
-      "sections": [],
-      "status": "unverified",
-      "status_resolution": "aggregate_status_scope_unresolved",
+      "canonical": "high",
+      "meaning": "最高价",
+      "unit": "元",
+      "section": "20261020/20261020_collision_report.json",
+      "sections": [
+        "20261020/20261020_collision_report.json"
+      ],
+      "status": "verified",
+      "status_resolution": "manual_collision_adjudication",
       "status_evidence": {
         "reference_statuses": [],
         "reference_status_raw": [],
@@ -71452,9 +71576,26 @@
         ],
         "values": [
           "unverified"
+        ],
+        "adjudication_ids": [
+          "20261020-tdx-high"
         ]
       },
-      "reference_evidence": [],
+      "reference_evidence": [
+        {
+          "section": "20261020/20261020_collision_report.json",
+          "canonical": "high",
+          "meaning": "最高价",
+          "unit": "元",
+          "status_raw": "人工复核 2026-10-20：20261020-tdx-high",
+          "status": "verified",
+          "adjudication_id": "20261020-tdx-high",
+          "external_evidence": [
+            "https://github.com/yanwei99521/easy-tdx",
+            "https://github.com/rainx/pytdx/issues/112"
+          ]
+        }
+      ],
       "attribute_conflicts": {},
       "registry_aggregate": {
         "code": "high",
@@ -71469,7 +71610,48 @@
         "meaning": "",
         "unit": "",
         "section": ""
-      }
+      },
+      "adjudications": [
+        {
+          "id": "20261020-tdx-high",
+          "action": "verify",
+          "status": "verified",
+          "reviewer": "Codex evidence review",
+          "reviewed_on": "2026-10-20",
+          "report": "20261020/20261020_collision_report.json",
+          "decision_file": "adjudications/20261020_tdx_quote_l1.json",
+          "candidate": {
+            "left": "tdx.quote_raw.high",
+            "right": "fuyao.snapshot.high_price"
+          },
+          "level": "L1",
+          "rationale": "报告中的 L1 候选显示，TDX 原始协议字段与独立同花顺快照最高价在 2026-10-16、2026-10-19、2026-10-20 三个有效交易日各 20 组样本中全部精确相等（60/60，100%）；无盘中或时段未知样本。上游 TDX 客户端公开字段表包含 high；项目已验证的同花顺字段定义为最高价、单位元。",
+          "evidence": {
+            "ratio": null,
+            "overall_hit": 1.0,
+            "n_days": 3,
+            "n_pairs": 60,
+            "distinct_days": [
+              "T:20261016",
+              "T:20261019",
+              "T:20261020"
+            ],
+            "daily_sample_counts": {
+              "T:20261019": 20,
+              "T:20261016": 20,
+              "T:20261020": 20
+            },
+            "evidence_sources": [
+              "tdx",
+              "tonghuashun"
+            ]
+          },
+          "external_evidence": [
+            "https://github.com/yanwei99521/easy-tdx",
+            "https://github.com/rainx/pytdx/issues/112"
+          ]
+        }
+      ]
     },
     {
       "source": "TDX(双命名源)",
@@ -72115,13 +72297,15 @@
       "code": "last_close",
       "identity": "TDX(双命名源)::last_close",
       "path": "last_close",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "section": "",
-      "sections": [],
-      "status": "unverified",
-      "status_resolution": "registry_status_only_single_source",
+      "canonical": "last_close",
+      "meaning": "昨收价",
+      "unit": "元",
+      "section": "20261020/20261020_collision_report.json",
+      "sections": [
+        "20261020/20261020_collision_report.json"
+      ],
+      "status": "verified",
+      "status_resolution": "manual_collision_adjudication",
       "status_evidence": {
         "reference_statuses": [],
         "reference_status_raw": [],
@@ -72131,9 +72315,26 @@
         ],
         "values": [
           "unverified"
+        ],
+        "adjudication_ids": [
+          "20261020-tdx-last-close"
         ]
       },
-      "reference_evidence": [],
+      "reference_evidence": [
+        {
+          "section": "20261020/20261020_collision_report.json",
+          "canonical": "last_close",
+          "meaning": "昨收价",
+          "unit": "元",
+          "status_raw": "人工复核 2026-10-20：20261020-tdx-last-close",
+          "status": "verified",
+          "adjudication_id": "20261020-tdx-last-close",
+          "external_evidence": [
+            "https://github.com/yanwei99521/easy-tdx",
+            "https://github.com/rainx/pytdx/issues/112"
+          ]
+        }
+      ],
       "attribute_conflicts": {},
       "registry_aggregate": {
         "code": "last_close",
@@ -72146,7 +72347,48 @@
         "meaning": "",
         "unit": "",
         "section": ""
-      }
+      },
+      "adjudications": [
+        {
+          "id": "20261020-tdx-last-close",
+          "action": "verify",
+          "status": "verified",
+          "reviewer": "Codex evidence review",
+          "reviewed_on": "2026-10-20",
+          "report": "20261020/20261020_collision_report.json",
+          "decision_file": "adjudications/20261020_tdx_quote_l1.json",
+          "candidate": {
+            "left": "tdx.quote_raw.last_close",
+            "right": "fuyao.snapshot.prev_price"
+          },
+          "level": "L1",
+          "rationale": "报告中的 L1 候选显示，TDX 原始协议字段与独立同花顺快照昨收价在 2026-10-16、2026-10-19、2026-10-20 三个有效交易日各 20 组样本中全部精确相等（60/60，100%）；无盘中或时段未知样本。上游 TDX 客户端公开字段表包含 last_close；项目已验证的同花顺字段定义为昨收价、单位元。",
+          "evidence": {
+            "ratio": null,
+            "overall_hit": 1.0,
+            "n_days": 3,
+            "n_pairs": 60,
+            "distinct_days": [
+              "T:20261016",
+              "T:20261019",
+              "T:20261020"
+            ],
+            "daily_sample_counts": {
+              "T:20261019": 20,
+              "T:20261016": 20,
+              "T:20261020": 20
+            },
+            "evidence_sources": [
+              "tdx",
+              "tonghuashun"
+            ]
+          },
+          "external_evidence": [
+            "https://github.com/yanwei99521/easy-tdx",
+            "https://github.com/rainx/pytdx/issues/112"
+          ]
+        }
+      ]
     },
     {
       "source": "TDX(双命名源)",
@@ -73180,13 +73422,15 @@
       "code": "low",
       "identity": "TDX(双命名源)::low",
       "path": "low",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "section": "",
-      "sections": [],
-      "status": "unverified",
-      "status_resolution": "aggregate_status_scope_unresolved",
+      "canonical": "low",
+      "meaning": "最低价",
+      "unit": "元",
+      "section": "20261020/20261020_collision_report.json",
+      "sections": [
+        "20261020/20261020_collision_report.json"
+      ],
+      "status": "verified",
+      "status_resolution": "manual_collision_adjudication",
       "status_evidence": {
         "reference_statuses": [],
         "reference_status_raw": [],
@@ -73198,9 +73442,26 @@
         ],
         "values": [
           "unverified"
+        ],
+        "adjudication_ids": [
+          "20261020-tdx-low"
         ]
       },
-      "reference_evidence": [],
+      "reference_evidence": [
+        {
+          "section": "20261020/20261020_collision_report.json",
+          "canonical": "low",
+          "meaning": "最低价",
+          "unit": "元",
+          "status_raw": "人工复核 2026-10-20：20261020-tdx-low",
+          "status": "verified",
+          "adjudication_id": "20261020-tdx-low",
+          "external_evidence": [
+            "https://github.com/yanwei99521/easy-tdx",
+            "https://github.com/rainx/pytdx/issues/112"
+          ]
+        }
+      ],
       "attribute_conflicts": {},
       "registry_aggregate": {
         "code": "low",
@@ -73215,7 +73476,48 @@
         "meaning": "",
         "unit": "",
         "section": ""
-      }
+      },
+      "adjudications": [
+        {
+          "id": "20261020-tdx-low",
+          "action": "verify",
+          "status": "verified",
+          "reviewer": "Codex evidence review",
+          "reviewed_on": "2026-10-20",
+          "report": "20261020/20261020_collision_report.json",
+          "decision_file": "adjudications/20261020_tdx_quote_l1.json",
+          "candidate": {
+            "left": "tdx.quote_raw.low",
+            "right": "fuyao.snapshot.low_price"
+          },
+          "level": "L1",
+          "rationale": "报告中的 L1 候选显示，TDX 原始协议字段与独立同花顺快照最低价在 2026-10-16、2026-10-19、2026-10-20 三个有效交易日各 20 组样本中全部精确相等（60/60，100%）；无盘中或时段未知样本。上游 TDX 客户端公开字段表包含 low；项目已验证的同花顺字段定义为最低价、单位元。",
+          "evidence": {
+            "ratio": null,
+            "overall_hit": 1.0,
+            "n_days": 3,
+            "n_pairs": 60,
+            "distinct_days": [
+              "T:20261016",
+              "T:20261019",
+              "T:20261020"
+            ],
+            "daily_sample_counts": {
+              "T:20261019": 20,
+              "T:20261016": 20,
+              "T:20261020": 20
+            },
+            "evidence_sources": [
+              "tdx",
+              "tonghuashun"
+            ]
+          },
+          "external_evidence": [
+            "https://github.com/yanwei99521/easy-tdx",
+            "https://github.com/rainx/pytdx/issues/112"
+          ]
+        }
+      ]
     },
     {
       "source": "TDX(双命名源)",
@@ -73766,13 +74068,15 @@
       "code": "open",
       "identity": "TDX(双命名源)::open",
       "path": "open",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "section": "",
-      "sections": [],
-      "status": "unverified",
-      "status_resolution": "aggregate_status_scope_unresolved",
+      "canonical": "open",
+      "meaning": "开盘价",
+      "unit": "元",
+      "section": "20261020/20261020_collision_report.json",
+      "sections": [
+        "20261020/20261020_collision_report.json"
+      ],
+      "status": "verified",
+      "status_resolution": "manual_collision_adjudication",
       "status_evidence": {
         "reference_statuses": [],
         "reference_status_raw": [],
@@ -73785,9 +74089,26 @@
         ],
         "values": [
           "unverified"
+        ],
+        "adjudication_ids": [
+          "20261020-tdx-open"
         ]
       },
-      "reference_evidence": [],
+      "reference_evidence": [
+        {
+          "section": "20261020/20261020_collision_report.json",
+          "canonical": "open",
+          "meaning": "开盘价",
+          "unit": "元",
+          "status_raw": "人工复核 2026-10-20：20261020-tdx-open",
+          "status": "verified",
+          "adjudication_id": "20261020-tdx-open",
+          "external_evidence": [
+            "https://github.com/yanwei99521/easy-tdx",
+            "https://github.com/rainx/pytdx/issues/112"
+          ]
+        }
+      ],
       "attribute_conflicts": {},
       "registry_aggregate": {
         "code": "open",
@@ -73803,7 +74124,48 @@
         "meaning": "",
         "unit": "",
         "section": ""
-      }
+      },
+      "adjudications": [
+        {
+          "id": "20261020-tdx-open",
+          "action": "verify",
+          "status": "verified",
+          "reviewer": "Codex evidence review",
+          "reviewed_on": "2026-10-20",
+          "report": "20261020/20261020_collision_report.json",
+          "decision_file": "adjudications/20261020_tdx_quote_l1.json",
+          "candidate": {
+            "left": "tdx.quote_raw.open",
+            "right": "fuyao.snapshot.open_price"
+          },
+          "level": "L1",
+          "rationale": "报告中的 L1 候选显示，TDX 原始协议字段与独立同花顺快照开盘价在 2026-10-16、2026-10-19、2026-10-20 三个有效交易日各 20 组样本中全部精确相等（60/60，100%）；无盘中或时段未知样本。上游 TDX 客户端公开字段表包含 open；项目已验证的同花顺字段定义为开盘价、单位元。",
+          "evidence": {
+            "ratio": null,
+            "overall_hit": 1.0,
+            "n_days": 3,
+            "n_pairs": 60,
+            "distinct_days": [
+              "T:20261016",
+              "T:20261019",
+              "T:20261020"
+            ],
+            "daily_sample_counts": {
+              "T:20261019": 20,
+              "T:20261016": 20,
+              "T:20261020": 20
+            },
+            "evidence_sources": [
+              "tdx",
+              "tonghuashun"
+            ]
+          },
+          "external_evidence": [
+            "https://github.com/yanwei99521/easy-tdx",
+            "https://github.com/rainx/pytdx/issues/112"
+          ]
+        }
+      ]
     },
     {
       "source": "TDX(双命名源)",

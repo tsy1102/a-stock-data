@@ -7,6 +7,7 @@ from stock_common.sc_report_runner import (
     classify_price_range,
     format_52w_reference,
     format_quote_provenance,
+    non_quarter_end_dates,
 )
 
 
@@ -49,6 +50,17 @@ def test_quote_provenance_does_not_mislabel_unknown_batch_as_a_source():
     assert "行情有效日期未核实" in rendered
     assert "价格来源：未确认" in rendered
     assert "batch" not in rendered
+
+
+def test_non_quarter_end_dates_preserve_source_dates_and_ignore_invalid_values():
+    records = [
+        {"date": "2026-06-30"},
+        {"date": "2025-11-25"},
+        {"date": "2025-11-25"},
+        {"date": "not-a-date"},
+        {"date": ""},
+    ]
+    assert non_quarter_end_dates(records) == ["2025-11-25"]
 
 
 def test_val_52_week_candidates_exclude_out_of_range_and_invalid_pe():
@@ -136,6 +148,43 @@ def test_val_contrarian_candidates_are_selected_by_market_cap(monkeypatch):
 def test_market_breadth_handles_zero_decliners_without_fake_ratio():
     assert get_mak_report._market_breadth_display(0, 0) == ("N/A", "无有效涨跌方向样本")
     assert get_mak_report._market_breadth_display(10, 0) == ("∞", "上涨样本中无下跌")
+
+
+def test_mak_limit_pool_consensus_distinguishes_majority_from_unanimity():
+    source_text, status = get_mak_report._format_limit_pool_source_summary(
+        {"cls": 54, "kpl": 54, "fupan": 52}, 54
+    )
+    assert "cls=54 / kpl=54 / fupan=52" == source_text
+    assert "多数值 54" in status
+    assert "2/3" in status
+    assert "存在差异" in status
+    assert "全数一致" not in status
+
+    _, matching_status = get_mak_report._format_limit_pool_source_summary(
+        {"cls": 54, "kpl": 54, "fupan": None}, 54
+    )
+    assert "全数一致（2/2）" in matching_status
+    assert "1 个来源无有效值" in matching_status
+
+    _, inconsistent_total_status = get_mak_report._format_limit_pool_source_summary(
+        {"cls": 54, "kpl": 54, "fupan": 52}, 52
+    )
+    assert "多数值 54（2/3" in inconsistent_total_status
+    assert "接口汇总值 52 与多数值不符" in inconsistent_total_status
+
+    _, tied_status = get_mak_report._format_limit_pool_source_summary(
+        {"a": 54, "b": 54, "c": 52, "d": 52}, 54
+    )
+    assert "来源计数并列（52、54 各 2 票）" in tied_status
+    assert "无唯一多数结论" in tied_status
+
+
+def test_mak_limit_pool_mismatch_note_keeps_pool_count_separate():
+    note = get_mak_report._limit_pool_count_mismatch_note(54, 52)
+    assert "多源统计值 54 只" in note
+    assert "本节涨停池 52 只" in note
+    assert "未逐只对齐名单" in note
+    assert get_mak_report._limit_pool_count_mismatch_note(52, 52) == ""
 
 
 def test_mak_flow_summary_reports_coverage_and_never_calls_auction_main_flow():

@@ -621,7 +621,7 @@
 
 | 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
 |:--|:--|:--|:--|:--|
-| TDX(双命名源) · `amount` | — | — | — | `unverified` |
+| TDX(双命名源) · `amount` | amount | 成交额 | 元 | `verified` |
 | TDX-eltdx(适配层) · `amount` | amount | 成交额 | — | `unverified` |
 | ZHB-tdxstat2 · `amount` | amount | T日总成交额 | 万元 | `verified` |
 | reports · `amount` | amount | 成交额 | — | `verified` |
@@ -2416,12 +2416,12 @@
 
 ### `high` — ambiguous
 
-聚合问题：canonical_differs；canonical_incomplete；meaning_differs；meaning_incomplete；source_statuses_differ；unit_incomplete；聚合状态：`conflict`。
+聚合问题：canonical_differs；canonical_incomplete；meaning_differs；meaning_incomplete；source_statuses_differ；unit_differs；unit_incomplete；聚合状态：`conflict`。
 
 | 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
 |:--|:--|:--|:--|:--|
 | FTShare REST · `high` | high | 最高价 | 元/股 | `verified` |
-| TDX(双命名源) · `high` | — | — | — | `unverified` |
+| TDX(双命名源) · `high` | high | 最高价 | 元 | `verified` |
 | TDX-eltdx(适配层) · `high` | time / open / high / low / close | 时间 / OHLC | — | `unverified` |
 | 同花顺-fuyao · `high` | — | — | — | `unverified` |
 
@@ -2600,12 +2600,12 @@
 
 ### `low` — ambiguous
 
-聚合问题：canonical_differs；canonical_incomplete；meaning_differs；meaning_incomplete；source_statuses_differ；unit_incomplete；聚合状态：`conflict`。
+聚合问题：canonical_differs；canonical_incomplete；meaning_differs；meaning_incomplete；source_statuses_differ；unit_differs；unit_incomplete；聚合状态：`conflict`。
 
 | 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
 |:--|:--|:--|:--|:--|
 | FTShare REST · `low` | low | 最低价 | 元/股 | `verified` |
-| TDX(双命名源) · `low` | — | — | — | `unverified` |
+| TDX(双命名源) · `low` | low | 最低价 | 元 | `verified` |
 | TDX-eltdx(适配层) · `low` | time / open / high / low / close | 时间 / OHLC | — | `unverified` |
 | 同花顺-fuyao · `low` | — | — | — | `unverified` |
 
@@ -2856,12 +2856,12 @@
 
 ### `open` — ambiguous
 
-聚合问题：canonical_differs；canonical_incomplete；meaning_differs；meaning_incomplete；source_statuses_differ；unit_incomplete；聚合状态：`conflict`。
+聚合问题：canonical_differs；canonical_incomplete；meaning_differs；meaning_incomplete；source_statuses_differ；unit_differs；unit_incomplete；聚合状态：`conflict`。
 
 | 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
 |:--|:--|:--|:--|:--|
 | FTShare REST · `open` | open | 开盘价 | 元/股 | `verified` |
-| TDX(双命名源) · `open` | — | — | — | `unverified` |
+| TDX(双命名源) · `open` | open | 开盘价 | 元 | `verified` |
 | TDX-eltdx(适配层) · `open` | time / open / high / low / close | 时间 / OHLC | — | `unverified` |
 | 同花顺-fuyao · `open` | — | — | — | `unverified` |
 | 新浪(扩展API) · `open` | strike / prev_close / open | 行权价 / 昨收盘 / 开盘 | — | `unverified` |

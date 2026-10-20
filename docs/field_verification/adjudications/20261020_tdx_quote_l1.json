@@ -1,0 +1,128 @@
+{
+  "schema_version": 1,
+  "report": "20261020/20261020_collision_report.json",
+  "reviewer": "Codex evidence review",
+  "reviewed_on": "2026-10-20",
+  "decisions": [
+    {
+      "id": "20261020-tdx-last-close",
+      "candidate": {
+        "left": "tdx.quote_raw.last_close",
+        "right": "fuyao.snapshot.prev_price"
+      },
+      "target": {
+        "source": "TDX(双命名源)",
+        "code": "last_close"
+      },
+      "anchor": {
+        "source": "同花顺-fuyao",
+        "code": "snapshot.prev_price"
+      },
+      "action": "verify",
+      "canonical": "last_close",
+      "meaning": "昨收价",
+      "unit": "元",
+      "external_evidence": [
+        "https://github.com/yanwei99521/easy-tdx",
+        "https://github.com/rainx/pytdx/issues/112"
+      ],
+      "rationale": "报告中的 L1 候选显示，TDX 原始协议字段与独立同花顺快照昨收价在 2026-10-16、2026-10-19、2026-10-20 三个有效交易日各 20 组样本中全部精确相等（60/60，100%）；无盘中或时段未知样本。上游 TDX 客户端公开字段表包含 last_close；项目已验证的同花顺字段定义为昨收价、单位元。"
+    },
+    {
+      "id": "20261020-tdx-open",
+      "candidate": {
+        "left": "tdx.quote_raw.open",
+        "right": "fuyao.snapshot.open_price"
+      },
+      "target": {
+        "source": "TDX(双命名源)",
+        "code": "open"
+      },
+      "anchor": {
+        "source": "同花顺-fuyao",
+        "code": "snapshot.open_price"
+      },
+      "action": "verify",
+      "canonical": "open",
+      "meaning": "开盘价",
+      "unit": "元",
+      "external_evidence": [
+        "https://github.com/yanwei99521/easy-tdx",
+        "https://github.com/rainx/pytdx/issues/112"
+      ],
+      "rationale": "报告中的 L1 候选显示，TDX 原始协议字段与独立同花顺快照开盘价在 2026-10-16、2026-10-19、2026-10-20 三个有效交易日各 20 组样本中全部精确相等（60/60，100%）；无盘中或时段未知样本。上游 TDX 客户端公开字段表包含 open；项目已验证的同花顺字段定义为开盘价、单位元。"
+    },
+    {
+      "id": "20261020-tdx-high",
+      "candidate": {
+        "left": "tdx.quote_raw.high",
+        "right": "fuyao.snapshot.high_price"
+      },
+      "target": {
+        "source": "TDX(双命名源)",
+        "code": "high"
+      },
+      "anchor": {
+        "source": "同花顺-fuyao",
+        "code": "snapshot.high_price"
+      },
+      "action": "verify",
+      "canonical": "high",
+      "meaning": "最高价",
+      "unit": "元",
+      "external_evidence": [
+        "https://github.com/yanwei99521/easy-tdx",
+        "https://github.com/rainx/pytdx/issues/112"
+      ],
+      "rationale": "报告中的 L1 候选显示，TDX 原始协议字段与独立同花顺快照最高价在 2026-10-16、2026-10-19、2026-10-20 三个有效交易日各 20 组样本中全部精确相等（60/60，100%）；无盘中或时段未知样本。上游 TDX 客户端公开字段表包含 high；项目已验证的同花顺字段定义为最高价、单位元。"
+    },
+    {
+      "id": "20261020-tdx-low",
+      "candidate": {
+        "left": "tdx.quote_raw.low",
+        "right": "fuyao.snapshot.low_price"
+      },
+      "target": {
+        "source": "TDX(双命名源)",
+        "code": "low"
+      },
+      "anchor": {
+        "source": "同花顺-fuyao",
+        "code": "snapshot.low_price"
+      },
+      "action": "verify",
+      "canonical": "low",
+      "meaning": "最低价",
+      "unit": "元",
+      "external_evidence": [
+        "https://github.com/yanwei99521/easy-tdx",
+        "https://github.com/rainx/pytdx/issues/112"
+      ],
+      "rationale": "报告中的 L1 候选显示，TDX 原始协议字段与独立同花顺快照最低价在 2026-10-16、2026-10-19、2026-10-20 三个有效交易日各 20 组样本中全部精确相等（60/60，100%）；无盘中或时段未知样本。上游 TDX 客户端公开字段表包含 low；项目已验证的同花顺字段定义为最低价、单位元。"
+    },
+    {
+      "id": "20261020-tdx-amount",
+      "candidate": {
+        "left": "tdx.quote_raw.amount",
+        "right": "fuyao.snapshot.turnover"
+      },
+      "target": {
+        "source": "TDX(双命名源)",
+        "code": "amount"
+      },
+      "anchor": {
+        "source": "同花顺-fuyao",
+        "code": "snapshot.turnover"
+      },
+      "action": "verify",
+      "canonical": "amount",
+      "meaning": "成交额",
+      "unit": "元",
+      "external_evidence": [
+        "https://github.com/yanwei99521/easy-tdx",
+        "https://github.com/rainx/pytdx/issues/112"
+      ],
+      "rationale": "报告中的 L1 候选显示，TDX 原始协议字段与独立同花顺快照成交额在 2026-10-16、2026-10-19、2026-10-20 三个有效交易日各 20 组样本中全部精确相等（60/60，100%）；无盘中或时段未知样本。上游 TDX 客户端公开字段表包含 amount；项目已验证的同花顺字段定义为成交额、单位元；这与另一个 TDX 适配字段 quote_full.amount_wan 的万元口径不同。"
+    }
+  ]
+}

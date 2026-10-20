@@ -78,7 +78,11 @@ from stock_common import (
     get_irm_qa,
     sec_type_market_label,
 )  # V10.3, V16.2.3; V17.0.32 DEBT-016 露出 sec_type
-from stock_common.sc_report_runner import format_52w_reference, format_quote_provenance
+from stock_common.sc_report_runner import (
+    format_52w_reference,
+    format_quote_provenance,
+    non_quarter_end_dates,
+)
 
 _SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 
@@ -384,7 +388,8 @@ async def generate_report_async(session, code, output_path, ind_comp=None):
                         _ind_up = _id.get("up_count", 0)
                         _ind_down = _id.get("down_count", 0)
                     L(
-                        f"  📊 行业周期定位: 全市场排名#{_ind_rank} | 涨幅{_ind_chg:+.2f}% | 上涨{_ind_up}家/下跌{_ind_down}家"
+                        f"  📊 行业周期定位（行情快照日期未核实）: "
+                        f"全市场排名#{_ind_rank} | 涨幅{_ind_chg:+.2f}% | 上涨{_ind_up}家/下跌{_ind_down}家"
                     )
                     break
     except Exception as _e:
@@ -629,14 +634,19 @@ async def generate_report_async(session, code, output_path, ind_comp=None):
                     _lng_pe_lyr = getattr(_cdata, "pe_lyr", 0) or 0
                     _lng_pe_lyr_s = f"{_lng_pe_lyr:.1f}x" if _lng_pe_lyr > 0 else "N/A"
                     L(
-                        f"  📊 板块横向对比: 本股PE（TTM）={q.get('pe_ttm',0):.1f}x | 本股PE（静）={_lng_pe_lyr_s} | 板块涨跌{_ind.get('change_pct',0):+.2f}%"
+                        f"  📊 板块横向对比: 本股PE（TTM）={q.get('pe_ttm',0):.1f}x "
+                        f"| 本股PE（静）={_lng_pe_lyr_s} | 板块行情快照涨跌"
+                        f"{_ind.get('change_pct',0):+.2f}%（日期未核实）"
                     )
                     break
     except Exception as _e:
         _debug_log(f"lng industry_compare error: {_e}")
 
-    L("\n## 【二、跨期财务纵深与长效业绩验证 (近8个报告期)】")
+    L("\n## 【二、跨期财务纵深与长效业绩验证（近8个报告期）】")
     L("---")
+    L(
+        "ℹ️ 营业总收入与净利润按报告期披露的累计口径展示：一季报为年初至一季度末，半年报和三季报为年初累计，年报为全年值；不能把各行直接当作单季度值。"
+    )
     financials = await get_financial_report_with_fallback_async(code, num_periods=8)
     if financials:
         L(f"  {'报告期':<12} {'营业总收入(亿)':>10} {'净利润(亿)':>13}")
@@ -1227,10 +1237,15 @@ async def generate_report_async(session, code, output_path, ind_comp=None):
     except Exception as _e:
         _debug_log(f"lng cyq ({code}): {_e}")
     if st:
-        L(f"  数据来源: 十大流通股东季报（最近 {len(st)} 期）")
+        L(f"  数据来源: 东财前十大流通股东统计，按上游 END_DATE 分组（最近 {len(st)} 个日期）")
+        _non_quarter_dates = non_quarter_end_dates(st)
+        if _non_quarter_dates:
+            L(
+                f"  ⚠️ 非季末 END_DATE: {'、'.join(_non_quarter_dates)}；保留上游日期，但不按标准季度末数据解读。"
+            )
         L("")
         _header = (
-            f"  {'截止':<12} {'北向':>6}  {'外资':>8}  {'境内法人等':>8}  {'个人':>6}  {'Top10':>6}"
+            f"  {'上游截止日':<12} {'北向':>6}  {'外资':>8}  {'境内法人等':>8}  {'个人':>6}  {'Top10':>6}"
         )
         L(_header)
         L(f"  {'-'*60}")
@@ -1279,8 +1294,11 @@ async def generate_report_async(session, code, output_path, ind_comp=None):
             chg = latest['total'] - prv['total']
             if abs(chg) >= 1:
                 _dir = "↑" if chg > 0 else "↓"
+                _start_date = prv.get("date") or "日期未标注"
+                _end_date = latest.get("date") or "日期未标注"
                 L(
-                    f"\n  前十大流通股东合计持股变化: {prv['total']:.1f}% → {latest['total']:.1f}% ({_dir}{abs(chg):.1f}个百分点)"
+                    f"\n  前十大流通股东合计持股区间变化（{_start_date} 至 {_end_date}）: "
+                    f"{prv['total']:.1f}% → {latest['total']:.1f}% ({_dir}{abs(chg):.1f}个百分点)"
                 )
                 if chg > 1:
                     L("    持股集中度上升；披露名单变化不等同于主力资金流入。")
@@ -1738,7 +1756,9 @@ async def generate_report_async(session, code, output_path, ind_comp=None):
     from stock_common.sc_render import render_multi_school_scores
 
     multi_scores = render_multi_school_scores(L, score_data)
-    L("  ℹ️ 多评委技术面仅使用当日涨跌幅；均线、MACD、RSI、KDJ及20日收益等技术指标本次未纳入。")
+    L(
+        "  ℹ️ 多评委技术面仅使用本次行情快照涨跌幅（本次有效日期未核实）；均线、MACD、RSI、KDJ及20日收益等技术指标本次未纳入。"
+    )
 
     # 综合投资建议
     try:

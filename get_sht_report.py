@@ -872,7 +872,9 @@ async def generate_report_async(
                 industry_change_pct = row['change_pct']
                 industry_match_name = row['name']
 
-                rank_str = f"第 {industry_rank} 名 (板块当日涨跌幅 {industry_change_pct}%)"
+                rank_str = (
+                    f"第 {industry_rank} 名（板块快照涨跌幅 {industry_change_pct}%，有效日期未核实）"
+                )
 
                 if industry_rank <= 10:
                     is_top = True
@@ -880,10 +882,12 @@ async def generate_report_async(
                 break
 
         L("  ➤ 板块共振监测")
-        L(f"  该板块今日全市场排名: {rank_str}")
+        L(f"  该板块行情快照全市场排名（有效日期未核实）: {rank_str}")
 
         if is_top:
-            L("     🔥 提醒: 所在板块处于全市场 TOP10，具备较强板块共振溢价效应！")
+            L(
+                "     🔥 提醒: 所在板块在该行情快照中处于全市场 TOP10；快照日期未核实，不据此认定当前板块共振。"
+            )
 
     # V16.1: time.sleep 阻塞事件循环 → await asyncio.sleep
     await asyncio.sleep(0.5)
@@ -929,7 +933,9 @@ async def generate_report_async(
 
                 _down = sum(1 for m in _all_members if m.get('change_pct', 0) < 0)
 
-            _rank_parts.append(f"[板块涨跌排名] 上涨 {int(_up)} 家 / 下跌 {int(_down)} 家")
+            _rank_parts.append(
+                f"[板块快照涨跌排名/日期未核实] 上涨 {int(_up)} 家 / 下跌 {int(_down)} 家"
+            )
 
         try:
 
@@ -938,7 +944,7 @@ async def generate_report_async(
 
             if _sr:
                 _rank_parts.append(
-                    f"本股今日{_sr['change_pct']:+.2f}%，板块内排名第{_sr['rank']}/{_sr['total']}名"
+                    f"本股行情涨跌幅{_sr['change_pct']:+.2f}%（有效日期未核实），板块内排名第{_sr['rank']}/{_sr['total']}名"
                 )
 
         except Exception as _e:

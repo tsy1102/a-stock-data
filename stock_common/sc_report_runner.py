@@ -112,6 +112,25 @@ def format_quote_provenance(cdata: Any) -> str:
     return f"{date_text} | 价格来源：{source} | 时间锚：{anchor_text}"
 
 
+def non_quarter_end_dates(records: Any) -> list[str]:
+    """Return distinct source dates that are not standard quarter ends."""
+    quarter_ends = {(3, 31), (6, 30), (9, 30), (12, 31)}
+    dates: list[str] = []
+    seen: set[str] = set()
+    for record in records or []:
+        if not isinstance(record, dict):
+            continue
+        date_text = str(record.get("date") or "").strip()
+        try:
+            parsed = date.fromisoformat(date_text)
+        except ValueError:
+            continue
+        if (parsed.month, parsed.day) not in quarter_ends and date_text not in seen:
+            dates.append(date_text)
+            seen.add(date_text)
+    return dates
+
+
 def format_52w_reference(
     price: Any,
     low: Any,

@@ -849,6 +849,24 @@ def test_runtime_id_normalizes_the_tdx_finance_info_adapter_wrapper():
     )
 
 
+def test_runtime_id_normalizes_tdx_quote_raw_and_kpl_raw_columns():
+    from scripts.apply_collision_adjudications import _runtime_identity
+    from scripts import source_lineage_api
+
+    lineage = source_lineage_api.load_source_lineage()
+
+    assert _runtime_identity("tdx.quote_raw.open", "TDX(双命名源)", lineage) == (
+        "tdx",
+        "open",
+    )
+    assert _runtime_identity(
+        "kpl.raw_columns.col_06", "开盘啦(kpl_limit_up_detail)", lineage
+    ) == ("kpl", "seal_amount")
+    assert _runtime_identity(
+        "kpl.raw_columns.col_11", "开盘啦(kpl_limit_up_detail)", lineage
+    ) == ("kpl", "amount")
+
+
 def test_conflict_status_cannot_be_overridden_by_collision_adjudication():
     registry, lineage, document, report = _inputs()
     registry["source_fields"][0]["status"] = "conflict"

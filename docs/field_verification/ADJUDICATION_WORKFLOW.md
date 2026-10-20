@@ -11,7 +11,7 @@
 ## 可以进入此流程的候选
 
 - 报告必须是 `collision_mode: verified_anchor_only`，且 `exploratory_pair_count` 为 0。
-- 只接受碰撞报告 schema 3，且 `report_completeness.status` 必须为 `complete`；应用器还会复核方法候选总数、全量 inventory、目标覆盖计数和可裁决章节计数。缺清单或任一数量不一致时不得定案。旧版报告需先从原始归档重建为完整新报告。
+- 只接受碰撞报告 schema 3 或 4，且 `report_completeness.status` 必须为 `complete`；schema 4 还包含来源覆盖章节。应用器会复核方法候选总数、全量 inventory、目标覆盖计数和可裁决章节计数。缺清单或任一数量不一致时不得定案。旧版报告需先从原始归档重建为完整新报告。
 - 仅接受报告 `actionable_L1` 中的 `L1` 或 `L1-U` 新候选；旧版报告没有该键时才回退读取 `L1`。已登记映射的当前窗口复验另列于 `mapped_pair_revalidations`，不是新候选；L4、方法候选和未知字段互撞结果不能直接晋级。
 - FTShare 官方契约字段确实参与默认碰撞，强匹配会显示在报告的 `L1-C` 中；`L1-C` 因底层来源独立性未确认而不进入 `actionable_L1`，也不会被普通 L1/L1-U 决策自动应用。它是有公开语义定义的碰撞锚候选，不是独立来源锚或跳过碰撞。
 - `target` 与 `anchor` 必须各自精确对应报告中的一个端点，允许它们与报告 `left` / `right` 的顺序相反；运行时别名必须能唯一解析到注册表中的完整路径。若运行时别名映射到多个字典来源，决策文件必须明确指出正确的来源名。

@@ -1878,6 +1878,33 @@ def test_ftshare_rest_collector_reports_client_errors(monkeypatch):
     assert result["__error__"] == "HTTP 429; no retry"
 
 
+def test_ftshare_rest_main_dispatch_passes_selected_data_date(monkeypatch, tmp_path):
+    import sys
+
+    calls = []
+
+    def fake_collector(pool, *, data_date):
+        calls.append((pool, data_date))
+        return {
+            "scheme": "ftshare.rest.a_share_quote",
+            "as_of_date": "2026-10-20",
+            "stocks": {"600000": {"symbol": "600000.SH", "close": "10.5"}},
+        }
+
+    monkeypatch.setattr(capture_probe, "OUT_BASE", str(tmp_path))
+    monkeypatch.setattr(capture_probe, "load_pool", lambda: [{"code": "600000"}])
+    monkeypatch.setattr(capture_probe, "build_collectors", lambda: {"ftshare_rest": fake_collector})
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        ["capture_field_probe.py", "--date", "20261020", "--only", "ftshare_rest"],
+    )
+
+    capture_probe.main()
+
+    assert calls == [([{"code": "600000"}], "20261020")]
+
+
 def test_tdx_capture_quote_normalization_handles_nullable_wire_values():
     from scripts.capture_field_probe import _normalize_tdx_capture_quote
 

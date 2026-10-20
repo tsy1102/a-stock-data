@@ -175,6 +175,69 @@ def _verified_main_net_amount(code: str) -> float:
     return value if math.isfinite(value) else 0.0
 
 
+def _format_limit_pool_source_summary(sources: dict, total: Any) -> tuple[str, str]:
+    """Render returned source counts without overstating a majority as unanimity."""
+    source_parts = []
+    valid_counts = []
+    for name, value in (sources or {}).items():
+        if value is None:
+            source_parts.append(f"{name}=失败")
+            continue
+        try:
+            count = int(value)
+        except (TypeError, ValueError):
+            source_parts.append(f"{name}=无效值")
+            continue
+        source_parts.append(f"{name}={count}")
+        valid_counts.append(count)
+
+    source_text = " / ".join(source_parts) if source_parts else "无来源结果"
+    try:
+        total_count = int(total)
+    except (TypeError, ValueError):
+        total_count = None
+
+    if not valid_counts:
+        return source_text, "无可用来源数值，未能交叉验证"
+
+    counts_by_value = {count: valid_counts.count(count) for count in set(valid_counts)}
+    majority_count = max(counts_by_value.values())
+    leaders = sorted(value for value, count in counts_by_value.items() if count == majority_count)
+    majority_value = leaders[0]
+    if majority_count >= 2 and len(leaders) == 1:
+        if majority_count == len(valid_counts):
+            status = f"可用来源全数一致（{majority_count}/{len(valid_counts)}）"
+        else:
+            status = f"多数值 {majority_value}（{majority_count}/{len(valid_counts)} 个可用来源同值），存在差异"
+        if total_count is not None and total_count != majority_value:
+            status += f"；接口汇总值 {total_count} 与多数值不符"
+    elif majority_count >= 2:
+        tied_values = "、".join(str(value) for value in leaders)
+        status = f"来源计数并列（{tied_values} 各 {majority_count} 票），无唯一多数结论"
+    elif len(valid_counts) == 1:
+        status = "仅1个来源可用，未能交叉验证"
+    else:
+        status = "无两源同值；汇总值是无共识时的最大值回退，不能视为交叉确认"
+
+    failed_count = len(source_parts) - len(valid_counts)
+    if failed_count:
+        status += f"；另有 {failed_count} 个来源无有效值"
+    return source_text, status
+
+
+def _limit_pool_count_mismatch_note(multi_total: Any, pool_count: Any) -> str:
+    """Explain separate multi-source and primary-pool counts when they differ."""
+    try:
+        if multi_total is None or int(multi_total) == int(pool_count):
+            return ""
+    except (TypeError, ValueError):
+        return ""
+    return (
+        f"⚠️ 口径差异：多源统计值 {multi_total} 只与本节涨停池 {pool_count} 只不同；"
+        "多源日期未在本报告中核实，且未逐只对齐名单；封板率和明细仅代表本节涨停池。"
+    )
+
+
 def _main_flow_summary_lines(
     flow_values: Dict[str, float],
     requested_count: int,
@@ -1603,10 +1666,10 @@ async def generate_sector_report(output_path):
         _max_desc = f", 最高{_max_board}板" if _max_board else ", 最高首板"
         L(f"  📊 连板梯队（财联社情绪板档·市场口径）: {_ladder_str}{_max_desc}")
         # V17.2.27(2026-09-18) P1 口径说明: A段连板高度为财联社情绪板档(市场口径),
-        # B段【涨停池扫描】的"最高连板"为财联社/KPL/复盘啦三源互校口径(本报告封板基准),
-        # 二者来源与统计窗口可能不同, 数值可并存; 全市场权威最高连板以 B段互校值为准。
+        # B段【涨停池扫描】的最高连板为财联社/KPL/复盘啦多源统计口径；
+        # 来源与统计窗口可能不同，数值并列展示，不将一方当作另一方的逐股核验。
         L(
-            "    ℹ️ 本段连板高度为财联社情绪板档(市场口径); 全市场涨停数及最高连板三源互校口径见【B. 涨停池扫描】, 二者来源不同, 数值可并存, 以 B段互校值为全市场基准"
+            "    ℹ️ 本段连板高度为财联社情绪板档(市场口径); 全市场涨停数及最高连板的多源统计见【B. 涨停池扫描】。来源与统计窗口可能不同，数值并列展示，不视为逐股核验。"
         )
         if _max_board >= 4:
             L(f"    🔥 高标{_max_board}板打开空间，可积极做多")
@@ -1707,19 +1770,20 @@ async def generate_sector_report(output_path):
     L("## 【B. 涨停池扫描（打板情绪看板）】")
     L(f"{'---'}")
     try:
-        # V16.3.3 (2026-08-10 字典 12.15.5): 涨停数三源互校——财联社=KPL=复盘啦
-        # （2026-08-10 实测 99=99=99 一致）；push2ex 明细仍作主数据源
+        # V16.3.3 (2026-08-10 字典 12.15.5): 多源计数按至少两源同值标记交叉验证；
+        # push2ex 明细仍作主数据源，报告需区分多数值与涨停池逐股名单口径。
+        _multi = {}
         try:
             from stock_common import get_limit_pool_multi_source
 
             _multi = get_limit_pool_multi_source()
             if _multi.get("sources"):
-                _src_txt = " / ".join(
-                    f"{k}={v}" for k, v in _multi["sources"].items() if v is not None
+                _src_txt, _verified = _format_limit_pool_source_summary(
+                    _multi.get("sources", {}), _multi.get("total")
                 )
-                _verified = "✅ 三源互校一致" if _multi.get("cross_verified") else "⚠️ 源间差异"
                 L(
-                    f"  📊 涨停数互校: 财联社/KPL/复盘啦 {_src_txt} → {_multi.get('total')} 只 {_verified} | 最高连板 {_multi.get('max_ladder')}"
+                    f"  📊 涨停数来源对照: {_src_txt} → {_multi.get('total')} 只；"
+                    f"{_verified} | 最高连板 {_multi.get('max_ladder')}"
                 )
         except Exception as _e:
             _debug_log(f"mak multi_source error: {_e}")
@@ -1729,6 +1793,10 @@ async def generate_sector_report(output_path):
         pool = get_limit_pool_summary()
         zt_count = pool.get("limit_up_count", 0)
         zb_count = pool.get("limit_broken_count", 0)
+        _multi_total = _multi.get("total")
+        _mismatch_note = _limit_pool_count_mismatch_note(_multi_total, zt_count)
+        if _mismatch_note:
+            L(f"  {_mismatch_note}")
         # V17.0.4(2026-08-19 实测): 东财跌停池 getTopicDTPool 明细接口 tc>0 但 pool=[] 空;
         # get_limit_pool_summary ZHB 兜底用的是**当前快照**(T-1, 如 8/18)→ 8/19 报告显示 8/18 跌停数(10),
         # 与 A 段涨跌幅口径(8/19=152)严重不一致。统一: B 段跌停数无条件用 A 段 _dt_count(8/19 涨跌幅口径)
@@ -1777,10 +1845,9 @@ async def generate_sector_report(output_path):
         L(
             f"  涨停 {zt_count} 只 | 炸板 {zb_count} 只 | 跌停 {dt_count} 只 | 封板率 {success_rate:.0f}%（涨停池口径）"
         )
-        # V17.4.x (#444): 涨跌停数为涨停池口径; 与 B++(eltdx)/KPL(开盘啦) 独立源交叉验证,
-        # 多源并存时以本节为全市场基准.
+        # V17.4.x (#444): 涨跌停数为涨停池口径；与其他来源并列观察，未逐只对齐前不称为一致确认。
         L(
-            "  ℹ️ 上述涨停/跌停数为涨停池口径；与【B++. 连板天梯(eltdx)】/【开盘啦情绪】独立源交叉验证，多源并存时以本节为全市场基准。"
+            "  ℹ️ 本节涨跌停数、封板率和名单统一按涨停池口径；其他来源日期未在本报告中核实，且未逐股对账前仅作并列观察，不称为交叉确认。"
         )
 
         # 涨停板块分布

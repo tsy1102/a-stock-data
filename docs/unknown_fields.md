@@ -5,8 +5,8 @@
 > 碰撞候选须人工复核后使用 `apply_collision_adjudications.py` 同步状态；流程见 `field_verification/ADJUDICATION_WORKFLOW.md`。
 > 聚合层的同码异义与定义缺口见 [`field_aggregate_review.md`](field_aggregate_review.md)，不代表逐源记录状态冲突。
 
-> 总字段路径 2518；unverified 1508、candidate 1、conflict 81、disproved 2。
-> 另有 200 条虽标 verified、但含义/单位元数据未达到碰撞锚条件；这些记录会重新进入碰撞目标，详见 [字段元数据复核](field_metadata_gaps.md)。
+> 注册字段路径 2550；日常来源路径 2406：unverified 1387、candidate 1、conflict 81、disproved 2；历史来源路径 144。
+> 另有 182 条虽标 verified、但含义/单位元数据未达到碰撞锚条件；这些记录会重新进入碰撞目标，详见 [字段元数据复核](field_metadata_gaps.md)。
 > 以下两组未验证字段统计是不同维度，不能相加：含义栏文本只表示存在文字，不代表语义正确；状态判定反映旧字典状态证据能否映射到逐源身份。
 
 ## 未验证字段的复核分层
@@ -15,18 +15,18 @@
 
 | 分类 | 数量 |
 |:--|--:|
-| 含义栏为空/占位 | 1323 |
-| 含义栏有文本（仍未验证） | 185 |
+| 含义栏为空/占位 | 1203 |
+| 含义栏有文本（仍未验证） | 184 |
 
 ### 历史状态证据的解析结果
 
 | 状态判定 | 数量 | 说明 |
 |:--|--:|:--|
-| `aggregate_status_scope_unresolved` | 497 | 历史聚合状态尚不能可靠映射到逐源身份 |
-| `identity_reclassified_pending` | 9 | 按注册表原始状态判定代码保留 |
+| `aggregate_status_scope_unresolved` | 458 | 历史聚合状态尚不能可靠映射到逐源身份 |
+| `live_observed_not_documented` | 1 | 按注册表原始状态判定代码保留 |
 | `matched` | 59 | 历史逐源状态与聚合状态一致，但仍未定案 |
 | `reference_status_missing` | 35 | 按注册表原始状态判定代码保留 |
-| `registry_status_only_single_source` | 865 | 只有来源自身状态，历史聚合信息不足以进一步归属 |
+| `registry_status_only_single_source` | 791 | 只有来源自身状态，历史聚合信息不足以进一步归属 |
 | `status_missing` | 43 | 缺少可用的历史状态记录 |
 
 ## 一、状态冲突（禁止作为锚点，优先复核）（81）
@@ -121,130 +121,11 @@
 |:--|:--|:--|:--|:--|:--|:--|:--|
 | ZHB-tdxstat | `stat.unknown_2` | stat.unknown_2 | 贝塔系数(60日)·L2候选(列[2]已定BetaValue: ihelp.dat L63官方定义+慢变特征实证自相关0.91, 待真实指数基准复现升L1) | - | 含义栏有文本（仍未验证） | matched | 1.1 tdxstat.cfg 标准契约表（stat.*，20260918 对撞定案）🆕 |
 
-## 三、待破解字段（1508）
+## 三、待破解字段（1387）
 
 | 来源 | 完整 code path | 规范名 | 含义 | 单位 | 含义栏提示 | 状态判定 | 证据章节 |
 |:--|:--|:--|:--|:--|:--|:--|:--|
-| FTShare | `first_limit_up_time` | — | — | — | 含义栏为空/占位 | identity_reclassified_pending | — |
-| FTShare | `limit_up_break` | — | — | — | 含义栏为空/占位 | identity_reclassified_pending | — |
-| FTShare | `limit_up_break_count` | — | — | — | 含义栏为空/占位 | identity_reclassified_pending | — |
-| FTShare | `limit_up_enter` | — | — | — | 含义栏为空/占位 | identity_reclassified_pending | — |
-| FTShare | `limit_up_price` | — | — | — | 含义栏为空/占位 | identity_reclassified_pending | — |
-| FTShare | `ready` | — | — | — | 含义栏为空/占位 | identity_reclassified_pending | — |
-| FTShare | `status` | — | — | — | 含义栏为空/占位 | identity_reclassified_pending | — |
-| FTShare | `symbol` | — | — | — | 含义栏为空/占位 | identity_reclassified_pending | — |
-| FTShare | `trade_date` | — | — | — | 含义栏为空/占位 | identity_reclassified_pending | — |
-| Levistock历史未归属 | `amount` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
-| Levistock历史未归属 | `amplitude` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
-| Levistock历史未归属 | `category` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
-| Levistock历史未归属 | `change` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
-| Levistock历史未归属 | `change_pct` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
-| Levistock历史未归属 | `change_rate` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
-| Levistock历史未归属 | `change_type` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
-| Levistock历史未归属 | `circ_market` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| Levistock历史未归属 | `circ_mv` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
-| Levistock历史未归属 | `circ_share` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| Levistock历史未归属 | `close_price` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
-| Levistock历史未归属 | `close_seal_amount` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
-| Levistock历史未归属 | `content` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
-| Levistock历史未归属 | `continuous` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| Levistock历史未归属 | `dapan_flow` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| Levistock历史未归属 | `date` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
-| Levistock历史未归属 | `diagnose_date` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| Levistock历史未归属 | `dict` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| Levistock历史未归属 | `down_0pct_to_1pct` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| Levistock历史未归属 | `down_1pct_to_5pct` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| Levistock历史未归属 | `down_5pct_to_limited` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| Levistock历史未归属 | `down_limit` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| Levistock历史未归属 | `down_limited` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| Levistock历史未归属 | `filter_st` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| Levistock历史未归属 | `first_zt_time` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| Levistock历史未归属 | `float_mv` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| Levistock历史未归属 | `goodwill_scale` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| Levistock历史未归属 | `goodwill_to_net_assets_ratio` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| Levistock历史未归属 | `hs300_index` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| Levistock历史未归属 | `hs300_week_change_ratio` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| Levistock历史未归属 | `large_net` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| Levistock历史未归属 | `large_pct` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| Levistock历史未归属 | `last_px` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
-| Levistock历史未归属 | `last_zt_time` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| Levistock历史未归属 | `limit_up_pool_yesterday` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| Levistock历史未归属 | `main_inflow` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
-| Levistock历史未归属 | `main_net` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
-| Levistock历史未归属 | `main_pct` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| Levistock历史未归属 | `market_cap` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | 12.10.4 开盘红复盘（get_zttt 涨停天梯 / get_pmsl 盘面梳理 / get_his_limit_resumption 历史涨停复盘）🆕；12.10.7 开盘红板块排行（sector_ranking_kph）补充字段 |
-| Levistock历史未归属 | `market_focus` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| Levistock历史未归属 | `market_focus_change` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| Levistock历史未归属 | `market_focus_rank` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| Levistock历史未归属 | `market_index_all_em` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| Levistock历史未归属 | `market_snapshot` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
-| Levistock历史未归属 | `mid_net` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| Levistock历史未归属 | `mid_pct` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| Levistock历史未归属 | `name` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
-| Levistock历史未归属 | `net_profit_scale` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| Levistock历史未归属 | `net_profit_yoy_ratio` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| Levistock历史未归属 | `open_times` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
-| Levistock历史未归属 | `org_participate` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| Levistock历史未归属 | `participation_wish` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| Levistock历史未归属 | `participation_wish_5days` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| Levistock历史未归属 | `participation_wish_5days_change` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| Levistock历史未归属 | `participation_wish_change` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| Levistock历史未归属 | `pb` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
-| Levistock历史未归属 | `pe_dynamic` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
-| Levistock历史未归属 | `pe_static` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
-| Levistock历史未归属 | `pe_ttm` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
-| Levistock历史未归属 | `plate_code` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
-| Levistock历史未归属 | `pledge_company_count` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| Levistock历史未归属 | `pledge_deal_count` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| Levistock历史未归属 | `pledge_summary` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| Levistock历史未归属 | `pledge_total_market_value` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| Levistock历史未归属 | `pledge_total_ratio` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| Levistock历史未归属 | `pledge_total_shares` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| Levistock历史未归属 | `pre_close` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
-| Levistock历史未归属 | `prev_turnover` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| Levistock历史未归属 | `price` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
-| Levistock历史未归属 | `probe_trading_day` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
-| Levistock历史未归属 | `resume_time` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| Levistock历史未归属 | `sector` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
-| Levistock历史未归属 | `sector_ranking_kph` | sector_ranking_kph | — | — | 含义栏为空/占位 | registry_status_only_single_source | 12.10.9 levistock 全接口字段核实（2026-08-09 复测，**38/38 全部实测**）🆕 |
-| Levistock历史未归属 | `sector_stocks_his_kph` | sector_stocks_his_kph | — | — | 含义栏为空/占位 | registry_status_only_single_source | 12.10.9 levistock 全接口字段核实（2026-08-09 复测，**38/38 全部实测**）🆕 |
-| Levistock历史未归属 | `secu_code` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| Levistock历史未归属 | `secu_name` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| Levistock历史未归属 | `security_code` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| Levistock历史未归属 | `sh_change_pct` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| Levistock历史未归属 | `sh_close` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| Levistock历史未归属 | `shares` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
-| Levistock历史未归属 | `small_net` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| Levistock历史未归属 | `small_pct` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| Levistock历史未归属 | `speed` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
-| Levistock历史未归属 | `stock_code` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| Levistock历史未归属 | `stock_name` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
-| Levistock历史未归属 | `suspend` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| Levistock历史未归属 | `suspend_time` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| Levistock历史未归属 | `suspension_list` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| Levistock历史未归属 | `suspension_type` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| Levistock历史未归属 | `sz_change_pct` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| Levistock历史未归属 | `sz_close` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| Levistock历史未归属 | `time` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
-| Levistock历史未归属 | `title` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
-| Levistock历史未归属 | `total_market` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| Levistock历史未归属 | `total_mv` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
-| Levistock历史未归属 | `total_score` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| Levistock历史未归属 | `ts_code` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| Levistock历史未归属 | `turnover_pct` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
-| Levistock历史未归属 | `turnover_rate` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | 12.10.4 开盘红复盘（get_zttt 涨停天梯 / get_pmsl 盘面梳理 / get_his_limit_resumption 历史涨停复盘）🆕；12.10.7 开盘红板块排行（sector_ranking_kph）补充字段 |
-| Levistock历史未归属 | `unlock_by_date` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| Levistock历史未归属 | `up_0pct_to_1pct` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| Levistock历史未归属 | `up_1pct_to_5pct` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| Levistock历史未归属 | `up_5pct_to_limited` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| Levistock历史未归属 | `up_limit` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| Levistock历史未归属 | `up_limited` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| Levistock历史未归属 | `vol_ratio` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
-| Levistock历史未归属 | `volume` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
-| Levistock历史未归属 | `xlarge_net` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| Levistock历史未归属 | `xlarge_pct` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| Levistock历史未归属 | `zt_count` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| Levistock历史未归属 | `zt_days` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
+| FTShare REST | `symbol_id` | — | — | — | 含义栏为空/占位 | live_observed_not_documented | FTShare REST 官方接口契约：A股行情列表 |
 | TDX(双命名源) | `Amount` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
 | TDX(双命名源) | `Average` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
 | TDX(双命名源) | `BCancel` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
@@ -467,7 +348,6 @@
 | TDX(双命名源) | `wuxing_zichan` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
 | TDX(双命名源) | `yingshou_zhangkuan` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
 | TDX(双命名源) | `zhigong_gu` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| TDX(双命名源) | `zhongguben` | — | 总股本（TDX finance_info 键名拼写为 zhongguben） | 万股 | 含义栏有文本（仍未验证） | registry_status_only_single_source | — |
 | TDX(双命名源) | `zhuying_lirun` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
 | TDX(双命名源) | `zhuying_shouru` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
 | TDX(双命名源) | `zhuyinglyrun` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
@@ -963,7 +843,6 @@
 | 东财-push2ex | `limit_broken_pool` | — | — | — | 含义栏为空/占位 | status_missing | — |
 | 东财-push2ex | `limit_count` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
 | 东财-push2ex | `limit_down_pool` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| 东财-push2ex | `limit_fund` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
 | 东财-push2ex | `limit_up_pool` | — | — | — | 含义栏为空/占位 | status_missing | — |
 | 东财-push2ex | `name` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
 | 东财-push2ex | `price` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
@@ -1640,3 +1519,10 @@
 |:--|:--|:--|:--|:--|:--|:--|:--|
 | ZHB-tdxstat | `change_30d` | change_20d | 与同来源同路径 change_20d 完全重复的历史兼容键，不是独立的 30 日涨跌幅 | % | 含义栏有文本（仍未验证） | empirical_duplicate_alias | 2026-10-17 change_30d 纠错审计 |
 | ZHB-tdxstat | `stat.change_30d` | stat.change_20d | 与同来源同路径 stat.change_20d 完全重复的历史兼容键，不是独立的 30 日涨跌幅 | % | 含义栏有文本（仍未验证） | empirical_duplicate_alias | 2026-10-17 change_30d 纠错审计 |
+
+## 已退出来源字段（仅历史证据，不进入默认破解）
+
+| 来源 | 路径数 | verified | unverified | candidate | conflict | disproved |
+|:--|--:|--:|--:|--:|--:|--:|
+| FTShare | 15 | 6 | 9 | 0 | 0 | 0 |
+| Levistock历史未归属 | 129 | 18 | 111 | 0 | 0 | 0 |

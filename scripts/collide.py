@@ -49,8 +49,9 @@ import heapq
 import math
 import argparse
 import re
-from collections import defaultdict
-from datetime import date
+from collections import Counter, defaultdict
+from datetime import date, timedelta
+from typing import Any
 
 if __package__ in (None, ""):
     _project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -118,6 +119,9 @@ MIN_INFORMATIVE_DAILY_L1 = CR.MIN_INFORMATIVE_SAMPLES_L1 if RULES_OK else 5
 MIN_DAILY_L4 = CR.MIN_DAILY_SAMPLES_L4 if RULES_OK else 8
 MIN_CANDIDATE_PAIRS = 12  # 方法候选最少配对样本
 MAX_METHOD_CANDIDATES = 500
+MAX_TARGET_METHOD_CANDIDATES = 8
+MAX_FIELD_FRONTIER_CANDIDATES = 1
+MAX_FORMULA_CANDIDATES_PER_TARGET = 2
 HUB_MAX = 6  # 单字段匹配超过此数 → 巧合，降级
 CONST_MAX_DISTINCT = 1  # 不同值 ≤1 → 常量，跳过
 ID_SUFFIX_HINTS = ("market", "code", "date", "name", "thscode", "ticker", "url", "host", "secid")
@@ -279,6 +283,10 @@ def _record_code(record, container_code, source=None):
         or record.get("symbol")
     )
     code = str(raw_code or container_code)
+    if source == "ftshare_rest":
+        match = re.fullmatch(r"(?i)(\d{6})(?:\.(?:xshg|xshe|bjse|sh|sz|bj))?", code)
+        if match:
+            return match.group(1)
     if source == "ftshare" and _is_ftshare_limit_up_record(source, container_code):
         match = re.fullmatch(r"(?i)(\d{6})(?:\.[a-z]+)?", code)
         if match:
@@ -424,7 +432,6 @@ def load_snapshots(
     event_end=None,
     include_context=False,
     excluded_sources=None,
-    excluded_fields_by_source=None,
     allowed_trading_dates=None,
 ):
     """Flatten selected source snapshots using domain-qualified sample dates."""
@@ -449,7 +456,8 @@ def load_snapshots(
             identity = excluded_sources[snapshot.source]
             interface_id = identity.get("interface_id") if isinstance(identity, dict) else identity
             diagnostics.append(
-                f"{snapshot.folder}/{snapshot.source}: 日常碰撞已排除已确认冗余接口 {interface_id or 'unknown'}"
+                f"{snapshot.folder}/{snapshot.source}: 日常碰撞已排除来源身份 "
+                f"{interface_id or (identity.get('status') if isinstance(identity, dict) else 'unknown')}"
             )
             continue
         if snapshot.source in CONTEXT_ONLY_SOURCES and not include_context:
@@ -459,17 +467,6 @@ def load_snapshots(
             )
             continue
         doc = snapshot.document
-        suppressed_fields = (
-            excluded_fields_by_source.get(snapshot.source, set())
-            if isinstance(excluded_fields_by_source, dict)
-            else set()
-        )
-        if suppressed_fields and snapshot.source == "ftshare":
-            doc, removed = _without_identity_fields(doc, suppressed_fields)
-            if removed:
-                diagnostics.append(
-                    f"{snapshot.folder}/{snapshot.source}: 已排除 {removed} 个已确认冗余的 FTShare 接口字段"
-                )
         if not include_context:
             doc, excluded_context = _without_context_records(doc, snapshot.source)
             for path, count in excluded_context:
@@ -610,26 +607,6 @@ def load_snapshots(
     return total
 
 
-def _without_identity_fields(document, fields):
-    """Drop only confirmed FTShare endpoint keys from in-memory stock records."""
-    if not isinstance(document, dict) or not isinstance(document.get("stocks"), dict):
-        return document, 0
-    stocks = {}
-    removed = 0
-    for code, record in document["stocks"].items():
-        if not isinstance(record, dict):
-            stocks[code] = record
-            continue
-        filtered = {key: value for key, value in record.items() if key not in fields}
-        removed += len(record) - len(filtered)
-        stocks[code] = filtered
-    if not removed:
-        return document, 0
-    sanitized = dict(document)
-    sanitized["stocks"] = stocks
-    return sanitized, removed
-
-
 # ───────────────────────────────────────────────────────────────────────
 # 字段分类（数值 / 枚举 / 字符串 / 常量 / 标识符）
 # ───────────────────────────────────────────────────────────────────────
@@ -701,15 +678,16 @@ def _ratio_step(value):
     return None
 
 
-def collide_pair(L, R):
+def collide_pair(L, R, *, contract_anchor=False):
     """Compare fields with per-session sample floors and independent-day gates."""
     left_source = str(L.get("src") or "")
     right_source = str(R.get("src") or "")
     independent_sources = bool(left_source and right_source) and are_independent_sources(
         left_source, right_source
     )
-    if left_source and right_source and not independent_sources:
+    if left_source and right_source and not independent_sources and not contract_anchor:
         return None
+    evidence_gate = independent_sources or contract_anchor
     lv, rv = L["vals"], R["vals"]
     common = set(lv) & set(rv)
     if len(common) < MIN_PAIR:
@@ -766,7 +744,7 @@ def collide_pair(L, R):
         and exact_overall >= HIT_RATE_L1_RATIO
         and not L["is_constant"]
         and not R["is_constant"]
-        and independent_sources
+        and evidence_gate
     )
 
     # A unit-ratio conclusion needs enough independent non-zero observations on
@@ -816,12 +794,7 @@ def collide_pair(L, R):
         selected_evidence_days = informative_l1
         overall = exact_overall
         days_ge = exact_days_ge
-    elif (
-        ratio_info is not None
-        and not L["is_constant"]
-        and not R["is_constant"]
-        and independent_sources
-    ):
+    elif ratio_info is not None and not L["is_constant"] and not R["is_constant"] and evidence_gate:
         level = "L1-U"
         selected_days = ratio_days
         overall = ratio_overall
@@ -839,10 +812,14 @@ def collide_pair(L, R):
         else:
             return None
 
-    if level == "L1":
+    statistical_level = level
+    if contract_anchor and not independent_sources and level in ("L1", "L1-U"):
+        level = "L1-C"
+
+    if statistical_level == "L1":
         informative_report_days = informative_l1
         n_informative_pairs = sum(total for _, total in selected_evidence_days.values())
-    elif level == "L1-U":
+    elif statistical_level == "L1-U":
         informative_report_days = ratio_days
         n_informative_pairs = None
     else:
@@ -853,7 +830,10 @@ def collide_pair(L, R):
         "left": None,
         "right": None,
         "level": level,
-        "ratio": ratio_info if level == "L1-U" else None,
+        "statistical_level": statistical_level,
+        "ratio": ratio_info if statistical_level == "L1-U" else None,
+        "anchor_basis": "official_contract" if contract_anchor else "independent_source",
+        "source_independence_confirmed": independent_sources,
         "overall_hit": round(overall, 4),
         "days_ge_threshold": days_ge,
         "n_days": len(selected_days),
@@ -1004,11 +984,11 @@ def _semantic_tokens(fid):
     return {token for token in tokens if not token.isdigit()}
 
 
-def method_candidates_for_pair(left_id, right_id, L, R):
-    """Return non-final semantic, formula, temporal, and robust-correlation clues."""
+def _method_candidate_for_pair(left_id, right_id, L, R):
+    """Return a non-final candidate and the reason when no method signal is found."""
     common = sorted(set(L["vals"]) & set(R["vals"]), key=lambda item: (item[1], item[0]))
     if len(common) < MIN_CANDIDATE_PAIRS:
-        return None
+        return None, "insufficient_common_samples"
     numeric = []
     for key in common:
         left_num = to_num(L["vals"][key])
@@ -1016,7 +996,7 @@ def method_candidates_for_pair(left_id, right_id, L, R):
         if left_num is not None and right_num is not None:
             numeric.append((key, left_num, right_num))
     if len(numeric) < MIN_CANDIDATE_PAIRS:
-        return None
+        return None, "insufficient_numeric_samples"
 
     x_values = [row[1] for row in numeric]
     y_values = [row[2] for row in numeric]
@@ -1071,26 +1051,796 @@ def method_candidates_for_pair(left_id, right_id, L, R):
                 }
             )
     if not methods:
-        return None
+        return None, "no_method_signal"
 
     sample_dates = sorted({row[0][1] for row in numeric})
     evidence_sources = sorted({str(L.get("src") or ""), str(R.get("src") or "")})
     evidence_sources = [source for source in evidence_sources if source]
+    return (
+        {
+            "left": left_id,
+            "right": right_id,
+            "methods": methods,
+            "sample_count": len(numeric),
+            "sample_dates": sample_dates,
+            "evidence_sources": evidence_sources,
+            "sample_codes": sorted({row[0][0] for row in numeric})[:20],
+        },
+        "candidate",
+    )
+
+
+def method_candidates_for_pair(left_id, right_id, L, R):
+    """Compatibility wrapper returning a candidate or ``None``."""
+    return _method_candidate_for_pair(left_id, right_id, L, R)[0]
+
+
+def _method_candidate_score(candidate):
+    return (
+        len(candidate["methods"]),
+        candidate["sample_count"],
+        candidate["left"],
+        candidate["right"],
+    )
+
+
+def _compact_method_candidate(candidate):
+    """Keep useful method evidence while bounding the target-frontier report size."""
+    compact = {key: value for key, value in candidate.items()}
+    compact_methods = []
+    for method in candidate.get("methods", []):
+        item = dict(method)
+        if item.get("method") == "per_stock_time_series":
+            item["stock_correlations"] = item.get("stock_correlations", [])[:5]
+        compact_methods.append(item)
+    compact["methods"] = compact_methods
+    return compact
+
+
+def _method_candidate_summary(candidate):
+    details = []
+    for method in candidate.get("methods", []):
+        detail = dict(method)
+        if detail.get("method") == "per_stock_time_series":
+            detail["stock_correlations"] = detail.get("stock_correlations", [])[:5]
+        details.append(detail)
     return {
-        "left": left_id,
-        "right": right_id,
-        "methods": methods,
-        "sample_count": len(numeric),
-        "sample_dates": sample_dates,
-        "evidence_sources": evidence_sources,
-        "sample_codes": sorted({row[0][0] for row in numeric})[:20],
+        "right": candidate["right"],
+        "methods": details,
+        "sample_count": candidate["sample_count"],
+        "sample_dates": candidate["sample_dates"],
+        "evidence_sources": candidate["evidence_sources"],
     }
 
 
-def range_overlap(L, R):
-    if L["vmin"] is None or R["vmin"] is None:
-        return True
-    return not (L["vmax"] < R["vmin"] or R["vmax"] < L["vmin"])
+def select_method_candidate_frontier(method_candidates_by_left, global_candidates):
+    """Retain one best candidate per target when it falls outside the global cap."""
+    global_pairs = {(row["left"], row["right"]) for row in global_candidates}
+    frontier = []
+    for left_id in sorted(method_candidates_by_left):
+        candidates = method_candidates_by_left[left_id]
+        for candidate in candidates:
+            if (candidate["left"], candidate["right"]) in global_pairs:
+                continue
+            frontier.append(_compact_method_candidate(candidate))
+            if len(frontier) >= MAX_FIELD_FRONTIER_CANDIDATES:
+                break
+    return frontier
+
+
+def _fit_affine_feature(feature_values, target_values):
+    if len(feature_values) != len(target_values) or len(feature_values) < 2:
+        return None
+    feature_mean = sum(feature_values) / len(feature_values)
+    target_mean = sum(target_values) / len(target_values)
+    feature_variance = sum((value - feature_mean) ** 2 for value in feature_values)
+    if feature_variance <= 1e-18:
+        return None
+    slope = (
+        sum(
+            (feature - feature_mean) * (target - target_mean)
+            for feature, target in zip(feature_values, target_values)
+        )
+        / feature_variance
+    )
+    intercept = target_mean - slope * feature_mean
+    if not math.isfinite(slope) or not math.isfinite(intercept):
+        return None
+    return slope, intercept
+
+
+def _r_squared(actual, predicted):
+    if len(actual) != len(predicted) or not actual:
+        return None
+    mean_value = sum(actual) / len(actual)
+    total = sum((value - mean_value) ** 2 for value in actual)
+    if total <= 1e-18:
+        return None
+    residual = sum((value - estimate) ** 2 for value, estimate in zip(actual, predicted))
+    score = 1.0 - residual / total
+    return score if math.isfinite(score) else None
+
+
+def _standard_deviation(values):
+    if not values:
+        return 0.0
+    mean_value = sum(values) / len(values)
+    variance = sum((value - mean_value) ** 2 for value in values) / len(values)
+    return math.sqrt(max(0.0, variance))
+
+
+def _formula_feature(operator, left_value, right_value):
+    if operator == "product":
+        value = left_value * right_value
+    elif operator == "ratio_left_right":
+        if abs(right_value) <= 1e-12 * max(1.0, abs(left_value)):
+            return None
+        value = left_value / right_value
+    elif operator == "ratio_right_left":
+        if abs(left_value) <= 1e-12 * max(1.0, abs(right_value)):
+            return None
+        value = right_value / left_value
+    elif operator == "sum":
+        value = left_value + right_value
+    elif operator == "difference":
+        value = left_value - right_value
+    else:
+        return None
+    return value if math.isfinite(value) else None
+
+
+def _formula_holdout(code):
+    digest = hashlib.sha256(str(code).encode("utf-8")).digest()
+    return int.from_bytes(digest[:2], "big") % 5 == 0
+
+
+def formula_candidates_for_target(left_id, store, input_candidates):
+    """Generate conservative two-input formula clues with stock-level holdout."""
+    left = store.get(left_id)
+    if not isinstance(left, dict) or left.get("type") != "num":
+        return [], {"tested": 0, "validated": 0}
+
+    input_ids = []
+    for candidate in input_candidates:
+        right_id = candidate.get("right")
+        right = store.get(right_id)
+        if (
+            isinstance(right_id, str)
+            and right_id != left_id
+            and isinstance(right, dict)
+            and right.get("type") == "num"
+            and right_id not in input_ids
+        ):
+            input_ids.append(right_id)
+        if len(input_ids) >= MAX_TARGET_METHOD_CANDIDATES:
+            break
+
+    operators = (
+        ("product", "×"),
+        ("ratio_left_right", "÷"),
+        ("ratio_right_left", "÷"),
+        ("sum", "+"),
+        ("difference", "−"),
+    )
+    tested = 0
+    accepted = []
+    for first_index, first_id in enumerate(input_ids):
+        first = store[first_id]
+        for second_id in input_ids[first_index + 1 :]:
+            second = store[second_id]
+            common = set(left["vals"]) & set(first["vals"]) & set(second["vals"])
+            rows = []
+            for key in sorted(common, key=lambda item: (item[1], item[0])):
+                if not str(key[1]).startswith("T:"):
+                    continue
+                if not all(_eligible_for_l1(info, key) for info in (left, first, second)):
+                    continue
+                values = tuple(to_num(info["vals"][key]) for info in (left, first, second))
+                if any(value is None for value in values):
+                    continue
+                rows.append((key, values[0], values[1], values[2]))
+            codes = {row[0][0] for row in rows}
+            days = {row[0][1] for row in rows}
+            if len(rows) < 36 or len(codes) < 10 or len(days) < 3:
+                continue
+
+            training = [row for row in rows if not _formula_holdout(row[0][0])]
+            validation = [row for row in rows if _formula_holdout(row[0][0])]
+            training_codes = {row[0][0] for row in training}
+            validation_codes = {row[0][0] for row in validation}
+            if (
+                len(training) < 24
+                or len(validation) < 8
+                or len(training_codes) < 8
+                or len(validation_codes) < 3
+            ):
+                continue
+
+            for operator, symbol in operators:
+                train_features = [_formula_feature(operator, row[2], row[3]) for row in training]
+                validation_features = [
+                    _formula_feature(operator, row[2], row[3]) for row in validation
+                ]
+                if any(value is None for value in train_features + validation_features):
+                    continue
+                tested += 1
+                train_target = [row[1] for row in training]
+                validation_target = [row[1] for row in validation]
+                fit = _fit_affine_feature(train_features, train_target)
+                if fit is None:
+                    continue
+                slope, intercept = fit
+                predicted = [slope * value + intercept for value in validation_features]
+                validation_r2 = _r_squared(validation_target, predicted)
+                target_scale = _standard_deviation(train_target)
+                if not target_scale or validation_r2 is None:
+                    continue
+                normalized_rmse = (
+                    math.sqrt(
+                        sum(
+                            (actual - estimate) ** 2
+                            for actual, estimate in zip(validation_target, predicted)
+                        )
+                        / len(validation_target)
+                    )
+                    / target_scale
+                )
+
+                baseline_scores = []
+                for column in (2, 3):
+                    single_train = [row[column] for row in training]
+                    single_validation = [row[column] for row in validation]
+                    single_fit = _fit_affine_feature(single_train, train_target)
+                    if single_fit is None:
+                        continue
+                    single_slope, single_intercept = single_fit
+                    single_predicted = [
+                        single_slope * value + single_intercept for value in single_validation
+                    ]
+                    score = _r_squared(validation_target, single_predicted)
+                    if score is not None:
+                        baseline_scores.append(score)
+                baseline_r2 = max(baseline_scores, default=-1.0)
+                improvement = validation_r2 - baseline_r2
+                if validation_r2 < 0.985 or normalized_rmse > 0.05 or improvement < 0.05:
+                    continue
+
+                formula = (
+                    f"{left_id} ≈ {slope:.8g} × ({first_id} {symbol} {second_id}) "
+                    f"+ {intercept:.8g}"
+                )
+                accepted.append(
+                    {
+                        "left": left_id,
+                        "right_inputs": [first_id, second_id],
+                        "operator": operator,
+                        "formula": formula,
+                        "training_samples": len(training),
+                        "validation_samples": len(validation),
+                        "validation_stocks": len(validation_codes),
+                        "validation_dates": sorted({row[0][1] for row in validation}),
+                        "validation_r2": round(validation_r2, 6),
+                        "normalized_rmse": round(normalized_rmse, 6),
+                        "best_single_input_r2": round(baseline_r2, 6),
+                        "improvement_over_single_input": round(improvement, 6),
+                        "evidence_sources": sorted(
+                            {
+                                str(left.get("src") or ""),
+                                str(first.get("src") or ""),
+                                str(second.get("src") or ""),
+                            }
+                            - {""}
+                        ),
+                        "adjudication_status": "candidate_only",
+                    }
+                )
+
+    accepted.sort(
+        key=lambda item: (
+            item["validation_r2"],
+            item["improvement_over_single_input"],
+            item["validation_samples"],
+            item["formula"],
+        ),
+        reverse=True,
+    )
+    unique = []
+    seen = set()
+    for candidate in accepted:
+        key = (candidate["left"], tuple(candidate["right_inputs"]), candidate["operator"])
+        if key in seen:
+            continue
+        seen.add(key)
+        unique.append(candidate)
+        if len(unique) >= MAX_FORMULA_CANDIDATES_PER_TARGET:
+            break
+    return unique, {"tested": tested, "validated": len(accepted)}
+
+
+def discriminating_sample_for_target(left_id, store, input_candidates):
+    """Find a stock whose held-out candidate predictions disagree most."""
+    left = store.get(left_id)
+    if not isinstance(left, dict):
+        return None
+    candidate_ids = []
+    for candidate in input_candidates:
+        right_id = candidate.get("right")
+        if right_id in store and right_id != left_id and right_id not in candidate_ids:
+            candidate_ids.append(right_id)
+        if len(candidate_ids) >= MAX_TARGET_METHOD_CANDIDATES:
+            break
+    if len(candidate_ids) < 2:
+        return None
+
+    codes = set()
+    for right_id in candidate_ids:
+        right = store[right_id]
+        codes.update(
+            key[0] for key in set(left["vals"]) & set(right["vals"]) if str(key[1]).startswith("T:")
+        )
+
+    suggestions = []
+    for code in sorted(codes):
+        predictions_by_key = defaultdict(list)
+        training_target_values = []
+        usable_candidates = 0
+        usable_candidate_ids = []
+        for right_id in candidate_ids:
+            right = store[right_id]
+            common = set(left["vals"]) & set(right["vals"])
+            numeric = []
+            for key in common:
+                if not str(key[1]).startswith("T:"):
+                    continue
+                if not all(_eligible_for_l1(info, key) for info in (left, right)):
+                    continue
+                left_num = to_num(left["vals"][key])
+                right_num = to_num(right["vals"][key])
+                if left_num is not None and right_num is not None:
+                    numeric.append((key, left_num, right_num))
+            train = [row for row in numeric if row[0][0] != code]
+            held_out = [row for row in numeric if row[0][0] == code]
+            if len(train) < MIN_CANDIDATE_PAIRS or not held_out:
+                continue
+            fit = _fit_affine_feature([row[2] for row in train], [row[1] for row in train])
+            if fit is None:
+                continue
+            usable_candidates += 1
+            usable_candidate_ids.append(right_id)
+            slope, intercept = fit
+            training_target_values.extend(row[1] for row in train)
+            for key, _, right_value in held_out:
+                predictions_by_key[key].append((right_id, slope * right_value + intercept))
+        if usable_candidates < 2 or not training_target_values:
+            continue
+
+        scale = max(
+            _standard_deviation(training_target_values),
+            abs(_median(training_target_values) or 0.0) * 0.01,
+            1e-12,
+        )
+        spreads = []
+        for key, predictions in predictions_by_key.items():
+            if len(predictions) < 2:
+                continue
+            values = [prediction for _, prediction in predictions]
+            spreads.append((key[1], (max(values) - min(values)) / scale))
+        if len({day for day, _ in spreads}) < 2:
+            continue
+        score = _median([spread for _, spread in spreads]) or 0.0
+        suggestions.append(
+            {
+                "stock_code": code,
+                "candidate_count": usable_candidates,
+                "out_of_sample_dates": sorted({day for day, _ in spreads}),
+                "normalized_prediction_spread": round(score, 6),
+                "candidate_fields": usable_candidate_ids,
+            }
+        )
+
+    if not suggestions:
+        return {"status": "no_shared_stock_holdout", "candidate_fields": candidate_ids}
+    suggestions.sort(
+        key=lambda item: (
+            item["normalized_prediction_spread"],
+            len(item["out_of_sample_dates"]),
+            item["stock_code"],
+        ),
+        reverse=True,
+    )
+    best = suggestions[0]
+    if best["normalized_prediction_spread"] < 0.02:
+        return {
+            "status": "candidates_converge_on_existing_samples",
+            "candidate_fields": candidate_ids,
+            "best_observed_spread": best["normalized_prediction_spread"],
+        }
+    return {"status": "prioritize_recheck", **best}
+
+
+def load_field_coverage_index(folder_paths, trading_dates, event_start, event_end):
+    """Read the ignored per-capture coverage indices without changing capture data."""
+    coverage_root = os.path.join(ROOT, ".tmp", "field_evidence_coverage")
+    selected_day_keys = {f"T:{str(value).replace('-', '')}" for value in trading_dates}
+    if isinstance(event_start, str):
+        event_start = parse_date(event_start)
+    if isinstance(event_end, str):
+        event_end = parse_date(event_end)
+    if isinstance(event_start, date) and isinstance(event_end, date):
+        event_day = event_start
+        while event_day <= event_end:
+            selected_day_keys.add(f"C:{event_day:%Y%m%d}")
+            event_day += timedelta(days=1)
+
+    coverage_records = {}
+    source_statuses = defaultdict(lambda: defaultdict(set))
+    diagnostics = []
+    coverage_paths = set()
+    metadata_count = 0
+    metadata_errors = 0
+    for folder in folder_paths:
+        folder_path = os.fspath(getattr(folder, "path", folder))
+        meta_path = os.path.join(folder_path, "meta.json")
+        if not os.path.isfile(meta_path):
+            continue
+        try:
+            with open(meta_path, encoding="utf-8") as handle:
+                metadata = json.load(handle)
+        except (OSError, ValueError, TypeError) as exc:
+            metadata_errors += 1
+            diagnostics.append(
+                f"字段覆盖索引跳过无效 meta.json：{os.path.basename(folder_path)} ({exc})"
+            )
+            continue
+        if not isinstance(metadata, dict):
+            metadata_errors += 1
+            diagnostics.append(f"字段覆盖索引跳过非对象 meta.json：{os.path.basename(folder_path)}")
+            continue
+        metadata_count += 1
+        capture_day = str(metadata.get("data_date") or os.path.basename(folder_path))
+        capture_day = re.sub(r"[^0-9]", "", capture_day)
+        source_records = metadata.get("sources")
+        if not isinstance(source_records, dict):
+            source_records = {}
+        capture_day_selected = bool(
+            re.fullmatch(r"\d{8}", capture_day)
+            and (f"T:{capture_day}" in selected_day_keys or f"C:{capture_day}" in selected_day_keys)
+        )
+        if capture_day_selected:
+            for source, status_record in source_records.items():
+                if isinstance(status_record, dict):
+                    status = status_record.get("status") or status_record.get("state") or "unknown"
+                elif isinstance(status_record, str):
+                    status = status_record
+                else:
+                    status = "unknown"
+                source_statuses[str(source)][str(status)].add(capture_day)
+
+        coverage_meta = metadata.get("field_evidence_coverage")
+        if not isinstance(coverage_meta, dict):
+            continue
+        report_day = re.sub(r"[^0-9]", "", str(coverage_meta.get("report_date") or capture_day))
+        if not re.fullmatch(r"\d{8}", report_day):
+            continue
+        coverage_path = os.path.join(coverage_root, f"coverage_{report_day}.json")
+        if coverage_path in coverage_paths or not os.path.isfile(coverage_path):
+            continue
+        coverage_paths.add(coverage_path)
+        try:
+            with open(coverage_path, encoding="utf-8") as handle:
+                coverage_doc = json.load(handle)
+        except (OSError, ValueError, TypeError) as exc:
+            diagnostics.append(f"字段覆盖详情读取失败：{os.path.basename(coverage_path)} ({exc})")
+            continue
+        rows = coverage_doc.get("fields") if isinstance(coverage_doc, dict) else None
+        if not isinstance(rows, list):
+            diagnostics.append(f"字段覆盖详情格式无效：{os.path.basename(coverage_path)}")
+            continue
+        for row in rows:
+            if not isinstance(row, dict):
+                continue
+            source = row.get("source")
+            code = row.get("code")
+            if not isinstance(source, str) or not isinstance(code, str):
+                continue
+            identity = (source, code)
+            aggregate = coverage_records.setdefault(
+                identity,
+                {
+                    "source": source,
+                    "code": code,
+                    "registry_status": row.get("registry_status"),
+                    "target_kind": row.get("target_kind"),
+                    "identity_status": row.get("identity_status"),
+                    "runtime_aliases": set(),
+                    "independence_family": row.get("independence_family"),
+                    "independence_status": row.get("independence_status"),
+                    "anchor_eligible": bool(row.get("anchor_eligible")),
+                    "source_as_of_days": set(),
+                    "candidate_days": set(),
+                    "source_as_of_sample_counts": {},
+                    "source_statuses": set(),
+                },
+            )
+            aggregate["runtime_aliases"].update(
+                alias for alias in row.get("runtime_aliases", []) if isinstance(alias, str)
+            )
+            aggregate["source_statuses"].update(
+                status for status in row.get("source_statuses", []) if isinstance(status, str)
+            )
+            for date_key in row.get("source_as_of_days", []):
+                if date_key in selected_day_keys:
+                    aggregate["source_as_of_days"].add(date_key)
+            for date_key in row.get("candidate_days", []):
+                if date_key in selected_day_keys:
+                    aggregate["candidate_days"].add(date_key)
+            for date_key, count in (row.get("source_as_of_sample_counts") or {}).items():
+                if date_key in selected_day_keys and isinstance(count, int):
+                    aggregate["source_as_of_sample_counts"][date_key] = max(
+                        count, aggregate["source_as_of_sample_counts"].get(date_key, 0)
+                    )
+
+    statuses = {}
+    for source, by_status in sorted(source_statuses.items()):
+        statuses[source] = {
+            "status_counts": {status: len(days) for status, days in sorted(by_status.items())},
+            "non_ok_dates": sorted(
+                day
+                for status, days in by_status.items()
+                if status.lower() not in {"ok", "success", "completed"}
+                for day in days
+            ),
+        }
+    return {
+        "records": coverage_records,
+        "source_statuses": statuses,
+        "summary": {
+            "capture_metadata_files": metadata_count,
+            "metadata_errors": metadata_errors,
+            "coverage_detail_files": len(coverage_paths),
+            "coverage_identity_count": len(coverage_records),
+            "detail_status": "available" if coverage_paths else "unavailable",
+        },
+        "diagnostics": diagnostics,
+        "selected_day_keys": selected_day_keys,
+    }
+
+
+def _coverage_records_for_target(fid, coverage_index):
+    alias = alias_src(fid)
+    target_code = code_of(fid)
+    matches = []
+    for record in coverage_index.get("records", {}).values():
+        if alias not in record.get("runtime_aliases", set()):
+            continue
+        record_code = SLA.normalize_runtime_field_code(alias, record.get("code", ""))
+        if target_code == record_code or (
+            alias == "zhb" and target_code.endswith("." + record_code)
+        ):
+            matches.append(record)
+
+    output = []
+    covered_days = set()
+    candidate_days = set()
+    for record in matches:
+        family = record.get("independence_family")
+        source_days = sorted(record.get("source_as_of_days", set()))
+        possible_days = sorted(record.get("candidate_days", set()))
+        covered_days.update(source_days)
+        candidate_days.update(possible_days)
+        output.append(
+            {
+                "source": record["source"],
+                "code": record["code"],
+                "registry_status": record.get("registry_status"),
+                "identity_status": record.get("identity_status"),
+                "independence_family": family,
+                "independence_status": record.get("independence_status"),
+                "anchor_eligible": bool(record.get("anchor_eligible")),
+                "source_as_of_days": source_days,
+                "candidate_days": possible_days,
+                "source_as_of_sample_counts": dict(
+                    sorted(record.get("source_as_of_sample_counts", {}).items())
+                ),
+                "source_statuses": sorted(record.get("source_statuses", set())),
+            }
+        )
+    output.sort(
+        key=lambda item: (
+            item["anchor_eligible"],
+            len(item["source_as_of_days"]),
+            item["source"],
+            item["code"],
+        ),
+        reverse=True,
+    )
+    return {
+        "status": (
+            "available"
+            if coverage_index.get("summary", {}).get("coverage_detail_files")
+            else "unavailable"
+        ),
+        "source_count": len(output),
+        "source_as_of_days": sorted(covered_days),
+        "candidate_days": sorted(candidate_days),
+        "sources": output[:8],
+    }
+
+
+def build_candidate_triage(
+    left_ids,
+    candidate_counts,
+    pair_stats,
+    method_candidates_by_left,
+    coverage_index,
+    formula_by_left,
+    sample_by_left,
+    pair_family_counts=None,
+):
+    pair_family_counts = pair_family_counts or {}
+    rows = []
+    for left_id in left_ids:
+        pair_counts = pair_stats.get(left_id, Counter())
+        target_candidates = method_candidates_by_left.get(left_id, [])
+        target_coverage = _coverage_records_for_target(left_id, coverage_index)
+        target_coverage["independent_anchor_families"] = sorted(
+            family for family, count in pair_family_counts.get(left_id, {}).items() if count
+        )
+        target_coverage["independent_anchor_pairs"] = sum(
+            pair_family_counts.get(left_id, {}).values()
+        )
+        formulas = formula_by_left.get(left_id, [])
+        next_sample = sample_by_left.get(left_id)
+        count = candidate_counts.get(left_id, 0)
+        independent_comparisons = pair_counts.get("independent_pairs", 0)
+        independent_family_count = len(target_coverage["independent_anchor_families"])
+        if formulas:
+            status = "formula_candidate_needs_independent_review"
+            priority = 0
+        elif count >= 2:
+            status = "multiple_method_candidates_need_discrimination"
+            priority = 1
+        elif count == 1:
+            status = "single_method_candidate_needs_external_check"
+            priority = 2
+        elif pair_counts.get("unknown_lineage_skips", 0) and not independent_comparisons:
+            status = "source_lineage_gap"
+            priority = 3
+        elif target_coverage["source_count"] == 0 and target_coverage["status"] == "available":
+            status = "field_coverage_identity_unmapped"
+            priority = 4
+        elif independent_family_count == 0 and target_coverage["status"] == "available":
+            status = "independent_source_coverage_gap"
+            priority = 5
+        elif pair_counts.get("insufficient_numeric_samples", 0):
+            status = "joint_sample_coverage_gap"
+            priority = 6
+        elif independent_comparisons:
+            status = "no_current_method_signal"
+            priority = 7
+        else:
+            status = "no_eligible_comparison"
+            priority = 8
+        rows.append(
+            {
+                "left": left_id,
+                "status": status,
+                "priority": priority,
+                "candidate_count": count,
+                "pair_counts": dict(pair_counts),
+                "top_candidates": [
+                    _method_candidate_summary(candidate) for candidate in target_candidates[:2]
+                ],
+                "formula_candidates": formulas,
+                "next_sample": next_sample,
+                "coverage": target_coverage,
+            }
+        )
+    rows.sort(
+        key=lambda item: (
+            item["priority"],
+            -item["candidate_count"],
+            -len(item["coverage"]["independent_anchor_families"]),
+            item["left"],
+        )
+    )
+    summary = {
+        "target_count": len(rows),
+        "targets_with_method_candidates": sum(row["candidate_count"] > 0 for row in rows),
+        "targets_without_method_candidates": sum(row["candidate_count"] == 0 for row in rows),
+        "targets_with_multiple_candidates": sum(row["candidate_count"] > 1 for row in rows),
+        "targets_with_formula_candidates": sum(bool(row["formula_candidates"]) for row in rows),
+        "targets_with_next_sample": sum(
+            isinstance(row.get("next_sample"), dict)
+            and row["next_sample"].get("status") == "prioritize_recheck"
+            for row in rows
+        ),
+        "targets_with_independent_anchor_coverage": sum(
+            bool(row["coverage"]["independent_anchor_families"]) for row in rows
+        ),
+        "coverage_detail_status": coverage_index.get("summary", {}).get(
+            "detail_status", "unavailable"
+        ),
+        "status_counts": dict(Counter(row["status"] for row in rows)),
+    }
+    return {"summary": summary, "targets": rows}
+
+
+def _known_mapping_candidate_controls(store, known_mappings):
+    identity_index = defaultdict(list)
+    for fid in store:
+        identity_index[(alias_src(fid), code_of(fid))].append(fid)
+    pair_keys = set()
+    for left_alias, left_code, right_alias, right_code in known_mappings:
+        left_identity = (left_alias, left_code)
+        right_identity = (right_alias, right_code)
+        if left_identity == right_identity:
+            continue
+        pair_keys.add(tuple(sorted((left_identity, right_identity))))
+    counts = Counter()
+    for left_identity, right_identity in sorted(pair_keys):
+        left_ids = identity_index.get(left_identity, [])
+        right_ids = identity_index.get(right_identity, [])
+        if len(left_ids) != 1 or len(right_ids) != 1:
+            counts["missing_or_ambiguous_runtime_pairs"] += 1
+            continue
+        left_id, right_id = left_ids[0], right_ids[0]
+        if not are_independent_sources(left_id, right_id):
+            counts["same_or_unconfirmed_family_pairs"] += 1
+            continue
+        left, right = store[left_id], store[right_id]
+        if left.get("type") != "num" or right.get("type") != "num":
+            counts["non_numeric_pairs"] += 1
+            continue
+        eligible, pair_reason = _pair_analysis_eligibility(left, right)
+        if not eligible:
+            counts["incompatible_type_pairs"] += 1
+            continue
+        if pair_reason == "range_disjoint":
+            counts["range_disjoint_pairs"] += 1
+        counts["eligible_numeric_pairs"] += 1
+        candidate, reason = _method_candidate_for_pair(left_id, right_id, left, right)
+        if candidate is not None:
+            counts["with_method_signal"] += 1
+        elif reason.startswith("insufficient"):
+            counts["insufficient_numeric_samples"] += 1
+        else:
+            counts["without_method_signal"] += 1
+    return {
+        "positive_control": {
+            "control": "observed, independently mapped numeric pairs in the current window",
+            "eligible_numeric_pairs": counts["eligible_numeric_pairs"],
+            "with_method_signal": counts["with_method_signal"],
+            "without_method_signal": counts["without_method_signal"],
+            "insufficient_numeric_samples": counts["insufficient_numeric_samples"],
+            "same_or_unconfirmed_family_pairs": counts["same_or_unconfirmed_family_pairs"],
+            "missing_or_ambiguous_runtime_pairs": counts["missing_or_ambiguous_runtime_pairs"],
+            "non_numeric_pairs": counts["non_numeric_pairs"],
+            "incompatible_type_pairs": counts["incompatible_type_pairs"],
+            "range_disjoint_pairs": counts["range_disjoint_pairs"],
+            "interpretation": (
+                "数值区间不相交只作诊断，仍会检查比值和仿射关系；覆盖率用于检查候选方法能否找回已登记映射，"
+                "不是准确率或定案条件。"
+            ),
+        }
+    }
+
+
+def _pair_analysis_eligibility(left, right):
+    """Report type compatibility and range diagnostics without pruning numeric pairs.
+
+    Unit conversions and affine relationships can place valid fields in disjoint
+    numeric ranges, so range separation is diagnostic only.
+    """
+    if left.get("type") != right.get("type"):
+        return False, "incompatible_type"
+    if left.get("type") != "num":
+        return True, "eligible"
+    if any(left.get(key) is None or right.get(key) is None for key in ("vmin", "vmax")):
+        return True, "eligible"
+    if left["vmax"] < right["vmin"] or right["vmax"] < left["vmin"]:
+        return True, "range_disjoint"
+    return True, "eligible"
 
 
 # ───────────────────────────────────────────────────────────────────────
@@ -1120,6 +1870,7 @@ def load_registry_context():
         "verified": set(),
         "disproved": set(),
         "anchors": set(),
+        "contract_anchors": set(),
         "known_mappings": set(),
         "diagnostics": [],
         "unmapped_verified": 0,
@@ -1172,6 +1923,11 @@ def load_registry_context():
         return context
 
     context["source_fields"] = len(source_fields)
+    registry_sources = {
+        item.get("name"): item
+        for item in registry.get("sources", [])
+        if isinstance(item, dict) and isinstance(item.get("name"), str)
+    }
     alias_identity_owners = defaultdict(set)
     for candidate in source_fields:
         if not isinstance(candidate, dict):
@@ -1241,12 +1997,24 @@ def load_registry_context():
             context["verified"].add(identity)
             family = SLA.runtime_family(alias, lineage)
             source_record = lineage.get("sources", {}).get(source, {})
+            source_config = registry_sources.get(source, {})
+            evidence = field.get("evidence")
+            contract_anchor_verified = (
+                source_config.get("source_role") == "documented_contract_anchor"
+                and source_record.get("semantic_anchor_basis") == "official_contract"
+                and isinstance(evidence, dict)
+                and evidence.get("basis") == "official_contract"
+                and evidence.get("contract_id")
+                and evidence.get("evidence_file")
+            )
             if (
                 source_record.get("anchor_eligible")
                 and source_record.get("independence_status") == "confirmed"
                 and family == source_record.get("independence_family")
             ):
                 context["anchors"].add(identity)
+            elif contract_anchor_verified:
+                context["contract_anchors"].add(identity)
             else:
                 context["unconfirmed_verified"] += 1
 
@@ -1294,6 +2062,10 @@ def load_registry_context():
         context["diagnostics"].append(
             f"{context['unconfirmed_verified']} 条 verified 源字段来源未确认独立性，作为已知字段跳过重解但不作锚"
         )
+    if context["contract_anchors"]:
+        context["diagnostics"].append(
+            f"{len(context['contract_anchors'])} 条官方契约语义锚可参与对撞；底层来源独立性未确认，强候选标为 L1-C"
+        )
     if context["ambiguous_verified"]:
         context["diagnostics"].append(
             f"{context['ambiguous_verified']} 条 verified 源字段映射到重复运行时身份，未作为已知字段或锚"
@@ -1314,7 +2086,7 @@ def load_registry_context():
             f"{context['unresolved_verified_metadata']} 条 verified 源字段元数据未达锚点条件"
             f"（{issue_summary}），已重新纳入待破解目标且不作碰撞锚"
         )
-    if not context["anchors"]:
+    if not context["anchors"] and not context["contract_anchors"]:
         context["diagnostics"].append("没有可用的已确认独立锚；默认模式不会把未知字段互相定案")
     return context
 
@@ -1370,7 +2142,9 @@ def is_disproved(fid, disproved):
     return (alias_src(fid), code_of(fid)) in disproved
 
 
-def select_collision_fields(store, verified, disproved, anchors, exploratory=False):
+def select_collision_fields(
+    store, verified, disproved, anchors, exploratory=False, contract_anchors=None
+):
     """Return unknown cracking targets and the allowed comparison field set.
 
     Verified status removes an identity only from the left-hand cracking targets.
@@ -1388,7 +2162,13 @@ def select_collision_fields(store, verified, disproved, anchors, exploratory=Fal
     left = [fid for fid in eligible if not is_verified(fid, verified)]
     if exploratory:
         return left, eligible
-    right = [fid for fid in eligible if (alias_src(fid), code_of(fid)) in anchors]
+    contract_anchors = contract_anchors or set()
+    right = [
+        fid
+        for fid in eligible
+        if (alias_src(fid), code_of(fid)) in anchors
+        or (alias_src(fid), code_of(fid)) in contract_anchors
+    ]
     return left, right
 
 
@@ -1503,7 +2283,7 @@ def run(args):
         usable_snapshots.append(snapshot)
     snapshots = usable_snapshots
 
-    routine_suppression = {"sources": {}, "fields_by_source": {}}
+    routine_suppression = {"sources": {}}
     if not args.all and not args.exploratory:
         try:
             try:
@@ -1516,34 +2296,19 @@ def run(args):
             diagnostics.append(
                 f"AxData 日常碰撞排除状态读取失败，保留所有样本: {type(exc).__name__}: {exc}"
             )
-        try:
-            try:
-                from scripts.source_identity_reconciliation import get_ftshare_identity_plan
-            except ModuleNotFoundError:
-                from source_identity_reconciliation import get_ftshare_identity_plan
-
-            ftshare_plan = get_ftshare_identity_plan(data_date=today)
-            ftshare_skips = ftshare_plan.get("skip", {})
-            if isinstance(ftshare_skips, dict) and ftshare_skips:
-                routine_suppression["fields_by_source"]["ftshare"] = set(ftshare_skips)
-        except Exception as exc:
-            diagnostics.append(
-                f"FTShare 日常碰撞排除状态读取失败，保留所有样本: {type(exc).__name__}: {exc}"
-            )
+        routine_suppression["sources"]["ftshare"] = {
+            "status": "retired",
+            "interface_id": "FTShare private hosted MCP",
+            "reason": "底层公开来源无法验证，当前仅保留历史证据",
+        }
     if routine_suppression["sources"]:
         diagnostics.append(
-            "日常碰撞排除已确认冗余的 AxData 路由: "
+            "日常碰撞排除来源: "
             + ", ".join(
                 f"{source}={identity.get('interface_id', 'unknown')}"
                 for source, identity in sorted(routine_suppression["sources"].items())
             )
         )
-    if routine_suppression["fields_by_source"].get("ftshare"):
-        diagnostics.append(
-            "日常碰撞排除已确认冗余的 FTShare 字段: "
-            + ", ".join(sorted(routine_suppression["fields_by_source"]["ftshare"]))
-        )
-
     # 2) Load only quality-selected source snapshots; sample keys include date domain.
     store = defaultdict(lambda: {"vals": {}, "scheme": None, "src": None, "sample_meta": {}})
     total = load_snapshots(
@@ -1554,7 +2319,6 @@ def run(args):
         event_end=folder_window.event_end,
         include_context=getattr(args, "include_context", False),
         excluded_sources=routine_suppression["sources"],
-        excluded_fields_by_source=routine_suppression["fields_by_source"],
         allowed_trading_dates=folder_window.trading_dates,
     )
     classify(store)
@@ -1570,13 +2334,19 @@ def run(args):
     verified = registry_context["verified"]
     disproved = registry_context["disproved"]
     anchors = registry_context["anchors"]
+    contract_anchors = registry_context["contract_anchors"]
     known_maps = registry_context["known_mappings"]
     diagnostics.extend(registry_context["diagnostics"])
 
     # 4) Candidate targets exclude verified and explicitly disproved identities.
     if registry_context["safe_to_run"]:
         left_ids, safe_right_ids = select_collision_fields(
-            store, verified, disproved, anchors, exploratory=False
+            store,
+            verified,
+            disproved,
+            anchors,
+            exploratory=False,
+            contract_anchors=contract_anchors,
         )
     else:
         left_ids, safe_right_ids = [], []
@@ -1585,7 +2355,12 @@ def run(args):
         # Opt-in only: useful for candidate discovery, but unknown×unknown must
         # never be mistaken for a verified anchor.
         _, right_ids = select_collision_fields(
-            store, verified, disproved, anchors, exploratory=True
+            store,
+            verified,
+            disproved,
+            anchors,
+            exploratory=True,
+            contract_anchors=contract_anchors,
         )
         diagnostics.append("已启用探索模式：未知字段间也会生成候选；须独立复核后才能定案")
     elif registry_context["safe_to_run"]:
@@ -1595,14 +2370,15 @@ def run(args):
     diagnostics.append(
         f"对撞模式：{'exploratory' if args.exploratory else 'verified_anchor_only'}；"
         f"待破解字段={len(left_ids)}，verified 字段={len(verified)}，"
-        f"可用独立锚={len(anchors)}，right 字段={len(right_ids)}"
+        f"可用独立锚={len(anchors)}，官方契约锚={len(contract_anchors)}，"
+        f"right 字段={len(right_ids)}"
     )
 
     if args.limit:
         left_ids = left_ids[: args.limit]
     print(
         f"[collide] 主攻目标(left)={len(left_ids)}，"
-        f"{'探索字段(right)' if args.exploratory else '已确认独立锚(right)'}={len(right_ids)}",
+        f"{'探索字段(right)' if args.exploratory else '已确认独立锚/官方契约锚(right)'}={len(right_ids)}",
         file=sys.stderr,
     )
 
@@ -1610,10 +2386,18 @@ def run(args):
     raw_pairs = []  # (left, right, result)
     guardrail_hits = []  # 命中 REFUTED_CONCLUSIONS 被拦截的伪结论候选
     method_candidate_heap = []
+    method_candidate_inventory = []
+    method_candidates_by_left = defaultdict(list)
+    method_candidate_counts = Counter()
+    pair_stats_by_left = defaultdict(Counter)
+    anchor_family_counts_by_left = defaultdict(Counter)
     method_candidate_count = 0
     method_candidate_sequence = 0
+    refuted_candidate_controls = Counter()
+    refuted_candidate_examples = []
     skipped_same_family = 0
     skipped_unknown_lineage = 0
+    contract_anchor_pair_count = 0
     skipped_duplicate_unknown_pairs = 0
     exploratory_pair_count = 0
     for li in left_ids:
@@ -1621,7 +2405,10 @@ def run(args):
         for ri in right_ids:
             if li == ri:
                 continue
-            right_is_anchor = (alias_src(ri), code_of(ri)) in anchors
+            right_identity = (alias_src(ri), code_of(ri))
+            right_is_independent_anchor = right_identity in anchors
+            right_is_contract_anchor = right_identity in contract_anchors
+            right_is_anchor = right_is_independent_anchor or right_is_contract_anchor
             if not args.exploratory and not right_is_anchor:
                 continue
             if args.exploratory and not right_is_anchor and ri in left_ids and li > ri:
@@ -1629,37 +2416,68 @@ def run(args):
                 continue
             left_family = evidence_source_family(li)
             right_family = evidence_source_family(ri)
-            if left_family is None or right_family is None:
+            if (left_family is None or right_family is None) and not right_is_contract_anchor:
                 skipped_unknown_lineage += 1
+                pair_stats_by_left[li]["unknown_lineage_skips"] += 1
                 continue
-            if left_family == right_family:
+            if left_family is not None and left_family == right_family:
                 skipped_same_family += 1
+                pair_stats_by_left[li]["same_family_skips"] += 1
                 continue
             R = store[ri]
-            if L["type"] != R["type"]:
+            eligible, pair_reason = _pair_analysis_eligibility(L, R)
+            if not eligible:
+                pair_stats_by_left[li]["incompatible_type_skips"] += 1
                 continue
-            if L["type"] == "num" and not range_overlap(L, R):
-                continue
-            res = collide_pair(L, R)
+            if pair_reason == "range_disjoint":
+                pair_stats_by_left[li]["range_disjoint_evaluated"] += 1
+            if right_is_contract_anchor and not right_is_independent_anchor:
+                contract_anchor_pair_count += 1
+                pair_stats_by_left[li]["contract_anchor_pairs"] += 1
+            else:
+                pair_stats_by_left[li]["independent_pairs"] += 1
+            if right_is_independent_anchor and right_family is not None:
+                anchor_family_counts_by_left[li][right_family] += 1
+            res = collide_pair(L, R, contract_anchor=right_is_contract_anchor)
             if args.exploratory and mark_exploratory_candidate(res, right_is_anchor):
                 exploratory_pair_count += 1
             refuted = CR.match_refuted(li, ri) if RULES_OK else None
             if refuted is None:
-                method_candidate = method_candidates_for_pair(li, ri, L, R)
+                method_candidate, candidate_reason = _method_candidate_for_pair(li, ri, L, R)
+                if candidate_reason.startswith("insufficient"):
+                    pair_stats_by_left[li]["insufficient_numeric_samples"] += 1
+                elif candidate_reason == "no_method_signal":
+                    pair_stats_by_left[li]["no_method_signal"] += 1
                 if method_candidate is not None:
                     method_candidate_count += 1
+                    method_candidate_inventory.append(method_candidate)
+                    method_candidate_counts[li] += 1
                     method_candidate_sequence += 1
-                    score = (
-                        len(method_candidate["methods"]),
-                        method_candidate["sample_count"],
-                        method_candidate["left"],
-                        method_candidate["right"],
-                    )
+                    pair_stats_by_left[li]["method_candidates"] += 1
+                    score = _method_candidate_score(method_candidate)
                     item = (score, method_candidate_sequence, method_candidate)
                     if len(method_candidate_heap) < MAX_METHOD_CANDIDATES:
                         heapq.heappush(method_candidate_heap, item)
                     elif score > method_candidate_heap[0][0]:
                         heapq.heapreplace(method_candidate_heap, item)
+                    target_candidates = method_candidates_by_left[li]
+                    target_candidates.append(method_candidate)
+                    target_candidates.sort(key=_method_candidate_score, reverse=True)
+                    del target_candidates[MAX_TARGET_METHOD_CANDIDATES:]
+            else:
+                if L["type"] == "num" and R["type"] == "num":
+                    refuted_candidate_controls["numeric_refuted_pairs"] += 1
+                    candidate, reason = _method_candidate_for_pair(li, ri, L, R)
+                    if candidate is not None:
+                        refuted_candidate_controls["with_method_signal"] += 1
+                        if len(refuted_candidate_examples) < 20:
+                            refuted_candidate_examples.append(
+                                {"left": li, "right": ri, "refuted_id": refuted["id"]}
+                            )
+                    elif reason.startswith("insufficient"):
+                        refuted_candidate_controls["insufficient_numeric_samples"] += 1
+                    else:
+                        refuted_candidate_controls["without_method_signal"] += 1
             if res:
                 if refuted is not None:
                     guardrail_hits.append(
@@ -1675,24 +2493,90 @@ def run(args):
                 res["right"] = ri
                 res["same_code"] = code_of(li) == code_of(ri)
                 res["evidence_sources"] = sorted(
-                    {evidence_source_family(li), evidence_source_family(ri)}
+                    family
+                    for family in {evidence_source_family(li), evidence_source_family(ri)}
+                    if family is not None
                 )
                 raw_pairs.append(res)
 
     method_candidates = [item[2] for item in method_candidate_heap]
-    method_candidates.sort(
-        key=lambda candidate: (
-            len(candidate["methods"]),
-            candidate["sample_count"],
-            candidate["left"],
-            candidate["right"],
-        ),
-        reverse=True,
+    method_candidates.sort(key=_method_candidate_score, reverse=True)
+    method_candidate_inventory.sort(key=_method_candidate_score, reverse=True)
+    method_candidate_frontier = select_method_candidate_frontier(
+        method_candidates_by_left, method_candidates
     )
+    formula_candidates = []
+    formula_search_counts = Counter()
+    formula_by_left = {}
+    sample_by_left = {}
+    for left_id in left_ids:
+        target_candidates = method_candidates_by_left.get(left_id, [])
+        if not target_candidates:
+            continue
+        formulas, formula_stats = formula_candidates_for_target(left_id, store, target_candidates)
+        formula_by_left[left_id] = formulas
+        formula_search_counts.update(formula_stats)
+        formula_candidates.extend(formulas)
+        if len(target_candidates) >= 2:
+            sample_by_left[left_id] = discriminating_sample_for_target(
+                left_id, store, target_candidates
+            )
+
+    field_coverage_index = load_field_coverage_index(
+        folder_window.folders,
+        folder_window.trading_dates,
+        folder_window.event_start,
+        folder_window.event_end,
+    )
+    diagnostics.extend(field_coverage_index["diagnostics"])
+    candidate_triage = build_candidate_triage(
+        left_ids,
+        method_candidate_counts,
+        pair_stats_by_left,
+        method_candidates_by_left,
+        field_coverage_index,
+        formula_by_left,
+        sample_by_left,
+        anchor_family_counts_by_left,
+    )
+    candidate_controls = _known_mapping_candidate_controls(store, known_maps)
+    candidate_controls["negative_control"] = {
+        "control": "candidate method signals against exact pairs listed in REFUTED_CONCLUSIONS",
+        "numeric_refuted_pairs": refuted_candidate_controls.get("numeric_refuted_pairs", 0),
+        "with_method_signal": refuted_candidate_controls.get("with_method_signal", 0),
+        "without_method_signal": refuted_candidate_controls.get("without_method_signal", 0),
+        "insufficient_numeric_samples": refuted_candidate_controls.get(
+            "insufficient_numeric_samples", 0
+        ),
+        "examples": refuted_candidate_examples,
+        "interpretation": "负向样本若仍出现方法信号，报告会展示为反例；这些信号不会进入普通候选或定案。",
+    }
+    candidate_triage["summary"]["candidate_pairs_generated"] = method_candidate_count
+    candidate_triage["summary"]["global_detail_limit"] = MAX_METHOD_CANDIDATES
+    candidate_triage["summary"]["global_details_retained"] = len(method_candidates)
+    candidate_triage["summary"]["field_frontier_details_retained"] = len(method_candidate_frontier)
+    candidate_triage["summary"]["candidate_pairs_without_full_detail"] = max(
+        0, method_candidate_count - len(method_candidate_inventory)
+    )
+    candidate_triage["summary"]["candidate_pairs_outside_primary_and_frontier"] = max(
+        0, method_candidate_count - len(method_candidates) - len(method_candidate_frontier)
+    )
+    candidate_triage["summary"]["method_candidate_inventory_count"] = len(
+        method_candidate_inventory
+    )
+    candidate_triage["summary"]["formula_combinations_tested"] = formula_search_counts.get(
+        "tested", 0
+    )
+    candidate_triage["summary"]["formula_candidates_validated"] = formula_search_counts.get(
+        "validated", 0
+    )
+    candidate_triage["summary"]["field_coverage"] = field_coverage_index["summary"]
+    candidate_triage["summary"]["capture_source_statuses"] = field_coverage_index["source_statuses"]
     if method_candidate_count > len(method_candidates):
         diagnostics.append(
-            f"主动方法候选共 {method_candidate_count} 条，报告保留优先级最高的 "
-            f"{len(method_candidates)} 条"
+            f"主动方法候选共 {method_candidate_count} 条；全局保留 {len(method_candidates)} 条，"
+            f"另按目标字段补充 {len(method_candidate_frontier)} 条字段前沿候选；"
+            "完整方法明细保存在 JSON `method_candidate_inventory`"
         )
     if skipped_same_family:
         diagnostics.append(f"跳过同一来源家族字段对：{skipped_same_family}")
@@ -1704,6 +2588,10 @@ def run(args):
         diagnostics.append(
             f"探索模式产生非锚候选：{exploratory_pair_count} 对；即使数值高度吻合也降为 L4，不写入定案状态"
         )
+    if contract_anchor_pair_count:
+        diagnostics.append(
+            f"官方契约锚参与字段对撞 {contract_anchor_pair_count} 对；底层来源独立性未确认，强匹配单列 L1-C"
+        )
 
     # 6) hub 巧合排除：单字段匹配过多 → 降级
     left_count = defaultdict(int)
@@ -1713,7 +2601,7 @@ def run(args):
         right_count[p["right"]] += 1
     for p in raw_pairs:
         if left_count[p["left"]] > HUB_MAX or right_count[p["right"]] > HUB_MAX:
-            if p["level"] in ("L1", "L1-U"):
+            if p["level"] in ("L1", "L1-U", "L1-C"):
                 p["level"] = "L4"
                 p["hub_flag"] = True
 
@@ -1773,27 +2661,28 @@ def run(args):
 
     # 8) 输出报告
     l1 = [p for p in raw_pairs if p["level"] in ("L1", "L1-U")]
+    l1_contract = [p for p in raw_pairs if p["level"] == "L1-C"]
     actionable_l1 = [p for p in l1 if not p.get("in_registry", False)]
     mapped_pair_revalidations = [p for p in l1 if p.get("in_registry", False)]
     l4 = [p for p in raw_pairs if p["level"] == "L4"]
     l1.sort(key=lambda p: (-p["overall_hit"], -p["n_days"]))
     l4.sort(key=lambda p: -p["overall_hit"])
-    try:
-        try:
-            from scripts.source_identity_reconciliation import reconcile_source_identity
-        except ModuleNotFoundError:
-            from source_identity_reconciliation import reconcile_source_identity
-
-        source_identity = reconcile_source_identity()
-    except Exception as exc:
-        source_identity = {
-            "status": "failed_open",
-            "reason": f"{type(exc).__name__}: {exc}"[:300],
-            "endpoints": {},
-        }
-    diagnostics.append("来源身份核验单独使用完整记录匹配；结果不会进入字段语义定案或独立锚")
+    source_identity = {
+        "status": "active_with_historical_legacy",
+        "active_runtime_source": "ftshare_rest",
+        "active_interface": "FTShare public REST A-share quote list",
+        "active_semantic_anchor": "official_documented_contract",
+        "upstream_lineage": "unconfirmed",
+        "legacy_runtime_source": "ftshare",
+        "legacy_status": "retired",
+        "legacy_interface": "FTShare private hosted MCP",
+        "reason": "FTShare REST contract fields participate as semantic anchors; underlying data independence remains unconfirmed",
+        "endpoints": {"a_share_realtime_quote": "/api/v1/market/data/daec/stocks/all"},
+    }
     daily_aggregate_evidence = CAE.build_daily_aggregate_evidence(
-        folder_window.folders, folder_window.trading_dates
+        folder_window.folders,
+        folder_window.trading_dates,
+        include_retired_sources=bool(args.all or args.exploratory),
     )
     name_candidate_report = FNC.build_field_name_candidates(
         store, list(store), REG_PATH, _SOURCE_LINEAGE
@@ -1816,16 +2705,21 @@ def run(args):
     json_path = os.path.join(out_dir, f"{today}_collision_report.json")
     report_relative_path = os.path.relpath(json_path, DATA_DIR).replace("\\", "/")
     report_data = {
-        "schema_version": 2,
+        "schema_version": 3,
         "date": today,
         "collision_mode": collision_mode,
+        "anchor_policy": (
+            "verified_independent_and_official_contract" if not args.exploratory else "exploratory"
+        ),
         "include_context": bool(args.include_context),
         "window_selection": window_selection,
         "target_count": len(left_ids),
         "verified_identity_count": len(verified),
         "anchor_identity_count": len(anchors),
+        "contract_anchor_identity_count": len(contract_anchors),
         "right_field_count": len(right_ids),
         "exploratory_pair_count": exploratory_pair_count,
+        "contract_anchor_pair_count": contract_anchor_pair_count,
         "skipped_pairs": {
             "same_family": skipped_same_family,
             "unknown_lineage": skipped_unknown_lineage,
@@ -1833,10 +2727,6 @@ def run(args):
         },
         "routine_collision_suppression": {
             "sources": routine_suppression["sources"],
-            "fields_by_source": {
-                source: sorted(fields)
-                for source, fields in routine_suppression["fields_by_source"].items()
-            },
         },
         "trading_window": list(folder_window.trading_dates),
         "event_window": {
@@ -1844,14 +2734,21 @@ def run(args):
             "end": folder_window.event_end.strftime("%Y%m%d"),
         },
         "L1": l1,
+        "L1-C": l1_contract,
         "actionable_L1": actionable_l1,
         "mapped_pair_revalidations": mapped_pair_revalidations,
         "L4": l4,
+        "guardrail_hits": guardrail_hits,
         "method_candidates": method_candidates[:MAX_METHOD_CANDIDATES],
         "method_candidate_count": method_candidate_count,
+        "method_candidate_inventory": method_candidate_inventory,
+        "method_candidate_frontier": method_candidate_frontier,
+        "candidate_triage": candidate_triage,
+        "formula_candidates": formula_candidates,
+        "candidate_controls": candidate_controls,
         "diagnostics": list(dict.fromkeys(diagnostics)),
         "new_candidate_pair_count": new_count,
-        # Backward-compatible alias; this counts first-seen candidate pairs, not confirmed semantics.
+        # Backward-compatible alias: counts first-seen candidate pairs, not confirmed semantics.
         "new_count": new_count,
         "source_identity_reconciliation": source_identity,
         "daily_aggregate_evidence": daily_aggregate_evidence,
@@ -1905,11 +2802,21 @@ def run(args):
             window_selection=window_selection,
         )
         rendered = append_source_identity_report(rendered, source_identity)
+        rendered = append_contract_anchor_candidates(rendered, report_data.get("L1-C", []))
         rendered = CAE.append_daily_aggregate_report(rendered, daily_aggregate_evidence)
         rendered = FNC.append_field_name_candidate_report(rendered, name_candidate_report)
-        return append_research_state_report(rendered, report_data["research_state"])
+        rendered = append_research_state_report(rendered, report_data["research_state"])
+        rendered = append_candidate_triage_report(
+            rendered,
+            candidate_triage,
+            method_candidate_frontier,
+            formula_candidates,
+            candidate_controls,
+        )
+        return append_report_completeness_report(rendered, report_data["report_completeness"])
 
     def write_report() -> None:
+        report_data["report_completeness"] = build_report_completeness(report_data)
         with open(md_path, "w", encoding="utf-8") as handle:
             handle.write(render_report())
         with open(json_path, "w", encoding="utf-8") as handle:
@@ -1933,7 +2840,8 @@ def run(args):
     write_report()
 
     print(
-        f"[collide] L1 候选={len(l1)}，L4 候选={len(l4)}，首次发现候选对={new_count}，"
+        f"[collide] L1 候选={len(l1)}，L1-C 契约锚候选={len(l1_contract)}，"
+        f"L4 候选={len(l4)}，首次发现候选对={new_count}，"
         f"护栏拦截={len(guardrail_hits)}",
         file=sys.stderr,
     )
@@ -1942,40 +2850,41 @@ def run(args):
 
 
 def append_source_identity_report(report_md, result):
-    """Append the separate endpoint identity lane without changing field L1s."""
-    lines = [report_md.rstrip(), "", "## 来源身份核验（不参与字段语义定案）", ""]
-    if not isinstance(result, dict) or not isinstance(result.get("endpoints"), dict):
-        lines.append("_本轮未生成来源身份结果。_")
-        return "\n".join(lines) + "\n"
-    if result.get("status") == "failed_open":
-        lines.append(f"_核验失败开放：{result.get('warning') or result.get('reason', '未知原因')}_")
-        return "\n".join(lines) + "\n"
-    if result.get("status") == "not_eligible" and not result["endpoints"]:
-        lines.append(f"_本轮未运行接口停采核验：{result.get('reason', '来源不符合候选核验条件')}_")
-        return "\n".join(lines) + "\n"
-    lines.append(
-        f"> 仅核验已登记的 FTShare 接口。需 {result.get('minimum_capture_dates', 3)} 个"
-        f"不同的已完成交易数据日、每日至少 {result.get('minimum_symbols_per_date', 18)} 只股票的"
-        "完整记录逐项匹配；项目数据日和各来源 as_of_date 必须一致，盘前、周末或节假日采集也可计入；"
-        "结果不会改变主字典或确认 FTShare 来源独立性。"
-    )
-    lines.append("")
-    lines.append(
-        f"运行上冗余的接口每累计 {result.get('recheck_capture_dates', 20)} 个后续有效交易数据日复核一次；"
-        "字段或适配器契约变化会恢复采集，需重新积累完整证据。"
-    )
-    lines.append("")
-    lines.append("| 字段接口 | 状态 | 对照来源 | 证据交易日 | 说明 |")
-    lines.append("|:--|:--|:--|:--|:--|")
-    for code, item in sorted(result["endpoints"].items()):
-        if not isinstance(item, dict):
-            continue
-        dates = ", ".join(item.get("evidence_dates", []))
-        reason = str(item.get("reason", "")).replace("|", "\\|").replace("\n", " ")
+    """Append active REST and retired legacy FTShare identities to the report."""
+    lines = [report_md.rstrip(), "", "## 来源身份状态（不参与字段语义定案）", ""]
+    if isinstance(result, dict) and result.get("active_runtime_source") == "ftshare_rest":
         lines.append(
-            f"| {code} | {item.get('status', 'unknown')} | "
-            f"{item.get('reference_source') or '—'} | {dates or '—'} | {reason} |"
+            "_FTShare 公共 REST 接口已进入日常采集；官方字段契约作为语义锚，"
+            "底层数据提供方仍未确认。与其匹配的强候选列在 L1-C，不混入独立来源 L1。_"
         )
+        lines.append("_旧私有托管 MCP 采集器已退役，历史样本仅供 `--all` / `--exploratory` 追溯。_")
+    else:
+        lines.append("_当前没有运行来源身份核验；历史核验摘要见每日辅助证据。_")
+    lines.append("")
+    return "\n".join(lines) + "\n"
+
+
+def append_contract_anchor_candidates(report_md, candidates):
+    """Render contract-backed candidates without presenting them as independent-source L1."""
+    lines = [
+        report_md.rstrip(),
+        "",
+        f"## 官方契约锚候选 L1-C（{len(candidates)}）",
+        "",
+        "_L1-C 使用 FTShare 官方接口文档已定义的字段语义作锚，并满足多日数值匹配门槛；"
+        "FTShare 底层数据来源未确认，因此不属于独立来源 L1，也不进入自动定案状态。_",
+        "",
+    ]
+    if candidates:
+        lines.extend(
+            [
+                "| 左字段（待确认） | FTShare REST 字段 | 等级 | 命中率 | 交易日数 | 样本 | 信息样本 | 比值 | hub | registry |",
+                "|:--|:--|:--|--:|--:|--:|--:|--:|:--|:--|",
+            ]
+        )
+        lines.extend(_l1_row(candidate) for candidate in candidates)
+    else:
+        lines.append("_本轮无达到多日门槛的官方契约锚候选。_")
     lines.append("")
     return "\n".join(lines) + "\n"
 
@@ -2009,6 +2918,412 @@ def _l1_row(p):
         f"{p.get('ratio') or '-'} | {'⚠' if p.get('hub_flag') else ''} | "
         f"{'✅' if p.get('in_registry') else '—'} |"
     )
+
+
+def append_candidate_triage_report(
+    markdown: str,
+    triage: dict[str, Any],
+    frontier: list[dict[str, Any]],
+    formulas: list[dict[str, Any]],
+    controls: dict[str, Any],
+) -> str:
+    summary = triage.get("summary", {})
+    targets = triage.get("targets", [])
+    lines = ["\n## 候选覆盖、公式与下一步采样\n"]
+    lines.append(
+        "本节用于定位证据缺口和安排后续取样。相关性、公式与样本优先级均为探索候选；"
+        "不会改变 L1/L1-U 门槛、来源独立性或主字典。\n"
+    )
+    lines.append(
+        f"- 未知目标 {summary.get('target_count', 0)} 个；其中有方法候选 "
+        f"{summary.get('targets_with_method_candidates', 0)} 个、无候选 "
+        f"{summary.get('targets_without_method_candidates', 0)} 个；多候选目标 "
+        f"{summary.get('targets_with_multiple_candidates', 0)} 个。"
+    )
+    lines.append(
+        f"- 方法候选生成 {summary.get('candidate_pairs_generated', 0)} 条；"
+        f"全局详细项保留 {summary.get('global_details_retained', 0)}/"
+        f"{summary.get('global_detail_limit', MAX_METHOD_CANDIDATES)}，"
+        f"另按目标字段保留 {summary.get('field_frontier_details_retained', 0)} 条；"
+        f"完整明细 {summary.get('method_candidate_inventory_count', 0)} 条在 JSON "
+        "`method_candidate_inventory`；"
+        f"未归档明细 {summary.get('candidate_pairs_without_full_detail', 0)} 条。"
+    )
+    field_coverage = summary.get("field_coverage", {})
+    lines.append(
+        f"- 字段覆盖详情：{field_coverage.get('detail_status', 'unavailable')}；"
+        f"覆盖身份 {field_coverage.get('coverage_identity_count', 0)}，"
+        f"读取 {field_coverage.get('coverage_detail_files', 0)} 份本地索引。"
+    )
+
+    status_labels = {
+        "formula_candidate_needs_independent_review": "公式候选待独立复核",
+        "multiple_method_candidates_need_discrimination": "存在多个候选，需区分",
+        "single_method_candidate_needs_external_check": "单候选，需外部证据",
+        "source_lineage_gap": "来源血缘缺口",
+        "field_coverage_identity_unmapped": "覆盖字段未映射到运行路径",
+        "independent_source_coverage_gap": "独立来源覆盖缺口",
+        "joint_sample_coverage_gap": "共同样本不足",
+        "no_current_method_signal": "当前方法未发现信号",
+        "no_eligible_comparison": "无可用独立对比",
+    }
+    lines.append("\n### 优先处理字段\n")
+    lines.append(
+        "| 未知字段 | 当前诊断 | 独立对比/候选数 | 独立锚家族/本源日期 | 建议复核股票 | 最强候选线索 |"
+    )
+    lines.append("|:--|:--|--:|:--|:--|:--|")
+    for target in targets[:50]:
+        coverage = target.get("coverage", {})
+        families = coverage.get("independent_anchor_families", [])
+        dates = coverage.get("source_as_of_days", [])
+        candidate_names = [
+            (
+                f"{item.get('right')} "
+                f"({','.join(m.get('method', '') for m in item.get('methods', []))})"
+            )
+            for item in target.get("top_candidates", [])
+        ]
+        candidate_text = "; ".join(candidate_names) or "—"
+        formula_text = "; ".join(
+            item.get("formula", "") for item in target.get("formula_candidates", [])
+        )
+        evidence_text = (candidate_text + ("; " + formula_text if formula_text else ""))[:240]
+        sample = target.get("next_sample") or {}
+        sample_text = (
+            f"{sample.get('stock_code')} ({sample.get('normalized_prediction_spread')})"
+            if sample.get("status") == "prioritize_recheck"
+            else sample.get("status", "—")
+        )
+        pair_counts = target.get("pair_counts", {})
+        comparisons = (
+            f"{pair_counts.get('independent_pairs', 0)} / {target.get('candidate_count', 0)}"
+        )
+        anchor_text = f"{len(families)} 家族 / {coverage.get('independent_anchor_pairs', 0)} 对"
+        coverage_text = (
+            f"{anchor_text} / 本源 {len(dates)} 日"
+            if coverage.get("status") == "available"
+            else f"{anchor_text} / 本源详情不可用"
+        )
+        label = status_labels.get(target.get("status"), target.get("status", "未知"))
+        lines.append(
+            f"| `{target.get('left', '')}` | {label} | {comparisons} | "
+            f"{coverage_text} | {sample_text} | {evidence_text} |"
+        )
+    if len(targets) > 50:
+        lines.append(f"\n_此表显示优先级最高的 50 / 共 {len(targets)} 个目标；完整清单见 JSON。_\n")
+
+    if frontier:
+        lines.append(f"\n### 补足全局截断的字段候选（{len(frontier)}）\n")
+        lines.append("| 未知字段 | 候选字段 | 方法 | 样本 | 日期 | 来源 |")
+        lines.append("|:--|:--|:--|--:|:--|:--|")
+        for candidate in frontier[:100]:
+            lines.append(
+                f"| `{candidate.get('left')}` | `{candidate.get('right')}` | "
+                f"{', '.join(item.get('method', '') for item in candidate.get('methods', []))} | "
+                f"{candidate.get('sample_count', 0)} | "
+                f"{', '.join(candidate.get('sample_dates', [])[:5])} | "
+                f"{', '.join(candidate.get('evidence_sources', []))} |"
+            )
+        if len(frontier) > 100:
+            lines.append(f"\n_仅显示前 100 / 共 {len(frontier)} 条字段前沿候选。_\n")
+
+    if formulas:
+        lines.append(f"\n### 双输入公式候选（{len(formulas)}）\n")
+        lines.append(
+            "公式使用按股票代码分组的留出样本验证；至少 3 个留出股票，验证 R²≥0.985、"
+            "误差不超过训练目标标准差的 5%，并要求优于最佳单输入线性模型至少 0.05。"
+            "这些阈值只筛选探索候选，不构成语义证明。\n"
+        )
+        lines.append("| 目标字段 | 候选公式 | 留出 R² | 相对误差尺度 | 验证样本/股票 |")
+        lines.append("|:--|:--|--:|--:|--:|")
+        for formula in formulas[:50]:
+            lines.append(
+                f"| `{formula.get('left')}` | `{formula.get('formula')}` | "
+                f"{formula.get('validation_r2')} | {formula.get('normalized_rmse')} | "
+                f"{formula.get('validation_samples')}/{formula.get('validation_stocks')} |"
+            )
+        if len(formulas) > 50:
+            lines.append(f"\n_仅显示前 50 / 共 {len(formulas)} 条公式候选。_\n")
+    else:
+        lines.append(
+            f"\n### 双输入公式候选\n本轮未发现通过留出筛选的公式候选；"
+            f"测试组合 {summary.get('formula_combinations_tested', 0)} 个。\n"
+        )
+
+    positive = controls.get("positive_control", {})
+    negative = controls.get("negative_control", {})
+    lines.append("\n### 已知映射与已证伪关系的候选校准\n")
+    lines.append(
+        f"- 已登记正向对照：当前窗口有 {positive.get('eligible_numeric_pairs', 0)} 组独立数值关系可评估，"
+        f"{positive.get('with_method_signal', 0)} 组被方法候选识别；样本不足 "
+        f"{positive.get('insufficient_numeric_samples', 0)} 组。此计数仅检查方法覆盖，不是准确率。"
+    )
+    lines.append(
+        f"- 已证伪负向对照：数值关系 {negative.get('numeric_refuted_pairs', 0)} 组，"
+        f"其中仍有方法信号 {negative.get('with_method_signal', 0)} 组；这些信号被隔离，不进入普通候选。"
+    )
+    failed_sources = []
+    for source, status in summary.get("capture_source_statuses", {}).items():
+        if status.get("non_ok_dates"):
+            failed_sources.append(
+                f"{source}: {', '.join(status['non_ok_dates'][-3:])} "
+                f"({status.get('status_counts', {})})"
+            )
+    if failed_sources:
+        lines.append("\n### 采集覆盖异常源\n")
+        lines.extend(f"- {item}" for item in failed_sources[:30])
+        if len(failed_sources) > 30:
+            lines.append(
+                f"- 另有 {len(failed_sources) - 30} 个来源见 JSON "
+                "`candidate_triage.summary.capture_source_statuses`。"
+            )
+    return markdown.rstrip() + "\n" + "\n".join(lines) + "\n"
+
+
+def build_report_completeness(report_data: dict[str, Any]) -> dict[str, Any]:
+    """Reconcile complete JSON evidence against intentionally summarized Markdown views."""
+    triage = report_data.get("candidate_triage")
+    triage = triage if isinstance(triage, dict) else {}
+    triage_summary = triage.get("summary")
+    triage_summary = triage_summary if isinstance(triage_summary, dict) else {}
+    targets = triage.get("targets")
+    if not isinstance(targets, list):
+        targets = []
+
+    section_specs = {
+        "L1": (report_data.get("L1"), None, "完整 L1 关系清单"),
+        "L1-C": (report_data.get("L1-C"), None, "完整官方契约锚候选清单"),
+        "actionable_L1": (report_data.get("actionable_L1"), None, "完整新候选清单"),
+        "mapped_pair_revalidations": (
+            report_data.get("mapped_pair_revalidations"),
+            None,
+            "完整已登记映射复验清单",
+        ),
+        "L4": (report_data.get("L4"), 60, "完整 L4 清单"),
+        "guardrail_hits": (
+            report_data.get("guardrail_hits"),
+            None,
+            "完整证伪护栏命中清单",
+        ),
+        "method_candidates": (
+            report_data.get("method_candidates"),
+            100,
+            "全局排序摘要；完整清单见 method_candidate_inventory",
+        ),
+        "method_candidate_inventory": (
+            report_data.get("method_candidate_inventory"),
+            0,
+            "完整方法候选明细；仅存于 JSON",
+        ),
+        "method_candidate_frontier": (
+            report_data.get("method_candidate_frontier"),
+            100,
+            "按目标补充的前沿清单；完整清单见 JSON",
+        ),
+        "candidate_triage.targets": (
+            targets,
+            50,
+            "逐个未知目标的完整诊断清单；完整清单见 JSON",
+        ),
+        "formula_candidates": (
+            report_data.get("formula_candidates"),
+            50,
+            "完整通过筛选的公式候选；完整清单见 JSON",
+        ),
+        "diagnostics": (report_data.get("diagnostics"), 100, "完整告警清单"),
+    }
+
+    issues = []
+    sections = {}
+    markdown_omissions = []
+    for name, (records, markdown_limit, scope) in section_specs.items():
+        if not isinstance(records, list):
+            issues.append(f"{name}: missing_or_invalid_json_list")
+            records = []
+        record_count = len(records)
+        visible_count = (
+            record_count if markdown_limit is None else min(record_count, markdown_limit)
+        )
+        omitted_count = record_count - visible_count
+        if omitted_count:
+            markdown_omissions.append(
+                {
+                    "section": name,
+                    "available": record_count,
+                    "visible": visible_count,
+                    "omitted_from_markdown": omitted_count,
+                }
+            )
+        sections[name] = {
+            "json_record_count": record_count,
+            "markdown_display_limit": markdown_limit,
+            "markdown_display_count": visible_count,
+            "markdown_omitted_count": omitted_count,
+            "detail_scope": scope,
+        }
+
+    generated_count = report_data.get("method_candidate_count")
+    if type(generated_count) is not int or generated_count < 0:
+        generated_count = 0
+        issues.append("method_candidate_count: missing_or_invalid")
+    inventory = report_data.get("method_candidate_inventory")
+    if not isinstance(inventory, list):
+        inventory = []
+    candidate_pairs = []
+    invalid_pair_identity_count = 0
+    for row in inventory:
+        if not isinstance(row, dict):
+            invalid_pair_identity_count += 1
+            continue
+        left, right = row.get("left"), row.get("right")
+        if not isinstance(left, str) or not left or not isinstance(right, str) or not right:
+            invalid_pair_identity_count += 1
+            continue
+        candidate_pairs.append((left, right))
+    unique_pair_count = len(set(candidate_pairs))
+    missing_detail_count = max(0, generated_count - len(inventory))
+    excess_detail_count = max(0, len(inventory) - generated_count)
+    duplicate_pair_count = len(candidate_pairs) - unique_pair_count
+
+    summary_rows = report_data.get("method_candidates")
+    if not isinstance(summary_rows, list):
+        summary_rows = []
+    summary_pairs = []
+    invalid_summary_pair_count = 0
+    for row in summary_rows:
+        if not isinstance(row, dict):
+            invalid_summary_pair_count += 1
+            continue
+        left, right = row.get("left"), row.get("right")
+        if isinstance(left, str) and left and isinstance(right, str) and right:
+            summary_pairs.append((left, right))
+        else:
+            invalid_summary_pair_count += 1
+    if invalid_summary_pair_count or summary_pairs != candidate_pairs[: len(summary_pairs)]:
+        issues.append("method_candidates: ranked_summary_not_a_prefix_of_full_inventory")
+
+    frontier_rows = report_data.get("method_candidate_frontier")
+    if not isinstance(frontier_rows, list):
+        frontier_rows = []
+    frontier_pairs = []
+    invalid_frontier_pair_count = 0
+    for row in frontier_rows:
+        if not isinstance(row, dict):
+            invalid_frontier_pair_count += 1
+            continue
+        left, right = row.get("left"), row.get("right")
+        if isinstance(left, str) and left and isinstance(right, str) and right:
+            frontier_pairs.append((left, right))
+        else:
+            invalid_frontier_pair_count += 1
+    inventory_pair_set = set(candidate_pairs)
+    summary_pair_set = set(summary_pairs)
+    if (
+        invalid_frontier_pair_count
+        or len({left for left, _ in frontier_pairs}) != len(frontier_pairs)
+        or any(
+            pair not in inventory_pair_set or pair in summary_pair_set for pair in frontier_pairs
+        )
+    ):
+        issues.append("method_candidate_frontier: pair_identity_mismatch")
+
+    if (
+        missing_detail_count
+        or excess_detail_count
+        or duplicate_pair_count
+        or invalid_pair_identity_count
+    ):
+        issues.append("method_candidate_inventory: count_or_pair_identity_mismatch")
+
+    expected_target_count = triage_summary.get("target_count")
+    if type(expected_target_count) is not int or expected_target_count != len(targets):
+        issues.append("candidate_triage.targets: count_mismatch")
+    target_candidate_count_sum = 0
+    invalid_target_candidate_counts = 0
+    for target in targets:
+        count = target.get("candidate_count") if isinstance(target, dict) else None
+        if type(count) is not int or count < 0:
+            invalid_target_candidate_counts += 1
+        else:
+            target_candidate_count_sum += count
+    if invalid_target_candidate_counts or target_candidate_count_sum != generated_count:
+        issues.append("candidate_triage.targets: candidate_count_mismatch")
+
+    top_level_sections = {}
+    for name, value in report_data.items():
+        if name == "report_completeness":
+            continue
+        if name not in sections:
+            sections[name] = {
+                "json_record_count": len(value) if isinstance(value, (list, dict)) else None,
+                "markdown_display_limit": None,
+                "markdown_display_count": None,
+                "markdown_omitted_count": None,
+                "detail_scope": "完整 JSON 顶层内容；需按实际结构逐项审阅",
+            }
+        top_level_sections[name] = {
+            "value_type": type(value).__name__,
+            "record_count": len(value) if isinstance(value, (list, dict)) else None,
+        }
+
+    return {
+        "schema_version": 1,
+        "status": "complete" if not issues else "incomplete",
+        "markdown_is_summary": True,
+        "top_level_sections": top_level_sections,
+        "method_candidate_inventory": {
+            "generated_count": generated_count,
+            "saved_count": len(inventory),
+            "unique_pair_count": unique_pair_count,
+            "missing_detail_count": missing_detail_count,
+            "excess_detail_count": excess_detail_count,
+            "duplicate_pair_count": duplicate_pair_count,
+            "invalid_pair_identity_count": invalid_pair_identity_count,
+            "target_candidate_count_sum": target_candidate_count_sum,
+            "invalid_target_candidate_count_rows": invalid_target_candidate_counts,
+            "json_key": "method_candidate_inventory",
+        },
+        "sections": sections,
+        "markdown_omissions": markdown_omissions,
+        "issues": issues,
+    }
+
+
+def append_report_completeness_report(markdown: str, completeness: dict[str, Any]) -> str:
+    """Expose truncation and completeness checks at the end of the human-readable report."""
+    inventory = completeness.get("method_candidate_inventory", {})
+    lines = ["\n## 报告完整性与审阅范围\n"]
+    lines.append(
+        f"- 机器可读完整性：`{completeness.get('status', 'incomplete')}`；"
+        f"方法候选生成 {inventory.get('generated_count', 0)} 条，"
+        f"完整明细保存 {inventory.get('saved_count', 0)} 条，"
+        f"缺失 {inventory.get('missing_detail_count', 0)} 条，"
+        f"多余 {inventory.get('excess_detail_count', 0)} 条，"
+        f"重复 {inventory.get('duplicate_pair_count', 0)} 条，"
+        f"身份无效 {inventory.get('invalid_pair_identity_count', 0)} 条。"
+    )
+    lines.append(
+        "- 全量方法候选位于同名 JSON 的 `method_candidate_inventory`；"
+        "Markdown 的 Top-N 表格是导航摘要，不能代替全量 JSON 审阅。"
+    )
+    omissions = completeness.get("markdown_omissions", [])
+    if omissions:
+        lines.append("- Markdown 未逐行展示、但 JSON 保留的部分：")
+        lines.extend(
+            f"  - `{item.get('section')}`：展示 {item.get('visible', 0)} / "
+            f"{item.get('available', 0)}，摘要省略 {item.get('omitted_from_markdown', 0)} 条。"
+            for item in omissions
+        )
+    issues = completeness.get("issues", [])
+    if issues:
+        lines.append("- **审阅阻断**：完整性对账失败；不得据此断言无候选、无字段或提交定案。")
+        lines.extend(f"  - `{issue}`" for issue in issues)
+    else:
+        lines.append(
+            "- 完整性对账通过；逐目标复核仍须覆盖 JSON 的全部明细，并为每项记录"
+            "已检查、重复归并、证据不足或需外部核验的处置。"
+        )
+    return markdown.rstrip() + "\n" + "\n".join(lines) + "\n"
 
 
 def build_report_md(

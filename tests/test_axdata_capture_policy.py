@@ -6,7 +6,7 @@ from scripts import capture_field_probe as capture_probe
 import stock_common
 
 
-def test_collect_axdata_keeps_raw_capture_for_confirmed_redundant_route(monkeypatch):
+def test_collect_axdata_skips_confirmed_redundant_route(monkeypatch):
     calls = []
 
     def capture(_code):
@@ -17,7 +17,7 @@ def test_collect_axdata_keeps_raw_capture_for_confirmed_redundant_route(monkeypa
     result = capture_probe.collect_axdata(
         [{"code": "000001"}, {"code": "000002"}],
         identity_policy={
-            "action": "collect",
+            "action": "skip",
             "identity_validation_action": "suppress",
             "reason": "endpoint_redundant_until_scheduled_recheck",
             "reference_source": "eltdx",
@@ -29,14 +29,17 @@ def test_collect_axdata_keeps_raw_capture_for_confirmed_redundant_route(monkeypa
         },
     )
 
-    assert calls == ["000001", "000002"]
-    assert result["stocks"]["000001"]["data"] == {"f1": 1.0, "f2": 2.0}
-    suppression = result["__source_meta__"]["identity_validation_suppression"]
-    assert suppression["interface_id"] == "stock_shortline_indicators_tdx"
-    assert suppression["capture_performed"] is True
+    assert calls == []
+    assert all(
+        item["__skipped__"] == "endpoint_redundant_until_scheduled_recheck"
+        for item in result["stocks"].values()
+    )
+    capture_block = result["__source_meta__"]["capture_block"]
+    assert capture_block["interface_id"] == "stock_shortline_indicators_tdx"
+    assert capture_block["capture_performed"] is False
 
 
-def test_legacy_same_date_identity_skip_does_not_stop_raw_capture(monkeypatch):
+def test_same_date_identity_skip_does_not_request_duplicate_data(monkeypatch):
     calls = []
 
     def capture(code):
@@ -59,12 +62,12 @@ def test_legacy_same_date_identity_skip_does_not_stop_raw_capture(monkeypatch):
         },
     )
 
-    assert calls == ["000001"]
-    assert result["stocks"]["000001"]["data"]["f1"] == 10.0
-    assert result["__source_meta__"]["identity_validation_suppression"]["capture_performed"]
+    assert calls == []
+    assert result["stocks"]["000001"]["__skipped__"] == "data_date_already_confirmed"
+    assert result["__source_meta__"]["capture_block"]["capture_performed"] is False
 
 
-def test_collect_kph_history_keeps_raw_capture_for_confirmed_redundant_route(monkeypatch):
+def test_collect_kph_history_skips_confirmed_redundant_route(monkeypatch):
     calls = []
 
     def capture(*args, **kwargs):
@@ -78,7 +81,7 @@ def test_collect_kph_history_keeps_raw_capture_for_confirmed_redundant_route(mon
     result = capture_probe.collect_kph_history(
         "20261013",
         identity_policy={
-            "action": "collect",
+            "action": "skip",
             "identity_validation_action": "suppress",
             "reason": "endpoint_redundant_until_scheduled_recheck",
             "reference_source": "kpl",
@@ -90,12 +93,11 @@ def test_collect_kph_history_keeps_raw_capture_for_confirmed_redundant_route(mon
         },
     )
 
-    assert calls == [(("kph_limit_up_history",), {"params": {"trade_date": "2026-10-13"}})]
+    assert calls == []
     assert result["trade_date"] == "2026-10-13"
-    assert result["stocks"]["000001"]["sample_value"] == 9.0
-    suppression = result["__source_meta__"]["identity_validation_suppression"]
-    assert suppression["interface_id"] == "kph_limit_up_history"
-    assert suppression["capture_performed"] is True
+    assert result["stocks"] == {}
+    assert result["__source_meta__"]["capture_block"]["interface_id"] == "kph_limit_up_history"
+    assert result["__source_meta__"]["capture_block"]["capture_performed"] is False
 
 
 def test_collect_axdata_stops_after_rate_limit_and_defers_remaining_codes(monkeypatch):

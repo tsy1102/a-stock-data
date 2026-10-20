@@ -107,10 +107,7 @@ def test_limit_ladder_accepts_scoped_codes_and_timeout(monkeypatch: pytest.Monke
 
 
 def test_finance_map_uses_canonical_after_tax_profit_key() -> None:
-    mapping = {
-        attribute: output_key
-        for attribute, output_key, _scale in eltdx_adapter._FIN_MAP
-    }
+    mapping = {attribute: output_key for attribute, output_key, _scale in eltdx_adapter._FIN_MAP}
 
     assert mapping["shui_hou_li_run_raw_float"] == "shuihoulirun"
     assert "shuihouli run" not in mapping.values()

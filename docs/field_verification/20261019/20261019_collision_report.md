@@ -1,18 +1,21 @@
 # 全源对撞报告（20261019）
 
+> **状态更新（2026-10-20）**：本报告是 2026-10-19 的历史碰撞快照，报告内 FTShare `failed` 状态只针对当时使用的私有托管 MCP/SDK；该集成已退役。公开 REST `ftshare_rest` 已另行接入每日采集和默认碰撞，官方字段强匹配单列为 `L1-C`。由于 REST 集成晚于本报告采集，本报告不含其样本或结论；旧 `FTShare` 历史 raw 与新 REST 身份不可混用。
+
 > 交易数据窗口配置：近 7 个交易日（`--window`）
 > 行情窗口：20261009 ~ 20261019（7 个不同交易日）｜字段 968 个｜样本值 291024 条
 > 新闻/公告自然日窗口：20261013 ~ 20261019
-> 主攻目标（unverified）=372｜可审定新候选=1｜首次发现新候选对=1｜已登记关系复验=2｜异号同义 1 / 同号镜像 0
+> 主攻目标（unverified）=372｜可审定新候选=2｜首次发现新候选对=1｜已登记关系复验=2｜异号同义 2 / 同号镜像 0
 
 > **规则**：L1 每日需≥18 组有效配对，并至少有5 组信息配对；双方同时为 0 或同时缺失不计命中率，一侧为 0、另一侧非 0 按失配计。信息配对命中率≥90%，且覆盖至少 3 个独立交易日/自然事件日；同一来源族不作为跨源证据；盘中快照不计入 L1。JSON `daily_sample_counts` 与 `daily_informative_sample_counts`分别保留每日有效配对数和 L1 信息配对数。（详见 `COLLISION_RULES.md`）。本引擎只发现、不写字典；新定案经 field_dict.md 订正后由 sanctioned 管线 ingest。
 
 ---
 
-## 一、L1 / L1-U 新候选 — 异号同义（跨编号，高价值）(1)
+## 一、L1 / L1-U 新候选 — 异号同义（跨编号，高价值）(2)
 
 | 左字段(unverified) | 右字段 | 等级 | 命中率 | 天数 | 样本 | 信息样本 | 比值 | hub | registry |
 |:--|:--|:--|--:|--:|--:|--:|--:|:--|:--|
+| `tdx.finance_info.zhongguben` | `tencent[73]` | L1-U | 100.00% | 6 | 120 | — | 10000 |  | — |
 | `push2ex.limit_fund` | `kpl.seal_amount` | L1 | 100.00% | 3 | 128 | 128 | - |  | — |
 
 ## 二、L1 / L1-U 新候选 — 同号镜像（同编号，低优先级）(0)
@@ -334,9 +337,9 @@ _仅显示前 100 / 共 500 条。_
 | ggmx | pending | — | — | not enough matching completed trading-date samples |
 | goodwill_detail | pending | — | — | not enough matching completed trading-date samples |
 
-## AxData / FTShare 每日轮验（不作为独立字段锚）
+## AxData 每日轮验与 FTShare REST 契约锚
 
-> 此处汇总采集目录已保存的本地证据，不发起网络请求、不改变注册表状态；AxData 是多源框架，FTShare 底层来源族仍须单独核实。
+> 本节内容只汇总报告生成时已保存的本地证据，不发起网络请求、不改变注册表状态；AxData 是多源框架。本文记录的是旧私有 MCP 样本，不能代替之后新增的公开 REST `ftshare_rest` 日常样本；新 REST 的官方语义锚及 L1-C 规则见 [`ftshare_rest_contract.md`](../../verify/ftshare_rest_contract.md)。
 
 ### AxData
 
@@ -506,5 +509,224 @@ Markdown 显示前 100 条；其余 25 条完整保留在 JSON。
 
 ## 探索候选持续跟踪
 
-研究台账：`collision_research_state.json.gz`；累计历史跟踪候选对 1663，本报告候选对 594，历史复现 573，新发现 0。
+研究台账：`collision_research_state.json.gz`；累计历史跟踪候选对 1663，本报告候选对 745，历史复现 578，新发现 0。
 台账保留报告引用、证据交易日、来源和碰撞指标；仅供后续研究回看，不会自动改变字段状态、碰撞锚或主字典。新报告只将 `actionable_L1`、L4 和主动方法候选写入待研究队列；已登记关系的复验单独展示，历史跟踪记录不会被删除。
+
+## 候选覆盖、公式与下一步采样
+
+本节用于定位证据缺口和安排后续取样。相关性、公式与样本优先级均为探索候选；不会改变 L1/L1-U 门槛、来源独立性或主字典。
+
+- 未知目标 372 个；其中有方法候选 185 个、无候选 187 个；多候选目标 178 个。
+- 方法候选生成 5144 条；全局详细项保留 500/500，另按目标字段保留 168 条；完整明细 5144 条在 JSON `method_candidate_inventory`；未归档明细 0 条。
+- 字段覆盖详情：available；覆盖身份 2003，读取 4 份本地索引。
+
+### 优先处理字段
+
+| 未知字段 | 当前诊断 | 独立对比/候选数 | 独立锚家族/本源日期 | 建议复核股票 | 最强候选线索 |
+|:--|:--|--:|:--|:--|:--|
+| `sina[23]` | 存在多个候选，需区分 | 246 / 86 | 6 家族 / 246 对 / 本源 0 日 | 600519 (6.144549) | tencent[9] (robust_correlation,affine_formula,per_stock_time_series); tencent[85] (robust_correlation,affine_formula,per_stock_time_series) |
+| `sina[25]` | 存在多个候选，需区分 | 246 / 86 | 6 家族 / 246 对 / 本源 0 日 | 600519 (6.14669) | tencent[9] (robust_correlation,affine_formula,per_stock_time_series); tencent[85] (robust_correlation,affine_formula,per_stock_time_series) |
+| `sina[27]` | 存在多个候选，需区分 | 246 / 86 | 6 家族 / 246 对 / 本源 0 日 | 600519 (6.147138) | tencent[9] (robust_correlation,affine_formula,per_stock_time_series); tencent[85] (robust_correlation,affine_formula,per_stock_time_series) |
+| `sina[29]` | 存在多个候选，需区分 | 246 / 86 | 6 家族 / 246 对 / 本源 0 日 | 600519 (6.147783) | tencent[9] (robust_correlation,affine_formula,per_stock_time_series); tencent[85] (robust_correlation,affine_formula,per_stock_time_series) |
+| `push2.f108` | 存在多个候选，需区分 | 228 / 84 | 6 家族 / 228 对 / 本源 0 日 | no_shared_stock_holdout | zhb.tipinfo.eps (robust_correlation,affine_formula); zhb.stat2.low_52w (robust_correlation,affine_formula) |
+| `push2.f160` | 存在多个候选，需区分 | 228 / 83 | 6 家族 / 228 对 / 本源 0 日 | no_shared_stock_holdout | zhb.tipinfo.eps (robust_correlation,affine_formula); zhb.stat2.low_52w (robust_correlation,affine_formula) |
+| `sina[11]` | 存在多个候选，需区分 | 246 / 82 | 6 家族 / 246 对 / 本源 0 日 | 600519 (5.945086) | tencent[9] (robust_correlation,affine_formula,per_stock_time_series); tencent[85] (robust_correlation,affine_formula,per_stock_time_series) |
+| `sina[13]` | 存在多个候选，需区分 | 246 / 82 | 6 家族 / 246 对 / 本源 0 日 | 600519 (5.936646) | tencent[9] (robust_correlation,affine_formula,per_stock_time_series); tencent[85] (robust_correlation,affine_formula,per_stock_time_series) |
+| `sina[15]` | 存在多个候选，需区分 | 246 / 82 | 6 家族 / 246 对 / 本源 0 日 | 600519 (5.934779) | tencent[9] (robust_correlation,affine_formula,per_stock_time_series); tencent[85] (robust_correlation,affine_formula,per_stock_time_series) |
+| `sina[17]` | 存在多个候选，需区分 | 246 / 82 | 6 家族 / 246 对 / 本源 0 日 | 600519 (5.934354) | tencent[9] (robust_correlation,affine_formula,per_stock_time_series); tencent[85] (robust_correlation,affine_formula,per_stock_time_series) |
+| `sina[19]` | 存在多个候选，需区分 | 246 / 82 | 6 家族 / 246 对 / 本源 0 日 | 600519 (5.933594) | tencent[9] (robust_correlation,affine_formula,per_stock_time_series); tencent[85] (robust_correlation,affine_formula,per_stock_time_series) |
+| `fuyao.valuation.pb_mrq` | 存在多个候选，需区分 | 250 / 80 | 6 家族 / 250 对 / 本源 4 日 | 600519 (13.205876) | tencent[46] (robust_correlation,affine_formula,per_stock_time_series); tencent[9] (per_stock_time_series) |
+| `push2.f190` | 存在多个候选，需区分 | 228 / 78 | 6 家族 / 228 对 / 本源 0 日 | no_shared_stock_holdout | zhb.tipinfo.eps (robust_correlation,affine_formula); zhb.stat2.low_52w (robust_correlation,affine_formula) |
+| `fuyao.valuation.ps_ttm` | 存在多个候选，需区分 | 250 / 77 | 6 家族 / 250 对 / 本源 4 日 | 600519 (9.116246) | tencent[46] (robust_correlation,per_stock_time_series); eltdx.shortline.limit_stat_days (robust_correlation,per_stock_time_series) |
+| `push2.f92` | 存在多个候选，需区分 | 228 / 77 | 6 家族 / 228 对 / 本源 0 日 | no_shared_stock_holdout | zhb.tipinfo.eps (robust_correlation,affine_formula); zhb.stat2.low_52w (robust_correlation,affine_formula) |
+| `push2.f103` | 存在多个候选，需区分 | 228 / 75 | 6 家族 / 228 对 / 本源 0 日 | no_shared_stock_holdout | zhb.stat.employee_count (robust_correlation,affine_formula); zhb.stat.cash_reserve_wan (robust_correlation,affine_formula) |
+| `push2.f49` | 存在多个候选，需区分 | 228 / 73 | 6 家族 / 228 对 / 本源 0 日 | no_shared_stock_holdout | zhb.stat2.main_net_buy_hands_1d (robust_correlation,affine_formula); zhb.stat2.main_net_buy_hands (robust_correlation,affine_formula) |
+| `push2.f161` | 存在多个候选，需区分 | 228 / 72 | 6 家族 / 228 对 / 本源 0 日 | no_shared_stock_holdout | zhb.stat2.main_net_buy_hands_1d (robust_correlation,affine_formula); zhb.stat2.main_net_buy_hands (robust_correlation,affine_formula) |
+| `tencent[21]` | 存在多个候选，需区分 | 208 / 66 | 6 家族 / 208 对 / 本源 0 日 | 600519 (1.615369) | sina[7] (robust_correlation,affine_formula,per_stock_time_series); sina[6] (robust_correlation,affine_formula,per_stock_time_series) |
+| `tencent[23]` | 存在多个候选，需区分 | 208 / 66 | 6 家族 / 208 对 / 本源 0 日 | 600519 (1.614651) | sina[7] (robust_correlation,affine_formula,per_stock_time_series); sina[6] (robust_correlation,affine_formula,per_stock_time_series) |
+| `tencent[25]` | 存在多个候选，需区分 | 208 / 66 | 6 家族 / 208 对 / 本源 0 日 | 600519 (1.614024) | sina[7] (robust_correlation,affine_formula,per_stock_time_series); sina[6] (robust_correlation,affine_formula,per_stock_time_series) |
+| `tencent[27]` | 存在多个候选，需区分 | 208 / 66 | 6 家族 / 208 对 / 本源 0 日 | 600519 (1.613245) | sina[7] (robust_correlation,affine_formula,per_stock_time_series); sina[6] (robust_correlation,affine_formula,per_stock_time_series) |
+| `push2.f109` | 存在多个候选，需区分 | 228 / 63 | 6 家族 / 228 对 / 本源 0 日 | no_shared_stock_holdout | zhb.stat.net_profit_kcf (robust_correlation,affine_formula); tdx.finance_info.yingyelirun (robust_correlation,affine_formula) |
+| `tencent[11]` | 存在多个候选，需区分 | 208 / 62 | 6 家族 / 208 对 / 本源 0 日 | 600519 (2.426146) | sina[7] (robust_correlation,affine_formula,per_stock_time_series); sina[6] (robust_correlation,affine_formula,per_stock_time_series) |
+| `tencent[13]` | 存在多个候选，需区分 | 208 / 62 | 6 家族 / 208 对 / 本源 0 日 | 600519 (2.427006) | sina[7] (robust_correlation,affine_formula,per_stock_time_series); sina[6] (robust_correlation,affine_formula,per_stock_time_series) |
+| `tencent[15]` | 存在多个候选，需区分 | 208 / 62 | 6 家族 / 208 对 / 本源 0 日 | 600519 (2.427809) | sina[7] (robust_correlation,affine_formula,per_stock_time_series); sina[6] (robust_correlation,affine_formula,per_stock_time_series) |
+| `tencent[17]` | 存在多个候选，需区分 | 208 / 62 | 6 家族 / 208 对 / 本源 0 日 | 600519 (2.428479) | sina[7] (robust_correlation,affine_formula,per_stock_time_series); sina[6] (robust_correlation,affine_formula,per_stock_time_series) |
+| `push2.f175` | 存在多个候选，需区分 | 228 / 59 | 6 家族 / 228 对 / 本源 0 日 | no_shared_stock_holdout | zhb.tipinfo.eps (robust_correlation,affine_formula); zhb.stat2.low_52w (robust_correlation,affine_formula) |
+| `push2.f183` | 存在多个候选，需区分 | 228 / 58 | 6 家族 / 228 对 / 本源 0 日 | no_shared_stock_holdout | tdx.finance_info.zhuyingshouru (robust_correlation,affine_formula); tdx.finance_info.farengu (robust_correlation,affine_formula) |
+| `push2.f60` | 存在多个候选，需区分 | 228 / 57 | 6 家族 / 228 对 / 本源 0 日 | no_shared_stock_holdout | zhb.tipinfo.eps (robust_correlation,affine_formula); zhb.stat2.low_52w (robust_correlation,affine_formula) |
+| `push2.f71` | 存在多个候选，需区分 | 228 / 57 | 6 家族 / 228 对 / 本源 0 日 | no_shared_stock_holdout | zhb.tipinfo.eps (robust_correlation,affine_formula); zhb.stat2.low_52w (robust_correlation,affine_formula) |
+| `push2.f174` | 存在多个候选，需区分 | 228 / 56 | 6 家族 / 228 对 / 本源 0 日 | no_shared_stock_holdout | zhb.tipinfo.eps (robust_correlation,affine_formula); zhb.stat2.low_52w (robust_correlation,affine_formula) |
+| `push2.f145` | 存在多个候选，需区分 | 228 / 53 | 6 家族 / 228 对 / 本源 0 日 | no_shared_stock_holdout | zhb.stat2.main_net_buy_amount_1d (robust_correlation,affine_formula); zhb.stat2.amount_1d (robust_correlation,affine_formula) |
+| `push2.f142` | 存在多个候选，需区分 | 228 / 50 | 6 家族 / 228 对 / 本源 0 日 | no_shared_stock_holdout | zhb.stat2.amount_2d (robust_correlation,affine_formula); zhb.stat2.amount_1d (robust_correlation,affine_formula) |
+| `push2.f186` | 存在多个候选，需区分 | 228 / 50 | 6 家族 / 228 对 / 本源 0 日 | no_shared_stock_holdout | zhb.stat2.low_52w (robust_correlation); zhb.stat2.ipo_price (robust_correlation) |
+| `push2.f194` | 存在多个候选，需区分 | 228 / 50 | 6 家族 / 228 对 / 本源 0 日 | no_shared_stock_holdout | zhb.tipinfo.eps (robust_correlation); zhb.stat2.low_52w (robust_correlation) |
+| `push2.f140` | 存在多个候选，需区分 | 228 / 49 | 6 家族 / 228 对 / 本源 0 日 | no_shared_stock_holdout | zhb.tipinfo.eps (robust_correlation); zhb.stat2.low_52w (robust_correlation) |
+| `push2.f144` | 存在多个候选，需区分 | 228 / 48 | 6 家族 / 228 对 / 本源 0 日 | no_shared_stock_holdout | zhb.stat2.main_net_buy_amount_1d (robust_correlation,affine_formula); zhb.stat2.amount_1d (robust_correlation,affine_formula) |
+| `zhb.full.dividend_yield` | 存在多个候选，需区分 | 120 / 48 | 6 家族 / 120 对 / 本源 5 日 | 600519 (45.145617) | tencent[64] (robust_correlation,per_stock_time_series); tencent[9] (per_stock_time_series) |
+| `push2.f136` | 存在多个候选，需区分 | 228 / 47 | 6 家族 / 228 对 / 本源 0 日 | no_shared_stock_holdout | zhb.stat2.main_net_buy_amount_1d (robust_correlation,affine_formula); zhb.stat2.amount_1d (robust_correlation,affine_formula) |
+| `push2.f141` | 存在多个候选，需区分 | 228 / 45 | 6 家族 / 228 对 / 本源 0 日 | no_shared_stock_holdout | zhb.stat2.main_net_buy_amount_1d (robust_correlation,affine_formula); zhb.stat2.amount_1d (robust_correlation,affine_formula) |
+| `zhb.full.high_52w` | 存在多个候选，需区分 | 120 / 44 | 6 家族 / 120 对 / 本源 5 日 | 600519 (17.887017) | tencent[67] (robust_correlation,affine_formula,per_stock_time_series); tencent[4] (robust_correlation,affine_formula,per_stock_time_series) |
+| `em_fund_flow.f143` | 存在多个候选，需区分 | 228 / 43 | 6 家族 / 228 对 / 本源 0 日 | no_shared_stock_holdout | tencent[9] (robust_correlation); tencent[85] (robust_correlation) |
+| `push2.f135` | 存在多个候选，需区分 | 228 / 43 | 6 家族 / 228 对 / 本源 0 日 | no_shared_stock_holdout | zhb.stat2.amount_1d (robust_correlation,affine_formula); zhb.stat2.amount (robust_correlation,affine_formula) |
+| `tdx.finance_info.eps` | 存在多个候选，需区分 | 120 / 43 | 6 家族 / 120 对 / 本源 0 日 | 600519 (21.041537) | tencent[9] (robust_correlation,affine_formula); tencent[85] (robust_correlation,affine_formula) |
+| `em_fund_flow.f140` | 存在多个候选，需区分 | 228 / 42 | 6 家族 / 228 对 / 本源 0 日 | no_shared_stock_holdout | tencent[58] (robust_correlation,affine_formula); tencent[80] (robust_correlation) |
+| `em_fund_flow.f146` | 存在多个候选，需区分 | 228 / 42 | 6 家族 / 228 对 / 本源 0 日 | no_shared_stock_holdout | tencent[9] (affine_formula); tencent[85] (affine_formula) |
+| `zhb.full.change_mtd` | 存在多个候选，需区分 | 120 / 42 | 6 家族 / 120 对 / 本源 5 日 | 600519 (8.409311) | tencent[75] (robust_correlation,per_stock_time_series); tencent[63] (robust_correlation,per_stock_time_series) |
+| `zhb.full.zt_streak_cycle` | 存在多个候选，需区分 | 120 / 41 | 6 家族 / 120 对 / 本源 0 日 | 301190 (3.475513) | tencent[79] (robust_correlation,per_stock_time_series); tencent[71] (robust_correlation,per_stock_time_series) |
+| `push2.f192` | 存在多个候选，需区分 | 228 / 39 | 6 家族 / 228 对 / 本源 0 日 | no_shared_stock_holdout | zhb.stat.free_ltgb (robust_correlation,affine_formula); zhb.stat.cash_reserve_wan (robust_correlation,affine_formula) |
+
+_此表显示优先级最高的 50 / 共 372 个目标；完整清单见 JSON。_
+
+
+### 补足全局截断的字段候选（168）
+
+| 未知字段 | 候选字段 | 方法 | 样本 | 日期 | 来源 |
+|:--|:--|:--|--:|:--|:--|
+| `em_fund_flow.f135` | `tencent[57]` | robust_correlation, affine_formula | 13 | T:20261019 | em_fund_flow, tencent |
+| `em_fund_flow.f136` | `tencent[57]` | robust_correlation, affine_formula | 13 | T:20261019 | em_fund_flow, tencent |
+| `em_fund_flow.f137` | `tencent[57]` | robust_correlation, affine_formula | 13 | T:20261019 | em_fund_flow, tencent |
+| `em_fund_flow.f140` | `tencent[58]` | robust_correlation, affine_formula | 13 | T:20261019 | em_fund_flow, tencent |
+| `em_fund_flow.f141` | `tencent[57]` | robust_correlation, affine_formula | 13 | T:20261019 | em_fund_flow, tencent |
+| `em_fund_flow.f142` | `tencent[57]` | robust_correlation, affine_formula | 13 | T:20261019 | em_fund_flow, tencent |
+| `em_fund_flow.f143` | `tencent[9]` | robust_correlation | 13 | T:20261019 | em_fund_flow, tencent |
+| `em_fund_flow.f144` | `tencent[57]` | robust_correlation, affine_formula | 13 | T:20261019 | em_fund_flow, tencent |
+| `em_fund_flow.f145` | `tencent[57]` | robust_correlation, affine_formula | 13 | T:20261019 | em_fund_flow, tencent |
+| `em_fund_flow.f146` | `tencent[9]` | affine_formula | 13 | T:20261019 | em_fund_flow, tencent |
+| `em_fund_flow.f147` | `tdx.finance_info.zibengongjijin` | robust_correlation | 13 | T:20261019 | em_fund_flow, tdx |
+| `em_fund_flow.f148` | `tencent[31]` | robust_correlation | 13 | T:20261019 | em_fund_flow, tencent |
+| `em_fund_flow.f149` | `tencent[70]` | robust_correlation | 13 | T:20261019 | em_fund_flow, tencent |
+| `fuyao.valuation.pb_mrq` | `tencent[9]` | per_stock_time_series | 80 | T:20261009, T:20261014, T:20261016, T:20261019 | fuyao, tencent |
+| `fuyao.valuation.pe_mrq` | `tencent[39]` | robust_correlation, per_stock_time_series | 80 | T:20261009, T:20261014, T:20261016, T:20261019 | fuyao, tencent |
+| `fuyao.valuation.pe_ttm` | `tencent[52]` | robust_correlation, per_stock_time_series | 80 | T:20261009, T:20261014, T:20261016, T:20261019 | fuyao, tencent |
+| `fuyao.valuation.ps_ttm` | `tencent[46]` | robust_correlation, per_stock_time_series | 80 | T:20261009, T:20261014, T:20261016, T:20261019 | fuyao, tencent |
+| `kpl.main_buy` | `kph.turnover` | robust_correlation | 143 | T:20261009, T:20261013, T:20261016 | kph, kpl |
+| `kpl.main_sell` | `kph.turnover` | robust_correlation | 143 | T:20261009, T:20261013, T:20261016 | kph, kpl |
+| `kpl.raw_columns.col_04` | `kph.limit_time` | robust_correlation, affine_formula | 50 | T:20261016 | kph, kpl |
+| `kpl.raw_columns.col_06` | `kph.seal_amount` | robust_correlation, affine_formula | 50 | T:20261016 | kph, kpl |
+| `kpl.raw_columns.col_07` | `kph.seal_money` | robust_correlation, affine_formula | 50 | T:20261016 | kph, kpl |
+| `kpl.raw_columns.col_08` | `kph.net_inflow` | robust_correlation, affine_formula | 50 | T:20261016 | kph, kpl |
+| `kpl.raw_columns.col_09` | `push2ex.amount` | robust_correlation, affine_formula | 107 | T:20261016, T:20261019 | kpl, push2ex |
+| `kpl.raw_columns.col_10` | `push2ex.amount` | robust_correlation, affine_formula | 107 | T:20261016, T:20261019 | kpl, push2ex |
+| `kpl.raw_columns.col_11` | `push2ex.amount` | robust_correlation, affine_formula | 107 | T:20261016, T:20261019 | kpl, push2ex |
+| `kpl.raw_columns.col_13` | `push2ex.amount` | robust_correlation | 107 | T:20261016, T:20261019 | kpl, push2ex |
+| `kpl.raw_columns.col_14` | `kph.turnover_rate` | robust_correlation, affine_formula | 50 | T:20261016 | kph, kpl |
+| `push2.f103` | `zhb.stat.employee_count` | robust_correlation, affine_formula | 12 | T:20261012 | push2, zhb |
+| `push2.f108` | `zhb.tipinfo.eps` | robust_correlation, affine_formula | 12 | T:20261012 | push2, zhb |
+| `push2.f109` | `zhb.stat.net_profit_kcf` | robust_correlation, affine_formula | 12 | T:20261012 | push2, zhb |
+| `push2.f119` | `zhb.stat.change_5d` | robust_correlation, affine_formula | 12 | T:20261012 | push2, zhb |
+| `push2.f120` | `zhb.stat.change_20d` | robust_correlation, affine_formula | 12 | T:20261012 | push2, zhb |
+| `push2.f135` | `zhb.stat2.amount_1d` | robust_correlation, affine_formula | 12 | T:20261012 | push2, zhb |
+| `push2.f136` | `zhb.stat2.main_net_buy_amount_1d` | robust_correlation, affine_formula | 12 | T:20261012 | push2, zhb |
+| `push2.f137` | `zhb.stat.change_ytd` | robust_correlation | 12 | T:20261012 | push2, zhb |
+| `push2.f140` | `zhb.tipinfo.eps` | robust_correlation | 12 | T:20261012 | push2, zhb |
+| `push2.f141` | `zhb.stat2.main_net_buy_amount_1d` | robust_correlation, affine_formula | 12 | T:20261012 | push2, zhb |
+| `push2.f142` | `zhb.stat2.amount_2d` | robust_correlation, affine_formula | 12 | T:20261012 | push2, zhb |
+| `push2.f143` | `zhb.stat.streak_days` | robust_correlation | 12 | T:20261012 | push2, zhb |
+| `push2.f144` | `zhb.stat2.main_net_buy_amount_1d` | robust_correlation, affine_formula | 12 | T:20261012 | push2, zhb |
+| `push2.f145` | `zhb.stat2.main_net_buy_amount_1d` | robust_correlation, affine_formula | 12 | T:20261012 | push2, zhb |
+| `push2.f146` | `zhb.stat2.main_net_buy_hands` | robust_correlation | 12 | T:20261012 | push2, zhb |
+| `push2.f148` | `zhb.stat2.main_net_buy_hands` | robust_correlation | 12 | T:20261012 | push2, zhb |
+| `push2.f149` | `zhb.stat.change_ytd` | robust_correlation | 12 | T:20261012 | push2, zhb |
+| `push2.f160` | `zhb.tipinfo.eps` | robust_correlation, affine_formula | 12 | T:20261012 | push2, zhb |
+| `push2.f161` | `zhb.stat2.main_net_buy_hands_1d` | robust_correlation, affine_formula | 12 | T:20261012 | push2, zhb |
+| `push2.f162` | `zhb.stat.pe_ttm` | robust_correlation, affine_formula | 12 | T:20261012 | push2, zhb |
+| `push2.f163` | `tencent[53]` | robust_correlation, affine_formula | 12 | T:20261012 | push2, tencent |
+| `push2.f164` | `zhb.stat.pe_ttm` | robust_correlation, affine_formula | 12 | T:20261012 | push2, zhb |
+| `push2.f165` | `tencent[46]` | robust_correlation | 12 | T:20261012 | push2, tencent |
+| `push2.f166` | `zhb.stat2.ipo_price` | robust_correlation | 12 | T:20261012 | push2, zhb |
+| `push2.f167` | `tencent[46]` | robust_correlation, affine_formula | 12 | T:20261012 | push2, tencent |
+| `push2.f174` | `zhb.tipinfo.eps` | robust_correlation, affine_formula | 12 | T:20261012 | push2, zhb |
+| `push2.f175` | `zhb.tipinfo.eps` | robust_correlation, affine_formula | 12 | T:20261012 | push2, zhb |
+| `push2.f176` | `tencent[46]` | robust_correlation | 12 | T:20261012 | push2, tencent |
+| `push2.f177` | `zhb.tipinfo.eps` | robust_correlation | 12 | T:20261012 | push2, zhb |
+| `push2.f181` | `zhb.stat.change_60k_bar` | robust_correlation | 12 | T:20261012 | push2, zhb |
+| `push2.f183` | `tdx.finance_info.zhuyingshouru` | robust_correlation, affine_formula | 12 | T:20261012 | push2, tdx |
+| `push2.f184` | `tencent[30]` | robust_correlation | 12 | T:20261012 | push2, tencent |
+| `push2.f186` | `zhb.stat2.low_52w` | robust_correlation | 12 | T:20261012 | push2, zhb |
+| `push2.f187` | `zhb.tipinfo.eps` | robust_correlation | 12 | T:20261012 | push2, zhb |
+| `push2.f188` | `zhb.stat.shape_value` | robust_correlation | 12 | T:20261012 | push2, zhb |
+| `push2.f190` | `zhb.tipinfo.eps` | robust_correlation, affine_formula | 12 | T:20261012 | push2, zhb |
+| `push2.f191` | `tencent[74]` | robust_correlation, affine_formula | 12 | T:20261012 | push2, tencent |
+| `push2.f192` | `zhb.stat.free_ltgb` | robust_correlation, affine_formula | 12 | T:20261012 | push2, zhb |
+| `push2.f193` | `zhb.stat.change_60k_bar` | robust_correlation | 12 | T:20261012 | push2, zhb |
+| `push2.f194` | `zhb.tipinfo.eps` | robust_correlation | 12 | T:20261012 | push2, zhb |
+| `push2.f195` | `zhb.stat.change_ytd` | robust_correlation | 12 | T:20261012 | push2, zhb |
+| `push2.f196` | `tencent[43]` | robust_correlation | 12 | T:20261012 | push2, tencent |
+| `push2.f197` | `zhb.tipinfo.eps` | robust_correlation | 12 | T:20261012 | push2, zhb |
+| `push2.f49` | `zhb.stat2.main_net_buy_hands_1d` | robust_correlation, affine_formula | 12 | T:20261012 | push2, zhb |
+| `push2.f57` | `tencent[2]` | robust_correlation, affine_formula | 12 | T:20261012 | push2, tencent |
+| `push2.f60` | `zhb.tipinfo.eps` | robust_correlation, affine_formula | 12 | T:20261012 | push2, zhb |
+| `push2.f71` | `zhb.tipinfo.eps` | robust_correlation, affine_formula | 12 | T:20261012 | push2, zhb |
+| `push2.f92` | `zhb.tipinfo.eps` | robust_correlation, affine_formula | 12 | T:20261012 | push2, zhb |
+| `push2ex.circulating_value` | `kph.turnover` | robust_correlation | 50 | T:20261016 | kph, push2ex |
+| `push2ex.first_limit_time` | `kph.limit_time` | robust_correlation, affine_formula, semantic_label | 50 | T:20261016 | kph, push2ex |
+| `push2ex.limit_fund` | `kpl.seal_amount` | robust_correlation, affine_formula | 128 | T:20261014, T:20261016, T:20261019 | kpl, push2ex |
+| `push2ex.total_value` | `kph.turnover` | robust_correlation | 50 | T:20261016 | kph, push2ex |
+| `push2ex.turnover_rate` | `kph.turnover_rate` | robust_correlation, semantic_label | 50 | T:20261016 | kph, push2ex |
+| `sina[14]` | `push2.f47` | robust_correlation, affine_formula | 12 | T:20261012 | push2, sina |
+| `sina[16]` | `push2.f47` | robust_correlation, affine_formula | 12 | T:20261012 | push2, sina |
+| `sina[18]` | `fuyao.snapshot.volume` | robust_correlation | 80 | T:20261009, T:20261014, T:20261016, T:20261019 | fuyao, sina |
+| `sina[24]` | `zhb.stat.zt_lianban` | robust_correlation | 14 | T:20261009, T:20261012, T:20261013, T:20261014, T:20261016 | sina, zhb |
+| `sina[26]` | `push2.f47` | robust_correlation, affine_formula | 12 | T:20261012 | push2, sina |
+| `sina[28]` | `zhb.stat.zt_streak_cycle` | per_stock_time_series | 18 | T:20261009, T:20261012, T:20261013, T:20261014, T:20261016 | sina, zhb |
+| `sina[32]` | `eltdx.quote_snapshot.amount_raw` | affine_formula | 118 | T:20261009, T:20261012, T:20261014, T:20261015, T:20261016 | eltdx, sina |
+| `sina_extended.netamount` | `tencent[58]` | robust_correlation | 20 | T:20261019 | sina_extended, tencent |
+| `sina_extended.trade` | `tencent[9]` | robust_correlation, affine_formula | 20 | T:20261019 | sina_extended, tencent |
+| `sina_extended.turnover` | `tencent[38]` | robust_correlation, affine_formula | 20 | T:20261019 | sina_extended, tencent |
+| `tdx.b_vol` | `tencent[6]` | robust_correlation, per_stock_time_series | 100 | T:20261009, T:20261012, T:20261014, T:20261016, T:20261019 | tdx, tencent |
+| `tdx.finance_info.eps` | `tencent[9]` | robust_correlation, affine_formula | 120 | T:20261009, T:20261012, T:20261014, T:20261015, T:20261016 | tdx, tencent |
+| `tdx.finance_info.fajirenfarengu` | `push2.f105` | robust_correlation, affine_formula | 12 | T:20261012 | push2, tdx |
+| `tdx.finance_info.shuihouli run` | `push2.f105` | robust_correlation, affine_formula | 12 | T:20261012 | push2, tdx |
+| `tdx.finance_info.zhongguben` | `tencent[76]` | robust_correlation, affine_formula | 120 | T:20261009, T:20261012, T:20261014, T:20261015, T:20261016 | tdx, tencent |
+| `tdx.finance_info.zhuyinglyrun` | `tencent[76]` | robust_correlation | 120 | T:20261009, T:20261012, T:20261014, T:20261015, T:20261016 | tdx, tencent |
+| `tdx.quote_full.ask1_vol` | `sina[20]` | robust_correlation, affine_formula | 40 | T:20261016, T:20261019 | sina, tdx |
+| `tdx.quote_full.b_vol` | `tencent[6]` | robust_correlation, per_stock_time_series | 100 | T:20261009, T:20261012, T:20261014, T:20261016, T:20261019 | tdx, tencent |
+| `tdx.quote_full.bid1_vol` | `sina[10]` | robust_correlation, affine_formula | 40 | T:20261016, T:20261019 | sina, tdx |
+
+_仅显示前 100 / 共 168 条字段前沿候选。_
+
+
+### 双输入公式候选
+本轮未发现通过留出筛选的公式候选；测试组合 6114 个。
+
+
+### 已知映射与已证伪关系的候选校准
+
+- 已登记正向对照：当前窗口有 79 组独立数值关系可评估，78 组被方法候选识别；样本不足 1 组。此计数仅检查方法覆盖，不是准确率。
+- 已证伪负向对照：数值关系 0 组，其中仍有方法信号 0 组；这些信号被隔离，不进入普通候选。
+
+### 采集覆盖异常源
+
+- baidu: 20261014, 20261015, 20261016 ({'deprecated': 6})
+- clist: 20261012, 20261014, 20261015 ({'not_attempted_blocked_family': 1, 'partial': 2})
+- datacenter: 20261012 ({'not_attempted_blocked_family': 1, 'ok': 4})
+- em_fund_flow: 20261014, 20261015, 20261019 ({'partial': 4})
+- em_hot: 20261012, 20261014, 20261015 ({'context_only': 3})
+- em_kline_f61: 20261014, 20261015, 20261019 ({'partial': 4})
+- event_dc: 20261012 ({'not_attempted_blocked_family': 1, 'ok': 4})
+- exchange: 20261012, 20261014, 20261015 ({'context_only': 3})
+- ftshare: 20261015, 20261016, 20261019 ({'failed': 5, 'ok': 2})
+- fuyao: 20261012 ({'interrupted': 1, 'ok': 5})
+- macro_dc: 20261012 ({'not_attempted_blocked_family': 1, 'ok': 4})
+- news_wscn_cctv: 20261015 ({'ok': 6, 'partial': 1})
+- push2: 20261012, 20261014, 20261015 ({'failed': 2, 'partial': 1})
+- push2ex: 20261012 ({'not_attempted_blocked_family': 1, 'ok': 4})
+- reports: 20261012 ({'not_attempted_blocked_family': 1, 'ok': 4})
+- slist: 20261012, 20261014, 20261015 ({'failed': 2, 'not_attempted_blocked_family': 1})
+- sse_e_interaction: 20261012, 20261014, 20261016 ({'ok': 4, 'partial': 3})
+- st_list: 20261012, 20261014, 20261015 ({'ok': 2, 'partial': 3})
+- ulist239: 20261014, 20261015, 20261019 ({'failed': 4})
+- zhb: 20261019 ({'ok': 5, 'partial': 1})
+
+## 报告完整性与审阅范围
+
+- 机器可读完整性：`complete`；方法候选生成 5144 条，完整明细保存 5144 条，缺失 0 条，多余 0 条，重复 0 条，身份无效 0 条。
+- 全量方法候选位于同名 JSON 的 `method_candidate_inventory`；Markdown 的 Top-N 表格是导航摘要，不能代替全量 JSON 审阅。
+- Markdown 未逐行展示、但 JSON 保留的部分：
+  - `L4`：展示 60 / 100，摘要省略 40 条。
+  - `method_candidates`：展示 100 / 500，摘要省略 400 条。
+  - `method_candidate_inventory`：展示 0 / 5144，摘要省略 5144 条。
+  - `method_candidate_frontier`：展示 100 / 168，摘要省略 68 条。
+  - `candidate_triage.targets`：展示 50 / 372，摘要省略 322 条。
+  - `diagnostics`：展示 100 / 135，摘要省略 35 条。
+- 完整性对账通过；逐目标复核仍须覆盖 JSON 的全部明细，并为每项记录已检查、重复归并、证据不足或需外部核验的处置。

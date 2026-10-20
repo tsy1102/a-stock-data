@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": 2,
-    "updated": "2026-10-19",
+    "updated": "2026-10-20",
     "source_of_truth": "field_registry.json",
     "generated_by": "manual source-identity reconciliation; see source_identity_reclassifications.json",
     "note": "source_fields 是逐源完整路径权威记录；fields 是兼容聚合视图。Levistock 历史混合身份的 175 条结构化记录已按逐字段映射重分类。历史原文中额外解析到的 56 个 token 不在迁移前的结构化注册表中，继续保留在只读档案，不提升为当前字段记录。状态冲突与历史证据保存在 source_fields。source_field_addenda 只允许有 E3 文件证据且经 parity 校验的增补，不覆盖 field_source_reference.md 历史原文。",
@@ -13,16 +13,16 @@
       "disproved": 2,
       "empirical_duplicate_alias": 2,
       "identity_reclassified_pending": 9,
-      "manual_collision_adjudication": 16,
+      "manual_collision_adjudication": 18,
       "matched": 878,
       "reference_status_conflict": 22,
       "reference_status_missing": 35,
-      "registry_status_only_single_source": 874,
+      "registry_status_only_single_source": 872,
       "resolved_by_multiday_independent_cross_source_l1": 2,
       "status_conflict": 59,
       "status_missing": 43,
-      "unverified": 1508,
-      "verified": 926,
+      "unverified": 1506,
+      "verified": 928,
       "verified_by_empirical_addendum": 12,
       "verified_by_source_contract": 69
     }
@@ -100,8 +100,8 @@
       "section_patterns": [
         "12.20.1 FTShare 股吧/评论原始字段补录（V17.1.1 全量登记）"
       ],
-      "status": "active",
-      "source_role": "service_endpoint"
+      "status": "historical",
+      "source_role": "retired_service_endpoint"
     },
     {
       "name": "Levistock历史未归属",
@@ -336,6 +336,16 @@
         "12.8.13.1 财联社快讯 telegraph 原始字段补录（V17.1.1 全量登记）"
       ],
       "status": "active"
+    },
+    {
+      "name": "FTShare REST",
+      "verify_file": "ftshare_rest_contract.md",
+      "section_patterns": [],
+      "status": "active",
+      "source_role": "documented_contract_anchor",
+      "contract_ids": [
+        "a_share_realtime_quote"
+      ]
     }
   ],
   "fields": [
@@ -8318,6 +8328,7 @@
       "code": "amplitude",
       "source": null,
       "sources": [
+        "FTShare REST",
         "Levistock历史未归属",
         "同花顺-fuyao",
         "市场源(market_sources)",
@@ -8328,17 +8339,20 @@
       "meaning": "",
       "unit": "",
       "status_raw": "",
-      "status": "unverified",
+      "status": "conflict",
       "source_statuses": {
         "Levistock历史未归属": "unverified",
         "同花顺-fuyao": "unverified",
         "市场源(market_sources)": "unverified",
-        "开盘啦(kpl)": "unverified"
+        "开盘啦(kpl)": "unverified",
+        "FTShare REST": "verified"
       },
-      "aggregation_status": "incomplete",
+      "aggregation_status": "ambiguous",
       "aggregation_issues": [
         "canonical_incomplete",
+        "meaning_differs",
         "meaning_incomplete",
+        "source_statuses_differ",
         "unit_incomplete"
       ]
     },
@@ -9253,6 +9267,24 @@
       ]
     },
     {
+      "code": "avg",
+      "source": "FTShare REST",
+      "sources": [
+        "FTShare REST"
+      ],
+      "section": "FTShare REST 官方接口契约：A股行情列表",
+      "canonical": "avg",
+      "meaning": "平均价格",
+      "unit": "",
+      "status_raw": "",
+      "status": "verified",
+      "source_statuses": {
+        "FTShare REST": "verified"
+      },
+      "aggregation_status": "consistent",
+      "aggregation_issues": []
+    },
+    {
       "code": "avg_change",
       "source": "开盘红(Levistock适配)",
       "sources": [
@@ -9684,6 +9716,24 @@
       ]
     },
     {
+      "code": "bid_ask_ratio",
+      "source": "FTShare REST",
+      "sources": [
+        "FTShare REST"
+      ],
+      "section": "FTShare REST 官方接口契约：A股行情列表",
+      "canonical": "bid_ask_ratio",
+      "meaning": "买卖盘比率",
+      "unit": "",
+      "status_raw": "",
+      "status": "verified",
+      "source_statuses": {
+        "FTShare REST": "verified"
+      },
+      "aggregation_status": "consistent",
+      "aggregation_issues": []
+    },
+    {
       "code": "bid_vol",
       "source": "新浪(扩展API)",
       "sources": [
@@ -9804,6 +9854,24 @@
         "canonical_incomplete",
         "meaning_incomplete"
       ]
+    },
+    {
+      "code": "board",
+      "source": "FTShare REST",
+      "sources": [
+        "FTShare REST"
+      ],
+      "section": "FTShare REST 官方接口契约：A股行情列表",
+      "canonical": "board",
+      "meaning": "板块标识",
+      "unit": "",
+      "status_raw": "",
+      "status": "verified",
+      "source_statuses": {
+        "FTShare REST": "verified"
+      },
+      "aggregation_status": "consistent",
+      "aggregation_issues": []
     },
     {
       "code": "board_count",
@@ -10420,6 +10488,7 @@
       "code": "change",
       "source": null,
       "sources": [
+        "FTShare REST",
         "Levistock历史未归属",
         "TDX(双命名源)",
         "同花顺-fuyao"
@@ -10429,17 +10498,20 @@
       "meaning": "",
       "unit": "",
       "status_raw": "",
-      "status": "unverified",
+      "status": "conflict",
       "source_statuses": {
         "Levistock历史未归属": "unverified",
         "TDX(双命名源)": "unverified",
-        "同花顺-fuyao": "verified"
+        "同花顺-fuyao": "verified",
+        "FTShare REST": "verified"
       },
-      "aggregation_status": "incomplete",
+      "aggregation_status": "ambiguous",
       "aggregation_issues": [
         "canonical_incomplete",
+        "meaning_differs",
         "meaning_incomplete",
         "source_statuses_differ",
+        "unit_differs",
         "unit_incomplete"
       ]
     },
@@ -10829,6 +10901,7 @@
       "code": "change_rate",
       "source": null,
       "sources": [
+        "FTShare REST",
         "Levistock历史未归属",
         "东财-热榜(em_hot)"
       ],
@@ -10837,17 +10910,129 @@
       "meaning": "",
       "unit": "",
       "status_raw": "✅",
-      "status": "unverified",
+      "status": "conflict",
       "source_statuses": {
         "Levistock历史未归属": "unverified",
-        "东财-热榜(em_hot)": "verified"
+        "东财-热榜(em_hot)": "verified",
+        "FTShare REST": "verified"
       },
-      "aggregation_status": "incomplete",
+      "aggregation_status": "ambiguous",
       "aggregation_issues": [
+        "canonical_differs",
         "canonical_incomplete",
+        "meaning_differs",
         "meaning_incomplete",
-        "source_statuses_differ"
+        "source_statuses_differ",
+        "unit_incomplete"
       ]
+    },
+    {
+      "code": "change_rate_day10",
+      "source": "FTShare REST",
+      "sources": [
+        "FTShare REST"
+      ],
+      "section": "FTShare REST 官方接口契约：A股行情列表",
+      "canonical": "change_rate_day10",
+      "meaning": "10日涨跌幅",
+      "unit": "比率",
+      "status_raw": "",
+      "status": "verified",
+      "source_statuses": {
+        "FTShare REST": "verified"
+      },
+      "aggregation_status": "consistent",
+      "aggregation_issues": []
+    },
+    {
+      "code": "change_rate_day120",
+      "source": "FTShare REST",
+      "sources": [
+        "FTShare REST"
+      ],
+      "section": "FTShare REST 官方接口契约：A股行情列表",
+      "canonical": "change_rate_day120",
+      "meaning": "120日涨跌幅",
+      "unit": "比率",
+      "status_raw": "",
+      "status": "verified",
+      "source_statuses": {
+        "FTShare REST": "verified"
+      },
+      "aggregation_status": "consistent",
+      "aggregation_issues": []
+    },
+    {
+      "code": "change_rate_day20",
+      "source": "FTShare REST",
+      "sources": [
+        "FTShare REST"
+      ],
+      "section": "FTShare REST 官方接口契约：A股行情列表",
+      "canonical": "change_rate_day20",
+      "meaning": "20日涨跌幅",
+      "unit": "比率",
+      "status_raw": "",
+      "status": "verified",
+      "source_statuses": {
+        "FTShare REST": "verified"
+      },
+      "aggregation_status": "consistent",
+      "aggregation_issues": []
+    },
+    {
+      "code": "change_rate_day5",
+      "source": "FTShare REST",
+      "sources": [
+        "FTShare REST"
+      ],
+      "section": "FTShare REST 官方接口契约：A股行情列表",
+      "canonical": "change_rate_day5",
+      "meaning": "5日涨跌幅",
+      "unit": "比率",
+      "status_raw": "",
+      "status": "verified",
+      "source_statuses": {
+        "FTShare REST": "verified"
+      },
+      "aggregation_status": "consistent",
+      "aggregation_issues": []
+    },
+    {
+      "code": "change_rate_day60",
+      "source": "FTShare REST",
+      "sources": [
+        "FTShare REST"
+      ],
+      "section": "FTShare REST 官方接口契约：A股行情列表",
+      "canonical": "change_rate_day60",
+      "meaning": "60日涨跌幅",
+      "unit": "比率",
+      "status_raw": "",
+      "status": "verified",
+      "source_statuses": {
+        "FTShare REST": "verified"
+      },
+      "aggregation_status": "consistent",
+      "aggregation_issues": []
+    },
+    {
+      "code": "change_rate_ytd",
+      "source": "FTShare REST",
+      "sources": [
+        "FTShare REST"
+      ],
+      "section": "FTShare REST 官方接口契约：A股行情列表",
+      "canonical": "change_rate_ytd",
+      "meaning": "年初至今涨跌幅",
+      "unit": "比率",
+      "status_raw": "",
+      "status": "verified",
+      "source_statuses": {
+        "FTShare REST": "verified"
+      },
+      "aggregation_status": "consistent",
+      "aggregation_issues": []
     },
     {
       "code": "change_ratio",
@@ -11243,6 +11428,7 @@
       "code": "close",
       "source": null,
       "sources": [
+        "FTShare REST",
         "TDX-eltdx(适配层)",
         "东财-datacenter(英文键)",
         "东财-热榜(em_hot)",
@@ -11258,7 +11444,8 @@
         "TDX-eltdx(适配层)": "unverified",
         "东财-datacenter(英文键)": "unverified",
         "东财-热榜(em_hot)": "verified",
-        "新浪(扩展API)": "unverified"
+        "新浪(扩展API)": "unverified",
+        "FTShare REST": "verified"
       },
       "aggregation_status": "ambiguous",
       "aggregation_issues": [
@@ -11266,7 +11453,8 @@
         "canonical_incomplete",
         "meaning_differs",
         "meaning_incomplete",
-        "source_statuses_differ"
+        "source_statuses_differ",
+        "unit_incomplete"
       ]
     },
     {
@@ -20315,6 +20503,24 @@
       ]
     },
     {
+      "code": "float_a_shares",
+      "source": "FTShare REST",
+      "sources": [
+        "FTShare REST"
+      ],
+      "section": "FTShare REST 官方接口契约：A股行情列表",
+      "canonical": "float_a_shares",
+      "meaning": "A股流通股数",
+      "unit": "股",
+      "status_raw": "",
+      "status": "verified",
+      "source_statuses": {
+        "FTShare REST": "verified"
+      },
+      "aggregation_status": "consistent",
+      "aggregation_issues": []
+    },
+    {
       "code": "float_capital",
       "source": "TDX(双命名源)",
       "sources": [
@@ -21420,6 +21626,7 @@
       "code": "high",
       "source": null,
       "sources": [
+        "FTShare REST",
         "TDX(双命名源)",
         "TDX-eltdx(适配层)",
         "同花顺-fuyao"
@@ -21429,16 +21636,21 @@
       "meaning": "",
       "unit": "",
       "status_raw": "",
-      "status": "unverified",
+      "status": "conflict",
       "source_statuses": {
         "TDX(双命名源)": "unverified",
         "TDX-eltdx(适配层)": "unverified",
-        "同花顺-fuyao": "unverified"
+        "同花顺-fuyao": "unverified",
+        "FTShare REST": "verified"
       },
-      "aggregation_status": "incomplete",
+      "aggregation_status": "ambiguous",
       "aggregation_issues": [
+        "canonical_differs",
         "canonical_incomplete",
-        "meaning_incomplete"
+        "meaning_differs",
+        "meaning_incomplete",
+        "source_statuses_differ",
+        "unit_incomplete"
       ]
     },
     {
@@ -23747,20 +23959,17 @@
       "sources": [
         "东财-push2ex"
       ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
+      "section": "20261019/20261019_collision_report.json",
+      "canonical": "seal_amount",
+      "meaning": "封单金额",
+      "unit": "元",
       "status_raw": "",
-      "status": "unverified",
+      "status": "verified",
       "source_statuses": {
-        "东财-push2ex": "unverified"
+        "东财-push2ex": "verified"
       },
-      "aggregation_status": "incomplete",
-      "aggregation_issues": [
-        "canonical_incomplete",
-        "meaning_incomplete"
-      ]
+      "aggregation_status": "consistent",
+      "aggregation_issues": []
     },
     {
       "code": "limit_or_count_raw",
@@ -24310,6 +24519,24 @@
       ]
     },
     {
+      "code": "listing_date",
+      "source": "FTShare REST",
+      "sources": [
+        "FTShare REST"
+      ],
+      "section": "FTShare REST 官方接口契约：A股行情列表",
+      "canonical": "listing_date",
+      "meaning": "上市日期",
+      "unit": "",
+      "status_raw": "",
+      "status": "verified",
+      "source_statuses": {
+        "FTShare REST": "verified"
+      },
+      "aggregation_status": "consistent",
+      "aggregation_issues": []
+    },
+    {
       "code": "liu_dong_fu_zhai_raw_float",
       "source": "TDX-eltdx(适配层)",
       "sources": [
@@ -24578,6 +24805,7 @@
       "code": "low",
       "source": null,
       "sources": [
+        "FTShare REST",
         "TDX(双命名源)",
         "TDX-eltdx(适配层)",
         "同花顺-fuyao"
@@ -24587,16 +24815,21 @@
       "meaning": "",
       "unit": "",
       "status_raw": "",
-      "status": "unverified",
+      "status": "conflict",
       "source_statuses": {
         "TDX(双命名源)": "unverified",
         "TDX-eltdx(适配层)": "unverified",
-        "同花顺-fuyao": "unverified"
+        "同花顺-fuyao": "unverified",
+        "FTShare REST": "verified"
       },
-      "aggregation_status": "incomplete",
+      "aggregation_status": "ambiguous",
       "aggregation_issues": [
+        "canonical_differs",
         "canonical_incomplete",
-        "meaning_incomplete"
+        "meaning_differs",
+        "meaning_incomplete",
+        "source_statuses_differ",
+        "unit_incomplete"
       ]
     },
     {
@@ -25283,6 +25516,7 @@
       "code": "market_cap",
       "source": null,
       "sources": [
+        "FTShare REST",
         "Levistock历史未归属",
         "东财-datacenter(英文键)"
       ],
@@ -25294,12 +25528,15 @@
       "status": "unverified",
       "source_statuses": {
         "Levistock历史未归属": "unverified",
-        "东财-datacenter(英文键)": "unverified"
+        "东财-datacenter(英文键)": "unverified",
+        "FTShare REST": "verified"
       },
       "aggregation_status": "incomplete",
       "aggregation_issues": [
         "canonical_incomplete",
-        "meaning_incomplete"
+        "meaning_incomplete",
+        "source_statuses_differ",
+        "unit_incomplete"
       ]
     },
     {
@@ -25900,6 +26137,7 @@
       "code": "name",
       "source": null,
       "sources": [
+        "FTShare REST",
         "Levistock历史未归属",
         "TDX(双命名源)",
         "TDX-eltdx(适配层)",
@@ -25915,7 +26153,7 @@
       "meaning": "",
       "unit": "",
       "status_raw": "✅",
-      "status": "unverified",
+      "status": "conflict",
       "source_statuses": {
         "Levistock历史未归属": "unverified",
         "TDX(双命名源)": "unverified",
@@ -25925,11 +26163,13 @@
         "同花顺-fuyao": "unverified",
         "市场源(market_sources)": "verified",
         "开盘啦(kpl)": "unverified",
-        "财联社(cls)": "unverified"
+        "财联社(cls)": "unverified",
+        "FTShare REST": "verified"
       },
-      "aggregation_status": "incomplete",
+      "aggregation_status": "ambiguous",
       "aggregation_issues": [
         "canonical_incomplete",
+        "meaning_differs",
         "meaning_incomplete",
         "source_statuses_differ",
         "unit_incomplete"
@@ -26649,6 +26889,7 @@
       "code": "open",
       "source": null,
       "sources": [
+        "FTShare REST",
         "TDX(双命名源)",
         "TDX-eltdx(适配层)",
         "同花顺-fuyao",
@@ -26664,14 +26905,17 @@
         "TDX(双命名源)": "unverified",
         "TDX-eltdx(适配层)": "unverified",
         "同花顺-fuyao": "unverified",
-        "新浪(扩展API)": "unverified"
+        "新浪(扩展API)": "unverified",
+        "FTShare REST": "verified"
       },
       "aggregation_status": "ambiguous",
       "aggregation_issues": [
         "canonical_differs",
         "canonical_incomplete",
         "meaning_differs",
-        "meaning_incomplete"
+        "meaning_incomplete",
+        "source_statuses_differ",
+        "unit_incomplete"
       ]
     },
     {
@@ -27857,6 +28101,7 @@
       "code": "pe_ttm",
       "source": null,
       "sources": [
+        "FTShare REST",
         "Levistock历史未归属",
         "TDX(双命名源)",
         "TDX-eltdx(适配层)",
@@ -27876,7 +28121,8 @@
         "TDX-eltdx(适配层)": "unverified",
         "ZHB-tdxstat": "verified",
         "同花顺-fuyao": "unverified",
-        "开盘啦(kpl)": "conflict"
+        "开盘啦(kpl)": "conflict",
+        "FTShare REST": "verified"
       },
       "aggregation_status": "ambiguous",
       "aggregation_issues": [
@@ -28791,21 +29037,28 @@
     },
     {
       "code": "prev_close",
-      "source": "新浪(扩展API)",
+      "source": null,
       "sources": [
+        "FTShare REST",
         "新浪(扩展API)"
       ],
-      "section": "12.8.14 新浪（行情/三表/期权/资金流备胎）✅/⏸️",
-      "canonical": "strike / prev_close / open",
-      "meaning": "行权价 / 昨收盘 / 开盘",
+      "section": "",
+      "canonical": "",
+      "meaning": "",
       "unit": "",
       "status_raw": "⏸️",
-      "status": "unverified",
+      "status": "conflict",
       "source_statuses": {
-        "新浪(扩展API)": "unverified"
+        "新浪(扩展API)": "unverified",
+        "FTShare REST": "verified"
       },
-      "aggregation_status": "consistent",
-      "aggregation_issues": []
+      "aggregation_status": "ambiguous",
+      "aggregation_issues": [
+        "canonical_differs",
+        "meaning_differs",
+        "source_statuses_differ",
+        "unit_incomplete"
+      ]
     },
     {
       "code": "prev_open_amount",
@@ -32199,6 +32452,7 @@
       "code": "shares",
       "source": null,
       "sources": [
+        "FTShare REST",
         "Levistock历史未归属",
         "东财-datacenter(英文键)"
       ],
@@ -32210,12 +32464,15 @@
       "status": "unverified",
       "source_statuses": {
         "Levistock历史未归属": "unverified",
-        "东财-datacenter(英文键)": "unverified"
+        "东财-datacenter(英文键)": "unverified",
+        "FTShare REST": "verified"
       },
       "aggregation_status": "incomplete",
       "aggregation_issues": [
         "canonical_incomplete",
-        "meaning_incomplete"
+        "meaning_incomplete",
+        "source_statuses_differ",
+        "unit_incomplete"
       ]
     },
     {
@@ -33677,6 +33934,24 @@
       ]
     },
     {
+      "code": "st",
+      "source": "FTShare REST",
+      "sources": [
+        "FTShare REST"
+      ],
+      "section": "FTShare REST 官方接口契约：A股行情列表",
+      "canonical": "st",
+      "meaning": "是否为 ST",
+      "unit": "",
+      "status_raw": "",
+      "status": "verified",
+      "source_statuses": {
+        "FTShare REST": "verified"
+      },
+      "aggregation_status": "consistent",
+      "aggregation_issues": []
+    },
+    {
       "code": "start",
       "source": "TDX-eltdx(适配层)",
       "sources": [
@@ -34850,6 +35125,7 @@
       "source": null,
       "sources": [
         "FTShare",
+        "FTShare REST",
         "市场源(market_sources)",
         "开盘啦(kpl)"
       ],
@@ -34862,12 +35138,14 @@
       "source_statuses": {
         "FTShare": "unverified",
         "市场源(market_sources)": "unverified",
-        "开盘啦(kpl)": "unverified"
+        "开盘啦(kpl)": "unverified",
+        "FTShare REST": "verified"
       },
       "aggregation_status": "incomplete",
       "aggregation_issues": [
         "canonical_incomplete",
-        "meaning_incomplete"
+        "meaning_incomplete",
+        "source_statuses_differ"
       ]
     },
     {
@@ -35551,9 +35829,10 @@
     },
     {
       "code": "symbol",
-      "source": "FTShare",
+      "source": null,
       "sources": [
-        "FTShare"
+        "FTShare",
+        "FTShare REST"
       ],
       "section": "",
       "canonical": "",
@@ -35562,7 +35841,30 @@
       "status_raw": "",
       "status": "unverified",
       "source_statuses": {
-        "FTShare": "unverified"
+        "FTShare": "unverified",
+        "FTShare REST": "verified"
+      },
+      "aggregation_status": "incomplete",
+      "aggregation_issues": [
+        "canonical_incomplete",
+        "meaning_incomplete",
+        "source_statuses_differ"
+      ]
+    },
+    {
+      "code": "symbol_id",
+      "source": "FTShare REST",
+      "sources": [
+        "FTShare REST"
+      ],
+      "section": "FTShare REST 官方接口契约：A股行情列表",
+      "canonical": "",
+      "meaning": "",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified",
+      "source_statuses": {
+        "FTShare REST": "unverified"
       },
       "aggregation_status": "incomplete",
       "aggregation_issues": [
@@ -36783,6 +37085,24 @@
       "aggregation_issues": []
     },
     {
+      "code": "tradable_a_market_cap",
+      "source": "FTShare REST",
+      "sources": [
+        "FTShare REST"
+      ],
+      "section": "FTShare REST 官方接口契约：A股行情列表",
+      "canonical": "tradable_a_market_cap",
+      "meaning": "A股流通市值",
+      "unit": "元",
+      "status_raw": "",
+      "status": "verified",
+      "source_statuses": {
+        "FTShare REST": "verified"
+      },
+      "aggregation_status": "consistent",
+      "aggregation_issues": []
+    },
+    {
       "code": "trade",
       "source": "新浪(扩展API)",
       "sources": [
@@ -36933,6 +37253,24 @@
       ]
     },
     {
+      "code": "ts_millis",
+      "source": "FTShare REST",
+      "sources": [
+        "FTShare REST"
+      ],
+      "section": "FTShare REST 官方接口契约：A股行情列表",
+      "canonical": "ts_millis",
+      "meaning": "交易所行情时间戳",
+      "unit": "毫秒（Unix 时间戳）",
+      "status_raw": "",
+      "status": "verified",
+      "source_statuses": {
+        "FTShare REST": "verified"
+      },
+      "aggregation_status": "consistent",
+      "aggregation_issues": []
+    },
+    {
       "code": "tshare",
       "source": null,
       "sources": [
@@ -36979,6 +37317,7 @@
       "code": "turnover",
       "source": null,
       "sources": [
+        "FTShare REST",
         "同花顺-fuyao",
         "开盘啦(kpl)",
         "开盘红",
@@ -36996,7 +37335,8 @@
         "开盘啦(kpl)": "unverified",
         "开盘红": "verified",
         "开盘红(Levistock适配)": "unverified",
-        "新浪(扩展API)": "conflict"
+        "新浪(扩展API)": "conflict",
+        "FTShare REST": "verified"
       },
       "aggregation_status": "ambiguous",
       "aggregation_issues": [
@@ -37039,6 +37379,7 @@
       "code": "turnover_rate",
       "source": null,
       "sources": [
+        "FTShare REST",
         "Levistock历史未归属",
         "东财-push2ex",
         "东财-热榜(em_hot)",
@@ -37054,7 +37395,8 @@
         "Levistock历史未归属": "unverified",
         "东财-push2ex": "unverified",
         "东财-热榜(em_hot)": "verified",
-        "开盘红": "verified"
+        "开盘红": "verified",
+        "FTShare REST": "verified"
       },
       "aggregation_status": "ambiguous",
       "aggregation_issues": [
@@ -38008,6 +38350,7 @@
       "code": "volume",
       "source": null,
       "sources": [
+        "FTShare REST",
         "Levistock历史未归属",
         "TDX(双命名源)",
         "TDX-eltdx(适配层)",
@@ -38023,12 +38366,15 @@
         "Levistock历史未归属": "unverified",
         "TDX(双命名源)": "unverified",
         "TDX-eltdx(适配层)": "unverified",
-        "同花顺-fuyao": "unverified"
+        "同花顺-fuyao": "unverified",
+        "FTShare REST": "verified"
       },
       "aggregation_status": "incomplete",
       "aggregation_issues": [
         "canonical_incomplete",
-        "meaning_incomplete"
+        "meaning_incomplete",
+        "source_statuses_differ",
+        "unit_incomplete"
       ]
     },
     {
@@ -38825,19 +39171,17 @@
       "sources": [
         "TDX(双命名源)"
       ],
-      "section": "",
-      "canonical": "",
+      "section": "20261019/20261019_collision_report.json",
+      "canonical": "zongguben",
       "meaning": "总股本（TDX finance_info 键名拼写为 zhongguben）",
       "unit": "万股",
       "status_raw": "",
-      "status": "unverified",
+      "status": "verified",
       "source_statuses": {
-        "TDX(双命名源)": "unverified"
+        "TDX(双命名源)": "verified"
       },
-      "aggregation_status": "incomplete",
-      "aggregation_issues": [
-        "canonical_incomplete"
-      ]
+      "aggregation_status": "consistent",
+      "aggregation_issues": []
     },
     {
       "code": "zhu_ying_li_run_raw_float",
@@ -40401,6 +40745,7 @@
     ],
     "change": [
       "AxData",
+      "FTShare REST",
       "TDX-eltdx"
     ],
     "change_pct": [
@@ -40409,6 +40754,7 @@
       "TDX-eltdx"
     ],
     "change_rate": [
+      "FTShare REST",
       "东财"
     ],
     "change_tag": [
@@ -40440,6 +40786,7 @@
       "TDX-0x0010/F10"
     ],
     "close": [
+      "FTShare REST",
       "TDX-eltdx",
       "东财"
     ],
@@ -40879,6 +41226,7 @@
     ],
     "high": [
       "AxData",
+      "FTShare REST",
       "TDX-eltdx"
     ],
     "high_change_pct": [
@@ -41199,6 +41547,7 @@
     ],
     "low": [
       "AxData",
+      "FTShare REST",
       "TDX-eltdx"
     ],
     "low_change_pct": [
@@ -41269,6 +41618,7 @@
       "东财"
     ],
     "market_cap": [
+      "FTShare REST",
       "开盘红"
     ],
     "market_degree": [
@@ -41343,6 +41693,7 @@
     ],
     "name": [
       "AxData",
+      "FTShare REST",
       "TDX-0x0010/F10",
       "TDX-eltdx",
       "东财"
@@ -41439,6 +41790,7 @@
     ],
     "open": [
       "AxData",
+      "FTShare REST",
       "TDX-eltdx",
       "新浪"
     ],
@@ -41548,6 +41900,7 @@
       "东财"
     ],
     "pe_ttm": [
+      "FTShare REST",
       "TDX-eltdx"
     ],
     "peigu": [
@@ -41632,6 +41985,7 @@
       "TDX-eltdx"
     ],
     "prev_close": [
+      "FTShare REST",
       "新浪"
     ],
     "prev_open_amount": [
@@ -42593,7 +42947,8 @@
       "TDX-0x0010/F10"
     ],
     "symbol": [
-      "AxData"
+      "AxData",
+      "FTShare REST"
     ],
     "szln": [
       "开盘红"
@@ -42782,10 +43137,12 @@
       "东财"
     ],
     "turnover": [
+      "FTShare REST",
       "开盘红",
       "新浪"
     ],
     "turnover_rate": [
+      "FTShare REST",
       "东财",
       "开盘红"
     ],
@@ -42862,6 +43219,7 @@
     ],
     "volume": [
       "AxData",
+      "FTShare REST",
       "TDX-eltdx"
     ],
     "volume_hand": [
@@ -44032,6 +44390,60 @@
     ],
     "🔌 push 替代候选": [
       "TDX-0x0010/F10"
+    ],
+    "amplitude": [
+      "FTShare REST"
+    ],
+    "avg": [
+      "FTShare REST"
+    ],
+    "bid_ask_ratio": [
+      "FTShare REST"
+    ],
+    "tradable_a_market_cap": [
+      "FTShare REST"
+    ],
+    "board": [
+      "FTShare REST"
+    ],
+    "st": [
+      "FTShare REST"
+    ],
+    "status": [
+      "FTShare REST"
+    ],
+    "shares": [
+      "FTShare REST"
+    ],
+    "float_a_shares": [
+      "FTShare REST"
+    ],
+    "listing_date": [
+      "FTShare REST"
+    ],
+    "change_rate_day5": [
+      "FTShare REST"
+    ],
+    "change_rate_day10": [
+      "FTShare REST"
+    ],
+    "change_rate_day20": [
+      "FTShare REST"
+    ],
+    "change_rate_day60": [
+      "FTShare REST"
+    ],
+    "change_rate_day120": [
+      "FTShare REST"
+    ],
+    "change_rate_ytd": [
+      "FTShare REST"
+    ],
+    "ts_millis": [
+      "FTShare REST"
+    ],
+    "symbol_id": [
+      "FTShare REST"
     ]
   },
   "mappings": [
@@ -57546,6 +57958,30 @@
       },
       "relation": "same_number_same_meaning",
       "evidence": "adjudication:adjudications/20261019_historical_field_candidates.json#20261019-ulist-f160-change-10d;report:collision_research_20261019/verified_anchor_only/20260914/20260914_collision_report.json"
+    },
+    {
+      "from": {
+        "source": "东财-push2ex",
+        "code": "limit_fund"
+      },
+      "to": {
+        "source": "开盘啦(kpl_limit_up_detail)",
+        "code": "seal_amount"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "adjudication:adjudications/20261020_20261019_l1.json#20261020-push2ex-limit-fund-kpl-seal-amount;report:20261019/20261019_collision_report.json"
+    },
+    {
+      "from": {
+        "source": "TDX(双命名源)",
+        "code": "zhongguben"
+      },
+      "to": {
+        "source": "腾讯(qt.gtimg)",
+        "code": "[73]"
+      },
+      "relation": "same_number_same_meaning",
+      "evidence": "adjudication:adjudications/20261020_20261019_l1.json#20261020-tdx-zhongguben-tencent-73;report:20261019/20261019_collision_report.json"
     }
   ],
   "source_fields": [
@@ -76777,13 +77213,15 @@
       "code": "zhongguben",
       "identity": "TDX(双命名源)::zhongguben",
       "path": "zhongguben",
-      "canonical": "",
+      "canonical": "zongguben",
       "meaning": "总股本（TDX finance_info 键名拼写为 zhongguben）",
       "unit": "万股",
-      "section": "",
-      "sections": [],
-      "status": "unverified",
-      "status_resolution": "registry_status_only_single_source",
+      "section": "20261019/20261019_collision_report.json",
+      "sections": [
+        "20261019/20261019_collision_report.json"
+      ],
+      "status": "verified",
+      "status_resolution": "manual_collision_adjudication",
       "status_evidence": {
         "reference_statuses": [],
         "reference_status_raw": [],
@@ -76793,9 +77231,22 @@
         ],
         "values": [
           "unverified"
+        ],
+        "adjudication_ids": [
+          "20261020-tdx-zhongguben-tencent-73"
         ]
       },
-      "reference_evidence": [],
+      "reference_evidence": [
+        {
+          "section": "20261019/20261019_collision_report.json",
+          "canonical": "zongguben",
+          "meaning": "总股本（TDX finance_info 键名拼写为 zhongguben）",
+          "unit": "万股",
+          "status_raw": "人工复核 2026-10-20：20261020-tdx-zhongguben-tencent-73",
+          "status": "verified",
+          "adjudication_id": "20261020-tdx-zhongguben-tencent-73"
+        }
+      ],
       "attribute_conflicts": {},
       "registry_aggregate": {
         "code": "zhongguben",
@@ -76809,7 +77260,50 @@
         "unit": "",
         "section": ""
       },
-      "semantic_evidence_file": "docs/field_verification/20261014/20261014_alphabetic_field_name_audit.md#confirmed-lexical-findings"
+      "semantic_evidence_file": "docs/field_verification/20261014/20261014_alphabetic_field_name_audit.md#confirmed-lexical-findings",
+      "adjudications": [
+        {
+          "id": "20261020-tdx-zhongguben-tencent-73",
+          "action": "verify",
+          "status": "verified",
+          "reviewer": "Codex（按用户采集与碰撞授权完成定案复核）",
+          "reviewed_on": "2026-10-20",
+          "report": "20261019/20261019_collision_report.json",
+          "decision_file": "adjudications/20261020_20261019_l1.json",
+          "candidate": {
+            "left": "tdx.finance_info.zhongguben",
+            "right": "tencent[73]"
+          },
+          "level": "L1-U",
+          "rationale": "2026-10-19 verified_anchor_only 报告满足现行 L1-U 门槛：TDX 与独立 Tencent 来源族在 2026-10-09、10-12、10-14、10-15、10-16、10-19 六个交易日共 120 组有效配对全部符合固定 10000 比值；每天 20 组，支持 TDX 万股与 Tencent [73] 股之间的单位换算。Tencent [73] 已验证为总股本、单位股。确认完整路径 TDX(双命名源)::zhongguben 的语义和单位；canonical 统一到总股本概念，但保留 zhongguben 原始键及独立来源记录，不与同源 zongguben 路径合并。",
+          "evidence": {
+            "ratio": 10000,
+            "overall_hit": 1.0,
+            "n_days": 6,
+            "n_pairs": 120,
+            "distinct_days": [
+              "T:20261009",
+              "T:20261012",
+              "T:20261014",
+              "T:20261015",
+              "T:20261016",
+              "T:20261019"
+            ],
+            "daily_sample_counts": {
+              "T:20261016": 20,
+              "T:20261009": 20,
+              "T:20261019": 20,
+              "T:20261012": 20,
+              "T:20261015": 20,
+              "T:20261014": 20
+            },
+            "evidence_sources": [
+              "tdx",
+              "tencent"
+            ]
+          }
+        }
+      ]
     },
     {
       "source": "TDX(双命名源)",
@@ -125206,13 +125700,15 @@
       "code": "limit_fund",
       "identity": "东财-push2ex::limit_fund",
       "path": "limit_fund",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "section": "",
-      "sections": [],
-      "status": "unverified",
-      "status_resolution": "registry_status_only_single_source",
+      "canonical": "seal_amount",
+      "meaning": "封单金额",
+      "unit": "元",
+      "section": "20261019/20261019_collision_report.json",
+      "sections": [
+        "20261019/20261019_collision_report.json"
+      ],
+      "status": "verified",
+      "status_resolution": "manual_collision_adjudication",
       "status_evidence": {
         "reference_statuses": [],
         "reference_status_raw": [],
@@ -125222,9 +125718,22 @@
         ],
         "values": [
           "unverified"
+        ],
+        "adjudication_ids": [
+          "20261020-push2ex-limit-fund-kpl-seal-amount"
         ]
       },
-      "reference_evidence": [],
+      "reference_evidence": [
+        {
+          "section": "20261019/20261019_collision_report.json",
+          "canonical": "seal_amount",
+          "meaning": "封单金额",
+          "unit": "元",
+          "status_raw": "人工复核 2026-10-20：20261020-push2ex-limit-fund-kpl-seal-amount",
+          "status": "verified",
+          "adjudication_id": "20261020-push2ex-limit-fund-kpl-seal-amount"
+        }
+      ],
       "attribute_conflicts": {},
       "registry_aggregate": {
         "code": "limit_fund",
@@ -125237,7 +125746,44 @@
         "meaning": "",
         "unit": "",
         "section": ""
-      }
+      },
+      "adjudications": [
+        {
+          "id": "20261020-push2ex-limit-fund-kpl-seal-amount",
+          "action": "verify",
+          "status": "verified",
+          "reviewer": "Codex（按用户采集与碰撞授权完成定案复核）",
+          "reviewed_on": "2026-10-20",
+          "report": "20261019/20261019_collision_report.json",
+          "decision_file": "adjudications/20261020_20261019_l1.json",
+          "candidate": {
+            "left": "push2ex.limit_fund",
+            "right": "kpl.seal_amount"
+          },
+          "level": "L1",
+          "rationale": "2026-10-19 verified_anchor_only 报告满足现行 L1 门槛：Eastmoney push2ex 与独立 KPL 来源族在 2026-10-14、10-16、10-19 三个交易日共 128 组有效配对全部精确命中，每日分别为 21、61、46 组；无盘中或时段未知样本被排除。KPL seal_amount 已由 KPH/KPL 双交易日逐值核验为封单金额、单位元。将东财-push2ex::limit_fund 确认为同义字段，并保留其原始完整来源路径。",
+          "evidence": {
+            "ratio": null,
+            "overall_hit": 1.0,
+            "n_days": 3,
+            "n_pairs": 128,
+            "distinct_days": [
+              "T:20261014",
+              "T:20261016",
+              "T:20261019"
+            ],
+            "daily_sample_counts": {
+              "T:20261016": 61,
+              "T:20261019": 46,
+              "T:20261014": 21
+            },
+            "evidence_sources": [
+              "eastmoney",
+              "kpl"
+            ]
+          }
+        }
+      ]
     },
     {
       "source": "东财-push2ex",
@@ -185814,6 +186360,932 @@
         "unit": "",
         "section": ""
       }
+    },
+    {
+      "source": "FTShare REST",
+      "code": "symbol",
+      "identity": "FTShare REST::symbol",
+      "path": "symbol",
+      "canonical": "symbol",
+      "meaning": "证券代码（含交易所后缀）",
+      "unit": "",
+      "section": "FTShare REST 官方接口契约：A股行情列表",
+      "sections": [
+        "FTShare REST 官方接口契约：A股行情列表"
+      ],
+      "status": "verified",
+      "status_resolution": "official_contract",
+      "status_evidence": {
+        "evidence_level": "official_contract",
+        "contract_id": "a_share_realtime_quote",
+        "evidence_file": "docs/verify/ftshare_rest_contract.md",
+        "documentation_url": "https://market.ft.tech/gateway/doc/p/mdsj0xyo"
+      },
+      "reference_evidence": [],
+      "attribute_conflicts": {},
+      "evidence": {
+        "basis": "official_contract",
+        "contract_id": "a_share_realtime_quote",
+        "evidence_file": "docs/verify/ftshare_rest_contract.md",
+        "documentation_url": "https://market.ft.tech/gateway/doc/p/mdsj0xyo"
+      }
+    },
+    {
+      "source": "FTShare REST",
+      "code": "name",
+      "identity": "FTShare REST::name",
+      "path": "name",
+      "canonical": "name",
+      "meaning": "证券名称",
+      "unit": "",
+      "section": "FTShare REST 官方接口契约：A股行情列表",
+      "sections": [
+        "FTShare REST 官方接口契约：A股行情列表"
+      ],
+      "status": "verified",
+      "status_resolution": "official_contract",
+      "status_evidence": {
+        "evidence_level": "official_contract",
+        "contract_id": "a_share_realtime_quote",
+        "evidence_file": "docs/verify/ftshare_rest_contract.md",
+        "documentation_url": "https://market.ft.tech/gateway/doc/p/mdsj0xyo"
+      },
+      "reference_evidence": [],
+      "attribute_conflicts": {},
+      "evidence": {
+        "basis": "official_contract",
+        "contract_id": "a_share_realtime_quote",
+        "evidence_file": "docs/verify/ftshare_rest_contract.md",
+        "documentation_url": "https://market.ft.tech/gateway/doc/p/mdsj0xyo"
+      }
+    },
+    {
+      "source": "FTShare REST",
+      "code": "open",
+      "identity": "FTShare REST::open",
+      "path": "open",
+      "canonical": "open",
+      "meaning": "开盘价",
+      "unit": "元/股",
+      "section": "FTShare REST 官方接口契约：A股行情列表",
+      "sections": [
+        "FTShare REST 官方接口契约：A股行情列表"
+      ],
+      "status": "verified",
+      "status_resolution": "official_contract",
+      "status_evidence": {
+        "evidence_level": "official_contract",
+        "contract_id": "a_share_realtime_quote",
+        "evidence_file": "docs/verify/ftshare_rest_contract.md",
+        "documentation_url": "https://market.ft.tech/gateway/doc/p/mdsj0xyo"
+      },
+      "reference_evidence": [],
+      "attribute_conflicts": {},
+      "evidence": {
+        "basis": "official_contract",
+        "contract_id": "a_share_realtime_quote",
+        "evidence_file": "docs/verify/ftshare_rest_contract.md",
+        "documentation_url": "https://market.ft.tech/gateway/doc/p/mdsj0xyo"
+      }
+    },
+    {
+      "source": "FTShare REST",
+      "code": "high",
+      "identity": "FTShare REST::high",
+      "path": "high",
+      "canonical": "high",
+      "meaning": "最高价",
+      "unit": "元/股",
+      "section": "FTShare REST 官方接口契约：A股行情列表",
+      "sections": [
+        "FTShare REST 官方接口契约：A股行情列表"
+      ],
+      "status": "verified",
+      "status_resolution": "official_contract",
+      "status_evidence": {
+        "evidence_level": "official_contract",
+        "contract_id": "a_share_realtime_quote",
+        "evidence_file": "docs/verify/ftshare_rest_contract.md",
+        "documentation_url": "https://market.ft.tech/gateway/doc/p/mdsj0xyo"
+      },
+      "reference_evidence": [],
+      "attribute_conflicts": {},
+      "evidence": {
+        "basis": "official_contract",
+        "contract_id": "a_share_realtime_quote",
+        "evidence_file": "docs/verify/ftshare_rest_contract.md",
+        "documentation_url": "https://market.ft.tech/gateway/doc/p/mdsj0xyo"
+      }
+    },
+    {
+      "source": "FTShare REST",
+      "code": "low",
+      "identity": "FTShare REST::low",
+      "path": "low",
+      "canonical": "low",
+      "meaning": "最低价",
+      "unit": "元/股",
+      "section": "FTShare REST 官方接口契约：A股行情列表",
+      "sections": [
+        "FTShare REST 官方接口契约：A股行情列表"
+      ],
+      "status": "verified",
+      "status_resolution": "official_contract",
+      "status_evidence": {
+        "evidence_level": "official_contract",
+        "contract_id": "a_share_realtime_quote",
+        "evidence_file": "docs/verify/ftshare_rest_contract.md",
+        "documentation_url": "https://market.ft.tech/gateway/doc/p/mdsj0xyo"
+      },
+      "reference_evidence": [],
+      "attribute_conflicts": {},
+      "evidence": {
+        "basis": "official_contract",
+        "contract_id": "a_share_realtime_quote",
+        "evidence_file": "docs/verify/ftshare_rest_contract.md",
+        "documentation_url": "https://market.ft.tech/gateway/doc/p/mdsj0xyo"
+      }
+    },
+    {
+      "source": "FTShare REST",
+      "code": "close",
+      "identity": "FTShare REST::close",
+      "path": "close",
+      "canonical": "close",
+      "meaning": "收盘价/最新价",
+      "unit": "元/股",
+      "section": "FTShare REST 官方接口契约：A股行情列表",
+      "sections": [
+        "FTShare REST 官方接口契约：A股行情列表"
+      ],
+      "status": "verified",
+      "status_resolution": "official_contract",
+      "status_evidence": {
+        "evidence_level": "official_contract",
+        "contract_id": "a_share_realtime_quote",
+        "evidence_file": "docs/verify/ftshare_rest_contract.md",
+        "documentation_url": "https://market.ft.tech/gateway/doc/p/mdsj0xyo"
+      },
+      "reference_evidence": [],
+      "attribute_conflicts": {},
+      "evidence": {
+        "basis": "official_contract",
+        "contract_id": "a_share_realtime_quote",
+        "evidence_file": "docs/verify/ftshare_rest_contract.md",
+        "documentation_url": "https://market.ft.tech/gateway/doc/p/mdsj0xyo"
+      }
+    },
+    {
+      "source": "FTShare REST",
+      "code": "prev_close",
+      "identity": "FTShare REST::prev_close",
+      "path": "prev_close",
+      "canonical": "prev_close",
+      "meaning": "前收盘价",
+      "unit": "元/股",
+      "section": "FTShare REST 官方接口契约：A股行情列表",
+      "sections": [
+        "FTShare REST 官方接口契约：A股行情列表"
+      ],
+      "status": "verified",
+      "status_resolution": "official_contract",
+      "status_evidence": {
+        "evidence_level": "official_contract",
+        "contract_id": "a_share_realtime_quote",
+        "evidence_file": "docs/verify/ftshare_rest_contract.md",
+        "documentation_url": "https://market.ft.tech/gateway/doc/p/mdsj0xyo"
+      },
+      "reference_evidence": [],
+      "attribute_conflicts": {},
+      "evidence": {
+        "basis": "official_contract",
+        "contract_id": "a_share_realtime_quote",
+        "evidence_file": "docs/verify/ftshare_rest_contract.md",
+        "documentation_url": "https://market.ft.tech/gateway/doc/p/mdsj0xyo"
+      }
+    },
+    {
+      "source": "FTShare REST",
+      "code": "change",
+      "identity": "FTShare REST::change",
+      "path": "change",
+      "canonical": "change",
+      "meaning": "价格涨跌额",
+      "unit": "元/股",
+      "section": "FTShare REST 官方接口契约：A股行情列表",
+      "sections": [
+        "FTShare REST 官方接口契约：A股行情列表"
+      ],
+      "status": "verified",
+      "status_resolution": "official_contract",
+      "status_evidence": {
+        "evidence_level": "official_contract",
+        "contract_id": "a_share_realtime_quote",
+        "evidence_file": "docs/verify/ftshare_rest_contract.md",
+        "documentation_url": "https://market.ft.tech/gateway/doc/p/mdsj0xyo"
+      },
+      "reference_evidence": [],
+      "attribute_conflicts": {},
+      "evidence": {
+        "basis": "official_contract",
+        "contract_id": "a_share_realtime_quote",
+        "evidence_file": "docs/verify/ftshare_rest_contract.md",
+        "documentation_url": "https://market.ft.tech/gateway/doc/p/mdsj0xyo"
+      }
+    },
+    {
+      "source": "FTShare REST",
+      "code": "change_rate",
+      "identity": "FTShare REST::change_rate",
+      "path": "change_rate",
+      "canonical": "change_rate",
+      "meaning": "日涨跌幅；0.03 表示 3%",
+      "unit": "比率",
+      "section": "FTShare REST 官方接口契约：A股行情列表",
+      "sections": [
+        "FTShare REST 官方接口契约：A股行情列表"
+      ],
+      "status": "verified",
+      "status_resolution": "official_contract",
+      "status_evidence": {
+        "evidence_level": "official_contract",
+        "contract_id": "a_share_realtime_quote",
+        "evidence_file": "docs/verify/ftshare_rest_contract.md",
+        "documentation_url": "https://market.ft.tech/gateway/doc/p/mdsj0xyo"
+      },
+      "reference_evidence": [],
+      "attribute_conflicts": {},
+      "evidence": {
+        "basis": "official_contract",
+        "contract_id": "a_share_realtime_quote",
+        "evidence_file": "docs/verify/ftshare_rest_contract.md",
+        "documentation_url": "https://market.ft.tech/gateway/doc/p/mdsj0xyo"
+      }
+    },
+    {
+      "source": "FTShare REST",
+      "code": "volume",
+      "identity": "FTShare REST::volume",
+      "path": "volume",
+      "canonical": "volume",
+      "meaning": "成交量",
+      "unit": "股",
+      "section": "FTShare REST 官方接口契约：A股行情列表",
+      "sections": [
+        "FTShare REST 官方接口契约：A股行情列表"
+      ],
+      "status": "verified",
+      "status_resolution": "official_contract",
+      "status_evidence": {
+        "evidence_level": "official_contract",
+        "contract_id": "a_share_realtime_quote",
+        "evidence_file": "docs/verify/ftshare_rest_contract.md",
+        "documentation_url": "https://market.ft.tech/gateway/doc/p/mdsj0xyo"
+      },
+      "reference_evidence": [],
+      "attribute_conflicts": {},
+      "evidence": {
+        "basis": "official_contract",
+        "contract_id": "a_share_realtime_quote",
+        "evidence_file": "docs/verify/ftshare_rest_contract.md",
+        "documentation_url": "https://market.ft.tech/gateway/doc/p/mdsj0xyo"
+      }
+    },
+    {
+      "source": "FTShare REST",
+      "code": "turnover",
+      "identity": "FTShare REST::turnover",
+      "path": "turnover",
+      "canonical": "turnover",
+      "meaning": "成交额",
+      "unit": "元",
+      "section": "FTShare REST 官方接口契约：A股行情列表",
+      "sections": [
+        "FTShare REST 官方接口契约：A股行情列表"
+      ],
+      "status": "verified",
+      "status_resolution": "official_contract",
+      "status_evidence": {
+        "evidence_level": "official_contract",
+        "contract_id": "a_share_realtime_quote",
+        "evidence_file": "docs/verify/ftshare_rest_contract.md",
+        "documentation_url": "https://market.ft.tech/gateway/doc/p/mdsj0xyo"
+      },
+      "reference_evidence": [],
+      "attribute_conflicts": {},
+      "evidence": {
+        "basis": "official_contract",
+        "contract_id": "a_share_realtime_quote",
+        "evidence_file": "docs/verify/ftshare_rest_contract.md",
+        "documentation_url": "https://market.ft.tech/gateway/doc/p/mdsj0xyo"
+      }
+    },
+    {
+      "source": "FTShare REST",
+      "code": "amplitude",
+      "identity": "FTShare REST::amplitude",
+      "path": "amplitude",
+      "canonical": "amplitude",
+      "meaning": "价格振幅",
+      "unit": "",
+      "section": "FTShare REST 官方接口契约：A股行情列表",
+      "sections": [
+        "FTShare REST 官方接口契约：A股行情列表"
+      ],
+      "status": "verified",
+      "status_resolution": "official_contract",
+      "status_evidence": {
+        "evidence_level": "official_contract",
+        "contract_id": "a_share_realtime_quote",
+        "evidence_file": "docs/verify/ftshare_rest_contract.md",
+        "documentation_url": "https://market.ft.tech/gateway/doc/p/mdsj0xyo"
+      },
+      "reference_evidence": [],
+      "attribute_conflicts": {},
+      "evidence": {
+        "basis": "official_contract",
+        "contract_id": "a_share_realtime_quote",
+        "evidence_file": "docs/verify/ftshare_rest_contract.md",
+        "documentation_url": "https://market.ft.tech/gateway/doc/p/mdsj0xyo"
+      }
+    },
+    {
+      "source": "FTShare REST",
+      "code": "avg",
+      "identity": "FTShare REST::avg",
+      "path": "avg",
+      "canonical": "avg",
+      "meaning": "平均价格",
+      "unit": "",
+      "section": "FTShare REST 官方接口契约：A股行情列表",
+      "sections": [
+        "FTShare REST 官方接口契约：A股行情列表"
+      ],
+      "status": "verified",
+      "status_resolution": "official_contract",
+      "status_evidence": {
+        "evidence_level": "official_contract",
+        "contract_id": "a_share_realtime_quote",
+        "evidence_file": "docs/verify/ftshare_rest_contract.md",
+        "documentation_url": "https://market.ft.tech/gateway/doc/p/mdsj0xyo"
+      },
+      "reference_evidence": [],
+      "attribute_conflicts": {},
+      "evidence": {
+        "basis": "official_contract",
+        "contract_id": "a_share_realtime_quote",
+        "evidence_file": "docs/verify/ftshare_rest_contract.md",
+        "documentation_url": "https://market.ft.tech/gateway/doc/p/mdsj0xyo"
+      }
+    },
+    {
+      "source": "FTShare REST",
+      "code": "bid_ask_ratio",
+      "identity": "FTShare REST::bid_ask_ratio",
+      "path": "bid_ask_ratio",
+      "canonical": "bid_ask_ratio",
+      "meaning": "买卖盘比率",
+      "unit": "",
+      "section": "FTShare REST 官方接口契约：A股行情列表",
+      "sections": [
+        "FTShare REST 官方接口契约：A股行情列表"
+      ],
+      "status": "verified",
+      "status_resolution": "official_contract",
+      "status_evidence": {
+        "evidence_level": "official_contract",
+        "contract_id": "a_share_realtime_quote",
+        "evidence_file": "docs/verify/ftshare_rest_contract.md",
+        "documentation_url": "https://market.ft.tech/gateway/doc/p/mdsj0xyo"
+      },
+      "reference_evidence": [],
+      "attribute_conflicts": {},
+      "evidence": {
+        "basis": "official_contract",
+        "contract_id": "a_share_realtime_quote",
+        "evidence_file": "docs/verify/ftshare_rest_contract.md",
+        "documentation_url": "https://market.ft.tech/gateway/doc/p/mdsj0xyo"
+      }
+    },
+    {
+      "source": "FTShare REST",
+      "code": "turnover_rate",
+      "identity": "FTShare REST::turnover_rate",
+      "path": "turnover_rate",
+      "canonical": "turnover_rate",
+      "meaning": "换手率",
+      "unit": "",
+      "section": "FTShare REST 官方接口契约：A股行情列表",
+      "sections": [
+        "FTShare REST 官方接口契约：A股行情列表"
+      ],
+      "status": "verified",
+      "status_resolution": "official_contract",
+      "status_evidence": {
+        "evidence_level": "official_contract",
+        "contract_id": "a_share_realtime_quote",
+        "evidence_file": "docs/verify/ftshare_rest_contract.md",
+        "documentation_url": "https://market.ft.tech/gateway/doc/p/mdsj0xyo"
+      },
+      "reference_evidence": [],
+      "attribute_conflicts": {},
+      "evidence": {
+        "basis": "official_contract",
+        "contract_id": "a_share_realtime_quote",
+        "evidence_file": "docs/verify/ftshare_rest_contract.md",
+        "documentation_url": "https://market.ft.tech/gateway/doc/p/mdsj0xyo"
+      }
+    },
+    {
+      "source": "FTShare REST",
+      "code": "market_cap",
+      "identity": "FTShare REST::market_cap",
+      "path": "market_cap",
+      "canonical": "market_cap",
+      "meaning": "总市值",
+      "unit": "元",
+      "section": "FTShare REST 官方接口契约：A股行情列表",
+      "sections": [
+        "FTShare REST 官方接口契约：A股行情列表"
+      ],
+      "status": "verified",
+      "status_resolution": "official_contract",
+      "status_evidence": {
+        "evidence_level": "official_contract",
+        "contract_id": "a_share_realtime_quote",
+        "evidence_file": "docs/verify/ftshare_rest_contract.md",
+        "documentation_url": "https://market.ft.tech/gateway/doc/p/mdsj0xyo"
+      },
+      "reference_evidence": [],
+      "attribute_conflicts": {},
+      "evidence": {
+        "basis": "official_contract",
+        "contract_id": "a_share_realtime_quote",
+        "evidence_file": "docs/verify/ftshare_rest_contract.md",
+        "documentation_url": "https://market.ft.tech/gateway/doc/p/mdsj0xyo"
+      }
+    },
+    {
+      "source": "FTShare REST",
+      "code": "tradable_a_market_cap",
+      "identity": "FTShare REST::tradable_a_market_cap",
+      "path": "tradable_a_market_cap",
+      "canonical": "tradable_a_market_cap",
+      "meaning": "A股流通市值",
+      "unit": "元",
+      "section": "FTShare REST 官方接口契约：A股行情列表",
+      "sections": [
+        "FTShare REST 官方接口契约：A股行情列表"
+      ],
+      "status": "verified",
+      "status_resolution": "official_contract",
+      "status_evidence": {
+        "evidence_level": "official_contract",
+        "contract_id": "a_share_realtime_quote",
+        "evidence_file": "docs/verify/ftshare_rest_contract.md",
+        "documentation_url": "https://market.ft.tech/gateway/doc/p/mdsj0xyo"
+      },
+      "reference_evidence": [],
+      "attribute_conflicts": {},
+      "evidence": {
+        "basis": "official_contract",
+        "contract_id": "a_share_realtime_quote",
+        "evidence_file": "docs/verify/ftshare_rest_contract.md",
+        "documentation_url": "https://market.ft.tech/gateway/doc/p/mdsj0xyo"
+      }
+    },
+    {
+      "source": "FTShare REST",
+      "code": "pe_ttm",
+      "identity": "FTShare REST::pe_ttm",
+      "path": "pe_ttm",
+      "canonical": "pe_ttm",
+      "meaning": "滚动市盈率（TTM）",
+      "unit": "",
+      "section": "FTShare REST 官方接口契约：A股行情列表",
+      "sections": [
+        "FTShare REST 官方接口契约：A股行情列表"
+      ],
+      "status": "verified",
+      "status_resolution": "official_contract",
+      "status_evidence": {
+        "evidence_level": "official_contract",
+        "contract_id": "a_share_realtime_quote",
+        "evidence_file": "docs/verify/ftshare_rest_contract.md",
+        "documentation_url": "https://market.ft.tech/gateway/doc/p/mdsj0xyo"
+      },
+      "reference_evidence": [],
+      "attribute_conflicts": {},
+      "evidence": {
+        "basis": "official_contract",
+        "contract_id": "a_share_realtime_quote",
+        "evidence_file": "docs/verify/ftshare_rest_contract.md",
+        "documentation_url": "https://market.ft.tech/gateway/doc/p/mdsj0xyo"
+      }
+    },
+    {
+      "source": "FTShare REST",
+      "code": "board",
+      "identity": "FTShare REST::board",
+      "path": "board",
+      "canonical": "board",
+      "meaning": "板块标识",
+      "unit": "",
+      "section": "FTShare REST 官方接口契约：A股行情列表",
+      "sections": [
+        "FTShare REST 官方接口契约：A股行情列表"
+      ],
+      "status": "verified",
+      "status_resolution": "official_contract",
+      "status_evidence": {
+        "evidence_level": "official_contract",
+        "contract_id": "a_share_realtime_quote",
+        "evidence_file": "docs/verify/ftshare_rest_contract.md",
+        "documentation_url": "https://market.ft.tech/gateway/doc/p/mdsj0xyo"
+      },
+      "reference_evidence": [],
+      "attribute_conflicts": {},
+      "evidence": {
+        "basis": "official_contract",
+        "contract_id": "a_share_realtime_quote",
+        "evidence_file": "docs/verify/ftshare_rest_contract.md",
+        "documentation_url": "https://market.ft.tech/gateway/doc/p/mdsj0xyo"
+      }
+    },
+    {
+      "source": "FTShare REST",
+      "code": "st",
+      "identity": "FTShare REST::st",
+      "path": "st",
+      "canonical": "st",
+      "meaning": "是否为 ST",
+      "unit": "",
+      "section": "FTShare REST 官方接口契约：A股行情列表",
+      "sections": [
+        "FTShare REST 官方接口契约：A股行情列表"
+      ],
+      "status": "verified",
+      "status_resolution": "official_contract",
+      "status_evidence": {
+        "evidence_level": "official_contract",
+        "contract_id": "a_share_realtime_quote",
+        "evidence_file": "docs/verify/ftshare_rest_contract.md",
+        "documentation_url": "https://market.ft.tech/gateway/doc/p/mdsj0xyo"
+      },
+      "reference_evidence": [],
+      "attribute_conflicts": {},
+      "evidence": {
+        "basis": "official_contract",
+        "contract_id": "a_share_realtime_quote",
+        "evidence_file": "docs/verify/ftshare_rest_contract.md",
+        "documentation_url": "https://market.ft.tech/gateway/doc/p/mdsj0xyo"
+      }
+    },
+    {
+      "source": "FTShare REST",
+      "code": "status",
+      "identity": "FTShare REST::status",
+      "path": "status",
+      "canonical": "status",
+      "meaning": "证券状态",
+      "unit": "",
+      "section": "FTShare REST 官方接口契约：A股行情列表",
+      "sections": [
+        "FTShare REST 官方接口契约：A股行情列表"
+      ],
+      "status": "verified",
+      "status_resolution": "official_contract",
+      "status_evidence": {
+        "evidence_level": "official_contract",
+        "contract_id": "a_share_realtime_quote",
+        "evidence_file": "docs/verify/ftshare_rest_contract.md",
+        "documentation_url": "https://market.ft.tech/gateway/doc/p/mdsj0xyo"
+      },
+      "reference_evidence": [],
+      "attribute_conflicts": {},
+      "evidence": {
+        "basis": "official_contract",
+        "contract_id": "a_share_realtime_quote",
+        "evidence_file": "docs/verify/ftshare_rest_contract.md",
+        "documentation_url": "https://market.ft.tech/gateway/doc/p/mdsj0xyo"
+      }
+    },
+    {
+      "source": "FTShare REST",
+      "code": "shares",
+      "identity": "FTShare REST::shares",
+      "path": "shares",
+      "canonical": "shares",
+      "meaning": "总股本",
+      "unit": "股",
+      "section": "FTShare REST 官方接口契约：A股行情列表",
+      "sections": [
+        "FTShare REST 官方接口契约：A股行情列表"
+      ],
+      "status": "verified",
+      "status_resolution": "official_contract",
+      "status_evidence": {
+        "evidence_level": "official_contract",
+        "contract_id": "a_share_realtime_quote",
+        "evidence_file": "docs/verify/ftshare_rest_contract.md",
+        "documentation_url": "https://market.ft.tech/gateway/doc/p/mdsj0xyo"
+      },
+      "reference_evidence": [],
+      "attribute_conflicts": {},
+      "evidence": {
+        "basis": "official_contract",
+        "contract_id": "a_share_realtime_quote",
+        "evidence_file": "docs/verify/ftshare_rest_contract.md",
+        "documentation_url": "https://market.ft.tech/gateway/doc/p/mdsj0xyo"
+      }
+    },
+    {
+      "source": "FTShare REST",
+      "code": "float_a_shares",
+      "identity": "FTShare REST::float_a_shares",
+      "path": "float_a_shares",
+      "canonical": "float_a_shares",
+      "meaning": "A股流通股数",
+      "unit": "股",
+      "section": "FTShare REST 官方接口契约：A股行情列表",
+      "sections": [
+        "FTShare REST 官方接口契约：A股行情列表"
+      ],
+      "status": "verified",
+      "status_resolution": "official_contract",
+      "status_evidence": {
+        "evidence_level": "official_contract",
+        "contract_id": "a_share_realtime_quote",
+        "evidence_file": "docs/verify/ftshare_rest_contract.md",
+        "documentation_url": "https://market.ft.tech/gateway/doc/p/mdsj0xyo"
+      },
+      "reference_evidence": [],
+      "attribute_conflicts": {},
+      "evidence": {
+        "basis": "official_contract",
+        "contract_id": "a_share_realtime_quote",
+        "evidence_file": "docs/verify/ftshare_rest_contract.md",
+        "documentation_url": "https://market.ft.tech/gateway/doc/p/mdsj0xyo"
+      }
+    },
+    {
+      "source": "FTShare REST",
+      "code": "listing_date",
+      "identity": "FTShare REST::listing_date",
+      "path": "listing_date",
+      "canonical": "listing_date",
+      "meaning": "上市日期",
+      "unit": "",
+      "section": "FTShare REST 官方接口契约：A股行情列表",
+      "sections": [
+        "FTShare REST 官方接口契约：A股行情列表"
+      ],
+      "status": "verified",
+      "status_resolution": "official_contract",
+      "status_evidence": {
+        "evidence_level": "official_contract",
+        "contract_id": "a_share_realtime_quote",
+        "evidence_file": "docs/verify/ftshare_rest_contract.md",
+        "documentation_url": "https://market.ft.tech/gateway/doc/p/mdsj0xyo"
+      },
+      "reference_evidence": [],
+      "attribute_conflicts": {},
+      "evidence": {
+        "basis": "official_contract",
+        "contract_id": "a_share_realtime_quote",
+        "evidence_file": "docs/verify/ftshare_rest_contract.md",
+        "documentation_url": "https://market.ft.tech/gateway/doc/p/mdsj0xyo"
+      }
+    },
+    {
+      "source": "FTShare REST",
+      "code": "change_rate_day5",
+      "identity": "FTShare REST::change_rate_day5",
+      "path": "change_rate_day5",
+      "canonical": "change_rate_day5",
+      "meaning": "5日涨跌幅",
+      "unit": "比率",
+      "section": "FTShare REST 官方接口契约：A股行情列表",
+      "sections": [
+        "FTShare REST 官方接口契约：A股行情列表"
+      ],
+      "status": "verified",
+      "status_resolution": "official_contract",
+      "status_evidence": {
+        "evidence_level": "official_contract",
+        "contract_id": "a_share_realtime_quote",
+        "evidence_file": "docs/verify/ftshare_rest_contract.md",
+        "documentation_url": "https://market.ft.tech/gateway/doc/p/mdsj0xyo"
+      },
+      "reference_evidence": [],
+      "attribute_conflicts": {},
+      "evidence": {
+        "basis": "official_contract",
+        "contract_id": "a_share_realtime_quote",
+        "evidence_file": "docs/verify/ftshare_rest_contract.md",
+        "documentation_url": "https://market.ft.tech/gateway/doc/p/mdsj0xyo"
+      }
+    },
+    {
+      "source": "FTShare REST",
+      "code": "change_rate_day10",
+      "identity": "FTShare REST::change_rate_day10",
+      "path": "change_rate_day10",
+      "canonical": "change_rate_day10",
+      "meaning": "10日涨跌幅",
+      "unit": "比率",
+      "section": "FTShare REST 官方接口契约：A股行情列表",
+      "sections": [
+        "FTShare REST 官方接口契约：A股行情列表"
+      ],
+      "status": "verified",
+      "status_resolution": "official_contract",
+      "status_evidence": {
+        "evidence_level": "official_contract",
+        "contract_id": "a_share_realtime_quote",
+        "evidence_file": "docs/verify/ftshare_rest_contract.md",
+        "documentation_url": "https://market.ft.tech/gateway/doc/p/mdsj0xyo"
+      },
+      "reference_evidence": [],
+      "attribute_conflicts": {},
+      "evidence": {
+        "basis": "official_contract",
+        "contract_id": "a_share_realtime_quote",
+        "evidence_file": "docs/verify/ftshare_rest_contract.md",
+        "documentation_url": "https://market.ft.tech/gateway/doc/p/mdsj0xyo"
+      }
+    },
+    {
+      "source": "FTShare REST",
+      "code": "change_rate_day20",
+      "identity": "FTShare REST::change_rate_day20",
+      "path": "change_rate_day20",
+      "canonical": "change_rate_day20",
+      "meaning": "20日涨跌幅",
+      "unit": "比率",
+      "section": "FTShare REST 官方接口契约：A股行情列表",
+      "sections": [
+        "FTShare REST 官方接口契约：A股行情列表"
+      ],
+      "status": "verified",
+      "status_resolution": "official_contract",
+      "status_evidence": {
+        "evidence_level": "official_contract",
+        "contract_id": "a_share_realtime_quote",
+        "evidence_file": "docs/verify/ftshare_rest_contract.md",
+        "documentation_url": "https://market.ft.tech/gateway/doc/p/mdsj0xyo"
+      },
+      "reference_evidence": [],
+      "attribute_conflicts": {},
+      "evidence": {
+        "basis": "official_contract",
+        "contract_id": "a_share_realtime_quote",
+        "evidence_file": "docs/verify/ftshare_rest_contract.md",
+        "documentation_url": "https://market.ft.tech/gateway/doc/p/mdsj0xyo"
+      }
+    },
+    {
+      "source": "FTShare REST",
+      "code": "change_rate_day60",
+      "identity": "FTShare REST::change_rate_day60",
+      "path": "change_rate_day60",
+      "canonical": "change_rate_day60",
+      "meaning": "60日涨跌幅",
+      "unit": "比率",
+      "section": "FTShare REST 官方接口契约：A股行情列表",
+      "sections": [
+        "FTShare REST 官方接口契约：A股行情列表"
+      ],
+      "status": "verified",
+      "status_resolution": "official_contract",
+      "status_evidence": {
+        "evidence_level": "official_contract",
+        "contract_id": "a_share_realtime_quote",
+        "evidence_file": "docs/verify/ftshare_rest_contract.md",
+        "documentation_url": "https://market.ft.tech/gateway/doc/p/mdsj0xyo"
+      },
+      "reference_evidence": [],
+      "attribute_conflicts": {},
+      "evidence": {
+        "basis": "official_contract",
+        "contract_id": "a_share_realtime_quote",
+        "evidence_file": "docs/verify/ftshare_rest_contract.md",
+        "documentation_url": "https://market.ft.tech/gateway/doc/p/mdsj0xyo"
+      }
+    },
+    {
+      "source": "FTShare REST",
+      "code": "change_rate_day120",
+      "identity": "FTShare REST::change_rate_day120",
+      "path": "change_rate_day120",
+      "canonical": "change_rate_day120",
+      "meaning": "120日涨跌幅",
+      "unit": "比率",
+      "section": "FTShare REST 官方接口契约：A股行情列表",
+      "sections": [
+        "FTShare REST 官方接口契约：A股行情列表"
+      ],
+      "status": "verified",
+      "status_resolution": "official_contract",
+      "status_evidence": {
+        "evidence_level": "official_contract",
+        "contract_id": "a_share_realtime_quote",
+        "evidence_file": "docs/verify/ftshare_rest_contract.md",
+        "documentation_url": "https://market.ft.tech/gateway/doc/p/mdsj0xyo"
+      },
+      "reference_evidence": [],
+      "attribute_conflicts": {},
+      "evidence": {
+        "basis": "official_contract",
+        "contract_id": "a_share_realtime_quote",
+        "evidence_file": "docs/verify/ftshare_rest_contract.md",
+        "documentation_url": "https://market.ft.tech/gateway/doc/p/mdsj0xyo"
+      }
+    },
+    {
+      "source": "FTShare REST",
+      "code": "change_rate_ytd",
+      "identity": "FTShare REST::change_rate_ytd",
+      "path": "change_rate_ytd",
+      "canonical": "change_rate_ytd",
+      "meaning": "年初至今涨跌幅",
+      "unit": "比率",
+      "section": "FTShare REST 官方接口契约：A股行情列表",
+      "sections": [
+        "FTShare REST 官方接口契约：A股行情列表"
+      ],
+      "status": "verified",
+      "status_resolution": "official_contract",
+      "status_evidence": {
+        "evidence_level": "official_contract",
+        "contract_id": "a_share_realtime_quote",
+        "evidence_file": "docs/verify/ftshare_rest_contract.md",
+        "documentation_url": "https://market.ft.tech/gateway/doc/p/mdsj0xyo"
+      },
+      "reference_evidence": [],
+      "attribute_conflicts": {},
+      "evidence": {
+        "basis": "official_contract",
+        "contract_id": "a_share_realtime_quote",
+        "evidence_file": "docs/verify/ftshare_rest_contract.md",
+        "documentation_url": "https://market.ft.tech/gateway/doc/p/mdsj0xyo"
+      }
+    },
+    {
+      "source": "FTShare REST",
+      "code": "ts_millis",
+      "identity": "FTShare REST::ts_millis",
+      "path": "ts_millis",
+      "canonical": "ts_millis",
+      "meaning": "交易所行情时间戳",
+      "unit": "毫秒（Unix 时间戳）",
+      "section": "FTShare REST 官方接口契约：A股行情列表",
+      "sections": [
+        "FTShare REST 官方接口契约：A股行情列表"
+      ],
+      "status": "verified",
+      "status_resolution": "official_contract",
+      "status_evidence": {
+        "evidence_level": "official_contract",
+        "contract_id": "a_share_realtime_quote",
+        "evidence_file": "docs/verify/ftshare_rest_contract.md",
+        "documentation_url": "https://market.ft.tech/gateway/doc/p/mdsj0xyo"
+      },
+      "reference_evidence": [],
+      "attribute_conflicts": {},
+      "evidence": {
+        "basis": "official_contract",
+        "contract_id": "a_share_realtime_quote",
+        "evidence_file": "docs/verify/ftshare_rest_contract.md",
+        "documentation_url": "https://market.ft.tech/gateway/doc/p/mdsj0xyo"
+      }
+    },
+    {
+      "source": "FTShare REST",
+      "code": "symbol_id",
+      "identity": "FTShare REST::symbol_id",
+      "path": "symbol_id",
+      "canonical": "",
+      "meaning": "",
+      "unit": "",
+      "section": "FTShare REST 官方接口契约：A股行情列表",
+      "sections": [
+        "FTShare REST 官方接口契约：A股行情列表"
+      ],
+      "status": "unverified",
+      "status_resolution": "live_observed_not_documented",
+      "status_evidence": {
+        "evidence_level": "single_live_response_observation",
+        "evidence_file": "docs/ftshare_contract_catalog.json"
+      },
+      "reference_evidence": [],
+      "attribute_conflicts": {},
+      "identity_evidence": {
+        "basis": "single_live_response_observation",
+        "contract_file": "docs/ftshare_contract_catalog.json",
+        "path": "symbol_id",
+        "semantic_status": "unverified"
+      }
     }
   ],
   "source_field_addenda": [
@@ -185948,6 +187420,390 @@
       "evidence_file": "docs/verify/kph_kpl_history_verify.md",
       "matrix_field": "turnover_real",
       "matrix_source": "开盘啦(kpl)"
+    }
+  ],
+  "source_contract_addenda": [
+    {
+      "source": "FTShare REST",
+      "code": "symbol",
+      "contract_id": "a_share_realtime_quote",
+      "canonical": "symbol",
+      "meaning": "证券代码（含交易所后缀）",
+      "unit": "",
+      "evidence_level": "official_contract",
+      "evidence_file": "docs/verify/ftshare_rest_contract.md",
+      "matrix_field": "symbol",
+      "matrix_source": "FTShare REST"
+    },
+    {
+      "source": "FTShare REST",
+      "code": "name",
+      "contract_id": "a_share_realtime_quote",
+      "canonical": "name",
+      "meaning": "证券名称",
+      "unit": "",
+      "evidence_level": "official_contract",
+      "evidence_file": "docs/verify/ftshare_rest_contract.md",
+      "matrix_field": "name",
+      "matrix_source": "FTShare REST"
+    },
+    {
+      "source": "FTShare REST",
+      "code": "open",
+      "contract_id": "a_share_realtime_quote",
+      "canonical": "open",
+      "meaning": "开盘价",
+      "unit": "元/股",
+      "evidence_level": "official_contract",
+      "evidence_file": "docs/verify/ftshare_rest_contract.md",
+      "matrix_field": "open",
+      "matrix_source": "FTShare REST"
+    },
+    {
+      "source": "FTShare REST",
+      "code": "high",
+      "contract_id": "a_share_realtime_quote",
+      "canonical": "high",
+      "meaning": "最高价",
+      "unit": "元/股",
+      "evidence_level": "official_contract",
+      "evidence_file": "docs/verify/ftshare_rest_contract.md",
+      "matrix_field": "high",
+      "matrix_source": "FTShare REST"
+    },
+    {
+      "source": "FTShare REST",
+      "code": "low",
+      "contract_id": "a_share_realtime_quote",
+      "canonical": "low",
+      "meaning": "最低价",
+      "unit": "元/股",
+      "evidence_level": "official_contract",
+      "evidence_file": "docs/verify/ftshare_rest_contract.md",
+      "matrix_field": "low",
+      "matrix_source": "FTShare REST"
+    },
+    {
+      "source": "FTShare REST",
+      "code": "close",
+      "contract_id": "a_share_realtime_quote",
+      "canonical": "close",
+      "meaning": "收盘价/最新价",
+      "unit": "元/股",
+      "evidence_level": "official_contract",
+      "evidence_file": "docs/verify/ftshare_rest_contract.md",
+      "matrix_field": "close",
+      "matrix_source": "FTShare REST"
+    },
+    {
+      "source": "FTShare REST",
+      "code": "prev_close",
+      "contract_id": "a_share_realtime_quote",
+      "canonical": "prev_close",
+      "meaning": "前收盘价",
+      "unit": "元/股",
+      "evidence_level": "official_contract",
+      "evidence_file": "docs/verify/ftshare_rest_contract.md",
+      "matrix_field": "prev_close",
+      "matrix_source": "FTShare REST"
+    },
+    {
+      "source": "FTShare REST",
+      "code": "change",
+      "contract_id": "a_share_realtime_quote",
+      "canonical": "change",
+      "meaning": "价格涨跌额",
+      "unit": "元/股",
+      "evidence_level": "official_contract",
+      "evidence_file": "docs/verify/ftshare_rest_contract.md",
+      "matrix_field": "change",
+      "matrix_source": "FTShare REST"
+    },
+    {
+      "source": "FTShare REST",
+      "code": "change_rate",
+      "contract_id": "a_share_realtime_quote",
+      "canonical": "change_rate",
+      "meaning": "日涨跌幅；0.03 表示 3%",
+      "unit": "比率",
+      "evidence_level": "official_contract",
+      "evidence_file": "docs/verify/ftshare_rest_contract.md",
+      "matrix_field": "change_rate",
+      "matrix_source": "FTShare REST"
+    },
+    {
+      "source": "FTShare REST",
+      "code": "volume",
+      "contract_id": "a_share_realtime_quote",
+      "canonical": "volume",
+      "meaning": "成交量",
+      "unit": "股",
+      "evidence_level": "official_contract",
+      "evidence_file": "docs/verify/ftshare_rest_contract.md",
+      "matrix_field": "volume",
+      "matrix_source": "FTShare REST"
+    },
+    {
+      "source": "FTShare REST",
+      "code": "turnover",
+      "contract_id": "a_share_realtime_quote",
+      "canonical": "turnover",
+      "meaning": "成交额",
+      "unit": "元",
+      "evidence_level": "official_contract",
+      "evidence_file": "docs/verify/ftshare_rest_contract.md",
+      "matrix_field": "turnover",
+      "matrix_source": "FTShare REST"
+    },
+    {
+      "source": "FTShare REST",
+      "code": "amplitude",
+      "contract_id": "a_share_realtime_quote",
+      "canonical": "amplitude",
+      "meaning": "价格振幅",
+      "unit": "",
+      "evidence_level": "official_contract",
+      "evidence_file": "docs/verify/ftshare_rest_contract.md",
+      "matrix_field": "amplitude",
+      "matrix_source": "FTShare REST"
+    },
+    {
+      "source": "FTShare REST",
+      "code": "avg",
+      "contract_id": "a_share_realtime_quote",
+      "canonical": "avg",
+      "meaning": "平均价格",
+      "unit": "",
+      "evidence_level": "official_contract",
+      "evidence_file": "docs/verify/ftshare_rest_contract.md",
+      "matrix_field": "avg",
+      "matrix_source": "FTShare REST"
+    },
+    {
+      "source": "FTShare REST",
+      "code": "bid_ask_ratio",
+      "contract_id": "a_share_realtime_quote",
+      "canonical": "bid_ask_ratio",
+      "meaning": "买卖盘比率",
+      "unit": "",
+      "evidence_level": "official_contract",
+      "evidence_file": "docs/verify/ftshare_rest_contract.md",
+      "matrix_field": "bid_ask_ratio",
+      "matrix_source": "FTShare REST"
+    },
+    {
+      "source": "FTShare REST",
+      "code": "turnover_rate",
+      "contract_id": "a_share_realtime_quote",
+      "canonical": "turnover_rate",
+      "meaning": "换手率",
+      "unit": "",
+      "evidence_level": "official_contract",
+      "evidence_file": "docs/verify/ftshare_rest_contract.md",
+      "matrix_field": "turnover_rate",
+      "matrix_source": "FTShare REST"
+    },
+    {
+      "source": "FTShare REST",
+      "code": "market_cap",
+      "contract_id": "a_share_realtime_quote",
+      "canonical": "market_cap",
+      "meaning": "总市值",
+      "unit": "元",
+      "evidence_level": "official_contract",
+      "evidence_file": "docs/verify/ftshare_rest_contract.md",
+      "matrix_field": "market_cap",
+      "matrix_source": "FTShare REST"
+    },
+    {
+      "source": "FTShare REST",
+      "code": "tradable_a_market_cap",
+      "contract_id": "a_share_realtime_quote",
+      "canonical": "tradable_a_market_cap",
+      "meaning": "A股流通市值",
+      "unit": "元",
+      "evidence_level": "official_contract",
+      "evidence_file": "docs/verify/ftshare_rest_contract.md",
+      "matrix_field": "tradable_a_market_cap",
+      "matrix_source": "FTShare REST"
+    },
+    {
+      "source": "FTShare REST",
+      "code": "pe_ttm",
+      "contract_id": "a_share_realtime_quote",
+      "canonical": "pe_ttm",
+      "meaning": "滚动市盈率（TTM）",
+      "unit": "",
+      "evidence_level": "official_contract",
+      "evidence_file": "docs/verify/ftshare_rest_contract.md",
+      "matrix_field": "pe_ttm",
+      "matrix_source": "FTShare REST"
+    },
+    {
+      "source": "FTShare REST",
+      "code": "board",
+      "contract_id": "a_share_realtime_quote",
+      "canonical": "board",
+      "meaning": "板块标识",
+      "unit": "",
+      "evidence_level": "official_contract",
+      "evidence_file": "docs/verify/ftshare_rest_contract.md",
+      "matrix_field": "board",
+      "matrix_source": "FTShare REST"
+    },
+    {
+      "source": "FTShare REST",
+      "code": "st",
+      "contract_id": "a_share_realtime_quote",
+      "canonical": "st",
+      "meaning": "是否为 ST",
+      "unit": "",
+      "evidence_level": "official_contract",
+      "evidence_file": "docs/verify/ftshare_rest_contract.md",
+      "matrix_field": "st",
+      "matrix_source": "FTShare REST"
+    },
+    {
+      "source": "FTShare REST",
+      "code": "status",
+      "contract_id": "a_share_realtime_quote",
+      "canonical": "status",
+      "meaning": "证券状态",
+      "unit": "",
+      "evidence_level": "official_contract",
+      "evidence_file": "docs/verify/ftshare_rest_contract.md",
+      "matrix_field": "status",
+      "matrix_source": "FTShare REST"
+    },
+    {
+      "source": "FTShare REST",
+      "code": "shares",
+      "contract_id": "a_share_realtime_quote",
+      "canonical": "shares",
+      "meaning": "总股本",
+      "unit": "股",
+      "evidence_level": "official_contract",
+      "evidence_file": "docs/verify/ftshare_rest_contract.md",
+      "matrix_field": "shares",
+      "matrix_source": "FTShare REST"
+    },
+    {
+      "source": "FTShare REST",
+      "code": "float_a_shares",
+      "contract_id": "a_share_realtime_quote",
+      "canonical": "float_a_shares",
+      "meaning": "A股流通股数",
+      "unit": "股",
+      "evidence_level": "official_contract",
+      "evidence_file": "docs/verify/ftshare_rest_contract.md",
+      "matrix_field": "float_a_shares",
+      "matrix_source": "FTShare REST"
+    },
+    {
+      "source": "FTShare REST",
+      "code": "listing_date",
+      "contract_id": "a_share_realtime_quote",
+      "canonical": "listing_date",
+      "meaning": "上市日期",
+      "unit": "",
+      "evidence_level": "official_contract",
+      "evidence_file": "docs/verify/ftshare_rest_contract.md",
+      "matrix_field": "listing_date",
+      "matrix_source": "FTShare REST"
+    },
+    {
+      "source": "FTShare REST",
+      "code": "change_rate_day5",
+      "contract_id": "a_share_realtime_quote",
+      "canonical": "change_rate_day5",
+      "meaning": "5日涨跌幅",
+      "unit": "比率",
+      "evidence_level": "official_contract",
+      "evidence_file": "docs/verify/ftshare_rest_contract.md",
+      "matrix_field": "change_rate_day5",
+      "matrix_source": "FTShare REST"
+    },
+    {
+      "source": "FTShare REST",
+      "code": "change_rate_day10",
+      "contract_id": "a_share_realtime_quote",
+      "canonical": "change_rate_day10",
+      "meaning": "10日涨跌幅",
+      "unit": "比率",
+      "evidence_level": "official_contract",
+      "evidence_file": "docs/verify/ftshare_rest_contract.md",
+      "matrix_field": "change_rate_day10",
+      "matrix_source": "FTShare REST"
+    },
+    {
+      "source": "FTShare REST",
+      "code": "change_rate_day20",
+      "contract_id": "a_share_realtime_quote",
+      "canonical": "change_rate_day20",
+      "meaning": "20日涨跌幅",
+      "unit": "比率",
+      "evidence_level": "official_contract",
+      "evidence_file": "docs/verify/ftshare_rest_contract.md",
+      "matrix_field": "change_rate_day20",
+      "matrix_source": "FTShare REST"
+    },
+    {
+      "source": "FTShare REST",
+      "code": "change_rate_day60",
+      "contract_id": "a_share_realtime_quote",
+      "canonical": "change_rate_day60",
+      "meaning": "60日涨跌幅",
+      "unit": "比率",
+      "evidence_level": "official_contract",
+      "evidence_file": "docs/verify/ftshare_rest_contract.md",
+      "matrix_field": "change_rate_day60",
+      "matrix_source": "FTShare REST"
+    },
+    {
+      "source": "FTShare REST",
+      "code": "change_rate_day120",
+      "contract_id": "a_share_realtime_quote",
+      "canonical": "change_rate_day120",
+      "meaning": "120日涨跌幅",
+      "unit": "比率",
+      "evidence_level": "official_contract",
+      "evidence_file": "docs/verify/ftshare_rest_contract.md",
+      "matrix_field": "change_rate_day120",
+      "matrix_source": "FTShare REST"
+    },
+    {
+      "source": "FTShare REST",
+      "code": "change_rate_ytd",
+      "contract_id": "a_share_realtime_quote",
+      "canonical": "change_rate_ytd",
+      "meaning": "年初至今涨跌幅",
+      "unit": "比率",
+      "evidence_level": "official_contract",
+      "evidence_file": "docs/verify/ftshare_rest_contract.md",
+      "matrix_field": "change_rate_ytd",
+      "matrix_source": "FTShare REST"
+    },
+    {
+      "source": "FTShare REST",
+      "code": "ts_millis",
+      "contract_id": "a_share_realtime_quote",
+      "canonical": "ts_millis",
+      "meaning": "交易所行情时间戳",
+      "unit": "毫秒（Unix 时间戳）",
+      "evidence_level": "official_contract",
+      "evidence_file": "docs/verify/ftshare_rest_contract.md",
+      "matrix_field": "ts_millis",
+      "matrix_source": "FTShare REST"
+    }
+  ],
+  "source_observation_addenda": [
+    {
+      "source": "FTShare REST",
+      "code": "symbol_id",
+      "evidence_level": "single_live_response_observation",
+      "evidence_file": "docs/verify/ftshare_rest_contract.md",
+      "matrix_field": "symbol_id",
+      "matrix_source": "FTShare REST"
     }
   ]
 }

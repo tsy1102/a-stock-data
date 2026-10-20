@@ -1,4 +1,5 @@
 import json
+from datetime import date, timedelta
 
 from scripts import axdata_daily_validation as validation
 
@@ -67,7 +68,10 @@ def _write_snapshot(
     }
     for filename, document in documents.items():
         (output_dir / filename).write_text(json.dumps(document), encoding="utf-8")
-    return {source: {"ok": True, "status": "ok"} for source in ("axdata", "eltdx", "kph", "kpl")}
+    return {
+        source: {"ok": True, "status": "ok", "as_of_date": data_date}
+        for source in ("axdata", "eltdx", "kph", "kpl")
+    }
 
 
 def _confirm_both_routes(tmp_path, monkeypatch):
@@ -85,25 +89,25 @@ def _confirm_both_routes(tmp_path, monkeypatch):
     return state_path, dates
 
 
-def test_proven_axdata_routes_keep_capture_and_are_excluded_from_routine_collisions(
+def test_proven_axdata_routes_skip_capture_and_are_excluded_from_routine_collisions(
     tmp_path, monkeypatch
 ):
     _confirm_both_routes(tmp_path, monkeypatch)
 
     plan = validation.get_axdata_capture_identity_plan("2026-10-13")
     for endpoint in plan["endpoints"].values():
-        assert endpoint["action"] == "collect"
+        assert endpoint["action"] == "skip"
         assert endpoint["identity_validation_action"] == "suppress"
     assert validation.get_axdata_collision_suppressions().keys() == {"axdata", "kph"}
 
 
-def test_confirmed_identity_for_same_or_older_date_still_collects_raw_data(tmp_path, monkeypatch):
+def test_confirmed_identity_for_same_or_older_date_skips_duplicate_capture(tmp_path, monkeypatch):
     _confirm_both_routes(tmp_path, monkeypatch)
 
     plan = validation.get_axdata_capture_identity_plan("2026-10-12")
 
     for endpoint in plan["endpoints"].values():
-        assert endpoint["action"] == "collect"
+        assert endpoint["action"] == "skip"
         assert endpoint["identity_validation_action"] == "suppress"
         assert endpoint["reason"] == "identity_validation_already_confirmed_for_date"
 
@@ -125,7 +129,7 @@ def test_kph_unknown_fields_keep_the_route_active(tmp_path, monkeypatch):
     assert summaries["kph_limit_up_history"]["status"] == "observing"
     assert "unmapped_candidate" in summaries["kph_limit_up_history"]["unresolved_fields"]
     plan = validation.get_axdata_capture_identity_plan("2026-10-13")
-    assert plan["endpoints"]["stock_shortline_indicators_tdx"]["action"] == "collect"
+    assert plan["endpoints"]["stock_shortline_indicators_tdx"]["action"] == "skip"
     assert (
         plan["endpoints"]["stock_shortline_indicators_tdx"]["identity_validation_action"]
         == "suppress"
@@ -406,3 +410,105 @@ def test_partial_capture_does_not_reopen_unselected_endpoint_on_contract_change(
     unselected_after = updated["capture_endpoint_identities"]["kph_limit_up_history"]
     assert unselected_after["contract_fingerprint"] == "stale-contract"
     assert unselected_after["status"] == "operationally_redundant"
+
+
+def _write_redundant_skip_snapshot(
+    output_dir, data_date, *, reference_date=None, reference_ok=True
+):
+    output_dir.mkdir(parents=True, exist_ok=True)
+    source_meta = {}
+    for interface_id, endpoint in validation.CAPTURE_ENDPOINTS.items():
+        source = endpoint["source"]
+        reference_source = endpoint["reference_source"]
+        (output_dir / f"raw_{source}.json").write_text(
+            json.dumps(
+                {
+                    "__source_meta__": {
+                        "capture_block": {
+                            "status": "operationally_redundant",
+                            "interface_id": interface_id,
+                            "capture_performed": False,
+                        }
+                    }
+                }
+            ),
+            encoding="utf-8",
+        )
+        source_meta[source] = {"ok": False, "status": "skipped"}
+        source_meta[reference_source] = {
+            "ok": reference_ok,
+            "status": "ok" if reference_ok else "failed",
+            "as_of_date": reference_date or data_date,
+        }
+    return source_meta
+
+
+def test_skipped_redundant_routes_count_only_matching_reference_data_dates(tmp_path, monkeypatch):
+    state_path, _ = _confirm_both_routes(tmp_path, monkeypatch)
+    state = json.loads(state_path.read_text(encoding="utf-8"))
+    for identity in state["capture_endpoint_identities"].values():
+        identity["eligible_data_dates_since_probe"] = 0
+        identity["last_counted_data_date"] = None
+    state_path.write_text(json.dumps(state), encoding="utf-8")
+
+    output_dir = tmp_path / "20261013"
+    source_meta = _write_redundant_skip_snapshot(
+        output_dir, "2026-10-13", reference_date="2026-10-12"
+    )
+    validation.update_axdata_capture_identities(
+        out_dir=output_dir,
+        data_date="2026-10-13",
+        source_meta=source_meta,
+    )
+    state = json.loads(state_path.read_text(encoding="utf-8"))
+    assert all(
+        item["eligible_data_dates_since_probe"] == 0
+        for item in state["capture_endpoint_identities"].values()
+    )
+
+    output_dir = tmp_path / "20261014"
+    source_meta = _write_redundant_skip_snapshot(output_dir, "2026-10-14")
+    validation.update_axdata_capture_identities(
+        out_dir=output_dir,
+        data_date="2026-10-14",
+        source_meta=source_meta,
+    )
+    validation.update_axdata_capture_identities(
+        out_dir=output_dir,
+        data_date="2026-10-14",
+        source_meta=source_meta,
+    )
+    state = json.loads(state_path.read_text(encoding="utf-8"))
+    assert all(
+        item["eligible_data_dates_since_probe"] == 1
+        and item["last_counted_data_date"] == "2026-10-14"
+        for item in state["capture_endpoint_identities"].values()
+    )
+
+
+def test_twenty_reference_only_dates_reopen_redundant_routes_for_recheck(tmp_path, monkeypatch):
+    state_path, _ = _confirm_both_routes(tmp_path, monkeypatch)
+    state = json.loads(state_path.read_text(encoding="utf-8"))
+    for identity in state["capture_endpoint_identities"].values():
+        identity["eligible_data_dates_since_probe"] = 0
+        identity["last_counted_data_date"] = None
+    state_path.write_text(json.dumps(state), encoding="utf-8")
+
+    current = date(2026, 10, 13)
+    counted = 0
+    while counted < validation.CAPTURE_IDENTITY_RECHECK_DATES:
+        if current.weekday() < 5:
+            data_date = current.isoformat()
+            output_dir = tmp_path / current.strftime("%Y%m%d")
+            source_meta = _write_redundant_skip_snapshot(output_dir, data_date)
+            validation.update_axdata_capture_identities(
+                out_dir=output_dir,
+                data_date=data_date,
+                source_meta=source_meta,
+            )
+            counted += 1
+        current += timedelta(days=1)
+
+    plan = validation.get_axdata_capture_identity_plan(current.isoformat())
+    assert all(item["action"] == "collect" for item in plan["endpoints"].values())
+    assert all(item["identity"]["status"] == "rechecking" for item in plan["endpoints"].values())

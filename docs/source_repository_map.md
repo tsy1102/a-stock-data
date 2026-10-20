@@ -11,7 +11,7 @@
 | ZHB-tdxstat | active | zhb | Tongdaxin | tdx（confirmed） | 是 | confirmed | confirmed（2026-10-06） |
 | ZHB-tdxstat2 | active | zhb | Tongdaxin | tdx（confirmed） | 是 | confirmed | confirmed（2026-10-06） |
 | ZHB-tipinfo | active | zhb | Tongdaxin | tdx（confirmed） | 是 | confirmed | confirmed（2026-10-06） |
-| FTShare | active | ftshare | FTShare hosted MCP service at market.ft.tech | 未确认（unconfirmed） | 否 | confirmed | pending |
+| FTShare | historical | ftshare | Retired FTShare hosted private MCP service at market.ft.tech; underlying sources unverified | 未确认（unconfirmed） | 否 | confirmed | confirmed（2026-10-20） |
 | Levistock历史未归属 | historical | 未确认 | Levistock 多源客户端包装库的历史未归属字段记录 | 未确认（unconfirmed） | 否 | confirmed | confirmed（2026-10-06） |
 | 开盘红(Levistock适配) | active | kph | KPH / 开盘红（通过 Levistock 的历史方法路径） | kph（confirmed） | 是 | confirmed | confirmed（2026-10-06） |
 | reports | active | reports | Eastmoney | eastmoney（confirmed） | 是 | unconfirmed | pending |
@@ -37,6 +37,7 @@
 | 百度(baidu) | pending_validation | baidu | Baidu | baidu（confirmed） | 是 | unconfirmed | pending |
 | 腾讯(qt.gtimg) | active | tencent | Tencent | tencent（confirmed） | 是 | confirmed | confirmed（2026-10-08） |
 | 财联社(cls) | active | cls | CLS | cls（confirmed） | 是 | confirmed | confirmed（2026-10-08） |
+| FTShare REST | active | ftshare_rest | FTShare public REST Gateway; the underlying data provider is unconfirmed | 未确认（unconfirmed） | 否 | unconfirmed | pending |
 
 ## 项目级历史参考基线
 
@@ -88,16 +89,16 @@
 
 ### FTShare
 
-- 来源说明：服务接口来源身份；底层提供方族未逐工具确认，不能作为独立来源锚。。
-- 对话确认：pending。已确认仓库是 FTShare MCP 文档/集成参考；用户尚未确认将其映射为底层独立数据提供方。
-- [https://github.com/FTShare-Lab/FTShare-MCP](https://github.com/FTShare-Lab/FTShare-MCP) — hosted_service_documentation；confirmed。仓库提供 FTShare MCP 的文档/集成说明；服务由 market.ft.tech 托管，仓库不包含 MCP 服务端实现，也不证明每个工具底层数据源的独立性。
-  - 项目内证据：stock_common/sc_ftshare.py, docs/verify/ftshare_fields_mirror.md
+- 来源说明：私有托管 MCP 服务已退役；底层提供方未公开核实，字段仅保留历史证据，不作来源锚。
+- 对话确认：confirmed（2026-10-20）。确认退役项目内 FTShare MCP 集成；未确认其底层提供方身份，历史字段和采集证据仍保留。
+- [https://github.com/FTShare-Lab/FTShare-MCP](https://github.com/FTShare-Lab/FTShare-MCP) — hosted_service_documentation；confirmed。仓库仅提供 MCP 文档/集成说明，不含服务端实现；项目旧版通过自编客户端连接托管服务，无法从公开材料核实其底层来源或官方性。该集成现已退役。
+  - 项目内证据：docs/verify/ftshare_fields_mirror.md
 
 ### Levistock历史未归属
 
-- 来源说明：仅保留无法逐字段归属的历史证据；不是运行源，不映射到 FTShare，也不参与碰撞锚点。。
+- 来源说明：仅保留无法逐字段归属的历史证据；不是运行源，不映射到 FTShare，也不参与碰撞锚点。
 - 对话确认：confirmed（2026-10-06）。确认该仓库对应 levistock 多源客户端包装库；不将包装库视作独立数据提供方，也不据此确认每个字段的底层来源。项目字段中的历史混合键不再映射到 FTShare 运行源。
-- [https://github.com/fleetinglife/levistock](https://github.com/fleetinglife/levistock) — multi_provider_client_wrapper；confirmed。Levistock 是多源客户端包装库。项目当前使用的 CLS 与 KPH 方法分别归入财联社、开盘红；FTShare 由项目自己的 MCP 客户端采集，不映射到 Levistock。
+- [https://github.com/fleetinglife/levistock](https://github.com/fleetinglife/levistock) — multi_provider_client_wrapper；confirmed。Levistock 是多源客户端包装库。项目当前使用的 CLS 与 KPH 方法分别归入财联社、开盘红；历史 FTShare 服务字段不属于 Levistock，其私有 MCP 集成已退役，相关字段仅作历史归档
   - 项目内证据：docs/verify/levistock_field_verify.md, docs/levistock_source_reconciliation_20261010.md
 
 ### 开盘红(Levistock适配)
@@ -266,6 +267,12 @@
 - 对话确认：confirmed（2026-10-08）。按用户确认登记仓库关系；具体仓库的关系范围及限制见 repositories.note。
 - [https://github.com/fleetinglife/levistock](https://github.com/fleetinglife/levistock) — api_implementation_reference；confirmed。按用户确认作为财联社接口实现参考；levistock 为多源包装库，不据此确认独立数据提供方或本项目逐行复制关系。
   - 项目内证据：scripts/capture_field_probe.py, stock_common/sc_datasource/_eastmoney.py
+
+### FTShare REST
+
+- 来源说明：官方接口字段契约支持语义锚；底层数据提供方及跨来源独立性未确认，碰撞强候选标 L1-C。
+- 对话确认：pending。关系待通过对话逐项确认。
+- GitHub 对应仓库：**unconfirmed**。现有材料不足以证明某个仓库就是本项目使用的采集实现；等待后续证据或用户确认。
 
 ## 解释口径
 

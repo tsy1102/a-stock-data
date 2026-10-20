@@ -14,18 +14,19 @@
 
 ## 状态与锚点规则
 
-- `verified` 表示字段语义已经确认。作为碰撞锚还要求含义非空且非占位、含义/单位无冲突或对齐歧义、来源独立性已确认，并且运行时来源与完整路径精确匹配。
+- 普通来源的 `verified` 字段要成为独立来源碰撞锚，还要求含义非空且非占位、含义/单位无冲突或对齐歧义、来源独立性已确认，并且运行时来源与完整路径精确匹配。
+- `source_role=documented_contract_anchor` 且字段证据为 `official_contract` 时，官方文档可直接确认该来源字段含义；其多日强匹配单列 `L1-C`，不声称上游来源独立，也不自动定案。
 - 规范名的别名差异不会单独阻止碰撞；字段含义缺失/占位或含义/单位存在冲突时，碰撞器会将该 verified 路径重新纳入待破解目标，并排除为锚。
 - `unverified`、`candidate` 是默认破解目标；`conflict` 可作为待复核目标但不能作锚，碰撞候选不能替代证据冲突复核。
 - `disproved` 单独归档，不进入默认破解队列。
 - 未登记来源、路径不完整或来源独立性未确认时，不参与默认 L1 定案。
 - AxData 是多提供方接口框架；当前 `stock_shortline_indicators_tdx` 属于 TDX 来源族。AxData 接口盘点只作框架参考，不能作为独立来源或锚；详见 [`axdata_field_reconciliation_20261010.md`](axdata_field_reconciliation_20261010.md)。
-- Levistock 是多源客户端包装库。已归属的 KPH 记录映射到 KPH 来源族；FTShare MCP 记录归到项目独立接入的 FTShare 服务接口，但其底层来源族未确认，不能作独立锚。其余历史记录保留为未归属证据，不计为 Levistock 数据源；字段映射见 [`source_identity_reclassifications.json`](field_verification/source_identity_reclassifications.json) 与 [`levistock_source_reconciliation_20261010.md`](levistock_source_reconciliation_20261010.md)。
+- Levistock 是多源客户端包装库。已归属的 KPH 记录映射到 KPH 来源族；FTShare 私有托管 MCP 集成已退役，其字段仅留作历史证据，底层来源未确认、不作独立锚。其余历史记录保留为未归属证据，不计为 Levistock 数据源；字段映射见 [`source_identity_reclassifications.json`](field_verification/source_identity_reclassifications.json) 与 [`levistock_source_reconciliation_20261010.md`](field_verification/levistock_source_reconciliation_20261010.md)。
 
 ## 当前覆盖
 
-- 来源身份与参考登记：32 项；是否可作独立锚由来源谱系单独判定。
-- 逐源字段路径：2518 条；verified 926、unverified 1508、candidate 1、conflict 81、disproved 2。
+- 来源身份与参考登记：33 项；是否可作独立锚由来源谱系单独判定。
+- 逐源字段路径：2550 条；verified 959、unverified 1507、candidate 1、conflict 81、disproved 2。
 - 矩阵：[`field_matrix.md`](field_matrix.md)。
 - 待破解与状态冲突：[`unknown_fields.md`](unknown_fields.md)。
 - 来源与 GitHub 仓库映射：[`source_repository_map.md`](source_repository_map.md)。
@@ -54,7 +55,7 @@
 | ZHB-tdxstat | 运行时来源身份（独立性按来源谱系判定） | [verify/tdx_func_fields.md](verify/tdx_func_fields.md) | 1. `tdxstat.cfg` (个股综合统计快照，35 个字段，7,951 行) |
 | ZHB-tdxstat2 | 运行时来源身份（独立性按来源谱系判定） | [verify/tdx_func_fields.md](verify/tdx_func_fields.md) | 2. `tdxstat2.cfg` (成交与资金流向表，21 个字段，7,951 行) |
 | ZHB-tipinfo | 运行时来源身份（独立性按来源谱系判定） | [verify/tdx_func_fields.md](verify/tdx_func_fields.md) | 3. `tipinfo.dat` (财报日历与业绩快照，22 列，5,612 行) |
-| FTShare | 服务接口（底层来源族未确认） | [verify/ftshare_fields_mirror.md](verify/ftshare_fields_mirror.md) | 12.20.1 FTShare 股吧/评论原始字段补录（V17.1.1 全量登记） |
+| FTShare | 已退役的托管服务（仅保留历史证据） | [verify/ftshare_fields_mirror.md](verify/ftshare_fields_mirror.md) | 12.20.1 FTShare 股吧/评论原始字段补录（V17.1.1 全量登记） |
 | Levistock历史未归属 | 历史未归属（不作来源锚） | [verify/levistock_field_verify.md](verify/levistock_field_verify.md) | 未能按逐字段证据归属的历史接口记录 |
 | 开盘红(Levistock适配) | 已映射提供方的接口组件 | [verify/levistock_field_verify.md](verify/levistock_field_verify.md) | 12.10.3 开盘红市场情绪（market_emotion_kph，**含历史**）🆕 |
 | 东财-push2(stock/get) | 运行时来源身份（独立性按来源谱系判定） | [verify/push2_verify.md](verify/push2_verify.md) | 12.3.1 单股行情 `stock/get`（已由 get_em_quote_full 验证） |
@@ -64,6 +65,7 @@
 | 开盘啦(kpl_limit_up_detail) | 运行时来源身份（独立性按来源谱系判定） | [verify/kph_kpl_history_verify.md](verify/kph_kpl_history_verify.md) | KPH 与 KPL 涨停明细核验（2026-09-29/30 双交易日） |
 | 开盘红 | 运行时来源身份（独立性按来源谱系判定） | [verify/kph_kpl_history_verify.md](verify/kph_kpl_history_verify.md) | KPH 与 KPL 涨停明细核验（2026-09-29/30 双交易日） |
 | 腾讯(qt.gtimg) | 运行时来源身份（独立性按来源谱系判定） | [verify/tencent_verify.md](verify/tencent_verify.md) | 12.1 腾讯 qt.gtimg.cn 完整字段字典（88 字段） |
+| FTShare REST | 官方文档定义字段语义的契约锚（底层数据来源未确认） | [verify/ftshare_rest_contract.md](verify/ftshare_rest_contract.md) | — |
 
 ## 维护命令
 

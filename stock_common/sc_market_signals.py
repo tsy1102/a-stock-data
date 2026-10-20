@@ -24,7 +24,6 @@ from datetime import date, datetime, timedelta
 from typing import Any, Dict, List, Optional, Tuple
 
 
-
 # ---------------------------------------------------------------------------
 # 内部工具
 # ---------------------------------------------------------------------------

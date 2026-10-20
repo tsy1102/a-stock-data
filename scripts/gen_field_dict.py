@@ -64,10 +64,16 @@ _SOURCE_ROLE_LABELS = {
     "service_endpoint": "服务接口（底层来源族未确认）",
     "framework_reference": "多源框架参考（非独立来源）",
     "historical_unattributed": "历史未归属（不作来源锚）",
+    "retired_service_endpoint": "已退役的托管服务（仅保留历史证据）",
+    "documented_contract_anchor": "官方文档定义字段语义的契约锚（底层数据来源未确认）",
 }
 
 
 def _source_role_label(source: dict[str, Any]) -> str:
+    if source.get("status") in {"historical", "retired"}:
+        return _SOURCE_ROLE_LABELS.get(
+            str(source.get("source_role") or ""), "已退役来源（仅保留历史证据）"
+        )
     if source.get("status") == "retired_duplicate":
         replacement = source.get("replacement_source")
         if replacement:
@@ -110,13 +116,14 @@ def render_field_dict(registry: dict[str, Any]) -> str:
         "",
         "## 状态与锚点规则",
         "",
-        "- `verified` 表示字段语义已经确认。作为碰撞锚还要求含义非空且非占位、含义/单位无冲突或对齐歧义、来源独立性已确认，并且运行时来源与完整路径精确匹配。",
+        "- 普通来源的 `verified` 字段要成为独立来源碰撞锚，还要求含义非空且非占位、含义/单位无冲突或对齐歧义、来源独立性已确认，并且运行时来源与完整路径精确匹配。",
+        "- `source_role=documented_contract_anchor` 且字段证据为 `official_contract` 时，官方文档可直接确认该来源字段含义；其多日强匹配单列 `L1-C`，不声称上游来源独立，也不自动定案。",
         "- 规范名的别名差异不会单独阻止碰撞；字段含义缺失/占位或含义/单位存在冲突时，碰撞器会将该 verified 路径重新纳入待破解目标，并排除为锚。",
         "- `unverified`、`candidate` 是默认破解目标；`conflict` 可作为待复核目标但不能作锚，碰撞候选不能替代证据冲突复核。",
         "- `disproved` 单独归档，不进入默认破解队列。",
         "- 未登记来源、路径不完整或来源独立性未确认时，不参与默认 L1 定案。",
         "- AxData 是多提供方接口框架；当前 `stock_shortline_indicators_tdx` 属于 TDX 来源族。AxData 接口盘点只作框架参考，不能作为独立来源或锚；详见 [`axdata_field_reconciliation_20261010.md`](axdata_field_reconciliation_20261010.md)。",
-        "- Levistock 是多源客户端包装库。已归属的 KPH 记录映射到 KPH 来源族；FTShare MCP 记录归到项目独立接入的 FTShare 服务接口，但其底层来源族未确认，不能作独立锚。其余历史记录保留为未归属证据，不计为 Levistock 数据源；字段映射见 [`source_identity_reclassifications.json`](field_verification/source_identity_reclassifications.json) 与 [`levistock_source_reconciliation_20261010.md`](levistock_source_reconciliation_20261010.md)。",
+        "- Levistock 是多源客户端包装库。已归属的 KPH 记录映射到 KPH 来源族；FTShare 私有托管 MCP 集成已退役，其字段仅留作历史证据，底层来源未确认、不作独立锚。其余历史记录保留为未归属证据，不计为 Levistock 数据源；字段映射见 [`source_identity_reclassifications.json`](field_verification/source_identity_reclassifications.json) 与 [`levistock_source_reconciliation_20261010.md`](field_verification/levistock_source_reconciliation_20261010.md)。",
         "",
         "## 当前覆盖",
         "",
@@ -178,15 +185,31 @@ def render_unknown_fields(registry: dict[str, Any]) -> str:
         raise ValueError(
             "registry.source_fields is empty; refusing to generate an incomplete queue"
         )
-    counts = _source_field_counts(records)
+    source_statuses = {
+        str(source.get("name")): str(source.get("status", "active"))
+        for source in registry.get("sources", [])
+        if isinstance(source, dict) and source.get("name")
+    }
+    historical_statuses = {"historical", "retired"}
+    active_records = [
+        record
+        for record in records
+        if source_statuses.get(str(record.get("source")), "active") not in historical_statuses
+    ]
+    historical_records = [
+        record
+        for record in records
+        if source_statuses.get(str(record.get("source")), "active") in historical_statuses
+    ]
+    counts = _source_field_counts(active_records)
     groups: dict[str, list[dict[str, Any]]] = defaultdict(list)
-    for record in records:
+    for record in active_records:
         status = record.get("status", "unverified")
         if status in {"unverified", "candidate", "conflict", "disproved"}:
             groups[status].append(record)
     verified_quality_review = [
         record
-        for record in records
+        for record in active_records
         if record.get("status") == "verified" and fra.source_field_semantic_issues(record)
     ]
     unverified = groups["unverified"]
@@ -201,7 +224,7 @@ def render_unknown_fields(registry: dict[str, Any]) -> str:
         "> 碰撞候选须人工复核后使用 `apply_collision_adjudications.py` 同步状态；流程见 `field_verification/ADJUDICATION_WORKFLOW.md`。",
         "> 聚合层的同码异义与定义缺口见 [`field_aggregate_review.md`](field_aggregate_review.md)，不代表逐源记录状态冲突。",
         "",
-        f"> 总字段路径 {len(records)}；unverified {counts['unverified']}、candidate {counts['candidate']}、conflict {counts['conflict']}、disproved {counts['disproved']}。",
+        f"> 注册字段路径 {len(records)}；日常来源路径 {len(active_records)}：unverified {counts['unverified']}、candidate {counts['candidate']}、conflict {counts['conflict']}、disproved {counts['disproved']}；历史来源路径 {len(historical_records)}。",
         f"> 另有 {len(verified_quality_review)} 条虽标 verified、但含义/单位元数据未达到碰撞锚条件；这些记录会重新进入碰撞目标，详见 [字段元数据复核](field_metadata_gaps.md)。",
         "> 以下两组未验证字段统计是不同维度，不能相加：含义栏文本只表示存在文字，不代表语义正确；状态判定反映旧字典状态证据能否映射到逐源身份。",
         "",
@@ -260,8 +283,31 @@ def render_unknown_fields(registry: dict[str, Any]) -> str:
                     section=_cell("；".join(sections)),
                 )
             )
+    if historical_records:
+        historical_by_source: dict[str, Counter] = defaultdict(Counter)
+        for record in historical_records:
+            historical_by_source[str(record.get("source", "unknown"))][
+                str(record.get("status", "unverified"))
+            ] += 1
+        lines.extend(
+            [
+                "",
+                "## 已退出来源字段（仅历史证据，不进入默认破解）",
+                "",
+                "| 来源 | 路径数 | verified | unverified | candidate | conflict | disproved |",
+                "|:--|--:|--:|--:|--:|--:|--:|",
+            ]
+        )
+        for source, status_counts in sorted(historical_by_source.items()):
+            lines.append(
+                f"| {_cell(source)} | {sum(status_counts.values())} | "
+                f"{status_counts['verified']} | {status_counts['unverified']} | "
+                f"{status_counts['candidate']} | {status_counts['conflict']} | "
+                f"{status_counts['disproved']} |"
+            )
+        lines.append("")
     lines.append("")
-    return "\n".join(lines)
+    return "\n".join(lines).rstrip("\n") + "\n"
 
 
 def render_field_aggregate_review(registry: dict[str, Any]) -> str:
@@ -269,6 +315,17 @@ def render_field_aggregate_review(registry: dict[str, Any]) -> str:
     records = fra.source_field_records(registry)
     if not records:
         raise ValueError("registry.source_fields is empty; refusing to generate aggregate review")
+    historical_statuses = {"historical", "retired"}
+    source_statuses = {
+        str(source.get("name")): str(source.get("status", "active"))
+        for source in registry.get("sources", [])
+        if isinstance(source, dict) and source.get("name")
+    }
+    records = [
+        record
+        for record in records
+        if source_statuses.get(str(record.get("source")), "active") not in historical_statuses
+    ]
     groups: dict[str, list[dict[str, Any]]] = defaultdict(list)
     for record in records:
         groups[record["code"]].append(record)

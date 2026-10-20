@@ -84,9 +84,7 @@ def _isolated_test_cache_db():
             stock_cache._L1_CACHE.clear()
         with stock_cache._STATS_LOCK:
             original_cache_stats = deepcopy(stock_cache._CACHE_STATS)
-            stock_cache._CACHE_STATS.update(
-                {"total_get": 0, "total_hit": 0, "category_stats": {}}
-            )
+            stock_cache._CACHE_STATS.update({"total_get": 0, "total_hit": 0, "category_stats": {}})
         original_soft_stats = deepcopy(stock_cache._SOFT_STATS)
         stock_cache._SOFT_STATS.update({"soft_hit_count": 0, "hard_miss_count": 0})
         stock_cache._CACHE_DB = str(cache_dir / "stock_cache.db")

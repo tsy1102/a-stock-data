@@ -325,11 +325,11 @@ def _route_identity_summary_map(state: Optional[dict[str, Any]]) -> dict[str, di
 def get_axdata_capture_identity_plan(
     data_date: str, *, force_reprobe: bool = False
 ) -> dict[str, Any]:
-    """Keep raw capture active while scheduling separate identity-evidence checks.
+    """Stop confirmed redundant routes until a scheduled identity recheck.
 
-    A confirmed redundant route continues producing raw snapshots. Its values are
-    excluded from repeated identity checks and routine collisions until a scheduled
-    recheck. Capture is skipped only for a same-date duplicate or a manual block.
+    A due or explicitly requested recheck temporarily reopens collection. Other
+    confirmed redundant routes are skipped, while their reference source continues
+    to provide eligible data dates for the next recheck window.
     """
     state, error = _load_validation_state()
     if error:
@@ -364,12 +364,8 @@ def get_axdata_capture_identity_plan(
             action, reason = "skip", "blocked_until_manual_review"
             identity_validation_action = "blocked"
         elif status == "operationally_redundant":
-            if last_probe and target_date <= last_probe:
-                action, reason = "collect", "identity_validation_already_confirmed_for_date"
-                identity_validation_action = "suppress"
-            elif (
-                force_reprobe
-                or _capture_identity_days_since_probe(identity) >= CAPTURE_IDENTITY_RECHECK_DATES
+            if force_reprobe or (
+                _capture_identity_days_since_probe(identity) >= CAPTURE_IDENTITY_RECHECK_DATES
             ):
                 identity["status"] = "rechecking"
                 identity["recheck_samples"] = []
@@ -378,8 +374,16 @@ def get_axdata_capture_identity_plan(
                 )
                 changed = True
                 reason = identity["reason"]
+            elif not last_probe:
+                action, reason = "collect", "missing_last_probe_date_reopened"
+                identity_validation_action = "sample"
             else:
-                action, reason = "collect", "endpoint_redundant_until_scheduled_recheck"
+                action = "skip"
+                reason = (
+                    "identity_validation_already_confirmed_for_date"
+                    if target_date <= last_probe
+                    else "endpoint_redundant_until_scheduled_recheck"
+                )
                 identity_validation_action = "suppress"
         endpoints[interface_id] = {
             "action": action,
@@ -708,7 +712,7 @@ def update_axdata_capture_identities(
     source_meta: Optional[dict[str, Any]],
     requested_sources: Optional[set[str]] = None,
 ) -> dict[str, dict[str, Any]]:
-    """Update identities only from successful routes selected in this capture."""
+    """Update identities from successful captures or dates eligible for recheck."""
     state, error = _load_validation_state()
     if error or not isinstance(state, dict):
         return _route_identity_summary_map(None)
@@ -727,10 +731,12 @@ def update_axdata_capture_identities(
         changed = changed or contract_changed
         source_state = source_meta.get(source)
         reference_state = source_meta.get(reference_source)
-        if not isinstance(source_state, dict) or not isinstance(reference_state, dict):
+        if not isinstance(reference_state, dict):
             continue
         payload = _read_json(output_dir / f"raw_{source}.json") or {}
-        if _source_has_rate_limit(source_state) or _payload_has_rate_limit(payload):
+        if (isinstance(source_state, dict) and _source_has_rate_limit(source_state)) or (
+            _payload_has_rate_limit(payload)
+        ):
             if identity.get("status") in {"operationally_redundant", "rechecking"}:
                 identity["status_before_block"] = identity["status"]
             identity["status"] = "blocked_until_manual_review"
@@ -739,19 +745,26 @@ def update_axdata_capture_identities(
             continue
         if identity.get("status") == "blocked_until_manual_review":
             continue
-        if source_state.get("ok") is not True or reference_state.get("ok") is not True:
+        if reference_state.get("ok") is not True:
             continue
         source_meta_block = payload.get("__source_meta__")
-        suppressed = isinstance(source_meta_block, dict) and (
-            isinstance(source_meta_block.get("identity_validation_suppression"), dict)
-            or isinstance(source_meta_block.get("identity_suppression"), dict)
+        capture_block = (
+            source_meta_block.get("capture_block") if isinstance(source_meta_block, dict) else None
         )
-        if identity.get("status") == "operationally_redundant" and suppressed:
-            # The raw response is still captured and retained for future use. This
-            # marker only excludes it from today's identity proof / routine cracking.
+        reference_date = _date_key(reference_state.get("as_of_date"))
+        if (
+            identity.get("status") == "operationally_redundant"
+            and isinstance(capture_block, dict)
+            and capture_block.get("status") == "operationally_redundant"
+            and target_date
+            and reference_date == target_date
+        ):
+            # The redundant route made no request. Count only a successful reference
+            # snapshot whose effective date matches this completed capture date.
             last_counted = _date_key(identity.get("last_counted_data_date"))
+            last_probe = _date_key(identity.get("last_probe_data_date"))
             if (
-                target_date
+                (last_probe is None or target_date > last_probe)
                 and target_date != last_counted
                 and (last_counted is None or target_date > last_counted)
             ):
@@ -760,6 +773,10 @@ def update_axdata_capture_identities(
                 )
                 identity["last_counted_data_date"] = target_date
                 changed = True
+            continue
+        if not isinstance(source_state, dict) or source_state.get("ok") is not True:
+            continue
+        if reference_date != target_date:
             continue
         sample = (
             _shortline_capture_sample(output_dir, target_date)

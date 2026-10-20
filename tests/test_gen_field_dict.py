@@ -147,7 +147,8 @@ def test_field_dictionary_distinguishes_sources_from_framework_and_historical_re
             },
             {
                 "name": "FTShare",
-                "source_role": "service_endpoint",
+                "status": "historical",
+                "source_role": "retired_service_endpoint",
                 "verify_file": "ftshare_fields_mirror.md",
                 "section_patterns": ["FTShare MCP fields"],
             },
@@ -164,10 +165,35 @@ def test_field_dictionary_distinguishes_sources_from_framework_and_historical_re
 
     assert "来源身份与框架参考索引" in rendered
     assert "AxData | 多源框架参考（非独立来源）" in rendered
-    assert "FTShare | 服务接口（底层来源族未确认）" in rendered
+    assert "FTShare | 已退役的托管服务（仅保留历史证据）" in rendered
     assert "Levistock历史未归属 | 历史未归属（不作来源锚）" in rendered
     assert "AxData 是多提供方接口框架" in rendered
     assert "field_aggregate_review.md" in rendered
+
+
+def test_historical_source_fields_are_not_in_daily_unknown_queue():
+    registry = {
+        "sources": [{"name": "retired-source", "status": "historical"}],
+        "source_fields": [
+            {
+                "source": "active-source",
+                "code": "active.unknown",
+                "status": "unverified",
+            },
+            {
+                "source": "retired-source",
+                "code": "retired.unknown",
+                "status": "unverified",
+            },
+        ],
+    }
+
+    rendered = render_unknown_fields(registry)
+
+    assert "active.unknown" in rendered
+    assert "retired.unknown" not in rendered
+    assert "已退出来源字段（仅历史证据，不进入默认破解）" in rendered
+    assert "retired-source | 1 | 0 | 1" in rendered
 
 
 def test_aggregate_review_lists_source_scoped_meanings_without_splitting_them():
@@ -210,3 +236,35 @@ def test_aggregate_review_lists_source_scoped_meanings_without_splitting_them():
     assert "单来源或全空的定义缺口" in rendered
     assert "field_metadata_gaps.md" in rendered and "unknown_fields.md" in rendered
     assert registry["source_fields"] == source_fields
+
+
+def test_aggregate_review_omits_retired_source_fields():
+    registry = {
+        "sources": [
+            {"name": "active-source", "status": "active"},
+            {"name": "retired-source", "status": "historical"},
+        ],
+        "source_fields": [
+            {
+                "source": "active-source",
+                "code": "metric.composite",
+                "canonical": "metric.value",
+                "meaning": "revenue/profit composite",
+                "unit": "yuan",
+                "status": "candidate",
+            },
+            {
+                "source": "retired-source",
+                "code": "metric.composite",
+                "canonical": "old.metric",
+                "meaning": "historical value/flag",
+                "unit": "unknown",
+                "status": "unverified",
+            },
+        ],
+    }
+
+    rendered = render_field_aggregate_review(registry)
+
+    assert "active-source" in rendered
+    assert "retired-source" not in rendered

@@ -13,7 +13,7 @@ from pathlib import Path
 from typing import Any
 
 SCHEMA_VERSION = 2
-REPORT_SECTIONS = ("L1", "L4", "method_candidates")
+REPORT_SECTIONS = ("L1", "L4", "method_candidates", "method_candidate_frontier")
 STATE_PATH = (
     Path(__file__).resolve().parents[1]
     / "docs"

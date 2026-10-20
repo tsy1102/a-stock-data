@@ -11,10 +11,9 @@
 | sc_network.py | 统一传输层: 分域限流/令牌桶/封禁冷却/跨进程文件锁/UA/Referer |
 | sc_fault_tolerance.py | 容错层: TokenBucket / CircuitBreaker / RandomUAPool |
 | sc_fuyao.py | 同花顺官方金融数据 API(fuyao)适配器 |
-| sc_ftshare.py | FTShare MCP 工具封装(千股千评/董监高/商誉/质押等) |
 
 ### 数据源查询(子包 sc_datasource/)
-> **V17.2 起 `sc_datasource.py` 单文件已拆分为 `sc_datasource/` 子包**(拆分前单文件备份见 `docs/backups/_sc_datasource_singlefile_backup.py`)。`__init__.py` 统一再导出, 对外 `from stock_common.sc_datasource import X` 接口不变。
+> **V17.2 起 `sc_datasource.py` 单文件已拆分为 `sc_datasource/` 子包**。拆包前快照已从当前工作树清理，历史副本仍保存在 Git 提交 `e868de5` 中。`__init__.py` 统一再导出, 对外 `from stock_common.sc_datasource import X` 接口不变。
 
 | 子模块 | 职责 |
 |:---|:---|

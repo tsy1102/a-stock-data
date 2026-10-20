@@ -11,7 +11,7 @@
 > 完整资产清单见 docs/field_verification/20260814/local_assets.md; 官方字段 ID 体系见 §零·C。
 
 > **🔎 AI 破解字段导航（V17.0.16 强化）**：本文件是**决策层**（已定结论/优先级/订正，★唯一权威）。若某字段/源在本字典未收录或仅见结论，按尾部 **§12.15.9 附录索引**按源查对应 `verify/` 分字典（原始证据层，按源组织）：
-> 东财指标代码→`em_indicators` / 东财表头→`em_tableheader_ids` / 通达信官方字段→`tdx_func_fields` / 通达信表头→`tdx_headers_definition` / 通达信行业→`tdxhy_x_names` / 腾讯→`tencent_verify` / push2→`push2_verify` / ulist↔push2 对齐→`ulist_push2_align` / 同花顺 SDK→`thsdk_field_verify` / 同花顺 tableheader→`ths_tableheader_ids` / 样本矩阵→`samples_verify` / AxData→`axdata_verify` / FTShare→`ftshare_fields_mirror` / fuyao→`fuyao_api_full` / 客户端枚举→`client_fields_enum` / 服务器→`network_servers`。**破解未知字段前先查主字典，再查对应分字典，勿重复造轮子。**
+> 东财指标代码→`em_indicators` / 东财表头→`em_tableheader_ids` / 通达信官方字段→`tdx_func_fields` / 通达信表头→`tdx_headers_definition` / 通达信行业→`tdxhy_x_names` / 腾讯→`tencent_verify` / push2→`push2_verify` / ulist↔push2 对齐→`ulist_push2_align` / 同花顺 SDK→`thsdk_field_verify` / 同花顺 tableheader→`ths_tableheader_ids` / 样本矩阵→`samples_verify` / AxData→`axdata_verify` / FTShare→`ftshare_fields_mirror`（历史归档） / fuyao→`fuyao_api_full` / 客户端枚举→`client_fields_enum` / 服务器→`network_servers`。**破解未知字段前先查主字典，再查对应分字典，勿重复造轮子。**
 
 ---
 
@@ -4875,7 +4875,11 @@ get_sector_rotation 板块轮动/news_telegraph_cls 快讯流）。大部分通�
 
 ---
 
-### 12.20 FTShare MCP（✅ 已采纳——2026-08-25 实测+接入统一层与采集脚本）🆕
+### 12.20 FTShare MCP（已退役；以下为历史接入记录）
+
+> **生命周期更新（2026-10-20）**：本节记录的是 2026-08-25 的历史调查与接入状态。项目已删除自编 FTShare SDK/MCP 客户端、请求限流注册、每日采集和五大报告调用。FTShare GitHub 仓库只公开客户端/集成文档，没有公开服务端实现；托管服务底层数据提供方及其官方接口身份无法核实，因此 FTShare 不再作为当前数据源、碰撞锚或日常未知字段来源。15 条字段路径及旧 raw 仅用于显式历史研究。若将来需要这些能力，应直接核验并接入公开、可审计的官方上游接口。
+
+> 下方接入说明、接口实测和字段状态均描述旧版集成，不构成当前使用建议；其中“已采纳/已接入”指历史时点的项目状态。
 
 > **来源**：https://github.com/FTShare-Lab/FTShare-MCP （MIT；MCP Streamable HTTP 网关，
 > 公共地址 `https://market.ft.tech/gateway/mcp`；另有 FTShare-python-sdk 编程通道）
@@ -4902,7 +4906,7 @@ get_sector_rotation 板块轮动/news_telegraph_cls 快讯流）。大部分通�
 **已知字段对照警示**：其"集合竞价结果"与 fuyao auction 同类（须做 ZHB[9]/[14] 互锁后再定口径）；
 "东财板块成份/K线"与 push2 clist 同上游（无新增信息量，仅接入面变化）。
 
-**接入前置条件**：①MCP client 或 python-sdk 二选一；②tools/list 核对各工具
+**历史接入前置条件（已失效）**：①MCP client 或 python-sdk 二选一；②tools/list 核对各工具
 inputSchema/outputSchema 与配额；③优先实测 DAEC 快照族（push 替代价值最高）与
 千股千评/商誉/质押三个全新维度。
 
@@ -4950,7 +4954,7 @@ inputSchema/outputSchema 与配额；③优先实测 DAEC 快照族（push 替�
 ggmx 26 字段=lng 九之二减持的结构化升级；unlock_by_date 持有人明细+20 日涨跌率=
 lng 解禁压力评估升级；stock_filter 表达式待上游修复后可承接 val 部分扫描。
 
-**✅ 采纳落地（同日）**：统一封装 **stock_common/sc_ftshare.py**（会话 TTL 自动续期+
+**历史采纳记录（2026-08-25；已于 2026-10-20 退役）**：旧版统一封装 **stock_common/sc_ftshare.py**（会话 TTL 自动续期+
 SSE 解析+代码双格式转换）；sc_network 注册 market.ft.tech @2rps；采集脚本新增
 `collect_ftshare`（个股×6 族+市场级 7 项，~126 请求≈66s）；sht 十四章消费千股千评+
 昨日涨停池晋级统计；lng 九之二消费董监高结构化+商誉交叉核验。
@@ -4972,7 +4976,7 @@ push2delay ulist **不成立**（分页上限+filter 失效），维持 V17.0.7 
 | ggmx | 高管增持明细 | ft_stock_ggmx_em | ✅ 已接入 |
 | goodwill_detail | 商誉明细 | ft_goodwill_stock_detail | ✅ 已接入 |
 
-> 注：原始叶名与 §12.20 工具输出键（total_score 等）为同一字段的不同命名层；统一层 `sc_ftshare.py` 已做映射，本表补全源原始字段登记。
+> 注：原始叶名与 §12.20 工具输出键（total_score 等）为同一字段的不同命名层；旧版统一层 `sc_ftshare.py` 曾做映射，本表补全源原始字段登记。客户端已删除，字段仅保留历史身份和路径。
 
 ### 12.21 开盘啦 App 数据解析工具（✅ 实测可接入——无 Token 可用，2026-08-26 盘中穷尽测试）🆕
 

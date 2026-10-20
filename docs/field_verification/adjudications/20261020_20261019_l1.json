@@ -1,0 +1,48 @@
+{
+  "schema_version": 1,
+  "report": "20261019/20261019_collision_report.json",
+  "reviewer": "Codex（按用户采集与碰撞授权完成定案复核）",
+  "reviewed_on": "2026-10-20",
+  "decisions": [
+    {
+      "id": "20261020-push2ex-limit-fund-kpl-seal-amount",
+      "candidate": {
+        "left": "push2ex.limit_fund",
+        "right": "kpl.seal_amount"
+      },
+      "target": {
+        "source": "东财-push2ex",
+        "code": "limit_fund"
+      },
+      "anchor": {
+        "source": "开盘啦(kpl_limit_up_detail)",
+        "code": "seal_amount"
+      },
+      "action": "verify",
+      "canonical": "seal_amount",
+      "meaning": "封单金额",
+      "unit": "元",
+      "rationale": "2026-10-19 verified_anchor_only 报告满足现行 L1 门槛：Eastmoney push2ex 与独立 KPL 来源族在 2026-10-14、10-16、10-19 三个交易日共 128 组有效配对全部精确命中，每日分别为 21、61、46 组；无盘中或时段未知样本被排除。KPL seal_amount 已由 KPH/KPL 双交易日逐值核验为封单金额、单位元。将东财-push2ex::limit_fund 确认为同义字段，并保留其原始完整来源路径。"
+    },
+    {
+      "id": "20261020-tdx-zhongguben-tencent-73",
+      "candidate": {
+        "left": "tdx.finance_info.zhongguben",
+        "right": "tencent[73]"
+      },
+      "target": {
+        "source": "TDX(双命名源)",
+        "code": "zhongguben"
+      },
+      "anchor": {
+        "source": "腾讯(qt.gtimg)",
+        "code": "[73]"
+      },
+      "action": "verify",
+      "canonical": "zongguben",
+      "meaning": "总股本（TDX finance_info 键名拼写为 zhongguben）",
+      "unit": "万股",
+      "rationale": "2026-10-19 verified_anchor_only 报告满足现行 L1-U 门槛：TDX 与独立 Tencent 来源族在 2026-10-09、10-12、10-14、10-15、10-16、10-19 六个交易日共 120 组有效配对全部符合固定 10000 比值；每天 20 组，支持 TDX 万股与 Tencent [73] 股之间的单位换算。Tencent [73] 已验证为总股本、单位股。确认完整路径 TDX(双命名源)::zhongguben 的语义和单位；canonical 统一到总股本概念，但保留 zhongguben 原始键及独立来源记录，不与同源 zongguben 路径合并。"
+    }
+  ]
+}

@@ -1,11 +1,12 @@
 import math
 import json
+from io import StringIO
 from collections import defaultdict
 from datetime import date
 from importlib.util import module_from_spec, spec_from_file_location
 from pathlib import Path
 
-from scripts import collision_dates
+from scripts import collision_dates, collision_rules
 
 _collide_path = Path(__file__).resolve().parents[1] / "scripts" / "collide.py"
 _collide_spec = spec_from_file_location("collide_marker_test_module", _collide_path)
@@ -835,6 +836,452 @@ def test_method_candidates_keep_metrics_dates_and_source_provenance():
     assert candidate["evidence_sources"] == ["sina", "tdx"]
 
 
+def test_range_disjoint_unit_conversion_pairs_remain_eligible_for_analysis(monkeypatch):
+    left, right = _daily_fields(["20260924", "20260928", "20260929"], ratio=10_000)
+    right["src"] = "tencent"
+    monkeypatch.setattr(collide, "are_independent_sources", lambda _left, _right: True)
+    store = {"tdx.finance_info.zhongguben": left, "tencent[73]": right}
+    collide.classify(store)
+
+    eligible, reason = collide._pair_analysis_eligibility(left, right)
+    candidate = collide.method_candidates_for_pair(
+        "tdx.finance_info.zhongguben", "tencent[73]", left, right
+    )
+    result = collide.collide_pair(left, right)
+
+    assert left["vmax"] < right["vmin"]
+    assert eligible is True
+    assert reason == "range_disjoint"
+    assert candidate is not None
+    assert result is not None
+    assert result["level"] == "L1-U"
+    assert result["ratio"] == 10_000
+
+
+def test_known_mapping_control_evaluates_range_disjoint_unit_conversions(monkeypatch):
+    left, right = _daily_fields(["20260924", "20260928", "20260929"], ratio=10_000)
+    right["src"] = "tencent"
+    monkeypatch.setattr(collide, "are_independent_sources", lambda _left, _right: True)
+    store = {"tdx.zongguben": left, "tencent[73]": right}
+    collide.classify(store)
+    mappings = {("tdx", "zongguben", "tencent", "[73]")}
+
+    positive = collide._known_mapping_candidate_controls(store, mappings)["positive_control"]
+
+    assert positive["eligible_numeric_pairs"] == 1
+    assert positive["range_disjoint_pairs"] == 1
+    assert positive["with_method_signal"] == 1
+
+
+def test_candidate_frontier_preserves_a_best_candidate_per_target():
+    def candidate(left, right, sample_count):
+        return {
+            "left": left,
+            "right": right,
+            "methods": [{"method": "robust_correlation", "pearson": 0.99}],
+            "sample_count": sample_count,
+            "sample_dates": ["T:20261019"],
+            "evidence_sources": ["source-a", "source-b"],
+            "sample_codes": ["600000"],
+        }
+
+    first = candidate("unknown.a", "anchor.a1", 50)
+    omitted_for_a = candidate("unknown.a", "anchor.a2", 40)
+    omitted_for_b = candidate("unknown.b", "anchor.b1", 35)
+    by_left = {
+        "unknown.a": [first, omitted_for_a],
+        "unknown.b": [omitted_for_b],
+    }
+
+    frontier = collide.select_method_candidate_frontier(by_left, [first])
+
+    assert {(row["left"], row["right"]) for row in frontier} == {
+        ("unknown.a", "anchor.a2"),
+        ("unknown.b", "anchor.b1"),
+    }
+
+
+def test_candidate_summary_preserves_method_specific_evidence():
+    method = {
+        "method": "per_stock_time_series",
+        "median_abs_pearson": 0.91,
+        "sign_consistency": 1.0,
+        "stocks": 8,
+        "sample_dates": ["T:20261009", "T:20261012", "T:20261013"],
+        "stock_correlations": [{"code": f"600{index:03d}", "pearson": 0.9} for index in range(8)],
+    }
+    candidate = {
+        "left": "unknown.field",
+        "right": "anchor.field",
+        "methods": [method],
+        "sample_count": 24,
+        "sample_dates": method["sample_dates"],
+        "evidence_sources": ["anchor"],
+    }
+
+    summary = collide._method_candidate_summary(candidate)
+
+    assert summary["methods"][0]["sample_dates"] == method["sample_dates"]
+    assert summary["methods"][0]["median_abs_pearson"] == 0.91
+    assert len(summary["methods"][0]["stock_correlations"]) == 5
+
+
+def test_formula_candidates_require_out_of_stock_validation():
+    random = __import__("random").Random(20261020)
+    left_values = {}
+    price_values = {}
+    shares_values = {}
+    days = ("20261009", "20261012", "20261013", "20261014")
+    for stock_index in range(20):
+        code = f"600{stock_index:03d}"
+        shares = random.uniform(10, 1000)
+        for day in days:
+            key = (code, f"T:{day}")
+            price = random.uniform(5, 200)
+            price_values[key] = price
+            shares_values[key] = shares
+            left_values[key] = price * shares * 1000 + 2
+
+    def numeric_field(values, source):
+        return {
+            "vals": values,
+            "src": source,
+            "type": "num",
+            "sample_meta": {key: {"phase": "closed"} for key in values},
+        }
+
+    store = {
+        "unknown.target": numeric_field(left_values, "unknown"),
+        "tencent.price": numeric_field(price_values, "tencent"),
+        "fuyao.shares": numeric_field(shares_values, "fuyao"),
+    }
+    formulas, stats = collide.formula_candidates_for_target(
+        "unknown.target",
+        store,
+        [{"right": "tencent.price"}, {"right": "fuyao.shares"}],
+    )
+
+    assert stats["tested"] > 0
+    assert formulas
+    assert formulas[0]["operator"] == "product"
+    assert formulas[0]["validation_r2"] >= 0.985
+    assert formulas[0]["adjudication_status"] == "candidate_only"
+
+
+def test_discriminating_sample_prefers_stock_with_out_of_sample_disagreement():
+    left_values = {}
+    first_values = {}
+    second_values = {}
+    days = ("20261009", "20261012", "20261013")
+    for stock_index in range(20):
+        code = f"600{stock_index:03d}"
+        for day_index, day in enumerate(days):
+            key = (code, f"T:{day}")
+            value = 100 + stock_index * 50 + day_index * 3
+            left_values[key] = value
+            first_values[key] = value
+            second_values[key] = value + (500 if stock_index == 0 else 0)
+
+    def numeric_field(values, source):
+        return {
+            "vals": values,
+            "src": source,
+            "type": "num",
+            "sample_meta": {key: {"phase": "closed"} for key in values},
+        }
+
+    store = {
+        "unknown.target": numeric_field(left_values, "unknown"),
+        "anchor.first": numeric_field(first_values, "anchor-a"),
+        "anchor.second": numeric_field(second_values, "anchor-b"),
+    }
+
+    suggestion = collide.discriminating_sample_for_target(
+        "unknown.target",
+        store,
+        [{"right": "anchor.first"}, {"right": "anchor.second"}],
+    )
+
+    assert suggestion["status"] == "prioritize_recheck"
+    assert suggestion["stock_code"] == "600000"
+    assert suggestion["normalized_prediction_spread"] > 0.02
+
+
+def test_local_field_coverage_index_maps_status_and_date_evidence(tmp_path, monkeypatch):
+    old_folder = tmp_path / "docs" / "field_verification" / "20261012"
+    old_folder.mkdir(parents=True)
+    (old_folder / "meta.json").write_text(
+        json.dumps(
+            {
+                "data_date": "2026-10-12",
+                "sources": {"foo": {"status": "blocked"}},
+            }
+        ),
+        encoding="utf-8",
+    )
+    folder = tmp_path / "docs" / "field_verification" / "20261019"
+    folder.mkdir(parents=True)
+    coverage_dir = tmp_path / ".tmp" / "field_evidence_coverage"
+    coverage_dir.mkdir(parents=True)
+    meta = {
+        "data_date": "2026-10-19",
+        "sources": {"foo": {"status": "partial"}},
+        "field_evidence_coverage": {"report_date": "2026-10-19", "status": "ok"},
+    }
+    coverage = {
+        "fields": [
+            {
+                "source": "Foo",
+                "code": "bar",
+                "registry_status": "unverified",
+                "identity_status": "mapped",
+                "runtime_aliases": ["foo"],
+                "independence_family": "family-b",
+                "independence_status": "confirmed",
+                "anchor_eligible": True,
+                "source_as_of_days": ["T:20261019"],
+                "candidate_days": ["T:20261019"],
+                "source_as_of_sample_counts": {"T:20261019": 20},
+                "source_statuses": ["ok"],
+            }
+        ]
+    }
+    (folder / "meta.json").write_text(json.dumps(meta), encoding="utf-8")
+    (coverage_dir / "coverage_20261019.json").write_text(json.dumps(coverage), encoding="utf-8")
+    monkeypatch.setattr(collide, "ROOT", str(tmp_path))
+
+    index = collide.load_field_coverage_index(
+        [
+            str(old_folder),
+            collision_dates.CaptureFolder(
+                name=folder.name,
+                path=str(folder),
+                folder_date=date(2026, 10, 19),
+                capture_date=date(2026, 10, 19),
+                market_date=date(2026, 10, 19),
+                meta=meta,
+                market_date_origin="meta.data_date",
+            ),
+        ],
+        ["2026-10-19"],
+        date(2026, 10, 13),
+        date(2026, 10, 19),
+    )
+    target = collide._coverage_records_for_target("foo.bar", index)
+
+    assert index["summary"]["detail_status"] == "available"
+    assert index["source_statuses"]["foo"]["non_ok_dates"] == ["20261019"]
+    assert target["source_count"] == 1
+    assert "independent_anchor_families" not in target
+    assert target["source_as_of_days"] == ["T:20261019"]
+
+
+def test_candidate_triage_uses_actual_independent_anchor_comparisons():
+    triage = collide.build_candidate_triage(
+        ["unknown.target"],
+        {},
+        {"unknown.target": {"independent_pairs": 2}},
+        {},
+        {"records": {}, "summary": {"coverage_detail_files": 1}},
+        {},
+        {},
+        {"unknown.target": {"family-a": 2, "family-b": 1}},
+    )
+
+    target = triage["targets"][0]
+    assert target["coverage"]["independent_anchor_families"] == ["family-a", "family-b"]
+    assert target["coverage"]["independent_anchor_pairs"] == 3
+    assert triage["summary"]["targets_with_independent_anchor_coverage"] == 1
+
+
+def test_candidate_triage_markdown_renders_evidence_and_control_summaries():
+    triage = {
+        "summary": {
+            "target_count": 1,
+            "targets_with_method_candidates": 1,
+            "targets_without_method_candidates": 0,
+            "targets_with_multiple_candidates": 1,
+            "candidate_pairs_generated": 4,
+            "global_details_retained": 2,
+            "global_detail_limit": 500,
+            "field_frontier_details_retained": 1,
+            "candidate_pairs_without_full_detail": 0,
+            "method_candidate_inventory_count": 3,
+            "candidate_pairs_outside_primary_and_frontier": 1,
+            "field_coverage": {"detail_status": "available", "coverage_identity_count": 1},
+            "formula_combinations_tested": 5,
+            "capture_source_statuses": {
+                "source-a": {"non_ok_dates": ["20261019"], "status_counts": {"partial": 1}}
+            },
+        },
+        "targets": [
+            {
+                "left": "unknown.field",
+                "status": "multiple_method_candidates_need_discrimination",
+                "candidate_count": 2,
+                "pair_counts": {"independent_pairs": 3},
+                "top_candidates": [
+                    {
+                        "right": "anchor.field",
+                        "methods": [{"method": "robust_correlation", "pearson": 0.99}],
+                    }
+                ],
+                "formula_candidates": [],
+                "next_sample": {
+                    "status": "prioritize_recheck",
+                    "stock_code": "600000",
+                    "normalized_prediction_spread": 0.2,
+                },
+                "coverage": {
+                    "status": "available",
+                    "independent_anchor_families": ["family-a"],
+                    "independent_anchor_pairs": 3,
+                    "source_as_of_days": ["T:20261019"],
+                },
+            }
+        ],
+    }
+    frontier = [
+        {
+            "left": "unknown.field",
+            "right": "anchor.field",
+            "methods": [{"method": "affine_formula"}],
+            "sample_count": 42,
+            "sample_dates": ["T:20261019"],
+            "evidence_sources": ["family-a", "family-b"],
+        }
+    ]
+    formulas = [
+        {
+            "left": "unknown.field",
+            "formula": "unknown.field ≈ x × (a × b) + y",
+            "validation_r2": 0.99,
+            "normalized_rmse": 0.01,
+            "validation_samples": 10,
+            "validation_stocks": 4,
+        }
+    ]
+    controls = {
+        "positive_control": {
+            "eligible_numeric_pairs": 2,
+            "with_method_signal": 1,
+            "insufficient_numeric_samples": 0,
+        },
+        "negative_control": {"numeric_refuted_pairs": 1, "with_method_signal": 1},
+    }
+
+    rendered = collide.append_candidate_triage_report(
+        "# collision report", triage, frontier, formulas, controls
+    )
+
+    assert "候选覆盖、公式与下一步采样" in rendered
+    assert "补足全局截断的字段候选" in rendered
+    assert "双输入公式候选" in rendered
+    assert "source-a" in rendered
+    assert "600000" in rendered
+    assert "已证伪负向对照" in rendered
+    assert "完整明细 3 条" in rendered
+
+
+def test_report_completeness_reconciles_full_candidate_inventory_and_markdown_caps():
+    inventory = [{"left": "unknown.field", "right": f"anchor.{index}"} for index in range(501)]
+    targets = [
+        {"left": f"unknown.{index}", "candidate_count": 501 if index == 0 else 0}
+        for index in range(51)
+    ]
+    report = {
+        "L1": [],
+        "L1-C": [],
+        "actionable_L1": [],
+        "mapped_pair_revalidations": [],
+        "L4": [{} for _ in range(61)],
+        "guardrail_hits": [{}],
+        "method_candidates": inventory[:500],
+        "method_candidate_count": 501,
+        "method_candidate_inventory": inventory,
+        "method_candidate_frontier": [],
+        "candidate_triage": {"summary": {"target_count": 51}, "targets": targets},
+        "formula_candidates": [{} for _ in range(51)],
+        "diagnostics": ["warning"] * 101,
+        "source_identity_reconciliation": {"status": "ok", "endpoints": {"ep": {}}},
+    }
+
+    completeness = collide.build_report_completeness(report)
+    markdown = collide.append_report_completeness_report("# Report", completeness)
+
+    assert completeness["status"] == "complete"
+    assert completeness["method_candidate_inventory"]["generated_count"] == 501
+    assert completeness["method_candidate_inventory"]["saved_count"] == 501
+    assert completeness["method_candidate_inventory"]["missing_detail_count"] == 0
+    assert completeness["method_candidate_inventory"]["target_candidate_count_sum"] == 501
+    assert completeness["sections"]["method_candidates"]["json_record_count"] == 500
+    assert completeness["sections"]["guardrail_hits"]["json_record_count"] == 1
+    assert completeness["sections"]["source_identity_reconciliation"]["detail_scope"].startswith(
+        "完整 JSON 顶层内容"
+    )
+    omissions = {
+        row["section"]: row["omitted_from_markdown"] for row in completeness["markdown_omissions"]
+    }
+    assert omissions["L4"] == 1
+    assert omissions["method_candidates"] == 400
+    assert omissions["method_candidate_inventory"] == 501
+    assert omissions["candidate_triage.targets"] == 1
+    assert omissions["formula_candidates"] == 1
+    assert omissions["diagnostics"] == 1
+    assert "全量方法候选位于同名 JSON" in markdown
+    assert "Markdown 未逐行展示" in markdown
+
+
+def test_report_completeness_blocks_a_missing_method_candidate_detail():
+    report = {
+        "L1": [],
+        "actionable_L1": [],
+        "mapped_pair_revalidations": [],
+        "L4": [],
+        "guardrail_hits": [],
+        "method_candidates": [],
+        "method_candidate_count": 2,
+        "method_candidate_inventory": [{"left": "unknown.a", "right": "anchor.a"}],
+        "method_candidate_frontier": [],
+        "candidate_triage": {"summary": {"target_count": 0}, "targets": []},
+        "formula_candidates": [],
+        "diagnostics": [],
+    }
+
+    completeness = collide.build_report_completeness(report)
+    markdown = collide.append_report_completeness_report("# Report", completeness)
+
+    assert completeness["status"] == "incomplete"
+    assert completeness["method_candidate_inventory"]["missing_detail_count"] == 1
+    assert "审阅阻断" in markdown
+
+
+def test_report_completeness_blocks_duplicate_candidate_pairs():
+    candidate = {"left": "unknown.a", "right": "anchor.a"}
+    report = {
+        "L1": [],
+        "actionable_L1": [],
+        "mapped_pair_revalidations": [],
+        "L4": [],
+        "guardrail_hits": [],
+        "method_candidates": [candidate, candidate],
+        "method_candidate_count": 2,
+        "method_candidate_inventory": [candidate, candidate],
+        "method_candidate_frontier": [],
+        "candidate_triage": {
+            "summary": {"target_count": 1},
+            "targets": [{"left": "unknown.a", "candidate_count": 2}],
+        },
+        "formula_candidates": [],
+        "diagnostics": [],
+    }
+
+    completeness = collide.build_report_completeness(report)
+
+    assert completeness["status"] == "incomplete"
+    assert completeness["method_candidate_inventory"]["duplicate_pair_count"] == 1
+
+
 def test_per_stock_time_series_is_an_explicit_candidate_method():
     left_values = {}
     right_values = {}
@@ -925,26 +1372,26 @@ def test_event_snapshots_keep_natural_dates_and_source_scoped_identity(tmp_path)
     )
 
 
-def test_source_identity_report_stays_outside_field_adjudication():
+def test_ftshare_contract_anchor_rule_is_in_runtime_banner_and_generated_docs():
+    generated_path = collision_rules.emit_markdown()
+    rendered = Path(generated_path).read_text(encoding="utf-8")
+    output = StringIO()
+
+    collision_rules.print_active_rules(output)
+
+    assert "## 三、官方契约语义锚候选 L1-C" in rendered
+    assert "不计独立来源覆盖" in rendered
+    assert "官方契约语义锚分支（参与碰撞，不代表来源独立）" in output.getvalue()
+    assert "不自动定案" in output.getvalue()
+
+
+def test_ftshare_rest_source_status_separates_active_contract_and_retired_mcp():
     base_report = "## L1 候选\n\n保持原候选内容。"
-    result = {
-        "status": "ok",
-        "minimum_capture_dates": 3,
-        "minimum_symbols_per_date": 18,
-        "recheck_capture_dates": 20,
-        "endpoints": {
-            "ggmx": {
-                "status": "operationally_redundant",
-                "reference_source": "tencent",
-                "evidence_dates": ["20261008", "20261009", "20261012"],
-                "reason": "exact match",
-            }
-        },
-    }
+    result = {"status": "active_with_historical_legacy", "active_runtime_source": "ftshare_rest"}
 
     report = collide.append_source_identity_report(base_report, result)
 
     assert report.startswith(base_report)
-    assert "来源身份核验（不参与字段语义定案）" in report
-    assert "operationally_redundant" in report
-    assert "20261008, 20261009, 20261012" in report
+    assert "来源身份状态（不参与字段语义定案）" in report
+    assert "已进入日常采集" in report
+    assert "旧私有托管 MCP 采集器已退役" in report

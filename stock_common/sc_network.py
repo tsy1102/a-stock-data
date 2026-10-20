@@ -263,8 +263,6 @@ _DOMAIN_LIMITS: Dict[str, Dict[str, Any]] = {
     "data.10jqka.com.cn": {"sleep_ms": 150, "semaphore": None, "rps": 5.0},
     # V16.3.3: 同花顺官方金融数据 REST（fuyao，字典 §12.8.12c）——官方 4001 限流 + 本地 500ms/2rps 保守
     "fuyao.aicubes.cn": {"sleep_ms": 500, "semaphore": None, "rps": 2.0},
-    # V17.0.7: FTShare MCP 网关（字典 §12.20）——配额未声明，保守 500ms/2rps
-    "market.ft.tech": {"sleep_ms": 500, "semaphore": None, "rps": 2.0},
     # V17.0.7: 开盘啦(KPL) longhuvip.com 四子域——Dalvik UA 必须，自行限流 >=200ms
     "apphwhq.longhuvip.com": {"sleep_ms": 200, "semaphore": None, "rps": 5.0},
     "apphis.longhuvip.com": {"sleep_ms": 200, "semaphore": None, "rps": 5.0},
@@ -593,8 +591,8 @@ def em_get(
     # V16.0: rps 从 _DOMAIN_LIMITS 读取（push2=0.6, push2ex=0.6, datacenter=1.0），
     # 不再硬编码 1.0；EM_MIN_INTERVAL 作为硬性全局下限（两者取严），使"调大 EM_MIN_INTERVAL"真正生效
     # V16.2.6: 桶 key 用归一化 _ft_domain（push2 系共享 0.6rps），rps 读取仍用原始域配置
+    _cfg_rps = _DOMAIN_LIMITS.get(_domain, {}).get("rps", 1.0)
     try:
-        _cfg_rps = _DOMAIN_LIMITS.get(_domain, {}).get("rps", 1.0)
         _bucket = get_domain_token_bucket(_ft_domain, rps=_cfg_rps)
         _bucket.acquire(1)
         # V16.0: EM_MIN_INTERVAL 作为硬性下限（参考仓库: 每请求强制 ≥EM_MIN_INTERVAL，无突发）
@@ -609,6 +607,23 @@ def em_get(
         wait = EM_MIN_INTERVAL - (time.time() - _EM_LAST_CALL[0])
         if wait > 0:
             time.sleep(wait + _rand.uniform(0.10, 0.50))
+
+    def _wait_for_retry_slot() -> None:
+        """Reserve another fully rate-limited Eastmoney request slot."""
+        try:
+            get_domain_token_bucket(_ft_domain, rps=_cfg_rps).acquire(1)
+            _min_interval = max(float(EM_MIN_INTERVAL), 1.0 / max(_cfg_rps, 1e-6))
+            _elapsed = time.time() - _EM_LAST_CALL[0]
+            if _elapsed < _min_interval:
+                time.sleep(_min_interval - _elapsed)
+        except Exception as _e:
+            _debug_log(f"em_get: retry token bucket acquire failed: {_e}")
+            _min_interval = max(float(EM_MIN_INTERVAL), 1.0 / max(_cfg_rps, 1e-6))
+            _elapsed = time.time() - _EM_LAST_CALL[0]
+            if _elapsed < _min_interval:
+                time.sleep(_min_interval - _elapsed + _rand.uniform(0.10, 0.50))
+        _EM_LAST_CALL[0] = time.time()
+        _em_wait_process_interval()
 
     # V16.0: 接通同步进程间文件锁（_em_wait_process_interval 原本定义但无调用方），
     # 使 --concurrency 3 时跨进程仍 ≤1 rps
@@ -636,13 +651,41 @@ def em_get(
         if _em_cookie:
             session_headers["Cookie"] = _em_cookie
 
-        # V17.2.x: DNS 解析阶段硬超时护栏——在 connect/read 之前先把"解析挂起"转换为
-        # ConnectionError，使其落入下方连接级 except（_record_em_disconnect→封禁跳过/return None）的兜底路径。
-        _resolve_host_with_timeout(_domain)
+        # 一次采集调用最多重试一次明确的临时网络错误或 HTTP 408/5xx。
+        # 每次重试重新取得令牌并经过跨进程间隔；403/429 不在此重试。
+        _response = None
+        for _attempt in range(2):
+            try:
+                # DNS 解析阶段硬超时护栏，挂起转换为可控的 ConnectionError。
+                _resolve_host_with_timeout(_domain)
+                _response = EM_SESSION.get(
+                    url, params=params, headers=session_headers, timeout=timeout, **kwargs
+                )
+            except (requests.exceptions.ConnectionError, requests.exceptions.Timeout) as _e:
+                if _attempt >= 1:
+                    raise
+                if isinstance(_e, requests.exceptions.ConnectionError):
+                    _record_em_disconnect(_ft_domain)
+                    if _em_is_banned(_ft_domain):
+                        _debug_log(f"em_get: {_ft_domain} ban threshold reached; retry stopped")
+                        return None
+                time.sleep(exponential_backoff(_attempt, base=1.0, max_wait=30.0))
+                _wait_for_retry_slot()
+                _RL_STATS["em_request_count"] += 1
+                continue
 
-        _response = EM_SESSION.get(
-            url, params=params, headers=session_headers, timeout=timeout, **kwargs
-        )
+            if (
+                _response.status_code == 408 or 500 <= _response.status_code < 600
+            ) and _attempt < 1:
+                _response.close()
+                time.sleep(exponential_backoff(_attempt, base=1.0, max_wait=30.0))
+                _wait_for_retry_slot()
+                _RL_STATS["em_request_count"] += 1
+                continue
+            break
+
+        if _response is None:
+            return None
 
         # V16.2 修复: 403/429 统一走失败路径 —— 不再返回响应走"成功"分支（原 403 后仍 _on_success 并返回 403 响应）
         _status = _response.status_code
@@ -695,41 +738,14 @@ def em_get(
                 get_domain_circuit_breaker(_ft_domain)._on_failure()
             except Exception:
                 pass
-            _wait_s = exponential_backoff(0, base=2.0, max_wait=60.0)
-            # 429 Retry-After 优先
+            return None  # V16.2: 明确失败语义（对齐调用方 `if r is None` 约定），不再当成功返回
+
+        if _response.status_code >= 400:
             try:
-                _ra = _response.headers.get("Retry-After")
-                if _ra and _ra.strip().isdigit():
-                    _wait_s = min(max(float(_ra.strip()), 1.0), 120.0)
+                get_domain_circuit_breaker(_ft_domain)._on_failure()
             except Exception:
                 pass
-            time.sleep(_wait_s)
-            # V16.2.3: 429（瞬时风控）退避后重试一次；403 直接失败（重试 403 加速封禁）
-            if _status == 429:
-                try:
-                    # V16.4.1: 重试前补一次节流——原裸重试绕过令牌桶/进程间隔/时间戳,
-                    # 封禁恢复期可能全速重试加重风控(2026-08-12 二次封禁教训)
-                    try:
-                        _min_i = max(float(EM_MIN_INTERVAL), 1.0 / max(_cfg_rps, 1e-6))
-                        _el2 = time.time() - _EM_LAST_CALL[0]
-                        if _el2 < _min_i:
-                            time.sleep(_min_i - _el2)
-                        _EM_LAST_CALL[0] = time.time()
-                    except Exception:
-                        pass
-                    _r2 = EM_SESSION.get(
-                        url, params=params, headers=session_headers, timeout=timeout, **kwargs
-                    )
-                    if _r2 is not None and _r2.status_code not in (403, 429):
-                        try:
-                            get_domain_circuit_breaker(_ft_domain)._on_success()
-                        except Exception:
-                            pass
-                        return _r2
-                except Exception:
-                    pass
-                _RL_STATS["em_429_count"] = _RL_STATS.get("em_429_count", 0) + 1
-            return None  # V16.2: 明确失败语义（对齐调用方 `if r is None` 约定），不再当成功返回
+            return _response
 
         # V12.1: 成功则重置熔断器 + 清零断连计数（V16.2.8）
         try:
@@ -1020,6 +1036,9 @@ def _quick_request(
     V8.5 新增：添加随机抖动防止被限流。
     V9.0 新增：线程锁保护 + 限流统计。
     V16.2 新增：eastmoney 域接入 TokenBucket + CircuitBreaker + 跨进程文件锁（消除限流旁路）。
+
+    ``max_retries`` 是总尝试次数（含首次请求）；连接/超时类异常和 HTTP 408/5xx
+    使用有界退避，HTTP 403/429 不重试。
     """
     import random as _rand
 
@@ -1194,7 +1213,8 @@ def _do_request(
 ) -> Optional[requests.Response]:
     """内部：执行 HTTP 请求 + 重试（由 _request_with_retry / _quick_request 调用）。
 
-    V9.0 新增：429状态码检测 + 指数退避重试。
+    Transient connection/timeouts and HTTP 408/5xx receive bounded backoff retries.
+    HTTP 403/429 stop immediately so a ban or rate limit is not amplified.
     V9.3.2 新增：禁用系统代理（数据获取全部直连）+ 捕获 ProxyError 和兜底 Exception。
     V11.5 新增：随机UA/Referer + 指数退避 + 熔断器模式
     """
@@ -1216,6 +1236,22 @@ def _do_request(
                         error_out, kind="ip_banned", domain=_ft_domain, attempt=attempt
                     )
                     return None
+                if attempt > 0:
+                    _retry_rps = _DOMAIN_LIMITS.get(domain, {}).get("rps", 1.0)
+                    try:
+                        from stock_common.sc_fault_tolerance import get_domain_token_bucket
+
+                        get_domain_token_bucket(_ft_domain, rps=float(_retry_rps)).acquire(1)
+                    except Exception as _e:
+                        _debug_log(f"quick_request retry token bucket failed ({domain}): {_e}")
+                        _min_interval = max(
+                            float(EM_MIN_INTERVAL), 1.0 / max(float(_retry_rps), 1e-6)
+                        )
+                        _elapsed = time.time() - _EM_LAST_CALL[0]
+                        if _elapsed < _min_interval:
+                            time.sleep(_min_interval - _elapsed)
+                    _EM_LAST_CALL[0] = time.time()
+                    _RL_STATS["em_request_count"] += 1
                 _em_wait_process_interval()
             _req_headers = headers.copy() if headers else {}
             if not _req_headers.get("User-Agent"):
@@ -1289,10 +1325,6 @@ def _do_request(
                         )._on_failure()
                     except Exception:
                         pass
-                if attempt < max_retries - 1:
-                    wait_s = exponential_backoff(attempt, base=2.0, max_wait=60.0)
-                    time.sleep(wait_s)
-                    continue
                 _record_request_failure(
                     error_out,
                     kind="http_403",
@@ -1309,24 +1341,6 @@ def _do_request(
                             get_domain_circuit_breaker(_normalize_em_domain(domain))._on_failure()
                         except Exception:
                             pass
-                if attempt < max_retries - 1:
-                    retry_after = r.headers.get("Retry-After")
-                    if retry_after:
-                        # V16.0: Retry-After 可能非数字，加 try/except 防 ValueError 吞掉重试
-                        try:
-                            wait_s = float(retry_after)
-                        except (ValueError, TypeError):
-                            if _HAS_FAULT_TOLERANCE:
-                                wait_s = exponential_backoff(attempt)
-                            else:
-                                wait_s = 1.0 * (2**attempt)
-                    else:
-                        if _HAS_FAULT_TOLERANCE:
-                            wait_s = exponential_backoff(attempt)
-                        else:
-                            wait_s = 1.0 * (2**attempt)
-                    time.sleep(wait_s)
-                    continue
                 _record_request_failure(
                     error_out,
                     kind="http_429",
@@ -1335,6 +1349,12 @@ def _do_request(
                     status_code=429,
                 )
                 return None
+            if r.status_code == 408 or 500 <= r.status_code < 600:
+                if attempt < max_retries - 1:
+                    r.close()
+                    wait_s = exponential_backoff(attempt, base=1.0, max_wait=30.0)
+                    time.sleep(wait_s)
+                    continue
             # Opt-in diagnostics treat other HTTP errors as failed responses for
             # collectors, while callers without error_out retain the raw Response.
             if r.status_code >= 400 and error_out is not None:
@@ -1700,10 +1720,13 @@ async def _async_quick_request(
     GEN 域: 0.2s 间隔 + GEN 跨进程节奏。
 
     Args:
+        max_retries: 总尝试次数（含首次请求）；传输异常和 HTTP 408/5xx 有界重试。
         is_json:  True (默认) → 解析为 JSON，返回 dict/list。False → 返回原始文本 str
         encoding: 文本模式下的解码方式（如 'gbk'），None 表示用 aiohttp 自动检测
     Returns:
         dict/list (is_json=True), str (is_json=False), 或 None（失败时）
+
+    HTTP 403/429 立即失败；其它 HTTP 408/5xx 最多按 ``max_retries`` 总尝试次数退避重试。
     """
     if not _HAS_ASYNCIO or not _HAS_AIOHTTP:
         return None
@@ -1728,6 +1751,26 @@ async def _async_quick_request(
     is_em = "eastmoney.com" in domain
     import random as _rand
     import json as _json
+
+    async def _wait_for_retry_slot() -> None:
+        global _em_async_last_request, _gen_async_last_request
+
+        now = time.time()
+        if is_em:
+            rps = float(_DOMAIN_LIMITS.get(domain, {}).get("rps", 1.0))
+            interval = max(1.0 + _rand.uniform(0.10, 0.30), 1.0 / max(rps, 1e-6))
+            last_request = max(_em_async_last_request, _EM_LAST_CALL[0])
+            if last_request > 0 and now - last_request < interval:
+                await asyncio.sleep(interval - (now - last_request))
+            _em_async_last_request = time.time()
+            _EM_LAST_CALL[0] = time.time()
+            await _em_wait_process_interval_async()
+        else:
+            interval = 0.2 + _rand.uniform(0.01, 0.05)
+            if _gen_async_last_request > 0 and now - _gen_async_last_request < interval:
+                await asyncio.sleep(interval - (now - _gen_async_last_request))
+            _gen_async_last_request = time.time()
+            await _gen_wait_process_interval_async()
 
     if is_em:
         # V16.2.8: 封禁跳过期直接返回 None（参考仓库 PR#36：不浪费请求、不加重封禁）
@@ -1804,15 +1847,15 @@ async def _async_quick_request(
                         if response.status == 403:
                             _got_403 = True
                             break
-                        if response.status == 429 and attempt < max_retries - 1:
-                            if _HAS_FAULT_TOLERANCE:
-                                wait_s = exponential_backoff(attempt)
-                            else:
-                                wait_s = 1.0 * (2**attempt)
+                        if response.status == 429:
+                            break
+                        if (
+                            response.status == 408 or 500 <= response.status < 600
+                        ) and attempt < max_retries - 1:
+                            wait_s = exponential_backoff(attempt, base=1.0, max_wait=30.0)
                             await asyncio.sleep(wait_s)
+                            await _wait_for_retry_slot()
                             continue
-                        # V16.4.1: 403/500 等非 200/429 直接失败——原落下方 sleep 重试循环,
-                        # 违反同文件"重试 403 加速封禁"铁律(与 _async_request_with_retry L1055 对齐)
                         break
                 else:
                     async with session.get(
@@ -1828,12 +1871,14 @@ async def _async_quick_request(
                         if response.status == 403:
                             _got_403 = True
                             break
-                        if response.status == 429 and attempt < max_retries - 1:
-                            if _HAS_FAULT_TOLERANCE:
-                                wait_s = exponential_backoff(attempt)
-                            else:
-                                wait_s = 1.0 * (2**attempt)
+                        if response.status == 429:
+                            break
+                        if (
+                            response.status == 408 or 500 <= response.status < 600
+                        ) and attempt < max_retries - 1:
+                            wait_s = exponential_backoff(attempt, base=1.0, max_wait=30.0)
                             await asyncio.sleep(wait_s)
+                            await _wait_for_retry_slot()
                             continue
                         break
             except (aiohttp.ClientError, asyncio.TimeoutError, ValueError, _json.JSONDecodeError):
@@ -1843,6 +1888,7 @@ async def _async_quick_request(
                     else:
                         wait_s = 1.0 * (attempt + 1)
                     await asyncio.sleep(wait_s)
+                    await _wait_for_retry_slot()
                     continue
                 break
 

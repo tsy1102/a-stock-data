@@ -1,5 +1,7 @@
 # 5 大脚本字段接入与 fallback 治理 · 复核报告（v2 修正版）
 
+> 历史快照（生成于 2026-09-21，2026-09-28 复核）。当前已于 2026-10-20 退役 FTShare 私有 MCP/SDK；本文中 `ftshare` 的脚本调用和源接线描述仅反映当时状态，不代表当前生产代码。当前源状态见根目录 README 与 `scripts/README.md`。
+
 > 生成日期：2026-09-21
 > 范围：`get_mak / get_lng / get_med / get_val / get_sht` 五大报告脚本 + `core/data_provider.py` 的 `get_canonical_stock_data` 统一取数入口。报告形成时登记表有 26 个来源；2026-09-28 复核后为 28 个来源。
 > 状态：**本文档已用代码实测核实，修正了初版 Explore 报告的若干误判**。所有论断均附 `file:line` 证据。

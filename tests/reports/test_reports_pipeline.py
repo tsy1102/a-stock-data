@@ -26,11 +26,11 @@ import argparse
 import asyncio
 import contextlib
 import io
+import inspect
 import os
 import tempfile
 import unittest
 from contextlib import redirect_stdout
-from datetime import date
 from pathlib import Path
 from typing import Any
 from unittest import mock
@@ -343,13 +343,9 @@ class TestLngRunnerPipeline(_BatchMixin, _RunnerTestBase):
 
     MOD, CLS, RTYPE = L, "LngReportRunner", "lng"
 
-    def test_insider_change_window_uses_trading_calendar(self):
-        with mock.patch(
-            "stock_common.stock_calendar.trading_day_window",
-            return_value=(date(2026, 9, 24), date(2026, 9, 28)),
-        ) as trading_window:
-            self.assertEqual(L._recent_insider_change_window_start(), "2026-09-24")
-        trading_window.assert_called_once_with(180)
+    def test_report_does_not_call_retired_ftshare_sdk(self):
+        source = inspect.getsource(L.generate_report_async).lower()
+        self.assertNotIn("ftshare", source)
 
     CACHE_PATCHES = ((L, "industry_comparison", "IND_COMP_20", 1),)
 

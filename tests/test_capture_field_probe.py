@@ -1232,10 +1232,6 @@ def test_only_selection_reruns_a_complete_existing_source(tmp_path, monkeypatch)
     axdata_validation.run_axdata_daily_validation = lambda **_kwargs: {"status": "not_eligible"}
     monkeypatch.setitem(sys.modules, "axdata_daily_validation", axdata_validation)
     monkeypatch.setitem(sys.modules, "scripts.axdata_daily_validation", axdata_validation)
-    source_identity = ModuleType("source_identity_reconciliation")
-    source_identity.reconcile_source_identity = lambda **_kwargs: {"status": "ok"}
-    monkeypatch.setitem(sys.modules, "source_identity_reconciliation", source_identity)
-    monkeypatch.setitem(sys.modules, "scripts.source_identity_reconciliation", source_identity)
 
     def fake_push2(pool):
         calls.append([item["code"] for item in pool])
@@ -1811,97 +1807,53 @@ def test_closed_snapshot_validation_refresh_reuses_raw_without_relabeling_mixed_
     assert persisted["levistock_validation"]["status"] == "partial"
 
 
-def test_ftshare_capture_keeps_confirmed_redundant_endpoint_values(monkeypatch):
-    from scripts import source_identity_reconciliation
-    from stock_common import sc_ftshare
+def test_ftshare_capture_is_retired_without_network(monkeypatch):
+    def fail_if_requested(*_args, **_kwargs):
+        raise AssertionError("retired FTShare source must not make network requests")
 
-    called = []
-    monkeypatch.setattr(
-        source_identity_reconciliation,
-        "get_ftshare_identity_plan",
-        lambda **_kwargs: {
-            "status": "ready",
-            "skip": {
-                "ggmx": {
-                    "reference_source": "tencent",
-                    "reference_family": "tencent-family",
-                    "evidence_dates": ["20261008", "20261009", "20261012"],
-                }
-            },
-            "recheck": [],
-            "contract_fingerprints": {"ggmx": "contract-v1"},
-        },
-    )
-    monkeypatch.setattr(sc_ftshare, "is_ftshare_enabled", lambda: True)
-    monkeypatch.setattr(sc_ftshare, "_clear_diagnostics", lambda: None)
-    monkeypatch.setattr(sc_ftshare, "_ftshare_diagnostics_summary", lambda: "")
-
-    def getter(name, value):
-        def call(*_args):
-            called.append(name)
-            return value
-
-        return call
-
-    monkeypatch.setattr(sc_ftshare, "get_ft_comment_score_series", getter("comment_score", []))
-    monkeypatch.setattr(sc_ftshare, "get_ft_comment_desire", getter("comment_desire", {}))
-    monkeypatch.setattr(sc_ftshare, "get_ft_comment_focus", getter("comment_focus", {}))
-    monkeypatch.setattr(sc_ftshare, "get_ft_comment_org_participate", getter("comment_org", {}))
-    monkeypatch.setattr(sc_ftshare, "get_ft_ggmx_changes", getter("ggmx", [{"amount": 10}]))
-    monkeypatch.setattr(sc_ftshare, "get_ft_goodwill_stock_detail", getter("goodwill_detail", []))
-    monkeypatch.setattr(sc_ftshare, "get_ft_dapan_flow", getter("dapan_flow", [{"main_net": 12.5}]))
-    monkeypatch.setattr(
-        sc_ftshare, "get_ft_market_snapshot", getter("market_snapshot", {"change_rate": 1.2})
-    )
-    monkeypatch.setattr(
-        sc_ftshare,
-        "get_ft_suspension_list",
-        getter("suspension_list", [{"symbol": "600000.XSHG"}]),
-    )
-    monkeypatch.setattr(
-        sc_ftshare,
-        "get_ft_limit_up_pool_yesterday",
-        getter(
-            "limit_up_pool_yesterday",
-            [{"symbol": "600000.XSHG", "limit_up_break_count": 1}],
-        ),
-    )
-    monkeypatch.setattr(
-        sc_ftshare, "get_ft_unlock_by_date", getter("unlock_by_date", [{"stockCode": "600000"}])
-    )
-    monkeypatch.setattr(
-        sc_ftshare, "get_ft_pledge_summary", getter("pledge_summary", {"pledge_total_ratio": 0})
-    )
-    monkeypatch.setattr(capture_probe, "_last_completed_trading_day", lambda: date(2026, 10, 12))
-
+    monkeypatch.setattr(stock_common, "_quick_request", fail_if_requested)
     result = capture_probe.collect_ftshare([{"code": "600000"}], data_date="20261012")
 
-    assert called == [
-        "comment_score",
-        "comment_desire",
-        "comment_focus",
-        "comment_org",
-        "ggmx",
-        "goodwill_detail",
-        "dapan_flow",
-        "market_snapshot",
-        "suspension_list",
-        "limit_up_pool_yesterday",
-        "unlock_by_date",
-        "pledge_summary",
-    ]
-    assert result["stocks"]["600000"]["ggmx"] == [{"amount": 10}]
-    assert result["market"]["dapan_flow"] == [{"main_net": 12.5}]
-    assert result["market"]["market_snapshot"] == {"change_rate": 1.2}
-    assert result["market"]["limit_up_pool_yesterday"] == [
-        {"symbol": "600000.XSHG", "limit_up_break_count": 1}
-    ]
-    assert result["market"]["pledge_summary"] == {"pledge_total_ratio": 0}
-    metadata = result["__source_meta__"]
-    assert set(metadata["identity_validation_suppressed_endpoints"]) == {"ggmx"}
-    assert metadata["identity_validation_suppressed_endpoints"]["ggmx"]["capture_performed"] is True
-    assert "ggmx" not in metadata["identity_sampled_endpoints"]
-    assert metadata["identity_contract_fingerprints"] == {"ggmx": "contract-v1"}
+    assert result["__unwired__"] == "deprecated"
+    assert result["registry_name"] == "FTShare"
+    assert "private MCP" in result["reason"]
+
+
+def test_ftshare_rest_is_registered_as_daily_collector(monkeypatch):
+    from stock_common import sc_ftshare
+
+    calls = []
+
+    def fake_snapshot(codes, *, data_date):
+        calls.append((codes, data_date))
+        return {
+            "scheme": "ftshare.rest.a_share_quote",
+            "as_of_date": "2026-10-20",
+            "stocks": {"600000": {"symbol": "600000.SH", "close": "10.5"}},
+        }
+
+    monkeypatch.setattr(sc_ftshare, "get_a_share_quote_snapshot", fake_snapshot)
+    collectors = capture_probe.build_collectors()
+    result = collectors["ftshare_rest"](
+        [{"code": "600000"}, {"code": "600000"}, {"code": "000001"}],
+        data_date="20261020",
+    )
+
+    assert calls == [(["600000", "000001"], "20261020")]
+    assert result["registry_name"] == "FTShare REST"
+    assert result["scheme"] == "ftshare.rest.a_share_quote"
+
+
+def test_ftshare_rest_collector_reports_client_errors(monkeypatch):
+    from stock_common import sc_ftshare
+
+    def fail(*args, **kwargs):
+        raise sc_ftshare.FTShareRateLimitError("HTTP 429; no retry")
+
+    monkeypatch.setattr(sc_ftshare, "get_a_share_quote_snapshot", fail)
+    result = capture_probe.collect_ftshare_rest([{"code": "600000"}], data_date="20261020")
+    assert result["registry_name"] == "FTShare REST"
+    assert result["__error__"] == "HTTP 429; no retry"
 
 
 def test_tdx_capture_quote_normalization_handles_nullable_wire_values():

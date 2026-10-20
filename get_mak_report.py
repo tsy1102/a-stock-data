@@ -1291,17 +1291,13 @@ async def generate_sector_report(output_path):
         )
     _zhb_date = get_zhb_data_date()
     _zhb_check_as_of = datetime.now()
-    _zhb_fresh = is_zhb_data_fresh(
-        max_delay_days=3, data_date=_zhb_date, as_of=_zhb_check_as_of
-    )
+    _zhb_fresh = is_zhb_data_fresh(max_delay_days=3, data_date=_zhb_date, as_of=_zhb_check_as_of)
     _zhb_age = None
     if _zhb_date:
         try:
             from stock_common.stock_calendar import trading_day_age
 
-            _zhb_age = trading_day_age(
-                date.fromisoformat(_zhb_date), as_of=_zhb_check_as_of
-            )
+            _zhb_age = trading_day_age(date.fromisoformat(_zhb_date), as_of=_zhb_check_as_of)
         except (TypeError, ValueError, NotImplementedError) as _e:
             _debug_log(f"mak zhb snapshot age ({_zhb_date}): {_e}")
     if _zhb_date:
@@ -1381,32 +1377,6 @@ async def generate_sector_report(output_path):
     L(
         "  说明：广度、情绪阈值和样本资金流用于描述当日样本，不单独预测次日方向，也不是个性化仓位指令。"
     )
-    # V17.0.7: FTShare 开盘红涨跌分布(10档——字典 §12.10.10 独有维度)
-    try:
-        from stock_common.sc_ftshare import _ft_call
-
-        _kph = await asyncio.to_thread(_ft_call, 'market_emotion_kph')
-        if _kph and isinstance(_kph, dict):
-            _rd = _kph.get('rise_dist') or {}
-            _fd = _kph.get('fall_dist') or {}
-            if _rd:
-                _up_line = ' '.join(
-                    f'{k}档:{v}'
-                    for k, v in sorted(_rd.items(), key=lambda x: int(x[0]))
-                    if int(v) > 0
-                )
-                if _up_line:
-                    L(f"  上涨分布: {_up_line}")
-            if _fd:
-                _dn_line = ' '.join(
-                    f'{k}档:{v}'
-                    for k, v in sorted(_fd.items(), key=lambda x: -int(x[0]))
-                    if int(v) > 0
-                )
-                if _dn_line:
-                    L(f"  下跌分布: {_dn_line}")
-    except Exception as _e:
-        _debug_log(f"mak ftshare kph distribution: {_e}")
     # V17.0(2026-08-15): 北向宏观资金 + 两融杠杆情绪(A 段增强, P4)
     try:
         from stock_common.sc_datasource import get_hsgt_macro_flow
@@ -2027,9 +1997,7 @@ async def generate_sector_report(output_path):
                 _ind = normalize_industry(_r.get("industry") or _r.get("sector") or "")
                 L(f"| {_plain} | {_nm} | {_ll}连板 | {_streak} | {_seal:.2f} | {_ind} |")
         else:
-            L(
-                f"  eltdx 返回 {len(_eltdx_ladder)} 条记录，但其中没有可展示的 ≥2 板天梯记录。"
-            )
+            L(f"  eltdx 返回 {len(_eltdx_ladder)} 条记录，但其中没有可展示的 ≥2 板天梯记录。")
         L("")
     else:
         # 适配器将空响应、异常和超时统一降级为空列表，故报告不能仅凭空结果断言源不可用。

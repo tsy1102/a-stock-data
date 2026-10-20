@@ -8,7 +8,7 @@
     ZHB / TDX / 腾讯(qt.gtimg) / 东财-push2 / 新浪 / axdata(短线指标)
     / 市场源(market_sources) / TDX-F10 / 同花顺-fuyao / 东财-em_kline_f61 / 东财-资金流(em_fund_flow)
     / 东财-ulist239 / 东财-push2ex / 东财-热榜(em_hot) / 财联社(cls) / 东财-datacenter / 巨潮(cninfo)
-    / 东财-reports / levistock(ftshare) / TDX-F10-more
+    / 东财-reports / TDX-F10-more
   已登记且已接入真实 producer(写 raw 文件, 计入异常清单判定):
     东财-clist(§12.8.6, V17.2.13)/ 东财-slist(§12.8.5, V17.2.13)
   已登记但暂无 producer(标记 unwired, 写 meta 不进异常清单):
@@ -133,7 +133,7 @@ EM_FULL_FIELDS = ",".join(f"f{i}" for i in range(1, 251))
 #   em.stock_get : push2 / em_fund_flow 走 stock/get 端点, 同一套 f 编号
 #                  (f62=主力净, f164=pe_ttm)。AxData 是本地 ZHB 短线指标, 独立标记。
 #   em.ulist_np  : ulist239 走 ulist.np 端点, 独立 f 编号, 与 stock/get 不同号。
-# 其余源为命名/数组体系(zhb/tdx/tencent/sina/fuyao/ftshare…), 与任何 f 编号天然不可按号对应。
+# 其余运行源为命名/数组体系(zhb/tdx/tencent/sina/fuyao…), 与任何 f 编号天然不可按号对应。
 # 标注写入每个 raw_{source}.json 顶层 scheme 键 + meta.json(schemes 映射), 供对撞工具
 # 与字典 lint 做血缘校验, 从数据层面固化「同号即同义」陷阱的硬提示。
 SOURCE_SCHEME = {
@@ -151,6 +151,7 @@ SOURCE_SCHEME = {
     "sina_extended": "sina.extended",
     "fuyao": "fuyao",
     "ftshare": "ftshare",
+    "ftshare_rest": "ftshare.rest.a_share_quote",
     "em_kline_f61": "em.kline",
     "datacenter": "em.datacenter",
     "push2ex": "em.push2ex",
@@ -196,12 +197,12 @@ FULL_POOL_STOCK_SOURCES = {
     "em_fund_flow",
     "ulist239",
     "slist",
-    "ftshare",
     "datacenter",
     "event_dc",
     "tdx_f10_more",
     "cninfo",
     "reports",
+    "ftshare_rest",
 }
 SOURCE_REQUIRED_PATHS: Dict[str, List[tuple]] = {
     "market_sources": [
@@ -224,6 +225,7 @@ SOURCE_REQUIRED_PATHS: Dict[str, List[tuple]] = {
     "etf": [("etf_sh",), ("etf_sz",)],
     "news_wscn_cctv": [("cctv_xwlb",)],
     "sina_extended": [("stocks",)],
+    "ftshare_rest": [("stocks",)],
 }
 # No field-status check is allowed to remove a source collector. These states
 # describe endpoint lifecycle only; verified fields continue to be captured.
@@ -1383,10 +1385,7 @@ def _defer_axdata_codes(
 
 
 def _identity_capture_block_reason(identity_policy: Optional[dict]) -> Optional[str]:
-    """Return a reason only when policy explicitly blocks the network request.
-
-    Redundant identity suppressions affect collision/validation scope, not capture.
-    """
+    """Return a reason when the identity policy says not to call the endpoint."""
     if not isinstance(identity_policy, dict) or identity_policy.get("action") != "skip":
         return None
     identity = identity_policy.get("identity")
@@ -1394,10 +1393,9 @@ def _identity_capture_block_reason(identity_policy: Optional[dict]) -> Optional[
     status = identity.get("status")
     reason = str(identity_policy.get("reason") or "capture_policy_skip")
     validation_action = identity_policy.get("identity_validation_action")
-    if validation_action == "suppress" or status in {
-        "operationally_redundant",
-        "partially_redundant",
-    }:
+    if status == "operationally_redundant":
+        return reason
+    if validation_action == "suppress" or status == "partially_redundant":
         return None
     return reason
 
@@ -1444,7 +1442,10 @@ def collect_axdata(pool: list, identity_policy: Optional[dict] = None) -> dict:
                 "capture_block": {
                     "status": identity.get("status"),
                     "interface_id": interface_id,
+                    "reference_source": policy.get("reference_source"),
                     "reason": reason,
+                    "evidence_dates": identity.get("evidence_dates", []),
+                    "capture_performed": False,
                 }
             },
         }
@@ -1844,7 +1845,10 @@ def collect_kph_history(
                 "capture_block": {
                     "status": identity.get("status"),
                     "interface_id": identity.get("interface_id"),
+                    "reference_source": policy.get("reference_source"),
                     "reason": reason,
+                    "evidence_dates": identity.get("evidence_dates", []),
+                    "capture_performed": False,
                 }
             },
         }
@@ -2687,128 +2691,41 @@ def _has_populated_capture_value(value: Any, key: str = "") -> bool:
 
 
 def collect_ftshare(pool: list, *, data_date: str = "", force_reprobe: bool = False) -> dict:
-    """FTShare MCP 全景采集（V17.0.7 新源——字典 §12.20，全字段镜像见 verify/ftshare_fields_mirror.md）。
+    """Keep legacy private-MCP captures visible without making requests."""
+    del pool, data_date, force_reprobe
+    return {
+        "__unwired__": "deprecated",
+        "registry_name": "FTShare",
+        "reason": (
+            "Retired: legacy FTShare private MCP captures are historical only; "
+            "the public REST collector uses the separate ftshare_rest identity."
+        ),
+    }
 
-    个股级: 千股千评四族（评分日序列/参与意愿/关注度/机构参与度）/
-            董监高变动明细(26字段) / 商誉个股明细
-    市场级: 大盘资金流 / DAEC 涨跌分布聚合 / 停牌列表 /
-            昨日涨停池(炸板回封时间数组) / 限售解禁按日 / 股权质押汇总
-    逐请求至少间隔 500ms；遇到 403/429 或连续三次错误立即熔断，诊断写入 __error__。
-    """
-    from stock_common.sc_ftshare import (
-        is_ftshare_enabled,
-        _clear_diagnostics,
-        _ftshare_diagnostics_summary,
-        get_ft_comment_score_series,
-        get_ft_comment_desire,
-        get_ft_comment_focus,
-        get_ft_comment_org_participate,
-        get_ft_ggmx_changes,
-        get_ft_goodwill_stock_detail,
-        get_ft_pledge_summary,
-        get_ft_dapan_flow,
-        get_ft_market_snapshot,
-        get_ft_suspension_list,
-        get_ft_limit_up_pool_yesterday,
-        get_ft_unlock_by_date,
-    )
 
-    try:
-        try:
-            from scripts.source_identity_reconciliation import get_ftshare_identity_plan
-        except ModuleNotFoundError:
-            from source_identity_reconciliation import (  # type: ignore[no-redef]
-                get_ftshare_identity_plan,
-            )
+def collect_ftshare_rest(pool: list, *, data_date: str = "", force_reprobe: bool = False) -> dict:
+    """Capture the documented FTShare REST quote contract for the configured stock pool."""
+    del force_reprobe
+    from stock_common.sc_ftshare import FTShareRequestError, get_a_share_quote_snapshot
 
-        identity_plan = get_ftshare_identity_plan(data_date=data_date, force_reprobe=force_reprobe)
-    except Exception as exc:
-        # Identity suppression is auxiliary. If its evidence cannot be read,
-        # sample all FTShare endpoints and keep the primary capture available.
-        identity_plan = {
-            "skip": {},
-            "recheck": [],
-            "status": "failed_open",
-            "reason": f"{type(exc).__name__}: {exc}",
-        }
-
-    identity_skips = identity_plan.get("skip", {})
-    if not isinstance(identity_skips, dict):
-        identity_skips = {}
-    identity_rechecks = identity_plan.get("recheck", [])
-    if not isinstance(identity_rechecks, list):
-        identity_rechecks = []
-    identity_validation_sampled = [
-        key
-        for key in (
-            "comment_score",
-            "comment_desire",
-            "comment_focus",
-            "comment_org",
-            "ggmx",
-            "goodwill_detail",
+    codes = list(
+        dict.fromkeys(
+            str(item.get("code", "")).strip()
+            for item in pool
+            if isinstance(item, dict) and str(item.get("code", "")).strip()
         )
-        if key not in identity_skips
-    ]
-    out: dict = {"stocks": {}, "market": {}}
-    if not is_ftshare_enabled():
-        out["__error__"] = "FTShare MCP is disabled"
-        return out
-    _clear_diagnostics()
-
-    for p in pool:
-        c = p["code"]
-        # V17.1.x: 去截断, 采全集(评分日序列/董监高变动/商誉明细全量), 方法轮与对撞铁律需完整经验。
-        out["stocks"][c] = {
-            "comment_score": get_ft_comment_score_series(c) or [],
-            "comment_desire": get_ft_comment_desire(c),
-            "comment_focus": get_ft_comment_focus(c),
-            "comment_org": get_ft_comment_org_participate(c),
-            "ggmx": get_ft_ggmx_changes(c) or [],
-            "goodwill_detail": get_ft_goodwill_stock_detail(c) or [],
+    )
+    if not codes:
+        return {
+            "__skipped__": "stock pool is empty; no FTShare request was sent",
+            "registry_name": "FTShare REST",
         }
-
-    if identity_skips or identity_validation_sampled or identity_plan.get("status") != "ready":
-        out["__source_meta__"] = {
-            "identity_validation_suppressed_endpoints": {
-                key: {
-                    "status": "redundant",
-                    "reference_source": value.get("reference_source"),
-                    "reference_family": value.get("reference_family"),
-                    "evidence_dates": value.get("evidence_dates", []),
-                    "capture_performed": True,
-                }
-                for key, value in identity_skips.items()
-                if isinstance(value, dict)
-            },
-            "identity_sampled_endpoints": identity_validation_sampled,
-            "identity_recheck_endpoints": identity_rechecks,
-            "identity_contract_fingerprints": (
-                identity_plan.get("contract_fingerprints", {})
-                if isinstance(identity_plan.get("contract_fingerprints"), dict)
-                else {}
-            ),
-            "identity_plan_status": identity_plan.get("status", "failed_open"),
-        }
-        if identity_plan.get("reason"):
-            out["__source_meta__"]["identity_plan_reason"] = str(identity_plan["reason"])[:240]
-
-    mkt = out["market"]
-    td = _last_completed_trading_day().strftime("%Y%m%d")
-    mkt["dapan_flow"] = get_ft_dapan_flow(td)
-    mkt["market_snapshot"] = get_ft_market_snapshot()
-    mkt["suspension_list"] = (get_ft_suspension_list(td) or [])[:50]
-    mkt["limit_up_pool_yesterday"] = get_ft_limit_up_pool_yesterday(td)
-    mkt["unlock_by_date"] = (get_ft_unlock_by_date(td) or [])[:80]
-    mkt["pledge_summary"] = get_ft_pledge_summary()
-    mkt["probe_trading_day"] = td
-    diagnostics = _ftshare_diagnostics_summary()
-    if diagnostics:
-        out["__error__"] = f"FTShare MCP errors: {diagnostics}"
-    if not _has_populated_capture_value(out):
-        empty_error = "FTShare returned no populated data fields"
-        out["__error__"] = f"{empty_error}; {out['__error__']}" if diagnostics else empty_error
-    return out
+    try:
+        result = get_a_share_quote_snapshot(codes, data_date=data_date)
+    except FTShareRequestError as exc:
+        return {"__error__": str(exc), "registry_name": "FTShare REST"}
+    result["registry_name"] = "FTShare REST"
+    return result
 
 
 def collect_em_kline_f61(pool: list) -> dict:
@@ -3973,6 +3890,7 @@ def build_collectors() -> Dict[str, Callable[..., Dict[str, Any]]]:
         "cninfo": collect_cninfo,
         "reports": collect_reports,
         "ftshare": collect_ftshare,
+        "ftshare_rest": collect_ftshare_rest,
         "baidu": collect_baidu,
         "clist": collect_clist,
         "slist": collect_slist,
@@ -4367,12 +4285,6 @@ def main() -> None:
                 )
             elif name == "fuyao":
                 data = fn(pool, include_context=include_context)
-            elif name == "ftshare":
-                data = fn(
-                    pool,
-                    data_date=args.date,
-                    force_reprobe=args.overwrite,
-                )
             elif name == "baidu":
                 # The Baidu endpoint is pending validation and is probed only when
                 # the caller explicitly selects it with --only baidu.
@@ -4459,19 +4371,6 @@ def main() -> None:
                 _entry["as_of_date"] = _as_of_date
                 meta["source_as_of_dates"][name] = _as_of_date
             _entry.update(_info)
-            if name == "ftshare" and isinstance(data, dict):
-                _identity = data.get("__source_meta__")
-                if isinstance(_identity, dict):
-                    for _identity_key in (
-                        "identity_validation_suppressed_endpoints",
-                        "identity_skipped_endpoints",
-                        "identity_sampled_endpoints",
-                        "identity_recheck_endpoints",
-                        "identity_contract_fingerprints",
-                        "identity_plan_status",
-                    ):
-                        if _identity_key in _identity:
-                            _entry[_identity_key] = _identity[_identity_key]
             if name in {"axdata", "kph"} and isinstance(data, dict):
                 _identity = data.get("__source_meta__")
                 if isinstance(_identity, dict) and isinstance(
@@ -4686,21 +4585,6 @@ def main() -> None:
         "n_abnormal": len(_bad),
         "abnormal": _bad,
     }
-    try:
-        try:
-            from scripts.source_identity_reconciliation import reconcile_source_identity
-        except ModuleNotFoundError:
-            from source_identity_reconciliation import (  # type: ignore[no-redef]
-                reconcile_source_identity,
-            )
-
-        meta["source_identity_reconciliation"] = reconcile_source_identity(current_meta=meta)
-    except Exception as exc:
-        meta["source_identity_reconciliation"] = {
-            "status": "failed_open",
-            "reason": f"{type(exc).__name__}: {exc}"[:300],
-        }
-        print(f"  ⚠ 来源身份核验失败，不影响原始采集: {exc}", flush=True)
     with open(meta_path, "w", encoding="utf-8") as f:
         json.dump(meta, f, ensure_ascii=False, indent=1)
     _refresh_field_evidence_coverage(out_dir, meta)

@@ -1,5 +1,7 @@
 # Levistock 来源与每日采集核对
 
+> 历史状态说明（2026-10-20）：本报告记录 2026-10-10 的来源映射；FTShare 运行时描述仅代表当时状态。项目已退役 FTShare 私有托管 MCP/SDK 集成，当前只保留历史字段证据与归档样本。
+
 核对日期：2026-10-10
 依赖版本：`levistock==0.1.8`
 范围：上游仓库定位、项目实际调用路径、逐日样本记录策略及来源身份校正。本文不修改字段含义或定案状态。
@@ -59,3 +61,4 @@
 - **历史未归属**：136 条结构化记录保留原字段路径、状态、含义和证据。旧 Markdown 解析器另能识别 56 个 token，但这些 token 在迁移前的结构化注册表中没有对应记录，现仍只留在不可改写的 `field_source_reference.md` 原文中，不提升为当前字段记录、不推断含义或底层源。
 
 逐项映射清单见 [`source_identity_reclassifications.json`](field_verification/source_identity_reclassifications.json)。重分类后注册表仍有 2,481 条 `source_fields`、1,852 个兼容聚合字段；verified 842、unverified 1,548、candidate 1、conflict 90。迁移只改 175 条记录的来源身份键及对应聚合来源名，不变更字段状态、含义、单位、路径或证据。历史逐字节归档 `field_source_reference.md` 保持不变。
+# 历史状态说明（2026-10-20）

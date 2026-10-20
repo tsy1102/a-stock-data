@@ -162,13 +162,6 @@ async def _get_eps_from_em_reports_async(session, code):
 # ==================== 报告生成引擎 ====================
 
 
-def _recent_insider_change_window_start() -> str:
-    """返回最近 180 个交易日窗口的起始日。"""
-    from stock_common.stock_calendar import trading_day_window
-
-    return trading_day_window(180)[0].isoformat()
-
-
 async def generate_report_async(session, code, output_path, ind_comp=None):
     """async 版: 长线价值体检报告生成引擎"""
     today_str = date.today().strftime("%Y-%m-%d")
@@ -1538,48 +1531,6 @@ async def generate_report_async(session, code, output_path, ind_comp=None):
             L("  📐 [Beta风险档] N/A（未取到）")
     except Exception as _be:
         _debug_log(f"lng beta risk tier: {_be}")
-
-    # V17.0.7: FTShare 结构化排雷（字典 §12.20——董监高变动/商誉对照，零关键词弱口径）
-    try:
-        from stock_common import get_ft_ggmx_changes, get_ft_goodwill_stock_detail
-
-        _ggmx_v7 = await asyncio.to_thread(get_ft_ggmx_changes, code) or []
-        if _ggmx_v7:
-            _cut180 = _recent_insider_change_window_start()
-            _recent = [g for g in _ggmx_v7 if str(g.get("change_date", "")) >= _cut180]
-            if _recent:
-                _dec_n = sum(1 for g in _recent if g.get("change_direction") == "减持")
-                _add_n = sum(1 for g in _recent if g.get("change_direction") == "增持")
-                L(
-                    f"\n  🧾 董监高变动(FTShare 结构化, 近180个交易日): 增持 {_add_n} 笔 / 减持 {_dec_n} 笔"
-                )
-                for g in sorted(_recent, key=lambda x: str(x.get("change_date", "")), reverse=True)[
-                    :3
-                ]:
-                    try:
-                        _shares = float(g.get("change_shares") or 0) / 1e4
-                        _avgp = float(g.get("avg_price") or 0)
-                        L(
-                            f"    - [{g.get('change_date')}] {g.get('changer')}"
-                            f"({g.get('relation', '')}/{g.get('position', '')}) "
-                            f"{g.get('change_direction')} {_shares:.1f}万股"
-                            f" @均价{_avgp:.2f}({g.get('change_reason', '')})"
-                        )
-                    except (ValueError, TypeError):
-                        continue
-        _gw_v7 = await asyncio.to_thread(get_ft_goodwill_stock_detail, code) or []
-        if _gw_v7:
-            g0 = _gw_v7[0]
-            _ratio = float(g0.get("goodwill_to_net_assets_ratio") or 0) * 100
-            _gw_scale = float(g0.get("goodwill_scale") or 0) / 1e8
-            _lv = "🔴" if _ratio > 30 else ("🟡" if _ratio > 10 else "🟢")
-            L(
-                f"\n  🔬 商誉交叉核验(FTShare): 商誉 {_gw_scale:.2f}亿 | "
-                f"商誉/净资产 {_ratio:.1f}% {_lv}"
-                f"(公告日 {str(g0.get('notice_date'))[:10]})"
-            )
-    except Exception as _e:
-        _debug_log(f"lng ftshare risk cross: {_e}")
 
     # ─── 十、舆情与互动 ───
     L("\n## **十、舆情与互动**")

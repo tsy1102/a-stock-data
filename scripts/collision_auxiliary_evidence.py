@@ -1,4 +1,4 @@
-"""Read-only summaries of daily AxData and FTShare validation artifacts."""
+"""Read-only summaries of AxData daily evidence and retired FTShare records."""
 
 from __future__ import annotations
 
@@ -240,6 +240,8 @@ def _ftshare_record(folder: Any, allowed_dates: set[str]) -> dict[str, Any] | No
     result = meta.get("source_identity_reconciliation")
     if not isinstance(result, dict):
         return None
+    if result.get("status") == "retired":
+        return None
     endpoints = result.get("endpoints")
     if not isinstance(endpoints, dict):
         endpoints = {}
@@ -298,9 +300,12 @@ def _select_per_date(
 
 
 def build_daily_aggregate_evidence(
-    folders: Iterable[Any], trading_dates: Iterable[str]
+    folders: Iterable[Any],
+    trading_dates: Iterable[str],
+    *,
+    include_retired_sources: bool = False,
 ) -> dict[str, Any]:
-    """Summarize daily aggregate-source checks without retaining raw values."""
+    """Summarize AxData checks and optionally selected retired-source history."""
     allowed_dates = {key for value in trading_dates if (key := _date_key(value))}
     diagnostics: list[str] = []
     axdata_raw = []
@@ -309,9 +314,10 @@ def build_daily_aggregate_evidence(
         axdata = _axdata_record(folder, allowed_dates, diagnostics)
         if axdata is not None:
             axdata_raw.append(axdata)
-        ftshare = _ftshare_record(folder, allowed_dates)
-        if ftshare is not None:
-            ftshare_raw.append(ftshare)
+        if include_retired_sources:
+            ftshare = _ftshare_record(folder, allowed_dates)
+            if ftshare is not None:
+                ftshare_raw.append(ftshare)
 
     axdata_records, axdata_duplicates = _select_per_date(axdata_raw, ranking_key="_rank")
     ftshare_records, ftshare_duplicates = _select_per_date(
@@ -347,11 +353,12 @@ def build_daily_aggregate_evidence(
                 endpoint_identity_statuses[str(interface_id)][
                     str(identity_record.get("status", "unknown"))
                 ] += 1
-    return {
+    result = {
         "schema_version": 1,
         "policy": (
-            "Read-only daily evidence; AxData and FTShare aggregate/framework records are not "
-            "independent field anchors and do not promote dictionary status."
+            "Read-only evidence; AxData aggregate/framework records are not independent field "
+            "anchors and do not promote dictionary status. Retired FTShare records are included "
+            "only for explicitly selected historical research."
         ),
         "axdata": {
             "status": "observed" if axdata_records else "no_daily_evidence",
@@ -370,14 +377,17 @@ def build_daily_aggregate_evidence(
             "passive_field_comparison_totals": passive_totals,
             "daily_records": axdata_records,
         },
-        "ftshare": {
-            "status": "observed" if ftshare_records else "no_daily_meta_evidence",
+        "diagnostics": diagnostics[:100],
+    }
+
+    if include_retired_sources:
+        result["ftshare"] = {
+            "status": "observed" if ftshare_records else "no_historical_meta_evidence",
             "data_date_count": len(ftshare_records),
             "duplicate_capture_records_deduplicated": ftshare_duplicates,
             "daily_records": ftshare_records,
-        },
-        "diagnostics": diagnostics[:100],
-    }
+        }
+    return result
 
 
 def _cell(value: Any) -> str:
@@ -388,10 +398,10 @@ def append_daily_aggregate_report(report_md: str, evidence: dict[str, Any]) -> s
     lines = [
         report_md.rstrip(),
         "",
-        "## AxData / FTShare 每日轮验（不作为独立字段锚）",
+        "## AxData 每日接口核验",
         "",
         "> 此处汇总采集目录已保存的本地证据，不发起网络请求、不改变注册表状态；"
-        "AxData 是多源框架，FTShare 底层来源族仍须单独核实。",
+        "AxData 是多源框架，不作为独立字段锚。",
         "",
     ]
     if not isinstance(evidence, dict):
@@ -492,28 +502,31 @@ def append_daily_aggregate_report(report_md: str, evidence: dict[str, Any]) -> s
     ftshare = raw_ftshare if isinstance(raw_ftshare, dict) else {}
     daily_ftshare = ftshare.get("daily_records")
     daily_ftshare = daily_ftshare if isinstance(daily_ftshare, list) else []
-    lines.extend(
-        [
-            "### FTShare 每日身份核验记录",
-            "",
-            (
-                f"窗口内保留 {ftshare.get('data_date_count', 0)} 个唯一数据日的采集时记录；"
-                f"重复目录合并 {ftshare.get('duplicate_capture_records_deduplicated', 0)} 条。"
-            ),
-            "",
-            "| 数据日 | 核验状态 | 接口状态计数 |",
-            "|:--|:--|:--|",
-        ]
-    )
-    for item in daily_ftshare:
-        status_counts = item.get("endpoint_status_counts") or {}
-        counts_text = (
-            ", ".join(f"{key}: {value}" for key, value in sorted(status_counts.items())) or "—"
+    if "ftshare" in evidence:
+        lines.extend(
+            [
+                "### FTShare 退役来源历史记录（显式历史研究）",
+                "",
+                (
+                    f"窗口内保留 {ftshare.get('data_date_count', 0)} 个唯一数据日的旧元数据；"
+                    f"重复目录合并 {ftshare.get('duplicate_capture_records_deduplicated', 0)} 条。"
+                ),
+                "",
+                "| 数据日 | 历史状态 | 旧接口状态计数 |",
+                "|:--|:--|:--|",
+            ]
         )
-        lines.append(f"| {item.get('data_date')} | {item.get('status')} | {_cell(counts_text)} |")
-    if not daily_ftshare:
-        lines.append("| — | 当前窗口没有 FTShare 日轮验据 | — |")
-    lines.append("")
+        for item in daily_ftshare:
+            status_counts = item.get("endpoint_status_counts") or {}
+            counts_text = (
+                ", ".join(f"{key}: {value}" for key, value in sorted(status_counts.items())) or "—"
+            )
+            lines.append(
+                f"| {item.get('data_date')} | {item.get('status')} | {_cell(counts_text)} |"
+            )
+        if not daily_ftshare:
+            lines.append("| — | 所选历史窗口没有 FTShare 旧元数据 | — |")
+        lines.append("")
     if evidence.get("diagnostics"):
         lines.append("读取诊断：")
         lines.extend(f"- {_cell(message)}" for message in evidence["diagnostics"])

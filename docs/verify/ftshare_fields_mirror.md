@@ -1,5 +1,7 @@
 # FTShare MCP 全字段镜像（2026-08-25 实弹采样 v2）
 
+> **历史归档（2026-10-20）**：项目已退役 FTShare 私有托管 MCP 适配器。此镜像只记录旧服务暴露的工具与字段，不证明其底层数据来自官方接口；不再用于日常采集、默认碰撞或来源锚。旧 `raw_ftshare.json` 仅在显式 `--all` / `--exploratory` 研究时读取。FTShare 官方 REST 网关作为独立的公开接口已接入每日采集与默认碰撞；当前字段契约及 `L1-C` 语义规则见 [`ftshare_rest_contract.md`](ftshare_rest_contract.md) 和 [`套餐/接口目录`](../ftshare_contract_catalog.json)。两套字段身份不可互相推定或混用。
+
 > 字段表来自实际响应首行；❌ 条目为参数需人工复核或上游空数据。
 
 ## capital_flow（资金流）

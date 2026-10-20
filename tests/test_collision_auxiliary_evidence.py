@@ -108,9 +108,7 @@ def test_daily_aggregate_evidence_deduplicates_dates_and_drops_raw_values(tmp_pa
         encoding="utf-8",
     )
 
-    result = evidence.build_daily_aggregate_evidence(
-        [first, second], ["20261012"]
-    )
+    result = evidence.build_daily_aggregate_evidence([first, second], ["20261012"])
 
     assert result["axdata"]["data_date_count"] == 1
     assert result["axdata"]["duplicate_capture_records_deduplicated"] == 1
@@ -125,8 +123,12 @@ def test_daily_aggregate_evidence_deduplicates_dates_and_drops_raw_values(tmp_pa
     assert result["axdata"]["passive_field_comparison_totals"][
         "axdata_shortline_vs_eltdx:return_on_equity"
     ] == {"equal": 18, "different": 2, "both_null": 0, "missing": 0}
-    assert result["ftshare"]["data_date_count"] == 1
-    assert result["ftshare"]["daily_records"][0]["endpoint_status_counts"] == {
+    assert "ftshare" not in result
+    historical = evidence.build_daily_aggregate_evidence(
+        [first, second], ["20261012"], include_retired_sources=True
+    )
+    assert historical["ftshare"]["data_date_count"] == 1
+    assert historical["ftshare"]["daily_records"][0]["endpoint_status_counts"] == {
         "collecting_evidence": 1,
         "operationally_redundant": 1,
     }
@@ -167,7 +169,9 @@ def test_auxiliary_report_keeps_aggregate_checks_out_of_anchor_lane():
     )
 
     assert "## L1 候选" in report
-    assert "AxData / FTShare 每日轮验（不作为独立字段锚）" in report
+    assert "AxData 每日接口核验" in report
+    assert "FTShare 退役来源历史记录（显式历史研究）" in report
+    assert "FTShare 退役来源历史记录（显式历史研究）" in report
     assert "257 个接口" in report
     assert "来源身份状态" in report
     assert "partially_redundant（18 个数据日后复验）；待核 1 字段" in report

@@ -111,9 +111,38 @@ def _inputs(action="verify"):
         "source_aliases": {"target-source": "left", "anchor-source": "right"},
     }
     report = {
-        "schema_version": 2,
+        "schema_version": 3,
         "collision_mode": "verified_anchor_only",
         "exploratory_pair_count": 0,
+        "method_candidate_count": 0,
+        "method_candidate_inventory": [],
+        "method_candidates": [],
+        "method_candidate_frontier": [],
+        "actionable_L1": [],
+        "mapped_pair_revalidations": [],
+        "candidate_triage": {"summary": {"target_count": 0}, "targets": []},
+        "report_completeness": {
+            "schema_version": 1,
+            "status": "complete",
+            "issues": [],
+            "method_candidate_inventory": {
+                "generated_count": 0,
+                "saved_count": 0,
+                "unique_pair_count": 0,
+                "missing_detail_count": 0,
+                "excess_detail_count": 0,
+                "duplicate_pair_count": 0,
+                "invalid_pair_identity_count": 0,
+                "target_candidate_count_sum": 0,
+                "invalid_target_candidate_count_rows": 0,
+            },
+            "sections": {
+                "L1": {"json_record_count": 1},
+                "actionable_L1": {"json_record_count": 0},
+                "mapped_pair_revalidations": {"json_record_count": 0},
+                "candidate_triage.targets": {"json_record_count": 0},
+            },
+        },
         "L1": [
             {
                 "left": "left.unknown.value",
@@ -129,6 +158,8 @@ def _inputs(action="verify"):
             }
         ],
     }
+    report["actionable_L1"] = copy.deepcopy(report["L1"])
+    report["report_completeness"]["sections"]["actionable_L1"]["json_record_count"] = 1
     decision_document = {
         "schema_version": 1,
         "report": "sample_report.json",
@@ -280,6 +311,10 @@ def test_verified_metadata_enrichment_supports_reversed_pair_and_anchor_correcti
     report["L1"][0]["left"], report["L1"][0]["right"] = (
         report["L1"][0]["right"],
         report["L1"][0]["left"],
+    )
+    report["actionable_L1"][0]["left"], report["actionable_L1"][0]["right"] = (
+        report["actionable_L1"][0]["right"],
+        report["actionable_L1"][0]["left"],
     )
     document["decisions"][0]["anchor_metadata_correction"] = {
         "previous": {
@@ -711,8 +746,44 @@ def test_pair_disproof_cannot_disprove_the_entire_target_field():
 def test_non_default_or_missing_candidates_are_rejected(report_change, match):
     registry, lineage, document, report = _inputs()
     report.update(copy.deepcopy(report_change))
+    if "L1" in report_change:
+        report["actionable_L1"] = copy.deepcopy(report["L1"])
+        report["report_completeness"]["sections"]["L1"]["json_record_count"] = len(report["L1"])
+        report["report_completeness"]["sections"]["actionable_L1"]["json_record_count"] = len(
+            report["actionable_L1"]
+        )
 
     with pytest.raises(ValueError, match=match):
+        apply_adjudications(
+            registry, lineage, document, report, "sample_report.json", "adjudications/review.json"
+        )
+
+
+def test_incomplete_report_cannot_be_used_for_adjudication():
+    registry, lineage, document, report = _inputs()
+    report["report_completeness"]["status"] = "incomplete"
+
+    with pytest.raises(ValueError, match="report_completeness is not complete"):
+        apply_adjudications(
+            registry, lineage, document, report, "sample_report.json", "adjudications/review.json"
+        )
+
+
+def test_report_schema_two_is_rejected_without_full_inventory_contract():
+    registry, lineage, document, report = _inputs()
+    report["schema_version"] = 2
+
+    with pytest.raises(ValueError, match="expected 3"):
+        apply_adjudications(
+            registry, lineage, document, report, "sample_report.json", "adjudications/review.json"
+        )
+
+
+def test_report_inventory_mismatch_blocks_adjudication():
+    registry, lineage, document, report = _inputs()
+    report["method_candidate_inventory"] = [{"left": "left.x", "right": "right.y"}]
+
+    with pytest.raises(ValueError, match="inventory mismatch: saved_count"):
         apply_adjudications(
             registry, lineage, document, report, "sample_report.json", "adjudications/review.json"
         )
@@ -722,6 +793,7 @@ def test_registered_mapping_revalidation_is_not_an_actionable_adjudication_candi
     registry, lineage, document, report = _inputs()
     report["L1"][0]["in_registry"] = True
     report["actionable_L1"] = []
+    report["report_completeness"]["sections"]["actionable_L1"]["json_record_count"] = 0
 
     with pytest.raises(ValueError, match="found 0"):
         apply_adjudications(

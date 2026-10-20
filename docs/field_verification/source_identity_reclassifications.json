@@ -972,7 +972,7 @@
         "12.20.1 FTShare 股吧/评论原始字段补录（V17.1.1 全量登记）"
       ],
       "status": "active",
-      "source_role": "service_endpoint"
+      "source_role": "retired_service_endpoint"
     },
     {
       "name": "Levistock历史未归属",

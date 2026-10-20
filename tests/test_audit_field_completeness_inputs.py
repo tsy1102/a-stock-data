@@ -267,6 +267,26 @@ def test_sina_raw_audit_unions_all_stocks_and_all_report_rows(monkeypatch, tmp_p
     assert not {"__error__", "__skipped__", "financial_reports", "money_flow", "item_title"} & raw
 
 
+def test_registry_raw_leaf_keys_honor_explicit_capture_allowlist():
+    payload = {
+        "stocks": {
+            "000001": {
+                "financial_reports": {"audit_opinion": "", "item_value": "1"},
+                "money_flow": [{"netamount": "2", "r0_net": "3"}],
+            }
+        },
+        "__source_meta__": {"captured_registry_codes": ["item_value", "netamount"]},
+    }
+
+    assert audit._registry_capture_leaf_keys(payload) == {"item_value", "netamount"}
+
+
+def test_registry_raw_leaf_keys_keep_legacy_behavior_without_allowlist():
+    payload = {"stocks": {"000001": {"close": 10, "volume": 20}}}
+
+    assert audit._registry_capture_leaf_keys(payload) == {"close", "volume"}
+
+
 def test_compare_field_sets_reports_both_unregistered_and_unobserved_fields():
     result = audit.compare_field_sets(
         {"f1", "f3"},

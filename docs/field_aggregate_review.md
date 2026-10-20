@@ -4,7 +4,7 @@
 > `aggregation_status` 只描述兼容聚合视图，不会改写逐源 `status`。疑似合并文本由分隔符启发式识别，仅供人工检查，不自动拆字段或定案。
 > 本文统计的定义缺口仅限列出的复核组；单来源或全空的定义缺口仍见 [元数据缺口](field_metadata_gaps.md) 与 [未知字段队列](unknown_fields.md)。
 
-> 聚合歧义 89 个 code；聚合定义不完整 255 个 code；疑似合并文本 246 条逐源记录。
+> 聚合歧义 96 个 code；聚合定义不完整 243 个 code；疑似合并文本 237 条逐源记录。
 
 ## 同码聚合存在差异或定义缺口
 
@@ -621,7 +621,6 @@
 
 | 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
 |:--|:--|:--|:--|:--|
-| Levistock历史未归属 · `amount` | — | — | — | `unverified` |
 | TDX(双命名源) · `amount` | — | — | — | `unverified` |
 | TDX-eltdx(适配层) · `amount` | amount | 成交额 | — | `unverified` |
 | ZHB-tdxstat2 · `amount` | amount | T日总成交额 | 万元 | `verified` |
@@ -632,13 +631,13 @@
 | 开盘啦(kpl) · `amount` | amount | 成交额 | 元 | `unverified` |
 | 开盘啦(kpl_limit_up_detail) · `amount` | amount | 成交额；与 KPH turnover 两日逐值一致 | 元 | `verified` |
 
-### `amplitude` — incomplete
+### `amplitude` — ambiguous
 
-聚合问题：canonical_incomplete；meaning_incomplete；unit_incomplete；聚合状态：`unverified`。
+聚合问题：canonical_incomplete；meaning_differs；meaning_incomplete；source_statuses_differ；unit_incomplete；聚合状态：`conflict`。
 
 | 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
 |:--|:--|:--|:--|:--|
-| Levistock历史未归属 · `amplitude` | — | — | — | `unverified` |
+| FTShare REST · `amplitude` | amplitude | 价格振幅 | — | `verified` |
 | 同花顺-fuyao · `amplitude` | — | — | — | `unverified` |
 | 市场源(market_sources) · `amplitude` | — | — | — | `unverified` |
 | 开盘啦(kpl) · `amplitude` | amplitude | 振幅% | % | `unverified` |
@@ -685,13 +684,13 @@
 | reports · `brief` | brief | 摘要 | — | `verified` |
 | 财联社(cls) · `brief` | title / brief | 标题 / 摘要 | — | `verified` |
 
-### `change` — incomplete
+### `change` — ambiguous
 
-聚合问题：canonical_incomplete；meaning_incomplete；source_statuses_differ；unit_incomplete；聚合状态：`unverified`。
+聚合问题：canonical_incomplete；meaning_differs；meaning_incomplete；source_statuses_differ；unit_differs；unit_incomplete；聚合状态：`conflict`。
 
 | 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
 |:--|:--|:--|:--|:--|
-| Levistock历史未归属 · `change` | — | — | — | `unverified` |
+| FTShare REST · `change` | change | 价格涨跌额 | 元/股 | `verified` |
 | TDX(双命名源) · `change` | — | — | — | `unverified` |
 | 同花顺-fuyao · `change` | change | 当日涨跌幅，小数形式。 | 比例（小数） | `verified` |
 
@@ -701,7 +700,6 @@
 
 | 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
 |:--|:--|:--|:--|:--|
-| Levistock历史未归属 · `change_pct` | — | — | — | `unverified` |
 | TDX(双命名源) · `change_pct` | — | — | — | `unverified` |
 | TDX-eltdx(适配层) · `change_pct` | change_pct | — | — | `unverified` |
 | ZHB-tdxstat · `change_pct` | — | — | — | `unverified` |
@@ -709,52 +707,26 @@
 | 市场源(market_sources) · `change_pct` | change_pct | 涨跌幅 | — | `verified` |
 | 开盘啦(kpl) · `change_pct` | change_pct | 涨跌幅% | % | `unverified` |
 
-### `change_rate` — incomplete
+### `change_rate` — ambiguous
 
-聚合问题：canonical_incomplete；meaning_incomplete；source_statuses_differ；聚合状态：`unverified`。
+聚合问题：canonical_differs；meaning_differs；unit_incomplete；聚合状态：`conflict`。
 
 | 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
 |:--|:--|:--|:--|:--|
-| Levistock历史未归属 · `change_rate` | — | — | — | `unverified` |
+| FTShare REST · `change_rate` | change_rate | 日涨跌幅；0.03 表示 3% | 比率 | `verified` |
 | 东财-热榜(em_hot) · `change_rate` | latest / change_rate | 现价 / 涨跌幅 | — | `verified` |
-
-### `change_type` — incomplete
-
-聚合问题：canonical_incomplete；meaning_incomplete；聚合状态：`unverified`。
-
-| 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
-|:--|:--|:--|:--|:--|
-| Levistock历史未归属 · `change_type` | — | — | — | `unverified` |
-| 市场源(market_sources) · `change_type` | change_type | 变动类型 | — | `unverified` |
-
-### `circ_mv` — incomplete
-
-聚合问题：canonical_incomplete；meaning_incomplete；unit_incomplete；聚合状态：`unverified`。
-
-| 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
-|:--|:--|:--|:--|:--|
-| Levistock历史未归属 · `circ_mv` | — | — | — | `unverified` |
-| 开盘啦(kpl) · `circ_mv` | circ_mv | 流通市值 | 元 | `unverified` |
 
 ### `close` — ambiguous
 
-聚合问题：canonical_differs；canonical_incomplete；meaning_differs；meaning_incomplete；source_statuses_differ；聚合状态：`conflict`。
+聚合问题：canonical_differs；canonical_incomplete；meaning_differs；meaning_incomplete；source_statuses_differ；unit_incomplete；聚合状态：`conflict`。
 
 | 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
 |:--|:--|:--|:--|:--|
+| FTShare REST · `close` | close | 收盘价/最新价 | 元/股 | `verified` |
 | TDX-eltdx(适配层) · `close` | time / open / high / low / close | 时间 / OHLC | — | `unverified` |
 | 东财-datacenter(英文键) · `close` | — | — | — | `unverified` |
 | 东财-热榜(em_hot) · `close` | close / zhangdie | 收盘价 / 涨跌额 | — | `verified` |
 | 新浪(扩展API) · `close` | — | — | — | `unverified` |
-
-### `close_seal_amount` — incomplete
-
-聚合问题：canonical_incomplete；meaning_incomplete；unit_incomplete；聚合状态：`unverified`。
-
-| 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
-|:--|:--|:--|:--|:--|
-| Levistock历史未归属 · `close_seal_amount` | — | — | — | `unverified` |
-| 开盘啦(kpl) · `close_seal_amount` | close_seal_amount | 收盘封单额 | 元 | `unverified` |
 
 ### `code` — ambiguous
 
@@ -789,7 +761,6 @@
 
 | 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
 |:--|:--|:--|:--|:--|
-| Levistock历史未归属 · `content` | — | — | — | `unverified` |
 | 开盘啦(kpl) · `content` | — | — | — | `unverified` |
 | 财联社(cls) · `content` | content | 正文 | — | `verified` |
 
@@ -808,7 +779,6 @@
 
 | 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
 |:--|:--|:--|:--|:--|
-| Levistock历史未归属 · `date` | — | — | — | `unverified` |
 | TDX(双命名源) · `date` | date / category_name | 事件日期 / 类别名称 | — | `unverified` |
 | ZHB-tdxstat · `date` | — | — | — | `unverified` |
 | ZHB-tdxstat2 · `date` | — | — | — | `unverified` |
@@ -2411,15 +2381,6 @@
 | 东财-push2ex · `first_limit_time` | — | — | — | `unverified` |
 | 同花顺-fuyao · `first_limit_time` | first_limit_time | 首次与最后跌停时间，上海时区 `HH:mm`。 | HH:mm | `verified` |
 
-### `first_limit_up_time` — incomplete
-
-聚合问题：canonical_incomplete；meaning_incomplete；source_statuses_differ；聚合状态：`unverified`。
-
-| 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
-|:--|:--|:--|:--|:--|
-| FTShare · `first_limit_up_time` | — | — | — | `unverified` |
-| 东财-热榜(em_hot) · `first_limit_up_time` | first_limit_up_time | Unix 秒时间戳 | — | `verified` |
-
 ### `fund` — incomplete
 
 聚合问题：canonical_incomplete；meaning_incomplete；source_statuses_differ；unit_incomplete；聚合状态：`unverified`。
@@ -2453,12 +2414,13 @@
 |:--|:--|:--|:--|:--|
 | 同花顺-fuyao · `growth.calculate_parent_holder_net_profit_yoy_growth_ratio` | growth.calculate_parent_holder_net_profit_yoy_growth_ratio | — | — | `conflict` |
 
-### `high` — incomplete
+### `high` — ambiguous
 
-聚合问题：canonical_incomplete；meaning_incomplete；聚合状态：`unverified`。
+聚合问题：canonical_differs；canonical_incomplete；meaning_differs；meaning_incomplete；source_statuses_differ；unit_incomplete；聚合状态：`conflict`。
 
 | 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
 |:--|:--|:--|:--|:--|
+| FTShare REST · `high` | high | 最高价 | 元/股 | `verified` |
 | TDX(双命名源) · `high` | — | — | — | `unverified` |
 | TDX-eltdx(适配层) · `high` | time / open / high / low / close | 时间 / OHLC | — | `unverified` |
 | 同花顺-fuyao · `high` | — | — | — | `unverified` |
@@ -2608,15 +2570,6 @@
 | TDX-eltdx(适配层) · `limit_up_count` | limit_up_count | — | — | `unverified` |
 | 开盘啦(kpl) · `limit_up_count` | — | — | — | `unverified` |
 
-### `limit_up_price` — incomplete
-
-聚合问题：canonical_incomplete；meaning_incomplete；聚合状态：`unverified`。
-
-| 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
-|:--|:--|:--|:--|:--|
-| FTShare · `limit_up_price` | — | — | — | `unverified` |
-| TDX-eltdx(适配层) · `limit_up_price` | limit_up_price / limit_down_price | 涨停价 / 跌停价 | — | `unverified` |
-
 ### `list` — incomplete
 
 聚合问题：canonical_incomplete；meaning_incomplete；聚合状态：`unverified`。
@@ -2645,12 +2598,13 @@
 | TDX(双命名源) · `locked_amount` | — | — | — | `unverified` |
 | TDX-eltdx(适配层) · `locked_amount` | vol_rise_speed / locked_amount | 量涨速 / 封单额（=bid1×bid_vol1×100） | — | `unverified` |
 
-### `low` — incomplete
+### `low` — ambiguous
 
-聚合问题：canonical_incomplete；meaning_incomplete；聚合状态：`unverified`。
+聚合问题：canonical_differs；canonical_incomplete；meaning_differs；meaning_incomplete；source_statuses_differ；unit_incomplete；聚合状态：`conflict`。
 
 | 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
 |:--|:--|:--|:--|:--|
+| FTShare REST · `low` | low | 最低价 | 元/股 | `verified` |
 | TDX(双命名源) · `low` | — | — | — | `unverified` |
 | TDX-eltdx(适配层) · `low` | time / open / high / low / close | 时间 / OHLC | — | `unverified` |
 | 同花顺-fuyao · `low` | — | — | — | `unverified` |
@@ -2670,18 +2624,8 @@
 
 | 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
 |:--|:--|:--|:--|:--|
-| Levistock历史未归属 · `main_inflow` | — | — | — | `unverified` |
 | 市场源(market_sources) · `main_inflow` | — | — | — | `unverified` |
 | 开盘啦(kpl_limit_up_detail) · `main_inflow` | main_inflow | 主力净流入；与 KPH net_inflow 两日逐值一致 | 元 | `verified` |
-
-### `main_net` — incomplete
-
-聚合问题：canonical_incomplete；meaning_incomplete；unit_incomplete；聚合状态：`unverified`。
-
-| 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
-|:--|:--|:--|:--|:--|
-| Levistock历史未归属 · `main_net` | — | — | — | `unverified` |
-| 开盘啦(kpl) · `main_net` | main_net | 主力净额(≡主力净买入额) | 元 | `unverified` |
 
 ### `main_sell` — incomplete
 
@@ -2778,6 +2722,15 @@
 | 同花顺-fuyao · `market` | dump/market-dumps/{daily-k,daily-k-10d,adjustment-factors}/download-url | — | — | `unverified` |
 | 市场源(market_sources) · `market` | market | 市场 | — | `verified` |
 
+### `market_cap` — incomplete
+
+聚合问题：canonical_incomplete；meaning_incomplete；source_statuses_differ；unit_incomplete；聚合状态：`unverified`。
+
+| 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
+|:--|:--|:--|:--|:--|
+| FTShare REST · `market_cap` | market_cap | 总市值 | 元 | `verified` |
+| 东财-datacenter(英文键) · `market_cap` | — | — | — | `unverified` |
+
 ### `max_seal` — incomplete
 
 聚合问题：canonical_incomplete；meaning_incomplete；source_statuses_differ；聚合状态：`unverified`。
@@ -2787,13 +2740,13 @@
 | 市场源(market_sources) · `max_seal` | — | — | — | `unverified` |
 | 开盘啦(kpl_limit_up_detail) · `max_seal` | max_seal | 封单量；与 KPH seal_amount 两日逐值一致，计量单位未确认 | — | `verified` |
 
-### `name` — incomplete
+### `name` — ambiguous
 
-聚合问题：canonical_incomplete；meaning_incomplete；source_statuses_differ；unit_incomplete；聚合状态：`unverified`。
+聚合问题：canonical_incomplete；meaning_differs；meaning_incomplete；source_statuses_differ；unit_incomplete；聚合状态：`conflict`。
 
 | 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
 |:--|:--|:--|:--|:--|
-| Levistock历史未归属 · `name` | — | — | — | `unverified` |
+| FTShare REST · `name` | name | 证券名称 | — | `verified` |
 | TDX(双命名源) · `name` | — | — | — | `unverified` |
 | TDX-eltdx(适配层) · `name` | name | — | — | `unverified` |
 | 东财-push2ex · `name` | — | — | — | `unverified` |
@@ -2903,10 +2856,11 @@
 
 ### `open` — ambiguous
 
-聚合问题：canonical_differs；canonical_incomplete；meaning_differs；meaning_incomplete；聚合状态：`conflict`。
+聚合问题：canonical_differs；canonical_incomplete；meaning_differs；meaning_incomplete；source_statuses_differ；unit_incomplete；聚合状态：`conflict`。
 
 | 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
 |:--|:--|:--|:--|:--|
+| FTShare REST · `open` | open | 开盘价 | 元/股 | `verified` |
 | TDX(双命名源) · `open` | — | — | — | `unverified` |
 | TDX-eltdx(适配层) · `open` | time / open / high / low / close | 时间 / OHLC | — | `unverified` |
 | 同花顺-fuyao · `open` | — | — | — | `unverified` |
@@ -2920,15 +2874,6 @@
 |:--|:--|:--|:--|:--|
 | TDX-eltdx(适配层) · `open_price` | open_price | — | — | `unverified` |
 | 同花顺-fuyao · `open_price` | — | — | — | `unverified` |
-
-### `open_times` — incomplete
-
-聚合问题：canonical_incomplete；meaning_incomplete；source_statuses_differ；unit_incomplete；聚合状态：`unverified`。
-
-| 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
-|:--|:--|:--|:--|:--|
-| Levistock历史未归属 · `open_times` | — | — | — | `unverified` |
-| 同花顺-fuyao · `open_times` | open_times | 开板次数。 | 次 | `verified` |
 
 ### `opendate` — consistent
 
@@ -2944,7 +2889,6 @@
 
 | 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
 |:--|:--|:--|:--|:--|
-| Levistock历史未归属 · `pb` | — | — | — | `unverified` |
 | TDX(双命名源) · `pb` | — | — | — | `unverified` |
 | 开盘啦(kpl) · `pb` | pb | 市净率 | 倍 | `unverified` |
 
@@ -2957,13 +2901,12 @@
 | 东财-热榜(em_hot) · `pct` | pct | 涨跌幅 | % | `verified` |
 | 财联社(cls) · `pct` | — | — | — | `unverified` |
 
-### `pe_dynamic` — incomplete
+### `pe_dynamic` — consistent
 
-聚合问题：canonical_incomplete；meaning_incomplete；source_status_conflict；source_statuses_differ；unit_incomplete；聚合状态：`conflict`。
+聚合问题：source_status_conflict；聚合状态：`conflict`。
 
 | 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
 |:--|:--|:--|:--|:--|
-| Levistock历史未归属 · `pe_dynamic` | — | — | — | `unverified` |
 | 开盘啦(kpl) · `pe_dynamic` | pe_dynamic | 动态PE（最新报告期年化） | 倍 | `conflict` |
 
 ### `pe_static` — incomplete
@@ -2972,7 +2915,6 @@
 
 | 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
 |:--|:--|:--|:--|:--|
-| Levistock历史未归属 · `pe_static` | — | — | — | `unverified` |
 | TDX(双命名源) · `pe_static` | — | — | — | `unverified` |
 | 开盘啦(kpl) · `pe_static` | pe_static | 静态PE（上年度年报 LYR） | 倍 | `conflict` |
 
@@ -2982,7 +2924,7 @@
 
 | 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
 |:--|:--|:--|:--|:--|
-| Levistock历史未归属 · `pe_ttm` | — | — | — | `unverified` |
+| FTShare REST · `pe_ttm` | pe_ttm | 滚动市盈率（TTM） | — | `verified` |
 | TDX(双命名源) · `pe_ttm` | — | — | — | `unverified` |
 | TDX-eltdx(适配层) · `pe_ttm` | pe_ttm | — | — | `unverified` |
 | ZHB-tdxstat · `pe_ttm` | pe_ttm | 市盈率（TTM） | 倍 | `verified` |
@@ -3000,11 +2942,10 @@
 
 ### `plate_code` — ambiguous
 
-聚合问题：canonical_differs；canonical_incomplete；meaning_differs；meaning_incomplete；source_statuses_differ；聚合状态：`conflict`。
+聚合问题：canonical_differs；meaning_differs；source_statuses_differ；聚合状态：`conflict`。
 
 | 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
 |:--|:--|:--|:--|:--|
-| Levistock历史未归属 · `plate_code` | — | — | — | `unverified` |
 | 市场源(market_sources) · `plate_code` | plate_code | 板块代码 | — | `verified` |
 | 财联社(cls) · `plate_code` | plate_code / plate_name | 板块代码 / 名称（风口板块） | — | `unverified` |
 
@@ -3032,7 +2973,6 @@
 
 | 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
 |:--|:--|:--|:--|:--|
-| Levistock历史未归属 · `pre_close` | — | — | — | `unverified` |
 | TDX(双命名源) · `pre_close` | — | — | — | `unverified` |
 | TDX-eltdx(适配层) · `pre_close` | pre_close | — | — | `unverified` |
 
@@ -3069,6 +3009,15 @@
 |:--|:--|:--|:--|:--|
 | reports · `predictThisYearPe` | — | — | — | `conflict` |
 
+### `prev_close` — ambiguous
+
+聚合问题：canonical_differs；meaning_differs；source_statuses_differ；unit_incomplete；聚合状态：`conflict`。
+
+| 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
+|:--|:--|:--|:--|:--|
+| FTShare REST · `prev_close` | prev_close | 前收盘价 | 元/股 | `verified` |
+| 新浪(扩展API) · `prev_close` | strike / prev_close / open | 行权价 / 昨收盘 / 开盘 | — | `unverified` |
+
 ### `prev_price` — incomplete
 
 聚合问题：meaning_incomplete；source_status_conflict；聚合状态：`conflict`。
@@ -3083,7 +3032,6 @@
 
 | 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
 |:--|:--|:--|:--|:--|
-| Levistock历史未归属 · `price` | — | — | — | `unverified` |
 | TDX(双命名源) · `price` | — | — | — | `unverified` |
 | TDX-eltdx(适配层) · `price` | price | — | — | `unverified` |
 | 东财-datacenter(英文键) · `price` | — | — | — | `unverified` |
@@ -3231,6 +3179,15 @@
 | 开盘红 · `seal_money` | seal_amount | 封单金额；与 KPL seal_amount 两日逐值一致 | 元 | `verified` |
 | 开盘红(Levistock适配) · `seal_money` | seal_amount / seal_money | 待破解 | — | `unverified` |
 
+### `shares` — incomplete
+
+聚合问题：canonical_incomplete；meaning_incomplete；source_statuses_differ；unit_incomplete；聚合状态：`unverified`。
+
+| 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
+|:--|:--|:--|:--|:--|
+| FTShare REST · `shares` | shares | 总股本 | 股 | `verified` |
+| 东财-datacenter(英文键) · `shares` | — | — | — | `unverified` |
+
 ### `solvency` — incomplete
 
 聚合问题：meaning_incomplete；source_status_conflict；聚合状态：`conflict`。
@@ -3262,7 +3219,6 @@
 
 | 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
 |:--|:--|:--|:--|:--|
-| Levistock历史未归属 · `speed` | — | — | — | `unverified` |
 | 市场源(market_sources) · `speed` | — | — | — | `unverified` |
 | 开盘啦(kpl) · `speed` | speed | 涨速 | — | `unverified` |
 
@@ -3273,6 +3229,16 @@
 | 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
 |:--|:--|:--|:--|:--|
 | ZHB-tdxstat · `stat.unknown_26` | stat.unknown_26 | 年内涨停天数 YearZTDay·L2候选(列[26]已定YearZTDay: ihelp.dat L64官方定义+事件级Δ实证, 待≥90%命中升L1) | - | `conflict` |
+
+### `status` — incomplete
+
+聚合问题：canonical_incomplete；meaning_incomplete；source_statuses_differ；聚合状态：`unverified`。
+
+| 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
+|:--|:--|:--|:--|:--|
+| FTShare REST · `status` | status | 证券状态 | — | `verified` |
+| 市场源(market_sources) · `status` | — | — | — | `unverified` |
+| 开盘啦(kpl) · `status` | — | — | — | `unverified` |
 
 ### `stock_list` — ambiguous
 
@@ -3298,7 +3264,6 @@
 
 | 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
 |:--|:--|:--|:--|:--|
-| Levistock历史未归属 · `time` | — | — | — | `unverified` |
 | TDX-eltdx(适配层) · `time` | time / open / high / low / close | 时间 / OHLC | — | `unverified` |
 | 东财-热榜(em_hot) · `time` | time | 分钟时间点 | — | `verified` |
 | 市场源(market_sources) · `time` | time | 时间 | — | `verified` |
@@ -3311,20 +3276,10 @@
 
 | 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
 |:--|:--|:--|:--|:--|
-| Levistock历史未归属 · `title` | — | — | — | `unverified` |
 | TDX-eltdx(适配层) · `title` | — | — | — | `unverified` |
 | reports · `title` | title | 研报标题 | — | `verified` |
 | 巨潮(cninfo) · `title` | — | — | — | `unverified` |
 | 财联社(cls) · `title` | title / brief | 标题 / 摘要 | — | `verified` |
-
-### `total_mv` — incomplete
-
-聚合问题：canonical_incomplete；meaning_incomplete；unit_incomplete；聚合状态：`unverified`。
-
-| 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
-|:--|:--|:--|:--|:--|
-| Levistock历史未归属 · `total_mv` | — | — | — | `unverified` |
-| 开盘啦(kpl) · `total_mv` | total_mv | 总市值 | 元 | `unverified` |
 
 ### `total_shares` — incomplete
 
@@ -3349,7 +3304,6 @@
 
 | 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
 |:--|:--|:--|:--|:--|
-| FTShare · `trade_date` | — | — | — | `unverified` |
 | TDX-eltdx(适配层) · `trade_date` | — | — | — | `unverified` |
 | 市场源(market_sources) · `trade_date` | — | — | — | `unverified` |
 | 财联社(cls) · `trade_date` | trade_date / plates | 轮动日期 / 当日 top10 板块列表 | — | `unverified` |
@@ -3369,6 +3323,7 @@
 
 | 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
 |:--|:--|:--|:--|:--|
+| FTShare REST · `turnover` | turnover | 成交额 | 元 | `verified` |
 | 同花顺-fuyao · `turnover` | — | — | — | `unverified` |
 | 开盘啦(kpl) · `turnover` | — | — | — | `unverified` |
 | 开盘红 · `turnover` | amount | 成交额；与 KPL amount 两日逐值一致 | 元 | `verified` |
@@ -3381,7 +3336,6 @@
 
 | 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
 |:--|:--|:--|:--|:--|
-| Levistock历史未归属 · `turnover_pct` | — | — | — | `unverified` |
 | TDX(双命名源) · `turnover_pct` | — | — | — | `unverified` |
 | 开盘啦(kpl) · `turnover_pct` | turnover_pct | 换手率% | % | `unverified` |
 
@@ -3391,7 +3345,7 @@
 
 | 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
 |:--|:--|:--|:--|:--|
-| Levistock历史未归属 · `turnover_rate` | — | — | — | `unverified` |
+| FTShare REST · `turnover_rate` | turnover_rate | 换手率 | — | `verified` |
 | 东财-push2ex · `turnover_rate` | — | — | — | `unverified` |
 | 东财-热榜(em_hot) · `turnover_rate` | turnover_rate | 换手率% | — | `verified` |
 | 开盘红 · `turnover_rate` | turnover_real | 实际换手率；与 KPL turnover_real 两日逐值一致 | % | `verified` |
@@ -3462,18 +3416,17 @@
 
 | 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
 |:--|:--|:--|:--|:--|
-| Levistock历史未归属 · `vol_ratio` | — | — | — | `unverified` |
 | TDX(双命名源) · `vol_ratio` | — | — | — | `unverified` |
 | 市场源(market_sources) · `vol_ratio` | — | — | — | `unverified` |
 | 开盘啦(kpl) · `vol_ratio` | vol_ratio | 量比 | — | `unverified` |
 
 ### `volume` — incomplete
 
-聚合问题：canonical_incomplete；meaning_incomplete；聚合状态：`unverified`。
+聚合问题：canonical_incomplete；meaning_incomplete；source_statuses_differ；unit_incomplete；聚合状态：`unverified`。
 
 | 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
 |:--|:--|:--|:--|:--|
-| Levistock历史未归属 · `volume` | — | — | — | `unverified` |
+| FTShare REST · `volume` | volume | 成交量 | 股 | `verified` |
 | TDX(双命名源) · `volume` | — | — | — | `unverified` |
 | TDX-eltdx(适配层) · `volume` | volume | — | — | `unverified` |
 | 同花顺-fuyao · `volume` | — | — | — | `unverified` |
@@ -3511,17 +3464,8 @@
 
 | 来源身份 | 完整 code path | 规范名 | 含义 | 状态 |
 |:--|:--|:--|:--|:--|
-| Levistock历史未归属 | `all` | market_index_em / all | — | `verified` |
-| Levistock历史未归属 | `belong` | sector_stocks_em / belong | — | `verified` |
-| Levistock历史未归属 | `is_trade_day` | is_trade_day / get_trade_days | — | `verified` |
-| Levistock历史未归属 | `limit_up_his_kph` | limit_up_his_kph / wind_vane | — | `verified` |
-| Levistock历史未归属 | `market_index_em` | market_index_em / all | — | `verified` |
-| Levistock历史未归属 | `rotation` | get_sector_heat / rotation | — | `verified` |
-| Levistock历史未归属 | `sector_stocks_em` | sector_stocks_em / belong | — | `verified` |
-| Levistock历史未归属 | `stocks_all_em` | stocks_em / stocks_all_em | — | `verified` |
-| Levistock历史未归属 | `stocks_em` | stocks_em / stocks_all_em | — | `verified` |
-| Levistock历史未归属 | `wind_stocks` | market_wind_cls / wind_stocks | — | `verified` |
-| Levistock历史未归属 | `wind_vane` | limit_up_his_kph / wind_vane | — | `verified` |
+| FTShare REST | `change_rate` | change_rate | 日涨跌幅；0.03 表示 3% | `verified` |
+| FTShare REST | `close` | close | 收盘价/最新价 | `verified` |
 | TDX(双命名源) | `JZC` | JZC | 净资产/股东权益 | `verified` |
 | TDX(双命名源) | `category_name` | date / category_name | 事件日期 / 类别名称 | `unverified` |
 | TDX(双命名源) | `circulating_shares` | circulating_shares / total_shares | 待破解 | `unverified` |

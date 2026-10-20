@@ -1,6 +1,6 @@
 # 对撞四铁律与定案状态机（运行时规则真相源）
 
-> 本文件由 `scripts/collision_rules.py` 自动派生（`python scripts/collision_rules.py --emit`），生成日 2026-10-14。
+> 本文件由 `scripts/collision_rules.py` 自动派生（`python scripts/collision_rules.py --emit`），生成日 2026-10-20。
 
 > 对撞脚本运行时自动 `print_active_rules()` 查询本规则；以代码常量（`collision_rules.py`）为唯一权威，本文档为其人读镜像。
 
@@ -27,7 +27,13 @@
 | L3 | 方向确证·覆盖不完整 | H12 实测方向对、样本不全 |
 | L4 | 候选存疑 | 命中率 8~17，仅候选 |
 
-## 三、不对撞（跳过）规则
+## 三、官方契约语义锚候选 L1-C
+
+- FTShare REST 官方文档定义字段参与日常碰撞；满足 L1/L1-U 数值门槛的关系单列 L1-C
+- L1-C 是契约语义锚候选，不计独立来源覆盖、不混入普通 L1/L1-U，也不自动定案
+- 仅 registry 中 documented_contract_anchor + official_contract 字段可作锚；未文档化观察字段不作锚
+
+## 四、不对撞（跳过）规则
 
 - 已 L1 定案字段：移出 FOCUS，不再主攻；仅进全历史复核的回归保护池
 - 标识符字段（market/code/date/name/tx[1..3]）：排除出数值对撞目标，防 false L1
@@ -41,7 +47,7 @@
 - 行情日按交易所日历与 ZHB 补充日历校验；新闻/公告按记录自然日对齐
 - 采集目录名、来源 as_of_date、记录事件日和实际采集时间分别保留；历史目录不自动改名或删除
 
-## 四、对撞 / 不降解撞的判定边界
+## 五、对撞 / 不降解撞的判定边界
 
 - **主攻对撞（crack）**：仅对 `FOCUS` 内未定案的 residual unknowns 跑；已 **L1** 字段从攻击目标移除。
 - **全历史复核 / 再确认（re-validation）**：全量扫描会顺带扫到已定案字段，结果标注「再确认 / 强化现有结论，未改动语义」，作为回归保护。

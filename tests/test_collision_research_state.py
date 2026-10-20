@@ -73,6 +73,30 @@ def test_exploratory_candidates_persist_and_rerun_is_idempotent():
     assert candidate["latest_evidence"]["method_candidates"][0]["methods"] == ["scale"]
 
 
+def test_per_target_candidate_frontier_is_retained_in_research_history():
+    report = _report("20261011")
+    report["method_candidate_frontier"] = [
+        {
+            "left": "zhb.full.other_amount",
+            "right": "tencent[17]",
+            "sample_count": 42,
+            "sample_dates": ["T:20261007", "T:20261008", "T:20261009"],
+            "evidence_sources": ["tencent", "zhb"],
+            "methods": [{"method": "robust_correlation", "pearson": 0.99}],
+        }
+    ]
+
+    state, _run_id, stats = research.update_state(
+        research.empty_state(), report, "collision_research_20261011/exploratory/report.json"
+    )
+
+    assert stats["current_candidate_pairs"] == 2
+    candidate = next(
+        item for item in state["candidates"].values() if item["left"] == "zhb.full.other_amount"
+    )
+    assert candidate["latest_evidence"]["method_candidate_frontier"][0]["sample_count"] == 42
+
+
 def test_later_report_inherits_prior_pair_history_even_if_orientation_changes():
     first, _run_id, _stats = research.update_state(
         research.empty_state(),

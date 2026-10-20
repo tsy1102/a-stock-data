@@ -51,6 +51,7 @@ def test_repository_evidence_and_dialog_confirmation_are_separate_states():
         "新浪(hq.sinajs)",
         "新浪(扩展API)",
         "AxData",
+        "FTShare",
         "东财-push2_full",
         "财联社(cls)",
         "东财-em_kline_f61",
@@ -73,7 +74,6 @@ def test_repository_evidence_and_dialog_confirmation_are_separate_states():
         "开盘红",
         "沪深交易所",
         "百度(baidu)",
-        "FTShare",
     }
     assert lineage["project_reference"]["url"] == "https://github.com/simonlin1212/a-stock-data"
     assert lineage["sources"]["AxData"]["anchor_eligible"] is False

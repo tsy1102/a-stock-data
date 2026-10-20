@@ -1632,8 +1632,7 @@ async def generate_report_async(
             _rq_up = sum(
                 1
                 for i in range(_rq_comparisons)
-                if _safe_float(margin[i].get("rqye"))
-                > _safe_float(margin[i + 1].get("rqye"))
+                if _safe_float(margin[i].get("rqye")) > _safe_float(margin[i + 1].get("rqye"))
             )
             if _rq_up >= 2:
                 L(
@@ -1896,32 +1895,6 @@ async def generate_report_async(
 
     else:
         L("  近7日暂无触及关键词的重大公告")
-
-    # V17.0.7: FTShare 主线机会(字典 §12.10.10——全新维度, 无替代源)
-    try:
-        from stock_common.sc_ftshare import _ft_call
-
-        _ml = await asyncio.to_thread(_ft_call, 'market_mainline_cls')
-        if _ml and isinstance(_ml, dict):
-            _chances = _ml.get('chances') or []
-            if _chances:
-                L("\n  🧭 市场主线方向(财联社 FTShare):")
-                for ch in _chances[:3]:
-                    _title = ch.get('title', '')
-                    _days = ch.get('continued', 0)
-                    _hot = ch.get('hot', 0)
-                    _desc = str(ch.get('mainLine_desc', ''))[:120]
-                    L(f"    🔥 {_title} (持续{_days}天 | 热度{_hot})")
-                    if _desc:
-                        L(f"      {_desc}")
-                    # 龙头股前三
-                    for pl in (ch.get('plates') or [])[:2]:
-                        for fk_key in ('faucet_1', 'faucet_2', 'faucet_3'):
-                            fk = pl.get(fk_key)
-                            if fk and fk.get('stock_name'):
-                                L(f"      龙头: {fk['stock_name']} ({fk.get('reason','')})")
-    except Exception as _e:
-        _debug_log(f"sht ftshare mainline: {_e}")
 
     # ── 打板分析 ── V16.1: 同步包 to_thread
     L("\n  ➤ 打板与涨停分析:")
@@ -2187,66 +2160,6 @@ async def generate_report_async(
                     L(f"    关键词: {'、'.join(str(k) for k in _a0['keyword_list'][:6])}")
     except Exception as _e:
         _debug_log(f"sht fuyao anomaly: {_e}")
-
-    # V17.0.7: FTShare 昨日涨停池晋级富化(炸板次数分布/今日续封率——字典 §12.20)
-    try:
-        from stock_common import get_ft_limit_up_pool_yesterday
-
-        _ypool = await asyncio.to_thread(get_ft_limit_up_pool_yesterday)
-        if _ypool:
-            _yn = len(_ypool)
-            _cont = sum(1 for r in _ypool if r.get("status") == "limit_up")
-            _brks = [int(r.get("limit_up_break_count") or 0) for r in _ypool]
-            _brk_avg = sum(_brks) / _yn if _yn else 0
-            L(
-                f"    🎯 昨日涨停({_yn}只)今日表现: 续封 {_cont} 只({_cont/_yn*100:.0f}%) | "
-                f"平均炸板 {_brk_avg:.1f} 次 | 断板 {_yn-_cont} 只"
-            )
-    except Exception as _e:
-        _debug_log(f"sht ftshare yesterday pool: {_e}")
-
-    # V17.0.7: FTShare 千股千评(散户情绪面——字典 §12.20 全新维度)
-    try:
-        from stock_common import (
-            get_ft_comment_score_series,
-            get_ft_comment_desire,
-            get_ft_comment_org_participate,
-        )
-
-        _sc_series = await asyncio.to_thread(get_ft_comment_score_series, code)
-        if _sc_series:
-            _scores = [_safe_float(x.get("total_score")) for x in _sc_series]
-            _scores = [x for x in _scores if x is not None]
-            if _scores:
-                _last6 = _scores[-6:]
-                _cur = _last6[-1]
-                _prev = _last6[:-1] or [_cur]
-                _avg_prev = sum(_prev) / len(_prev)
-                _trend = (
-                    "↑ 回升" if _cur > _avg_prev else ("↓ 走弱" if _cur < _avg_prev else "→ 持平")
-                )
-                L(
-                    f"  🧠 千股千评(FTShare): 综合评分 {_cur:.1f} {_trend}"
-                    f"(近{len(_prev)}日均值 {_avg_prev:.1f})"
-                )
-        _des = await asyncio.to_thread(get_ft_comment_desire, code)
-        if isinstance(_des, dict) and _des.get("participation_wish"):
-            _pw = float(_des["participation_wish"])
-            _pwc = float(_des.get("participation_wish_change") or 0)
-            L(
-                f"     参与意愿: {_pw:.1f}%（较上期 {_pwc:+.1f}）"
-                f"{'' if abs(_pwc) < 10 else ' ⚠️ 情绪异动'}"
-            )
-        _org = await asyncio.to_thread(get_ft_comment_org_participate, code)
-        _org_v = None
-        if isinstance(_org, dict):
-            _org_v = _safe_float(_org.get("org_participate"))
-        elif isinstance(_org, list) and _org:
-            _org_v = _safe_float(_org[-1].get("org_participate"))
-        if _org_v:
-            L(f"     机构参与度: {_org_v*100:.1f}%")
-    except Exception as _e:
-        _debug_log(f"sht ftshare comment: {_e}")
 
     L("\n" + "---")
     L("## **十六、综合信号汇总**")

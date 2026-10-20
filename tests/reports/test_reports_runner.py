@@ -23,7 +23,9 @@ from __future__ import annotations
 import argparse
 import asyncio
 import os
+import selectors
 import tempfile
+import time
 import unittest
 from unittest import mock
 
@@ -39,6 +41,43 @@ class _FakeSession:
 
     async def close(self):
         self.closed = True
+
+
+class _OfflineSelectSelector(selectors.SelectSelector):
+    def select(self, timeout=None):
+        if self.get_map():
+            return super().select(timeout)
+        if timeout and timeout > 0:
+            time.sleep(timeout)
+        return []
+
+
+class _OfflineSelectorEventLoop(asyncio.SelectorEventLoop):
+    """Selector loop without a self-pipe for single-threaded, no-I/O unit tests."""
+
+    def __init__(self):
+        super().__init__(_OfflineSelectSelector())
+
+    def _make_self_pipe(self):
+        # Windows' socket.socketpair fallback opens a loopback listener. The
+        # restricted offline test sandbox can block that accept indefinitely.
+        self._ssock = None
+        self._csock = None
+        self._internal_fds = 0
+
+    def _write_to_self(self):
+        # These tests schedule and await work on one thread; no cross-thread
+        # wakeup is required.
+        return None
+
+    def _close_self_pipe(self):
+        self._ssock = None
+        self._csock = None
+
+
+class _OfflineSelectorEventLoopPolicy(asyncio.DefaultEventLoopPolicy):
+    def new_event_loop(self):
+        return _OfflineSelectorEventLoop()
 
 
 def _make_runner(output_dir: str, codes=None):
@@ -109,7 +148,14 @@ class TestExecuteBatchPipeline(unittest.TestCase):
             return s
 
         with mock.patch.object(sc_report_runner, "create_async_session", _fake_create):
-            result = runner.execute_batch_pipeline("tst", generator_fn, **kw)
+            previous_policy = asyncio.get_event_loop_policy()
+            if os.name == "nt":
+                asyncio.set_event_loop_policy(_OfflineSelectorEventLoopPolicy())
+            try:
+                result = runner.execute_batch_pipeline("tst", generator_fn, **kw)
+            finally:
+                if os.name == "nt":
+                    asyncio.set_event_loop_policy(previous_policy)
         return result, sessions
 
     # ── 1. 空代码列表 ─────────────────────────────────────────────

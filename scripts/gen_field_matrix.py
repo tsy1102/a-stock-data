@@ -40,6 +40,7 @@ SOURCE_ORDER = [
     "TDX-0x0010/F10",
     "TDX-eltdx",
     "腾讯",
+    "FTShare REST",
     # V17.0.7 层级定案: 同花顺-fuyao(REST) 升至腾讯之后——官方口径/盘后可查/
     # 独立风控域(4001 退避), 已升为财务 TTM 族主源; thsdk(TCP) 盘后关闸 →
     # 盘中专属特殊层, 排其后、东财前。

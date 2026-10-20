@@ -456,12 +456,13 @@ def apply_adjudications(
     """Validate decisions and return an updated copy without mutating inputs."""
     if decision_document.get("schema_version") != 1:
         raise ValueError("unsupported adjudication schema_version")
-    if report.get("schema_version") != 2:
-        raise ValueError("unsupported collision report schema_version")
+    if report.get("schema_version") != 3:
+        raise ValueError("unsupported collision report schema_version; expected 3")
     if report.get("collision_mode") != "verified_anchor_only":
         raise ValueError("only verified_anchor_only collision reports are accepted")
     if report.get("exploratory_pair_count", 0) != 0:
         raise ValueError("exploratory reports cannot be promoted to registry decisions")
+    _validate_complete_collision_report(report)
 
     reviewer = _non_empty_string(decision_document.get("reviewer"), "reviewer")
     reviewed_on = _validate_iso_date(decision_document.get("reviewed_on"), "reviewed_on")
@@ -758,6 +759,113 @@ def apply_adjudications(
     if affected_codes:
         _refresh_aggregate_projection(updated, affected_codes)
     return updated, stats
+
+
+def _validate_candidate_inventory(report: dict[str, Any], summary: dict[str, Any]) -> int:
+    method_candidate_count = report.get("method_candidate_count")
+    inventory = report.get("method_candidate_inventory")
+    if type(method_candidate_count) is not int or method_candidate_count < 0:
+        raise ValueError("collision report has an invalid method_candidate_count")
+    if not isinstance(inventory, list):
+        raise ValueError("collision report has no complete method_candidate_inventory")
+
+    candidate_pairs: list[tuple[str, str]] = []
+    for row in inventory:
+        if not isinstance(row, dict):
+            raise ValueError("collision report method candidate inventory contains an invalid row")
+        left, right = row.get("left"), row.get("right")
+        if not isinstance(left, str) or not left or not isinstance(right, str) or not right:
+            raise ValueError("collision report method candidate inventory contains an invalid pair")
+        candidate_pairs.append((left, right))
+
+    unique_pair_count = len(set(candidate_pairs))
+    inventory_expectations = {
+        "generated_count": method_candidate_count,
+        "saved_count": len(inventory),
+        "unique_pair_count": unique_pair_count,
+        "missing_detail_count": max(0, method_candidate_count - len(inventory)),
+        "excess_detail_count": max(0, len(inventory) - method_candidate_count),
+        "duplicate_pair_count": len(candidate_pairs) - unique_pair_count,
+        "invalid_pair_identity_count": 0,
+    }
+    for key, expected in inventory_expectations.items():
+        if summary.get(key) != expected:
+            raise ValueError(f"collision report completeness inventory mismatch: {key}")
+    if any(
+        summary.get(key) != 0
+        for key in (
+            "missing_detail_count",
+            "excess_detail_count",
+            "duplicate_pair_count",
+            "invalid_pair_identity_count",
+        )
+    ):
+        raise ValueError(
+            "collision report completeness inventory contains missing or duplicate details"
+        )
+    return method_candidate_count
+
+
+def _validate_candidate_triage(
+    report: dict[str, Any], inventory_summary: dict[str, Any], method_candidate_count: int
+) -> list[dict[str, Any]]:
+    triage = report.get("candidate_triage")
+    triage_summary = triage.get("summary") if isinstance(triage, dict) else None
+    targets = triage.get("targets") if isinstance(triage, dict) else None
+    if not isinstance(triage_summary, dict) or not isinstance(targets, list):
+        raise ValueError("collision report is missing full candidate triage")
+    target_candidate_count = 0
+    for target in targets:
+        count = target.get("candidate_count") if isinstance(target, dict) else None
+        if type(count) is not int or count < 0:
+            raise ValueError(
+                "collision report candidate triage contains an invalid candidate count"
+            )
+        target_candidate_count += count
+    if triage_summary.get("target_count") != len(targets):
+        raise ValueError("collision report candidate triage target count mismatch")
+    if target_candidate_count != method_candidate_count:
+        raise ValueError("collision report candidate triage does not cover all method candidates")
+    if inventory_summary.get("target_candidate_count_sum") != target_candidate_count:
+        raise ValueError("collision report completeness candidate count sum mismatch")
+    if inventory_summary.get("invalid_target_candidate_count_rows") != 0:
+        raise ValueError("collision report completeness has invalid target candidate counts")
+    return targets
+
+
+def _validate_collision_report_sections(
+    report: dict[str, Any], completeness: dict[str, Any], targets: list[dict[str, Any]]
+) -> None:
+    sections = completeness.get("sections")
+    if not isinstance(sections, dict):
+        raise ValueError("collision report completeness has no section inventory")
+    section_records = {
+        "L1": report.get("L1"),
+        "actionable_L1": report.get("actionable_L1"),
+        "mapped_pair_revalidations": report.get("mapped_pair_revalidations"),
+        "candidate_triage.targets": targets,
+    }
+    for name, rows in section_records.items():
+        section = sections.get(name)
+        if not isinstance(rows, list) or not isinstance(section, dict):
+            raise ValueError(f"collision report completeness is missing section {name}")
+        if section.get("json_record_count") != len(rows):
+            raise ValueError(f"collision report completeness section count mismatch: {name}")
+
+
+def _validate_complete_collision_report(report: dict[str, Any]) -> None:
+    """Require the current report schema and a self-consistent full-evidence inventory."""
+    completeness = report.get("report_completeness")
+    if not isinstance(completeness, dict) or completeness.get("schema_version") != 1:
+        raise ValueError("collision report is missing supported report_completeness metadata")
+    if completeness.get("status") != "complete" or completeness.get("issues") != []:
+        raise ValueError("collision report report_completeness is not complete")
+    inventory_summary = completeness.get("method_candidate_inventory")
+    if not isinstance(inventory_summary, dict):
+        raise ValueError("collision report completeness has no method inventory summary")
+    method_candidate_count = _validate_candidate_inventory(report, inventory_summary)
+    targets = _validate_candidate_triage(report, inventory_summary, method_candidate_count)
+    _validate_collision_report_sections(report, completeness, targets)
 
 
 def apply_source_contract_adjudications(

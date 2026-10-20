@@ -312,22 +312,6 @@ __all__ = [
     "get_fuyao_seal_map",
     "get_fuyao_seal_info",
     "fuyao_to_thscode",
-    # V17.0.7: FTShare MCP(字典 §12.20——千股千评/打板池/董监高/商誉质押解禁)
-    "is_ftshare_enabled",
-    "get_ft_comment_score_series",
-    "get_ft_comment_desire",
-    "get_ft_comment_focus",
-    "get_ft_comment_org_participate",
-    "get_ft_comment_all",
-    "get_ft_limit_up_pool_yesterday",
-    "get_ft_limit_event_timeline",
-    "get_ft_ggmx_changes",
-    "get_ft_goodwill_stock_detail",
-    "get_ft_pledge_summary",
-    "get_ft_unlock_by_date",
-    "get_ft_dapan_flow",
-    "get_ft_market_snapshot",
-    "get_ft_suspension_list",
     # V17.0.7: KPL 无 Token API(字典 §12.21.5——市场情绪/涨跌分析/板块排行/个股详情)
     "kpl_get_market_emotion",
     "kpl_get_rise_fall_analysis",
@@ -681,25 +665,6 @@ from stock_common.sc_fuyao import (
     get_fuyao_seal_map,
     get_fuyao_seal_info,
     fuyao_to_thscode,
-)
-
-# --- FTShare MCP（V17.0.7 新源——字典 §12.20） ---
-from stock_common.sc_ftshare import (
-    is_ftshare_enabled,
-    get_ft_comment_score_series,
-    get_ft_comment_desire,
-    get_ft_comment_focus,
-    get_ft_comment_org_participate,
-    get_ft_comment_all,
-    get_ft_limit_up_pool_yesterday,
-    get_ft_limit_event_timeline,
-    get_ft_ggmx_changes,
-    get_ft_goodwill_stock_detail,
-    get_ft_pledge_summary,
-    get_ft_unlock_by_date,
-    get_ft_dapan_flow,
-    get_ft_market_snapshot,
-    get_ft_suspension_list,
 )
 
 # ═══════════════════════════════════════════════════════════════

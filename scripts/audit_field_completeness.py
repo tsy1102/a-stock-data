@@ -405,8 +405,8 @@ def raw_field_sets():
     d = loadjson("raw_ftshare.json")
     # Phase 3 (2026-09-12): 改用叶键命名空间(与 reg_tokens_for_section 新逻辑对齐),
     # 旧版 set(_leaves(...)) 产出的 dotted 路径(stocks.600xxx.high) 与 registry 命名空间错位,
-    # 会令 gap 审计产生假缺口。除个股字段外，FTShare 的 market.* 也是采集器真实保留的
-    # 接口响应；将其纳入同一来源集合，防止市场级字段被完整性审计静默漏掉。采集器自加的
+    # 会令 gap 审计产生假缺口。除个股字段外，历史 FTShare raw 的 market.* 也是真实保存的
+    # 服务响应；将其纳入历史完整性审计，防止市场级字段在归档核对中遗漏。采集器自加的
     # probe_trading_day 仅是日期元数据，不作为上游字段。
     ftshare_fields = all_stock_leaves(d)
     if isinstance(d.get("stocks"), dict):
@@ -416,6 +416,9 @@ def raw_field_sets():
     if isinstance(market_payload, dict):
         ftshare_fields |= _leaf_keys(market_payload) - {"probe_trading_day"}
     raw["FTShare"] = ftshare_fields
+    # The public REST gateway is a separate runtime identity from the retired
+    # private MCP captures above. Its stock-record keys are contract fields.
+    raw["FTShare REST"] = all_stock_leaves(loadjson("raw_ftshare_rest.json"))
 
     # Levistock candidate probes are stored separately from source captures. Keep
     # observed candidate payload fields visible without assigning them to the
@@ -560,6 +563,31 @@ def _leaf_keys(o):
     return out
 
 
+def _registry_capture_leaf_keys(document):
+    """Return capture fields intended for registry extraction.
+
+    Most legacy captures have no registration declaration, so retain their full
+    leaf-key behavior. When a capture declares ``captured_registry_codes``, that
+    list is the explicit allowlist for registry completeness; other raw leaves
+    remain visible to ``raw_field_sets`` without being promoted into the master
+    dictionary baseline.
+    """
+    source_meta = document.get("__source_meta__") if isinstance(document, dict) else None
+    if not isinstance(source_meta, dict) or "captured_registry_codes" not in source_meta:
+        return _leaf_keys(document)
+
+    declared_codes = source_meta["captured_registry_codes"]
+    if not isinstance(declared_codes, list) or any(
+        not isinstance(code, str) or not code.strip() for code in declared_codes
+    ):
+        raise ValueError(
+            "__source_meta__.captured_registry_codes must be a list of non-empty strings"
+        )
+    if len(declared_codes) != len(set(declared_codes)):
+        raise ValueError("__source_meta__.captured_registry_codes must not contain duplicates")
+    return set(declared_codes)
+
+
 # ---------------------------------------------------------------------------
 # Phase 3 (2026-09-12): 根治 snake_case 源的「散文过度抽取」污染。
 #
@@ -580,6 +608,7 @@ _RAW_FILE_FOR_SRC = {
     "东财-热榜(em_hot)": ["raw_em_hot.json"],
     "市场源(market_sources)": ["raw_market_sources.json"],
     "levistock(ftshare)": ["raw_ftshare.json"],
+    "FTShare REST": ["raw_ftshare_rest.json"],
     "财联社(cls)": ["raw_cls.json"],
     "巨潮(cninfo)": ["raw_cninfo.json"],
     "TDX(双命名源)": ["raw_tdx.json", "raw_tdxquant.json"],
@@ -607,6 +636,7 @@ _CANON_PREFIX_FOR_SRC = {
     "东财-push2ex": ["push2ex"],
     "东财-热榜(em_hot)": [],
     "市场源(market_sources)": [],
+    "FTShare REST": [],
     "levistock(ftshare)": ["开盘啦", "开盘红", "KPL", "levistock", "ftshare"],
     "财联社(cls)": [],
     "巨潮(cninfo)": [],
@@ -656,9 +686,11 @@ _CAPTURE_CONTAINER_TOKENS = {
 
 
 def _agg_raw_leaf_keys(filenames):
-    """聚合 docs/field_verification/2026* 下所有 dated 目录的 raw 叶键(真实返回字段)。
+    """聚合 dated raw 文件中声明可登记的叶键；无声明时沿用历史全叶键规则。
 
-    剔除 _RAW_DENY(采集元数据键如 scheme, 非市场字段)后返回。
+    ``raw_field_sets`` 仍扫描完整原始响应。此处仅构造登记基线，故遵循捕获文件
+    的 ``__source_meta__.captured_registry_codes`` 显式白名单，避免把归档路径或
+    采集上下文自动提升为主字典字段。剔除 _RAW_DENY 后返回。
     """
     ks = set()
     for fn in filenames:
@@ -667,7 +699,7 @@ def _agg_raw_leaf_keys(filenames):
                 d = json.load(io.open(f, encoding="utf-8"))
             except Exception:
                 continue
-            ks |= _leaf_keys(d)
+            ks |= _registry_capture_leaf_keys(d)
     return {k for k in ks if re.fullmatch(r"[A-Za-z][A-Za-z0-9_]{1,}", k) and k not in _RAW_DENY}
 
 
@@ -773,7 +805,7 @@ def _is_denied(tok):
             return True
     # Python 代码标识符(函数/类/模块名), 非字段:
     #   *_cls        —— 类(如 market_wind_cls / stock_zt_pool_cls)
-    #   ft_*         —— ftshare 模块函数(如 ft_get_eastmoney_dapan_flow)
+    #   ft_*         —— 历史 FTShare 工具标识(如 ft_get_eastmoney_dapan_flow)
     #   *_ths        —— 同花顺代码标识符(如 stock_hot_rank_ths)
     #   tdx\w+       —— tdx 模块变体(tdxstat/tdxchain...)
     #   内部驼峰 aB   —— 表格里的 GetStockList/HomeDingPan/ZhiShuL2Data 等实现符号

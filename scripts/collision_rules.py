@@ -51,6 +51,13 @@ MULTI_DAY_MIN = 3  # 至少 3 个独立采集日重复方可定案
 # 5. 相关性仅生成候选
 CORR_SPEARMAN_MIN = 0.6  # |Spearman| 阈值；且需 Pearson+Spearman 同号 + 留一法不翻号
 
+# FTShare REST 的公开字段契约语义锚：参与碰撞，但不冒充独立来源。
+CONTRACT_ANCHOR_RULES = [
+    "FTShare REST 官方文档定义字段参与日常碰撞；满足 L1/L1-U 数值门槛的关系单列 L1-C",
+    "L1-C 是契约语义锚候选，不计独立来源覆盖、不混入普通 L1/L1-U，也不自动定案",
+    "仅 registry 中 documented_contract_anchor + official_contract 字段可作锚；未文档化观察字段不作锚",
+]
+
 # ───────────────────────────────────────────────────────────────────────
 # 定案状态机 L1~L4（升格路径与含义）
 # ───────────────────────────────────────────────────────────────────────
@@ -242,6 +249,10 @@ def print_active_rules(stream: TextIO | None = None) -> TextIO:
     for code, name, desc in LEVELS:
         print(f"  {code} {name}: {desc}", file=out)
     print("-" * 66, file=out)
+    print("官方契约语义锚分支（参与碰撞，不代表来源独立）:", file=out)
+    for rule in CONTRACT_ANCHOR_RULES:
+        print(f"  • {rule}", file=out)
+    print("-" * 66, file=out)
     print("不对撞（跳过）规则:", file=out)
     for r in SKIP_RULES:
         print(f"  ✗ {r}", file=out)
@@ -295,11 +306,15 @@ def emit_markdown(path: str | None = None) -> str:
     for code, name, desc in LEVELS:
         L.append(f"| {code} | {name} | {desc} |")
     L.append("")
-    L.append("## 三、不对撞（跳过）规则\n")
+    L.append("## 三、官方契约语义锚候选 L1-C\n")
+    for rule in CONTRACT_ANCHOR_RULES:
+        L.append(f"- {rule}")
+    L.append("")
+    L.append("## 四、不对撞（跳过）规则\n")
     for r in SKIP_RULES:
         L.append(f"- {r}")
     L.append("")
-    L.append("## 四、对撞 / 不降解撞的判定边界\n")
+    L.append("## 五、对撞 / 不降解撞的判定边界\n")
     L.append(
         "- **主攻对撞（crack）**：仅对 `FOCUS` 内未定案的 residual unknowns 跑；"
         "已 **L1** 字段从攻击目标移除。"

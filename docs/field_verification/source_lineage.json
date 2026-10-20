@@ -800,7 +800,7 @@
       "independence_family": null,
       "independence_status": "unconfirmed",
       "anchor_eligible": false,
-      "anchor_note": "仅保留无法逐字段归属的历史证据；不是运行源，不映射到 FTShare，也不参与碰撞锚点。",
+      "anchor_note": "仅保留无法逐字段归属的历史证据；不是运行源，不映射到 FTShare，也不参与碰撞锚点",
       "repository_mapping_status": "confirmed",
       "repositories": [
         {
@@ -811,7 +811,7 @@
             "docs/verify/levistock_field_verify.md",
             "docs/levistock_source_reconciliation_20261010.md"
           ],
-          "note": "Levistock 是多源客户端包装库。项目当前使用的 CLS 与 KPH 方法分别归入财联社、开盘红；FTShare 由项目自己的 MCP 客户端采集，不映射到 Levistock。"
+          "note": "Levistock 是多源客户端包装库。项目当前使用的 CLS 与 KPH 方法分别归入财联社、开盘红；历史 FTShare 服务字段不属于 Levistock，其私有 MCP 集成已退役，相关字段仅作历史归档"
         }
       ],
       "dialog_confirmation": {
@@ -854,11 +854,11 @@
       "runtime_aliases": [
         "ftshare"
       ],
-      "provider": "FTShare hosted MCP service at market.ft.tech",
+      "provider": "Retired FTShare hosted private MCP service at market.ft.tech; underlying sources unverified",
       "independence_family": null,
       "independence_status": "unconfirmed",
       "anchor_eligible": false,
-      "anchor_note": "服务接口来源身份；底层提供方族未逐工具确认，不能作为独立来源锚。",
+      "anchor_note": "私有托管 MCP 服务已退役；底层提供方未公开核实，字段仅保留历史证据，不作来源锚",
       "repository_mapping_status": "confirmed",
       "repositories": [
         {
@@ -866,15 +866,34 @@
           "relation": "hosted_service_documentation",
           "status": "confirmed",
           "evidence_files": [
-            "stock_common/sc_ftshare.py",
             "docs/verify/ftshare_fields_mirror.md"
           ],
-          "note": "仓库提供 FTShare MCP 的文档/集成说明；服务由 market.ft.tech 托管，仓库不包含 MCP 服务端实现，也不证明每个工具底层数据源的独立性。"
+          "note": "仓库仅提供 MCP 文档/集成说明，不含服务端实现；项目旧版通过自编客户端连接托管服务，无法从公开材料核实其底层来源或官方性。该集成现已退役。"
         }
       ],
       "dialog_confirmation": {
-        "status": "pending",
-        "note": "已确认仓库是 FTShare MCP 文档/集成参考；用户尚未确认将其映射为底层独立数据提供方。"
+        "status": "confirmed",
+        "confirmed_on": "2026-10-20",
+        "basis": "用户明确要求项目采用可核验的公开官方接口，并指出 FTShare 的 MCP 是私有托管服务。",
+        "note": "确认退役项目内 FTShare MCP 集成；未确认其底层提供方身份，历史字段和采集证据仍保留。"
+      }
+    },
+    "FTShare REST": {
+      "runtime_aliases": [
+        "ftshare_rest"
+      ],
+      "provider": "FTShare public REST Gateway; the underlying data provider is unconfirmed",
+      "independence_family": null,
+      "independence_status": "unconfirmed",
+      "anchor_eligible": false,
+      "semantic_anchor_basis": "official_contract",
+      "anchor_note": "官方接口字段契约支持语义锚；底层数据提供方及跨来源独立性未确认，碰撞强候选标 L1-C",
+      "repository_mapping_status": "unconfirmed",
+      "repositories": [],
+      "contract": {
+        "contract_id": "a_share_realtime_quote",
+        "documentation_url": "https://market.ft.tech/gateway/doc/p/mdsj0xyo",
+        "evidence_file": "docs/verify/ftshare_rest_contract.md"
       }
     }
   },
@@ -923,7 +942,8 @@
     "财联社": "cls",
     "财联社(cls)": "cls",
     "Levistock历史未归属": null,
-    "开盘红(Levistock适配)": "kph"
+    "开盘红(Levistock适配)": "kph",
+    "FTShare REST": "ftshare_rest"
   },
   "runtime_sources": {
     "axdata": {
@@ -994,7 +1014,7 @@
     "ftshare": {
       "independence_family": null,
       "independence_status": "unconfirmed",
-      "note": "项目自有 stock_common.sc_ftshare MCP 适配器连接 market.ft.tech；它不通过 Levistock，底层服务独立性仍未确认。"
+      "note": "FTShare 托管 MCP 集成已退役；保留的 ftshare 命名空间只供读取历史采集数据，底层来源及官方性未确认"
     },
     "fuyao": {
       "independence_family": "tonghuashun",
@@ -1110,6 +1130,11 @@
       "independence_family": "tdx",
       "independence_status": "confirmed",
       "note": "本地缓存的 Tongdaxin 数据"
+    },
+    "ftshare_rest": {
+      "independence_family": null,
+      "independence_status": "unconfirmed",
+      "note": "公开 FTShare REST 接口身份与字段契约明确；底层数据来源未确认。契约字段的语义锚资格单独由 registry 证据控制。"
     }
   },
   "project_reference": {

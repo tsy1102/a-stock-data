@@ -16,11 +16,18 @@ import os
 import sys
 import unittest
 from contextlib import ExitStack, contextmanager
+from datetime import datetime
 from unittest import mock
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 import core.data_provider as dp
+
+
+class _FixedDateTime(datetime):
+    @classmethod
+    def now(cls, tz=None):
+        return cls(2026, 10, 19, 12, 0, tzinfo=tz)
 
 
 @contextmanager
@@ -203,7 +210,8 @@ class TestCanonicalDataAPI(unittest.TestCase):
             with patch("stock_common.get_zhb_single_stock_data", return_value={"price": 100.0}):
                 with patch("stock_common.sc_datasource.get_zhb_data_date", return_value="20261019"):
                     with patch("stock_common.sc_datasource.zhb_field_safe", return_value=True):
-                        self._assert_circuit_breaker_falls_back_to_zhb(patch)
+                        with patch.object(dp, "datetime", _FixedDateTime):
+                            self._assert_circuit_breaker_falls_back_to_zhb(patch)
 
     def _assert_circuit_breaker_falls_back_to_zhb(self, patch):
         with patch("stock_common.sc_fuyao.is_fuyao_enabled", return_value=False):

@@ -104,7 +104,7 @@ def test_extracted_registry_source_metadata_is_unique(monkeypatch):
     assert "levistock(ftshare)" not in source_names
     metadata = {source["name"]: source for source in registry["sources"]}
     assert metadata["AxData"]["source_role"] == "framework_reference"
-    assert metadata["FTShare"]["source_role"] == "service_endpoint"
+    assert metadata["FTShare"]["source_role"] == "retired_service_endpoint"
     assert metadata["Levistock历史未归属"]["source_role"] == "historical_unattributed"
     assert metadata["开盘红(Levistock适配)"]["source_role"] == "provider_component"
     source_counts = {}

@@ -20,6 +20,7 @@ import json
 import os
 import sys
 import argparse
+from typing import Any
 
 for _s in (sys.stdout, sys.stderr):
     if _s is not None and hasattr(_s, "reconfigure"):
@@ -77,9 +78,19 @@ def main(argv=None):
     if not source_records:
         print("parity[native]: FAIL — registry 缺少 source_fields")
         return 1
-    addenda_pairs, matrix_addenda, addenda_problems = _validated_addenda(
+    e3_pairs, e3_matrix, e3_problems = _validated_addenda(reg, source_records, base_pairs)
+    contract_pairs, contract_matrix, contract_problems = _validated_contract_addenda(
         reg, source_records, base_pairs
     )
+    observation_pairs, observation_matrix, observation_problems = _validated_observation_addenda(
+        reg, source_records, base_pairs
+    )
+    addenda_pairs = e3_pairs | contract_pairs | observation_pairs
+    matrix_addenda = {key: set(value) for key, value in e3_matrix.items()}
+    for additional_matrix in (contract_matrix, observation_matrix):
+        for key, value in additional_matrix.items():
+            matrix_addenda.setdefault(key, set()).update(value)
+    addenda_problems = e3_problems + contract_problems + observation_problems
     actual_pairs = {(record["source"], record["code"]) for record in source_records}
     scope_entries, scope_problems = _load_scope_manifest(args.scope_manifest)
     if scope_entries is None:
@@ -97,9 +108,7 @@ def main(argv=None):
             f"范围清单排除项已登记在 registry 中: {sorted(registered_scope_pairs)[:10]}"
         )
     if addenda_scope_pairs:
-        scope_problems.append(
-            f"范围清单排除项与 source_field_addenda 重叠: {sorted(addenda_scope_pairs)[:10]}"
-        )
+        scope_problems.append(f"范围清单排除项与字段补录重叠: {sorted(addenda_scope_pairs)[:10]}")
     expected_pairs = (base_pairs - scope_pairs) | addenda_pairs
     accepted_missing_pairs = None
     debt_problems = []
@@ -127,7 +136,7 @@ def main(argv=None):
     if reg_multi != expected_multi:
         problems.append(f"多源数 {reg_multi} != parity 预期 {expected_multi}")
 
-    expected_label = "baseline-scope-adjusted+E3-addenda"
+    expected_label = "baseline-scope-adjusted+E3+official-contract+observation-addenda"
     if accepted_missing_pairs is not None:
         expected_label += "-accepted-debt-adjusted"
     print(
@@ -442,6 +451,187 @@ def _validated_addenda(
             problems.append(f"{source}::{code} 缺少 matrix_field")
         elif not isinstance(matrix_source, str) or not matrix_source:
             problems.append(f"{source}::{code} 缺少 matrix_source")
+        else:
+            matrix_addenda.setdefault(matrix_field, set()).add(matrix_source)
+    return declared, matrix_addenda, problems
+
+
+def _validated_contract_addenda(
+    reg: dict, source_records: list[dict], base_pairs: set[tuple[str, str]]
+) -> tuple[set, dict, list]:
+    """Validate fields whose meanings come from an explicit public API contract."""
+    declarations = reg.get("source_contract_addenda", [])
+    if not isinstance(declarations, list):
+        return set(), {}, ["source_contract_addenda 必须是数组"]
+    source_configs = {
+        item.get("name"): item
+        for item in reg.get("sources", [])
+        if isinstance(item, dict) and isinstance(item.get("name"), str)
+    }
+    rows = {(row["source"], row["code"]): row for row in source_records}
+    declared: set[tuple[str, str]] = set()
+    matrix_addenda: dict[str, set[str]] = {}
+    problems: list[str] = []
+    catalog_path = os.path.join(REPO_ROOT, "docs", "ftshare_contract_catalog.json")
+    try:
+        with io.open(catalog_path, encoding="utf-8") as handle:
+            catalog = json.load(handle)
+    except (OSError, ValueError, TypeError) as exc:
+        return set(), {}, [f"FTShare 官方契约目录无法读取: {exc}"]
+    contracts = catalog.get("verified_contracts", {})
+    if not isinstance(contracts, dict):
+        return set(), {}, ["FTShare 官方契约目录缺少 verified_contracts 对象"]
+
+    for item in declarations:
+        if not isinstance(item, dict):
+            problems.append("source_contract_addenda 包含非对象记录")
+            continue
+        source, code, contract_id = item.get("source"), item.get("code"), item.get("contract_id")
+        if not all(isinstance(value, str) and value for value in (source, code, contract_id)):
+            problems.append("source_contract_addenda 需要非空 source/code/contract_id")
+            continue
+        pair = (source, code)
+        source_config = source_configs.get(source, {})
+        contract = contracts.get(contract_id)
+        if pair in base_pairs:
+            problems.append(f"source_contract_addenda 不能重复声明历史基线字段: {source}::{code}")
+            continue
+        if pair in declared or pair not in rows or source not in source_configs:
+            problems.append(
+                f"source_contract_addenda 身份重复或 registry 无对应源字段: {source}::{code}"
+            )
+            continue
+        declared.add(pair)
+        if source_config.get("source_role") != "documented_contract_anchor":
+            problems.append(f"{source}::{code} 来源未声明 documented_contract_anchor")
+        if not isinstance(contract, dict):
+            problems.append(f"{source}::{code} 引用未知契约: {contract_id}")
+            continue
+        if item.get("evidence_level") != "official_contract":
+            problems.append(f"{source}::{code} 证据等级必须是 official_contract")
+        field_names = {
+            field.get("name")
+            for field in contract.get("returned_fields", [])
+            if isinstance(field, dict)
+        }
+        if code not in field_names:
+            problems.append(f"{source}::{code} 不在 {contract_id} 官方返回字段表中")
+        evidence_file = item.get("evidence_file")
+        if (
+            not isinstance(evidence_file, str)
+            or not evidence_file
+            or not _repo_file_exists(evidence_file)
+        ):
+            problems.append(f"{source}::{code} 官方契约证据文件不存在或位于仓库外: {evidence_file}")
+        else:
+            evidence_path = os.path.join(REPO_ROOT, evidence_file.replace("/", os.sep))
+            with io.open(evidence_path, encoding="utf-8") as handle:
+                evidence_text = handle.read()
+            doc_url = contract.get("documentation_url")
+            if not isinstance(doc_url, str) or doc_url not in evidence_text:
+                problems.append(f"{source}::{code} 证据文件未链接对应的官方接口文档")
+            if f"`{code}`" not in evidence_text:
+                problems.append(f"{source}::{code} 证据文件未列出字段代码")
+        row = rows[pair]
+        raw_evidence = row.get("evidence")
+        evidence: dict[str, Any] = raw_evidence if isinstance(raw_evidence, dict) else {}
+        for key in ("canonical", "meaning", "unit"):
+            if row.get(key, "") != item.get(key, ""):
+                problems.append(f"{source}::{code} 契约补录的 {key} 与 source_fields 不一致")
+        if row.get("status") != "verified":
+            problems.append(f"{source}::{code} 官方契约字段必须为 verified")
+        if (
+            evidence.get("basis") != "official_contract"
+            or evidence.get("contract_id") != contract_id
+            or evidence.get("evidence_file") != evidence_file
+        ):
+            problems.append(f"{source}::{code} source_fields 缺少匹配的官方契约证据")
+        matrix_field, matrix_source = item.get("matrix_field"), item.get("matrix_source")
+        if not isinstance(matrix_field, str) or not matrix_field:
+            problems.append(f"{source}::{code} 缺少 matrix_field")
+        elif not isinstance(matrix_source, str) or not matrix_source:
+            problems.append(f"{source}::{code} 缺少 matrix_source")
+        elif matrix_source != source:
+            problems.append(f"{source}::{code} matrix_source 必须等于源身份 {source}")
+        else:
+            matrix_addenda.setdefault(matrix_field, set()).add(matrix_source)
+
+    for source, config in source_configs.items():
+        if config.get("source_role") != "documented_contract_anchor":
+            continue
+        for row in source_records:
+            if row.get("source") == source and row.get("status") == "verified":
+                pair = (source, row.get("code"))
+                if pair not in declared:
+                    problems.append(f"{source}::{row.get('code')} 缺少官方契约补录")
+    return declared, matrix_addenda, problems
+
+
+def _validated_observation_addenda(
+    reg: dict, source_records: list[dict], base_pairs: set[tuple[str, str]]
+) -> tuple[set, dict, list]:
+    """Track captured fields that are observed but not defined by a public contract."""
+    declarations = reg.get("source_observation_addenda", [])
+    if not isinstance(declarations, list):
+        return set(), {}, ["source_observation_addenda 必须是数组"]
+    rows = {(row["source"], row["code"]): row for row in source_records}
+    source_names = {item.get("name") for item in reg.get("sources", []) if isinstance(item, dict)}
+    declared: set[tuple[str, str]] = set()
+    matrix_addenda: dict[str, set[str]] = {}
+    problems: list[str] = []
+    catalog_path = os.path.join(REPO_ROOT, "docs", "ftshare_contract_catalog.json")
+    try:
+        with io.open(catalog_path, encoding="utf-8") as handle:
+            catalog = json.load(handle)
+        contract = catalog["verified_contracts"]["a_share_realtime_quote"]
+        observed_schema = contract["observed_response_schema"]
+        observed_names = set(observed_schema["field_names"])
+        documented_names = {item["name"] for item in contract["returned_fields"]}
+        undocumented = observed_names - documented_names
+    except (OSError, ValueError, TypeError, KeyError) as exc:
+        return set(), {}, [f"FTShare 单次观测目录无法读取: {exc}"]
+
+    for item in declarations:
+        if not isinstance(item, dict):
+            problems.append("source_observation_addenda 包含非对象记录")
+            continue
+        source, code = item.get("source"), item.get("code")
+        if not isinstance(source, str) or not source or not isinstance(code, str) or not code:
+            problems.append("source_observation_addenda 需要非空 source/code")
+            continue
+        pair = (source, code)
+        if pair in base_pairs or pair in declared or pair not in rows or source not in source_names:
+            problems.append(
+                f"source_observation_addenda 身份重复或 registry 无对应源字段: {source}::{code}"
+            )
+            continue
+        declared.add(pair)
+        row = rows[pair]
+        if item.get("evidence_level") != "single_live_response_observation":
+            problems.append(f"{source}::{code} 观测证据等级必须为 single_live_response_observation")
+        if code not in undocumented:
+            problems.append(f"{source}::{code} 不是文档之外的单次观测字段")
+        if code not in observed_names:
+            problems.append(f"{source}::{code} 不在目录记录的观测响应结构中")
+        if row.get("status") not in {"unverified", "candidate"}:
+            problems.append(f"{source}::{code} 单次观测字段不能标记为已验证")
+        evidence_file = item.get("evidence_file")
+        if (
+            not isinstance(evidence_file, str)
+            or not evidence_file
+            or not _repo_file_exists(evidence_file)
+        ):
+            problems.append(f"{source}::{code} 观测证据文件不存在或位于仓库外: {evidence_file}")
+        else:
+            evidence_path = os.path.join(REPO_ROOT, evidence_file.replace("/", os.sep))
+            with io.open(evidence_path, encoding="utf-8") as handle:
+                if f"`{code}`" not in handle.read():
+                    problems.append(f"{source}::{code} 证据文件未列出观测字段")
+        matrix_field, matrix_source = item.get("matrix_field"), item.get("matrix_source")
+        if not isinstance(matrix_field, str) or not matrix_field:
+            problems.append(f"{source}::{code} 缺少 matrix_field")
+        elif matrix_source != source:
+            problems.append(f"{source}::{code} matrix_source 必须等于来源身份 {source}")
         else:
             matrix_addenda.setdefault(matrix_field, set()).add(matrix_source)
     return declared, matrix_addenda, problems

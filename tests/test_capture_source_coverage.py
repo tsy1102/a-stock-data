@@ -93,6 +93,7 @@ def test_baidu_pending_status_is_reproduced_by_registry_generator():
 
 def test_ftshare_limit_up_fields_have_explicit_raw_paths_and_remain_unverified():
     rows = [row for row in _registry()["source_fields"] if row["source"] == "FTShare"]
+    source = next(item for item in _registry()["sources"] if item["name"] == "FTShare")
     by_code = {row["code"]: row for row in rows}
     expected_paths = {
         code: f"market.limit_up_pool_yesterday[].{code}"
@@ -118,6 +119,8 @@ def test_ftshare_limit_up_fields_have_explicit_raw_paths_and_remain_unverified()
         assert not row["meaning"]
         assert row["identity_evidence"]["raw_capture"].endswith("raw_ftshare.json")
     assert sum(row["source"] == "FTShare" for row in _registry()["source_fields"]) == 15
+    assert source["status"] == "historical"
+    assert source["source_role"] == "retired_service_endpoint"
 
 
 def test_default_baidu_lifecycle_is_pending_and_makes_no_network_request(monkeypatch):

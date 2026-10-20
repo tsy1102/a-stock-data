@@ -1,4 +1,4 @@
-from datetime import date, datetime
+from datetime import date, datetime, timezone
 from importlib.util import module_from_spec, spec_from_file_location
 import json
 from pathlib import Path
@@ -553,6 +553,27 @@ def test_fuyao_auction_timestamp_is_not_treated_as_source_data_date():
     )
 
     assert meta["response_timestamp"] == "2026-09-29T09:25:00"
+    assert meta["response_timestamp_date"] == "2026-09-29"
+    assert meta["response_timestamp_semantics"] == "response_assembly_time_only"
+    assert meta["source_data_date"] is None
+    assert meta["source_data_date_basis"] == "not_exposed_by_auction_snapshot_contract"
+    assert meta["collision_eligible"] is False
+    assert meta["exclusion_reason"] == "source_data_date_unavailable"
+
+
+def test_fuyao_auction_timestamp_date_uses_shanghai_time_but_never_unlocks_collision():
+    timestamp_ms = int(datetime(2026, 9, 28, 17, 0, tzinfo=timezone.utc).timestamp() * 1000)
+    meta = capture_probe._fuyao_auction_snapshot_meta(
+        {
+            "code": 0,
+            "timestamp": timestamp_ms,
+            "data": {"auction_phase": "final", "data_status": "ready", "item": []},
+        },
+        "final",
+        date(2026, 9, 29),
+    )
+
+    assert meta["response_timestamp_date"] == "2026-09-29"
     assert meta["source_data_date"] is None
     assert meta["collision_eligible"] is False
     assert meta["exclusion_reason"] == "source_data_date_unavailable"
@@ -591,6 +612,7 @@ def test_fuyao_auction_requires_ready_status_and_matching_explicit_date():
     )
 
     assert eligible["source_data_date"] == "2026-09-29"
+    assert eligible["source_data_date_basis"] == "explicit_response_field:trade_date"
     assert eligible["collision_eligible"] is True
     assert eligible["exclusion_reason"] is None
     assert not_ready["collision_eligible"] is False

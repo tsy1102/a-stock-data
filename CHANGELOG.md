@@ -4,6 +4,22 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## [17.5.9] - 2026-10-20
+
+### Added
+
+- 碰撞报告新增逐来源统计：区分逐字段审定的官方契约定义、可用锚、窗口实际观察覆盖、参与比较次数及 L1/L1-C/L4 结果，并纳入报告完整性对账。
+
+### Changed
+
+- 将 Fuyao 的经审定官方字段契约证据纳入来源覆盖统计；Fuyao 来源独立性已确认，仍按普通独立锚参与 L1/L1-U，不转成 L1-C。FTShare REST 在来源独立性未确认时继续使用 L1-C。
+- 竞价响应增加上海时区的响应时间日期和数据日期依据，明确 `timestamp` 只代表响应组装时间；缺少显式数据日时仍排除竞价子树。
+- Fuyao API Key 优先读取官方变量 `HITHINK_FINANCE_API_KEY`，兼容 `THS_FUYAO_API_KEY` 和本地忽略凭证文件。
+
+### Fixed
+
+- 对撞字段注册上下文现在核验官方契约证据与对应审定记录，避免把未文档化的单次观察字段或未审定来源字段提升为契约锚。
+
 ## [17.5.8] - 2026-10-20
 
 ### Added

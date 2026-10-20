@@ -52,6 +52,10 @@ FTShare 的旧私有托管 MCP/SDK 已退役；旧 `FTShare` 身份下的 15 条
 
 `audit_field_completeness.py <采集目录日期> <报告日期>` 会把全部成功或部分成功的股票记录、列表响应中的全部行与登记字段做双向比较：`raw not registered` 是采到但字典未登记的候选，`registered not observed` 是本目录没有观察到的登记字段。另将 `levistock_candidate_raw.json` 中 `status=observed` 的 payload 按 candidate_id 和 provider_family 单列；探针元数据不当作字段，候选也不并入任何来源的独立碰撞锚。后者可能来自源未选择、请求失败、字段稀疏或明确暂停，不能单独判为采集器遗漏；需结合 `meta.json`、源状态和字段处置说明判断。报告 JSON 同时保留两类差异，不会把空目录误报为完整。
 
+Fuyao REST 的 Key 读取顺序为官方变量 `HITHINK_FINANCE_API_KEY`、兼容变量 `THS_FUYAO_API_KEY`、被 Git 忽略的 `credentials/fuyao_key.txt`；程序不输出 Key。逐字段审定的 Fuyao 官方契约证据会列入碰撞报告来源统计，但 Fuyao 的来源独立性已确认，仍走普通 L1/L1-U 锚。只有底层数据来源未确认、且明确登记为官方契约锚的来源才走 L1-C。
+
+`collide.py` 的 `source_coverage` 报告分列每个运行源的已确认字段、官方契约字段、窗口观察字段/字段值样本/交易日、目标/右侧比较次数及 L1/L1-C/L4 关系数；这些数量经过快照日期、择优和类型筛选，不能当作原始请求数。Fuyao 集合竞价的响应 `timestamp` 另存上海时区日期，但标记为响应组装时间；没有上游显式数据日时，仍排除该竞价子树，不用响应日期补造行情日期。
+
 ## 字段登记、生成与治理
 
 | 脚本 | 用途与写入行为 |

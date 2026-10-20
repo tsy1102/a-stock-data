@@ -2479,6 +2479,46 @@ def _normalize_fuyao_source_date(value: Any) -> Optional[str]:
     return None
 
 
+def _normalize_fuyao_response_timestamp_date(value: Any) -> Optional[str]:
+    """Return the Shanghai calendar date of response assembly time, never a data date."""
+    shanghai = timezone(timedelta(hours=8))
+    if isinstance(value, bool) or value is None:
+        return None
+    if isinstance(value, datetime):
+        timestamp = value if value.tzinfo else value.replace(tzinfo=shanghai)
+        return timestamp.astimezone(shanghai).date().isoformat()
+    if isinstance(value, date):
+        return value.isoformat()
+
+    numeric = None
+    if isinstance(value, (int, float)):
+        numeric = float(value)
+    elif isinstance(value, str):
+        normalized = value.strip()
+        if not normalized:
+            return None
+        try:
+            numeric = float(normalized)
+        except ValueError:
+            try:
+                timestamp = datetime.fromisoformat(normalized.replace("Z", "+00:00"))
+            except ValueError:
+                return None
+            if timestamp.tzinfo is None:
+                timestamp = timestamp.replace(tzinfo=shanghai)
+            return timestamp.astimezone(shanghai).date().isoformat()
+    else:
+        return None
+
+    if numeric is None or not math.isfinite(numeric) or numeric <= 0:
+        return None
+    epoch_seconds = numeric / 1000 if numeric >= 100_000_000_000 else numeric
+    try:
+        return datetime.fromtimestamp(epoch_seconds, tz=shanghai).date().isoformat()
+    except (OverflowError, OSError, ValueError):
+        return None
+
+
 def _fuyao_auction_snapshot_meta(envelope: Any, stage: str, expected_trading_day: date) -> dict:
     """Build provenance metadata without treating response assembly time as data time."""
     envelope = envelope if isinstance(envelope, dict) else {}
@@ -2490,14 +2530,17 @@ def _fuyao_auction_snapshot_meta(envelope: Any, stage: str, expected_trading_day
         return data.get(key) if value is None else value
 
     source_data_date = None
+    source_data_date_field = None
     for key in ("data_date", "trade_date", "tradeDate", "as_of_date", "asof_date"):
         source_data_date = _normalize_fuyao_source_date(envelope_value(key))
         if source_data_date:
+            source_data_date_field = key
             break
 
     raw_status = envelope_value("data_status")
     status = str(raw_status or "").strip().lower().replace("-", "_").replace(" ", "_")
     response_timestamp = envelope_value("timestamp")
+    response_timestamp_date = _normalize_fuyao_response_timestamp_date(response_timestamp)
     auction_phase = envelope_value("auction_phase")
 
     eligible = False
@@ -2530,7 +2573,14 @@ def _fuyao_auction_snapshot_meta(envelope: Any, stage: str, expected_trading_day
         "data_status": raw_status,
         "auction_phase": auction_phase,
         "response_timestamp": response_timestamp,
+        "response_timestamp_date": response_timestamp_date,
+        "response_timestamp_semantics": "response_assembly_time_only",
         "source_data_date": source_data_date,
+        "source_data_date_basis": (
+            f"explicit_response_field:{source_data_date_field}"
+            if source_data_date_field
+            else "not_exposed_by_auction_snapshot_contract"
+        ),
         "expected_trading_day": expected_trading_day.isoformat(),
         "collision_eligible": eligible,
         "exclusion_reason": reason,

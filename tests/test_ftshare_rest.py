@@ -156,3 +156,17 @@ def test_lineage_and_registry_expose_documented_contract_anchors_only():
     assert "symbol_id" not in contract_codes
     assert ("ftshare_rest", "close") in context["verified"]
     assert not any(source == "ftshare_rest" for source, _ in context["anchors"])
+    assert ("ftshare_rest", "close") in context["official_contract_verified"]
+    assert ("ftshare_rest", "close") in context["official_contract_anchors"]
+
+
+def test_fuyao_contract_evidence_is_reported_without_becoming_l1c():
+    from scripts.collide import load_registry_context
+
+    context = load_registry_context()
+
+    assert ("fuyao", "accounts_receivable") in context["official_contract_verified"]
+    assert ("fuyao", "accounts_receivable") in context["official_contract_anchors"]
+    assert ("fuyao", "accounts_receivable") in context["anchors"]
+    assert ("fuyao", "accounts_receivable") not in context["contract_anchors"]
+    assert ("fuyao", "pe_ttm") not in context["official_contract_verified"]

@@ -83,6 +83,7 @@
 | **财务 TTM 族兜底链(V17.0.7 层级定案)** | get_canonical_stock_data | **fuyao 三大报表 quarterly 聚合(主源, 同花顺官方 REST 独立风控域+盘后可查) → push2delay f103 族(兜底, 仅补缺失)**: ocf_ttm/revenue_ttm/net_profit_period/net_profit_annual + eps_annual(净利年报÷股本缓存折算); revenue 兜底为营业收入口径差~1.8%需注记; eps_deduct_ttm/undist_profit_ps 无 fuyao 字段仍 push 独有; 进程缓存按(code,report_period); **thsdk(TCP) 盘后关闸 → 定位盘中专属特殊层不进通用链**(用户决策: 运行时段多为盘后) |
 | **FTShare 历史字段（已退役）** | 旧私有托管 MCP；运行时会话客户端已删除 | 15 条旧来源路径及 `raw_ftshare.json` 仅保留作审计和显式历史研究；默认不采集、不碰撞。其底层来源无法从公开材料核实。 |
 | **FTShare REST 契约锚** | `capture_field_probe.py` → `stock_common.sc_ftshare.get_a_share_quote_snapshot` | `ftshare_rest` 每日采集 `A股行情列表` 并输出 `raw_ftshare_rest.json`。官方返回字段定义登记为语义锚并参与默认碰撞；强多日匹配标 `L1-C`，不表示底层来源独立，也不自动定案。 |
+| **Fuyao 官方字段契约** | `capture_field_probe.py` → `stock_common.sc_fuyao` | 逐字段审定的 Fuyao 上游契约证据会列入来源覆盖报告；Fuyao 来源独立性已确认，合格字段按普通独立锚参与 L1/L1-U，不标为 L1-C。 |
 
 ### 2.1b 竞价族(V17.0 实锤: ZHB tdxstat2 资金流键=竞价数据)
 | 字段 | 中间层 | 说明 |

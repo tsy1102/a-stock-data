@@ -202,7 +202,9 @@ def test_fuyao_ineligible_auction_is_diagnosed_without_dropping_other_fields(tmp
             "exclusion_reason": "source_data_date_unavailable",
             "data_status": "ready",
             "source_data_date": None,
+            "source_data_date_basis": "not_exposed_by_auction_snapshot_contract",
             "response_timestamp": "2026-09-29T09:25:00",
+            "response_timestamp_date": "2026-09-29",
             "item_count": 1,
         },
         "stocks": {
@@ -233,6 +235,8 @@ def test_fuyao_ineligible_auction_is_diagnosed_without_dropping_other_fields(tmp
     assert any("stocks.*.auction_final" in item for item in diagnostics)
     assert any("source_data_date_unavailable" in item for item in diagnostics)
     assert any("response_timestamp" in item for item in diagnostics)
+    assert any("response_timestamp_date='2026-09-29'" in item for item in diagnostics)
+    assert any("not_exposed_by_auction_snapshot_contract" in item for item in diagnostics)
     report = collide.build_report_md(
         "20260929", [], len(store), 1, [], [], [], 0, set(), [], diagnostics=diagnostics
     )
@@ -1192,6 +1196,7 @@ def test_report_completeness_reconciles_full_candidate_inventory_and_markdown_ca
     report = {
         "L1": [],
         "L1-C": [],
+        "source_coverage": [],
         "actionable_L1": [],
         "mapped_pair_revalidations": [],
         "L4": [{} for _ in range(61)],
@@ -1235,6 +1240,8 @@ def test_report_completeness_reconciles_full_candidate_inventory_and_markdown_ca
 def test_report_completeness_blocks_a_missing_method_candidate_detail():
     report = {
         "L1": [],
+        "L1-C": [],
+        "source_coverage": [],
         "actionable_L1": [],
         "mapped_pair_revalidations": [],
         "L4": [],
@@ -1260,6 +1267,8 @@ def test_report_completeness_blocks_duplicate_candidate_pairs():
     candidate = {"left": "unknown.a", "right": "anchor.a"}
     report = {
         "L1": [],
+        "L1-C": [],
+        "source_coverage": [],
         "actionable_L1": [],
         "mapped_pair_revalidations": [],
         "L4": [],
@@ -1280,6 +1289,60 @@ def test_report_completeness_blocks_duplicate_candidate_pairs():
 
     assert completeness["status"] == "incomplete"
     assert completeness["method_candidate_inventory"]["duplicate_pair_count"] == 1
+
+
+def test_source_coverage_reports_contract_evidence_and_actual_pair_participation():
+    tdx_key = ("600000", "T:20261019")
+    fuyao_key = ("600000", "T:20261019")
+    store = {
+        "tdx.f1": {
+            "vals": {tdx_key: 10.0},
+            "sample_meta": {tdx_key: {"domain": "trading", "as_of_date": "20261019"}},
+        },
+        "fuyao.snapshot.close": {
+            "vals": {fuyao_key: 10.0},
+            "sample_meta": {fuyao_key: {"domain": "trading", "as_of_date": "20261019"}},
+        },
+    }
+    coverage = collide.build_source_coverage_report(
+        store=store,
+        verified={("fuyao", "snapshot.close"), ("ftshare_rest", "close")},
+        anchors={("fuyao", "snapshot.close")},
+        contract_anchors={("ftshare_rest", "close")},
+        official_contract_verified={("fuyao", "snapshot.close"), ("ftshare_rest", "close")},
+        official_contract_anchors={("fuyao", "snapshot.close"), ("ftshare_rest", "close")},
+        left_ids=["tdx.f1"],
+        right_ids=["fuyao.snapshot.close", "ftshare_rest.close"],
+        pair_evaluations_by_source={
+            "tdx": {"as_target": 2},
+            "fuyao": {"as_right_field": 1},
+            "ftshare_rest": {"as_right_field": 1, "l1c_anchor": 1},
+        },
+        l1_relations=[{"left": "tdx.f1", "right": "fuyao.snapshot.close"}],
+        l1_contract_relations=[{"left": "tdx.f2", "right": "ftshare_rest.close"}],
+        l4_relations=[{"left": "tdx.f3", "right": "fuyao.snapshot.close"}],
+        method_candidate_inventory=[{"left": "tdx.f4", "right": "fuyao.snapshot.close"}],
+    )
+    by_source = {row["source"]: row for row in coverage}
+    fuyao = by_source["fuyao"]
+    ftshare = by_source["ftshare_rest"]
+
+    assert fuyao["official_contract_verified_field_count"] == 1
+    assert fuyao["independent_anchor_field_count"] == 1
+    assert fuyao["contract_only_anchor_field_count"] == 0
+    assert fuyao["observed_window_field_value_count"] == 1
+    assert fuyao["observed_window_trading_day_count"] == 1
+    assert fuyao["L1_relation_count"] == 1
+    assert fuyao["L4_relation_count"] == 1
+    assert ftshare["official_contract_anchor_field_count"] == 1
+    assert ftshare["contract_only_anchor_field_count"] == 1
+    assert ftshare["L1_C_anchor_comparisons"] == 1
+    assert ftshare["L1_C_relation_count"] == 1
+
+    rendered = collide.append_source_coverage_report("# Report", coverage)
+    assert "来源字段覆盖与碰撞参与" in rendered
+    assert "窗口字段 / 字段值样本 / 交易日" in rendered
+    assert "fuyao" in rendered and "ftshare_rest" in rendered
 
 
 def test_per_stock_time_series_is_an_explicit_candidate_method():
@@ -1372,7 +1435,7 @@ def test_event_snapshots_keep_natural_dates_and_source_scoped_identity(tmp_path)
     )
 
 
-def test_ftshare_contract_anchor_rule_is_in_runtime_banner_and_generated_docs():
+def test_official_contract_anchor_rule_is_in_runtime_banner_and_generated_docs():
     generated_path = collision_rules.emit_markdown()
     rendered = Path(generated_path).read_text(encoding="utf-8")
     output = StringIO()
@@ -1382,6 +1445,7 @@ def test_ftshare_contract_anchor_rule_is_in_runtime_banner_and_generated_docs():
     assert "## 三、官方契约语义锚候选 L1-C" in rendered
     assert "不计独立来源覆盖" in rendered
     assert "官方契约语义锚分支（参与碰撞，不代表来源独立）" in output.getvalue()
+    assert "Fuyao" in output.getvalue()
     assert "不自动定案" in output.getvalue()
 
 

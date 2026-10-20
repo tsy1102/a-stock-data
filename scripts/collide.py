@@ -482,7 +482,10 @@ def load_snapshots(
                 f"竞价子树已排除；reason={auction_meta.get('exclusion_reason') or 'unspecified'}，"
                 f"data_status={auction_meta.get('data_status')!r}，"
                 f"source_data_date={auction_meta.get('source_data_date')!r}，"
+                f"source_data_date_basis={auction_meta.get('source_data_date_basis')!r}，"
                 f"response_timestamp={auction_meta.get('response_timestamp')!r}，"
+                f"response_timestamp_date={auction_meta.get('response_timestamp_date')!r}"
+                "（仅响应组装时间，不作为数据日期），"
                 f"记录数={auction_meta.get('item_count', 0)}"
             )
             diagnostics.append(diagnostic)
@@ -1865,12 +1868,14 @@ def _lineage_aliases(source, lineage):
 
 
 def load_registry_context():
-    """Load field status, exact anchors, mappings, lineage and visible diagnostics."""
+    """Load verified identities, contract evidence, anchors, mappings and diagnostics."""
     context = {
         "verified": set(),
         "disproved": set(),
         "anchors": set(),
         "contract_anchors": set(),
+        "official_contract_verified": set(),
+        "official_contract_anchors": set(),
         "known_mappings": set(),
         "diagnostics": [],
         "unmapped_verified": 0,
@@ -1928,6 +1933,17 @@ def load_registry_context():
         for item in registry.get("sources", [])
         if isinstance(item, dict) and isinstance(item.get("name"), str)
     }
+    adjudications = {}
+    adjudication_sources = [registry.get("adjudications", [])]
+    adjudication_sources.extend(
+        field.get("adjudications", []) for field in source_fields if isinstance(field, dict)
+    )
+    for records in adjudication_sources:
+        if not isinstance(records, list):
+            continue
+        for record in records:
+            if isinstance(record, dict) and isinstance(record.get("id"), str):
+                adjudications[record["id"]] = record
     alias_identity_owners = defaultdict(set)
     for candidate in source_fields:
         if not isinstance(candidate, dict):
@@ -1968,6 +1984,9 @@ def load_registry_context():
             context["verified"].clear()
             context["disproved"].clear()
             context["anchors"].clear()
+            context["contract_anchors"].clear()
+            context["official_contract_verified"].clear()
+            context["official_contract_anchors"].clear()
             context["known_mappings"].clear()
             return context
         seen_source_identities.add(identity)
@@ -1998,23 +2017,25 @@ def load_registry_context():
             family = SLA.runtime_family(alias, lineage)
             source_record = lineage.get("sources", {}).get(source, {})
             source_config = registry_sources.get(source, {})
-            evidence = field.get("evidence")
-            contract_anchor_verified = (
-                source_config.get("source_role") == "documented_contract_anchor"
-                and source_record.get("semantic_anchor_basis") == "official_contract"
-                and isinstance(evidence, dict)
-                and evidence.get("basis") == "official_contract"
-                and evidence.get("contract_id")
-                and evidence.get("evidence_file")
+            contract_evidence_kind = _verified_official_contract_kind(
+                field, source_config, source_record, adjudications
             )
+            if contract_evidence_kind:
+                context["official_contract_verified"].add(identity)
             if (
                 source_record.get("anchor_eligible")
                 and source_record.get("independence_status") == "confirmed"
                 and family == source_record.get("independence_family")
             ):
                 context["anchors"].add(identity)
-            elif contract_anchor_verified:
+                if contract_evidence_kind:
+                    context["official_contract_anchors"].add(identity)
+            elif (
+                contract_evidence_kind == "semantic_anchor_contract"
+                and source_record.get("semantic_anchor_basis") == "official_contract"
+            ):
                 context["contract_anchors"].add(identity)
+                context["official_contract_anchors"].add(identity)
             else:
                 context["unconfirmed_verified"] += 1
 
@@ -2132,6 +2153,229 @@ def code_of(fid):
     else:
         return fid
     return SLA.normalize_runtime_field_code(norm_src_of(fid), code)
+
+
+def _verified_official_contract_kind(field, source_config, source_record, adjudications):
+    """Return the reviewed contract-evidence kind for an active verified identity."""
+    if source_config.get("status") != "active":
+        return None
+
+    direct = field.get("evidence")
+    source_contract = source_record.get("contract")
+    contract_ids = source_config.get("contract_ids")
+    if (
+        source_config.get("source_role") == "documented_contract_anchor"
+        and source_record.get("semantic_anchor_basis") == "official_contract"
+        and isinstance(direct, dict)
+        and direct.get("basis") == "official_contract"
+        and isinstance(source_contract, dict)
+        and direct.get("contract_id") == source_contract.get("contract_id")
+        and isinstance(contract_ids, list)
+        and direct.get("contract_id") in contract_ids
+        and direct.get("evidence_file") == source_contract.get("evidence_file")
+        and direct.get("documentation_url") == source_contract.get("documentation_url")
+    ):
+        return "semantic_anchor_contract"
+
+    status_evidence = field.get("status_evidence")
+    adjudication_ids = (
+        status_evidence.get("source_contract_adjudication_ids", [])
+        if isinstance(status_evidence, dict)
+        else []
+    )
+    if not isinstance(adjudication_ids, list):
+        return None
+    reference_evidence = field.get("reference_evidence", [])
+    if not isinstance(reference_evidence, list):
+        return None
+    for evidence in reference_evidence:
+        if not isinstance(evidence, dict):
+            continue
+        if evidence.get("status") != "verified":
+            continue
+        if evidence.get("evidence_basis") not in {
+            "authoritative_source_contract",
+            "official_contract",
+        }:
+            continue
+        contract = evidence.get("source_contract")
+        adjudication_id = evidence.get("adjudication_id")
+        if (
+            not isinstance(contract, dict)
+            or not all(contract.get(key) for key in ("authority", "path", "locator", "url"))
+            or not isinstance(adjudication_id, str)
+            or adjudication_id not in adjudication_ids
+        ):
+            continue
+        adjudication = adjudications.get(adjudication_id, {})
+        adjudicated_contract = adjudication.get("source_contract")
+        if (
+            adjudication.get("action") != "verify_source_contract"
+            or adjudication.get("status") != "verified"
+            or adjudication.get("evidence_basis") != evidence.get("evidence_basis")
+            or not isinstance(adjudicated_contract, dict)
+            or any(adjudicated_contract.get(key) != contract.get(key) for key in contract)
+        ):
+            continue
+        return "source_contract"
+    return None
+
+
+def build_source_coverage_report(
+    store,
+    verified,
+    anchors,
+    contract_anchors,
+    official_contract_verified,
+    official_contract_anchors,
+    left_ids,
+    right_ids,
+    pair_evaluations_by_source,
+    l1_relations,
+    l1_contract_relations,
+    l4_relations,
+    method_candidate_inventory,
+):
+    """Summarize observed window coverage and actual collision participation by runtime source."""
+    rows = defaultdict(
+        lambda: {
+            "observed_fields": set(),
+            "observed_field_values": 0,
+            "observed_trading_dates": set(),
+            "verified_fields": set(),
+            "official_contract_verified_fields": set(),
+            "official_contract_anchor_fields": set(),
+            "independent_anchor_fields": set(),
+            "contract_only_anchor_fields": set(),
+            "cracking_target_fields": set(),
+            "comparison_fields": set(),
+            "L1_relations": 0,
+            "L1_C_relations": 0,
+            "L4_relations": 0,
+            "method_candidate_pairs": 0,
+        }
+    )
+
+    for fid, info in store.items():
+        source = norm_src_of(fid)
+        row = rows[source]
+        row["observed_fields"].add(code_of(fid))
+        values = info.get("vals", {})
+        metadata = info.get("sample_meta", {})
+        row["observed_field_values"] += len(values)
+        for key in values:
+            sample_meta = metadata.get(key, {}) if isinstance(metadata, dict) else {}
+            if sample_meta.get("domain") == TRADING and sample_meta.get("as_of_date"):
+                row["observed_trading_dates"].add(sample_meta["as_of_date"])
+
+    def add_identities(identity_set, target_key):
+        for source, code in identity_set:
+            rows[source][target_key].add(code)
+
+    add_identities(verified, "verified_fields")
+    add_identities(official_contract_verified, "official_contract_verified_fields")
+    add_identities(official_contract_anchors, "official_contract_anchor_fields")
+    add_identities(anchors, "independent_anchor_fields")
+    add_identities(contract_anchors, "contract_only_anchor_fields")
+    for fid in left_ids:
+        rows[norm_src_of(fid)]["cracking_target_fields"].add(code_of(fid))
+    for fid in right_ids:
+        rows[norm_src_of(fid)]["comparison_fields"].add(code_of(fid))
+
+    relation_sets = (
+        (l1_relations, "L1_relations"),
+        (l1_contract_relations, "L1_C_relations"),
+        (l4_relations, "L4_relations"),
+    )
+    for relations, key in relation_sets:
+        for relation in relations:
+            fields = {
+                fid for fid in (relation.get("left"), relation.get("right")) if isinstance(fid, str)
+            }
+            for fid in fields:
+                rows[norm_src_of(fid)][key] += 1
+    for candidate in method_candidate_inventory:
+        fields = {
+            fid for fid in (candidate.get("left"), candidate.get("right")) if isinstance(fid, str)
+        }
+        for fid in fields:
+            rows[norm_src_of(fid)]["method_candidate_pairs"] += 1
+
+    output = []
+    for source in sorted(rows):
+        row = rows[source]
+        pair_stats = pair_evaluations_by_source.get(source, {})
+        output.append(
+            {
+                "source": source,
+                "verified_field_count": len(row["verified_fields"]),
+                "official_contract_verified_field_count": len(
+                    row["official_contract_verified_fields"]
+                ),
+                "official_contract_anchor_field_count": len(row["official_contract_anchor_fields"]),
+                "independent_anchor_field_count": len(row["independent_anchor_fields"]),
+                "contract_only_anchor_field_count": len(row["contract_only_anchor_fields"]),
+                "observed_window_field_count": len(row["observed_fields"]),
+                "observed_window_field_value_count": row["observed_field_values"],
+                "observed_window_trading_day_count": len(row["observed_trading_dates"]),
+                "cracking_target_field_count": len(row["cracking_target_fields"]),
+                "comparison_field_count": len(row["comparison_fields"]),
+                "comparisons_as_target": pair_stats.get("as_target", 0),
+                "comparisons_as_right_field": pair_stats.get("as_right_field", 0),
+                "L1_C_anchor_comparisons": pair_stats.get("l1c_anchor", 0),
+                "L1_relation_count": row["L1_relations"],
+                "L1_C_relation_count": row["L1_C_relations"],
+                "L4_relation_count": row["L4_relations"],
+                "method_candidate_pair_count": row["method_candidate_pairs"],
+            }
+        )
+    return output
+
+
+def append_source_coverage_report(markdown, source_coverage):
+    """Render complete per-source contract, observed-data, and collision coverage."""
+    lines = [markdown.rstrip(), "", "## 来源字段覆盖与碰撞参与", ""]
+    lines.append(
+        "_窗口字段值样本是经日期筛选、重复折叠和快照择优后载入的非空值；"
+        "右侧比较次数另受字段类型及来源规则筛选。官方契约字段须有逐字段审定证据，"
+        "契约语义本身不证明底层数据来源独立。_"
+    )
+    lines.extend(
+        [
+            "",
+            "| 来源 | 已确认字段 | 契约已确认 | 契约锚 | 独立锚 | L1-C 锚 | 窗口字段 / 字段值样本 / 交易日 |",
+            "|:--|--:|--:|--:|--:|--:|--:|",
+        ]
+    )
+    for row in source_coverage:
+        lines.append(
+            "| {source} | {verified_field_count} | {official_contract_verified_field_count} | "
+            "{official_contract_anchor_field_count} | {independent_anchor_field_count} | "
+            "{contract_only_anchor_field_count} | {observed_window_field_count} / "
+            "{observed_window_field_value_count} / {observed_window_trading_day_count} |".format(
+                **row
+            )
+        )
+    if not source_coverage:
+        lines.append("| _无来源数据_ | 0 | 0 | 0 | 0 | 0 | 0 / 0 / 0 |")
+    lines.extend(
+        [
+            "",
+            "| 来源 | 破解目标 | 比较字段 | 作目标比较 | 作右侧比较 | L1-C 锚比较 | L1 / L1-C / L4 关系 | 方法候选涉及 |",
+            "|:--|--:|--:|--:|--:|--:|--:|--:|",
+        ]
+    )
+    for row in source_coverage:
+        lines.append(
+            "| {source} | {cracking_target_field_count} | {comparison_field_count} | "
+            "{comparisons_as_target} | {comparisons_as_right_field} | {L1_C_anchor_comparisons} | "
+            "{L1_relation_count} / {L1_C_relation_count} / {L4_relation_count} | "
+            "{method_candidate_pair_count} |".format(**row)
+        )
+    if not source_coverage:
+        lines.append("| _无来源数据_ | 0 | 0 | 0 | 0 | 0 | 0 / 0 / 0 | 0 |")
+    lines.append("")
+    return "\n".join(lines) + "\n"
 
 
 def is_verified(fid, verified):
@@ -2329,12 +2573,14 @@ def run(args):
         file=sys.stderr,
     )
 
-    # 3) Registry identities and independently confirmed anchors.
+    # 3) Registry identities, reviewed contract evidence and eligible anchors.
     registry_context = load_registry_context()
     verified = registry_context["verified"]
     disproved = registry_context["disproved"]
     anchors = registry_context["anchors"]
     contract_anchors = registry_context["contract_anchors"]
+    official_contract_verified = registry_context["official_contract_verified"]
+    official_contract_anchors = registry_context["official_contract_anchors"]
     known_maps = registry_context["known_mappings"]
     diagnostics.extend(registry_context["diagnostics"])
 
@@ -2370,7 +2616,8 @@ def run(args):
     diagnostics.append(
         f"对撞模式：{'exploratory' if args.exploratory else 'verified_anchor_only'}；"
         f"待破解字段={len(left_ids)}，verified 字段={len(verified)}，"
-        f"可用独立锚={len(anchors)}，官方契约锚={len(contract_anchors)}，"
+        f"可用独立锚={len(anchors)}，官方契约字段={len(official_contract_verified)}，"
+        f"L1-C 契约锚={len(contract_anchors)}，"
         f"right 字段={len(right_ids)}"
     )
 
@@ -2390,6 +2637,7 @@ def run(args):
     method_candidates_by_left = defaultdict(list)
     method_candidate_counts = Counter()
     pair_stats_by_left = defaultdict(Counter)
+    pair_evaluations_by_source = defaultdict(Counter)
     anchor_family_counts_by_left = defaultdict(Counter)
     method_candidate_count = 0
     method_candidate_sequence = 0
@@ -2429,6 +2677,10 @@ def run(args):
             if not eligible:
                 pair_stats_by_left[li]["incompatible_type_skips"] += 1
                 continue
+            pair_evaluations_by_source[norm_src_of(li)]["as_target"] += 1
+            pair_evaluations_by_source[norm_src_of(ri)]["as_right_field"] += 1
+            if right_is_contract_anchor and not right_is_independent_anchor:
+                pair_evaluations_by_source[norm_src_of(ri)]["l1c_anchor"] += 1
             if pair_reason == "range_disjoint":
                 pair_stats_by_left[li]["range_disjoint_evaluated"] += 1
             if right_is_contract_anchor and not right_is_independent_anchor:
@@ -2667,6 +2919,21 @@ def run(args):
     l4 = [p for p in raw_pairs if p["level"] == "L4"]
     l1.sort(key=lambda p: (-p["overall_hit"], -p["n_days"]))
     l4.sort(key=lambda p: -p["overall_hit"])
+    source_coverage = build_source_coverage_report(
+        store,
+        verified,
+        anchors,
+        contract_anchors,
+        official_contract_verified,
+        official_contract_anchors,
+        left_ids,
+        right_ids,
+        pair_evaluations_by_source,
+        l1,
+        l1_contract,
+        l4,
+        method_candidate_inventory,
+    )
     source_identity = {
         "status": "active_with_historical_legacy",
         "active_runtime_source": "ftshare_rest",
@@ -2705,7 +2972,7 @@ def run(args):
     json_path = os.path.join(out_dir, f"{today}_collision_report.json")
     report_relative_path = os.path.relpath(json_path, DATA_DIR).replace("\\", "/")
     report_data = {
-        "schema_version": 3,
+        "schema_version": 4,
         "date": today,
         "collision_mode": collision_mode,
         "anchor_policy": (
@@ -2717,6 +2984,9 @@ def run(args):
         "verified_identity_count": len(verified),
         "anchor_identity_count": len(anchors),
         "contract_anchor_identity_count": len(contract_anchors),
+        "official_contract_verified_identity_count": len(official_contract_verified),
+        "official_contract_anchor_identity_count": len(official_contract_anchors),
+        "source_coverage": source_coverage,
         "right_field_count": len(right_ids),
         "exploratory_pair_count": exploratory_pair_count,
         "contract_anchor_pair_count": contract_anchor_pair_count,
@@ -2803,6 +3073,7 @@ def run(args):
         )
         rendered = append_source_identity_report(rendered, source_identity)
         rendered = append_contract_anchor_candidates(rendered, report_data.get("L1-C", []))
+        rendered = append_source_coverage_report(rendered, report_data.get("source_coverage", []))
         rendered = CAE.append_daily_aggregate_report(rendered, daily_aggregate_evidence)
         rendered = FNC.append_field_name_candidate_report(rendered, name_candidate_report)
         rendered = append_research_state_report(rendered, report_data["research_state"])
@@ -2871,14 +3142,14 @@ def append_contract_anchor_candidates(report_md, candidates):
         "",
         f"## 官方契约锚候选 L1-C（{len(candidates)}）",
         "",
-        "_L1-C 使用 FTShare 官方接口文档已定义的字段语义作锚，并满足多日数值匹配门槛；"
-        "FTShare 底层数据来源未确认，因此不属于独立来源 L1，也不进入自动定案状态。_",
+        "_L1-C 使用逐字段审定的官方接口契约语义作锚，并满足多日数值匹配门槛；"
+        "仅当该接口底层数据来源独立性未确认时才列入此处，不属于独立来源 L1，也不自动定案。_",
         "",
     ]
     if candidates:
         lines.extend(
             [
-                "| 左字段（待确认） | FTShare REST 字段 | 等级 | 命中率 | 交易日数 | 样本 | 信息样本 | 比值 | hub | registry |",
+                "| 左字段（待确认） | 官方契约字段 | 等级 | 命中率 | 交易日数 | 样本 | 信息样本 | 比值 | hub | registry |",
                 "|:--|:--|:--|--:|--:|--:|--:|--:|:--|:--|",
             ]
         )
@@ -3100,6 +3371,11 @@ def build_report_completeness(report_data: dict[str, Any]) -> dict[str, Any]:
             "完整已登记映射复验清单",
         ),
         "L4": (report_data.get("L4"), 60, "完整 L4 清单"),
+        "source_coverage": (
+            report_data.get("source_coverage"),
+            None,
+            "完整逐来源契约定义、窗口观察与碰撞参与统计",
+        ),
         "guardrail_hits": (
             report_data.get("guardrail_hits"),
             None,

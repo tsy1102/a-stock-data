@@ -456,8 +456,8 @@ def apply_adjudications(
     """Validate decisions and return an updated copy without mutating inputs."""
     if decision_document.get("schema_version") != 1:
         raise ValueError("unsupported adjudication schema_version")
-    if report.get("schema_version") != 3:
-        raise ValueError("unsupported collision report schema_version; expected 3")
+    if report.get("schema_version") not in {3, 4}:
+        raise ValueError("unsupported collision report schema_version; expected 3 or 4")
     if report.get("collision_mode") != "verified_anchor_only":
         raise ValueError("only verified_anchor_only collision reports are accepted")
     if report.get("exploratory_pair_count", 0) != 0:
@@ -845,6 +845,8 @@ def _validate_collision_report_sections(
         "mapped_pair_revalidations": report.get("mapped_pair_revalidations"),
         "candidate_triage.targets": targets,
     }
+    if report.get("schema_version", 0) >= 4:
+        section_records["source_coverage"] = report.get("source_coverage")
     for name, rows in section_records.items():
         section = sections.get(name)
         if not isinstance(rows, list) or not isinstance(section, dict):

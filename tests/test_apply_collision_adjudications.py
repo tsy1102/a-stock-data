@@ -120,6 +120,7 @@ def _inputs(action="verify"):
         "method_candidate_frontier": [],
         "actionable_L1": [],
         "mapped_pair_revalidations": [],
+        "source_coverage": [],
         "candidate_triage": {"summary": {"target_count": 0}, "targets": []},
         "report_completeness": {
             "schema_version": 1,
@@ -140,6 +141,7 @@ def _inputs(action="verify"):
                 "L1": {"json_record_count": 1},
                 "actionable_L1": {"json_record_count": 0},
                 "mapped_pair_revalidations": {"json_record_count": 0},
+                "source_coverage": {"json_record_count": 0},
                 "candidate_triage.targets": {"json_record_count": 0},
             },
         },
@@ -182,8 +184,10 @@ def _inputs(action="verify"):
     return registry, lineage, decision_document, report
 
 
-def test_verify_adjudication_updates_source_record_aggregate_and_mapping():
+@pytest.mark.parametrize("collision_schema_version", [3, 4])
+def test_verify_adjudication_updates_source_record_aggregate_and_mapping(collision_schema_version):
     registry, lineage, document, report = _inputs()
+    report["schema_version"] = collision_schema_version
 
     updated, stats = apply_adjudications(
         registry, lineage, document, report, "sample_report.json", "adjudications/review.json"

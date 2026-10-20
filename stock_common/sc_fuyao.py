@@ -3,9 +3,10 @@
 V16.3.3 新增：官方 REST 通道（字典 §12.8.12c）——Key 交互引导 + 跳过禁用逻辑。
 
 Key 获取优先级：
-    1. 环境变量 THS_FUYAO_API_KEY（推荐，CI/长期使用）
-    2. credentials/fuyao_key.txt（交互输入后自动保存，已 gitignore）
-    3. 交互式引导（ensure_fuyao_key）——无 Key 时提供两个选项：
+    1. 环境变量 HITHINK_FINANCE_API_KEY（上游当前推荐）
+    2. 环境变量 THS_FUYAO_API_KEY（项目兼容名称）
+    3. credentials/fuyao_key.txt（交互输入后自动保存，已 gitignore）
+    4. 交互式引导（ensure_fuyao_key）——无 Key 时提供两个选项：
        a. 粘贴新 Key → 自动验证（meta/tickers/search）→ 保存 → 继续
        b. 跳过 → 本进程禁用 fuyao（_FUYAO_DISABLED=True），后续调用自动返回 None
 
@@ -40,6 +41,7 @@ _logger = logging.getLogger("fuyao_adapter")
 
 _REPO_ROOT = Path(__file__).resolve().parent.parent
 _KEY_FILE = _REPO_ROOT / "credentials" / "fuyao_key.txt"
+_KEY_ENV_VARS = ("HITHINK_FINANCE_API_KEY", "THS_FUYAO_API_KEY")
 
 _BASE = "https://fuyao.aicubes.cn"
 
@@ -82,14 +84,15 @@ def is_fuyao_enabled() -> bool:
 
 
 def get_fuyao_key() -> Optional[str]:
-    """解析 Key：环境变量 → credentials/fuyao_key.txt → None。不触发交互。"""
+    """解析 Key：官方/兼容环境变量 → credentials/fuyao_key.txt → None。不触发交互。"""
     global _CACHED_KEY
     if _CACHED_KEY:
         return _CACHED_KEY
-    env = os.environ.get("THS_FUYAO_API_KEY", "").strip()
-    if env:
-        _CACHED_KEY = env
-        return env
+    for env_name in _KEY_ENV_VARS:
+        env = os.environ.get(env_name, "").strip()
+        if env:
+            _CACHED_KEY = env
+            return env
     if _KEY_FILE.is_file():
         k = _KEY_FILE.read_text(encoding="utf-8").strip()
         if k:
@@ -109,7 +112,8 @@ def _print_guide() -> None:
     print("    3. 点击「创建 API Key」，填写别名（如 a-stock-data）")
     print("    4. 复制弹出的 Key（形如 sk-fuyao-xxxxxxxx，只显示一次）")
     print("")
-    print("  也可设置环境变量 THS_FUYAO_API_KEY 后重启脚本。")
+    print("  也可设置环境变量 HITHINK_FINANCE_API_KEY 后重启脚本。")
+    print("  项目兼容环境变量 THS_FUYAO_API_KEY。")
     print("=" * 60)
 
 
@@ -634,7 +638,11 @@ if __name__ == "__main__":
     if k:
         print(
             "Key 状态: 已配置（来源:",
-            "环境变量" if os.environ.get("THS_FUYAO_API_KEY") else "credentials/fuyao_key.txt",
+            (
+                "环境变量"
+                if any(os.environ.get(name, "").strip() for name in _KEY_ENV_VARS)
+                else "credentials/fuyao_key.txt"
+            ),
             ")",
         )
         snap = get_fuyao_snapshot(["600519"])

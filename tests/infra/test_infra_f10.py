@@ -67,7 +67,7 @@ def _require_fuyao(skip_if_upstream_down) -> None:
 
     if not is_fuyao_enabled():
         pytest.skip(
-            "fuyao API Key 未配置（设 THS_FUYAO_API_KEY 或写入 "
+            "fuyao API Key 未配置（设 HITHINK_FINANCE_API_KEY / THS_FUYAO_API_KEY 或写入 "
             "credentials/fuyao_key.txt）——环境性跳过，非代码回归"
         )
     skip_if_upstream_down("fuyao", _FUYAO_BASE)

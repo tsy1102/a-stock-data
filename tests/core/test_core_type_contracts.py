@@ -27,6 +27,30 @@ def test_fuyao_raw_rejects_non_object_json(monkeypatch: pytest.MonkeyPatch) -> N
     assert fuyao._fuyao_raw("/test") is None
 
 
+def test_fuyao_key_prefers_official_env_then_compat_env_then_local_file(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    key_file = tmp_path / "fuyao_key.txt"
+    key_file.write_text("file-key", encoding="utf-8")
+    monkeypatch.setattr(fuyao, "_KEY_FILE", key_file)
+    monkeypatch.setattr(fuyao, "_CACHED_KEY", None)
+    monkeypatch.delenv("HITHINK_FINANCE_API_KEY", raising=False)
+    monkeypatch.delenv("THS_FUYAO_API_KEY", raising=False)
+
+    monkeypatch.setenv("HITHINK_FINANCE_API_KEY", "official-env-key")
+    monkeypatch.setenv("THS_FUYAO_API_KEY", "compat-env-key")
+    assert fuyao.get_fuyao_key() == "official-env-key"
+
+    monkeypatch.setattr(fuyao, "_CACHED_KEY", None)
+    monkeypatch.setenv("HITHINK_FINANCE_API_KEY", "   ")
+    assert fuyao.get_fuyao_key() == "compat-env-key"
+
+    monkeypatch.setattr(fuyao, "_CACHED_KEY", None)
+    monkeypatch.delenv("HITHINK_FINANCE_API_KEY")
+    monkeypatch.delenv("THS_FUYAO_API_KEY")
+    assert fuyao.get_fuyao_key() == "file-key"
+
+
 def test_market_cap_accepts_numeric_strings_from_legacy_cache(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:

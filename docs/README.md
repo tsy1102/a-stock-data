@@ -9,6 +9,8 @@
 | 当前项目约束与阅读路径 | [PROJECT_CONTEXT.md](PROJECT_CONTEXT.md) |
 | 模块、数据路由与架构约束 | [architecture.md](architecture.md)、[ARCHITECTURE_THEORY.md](ARCHITECTURE_THEORY.md) |
 | 已批准并分阶段实施的架构整改方案 | [PROJECT_ARCHITECTURE_REFINEMENT_PLAN.md](PROJECT_ARCHITECTURE_REFINEMENT_PLAN.md) |
+| 后续大型模块拆分计划与阶段档案 | [PROJECT_MODULE_REFINEMENT_PLAN.md](PROJECT_MODULE_REFINEMENT_PLAN.md) |
+| 核心模块依赖、状态所有权与数据契约图 | [PROJECT_MODULE_MAP.md](PROJECT_MODULE_MAP.md) |
 | 字段治理入口 | [field_dict.md](field_dict.md) |
 | 待破解字段与状态冲突 | [unknown_fields.md](unknown_fields.md) |
 | 已验证字段的缺失规范名/含义 | [field_metadata_gaps.md](field_metadata_gaps.md) |

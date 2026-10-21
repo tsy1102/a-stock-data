@@ -17,6 +17,7 @@ import os
 import sys
 import time
 import json
+import math
 import threading
 import socket
 import logging
@@ -430,17 +431,11 @@ def _normalize_em_domain(domain: str) -> str:
     return domain
 
 
-_LOCK_STALE_SECONDS = 60.0  # V16.2: 锁文件 stale 阈值（进程崩溃后自动回收）
-
-
 def _file_lock_acquire(lock_path: str, timeout: float = 10.0) -> bool:
-    """V16.2 修复: 跨进程互斥锁 —— 所有进程竞争**同一个**锁文件（原每 PID 一个文件导致互斥失效）。
-    锁文件内容为 PID+时间戳；进程崩溃残留超过 _LOCK_STALE_SECONDS 时视为 stale 回收。
-    成功返回 True，超时返回 False。"""
+    """Acquire the shared OS mutex; process termination automatically releases it."""
     return _network_limits.file_lock_acquire(
         lock_path,
         timeout,
-        stale_seconds=_LOCK_STALE_SECONDS,
         os_module=os,
         time_module=time,
         debug_log=_debug_log,
@@ -448,11 +443,10 @@ def _file_lock_acquire(lock_path: str, timeout: float = 10.0) -> bool:
 
 
 def _file_lock_release(lock_path: str) -> None:
-    """V16.2: 释放跨进程锁（删除共享锁文件，仅当内容属于本进程）。"""
+    """Release the shared OS mutex acquired by this thread."""
     _network_limits.file_lock_release(
         lock_path,
         os_module=os,
-        open_file=open,
         debug_log=_debug_log,
     )
 
@@ -605,6 +599,7 @@ def em_get(
         _em_wait_process_interval()
     except Exception as _e:
         _debug_log(f"em_get: process interval: {_e}")
+        return None
 
     # V12.1: 同步更新 per-domain 限流器状态
     with _DOMAIN_LAST_TIME_LOCK:
@@ -751,23 +746,13 @@ def em_get(
 
 
 def _process_interval_wait(
-    lock_file: str, target_interval: float, use_lock: bool = False, use_content_ts: bool = False
+    lock_file: str, target_interval: float, use_lock: bool = True, use_content_ts: bool = True
 ) -> float:
-    """V17.0 R2: 进程间协调核心(sync 版)——EM/GEN 原 2 函数收敛。
+    """Shared sync interval gate used by both Eastmoney and general HTTP requests.
+    Return actual sleep seconds after reserving the next cross-process request slot.
 
-    Args:
-        lock_file: 锁文件路径
-        target_interval: 目标间隔(秒, 已含抖动)
-        use_lock: True=EM 版——跨进程文件锁(检查+更新原子化); False=GEN 版无锁
-        use_content_ts: True=EM 版——读锁文件**内容**时间戳(| 分隔取 [1]);
-                        False=GEN 版读 mtime
-    返回实际等待秒数(0=无需等待)。
-
-    ⚠️ V17.0 审查实测(_file_lock_acquire): acquire 用 O_CREAT|O_EXCL 创建锁文件并**立即写入
-    pid|ts payload**, release 时删除文件——故锁内读到的内容时间戳恒为本次 acquire 时刻,
-    elapsed≈0 → **每次 EM sync 请求固定睡满 1.0-1.3s**。该行为自 V16.2 引入文件锁起即如此
-    (V16.4.1 只是把读 mtime 换成读内容, 两者同样"acquire 刚写→≈0"), 非 V17.0 回归。
-    效果: 全局 EM ≤1rps 串行——比"利用上次请求差"更保守, 防封目标完全达成, 维持现状。
+    ``use_lock`` and ``use_content_ts`` are kept for compatibility with the old private
+    helper signature; the gate always uses the OS mutex and versioned content state.
     """
     return _network_limits.process_interval_wait(
         lock_file,
@@ -786,9 +771,8 @@ def _process_interval_wait(
 def _provider_interval_wait(lock_file: str, state_file: str, target_interval: float) -> float:
     """Reserve a cross-process request slot for clients that bypass ``_quick_request``.
 
-    The mutex file is removed after each reservation, so the last-start timestamp lives in a
-    separate persistent state file. Reserving the next slot before releasing the mutex keeps
-    concurrent processes from sending these direct-client requests back-to-back.
+    The OS mutex file is persistent and separate from the state file. Reserving the next slot
+    before releasing the mutex keeps concurrent processes from sending requests back-to-back.
     """
     return _network_limits.provider_interval_wait(
         lock_file,
@@ -815,14 +799,14 @@ def _em_wait_process_interval() -> float:
 
 
 def _gen_wait_process_interval() -> float:
-    """V17.0 R2: GEN sync 薄包装(无锁 + mtime + 0.2s)。"""
+    """GEN sync gate with the same cross-process mutex as the async path."""
     import random as _rand
 
     return _process_interval_wait(
         _gen_lock_file,
         0.2 + _rand.uniform(0.01, 0.05),
-        use_lock=False,
-        use_content_ts=False,
+        use_lock=True,
+        use_content_ts=True,
     )
 
 
@@ -1486,50 +1470,22 @@ def _ensure_async_locks() -> None:
 async def _process_interval_wait_async(
     lock_file: str, target_interval: float, use_content_ts: bool = False
 ) -> float:
-    """V17.0 R2: 进程间协调核心(async 版)——EM/GEN 原 2 函数收敛。
-
-    无文件锁(阻塞锁会卡事件循环, 属有意为之); 与同步版共用同一文件。
-    use_content_ts: EM 版读内容时间戳(| 分隔取 [1], 兼容纯数字); GEN 版读 mtime。
-    """
+    """Run the sync cross-process gate off-loop so async and sync share one lock/state."""
     try:
-        _last_ts = 0.0
-        if use_content_ts:
-            if os.path.exists(lock_file):
-                try:
-                    with open(lock_file, "r", encoding="utf-8") as _f:
-                        _c = _f.read().strip()
-                    if _c and "|" in _c:
-                        _last_ts = float(_c.split("|")[1])
-                    elif _c:
-                        _last_ts = float(_c)
-                except (OSError, ValueError):
-                    _last_ts = 0.0
-        elif os.path.exists(lock_file):
-            _last_ts = os.path.getmtime(lock_file)
-        _elapsed = time.time() - _last_ts if _last_ts > 0 else target_interval
-        if _elapsed < target_interval:
-            _wait = target_interval - _elapsed
-            await asyncio.sleep(_wait)
-            if use_content_ts:
-                with open(lock_file, "w") as _f:
-                    _f.write(f"{os.getpid()}|{time.time():.3f}")
-            else:
-                with open(lock_file, "w") as _f:
-                    _f.write(str(time.time()))
-            return _wait
-        if use_content_ts:
-            with open(lock_file, "w") as _f:
-                _f.write(f"{os.getpid()}|{time.time():.3f}")
-        else:
-            with open(lock_file, "w") as _f:
-                _f.write(str(time.time()))
+        return await asyncio.to_thread(
+            _process_interval_wait,
+            lock_file,
+            target_interval,
+            True,
+            True,
+        )
     except Exception as _e:
         _debug_log(f"sc_network process_interval_wait_async: {_e}")
-    return 0.0
+        raise
 
 
 async def _em_wait_process_interval_async() -> float:
-    """V17.0 R2: EM async 薄包装(内容时间戳 + 1.0-1.3s, 与同步版共用文件)。"""
+    """EM async gate sharing the sync cross-process mutex and state."""
     import random as _rand
 
     return await _process_interval_wait_async(
@@ -1540,13 +1496,13 @@ async def _em_wait_process_interval_async() -> float:
 
 
 async def _gen_wait_process_interval_async() -> float:
-    """V17.0 R2: GEN async 薄包装(mtime + 0.2s, 与同步版共用文件)。"""
+    """GEN async gate sharing the sync cross-process mutex and state."""
     import random as _rand
 
     return await _process_interval_wait_async(
         _gen_lock_file,
         0.2 + _rand.uniform(0.01, 0.05),
-        use_content_ts=False,
+        use_content_ts=True,
     )
 
 

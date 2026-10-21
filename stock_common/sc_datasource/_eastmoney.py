@@ -41,6 +41,8 @@ from ._shared import (
     _FFLOW_HOSTS,
 )
 from stock_common.sc_kpl import _f
+from ._datacenter import query_datacenter as _query_datacenter
+from ._datacenter import query_datacenter_async as _query_datacenter_async
 
 
 def eastmoney_datacenter(
@@ -57,54 +59,22 @@ def eastmoney_datacenter(
 
     V7.5 新增：HTTP状态码非200时记录日志，业务错误码(status=-1)时记录日志，JSON解析失败时记录日志。
     """
-    try:
-        # V17.4.1: 市场级报表(code="")且无显式 filter 时传空过滤(返回全量);
-        # 此前恒补 (SECURITY_CODE="") 把全市场报表过滤成空(ipo_calendar/
-        # convertible_bonds/lpr_history 恒空根因)。
-        full_filter = filter_str if filter_str else (f'(SECURITY_CODE="{code}")' if code else "")
-        r = _quick_request(
-            DATACENTER_URL,
-            params={
-                "reportName": report_name,
-                "columns": columns,
-                "filter": full_filter,
-                "pageNumber": str(page_index),
-                "pageSize": str(page_size),
-                "sortColumns": sort_columns,
-                "sortTypes": sort_types,
-                "source": "WEB",
-                "client": "WEB",
-            },
-            headers={"User-Agent": UA},
-            timeout=15,
-        )
-        if r is None:
-            return []
-        # HTTP状态码检查
-        if r.status_code != 200:
-            _http_logger.error(f"{r.status_code} | {DATACENTER_URL} | {report_name} | {code}")
-            return []
-        try:
-            d = r.json()
-        except Exception as _json_err:
-            _http_logger.error(
-                f"JSONDecodeError | {DATACENTER_URL} | {report_name} | {code} | {_json_err}"
-            )
-            return []
-        # 业务错误码检查
-        if isinstance(d, dict) and d.get("status") == -1:
-            _biz_logger.error(f"status=-1 | {report_name} | {code} | {d.get('message', '')}")
-            return []
-        if isinstance(d, dict):
-            result = d.get("result")
-            if isinstance(result, dict):
-                data = result.get("data")
-                if isinstance(data, list):
-                    return [row for row in data if isinstance(row, dict)]
-        return []
-    except Exception as _e:
-        _debug_log(f"eastmoney_datacenter({code}, {report_name}): {_e}")
-        return []
+    return _query_datacenter(
+        code,
+        report_name,
+        columns,
+        filter_str,
+        page_size,
+        sort_columns,
+        sort_types,
+        page_index,
+        quick_request=_quick_request,
+        datacenter_url=DATACENTER_URL,
+        user_agent=UA,
+        http_logger=_http_logger,
+        biz_logger=_biz_logger,
+        debug_log=_debug_log,
+    )
 
 
 def _em_filter(
@@ -140,41 +110,21 @@ async def eastmoney_datacenter_async(
 
     V9.4: 原生 aiohttp 实现，移除 asyncio.to_thread 包装。
     """
-    try:
-        # V17.4.1: 同同步版 —— 市场级报表(code="")传空过滤返回全量。
-        full_filter = filter_str if filter_str else (f'(SECURITY_CODE="{code}")' if code else "")
-        d = await _async_request_with_retry(
-            session,
-            DATACENTER_URL,
-            params={
-                "reportName": report_name,
-                "columns": columns,
-                "filter": full_filter,
-                "pageNumber": "1",
-                "pageSize": str(page_size),
-                "sortColumns": sort_columns,
-                "sortTypes": sort_types,
-                "source": "WEB",
-                "client": "WEB",
-            },
-            headers={"User-Agent": UA},
-            timeout=15,
-        )
-        if d is None:
-            return []
-        if isinstance(d, dict) and d.get("status") == -1:
-            _biz_logger.error(f"status=-1 | {report_name} | {code} | {d.get('message', '')}")
-            return []
-        if isinstance(d, dict):
-            result = d.get("result")
-            if isinstance(result, dict):
-                data = result.get("data")
-                if isinstance(data, list):
-                    return [row for row in data if isinstance(row, dict)]
-        return []
-    except Exception as _e:
-        _debug_log(f"eastmoney_datacenter_async({code}, {report_name}): {_e}")
-        return []
+    return await _query_datacenter_async(
+        session,
+        code,
+        report_name,
+        columns,
+        filter_str,
+        page_size,
+        sort_columns,
+        sort_types,
+        async_request_with_retry=_async_request_with_retry,
+        datacenter_url=DATACENTER_URL,
+        user_agent=UA,
+        biz_logger=_biz_logger,
+        debug_log=_debug_log,
+    )
 
 
 async def _em_filter_async(
@@ -1295,12 +1245,9 @@ def dragon_tiger_backup(trade_date: str) -> Dict[str, Any]:
             },
         )
         # V16.3 C1: 备胎源裸 urlopen 补节流（_DOMAIN_LIMITS 的 szse 域 3.0rps 不覆盖此直连路径）
-        try:
-            from stock_common.sc_network import _gen_wait_process_interval
+        from stock_common.sc_network import _gen_wait_process_interval
 
-            _gen_wait_process_interval()
-        except Exception:
-            pass
+        _gen_wait_process_interval()
         # V16.3 O14: 备胎源强制直连（ProxyHandler({}) 忽略系统代理——GD 外全部直连）
         # V16.3 O22: OpenerDirector.open 不接受 context 关键字（原 TypeError 使备胎源永久失效）——
         # 自定义 SSL context 通过 HTTPSHandler 注入
@@ -1339,12 +1286,9 @@ def dragon_tiger_backup(trade_date: str) -> Dict[str, Any]:
             },
         )
         # V16.3 C1: 备胎源裸 urlopen 补节流
-        try:
-            from stock_common.sc_network import _gen_wait_process_interval
+        from stock_common.sc_network import _gen_wait_process_interval
 
-            _gen_wait_process_interval()
-        except Exception:
-            pass
+        _gen_wait_process_interval()
         # V16.3 O14: 强制直连（忽略系统代理）
         _opener = urllib.request.build_opener(urllib.request.ProxyHandler({}))
         with _opener.open(req, timeout=15) as r:

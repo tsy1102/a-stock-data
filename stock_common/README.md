@@ -20,6 +20,7 @@
 | sc_datasource/__init__.py | 子包入口: 统一再导出全部数据源函数(对外兼容旧 `sc_datasource.py` 命名空间) |
 | sc_datasource/_shared.py | 跨片段共享可变状态(单实例), 常量/字段段定义 |
 | sc_datasource/_axdata.py | AxData 请求适配；由采集器按核验策略调用，不持有日常验证状态 |
+| sc_datasource/_datacenter.py | 东财数据中心 sync/async 端点处理；由 `_eastmoney.py` 注入共享请求/重试函数，不持有网络状态 |
 | sc_datasource/_eastmoney.py | 东财接口(接口映射/多域健康矩阵/资金流/板块/研报等) |
 | sc_datasource/_financials.py | 财务数据(利润表/资产负债表/现金流量表/估值) |
 | sc_datasource/_holders.py | 股东/股本/十大股东/限售解禁 |

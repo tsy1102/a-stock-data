@@ -7,15 +7,15 @@
 | 区域 | 测试模块数 | 覆盖范围 | 详细清单 |
 |:---|---:|:---|:---|
 | `core/` | 19 | 核心门面、缓存、日历、类型契约、fallback、评分和技术指标 | [`core/README.md`](core/README.md) |
-| `data/` | 15 | ZHB、TDX/ELTDX、Eastmoney、KPL、网络、解禁单位、指数、EPS 预测缓存、财务日历和异步财报兜底 | [`data/README.md`](data/README.md) |
+| `data/` | 17 | ZHB、TDX/ELTDX、Eastmoney、KPL、网络、解禁单位、指数、EPS 预测缓存、财务日历和异步财报兜底 | [`data/README.md`](data/README.md) |
 | `infra/` | 12 | 调度器、字段完整性/命名、依赖预检、dry-run 写入边界、F10、外部 API 与 GD | [`infra/README.md`](infra/README.md) |
 | `reports/` | 14 | 报告 Runner、流水线、策略、章节契约、财务精度、Markdown 输出、正文辅助逻辑、指数映射和快照失败处理 | [`reports/README.md`](reports/README.md) |
 | 根目录 | 47 | 碰撞/字段登记、采集探针、来源身份核验、来源语义质量、依赖适配、AxData 摘要与维护工具、网络和临时目录隔离 | 本文件下方列出 |
-| **合计** | **107** | 参数化用例展开前的测试模块数 | — |
+| **合计** | **108** | 参数化用例展开前的测试模块数 | — |
 
 ## 最近完整执行
 
-2026-10-21（Python 3.12.10，`run_offline_checks.ps1`）：收集 1,229 项，1,176 通过、1 跳过、52 个 `real_network` 用例按默认策略排除，耗时 28.34 秒。真实网络测试未运行；语法、Mypy、Black API、AxData 摘要、数据访问、字典同步、Canonical contract 与 registry parity 闸门均通过。
+2026-10-21（Python 3.12.10，`run_offline_checks.ps1`）：收集 1,250 项，离线执行 1,198 项，其中 1,197 通过、1 跳过；52 个 `real_network` 用例按默认策略排除，耗时 33.96 秒。真实网络测试未运行；语法 262 个文件、Mypy 232 个源文件、Black API 247 个文件且 0 格式差异；AxData 摘要、数据访问、字典同步、Canonical contract 与 registry parity 闸门均通过。
 
 根目录测试：
 
@@ -27,7 +27,7 @@
 - `test_extract_registry_alignment.py`：逐源字段解析中的分组对齐、组合单位和证据优先级。
 - `test_dependency_adapter_compat.py`：Levistock 实际方法契约与 AxData 本地 ZHB ZIP 读取。
 - `test_ftshare_rest.py`、`test_ftshare_collision_anchor.py`：FTShare REST 日常采集契约、凭证隔离、限流/403/429 熔断、报价日期校验、代码归一化及官方契约锚 L1-C 行为。
-- `test_axdata_daily_validation.py`、`test_axdata_crosswalk_summary.py`、`test_levistock_daily_probe.py`、`test_levistock_daily_validation.py`、`test_levistock_rate_limit.py`：AxData 摘要完整性与候选源每日核验、日期/数据阶段、熔断与限流。
+- `test_axdata_daily_validation.py`、`test_axdata_crosswalk_summary.py`、`test_levistock_daily_probe.py`、`test_levistock_daily_validation.py`、`test_levistock_rate_limit.py`：AxData 摘要完整性与候选源每日核验、日期/数据阶段、同步/异步跨进程限流与 OS 锁崩溃释放。
 - `test_axdata_capture_identity.py`、`test_axdata_capture_policy.py`、`test_axdata_collision_suppression.py`：AxData 生产路由退出、三交易日复验、限流熔断与默认碰撞过滤。
 - `test_collision_research_state.py`：探索候选跨轮保存、幂等和历史继承。
 - `test_collision_candidate_reviews.py`、`test_collision_math.py`、`test_collision_state.py`：稳定候选身份、人工处置历史、批量重复归并、证据引用校验、数值方法和碰撞状态读写保护。

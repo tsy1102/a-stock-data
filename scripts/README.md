@@ -46,7 +46,7 @@ FTShare 的旧私有托管 MCP/SDK 已退役；旧 `FTShare` 身份下的 15 条
 
 主字典字段变为 `verified` 后，碰撞脚本只将它从“待破解目标”中移除，仍保留为独立锚点；采集器不读取字段状态，因此已定案字段会继续进入每日样本，用于复核和漂移监测。接口因来源身份重复而暂停请求是另一项独立的源级决定，不由字段定案触发。
 
-采集覆盖回归遍历本轮注册表中的 2,483 条 `source_fields` 记录，逐条检查来源身份能解析到日常采集器，只有已退役重复源与历史未归属记录使用明确例外。该回归证明字段记录没有因 `verified`/`unverified` 状态而失去来源路由；它是静态源级路由检查，不代表每个接口字段在某次样本中都实际返回。实际 raw 与登记字段的双向差异由 `audit_field_completeness.py` 检查，并结合 `meta.json` 区分未选源、请求失败、稀疏字段和采集遗漏。新浪扩展 API 的 27 项拆为 7 项可采集字段、17 项因缺少期权合约池而暂停、3 项无可靠接口路径而待补证；三类状态都由采集 raw 的 `__source_meta__` 记录。百度 K 线 3 个 MA 字段默认保持 `pending_validation`，仅 `--only baidu` 时限量请求；首次请求或响应契约失败即停止本轮剩余代码，避免对不稳定接口批量施压。
+采集覆盖回归遍历本轮注册表中的 2,550 条 `source_fields` 记录，逐条检查来源身份能解析到日常采集器，只有已退役重复源与历史未归属记录使用明确例外。该回归证明字段记录没有因 `verified`/`unverified` 状态而失去来源路由；它是静态源级路由检查，不代表每个接口字段在某次样本中都实际返回。实际 raw 与登记字段的双向差异由 `audit_field_completeness.py` 检查，并结合 `meta.json` 区分未选源、请求失败、稀疏字段和采集遗漏。新浪扩展 API 的 27 项拆为 7 项可采集字段、17 项因缺少期权合约池而暂停、3 项无可靠接口路径而待补证；三类状态都由采集 raw 的 `__source_meta__` 记录。百度 K 线 3 个 MA 字段默认保持 `pending_validation`，仅 `--only baidu` 时限量请求；首次请求或响应契约失败即停止本轮剩余代码，避免对不稳定接口批量施压。
 
 字段语义定案与采集生命周期相互独立：已验证字段继续每日采集，只作为锚点退出未知字段的重复破解。TDX 字段采集保存原始 adapter 快照于 `quote_raw`，并从其直接计算 `quote_full` 行情路径；不会把 ZHB/Tencent 回退值标作 TDX。空行情或财务结果会留下逐股错误标记，防止空数据被统计为成功。`audit_field_completeness.py` 同时报告采到但未登记、登记但本次未观察到两类差异；后者还需结合采集范围、来源状态和字段稀疏性判断，不能直接等同于漏采。
 
@@ -65,10 +65,13 @@ Fuyao REST 的 Key 读取顺序为官方变量 `HITHINK_FINANCE_API_KEY`、兼�
 | `capture_catalog.py` | 采集器源配置、字段族和来源契约目录。 |
 | `capture_diagnostics.py` | 响应、错误、数据日和 ZHB 新鲜度诊断；保留原采集入口兼容名称。 |
 | `capture_archive.py` | ZHB 快照保护、上下文保留及归档完整性/覆盖刷新。 |
+| `capture_context_collectors.py`、`capture_tcp_collectors.py`、`capture_verified_collectors.py`、`capture_http_collectors.py` | 按来源族实现采集 producer；`capture_field_probe.py` 继续持有 CLI、日期/覆盖编排、注册表和落盘。 |
 | `stock_common/sc_network_limits.py` | 纯跨进程间隔等待与锁文件机制；所有限流、熔断状态仍由 `sc_network.py` 单一持有。 |
 | `collision_snapshots.py`、`collision_math.py` | 碰撞快照身份/筛选，与纯数值、公式候选方法。 |
+| `collision_candidate_methods.py`、`collision_registry_context.py`、`collision_candidate_triage.py` | 碰撞候选计算、只读来源/registry 上下文与覆盖 triage；`collide.py` 保留运行编排和兼容名称。 |
 | `collision_candidate_ranking.py`、`collision_state.py`、`collision_reporting.py` | 候选排序、碰撞状态读写及报告序列化。 |
 | `collision_candidate_reviews.py` | 独立候选审阅台账；`review_collision_candidates.py` 默认预览，显式 `--apply` 才记录处置。 |
+| `collision_adjudication_validation.py`、`collision_adjudication_transformations.py` | 裁决输入验证与内存对象变换；裁决 CLI 和唯一原子写入仍在 `apply_collision_adjudications.py`。 |
 | `stock_common/md_render.py` | 五大报告共用的 Markdown 表格与文本转换。 |
 | `axdata_crosswalk_summary.py` | 从规范交叉表生成并校验轻量运行时队列摘要。 |
 | `verify_python_syntax.py`、`verify_black_api.py`、`run_offline_checks.ps1` | 语法、Black Python API 和完整离线验收入口。 |
@@ -81,7 +84,7 @@ Fuyao REST 的 Key 读取顺序为官方变量 `HITHINK_FINANCE_API_KEY`、兼�
 |:---|:---|
 | `extract_registry.py`、`field_registry_api.py` | 从主字典提取登记信息；后者是多个治理脚本共用的内部 API。 |
 | `registry_parity.py` | 校验登记表、主字典投影和字段矩阵；历史 TDX 五档 token 与当前 bid/ask 原始路径、以及仍采集的 Fuyao 上下文标签通过 `registry_parity_scope.json` 逐项注明证据和采集范围。未列入清单的新差异仍会失败；治理运行器的接受差异清单只用于另行审定的 parity debt。 |
-| `apply_collision_adjudications.py` | 默认预览，显式 `--apply` 后才写 registry 和生成视图；支持 L1 碰撞、固定版本的单源上游契约，以及有来源独立性检查和 CSV 复算的公式关系定案。公式样本留档于 `docs/field_verification/derived_evidence/`，不自动联网、不建立输入字段映射。 |
+| `apply_collision_adjudications.py` | 默认预览，显式 `--apply` 后才写 registry 和生成视图；支持 L1 碰撞、固定版本的单源上游契约，以及有来源独立性检查和 CSV 复算的公式关系定案。校验与内存变换委托给相邻模块；公式样本留档于 `docs/field_verification/derived_evidence/`，不自动联网、不建立输入字段映射。 |
 | `derived_relation_evidence.py` | 定案器调用的公式证据校验模块；限制算术语法与本地样本范围，核验来源族、已验证输入、有效日期和样本误差。 |
 | `gen_field_dict.py`、`gen_field_matrix.py` | 生成字典/矩阵片段；`--check` 只检查、不写入。 |
 | `gen_ulist_subdict.py`、`gen_zhb_subdict.py` | 生成对应接口的字典子表及镜像。 |

@@ -17,6 +17,7 @@
 | `_shared.py` | 跨片段**共享可变状态**(单实例) + 公共常量 / 字段段定义 | `_ZHB_*_FIELDS` / `_EM_*` / `_get_shared_state()` |
 | `_axdata.py` | AxData 请求适配与响应归一化；不保存每日核验状态 | `get_axdata_records` |
 | `_convertible.py` | 可转债条款、转股价值与溢价率 | `convertible_bonds` |
+| `_datacenter.py` | 东财数据中心 sync/async 请求参数与响应行处理；无缓存/网络状态，通过 `_eastmoney.py` 注入现有请求门面 | 由 `_eastmoney.py` 内部调用 |
 | `_eastmoney.py` | 东方财富接口层: 接口映射 / 多域健康矩阵 / 资金流 / 板块 / 研报 / 个股全景 | `get_em_*` / `check_em_health` |
 | `_etf.py` | 上交所/深交所 ETF 份额数据 | `etf_shares` |
 | `_events.py` | 业绩预告、机构调研、股东变动、质押与新股申购 | 事件查询函数 |

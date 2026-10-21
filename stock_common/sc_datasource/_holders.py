@@ -776,9 +776,6 @@ def cninfo_irm(code: str, page_size: int = 30, page_num: int = 1) -> List[Dict[s
         from stock_common.sc_network import _gen_wait_process_interval
 
         _gen_wait_process_interval()
-    except Exception:
-        pass
-    try:
         # V16.3 O14: 巨潮互动易强制直连（忽略系统代理——GD 外全部直连）
         _no_proxy = {"http": None, "https": None}
         r1 = requests.post(

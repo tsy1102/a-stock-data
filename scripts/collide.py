@@ -71,18 +71,48 @@ from scripts.collision_dates import (
     select_snapshots,
 )
 from scripts.context_policy import CONTEXT_ONLY_SOURCES, CONTEXT_RECORD_PATHS
+from scripts import collision_candidate_triage as CCT
+from scripts import collision_registry_context as CRCX
+
+_lineage_aliases = CRCX._lineage_aliases
+_verified_official_contract_kind = CRCX._verified_official_contract_kind
+from scripts.collision_candidate_methods import (
+    CR,
+    RULES_OK,
+    CONST_MAX_DISTINCT,
+    HIT_RATE_L1_RATIO,
+    HUB_MAX,
+    ID_SUFFIX_HINTS,
+    MAX_FIELD_FRONTIER_CANDIDATES,
+    MAX_FORMULA_CANDIDATES_PER_TARGET,
+    MAX_METHOD_CANDIDATES,
+    MAX_TARGET_METHOD_CANDIDATES,
+    MIN_CANDIDATE_PAIRS,
+    MIN_DAILY_L1,
+    MIN_DAILY_L4,
+    MIN_INFORMATIVE_DAILY_L1,
+    MIN_PAIR,
+    MULTI_DAY_MIN,
+    RATIO_CV_MAX,
+    RATIO_STEPS_SIGNED,
+    _eligible_for_l1,
+    _informative_pair,
+    _median,
+    _ratio_step,
+    _temporal_candidate,
+    classify,
+    cv,
+    discriminating_sample_for_target,
+    formula_candidates_for_target,
+    is_close,
+    to_num,
+)
 from scripts import collision_auxiliary_evidence as CAE
 from scripts import collision_candidate_reviews as CCR
 from scripts import collision_research_state as CRS
 from scripts import field_name_candidates as FNC
 from scripts import field_registry_api as FRA
 
-try:
-    from scripts import collision_rules as CR
-
-    RULES_OK = True
-except Exception:
-    RULES_OK = False
 
 from scripts import source_lineage_api as SLA
 from scripts.collision_snapshots import (
@@ -129,41 +159,21 @@ try:
 except (OSError, ValueError, TypeError):
     _SOURCE_LINEAGE = {"sources": {}, "source_aliases": {}, "runtime_sources": {}}
 
+
 # ───────────────────────────────────────────────────────────────────────
 # 路径与常量
 # ───────────────────────────────────────────────────────────────────────
+def _set_source_lineage(lineage):
+    global _SOURCE_LINEAGE
+    _SOURCE_LINEAGE = lineage
+
+
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DATA_DIR = os.path.join(ROOT, "docs", "field_verification")
 REG_PATH = os.path.join(DATA_DIR, "field_registry.json")
 STATE_PATH = os.path.join(DATA_DIR, "collision_state.json")
 RESEARCH_STATE_PATH = os.path.join(DATA_DIR, "collision_research_state.json.gz")
 
-# 样本为 20 股（pool.json: fixed 15 + dynamic 5）。L1 命中率阈值 = HIT_RATE_L1(18)/20 = 0.9；
-# 采用比率而非绝对 18/20，便于样本数变动时阈值自适应（符合四铁律精神）。
-# 注：早期版本曾误记样本为 12 股，实际采集脚本 load_pool() 始终返回 20 只——采集无缩水。
-HIT_RATE_L1_RATIO = (CR.HIT_RATE_L1 / 20.0) if RULES_OK else 0.9  # 0.9
-MULTI_DAY_MIN = CR.MULTI_DAY_MIN if RULES_OK else 3
-RATIO_CV_MAX = CR.RATIO_CV_MAX if RULES_OK else 1e-4
-RATIO_STEPS_SIGNED = set()
-if RULES_OK:
-    for k in range(0, 5):
-        RATIO_STEPS_SIGNED.add(10**k)
-        RATIO_STEPS_SIGNED.add(10**-k)
-else:
-    RATIO_STEPS_SIGNED = {1, 10, 100, 1000, 10000, 0.1, 0.01, 0.001, 0.0001}
-
-MIN_PAIR = 8  # 候选对最少总样本数
-MIN_DAILY_L1 = CR.MIN_DAILY_SAMPLES_L1 if RULES_OK else 18
-MIN_INFORMATIVE_DAILY_L1 = CR.MIN_INFORMATIVE_SAMPLES_L1 if RULES_OK else 5
-MIN_DAILY_L4 = CR.MIN_DAILY_SAMPLES_L4 if RULES_OK else 8
-MIN_CANDIDATE_PAIRS = 12  # 方法候选最少配对样本
-MAX_METHOD_CANDIDATES = 500
-MAX_TARGET_METHOD_CANDIDATES = 8
-MAX_FIELD_FRONTIER_CANDIDATES = 1
-MAX_FORMULA_CANDIDATES_PER_TARGET = 2
-HUB_MAX = 6  # 单字段匹配超过此数 → 巧合，降级
-CONST_MAX_DISTINCT = 1  # 不同值 ≤1 → 常量，跳过
-ID_SUFFIX_HINTS = ("market", "code", "date", "name", "thscode", "ticker", "url", "host", "secid")
 # 剔除已知异常采集日（数据质量缺陷，不可参与对撞）：
 # - 20260814：盘中快照（采集 start=10:49:53，其余日均为 15:00–17:09 收盘后）→
 #   当日 change_pct 在 19/20 股同时失配（单日全市场同向，是采集时点问题非字段问题）。
@@ -175,41 +185,6 @@ EXCLUDE_DIRS = set(EXCLUDED_MARKET_DATES)
 # ───────────────────────────────────────────────────────────────────────
 # 数值工具
 # ───────────────────────────────────────────────────────────────────────
-def to_num(v):
-    """尽力把值转成 float；非数值返回 None。"""
-    if v is None or isinstance(v, bool):
-        return None
-    if isinstance(v, (int, float)):
-        return float(v)
-    if isinstance(v, str):
-        s = v.strip().replace(",", "")
-        if s == "":
-            return None
-        try:
-            return float(s)
-        except ValueError:
-            return None
-    return None
-
-
-def is_close(a: float, b: float) -> bool:
-    """舍入感知容差：相对 1e-6，绝对值兜底 1e-9。"""
-    if a == b:
-        return True
-    denom = max(1.0, abs(a), abs(b))
-    return abs(a - b) <= 1e-6 * denom
-
-
-def cv(xs):
-    """变异系数 std/mean。"""
-    n = len(xs)
-    if n < 2:
-        return 0.0
-    m = sum(xs) / n
-    if m == 0:
-        return 0.0
-    var = sum((x - m) ** 2 for x in xs) / n
-    return math.sqrt(var) / abs(m)
 
 
 # ───────────────────────────────────────────────────────────────────────
@@ -220,72 +195,11 @@ def cv(xs):
 # ───────────────────────────────────────────────────────────────────────
 # 字段分类（数值 / 枚举 / 字符串 / 常量 / 标识符）
 # ───────────────────────────────────────────────────────────────────────
-def classify(store):
-    """为每个字段补充 type / n_distinct / is_constant / is_identifier。"""
-    for fid, info in store.items():
-        vals = [
-            v for v in info["vals"].values() if v is not None and not isinstance(v, (dict, list))
-        ]
-        nums = [to_num(v) for v in vals]
-        nums = [n for n in nums if n is not None]
-        n_total = len(vals)
-        n_num = len(nums)
-        distinct = len(set(vals))
-        info["n"] = n_total
-        info["n_num"] = n_num
-        info["n_distinct"] = distinct
-        info["is_constant"] = distinct <= CONST_MAX_DISTINCT and n_total > 0
-        low = fid.lower()
-        info["is_identifier"] = any(h in low for h in ID_SUFFIX_HINTS)
-        if n_total > 0 and n_num >= 0.8 * n_total:
-            info["type"] = "num"
-        elif distinct <= 30 and n_total > 0:
-            info["type"] = "enum"
-        else:
-            info["type"] = "str"
-        # 值域（用于快速预筛）
-        if nums:
-            info["vmin"] = min(nums)
-            info["vmax"] = max(nums)
-        else:
-            info["vmin"] = None
-            info["vmax"] = None
 
 
 # ───────────────────────────────────────────────────────────────────────
 # 对撞核心
 # ───────────────────────────────────────────────────────────────────────
-def _eligible_for_l1(info, key):
-    sample_meta = info.get("sample_meta", {}).get(key, {})
-    return sample_meta.get("phase") in {"closed", "calendar"}
-
-
-def _median(values):
-    ordered = sorted(values)
-    if not ordered:
-        return None
-    middle = len(ordered) // 2
-    if len(ordered) % 2:
-        return ordered[middle]
-    return (ordered[middle - 1] + ordered[middle]) / 2.0
-
-
-def _informative_pair(a, b, left_num, right_num):
-    """Ignore jointly missing and 0/0 pairs when exact matches could be coincidental."""
-    left_missing = a is None or (isinstance(a, str) and not a.strip())
-    right_missing = b is None or (isinstance(b, str) and not b.strip())
-    if left_missing and right_missing:
-        return False
-    if left_num == 0 and right_num == 0:
-        return False
-    return True
-
-
-def _ratio_step(value):
-    for step in RATIO_STEPS_SIGNED:
-        if step != 1 and math.isclose(value, step, rel_tol=0.005, abs_tol=1e-9):
-            return step
-    return None
 
 
 def collide_pair(L, R, *, contract_anchor=False):
@@ -476,48 +390,6 @@ def collide_pair(L, R, *, contract_anchor=False):
     }
 
 
-def _temporal_candidate(common, left_values, right_values):
-    per_code = defaultdict(list)
-    for key in common:
-        code, day_key = key
-        if not str(day_key).startswith("T:"):
-            continue
-        left_num, right_num = to_num(left_values[key]), to_num(right_values[key])
-        if left_num is not None and right_num is not None:
-            per_code[code].append((day_key, left_num, right_num))
-    correlations = []
-    used_days = set()
-    for code, rows in per_code.items():
-        rows.sort(key=lambda item: item[0])
-        if len(rows) < 3:
-            continue
-        value = _pearson([row[1] for row in rows], [row[2] for row in rows])
-        if value is not None:
-            correlations.append((code, value, [row[0] for row in rows]))
-            used_days.update(row[0] for row in rows)
-    if len(correlations) < 3:
-        return None
-    signs = [1 if value > 0 else -1 for _, value, _ in correlations if value != 0]
-    if not signs:
-        return None
-    dominant = 1 if sum(signs) >= 0 else -1
-    sign_consistency = sum(sign == dominant for sign in signs) / len(signs)
-    median_abs = _median([abs(value) for _, value, _ in correlations]) or 0.0
-    if median_abs < 0.7 or sign_consistency < 0.8:
-        return None
-    return {
-        "method": "per_stock_time_series",
-        "median_abs_pearson": round(median_abs, 4),
-        "sign_consistency": round(sign_consistency, 4),
-        "stocks": len(correlations),
-        "stock_correlations": [
-            {"code": code, "pearson": round(value, 4), "dates": dates}
-            for code, value, dates in correlations[:20]
-        ],
-        "sample_dates": sorted(used_days),
-    }
-
-
 def _semantic_tokens(fid):
     label = code_of(fid).lower()
     if re.fullmatch(r"(?:f\d+|tx\[\d+\])", label):
@@ -623,477 +495,17 @@ def select_method_candidate_frontier(method_candidates_by_left, global_candidate
     )
 
 
-def formula_candidates_for_target(left_id, store, input_candidates):
-    """Generate conservative two-input formula clues with stock-level holdout."""
-    left = store.get(left_id)
-    if not isinstance(left, dict) or left.get("type") != "num":
-        return [], {"tested": 0, "validated": 0}
-
-    input_ids = []
-    for candidate in input_candidates:
-        right_id = candidate.get("right")
-        right = store.get(right_id)
-        if (
-            isinstance(right_id, str)
-            and right_id != left_id
-            and isinstance(right, dict)
-            and right.get("type") == "num"
-            and right_id not in input_ids
-        ):
-            input_ids.append(right_id)
-        if len(input_ids) >= MAX_TARGET_METHOD_CANDIDATES:
-            break
-
-    operators = (
-        ("product", "×"),
-        ("ratio_left_right", "÷"),
-        ("ratio_right_left", "÷"),
-        ("sum", "+"),
-        ("difference", "−"),
-    )
-    tested = 0
-    accepted = []
-    for first_index, first_id in enumerate(input_ids):
-        first = store[first_id]
-        for second_id in input_ids[first_index + 1 :]:
-            second = store[second_id]
-            common = set(left["vals"]) & set(first["vals"]) & set(second["vals"])
-            rows = []
-            for key in sorted(common, key=lambda item: (item[1], item[0])):
-                if not str(key[1]).startswith("T:"):
-                    continue
-                if not all(_eligible_for_l1(info, key) for info in (left, first, second)):
-                    continue
-                values = tuple(to_num(info["vals"][key]) for info in (left, first, second))
-                if any(value is None for value in values):
-                    continue
-                rows.append((key, values[0], values[1], values[2]))
-            codes = {row[0][0] for row in rows}
-            days = {row[0][1] for row in rows}
-            if len(rows) < 36 or len(codes) < 10 or len(days) < 3:
-                continue
-
-            training = [row for row in rows if not _formula_holdout(row[0][0])]
-            validation = [row for row in rows if _formula_holdout(row[0][0])]
-            training_codes = {row[0][0] for row in training}
-            validation_codes = {row[0][0] for row in validation}
-            if (
-                len(training) < 24
-                or len(validation) < 8
-                or len(training_codes) < 8
-                or len(validation_codes) < 3
-            ):
-                continue
-
-            for operator, symbol in operators:
-                train_features = [_formula_feature(operator, row[2], row[3]) for row in training]
-                validation_features = [
-                    _formula_feature(operator, row[2], row[3]) for row in validation
-                ]
-                if any(value is None for value in train_features + validation_features):
-                    continue
-                tested += 1
-                train_target = [row[1] for row in training]
-                validation_target = [row[1] for row in validation]
-                fit = _fit_affine_feature(train_features, train_target)
-                if fit is None:
-                    continue
-                slope, intercept = fit
-                predicted = [slope * value + intercept for value in validation_features]
-                validation_r2 = _r_squared(validation_target, predicted)
-                target_scale = _standard_deviation(train_target)
-                if not target_scale or validation_r2 is None:
-                    continue
-                normalized_rmse = (
-                    math.sqrt(
-                        sum(
-                            (actual - estimate) ** 2
-                            for actual, estimate in zip(validation_target, predicted)
-                        )
-                        / len(validation_target)
-                    )
-                    / target_scale
-                )
-
-                baseline_scores = []
-                for column in (2, 3):
-                    single_train = [row[column] for row in training]
-                    single_validation = [row[column] for row in validation]
-                    single_fit = _fit_affine_feature(single_train, train_target)
-                    if single_fit is None:
-                        continue
-                    single_slope, single_intercept = single_fit
-                    single_predicted = [
-                        single_slope * value + single_intercept for value in single_validation
-                    ]
-                    score = _r_squared(validation_target, single_predicted)
-                    if score is not None:
-                        baseline_scores.append(score)
-                baseline_r2 = max(baseline_scores, default=-1.0)
-                improvement = validation_r2 - baseline_r2
-                if validation_r2 < 0.985 or normalized_rmse > 0.05 or improvement < 0.05:
-                    continue
-
-                formula = (
-                    f"{left_id} ≈ {slope:.8g} × ({first_id} {symbol} {second_id}) "
-                    f"+ {intercept:.8g}"
-                )
-                accepted.append(
-                    {
-                        "left": left_id,
-                        "right_inputs": [first_id, second_id],
-                        "operator": operator,
-                        "formula": formula,
-                        "training_samples": len(training),
-                        "validation_samples": len(validation),
-                        "validation_stocks": len(validation_codes),
-                        "validation_dates": sorted({row[0][1] for row in validation}),
-                        "validation_r2": round(validation_r2, 6),
-                        "normalized_rmse": round(normalized_rmse, 6),
-                        "best_single_input_r2": round(baseline_r2, 6),
-                        "improvement_over_single_input": round(improvement, 6),
-                        "evidence_sources": sorted(
-                            {
-                                str(left.get("src") or ""),
-                                str(first.get("src") or ""),
-                                str(second.get("src") or ""),
-                            }
-                            - {""}
-                        ),
-                        "adjudication_status": "candidate_only",
-                    }
-                )
-
-    accepted.sort(
-        key=lambda item: (
-            item["validation_r2"],
-            item["improvement_over_single_input"],
-            item["validation_samples"],
-            item["formula"],
-        ),
-        reverse=True,
-    )
-    unique = []
-    seen = set()
-    for candidate in accepted:
-        key = (candidate["left"], tuple(candidate["right_inputs"]), candidate["operator"])
-        if key in seen:
-            continue
-        seen.add(key)
-        unique.append(candidate)
-        if len(unique) >= MAX_FORMULA_CANDIDATES_PER_TARGET:
-            break
-    return unique, {"tested": tested, "validated": len(accepted)}
-
-
-def discriminating_sample_for_target(left_id, store, input_candidates):
-    """Find a stock whose held-out candidate predictions disagree most."""
-    left = store.get(left_id)
-    if not isinstance(left, dict):
-        return None
-    candidate_ids = []
-    for candidate in input_candidates:
-        right_id = candidate.get("right")
-        if right_id in store and right_id != left_id and right_id not in candidate_ids:
-            candidate_ids.append(right_id)
-        if len(candidate_ids) >= MAX_TARGET_METHOD_CANDIDATES:
-            break
-    if len(candidate_ids) < 2:
-        return None
-
-    codes = set()
-    for right_id in candidate_ids:
-        right = store[right_id]
-        codes.update(
-            key[0] for key in set(left["vals"]) & set(right["vals"]) if str(key[1]).startswith("T:")
-        )
-
-    suggestions = []
-    for code in sorted(codes):
-        predictions_by_key = defaultdict(list)
-        training_target_values = []
-        usable_candidates = 0
-        usable_candidate_ids = []
-        for right_id in candidate_ids:
-            right = store[right_id]
-            common = set(left["vals"]) & set(right["vals"])
-            numeric = []
-            for key in common:
-                if not str(key[1]).startswith("T:"):
-                    continue
-                if not all(_eligible_for_l1(info, key) for info in (left, right)):
-                    continue
-                left_num = to_num(left["vals"][key])
-                right_num = to_num(right["vals"][key])
-                if left_num is not None and right_num is not None:
-                    numeric.append((key, left_num, right_num))
-            train = [row for row in numeric if row[0][0] != code]
-            held_out = [row for row in numeric if row[0][0] == code]
-            if len(train) < MIN_CANDIDATE_PAIRS or not held_out:
-                continue
-            fit = _fit_affine_feature([row[2] for row in train], [row[1] for row in train])
-            if fit is None:
-                continue
-            usable_candidates += 1
-            usable_candidate_ids.append(right_id)
-            slope, intercept = fit
-            training_target_values.extend(row[1] for row in train)
-            for key, _, right_value in held_out:
-                predictions_by_key[key].append((right_id, slope * right_value + intercept))
-        if usable_candidates < 2 or not training_target_values:
-            continue
-
-        scale = max(
-            _standard_deviation(training_target_values),
-            abs(_median(training_target_values) or 0.0) * 0.01,
-            1e-12,
-        )
-        spreads = []
-        for key, predictions in predictions_by_key.items():
-            if len(predictions) < 2:
-                continue
-            values = [prediction for _, prediction in predictions]
-            spreads.append((key[1], (max(values) - min(values)) / scale))
-        if len({day for day, _ in spreads}) < 2:
-            continue
-        score = _median([spread for _, spread in spreads]) or 0.0
-        suggestions.append(
-            {
-                "stock_code": code,
-                "candidate_count": usable_candidates,
-                "out_of_sample_dates": sorted({day for day, _ in spreads}),
-                "normalized_prediction_spread": round(score, 6),
-                "candidate_fields": usable_candidate_ids,
-            }
-        )
-
-    if not suggestions:
-        return {"status": "no_shared_stock_holdout", "candidate_fields": candidate_ids}
-    suggestions.sort(
-        key=lambda item: (
-            item["normalized_prediction_spread"],
-            len(item["out_of_sample_dates"]),
-            item["stock_code"],
-        ),
-        reverse=True,
-    )
-    best = suggestions[0]
-    if best["normalized_prediction_spread"] < 0.02:
-        return {
-            "status": "candidates_converge_on_existing_samples",
-            "candidate_fields": candidate_ids,
-            "best_observed_spread": best["normalized_prediction_spread"],
-        }
-    return {"status": "prioritize_recheck", **best}
-
-
 def load_field_coverage_index(folder_paths, trading_dates, event_start, event_end):
-    """Read the ignored per-capture coverage indices without changing capture data."""
     coverage_root = os.path.join(ROOT, ".tmp", "field_evidence_coverage")
-    selected_day_keys = {f"T:{str(value).replace('-', '')}" for value in trading_dates}
-    if isinstance(event_start, str):
-        event_start = parse_date(event_start)
-    if isinstance(event_end, str):
-        event_end = parse_date(event_end)
-    if isinstance(event_start, date) and isinstance(event_end, date):
-        event_day = event_start
-        while event_day <= event_end:
-            selected_day_keys.add(f"C:{event_day:%Y%m%d}")
-            event_day += timedelta(days=1)
-
-    coverage_records = {}
-    source_statuses = defaultdict(lambda: defaultdict(set))
-    diagnostics = []
-    coverage_paths = set()
-    metadata_count = 0
-    metadata_errors = 0
-    for folder in folder_paths:
-        folder_path = os.fspath(getattr(folder, "path", folder))
-        meta_path = os.path.join(folder_path, "meta.json")
-        if not os.path.isfile(meta_path):
-            continue
-        try:
-            with open(meta_path, encoding="utf-8") as handle:
-                metadata = json.load(handle)
-        except (OSError, ValueError, TypeError) as exc:
-            metadata_errors += 1
-            diagnostics.append(
-                f"字段覆盖索引跳过无效 meta.json：{os.path.basename(folder_path)} ({exc})"
-            )
-            continue
-        if not isinstance(metadata, dict):
-            metadata_errors += 1
-            diagnostics.append(f"字段覆盖索引跳过非对象 meta.json：{os.path.basename(folder_path)}")
-            continue
-        metadata_count += 1
-        capture_day = str(metadata.get("data_date") or os.path.basename(folder_path))
-        capture_day = re.sub(r"[^0-9]", "", capture_day)
-        source_records = metadata.get("sources")
-        if not isinstance(source_records, dict):
-            source_records = {}
-        capture_day_selected = bool(
-            re.fullmatch(r"\d{8}", capture_day)
-            and (f"T:{capture_day}" in selected_day_keys or f"C:{capture_day}" in selected_day_keys)
-        )
-        if capture_day_selected:
-            for source, status_record in source_records.items():
-                if isinstance(status_record, dict):
-                    status = status_record.get("status") or status_record.get("state") or "unknown"
-                elif isinstance(status_record, str):
-                    status = status_record
-                else:
-                    status = "unknown"
-                source_statuses[str(source)][str(status)].add(capture_day)
-
-        coverage_meta = metadata.get("field_evidence_coverage")
-        if not isinstance(coverage_meta, dict):
-            continue
-        report_day = re.sub(r"[^0-9]", "", str(coverage_meta.get("report_date") or capture_day))
-        if not re.fullmatch(r"\d{8}", report_day):
-            continue
-        coverage_path = os.path.join(coverage_root, f"coverage_{report_day}.json")
-        if coverage_path in coverage_paths or not os.path.isfile(coverage_path):
-            continue
-        coverage_paths.add(coverage_path)
-        try:
-            with open(coverage_path, encoding="utf-8") as handle:
-                coverage_doc = json.load(handle)
-        except (OSError, ValueError, TypeError) as exc:
-            diagnostics.append(f"字段覆盖详情读取失败：{os.path.basename(coverage_path)} ({exc})")
-            continue
-        rows = coverage_doc.get("fields") if isinstance(coverage_doc, dict) else None
-        if not isinstance(rows, list):
-            diagnostics.append(f"字段覆盖详情格式无效：{os.path.basename(coverage_path)}")
-            continue
-        for row in rows:
-            if not isinstance(row, dict):
-                continue
-            source = row.get("source")
-            code = row.get("code")
-            if not isinstance(source, str) or not isinstance(code, str):
-                continue
-            identity = (source, code)
-            aggregate = coverage_records.setdefault(
-                identity,
-                {
-                    "source": source,
-                    "code": code,
-                    "registry_status": row.get("registry_status"),
-                    "target_kind": row.get("target_kind"),
-                    "identity_status": row.get("identity_status"),
-                    "runtime_aliases": set(),
-                    "independence_family": row.get("independence_family"),
-                    "independence_status": row.get("independence_status"),
-                    "anchor_eligible": bool(row.get("anchor_eligible")),
-                    "source_as_of_days": set(),
-                    "candidate_days": set(),
-                    "source_as_of_sample_counts": {},
-                    "source_statuses": set(),
-                },
-            )
-            aggregate["runtime_aliases"].update(
-                alias for alias in row.get("runtime_aliases", []) if isinstance(alias, str)
-            )
-            aggregate["source_statuses"].update(
-                status for status in row.get("source_statuses", []) if isinstance(status, str)
-            )
-            for date_key in row.get("source_as_of_days", []):
-                if date_key in selected_day_keys:
-                    aggregate["source_as_of_days"].add(date_key)
-            for date_key in row.get("candidate_days", []):
-                if date_key in selected_day_keys:
-                    aggregate["candidate_days"].add(date_key)
-            for date_key, count in (row.get("source_as_of_sample_counts") or {}).items():
-                if date_key in selected_day_keys and isinstance(count, int):
-                    aggregate["source_as_of_sample_counts"][date_key] = max(
-                        count, aggregate["source_as_of_sample_counts"].get(date_key, 0)
-                    )
-
-    statuses = {}
-    for source, by_status in sorted(source_statuses.items()):
-        statuses[source] = {
-            "status_counts": {status: len(days) for status, days in sorted(by_status.items())},
-            "non_ok_dates": sorted(
-                day
-                for status, days in by_status.items()
-                if status.lower() not in {"ok", "success", "completed"}
-                for day in days
-            ),
-        }
-    return {
-        "records": coverage_records,
-        "source_statuses": statuses,
-        "summary": {
-            "capture_metadata_files": metadata_count,
-            "metadata_errors": metadata_errors,
-            "coverage_detail_files": len(coverage_paths),
-            "coverage_identity_count": len(coverage_records),
-            "detail_status": "available" if coverage_paths else "unavailable",
-        },
-        "diagnostics": diagnostics,
-        "selected_day_keys": selected_day_keys,
-    }
+    return CCT.load_field_coverage_index(
+        folder_paths, trading_dates, event_start, event_end, coverage_root
+    )
 
 
 def _coverage_records_for_target(fid, coverage_index):
-    alias = alias_src(fid)
-    target_code = code_of(fid)
-    matches = []
-    for record in coverage_index.get("records", {}).values():
-        if alias not in record.get("runtime_aliases", set()):
-            continue
-        record_code = SLA.normalize_runtime_field_code(alias, record.get("code", ""))
-        if target_code == record_code or (
-            alias == "zhb" and target_code.endswith("." + record_code)
-        ):
-            matches.append(record)
-
-    output = []
-    covered_days = set()
-    candidate_days = set()
-    for record in matches:
-        family = record.get("independence_family")
-        source_days = sorted(record.get("source_as_of_days", set()))
-        possible_days = sorted(record.get("candidate_days", set()))
-        covered_days.update(source_days)
-        candidate_days.update(possible_days)
-        output.append(
-            {
-                "source": record["source"],
-                "code": record["code"],
-                "registry_status": record.get("registry_status"),
-                "identity_status": record.get("identity_status"),
-                "independence_family": family,
-                "independence_status": record.get("independence_status"),
-                "anchor_eligible": bool(record.get("anchor_eligible")),
-                "source_as_of_days": source_days,
-                "candidate_days": possible_days,
-                "source_as_of_sample_counts": dict(
-                    sorted(record.get("source_as_of_sample_counts", {}).items())
-                ),
-                "source_statuses": sorted(record.get("source_statuses", set())),
-            }
-        )
-    output.sort(
-        key=lambda item: (
-            item["anchor_eligible"],
-            len(item["source_as_of_days"]),
-            item["source"],
-            item["code"],
-        ),
-        reverse=True,
+    return CCT.coverage_records_for_target(
+        fid, coverage_index, alias_src, code_of, SLA.normalize_runtime_field_code
     )
-    return {
-        "status": (
-            "available"
-            if coverage_index.get("summary", {}).get("coverage_detail_files")
-            else "unavailable"
-        ),
-        "source_count": len(output),
-        "source_as_of_days": sorted(covered_days),
-        "candidate_days": sorted(candidate_days),
-        "sources": output[:8],
-    }
 
 
 def build_candidate_triage(
@@ -1106,93 +518,18 @@ def build_candidate_triage(
     sample_by_left,
     pair_family_counts=None,
 ):
-    pair_family_counts = pair_family_counts or {}
-    rows = []
-    for left_id in left_ids:
-        pair_counts = pair_stats.get(left_id, Counter())
-        target_candidates = method_candidates_by_left.get(left_id, [])
-        target_coverage = _coverage_records_for_target(left_id, coverage_index)
-        target_coverage["independent_anchor_families"] = sorted(
-            family for family, count in pair_family_counts.get(left_id, {}).items() if count
-        )
-        target_coverage["independent_anchor_pairs"] = sum(
-            pair_family_counts.get(left_id, {}).values()
-        )
-        formulas = formula_by_left.get(left_id, [])
-        next_sample = sample_by_left.get(left_id)
-        count = candidate_counts.get(left_id, 0)
-        independent_comparisons = pair_counts.get("independent_pairs", 0)
-        independent_family_count = len(target_coverage["independent_anchor_families"])
-        if formulas:
-            status = "formula_candidate_needs_independent_review"
-            priority = 0
-        elif count >= 2:
-            status = "multiple_method_candidates_need_discrimination"
-            priority = 1
-        elif count == 1:
-            status = "single_method_candidate_needs_external_check"
-            priority = 2
-        elif pair_counts.get("unknown_lineage_skips", 0) and not independent_comparisons:
-            status = "source_lineage_gap"
-            priority = 3
-        elif target_coverage["source_count"] == 0 and target_coverage["status"] == "available":
-            status = "field_coverage_identity_unmapped"
-            priority = 4
-        elif independent_family_count == 0 and target_coverage["status"] == "available":
-            status = "independent_source_coverage_gap"
-            priority = 5
-        elif pair_counts.get("insufficient_numeric_samples", 0):
-            status = "joint_sample_coverage_gap"
-            priority = 6
-        elif independent_comparisons:
-            status = "no_current_method_signal"
-            priority = 7
-        else:
-            status = "no_eligible_comparison"
-            priority = 8
-        rows.append(
-            {
-                "left": left_id,
-                "status": status,
-                "priority": priority,
-                "candidate_count": count,
-                "pair_counts": dict(pair_counts),
-                "top_candidates": [
-                    _method_candidate_summary(candidate) for candidate in target_candidates[:2]
-                ],
-                "formula_candidates": formulas,
-                "next_sample": next_sample,
-                "coverage": target_coverage,
-            }
-        )
-    rows.sort(
-        key=lambda item: (
-            item["priority"],
-            -item["candidate_count"],
-            -len(item["coverage"]["independent_anchor_families"]),
-            item["left"],
-        )
+    return CCT.build_candidate_triage(
+        left_ids,
+        candidate_counts,
+        pair_stats,
+        method_candidates_by_left,
+        coverage_index,
+        formula_by_left,
+        sample_by_left,
+        _coverage_records_for_target,
+        _method_candidate_summary,
+        pair_family_counts,
     )
-    summary = {
-        "target_count": len(rows),
-        "targets_with_method_candidates": sum(row["candidate_count"] > 0 for row in rows),
-        "targets_without_method_candidates": sum(row["candidate_count"] == 0 for row in rows),
-        "targets_with_multiple_candidates": sum(row["candidate_count"] > 1 for row in rows),
-        "targets_with_formula_candidates": sum(bool(row["formula_candidates"]) for row in rows),
-        "targets_with_next_sample": sum(
-            isinstance(row.get("next_sample"), dict)
-            and row["next_sample"].get("status") == "prioritize_recheck"
-            for row in rows
-        ),
-        "targets_with_independent_anchor_coverage": sum(
-            bool(row["coverage"]["independent_anchor_families"]) for row in rows
-        ),
-        "coverage_detail_status": coverage_index.get("summary", {}).get(
-            "detail_status", "unavailable"
-        ),
-        "status_counts": dict(Counter(row["status"] for row in rows)),
-    }
-    return {"summary": summary, "targets": rows}
 
 
 def _known_mapping_candidate_controls(store, known_mappings):
@@ -1282,260 +619,11 @@ def _pair_analysis_eligibility(left, right):
 # 重对撞、且 findings 的 in_registry 标记恒为 False。
 # 本表分两段：① 采集器短键自映射到规范键（保证 raw 字段源名解析一致）；② 主字典
 # 显示名 → 规范短键（保证 verified 集合与 raw 字段同源同名）。两路解析到同一规范键即匹配。
-def _lineage_aliases(source, lineage):
-    """Resolve an exact registry source to its runtime source identity or identities."""
-    if not isinstance(source, str) or not source:
-        return []
-    runtime_sources = lineage.get("runtime_sources", {})
-    if source in runtime_sources:
-        return [source]
-    aliases = SLA.runtime_aliases_for_source(source, lineage)
-    return [alias for alias in aliases if alias in runtime_sources]
 
 
 def load_registry_context():
-    """Load verified identities, contract evidence, anchors, mappings and diagnostics."""
-    context = {
-        "verified": set(),
-        "disproved": set(),
-        "anchors": set(),
-        "contract_anchors": set(),
-        "official_contract_verified": set(),
-        "official_contract_anchors": set(),
-        "known_mappings": set(),
-        "diagnostics": [],
-        "unmapped_verified": 0,
-        "unconfirmed_verified": 0,
-        "ambiguous_verified": 0,
-        "unresolved_verified_metadata": 0,
-        "unresolved_verified_metadata_by_issue": {},
-        "source_fields": 0,
-        "safe_to_run": False,
-    }
-    if not os.path.exists(REG_PATH):
-        context["diagnostics"].append(f"字段注册表不存在：{REG_PATH}；本轮无已知字段锚")
-        return context
-    try:
-        with open(REG_PATH, encoding="utf-8") as handle:
-            registry = json.load(handle)
-    except (OSError, ValueError, TypeError) as exc:
-        context["diagnostics"].append(f"字段注册表读取失败；本轮无已知字段锚：{exc}")
-        return context
-
-    try:
-        lineage = SLA.load_source_lineage(registry=registry)
-        lineage_valid = True
-    except (OSError, ValueError, TypeError) as exc:
-        lineage = {"sources": {}, "source_aliases": {}, "runtime_sources": {}}
-        context["diagnostics"].append(f"来源血缘校验失败；禁止生成已确认锚：{exc}")
-        lineage_valid = False
-    global _SOURCE_LINEAGE
-    _SOURCE_LINEAGE = lineage
-    if not lineage_valid:
-        return context
-
-    source_fields = registry.get("source_fields")
-    if source_fields is None:
-        # Compatibility for old one-source aggregate rows only. A multi-source
-        # aggregate status cannot safely be attributed to any individual source.
-        source_fields = []
-        for field in registry.get("fields", []):
-            sources = field.get("sources", [])
-            source = field.get("source")
-            if not source and len(sources) == 1:
-                source = sources[0]
-            if isinstance(source, str) and source and len(sources or [source]) == 1:
-                source_fields.append({**field, "source": source})
-        context["diagnostics"].append(
-            "注册表没有 source_fields；仅使用可精确归属的单源旧记录，多源汇总状态不分摊"
-        )
-    if not isinstance(source_fields, list):
-        context["diagnostics"].append("注册表 source_fields 格式无效；本轮无已知字段锚")
-        return context
-
-    context["source_fields"] = len(source_fields)
-    registry_sources = {
-        item.get("name"): item
-        for item in registry.get("sources", [])
-        if isinstance(item, dict) and isinstance(item.get("name"), str)
-    }
-    adjudications = {}
-    adjudication_sources = [registry.get("adjudications", [])]
-    adjudication_sources.extend(
-        field.get("adjudications", []) for field in source_fields if isinstance(field, dict)
-    )
-    for records in adjudication_sources:
-        if not isinstance(records, list):
-            continue
-        for record in records:
-            if isinstance(record, dict) and isinstance(record.get("id"), str):
-                adjudications[record["id"]] = record
-    alias_identity_owners = defaultdict(set)
-    for candidate in source_fields:
-        if not isinstance(candidate, dict):
-            continue
-        candidate_source = candidate.get("source")
-        candidate_code = candidate.get("code")
-        if not isinstance(candidate_source, str) or not isinstance(candidate_code, str):
-            continue
-        for alias in _lineage_aliases(candidate_source, lineage):
-            alias_identity_owners[(alias, candidate_code)].add((candidate_source, candidate_code))
-
-    seen_source_identities = set()
-    for field in source_fields:
-        if not isinstance(field, dict):
-            context["diagnostics"].append("source_fields 含非对象记录；已禁用本轮字段对撞")
-            return context
-        source = field.get("source")
-        code = field.get("code")
-        if not isinstance(source, str) or not isinstance(code, str) or not code:
-            context["diagnostics"].append("source_fields 含无效来源/完整路径；已禁用本轮字段对撞")
-            return context
-        if field.get("status") not in {
-            "verified",
-            "unverified",
-            "candidate",
-            "conflict",
-            "disproved",
-        }:
-            context["diagnostics"].append(
-                f"source_fields 含未知状态 {source}::{code}；已禁用本轮字段对撞"
-            )
-            return context
-        identity = (source, code)
-        if identity in seen_source_identities:
-            context["diagnostics"].append(
-                f"source_fields 存在重复身份 {source}::{code}；已禁用全部 registry 锚"
-            )
-            context["verified"].clear()
-            context["disproved"].clear()
-            context["anchors"].clear()
-            context["contract_anchors"].clear()
-            context["official_contract_verified"].clear()
-            context["official_contract_anchors"].clear()
-            context["known_mappings"].clear()
-            return context
-        seen_source_identities.add(identity)
-        aliases = _lineage_aliases(source, lineage)
-        if field.get("status") == "disproved":
-            for alias in aliases:
-                if alias != "zhb" or len(alias_identity_owners[(alias, code)]) == 1:
-                    context["disproved"].add((alias, code))
-            continue
-        if field.get("status") != "verified":
-            continue
-        metadata_issues = FRA.source_field_semantic_issues(field)
-        if metadata_issues:
-            context["unresolved_verified_metadata"] += 1
-            for issue in metadata_issues:
-                issue_counts = context["unresolved_verified_metadata_by_issue"]
-                issue_counts[issue] = issue_counts.get(issue, 0) + 1
-            continue
-        if not aliases:
-            context["unmapped_verified"] += 1
-            continue
-        for alias in aliases:
-            if alias == "zhb" and len(alias_identity_owners[(alias, code)]) != 1:
-                context["ambiguous_verified"] += 1
-                continue
-            identity = (alias, code)
-            context["verified"].add(identity)
-            family = SLA.runtime_family(alias, lineage)
-            source_record = lineage.get("sources", {}).get(source, {})
-            source_config = registry_sources.get(source, {})
-            contract_evidence_kind = _verified_official_contract_kind(
-                field, source_config, source_record, adjudications
-            )
-            if contract_evidence_kind:
-                context["official_contract_verified"].add(identity)
-            if (
-                source_record.get("anchor_eligible")
-                and source_record.get("independence_status") == "confirmed"
-                and family == source_record.get("independence_family")
-            ):
-                context["anchors"].add(identity)
-                if contract_evidence_kind:
-                    context["official_contract_anchors"].add(identity)
-            elif (
-                contract_evidence_kind == "semantic_anchor_contract"
-                and source_record.get("semantic_anchor_basis") == "official_contract"
-            ):
-                context["contract_anchors"].add(identity)
-                context["official_contract_anchors"].add(identity)
-            else:
-                context["unconfirmed_verified"] += 1
-
-    for mapping in registry.get("mappings", []):
-        if not isinstance(mapping, dict):
-            continue
-        left = mapping.get("from", {})
-        right = mapping.get("to", {})
-        if not isinstance(left, dict) or not isinstance(right, dict):
-            continue
-        left_aliases = _lineage_aliases(left.get("source"), lineage)
-        right_aliases = _lineage_aliases(right.get("source"), lineage)
-        left_code = left.get("code")
-        right_code = right.get("code")
-        if not isinstance(left_code, str) or not isinstance(right_code, str):
-            continue
-        for left_alias in left_aliases:
-            for right_alias in right_aliases:
-                normalized_left_code = SLA.normalize_runtime_field_code(left_alias, left_code)
-                normalized_right_code = SLA.normalize_runtime_field_code(right_alias, right_code)
-                if (
-                    left_alias == "zhb"
-                    and len(alias_identity_owners[(left_alias, normalized_left_code)]) != 1
-                ):
-                    continue
-                if (
-                    right_alias == "zhb"
-                    and len(alias_identity_owners[(right_alias, normalized_right_code)]) != 1
-                ):
-                    continue
-                context["known_mappings"].add(
-                    (left_alias, normalized_left_code, right_alias, normalized_right_code)
-                )
-                context["known_mappings"].add(
-                    (right_alias, normalized_right_code, left_alias, normalized_left_code)
-                )
-
-    context["safe_to_run"] = True
-
-    if context["unmapped_verified"]:
-        context["diagnostics"].append(
-            f"{context['unmapped_verified']} 条 verified 源字段无法映射到运行时来源，未作锚"
-        )
-    if context["unconfirmed_verified"]:
-        context["diagnostics"].append(
-            f"{context['unconfirmed_verified']} 条 verified 源字段来源未确认独立性，作为已知字段跳过重解但不作锚"
-        )
-    if context["contract_anchors"]:
-        context["diagnostics"].append(
-            f"{len(context['contract_anchors'])} 条官方契约语义锚可参与对撞；底层来源独立性未确认，强候选标为 L1-C"
-        )
-    if context["ambiguous_verified"]:
-        context["diagnostics"].append(
-            f"{context['ambiguous_verified']} 条 verified 源字段映射到重复运行时身份，未作为已知字段或锚"
-        )
-    if context["unresolved_verified_metadata"]:
-        issue_labels = {
-            "meaning_missing": "缺义/占位",
-            "meaning_conflict": "含义冲突",
-            "unit_conflict": "单位冲突",
-            "meaning_alignment_ambiguous": "含义分组待对齐",
-            "unit_alignment_ambiguous": "单位分组待对齐",
-        }
-        issue_summary = "、".join(
-            f"{issue_labels.get(issue, issue)} {count} 条"
-            for issue, count in sorted(context["unresolved_verified_metadata_by_issue"].items())
-        )
-        context["diagnostics"].append(
-            f"{context['unresolved_verified_metadata']} 条 verified 源字段元数据未达锚点条件"
-            f"（{issue_summary}），已重新纳入待破解目标且不作碰撞锚"
-        )
-    if not context["anchors"] and not context["contract_anchors"]:
-        context["diagnostics"].append("没有可用的已确认独立锚；默认模式不会把未知字段互相定案")
-    return context
+    """Load the read-only context through the compatibility façade."""
+    return CRCX.load_registry_context(REG_PATH, SLA.load_source_lineage, _set_source_lineage)
 
 
 def load_registry_state():
@@ -1544,107 +632,39 @@ def load_registry_state():
     return context["verified"], context["known_mappings"]
 
 
-def norm_src_of(fid):
-    if "." in fid:
-        return fid.split(".")[0]
-    if "[" in fid:
-        return fid.split("[")[0]
-    return fid
+norm_src_of = CRCX.norm_src_of
 
 
 def alias_src(fid):
-    source = norm_src_of(fid)
-    if source in _SOURCE_LINEAGE.get("runtime_sources", {}):
-        return source
-    aliases = _lineage_aliases(source, _SOURCE_LINEAGE)
-    return aliases[0] if aliases else source
+    return CRCX.alias_source(fid, _SOURCE_LINEAGE)
 
 
 def evidence_source_family(fid):
-    """Return a confirmed producer family, or None when lineage is unknown."""
-    return SLA.runtime_family(alias_src(fid), _SOURCE_LINEAGE)
+    return CRCX.evidence_source_family(fid, _SOURCE_LINEAGE)
 
 
 def are_independent_sources(left_fid, right_fid):
-    left_family = evidence_source_family(left_fid)
-    right_family = evidence_source_family(right_fid)
-    return left_family is not None and right_family is not None and left_family != right_family
+    return CRCX.are_independent_sources(left_fid, right_fid, _SOURCE_LINEAGE)
 
 
 def code_of(fid):
-    if "[" in fid:
-        code = fid[fid.index("[") :]
-    elif "." in fid:
-        code = fid.split(".", 1)[1]
-    else:
-        return fid
-    return SLA.normalize_runtime_field_code(norm_src_of(fid), code)
+    return CRCX.code_of(fid, SLA.normalize_runtime_field_code)
 
 
-def _verified_official_contract_kind(field, source_config, source_record, adjudications):
-    """Return the reviewed contract-evidence kind for an active verified identity."""
-    if source_config.get("status") != "active":
-        return None
+def is_verified(fid, verified):
+    return CRCX.is_verified(fid, verified, _SOURCE_LINEAGE)
 
-    direct = field.get("evidence")
-    source_contract = source_record.get("contract")
-    contract_ids = source_config.get("contract_ids")
-    if (
-        source_config.get("source_role") == "documented_contract_anchor"
-        and source_record.get("semantic_anchor_basis") == "official_contract"
-        and isinstance(direct, dict)
-        and direct.get("basis") == "official_contract"
-        and isinstance(source_contract, dict)
-        and direct.get("contract_id") == source_contract.get("contract_id")
-        and isinstance(contract_ids, list)
-        and direct.get("contract_id") in contract_ids
-        and direct.get("evidence_file") == source_contract.get("evidence_file")
-        and direct.get("documentation_url") == source_contract.get("documentation_url")
-    ):
-        return "semantic_anchor_contract"
 
-    status_evidence = field.get("status_evidence")
-    adjudication_ids = (
-        status_evidence.get("source_contract_adjudication_ids", [])
-        if isinstance(status_evidence, dict)
-        else []
+def is_disproved(fid, disproved):
+    return CRCX.is_disproved(fid, disproved, _SOURCE_LINEAGE)
+
+
+def select_collision_fields(
+    store, verified, disproved, anchors, exploratory=False, contract_anchors=None
+):
+    return CRCX.select_collision_fields(
+        store, verified, disproved, anchors, exploratory, contract_anchors, _SOURCE_LINEAGE
     )
-    if not isinstance(adjudication_ids, list):
-        return None
-    reference_evidence = field.get("reference_evidence", [])
-    if not isinstance(reference_evidence, list):
-        return None
-    for evidence in reference_evidence:
-        if not isinstance(evidence, dict):
-            continue
-        if evidence.get("status") != "verified":
-            continue
-        if evidence.get("evidence_basis") not in {
-            "authoritative_source_contract",
-            "official_contract",
-        }:
-            continue
-        contract = evidence.get("source_contract")
-        adjudication_id = evidence.get("adjudication_id")
-        if (
-            not isinstance(contract, dict)
-            or not all(contract.get(key) for key in ("authority", "path", "locator", "url"))
-            or not isinstance(adjudication_id, str)
-            or adjudication_id not in adjudication_ids
-        ):
-            continue
-        adjudication = adjudications.get(adjudication_id, {})
-        adjudicated_contract = adjudication.get("source_contract")
-        if (
-            adjudication.get("action") != "verify_source_contract"
-            or adjudication.get("status") != "verified"
-            or adjudication.get("evidence_basis") != evidence.get("evidence_basis")
-            or not isinstance(adjudicated_contract, dict)
-            or any(adjudicated_contract.get(key) != contract.get(key) for key in contract)
-        ):
-            continue
-        return "source_contract"
-    return None
 
 
 def build_source_coverage_report(
@@ -1662,138 +682,23 @@ def build_source_coverage_report(
     l4_relations,
     method_candidate_inventory,
 ):
-    """Summarize observed window coverage and actual collision participation by runtime source."""
-    rows = defaultdict(
-        lambda: {
-            "observed_fields": set(),
-            "observed_field_values": 0,
-            "observed_trading_dates": set(),
-            "verified_fields": set(),
-            "official_contract_verified_fields": set(),
-            "official_contract_anchor_fields": set(),
-            "independent_anchor_fields": set(),
-            "contract_only_anchor_fields": set(),
-            "cracking_target_fields": set(),
-            "comparison_fields": set(),
-            "L1_relations": 0,
-            "L1_C_relations": 0,
-            "L4_relations": 0,
-            "method_candidate_pairs": 0,
-        }
+    return CCT.build_source_coverage_report(
+        store,
+        verified,
+        anchors,
+        contract_anchors,
+        official_contract_verified,
+        official_contract_anchors,
+        left_ids,
+        right_ids,
+        pair_evaluations_by_source,
+        l1_relations,
+        l1_contract_relations,
+        l4_relations,
+        method_candidate_inventory,
+        norm_src_of,
+        code_of,
     )
-
-    for fid, info in store.items():
-        source = norm_src_of(fid)
-        row = rows[source]
-        row["observed_fields"].add(code_of(fid))
-        values = info.get("vals", {})
-        metadata = info.get("sample_meta", {})
-        row["observed_field_values"] += len(values)
-        for key in values:
-            sample_meta = metadata.get(key, {}) if isinstance(metadata, dict) else {}
-            if sample_meta.get("domain") == TRADING and sample_meta.get("as_of_date"):
-                row["observed_trading_dates"].add(sample_meta["as_of_date"])
-
-    def add_identities(identity_set, target_key):
-        for source, code in identity_set:
-            rows[source][target_key].add(code)
-
-    add_identities(verified, "verified_fields")
-    add_identities(official_contract_verified, "official_contract_verified_fields")
-    add_identities(official_contract_anchors, "official_contract_anchor_fields")
-    add_identities(anchors, "independent_anchor_fields")
-    add_identities(contract_anchors, "contract_only_anchor_fields")
-    for fid in left_ids:
-        rows[norm_src_of(fid)]["cracking_target_fields"].add(code_of(fid))
-    for fid in right_ids:
-        rows[norm_src_of(fid)]["comparison_fields"].add(code_of(fid))
-
-    relation_sets = (
-        (l1_relations, "L1_relations"),
-        (l1_contract_relations, "L1_C_relations"),
-        (l4_relations, "L4_relations"),
-    )
-    for relations, key in relation_sets:
-        for relation in relations:
-            fields = {
-                fid for fid in (relation.get("left"), relation.get("right")) if isinstance(fid, str)
-            }
-            for fid in fields:
-                rows[norm_src_of(fid)][key] += 1
-    for candidate in method_candidate_inventory:
-        fields = {
-            fid for fid in (candidate.get("left"), candidate.get("right")) if isinstance(fid, str)
-        }
-        for fid in fields:
-            rows[norm_src_of(fid)]["method_candidate_pairs"] += 1
-
-    output = []
-    for source in sorted(rows):
-        row = rows[source]
-        pair_stats = pair_evaluations_by_source.get(source, {})
-        output.append(
-            {
-                "source": source,
-                "verified_field_count": len(row["verified_fields"]),
-                "official_contract_verified_field_count": len(
-                    row["official_contract_verified_fields"]
-                ),
-                "official_contract_anchor_field_count": len(row["official_contract_anchor_fields"]),
-                "independent_anchor_field_count": len(row["independent_anchor_fields"]),
-                "contract_only_anchor_field_count": len(row["contract_only_anchor_fields"]),
-                "observed_window_field_count": len(row["observed_fields"]),
-                "observed_window_field_value_count": row["observed_field_values"],
-                "observed_window_trading_day_count": len(row["observed_trading_dates"]),
-                "cracking_target_field_count": len(row["cracking_target_fields"]),
-                "comparison_field_count": len(row["comparison_fields"]),
-                "comparisons_as_target": pair_stats.get("as_target", 0),
-                "comparisons_as_right_field": pair_stats.get("as_right_field", 0),
-                "L1_C_anchor_comparisons": pair_stats.get("l1c_anchor", 0),
-                "L1_relation_count": row["L1_relations"],
-                "L1_C_relation_count": row["L1_C_relations"],
-                "L4_relation_count": row["L4_relations"],
-                "method_candidate_pair_count": row["method_candidate_pairs"],
-            }
-        )
-    return output
-
-
-def is_verified(fid, verified):
-    return (alias_src(fid), code_of(fid)) in verified
-
-
-def is_disproved(fid, disproved):
-    return (alias_src(fid), code_of(fid)) in disproved
-
-
-def select_collision_fields(
-    store, verified, disproved, anchors, exploratory=False, contract_anchors=None
-):
-    """Return unknown cracking targets and the allowed comparison field set.
-
-    Verified status removes an identity only from the left-hand cracking targets.
-    Independently confirmed verified fields remain on the right as anchors; capture
-    routing is source-level and never consults this field status.
-    """
-    eligible = [
-        fid
-        for fid, info in store.items()
-        if not info["is_identifier"]
-        and not info["is_constant"]
-        and info["type"] in ("num", "enum")
-        and not is_disproved(fid, disproved)
-    ]
-    left = [fid for fid in eligible if not is_verified(fid, verified)]
-    if exploratory:
-        return left, eligible
-    contract_anchors = contract_anchors or set()
-    right = [
-        fid
-        for fid in eligible
-        if (alias_src(fid), code_of(fid)) in anchors
-        or (alias_src(fid), code_of(fid)) in contract_anchors
-    ]
-    return left, right
 
 
 def mark_exploratory_candidate(result, right_is_anchor):

@@ -1,90 +1,28 @@
 #!/usr/bin/env python3
-"""capture_field_probe.py — 字段实测验证采集脚本(V17.2.12 主字典对齐)
+"""Collect daily raw field evidence for the project's registered sources.
 
-固定股票池(docs/field_verification/pool.json)20 股,按天采集各源全字段。
-采集器集合与主字典 field_registry.json(26 源)逐源映射(V17.3 同步):
+The collector writes source payloads and run metadata under
+``docs/field_verification/{YYYYMMDD}/``. It records observations for later field
+analysis; it does not adjudicate meanings or update the field registry.
 
-  已采集(可用 producer):
-    ZHB / TDX / 腾讯(qt.gtimg) / 东财-push2 / 新浪 / axdata(短线指标)
-    / 市场源(market_sources) / TDX-F10 / 同花顺-fuyao / 东财-em_kline_f61 / 东财-资金流(em_fund_flow)
-    / 东财-ulist239 / 东财-push2ex / 东财-热榜(em_hot) / 财联社(cls) / 东财-datacenter / 巨潮(cninfo)
-    / 东财-reports / TDX-F10-more
-  已登记且已接入真实 producer(写 raw 文件, 计入异常清单判定):
-    东财-clist(§12.8.6, V17.2.13)/ 东财-slist(§12.8.5, V17.2.13)
-  已登记但暂无 producer(标记 unwired, 写 meta 不进异常清单):
-    沪深交易所(§12.8.17, 龙虎榜已被 fuyao 覆盖; 官方行情/公告端点待 probing)
-  默认待验证、仅显式 --only 请求(标记 pending_validation):
-    百度 K 线(§12.8.16；getrelatedblock 失效与 K 线端点状态分开处理)
-  真实可用, 已于 V17.2.13 补登 registry(此前 SECTION_MAP 漏登记, 属治理抽取债):
-    TDX(行情+F10) / axdata
-  已从项目彻底移除, 采集器同步删除(§12.8.12b 章节保留为退役追溯):
-    同花顺-thsdk(V17.0.29 移除 TCP 网关)
+Source routing and capture orchestration live here. Shared source metadata,
+diagnostics, and archive handling are maintained in ``capture_catalog.py``,
+``capture_diagnostics.py``, and ``capture_archive.py``. See ``scripts/README.md``
+and ``docs/field_verification/DAILY_RUNBOOK.md`` for the current workflow.
 
-V17.0.24(2026-09-01) 据主字典最新定案更新:
-  - 新增 em_kline_f61: 东财日K(f61 换手率)——CYQ 筹码分布唯一源(字典 V17.0.14)
-  - 新增 em_fund_flow: push2delay f137/f140/f143/f146/f149 资金流四档——主力净额
-    唯一同口径源(V17.0.16: 主力净=f137, 勿 f137+f140); 走 delay 域不碰 push2 主域
-  - collect_fuyao 补 fin_report 三大报表(income/balance/cashflow)——f163 静态PE
-    闭环(f160 年报EPS)与 ocf_ttm/revenue_ttm TTM 重建的原始锚数据(V17.0.7)
-V17.2.9(2026-09-12) 元数据与健康度修复:
-  - --only 增量采集**合并**已有 meta.json(sources/schemes/start/zhb_data_date 均保留),
-    修复「单源覆写整份元数据」缺陷; 新增 meta["only"] 与 meta["run"] 运行摘要。
-  - 新增 assess_result(): 按返回物中 __error__ 的真实数量判定源状态 ok/partial/failed,
-    修复「采集函数内部吞异常返回错误占位、外层仍标 ok=True」缺陷(A8 禁止静默迁就)。
-    源条目新增 status / n_error / n_total / n_dead / error_sample 字段。
-  - 控制台: 异常源打印 ⚠ + 失败计数, 运行结束追加异常源清单。
+Examples::
 
-V17.3(2026-09-20) 采集脚本↔主字典(field_registry.json, 26 源)逐源对齐:
-  - collectors 集合扩展为主字典 26 源的完整映射: 已登记但暂无 producer 的 东财-clist/slist、
-    沪深交易所, 以及已废弃的 百度, 统一以 unwired/deprecated 标记纳入 collectors(写 meta、
-    不进异常源清单), 使脚本采集清单与主字典源清单一一对应。
-  - SOURCE_SCHEME 同步增补 baidu/clist/slist/exchange 四项 scheme 标注, 并与
-    对撞护栏的 BUILTIN_SCHEME 保持一致(跨源对撞血缘约束)。
-  - TDX(行情+F10)/axdata 为真实可用采集器但 registry 漏登记, 保留采集并在本注记标注
-    (属字典侧补登, 非脚本缺陷)。
+    python scripts/capture_field_probe.py
+    python scripts/capture_field_probe.py --date 20261021
+    python scripts/capture_field_probe.py --only zhb,tdx,tencent
+    python scripts/capture_field_probe.py --include-context
+    python scripts/capture_field_probe.py --dry-run
+    python scripts/capture_field_probe.py --refresh-pool
 
-V17.3.1(2026-09-21) push2_full 去重:
-  - 经实证 push2 与 push2_full 两采集函数逐字同构(同端点 push2/push2delay stock/get、同 f1-f250、
-    同兜底域), 且二者 114 字段值级 114/114 全相等; registry 中仅依赖 push2_full 而不在 push2 登记的
-    字段数 = 0 → 纯冗余负载。故从 collectors 注销 push2_full、删除 collect_push2_full 函数,
-日常采集只请求 push2；push2_full 的历史字段信息保存在 field_source_reference.md，当前状态以 field_registry.json 为准
-    (语义与 push2 完全等价, 见 §12.9.1「同源同步治理规则」)。em_fund_flow 保留为 push2 子集韧性备源
-    (主域封禁时经 push2delay 补资金流四档)。
-
-V17.2.13(2026-09-12) clist/slist 真实 producer 接入(Q3 用户授权):
-  - collect_clist / collect_slist 由 unwired 占位升级为真实 producer: 直连 push2 clist/get、slist/get
-    (复刻 get_board_fund_flow 的 _quick_request + 83.push2 备域回退策略, 遵守 A1 分域限流)。
-  - clist 覆盖 行业/概念/地域 三类板块, 按 §12.8.6 登记字段全集(排名 + 今日/5日/10日 资金流)抓原始 f 字段;
-    slist 按 §12.8.5 **逐股**抓其归属板块(须带 secid, 裸 spt=3 实测 rc:102 已订正)字段 f12/f14/f3/f128/f140。
-    周六休市不影响(东财数据 API 7×24 服务最近交易日快照)。
-V17.2.14(2026-09-12) 沪深交易所(§12.8.17)真实 producer 接入(Q3 用户授权第③项):
-  - 沪深交易所(§12.8.17)真实 producer 接入: 直连深交所 szse.cn(CATALOGID=1842_xxpl)
-    结构化龙虎榜 + 上交所 query.sse.com.cn(JSONP fileContents→sse_raw), 抓取 zqdm/zqjc/cjje/plyy
-    验证 registry 字段; 复用 dragon_tiger_backup 已验证端点与节流范式(ProxyHandler 直连 + 全局节流, A1)。
-    周六休市自动回退最近交易日(周五)快照, 不影响采集。
-  - 配套(governance): 沪深交易所 源抽取从 snake_case 过度抽取分支移出, 改为显式字段白名单
-    {zqdm,zqjc,cjje,plyy,sse_raw}(§12.8.17 字段表登记的真实源字段), 剔除端点散文(szse/sse/com/
-    api/market/snap/ann/anotice/dragon_tiger_backup/... 共 13 个)对 registry 核心资产的污染。
-
-V17.3(2026-09-20) 采集↔字典/对撞同步核验:
-  - 源级覆盖确认: 主字典 26 源(含 V17.2 新增 eltdx/clist/slist/exchange/em_kline_f61/
-    em_fund_flow/ulist239/datacenter 全量、V17.3 五项 ZHB 新解析器)均已有 producer 或 unwired 占位,
-    无源级遗漏(commit 同步核验)。
-  - ZHB 五项新解析器(ilong/tdxbk/addedcode_bj/tend_std/hspy)为市场级参考字典(指数名/板块简称/
-    北交所元数据/概念树/拼音码), 非逐股字段, 与主字典仅登记 3 个逐股 ZHB 家族(tipinfo/tdxstat/
-    tdxstat2)一致; collect_zhb 已覆盖此 3 家族, 无采集遗漏。
-  - 对撞脚本 collide.py 同步: REG_ALIAS 全量对齐 26 源显示名→短键(修正 push2ex→push2、
-    同花顺→thsdk 两处误映射); load_date 除 stocks 外摄入 records/市场级容器, 使 clist/exchange/
-    cls/em_hot/push2ex/market_sources 共 138 注册字段不再被静默漏载。
-
-输出: docs/field_verification/{YYYYMMDD}/raw_{source}.json(顶层含 scheme 字段体系标注) + meta.json(含 schemes 映射)
-用法:
-  python scripts/capture_field_probe.py                 # 采今天(用现有 ZHB 包)
-  python scripts/capture_field_probe.py --date 20260812
-  python scripts/capture_field_probe.py --dry-run       # 只检查源可用性,不发请求
-  python scripts/capture_field_probe.py --only zhb,tdx,tencent   # 只采指定源
-  python scripts/capture_field_probe.py --refresh-pool  # 采集前从涨停池刷新动态层(连板/新股/涨停)再采集
-  python scripts/capture_field_probe.py --refresh-pool-only   # 仅刷新动态层写回 pool.json, 不采集
+Market context such as exchange notices and popularity lists is opt-in with
+``--include-context``; selecting ``exchange`` or ``em_hot`` through ``--only``
+enables it automatically. A successful collection is evidence, not a field
+definition or registry decision.
 """
 
 import sys, os, json, time, argparse, glob, math, re
@@ -152,6 +90,72 @@ from scripts.capture_archive import (
     _has_complete_snapshot,
     _preserve_context_paths,
     _retain_current_zhb_snapshot,
+)
+
+from scripts import capture_http_collectors as _capture_http_collectors
+from scripts.capture_http_collectors import (
+    collect_cls,
+    collect_em_hot,
+    collect_push2ex,
+    collect_sina,
+    collect_tencent,
+)
+
+
+def _capture_http_dependencies() -> _capture_http_collectors.CaptureHttpDependencies:
+    """Snapshot patchable entry-point policies for one collector invocation."""
+    return _capture_http_collectors.CaptureHttpDependencies(
+        em_full_fields=EM_FULL_FIELDS,
+        request_failure_summary=_request_failure_summary,
+        request_is_rate_limited=_request_is_rate_limited,
+        em_secid_prefix=em_secid_prefix,
+        sina_captured_field_codes=SINA_CAPTURED_FIELD_CODES,
+        sina_paused_option_fields=SINA_PAUSED_OPTION_FIELDS,
+        sina_required_flow_fields=SINA_REQUIRED_FLOW_FIELDS,
+        sina_unresolved_field_codes=SINA_UNRESOLVED_FIELD_CODES,
+        baidu_pending_field_codes=BAIDU_PENDING_FIELD_CODES,
+        parse_baidu_kline_probe=_parse_baidu_kline_probe,
+        last_completed_trading_day=_last_completed_trading_day,
+        em_capture_pause_reason=_em_capture_pause_reason,
+    )
+
+
+from scripts import capture_verified_collectors as _capture_verified_collectors
+from scripts.capture_verified_collectors import collect_ftshare, collect_ftshare_rest
+
+
+def _capture_source_dependencies() -> _capture_verified_collectors.CaptureSourceDependencies:
+    """Build a per-call snapshot of the entry point's injectable helpers."""
+    return _capture_verified_collectors.CaptureSourceDependencies(
+        identity_capture_block_reason=_identity_capture_block_reason,
+        attach_identity_validation_suppression=_attach_identity_validation_suppression,
+        request_is_rate_limited=_request_is_rate_limited,
+        defer_axdata_codes=_defer_axdata_codes,
+        capture_source_fields=_capture_source_fields,
+        kpl_timestamp_date=_kpl_timestamp_date,
+        parse_capture_date=_parse_capture_date,
+        six_digit_symbol=_six_digit_symbol,
+        kph_history_trade_date=_kph_history_trade_date,
+        kph_ladder_blocks_followup=_kph_ladder_blocks_followup,
+        fuyao_auction_items=_fuyao_auction_items,
+        fuyao_auction_snapshot_meta=_fuyao_auction_snapshot_meta,
+        last_completed_trading_day=_last_completed_trading_day,
+    )
+
+
+from scripts import capture_tcp_collectors as _capture_tcp_collectors
+from scripts.capture_tcp_collectors import collect_tdx_f10, collect_tdx_f10_more
+
+from scripts import capture_context_collectors as _capture_context_collectors
+from scripts.capture_context_collectors import (
+    collect_cninfo,
+    collect_datacenter,
+    collect_event_dc,
+    collect_macro_dc,
+    collect_reports,
+    collect_research_sina,
+    collect_sse_e_interaction,
+    collect_st_list,
 )
 
 POOL_PATH = os.path.join(_ROOT, "docs", "field_verification", "pool.json")
@@ -441,32 +445,8 @@ def refresh_dynamic_layer(trade_date: str = "", write: bool = True) -> list:
 
 
 def collect_zhb(pool: list) -> dict:
-    """读取 ZHB 全字段；本地缓存过期时由 get_zhb 按其规则尝试刷新。"""
-    from core.zhb_client import (
-        full_market_snapshot,
-        market_stat_snapshot,
-        market_stat2_snapshot,
-        get_tip_info,
-        get_zhb,
-    )
-
-    zhb = get_zhb()
-    zhb_date = zhb.date if zhb is not None else ""
-    full = full_market_snapshot([p["code"] for p in pool]) or {}
-    stat = market_stat_snapshot([p["code"] for p in pool]) or {}
-    stat2 = market_stat2_snapshot([p["code"] for p in pool]) or {}
-    out: Dict[str, Any] = {"zhb_date": zhb_date, "stocks": {}}
-    for p in pool:
-        c = p["code"]
-        tip = get_tip_info(c)
-        out["stocks"][c] = {
-            "name": _resolve_zhb_name(c),
-            "full": full.get(c),
-            "stat": stat.get(c),
-            "stat2": stat2.get(c),
-            "tipinfo": tip,
-        }
-    return out
+    """Compatibility wrapper preserving ZHB name-resolution injection."""
+    return _capture_tcp_collectors.collect_zhb(pool, _resolve_zhb_name)
 
 
 def _resolve_zhb_name(code: str) -> Optional[str]:
@@ -548,47 +528,10 @@ def _normalize_tdx_capture_quote(raw_quote: Any) -> Optional[Dict[str, Any]]:
 
 
 def collect_tdx(pool: list) -> dict:
-    """TDX 行情快照 + 财务(失败标的记 None,不中断)。
-
-    字段探针使用 tdx_get_quote_raw，直接读取 TDX adapter 行情，不走
-    tdx_get_quote_full 的 ZHB/Tencent 降级，也不复用其合成缓存；adapter
-    顺序为 eltdx 优先、easy_tdx 兜底。财务数据仍经既有
-    tdx_get_finance_info 读取。两项均为空时给该股票增加错误标记，避免
-    把空响应计为成功采集。
-    """
-    from core.tdx_client import tdx_get_quote_raw, tdx_get_finance_info
-
-    out: Dict[str, Any] = {"stocks": {}}
-    for p in pool:
-        c = p["code"]
-        rec: Dict[str, Any] = {}
-        missing_components = []
-        try:
-            rec["quote_raw"] = tdx_get_quote_raw(c)
-        except Exception as e:
-            rec["quote_raw"] = {"__error__": str(e)[:200]}
-        rec["quote_full"] = _normalize_tdx_capture_quote(rec["quote_raw"])
-        if not _has_populated_capture_value(rec["quote_full"]):
-            missing_components.append("quote_full")
-        # 显式暴露 TDX 快照直解字段(内盘/外盘/涨速)为顶层键，便于碰撞脚本纵向串联。
-        # quote_full 只含 TDX adapter 返回值及其可复算行情量，不混入 ZHB/Tencent 回退值。
-        _qf = rec["quote_full"]
-        if isinstance(_qf, dict) and "__error__" not in _qf:
-            for _k in ("s_vol", "b_vol", "rise_speed"):
-                if _qf.get(_k) is not None:
-                    rec[_k] = _qf[_k]
-        try:
-            rec["finance_info"] = tdx_get_finance_info(c)
-        except Exception as e:
-            rec["finance_info"] = {"__error__": str(e)[:200]}
-        if not _has_populated_capture_value(rec["finance_info"]):
-            missing_components.append("finance_info")
-        if missing_components:
-            rec["__error__"] = "TDX returned no populated source fields for: " + ", ".join(
-                missing_components
-            )
-        out["stocks"][c] = rec
-    return out
+    """Compatibility wrapper preserving TDX normalization injection."""
+    return _capture_tcp_collectors.collect_tdx(
+        pool, _normalize_tdx_capture_quote, _has_populated_capture_value
+    )
 
 
 def _eltdx_preopen_not_ready(exc: Exception) -> bool:
@@ -614,290 +557,8 @@ def _eltdx_failure_marker(exc: Exception) -> dict:
 
 
 def collect_eltdx(pool: list, lite: bool = False) -> dict:
-    """eltdx 全字段采集（V17.2.15, 主字典第 24 源）。
-
-    eltdx = Rust 内核通达信 7709/7615 客户端（PyPI 在线、零依赖、Research-Only 许可）。
-    覆盖: 行情快照(含 tail_raw 原始帧尾字节) / 日K(含 record_hex 原始记录) / 市场统计
-    (sh880005) / 0x0010 财务(含 finance_info_raw 原始块) / F10 新闻 / 短线指标
-    (ShortlineIndicator 41 字段) / 全局 Helpers(连板天梯/题材强度排行/成交对比/买卖力道
-    /实时排名)。
-    返回「命名字段 + 原始字节」双轨, 供 collide.py 值级对撞 + 原始字节二次解码(见 D 步)。
-    源 = 本地 eltdx TCP(非云连接器); 标注 scheme="eltdx" 独立血缘, 不动东财主路径。
-    lite 模式(lite=True, 由 --eltdx-lite 触发): 跳过 kline_day/finance_batch
-    (对撞未消费且与 TDX 源冗余), 仅保留
-    quote_snapshot + shortline + 连板天梯——即 collide.py 真正消费的 eltdx 字段。
-    注: lite 仅省次要载荷(实测 688.1s→668.5s, 约 2.8%); eltdx 采集主瓶颈是逐股
-    get_snapshots RPC(≈33s/股), 已通过 L461 起「批量 get_snapshots(ecodes) 一次预取」
-    彻底消解(20 次 RPC 往返→1 次), 与 eltdx shortline_indicators 批量 API 同源。
-    """
-    from dataclasses import asdict, is_dataclass
-    from datetime import datetime as _dt
-
-    def _jfy(o):
-        """dataclass / datetime / bytes -> JSON 安全(字节统一转 hex)。"""
-        if isinstance(o, bytes):
-            return o.hex()
-        if isinstance(o, (list, tuple)):
-            return [_jfy(x) for x in o]
-        if isinstance(o, dict):
-            return {str(k): _jfy(v) for k, v in o.items()}
-        if isinstance(o, _dt):
-            return o.isoformat()
-        if is_dataclass(o) and not isinstance(o, type):
-            return _jfy(asdict(o))
-        if isinstance(o, (str, int, float, bool)) or o is None:
-            return o
-        return str(o)
-
-    def _ecode(code: str) -> str:
-        c = str(code).lower()
-        if c.startswith("sh92"):
-            return "bj" + c[2:]
-        if c.startswith(("sh", "sz", "bj")):
-            return c
-        if c.startswith(("92", "8", "4")):
-            return "bj" + c
-        if c.startswith(("6", "5", "9", "11", "13")):
-            return "sh" + c
-        return "sz" + c  # 0/3/2/1 开头
-
-    def _is_bse(ec: str) -> bool:
-        # 保留 sh92 识别以兼容旧数据；新请求始终将 92xxxx 映射为 bj 前缀。
-        return ec.startswith("bj") or (ec.startswith("sh") and ec[2:].startswith("92"))
-
-    # 注意: eltdx 客户端非线程安全, 任何 eltdx 调用放进后台线程都会死锁挂起;
-    # 因此全程主线程直调, 不做线程超时护栏(护栏本身即死锁源)。挂起源靠"限定 codes 范围"消除。
-
-    try:
-        from eltdx import TdxClient
-    except Exception as _e:
-        return {"stocks": {}, "__error__": f"eltdx import failed: {str(_e)[:200]}"}
-
-    client = None
-    out: Dict[str, Any] = {"stocks": {}, "global_helpers": {}}
-    try:
-        # 默认探测主站(含 2026-09 新式握手); 单客户端复用(连接池)避免逐股重连。
-        client = TdxClient(timeout=8)
-        # 池代码(供全局 helpers 限域 + 逐股循环复用)
-        codes = [p["code"] for p in pool]
-        ecodes = [_ecode(c) for c in codes]
-        _bse = [e for e in ecodes if _is_bse(e)]
-        _a = [e for e in ecodes if e not in _bse]
-        _gh = out["global_helpers"]
-        # ── 全局 Helpers(仅处理本次池内代码) ──
-        # V17.2.28 根因修正: limit_ladder/theme_strength_rank/stock_theme_strength_rank 默认 codes=None
-        # 会扫描全市场 A 股(~5000 只)的 shortline_indicators + F10 主题查询, 单只 ~50ms 累积→~660s 挂起。
-        # 修复: 显式传入本池 ecodes(仅 ~20 只)将工作量降到本池, 秒级完成; eltdx 调用一律主线程直调
-        # (线程护栏会死锁非线程安全的客户端, 已废弃)。volume_comparison/buy_sell_strength 是逐股辅助
-        # (需 code 参数), 不属于全局, 移除以免报错。
-        _global_helpers: List[tuple[str, Callable[[], Any]]] = [
-            ("limit_ladder", lambda: client.helpers.limit_ladder(codes=ecodes)),
-            ("theme_strength_rank", lambda: client.helpers.theme_strength_rank(codes=ecodes)),
-            (
-                "stock_theme_strength_rank",
-                lambda: client.helpers.stock_theme_strength_rank(codes=ecodes),
-            ),
-            ("realtime_rank", lambda: client.helpers.realtime_rank()),
-            ("market_stat_880005", lambda: client.bars.get("sh880005", period="day", count=1)),
-        ]
-        for _name, _fn in _global_helpers:
-            try:
-                _gh[_name] = _jfy(_fn())
-            except Exception as _e:
-                _gh[_name] = _eltdx_failure_marker(_e)
-        # ── 逐股 ──
-        # 短线指标(逐股, 41 字段/股) -> 命中映射(_sl_map); 主线程逐股直调
-        # (实测 ~1.0s/股, A股与 BSE 均安全, BSE 快速报错不挂)。
-        _sl_map = {}
-        _sl_errors: Dict[str, dict] = {}
-        # V17.2.28: 批量 shortline_indicators 进后台线程会死锁挂起, 且遇 BSE 坏码整批挂起;
-        # 改用主线程逐股直调(实测 ~1.0s/股, A股与 BSE 均安全, BSE 快速报错不挂), 绝无挂起。
-        for _ec in ecodes:
-            try:
-                _sl_one = client.helpers.shortline_indicators([_ec])
-                # shortline_indicators 返回 ShortlineIndicatorTable(非 list); 须取 .rows 迭代,
-                # 否则会遍历 dataclass 字段而非记录, 导致 shortline 永远挂不上。
-                _matched = False
-                for _rec in getattr(_sl_one, "rows", None) or []:
-                    _recd = _jfy(_rec)
-                    _cc = _recd.get("full_code") or _recd.get("code")
-                    if _cc:
-                        _reported = str(_cc).lower()
-                        _reported_ec = _ecode(_reported)
-                        if _reported_ec == _ec:
-                            _sl_map[_ec] = _recd
-                            _matched = True
-                if not _matched:
-                    _sl_errors[_ec] = {"__error__": "shortline response missing requested code"}
-            except Exception as _e:
-                _sl_errors[_ec] = _eltdx_failure_marker(_e)
-        # ── 行情快照(A股批量一次取全部, 避免逐股 RPC 往返) ──
-        # A股、北交所分别批量请求：北交所必须使用 bj92xxxx 市场码，避免旧 sh92xxxx marker 错误。
-        # 旧采集 688s 真正主因 = global_helpers 默认扫描全市场(~5000 只)→ 已改为限本池 ecodes。
-        _snap_map = {}
-
-        def _merge_snapshot_rows(snapshot_result: Any, requested_codes: List[str]) -> None:
-            _batch_snaps = (
-                getattr(snapshot_result, "snapshots", snapshot_result)
-                if not isinstance(snapshot_result, list)
-                else snapshot_result
-            )
-            if isinstance(_batch_snaps, dict):
-                for _key, _value in _batch_snaps.items():
-                    _snap_map[_ecode(str(_key))] = _value
-            elif isinstance(_batch_snaps, (list, tuple)):
-                for _index, _entry in enumerate(_batch_snaps):
-                    _reported_code = (
-                        getattr(_entry, "full_code", None)
-                        or getattr(_entry, "code", None)
-                        or (
-                            _entry.get("full_code") or _entry.get("code")
-                            if isinstance(_entry, dict)
-                            else None
-                        )
-                    )
-                    if _reported_code:
-                        _snap_map[_ecode(str(_reported_code))] = _entry
-                    elif _index < len(requested_codes):
-                        _snap_map[requested_codes[_index]] = _entry
-
-        if _a:
-            try:
-                _batch = client.quotes.get_snapshots(_a)
-                _merge_snapshot_rows(_batch, _a)
-            except Exception as _e:
-                # A股批量失败(罕见)→ 降级逐股保住快照(挂起风险已由 BSE 隔离消除)
-                out["snapshot_error"] = f"A-share batch failed, fallback per-code: {str(_e)[:120]}"
-                for _ec in _a:
-                    try:
-                        _s = client.quotes.get_snapshots([_ec])
-                        _merge_snapshot_rows(_s, [_ec])
-                        if _ec not in _snap_map:
-                            _snap_map[_ec] = {"__error__": "snapshot request returned no record"}
-                    except Exception as _single_error:
-                        _snap_map[_ec] = {"__error__": str(_single_error)[:200]}
-        if _bse:
-            try:
-                _bse_batch = client.quotes.get_snapshots(_bse)
-                _merge_snapshot_rows(_bse_batch, _bse)
-            except Exception as _e:
-                out["bse_snapshot_error"] = f"BSE batch failed, fallback per-code: {str(_e)[:120]}"
-                for _ec in _bse:
-                    try:
-                        _snapshot = client.quotes.get_snapshots([_ec])
-                        _merge_snapshot_rows(_snapshot, [_ec])
-                        if _ec not in _snap_map:
-                            _snap_map[_ec] = {"__error__": "snapshot request returned no record"}
-                    except Exception as _single_error:
-                        _snap_map[_ec] = {"__error__": str(_single_error)[:200]}
-        for p in pool:
-            c = p["code"]
-            ec = _ecode(c)
-            rec: Dict[str, Any] = {}
-            # 行情快照(含 tail_raw 原始帧尾) —— 已由批量 _snap_map 预取
-            try:
-                if ec in _snap_map:
-                    _snapshot = _jfy(_snap_map[ec])
-                    rec["quote_snapshot"] = (
-                        _snapshot
-                        if _snapshot is not None
-                        else {"__error__": "snapshot batch returned an empty record"}
-                    )
-                else:
-                    try:
-                        _snap = client.quotes.get_snapshots([ec])
-                        _merge_snapshot_rows(_snap, [ec])
-                        rec["quote_snapshot"] = (
-                            _jfy(_snap_map[ec])
-                            if ec in _snap_map
-                            else {"__error__": "snapshot request returned no record"}
-                        )
-                    except Exception as _e:
-                        rec["quote_snapshot"] = {"__error__": str(_e)[:200]}
-            except Exception as _e:
-                rec["quote_snapshot"] = {"__error__": str(_e)[:200]}
-            # 日K(最新若干根 + record_hex 原始记录) —— lite 模式跳过(与 tdx 源冗余, 对撞未消费)
-            if not lite:
-                try:
-                    _ks = client.bars.get(ec, period="day", count=5, include_raw=True)
-                    _bars = getattr(_ks, "bars", None) or []
-                    rec["kline_day"] = [_jfy(b) for b in _bars]
-                except Exception as _e:
-                    rec["kline_day"] = {"__error__": str(_e)[:200]}
-            # 0x0010 财务(含 finance_info_raw 原始块) —— lite 模式跳过(与 tdx 源冗余, 对撞未消费)
-            if not lite:
-                try:
-                    _fb = client.corporate.finance_batch(ec, include_raw=True)
-                    _recs = getattr(_fb, "records", None) or []
-                    rec["finance_batch"] = [_jfy(r) for r in _recs]
-                except Exception as _e:
-                    rec["finance_batch"] = {"__error__": str(_e)[:200]}
-            # 短线指标(命中)
-            if ec in _sl_map:
-                rec["shortline"] = _sl_map[ec]
-            elif ec in _sl_errors:
-                rec["shortline"] = _sl_errors[ec]
-            else:
-                rec["shortline"] = {"__error__": "shortline response missing requested code"}
-            out["stocks"][c] = rec
-        # V17.2.25: 全局连板天梯(global_helpers.limit_ladder) 折回逐股结构, 使 collide.py
-        # (只读 stocks 逐股) 能消费 eltdx 特有连板字段(ladder_level/limit_up_streak_days/
-        # seal_to_float_ratio/open_volume_ratio/limit_board_text)。匹配键=plain code。
-        _ll = _gh.get("limit_ladder", {})
-        _ll_rows = _ll.get("rows") if isinstance(_ll, dict) else None
-        if _ll_rows:
-            for _row in _ll_rows:
-                _rc = _row.get("code") or _row.get("full_code")
-                _rc_plain = (
-                    _rc[2:] if isinstance(_rc, str) and _rc[:2] in ("sh", "sz", "bj") else _rc
-                )
-                if _rc_plain in out["stocks"]:
-                    out["stocks"][_rc_plain]["limit_ladder"] = _jfy(_row)
-                elif _rc in out["stocks"]:
-                    out["stocks"][_rc]["limit_ladder"] = _jfy(_row)
-    finally:
-        try:
-            if client is not None:
-                client.close()
-        except Exception:
-            pass
-    return out
-
-
-def collect_tencent(pool: list) -> dict:
-    """腾讯 qt.gtimg 单股全字段(保存原始 split 数组 + 索引名说明)。"""
-    from stock_common import _quick_request
-
-    out: Dict[str, Any] = {"stocks": {}}
-    for p in pool:
-        c = p["code"]
-        # V17.0 审查: 原三元 9 先于 92 → 北交所 920 误判 sh(昨日采集 920118/920508 空数据实证);
-        # 92 北交所必须先行(与 em_secid_prefix 同口径)
-        market = (
-            "bj"
-            if c.startswith(("92", "8", "4", "43", "83", "87"))
-            else ("sh" if c.startswith(("6", "9", "5")) else "sz")
-        )
-        url = f"https://qt.gtimg.cn/q={market}{c}"
-        try:
-            r = _quick_request(url, timeout=10)
-            if r is None:
-                out["stocks"][c] = {"__error__": "request failed"}
-                continue
-            line = r.text.strip()
-            if "=" not in line or '"' not in line:
-                out["stocks"][c] = {"__error__": f"parse failed: {line[:100]}"}
-                continue
-            body = line.split('"')[1]
-            fields = body.split("~")
-            out["stocks"][c] = {
-                "url": url,
-                "n_fields": len(fields),
-                "fields": fields,  # 原始全字段数组,索引对照 docs/verify/tencent_verify.md
-            }
-        except Exception as e:
-            out["stocks"][c] = {"__error__": str(e)[:200]}
-    return out
+    """Compatibility wrapper preserving ELTDX diagnostic injection."""
+    return _capture_tcp_collectors.collect_eltdx(pool, _eltdx_failure_marker, lite=lite)
 
 
 def _request_failure_summary(label: str, detail: dict) -> str:
@@ -968,156 +629,8 @@ def _em_capture_pause_reason(
 
 
 def collect_push2(pool: list) -> dict:
-    """东财 push2 stock/get 显式全字段(f1-f250, EM_FULL_FIELDS)。
-
-    V16.4.1 实测: 不指定 fields 时服务端仅返回 58 字段基础子集(缺 f162/f167 等估值字段),
-    故此处显式请求全字段, 与主字典登记口径对齐, 采集不遗漏。2026-08-12 实测: push2 半恢复状态——
-    连接级风控仍在,首次连接约 50%
-    概率 RemoteDisconnected(健康探测单次连接恰好成功)。V16.4.1 防封:
-    失败**不再重试**(重试叠加失败连接会触发封禁),失败即记 error。
-    V17.3.2 封禁规律对齐: 跨 33 采集日实证 push2 主域受扰率 80%、push2delay 镜像域可用率
-    ~93-97%(独立风控面), 故**优先走 push2delay 镜像域**(与运行时 _FFLOW_HOSTS / get_em_batch_quotes
-    一致策略), 主域仅作兜底; 两域字段同构(f1-f250)无损失。used_host 记录实际命中域便于排查。
-    """
-    from stock_common import _quick_request
-    from stock_common.sc_network import (
-        _em_is_banned,
-    )  # V17.4.10 修复: _em_is_banned 定义在 sc_network, 未由 stock_common 包 __init__ 重导出
-
-    # V17.3.2 封禁规律对齐: 跨 33 采集日实证 push2 主域受扰率 80%、push2delay 镜像域
-    # 可用率 ~93-97%(独立风控面, 主域被封时仍可用)。故**优先 push2delay 镜像域**,
-    # 仅当镜像域连续失败(罕见总封禁)才兜底试 push2 主域; 两域字段同构(f1-f250)无损失。
-    # V17.3.17 跨进程封禁共享: push2delay 与 push2 为独立 ban key, 本/他进程标记 push2delay
-    # 封禁后此处直接跳过镜像域省一次请求, 走 push2 兜底(用户指令: 全走 push2delay, 仅当其
-    # 被封再回退其他 push2 源)。
-    fields = EM_FULL_FIELDS  # f1-f250 显式全字段(与主字典口径对齐)
-    delay_fail_streak = 0
-    primary_fail_streak = 0
-    delay_circuit_open = False
-    primary_circuit_open = False
-    out: Dict[str, Any] = {"stocks": {}}
-    for p in pool:
-        c = p["code"]
-        secid = em_secid_prefix(c) + c  # V17.0 S3: 统一(修复 92 北交所误判 1.)
-        r = None
-        used_host = ""
-        delay_domain = "push2delay.eastmoney.com"
-        primary_domain = "push2.eastmoney.com"
-        delay_error: Dict[str, Any] = {}
-        primary_error: Dict[str, Any] = {}
-        delay_banned = delay_circuit_open or _em_is_banned(delay_domain)
-        # 首选 push2delay 镜像域(独立风控面, 实测可用率 ~95%); 若已被任一进程跨进程标记封禁则跳过
-        if not delay_banned:
-            try:
-                r = _quick_request(
-                    "https://push2delay.eastmoney.com/api/qt/stock/get",
-                    params={
-                        "secid": secid,
-                        "fltt": "2",
-                        "invt": "2",
-                        "fields": fields,
-                        "ut": "fa5fd1943c7b386f172d6893dbfba10b",
-                    },
-                    headers={"Referer": "https://quote.eastmoney.com/"},
-                    timeout=10,
-                    max_retries=1,
-                    error_out=delay_error,
-                )
-                if r is not None:
-                    used_host = "push2delay"
-                    delay_fail_streak = 0
-                else:
-                    delay_fail_streak += 1
-                    if _request_is_rate_limited(delay_error) or delay_fail_streak >= 3:
-                        delay_circuit_open = True
-            except Exception as exc:
-                delay_fail_streak += 1
-                r = None
-                delay_error = {
-                    "kind": "request_exception",
-                    "domain": delay_domain,
-                    "error_type": type(exc).__name__,
-                    "message": str(exc).split("?", 1)[0][:160],
-                }
-                if delay_fail_streak >= 3:
-                    delay_circuit_open = True
-        elif _em_is_banned(delay_domain):
-            delay_error = {"kind": "ip_banned", "domain": delay_domain, "attempts": 0}
-        else:
-            delay_error = {
-                "kind": "suppressed_after_failures",
-                "domain": delay_domain,
-                "attempts": 0,
-            }
-        # 只有在未触发封禁/失败熔断的域上才走备用请求; 每个股票、每个域最多一次。
-        if r is None:
-            primary_banned = primary_circuit_open or _em_is_banned(primary_domain)
-            if not primary_banned:
-                try:
-                    r = _quick_request(
-                        "https://push2.eastmoney.com/api/qt/stock/get",
-                        params={
-                            "secid": secid,
-                            "fltt": "2",
-                            "invt": "2",
-                            "fields": fields,
-                            "ut": "fa5fd1943c7b386f172d6893dbfba10b",
-                        },
-                        headers={"Referer": "https://quote.eastmoney.com/"},
-                        timeout=10,
-                        max_retries=1,
-                        error_out=primary_error,
-                    )
-                    if r is not None:
-                        used_host = "push2"
-                        primary_fail_streak = 0
-                    else:
-                        primary_fail_streak += 1
-                        if _request_is_rate_limited(primary_error) or primary_fail_streak >= 3:
-                            primary_circuit_open = True
-                except Exception as exc:
-                    primary_fail_streak += 1
-                    r = None
-                    primary_error = {
-                        "kind": "request_exception",
-                        "domain": primary_domain,
-                        "error_type": type(exc).__name__,
-                        "message": str(exc).split("?", 1)[0][:160],
-                    }
-                    if primary_fail_streak >= 3:
-                        primary_circuit_open = True
-            else:
-                primary_error = {
-                    "kind": (
-                        "ip_banned"
-                        if _em_is_banned(primary_domain)
-                        else "suppressed_after_failures"
-                    ),
-                    "domain": primary_domain,
-                    "attempts": 0,
-                }
-        if r is None:
-            out["stocks"][c] = {
-                "__error__": (
-                    "request failed ("
-                    + _request_failure_summary("push2delay", delay_error)
-                    + "; "
-                    + _request_failure_summary("push2", primary_error)
-                    + ")"
-                )
-            }
-            continue
-        try:
-            payload = r.json() or {}
-            data = payload.get("data") or {}
-            if not isinstance(data, dict) or not data:
-                out["stocks"][c] = {"__error__": f"{used_host} empty payload (no stock/get data)"}
-                continue
-        except Exception as exc:
-            out["stocks"][c] = {"__error__": f"{used_host} response parse failed: {str(exc)[:160]}"}
-            continue
-        out["stocks"][c] = {"secid": secid, "host": used_host, "n_fields": len(data), "data": data}
-    return out
+    """Compatibility wrapper preserving capture-entry dependency injection."""
+    return _capture_http_collectors.collect_push2(pool, _capture_http_dependencies())
 
 
 # NOTE(V17.3.1): collect_push2_full 已移除——与 collect_push2 逐字同构(同端点 push2/push2delay
@@ -1127,134 +640,9 @@ def collect_push2(pool: list) -> dict:
 #   push2_full 条目作运行时 fallback 参考(语义等价, 见「同源同步治理规则」)。
 
 
-def collect_sina(pool: list) -> dict:
-    """新浪行情 hq.sinajs 全字段(需 Referer)。"""
-    from stock_common import _quick_request, UA
-
-    out: Dict[str, Any] = {"stocks": {}}
-    for p in pool:
-        c = p["code"]
-        # M13 修复：原来只把 "6" 判沪市，漏 "5"(沪ETF)/"9"(沪B) → 新浪源误判 sz 污染跨源对照。
-        # 与 collect_tencent(:97) 同口径：92/8/4/43/83/87→bj，6/9/5→sh，其余→sz。
-        pre = (
-            "bj"
-            if c.startswith(("92", "8", "4", "43", "83", "87"))
-            else ("sh" if c.startswith(("6", "9", "5")) else "sz")
-        )
-        try:
-            r = _quick_request(
-                f"https://hq.sinajs.cn/list={pre}{c}",
-                headers={"Referer": "https://finance.sina.com.cn/", "User-Agent": UA},
-                timeout=8,
-            )
-            if r is None:
-                out["stocks"][c] = {"__error__": "request failed"}
-                continue
-            text = r.text.strip()
-            if "=" not in text:
-                out["stocks"][c] = {"__error__": f"parse failed: {text[:80]}"}
-                continue
-            payload = text.split('"')[1] if '"' in text else ""
-            fields = payload.split(",")
-            out["stocks"][c] = {"n_fields": len(fields), "fields": fields}
-        except Exception as e:
-            out["stocks"][c] = {"__error__": str(e)[:200]}
-    return out
-
-
 def collect_sina_extended(pool: list) -> dict:
-    """Capture Sina's three statement endpoints and per-stock money-flow rows.
-
-    Structured statement rows stay attached to report type, period and item title;
-    only the latest money-flow row is also lifted to scalar fields for safe matching.
-    Option fields remain explicitly paused because the capture pool has no option
-    contract identifiers.
-    """
-    from stock_common import get_sina_financial_report_raw, get_sina_stock_fund_flow_raw
-
-    report_types = ("fzb", "lrb", "llb")
-    output: Dict[str, Any] = {
-        "stocks": {},
-        "__source_meta__": {
-            "structured_paths_archived_only": ["financial_reports.*.report_list.*.data[]"],
-            "paused_fields": {
-                "codes": list(SINA_PAUSED_OPTION_FIELDS),
-                "reason": "requires an option-contract universe; stock pool entries are not option contracts",
-            },
-            "captured_registry_codes": list(SINA_CAPTURED_FIELD_CODES),
-            "unresolved_registry_codes": {
-                "codes": list(SINA_UNRESOLVED_FIELD_CODES),
-                "reason": "no source-specific endpoint path is documented; do not infer aliases",
-            },
-            "row_identity_keys": ["item_title", "report period", "report_type"],
-            "request_policy": "one attempt per endpoint; stop that endpoint family after first failure",
-        },
-    }
-    finance_available = True
-    flow_available = True
-
-    for item in pool:
-        code = item["code"]
-        record: Dict[str, Any] = {"financial_reports": {}}
-
-        if finance_available:
-            for index, report_type in enumerate(report_types):
-                report = get_sina_financial_report_raw(code, report_type, num_periods=1)
-                if report is None:
-                    record["financial_reports"][report_type] = {
-                        "__error__": "Sina financial report request or response failed"
-                    }
-                    finance_available = False
-                    for pending_type in report_types[index + 1 :]:
-                        record["financial_reports"][pending_type] = {
-                            "__skipped__": "deferred: Sina financial endpoint stopped after first failure"
-                        }
-                    break
-                record["financial_reports"][report_type] = report
-        else:
-            record["financial_reports"] = {
-                report_type: {
-                    "__skipped__": "deferred: Sina financial endpoint stopped after first failure"
-                }
-                for report_type in report_types
-            }
-
-        if flow_available:
-            rows = get_sina_stock_fund_flow_raw(code, days=1)
-            if rows is None or not rows:
-                record["money_flow"] = {
-                    "__error__": "Sina per-stock money-flow request returned no rows"
-                }
-                flow_available = False
-            else:
-                record["money_flow"] = rows
-                latest = max(
-                    rows,
-                    key=lambda row: str(row.get("opendate", "")) if isinstance(row, dict) else "",
-                )
-                missing_fields = (
-                    set(SINA_REQUIRED_FLOW_FIELDS) - set(latest)
-                    if isinstance(latest, dict)
-                    else set(SINA_REQUIRED_FLOW_FIELDS)
-                )
-                if missing_fields:
-                    # Preserve evidence, but do not report a successful field capture
-                    # when the upstream contract omitted a registered value.
-                    record["__error__"] = (
-                        "Sina money-flow response missing registered fields: "
-                        + ", ".join(sorted(missing_fields))
-                    )
-                    flow_available = False
-                else:
-                    for key in SINA_REQUIRED_FLOW_FIELDS:
-                        record[key] = latest[key]
-        else:
-            record["money_flow"] = {
-                "__skipped__": "deferred: Sina money-flow endpoint stopped after first failure"
-            }
-
-        output["stocks"][code] = record
-    return output
+    """Compatibility wrapper preserving capture-entry dependency injection."""
+    return _capture_http_collectors.collect_sina_extended(pool, _capture_http_dependencies())
 
 
 def _defer_axdata_codes(
@@ -1319,67 +707,10 @@ def _attach_identity_validation_suppression(
 
 
 def collect_axdata(pool: list, identity_policy: Optional[dict] = None) -> dict:
-    """采集 AxData 的 TDX 短线接口；ZHB 统计文件本地读取，接口仍可能访问网络。"""
-    policy = identity_policy if isinstance(identity_policy, dict) else {}
-    block_reason = _identity_capture_block_reason(policy)
-    if block_reason:
-        reason = str(policy.get("reason") or "endpoint_redundant")
-        identity = policy.get("identity")
-        identity = identity if isinstance(identity, dict) else {}
-        interface_id = identity.get("interface_id")
-        return {
-            "stocks": {item["code"]: {"__skipped__": reason} for item in pool},
-            "__source_meta__": {
-                "capture_block": {
-                    "status": identity.get("status"),
-                    "interface_id": interface_id,
-                    "reference_source": policy.get("reference_source"),
-                    "reason": reason,
-                    "evidence_dates": identity.get("evidence_dates", []),
-                    "capture_performed": False,
-                }
-            },
-        }
-    from stock_common import get_shortline_indicators_result
-
-    out: Dict[str, Any] = {"stocks": {}}
-    _attach_identity_validation_suppression(out, identity_policy)
-    for index, p in enumerate(pool):
-        c = p["code"]
-        try:
-            result = get_shortline_indicators_result(c)
-            if result.get("status") != "ok":
-                error = result.get("error") or (
-                    "request_error: AxData stock_shortline_indicators_tdx (TDX) "
-                    f"failed with status {result.get('status', 'unknown')}"
-                )
-                out["stocks"][c] = {"__error__": str(error)[:200]}
-                detail = {
-                    "kind": result.get("kind") or result.get("status"),
-                    "status_code": result.get("status_code") or result.get("http_status"),
-                    "message": str(error),
-                }
-                if _request_is_rate_limited(detail):
-                    _defer_axdata_codes(out, pool, index + 1, c)
-                    break
-                continue
-
-            rec = result.get("data")
-            if not isinstance(rec, dict) or not rec:
-                out["stocks"][c] = {
-                    "__error__": (
-                        "no_records: AxData stock_shortline_indicators_tdx "
-                        "(TDX) returned no usable records"
-                    )
-                }
-            else:
-                out["stocks"][c] = {"n_fields": len(rec), "data": rec}
-        except Exception as e:
-            out["stocks"][c] = {"__error__": str(e)[:200]}
-            if _request_is_rate_limited({"kind": type(e).__name__, "message": str(e)}):
-                _defer_axdata_codes(out, pool, index + 1, c)
-                break
-    return out
+    """Compatibility wrapper preserving policy and rate-limit patch seams."""
+    return _capture_verified_collectors.collect_axdata(
+        pool, _capture_source_dependencies(), identity_policy
+    )
 
 
 def collect_market_sources(
@@ -1624,90 +955,10 @@ def _kpl_timestamp_date(value: Any) -> Optional[date]:
 
 
 def collect_kpl_detail(capture_date: Any) -> dict:
-    """Collect all five KPL limit-up ladders with source and date provenance."""
-    import stock_common
-
-    rows = []
-    warnings = []
-    pid_type_counts = {}
-    for pid_type in range(1, 6):
-        try:
-            ladder_rows = stock_common.get_kpl_limit_up_detail(pid_type=pid_type, capture_raw=True)
-        except Exception as exc:
-            warnings.append(f"PidType={pid_type} request failed: {str(exc)[:160]}")
-            continue
-        if ladder_rows is None or not isinstance(ladder_rows, list):
-            warnings.append(f"PidType={pid_type} returned an invalid response")
-            continue
-        if len(ladder_rows) == 1 and isinstance(ladder_rows[0], dict):
-            error = ladder_rows[0].get("__error__")
-            if error:
-                warnings.append(f"PidType={pid_type} request failed: {str(error)[:160]}")
-                continue
-        pid_type_counts[str(pid_type)] = len(ladder_rows)
-        for row in ladder_rows:
-            if isinstance(row, dict):
-                row.setdefault("pid_type", pid_type)
-                rows.append(row)
-    if not rows:
-        return {
-            "stocks": {},
-            "capture_date": _parse_capture_date(capture_date).isoformat(),
-            "pid_type_counts": pid_type_counts,
-            "warnings": warnings,
-            "__error__": "KPL detail returned no rows across PidType=1..5",
-        }
-
-    dated_rows = []
-    trade_dates = set()
-    for row in rows:
-        if not isinstance(row, dict):
-            continue
-        row_date = _kpl_timestamp_date(row.get("zt_time"))
-        if row_date is not None:
-            trade_dates.add(row_date)
-            dated_rows.append((row, row_date))
-    if len(trade_dates) != 1:
-        return {
-            "stocks": {},
-            "capture_date": _parse_capture_date(capture_date).isoformat(),
-            "__error__": (
-                "KPL detail must contain exactly one date derived from zt_time; "
-                f"observed {sorted(day.isoformat() for day in trade_dates)}"
-            ),
-        }
-
-    trade_date = next(iter(trade_dates))
-    stocks: Dict[str, Any] = {}
-    duplicate_rows = []
-    missing_date_rows = len(rows) - len(dated_rows)
-    if missing_date_rows:
-        warnings.append(f"excluded {missing_date_rows} KPL rows without a valid zt_time")
-    for row, row_date in dated_rows:
-        if row_date != trade_date:
-            continue
-        symbol = _six_digit_symbol(row)
-        if symbol is None:
-            warnings.append("excluded a KPL row without a six-digit stock code")
-            continue
-        captured_fields = _capture_source_fields(row)
-        if symbol in stocks:
-            warnings.append(f"duplicate KPL stock code {symbol}; preserved first row")
-            duplicate_rows.append({"symbol": symbol, "fields": captured_fields})
-            continue
-        stocks[symbol] = captured_fields
-
-    return {
-        "trade_date": trade_date.isoformat(),
-        "capture_date": _parse_capture_date(capture_date).isoformat(),
-        "stocks": stocks,
-        "row_count": len(stocks),
-        "raw_row_count": len(dated_rows),
-        "duplicate_row_count": len(duplicate_rows),
-        "duplicate_rows": duplicate_rows,
-        "pid_type_counts": pid_type_counts,
-        "warnings": warnings,
-    }
+    """Compatibility wrapper preserving source parsing helper patch seams."""
+    return _capture_verified_collectors.collect_kpl_detail(
+        capture_date, _capture_source_dependencies()
+    )
 
 
 def collect_kph_history(
@@ -1715,163 +966,10 @@ def collect_kph_history(
     prior_market_sources: Any = None,
     identity_policy: Optional[dict] = None,
 ) -> dict:
-    """Request one AxData KPH historical batch; never retry or persist it."""
-    try:
-        trade_date = _kph_history_trade_date(capture_date)
-    except Exception as exc:
-        return {"stocks": {}, "__error__": f"KPH date selection failed: {str(exc)[:240]}"}
-
-    policy = identity_policy if isinstance(identity_policy, dict) else {}
-    block_reason = _identity_capture_block_reason(policy)
-    if block_reason:
-        reason = str(policy.get("reason") or "endpoint_redundant")
-        identity = policy.get("identity")
-        identity = identity if isinstance(identity, dict) else {}
-        return {
-            "trade_date": trade_date.isoformat(),
-            "requested_trade_date": trade_date.isoformat(),
-            "stocks": {},
-            "__skipped__": reason,
-            "__source_meta__": {
-                "capture_block": {
-                    "status": identity.get("status"),
-                    "interface_id": identity.get("interface_id"),
-                    "reference_source": policy.get("reference_source"),
-                    "reason": reason,
-                    "evidence_dates": identity.get("evidence_dates", []),
-                    "capture_performed": False,
-                }
-            },
-        }
-
-    if _kph_ladder_blocks_followup(prior_market_sources):
-        return {
-            "trade_date": trade_date.isoformat(),
-            "stocks": {},
-            "__skipped__": (
-                "KPH history skipped because the same-run Levistock sample was "
-                "empty, failed, or throttled"
-            ),
-        }
-
-    try:
-        from stock_common.sc_datasource import get_axdata_records
-
-        records = get_axdata_records(
-            "kph_limit_up_history",
-            params={"trade_date": trade_date.isoformat()},
-        )
-    except Exception as exc:
-        return {
-            "trade_date": trade_date.isoformat(),
-            "stocks": {},
-            "__error__": f"KPH history request failed: {type(exc).__name__}: {str(exc)[:240]}",
-        }
-    if not records:
-        return {
-            "trade_date": trade_date.isoformat(),
-            "stocks": {},
-            "__error__": f"KPH history returned no records for {trade_date.isoformat()}",
-        }
-
-    stocks: Dict[str, Any] = {}
-    identity_observations: List[str] = []
-    warnings = []
-    response_dates = set()
-    for row in records:
-        raw_date = row.get("trade_date")
-        if raw_date is not None:
-            try:
-                response_dates.add(_parse_capture_date(str(raw_date)).isoformat())
-            except ValueError:
-                warnings.append(f"unparseable KPH row trade_date: {raw_date!r}")
-        symbol = _six_digit_symbol(row)
-        if symbol is None:
-            warnings.append("excluded KPH row without a six-digit stock code")
-            continue
-        if row.get("exchange") is not None and symbol.startswith("92"):
-            exchange = str(row.get("exchange")).strip().upper()
-            instrument_id = str(row.get("instrument_id") or "")
-            if exchange in {"SSE", "SH", "SHSE", "SHANGHAI"} or instrument_id.upper().endswith(
-                ".SH"
-            ):
-                identity_observations.append(
-                    f"{symbol}: reported_exchange={row.get('exchange')}; "
-                    f"reported_instrument_id={row.get('instrument_id')}"
-                )
-                warnings.append(
-                    f"KPH reports Beijing code {symbol} as Shanghai; raw identity preserved separately"
-                )
-        # Keep every JSON-safe source field, including text, flags, and arrays.
-        # Identity/date metadata remains available under __identity__ but is not
-        # exposed as a candidate metric by the collision flattener.
-        captured_fields = _capture_source_fields(row)
-        if symbol in stocks:
-            warnings.append(f"duplicate KPH stock code {symbol}; preserved first row")
-            continue
-        stocks[symbol] = captured_fields
-
-    if response_dates and response_dates != {trade_date.isoformat()}:
-        return {
-            "trade_date": trade_date.isoformat(),
-            "stocks": {},
-            "__error__": (
-                f"KPH response trade dates {sorted(response_dates)} do not match "
-                f"requested {trade_date.isoformat()}"
-            ),
-            "warnings": warnings,
-        }
-    if not stocks:
-        return {
-            "trade_date": trade_date.isoformat(),
-            "stocks": {},
-            "__error__": f"KPH response had no usable stock records for {trade_date.isoformat()}",
-            "warnings": warnings,
-            "identity_observations": identity_observations,
-        }
-
-    output = {
-        "trade_date": trade_date.isoformat(),
-        "requested_trade_date": trade_date.isoformat(),
-        "capture_date": _parse_capture_date(capture_date).isoformat(),
-        "stocks": stocks,
-        "row_count": len(stocks),
-        "warnings": warnings,
-    }
-    _attach_identity_validation_suppression(output, identity_policy)
-    if identity_observations:
-        output["identity_observations"] = identity_observations
-    if trade_date != _parse_capture_date(capture_date):
-        output["date_selection_note"] = (
-            "AxData KPH history requires a date before the natural current day; "
-            "the source trade date is recorded explicitly."
-        )
-    return output
-
-
-def collect_tdx_f10(pool: list) -> dict:
-    """TDX F10 财务九件套补充: 财务分析/股本/分红(TCP,免费)。"""
-    from core.tdx_client import (
-        tdx_get_financial_analysis,
-        tdx_get_share_capital,
-        tdx_get_dividend_history,
+    """Compatibility wrapper preserving date and identity policy patch seams."""
+    return _capture_verified_collectors.collect_kph_history(
+        capture_date, _capture_source_dependencies(), prior_market_sources, identity_policy
     )
-
-    out: Dict[str, Any] = {"stocks": {}}
-    for p in pool:
-        c = p["code"]
-        rec: Dict[str, Any] = {}
-        for name, fn in [
-            ("financial_analysis", tdx_get_financial_analysis),
-            ("share_capital", tdx_get_share_capital),
-            ("dividend_history", tdx_get_dividend_history),
-        ]:
-            try:
-                rec[name] = fn(c)
-            except Exception as e:
-                rec[name] = {"__error__": str(e)[:150]}
-        out["stocks"][c] = rec
-    return out
 
 
 def _parse_baidu_kline_probe(payload: Any) -> Optional[Dict[str, Any]]:
@@ -1908,432 +1006,23 @@ def _parse_baidu_kline_probe(payload: Any) -> Optional[Dict[str, Any]]:
 
 
 def collect_baidu(pool: list, probe: bool = False) -> dict:
-    """Keep Baidu pending by default; explicit ``--only baidu`` enables one probe.
-
-    The dead ``getrelatedblock`` concept endpoint is unrelated to this K-line URL.
-    This collector makes at most one request per code and opens a local circuit after
-    the first request/shape failure, marking remaining codes as deferred.
-    """
-    if not probe:
-        return {
-            "__unwired__": "pending_validation",
-            "registry_name": "百度(baidu)",
-            "section": "12.8.16 百度股市通（K线带MA）❌→⏸️",
-            "pending_field_codes": list(BAIDU_PENDING_FIELD_CODES),
-            "reason": (
-                "K线端点当前无法在本机验证；默认不请求。显式运行 --only baidu 可限量复核；"
-                "getrelatedblock 失效不作为 K 线失效证据"
-            ),
-        }
-
-    from stock_common import _quick_request, UA
-
-    url = "https://finance.pae.baidu.com/selfselect/getstockquotation"
-    headers = {
-        "User-Agent": UA,
-        "Accept": "application/vnd.finance-web.v1+json",
-        "Origin": "https://gushitong.baidu.com",
-        "Referer": "https://gushitong.baidu.com/",
-    }
-    output: Dict[str, Any] = {
-        "stocks": {},
-        "__source_meta__": {"probe_mode": "explicit_only", "request_count": 0},
-    }
-    stopped = False
-    for item in pool:
-        code = item["code"]
-        if stopped:
-            output["stocks"][code] = {
-                "__skipped__": "deferred: Baidu probe stopped after first request or contract failure"
-            }
-            continue
-        params = {
-            "all": "1",
-            "isIndex": "false",
-            "isBk": "false",
-            "isBlock": "false",
-            "isFutures": "false",
-            "isStock": "true",
-            "newFormat": "1",
-            "group": "quotation_kline_ab",
-            "finClientType": "pc",
-            "code": code,
-            "start_time": "",
-            "ktype": "1",
-        }
-        output["__source_meta__"]["request_count"] += 1
-        try:
-            response = _quick_request(
-                url, params=params, headers=headers, timeout=10, max_retries=1
-            )
-            record = _parse_baidu_kline_probe(response.json()) if response is not None else None
-        except Exception as exc:
-            record = None
-            output["__source_meta__"]["failure_sample"] = f"{type(exc).__name__}: {exc}"[:200]
-        if record is None:
-            output["stocks"][code] = {
-                "__error__": "Baidu K-line request failed or response contract is incomplete"
-            }
-            output["__source_meta__"]["stopped_after_code"] = code
-            stopped = True
-        else:
-            output["stocks"][code] = record
-    return output
+    """Compatibility wrapper preserving the explicit one-probe API."""
+    return _capture_http_collectors.collect_baidu(pool, _capture_http_dependencies(), probe=probe)
 
 
 def collect_clist(pool: list) -> dict:
-    """东财 clist(板块排名/板块资金流, §12.8.6)——真实 producer(V17.2.13)。
-
-    走 push2delay 镜像域 clist/get(东财板块榜, 与 push2 主域内容一致、延迟 15min 无影响),
-    覆盖 行业(m:90 t:2)/概念(t:3)/地域(t:1) 三类, 按 §12.8.6 登记字段全集抓取原始 f 字段
-    (排名 + 今日/5日/10日 资金流)。
-    A1: 复用 stock_common._quick_request(分域限流); **主域优先 push2delay**(独立风控面,
-    规避 push2 主域 IP 级封禁——实测 push2/push2his/83.push2 同风控面常 20h 冷却封禁,
-    而 push2delay/push2ex 独立可用); push2delay 失败回退 push2 主域。
-    """
-    from stock_common import _quick_request, UA
-    from stock_common.sc_network import _em_is_banned
-
-    # §12.8.6 登记字段全集: 排名(f2/f3/f4/f12/f13/f14/f104/f105/f128/f136/f140/f141/f207)
-    # + 资金流今日(f62/f184/f66/f72/f78/f84)/5日(f164/f165/f109/f257)/10日(f174/f175/f160)
-    FIELDS = (
-        "f2,f3,f4,f12,f13,f14,f104,f105,f128,f136,f140,f141,f207,"
-        "f62,f184,f66,f72,f78,f84,f164,f165,f109,f257,f174,f175,f160"
-    )
-    TYPES = [("industry", "m:90+t:2"), ("concept", "m:90+t:3"), ("area", "m:90+t:1")]
-    out: Dict[str, Any] = {"records": [], "by_type": {}}
-    domain_blocked = {"push2delay.eastmoney.com": False, "push2.eastmoney.com": False}
-    domain_failures = {"push2delay.eastmoney.com": 0, "push2.eastmoney.com": 0}
-    domain_errors: Dict[str, Dict[str, Any]] = {}
-    for label, fs in TYPES:
-        # V17.2.13 稳健分页: 以服务端 data.total 为权威总数驱动翻页, 避免「单页未满即误判末页」
-        # 导致的概念板(400+ 只)被截断为 100 的问题; 另设 50 页硬上限防异常死循环。
-        all_recs = []
-        total = None
-        pn = 1
-        while pn <= 50:
-            params = {
-                "po": "1",
-                "np": "1",
-                "fltt": "2",
-                "invt": "2",
-                "fs": fs,
-                "fields": FIELDS,
-                "pz": "200",
-                "pn": str(pn),
-                "ut": "bd1d9ddb04089700cf9c27f6f7426281",
-            }
-            hdr = {"User-Agent": UA, "Referer": "https://quote.eastmoney.com/"}
-            delay_error: Dict[str, Any] = {}
-            primary_error: Dict[str, Any] = {}
-            try:
-                delay_domain = "push2delay.eastmoney.com"
-                primary_domain = "push2.eastmoney.com"
-                if domain_blocked[delay_domain]:
-                    delay_error = dict(domain_errors.get(delay_domain) or {})
-                    delay_error.update({"domain": delay_domain, "attempts": 0})
-                    delay_error.setdefault("kind", "suppressed_after_failures")
-                    r = None
-                elif _em_is_banned(delay_domain):
-                    delay_error = {"kind": "ip_banned", "domain": delay_domain, "attempts": 0}
-                    r = None
-                else:
-                    r = _quick_request(
-                        "https://push2delay.eastmoney.com/api/qt/clist/get",
-                        params=params,
-                        headers=hdr,
-                        timeout=10,
-                        max_retries=1,
-                        error_out=delay_error,
-                    )
-                    if r is None:
-                        domain_failures[delay_domain] += 1
-                        domain_errors[delay_domain] = dict(delay_error)
-                        if (
-                            _request_is_rate_limited(delay_error)
-                            or domain_failures[delay_domain] >= 3
-                        ):
-                            domain_blocked[delay_domain] = True
-                    else:
-                        domain_failures[delay_domain] = 0
-                if r is None:
-                    if domain_blocked[primary_domain]:
-                        primary_error = dict(domain_errors.get(primary_domain) or {})
-                        primary_error.update({"domain": primary_domain, "attempts": 0})
-                        primary_error.setdefault("kind", "suppressed_after_failures")
-                    elif _em_is_banned(primary_domain):
-                        primary_error = {
-                            "kind": "ip_banned",
-                            "domain": primary_domain,
-                            "attempts": 0,
-                        }
-                    else:
-                        r = _quick_request(
-                            "https://push2.eastmoney.com/api/qt/clist/get",
-                            params=params,
-                            headers=hdr,
-                            timeout=10,
-                            max_retries=1,
-                            error_out=primary_error,
-                        )
-                        if r is None:
-                            domain_failures[primary_domain] += 1
-                            domain_errors[primary_domain] = dict(primary_error)
-                            if (
-                                _request_is_rate_limited(primary_error)
-                                or domain_failures[primary_domain] >= 3
-                            ):
-                                domain_blocked[primary_domain] = True
-                        else:
-                            domain_failures[primary_domain] = 0
-                if r is None:
-                    out["by_type"][label] = {
-                        "__error__": (
-                            "request failed ("
-                            + _request_failure_summary("push2delay", delay_error)
-                            + "; "
-                            + _request_failure_summary("push2", primary_error)
-                            + ")"
-                        )
-                    }
-                    break
-                d = (r.json() or {}).get("data") or {}
-                if total is None:
-                    total = d.get("total")
-                diff = d.get("diff") or []
-                if isinstance(diff, dict):
-                    diff = list(diff.values())
-                if not diff:
-                    break
-                for it in diff:
-                    rec = dict(it)
-                    rec["_board_type"] = label
-                    all_recs.append(rec)
-                # 终止条件: 已达权威 total / 本页未满(末页) / 硬上限
-                if total is not None and len(all_recs) >= total:
-                    break
-                if len(diff) < 200:
-                    break
-                pn += 1
-            except Exception as e:
-                out["by_type"][label] = {"__error__": str(e)[:200]}
-                break
-        out["records"].extend(all_recs)
-        if all_recs:
-            out["by_type"][label] = {"n": len(all_recs), "total": total}
-        else:
-            # 请求成功但 0 条(板块榜恒有数据)→ 空载荷异常(多见于 push2 主域 IP 封禁
-            # 返回空成功响应), 显式标错以免 assess_result 误判 ok(公理 A8 禁止静默迁就)。
-            # 下列失败分支(line 484/504)已置 __error__ 的, 此处不覆盖。
-            _prev = out["by_type"].get(label, {})
-            if "__error__" not in _prev:
-                out["by_type"][label] = {
-                    "n": 0,
-                    "total": total,
-                    "__error__": "empty payload (0 records; possible push2 family IP-ban / endpoint anomaly)",
-                }
-    return out
+    """Compatibility wrapper preserving capture-entry dependency injection."""
+    return _capture_http_collectors.collect_clist(pool, _capture_http_dependencies())
 
 
 def collect_slist(pool: list) -> dict:
-    """东财 slist(个股所属板块/概念归属, §12.8.5)——真实 producer(V17.2.13, 联网实测修正)。
-
-    V17.2.13 联网实测订正(关键): slist/get **必须带 secid(个股 secid)**, 裸 spt=3(无 secid)
-    服务端恒返回 rc:102(拒收)。带 secid 时返回**该股票所属的全部板块**(行业/概念/地域混合一表),
-    字段: f12=板块 BK 代码、f14=板块名、f3=板块当日涨跌幅%、f128=板块龙头股名、f140=龙头股代码。
-    → 与 §12.8.5「个股所属板块/概念归属」语义完全吻合(逐股返回其归属板块列表)。
-    此前字典 §12.8.5 误记为「裸 spt=3 返回全局混合板块列表」, 经本次实测更正(裸 spt=3 → rc:102)。
-    A1: 复用 _quick_request(分域限流); **主域优先 push2delay**(独立风控面, 规避 push2 主域 IP 封禁), 失败回退 push2 主域; 周六休市不影响(东财 7×24 快照)。
-    逐股请求(20 股), 单股失败记 __error__ 不中断(A8 禁止静默迁就)。
-    """
-    from stock_common import _quick_request, UA
-    from stock_common.sc_network import _em_is_banned
-
-    FIELDS = "f12,f14,f3,f128,f140"  # 板块代码/名/涨跌幅/龙头名/龙头代码
-    out: Dict[str, Any] = {"stocks": {}}
-    domain_blocked = {"push2delay.eastmoney.com": False, "push2.eastmoney.com": False}
-    domain_failures = {"push2delay.eastmoney.com": 0, "push2.eastmoney.com": 0}
-    domain_errors: Dict[str, Dict[str, Any]] = {}
-    for p in pool:
-        c = p["code"]
-        secid = em_secid_prefix(c) + c
-        params = {
-            "spt": "3",
-            "np": "1",
-            "fltt": "2",
-            "invt": "2",
-            "secid": secid,
-            "fields": FIELDS,
-            "pz": "200",
-            "pn": "1",
-            "ut": "bd1d9ddb04089700cf9c27f6f7426281",
-        }
-        hdr = {"User-Agent": UA, "Referer": "https://quote.eastmoney.com/"}
-        delay_error: Dict[str, Any] = {}
-        primary_error: Dict[str, Any] = {}
-        try:
-            delay_domain = "push2delay.eastmoney.com"
-            primary_domain = "push2.eastmoney.com"
-            if domain_blocked[delay_domain]:
-                delay_error = dict(domain_errors.get(delay_domain) or {})
-                delay_error.update({"domain": delay_domain, "attempts": 0})
-                delay_error.setdefault("kind", "suppressed_after_failures")
-                r = None
-            elif _em_is_banned(delay_domain):
-                delay_error = {"kind": "ip_banned", "domain": delay_domain, "attempts": 0}
-                r = None
-            else:
-                r = _quick_request(
-                    "https://push2delay.eastmoney.com/api/qt/slist/get",
-                    params=params,
-                    headers=hdr,
-                    timeout=10,
-                    max_retries=1,
-                    error_out=delay_error,
-                )
-                if r is None:
-                    domain_failures[delay_domain] += 1
-                    domain_errors[delay_domain] = dict(delay_error)
-                    if _request_is_rate_limited(delay_error) or domain_failures[delay_domain] >= 3:
-                        domain_blocked[delay_domain] = True
-                else:
-                    domain_failures[delay_domain] = 0
-            if r is None:
-                if domain_blocked[primary_domain]:
-                    primary_error = dict(domain_errors.get(primary_domain) or {})
-                    primary_error.update({"domain": primary_domain, "attempts": 0})
-                    primary_error.setdefault("kind", "suppressed_after_failures")
-                elif _em_is_banned(primary_domain):
-                    primary_error = {"kind": "ip_banned", "domain": primary_domain, "attempts": 0}
-                else:
-                    r = _quick_request(
-                        "https://push2.eastmoney.com/api/qt/slist/get",
-                        params=params,
-                        headers=hdr,
-                        timeout=10,
-                        max_retries=1,
-                        error_out=primary_error,
-                    )
-                    if r is None:
-                        domain_failures[primary_domain] += 1
-                        domain_errors[primary_domain] = dict(primary_error)
-                        if (
-                            _request_is_rate_limited(primary_error)
-                            or domain_failures[primary_domain] >= 3
-                        ):
-                            domain_blocked[primary_domain] = True
-                    else:
-                        domain_failures[primary_domain] = 0
-            if r is None:
-                out["stocks"][c] = {
-                    "__error__": (
-                        "request failed ("
-                        + _request_failure_summary("push2delay", delay_error)
-                        + "; "
-                        + _request_failure_summary("push2", primary_error)
-                        + ")"
-                    )
-                }
-                continue
-            d = (r.json() or {}).get("data") or {}
-            diff = d.get("diff") or []
-            if isinstance(diff, dict):
-                diff = list(diff.values())
-            if diff:
-                out["stocks"][c] = {"secid": secid, "n_boards": len(diff), "boards": diff}
-            else:
-                # 请求成功但 0 板块(个股恒有归属板块)→ 空载荷异常, 显式标错以免 assess_result
-                # 误判 ok(公理 A8 禁止静默迁就)。
-                out["stocks"][c] = {
-                    "secid": secid,
-                    "n_boards": 0,
-                    "__error__": "empty payload (0 boards; possible push2 family IP-ban / endpoint anomaly)",
-                }
-        except Exception as e:
-            out["stocks"][c] = {"__error__": str(e)[:200]}
-    return out
+    """Compatibility wrapper preserving capture-entry dependency injection."""
+    return _capture_http_collectors.collect_slist(pool, _capture_http_dependencies())
 
 
 def collect_exchange(pool: list) -> dict:
-    """沪深交易所官方(§12.8.17)——真实 producer(V17.2.14)。
-
-    直连交易所官方龙虎榜端点(深交所 szse.cn + 上交所 query.sse.com.cn),
-    抓取 §12.8.17 登记字段 zqdm/zqjc/cjje/plyy(+原始 cjsl/dqrq/bz) 与 sse_raw(沪市全文),
-    验证 registry「沪深交易所」源字段。复用 dragon_tiger_backup(_eastmoney.py:1155)
-    已验证端点的节流范式: ProxyHandler({}) 直连 + _gen_wait_process_interval 全局节流(A1)。
-    注: 龙虎榜仅交易日产出; 非交易日(如周六休市)自动回退到最近交易日快照
-    (_last_completed_trading_day 取周五, 交易所历史龙虎榜数据可查, 不受周末影响)。
-    """
-    import urllib.request, json, ssl
-    from stock_common import UA
-
-    from stock_common.sc_network import _gen_wait_process_interval
-
-    trade_date = _last_completed_trading_day().strftime("%Y-%m-%d")
-    out: Dict[str, Any] = {
-        "records": [],
-        "sse_raw": "",
-        "szse_keys": [],
-        "n_szse": 0,
-        "trade_date": trade_date,
-    }
-    _ctx = ssl._create_unverified_context()
-
-    # 深交所龙虎榜(结构化 JSON: zqdm/zqjc/cjje/plyy/cjsl/dqrq/bz)
-    su = (
-        "https://www.szse.cn/api/report/ShowReport/data?SHOWTYPE=JSON"
-        f"&CATALOGID=1842_xxpl&TABKEY=tab1&txtStart={trade_date}"
-        f"&txtEnd={trade_date}&random=0.9"
-    )
-    try:
-        _gen_wait_process_interval()
-        req = urllib.request.Request(
-            su,
-            headers={
-                "User-Agent": UA,
-                "Referer": "https://www.szse.cn/disclosure/supervision/dealinfo/index.html",
-            },
-        )
-        op = urllib.request.build_opener(
-            urllib.request.ProxyHandler({}),
-            urllib.request.HTTPSHandler(context=_ctx),
-        )
-        with op.open(req, timeout=15) as r:
-            d = json.loads(r.read())
-        if isinstance(d, list) and d:
-            rows = d[0].get("data", []) or []
-            out["n_szse"] = len(rows)
-            if rows:
-                out["szse_keys"] = sorted(rows[0].keys())
-                out["records"] = rows
-    except Exception as e:
-        out["__error_szse__"] = str(e)[:200]
-
-    # 上交所龙虎榜(JSONP 全文, 含营业部席位 → sse_raw)
-    eu = (
-        "https://query.sse.com.cn/infodisplay/showTradePublicFile.do?"
-        f"jsonCallBack=cb&isPagination=false&dateTx={trade_date}"
-    )
-    try:
-        _gen_wait_process_interval()
-        req = urllib.request.Request(
-            eu,
-            headers={
-                "User-Agent": UA,
-                "Referer": "https://www.sse.com.cn/disclosure/diclosure/public/",
-            },
-        )
-        op = urllib.request.build_opener(urllib.request.ProxyHandler({}))
-        with op.open(req, timeout=15) as r:
-            t = r.read().decode("utf-8", "ignore")
-        if "(" in t and ")" in t:
-            d2 = json.loads(t[t.index("(") + 1 : t.rindex(")")])
-            fc = d2.get("fileContents", []) or []
-            out["sse_raw"] = "\n".join(fc)
-    except Exception as e:
-        out["__error_sse__"] = str(e)[:200]
-
-    return out
+    """Compatibility wrapper preserving capture-entry dependency injection."""
+    return _capture_http_collectors.collect_exchange(pool, _capture_http_dependencies())
 
 
 def _last_completed_trading_day() -> date:
@@ -2493,122 +1182,10 @@ def _fuyao_auction_items(envelope: Any) -> list:
 
 
 def collect_fuyao(pool: list, include_context: bool = False) -> dict:
-    """fuyao 官方 REST 全景采集（V17.0.5 新源——字典 §12.8.12c，全量契约见 verify/fuyao_api_full.md）。
-
-    个股级: 行情快照 / 估值(ps_ttm·pcf_ttm 新维度) / 集合竞价终态 /
-            五类财务指标(ROE·扣非ROE·ROA 官方口径——tx65/tx66 对撞终判源)
-    市场级: 短线风向标基准 / 涨跌停炸板池(date_ms 任意交易日回查) / 异动原因
-    龙虎榜与热股榜仅在 include_context=True 时请求。
-    无 Key 时自动禁用(meta 标记 no_key)；~35 请求 @2rps(sc_network 域限流)。
-    """
-    from stock_common import (
-        get_fuyao_snapshot,
-        get_fuyao_valuation,
-        get_fuyao_fin_indicators,
-        get_fuyao_auction_snapshot_envelope,
-        get_fuyao_auction_benchmark,
-        get_fuyao_limit_pool,
-        get_fuyao_anomaly,
-        is_fuyao_enabled,
+    """Compatibility wrapper preserving Fuyao date and auction metadata seams."""
+    return _capture_verified_collectors.collect_fuyao(
+        pool, _capture_source_dependencies(), include_context
     )
-
-    out: dict = {"stocks": {}, "market": {}}
-    if not is_fuyao_enabled():
-        out["error"] = "no_key_disabled"
-        return out
-    codes = [p["code"] for p in pool]
-    td = _last_completed_trading_day()
-    date_ms = int(datetime.combine(td, dt_time()).timestamp() * 1000)
-    out["probe_trading_day"] = td.isoformat()
-    out["date_ms"] = date_ms
-
-    snap = {r.get("ticker"): r for r in (get_fuyao_snapshot(codes) or [])}
-    val = {r.get("ticker"): r for r in (get_fuyao_valuation(codes) or [])}
-    auction_envelope = get_fuyao_auction_snapshot_envelope(codes, stage="final")
-    auction_items = _fuyao_auction_items(auction_envelope)
-    auction_meta = _fuyao_auction_snapshot_meta(auction_envelope, "final", td)
-    auction_meta["item_count"] = len(auction_items)
-    out["auction_snapshot_meta"] = auction_meta
-    auction = {}
-    for item in auction_items:
-        enriched_item = dict(item)
-        enriched_item["__source_meta__"] = dict(auction_meta)
-        auction[item.get("ticker")] = enriched_item
-    # V17.0.24: 三大报表(近 8 期 quarterly + 年报 annual)——财务 TTM 族主源原始锚:
-    # f163 静态PE=现价÷f160(年报EPS) 闭环验证 + ocf_ttm/revenue_ttm TTM 重建(R_YTD+FY−H1)
-    finrep: Dict[str, Any] = {}
-    try:
-        from stock_common.sc_fuyao import get_fuyao_financials as _gff
-
-        for p in pool:
-            c = p["code"]
-            finrep[c] = {
-                "income_q": _gff("income", c, limit=8, period="quarterly") or [],
-                "balance_q": _gff("balance", c, limit=8, period="quarterly") or [],
-                "cashflow_q": _gff("cashflow", c, limit=8, period="quarterly") or [],
-                "income_a": _gff("income", c, limit=3, period="annual") or [],
-            }
-    except Exception as _e:
-        finrep["__error__"] = str(_e)[:200]
-    for p in pool:
-        c = p["code"]
-        ind = None
-        used_report = None
-        for rpt in (
-            _last_completed_trading_day().strftime("%Y") + "-2",
-            _last_completed_trading_day().strftime("%Y") + "-1",
-        ):
-            ind = get_fuyao_fin_indicators(c, rpt)
-            if ind:
-                used_report = rpt
-                break
-        out["stocks"][c] = {
-            "snapshot": snap.get(c),
-            "valuation": val.get(c),
-            "auction_final": auction.get(c),
-            "fin_indicators": ind,
-            "fin_report": used_report,
-            # V17.0.24: 三大报表原始数据(TTM 重建/静态PE 闭环锚)
-            "financials": finrep.get(c) if isinstance(finrep.get(c), dict) else None,
-        }
-
-    mkt = out["market"]
-    bench = get_fuyao_auction_benchmark(td.isoformat())
-    mkt["short_term_benchmark"] = bench[:80] if isinstance(bench, list) else bench
-
-    # ── 中报(yyyy-2)就绪自动探测——tx[65]=扣非加权ROE(TTM) 的 L1 终判数据源 ──
-    # 哨兵: 首只股探 2026-2；上游入库滞后(披露日≠入库日, code=5003)时跳过全量拉取省配额
-    year = td.strftime("%Y")
-    sentinel = get_fuyao_fin_indicators(codes[0], year + "-2")
-    mkt["h1_indicators_ready"] = bool(sentinel)
-    mkt["h1_indicators"] = {}
-    if sentinel:
-        for c in codes:
-            ind = get_fuyao_fin_indicators(c, year + "-2") or {}
-            p = ind.get("profitability") or {}
-            if p:
-                mkt["h1_indicators"][c] = {
-                    "ded_weighted_roe": p.get("index_deduct_weighted_avg_roe"),
-                    "weighted_roe": p.get("index_weighted_avg_roe"),
-                    "roa": p.get("total_assets_net_ratio"),
-                }
-        print(f"  ⭐ 中报指标已入库({len(mkt['h1_indicators'])} 只)——tx65/tx66 L1 终判条件达成")
-
-    for kind in ("up", "down", "break"):
-        pd_ = get_fuyao_limit_pool(kind, page=1, size=200, date_ms=date_ms)
-        items = (pd_ or {}).get("item") or []
-        mkt[f"limit_{kind}_pool"] = {
-            "total": ((pd_ or {}).get("pagination") or {}).get("total"),
-            "count_captured": len(items),
-            "item": items,
-        }
-    mkt["anomaly_list"] = (get_fuyao_anomaly() or [])[:60]
-    if include_context:
-        from stock_common import get_fuyao_dragon_tiger, get_fuyao_hot_list
-
-        mkt["dragon_tiger"] = (get_fuyao_dragon_tiger(td.isoformat()) or [])[:60]
-        mkt["hot_list_hour"] = (get_fuyao_hot_list("hour") or [])[:50]
-    return out
 
 
 def _has_populated_capture_value(value: Any, key: str = "") -> bool:
@@ -2631,393 +1208,19 @@ def _has_populated_capture_value(value: Any, key: str = "") -> bool:
     return value is not None and value != ""
 
 
-def collect_ftshare(pool: list, *, data_date: str = "", force_reprobe: bool = False) -> dict:
-    """Keep legacy private-MCP captures visible without making requests."""
-    del pool, data_date, force_reprobe
-    return {
-        "__unwired__": "deprecated",
-        "registry_name": "FTShare",
-        "reason": (
-            "Retired: legacy FTShare private MCP captures are historical only; "
-            "the public REST collector uses the separate ftshare_rest identity."
-        ),
-    }
-
-
-def collect_ftshare_rest(pool: list, *, data_date: str = "", force_reprobe: bool = False) -> dict:
-    """Capture the documented FTShare REST quote contract for the configured stock pool."""
-    del force_reprobe
-    from stock_common.sc_ftshare import FTShareRequestError, get_a_share_quote_snapshot
-
-    codes = list(
-        dict.fromkeys(
-            str(item.get("code", "")).strip()
-            for item in pool
-            if isinstance(item, dict) and str(item.get("code", "")).strip()
-        )
-    )
-    if not codes:
-        return {
-            "__skipped__": "stock pool is empty; no FTShare request was sent",
-            "registry_name": "FTShare REST",
-        }
-    try:
-        result = get_a_share_quote_snapshot(codes, data_date=data_date)
-    except FTShareRequestError as exc:
-        return {"__error__": str(exc), "registry_name": "FTShare REST"}
-    result["registry_name"] = "FTShare REST"
-    return result
-
-
 def collect_em_kline_f61(pool: list) -> dict:
-    """东财日K线(**push2his** 域)——f61 换手率为 CYQ 筹码分布唯一源(字典 V17.0.14)。
-
-    TDX 0x0010 日K 与腾讯 ifzq 均无换手率 → 仅东财日K有。
-    🔴 域选择实测(2026-09-01 及 2026-09-14 换 IP 后复测三股 600519/000568/601288 均证):
-    push2/push2delay 主域 kline **dktotal 恒为 0 空返回**(延时镜像无历史窗口), 故镜像
-    **不可补数据且探测它纯耗限流额度、易触发远端重封**——本采集器**仅打 push2his**。
-    仅 push2his 有全窗口(dktotal=6004/7736/3924, 150 根)——与生产 `get_cyq_distribution`
-    的 `_em_fflow_request(prefer_his=True)` 同源。
-    klines 结构: "date,open,close,high,low,volume,amount,amplitude,pct,chg,turnover"
-    其中 turnover=f61 换手率; fqt=0 不复权(成本分布口径)。
-    V17.2.x 可用性修复: 旧逻辑"连续3败即整段熔断"把后续股票直接判死(从未真试)→ 实测
-    13/20 误杀。改为: 每只股票**始终真试 push2his**(限流 0.25rps/4s 由 _quick_request 内置, 2026-09-14 由 0.4rps 进一步放缓以避远端封禁),
-    失败仅记 error、不杀域; **仅 dktotal>0 才收**, 杜绝空数据误存。远端 IP 级封禁冷却后
-    本采集器不再自伤、自动恢复(东财 push2 族风控面极敏感, 需采集间留足冷却)。
-    """
-    from stock_common import _quick_request
-
-    KLINE_FIELDS2 = "f51,f52,f53,f54,f55,f56,f57,f58,f59,f60,f61"
-    out: Dict[str, Any] = {"stocks": {}}
-    pause_reason: Optional[str] = None
-    consecutive_disconnects = 0
-    for p in pool:
-        c = p["code"]
-        if pause_reason:
-            out["stocks"][c] = {"__skipped__": f"source paused after {pause_reason}"}
-            continue
-        secid = em_secid_prefix(c) + c
-        request_error: Dict[str, Any] = {}
-        try:
-            r = _quick_request(
-                "https://push2his.eastmoney.com/api/qt/stock/kline/get",
-                params={
-                    "secid": secid,
-                    "fields1": "f1,f2,f3,f4,f5,f6",
-                    "fields2": KLINE_FIELDS2,
-                    "klt": "101",
-                    "fqt": "0",
-                    "end": "20500101",
-                    "lmt": "150",
-                    "ut": "b2884a393a59ad64002292a3e90d46a5",
-                },
-                headers={"Referer": "https://quote.eastmoney.com/"},
-                timeout=15,
-                max_retries=1,
-                error_out=request_error,
-            )
-        except Exception as exc:
-            r = None
-            request_error = {
-                "kind": "request_exception",
-                "domain": "push2his.eastmoney.com",
-                "error_type": type(exc).__name__,
-                "message": str(exc).split("?", 1)[0][:160],
-            }
-        if r is None:
-            out["stocks"][c] = {"__error__": _request_failure_summary("push2his", request_error)}
-            _kind = str(request_error.get("kind") or "").lower()
-            consecutive_disconnects = (
-                consecutive_disconnects + 1 if _kind in {"connection_error", "timeout"} else 0
-            )
-            pause_reason = _em_capture_pause_reason(
-                "push2his", request_error, consecutive_disconnects
-            )
-            continue
-        consecutive_disconnects = 0
-        try:
-            payload = r.json() or {}
-            data = payload.get("data") or {}
-            if not isinstance(data, dict):
-                raise ValueError("response data is not an object")
-            klines = data.get("klines") or []
-            dktotal = data.get("dktotal") or 0
-        except Exception as exc:
-            out["stocks"][c] = {"__error__": f"push2his response parse failed: {str(exc)[:160]}"}
-            continue
-        if dktotal and len(klines) > 0:  # 仅真实窗口才算成功, 杜绝空数据误存
-            out["stocks"][c] = {
-                "secid": secid,
-                "dktotal": dktotal,
-                "n_klines": len(klines),
-                "klines_tail30": klines[-30:],
-                "klines_all": klines[:150],
-                "host": "push2his",
-            }
-        else:
-            out["stocks"][c] = {"__error__": "push2his empty (dktotal=0)"}
-    return out
+    """Compatibility wrapper preserving capture-entry dependency injection."""
+    return _capture_http_collectors.collect_em_kline_f61(pool, _capture_http_dependencies())
 
 
 def collect_em_fund_flow(pool: list) -> dict:
-    """东财资金流四档(push2delay 域)——f137 主力净额唯一同口径源(V17.0.16)。
-
-    stock/get: f135/136/137=主力(超大+大单)、f138/139/140=超大单、f141/142/143=大单、
-    f144/145/146=中单、f149=小单净。铁证 f137=f140+f143(169/169); ulist f62==f137(96.6%)。
-    全走 push2delay 镜像域(独立风控 1.0rps), 不碰 push2 主域。
-    """
-    from stock_common import _quick_request
-
-    # V17.1.x: 补全 f147/f148(散单买/卖额, 主字典 §12.3.4 已登记)——原列表漏此二项致采集缺失。
-    ff_fields = ",".join(
-        [
-            "f135",
-            "f136",
-            "f137",
-            "f138",
-            "f139",
-            "f140",
-            "f141",
-            "f142",
-            "f143",
-            "f144",
-            "f145",
-            "f146",
-            "f147",
-            "f148",  # 散单(第五档)买/卖额
-            "f149",
-        ]
-    )
-    out: Dict[str, Any] = {"stocks": {}}
-    pause_reason: Optional[str] = None
-    consecutive_disconnects = 0
-    for p in pool:
-        c = p["code"]
-        if pause_reason:
-            out["stocks"][c] = {"__skipped__": f"source paused after {pause_reason}"}
-            continue
-        secid = em_secid_prefix(c) + c
-        request_error: Dict[str, Any] = {}
-        try:
-            r = _quick_request(
-                "https://push2delay.eastmoney.com/api/qt/stock/get",
-                params={
-                    "secid": secid,
-                    "fltt": "2",
-                    "invt": "2",
-                    "fields": ff_fields,
-                    "ut": "fa5fd1943c7b386f172d6893dbfba10b",
-                },
-                headers={"Referer": "https://quote.eastmoney.com/"},
-                timeout=10,
-                max_retries=1,
-                error_out=request_error,
-            )
-            if r is None:
-                out["stocks"][c] = {
-                    "__error__": _request_failure_summary("push2delay", request_error)
-                }
-                _kind = str(request_error.get("kind") or "").lower()
-                consecutive_disconnects = (
-                    consecutive_disconnects + 1 if _kind in {"connection_error", "timeout"} else 0
-                )
-                pause_reason = _em_capture_pause_reason(
-                    "push2delay", request_error, consecutive_disconnects
-                )
-                continue
-            consecutive_disconnects = 0
-            payload = r.json() or {}
-            data = payload.get("data") or {}
-            if not isinstance(data, dict) or not data:
-                out["stocks"][c] = {"__error__": "push2delay empty payload (no stock/get data)"}
-                continue
-            out["stocks"][c] = {"secid": secid, "n_fields": len(data), "data": data}
-        except Exception as e:
-            out["stocks"][c] = {"__error__": str(e)[:200]}
-    return out
+    """Compatibility wrapper preserving capture-entry dependency injection."""
+    return _capture_http_collectors.collect_em_fund_flow(pool, _capture_http_dependencies())
 
 
 def collect_ulist239(pool: list) -> dict:
-    """东财 push2delay ulist.np 批量全字段(1 次请求 20 只,字典 §12.9 ulist 239 字段)。"""
-    from stock_common import _quick_request
-
-    def _mkt(c):
-        if c.startswith(("92", "8", "4", "43", "83", "87")):
-            return "0."  # 北交所(920 等)必须先判——"9" 前缀会被沪市分支吃掉(V16.4.1 bug 修复)
-        if c.startswith(("6", "5", "9")):
-            return "1."
-        return "0."
-
-    secids = ",".join(_mkt(p["code"]) + p["code"] for p in pool)
-    request_error: Dict[str, Any] = {}
-    try:
-        r = _quick_request(
-            "https://push2delay.eastmoney.com/api/qt/ulist.np/get",
-            params={"fltt": "2", "invt": "2", "secids": secids, "fields": EM_FULL_FIELDS},
-            headers={"Referer": "https://quote.eastmoney.com/"},
-            timeout=15,
-            max_retries=1,
-            error_out=request_error,
-        )
-        if r is None:
-            return {
-                "stocks": {},
-                "__error__": _request_failure_summary("push2delay", request_error),
-            }
-        payload = r.json() or {}
-        response_data = payload.get("data") or {}
-        diff = response_data.get("diff") or []
-        if isinstance(diff, dict):
-            diff = list(diff.values())
-        out: Dict[str, Any] = {"stocks": {}}
-        for item in diff:
-            code = str(item.get("f12", ""))
-            if code:
-                out["stocks"][code] = {"n_fields": len(item), "data": item}
-        if not out["stocks"]:
-            return {
-                "stocks": {},
-                "__error__": "push2delay ulist empty payload (0 stock records)",
-            }
-        for item in pool:
-            code = str(item.get("code", ""))
-            if code and code not in out["stocks"]:
-                out["stocks"][code] = {"__error__": "requested code missing from ulist response"}
-        return out
-    except Exception as e:
-        return {"__error__": str(e)[:200]}
-
-
-def collect_push2ex(pool: list) -> dict:
-    """push2ex 涨停/跌停/炸板池(市场级,字典 §12.9.2)。"""
-    out: Dict[str, Any] = {}
-    try:
-        from stock_common import get_limit_up_pool, get_limit_down_pool, get_limit_broken_pool
-
-        out["limit_up_pool"] = get_limit_up_pool()
-        out["limit_down_pool"] = get_limit_down_pool()
-        out["limit_broken_pool"] = get_limit_broken_pool()
-    except Exception as e:
-        out["error"] = str(e)[:200]
-    return out
-
-
-def collect_em_hot(pool: list) -> dict:
-    """东财人气榜(市场级,emappdata 域)。"""
-    try:
-        from stock_common import em_hot_rank
-
-        return {"hot_rank": em_hot_rank(top=50)}
-    except Exception as e:
-        return {"error": str(e)[:200]}
-
-
-def collect_cls(pool: list) -> dict:
-    """财联社快讯(市场级)。"""
-    try:
-        from stock_common import cls_telegraph
-
-        return {"telegraph": cls_telegraph(page_size=50)}
-    except Exception as e:
-        return {"error": str(e)[:200]}
-
-
-def collect_datacenter(pool: list) -> dict:
-    """东财 datacenter 个股级: 两融/北向/解禁(每只 3 请求,1.0rps)。"""
-    from stock_common import get_margin_trading, get_northbound_hold, get_lockup_expiry
-
-    out: Dict[str, Any] = {"stocks": {}}
-    for p in pool:
-        c = p["code"]
-        rec: Dict[str, Any] = {}
-        _dc_functions: List[tuple[str, Callable[[str], Any]]] = [
-            ("margin_trading", get_margin_trading),
-            ("northbound_hold", get_northbound_hold),
-            ("lockup_expiry", get_lockup_expiry),
-        ]
-        for name, fn in _dc_functions:
-            try:
-                v = fn(c)
-                rec[name] = v if isinstance(v, (list, dict)) else {"value": v}
-            except Exception as e:
-                rec[name] = {"__error__": str(e)[:150]}
-        out["stocks"][c] = rec
-    return out
-
-
-def collect_event_dc(pool: list) -> dict:
-    """V17.4 事件驱动/可转债层采集(东财 datacenter) — 验证 _EM_REPORTS 候选常量真伪(治理铁律: 推断走候选)。
-
-    每股票采业绩预告/机构调研/股东增减持/股权质押; 另采全市场级新股申购日历 + 可转债列表(标的相关性由报告层判断)。
-    仅作采集占位: 取值异常不抛(对撞阶段再钉死常量); 返回 {"stocks": {...}} 供 collide 读取。
-    """
-    from stock_common.sc_datasource import (
-        earnings_forecast,
-        institution_survey,
-        holder_trades,
-        equity_pledge,
-        ipo_calendar,
-        convertible_bonds,
-    )
-
-    out: Dict[str, Any] = {"stocks": {}}
-    for p in pool:
-        c = p["code"]
-        rec: Dict[str, Any] = {}
-        _event_functions: List[tuple[str, Callable[[str], Any]]] = [
-            ("earnings_forecast", earnings_forecast),
-            ("institution_survey", institution_survey),
-            ("holder_trades", holder_trades),
-            ("equity_pledge", equity_pledge),
-        ]
-        for name, fn in _event_functions:
-            try:
-                v = fn(c)
-                rec[name] = v if isinstance(v, (list, dict)) else {"value": v}
-            except Exception as e:
-                rec[name] = {"__error__": str(e)[:150]}
-        out["stocks"][c] = rec
-    # 全市场级: 申购日历 + 可转债列表(标的相关性由报告层判断)
-    try:
-        out["ipo_calendar"] = ipo_calendar()
-    except Exception as e:
-        out["ipo_calendar"] = {"__error__": str(e)[:150]}
-    try:
-        out["convertible_bonds"] = convertible_bonds()
-    except Exception as e:
-        out["convertible_bonds"] = {"__error__": str(e)[:150]}
-    return out
-
-
-def collect_macro_dc(pool: list) -> dict:
-    """V17.4 宏观利率层采集(东财 datacenter + 中债/货币网占位) — 验证 _EM_REPORTS 候选常量真伪。
-
-    宏观为全市场级(不按个股); 套 stocks 壳以对齐 meta 评估。中债收益率曲线端点待补(返回空占位)。
-    """
-    from stock_common.sc_datasource import (
-        lpr_history,
-        macro_calendar as _macro_cal,
-        repo_fixing_rates,
-        chinabond_yield_curve,
-    )
-
-    out: Dict[str, Any] = {"stocks": {}}
-    rec: Dict[str, Any] = {}
-    _macro_functions: List[tuple[str, Callable[[], Any]]] = [
-        ("lpr_history", lpr_history),
-        ("macro_calendar", _macro_cal),
-        ("repo_fixing_fr", lambda: repo_fixing_rates("FR")),
-        ("repo_fixing_fdr", lambda: repo_fixing_rates("FDR")),
-        ("chinabond_yield_curve", chinabond_yield_curve),
-    ]
-    for name, fn in _macro_functions:
-        try:
-            v = fn()
-            rec[name] = v if isinstance(v, (list, dict)) else {"value": v}
-        except Exception as e:
-            rec[name] = {"__error__": str(e)[:150]}
-    out["macro"] = rec
-    return out
+    """Compatibility wrapper preserving capture-entry dependency injection."""
+    return _capture_http_collectors.collect_ulist239(pool, _capture_http_dependencies())
 
 
 def _recent_calendar_days(n: int = 4, today=None) -> List[str]:
@@ -3039,164 +1242,14 @@ def _recent_trade_days(n: int = 4, today=None) -> List[str]:
     return [day.strftime("%Y-%m-%d") for day in recent_trading_dates(max(0, n), today)]
 
 
-def collect_research_sina(pool: list) -> dict:
-    """V17.4.1 吸收层: 新浪研报(研报第二来源, §2.4)。
-
-    市场级(全市场最新一页) + 个股级抽样(前 5 只, 验证 per-stock 路径; 新浪 6s 节流, 不 20× 全量)。
-    """
-    from stock_common.sc_datasource import sina_research_reports
-
-    out: Dict[str, Any] = {"stocks": {}}
-    try:
-        out["market_latest"] = sina_research_reports()
-    except Exception as e:
-        out["market_latest"] = {"__error__": str(e)[:150]}
-    for p in pool[:5]:
-        c = p["code"]
-        try:
-            out["stocks"][c] = sina_research_reports(c)
-        except Exception as e:
-            out["stocks"][c] = {"__error__": str(e)[:150]}
-    return out
-
-
 def collect_etf(pool: list) -> dict:
-    """V17.4.1 吸收层: ETF 份额(万份, §4.7)。上交所按日归档/深交所当前快照。
-
-    取最近 4 个市场工作日里首个有数据的快照(深交所仅最新一天)。SH+SZ 全市场列表。
-    """
-    from stock_common.sc_datasource import etf_shares
-
-    out: Dict[str, Any] = {}
-    for ex in ("SH", "SZ"):
-        got: Any = None
-        attempted = []
-        errors = []
-        for day in _recent_trade_days(4):
-            attempted.append(day)
-            try:
-                rows = etf_shares(day, ex)
-                if rows:
-                    got = rows
-                    break
-            except Exception as exc:
-                errors.append(f"{day}:{type(exc).__name__}: {str(exc).split('?')[0][:100]}")
-        if got is None:
-            message = f"no ETF rows for market sessions: {', '.join(attempted)}"
-            if errors:
-                message += "; errors: " + "; ".join(errors)
-            out[f"etf_{ex.lower()}"] = {
-                "__error__": message,
-                "attempted_dates": attempted,
-            }
-        else:
-            out[f"etf_{ex.lower()}"] = got
-    return out
+    """Compatibility wrapper preserving the entry point's date-helper patch seam."""
+    return _capture_context_collectors.collect_etf(pool, _recent_trade_days)
 
 
 def collect_news_wscn_cctv(pool: list) -> dict:
-    """V17.4.1 吸收层: 央视《新闻联播》(§5.5, 政策信号文本)。取最近 3 天首个有条目日。"""
-    from stock_common.sc_datasource import cctv_news
-
-    out: Dict[str, Any] = {}
-    attempts = []
-    got = None
-    for day in _recent_calendar_days(3):
-        try:
-            rows = cctv_news(day)
-            attempts.append(f"{day}:{len(rows)}")
-            if rows:
-                got = rows
-                break
-        except Exception as e:
-            attempts.append(f"{day}:ERR {str(e)[:80]}")
-    out["cctv_xwlb"] = got if got is not None else {"__error__": "no data; " + "; ".join(attempts)}
-    return out
-
-
-def collect_sse_e_interaction(pool: list) -> dict:
-    """V17.4.1 吸收层: 上证e互动(§10.3)。市场级(全市场最新已回复) + 个股级抽样(前 3 只沪市股, uid 解析 ~10-13 请求/股)。"""
-    from stock_common.sc_datasource import sse_e_interaction
-
-    out: Dict[str, Any] = {"stocks": {}}
-    try:
-        out["market"] = sse_e_interaction()
-    except Exception as e:
-        out["market"] = {"__error__": str(e)[:150]}
-    for p in pool[:3]:
-        c = p["code"]
-        if not c.startswith(("60", "68", "900")):
-            continue
-        try:
-            out["stocks"][c] = sse_e_interaction(c, kind="answered")
-        except Exception as e:
-            out["stocks"][c] = {"__error__": str(e)[:150]}
-    return out
-
-
-def collect_st_list(pool: list) -> dict:
-    """V17.4.1 吸收层: ST/*ST 名单(§6.8, 沪深京风险警示板)。市场级(全市场当日快照)。"""
-    from stock_common.sc_datasource import st_stock_list
-
-    out: Dict[str, Any] = {}
-    try:
-        out["st_list"] = st_stock_list()
-    except Exception as e:
-        out["st_list"] = {"__error__": str(e)[:150]}
-    return out
-
-
-def collect_tdx_f10_more(pool: list) -> dict:
-    """TDX F10 补充: 股东研究/公司新闻/异动提醒(TCP 免费)。"""
-    from core.tdx_client import (
-        tdx_get_shareholder_research,
-        tdx_get_company_news_f10,
-        tdx_get_latest_reminders,
-    )
-
-    out: Dict[str, Any] = {"stocks": {}}
-    for p in pool:
-        c = p["code"]
-        rec: Dict[str, Any] = {}
-        for name, fn in [
-            ("shareholder_research", tdx_get_shareholder_research),
-            ("company_news", lambda x: tdx_get_company_news_f10(x, count=10)),
-            ("reminders", tdx_get_latest_reminders),
-        ]:
-            try:
-                rec[name] = fn(c)
-            except Exception as e:
-                rec[name] = {"__error__": str(e)[:150]}
-        out["stocks"][c] = rec
-    return out
-
-
-def collect_cninfo(pool: list) -> dict:
-    """巨潮互动易(irm.cninfo,3rps;全 20 只)。"""
-    from stock_common import cninfo_irm
-
-    out: Dict[str, Any] = {"stocks": {}}
-    for p in pool:
-        c = p["code"]
-        try:
-            out["stocks"][c] = cninfo_irm(c, page_size=10)
-        except Exception as e:
-            out["stocks"][c] = {"__error__": str(e)[:150]}
-    return out
-
-
-def collect_reports(pool: list) -> dict:
-    """东财研报 reportapi(全 20 只,1.0rps)。"""
-    from stock_common import get_reports
-
-    out: Dict[str, Any] = {"stocks": {}}
-    for p in pool:
-        c = p["code"]
-        try:
-            out["stocks"][c] = get_reports(c, max_pages=1)
-        except Exception as e:
-            out["stocks"][c] = {"__error__": str(e)[:150]}
-    return out
+    """Compatibility wrapper preserving the entry point's calendar-helper patch seam."""
+    return _capture_context_collectors.collect_news_wscn_cctv(pool, _recent_calendar_days)
 
 
 def dry_run(pool: list) -> None:

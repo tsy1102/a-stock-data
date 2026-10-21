@@ -193,3 +193,93 @@ class TestEmBanCooldown(unittest.TestCase):
         self.assertIs(result, response)
         self.assertNotIn("push2.eastmoney.com", self.sn._EM_BAN_STREAK)
         circuit._on_success.assert_called_once_with()
+
+
+class TestRateLimitFailureStopsRequests(unittest.TestCase):
+    def test_em_get_returns_before_http_when_process_limiter_fails(self):
+        import stock_common.sc_network as sn
+        import unittest.mock as _mock
+
+        bucket = _mock.Mock()
+        circuit = _mock.Mock(state="closed")
+        with (
+            _mock.patch.object(sn, "_em_is_banned", return_value=False),
+            _mock.patch(
+                "stock_common.sc_fault_tolerance.get_domain_token_bucket", return_value=bucket
+            ),
+            _mock.patch(
+                "stock_common.sc_fault_tolerance.get_domain_circuit_breaker",
+                return_value=circuit,
+            ),
+            _mock.patch.object(sn, "_EM_LAST_CALL", [0.0]),
+            _mock.patch.object(
+                sn, "_em_wait_process_interval", side_effect=TimeoutError("limiter unavailable")
+            ),
+            _mock.patch.object(sn.EM_SESSION, "get") as request,
+        ):
+            result = sn.em_get("https://push2.eastmoney.com/api/test")
+
+        self.assertIsNone(result)
+        request.assert_not_called()
+
+    def test_quick_request_returns_before_http_when_process_limiter_fails(self):
+        import stock_common.sc_network as sn
+        import unittest.mock as _mock
+
+        with (
+            _mock.patch.object(sn, "_em_is_banned", return_value=False),
+            _mock.patch.object(
+                sn, "_em_wait_process_interval", side_effect=TimeoutError("limiter unavailable")
+            ),
+            _mock.patch.object(sn._HTTP_SESSION, "get") as request,
+        ):
+            error = {}
+            result = sn._do_request(
+                "https://push2.eastmoney.com/api/test",
+                None,
+                None,
+                1,
+                3,
+                None,
+                "GET",
+                True,
+                error,
+            )
+
+        self.assertIsNone(result)
+        request.assert_not_called()
+        self.assertEqual(error["kind"], "request_error")
+
+    def test_cninfo_irm_does_not_post_when_process_limiter_fails(self):
+        import stock_common.sc_network as sn
+        import unittest.mock as _mock
+        from stock_common.sc_datasource._holders import cninfo_irm
+
+        with (
+            _mock.patch.object(
+                sn, "_gen_wait_process_interval", side_effect=OSError("limiter state unavailable")
+            ),
+            _mock.patch("requests.post") as request,
+        ):
+            result = cninfo_irm("600000")
+
+        self.assertEqual(result, [])
+        request.assert_not_called()
+
+    def test_dragon_tiger_backup_does_not_open_when_process_limiter_fails(self):
+        import stock_common.sc_network as sn
+        import unittest.mock as _mock
+        from stock_common.sc_datasource._eastmoney import dragon_tiger_backup
+
+        with (
+            _mock.patch.object(
+                sn, "_gen_wait_process_interval", side_effect=OSError("limiter state unavailable")
+            ) as wait,
+            _mock.patch("urllib.request.build_opener") as build_opener,
+        ):
+            result = dragon_tiger_backup("2026-10-21")
+
+        self.assertEqual(result["szse"], [])
+        self.assertEqual(result["sse_raw"], "")
+        self.assertEqual(wait.call_count, 2)
+        build_opener.assert_not_called()

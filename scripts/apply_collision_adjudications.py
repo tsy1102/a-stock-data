@@ -17,10 +17,8 @@ import os
 import re
 import sys
 import tempfile
-from collections import Counter
 from pathlib import Path
 from typing import Any
-from urllib.parse import urlsplit
 
 for _stream in (sys.stdout, sys.stderr):
     if _stream is not None and hasattr(_stream, "reconfigure"):
@@ -35,7 +33,10 @@ FIELD_DICT_PATH = REPO_ROOT / "docs" / "field_dict.md"
 UNKNOWN_FIELDS_PATH = REPO_ROOT / "docs" / "unknown_fields.md"
 SOURCE_MAP_PATH = REPO_ROOT / "docs" / "source_repository_map.md"
 METADATA_GAPS_PATH = REPO_ROOT / "docs" / "field_metadata_gaps.md"
-sys.path.insert(0, str(SCRIPT_DIR))
+if str(SCRIPT_DIR) not in sys.path:
+    sys.path.insert(0, str(SCRIPT_DIR))
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
 
 import field_registry_api as fra
 import collision_candidate_reviews as ccr
@@ -43,31 +44,37 @@ import derived_relation_evidence as dre
 import gen_field_dict as gfd
 import source_lineage_api as sla
 
+from scripts.collision_adjudication_validation import (
+    VALID_LEVELS,
+    _candidate_identity_for_source,
+    _find_l1_candidate,
+    _is_placeholder_metadata,
+    _is_registry_aggregate_status_conflict,
+    _metadata,
+    _metadata_snapshot,
+    _non_empty_string,
+    _require_object,
+    _runtime_identity,
+    _validate_anchor_metadata_correction,
+    _validate_candidate_inventory,
+    _validate_candidate_triage,
+    _validate_collision_report_sections,
+    _validate_complete_collision_report,
+    _validate_external_evidence,
+    _validate_iso_date,
+    _validate_source_contract,
+    _validate_source_contract_metadata_correction,
+)
+from scripts.collision_adjudication_transformations import (
+    SAME_MEANING_RELATION,
+    _add_verified_mapping,
+    _append_adjudication_evidence,
+    _append_derived_relation_decision,
+    _mapping_key,
+    _refresh_aggregate_projection,
+)
+
 VALID_ACTIONS = {"verify", "enrich_metadata", "link_verified"}
-VALID_LEVELS = {"L1", "L1-U"}
-SAME_MEANING_RELATION = "same_number_same_meaning"
-
-
-def _require_object(value: Any, label: str) -> dict[str, Any]:
-    if not isinstance(value, dict):
-        raise TypeError(f"{label} must be an object")
-    return value
-
-
-def _non_empty_string(value: Any, label: str) -> str:
-    if not isinstance(value, str) or not value.strip():
-        raise ValueError(f"{label} must be a non-empty string")
-    return value.strip()
-
-
-def _validate_iso_date(value: Any, label: str) -> str:
-    text = _non_empty_string(value, label)
-    try:
-        if dt.date.fromisoformat(text).isoformat() != text:
-            raise ValueError
-    except ValueError as exc:
-        raise ValueError(f"{label} must use YYYY-MM-DD") from exc
-    return text
 
 
 def _inside_verification_dir(
@@ -82,368 +89,6 @@ def _inside_verification_dir(
     except ValueError as exc:
         raise ValueError(f"{label} must be inside docs/field_verification") from exc
     return resolved, relative.as_posix()
-
-
-def _runtime_identity(field_id: str, source: str, lineage: dict[str, Any]) -> tuple[str, str]:
-    aliases = sla.runtime_aliases_for_source(source, lineage)
-    matches: list[tuple[int, str, str]] = []
-    for alias in aliases:
-        if field_id.startswith(alias + "."):
-            matches.append((len(alias), alias, field_id[len(alias) + 1 :]))
-        elif field_id.startswith(alias + "["):
-            matches.append((len(alias), alias, field_id[len(alias) :]))
-    if not matches:
-        raise ValueError(
-            f"{source!r} does not map to runtime field {field_id!r} in the collision report"
-        )
-    longest = max(match[0] for match in matches)
-    best = {(alias, code) for length, alias, code in matches if length == longest}
-    if len(best) != 1:
-        raise ValueError(f"runtime field identity is ambiguous: {field_id!r}")
-    alias, code = next(iter(best))
-    if not code:
-        raise ValueError(f"runtime field has an empty code path: {field_id!r}")
-    return alias, sla.normalize_runtime_field_code(alias, code)
-
-
-def _candidate_identity_for_source(
-    candidate_ids: tuple[str, str],
-    source_field: tuple[str, str],
-    lineage: dict[str, Any],
-    label: str,
-) -> tuple[str, str]:
-    """Resolve a registered identity to either endpoint of a symmetric pair."""
-    source, expected_code = source_field
-    aliases = sla.runtime_aliases_for_source(source, lineage)
-    matches: list[tuple[str, str]] = []
-    for field_id in candidate_ids:
-        if not any(
-            field_id.startswith(alias + ".") or field_id.startswith(alias + "[")
-            for alias in aliases
-        ):
-            continue
-        alias, code = _runtime_identity(field_id, source, lineage)
-        if code == expected_code:
-            matches.append((field_id, alias))
-    if len(matches) != 1:
-        raise ValueError(
-            f"{label} {source}::{expected_code} does not match report field endpoint exactly once; "
-            f"matched {len(matches)}"
-        )
-    return matches[0]
-
-
-def _metadata_snapshot(value: Any, label: str) -> dict[str, str]:
-    snapshot = _require_object(value, label)
-    if set(snapshot) != {"canonical", "meaning", "unit"}:
-        raise ValueError(f"{label} must contain exactly canonical, meaning, and unit")
-    if any(not isinstance(snapshot[key], str) for key in snapshot):
-        raise TypeError(f"{label} values must be strings")
-    return {key: snapshot[key].strip() for key in ("canonical", "meaning", "unit")}
-
-
-def _metadata(record: dict[str, Any]) -> dict[str, str]:
-    return {key: str(record.get(key, "") or "").strip() for key in ("canonical", "meaning", "unit")}
-
-
-def _validate_external_evidence(value: Any, label: str) -> list[str] | None:
-    if value is None:
-        return None
-    if not isinstance(value, list) or not value:
-        raise ValueError(f"{label} must be a non-empty URL list")
-    if any(not isinstance(item, str) or not item.strip() for item in value):
-        raise ValueError(f"{label} entries must be HTTPS URLs")
-    urls = [item.strip() for item in value]
-    if any(
-        urlsplit(item).scheme != "https"
-        or not urlsplit(item).hostname
-        or urlsplit(item).username is not None
-        for item in urls
-    ):
-        raise ValueError(f"{label} entries must be HTTPS URLs with a hostname")
-    return urls
-
-
-def _validate_source_contract(value: Any, label: str) -> dict[str, str]:
-    contract = _require_object(value, label)
-    required = {"authority", "revision", "path", "locator", "url"}
-    if set(contract) != required:
-        raise ValueError(f"{label} must contain exactly {', '.join(sorted(required))}")
-    normalized = {
-        key: _non_empty_string(contract.get(key), f"{label}.{key}")
-        for key in ("authority", "revision", "path", "locator")
-    }
-    revision_key = normalized["revision"].casefold()
-    if revision_key in {"main", "master", "latest", "current", "head"}:
-        raise ValueError(f"{label}.revision must identify a pinned version or dated document")
-    urls = _validate_external_evidence([contract.get("url")], f"{label}.url")
-    if urls is None:
-        raise ValueError(f"{label}.url must be an HTTPS evidence URL")
-    normalized["url"] = urls[0]
-    return normalized
-
-
-def _is_registry_aggregate_status_conflict(record: dict[str, Any]) -> bool:
-    """Identify a status-only conflict caused by the aggregate registry projection."""
-    evidence = record.get("status_evidence")
-    if not isinstance(evidence, dict):
-        return False
-    reference_statuses = evidence.get("reference_statuses")
-    values = evidence.get("values")
-    if not isinstance(reference_statuses, list) or any(
-        not isinstance(status, str) for status in reference_statuses
-    ):
-        return False
-    if set(reference_statuses) != {"verified"}:
-        return False
-    if not isinstance(values, list) or any(not isinstance(status, str) for status in values):
-        return False
-    if set(values) != {"verified", "unverified"}:
-        return False
-    if evidence.get("registry_aggregate_status") != "unverified":
-        return False
-    attribute_conflicts = record.get("attribute_conflicts")
-    if attribute_conflicts not in (None, {}, []):
-        return False
-    reference_evidence = record.get("reference_evidence")
-    if not isinstance(reference_evidence, list) or not reference_evidence:
-        return False
-    reference_evidence_statuses: set[str] = set()
-    for item in reference_evidence:
-        if not isinstance(item, dict):
-            return False
-        status = item.get("status")
-        if not isinstance(status, str) or not status:
-            return False
-        reference_evidence_statuses.add(status)
-    return reference_evidence_statuses == {"verified"}
-
-
-def _validate_source_contract_metadata_correction(
-    value: Any,
-    previous: dict[str, str],
-    updated: dict[str, str],
-) -> dict[str, Any] | None:
-    if value is None:
-        return None
-    correction = _require_object(value, "metadata_correction")
-    if set(correction) != {"previous", "updated", "rationale"}:
-        raise ValueError(
-            "metadata_correction must contain exactly previous, updated, and rationale"
-        )
-    correction_previous = _metadata_snapshot(
-        correction.get("previous"), "metadata_correction.previous"
-    )
-    correction_updated = _metadata_snapshot(
-        correction.get("updated"), "metadata_correction.updated"
-    )
-    rationale = _non_empty_string(correction.get("rationale"), "metadata_correction.rationale")
-    if correction_previous != previous or correction_updated != updated:
-        raise ValueError("metadata_correction must exactly match the decision metadata snapshots")
-    if correction_previous == correction_updated:
-        raise ValueError("metadata_correction must change at least one established value")
-    return {
-        "previous": correction_previous,
-        "updated": correction_updated,
-        "rationale": rationale,
-    }
-
-
-def _is_placeholder_metadata(value: str, key: str, code: str) -> bool:
-    normalized = value.strip()
-    if not normalized:
-        return True
-    if key == "canonical" and normalized == code:
-        return True
-    return normalized.casefold() in {
-        "待破解",
-        "待确认",
-        "待验证",
-        "未验证",
-        "未定义",
-        "未知",
-        "unknown",
-        "tbd",
-        "n/a",
-        "na",
-        "—",
-        "-",
-    }
-
-
-def _validate_anchor_metadata_correction(
-    value: Any, label: str = "anchor_metadata_correction"
-) -> dict[str, Any] | None:
-    if value is None:
-        return None
-    correction = _require_object(value, label)
-    previous = _metadata_snapshot(correction.get("previous"), f"{label}.previous")
-    updated = _metadata_snapshot(correction.get("updated"), f"{label}.updated")
-    rationale = _non_empty_string(correction.get("rationale"), f"{label}.rationale")
-    external_evidence = _validate_external_evidence(
-        correction.get("external_evidence"), f"{label}.external_evidence"
-    )
-    if external_evidence is None:
-        raise ValueError(f"{label}.external_evidence must be a non-empty URL list")
-    if previous == updated:
-        raise ValueError(f"{label} must change at least one metadata value")
-    return {
-        "previous": previous,
-        "updated": updated,
-        "rationale": rationale,
-        "external_evidence": list(external_evidence),
-    }
-
-
-def _find_l1_candidate(report: dict[str, Any], left: str, right: str) -> dict[str, Any]:
-    candidates = report.get("actionable_L1", report.get("L1"))
-    if not isinstance(candidates, list):
-        raise TypeError("collision report actionable_L1/L1 must be a list")
-    matches = [
-        candidate
-        for candidate in candidates
-        if isinstance(candidate, dict)
-        and candidate.get("left") == left
-        and candidate.get("right") == right
-    ]
-    if len(matches) != 1:
-        raise ValueError(
-            f"expected exactly one report L1 candidate for {left!r} -> {right!r}; found {len(matches)}"
-        )
-    candidate = matches[0]
-    if candidate.get("level") not in VALID_LEVELS:
-        raise ValueError("only L1 and L1-U findings can be adjudicated")
-    if candidate.get("in_registry"):
-        raise ValueError(
-            "registered mappings are revalidation evidence, not new adjudication candidates"
-        )
-    if candidate.get("hub_flag"):
-        raise ValueError("hub-flagged collision candidates cannot be adjudicated")
-    if int(candidate.get("n_days", 0)) < 3:
-        raise ValueError("L1 candidate must contain at least three independent trading days")
-    return candidate
-
-
-def _mapping_key(mapping: dict[str, Any]) -> frozenset[tuple[str, str]] | None:
-    left = mapping.get("from")
-    right = mapping.get("to")
-    if not isinstance(left, dict) or not isinstance(right, dict):
-        return None
-    left_source, left_code = left.get("source"), left.get("code")
-    right_source, right_code = right.get("source"), right.get("code")
-    if not isinstance(left_source, str) or not left_source:
-        return None
-    if not isinstance(left_code, str) or not left_code:
-        return None
-    if not isinstance(right_source, str) or not right_source:
-        return None
-    if not isinstance(right_code, str) or not right_code:
-        return None
-    return frozenset({(left_source, left_code), (right_source, right_code)})
-
-
-def _add_verified_mapping(
-    registry: dict[str, Any],
-    target: tuple[str, str],
-    anchor: tuple[str, str],
-    evidence: str,
-) -> bool:
-    mappings = registry.setdefault("mappings", [])
-    if not isinstance(mappings, list):
-        raise TypeError("registry.mappings must be a list")
-    wanted = frozenset({target, anchor})
-    for mapping in mappings:
-        if not isinstance(mapping, dict) or _mapping_key(mapping) != wanted:
-            continue
-        if mapping.get("relation") != SAME_MEANING_RELATION:
-            raise ValueError(
-                "an existing mapping for this pair has a different relation; resolve it manually"
-            )
-        return False
-    mappings.append(
-        {
-            "from": {"source": target[0], "code": target[1]},
-            "to": {"source": anchor[0], "code": anchor[1]},
-            "relation": SAME_MEANING_RELATION,
-            "evidence": evidence,
-        }
-    )
-    return True
-
-
-def _append_adjudication_evidence(field: dict[str, Any], adjudication: dict[str, Any]) -> None:
-    history = field.setdefault("adjudications", [])
-    if not isinstance(history, list):
-        raise TypeError("source field adjudications must be a list")
-    history.append(copy.deepcopy(adjudication))
-
-    reference_evidence = field.setdefault("reference_evidence", [])
-    if not isinstance(reference_evidence, list):
-        raise TypeError("source field reference_evidence must be a list")
-    evidence_record = {
-        "section": adjudication["report"],
-        "canonical": field.get("canonical", ""),
-        "meaning": field.get("meaning", ""),
-        "unit": field.get("unit", ""),
-        "status_raw": f"人工复核 {adjudication['reviewed_on']}：{adjudication['id']}",
-        "status": adjudication["status"],
-        "adjudication_id": adjudication["id"],
-    }
-    if "metadata_change" in adjudication:
-        evidence_record["metadata_change"] = copy.deepcopy(adjudication["metadata_change"])
-    if "external_evidence" in adjudication:
-        evidence_record["external_evidence"] = copy.deepcopy(adjudication["external_evidence"])
-    reference_evidence.append(evidence_record)
-    sections = field.setdefault("sections", [])
-    if not isinstance(sections, list):
-        raise TypeError("source field sections must be a list")
-    if adjudication["report"] not in sections:
-        sections.append(adjudication["report"])
-        sections.sort()
-    if not field.get("section"):
-        field["section"] = adjudication["report"]
-
-    status_evidence = field.setdefault("status_evidence", {})
-    if not isinstance(status_evidence, dict):
-        raise TypeError("source field status_evidence must be an object")
-    ids = status_evidence.setdefault("adjudication_ids", [])
-    if not isinstance(ids, list):
-        raise TypeError("source field status_evidence.adjudication_ids must be a list")
-    ids.append(adjudication["id"])
-
-
-def _refresh_aggregate_projection(registry: dict[str, Any], affected_codes: set[str]) -> None:
-    fields = registry.get("fields")
-    if not isinstance(fields, list):
-        raise TypeError("registry.fields must be a list")
-    source_fields = fra.source_field_records(registry)
-    projected = {
-        record["code"]: record
-        for record in fra.build_aggregate_fields(source_fields)
-        if record["code"] in affected_codes
-    }
-
-    for code in affected_codes:
-        aggregates = [record for record in fields if record.get("code") == code]
-        if len(aggregates) != 1:
-            raise ValueError(
-                f"expected one compatibility aggregate for code {code!r}; found {len(aggregates)}"
-            )
-        aggregate = projected.get(code)
-        if aggregate is None:
-            raise ValueError(f"no source_fields remain for aggregate code {code!r}")
-        aggregates[0].clear()
-        aggregates[0].update(aggregate)
-
-    meta = registry.setdefault("meta", {})
-    if not isinstance(meta, dict):
-        raise TypeError("registry.meta must be an object")
-    meta["updated"] = dt.date.today().isoformat()
-    counts: Counter[str] = Counter()
-    for record in source_fields:
-        counts[record.get("status", "unverified")] += 1
-        counts[record.get("status_resolution", "unresolved")] += 1
-    meta["source_field_stats"] = dict(sorted(counts.items()))
 
 
 def apply_adjudications(
@@ -770,124 +415,6 @@ def apply_adjudications(
     return updated, stats
 
 
-def _validate_candidate_inventory(report: dict[str, Any], summary: dict[str, Any]) -> int:
-    method_candidate_count = report.get("method_candidate_count")
-    inventory = report.get("method_candidate_inventory")
-    if type(method_candidate_count) is not int or method_candidate_count < 0:
-        raise ValueError("collision report has an invalid method_candidate_count")
-    if not isinstance(inventory, list):
-        raise ValueError("collision report has no complete method_candidate_inventory")
-
-    candidate_pairs: list[tuple[str, str]] = []
-    for row in inventory:
-        if not isinstance(row, dict):
-            raise ValueError("collision report method candidate inventory contains an invalid row")
-        left, right = row.get("left"), row.get("right")
-        if not isinstance(left, str) or not left or not isinstance(right, str) or not right:
-            raise ValueError("collision report method candidate inventory contains an invalid pair")
-        candidate_pairs.append((left, right))
-
-    unique_pair_count = len(set(candidate_pairs))
-    inventory_expectations = {
-        "generated_count": method_candidate_count,
-        "saved_count": len(inventory),
-        "unique_pair_count": unique_pair_count,
-        "missing_detail_count": max(0, method_candidate_count - len(inventory)),
-        "excess_detail_count": max(0, len(inventory) - method_candidate_count),
-        "duplicate_pair_count": len(candidate_pairs) - unique_pair_count,
-        "invalid_pair_identity_count": 0,
-    }
-    for key, expected in inventory_expectations.items():
-        if summary.get(key) != expected:
-            raise ValueError(f"collision report completeness inventory mismatch: {key}")
-    if any(
-        summary.get(key) != 0
-        for key in (
-            "missing_detail_count",
-            "excess_detail_count",
-            "duplicate_pair_count",
-            "invalid_pair_identity_count",
-        )
-    ):
-        raise ValueError(
-            "collision report completeness inventory contains missing or duplicate details"
-        )
-    return method_candidate_count
-
-
-def _validate_candidate_triage(
-    report: dict[str, Any], inventory_summary: dict[str, Any], method_candidate_count: int
-) -> list[dict[str, Any]]:
-    triage = report.get("candidate_triage")
-    triage_summary = triage.get("summary") if isinstance(triage, dict) else None
-    targets = triage.get("targets") if isinstance(triage, dict) else None
-    if not isinstance(triage_summary, dict) or not isinstance(targets, list):
-        raise ValueError("collision report is missing full candidate triage")
-    target_candidate_count = 0
-    for target in targets:
-        count = target.get("candidate_count") if isinstance(target, dict) else None
-        if type(count) is not int or count < 0:
-            raise ValueError(
-                "collision report candidate triage contains an invalid candidate count"
-            )
-        target_candidate_count += count
-    if triage_summary.get("target_count") != len(targets):
-        raise ValueError("collision report candidate triage target count mismatch")
-    if target_candidate_count != method_candidate_count:
-        raise ValueError("collision report candidate triage does not cover all method candidates")
-    if inventory_summary.get("target_candidate_count_sum") != target_candidate_count:
-        raise ValueError("collision report completeness candidate count sum mismatch")
-    if inventory_summary.get("invalid_target_candidate_count_rows") != 0:
-        raise ValueError("collision report completeness has invalid target candidate counts")
-    return targets
-
-
-def _validate_collision_report_sections(
-    report: dict[str, Any], completeness: dict[str, Any], targets: list[dict[str, Any]]
-) -> None:
-    sections = completeness.get("sections")
-    if not isinstance(sections, dict):
-        raise ValueError("collision report completeness has no section inventory")
-    section_records = {
-        "L1": report.get("L1"),
-        "actionable_L1": report.get("actionable_L1"),
-        "mapped_pair_revalidations": report.get("mapped_pair_revalidations"),
-        "candidate_triage.targets": targets,
-    }
-    if report.get("schema_version", 0) >= 4:
-        section_records["source_coverage"] = report.get("source_coverage")
-    for name, rows in section_records.items():
-        section = sections.get(name)
-        if not isinstance(rows, list) or not isinstance(section, dict):
-            raise ValueError(f"collision report completeness is missing section {name}")
-        if section.get("json_record_count") != len(rows):
-            raise ValueError(f"collision report completeness section count mismatch: {name}")
-
-
-def _validate_complete_collision_report(report: dict[str, Any]) -> None:
-    """Require the current report schema and a self-consistent full-evidence inventory."""
-    completeness = report.get("report_completeness")
-    if not isinstance(completeness, dict) or completeness.get("schema_version") != 1:
-        raise ValueError("collision report is missing supported report_completeness metadata")
-    if completeness.get("status") != "complete" or completeness.get("issues") != []:
-        raise ValueError("collision report report_completeness is not complete")
-    inventory_summary = completeness.get("method_candidate_inventory")
-    if not isinstance(inventory_summary, dict):
-        raise ValueError("collision report completeness has no method inventory summary")
-    method_candidate_count = _validate_candidate_inventory(report, inventory_summary)
-    targets = _validate_candidate_triage(report, inventory_summary, method_candidate_count)
-    _validate_collision_report_sections(report, completeness, targets)
-    if report.get("schema_version", 0) >= 5:
-        review_validation = ccr.validate_report_summary(report)
-        if review_validation.get("status") != "complete":
-            raise ValueError(
-                "collision report candidate review identities/statuses are inconsistent"
-            )
-        recorded_review_validation = completeness.get("candidate_review")
-        if recorded_review_validation != review_validation:
-            raise ValueError("collision report candidate review completeness is inconsistent")
-
-
 def apply_source_contract_adjudications(
     registry: dict[str, Any], decision_document: dict[str, Any], decision_path: str
 ) -> tuple[dict[str, Any], dict[str, int]]:
@@ -1186,77 +713,6 @@ def _prepare_derived_relation_decision(
         "adjudication": adjudication,
         "section": section,
     }
-
-
-def _append_derived_relation_decision(payload: dict[str, Any]) -> bool:
-    target_record = payload["record"]
-    adjudication = payload["adjudication"]
-    decision_id = payload["id"]
-    after_metadata = payload["after_metadata"]
-    history = target_record.get("adjudications", [])
-    if not isinstance(history, list):
-        raise TypeError("source field adjudications must be a list")
-    prior = next(
-        (item for item in history if isinstance(item, dict) and item.get("id") == decision_id),
-        None,
-    )
-    if prior is not None:
-        if (
-            prior != adjudication
-            or target_record.get("status") != "verified"
-            or _metadata(target_record) != after_metadata
-            or target_record.get("status_resolution") != "verified_by_derived_relation"
-        ):
-            raise ValueError(f"decision id already exists with different content: {decision_id}")
-        return False
-
-    if target_record.get("status", "unverified") != payload["previous_status"]:
-        raise ValueError(f"target status changed since review: {payload['target']}")
-    if (target_record.get("status_resolution") or "status_missing") != payload[
-        "previous_status_resolution"
-    ]:
-        raise ValueError(f"target status resolution changed since review: {payload['target']}")
-    if _metadata(target_record) != payload["previous_metadata"]:
-        raise ValueError(f"target metadata changed since review: {payload['target']}")
-
-    target_record.update(after_metadata)
-    target_record["status"] = "verified"
-    target_record["status_resolution"] = "verified_by_derived_relation"
-    target_record.setdefault("adjudications", []).append(copy.deepcopy(adjudication))
-    reference_evidence = target_record.setdefault("reference_evidence", [])
-    if not isinstance(reference_evidence, list):
-        raise TypeError("source field reference_evidence must be a list")
-    reference_evidence.append(
-        {
-            "section": payload["section"],
-            **after_metadata,
-            "status_raw": f"人工复核公式关系 {adjudication['reviewed_on']}：{decision_id}",
-            "status": "verified",
-            "adjudication_id": decision_id,
-            "evidence_basis": "derived_relation",
-            "formula_evidence": copy.deepcopy(adjudication["formula_evidence"]),
-            "metadata_change": copy.deepcopy(adjudication["metadata_change"]),
-        }
-    )
-    sections = target_record.setdefault("sections", [])
-    if not isinstance(sections, list):
-        raise TypeError("source field sections must be a list")
-    if payload["section"] not in sections:
-        sections.append(payload["section"])
-        sections.sort()
-    if not target_record.get("section"):
-        target_record["section"] = payload["section"]
-
-    status_evidence = target_record.setdefault("status_evidence", {})
-    if not isinstance(status_evidence, dict):
-        raise TypeError("source field status_evidence must be an object")
-    for key in ("adjudication_ids", "derived_relation_adjudication_ids"):
-        ids = status_evidence.setdefault(key, [])
-        if not isinstance(ids, list):
-            raise TypeError(f"source field status_evidence.{key} must be a list")
-        if decision_id not in ids:
-            ids.append(decision_id)
-    return True
 
 
 def apply_derived_relation_adjudications(

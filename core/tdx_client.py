@@ -39,7 +39,7 @@ import core._tdx_handshake_patch  # noqa: F401  植入 2026-09 新式动态单�
 import math
 import time
 from datetime import datetime
-from typing import Any, Callable, Dict, List, Optional, Tuple, cast
+from typing import Any, Dict, List, Optional, Tuple, cast
 
 import requests
 
@@ -1046,23 +1046,14 @@ def _tencent_batch_fallback(
             pass
     if missing:
         _BATCH = 60  # 腾讯 qt.gtimg.cn 单次 URL 安全上限（经验值 60-80）
-        # V16.2: 腾讯批量接入进程级节流（原批间固定 100ms 无协调，多进程时叠加）——用通用协调锁
-        _wait_interval: Optional[Callable[[], Any]]
-        try:
-            from stock_common.sc_network import (
-                _gen_wait_process_interval as _wait_interval,
-            )
-        except Exception:
-            _wait_interval = None
+        # A failed import or failed gate must abort before the direct HTTP request.
+        from stock_common.sc_network import _gen_wait_process_interval
+
         for _start in range(0, len(missing), _BATCH):
             _chunk = missing[_start : _start + _BATCH]
             prefixed = [f"{_market_prefix(c)}{c}" for c in _chunk]
+            _gen_wait_process_interval()
             try:
-                if _wait_interval is not None:
-                    try:
-                        _wait_interval()
-                    except Exception:
-                        pass
                 r = _http_get("https://qt.gtimg.cn/q=" + ",".join(prefixed), timeout=15)
                 if r is None:
                     continue

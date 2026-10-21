@@ -4,6 +4,40 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## [Unreleased]
+
+## [17.6] - 2026-10-21
+
+### Added
+
+- 将碰撞计算、快照选择、候选排序、状态读写和报告序列化拆分为独立模块，保留 `collide.py` CLI 与兼容门面。
+- 将采集器目录、诊断和归档逻辑拆出；新增网络限流等待辅助模块，但限流/熔断状态仍由 `sc_network.py` 单一持有。
+- 为 AxData 规范交叉表生成含 SHA-256 的轻量摘要，运行时仅消费摘要并对过期或不匹配状态 fail closed。
+- 新增五大报告离线输出契约和维护验收入口 `scripts/run_offline_checks.ps1`，涵盖语法、Mypy、Black API、摘要、架构闸门与离线套件。
+- 新增候选审阅台账与预览/应用工具，机器候选完整度与人工审阅状态分开追踪。
+
+### Changed
+
+- 五大报告仍保留各自的策略和章节逻辑，共用 Markdown 呈现层；SHT 加入实际生成器输出覆盖。
+- 更新项目架构计划、模块索引、测试说明和 Agent 验证规则，统一说明 PowerShell 离线验收入口。
+- 语法和 Black 检查跳过已从工作树删除的 Git 索引路径；新增回归覆盖缺失路径与失败退出码。
+
+### Verified
+
+- Python 3.12.10 完整离线验收通过：语法检查 250 个文件，Mypy 220 个源文件，Black API 235 个文件且 0 格式差异/0 错误；AxData 摘要、数据访问、字典同步、Canonical contract、registry parity 均通过。
+- 离线套件：1,176 passed、1 skipped、52 个真实网络测试排除，28.34 秒；新增维护检查回归 4/4 通过。Windows PowerShell 5.1 解析验收脚本通过。
+- 注册表 parity 为 1,893 个字段、2,550 条来源路径、378 个多源字段。未改主字典、字段注册表或历史采集证据；未发起真实网络采集。
+
+### Fixed
+
+- 修正 ELTDX 短线适配器测试对可选返回值缺少非空断言的问题；运行时接口和缓存行为不变。
+
+### Changed
+
+- 更新 registry parity 状态与 f107/f118 的逐来源待核范围，避免聚合字段状态覆盖来源路径状态。
+- 增加共享 Markdown 报告写入器的输出契约测试，并登记五大 Runner 的输出路径契约与正文快照覆盖边界。
+- 新增并完成分阶段架构与维护整改计划；验收记录详见 `docs/PROJECT_ARCHITECTURE_REFINEMENT_PLAN.md`。
+
 ## [17.5.11] - 2026-10-21
 
 ### Added

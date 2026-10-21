@@ -2,6 +2,21 @@
 
 `collide.py` 只发现候选，不直接改变主字典。只有经过逐项证据复核的决定，才能通过此流程写入逐源字段注册表。数值命中本身不是语义定案。用户要求运行采集并碰撞时，授权包含对达到现行规则的候选完成本流程；执行者应自行完成预览、应用和验证，无需再次请求进入定案。未达到门槛的候选保持原状态，并记录证据缺口。
 
+## 候选审阅状态（schema 5 起）
+
+schema 5 碰撞报告为完整方法候选、L1/L1-C、L4 和公式候选生成稳定 `candidate_id`；身份包含完整来源路径、方法/结果、日期与样本资格以及 `collision-candidate-v1` 方法版本。若候选算法、归一化或样本资格语义发生变化，必须提升 `scripts/collision_candidate_reviews.py` 中的 `METHOD_VERSION`，旧审阅不会附着到新身份。`docs/field_verification/collision_candidate_reviews.json` 是独立追加式人工审阅台账；机器候选完整率、身份校验和人工审阅进度分别统计。`unreviewed` 是默认派生状态，不是人工处置。
+
+复制 [`review_templates/candidate_review_template.json`](review_templates/candidate_review_template.json) 后填写决定，先预览，再显式应用：
+
+```powershell
+python.exe scripts/review_collision_candidates.py --decision docs/field_verification/adjudications/YYYYMMDD_candidate_review.json
+python.exe scripts/review_collision_candidates.py --decision docs/field_verification/adjudications/YYYYMMDD_candidate_review.json --apply
+```
+
+每项决定必须引用至少一份包含该候选的碰撞 JSON；工具保存引用路径与 SHA-256，并验证候选身份。批量决定可用 `{"schema_version":1,"decisions":[...]}`，重复成员必须逐项指向同一个代表候选，台账和报告会保留代表/成员双向索引。合法处置为 `duplicate_grouped`、`insufficient_evidence`、`needs_external_evidence`、`accepted_for_adjudication`、`rejected`；每条记录都带审阅人、带时区时间、理由、证据引用和历史事件。
+
+审阅台账不会写字段注册表。对于 schema 5 的 L1 注册表裁决，必须先将该候选置为 `accepted_for_adjudication`，再用更新后的碰撞报告运行现有 `apply_collision_adjudications.py` 预览/应用。老 schema 3/4 报告维持兼容；schema 5 的候选身份和审阅状态则由完整性闸门复核。
+
 ## 探索模式结果如何继承
 
 `collide.py --exploratory` 会把报告中的 L1、L4 和方法候选按无序字段对登记到 `collision_research_state.json.gz`，并以 gzip 台账保留每次观察的完整 sections 证据、数据日和报告路径；仅从磁盘副本移除可由最新 observation 重建的重复 latest_evidence。后续碰撞报告会为再次出现的字段对附上 `research_history`，同时汇总累计候选数、历史复现数和本次新发现数。FTShare REST 的 L1-C 契约锚候选不计作独立来源研究状态；它通过每天保存的 `raw_ftshare_rest.json` 在默认碰撞中重算，并在报告中单列。
@@ -11,8 +26,8 @@
 ## 可以进入此流程的候选
 
 - 报告必须是 `collision_mode: verified_anchor_only`，且 `exploratory_pair_count` 为 0。
-- 只接受碰撞报告 schema 3 或 4，且 `report_completeness.status` 必须为 `complete`；schema 4 还包含来源覆盖章节。应用器会复核方法候选总数、全量 inventory、目标覆盖计数和可裁决章节计数。缺清单或任一数量不一致时不得定案。旧版报告需先从原始归档重建为完整新报告。
-- 仅接受报告 `actionable_L1` 中的 `L1` 或 `L1-U` 新候选；旧版报告没有该键时才回退读取 `L1`。已登记映射的当前窗口复验另列于 `mapped_pair_revalidations`，不是新候选；L4、方法候选和未知字段互撞结果不能直接晋级。
+- 只接受碰撞报告 schema 3、4 或 5，且 `report_completeness.status` 必须为 `complete`；schema 4 起还包含来源覆盖章节，schema 5 另校验候选身份与审阅摘要。应用器会复核方法候选总数、全量 inventory、目标覆盖计数和可裁决章节计数。缺清单或任一数量不一致时不得定案。旧版报告需先从原始归档重建为完整新报告。
+- 仅接受报告 `actionable_L1` 中的 `L1` 或 `L1-U` 新候选；旧版报告没有该键时才回退读取 `L1`。schema 5 还要求该候选的审阅处置是 `accepted_for_adjudication`。已登记映射的当前窗口复验另列于 `mapped_pair_revalidations`，不是新候选；L4、方法候选和未知字段互撞结果不能直接晋级。
 - FTShare 官方契约字段确实参与默认碰撞，强匹配会显示在报告的 `L1-C` 中；`L1-C` 因底层来源独立性未确认而不进入 `actionable_L1`，也不会被普通 L1/L1-U 决策自动应用。它是有公开语义定义的碰撞锚候选，不是独立来源锚或跳过碰撞。
 - `target` 与 `anchor` 必须各自精确对应报告中的一个端点，允许它们与报告 `left` / `right` 的顺序相反；运行时别名必须能唯一解析到注册表中的完整路径。若运行时别名映射到多个字典来源，决策文件必须明确指出正确的来源名。
 - `action: verify` 只接受状态为 `unverified` 或 `candidate` 的目标字段，并将其升级为 `verified`。

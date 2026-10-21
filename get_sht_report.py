@@ -872,9 +872,7 @@ async def generate_report_async(
                 industry_change_pct = row['change_pct']
                 industry_match_name = row['name']
 
-                rank_str = (
-                    f"第 {industry_rank} 名（板块快照涨跌幅 {industry_change_pct}%，有效日期未核实）"
-                )
+                rank_str = f"第 {industry_rank} 名（板块快照涨跌幅 {industry_change_pct}%，有效日期未核实）"
 
                 if industry_rank <= 10:
                     is_top = True

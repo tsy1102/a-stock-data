@@ -38,6 +38,7 @@ from urllib.parse import urlparse
 
 import requests
 import urllib3
+from . import sc_network_limits as _network_limits
 from stock_common._temp import configure_project_temp
 
 P = ParamSpec("P")
@@ -436,51 +437,24 @@ def _file_lock_acquire(lock_path: str, timeout: float = 10.0) -> bool:
     """V16.2 修复: 跨进程互斥锁 —— 所有进程竞争**同一个**锁文件（原每 PID 一个文件导致互斥失效）。
     锁文件内容为 PID+时间戳；进程崩溃残留超过 _LOCK_STALE_SECONDS 时视为 stale 回收。
     成功返回 True，超时返回 False。"""
-    _deadline = time.time() + timeout
-    _payload = f"{os.getpid()}|{time.time():.3f}"
-    while time.time() < _deadline:
-        try:
-            _fd = os.open(lock_path, os.O_CREAT | os.O_EXCL | os.O_RDWR)
-            try:
-                os.write(_fd, _payload.encode("utf-8"))
-            finally:
-                os.close(_fd)
-            return True
-        except FileExistsError:
-            # 已被其他进程持有：检查是否 stale（进程已崩溃）
-            try:
-                _st = os.stat(lock_path)
-                if time.time() - _st.st_mtime > _LOCK_STALE_SECONDS:
-                    try:
-                        os.remove(lock_path)
-                        _debug_log(f"file_lock_acquire: removed stale lock {lock_path}")
-                        continue  # 重新竞争
-                    except OSError:
-                        pass  # 被他人抢先删除，下一轮再试
-            except OSError:
-                pass  # 文件刚被删除，下一轮再试
-            time.sleep(0.05)
-        except Exception as _e:
-            _debug_log(f"file_lock_acquire error ({lock_path}): {_e}")
-            return False
-    return False
+    return _network_limits.file_lock_acquire(
+        lock_path,
+        timeout,
+        stale_seconds=_LOCK_STALE_SECONDS,
+        os_module=os,
+        time_module=time,
+        debug_log=_debug_log,
+    )
 
 
 def _file_lock_release(lock_path: str) -> None:
     """V16.2: 释放跨进程锁（删除共享锁文件，仅当内容属于本进程）。"""
-    try:
-        if os.path.exists(lock_path):
-            try:
-                with open(lock_path, "r", encoding="utf-8") as _f:
-                    _content = _f.read().strip()
-                _owner_pid = int(_content.split("|")[0]) if _content else -1
-            except (OSError, ValueError):
-                _owner_pid = -1
-            # 只删除自己持有的锁（避免误删他人刚创建的新锁）
-            if _owner_pid == os.getpid() or _owner_pid == -1:
-                os.remove(lock_path)
-    except Exception as _e:
-        _debug_log(f"sc_network file_lock_release: {_e}")
+    _network_limits.file_lock_release(
+        lock_path,
+        os_module=os,
+        open_file=open,
+        debug_log=_debug_log,
+    )
 
 
 _EM_COOKIE: str | None = None
@@ -795,43 +769,18 @@ def _process_interval_wait(
     (V16.4.1 只是把读 mtime 换成读内容, 两者同样"acquire 刚写→≈0"), 非 V17.0 回归。
     效果: 全局 EM ≤1rps 串行——比"利用上次请求差"更保守, 防封目标完全达成, 维持现状。
     """
-    _waited = 0.0
-    try:
-        if use_lock:
-            if not _file_lock_acquire(lock_file, timeout=target_interval + 5.0):
-                return 0.0
-        try:
-            _last_ts = 0.0
-            if use_content_ts:
-                try:
-                    with open(lock_file, "r", encoding="utf-8") as _f:
-                        _content = _f.read().strip()
-                    if _content and "|" in _content:
-                        _last_ts = float(_content.split("|")[1])
-                except (OSError, ValueError):
-                    _last_ts = 0.0
-            elif os.path.exists(lock_file):
-                _last_ts = os.path.getmtime(lock_file)
-            _now = time.time()
-            if _last_ts > 0:
-                _elapsed = _now - _last_ts
-                if _elapsed < target_interval:
-                    _wait = target_interval - _elapsed
-                    time.sleep(_wait)
-                    _waited = _wait
-            # 写时间戳标记本次请求(锁内原子更新)
-            if use_content_ts:
-                with open(lock_file, "w") as _f:
-                    _f.write(f"{os.getpid()}|{time.time():.3f}")
-            else:
-                with open(lock_file, "w") as _f:
-                    _f.write(str(time.time()))
-        finally:
-            if use_lock:
-                _file_lock_release(lock_file)
-    except Exception as _e:
-        _debug_log(f"sc_network process_interval_wait: {_e}")
-    return _waited
+    return _network_limits.process_interval_wait(
+        lock_file,
+        target_interval,
+        use_lock,
+        use_content_ts,
+        file_lock_acquire=_file_lock_acquire,
+        file_lock_release=_file_lock_release,
+        debug_log=_debug_log,
+        os_module=os,
+        open_file=open,
+        time_module=time,
+    )
 
 
 def _provider_interval_wait(lock_file: str, state_file: str, target_interval: float) -> float:
@@ -841,29 +790,16 @@ def _provider_interval_wait(lock_file: str, state_file: str, target_interval: fl
     separate persistent state file. Reserving the next slot before releasing the mutex keeps
     concurrent processes from sending these direct-client requests back-to-back.
     """
-    if not _file_lock_acquire(lock_file, timeout=target_interval + 10.0):
-        raise TimeoutError(f"provider rate-limit lock timed out: {lock_file}")
-    waited = 0.0
-    try:
-        last_started = 0.0
-        try:
-            with open(state_file, "r", encoding="ascii") as state:
-                last_started = float(state.read().strip())
-        except FileNotFoundError:
-            pass
-        except (OSError, ValueError) as exc:
-            _debug_log(f"provider_interval_wait invalid state ({state_file}): {exc}")
-
-        now = time.time()
-        remaining = target_interval - (now - last_started) if last_started > 0 else 0.0
-        if remaining > 0:
-            time.sleep(remaining)
-            waited = remaining
-        with open(state_file, "w", encoding="ascii") as state:
-            state.write(f"{time.time():.6f}")
-    finally:
-        _file_lock_release(lock_file)
-    return waited
+    return _network_limits.provider_interval_wait(
+        lock_file,
+        state_file,
+        target_interval,
+        file_lock_acquire=_file_lock_acquire,
+        file_lock_release=_file_lock_release,
+        debug_log=_debug_log,
+        open_file=open,
+        time_module=time,
+    )
 
 
 def _em_wait_process_interval() -> float:

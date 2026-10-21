@@ -4,6 +4,8 @@ import json
 import pytest
 
 from scripts import apply_collision_adjudications as adjudication_module
+from scripts import collision_candidate_reviews as candidate_reviews
+from scripts import collide
 from scripts.apply_collision_adjudications import (
     REPO_ROOT,
     VERIFY_DIR,
@@ -211,6 +213,71 @@ def test_verify_adjudication_updates_source_record_aggregate_and_mapping(collisi
         "mappings_added": 1,
     }
     assert registry["source_fields"][0]["status"] == "unverified"
+
+
+def _prepare_schema5_report(report, review_disposition=None):
+    report.update(
+        {
+            "schema_version": 5,
+            "L1-C": [],
+            "L4": [],
+            "guardrail_hits": [],
+            "method_candidates": [],
+            "method_candidate_count": 0,
+            "method_candidate_inventory": [],
+            "method_candidate_frontier": [],
+            "formula_candidates": [],
+            "diagnostics": [],
+            "candidate_triage": {"summary": {"target_count": 0}, "targets": []},
+        }
+    )
+    state = candidate_reviews.empty_state()
+    if review_disposition:
+        row = report["actionable_L1"][0]
+        identity = candidate_reviews.candidate_identity_payload(row, "l1_candidate")
+        identifier = candidate_reviews.candidate_id_from_payload(identity)
+        state, _changed = candidate_reviews.record_review(
+            state,
+            identity,
+            candidate=identifier,
+            disposition=review_disposition,
+            reviewer="reviewer",
+            reviewed_at="2026-10-06T12:00:00+08:00",
+            rationale="Reviewed the candidate evidence before adjudication.",
+            evidence_refs=[{"path": "sample_report.json", "sha256": "a" * 64}],
+        )
+    candidate_reviews.annotate_report(report, state)
+    report["report_completeness"] = collide.build_report_completeness(report)
+    return report
+
+
+def test_schema5_registry_adjudication_requires_explicit_candidate_acceptance():
+    registry, lineage, document, unreviewed_report = _inputs()
+    _prepare_schema5_report(unreviewed_report)
+
+    with pytest.raises(ValueError, match="accepted_for_adjudication"):
+        apply_adjudications(
+            registry,
+            lineage,
+            document,
+            unreviewed_report,
+            "sample_report.json",
+            "adjudications/review.json",
+        )
+
+    registry, lineage, document, accepted_report = _inputs()
+    _prepare_schema5_report(accepted_report, "accepted_for_adjudication")
+    updated, stats = apply_adjudications(
+        registry,
+        lineage,
+        document,
+        accepted_report,
+        "sample_report.json",
+        "adjudications/review.json",
+    )
+
+    assert updated["source_fields"][0]["status"] == "verified"
+    assert stats["verified"] == 1
 
 
 def test_aggregate_projection_does_not_borrow_metadata_from_a_blank_source_row():
@@ -859,12 +926,14 @@ def test_runtime_id_normalizes_tdx_quote_raw_and_kpl_raw_columns():
         "tdx",
         "open",
     )
-    assert _runtime_identity(
-        "kpl.raw_columns.col_06", "开盘啦(kpl_limit_up_detail)", lineage
-    ) == ("kpl", "seal_amount")
-    assert _runtime_identity(
-        "kpl.raw_columns.col_11", "开盘啦(kpl_limit_up_detail)", lineage
-    ) == ("kpl", "amount")
+    assert _runtime_identity("kpl.raw_columns.col_06", "开盘啦(kpl_limit_up_detail)", lineage) == (
+        "kpl",
+        "seal_amount",
+    )
+    assert _runtime_identity("kpl.raw_columns.col_11", "开盘啦(kpl_limit_up_detail)", lineage) == (
+        "kpl",
+        "amount",
+    )
 
 
 def test_conflict_status_cannot_be_overridden_by_collision_adjudication():

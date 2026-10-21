@@ -311,13 +311,10 @@ reports/
 ### 静态检查与架构闸门
 
 ```powershell
-.\scripts\run_with_system_python.ps1 -m black --check core\_accessors.py
-.\scripts\run_with_system_python.ps1 -m mypy core\_accessors.py
-.\scripts\run_with_system_python.ps1 scripts\verify_data_access.py
-.\scripts\run_with_system_python.ps1 scripts\verify_sync_check.py
+.\scripts\run_offline_checks.ps1
 ```
 
-按实际改动范围运行格式和类型检查；数据访问或字段同步相关修改还需通过 A1/A7 闸门。完整验收要求见 [`AGENTS.md`](AGENTS.md) §9。
+该入口依次检查 Git 可见 Python 文件的语法、全项目 MyPy、Black Python API 格式、AxData 摘要新鲜度、数据访问、字典同步、Canonical contract、registry parity 和完整离线测试；真实网络用例仍默认排除。Windows 下的格式检查使用与 `pyproject.toml` 一致的 Black Python API，不调用曾出现长时间无输出的 Black CLI。局部回归仍可用 [`scripts/run_tests.ps1`](scripts/run_tests.ps1) 选择单个测试文件。完整约束见 [`AGENTS.md`](AGENTS.md) §9。
 
 ### 文档与版本
 

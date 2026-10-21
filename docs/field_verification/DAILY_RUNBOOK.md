@@ -18,7 +18,7 @@
 
 4. **遵守限流并处理瞬时失败。** 来源按采集器顺序运行，不并发重试。通用同步/异步请求层对传输超时、连接类异常和 HTTP 408/5xx 按调用方 `max_retries` 总尝试次数（含首次请求）做有界退避；Eastmoney 专用 `em_get` 最多额外请求一次，每次重试重新取得令牌并遵守跨进程节奏。HTTP 403/429 不在这些共享请求层重试，push2 显式设置 `max_retries=1` 时仍只发一次。单次超时、连接重置、临时 DNS 故障或 HTTP 408/5xx 不得直接当作该源永久失败；请求层重试结束后，采集器继续执行其他来源。首轮结束后，若 `meta.json` 仍将某源标为 `partial`/`failed`，且错误证据属于上述瞬时故障、该源策略允许重试，可对该源做**一次串行单源补采**：沿用同一 `--date`，使用 `--only <source>`，不要重跑全量采集或 `--all`。重试前把该源现有 `raw_<source>.json`（若存在）及 `meta.json` 复制到仓库 `.tmp/capture_retry/<data_date>/`；`--only` 会重新请求并覆盖该源文件。重试后比较来源日期、必需路径、成功样本覆盖与错误/缺股数；只有结果确实改善且没有丢失原有成功样本时才保留，否则恢复原文件。每源每天最多做一次这种采集器级补采。
 
-   `meta.json` 中 `sources.<source>.error_diagnostics` 将错误标记分为 `suppressed_before_request`、HTTP 限流、传输、契约/解析及其他类别，并统计 `not_attempted`、`client_attempted`、`unknown`。这是基于错误文本的诊断分类，不证明远端收到请求；分类不清时保持 `unknown`，逐股原始错误仍是核查依据。
+   `meta.json` 中 `sources.<source>.error_diagnostics` 保留 `categories` 与 `request_attempt_states` 汇总，并给出至多 20 组明细：分类代码、阶段、风险族、尝试状态、可重试提示、主机、HTTP 状态、脱敏错误样例和路径样例。分类来自错误标记文本，不证明远端收到请求；`retryable_hint` 只用于排查、不会改变重试策略。明细超量时检查 `omitted_detail_groups`；最终以 raw 中的原始错误和逐请求记录为准。
 
    HTTP 403、429、明确封禁、`circuit_open` 或 `blocked_until_manual_review` 属于限流/封禁：共享请求层不重试 403/429，适配器内部其他明确限次处理也不叠加采集器级重跑；适配器最终返回受限状态后，立即停止该源族本轮剩余请求，不换同源端点继续试，但继续其他独立源。400/401/404、参数错误、稳定的解析/契约错误也不做采集器级补采，应定位接口或代码问题。若来源已有更严格的防封或禁止重试约束，遵守该约束。二次补采后仍失败就保留失败记录并报告证据缺口，不把一次失败静默当作已完成。不要把 main.py --all 当作字段采集命令；collide.py --all 只扩展历史分析窗口，不发网络请求。各源白名单、退役/复验条件见 [scripts/README.md](../../scripts/README.md)。
 
@@ -32,9 +32,16 @@
 
 6. **完整审阅报告，先过完整性闸门。** 检查窗口中的样本日期、来源日期、采集阶段、每日样本量、信息配对、来源独立性和告警；把 `actionable_L1` 与 `mapped_pair_revalidations` 分开。候选覆盖区逐个未知目标给出比较、覆盖、候选、来源失败、公式线索和复核股票。
 
-   先核对 JSON 的 `report_completeness`：状态必须为 `complete`，方法候选生成数、全量明细数、重复数和缺失数必须对平。再逐章节检查 Markdown，并结构化遍历 JSON 中所有明细集合，尤其是完整的 `method_candidate_inventory`、L1/L4、目标诊断、公式候选、来源状态和告警。Markdown 的 Top-N 仅是导航摘要；不得只分析开头、前 N 条或摘要后就称“无候选/无成果”。为每个目标及候选记录已审、重复归并、证据不足、需补样或需外部核验等处置，汇总数量必须与报告清单相符。
+    先核对 JSON 的 `report_completeness`：状态必须为 `complete`，方法候选生成数、全量明细数、重复数和缺失数必须对平。`candidate_review` 单独列出机器候选完整性、身份校验、人工审阅覆盖率与待处理量；`report_completeness.status=complete` 不代表人工已审完。再逐章节检查 Markdown，并结构化遍历 JSON 中所有明细集合，尤其是完整的 `method_candidate_inventory`、L1/L4、目标诊断、公式候选、来源状态和告警。Markdown 的 Top-N 仅是导航摘要；不得只分析开头、前 N 条或摘要后就称“无候选/无成果”。
 
-   若完整性状态异常、集合缺失或数量不一致，暂停语义结论与主字典裁决；从原始采集归档重建缺失明细。无法重建时，明确记录未审条数、字段范围和缺失原因，不得把未展示内容视为无结果。旧版报告若没有 `report_completeness` 或全量方法候选清单，按可能截断处理；缺失索引 `.tmp/field_evidence_coverage/` 时则按报告给出的不可用状态记录证据缺口。
+    人工处置写入独立台账，不直接改注册表：从 [候选审阅模板](review_templates/candidate_review_template.json) 复制出一份决定 JSON，填入候选的 `candidate_id`、处置、审阅人、带时区的 `reviewed_at`、理由和证据引用。至少引用一份包含该候选的碰撞 JSON；工具会记录该文件的 SHA-256。先预览，再显式写入：
+
+        python.exe scripts/review_collision_candidates.py --decision docs/field_verification/adjudications/candidate_review.json
+        python.exe scripts/review_collision_candidates.py --decision docs/field_verification/adjudications/candidate_review.json --apply
+
+    批量决定可用根对象 `{"schema_version":1,"decisions":[...]}`，每个成员采用模板中的决定字段。重复归并时，每个成员都填写 `duplicate_grouped` 和同一个代表候选 `duplicate_of`；报告会保留代表到成员的反向索引。状态含义：`insufficient_evidence` 表示当前证据不够，`needs_external_evidence` 表示须补权威外部材料，`rejected` 表示拒绝该关系候选，`accepted_for_adjudication` 表示可进入既有裁决流程。写入审阅台账后重新运行本地碰撞，使新报告反映状态；schema 5 的 L1 注册表裁决要求对应候选先达到 `accepted_for_adjudication`。审阅记录不会单独升级字段或修改主字典。
+
+    若完整性状态异常、候选身份/处置数对不上、集合缺失或数量不一致，暂停语义结论与主字典裁决；从原始采集归档重建缺失明细。无法重建时，明确记录未审条数、字段范围和缺失原因，不得把未展示内容视为无结果。`candidate_review.human_review.status=pending` 表示审阅尚未完成，不等同于机器清单不完整；台账不可用或身份校验不通过时，不得宣称候选已审。旧版报告若没有 `report_completeness` 或全量方法候选清单，按可能截断处理；缺失索引 `.tmp/field_evidence_coverage/` 时则按报告给出的不可用状态记录证据缺口。
 
    名称拆词、相关性、公式/时间序列、AxData/Levistock 汇总接口都只提供候选或来源身份辅助证据，不能绕过当前 L1/L1-U 门槛或独立性规则。FTShare 旧私有 MCP 已退役；公开 REST `ftshare_rest` 是日常采集源，官方文档定义的字段参与默认碰撞并作为语义契约锚，强多日匹配单列 `L1-C`，不代表底层来源独立或自动定案。旧 `FTShare` raw 默认排除，仅显式 `--all` / `--exploratory` 可研究。
 

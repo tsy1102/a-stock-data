@@ -77,8 +77,12 @@ def test_shortline_bundle_uses_bj_prefix_and_scopes_ladder(monkeypatch: pytest.M
     assert ladder == []
     assert calls == {"ladder": ["bj920118"], "shortline": ["bj920118"]}
     assert shortline["bj920118"]["last_price"] == 12.34
-    assert eltdx_adapter.get_eltdx_shortline_for_code("920118")["last_price"] == 12.34
-    assert eltdx_adapter.get_eltdx_shortline_for_code("sh920118")["last_price"] == 12.34
+    shortline_by_plain_code = eltdx_adapter.get_eltdx_shortline_for_code("920118")
+    assert shortline_by_plain_code is not None
+    assert shortline_by_plain_code["last_price"] == 12.34
+    shortline_by_scoped_code = eltdx_adapter.get_eltdx_shortline_for_code("sh920118")
+    assert shortline_by_scoped_code is not None
+    assert shortline_by_scoped_code["last_price"] == 12.34
 
 
 def test_limit_ladder_accepts_scoped_codes_and_timeout(monkeypatch: pytest.MonkeyPatch) -> None:

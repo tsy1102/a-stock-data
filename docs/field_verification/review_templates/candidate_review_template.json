@@ -1,0 +1,13 @@
+{
+  "schema_version": 1,
+  "candidate_id": "cc1_REPLACE_WITH_64_LOWERCASE_HEX_CHARACTERS",
+  "disposition": "needs_external_evidence",
+  "reviewer": "REPLACE_WITH_REVIEWER",
+  "reviewed_at": "YYYY-MM-DDTHH:MM:SS+08:00",
+  "rationale": "Record what was checked, the evidence result, and why this disposition is appropriate.",
+  "evidence_refs": [
+    "YYYYMMDD/YYYYMMDD_collision_report.json",
+    "https://example.com/authoritative-document"
+  ],
+  "duplicate_of": null
+}

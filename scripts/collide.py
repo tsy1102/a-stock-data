@@ -72,6 +72,7 @@ from scripts.collision_dates import (
 )
 from scripts.context_policy import CONTEXT_ONLY_SOURCES, CONTEXT_RECORD_PATHS
 from scripts import collision_auxiliary_evidence as CAE
+from scripts import collision_candidate_reviews as CCR
 from scripts import collision_research_state as CRS
 from scripts import field_name_candidates as FNC
 from scripts import field_registry_api as FRA
@@ -84,6 +85,44 @@ except Exception:
     RULES_OK = False
 
 from scripts import source_lineage_api as SLA
+from scripts.collision_snapshots import (
+    _collision_value,
+    _event_identity,
+    _flatten,
+    _is_ftshare_limit_up_record,
+    _ftshare_limit_up_trade_date,
+    _record_code,
+    _record_containers,
+    _without_context_records,
+    load_snapshots,
+)
+from scripts.collision_candidate_ranking import (
+    _compact_method_candidate,
+    _method_candidate_score,
+    _method_candidate_summary,
+    select_method_candidate_frontier as _select_method_candidate_frontier,
+)
+from scripts.collision_state import load_state as _load_collision_state
+from scripts.collision_state import save_state as _save_collision_state
+from scripts import collision_reporting as CREP
+
+append_source_coverage_report = CREP.append_source_coverage_report
+append_source_identity_report = CREP.append_source_identity_report
+append_contract_anchor_candidates = CREP.append_contract_anchor_candidates
+append_research_state_report = CREP.append_research_state_report
+_l1_row = CREP._l1_row
+build_report_completeness = CREP.build_report_completeness
+append_report_completeness_report = CREP.append_report_completeness_report
+from scripts.collision_math import (
+    correlation_metrics as _correlation_metrics,
+    fit_affine_feature as _fit_affine_feature,
+    formula_feature as _formula_feature,
+    formula_holdout as _formula_holdout,
+    pearson as _pearson,
+    r_squared as _r_squared,
+    ranks as _ranks,
+    standard_deviation as _standard_deviation,
+)
 
 try:
     _SOURCE_LINEAGE = SLA.load_source_lineage()
@@ -176,438 +215,6 @@ def cv(xs):
 # ───────────────────────────────────────────────────────────────────────
 # 原始数据加载与字段扁平化
 # ───────────────────────────────────────────────────────────────────────
-def _collision_value(value, *, include_structured=False):
-    """Convert JSON source values into stable values the pair matcher can compare."""
-    if value is None:
-        return None
-    if isinstance(value, bool):
-        return "true" if value else "false"
-    if isinstance(value, float) and not math.isfinite(value):
-        return None
-    if isinstance(value, (int, float, str)):
-        return value
-    if include_structured and isinstance(value, (list, dict)):
-        try:
-            return json.dumps(value, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
-        except (TypeError, ValueError):
-            return None
-    return None
-
-
-def _flatten(rec, source, scheme, code, date, out, *, include_structured_values=False):
-    """把单只股票的原始记录扁平化为 (fid, value) 列表，写入 out。"""
-    if not isinstance(rec, dict):
-        return
-    if rec.get("__error__") or "__skipped__" in rec:
-        return
-
-    # 形态 A：fN 字典（ulist239 / push2_full / push2）
-    data = rec.get("data")
-    if isinstance(data, dict) and any(
-        (isinstance(k, str) and (k.startswith("f") and k[1:].isdigit())) for k in data
-    ):
-        for k, v in data.items():
-            if not isinstance(k, str) or k.startswith("__"):
-                continue
-            value = _collision_value(v, include_structured=include_structured_values)
-            if value is not None:
-                out.append((f"{source}.{k}", value))
-        return
-
-    # 形态 B：位置列表（tencent / sina）
-    flds = rec.get("fields")
-    if isinstance(flds, list):
-        for i, v in enumerate(flds):
-            value = _collision_value(v, include_structured=include_structured_values)
-            if value is not None:
-                out.append((f"{source}[{i}]", value))
-        return
-
-    # 形态 C：嵌套名典 / 标量（zhb full/stat/stat2/tipinfo、tdx quote_full/finance_info、fuyao *、…）
-    for sub, subv in rec.items():
-        if (
-            not isinstance(sub, str)
-            or sub.startswith("__")
-            or sub
-            in (
-                "scheme",
-                "n_fields",
-                "url",
-                "host",
-                "secid",
-                "zhb_date",
-                "__error__",
-                "__skipped__",
-                "__source_meta__",
-                "auction_snapshot_meta",
-            )
-        ):
-            continue
-        if isinstance(subv, dict):
-            source_meta = subv.get("__source_meta__")
-            if isinstance(source_meta, dict) and source_meta.get("collision_eligible") is False:
-                continue
-            for k, v in subv.items():
-                if not isinstance(k, str) or k.startswith("__"):
-                    continue
-                value = _collision_value(v, include_structured=include_structured_values)
-                if value is not None:
-                    out.append((f"{source}.{sub}.{k}", value))
-        else:
-            value = _collision_value(subv, include_structured=include_structured_values)
-            if value is not None:
-                out.append((f"{source}.{sub}", value))
-
-
-def _is_ftshare_limit_up_record(source, container_code):
-    return source == "ftshare" and str(container_code).startswith(
-        "__market_limit_up_pool_yesterday_"
-    )
-
-
-def _ftshare_limit_up_trade_date(source, container_code, record):
-    if not _is_ftshare_limit_up_record(source, container_code) or not isinstance(record, dict):
-        return None
-    return parse_date(record.get("trade_date"))
-
-
-def _record_code(record, container_code, source=None):
-    raw_code = (
-        record.get("zqdm")
-        or record.get("f12")
-        or record.get("code")
-        or record.get("stockCode")
-        or record.get("stock_code")
-        or record.get("SECURITY_CODE")
-        or record.get("ticker")
-        or record.get("symbol")
-    )
-    code = str(raw_code or container_code)
-    if source == "ftshare_rest":
-        match = re.fullmatch(r"(?i)(\d{6})(?:\.(?:xshg|xshe|bjse|sh|sz|bj))?", code)
-        if match:
-            return match.group(1)
-    if source == "ftshare" and _is_ftshare_limit_up_record(source, container_code):
-        match = re.fullmatch(r"(?i)(\d{6})(?:\.[a-z]+)?", code)
-        if match:
-            return match.group(1)
-    return code
-
-
-def _without_context_records(doc, source):
-    """Return a shallow copy with context-only record paths removed."""
-    paths = CONTEXT_RECORD_PATHS.get(source, [])
-    if not paths or not isinstance(doc, dict):
-        return doc, []
-    sanitized = dict(doc)
-    excluded = []
-    for path in paths:
-        node = sanitized
-        for part in path[:-1]:
-            child = node.get(part) if isinstance(node, dict) else None
-            if not isinstance(child, dict):
-                node = None
-                break
-            child_copy = dict(child)
-            node[part] = child_copy
-            node = child_copy
-        if not isinstance(node, dict) or path[-1] not in node:
-            continue
-        value = node.pop(path[-1])
-        count = len(value) if isinstance(value, (dict, list)) else int(value is not None)
-        excluded.append((".".join(path), count))
-    return sanitized, excluded
-
-
-def _record_containers(doc, source=None, include_context=False):
-    """Return supported stock, record, and market-level record containers."""
-    containers = []
-    stocks = doc.get("stocks")
-    if isinstance(stocks, dict):
-        containers.append(stocks)
-        if source and is_calendar_event_source(source):
-            for stock_code, stock_record in stocks.items():
-                if isinstance(stock_record, list):
-                    containers.append(
-                        {
-                            f"{stock_code}#event{index}": record
-                            for index, record in enumerate(stock_record)
-                            if isinstance(record, dict)
-                        }
-                    )
-                elif isinstance(stock_record, dict):
-                    for key in ("records", "items", "announcements", "reports", "news"):
-                        nested = stock_record.get(key)
-                        if isinstance(nested, list):
-                            containers.append(
-                                {
-                                    f"{stock_code}#{key}{index}": record
-                                    for index, record in enumerate(nested)
-                                    if isinstance(record, dict)
-                                }
-                            )
-    records = doc.get("records")
-    if isinstance(records, dict):
-        containers.append(records)
-    elif isinstance(records, list):
-        containers.append({f"__{i}": value for i, value in enumerate(records)})
-    for key, value in doc.items():
-        if key in (
-            "scheme",
-            "field_meta",
-            "zhb_date",
-            "stocks",
-            "records",
-            "auction_snapshot_meta",
-        ):
-            continue
-        if source == "ftshare" and key == "market":
-            continue
-        if (
-            isinstance(value, dict)
-            and value
-            and all(isinstance(item, (dict, list)) for item in value.values())
-        ):
-            containers.append(value)
-        elif isinstance(value, list) and value and all(isinstance(item, dict) for item in value):
-            containers.append({f"__{i}": item for i, item in enumerate(value)})
-    if include_context and source == "fuyao":
-        market = doc.get("market")
-        if isinstance(market, dict):
-            for key in ("dragon_tiger", "hot_list_hour"):
-                records = market.get(key)
-                if isinstance(records, list):
-                    containers.append(
-                        {
-                            f"__{key}_{index}": record
-                            for index, record in enumerate(records)
-                            if isinstance(record, dict)
-                        }
-                    )
-    if include_context and source == "ftshare":
-        market = doc.get("market")
-        records = market.get("limit_up_pool_yesterday") if isinstance(market, dict) else None
-        if isinstance(records, list):
-            containers.append(
-                {
-                    f"__market_limit_up_pool_yesterday_{index}": record
-                    for index, record in enumerate(records)
-                    if isinstance(record, dict)
-                }
-            )
-    return containers
-
-
-def _event_identity(source, record, container_code, entity_code):
-    """Use a shared title fingerprint or a source-scoped fallback event id."""
-    title = next(
-        (
-            record.get(key)
-            for key in ("title", "announcementTitle", "announcement_title", "headline", "question")
-            if record.get(key) not in (None, "")
-        ),
-        None,
-    )
-    if title is not None:
-        normalized_title = re.sub(r"\s+", " ", str(title)).strip().casefold()
-        if normalized_title:
-            fingerprint = hashlib.sha256(normalized_title.encode("utf-8")).hexdigest()[:20]
-            return f"shared:{entity_code}:{fingerprint}"
-    source_id = (
-        record.get("id")
-        or record.get("announcementId")
-        or record.get("reportId")
-        or record.get("question_id")
-        or record.get("answer_id")
-        or container_code
-    )
-    return f"source:{source}:{source_id}"
-
-
-def load_snapshots(
-    snapshots,
-    store,
-    diagnostics,
-    event_start=None,
-    event_end=None,
-    include_context=False,
-    excluded_sources=None,
-    allowed_trading_dates=None,
-):
-    """Flatten selected source snapshots using domain-qualified sample dates."""
-    total = 0
-    sample_ranks = {}
-    duplicate_count = 0
-    duplicate_examples = []
-    undated_event_counts = defaultdict(int)
-    future_event_counts = defaultdict(int)
-    undated_market_counts = defaultdict(int)
-    out_of_window_market_counts = defaultdict(int)
-    allowed_trading_dates = (
-        {
-            day.strftime("%Y%m%d") if isinstance(day, date) else str(day).replace("-", "")
-            for day in allowed_trading_dates
-        }
-        if allowed_trading_dates is not None
-        else None
-    )
-    for snapshot in snapshots:
-        if isinstance(excluded_sources, dict) and snapshot.source in excluded_sources:
-            identity = excluded_sources[snapshot.source]
-            interface_id = identity.get("interface_id") if isinstance(identity, dict) else identity
-            diagnostics.append(
-                f"{snapshot.folder}/{snapshot.source}: 日常碰撞已排除来源身份 "
-                f"{interface_id or (identity.get('status') if isinstance(identity, dict) else 'unknown')}"
-            )
-            continue
-        if snapshot.source in CONTEXT_ONLY_SOURCES and not include_context:
-            diagnostics.append(
-                f"{snapshot.folder}/{snapshot.source}: 纯市场上下文源已按默认策略排除；"
-                "如需研究性碰撞请使用 --include-context"
-            )
-            continue
-        doc = snapshot.document
-        if not include_context:
-            doc, excluded_context = _without_context_records(doc, snapshot.source)
-            for path, count in excluded_context:
-                diagnostics.append(
-                    f"{snapshot.folder}/{snapshot.source}/{path}: 默认碰撞已排除上下文记录"
-                    f"（{count} 条）"
-                )
-        scheme = doc.get("scheme")
-        auction_meta = doc.get("auction_snapshot_meta")
-        if isinstance(auction_meta, dict) and auction_meta.get("collision_eligible") is False:
-            diagnostic = (
-                f"{snapshot.folder}/{snapshot.source}/stocks.*.auction_final: "
-                f"竞价子树已排除；reason={auction_meta.get('exclusion_reason') or 'unspecified'}，"
-                f"data_status={auction_meta.get('data_status')!r}，"
-                f"source_data_date={auction_meta.get('source_data_date')!r}，"
-                f"source_data_date_basis={auction_meta.get('source_data_date_basis')!r}，"
-                f"response_timestamp={auction_meta.get('response_timestamp')!r}，"
-                f"response_timestamp_date={auction_meta.get('response_timestamp_date')!r}"
-                "（仅响应组装时间，不作为数据日期），"
-                f"记录数={auction_meta.get('item_count', 0)}"
-            )
-            diagnostics.append(diagnostic)
-        for container in _record_containers(doc, snapshot.source, include_context=include_context):
-            for container_code, rec in container.items():
-                if not isinstance(rec, dict):
-                    continue
-                sample_day = snapshot.sample_date
-                if snapshot.domain == CALENDAR:
-                    event_day = event_record_date(snapshot.source, rec)
-                    if event_day is None:
-                        undated_event_counts[(snapshot.folder, snapshot.source)] += 1
-                        continue
-                    if event_start is not None and event_day < event_start:
-                        continue
-                    if event_end is not None and event_day > event_end:
-                        future_event_counts[(snapshot.folder, snapshot.source)] += 1
-                        continue
-                    sample_day = event_day
-                    day_key = sample_date_key(CALENDAR, event_day)
-                    sample_date_origin = "record.event_date"
-                else:
-                    ftshare_trade_day = _ftshare_limit_up_trade_date(
-                        snapshot.source, container_code, rec
-                    )
-                    if _is_ftshare_limit_up_record(snapshot.source, container_code):
-                        if ftshare_trade_day is None:
-                            undated_market_counts[(snapshot.folder, snapshot.source)] += 1
-                            continue
-                        trade_day_text = ftshare_trade_day.strftime("%Y%m%d")
-                        if ftshare_trade_day > snapshot.sample_date or (
-                            allowed_trading_dates is not None
-                            and trade_day_text not in allowed_trading_dates
-                        ):
-                            out_of_window_market_counts[(snapshot.folder, snapshot.source)] += 1
-                            continue
-                        sample_day = ftshare_trade_day
-                        day_key = sample_date_key(TRADING, ftshare_trade_day)
-                        sample_date_origin = "record.trade_date"
-                    else:
-                        day_key = snapshot.day_key
-                        sample_date_origin = snapshot.date_origin
-
-                raw_code = (
-                    rec.get("zqdm")
-                    or rec.get("f12")
-                    or rec.get("code")
-                    or rec.get("stockCode")
-                    or rec.get("stock_code")
-                    or rec.get("SECURITY_CODE")
-                    or rec.get("ticker")
-                )
-                code = (
-                    str(raw_code or container_code)
-                    if snapshot.domain == CALENDAR
-                    else _record_code(rec, container_code, source=snapshot.source)
-                )
-                if snapshot.domain == CALENDAR:
-                    entity_code = str(raw_code or "")
-                    if not entity_code and re.fullmatch(r"\d{6,}", str(container_code)):
-                        entity_code = str(container_code)
-                    event_id = _event_identity(snapshot.source, rec, container_code, entity_code)
-                    code = f"{code}#event:{event_id}"
-                pairs = []
-                _flatten(
-                    rec,
-                    snapshot.source,
-                    scheme,
-                    code,
-                    day_key,
-                    pairs,
-                    include_structured_values=_is_ftshare_limit_up_record(
-                        snapshot.source, container_code
-                    ),
-                )
-                for fid, value in pairs:
-                    key = (code, day_key)
-                    rank_key = (fid, key)
-                    previous_rank = sample_ranks.get(rank_key)
-                    if previous_rank is not None and snapshot.rank < previous_rank:
-                        duplicate_count += 1
-                        if len(duplicate_examples) < 10:
-                            duplicate_examples.append(f"{fid}/{code}/{day_key}")
-                        continue
-                    if previous_rank is not None:
-                        duplicate_count += 1
-                        if len(duplicate_examples) < 10:
-                            duplicate_examples.append(f"{fid}/{code}/{day_key}")
-                    store[fid]["vals"][key] = value
-                    store[fid].setdefault("sample_meta", {})[key] = {
-                        "phase": snapshot.phase,
-                        "source": snapshot.source,
-                        "capture_folder": snapshot.folder,
-                        "capture_date": snapshot.capture_date.strftime("%Y%m%d"),
-                        "as_of_date": sample_day.strftime("%Y%m%d"),
-                        "as_of_date_origin": sample_date_origin,
-                        "captured_at": (
-                            snapshot.captured_at.isoformat(timespec="seconds")
-                            if snapshot.captured_at
-                            else None
-                        ),
-                        "status": snapshot.status,
-                        "domain": snapshot.domain,
-                    }
-                    store[fid]["scheme"] = scheme
-                    store[fid]["src"] = snapshot.source
-                    sample_ranks[rank_key] = snapshot.rank
-                    total += 1
-    if duplicate_count:
-        diagnostics.append(
-            f"折叠 {duplicate_count} 条重复字段样本，按快照质量择优；示例: "
-            + ", ".join(duplicate_examples)
-        )
-    for (folder, source), count in sorted(undated_event_counts.items()):
-        diagnostics.append(f"{folder}/{source}: {count} 条事件记录缺少可解析的自然日，已跳过")
-    for (folder, source), count in sorted(future_event_counts.items()):
-        diagnostics.append(f"{folder}/{source}: {count} 条事件记录晚于报告日，已跳过")
-    for (folder, source), count in sorted(undated_market_counts.items()):
-        diagnostics.append(f"{folder}/{source}: {count} 条市场记录缺少可解析的来源交易日，已跳过")
-    for (folder, source), count in sorted(out_of_window_market_counts.items()):
-        diagnostics.append(f"{folder}/{source}: {count} 条市场记录不在所选交易日窗口内，已跳过")
-    return total
 
 
 # ───────────────────────────────────────────────────────────────────────
@@ -869,74 +476,6 @@ def collide_pair(L, R, *, contract_anchor=False):
     }
 
 
-def _pearson(x_values, y_values):
-    if len(x_values) != len(y_values) or len(x_values) < 3:
-        return None
-    x_mean = sum(x_values) / len(x_values)
-    y_mean = sum(y_values) / len(y_values)
-    x_delta = [value - x_mean for value in x_values]
-    y_delta = [value - y_mean for value in y_values]
-    x_sum = sum(value * value for value in x_delta)
-    y_sum = sum(value * value for value in y_delta)
-    if x_sum <= 0 or y_sum <= 0:
-        return None
-    return sum(a * b for a, b in zip(x_delta, y_delta)) / math.sqrt(x_sum * y_sum)
-
-
-def _ranks(values):
-    order = sorted(range(len(values)), key=values.__getitem__)
-    result = [0.0] * len(values)
-    offset = 0
-    while offset < len(order):
-        end = offset + 1
-        while end < len(order) and values[order[end]] == values[order[offset]]:
-            end += 1
-        rank = ((offset + 1) + end) / 2.0
-        for position in range(offset, end):
-            result[order[position]] = rank
-        offset = end
-    return result
-
-
-def _correlation_metrics(x_values, y_values):
-    pearson = _pearson(x_values, y_values)
-    if pearson is None:
-        return None
-    spearman = _pearson(_ranks(x_values), _ranks(y_values))
-    leave_one_out = []
-    if len(x_values) >= 5:
-        count = len(x_values)
-        x_mean = sum(x_values) / count
-        y_mean = sum(y_values) / count
-        x_delta = [value - x_mean for value in x_values]
-        y_delta = [value - y_mean for value in y_values]
-        covariance = sum(x * y for x, y in zip(x_delta, y_delta))
-        x_variance = sum(x * x for x in x_delta)
-        y_variance = sum(y * y for y in y_delta)
-        multiplier = count / (count - 1)
-        for x, y in zip(x_delta, y_delta):
-            reduced_covariance = covariance - multiplier * x * y
-            reduced_x_variance = x_variance - multiplier * x * x
-            reduced_y_variance = y_variance - multiplier * y * y
-            if reduced_x_variance <= 0 or reduced_y_variance <= 0:
-                continue
-            leave_one_out.append(
-                reduced_covariance / math.sqrt(reduced_x_variance * reduced_y_variance)
-            )
-    sign_stable = (
-        len(leave_one_out) == len(x_values)
-        and pearson != 0
-        and all(value != 0 and (value > 0) == (pearson > 0) for value in leave_one_out)
-    )
-    return {
-        "pearson": pearson,
-        "spearman": spearman,
-        "leave_one_out_sign_stable": sign_stable,
-        "leave_one_out_min": min(leave_one_out) if leave_one_out else None,
-        "leave_one_out_max": max(leave_one_out) if leave_one_out else None,
-    }
-
-
 def _temporal_candidate(common, left_values, right_values):
     per_code = defaultdict(list)
     for key in common:
@@ -1078,123 +617,10 @@ def method_candidates_for_pair(left_id, right_id, L, R):
     return _method_candidate_for_pair(left_id, right_id, L, R)[0]
 
 
-def _method_candidate_score(candidate):
-    return (
-        len(candidate["methods"]),
-        candidate["sample_count"],
-        candidate["left"],
-        candidate["right"],
-    )
-
-
-def _compact_method_candidate(candidate):
-    """Keep useful method evidence while bounding the target-frontier report size."""
-    compact = {key: value for key, value in candidate.items()}
-    compact_methods = []
-    for method in candidate.get("methods", []):
-        item = dict(method)
-        if item.get("method") == "per_stock_time_series":
-            item["stock_correlations"] = item.get("stock_correlations", [])[:5]
-        compact_methods.append(item)
-    compact["methods"] = compact_methods
-    return compact
-
-
-def _method_candidate_summary(candidate):
-    details = []
-    for method in candidate.get("methods", []):
-        detail = dict(method)
-        if detail.get("method") == "per_stock_time_series":
-            detail["stock_correlations"] = detail.get("stock_correlations", [])[:5]
-        details.append(detail)
-    return {
-        "right": candidate["right"],
-        "methods": details,
-        "sample_count": candidate["sample_count"],
-        "sample_dates": candidate["sample_dates"],
-        "evidence_sources": candidate["evidence_sources"],
-    }
-
-
 def select_method_candidate_frontier(method_candidates_by_left, global_candidates):
-    """Retain one best candidate per target when it falls outside the global cap."""
-    global_pairs = {(row["left"], row["right"]) for row in global_candidates}
-    frontier = []
-    for left_id in sorted(method_candidates_by_left):
-        candidates = method_candidates_by_left[left_id]
-        for candidate in candidates:
-            if (candidate["left"], candidate["right"]) in global_pairs:
-                continue
-            frontier.append(_compact_method_candidate(candidate))
-            if len(frontier) >= MAX_FIELD_FRONTIER_CANDIDATES:
-                break
-    return frontier
-
-
-def _fit_affine_feature(feature_values, target_values):
-    if len(feature_values) != len(target_values) or len(feature_values) < 2:
-        return None
-    feature_mean = sum(feature_values) / len(feature_values)
-    target_mean = sum(target_values) / len(target_values)
-    feature_variance = sum((value - feature_mean) ** 2 for value in feature_values)
-    if feature_variance <= 1e-18:
-        return None
-    slope = (
-        sum(
-            (feature - feature_mean) * (target - target_mean)
-            for feature, target in zip(feature_values, target_values)
-        )
-        / feature_variance
+    return _select_method_candidate_frontier(
+        method_candidates_by_left, global_candidates, MAX_FIELD_FRONTIER_CANDIDATES
     )
-    intercept = target_mean - slope * feature_mean
-    if not math.isfinite(slope) or not math.isfinite(intercept):
-        return None
-    return slope, intercept
-
-
-def _r_squared(actual, predicted):
-    if len(actual) != len(predicted) or not actual:
-        return None
-    mean_value = sum(actual) / len(actual)
-    total = sum((value - mean_value) ** 2 for value in actual)
-    if total <= 1e-18:
-        return None
-    residual = sum((value - estimate) ** 2 for value, estimate in zip(actual, predicted))
-    score = 1.0 - residual / total
-    return score if math.isfinite(score) else None
-
-
-def _standard_deviation(values):
-    if not values:
-        return 0.0
-    mean_value = sum(values) / len(values)
-    variance = sum((value - mean_value) ** 2 for value in values) / len(values)
-    return math.sqrt(max(0.0, variance))
-
-
-def _formula_feature(operator, left_value, right_value):
-    if operator == "product":
-        value = left_value * right_value
-    elif operator == "ratio_left_right":
-        if abs(right_value) <= 1e-12 * max(1.0, abs(left_value)):
-            return None
-        value = left_value / right_value
-    elif operator == "ratio_right_left":
-        if abs(left_value) <= 1e-12 * max(1.0, abs(right_value)):
-            return None
-        value = right_value / left_value
-    elif operator == "sum":
-        value = left_value + right_value
-    elif operator == "difference":
-        value = left_value - right_value
-    else:
-        return None
-    return value if math.isfinite(value) else None
-
-
-def _formula_holdout(code):
-    digest = hashlib.sha256(str(code).encode("utf-8")).digest()
-    return int.from_bytes(digest[:2], "big") % 5 == 0
 
 
 def formula_candidates_for_target(left_id, store, input_candidates):
@@ -2332,52 +1758,6 @@ def build_source_coverage_report(
     return output
 
 
-def append_source_coverage_report(markdown, source_coverage):
-    """Render complete per-source contract, observed-data, and collision coverage."""
-    lines = [markdown.rstrip(), "", "## 来源字段覆盖与碰撞参与", ""]
-    lines.append(
-        "_窗口字段值样本是经日期筛选、重复折叠和快照择优后载入的非空值；"
-        "右侧比较次数另受字段类型及来源规则筛选。官方契约字段须有逐字段审定证据，"
-        "契约语义本身不证明底层数据来源独立。_"
-    )
-    lines.extend(
-        [
-            "",
-            "| 来源 | 已确认字段 | 契约已确认 | 契约锚 | 独立锚 | L1-C 锚 | 窗口字段 / 字段值样本 / 交易日 |",
-            "|:--|--:|--:|--:|--:|--:|--:|",
-        ]
-    )
-    for row in source_coverage:
-        lines.append(
-            "| {source} | {verified_field_count} | {official_contract_verified_field_count} | "
-            "{official_contract_anchor_field_count} | {independent_anchor_field_count} | "
-            "{contract_only_anchor_field_count} | {observed_window_field_count} / "
-            "{observed_window_field_value_count} / {observed_window_trading_day_count} |".format(
-                **row
-            )
-        )
-    if not source_coverage:
-        lines.append("| _无来源数据_ | 0 | 0 | 0 | 0 | 0 | 0 / 0 / 0 |")
-    lines.extend(
-        [
-            "",
-            "| 来源 | 破解目标 | 比较字段 | 作目标比较 | 作右侧比较 | L1-C 锚比较 | L1 / L1-C / L4 关系 | 方法候选涉及 |",
-            "|:--|--:|--:|--:|--:|--:|--:|--:|",
-        ]
-    )
-    for row in source_coverage:
-        lines.append(
-            "| {source} | {cracking_target_field_count} | {comparison_field_count} | "
-            "{comparisons_as_target} | {comparisons_as_right_field} | {L1_C_anchor_comparisons} | "
-            "{L1_relation_count} / {L1_C_relation_count} / {L4_relation_count} | "
-            "{method_candidate_pair_count} |".format(**row)
-        )
-    if not source_coverage:
-        lines.append("| _无来源数据_ | 0 | 0 | 0 | 0 | 0 | 0 / 0 / 0 | 0 |")
-    lines.append("")
-    return "\n".join(lines) + "\n"
-
-
 def is_verified(fid, verified):
     return (alias_src(fid), code_of(fid)) in verified
 
@@ -2426,66 +1806,17 @@ def mark_exploratory_candidate(result, right_is_anchor):
     return True
 
 
-def load_state():
-    if os.path.exists(STATE_PATH):
-        try:
-            with open(STATE_PATH, encoding="utf-8") as handle:
-                state = json.load(handle)
-        except (OSError, UnicodeError, json.JSONDecodeError) as exc:
-            return {
-                "version": 2,
-                "findings": {},
-                "warnings": [f"state 读取失败，未覆盖原文件: {exc}"],
-                "read_error": True,
-            }
-        if not isinstance(state, dict):
-            return {
-                "version": 2,
-                "findings": {},
-                "warnings": ["state 顶层不是对象，未覆盖原文件"],
-                "read_error": True,
-            }
-        if not isinstance(state.get("findings", {}), dict):
-            return {
-                "version": 2,
-                "findings": {},
-                "warnings": ["state.findings 格式无效，未覆盖原文件"],
-                "read_error": True,
-            }
-        version = state.get("version", 1)
-        if not isinstance(version, int) or version > 2:
-            return {
-                "version": 2,
-                "findings": {},
-                "warnings": [f"collision_state 版本 {version!r} 不受支持，未覆盖原文件"],
-                "read_error": True,
-            }
-        if version < 2:
-            old_findings = state.get("findings", {})
-            migrated = {
-                "version": 2,
-                "findings": {},
-                "legacy_findings_v1": old_findings,
-                "legacy_state_version": version,
-                "warnings": [
-                    f"collision_state v{version} 已归档到 legacy_findings_v1；旧 L1 不再自动视为当前确认"
-                ],
-            }
-            return migrated
-        state.setdefault("findings", {})
-        state.setdefault("warnings", [])
-        return state
-    return {"version": 2, "findings": {}, "warnings": []}
-
-
-def save_state(st):
-    with open(STATE_PATH, "w", encoding="utf-8") as f:
-        json.dump(st, f, ensure_ascii=False, indent=2)
-
-
 # ───────────────────────────────────────────────────────────────────────
 # 主流程
 # ───────────────────────────────────────────────────────────────────────
+def load_state():
+    return _load_collision_state(STATE_PATH)
+
+
+def save_state(st):
+    return _save_collision_state(STATE_PATH, st)
+
+
 def run(args):
     report_day = parse_date(args.date) if args.date else date.today()
     if report_day is None:
@@ -2972,7 +2303,7 @@ def run(args):
     json_path = os.path.join(out_dir, f"{today}_collision_report.json")
     report_relative_path = os.path.relpath(json_path, DATA_DIR).replace("\\", "/")
     report_data = {
-        "schema_version": 4,
+        "schema_version": 5,
         "date": today,
         "collision_mode": collision_mode,
         "anchor_policy": (
@@ -3024,6 +2355,15 @@ def run(args):
         "daily_aggregate_evidence": daily_aggregate_evidence,
         "field_name_candidates": name_candidate_report,
     }
+
+    candidate_review_state, candidate_review_warnings, candidate_review_writable = CCR.load_state()
+    diagnostics.extend(candidate_review_warnings)
+    candidate_review_summary = CCR.annotate_report(
+        report_data,
+        candidate_review_state,
+        available=not candidate_review_warnings,
+        writable=candidate_review_writable,
+    )
 
     research_state, research_warnings, research_state_writable = CRS.load_state(RESEARCH_STATE_PATH)
     diagnostics.extend(research_warnings)
@@ -3084,6 +2424,7 @@ def run(args):
             formula_candidates,
             candidate_controls,
         )
+        rendered = CCR.append_review_summary_report(rendered, candidate_review_summary)
         return append_report_completeness_report(rendered, report_data["report_completeness"])
 
     def write_report() -> None:
@@ -3120,486 +2461,10 @@ def run(args):
     return md_path, json_path
 
 
-def append_source_identity_report(report_md, result):
-    """Append active REST and retired legacy FTShare identities to the report."""
-    lines = [report_md.rstrip(), "", "## 来源身份状态（不参与字段语义定案）", ""]
-    if isinstance(result, dict) and result.get("active_runtime_source") == "ftshare_rest":
-        lines.append(
-            "_FTShare 公共 REST 接口已进入日常采集；官方字段契约作为语义锚，"
-            "底层数据提供方仍未确认。与其匹配的强候选列在 L1-C，不混入独立来源 L1。_"
-        )
-        lines.append("_旧私有托管 MCP 采集器已退役，历史样本仅供 `--all` / `--exploratory` 追溯。_")
-    else:
-        lines.append("_当前没有运行来源身份核验；历史核验摘要见每日辅助证据。_")
-    lines.append("")
-    return "\n".join(lines) + "\n"
-
-
-def append_contract_anchor_candidates(report_md, candidates):
-    """Render contract-backed candidates without presenting them as independent-source L1."""
-    lines = [
-        report_md.rstrip(),
-        "",
-        f"## 官方契约锚候选 L1-C（{len(candidates)}）",
-        "",
-        "_L1-C 使用逐字段审定的官方接口契约语义作锚，并满足多日数值匹配门槛；"
-        "仅当该接口底层数据来源独立性未确认时才列入此处，不属于独立来源 L1，也不自动定案。_",
-        "",
-    ]
-    if candidates:
-        lines.extend(
-            [
-                "| 左字段（待确认） | 官方契约字段 | 等级 | 命中率 | 交易日数 | 样本 | 信息样本 | 比值 | hub | registry |",
-                "|:--|:--|:--|--:|--:|--:|--:|--:|:--|:--|",
-            ]
-        )
-        lines.extend(_l1_row(candidate) for candidate in candidates)
-    else:
-        lines.append("_本轮无达到多日门槛的官方契约锚候选。_")
-    lines.append("")
-    return "\n".join(lines) + "\n"
-
-
-def append_research_state_report(report_md: str, state_summary: dict) -> str:
-    """Show research carry-forward status without promoting candidates."""
-    lines = [report_md.rstrip(), "", "## 探索候选持续跟踪", ""]
-    lines.append(
-        f"研究台账：`{state_summary.get('path', 'collision_research_state.json.gz')}`；"
-        f"累计历史跟踪候选对 {state_summary.get('tracked_candidate_pairs', 0)}，"
-        f"本报告候选对 {state_summary.get('current_candidate_pairs', 0)}，"
-        f"历史复现 {state_summary.get('previously_tracked_pairs', 0)}，"
-        f"新发现 {state_summary.get('new_candidate_pairs', 0)}。"
+def append_candidate_triage_report(markdown, triage, frontier, formulas, controls):
+    return CREP.append_candidate_triage_report(
+        markdown, triage, frontier, formulas, controls, MAX_METHOD_CANDIDATES
     )
-    lines.append(
-        "台账保留报告引用、证据交易日、来源和碰撞指标；仅供后续研究回看，"
-        "不会自动改变字段状态、碰撞锚或主字典。新报告只将 `actionable_L1`、L4 和主动方法候选"
-        "写入待研究队列；已登记关系的复验单独展示，历史跟踪记录不会被删除。"
-    )
-    if state_summary.get("persisted") is False:
-        lines.append("_本轮台账没有写入；请查看诊断，已有台账保持原样。_")
-    lines.append("")
-    return "\n".join(lines) + "\n"
-
-
-def _l1_row(p):
-    return (
-        f"| `{p['left']}` | `{p['right']}` | {p['level']} | "
-        f"{p['overall_hit']:.2%} | {p['n_days']} | {p['n_pairs']} | "
-        f"{p.get('n_informative_pairs') if p.get('n_informative_pairs') is not None else '—'} | "
-        f"{p.get('ratio') or '-'} | {'⚠' if p.get('hub_flag') else ''} | "
-        f"{'✅' if p.get('in_registry') else '—'} |"
-    )
-
-
-def append_candidate_triage_report(
-    markdown: str,
-    triage: dict[str, Any],
-    frontier: list[dict[str, Any]],
-    formulas: list[dict[str, Any]],
-    controls: dict[str, Any],
-) -> str:
-    summary = triage.get("summary", {})
-    targets = triage.get("targets", [])
-    lines = ["\n## 候选覆盖、公式与下一步采样\n"]
-    lines.append(
-        "本节用于定位证据缺口和安排后续取样。相关性、公式与样本优先级均为探索候选；"
-        "不会改变 L1/L1-U 门槛、来源独立性或主字典。\n"
-    )
-    lines.append(
-        f"- 未知目标 {summary.get('target_count', 0)} 个；其中有方法候选 "
-        f"{summary.get('targets_with_method_candidates', 0)} 个、无候选 "
-        f"{summary.get('targets_without_method_candidates', 0)} 个；多候选目标 "
-        f"{summary.get('targets_with_multiple_candidates', 0)} 个。"
-    )
-    lines.append(
-        f"- 方法候选生成 {summary.get('candidate_pairs_generated', 0)} 条；"
-        f"全局详细项保留 {summary.get('global_details_retained', 0)}/"
-        f"{summary.get('global_detail_limit', MAX_METHOD_CANDIDATES)}，"
-        f"另按目标字段保留 {summary.get('field_frontier_details_retained', 0)} 条；"
-        f"完整明细 {summary.get('method_candidate_inventory_count', 0)} 条在 JSON "
-        "`method_candidate_inventory`；"
-        f"未归档明细 {summary.get('candidate_pairs_without_full_detail', 0)} 条。"
-    )
-    field_coverage = summary.get("field_coverage", {})
-    lines.append(
-        f"- 字段覆盖详情：{field_coverage.get('detail_status', 'unavailable')}；"
-        f"覆盖身份 {field_coverage.get('coverage_identity_count', 0)}，"
-        f"读取 {field_coverage.get('coverage_detail_files', 0)} 份本地索引。"
-    )
-
-    status_labels = {
-        "formula_candidate_needs_independent_review": "公式候选待独立复核",
-        "multiple_method_candidates_need_discrimination": "存在多个候选，需区分",
-        "single_method_candidate_needs_external_check": "单候选，需外部证据",
-        "source_lineage_gap": "来源血缘缺口",
-        "field_coverage_identity_unmapped": "覆盖字段未映射到运行路径",
-        "independent_source_coverage_gap": "独立来源覆盖缺口",
-        "joint_sample_coverage_gap": "共同样本不足",
-        "no_current_method_signal": "当前方法未发现信号",
-        "no_eligible_comparison": "无可用独立对比",
-    }
-    lines.append("\n### 优先处理字段\n")
-    lines.append(
-        "| 未知字段 | 当前诊断 | 独立对比/候选数 | 独立锚家族/本源日期 | 建议复核股票 | 最强候选线索 |"
-    )
-    lines.append("|:--|:--|--:|:--|:--|:--|")
-    for target in targets[:50]:
-        coverage = target.get("coverage", {})
-        families = coverage.get("independent_anchor_families", [])
-        dates = coverage.get("source_as_of_days", [])
-        candidate_names = [
-            (
-                f"{item.get('right')} "
-                f"({','.join(m.get('method', '') for m in item.get('methods', []))})"
-            )
-            for item in target.get("top_candidates", [])
-        ]
-        candidate_text = "; ".join(candidate_names) or "—"
-        formula_text = "; ".join(
-            item.get("formula", "") for item in target.get("formula_candidates", [])
-        )
-        evidence_text = (candidate_text + ("; " + formula_text if formula_text else ""))[:240]
-        sample = target.get("next_sample") or {}
-        sample_text = (
-            f"{sample.get('stock_code')} ({sample.get('normalized_prediction_spread')})"
-            if sample.get("status") == "prioritize_recheck"
-            else sample.get("status", "—")
-        )
-        pair_counts = target.get("pair_counts", {})
-        comparisons = (
-            f"{pair_counts.get('independent_pairs', 0)} / {target.get('candidate_count', 0)}"
-        )
-        anchor_text = f"{len(families)} 家族 / {coverage.get('independent_anchor_pairs', 0)} 对"
-        coverage_text = (
-            f"{anchor_text} / 本源 {len(dates)} 日"
-            if coverage.get("status") == "available"
-            else f"{anchor_text} / 本源详情不可用"
-        )
-        label = status_labels.get(target.get("status"), target.get("status", "未知"))
-        lines.append(
-            f"| `{target.get('left', '')}` | {label} | {comparisons} | "
-            f"{coverage_text} | {sample_text} | {evidence_text} |"
-        )
-    if len(targets) > 50:
-        lines.append(f"\n_此表显示优先级最高的 50 / 共 {len(targets)} 个目标；完整清单见 JSON。_\n")
-
-    if frontier:
-        lines.append(f"\n### 补足全局截断的字段候选（{len(frontier)}）\n")
-        lines.append("| 未知字段 | 候选字段 | 方法 | 样本 | 日期 | 来源 |")
-        lines.append("|:--|:--|:--|--:|:--|:--|")
-        for candidate in frontier[:100]:
-            lines.append(
-                f"| `{candidate.get('left')}` | `{candidate.get('right')}` | "
-                f"{', '.join(item.get('method', '') for item in candidate.get('methods', []))} | "
-                f"{candidate.get('sample_count', 0)} | "
-                f"{', '.join(candidate.get('sample_dates', [])[:5])} | "
-                f"{', '.join(candidate.get('evidence_sources', []))} |"
-            )
-        if len(frontier) > 100:
-            lines.append(f"\n_仅显示前 100 / 共 {len(frontier)} 条字段前沿候选。_\n")
-
-    if formulas:
-        lines.append(f"\n### 双输入公式候选（{len(formulas)}）\n")
-        lines.append(
-            "公式使用按股票代码分组的留出样本验证；至少 3 个留出股票，验证 R²≥0.985、"
-            "误差不超过训练目标标准差的 5%，并要求优于最佳单输入线性模型至少 0.05。"
-            "这些阈值只筛选探索候选，不构成语义证明。\n"
-        )
-        lines.append("| 目标字段 | 候选公式 | 留出 R² | 相对误差尺度 | 验证样本/股票 |")
-        lines.append("|:--|:--|--:|--:|--:|")
-        for formula in formulas[:50]:
-            lines.append(
-                f"| `{formula.get('left')}` | `{formula.get('formula')}` | "
-                f"{formula.get('validation_r2')} | {formula.get('normalized_rmse')} | "
-                f"{formula.get('validation_samples')}/{formula.get('validation_stocks')} |"
-            )
-        if len(formulas) > 50:
-            lines.append(f"\n_仅显示前 50 / 共 {len(formulas)} 条公式候选。_\n")
-    else:
-        lines.append(
-            f"\n### 双输入公式候选\n本轮未发现通过留出筛选的公式候选；"
-            f"测试组合 {summary.get('formula_combinations_tested', 0)} 个。\n"
-        )
-
-    positive = controls.get("positive_control", {})
-    negative = controls.get("negative_control", {})
-    lines.append("\n### 已知映射与已证伪关系的候选校准\n")
-    lines.append(
-        f"- 已登记正向对照：当前窗口有 {positive.get('eligible_numeric_pairs', 0)} 组独立数值关系可评估，"
-        f"{positive.get('with_method_signal', 0)} 组被方法候选识别；样本不足 "
-        f"{positive.get('insufficient_numeric_samples', 0)} 组。此计数仅检查方法覆盖，不是准确率。"
-    )
-    lines.append(
-        f"- 已证伪负向对照：数值关系 {negative.get('numeric_refuted_pairs', 0)} 组，"
-        f"其中仍有方法信号 {negative.get('with_method_signal', 0)} 组；这些信号被隔离，不进入普通候选。"
-    )
-    failed_sources = []
-    for source, status in summary.get("capture_source_statuses", {}).items():
-        if status.get("non_ok_dates"):
-            failed_sources.append(
-                f"{source}: {', '.join(status['non_ok_dates'][-3:])} "
-                f"({status.get('status_counts', {})})"
-            )
-    if failed_sources:
-        lines.append("\n### 采集覆盖异常源\n")
-        lines.extend(f"- {item}" for item in failed_sources[:30])
-        if len(failed_sources) > 30:
-            lines.append(
-                f"- 另有 {len(failed_sources) - 30} 个来源见 JSON "
-                "`candidate_triage.summary.capture_source_statuses`。"
-            )
-    return markdown.rstrip() + "\n" + "\n".join(lines) + "\n"
-
-
-def build_report_completeness(report_data: dict[str, Any]) -> dict[str, Any]:
-    """Reconcile complete JSON evidence against intentionally summarized Markdown views."""
-    triage = report_data.get("candidate_triage")
-    triage = triage if isinstance(triage, dict) else {}
-    triage_summary = triage.get("summary")
-    triage_summary = triage_summary if isinstance(triage_summary, dict) else {}
-    targets = triage.get("targets")
-    if not isinstance(targets, list):
-        targets = []
-
-    section_specs = {
-        "L1": (report_data.get("L1"), None, "完整 L1 关系清单"),
-        "L1-C": (report_data.get("L1-C"), None, "完整官方契约锚候选清单"),
-        "actionable_L1": (report_data.get("actionable_L1"), None, "完整新候选清单"),
-        "mapped_pair_revalidations": (
-            report_data.get("mapped_pair_revalidations"),
-            None,
-            "完整已登记映射复验清单",
-        ),
-        "L4": (report_data.get("L4"), 60, "完整 L4 清单"),
-        "source_coverage": (
-            report_data.get("source_coverage"),
-            None,
-            "完整逐来源契约定义、窗口观察与碰撞参与统计",
-        ),
-        "guardrail_hits": (
-            report_data.get("guardrail_hits"),
-            None,
-            "完整证伪护栏命中清单",
-        ),
-        "method_candidates": (
-            report_data.get("method_candidates"),
-            100,
-            "全局排序摘要；完整清单见 method_candidate_inventory",
-        ),
-        "method_candidate_inventory": (
-            report_data.get("method_candidate_inventory"),
-            0,
-            "完整方法候选明细；仅存于 JSON",
-        ),
-        "method_candidate_frontier": (
-            report_data.get("method_candidate_frontier"),
-            100,
-            "按目标补充的前沿清单；完整清单见 JSON",
-        ),
-        "candidate_triage.targets": (
-            targets,
-            50,
-            "逐个未知目标的完整诊断清单；完整清单见 JSON",
-        ),
-        "formula_candidates": (
-            report_data.get("formula_candidates"),
-            50,
-            "完整通过筛选的公式候选；完整清单见 JSON",
-        ),
-        "diagnostics": (report_data.get("diagnostics"), 100, "完整告警清单"),
-    }
-
-    issues = []
-    sections = {}
-    markdown_omissions = []
-    for name, (records, markdown_limit, scope) in section_specs.items():
-        if not isinstance(records, list):
-            issues.append(f"{name}: missing_or_invalid_json_list")
-            records = []
-        record_count = len(records)
-        visible_count = (
-            record_count if markdown_limit is None else min(record_count, markdown_limit)
-        )
-        omitted_count = record_count - visible_count
-        if omitted_count:
-            markdown_omissions.append(
-                {
-                    "section": name,
-                    "available": record_count,
-                    "visible": visible_count,
-                    "omitted_from_markdown": omitted_count,
-                }
-            )
-        sections[name] = {
-            "json_record_count": record_count,
-            "markdown_display_limit": markdown_limit,
-            "markdown_display_count": visible_count,
-            "markdown_omitted_count": omitted_count,
-            "detail_scope": scope,
-        }
-
-    generated_count = report_data.get("method_candidate_count")
-    if type(generated_count) is not int or generated_count < 0:
-        generated_count = 0
-        issues.append("method_candidate_count: missing_or_invalid")
-    inventory = report_data.get("method_candidate_inventory")
-    if not isinstance(inventory, list):
-        inventory = []
-    candidate_pairs = []
-    invalid_pair_identity_count = 0
-    for row in inventory:
-        if not isinstance(row, dict):
-            invalid_pair_identity_count += 1
-            continue
-        left, right = row.get("left"), row.get("right")
-        if not isinstance(left, str) or not left or not isinstance(right, str) or not right:
-            invalid_pair_identity_count += 1
-            continue
-        candidate_pairs.append((left, right))
-    unique_pair_count = len(set(candidate_pairs))
-    missing_detail_count = max(0, generated_count - len(inventory))
-    excess_detail_count = max(0, len(inventory) - generated_count)
-    duplicate_pair_count = len(candidate_pairs) - unique_pair_count
-
-    summary_rows = report_data.get("method_candidates")
-    if not isinstance(summary_rows, list):
-        summary_rows = []
-    summary_pairs = []
-    invalid_summary_pair_count = 0
-    for row in summary_rows:
-        if not isinstance(row, dict):
-            invalid_summary_pair_count += 1
-            continue
-        left, right = row.get("left"), row.get("right")
-        if isinstance(left, str) and left and isinstance(right, str) and right:
-            summary_pairs.append((left, right))
-        else:
-            invalid_summary_pair_count += 1
-    if invalid_summary_pair_count or summary_pairs != candidate_pairs[: len(summary_pairs)]:
-        issues.append("method_candidates: ranked_summary_not_a_prefix_of_full_inventory")
-
-    frontier_rows = report_data.get("method_candidate_frontier")
-    if not isinstance(frontier_rows, list):
-        frontier_rows = []
-    frontier_pairs = []
-    invalid_frontier_pair_count = 0
-    for row in frontier_rows:
-        if not isinstance(row, dict):
-            invalid_frontier_pair_count += 1
-            continue
-        left, right = row.get("left"), row.get("right")
-        if isinstance(left, str) and left and isinstance(right, str) and right:
-            frontier_pairs.append((left, right))
-        else:
-            invalid_frontier_pair_count += 1
-    inventory_pair_set = set(candidate_pairs)
-    summary_pair_set = set(summary_pairs)
-    if (
-        invalid_frontier_pair_count
-        or len({left for left, _ in frontier_pairs}) != len(frontier_pairs)
-        or any(
-            pair not in inventory_pair_set or pair in summary_pair_set for pair in frontier_pairs
-        )
-    ):
-        issues.append("method_candidate_frontier: pair_identity_mismatch")
-
-    if (
-        missing_detail_count
-        or excess_detail_count
-        or duplicate_pair_count
-        or invalid_pair_identity_count
-    ):
-        issues.append("method_candidate_inventory: count_or_pair_identity_mismatch")
-
-    expected_target_count = triage_summary.get("target_count")
-    if type(expected_target_count) is not int or expected_target_count != len(targets):
-        issues.append("candidate_triage.targets: count_mismatch")
-    target_candidate_count_sum = 0
-    invalid_target_candidate_counts = 0
-    for target in targets:
-        count = target.get("candidate_count") if isinstance(target, dict) else None
-        if type(count) is not int or count < 0:
-            invalid_target_candidate_counts += 1
-        else:
-            target_candidate_count_sum += count
-    if invalid_target_candidate_counts or target_candidate_count_sum != generated_count:
-        issues.append("candidate_triage.targets: candidate_count_mismatch")
-
-    top_level_sections = {}
-    for name, value in report_data.items():
-        if name == "report_completeness":
-            continue
-        if name not in sections:
-            sections[name] = {
-                "json_record_count": len(value) if isinstance(value, (list, dict)) else None,
-                "markdown_display_limit": None,
-                "markdown_display_count": None,
-                "markdown_omitted_count": None,
-                "detail_scope": "完整 JSON 顶层内容；需按实际结构逐项审阅",
-            }
-        top_level_sections[name] = {
-            "value_type": type(value).__name__,
-            "record_count": len(value) if isinstance(value, (list, dict)) else None,
-        }
-
-    return {
-        "schema_version": 1,
-        "status": "complete" if not issues else "incomplete",
-        "markdown_is_summary": True,
-        "top_level_sections": top_level_sections,
-        "method_candidate_inventory": {
-            "generated_count": generated_count,
-            "saved_count": len(inventory),
-            "unique_pair_count": unique_pair_count,
-            "missing_detail_count": missing_detail_count,
-            "excess_detail_count": excess_detail_count,
-            "duplicate_pair_count": duplicate_pair_count,
-            "invalid_pair_identity_count": invalid_pair_identity_count,
-            "target_candidate_count_sum": target_candidate_count_sum,
-            "invalid_target_candidate_count_rows": invalid_target_candidate_counts,
-            "json_key": "method_candidate_inventory",
-        },
-        "sections": sections,
-        "markdown_omissions": markdown_omissions,
-        "issues": issues,
-    }
-
-
-def append_report_completeness_report(markdown: str, completeness: dict[str, Any]) -> str:
-    """Expose truncation and completeness checks at the end of the human-readable report."""
-    inventory = completeness.get("method_candidate_inventory", {})
-    lines = ["\n## 报告完整性与审阅范围\n"]
-    lines.append(
-        f"- 机器可读完整性：`{completeness.get('status', 'incomplete')}`；"
-        f"方法候选生成 {inventory.get('generated_count', 0)} 条，"
-        f"完整明细保存 {inventory.get('saved_count', 0)} 条，"
-        f"缺失 {inventory.get('missing_detail_count', 0)} 条，"
-        f"多余 {inventory.get('excess_detail_count', 0)} 条，"
-        f"重复 {inventory.get('duplicate_pair_count', 0)} 条，"
-        f"身份无效 {inventory.get('invalid_pair_identity_count', 0)} 条。"
-    )
-    lines.append(
-        "- 全量方法候选位于同名 JSON 的 `method_candidate_inventory`；"
-        "Markdown 的 Top-N 表格是导航摘要，不能代替全量 JSON 审阅。"
-    )
-    omissions = completeness.get("markdown_omissions", [])
-    if omissions:
-        lines.append("- Markdown 未逐行展示、但 JSON 保留的部分：")
-        lines.extend(
-            f"  - `{item.get('section')}`：展示 {item.get('visible', 0)} / "
-            f"{item.get('available', 0)}，摘要省略 {item.get('omitted_from_markdown', 0)} 条。"
-            for item in omissions
-        )
-    issues = completeness.get("issues", [])
-    if issues:
-        lines.append("- **审阅阻断**：完整性对账失败；不得据此断言无候选、无字段或提交定案。")
-        lines.extend(f"  - `{issue}`" for issue in issues)
-    else:
-        lines.append(
-            "- 完整性对账通过；逐目标复核仍须覆盖 JSON 的全部明细，并为每项记录"
-            "已检查、重复归并、证据不足或需外部核验的处置。"
-        )
-    return markdown.rstrip() + "\n" + "\n".join(lines) + "\n"
 
 
 def build_report_md(
@@ -3618,151 +2483,26 @@ def build_report_md(
     event_window=None,
     window_selection=None,
 ):
-    # Keep already-registered pairs visible for revalidation, outside the new-candidate queue.
-    revalidations = [p for p in l1 if p.get("in_registry", False)]
-    actionable = [p for p in l1 if not p.get("in_registry", False)]
-    cross = [p for p in actionable if not p.get("same_code")]
-    same = [p for p in actionable if p.get("same_code")]
-    cross.sort(key=lambda p: (-p["overall_hit"], -p["n_days"]))
-    same.sort(key=lambda p: (-p["overall_hit"], -p["n_days"]))
-    revalidations.sort(key=lambda p: (-p["overall_hit"], -p["n_days"]))
-
-    L = []
-    L.append(f"# 全源对撞报告（{today}）\n")
-    if window_selection:
-        if window_selection.get("mode") == "all_history":
-            L.append("> 交易数据窗口配置：全部历史日期（`--all`）")
-        else:
-            requested_days = window_selection.get("requested_trading_days")
-            L.append(f"> 交易数据窗口配置：近 {requested_days} 个交易日（`--window`）")
-    trading_window = f"{window[0]} ~ {window[-1]}" if window else "无有效交易日样本"
-    L.append(
-        f"> 行情窗口：{trading_window}（{len(window)} 个不同交易日）｜"
-        f"字段 {nfields} 个｜样本值 {nsamples} 条"
+    return CREP.build_report_md(
+        today,
+        window,
+        nfields,
+        nsamples,
+        left_ids,
+        l1,
+        l4,
+        new_count,
+        verified,
+        guardrail_hits,
+        method_candidates,
+        diagnostics,
+        event_window,
+        window_selection,
+        hit_rate_l1_ratio=HIT_RATE_L1_RATIO,
+        min_daily_l1=MIN_DAILY_L1,
+        min_informative_daily_l1=MIN_INFORMATIVE_DAILY_L1,
+        multi_day_min=MULTI_DAY_MIN,
     )
-    if event_window:
-        L.append(f"> 新闻/公告自然日窗口：{event_window[0]:%Y%m%d} ~ {event_window[1]:%Y%m%d}")
-    L.append(
-        f"> 主攻目标（unverified）={len(left_ids)}｜可审定新候选={len(actionable)}｜"
-        f"首次发现新候选对={new_count}｜已登记关系复验={len(revalidations)}｜"
-        f"异号同义 {len(cross)} / 同号镜像 {len(same)}\n"
-    )
-    L.append(
-        f"> **规则**：L1 每日需≥{MIN_DAILY_L1} 组有效配对，并至少有"
-        f"{MIN_INFORMATIVE_DAILY_L1} 组信息配对；双方同时为 0 或同时缺失不计命中率，"
-        f"一侧为 0、另一侧非 0 按失配计。信息配对命中率≥{HIT_RATE_L1_RATIO:.0%}，"
-        f"且覆盖至少 {MULTI_DAY_MIN} 个独立交易日/自然事件日；同一来源族不作为跨源证据；"
-        "盘中快照不计入 L1。JSON `daily_sample_counts` 与 `daily_informative_sample_counts`"
-        "分别保留每日有效配对数和 L1 信息配对数。"
-        "（详见 `COLLISION_RULES.md`）。本引擎只发现、不写字典；"
-        "新定案经 field_dict.md 订正后由 sanctioned 管线 ingest。\n"
-    )
-    L.append("---\n")
-    L.append(f"## 一、L1 / L1-U 新候选 — 异号同义（跨编号，高价值）({len(cross)})\n")
-    if cross:
-        L.append(
-            "| 左字段(unverified) | 右字段 | 等级 | 命中率 | 天数 | 样本 | 信息样本 | 比值 | hub | registry |"
-        )
-        L.append("|:--|:--|:--|--:|--:|--:|--:|--:|:--|:--|")
-        for p in cross:
-            L.append(_l1_row(p))
-    else:
-        L.append("_本轮无异号同义候选。_\n")
-    L.append(f"\n## 二、L1 / L1-U 新候选 — 同号镜像（同编号，低优先级）({len(same)})\n")
-    if same:
-        L.append(
-            "| 左字段 | 右字段 | 等级 | 命中率 | 天数 | 样本 | 信息样本 | 比值 | hub | registry |"
-        )
-        L.append("|:--|:--|:--|--:|--:|--:|--:|--:|:--|:--|")
-        for p in same:
-            L.append(_l1_row(p))
-    else:
-        L.append("_本轮无同号镜像候选。_\n")
-    L.append(f"\n## 三、已登记映射的本窗口复验（{len(revalidations)}）\n")
-    L.append(
-        "_这些关系已在主注册表登记，只用于观察当前样本是否仍支持既有映射；"
-        "它们不是新的未知字段候选，也不能再次提交为新定案。_\n"
-    )
-    if revalidations:
-        L.append(
-            "| 左字段 | 右字段 | 等级 | 命中率 | 天数 | 样本 | 信息样本 | 比值 | hub | registry |"
-        )
-        L.append("|:--|:--|:--|--:|--:|--:|--:|--:|:--|:--|")
-        for pair in revalidations:
-            L.append(_l1_row(pair))
-    else:
-        L.append("_本轮没有已登记关系进入复验窗口。_\n")
-    L.append("\n## 四、L4 存疑候选（{0}）\n".format(len(l4)))
-    if l4:
-        L.append("| 左字段 | 右字段 | 命中率 | 天数 | 样本 |")
-        L.append("|:--|:--|--:|--:|--:|")
-        for p in l4[:60]:
-            L.append(
-                f"| `{p['left']}` | `{p['right']}` | {p['overall_hit']:.2%} | "
-                f"{p['n_days']} | {p['n_pairs']} |"
-            )
-        if len(l4) > 60:
-            L.append(f"\n_（仅显示前 60 / 共 {len(l4)}）_")
-    else:
-        L.append("_本轮无 L4 候选。_\n")
-    L.append("\n## 五、已证伪护栏命中（被拦截的伪结论候选）（{0}）\n".format(len(guardrail_hits)))
-    if guardrail_hits:
-        L.append("| 左字段 | 右字段 | 命中护栏ID | 伪主张 |")
-        L.append("|:--|:--|:--|:--|")
-        for h in guardrail_hits:
-            L.append(f"| `{h['left']}` | `{h['right']}` | {h['id']} | {h['false_claim']} |")
-        L.append("\n_以上候选因命中 REFUTED_CONCLUSIONS（数值实证推翻）已被自动判伪，未进入 L1。_")
-    else:
-        L.append("_本轮无护栏命中（未产出与已证伪结论冲突的候选）。_\n")
-    method_candidates = method_candidates or []
-    L.append(f"\n## 六、主动方法候选（不直接定案）（{len(method_candidates)}）\n")
-    L.append(
-        "_候选可能来自稳健相关、仿射公式、逐股时间序列或字段标签线索；"
-        "每项保留样本日期和来源，仍需人工复核并以独立证据终判。_\n"
-    )
-    if method_candidates:
-        L.append("| 左字段 | 右字段 | 方法 | 样本 | 日期 | 来源 | 证据摘要 |")
-        L.append("|:--|:--|:--|--:|:--|:--|:--|")
-        for candidate in method_candidates[:100]:
-            method_names = ", ".join(method["method"] for method in candidate["methods"])
-            dates = ", ".join(candidate["sample_dates"][:6])
-            sources = ", ".join(candidate["evidence_sources"])
-            evidence = candidate["methods"][0]
-            if evidence["method"] == "robust_correlation":
-                summary = (
-                    f"Pearson={evidence['pearson']}, Spearman={evidence['spearman']}, "
-                    f"LOO稳号={evidence['leave_one_out_sign_stable']}"
-                )
-            elif evidence["method"] == "affine_formula":
-                summary = evidence["formula"]
-            elif evidence["method"] == "per_stock_time_series":
-                summary = (
-                    f"逐股相关={evidence['median_abs_pearson']}, "
-                    f"方向一致={evidence['sign_consistency']}"
-                )
-            else:
-                summary = ", ".join(evidence.get("shared_tokens", [])) or "标签线索"
-            L.append(
-                f"| `{candidate['left']}` | `{candidate['right']}` | {method_names} | "
-                f"{candidate['sample_count']} | {dates} | {sources} | {summary} |"
-            )
-        if len(method_candidates) > 100:
-            L.append(f"\n_仅显示前 100 / 共 {len(method_candidates)} 条。_\n")
-    else:
-        L.append("_本轮无达到门槛的主动方法候选。_\n")
-
-    diagnostics = list(dict.fromkeys(diagnostics or []))
-    L.append(f"\n## 七、日期与数据质量告警（{len(diagnostics)}）\n")
-    if diagnostics:
-        for message in diagnostics[:100]:
-            L.append(f"- {message}")
-        if len(diagnostics) > 100:
-            L.append(f"- 另有 {len(diagnostics) - 100} 条告警，详见同名 JSON 报告。")
-    else:
-        L.append("_无日期或数据质量告警。_")
-    L.append("\n---\n")
-    L.append("> 数据来源：通达信 / 项目字段对撞体系。以上为方法论梳理，不构成投资建议。\n")
-    return "\n".join(L)
 
 
 def main():

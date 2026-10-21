@@ -112,7 +112,19 @@ from scripts.context_policy import (
     CONTEXT_REQUIRED_PATHS,
 )
 
-from scripts.collision_dates import EVENT_SOURCES
+from scripts.capture_catalog import (
+    BAIDU_PENDING_FIELD_CODES,
+    EM_FULL_FIELDS,
+    EVENT_ONLY_CAPTURE_SOURCES,
+    FULL_POOL_STOCK_SOURCES,
+    NON_RAW_SOURCE_STATUS,
+    SINA_CAPTURED_FIELD_CODES,
+    SINA_PAUSED_OPTION_FIELDS,
+    SINA_REQUIRED_FLOW_FIELDS,
+    SINA_UNRESOLVED_FIELD_CODES,
+    SOURCE_REQUIRED_PATHS,
+    SOURCE_SCHEME,
+)
 
 from stock_common.sc_utils import em_secid_prefix  # V17.0 S3: 统一 secid 前缀
 from core.zhb_client import (
@@ -120,116 +132,31 @@ from core.zhb_client import (
     _lookup_name_persist,
 )  # V17.4.10 修复: 供模块级 _resolve_zhb_name 使用(原仅 collect_zhb 局部导入 → NameError)
 
+from scripts.capture_diagnostics import (
+    _apply_zhb_freshness,
+    _assess_zhb_freshness,
+    _capture_error_diagnostic,
+    _classify_capture_error,
+    _has_error_marker,
+    _has_root_error_marker,
+    _is_error_marker_key,
+    _path_exists,
+    _source_as_of_date,
+    _source_expected_codes,
+    _source_required_paths,
+    assess_result,
+)
+
+from scripts import capture_archive as CAPA
+from scripts.capture_archive import (
+    _has_complete_snapshot,
+    _preserve_context_paths,
+    _retain_current_zhb_snapshot,
+)
+
 POOL_PATH = os.path.join(_ROOT, "docs", "field_verification", "pool.json")
 OUT_BASE = os.path.join(_ROOT, "docs", "field_verification")
 
-# V17.1.x: 东财 stock/get 全字段(与主字典登记口径对齐 f1-f250, 保证采集不遗漏任何字段)。
-# 统一供 push2 / ulist239 / em_fund_flow 等东财 f 编号端点复用;
-# 主字典 push2/ulist 最高登记到 f250, 故 range(1,251) 即全量。新增 f 编号时只需改此处。
-EM_FULL_FIELDS = ",".join(f"f{i}" for i in range(1, 251))
-
-# A 方案(V17.2.5, 第九轮后落地): 字段体系(scheme)血缘标注。
-# 东方财富存在两套 f 编号体系, 同号≠同义(铁证 ulist.f62 == push2.f137 主力净):
-#   em.stock_get : push2 / em_fund_flow 走 stock/get 端点, 同一套 f 编号
-#                  (f62=主力净, f164=pe_ttm)。AxData 是本地 ZHB 短线指标, 独立标记。
-#   em.ulist_np  : ulist239 走 ulist.np 端点, 独立 f 编号, 与 stock/get 不同号。
-# 其余运行源为命名/数组体系(zhb/tdx/tencent/sina/fuyao…), 与任何 f 编号天然不可按号对应。
-# 标注写入每个 raw_{source}.json 顶层 scheme 键 + meta.json(schemes 映射), 供对撞工具
-# 与字典 lint 做血缘校验, 从数据层面固化「同号即同义」陷阱的硬提示。
-SOURCE_SCHEME = {
-    "push2": "em.stock_get",
-    "em_fund_flow": "em.stock_get",  # 同样走 push2delay stock/get, 与 push2 同编号族
-    "axdata": "axdata.shortline",  # collect_axdata 读取本地 ZHB/AxData 短线指标, 非 Eastmoney
-    "kpl": "kpl.limit_up_detail",  # KPL 个股明细独立落盘，保留接口字段路径和来源日期
-    "kph": "kph.limit_up_history",  # AxData 传输层访问开盘红历史涨停明细
-    "ulist239": "em.ulist_np",  # 独立 f 编号体系, 与 stock/get 不同号
-    "zhb": "zhb",
-    "tdx": "tdx",
-    "eltdx": "eltdx",  # V17.2.25 补登: eltdx 7709/7615 Rust 客户端, 实时连板/短线指标源; 此前漏登记致 scheme=unknown 被 collide 跳过
-    "tencent": "tencent.qt",
-    "sina": "sina.hq",
-    "sina_extended": "sina.extended",
-    "fuyao": "fuyao",
-    "ftshare": "ftshare",
-    "ftshare_rest": "ftshare.rest.a_share_quote",
-    "em_kline_f61": "em.kline",
-    "datacenter": "em.datacenter",
-    "push2ex": "em.push2ex",
-    "em_hot": "em.hot",
-    "cls": "cls",
-    "cninfo": "cninfo",
-    "reports": "reports",
-    "market_sources": "market.mixed",
-    "tdx_f10": "tdx.f10",
-    "tdx_f10_more": "tdx.f10",
-    # 百度 K 线仅在 --only baidu 时做单次限量验证；默认不触发未经确认的网络请求。
-    "baidu": "baidu.kline_probe",
-    "clist": "em.clist",  # 东财-clist(板块排名/板块资金流, §12.8.6); V17.2.13 真实 producer 已接入
-    "slist": "em.slist",  # 东财-slist(个股所属板块/概念归属, §12.8.5); V17.2.13 真实 producer(须 secid, 裸 spt=3→rc:102 已订正)
-    "exchange": "exchange.official",  # 沪深交易所官方(§12.8.17); V17.2.14 真实 producer 已接入(直连 szse/sse 龙虎榜端点)
-    # V17.4.0: 事件驱动/可转债/宏观层采集(吸收上游 3.9.0 §11/§14/§15) — 复用 em.datacenter scheme 供 collide 读取;
-    #          常量 _EM_REPORTS 标 verified=False, 本采集仅作真伪验证占位(治理铁律: 推断走候选、不越级定案)。
-    "event_dc": "em.datacenter",
-    "macro_dc": "em.datacenter",
-    # V17.4.1: 吸收层 5 模块(新源+新字段, 经上游权威仓库对撞校正) — 各标独立 scheme 供 collide 读取
-    "research_sina": "sina.research",  # 新浪研报(研报第二来源, §2.4)
-    "etf": "sse/szse.etf_shares",  # ETF 份额(万份, §4.7)
-    "news_wscn_cctv": "cctv.news",  # 央视新闻联播(§5.5; WSCN 宏观日历已在 macro_dc)
-    "sse_e_interaction": "sse.e_interaction",  # 上证e互动(§10.3)
-    "st_list": "em.clist",  # ST/*ST 名单(§6.8, 风险警示板过滤)
-}
-
-# 逐股采集器的预期覆盖范围。明确抽样的来源只检查实际计划采集的代码；
-# 市场级来源不伪造股票覆盖要求。
-FULL_POOL_STOCK_SOURCES = {
-    "zhb",
-    "tdx",
-    "eltdx",
-    "tencent",
-    "push2",
-    "sina",
-    "sina_extended",
-    "baidu",
-    "axdata",
-    "tdx_f10",
-    "fuyao",
-    "em_kline_f61",
-    "em_fund_flow",
-    "ulist239",
-    "slist",
-    "datacenter",
-    "event_dc",
-    "tdx_f10_more",
-    "cninfo",
-    "reports",
-    "ftshare_rest",
-}
-SOURCE_REQUIRED_PATHS: Dict[str, List[tuple]] = {
-    "market_sources": [
-        ("cls_market_emotion",),
-        ("kph_limit_ladder",),
-        ("stock_changes_8201",),
-        ("kpl_sentiment",),
-        ("kpl_up_down",),
-        ("kpl_plate_strength",),
-        ("kpl_broken_ratio",),
-        ("plate_rotation_matrix",),
-        ("plate_rotation_top",),
-    ],
-    "kpl": [("stocks",)],
-    "kph": [("stocks",)],
-    "clist": [("by_type", "industry"), ("by_type", "concept"), ("by_type", "area")],
-    "push2ex": [("limit_up_pool",), ("limit_down_pool",), ("limit_broken_pool",)],
-    "em_hot": [("hot_rank",)],
-    "cls": [("telegraph",)],
-    "etf": [("etf_sh",), ("etf_sz",)],
-    "news_wscn_cctv": [("cctv_xwlb",)],
-    "sina_extended": [("stocks",)],
-    "ftshare_rest": [("stocks",)],
-}
-# No field-status check is allowed to remove a source collector. These states
-# describe endpoint lifecycle only; verified fields continue to be captured.
-NON_RAW_SOURCE_STATUS = {"baidu": "pending_validation"}
 
 # 模块文档未改动处见上方 docstring; 输出文件新增 scheme 标注(见 main)。
 
@@ -252,9 +179,6 @@ def load_pool() -> List[Dict[str, Any]]:
 def _last_trading_day_str() -> str:
     """返回最近已收盘交易日 YYYYMMDD(涨停池按交易日快照)。"""
     return _last_completed_trading_day().strftime("%Y%m%d")
-
-
-EVENT_ONLY_CAPTURE_SOURCES = EVENT_SOURCES
 
 
 def _validate_capture_data_date(value: str, only_sources=None, session_checker=None):
@@ -1236,39 +1160,6 @@ def collect_sina(pool: list) -> dict:
         except Exception as e:
             out["stocks"][c] = {"__error__": str(e)[:200]}
     return out
-
-
-SINA_PAUSED_OPTION_FIELDS = (
-    "ask",
-    "ask_vol",
-    "bid",
-    "bid_vol",
-    "delta",
-    "gamma",
-    "iv",
-    "last",
-    "limit_down",
-    "limit_up",
-    "open",
-    "open_interest",
-    "prev_close",
-    "strike",
-    "theory",
-    "theta",
-    "vega",
-)
-SINA_CAPTURED_FIELD_CODES = (
-    "item_tongbi",
-    "item_value",
-    "netamount",
-    "opendate",
-    "report_type",
-    "trade",
-    "turnover",
-)
-SINA_REQUIRED_FLOW_FIELDS = ("opendate", "trade", "netamount", "turnover")
-SINA_UNRESOLVED_FIELD_CODES = ("close", "date", "net_amount")
-BAIDU_PENDING_FIELD_CODES = ("ma5avgprice", "ma10avgprice", "ma20avgprice")
 
 
 def collect_sina_extended(pool: list) -> dict:
@@ -3330,662 +3221,24 @@ def dry_run(pool: list) -> None:
     print(f"  push2   : {'OK' if r is not None else 'FAIL'}")
 
 
-def _is_error_marker_key(key: Any) -> bool:
-    text = str(key)
-    return (
-        text == "error"
-        or text.endswith("_error")
-        or (text.startswith("__error_") and text.endswith("__"))
-    )
-
-
-def _has_error_marker(value: Any) -> bool:
-    if isinstance(value, dict):
-        if any(
-            key == "__error__" or (_is_error_marker_key(key) and bool(marker))
-            for key, marker in value.items()
-        ):
-            return True
-        return any(_has_error_marker(child) for child in value.values())
-    if isinstance(value, list):
-        return any(_has_error_marker(child) for child in value)
-    return False
-
-
-def _has_root_error_marker(value: Any) -> bool:
-    return isinstance(value, dict) and any(
-        key == "__error__" or (_is_error_marker_key(key) and bool(marker))
-        for key, marker in value.items()
-    )
-
-
-def _source_expected_codes(source: str, pool: List[Dict[str, Any]]) -> Optional[List[str]]:
-    if source in FULL_POOL_STOCK_SOURCES:
-        return [str(item["code"]) for item in pool if item.get("code")]
-    if source == "research_sina":
-        return [str(item["code"]) for item in pool[:5] if item.get("code")]
-    if source == "sse_e_interaction":
-        return [
-            str(item["code"])
-            for item in pool[:3]
-            if item.get("code") and str(item["code"]).startswith(("60", "68", "900"))
-        ]
-    return None
-
-
-def _path_exists(data: Any, path: tuple) -> bool:
-    current = data
-    for key in path:
-        if not isinstance(current, dict) or key not in current:
-            return False
-        current = current[key]
-    return current is not None
-
-
-def _source_as_of_date(source: str, data: Any) -> Optional[str]:
-    """Return only an explicit source date; never substitute the folder target date."""
-    if not isinstance(data, dict):
-        return None
-    keys = (
-        "zhb_date",
-        "as_of_date",
-        "asof_date",
-        "data_date",
-        "trade_date",
-        "tradeDate",
-        "probe_trading_day",
-    )
-    for key in keys:
-        value = data.get(key)
-        if isinstance(value, (str, date, datetime)) and str(value).strip():
-            return value.strftime("%Y-%m-%d") if isinstance(value, (date, datetime)) else str(value)
-    market = data.get("market")
-    if isinstance(market, dict):
-        for key in keys:
-            value = market.get(key)
-            if isinstance(value, (str, date, datetime)) and str(value).strip():
-                return (
-                    value.strftime("%Y-%m-%d")
-                    if isinstance(value, (date, datetime))
-                    else str(value)
-                )
-    return None
-
-
-def _assess_zhb_freshness(data: Any, target_date: str) -> Dict[str, Any]:
-    """Compare a ZHB package date with the latest market date on/before the target day."""
-    actual_raw = _source_as_of_date("zhb", data)
-    actual_day = None
-    if actual_raw:
-        for date_format in ("%Y%m%d", "%Y-%m-%d", "%Y-%m-%d %H:%M:%S"):
-            try:
-                actual_day = datetime.strptime(actual_raw, date_format).date()
-                break
-            except ValueError:
-                continue
-
-    try:
-        target_day = datetime.strptime(str(target_date), "%Y%m%d").date()
-        from stock_common.stock_calendar import latest_market_data_date
-
-        expected_day = latest_market_data_date(target_day)
-    except Exception as exc:
-        return {
-            "status": "unverified",
-            "expected_as_of_date": None,
-            "actual_as_of_date": actual_day.strftime("%Y%m%d") if actual_day else actual_raw,
-            "matches_expected_date": False,
-            "reason": f"无法校验 ZHB 来源日期: {type(exc).__name__}: {str(exc)[:160]}",
-        }
-
-    expected = expected_day.strftime("%Y%m%d")
-    actual = actual_day.strftime("%Y%m%d") if actual_day else None
-    if actual_day is None:
-        status = "unknown"
-        reason = f"ZHB 未提供可识别的数据日期；目标交易日为 {expected}"
-    elif actual_day < expected_day:
-        status = "stale"
-        reason = f"ZHB 数据日期 {actual} 落后目标交易日 {expected}；数据已保留但不视为最新"
-    elif actual_day > expected_day:
-        status = "future"
-        reason = f"ZHB 数据日期 {actual} 晚于目标交易日 {expected}；该样本不能与目标日对齐"
-    else:
-        status = "current"
-        reason = None
-    return {
-        "status": status,
-        "expected_as_of_date": expected,
-        "actual_as_of_date": actual,
-        "matches_expected_date": status == "current",
-        "reason": reason,
-    }
-
-
-def _apply_zhb_freshness(
-    ok: bool, info: Dict[str, Any], data: Any, target_date: str
-) -> tuple[bool, Dict[str, Any]]:
-    """Keep cached ZHB rows, but prevent a date-mismatched package from reporting ok."""
-    result = dict(info)
-    freshness = _assess_zhb_freshness(data, target_date)
-    result["freshness"] = freshness
-    if freshness["status"] != "current":
-        result["freshness_issue"] = freshness["reason"]
-        if result.get("status") == "ok":
-            result["status"] = "partial"
-        ok = False
-    return ok, result
-
-
-def _retain_current_zhb_snapshot(
-    data: Any, path: str, target_date: str
-) -> tuple[Any, bool, Optional[Dict[str, Any]]]:
-    """Prevent a non-current or older refresh from replacing an existing ZHB snapshot."""
-    attempted_freshness = _assess_zhb_freshness(data, target_date)
-    if attempted_freshness["status"] == "current" or not os.path.exists(path):
-        return data, True, None
-
-    try:
-        with open(path, "r", encoding="utf-8") as f:
-            existing = json.load(f)
-    except (OSError, UnicodeDecodeError, json.JSONDecodeError) as exc:
-        return (
-            data,
-            False,
-            {
-                "status": "existing_snapshot_unreadable",
-                "attempted_freshness": attempted_freshness,
-                "reason": (
-                    f"现有 ZHB 快照无法安全比较，已保留原文件: "
-                    f"{type(exc).__name__}: {str(exc)[:120]}"
-                ),
-            },
-        )
-
-    if not isinstance(existing, dict):
-        return (
-            data,
-            False,
-            {
-                "status": "existing_snapshot_unreadable",
-                "attempted_freshness": attempted_freshness,
-                "reason": "现有 ZHB 快照不是对象，已保留原文件",
-            },
-        )
-
-    existing_freshness = _assess_zhb_freshness(existing, target_date)
-    if existing_freshness["status"] == "current":
-        return (
-            existing,
-            False,
-            {
-                "status": "noncurrent_refresh_rejected",
-                "attempted_freshness": attempted_freshness,
-                "retained_as_of_date": existing_freshness["actual_as_of_date"],
-                "reason": attempted_freshness["reason"],
-            },
-        )
-    if attempted_freshness["status"] in {"unknown", "unverified", "future"}:
-        refresh_status = (
-            "future_refresh_rejected"
-            if attempted_freshness["status"] == "future"
-            else "freshness_unverified"
-        )
-        return (
-            existing,
-            False,
-            {
-                "status": refresh_status,
-                "attempted_freshness": attempted_freshness,
-                "retained_as_of_date": existing_freshness["actual_as_of_date"],
-                "reason": (f"{attempted_freshness['reason']}；为避免覆盖现有证据，已保留原文件"),
-            },
-        )
-    if existing_freshness["status"] in {"unknown", "unverified"}:
-        return (
-            existing,
-            False,
-            {
-                "status": "existing_freshness_unverified",
-                "attempted_freshness": attempted_freshness,
-                "retained_as_of_date": existing_freshness["actual_as_of_date"],
-                "reason": (f"{existing_freshness['reason']}；为避免覆盖现有证据，已保留原文件"),
-            },
-        )
-    if (
-        existing_freshness["status"] == "stale"
-        and existing_freshness["actual_as_of_date"]
-        and attempted_freshness["actual_as_of_date"]
-        and existing_freshness["actual_as_of_date"] > attempted_freshness["actual_as_of_date"]
-    ):
-        return (
-            existing,
-            False,
-            {
-                "status": "older_refresh_rejected",
-                "attempted_freshness": attempted_freshness,
-                "retained_as_of_date": existing_freshness["actual_as_of_date"],
-                "reason": (
-                    f"重采数据日 {attempted_freshness['actual_as_of_date']} "
-                    f"早于现有数据日 {existing_freshness['actual_as_of_date']}，已保留原文件"
-                ),
-            },
-        )
-    return data, True, None
-
-
-def _classify_capture_error(error: Any) -> tuple[str, str]:
-    """Classify an error marker without treating a local skip as a remote failure.
-
-    The classification is diagnostic only. The original marker remains in the raw
-    archive, and ambiguous text is deliberately reported as unknown.
-    """
-    text = str(error or "")
-    normalized = text.lower()
-    attempts_match = re.search(r"\battempts?\s*[=:]\s*(\d+)", normalized)
-    attempts = int(attempts_match.group(1)) if attempts_match else None
-    suppressed = any(
-        marker in normalized
-        for marker in (
-            "ip_banned",
-            "circuit_open",
-            "suppressed_after_failures",
-            "blocked_until_manual_review",
-            "封禁跳过",
-            "已封禁",
-            "熔断跳过",
-        )
-    )
-    if suppressed and (attempts is None or attempts == 0):
-        return "suppressed_before_request", "not_attempted"
-
-    status_match = re.search(r"(?:http\s*|status\s*[=:]?\s*|http_)(\d{3})", normalized)
-    status_code = int(status_match.group(1)) if status_match else None
-    if status_code in (403, 429):
-        return "rate_limited_response", "client_attempted"
-    if status_code is not None and status_code >= 400:
-        return "http_response_failure", "client_attempted"
-
-    if any(
-        marker in normalized
-        for marker in (
-            "timeout",
-            "connectionerror",
-            "connection_error",
-            "remote disconnected",
-            "connection reset",
-            "proxyerror",
-            "dns",
-            "socket",
-        )
-    ):
-        return "transport_failure", "client_attempted"
-    if any(
-        marker in normalized
-        for marker in (
-            "parse failed",
-            "invalid json",
-            "jsondecodeerror",
-            "empty payload",
-            "missing required",
-            "missing contract",
-            "unexpected payload",
-            "response parse failed",
-        )
-    ):
-        return "payload_or_contract_failure", "client_attempted"
-    if attempts is not None and attempts > 0:
-        return "request_failure", "client_attempted"
-    return "other_failure", "unknown"
-
-
-def assess_result(
-    data: Any,
-    expected_symbols: Optional[List[str]] = None,
-    required_paths: Optional[List[tuple]] = None,
-) -> tuple:
-    """Assess errors, deferred work, source contract keys and requested stock coverage."""
-    n_err = 0
-    sample = None
-    n_skipped = 0
-    n_deferred = 0
-    skip_sample = None
-    error_categories: Dict[str, int] = {}
-    request_attempt_states: Dict[str, int] = {}
-
-    def record_error(error: Any) -> None:
-        nonlocal n_err, sample
-        n_err += 1
-        text = str(error)
-        if sample is None:
-            sample = text[:160]
-        category, attempt_state = _classify_capture_error(error)
-        error_categories[category] = error_categories.get(category, 0) + 1
-        request_attempt_states[attempt_state] = request_attempt_states.get(attempt_state, 0) + 1
-
-    def walk(value: Any) -> None:
-        nonlocal n_err, sample, n_skipped, n_deferred, skip_sample
-        if isinstance(value, dict):
-            if "__error__" in value:
-                record_error(value["__error__"])
-                return
-            if "__skipped__" in value:
-                n_skipped += 1
-                reason = str(value["__skipped__"])
-                if reason.lower().startswith("deferred:"):
-                    n_deferred += 1
-                if skip_sample is None:
-                    skip_sample = reason[:160]
-                return
-            for key, child in value.items():
-                if _is_error_marker_key(key) and child:
-                    record_error(child)
-                else:
-                    walk(child)
-        elif isinstance(value, list):
-            for child in value:
-                walk(child)
-
-    walk(data)
-
-    missing_symbols: List[str] = []
-    n_total: Optional[int] = None
-    n_dead = 0
-    if expected_symbols is not None:
-        expected = {str(code) for code in expected_symbols}
-        stocks = data.get("stocks") if isinstance(data, dict) else None
-        received = set(map(str, stocks)) if isinstance(stocks, dict) else set()
-        missing_symbols = sorted(expected - received)
-        n_total = len(expected)
-        if isinstance(stocks, dict):
-            n_dead = sum(1 for record in stocks.values() if _has_error_marker(record))
-    elif isinstance(data, dict):
-        for key in ("stocks", "records", "items"):
-            container = data.get(key)
-            if isinstance(container, (dict, list)):
-                n_total = len(container)
-                items = container.values() if isinstance(container, dict) else container
-                n_dead = sum(1 for item in items if _has_error_marker(item))
-                break
-
-    missing_paths = [path for path in (required_paths or []) if not _path_exists(data, path)]
-    n_missing = len(missing_symbols) + len(missing_paths)
-    complete = n_err == 0 and n_deferred == 0 and n_missing == 0
-    if complete:
-        status = "ok"
-        ok = True
-    else:
-        root_error = _has_root_error_marker(data)
-        no_stock_response = (
-            expected_symbols is not None and n_total and len(missing_symbols) == n_total
-        )
-        if (
-            root_error
-            or no_stock_response
-            or (n_total is not None and n_total > 0 and n_dead >= n_total)
-        ):
-            status = "failed"
-        else:
-            status = "partial"
-        ok = False
-
-    info: Dict[str, Any] = {"status": status, "n_error": n_err}
-    if n_skipped:
-        info["n_skipped"] = n_skipped
-        info["skip_sample"] = skip_sample
-    if n_deferred:
-        info["n_deferred"] = n_deferred
-    if n_total is not None:
-        info["n_total"] = n_total
-        info["n_dead"] = n_dead
-    if expected_symbols is not None:
-        info["n_expected"] = n_total
-        info["n_received"] = n_total - len(missing_symbols) if n_total is not None else 0
-        info["n_missing_stocks"] = len(missing_symbols)
-        if missing_symbols:
-            info["missing_stocks_sample"] = missing_symbols[:10]
-    if missing_paths:
-        info["n_missing_contracts"] = len(missing_paths)
-        info["missing_contracts"] = [".".join(map(str, path)) for path in missing_paths]
-    if sample:
-        info["error_sample"] = sample
-    if error_categories:
-        info["error_diagnostics"] = {
-            "classification_basis": "error_marker_text",
-            "request_attempt_states": request_attempt_states,
-            "categories": error_categories,
-        }
-    return ok, info
-
-
-def _source_required_paths(source: str, include_context: bool = False) -> Optional[List[tuple]]:
-    required_paths = list(SOURCE_REQUIRED_PATHS.get(source, []))
-    if include_context:
-        required_paths.extend(CONTEXT_REQUIRED_PATHS.get(source, []))
-    return required_paths or None
-
-
-def _preserve_context_paths(
-    source: str, data: Dict[str, Any], out_dir: str
-) -> tuple[List[str], List[str]]:
-    """Carry forward opt-in context subtrees when refreshing a default snapshot."""
-    paths: List[tuple] = list(CONTEXT_RAW_PATHS.get(source, ()))
-    raw_path = os.path.join(out_dir, f"raw_{source}.json")
-    if not paths or not os.path.isfile(raw_path):
-        return [], []
-    try:
-        with open(raw_path, encoding="utf-8") as stream:
-            previous = json.load(stream)
-    except (OSError, json.JSONDecodeError) as exc:
-        return [], [f"{source}: cannot preserve prior context from {raw_path}: {exc}"]
-    if not isinstance(previous, dict):
-        return [], [f"{source}: cannot preserve prior context; previous raw root is not an object"]
-
-    preserved: List[str] = []
-    warnings: List[str] = []
-    for path in paths:
-        old_node: Any = previous
-        new_node: Any = data
-        found = True
-        for part in path[:-1]:
-            if not isinstance(old_node, dict) or not isinstance(old_node.get(part), dict):
-                found = False
-                break
-            old_node = old_node[part]
-            if not isinstance(new_node, dict):
-                found = False
-                break
-            if not isinstance(new_node.get(part), dict):
-                new_node[part] = {}
-            new_node = new_node[part]
-        if not found or not isinstance(old_node, dict) or path[-1] not in old_node:
-            continue
-        if not isinstance(new_node, dict):
-            warnings.append(f"{source}: cannot preserve context path {'.'.join(path)}")
-            continue
-        if path[-1] not in new_node:
-            new_node[path[-1]] = old_node[path[-1]]
-            preserved.append(".".join(path))
-    return preserved, warnings
-
-
-def _has_complete_snapshot(
-    collectors: Dict[str, Callable[..., Dict[str, Any]]],
-    meta: dict,
-    out_dir: str,
-    pool: List[Dict[str, Any]],
-    include_context: bool = False,
-) -> bool:
-    """Only skip when each requested producer has a complete, assessable snapshot."""
-    source_meta = meta.get("sources") if isinstance(meta.get("sources"), dict) else {}
-    for source in collectors:
-        if source in CONTEXT_ONLY_SOURCES and not include_context:
-            continue
-        entry = source_meta.get(source) if isinstance(source_meta, dict) else None
-        if not isinstance(entry, dict):
-            return False
-        status = entry.get("status")
-        expected_non_raw_status = NON_RAW_SOURCE_STATUS.get(source)
-        if expected_non_raw_status:
-            if status != expected_non_raw_status:
-                return False
-            continue
-        if status in {"unwired", "deprecated"}:
-            continue
-        if entry.get("ok") is not True or status not in (None, "ok"):
-            return False
-        raw_path = os.path.join(out_dir, f"raw_{source}.json")
-        if not os.path.isfile(raw_path):
-            return False
-        try:
-            with open(raw_path, encoding="utf-8") as stream:
-                document = json.load(stream)
-        except (OSError, json.JSONDecodeError):
-            return False
-        ok, _ = assess_result(
-            document,
-            expected_symbols=_source_expected_codes(source, pool),
-            required_paths=_source_required_paths(source, include_context),
-        )
-        if not ok:
-            return False
-    return True
-
-
-def _refresh_closed_snapshot_validations(
-    *, out_dir: str, data_date: str, pool: List[Dict[str, Any]], snapshot_meta: Dict[str, Any]
-) -> None:
-    """Refresh daily evidence from a complete snapshot without recapturing sources."""
-    market_path = os.path.join(out_dir, "raw_market_sources.json")
-    market_data: Optional[Dict[str, Any]] = None
-    try:
-        with open(market_path, encoding="utf-8") as stream:
-            loaded_market_data = json.load(stream)
-        if isinstance(loaded_market_data, dict):
-            market_data = loaded_market_data
-    except (OSError, json.JSONDecodeError) as exc:
-        print(f"  ⚠ 已有市场源 raw 不可读取，跳过 Levistock 候选请求: {exc}", flush=True)
-
-    try:
-        try:
-            from axdata_daily_validation import run_axdata_daily_validation
-        except ModuleNotFoundError:
-            from scripts.axdata_daily_validation import run_axdata_daily_validation
-
-        snapshot_meta["axdata_validation"] = run_axdata_daily_validation(
-            data_date=data_date,
-            data_date_domain=snapshot_meta.get("data_date_domain", "trading"),
-            market_phase=snapshot_meta.get("market_phase", "unknown"),
-            latest_completed_trade_date=_last_trading_day_str(),
-            only="",
-            out_dir=out_dir,
-            pool=pool,
-            source_meta=snapshot_meta.get("sources", {}),
-        )
-    except Exception as exc:
-        snapshot_meta["axdata_validation"] = {
-            "status": "failed_open",
-            "error": str(exc)[:300],
-            "request_count": 0,
-        }
-        print(f"  ⚠ AxData 每日验证刷新失败: {exc}", flush=True)
-
-    if market_data is not None:
-        try:
-            try:
-                from levistock_daily_probe import run_levistock_daily_probe
-            except ModuleNotFoundError:
-                from scripts.levistock_daily_probe import run_levistock_daily_probe
-
-            probe = run_levistock_daily_probe(
-                out_dir=out_dir,
-                data_date=data_date,
-                latest_completed_trade_date=_last_trading_day_str(),
-                # This is a trading-date market source even when the full meta is mixed
-                # with natural-day news/announcement sources.
-                data_date_domain="trading",
-                market_phase=snapshot_meta.get("market_phase", "unknown"),
-                only=None,
-                market_data=market_data,
-                pool=pool,
-            )
-            snapshot_meta["levistock_daily_candidate"] = {
-                key: value for key, value in probe.items() if key != "payload"
-            }
-        except Exception as exc:
-            snapshot_meta["levistock_daily_candidate"] = {
-                "status": "failed_open",
-                "reason": f"probe_integration_error:{type(exc).__name__}",
-                "request_count": 0,
-            }
-            print(f"  ⚠ Levistock 每日候选刷新失败: {exc}", flush=True)
-
-    try:
-        try:
-            from levistock_daily_validation import run_levistock_daily_validation
-        except ModuleNotFoundError:
-            from scripts.levistock_daily_validation import run_levistock_daily_validation
-
-        snapshot_meta["levistock_validation"] = run_levistock_daily_validation(
-            out_dir=out_dir,
-            data_date=data_date,
-            latest_completed_trade_date=_last_trading_day_str(),
-            data_date_domain="trading",
-            market_phase=snapshot_meta.get("market_phase", "unknown"),
-            only=None,
-            source_meta=snapshot_meta.get("sources", {}),
-            candidate_probe_meta=snapshot_meta.get("levistock_daily_candidate"),
-        )
-    except Exception as exc:
-        snapshot_meta["levistock_validation"] = {
-            "status": "failed_open",
-            "error": str(exc)[:300],
-            "network_requests_added": 0,
-        }
-        print(f"  ⚠ Levistock 离线验证刷新失败: {exc}", flush=True)
-
-    try:
-        with open(os.path.join(out_dir, "meta.json"), "w", encoding="utf-8") as stream:
-            json.dump(snapshot_meta, stream, ensure_ascii=False, indent=1)
-    except OSError as exc:
-        print(f"  ⚠ 每日验证摘要未能更新到 meta.json: {exc}", flush=True)
-
-
-def _refresh_field_evidence_coverage(out_dir: str, snapshot_meta: dict) -> None:
-    """Refresh local unresolved-field coverage from archived raw snapshots only."""
-    try:
-        try:
-            from field_evidence_coverage import refresh_daily_coverage
-        except ModuleNotFoundError:
-            from scripts.field_evidence_coverage import refresh_daily_coverage
-
-        coverage = refresh_daily_coverage(out_dir, snapshot_meta, data_dir=OUT_BASE)
-        snapshot_meta["field_evidence_coverage"] = coverage
-        print(
-            "  字段证据覆盖: "
-            f"目标 {coverage.get('pending_source_fields', 0)} | "
-            f"有样本 {coverage.get('targets_observed', 0)} | "
-            f"精确来源日期覆盖≥3日 {coverage.get('targets_with_3_source_as_of_days', 0)} | "
-            f"文件 {coverage.get('file', coverage.get('status', 'unavailable'))}",
-            flush=True,
-        )
-    except Exception as exc:
-        snapshot_meta["field_evidence_coverage"] = {
-            "status": "failed_open",
-            "reason": f"{type(exc).__name__}: {exc}"[:300],
-        }
-        print(f"  ⚠ 字段证据覆盖刷新失败，不影响已采集 raw: {exc}", flush=True)
-
-    try:
-        with open(os.path.join(out_dir, "meta.json"), "w", encoding="utf-8") as stream:
-            json.dump(snapshot_meta, stream, ensure_ascii=False, indent=1)
-    except OSError as exc:
-        print(f"  ⚠ 字段证据覆盖摘要未能更新到 meta.json: {exc}", flush=True)
-
-
 def _startup_scope_label(selected_sources: list[str], include_context: bool) -> str:
     source_scope = f"--only {','.join(selected_sources)}" if selected_sources else "默认源集合"
     context_scope = "启用" if include_context else "跳过"
     return f"源范围: {source_scope} | 市场上下文: {context_scope}"
+
+
+def _refresh_closed_snapshot_validations(out_dir, data_date, pool, snapshot_meta):
+    return CAPA._refresh_closed_snapshot_validations(
+        out_dir=out_dir,
+        data_date=data_date,
+        pool=pool,
+        snapshot_meta=snapshot_meta,
+        latest_trading_day_str=_last_trading_day_str,
+    )
+
+
+def _refresh_field_evidence_coverage(out_dir, snapshot_meta):
+    return CAPA._refresh_field_evidence_coverage(out_dir, snapshot_meta, out_base=OUT_BASE)
 
 
 def build_collectors() -> Dict[str, Callable[..., Dict[str, Any]]]:

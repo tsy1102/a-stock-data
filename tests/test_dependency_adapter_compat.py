@@ -136,10 +136,15 @@ def test_public_kph_adapter_normalizes_and_validates_trade_date(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     calls: list[str] = []
+
+    def capture_kph_date(trade_date: str) -> list[dict[str, str]]:
+        calls.append(trade_date)
+        return [{"code": "600000"}]
+
     monkeypatch.setattr(
         _pools,
         "_get_kph_limit_ladder_for_date",
-        lambda trade_date: calls.append(trade_date) or [{"code": "600000"}],
+        capture_kph_date,
     )
 
     assert _pools.get_kph_limit_ladder("20261009") == [{"code": "600000"}]
@@ -462,6 +467,10 @@ def test_levistock_candidate_adapter_routes_and_rate_limits_each_candidate(
         events.append(("request", kwargs))
         return [{"sample": candidate_id}]
 
+    def provider_is_blocked(checked_family: str) -> bool:
+        events.append(("block_check", checked_family))
+        return False
+
     monkeypatch.setattr(
         importlib,
         "import_module",
@@ -474,7 +483,7 @@ def test_levistock_candidate_adapter_routes_and_rate_limits_each_candidate(
     monkeypatch.setattr(
         sc_network,
         "_levistock_provider_is_blocked",
-        lambda checked_family: events.append(("block_check", checked_family)) or False,
+        provider_is_blocked,
     )
     monkeypatch.setattr(
         sc_network,
@@ -508,10 +517,15 @@ def test_levistock_candidate_adapter_rejects_family_mismatch_before_request(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     calls: list[str] = []
+
+    def record_block_check(_family: str) -> bool:
+        calls.append("block_check")
+        return False
+
     monkeypatch.setattr(
         sc_network,
         "_levistock_provider_is_blocked",
-        lambda _family: calls.append("block_check") or False,
+        record_block_check,
     )
 
     with pytest.raises(ValueError, match="family mismatch"):

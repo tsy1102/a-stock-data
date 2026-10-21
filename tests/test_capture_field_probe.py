@@ -280,6 +280,61 @@ def test_assess_result_separates_pre_request_suppression_from_client_failures():
     }
 
 
+def test_assess_result_emits_structured_diagnostics_without_changing_legacy_counts():
+    rate_limit = (
+        "http_429 status=429 attempts=1 "
+        "https://push2.eastmoney.com/api/quote?token=private-value"
+    )
+    result = {
+        "stocks": {
+            "600000": {"quote_snapshot": {"__error__": rate_limit}},
+            "000001": {"quote_snapshot": {"__error__": rate_limit}},
+            "300001": {"details": {"error": "invalid json payload"}},
+        }
+    }
+
+    ok, info = capture_probe.assess_result(result, expected_symbols=["600000", "000001", "300001"])
+
+    assert ok is False
+    diagnostics = info["error_diagnostics"]
+    assert diagnostics["schema_version"] == 1
+    assert diagnostics["categories"] == {
+        "rate_limited_response": 2,
+        "payload_or_contract_failure": 1,
+    }
+    rate_record = next(
+        item for item in diagnostics["details"] if item["code"] == "rate_limited_response"
+    )
+    assert rate_record["count"] == 2
+    assert rate_record["phase"] == "request"
+    assert rate_record["request_attempt_state"] == "client_attempted"
+    assert rate_record["retryable_hint"] is False
+    assert rate_record["risk_family"] == "rate_limit"
+    assert rate_record["host"] == "push2.eastmoney.com"
+    assert rate_record["http_status"] == 429
+    assert "stocks.600000.quote_snapshot.__error__" in rate_record["paths"]
+    assert "private-value" not in rate_record["raw_error"]
+    assert "[query redacted]" in rate_record["raw_error"]
+    payload_record = next(
+        item for item in diagnostics["details"] if item["code"] == "payload_or_contract_failure"
+    )
+    assert payload_record["phase"] == "response_validation"
+    assert payload_record["risk_family"] == "payload_contract"
+    assert payload_record["retryable_hint"] is None
+    json.dumps(diagnostics)
+
+
+def test_assess_result_caps_structured_diagnostic_detail_groups():
+    errors = {f"code-{index:06d}": {"__error__": f"unclassified-{index}"} for index in range(25)}
+
+    _ok, info = capture_probe.assess_result({"stocks": errors})
+
+    diagnostics = info["error_diagnostics"]
+    assert len(diagnostics["details"]) == 20
+    assert diagnostics["omitted_detail_groups"] == 5
+    assert sum(item["count"] for item in diagnostics["details"]) == 20
+
+
 def test_assess_result_distinguishes_all_stock_failures_from_partial_failure():
     all_failed = {
         "stocks": {

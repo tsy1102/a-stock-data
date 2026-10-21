@@ -1,3 +1,4 @@
+import copy
 import math
 import json
 from io import StringIO
@@ -6,7 +7,7 @@ from datetime import date
 from importlib.util import module_from_spec, spec_from_file_location
 from pathlib import Path
 
-from scripts import collision_dates, collision_rules
+from scripts import collision_candidate_reviews, collision_dates, collision_rules
 
 _collide_path = Path(__file__).resolve().parents[1] / "scripts" / "collide.py"
 _collide_spec = spec_from_file_location("collide_marker_test_module", _collide_path)
@@ -1289,6 +1290,56 @@ def test_report_completeness_blocks_duplicate_candidate_pairs():
 
     assert completeness["status"] == "incomplete"
     assert completeness["method_candidate_inventory"]["duplicate_pair_count"] == 1
+
+
+def test_schema5_report_separates_machine_completeness_from_pending_human_review():
+    candidate = {
+        "left": "unknown.a",
+        "right": "anchor.a",
+        "sample_count": 12,
+        "sample_dates": ["T:20261020"],
+        "sample_codes": ["600000"],
+        "evidence_sources": ["source-a", "source-b"],
+        "methods": [{"method": "scale", "ratio": 1.0}],
+    }
+    report = {
+        "schema_version": 5,
+        "L1": [],
+        "L1-C": [],
+        "source_coverage": [],
+        "actionable_L1": [],
+        "mapped_pair_revalidations": [],
+        "L4": [],
+        "guardrail_hits": [],
+        "method_candidates": [copy.deepcopy(candidate)],
+        "method_candidate_count": 1,
+        "method_candidate_inventory": [candidate],
+        "method_candidate_frontier": [],
+        "candidate_triage": {
+            "summary": {"target_count": 1},
+            "targets": [{"left": "unknown.a", "candidate_count": 1}],
+        },
+        "formula_candidates": [],
+        "diagnostics": [],
+    }
+    review_summary = collision_candidate_reviews.annotate_report(
+        report, collision_candidate_reviews.empty_state()
+    )
+
+    completeness = collide.build_report_completeness(report)
+    markdown = collision_candidate_reviews.append_review_summary_report("# Report", review_summary)
+    markdown = collide.append_report_completeness_report(markdown, completeness)
+
+    assert completeness["status"] == "complete"
+    assert completeness["candidate_review"]["status"] == "complete"
+    assert review_summary["human_review"]["status"] == "pending"
+    assert review_summary["human_review"]["pending_count"] == 1
+    assert "已审 0，待处理 1" in markdown
+    assert "机器可读完整性：`complete`" in markdown
+    assert "状态 `pending`" in markdown
+
+    report["candidate_review"]["human_review"]["status"] = "complete"
+    assert collide.build_report_completeness(report)["status"] == "incomplete"
 
 
 def test_source_coverage_reports_contract_evidence_and_actual_pair_participation():

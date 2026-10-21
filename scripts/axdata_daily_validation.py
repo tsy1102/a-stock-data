@@ -18,6 +18,8 @@ import re
 import time
 from typing import Any, Optional
 
+from scripts.axdata_crosswalk_summary import read_summary
+
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 STATE_PATH = PROJECT_ROOT / ".tmp" / "axdata_daily_validation_state.json"
 _STATIC_QUEUE_CACHE: Optional[dict[str, Any]] = None
@@ -986,35 +988,26 @@ def _static_queue_summary() -> dict[str, Any]:
     global _STATIC_QUEUE_CACHE
     if _STATIC_QUEUE_CACHE is not None:
         return dict(_STATIC_QUEUE_CACHE)
-    path = PROJECT_ROOT / "docs" / "axdata_interface_crosswalk.json"
-    crosswalk = _read_json(path)
-    interfaces = crosswalk.get("interfaces") if crosswalk else None
-    if not isinstance(interfaces, list):
+    path = PROJECT_ROOT / "docs" / "axdata_interface_crosswalk_summary.json"
+    summary = read_summary(path)
+    if summary is None:
         return {"status": "unavailable", "reason": "AxData crosswalk missing or unreadable"}
-    field_count = 0
-    pending_evidence_count = 0
-    interface_statuses: dict[str, int] = {}
-    for interface in interfaces:
-        if not isinstance(interface, dict):
-            continue
-        relation = interface.get("static_reconciliation") or {}
-        status = relation.get("relation_status", "unknown")
-        interface_statuses[status] = interface_statuses.get(status, 0) + 1
-        fields = interface.get("fields")
-        if not isinstance(fields, list):
-            continue
-        field_count += len(fields)
-        pending_evidence_count += sum(
-            1
-            for field in fields
-            if (field.get("static_reconciliation") or {}).get("evidence_level") != "E3"
-        )
+    source_path = PROJECT_ROOT / "docs" / "axdata_interface_crosswalk.json"
+    try:
+        source_digest = hashlib.sha256(source_path.read_bytes()).hexdigest()
+    except OSError:
+        return {
+            "status": "unavailable",
+            "reason": "AxData canonical crosswalk missing or unreadable",
+        }
+    if source_digest != summary["source_sha256"]:
+        return {"status": "unavailable", "reason": "AxData crosswalk summary is stale"}
     _STATIC_QUEUE_CACHE = {
         "status": "ok",
-        "interface_count": len(interfaces),
-        "field_occurrence_count": field_count,
-        "field_occurrences_below_e3": pending_evidence_count,
-        "interface_relation_status_counts": interface_statuses,
+        "interface_count": summary["interface_count"],
+        "field_occurrence_count": summary["field_occurrence_count"],
+        "field_occurrences_below_e3": summary["field_occurrences_below_e3"],
+        "interface_relation_status_counts": summary["interface_relation_status_counts"],
         "active_probe_allowlist": [ACTIVE_INTERFACE],
         "other_candidates": "static review only until route, parameters, date basis, and request safety are approved",
     }

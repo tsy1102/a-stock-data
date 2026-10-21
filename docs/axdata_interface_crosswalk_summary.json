@@ -1,0 +1,17 @@
+{
+  "field_occurrence_count": 3343,
+  "field_occurrences_below_e3": 3343,
+  "generated_date": "2026-10-10",
+  "interface_count": 257,
+  "interface_relation_status_counts": {
+    "direct_call": 1,
+    "family_candidate_only": 88,
+    "no_project_route": 141,
+    "same_endpoint_candidate": 21,
+    "same_provider_different_endpoint": 5,
+    "stream_only": 1
+  },
+  "schema_version": 1,
+  "source_file": "axdata_interface_crosswalk.json",
+  "source_sha256": "99796631586ff6def8982570b05c611f99fa3c779442f0801a204e1cc523ee8d"
+}

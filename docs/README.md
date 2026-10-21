@@ -8,6 +8,7 @@
 |---|---|
 | 当前项目约束与阅读路径 | [PROJECT_CONTEXT.md](PROJECT_CONTEXT.md) |
 | 模块、数据路由与架构约束 | [architecture.md](architecture.md)、[ARCHITECTURE_THEORY.md](ARCHITECTURE_THEORY.md) |
+| 已批准并分阶段实施的架构整改方案 | [PROJECT_ARCHITECTURE_REFINEMENT_PLAN.md](PROJECT_ARCHITECTURE_REFINEMENT_PLAN.md) |
 | 字段治理入口 | [field_dict.md](field_dict.md) |
 | 待破解字段与状态冲突 | [unknown_fields.md](unknown_fields.md) |
 | 已验证字段的缺失规范名/含义 | [field_metadata_gaps.md](field_metadata_gaps.md) |
@@ -24,6 +25,7 @@
 
 - [`verify/`](verify/README.md)：按数据源整理的字段契约、样本和交叉核验资料。
 - [`field_verification/`](field_verification/README.md)：采集流程、破解方法和按日期归档的原始数据与分析报告。
+- [`field_verification/f118_ulist_source_semantics_plan.md`](field_verification/f118_ulist_source_semantics_plan.md)：ulist239 两条待确认路径的逐来源核验计划。
 - [`session_notes/`](session_notes/README.md)：按日期保存的会话决策和待办。
 - [`PROJECT_AUDIT_20261015.md`](PROJECT_AUDIT_20261015.md)：本轮全仓审计范围、修复结果、验证和保留事项。
 - `PROJECT_AUDIT_REMEDIATION_*.md`、日期命名的核查文档：历史阶段记录；判断当前状态时以代码和当次验证结果为准。
@@ -39,6 +41,7 @@
 | 核查来源独立性或上游实现 | `source_repository_map.md` → `field_verification/source_lineage.json` → 映射中的项目内证据 |
 | 修改报告脚本 | `script_data_dict.md` → 架构文档 → 相关代码和测试 |
 | 恢复项目上下文 | `PROJECT_CONTEXT.md` → 最新会话纪要；动态状态需现场核实 |
+| 提交前完整离线验收 | `scripts/run_offline_checks.ps1` → 核对 [`tests/README.md`](../tests/README.md) 中的实际结果 |
 
 ## 维护约定
 

@@ -301,18 +301,16 @@ python.exe scripts\verify_canonical_contract.py  # Tier 1: 属性、日期、来
 
 > 来源: ECC `verification-loop` skill 提炼,适配本仓库(纯 Python + PowerShell)。每次代码修改完成后、提交前运行。
 
-### 9.1 六阶段验证
+### 9.1 验证入口与局部回归
 
-| 阶段 | 命令(全部 PowerShell 语法) | 通过标准 |
+| 检查 | 命令(全部 PowerShell 语法) | 通过标准 |
 |---|---|---|
-| 1. 语法 | `python.exe -m py_compile <file>` | 无错误 |
-| 2. 类型 | `mypy <file>` | 无新增错误 |
-| 3. 格式 | `black --check <file>`(line-length=100) | 无格式差异 |
-| 4. 测试 | `.\scripts\run_tests.ps1 -Mode skip_real` | 全部通过 |
-| 5. 安全 | `Select-String -Pattern "sk-|api_key|password|token" <改动文件>`(或 Python 探针) | 无硬编码密钥 |
-| 6. Diff | `git.exe diff --stat` | 改动符合预期 |
+| 完整验收 | `.\scripts\run_offline_checks.ps1` | 语法、全项目 Mypy、Black API、AxData 摘要、架构闸门及离线测试全部通过 |
+| 局部回归 | `.\scripts\run_tests.ps1 -Mode module -Path <测试文件>` | 相关用例通过；真实网络仍排除 |
+| 安全 | 对改动代码执行密钥模式扫描并检查配置读写 | 无硬编码密钥或意外敏感数据 |
+| Diff | `git.exe diff --stat` | 改动与任务范围一致 |
 
-> 注意: 阶段 4 全量跑较慢,改动局部时可先 `-Mode module -Path <单文件>`,提交前再全量。
+> 提交前必须运行完整离线验收。该入口通过 Black Python API 按 `pyproject.toml` 配置检查 Git 可见 Python 文件，避免 Windows 下 `black --check` 曾出现的长时间无输出；真实网络测试不会启动。局部回归可先运行单模块，但不能替代提交前完整验收。
 
 ### 9.2 验证报告格式
 
@@ -437,23 +435,13 @@ Overall:  [READY/NOT READY] for commit
 
 > 完成一项即删除对应条目;新会话开始时必须先看本节。
 
-### 12.1 ⏳ 东财 push2 恢复后多主机字段差异复核（2026-08-12 记录）
+### 12.1 ⏳ 东财 push2 多主机字段差异复核
 
-- 2026-08-12 健康探测 6/6 OK（push2/83.push2/push2delay/push2his/push2ex/datacenter-web）；当时 `test_data_eastmoney.py` 27/27 通过。
-- 后续采集曾因失败重试触发二次封禁；已修复“失败不重试 + 域级熔断”。
-- **待办**：复核恢复期 5 个主机的字段差异，并归档实测结果；完成后删除本条。
+- 2026-08-12 的历史健康探测曾记录 6/6 主机或接口可用；之后确认“失败不重试 + 域级熔断”已修复重复请求导致二次封禁的问题。该历史结果不代表当前主机健康。
+- **待办**：在用户明确安排真实网络核验后，用低频、逐主机样本比较字段集合、数值、来源日期和响应状态；先验证备用域，再决定是否触达敏感 push2 主域。首个 403、429、封禁或熔断迹象即停止该风险族；不运行 `--all`。健康探测只证明端点可达，不代替字段等价性核验。
 
-### 12.2 ⏳ f118(≡ulist f107) 身份定案（L1 双确认）· 语义待 pin
+### 12.2 ⏳ ulist239 `f107` / `f118` 来源路径语义待核
 
-- **身份已定案(L1 双确认)**(`ff737f5` + `d49ff95`): `push2 f118 ≡ ulist f107`(ff737f5: 338 stock-days 精确100%; d49ff95: 2026-09-06 全源多日碰撞 18 日·比值族 L1-U·比值≈1) → 等价铁证级; 枚举域 `{2,5}`。
-- **语义待 pin**: f107 的 `{2,5}` 业务含义未知。引擎 `scripts/crack_f118_semantics.py` 首跑(340 单元)结论:
-  - f107 为**状态量**(19/20 股跨日翻转); 全部 36 个 `f107=2` **仅出现在 2026-08-13/08-14** 两连续日 →
-    强时间聚集, 指向**采集链路/接口取值口径差异**而非个股属性。
-  - is_st / market / board / sec_type / is_bj / f27 对 f107 一致率均 <20%, 无 L1 候选。
-- **待办**(详见 `docs/field_verification/20260906/f118_semantics_crack_plan.md`):
-  1. **P0 排查**: 复查 0813/0814 采集脚本日志(采集时刻/所用 ulist 接口·域/是否盘中) → 确认 f107=2 是否采集时序产物
-  2. **P1 扩样**: 跑完整 239 股 ulist 采集(当前 raw_ulist239.json 实为 20 股采样)暴露 f107 全谱
-  3. **P2 状态字段**: 补同日停牌/交易状态(push2 f76 或 volume=0 推停)作最强候选解释
-  4. **P3 名单交叉**: 沪深港通/融资融券标的名单与 f107 列联
-   5. **P4 定案/归档**: 任一候选 ≥90% 且 ≥3 日稳定 → 更新对应 registry 源字段记录并重生成文档; 若证为接口级状态量则标 WONT_FIX 关闭
-- 完成 P4 后删除本条。
+- **逐路径现状**：`push2(stock/get)::f107` 与 `::f118` 已在主注册表标为 verified；`ulist239(np/get)::f107` 与 `::f118` 的含义、单位为空，状态为 `unverified` / `aggregate_status_scope_unresolved`。全局聚合状态来自 push2 证据，不能直接复制为 ulist239 的字段语义。
+- 生成队列仍列出两条 ulist239 待核记录；本轮未改注册表、主字典或采集路由。
+- **待办**：按 [`docs/field_verification/f118_ulist_source_semantics_plan.md`](docs/field_verification/f118_ulist_source_semantics_plan.md) 对照每个接口的原始样本、有效日期和公开契约；区分“字段身份映射”“字段语义”和“接口占位/空值”。只有证据满足裁决流程后，才更新逐源记录及生成视图。

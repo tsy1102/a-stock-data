@@ -1244,9 +1244,7 @@ async def generate_report_async(session, code, output_path, ind_comp=None):
                 f"  ⚠️ 非季末 END_DATE: {'、'.join(_non_quarter_dates)}；保留上游日期，但不按标准季度末数据解读。"
             )
         L("")
-        _header = (
-            f"  {'上游截止日':<12} {'北向':>6}  {'外资':>8}  {'境内法人等':>8}  {'个人':>6}  {'Top10':>6}"
-        )
+        _header = f"  {'上游截止日':<12} {'北向':>6}  {'外资':>8}  {'境内法人等':>8}  {'个人':>6}  {'Top10':>6}"
         L(_header)
         L(f"  {'-'*60}")
         for p in st:

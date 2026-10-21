@@ -38,6 +38,7 @@ METADATA_GAPS_PATH = REPO_ROOT / "docs" / "field_metadata_gaps.md"
 sys.path.insert(0, str(SCRIPT_DIR))
 
 import field_registry_api as fra
+import collision_candidate_reviews as ccr
 import derived_relation_evidence as dre
 import gen_field_dict as gfd
 import source_lineage_api as sla
@@ -456,8 +457,8 @@ def apply_adjudications(
     """Validate decisions and return an updated copy without mutating inputs."""
     if decision_document.get("schema_version") != 1:
         raise ValueError("unsupported adjudication schema_version")
-    if report.get("schema_version") not in {3, 4}:
-        raise ValueError("unsupported collision report schema_version; expected 3 or 4")
+    if report.get("schema_version") not in {3, 4, 5}:
+        raise ValueError("unsupported collision report schema_version; expected 3, 4, or 5")
     if report.get("collision_mode") != "verified_anchor_only":
         raise ValueError("only verified_anchor_only collision reports are accepted")
     if report.get("exploratory_pair_count", 0) != 0:
@@ -498,6 +499,14 @@ def apply_adjudications(
         left_id = _non_empty_string(candidate_pair.get("left"), "candidate.left")
         right_id = _non_empty_string(candidate_pair.get("right"), "candidate.right")
         candidate = _find_l1_candidate(report, left_id, right_id)
+        if (
+            report.get("schema_version") == 5
+            and candidate.get("review_disposition") != "accepted_for_adjudication"
+        ):
+            raise ValueError(
+                "schema 5 collision candidates must be reviewed as "
+                "accepted_for_adjudication before registry changes"
+            )
 
         target_obj = _require_object(decision.get("target"), "decision.target")
         anchor_obj = _require_object(decision.get("anchor"), "decision.anchor")
@@ -868,6 +877,15 @@ def _validate_complete_collision_report(report: dict[str, Any]) -> None:
     method_candidate_count = _validate_candidate_inventory(report, inventory_summary)
     targets = _validate_candidate_triage(report, inventory_summary, method_candidate_count)
     _validate_collision_report_sections(report, completeness, targets)
+    if report.get("schema_version", 0) >= 5:
+        review_validation = ccr.validate_report_summary(report)
+        if review_validation.get("status") != "complete":
+            raise ValueError(
+                "collision report candidate review identities/statuses are inconsistent"
+            )
+        recorded_review_validation = completeness.get("candidate_review")
+        if recorded_review_validation != review_validation:
+            raise ValueError("collision report candidate review completeness is inconsistent")
 
 
 def apply_source_contract_adjudications(

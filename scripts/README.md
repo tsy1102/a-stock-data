@@ -14,6 +14,8 @@ Windows 开发默认使用 PowerShell。`run_with_system_python.ps1` 校验并�
 
 `run_with_system_python.bat` 和 `upload_reports_to_gd.bat` 是兼容包装器。`run_governance_gates.sh` 是供 POSIX shell 使用的本地门禁运行器；仓库没有版本化 CI 或 hook 安装配置，具体克隆是否在 `.git/hooks/pre-commit` 中调用它取决于本地设置。门禁只按暂存内容判断是否触发；相关路径若同时有未暂存或未跟踪文件，会拒绝检查，避免结果与提交快照不一致。
 
+提交前的完整离线验收统一运行 `.\scripts\run_offline_checks.ps1`：语法、全项目 MyPy、Black API 格式、AxData 摘要一致性、数据访问、字典同步、Canonical contract、registry parity 和离线测试都在同一入口执行，真实网络测试不会被启动。Black 检查读取 Git 可见的 Python 文件，使用 `pyproject.toml` 配置的 Python API，以避免 Windows 下 CLI 无输出挂起。
+
 ## 字段采集与研究
 
 当 `capture_field_probe.py` 的数据日为最近已完成交易日时，`closed`、`pre_open` 与 `non_trading_day` 阶段可调用 `axdata_daily_validation.py`；盘中和集合竞价阶段不主动探测。允许完整采集，或 `--only` 明确选中 AxData 与 Tencent 两个主动探测必要源；项目 Tencent 对照失败时不发请求。每个有效数据日最多请求一次已核准的 Tencent `tencent_realtime_snapshot`，仅在双方 `quote_time` 与日期完全相同时比较字段。周末和节假日默认把数据日设为最近交易日，因此可核验上一完整交易日；实际采集时刻不设 15:30 门槛。被动短线/ELTDX 与 KPH/KPL 对照按双方共同有效交易日配对，不以采集目录日替代来源数据日；只有相关源对本次均被选中且成功时才更新对应身份样本。该日轮换的是样本股票，不是 AxData 的 257 个接口；其他接口仍按交叉表候选待审。至少 3 个不同交易数据日、3 只不同股票且每份样本至少 5 个非空信息字段匹配、没有数值失配后，接口标记为运行上（部分）冗余并停止每日探测；未决/语义冲突字段继续展示。每 20 个后续有效数据日启动复验，需 3 个新有效样本；映射指纹、返回字段结构变化或复验差异会恢复日常探测。状态保存在本机 `.tmp/axdata_daily_validation_state.json`，每日证据写入数据日目录的 `axdata_validation.json`；碰撞报告显示状态和未决字段，但不把 AxData 当独立锚或自动更新主字典。非最近数据日、盘中或集合竞价阶段、必要源未选中或对照源失败时不发主动请求；零请求跳过后可同日重评，已发请求同日不会重复。Eastmoney push2 不在白名单中。403/429/封禁立即暂停 Tencent 探针，连续两次空响应也暂停。超过 30 分钟的残留日锁会原子回收。
@@ -31,7 +33,7 @@ FTShare 的旧私有托管 MCP/SDK 已退役；旧 `FTShare` 身份下的 15 条
 | 脚本 | 用途 |
 |:---|:---|
 | `capture_field_probe.py` | 按来源分别采集字段样本至 `docs/field_verification/<数据日>/`；串行调用各源，沿用适配器限流，记录逐源错误、缺股、deferred 与来源数据日。东财 `push2` 样本先请求 `push2delay`，只有某只股票的 delay 请求失败才逐股回退主域 `push2`；不会在 delay 成功后再重复请求主域，也不单独运行已退役的 `push2_full` 全量采集器。KPL 市场接口保存原始响应字段，新增板块强度源；涨停明细按 `PidType=1…5` 分层采集，保存原始列与层级身份，复用 1 秒请求间隔。AxData `kph_limit_up_history` 单次批量写入 `raw_kph.json`，不缓存、不重试，并与 KPL 对撞；短线 TDX 路由与 ELTDX 逐股比较，原始快照保留 bid/ask 五档价格及对应 `_vol` 数值，不改写源单位。两条 AxData 实际路由各自满足三交易日、每日 18 只配对股票及全字段规则后停止日常采集，20 个后续有效数据日后用三个新数据日复验；确认路由也从默认碰撞排除，复验期间仍排除，失配/结构变化即重新纳入。未知数值字段保持路由活跃。403/429/封禁立即停止 AxData 短线剩余请求并持久暂停相应路由；单独 `--only` 也记录状态。可用 `--only kpl` 或 `--only kph` 单独补采。该补充不替代 KPL 完整名单，也不增加独立 Eastmoney push2 采集。默认仍跳过纯上下文的交易所龙虎榜、东财人气榜和市场源/Fuyao 中的龙虎榜与热股榜子路径；上下文可用 `--include-context` 恢复，或通过 `--only exchange` / `--only em_hot` 明确选择。 |
-| `collide.py`、`collision_dates.py`、`collision_rules.py` | 共用日期归一化与快照择优；行情窗口按有效交易日，`as_of_date` 不在所选交易日窗口内的行情快照会排除并记诊断；新闻/公告按自然日。L1 检查样本量、独立日期和来源族。默认排除交易所/东财人气榜源及市场源/Fuyao 中的上下文记录，也过滤历史 raw；需纳入研究时加 `--include-context`。其他带 `collision_eligible=false` 的子树仍按来源元数据排除并在报告诊断中说明。候选报告逐字段展示来源覆盖、候选缺口、按股票留出的区分点、受约束公式线索及正/负向校准统计；数值范围不重叠只作诊断，不过滤单位换算或仿射候选。完整方法候选保存在 JSON `method_candidate_inventory`，`report_completeness` 对账生成/保留数量和 Markdown Top-N 展示差额。分析必须覆盖 JSON 全量明细；完整性不通过时不得据报告做无候选或定案结论。候选方法不改变 L1/L1-U 条件或主字典。盘中/未知阶段仅作候选，所有结果保留日期及来源证据。详见 `docs/field_verification/DAILY_RUNBOOK.md` 与 `docs/field_verification/CRACKING_METHODOLOGY.md`。 |
+| `collide.py`、`collision_dates.py`、`collision_rules.py`、`collision_candidate_reviews.py` | 共用日期归一化与快照择优；行情窗口按有效交易日，`as_of_date` 不在所选交易日窗口内的行情快照会排除并记诊断；新闻/公告按自然日。L1 检查样本量、独立日期和来源族。默认排除交易所/东财人气榜源及市场源/Fuyao 中的上下文记录，也过滤历史 raw；需纳入研究时加 `--include-context`。其他带 `collision_eligible=false` 的子树仍按来源元数据排除并在报告诊断中说明。候选报告逐字段展示来源覆盖、候选缺口、按股票留出的区分点、受约束公式线索及正/负向校准统计；数值范围不重叠只作诊断，不过滤单位换算或仿射候选。完整方法候选保存在 JSON `method_candidate_inventory`，`report_completeness` 对账生成/保留数量和 Markdown Top-N 展示差额。schema 5 另为候选附稳定 ID 与人工处置状态；审阅状态写入 `collision_candidate_reviews.json`，候选审阅工具默认预览，只有 `--apply` 才追加记录。`accepted_for_adjudication` 是进入既有定案流程的前置条件，不会直接改主字典；重复成员保留到代表项的反向关系。机器完整性与人工审阅覆盖率分开统计。完整性不通过时不得据报告做无候选或定案结论。候选方法不改变 L1/L1-U 条件或主字典。盘中/未知阶段仅作候选，所有结果保留日期及来源证据。详见 `docs/field_verification/DAILY_RUNBOOK.md` 与 `docs/field_verification/CRACKING_METHODOLOGY.md`。 |
 | `context_policy.py` | 采集与碰撞共用的上下文源及路径策略，避免默认过滤规则漂移。 |
 | `field_meta.py` | 为采集样本补充来源与锚点元数据。 |
 | `crack_push2_status_codes_20260921.py` | Push2 状态码研究脚本。 |
@@ -55,6 +57,23 @@ FTShare 的旧私有托管 MCP/SDK 已退役；旧 `FTShare` 身份下的 15 条
 Fuyao REST 的 Key 读取顺序为官方变量 `HITHINK_FINANCE_API_KEY`、兼容变量 `THS_FUYAO_API_KEY`、被 Git 忽略的 `credentials/fuyao_key.txt`；程序不输出 Key。逐字段审定的 Fuyao 官方契约证据会列入碰撞报告来源统计，但 Fuyao 的来源独立性已确认，仍走普通 L1/L1-U 锚。只有底层数据来源未确认、且明确登记为官方契约锚的来源才走 L1-C。
 
 `collide.py` 的 `source_coverage` 报告分列每个运行源的已确认字段、官方契约字段、窗口观察字段/字段值样本/交易日、目标/右侧比较次数及 L1/L1-C/L4 关系数；这些数量经过快照日期、择优和类型筛选，不能当作原始请求数。Fuyao 集合竞价的响应 `timestamp` 另存上海时区日期，但标记为响应组装时间；没有上游显式数据日时，仍排除该竞价子树，不用响应日期补造行情日期。
+
+## 架构支持模块与维护验收
+
+| 模块 | 职责 |
+|:---|:---|
+| `capture_catalog.py` | 采集器源配置、字段族和来源契约目录。 |
+| `capture_diagnostics.py` | 响应、错误、数据日和 ZHB 新鲜度诊断；保留原采集入口兼容名称。 |
+| `capture_archive.py` | ZHB 快照保护、上下文保留及归档完整性/覆盖刷新。 |
+| `stock_common/sc_network_limits.py` | 纯跨进程间隔等待与锁文件机制；所有限流、熔断状态仍由 `sc_network.py` 单一持有。 |
+| `collision_snapshots.py`、`collision_math.py` | 碰撞快照身份/筛选，与纯数值、公式候选方法。 |
+| `collision_candidate_ranking.py`、`collision_state.py`、`collision_reporting.py` | 候选排序、碰撞状态读写及报告序列化。 |
+| `collision_candidate_reviews.py` | 独立候选审阅台账；`review_collision_candidates.py` 默认预览，显式 `--apply` 才记录处置。 |
+| `stock_common/md_render.py` | 五大报告共用的 Markdown 表格与文本转换。 |
+| `axdata_crosswalk_summary.py` | 从规范交叉表生成并校验轻量运行时队列摘要。 |
+| `verify_python_syntax.py`、`verify_black_api.py`、`run_offline_checks.ps1` | 语法、Black Python API 和完整离线验收入口。 |
+
+交叉表摘要只作派生计数视图；完整接口/字段证据仍保存在 `docs/axdata_interface_crosswalk.json`。更新源文件后执行 `run_with_system_python.ps1 scripts\build_axdata_crosswalk_summary.py`，不可手工修改派生摘要。
 
 ## 字段登记、生成与治理
 
@@ -98,7 +117,7 @@ Fuyao REST 的 Key 读取顺序为官方变量 `HITHINK_FINANCE_API_KEY`、兼�
 
 JSON 默认写入仓库 `.tmp/eastmoney_health/`。退出码 `0` 表示所选端点返回预期结构，`1` 表示实际请求或结构失败，`2` 表示被本地保护跳过或返回空样本、结论不确定。涨停池接口按 `data.pool` 校验，`rc=205` 表示请求日期无记录。`calendar_reference_date` 只是交易日历基准；`requested_data_date` 与 `returned_data_dates` 分开记录，快照端点没有显式数据日期时不推断来源日期。
 
-日采集 `meta.json` 的 `sources.<source>.error_diagnostics` 是根据原始错误标记生成的分类统计，用于区分请求前熔断跳过、客户端已尝试失败和无法分类的错误。它不证明上游服务器实际收到请求；原始错误仍保留在 raw 归档中，以 raw 和逐请求细节为准。
+日采集 `meta.json` 的 `sources.<source>.error_diagnostics` 保留分类计数，并包含最多 20 组结构化错误明细（`code`、`phase`、`request_attempt_state`、`retryable_hint`、`risk_family`、`host`、`http_status`、脱敏 `raw_error` 与路径样例）。明细由错误标记文本推导，`retryable_hint` 不参与重试或熔断决策；它不证明上游服务器实际收到请求。原始错误仍保留在 raw 归档中，调查时以 raw 和逐请求记录为准；超出的分组数记在 `omitted_detail_groups`。
 
 ## 报告 Markdown 约定
 

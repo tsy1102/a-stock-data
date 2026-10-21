@@ -77,7 +77,7 @@ Fuyao REST 的 Key 读取顺序为官方变量 `HITHINK_FINANCE_API_KEY`、兼�
 | 脚本 | 用途 |
 |:---|:---|
 | `backtest_topn.py` | 基于本地历史数据回测 Top-N 选股。 |
-| `check_em_health.py` | 低频探测东方财富服务状态；按脚本限频执行。 |
+| `check_em_health.py` | 低频按主机/接口诊断东方财富；共享限流、单次请求、封禁后停止同族探测，JSON 仅写入 `.tmp/eastmoney_health/`。 |
 | `clean_cache.py` | 调用统一缓存清理入口；清理范围以 `--help` 为准。 |
 | `fmt_preview.py` | 离线预览报告 Markdown 渲染。 |
 | `perf_compare.py` | 本地数据结构性能对比。 |
@@ -86,6 +86,19 @@ Fuyao REST 的 Key 读取顺序为官方变量 `HITHINK_FINANCE_API_KEY`、兼�
 | `backup-opencode.ps1` | 备份本机 OpenCode 配置。 |
 
 会改写字典、矩阵、采集记录或审计报告的工具，先检查其写入目标和工作区状态。`cache/` 里的 SQLite、K 线和 ZHB 快照不是同一种缓存；不要通过删除整个目录来代替有范围的清理。
+
+### 东方财富端点诊断
+
+使用 `check_em_health.py` 对照主机和接口的 HTTP 状态、响应大小、JSON 结构、返回日期线索及耗时。默认每个选中端点只请求一次，调用共享 `_quick_request` 限流；本地封禁/熔断记为 `suppressed`，不发请求。遇到封禁、403/429 或传输故障后停止该 push2 风控族剩余探测，但继续独立主机族；不自动重试、不轮换 IP，也不把 `push2delay` 的成功推断成实时数据。
+
+```powershell
+.\scripts\run_with_system_python.ps1 scripts\check_em_health.py
+.\scripts\run_with_system_python.ps1 scripts\check_em_health.py --probe push2his
+```
+
+JSON 默认写入仓库 `.tmp/eastmoney_health/`。退出码 `0` 表示所选端点返回预期结构，`1` 表示实际请求或结构失败，`2` 表示被本地保护跳过或返回空样本、结论不确定。涨停池接口按 `data.pool` 校验，`rc=205` 表示请求日期无记录。`calendar_reference_date` 只是交易日历基准；`requested_data_date` 与 `returned_data_dates` 分开记录，快照端点没有显式数据日期时不推断来源日期。
+
+日采集 `meta.json` 的 `sources.<source>.error_diagnostics` 是根据原始错误标记生成的分类统计，用于区分请求前熔断跳过、客户端已尝试失败和无法分类的错误。它不证明上游服务器实际收到请求；原始错误仍保留在 raw 归档中，以 raw 和逐请求细节为准。
 
 ## 报告 Markdown 约定
 

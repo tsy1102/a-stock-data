@@ -256,6 +256,30 @@ def test_assess_result_counts_expected_skips_separately():
     assert info["n_skipped"] == 1
 
 
+def test_assess_result_separates_pre_request_suppression_from_client_failures():
+    result = {
+        "stocks": {
+            "600000": {"__error__": "push2delay: ip_banned, attempts=0"},
+            "000001": {"__error__": "http_429, status=429, attempts=1"},
+            "300001": {"__error__": "ReadTimeout while waiting for response"},
+        }
+    }
+
+    ok, info = capture_probe.assess_result(result, expected_symbols=["600000", "000001", "300001"])
+
+    assert ok is False
+    assert info["n_error"] == 3
+    assert info["error_diagnostics"]["request_attempt_states"] == {
+        "not_attempted": 1,
+        "client_attempted": 2,
+    }
+    assert info["error_diagnostics"]["categories"] == {
+        "suppressed_before_request": 1,
+        "rate_limited_response": 1,
+        "transport_failure": 1,
+    }
+
+
 def test_assess_result_distinguishes_all_stock_failures_from_partial_failure():
     all_failed = {
         "stocks": {

@@ -4,6 +4,19 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## [17.5.11] - 2026-10-21
+
+### Added
+
+- 日采集源状态新增 `error_diagnostics` 计数，分别记录请求前熔断/封禁跳过、客户端尝试失败和未分类错误；原始错误标记继续保留。
+- 东方财富健康探测现在按主机/接口记录 HTTP 状态、响应大小、JSON 结构、日期线索和耗时；通过共享限流单次请求，封禁或传输失败后停止同风险族剩余探测，结果写入被忽略的 `.tmp/`。
+
+### Fixed
+
+- 移除东方财富健康探测在共享网络适配器导入失败时的裸 `requests` 回退，避免绕过项目限流和封禁状态。
+- 健康探测改用项目交易日历生成历史数据日期；本地熔断跳过和空样本分别报告为不确定状态，不再混称为接口请求失败。
+- 涨停池探测按项目实际协议检查 `data.pool`，并将东财 `rc=205` 识别为指定日期无记录，避免把正常空池响应报告为接口结构错误。
+
 ## [17.5.10] - 2026-10-20
 
 ### Fixed

@@ -3573,6 +3573,71 @@ def _retain_current_zhb_snapshot(
     return data, True, None
 
 
+def _classify_capture_error(error: Any) -> tuple[str, str]:
+    """Classify an error marker without treating a local skip as a remote failure.
+
+    The classification is diagnostic only. The original marker remains in the raw
+    archive, and ambiguous text is deliberately reported as unknown.
+    """
+    text = str(error or "")
+    normalized = text.lower()
+    attempts_match = re.search(r"\battempts?\s*[=:]\s*(\d+)", normalized)
+    attempts = int(attempts_match.group(1)) if attempts_match else None
+    suppressed = any(
+        marker in normalized
+        for marker in (
+            "ip_banned",
+            "circuit_open",
+            "suppressed_after_failures",
+            "blocked_until_manual_review",
+            "封禁跳过",
+            "已封禁",
+            "熔断跳过",
+        )
+    )
+    if suppressed and (attempts is None or attempts == 0):
+        return "suppressed_before_request", "not_attempted"
+
+    status_match = re.search(r"(?:http\s*|status\s*[=:]?\s*|http_)(\d{3})", normalized)
+    status_code = int(status_match.group(1)) if status_match else None
+    if status_code in (403, 429):
+        return "rate_limited_response", "client_attempted"
+    if status_code is not None and status_code >= 400:
+        return "http_response_failure", "client_attempted"
+
+    if any(
+        marker in normalized
+        for marker in (
+            "timeout",
+            "connectionerror",
+            "connection_error",
+            "remote disconnected",
+            "connection reset",
+            "proxyerror",
+            "dns",
+            "socket",
+        )
+    ):
+        return "transport_failure", "client_attempted"
+    if any(
+        marker in normalized
+        for marker in (
+            "parse failed",
+            "invalid json",
+            "jsondecodeerror",
+            "empty payload",
+            "missing required",
+            "missing contract",
+            "unexpected payload",
+            "response parse failed",
+        )
+    ):
+        return "payload_or_contract_failure", "client_attempted"
+    if attempts is not None and attempts > 0:
+        return "request_failure", "client_attempted"
+    return "other_failure", "unknown"
+
+
 def assess_result(
     data: Any,
     expected_symbols: Optional[List[str]] = None,
@@ -3584,14 +3649,24 @@ def assess_result(
     n_skipped = 0
     n_deferred = 0
     skip_sample = None
+    error_categories: Dict[str, int] = {}
+    request_attempt_states: Dict[str, int] = {}
+
+    def record_error(error: Any) -> None:
+        nonlocal n_err, sample
+        n_err += 1
+        text = str(error)
+        if sample is None:
+            sample = text[:160]
+        category, attempt_state = _classify_capture_error(error)
+        error_categories[category] = error_categories.get(category, 0) + 1
+        request_attempt_states[attempt_state] = request_attempt_states.get(attempt_state, 0) + 1
 
     def walk(value: Any) -> None:
         nonlocal n_err, sample, n_skipped, n_deferred, skip_sample
         if isinstance(value, dict):
             if "__error__" in value:
-                n_err += 1
-                if sample is None:
-                    sample = str(value["__error__"])[:160]
+                record_error(value["__error__"])
                 return
             if "__skipped__" in value:
                 n_skipped += 1
@@ -3603,9 +3678,7 @@ def assess_result(
                 return
             for key, child in value.items():
                 if _is_error_marker_key(key) and child:
-                    n_err += 1
-                    if sample is None:
-                        sample = str(child)[:160]
+                    record_error(child)
                 else:
                     walk(child)
         elif isinstance(value, list):
@@ -3675,6 +3748,12 @@ def assess_result(
         info["missing_contracts"] = [".".join(map(str, path)) for path in missing_paths]
     if sample:
         info["error_sample"] = sample
+    if error_categories:
+        info["error_diagnostics"] = {
+            "classification_basis": "error_marker_text",
+            "request_attempt_states": request_attempt_states,
+            "categories": error_categories,
+        }
     return ok, info
 
 

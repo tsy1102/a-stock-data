@@ -10,12 +10,12 @@
 | `data/` | 15 | ZHB、TDX/ELTDX、Eastmoney、KPL、网络、解禁单位、指数、EPS 预测缓存、财务日历和异步财报兜底 | [`data/README.md`](data/README.md) |
 | `infra/` | 12 | 调度器、字段完整性/命名、依赖预检、dry-run 写入边界、F10、外部 API 与 GD | [`infra/README.md`](infra/README.md) |
 | `reports/` | 12 | 报告 Runner、流水线、策略、章节契约、财务精度、正文辅助逻辑、指数映射和快照失败处理 | [`reports/README.md`](reports/README.md) |
-| 根目录 | 40 | 碰撞/字段登记、采集探针、来源身份核验、来源语义质量、依赖适配、网络与临时目录隔离 | 本文件下方列出 |
-| **合计** | **98** | 参数化用例展开前的测试模块数 | — |
+| 根目录 | 41 | 碰撞/字段登记、采集探针、来源身份核验、来源语义质量、依赖适配、网络与临时目录隔离 | 本文件下方列出 |
+| **合计** | **99** | 参数化用例展开前的测试模块数 | — |
 
 ## 最近完整执行
 
-2026-10-20（本机 Python 3.12）：收集 1,158 项，1,105 通过、1 跳过、52 个 `real_network` 用例按默认策略排除，耗时 28.03 秒。真实网络测试未运行；默认离线套件通过。5 个依赖真实 ZHB 数据的冒烟用例已标为 `real_network`，避免默认离线运行依赖本地快照。
+2026-10-21（本机 Python 3.12）：收集 1,186 项，1,133 通过、1 跳过、52 个 `real_network` 用例按默认策略排除，耗时 27.95 秒。真实网络测试未运行；默认离线套件通过。5 个依赖真实 ZHB 数据的冒烟用例已标为 `real_network`，避免默认离线运行依赖本地快照。
 
 根目录测试：
 
@@ -23,6 +23,7 @@
 - `test_field_registry_api.py`、`test_registry_parity.py`、`test_gen_field_dict.py`、`test_reconcile_field_registry.py`、`test_reconcile_field_registry_quality.py`、`test_field_registry_semantic_quality.py`、`test_field_source_quality_audit.py`、`test_source_lineage_api.py`：字段登记、严格 parity、语义质量门、元数据审计、状态同步与来源谱系。
 - `test_refresh_field_registry_projection.py`、`test_field_evidence_coverage.py`：生成视图 parity 与每日证据覆盖。
 - `test_capture_field_probe.py`、`test_capture_source_coverage.py`、`test_sina_raw_adapters.py`、`test_audit_field_completeness_inputs.py`：采集源路由与字段生命周期覆盖、Sina 扩展适配、日期校验、状态/调用边界，以及全样本双向字段归档审计。
+- `test_check_em_health.py`：东财单次低频探测的请求约束、风控族停止、响应结构摘要及跳过/失败分类。
 - `test_extract_registry_alignment.py`：逐源字段解析中的分组对齐、组合单位和证据优先级。
 - `test_dependency_adapter_compat.py`：Levistock 实际方法契约与 AxData 本地 ZHB ZIP 读取。
 - `test_ftshare_rest.py`、`test_ftshare_collision_anchor.py`：FTShare REST 日常采集契约、凭证隔离、限流/403/429 熔断、报价日期校验、代码归一化及官方契约锚 L1-C 行为。

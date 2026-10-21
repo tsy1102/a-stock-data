@@ -1080,12 +1080,10 @@ def get_stock_changes(change_type: str = "8201") -> List[Dict[str, Any]]:
     _safe_float 解析失败 → 涨幅恒 0。此处直接解析原始 JSON 修复。
     """
     try:
-        import requests
         from stock_common import UA
         from stock_common.stock_calendar import get_last_trading_day
-        from stock_common.sc_network import _em_wait_process_interval
+        from stock_common.sc_network import _quick_request
 
-        _em_wait_process_interval()
         _params: Dict[str, Any] = {
             "type": change_type,
             "ut": "7eea3edcaed734bea9cbfc24409ed989",
@@ -1093,12 +1091,16 @@ def get_stock_changes(change_type: str = "8201") -> List[Dict[str, Any]]:
             "pagesize": 10000,
             "dpt": "wzchanges",
         }
-        resp = requests.get(
+        resp = _quick_request(
             "https://push2ex.eastmoney.com/getAllStockChanges",
             params=_params,
             headers={"User-Agent": UA},
             timeout=10,
+            # GET is idempotent: allow one transient retry; shared transport still stops immediately on 403/429.
+            max_retries=2,
         )
+        if resp is None:
+            return []
         resp.raise_for_status()
         body = resp.json().get("data") or {}
         items = body.get("allstock", []) or []

@@ -6,6 +6,7 @@ single shared state and synchronization callbacks into these helpers.
 
 from __future__ import annotations
 
+import json
 import math
 import threading
 from typing import Any, Callable
@@ -235,6 +236,105 @@ def process_interval_wait(
             file_lock_release(lock_file)
     except Exception as exc:
         debug_log(f"sc_network process_interval_wait: {exc}")
+        raise
+    return waited
+
+
+def _read_em_rate_state(
+    content: str,
+    global_interval: float,
+    group_interval: float,
+    now: float,
+) -> tuple[float, dict[str, float]]:
+    """Read v3 EM state, migrating the previous single-clock formats in memory."""
+    if not content:
+        return 0.0, {}
+    if not content.startswith("v3|"):
+        return _process_next_allowed(content, global_interval, now), {}
+
+    try:
+        state = json.loads(content[3:])
+    except (TypeError, ValueError) as exc:
+        raise ValueError("invalid EM rate-limit state JSON") from exc
+    if not isinstance(state, dict) or set(state) != {"global_next_allowed", "groups"}:
+        raise ValueError("invalid EM rate-limit state structure")
+
+    max_future = max(global_interval, group_interval, 10.0) * 2.0
+
+    def checked_timestamp(value: Any, label: str) -> float:
+        try:
+            timestamp = float(value)
+        except (TypeError, ValueError) as exc:
+            raise ValueError(f"invalid EM rate-limit {label}: {value!r}") from exc
+        if not math.isfinite(timestamp) or timestamp <= 0 or timestamp - now > max_future:
+            raise ValueError(f"invalid EM rate-limit {label}: {value!r}")
+        return timestamp
+
+    global_next = checked_timestamp(state["global_next_allowed"], "global timestamp")
+    raw_groups = state["groups"]
+    if not isinstance(raw_groups, dict) or any(not isinstance(key, str) for key in raw_groups):
+        raise ValueError("invalid EM rate-limit groups")
+    groups = {
+        key: checked_timestamp(value, f"group timestamp for {key!r}")
+        for key, value in raw_groups.items()
+    }
+    return global_next, groups
+
+
+def process_rate_limit_wait(
+    lock_file: str,
+    global_interval: float,
+    group_key: str,
+    group_interval: float,
+    *,
+    file_lock_acquire: FileLockAcquire,
+    file_lock_release: FileLockRelease,
+    debug_log: DebugLog,
+    os_module: Any,
+    open_file: Callable[..., Any],
+    time_module: Any,
+) -> float:
+    """Atomically reserve both a provider-wide and risk-group request slot."""
+    if not group_key:
+        raise ValueError("EM rate-limit group key must not be empty")
+    for label, interval in (("global", global_interval), ("group", group_interval)):
+        if not math.isfinite(interval) or interval < 0:
+            raise ValueError(f"invalid EM {label} rate-limit interval: {interval!r}")
+
+    waited = 0.0
+    timeout = max(global_interval, group_interval) + 5.0
+    try:
+        if not file_lock_acquire(lock_file, timeout):
+            raise TimeoutError(f"EM rate-limit lock timed out: {lock_file}")
+        try:
+            try:
+                with open_file(lock_file, "r", encoding="utf-8") as stream:
+                    content = stream.read().strip()
+            except FileNotFoundError:
+                content = ""
+            if not content and os_module.path.exists(lock_file):
+                raise ValueError(f"empty EM rate-limit state: {lock_file}")
+
+            global_next, groups = _read_em_rate_state(
+                content, global_interval, group_interval, time_module.time()
+            )
+            next_allowed = max(global_next, groups.get(group_key, 0.0))
+            while next_allowed > 0:
+                remaining = next_allowed - time_module.time()
+                if remaining <= 0:
+                    break
+                time_module.sleep(remaining)
+                waited += remaining
+
+            reserved_at = time_module.time()
+            groups[group_key] = reserved_at + group_interval
+            state = {"global_next_allowed": reserved_at + global_interval, "groups": groups}
+            with open_file(lock_file, "w", encoding="utf-8") as stream:
+                stream.write("v3|" + json.dumps(state, separators=(",", ":"), sort_keys=True))
+        finally:
+            file_lock_release(lock_file)
+    except Exception as exc:
+        debug_log(f"sc_network process_rate_limit_wait: {exc}")
         raise
     return waited
 

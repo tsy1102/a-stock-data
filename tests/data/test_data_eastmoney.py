@@ -19,7 +19,7 @@
   - 其他异常 / 数据为空           → FAIL（可能为代码/协议问题）
 
 运行方式（需 REAL_NETWORK=1，遵守限流：域间 ≥1.8s 间隔；连续两次运行间隔 ≥5 分钟——
-  push2 系阈值极低，0.4rps 连续探测仍可能触发连接级风控，SKIP 属正常现象）：
+  push2 风险组按 0.25rps 保守限速，封禁/熔断后的 SKIP 属正常现象）：
   $env:REAL_NETWORK=1; .\\scripts\\run_tests.ps1 -Mode module -Path tests/test_eastmoney_health.py -ExtraArgs '-v'  # noqa: W605
 """
 

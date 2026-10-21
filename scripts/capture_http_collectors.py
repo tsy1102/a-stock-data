@@ -88,7 +88,7 @@ def collect_push2(pool: list, deps: CaptureHttpDependencies) -> dict:
     概率 RemoteDisconnected(健康探测单次连接恰好成功)。V16.4.1 防封:
     失败**不再重试**(重试叠加失败连接会触发封禁),失败即记 error。
     V17.3.2 封禁规律对齐: 跨 33 采集日实证 push2 主域受扰率 80%、push2delay 镜像域可用率
-    ~93-97%(独立风控面), 故**优先走 push2delay 镜像域**(与运行时 _FFLOW_HOSTS / get_em_batch_quotes
+    ~93-97%(独立分组策略，仍共享东财全局节流), 故**优先走 push2delay 镜像域**(与运行时 _FFLOW_HOSTS / get_em_batch_quotes
     一致策略), 主域仅作兜底; 两域字段同构(f1-f250)无损失。used_host 记录实际命中域便于排查。
     """
     EM_FULL_FIELDS = deps.em_full_fields
@@ -101,9 +101,9 @@ def collect_push2(pool: list, deps: CaptureHttpDependencies) -> dict:
     )  # V17.4.10 修复: _em_is_banned 定义在 sc_network, 未由 stock_common 包 __init__ 重导出
 
     # V17.3.2 封禁规律对齐: 跨 33 采集日实证 push2 主域受扰率 80%、push2delay 镜像域
-    # 可用率 ~93-97%(独立风控面, 主域被封时仍可用)。故**优先 push2delay 镜像域**,
+    # 可用率 ~93-97%(独立分组策略，仍共享东财全局节流)。故**优先 push2delay 镜像域**,
     # 仅当镜像域连续失败(罕见总封禁)才兜底试 push2 主域; 两域字段同构(f1-f250)无损失。
-    # V17.3.17 跨进程封禁共享: push2delay 与 push2 为独立 ban key, 本/他进程标记 push2delay
+    # V17.3.17 跨进程封禁共享: push2delay 与 push2 使用不同风险组 key；标记 push2delay
     # 封禁后此处直接跳过镜像域省一次请求, 走 push2 兜底(用户指令: 全走 push2delay, 仅当其
     # 被封再回退其他 push2 源)。
     fields = EM_FULL_FIELDS  # f1-f250 显式全字段(与主字典口径对齐)
@@ -122,7 +122,7 @@ def collect_push2(pool: list, deps: CaptureHttpDependencies) -> dict:
         delay_error: Dict[str, Any] = {}
         primary_error: Dict[str, Any] = {}
         delay_banned = delay_circuit_open or _em_is_banned(delay_domain)
-        # 首选 push2delay 镜像域(独立风控面, 实测可用率 ~95%); 若已被任一进程跨进程标记封禁则跳过
+        # 首选 push2delay 分组；它仍受 Eastmoney 全局节流，封禁状态按该分组跨进程共享。
         if not delay_banned:
             try:
                 r = _quick_request(
@@ -452,7 +452,7 @@ def collect_clist(pool: list, deps: CaptureHttpDependencies) -> dict:
     走 push2delay 镜像域 clist/get(东财板块榜, 与 push2 主域内容一致、延迟 15min 无影响),
     覆盖 行业(m:90 t:2)/概念(t:3)/地域(t:1) 三类, 按 §12.8.6 登记字段全集抓取原始 f 字段
     (排名 + 今日/5日/10日 资金流)。
-    A1: 复用 stock_common._quick_request(分域限流); **主域优先 push2delay**(独立风控面,
+    A1: 复用 stock_common._quick_request(分域限流); **主域优先 push2delay**(单独分组节流,
     规避 push2 主域 IP 级封禁——实测 push2/push2his/83.push2 同风控面常 20h 冷却封禁,
     而 push2delay/push2ex 独立可用); push2delay 失败回退 push2 主域。
     """
@@ -610,7 +610,7 @@ def collect_slist(pool: list, deps: CaptureHttpDependencies) -> dict:
     字段: f12=板块 BK 代码、f14=板块名、f3=板块当日涨跌幅%、f128=板块龙头股名、f140=龙头股代码。
     → 与 §12.8.5「个股所属板块/概念归属」语义完全吻合(逐股返回其归属板块列表)。
     此前字典 §12.8.5 误记为「裸 spt=3 返回全局混合板块列表」, 经本次实测更正(裸 spt=3 → rc:102)。
-    A1: 复用 _quick_request(分域限流); **主域优先 push2delay**(独立风控面, 规避 push2 主域 IP 封禁), 失败回退 push2 主域; 周六休市不影响(东财 7×24 快照)。
+    A1: 复用 _quick_request(分域限流); **主域优先 push2delay**(单独分组节流, 仍共享东财全局节流), 失败回退 push2 主域; 周六休市不影响(东财 7×24 快照)。
     逐股请求(20 股), 单股失败记 __error__ 不中断(A8 禁止静默迁就)。
     """
     _request_failure_summary = deps.request_failure_summary
@@ -905,7 +905,7 @@ def collect_em_fund_flow(pool: list, deps: CaptureHttpDependencies) -> dict:
 
     stock/get: f135/136/137=主力(超大+大单)、f138/139/140=超大单、f141/142/143=大单、
     f144/145/146=中单、f149=小单净。铁证 f137=f140+f143(169/169); ulist f62==f137(96.6%)。
-    全走 push2delay 镜像域(独立风控 1.0rps), 不碰 push2 主域。
+    全走 push2delay 镜像域(本地分组上限 1.0rps，另受东财全局节流), 不碰 push2 主域。
     """
     _em_capture_pause_reason = deps.em_capture_pause_reason
     _request_failure_summary = deps.request_failure_summary

@@ -1415,7 +1415,7 @@ def test_network_failure_diagnostics_redact_query_parameters(monkeypatch):
 
     monkeypatch.setattr(sc_network, "_HTTP_SESSION", FailingSession())
     monkeypatch.setattr(sc_network, "_resolve_host_with_timeout", lambda _domain: None)
-    monkeypatch.setattr(sc_network, "_em_wait_process_interval", lambda: None)
+    monkeypatch.setattr(sc_network, "_em_wait_process_interval", lambda _domain=None: None)
     detail = {}
 
     response = sc_network._do_request(
@@ -1448,7 +1448,7 @@ def test_network_diagnostics_are_opt_in_for_http_error_responses(monkeypatch):
 
     monkeypatch.setattr(sc_network, "_HTTP_SESSION", FailingSession())
     monkeypatch.setattr(sc_network, "_resolve_host_with_timeout", lambda _domain: None)
-    monkeypatch.setattr(sc_network, "_em_wait_process_interval", lambda: None)
+    monkeypatch.setattr(sc_network, "_em_wait_process_interval", lambda _domain=None: None)
     detail = {}
 
     diagnosed = sc_network._do_request(
@@ -1490,7 +1490,7 @@ def test_network_stream_option_reaches_requests_session(monkeypatch):
 
     monkeypatch.setattr(sc_network, "_HTTP_SESSION", StreamingSession())
     monkeypatch.setattr(sc_network, "_resolve_host_with_timeout", lambda _domain: None)
-    monkeypatch.setattr(sc_network, "_em_wait_process_interval", lambda: None)
+    monkeypatch.setattr(sc_network, "_em_wait_process_interval", lambda _domain=None: None)
 
     result = sc_network._do_request(
         "https://stock.gtimg.cn/data/index.php",
@@ -1520,7 +1520,7 @@ def test_streamed_http_error_closes_response(monkeypatch):
 
     monkeypatch.setattr(sc_network, "_HTTP_SESSION", StreamingSession())
     monkeypatch.setattr(sc_network, "_resolve_host_with_timeout", lambda _domain: None)
-    monkeypatch.setattr(sc_network, "_em_wait_process_interval", lambda: None)
+    monkeypatch.setattr(sc_network, "_em_wait_process_interval", lambda _domain=None: None)
 
     result = sc_network._do_request(
         "https://stock.gtimg.cn/data/index.php",
@@ -1549,10 +1549,9 @@ def test_non_eastmoney_403_does_not_touch_eastmoney_ban_counter(monkeypatch):
 
     monkeypatch.setattr(sc_network, "_HTTP_SESSION", DeniedSession())
     monkeypatch.setattr(sc_network, "_resolve_host_with_timeout", lambda _domain: None)
-    monkeypatch.setattr(sc_network, "_em_wait_process_interval", lambda: None)
+    monkeypatch.setattr(sc_network, "_em_wait_process_interval", lambda _domain=None: None)
     monkeypatch.setattr(sc_network, "_HAS_FAULT_TOLERANCE", False)
-    monkeypatch.setitem(sc_network._CONSECUTIVE_403, "count", 0)
-    monkeypatch.setitem(sc_network._CONSECUTIVE_403, "last_ts", 0.0)
+    monkeypatch.setattr(sc_network, "_CONSECUTIVE_403", {})
     detail = {}
 
     result = sc_network._do_request(
@@ -1569,7 +1568,7 @@ def test_non_eastmoney_403_does_not_touch_eastmoney_ban_counter(monkeypatch):
 
     assert result is None
     assert detail["kind"] == "http_403"
-    assert sc_network._CONSECUTIVE_403["count"] == 0
+    assert sc_network._CONSECUTIVE_403 == {}
 
 
 def test_quick_request_reports_preexisting_ban_without_request(monkeypatch):

@@ -446,7 +446,7 @@ _EM_BOARD_TYPE_FS_MAP = {
 # 无需历史窗口); 原 push2his/push2 优先导致 val 策略20 盘中 30+ 次逐股调用时
 # 每次先打 2 次 push2 主域(共享风控面) → 封禁风险源
 _FFLOW_HOSTS = (
-    "push2delay.eastmoney.com",  # 延时镜像优先(独立风控, 当日数据够用)
+    "push2delay.eastmoney.com",  # 延时镜像优先(单独风险组；仍共享东财全局节流)
     "push2his.eastmoney.com",  # 历史资金流主域(全窗口, 兜底)
     "push2.eastmoney.com",  # 实时主域(最后兜底)
 )

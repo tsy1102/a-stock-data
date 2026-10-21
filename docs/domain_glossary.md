@@ -23,7 +23,7 @@
 |---|---|---|
 | ZHB | zctt.cn 提供的通达信离线数据包(45+ cfg/dat 文件), T-1 数据 | 离线优先路由, 零网络风险 |
 | TDX | 通达信 TCP 行情(经 mootdx/easy_tdx 适配层), 白名单 5 台 FULL 服务器 | 见 tdx_client.py `_EASY_TDX_PREFERRED_HOSTS` |
-| 东财 | EastMoney HTTP 接口(push2/datacenter-web/reportapi 等域) | 各域风控独立, 见 sc_network |
+| 东财 | EastMoney HTTP 接口(push2/datacenter-web/reportapi 等域) | 全域共享总速率门槛；push2、push2ex、push2delay 按风险组分别限速，见 sc_network |
 | 腾讯 | qt.gtimg.cn 批量行情(60只/批, 进程内按交易日缓存) | `_tencent_batch_fallback` |
 
 ## 2. ZHB 数据文件
@@ -61,13 +61,13 @@
 | @cached | SQLite 缓存装饰器(category + 参数 key + TTL + trading_day) | stock_cache.py |
 | 缓存版本号 | 口径/结构变更时必须升级 category(如 industry_peers → industry_peers_v2), 旧缓存不删除但不再读取 | **防污染铁律** |
 | single-flight | 同 key 并发 miss 仅一次上游请求 | @cached 内置 |
-| 限流桶 | TokenBucket + 全局时间戳协调; push2 系共享桶 0.4rps/2.5s, datacenter 1.0rps | sc_network |
+| 限流桶 | TokenBucket + 原子跨进程全局/风险组时隙；push2 家族上限 0.25rps/4s、push2ex 0.6rps、push2delay 1.0rps，仍受 Eastmoney 全局间隔约束 | sc_network |
 
 ## 5. 网络风控
 
 | 术语 | 定义 | 备注 |
 |---|---|---|
-| push2 封禁 | push2 系域名连接级风控(RemoteDisconnected), 恢复需 **20h+** | 参考仓库 PR#36 实战结论 |
+| push2 封禁 | push2 家族共享组级封禁状态(RemoteDisconnected/连续 403)，push2ex 与 push2delay 单独计数；Eastmoney 各组仍共享总速率门槛，封禁恢复保守按 **20h+** 处理 | 参考仓库 PR#36 实战结论 |
 | _em_is_banned | 连续 3 次断连 → 标记封禁 → 自动跳过 20h 冷却 | |
 | _FFLOW_HOSTS | 资金流多域轮换(push2his→push2→push2delay) | |
 | 429 | 请求限频返回, 自动退避重试 | |
@@ -163,7 +163,7 @@ ZHB_SUFFICIENT 路由集为"ZHB 有无此字段"的静态声明不做移出（�
 | easy_tdx MacClient（板块）| TCP MAC | ✅ 白名单 host 可用 | **56 个通达信行业** | 板块归属/成员（880xxx 码）|
 | 腾讯 qt.gtimg.cn | HTTP | ✅ 全市场批量 | 60只/批 | 名称/行情/补名 |
 | 东财 datacenter-web | HTTP | ✅ | 行业映射/龙虎榜等 | 低风控域 1.0rps |
-| 东财 push2 系 | HTTP | ⚠️ 风控敏感 | 13 个入口 | **最后手段** 0.4rps/20h 冷却 |
+| 东财 push2 系 | HTTP | ⚠️ 风控敏感 | 13 个入口 | push2 家族上限 0.25rps；另受全局节流与 20h 冷却 |
 
 ### 码体系（BK↔880 不匹配是风控放大根因）
 

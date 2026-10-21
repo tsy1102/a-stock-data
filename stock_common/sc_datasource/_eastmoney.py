@@ -185,8 +185,8 @@ def get_em_batch_quotes(codes: List[str]) -> Dict[str, Dict[str, Any]]:
         if not code_chunk:
             return
         fs_str = ",".join(code_chunk)
-        # V17.0(2026-08-15 运行前核查): push2 主域连接级封禁期整体失败+0.4rps 限流
-        # (17 chunk × 2.5s = 42.5s)——改 push2delay 镜像域(1.0rps 独立风控, 与采集 ulist239/人气榜先例一致);
+        # V17.0(2026-08-15 运行前核查): push2 主域连接级封禁期整体失败——改用 push2delay 镜像分组。
+        # 当前 push2delay 分组上限为 1.0rps，但仍受 Eastmoney 全局节流；
         # 盘后/盘中延时 15 分钟对 mak 全景报告可接受
         url = "https://push2delay.eastmoney.com/api/qt/ulist.np/get"
         # V15.2 P0 修复: 增加 mcap_yi 字段（f20 总市值=f116/1e8, f21=f117 流通市值）

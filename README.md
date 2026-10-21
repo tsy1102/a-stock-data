@@ -26,7 +26,7 @@
 - **按工作负载批量取源**：SHT/MED/LNG 先用 push2delay 批量行情，再用腾讯 60 只/批接口补齐估值、财务比率、盘口和涨跌停字段；VAL 保留全市场腾讯批量，MAK 保留 ZHB 快照、腾讯行情覆盖和东财资金字段批次。每字段记录实际来源，缺项仍保留单股 fallback。长线正文不消费 ELTDX 短线天梯，因此不再为长线请求该数据。
 - **按时段与新鲜度选择行情**：盘前和休市日可复用满足逐字段新鲜度要求的 ZHB 快照；交易日 09:30 起，实时行情按当前路由获取当日数据。路由和来源标注见 [`架构说明`](docs/architecture.md)。
 - **申万二级行业统一**：东财 datacenter 一次性分页拉取 + 90 天缓存，零逐股请求、零 push2 风控面。
-- **东财分域限流与风控**：共享令牌桶 + 全局 1.0s 节流 + 强制直连；瞬时连接/超时及 408/5xx 有界退避，403/429 立即停止重试；连续 3 次断连触发跨进程 20h 冷却，字段采集在 403、429、已封禁或连续断连时暂停该源后续股票请求。
+- **东财分域限流与风控**：所有 Eastmoney HTTP 请求共享跨进程全局间隔，并在同一锁内原子执行风险组间隔：push2/push2his/83/1/2 家族 0.25 RPS、push2ex 0.6 RPS、push2delay 1.0 RPS；全局门槛更慢时取更慢值。这些是保守本地配置，不是上游公布的限流承诺。瞬时连接/超时及 408/5xx 有界退避，403/429 不重试；push2 家族、push2ex、push2delay 的连续 403 计数和暂停状态按风险组隔离，连续断连仍触发对应组的跨进程 20h 冷却。
 - **统一缓存层**：SQLite + L1 内存 + TTL + `cross_verify` + single-flight + 版本化防污染（口径变更升 category）。
 - **TDX 服务器选择**：主源使用已验证主机列表并避免冷启动全量探测，故障时交由兼容适配器降级。ELTDX 北交所 `92xxxx` 使用 `bj` 市场码；采集与报告适配器按目标代码范围请求，避免误扫全市场。字段采集不再逐股请求未用于破解的 F10 新闻。
 - **通用框架与工程化**：`BaseReportRunner` 共享骨架、并发下沉线程池、云端同步（GD 上传）、批量并行、mypy 类型安全。
@@ -245,7 +245,7 @@ a-stock-data/
 
 ### requirements.txt / config.py
 
-运行时依赖见 [`requirements.txt`](requirements.txt)（16 项；`levistock`/`axdata` 可选，缺失自动降级），开发依赖见 [`requirements-dev.txt`](requirements-dev.txt)（pytest/mypy/black）。核心参数集中在 `core/config.py`：网络超时、限流（`EM_MIN_INTERVAL=1.0`）、重试、缓存（DB≤500MB）、熔断（阈值 10）；分域限流表在 `stock_common/sc_network.py::_DOMAIN_LIMITS`（push2 系最严 0.4rps）。完整定义以源文件为准。
+运行时依赖见 [`requirements.txt`](requirements.txt)（16 项；`levistock`/`axdata` 可选，缺失自动降级），开发依赖见 [`requirements-dev.txt`](requirements-dev.txt)（pytest/mypy/black）。核心参数集中在 `core/config.py`：网络超时、限流（`EM_MIN_INTERVAL=1.0`）、重试、缓存（DB≤500MB）、熔断（阈值 10）；分域限流表在 `stock_common/sc_network.py::_DOMAIN_LIMITS`，push2 家族上限为 0.25 RPS。Eastmoney 全局门槛和风险组门槛由共享跨进程调度共同执行。完整定义以源文件为准。
 
 ### Google Drive 配置（可选）
 
@@ -266,7 +266,7 @@ a-stock-data/
 文档完整架构（模块职责 / 数据流 / 并发限流 / 缓存分层 / 字段路由）见 [`docs/architecture.md`](docs/architecture.md)（含 Mermaid 图）。要点速览：
 
 - **`core/data_provider.py`**：个股数据统一入口，封装 `CanonicalStockData` 强类型合约（115 个 dataclass 属性，含 12 个可选 ELTDX 扩展；非扩展属性为 103 个；`sc_schema.FIELD_SPECS` 是 38 项精选源字段元数据，不是完整契约字段清单）。报告批量路由为 push2delay 基础行情 + 腾讯补充字段；批量缺价时单股 fallback 为 TDX → 腾讯 → push2delay → push2，并按时段使用 ZHB 快照。每只股票通过 `field_sources` 留存来源，并透传行情有效日期与采集时间；跨边界访问器已拆至 `core/_accessors.py`，消除与 `stock_common` 的导入期循环依赖。
-- **`stock_common/sc_network.py`**：分域限流（37 域）、进程文件锁、408/5xx 与瞬时传输故障有界退避、403/429 立即停止、连续封禁 20h 冷却。
+- **`stock_common/sc_network.py`**：分域与风险组限流（push2 家族、push2ex、push2delay 各自设限，仍共享 Eastmoney 全局间隔）、跨进程原子时隙、408/5xx 与瞬时传输故障有界退避、403/429 立即停止、按组连续封禁 20h 冷却。
   > 注：`core/tdx_client.py::_DOMAIN_LIMITS` 另有 6 域**独立**限流表（TCP 长连接语义，与 HTTP 请求级节流不同，**有意不合并**）。
 - **`stock_common/sc_datasource/`**：按数据源和业务职责组织的查询适配器，模块清单见 [`stock_common/sc_datasource/README.md`](stock_common/sc_datasource/README.md)。
 - **`stock_common/sc_schema.py`**：字段元数据层（`FieldSpec` / `TimeAnchor` / `DataSource` / `Unit`），`normalize_at_boundary` 单位归一。

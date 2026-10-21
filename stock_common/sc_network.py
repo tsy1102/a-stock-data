@@ -201,8 +201,9 @@ class RateLimitBlockedError(Exception):
     """
 
 
-# 连续 403 计数（模块级，跨调用累积）
-_CONSECUTIVE_403 = {"count": 0, "last_ts": 0.0}
+# 连续 403 按风控组隔离；push2 家族共享，push2delay 与 push2ex 各自独立。
+_CONSECUTIVE_403: Dict[str, int] = {}
+_EM_403_LOCK = threading.Lock()
 _EM_COOKIE_FAIL_COUNT = 0  # V17.0.7: Cookie 过期检测计数器
 
 # ═══════════════════════════════════════
@@ -228,19 +229,16 @@ _DOMAIN_LIMITS: Dict[str, Dict[str, Any]] = {
     "finance.pae.baidu.com": {"sleep_ms": 150, "semaphore": None, "rps": 5.0},
     "zx.10jqka.com.cn": {"sleep_ms": 150, "semaphore": None, "rps": 5.0},
     "datacenter-web.eastmoney.com": {"sleep_ms": 1000, "semaphore": None, "rps": 1.0},
-    # V16.2.7: push2 系共享风控面且阈值极低（0.6rps 连续探测即触发连接级风控）→ 降到 0.4rps(2.5s)
-    "push2.eastmoney.com": {"sleep_ms": 2500, "semaphore": None, "rps": 0.4},
-    # V16.0: push2ex（涨停/炸板/跌停池）与 push2 共用东财风控面，
-    # 原缺省 100ms=10rps 无令牌桶 → 最高封禁风险点，补限流对齐 push2
-    "push2ex.eastmoney.com": {"sleep_ms": 1500, "semaphore": None, "rps": 0.6},
+    # Push2 家族由统一风险组以 0.25 RPS 限制；跨进程调度再与东财总速率门槛取严。
+    "push2.eastmoney.com": {"sleep_ms": 4000, "semaphore": None, "rps": 0.25},
+    # push2ex 使用独立分组节奏；仍受所有 Eastmoney 请求共享的总速率限制。
+    "push2ex.eastmoney.com": {"sleep_ms": 1700, "semaphore": None, "rps": 0.6},
     "reportapi.eastmoney.com": {"sleep_ms": 1000, "semaphore": None, "rps": 1.0},
     "np-weblist.eastmoney.com": {"sleep_ms": 1000, "semaphore": None, "rps": 1.0},
     # V16.0.2: 补齐遗漏的东财域名限流（参考仓库"东财所有域名统一限流"原则）
     # 之前以下域名落入默认 100ms=10rps → 封禁隐患（尤其 emappdata 热榜高频）
-    "83.push2.eastmoney.com": {"sleep_ms": 2500, "semaphore": None, "rps": 0.4},
-    # V17.2.x: 2026-09-14 实测 push2 系即便 0.4rps(2.5s) 仍被东财远端 IP 级封禁(换 IP 后采集流量复触发)。
-    # 把 kline 主源 push2his 进一步放缓到 0.25rps(4s); 因家族共享归一化桶 + 全局 _EM_LAST_CALL,
-    # 此调整同时把 push2/83.push2 整族节奏拖慢, 降低远端封禁概率。用户确认后于次日采集前落地。
+    "83.push2.eastmoney.com": {"sleep_ms": 4000, "semaphore": None, "rps": 0.25},
+    # 历史封禁证据下，push2his 的 0.25 RPS 作为整个 push2 家族的保守速率锚。
     "push2his.eastmoney.com": {"sleep_ms": 4000, "semaphore": None, "rps": 0.25},
     # V16.2.4: push2delay（延时 15 分钟镜像域，fflow 资金流主入口——push2/push2his 连接级风控时唯一可用）
     "push2delay.eastmoney.com": {"sleep_ms": 1000, "semaphore": None, "rps": 1.0},
@@ -306,9 +304,8 @@ _LEVISTOCK_BLOCK_FILE = os.path.join(_em_lock_dir, "levistock_provider_blocks.js
 _LEVISTOCK_BLOCK_LOCK_FILE = os.path.join(_em_lock_dir, "levistock_provider_blocks.lock")
 _LEVISTOCK_BLOCKED_LOCAL: set[str] = set()
 
-# V16.2.6: 东财 push2 系共享同一风控面（实测 push2/push2his/83.push2 同时被连接级风控，
-# 而 push2delay/push2ex 独立可用）→ 令牌桶/熔断器必须按风控面归一化共享，
-# 否则 3 个独立桶各 0.6rps = 同风控面合计 1.8rps 叠加触发封禁。
+# push2 家族共用一个节流/熔断组；push2delay 与 push2ex 使用各自的组策略。
+# 三组仍共享下面的 Eastmoney 全局跨进程间隔，避免域名轮换叠加总请求速率。
 _EM_PUSH2_FAMILY = (
     "push2.eastmoney.com",
     "push2his.eastmoney.com",
@@ -431,6 +428,39 @@ def _normalize_em_domain(domain: str) -> str:
     return domain
 
 
+def _em_rate_limit_policy(domain: str) -> Tuple[str, float]:
+    """Return the Eastmoney risk-group key and its conservative requests-per-second cap."""
+    risk_group = _normalize_em_domain(domain)
+    if risk_group == "push2.eastmoney.com":
+        family_rates = [
+            float(_DOMAIN_LIMITS.get(member, {}).get("rps", 1.0)) for member in _EM_PUSH2_FAMILY
+        ]
+        return risk_group, min(family_rates)
+    rps = float(_DOMAIN_LIMITS.get(domain, {}).get("rps", 1.0))
+    return risk_group, max(rps, 1e-6)
+
+
+def _record_em_403(domain: str) -> int:
+    """Increment the consecutive 403 counter for one normalized Eastmoney risk group."""
+    risk_group = _normalize_em_domain(domain)
+    with _EM_403_LOCK:
+        count = _CONSECUTIVE_403.get(risk_group, 0) + 1
+        _CONSECUTIVE_403[risk_group] = count
+    if count >= 3:
+        try:
+            _mark_em_banned(risk_group)
+        except Exception as exc:
+            _debug_log(f"could not persist Eastmoney 403 ban for {risk_group}: {exc}")
+    return count
+
+
+def _reset_em_403(domain: str) -> None:
+    """Reset only the consecutive 403 counter belonging to this risk group."""
+    risk_group = _normalize_em_domain(domain)
+    with _EM_403_LOCK:
+        _CONSECUTIVE_403.pop(risk_group, None)
+
+
 def _file_lock_acquire(lock_path: str, timeout: float = 10.0) -> bool:
     """Acquire the shared OS mutex; process termination automatically releases it."""
     return _network_limits.file_lock_acquire(
@@ -533,9 +563,8 @@ def em_get(
     global _EM_COOKIE_FAIL_COUNT
 
     _domain = urlparse(url).netloc
-    # V16.2.6: push2 系（push2/push2his/83.push2/1.push2/2.push2）共享同一风控面 →
-    # 令牌桶/熔断器按归一化 key 共享（原 3 个独立桶各 0.6rps 合计 1.8rps 叠加触发封禁）
-    _ft_domain = _normalize_em_domain(_domain)
+    # push2 家族共享归一化风险组；令牌桶按该组内最严格配置统一限速。
+    _ft_domain, _cfg_rps = _em_rate_limit_policy(_domain)
 
     # V16.2.8: 封禁跳过期直接拒绝（参考仓库 PR#36：连续 3 次断连标记封禁，不再浪费请求）
     if _em_is_banned(_ft_domain):
@@ -556,15 +585,12 @@ def em_get(
         raise CircuitBreakerError(f"Domain {_domain} is circuit-broken")
 
     # V12.1: 令牌桶限流 - 替代原有简单 sleep
-    # V16.0: rps 从 _DOMAIN_LIMITS 读取（push2=0.6, push2ex=0.6, datacenter=1.0），
-    # 不再硬编码 1.0；EM_MIN_INTERVAL 作为硬性全局下限（两者取严），使"调大 EM_MIN_INTERVAL"真正生效
-    # V16.2.6: 桶 key 用归一化 _ft_domain（push2 系共享 0.6rps），rps 读取仍用原始域配置
-    _cfg_rps = _DOMAIN_LIMITS.get(_domain, {}).get("rps", 1.0)
+    # 令牌桶按风险组归一化；push2 家族统一使用家族内最严格的 RPS。
     try:
         _bucket = get_domain_token_bucket(_ft_domain, rps=_cfg_rps)
         _bucket.acquire(1)
-        # V16.0: EM_MIN_INTERVAL 作为硬性下限（参考仓库: 每请求强制 ≥EM_MIN_INTERVAL，无突发）
-        _min_interval = max(float(EM_MIN_INTERVAL), 1.0 / max(_cfg_rps, 1e-6))
+        # 本地全东财间隔只承担总量保护，风险组间隔由令牌桶与跨进程调度独立执行。
+        _min_interval = max(float(EM_MIN_INTERVAL), 1.0)
         _elapsed = time.time() - _EM_LAST_CALL[0]
         if _elapsed < _min_interval:
             time.sleep(_min_interval - _elapsed)
@@ -572,7 +598,7 @@ def em_get(
     except Exception as _e:
         _debug_log(f"em_get: token bucket acquire failed: {_e}")
         # Fallback: 使用原有 sleep 逻辑
-        wait = EM_MIN_INTERVAL - (time.time() - _EM_LAST_CALL[0])
+        wait = max(float(EM_MIN_INTERVAL), 1.0) - (time.time() - _EM_LAST_CALL[0])
         if wait > 0:
             time.sleep(wait + _rand.uniform(0.10, 0.50))
 
@@ -580,23 +606,23 @@ def em_get(
         """Reserve another fully rate-limited Eastmoney request slot."""
         try:
             get_domain_token_bucket(_ft_domain, rps=_cfg_rps).acquire(1)
-            _min_interval = max(float(EM_MIN_INTERVAL), 1.0 / max(_cfg_rps, 1e-6))
+            _min_interval = max(float(EM_MIN_INTERVAL), 1.0)
             _elapsed = time.time() - _EM_LAST_CALL[0]
             if _elapsed < _min_interval:
                 time.sleep(_min_interval - _elapsed)
         except Exception as _e:
             _debug_log(f"em_get: retry token bucket acquire failed: {_e}")
-            _min_interval = max(float(EM_MIN_INTERVAL), 1.0 / max(_cfg_rps, 1e-6))
+            _min_interval = max(float(EM_MIN_INTERVAL), 1.0)
             _elapsed = time.time() - _EM_LAST_CALL[0]
             if _elapsed < _min_interval:
                 time.sleep(_min_interval - _elapsed + _rand.uniform(0.10, 0.50))
         _EM_LAST_CALL[0] = time.time()
-        _em_wait_process_interval()
+        _em_wait_process_interval(_domain)
 
     # V16.0: 接通同步进程间文件锁（_em_wait_process_interval 原本定义但无调用方），
     # 使 --concurrency 3 时跨进程仍 ≤1 rps
     try:
-        _em_wait_process_interval()
+        _em_wait_process_interval(_domain)
     except Exception as _e:
         _debug_log(f"em_get: process interval: {_e}")
         return None
@@ -688,20 +714,14 @@ def em_get(
             except Exception:
                 pass
             if _status == 403:
-                _CONSECUTIVE_403["count"] += 1
-                _CONSECUTIVE_403["last_ts"] = time.time()
-                if _CONSECUTIVE_403["count"] >= 3:
-                    # V17.3.17: 403 型 IP 封禁同样跨进程共享（原仅本进程抛错，其余脚本/进程继续狂轰）
-                    try:
-                        _mark_em_banned(_ft_domain)
-                    except Exception:
-                        pass
+                _consecutive_403 = _record_em_403(_domain)
+                if _consecutive_403 >= 3:
                     raise RateLimitBlockedError(
-                        f"EM 连续 {_CONSECUTIVE_403['count']} 次 403，疑似 IP 被封。"
+                        f"EM 风险组 {_ft_domain} 连续 {_consecutive_403} 次 403，疑似被限。"
                         f"建议: 停止 20+ 小时（参考仓库 PR#36 实测恢复时间）/ 换网络 / 调大 EM_MIN_INTERVAL / 切换备胎源"
                     )
             else:
-                _CONSECUTIVE_403["count"] = 0  # 429 不算 403 连续
+                _reset_em_403(_domain)  # 429 不算同风险组的连续 403
             # 熔断失败计数 + 退避
             try:
                 get_domain_circuit_breaker(_ft_domain)._on_failure()
@@ -715,6 +735,8 @@ def em_get(
             except Exception:
                 pass
             return _response
+
+        _reset_em_403(_domain)
 
         # V12.1: 成功则重置熔断器 + 清零断连计数（V16.2.8）
         try:
@@ -786,15 +808,27 @@ def _provider_interval_wait(lock_file: str, state_file: str, target_interval: fl
     )
 
 
-def _em_wait_process_interval() -> float:
-    """V17.0 R2: EM sync 薄包装(文件锁 + 内容时间戳 + 1.0-1.3s)。"""
+def _em_wait_process_interval(domain: Optional[str] = None) -> float:
+    """Atomically reserve the Eastmoney global slot and optional risk-group slot."""
     import random as _rand
 
-    return _process_interval_wait(
+    if domain:
+        risk_group, rps = _em_rate_limit_policy(domain)
+        group_interval = 1.0 / rps
+    else:
+        risk_group, group_interval = "__all__", 0.0
+    global_interval = max(1.0, float(EM_MIN_INTERVAL)) + _rand.uniform(0.10, 0.30)
+    return _network_limits.process_rate_limit_wait(
         _em_lock_file,
-        1.0 + _rand.uniform(0.10, 0.30),
-        use_lock=True,
-        use_content_ts=True,
+        global_interval,
+        risk_group,
+        group_interval,
+        file_lock_acquire=_file_lock_acquire,
+        file_lock_release=_file_lock_release,
+        debug_log=_debug_log,
+        os_module=os,
+        open_file=open,
+        time_module=time,
     )
 
 
@@ -996,13 +1030,13 @@ def _quick_request(
                     error_out, kind="circuit_open", domain=_ft_domain, attempt=0
                 )
                 return None
-            _cfg_rps = _DOMAIN_LIMITS.get(domain, {}).get("rps", 1.0)
+            _risk_group, _cfg_rps = _em_rate_limit_policy(domain)
             try:
                 get_domain_token_bucket(_ft_domain, rps=float(_cfg_rps)).acquire(1)
             except Exception as _e:
                 _debug_log(f"quick_request token bucket acquire failed ({domain}): {_e}")
-            # V16.3 O22: 全局节奏（_em_wait_process_interval 跨进程 1.0-1.3s）统一由
-            # _do_request 执行——此处不再重复等待（原 L657-667 与 _do_request 叠加 → 速率减半耗时翻倍）
+            # 全局节奏和风险组节奏由 _do_request 的原子跨进程调度统一执行；
+            # 此处只预取进程内风险组令牌，避免重复预留全局时隙。
         except Exception as _e:
             _debug_log(f"quick_request ft init error ({domain}): {_e}")
 
@@ -1145,10 +1179,8 @@ def _do_request(
 
     for attempt in range(max_retries):
         try:
-            # V16.3 O15: 方案A——东财全域名统一全局节奏（跨进程 1.0-1.3s + 100-300ms 抖动，
-            # 文件锁原子）。per-domain 限流只锁单域，多域名并行时东财总速率会叠加
-            # （实测 45000 请求/小时触发 push2 全系列封禁 20+ 小时）——全局节奏保证
-            # 任何时间窗口东财总速率 ≤1 req/s，恢复 v9.6 已验证行为。
+            # 东财全局时隙与 endpoint 风险组时隙在同一文件锁内原子预留，
+            # 所有 Eastmoney 域名共享总速率门槛，push2 / push2ex / push2delay 再各自限速。
             if is_em:
                 _ft_domain = _normalize_em_domain(domain)
                 if _em_is_banned(_ft_domain):
@@ -1157,22 +1189,20 @@ def _do_request(
                     )
                     return None
                 if attempt > 0:
-                    _retry_rps = _DOMAIN_LIMITS.get(domain, {}).get("rps", 1.0)
+                    _risk_group, _retry_rps = _em_rate_limit_policy(domain)
                     try:
                         from stock_common.sc_fault_tolerance import get_domain_token_bucket
 
                         get_domain_token_bucket(_ft_domain, rps=float(_retry_rps)).acquire(1)
                     except Exception as _e:
                         _debug_log(f"quick_request retry token bucket failed ({domain}): {_e}")
-                        _min_interval = max(
-                            float(EM_MIN_INTERVAL), 1.0 / max(float(_retry_rps), 1e-6)
-                        )
+                        _min_interval = max(float(EM_MIN_INTERVAL), 1.0)
                         _elapsed = time.time() - _EM_LAST_CALL[0]
                         if _elapsed < _min_interval:
                             time.sleep(_min_interval - _elapsed)
                     _EM_LAST_CALL[0] = time.time()
                     _RL_STATS["em_request_count"] += 1
-                _em_wait_process_interval()
+                _em_wait_process_interval(domain)
             _req_headers = headers.copy() if headers else {}
             if not _req_headers.get("User-Agent"):
                 if _HAS_FAULT_TOLERANCE:
@@ -1218,24 +1248,19 @@ def _do_request(
                 r.close()
 
             if r.status_code == 403:
-                # Eastmoney 403 is treated as a domain/IP ban signal; unrelated providers
-                # must not increment or reset Eastmoney's shared consecutive-ban counter.
+                # Eastmoney 403 counts only within its normalized risk group.
                 if is_em:
                     _RL_STATS["em_403_count"] += 1
                     try:
                         _biz_logger.warning(f"EM 403 rate-limited: {domain} {url[:120]}")
                     except Exception:
                         pass
-                    # 3 consecutive Eastmoney 403s mark the shared Eastmoney domain banned.
-                    _CONSECUTIVE_403["count"] += 1
-                    _CONSECUTIVE_403["last_ts"] = time.time()
-                    if _CONSECUTIVE_403["count"] >= 3:
-                        try:
-                            _mark_em_banned(_normalize_em_domain(domain))
-                        except Exception:
-                            pass
+                    # Three consecutive 403s stop only this normalized risk group.
+                    _consecutive_403 = _record_em_403(domain)
+                    if _consecutive_403 >= 3:
                         raise RateLimitBlockedError(
-                            f"EM 连续 {_CONSECUTIVE_403['count']} 次 403，疑似 IP 被封。"
+                            f"EM 风险组 {_normalize_em_domain(domain)} 连续 "
+                            f"{_consecutive_403} 次 403，疑似被限。"
                             f"建议: 停止 20+ 小时（参考仓库 PR#36 实测恢复时间）/ 换网络 / 调大 EM_MIN_INTERVAL / 切换备胎源"
                         )
                 if _HAS_FAULT_TOLERANCE:
@@ -1256,6 +1281,7 @@ def _do_request(
             if r.status_code == 429:
                 if is_em:
                     _RL_STATS["em_429_count"] += 1
+                    _reset_em_403(domain)
                     if _HAS_FAULT_TOLERANCE:
                         try:
                             get_domain_circuit_breaker(_normalize_em_domain(domain))._on_failure()
@@ -1287,8 +1313,8 @@ def _do_request(
                 )
                 return None
             # V16: 成功响应（<400）重置连续 403 计数
-            if is_em and _CONSECUTIVE_403["count"] > 0 and r.status_code < 400:
-                _CONSECUTIVE_403["count"] = 0
+            if is_em and r.status_code < 400:
+                _reset_em_403(domain)
             if is_em and r.status_code < 400:
                 _ft_domain = _normalize_em_domain(domain)
                 _EM_BAN_STREAK.pop(_ft_domain, None)
@@ -1398,10 +1424,11 @@ def print_rate_limit_stats() -> None:
 
 
 def requires_push2(fn: Callable[P, R]) -> Callable[P, R]:
-    """V16 审计装饰器: 标记使用 push2 端点的函数。
+    """Audit-only decorator for functions that depend on push2 endpoints.
 
-    push2 是东财风控最严的域名（参考仓库 FAQ），每次调用打 WARNING 日志，
-    便于审计 push2 使用频率、督促优先走 ZHB/eltdx(兜底 easy_tdx)/腾讯。
+    This decorator only logs and counts calls; it does not throttle requests.
+    Eastmoney throttling is enforced by ``em_get``, ``_quick_request`` and the
+    shared process risk-group scheduler.
     用法:
         @requires_push2
         def get_x(...): ...
@@ -1484,15 +1511,9 @@ async def _process_interval_wait_async(
         raise
 
 
-async def _em_wait_process_interval_async() -> float:
-    """EM async gate sharing the sync cross-process mutex and state."""
-    import random as _rand
-
-    return await _process_interval_wait_async(
-        _em_lock_file,
-        1.0 + _rand.uniform(0.10, 0.30),
-        use_content_ts=True,
-    )
+async def _em_wait_process_interval_async(domain: Optional[str] = None) -> float:
+    """Use the same atomic global-plus-group EM gate as synchronous requests."""
+    return await asyncio.to_thread(_em_wait_process_interval, domain)
 
 
 async def _gen_wait_process_interval_async() -> float:
@@ -1608,7 +1629,7 @@ async def _async_quick_request(
     V7.5.1修复: 在 async with 块内读取完数据再返回，避免 response 连接释放后读取失败。
     V11.5 新增: 熔断器模式 + 随机UA/Referer + 指数退避
     V17.0 S2: 按域名分流 EM/GEN——EM 域(原 _async_request_with_retry 语义): 封禁跳过 +
-    EM 锁 + 1.0-1.3s 间隔(与同步 em_get 共享 _EM_LAST_CALL) + EM 跨进程节奏 + Referer 注入;
+    EM 锁 + 全局及风险组跨进程时隙 + Referer 注入;
     GEN 域: 0.2s 间隔 + GEN 跨进程节奏。
 
     Args:
@@ -1638,7 +1659,7 @@ async def _async_quick_request(
 
     _ensure_async_locks()
     # V17.0 S2: 按域名分流 EM/GEN——EM 域(原 _async_request_with_retry 语义):
-    #   封禁跳过 + EM 锁 + 1.0-1.3s 间隔(与同步通道共享 _EM_LAST_CALL) + EM 跨进程节奏;
+    #   封禁跳过 + EM 锁 + 全局及风险组跨进程时隙;
     #   GEN 域: 0.2s 间隔 + GEN 跨进程节奏。
     is_em = "eastmoney.com" in domain
     import random as _rand
@@ -1649,14 +1670,13 @@ async def _async_quick_request(
 
         now = time.time()
         if is_em:
-            rps = float(_DOMAIN_LIMITS.get(domain, {}).get("rps", 1.0))
-            interval = max(1.0 + _rand.uniform(0.10, 0.30), 1.0 / max(rps, 1e-6))
+            interval = max(1.0, float(EM_MIN_INTERVAL)) + _rand.uniform(0.10, 0.30)
             last_request = max(_em_async_last_request, _EM_LAST_CALL[0])
             if last_request > 0 and now - last_request < interval:
                 await asyncio.sleep(interval - (now - last_request))
             _em_async_last_request = time.time()
             _EM_LAST_CALL[0] = time.time()
-            await _em_wait_process_interval_async()
+            await _em_wait_process_interval_async(domain)
         else:
             interval = 0.2 + _rand.uniform(0.01, 0.05)
             if _gen_async_last_request > 0 and now - _gen_async_last_request < interval:
@@ -1678,9 +1698,8 @@ async def _async_quick_request(
         now = time.time()
         if is_em:
             global _em_async_last_request  # noqa: PLW0603
-            # V16.2.3: 异步通道与同步通道（em_get 的 _EM_LAST_CALL）共享全局间隔，
-            # 原双通道各自 1rps → 同进程混合调用合计 2rps，超过 push2 域 0.6rps 风控阈值 → 403/429。
-            interval = 1.0 + _rand.uniform(0.10, 0.30)
+            # 同步/异步共用东财全局间隔；跨进程风险组时隙另由同一调度器限制。
+            interval = max(1.0, float(EM_MIN_INTERVAL)) + _rand.uniform(0.10, 0.30)
             _last = max(_em_async_last_request, _EM_LAST_CALL[0])
             if _last > 0 and now - _last < interval:
                 await asyncio.sleep(interval - (now - _last))
@@ -1694,7 +1713,7 @@ async def _async_quick_request(
             _gen_async_last_request = time.time()
 
         if is_em:
-            await _em_wait_process_interval_async()
+            await _em_wait_process_interval_async(domain)
         else:
             await _gen_wait_process_interval_async()
 
@@ -1722,6 +1741,7 @@ async def _async_quick_request(
 
         _result: Optional[Union[Dict[str, Any], List[Any], str]] = None
         _got_403 = False
+        _got_429 = False
         for attempt in range(max_retries):
             try:
                 timeout_obj = aiohttp.ClientTimeout(total=timeout)
@@ -1740,6 +1760,7 @@ async def _async_quick_request(
                             _got_403 = True
                             break
                         if response.status == 429:
+                            _got_429 = True
                             break
                         if (
                             response.status == 408 or 500 <= response.status < 600
@@ -1764,6 +1785,7 @@ async def _async_quick_request(
                             _got_403 = True
                             break
                         if response.status == 429:
+                            _got_429 = True
                             break
                         if (
                             response.status == 408 or 500 <= response.status < 600
@@ -1785,10 +1807,18 @@ async def _async_quick_request(
                 break
 
         if _got_403 and is_em:
-            try:
-                _record_em_disconnect(_ft_domain)
-            except Exception as _e:
-                _debug_log(f"Async quick 403 ban record error ({domain}): {_e}")
+            _RL_STATS["em_403_count"] = _RL_STATS.get("em_403_count", 0) + 1
+            _consecutive_403 = _record_em_403(domain)
+            if _consecutive_403 >= 3:
+                _debug_log(
+                    f"Async quick stopped Eastmoney risk group {_ft_domain} "
+                    f"after {_consecutive_403} consecutive 403 responses"
+                )
+        elif _got_429 and is_em:
+            _RL_STATS["em_429_count"] = _RL_STATS.get("em_429_count", 0) + 1
+            _reset_em_403(domain)
+        elif _result is not None and is_em:
+            _reset_em_403(domain)
 
         if _cb is not None:
             try:

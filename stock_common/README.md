@@ -8,7 +8,7 @@
 ### 网络与容错
 | 模块 | 职责 |
 |:---|:---|
-| sc_network.py | 统一传输层: 分域限流/令牌桶/封禁冷却/跨进程文件锁/UA/Referer |
+| sc_network.py | 统一传输层: 全局与风险组限流/令牌桶/组级封禁冷却/原子跨进程时隙/UA/Referer |
 | sc_fault_tolerance.py | 容错层: TokenBucket / CircuitBreaker / RandomUAPool |
 | sc_fuyao.py | 同花顺官方金融数据 API(fuyao)适配器 |
 

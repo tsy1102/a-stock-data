@@ -6,6 +6,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+### Fixed
+
+- 东财 push2 家族、push2ex、push2delay 改为各自风险组限速，并与全东财跨进程总间隔在同一锁内原子预约；push2 家族统一采用 0.25 RPS，避免首个别名创建令牌桶后锁死家族速率。
+- 连续 403 计数按归一化风险组隔离；修正 push2ex 异动接口绕过组级跨进程调度的问题，同步和异步请求共用调度及 403/429 规则。
+- push2ex 异动 GET 对连接故障和 5xx 最多允许一次受限重试；403/429 仍立即停止，不增加封禁风险。
+
+### Changed
+
+- 更新每日采集操作卡、脚本说明、网络层说明和领域词汇表，明确项目限流值是本地保守策略，不是 Eastmoney 官方限流承诺。
+
 ## [17.6.3] - 2026-10-21
 
 ### Fixed

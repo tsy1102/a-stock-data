@@ -364,8 +364,8 @@ def test_passive_kph_kpl_compare_uses_explicit_trade_dates_and_confirmed_mapping
         "stocks": {
             "600519": {
                 "zt_time": 1791530000,
-                "max_seal": 1.0,
-                "seal_amount": 2.0,
+                "seal_amount": 1.0,
+                "max_seal": 2.0,
                 "main_inflow": 3.0,
                 "amount": 4.0,
                 "turnover_real": 0.5,

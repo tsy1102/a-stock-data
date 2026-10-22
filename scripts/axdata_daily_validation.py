@@ -63,8 +63,8 @@ IDENTITY_REDUNDANT_STATUSES = {"partially_redundant", "operationally_redundant"}
 SHORTLINE_META_FIELDS = {"stats_date", "trade_date", "as_of_date", "exchange"}
 KPH_KPL_FIELD_PAIRS = {
     "limit_time": "zt_time",
-    "seal_amount": "max_seal",
-    "seal_money": "seal_amount",
+    "seal_amount": "seal_amount",
+    "seal_money": "max_seal",
     "net_inflow": "main_inflow",
     "turnover": "amount",
     "turnover_rate": "turnover_real",

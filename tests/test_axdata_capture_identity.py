@@ -52,8 +52,8 @@ def _write_snapshot(
         kph_stocks[code] = kph_row
         kpl_stocks[code] = {
             "zt_time": kph_row["limit_time"],
-            "max_seal": kph_row["seal_amount"],
-            "seal_amount": kph_row["seal_money"],
+            "seal_amount": kph_row["seal_amount"],
+            "max_seal": kph_row["seal_money"],
             "main_inflow": kph_row["net_inflow"],
             "amount": kph_row["turnover"],
             "turnover_real": kph_row["turnover_rate"],

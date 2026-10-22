@@ -2733,12 +2733,12 @@
 
 ### `max_seal` — incomplete
 
-聚合问题：canonical_incomplete；meaning_incomplete；source_statuses_differ；聚合状态：`unverified`。
+聚合问题：canonical_incomplete；meaning_incomplete；source_statuses_differ；unit_incomplete；聚合状态：`unverified`。
 
 | 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
 |:--|:--|:--|:--|:--|
 | 市场源(market_sources) · `max_seal` | — | — | — | `unverified` |
-| 开盘啦(kpl_limit_up_detail) · `max_seal` | max_seal | 封单量；与 KPH seal_amount 两日逐值一致，计量单位未确认 | — | `verified` |
+| 开盘啦(kpl_limit_up_detail) · `max_seal` | max_seal | 最大封单金额；与 KPH seal_money 三个交易日逐股逐值一致 | 元 | `verified` |
 
 ### `name` — ambiguous
 
@@ -3159,14 +3159,14 @@
 
 ### `seal_amount` — ambiguous
 
-聚合问题：canonical_differs；canonical_incomplete；meaning_differs；meaning_incomplete；source_statuses_differ；unit_incomplete；聚合状态：`conflict`。
+聚合问题：canonical_differs；canonical_incomplete；meaning_differs；meaning_incomplete；source_statuses_differ；聚合状态：`conflict`。
 
 | 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
 |:--|:--|:--|:--|:--|
 | TDX-eltdx(适配层) · `seal_amount` | seal_amount | — | — | `unverified` |
 | 市场源(market_sources) · `seal_amount` | — | — | — | `unverified` |
-| 开盘啦(kpl_limit_up_detail) · `seal_amount` | seal_amount | 封单金额；与 KPH seal_money 两日逐值一致 | 元 | `verified` |
-| 开盘红 · `seal_amount` | max_seal | 封单量；与 KPL max_seal 两日逐值一致，计量单位未确认 | — | `verified` |
+| 开盘啦(kpl_limit_up_detail) · `seal_amount` | seal_amount | 封单量；与 KPH seal_amount 三个交易日逐股逐值一致，计量单位未确认 | — | `verified` |
+| 开盘红 · `seal_amount` | seal_amount | 封单量；与 KPL seal_amount 三个交易日逐股逐值一致，计量单位未确认 | — | `verified` |
 | 开盘红(Levistock适配) · `seal_amount` | seal_amount / seal_money | 待破解 | — | `unverified` |
 
 ### `seal_money` — ambiguous
@@ -3176,7 +3176,7 @@
 | 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
 |:--|:--|:--|:--|:--|
 | 同花顺-fuyao · `seal_money` | seal_money | 当前封单额，单位元。 | 元 | `verified` |
-| 开盘红 · `seal_money` | seal_amount | 封单金额；与 KPL seal_amount 两日逐值一致 | 元 | `verified` |
+| 开盘红 · `seal_money` | max_seal | 封单金额；与 KPL max_seal（KPL 响应标签：最大封单）三个交易日逐股逐值一致 | 元 | `verified` |
 | 开盘红(Levistock适配) · `seal_money` | seal_amount / seal_money | 待破解 | — | `unverified` |
 
 ### `shares` — incomplete
@@ -3624,14 +3624,14 @@
 | 开盘啦(kpl) | `Theme` | Theme/InfoBKR | — | `unverified` |
 | 开盘啦(kpl_limit_up_detail) | `amount` | amount | 成交额；与 KPH turnover 两日逐值一致 | `verified` |
 | 开盘啦(kpl_limit_up_detail) | `main_inflow` | main_inflow | 主力净流入；与 KPH net_inflow 两日逐值一致 | `verified` |
-| 开盘啦(kpl_limit_up_detail) | `max_seal` | max_seal | 封单量；与 KPH seal_amount 两日逐值一致，计量单位未确认 | `verified` |
-| 开盘啦(kpl_limit_up_detail) | `seal_amount` | seal_amount | 封单金额；与 KPH seal_money 两日逐值一致 | `verified` |
+| 开盘啦(kpl_limit_up_detail) | `max_seal` | max_seal | 最大封单金额；与 KPH seal_money 三个交易日逐股逐值一致 | `verified` |
+| 开盘啦(kpl_limit_up_detail) | `seal_amount` | seal_amount | 封单量；与 KPH seal_amount 三个交易日逐股逐值一致，计量单位未确认 | `verified` |
 | 开盘啦(kpl_limit_up_detail) | `turnover_real` | turnover_real | 实际换手率；与 KPH turnover_rate 两日逐值一致 | `verified` |
 | 开盘啦(kpl_limit_up_detail) | `zt_time` | limit_time | 涨停时间；与 KPH limit_time 两日逐值一致 | `verified` |
 | 开盘红 | `limit_time` | limit_time | 涨停时间；与 KPL zt_time 两日逐值一致 | `verified` |
 | 开盘红 | `net_inflow` | main_inflow | 主力净流入；与 KPL main_inflow 两日逐值一致 | `verified` |
-| 开盘红 | `seal_amount` | max_seal | 封单量；与 KPL max_seal 两日逐值一致，计量单位未确认 | `verified` |
-| 开盘红 | `seal_money` | seal_amount | 封单金额；与 KPL seal_amount 两日逐值一致 | `verified` |
+| 开盘红 | `seal_amount` | seal_amount | 封单量；与 KPL seal_amount 三个交易日逐股逐值一致，计量单位未确认 | `verified` |
+| 开盘红 | `seal_money` | max_seal | 封单金额；与 KPL max_seal（KPL 响应标签：最大封单）三个交易日逐股逐值一致 | `verified` |
 | 开盘红 | `turnover` | amount | 成交额；与 KPL amount 两日逐值一致 | `verified` |
 | 开盘红 | `turnover_rate` | turnover_real | 实际换手率；与 KPL turnover_real 两日逐值一致 | `verified` |
 | 开盘红(Levistock适配) | `buy_amount` | buy_amount / sell_amount | 待破解 | `unverified` |

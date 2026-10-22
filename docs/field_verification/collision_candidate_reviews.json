@@ -1,0 +1,362 @@
+{
+  "reviews": {
+    "cc1_2e1aaa413195bd812830126afa1359075aa0a7d5734b8f46f5b933b2d2a3c398": {
+      "current": {
+        "candidate_id": "cc1_2e1aaa413195bd812830126afa1359075aa0a7d5734b8f46f5b933b2d2a3c398",
+        "disposition": "accepted_for_adjudication",
+        "duplicate_of": null,
+        "event_id": "3058371800d69bd339b708fb8886623177382900cf75bcdc512d935934cf53a8",
+        "evidence_refs": [
+          {
+            "path": "20261021/20261021_collision_report.json",
+            "sha256": "5fa94ce355fbecae6759bf425c5e4f525dba8fdce1473f0d0a93b4fd79f30876"
+          },
+          {
+            "path": "adjudications/20261022_kph_kpl_seal_mapping_correction.md",
+            "sha256": "876a9f219c218a15064ba5232956af98b5110ab7d9beec6c18f49a10844fe546"
+          }
+        ],
+        "rationale": "三日同股样本 135/135 精确匹配。raw_columns.col_04 是 KPL 响应位置别名，sc_kpl 将对应位置解析为已登记的 zt_time；此候选用于复验既有 limit_time ↔ zt_time 映射，不新增 raw_columns 字典身份。",
+        "reviewed_at": "2026-10-22T08:14:46+08:00",
+        "reviewer": "Codex"
+      },
+      "history": [
+        {
+          "candidate_id": "cc1_2e1aaa413195bd812830126afa1359075aa0a7d5734b8f46f5b933b2d2a3c398",
+          "disposition": "accepted_for_adjudication",
+          "duplicate_of": null,
+          "event_id": "3058371800d69bd339b708fb8886623177382900cf75bcdc512d935934cf53a8",
+          "evidence_refs": [
+            {
+              "path": "20261021/20261021_collision_report.json",
+              "sha256": "5fa94ce355fbecae6759bf425c5e4f525dba8fdce1473f0d0a93b4fd79f30876"
+            },
+            {
+              "path": "adjudications/20261022_kph_kpl_seal_mapping_correction.md",
+              "sha256": "876a9f219c218a15064ba5232956af98b5110ab7d9beec6c18f49a10844fe546"
+            }
+          ],
+          "rationale": "三日同股样本 135/135 精确匹配。raw_columns.col_04 是 KPL 响应位置别名，sc_kpl 将对应位置解析为已登记的 zt_time；此候选用于复验既有 limit_time ↔ zt_time 映射，不新增 raw_columns 字典身份。",
+          "reviewed_at": "2026-10-22T08:14:46+08:00",
+          "reviewer": "Codex"
+        }
+      ],
+      "identity": {
+        "evidence": {
+          "anchor_basis": "independent_source",
+          "daily_informative_hit_counts": {
+            "T:20261016": 50,
+            "T:20261019": 40,
+            "T:20261021": 45
+          },
+          "daily_informative_sample_counts": {
+            "T:20261016": 50,
+            "T:20261019": 40,
+            "T:20261021": 45
+          },
+          "daily_sample_counts": {
+            "T:20261016": 50,
+            "T:20261019": 40,
+            "T:20261021": 45
+          },
+          "days_ge_threshold": 3,
+          "distinct_days": [
+            "T:20261016",
+            "T:20261019",
+            "T:20261021"
+          ],
+          "evidence_sources": [
+            "kph",
+            "kpl"
+          ],
+          "excluded_intraday_pairs": 0,
+          "excluded_unknown_phase_pairs": 0,
+          "in_registry": false,
+          "left": "kpl.raw_columns.col_04",
+          "level": "L1",
+          "n_days": 3,
+          "n_informative_pairs": 135,
+          "n_pairs": 135,
+          "overall_hit": 1.0,
+          "ratio": null,
+          "right": "kph.limit_time",
+          "same_code": false,
+          "source_independence_confirmed": true,
+          "statistical_level": "L1"
+        },
+        "kind": "l1_candidate",
+        "method_version": "collision-candidate-v1",
+        "schema_version": 1
+      }
+    },
+    "cc1_64a39a6516f2aac1aacef07e38d5d7764d503a58539328e21439ac97ca6b7b02": {
+      "current": {
+        "candidate_id": "cc1_64a39a6516f2aac1aacef07e38d5d7764d503a58539328e21439ac97ca6b7b02",
+        "disposition": "accepted_for_adjudication",
+        "duplicate_of": null,
+        "event_id": "19b9d4f3f8ef8ccca91c867ed62994e7d555e2cc726abe3a2e12a3b1dd2b5a6b",
+        "evidence_refs": [
+          {
+            "path": "20261021/20261021_collision_report.json",
+            "sha256": "5fa94ce355fbecae6759bf425c5e4f525dba8fdce1473f0d0a93b4fd79f30876"
+          },
+          {
+            "path": "adjudications/20261022_kph_kpl_seal_mapping_correction.md",
+            "sha256": "876a9f219c218a15064ba5232956af98b5110ab7d9beec6c18f49a10844fe546"
+          }
+        ],
+        "rationale": "三日同股样本有 133 个信息配对，133/133 精确匹配。raw_columns.col_08 是已登记 main_inflow 的原始位置别名；只复验 net_inflow ↔ main_inflow，不注册第二个 raw path。",
+        "reviewed_at": "2026-10-22T08:14:46+08:00",
+        "reviewer": "Codex"
+      },
+      "history": [
+        {
+          "candidate_id": "cc1_64a39a6516f2aac1aacef07e38d5d7764d503a58539328e21439ac97ca6b7b02",
+          "disposition": "accepted_for_adjudication",
+          "duplicate_of": null,
+          "event_id": "19b9d4f3f8ef8ccca91c867ed62994e7d555e2cc726abe3a2e12a3b1dd2b5a6b",
+          "evidence_refs": [
+            {
+              "path": "20261021/20261021_collision_report.json",
+              "sha256": "5fa94ce355fbecae6759bf425c5e4f525dba8fdce1473f0d0a93b4fd79f30876"
+            },
+            {
+              "path": "adjudications/20261022_kph_kpl_seal_mapping_correction.md",
+              "sha256": "876a9f219c218a15064ba5232956af98b5110ab7d9beec6c18f49a10844fe546"
+            }
+          ],
+          "rationale": "三日同股样本有 133 个信息配对，133/133 精确匹配。raw_columns.col_08 是已登记 main_inflow 的原始位置别名；只复验 net_inflow ↔ main_inflow，不注册第二个 raw path。",
+          "reviewed_at": "2026-10-22T08:14:46+08:00",
+          "reviewer": "Codex"
+        }
+      ],
+      "identity": {
+        "evidence": {
+          "anchor_basis": "independent_source",
+          "daily_informative_hit_counts": {
+            "T:20261016": 48,
+            "T:20261019": 40,
+            "T:20261021": 45
+          },
+          "daily_informative_sample_counts": {
+            "T:20261016": 48,
+            "T:20261019": 40,
+            "T:20261021": 45
+          },
+          "daily_sample_counts": {
+            "T:20261016": 50,
+            "T:20261019": 40,
+            "T:20261021": 45
+          },
+          "days_ge_threshold": 3,
+          "distinct_days": [
+            "T:20261016",
+            "T:20261019",
+            "T:20261021"
+          ],
+          "evidence_sources": [
+            "kph",
+            "kpl"
+          ],
+          "excluded_intraday_pairs": 0,
+          "excluded_unknown_phase_pairs": 0,
+          "in_registry": false,
+          "left": "kpl.raw_columns.col_08",
+          "level": "L1",
+          "n_days": 3,
+          "n_informative_pairs": 133,
+          "n_pairs": 135,
+          "overall_hit": 1.0,
+          "ratio": null,
+          "right": "kph.net_inflow",
+          "same_code": false,
+          "source_independence_confirmed": true,
+          "statistical_level": "L1"
+        },
+        "kind": "l1_candidate",
+        "method_version": "collision-candidate-v1",
+        "schema_version": 1
+      }
+    },
+    "cc1_6840a5ec42977ed829fc0371f99a223d7c5bc0d4193c166b5fb67b9aba0f18bc": {
+      "current": {
+        "candidate_id": "cc1_6840a5ec42977ed829fc0371f99a223d7c5bc0d4193c166b5fb67b9aba0f18bc",
+        "disposition": "accepted_for_adjudication",
+        "duplicate_of": null,
+        "event_id": "e37cf088d1f0bd36a5f82ea0cec92089a16bfafabebaa2e7b76d2eaa61fbd94c",
+        "evidence_refs": [
+          {
+            "path": "20261021/20261021_collision_report.json",
+            "sha256": "5fa94ce355fbecae6759bf425c5e4f525dba8fdce1473f0d0a93b4fd79f30876"
+          },
+          {
+            "path": "adjudications/20261022_kph_kpl_seal_mapping_correction.md",
+            "sha256": "876a9f219c218a15064ba5232956af98b5110ab7d9beec6c18f49a10844fe546"
+          }
+        ],
+        "rationale": "三日同股样本 135/135 精确匹配。raw_columns.col_14 是已登记 turnover_real 的原始位置别名；只复验 turnover_rate ↔ turnover_real，不新增 raw path。",
+        "reviewed_at": "2026-10-22T08:14:46+08:00",
+        "reviewer": "Codex"
+      },
+      "history": [
+        {
+          "candidate_id": "cc1_6840a5ec42977ed829fc0371f99a223d7c5bc0d4193c166b5fb67b9aba0f18bc",
+          "disposition": "accepted_for_adjudication",
+          "duplicate_of": null,
+          "event_id": "e37cf088d1f0bd36a5f82ea0cec92089a16bfafabebaa2e7b76d2eaa61fbd94c",
+          "evidence_refs": [
+            {
+              "path": "20261021/20261021_collision_report.json",
+              "sha256": "5fa94ce355fbecae6759bf425c5e4f525dba8fdce1473f0d0a93b4fd79f30876"
+            },
+            {
+              "path": "adjudications/20261022_kph_kpl_seal_mapping_correction.md",
+              "sha256": "876a9f219c218a15064ba5232956af98b5110ab7d9beec6c18f49a10844fe546"
+            }
+          ],
+          "rationale": "三日同股样本 135/135 精确匹配。raw_columns.col_14 是已登记 turnover_real 的原始位置别名；只复验 turnover_rate ↔ turnover_real，不新增 raw path。",
+          "reviewed_at": "2026-10-22T08:14:46+08:00",
+          "reviewer": "Codex"
+        }
+      ],
+      "identity": {
+        "evidence": {
+          "anchor_basis": "independent_source",
+          "daily_informative_hit_counts": {
+            "T:20261016": 50,
+            "T:20261019": 40,
+            "T:20261021": 45
+          },
+          "daily_informative_sample_counts": {
+            "T:20261016": 50,
+            "T:20261019": 40,
+            "T:20261021": 45
+          },
+          "daily_sample_counts": {
+            "T:20261016": 50,
+            "T:20261019": 40,
+            "T:20261021": 45
+          },
+          "days_ge_threshold": 3,
+          "distinct_days": [
+            "T:20261016",
+            "T:20261019",
+            "T:20261021"
+          ],
+          "evidence_sources": [
+            "kph",
+            "kpl"
+          ],
+          "excluded_intraday_pairs": 0,
+          "excluded_unknown_phase_pairs": 0,
+          "in_registry": false,
+          "left": "kpl.raw_columns.col_14",
+          "level": "L1",
+          "n_days": 3,
+          "n_informative_pairs": 135,
+          "n_pairs": 135,
+          "overall_hit": 1.0,
+          "ratio": null,
+          "right": "kph.turnover_rate",
+          "same_code": false,
+          "source_independence_confirmed": true,
+          "statistical_level": "L1"
+        },
+        "kind": "l1_candidate",
+        "method_version": "collision-candidate-v1",
+        "schema_version": 1
+      }
+    },
+    "cc1_7e560a51eb59e63f2da2208de5ddac84ff7d8530750d7b3619a5a1ac32593f53": {
+      "current": {
+        "candidate_id": "cc1_7e560a51eb59e63f2da2208de5ddac84ff7d8530750d7b3619a5a1ac32593f53",
+        "disposition": "accepted_for_adjudication",
+        "duplicate_of": null,
+        "event_id": "fbd866e6712aacfdf85297926419dd208c095f2ae110ff4ad267691e1b819d57",
+        "evidence_refs": [
+          {
+            "path": "20261021/20261021_collision_report.json",
+            "sha256": "5fa94ce355fbecae6759bf425c5e4f525dba8fdce1473f0d0a93b4fd79f30876"
+          },
+          {
+            "path": "adjudications/20261022_kph_kpl_seal_mapping_correction.md",
+            "sha256": "876a9f219c218a15064ba5232956af98b5110ab7d9beec6c18f49a10844fe546"
+          }
+        ],
+        "rationale": "三日同股样本 135/135 精确匹配。KPL row[7] 解析为已登记路径 max_seal，和 KPH seal_money 对应；该结果纠正历史上 KPH seal_amount ↔ KPL max_seal 的反向登记，不把 raw_columns.col_07 新增为独立字段。",
+        "reviewed_at": "2026-10-22T08:14:46+08:00",
+        "reviewer": "Codex"
+      },
+      "history": [
+        {
+          "candidate_id": "cc1_7e560a51eb59e63f2da2208de5ddac84ff7d8530750d7b3619a5a1ac32593f53",
+          "disposition": "accepted_for_adjudication",
+          "duplicate_of": null,
+          "event_id": "fbd866e6712aacfdf85297926419dd208c095f2ae110ff4ad267691e1b819d57",
+          "evidence_refs": [
+            {
+              "path": "20261021/20261021_collision_report.json",
+              "sha256": "5fa94ce355fbecae6759bf425c5e4f525dba8fdce1473f0d0a93b4fd79f30876"
+            },
+            {
+              "path": "adjudications/20261022_kph_kpl_seal_mapping_correction.md",
+              "sha256": "876a9f219c218a15064ba5232956af98b5110ab7d9beec6c18f49a10844fe546"
+            }
+          ],
+          "rationale": "三日同股样本 135/135 精确匹配。KPL row[7] 解析为已登记路径 max_seal，和 KPH seal_money 对应；该结果纠正历史上 KPH seal_amount ↔ KPL max_seal 的反向登记，不把 raw_columns.col_07 新增为独立字段。",
+          "reviewed_at": "2026-10-22T08:14:46+08:00",
+          "reviewer": "Codex"
+        }
+      ],
+      "identity": {
+        "evidence": {
+          "anchor_basis": "independent_source",
+          "daily_informative_hit_counts": {
+            "T:20261016": 50,
+            "T:20261019": 40,
+            "T:20261021": 45
+          },
+          "daily_informative_sample_counts": {
+            "T:20261016": 50,
+            "T:20261019": 40,
+            "T:20261021": 45
+          },
+          "daily_sample_counts": {
+            "T:20261016": 50,
+            "T:20261019": 40,
+            "T:20261021": 45
+          },
+          "days_ge_threshold": 3,
+          "distinct_days": [
+            "T:20261016",
+            "T:20261019",
+            "T:20261021"
+          ],
+          "evidence_sources": [
+            "kph",
+            "kpl"
+          ],
+          "excluded_intraday_pairs": 0,
+          "excluded_unknown_phase_pairs": 0,
+          "in_registry": false,
+          "left": "kpl.raw_columns.col_07",
+          "level": "L1",
+          "n_days": 3,
+          "n_informative_pairs": 135,
+          "n_pairs": 135,
+          "overall_hit": 1.0,
+          "ratio": null,
+          "right": "kph.seal_money",
+          "same_code": false,
+          "source_independence_confirmed": true,
+          "statistical_level": "L1"
+        },
+        "kind": "l1_candidate",
+        "method_version": "collision-candidate-v1",
+        "schema_version": 1
+      }
+    }
+  },
+  "schema_version": 1,
+  "updated_at": "2026-10-22T08:14:46+08:00"
+}

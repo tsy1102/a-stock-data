@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": 2,
-    "updated": "2026-10-20",
+    "updated": "2026-10-22",
     "source_of_truth": "field_registry.json",
     "generated_by": "manual source-identity reconciliation; see source_identity_reclassifications.json",
     "note": "source_fields 是逐源完整路径权威记录；fields 是兼容聚合视图。Levistock 历史混合身份的 175 条结构化记录已按逐字段映射重分类。历史原文中额外解析到的 56 个 token 不在迁移前的结构化注册表中，继续保留在只读档案，不提升为当前字段记录。状态冲突与历史证据保存在 source_fields。source_field_addenda 只允许有 E3 文件证据且经 parity 校验的增补，不覆盖 field_source_reference.md 历史原文。",
@@ -25806,7 +25806,8 @@
       "aggregation_issues": [
         "canonical_incomplete",
         "meaning_incomplete",
-        "source_statuses_differ"
+        "source_statuses_differ",
+        "unit_incomplete"
       ]
     },
     {
@@ -31958,8 +31959,7 @@
         "canonical_incomplete",
         "meaning_differs",
         "meaning_incomplete",
-        "source_statuses_differ",
-        "unit_incomplete"
+        "source_statuses_differ"
       ]
     },
     {
@@ -57560,10 +57560,10 @@
       },
       "to": {
         "source": "开盘啦(kpl_limit_up_detail)",
-        "code": "max_seal"
+        "code": "seal_amount"
       },
       "relation": "same_number_same_meaning",
-      "evidence": "docs/verify/kph_kpl_history_verify.md"
+      "evidence": "docs/field_verification/adjudications/20261022_kph_kpl_seal_mapping_correction.md"
     },
     {
       "from": {
@@ -57572,10 +57572,10 @@
       },
       "to": {
         "source": "开盘啦(kpl_limit_up_detail)",
-        "code": "seal_amount"
+        "code": "max_seal"
       },
       "relation": "same_number_same_meaning",
-      "evidence": "docs/verify/kph_kpl_history_verify.md"
+      "evidence": "docs/field_verification/adjudications/20261022_kph_kpl_seal_mapping_correction.md"
     },
     {
       "from": {
@@ -174977,9 +174977,9 @@
       "identity": "开盘啦(kpl_limit_up_detail)::max_seal",
       "path": "max_seal",
       "canonical": "max_seal",
-      "meaning": "封单量；与 KPH seal_amount 两日逐值一致，计量单位未确认",
-      "unit": "",
-      "section": "KPH 与 KPL 涨停明细核验（2026-09-29/30 双交易日）",
+      "meaning": "最大封单金额；与 KPH seal_money 三个交易日逐股逐值一致",
+      "unit": "元",
+      "section": "KPH/KPL 封单映射纠错（2026-10-22，三交易日）",
       "sections": [
         "KPH 与 KPL 涨停明细核验（2026-09-29/30 双交易日）"
       ],
@@ -174987,14 +174987,16 @@
       "status_resolution": "verified_by_empirical_addendum",
       "status_evidence": {
         "evidence_level": "E3",
-        "evidence_file": "docs/verify/kph_kpl_history_verify.md",
+        "evidence_file": "docs/field_verification/adjudications/20261022_kph_kpl_seal_mapping_correction.md",
         "sample_trade_dates": [
-          "2026-09-29",
-          "2026-09-30"
+          "2026-10-16",
+          "2026-10-19",
+          "2026-10-21"
         ],
         "overlap_counts": [
-          45,
-          40
+          50,
+          40,
+          45
         ]
       },
       "reference_evidence": [],
@@ -175006,9 +175008,9 @@
       "identity": "开盘啦(kpl_limit_up_detail)::seal_amount",
       "path": "seal_amount",
       "canonical": "seal_amount",
-      "meaning": "封单金额；与 KPH seal_money 两日逐值一致",
-      "unit": "元",
-      "section": "KPH 与 KPL 涨停明细核验（2026-09-29/30 双交易日）",
+      "meaning": "封单量；与 KPH seal_amount 三个交易日逐股逐值一致，计量单位未确认",
+      "unit": "",
+      "section": "KPH/KPL 封单映射纠错（2026-10-22，三交易日）",
       "sections": [
         "KPH 与 KPL 涨停明细核验（2026-09-29/30 双交易日）"
       ],
@@ -175016,14 +175018,16 @@
       "status_resolution": "verified_by_empirical_addendum",
       "status_evidence": {
         "evidence_level": "E3",
-        "evidence_file": "docs/verify/kph_kpl_history_verify.md",
+        "evidence_file": "docs/field_verification/adjudications/20261022_kph_kpl_seal_mapping_correction.md",
         "sample_trade_dates": [
-          "2026-09-29",
-          "2026-09-30"
+          "2026-10-16",
+          "2026-10-19",
+          "2026-10-21"
         ],
         "overlap_counts": [
-          45,
-          40
+          50,
+          40,
+          45
         ]
       },
       "reference_evidence": [],
@@ -175150,10 +175154,10 @@
       "code": "seal_amount",
       "identity": "开盘红::seal_amount",
       "path": "seal_amount",
-      "canonical": "max_seal",
-      "meaning": "封单量；与 KPL max_seal 两日逐值一致，计量单位未确认",
+      "canonical": "seal_amount",
+      "meaning": "封单量；与 KPL seal_amount 三个交易日逐股逐值一致，计量单位未确认",
       "unit": "",
-      "section": "KPH 与 KPL 涨停明细核验（2026-09-29/30 双交易日）",
+      "section": "KPH/KPL 封单映射纠错（2026-10-22，三交易日）",
       "sections": [
         "KPH 与 KPL 涨停明细核验（2026-09-29/30 双交易日）"
       ],
@@ -175161,14 +175165,16 @@
       "status_resolution": "verified_by_empirical_addendum",
       "status_evidence": {
         "evidence_level": "E3",
-        "evidence_file": "docs/verify/kph_kpl_history_verify.md",
+        "evidence_file": "docs/field_verification/adjudications/20261022_kph_kpl_seal_mapping_correction.md",
         "sample_trade_dates": [
-          "2026-09-29",
-          "2026-09-30"
+          "2026-10-16",
+          "2026-10-19",
+          "2026-10-21"
         ],
         "overlap_counts": [
-          45,
-          40
+          50,
+          40,
+          45
         ]
       },
       "reference_evidence": [],
@@ -175179,10 +175185,10 @@
       "code": "seal_money",
       "identity": "开盘红::seal_money",
       "path": "seal_money",
-      "canonical": "seal_amount",
-      "meaning": "封单金额；与 KPL seal_amount 两日逐值一致",
+      "canonical": "max_seal",
+      "meaning": "封单金额；与 KPL max_seal（KPL 响应标签：最大封单）三个交易日逐股逐值一致",
       "unit": "元",
-      "section": "KPH 与 KPL 涨停明细核验（2026-09-29/30 双交易日）",
+      "section": "KPH/KPL 封单映射纠错（2026-10-22，三交易日）",
       "sections": [
         "KPH 与 KPL 涨停明细核验（2026-09-29/30 双交易日）"
       ],
@@ -175190,14 +175196,16 @@
       "status_resolution": "verified_by_empirical_addendum",
       "status_evidence": {
         "evidence_level": "E3",
-        "evidence_file": "docs/verify/kph_kpl_history_verify.md",
+        "evidence_file": "docs/field_verification/adjudications/20261022_kph_kpl_seal_mapping_correction.md",
         "sample_trade_dates": [
-          "2026-09-29",
-          "2026-09-30"
+          "2026-10-16",
+          "2026-10-19",
+          "2026-10-21"
         ],
         "overlap_counts": [
-          45,
-          40
+          50,
+          40,
+          45
         ]
       },
       "reference_evidence": [],
@@ -187665,22 +187673,22 @@
     {
       "source": "开盘红",
       "code": "seal_amount",
-      "canonical": "max_seal",
-      "meaning": "封单量；与 KPL max_seal 两日逐值一致，计量单位未确认",
+      "canonical": "seal_amount",
+      "meaning": "封单量；与 KPL seal_amount 三个交易日逐股逐值一致，计量单位未确认",
       "unit": "",
       "evidence_level": "E3",
-      "evidence_file": "docs/verify/kph_kpl_history_verify.md",
+      "evidence_file": "docs/field_verification/adjudications/20261022_kph_kpl_seal_mapping_correction.md",
       "matrix_field": "seal_amount",
       "matrix_source": "开盘红"
     },
     {
       "source": "开盘红",
       "code": "seal_money",
-      "canonical": "seal_amount",
-      "meaning": "封单金额；与 KPL seal_amount 两日逐值一致",
+      "canonical": "max_seal",
+      "meaning": "封单金额；与 KPL max_seal（KPL 响应标签：最大封单）三个交易日逐股逐值一致",
       "unit": "元",
       "evidence_level": "E3",
-      "evidence_file": "docs/verify/kph_kpl_history_verify.md",
+      "evidence_file": "docs/field_verification/adjudications/20261022_kph_kpl_seal_mapping_correction.md",
       "matrix_field": "seal_money",
       "matrix_source": "开盘红"
     },
@@ -187732,10 +187740,10 @@
       "source": "开盘啦(kpl_limit_up_detail)",
       "code": "max_seal",
       "canonical": "max_seal",
-      "meaning": "封单量；与 KPH seal_amount 两日逐值一致，计量单位未确认",
-      "unit": "",
+      "meaning": "最大封单金额；与 KPH seal_money 三个交易日逐股逐值一致",
+      "unit": "元",
       "evidence_level": "E3",
-      "evidence_file": "docs/verify/kph_kpl_history_verify.md",
+      "evidence_file": "docs/field_verification/adjudications/20261022_kph_kpl_seal_mapping_correction.md",
       "matrix_field": "max_seal",
       "matrix_source": "开盘啦(kpl)"
     },
@@ -187743,10 +187751,10 @@
       "source": "开盘啦(kpl_limit_up_detail)",
       "code": "seal_amount",
       "canonical": "seal_amount",
-      "meaning": "封单金额；与 KPH seal_money 两日逐值一致",
-      "unit": "元",
+      "meaning": "封单量；与 KPH seal_amount 三个交易日逐股逐值一致，计量单位未确认",
+      "unit": "",
       "evidence_level": "E3",
-      "evidence_file": "docs/verify/kph_kpl_history_verify.md",
+      "evidence_file": "docs/field_verification/adjudications/20261022_kph_kpl_seal_mapping_correction.md",
       "matrix_field": "seal_amount",
       "matrix_source": "开盘啦(kpl)"
     },

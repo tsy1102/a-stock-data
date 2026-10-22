@@ -1,5 +1,7 @@
 # KPH 与 KPL 涨停明细核验
 
+> **封单映射更正（2026-10-22）**：下方 2026-09-29/30 表格记录的是当时的解释，其中 `seal_amount` / `seal_money` 与 `max_seal` / `seal_amount` 两组关系发生了对调。三日原始样本、原因、修正后的定义和证据见[纠错定案记录](../field_verification/adjudications/20261022_kph_kpl_seal_mapping_correction.md)；当前主字典以该记录和 `field_registry.json` 为准。
+
 核验日期：2026-10-10
 证据来源：`docs/axdata_field_reconciliation_20261010.md` 的双交易日实测、AxData 0.1.4 本地接口目录、项目归档的 KPL 原始采集文件。
 
@@ -10,7 +12,7 @@
 - KPH 明细单独保存为 `raw_kph.json`。每个交易日最多发出一次 AxData 历史批量请求，`persist=False`，不重试。若同次采集的 KPH 天梯返回 403、429、封禁或限流标志，则跳过历史请求。
 - 本功能不调用 Eastmoney push2，也不要求使用 `--all`。
 
-## 双交易日逐股证据
+## 双交易日逐股证据（历史记录；封单关系已被纠正）
 
 | 交易日 | KPH 返回 | 项目 KPL 明细 | 重叠证券 | 六字段逐值相同 | KPH 多出 | KPL 多出 |
 |---|---:|---:|---:|---:|---:|---:|

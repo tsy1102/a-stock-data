@@ -8751,22 +8751,22 @@
       "right": "tencent[32]",
       "level": "L1",
       "ratio": null,
-      "overall_hit": 0.9798,
+      "overall_hit": 0.9796,
       "n_days": 5,
       "n_pairs": 100,
       "sample_dates": [
-        "T:20261012",
         "T:20261013",
         "T:20261014",
         "T:20261016",
-        "T:20261019"
+        "T:20261019",
+        "T:20261020"
       ],
       "evidence_sources": [
         "tdx",
         "tencent"
       ],
       "hub_flag": false,
-      "last_seen": "20261020",
+      "last_seen": "20261022",
       "in_registry": true,
       "first_seen": "20261005",
       "status": "confirmed"
@@ -10312,18 +10312,18 @@
       "n_days": 5,
       "n_pairs": 100,
       "sample_dates": [
-        "T:20261012",
         "T:20261013",
         "T:20261014",
         "T:20261016",
-        "T:20261019"
+        "T:20261019",
+        "T:20261020"
       ],
       "evidence_sources": [
         "tdx",
         "tencent"
       ],
       "hub_flag": false,
-      "last_seen": "20261020",
+      "last_seen": "20261022",
       "in_registry": true,
       "first_seen": "20261008",
       "status": "confirmed"
@@ -12512,6 +12512,98 @@
       "last_seen": "20261020",
       "in_registry": false,
       "first_seen": "20261020",
+      "status": "repeated"
+    },
+    "kph.limit_time||kpl.raw_columns.col_04": {
+      "left": "kpl.raw_columns.col_04",
+      "right": "kph.limit_time",
+      "level": "L1",
+      "ratio": null,
+      "overall_hit": 1.0,
+      "n_days": 3,
+      "n_pairs": 135,
+      "sample_dates": [
+        "T:20261016",
+        "T:20261019",
+        "T:20261021"
+      ],
+      "evidence_sources": [
+        "kph",
+        "kpl"
+      ],
+      "hub_flag": false,
+      "last_seen": "20261022",
+      "in_registry": false,
+      "first_seen": "20261021",
+      "status": "repeated"
+    },
+    "kph.seal_money||kpl.raw_columns.col_07": {
+      "left": "kpl.raw_columns.col_07",
+      "right": "kph.seal_money",
+      "level": "L1",
+      "ratio": null,
+      "overall_hit": 1.0,
+      "n_days": 3,
+      "n_pairs": 135,
+      "sample_dates": [
+        "T:20261016",
+        "T:20261019",
+        "T:20261021"
+      ],
+      "evidence_sources": [
+        "kph",
+        "kpl"
+      ],
+      "hub_flag": false,
+      "last_seen": "20261022",
+      "in_registry": false,
+      "first_seen": "20261021",
+      "status": "repeated"
+    },
+    "kph.net_inflow||kpl.raw_columns.col_08": {
+      "left": "kpl.raw_columns.col_08",
+      "right": "kph.net_inflow",
+      "level": "L1",
+      "ratio": null,
+      "overall_hit": 1.0,
+      "n_days": 3,
+      "n_pairs": 135,
+      "sample_dates": [
+        "T:20261016",
+        "T:20261019",
+        "T:20261021"
+      ],
+      "evidence_sources": [
+        "kph",
+        "kpl"
+      ],
+      "hub_flag": false,
+      "last_seen": "20261022",
+      "in_registry": false,
+      "first_seen": "20261021",
+      "status": "repeated"
+    },
+    "kph.turnover_rate||kpl.raw_columns.col_14": {
+      "left": "kpl.raw_columns.col_14",
+      "right": "kph.turnover_rate",
+      "level": "L1",
+      "ratio": null,
+      "overall_hit": 1.0,
+      "n_days": 3,
+      "n_pairs": 135,
+      "sample_dates": [
+        "T:20261016",
+        "T:20261019",
+        "T:20261021"
+      ],
+      "evidence_sources": [
+        "kph",
+        "kpl"
+      ],
+      "hub_flag": false,
+      "last_seen": "20261022",
+      "in_registry": false,
+      "first_seen": "20261021",
       "status": "repeated"
     }
   },
@@ -22500,5 +22592,5 @@
     }
   },
   "legacy_state_version": 1,
-  "updated": "20261020"
+  "updated": "20261022"
 }

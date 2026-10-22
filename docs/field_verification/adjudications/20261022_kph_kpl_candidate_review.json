@@ -1,0 +1,53 @@
+{
+  "schema_version": 1,
+  "decisions": [
+    {
+      "candidate_id": "cc1_2e1aaa413195bd812830126afa1359075aa0a7d5734b8f46f5b933b2d2a3c398",
+      "disposition": "accepted_for_adjudication",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-10-22T08:14:46+08:00",
+      "rationale": "三日同股样本 135/135 精确匹配。raw_columns.col_04 是 KPL 响应位置别名，sc_kpl 将对应位置解析为已登记的 zt_time；此候选用于复验既有 limit_time ↔ zt_time 映射，不新增 raw_columns 字典身份。",
+      "evidence_refs": [
+        "20261021/20261021_collision_report.json",
+        "adjudications/20261022_kph_kpl_seal_mapping_correction.md"
+      ],
+      "duplicate_of": null
+    },
+    {
+      "candidate_id": "cc1_7e560a51eb59e63f2da2208de5ddac84ff7d8530750d7b3619a5a1ac32593f53",
+      "disposition": "accepted_for_adjudication",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-10-22T08:14:46+08:00",
+      "rationale": "三日同股样本 135/135 精确匹配。KPL row[7] 解析为已登记路径 max_seal，和 KPH seal_money 对应；该结果纠正历史上 KPH seal_amount ↔ KPL max_seal 的反向登记，不把 raw_columns.col_07 新增为独立字段。",
+      "evidence_refs": [
+        "20261021/20261021_collision_report.json",
+        "adjudications/20261022_kph_kpl_seal_mapping_correction.md"
+      ],
+      "duplicate_of": null
+    },
+    {
+      "candidate_id": "cc1_64a39a6516f2aac1aacef07e38d5d7764d503a58539328e21439ac97ca6b7b02",
+      "disposition": "accepted_for_adjudication",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-10-22T08:14:46+08:00",
+      "rationale": "三日同股样本有 133 个信息配对，133/133 精确匹配。raw_columns.col_08 是已登记 main_inflow 的原始位置别名；只复验 net_inflow ↔ main_inflow，不注册第二个 raw path。",
+      "evidence_refs": [
+        "20261021/20261021_collision_report.json",
+        "adjudications/20261022_kph_kpl_seal_mapping_correction.md"
+      ],
+      "duplicate_of": null
+    },
+    {
+      "candidate_id": "cc1_6840a5ec42977ed829fc0371f99a223d7c5bc0d4193c166b5fb67b9aba0f18bc",
+      "disposition": "accepted_for_adjudication",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-10-22T08:14:46+08:00",
+      "rationale": "三日同股样本 135/135 精确匹配。raw_columns.col_14 是已登记 turnover_real 的原始位置别名；只复验 turnover_rate ↔ turnover_real，不新增 raw path。",
+      "evidence_refs": [
+        "20261021/20261021_collision_report.json",
+        "adjudications/20261022_kph_kpl_seal_mapping_correction.md"
+      ],
+      "duplicate_of": null
+    }
+  ]
+}

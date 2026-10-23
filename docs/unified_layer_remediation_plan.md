@@ -10,7 +10,7 @@
 |---|---|---|
 | Tier 1 调用方 | SHT、MED、LNG、VAL；`stock_common/enrich_helpers.py` 读取 `field_sources` | 保持 `get_canonical_stock_data()` 签名和 `field_sources: dict[str, str]` 类型 |
 | 日期消费者 | SHT、MED 使用 `time_anchor == "t-1"` 显示上一交易日提示 | `time_anchor` 基于可核验的价格数据日期；无日期时显式为 `unknown` 并提示，不冒充 T 日 |
-| Canonical 序列化 | `CanonicalStockData` 有 115 个 dataclass 属性；`to_dict()` 使用 `asdict()` | 新增日期元数据属于公开的增量字段，更新属性清单、`to_dict()` 和报告契约测试 |
+| Canonical 序列化 | `CanonicalStockData` 有 113 个 dataclass 属性；`to_dict()` 使用 `asdict()` | 新增日期元数据属于公开的增量字段，更新属性清单、`to_dict()` 和报告契约测试 |
 | 采集日期 | EastMoney quote adapter 的 `data_date` 由本机 `datetime.now()` 生成 | 将其视为采集时间兼容字段，不再当作上游 `as_of_date` |
 | ZHB 日期 | `ZhbData.date` 是缓存包数据日；现有年龄按股票交易日计算 | 所有直接 ZHB 字段通过同一包日期和 ABCD 阈值过滤；未来日期判为不新鲜 |
 | 报告期事件锁 | Canonical `report_period` 可来自 ZHB `report_date` | `report_date` 是报告期标识，不参与快照日期过滤，保证事件锁输入不变 |
@@ -94,3 +94,10 @@
 - [x] 阶段 C：字段级来源与日期元数据。
 - [x] 阶段 D：公开批量预热 API。
 - [x] 阶段 E：契约闸门、文档与离线验证。
+
+## 7. 2026-10-22 后续边界复核
+
+- Tier 1 已移除没有 Canonical 报表消费者的 `avg_price` 与 `bid_ask_net`；Tier 2 专用适配器仍保留原始值，不把未定案字段混入统一契约。
+- `scripts/verify_canonical_contract.py` 现在调用 `scripts/canonical_consumer_coverage.py`，静态追踪五类报告中的直接属性、动态 `getattr`、`to_dict()` 字典读取和传入辅助函数的字段。当前 113 个字段中 81 个有仓库内报告读取点；其余 32 个逐字段记录兼容原因。新增未分类字段、消费点意外消失或兼容例外已被消费都会让闸门失败。
+- `tests/core/test_canonical_consumer_coverage.py` 覆盖 getter 别名、辅助函数参数、动态字段名、序列化字典键，以及排除与 Canonical 无关的同名属性。
+- 指标：报表消费者覆盖基线从无自动核查（未量化）转为 81/113 字段可追踪，另有 32/113 项显式例外；`avg_price` 与 `bid_ask_net` 从 Tier 1 合约移除，减少 2 个无消费者属性。

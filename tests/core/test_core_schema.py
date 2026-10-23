@@ -52,9 +52,14 @@ class TestFieldSpecTable(unittest.TestCase):
         contract_names = {item.name for item in fields(schema.CanonicalStockData)}
         extension_names = {name for name in contract_names if name.startswith("eltdx_")}
 
-        self.assertEqual(len(contract_names), 115, "update schema inventory documentation")
+        self.assertEqual(len(contract_names), 113, "update schema inventory documentation")
         self.assertEqual(len(extension_names), 12, "update ELTDX extension documentation")
-        self.assertEqual(len(contract_names - extension_names), 103)
+        self.assertEqual(len(contract_names - extension_names), 101)
+        self.assertNotIn("avg_price", contract_names)
+        self.assertNotIn("bid_ask_net", contract_names)
+        serialized = schema.CanonicalStockData(code="000001").to_dict()
+        self.assertNotIn("avg_price", serialized)
+        self.assertNotIn("bid_ask_net", serialized)
         self.assertEqual(len(schema.FIELD_SPECS), 38, "FIELD_SPECS is a curated metadata registry")
 
     def test_field_specs_not_empty(self):

@@ -42,7 +42,7 @@
 生产脚本 (main.py / get_*_report.py / sc_report_runner.py)
       │
       ├── Tier1 门面 ─── get_canonical_stock_data()  [core/data_provider.py]
-       │                  · CanonicalStockData：115 个属性，其中 12 个 ELTDX 扩展、103 个非扩展属性
+       │                  · CanonicalStockData：113 个属性，其中 12 个 ELTDX 扩展、101 个非扩展属性
        │                  · 源选择 + fallback + 单位归一化 + 逐字段来源/有效日期溯源
       │                  · 所有报告/策略引擎共用的"横向数据"
       │
@@ -59,7 +59,7 @@
 ### 1.2 关键边界：不要把专精数据塞进 CanonicalStockData
 
 把 CYQ / F10 / 龙虎榜塞进 `CanonicalStockData` 会造出 **god-object**：
-当前 `CanonicalStockData` 有 115 个 dataclass 属性，其中 12 个为可选 ELTDX 扩展；其余 103 个属性组成非扩展契约。新增的 `collected_at` 与 `field_as_of_dates` 是统一层元数据，不是报告专属业务字段。混入报告特有数据会过度耦合，
+当前 `CanonicalStockData` 有 113 个 dataclass 属性，其中 12 个为可选 ELTDX 扩展；其余 101 个属性组成非扩展契约。新增的 `collected_at` 与 `field_as_of_dates` 是统一层元数据，不是报告专属业务字段。混入报告特有数据会过度耦合，
 且 fallback 一致性反而更难做（而这正是统一层要解决的原始问题）。
 
 `sc_schema.FIELD_SPECS` 是 38 项精选源字段元数据，不是完整的 `CanonicalStockData` 字段注册表；其中部分名字对应源字段别名。其实时分类集合仅作为测试契约元数据，不能代替运行时路由判断。
@@ -122,8 +122,8 @@
 **字典 → 契约 → 消费方** 三处；若暂不接消费方，**必须**在台账登记为"预留"并注明用途。
 
 - **理由**：只加不用的字段会让契约失去权威性（无法区分"重要但未接"和"废弃"）。
-- **自动化验证**：待建孤儿字段检测
-- **已知偏离**：DEBT-007（`avg_price`/`beta`/`bid_ask_net` 已入契约，零消费方）
+- **自动化验证**：待建孤儿字段检测（当前没有契约字段消费覆盖闸门）
+- **当前已知偏离**：无；历史 DEBT-007 已于 2026-09-04 按字段置信度接入报告消费，见 `DEBT_LEDGER.md`。自动化检测缺口仍待补齐。
 
 ### A6 — 缺失即缺失（Absence ≠ Zero）
 

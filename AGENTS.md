@@ -263,7 +263,7 @@ $OutputEncoding = [Console]::OutputEncoding
 
 | 层 | 入口 | 职责 |
 |---|---|---|
-| **Tier1 门面** | `core/data_provider.get_canonical_stock_data()` | `CanonicalStockData` 115 个属性（含 12 个 ELTDX 扩展属性）、源选择、fallback、单位归一化、逐字段来源和有效日期溯源 |
+| **Tier1 门面** | `core/data_provider.get_canonical_stock_data()` | `CanonicalStockData` 113 个属性（含 12 个 ELTDX 扩展属性）、源选择、fallback、单位归一化、逐字段来源和有效日期溯源 |
 | **Tier2 适配器** | `sc_datasource.get_*` / `sc_fuyao.get_fuyao_*` / `tdx_client.tdx_get_*` | 专精数据(CYQ / F10 / 涨停梯队 / 龙虎榜 / 行业L2 / 宏观流向 / 竞价),已含 @cached + 归一化 + 令牌桶限流 |
 | **原始客户端** | `_get_tdx_client()` / `sc_network.em_get` / `sc_fuyao._fuyao_raw` / 裸 requests·httpx | **仅允许出现在 `stock_common/` 与 `core/tdx_client.py` 内部** |
 

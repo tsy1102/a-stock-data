@@ -336,7 +336,8 @@ ZHB_SUFFICIENT 路由集为"ZHB 有无此字段"的静态声明不做移出（�
 | `bps` | 每股净资产 | f92 | 元 |
 | `dividend_yield` | 股息率 | f126 | % |
 | `concepts` | 概念列表 | f129 | 逗号分隔 |
-| `entrust_ratio` / `bid_ask_net` | 委比 / 委差 | f191 / f192 | % / 手 |
+| `entrust_ratio` | 委比 | f191 | % |
+| `bid_ask_net`（Tier2 候选字段） | 盘口净量候选；来源语义与单位未统一，不作为 canonical 定案字段 | push2 f192 / 腾讯[50] | 未统一 |
 | `fund_main_today` | 主力净流入(今日) | f137 | 元（=f140+f143） |
 | `fund_main_buy` / `fund_main_sell` | 主力买入额 / 卖出额 | f135 / f136 | 元 |
 | `fund_super_today` | 超大单净流入 | f140 | 元 |

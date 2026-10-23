@@ -3,7 +3,7 @@
 > 本目录归并**数据从哪来**的 pytest 用例, 覆盖 ZHB / TDX / 东财 / 网络传输 / 预取等底层数据源, 对应 `stock_common/sc_datasource/` 与 `core/tdx_client.py` / `core/zhb_client.py` / `stock_common/sc_network.py`。
 > 文件清单与逐文件定位见父目录 [`../README.md`](../README.md); 本文件仅作本层速查。
 
-## 文件与职责(16)
+## 文件与职责(18)
 
 | 文件 | 职责 |
 |:---|:---|
@@ -24,6 +24,7 @@
 | test_financial_report_fallback_async.py | 新浪主源 + Fuyao 兜底的异步线程边界和单次调用契约 |
 | test_financials_calendar_fallback.py | 财报日历来源失败与日期回退 |
 | test_eastmoney_datacenter_contract.py | 东财数据中心 sync/async 请求、市场空过滤、分页和响应行契约 |
+| test_em_risk_rate_limit.py | Eastmoney 风险分组的进程级限速、全局时隙和跨进程串行化 |
 
 ## 运行
 

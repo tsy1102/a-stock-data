@@ -10,8 +10,9 @@ from pathlib import Path
 import sys
 
 ROOT = Path(__file__).resolve().parents[1]
-EXPECTED_CANONICAL_FIELDS = 115
+EXPECTED_CANONICAL_FIELDS = 113
 EXPECTED_ELTDX_FIELDS = 12
+RETIRED_UNCONSUMED_FIELDS = {"avg_price", "bid_ask_net"}
 PRIVATE_CACHE_NAMES = {"_BATCH_QUOTE_CACHE", "_PD_EXTRA_CACHE", "_PD_EXTRA_CACHE_DATE"}
 REPORT_FILES = (
     "main.py",
@@ -152,8 +153,53 @@ def _check_report_warnings(errors: list[str]) -> None:
             errors.append(f"{relative_path} must use the shared quote provenance formatter")
 
 
+def _check_canonical_consumer_coverage(canonical_names: set[str], errors: list[str]) -> int:
+    from scripts.canonical_consumer_coverage import (
+        CANONICAL_CONSUMER_EXEMPTIONS,
+        CANONICAL_CONSUMER_FILES,
+        find_canonical_consumer_reads,
+    )
+
+    missing_files = [
+        relative_path
+        for relative_path in CANONICAL_CONSUMER_FILES
+        if not (ROOT / relative_path).is_file()
+    ]
+    if missing_files:
+        errors.append(f"Canonical consumer source files are missing: {', '.join(missing_files)}")
+        return 0
+
+    sources = {
+        relative_path: (ROOT / relative_path).read_text(encoding="utf-8")
+        for relative_path in CANONICAL_CONSUMER_FILES
+    }
+    reads_by_field = find_canonical_consumer_reads(sources, canonical_names)
+    read_fields = set(reads_by_field)
+    exempt_fields = set(CANONICAL_CONSUMER_EXEMPTIONS)
+    unclassified = canonical_names - read_fields - exempt_fields
+    stale_exemptions = exempt_fields & read_fields
+    removed_exemptions = exempt_fields - canonical_names
+    if unclassified:
+        errors.append(
+            "Canonical fields have no report consumer or reviewed compatibility reason: "
+            f"{sorted(unclassified)}"
+        )
+    if stale_exemptions:
+        errors.append(
+            "Canonical consumer exemptions now have report readers and need reclassification: "
+            f"{sorted(stale_exemptions)}"
+        )
+    if removed_exemptions:
+        errors.append(
+            "Canonical consumer exemptions reference removed fields: "
+            f"{sorted(removed_exemptions)}"
+        )
+    return len(read_fields)
+
+
 def main() -> int:
     errors: list[str] = []
+    consumer_field_count = 0
     try:
         sys.path.insert(0, str(ROOT))
         from core.canonical_metadata import build_field_as_of_dates, canonical_data_source
@@ -161,6 +207,11 @@ def main() -> int:
 
         canonical_names = {item.name for item in fields(CanonicalStockData)}
         extension_names = {name for name in canonical_names if name.startswith("eltdx_")}
+        retained_orphans = canonical_names & RETIRED_UNCONSUMED_FIELDS
+        if retained_orphans:
+            errors.append(
+                f"CanonicalStockData contains fields without report consumers: {sorted(retained_orphans)}"
+            )
         if len(canonical_names) != EXPECTED_CANONICAL_FIELDS:
             errors.append(
                 f"CanonicalStockData has {len(canonical_names)} fields; expected {EXPECTED_CANONICAL_FIELDS}"
@@ -169,6 +220,7 @@ def main() -> int:
             errors.append(
                 f"CanonicalStockData has {len(extension_names)} ELTDX fields; expected {EXPECTED_ELTDX_FIELDS}"
             )
+        consumer_field_count = _check_canonical_consumer_coverage(canonical_names, errors)
 
         sample = CanonicalStockData(code="000001")
         if not isinstance(sample.field_sources, dict) or not isinstance(
@@ -211,7 +263,12 @@ def main() -> int:
         return 1
 
     print("Canonical contract verification: PASS")
-    print("  - 115 attributes, including 12 ELTDX extensions")
+    print("  - 113 attributes, including 12 ELTDX extensions")
+    print(
+        "  - "
+        f"{consumer_field_count}/113 fields have report consumers; "
+        "remaining fields have reviewed compatibility reasons"
+    )
     print("  - date/source metadata and trading-calendar routing are explicit")
     print("  - report scripts use the public cache API and expose unknown dates")
     return 0

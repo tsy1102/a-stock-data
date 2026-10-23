@@ -7,15 +7,15 @@
 | 区域 | 测试模块数 | 覆盖范围 | 详细清单 |
 |:---|---:|:---|:---|
 | `core/` | 19 | 核心门面、缓存、日历、类型契约、fallback、评分和技术指标 | [`core/README.md`](core/README.md) |
-| `data/` | 17 | ZHB、TDX/ELTDX、Eastmoney、KPL、网络、解禁单位、指数、EPS 预测缓存、财务日历和异步财报兜底 | [`data/README.md`](data/README.md) |
+| `data/` | 18 | ZHB、TDX/ELTDX、Eastmoney、KPL、网络、解禁单位、指数、EPS 预测缓存、财务日历和异步财报兜底 | [`data/README.md`](data/README.md) |
 | `infra/` | 12 | 调度器、字段完整性/命名、依赖预检、dry-run 写入边界、F10、外部 API 与 GD | [`infra/README.md`](infra/README.md) |
 | `reports/` | 14 | 报告 Runner、流水线、策略、章节契约、财务精度、Markdown 输出、正文辅助逻辑、指数映射和快照失败处理 | [`reports/README.md`](reports/README.md) |
 | 根目录 | 47 | 碰撞/字段登记、采集探针、来源身份核验、来源语义质量、依赖适配、AxData 摘要与维护工具、网络和临时目录隔离 | 本文件下方列出 |
-| **合计** | **108** | 参数化用例展开前的测试模块数 | — |
+| **合计** | **110** | 参数化用例展开前的测试模块数 | — |
 
 ## 最近完整执行
 
-2026-10-21（Python 3.12.10，`run_offline_checks.ps1`）：收集 1,250 项，离线执行 1,198 项，其中 1,197 通过、1 跳过；52 个 `real_network` 用例按默认策略排除，耗时 33.96 秒。真实网络测试未运行；语法 262 个文件、Mypy 232 个源文件、Black API 247 个文件且 0 格式差异；AxData 摘要、数据访问、字典同步、Canonical contract 与 registry parity 闸门均通过。
+2026-10-22（Python 3.12.10，`run_offline_checks.ps1`）：收集 1,260 项，离线执行 1,208 项，其中 1,207 通过、1 跳过；52 个 `real_network` 用例按默认策略排除，测试耗时 112.84 秒。真实网络测试未运行；语法 263 个文件、Mypy 233 个源文件、Black API 248 个文件且 0 格式差异；AxData 摘要、数据访问、字典同步、Canonical contract 与 registry parity 闸门均通过。四个跨进程限流/锁用例合计约 45.42 秒，保留其真实进程隔离和 OS 锁行为验证。
 
 根目录测试：
 

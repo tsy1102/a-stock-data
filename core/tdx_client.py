@@ -970,9 +970,9 @@ _TENCENT_FIELD_INDEX = {
     #   （🔥原腾讯[85] 对均价锚仅 3/20，已撤销其均价候选，回退 L3；主字典 09-08 TDX Average 20/20 精确强锚）
     "avg_price": 51,  # 均价 / VWAP（元, 腾讯 qt.gtimg [51]；TDX快照 average_price 同义）
     "beta": 56,  # Beta 族（高置信）——自算 Beta 与 [56] Pearson=0.908；腾讯口径估计值, 非本系统重算
-    # V17.0.25(2026-09-03)→2026-09-08 round12(字典定案): 委差=腾讯[50]+push2 f192
-    #   （🔥腾讯[86] 非委差: 等值 0/20、与 TDX 委比同号仅 55%, 已撤销[86]候选; [50]为委差强锚）
-    "bid_ask_net": 50,  # 委差（手级带符号量, 腾讯[50]；push2 f192 同义兜底）
+    # Tier2 research candidate only: Tencent[50] and push2 f192 have not been shown
+    # to share normalized semantics or units; this key is excluded from Tier1.
+    "bid_ask_net": 50,
     # V17.2.x(2026-09-10) 统一层接线补全(字典 §12.8.12e canonical 实装):
     "entrust_ratio": 74,  # 委比%(腾讯[74]；push2 f191 / TDX快照 entrust_ratio 同义)
     "bid2": 12,  # 买二价(元, 腾讯[12]；tdx bid2 / sina[14] 同义)

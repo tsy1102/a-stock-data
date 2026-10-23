@@ -627,8 +627,6 @@ class CanonicalStockData:
     pb: float = 0.0  # PB (倍)
     ps_ttm: float = 0.0  # V17.0.5: 市销率 TTM (fuyao 独有)
     pcf_ttm: float = 0.0  # V17.0.5: 市现率 TTM (fuyao 独有)
-    # V17.2.x(2026-09-10) 调整 A: 均价源 [85]→[51]（字典 09-08 round12 定案: [85]对均价锚仅3/20已撤销, [51]强锚+TDX快照 average_price）
-    avg_price: float = 0.0  # 均价 / VWAP（元，腾讯 qt.gtimg [51] + TDX快照 average_price）
     dividend_yield: float = 0.0  # 股息率 (%)
     turnover_pct: float = 0.0  # 换手率 (%)
     vol_ratio: float = (
@@ -683,8 +681,6 @@ class CanonicalStockData:
     # 衍生与历史指标
     # V17.0.25(2026-09-03): Beta（腾讯 [56]，据主字典 09-03 主动升级定案 = Beta 族高置信）
     beta: float = 0.0  # Beta（腾讯口径 Beta 估计值, 与自算 Pearson=0.908; 非本系统重算）
-    # V17.2.x(2026-09-10) 调整 B: 委差源 [86]→[50]+push2 f192（字典 09-08 定案: [86]非委差已撤销, [50]+f192 为 canonical）
-    bid_ask_net: float = 0.0  # 委差（手级带符号量, 腾讯[50] + push2 f192 兜底）
     # V17.2.x(2026-09-10) 调整 C: 委比%（腾讯[74] + push2 f191 + TDX快照 entrust_ratio；字典 §12.8.12e canonical）
     entrust_ratio: float = 0.0  # 委比(%)（腾讯[74]；push2 f191 / TDX快照 同义）
     change_5d: float = 0.0  # 5日涨跌幅 (%)

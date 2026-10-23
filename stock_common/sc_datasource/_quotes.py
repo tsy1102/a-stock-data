@@ -144,8 +144,10 @@ def get_tencent_quote(code: str) -> Dict[str, Any]:
             "avg_price": _tv("avg_price"),  # 均价/VWAP（腾讯[51]；TDX快照 average_price 同义）
             # V17.0.25(2026-09-03): [56] Beta 族（高置信, 腾讯口径 Beta 估计值）
             "beta": _tv("beta"),
-            # V17.2.x(2026-09-10) 调整 B: 委差源 [86]→[50]（字典 09-08 定案: [86]非委差已撤销, [50]+push2 f192 为 canonical）
-            "bid_ask_net": _tv("bid_ask_net"),  # 委差（手级带符号量, 腾讯[50]；push2 f192 兜底）
+            # Tier2 research candidate only; source semantics and units are not normalized.
+            "bid_ask_net": _tv(
+                "bid_ask_net"
+            ),  # Tencent[50]; push2 f192 is a separate source candidate
             # V17.2.x(2026-09-10) 调整 C/D: 委比/买二卖二价/内盘外盘（字典 §12.8.12e canonical 实装）
             "entrust_ratio": _tv("entrust_ratio"),  # 委比%(腾讯[74]；push2 f191 / TDX快照 同义)
             "bid2": _tv("bid2"),  # 买二价(元, 腾讯[12]；tdx bid2 / sina[14] 同义)
@@ -160,8 +162,8 @@ def get_tencent_quote(code: str) -> Dict[str, Any]:
             "limit_down": _safe_float(vals[_f["limit_down_price"]]),
         }
         result = normalize_at_boundary(raw, DataSource.TENCENT)
-        # V16.3.3: normalize 为白名单映射——腾讯独有字段（normalize 未定义）在此透传
-        # V17.0.25: 透传列表增补 avg_price/beta/bid_ask_net（[85]/[56]/[86] 09-03 定案字段）
+        # V16.3.3: normalize 为白名单映射——腾讯独有字段（normalize 未定义）在此透传。
+        # Tier2 keeps avg_price/beta/bid_ask_net for direct adapter consumers; Tier1 currently consumes beta only.
         # V17.2.x(2026-09-10): 透传列表增补 entrust_ratio/bid2/ask2/s_vol/b_vol（调整 C/D 实装字段）
         for _xk in (
             "roa",

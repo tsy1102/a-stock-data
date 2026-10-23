@@ -691,14 +691,12 @@ def get_canonical_stock_data(code: str, force_realtime: bool = False) -> Any:
             # V17.0 修复: 补取循环删 pe_dynamic——🔴2026-09-01 纠正：腾讯 [52]=f162=动态PE(pe_mrq, 字典实锤),
             # 非静态PE; 原注释"实为静态PE"系 2026-08-13 误订。pe_dynamic 只信 f162/fuyao, 不取腾讯[52]避免多源混用
             # V17.0.7: 删 main_net_inflow_yi(tx75 证伪=近180交易日涨幅, 非主力净流入)
-            # V17.2.x(2026-09-10) 调整 A/B/C: avg_price 源 [85]→[51]、bid_ask_net 源 [86]→[50](+push2 f192)；
-            #   增补 entrust_ratio([74])/bid2([12])/ask2([22]) 接线(字典 §12.8.12e canonical 实装)
+            # V17.2.x(2026-09-10): 补齐仍被 Tier1 消费的 Beta、委比与盘口价字段。
+            # avg_price / bid_ask_net 保留在 Tier2 行情 payload，但无报告消费方，不进入 CanonicalStockData。
             for _tf in (
                 "roa",
                 "roe_deduct_ttm",
-                "avg_price",
                 "beta",
-                "bid_ask_net",
                 "entrust_ratio",
                 "bid2",
                 "ask2",
@@ -1711,6 +1709,10 @@ def get_canonical_stock_data(code: str, force_realtime: bool = False) -> Any:
     except Exception as _e:
         _debug_log(f"get_canonical_stock_data eltdx enrichment error ({code_str}): {_e}")
 
+    # These Tier2 quote payload values have no Tier1/report consumer. Keep their
+    # source adapters intact while excluding their provenance from the canonical contract.
+    field_sources.pop("avg_price", None)
+    field_sources.pop("bid_ask_net", None)
     field_as_of_dates = build_field_as_of_dates(
         field_sources,
         source_as_of_dates,
@@ -1819,15 +1821,9 @@ def get_canonical_stock_data(code: str, force_realtime: bool = False) -> Any:
             or ""
         ),
         bid1_vol=_safe_float(rt_quote.get("bid1_vol") or em_quote_raw.get("bid1_vol") or 0),
-        # V17.2.x(2026-09-10) 调整 A/B/C: 统一层契约接线(字典 §12.8.12e canonical)
-        # avg_price=均价/VWAP(腾讯[51]+TDX快照)、beta=腾讯[56]口径Beta估计、
-        # bid_ask_net=委差(腾讯[50]+push2 f192)、entrust_ratio=委比%(腾讯[74]+push2 f191+TDX快照)、
-        # bid2=买二价(腾讯[12]+tdx bid2)、ask2=卖二价(腾讯[22]+tdx ask2)
-        avg_price=_safe_float(rt_quote.get("avg_price") or em_quote_raw.get("avg_price") or 0),
+        # V17.2.x(2026-09-10) Tier1 保留字段：beta、entrust_ratio、bid2、ask2。
+        # avg_price / bid_ask_net 仍可由 Tier2 行情适配器读取，但当前没有 Tier1 消费方。
         beta=_safe_float(rt_quote.get("beta") or em_quote_raw.get("beta") or 0),
-        bid_ask_net=_safe_float(
-            rt_quote.get("bid_ask_net") or em_quote_raw.get("bid_ask_net") or 0
-        ),
         entrust_ratio=_safe_float(
             rt_quote.get("entrust_ratio") or em_quote_raw.get("entrust_ratio") or 0
         ),

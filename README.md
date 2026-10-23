@@ -22,7 +22,7 @@
 - **Levistock 每日来源核验**：完整采集或 `--only market_sources` 会复用已采集的 CLS 情绪与 KPH 天梯，并从 7 个已筛选的数值接口中逐交易日轮换至多一个候选请求；仅在运行版本符合 `requirements.txt` 的 `0.1.8` 固定约束、目标为最近已完成交易日且数据阶段为 `closed` 时探测。周末和节假日默认以最近交易日作为数据日，盘前运行也可以核验该数据日；候选日期可比性仍依据请求日期或响应日期证据判定。调用前走 CLS/KPH 源族限流，403/429/封禁后停止该族并等待人工复核。候选 raw 独立存放，不直接作为碰撞锚；每日核验器本身只读 raw，新增请求数为 0。当前 7 项轮验不代表 Levistock 全部公开 API 均已验证。Eastmoney push2 未确认恢复前排除。完整快照同日重跑会复用 raw、补齐缺失的核验摘要，已保存的候选样本不会重请求；此前因对照源缺失而零请求跳过时，主源通过 `--overwrite` 恢复后可同日重新评估，实际候选请求一旦启动仍会被日级状态去重。详见 [`Levistock 来源核对`](docs/levistock_source_reconciliation_20261010.md)。
 - **上游兼容性复核**：登记仓库、依赖版本差异、实际调用边界与采用结论见 [`UPSTREAM_COMPATIBILITY.md`](docs/UPSTREAM_COMPATIBILITY.md)；仓库对应关系见 [`source_repository_map.md`](docs/source_repository_map.md)。
 - **百度源状态**：百度 K 线 MA 的 3 个登记字段目前为 `pending_validation`；默认不发请求，可显式使用 `--only baidu` 做限量验证。先前失效的 `getrelatedblock` 是概念接口，不能据此断定 K 线接口失效。AxData 当前接口表没有百度接口；FTShare 历史服务曾暴露的 `baidu_financial_calendar` 是财经日历方法，不是股票行情源。
-- **统一数据合约**：唯一入口 `get_canonical_stock_data` 返回 `CanonicalStockData` 强类型合约（115 个 dataclass 属性，含 12 个可选 ELTDX 扩展；每只股票通过 `field_sources` 记录来源，并保留行情有效日期和采集时间元数据）。
+- **统一数据合约**：唯一入口 `get_canonical_stock_data` 返回 `CanonicalStockData` 强类型合约（113 个 dataclass 属性，含 12 个可选 ELTDX 扩展；每只股票通过 `field_sources` 记录来源，并保留行情有效日期和采集时间元数据）。
 - **按工作负载批量取源**：SHT/MED/LNG 先用 push2delay 批量行情，再用腾讯 60 只/批接口补齐估值、财务比率、盘口和涨跌停字段；VAL 保留全市场腾讯批量，MAK 保留 ZHB 快照、腾讯行情覆盖和东财资金字段批次。每字段记录实际来源，缺项仍保留单股 fallback。长线正文不消费 ELTDX 短线天梯，因此不再为长线请求该数据。
 - **按时段与新鲜度选择行情**：盘前和休市日可复用满足逐字段新鲜度要求的 ZHB 快照；交易日 09:30 起，实时行情按当前路由获取当日数据。路由和来源标注见 [`架构说明`](docs/architecture.md)。
 - **申万二级行业统一**：东财 datacenter 一次性分页拉取 + 90 天缓存，零逐股请求、零 push2 风控面。
@@ -265,7 +265,7 @@ a-stock-data/
 
 文档完整架构（模块职责 / 数据流 / 并发限流 / 缓存分层 / 字段路由）见 [`docs/architecture.md`](docs/architecture.md)（含 Mermaid 图）。要点速览：
 
-- **`core/data_provider.py`**：个股数据统一入口，封装 `CanonicalStockData` 强类型合约（115 个 dataclass 属性，含 12 个可选 ELTDX 扩展；非扩展属性为 103 个；`sc_schema.FIELD_SPECS` 是 38 项精选源字段元数据，不是完整契约字段清单）。报告批量路由为 push2delay 基础行情 + 腾讯补充字段；批量缺价时单股 fallback 为 TDX → 腾讯 → push2delay → push2，并按时段使用 ZHB 快照。每只股票通过 `field_sources` 留存来源，并透传行情有效日期与采集时间；跨边界访问器已拆至 `core/_accessors.py`，消除与 `stock_common` 的导入期循环依赖。
+- **`core/data_provider.py`**：个股数据统一入口，封装 `CanonicalStockData` 强类型合约（113 个 dataclass 属性，含 12 个可选 ELTDX 扩展；非扩展属性为 101 个；`sc_schema.FIELD_SPECS` 是 38 项精选源字段元数据，不是完整契约字段清单）。报告批量路由为 push2delay 基础行情 + 腾讯补充字段；批量缺价时单股 fallback 为 TDX → 腾讯 → push2delay → push2，并按时段使用 ZHB 快照。每只股票通过 `field_sources` 留存来源，并透传行情有效日期与采集时间；跨边界访问器已拆至 `core/_accessors.py`，消除与 `stock_common` 的导入期循环依赖。
 - **`stock_common/sc_network.py`**：分域与风险组限流（push2 家族、push2ex、push2delay 各自设限，仍共享 Eastmoney 全局间隔）、跨进程原子时隙、408/5xx 与瞬时传输故障有界退避、403/429 立即停止、按组连续封禁 20h 冷却。
   > 注：`core/tdx_client.py::_DOMAIN_LIMITS` 另有 6 域**独立**限流表（TCP 长连接语义，与 HTTP 请求级节流不同，**有意不合并**）。
 - **`stock_common/sc_datasource/`**：按数据源和业务职责组织的查询适配器，模块清单见 [`stock_common/sc_datasource/README.md`](stock_common/sc_datasource/README.md)。

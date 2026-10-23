@@ -2,7 +2,7 @@
 
 > 用途：提供稳定架构、关键约束与文档路由；任务开始时按 §0 读取相关文件，不重复加载全仓历史。
 > 维护：结构、入口或稳定流程变化时更新。字段语义以 registry/裁决证据为准；运行结果以当次产物为准。
-> 更新日期：2026-10-21（`VERSION`：17.6.3）
+> 更新日期：2026-10-22（`VERSION`：17.6.3）
 
 ## 0. 任务路由
 
@@ -40,7 +40,7 @@
 
 - ZHB/实时路由由 `data_provider.py` 和 `sc_datasource.zhb_field_safe()` 决定：非交易日或交易日盘前可使用最近已完成交易日快照；交易日开盘后及盘后使用实时路径，不能假定磁盘 ZHB 已更新到当日。
 - 报告批量路由和单股 fallback 不是同一层。SHT/MED/LNG 常规批量行情以 push2delay + 腾讯补充为主；单股 fallback 顺序由代码维护为 TDX → 腾讯 → push2delay → push2。delay 成功时不额外请求 push2 主域；push2 是失败回退，不是重复全量锚。
-- `CanonicalStockData` 当前有 115 个 dataclass 属性（含 12 个 ELTDX 扩展）；`FIELD_SPECS` 的 38 项是精选字段元数据，不代表全部契约字段。
+- `CanonicalStockData` 当前有 113 个 dataclass 属性（含 12 个 ELTDX 扩展）；`FIELD_SPECS` 的 38 项是精选字段元数据，不代表全部契约字段。
 - 注册表身份始终是 `(source, 完整 code path)`。语义已确认只停止对同一关系的重复破解，不停止采集；只有逐路由冗余证据达到 `scripts/README.md` 的退出与复验条件后，才可暂停该路由的常规采集。
 - AxData 和 Levistock 候选样本只作来源或接口核验辅助证据；除非来源谱系明确独立，否则不作为跨源定案锚。AxData 已确认冗余的生产路由会退出日常请求，并在 20 个有效交易数据日后复验。FTShare 私有托管 MCP 已退役，旧字段与 raw 仅供显式历史研究；公开 REST 的 `A股行情列表` 已进入每日采集和默认碰撞。官方契约字段须有逐字段审定证据：Fuyao 属已确认独立来源，使用普通 L1/L1-U；底层来源独立性未确认的契约锚才列入 L1-C。碰撞报告按来源分列契约定义数、窗口观察、比较参与和等级结果；契约定义不等于来源独立，也不自动定案。白名单、限流、封禁和复验状态以 `scripts/README.md` 与本机 `.tmp/` 状态为准。
 - 碰撞报告的 Markdown 是摘要；字段结论前必须核对 JSON `report_completeness` 并覆盖所有候选明细。schema 5 还需分别核对机器候选完整率、身份校验和 `candidate_review.human_review` 覆盖状态；L1 主字典裁决要求该候选处置为 `accepted_for_adjudication`。完整性失败、缺失或数量不平时，结论保持未完成，优先从原始归档重建。人工处置由 `scripts/review_collision_candidates.py` 预览/记录，不会单独修改注册表。
@@ -54,8 +54,8 @@
 
 - Python 最低版本 3.11；开发/测试推荐 Python 3.12。解释器由 `scripts/run_with_system_python.ps1` 选择。
 - 测试通过 `scripts/run_tests.ps1` 运行；真实网络测试只有显式选择时才运行。模块索引与最近全量结果见 [`tests/README.md`](../tests/README.md)。
-- 最近完成的全量离线套件（2026-10-21，本机 Python 3.12.10）：收集 1,242 项，1,189 通过、1 跳过、52 个真实网络用例排除，28.21 秒。真实网络用例未运行；后续运行结果以当次命令输出为准。
-- 2026-10-21 registry parity：1,893 个字段、2,550 条来源路径、378 个多源字段；原始基线与 scope-adjusted + E3 + 官方契约 + observation 补录严格相等。范围校验、投影、聚合语义和 field matrix 全部通过；此前“差 16 条新浪路径”的状态已过期。
+- 最近完成的全量离线套件（2026-10-22，本机 Python 3.12.10）：收集 1,260 项，离线执行 1,208 项，其中 1,207 通过、1 跳过；52 个真实网络用例排除，测试耗时 112.84 秒。依赖按 `requirements-dev.txt` 安装，`pip check` 无依赖冲突；真实网络用例未运行。语法 263 个文件、Mypy 233 个源文件、Black API 248 个文件且 0 格式差异；AxData 摘要、数据访问、字典同步、Canonical contract 与 registry parity 闸门均通过。
+- 2026-10-22 registry parity：1,893 个字段、2,550 条来源路径、378 个多源字段；原始基线与 scope-adjusted + E3 + 官方契约 + observation 补录严格相等。范围校验、投影、聚合语义和 field matrix 全部通过；此前“差 16 条新浪路径”的状态已过期。
 - 代码改动按 `AGENTS.md` §8 调查数据契约影响，再按 §9 验证。静态规则有专用闸门：`scripts/verify_data_access.py`（A1）和 `scripts/verify_sync_check.py`（A7）；字段视图用对应生成器与 `scripts/registry_parity.py` 检查。
 - 清理缓存或采集归档前，先确认是否仍需离线复核；`.gitignore` 按路径规则忽略本机运行数据。
 

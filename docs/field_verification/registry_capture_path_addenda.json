@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "purpose": "记录只证明采集器根路径存在、不声明叶字段语义的路径补录；证据仅使用保留起始日之后的原始样本。",
+  "entries": [
+    {
+      "source": "市场源(market_sources)",
+      "code": "cls_market_emotion",
+      "evidence_file": "docs/field_verification/20261021/raw_market_sources.json",
+      "capture_path": "/cls_market_emotion"
+    },
+    {
+      "source": "市场源(market_sources)",
+      "code": "kph_limit_ladder",
+      "evidence_file": "docs/field_verification/20261021/raw_market_sources.json",
+      "capture_path": "/kph_limit_ladder"
+    }
+  ]
+}

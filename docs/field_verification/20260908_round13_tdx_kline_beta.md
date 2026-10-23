@@ -1,5 +1,7 @@
 # 第 13 轮 · tx[56] Beta 第四源(TDX K线)对撞终判 + tx[85]/tx[86] 状态复核
 
+> 保留说明：本报告引用的 `raw_tdx_kline_beta.json` 样本日期为 2026-09-08，已于 2026-10-23 按 20261015 保留起点清理；本分析记录保留。
+
 > 方法体系：对撞四铁律（精确对齐 / 命中率分层 / 比值族 / 多日复核）+ 相关性仅生成候选、不定案（铁律#5）
 > 数据日：2026-09-08（盘前快照；TDX K线 前复权日线，窗口 20250815–20260908，259 有效根/只）
 > 第四源：通达信 MCP `tdx_kline`（独立第四源，与腾讯/东财push2/ulist/ZHB 无关）
@@ -128,7 +130,7 @@ max|resid| = 0.1545
 | tx[86] | 纯 L4 手级带符号量 | 维持；路径穷尽，待官方文档 |
 
 **产物**：
-- `docs/field_verification/raw_tdx_kline_beta.json`（19 个股 + 沪深300 + 中证全指 Close 序列）
+- `docs/field_verification/raw_tdx_kline_beta.json`（19 个股 + 沪深300 + 中证全指 Close 序列；原始样本已按保留策略清理）
 - `docs/field_verification/tx56_collision_evidence.json`（对撞证据机读存档）
 - `docs/field_verification/20260908_round13_tdx_kline_beta.md`（本报告）
 

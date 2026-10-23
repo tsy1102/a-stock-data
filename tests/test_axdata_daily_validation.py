@@ -1,9 +1,12 @@
 from __future__ import annotations
 
+from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime
 import json
 import os
 import time
+from pathlib import Path
+from threading import Barrier
 
 import pytest
 
@@ -96,6 +99,37 @@ def _run_validation(
         source_meta=source_meta or {"tencent": {"ok": True, "status": "ok"}},
         now=now or parsed_date.replace(hour=16),
     )
+
+
+def test_json_writes_use_unique_target_local_temporary_files(tmp_path, monkeypatch):
+    state_path = tmp_path / "state.json"
+    monkeypatch.setattr(validation, "STATE_PATH", state_path)
+    targets = [tmp_path / f"capture_{index}" / validation.EVIDENCE_FILENAME for index in range(2)]
+    replace_barrier = Barrier(2)
+    replace_sources = []
+    original_replace = os.replace
+
+    def synchronized_replace(source, destination):
+        replace_sources.append(Path(source))
+        replace_barrier.wait(timeout=5)
+        return original_replace(source, destination)
+
+    monkeypatch.setattr(validation.os, "replace", synchronized_replace)
+    with ThreadPoolExecutor(max_workers=2) as executor:
+        futures = [
+            executor.submit(validation._write_json, target, {"writer": index})
+            for index, target in enumerate(targets)
+        ]
+        for future in futures:
+            future.result(timeout=10)
+
+    assert len(replace_sources) == 2
+    assert len(set(replace_sources)) == 2
+    assert {source.parent for source in replace_sources} == {target.parent for target in targets}
+    assert [json.loads(target.read_text(encoding="utf-8"))["writer"] for target in targets] == [
+        0,
+        1,
+    ]
 
 
 def test_validation_requires_latest_trade_date_and_required_sources(tmp_path, monkeypatch):

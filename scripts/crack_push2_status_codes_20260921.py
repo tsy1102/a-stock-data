@@ -12,7 +12,12 @@
 """
 
 from collections import defaultdict
+import importlib
 from typing import TYPE_CHECKING, Any
+
+_package_prefix = f"{__package__}." if __package__ else ""
+_retention_module = importlib.import_module(f"{_package_prefix}capture_retention")
+MIN_CAPTURE_DATE = _retention_module.MIN_CAPTURE_DATE
 
 if TYPE_CHECKING:
     from scripts.collision_dates import discover_capture_folders, select_snapshots
@@ -113,6 +118,8 @@ def _collision_field(per_date, source):
 
 def main():
     global DATES, SNAPSHOT_DOCS, SNAPSHOT_PHASES
+    if DATES and max(DATES) < MIN_CAPTURE_DATE.strftime("%Y%m%d"):
+        raise SystemExit("该历史专题脚本依赖保留起始日前的数据，已停用；请运行 scripts/collide.py")
     requested_folders = set(DATES)
     sources = {"push2_full", "ulist239", "tencent"}
     folders, folder_warnings = discover_capture_folders(FV)

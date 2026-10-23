@@ -12,10 +12,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - 连续 403 计数按归一化风险组隔离；修正 push2ex 异动接口绕过组级跨进程调度的问题，同步和异步请求共用调度及 403/429 规则。
 - push2ex 异动 GET 对连接故障和 5xx 最多允许一次受限重试；403/429 仍立即停止，不增加封禁风险。
 - 按 A5 清理已无报告消费方的 `CanonicalStockData.avg_price` 与 `bid_ask_net`；Tier2 原始报价输出保留，Tier1 契约由 115 项降为 113 项。
+- AxData 日验证的 JSON 原子写入改为目标目录内唯一临时文件，避免并发日期写入共用临时路径。
 
 ### Changed
 
 - 更新每日采集操作卡、脚本说明、网络层说明和领域词汇表，明确项目限流值是本地保守策略，不是 Eastmoney 官方限流承诺。
+- 字典同步报告默认覆盖 `.tmp/verify_sync_report.md`，不再向文档目录追加无消费方的时间戳报告；模块拆分计划压缩为结项导航，详细地图和阶段证据继续保留。
 
 ## [17.6.3] - 2026-10-21
 

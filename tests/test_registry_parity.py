@@ -1,3 +1,5 @@
+import json
+from datetime import date
 from pathlib import Path
 
 from scripts import registry_parity
@@ -177,16 +179,12 @@ def test_scope_manifest_rejects_duplicate_pairs_and_invalid_runtime_contract():
     assert any("必须声明 capture_path" in problem for problem in problems)
 
 
-def test_repository_scope_manifest_matches_only_the_five_reviewed_baseline_pairs():
+def test_repository_scope_manifest_contains_only_current_baseline_pairs():
     entries, problems = registry_parity._load_scope_manifest(registry_parity.SCOPE_MANIFEST)
 
     assert problems == []
     assert entries is not None
     expected = {
-        ("TDX(双命名源)", "Buyp"),
-        ("TDX(双命名源)", "Buyv"),
-        ("TDX(双命名源)", "Sellp"),
-        ("TDX(双命名源)", "Sellv"),
         ("同花顺-fuyao", "tags"),
     }
     assert set(entries) == expected
@@ -202,12 +200,199 @@ def test_repository_scope_manifest_matches_only_the_five_reviewed_baseline_pairs
         for record in registry_parity.fra.source_field_records(registry)
     }
     assert set(entries).isdisjoint(current_pairs)
-    for code in ("Buyp", "Buyv", "Sellp", "Sellv"):
-        assert entries[("TDX(双命名源)", code)]["disposition"] == "captured_runtime"
     assert entries[("同花顺-fuyao", "tags")]["disposition"] == "captured_context"
     assert entries[("同花顺-fuyao", "tags")]["capture_path"] == (
         "raw_fuyao.json:market.short_term_benchmark[*].tags"
     )
+
+
+def test_repository_parity_classifies_all_nonbaseline_paths(capsys):
+    assert registry_parity.main([]) == 0
+
+    output = capsys.readouterr().out
+    assert "registry-core(1703/2315/345)" in output
+    assert "parity[unverified-candidates]: PASS 235" in output
+    assert "parity[adjudication-addenda]: PASS 8" in output
+    assert "parity[capture-path-addenda]: PASS 2" in output
+    assert "parity[field_matrix]: PASS" in output
+
+
+def test_adjudication_plan_validates_target_source_and_allows_runtime_alias_paths():
+    pair = ("开盘啦(kpl_limit_up_detail)", "zt_time")
+    target = {"source": pair[0], "code": pair[1]}
+    candidate = {"left": "kpl.raw_columns.col_04", "right": "kph.limit_time"}
+    adjudication = {
+        "id": "review-1",
+        "candidate": candidate,
+        "reviewed_on": "2026-10-23",
+        "target": target,
+    }
+    plan = {
+        "report": "20261023/20261023_collision_report.json",
+        "reviewed_on": "2026-10-23",
+        "decisions": [
+            {
+                "id": "review-1",
+                "action": "verify",
+                "candidate": candidate,
+                "target": target,
+            }
+        ],
+    }
+    problems = []
+
+    matched = registry_parity._match_adjudication_plan(
+        pair,
+        adjudication,
+        "review-1",
+        "20261023/20261023_collision_report.json",
+        plan,
+        problems,
+    )
+
+    assert matched == candidate
+    assert problems == []
+
+
+def test_adjudication_plan_rejects_candidate_from_a_different_source():
+    pair = ("另一来源", "[11]")
+    candidate = {"left": "sina.[11]", "right": "tdx.quote_raw.bid1"}
+    adjudication = {
+        "id": "review-2",
+        "candidate": candidate,
+        "reviewed_on": "2026-10-23",
+    }
+    plan = {
+        "report": "20261023/report.json",
+        "reviewed_on": "2026-10-23",
+        "decisions": [
+            {
+                "id": "review-2",
+                "action": "verify",
+                "candidate": candidate,
+                "target": {"source": "新浪(hq.sinajs)", "code": "[11]"},
+            }
+        ],
+    }
+    problems = []
+
+    matched = registry_parity._match_adjudication_plan(
+        pair, adjudication, "review-2", "20261023/report.json", plan, problems
+    )
+
+    assert matched is None
+    assert any("目标身份" in problem for problem in problems)
+
+
+def test_adjudication_validation_uses_persisted_decision_without_local_full_report(
+    tmp_path: Path,
+):
+    pair = ("TDX(双命名源)", "amount")
+    decision_id = "review-with-local-report"
+    report = "20261023/20261023_collision_report.json"
+    candidate = {"left": "tdx.quote_raw.amount", "right": "fuyao.snapshot.turnover"}
+    target = {"source": pair[0], "code": pair[1]}
+    verification_root = tmp_path / "field_verification"
+    decision_path = verification_root / "adjudications" / "decision.json"
+    decision_path.parent.mkdir(parents=True)
+    decision_path.write_text(
+        json.dumps(
+            {
+                "report": report,
+                "reviewed_on": "2026-10-23",
+                "decisions": [
+                    {
+                        "id": decision_id,
+                        "action": "verify",
+                        "candidate": candidate,
+                        "target": target,
+                    }
+                ],
+            }
+        ),
+        encoding="utf-8",
+    )
+    adjudication = {
+        "id": decision_id,
+        "action": "verify",
+        "status": "verified",
+        "decision_file": "adjudications/decision.json",
+        "report": report,
+        "candidate": candidate,
+        "reviewed_on": "2026-10-23",
+        "evidence": {"n_days": 3, "n_pairs": 60, "evidence_sources": ["tdx", "fuyao"]},
+    }
+    row = {
+        "canonical": "amount",
+        "meaning": "成交额",
+        "unit": "元",
+        "reference_evidence": [
+            {
+                "adjudication_id": decision_id,
+                "status": "verified",
+                "canonical": "amount",
+                "meaning": "成交额",
+                "unit": "元",
+            }
+        ],
+    }
+    problems: list[str] = []
+
+    valid = registry_parity._validate_adjudication_record(
+        pair, row, adjudication, verification_root, {}, set(), problems
+    )
+
+    assert valid
+    assert not (verification_root / report).exists()
+    assert problems == []
+
+
+def test_capture_path_manifest_rejects_pre_retention_evidence(tmp_path: Path):
+    evidence_path = (
+        tmp_path / "docs" / "field_verification" / "20261014" / "raw_market_sources.json"
+    )
+    evidence_path.parent.mkdir(parents=True)
+    evidence_path.write_text(
+        json.dumps({"cls_market_emotion": {"market_degree": 1}}), encoding="utf-8"
+    )
+    source = "市场源(market_sources)"
+    code = "cls_market_emotion"
+    manifest = {
+        "schema_version": 1,
+        "purpose": "Reject capture evidence before the retained-data floor.",
+        "entries": [
+            {
+                "source": source,
+                "code": code,
+                "evidence_file": ("docs/field_verification/20261014/raw_market_sources.json"),
+                "capture_path": "/cls_market_emotion",
+            }
+        ],
+    }
+    records = [
+        {
+            "source": source,
+            "code": code,
+            "status": "verified",
+            "status_resolution": "registry_status_only_single_source",
+            "canonical": "",
+            "meaning": "",
+            "unit": "",
+            "reference_evidence": [],
+        }
+    ]
+
+    pairs, problems = registry_parity._validate_capture_path_manifest(
+        manifest,
+        records,
+        {source},
+        set(),
+        tmp_path,
+        date(2026, 10, 15),
+    )
+
+    assert pairs == set()
+    assert any("早于保留起始日" in problem for problem in problems)
 
 
 def test_reconciled_capture_pairs_stay_unverified_and_traceable():

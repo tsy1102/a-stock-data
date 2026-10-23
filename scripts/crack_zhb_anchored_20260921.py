@@ -9,7 +9,15 @@ ZHB-T1 铁律: 休市日 ZHB 日期=报告数据日; 本机 ZHB 未同步今日�
 输出: docs/field_verification/20260921/zhb_anchored_crack.md
 不改 field_dict.md（仅产证据）。
 """
+import importlib
 import json, statistics
+
+_package_prefix = f"{__package__}." if __package__ else ""
+_capture_store_module = importlib.import_module(f"{_package_prefix}raw_capture_store")
+_retention_module = importlib.import_module(f"{_package_prefix}capture_retention")
+read_capture_json = _capture_store_module.read_capture_json
+MIN_CAPTURE_DATE = _retention_module.MIN_CAPTURE_DATE
+
 FV = "docs/field_verification"
 DATE = "20260918"          # 全采集锚定日(tencent/push2_full/ulist239 均有效)
 ZHB_DIR = "20260921"       # 今日(20260921)采集的 ZHB(=20260918)
@@ -46,8 +54,7 @@ def match_precise(a, b):
 
 
 def load_json(p):
-    with open(p, encoding="utf-8") as f:
-        return json.load(f)
+    return read_capture_json(p)
 
 
 def load_tencent(date):
@@ -114,6 +121,10 @@ def _rank(vals):
 
 
 def main():
+    if DATE < MIN_CAPTURE_DATE.strftime("%Y%m%d") or ZHB_DIR < MIN_CAPTURE_DATE.strftime("%Y%m%d"):
+        raise SystemExit(
+            "该历史专题脚本依赖保留起始日前的采集样本，已停用；请运行 scripts/collide.py"
+        )
     tx = load_tencent(DATE)
     p2 = load_push2(DATE)
     ul = load_ulist(DATE)

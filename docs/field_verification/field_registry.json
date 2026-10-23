@@ -1,13 +1,13 @@
 {
   "meta": {
     "version": 2,
-    "updated": "2026-10-22",
+    "updated": "2026-10-23",
     "source_of_truth": "field_registry.json",
     "generated_by": "manual source-identity reconciliation; see source_identity_reclassifications.json",
     "note": "source_fields 是逐源完整路径权威记录；fields 是兼容聚合视图。Levistock 历史混合身份的 175 条结构化记录已按逐字段映射重分类。历史原文中额外解析到的 56 个 token 不在迁移前的结构化注册表中，继续保留在只读档案，不提升为当前字段记录。状态冲突与历史证据保存在 source_fields。source_field_addenda 只允许有 E3 文件证据且经 parity 校验的增补，不覆盖 field_source_reference.md 历史原文。",
     "format_note": "JSON（YAML 严格子集，零依赖）。原计划 YAML 因环境无 pyyaml/ruamel 改 JSON。",
     "source_field_stats": {
-      "aggregate_status_scope_unresolved": 493,
+      "aggregate_status_scope_unresolved": 492,
       "candidate": 1,
       "conflict": 81,
       "disproved": 2,
@@ -23,9 +23,9 @@
       "resolved_by_multiday_independent_cross_source_l1": 2,
       "status_conflict": 59,
       "status_missing": 43,
-      "unverified": 1502,
-      "verified": 964,
-      "verified_by_empirical_addendum": 12,
+      "unverified": 1501,
+      "verified": 965,
+      "verified_by_empirical_addendum": 13,
       "verified_by_source_contract": 69
     }
   },
@@ -5863,7 +5863,7 @@
         "ZHB-tdxstat": "verified",
         "ZHB-tdxstat2": "verified",
         "ZHB-tipinfo": "verified",
-        "新浪(hq.sinajs)": "unverified",
+        "新浪(hq.sinajs)": "verified",
         "腾讯(qt.gtimg)": "unverified"
       },
       "aggregation_status": "ambiguous",
@@ -41538,6 +41538,7 @@
       "TDX-eltdx"
     ],
     "liudongfuzhai": [
+      "TDX(双命名源)",
       "TDX-0x0010/F10"
     ],
     "liutongguben": [
@@ -43289,6 +43290,7 @@
       "TDX-0x0010/F10"
     ],
     "zibengongjijin": [
+      "TDX(双命名源)",
       "TDX-0x0010/F10"
     ],
     "zong_gu_ben_raw_float": [
@@ -43301,6 +43303,7 @@
       "TDX-0x0010/F10"
     ],
     "zongzichan": [
+      "TDX(双命名源)",
       "TDX-0x0010/F10"
     ],
     "zqdm": [
@@ -44446,6 +44449,21 @@
     ],
     "symbol_id": [
       "FTShare REST"
+    ],
+    "gudingzichan": [
+      "TDX(双命名源)"
+    ],
+    "lirunzonghe": [
+      "TDX(双命名源)"
+    ],
+    "liudongzichan": [
+      "TDX(双命名源)"
+    ],
+    "weifenlirun": [
+      "TDX(双命名源)"
+    ],
+    "yingyelirun": [
+      "TDX(双命名源)"
     ]
   },
   "mappings": [
@@ -174952,6 +174970,7 @@
       "unit": "元",
       "section": "KPH 与 KPL 涨停明细核验（2026-09-29/30 双交易日）",
       "sections": [
+        "20261023/20261023_collision_report.json",
         "KPH 与 KPL 涨停明细核验（2026-09-29/30 双交易日）"
       ],
       "status": "verified",
@@ -174966,10 +174985,68 @@
         "overlap_counts": [
           45,
           40
+        ],
+        "adjudication_ids": [
+          "20261023-kpl-col08-net-inflow-link"
         ]
       },
-      "reference_evidence": [],
-      "attribute_conflicts": {}
+      "reference_evidence": [
+        {
+          "section": "20261023/20261023_collision_report.json",
+          "canonical": "main_inflow",
+          "meaning": "主力净流入；与 KPH net_inflow 两日逐值一致",
+          "unit": "元",
+          "status_raw": "人工复核 2026-10-23：20261023-kpl-col08-net-inflow-link",
+          "status": "verified",
+          "adjudication_id": "20261023-kpl-col08-net-inflow-link"
+        }
+      ],
+      "attribute_conflicts": {},
+      "adjudications": [
+        {
+          "id": "20261023-kpl-col08-net-inflow-link",
+          "action": "link_verified",
+          "status": "verified",
+          "reviewer": "Codex",
+          "reviewed_on": "2026-10-23",
+          "report": "20261023/20261023_collision_report.json",
+          "decision_file": "adjudications/20261023_kpl_raw_alias_link.json",
+          "candidate": {
+            "left": "kpl.raw_columns.col_08",
+            "right": "kph.net_inflow"
+          },
+          "level": "L1",
+          "rationale": "复核三个交易日的 KPL 与 KPH 原始样本，135 个配对中 133 个为信息样本，133/133 精确匹配；另外两个配对是双方均无信息值。KPL 原始列 col_08 已由适配器解析为已验证 main_inflow，与 KPH net_inflow 建立关系，不新增原始列身份。",
+          "evidence": {
+            "ratio": null,
+            "overall_hit": 1.0,
+            "n_days": 3,
+            "n_pairs": 135,
+            "distinct_days": [
+              "T:20261016",
+              "T:20261019",
+              "T:20261021"
+            ],
+            "daily_sample_counts": {
+              "T:20261021": 45,
+              "T:20261016": 50,
+              "T:20261019": 40
+            },
+            "evidence_sources": [
+              "kph",
+              "kpl"
+            ]
+          },
+          "target": {
+            "source": "开盘啦(kpl_limit_up_detail)",
+            "code": "main_inflow"
+          },
+          "anchor": {
+            "source": "开盘红",
+            "code": "net_inflow"
+          }
+        }
+      ]
     },
     {
       "source": "开盘啦(kpl_limit_up_detail)",
@@ -174981,6 +175058,7 @@
       "unit": "元",
       "section": "KPH/KPL 封单映射纠错（2026-10-22，三交易日）",
       "sections": [
+        "20261023/20261023_collision_report.json",
         "KPH 与 KPL 涨停明细核验（2026-09-29/30 双交易日）"
       ],
       "status": "verified",
@@ -174997,10 +175075,68 @@
           50,
           40,
           45
+        ],
+        "adjudication_ids": [
+          "20261023-kpl-col07-seal-money-link"
         ]
       },
-      "reference_evidence": [],
-      "attribute_conflicts": {}
+      "reference_evidence": [
+        {
+          "section": "20261023/20261023_collision_report.json",
+          "canonical": "max_seal",
+          "meaning": "最大封单金额；与 KPH seal_money 三个交易日逐股逐值一致",
+          "unit": "元",
+          "status_raw": "人工复核 2026-10-23：20261023-kpl-col07-seal-money-link",
+          "status": "verified",
+          "adjudication_id": "20261023-kpl-col07-seal-money-link"
+        }
+      ],
+      "attribute_conflicts": {},
+      "adjudications": [
+        {
+          "id": "20261023-kpl-col07-seal-money-link",
+          "action": "link_verified",
+          "status": "verified",
+          "reviewer": "Codex",
+          "reviewed_on": "2026-10-23",
+          "report": "20261023/20261023_collision_report.json",
+          "decision_file": "adjudications/20261023_kpl_raw_alias_link.json",
+          "candidate": {
+            "left": "kpl.raw_columns.col_07",
+            "right": "kph.seal_money"
+          },
+          "level": "L1",
+          "rationale": "复核三个交易日同股同日 135/135 精确匹配，并对照 2026-10-22 的封单映射纠错记录。KPL 原始列 col_07 对应已验证 max_seal，KPH seal_money 为封单金额；保留更正后的对应关系，不将原始位置别名登记为第二个字段。",
+          "evidence": {
+            "ratio": null,
+            "overall_hit": 1.0,
+            "n_days": 3,
+            "n_pairs": 135,
+            "distinct_days": [
+              "T:20261016",
+              "T:20261019",
+              "T:20261021"
+            ],
+            "daily_sample_counts": {
+              "T:20261021": 45,
+              "T:20261016": 50,
+              "T:20261019": 40
+            },
+            "evidence_sources": [
+              "kph",
+              "kpl"
+            ]
+          },
+          "target": {
+            "source": "开盘啦(kpl_limit_up_detail)",
+            "code": "max_seal"
+          },
+          "anchor": {
+            "source": "开盘红",
+            "code": "seal_money"
+          }
+        }
+      ]
     },
     {
       "source": "开盘啦(kpl_limit_up_detail)",
@@ -175043,6 +175179,7 @@
       "unit": "%",
       "section": "KPH 与 KPL 涨停明细核验（2026-09-29/30 双交易日）",
       "sections": [
+        "20261023/20261023_collision_report.json",
         "KPH 与 KPL 涨停明细核验（2026-09-29/30 双交易日）"
       ],
       "status": "verified",
@@ -175057,10 +175194,68 @@
         "overlap_counts": [
           45,
           40
+        ],
+        "adjudication_ids": [
+          "20261023-kpl-col14-turnover-link"
         ]
       },
-      "reference_evidence": [],
-      "attribute_conflicts": {}
+      "reference_evidence": [
+        {
+          "section": "20261023/20261023_collision_report.json",
+          "canonical": "turnover_real",
+          "meaning": "实际换手率；与 KPH turnover_rate 两日逐值一致",
+          "unit": "%",
+          "status_raw": "人工复核 2026-10-23：20261023-kpl-col14-turnover-link",
+          "status": "verified",
+          "adjudication_id": "20261023-kpl-col14-turnover-link"
+        }
+      ],
+      "attribute_conflicts": {},
+      "adjudications": [
+        {
+          "id": "20261023-kpl-col14-turnover-link",
+          "action": "link_verified",
+          "status": "verified",
+          "reviewer": "Codex",
+          "reviewed_on": "2026-10-23",
+          "report": "20261023/20261023_collision_report.json",
+          "decision_file": "adjudications/20261023_kpl_raw_alias_link.json",
+          "candidate": {
+            "left": "kpl.raw_columns.col_14",
+            "right": "kph.turnover_rate"
+          },
+          "level": "L1",
+          "rationale": "复核 2026-10-16、10-19、10-21 三个交易日的 KPL 与 KPH 原始样本，同股同日 135/135 精确匹配。KPL 原始列 col_14 对应已验证 turnover_real，和 KPH turnover_rate 的单位均为百分比；不新建原始列身份。",
+          "evidence": {
+            "ratio": null,
+            "overall_hit": 1.0,
+            "n_days": 3,
+            "n_pairs": 135,
+            "distinct_days": [
+              "T:20261016",
+              "T:20261019",
+              "T:20261021"
+            ],
+            "daily_sample_counts": {
+              "T:20261021": 45,
+              "T:20261016": 50,
+              "T:20261019": 40
+            },
+            "evidence_sources": [
+              "kph",
+              "kpl"
+            ]
+          },
+          "target": {
+            "source": "开盘啦(kpl_limit_up_detail)",
+            "code": "turnover_real"
+          },
+          "anchor": {
+            "source": "开盘红",
+            "code": "turnover_rate"
+          }
+        }
+      ]
     },
     {
       "source": "开盘啦(kpl_limit_up_detail)",
@@ -175072,6 +175267,7 @@
       "unit": "Unix 秒",
       "section": "KPH 与 KPL 涨停明细核验（2026-09-29/30 双交易日）",
       "sections": [
+        "20261023/20261023_collision_report.json",
         "KPH 与 KPL 涨停明细核验（2026-09-29/30 双交易日）"
       ],
       "status": "verified",
@@ -175086,10 +175282,68 @@
         "overlap_counts": [
           45,
           40
+        ],
+        "adjudication_ids": [
+          "20261023-kpl-col04-limit-time-link"
         ]
       },
-      "reference_evidence": [],
-      "attribute_conflicts": {}
+      "reference_evidence": [
+        {
+          "section": "20261023/20261023_collision_report.json",
+          "canonical": "limit_time",
+          "meaning": "涨停时间；与 KPH limit_time 两日逐值一致",
+          "unit": "Unix 秒",
+          "status_raw": "人工复核 2026-10-23：20261023-kpl-col04-limit-time-link",
+          "status": "verified",
+          "adjudication_id": "20261023-kpl-col04-limit-time-link"
+        }
+      ],
+      "attribute_conflicts": {},
+      "adjudications": [
+        {
+          "id": "20261023-kpl-col04-limit-time-link",
+          "action": "link_verified",
+          "status": "verified",
+          "reviewer": "Codex",
+          "reviewed_on": "2026-10-23",
+          "report": "20261023/20261023_collision_report.json",
+          "decision_file": "adjudications/20261023_kpl_raw_alias_link.json",
+          "candidate": {
+            "left": "kpl.raw_columns.col_04",
+            "right": "kph.limit_time"
+          },
+          "level": "L1",
+          "rationale": "复核 2026-10-16、10-19、10-21 三个交易日的 KPL 原始响应与 KPH 原始响应，同股同日 135/135 精确匹配。KPL 原始列 col_04 由适配器解析为已验证 zt_time；与已验证 KPH limit_time 建立的是同义关系，沿用既有字段元数据，不新建原始列身份。",
+          "evidence": {
+            "ratio": null,
+            "overall_hit": 1.0,
+            "n_days": 3,
+            "n_pairs": 135,
+            "distinct_days": [
+              "T:20261016",
+              "T:20261019",
+              "T:20261021"
+            ],
+            "daily_sample_counts": {
+              "T:20261021": 45,
+              "T:20261016": 50,
+              "T:20261019": 40
+            },
+            "evidence_sources": [
+              "kph",
+              "kpl"
+            ]
+          },
+          "target": {
+            "source": "开盘啦(kpl_limit_up_detail)",
+            "code": "zt_time"
+          },
+          "anchor": {
+            "source": "开盘红",
+            "code": "limit_time"
+          }
+        }
+      ]
     },
     {
       "source": "开盘红",
@@ -177072,28 +177326,35 @@
       "identity": "新浪(hq.sinajs)::[11]",
       "path": "[11]",
       "canonical": "[11]",
-      "meaning": "待破解",
+      "meaning": "买一价（与同一响应的 [6] 竞买报价逐值重复）",
       "unit": "元",
       "section": "12.2 新浪 hq.sinajs.cn 完整字段字典（33-34 字段）",
       "sections": [
         "12.2 新浪 hq.sinajs.cn 完整字段字典（33-34 字段）"
       ],
-      "status": "unverified",
-      "status_resolution": "aggregate_status_scope_unresolved",
+      "status": "verified",
+      "status_resolution": "verified_by_empirical_addendum",
       "status_evidence": {
-        "reference_statuses": [],
-        "reference_status_raw": [],
-        "registry_aggregate_status": "verified",
-        "registry_aggregate_sources": [
-          "ZHB-tdxstat",
-          "ZHB-tdxstat2",
-          "ZHB-tipinfo",
-          "新浪(hq.sinajs)",
-          "腾讯(qt.gtimg)"
+        "evidence_file": "docs/field_verification/adjudications/20261023_sina_orderbook_duplicate_fields.md",
+        "evidence_level": "E3",
+        "overlap_counts": [
+          20,
+          20,
+          20,
+          20,
+          20,
+          20
         ],
-        "values": [
-          "verified"
-        ]
+        "sample_trade_dates": [
+          "2026-10-15",
+          "2026-10-16",
+          "2026-10-19",
+          "2026-10-20",
+          "2026-10-21",
+          "2026-10-23"
+        ],
+        "sample_count": 120,
+        "comparison": "[11] == [6] exact raw string equality"
       },
       "reference_evidence": [
         {
@@ -177121,6 +177382,47 @@
         "meaning": "自由流通股本 FreeLtgb（万股）",
         "unit": "float",
         "section": "1. `tdxstat.cfg` (个股综合统计快照，35 个字段，7,951 行)"
+      },
+      "superseded_status_evidence": {
+        "reference_statuses": [],
+        "reference_status_raw": [],
+        "registry_aggregate_status": "verified",
+        "registry_aggregate_sources": [
+          "ZHB-tdxstat",
+          "ZHB-tdxstat2",
+          "ZHB-tipinfo",
+          "新浪(hq.sinajs)",
+          "腾讯(qt.gtimg)"
+        ],
+        "values": [
+          "verified"
+        ]
+      },
+      "adjudication_evidence": {
+        "id": "sina-orderbook-duplicate-20261023:[11]",
+        "decision": "verified",
+        "decision_date": "2026-10-23",
+        "decision_note": "docs/field_verification/adjudications/20261023_sina_orderbook_duplicate_fields.md",
+        "previous_status": "unverified",
+        "previous_status_resolution": "aggregate_status_scope_unresolved",
+        "evidence_files": [
+          "docs/field_verification/20261015/raw_sina.json",
+          "docs/field_verification/20261016/raw_sina.json",
+          "docs/field_verification/20261019/raw_sina.json",
+          "docs/field_verification/20261020/raw_sina.json",
+          "docs/field_verification/20261021/raw_sina.json",
+          "docs/field_verification/20261023/raw_sina.json"
+        ],
+        "sample_as_of_dates": [
+          "2026-10-15",
+          "2026-10-16",
+          "2026-10-19",
+          "2026-10-20",
+          "2026-10-21",
+          "2026-10-23"
+        ],
+        "sample_count_per_path": 120,
+        "reason": "六个有效交易日各 20 只股票中，[11] 与已验证 [6] 的原始值 120/120 精确相等；日期索引 [30] 六日均 20/20 对齐。"
       }
     },
     {

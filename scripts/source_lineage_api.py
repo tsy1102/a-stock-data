@@ -221,8 +221,12 @@ def normalize_runtime_field_code(alias: str, code: str) -> str:
                 return code[len(prefix) :]
     if alias == "kpl":
         kpl_raw_field_codes = {
+            "raw_columns.col_04": "zt_time",
             "raw_columns.col_06": "seal_amount",
+            "raw_columns.col_07": "max_seal",
+            "raw_columns.col_08": "main_inflow",
             "raw_columns.col_11": "amount",
+            "raw_columns.col_14": "turnover_real",
         }
         return kpl_raw_field_codes.get(code, code)
     return code

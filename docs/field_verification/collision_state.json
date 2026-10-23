@@ -8751,11 +8751,10 @@
       "right": "tencent[32]",
       "level": "L1",
       "ratio": null,
-      "overall_hit": 0.9872,
-      "n_days": 4,
-      "n_pairs": 80,
+      "overall_hit": 1.0,
+      "n_days": 3,
+      "n_pairs": 60,
       "sample_dates": [
-        "T:20261014",
         "T:20261016",
         "T:20261019",
         "T:20261020"
@@ -8765,7 +8764,7 @@
         "tencent"
       ],
       "hub_flag": false,
-      "last_seen": "20261022",
+      "last_seen": "20261023",
       "in_registry": true,
       "first_seen": "20261005",
       "status": "confirmed"
@@ -10308,10 +10307,9 @@
       "level": "L1",
       "ratio": null,
       "overall_hit": 0.95,
-      "n_days": 4,
-      "n_pairs": 80,
+      "n_days": 3,
+      "n_pairs": 60,
       "sample_dates": [
-        "T:20261014",
         "T:20261016",
         "T:20261019",
         "T:20261020"
@@ -10321,7 +10319,7 @@
         "tencent"
       ],
       "hub_flag": false,
-      "last_seen": "20261022",
+      "last_seen": "20261023",
       "in_registry": true,
       "first_seen": "20261008",
       "status": "confirmed"
@@ -12530,7 +12528,7 @@
         "kpl"
       ],
       "hub_flag": false,
-      "last_seen": "20261022",
+      "last_seen": "20261023",
       "in_registry": false,
       "first_seen": "20261021",
       "status": "repeated"
@@ -12553,7 +12551,7 @@
         "kpl"
       ],
       "hub_flag": false,
-      "last_seen": "20261022",
+      "last_seen": "20261023",
       "in_registry": false,
       "first_seen": "20261021",
       "status": "repeated"
@@ -12576,7 +12574,7 @@
         "kpl"
       ],
       "hub_flag": false,
-      "last_seen": "20261022",
+      "last_seen": "20261023",
       "in_registry": false,
       "first_seen": "20261021",
       "status": "repeated"
@@ -12599,10 +12597,60 @@
         "kpl"
       ],
       "hub_flag": false,
-      "last_seen": "20261022",
+      "last_seen": "20261023",
       "in_registry": false,
       "first_seen": "20261021",
       "status": "repeated"
+    },
+    "sina[6]||tdx.quote_raw.bid1": {
+      "left": "tdx.quote_raw.bid1",
+      "right": "sina[6]",
+      "level": "L1",
+      "ratio": null,
+      "overall_hit": 1.0,
+      "n_days": 5,
+      "n_pairs": 100,
+      "sample_dates": [
+        "T:20261016",
+        "T:20261019",
+        "T:20261020",
+        "T:20261021",
+        "T:20261023"
+      ],
+      "evidence_sources": [
+        "sina",
+        "tdx"
+      ],
+      "hub_flag": false,
+      "last_seen": "20261023",
+      "in_registry": true,
+      "first_seen": "20261023",
+      "status": "confirmed"
+    },
+    "tdx.quote_raw.bid1||tencent[9]": {
+      "left": "tdx.quote_raw.bid1",
+      "right": "tencent[9]",
+      "level": "L1",
+      "ratio": null,
+      "overall_hit": 1.0,
+      "n_days": 5,
+      "n_pairs": 100,
+      "sample_dates": [
+        "T:20261016",
+        "T:20261019",
+        "T:20261020",
+        "T:20261021",
+        "T:20261023"
+      ],
+      "evidence_sources": [
+        "tdx",
+        "tencent"
+      ],
+      "hub_flag": false,
+      "last_seen": "20261023",
+      "in_registry": true,
+      "first_seen": "20261023",
+      "status": "confirmed"
     }
   },
   "legacy_findings_v1": {
@@ -22590,5 +22638,5 @@
     }
   },
   "legacy_state_version": 1,
-  "updated": "20261022"
+  "updated": "20261023"
 }

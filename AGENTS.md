@@ -5,7 +5,8 @@
 > **静态上下文（按任务分层读取）**：`docs/PROJECT_CONTEXT.md` §0 是任务路由索引；常规任务只读相关热区，字段破解不默认加载整份方法论文档或大体积 JSON。
 > 🔥热区：本文件 §5；🌤️温区：任务所需章节；🧊冷区：只在遇到具体候选/问题时按路径取证。日常采集与碰撞流程见 `docs/field_verification/DAILY_RUNBOOK.md`。
 > 字段身份以 `field_registry.json` 的 `(source, 完整 code path)` 为准；先用生成的 `field_dict.md` / `unknown_fields.md` 导航，历史协议原文按需查 `field_source_reference.md`。
-> 版本:v1.3（压缩重复常驻规则，保留原有数据安全约束）
+> 字段样本保留起点为 20261015：此前 `raw_*.json`、日期化 ZHB 压缩包及解析缓存已清理，采集、碰撞与审计不得回补或读取更早日期；少数被裁决材料引用的报告与元数据保留。
+> 版本:v1.4（增加字段样本保留起点与旧样本读取限制）
 
 ---
 

@@ -5,7 +5,7 @@
 > 碰撞候选须人工复核后使用 `apply_collision_adjudications.py` 同步状态；流程见 `field_verification/ADJUDICATION_WORKFLOW.md`。
 > 聚合层的同码异义与定义缺口见 [`field_aggregate_review.md`](field_aggregate_review.md)，不代表逐源记录状态冲突。
 
-> 注册字段路径 2550；日常来源路径 2406：unverified 1382、candidate 1、conflict 81、disproved 2；历史来源路径 144。
+> 注册字段路径 2550；日常来源路径 2406：unverified 1381、candidate 1、conflict 81、disproved 2；历史来源路径 144。
 > 另有 182 条虽标 verified、但含义/单位元数据未达到碰撞锚条件；这些记录会重新进入碰撞目标，详见 [字段元数据复核](field_metadata_gaps.md)。
 > 以下两组未验证字段统计是不同维度，不能相加：含义栏文本只表示存在文字，不代表语义正确；状态判定反映旧字典状态证据能否映射到逐源身份。
 
@@ -15,14 +15,14 @@
 
 | 分类 | 数量 |
 |:--|--:|
-| 含义栏为空/占位 | 1198 |
+| 含义栏为空/占位 | 1197 |
 | 含义栏有文本（仍未验证） | 184 |
 
 ### 历史状态证据的解析结果
 
 | 状态判定 | 数量 | 说明 |
 |:--|--:|:--|
-| `aggregate_status_scope_unresolved` | 454 | 历史聚合状态尚不能可靠映射到逐源身份 |
+| `aggregate_status_scope_unresolved` | 453 | 历史聚合状态尚不能可靠映射到逐源身份 |
 | `live_observed_not_documented` | 1 | 按注册表原始状态判定代码保留 |
 | `matched` | 59 | 历史逐源状态与聚合状态一致，但仍未定案 |
 | `reference_status_missing` | 35 | 按注册表原始状态判定代码保留 |
@@ -121,7 +121,7 @@
 |:--|:--|:--|:--|:--|:--|:--|:--|
 | ZHB-tdxstat | `stat.unknown_2` | stat.unknown_2 | 贝塔系数(60日)·L2候选(列[2]已定BetaValue: ihelp.dat L63官方定义+慢变特征实证自相关0.91, 待真实指数基准复现升L1) | - | 含义栏有文本（仍未验证） | matched | 1.1 tdxstat.cfg 标准契约表（stat.*，20260918 对撞定案）🆕 |
 
-## 三、待破解字段（1382）
+## 三、待破解字段（1381）
 
 | 来源 | 完整 code path | 规范名 | 含义 | 单位 | 含义栏提示 | 状态判定 | 证据章节 |
 |:--|:--|:--|:--|:--|:--|:--|:--|
@@ -1422,7 +1422,6 @@
 | 开盘红(Levistock适配) | `themes` | themes | 题材 | — | 含义栏有文本（仍未验证） | registry_status_only_single_source | 12.10.4 开盘红复盘（get_zttt 涨停天梯 / get_pmsl 盘面梳理 / get_his_limit_resumption 历史涨停复盘）🆕 |
 | 开盘红(Levistock适配) | `turnover` | turnover / turnover_rate | 成交额 / 换手率% | — | 含义栏有文本（仍未验证） | aggregate_status_scope_unresolved | 12.10.4 开盘红复盘（get_zttt 涨停天梯 / get_pmsl 盘面梳理 / get_his_limit_resumption 历史涨停复盘）🆕 |
 | 开盘红(Levistock适配) | `zt` | zt / dt | 涨停 / 跌停总数 | — | 含义栏有文本（仍未验证） | aggregate_status_scope_unresolved | 12.10.3 开盘红市场情绪（market_emotion_kph，**含历史**）🆕 |
-| 新浪(hq.sinajs) | `[11]` | [11] | 待破解 | 元 | 含义栏为空/占位 | aggregate_status_scope_unresolved | 12.2 新浪 hq.sinajs.cn 完整字段字典（33-34 字段） |
 | 新浪(hq.sinajs) | `[13]` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
 | 新浪(hq.sinajs) | `[14]` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
 | 新浪(hq.sinajs) | `[15]` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |

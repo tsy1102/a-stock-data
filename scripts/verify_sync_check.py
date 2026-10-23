@@ -657,17 +657,8 @@ def main():
             rep_path = os.path.abspath(args.report_output)
             report_mode = "w"
         else:
-            timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S_%f")
-            rep_path = os.path.abspath(
-                os.path.join(
-                    args.repo,
-                    "docs",
-                    "field_verification",
-                    "sync_check_reports",
-                    f"{timestamp}_verify_sync_report.md",
-                )
-            )
-            report_mode = "x"
+            rep_path = os.path.abspath(os.path.join(args.repo, ".tmp", "verify_sync_report.md"))
+            report_mode = "w"
         rep_dir = os.path.dirname(rep_path)
         os.makedirs(rep_dir, exist_ok=True)
         with open(rep_path, report_mode, encoding="utf-8") as rf:

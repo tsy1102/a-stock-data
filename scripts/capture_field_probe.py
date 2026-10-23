@@ -43,6 +43,7 @@ if _ROOT not in sys.path:
 _SCRIPTS = os.path.dirname(os.path.abspath(__file__))
 if _SCRIPTS not in sys.path:
     sys.path.insert(0, _SCRIPTS)
+from scripts.capture_retention import MIN_CAPTURE_DATE
 from scripts.context_policy import (
     CONTEXT_EXCLUDED_PATHS,
     CONTEXT_ONLY_SOURCES,
@@ -196,6 +197,10 @@ def _validate_capture_data_date(value: str, only_sources=None, session_checker=N
         raise ValueError(f"--date 不是有效日期: {text}") from exc
     if capture_day.strftime("%Y%m%d") != text:
         raise ValueError(f"--date 不是有效日期: {text}")
+    if capture_day < MIN_CAPTURE_DATE:
+        raise ValueError(
+            f"--date {text} 早于采集数据保留起始日 {MIN_CAPTURE_DATE:%Y%m%d}，禁止回补旧日期"
+        )
 
     selected = {name.strip() for name in (only_sources or []) if name.strip()}
     event_only = bool(selected) and selected.issubset(EVENT_ONLY_CAPTURE_SOURCES)

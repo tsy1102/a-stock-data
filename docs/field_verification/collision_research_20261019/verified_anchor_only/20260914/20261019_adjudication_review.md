@@ -34,4 +34,4 @@
 - 注册表共 2,518 个逐源字段身份，应用前后数量不变；仅 11 个目标身份的状态/元数据发生变化，新增 11 条精确来源映射。
 - 再次只读预览得到 already_applied=11、mappings_added=0，确认决策可幂等重放且没有重复映射。
 - registry_parity 通过：当前 1,878 / 2,518 / 376 与基线及 E3 补录一致；field matrix 和聚合视图均通过。
-- verify_sync_check 通过：HARD FAIL=0、WARN=0；生成的治理报告位于 ../../../sync_check_reports/20261019_154943_810048_verify_sync_report.md。
+- verify_sync_check 通过：HARD FAIL=0、WARN=0。该检查仅记录结构闸门结果，详情可通过离线闸门复现。

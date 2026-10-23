@@ -1,8 +1,14 @@
 import json
 from datetime import date, datetime, timezone
 from pathlib import Path
+import pytest
 
 from scripts import collision_dates
+
+
+@pytest.fixture(autouse=True)
+def _allow_historical_dates_in_date_normalization_tests(monkeypatch):
+    monkeypatch.setattr(collision_dates, "MIN_CAPTURE_DATE", date(2026, 8, 1))
 
 
 def _write_capture(root: Path, folder: str, meta: dict, source: str, document: dict):
@@ -10,6 +16,28 @@ def _write_capture(root: Path, folder: str, meta: dict, source: str, document: d
     target.mkdir(parents=True, exist_ok=True)
     (target / "meta.json").write_text(json.dumps(meta), encoding="utf-8")
     (target / f"raw_{source}.json").write_text(json.dumps(document), encoding="utf-8")
+
+
+def test_discovery_skips_folders_before_retention_start(tmp_path, monkeypatch):
+    monkeypatch.setattr(collision_dates, "MIN_CAPTURE_DATE", date(2026, 10, 15))
+    _write_capture(
+        tmp_path,
+        "20261014",
+        {"data_date": "20261014", "capture_date": "20261014"},
+        "push2",
+        {"stocks": {"600000": {"data": {"f1": 1}}}},
+    )
+    _write_capture(
+        tmp_path,
+        "20261015",
+        {"data_date": "20261015", "capture_date": "20261015"},
+        "push2",
+        {"stocks": {"600000": {"data": {"f1": 1}}}},
+    )
+
+    folders, _ = collision_dates.discover_capture_folders(str(tmp_path), _weekday)
+
+    assert [folder.name for folder in folders] == ["20261015"]
 
 
 def _weekday(day: date) -> bool:

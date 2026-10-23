@@ -1,5 +1,10 @@
+from datetime import date
+
+import pytest
+
 from scripts import crack_push2_status_codes_20260921 as push2_topic
 from scripts import crack_ulist_f88_95_20260921 as ulist_topic
+from scripts import crack_zhb_anchored_20260921 as zhb_topic
 
 
 def test_push2_topic_fields_preserve_snapshot_phase_for_shared_gate():
@@ -14,3 +19,10 @@ def test_ulist_topic_fields_preserve_snapshot_phase_for_shared_gate():
     field = ulist_topic._collision_field({"20260929": {"600000": 1.0}}, "ulist239")
 
     assert field["sample_meta"][("600000", "T:20260929")]["phase"] == "closed"
+
+
+def test_archived_topic_scripts_stop_before_reading_removed_samples(monkeypatch):
+    for module in (push2_topic, ulist_topic, zhb_topic):
+        monkeypatch.setattr(module, "MIN_CAPTURE_DATE", date(2026, 10, 15))
+        with pytest.raises(SystemExit, match="已停用"):
+            module.main()

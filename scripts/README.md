@@ -33,12 +33,12 @@ FTShare 的旧私有托管 MCP/SDK 已退役；旧 `FTShare` 身份下的 15 条
 | 脚本 | 用途 |
 |:---|:---|
 | `capture_field_probe.py` | 按来源分别采集字段样本至 `docs/field_verification/<数据日>/`；串行调用各源，沿用适配器限流，记录逐源错误、缺股、deferred 与来源数据日。东财 `push2` 样本先请求 `push2delay`，只有某只股票的 delay 请求失败才逐股回退主域 `push2`；不会在 delay 成功后再重复请求主域，也不单独运行已退役的 `push2_full` 全量采集器。东财 HTTP 请求共享跨进程全局间隔，并按 push2 家族 0.25 RPS、push2ex 0.6 RPS、push2delay 1.0 RPS 分组限速；全局及分组时隙原子预留，403 连续计数和停止状态也按风险组隔离。KPL 市场接口保存原始响应字段，新增板块强度源；涨停明细按 `PidType=1…5` 分层采集，保存原始列与层级身份，复用 1 秒请求间隔。AxData `kph_limit_up_history` 单次批量写入 `raw_kph.json`，不缓存、不重试，并与 KPL 对撞；短线 TDX 路由与 ELTDX 逐股比较，原始快照保留 bid/ask 五档价格及对应 `_vol` 数值，不改写源单位。两条 AxData 实际路由各自满足三交易日、每日 18 只配对股票及全字段规则后停止日常采集，20 个后续有效数据日后用三个新数据日复验；确认路由也从默认碰撞排除，复验期间仍排除，失配/结构变化即重新纳入。未知数值字段保持路由活跃。403/429/封禁立即停止 AxData 短线剩余请求并持久暂停相应路由；单独 `--only` 也记录状态。可用 `--only kpl` 或 `--only kph` 单独补采。该补充不替代 KPL 完整名单，也不增加独立 Eastmoney push2 采集。默认仍跳过纯上下文的交易所龙虎榜、东财人气榜和市场源/Fuyao 中的龙虎榜与热股榜子路径；上下文可用 `--include-context` 恢复，或通过 `--only exchange` / `--only em_hot` 明确选择。 |
-| `collide.py`、`collision_dates.py`、`collision_rules.py`、`collision_candidate_reviews.py` | 共用日期归一化与快照择优；行情窗口按有效交易日，`as_of_date` 不在所选交易日窗口内的行情快照会排除并记诊断；新闻/公告按自然日。L1 检查样本量、独立日期和来源族。默认排除交易所/东财人气榜源及市场源/Fuyao 中的上下文记录，也过滤历史 raw；需纳入研究时加 `--include-context`。其他带 `collision_eligible=false` 的子树仍按来源元数据排除并在报告诊断中说明。候选报告逐字段展示来源覆盖、候选缺口、按股票留出的区分点、受约束公式线索及正/负向校准统计；数值范围不重叠只作诊断，不过滤单位换算或仿射候选。完整方法候选保存在 JSON `method_candidate_inventory`，`report_completeness` 对账生成/保留数量和 Markdown Top-N 展示差额。schema 5 另为候选附稳定 ID 与人工处置状态；审阅状态写入 `collision_candidate_reviews.json`，候选审阅工具默认预览，只有 `--apply` 才追加记录。`accepted_for_adjudication` 是进入既有定案流程的前置条件，不会直接改主字典；重复成员保留到代表项的反向关系。机器完整性与人工审阅覆盖率分开统计。完整性不通过时不得据报告做无候选或定案结论。候选方法不改变 L1/L1-U 条件或主字典。盘中/未知阶段仅作候选，所有结果保留日期及来源证据。详见 `docs/field_verification/DAILY_RUNBOOK.md` 与 `docs/field_verification/CRACKING_METHODOLOGY.md`。 |
+| `collide.py`、`collision_dates.py`、`collision_rules.py`、`collision_candidate_reviews.py` | 共用日期归一化与快照择优；样本发现跳过 20261015 前的目录，`--window` 与 `--all` 均不能读入更早数据。行情窗口按有效交易日，`as_of_date` 不在所选交易日窗口内的行情快照会排除并记诊断；新闻/公告按自然日。L1 检查样本量、独立日期和来源族。默认排除交易所/东财人气榜源及市场源/Fuyao 中的上下文记录，也过滤历史 raw；需纳入研究时加 `--include-context`。其他带 `collision_eligible=false` 的子树仍按来源元数据排除并在报告诊断中说明。候选报告逐字段展示来源覆盖、候选缺口、按股票留出的区分点、受约束公式线索及正/负向校准统计；数值范围不重叠只作诊断，不过滤单位换算或仿射候选。完整方法候选保存在 JSON `method_candidate_inventory`，`report_completeness` 对账生成/保留数量和 Markdown Top-N 展示差额。schema 5 另为候选附稳定 ID 与人工处置状态；审阅状态写入 `collision_candidate_reviews.json`，候选审阅工具默认预览，只有 `--apply` 才追加记录。`accepted_for_adjudication` 是进入既有定案流程的前置条件，不会直接改主字典；重复成员保留到代表项的反向关系。机器完整性与人工审阅覆盖率分开统计。完整性不通过时不得据报告做无候选或定案结论。候选方法不改变 L1/L1-U 条件或主字典。盘中/未知阶段仅作候选，所有结果保留日期及来源证据。详见 `docs/field_verification/DAILY_RUNBOOK.md` 与 `docs/field_verification/CRACKING_METHODOLOGY.md`。 |
 | `context_policy.py` | 采集与碰撞共用的上下文源及路径策略，避免默认过滤规则漂移。 |
 | `field_meta.py` | 为采集样本补充来源与锚点元数据。 |
-| `crack_push2_status_codes_20260921.py` | Push2 状态码研究脚本。 |
-| `crack_ulist_f88_95_20260921.py` | Ulist 高位字段研究脚本。 |
-| `crack_zhb_anchored_20260921.py` | 基于锚点样本的 ZHB 字段研究脚本。 |
+| `crack_push2_status_codes_20260921.py` | Push2 状态码历史专题；旧样本已清理，入口会直接提示停用。 |
+| `crack_ulist_f88_95_20260921.py` | Ulist 高位字段历史专题；固定旧输出目录已过保留起点，入口会直接提示停用。 |
+| `crack_zhb_anchored_20260921.py` | 基于旧锚点的 ZHB 历史专题；旧样本已清理，入口会直接提示停用。 |
 
 采集启动行会显示 `--only` 中实际选择的源，未指定时显示“默认源集合”，并单独标明市场上下文是“启用”还是“跳过”。
 
@@ -83,14 +83,14 @@ Fuyao REST 的 Key 读取顺序为官方变量 `HITHINK_FINANCE_API_KEY`、兼�
 | 脚本 | 用途与写入行为 |
 |:---|:---|
 | `extract_registry.py`、`field_registry_api.py` | 从主字典提取登记信息；后者是多个治理脚本共用的内部 API。 |
-| `registry_parity.py` | 校验登记表、主字典投影和字段矩阵；历史 TDX 五档 token 与当前 bid/ask 原始路径、以及仍采集的 Fuyao 上下文标签通过 `registry_parity_scope.json` 逐项注明证据和采集范围。未列入清单的新差异仍会失败；治理运行器的接受差异清单只用于另行审定的 parity debt。 |
+| `registry_parity.py` | 校验历史来源基线、字段登记表、主字典投影和字段矩阵；已裁决补录需与裁决文件及目标来源身份一致，根路径补录需有保留期内样本，未验证候选必须仍在 `unknown_fields.md` 中。`registry_parity_scope.json` 只保留不纳入破解队列的 Fuyao 上下文标签；治理运行器的接受差异清单只用于另行审定的 parity debt。 |
 | `apply_collision_adjudications.py` | 默认预览，显式 `--apply` 后才写 registry 和生成视图；支持 L1 碰撞、固定版本的单源上游契约，以及有来源独立性检查和 CSV 复算的公式关系定案。校验与内存变换委托给相邻模块；公式样本留档于 `docs/field_verification/derived_evidence/`，不自动联网、不建立输入字段映射。 |
 | `derived_relation_evidence.py` | 定案器调用的公式证据校验模块；限制算术语法与本地样本范围，核验来源族、已验证输入、有效日期和样本误差。 |
 | `gen_field_dict.py`、`gen_field_matrix.py` | 生成字典/矩阵片段；`--check` 只检查、不写入。 |
 | `gen_ulist_subdict.py`、`gen_zhb_subdict.py` | 生成对应接口的字典子表及镜像。 |
 | `audit_field_completeness.py`、`audit_field_source_quality.py`、`lint_field_names.py`、`lint_field_same_number.py` | 分别审查归档样本字段覆盖、已验证登记的语义元数据质量，以及命名和编号；质量审计只读 registry，不会自动改状态。 |
 | `archive_field_preflight.py` | 检查字段采集归档的 Markdown 契约。 |
-| `verify_data_access.py`、`verify_sync_check.py` | 分别检查生产数据访问边界和字典/代码同步；同步检查会更新审计报告。 |
+| `verify_data_access.py`、`verify_sync_check.py` | 分别检查生产数据访问边界和字典/代码同步；同步报告默认覆盖 `.tmp/verify_sync_report.md`，需长期留档时使用 `--report-output` 指定路径。 |
 | `cleanse_dict_provenance.py` | 整理字段证据叙述；默认 dry-run，`--apply` 会改写字典并追加溯源记录。 |
 | `cleanse_dict_verif_narrative.py` | 生成字段结论列清理建议；默认 dry-run 不写文件，需显式传 `--plan-output <路径>` 才保存计划；`--apply` 会改写字典并追加溯源记录。 |
 

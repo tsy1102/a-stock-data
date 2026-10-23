@@ -934,6 +934,22 @@ def test_runtime_id_normalizes_tdx_quote_raw_and_kpl_raw_columns():
         "kpl",
         "amount",
     )
+    assert _runtime_identity("kpl.raw_columns.col_04", "开盘啦(kpl_limit_up_detail)", lineage) == (
+        "kpl",
+        "zt_time",
+    )
+    assert _runtime_identity("kpl.raw_columns.col_07", "开盘啦(kpl_limit_up_detail)", lineage) == (
+        "kpl",
+        "max_seal",
+    )
+    assert _runtime_identity("kpl.raw_columns.col_08", "开盘啦(kpl_limit_up_detail)", lineage) == (
+        "kpl",
+        "main_inflow",
+    )
+    assert _runtime_identity("kpl.raw_columns.col_14", "开盘啦(kpl_limit_up_detail)", lineage) == (
+        "kpl",
+        "turnover_real",
+    )
 
 
 def test_conflict_status_cannot_be_overridden_by_collision_adjudication():

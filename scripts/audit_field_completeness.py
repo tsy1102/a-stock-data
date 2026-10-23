@@ -29,36 +29,72 @@ import json
 import os
 import re
 import glob
+import importlib
+from datetime import datetime
 from functools import lru_cache
 from collections import defaultdict
+from typing import Any, cast
 
 # (b) 架构根治：优先从 field_registry.json 单一真相源读取「已登记字段集」，
 # 使 §零·A 主路径不再依赖 SECTION_MAP / section_to_sources 的字典章节解析（G0 标记脆弱点）。
 # registry 缺失或读失败时回退 registered_field_sets()（字典解析）。
-import field_registry_api as _fra
+_package_prefix = f"{__package__}." if __package__ else ""
+_fra = cast(Any, importlib.import_module(f"{_package_prefix}field_registry_api"))
+_retention_module = importlib.import_module(f"{_package_prefix}capture_retention")
+_capture_store_module = cast(Any, importlib.import_module(f"{_package_prefix}raw_capture_store"))
+MIN_CAPTURE_DATE = _retention_module.MIN_CAPTURE_DATE
+read_capture_json = _capture_store_module.read_capture_json
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DICT = os.path.join(ROOT, "docs", "field_source_reference.md")
 SOURCE_IDENTITY_RECLASSIFICATIONS = os.path.join(
     ROOT, "docs", "field_verification", "source_identity_reclassifications.json"
 )
-# v3.1 (2026-09-06): CAP/OUT 日期参数化 —— 每次全源采集后必须对「当日 raw」重跑本审计,
-# 否则审计永远停在上一次捕获日, 形成 A7(文档代码同真) 口径漂移。
-# 用法: python scripts/audit_field_completeness.py [CAP_DATE] [OUT_DATE]
-#   例: python scripts/audit_field_completeness.py 20260906 20260906
-#   不带参数则沿用历史默认: CAP=20260904, OUT=20260906。
-# 导入本模块只初始化历史默认值；CLI 参数仅在 main() 中解析，避免污染导入方参数。
-DEFAULT_CAPTURE_DATE = "20260904"
-DEFAULT_OUTPUT_DATE = "20260906"
+# Omitted dates select the latest retained capture and write beside that capture.
+DEFAULT_CAPTURE_DATE = MIN_CAPTURE_DATE.strftime("%Y%m%d")
+DEFAULT_OUTPUT_DATE = DEFAULT_CAPTURE_DATE
 CAP = os.path.join(ROOT, "docs", "field_verification", DEFAULT_CAPTURE_DATE)
 OUTDIR = os.path.join(ROOT, "docs", "field_verification", DEFAULT_OUTPUT_DATE)
+
+
+def _validate_retained_date(value: str, label: str) -> str:
+    text = str(value or "").strip()
+    if not re.fullmatch(r"\d{8}", text):
+        raise ValueError(f"{label} 必须是 YYYYMMDD")
+    try:
+        parsed = datetime.strptime(text, "%Y%m%d").date()
+    except ValueError as exc:
+        raise ValueError(f"{label} 不是有效日期: {text}") from exc
+    if parsed < MIN_CAPTURE_DATE:
+        raise ValueError(f"{label} {text} 早于采集数据保留起始日 {MIN_CAPTURE_DATE:%Y%m%d}")
+    return text
+
+
+def _latest_retained_capture_date(capture_root: str | None = None) -> str:
+    root = capture_root or os.path.join(ROOT, "docs", "field_verification")
+    candidates = []
+    for name in os.listdir(root):
+        try:
+            capture_date = datetime.strptime(name, "%Y%m%d").date()
+        except ValueError:
+            continue
+        if capture_date < MIN_CAPTURE_DATE:
+            continue
+        directory = os.path.join(root, name)
+        if os.path.isdir(directory) and any(
+            filename.startswith("raw_") and filename.endswith(".json")
+            for filename in os.listdir(directory)
+        ):
+            candidates.append(name)
+    if not candidates:
+        raise FileNotFoundError(f"未找到 {MIN_CAPTURE_DATE:%Y%m%d} 或之后的采集样本: {root}")
+    return max(candidates)
 
 
 def loadjson(f):
     path = os.path.join(CAP, f)
     try:
-        with io.open(path, encoding="utf-8") as handle:
-            return json.load(handle)
+        return read_capture_json(path)
     except FileNotFoundError:
         return {}
 
@@ -1079,10 +1115,10 @@ def registry_field_sets():
 def build_argument_parser():
     parser = argparse.ArgumentParser(description="审计采集字段与字段登记表之间的覆盖差异")
     parser.add_argument(
-        "capture_date", nargs="?", default=DEFAULT_CAPTURE_DATE, help="采集目录日期 YYYYMMDD"
+        "capture_date", nargs="?", default=None, help="采集目录日期 YYYYMMDD（默认最新保留样本）"
     )
     parser.add_argument(
-        "output_date", nargs="?", default=DEFAULT_OUTPUT_DATE, help="报告目录日期 YYYYMMDD"
+        "output_date", nargs="?", default=None, help="报告目录日期 YYYYMMDD（默认与采集日相同）"
     )
     parser.add_argument(
         "--report-output", help="报告 JSON 完整路径（默认写入 output_date/completeness_audit.json）"
@@ -1093,8 +1129,12 @@ def build_argument_parser():
 def main(argv=None):
     args = build_argument_parser().parse_args(argv)
     global CAP, OUTDIR
-    CAP = os.path.join(ROOT, "docs", "field_verification", args.capture_date)
-    OUTDIR = os.path.join(ROOT, "docs", "field_verification", args.output_date)
+    capture_date = _validate_retained_date(
+        args.capture_date or _latest_retained_capture_date(), "capture_date"
+    )
+    output_date = _validate_retained_date(args.output_date or capture_date, "output_date")
+    CAP = os.path.join(ROOT, "docs", "field_verification", capture_date)
+    OUTDIR = os.path.join(ROOT, "docs", "field_verification", output_date)
     report_path = args.report_output or os.path.join(OUTDIR, "completeness_audit.json")
     report_path = os.path.abspath(report_path)
 

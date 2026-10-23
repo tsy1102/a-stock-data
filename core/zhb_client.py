@@ -104,8 +104,8 @@ from stock_common import _debug_log
 _ZHB_CACHE_DIR = os.path.join(
     os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "cache", "zhb"
 )
-# V15.1: 自动清理已移除（M3: _cleanup_old_files 随 _KEEP_DAYS 删除），
-# 用户手动维护 cache/zhb 目录（保留历史 ZHB 文件供对比与字段深挖）
+# V15.1: 自动清理已移除（M3: _cleanup_old_files 随 _KEEP_DAYS 删除）；
+# cache/zhb 的日期化 ZHB 文件按项目保留起点 20261015 手动维护，旧包与对应解析缓存已清理。
 _MIN_DISK_SPACE_MB = 100  # 最小保留磁盘空间（MB）
 _LOCK_FILE = os.path.join(
     os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "cache", "zhb", ".zhb.lock"

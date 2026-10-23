@@ -2,7 +2,7 @@
 
 > 用途：提供稳定架构、关键约束与文档路由；任务开始时按 §0 读取相关文件，不重复加载全仓历史。
 > 维护：结构、入口或稳定流程变化时更新。字段语义以 registry/裁决证据为准；运行结果以当次产物为准。
-> 更新日期：2026-10-22（`VERSION`：17.6.3）
+> 更新日期：2026-10-23（`VERSION`：17.6.3）
 
 ## 0. 任务路由
 
@@ -15,7 +15,7 @@
 | 测试/回归 | [`tests/README.md`](../tests/README.md)、`AGENTS.md` §2.1、§9 | 被改模块及相关测试 |
 | 上游/依赖复核 | [`UPSTREAM_COMPATIBILITY.md`](UPSTREAM_COMPATIBILITY.md) | [`source_repository_map.md`](source_repository_map.md)、requirements |
 | 架构边界/偏离 | [`ARCHITECTURE_THEORY.md`](ARCHITECTURE_THEORY.md) | [`DEBT_LEDGER.md`](DEBT_LEDGER.md)、对应调用方 |
-| 模块依赖图/拆分进度 | [`PROJECT_MODULE_MAP.md`](PROJECT_MODULE_MAP.md)、[`PROJECT_MODULE_REFINEMENT_PLAN.md`](PROJECT_MODULE_REFINEMENT_PLAN.md) | 调用者、状态契约、固定离线样本与阶段验收 |
+| 模块依赖图/拆分结项 | [`PROJECT_MODULE_MAP.md`](PROJECT_MODULE_MAP.md)、[`PROJECT_MODULE_REFINEMENT_PLAN.md`](PROJECT_MODULE_REFINEMENT_PLAN.md) | 调用者、状态契约、固定离线样本与阶段验收档案 |
 | 临时目录/启动器 | `AGENTS.md` §1.3 | 仓库根 `.tmp/`、`scripts/run_with_system_python.ps1` |
 | 提交前完整离线验收 | `scripts/run_offline_checks.ps1` | [`tests/README.md`](../tests/README.md)、`AGENTS.md` §9 |
 
@@ -54,10 +54,10 @@
 
 - Python 最低版本 3.11；开发/测试推荐 Python 3.12。解释器由 `scripts/run_with_system_python.ps1` 选择。
 - 测试通过 `scripts/run_tests.ps1` 运行；真实网络测试只有显式选择时才运行。模块索引与最近全量结果见 [`tests/README.md`](../tests/README.md)。
-- 最近完成的全量离线套件（2026-10-22，本机 Python 3.12.10）：收集 1,260 项，离线执行 1,208 项，其中 1,207 通过、1 跳过；52 个真实网络用例排除，测试耗时 112.84 秒。依赖按 `requirements-dev.txt` 安装，`pip check` 无依赖冲突；真实网络用例未运行。语法 263 个文件、Mypy 233 个源文件、Black API 248 个文件且 0 格式差异；AxData 摘要、数据访问、字典同步、Canonical contract 与 registry parity 闸门均通过。
-- 2026-10-22 registry parity：1,893 个字段、2,550 条来源路径、378 个多源字段；原始基线与 scope-adjusted + E3 + 官方契约 + observation 补录严格相等。范围校验、投影、聚合语义和 field matrix 全部通过；此前“差 16 条新浪路径”的状态已过期。
+- 最新全量离线验收（2026-10-23，本机 Python 3.12.10）：语法 269 个文件、Mypy 239 个源文件、Black API 254 个文件且 0 格式差异；AxData 摘要、数据访问、字典同步与 Canonical contract 通过。离线测试 1,232 项通过、1 项跳过、52 个真实网络用例排除；Registry parity 全部通过。本轮未运行真实网络。
+- 2026-10-23 Registry parity 复核完成：scope 删除 4 条不属于当前基线的 TDX 配对；原报告的 245 条额外路径中，235 条是未知字段队列中的未验证候选、8 条有人工定案证据、2 条是保留采集样本中的根键路径，分别由严格校验的分类清单处理。native parity、field_matrix parity 及分类校验通过；没有删除字段或放宽 parity 闸门。
 - 代码改动按 `AGENTS.md` §8 调查数据契约影响，再按 §9 验证。静态规则有专用闸门：`scripts/verify_data_access.py`（A1）和 `scripts/verify_sync_check.py`（A7）；字段视图用对应生成器与 `scripts/registry_parity.py` 检查。
-- 清理缓存或采集归档前，先确认是否仍需离线复核；`.gitignore` 按路径规则忽略本机运行数据。
+- 20261015 字段样本保留起点已执行：删除 971 个早期采集/K线/ZHB 文件，按文件字节估算释放 319.55 MiB。更早的采集 `raw_*.json`、日期化 `cache/zhb/*.zip` 与 `cache/zhb_parsed/*_YYYYMMDD_vN.bin` 已清理；默认采集、碰撞、完整性审计不回补或读取更早日期。引用旧证据的裁决报告和元数据仍保留；其他缓存与恢复材料按具体用途核查后再清理。
 
 ## 4. 权威文档索引
 

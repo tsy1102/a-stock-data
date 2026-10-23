@@ -21,12 +21,12 @@
 - `disproved` 单独归档，不进入默认破解队列。
 - 未登记来源、路径不完整或来源独立性未确认时，不参与默认 L1 定案。
 - AxData 是多提供方接口框架；当前 `stock_shortline_indicators_tdx` 属于 TDX 来源族。AxData 接口盘点只作框架参考，不能作为独立来源或锚；详见 [`axdata_field_reconciliation_20261010.md`](axdata_field_reconciliation_20261010.md)。
-- Levistock 是多源客户端包装库。已归属的 KPH 记录映射到 KPH 来源族；FTShare 私有托管 MCP 集成已退役，其字段仅留作历史证据，底层来源未确认、不作独立锚。其余历史记录保留为未归属证据，不计为 Levistock 数据源；字段映射见 [`source_identity_reclassifications.json`](field_verification/source_identity_reclassifications.json) 与 [`levistock_source_reconciliation_20261010.md`](field_verification/levistock_source_reconciliation_20261010.md)。
+- Levistock 是多源客户端包装库。已归属的 KPH 记录映射到 KPH 来源族；FTShare 私有托管 MCP 集成已退役，其字段仅留作历史证据，底层来源未确认、不作独立锚。其余历史记录保留为未归属证据，不计为 Levistock 数据源；字段映射见 [`source_identity_reclassifications.json`](field_verification/source_identity_reclassifications.json) 与 [`levistock_source_reconciliation_20261010.md`](levistock_source_reconciliation_20261010.md)。
 
 ## 当前覆盖
 
 - 来源身份与参考登记：33 项；是否可作独立锚由来源谱系单独判定。
-- 逐源字段路径：2550 条；verified 964、unverified 1502、candidate 1、conflict 81、disproved 2。
+- 逐源字段路径：2550 条；verified 965、unverified 1501、candidate 1、conflict 81、disproved 2。
 - 矩阵：[`field_matrix.md`](field_matrix.md)。
 - 待破解与状态冲突：[`unknown_fields.md`](unknown_fields.md)。
 - 来源与 GitHub 仓库映射：[`source_repository_map.md`](source_repository_map.md)。

@@ -11,9 +11,18 @@ import json
 import os
 import re
 import sys
+import importlib
 from dataclasses import dataclass
 from datetime import date, datetime, time, timedelta, timezone
+from pathlib import Path
 from typing import Any, Callable, Iterable
+
+_package_prefix = f"{__package__}." if __package__ else ""
+_retention_module = importlib.import_module(f"{_package_prefix}capture_retention")
+_capture_store_module = importlib.import_module(f"{_package_prefix}raw_capture_store")
+MIN_CAPTURE_DATE = _retention_module.MIN_CAPTURE_DATE
+raw_capture_sources = _capture_store_module.raw_capture_sources
+read_capture_json = _capture_store_module.read_capture_json
 
 PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 if PROJECT_ROOT not in sys.path:
@@ -183,8 +192,7 @@ def previous_trading_session(
 
 def _read_json(path: str) -> dict[str, Any] | None:
     try:
-        with open(path, encoding="utf-8") as handle:
-            value = json.load(handle)
+        value = read_capture_json(path)
     except (OSError, UnicodeError, json.JSONDecodeError):
         return None
     return value if isinstance(value, dict) else None
@@ -230,6 +238,8 @@ def discover_capture_folders(
         folder_day = parse_date(name)
         if folder_day is None:
             warnings.append(f"无效日期目录已跳过: {name}")
+            continue
+        if folder_day < MIN_CAPTURE_DATE:
             continue
 
         meta_path = os.path.join(path, "meta.json")
@@ -598,15 +608,10 @@ def select_snapshots(
     for folder in folders:
         warnings.extend(folder.warnings)
         try:
-            filenames = sorted(os.listdir(folder.path))
+            raw_sources = raw_capture_sources(Path(folder.path))
         except OSError as exc:
             warnings.append(f"{folder.name}: 无法列出目录内容: {exc}")
             continue
-        raw_sources = {
-            filename[len("raw_") : -len(".json")]
-            for filename in filenames
-            if filename.startswith("raw_") and filename.endswith(".json")
-        }
         meta_sources = folder.meta.get("sources")
         if isinstance(meta_sources, dict):
             for source, info in meta_sources.items():

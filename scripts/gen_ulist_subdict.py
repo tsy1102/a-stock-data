@@ -196,7 +196,14 @@ def build_mirror(main_path: str = MAIN) -> str:
         parts.append("\n".join(trailing))
         parts.append("")
 
-    return "\n".join(parts) + "\n"
+    content = "\n".join(parts) + "\n"
+    # The archived source is rooted at docs/, but this mirror is written under
+    # docs/verify/. Avoid copying its source-relative self-link into the mirror.
+    content = content.replace(
+        "其镜像分字典 = [`ulist_verify.md`](verify/ulist_verify.md)",
+        "其镜像分字典 = 本文件",
+    )
+    return content
 
 
 def main():

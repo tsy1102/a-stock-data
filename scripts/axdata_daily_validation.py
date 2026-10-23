@@ -15,10 +15,16 @@ import math
 import os
 from pathlib import Path
 import re
+import tempfile
 import time
 from typing import Any, Optional
 
 from scripts.axdata_crosswalk_summary import read_summary
+import importlib
+
+_package_prefix = f"{__package__}." if __package__ else ""
+_capture_store_module = importlib.import_module(f"{_package_prefix}raw_capture_store")
+read_capture_json = _capture_store_module.read_capture_json
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 STATE_PATH = PROJECT_ROOT / ".tmp" / "axdata_daily_validation_state.json"
@@ -108,7 +114,7 @@ CAPTURE_ENDPOINTS = {
 
 def _read_json(path: Path) -> Optional[dict[str, Any]]:
     try:
-        value = json.loads(path.read_text(encoding="utf-8"))
+        value = read_capture_json(path)
     except (OSError, json.JSONDecodeError):
         return None
     return value if isinstance(value, dict) else None
@@ -116,12 +122,25 @@ def _read_json(path: Path) -> Optional[dict[str, Any]]:
 
 def _write_json(path: Path, value: dict[str, Any]) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
-    STATE_PATH.parent.mkdir(parents=True, exist_ok=True)
-    temporary = STATE_PATH.parent / f"{path.stem}.{os.getpid()}.tmp"
-    temporary.write_text(
-        json.dumps(value, ensure_ascii=False, indent=2, default=str), encoding="utf-8"
-    )
-    os.replace(temporary, path)
+    temporary_path: Optional[Path] = None
+    try:
+        with tempfile.NamedTemporaryFile(
+            mode="w",
+            encoding="utf-8",
+            dir=path.parent,
+            prefix=f".{path.stem}.",
+            suffix=".tmp",
+            delete=False,
+        ) as temporary_file:
+            temporary_path = Path(temporary_file.name)
+            json.dump(value, temporary_file, ensure_ascii=False, indent=2, default=str)
+        os.replace(temporary_path, path)
+    finally:
+        if temporary_path is not None:
+            try:
+                temporary_path.unlink()
+            except FileNotFoundError:
+                pass
 
 
 def _date_key(value: Any) -> Optional[str]:

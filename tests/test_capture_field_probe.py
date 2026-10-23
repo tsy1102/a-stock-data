@@ -874,26 +874,33 @@ def test_collect_etf_uses_recent_market_sessions(monkeypatch):
 
 
 def test_capture_date_validation_uses_trading_days_for_market_sources():
-    is_session = lambda day: day.weekday() < 5 and day != date(2026, 9, 25)
+    is_session = lambda day: day.weekday() < 5 and day != date(2026, 10, 16)
 
     with pytest.raises(ValueError, match="不是 A 股交易日"):
-        capture_probe._validate_capture_data_date("20260927", ["push2"], is_session)
+        capture_probe._validate_capture_data_date("20261018", ["push2"], is_session)
     with pytest.raises(ValueError, match="不是 A 股交易日"):
-        capture_probe._validate_capture_data_date("20260925", ["tdx"], is_session)
+        capture_probe._validate_capture_data_date("20261016", ["tdx"], is_session)
 
 
 def test_capture_date_validation_allows_natural_days_for_event_only_sources():
     capture_day, domain = capture_probe._validate_capture_data_date(
-        "20260927", ["reports", "news_wscn_cctv"], lambda _day: False
+        "20261018", ["reports", "news_wscn_cctv"], lambda _day: False
     )
 
-    assert capture_day == date(2026, 9, 27)
+    assert capture_day == date(2026, 10, 18)
     assert domain == "calendar"
+
+
+def test_capture_date_validation_rejects_pre_retention_dates():
+    with pytest.raises(ValueError, match="早于采集数据保留起始日 20261015"):
+        capture_probe._validate_capture_data_date(
+            "20261014", ["reports", "news_wscn_cctv"], lambda _day: False
+        )
 
 
 def test_capture_date_validation_rejects_malformed_dates():
     with pytest.raises(ValueError, match="YYYYMMDD"):
-        capture_probe._validate_capture_data_date("2026-09-27", ["reports"])
+        capture_probe._validate_capture_data_date("2026-10-18", ["reports"])
 
 
 def test_default_capture_date_uses_last_completed_session(monkeypatch):

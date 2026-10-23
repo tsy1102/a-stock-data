@@ -230,7 +230,7 @@
 | ZHB-tdxstat · `[11]` | [11] | 自由流通股本 FreeLtgb（万股） | — | `verified` |
 | ZHB-tdxstat2 · `[11]` | [11] | 本月至今累积涨跌幅 %（Month-to-Date，基准=上月末最后交易日收盘价） | float | `verified` |
 | ZHB-tipinfo · `[11]` | [11] | 最新业绩预告发布日 | — | `verified` |
-| 新浪(hq.sinajs) · `[11]` | [11] | 待破解 | 元 | `unverified` |
+| 新浪(hq.sinajs) · `[11]` | [11] | 买一价（与同一响应的 [6] 竞买报价逐值重复） | 元 | `verified` |
 | 腾讯(qt.gtimg) · `[11]` | — | — | — | `unverified` |
 
 ### `[12]` — ambiguous

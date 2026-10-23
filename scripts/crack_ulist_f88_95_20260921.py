@@ -20,8 +20,13 @@
 """
 
 import statistics
+import importlib
 from collections import defaultdict
 from typing import TYPE_CHECKING, Any
+
+_package_prefix = f"{__package__}." if __package__ else ""
+_retention_module = importlib.import_module(f"{_package_prefix}capture_retention")
+MIN_CAPTURE_DATE = _retention_module.MIN_CAPTURE_DATE
 
 if TYPE_CHECKING:
     from scripts.collision_dates import discover_capture_folders, select_snapshots
@@ -38,6 +43,7 @@ else:
         from scripts.collide import EXCLUDE_DIRS, collide_pair
 
 FV = "docs/field_verification"
+HISTORICAL_OUTPUT_DATE = "20260921"
 SNAPSHOT_DOCS: dict[tuple[str, str], dict[str, Any]] = {}
 SNAPSHOT_PHASES: dict[tuple[str, str], str] = {}
 FOCUS_ULIST = [f"f{i}" for i in range(88, 96)]  # f88..f95
@@ -116,6 +122,10 @@ def _collision_field(per_date, source):
 
 def main():
     global SNAPSHOT_DOCS, SNAPSHOT_PHASES
+    if HISTORICAL_OUTPUT_DATE < MIN_CAPTURE_DATE.strftime("%Y%m%d"):
+        raise SystemExit(
+            "该历史专题脚本的输出目录早于保留起始日，已停用；请运行 scripts/collide.py"
+        )
     sources = {"push2_full", "ulist239", "tencent", "zhb"}
     folders, folder_warnings = discover_capture_folders(FV)
     snapshots, snapshot_warnings = select_snapshots(folders, sources=sources)

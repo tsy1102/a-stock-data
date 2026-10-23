@@ -4,10 +4,17 @@ import json
 from io import StringIO
 from collections import defaultdict
 from datetime import date
+import pytest
 from importlib.util import module_from_spec, spec_from_file_location
 from pathlib import Path
 
 from scripts import collision_candidate_reviews, collision_dates, collision_rules
+
+
+@pytest.fixture(autouse=True)
+def _allow_historical_dates_in_collision_unit_tests(monkeypatch):
+    monkeypatch.setattr(collision_dates, "MIN_CAPTURE_DATE", date(2026, 8, 1))
+
 
 _collide_path = Path(__file__).resolve().parents[1] / "scripts" / "collide.py"
 _collide_spec = spec_from_file_location("collide_marker_test_module", _collide_path)

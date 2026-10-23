@@ -231,7 +231,14 @@ def build_mirror(main_path: str = MAIN) -> str:
             parts.extend(con)
             parts.append("")
 
-    return "\n".join(parts) + "\n"
+    content = "\n".join(parts) + "\n"
+    # The historical reference used an obsolete directory name; the retained
+    # sample archive is keyed by its ZHB data date (20260821).
+    content = content.replace(
+        "docs/field_verification/20260822/cross_analysis.md",
+        "docs/field_verification/20260821/cross_analysis.md",
+    )
+    return content
 
 
 def main():

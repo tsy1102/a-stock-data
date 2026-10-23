@@ -1,5 +1,7 @@
 # VWAP 功能扩展实现与验证报告（2026-09-09）
 
+> 保留说明：本报告引用的 `raw_tdx_kline_beta.json` 与 `raw_tdx_kline_full.json` 样本均早于 20261015，已于 2026-10-23 清理；本分析记录保留。
+
 > 承接 Round 13（tx[56] Beta 第四源锚）与 (a)/(b) 通用对撞器落地，本报告完成 **VWAP 指标的工程化扩展**：
 > 计算逻辑补充、边界情况处理、独立锚重算对撞验证。数据来源：通达信 TDX K线（独立第四源）。
 
@@ -14,7 +16,7 @@
 ## 2. 计算逻辑补充
 
 ### 2.1 缓存补全
-新增 `raw_tdx_kline_full.json`（替代仅含 closes 的 `raw_tdx_kline_beta.json` 作为对撞器默认缓存），每 code 含：
+新增 `raw_tdx_kline_full.json`（当时替代仅含 closes 的 `raw_tdx_kline_beta.json` 作为对撞器默认缓存；这些历史原始样本现已按保留策略清理），每 code 含：
 `dates/opens/highs/lows/closes/amounts/volumes/rawvolumes/rawamounts/unit/n_kept`。
 来源：重新解析 `mcp-tdx-connector-tdx_kline-*.txt`（21 个文件，去重后 20 code，含 000300/000985 基准）。
 实测每行结构含 `Amount`(元, 终值) / `Volume`(手, 按 Unit 换算) / `RawAmount` / `RawVolume`(未换算原生值)。
@@ -87,7 +89,7 @@ python scripts/field_meta.py                     # 字段身份注册表自检
 ## 7. 交付文件
 - `scripts/computed_collider.py`（VWAP 指标 + 边界 + 注册）
 - `scripts/field_meta.py`（tx[51]/tx[85] 元数据升级）
-- `docs/field_verification/raw_tdx_kline_full.json`（含 amount/volume 的 K线缓存）
+- `docs/field_verification/raw_tdx_kline_full.json`（含 amount/volume 的 K 线缓存；原始样本已按保留策略清理）
 - `docs/field_dict.md`（tx[51] L1 第四源注记、tx[85] 非均价注记）
 
 > 注：以上为字段语义破解工程化能力交付，非投资建议。

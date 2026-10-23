@@ -10,6 +10,11 @@ from datetime import date, datetime
 from importlib import metadata
 from pathlib import Path
 from typing import Any
+import importlib
+
+_package_prefix = f"{__package__}." if __package__ else ""
+_capture_store_module = importlib.import_module(f"{_package_prefix}raw_capture_store")
+read_capture_json = _capture_store_module.read_capture_json
 
 METHODS: dict[str, dict[str, str]] = {
     "cls_market_emotion": {
@@ -28,7 +33,7 @@ _IGNORED_KEYS = frozenset(
 
 def _read_json(path: Path) -> tuple[dict[str, Any] | None, str | None]:
     try:
-        value = json.loads(path.read_text(encoding="utf-8"))
+        value = read_capture_json(path)
     except FileNotFoundError:
         return None, "capture_file_missing"
     except (OSError, json.JSONDecodeError) as exc:

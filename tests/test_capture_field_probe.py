@@ -280,6 +280,31 @@ def test_assess_result_separates_pre_request_suppression_from_client_failures():
     }
 
 
+def test_assess_result_marks_dns_failure_as_pre_request_and_retryable():
+    result = {
+        "stocks": {
+            "600000": {
+                "__error__": (
+                    "push2delay: connection_error, domain=push2delay.eastmoney.com, "
+                    "DNS resolution failed: [Errno 11001] getaddrinfo failed"
+                )
+            }
+        }
+    }
+
+    ok, info = capture_probe.assess_result(result, expected_symbols=["600000"])
+
+    assert ok is False
+    diagnostics = info["error_diagnostics"]
+    assert diagnostics["request_attempt_states"] == {"not_attempted": 1}
+    assert diagnostics["categories"] == {"dns_resolution_failure": 1}
+    detail = diagnostics["details"][0]
+    assert detail["phase"] == "dns_resolution"
+    assert detail["request_attempt_state"] == "not_attempted"
+    assert detail["retryable_hint"] is True
+    assert detail["risk_family"] == "dns"
+
+
 def test_assess_result_emits_structured_diagnostics_without_changing_legacy_counts():
     rate_limit = (
         "http_429 status=429 attempts=1 "

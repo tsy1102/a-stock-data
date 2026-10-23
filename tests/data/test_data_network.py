@@ -165,6 +165,95 @@ class TestEmBanCooldown(unittest.TestCase):
         self.assertEqual(error["kind"], "ip_banned")
         self.assertGreaterEqual(circuit._on_failure.call_count, 3)
 
+    def test_dns_preflight_retries_once_without_http_request(self):
+        import socket
+        import unittest.mock as _mock
+
+        host = "dns-retry-probe.invalid"
+        dns_cache = {}
+        with (
+            _mock.patch.object(self.sn, "_DNS_CACHE", dns_cache),
+            _mock.patch.object(
+                self.sn.socket,
+                "gethostbyname",
+                side_effect=[socket.gaierror(11001, "host not found"), "198.18.0.10"],
+            ) as resolve,
+            _mock.patch.object(self.sn.time, "sleep"),
+        ):
+            self.sn._resolve_host_with_timeout(host)
+
+        self.assertEqual(resolve.call_count, 2)
+        self.assertEqual(dns_cache[host][0], "198.18.0.10")
+
+    def test_dns_preflight_failure_does_not_count_as_em_disconnect(self):
+        import unittest.mock as _mock
+
+        circuit = _mock.Mock(state="closed")
+        dns_error = self.sn.DNSResolutionError(
+            "DNS resolution failed for push2.eastmoney.com: [Errno 11001] getaddrinfo failed"
+        )
+        with (
+            _mock.patch.object(self.sn, "_resolve_host_with_timeout", side_effect=dns_error),
+            _mock.patch.object(self.sn, "_em_wait_process_interval"),
+            _mock.patch.object(self.sn._HTTP_SESSION, "get") as request,
+            _mock.patch.object(self.sn, "_record_em_disconnect") as record_disconnect,
+            _mock.patch.object(self.sn, "get_domain_circuit_breaker", return_value=circuit),
+        ):
+            for _ in range(3):
+                error = {}
+                result = self.sn._do_request(
+                    "https://push2delay.eastmoney.com/api/qt/ulist.np/get",
+                    None,
+                    None,
+                    15,
+                    1,
+                    None,
+                    "GET",
+                    True,
+                    error,
+                )
+                self.assertIsNone(result)
+
+        request.assert_not_called()
+        record_disconnect.assert_not_called()
+        circuit._on_failure.assert_not_called()
+        self.assertFalse(self.sn._em_is_banned("push2delay.eastmoney.com"))
+        self.assertEqual(error["kind"], "connection_error")
+        self.assertEqual(error["error_type"], "DNSResolutionError")
+        self.assertEqual(error["attempts"], 0)
+
+    def test_http_dns_errors_do_not_count_as_em_disconnect(self):
+        import requests
+        import unittest.mock as _mock
+
+        circuit = _mock.Mock(state="closed")
+        dns_error = requests.exceptions.ConnectionError(
+            "HTTPSConnectionPool: Failed to resolve push2.eastmoney.com: [Errno 11001] getaddrinfo failed"
+        )
+        with (
+            _mock.patch.object(self.sn, "_resolve_host_with_timeout"),
+            _mock.patch.object(self.sn, "_em_wait_process_interval"),
+            _mock.patch.object(self.sn._HTTP_SESSION, "get", side_effect=dns_error) as request,
+            _mock.patch.object(self.sn, "_record_em_disconnect") as record_disconnect,
+            _mock.patch.object(self.sn, "get_domain_circuit_breaker", return_value=circuit),
+        ):
+            for _ in range(3):
+                self.sn._do_request(
+                    "https://push2.eastmoney.com/api/qt/stock/get",
+                    None,
+                    None,
+                    10,
+                    1,
+                    None,
+                    "GET",
+                    True,
+                )
+
+        self.assertEqual(request.call_count, 3)
+        record_disconnect.assert_not_called()
+        circuit._on_failure.assert_not_called()
+        self.assertFalse(self.sn._em_is_banned("push2.eastmoney.com"))
+
     def test_quick_request_success_resets_disconnect_streak(self):
         import unittest.mock as _mock
 

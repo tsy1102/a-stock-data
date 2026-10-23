@@ -1088,6 +1088,16 @@ _DNS_CACHE: Dict[str, Tuple[Optional[str], float]] = {}
 _DNS_CACHE_TTL = 300.0
 _DNS_CACHE_LOCK = threading.Lock()
 _DNS_RESOLVE_TIMEOUT = 5.0
+_DNS_PREFLIGHT_RETRIES = 1
+_DNS_PREFLIGHT_RETRY_DELAY = 0.25
+
+
+class DNSResolutionError(requests.exceptions.ConnectionError):
+    """A hostname lookup failed before any HTTP request could reach the provider."""
+
+    def __init__(self, message: str, *, timed_out: bool = False) -> None:
+        super().__init__(message)
+        self.timed_out = timed_out
 
 
 def _resolve_host_with_timeout(host: str, timeout: float = _DNS_RESOLVE_TIMEOUT) -> None:
@@ -1106,27 +1116,66 @@ def _resolve_host_with_timeout(host: str, timeout: float = _DNS_RESOLVE_TIMEOUT)
         _cached = _DNS_CACHE.get(_h)
     if _cached is not None and _now - _cached[1] < _DNS_CACHE_TTL:
         return  # 缓存命中（含此前成功解析的 IP），跳过预检
-    _res: Dict[str, Any] = {}
+    for dns_attempt in range(_DNS_PREFLIGHT_RETRIES + 1):
+        _res: Dict[str, Any] = {}
 
-    def _resolve() -> None:
-        try:
-            _res["ip"] = socket.gethostbyname(_h)
-        except Exception as _e:  # DNS 失败（NXDOMAIN / 临时错误 / 等服务端拒绝）
-            _res["err"] = _e
+        def _resolve() -> None:
+            try:
+                _res["ip"] = socket.gethostbyname(_h)
+            except Exception as _e:  # DNS 失败（NXDOMAIN / 临时错误 / 等服务端拒绝）
+                _res["err"] = _e
 
-    _th = threading.Thread(target=_resolve, daemon=True)
-    _th.start()
-    _th.join(timeout)
-    if _th.is_alive():
-        # DNS 解析挂起（超时不返回）——requests timeout 无法覆盖的盲区
-        raise requests.exceptions.ConnectionError(
-            f"DNS resolution timeout for {_h} (>={timeout}s, 疑似解析挂起)"
-        )
-    if "err" in _res:
-        # DNS 解析失败：按连接级错误抛出，复用既有 fallback
-        raise requests.exceptions.ConnectionError(f"DNS resolution failed for {_h}: {_res['err']}")
-    with _DNS_CACHE_LOCK:
-        _DNS_CACHE[_h] = (_res.get("ip"), _now)
+        _th = threading.Thread(target=_resolve, daemon=True)
+        _th.start()
+        _th.join(timeout)
+        if _th.is_alive():
+            # 不能再启动并行解析线程：首次解析仍在后台运行。
+            raise DNSResolutionError(
+                f"DNS resolution timeout for {_h} (>={timeout}s, 疑似解析挂起)",
+                timed_out=True,
+            )
+        if "err" in _res:
+            if dns_attempt < _DNS_PREFLIGHT_RETRIES:
+                # 只重试 DNS；此时尚未发出 HTTP 请求，不增加上游请求频率或封禁风险。
+                time.sleep(_DNS_PREFLIGHT_RETRY_DELAY)
+                continue
+            raise DNSResolutionError(f"DNS resolution failed for {_h}: {_res['err']}") from _res[
+                "err"
+            ]
+        with _DNS_CACHE_LOCK:
+            _DNS_CACHE[_h] = (_res.get("ip"), _now)
+        return
+
+
+def _is_dns_resolution_error(error: BaseException) -> bool:
+    """Recognize resolver failures so they do not count as provider disconnects."""
+    markers = (
+        "dns resolution",
+        "getaddrinfo failed",
+        "name resolution",
+        "failed to resolve",
+        "nameresolutionerror",
+        "temporary failure in name resolution",
+    )
+    pending: List[BaseException] = [error]
+    seen: set[int] = set()
+    while pending:
+        current = pending.pop()
+        if id(current) in seen:
+            continue
+        seen.add(id(current))
+        if isinstance(current, (DNSResolutionError, socket.gaierror)):
+            return True
+        if any(marker in str(current).lower() for marker in markers):
+            return True
+        for attr in ("__cause__", "__context__", "reason", "original_error"):
+            nested = getattr(current, attr, None)
+            if isinstance(nested, BaseException):
+                pending.append(nested)
+        for arg in getattr(current, "args", ()):
+            if isinstance(arg, BaseException):
+                pending.append(arg)
+    return False
 
 
 def _record_request_failure(
@@ -1330,13 +1379,18 @@ def _do_request(
             requests.exceptions.ConnectTimeout,
             requests.exceptions.ProxyError,
         ) as _e:
-            if is_em and _HAS_FAULT_TOLERANCE:
+            _dns_failure = _is_dns_resolution_error(_e)
+            if is_em and _HAS_FAULT_TOLERANCE and not _dns_failure:
                 try:
                     get_domain_circuit_breaker(_normalize_em_domain(domain))._on_failure()
                 except Exception:
                     pass
-            if is_em and isinstance(
-                _e, (requests.exceptions.ConnectionError, requests.exceptions.ConnectTimeout)
+            if (
+                is_em
+                and isinstance(
+                    _e, (requests.exceptions.ConnectionError, requests.exceptions.ConnectTimeout)
+                )
+                and not _dns_failure
             ):
                 _ft_domain = _normalize_em_domain(domain)
                 _record_em_disconnect(_ft_domain)
@@ -1369,7 +1423,7 @@ def _do_request(
                 error_out,
                 kind=failure_kind,
                 domain=domain,
-                attempt=attempt + 1,
+                attempt=0 if _dns_failure else attempt + 1,
                 error=_e,
             )
             return None

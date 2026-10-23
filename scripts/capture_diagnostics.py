@@ -186,6 +186,19 @@ def _classify_capture_error(error: Any) -> tuple[str, str]:
     if status_code is not None and status_code >= 400:
         return "http_response_failure", "client_attempted"
 
+    dns_markers = (
+        "dns resolution failed",
+        "dns resolution timeout",
+        "getaddrinfo failed",
+        "name resolution",
+        "failed to resolve",
+        "nameresolutionerror",
+        "gaierror",
+    )
+    if any(marker in normalized for marker in dns_markers):
+        # DNS lookup fails before the provider receives an HTTP request.
+        return "dns_resolution_failure", "not_attempted"
+
     if any(
         marker in normalized
         for marker in (
@@ -233,6 +246,7 @@ def _capture_error_diagnostic(error: Any, path: tuple) -> Dict[str, Any]:
         "suppressed_before_request": "request_admission",
         "rate_limited_response": "request",
         "http_response_failure": "request",
+        "dns_resolution_failure": "dns_resolution",
         "transport_failure": "request",
         "request_failure": "request",
         "payload_or_contract_failure": "response_validation",
@@ -242,6 +256,7 @@ def _capture_error_diagnostic(error: Any, path: tuple) -> Dict[str, Any]:
         "suppressed_before_request": "circuit_breaker",
         "rate_limited_response": "rate_limit",
         "http_response_failure": "provider_response",
+        "dns_resolution_failure": "dns",
         "transport_failure": "transport",
         "request_failure": "request",
         "payload_or_contract_failure": "payload_contract",
@@ -250,7 +265,9 @@ def _capture_error_diagnostic(error: Any, path: tuple) -> Dict[str, Any]:
     retryable_hint: Optional[bool]
     if category in {"suppressed_before_request", "rate_limited_response"}:
         retryable_hint = False
-    elif category == "transport_failure" or (status_code is not None and status_code >= 500):
+    elif category in {"dns_resolution_failure", "transport_failure"} or (
+        status_code is not None and status_code >= 500
+    ):
         retryable_hint = True
     elif status_code is not None and status_code >= 400:
         retryable_hint = False

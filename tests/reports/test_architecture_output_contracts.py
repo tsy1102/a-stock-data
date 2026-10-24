@@ -337,6 +337,9 @@ def test_report_generator_writes_utf8_markdown_offline(
         )
 
     def immediate_to_thread(function: Any, /, *args: Any, **kwargs: Any) -> _ImmediateAwaitable:
+        if function is sht_report._canonical_ohlc_lines:
+            with mock.patch.object(sht_report, "_verified_tdx_daily_bar", return_value=None):
+                return _ImmediateAwaitable(function(*args, **kwargs))
         if not isinstance(function, mock.Mock):
             raise AssertionError(f"unmocked threaded data function: {function!r}")
         return _ImmediateAwaitable(function(*args, **kwargs))
@@ -355,7 +358,16 @@ def test_report_generator_writes_utf8_markdown_offline(
                 results.append(exc)
         return _ImmediateAwaitable(results)
 
+    injected_val_timeout = False
+
     def immediate_wait_for(awaitable: Any, *_args: Any, **_kwargs: Any) -> _ImmediateAwaitable:
+        nonlocal injected_val_timeout
+        if report_type == "val" and not injected_val_timeout:
+            injected_val_timeout = True
+            close = getattr(awaitable, "close", None)
+            if callable(close):
+                close()
+            raise asyncio.TimeoutError
         return _ImmediateAwaitable(_complete_without_event_loop(awaitable))
 
     monkeypatch.setattr(asyncio, "to_thread", immediate_to_thread)
@@ -371,6 +383,10 @@ def test_report_generator_writes_utf8_markdown_offline(
     assert expected_text in content
     assert expected_section in content
     assert "2026-10-20" in content
+    if report_type == "val":
+        assert "停牌状态未过滤（ZHB快照不含可靠成交量/停牌标记）" in content
+        assert "扫描超时（720秒），结果未完成" in content
+        assert "空结果不代表没有符合标的" in content
     assert content.strip()
     assert returned == content
     assert network_attempts == []

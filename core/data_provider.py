@@ -538,6 +538,7 @@ def get_canonical_stock_data(code: str, force_realtime: bool = False) -> Any:
     # 字典 value = 数据来源标签 (e.g. "realtime:push2", "realtime:tencent", "calculated", "missing")
     field_sources: Dict[str, str] = {}
     source_as_of_dates: Dict[str, str] = {}
+    day_field_as_of_dates: Dict[str, str] = {}
 
     def _actual_realtime_source(field_name: str, default_family: str = "unknown") -> str:
         source = field_sources.get(field_name, "")
@@ -1025,23 +1026,53 @@ def get_canonical_stock_data(code: str, force_realtime: bool = False) -> Any:
     low_p, low_src = _extract_with_source("low", rt_quote.get("low"), zhb_dict.get("low"))
     field_sources["low"] = field_sources.get("low", low_src)
     # V17.0.1d: 休市/盘前 OHLC 缺口 → TDX 本机 .day 兜底(零网络, 与 TDX 快照同源)
+    # 仅接受目标交易日且收盘与 canonical price 相符的完整日线，避免把过期尾条混入当日快照。
     if not (open_p and high_p and low_p):
         try:
             from stock_common.sc_datasource import get_tdx_day_tail
+            from stock_common.stock_calendar import latest_market_data_date
 
             _day = get_tdx_day_tail(code_str)
             if _day:
-                if not open_p:
-                    open_p = _safe_float(_day.get("open"))
-                    field_sources["open"] = "tdx:.day"
-                if not high_p:
-                    high_p = _safe_float(_day.get("high"))
-                    field_sources["high"] = "tdx:.day"
-                if not low_p:
-                    low_p = _safe_float(_day.get("low"))
-                    field_sources["low"] = "tdx:.day"
+                _day_date = normalize_as_of_date(str(_day.get("date") or ""))
+                _expected_day = latest_market_data_date(now).isoformat()
+                _day_open = _safe_float(_day.get("open"))
+                _day_high = _safe_float(_day.get("high"))
+                _day_low = _safe_float(_day.get("low"))
+                _day_close = _safe_float(_day.get("price"))
+                _valid_day_bar = (
+                    _day_date == _expected_day
+                    and price > 0
+                    and abs(_day_close - price) <= 0.011
+                    and _day_open > 0
+                    and _day_low > 0
+                    and _day_high >= _day_open >= _day_low
+                    and _day_low <= _day_close <= _day_high
+                )
+                if _valid_day_bar:
+                    # 作为完整日线整体使用，避免把不同源或不同日期的 OHLC 拼在一起。
+                    open_p, high_p, low_p = _day_open, _day_high, _day_low
+                    for _field in ("open", "high", "low"):
+                        field_sources[_field] = "tdx:.day"
+                        day_field_as_of_dates[_field] = _day_date
+                else:
+                    _debug_log(
+                        f"get_canonical_stock_data .day bar rejected ({code_str}): "
+                        f"date={_day_date or 'unknown'} expected={_expected_day} "
+                        f"close={_day_close} price={price}"
+                    )
         except Exception as _e:
             _debug_log(f"get_canonical_stock_data .day ohlc fallback error: {_e}")
+    if price > 0 and open_p > 0 and high_p > 0 and low_p > 0:
+        if not (low_p <= open_p <= high_p and low_p <= price <= high_p):
+            _debug_log(
+                f"get_canonical_stock_data incoherent OHLC rejected ({code_str}): "
+                f"price={price} open={open_p} high={high_p} low={low_p}"
+            )
+            open_p = high_p = low_p = 0.0
+            day_field_as_of_dates.clear()
+            for _field in ("open", "high", "low"):
+                field_sources[_field] = "missing"
     prev_close, prev_close_src = _extract_with_source(
         "prev_close", rt_quote.get("last_close"), zhb_dict.get("prev_close")
     )
@@ -1718,6 +1749,7 @@ def get_canonical_stock_data(code: str, force_realtime: bool = False) -> Any:
         source_as_of_dates,
         zhb_data_date=zhb_data_date,
     )
+    field_as_of_dates.update(day_field_as_of_dates)
     quote_date = field_as_of_dates.get("price", "")
     price_source = field_sources.get("price", "missing")
     source_tag = canonical_data_source(price_source)

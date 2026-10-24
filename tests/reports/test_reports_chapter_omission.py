@@ -101,6 +101,9 @@ def _complete_without_event_loop(awaitable):
 
 
 def _fake_to_thread(function, /, *args, **kwargs):
+    if function is S._canonical_ohlc_lines:
+        with mock.patch.object(S, "_verified_tdx_daily_bar", return_value=None):
+            return _ImmediateAwaitable(function(*args, **kwargs))
     if not isinstance(function, mock.Mock):
         raise AssertionError(f"unmocked threaded data function: {function!r}")
     return _ImmediateAwaitable(function(*args, **kwargs))

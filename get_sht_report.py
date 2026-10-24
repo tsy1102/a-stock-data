@@ -35,8 +35,10 @@ ensure_utf8_stdio()
 
 
 import asyncio
+import logging
 
 from datetime import date, datetime, timedelta
+from typing import Any
 
 # V15.3 修复: 4 个报告模块同名 _SNAPSHOT_DATA 全局变量冲突
 # 抽出到 stock_common.sc_snapshot 统一管理（sc_report_runner 也用此模块）
@@ -97,6 +99,114 @@ from stock_common import (
 from stock_common.sc_report_runner import format_52w_reference, format_quote_provenance
 
 from core.data_provider import get_main_net_buy_async  # V16.4.1: 删 9 个未使用 async 包装
+
+
+def _canonical_ohlc_lines(
+    cdata: Any, canonical_open: Any, canonical_high: Any, canonical_low: Any
+) -> list[str]:
+    """只展示目标行情日、日期一致且与现价相容的 OHLC。"""
+    from stock_common.stock_calendar import latest_market_data_date
+
+    dates = getattr(cdata, "field_as_of_dates", {}) or {}
+    ohlc_dates = [str(dates.get(field) or "") for field in ("open", "high", "low")]
+    ohlc_date = ohlc_dates[0]
+    expected_date = latest_market_data_date().isoformat()
+    price_date = str(dates.get("price") or getattr(cdata, "quote_date", "") or "")
+    price = _safe_float(getattr(cdata, "price", 0))
+    open_price = _safe_float(canonical_open)
+    high_price = _safe_float(canonical_high)
+    low_price = _safe_float(canonical_low)
+    prev_close = _safe_float(getattr(cdata, "prev_close", 0))
+    ohlc_is_valid = (
+        bool(ohlc_date)
+        and ohlc_date == expected_date
+        and all(value == ohlc_date for value in ohlc_dates)
+        and (not price_date or price_date == ohlc_date)
+        and price > 0
+        and open_price > 0
+        and high_price >= open_price >= low_price > 0
+        and low_price <= price <= high_price
+    )
+    used_verified_tdx_bar = False
+    if not ohlc_is_valid:
+        verified_bar = _verified_tdx_daily_bar(cdata, expected_date, price)
+        if verified_bar:
+            open_price = verified_bar["open"]
+            high_price = verified_bar["high"]
+            low_price = verified_bar["low"]
+            ohlc_date = expected_date
+            ohlc_is_valid = True
+            used_verified_tdx_bar = True
+    prev_close_text = f"{prev_close:.2f} 元" if prev_close > 0 else "未取得"
+    if not ohlc_is_valid:
+        return [
+            f"  昨收: {prev_close_text}",
+            "  开盘/最高/最低: 数据缺失、过期或与现价不一致，未展示",
+        ]
+
+    lines = [
+        f"  行情日开盘: {open_price:.2f} 元  昨收: {prev_close_text}",
+        f"  最高: {high_price:.2f} 元  最低: {low_price:.2f} 元",
+        f"  OHLC 数据日: {ohlc_date}"
+        f"{'（TDX日线收盘与现价一致）' if used_verified_tdx_bar else ''}",
+    ]
+    prev_close_date = str(dates.get("prev_close") or "")
+    if prev_close > 0 and prev_close_date == ohlc_date:
+        amplitude = (high_price - low_price) / prev_close * 100
+        lines.append(f"  振幅: {amplitude:.2f}%")
+    return lines
+
+
+def _verified_tdx_daily_bar(
+    cdata: Any, expected_date: str, price: float
+) -> dict[str, float] | None:
+    """Fetch a target-date TDX bar and require its close to match the quote price."""
+    code = str(getattr(cdata, "code", "") or "").strip()
+    if not code or price <= 0:
+        return None
+    expected_date_key = expected_date.replace("-", "")[:8]
+    if not expected_date_key:
+        return None
+    try:
+        from core.tdx_client import tdx_get_security_bars
+
+        keys, rows = tdx_get_security_bars(code, count=17)
+        indexes = {str(key).lower(): index for index, key in enumerate(keys)}
+        required = ("time", "open", "close", "high", "low")
+        if any(key not in indexes for key in required):
+            return None
+        for row in reversed(rows):
+            if max(indexes[key] for key in required) >= len(row):
+                continue
+            raw_date = "".join(char for char in str(row[indexes["time"]]) if char.isdigit())
+            if len(raw_date) < 8:
+                continue
+            bar_date = f"{raw_date[:4]}-{raw_date[4:6]}-{raw_date[6:8]}"
+            if bar_date != expected_date:
+                continue
+            bar_open = _safe_float(row[indexes["open"]])
+            bar_close = _safe_float(row[indexes["close"]])
+            bar_high = _safe_float(row[indexes["high"]])
+            bar_low = _safe_float(row[indexes["low"]])
+            if (
+                bar_open > 0
+                and bar_close > 0
+                and bar_high >= bar_open >= bar_low > 0
+                and bar_low <= bar_close <= bar_high
+                and bar_low <= price <= bar_high
+                and abs(bar_close - price) <= 0.011
+            ):
+                return {
+                    "open": bar_open,
+                    "high": bar_high,
+                    "low": bar_low,
+                }
+    except Exception as exc:
+        logging.getLogger(__name__).debug(
+            "SHT verified TDX daily bar failed for %s: %s", code, exc, exc_info=True
+        )
+    return None
+
 
 # ═══════════════════════════════════════════
 # 数据获取层
@@ -457,13 +567,13 @@ async def generate_report_async(
         # V17.0.1e: 撤销 V17.0.1b 表格化, 恢复原"字段: 值"竖排(基本信息/行情不适用表格)
         L(f"  现价:   {cdata.price:.2f} 元")
         L(f"  涨跌幅:   {cdata.change_pct:.2f}%")
-        L(f"  今开:     {cdata.open:.2f} 元  昨收: {cdata.prev_close:.2f} 元")
-        L(f"  最高:     {cdata.high:.2f} 元  最低: {cdata.low:.2f} 元")
+        _ohlc_lines = await asyncio.to_thread(
+            _canonical_ohlc_lines, cdata, cdata.open, cdata.high, cdata.low
+        )
+        for _ohlc_line in _ohlc_lines:
+            L(_ohlc_line)
         L(f"  成交额:   {cdata.amount_wan/10000:.2f} 亿元  换手率: {cdata.turnover_pct:.2f}%")
         # V16.2.3 恢复: 振幅/涨停价/跌停价（V16.1 重构时丢失，对照 v9.6 模板；vol_ratio 未入 canonical 跳过）
-        if cdata.high > 0 and cdata.low > 0 and cdata.prev_close > 0:
-            _amp = (cdata.high - cdata.low) / cdata.prev_close * 100
-            L(f"  振幅:     {_amp:.2f}%")
         _limit_up = getattr(cdata, 'limit_up', 0) or 0
         _limit_dn = getattr(cdata, 'limit_down', 0) or 0
         if _limit_up > 0 or _limit_dn > 0:

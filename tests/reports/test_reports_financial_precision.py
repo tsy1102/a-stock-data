@@ -1,7 +1,10 @@
 import asyncio
+from datetime import date
 from types import SimpleNamespace
+from unittest import mock
 
 import get_mak_report
+import get_sht_report
 import get_val_report
 from stock_common.sc_report_runner import (
     classify_price_range,
@@ -50,6 +53,154 @@ def test_quote_provenance_does_not_mislabel_unknown_batch_as_a_source():
     assert "行情有效日期未核实" in rendered
     assert "价格来源：未确认" in rendered
     assert "batch" not in rendered
+
+
+def test_sht_ohlc_hides_stale_or_incoherent_values_and_amplitude():
+    cdata = SimpleNamespace(
+        price=25.17,
+        open=32.83,
+        high=33.05,
+        low=31.52,
+        prev_close=24.85,
+        quote_date="2026-10-23",
+        field_as_of_dates={
+            "price": "2026-10-23",
+            "open": "2026-09-24",
+            "high": "2026-09-24",
+            "low": "2026-09-24",
+            "prev_close": "2026-10-23",
+        },
+    )
+    with mock.patch(
+        "stock_common.stock_calendar.latest_market_data_date", return_value=date(2026, 10, 23)
+    ):
+        lines = get_sht_report._canonical_ohlc_lines(cdata, cdata.open, cdata.high, cdata.low)
+
+    rendered = "\n".join(lines)
+    assert "数据缺失、过期或与现价不一致，未展示" in rendered
+    assert "33.05" not in rendered
+    assert "31.52" not in rendered
+    assert "振幅" not in rendered
+    assert "0.00" not in rendered
+
+
+def test_sht_ohlc_renders_only_a_complete_same_day_coherent_bar():
+    cdata = SimpleNamespace(
+        price=10.0,
+        open=9.8,
+        high=10.2,
+        low=9.7,
+        prev_close=9.9,
+        quote_date="2026-10-23",
+        field_as_of_dates={
+            "price": "2026-10-23",
+            "open": "2026-10-23",
+            "high": "2026-10-23",
+            "low": "2026-10-23",
+            "prev_close": "2026-10-23",
+        },
+    )
+    with mock.patch(
+        "stock_common.stock_calendar.latest_market_data_date", return_value=date(2026, 10, 23)
+    ):
+        lines = get_sht_report._canonical_ohlc_lines(cdata, cdata.open, cdata.high, cdata.low)
+
+    rendered = "\n".join(lines)
+    assert "行情日开盘: 9.80 元" in rendered
+    assert "最高: 10.20 元  最低: 9.70 元" in rendered
+    assert "OHLC 数据日: 2026-10-23" in rendered
+    assert "振幅: 5.05%" in rendered
+
+
+def test_sht_ohlc_recovers_from_verified_current_tdx_bar():
+    cdata = SimpleNamespace(
+        code="601233",
+        price=21.67,
+        open=0.0,
+        high=0.0,
+        low=0.0,
+        prev_close=21.05,
+        quote_date="",
+        field_as_of_dates={},
+    )
+    bars = (
+        ["time", "open", "close", "high", "low", "volume", "amount"],
+        [["2026-10-23", "20.74", "21.67", "21.67", "20.52", "320414.92", "676349696.0"]],
+    )
+    with (
+        mock.patch(
+            "stock_common.stock_calendar.latest_market_data_date", return_value=date(2026, 10, 23)
+        ),
+        mock.patch("core.tdx_client.tdx_get_security_bars", return_value=bars) as get_bars,
+    ):
+        lines = get_sht_report._canonical_ohlc_lines(cdata, cdata.open, cdata.high, cdata.low)
+
+    rendered = "\n".join(lines)
+    get_bars.assert_called_once_with("601233", count=17)
+    assert "行情日开盘: 20.74 元" in rendered
+    assert "最高: 21.67 元  最低: 20.52 元" in rendered
+    assert "OHLC 数据日: 2026-10-23" in rendered
+    assert "TDX日线收盘与现价一致" in rendered
+    assert "数据缺失" not in rendered
+
+
+def test_sht_ohlc_rejects_tdx_bar_with_wrong_date_or_close():
+    cdata = SimpleNamespace(
+        code="601233",
+        price=21.67,
+        open=0.0,
+        high=0.0,
+        low=0.0,
+        prev_close=21.05,
+        quote_date="2026-10-23",
+        field_as_of_dates={"price": "2026-10-23"},
+    )
+    stale_bars = (
+        ["time", "open", "close", "high", "low"],
+        [["2026-10-22", "20.74", "21.67", "21.67", "20.52"]],
+    )
+    mismatched_close = (
+        ["time", "open", "close", "high", "low"],
+        [["2026-10-23", "20.74", "21.65", "21.67", "20.52"]],
+    )
+    with (
+        mock.patch(
+            "stock_common.stock_calendar.latest_market_data_date", return_value=date(2026, 10, 23)
+        ),
+        mock.patch(
+            "core.tdx_client.tdx_get_security_bars",
+            side_effect=(stale_bars, mismatched_close),
+        ),
+    ):
+        for _ in range(2):
+            lines = get_sht_report._canonical_ohlc_lines(cdata, cdata.open, cdata.high, cdata.low)
+            assert "数据缺失、过期或与现价不一致，未展示" in "\n".join(lines)
+
+
+def test_sht_ohlc_rejects_tdx_bar_when_quote_is_outside_day_range():
+    cdata = SimpleNamespace(
+        code="601233",
+        price=21.68,
+        open=0.0,
+        high=0.0,
+        low=0.0,
+        prev_close=21.05,
+        quote_date="",
+        field_as_of_dates={},
+    )
+    bars = (
+        ["time", "open", "close", "high", "low"],
+        [["2026-10-23", "20.74", "21.67", "21.67", "20.52"]],
+    )
+    with (
+        mock.patch(
+            "stock_common.stock_calendar.latest_market_data_date", return_value=date(2026, 10, 23)
+        ),
+        mock.patch("core.tdx_client.tdx_get_security_bars", return_value=bars),
+    ):
+        lines = get_sht_report._canonical_ohlc_lines(cdata, cdata.open, cdata.high, cdata.low)
+
+    assert "数据缺失、过期或与现价不一致，未展示" in "\n".join(lines)
 
 
 def test_non_quarter_end_dates_preserve_source_dates_and_ignore_invalid_values():

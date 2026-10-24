@@ -2325,6 +2325,101 @@ def run_discovery(output_path):
     return asyncio.run(run_discovery_async(output_path))
 
 
+def _snapshot_quality_notes(
+    stock_count: int,
+    mcap_count: int,
+    verified_quote_count: int | None = None,
+    basis_date: str = "",
+) -> list[str]:
+    """Describe market-snapshot coverage limits that affect strategy results."""
+    total = max(0, stock_count)
+    covered_mcap = min(max(0, mcap_count), total)
+    notes = ["停牌状态未过滤（ZHB快照不含可靠成交量/停牌标记）"]
+    missing_mcap = total - covered_mcap
+    if missing_mcap:
+        notes.append(
+            f"市值字段仅覆盖 {covered_mcap}/{total} 只；依赖市值的策略无法评估缺失样本，"
+            "空结果不代表没有合格标的。"
+        )
+    if verified_quote_count is not None:
+        covered_quotes = min(max(0, verified_quote_count), total)
+        notes.append(
+            f"休市腾讯价格交叉核验通过 {covered_quotes}/{total} 只；报价涨幅及价格/昨收反算涨幅"
+            f"均与 ZHB {basis_date or '未确认'} 涨幅相差不超过 0.03 个百分点。腾讯响应未提供日期，"
+            "行情日按该 ZHB 日期交叉推定。"
+        )
+    return notes
+
+
+def _market_date_key(value: Any) -> str:
+    digits = "".join(char for char in str(value or "") if char.isdigit())
+    return digits[:8] if len(digits) >= 8 else ""
+
+
+def _day_close_matches_market_date(
+    day_row: Dict[str, Any], basis_date: str, expected_date: str
+) -> bool:
+    target_date = _market_date_key(expected_date)
+    return bool(
+        target_date
+        and _market_date_key(basis_date) == target_date
+        and _market_date_key(day_row.get("date")) == target_date
+    )
+
+
+def _verified_snapshot_tencent_quotes(
+    snapshot: Dict[str, Dict[str, Any]],
+    quotes: Dict[str, Dict[str, Any]],
+    basis_date: str,
+    expected_date: str,
+) -> Dict[str, Dict[str, Any]]:
+    """Keep only close quotes that independently match the exact-date ZHB return."""
+    from math import isfinite
+
+    target_date = _market_date_key(expected_date)
+    if not target_date or _market_date_key(basis_date) != target_date:
+        return {}
+    verified: Dict[str, Dict[str, Any]] = {}
+    for code, quote in quotes.items():
+        stat = snapshot.get(code)
+        if not stat:
+            continue
+        stat_date = _market_date_key(stat.get("date") or basis_date)
+        if stat_date != target_date:
+            continue
+        raw_change = stat.get("change_pct")
+        if raw_change is None:
+            continue
+        raw_quote_change = quote.get("change_pct")
+        if raw_quote_change is None:
+            continue
+        try:
+            price = float(quote.get("price", 0))
+            last_close = float(quote.get("last_close", quote.get("prev_close", 0)))
+            quote_change = float(raw_quote_change)
+            snapshot_change = float(raw_change)
+        except (TypeError, ValueError):
+            continue
+        if not all(isfinite(value) for value in (price, last_close, quote_change, snapshot_change)):
+            continue
+        if price <= 0 or last_close <= 0:
+            continue
+        implied_change = (price - last_close) / last_close * 100
+        if (
+            abs(quote_change - snapshot_change) <= 0.03
+            and abs(implied_change - snapshot_change) <= 0.03
+        ):
+            verified[code] = quote
+    return verified
+
+
+def _strategy_failure_note(*, timed_out: bool, timeout_seconds: int) -> str:
+    """Clarify that a failed strategy's empty result is incomplete, not a no-match."""
+    if timed_out:
+        return f"  ⚠️ 扫描超时（{timeout_seconds}秒），结果未完成；" "空结果不代表没有符合标的。"
+    return "  ⚠️ 扫描异常，结果未完成；空结果不代表没有符合标的。"
+
+
 async def run_discovery_async(output_path):
     """V7.5 异步版: 使用 asyncio.gather 并行跑 27 策略（约 2-3x 提速）
 
@@ -2377,18 +2472,50 @@ async def run_discovery_async(output_path):
             # V12.1 休市期旁路优化：仅在非交易日和盘前（9:15前）旁路，其余时段获取T日数据
             # V16.2 修复: 市场状态判断提前 —— 原逻辑先全市场腾讯批量（133 批/8s+）再丢弃，休市纯浪费
             from stock_common import get_market_status
+            from stock_common.stock_calendar import latest_market_data_date
 
             m_status, _ = get_market_status()
             is_bypass = m_status in ("closed", "pre_market")
-            # V16.3 O39 修复: is_bypass 时也初始化 _tencent_map（原 else 分支才赋值——
-            # 休市旁路时下方 L1746 腾讯 mcap 兜底引用未定义变量 → UnboundLocalError →
-            # 被外层 except 吞 → tdx 兜底失败 → 提前 return → val 假成功不落盘）
+            _expected_market_date = latest_market_data_date().strftime("%Y%m%d")
+            # Every path defines this map; the closed-market path stores only date-verified quotes.
             _tencent_map: Dict[str, Dict[str, Any]] = {}
             if is_bypass:
                 L(
-                    f"  ⚡ 探测到非盘中时段 ({m_status})，自动旁路实时行情，直接复用 ZHB 昨收快照基准！"
+                    f"  ⚡ 当前为非盘中时段 ({m_status})，以最近交易日 ZHB 快照为基准；"
+                    "腾讯收盘报价仅在同日涨幅交叉核验通过后采用。"
                 )
-                _price_map = {}
+                if _market_date_key(_zhb_date) == _expected_market_date:
+                    try:
+                        from core.tdx_client import _tencent_batch_fallback
+
+                        _tc_key = f"{_expected_market_date}|closed-verified"
+                        _cached_verified = _VAL_TENCENT_CACHE.get(_tc_key)
+                        if _cached_verified is None:
+                            _raw_tencent_map = _tencent_batch_fallback(
+                                all_codes, use_l2_cache=False
+                            )
+                            _tencent_map = _verified_snapshot_tencent_quotes(
+                                _snapshot,
+                                _raw_tencent_map,
+                                _zhb_date,
+                                _expected_market_date,
+                            )
+                            if _tencent_map:
+                                _VAL_TENCENT_CACHE[_tc_key] = _tencent_map
+                        else:
+                            _tencent_map = _cached_verified
+                        _debug_log(
+                            f"val closed Tencent date check: {len(_tencent_map)}/"
+                            f"{len(all_codes)} quotes verified for {_expected_market_date}"
+                        )
+                    except Exception as _e:
+                        _debug_log(f"val closed Tencent batch error: {_e}")
+                else:
+                    _debug_log(
+                        f"val closed Tencent batch skipped: ZHB {_zhb_date or 'unknown'} "
+                        f"does not match latest market date {_expected_market_date}"
+                    )
+                _price_map = _tencent_map
             else:
                 # V15.5.9: 全市场腾讯批量预加载（不封 IP，含 mcap_yi/pe_ttm/turnover_pct）
                 # 替代原逐股 get_em_quote_full（push2 连接级风控 + 1.5s 限流 → 7957 次卡死数小时）
@@ -2423,10 +2550,8 @@ async def run_discovery_async(output_path):
                 except Exception as _e:
                     _debug_log(f"val batch-quote prewarm error: {_e}")
 
-            # 转换为列表格式，过滤停牌股（volume=0），补充市值
-            # V16.0: ZHB 不再提供 volume 字段（Col[24] 误映射已移除），此过滤自然失效
+            # 转换为列表格式并补充可得市值；ZHB 快照不含可靠成交量/停牌标记，不能执行停牌过滤。
             all_stocks = []
-            _excluded = 0  # V16.0: ZHB 无 volume 后停牌过滤失效，恒 0（保留统计位）
             _mcap_count = 0
             for _code, _stat in _snapshot.items():
                 # V16.0: ZHB 不再提供 volume 字段，原"volume=0 过滤停牌"失效，移除
@@ -2440,15 +2565,11 @@ async def run_discovery_async(output_path):
                     _mcap_count += 1
 
                 _price = _safe_float(_price_map.get(_code, {}).get("price", 0))
-                # V17.2.7(2026-09-07) 修复: 腾讯 T 日涨跌幅覆盖 ZHB T-1（与 mak 一致）。
-                # 原仅覆盖 price, change_pct 仍为 ZHB T-1 → 风控仪表盘涨停/跌停按 9/4 口径计算,
-                # 与 mak 同日(9/7)广度(87/92/95)不可比。盘前/休市旁路时 _price_map 为空, 不覆盖(保留 ZHB T-1)。
+                # 休市 _price_map 只含与最近交易日 ZHB 涨幅交叉核验通过的报价；未通过时保留 ZHB 原值。
                 _tq_cp = _price_map.get(_code, {}).get("change_pct")
                 if _tq_cp is not None:
                     _stock["change_pct"] = _safe_float(_tq_cp)
-                # V17.0(2026-08-15 运行核查): bypass(纯ZHB/休市)模式下 _price_map 为空 →
-                # price=0 → mcap 全 0 → 依赖 price/mcap 的策略(01/02/04/05/06/10/13/18)全 0 命中。
-                # 修复: 用 TDX 本机 .day 日线(零网络, 盘前模式同款)补收盘价 → 市值链恢复
+                # 仅同一目标交易日的 TDX .day 收盘价可用于补市值；跨日尾条不参与当前报告。
                 if _price <= 0:
                     try:
                         # V17.0(2026-08-15): TDX 本机 .day 尾部快速读(零网络毫秒级)——
@@ -2458,18 +2579,13 @@ async def run_discovery_async(output_path):
                             _pk = _fast_day_close(_code) or {}
                             _KLINE_PRICE_CACHE[_code] = _pk
                         if _pk.get("price"):
-                            # M2 终审修复: .day 日期新鲜度校验——陈旧收盘价禁用于市值计算
-                            # V17.0.4(2026-08-19): 放宽为容忍 7 天——TDX .day 常滞后于 ZHB
-                            # (客户端未同步, 实测 8/14 vs ZHB 8/17), 原严格拒绝 → bypass 无价
-                            # → mcap=0 → 形态/估值类策略全 0 命中(8/19 4:22 全 0 根因);
-                            # 市值粗算对 ≤7 天旧价不敏感(偏差<3%), 拒绝的代价(全策略 0)更大
-                            try:
-                                _day_ok = str(_pk.get("date", 0)) >= str(int(_zhb_date or 0) - 7)
-                            except (ValueError, TypeError):
-                                _day_ok = True
+                            _day_ok = _day_close_matches_market_date(
+                                _pk, _zhb_date, _expected_market_date
+                            )
                             if not _day_ok:
                                 _debug_log(
-                                    f"val .day stale ({_code}): {_pk.get('date')} < ZHB-7d {_zhb_date}"
+                                    f"val .day rejected ({_code}): date={_pk.get('date')} "
+                                    f"expected={_expected_market_date} zhb={_zhb_date}"
                                 )
                             else:
                                 _price = _safe_float(_pk["price"])
@@ -2533,23 +2649,42 @@ async def run_discovery_async(output_path):
                 all_stocks.append(_stock)
             # 行情有效日必须来自来源响应；报告生成日期或市场时段不能替代 as_of_date。
             _basis_date = _zhb_date or "未确认"
-            if is_bypass:
-                _fresh_tag = "ZHB最近可用交易日快照"
+            if is_bypass and _tencent_map:
+                _fresh_tag = "休市腾讯收盘报价经ZHB同日涨幅交叉核验"
+            elif is_bypass:
+                _fresh_tag = "ZHB最近可用交易日快照；无腾讯报价通过交叉核验"
             elif _tencent_map:
                 _fresh_tag = "腾讯批量行情已返回；源响应未提供逐股有效日期"
             else:
                 _fresh_tag = "腾讯实时行情未返回；基于ZHB快照，日期见下方"
             L(
-                f"  ✅ data_provider全市场: {len(all_stocks)}只（过滤{_excluded}只停牌股，市值覆盖率{_mcap_count}/{len(all_stocks)}）[{_fresh_tag}]"
+                f"  ✅ data_provider全市场: {len(all_stocks)}只（市值覆盖率{_mcap_count}/{len(all_stocks)}）[{_fresh_tag}]"
             )
+            for _quality_note in _snapshot_quality_notes(
+                len(all_stocks),
+                _mcap_count,
+                len(_tencent_map) if is_bypass else None,
+                _basis_date,
+            ):
+                L(f"  ⚠️ {_quality_note}")
             L(f"  📊 ZHB基础快照日期: {_basis_date}（这是快照日期，不代表所有实时覆盖字段的日期）")
-            if _tencent_map:
+            if _tencent_map and is_bypass:
+                L(
+                    f"  📊 腾讯休市报价交叉核验: {len(_tencent_map)}/{len(all_codes)}只通过；"
+                    f"报价响应未带日期，行情日按ZHB {_basis_date} 的涨幅匹配推定"
+                )
+            elif _tencent_map:
                 L(
                     f"  📊 腾讯批量行情覆盖: {len(_tencent_map)}/{len(all_codes)}只；"
-                    "当前响应未带有效日期元数据，不能据报告生成时段标成T日行情"
+                    "源响应未提供逐股有效日期，报告不将其日期标为已确认"
                 )
-            if is_bypass:
-                L("  📊 数据分层: [纯ZHB横截面] 已完全复用 ZHB 历史数据，无任何实时网络开销")
+            if is_bypass and _tencent_map:
+                L(
+                    "  📊 数据分层: [腾讯休市报价] 仅采用与ZHB同日涨幅交叉吻合的价格/市值；"
+                    "[ZHB/静态层] 其余字段按各自数据日期使用"
+                )
+            elif is_bypass:
+                L("  📊 数据分层: [ZHB横截面] 未采用未通过同日涨幅核验的腾讯报价")
             else:
                 L(
                     "  📊 数据分层: [腾讯批量覆盖] price/change_pct/amount/pe_ttm/turnover_pct（日期未由响应确认）"
@@ -2720,6 +2855,7 @@ async def run_discovery_async(output_path):
     )
 
     all_selections = {}
+    _strategy_failures: Dict[str, str] = {}
 
     # V7.5: 策略阶段 Semaphore 控制并发。V17.0.x(2026-09-10) P2: 按取数成本分桶——
     # 网络/逐股K线/盘后datacenter 类(见 _VAL_NET_HEAVY)限流到 3, 纯内存/ZHB 类放宽到 8,
@@ -2752,6 +2888,7 @@ async def run_discovery_async(output_path):
                     _coro = asyncio.to_thread(func, *args)
                     _r = await asyncio.wait_for(_coro, timeout=_STRATEGY_TIMEOUT)
             except asyncio.TimeoutError:
+                _strategy_failures[name] = "timeout"
                 # 上游阻塞（DNS/路由挂起等）触发：隔离该策略，不阻断其余策略与整批。
                 _debug_log(
                     f"val strategy {name}: 硬超时({_STRATEGY_TIMEOUT}s)跳过——上游阻塞"
@@ -2925,6 +3062,7 @@ async def run_discovery_async(output_path):
         _r, _err = [], None
         if isinstance(_raw, Exception):
             _err = str(_raw)[:60]
+            _strategy_failures[_name] = "error"
             _debug_log(f"val strategy {_name}: {_err}")  # M1 终审修复: 异常可见性(双打印修复副作用)
         elif isinstance(_raw, list):
             _r = _raw
@@ -3060,6 +3198,15 @@ async def run_discovery_async(output_path):
                 except Exception:
                     pass
         else:
+            _failure = _strategy_failures.get(_st_name)
+            if _failure:
+                L(
+                    _strategy_failure_note(
+                        timed_out=_failure == "timeout",
+                        timeout_seconds=_STRATEGY_TIMEOUT,
+                    )
+                )
+                continue
             # V17.0.x(2026-09-10) 新维度: 无产出时给出成因提示, 避免"空章节"误导
             if _k == "策略23":
                 try:

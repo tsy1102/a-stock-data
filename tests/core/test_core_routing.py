@@ -105,6 +105,79 @@ class TestRealtimeHttpField(unittest.TestCase):
         self.assertFalse(dp.is_realtime_http_field("not_a_real_field"))
 
 
+class TestCanonicalDayTailValidation(unittest.TestCase):
+    @staticmethod
+    def _load_with_day_tail(day_tail):
+        from datetime import date
+
+        snapshot = {"price": 10.0, "change_pct": 0.0, "prev_close": 9.8}
+        with ExitStack() as stack:
+            stack.enter_context(_offline_canonical_sources())
+            stack.enter_context(mock.patch.object(dp, "datetime", _FixedDateTime))
+            stack.enter_context(
+                mock.patch("stock_common.get_zhb_single_stock_data", return_value=snapshot)
+            )
+            stack.enter_context(
+                mock.patch("stock_common.sc_datasource.get_zhb_data_date", return_value="20261019")
+            )
+            stack.enter_context(
+                mock.patch(
+                    "core.canonical_metadata.filter_zhb_snapshot_fields",
+                    side_effect=lambda raw, *_args, **_kwargs: dict(raw),
+                )
+            )
+            stack.enter_context(
+                mock.patch(
+                    "stock_common.stock_calendar.latest_market_data_date",
+                    return_value=date(2026, 10, 19),
+                )
+            )
+            day_tail_mock = mock.Mock(return_value=day_tail)
+            stack.enter_context(
+                mock.patch("stock_common.sc_datasource.get_tdx_day_tail", new=day_tail_mock)
+            )
+            cdata = dp.get_canonical_stock_data("600519")
+            if not day_tail_mock.called:
+                raise AssertionError("canonical assembly did not query the mocked TDX .day tail")
+            return cdata
+
+    def test_rejects_stale_or_inconsistent_day_tail(self):
+        invalid_tails = (
+            {"date": 20260924, "price": 10.0, "open": 9.8, "high": 10.2, "low": 9.7},
+            {"date": 20261019, "price": 9.9, "open": 9.8, "high": 10.2, "low": 9.7},
+            {"date": 20261019, "price": 10.0, "open": 9.8, "high": 10.2, "low": 10.1},
+        )
+
+        for day_tail in invalid_tails:
+            with self.subTest(day_tail=day_tail):
+                cdata = self._load_with_day_tail(day_tail)
+                self.assertEqual((cdata.open, cdata.high, cdata.low), (0.0, 0.0, 0.0))
+                self.assertNotIn("open", cdata.field_as_of_dates)
+                self.assertNotIn("high", cdata.field_as_of_dates)
+                self.assertNotIn("low", cdata.field_as_of_dates)
+
+    def test_accepts_same_day_bar_when_close_matches_canonical_price(self):
+        day_tail = {
+            "date": 20261019,
+            "price": 10.0,
+            "open": 9.8,
+            "high": 10.2,
+            "low": 9.7,
+        }
+
+        cdata = self._load_with_day_tail(day_tail)
+
+        self.assertEqual(
+            (cdata.open, cdata.high, cdata.low),
+            (9.8, 10.2, 9.7),
+            f"price={cdata.price}, sources={cdata.field_sources}, dates={cdata.field_as_of_dates}",
+        )
+        self.assertEqual(
+            {field: cdata.field_as_of_dates[field] for field in ("open", "high", "low")},
+            {"open": "2026-10-19", "high": "2026-10-19", "low": "2026-10-19"},
+        )
+
+
 class TestZhbSufficientField(unittest.TestCase):
     """Fields that ZHB alone is sufficient for (no HTTP needed)."""
 

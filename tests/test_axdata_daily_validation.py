@@ -250,6 +250,33 @@ def test_probe_allows_latest_trade_date_on_holiday_or_before_open(tmp_path, monk
     assert comparison["dictionary_dynamic_pe_check"]["status"] == "different_or_missing"
 
 
+def test_same_day_unselected_passive_sources_preserve_existing_evidence(tmp_path, monkeypatch):
+    output = _capture_dir(tmp_path)
+    monkeypatch.setattr(validation, "STATE_PATH", tmp_path / "state.json")
+    monkeypatch.setattr(validation, "_static_queue_summary", lambda: {"status": "test"})
+    prior_passive = {
+        "axdata_shortline_vs_eltdx": {
+            "status": "compared",
+            "matched_trade_date": "2026-10-09",
+            "paired_stocks": 20,
+        },
+        "kph_limit_up_history_vs_kpl_detail": {"status": "date_or_sample_unavailable"},
+    }
+    previous = {
+        "data_date": "2026-10-09",
+        "probe": {"status": "sampled", "request_count": 1},
+        "passive_evidence": prior_passive,
+    }
+    (output / validation.EVIDENCE_FILENAME).write_text(json.dumps(previous), encoding="utf-8")
+
+    result = _run_validation(output, only="zhb")
+
+    assert result["status"] == "already_recorded"
+    assert result["passive_evidence"] == prior_passive
+    persisted = json.loads((output / validation.EVIDENCE_FILENAME).read_text(encoding="utf-8"))
+    assert persisted["passive_evidence"] == prior_passive
+
+
 def test_same_day_retries_after_zero_request_counterpart_skip(tmp_path, monkeypatch):
     output = _capture_dir(tmp_path)
     monkeypatch.setattr(validation, "STATE_PATH", tmp_path / "state.json")

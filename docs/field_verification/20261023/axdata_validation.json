@@ -1,6 +1,6 @@
 {
   "schema_version": "1.2",
-  "status": "sampled",
+  "status": "already_recorded",
   "data_date": "2026-10-23",
   "capture_directory_date": "2026-10-23",
   "latest_completed_trade_date": "2026-10-23",

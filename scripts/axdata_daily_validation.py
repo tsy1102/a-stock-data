@@ -2114,7 +2114,19 @@ def run_axdata_daily_validation(
             existing["queue"] = queue
             existing["capture_directory_date"] = target_date
             existing["latest_completed_trade_date"] = evidence["latest_completed_trade_date"]
-            existing["passive_evidence"] = evidence["passive_evidence"]
+            current_passive = evidence.get("passive_evidence")
+            previous_passive = existing.get("passive_evidence")
+            if isinstance(current_passive, dict):
+                if isinstance(previous_passive, dict):
+                    merged_passive = dict(previous_passive)
+                    for name, item in current_passive.items():
+                        # An incremental capture may not select either side of a
+                        # passive comparison; keep its last evaluated evidence.
+                        if not (isinstance(item, dict) and item.get("status") == "not_run"):
+                            merged_passive[name] = item
+                    existing["passive_evidence"] = merged_passive
+                else:
+                    existing["passive_evidence"] = current_passive
             existing["endpoint_identities"] = endpoint_identities
             _write_json(evidence_path, existing)
             return _summary(existing, evidence_path)

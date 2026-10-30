@@ -1,0 +1,85 @@
+{
+  "schema_version": 1,
+  "decisions": [
+    {
+      "schema_version": 1,
+      "candidate_id": "cc1_b0c4b81990bfe71e0ba3eb904713e4e940371481fb12532633e5b1a5af39c07d",
+      "disposition": "needs_external_evidence",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-10-26T21:43:26+08:00",
+      "rationale": "The complete collision report shows 59 informative pairs across three trading dates, but classifies this as L1-C with source_independence_confirmed=false and no independent evidence_sources. The source lineage record keeps AxData provider lineage unconfirmed and FTShare REST underlying provider unconfirmed. The semantic match is not sufficient to establish an independent cross-source mapping; authoritative provider-lineage evidence is required before adjudication.",
+      "evidence_refs": [
+        "20261026/20261026_collision_report.json",
+        "source_lineage.json"
+      ],
+      "duplicate_of": null
+    },
+    {
+      "schema_version": 1,
+      "candidate_id": "cc1_eef0226bb62269d0de70febecbf21dee2d7a01a9cac7a1f2d2753b6f849d3ec9",
+      "disposition": "needs_external_evidence",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-10-26T21:43:26+08:00",
+      "rationale": "The complete collision report shows 59 informative pairs across three trading dates, but classifies this as L1-C with source_independence_confirmed=false and no independent evidence_sources. The source lineage record keeps AxData provider lineage unconfirmed and FTShare REST underlying provider unconfirmed. The semantic match is not sufficient to establish an independent cross-source mapping; authoritative provider-lineage evidence is required before adjudication.",
+      "evidence_refs": [
+        "20261026/20261026_collision_report.json",
+        "source_lineage.json"
+      ],
+      "duplicate_of": null
+    },
+    {
+      "schema_version": 1,
+      "candidate_id": "cc1_71ba8072009a00ab5259c9492fae4cfc672f32c27ce0ec5193b13e97da78712c",
+      "disposition": "needs_external_evidence",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-10-26T21:43:26+08:00",
+      "rationale": "The complete collision report shows 59 informative pairs across three trading dates, but classifies this as L1-C with source_independence_confirmed=false and no independent evidence_sources. The source lineage record keeps AxData provider lineage unconfirmed and FTShare REST underlying provider unconfirmed. The semantic match is not sufficient to establish an independent cross-source mapping; authoritative provider-lineage evidence is required before adjudication.",
+      "evidence_refs": [
+        "20261026/20261026_collision_report.json",
+        "source_lineage.json"
+      ],
+      "duplicate_of": null
+    },
+    {
+      "schema_version": 1,
+      "candidate_id": "cc1_fa841c1d13188c9c4f361872ba0e51fdd3fe35f20a024c0e1ba6eb31f22b1796",
+      "disposition": "needs_external_evidence",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-10-26T21:43:26+08:00",
+      "rationale": "The complete collision report shows 59 informative pairs across three trading dates, but classifies this as L1-C with source_independence_confirmed=false and no independent evidence_sources. The source lineage record keeps AxData provider lineage unconfirmed and FTShare REST underlying provider unconfirmed. The semantic match is not sufficient to establish an independent cross-source mapping; authoritative provider-lineage evidence is required before adjudication.",
+      "evidence_refs": [
+        "20261026/20261026_collision_report.json",
+        "source_lineage.json"
+      ],
+      "duplicate_of": null
+    },
+    {
+      "schema_version": 1,
+      "candidate_id": "cc1_76f0b4aea5d057d1de08ec87eae1c68f04b4d6aef5160f704547e74556bf1e3c",
+      "disposition": "needs_external_evidence",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-10-26T22:40:43+08:00",
+      "rationale": "The report proposes zhb.full.change_pct ≈ 100.00112 × (tencent[31] ÷ tencent[4]) + -0.00043616683 and records R2=1.0 on 12 validation samples across 3 stocks. This remains a statistical lead: the formula candidate is candidate_only, and the target zhb.full.change_pct already has a registered L1 mapping that was revalidated in this report. It is therefore not a new field identity to promote. A derived_relation decision still requires a reviewed, date-aligned CSV replay, verified exact input identities and units, confirmed source-family independence, and a fixed-version authoritative formula definition/reference. Those adjudication artifacts are not present, so no registry change is justified.",
+      "evidence_refs": [
+        "20261026/20261026_collision_report.json",
+        "ADJUDICATION_WORKFLOW.md",
+        "source_lineage.json"
+      ],
+      "duplicate_of": null
+    },
+    {
+      "schema_version": 1,
+      "candidate_id": "cc1_f14125b40e33a07076a70d237966fc7aea31392c7934248d644bce3e6da422d3",
+      "disposition": "needs_external_evidence",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-10-26T22:40:43+08:00",
+      "rationale": "The report proposes zhb.full.change_pct ≈ 100.00112 × (fuyao.snapshot.price_change ÷ tencent[4]) + -0.00043616683 and records R2=1.0 on 12 validation samples across 3 stocks. This remains a statistical lead: the formula candidate is candidate_only, and the target zhb.full.change_pct already has a registered L1 mapping that was revalidated in this report. It is therefore not a new field identity to promote. A derived_relation decision still requires a reviewed, date-aligned CSV replay, verified exact input identities and units, confirmed source-family independence, and a fixed-version authoritative formula definition/reference. Those adjudication artifacts are not present, so no registry change is justified.",
+      "evidence_refs": [
+        "20261026/20261026_collision_report.json",
+        "ADJUDICATION_WORKFLOW.md",
+        "source_lineage.json"
+      ],
+      "duplicate_of": null
+    }
+  ]
+}

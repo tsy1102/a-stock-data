@@ -1,5 +1,266 @@
 {
   "reviews": {
+    "cc1_100c2e18527e7c42aceda98c01b1e2ddac9f35e44fad97640abee14c30153a75": {
+      "current": {
+        "candidate_id": "cc1_100c2e18527e7c42aceda98c01b1e2ddac9f35e44fad97640abee14c30153a75",
+        "disposition": "rejected",
+        "duplicate_of": null,
+        "event_id": "94cf8b482a33d35927ad511b47410d10c6bdbdf0a7ebf8a442e5abef5a16cebc",
+        "evidence_refs": [
+          {
+            "path": "20261029/20261029_collision_report.json",
+            "sha256": "0e71f529f68b9fe99f93dcf1b043d93d785eb1082da655a3cfafa407ae8e29b6"
+          },
+          {
+            "path": "derived_evidence/20261029_cross_source_replay.csv",
+            "sha256": "4f6f1a295c29cefd8d0764693ad21700fc202835752afda85c08f61005262788"
+          },
+          {
+            "path": "adjudications/20261029_research_adjudication.md",
+            "sha256": "cf26ee9a5c53c1d5548071c94c19c8552aee014ef5ad6ff1b7b765326e3d10bd"
+          },
+          {
+            "path": "field_registry.json",
+            "sha256": "3254b3d01218b552fb3d155682a9e4209cabb5e554aa32b07c422ae0d40b3114"
+          },
+          {
+            "path": "source_lineage.json",
+            "sha256": "fe4c778266604de73c79e169be707c1e065d7c7c27f22b776744e1460bf433bf"
+          },
+          {
+            "path": "ADJUDICATION_WORKFLOW.md",
+            "sha256": "9316c75a7ffdc03dc8c0e1e118bd6f5dd6b3f86e80caf668b250525ca2675bca"
+          },
+          {
+            "path": "https://market.ft.tech/gateway/doc/p/mdsj0xyo",
+            "sha256": null
+          },
+          {
+            "path": "https://github.com/FTShare-Lab/FTShare-MCP/blob/main/README_EN.md",
+            "sha256": null
+          },
+          {
+            "path": "https://pypi.org/project/axdata/0.1.4/",
+            "sha256": null
+          },
+          {
+            "path": "https://github.com/electkismet/eltdx/blob/main/docs/FIELD_REFERENCE.md",
+            "sha256": null
+          },
+          {
+            "path": "https://github.com/electkismet/eltdx/blob/main/docs/methods/7709-%E6%89%B9%E9%87%8F%E5%BF%AB%E7%85%A7.md",
+            "sha256": null
+          }
+        ],
+        "rationale": "Reject this fitted relation as a generalizable identity: replay over 120 saved observations gives 29/120 within 1% relative error, 103/120 within 5%, median error 2.00% and max error 38.60%. The report's 18-point validation R2=0.999956 does not meet the workflow's 95% / 1% formula standard. In the same rows Tencent [10] equals both TDX bid1_vol and ELTDX buy_levels[0].volume in 120/120 cases; public ELTDX docs define that volume as buy-order quantity in hands. This rejects the fitted formula candidate, not every possible temporal relation; Tencent [10]'s source field remains formally unverified.",
+        "reviewed_at": "2026-10-29T23:25:09+08:00",
+        "reviewer": "Codex"
+      },
+      "history": [
+        {
+          "candidate_id": "cc1_100c2e18527e7c42aceda98c01b1e2ddac9f35e44fad97640abee14c30153a75",
+          "disposition": "needs_external_evidence",
+          "duplicate_of": null,
+          "event_id": "5db1d2a3389c8666cddb8ee76fec93c607d47921c73d1c36fbabdb7f3e7f3885",
+          "evidence_refs": [
+            {
+              "path": "20261029/20261029_collision_report.json",
+              "sha256": "088f177fffa5f7a3d1d8da5faeb185fe4a996d993d7917ce3f7b6563b1b508f0"
+            },
+            {
+              "path": "field_registry.json",
+              "sha256": "3254b3d01218b552fb3d155682a9e4209cabb5e554aa32b07c422ae0d40b3114"
+            },
+            {
+              "path": "ADJUDICATION_WORKFLOW.md",
+              "sha256": "9316c75a7ffdc03dc8c0e1e118bd6f5dd6b3f86e80caf668b250525ca2675bca"
+            }
+          ],
+          "rationale": "The fitted relation is a candidate only (validation R2=0.999956 on 18 samples across three stocks), while the exact Tencent [10] registry identity remains unverified with no canonical meaning or unit. Fit quality does not establish the target semantics. Adjudication requires an authoritative fixed-version formula definition, explicit units, and a date-aligned derived-evidence CSV with tolerance replay. Do not promote this relation without those materials.",
+          "reviewed_at": "2026-10-29T21:20:20+08:00",
+          "reviewer": "Codex"
+        },
+        {
+          "candidate_id": "cc1_100c2e18527e7c42aceda98c01b1e2ddac9f35e44fad97640abee14c30153a75",
+          "disposition": "rejected",
+          "duplicate_of": null,
+          "event_id": "94cf8b482a33d35927ad511b47410d10c6bdbdf0a7ebf8a442e5abef5a16cebc",
+          "evidence_refs": [
+            {
+              "path": "20261029/20261029_collision_report.json",
+              "sha256": "0e71f529f68b9fe99f93dcf1b043d93d785eb1082da655a3cfafa407ae8e29b6"
+            },
+            {
+              "path": "derived_evidence/20261029_cross_source_replay.csv",
+              "sha256": "4f6f1a295c29cefd8d0764693ad21700fc202835752afda85c08f61005262788"
+            },
+            {
+              "path": "adjudications/20261029_research_adjudication.md",
+              "sha256": "cf26ee9a5c53c1d5548071c94c19c8552aee014ef5ad6ff1b7b765326e3d10bd"
+            },
+            {
+              "path": "field_registry.json",
+              "sha256": "3254b3d01218b552fb3d155682a9e4209cabb5e554aa32b07c422ae0d40b3114"
+            },
+            {
+              "path": "source_lineage.json",
+              "sha256": "fe4c778266604de73c79e169be707c1e065d7c7c27f22b776744e1460bf433bf"
+            },
+            {
+              "path": "ADJUDICATION_WORKFLOW.md",
+              "sha256": "9316c75a7ffdc03dc8c0e1e118bd6f5dd6b3f86e80caf668b250525ca2675bca"
+            },
+            {
+              "path": "https://market.ft.tech/gateway/doc/p/mdsj0xyo",
+              "sha256": null
+            },
+            {
+              "path": "https://github.com/FTShare-Lab/FTShare-MCP/blob/main/README_EN.md",
+              "sha256": null
+            },
+            {
+              "path": "https://pypi.org/project/axdata/0.1.4/",
+              "sha256": null
+            },
+            {
+              "path": "https://github.com/electkismet/eltdx/blob/main/docs/FIELD_REFERENCE.md",
+              "sha256": null
+            },
+            {
+              "path": "https://github.com/electkismet/eltdx/blob/main/docs/methods/7709-%E6%89%B9%E9%87%8F%E5%BF%AB%E7%85%A7.md",
+              "sha256": null
+            }
+          ],
+          "rationale": "Reject this fitted relation as a generalizable identity: replay over 120 saved observations gives 29/120 within 1% relative error, 103/120 within 5%, median error 2.00% and max error 38.60%. The report's 18-point validation R2=0.999956 does not meet the workflow's 95% / 1% formula standard. In the same rows Tencent [10] equals both TDX bid1_vol and ELTDX buy_levels[0].volume in 120/120 cases; public ELTDX docs define that volume as buy-order quantity in hands. This rejects the fitted formula candidate, not every possible temporal relation; Tencent [10]'s source field remains formally unverified.",
+          "reviewed_at": "2026-10-29T23:25:09+08:00",
+          "reviewer": "Codex"
+        }
+      ],
+      "identity": {
+        "evidence": {
+          "adjudication_status": "candidate_only",
+          "best_single_input_r2": 0.835853,
+          "evidence_sources": [
+            "eltdx",
+            "sina",
+            "tencent"
+          ],
+          "formula": "tencent[10] ≈ 0.0098217574 × (eltdx.shortline.seal_to_amount_ratio × sina[8]) + 0.4137512",
+          "improvement_over_single_input": 0.164103,
+          "left": "tencent[10]",
+          "normalized_rmse": 0.036975,
+          "operator": "product",
+          "right_inputs": [
+            "eltdx.shortline.seal_to_amount_ratio",
+            "sina[8]"
+          ],
+          "training_samples": 102,
+          "validation_dates": [
+            "T:20261020",
+            "T:20261021",
+            "T:20261023",
+            "T:20261026",
+            "T:20261028",
+            "T:20261029"
+          ],
+          "validation_r2": 0.999956,
+          "validation_samples": 18,
+          "validation_stocks": 3
+        },
+        "kind": "formula_candidate",
+        "method_version": "collision-candidate-v1",
+        "schema_version": 1
+      }
+    },
+    "cc1_2a48fbab25aac547d91de4fcf04eaedba26a466cb26895577b29cd0872bf158d": {
+      "current": {
+        "candidate_id": "cc1_2a48fbab25aac547d91de4fcf04eaedba26a466cb26895577b29cd0872bf158d",
+        "disposition": "needs_external_evidence",
+        "duplicate_of": null,
+        "event_id": "545e759eaca8aafa40a0a4480417191667123b70b7b2a602c220aed703c04672",
+        "evidence_refs": [
+          {
+            "path": "20261028/20261028_collision_report.json",
+            "sha256": "de6521460d883c3bdc48aed3455833d43ad7149f7cf8d0bd3f5f58366c181707"
+          },
+          {
+            "path": "source_lineage.json",
+            "sha256": "fe4c778266604de73c79e169be707c1e065d7c7c27f22b776744e1460bf433bf"
+          }
+        ],
+        "rationale": "The complete report records 79 informative pairs across 4 dates with 100% agreement, but classifies the relation as L1-C, sets source_independence_confirmed=false, and has no independent evidence_sources. source_lineage.json still leaves the AxData provider lineage and FTShare REST underlying provider unconfirmed. Numerical agreement does not establish an independent cross-source identity; authoritative provider-lineage evidence is required before adjudication.",
+        "reviewed_at": "2026-10-28T21:00:14+08:00",
+        "reviewer": "Codex"
+      },
+      "history": [
+        {
+          "candidate_id": "cc1_2a48fbab25aac547d91de4fcf04eaedba26a466cb26895577b29cd0872bf158d",
+          "disposition": "needs_external_evidence",
+          "duplicate_of": null,
+          "event_id": "545e759eaca8aafa40a0a4480417191667123b70b7b2a602c220aed703c04672",
+          "evidence_refs": [
+            {
+              "path": "20261028/20261028_collision_report.json",
+              "sha256": "de6521460d883c3bdc48aed3455833d43ad7149f7cf8d0bd3f5f58366c181707"
+            },
+            {
+              "path": "source_lineage.json",
+              "sha256": "fe4c778266604de73c79e169be707c1e065d7c7c27f22b776744e1460bf433bf"
+            }
+          ],
+          "rationale": "The complete report records 79 informative pairs across 4 dates with 100% agreement, but classifies the relation as L1-C, sets source_independence_confirmed=false, and has no independent evidence_sources. source_lineage.json still leaves the AxData provider lineage and FTShare REST underlying provider unconfirmed. Numerical agreement does not establish an independent cross-source identity; authoritative provider-lineage evidence is required before adjudication.",
+          "reviewed_at": "2026-10-28T21:00:14+08:00",
+          "reviewer": "Codex"
+        }
+      ],
+      "identity": {
+        "evidence": {
+          "anchor_basis": "official_contract",
+          "daily_informative_hit_counts": {
+            "T:20261020": 20,
+            "T:20261023": 20,
+            "T:20261026": 19,
+            "T:20261028": 20
+          },
+          "daily_informative_sample_counts": {
+            "T:20261020": 20,
+            "T:20261023": 20,
+            "T:20261026": 19,
+            "T:20261028": 20
+          },
+          "daily_sample_counts": {
+            "T:20261020": 20,
+            "T:20261023": 20,
+            "T:20261026": 19,
+            "T:20261028": 20
+          },
+          "days_ge_threshold": 4,
+          "distinct_days": [
+            "T:20261020",
+            "T:20261023",
+            "T:20261026",
+            "T:20261028"
+          ],
+          "evidence_sources": [],
+          "excluded_intraday_pairs": 0,
+          "excluded_unknown_phase_pairs": 0,
+          "left": "axdata.data.float_shares",
+          "level": "L1-C",
+          "n_days": 4,
+          "n_informative_pairs": 79,
+          "n_pairs": 79,
+          "overall_hit": 1.0,
+          "ratio": null,
+          "right": "ftshare_rest.float_a_shares",
+          "same_code": false,
+          "source_independence_confirmed": false,
+          "statistical_level": "L1"
+        },
+        "kind": "l1_contract_candidate",
+        "method_version": "collision-candidate-v1",
+        "schema_version": 1
+      }
+    },
     "cc1_2e1aaa413195bd812830126afa1359075aa0a7d5734b8f46f5b933b2d2a3c398": {
       "current": {
         "candidate_id": "cc1_2e1aaa413195bd812830126afa1359075aa0a7d5734b8f46f5b933b2d2a3c398",
@@ -85,6 +346,188 @@
           "statistical_level": "L1"
         },
         "kind": "l1_candidate",
+        "method_version": "collision-candidate-v1",
+        "schema_version": 1
+      }
+    },
+    "cc1_3d8928e30f7cfeb8e673ddca9f4ddbfbdcf97e78d85e3e2b1ebf684fb6917eab": {
+      "current": {
+        "candidate_id": "cc1_3d8928e30f7cfeb8e673ddca9f4ddbfbdcf97e78d85e3e2b1ebf684fb6917eab",
+        "disposition": "needs_external_evidence",
+        "duplicate_of": null,
+        "event_id": "ae7f5316a32713c21cf50d9a3bdf9ad50cc86d53c3e4bb5eea9d9435a695bdaa",
+        "evidence_refs": [
+          {
+            "path": "20261028/20261028_collision_report.json",
+            "sha256": "de6521460d883c3bdc48aed3455833d43ad7149f7cf8d0bd3f5f58366c181707"
+          },
+          {
+            "path": "field_registry.json",
+            "sha256": "3254b3d01218b552fb3d155682a9e4209cabb5e554aa32b07c422ae0d40b3114"
+          },
+          {
+            "path": "source_lineage.json",
+            "sha256": "fe4c778266604de73c79e169be707c1e065d7c7c27f22b776744e1460bf433bf"
+          },
+          {
+            "path": "ADJUDICATION_WORKFLOW.md",
+            "sha256": "9316c75a7ffdc03dc8c0e1e118bd6f5dd6b3f86e80caf668b250525ca2675bca"
+          }
+        ],
+        "rationale": "The fitted relation has validation R2=0.99996 on 18 samples across 3 stocks and 6 dates, but the exact Tencent [10] registry identity remains unverified with no canonical meaning or unit. Verified statistical inputs and distinct source families do not explain the target semantics. The generated regression is only a candidate: an authoritative fixed-version formula definition, explicit units, and a date-aligned derived-evidence CSV with tolerance replay are absent. Do not promote this relation without those materials.",
+        "reviewed_at": "2026-10-28T21:00:14+08:00",
+        "reviewer": "Codex"
+      },
+      "history": [
+        {
+          "candidate_id": "cc1_3d8928e30f7cfeb8e673ddca9f4ddbfbdcf97e78d85e3e2b1ebf684fb6917eab",
+          "disposition": "needs_external_evidence",
+          "duplicate_of": null,
+          "event_id": "ae7f5316a32713c21cf50d9a3bdf9ad50cc86d53c3e4bb5eea9d9435a695bdaa",
+          "evidence_refs": [
+            {
+              "path": "20261028/20261028_collision_report.json",
+              "sha256": "de6521460d883c3bdc48aed3455833d43ad7149f7cf8d0bd3f5f58366c181707"
+            },
+            {
+              "path": "field_registry.json",
+              "sha256": "3254b3d01218b552fb3d155682a9e4209cabb5e554aa32b07c422ae0d40b3114"
+            },
+            {
+              "path": "source_lineage.json",
+              "sha256": "fe4c778266604de73c79e169be707c1e065d7c7c27f22b776744e1460bf433bf"
+            },
+            {
+              "path": "ADJUDICATION_WORKFLOW.md",
+              "sha256": "9316c75a7ffdc03dc8c0e1e118bd6f5dd6b3f86e80caf668b250525ca2675bca"
+            }
+          ],
+          "rationale": "The fitted relation has validation R2=0.99996 on 18 samples across 3 stocks and 6 dates, but the exact Tencent [10] registry identity remains unverified with no canonical meaning or unit. Verified statistical inputs and distinct source families do not explain the target semantics. The generated regression is only a candidate: an authoritative fixed-version formula definition, explicit units, and a date-aligned derived-evidence CSV with tolerance replay are absent. Do not promote this relation without those materials.",
+          "reviewed_at": "2026-10-28T21:00:14+08:00",
+          "reviewer": "Codex"
+        }
+      ],
+      "identity": {
+        "evidence": {
+          "adjudication_status": "candidate_only",
+          "best_single_input_r2": 0.503388,
+          "evidence_sources": [
+            "eltdx",
+            "sina",
+            "tencent"
+          ],
+          "formula": "tencent[10] ≈ 0.0098209304 × (eltdx.shortline.seal_to_amount_ratio × sina[8]) + -1.9487793",
+          "improvement_over_single_input": 0.496573,
+          "left": "tencent[10]",
+          "normalized_rmse": 0.035252,
+          "operator": "product",
+          "right_inputs": [
+            "eltdx.shortline.seal_to_amount_ratio",
+            "sina[8]"
+          ],
+          "training_samples": 102,
+          "validation_dates": [
+            "T:20261019",
+            "T:20261020",
+            "T:20261021",
+            "T:20261023",
+            "T:20261026",
+            "T:20261028"
+          ],
+          "validation_r2": 0.99996,
+          "validation_samples": 18,
+          "validation_stocks": 3
+        },
+        "kind": "formula_candidate",
+        "method_version": "collision-candidate-v1",
+        "schema_version": 1
+      }
+    },
+    "cc1_4614e431acca31efc8d2e510afff12710c9003916a9996bcb8af8cb1fab5ec06": {
+      "current": {
+        "candidate_id": "cc1_4614e431acca31efc8d2e510afff12710c9003916a9996bcb8af8cb1fab5ec06",
+        "disposition": "needs_external_evidence",
+        "duplicate_of": null,
+        "event_id": "93accb844d8c3fd9129bdf53100d3c86e313101efd4d5d4a363d3609f7d258ba",
+        "evidence_refs": [
+          {
+            "path": "20261028/20261028_collision_report.json",
+            "sha256": "de6521460d883c3bdc48aed3455833d43ad7149f7cf8d0bd3f5f58366c181707"
+          },
+          {
+            "path": "source_lineage.json",
+            "sha256": "fe4c778266604de73c79e169be707c1e065d7c7c27f22b776744e1460bf433bf"
+          }
+        ],
+        "rationale": "The complete report records 79 informative pairs across 4 dates with 100% agreement, but classifies the relation as L1-C, sets source_independence_confirmed=false, and has no independent evidence_sources. source_lineage.json still leaves the AxData provider lineage and FTShare REST underlying provider unconfirmed. Numerical agreement does not establish an independent cross-source identity; authoritative provider-lineage evidence is required before adjudication.",
+        "reviewed_at": "2026-10-28T21:00:14+08:00",
+        "reviewer": "Codex"
+      },
+      "history": [
+        {
+          "candidate_id": "cc1_4614e431acca31efc8d2e510afff12710c9003916a9996bcb8af8cb1fab5ec06",
+          "disposition": "needs_external_evidence",
+          "duplicate_of": null,
+          "event_id": "93accb844d8c3fd9129bdf53100d3c86e313101efd4d5d4a363d3609f7d258ba",
+          "evidence_refs": [
+            {
+              "path": "20261028/20261028_collision_report.json",
+              "sha256": "de6521460d883c3bdc48aed3455833d43ad7149f7cf8d0bd3f5f58366c181707"
+            },
+            {
+              "path": "source_lineage.json",
+              "sha256": "fe4c778266604de73c79e169be707c1e065d7c7c27f22b776744e1460bf433bf"
+            }
+          ],
+          "rationale": "The complete report records 79 informative pairs across 4 dates with 100% agreement, but classifies the relation as L1-C, sets source_independence_confirmed=false, and has no independent evidence_sources. source_lineage.json still leaves the AxData provider lineage and FTShare REST underlying provider unconfirmed. Numerical agreement does not establish an independent cross-source identity; authoritative provider-lineage evidence is required before adjudication.",
+          "reviewed_at": "2026-10-28T21:00:14+08:00",
+          "reviewer": "Codex"
+        }
+      ],
+      "identity": {
+        "evidence": {
+          "anchor_basis": "official_contract",
+          "daily_informative_hit_counts": {
+            "T:20261020": 20,
+            "T:20261023": 20,
+            "T:20261026": 19,
+            "T:20261028": 20
+          },
+          "daily_informative_sample_counts": {
+            "T:20261020": 20,
+            "T:20261023": 20,
+            "T:20261026": 19,
+            "T:20261028": 20
+          },
+          "daily_sample_counts": {
+            "T:20261020": 20,
+            "T:20261023": 20,
+            "T:20261026": 19,
+            "T:20261028": 20
+          },
+          "days_ge_threshold": 4,
+          "distinct_days": [
+            "T:20261020",
+            "T:20261023",
+            "T:20261026",
+            "T:20261028"
+          ],
+          "evidence_sources": [],
+          "excluded_intraday_pairs": 0,
+          "excluded_unknown_phase_pairs": 0,
+          "left": "axdata.data.instrument_id",
+          "level": "L1-C",
+          "n_days": 4,
+          "n_informative_pairs": 79,
+          "n_pairs": 79,
+          "overall_hit": 1.0,
+          "ratio": null,
+          "right": "ftshare_rest.symbol",
+          "same_code": false,
+          "source_independence_confirmed": false,
+          "statistical_level": "L1"
+        },
+        "kind": "l1_contract_candidate",
         "method_version": "collision-candidate-v1",
         "schema_version": 1
       }
@@ -267,6 +710,457 @@
         "schema_version": 1
       }
     },
+    "cc1_6a4f777d3b439972ec6978c9672e4fc473229e0970144462fc68f4bc44eb293e": {
+      "current": {
+        "candidate_id": "cc1_6a4f777d3b439972ec6978c9672e4fc473229e0970144462fc68f4bc44eb293e",
+        "disposition": "needs_external_evidence",
+        "duplicate_of": null,
+        "event_id": "009e291518ff2912a42c5bb8dc41ce5d67b3d02fd9955460053321d93965fd20",
+        "evidence_refs": [
+          {
+            "path": "20261029/20261029_collision_report.json",
+            "sha256": "0e71f529f68b9fe99f93dcf1b043d93d785eb1082da655a3cfafa407ae8e29b6"
+          },
+          {
+            "path": "derived_evidence/20261029_cross_source_replay.csv",
+            "sha256": "4f6f1a295c29cefd8d0764693ad21700fc202835752afda85c08f61005262788"
+          },
+          {
+            "path": "adjudications/20261029_research_adjudication.md",
+            "sha256": "cf26ee9a5c53c1d5548071c94c19c8552aee014ef5ad6ff1b7b765326e3d10bd"
+          },
+          {
+            "path": "field_registry.json",
+            "sha256": "3254b3d01218b552fb3d155682a9e4209cabb5e554aa32b07c422ae0d40b3114"
+          },
+          {
+            "path": "source_lineage.json",
+            "sha256": "fe4c778266604de73c79e169be707c1e065d7c7c27f22b776744e1460bf433bf"
+          },
+          {
+            "path": "ADJUDICATION_WORKFLOW.md",
+            "sha256": "9316c75a7ffdc03dc8c0e1e118bd6f5dd6b3f86e80caf668b250525ca2675bca"
+          },
+          {
+            "path": "https://market.ft.tech/gateway/doc/p/mdsj0xyo",
+            "sha256": null
+          },
+          {
+            "path": "https://github.com/FTShare-Lab/FTShare-MCP/blob/main/README_EN.md",
+            "sha256": null
+          },
+          {
+            "path": "https://pypi.org/project/axdata/0.1.4/",
+            "sha256": null
+          },
+          {
+            "path": "https://github.com/electkismet/eltdx/blob/main/docs/FIELD_REFERENCE.md",
+            "sha256": null
+          },
+          {
+            "path": "https://github.com/electkismet/eltdx/blob/main/docs/methods/7709-%E6%89%B9%E9%87%8F%E5%BF%AB%E7%85%A7.md",
+            "sha256": null
+          }
+        ],
+        "rationale": "本研究将字段语义等价裁定为确认：FTShare 官方契约定义 open 为开盘价；AxData open_price 对 FTShare open 的正式 L1-C 样本 99/99 精确。扩展本地回放中 FTShare open 与 TDX、ELTDX、新浪、腾讯各 120/120 精确，公开 ELTDX 字段文档也定义 open_price 为今开。FTShare 服务端没有公开实现，底层提供方独立性未确认；AxData 也未作为逐源字段登记。needs_external_evidence 在此仅表示尚无当前流程可用的正式映射资格，不表示字段语义未定。",
+        "reviewed_at": "2026-10-29T23:25:09+08:00",
+        "reviewer": "Codex"
+      },
+      "history": [
+        {
+          "candidate_id": "cc1_6a4f777d3b439972ec6978c9672e4fc473229e0970144462fc68f4bc44eb293e",
+          "disposition": "needs_external_evidence",
+          "duplicate_of": null,
+          "event_id": "9192ca12762e0200198aa7472ddff6eac603847bef653671144abf23b65a9155",
+          "evidence_refs": [
+            {
+              "path": "20261029/20261029_collision_report.json",
+              "sha256": "088f177fffa5f7a3d1d8da5faeb185fe4a996d993d7917ce3f7b6563b1b508f0"
+            },
+            {
+              "path": "source_lineage.json",
+              "sha256": "fe4c778266604de73c79e169be707c1e065d7c7c27f22b776744e1460bf433bf"
+            }
+          ],
+          "rationale": "The complete 20261029 report records 99 informative pairs across five trading days with 100% agreement, but classifies this as L1-C, has source_independence_confirmed=false, and provides no independent evidence_sources. source_lineage.json leaves the AxData provider lineage and FTShare REST underlying provider unconfirmed. Numerical agreement does not establish independent cross-source identity; authoritative provider-lineage evidence is required before adjudication.",
+          "reviewed_at": "2026-10-29T21:20:20+08:00",
+          "reviewer": "Codex"
+        },
+        {
+          "candidate_id": "cc1_6a4f777d3b439972ec6978c9672e4fc473229e0970144462fc68f4bc44eb293e",
+          "disposition": "needs_external_evidence",
+          "duplicate_of": null,
+          "event_id": "009e291518ff2912a42c5bb8dc41ce5d67b3d02fd9955460053321d93965fd20",
+          "evidence_refs": [
+            {
+              "path": "20261029/20261029_collision_report.json",
+              "sha256": "0e71f529f68b9fe99f93dcf1b043d93d785eb1082da655a3cfafa407ae8e29b6"
+            },
+            {
+              "path": "derived_evidence/20261029_cross_source_replay.csv",
+              "sha256": "4f6f1a295c29cefd8d0764693ad21700fc202835752afda85c08f61005262788"
+            },
+            {
+              "path": "adjudications/20261029_research_adjudication.md",
+              "sha256": "cf26ee9a5c53c1d5548071c94c19c8552aee014ef5ad6ff1b7b765326e3d10bd"
+            },
+            {
+              "path": "field_registry.json",
+              "sha256": "3254b3d01218b552fb3d155682a9e4209cabb5e554aa32b07c422ae0d40b3114"
+            },
+            {
+              "path": "source_lineage.json",
+              "sha256": "fe4c778266604de73c79e169be707c1e065d7c7c27f22b776744e1460bf433bf"
+            },
+            {
+              "path": "ADJUDICATION_WORKFLOW.md",
+              "sha256": "9316c75a7ffdc03dc8c0e1e118bd6f5dd6b3f86e80caf668b250525ca2675bca"
+            },
+            {
+              "path": "https://market.ft.tech/gateway/doc/p/mdsj0xyo",
+              "sha256": null
+            },
+            {
+              "path": "https://github.com/FTShare-Lab/FTShare-MCP/blob/main/README_EN.md",
+              "sha256": null
+            },
+            {
+              "path": "https://pypi.org/project/axdata/0.1.4/",
+              "sha256": null
+            },
+            {
+              "path": "https://github.com/electkismet/eltdx/blob/main/docs/FIELD_REFERENCE.md",
+              "sha256": null
+            },
+            {
+              "path": "https://github.com/electkismet/eltdx/blob/main/docs/methods/7709-%E6%89%B9%E9%87%8F%E5%BF%AB%E7%85%A7.md",
+              "sha256": null
+            }
+          ],
+          "rationale": "本研究将字段语义等价裁定为确认：FTShare 官方契约定义 open 为开盘价；AxData open_price 对 FTShare open 的正式 L1-C 样本 99/99 精确。扩展本地回放中 FTShare open 与 TDX、ELTDX、新浪、腾讯各 120/120 精确，公开 ELTDX 字段文档也定义 open_price 为今开。FTShare 服务端没有公开实现，底层提供方独立性未确认；AxData 也未作为逐源字段登记。needs_external_evidence 在此仅表示尚无当前流程可用的正式映射资格，不表示字段语义未定。",
+          "reviewed_at": "2026-10-29T23:25:09+08:00",
+          "reviewer": "Codex"
+        }
+      ],
+      "identity": {
+        "evidence": {
+          "anchor_basis": "official_contract",
+          "daily_informative_hit_counts": {
+            "T:20261020": 20,
+            "T:20261023": 20,
+            "T:20261026": 19,
+            "T:20261028": 20,
+            "T:20261029": 20
+          },
+          "daily_informative_sample_counts": {
+            "T:20261020": 20,
+            "T:20261023": 20,
+            "T:20261026": 19,
+            "T:20261028": 20,
+            "T:20261029": 20
+          },
+          "daily_sample_counts": {
+            "T:20261020": 20,
+            "T:20261023": 20,
+            "T:20261026": 19,
+            "T:20261028": 20,
+            "T:20261029": 20
+          },
+          "days_ge_threshold": 5,
+          "distinct_days": [
+            "T:20261020",
+            "T:20261023",
+            "T:20261026",
+            "T:20261028",
+            "T:20261029"
+          ],
+          "evidence_sources": [],
+          "excluded_intraday_pairs": 0,
+          "excluded_unknown_phase_pairs": 0,
+          "left": "axdata.data.open_price",
+          "level": "L1-C",
+          "n_days": 5,
+          "n_informative_pairs": 99,
+          "n_pairs": 99,
+          "overall_hit": 1.0,
+          "ratio": null,
+          "right": "ftshare_rest.open",
+          "same_code": false,
+          "source_independence_confirmed": false,
+          "statistical_level": "L1"
+        },
+        "kind": "l1_contract_candidate",
+        "method_version": "collision-candidate-v1",
+        "schema_version": 1
+      }
+    },
+    "cc1_6da3ea7f27744613ee69ce216d43ac21cd4537a452c99c2f6dda64331c63309f": {
+      "current": {
+        "candidate_id": "cc1_6da3ea7f27744613ee69ce216d43ac21cd4537a452c99c2f6dda64331c63309f",
+        "disposition": "needs_external_evidence",
+        "duplicate_of": null,
+        "event_id": "44a1151ac6577e7836c6ab7e2ba7926db2a081c08509dcc3222bd69e256316cc",
+        "evidence_refs": [
+          {
+            "path": "20261028/20261028_collision_report.json",
+            "sha256": "de6521460d883c3bdc48aed3455833d43ad7149f7cf8d0bd3f5f58366c181707"
+          },
+          {
+            "path": "field_registry.json",
+            "sha256": "3254b3d01218b552fb3d155682a9e4209cabb5e554aa32b07c422ae0d40b3114"
+          },
+          {
+            "path": "ADJUDICATION_WORKFLOW.md",
+            "sha256": "9316c75a7ffdc03dc8c0e1e118bd6f5dd6b3f86e80caf668b250525ca2675bca"
+          }
+        ],
+        "rationale": "The fitted relation has validation R2=0.999999 on 9 samples across 3 stocks, but its target zhb.full.change_pct already appears in a registered L1 mapping to tencent[32], which this report revalidates. This is not a new field identity. Formula-fit statistics alone do not justify a derived_relation decision; that path requires an authoritative definition and a date-aligned evidence CSV replay with verified units and independence checks. Keep it as a candidate.",
+        "reviewed_at": "2026-10-28T21:00:14+08:00",
+        "reviewer": "Codex"
+      },
+      "history": [
+        {
+          "candidate_id": "cc1_6da3ea7f27744613ee69ce216d43ac21cd4537a452c99c2f6dda64331c63309f",
+          "disposition": "needs_external_evidence",
+          "duplicate_of": null,
+          "event_id": "44a1151ac6577e7836c6ab7e2ba7926db2a081c08509dcc3222bd69e256316cc",
+          "evidence_refs": [
+            {
+              "path": "20261028/20261028_collision_report.json",
+              "sha256": "de6521460d883c3bdc48aed3455833d43ad7149f7cf8d0bd3f5f58366c181707"
+            },
+            {
+              "path": "field_registry.json",
+              "sha256": "3254b3d01218b552fb3d155682a9e4209cabb5e554aa32b07c422ae0d40b3114"
+            },
+            {
+              "path": "ADJUDICATION_WORKFLOW.md",
+              "sha256": "9316c75a7ffdc03dc8c0e1e118bd6f5dd6b3f86e80caf668b250525ca2675bca"
+            }
+          ],
+          "rationale": "The fitted relation has validation R2=0.999999 on 9 samples across 3 stocks, but its target zhb.full.change_pct already appears in a registered L1 mapping to tencent[32], which this report revalidates. This is not a new field identity. Formula-fit statistics alone do not justify a derived_relation decision; that path requires an authoritative definition and a date-aligned evidence CSV replay with verified units and independence checks. Keep it as a candidate.",
+          "reviewed_at": "2026-10-28T21:00:14+08:00",
+          "reviewer": "Codex"
+        }
+      ],
+      "identity": {
+        "evidence": {
+          "adjudication_status": "candidate_only",
+          "best_single_input_r2": 0.184089,
+          "evidence_sources": [
+            "tencent",
+            "zhb"
+          ],
+          "formula": "zhb.full.change_pct ≈ 100.00314 × (tencent[31] ÷ tencent[4]) + -0.00084880944",
+          "improvement_over_single_input": 0.815911,
+          "left": "zhb.full.change_pct",
+          "normalized_rmse": 0.000653,
+          "operator": "ratio_left_right",
+          "right_inputs": [
+            "tencent[31]",
+            "tencent[4]"
+          ],
+          "training_samples": 51,
+          "validation_dates": [
+            "T:20261019",
+            "T:20261020",
+            "T:20261023"
+          ],
+          "validation_r2": 0.999999,
+          "validation_samples": 9,
+          "validation_stocks": 3
+        },
+        "kind": "formula_candidate",
+        "method_version": "collision-candidate-v1",
+        "schema_version": 1
+      }
+    },
+    "cc1_71ba8072009a00ab5259c9492fae4cfc672f32c27ce0ec5193b13e97da78712c": {
+      "current": {
+        "candidate_id": "cc1_71ba8072009a00ab5259c9492fae4cfc672f32c27ce0ec5193b13e97da78712c",
+        "disposition": "needs_external_evidence",
+        "duplicate_of": null,
+        "event_id": "a5b003c88936488cccaaca117f59bbf2e3ede0f0e8ddf6bc5c0dc57194c68783",
+        "evidence_refs": [
+          {
+            "path": "20261026/20261026_collision_report.json",
+            "sha256": "5eec07d78ed77d417f83080081b5ab19c019564bd5421196efb0149f8bb13108"
+          },
+          {
+            "path": "source_lineage.json",
+            "sha256": "fe4c778266604de73c79e169be707c1e065d7c7c27f22b776744e1460bf433bf"
+          }
+        ],
+        "rationale": "The complete collision report shows 59 informative pairs across three trading dates, but classifies this as L1-C with source_independence_confirmed=false and no independent evidence_sources. The source lineage record keeps AxData provider lineage unconfirmed and FTShare REST underlying provider unconfirmed. The semantic match is not sufficient to establish an independent cross-source mapping; authoritative provider-lineage evidence is required before adjudication.",
+        "reviewed_at": "2026-10-26T21:43:26+08:00",
+        "reviewer": "Codex"
+      },
+      "history": [
+        {
+          "candidate_id": "cc1_71ba8072009a00ab5259c9492fae4cfc672f32c27ce0ec5193b13e97da78712c",
+          "disposition": "needs_external_evidence",
+          "duplicate_of": null,
+          "event_id": "37aafdd42aff0344eed84f0645e7d62b6a8172368d732cf45f99d0f011812c16",
+          "evidence_refs": [
+            {
+              "path": "20261026/20261026_collision_report.json",
+              "sha256": "a42eb6f8ff39df4fb226b0a200465c571dd13cb398ca1130aa5b82436283d91f"
+            },
+            {
+              "path": "source_lineage.json",
+              "sha256": "fe4c778266604de73c79e169be707c1e065d7c7c27f22b776744e1460bf433bf"
+            }
+          ],
+          "rationale": "The complete collision report shows 59 informative pairs across three trading dates, but classifies this as L1-C with source_independence_confirmed=false and no independent evidence_sources. The source lineage record keeps AxData provider lineage unconfirmed and FTShare REST underlying provider unconfirmed. The semantic match is not sufficient to establish an independent cross-source mapping; authoritative provider-lineage evidence is required before adjudication.",
+          "reviewed_at": "2026-10-26T21:43:26+08:00",
+          "reviewer": "Codex"
+        },
+        {
+          "candidate_id": "cc1_71ba8072009a00ab5259c9492fae4cfc672f32c27ce0ec5193b13e97da78712c",
+          "disposition": "needs_external_evidence",
+          "duplicate_of": null,
+          "event_id": "a5b003c88936488cccaaca117f59bbf2e3ede0f0e8ddf6bc5c0dc57194c68783",
+          "evidence_refs": [
+            {
+              "path": "20261026/20261026_collision_report.json",
+              "sha256": "5eec07d78ed77d417f83080081b5ab19c019564bd5421196efb0149f8bb13108"
+            },
+            {
+              "path": "source_lineage.json",
+              "sha256": "fe4c778266604de73c79e169be707c1e065d7c7c27f22b776744e1460bf433bf"
+            }
+          ],
+          "rationale": "The complete collision report shows 59 informative pairs across three trading dates, but classifies this as L1-C with source_independence_confirmed=false and no independent evidence_sources. The source lineage record keeps AxData provider lineage unconfirmed and FTShare REST underlying provider unconfirmed. The semantic match is not sufficient to establish an independent cross-source mapping; authoritative provider-lineage evidence is required before adjudication.",
+          "reviewed_at": "2026-10-26T21:43:26+08:00",
+          "reviewer": "Codex"
+        }
+      ],
+      "identity": {
+        "evidence": {
+          "anchor_basis": "official_contract",
+          "daily_informative_hit_counts": {
+            "T:20261020": 20,
+            "T:20261023": 20,
+            "T:20261026": 19
+          },
+          "daily_informative_sample_counts": {
+            "T:20261020": 20,
+            "T:20261023": 20,
+            "T:20261026": 19
+          },
+          "daily_sample_counts": {
+            "T:20261020": 20,
+            "T:20261023": 20,
+            "T:20261026": 19
+          },
+          "days_ge_threshold": 3,
+          "distinct_days": [
+            "T:20261020",
+            "T:20261023",
+            "T:20261026"
+          ],
+          "evidence_sources": [],
+          "excluded_intraday_pairs": 0,
+          "excluded_unknown_phase_pairs": 0,
+          "left": "axdata.data.pre_close",
+          "level": "L1-C",
+          "n_days": 3,
+          "n_informative_pairs": 59,
+          "n_pairs": 59,
+          "overall_hit": 1.0,
+          "ratio": null,
+          "right": "ftshare_rest.prev_close",
+          "same_code": false,
+          "source_independence_confirmed": false,
+          "statistical_level": "L1"
+        },
+        "kind": "l1_contract_candidate",
+        "method_version": "collision-candidate-v1",
+        "schema_version": 1
+      }
+    },
+    "cc1_76f0b4aea5d057d1de08ec87eae1c68f04b4d6aef5160f704547e74556bf1e3c": {
+      "current": {
+        "candidate_id": "cc1_76f0b4aea5d057d1de08ec87eae1c68f04b4d6aef5160f704547e74556bf1e3c",
+        "disposition": "needs_external_evidence",
+        "duplicate_of": null,
+        "event_id": "dfb19c3a35ccd8a0f8c565c661e1f16d4063df87f8757d42f8db3feaa88dd883",
+        "evidence_refs": [
+          {
+            "path": "20261026/20261026_collision_report.json",
+            "sha256": "5eec07d78ed77d417f83080081b5ab19c019564bd5421196efb0149f8bb13108"
+          },
+          {
+            "path": "ADJUDICATION_WORKFLOW.md",
+            "sha256": "9316c75a7ffdc03dc8c0e1e118bd6f5dd6b3f86e80caf668b250525ca2675bca"
+          },
+          {
+            "path": "source_lineage.json",
+            "sha256": "fe4c778266604de73c79e169be707c1e065d7c7c27f22b776744e1460bf433bf"
+          }
+        ],
+        "rationale": "The report proposes zhb.full.change_pct ≈ 100.00112 × (tencent[31] ÷ tencent[4]) + -0.00043616683 and records R2=1.0 on 12 validation samples across 3 stocks. This remains a statistical lead: the formula candidate is candidate_only, and the target zhb.full.change_pct already has a registered L1 mapping that was revalidated in this report. It is therefore not a new field identity to promote. A derived_relation decision still requires a reviewed, date-aligned CSV replay, verified exact input identities and units, confirmed source-family independence, and a fixed-version authoritative formula definition/reference. Those adjudication artifacts are not present, so no registry change is justified.",
+        "reviewed_at": "2026-10-26T22:40:43+08:00",
+        "reviewer": "Codex"
+      },
+      "history": [
+        {
+          "candidate_id": "cc1_76f0b4aea5d057d1de08ec87eae1c68f04b4d6aef5160f704547e74556bf1e3c",
+          "disposition": "needs_external_evidence",
+          "duplicate_of": null,
+          "event_id": "dfb19c3a35ccd8a0f8c565c661e1f16d4063df87f8757d42f8db3feaa88dd883",
+          "evidence_refs": [
+            {
+              "path": "20261026/20261026_collision_report.json",
+              "sha256": "5eec07d78ed77d417f83080081b5ab19c019564bd5421196efb0149f8bb13108"
+            },
+            {
+              "path": "ADJUDICATION_WORKFLOW.md",
+              "sha256": "9316c75a7ffdc03dc8c0e1e118bd6f5dd6b3f86e80caf668b250525ca2675bca"
+            },
+            {
+              "path": "source_lineage.json",
+              "sha256": "fe4c778266604de73c79e169be707c1e065d7c7c27f22b776744e1460bf433bf"
+            }
+          ],
+          "rationale": "The report proposes zhb.full.change_pct ≈ 100.00112 × (tencent[31] ÷ tencent[4]) + -0.00043616683 and records R2=1.0 on 12 validation samples across 3 stocks. This remains a statistical lead: the formula candidate is candidate_only, and the target zhb.full.change_pct already has a registered L1 mapping that was revalidated in this report. It is therefore not a new field identity to promote. A derived_relation decision still requires a reviewed, date-aligned CSV replay, verified exact input identities and units, confirmed source-family independence, and a fixed-version authoritative formula definition/reference. Those adjudication artifacts are not present, so no registry change is justified.",
+          "reviewed_at": "2026-10-26T22:40:43+08:00",
+          "reviewer": "Codex"
+        }
+      ],
+      "identity": {
+        "evidence": {
+          "adjudication_status": "candidate_only",
+          "best_single_input_r2": -0.032208,
+          "evidence_sources": [
+            "tencent",
+            "zhb"
+          ],
+          "formula": "zhb.full.change_pct ≈ 100.00112 × (tencent[31] ÷ tencent[4]) + -0.00043616683",
+          "improvement_over_single_input": 1.032207,
+          "left": "zhb.full.change_pct",
+          "normalized_rmse": 0.000681,
+          "operator": "ratio_left_right",
+          "right_inputs": [
+            "tencent[31]",
+            "tencent[4]"
+          ],
+          "training_samples": 68,
+          "validation_dates": [
+            "T:20261016",
+            "T:20261019",
+            "T:20261020",
+            "T:20261023"
+          ],
+          "validation_r2": 1.0,
+          "validation_samples": 12,
+          "validation_stocks": 3
+        },
+        "kind": "formula_candidate",
+        "method_version": "collision-candidate-v1",
+        "schema_version": 1
+      }
+    },
     "cc1_7e560a51eb59e63f2da2208de5ddac84ff7d8530750d7b3619a5a1ac32593f53": {
       "current": {
         "candidate_id": "cc1_7e560a51eb59e63f2da2208de5ddac84ff7d8530750d7b3619a5a1ac32593f53",
@@ -355,8 +1249,1215 @@
         "method_version": "collision-candidate-v1",
         "schema_version": 1
       }
+    },
+    "cc1_9695083c1ae031a29df8f4fde08d9343646ef82f78c61f2d2576ffed98a507b2": {
+      "current": {
+        "candidate_id": "cc1_9695083c1ae031a29df8f4fde08d9343646ef82f78c61f2d2576ffed98a507b2",
+        "disposition": "needs_external_evidence",
+        "duplicate_of": null,
+        "event_id": "b78a0995ddc966c50a6a9fab49d47a2c099a794b360b2bae9ef9b4e9157bd574",
+        "evidence_refs": [
+          {
+            "path": "20261028/20261028_collision_report.json",
+            "sha256": "de6521460d883c3bdc48aed3455833d43ad7149f7cf8d0bd3f5f58366c181707"
+          },
+          {
+            "path": "source_lineage.json",
+            "sha256": "fe4c778266604de73c79e169be707c1e065d7c7c27f22b776744e1460bf433bf"
+          }
+        ],
+        "rationale": "The complete report records 79 informative pairs across 4 dates with 100% agreement, but classifies the relation as L1-C, sets source_independence_confirmed=false, and has no independent evidence_sources. source_lineage.json still leaves the AxData provider lineage and FTShare REST underlying provider unconfirmed. Numerical agreement does not establish an independent cross-source identity; authoritative provider-lineage evidence is required before adjudication.",
+        "reviewed_at": "2026-10-28T21:00:14+08:00",
+        "reviewer": "Codex"
+      },
+      "history": [
+        {
+          "candidate_id": "cc1_9695083c1ae031a29df8f4fde08d9343646ef82f78c61f2d2576ffed98a507b2",
+          "disposition": "needs_external_evidence",
+          "duplicate_of": null,
+          "event_id": "b78a0995ddc966c50a6a9fab49d47a2c099a794b360b2bae9ef9b4e9157bd574",
+          "evidence_refs": [
+            {
+              "path": "20261028/20261028_collision_report.json",
+              "sha256": "de6521460d883c3bdc48aed3455833d43ad7149f7cf8d0bd3f5f58366c181707"
+            },
+            {
+              "path": "source_lineage.json",
+              "sha256": "fe4c778266604de73c79e169be707c1e065d7c7c27f22b776744e1460bf433bf"
+            }
+          ],
+          "rationale": "The complete report records 79 informative pairs across 4 dates with 100% agreement, but classifies the relation as L1-C, sets source_independence_confirmed=false, and has no independent evidence_sources. source_lineage.json still leaves the AxData provider lineage and FTShare REST underlying provider unconfirmed. Numerical agreement does not establish an independent cross-source identity; authoritative provider-lineage evidence is required before adjudication.",
+          "reviewed_at": "2026-10-28T21:00:14+08:00",
+          "reviewer": "Codex"
+        }
+      ],
+      "identity": {
+        "evidence": {
+          "anchor_basis": "official_contract",
+          "daily_informative_hit_counts": {
+            "T:20261020": 20,
+            "T:20261023": 20,
+            "T:20261026": 19,
+            "T:20261028": 20
+          },
+          "daily_informative_sample_counts": {
+            "T:20261020": 20,
+            "T:20261023": 20,
+            "T:20261026": 19,
+            "T:20261028": 20
+          },
+          "daily_sample_counts": {
+            "T:20261020": 20,
+            "T:20261023": 20,
+            "T:20261026": 19,
+            "T:20261028": 20
+          },
+          "days_ge_threshold": 4,
+          "distinct_days": [
+            "T:20261020",
+            "T:20261023",
+            "T:20261026",
+            "T:20261028"
+          ],
+          "evidence_sources": [],
+          "excluded_intraday_pairs": 0,
+          "excluded_unknown_phase_pairs": 0,
+          "left": "axdata.data.pre_close",
+          "level": "L1-C",
+          "n_days": 4,
+          "n_informative_pairs": 79,
+          "n_pairs": 79,
+          "overall_hit": 1.0,
+          "ratio": null,
+          "right": "ftshare_rest.prev_close",
+          "same_code": false,
+          "source_independence_confirmed": false,
+          "statistical_level": "L1"
+        },
+        "kind": "l1_contract_candidate",
+        "method_version": "collision-candidate-v1",
+        "schema_version": 1
+      }
+    },
+    "cc1_b0c4b81990bfe71e0ba3eb904713e4e940371481fb12532633e5b1a5af39c07d": {
+      "current": {
+        "candidate_id": "cc1_b0c4b81990bfe71e0ba3eb904713e4e940371481fb12532633e5b1a5af39c07d",
+        "disposition": "needs_external_evidence",
+        "duplicate_of": null,
+        "event_id": "a61a855ba272e5261e0894f39c94af8b2eadb62da8a9be1379b9ed1f7cf570df",
+        "evidence_refs": [
+          {
+            "path": "20261026/20261026_collision_report.json",
+            "sha256": "5eec07d78ed77d417f83080081b5ab19c019564bd5421196efb0149f8bb13108"
+          },
+          {
+            "path": "source_lineage.json",
+            "sha256": "fe4c778266604de73c79e169be707c1e065d7c7c27f22b776744e1460bf433bf"
+          }
+        ],
+        "rationale": "The complete collision report shows 59 informative pairs across three trading dates, but classifies this as L1-C with source_independence_confirmed=false and no independent evidence_sources. The source lineage record keeps AxData provider lineage unconfirmed and FTShare REST underlying provider unconfirmed. The semantic match is not sufficient to establish an independent cross-source mapping; authoritative provider-lineage evidence is required before adjudication.",
+        "reviewed_at": "2026-10-26T21:43:26+08:00",
+        "reviewer": "Codex"
+      },
+      "history": [
+        {
+          "candidate_id": "cc1_b0c4b81990bfe71e0ba3eb904713e4e940371481fb12532633e5b1a5af39c07d",
+          "disposition": "needs_external_evidence",
+          "duplicate_of": null,
+          "event_id": "2251259a17877b954a2d6a0cd29893775c82dfd7062f4aef64014fb14c319327",
+          "evidence_refs": [
+            {
+              "path": "20261026/20261026_collision_report.json",
+              "sha256": "a42eb6f8ff39df4fb226b0a200465c571dd13cb398ca1130aa5b82436283d91f"
+            },
+            {
+              "path": "source_lineage.json",
+              "sha256": "fe4c778266604de73c79e169be707c1e065d7c7c27f22b776744e1460bf433bf"
+            }
+          ],
+          "rationale": "The complete collision report shows 59 informative pairs across three trading dates, but classifies this as L1-C with source_independence_confirmed=false and no independent evidence_sources. The source lineage record keeps AxData provider lineage unconfirmed and FTShare REST underlying provider unconfirmed. The semantic match is not sufficient to establish an independent cross-source mapping; authoritative provider-lineage evidence is required before adjudication.",
+          "reviewed_at": "2026-10-26T21:43:26+08:00",
+          "reviewer": "Codex"
+        },
+        {
+          "candidate_id": "cc1_b0c4b81990bfe71e0ba3eb904713e4e940371481fb12532633e5b1a5af39c07d",
+          "disposition": "needs_external_evidence",
+          "duplicate_of": null,
+          "event_id": "a61a855ba272e5261e0894f39c94af8b2eadb62da8a9be1379b9ed1f7cf570df",
+          "evidence_refs": [
+            {
+              "path": "20261026/20261026_collision_report.json",
+              "sha256": "5eec07d78ed77d417f83080081b5ab19c019564bd5421196efb0149f8bb13108"
+            },
+            {
+              "path": "source_lineage.json",
+              "sha256": "fe4c778266604de73c79e169be707c1e065d7c7c27f22b776744e1460bf433bf"
+            }
+          ],
+          "rationale": "The complete collision report shows 59 informative pairs across three trading dates, but classifies this as L1-C with source_independence_confirmed=false and no independent evidence_sources. The source lineage record keeps AxData provider lineage unconfirmed and FTShare REST underlying provider unconfirmed. The semantic match is not sufficient to establish an independent cross-source mapping; authoritative provider-lineage evidence is required before adjudication.",
+          "reviewed_at": "2026-10-26T21:43:26+08:00",
+          "reviewer": "Codex"
+        }
+      ],
+      "identity": {
+        "evidence": {
+          "anchor_basis": "official_contract",
+          "daily_informative_hit_counts": {
+            "T:20261020": 20,
+            "T:20261023": 20,
+            "T:20261026": 19
+          },
+          "daily_informative_sample_counts": {
+            "T:20261020": 20,
+            "T:20261023": 20,
+            "T:20261026": 19
+          },
+          "daily_sample_counts": {
+            "T:20261020": 20,
+            "T:20261023": 20,
+            "T:20261026": 19
+          },
+          "days_ge_threshold": 3,
+          "distinct_days": [
+            "T:20261020",
+            "T:20261023",
+            "T:20261026"
+          ],
+          "evidence_sources": [],
+          "excluded_intraday_pairs": 0,
+          "excluded_unknown_phase_pairs": 0,
+          "left": "axdata.data.instrument_id",
+          "level": "L1-C",
+          "n_days": 3,
+          "n_informative_pairs": 59,
+          "n_pairs": 59,
+          "overall_hit": 1.0,
+          "ratio": null,
+          "right": "ftshare_rest.symbol",
+          "same_code": false,
+          "source_independence_confirmed": false,
+          "statistical_level": "L1"
+        },
+        "kind": "l1_contract_candidate",
+        "method_version": "collision-candidate-v1",
+        "schema_version": 1
+      }
+    },
+    "cc1_b1fdd41ffacf365bd483edeb0defd1aecd3a32a2b56d402ca9827df2f18e0d95": {
+      "current": {
+        "candidate_id": "cc1_b1fdd41ffacf365bd483edeb0defd1aecd3a32a2b56d402ca9827df2f18e0d95",
+        "disposition": "needs_external_evidence",
+        "duplicate_of": null,
+        "event_id": "6d28a0c011ff16fa4a8eeffde1d96f0ae31c2c8016a6e032d2a1a136bf25e63a",
+        "evidence_refs": [
+          {
+            "path": "20261028/20261028_collision_report.json",
+            "sha256": "de6521460d883c3bdc48aed3455833d43ad7149f7cf8d0bd3f5f58366c181707"
+          },
+          {
+            "path": "field_registry.json",
+            "sha256": "3254b3d01218b552fb3d155682a9e4209cabb5e554aa32b07c422ae0d40b3114"
+          },
+          {
+            "path": "ADJUDICATION_WORKFLOW.md",
+            "sha256": "9316c75a7ffdc03dc8c0e1e118bd6f5dd6b3f86e80caf668b250525ca2675bca"
+          }
+        ],
+        "rationale": "The fitted relation has validation R2=0.999999 on 9 samples across 3 stocks, but its target zhb.full.change_pct already appears in a registered L1 mapping to tencent[32], which this report revalidates. This is not a new field identity. Formula-fit statistics alone do not justify a derived_relation decision; that path requires an authoritative definition and a date-aligned evidence CSV replay with verified units and independence checks. Keep it as a candidate.",
+        "reviewed_at": "2026-10-28T21:00:14+08:00",
+        "reviewer": "Codex"
+      },
+      "history": [
+        {
+          "candidate_id": "cc1_b1fdd41ffacf365bd483edeb0defd1aecd3a32a2b56d402ca9827df2f18e0d95",
+          "disposition": "needs_external_evidence",
+          "duplicate_of": null,
+          "event_id": "6d28a0c011ff16fa4a8eeffde1d96f0ae31c2c8016a6e032d2a1a136bf25e63a",
+          "evidence_refs": [
+            {
+              "path": "20261028/20261028_collision_report.json",
+              "sha256": "de6521460d883c3bdc48aed3455833d43ad7149f7cf8d0bd3f5f58366c181707"
+            },
+            {
+              "path": "field_registry.json",
+              "sha256": "3254b3d01218b552fb3d155682a9e4209cabb5e554aa32b07c422ae0d40b3114"
+            },
+            {
+              "path": "ADJUDICATION_WORKFLOW.md",
+              "sha256": "9316c75a7ffdc03dc8c0e1e118bd6f5dd6b3f86e80caf668b250525ca2675bca"
+            }
+          ],
+          "rationale": "The fitted relation has validation R2=0.999999 on 9 samples across 3 stocks, but its target zhb.full.change_pct already appears in a registered L1 mapping to tencent[32], which this report revalidates. This is not a new field identity. Formula-fit statistics alone do not justify a derived_relation decision; that path requires an authoritative definition and a date-aligned evidence CSV replay with verified units and independence checks. Keep it as a candidate.",
+          "reviewed_at": "2026-10-28T21:00:14+08:00",
+          "reviewer": "Codex"
+        }
+      ],
+      "identity": {
+        "evidence": {
+          "adjudication_status": "candidate_only",
+          "best_single_input_r2": 0.184089,
+          "evidence_sources": [
+            "fuyao",
+            "tencent",
+            "zhb"
+          ],
+          "formula": "zhb.full.change_pct ≈ 100.00314 × (fuyao.snapshot.price_change ÷ tencent[4]) + -0.00084880944",
+          "improvement_over_single_input": 0.815911,
+          "left": "zhb.full.change_pct",
+          "normalized_rmse": 0.000653,
+          "operator": "ratio_left_right",
+          "right_inputs": [
+            "fuyao.snapshot.price_change",
+            "tencent[4]"
+          ],
+          "training_samples": 51,
+          "validation_dates": [
+            "T:20261019",
+            "T:20261020",
+            "T:20261023"
+          ],
+          "validation_r2": 0.999999,
+          "validation_samples": 9,
+          "validation_stocks": 3
+        },
+        "kind": "formula_candidate",
+        "method_version": "collision-candidate-v1",
+        "schema_version": 1
+      }
+    },
+    "cc1_be8a46848561c3da25b85f557549482dc575791b3e81ef9bae0315f5a5ef0c63": {
+      "current": {
+        "candidate_id": "cc1_be8a46848561c3da25b85f557549482dc575791b3e81ef9bae0315f5a5ef0c63",
+        "disposition": "needs_external_evidence",
+        "duplicate_of": null,
+        "event_id": "c96ad2a5f58a896310f52ae70e91f6ac85ee081b557efb65bc679d58f7d3eed8",
+        "evidence_refs": [
+          {
+            "path": "20261029/20261029_collision_report.json",
+            "sha256": "0e71f529f68b9fe99f93dcf1b043d93d785eb1082da655a3cfafa407ae8e29b6"
+          },
+          {
+            "path": "derived_evidence/20261029_cross_source_replay.csv",
+            "sha256": "4f6f1a295c29cefd8d0764693ad21700fc202835752afda85c08f61005262788"
+          },
+          {
+            "path": "adjudications/20261029_research_adjudication.md",
+            "sha256": "cf26ee9a5c53c1d5548071c94c19c8552aee014ef5ad6ff1b7b765326e3d10bd"
+          },
+          {
+            "path": "field_registry.json",
+            "sha256": "3254b3d01218b552fb3d155682a9e4209cabb5e554aa32b07c422ae0d40b3114"
+          },
+          {
+            "path": "source_lineage.json",
+            "sha256": "fe4c778266604de73c79e169be707c1e065d7c7c27f22b776744e1460bf433bf"
+          },
+          {
+            "path": "ADJUDICATION_WORKFLOW.md",
+            "sha256": "9316c75a7ffdc03dc8c0e1e118bd6f5dd6b3f86e80caf668b250525ca2675bca"
+          },
+          {
+            "path": "https://market.ft.tech/gateway/doc/p/mdsj0xyo",
+            "sha256": null
+          },
+          {
+            "path": "https://github.com/FTShare-Lab/FTShare-MCP/blob/main/README_EN.md",
+            "sha256": null
+          },
+          {
+            "path": "https://pypi.org/project/axdata/0.1.4/",
+            "sha256": null
+          },
+          {
+            "path": "https://github.com/electkismet/eltdx/blob/main/docs/FIELD_REFERENCE.md",
+            "sha256": null
+          },
+          {
+            "path": "https://github.com/electkismet/eltdx/blob/main/docs/methods/7709-%E6%89%B9%E9%87%8F%E5%BF%AB%E7%85%A7.md",
+            "sha256": null
+          }
+        ],
+        "rationale": "本研究将字段语义等价裁定为确认：FTShare 官方契约定义 prev_close 为前收盘价；AxData pre_close 对 FTShare prev_close 的正式 L1-C 样本 99/99 精确。扩展本地回放中 FTShare prev_close 与 TDX、ELTDX、新浪、腾讯各 120/120 精确，公开 ELTDX 字段文档也定义 pre_close 为昨收。FTShare 服务端没有公开实现，底层提供方独立性未确认；AxData 也未作为逐源字段登记。needs_external_evidence 在此仅表示尚无当前流程可用的正式映射资格，不表示字段语义未定。",
+        "reviewed_at": "2026-10-29T23:25:09+08:00",
+        "reviewer": "Codex"
+      },
+      "history": [
+        {
+          "candidate_id": "cc1_be8a46848561c3da25b85f557549482dc575791b3e81ef9bae0315f5a5ef0c63",
+          "disposition": "needs_external_evidence",
+          "duplicate_of": null,
+          "event_id": "a38f1d617511f5116094520315a5a513d16834d2634891ce26521c5bd9ebfe07",
+          "evidence_refs": [
+            {
+              "path": "20261029/20261029_collision_report.json",
+              "sha256": "088f177fffa5f7a3d1d8da5faeb185fe4a996d993d7917ce3f7b6563b1b508f0"
+            },
+            {
+              "path": "source_lineage.json",
+              "sha256": "fe4c778266604de73c79e169be707c1e065d7c7c27f22b776744e1460bf433bf"
+            }
+          ],
+          "rationale": "The complete 20261029 report records 99 informative pairs across five trading days with 100% agreement, but classifies this as L1-C, has source_independence_confirmed=false, and provides no independent evidence_sources. source_lineage.json leaves the AxData provider lineage and FTShare REST underlying provider unconfirmed. Numerical agreement does not establish independent cross-source identity; authoritative provider-lineage evidence is required before adjudication.",
+          "reviewed_at": "2026-10-29T21:20:20+08:00",
+          "reviewer": "Codex"
+        },
+        {
+          "candidate_id": "cc1_be8a46848561c3da25b85f557549482dc575791b3e81ef9bae0315f5a5ef0c63",
+          "disposition": "needs_external_evidence",
+          "duplicate_of": null,
+          "event_id": "c96ad2a5f58a896310f52ae70e91f6ac85ee081b557efb65bc679d58f7d3eed8",
+          "evidence_refs": [
+            {
+              "path": "20261029/20261029_collision_report.json",
+              "sha256": "0e71f529f68b9fe99f93dcf1b043d93d785eb1082da655a3cfafa407ae8e29b6"
+            },
+            {
+              "path": "derived_evidence/20261029_cross_source_replay.csv",
+              "sha256": "4f6f1a295c29cefd8d0764693ad21700fc202835752afda85c08f61005262788"
+            },
+            {
+              "path": "adjudications/20261029_research_adjudication.md",
+              "sha256": "cf26ee9a5c53c1d5548071c94c19c8552aee014ef5ad6ff1b7b765326e3d10bd"
+            },
+            {
+              "path": "field_registry.json",
+              "sha256": "3254b3d01218b552fb3d155682a9e4209cabb5e554aa32b07c422ae0d40b3114"
+            },
+            {
+              "path": "source_lineage.json",
+              "sha256": "fe4c778266604de73c79e169be707c1e065d7c7c27f22b776744e1460bf433bf"
+            },
+            {
+              "path": "ADJUDICATION_WORKFLOW.md",
+              "sha256": "9316c75a7ffdc03dc8c0e1e118bd6f5dd6b3f86e80caf668b250525ca2675bca"
+            },
+            {
+              "path": "https://market.ft.tech/gateway/doc/p/mdsj0xyo",
+              "sha256": null
+            },
+            {
+              "path": "https://github.com/FTShare-Lab/FTShare-MCP/blob/main/README_EN.md",
+              "sha256": null
+            },
+            {
+              "path": "https://pypi.org/project/axdata/0.1.4/",
+              "sha256": null
+            },
+            {
+              "path": "https://github.com/electkismet/eltdx/blob/main/docs/FIELD_REFERENCE.md",
+              "sha256": null
+            },
+            {
+              "path": "https://github.com/electkismet/eltdx/blob/main/docs/methods/7709-%E6%89%B9%E9%87%8F%E5%BF%AB%E7%85%A7.md",
+              "sha256": null
+            }
+          ],
+          "rationale": "本研究将字段语义等价裁定为确认：FTShare 官方契约定义 prev_close 为前收盘价；AxData pre_close 对 FTShare prev_close 的正式 L1-C 样本 99/99 精确。扩展本地回放中 FTShare prev_close 与 TDX、ELTDX、新浪、腾讯各 120/120 精确，公开 ELTDX 字段文档也定义 pre_close 为昨收。FTShare 服务端没有公开实现，底层提供方独立性未确认；AxData 也未作为逐源字段登记。needs_external_evidence 在此仅表示尚无当前流程可用的正式映射资格，不表示字段语义未定。",
+          "reviewed_at": "2026-10-29T23:25:09+08:00",
+          "reviewer": "Codex"
+        }
+      ],
+      "identity": {
+        "evidence": {
+          "anchor_basis": "official_contract",
+          "daily_informative_hit_counts": {
+            "T:20261020": 20,
+            "T:20261023": 20,
+            "T:20261026": 19,
+            "T:20261028": 20,
+            "T:20261029": 20
+          },
+          "daily_informative_sample_counts": {
+            "T:20261020": 20,
+            "T:20261023": 20,
+            "T:20261026": 19,
+            "T:20261028": 20,
+            "T:20261029": 20
+          },
+          "daily_sample_counts": {
+            "T:20261020": 20,
+            "T:20261023": 20,
+            "T:20261026": 19,
+            "T:20261028": 20,
+            "T:20261029": 20
+          },
+          "days_ge_threshold": 5,
+          "distinct_days": [
+            "T:20261020",
+            "T:20261023",
+            "T:20261026",
+            "T:20261028",
+            "T:20261029"
+          ],
+          "evidence_sources": [],
+          "excluded_intraday_pairs": 0,
+          "excluded_unknown_phase_pairs": 0,
+          "left": "axdata.data.pre_close",
+          "level": "L1-C",
+          "n_days": 5,
+          "n_informative_pairs": 99,
+          "n_pairs": 99,
+          "overall_hit": 1.0,
+          "ratio": null,
+          "right": "ftshare_rest.prev_close",
+          "same_code": false,
+          "source_independence_confirmed": false,
+          "statistical_level": "L1"
+        },
+        "kind": "l1_contract_candidate",
+        "method_version": "collision-candidate-v1",
+        "schema_version": 1
+      }
+    },
+    "cc1_c339ca78644897840b1b93b3f35c9de0a14654264eb710b1e4324f116bcf7543": {
+      "current": {
+        "candidate_id": "cc1_c339ca78644897840b1b93b3f35c9de0a14654264eb710b1e4324f116bcf7543",
+        "disposition": "needs_external_evidence",
+        "duplicate_of": null,
+        "event_id": "4d6ac74810fbf3785e4349aceb39afe4e0e3a32ce2de82fc34ca9333dd3f1d3f",
+        "evidence_refs": [
+          {
+            "path": "20261029/20261029_collision_report.json",
+            "sha256": "0e71f529f68b9fe99f93dcf1b043d93d785eb1082da655a3cfafa407ae8e29b6"
+          },
+          {
+            "path": "derived_evidence/20261029_cross_source_replay.csv",
+            "sha256": "4f6f1a295c29cefd8d0764693ad21700fc202835752afda85c08f61005262788"
+          },
+          {
+            "path": "adjudications/20261029_research_adjudication.md",
+            "sha256": "cf26ee9a5c53c1d5548071c94c19c8552aee014ef5ad6ff1b7b765326e3d10bd"
+          },
+          {
+            "path": "field_registry.json",
+            "sha256": "3254b3d01218b552fb3d155682a9e4209cabb5e554aa32b07c422ae0d40b3114"
+          },
+          {
+            "path": "source_lineage.json",
+            "sha256": "fe4c778266604de73c79e169be707c1e065d7c7c27f22b776744e1460bf433bf"
+          },
+          {
+            "path": "ADJUDICATION_WORKFLOW.md",
+            "sha256": "9316c75a7ffdc03dc8c0e1e118bd6f5dd6b3f86e80caf668b250525ca2675bca"
+          },
+          {
+            "path": "https://market.ft.tech/gateway/doc/p/mdsj0xyo",
+            "sha256": null
+          },
+          {
+            "path": "https://github.com/FTShare-Lab/FTShare-MCP/blob/main/README_EN.md",
+            "sha256": null
+          },
+          {
+            "path": "https://pypi.org/project/axdata/0.1.4/",
+            "sha256": null
+          },
+          {
+            "path": "https://github.com/electkismet/eltdx/blob/main/docs/FIELD_REFERENCE.md",
+            "sha256": null
+          },
+          {
+            "path": "https://github.com/electkismet/eltdx/blob/main/docs/methods/7709-%E6%89%B9%E9%87%8F%E5%BF%AB%E7%85%A7.md",
+            "sha256": null
+          }
+        ],
+        "rationale": "本研究将字段语义等价裁定为确认：公开 FTShare 契约将 symbol 定义为含交易所后缀的证券代码，本地正式 L1-C 样本 99/99 完整标识相同。AxData 当前 stock_shortline_indicators_tdx 路径经锁定的 0.1.4 wheel 路由至 TDX 适配层。但 FTShare 官方仓库不含服务端实现，底层行情提供方仍未公开确认；且 AxData 在 field_registry 中是 framework_reference、没有逐源字段记录。needs_external_evidence 在此仅表示尚无当前流程可用的正式映射资格，不表示字段语义未定。",
+        "reviewed_at": "2026-10-29T23:25:09+08:00",
+        "reviewer": "Codex"
+      },
+      "history": [
+        {
+          "candidate_id": "cc1_c339ca78644897840b1b93b3f35c9de0a14654264eb710b1e4324f116bcf7543",
+          "disposition": "needs_external_evidence",
+          "duplicate_of": null,
+          "event_id": "cd2bf0fe46957abce573c498aaaf0f3c73391c5e81df06e16f9738b730cbdd27",
+          "evidence_refs": [
+            {
+              "path": "20261029/20261029_collision_report.json",
+              "sha256": "088f177fffa5f7a3d1d8da5faeb185fe4a996d993d7917ce3f7b6563b1b508f0"
+            },
+            {
+              "path": "source_lineage.json",
+              "sha256": "fe4c778266604de73c79e169be707c1e065d7c7c27f22b776744e1460bf433bf"
+            }
+          ],
+          "rationale": "The complete 20261029 report records 99 informative pairs across five trading days with 100% agreement, but classifies this as L1-C, has source_independence_confirmed=false, and provides no independent evidence_sources. source_lineage.json leaves the AxData provider lineage and FTShare REST underlying provider unconfirmed. Numerical agreement does not establish independent cross-source identity; authoritative provider-lineage evidence is required before adjudication.",
+          "reviewed_at": "2026-10-29T21:20:20+08:00",
+          "reviewer": "Codex"
+        },
+        {
+          "candidate_id": "cc1_c339ca78644897840b1b93b3f35c9de0a14654264eb710b1e4324f116bcf7543",
+          "disposition": "needs_external_evidence",
+          "duplicate_of": null,
+          "event_id": "4d6ac74810fbf3785e4349aceb39afe4e0e3a32ce2de82fc34ca9333dd3f1d3f",
+          "evidence_refs": [
+            {
+              "path": "20261029/20261029_collision_report.json",
+              "sha256": "0e71f529f68b9fe99f93dcf1b043d93d785eb1082da655a3cfafa407ae8e29b6"
+            },
+            {
+              "path": "derived_evidence/20261029_cross_source_replay.csv",
+              "sha256": "4f6f1a295c29cefd8d0764693ad21700fc202835752afda85c08f61005262788"
+            },
+            {
+              "path": "adjudications/20261029_research_adjudication.md",
+              "sha256": "cf26ee9a5c53c1d5548071c94c19c8552aee014ef5ad6ff1b7b765326e3d10bd"
+            },
+            {
+              "path": "field_registry.json",
+              "sha256": "3254b3d01218b552fb3d155682a9e4209cabb5e554aa32b07c422ae0d40b3114"
+            },
+            {
+              "path": "source_lineage.json",
+              "sha256": "fe4c778266604de73c79e169be707c1e065d7c7c27f22b776744e1460bf433bf"
+            },
+            {
+              "path": "ADJUDICATION_WORKFLOW.md",
+              "sha256": "9316c75a7ffdc03dc8c0e1e118bd6f5dd6b3f86e80caf668b250525ca2675bca"
+            },
+            {
+              "path": "https://market.ft.tech/gateway/doc/p/mdsj0xyo",
+              "sha256": null
+            },
+            {
+              "path": "https://github.com/FTShare-Lab/FTShare-MCP/blob/main/README_EN.md",
+              "sha256": null
+            },
+            {
+              "path": "https://pypi.org/project/axdata/0.1.4/",
+              "sha256": null
+            },
+            {
+              "path": "https://github.com/electkismet/eltdx/blob/main/docs/FIELD_REFERENCE.md",
+              "sha256": null
+            },
+            {
+              "path": "https://github.com/electkismet/eltdx/blob/main/docs/methods/7709-%E6%89%B9%E9%87%8F%E5%BF%AB%E7%85%A7.md",
+              "sha256": null
+            }
+          ],
+          "rationale": "本研究将字段语义等价裁定为确认：公开 FTShare 契约将 symbol 定义为含交易所后缀的证券代码，本地正式 L1-C 样本 99/99 完整标识相同。AxData 当前 stock_shortline_indicators_tdx 路径经锁定的 0.1.4 wheel 路由至 TDX 适配层。但 FTShare 官方仓库不含服务端实现，底层行情提供方仍未公开确认；且 AxData 在 field_registry 中是 framework_reference、没有逐源字段记录。needs_external_evidence 在此仅表示尚无当前流程可用的正式映射资格，不表示字段语义未定。",
+          "reviewed_at": "2026-10-29T23:25:09+08:00",
+          "reviewer": "Codex"
+        }
+      ],
+      "identity": {
+        "evidence": {
+          "anchor_basis": "official_contract",
+          "daily_informative_hit_counts": {
+            "T:20261020": 20,
+            "T:20261023": 20,
+            "T:20261026": 19,
+            "T:20261028": 20,
+            "T:20261029": 20
+          },
+          "daily_informative_sample_counts": {
+            "T:20261020": 20,
+            "T:20261023": 20,
+            "T:20261026": 19,
+            "T:20261028": 20,
+            "T:20261029": 20
+          },
+          "daily_sample_counts": {
+            "T:20261020": 20,
+            "T:20261023": 20,
+            "T:20261026": 19,
+            "T:20261028": 20,
+            "T:20261029": 20
+          },
+          "days_ge_threshold": 5,
+          "distinct_days": [
+            "T:20261020",
+            "T:20261023",
+            "T:20261026",
+            "T:20261028",
+            "T:20261029"
+          ],
+          "evidence_sources": [],
+          "excluded_intraday_pairs": 0,
+          "excluded_unknown_phase_pairs": 0,
+          "left": "axdata.data.instrument_id",
+          "level": "L1-C",
+          "n_days": 5,
+          "n_informative_pairs": 99,
+          "n_pairs": 99,
+          "overall_hit": 1.0,
+          "ratio": null,
+          "right": "ftshare_rest.symbol",
+          "same_code": false,
+          "source_independence_confirmed": false,
+          "statistical_level": "L1"
+        },
+        "kind": "l1_contract_candidate",
+        "method_version": "collision-candidate-v1",
+        "schema_version": 1
+      }
+    },
+    "cc1_c958c761e78fffdcee2c4e73d1bbe821082eb1d9cccc7dd55ba7ddc14fb82250": {
+      "current": {
+        "candidate_id": "cc1_c958c761e78fffdcee2c4e73d1bbe821082eb1d9cccc7dd55ba7ddc14fb82250",
+        "disposition": "needs_external_evidence",
+        "duplicate_of": null,
+        "event_id": "33a24ce6ee0ebabbc95dc512c7421f7cd53a5ed754b5fc4cb03350a3b25b8381",
+        "evidence_refs": [
+          {
+            "path": "20261028/20261028_collision_report.json",
+            "sha256": "de6521460d883c3bdc48aed3455833d43ad7149f7cf8d0bd3f5f58366c181707"
+          },
+          {
+            "path": "source_lineage.json",
+            "sha256": "fe4c778266604de73c79e169be707c1e065d7c7c27f22b776744e1460bf433bf"
+          }
+        ],
+        "rationale": "The complete report records 79 informative pairs across 4 dates with 100% agreement, but classifies the relation as L1-C, sets source_independence_confirmed=false, and has no independent evidence_sources. source_lineage.json still leaves the AxData provider lineage and FTShare REST underlying provider unconfirmed. Numerical agreement does not establish an independent cross-source identity; authoritative provider-lineage evidence is required before adjudication.",
+        "reviewed_at": "2026-10-28T21:00:14+08:00",
+        "reviewer": "Codex"
+      },
+      "history": [
+        {
+          "candidate_id": "cc1_c958c761e78fffdcee2c4e73d1bbe821082eb1d9cccc7dd55ba7ddc14fb82250",
+          "disposition": "needs_external_evidence",
+          "duplicate_of": null,
+          "event_id": "33a24ce6ee0ebabbc95dc512c7421f7cd53a5ed754b5fc4cb03350a3b25b8381",
+          "evidence_refs": [
+            {
+              "path": "20261028/20261028_collision_report.json",
+              "sha256": "de6521460d883c3bdc48aed3455833d43ad7149f7cf8d0bd3f5f58366c181707"
+            },
+            {
+              "path": "source_lineage.json",
+              "sha256": "fe4c778266604de73c79e169be707c1e065d7c7c27f22b776744e1460bf433bf"
+            }
+          ],
+          "rationale": "The complete report records 79 informative pairs across 4 dates with 100% agreement, but classifies the relation as L1-C, sets source_independence_confirmed=false, and has no independent evidence_sources. source_lineage.json still leaves the AxData provider lineage and FTShare REST underlying provider unconfirmed. Numerical agreement does not establish an independent cross-source identity; authoritative provider-lineage evidence is required before adjudication.",
+          "reviewed_at": "2026-10-28T21:00:14+08:00",
+          "reviewer": "Codex"
+        }
+      ],
+      "identity": {
+        "evidence": {
+          "anchor_basis": "official_contract",
+          "daily_informative_hit_counts": {
+            "T:20261020": 20,
+            "T:20261023": 20,
+            "T:20261026": 19,
+            "T:20261028": 20
+          },
+          "daily_informative_sample_counts": {
+            "T:20261020": 20,
+            "T:20261023": 20,
+            "T:20261026": 19,
+            "T:20261028": 20
+          },
+          "daily_sample_counts": {
+            "T:20261020": 20,
+            "T:20261023": 20,
+            "T:20261026": 19,
+            "T:20261028": 20
+          },
+          "days_ge_threshold": 4,
+          "distinct_days": [
+            "T:20261020",
+            "T:20261023",
+            "T:20261026",
+            "T:20261028"
+          ],
+          "evidence_sources": [],
+          "excluded_intraday_pairs": 0,
+          "excluded_unknown_phase_pairs": 0,
+          "left": "axdata.data.open_price",
+          "level": "L1-C",
+          "n_days": 4,
+          "n_informative_pairs": 79,
+          "n_pairs": 79,
+          "overall_hit": 1.0,
+          "ratio": null,
+          "right": "ftshare_rest.open",
+          "same_code": false,
+          "source_independence_confirmed": false,
+          "statistical_level": "L1"
+        },
+        "kind": "l1_contract_candidate",
+        "method_version": "collision-candidate-v1",
+        "schema_version": 1
+      }
+    },
+    "cc1_eef0226bb62269d0de70febecbf21dee2d7a01a9cac7a1f2d2753b6f849d3ec9": {
+      "current": {
+        "candidate_id": "cc1_eef0226bb62269d0de70febecbf21dee2d7a01a9cac7a1f2d2753b6f849d3ec9",
+        "disposition": "needs_external_evidence",
+        "duplicate_of": null,
+        "event_id": "80e57db1fcd59a04b5a651d00c58bd86f17d5a2587ec5bd3e5942b13ab5534dd",
+        "evidence_refs": [
+          {
+            "path": "20261026/20261026_collision_report.json",
+            "sha256": "5eec07d78ed77d417f83080081b5ab19c019564bd5421196efb0149f8bb13108"
+          },
+          {
+            "path": "source_lineage.json",
+            "sha256": "fe4c778266604de73c79e169be707c1e065d7c7c27f22b776744e1460bf433bf"
+          }
+        ],
+        "rationale": "The complete collision report shows 59 informative pairs across three trading dates, but classifies this as L1-C with source_independence_confirmed=false and no independent evidence_sources. The source lineage record keeps AxData provider lineage unconfirmed and FTShare REST underlying provider unconfirmed. The semantic match is not sufficient to establish an independent cross-source mapping; authoritative provider-lineage evidence is required before adjudication.",
+        "reviewed_at": "2026-10-26T21:43:26+08:00",
+        "reviewer": "Codex"
+      },
+      "history": [
+        {
+          "candidate_id": "cc1_eef0226bb62269d0de70febecbf21dee2d7a01a9cac7a1f2d2753b6f849d3ec9",
+          "disposition": "needs_external_evidence",
+          "duplicate_of": null,
+          "event_id": "f19f8f2c8b163a1a3ce0e7f881e4618d1a4201a7fbde6be3248adf595109838a",
+          "evidence_refs": [
+            {
+              "path": "20261026/20261026_collision_report.json",
+              "sha256": "a42eb6f8ff39df4fb226b0a200465c571dd13cb398ca1130aa5b82436283d91f"
+            },
+            {
+              "path": "source_lineage.json",
+              "sha256": "fe4c778266604de73c79e169be707c1e065d7c7c27f22b776744e1460bf433bf"
+            }
+          ],
+          "rationale": "The complete collision report shows 59 informative pairs across three trading dates, but classifies this as L1-C with source_independence_confirmed=false and no independent evidence_sources. The source lineage record keeps AxData provider lineage unconfirmed and FTShare REST underlying provider unconfirmed. The semantic match is not sufficient to establish an independent cross-source mapping; authoritative provider-lineage evidence is required before adjudication.",
+          "reviewed_at": "2026-10-26T21:43:26+08:00",
+          "reviewer": "Codex"
+        },
+        {
+          "candidate_id": "cc1_eef0226bb62269d0de70febecbf21dee2d7a01a9cac7a1f2d2753b6f849d3ec9",
+          "disposition": "needs_external_evidence",
+          "duplicate_of": null,
+          "event_id": "80e57db1fcd59a04b5a651d00c58bd86f17d5a2587ec5bd3e5942b13ab5534dd",
+          "evidence_refs": [
+            {
+              "path": "20261026/20261026_collision_report.json",
+              "sha256": "5eec07d78ed77d417f83080081b5ab19c019564bd5421196efb0149f8bb13108"
+            },
+            {
+              "path": "source_lineage.json",
+              "sha256": "fe4c778266604de73c79e169be707c1e065d7c7c27f22b776744e1460bf433bf"
+            }
+          ],
+          "rationale": "The complete collision report shows 59 informative pairs across three trading dates, but classifies this as L1-C with source_independence_confirmed=false and no independent evidence_sources. The source lineage record keeps AxData provider lineage unconfirmed and FTShare REST underlying provider unconfirmed. The semantic match is not sufficient to establish an independent cross-source mapping; authoritative provider-lineage evidence is required before adjudication.",
+          "reviewed_at": "2026-10-26T21:43:26+08:00",
+          "reviewer": "Codex"
+        }
+      ],
+      "identity": {
+        "evidence": {
+          "anchor_basis": "official_contract",
+          "daily_informative_hit_counts": {
+            "T:20261020": 20,
+            "T:20261023": 20,
+            "T:20261026": 19
+          },
+          "daily_informative_sample_counts": {
+            "T:20261020": 20,
+            "T:20261023": 20,
+            "T:20261026": 19
+          },
+          "daily_sample_counts": {
+            "T:20261020": 20,
+            "T:20261023": 20,
+            "T:20261026": 19
+          },
+          "days_ge_threshold": 3,
+          "distinct_days": [
+            "T:20261020",
+            "T:20261023",
+            "T:20261026"
+          ],
+          "evidence_sources": [],
+          "excluded_intraday_pairs": 0,
+          "excluded_unknown_phase_pairs": 0,
+          "left": "axdata.data.open_price",
+          "level": "L1-C",
+          "n_days": 3,
+          "n_informative_pairs": 59,
+          "n_pairs": 59,
+          "overall_hit": 1.0,
+          "ratio": null,
+          "right": "ftshare_rest.open",
+          "same_code": false,
+          "source_independence_confirmed": false,
+          "statistical_level": "L1"
+        },
+        "kind": "l1_contract_candidate",
+        "method_version": "collision-candidate-v1",
+        "schema_version": 1
+      }
+    },
+    "cc1_f14125b40e33a07076a70d237966fc7aea31392c7934248d644bce3e6da422d3": {
+      "current": {
+        "candidate_id": "cc1_f14125b40e33a07076a70d237966fc7aea31392c7934248d644bce3e6da422d3",
+        "disposition": "needs_external_evidence",
+        "duplicate_of": null,
+        "event_id": "a8ffce34eb5c99eb22933eb1b7ab2bc755354267c8f9fa4577d56f78ca91046e",
+        "evidence_refs": [
+          {
+            "path": "20261026/20261026_collision_report.json",
+            "sha256": "5eec07d78ed77d417f83080081b5ab19c019564bd5421196efb0149f8bb13108"
+          },
+          {
+            "path": "ADJUDICATION_WORKFLOW.md",
+            "sha256": "9316c75a7ffdc03dc8c0e1e118bd6f5dd6b3f86e80caf668b250525ca2675bca"
+          },
+          {
+            "path": "source_lineage.json",
+            "sha256": "fe4c778266604de73c79e169be707c1e065d7c7c27f22b776744e1460bf433bf"
+          }
+        ],
+        "rationale": "The report proposes zhb.full.change_pct ≈ 100.00112 × (fuyao.snapshot.price_change ÷ tencent[4]) + -0.00043616683 and records R2=1.0 on 12 validation samples across 3 stocks. This remains a statistical lead: the formula candidate is candidate_only, and the target zhb.full.change_pct already has a registered L1 mapping that was revalidated in this report. It is therefore not a new field identity to promote. A derived_relation decision still requires a reviewed, date-aligned CSV replay, verified exact input identities and units, confirmed source-family independence, and a fixed-version authoritative formula definition/reference. Those adjudication artifacts are not present, so no registry change is justified.",
+        "reviewed_at": "2026-10-26T22:40:43+08:00",
+        "reviewer": "Codex"
+      },
+      "history": [
+        {
+          "candidate_id": "cc1_f14125b40e33a07076a70d237966fc7aea31392c7934248d644bce3e6da422d3",
+          "disposition": "needs_external_evidence",
+          "duplicate_of": null,
+          "event_id": "a8ffce34eb5c99eb22933eb1b7ab2bc755354267c8f9fa4577d56f78ca91046e",
+          "evidence_refs": [
+            {
+              "path": "20261026/20261026_collision_report.json",
+              "sha256": "5eec07d78ed77d417f83080081b5ab19c019564bd5421196efb0149f8bb13108"
+            },
+            {
+              "path": "ADJUDICATION_WORKFLOW.md",
+              "sha256": "9316c75a7ffdc03dc8c0e1e118bd6f5dd6b3f86e80caf668b250525ca2675bca"
+            },
+            {
+              "path": "source_lineage.json",
+              "sha256": "fe4c778266604de73c79e169be707c1e065d7c7c27f22b776744e1460bf433bf"
+            }
+          ],
+          "rationale": "The report proposes zhb.full.change_pct ≈ 100.00112 × (fuyao.snapshot.price_change ÷ tencent[4]) + -0.00043616683 and records R2=1.0 on 12 validation samples across 3 stocks. This remains a statistical lead: the formula candidate is candidate_only, and the target zhb.full.change_pct already has a registered L1 mapping that was revalidated in this report. It is therefore not a new field identity to promote. A derived_relation decision still requires a reviewed, date-aligned CSV replay, verified exact input identities and units, confirmed source-family independence, and a fixed-version authoritative formula definition/reference. Those adjudication artifacts are not present, so no registry change is justified.",
+          "reviewed_at": "2026-10-26T22:40:43+08:00",
+          "reviewer": "Codex"
+        }
+      ],
+      "identity": {
+        "evidence": {
+          "adjudication_status": "candidate_only",
+          "best_single_input_r2": -0.032208,
+          "evidence_sources": [
+            "fuyao",
+            "tencent",
+            "zhb"
+          ],
+          "formula": "zhb.full.change_pct ≈ 100.00112 × (fuyao.snapshot.price_change ÷ tencent[4]) + -0.00043616683",
+          "improvement_over_single_input": 1.032207,
+          "left": "zhb.full.change_pct",
+          "normalized_rmse": 0.000681,
+          "operator": "ratio_left_right",
+          "right_inputs": [
+            "fuyao.snapshot.price_change",
+            "tencent[4]"
+          ],
+          "training_samples": 68,
+          "validation_dates": [
+            "T:20261016",
+            "T:20261019",
+            "T:20261020",
+            "T:20261023"
+          ],
+          "validation_r2": 1.0,
+          "validation_samples": 12,
+          "validation_stocks": 3
+        },
+        "kind": "formula_candidate",
+        "method_version": "collision-candidate-v1",
+        "schema_version": 1
+      }
+    },
+    "cc1_f60909a8ac93680e380e1fa82421a466668c5e4f00e1994ae36ada0215779b29": {
+      "current": {
+        "candidate_id": "cc1_f60909a8ac93680e380e1fa82421a466668c5e4f00e1994ae36ada0215779b29",
+        "disposition": "needs_external_evidence",
+        "duplicate_of": null,
+        "event_id": "10ae5287756a6c7c9f943dfe66c5b7eddc44e4e3e46c4bc950baef4383613fce",
+        "evidence_refs": [
+          {
+            "path": "20261029/20261029_collision_report.json",
+            "sha256": "0e71f529f68b9fe99f93dcf1b043d93d785eb1082da655a3cfafa407ae8e29b6"
+          },
+          {
+            "path": "derived_evidence/20261029_cross_source_replay.csv",
+            "sha256": "4f6f1a295c29cefd8d0764693ad21700fc202835752afda85c08f61005262788"
+          },
+          {
+            "path": "adjudications/20261029_research_adjudication.md",
+            "sha256": "cf26ee9a5c53c1d5548071c94c19c8552aee014ef5ad6ff1b7b765326e3d10bd"
+          },
+          {
+            "path": "field_registry.json",
+            "sha256": "3254b3d01218b552fb3d155682a9e4209cabb5e554aa32b07c422ae0d40b3114"
+          },
+          {
+            "path": "source_lineage.json",
+            "sha256": "fe4c778266604de73c79e169be707c1e065d7c7c27f22b776744e1460bf433bf"
+          },
+          {
+            "path": "ADJUDICATION_WORKFLOW.md",
+            "sha256": "9316c75a7ffdc03dc8c0e1e118bd6f5dd6b3f86e80caf668b250525ca2675bca"
+          },
+          {
+            "path": "https://market.ft.tech/gateway/doc/p/mdsj0xyo",
+            "sha256": null
+          },
+          {
+            "path": "https://github.com/FTShare-Lab/FTShare-MCP/blob/main/README_EN.md",
+            "sha256": null
+          },
+          {
+            "path": "https://pypi.org/project/axdata/0.1.4/",
+            "sha256": null
+          },
+          {
+            "path": "https://github.com/electkismet/eltdx/blob/main/docs/FIELD_REFERENCE.md",
+            "sha256": null
+          },
+          {
+            "path": "https://github.com/electkismet/eltdx/blob/main/docs/methods/7709-%E6%89%B9%E9%87%8F%E5%BF%AB%E7%85%A7.md",
+            "sha256": null
+          }
+        ],
+        "rationale": "本研究将字段语义等价裁定为确认：FTShare 官方契约定义 float_a_shares 为 A 股流通股本；正式 L1-C 样本 99/99 在碰撞容差内，扩展回放最大相对差 7.56e-7。AxData float_shares 与 ELTDX shortline.float_shares 在 99 条上精确相等；FTShare 与腾讯数组位置 [72]/[76] 在 120 条上均不超过 1 股差异。精确有效日期不明，因此不能把它们说成严格同一时点值；也不能证明 FTShare 上游独立性。needs_external_evidence 在此仅表示尚无当前流程可用的正式映射资格，不表示字段语义未定。",
+        "reviewed_at": "2026-10-29T23:25:09+08:00",
+        "reviewer": "Codex"
+      },
+      "history": [
+        {
+          "candidate_id": "cc1_f60909a8ac93680e380e1fa82421a466668c5e4f00e1994ae36ada0215779b29",
+          "disposition": "needs_external_evidence",
+          "duplicate_of": null,
+          "event_id": "1d48445ea43c43af2b6ef4602ac8e075a9f19cea0ba15ea466362f8124d7e60b",
+          "evidence_refs": [
+            {
+              "path": "20261029/20261029_collision_report.json",
+              "sha256": "088f177fffa5f7a3d1d8da5faeb185fe4a996d993d7917ce3f7b6563b1b508f0"
+            },
+            {
+              "path": "source_lineage.json",
+              "sha256": "fe4c778266604de73c79e169be707c1e065d7c7c27f22b776744e1460bf433bf"
+            }
+          ],
+          "rationale": "The complete 20261029 report records 99 informative pairs across five trading days with 100% agreement, but classifies this as L1-C, has source_independence_confirmed=false, and provides no independent evidence_sources. source_lineage.json leaves the AxData provider lineage and FTShare REST underlying provider unconfirmed. Numerical agreement does not establish independent cross-source identity; authoritative provider-lineage evidence is required before adjudication.",
+          "reviewed_at": "2026-10-29T21:20:20+08:00",
+          "reviewer": "Codex"
+        },
+        {
+          "candidate_id": "cc1_f60909a8ac93680e380e1fa82421a466668c5e4f00e1994ae36ada0215779b29",
+          "disposition": "needs_external_evidence",
+          "duplicate_of": null,
+          "event_id": "10ae5287756a6c7c9f943dfe66c5b7eddc44e4e3e46c4bc950baef4383613fce",
+          "evidence_refs": [
+            {
+              "path": "20261029/20261029_collision_report.json",
+              "sha256": "0e71f529f68b9fe99f93dcf1b043d93d785eb1082da655a3cfafa407ae8e29b6"
+            },
+            {
+              "path": "derived_evidence/20261029_cross_source_replay.csv",
+              "sha256": "4f6f1a295c29cefd8d0764693ad21700fc202835752afda85c08f61005262788"
+            },
+            {
+              "path": "adjudications/20261029_research_adjudication.md",
+              "sha256": "cf26ee9a5c53c1d5548071c94c19c8552aee014ef5ad6ff1b7b765326e3d10bd"
+            },
+            {
+              "path": "field_registry.json",
+              "sha256": "3254b3d01218b552fb3d155682a9e4209cabb5e554aa32b07c422ae0d40b3114"
+            },
+            {
+              "path": "source_lineage.json",
+              "sha256": "fe4c778266604de73c79e169be707c1e065d7c7c27f22b776744e1460bf433bf"
+            },
+            {
+              "path": "ADJUDICATION_WORKFLOW.md",
+              "sha256": "9316c75a7ffdc03dc8c0e1e118bd6f5dd6b3f86e80caf668b250525ca2675bca"
+            },
+            {
+              "path": "https://market.ft.tech/gateway/doc/p/mdsj0xyo",
+              "sha256": null
+            },
+            {
+              "path": "https://github.com/FTShare-Lab/FTShare-MCP/blob/main/README_EN.md",
+              "sha256": null
+            },
+            {
+              "path": "https://pypi.org/project/axdata/0.1.4/",
+              "sha256": null
+            },
+            {
+              "path": "https://github.com/electkismet/eltdx/blob/main/docs/FIELD_REFERENCE.md",
+              "sha256": null
+            },
+            {
+              "path": "https://github.com/electkismet/eltdx/blob/main/docs/methods/7709-%E6%89%B9%E9%87%8F%E5%BF%AB%E7%85%A7.md",
+              "sha256": null
+            }
+          ],
+          "rationale": "本研究将字段语义等价裁定为确认：FTShare 官方契约定义 float_a_shares 为 A 股流通股本；正式 L1-C 样本 99/99 在碰撞容差内，扩展回放最大相对差 7.56e-7。AxData float_shares 与 ELTDX shortline.float_shares 在 99 条上精确相等；FTShare 与腾讯数组位置 [72]/[76] 在 120 条上均不超过 1 股差异。精确有效日期不明，因此不能把它们说成严格同一时点值；也不能证明 FTShare 上游独立性。needs_external_evidence 在此仅表示尚无当前流程可用的正式映射资格，不表示字段语义未定。",
+          "reviewed_at": "2026-10-29T23:25:09+08:00",
+          "reviewer": "Codex"
+        }
+      ],
+      "identity": {
+        "evidence": {
+          "anchor_basis": "official_contract",
+          "daily_informative_hit_counts": {
+            "T:20261020": 20,
+            "T:20261023": 20,
+            "T:20261026": 19,
+            "T:20261028": 20,
+            "T:20261029": 20
+          },
+          "daily_informative_sample_counts": {
+            "T:20261020": 20,
+            "T:20261023": 20,
+            "T:20261026": 19,
+            "T:20261028": 20,
+            "T:20261029": 20
+          },
+          "daily_sample_counts": {
+            "T:20261020": 20,
+            "T:20261023": 20,
+            "T:20261026": 19,
+            "T:20261028": 20,
+            "T:20261029": 20
+          },
+          "days_ge_threshold": 5,
+          "distinct_days": [
+            "T:20261020",
+            "T:20261023",
+            "T:20261026",
+            "T:20261028",
+            "T:20261029"
+          ],
+          "evidence_sources": [],
+          "excluded_intraday_pairs": 0,
+          "excluded_unknown_phase_pairs": 0,
+          "left": "axdata.data.float_shares",
+          "level": "L1-C",
+          "n_days": 5,
+          "n_informative_pairs": 99,
+          "n_pairs": 99,
+          "overall_hit": 1.0,
+          "ratio": null,
+          "right": "ftshare_rest.float_a_shares",
+          "same_code": false,
+          "source_independence_confirmed": false,
+          "statistical_level": "L1"
+        },
+        "kind": "l1_contract_candidate",
+        "method_version": "collision-candidate-v1",
+        "schema_version": 1
+      }
+    },
+    "cc1_fa841c1d13188c9c4f361872ba0e51fdd3fe35f20a024c0e1ba6eb31f22b1796": {
+      "current": {
+        "candidate_id": "cc1_fa841c1d13188c9c4f361872ba0e51fdd3fe35f20a024c0e1ba6eb31f22b1796",
+        "disposition": "needs_external_evidence",
+        "duplicate_of": null,
+        "event_id": "93d4402197d6198c1ceb29b28edec3c6c9c538f2c80ee561e774cefcb20b3402",
+        "evidence_refs": [
+          {
+            "path": "20261026/20261026_collision_report.json",
+            "sha256": "5eec07d78ed77d417f83080081b5ab19c019564bd5421196efb0149f8bb13108"
+          },
+          {
+            "path": "source_lineage.json",
+            "sha256": "fe4c778266604de73c79e169be707c1e065d7c7c27f22b776744e1460bf433bf"
+          }
+        ],
+        "rationale": "The complete collision report shows 59 informative pairs across three trading dates, but classifies this as L1-C with source_independence_confirmed=false and no independent evidence_sources. The source lineage record keeps AxData provider lineage unconfirmed and FTShare REST underlying provider unconfirmed. The semantic match is not sufficient to establish an independent cross-source mapping; authoritative provider-lineage evidence is required before adjudication.",
+        "reviewed_at": "2026-10-26T21:43:26+08:00",
+        "reviewer": "Codex"
+      },
+      "history": [
+        {
+          "candidate_id": "cc1_fa841c1d13188c9c4f361872ba0e51fdd3fe35f20a024c0e1ba6eb31f22b1796",
+          "disposition": "needs_external_evidence",
+          "duplicate_of": null,
+          "event_id": "7192bdb4a2b8ba1976ad9171f5559abcfd0a0fa7032a42ef045edd015918ff28",
+          "evidence_refs": [
+            {
+              "path": "20261026/20261026_collision_report.json",
+              "sha256": "a42eb6f8ff39df4fb226b0a200465c571dd13cb398ca1130aa5b82436283d91f"
+            },
+            {
+              "path": "source_lineage.json",
+              "sha256": "fe4c778266604de73c79e169be707c1e065d7c7c27f22b776744e1460bf433bf"
+            }
+          ],
+          "rationale": "The complete collision report shows 59 informative pairs across three trading dates, but classifies this as L1-C with source_independence_confirmed=false and no independent evidence_sources. The source lineage record keeps AxData provider lineage unconfirmed and FTShare REST underlying provider unconfirmed. The semantic match is not sufficient to establish an independent cross-source mapping; authoritative provider-lineage evidence is required before adjudication.",
+          "reviewed_at": "2026-10-26T21:43:26+08:00",
+          "reviewer": "Codex"
+        },
+        {
+          "candidate_id": "cc1_fa841c1d13188c9c4f361872ba0e51fdd3fe35f20a024c0e1ba6eb31f22b1796",
+          "disposition": "needs_external_evidence",
+          "duplicate_of": null,
+          "event_id": "93d4402197d6198c1ceb29b28edec3c6c9c538f2c80ee561e774cefcb20b3402",
+          "evidence_refs": [
+            {
+              "path": "20261026/20261026_collision_report.json",
+              "sha256": "5eec07d78ed77d417f83080081b5ab19c019564bd5421196efb0149f8bb13108"
+            },
+            {
+              "path": "source_lineage.json",
+              "sha256": "fe4c778266604de73c79e169be707c1e065d7c7c27f22b776744e1460bf433bf"
+            }
+          ],
+          "rationale": "The complete collision report shows 59 informative pairs across three trading dates, but classifies this as L1-C with source_independence_confirmed=false and no independent evidence_sources. The source lineage record keeps AxData provider lineage unconfirmed and FTShare REST underlying provider unconfirmed. The semantic match is not sufficient to establish an independent cross-source mapping; authoritative provider-lineage evidence is required before adjudication.",
+          "reviewed_at": "2026-10-26T21:43:26+08:00",
+          "reviewer": "Codex"
+        }
+      ],
+      "identity": {
+        "evidence": {
+          "anchor_basis": "official_contract",
+          "daily_informative_hit_counts": {
+            "T:20261020": 20,
+            "T:20261023": 20,
+            "T:20261026": 19
+          },
+          "daily_informative_sample_counts": {
+            "T:20261020": 20,
+            "T:20261023": 20,
+            "T:20261026": 19
+          },
+          "daily_sample_counts": {
+            "T:20261020": 20,
+            "T:20261023": 20,
+            "T:20261026": 19
+          },
+          "days_ge_threshold": 3,
+          "distinct_days": [
+            "T:20261020",
+            "T:20261023",
+            "T:20261026"
+          ],
+          "evidence_sources": [],
+          "excluded_intraday_pairs": 0,
+          "excluded_unknown_phase_pairs": 0,
+          "left": "axdata.data.float_shares",
+          "level": "L1-C",
+          "n_days": 3,
+          "n_informative_pairs": 59,
+          "n_pairs": 59,
+          "overall_hit": 1.0,
+          "ratio": null,
+          "right": "ftshare_rest.float_a_shares",
+          "same_code": false,
+          "source_independence_confirmed": false,
+          "statistical_level": "L1"
+        },
+        "kind": "l1_contract_candidate",
+        "method_version": "collision-candidate-v1",
+        "schema_version": 1
+      }
     }
   },
   "schema_version": 1,
-  "updated_at": "2026-10-22T08:14:46+08:00"
+  "updated_at": "2026-10-29T23:25:09+08:00"
 }

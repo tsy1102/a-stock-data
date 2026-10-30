@@ -1,0 +1,100 @@
+{
+  "schema_version": 1,
+  "decisions": [
+    {
+      "schema_version": 1,
+      "candidate_id": "cc1_4614e431acca31efc8d2e510afff12710c9003916a9996bcb8af8cb1fab5ec06",
+      "disposition": "needs_external_evidence",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-10-28T21:00:14+08:00",
+      "rationale": "The complete report records 79 informative pairs across 4 dates with 100% agreement, but classifies the relation as L1-C, sets source_independence_confirmed=false, and has no independent evidence_sources. source_lineage.json still leaves the AxData provider lineage and FTShare REST underlying provider unconfirmed. Numerical agreement does not establish an independent cross-source identity; authoritative provider-lineage evidence is required before adjudication.",
+      "evidence_refs": [
+        "20261028/20261028_collision_report.json",
+        "source_lineage.json"
+      ],
+      "duplicate_of": null
+    },
+    {
+      "schema_version": 1,
+      "candidate_id": "cc1_c958c761e78fffdcee2c4e73d1bbe821082eb1d9cccc7dd55ba7ddc14fb82250",
+      "disposition": "needs_external_evidence",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-10-28T21:00:14+08:00",
+      "rationale": "The complete report records 79 informative pairs across 4 dates with 100% agreement, but classifies the relation as L1-C, sets source_independence_confirmed=false, and has no independent evidence_sources. source_lineage.json still leaves the AxData provider lineage and FTShare REST underlying provider unconfirmed. Numerical agreement does not establish an independent cross-source identity; authoritative provider-lineage evidence is required before adjudication.",
+      "evidence_refs": [
+        "20261028/20261028_collision_report.json",
+        "source_lineage.json"
+      ],
+      "duplicate_of": null
+    },
+    {
+      "schema_version": 1,
+      "candidate_id": "cc1_9695083c1ae031a29df8f4fde08d9343646ef82f78c61f2d2576ffed98a507b2",
+      "disposition": "needs_external_evidence",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-10-28T21:00:14+08:00",
+      "rationale": "The complete report records 79 informative pairs across 4 dates with 100% agreement, but classifies the relation as L1-C, sets source_independence_confirmed=false, and has no independent evidence_sources. source_lineage.json still leaves the AxData provider lineage and FTShare REST underlying provider unconfirmed. Numerical agreement does not establish an independent cross-source identity; authoritative provider-lineage evidence is required before adjudication.",
+      "evidence_refs": [
+        "20261028/20261028_collision_report.json",
+        "source_lineage.json"
+      ],
+      "duplicate_of": null
+    },
+    {
+      "schema_version": 1,
+      "candidate_id": "cc1_2a48fbab25aac547d91de4fcf04eaedba26a466cb26895577b29cd0872bf158d",
+      "disposition": "needs_external_evidence",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-10-28T21:00:14+08:00",
+      "rationale": "The complete report records 79 informative pairs across 4 dates with 100% agreement, but classifies the relation as L1-C, sets source_independence_confirmed=false, and has no independent evidence_sources. source_lineage.json still leaves the AxData provider lineage and FTShare REST underlying provider unconfirmed. Numerical agreement does not establish an independent cross-source identity; authoritative provider-lineage evidence is required before adjudication.",
+      "evidence_refs": [
+        "20261028/20261028_collision_report.json",
+        "source_lineage.json"
+      ],
+      "duplicate_of": null
+    },
+    {
+      "schema_version": 1,
+      "candidate_id": "cc1_3d8928e30f7cfeb8e673ddca9f4ddbfbdcf97e78d85e3e2b1ebf684fb6917eab",
+      "disposition": "needs_external_evidence",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-10-28T21:00:14+08:00",
+      "rationale": "The fitted relation has validation R2=0.99996 on 18 samples across 3 stocks and 6 dates, but the exact Tencent [10] registry identity remains unverified with no canonical meaning or unit. Verified statistical inputs and distinct source families do not explain the target semantics. The generated regression is only a candidate: an authoritative fixed-version formula definition, explicit units, and a date-aligned derived-evidence CSV with tolerance replay are absent. Do not promote this relation without those materials.",
+      "evidence_refs": [
+        "20261028/20261028_collision_report.json",
+        "field_registry.json",
+        "source_lineage.json",
+        "ADJUDICATION_WORKFLOW.md"
+      ],
+      "duplicate_of": null
+    },
+    {
+      "schema_version": 1,
+      "candidate_id": "cc1_6da3ea7f27744613ee69ce216d43ac21cd4537a452c99c2f6dda64331c63309f",
+      "disposition": "needs_external_evidence",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-10-28T21:00:14+08:00",
+      "rationale": "The fitted relation has validation R2=0.999999 on 9 samples across 3 stocks, but its target zhb.full.change_pct already appears in a registered L1 mapping to tencent[32], which this report revalidates. This is not a new field identity. Formula-fit statistics alone do not justify a derived_relation decision; that path requires an authoritative definition and a date-aligned evidence CSV replay with verified units and independence checks. Keep it as a candidate.",
+      "evidence_refs": [
+        "20261028/20261028_collision_report.json",
+        "field_registry.json",
+        "ADJUDICATION_WORKFLOW.md"
+      ],
+      "duplicate_of": null
+    },
+    {
+      "schema_version": 1,
+      "candidate_id": "cc1_b1fdd41ffacf365bd483edeb0defd1aecd3a32a2b56d402ca9827df2f18e0d95",
+      "disposition": "needs_external_evidence",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-10-28T21:00:14+08:00",
+      "rationale": "The fitted relation has validation R2=0.999999 on 9 samples across 3 stocks, but its target zhb.full.change_pct already appears in a registered L1 mapping to tencent[32], which this report revalidates. This is not a new field identity. Formula-fit statistics alone do not justify a derived_relation decision; that path requires an authoritative definition and a date-aligned evidence CSV replay with verified units and independence checks. Keep it as a candidate.",
+      "evidence_refs": [
+        "20261028/20261028_collision_report.json",
+        "field_registry.json",
+        "ADJUDICATION_WORKFLOW.md"
+      ],
+      "duplicate_of": null
+    }
+  ]
+}

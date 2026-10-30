@@ -1,0 +1,110 @@
+{
+  "schema_version": 1,
+  "decisions": [
+    {
+      "schema_version": 1,
+      "candidate_id": "cc1_c339ca78644897840b1b93b3f35c9de0a14654264eb710b1e4324f116bcf7543",
+      "disposition": "needs_external_evidence",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-10-29T23:25:09+08:00",
+      "rationale": "本研究将字段语义等价裁定为确认：公开 FTShare 契约将 symbol 定义为含交易所后缀的证券代码，本地正式 L1-C 样本 99/99 完整标识相同。AxData 当前 stock_shortline_indicators_tdx 路径经锁定的 0.1.4 wheel 路由至 TDX 适配层。但 FTShare 官方仓库不含服务端实现，底层行情提供方仍未公开确认；且 AxData 在 field_registry 中是 framework_reference、没有逐源字段记录。needs_external_evidence 在此仅表示尚无当前流程可用的正式映射资格，不表示字段语义未定。",
+      "evidence_refs": [
+        "20261029/20261029_collision_report.json",
+        "derived_evidence/20261029_cross_source_replay.csv",
+        "adjudications/20261029_research_adjudication.md",
+        "field_registry.json",
+        "source_lineage.json",
+        "ADJUDICATION_WORKFLOW.md",
+        "https://market.ft.tech/gateway/doc/p/mdsj0xyo",
+        "https://github.com/FTShare-Lab/FTShare-MCP/blob/main/README_EN.md",
+        "https://pypi.org/project/axdata/0.1.4/",
+        "https://github.com/electkismet/eltdx/blob/main/docs/FIELD_REFERENCE.md",
+        "https://github.com/electkismet/eltdx/blob/main/docs/methods/7709-%E6%89%B9%E9%87%8F%E5%BF%AB%E7%85%A7.md"
+      ]
+    },
+    {
+      "schema_version": 1,
+      "candidate_id": "cc1_6a4f777d3b439972ec6978c9672e4fc473229e0970144462fc68f4bc44eb293e",
+      "disposition": "needs_external_evidence",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-10-29T23:25:09+08:00",
+      "rationale": "本研究将字段语义等价裁定为确认：FTShare 官方契约定义 open 为开盘价；AxData open_price 对 FTShare open 的正式 L1-C 样本 99/99 精确。扩展本地回放中 FTShare open 与 TDX、ELTDX、新浪、腾讯各 120/120 精确，公开 ELTDX 字段文档也定义 open_price 为今开。FTShare 服务端没有公开实现，底层提供方独立性未确认；AxData 也未作为逐源字段登记。needs_external_evidence 在此仅表示尚无当前流程可用的正式映射资格，不表示字段语义未定。",
+      "evidence_refs": [
+        "20261029/20261029_collision_report.json",
+        "derived_evidence/20261029_cross_source_replay.csv",
+        "adjudications/20261029_research_adjudication.md",
+        "field_registry.json",
+        "source_lineage.json",
+        "ADJUDICATION_WORKFLOW.md",
+        "https://market.ft.tech/gateway/doc/p/mdsj0xyo",
+        "https://github.com/FTShare-Lab/FTShare-MCP/blob/main/README_EN.md",
+        "https://pypi.org/project/axdata/0.1.4/",
+        "https://github.com/electkismet/eltdx/blob/main/docs/FIELD_REFERENCE.md",
+        "https://github.com/electkismet/eltdx/blob/main/docs/methods/7709-%E6%89%B9%E9%87%8F%E5%BF%AB%E7%85%A7.md"
+      ]
+    },
+    {
+      "schema_version": 1,
+      "candidate_id": "cc1_be8a46848561c3da25b85f557549482dc575791b3e81ef9bae0315f5a5ef0c63",
+      "disposition": "needs_external_evidence",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-10-29T23:25:09+08:00",
+      "rationale": "本研究将字段语义等价裁定为确认：FTShare 官方契约定义 prev_close 为前收盘价；AxData pre_close 对 FTShare prev_close 的正式 L1-C 样本 99/99 精确。扩展本地回放中 FTShare prev_close 与 TDX、ELTDX、新浪、腾讯各 120/120 精确，公开 ELTDX 字段文档也定义 pre_close 为昨收。FTShare 服务端没有公开实现，底层提供方独立性未确认；AxData 也未作为逐源字段登记。needs_external_evidence 在此仅表示尚无当前流程可用的正式映射资格，不表示字段语义未定。",
+      "evidence_refs": [
+        "20261029/20261029_collision_report.json",
+        "derived_evidence/20261029_cross_source_replay.csv",
+        "adjudications/20261029_research_adjudication.md",
+        "field_registry.json",
+        "source_lineage.json",
+        "ADJUDICATION_WORKFLOW.md",
+        "https://market.ft.tech/gateway/doc/p/mdsj0xyo",
+        "https://github.com/FTShare-Lab/FTShare-MCP/blob/main/README_EN.md",
+        "https://pypi.org/project/axdata/0.1.4/",
+        "https://github.com/electkismet/eltdx/blob/main/docs/FIELD_REFERENCE.md",
+        "https://github.com/electkismet/eltdx/blob/main/docs/methods/7709-%E6%89%B9%E9%87%8F%E5%BF%AB%E7%85%A7.md"
+      ]
+    },
+    {
+      "schema_version": 1,
+      "candidate_id": "cc1_f60909a8ac93680e380e1fa82421a466668c5e4f00e1994ae36ada0215779b29",
+      "disposition": "needs_external_evidence",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-10-29T23:25:09+08:00",
+      "rationale": "本研究将字段语义等价裁定为确认：FTShare 官方契约定义 float_a_shares 为 A 股流通股本；正式 L1-C 样本 99/99 在碰撞容差内，扩展回放最大相对差 7.56e-7。AxData float_shares 与 ELTDX shortline.float_shares 在 99 条上精确相等；FTShare 与腾讯数组位置 [72]/[76] 在 120 条上均不超过 1 股差异。精确有效日期不明，因此不能把它们说成严格同一时点值；也不能证明 FTShare 上游独立性。needs_external_evidence 在此仅表示尚无当前流程可用的正式映射资格，不表示字段语义未定。",
+      "evidence_refs": [
+        "20261029/20261029_collision_report.json",
+        "derived_evidence/20261029_cross_source_replay.csv",
+        "adjudications/20261029_research_adjudication.md",
+        "field_registry.json",
+        "source_lineage.json",
+        "ADJUDICATION_WORKFLOW.md",
+        "https://market.ft.tech/gateway/doc/p/mdsj0xyo",
+        "https://github.com/FTShare-Lab/FTShare-MCP/blob/main/README_EN.md",
+        "https://pypi.org/project/axdata/0.1.4/",
+        "https://github.com/electkismet/eltdx/blob/main/docs/FIELD_REFERENCE.md",
+        "https://github.com/electkismet/eltdx/blob/main/docs/methods/7709-%E6%89%B9%E9%87%8F%E5%BF%AB%E7%85%A7.md"
+      ]
+    },
+    {
+      "schema_version": 1,
+      "candidate_id": "cc1_100c2e18527e7c42aceda98c01b1e2ddac9f35e44fad97640abee14c30153a75",
+      "disposition": "rejected",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-10-29T23:25:09+08:00",
+      "rationale": "Reject this fitted relation as a generalizable identity: replay over 120 saved observations gives 29/120 within 1% relative error, 103/120 within 5%, median error 2.00% and max error 38.60%. The report's 18-point validation R2=0.999956 does not meet the workflow's 95% / 1% formula standard. In the same rows Tencent [10] equals both TDX bid1_vol and ELTDX buy_levels[0].volume in 120/120 cases; public ELTDX docs define that volume as buy-order quantity in hands. This rejects the fitted formula candidate, not every possible temporal relation; Tencent [10]'s source field remains formally unverified.",
+      "evidence_refs": [
+        "20261029/20261029_collision_report.json",
+        "derived_evidence/20261029_cross_source_replay.csv",
+        "adjudications/20261029_research_adjudication.md",
+        "field_registry.json",
+        "source_lineage.json",
+        "ADJUDICATION_WORKFLOW.md",
+        "https://market.ft.tech/gateway/doc/p/mdsj0xyo",
+        "https://github.com/FTShare-Lab/FTShare-MCP/blob/main/README_EN.md",
+        "https://pypi.org/project/axdata/0.1.4/",
+        "https://github.com/electkismet/eltdx/blob/main/docs/FIELD_REFERENCE.md",
+        "https://github.com/electkismet/eltdx/blob/main/docs/methods/7709-%E6%89%B9%E9%87%8F%E5%BF%AB%E7%85%A7.md"
+      ]
+    }
+  ]
+}

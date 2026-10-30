@@ -1,0 +1,71 @@
+{
+  "schema_version": 1,
+  "decisions": [
+    {
+      "candidate_id": "cc1_c339ca78644897840b1b93b3f35c9de0a14654264eb710b1e4324f116bcf7543",
+      "disposition": "needs_external_evidence",
+      "duplicate_of": null,
+      "evidence_refs": [
+        "20261029/20261029_collision_report.json",
+        "source_lineage.json"
+      ],
+      "rationale": "The complete 20261029 report records 99 informative pairs across five trading days with 100% agreement, but classifies this as L1-C, has source_independence_confirmed=false, and provides no independent evidence_sources. source_lineage.json leaves the AxData provider lineage and FTShare REST underlying provider unconfirmed. Numerical agreement does not establish independent cross-source identity; authoritative provider-lineage evidence is required before adjudication.",
+      "reviewed_at": "2026-10-29T21:20:20+08:00",
+      "reviewer": "Codex",
+      "schema_version": 1
+    },
+    {
+      "candidate_id": "cc1_6a4f777d3b439972ec6978c9672e4fc473229e0970144462fc68f4bc44eb293e",
+      "disposition": "needs_external_evidence",
+      "duplicate_of": null,
+      "evidence_refs": [
+        "20261029/20261029_collision_report.json",
+        "source_lineage.json"
+      ],
+      "rationale": "The complete 20261029 report records 99 informative pairs across five trading days with 100% agreement, but classifies this as L1-C, has source_independence_confirmed=false, and provides no independent evidence_sources. source_lineage.json leaves the AxData provider lineage and FTShare REST underlying provider unconfirmed. Numerical agreement does not establish independent cross-source identity; authoritative provider-lineage evidence is required before adjudication.",
+      "reviewed_at": "2026-10-29T21:20:20+08:00",
+      "reviewer": "Codex",
+      "schema_version": 1
+    },
+    {
+      "candidate_id": "cc1_be8a46848561c3da25b85f557549482dc575791b3e81ef9bae0315f5a5ef0c63",
+      "disposition": "needs_external_evidence",
+      "duplicate_of": null,
+      "evidence_refs": [
+        "20261029/20261029_collision_report.json",
+        "source_lineage.json"
+      ],
+      "rationale": "The complete 20261029 report records 99 informative pairs across five trading days with 100% agreement, but classifies this as L1-C, has source_independence_confirmed=false, and provides no independent evidence_sources. source_lineage.json leaves the AxData provider lineage and FTShare REST underlying provider unconfirmed. Numerical agreement does not establish independent cross-source identity; authoritative provider-lineage evidence is required before adjudication.",
+      "reviewed_at": "2026-10-29T21:20:20+08:00",
+      "reviewer": "Codex",
+      "schema_version": 1
+    },
+    {
+      "candidate_id": "cc1_f60909a8ac93680e380e1fa82421a466668c5e4f00e1994ae36ada0215779b29",
+      "disposition": "needs_external_evidence",
+      "duplicate_of": null,
+      "evidence_refs": [
+        "20261029/20261029_collision_report.json",
+        "source_lineage.json"
+      ],
+      "rationale": "The complete 20261029 report records 99 informative pairs across five trading days with 100% agreement, but classifies this as L1-C, has source_independence_confirmed=false, and provides no independent evidence_sources. source_lineage.json leaves the AxData provider lineage and FTShare REST underlying provider unconfirmed. Numerical agreement does not establish independent cross-source identity; authoritative provider-lineage evidence is required before adjudication.",
+      "reviewed_at": "2026-10-29T21:20:20+08:00",
+      "reviewer": "Codex",
+      "schema_version": 1
+    },
+    {
+      "candidate_id": "cc1_100c2e18527e7c42aceda98c01b1e2ddac9f35e44fad97640abee14c30153a75",
+      "disposition": "needs_external_evidence",
+      "duplicate_of": null,
+      "evidence_refs": [
+        "20261029/20261029_collision_report.json",
+        "field_registry.json",
+        "ADJUDICATION_WORKFLOW.md"
+      ],
+      "rationale": "The fitted relation is a candidate only (validation R2=0.999956 on 18 samples across three stocks), while the exact Tencent [10] registry identity remains unverified with no canonical meaning or unit. Fit quality does not establish the target semantics. Adjudication requires an authoritative fixed-version formula definition, explicit units, and a date-aligned derived-evidence CSV with tolerance replay. Do not promote this relation without those materials.",
+      "reviewed_at": "2026-10-29T21:20:20+08:00",
+      "reviewer": "Codex",
+      "schema_version": 1
+    }
+  ]
+}

@@ -20359,6 +20359,27 @@
       ]
     },
     {
+      "code": "first_seal_time",
+      "source": "同花顺-fuyao",
+      "sources": [
+        "同花顺-fuyao"
+      ],
+      "section": "",
+      "canonical": "",
+      "meaning": "",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified",
+      "source_statuses": {
+        "同花顺-fuyao": "unverified"
+      },
+      "aggregation_status": "incomplete",
+      "aggregation_issues": [
+        "canonical_incomplete",
+        "meaning_incomplete"
+      ]
+    },
+    {
       "code": "first_zt_time",
       "source": "Levistock历史未归属",
       "sources": [
@@ -23549,6 +23570,27 @@
       "source_statuses": {
         "Levistock历史未归属": "unverified",
         "开盘啦(kpl)": "unverified"
+      },
+      "aggregation_status": "incomplete",
+      "aggregation_issues": [
+        "canonical_incomplete",
+        "meaning_incomplete"
+      ]
+    },
+    {
+      "code": "last_seal_time",
+      "source": "同花顺-fuyao",
+      "sources": [
+        "同花顺-fuyao"
+      ],
+      "section": "",
+      "canonical": "",
+      "meaning": "",
+      "unit": "",
+      "status_raw": "",
+      "status": "unverified",
+      "source_statuses": {
+        "同花顺-fuyao": "unverified"
       },
       "aggregation_status": "incomplete",
       "aggregation_issues": [
@@ -150442,6 +150484,44 @@
     },
     {
       "source": "同花顺-fuyao",
+      "code": "first_seal_time",
+      "identity": "同花顺-fuyao::first_seal_time",
+      "path": "first_seal_time",
+      "canonical": "",
+      "meaning": "",
+      "unit": "",
+      "section": "",
+      "sections": [],
+      "status": "unverified",
+      "status_resolution": "registry_status_only_single_source",
+      "status_evidence": {
+        "reference_statuses": [],
+        "reference_status_raw": [],
+        "registry_aggregate_status": "unverified",
+        "registry_aggregate_sources": [
+          "同花顺-fuyao"
+        ],
+        "values": [
+          "unverified"
+        ]
+      },
+      "reference_evidence": [],
+      "attribute_conflicts": {},
+      "registry_aggregate": {
+        "code": "first_seal_time",
+        "sources": [
+          "同花顺-fuyao"
+        ],
+        "status": "unverified",
+        "status_raw": "",
+        "canonical": "",
+        "meaning": "",
+        "unit": "",
+        "section": ""
+      }
+    },
+    {
+      "source": "同花顺-fuyao",
       "code": "fiscal_period",
       "identity": "同花顺-fuyao::fiscal_period",
       "path": "fiscal_period",
@@ -153292,6 +153372,44 @@
         "meaning": "",
         "unit": "",
         "section": "12.13.10 eltdx Helpers 净新增字段破解（V17.2.15 实测，collect_eltdx 采集 + 黄金锚对撞）"
+      }
+    },
+    {
+      "source": "同花顺-fuyao",
+      "code": "last_seal_time",
+      "identity": "同花顺-fuyao::last_seal_time",
+      "path": "last_seal_time",
+      "canonical": "",
+      "meaning": "",
+      "unit": "",
+      "section": "",
+      "sections": [],
+      "status": "unverified",
+      "status_resolution": "registry_status_only_single_source",
+      "status_evidence": {
+        "reference_statuses": [],
+        "reference_status_raw": [],
+        "registry_aggregate_status": "unverified",
+        "registry_aggregate_sources": [
+          "同花顺-fuyao"
+        ],
+        "values": [
+          "unverified"
+        ]
+      },
+      "reference_evidence": [],
+      "attribute_conflicts": {},
+      "registry_aggregate": {
+        "code": "last_seal_time",
+        "sources": [
+          "同花顺-fuyao"
+        ],
+        "status": "unverified",
+        "status_raw": "",
+        "canonical": "",
+        "meaning": "",
+        "unit": "",
+        "section": ""
       }
     },
     {

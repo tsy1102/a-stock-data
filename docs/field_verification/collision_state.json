@@ -8752,20 +8752,19 @@
       "level": "L1",
       "ratio": null,
       "overall_hit": 1.0,
-      "n_days": 4,
-      "n_pairs": 80,
+      "n_days": 3,
+      "n_pairs": 60,
       "sample_dates": [
-        "T:20261016",
-        "T:20261019",
         "T:20261020",
-        "T:20261023"
+        "T:20261023",
+        "T:20261028"
       ],
       "evidence_sources": [
         "tdx",
         "tencent"
       ],
       "hub_flag": false,
-      "last_seen": "20261023",
+      "last_seen": "20261029",
       "in_registry": true,
       "first_seen": "20261005",
       "status": "confirmed"
@@ -10308,20 +10307,19 @@
       "level": "L1",
       "ratio": null,
       "overall_hit": 0.95,
-      "n_days": 4,
-      "n_pairs": 80,
+      "n_days": 3,
+      "n_pairs": 60,
       "sample_dates": [
-        "T:20261016",
-        "T:20261019",
         "T:20261020",
-        "T:20261023"
+        "T:20261023",
+        "T:20261028"
       ],
       "evidence_sources": [
         "tdx",
         "tencent"
       ],
       "hub_flag": false,
-      "last_seen": "20261023",
+      "last_seen": "20261029",
       "in_registry": true,
       "first_seen": "20261008",
       "status": "confirmed"
@@ -22640,5 +22638,5 @@
     }
   },
   "legacy_state_version": 1,
-  "updated": "20261023"
+  "updated": "20261029"
 }

@@ -771,11 +771,11 @@ def cninfo_irm(code: str, page_size: int = 30, page_num: int = 1) -> List[Dict[s
     from datetime import datetime
     import requests
 
-    # V16.2.3: 巨潮互动易无统一入口（交易所直连），加进程级礼貌限速（每次调用 2 个请求）
+    # 巨潮互动易无统一入口（交易所直连）；两步请求均按 CNINFO 来源组跨进程限速。
     try:
-        from stock_common.sc_network import _gen_wait_process_interval
+        from stock_common.sc_network import _source_rate_limit_wait
 
-        _gen_wait_process_interval()
+        _source_rate_limit_wait("https://irm.cninfo.com.cn/newircs/index/queryKeyboardInfo")
         # V16.3 O14: 巨潮互动易强制直连（忽略系统代理——GD 外全部直连）
         _no_proxy = {"http": None, "https": None}
         r1 = requests.post(
@@ -814,6 +814,7 @@ def cninfo_irm(code: str, page_size: int = 30, page_num: int = 1) -> List[Dict[s
             "startDay": "",
             "endDay": "",
         }
+        _source_rate_limit_wait("https://irm.cninfo.com.cn/newircs/company/question")
         r2 = requests.post(
             "https://irm.cninfo.com.cn/newircs/company/question",
             params=params,

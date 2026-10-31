@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
-"""main.py — 统一 CLI 入口（脚本内 asyncio 并发 + 进程级串行防封）
+"""main.py — 统一 CLI 入口（脚本内并发 + 按缓存和上传边界调度子进程）
 
-并发策略（两层次序，确保东财接口不被封）：
-  1) 进程级：asyncio.create_subprocess_exec 串行运行脚本（concurrency=1）
-  2) 脚本级：每个脚本内部用 Semaphore(3) 并发 3 只股票
-             (stock_common.py 的 Semaphore(3) + 1.1s 间隔统一控制)
+并发策略：
+  1) 上传 Google Drive 时子进程串行，避免并行刷新 OAuth 凭据或竞争创建目录。
+  2) --no-upload 时最多并发 2 个单股报告；VAL/MAK 与首个单股缓存预热任务仍串行。
+  3) 脚本级保留每个脚本内部 Semaphore(3) 的股票并发；HTTP 来源组、Eastmoney 风控组
+     与 TDX TCP 分别使用跨进程时隙，防止子进程冷缓存时叠加请求。
 
 V15.0 更新：
   - 接入 CanonicalStockData 标准化强类型数据合约
@@ -187,7 +188,7 @@ def check_dependencies():
 
 
 # 程序启动前检查依赖
-_MAX_CONCURRENCY = 1  # 关键：脚本内部已用 Semaphore(3) 并发 3 只股票，进程级串行脚本避免叠加
+_MAX_CONCURRENCY = 2  # 跨进程源组限流后，单股报告最多并发 2 个子进程
 
 
 def parse_args():
@@ -206,7 +207,8 @@ def parse_args():
   python main.py --ful 600519           只跑全维度分析
   python main.py --val --no-upload        只跑全市场选股，不上传 GD
   python main.py --mak                    只跑异动扫描（不需要股票代码）
-  python main.py --concurrency 3         自定义并发数（默认 1，不推荐超过 2，避免请求叠加风险）
+  python main.py --sht 600519 --med 600519 --lng 600519 --no-upload --concurrency 2
+      两个单股报告进程并发（VAL/MAK 与首个缓存预热脚本仍串行）
 
   混合模式优势：每个脚本类型可以批量处理更多股票，提高并发效率
 """,
@@ -239,7 +241,7 @@ def parse_args():
         "--concurrency",
         type=int,
         default=_MAX_CONCURRENCY,
-        help="最大并发脚本数（默认 1，不推荐超过 3）",
+        help="最大并发脚本数（默认 2；启用 GD 上传时自动限制为 1；最大 2）",
     )
     return parser.parse_args()
 
@@ -377,6 +379,29 @@ def _all_tasks_succeeded(results_raw: list, expected_count: int) -> bool:
     return all(not isinstance(item, BaseException) and item[1] == 0 for item in results_raw)
 
 
+def _effective_concurrency(requested: int, no_upload: bool) -> int:
+    """Allow modest report parallelism only when Google Drive calls are disabled."""
+    bounded = min(max(int(requested), 1), _MAX_CONCURRENCY)
+    return bounded if no_upload else 1
+
+
+def _plan_task_batches(tasks_info: list, concurrency: int) -> list[list]:
+    """Keep market scans and the first quote-cache warmup serial, then batch stock reports."""
+    concurrency = min(max(int(concurrency), 1), _MAX_CONCURRENCY)
+    market_scripts = {"get_val_report.py", "get_mak_report.py"}
+    market_tasks = [task for task in tasks_info if task[0] in market_scripts]
+    stock_tasks = [task for task in tasks_info if task[0] not in market_scripts]
+    batches = [[task] for task in market_tasks]
+
+    has_val_warmup = any(task[0] == "get_val_report.py" for task in market_tasks)
+    if stock_tasks and not has_val_warmup:
+        batches.append([stock_tasks.pop(0)])
+
+    for start in range(0, len(stock_tasks), concurrency):
+        batches.append(stock_tasks[start : start + concurrency])
+    return batches
+
+
 async def main_async():
     args = parse_args()
 
@@ -400,12 +425,15 @@ async def main_async():
 
     output_dir = ensure_output_dir(args.output)
     ts = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    conc = min(max(args.concurrency, 1), 5)
+    requested_conc = min(max(args.concurrency, 1), _MAX_CONCURRENCY)
+    conc = _effective_concurrency(requested_conc, args.no_upload)
     print(f"[{ts}] 批量报告启动 | 并发度: {conc} | 输出目录: {output_dir}", flush=True)
     print(
-        f"  GD上传: {'跳过' if args.no_upload else '启用'} | 防封限流: 文件协调 + 1.0s+ 间隔",
+        f"  GD上传: {'跳过' if args.no_upload else '启用'} | HTTP按来源组跨进程限流；东财保留全局与风险组限流",
         flush=True,
     )
+    if not args.no_upload and requested_conc > 1:
+        print("  GD 上传启用，报告子进程并发限制为 1，避免并发刷新凭据或重复创建目录。", flush=True)
     print("-" * 60, flush=True)
 
     # 确定每个脚本的股票代码列表（混合模式：单独指定 + --all合并）
@@ -449,13 +477,12 @@ async def main_async():
         sys.exit(0)
 
     total_t0 = time.time()
-    print(f"▶ 准备运行 {len(tasks_info)} 个报告脚本 (每批最多 {conc} 个并发)", flush=True)
+    task_batches = _plan_task_batches(tasks_info, conc)
+    print(f"▶ 准备运行 {len(tasks_info)} 个报告脚本 (最多 {conc} 个并发进程)", flush=True)
 
-    # 分批：每批最多 conc 个并发，避免瞬间发大量请求
+    # VAL、MAK 和必要的首个单股报告串行预热；其余单股报告按来源共享限流后小批并发。
     results_raw = []
-    for batch_start in range(0, len(tasks_info), conc):
-        batch = tasks_info[batch_start : batch_start + conc]
-        batch_idx = batch_start // conc + 1
+    for batch_idx, batch in enumerate(task_batches, start=1):
         print(
             f"  [第 {batch_idx} 批] 并发运行 {len(batch)} 个脚本: "
             + ", ".join(f"{t[4]}" for t in batch),
@@ -467,8 +494,8 @@ async def main_async():
         results_raw.extend(batch_results)
 
         # 批与批之间留 2s 间隔，降低被封风险
-        if batch_start + conc < len(tasks_info):
-            print(f"  [第 {batch_idx} 批完成] 等待 2s 后启动下一批（降低东财接口压力）", flush=True)
+        if batch_idx < len(task_batches):
+            print(f"  [第 {batch_idx} 批完成] 等待 2s 后启动下一批（避免来源请求突发）", flush=True)
             await asyncio.sleep(2.0)
 
     total_time = time.time() - total_t0
@@ -484,7 +511,7 @@ async def main_async():
     print(f"{'=' * 60}", flush=True)
     print(
         f"[完成] 批量报告总耗时: {total_time:.1f} 秒 "
-        + f"(每批 {conc} 并发，已做三层防封保护：线程锁 + 进程间文件协调 + 时间戳)",
+        + f"(最多 {conc} 并发；HTTP来源组与Eastmoney全局/风险组分别做跨进程限流)",
         flush=True,
     )
     for name, (rc, dt, label, _) in results.items():

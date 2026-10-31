@@ -96,12 +96,17 @@ __all__ = [
     '_em_lock_dir',
     '_em_lock_file',
     '_gen_lock_file',
+    '_tdx_lock_file',
     '_file_lock_acquire',
     '_file_lock_release',
     # 同步请求
     'em_get',
     '_em_wait_process_interval',
     '_gen_wait_process_interval',
+    '_source_rate_limit_policy',
+    '_source_rate_limit_wait',
+    '_source_rate_limit_wait_async',
+    '_tdx_wait_process_interval',
     '_request_with_retry',
     '_quick_request',
     '_do_request',
@@ -296,6 +301,8 @@ except Exception as _e:
     _debug_log(f"sc_network makedirs lock_dir: {_e}")
 _em_lock_file = os.path.join(_em_lock_dir, "em_rate_limit")
 _gen_lock_file = os.path.join(_em_lock_dir, "gen_rate_limit")
+_tdx_lock_file = os.path.join(_em_lock_dir, "tdx_tcp_rate_limit")
+_tdx_state_file = os.path.join(_em_lock_dir, "tdx_tcp_last_request")
 _cls_lock_file = os.path.join(_em_lock_dir, "levistock_cls_rate_limit")
 _kph_lock_file = os.path.join(_em_lock_dir, "levistock_kph_rate_limit")
 _cls_state_file = os.path.join(_em_lock_dir, "levistock_cls_last_request")
@@ -808,6 +815,78 @@ def _provider_interval_wait(lock_file: str, state_file: str, target_interval: fl
     )
 
 
+def _source_rate_group(host: str) -> str:
+    """Normalize HTTP hosts to provider groups that share a conservative quota."""
+    host = host.lower().rstrip(".")
+    if host == "eastmoney.com" or host.endswith(".eastmoney.com"):
+        return "eastmoney"
+    if host == "gtimg.cn" or host.endswith(".gtimg.cn"):
+        return "tencent"
+    if host == "10jqka.com.cn" or host.endswith(".10jqka.com.cn"):
+        return "ths"
+    if host.endswith(("sina.cn", "sina.com.cn")):
+        return "sina"
+    if host == "cninfo.com.cn" or host.endswith(".cninfo.com.cn"):
+        return "cninfo"
+    if host.endswith("cls.cn"):
+        return "cls"
+    if host.endswith("szse.cn"):
+        return "szse"
+    if host.endswith("sse.com.cn"):
+        return "sse"
+    if host.endswith("longhuvip.com"):
+        return "kpl"
+    if host.endswith("aicubes.cn"):
+        return "fuyao"
+    return f"host:{host or 'unknown'}"
+
+
+def _source_rate_limit_policy(domain_or_url: str) -> Tuple[str, float]:
+    """Return the provider group and conservative interval for a non-Eastmoney host."""
+    from urllib.parse import urlparse as _urlparse
+
+    parsed = _urlparse(domain_or_url if "://" in domain_or_url else f"//{domain_or_url}")
+    host = (parsed.hostname or "").lower().rstrip(".")
+    group = _source_rate_group(host)
+    if group == "eastmoney":
+        raise ValueError("Eastmoney requests must use the global and risk-group limiter")
+    if group == "kpl":
+        # sc_kpl documents and enforces a one-second interval across its private API hosts.
+        return group, 1.0
+
+    members = [candidate for candidate in _DOMAIN_LIMITS if _source_rate_group(candidate) == group]
+    if not members:
+        members = [host] if host in _DOMAIN_LIMITS else []
+    intervals = []
+    for member in members:
+        config_item = _DOMAIN_LIMITS[member]
+        sleep_interval = float(config_item.get("sleep_ms", 100)) / 1000.0
+        rps = max(float(config_item.get("rps", 5.0)), 1e-6)
+        intervals.append(max(sleep_interval, 1.0 / rps))
+    return group, max([0.2, *intervals])
+
+
+def _source_rate_limit_wait(domain_or_url: str) -> float:
+    """Atomically reserve a cross-process HTTP slot for one source risk group."""
+    import hashlib as _hashlib
+
+    group, interval = _source_rate_limit_policy(domain_or_url)
+    token = _hashlib.sha256(group.encode("utf-8")).hexdigest()[:20]
+    lock_path = os.path.join(_em_lock_dir, f"http_source_{token}.lock")
+    state_path = os.path.join(_em_lock_dir, f"http_source_{token}.state")
+    return _provider_interval_wait(lock_path, state_path, interval)
+
+
+async def _source_rate_limit_wait_async(domain_or_url: str) -> float:
+    """Run the shared source limiter off the event loop."""
+    return await asyncio.to_thread(_source_rate_limit_wait, domain_or_url)
+
+
+def _tdx_wait_process_interval(target_interval: float) -> float:
+    """Share the existing TDX TCP minimum interval across report processes."""
+    return _provider_interval_wait(_tdx_lock_file, _tdx_state_file, target_interval)
+
+
 def _em_wait_process_interval(domain: Optional[str] = None) -> float:
     """Atomically reserve the Eastmoney global slot and optional risk-group slot."""
     import random as _rand
@@ -984,12 +1063,13 @@ def _quick_request(
     error_out: Optional[Dict[str, Any]] = None,
     stream: bool = False,
 ) -> Optional[requests.Response]:  # V16.2: 默认校验证书
-    """通用 HTTP 请求（按域名独立限流）。
+    """通用 HTTP 请求（按域名进程内限流，并按来源组跨进程限流）。
 
     V7.5 优化版：按域名独立控制并发和 sleep，不再使用全局 Semaphore。
     V8.5 新增：添加随机抖动防止被限流。
     V9.0 新增：线程锁保护 + 限流统计。
-    V16.2 新增：eastmoney 域接入 TokenBucket + CircuitBreaker + 跨进程文件锁（消除限流旁路）。
+    V16.2 新增：eastmoney 域接入 TokenBucket + CircuitBreaker + 全局/风险组跨进程锁。
+    V17.3: 其它来源也按 provider group 原子共享时隙，避免并发报告进程同时冷缓存突发。
 
     ``max_retries`` 是总尝试次数（含首次请求）；连接/超时类异常和 HTTP 408/5xx
     使用有界退避，HTTP 403/429 不重试。
@@ -1252,6 +1332,8 @@ def _do_request(
                     _EM_LAST_CALL[0] = time.time()
                     _RL_STATS["em_request_count"] += 1
                 _em_wait_process_interval(domain)
+            else:
+                _source_rate_limit_wait(domain)
             _req_headers = headers.copy() if headers else {}
             if not _req_headers.get("User-Agent"):
                 if _HAS_FAULT_TOLERANCE:
@@ -1684,7 +1766,7 @@ async def _async_quick_request(
     V11.5 新增: 熔断器模式 + 随机UA/Referer + 指数退避
     V17.0 S2: 按域名分流 EM/GEN——EM 域(原 _async_request_with_retry 语义): 封禁跳过 +
     EM 锁 + 全局及风险组跨进程时隙 + Referer 注入;
-    GEN 域: 0.2s 间隔 + GEN 跨进程节奏。
+    GEN 域: 使用 _DOMAIN_LIMITS 的速率并按来源组跨进程共享时隙。
 
     Args:
         max_retries: 总尝试次数（含首次请求）；传输异常和 HTTP 408/5xx 有界重试。
@@ -1714,7 +1796,7 @@ async def _async_quick_request(
     _ensure_async_locks()
     # V17.0 S2: 按域名分流 EM/GEN——EM 域(原 _async_request_with_retry 语义):
     #   封禁跳过 + EM 锁 + 全局及风险组跨进程时隙;
-    #   GEN 域: 0.2s 间隔 + GEN 跨进程节奏。
+    #   GEN 域: 进程内保留 0.2s 总节奏，跨进程由来源组时隙控制。
     is_em = "eastmoney.com" in domain
     import random as _rand
     import json as _json
@@ -1736,7 +1818,7 @@ async def _async_quick_request(
             if _gen_async_last_request > 0 and now - _gen_async_last_request < interval:
                 await asyncio.sleep(interval - (now - _gen_async_last_request))
             _gen_async_last_request = time.time()
-            await _gen_wait_process_interval_async()
+            await _source_rate_limit_wait_async(domain)
 
     if is_em:
         # V16.2.8: 封禁跳过期直接返回 None（参考仓库 PR#36：不浪费请求、不加重封禁）
@@ -1769,7 +1851,7 @@ async def _async_quick_request(
         if is_em:
             await _em_wait_process_interval_async(domain)
         else:
-            await _gen_wait_process_interval_async()
+            await _source_rate_limit_wait_async(domain)
 
         _req_headers = headers.copy() if headers else {}
         if not _req_headers.get("User-Agent"):

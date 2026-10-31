@@ -1268,7 +1268,7 @@ def cached(
 # ═══════════════════════════════════════
 # V17.3.12: 批量行情跨进程共享缓存（val 预热 → 其余 4 脚本零网络复用）
 # ═══════════════════════════════════════
-# V17.3.13: 跨进程共享 TTL 由 15min 提至 60min。原因：5 脚本串行(val→mak→sht→med→lng)总耗时 30~40min，
+# V17.3.13: 跨进程共享 TTL 由 15min 提至 60min。原因：默认上传模式下 5 脚本串行(val→mak→sht→med→lng)总耗时 30~40min，
 # 旧 15min 窗口使后段脚本(sht/med/lng)在 val 预热落盘后已过期 → 退回逐股网络补取而变慢。60min 覆盖整轮
 # (留 ~20min 余量)且严格硬过期(quote_batch/tencent_batch 不在 _SOFT_EXPIRY_WINDOW，无软过期)——跨交易日/超时重跑仍重联网。
 _QUOTE_BATCH_CACHE_TTL = 60 * 60

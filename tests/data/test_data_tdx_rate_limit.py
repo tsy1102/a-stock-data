@@ -1,25 +1,36 @@
-import pytest
-
 from core import tdx_client
 from stock_common import sc_network
 
 
-def test_tencent_batch_fallback_stops_before_http_when_rate_limit_fails(monkeypatch):
-    monkeypatch.setattr(tdx_client, "_TENCENT_BATCH_CACHE", {})
-    monkeypatch.setattr(tdx_client, "_TENCENT_BATCH_CACHE_DATE", "20990101")
+def test_tencent_http_get_stops_before_network_when_source_limiter_fails(monkeypatch):
+    def fail_rate_limit(*_args, **_kwargs):
+        raise TimeoutError("source limiter unavailable")
 
-    def fail_rate_limit():
-        raise TimeoutError("rate-limit state unavailable")
+    monkeypatch.setattr(sc_network, "_provider_interval_wait", fail_rate_limit)
+    requests = []
+    monkeypatch.setattr(
+        tdx_client.requests,
+        "get",
+        lambda *args, **kwargs: requests.append((args, kwargs)),
+    )
 
+    result = tdx_client._http_get("https://qt.gtimg.cn/q=sh600000")
+
+    assert result is None
+    assert requests == []
+
+
+def test_tdx_tcp_throttle_reserves_cross_process_slot(monkeypatch):
+    intervals = []
+    monkeypatch.setattr(tdx_client, "_last_request_time", 0.0)
+    monkeypatch.setattr(tdx_client, "_TDX_MIN_INTERVAL", 0.1)
     monkeypatch.setattr(
         sc_network,
-        "_gen_wait_process_interval",
-        fail_rate_limit,
+        "_tdx_wait_process_interval",
+        lambda interval: intervals.append(interval) or 0.0,
     )
-    requests = []
-    monkeypatch.setattr(tdx_client, "_http_get", lambda *args, **kwargs: requests.append(args))
 
-    with pytest.raises(TimeoutError, match="rate-limit state unavailable"):
-        tdx_client._tencent_batch_fallback(["600000"], use_l2_cache=False)
+    with tdx_client._TDX_CALL_LOCK:
+        tdx_client._tdx_throttle()
 
-    assert requests == []
+    assert intervals == [0.1]

@@ -1244,10 +1244,10 @@ def dragon_tiger_backup(trade_date: str) -> Dict[str, Any]:
                 "Referer": "https://www.szse.cn/disclosure/supervision/dealinfo/index.html",
             },
         )
-        # V16.3 C1: 备胎源裸 urlopen 补节流（_DOMAIN_LIMITS 的 szse 域 3.0rps 不覆盖此直连路径）
-        from stock_common.sc_network import _gen_wait_process_interval
+        # 备胎源裸 urlopen 也按深交所来源组跨进程限速。
+        from stock_common.sc_network import _source_rate_limit_wait
 
-        _gen_wait_process_interval()
+        _source_rate_limit_wait(su)
         # V16.3 O14: 备胎源强制直连（ProxyHandler({}) 忽略系统代理——GD 外全部直连）
         # V16.3 O22: OpenerDirector.open 不接受 context 关键字（原 TypeError 使备胎源永久失效）——
         # 自定义 SSL context 通过 HTTPSHandler 注入
@@ -1285,10 +1285,10 @@ def dragon_tiger_backup(trade_date: str) -> Dict[str, Any]:
                 "Referer": "https://www.sse.com.cn/disclosure/diclosure/public/",
             },
         )
-        # V16.3 C1: 备胎源裸 urlopen 补节流
-        from stock_common.sc_network import _gen_wait_process_interval
+        # 备胎源裸 urlopen 也按上交所来源组跨进程限速。
+        from stock_common.sc_network import _source_rate_limit_wait
 
-        _gen_wait_process_interval()
+        _source_rate_limit_wait(eu)
         # V16.3 O14: 强制直连（忽略系统代理）
         _opener = urllib.request.build_opener(urllib.request.ProxyHandler({}))
         with _opener.open(req, timeout=15) as r:

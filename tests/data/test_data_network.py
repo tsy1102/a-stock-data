@@ -346,7 +346,7 @@ class TestRateLimitFailureStopsRequests(unittest.TestCase):
 
         with (
             _mock.patch.object(
-                sn, "_gen_wait_process_interval", side_effect=OSError("limiter state unavailable")
+                sn, "_source_rate_limit_wait", side_effect=OSError("limiter state unavailable")
             ),
             _mock.patch("requests.post") as request,
         ):
@@ -362,7 +362,7 @@ class TestRateLimitFailureStopsRequests(unittest.TestCase):
 
         with (
             _mock.patch.object(
-                sn, "_gen_wait_process_interval", side_effect=OSError("limiter state unavailable")
+                sn, "_source_rate_limit_wait", side_effect=OSError("limiter state unavailable")
             ) as wait,
             _mock.patch("urllib.request.build_opener") as build_opener,
         ):

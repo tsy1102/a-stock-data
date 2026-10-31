@@ -89,7 +89,7 @@ _TDX_VERIFIED_CLIENT: Optional[Any] = None
 
 
 def _tdx_throttle():
-    """V8.5: TDX请求节流：确保两次请求间隔 >= _TDX_MIN_INTERVAL
+    """TDX TCP 节流：进程内串行加跨进程最小间隔保护。
 
     必须在 _TDX_CALL_LOCK 内调用。
     """
@@ -98,6 +98,9 @@ def _tdx_throttle():
     elapsed = now - _last_request_time
     if _last_request_time > 0 and elapsed < _TDX_MIN_INTERVAL:
         time.sleep(_TDX_MIN_INTERVAL - elapsed)
+    from stock_common.sc_network import _tdx_wait_process_interval
+
+    _tdx_wait_process_interval(_TDX_MIN_INTERVAL)
     _last_request_time = time.time()
 
 
@@ -216,6 +219,10 @@ def _http_get(
         time.sleep(wait_ms / 1000.0)
 
     try:
+        # Shared source-group gate: multiple report processes can miss the Tencent cache together.
+        from stock_common.sc_network import _source_rate_limit_wait
+
+        _source_rate_limit_wait(url)
         # V9.3.1: 数据获取全部直连，不使用系统代理（代理仅用于GD上传）
         return requests.get(
             url,
@@ -1046,13 +1053,9 @@ def _tencent_batch_fallback(
             pass
     if missing:
         _BATCH = 60  # 腾讯 qt.gtimg.cn 单次 URL 安全上限（经验值 60-80）
-        # A failed import or failed gate must abort before the direct HTTP request.
-        from stock_common.sc_network import _gen_wait_process_interval
-
         for _start in range(0, len(missing), _BATCH):
             _chunk = missing[_start : _start + _BATCH]
             prefixed = [f"{_market_prefix(c)}{c}" for c in _chunk]
-            _gen_wait_process_interval()
             try:
                 r = _http_get("https://qt.gtimg.cn/q=" + ",".join(prefixed), timeout=15)
                 if r is None:

@@ -44,7 +44,7 @@ _throttle_lock = threading.Lock()
 
 
 def _throttle() -> None:
-    """连接级限频（0.6s/请求）。"""
+    """进程内连接级限频（1.0s/请求）。"""
     global _last_request
     with _throttle_lock:
         now = time.time()
@@ -56,6 +56,9 @@ def _throttle() -> None:
 
 def _post(host: str, params: Dict[str, Any]) -> Dict[str, Any]:
     """POST 请求（form 编码 + Dalvik UA）。"""
+    from stock_common.sc_network import _source_rate_limit_wait
+
+    _source_rate_limit_wait(_HOSTS[host])
     _throttle()
     body = urllib.parse.urlencode(params, doseq=True).encode("utf-8")
     req = urllib.request.Request(

@@ -5,7 +5,7 @@
 > 碰撞候选须人工复核后使用 `apply_collision_adjudications.py` 同步状态；流程见 `field_verification/ADJUDICATION_WORKFLOW.md`。
 > 聚合层的同码异义与定义缺口见 [`field_aggregate_review.md`](field_aggregate_review.md)，不代表逐源记录状态冲突。
 
-> 注册字段路径 2552；日常来源路径 2408：unverified 1383、candidate 1、conflict 81、disproved 2；历史来源路径 144。
+> 注册字段路径 2552；日常来源路径 2408：unverified 1381、candidate 1、conflict 81、disproved 2；历史来源路径 144。
 > 另有 182 条虽标 verified、但含义/单位元数据未达到碰撞锚条件；这些记录会重新进入碰撞目标，详见 [字段元数据复核](field_metadata_gaps.md)。
 > 以下两组未验证字段统计是不同维度，不能相加：含义栏文本只表示存在文字，不代表语义正确；状态判定反映旧字典状态证据能否映射到逐源身份。
 
@@ -15,7 +15,7 @@
 
 | 分类 | 数量 |
 |:--|--:|
-| 含义栏为空/占位 | 1199 |
+| 含义栏为空/占位 | 1197 |
 | 含义栏有文本（仍未验证） | 184 |
 
 ### 历史状态证据的解析结果
@@ -26,7 +26,7 @@
 | `live_observed_not_documented` | 1 | 按注册表原始状态判定代码保留 |
 | `matched` | 59 | 历史逐源状态与聚合状态一致，但仍未定案 |
 | `reference_status_missing` | 35 | 按注册表原始状态判定代码保留 |
-| `registry_status_only_single_source` | 792 | 只有来源自身状态，历史聚合信息不足以进一步归属 |
+| `registry_status_only_single_source` | 790 | 只有来源自身状态，历史聚合信息不足以进一步归属 |
 | `status_missing` | 43 | 缺少可用的历史状态记录 |
 
 ## 一、状态冲突（禁止作为锚点，优先复核）（81）
@@ -121,7 +121,7 @@
 |:--|:--|:--|:--|:--|:--|:--|:--|
 | ZHB-tdxstat | `stat.unknown_2` | stat.unknown_2 | 贝塔系数(60日)·L2候选(列[2]已定BetaValue: ihelp.dat L63官方定义+慢变特征实证自相关0.91, 待真实指数基准复现升L1) | - | 含义栏有文本（仍未验证） | matched | 1.1 tdxstat.cfg 标准契约表（stat.*，20260918 对撞定案）🆕 |
 
-## 三、待破解字段（1383）
+## 三、待破解字段（1381）
 
 | 来源 | 完整 code path | 规范名 | 含义 | 单位 | 含义栏提示 | 状态判定 | 证据章节 |
 |:--|:--|:--|:--|:--|:--|:--|:--|
@@ -980,7 +980,6 @@
 | 同花顺-fuyao | `experience` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
 | 同花顺-fuyao | `fin_report` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
 | 同花顺-fuyao | `financials` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | 12.8.12c THS 官方金融数据 REST API（fuyao.aicubes.cn，2026-08-10 实测 7 接口 → V17.0.5 契约全量镜像 62 端点）🆕 |
-| 同花顺-fuyao | `first_seal_time` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
 | 同花顺-fuyao | `fixed_asset_invest_expansion_ratio` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
 | 同花顺-fuyao | `fund` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
 | 同花顺-fuyao | `fund/companies/detail` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
@@ -1007,7 +1006,6 @@
 | 同花顺-fuyao | `indicators` | a-share/financials/indicators | — | — | 含义栏为空/占位 | registry_status_only_single_source | 12.8.12c THS 官方金融数据 REST API（fuyao.aicubes.cn，2026-08-10 实测 7 接口 → V17.0.5 契约全量镜像 62 端点）🆕 |
 | 同花顺-fuyao | `inventory_turnover_ratio` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
 | 同花顺-fuyao | `item` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
-| 同花顺-fuyao | `last_seal_time` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
 | 同花顺-fuyao | `list` | meta/tickers/list | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | 12.8.12c THS 官方金融数据 REST API（fuyao.aicubes.cn，2026-08-10 实测 7 接口 → V17.0.5 契约全量镜像 62 端点）🆕 |
 | 同花顺-fuyao | `long_term_debt_equity_ratio` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
 | 同花顺-fuyao | `low` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |

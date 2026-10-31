@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": 2,
-    "updated": "2026-10-23",
+    "updated": "2026-10-31",
     "source_of_truth": "field_registry.json",
     "generated_by": "manual source-identity reconciliation; see source_identity_reclassifications.json",
     "note": "source_fields 是逐源完整路径权威记录；fields 是兼容聚合视图。Levistock 历史混合身份的 175 条结构化记录已按逐字段映射重分类。历史原文中额外解析到的 56 个 token 不在迁移前的结构化注册表中，继续保留在只读档案，不提升为当前字段记录。状态冲突与历史证据保存在 source_fields。source_field_addenda 只允许有 E3 文件证据且经 parity 校验的增补，不覆盖 field_source_reference.md 历史原文。",
@@ -24,9 +24,9 @@
       "status_conflict": 59,
       "status_missing": 43,
       "unverified": 1501,
-      "verified": 965,
+      "verified": 967,
       "verified_by_empirical_addendum": 13,
-      "verified_by_source_contract": 69
+      "verified_by_source_contract": 71
     }
   },
   "sources": [
@@ -20364,20 +20364,17 @@
       "sources": [
         "同花顺-fuyao"
       ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
+      "section": "source contract: 同花顺 Fuyao 官方 API（Financial-API） · docs/field_verification/adjudications/20261031_fuyao_limit_break_contract_snapshot.md#GET /api/a-share/special-data/limit-break-pool; 炸板股票池 response data.item[].first_seal_time @ official full-contract live snapshot retrieved 2026-10-31",
+      "canonical": "first_seal_time",
+      "meaning": "炸板股票当日首次封板时间，上海时区 HH:mm；上游缺失时为 null。",
+      "unit": "HH:mm",
       "status_raw": "",
-      "status": "unverified",
+      "status": "verified",
       "source_statuses": {
-        "同花顺-fuyao": "unverified"
+        "同花顺-fuyao": "verified"
       },
-      "aggregation_status": "incomplete",
-      "aggregation_issues": [
-        "canonical_incomplete",
-        "meaning_incomplete"
-      ]
+      "aggregation_status": "consistent",
+      "aggregation_issues": []
     },
     {
       "code": "first_zt_time",
@@ -23583,20 +23580,17 @@
       "sources": [
         "同花顺-fuyao"
       ],
-      "section": "",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
+      "section": "source contract: 同花顺 Fuyao 官方 API（Financial-API） · docs/field_verification/adjudications/20261031_fuyao_limit_break_contract_snapshot.md#GET /api/a-share/special-data/limit-break-pool; 炸板股票池 response data.item[].last_seal_time @ official full-contract live snapshot retrieved 2026-10-31",
+      "canonical": "last_seal_time",
+      "meaning": "炸板股票当日最后一次封板时间，上海时区 HH:mm；上游缺失时为 null。",
+      "unit": "HH:mm",
       "status_raw": "",
-      "status": "unverified",
+      "status": "verified",
       "source_statuses": {
-        "同花顺-fuyao": "unverified"
+        "同花顺-fuyao": "verified"
       },
-      "aggregation_status": "incomplete",
-      "aggregation_issues": [
-        "canonical_incomplete",
-        "meaning_incomplete"
-      ]
+      "aggregation_status": "consistent",
+      "aggregation_issues": []
     },
     {
       "code": "last_zt_time",
@@ -150487,13 +150481,15 @@
       "code": "first_seal_time",
       "identity": "同花顺-fuyao::first_seal_time",
       "path": "first_seal_time",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "section": "",
-      "sections": [],
-      "status": "unverified",
-      "status_resolution": "registry_status_only_single_source",
+      "canonical": "first_seal_time",
+      "meaning": "炸板股票当日首次封板时间，上海时区 HH:mm；上游缺失时为 null。",
+      "unit": "HH:mm",
+      "section": "source contract: 同花顺 Fuyao 官方 API（Financial-API） · docs/field_verification/adjudications/20261031_fuyao_limit_break_contract_snapshot.md#GET /api/a-share/special-data/limit-break-pool; 炸板股票池 response data.item[].first_seal_time @ official full-contract live snapshot retrieved 2026-10-31",
+      "sections": [
+        "source contract: 同花顺 Fuyao 官方 API（Financial-API） · docs/field_verification/adjudications/20261031_fuyao_limit_break_contract_snapshot.md#GET /api/a-share/special-data/limit-break-pool; 炸板股票池 response data.item[].first_seal_time @ official full-contract live snapshot retrieved 2026-10-31"
+      ],
+      "status": "verified",
+      "status_resolution": "verified_by_source_contract",
       "status_evidence": {
         "reference_statuses": [],
         "reference_status_raw": [],
@@ -150503,9 +150499,45 @@
         ],
         "values": [
           "unverified"
+        ],
+        "adjudication_ids": [
+          "20261031-fuyao-first_seal_time"
+        ],
+        "source_contract_adjudication_ids": [
+          "20261031-fuyao-first_seal_time"
         ]
       },
-      "reference_evidence": [],
+      "reference_evidence": [
+        {
+          "section": "source contract: 同花顺 Fuyao 官方 API（Financial-API） · docs/field_verification/adjudications/20261031_fuyao_limit_break_contract_snapshot.md#GET /api/a-share/special-data/limit-break-pool; 炸板股票池 response data.item[].first_seal_time @ official full-contract live snapshot retrieved 2026-10-31",
+          "canonical": "first_seal_time",
+          "meaning": "炸板股票当日首次封板时间，上海时区 HH:mm；上游缺失时为 null。",
+          "unit": "HH:mm",
+          "status_raw": "人工核验上游契约 2026-10-31：20261031-fuyao-first_seal_time",
+          "status": "verified",
+          "adjudication_id": "20261031-fuyao-first_seal_time",
+          "evidence_basis": "authoritative_source_contract",
+          "source_contract": {
+            "authority": "同花顺 Fuyao 官方 API（Financial-API）",
+            "revision": "official full-contract live snapshot retrieved 2026-10-31",
+            "path": "docs/field_verification/adjudications/20261031_fuyao_limit_break_contract_snapshot.md",
+            "locator": "GET /api/a-share/special-data/limit-break-pool; 炸板股票池 response data.item[].first_seal_time",
+            "url": "https://fuyao.aicubes.cn/llms-full.txt"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "first_seal_time",
+              "meaning": "炸板股票当日首次封板时间，上海时区 HH:mm；上游缺失时为 null。",
+              "unit": "HH:mm"
+            }
+          }
+        }
+      ],
       "attribute_conflicts": {},
       "registry_aggregate": {
         "code": "first_seal_time",
@@ -150518,7 +150550,43 @@
         "meaning": "",
         "unit": "",
         "section": ""
-      }
+      },
+      "adjudications": [
+        {
+          "id": "20261031-fuyao-first_seal_time",
+          "action": "verify_source_contract",
+          "status": "verified",
+          "reviewer": "Codex source-contract review",
+          "reviewed_on": "2026-10-31",
+          "decision_file": "adjudications/20261031_fuyao_limit_break_times.json",
+          "evidence_basis": "authoritative_source_contract",
+          "previous_status": "unverified",
+          "status_resolution_change": {
+            "before": "registry_status_only_single_source",
+            "after": "verified_by_source_contract"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "first_seal_time",
+              "meaning": "炸板股票当日首次封板时间，上海时区 HH:mm；上游缺失时为 null。",
+              "unit": "HH:mm"
+            }
+          },
+          "rationale": "项目 EP_LIMIT_BREAK_POOL 精确映射官方 /api/a-share/special-data/limit-break-pool；get_fuyao_limit_pool(kind=break) 原样返回 data.item。官方当前契约明确 first_seal_time 的首次封板含义、上海时区 HH:mm 格式及可空性，20261029 与 20261030 原始采集也观察到该路径。本裁决只确认 Fuyao 来源字段，不创建跨源映射。",
+          "source_contract": {
+            "authority": "同花顺 Fuyao 官方 API（Financial-API）",
+            "revision": "official full-contract live snapshot retrieved 2026-10-31",
+            "path": "docs/field_verification/adjudications/20261031_fuyao_limit_break_contract_snapshot.md",
+            "locator": "GET /api/a-share/special-data/limit-break-pool; 炸板股票池 response data.item[].first_seal_time",
+            "url": "https://fuyao.aicubes.cn/llms-full.txt"
+          }
+        }
+      ]
     },
     {
       "source": "同花顺-fuyao",
@@ -153379,13 +153447,15 @@
       "code": "last_seal_time",
       "identity": "同花顺-fuyao::last_seal_time",
       "path": "last_seal_time",
-      "canonical": "",
-      "meaning": "",
-      "unit": "",
-      "section": "",
-      "sections": [],
-      "status": "unverified",
-      "status_resolution": "registry_status_only_single_source",
+      "canonical": "last_seal_time",
+      "meaning": "炸板股票当日最后一次封板时间，上海时区 HH:mm；上游缺失时为 null。",
+      "unit": "HH:mm",
+      "section": "source contract: 同花顺 Fuyao 官方 API（Financial-API） · docs/field_verification/adjudications/20261031_fuyao_limit_break_contract_snapshot.md#GET /api/a-share/special-data/limit-break-pool; 炸板股票池 response data.item[].last_seal_time @ official full-contract live snapshot retrieved 2026-10-31",
+      "sections": [
+        "source contract: 同花顺 Fuyao 官方 API（Financial-API） · docs/field_verification/adjudications/20261031_fuyao_limit_break_contract_snapshot.md#GET /api/a-share/special-data/limit-break-pool; 炸板股票池 response data.item[].last_seal_time @ official full-contract live snapshot retrieved 2026-10-31"
+      ],
+      "status": "verified",
+      "status_resolution": "verified_by_source_contract",
       "status_evidence": {
         "reference_statuses": [],
         "reference_status_raw": [],
@@ -153395,9 +153465,45 @@
         ],
         "values": [
           "unverified"
+        ],
+        "adjudication_ids": [
+          "20261031-fuyao-last_seal_time"
+        ],
+        "source_contract_adjudication_ids": [
+          "20261031-fuyao-last_seal_time"
         ]
       },
-      "reference_evidence": [],
+      "reference_evidence": [
+        {
+          "section": "source contract: 同花顺 Fuyao 官方 API（Financial-API） · docs/field_verification/adjudications/20261031_fuyao_limit_break_contract_snapshot.md#GET /api/a-share/special-data/limit-break-pool; 炸板股票池 response data.item[].last_seal_time @ official full-contract live snapshot retrieved 2026-10-31",
+          "canonical": "last_seal_time",
+          "meaning": "炸板股票当日最后一次封板时间，上海时区 HH:mm；上游缺失时为 null。",
+          "unit": "HH:mm",
+          "status_raw": "人工核验上游契约 2026-10-31：20261031-fuyao-last_seal_time",
+          "status": "verified",
+          "adjudication_id": "20261031-fuyao-last_seal_time",
+          "evidence_basis": "authoritative_source_contract",
+          "source_contract": {
+            "authority": "同花顺 Fuyao 官方 API（Financial-API）",
+            "revision": "official full-contract live snapshot retrieved 2026-10-31",
+            "path": "docs/field_verification/adjudications/20261031_fuyao_limit_break_contract_snapshot.md",
+            "locator": "GET /api/a-share/special-data/limit-break-pool; 炸板股票池 response data.item[].last_seal_time",
+            "url": "https://fuyao.aicubes.cn/llms-full.txt"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "last_seal_time",
+              "meaning": "炸板股票当日最后一次封板时间，上海时区 HH:mm；上游缺失时为 null。",
+              "unit": "HH:mm"
+            }
+          }
+        }
+      ],
       "attribute_conflicts": {},
       "registry_aggregate": {
         "code": "last_seal_time",
@@ -153410,7 +153516,43 @@
         "meaning": "",
         "unit": "",
         "section": ""
-      }
+      },
+      "adjudications": [
+        {
+          "id": "20261031-fuyao-last_seal_time",
+          "action": "verify_source_contract",
+          "status": "verified",
+          "reviewer": "Codex source-contract review",
+          "reviewed_on": "2026-10-31",
+          "decision_file": "adjudications/20261031_fuyao_limit_break_times.json",
+          "evidence_basis": "authoritative_source_contract",
+          "previous_status": "unverified",
+          "status_resolution_change": {
+            "before": "registry_status_only_single_source",
+            "after": "verified_by_source_contract"
+          },
+          "metadata_change": {
+            "before": {
+              "canonical": "",
+              "meaning": "",
+              "unit": ""
+            },
+            "after": {
+              "canonical": "last_seal_time",
+              "meaning": "炸板股票当日最后一次封板时间，上海时区 HH:mm；上游缺失时为 null。",
+              "unit": "HH:mm"
+            }
+          },
+          "rationale": "项目 EP_LIMIT_BREAK_POOL 精确映射官方 /api/a-share/special-data/limit-break-pool；get_fuyao_limit_pool(kind=break) 原样返回 data.item。官方当前契约明确 last_seal_time 的最后封板含义、上海时区 HH:mm 格式及可空性，20261029 与 20261030 原始采集也观察到该路径。本裁决只确认 Fuyao 来源字段，不创建跨源映射。",
+          "source_contract": {
+            "authority": "同花顺 Fuyao 官方 API（Financial-API）",
+            "revision": "official full-contract live snapshot retrieved 2026-10-31",
+            "path": "docs/field_verification/adjudications/20261031_fuyao_limit_break_contract_snapshot.md",
+            "locator": "GET /api/a-share/special-data/limit-break-pool; 炸板股票池 response data.item[].last_seal_time",
+            "url": "https://fuyao.aicubes.cn/llms-full.txt"
+          }
+        }
+      ]
     },
     {
       "source": "同花顺-fuyao",

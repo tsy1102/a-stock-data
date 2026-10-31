@@ -4,7 +4,7 @@
 > `aggregation_status` 只描述兼容聚合视图，不会改写逐源 `status`。疑似合并文本由分隔符启发式识别，仅供人工检查，不自动拆字段或定案。
 > 本文统计的定义缺口仅限列出的复核组；单来源或全空的定义缺口仍见 [元数据缺口](field_metadata_gaps.md) 与 [未知字段队列](unknown_fields.md)。
 
-> 聚合歧义 96 个 code；聚合定义不完整 243 个 code；疑似合并文本 237 条逐源记录。
+> 聚合歧义 96 个 code；聚合定义不完整 243 个 code；疑似合并文本 239 条逐源记录。
 
 ## 同码聚合存在差异或定义缺口
 
@@ -3589,9 +3589,11 @@
 | 同花顺-fuyao | `continue_day_text` | continue_day_text | 连板文本，例如 `首板`、`5天4板`。 | `verified` |
 | 同花顺-fuyao | `dump` | dump/market-dumps/{daily-k,daily-k-10d,adjustment-factors}/download-url | — | `unverified` |
 | 同花顺-fuyao | `ex_date_ms` | ex_date_ms | 除权除息日，Asia/Shanghai 00:00:00 毫秒 Unix 时间戳。 | `verified` |
+| 同花顺-fuyao | `first_seal_time` | first_seal_time | 炸板股票当日首次封板时间，上海时区 HH:mm；上游缺失时为 null。 | `verified` |
 | 同花顺-fuyao | `fiscal_period` | fiscal_period | `FY` / `Q1` / `Q2` / `Q3` / `Q4`。 | `verified` |
 | 同花顺-fuyao | `indicators` | a-share/financials/indicators | — | `unverified` |
 | 同花顺-fuyao | `keyword_list` | keyword_list | 关键词列表；无关键词时返回空数组。 | `verified` |
+| 同花顺-fuyao | `last_seal_time` | last_seal_time | 炸板股票当日最后一次封板时间，上海时区 HH:mm；上游缺失时为 null。 | `verified` |
 | 同花顺-fuyao | `limit_up_reason` | limit_up_reason | 涨停原因；上游空字符串会标准化为 `null`。 | `verified` |
 | 同花顺-fuyao | `list` | meta/tickers/list | — | `unverified` |
 | 同花顺-fuyao | `market` | dump/market-dumps/{daily-k,daily-k-10d,adjustment-factors}/download-url | — | `unverified` |

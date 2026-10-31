@@ -1,5 +1,91 @@
 {
   "reviews": {
+    "cc1_0a67093dccf73d905391fb25bccf0e5a8eb4fa02fa744b162827e17da3c771dd": {
+      "current": {
+        "candidate_id": "cc1_0a67093dccf73d905391fb25bccf0e5a8eb4fa02fa744b162827e17da3c771dd",
+        "disposition": "rejected",
+        "duplicate_of": null,
+        "event_id": "3025c1b18322c804086b64b5c7c9d28dfefc7fc7388e233523f7bbe8dd1f048e",
+        "evidence_refs": [
+          {
+            "path": "20261031/20261031_collision_report.json",
+            "sha256": "04305268a80765cdd787f4b5e0d15a079376b673d7d64f67dee6bb6154c1cfc1"
+          },
+          {
+            "path": "20261030/raw_event_dc.json",
+            "sha256": "24d47a03f90c2b6b58c7bae3da9c3e686105c22fc2e59ba3708091e14defedf7"
+          },
+          {
+            "path": "20261030/raw_ftshare_rest.json",
+            "sha256": "399284e82da7336e749768b0b7900e2ee724c9390d01303acf0d4dc0c61aecb5"
+          }
+        ],
+        "rationale": "INDUSTRY_PE_NEW 表示新口径行业估值字段，而 ts_millis 是毫秒时间戳；量纲和取值域不相容，排除该关系。",
+        "reviewed_at": "2026-10-31T10:12:32+08:00",
+        "reviewer": "Codex"
+      },
+      "history": [
+        {
+          "candidate_id": "cc1_0a67093dccf73d905391fb25bccf0e5a8eb4fa02fa744b162827e17da3c771dd",
+          "disposition": "rejected",
+          "duplicate_of": null,
+          "event_id": "3025c1b18322c804086b64b5c7c9d28dfefc7fc7388e233523f7bbe8dd1f048e",
+          "evidence_refs": [
+            {
+              "path": "20261031/20261031_collision_report.json",
+              "sha256": "04305268a80765cdd787f4b5e0d15a079376b673d7d64f67dee6bb6154c1cfc1"
+            },
+            {
+              "path": "20261030/raw_event_dc.json",
+              "sha256": "24d47a03f90c2b6b58c7bae3da9c3e686105c22fc2e59ba3708091e14defedf7"
+            },
+            {
+              "path": "20261030/raw_ftshare_rest.json",
+              "sha256": "399284e82da7336e749768b0b7900e2ee724c9390d01303acf0d4dc0c61aecb5"
+            }
+          ],
+          "rationale": "INDUSTRY_PE_NEW 表示新口径行业估值字段，而 ts_millis 是毫秒时间戳；量纲和取值域不相容，排除该关系。",
+          "reviewed_at": "2026-10-31T10:12:32+08:00",
+          "reviewer": "Codex"
+        }
+      ],
+      "identity": {
+        "evidence": {
+          "evidence_sources": [
+            "event_dc",
+            "ftshare_rest"
+          ],
+          "left": "event_dc.INDUSTRY_PE_NEW",
+          "methods": [
+            {
+              "leave_one_out_max": -0.9065,
+              "leave_one_out_min": -0.9372,
+              "leave_one_out_sign_stable": true,
+              "method": "robust_correlation",
+              "pearson": -0.9274,
+              "spearman": -0.9804
+            }
+          ],
+          "right": "ftshare_rest.ts_millis",
+          "sample_codes": [
+            "000007",
+            "000011"
+          ],
+          "sample_count": 12,
+          "sample_dates": [
+            "T:20261021",
+            "T:20261023",
+            "T:20261026",
+            "T:20261028",
+            "T:20261029",
+            "T:20261030"
+          ]
+        },
+        "kind": "method_pair",
+        "method_version": "collision-candidate-v1",
+        "schema_version": 1
+      }
+    },
     "cc1_100c2e18527e7c42aceda98c01b1e2ddac9f35e44fad97640abee14c30153a75": {
       "current": {
         "candidate_id": "cc1_100c2e18527e7c42aceda98c01b1e2ddac9f35e44fad97640abee14c30153a75",
@@ -172,6 +258,610 @@
         "schema_version": 1
       }
     },
+    "cc1_12f3b2d2b59b7e87b40d5367e7cf6d5e229145e20563b827c224b18d5afdd9fe": {
+      "current": {
+        "candidate_id": "cc1_12f3b2d2b59b7e87b40d5367e7cf6d5e229145e20563b827c224b18d5afdd9fe",
+        "disposition": "insufficient_evidence",
+        "duplicate_of": null,
+        "event_id": "b94cb0173b3ae69005bc5cf504f98158239b258bd0b181de76fade0a347d517b",
+        "evidence_refs": [
+          {
+            "path": "20261031/20261031_collision_report.json",
+            "sha256": "04305268a80765cdd787f4b5e0d15a079376b673d7d64f67dee6bb6154c1cfc1"
+          }
+        ],
+        "rationale": "99 组、5 个交易日样本的 Pearson 相关仅 0.36；当前只有名称线索，不能据此认定 AxData open_volume_ratio 等同于 FTShare turnover。",
+        "reviewed_at": "2026-10-31T10:12:32+08:00",
+        "reviewer": "Codex"
+      },
+      "history": [
+        {
+          "candidate_id": "cc1_12f3b2d2b59b7e87b40d5367e7cf6d5e229145e20563b827c224b18d5afdd9fe",
+          "disposition": "insufficient_evidence",
+          "duplicate_of": null,
+          "event_id": "b94cb0173b3ae69005bc5cf504f98158239b258bd0b181de76fade0a347d517b",
+          "evidence_refs": [
+            {
+              "path": "20261031/20261031_collision_report.json",
+              "sha256": "04305268a80765cdd787f4b5e0d15a079376b673d7d64f67dee6bb6154c1cfc1"
+            }
+          ],
+          "rationale": "99 组、5 个交易日样本的 Pearson 相关仅 0.36；当前只有名称线索，不能据此认定 AxData open_volume_ratio 等同于 FTShare turnover。",
+          "reviewed_at": "2026-10-31T10:12:32+08:00",
+          "reviewer": "Codex"
+        }
+      ],
+      "identity": {
+        "evidence": {
+          "evidence_sources": [
+            "axdata",
+            "ftshare_rest"
+          ],
+          "left": "axdata.data.open_volume_ratio",
+          "methods": [
+            {
+              "leave_one_out_max": 0.5248,
+              "leave_one_out_min": 0.3323,
+              "leave_one_out_sign_stable": true,
+              "method": "robust_correlation",
+              "pearson": 0.3639,
+              "spearman": 0.667
+            }
+          ],
+          "right": "ftshare_rest.turnover",
+          "sample_codes": [
+            "000007",
+            "000011",
+            "000037",
+            "000568",
+            "000678",
+            "002034",
+            "002242",
+            "300031",
+            "300788",
+            "301190",
+            "600309",
+            "600519",
+            "600675",
+            "600825",
+            "601288",
+            "688327",
+            "688553",
+            "688589",
+            "920118",
+            "920508"
+          ],
+          "sample_count": 99,
+          "sample_dates": [
+            "T:20261023",
+            "T:20261026",
+            "T:20261028",
+            "T:20261029",
+            "T:20261030"
+          ]
+        },
+        "kind": "method_pair",
+        "method_version": "collision-candidate-v1",
+        "schema_version": 1
+      }
+    },
+    "cc1_167d44ca4f90f1823b3efa0fd38e1ca28029fb8759842a72cf115400b9a1a79a": {
+      "current": {
+        "candidate_id": "cc1_167d44ca4f90f1823b3efa0fd38e1ca28029fb8759842a72cf115400b9a1a79a",
+        "disposition": "accepted_for_adjudication",
+        "duplicate_of": null,
+        "event_id": "6492fc90c390fb0148c82a785ea468229ef5035d0714dae6348277efb2d89fc7",
+        "evidence_refs": [
+          {
+            "path": "collision_research_20261031/exploratory/20261031/20261031_collision_report.json",
+            "sha256": "c2d8c0bbc8e875fed749da1d6dafcc0c3e4673a6238cc743fd3cbf3734ae86d1"
+          },
+          {
+            "path": "20261021/raw_kpl.json",
+            "sha256": "5fce3039b5043210510a1d7fda9f7c9f34ab2012b8efb9ab4ede8d1d5a999d82"
+          },
+          {
+            "path": "20261021/raw_push2ex.json",
+            "sha256": "c4512cf688f55f9f3ed5006f2ec838cf13460c09c6c4411c7c77a7b7fa3630c7"
+          },
+          {
+            "path": "20261023/raw_kpl.json",
+            "sha256": "dba3db427ce21d26650ff4612d31c91e3dfced40ec245add424609b8d5e38069"
+          },
+          {
+            "path": "20261023/raw_push2ex.json",
+            "sha256": "9c927367fe4f72d7d1400991e6082466b8789b6ef665e73e0a96b0ef497b7da7"
+          },
+          {
+            "path": "20261026/raw_kpl.json",
+            "sha256": "4c1652d6dd4ad9dc4bca5ec36414f2decb8d8577c3bc4e63bf110c524d3849f5"
+          },
+          {
+            "path": "20261026/raw_push2ex.json",
+            "sha256": "eaf174874ba920dffb5d2bcd46b858f47cb11b7b2fd7456b284d10508c140dfb"
+          },
+          {
+            "path": "20261028/raw_kpl.json",
+            "sha256": "4c9ec7ef29e1605a3004775318d2b1002d46094ac44f497c481b4ae324e560c7"
+          },
+          {
+            "path": "20261028/raw_push2ex.json",
+            "sha256": "84a99b499c7f233215d19973dd611f30c079755ee9653a0fb1570a5950856159"
+          },
+          {
+            "path": "20261029/raw_kpl.json",
+            "sha256": "21d50f83253ce47872bbb8fa43e40b932b387cb5886b63973d222c8bae6556ec"
+          },
+          {
+            "path": "20261029/raw_push2ex.json",
+            "sha256": "6371d615ce58dc924b05aa1a3d52a8de5d7a25b006070710d1745de7a54b1647"
+          },
+          {
+            "path": "20261030/raw_kpl.json",
+            "sha256": "0d66691180d9eaf977ab7e38d0ebec5d844fafb176328fb3e468d5311ac9a883"
+          },
+          {
+            "path": "20261030/raw_push2ex.json",
+            "sha256": "914460e7a8246541f71947545d60bd0d06d42bae345f4987b7705f9d8a61af45"
+          },
+          {
+            "path": "20261021/raw_tencent.json",
+            "sha256": "44b8d150d6fa80053a8ea68842b76c95cda551958097173e8c2e48e6b5337a46"
+          },
+          {
+            "path": "20261023/raw_tencent.json",
+            "sha256": "45d502ace5a9465e980ddc26d81d5da471a79069d9007f44bf9746cb187591de"
+          },
+          {
+            "path": "20261026/raw_tencent.json",
+            "sha256": "eda707b7f72a7734fa10e9c2be8620f4f54c2ffd61d6f3402b5b7b69cc57fcc9"
+          },
+          {
+            "path": "20261028/raw_tencent.json",
+            "sha256": "bdb3716f90bab1ec3a30e340725e5917566e6b03c87ec8992ba664413bb9e752"
+          },
+          {
+            "path": "20261030/raw_tencent.json",
+            "sha256": "33bf553f85bfd693a4b57a0bb984164f42e650a8130ba7d108663a3c8ab7a990"
+          },
+          {
+            "path": "https://www.kaipanla.com/page/index.html?ntsing=1769018400014",
+            "sha256": null
+          }
+        ],
+        "rationale": "KPL raw col_22 与 Eastmoney push2ex.change_pct 的 344 组、6 日样本 Pearson=1.0、Spearman=0.9957，344/344 差值均不超过 0.02 个百分点；5 个日期与独立行情样本重叠时，Tencent 涨幅字段 5/5 精确一致。开盘啦官方首页展示实时涨幅列。公开资料未披露 DailyLimitPerformance row[22] 的精确契约，故只接受进入字段契约审查，不直接登记为已验证字段。",
+        "reviewed_at": "2026-10-31T10:22:38+08:00",
+        "reviewer": "Codex"
+      },
+      "history": [
+        {
+          "candidate_id": "cc1_167d44ca4f90f1823b3efa0fd38e1ca28029fb8759842a72cf115400b9a1a79a",
+          "disposition": "accepted_for_adjudication",
+          "duplicate_of": null,
+          "event_id": "6492fc90c390fb0148c82a785ea468229ef5035d0714dae6348277efb2d89fc7",
+          "evidence_refs": [
+            {
+              "path": "collision_research_20261031/exploratory/20261031/20261031_collision_report.json",
+              "sha256": "c2d8c0bbc8e875fed749da1d6dafcc0c3e4673a6238cc743fd3cbf3734ae86d1"
+            },
+            {
+              "path": "20261021/raw_kpl.json",
+              "sha256": "5fce3039b5043210510a1d7fda9f7c9f34ab2012b8efb9ab4ede8d1d5a999d82"
+            },
+            {
+              "path": "20261021/raw_push2ex.json",
+              "sha256": "c4512cf688f55f9f3ed5006f2ec838cf13460c09c6c4411c7c77a7b7fa3630c7"
+            },
+            {
+              "path": "20261023/raw_kpl.json",
+              "sha256": "dba3db427ce21d26650ff4612d31c91e3dfced40ec245add424609b8d5e38069"
+            },
+            {
+              "path": "20261023/raw_push2ex.json",
+              "sha256": "9c927367fe4f72d7d1400991e6082466b8789b6ef665e73e0a96b0ef497b7da7"
+            },
+            {
+              "path": "20261026/raw_kpl.json",
+              "sha256": "4c1652d6dd4ad9dc4bca5ec36414f2decb8d8577c3bc4e63bf110c524d3849f5"
+            },
+            {
+              "path": "20261026/raw_push2ex.json",
+              "sha256": "eaf174874ba920dffb5d2bcd46b858f47cb11b7b2fd7456b284d10508c140dfb"
+            },
+            {
+              "path": "20261028/raw_kpl.json",
+              "sha256": "4c9ec7ef29e1605a3004775318d2b1002d46094ac44f497c481b4ae324e560c7"
+            },
+            {
+              "path": "20261028/raw_push2ex.json",
+              "sha256": "84a99b499c7f233215d19973dd611f30c079755ee9653a0fb1570a5950856159"
+            },
+            {
+              "path": "20261029/raw_kpl.json",
+              "sha256": "21d50f83253ce47872bbb8fa43e40b932b387cb5886b63973d222c8bae6556ec"
+            },
+            {
+              "path": "20261029/raw_push2ex.json",
+              "sha256": "6371d615ce58dc924b05aa1a3d52a8de5d7a25b006070710d1745de7a54b1647"
+            },
+            {
+              "path": "20261030/raw_kpl.json",
+              "sha256": "0d66691180d9eaf977ab7e38d0ebec5d844fafb176328fb3e468d5311ac9a883"
+            },
+            {
+              "path": "20261030/raw_push2ex.json",
+              "sha256": "914460e7a8246541f71947545d60bd0d06d42bae345f4987b7705f9d8a61af45"
+            },
+            {
+              "path": "20261021/raw_tencent.json",
+              "sha256": "44b8d150d6fa80053a8ea68842b76c95cda551958097173e8c2e48e6b5337a46"
+            },
+            {
+              "path": "20261023/raw_tencent.json",
+              "sha256": "45d502ace5a9465e980ddc26d81d5da471a79069d9007f44bf9746cb187591de"
+            },
+            {
+              "path": "20261026/raw_tencent.json",
+              "sha256": "eda707b7f72a7734fa10e9c2be8620f4f54c2ffd61d6f3402b5b7b69cc57fcc9"
+            },
+            {
+              "path": "20261028/raw_tencent.json",
+              "sha256": "bdb3716f90bab1ec3a30e340725e5917566e6b03c87ec8992ba664413bb9e752"
+            },
+            {
+              "path": "20261030/raw_tencent.json",
+              "sha256": "33bf553f85bfd693a4b57a0bb984164f42e650a8130ba7d108663a3c8ab7a990"
+            },
+            {
+              "path": "https://www.kaipanla.com/page/index.html?ntsing=1769018400014",
+              "sha256": null
+            }
+          ],
+          "rationale": "KPL raw col_22 与 Eastmoney push2ex.change_pct 的 344 组、6 日样本 Pearson=1.0、Spearman=0.9957，344/344 差值均不超过 0.02 个百分点；5 个日期与独立行情样本重叠时，Tencent 涨幅字段 5/5 精确一致。开盘啦官方首页展示实时涨幅列。公开资料未披露 DailyLimitPerformance row[22] 的精确契约，故只接受进入字段契约审查，不直接登记为已验证字段。",
+          "reviewed_at": "2026-10-31T10:22:38+08:00",
+          "reviewer": "Codex"
+        }
+      ],
+      "identity": {
+        "evidence": {
+          "evidence_sources": [
+            "kpl",
+            "push2ex"
+          ],
+          "left": "kpl.raw_columns.col_22",
+          "methods": [
+            {
+              "leave_one_out_max": 1.0,
+              "leave_one_out_min": 1.0,
+              "leave_one_out_sign_stable": true,
+              "method": "robust_correlation",
+              "pearson": 1.0,
+              "spearman": 0.9957
+            },
+            {
+              "formula": "right ≈ 1.000025 × left + -0.0002451106",
+              "method": "affine_formula",
+              "r_squared": 1.0
+            },
+            {
+              "median_abs_pearson": 0.9983,
+              "method": "per_stock_time_series",
+              "sample_dates": [
+                "T:20261021",
+                "T:20261023",
+                "T:20261026",
+                "T:20261028",
+                "T:20261029",
+                "T:20261030"
+              ],
+              "sign_consistency": 1.0,
+              "stock_correlations": [
+                {
+                  "code": "002086",
+                  "dates": [
+                    "T:20261021",
+                    "T:20261026",
+                    "T:20261029",
+                    "T:20261030"
+                  ],
+                  "pearson": 1.0
+                },
+                {
+                  "code": "002696",
+                  "dates": [
+                    "T:20261021",
+                    "T:20261026",
+                    "T:20261028"
+                  ],
+                  "pearson": 0.9983
+                },
+                {
+                  "code": "600715",
+                  "dates": [
+                    "T:20261021",
+                    "T:20261028",
+                    "T:20261029"
+                  ],
+                  "pearson": 0.9999
+                },
+                {
+                  "code": "600838",
+                  "dates": [
+                    "T:20261021",
+                    "T:20261023",
+                    "T:20261026"
+                  ],
+                  "pearson": 1.0
+                },
+                {
+                  "code": "000559",
+                  "dates": [
+                    "T:20261023",
+                    "T:20261026",
+                    "T:20261028"
+                  ],
+                  "pearson": 0.9914
+                },
+                {
+                  "code": "000678",
+                  "dates": [
+                    "T:20261023",
+                    "T:20261026",
+                    "T:20261028"
+                  ],
+                  "pearson": 0.9938
+                },
+                {
+                  "code": "603337",
+                  "dates": [
+                    "T:20261023",
+                    "T:20261026",
+                    "T:20261028"
+                  ],
+                  "pearson": 0.9981
+                },
+                {
+                  "code": "001219",
+                  "dates": [
+                    "T:20261026",
+                    "T:20261028",
+                    "T:20261029",
+                    "T:20261030"
+                  ],
+                  "pearson": 0.985
+                },
+                {
+                  "code": "002708",
+                  "dates": [
+                    "T:20261026",
+                    "T:20261028",
+                    "T:20261029"
+                  ],
+                  "pearson": 1.0
+                },
+                {
+                  "code": "002172",
+                  "dates": [
+                    "T:20261028",
+                    "T:20261029",
+                    "T:20261030"
+                  ],
+                  "pearson": 0.9995
+                },
+                {
+                  "code": "603131",
+                  "dates": [
+                    "T:20261028",
+                    "T:20261029",
+                    "T:20261030"
+                  ],
+                  "pearson": 0.9783
+                }
+              ],
+              "stocks": 11
+            }
+          ],
+          "right": "push2ex.change_pct",
+          "sample_codes": [
+            "000156",
+            "000410",
+            "000411",
+            "000417",
+            "000518",
+            "000525",
+            "000530",
+            "000554",
+            "000559",
+            "000568",
+            "000596",
+            "000635",
+            "000670",
+            "000676",
+            "000678",
+            "000700",
+            "000701",
+            "000716",
+            "000788",
+            "000810"
+          ],
+          "sample_count": 344,
+          "sample_dates": [
+            "T:20261021",
+            "T:20261023",
+            "T:20261026",
+            "T:20261028",
+            "T:20261029",
+            "T:20261030"
+          ]
+        },
+        "kind": "method_pair",
+        "method_version": "collision-candidate-v1",
+        "schema_version": 1
+      }
+    },
+    "cc1_1a81920af0aa3a39a740f6764ab8ffa6a8bf902f72e123c8bad534e8426b29e5": {
+      "current": {
+        "candidate_id": "cc1_1a81920af0aa3a39a740f6764ab8ffa6a8bf902f72e123c8bad534e8426b29e5",
+        "disposition": "insufficient_evidence",
+        "duplicate_of": null,
+        "event_id": "7dea0518ee9a5a5ee272d429dc2ff9e510b4c7fa2d84b6f4d1c7a5d32e51b491",
+        "evidence_refs": [
+          {
+            "path": "20261031/20261031_collision_report.json",
+            "sha256": "04305268a80765cdd787f4b5e0d15a079376b673d7d64f67dee6bb6154c1cfc1"
+          }
+        ],
+        "rationale": "候选仅覆盖 2026-10-23 单日 14 组；push2.f197 与 ZHB 250k 价格变动字段的相关性不足以确认字段含义或单位。",
+        "reviewed_at": "2026-10-31T10:12:32+08:00",
+        "reviewer": "Codex"
+      },
+      "history": [
+        {
+          "candidate_id": "cc1_1a81920af0aa3a39a740f6764ab8ffa6a8bf902f72e123c8bad534e8426b29e5",
+          "disposition": "insufficient_evidence",
+          "duplicate_of": null,
+          "event_id": "7dea0518ee9a5a5ee272d429dc2ff9e510b4c7fa2d84b6f4d1c7a5d32e51b491",
+          "evidence_refs": [
+            {
+              "path": "20261031/20261031_collision_report.json",
+              "sha256": "04305268a80765cdd787f4b5e0d15a079376b673d7d64f67dee6bb6154c1cfc1"
+            }
+          ],
+          "rationale": "候选仅覆盖 2026-10-23 单日 14 组；push2.f197 与 ZHB 250k 价格变动字段的相关性不足以确认字段含义或单位。",
+          "reviewed_at": "2026-10-31T10:12:32+08:00",
+          "reviewer": "Codex"
+        }
+      ],
+      "identity": {
+        "evidence": {
+          "evidence_sources": [
+            "push2",
+            "zhb"
+          ],
+          "left": "push2.f197",
+          "methods": [
+            {
+              "leave_one_out_max": 0.6827,
+              "leave_one_out_min": 0.5141,
+              "leave_one_out_sign_stable": true,
+              "method": "robust_correlation",
+              "pearson": 0.6163,
+              "spearman": 0.6571
+            }
+          ],
+          "right": "zhb.stat2.change_250k_bar",
+          "sample_codes": [
+            "000007",
+            "000037",
+            "000568",
+            "002034",
+            "300031",
+            "300788",
+            "600309",
+            "600519",
+            "600675",
+            "601288",
+            "688327",
+            "688553",
+            "688589",
+            "920118"
+          ],
+          "sample_count": 14,
+          "sample_dates": [
+            "T:20261023"
+          ]
+        },
+        "kind": "method_pair",
+        "method_version": "collision-candidate-v1",
+        "schema_version": 1
+      }
+    },
+    "cc1_25eeee5d5e6aee7621c33dc80c066f4b9415150574fcf9eb69949314ad42cf7e": {
+      "current": {
+        "candidate_id": "cc1_25eeee5d5e6aee7621c33dc80c066f4b9415150574fcf9eb69949314ad42cf7e",
+        "disposition": "rejected",
+        "duplicate_of": null,
+        "event_id": "7cdce6bbe5fdce7becad04b1bdbc39c3f80dcd1da27d87d6d427e6c7f924432d",
+        "evidence_refs": [
+          {
+            "path": "20261031/20261031_collision_report.json",
+            "sha256": "04305268a80765cdd787f4b5e0d15a079376b673d7d64f67dee6bb6154c1cfc1"
+          },
+          {
+            "path": "20261030/raw_event_dc.json",
+            "sha256": "24d47a03f90c2b6b58c7bae3da9c3e686105c22fc2e59ba3708091e14defedf7"
+          },
+          {
+            "path": "20261030/raw_ftshare_rest.json",
+            "sha256": "399284e82da7336e749768b0b7900e2ee724c9390d01303acf0d4dc0c61aecb5"
+          }
+        ],
+        "rationale": "INDUSTRY_PE 表示行业估值字段，而 ts_millis 是毫秒时间戳；量纲和取值域不相容。高相关来自时间/顺序共变，不构成同义字段证据。",
+        "reviewed_at": "2026-10-31T10:12:32+08:00",
+        "reviewer": "Codex"
+      },
+      "history": [
+        {
+          "candidate_id": "cc1_25eeee5d5e6aee7621c33dc80c066f4b9415150574fcf9eb69949314ad42cf7e",
+          "disposition": "rejected",
+          "duplicate_of": null,
+          "event_id": "7cdce6bbe5fdce7becad04b1bdbc39c3f80dcd1da27d87d6d427e6c7f924432d",
+          "evidence_refs": [
+            {
+              "path": "20261031/20261031_collision_report.json",
+              "sha256": "04305268a80765cdd787f4b5e0d15a079376b673d7d64f67dee6bb6154c1cfc1"
+            },
+            {
+              "path": "20261030/raw_event_dc.json",
+              "sha256": "24d47a03f90c2b6b58c7bae3da9c3e686105c22fc2e59ba3708091e14defedf7"
+            },
+            {
+              "path": "20261030/raw_ftshare_rest.json",
+              "sha256": "399284e82da7336e749768b0b7900e2ee724c9390d01303acf0d4dc0c61aecb5"
+            }
+          ],
+          "rationale": "INDUSTRY_PE 表示行业估值字段，而 ts_millis 是毫秒时间戳；量纲和取值域不相容。高相关来自时间/顺序共变，不构成同义字段证据。",
+          "reviewed_at": "2026-10-31T10:12:32+08:00",
+          "reviewer": "Codex"
+        }
+      ],
+      "identity": {
+        "evidence": {
+          "evidence_sources": [
+            "event_dc",
+            "ftshare_rest"
+          ],
+          "left": "event_dc.INDUSTRY_PE",
+          "methods": [
+            {
+              "leave_one_out_max": -0.9065,
+              "leave_one_out_min": -0.9372,
+              "leave_one_out_sign_stable": true,
+              "method": "robust_correlation",
+              "pearson": -0.9274,
+              "spearman": -0.9804
+            }
+          ],
+          "right": "ftshare_rest.ts_millis",
+          "sample_codes": [
+            "000007",
+            "000011"
+          ],
+          "sample_count": 12,
+          "sample_dates": [
+            "T:20261021",
+            "T:20261023",
+            "T:20261026",
+            "T:20261028",
+            "T:20261029",
+            "T:20261030"
+          ]
+        },
+        "kind": "method_pair",
+        "method_version": "collision-candidate-v1",
+        "schema_version": 1
+      }
+    },
     "cc1_2a48fbab25aac547d91de4fcf04eaedba26a466cb26895577b29cd0872bf158d": {
       "current": {
         "candidate_id": "cc1_2a48fbab25aac547d91de4fcf04eaedba26a466cb26895577b29cd0872bf158d",
@@ -257,6 +947,219 @@
           "statistical_level": "L1"
         },
         "kind": "l1_contract_candidate",
+        "method_version": "collision-candidate-v1",
+        "schema_version": 1
+      }
+    },
+    "cc1_2cbc075b15bf2ff03ef59de8d2ad7c70006f53cce42945398558d023907abe1e": {
+      "current": {
+        "candidate_id": "cc1_2cbc075b15bf2ff03ef59de8d2ad7c70006f53cce42945398558d023907abe1e",
+        "disposition": "rejected",
+        "duplicate_of": null,
+        "event_id": "590b3ea746c7bc5eb786caa97487ea05497f05732d58b773875e2a46866a0b17",
+        "evidence_refs": [
+          {
+            "path": "20261031/20261031_collision_report.json",
+            "sha256": "04305268a80765cdd787f4b5e0d15a079376b673d7d64f67dee6bb6154c1cfc1"
+          },
+          {
+            "path": "20261030/raw_kpl.json",
+            "sha256": "0d66691180d9eaf977ab7e38d0ebec5d844fafb176328fb3e468d5311ac9a883"
+          },
+          {
+            "path": "20261030/raw_push2ex.json",
+            "sha256": "914460e7a8246541f71947545d60bd0d06d42bae345f4987b7705f9d8a61af45"
+          }
+        ],
+        "rationale": "6 个交易日共 344 组同股样本中 col_21 与 push2ex.amount 精确匹配为 0/344；col_21 呈股价数量级而成交额为金额数量级。排除该字段对关系，不对 col_21 本身作语义裁定。",
+        "reviewed_at": "2026-10-31T10:12:32+08:00",
+        "reviewer": "Codex"
+      },
+      "history": [
+        {
+          "candidate_id": "cc1_2cbc075b15bf2ff03ef59de8d2ad7c70006f53cce42945398558d023907abe1e",
+          "disposition": "rejected",
+          "duplicate_of": null,
+          "event_id": "590b3ea746c7bc5eb786caa97487ea05497f05732d58b773875e2a46866a0b17",
+          "evidence_refs": [
+            {
+              "path": "20261031/20261031_collision_report.json",
+              "sha256": "04305268a80765cdd787f4b5e0d15a079376b673d7d64f67dee6bb6154c1cfc1"
+            },
+            {
+              "path": "20261030/raw_kpl.json",
+              "sha256": "0d66691180d9eaf977ab7e38d0ebec5d844fafb176328fb3e468d5311ac9a883"
+            },
+            {
+              "path": "20261030/raw_push2ex.json",
+              "sha256": "914460e7a8246541f71947545d60bd0d06d42bae345f4987b7705f9d8a61af45"
+            }
+          ],
+          "rationale": "6 个交易日共 344 组同股样本中 col_21 与 push2ex.amount 精确匹配为 0/344；col_21 呈股价数量级而成交额为金额数量级。排除该字段对关系，不对 col_21 本身作语义裁定。",
+          "reviewed_at": "2026-10-31T10:12:32+08:00",
+          "reviewer": "Codex"
+        }
+      ],
+      "identity": {
+        "evidence": {
+          "evidence_sources": [
+            "kpl",
+            "push2ex"
+          ],
+          "left": "kpl.raw_columns.col_21",
+          "methods": [
+            {
+              "median_abs_pearson": 0.7669,
+              "method": "per_stock_time_series",
+              "sample_dates": [
+                "T:20261021",
+                "T:20261023",
+                "T:20261026",
+                "T:20261028",
+                "T:20261029",
+                "T:20261030"
+              ],
+              "sign_consistency": 0.8182,
+              "stock_correlations": [
+                {
+                  "code": "002086",
+                  "dates": [
+                    "T:20261021",
+                    "T:20261026",
+                    "T:20261029",
+                    "T:20261030"
+                  ],
+                  "pearson": 0.9963
+                },
+                {
+                  "code": "002696",
+                  "dates": [
+                    "T:20261021",
+                    "T:20261026",
+                    "T:20261028"
+                  ],
+                  "pearson": 1.0
+                },
+                {
+                  "code": "600715",
+                  "dates": [
+                    "T:20261021",
+                    "T:20261028",
+                    "T:20261029"
+                  ],
+                  "pearson": 0.9207
+                },
+                {
+                  "code": "600838",
+                  "dates": [
+                    "T:20261021",
+                    "T:20261023",
+                    "T:20261026"
+                  ],
+                  "pearson": 0.5006
+                },
+                {
+                  "code": "000559",
+                  "dates": [
+                    "T:20261023",
+                    "T:20261026",
+                    "T:20261028"
+                  ],
+                  "pearson": 0.298
+                },
+                {
+                  "code": "000678",
+                  "dates": [
+                    "T:20261023",
+                    "T:20261026",
+                    "T:20261028"
+                  ],
+                  "pearson": -0.9923
+                },
+                {
+                  "code": "603337",
+                  "dates": [
+                    "T:20261023",
+                    "T:20261026",
+                    "T:20261028"
+                  ],
+                  "pearson": 0.7669
+                },
+                {
+                  "code": "001219",
+                  "dates": [
+                    "T:20261026",
+                    "T:20261028",
+                    "T:20261029",
+                    "T:20261030"
+                  ],
+                  "pearson": 0.6856
+                },
+                {
+                  "code": "002708",
+                  "dates": [
+                    "T:20261026",
+                    "T:20261028",
+                    "T:20261029"
+                  ],
+                  "pearson": 0.6884
+                },
+                {
+                  "code": "002172",
+                  "dates": [
+                    "T:20261028",
+                    "T:20261029",
+                    "T:20261030"
+                  ],
+                  "pearson": 0.8727
+                },
+                {
+                  "code": "603131",
+                  "dates": [
+                    "T:20261028",
+                    "T:20261029",
+                    "T:20261030"
+                  ],
+                  "pearson": -0.4111
+                }
+              ],
+              "stocks": 11
+            }
+          ],
+          "right": "push2ex.amount",
+          "sample_codes": [
+            "000156",
+            "000410",
+            "000411",
+            "000417",
+            "000518",
+            "000525",
+            "000530",
+            "000554",
+            "000559",
+            "000568",
+            "000596",
+            "000635",
+            "000670",
+            "000676",
+            "000678",
+            "000700",
+            "000701",
+            "000716",
+            "000788",
+            "000810"
+          ],
+          "sample_count": 344,
+          "sample_dates": [
+            "T:20261021",
+            "T:20261023",
+            "T:20261026",
+            "T:20261028",
+            "T:20261029",
+            "T:20261030"
+          ]
+        },
+        "kind": "method_pair",
         "method_version": "collision-candidate-v1",
         "schema_version": 1
       }
@@ -532,6 +1435,184 @@
         "schema_version": 1
       }
     },
+    "cc1_5dd02ad36a47c3b16bbbd7dee4e0d1061dffd410ed41f62b79999a4cfae870f4": {
+      "current": {
+        "candidate_id": "cc1_5dd02ad36a47c3b16bbbd7dee4e0d1061dffd410ed41f62b79999a4cfae870f4",
+        "disposition": "insufficient_evidence",
+        "duplicate_of": null,
+        "event_id": "27dd8388373a0e5827d5990687974fda84f167aab157ca85fff5a17e095b2b55",
+        "evidence_refs": [
+          {
+            "path": "20261031/20261031_collision_report.json",
+            "sha256": "04305268a80765cdd787f4b5e0d15a079376b673d7d64f67dee6bb6154c1cfc1"
+          }
+        ],
+        "rationale": "99 组、5 个交易日样本的 Pearson 相关仅 0.21；名称和相关性不足以把 AxData seal_to_float_ratio 定义为 FTShare turnover_rate。",
+        "reviewed_at": "2026-10-31T10:12:32+08:00",
+        "reviewer": "Codex"
+      },
+      "history": [
+        {
+          "candidate_id": "cc1_5dd02ad36a47c3b16bbbd7dee4e0d1061dffd410ed41f62b79999a4cfae870f4",
+          "disposition": "insufficient_evidence",
+          "duplicate_of": null,
+          "event_id": "27dd8388373a0e5827d5990687974fda84f167aab157ca85fff5a17e095b2b55",
+          "evidence_refs": [
+            {
+              "path": "20261031/20261031_collision_report.json",
+              "sha256": "04305268a80765cdd787f4b5e0d15a079376b673d7d64f67dee6bb6154c1cfc1"
+            }
+          ],
+          "rationale": "99 组、5 个交易日样本的 Pearson 相关仅 0.21；名称和相关性不足以把 AxData seal_to_float_ratio 定义为 FTShare turnover_rate。",
+          "reviewed_at": "2026-10-31T10:12:32+08:00",
+          "reviewer": "Codex"
+        }
+      ],
+      "identity": {
+        "evidence": {
+          "evidence_sources": [
+            "axdata",
+            "ftshare_rest"
+          ],
+          "left": "axdata.data.seal_to_float_ratio",
+          "methods": [
+            {
+              "leave_one_out_max": 0.3582,
+              "leave_one_out_min": 0.1605,
+              "leave_one_out_sign_stable": true,
+              "method": "robust_correlation",
+              "pearson": 0.2145,
+              "spearman": 0.6597
+            }
+          ],
+          "right": "ftshare_rest.turnover_rate",
+          "sample_codes": [
+            "000007",
+            "000011",
+            "000037",
+            "000568",
+            "000678",
+            "002034",
+            "002242",
+            "300031",
+            "300788",
+            "301190",
+            "600309",
+            "600519",
+            "600675",
+            "600825",
+            "601288",
+            "688327",
+            "688553",
+            "688589",
+            "920118",
+            "920508"
+          ],
+          "sample_count": 99,
+          "sample_dates": [
+            "T:20261023",
+            "T:20261026",
+            "T:20261028",
+            "T:20261029",
+            "T:20261030"
+          ]
+        },
+        "kind": "method_pair",
+        "method_version": "collision-candidate-v1",
+        "schema_version": 1
+      }
+    },
+    "cc1_612dd936bb0f0c7af47acb8eb275e0172aeebbabe7217d07d43e81f6f084b1f3": {
+      "current": {
+        "candidate_id": "cc1_612dd936bb0f0c7af47acb8eb275e0172aeebbabe7217d07d43e81f6f084b1f3",
+        "disposition": "rejected",
+        "duplicate_of": null,
+        "event_id": "5a7e217e326b6b672bdfdb8bdd11c36b9eda9ea174cdb7a8066a74245746452b",
+        "evidence_refs": [
+          {
+            "path": "20261031/20261031_collision_report.json",
+            "sha256": "04305268a80765cdd787f4b5e0d15a079376b673d7d64f67dee6bb6154c1cfc1"
+          },
+          {
+            "path": "20261030/raw_event_dc.json",
+            "sha256": "24d47a03f90c2b6b58c7bae3da9c3e686105c22fc2e59ba3708091e14defedf7"
+          },
+          {
+            "path": "20261030/raw_ftshare_rest.json",
+            "sha256": "399284e82da7336e749768b0b7900e2ee724c9390d01303acf0d4dc0c61aecb5"
+          }
+        ],
+        "rationale": "event_dc.fetched_at 是本次抓取时间，ftshare_rest.ts_millis 是上游记录时间；10/30 目标样本中抓取时间落在 10/31 上午而 FTShare 时间落在 10/30 收盘后。二者随日期同向变化造成相关，语义并不相同。",
+        "reviewed_at": "2026-10-31T10:12:32+08:00",
+        "reviewer": "Codex"
+      },
+      "history": [
+        {
+          "candidate_id": "cc1_612dd936bb0f0c7af47acb8eb275e0172aeebbabe7217d07d43e81f6f084b1f3",
+          "disposition": "rejected",
+          "duplicate_of": null,
+          "event_id": "5a7e217e326b6b672bdfdb8bdd11c36b9eda9ea174cdb7a8066a74245746452b",
+          "evidence_refs": [
+            {
+              "path": "20261031/20261031_collision_report.json",
+              "sha256": "04305268a80765cdd787f4b5e0d15a079376b673d7d64f67dee6bb6154c1cfc1"
+            },
+            {
+              "path": "20261030/raw_event_dc.json",
+              "sha256": "24d47a03f90c2b6b58c7bae3da9c3e686105c22fc2e59ba3708091e14defedf7"
+            },
+            {
+              "path": "20261030/raw_ftshare_rest.json",
+              "sha256": "399284e82da7336e749768b0b7900e2ee724c9390d01303acf0d4dc0c61aecb5"
+            }
+          ],
+          "rationale": "event_dc.fetched_at 是本次抓取时间，ftshare_rest.ts_millis 是上游记录时间；10/30 目标样本中抓取时间落在 10/31 上午而 FTShare 时间落在 10/30 收盘后。二者随日期同向变化造成相关，语义并不相同。",
+          "reviewed_at": "2026-10-31T10:12:32+08:00",
+          "reviewer": "Codex"
+        }
+      ],
+      "identity": {
+        "evidence": {
+          "evidence_sources": [
+            "event_dc",
+            "ftshare_rest"
+          ],
+          "left": "event_dc.fetched_at",
+          "methods": [
+            {
+              "leave_one_out_max": 0.9977,
+              "leave_one_out_min": 0.9972,
+              "leave_one_out_sign_stable": true,
+              "method": "robust_correlation",
+              "pearson": 0.9973,
+              "spearman": 0.9947
+            },
+            {
+              "formula": "right ≈ 997.29865 × left + 4.8127172e+09",
+              "method": "affine_formula",
+              "r_squared": 0.994639
+            }
+          ],
+          "right": "ftshare_rest.ts_millis",
+          "sample_codes": [
+            "000007",
+            "000011"
+          ],
+          "sample_count": 12,
+          "sample_dates": [
+            "T:20261021",
+            "T:20261023",
+            "T:20261026",
+            "T:20261028",
+            "T:20261029",
+            "T:20261030"
+          ]
+        },
+        "kind": "method_pair",
+        "method_version": "collision-candidate-v1",
+        "schema_version": 1
+      }
+    },
     "cc1_64a39a6516f2aac1aacef07e38d5d7764d503a58539328e21439ac97ca6b7b02": {
       "current": {
         "candidate_id": "cc1_64a39a6516f2aac1aacef07e38d5d7764d503a58539328e21439ac97ca6b7b02",
@@ -617,6 +1698,83 @@
           "statistical_level": "L1"
         },
         "kind": "l1_candidate",
+        "method_version": "collision-candidate-v1",
+        "schema_version": 1
+      }
+    },
+    "cc1_64d171b03f7b373577afface669b2b412aa7e284dd57bb0ff5c43813debbcd00": {
+      "current": {
+        "candidate_id": "cc1_64d171b03f7b373577afface669b2b412aa7e284dd57bb0ff5c43813debbcd00",
+        "disposition": "insufficient_evidence",
+        "duplicate_of": null,
+        "event_id": "2970fa80febf02278ff842c6e9fe2a8503c3a5c764aba072cac2d866e7c818e9",
+        "evidence_refs": [
+          {
+            "path": "20261031/20261031_collision_report.json",
+            "sha256": "04305268a80765cdd787f4b5e0d15a079376b673d7d64f67dee6bb6154c1cfc1"
+          }
+        ],
+        "rationale": "候选仅覆盖 2026-10-23 单日 14 组，相关系数为负，不能支持 push2.f146 等同于 ZHB 连板天数字段；缺少逐路径上游契约。",
+        "reviewed_at": "2026-10-31T10:12:32+08:00",
+        "reviewer": "Codex"
+      },
+      "history": [
+        {
+          "candidate_id": "cc1_64d171b03f7b373577afface669b2b412aa7e284dd57bb0ff5c43813debbcd00",
+          "disposition": "insufficient_evidence",
+          "duplicate_of": null,
+          "event_id": "2970fa80febf02278ff842c6e9fe2a8503c3a5c764aba072cac2d866e7c818e9",
+          "evidence_refs": [
+            {
+              "path": "20261031/20261031_collision_report.json",
+              "sha256": "04305268a80765cdd787f4b5e0d15a079376b673d7d64f67dee6bb6154c1cfc1"
+            }
+          ],
+          "rationale": "候选仅覆盖 2026-10-23 单日 14 组，相关系数为负，不能支持 push2.f146 等同于 ZHB 连板天数字段；缺少逐路径上游契约。",
+          "reviewed_at": "2026-10-31T10:12:32+08:00",
+          "reviewer": "Codex"
+        }
+      ],
+      "identity": {
+        "evidence": {
+          "evidence_sources": [
+            "push2",
+            "zhb"
+          ],
+          "left": "push2.f146",
+          "methods": [
+            {
+              "leave_one_out_max": -0.8923,
+              "leave_one_out_min": -0.9706,
+              "leave_one_out_sign_stable": true,
+              "method": "robust_correlation",
+              "pearson": -0.8924,
+              "spearman": -0.6094
+            }
+          ],
+          "right": "zhb.stat.streak_days",
+          "sample_codes": [
+            "000007",
+            "000037",
+            "000568",
+            "002034",
+            "300031",
+            "300788",
+            "600309",
+            "600519",
+            "600675",
+            "601288",
+            "688327",
+            "688553",
+            "688589",
+            "920118"
+          ],
+          "sample_count": 14,
+          "sample_dates": [
+            "T:20261023"
+          ]
+        },
+        "kind": "method_pair",
         "method_version": "collision-candidate-v1",
         "schema_version": 1
       }
@@ -1079,6 +2237,203 @@
         "schema_version": 1
       }
     },
+    "cc1_72736e64de7975b16feedf597d0cc1c005d4f45783550a9ffac6f3c6c8cde157": {
+      "current": {
+        "candidate_id": "cc1_72736e64de7975b16feedf597d0cc1c005d4f45783550a9ffac6f3c6c8cde157",
+        "disposition": "accepted_for_adjudication",
+        "duplicate_of": null,
+        "event_id": "5c62cf757b70c3fd6e63c7871c0fac554b90dba8065e6534bb08409d2839731e",
+        "evidence_refs": [
+          {
+            "path": "collision_research_20261031/exploratory/20261031/20261031_collision_report.json",
+            "sha256": "c2d8c0bbc8e875fed749da1d6dafcc0c3e4673a6238cc743fd3cbf3734ae86d1"
+          },
+          {
+            "path": "20261021/raw_kpl.json",
+            "sha256": "5fce3039b5043210510a1d7fda9f7c9f34ab2012b8efb9ab4ede8d1d5a999d82"
+          },
+          {
+            "path": "20261021/raw_push2ex.json",
+            "sha256": "c4512cf688f55f9f3ed5006f2ec838cf13460c09c6c4411c7c77a7b7fa3630c7"
+          },
+          {
+            "path": "20261023/raw_kpl.json",
+            "sha256": "dba3db427ce21d26650ff4612d31c91e3dfced40ec245add424609b8d5e38069"
+          },
+          {
+            "path": "20261023/raw_push2ex.json",
+            "sha256": "9c927367fe4f72d7d1400991e6082466b8789b6ef665e73e0a96b0ef497b7da7"
+          },
+          {
+            "path": "20261026/raw_kpl.json",
+            "sha256": "4c1652d6dd4ad9dc4bca5ec36414f2decb8d8577c3bc4e63bf110c524d3849f5"
+          },
+          {
+            "path": "20261026/raw_push2ex.json",
+            "sha256": "eaf174874ba920dffb5d2bcd46b858f47cb11b7b2fd7456b284d10508c140dfb"
+          },
+          {
+            "path": "20261028/raw_kpl.json",
+            "sha256": "4c9ec7ef29e1605a3004775318d2b1002d46094ac44f497c481b4ae324e560c7"
+          },
+          {
+            "path": "20261028/raw_push2ex.json",
+            "sha256": "84a99b499c7f233215d19973dd611f30c079755ee9653a0fb1570a5950856159"
+          },
+          {
+            "path": "20261029/raw_kpl.json",
+            "sha256": "21d50f83253ce47872bbb8fa43e40b932b387cb5886b63973d222c8bae6556ec"
+          },
+          {
+            "path": "20261029/raw_push2ex.json",
+            "sha256": "6371d615ce58dc924b05aa1a3d52a8de5d7a25b006070710d1745de7a54b1647"
+          },
+          {
+            "path": "20261030/raw_kpl.json",
+            "sha256": "0d66691180d9eaf977ab7e38d0ebec5d844fafb176328fb3e468d5311ac9a883"
+          },
+          {
+            "path": "20261030/raw_push2ex.json",
+            "sha256": "914460e7a8246541f71947545d60bd0d06d42bae345f4987b7705f9d8a61af45"
+          },
+          {
+            "path": "https://www.kaipanla.com/article/39873",
+            "sha256": null
+          }
+        ],
+        "rationale": "KPL raw col_15 与 Eastmoney push2ex.limit_count 在 6 个实际交易日、344 组同股样本中 344/344 精确相等；KPL 响应的 PidType 梯队与该值一致，且最高梯队样本 col_15 可大于 PidType=5 的分组上限，支持它表示当前连续涨停板数/连板高度。开盘啦官方材料确认其产品按一板、二板及更高连板梯队展示。公开资料仍未给出 DailyLimitPerformance row[15] 的精确契约，因此仅接受进入字段契约审查，不直接提升注册表状态。",
+        "reviewed_at": "2026-10-31T10:22:38+08:00",
+        "reviewer": "Codex"
+      },
+      "history": [
+        {
+          "candidate_id": "cc1_72736e64de7975b16feedf597d0cc1c005d4f45783550a9ffac6f3c6c8cde157",
+          "disposition": "accepted_for_adjudication",
+          "duplicate_of": null,
+          "event_id": "5c62cf757b70c3fd6e63c7871c0fac554b90dba8065e6534bb08409d2839731e",
+          "evidence_refs": [
+            {
+              "path": "collision_research_20261031/exploratory/20261031/20261031_collision_report.json",
+              "sha256": "c2d8c0bbc8e875fed749da1d6dafcc0c3e4673a6238cc743fd3cbf3734ae86d1"
+            },
+            {
+              "path": "20261021/raw_kpl.json",
+              "sha256": "5fce3039b5043210510a1d7fda9f7c9f34ab2012b8efb9ab4ede8d1d5a999d82"
+            },
+            {
+              "path": "20261021/raw_push2ex.json",
+              "sha256": "c4512cf688f55f9f3ed5006f2ec838cf13460c09c6c4411c7c77a7b7fa3630c7"
+            },
+            {
+              "path": "20261023/raw_kpl.json",
+              "sha256": "dba3db427ce21d26650ff4612d31c91e3dfced40ec245add424609b8d5e38069"
+            },
+            {
+              "path": "20261023/raw_push2ex.json",
+              "sha256": "9c927367fe4f72d7d1400991e6082466b8789b6ef665e73e0a96b0ef497b7da7"
+            },
+            {
+              "path": "20261026/raw_kpl.json",
+              "sha256": "4c1652d6dd4ad9dc4bca5ec36414f2decb8d8577c3bc4e63bf110c524d3849f5"
+            },
+            {
+              "path": "20261026/raw_push2ex.json",
+              "sha256": "eaf174874ba920dffb5d2bcd46b858f47cb11b7b2fd7456b284d10508c140dfb"
+            },
+            {
+              "path": "20261028/raw_kpl.json",
+              "sha256": "4c9ec7ef29e1605a3004775318d2b1002d46094ac44f497c481b4ae324e560c7"
+            },
+            {
+              "path": "20261028/raw_push2ex.json",
+              "sha256": "84a99b499c7f233215d19973dd611f30c079755ee9653a0fb1570a5950856159"
+            },
+            {
+              "path": "20261029/raw_kpl.json",
+              "sha256": "21d50f83253ce47872bbb8fa43e40b932b387cb5886b63973d222c8bae6556ec"
+            },
+            {
+              "path": "20261029/raw_push2ex.json",
+              "sha256": "6371d615ce58dc924b05aa1a3d52a8de5d7a25b006070710d1745de7a54b1647"
+            },
+            {
+              "path": "20261030/raw_kpl.json",
+              "sha256": "0d66691180d9eaf977ab7e38d0ebec5d844fafb176328fb3e468d5311ac9a883"
+            },
+            {
+              "path": "20261030/raw_push2ex.json",
+              "sha256": "914460e7a8246541f71947545d60bd0d06d42bae345f4987b7705f9d8a61af45"
+            },
+            {
+              "path": "https://www.kaipanla.com/article/39873",
+              "sha256": null
+            }
+          ],
+          "rationale": "KPL raw col_15 与 Eastmoney push2ex.limit_count 在 6 个实际交易日、344 组同股样本中 344/344 精确相等；KPL 响应的 PidType 梯队与该值一致，且最高梯队样本 col_15 可大于 PidType=5 的分组上限，支持它表示当前连续涨停板数/连板高度。开盘啦官方材料确认其产品按一板、二板及更高连板梯队展示。公开资料仍未给出 DailyLimitPerformance row[15] 的精确契约，因此仅接受进入字段契约审查，不直接提升注册表状态。",
+          "reviewed_at": "2026-10-31T10:22:38+08:00",
+          "reviewer": "Codex"
+        }
+      ],
+      "identity": {
+        "evidence": {
+          "anchor_basis": "independent_source",
+          "daily_informative_hit_counts": {
+            "T:20261021": 50,
+            "T:20261023": 82,
+            "T:20261026": 55,
+            "T:20261028": 71,
+            "T:20261029": 39,
+            "T:20261030": 47
+          },
+          "daily_informative_sample_counts": {
+            "T:20261021": 50,
+            "T:20261023": 82,
+            "T:20261026": 55,
+            "T:20261028": 71,
+            "T:20261029": 39,
+            "T:20261030": 47
+          },
+          "daily_sample_counts": {
+            "T:20261021": 50,
+            "T:20261023": 82,
+            "T:20261026": 55,
+            "T:20261028": 71,
+            "T:20261029": 39,
+            "T:20261030": 47
+          },
+          "days_ge_threshold": 6,
+          "distinct_days": [
+            "T:20261021",
+            "T:20261023",
+            "T:20261026",
+            "T:20261028",
+            "T:20261029",
+            "T:20261030"
+          ],
+          "evidence_sources": [
+            "eastmoney",
+            "kpl"
+          ],
+          "excluded_intraday_pairs": 0,
+          "excluded_unknown_phase_pairs": 0,
+          "exploratory": true,
+          "left": "kpl.raw_columns.col_15",
+          "level": "L4",
+          "n_days": 6,
+          "n_informative_pairs": 344,
+          "n_pairs": 344,
+          "overall_hit": 1.0,
+          "ratio": null,
+          "right": "push2ex.limit_count",
+          "same_code": false,
+          "source_independence_confirmed": true,
+          "statistical_level": "L1"
+        },
+        "kind": "l4_candidate",
+        "method_version": "collision-candidate-v1",
+        "schema_version": 1
+      }
+    },
     "cc1_76f0b4aea5d057d1de08ec87eae1c68f04b4d6aef5160f704547e74556bf1e3c": {
       "current": {
         "candidate_id": "cc1_76f0b4aea5d057d1de08ec87eae1c68f04b4d6aef5160f704547e74556bf1e3c",
@@ -1250,6 +2605,168 @@
         "schema_version": 1
       }
     },
+    "cc1_86c0f21648d39082cadf649b173b8f5508c45a0951431ac2cb2ea47522d11c7e": {
+      "current": {
+        "candidate_id": "cc1_86c0f21648d39082cadf649b173b8f5508c45a0951431ac2cb2ea47522d11c7e",
+        "disposition": "needs_external_evidence",
+        "duplicate_of": null,
+        "event_id": "2a3842ff28588fd26cacc7cc30226a68d773d97d7a2905a61e48d136a03c970b",
+        "evidence_refs": [
+          {
+            "path": "20261031/20261031_collision_report.json",
+            "sha256": "04305268a80765cdd787f4b5e0d15a079376b673d7d64f67dee6bb6154c1cfc1"
+          },
+          {
+            "path": "20261030/raw_event_dc.json",
+            "sha256": "24d47a03f90c2b6b58c7bae3da9c3e686105c22fc2e59ba3708091e14defedf7"
+          },
+          {
+            "path": "20261030/raw_ftshare_rest.json",
+            "sha256": "399284e82da7336e749768b0b7900e2ee724c9390d01303acf0d4dc0c61aecb5"
+          }
+        ],
+        "rationale": "候选只由共享词 shares 触发，未证明公告表决字段 EACHBALLOT_SHARES 与 FTShare 总股本 shares 的统计对象、期间或单位相同；需要发行方字段契约。",
+        "reviewed_at": "2026-10-31T10:12:32+08:00",
+        "reviewer": "Codex"
+      },
+      "history": [
+        {
+          "candidate_id": "cc1_86c0f21648d39082cadf649b173b8f5508c45a0951431ac2cb2ea47522d11c7e",
+          "disposition": "needs_external_evidence",
+          "duplicate_of": null,
+          "event_id": "2a3842ff28588fd26cacc7cc30226a68d773d97d7a2905a61e48d136a03c970b",
+          "evidence_refs": [
+            {
+              "path": "20261031/20261031_collision_report.json",
+              "sha256": "04305268a80765cdd787f4b5e0d15a079376b673d7d64f67dee6bb6154c1cfc1"
+            },
+            {
+              "path": "20261030/raw_event_dc.json",
+              "sha256": "24d47a03f90c2b6b58c7bae3da9c3e686105c22fc2e59ba3708091e14defedf7"
+            },
+            {
+              "path": "20261030/raw_ftshare_rest.json",
+              "sha256": "399284e82da7336e749768b0b7900e2ee724c9390d01303acf0d4dc0c61aecb5"
+            }
+          ],
+          "rationale": "候选只由共享词 shares 触发，未证明公告表决字段 EACHBALLOT_SHARES 与 FTShare 总股本 shares 的统计对象、期间或单位相同；需要发行方字段契约。",
+          "reviewed_at": "2026-10-31T10:12:32+08:00",
+          "reviewer": "Codex"
+        }
+      ],
+      "identity": {
+        "evidence": {
+          "evidence_sources": [
+            "event_dc",
+            "ftshare_rest"
+          ],
+          "left": "event_dc.EACHBALLOT_SHARES",
+          "methods": [
+            {
+              "method": "semantic_label",
+              "shared_tokens": [
+                "shares"
+              ],
+              "token_jaccard": 0.5
+            }
+          ],
+          "right": "ftshare_rest.shares",
+          "sample_codes": [
+            "000007",
+            "000011"
+          ],
+          "sample_count": 12,
+          "sample_dates": [
+            "T:20261021",
+            "T:20261023",
+            "T:20261026",
+            "T:20261028",
+            "T:20261029",
+            "T:20261030"
+          ]
+        },
+        "kind": "method_pair",
+        "method_version": "collision-candidate-v1",
+        "schema_version": 1
+      }
+    },
+    "cc1_96782dff0af2cd2d22a23107b79e6a5967c9d2c427b2188c34caa6e7e01be4b0": {
+      "current": {
+        "candidate_id": "cc1_96782dff0af2cd2d22a23107b79e6a5967c9d2c427b2188c34caa6e7e01be4b0",
+        "disposition": "insufficient_evidence",
+        "duplicate_of": null,
+        "event_id": "8852f21e190cbc194c71a57cdc4ab8b07c4087e7f925267bd4000e2be911d615",
+        "evidence_refs": [
+          {
+            "path": "20261031/20261031_collision_report.json",
+            "sha256": "04305268a80765cdd787f4b5e0d15a079376b673d7d64f67dee6bb6154c1cfc1"
+          }
+        ],
+        "rationale": "候选仅覆盖 2026-10-23 单日 14 组，Pearson 0.19、Spearman 0.69；样本和一致性不足以确认 push2.f140 与 ZHB 日涨幅字段同义，且未找到逐路径上游契约。",
+        "reviewed_at": "2026-10-31T10:12:32+08:00",
+        "reviewer": "Codex"
+      },
+      "history": [
+        {
+          "candidate_id": "cc1_96782dff0af2cd2d22a23107b79e6a5967c9d2c427b2188c34caa6e7e01be4b0",
+          "disposition": "insufficient_evidence",
+          "duplicate_of": null,
+          "event_id": "8852f21e190cbc194c71a57cdc4ab8b07c4087e7f925267bd4000e2be911d615",
+          "evidence_refs": [
+            {
+              "path": "20261031/20261031_collision_report.json",
+              "sha256": "04305268a80765cdd787f4b5e0d15a079376b673d7d64f67dee6bb6154c1cfc1"
+            }
+          ],
+          "rationale": "候选仅覆盖 2026-10-23 单日 14 组，Pearson 0.19、Spearman 0.69；样本和一致性不足以确认 push2.f140 与 ZHB 日涨幅字段同义，且未找到逐路径上游契约。",
+          "reviewed_at": "2026-10-31T10:12:32+08:00",
+          "reviewer": "Codex"
+        }
+      ],
+      "identity": {
+        "evidence": {
+          "evidence_sources": [
+            "push2",
+            "zhb"
+          ],
+          "left": "push2.f140",
+          "methods": [
+            {
+              "leave_one_out_max": 0.4786,
+              "leave_one_out_min": 0.1557,
+              "leave_one_out_sign_stable": true,
+              "method": "robust_correlation",
+              "pearson": 0.1906,
+              "spearman": 0.6879
+            }
+          ],
+          "right": "zhb.stat.change_pct",
+          "sample_codes": [
+            "000007",
+            "000037",
+            "000568",
+            "002034",
+            "300031",
+            "300788",
+            "600309",
+            "600519",
+            "600675",
+            "601288",
+            "688327",
+            "688553",
+            "688589",
+            "920118"
+          ],
+          "sample_count": 14,
+          "sample_dates": [
+            "T:20261023"
+          ]
+        },
+        "kind": "method_pair",
+        "method_version": "collision-candidate-v1",
+        "schema_version": 1
+      }
+    },
     "cc1_9695083c1ae031a29df8f4fde08d9343646ef82f78c61f2d2576ffed98a507b2": {
       "current": {
         "candidate_id": "cc1_9695083c1ae031a29df8f4fde08d9343646ef82f78c61f2d2576ffed98a507b2",
@@ -1335,6 +2852,272 @@
           "statistical_level": "L1"
         },
         "kind": "l1_contract_candidate",
+        "method_version": "collision-candidate-v1",
+        "schema_version": 1
+      }
+    },
+    "cc1_ad593b9f2d7a0749c09503285a67bb8c15feb12fde32f3347e7936d89415a282": {
+      "current": {
+        "candidate_id": "cc1_ad593b9f2d7a0749c09503285a67bb8c15feb12fde32f3347e7936d89415a282",
+        "disposition": "needs_external_evidence",
+        "duplicate_of": null,
+        "event_id": "d95cffe6b4398385ad17f771fef3472510d843f3c74ae6bcd6e200751224fc7d",
+        "evidence_refs": [
+          {
+            "path": "20261031/20261031_collision_report.json",
+            "sha256": "04305268a80765cdd787f4b5e0d15a079376b673d7d64f67dee6bb6154c1cfc1"
+          }
+        ],
+        "rationale": "42 组、3 个交易日的样本显示较强负向时间序列相关，但相关性不能解释 Tencent[86] 与 push2.f104 的字段语义；Tencent[86] 的注册表语义本身仍有冲突，且未找到两个精确路径的上游契约。",
+        "reviewed_at": "2026-10-31T10:12:32+08:00",
+        "reviewer": "Codex"
+      },
+      "history": [
+        {
+          "candidate_id": "cc1_ad593b9f2d7a0749c09503285a67bb8c15feb12fde32f3347e7936d89415a282",
+          "disposition": "needs_external_evidence",
+          "duplicate_of": null,
+          "event_id": "d95cffe6b4398385ad17f771fef3472510d843f3c74ae6bcd6e200751224fc7d",
+          "evidence_refs": [
+            {
+              "path": "20261031/20261031_collision_report.json",
+              "sha256": "04305268a80765cdd787f4b5e0d15a079376b673d7d64f67dee6bb6154c1cfc1"
+            }
+          ],
+          "rationale": "42 组、3 个交易日的样本显示较强负向时间序列相关，但相关性不能解释 Tencent[86] 与 push2.f104 的字段语义；Tencent[86] 的注册表语义本身仍有冲突，且未找到两个精确路径的上游契约。",
+          "reviewed_at": "2026-10-31T10:12:32+08:00",
+          "reviewer": "Codex"
+        }
+      ],
+      "identity": {
+        "evidence": {
+          "evidence_sources": [
+            "push2",
+            "tencent"
+          ],
+          "left": "tencent[86]",
+          "methods": [
+            {
+              "median_abs_pearson": 0.8769,
+              "method": "per_stock_time_series",
+              "sample_dates": [
+                "T:20261023",
+                "T:20261026",
+                "T:20261029"
+              ],
+              "sign_consistency": 0.875,
+              "stock_correlations": [
+                {
+                  "code": "000007",
+                  "dates": [
+                    "T:20261023",
+                    "T:20261026",
+                    "T:20261029"
+                  ],
+                  "pearson": -0.9993
+                },
+                {
+                  "code": "000037",
+                  "dates": [
+                    "T:20261023",
+                    "T:20261026",
+                    "T:20261029"
+                  ],
+                  "pearson": -0.8775
+                },
+                {
+                  "code": "000568",
+                  "dates": [
+                    "T:20261023",
+                    "T:20261026",
+                    "T:20261029"
+                  ],
+                  "pearson": -0.8764
+                },
+                {
+                  "code": "002034",
+                  "dates": [
+                    "T:20261023",
+                    "T:20261026",
+                    "T:20261029"
+                  ],
+                  "pearson": -0.8811
+                },
+                {
+                  "code": "300031",
+                  "dates": [
+                    "T:20261023",
+                    "T:20261026",
+                    "T:20261029"
+                  ],
+                  "pearson": -0.7735
+                },
+                {
+                  "code": "300788",
+                  "dates": [
+                    "T:20261023",
+                    "T:20261026",
+                    "T:20261029"
+                  ],
+                  "pearson": 0.7916
+                },
+                {
+                  "code": "600309",
+                  "dates": [
+                    "T:20261023",
+                    "T:20261026",
+                    "T:20261029"
+                  ],
+                  "pearson": -0.7873
+                },
+                {
+                  "code": "600675",
+                  "dates": [
+                    "T:20261023",
+                    "T:20261026",
+                    "T:20261029"
+                  ],
+                  "pearson": -0.999
+                }
+              ],
+              "stocks": 8
+            }
+          ],
+          "right": "push2.f104",
+          "sample_codes": [
+            "000007",
+            "000037",
+            "000568",
+            "002034",
+            "300031",
+            "300788",
+            "600309",
+            "600519",
+            "600675",
+            "601288",
+            "688327",
+            "688553",
+            "688589",
+            "920118"
+          ],
+          "sample_count": 42,
+          "sample_dates": [
+            "T:20261023",
+            "T:20261026",
+            "T:20261029"
+          ]
+        },
+        "kind": "method_pair",
+        "method_version": "collision-candidate-v1",
+        "schema_version": 1
+      }
+    },
+    "cc1_ad7b6eef7185d7c414b5d92176053370a9d2b5c69355a22f98e30c0ce5fdc9e3": {
+      "current": {
+        "candidate_id": "cc1_ad7b6eef7185d7c414b5d92176053370a9d2b5c69355a22f98e30c0ce5fdc9e3",
+        "disposition": "needs_external_evidence",
+        "duplicate_of": null,
+        "event_id": "b6a98a4174283e3737ca98f14c6cd366f817241f7694df292e5bb1b184edc429",
+        "evidence_refs": [
+          {
+            "path": "20261031/20261031_collision_report.json",
+            "sha256": "04305268a80765cdd787f4b5e0d15a079376b673d7d64f67dee6bb6154c1cfc1"
+          },
+          {
+            "path": "20261030/raw_kpl.json",
+            "sha256": "0d66691180d9eaf977ab7e38d0ebec5d844fafb176328fb3e468d5311ac9a883"
+          },
+          {
+            "path": "20261030/raw_kph.json",
+            "sha256": "88cd9a5a2ec8eb76122f7d531f084fe344140f3869563fb7845ce422c099ff41"
+          },
+          {
+            "path": "20261030/raw_push2ex.json",
+            "sha256": "914460e7a8246541f71947545d60bd0d06d42bae345f4987b7705f9d8a61af45"
+          }
+        ],
+        "rationale": "候选主要由语义标签产生，缺少数值定案；若按目录日期比较，部分 KPH 样本实际交易日与 KPL 不同。须先取得精确 API 字段契约并按各自实际 trade_date 对齐后再核验。",
+        "reviewed_at": "2026-10-31T10:12:32+08:00",
+        "reviewer": "Codex"
+      },
+      "history": [
+        {
+          "candidate_id": "cc1_ad7b6eef7185d7c414b5d92176053370a9d2b5c69355a22f98e30c0ce5fdc9e3",
+          "disposition": "needs_external_evidence",
+          "duplicate_of": null,
+          "event_id": "b6a98a4174283e3737ca98f14c6cd366f817241f7694df292e5bb1b184edc429",
+          "evidence_refs": [
+            {
+              "path": "20261031/20261031_collision_report.json",
+              "sha256": "04305268a80765cdd787f4b5e0d15a079376b673d7d64f67dee6bb6154c1cfc1"
+            },
+            {
+              "path": "20261030/raw_kpl.json",
+              "sha256": "0d66691180d9eaf977ab7e38d0ebec5d844fafb176328fb3e468d5311ac9a883"
+            },
+            {
+              "path": "20261030/raw_kph.json",
+              "sha256": "88cd9a5a2ec8eb76122f7d531f084fe344140f3869563fb7845ce422c099ff41"
+            },
+            {
+              "path": "20261030/raw_push2ex.json",
+              "sha256": "914460e7a8246541f71947545d60bd0d06d42bae345f4987b7705f9d8a61af45"
+            }
+          ],
+          "rationale": "候选主要由语义标签产生，缺少数值定案；若按目录日期比较，部分 KPH 样本实际交易日与 KPL 不同。须先取得精确 API 字段契约并按各自实际 trade_date 对齐后再核验。",
+          "reviewed_at": "2026-10-31T10:12:32+08:00",
+          "reviewer": "Codex"
+        }
+      ],
+      "identity": {
+        "evidence": {
+          "evidence_sources": [
+            "kph",
+            "push2ex"
+          ],
+          "left": "push2ex.first_limit_time",
+          "methods": [
+            {
+              "method": "semantic_label",
+              "shared_tokens": [
+                "limit",
+                "time"
+              ],
+              "token_jaccard": 0.6667
+            }
+          ],
+          "right": "kph.limit_time",
+          "sample_codes": [
+            "000156",
+            "000410",
+            "000417",
+            "000518",
+            "000525",
+            "000554",
+            "000559",
+            "000568",
+            "000596",
+            "000676",
+            "000700",
+            "000716",
+            "000788",
+            "000810",
+            "000897",
+            "000995",
+            "001201",
+            "001216",
+            "001219",
+            "001239"
+          ],
+          "sample_count": 189,
+          "sample_dates": [
+            "T:20261021",
+            "T:20261023",
+            "T:20261028",
+            "T:20261030"
+          ]
+        },
+        "kind": "method_pair",
         "method_version": "collision-candidate-v1",
         "schema_version": 1
       }
@@ -1709,6 +3492,147 @@
         "schema_version": 1
       }
     },
+    "cc1_c0a6ba974c8b0ca40c9d4172ea91f06d8ed2630dac3397e0d6c96534658f056b": {
+      "current": {
+        "candidate_id": "cc1_c0a6ba974c8b0ca40c9d4172ea91f06d8ed2630dac3397e0d6c96534658f056b",
+        "disposition": "accepted_for_adjudication",
+        "duplicate_of": null,
+        "event_id": "1ea98afd20f2d4292c69045416046bccf2f3b2d70fd912c5bf4c3644f96eee89",
+        "evidence_refs": [
+          {
+            "path": "collision_research_20261031/exploratory/20261031/20261031_collision_report.json",
+            "sha256": "a13b7ba5b96a4a8dc18da7a923a94b813003599005bdb0e3c087b06178cf22ef"
+          },
+          {
+            "path": "20261030/raw_kpl.json",
+            "sha256": "0d66691180d9eaf977ab7e38d0ebec5d844fafb176328fb3e468d5311ac9a883"
+          },
+          {
+            "path": "20261030/raw_push2ex.json",
+            "sha256": "914460e7a8246541f71947545d60bd0d06d42bae345f4987b7705f9d8a61af45"
+          },
+          {
+            "path": "20261030/raw_tdx.json",
+            "sha256": "f62eee59dae5137d4740243b8ba55107ca8d6d3b3423c057133f25ae665d8910"
+          },
+          {
+            "path": "20261030/raw_tencent.json",
+            "sha256": "33bf553f85bfd693a4b57a0bb984164f42e650a8130ba7d108663a3c8ab7a990"
+          },
+          {
+            "path": "20261030/raw_sina.json",
+            "sha256": "30608da7c14028e3a36a5b2e95b56ae1a6bd955877f9f04ca11edbf78161dfe9"
+          },
+          {
+            "path": "https://www.kaipanla.com/page/index.html?ntsing=1769018400014",
+            "sha256": null
+          }
+        ],
+        "rationale": "探索报告中的 KPL col_21 与 push2ex.price 六日 344/344 逐股同日样本满足 Eastmoney 值 = KPL 值 × 1000；另有 5 个交易日的 5 组重叠样本与腾讯、新浪、通达信价格逐值一致，支持 KPL col_21 为以元计的现价。开盘啦官方首页确有“现价”“价格”和“涨幅”展示列。但公开资料未说明该 API 响应 row[21] 的精确字段映射；此决定仅接受进入下一步字段契约审查，不把探索/L4 结果直接升入注册表。",
+        "reviewed_at": "2026-10-31T10:12:32+08:00",
+        "reviewer": "Codex"
+      },
+      "history": [
+        {
+          "candidate_id": "cc1_c0a6ba974c8b0ca40c9d4172ea91f06d8ed2630dac3397e0d6c96534658f056b",
+          "disposition": "accepted_for_adjudication",
+          "duplicate_of": null,
+          "event_id": "1ea98afd20f2d4292c69045416046bccf2f3b2d70fd912c5bf4c3644f96eee89",
+          "evidence_refs": [
+            {
+              "path": "collision_research_20261031/exploratory/20261031/20261031_collision_report.json",
+              "sha256": "a13b7ba5b96a4a8dc18da7a923a94b813003599005bdb0e3c087b06178cf22ef"
+            },
+            {
+              "path": "20261030/raw_kpl.json",
+              "sha256": "0d66691180d9eaf977ab7e38d0ebec5d844fafb176328fb3e468d5311ac9a883"
+            },
+            {
+              "path": "20261030/raw_push2ex.json",
+              "sha256": "914460e7a8246541f71947545d60bd0d06d42bae345f4987b7705f9d8a61af45"
+            },
+            {
+              "path": "20261030/raw_tdx.json",
+              "sha256": "f62eee59dae5137d4740243b8ba55107ca8d6d3b3423c057133f25ae665d8910"
+            },
+            {
+              "path": "20261030/raw_tencent.json",
+              "sha256": "33bf553f85bfd693a4b57a0bb984164f42e650a8130ba7d108663a3c8ab7a990"
+            },
+            {
+              "path": "20261030/raw_sina.json",
+              "sha256": "30608da7c14028e3a36a5b2e95b56ae1a6bd955877f9f04ca11edbf78161dfe9"
+            },
+            {
+              "path": "https://www.kaipanla.com/page/index.html?ntsing=1769018400014",
+              "sha256": null
+            }
+          ],
+          "rationale": "探索报告中的 KPL col_21 与 push2ex.price 六日 344/344 逐股同日样本满足 Eastmoney 值 = KPL 值 × 1000；另有 5 个交易日的 5 组重叠样本与腾讯、新浪、通达信价格逐值一致，支持 KPL col_21 为以元计的现价。开盘啦官方首页确有“现价”“价格”和“涨幅”展示列。但公开资料未说明该 API 响应 row[21] 的精确字段映射；此决定仅接受进入下一步字段契约审查，不把探索/L4 结果直接升入注册表。",
+          "reviewed_at": "2026-10-31T10:12:32+08:00",
+          "reviewer": "Codex"
+        }
+      ],
+      "identity": {
+        "evidence": {
+          "anchor_basis": "independent_source",
+          "daily_informative_hit_counts": {
+            "T:20261021": 50,
+            "T:20261023": 82,
+            "T:20261026": 55,
+            "T:20261028": 71,
+            "T:20261029": 39,
+            "T:20261030": 47
+          },
+          "daily_informative_sample_counts": {
+            "T:20261021": 50,
+            "T:20261023": 82,
+            "T:20261026": 55,
+            "T:20261028": 71,
+            "T:20261029": 39,
+            "T:20261030": 47
+          },
+          "daily_sample_counts": {
+            "T:20261021": 50,
+            "T:20261023": 82,
+            "T:20261026": 55,
+            "T:20261028": 71,
+            "T:20261029": 39,
+            "T:20261030": 47
+          },
+          "days_ge_threshold": 6,
+          "distinct_days": [
+            "T:20261021",
+            "T:20261023",
+            "T:20261026",
+            "T:20261028",
+            "T:20261029",
+            "T:20261030"
+          ],
+          "evidence_sources": [
+            "eastmoney",
+            "kpl"
+          ],
+          "excluded_intraday_pairs": 0,
+          "excluded_unknown_phase_pairs": 0,
+          "exploratory": true,
+          "left": "kpl.raw_columns.col_21",
+          "level": "L4",
+          "n_days": 6,
+          "n_informative_pairs": null,
+          "n_pairs": 344,
+          "overall_hit": 1.0,
+          "ratio": 1000,
+          "right": "push2ex.price",
+          "same_code": false,
+          "source_independence_confirmed": true,
+          "statistical_level": "L1-U"
+        },
+        "kind": "l4_candidate",
+        "method_version": "collision-candidate-v1",
+        "schema_version": 1
+      }
+    },
     "cc1_c339ca78644897840b1b93b3f35c9de0a14654264eb710b1e4324f116bcf7543": {
       "current": {
         "candidate_id": "cc1_c339ca78644897840b1b93b3f35c9de0a14654264eb710b1e4324f116bcf7543",
@@ -1978,6 +3902,210 @@
           "statistical_level": "L1"
         },
         "kind": "l1_contract_candidate",
+        "method_version": "collision-candidate-v1",
+        "schema_version": 1
+      }
+    },
+    "cc1_ee6da338607fa971b96ec6e260bd71d4b66c346bf6bd98ffa7d8afe2e55b5d40": {
+      "current": {
+        "candidate_id": "cc1_ee6da338607fa971b96ec6e260bd71d4b66c346bf6bd98ffa7d8afe2e55b5d40",
+        "disposition": "rejected",
+        "duplicate_of": null,
+        "event_id": "fd26ea7ce2bb6ee05908a4b2ca81b98133c53f01cacd992c4235562dc0baaf03",
+        "evidence_refs": [
+          {
+            "path": "20261031/20261031_collision_report.json",
+            "sha256": "04305268a80765cdd787f4b5e0d15a079376b673d7d64f67dee6bb6154c1cfc1"
+          },
+          {
+            "path": "20261030/raw_kpl.json",
+            "sha256": "0d66691180d9eaf977ab7e38d0ebec5d844fafb176328fb3e468d5311ac9a883"
+          },
+          {
+            "path": "20261030/raw_push2ex.json",
+            "sha256": "914460e7a8246541f71947545d60bd0d06d42bae345f4987b7705f9d8a61af45"
+          }
+        ],
+        "rationale": "6 个交易日共 344 组同股样本中 col_16 与 limit_fund 精确匹配为 0/344；col_16 主要为 0/1，而 limit_fund 为金额数量级。排除该字段对关系，不对 col_16 本身作语义裁定。",
+        "reviewed_at": "2026-10-31T10:12:32+08:00",
+        "reviewer": "Codex"
+      },
+      "history": [
+        {
+          "candidate_id": "cc1_ee6da338607fa971b96ec6e260bd71d4b66c346bf6bd98ffa7d8afe2e55b5d40",
+          "disposition": "rejected",
+          "duplicate_of": null,
+          "event_id": "fd26ea7ce2bb6ee05908a4b2ca81b98133c53f01cacd992c4235562dc0baaf03",
+          "evidence_refs": [
+            {
+              "path": "20261031/20261031_collision_report.json",
+              "sha256": "04305268a80765cdd787f4b5e0d15a079376b673d7d64f67dee6bb6154c1cfc1"
+            },
+            {
+              "path": "20261030/raw_kpl.json",
+              "sha256": "0d66691180d9eaf977ab7e38d0ebec5d844fafb176328fb3e468d5311ac9a883"
+            },
+            {
+              "path": "20261030/raw_push2ex.json",
+              "sha256": "914460e7a8246541f71947545d60bd0d06d42bae345f4987b7705f9d8a61af45"
+            }
+          ],
+          "rationale": "6 个交易日共 344 组同股样本中 col_16 与 limit_fund 精确匹配为 0/344；col_16 主要为 0/1，而 limit_fund 为金额数量级。排除该字段对关系，不对 col_16 本身作语义裁定。",
+          "reviewed_at": "2026-10-31T10:12:32+08:00",
+          "reviewer": "Codex"
+        }
+      ],
+      "identity": {
+        "evidence": {
+          "evidence_sources": [
+            "kpl",
+            "push2ex"
+          ],
+          "left": "kpl.raw_columns.col_16",
+          "methods": [
+            {
+              "median_abs_pearson": 0.8934,
+              "method": "per_stock_time_series",
+              "sample_dates": [
+                "T:20261021",
+                "T:20261023",
+                "T:20261026",
+                "T:20261028",
+                "T:20261029",
+                "T:20261030"
+              ],
+              "sign_consistency": 1.0,
+              "stock_correlations": [
+                {
+                  "code": "002086",
+                  "dates": [
+                    "T:20261021",
+                    "T:20261026",
+                    "T:20261029",
+                    "T:20261030"
+                  ],
+                  "pearson": -0.8996
+                },
+                {
+                  "code": "002696",
+                  "dates": [
+                    "T:20261021",
+                    "T:20261026",
+                    "T:20261028"
+                  ],
+                  "pearson": -0.9516
+                },
+                {
+                  "code": "600715",
+                  "dates": [
+                    "T:20261021",
+                    "T:20261028",
+                    "T:20261029"
+                  ],
+                  "pearson": -0.9471
+                },
+                {
+                  "code": "600838",
+                  "dates": [
+                    "T:20261021",
+                    "T:20261023",
+                    "T:20261026"
+                  ],
+                  "pearson": -0.3195
+                },
+                {
+                  "code": "000559",
+                  "dates": [
+                    "T:20261023",
+                    "T:20261026",
+                    "T:20261028"
+                  ],
+                  "pearson": -0.6661
+                },
+                {
+                  "code": "000678",
+                  "dates": [
+                    "T:20261023",
+                    "T:20261026",
+                    "T:20261028"
+                  ],
+                  "pearson": -0.972
+                },
+                {
+                  "code": "603337",
+                  "dates": [
+                    "T:20261023",
+                    "T:20261026",
+                    "T:20261028"
+                  ],
+                  "pearson": -0.6034
+                },
+                {
+                  "code": "001219",
+                  "dates": [
+                    "T:20261026",
+                    "T:20261028",
+                    "T:20261029",
+                    "T:20261030"
+                  ],
+                  "pearson": -0.9821
+                },
+                {
+                  "code": "002708",
+                  "dates": [
+                    "T:20261026",
+                    "T:20261028",
+                    "T:20261029"
+                  ],
+                  "pearson": -0.8873
+                },
+                {
+                  "code": "603131",
+                  "dates": [
+                    "T:20261028",
+                    "T:20261029",
+                    "T:20261030"
+                  ],
+                  "pearson": -0.8378
+                }
+              ],
+              "stocks": 10
+            }
+          ],
+          "right": "push2ex.limit_fund",
+          "sample_codes": [
+            "000156",
+            "000410",
+            "000411",
+            "000417",
+            "000518",
+            "000525",
+            "000530",
+            "000554",
+            "000559",
+            "000568",
+            "000596",
+            "000635",
+            "000670",
+            "000676",
+            "000678",
+            "000700",
+            "000701",
+            "000716",
+            "000788",
+            "000810"
+          ],
+          "sample_count": 344,
+          "sample_dates": [
+            "T:20261021",
+            "T:20261023",
+            "T:20261026",
+            "T:20261028",
+            "T:20261029",
+            "T:20261030"
+          ]
+        },
+        "kind": "method_pair",
         "method_version": "collision-candidate-v1",
         "schema_version": 1
       }
@@ -2456,8 +4584,85 @@
         "method_version": "collision-candidate-v1",
         "schema_version": 1
       }
+    },
+    "cc1_fb783636c55545f68e9ead54be3046e38193757699d2ece6755632c36c79c53f": {
+      "current": {
+        "candidate_id": "cc1_fb783636c55545f68e9ead54be3046e38193757699d2ece6755632c36c79c53f",
+        "disposition": "insufficient_evidence",
+        "duplicate_of": null,
+        "event_id": "badcfa9c860d83a00504105ff04d2d0f0872af026c5e5aa200d7c487f741d312",
+        "evidence_refs": [
+          {
+            "path": "20261031/20261031_collision_report.json",
+            "sha256": "04305268a80765cdd787f4b5e0d15a079376b673d7d64f67dee6bb6154c1cfc1"
+          }
+        ],
+        "rationale": "候选仅覆盖 2026-10-23 单日 14 组；push2.f193 与 ZHB 250k 价格变动字段的相关性不足以确认字段含义或单位。",
+        "reviewed_at": "2026-10-31T10:12:32+08:00",
+        "reviewer": "Codex"
+      },
+      "history": [
+        {
+          "candidate_id": "cc1_fb783636c55545f68e9ead54be3046e38193757699d2ece6755632c36c79c53f",
+          "disposition": "insufficient_evidence",
+          "duplicate_of": null,
+          "event_id": "badcfa9c860d83a00504105ff04d2d0f0872af026c5e5aa200d7c487f741d312",
+          "evidence_refs": [
+            {
+              "path": "20261031/20261031_collision_report.json",
+              "sha256": "04305268a80765cdd787f4b5e0d15a079376b673d7d64f67dee6bb6154c1cfc1"
+            }
+          ],
+          "rationale": "候选仅覆盖 2026-10-23 单日 14 组；push2.f193 与 ZHB 250k 价格变动字段的相关性不足以确认字段含义或单位。",
+          "reviewed_at": "2026-10-31T10:12:32+08:00",
+          "reviewer": "Codex"
+        }
+      ],
+      "identity": {
+        "evidence": {
+          "evidence_sources": [
+            "push2",
+            "zhb"
+          ],
+          "left": "push2.f193",
+          "methods": [
+            {
+              "leave_one_out_max": -0.5684,
+              "leave_one_out_min": -0.7603,
+              "leave_one_out_sign_stable": true,
+              "method": "robust_correlation",
+              "pearson": -0.6674,
+              "spearman": -0.6615
+            }
+          ],
+          "right": "zhb.stat2.change_250k_bar",
+          "sample_codes": [
+            "000007",
+            "000037",
+            "000568",
+            "002034",
+            "300031",
+            "300788",
+            "600309",
+            "600519",
+            "600675",
+            "601288",
+            "688327",
+            "688553",
+            "688589",
+            "920118"
+          ],
+          "sample_count": 14,
+          "sample_dates": [
+            "T:20261023"
+          ]
+        },
+        "kind": "method_pair",
+        "method_version": "collision-candidate-v1",
+        "schema_version": 1
+      }
     }
   },
   "schema_version": 1,
-  "updated_at": "2026-10-29T23:25:09+08:00"
+  "updated_at": "2026-10-31T10:22:38+08:00"
 }

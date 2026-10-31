@@ -374,7 +374,8 @@ def get_fuyao_limit_pool(
     date_ms: 交易日零点毫秒戳——**任意交易日盘后回查**(东财 push2ex 仅当日)；
     up 池 sort_field 白名单: last_price/continue_day_cnt/seal_money/limit_up_time。
     up: seal_money/max_seal_money(封单双口径,元)/limit_up_reason/continue_day_text/cnt；
-    down: first/last_limit_time；break: open_times(开板次数)。
+    down: first/last_limit_time；break: open_times(开板次数)、first_seal_time/last_seal_time
+    (首次/最后封板时间，上海时区 HH:mm，可为空)。
     """
     ep = {"up": EP_LIMIT_UP_POOL, "down": EP_LIMIT_DOWN_POOL, "break": EP_LIMIT_BREAK_POOL}.get(
         kind

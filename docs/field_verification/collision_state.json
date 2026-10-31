@@ -8755,16 +8755,16 @@
       "n_days": 3,
       "n_pairs": 60,
       "sample_dates": [
-        "T:20261020",
         "T:20261023",
-        "T:20261028"
+        "T:20261028",
+        "T:20261030"
       ],
       "evidence_sources": [
         "tdx",
         "tencent"
       ],
       "hub_flag": false,
-      "last_seen": "20261029",
+      "last_seen": "20261031",
       "in_registry": true,
       "first_seen": "20261005",
       "status": "confirmed"
@@ -10310,16 +10310,16 @@
       "n_days": 3,
       "n_pairs": 60,
       "sample_dates": [
-        "T:20261020",
         "T:20261023",
-        "T:20261028"
+        "T:20261028",
+        "T:20261030"
       ],
       "evidence_sources": [
         "tdx",
         "tencent"
       ],
       "hub_flag": false,
-      "last_seen": "20261029",
+      "last_seen": "20261031",
       "in_registry": true,
       "first_seen": "20261008",
       "status": "confirmed"
@@ -22638,5 +22638,5 @@
     }
   },
   "legacy_state_version": 1,
-  "updated": "20261029"
+  "updated": "20261031"
 }

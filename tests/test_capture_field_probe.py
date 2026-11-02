@@ -1059,7 +1059,9 @@ def test_eltdx_exposes_preopen_shortline_as_deferred(monkeypatch):
 
     client = SimpleNamespace(
         helpers=FakeHelpers(),
-        quotes=SimpleNamespace(get_snapshots=lambda _codes: {"sh600000": {"last_price": 10.0}}),
+        quotes=SimpleNamespace(
+            get_snapshots=lambda _codes, **_kwargs: {"sh600000": {"last_price": 10.0}}
+        ),
         bars=SimpleNamespace(get=lambda *_args, **_kwargs: []),
         close=lambda: None,
     )
@@ -1118,8 +1120,8 @@ def test_eltdx_captures_bse_snapshot_and_shortline_with_bj_prefix(monkeypatch):
             )
 
     class FakeQuotes:
-        def get_snapshots(self, codes):
-            requested_snapshots.append(list(codes))
+        def get_snapshots(self, codes, *, on_missing="raise"):
+            requested_snapshots.append((list(codes), on_missing))
             return {code: {"code": code, "exchange": "bj", "last_price": 12.34} for code in codes}
 
     def get_bars(code, **_kwargs):
@@ -1144,7 +1146,7 @@ def test_eltdx_captures_bse_snapshot_and_shortline_with_bj_prefix(monkeypatch):
     result = capture_probe.collect_eltdx([{"code": code} for code in pool_codes], lite=False)
 
     assert requested_shortline == ["bj920118", "bj920508"]
-    assert requested_snapshots == [["bj920118", "bj920508"]]
+    assert requested_snapshots == [(["bj920118", "bj920508"], "skip")]
     assert requested_bars == ["sh880005", "bj920118", "bj920508"]
     assert requested_finance == ["bj920118", "bj920508"]
     for code in pool_codes:
@@ -1152,6 +1154,54 @@ def test_eltdx_captures_bse_snapshot_and_shortline_with_bj_prefix(monkeypatch):
         assert result["stocks"][code]["shortline"]["stats_date"] == "2026-10-09"
         assert result["stocks"][code]["kline_day"][0]["code"] == f"bj{code}"
         assert result["stocks"][code]["finance_batch"][0]["market_id"] == 2
+
+
+def test_eltdx_capture_keeps_partial_snapshot_batch_and_retries_only_missing_code(monkeypatch):
+    requested_snapshots = []
+
+    class FakeHelpers:
+        def limit_ladder(self, **_kwargs):
+            return SimpleNamespace(rows=[])
+
+        def theme_strength_rank(self, **_kwargs):
+            return SimpleNamespace(rows=[])
+
+        def stock_theme_strength_rank(self, **_kwargs):
+            return SimpleNamespace(rows=[])
+
+        def realtime_rank(self):
+            return []
+
+        def shortline_indicators(self, codes):
+            return SimpleNamespace(rows=[{"full_code": code} for code in codes])
+
+    class FakeQuotes:
+        def get_snapshots(self, codes, *, on_missing="raise"):
+            requested_snapshots.append((list(codes), on_missing))
+            if len(codes) > 1:
+                return [{"full_code": "sh600000", "last_price": 10.0}]
+            return []
+
+    client = SimpleNamespace(
+        helpers=FakeHelpers(),
+        quotes=FakeQuotes(),
+        bars=SimpleNamespace(get=lambda *_args, **_kwargs: []),
+        close=lambda: None,
+    )
+    fake_eltdx = ModuleType("eltdx")
+    fake_eltdx.TdxClient = lambda **_kwargs: client
+    monkeypatch.setitem(sys.modules, "eltdx", fake_eltdx)
+
+    result = capture_probe.collect_eltdx([{"code": "600000"}, {"code": "000001"}], lite=True)
+
+    assert requested_snapshots == [
+        (["sh600000", "sz000001"], "skip"),
+        (["sz000001"], "raise"),
+    ]
+    assert result["stocks"]["600000"]["quote_snapshot"]["last_price"] == 10.0
+    assert result["stocks"]["000001"]["quote_snapshot"]["__error__"] == (
+        "snapshot request returned no record"
+    )
 
 
 def test_eltdx_capture_does_not_request_unused_f10_news(monkeypatch):
@@ -1174,7 +1224,9 @@ def test_eltdx_capture_does_not_request_unused_f10_news(monkeypatch):
     client = SimpleNamespace(
         helpers=FakeHelpers(),
         quotes=SimpleNamespace(
-            get_snapshots=lambda codes: {code: {"code": code, "last_price": 10.0} for code in codes}
+            get_snapshots=lambda codes, **_kwargs: {
+                code: {"code": code, "last_price": 10.0} for code in codes
+            }
         ),
         bars=SimpleNamespace(get=lambda *_args, **_kwargs: SimpleNamespace(bars=[])),
         corporate=SimpleNamespace(

@@ -166,7 +166,9 @@ def get_limit_down_pool(date_str: str = "") -> List[Dict[str, Any]]:
 
 @cached(category="limit_pool", ttl_seconds=TTL["limit_pool"], trading_day=True)
 @requires_push2  # V16.0: push2ex 与东财共用风控面，标记审计
-def get_yesterday_limit_pool(date_str: str = "") -> List[Dict[str, Any]]:
+def get_yesterday_limit_pool(
+    date_str: str = "", allow_push2ex: bool = True
+) -> List[Dict[str, Any]]:
     """V16.1: 东财昨日涨停池（getYesterdayZTPool）— 昨涨停今表现。
 
     用于计算晋级率/赚钱效应（sht/mak 打板情绪）。
@@ -180,6 +182,72 @@ def get_yesterday_limit_pool(date_str: str = "") -> List[Dict[str, Any]]:
             speed(涨速)/y_first_seal(昨封板时间)/y_limit_count(昨连板数)/
             sector(行业)/zt_days/zt_continuous(N天M板)
     """
+    if not allow_push2ex:
+        # Daily reports avoid push2ex. Rebuild yesterday's pool from THS's dated
+        # limit-up list and the ZHB snapshot only when both dates are explicit and
+        # aligned; missing current rows remain unknown instead of becoming 0%.
+        try:
+            from datetime import datetime as _dt
+            from stock_common.stock_calendar import is_trading_day, previous_trading_day
+            from ._zhb import get_zhb_data_date, get_zhb_full_market_snapshot
+
+            _zhb_date = str(get_zhb_data_date() or "").replace("-", "")
+            _target = str(date_str or _zhb_date).replace("-", "")
+            if len(_target) != 8 or _target != _zhb_date:
+                _debug_log(
+                    f"get_yesterday_limit_pool: aligned ZHB date unavailable "
+                    f"(target={_target or 'unknown'}, zhb={_zhb_date or 'unknown'})"
+                )
+                return []
+            _target_day = _dt.strptime(_target, "%Y%m%d").date()
+            if not is_trading_day(_target_day):
+                _debug_log(
+                    f"get_yesterday_limit_pool: ZHB snapshot date is not a trading day ({_target})"
+                )
+                return []
+            _previous_day = previous_trading_day(_target_day)
+            _previous = _previous_day.strftime("%Y%m%d")
+            if _previous < "20261015":
+                _debug_log(
+                    f"get_yesterday_limit_pool: previous-day source is before retention floor ({_previous})"
+                )
+                return []
+
+            _yesterday_pool = ths_limit_up_pool(_previous) or []
+            _snapshot = get_zhb_full_market_snapshot() or {}
+            _result = []
+            for _item in _yesterday_pool:
+                _code = str(_item.get("code") or "")
+                if not _code:
+                    continue
+                _today = _snapshot.get(_code) or {}
+                _change = _today.get("change_pct")
+                _amplitude = _today.get("amplitude_pct")
+                _result.append(
+                    {
+                        "code": _code,
+                        "name": _item.get("name", ""),
+                        "price": (
+                            _safe_float(_today.get("price"))
+                            if _today.get("price") is not None
+                            else None
+                        ),
+                        "change_pct": _safe_float(_change) if _change is not None else None,
+                        "amplitude_pct": (
+                            _safe_float(_amplitude) if _amplitude is not None else None
+                        ),
+                        "y_limit_count": _safe_float(
+                            _item.get("limit_count") or _item.get("zt_days") or 1
+                        ),
+                        "date": _target,
+                        "y_limit_date": _previous,
+                    }
+                )
+            return _result
+        except Exception as _e:
+            _debug_log(f"get_yesterday_limit_pool aligned THS/ZHB fallback: {_e}")
+            return []
+
     if not date_str:
         from datetime import datetime
 
@@ -226,7 +294,7 @@ def get_yesterday_limit_pool(date_str: str = "") -> List[Dict[str, Any]]:
 
 
 @cached(
-    category="limit_pool_v2",
+    category="limit_pool_v3",
     ttl_seconds=TTL["limit_pool"],
     trading_day=True,
     valid_if=lambda r: bool(
@@ -239,14 +307,15 @@ def get_yesterday_limit_pool(date_str: str = "") -> List[Dict[str, Any]]:
         )
     ),
 )
-@requires_push2  # V17.0.1g: 涨停池同花顺优先, 炸板/跌停池仍走 push2ex → 保留审计
-def get_limit_pool_summary(date_str: str = "") -> Dict[str, Any]:
+@requires_push2  # V17.0.1g: 涨停池同花顺优先, push2ex 仅在显式允许时调用
+def get_limit_pool_summary(date_str: str = "", allow_push2ex: bool = True) -> Dict[str, Any]:
     """获取打板数据汇总（涨停池+炸板池+跌停池）
 
     V17.0.1g(2026-08-16): 涨停池改**同花顺优先**（10jqka 官方 dataapi, 字段更丰富:
     涨停原因/板型/封板率/炸板次数; 与东财 push2ex 62 vs 63 只仅差北交所口径）;
     同花顺无 sector 字段 → 用 TDX 本机 tdxhy 行业注入（零网络, 权威一级行业）;
-    失败兜底东财 push2ex。炸板池/跌停池无同花顺替代, 保持东财 push2ex（用户已确认）.
+    失败可由 push2ex 兜底。daily reports set ``allow_push2ex=False`` and use
+    dated CLS/KPL/Fupan counts plus same-date ZHB fallback instead.
 
     Returns:
         包含涨停/炸板/跌停数量和详细数据的字典
@@ -261,12 +330,12 @@ def get_limit_pool_summary(date_str: str = "") -> Dict[str, Any]:
     zt = ths_limit_up_pool(date_str)
     zt_source = "ths"
     _zt_count_override: Optional[int] = None
-    if not zt:
+    if not zt and allow_push2ex:
         zt = get_limit_up_pool(date_str)
         zt_source = "em"
     if not zt:
         try:
-            _multi = get_limit_pool_multi_source(date_str or None)
+            _multi = get_limit_pool_multi_source(date_str or None, allow_push2ex=allow_push2ex)
             _multi_total = _multi.get("total") if isinstance(_multi, dict) else None
             if isinstance(_multi_total, int) and _multi_total > 0:
                 _zt_count_override = _multi_total
@@ -292,42 +361,53 @@ def get_limit_pool_summary(date_str: str = "") -> Dict[str, Any]:
                 item["sector"] = _ind_map.get(item.get("code") or "", "") or ""
         except Exception as _e:
             _debug_log(f"get_limit_pool_summary tdxhy sector inject: {_e}")
-    zb = get_limit_broken_pool(_zt_date or date_str)
-    dt = get_limit_down_pool(_zt_date or date_str)
+    zb = get_limit_broken_pool(_zt_date or date_str) if allow_push2ex else []
+    dt = get_limit_down_pool(_zt_date or date_str) if allow_push2ex else []
     # V17.0.8(2026-08-26 报告核查): 修复跌停兜底——旧逻辑(ZHB 快照涨跌幅口径)在盘中读到
     # T-1(前一日) 快照, 把昨日跌停误报为今日(8/26 实测 22 假跌停, 真实=0)。
     # 权威顺序: ① 东财 getTopicDTPool tc 总数(pool 可能空但 tc>0) → ② KPL RiseFallAnalysis dt
     # (独立匿名源) → ③ ZHB 快照仅当数据日期==目标日期才允许(ZHB 盘中恒为 T-1)
     _dt_fb = None
+    _zb_fb = None
+    _dt_source = None
     if not dt:
         try:
             from datetime import datetime as _dtm
 
-            _target = _zt_date or date_str or _dtm.now().strftime("%Y%m%d")
-            # ① push2ex tc 权威总数
-            try:
-                from stock_common.sc_datasource import _query_dt_pool_tc
+            if _zt_date or date_str:
+                _target = (_zt_date or date_str).replace("-", "")
+            else:
+                from stock_common.stock_calendar import get_last_trading_day
 
-                _dt_tc = _query_dt_pool_tc(_target)
-                if _dt_tc is not None:
-                    _dt_fb = _dt_tc
-            except Exception as _e1:
-                _debug_log(f"get_limit_pool_summary dt tc: {_e1}")
-            # ② KPL 独立匿名源(交叉验证)
-            if _dt_fb is None:
+                _target = get_last_trading_day().strftime("%Y%m%d")
+            _target_date = _target[:4] + "-" + _target[4:6] + "-" + _target[6:]
+            # KPL is independent of Eastmoney and returns same-day aggregate counts.
+            _kpl_rf = None
+            if allow_push2ex:
+                try:
+                    from stock_common.sc_datasource import _query_dt_pool_tc
+
+                    _dt_tc = _query_dt_pool_tc(_target)
+                    if _dt_tc is not None:
+                        _dt_fb = _dt_tc
+                        _dt_source = "push2ex"
+                except Exception as _e1:
+                    _debug_log(f"get_limit_pool_summary dt tc: {_e1}")
+            # KPL is independent of Eastmoney and returns same-day aggregate counts.
+            if _dt_fb is None or not allow_push2ex:
                 try:
                     from stock_common.sc_kpl import get_kpl_broken_ratio
 
-                    _kpl_rf = get_kpl_broken_ratio()
-                    if (
-                        _kpl_rf
-                        and _kpl_rf.get("date")
-                        == _target[:4] + "-" + _target[4:6] + "-" + _target[6:]
-                    ):
-                        _dt_fb = int(_kpl_rf.get("dt") or 0)
+                    _candidate = get_kpl_broken_ratio()
+                    if _candidate and _candidate.get("date") == _target_date:
+                        _kpl_rf = _candidate
+                        if _dt_fb is None:
+                            _dt_fb = int(_candidate.get("dt") or 0)
+                            _dt_source = "kpl"
+                        _zb_fb = int(_candidate.get("broken_num") or 0)
                 except Exception as _e2:
-                    _debug_log(f"get_limit_pool_summary kpl dt: {_e2}")
-            # ③ ZHB 兜底: 仅当快照日期==目标日期(零网络最后手段)
+                    _debug_log(f"get_limit_pool_summary kpl counts: {_e2}")
+            # ZHB fallback: only count a snapshot when its own date matches target.
             if _dt_fb is None:
                 try:
                     from stock_common import is_limit_down
@@ -346,17 +426,19 @@ def get_limit_pool_summary(date_str: str = "") -> Dict[str, Any]:
                                 _safe_float(_d.get("change_pct", 0)),
                             )
                         )
+                        _dt_source = "zhb"
                     else:
                         _debug_log(
                             f"get_limit_pool_summary dt: zhb date {_zhb_date} != target {_target}, 跳过 T-1 误判兜底"
                         )
                 except Exception as _e3:
                     _debug_log(f"get_limit_pool_summary zhb dt fallback: {_e3}")
-            if _dt_fb is None:
+            if _dt_fb is None and allow_push2ex:
                 _dt_fb = 0
         except Exception as _e:
             _debug_log(f"get_limit_pool_summary dt fallback: {_e}")
-            _dt_fb = 0
+            if allow_push2ex:
+                _dt_fb = 0
 
     # 按板块统计涨停分布。缺失行业字段不等于真实“其他行业”，单独标识以免伪造板块归属。
     sector_stats: Dict[str, int] = {}
@@ -367,14 +449,25 @@ def get_limit_pool_summary(date_str: str = "") -> Dict[str, Any]:
     # 封板成功率：多源仅提供计数时，用互校涨停数作为分子；若炸板池可用，
     # 仍按“涨停 / (涨停 + 炸板)”计算，避免空明细把成功率伪造成 0%。
     _zt_count = _zt_count_override if _zt_count_override is not None else len(zt)
-    total_attempt = _zt_count + len(zb)
-    success_rate = _zt_count / total_attempt * 100 if total_attempt > 0 else 0
+    _zt_available = bool(zt) or _zt_count_override is not None
+    _broken_count = len(zb) if allow_push2ex else (_zb_fb if _zb_fb is not None else None)
+    total_attempt = _zt_count + _broken_count if _broken_count is not None else None
+    if _zt_available and total_attempt is not None:
+        success_rate = round(_zt_count / total_attempt * 100, 1) if total_attempt > 0 else 0.0
+    else:
+        success_rate = None
+    _down_count = len(dt) if dt else _dt_fb
 
     return {
         "limit_up_count": _zt_count,
-        "limit_broken_count": len(zb),
-        "limit_down_count": len(dt) or _dt_fb,
-        "success_rate": round(success_rate, 1),
+        "limit_up_count_available": _zt_available,
+        "limit_broken_count": _broken_count,
+        "limit_broken_count_available": _broken_count is not None,
+        "limit_broken_count_source": "detail" if zb else ("kpl" if _zb_fb is not None else None),
+        "limit_down_count": _down_count,
+        "limit_down_count_available": _down_count is not None,
+        "limit_down_count_source": "detail" if dt else _dt_source,
+        "success_rate": success_rate,
         "sector_stats": dict(sorted(sector_stats.items(), key=lambda x: x[1], reverse=True)[:10]),
         "limit_up_list": zt,
         "limit_broken_list": zb,
@@ -545,7 +638,7 @@ def em_stock_monitor(only_active: bool = True) -> List[Dict[str, Any]]:
 
 
 @cached(
-    category="market_emotion_multi",
+    category="market_emotion_multi_v2",
     ttl_seconds=TTL["market_emotion_multi"],
     trading_day=True,
     valid_if=lambda r: bool(
@@ -561,10 +654,12 @@ def em_stock_monitor(only_active: bool = True) -> List[Dict[str, Any]]:
         )
     ),
 )
-def get_limit_pool_multi_source(date: Optional[str] = None) -> Dict[str, Any]:
+def get_limit_pool_multi_source(
+    date: Optional[str] = None, allow_push2ex: bool = True
+) -> Dict[str, Any]:
     """涨停池三源互校——财联社=KPL=复盘啦（2026-08-10 实测 99=99=99 三源一致）。
 
-    源顺序（低风险优先）: 财联社 → KPL → 复盘啦 → push2ex(东财兜底)。
+    源顺序（低风险优先）: 财联社 → KPL → 复盘啦 → 可选 push2ex(东财兜底)。
     每源 1 次调用（间隔 2s，失败自动跳过——不阻塞、不重复请求）。
 
     Args:
@@ -573,7 +668,8 @@ def get_limit_pool_multi_source(date: Optional[str] = None) -> Dict[str, Any]:
     Returns:
         dict: {
             "total": int,              # 涨停总数（多源一致值）
-            "sources": {源: 数量},     # 各源实测值（None=源失败）
+            "sources": {源: 数量},     # 各源实测值（None=源失败或未查询）
+            "unqueried_sources": [],   # 因已有替代结果或策略禁止而未查询的来源
             "cross_verified": bool,    # ≥2 源一致
             "max_ladder": int,         # 最高连板
             "detail": dict,            # 复盘啦 StockList 全量等
@@ -582,7 +678,13 @@ def get_limit_pool_multi_source(date: Optional[str] = None) -> Dict[str, Any]:
     import time as _time
     from collections import Counter
 
-    out: Dict[str, Any] = {"sources": {}, "cross_verified": False, "max_ladder": 0, "detail": {}}
+    out: Dict[str, Any] = {
+        "sources": {},
+        "unqueried_sources": [],
+        "cross_verified": False,
+        "max_ladder": 0,
+        "detail": {},
+    }
 
     cls_n = None
     try:
@@ -640,7 +742,7 @@ def get_limit_pool_multi_source(date: Optional[str] = None) -> Dict[str, Any]:
     _time.sleep(2.0)
 
     push2ex_n = None
-    if cls_n is None and kpl_n is None and fupan_n is None:
+    if allow_push2ex and cls_n is None and kpl_n is None and fupan_n is None:
         try:
             from stock_common import get_limit_up_pool
 
@@ -648,6 +750,8 @@ def get_limit_pool_multi_source(date: Optional[str] = None) -> Dict[str, Any]:
             push2ex_n = len(pool)
         except Exception as _e:
             _debug_log(f"multi_source push2ex: {_e}")
+    elif not allow_push2ex or any(v is not None for v in (cls_n, kpl_n, fupan_n)):
+        out["unqueried_sources"].append("push2ex")
     out["sources"]["push2ex"] = push2ex_n
 
     vals = [v for v in (cls_n, kpl_n, fupan_n, push2ex_n) if v is not None]
@@ -902,47 +1006,47 @@ def kpl_get_info() -> Optional[Dict[str, Any]]:
 
 
 __all__ = [
-    'TTL',
-    'UA',
-    '_KPL_BASE',
-    '_KPL_HEADERS',
-    '_KPL_HIS',
-    '_KPL_HQ',
-    '_KPL_LAST_CALL',
-    '_KPL_LHB',
-    '_debug_log',
-    '_em_wait_process_interval',
-    '_f',
-    '_kpl_post',
-    '_parse_limit_pool',
-    '_quick_request',
-    '_safe_float',
-    'cached',
-    'datetime',
-    'em_stock_monitor',
-    'get_kph_limit_ladder',
-    'get_kpl_broken_ratio',
-    'get_kpl_market_sentiment',
-    'get_last_trading_day',
-    'get_limit_broken_pool',
-    'get_limit_down_pool',
-    'get_limit_pool_multi_source',
-    'get_limit_pool_summary',
-    'get_limit_up_pool',
-    'get_yesterday_limit_pool',
-    'is_limit_down',
-    'json',
-    'kpl_get_info',
-    'kpl_get_lhb_stock_list',
-    'kpl_get_market_emotion',
-    'kpl_get_real_ranking_info',
-    'kpl_get_rise_fall_analysis',
-    'kpl_get_stock_list_w8',
-    'kpl_get_stock_zd_num',
-    'kpl_get_ytfp_bkhx',
-    'kpl_get_ytfp_sctd',
-    're',
-    'requires_push2',
-    'ths_limit_up_pool',
-    'timedelta',
+    "TTL",
+    "UA",
+    "_KPL_BASE",
+    "_KPL_HEADERS",
+    "_KPL_HIS",
+    "_KPL_HQ",
+    "_KPL_LAST_CALL",
+    "_KPL_LHB",
+    "_debug_log",
+    "_em_wait_process_interval",
+    "_f",
+    "_kpl_post",
+    "_parse_limit_pool",
+    "_quick_request",
+    "_safe_float",
+    "cached",
+    "datetime",
+    "em_stock_monitor",
+    "get_kph_limit_ladder",
+    "get_kpl_broken_ratio",
+    "get_kpl_market_sentiment",
+    "get_last_trading_day",
+    "get_limit_broken_pool",
+    "get_limit_down_pool",
+    "get_limit_pool_multi_source",
+    "get_limit_pool_summary",
+    "get_limit_up_pool",
+    "get_yesterday_limit_pool",
+    "is_limit_down",
+    "json",
+    "kpl_get_info",
+    "kpl_get_lhb_stock_list",
+    "kpl_get_market_emotion",
+    "kpl_get_real_ranking_info",
+    "kpl_get_rise_fall_analysis",
+    "kpl_get_stock_list_w8",
+    "kpl_get_stock_zd_num",
+    "kpl_get_ytfp_bkhx",
+    "kpl_get_ytfp_sctd",
+    "re",
+    "requires_push2",
+    "ths_limit_up_pool",
+    "timedelta",
 ]

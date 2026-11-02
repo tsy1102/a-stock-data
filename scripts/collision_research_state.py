@@ -117,6 +117,7 @@ def _evidence_summary(candidate: dict[str, Any]) -> dict[str, Any]:
         "sample_dates",
         "distinct_days",
         "evidence_sources",
+        "temporal_evidence",
         "methods",
         "exploratory",
         "hub_flag",

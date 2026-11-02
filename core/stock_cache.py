@@ -335,6 +335,8 @@ TTL: Dict[str, int] = {
     * 86400,  # push2delay 单股全字段行情（trading_day 覆盖——15min 延时日级数据；降频防 push2 连接级风控，字典 §12.15.5 优先镜像域）
     # 分红历史（公告不频繁）
     "dividend": 30 * 86400,  # 分红历史
+    # TDX 0x000f adapter-backed dividend history; cache epoch avoids legacy empty results
+    "dividend_tdx_v2": 30 * 86400,
     # F10 数据（V9.0 新增；V16.3 O25 清理 8 个死分类——现 F10 走 f10_financial 等在用分类）
     # 高频分类（每日更新，休市不变，通过 @cached(trading_day=True) 启用交易日模式）
     "f10_reminders": 24 * 3600,  # F2 最新提示（交易日模式覆盖此值）

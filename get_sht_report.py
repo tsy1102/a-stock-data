@@ -36,9 +36,10 @@ ensure_utf8_stdio()
 
 import asyncio
 import logging
+import threading
 
 from datetime import date, datetime, timedelta
-from typing import Any
+from typing import Any, Callable
 
 # V15.3 修复: 4 个报告模块同名 _SNAPSHOT_DATA 全局变量冲突
 # 抽出到 stock_common.sc_snapshot 统一管理（sc_report_runner 也用此模块）
@@ -99,6 +100,26 @@ from stock_common import (
 from stock_common.sc_report_runner import format_52w_reference, format_quote_provenance
 
 from core.data_provider import get_main_net_buy_async  # V16.4.1: 删 9 个未使用 async 包装
+
+_SHT_MARKET_DATA_LOCK = threading.Lock()
+_SHT_MARKET_DATA_CACHE: dict[tuple[str, str, str], Any] = {}
+
+
+def _get_sht_market_data(key: str, loader: Callable[..., Any], *args: Any, **kwargs: Any) -> Any:
+    """Share one market-wide source result across concurrent per-stock reports."""
+    try:
+        _zhb_date = str(get_zhb_data_date() or "")
+    except Exception:
+        _zhb_date = ""
+    cache_key = (key, date.today().isoformat(), _zhb_date)
+    with _SHT_MARKET_DATA_LOCK:
+        if cache_key not in _SHT_MARKET_DATA_CACHE:
+            try:
+                _SHT_MARKET_DATA_CACHE[cache_key] = loader(*args, **kwargs)
+            except Exception as exc:
+                _debug_log(f"sht market-wide {key} fetch: {exc}")
+                _SHT_MARKET_DATA_CACHE[cache_key] = None
+        return _SHT_MARKET_DATA_CACHE[cache_key]
 
 
 def _canonical_ohlc_lines(
@@ -507,8 +528,8 @@ async def generate_report_async(
 
     # V15.4.2: get_stock_info 内部调腾讯，包 to_thread
     info = await asyncio.to_thread(get_stock_info, code)
-    stock_name = cdata.name or info.get('name', 'N/A')
-    stock_industry = cdata.industry or info.get('industry', 'N/A')
+    stock_name = cdata.name or info.get("name", "N/A")
+    stock_industry = cdata.industry or info.get("industry", "N/A")
 
     # V17.0.1e(2026-08-16): 撤销 V17.0.1b 表格化——基本信息/行情为"字段: 值"竖排,
     # 原展示方式更佳; 表格仅用于同业横向对比/资金走向/龙虎榜等数字列对齐章节
@@ -574,8 +595,8 @@ async def generate_report_async(
             L(_ohlc_line)
         L(f"  成交额:   {cdata.amount_wan/10000:.2f} 亿元  换手率: {cdata.turnover_pct:.2f}%")
         # V16.2.3 恢复: 振幅/涨停价/跌停价（V16.1 重构时丢失，对照 v9.6 模板；vol_ratio 未入 canonical 跳过）
-        _limit_up = getattr(cdata, 'limit_up', 0) or 0
-        _limit_dn = getattr(cdata, 'limit_down', 0) or 0
+        _limit_up = getattr(cdata, "limit_up", 0) or 0
+        _limit_dn = getattr(cdata, "limit_down", 0) or 0
         if _limit_up > 0 or _limit_dn > 0:
             L(f"  涨停价:   {_limit_up:.2f} 元  跌停价: {_limit_dn:.2f} 元")
         elif cdata.prev_close > 0:
@@ -604,10 +625,10 @@ async def generate_report_async(
 
     ma_data = await asyncio.to_thread(get_baidu_kline_with_ma, code)
 
-    if ma_data and 'ma5avgprice' in ma_data:
+    if ma_data and "ma5avgprice" in ma_data:
 
-        ma5 = _safe_float(ma_data.get('ma5avgprice', 0))
-        ma10 = _safe_float(ma_data.get('ma10avgprice', 0))
+        ma5 = _safe_float(ma_data.get("ma5avgprice", 0))
+        ma10 = _safe_float(ma_data.get("ma10avgprice", 0))
 
         L(f"\n  [技术支撑] MA5={ma5:.2f}元 | MA10={ma10:.2f}元")
 
@@ -865,10 +886,10 @@ async def generate_report_async(
 
     # V17.0.5 P0: 官方封单口径优先(fuyao 涨停池 seal_money/max_seal_money), 买一估算兜底
     if _seal_info:
-        fa = (_seal_info['seal_money'] or 0) / 1e8
-        fr = fa / (q.get('mcap_yi', 0) or 1) * 100
+        fa = (_seal_info["seal_money"] or 0) / 1e8
+        fr = fa / (q.get("mcap_yi", 0) or 1) * 100
         t = f"  封单额 {fa:.2f}亿元（fuyao 官方），占流通市值 {fr:.1f}%"
-        _dec = _seal_info.get('seal_decay_ratio')
+        _dec = _seal_info.get("seal_decay_ratio")
         if _dec is not None:
             _pct = _dec * 100
             if _pct < 30:
@@ -877,7 +898,7 @@ async def generate_report_async(
                 t += f"\n  📊 封单衰减率 {_pct:.0f}%——盘中有所开板回封"
             else:
                 t += f"\n  🔥 封单衰减率 {_pct:.0f}%——全日封死，封板质量极高"
-        if _seal_info.get('limit_up_reason'):
+        if _seal_info.get("limit_up_reason"):
             t += f"\n  涨停原因: {_seal_info['limit_up_reason']}"
         L(t)
     else:
@@ -942,7 +963,7 @@ async def generate_report_async(
 
         ind_comp = await asyncio.to_thread(get_industry_comparison)
 
-    stock_ind = info.get('industry', '')
+    stock_ind = info.get("industry", "")
 
     if blocks and blocks.get("industry"):
 
@@ -978,9 +999,9 @@ async def generate_report_async(
                 or _row_clean in _ind_clean
             ):
 
-                industry_rank = row['rank']
-                industry_change_pct = row['change_pct']
-                industry_match_name = row['name']
+                industry_rank = row["rank"]
+                industry_change_pct = row["change_pct"]
+                industry_match_name = row["name"]
 
                 rank_str = f"第 {industry_rank} 名（板块快照涨跌幅 {industry_change_pct}%，有效日期未核实）"
 
@@ -1033,13 +1054,13 @@ async def generate_report_async(
             _up = 0
             _down = 0
 
-            _all_members = peer_data.get('all_members', [])
+            _all_members = peer_data.get("all_members", [])
 
             if _all_members:
 
-                _up = sum(1 for m in _all_members if m.get('change_pct', 0) > 0)
+                _up = sum(1 for m in _all_members if m.get("change_pct", 0) > 0)
 
-                _down = sum(1 for m in _all_members if m.get('change_pct', 0) < 0)
+                _down = sum(1 for m in _all_members if m.get("change_pct", 0) < 0)
 
             _rank_parts.append(
                 f"[板块快照涨跌排名/日期未核实] 上涨 {int(_up)} 家 / 下跌 {int(_down)} 家"
@@ -1106,7 +1127,7 @@ async def generate_report_async(
         else:
 
             _my_mcap_show = (
-                peer_data['my_mcap'] if peer_data['my_mcap'] > 0 else q.get('mcap_yi', 0)
+                peer_data["my_mcap"] if peer_data["my_mcap"] > 0 else q.get("mcap_yi", 0)
             )
 
             L(f"  所属板块: {peer_data['industry']}")
@@ -1125,9 +1146,9 @@ async def generate_report_async(
             )
             L(f"  {'-'*80}")
 
-            _my_mcap = peer_data['my_mcap'] if peer_data['my_mcap'] > 0 else q.get('mcap_yi', 0)
+            _my_mcap = peer_data["my_mcap"] if peer_data["my_mcap"] > 0 else q.get("mcap_yi", 0)
 
-            _my_pe = q.get('pe_dynamic', 0) or 0
+            _my_pe = q.get("pe_dynamic", 0) or 0
             _my_pe_s = f"{_my_pe:.1f}" if _my_pe > 0 else "亏损"
             _my_pe_lyr = cdata.pe_lyr or 0
             _my_pe_lyr_s = f"{_my_pe_lyr:.1f}" if _my_pe_lyr > 0 else "N/A"
@@ -1136,9 +1157,9 @@ async def generate_report_async(
             )
 
             for p in peer_data["peers"]:
-                _ppe = p.get('pe', 0) or 0
+                _ppe = p.get("pe", 0) or 0
                 _ppe_s = f"{_ppe:.1f}" if _ppe > 0 else "亏损"
-                _ppe_lyr = p.get('pe_lyr', 0) or 0
+                _ppe_lyr = p.get("pe_lyr", 0) or 0
                 _ppe_lyr_s = f"{_ppe_lyr:.1f}" if _ppe_lyr > 0 else "N/A"
                 # V17.0.27(2026-09-04) A6「缺失≠0」（9/3 报告核查 #3）：
                 #   peers 的 change_pct 来自 TDX board_members，取不到时返回 0 —— 直接渲染
@@ -1146,7 +1167,7 @@ async def generate_report_async(
                 #   报告同业表均显示 0.00%，但统一层对其 change_pct 的 field_source 是
                 #   **"missing"**，且该股当日换手率 0.88%（有成交、非停牌）→ 确为缺失非平盘。
                 #   平盘（真实 0.00%）在 A 股极罕见，故此处按「0 即缺失」显式渲染 N/A。
-                _pchg = p.get('change_pct', 0) or 0
+                _pchg = p.get("change_pct", 0) or 0
                 _pchg_s = f"{_pchg:>7.2f}%" if _pchg != 0 else "    N/A "
                 L(
                     f"  {p['code']:<8} {p['name']:<12} {p['price']:>8.2f} {_pchg_s} {p['mcap_yi']:>9.1f} {_ppe_s:>9} {_ppe_lyr_s:>8} {p['turnover']:>7.2f}%"
@@ -1227,7 +1248,7 @@ async def generate_report_async(
                     f"    前一有效交易日主力净流入额: "
                     f"{_safe_float(zhb_main_net['main_net_buy_amount_1d']):+.0f}万元"
                 )
-            _amt_wan = q.get('amount_wan', 0) if q else 0
+            _amt_wan = q.get("amount_wan", 0) if q else 0
             # V16.4.1: 占比保留符号(原 abs 把净流出显示成正占比, 222% 即由此+源数据异常);
             # 净额绝对值超成交额 = 源数据存疑, 显式标注
             if _amt_wan > 0:
@@ -1337,7 +1358,7 @@ async def generate_report_async(
     from stock_common.sc_datasource import resolve_datacenter
 
     nb = await resolve_datacenter(
-        'northbound', code, direct_fn=lambda: get_northbound_hold_async(session, code, 20)
+        "northbound", code, direct_fn=lambda: get_northbound_hold_async(session, code, 20)
     )
 
     if nb:
@@ -1365,11 +1386,11 @@ async def generate_report_async(
 
         for d in nb:
 
-            _mcap = d.get('market_cap', 0) or 0
+            _mcap = d.get("market_cap", 0) or 0
 
-            _ratio = d.get('hold_ratio', 0) or 0
+            _ratio = d.get("hold_ratio", 0) or 0
 
-            _shares = d.get('hold_shares', 0) or 0
+            _shares = d.get("hold_shares", 0) or 0
 
             if _mcap == 0 and _shares > 0 and price_today > 0:
 
@@ -1412,7 +1433,7 @@ async def generate_report_async(
     # V8.5: lite模式跳过席位详情（V16.1: include_seats 一并关闭，省 2 次 API）
     # V17.0.7: 走 datacenter 预取流水线(批量启动时已后台拉取)
     dtb = await resolve_datacenter(
-        'dragon_tiger',
+        "dragon_tiger",
         code,
         direct_fn=lambda: get_dragon_tiger_board_async(
             session,
@@ -1610,7 +1631,7 @@ async def generate_report_async(
                     "neutral": "➖ 中性评级，价格已透支，此时追涨性价比低",
                     "unknown": "⚪ 数据不足（无已知游资席位，暂不评级）",
                 }
-                _signal_text = _signal_map.get(sa['premium_signal'], sa['premium_signal'])
+                _signal_text = _signal_map.get(sa["premium_signal"], sa["premium_signal"])
                 L(f"  溢价信号: {_signal_text}")
             if sa.get("legend_count"):
                 L(f"  顶级游资席位: {sa['legend_count']}家")
@@ -1633,7 +1654,7 @@ async def generate_report_async(
     L("---")
 
     lockup = await resolve_datacenter(
-        'lockup',
+        "lockup",
         code,
         direct_fn=lambda: get_lockup_expiry_async(session, code, days=90, include_history=True),
     )
@@ -1682,7 +1703,7 @@ async def generate_report_async(
         margin = []
     else:
         margin = await resolve_datacenter(
-            'margin', code, direct_fn=lambda: get_margin_trading_async(session, code)
+            "margin", code, direct_fn=lambda: get_margin_trading_async(session, code)
         )
 
     if margin and isinstance(margin, list):
@@ -1767,7 +1788,7 @@ async def generate_report_async(
         rbt = []
     else:
         bt = await resolve_datacenter(
-            'block_trade', code, direct_fn=lambda: get_block_trade_async(session, code)
+            "block_trade", code, direct_fn=lambda: get_block_trade_async(session, code)
         )
         rbt = [d for d in bt if d["date"] >= _30_trade_start_str]
 
@@ -1824,7 +1845,7 @@ async def generate_report_async(
         L(f"  {'-'*50}")
 
         for h in holders[:5]:
-            _cr = h.get('change_ratio', 0)
+            _cr = h.get("change_ratio", 0)
             # 边界检查：变化率超过±500%视为异常数据，不显示
             _cr_disp = _cr if abs(_cr) <= 500 else (999.99 if _cr > 500 else -999.99)
             _cr_flag = " ⚠️" if abs(_cr) > 500 else ""
@@ -1998,7 +2019,7 @@ async def generate_report_async(
 
             fl = " ⚠️" if any(k in a["title"] for k in ["减持", "立案", "严重异动"]) else ""
 
-            tt = f" [{a['type']}]" if a['type'] else ""
+            tt = f" [{a['type']}]" if a["type"] else ""
 
             L(f"  {i}. [{a['date']}]{tt} {a['title']}{fl}")
 
@@ -2015,13 +2036,21 @@ async def generate_report_async(
     try:
         from stock_common import get_limit_pool_summary
 
-        pool = await asyncio.to_thread(get_limit_pool_summary)
+        pool = await asyncio.to_thread(
+            _get_sht_market_data,
+            "limit_pool",
+            get_limit_pool_summary,
+            allow_push2ex=False,
+        )
         zt_count = pool.get("limit_up_count", 0)
         zb_count = pool.get("limit_broken_count", 0)
+        _zt_available = pool.get("limit_up_count_available", True)
+        _zb_available = pool.get("limit_broken_count_available", True)
         # V17.3 修复: 跌停池接口(pool.limit_down_count)偶发返回 stale T-1 数据(实测 33 篇 sht 报 3 只,
         # 而 mak A 段用全市场实时涨跌幅口径(is_limit_down)得 0 只)。为与 mak 同源同口径,
         # 优先采用实时涨跌幅口径, 仅在实时源不可用时回退 pool。
         _dt_count_pool = pool.get("limit_down_count", 0)
+        _dt_available = pool.get("limit_down_count_available", True)
         try:
             from core.tdx_client import tdx_get_market_abnormal_data
             from stock_common import is_limit_down
@@ -2037,15 +2066,22 @@ async def generate_report_async(
                         _safe_float(s.get("change_pct", 0)),
                     )
                 )  # 实时口径优先(与 mak A 段 _dt_count 同源)
+                _dt_available = True
             else:
                 dt_count = _dt_count_pool
         except Exception as _e:
             _debug_log(f"sht dt realtime: {_e}")
             dt_count = _dt_count_pool
-        success_rate = pool.get("success_rate", 0)
+        success_rate = pool.get("success_rate")
+        _zt_text = str(zt_count) if _zt_available else "未取得"
+        _zb_text = str(zb_count) if _zb_available else "未取得"
+        _dt_text = str(dt_count) if _dt_available and dt_count is not None else "未取得"
+        _success_text = f"{success_rate:.0f}%" if success_rate is not None else "未取得"
         L(
-            f"    今日涨停 {zt_count} 只 | 炸板 {zb_count} 只 | 跌停 {dt_count} 只 | 封板率 {success_rate:.0f}%"
+            f"    今日涨停 {_zt_text} 只 | 炸板 {_zb_text} 只 | 跌停 {_dt_text} 只 | 封板率 {_success_text}"
         )
+        if not _zb_available or not _dt_available:
+            L("    ℹ️ 未取得的炸板/跌停数不按 0 计；当前源未提供可核验的同日统计。")
 
         # V17.2.0: 全市场广度(通达信统计指数)交叉校验打板池口径
         try:
@@ -2086,11 +2122,11 @@ async def generate_report_async(
                 if item.get("turnover_rate"):
                     _extra += f" 换手{_safe_float(item['turnover_rate']):.1f}%"
                 if item.get("currency_value"):
-                    _cv = _safe_float(item['currency_value']) / 1e8
+                    _cv = _safe_float(item["currency_value"]) / 1e8
                     _extra += f" 流通{_cv:.0f}亿"
                 if item.get("order_volume"):
                     _extra += f" 封单量{_safe_float(item['order_volume'])/1e4:.0f}万股"
-                _lf = item.get('limit_fund', 0) or 0
+                _lf = item.get("limit_fund", 0) or 0
                 if _lf >= 1e8:
                     _lf_txt = f"{_lf/1e8:.2f}亿"
                 elif _lf >= 1e4:
@@ -2125,34 +2161,57 @@ async def generate_report_async(
                 else:
                     L(f"    涨停板块分布暂缺: {_missing_sector_count} 只涨停股的上游行业字段未提供")
 
-        # V16.1: 昨日涨停池晋级率/赚钱效应（push2ex getYesterdayZTPool）
-        # MEDIUM(审查 2026-08-16): 同步 HTTP 包 to_thread
+        # 昨日涨停晋级改由同花顺前一交易日名单 + 同日 ZHB 快照对齐，避免 push2ex。
         try:
             from stock_common import get_yesterday_limit_pool
 
-            yzt = await asyncio.to_thread(get_yesterday_limit_pool)
+            yzt = await asyncio.to_thread(
+                _get_sht_market_data,
+                "yesterday_limit_pool",
+                get_yesterday_limit_pool,
+                allow_push2ex=False,
+            )
             if yzt:
                 yzt_total = len(yzt)
-                # 晋级 = 今日仍涨停（统一 is_limit_up 判断，含北交所 30%）
+                _yzt_observed = [s for s in yzt if s.get("change_pct") is not None]
+                _target_date = yzt[0].get("date") or "未确认"
+                _previous_date = yzt[0].get("y_limit_date") or "未确认"
+                # 晋级 = 当日有效快照中仍涨停（统一 is_limit_up 判断，含北交所 30%）
                 yzt_promoted = [
                     s
-                    for s in yzt
-                    if is_limit_up(
-                        str(s.get("code", "")), s.get("name", ""), s.get("change_pct", 0)
-                    )
+                    for s in _yzt_observed
+                    if is_limit_up(str(s.get("code", "")), s.get("name", ""), s["change_pct"])
                 ]
-                yzt_avg_pct = sum(s.get("change_pct", 0) for s in yzt) / yzt_total
-                promotion_rate = len(yzt_promoted) / yzt_total * 100 if yzt_total else 0
-                L(
-                    f"    昨日涨停 {yzt_total} 只 → 今日晋级(仍涨停) {len(yzt_promoted)} 只，晋级率 {promotion_rate:.0f}%，平均涨幅 {yzt_avg_pct:+.1f}%"
-                )
+                if _yzt_observed:
+                    yzt_avg_pct = sum(s["change_pct"] for s in _yzt_observed) / len(_yzt_observed)
+                    promotion_rate = len(yzt_promoted) / len(_yzt_observed) * 100
+                    L(
+                        f"    昨日涨停名单 {_previous_date} 共 {yzt_total} 只；行情日 {_target_date} "
+                        f"可跟踪 {len(_yzt_observed)}/{yzt_total} 只，晋级 {len(yzt_promoted)} 只，"
+                        f"晋级率 {promotion_rate:.0f}%，平均涨幅 {yzt_avg_pct:+.1f}%"
+                    )
+                else:
+                    L(
+                        f"    昨日涨停名单 {_previous_date} 共 {yzt_total} 只；"
+                        f"ZHB {_target_date} 无可用对应行情，晋级率未计算。"
+                    )
                 # 当前股票是否在昨日涨停池（看今日承接）
                 for item in yzt:
                     if item.get("code") == code:
-                        L(
-                            f"    📌 当前股票为昨日涨停股（昨连板{item.get('y_limit_count',0)}板），今日涨幅 {item.get('change_pct',0):+.2f}% 振幅{item.get('amplitude_pct',0):.1f}%"
-                        )
+                        if item.get("change_pct") is not None:
+                            _amplitude = item.get("amplitude_pct")
+                            _amplitude_text = (
+                                f"振幅{_amplitude:.1f}%" if _amplitude is not None else "振幅未提供"
+                            )
+                            L(
+                                f"    📌 当前股票为昨日涨停股（昨连板{item.get('y_limit_count',0)}板），"
+                                f"行情日 {item.get('date','未确认')} 涨幅 {item['change_pct']:+.2f}% {_amplitude_text}"
+                            )
+                        else:
+                            L("    📌 当前股票在昨日涨停名单中，但同日行情缺失，未判断晋级或承接。")
                         break
+            else:
+                L("    昨日涨停晋级：暂不可核验（同花顺前一交易日名单或同日 ZHB 快照缺失）。")
         except Exception as _e2:
             _debug_log(f"sht yzt_pool: {_e2}")
     except Exception as _e:
@@ -2722,19 +2781,19 @@ async def generate_report_async(
     # 构建评分数据
     score_data = ScoreData(
         code=code,
-        name=info.get('name', ''),
+        name=info.get("name", ""),
         price=price_today,
-        change_pct=q.get('change_pct', 0) if q else 0,
+        change_pct=q.get("change_pct", 0) if q else 0,
     )
 
     # 均线数据
-    if ma_data and 'ma5avgprice' in ma_data:
-        score_data.ma5 = _safe_float(ma_data.get('ma5avgprice', 0))
-        score_data.ma10 = _safe_float(ma_data.get('ma10avgprice', 0))
-        score_data.ma20 = _safe_float(ma_data.get('ma20avgprice', 0))
+    if ma_data and "ma5avgprice" in ma_data:
+        score_data.ma5 = _safe_float(ma_data.get("ma5avgprice", 0))
+        score_data.ma10 = _safe_float(ma_data.get("ma10avgprice", 0))
+        score_data.ma20 = _safe_float(ma_data.get("ma20avgprice", 0))
 
     # 涨停判断
-    if q and q.get('change_pct', 0) >= 9.5 and price_today >= q.get("limit_up", 0) * 0.99:
+    if q and q.get("change_pct", 0) >= 9.5 and price_today >= q.get("limit_up", 0) * 0.99:
         score_data.is_limit_up = True
 
     # 资金流向：使用最近 20 个有效交易日；“连续流入天数”按最新日期起连续统计。
@@ -2838,7 +2897,7 @@ async def generate_report_async(
 
     # 综合投资建议
     try:
-        _consensus = multi_scores['consensus'].total_score
+        _consensus = multi_scores["consensus"].total_score
         if _consensus >= 60:
             _rating = "**中性偏乐观** 整体表现良好，建议持续跟踪后分批配置"
         elif _consensus >= 40:
@@ -2887,7 +2946,7 @@ async def generate_report_async(
 
     # 累积快照数据（批量结束后统一写入）
     _SNAPSHOT_DATA[code] = {
-        "name": info.get('name', ''),
+        "name": info.get("name", ""),
         "total_score": _ps,
         "price": price_today,
         "report_source": "sht",

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from collections import Counter
 from typing import Any
 
 from scripts import collision_candidate_reviews as CCR
@@ -87,6 +88,56 @@ def append_contract_anchor_candidates(report_md, candidates):
         lines.extend(_l1_row(candidate) for candidate in candidates)
     else:
         lines.append("_本轮无达到多日门槛的官方契约锚候选。_")
+    lines.append("")
+    return "\n".join(lines) + "\n"
+
+
+def append_temporal_evidence_report(report_md, l1_relations, l1_contract_relations, policy_summary):
+    """Separate semantic collision strength from the assurance of sample dates."""
+    relations = [*l1_relations, *l1_contract_relations]
+    counts = Counter(
+        relation.get("temporal_evidence", {}).get("alignment_status", "date_unconfirmed")
+        for relation in relations
+    )
+    lines = [report_md.rstrip(), "", "## 字段时效与来源日期证据", ""]
+    lines.append(
+        "_字段语义关系和来源日期可信度分开记录。`source_dates_confirmed` 表示两侧入选样本"
+        "都有来源或记录级日期；`semantic_only_date_unconfirmed` 只支持缓变/静态字段的语义关系，"
+        "不证明数据新鲜度或具体有效日期。未分类字段按来源日期严格门控。_"
+    )
+    lines.append("")
+    lines.append(
+        f"策略状态：`{policy_summary.get('status', 'unknown')}`；逐源分类字段 "
+        f"{policy_summary.get('classified_fields', 0)}，保守默认未分类字段 "
+        f"{policy_summary.get('unclassified_fields', 0)}。L1/L1-C 日期证据："
+        f"来源日期已确认 {counts['source_dates_confirmed']} 条，"
+        f"仅语义证据且日期未确认 {counts['semantic_only_date_unconfirmed']} 条，"
+        f"其他日期未确认 {counts['date_unconfirmed']} 条。"
+    )
+    unconfirmed = [
+        relation
+        for relation in relations
+        if relation.get("temporal_evidence", {}).get("alignment_status")
+        == "semantic_only_date_unconfirmed"
+    ]
+    if unconfirmed:
+        lines.extend(
+            [
+                "",
+                "| 字段关系 | 左侧时效分类 | 右侧时效分类 | 日期结论 |",
+                "|:--|:--|:--|:--|",
+            ]
+        )
+        for relation in unconfirmed:
+            evidence = relation["temporal_evidence"]
+            left = evidence["left"]
+            right = evidence["right"]
+            lines.append(
+                f"| `{relation.get('left', '')}` ↔ `{relation.get('right', '')}` | "
+                f"{left['temporal_class']} | {right['temporal_class']} | 仅语义证据，日期未确认 |"
+            )
+    else:
+        lines.extend(["", "_本轮 L1/L1-C 没有仅凭静态或缓变字段、且来源日期未确认的关系。_"])
     lines.append("")
     return "\n".join(lines) + "\n"
 
@@ -472,7 +523,7 @@ def build_report_completeness(report_data: dict[str, Any]) -> dict[str, Any]:
             continue
         if name not in sections:
             sections[name] = {
-                "json_record_count": len(value) if isinstance(value, (list, dict)) else None,
+                "json_record_count": (len(value) if isinstance(value, (list, dict)) else None),
                 "markdown_display_limit": None,
                 "markdown_display_count": None,
                 "markdown_omitted_count": None,

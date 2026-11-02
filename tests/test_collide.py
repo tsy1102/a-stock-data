@@ -330,7 +330,7 @@ def test_context_records_are_excluded_by_default_and_available_on_request(tmp_pa
                 "sources": {
                     source: {
                         "ok": True,
-                        "status": "context_only" if source in {"exchange", "em_hot"} else "ok",
+                        "status": ("context_only" if source in {"exchange", "em_hot"} else "ok"),
                         "scheme": source,
                     }
                     for source in source_documents
@@ -429,11 +429,18 @@ def test_ftshare_limit_up_context_uses_record_trade_date_and_stock_symbol(tmp_pa
 
 
 def _field(values, source):
+    phases = values.pop("_phases", {})
     return {
         "vals": values,
         "src": source,
         "is_constant": False,
-        "sample_meta": {key: {"phase": phase} for key, phase in values.pop("_phases", {}).items()},
+        "sample_meta": {
+            key: {
+                "phase": phases.get(key, "closed"),
+                "as_of_date_origin": "source_as_of",
+            }
+            for key in values
+        },
     }
 
 
@@ -535,6 +542,34 @@ def test_unknown_phase_samples_do_not_count_toward_l1():
     assert result["excluded_unknown_phase_pairs"] == 60
 
 
+def test_daily_samples_with_folder_inferred_dates_do_not_count_toward_l1():
+    left, right = _daily_fields(["20261016", "20261019", "20261020"])
+    for info in (left, right):
+        for sample_meta in info["sample_meta"].values():
+            sample_meta["as_of_date_origin"] = "folder_inferred"
+        info["temporal_class"] = "daily_market"
+
+    result = collide.collide_pair(left, right)
+
+    assert result is not None
+    assert result["level"] == "L4"
+    assert result["excluded_unconfirmed_date_pairs"] == 60
+
+
+def test_slow_changing_l1_marks_unconfirmed_dates_as_semantic_only():
+    left, right = _daily_fields(["20261016", "20261019", "20261020"])
+    for info in (left, right):
+        info["temporal_class"] = "slow_changing"
+        for sample_meta in info["sample_meta"].values():
+            sample_meta["as_of_date_origin"] = "folder_inferred"
+
+    result = collide.collide_pair(left, right)
+
+    assert result["level"] == "L1"
+    assert result["temporal_evidence"]["alignment_status"] == "semantic_only_date_unconfirmed"
+    assert result["temporal_evidence"]["left"]["temporal_class"] == "slow_changing"
+
+
 def test_trading_and_calendar_dates_cannot_align_as_same_sample():
     left = _field({(str(i), "T:20260929"): i + 1 for i in range(20)}, "tdx")
     right = _field({(str(i), "C:20260929"): i + 1 for i in range(20)}, "reports")
@@ -593,7 +628,10 @@ def test_code_of_preserves_full_nested_identity():
 def test_zhb_merged_field_paths_match_existing_registry_mappings():
     context = collide.load_registry_context()
 
-    left = (collide.alias_src("zhb.full.change_5d"), collide.code_of("zhb.full.change_5d"))
+    left = (
+        collide.alias_src("zhb.full.change_5d"),
+        collide.code_of("zhb.full.change_5d"),
+    )
     right = (collide.alias_src("ulist239.f109"), collide.code_of("ulist239.f109"))
 
     assert left == ("zhb", "change_5d")
@@ -959,7 +997,9 @@ def test_formula_candidates_require_out_of_stock_validation():
             "vals": values,
             "src": source,
             "type": "num",
-            "sample_meta": {key: {"phase": "closed"} for key in values},
+            "sample_meta": {
+                key: {"phase": "closed", "as_of_date_origin": "source_as_of"} for key in values
+            },
         }
 
     store = {
@@ -999,7 +1039,9 @@ def test_discriminating_sample_prefers_stock_with_out_of_sample_disagreement():
             "vals": values,
             "src": source,
             "type": "num",
-            "sample_meta": {key: {"phase": "closed"} for key in values},
+            "sample_meta": {
+                key: {"phase": "closed", "as_of_date_origin": "source_as_of"} for key in values
+            },
         }
 
     store = {
@@ -1120,10 +1162,16 @@ def test_candidate_triage_markdown_renders_evidence_and_control_summaries():
             "candidate_pairs_without_full_detail": 0,
             "method_candidate_inventory_count": 3,
             "candidate_pairs_outside_primary_and_frontier": 1,
-            "field_coverage": {"detail_status": "available", "coverage_identity_count": 1},
+            "field_coverage": {
+                "detail_status": "available",
+                "coverage_identity_count": 1,
+            },
             "formula_combinations_tested": 5,
             "capture_source_statuses": {
-                "source-a": {"non_ok_dates": ["20261019"], "status_counts": {"partial": 1}}
+                "source-a": {
+                    "non_ok_dates": ["20261019"],
+                    "status_counts": {"partial": 1},
+                }
             },
         },
         "targets": [
@@ -1367,8 +1415,14 @@ def test_source_coverage_reports_contract_evidence_and_actual_pair_participation
         verified={("fuyao", "snapshot.close"), ("ftshare_rest", "close")},
         anchors={("fuyao", "snapshot.close")},
         contract_anchors={("ftshare_rest", "close")},
-        official_contract_verified={("fuyao", "snapshot.close"), ("ftshare_rest", "close")},
-        official_contract_anchors={("fuyao", "snapshot.close"), ("ftshare_rest", "close")},
+        official_contract_verified={
+            ("fuyao", "snapshot.close"),
+            ("ftshare_rest", "close"),
+        },
+        official_contract_anchors={
+            ("fuyao", "snapshot.close"),
+            ("ftshare_rest", "close"),
+        },
         left_ids=["tdx.f1"],
         right_ids=["fuyao.snapshot.close", "ftshare_rest.close"],
         pair_evaluations_by_source={
@@ -1426,7 +1480,8 @@ def test_linear_leave_one_out_matches_direct_recalculation():
     y_values = [1.0, 2.0, 3.0, 4.0, -100.0]
     direct = [
         collide._pearson(
-            x_values[:index] + x_values[index + 1 :], y_values[:index] + y_values[index + 1 :]
+            x_values[:index] + x_values[index + 1 :],
+            y_values[:index] + y_values[index + 1 :],
         )
         for index in range(len(x_values))
     ]
@@ -1509,7 +1564,10 @@ def test_official_contract_anchor_rule_is_in_runtime_banner_and_generated_docs()
 
 def test_ftshare_rest_source_status_separates_active_contract_and_retired_mcp():
     base_report = "## L1 候选\n\n保持原候选内容。"
-    result = {"status": "active_with_historical_legacy", "active_runtime_source": "ftshare_rest"}
+    result = {
+        "status": "active_with_historical_legacy",
+        "active_runtime_source": "ftshare_rest",
+    }
 
     report = collide.append_source_identity_report(base_report, result)
 

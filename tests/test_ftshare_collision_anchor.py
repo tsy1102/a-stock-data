@@ -10,7 +10,7 @@ def _field(source: str) -> dict:
         for index in range(20):
             key = (f"{index:06d}", day)
             values[key] = float(index + 1)
-            sample_meta[key] = {"phase": "closed"}
+            sample_meta[key] = {"phase": "closed", "as_of_date_origin": "source_as_of"}
     return {
         "src": source,
         "type": "num",

@@ -13,6 +13,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - push2ex 异动 GET 对连接故障和 5xx 最多允许一次受限重试；403/429 仍立即停止，不增加封禁风险。
 - 按 A5 清理已无报告消费方的 `CanonicalStockData.avg_price` 与 `bid_ask_net`；Tier2 原始报价输出保留，Tier1 契约由 115 项降为 113 项。
 - AxData 日验证的 JSON 原子写入改为目标目录内唯一临时文件，避免并发日期写入共用临时路径。
+- 对照参考仓库 v3.10.3 补齐上证 e 互动 ISO/月日/纯时分、北京时间与相对时间边界解析；非法及越界时间继续触发整页 RuntimeError，并增加离线回归。
+- 将 TDX 主客户端 eltdx 从 3.2.2 更新至 3.3.2；同步其快照和财务响应归属校验修复，现有适配器的错误 fallback 与输出契约保持不变。
+- eltdx 原始采集的 A 股/北交所快照批次采用部分结果模式，保留有效记录并只单股补查缺项，避免缺失代码使整批转为逐股重取。
 
 ### Changed
 

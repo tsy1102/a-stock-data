@@ -39,6 +39,22 @@ def test_fast_kline_uses_one_larger_tdx_sample_when_requested_sample_is_short(mo
     assert calls == [("600519", 100), ("600519", 800)]
 
 
+def test_fast_kline_can_keep_a_deliberately_short_recent_window(monkeypatch):
+    calls = []
+    result = (["volume", "close"], [[100, 10.0]] * 10)
+
+    def fake_tdx(code, count):
+        calls.append((code, count))
+        return result
+
+    monkeypatch.setattr(tdx_client, "tdx_get_security_bars", fake_tdx)
+
+    assert val._fast_kline(
+        "600519", count=10, expand_short_sample=False
+    ) == result
+    assert calls == [("600519", 10)]
+
+
 def test_fast_kline_returns_empty_after_tdx_failure_without_fake_fallback(monkeypatch):
     calls = []
 

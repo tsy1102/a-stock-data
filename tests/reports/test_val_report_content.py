@@ -1,5 +1,5 @@
 from concurrent.futures import ThreadPoolExecutor
-from threading import get_ident
+from threading import Event, get_ident
 from types import SimpleNamespace
 
 import core.data_provider as data_provider
@@ -83,6 +83,19 @@ def test_snapshot_quality_notes_report_closed_quote_validation_coverage():
     assert any("行情日按该 ZHB 日期交叉推定" in note for note in notes)
 
 
+def test_snapshot_coverage_counts_only_a_shares_and_intersects_verified_quotes():
+    stocks = [
+        {"code": "600519", "mcap_yi": 100.0},
+        {"code": "000001", "mcap_yi": 0.0},
+        {"code": "510300", "mcap_yi": 50.0},
+        {"code": "123001", "mcap_yi": 20.0},
+    ]
+
+    assert get_val_report._a_share_snapshot_quality_counts(
+        stocks, {"600519", "510300"}
+    ) == (2, 1, 1)
+
+
 class _ImmediateAwaitable:
     def __init__(self, value):
         self.value = value
@@ -108,7 +121,7 @@ def test_liquidity_king_does_not_infer_money_flow_from_volume(monkeypatch):
     monkeypatch.setattr(
         get_val_report,
         "_fast_kline",
-        lambda _code: (["volume", "close"], rows),
+        lambda _code, **_kwargs: (["volume", "close"], rows),
     )
 
     result = get_val_report.strategy_13_liquidity_king(
@@ -122,6 +135,94 @@ def test_liquidity_king_does_not_infer_money_flow_from_volume(monkeypatch):
     assert "仅凭量价无法判断资金主体或后续方向" in reason
     assert "主力资金" not in reason
     assert "流动性溢价" not in reason
+
+
+def test_liquidity_king_requests_only_recent_bars_without_expanding(monkeypatch):
+    calls = []
+
+    def fake_kline(code, **kwargs):
+        calls.append((code, kwargs))
+        return (["volume", "close"], [[100, 10.0]] * 9 + [[200, 10.5]])
+
+    monkeypatch.setattr(get_val_report, "_fast_kline", fake_kline)
+    get_val_report.strategy_13_liquidity_king([{"code": "600519"}])
+
+    assert calls == [
+        ("600519", {"count": 10, "expand_short_sample": False})
+    ]
+
+
+def test_liquidity_king_caps_kline_requests_to_top_100_candidates(monkeypatch):
+    calls = []
+
+    def fake_kline(code, **_kwargs):
+        calls.append(code)
+        return (["volume", "close"], [[100, 10.0]] * 10)
+
+    monkeypatch.setattr(get_val_report, "_fast_kline", fake_kline)
+    candidates = [{"code": f"{index:06d}"} for index in range(105)]
+
+    assert get_val_report.strategy_13_liquidity_king(candidates) == []
+    assert calls == [candidate["code"] for candidate in candidates[:100]]
+
+
+def test_strategy_cancellation_stops_before_next_kline_request(monkeypatch):
+    event = Event()
+    event.set()
+    monkeypatch.setattr(
+        get_val_report,
+        "_fast_kline",
+        lambda *_args, **_kwargs: (_ for _ in ()).throw(AssertionError("K line called")),
+    )
+
+    assert get_val_report.strategy_13_liquidity_king(
+        [{"code": "600519"}], cancel_event=event
+    ) == []
+
+
+def test_weekly_ma_requests_only_enough_history_for_ma30(monkeypatch):
+    calls = []
+
+    def fake_weekly(code, count):
+        calls.append((code, count))
+        return (["close"], [[float(i + 1)] for i in range(count)])
+
+    monkeypatch.setattr(get_val_report, "tdx_get_weekly_bars", fake_weekly)
+
+    result = get_val_report.compute_weekly_ma("600519")
+
+    assert calls == [("600519", 40)]
+    assert result["week_count"] == 40
+    assert result["ma30"] is not None
+
+
+def test_weekly_strategy_checks_only_the_sorted_top_n_candidates(monkeypatch):
+    calls = []
+    stocks = [
+        {"code": f"{index:06d}", "change_20d": index, "streak_days": 0}
+        for index in range(105)
+    ]
+
+    monkeypatch.setattr(get_val_report, "_zhb_weekly_eligible", lambda _stock: True)
+
+    def fake_weekly_ma(code):
+        calls.append(code)
+        return {
+            "week_count": 30,
+            "ma5": 5.0,
+            "ma10": 4.0,
+            "ma20": 3.0,
+            "ma30": 2.0,
+            "cluster_spread": 1.0,
+            "last_close": 6.0,
+            "last_week_date": "2026-10-30",
+        }
+
+    monkeypatch.setattr(get_val_report, "compute_weekly_ma", fake_weekly_ma)
+
+    get_val_report.strategy_02_weekly_ma(stocks, top_n=100)
+
+    assert calls == [f"{index:06d}" for index in range(104, 4, -1)]
 
 
 def test_core_discount_offloads_pe_range_position_work(monkeypatch):

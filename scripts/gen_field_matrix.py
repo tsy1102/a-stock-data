@@ -282,20 +282,27 @@ def render(name_sources, records) -> str:
         f"（去重配对口径，取代旧版按行出现的 1412 重复计数）。\n"
     )
     out.append(
-        "> 源排序按易→难（V17.0.7 层级定案；2026-09-07 thsdk 已退役，不再列为活体源）："
+        "> 来源展示顺序为易→难的风险参考，不代表运行时调用优先级；"
+        "TDX-0x0010/F10 与 TDX-eltdx 属同一来源族，不能按独立来源计证据。"
+        "（V17.0.7 层级定案；2026-09-07 thsdk 已退役，不再列为活体源）："
         "ZHB（离线零网络）→ TDX TCP（0x0010/F10/eltdx）→ "
         "腾讯（不封 IP）→ **同花顺-fuyao（官方 REST，盘后可查+独立风控域，V17.0.7 升为财务 TTM 族主源）** → "
         "新浪 → 巨潮 → 东财（限流最严）→ 其他。\n"
     )
     out.append("> 字段名基于章节标题分类推断，精确接口见各节；正文修改后重跑本脚本即同步。\n")
-    out.append(f"**B.1 多源字段（{len(multi)} 个，fallback 路由表）**\n")
-    out.append("| 字段 | 源数 | 源（按易→难） |")
+    out.append(
+        f"**B.1 多来源字段（{len(multi)} 个；表示登记了多个来源标签，不等同于独立来源，"
+        "也不是运行时 fallback 表）**\n"
+    )
+    out.append("| 字段 | 登记来源标签数 | 来源标签（按风险参考顺序） |")
     out.append("|:---|:---:|:---|")
     for f in sorted(multi, key=lambda x: -len(multi[x])):
         srcs = sort_sources(multi[f])
         out.append(f"| {f} | {len(srcs)} | {'、'.join(srcs)} |")
     out.append("")
-    out.append(f"**B.2 单源字段（{len(name_sources) - len(multi)} 个，无 fallback）**\n")
+    out.append(
+        f"**B.2 单来源关系字段（{len(name_sources) - len(multi)} 个；仅登记一个来源标签）**\n"
+    )
     for src in SOURCE_ORDER:
         fields = sorted(single.get(src, []))
         if not fields:

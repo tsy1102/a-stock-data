@@ -13,6 +13,7 @@ import asyncio
 import code
 import hashlib
 import json
+import math
 import os
 import re
 import requests
@@ -25,6 +26,7 @@ from stock_common.sc_network import (
     _async_request_with_retry,
     _biz_logger,
     _debug_log,
+    _em_is_banned,
     _gen_wait_process_interval,
     _http_logger,
     _quick_request,
@@ -43,6 +45,11 @@ from ._shared import (
 from stock_common.sc_kpl import _f
 from ._datacenter import query_datacenter as _query_datacenter
 from ._datacenter import query_datacenter_async as _query_datacenter_async
+
+
+def is_em_batch_quotes_cooling_down() -> bool:
+    """Return whether the shared push2delay risk gate is currently closed."""
+    return _em_is_banned("push2delay.eastmoney.com")
 
 
 def eastmoney_datacenter(
@@ -226,6 +233,21 @@ def get_em_batch_quotes(codes: List[str]) -> Dict[str, Dict[str, Any]]:
                 # （此前直接赋值导致批量路径 mcap 错 1e8 倍——canonical L3 单股路径无此问题）
                 mcap_yi = _safe_float(item.get("f20", 0)) / 1e8
                 float_mcap_yi = _safe_float(item.get("f21", 0)) / 1e8
+                _f62_raw = item.get("f62")
+                _f62_wan = None
+                if _f62_raw is not None and str(_f62_raw).strip() not in (
+                    "",
+                    "-",
+                    "--",
+                    "None",
+                    "null",
+                ):
+                    try:
+                        _f62_value = float(str(_f62_raw).replace(",", "").strip())
+                        if math.isfinite(_f62_value):
+                            _f62_wan = _f62_value / 1e4
+                    except (TypeError, ValueError, OverflowError):
+                        _f62_wan = None
                 if code:
                     result[code] = {
                         "name": name,
@@ -250,7 +272,7 @@ def get_em_batch_quotes(codes: List[str]) -> Dict[str, Dict[str, Any]]:
                         #   → f62 = 主力净(已含超大单+大单)，f66 = 超大单净，f72 = 大单净。
                         # 再加 f66 即重复计一次超大单，虚高约 40%（与 push2 侧同量级）。
                         # 索引对齐仍然成立：ulist f62/f66/f72 ↔ push2 f137/f140/f143（跨接口对撞 96%+）。
-                        "main_net_inflow_wan": _safe_float(item.get("f62", 0)) / 1e4,
+                        "main_net_inflow_wan": _f62_wan,
                     }
         except RateLimitBlockedError:
             # M9 修复：EM 连续 403(IP 被封) 必须显性抛出，不能再被宽 except 吞成空数据
@@ -1947,6 +1969,7 @@ __all__ = [
     'get_eastmoney_minute_fund_flow',
     'get_eastmoney_stock_news',
     'get_em_batch_quotes',
+    'is_em_batch_quotes_cooling_down',
     'get_em_fund_flow',
     'get_em_history_fund_flow',
     'get_fund_flow_weighted',

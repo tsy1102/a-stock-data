@@ -204,7 +204,12 @@ def render_etf_shares_section(today_str: Optional[str] = None) -> List[str]:
             t.join(timeout=25)
             if t.is_alive():
                 return None, None
-            return box.get("rows"), (today_str[:10] if today_str else None)
+            rows = box.get("rows")
+            source_dates = {
+                str(row.get("date") or "")[:10] for row in (rows or []) if row.get("date")
+            }
+            source_day = next(iter(source_dates)) if len(source_dates) == 1 else None
+            return rows, source_day
         for day in _backtrack_trading_days(10):
             try:
                 rows = etf_shares(day, exchange)

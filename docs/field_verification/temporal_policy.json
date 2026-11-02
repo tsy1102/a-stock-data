@@ -1,0 +1,106 @@
+{
+  "schema_version": 1,
+  "policy_version": "2026-11-01",
+  "default_class": "unclassified",
+  "classes": {
+    "intraday_sensitive": "盘中或每日变化的敏感行情字段；L1 必须有明确来源日期且样本阶段已收盘。",
+    "daily_market": "按交易日变化的行情字段；L1 必须有明确来源日期，不能用目标数据日或目录日期代替。",
+    "periodic_or_event": "按报告期、生效日或事件日期变化；必须存在字段值自身的有效日期证据。",
+    "slow_changing": "低频变化字段；可用跨源多日样本确认语义关系，但未确认的来源日期仍保持未知。",
+    "static_reference": "稳定参考字段；可用跨源多日样本确认语义关系，但不据此确认样本新鲜度。",
+    "unclassified": "没有逐源分类的保守默认值；L1 必须有明确来源日期。"
+  },
+  "entries": [
+    {
+      "source": "FTShare REST",
+      "code": "high",
+      "class": "daily_market",
+      "registry_status": "verified",
+      "reason": "逐源注册表已确认最高价，随交易日变化。"
+    },
+    {
+      "source": "FTShare REST",
+      "code": "listing_date",
+      "class": "static_reference",
+      "registry_status": "verified",
+      "reason": "逐源注册表已确认上市日期；字段语义稳定，但不证明当前快照新鲜度。"
+    },
+    {
+      "source": "FTShare REST",
+      "code": "low",
+      "class": "daily_market",
+      "registry_status": "verified",
+      "reason": "逐源注册表已确认最低价，随交易日变化。"
+    },
+    {
+      "source": "FTShare REST",
+      "code": "name",
+      "class": "slow_changing",
+      "registry_status": "verified",
+      "reason": "逐源注册表已确认证券名称；通常稳定，但可能发生更名。"
+    },
+    {
+      "source": "FTShare REST",
+      "code": "open",
+      "class": "daily_market",
+      "registry_status": "verified",
+      "reason": "逐源注册表已确认开盘价，随交易日变化。"
+    },
+    {
+      "source": "FTShare REST",
+      "code": "pe_ttm",
+      "class": "daily_market",
+      "registry_status": "verified",
+      "reason": "逐源注册表已确认滚动市盈率，可能随价格和财报变化。"
+    },
+    {
+      "source": "FTShare REST",
+      "code": "prev_close",
+      "class": "daily_market",
+      "registry_status": "verified",
+      "reason": "逐源注册表已确认前收盘价，按有效交易日变化。"
+    },
+    {
+      "source": "FTShare REST",
+      "code": "volume",
+      "class": "daily_market",
+      "registry_status": "verified",
+      "reason": "逐源注册表已确认成交量，随交易日变化。"
+    },
+    {
+      "source": "TDX(双命名源)",
+      "code": "amount",
+      "class": "daily_market",
+      "registry_status": "verified",
+      "reason": "逐源注册表已确认成交额，随交易日变化。"
+    },
+    {
+      "source": "TDX(双命名源)",
+      "code": "high",
+      "class": "daily_market",
+      "registry_status": "verified",
+      "reason": "逐源注册表已确认最高价，随交易日变化。"
+    },
+    {
+      "source": "TDX(双命名源)",
+      "code": "low",
+      "class": "daily_market",
+      "registry_status": "verified",
+      "reason": "逐源注册表已确认最低价，随交易日变化。"
+    },
+    {
+      "source": "TDX(双命名源)",
+      "code": "open",
+      "class": "daily_market",
+      "registry_status": "verified",
+      "reason": "逐源注册表已确认开盘价，随交易日变化。"
+    },
+    {
+      "source": "ZHB-tdxstat2",
+      "code": "amount",
+      "class": "daily_market",
+      "registry_status": "verified",
+      "reason": "逐源注册表已确认 T 日总成交额，随交易日变化。"
+    }
+  ]
+}

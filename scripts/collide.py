@@ -112,6 +112,7 @@ from scripts import collision_candidate_reviews as CCR
 from scripts import collision_research_state as CRS
 from scripts import field_name_candidates as FNC
 from scripts import field_registry_api as FRA
+from scripts import temporal_policy as TP
 
 
 from scripts import source_lineage_api as SLA
@@ -387,6 +388,14 @@ def collide_pair(L, R, *, contract_anchor=False):
             if L.get("sample_meta", {}).get(key, {}).get("phase") not in {"closed", "calendar"}
             or R.get("sample_meta", {}).get(key, {}).get("phase") not in {"closed", "calendar"}
         ),
+        "excluded_unconfirmed_date_pairs": sum(
+            1
+            for key in common
+            if L.get("sample_meta", {}).get(key, {}).get("phase") in {"closed", "calendar"}
+            and R.get("sample_meta", {}).get(key, {}).get("phase") in {"closed", "calendar"}
+            and not (_eligible_for_l1(L, key) and _eligible_for_l1(R, key))
+        ),
+        "temporal_evidence": TP.relation_date_evidence(L, R, selected_days),
     }
 
 
@@ -819,6 +828,16 @@ def run(args):
     official_contract_anchors = registry_context["official_contract_anchors"]
     known_maps = registry_context["known_mappings"]
     diagnostics.extend(registry_context["diagnostics"])
+    temporal_policy_summary = TP.apply_store_policies(store)
+    diagnostics.extend(temporal_policy_summary["diagnostics"])
+    diagnostics.append(
+        "字段时效分类: "
+        + ", ".join(
+            f"{name}={count}"
+            for name, count in sorted(temporal_policy_summary["class_counts"].items())
+        )
+        + "；未分类字段按来源日期严格门控"
+    )
 
     # 4) Candidate targets exclude verified and explicitly disproved identities.
     if registry_context["safe_to_run"]:
@@ -1116,6 +1135,7 @@ def run(args):
             "evidence_sources": sorted(
                 {evidence_source_family(p["left"]), evidence_source_family(p["right"])}
             ),
+            "temporal_evidence": p.get("temporal_evidence"),
             "hub_flag": p.get("hub_flag", False),
             "last_seen": today,
         }
@@ -1222,6 +1242,7 @@ def run(args):
         "contract_anchor_identity_count": len(contract_anchors),
         "official_contract_verified_identity_count": len(official_contract_verified),
         "official_contract_anchor_identity_count": len(official_contract_anchors),
+        "temporal_policy": temporal_policy_summary,
         "source_coverage": source_coverage,
         "right_field_count": len(right_ids),
         "exploratory_pair_count": exploratory_pair_count,
@@ -1318,6 +1339,9 @@ def run(args):
         )
         rendered = append_source_identity_report(rendered, source_identity)
         rendered = append_contract_anchor_candidates(rendered, report_data.get("L1-C", []))
+        rendered = CREP.append_temporal_evidence_report(
+            rendered, l1, l1_contract, temporal_policy_summary
+        )
         rendered = append_source_coverage_report(rendered, report_data.get("source_coverage", []))
         rendered = CAE.append_daily_aggregate_report(rendered, daily_aggregate_evidence)
         rendered = FNC.append_field_name_candidate_report(rendered, name_candidate_report)

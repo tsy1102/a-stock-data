@@ -38,8 +38,9 @@ from concurrent.futures import ThreadPoolExecutor, as_completed  # V16.4.1: 删 
 _MAIN_NET_MAP_GLOBAL: Dict[str, float] = {}
 _MAIN_NET_REQUESTED_COUNT = 0
 _MAIN_NET_RETURNED_COUNT = 0
+_MAIN_NET_SOURCE_STATUS = "not_requested"
 
-warnings.filterwarnings('ignore')
+warnings.filterwarnings("ignore")
 from core.data_provider import get_market_snapshot_async
 
 from core.tdx_client import (  # V16.4.1: 删 tdx_get_security_bars/cleanup_tdx,
@@ -175,13 +176,17 @@ def _verified_main_net_amount(code: str) -> float:
     return value if math.isfinite(value) else 0.0
 
 
-def _format_limit_pool_source_summary(sources: dict, total: Any) -> tuple[str, str]:
+def _format_limit_pool_source_summary(
+    sources: dict, total: Any, unqueried_sources=()
+) -> tuple[str, str]:
     """Render returned source counts without overstating a majority as unanimity."""
     source_parts = []
     valid_counts = []
+    unqueried = set(unqueried_sources or ())
     for name, value in (sources or {}).items():
         if value is None:
-            source_parts.append(f"{name}=失败")
+            label = "未查询" if name in unqueried else "失败"
+            source_parts.append(f"{name}={label}")
             continue
         try:
             count = int(value)
@@ -219,7 +224,9 @@ def _format_limit_pool_source_summary(sources: dict, total: Any) -> tuple[str, s
     else:
         status = "无两源同值；汇总值是无共识时的最大值回退，不能视为交叉确认"
 
-    failed_count = len(source_parts) - len(valid_counts)
+    failed_count = sum(
+        1 for name, value in (sources or {}).items() if value is None and name not in unqueried
+    )
     if failed_count:
         status += f"；另有 {failed_count} 个来源无有效值"
     return source_text, status
@@ -245,6 +252,7 @@ def _main_flow_summary_lines(
     *,
     zhb_auction_amount_wan: float = 0.0,
     zhb_data_date: str = "",
+    source_status: str = "not_requested",
 ) -> List[str]:
     """Render main-flow and auction amount as separate, correctly labeled measures."""
     if flow_values:
@@ -261,12 +269,26 @@ def _main_flow_summary_lines(
             lines.append("    🔴 完整扫描样本主力净额低于 -50 亿元参考阈值")
         elif not complete:
             lines.append("    ⚠️ 覆盖不完整，不据样本合计推断全市场资金方向")
+        if source_status == "shared_cooldown":
+            lines.append(
+                "    来源状态：push2delay 共享风控冷却中，本轮跳过请求；缺项不按零值处理。"
+            )
+        elif source_status == "partial":
+            lines.append("    来源状态：仅返回部分有效 f62 样本；缺项不按零值处理。")
+        elif source_status == "error":
+            lines.append("    来源状态：批量 f62 请求异常；不据此判断资金方向。")
         return lines
 
     lines = [
         f"  ulist f62 主力净额覆盖：{returned_count}/{requested_count} 条扫描样本；未返回项不代表零净流。",
         "  💰 主力净流入：暂缺（ulist f62 未返回有效样本），不作资金方向判断。",
     ]
+    if source_status == "shared_cooldown":
+        lines.append("  来源状态：push2delay 共享风控冷却中，本轮跳过请求；未返回不代表零净流。")
+    elif source_status == "error":
+        lines.append("  来源状态：批量 f62 请求异常；未返回不代表零净流。")
+    elif source_status == "no_valid_rows":
+        lines.append("  来源状态：请求未返回可用 f62 数值；未返回不代表零净流。")
     if zhb_auction_amount_wan > 0:
         auction_yi = zhb_auction_amount_wan / 1e4
         as_of = zhb_data_date or "未确认"
@@ -287,9 +309,11 @@ async def get_market_abnormal_data():
           对应的 dataclass 形式由 _canonicalize_snapshot 转换层提供（V15.1）。
     """
     global _MAIN_NET_MAP_GLOBAL, _MAIN_NET_REQUESTED_COUNT, _MAIN_NET_RETURNED_COUNT
+    global _MAIN_NET_SOURCE_STATUS
     _MAIN_NET_MAP_GLOBAL = {}
     _MAIN_NET_REQUESTED_COUNT = 0
     _MAIN_NET_RETURNED_COUNT = 0
+    _MAIN_NET_SOURCE_STATUS = "not_requested"
 
     # V10.2: change_pct是实时字段，zhb日期必须是今天才能用
     # V17.3.11: 腾讯批量实时覆盖改为**单次获取并共享**——先取全 ZHB 宇宙 codes 拉一次批量，
@@ -335,25 +359,40 @@ async def get_market_abnormal_data():
         try:
             _bq_codes = [str(d.get("code", "")) for d in data if d.get("code")]
             if _bq_codes:
-                from stock_common.sc_datasource import get_em_batch_quotes
-
-                _bq = await asyncio.to_thread(get_em_batch_quotes, _bq_codes) or {}
                 _MAIN_NET_REQUESTED_COUNT = len(_bq_codes)
-                _MAIN_NET_MAP_GLOBAL = {
-                    str(code): _safe_float(q.get("main_net_inflow_wan")) * 1e4
-                    for code, q in _bq.items()
-                    if isinstance(q, dict)
-                    and q.get("main_net_inflow_wan") not in (None, "")
-                    and math.isfinite(_safe_float(q.get("main_net_inflow_wan")))
-                }
-                _MAIN_NET_RETURNED_COUNT = len(_MAIN_NET_MAP_GLOBAL)
-                if _MAIN_NET_RETURNED_COUNT < _MAIN_NET_REQUESTED_COUNT * 0.5:
+                from stock_common.sc_datasource import is_em_batch_quotes_cooling_down
+
+                if is_em_batch_quotes_cooling_down():
+                    _MAIN_NET_SOURCE_STATUS = "shared_cooldown"
                     _debug_log(
-                        "mak ulist f62 coverage below 50%: "
-                        f"{_MAIN_NET_RETURNED_COUNT}/{_MAIN_NET_REQUESTED_COUNT}; "
-                        "skip immediate full-batch retry"
+                        "mak ulist f62 skipped: push2delay shared risk-group cooldown is active"
                     )
+                else:
+                    from stock_common.sc_datasource import get_em_batch_quotes
+
+                    _MAIN_NET_SOURCE_STATUS = "loading"
+                    _bq = await asyncio.to_thread(get_em_batch_quotes, _bq_codes) or {}
+                    _MAIN_NET_MAP_GLOBAL = {
+                        str(code): _safe_float(q.get("main_net_inflow_wan")) * 1e4
+                        for code, q in _bq.items()
+                        if isinstance(q, dict)
+                        and q.get("main_net_inflow_wan") not in (None, "")
+                        and math.isfinite(_safe_float(q.get("main_net_inflow_wan")))
+                    }
+                    _MAIN_NET_RETURNED_COUNT = len(_MAIN_NET_MAP_GLOBAL)
+                    _MAIN_NET_SOURCE_STATUS = (
+                        "loaded"
+                        if _MAIN_NET_RETURNED_COUNT >= _MAIN_NET_REQUESTED_COUNT
+                        else "partial" if _MAIN_NET_RETURNED_COUNT else "no_valid_rows"
+                    )
+                    if _MAIN_NET_RETURNED_COUNT < _MAIN_NET_REQUESTED_COUNT * 0.5:
+                        _debug_log(
+                            "mak ulist f62 coverage below 50%: "
+                            f"{_MAIN_NET_RETURNED_COUNT}/{_MAIN_NET_REQUESTED_COUNT}; "
+                            "skip immediate full-batch retry"
+                        )
         except Exception as _e:
+            _MAIN_NET_SOURCE_STATUS = "error"
             _debug_log(f"mak ulist main_net batch (unified): {_e}")
     # V17.3.11: 腾讯实时覆盖已改为单次获取并共享（ZHB 路径内层构建 / TDX 路径 _apply_tencent_cover），
     # 此处不再二次拉取。
@@ -422,7 +461,7 @@ async def _get_zhb_market_data(tencent_map: Optional[Dict[str, Any]] = None):
                 name = zhb_name_cache[code]
             if not name:
                 continue
-            if 'ST' in name or '退' in name:
+            if "ST" in name or "退" in name:
                 continue
 
             # V15.5.15→V17.3.11: 腾讯实时优先（今日 price/change_pct/amount/turnover/mcap），缺失回退 ZHB T-1
@@ -543,8 +582,8 @@ def get_tdx_kline(code, days=20):
     if not keys or not rows:
         return [], []
     idx_map = {k: i for i, k in enumerate(keys)}
-    ci = idx_map.get('close', -1)
-    vi = idx_map.get('volume', -1)
+    ci = idx_map.get("close", -1)
+    vi = idx_map.get("volume", -1)
     if ci < 0:
         return [], []
     closes = [_safe_float(r[ci]) for r in rows[-days:] if len(r) > ci]
@@ -1606,6 +1645,7 @@ async def generate_sector_report(output_path):
         _MAIN_NET_RETURNED_COUNT,
         zhb_auction_amount_wan=_auction_amount_wan,
         zhb_data_date=get_zhb_data_date() or "",
+        source_status=_MAIN_NET_SOURCE_STATUS,
     ):
         L(_flow_line)
     if _lbp > 80:
@@ -1622,12 +1662,12 @@ async def generate_sector_report(output_path):
     # 否则退回 ret_3d 估算(放开3板封顶, 用复利对数算真实板数); KPL lbgd 作二次校验。
     _lb_3d = {}
     _max_board = 0
-    _cl_d = locals().get('_ladder')
+    _cl_d = locals().get("_ladder")
     if isinstance(_cl_d, dict) and _cl_d:
         for _k, _v in _cl_d.items():
-            _cnt = _v.get('count', 0) if isinstance(_v, dict) else 0
+            _cnt = _v.get("count", 0) if isinstance(_v, dict) else 0
             _lb_3d[_k] = _cnt
-            _m = re.search(r'(\d+)', str(_k))
+            _m = re.search(r"(\d+)", str(_k))
             if _m:
                 _max_board = max(_max_board, int(_m.group(1)))
     else:
@@ -1643,26 +1683,26 @@ async def generate_sector_report(output_path):
                 except (ValueError, ZeroDivisionError):
                     _est = 1
                 if _est >= 3:
-                    _lb_3d['3板+'] = _lb_3d.get('3板+', 0) + 1
+                    _lb_3d["3板+"] = _lb_3d.get("3板+", 0) + 1
                     _max_board = max(_max_board, _est)
                 elif _est == 2:
-                    _lb_3d['2板'] = _lb_3d.get('2板', 0) + 1
+                    _lb_3d["2板"] = _lb_3d.get("2板", 0) + 1
                     _max_board = max(_max_board, 2)
                 else:
-                    _lb_3d['首板'] = _lb_3d.get('首板', 0) + 1
+                    _lb_3d["首板"] = _lb_3d.get("首板", 0) + 1
     # V17.2.7(2026-09-07) 修复: 首板 = 样本涨停总数 - 连板合计, 杜绝 ret_3d 阈值误杀致首板≈1 的荒谬值;
     # 首板 + 连板 恒等于本段涨停总数(_zt_count)。
-    _lb_total = sum(v for k, v in _lb_3d.items() if k != '首板')
-    _lb_3d['首板'] = max(0, len(_zt_3d) - _lb_total)
+    _lb_total = sum(v for k, v in _lb_3d.items() if k != "首板")
+    _lb_3d["首板"] = max(0, len(_zt_3d) - _lb_total)
     # KPL 连板高度(lbgd)二次校验/兜底——独立源最高连板
     try:
-        _kpl_d = locals().get('_kpl')
-        if isinstance(_kpl_d, dict) and _kpl_d.get('lbgd') is not None:
-            _max_board = max(_max_board, int(_kpl_d['lbgd']))
+        _kpl_d = locals().get("_kpl")
+        if isinstance(_kpl_d, dict) and _kpl_d.get("lbgd") is not None:
+            _max_board = max(_max_board, int(_kpl_d["lbgd"]))
     except Exception:
         pass
     if _lb_3d:
-        _ladder_str = ' | '.join(f'{k}: {v}家' for k, v in sorted(_lb_3d.items()))
+        _ladder_str = " | ".join(f"{k}: {v}家" for k, v in sorted(_lb_3d.items()))
         _max_desc = f", 最高{_max_board}板" if _max_board else ", 最高首板"
         L(f"  📊 连板梯队（财联社情绪板档·市场口径）: {_ladder_str}{_max_desc}")
         # V17.2.27(2026-09-18) P1 口径说明: A段连板高度为财联社情绪板档(市场口径),
@@ -1776,10 +1816,12 @@ async def generate_sector_report(output_path):
         try:
             from stock_common import get_limit_pool_multi_source
 
-            _multi = get_limit_pool_multi_source()
+            _multi = get_limit_pool_multi_source(allow_push2ex=False)
             if _multi.get("sources"):
                 _src_txt, _verified = _format_limit_pool_source_summary(
-                    _multi.get("sources", {}), _multi.get("total")
+                    _multi.get("sources", {}),
+                    _multi.get("total"),
+                    _multi.get("unqueried_sources", ()),
                 )
                 L(
                     f"  📊 涨停数来源对照: {_src_txt} → {_multi.get('total')} 只；"
@@ -1790,7 +1832,7 @@ async def generate_sector_report(output_path):
 
         from stock_common import get_limit_pool_summary
 
-        pool = get_limit_pool_summary()
+        pool = get_limit_pool_summary(allow_push2ex=False)
         zt_count = pool.get("limit_up_count", 0)
         zb_count = pool.get("limit_broken_count", 0)
         _multi_total = _multi.get("total")
@@ -1803,9 +1845,11 @@ async def generate_sector_report(output_path):
         # V17.0.8(2026-08-26 报告核查): P0 修复后 pool.limit_down_count 已走权威链
         # (push2ex tc → KPL RiseFallAnalysis dt → ZHB 仅同日期), 恢复 pool 优先——
         # A 段 _dt_count(涨跌幅口径, 实时池) 仅作兜底
+        _dt_available = pool.get("limit_down_count_available", True)
         dt_count = pool.get("limit_down_count", 0)
-        if dt_count == 0 and _dt_count > 0:
+        if (dt_count == 0 or not _dt_available) and _dt_count > 0:
             dt_count = _dt_count
+            _dt_available = True
 
         # V17.0.5 P1: fuyao 跌停池明细(first/last_limit_time——东财 getTopicDTPool 空缺的正式解法)
         try:
@@ -1841,10 +1885,18 @@ async def generate_sector_report(output_path):
                 )
         except Exception as _e:
             _debug_log(f"mak fuyao limit_down detail: {_e}")
-        success_rate = pool.get("success_rate", 0)
+        success_rate = pool.get("success_rate")
+        _zt_available = pool.get("limit_up_count_available", True)
+        _zb_available = pool.get("limit_broken_count_available", True)
+        _zt_text = str(zt_count) if _zt_available else "未取得"
+        _zb_text = str(zb_count) if _zb_available else "未取得"
+        _dt_text = str(dt_count) if _dt_available and dt_count is not None else "未取得"
+        _success_text = f"{success_rate:.0f}%" if success_rate is not None else "未取得"
         L(
-            f"  涨停 {zt_count} 只 | 炸板 {zb_count} 只 | 跌停 {dt_count} 只 | 封板率 {success_rate:.0f}%（涨停池口径）"
+            f"  涨停 {_zt_text} 只 | 炸板 {_zb_text} 只 | 跌停 {_dt_text} 只 | 封板率 {_success_text}（涨停池口径）"
         )
+        if not _zb_available or not _dt_available:
+            L("  ℹ️ 未取得的炸板/跌停数不按 0 计；仅展示当日同源聚合数据。")
         # V17.4.x (#444): 涨跌停数为涨停池口径；与其他来源并列观察，未逐只对齐前不称为一致确认。
         L(
             "  ℹ️ 本节涨跌停数、封板率和名单统一按涨停池口径；其他来源日期未在本报告中核实，且未逐股对账前仅作并列观察，不称为交叉确认。"
@@ -1876,12 +1928,12 @@ async def generate_sector_report(output_path):
 
             def _seal_key(it):
                 # 封板时间排序键: 兼容 ths "HH:MM:SS" 与 东财 push2ex "HHMM[SS]" 两种格式
-                _raw = it.get('first_limit_time', '') or it.get('first_time', '')
+                _raw = it.get("first_limit_time", "") or it.get("first_time", "")
                 try:
-                    if ':' in str(_raw):
-                        _h, _m, _s = str(_raw).split(':')
+                    if ":" in str(_raw):
+                        _h, _m, _s = str(_raw).split(":")
                         return int(_h) * 3600 + int(_m) * 60 + int(_s)
-                    _v = int(_raw) if _raw not in ('', None) else 0
+                    _v = int(_raw) if _raw not in ("", None) else 0
                     if _v > 0:
                         return (_v // 10000) * 3600 + ((_v % 10000) // 100) * 60 + (_v % 100)
                 except Exception:
@@ -1893,11 +1945,11 @@ async def generate_sector_report(output_path):
             L("| 代码 | 名称 | 涨跌幅 | 连板 | 封板时间 | 封单额(亿) | 板块 |")
             L("|---|---|---|---|---|---|---|")
             for item in zt_list[:30]:
-                fund_yi = item.get('limit_fund', 0) / 1e8 if item.get('limit_fund', 0) else 0
+                fund_yi = item.get("limit_fund", 0) / 1e8 if item.get("limit_fund", 0) else 0
                 # H2(审查 2026-08-16): ths 优先源输出 first_time(已格式化 HH:MM:SS),
                 # 东财 push2ex 输出 first_limit_time(5 位串 "92500")——双键兼容;
                 # ths 路径直接显示格式化时间, 东财路径按 HHMM 拆
-                fbt_raw = item.get('first_limit_time', '') or item.get('first_time', '')
+                fbt_raw = item.get("first_limit_time", "") or item.get("first_time", "")
                 try:
                     _fbt_int = int(fbt_raw) if fbt_raw not in ("", None) else 0
                 except (TypeError, ValueError):
@@ -1995,7 +2047,7 @@ async def generate_sector_report(output_path):
                     _lst = _boards.get(_bk) or []
                     if _lst:
                         _sealed_next = sum(1 for x in _lst if x.get("seal_nextday"))
-                        _cn = _BOARD_CN.get(_bk, _bk.replace('_board', ''))
+                        _cn = _BOARD_CN.get(_bk, _bk.replace("_board", ""))
                         _summary.append(f"{_cn}板{len(_lst)}只(次日续封{_sealed_next})")
                 if _summary:
                     L("\n  🪜 fuyao 连板矩阵互校（30 日窗口最新日）:")
@@ -2013,18 +2065,18 @@ async def generate_sector_report(output_path):
         _debug_log(f"mak ths pool note: {_e}")
         _ths_pool = []
     if _ths_pool:
-        _zt_all = {s.get('code', '') for s in _zt_3d} if '_zt_3d' in dir() else set()
+        _zt_all = {s.get("code", "") for s in _zt_3d} if "_zt_3d" in dir() else set()
         _ladder_all = (
-            {str(s.get('code', '')) for s in (_ladder or [])}
+            {str(s.get("code", "")) for s in (_ladder or [])}
             if isinstance(_ladder, list)
             else set()
         )
         _ths_only = [
             h
             for h in _ths_pool
-            if h.get('code') not in _zt_all and h.get('code') not in _ladder_all
+            if h.get("code") not in _zt_all and h.get("code") not in _ladder_all
         ]
-        L('')
+        L("")
         L(f"  ❗ 同花顺独家 {len(_ths_only)} 只（东财口径未覆盖，交叉验证增量；下表仅列前 10）:")
         if _ths_only:
             # V17.0.2i: 直接 md 表格 4 列(原空格表"涨幅% 题材"因 1 空格粘连合并列)
@@ -2035,7 +2087,7 @@ async def generate_sector_report(output_path):
                     f"| {_h.get('code','')} | {_h.get('name','')}{_name_mark(_h.get('name',''))} | {_safe_float(_h.get('zhangfu',0)):+.2f}% | {str(_h.get('reason',''))[:40]} |"
                 )
     else:
-        L('')
+        L("")
         L(
             "  ⚠️ 同花顺独家交叉验证：数据源受限（同花顺网页接口 401 反爬），强势股热池暂无法获取，交叉验证增量视角缺失。"
         )
@@ -2228,7 +2280,7 @@ async def generate_sector_report(output_path):
     L("|---|---|---|---|---|---|")
     for i, ts in enumerate(top10, 1):
         name = normalize_industry(ts["name"])
-        _mfi = round(ts.get('main_inflow', 0) / 1e8, 2) if abs(ts.get('main_inflow', 0)) > 0 else 0
+        _mfi = round(ts.get("main_inflow", 0) / 1e8, 2) if abs(ts.get("main_inflow", 0)) > 0 else 0
         L(
             f"| {i} | {name} | {ts.get('score',0):.1f} | {ts['change_pct']:+.2f}% | {ts.get('amount_yi',0):.1f} | {_mfi:+.2f} |"
         )
@@ -2261,24 +2313,24 @@ async def generate_sector_report(output_path):
     top_analysis = analyze_top_stocks(top10)
     for ta in top_analysis:
         nm = normalize_industry(ta["sector"])
-        _code = ta['data'].get('code', '')
+        _code = ta["data"].get("code", "")
         # V16.3 L: ZHB 旁路板块 code=行业名（非 BK 码）→ 避免 "煤炭开采 (煤炭开采)" 重复
         _code_show = f" ({_code})" if _code and _code != ta["sector"] else ""
         L(f"\n  🔥 {nm}{_code_show} 总分={ta['data'].get('score',0):.1f}")
 
         L(f"     ├─ 成分股总数: {ta.get('total_stocks',0)} 只")
-        if ta['limit_up_count'] > 0:
+        if ta["limit_up_count"] > 0:
             # V17.0.8: 涨停名单用真实涨停全量(limit_up_all)而非梯队(_leaders 含替补)
-            _zt_names = ' '.join(st['name'] + st['code'] for st in ta.get('limit_up_all', []))
+            _zt_names = " ".join(st["name"] + st["code"] for st in ta.get("limit_up_all", []))
             L(f"     ├─ 涨停家数: {ta['limit_up_count']} 只 → {_zt_names}")
         else:
             L("     ├─ 涨停家数: 0 只")
-        _top5 = ta.get('top5_stocks', [])
+        _top5 = ta.get("top5_stocks", [])
         if _top5:
             L("     └─ 涨幅 TOP5:")
             for _t5 in _top5:
-                _t5_chg = _t5.get('change_pct', 0)
-                _t5_icon = '🚀' if _t5_chg >= 10 else ('📈' if _t5_chg >= 5 else '  ')
+                _t5_chg = _t5.get("change_pct", 0)
+                _t5_icon = "🚀" if _t5_chg >= 10 else ("📈" if _t5_chg >= 5 else "  ")
                 L(f"       {_t5_icon} {_t5['name']}({_t5['code']})  {_t5_chg:>+8.2f}%")
                 # [ENRICH] 数据维度充实（仅用 ZHB 快照已有字段，零新增取数；异常不阻断报告）
                 try:
@@ -2289,11 +2341,11 @@ async def generate_sector_report(output_path):
                 except Exception as _e:
                     _debug_log(f"mak enrich top5 error: {_e}")
         _items = []
-        for _st in ta['limit_up_stocks']:
+        for _st in ta["limit_up_stocks"]:
             # V16.0: 统一 is_limit_up 判断（ST 10% 与主板一致）
             _label = (
-                '涨停'
-                if is_limit_up(_st['code'], _st.get('name', ''), _st.get('change_pct', 0))
+                "涨停"
+                if is_limit_up(_st["code"], _st.get("name", ""), _st.get("change_pct", 0))
                 else f"{_st.get('change_pct',0):+.1f}%"
             )
             _items.append(f"{_st['name']}({_st['code']}, {_label})")
@@ -2310,6 +2362,10 @@ async def generate_sector_report(output_path):
         )
     else:
         L("  ulist f62 无可用样本；本节不判定行业主力资金方向。")
+        if _MAIN_NET_SOURCE_STATUS == "shared_cooldown":
+            L("  来源状态：push2delay 共享风控冷却中，本轮跳过请求；缺项不作零净流处理。")
+        elif _MAIN_NET_SOURCE_STATUS == "error":
+            L("  来源状态：批量 f62 请求异常；缺项不作零净流处理。")
     # V16.4.0: 按评分筛选（原 sectors[:50] 前 50 高评分板块可能全为净流入 → 虚涨段恒空）
     _scored = [s for s in sectors if s.get("score", 0) >= 30] or sectors
     # 全部行业均无非零合计时，只报告无法判断，不把空值当作真实零流量。
@@ -2324,7 +2380,7 @@ async def generate_sector_report(output_path):
             L("  主力净流入样本:")
             L("| 板块 | 评分 | 涨跌幅 | 主力净流入(亿) |")
             L("|---|---|---|---|")
-            _sorted_in = sorted(with_money, key=lambda x: x.get('main_inflow', 0), reverse=True)
+            _sorted_in = sorted(with_money, key=lambda x: x.get("main_inflow", 0), reverse=True)
             for s in _sorted_in[:10]:
                 L(
                     f"| {normalize_industry(s['name'])} | {s.get('score',0):.1f} | {s['change_pct']:+.2f}% | {round(s['main_inflow']/1e8,2):+.2f} |"
@@ -2334,7 +2390,7 @@ async def generate_sector_report(output_path):
             L("  ⚠️ 涨幅与已观测主力净流出同时出现（样本提示）:")
             L("| 板块 | 评分 | 涨跌幅 | 主力净流出(亿) |")
             L("|---|---|---|---|")
-            _sorted_out = sorted(without_money, key=lambda x: x.get('main_inflow', 0))
+            _sorted_out = sorted(without_money, key=lambda x: x.get("main_inflow", 0))
             for s in _sorted_out[:10]:
                 L(
                     f"| {normalize_industry(s['name'])} | {s.get('score',0):.1f} | {s['change_pct']:+.2f}% | {round(abs(s['main_inflow'])/1e8,2):.2f} |"

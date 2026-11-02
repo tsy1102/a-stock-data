@@ -27,6 +27,7 @@ from scripts.collision_math import (
     r_squared as _r_squared,
     standard_deviation as _standard_deviation,
 )
+from scripts import temporal_policy as TP
 
 # 样本为 20 股（pool.json: fixed 15 + dynamic 5）。L1 命中率阈值 = HIT_RATE_L1(18)/20 = 0.9；
 # 采用比率而非绝对 18/20，便于样本数变动时阈值自适应（符合四铁律精神）。
@@ -127,7 +128,7 @@ def classify(store):
 
 def _eligible_for_l1(info, key):
     sample_meta = info.get("sample_meta", {}).get(key, {})
-    return sample_meta.get("phase") in {"closed", "calendar"}
+    return TP.l1_date_eligible(info, sample_meta)
 
 
 def _median(values):

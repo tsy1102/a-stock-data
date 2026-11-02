@@ -1570,15 +1570,43 @@ def requires_push2(fn: Callable[P, R]) -> Callable[P, R]:
         def get_x(...): ...
     """
     import functools
+    import inspect
+
+    try:
+        parameters = inspect.signature(fn).parameters
+        allow_push2ex_parameter = parameters.get("allow_push2ex")
+        positional_parameters = tuple(
+            parameter
+            for parameter in parameters.values()
+            if parameter.kind
+            in (inspect.Parameter.POSITIONAL_ONLY, inspect.Parameter.POSITIONAL_OR_KEYWORD)
+        )
+        allow_push2ex_index = next(
+            (
+                index
+                for index, parameter in enumerate(positional_parameters)
+                if parameter.name == "allow_push2ex"
+            ),
+            None,
+        )
+        allow_push2ex_default = allow_push2ex_parameter.default if allow_push2ex_parameter else True
+    except (TypeError, ValueError):
+        allow_push2ex_index = None
+        allow_push2ex_default = True
 
     @functools.wraps(fn)
     def wrapper(*args: P.args, **kwargs: P.kwargs) -> R:
-        try:
-            _biz_logger.warning(f"PUSH2 used: {fn.__module__}.{fn.__name__}")
-        except Exception:
-            pass
-        # V16.4.1: 原 setdefault 第二次起不生效 → push2 审计计数恒为 1
-        _RL_STATS["push2_call_count"] = _RL_STATS.get("push2_call_count", 0) + 1
+        allow_push2ex = kwargs.get("allow_push2ex", allow_push2ex_default)
+        if allow_push2ex_index is not None:
+            if len(args) > allow_push2ex_index:
+                allow_push2ex = args[allow_push2ex_index]
+        if allow_push2ex is not False:
+            try:
+                _biz_logger.warning(f"PUSH2 used: {fn.__module__}.{fn.__name__}")
+            except Exception:
+                pass
+            # V16.4.1: 原 setdefault 第二次起不生效 → push2 审计计数恒为 1
+            _RL_STATS["push2_call_count"] = _RL_STATS.get("push2_call_count", 0) + 1
         return fn(*args, **kwargs)
 
     return wrapper

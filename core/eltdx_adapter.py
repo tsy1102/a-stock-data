@@ -184,10 +184,37 @@ class _EltdxAdapter:
     def index_bars(self, symbol, frequency=9, start=0, offset=800, market=None) -> Any:
         return self.bars(symbol, frequency, start, offset)
 
-    # ── 分红除权（eltdx capital_changes 映射待补，暂返回空）────────
+    # ── 分红除权（7709 0x000f，映射到 mootdx xdxr）────────────────
     def xdxr(self, symbol: str) -> Any:
-        _debug_log(f"eltdx xdxr stub ({symbol}): eltdx capital_changes 映射未实现，返回空")
-        return self._empty()
+        code = _normalize_eltdx_code(symbol)
+        block = self._client.corporate.capital_changes(code, include_raw=False)
+        records = getattr(block, "records", None) or []
+        rows = []
+        for record in records:
+            category = getattr(record, "category", None)
+            if category is None:
+                category = getattr(record, "category_raw", 0)
+            try:
+                category = int(category or 0)
+            except (TypeError, ValueError):
+                continue
+
+            event_date = getattr(record, "date", None) or getattr(record, "date_raw", "")
+            event_date = str(event_date or "").strip()[:10]
+            if len(event_date) == 8 and event_date.isdigit():
+                event_date = f"{event_date[:4]}-{event_date[4:6]}-{event_date[6:8]}"
+            row = {"category": category, "date": event_date}
+            if category == 1:
+                row.update(
+                    {
+                        "fenhong": getattr(record, "c1_value", getattr(record, "c1", 0)),
+                        "peigu_price": getattr(record, "c2_value", getattr(record, "c2", 0)),
+                        "songzhuangu": getattr(record, "c3_value", getattr(record, "c3", 0)),
+                        "peigu": getattr(record, "c4_value", getattr(record, "c4", 0)),
+                    }
+                )
+            rows.append(row)
+        return _pd.DataFrame(rows)
 
     # ── 财务 0x0010 ───────────────────────────────────────────────
     def finance(self, symbol: str) -> Any:

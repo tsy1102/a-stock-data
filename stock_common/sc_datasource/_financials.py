@@ -831,7 +831,11 @@ async def get_block_trade_async(session: Any, code: str) -> List[Dict[str, Any]]
     return rows
 
 
-@cached(category="dividend", ttl_seconds=TTL["dividend"], cross_verify=True)
+@cached(
+    category="dividend_tdx_v2",
+    ttl_seconds=TTL["dividend_tdx_v2"],
+    cross_verify=True,
+)
 def get_dividend_history(code: str) -> Optional[List[Dict[str, Any]]]:
     """V7.5: 分红历史 → TDX xdxr_info（东财 fallback 已删除）"""
     from core.tdx_client import tdx_get_dividend_history

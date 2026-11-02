@@ -101,7 +101,7 @@ def collect_eltdx(pool: list, failure_marker_fn: Callable[[Any], Any], lite: boo
     (ShortlineIndicator 41 字段) / 全局 Helpers(连板天梯/题材强度排行/成交对比/买卖力道
     /实时排名)。
     返回「命名字段 + 原始字节」双轨, 供 collide.py 值级对撞 + 原始字节二次解码(见 D 步)。
-    源 = 本地 eltdx TCP(非云连接器); 标注 scheme="eltdx" 独立血缘, 不动东财主路径。
+    源 = 本地 eltdx TCP(非云连接器); scheme="eltdx" 表示独立字段结构，来源谱系仍归并到 TDX。
     lite 模式(lite=True, 由 --eltdx-lite 触发): 跳过 kline_day/finance_batch
     (对撞未消费且与 TDX 源冗余), 仅保留
     quote_snapshot + shortline + 连板天梯——即 collide.py 真正消费的 eltdx 字段。
@@ -242,7 +242,9 @@ def collect_eltdx(pool: list, failure_marker_fn: Callable[[Any], Any], lite: boo
 
         if _a:
             try:
-                _batch = client.quotes.get_snapshots(_a)
+                # eltdx 3.3.2 默认严格模式会因任一缺失代码抛错并丢弃整批结果。
+                # 接受已确认的部分结果，后续逐股循环只补查未命中的代码。
+                _batch = client.quotes.get_snapshots(_a, on_missing="skip")
                 _merge_snapshot_rows(_batch, _a)
             except Exception as _e:
                 # A股批量失败(罕见)→ 降级逐股保住快照(挂起风险已由 BSE 隔离消除)
@@ -257,7 +259,7 @@ def collect_eltdx(pool: list, failure_marker_fn: Callable[[Any], Any], lite: boo
                         _snap_map[_ec] = {"__error__": str(_single_error)[:200]}
         if _bse:
             try:
-                _bse_batch = client.quotes.get_snapshots(_bse)
+                _bse_batch = client.quotes.get_snapshots(_bse, on_missing="skip")
                 _merge_snapshot_rows(_bse_batch, _bse)
             except Exception as _e:
                 out["bse_snapshot_error"] = f"BSE batch failed, fallback per-code: {str(_e)[:120]}"
@@ -344,11 +346,10 @@ def collect_eltdx(pool: list, failure_marker_fn: Callable[[Any], Any], lite: boo
 
 
 def collect_tdx_f10(pool: list) -> dict:
-    """TDX F10 财务九件套补充: 财务分析/股本/分红(TCP,免费)。"""
+    """TDX F10 日采集：财务分析和股本；整段分红历史仅由业务接口按需读取。"""
     from core.tdx_client import (
         tdx_get_financial_analysis,
         tdx_get_share_capital,
-        tdx_get_dividend_history,
     )
 
     out: Dict[str, Any] = {"stocks": {}}
@@ -358,7 +359,6 @@ def collect_tdx_f10(pool: list) -> dict:
         for name, fn in [
             ("financial_analysis", tdx_get_financial_analysis),
             ("share_capital", tdx_get_share_capital),
-            ("dividend_history", tdx_get_dividend_history),
         ]:
             try:
                 rec[name] = fn(c)

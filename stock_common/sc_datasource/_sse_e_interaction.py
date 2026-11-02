@@ -9,7 +9,7 @@ reportName 常量: 无(REST/HTML 接口); _VERIFIED 标记取自上游权威实�
 from __future__ import annotations
 import html as _html
 import re
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Any, Dict, List, Optional, Tuple
 
 from stock_common.sc_network import _quick_request, UA
@@ -20,54 +20,111 @@ _sse_uid_cache: Dict[str, str] = {}
 _sse_company_pages: Dict[int, List[Tuple[str, str]]] = {}
 _SSE_COMPANY_END = "没有任何上市公司的信息"
 _SSE_EMPTY_NOTE = re.compile(r'class="m_feed_note"[^>]*>[^<]*(暂无|暂时没有)[^<]*<')
+_SSE_CN_TZ = timezone(timedelta(hours=8))
+_SSE_ABS_TIME = re.compile(
+    r"(\d{4})\s*[年\-/]\s*(\d{1,2})\s*[月\-/]\s*(\d{1,2})\s*日?\s*(\d{1,2}):(\d{2})"
+)
+_SSE_DAY_WORD_TIME = re.compile(r"^(今天|昨天|前天)\s*(\d{1,2}):(\d{2})$")
+_SSE_MONTH_DAY_TIME = re.compile(r"^(\d{1,2})-(\d{1,2})\s+(\d{1,2}):(\d{2})$")
+_SSE_AGO_TIME = re.compile(r"^(\d+)\s*(秒|分钟|小时|天)前$")
+_SSE_CLOCK_TIME = re.compile(r"^(\d{1,2}):(\d{2})$")
+_SSE_DAY_OFFSETS = {"今天": 0, "昨天": 1, "前天": 2}
+_SSE_AGO_UNITS = {"秒": "seconds", "分钟": "minutes", "小时": "hours", "天": "days"}
 
 
 def _sse_text(fragment: str) -> str:
     return _html.unescape(re.sub(r"<[^>]+>", "", fragment)).strip()
 
 
-def _sse_time(text: str, now: Optional[datetime] = None) -> Optional[str]:
-    """问答时间解析: 支持绝对时间和刚刚/X秒前/X分钟前/X小时前/X天前等相对格式。
+def _sse_reference_time(now: Optional[datetime] = None) -> datetime:
+    """Use Beijing wall time; interpret naive injected times as Beijing local time."""
+    if now is None:
+        return datetime.now(_SSE_CN_TZ).replace(tzinfo=None)
+    if now.tzinfo is not None:
+        return now.astimezone(_SSE_CN_TZ).replace(tzinfo=None)
+    return now
 
-    V17.4.1 健壮性补强: 上游严格正则仅认绝对时间, 实测近期问答返回「4分钟前」等相对时间,
-    致 _sse_required_time 抛错(把「时间格式变了」误判); 此处统一归一为绝对时间戳。
-    ``now`` 供同一页面解析和测试使用，避免每条相对时间使用不同参考时刻。
-    """
+
+def _sse_parse_absolute_time(text: str) -> Optional[str]:
+    match = _SSE_ABS_TIME.search(text)
+    if not match:
+        return None
+    try:
+        year, month, day, hour, minute = (int(value) for value in match.groups())
+        return datetime(year, month, day, hour, minute).strftime("%Y-%m-%d %H:%M")
+    except (OverflowError, ValueError):
+        return None
+
+
+def _sse_parse_day_word_time(text: str, now: datetime) -> Optional[str]:
+    match = _SSE_DAY_WORD_TIME.match(text)
+    if not match:
+        return None
+    try:
+        when = now - timedelta(days=_SSE_DAY_OFFSETS[match.group(1)])
+        when = when.replace(hour=int(match.group(2)), minute=int(match.group(3)))
+        return when.replace(second=0, microsecond=0).strftime("%Y-%m-%d %H:%M")
+    except (OverflowError, ValueError):
+        return None
+
+
+def _sse_parse_month_day_time(text: str, now: datetime) -> Optional[str]:
+    match = _SSE_MONTH_DAY_TIME.match(text)
+    if not match:
+        return None
+    try:
+        month, day, hour, minute = (int(value) for value in match.groups())
+        when = datetime(now.year, month, day, hour, minute)
+        if when - now > timedelta(days=1):
+            when = when.replace(year=now.year - 1)
+        return when.strftime("%Y-%m-%d %H:%M")
+    except (OverflowError, ValueError):
+        return None
+
+
+def _sse_parse_ago_time(text: str, now: datetime) -> Optional[str]:
+    match = _SSE_AGO_TIME.match(text)
+    if not match:
+        return None
+    try:
+        delta = timedelta(**{_SSE_AGO_UNITS[match.group(2)]: int(match.group(1))})
+        return (now - delta).strftime("%Y-%m-%d %H:%M")
+    except (OverflowError, ValueError):
+        return None
+
+
+def _sse_parse_clock_time(text: str, now: datetime) -> Optional[str]:
+    match = _SSE_CLOCK_TIME.match(text)
+    if not match:
+        return None
+    try:
+        when = now.replace(hour=int(match.group(1)), minute=int(match.group(2)))
+        return when.replace(second=0, microsecond=0).strftime("%Y-%m-%d %H:%M")
+    except ValueError:
+        return None
+
+
+def _sse_time(text: str, now: Optional[datetime] = None) -> Optional[str]:
+    """Normalize SSE absolute and relative time labels to ``YYYY-MM-DD HH:MM`` Beijing time."""
+    text = str(text or "").strip()
     if not text:
         return None
-    match = re.search(r"(\d{4})年(\d{2})月(\d{2})日\s*(\d{2}:\d{2})", text)
-    if match:
-        return f"{match.group(1)}-{match.group(2)}-{match.group(3)} {match.group(4)}"
-    now = now or datetime.now()
-    if "刚刚" in text:
-        return now.strftime("%Y-%m-%d %H:%M")
-    ss = re.search(r"(\d+)\s*秒前", text)
-    if ss:
-        return (now - timedelta(seconds=int(ss.group(1)))).strftime("%Y-%m-%d %H:%M")
-    mm = re.search(r"(\d+)\s*分钟前", text)
-    if mm:
-        return (now - timedelta(minutes=int(mm.group(1)))).strftime("%Y-%m-%d %H:%M")
-    hh = re.search(r"(\d+)\s*小时前", text)
-    if hh:
-        return (now - timedelta(hours=int(hh.group(1)))).strftime("%Y-%m-%d %H:%M")
-    dd = re.search(r"(\d+)\s*天前", text)
-    if dd:
-        return (now - timedelta(days=int(dd.group(1)))).strftime("%Y-%m-%d %H:%M")
-    # 今天/昨天/前天 + 可选 HH:MM
-    _off = None
-    if "前天" in text:
-        _off = 2
-    elif "昨天" in text:
-        _off = 1
-    elif "今天" in text:
-        _off = 0
-    if _off is not None:
-        t = now - timedelta(days=_off)
-        tm = re.search(r"(\d{1,2}):(\d{2})", text)
-        if tm:
-            t = t.replace(hour=int(tm.group(1)), minute=int(tm.group(2)))
-        return t.strftime("%Y-%m-%d %H:%M")
-    return None
+    reference_time = _sse_reference_time(now)
+    parsed = _sse_parse_absolute_time(text)
+    if parsed is not None:
+        return parsed
+    parsed = _sse_parse_day_word_time(text, reference_time)
+    if parsed is not None:
+        return parsed
+    parsed = _sse_parse_month_day_time(text, reference_time)
+    if parsed is not None:
+        return parsed
+    parsed = _sse_parse_ago_time(text, reference_time)
+    if parsed is not None:
+        return parsed
+    if text in ("刚刚", "刚才"):
+        return reference_time.strftime("%Y-%m-%d %H:%M")
+    return _sse_parse_clock_time(text, reference_time)
 
 
 def _sse_required_time(item_id: str, text: str, now: Optional[datetime] = None) -> str:
@@ -137,7 +194,7 @@ def _sse_company_uid(code: str) -> str:
 def _sse_parse_feed(text: str) -> List[Dict[str, Any]]:
     """「最新回复」与「最新提问」两种列表标记不同, 以回复块 class 为界切问题段和回复段。"""
     rows: List[Dict[str, Any]] = []
-    reference_time = datetime.now()
+    reference_time = _sse_reference_time()
     for chunk in re.split(r'<div class="m_feed_item[^"]*" id="item-', text)[1:]:
         numbered = re.match(r"(\d+)", chunk)
         if not numbered:

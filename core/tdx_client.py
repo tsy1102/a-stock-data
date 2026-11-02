@@ -2125,8 +2125,8 @@ def tdx_get_finance_info(code: str) -> Optional[Dict[str, Any]]:
 
 
 @cached(
-    category="dividend", ttl_seconds=86400, cross_verify=True
-)  # V16.0: S13 高股息 100 次逐股 xdxr 无缓存 → 补缓存
+    category="dividend_tdx_v2", ttl_seconds=86400, cross_verify=True
+)  # V17.6: 版本化缓存，避免旧 xdxr stub 的空列表遮蔽 0x000f 数据
 def tdx_get_dividend_history(code: str) -> Optional[List[Dict[str, Any]]]:
     """解析 TDX 分红除权记录并规范日期字段。
     V16.2.3: 连接失败返回 None（与"真无分红"[] 区分，报告不再误报"一毛不拔"）。
@@ -2136,6 +2136,7 @@ def tdx_get_dividend_history(code: str) -> Optional[List[Dict[str, Any]]]:
         if client is None:
             return None
         try:
+            _tdx_throttle()
             df = client.xdxr(symbol=code)
             if df is None or df.empty:
                 return []

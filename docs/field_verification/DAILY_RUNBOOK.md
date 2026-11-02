@@ -10,7 +10,7 @@
 
        .\scripts\run_with_system_python.ps1 scripts\capture_field_probe.py
 
-   需要刷新动态股票池时显式加 --refresh-pool；需要龙虎榜/人气榜等市场上下文时加 --include-context，或单独用 --only exchange / --only em_hot（会自动启用上下文）。这一步不等于运行五大报告脚本，也不会自动启动碰撞。
+   需要刷新动态股票池时显式加 --refresh-pool；需要龙虎榜/人气榜等市场上下文时加 --include-context，或单独用 --only exchange / --only em_hot（会自动启用上下文）。这一步不等于运行五大报告脚本，也不会自动启动碰撞。默认 `tdx_f10` 只采财务分析和股本；分红接口 `0x000f` 没有日期范围、会返回整段历史，因此分红留给报告按需读取，不写入每日原始样本或碰撞证据。`TDX` 与 `eltdx` 属于同一来源族，不因此增加独立来源锚或字段矩阵关系。
 
 3. **核对采集归档。** 检查目标数据日目录的 meta.json：运行时间、数据日/日期域、市场阶段、各源状态、as_of_date、ZHB 实际日期、失败/deferred 和 raw 覆盖。盘前采集上一个交易日时，来源日期早于实际采集日可被碰撞器判为已收盘样本；以报告中的资格与告警为准，不因开盘时刻或旧目录名机械排除。
 
@@ -46,6 +46,23 @@
    名称拆词、相关性、公式/时间序列、AxData/Levistock 汇总接口都只提供候选或来源身份辅助证据，不能绕过当前 L1/L1-U 门槛或独立性规则。FTShare 旧私有 MCP 已退役；公开 REST `ftshare_rest` 是日常采集源，官方文档定义的字段参与默认碰撞并作为语义契约锚，强多日匹配单列 `L1-C`，不代表底层来源独立或自动定案。旧 `FTShare` raw 默认排除，仅显式 `--all` / `--exploratory` 可研究。
 
 每次碰撞报告的 `source_coverage` 必须同时阅读 JSON 全量统计与 Markdown 汇总，按来源核对契约定义、窗口观察样本、实际参与比较次数及 L1/L1-C/L4 结果。契约字段数不是实测覆盖数；已确认独立来源（如 Fuyao）的契约字段仍按普通独立锚处理。Fuyao 竞价响应时间只作采集时间诊断，不替代来源数据日期。
+
+## 字段时效分类与来源日期
+
+字段语义是否可由多日样本采纳，与该样本的来源有效日期是否已证实，是两项独立结论。逐源分类保存在 [`temporal_policy.json`](temporal_policy.json)，身份仍为 `(source, 完整 code)`；未列字段默认为 `unclassified`，不会根据同名短码或短期数值不变自动推断为静态字段。
+
+- `daily_market`、`intraday_sensitive` 和 `unclassified` 字段只有在来源元数据提供 `source_as_of`，或记录自身有 `event_date` / `trade_date` 时，样本才计入 L1/L1-U。目标 `data_date`、`meta_data_date` 或目录日期不能代替来源日期。
+- `slow_changing`、`static_reference` 可用已收盘的跨源多日样本验证语义关系，即使日期来源尚未证实；碰撞 JSON/Markdown 会标为 `semantic_only_date_unconfirmed`。该标记不证明数据新鲜度、有效日期或来源间日期对齐，也不自动写入字典。
+- `periodic_or_event` 必须提供字段值级 `effective_date` / `report_period` / `event_date`。当前通用采集结构未为所有此类字段提供值级日期时，保持 L1 排除，不能用采集日替代报告期。
+- 更新分类时只编辑逐源策略，写明原因并确认注册表状态；运行碰撞时按 lineage 别名精确解析回注册表身份。策略失效或状态漂移会关闭分类，所有字段回退到严格 `unclassified` 门控。
+
+使用历史 `meta.json` 检查采集日、目标数据日和来源日期的对应关系：
+
+```powershell
+python.exe scripts\audit_source_date_mapping.py
+```
+
+审计只读 `20261015` 起保留的 `meta.json`，不读取 raw、不联网、不以目录名补出来源日期；它报告自然日偏移，不把观察规律冒充上游契约。当前保留样本中，FTShare REST、Fuyao、KPL 分别有 7、10、10 条有效观察，来源日都等于目标 `data_date`；这是重复观察到的规律，不是上游保证。KPH 与 ZHB 各有 9 条观察，来源日与目标日的自然日偏移分别为 `0`（3 条）、`-1`（4 条）、`-3`（2 条），且来源日均不等于实际采集日。它们没有固定的“采集日/目标日→来源日”换算，必须逐次信任其明确来源日期；目标日或目录日期不能补齐缺失的来源 as-of。
 
 ## 破解与主字典闭环
 

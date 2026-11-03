@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+### Added
+
+- 将通达信、同花顺、东方财富、新浪、开盘啦、开盘红等来源的官方站点核验纳入每日采集与碰撞后的字段研究流程；明确按实际提供方、完整来源路径留证，第三方页面只作有标注的次级佐证，并保留现有定案门槛。
+
 ### Fixed
 
 - 东财 push2 家族、push2ex、push2delay 改为各自风险组限速，并与全东财跨进程总间隔在同一锁内原子预约；push2 家族统一采用 0.25 RPS，避免首个别名创建令牌桶后锁死家族速率。

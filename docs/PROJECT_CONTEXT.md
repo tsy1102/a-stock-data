@@ -2,12 +2,13 @@
 
 > 用途：提供稳定架构、关键约束与文档路由；任务开始时按 §0 读取相关文件，不重复加载全仓历史。
 > 维护：结构、入口或稳定流程变化时更新。字段语义以 registry/裁决证据为准；运行结果以当次产物为准。
-> 更新日期：2026-11-02（`VERSION`：17.6.3）
+> 更新日期：2026-11-03（`VERSION`：17.6.3）
 
 ## 0. 任务路由
 
 | 任务 | 先读 | 按需读取 |
 |---|---|---|
+| 公开网页字段核验 | [PUBLIC_WEB_VERIFICATION.md](field_verification/PUBLIC_WEB_VERIFICATION.md) | [field_dict.md](field_dict.md)、[ADJUDICATION_WORKFLOW.md](field_verification/ADJUDICATION_WORKFLOW.md)、当日完整候选报告与原始来源日期 |
 | 日常采集与碰撞 | [`field_verification/DAILY_RUNBOOK.md`](field_verification/DAILY_RUNBOOK.md)、当日 `meta.json` | [`scripts/README.md`](../scripts/README.md)、`collision_dates.py` 诊断 |
 | 字段破解/裁决 | [`field_dict.md`](field_dict.md)、[`COLLISION_RULES.md`](field_verification/COLLISION_RULES.md) | 大型碰撞 JSON 用 `scripts/query_collision_report.py` 按章节/来源/字段/候选 ID 查询；方法论相关章节、raw 样本、[`ADJUDICATION_WORKFLOW.md`](field_verification/ADJUDICATION_WORKFLOW.md) |
 | 字典/采集器改动 | `AGENTS.md` §8、§9；`field_registry.json` | `unknown_fields.md`、`script_data_dict.md`、对应适配器与测试 |

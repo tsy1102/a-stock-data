@@ -8,6 +8,7 @@
 - [`CRACKING_METHODOLOGY.md`](CRACKING_METHODOLOGY.md)：候选生成、数据拆解和常见误判；按需读相关章节，不替代运行时阈值。
 - [`EVIDENCE_COVERAGE.md`](EVIDENCE_COVERAGE.md)：字段覆盖、交易日/自然日、来源日期与证据边界。
 - [`ADJUDICATION_WORKFLOW.md`](ADJUDICATION_WORKFLOW.md)：跨源关系、单源契约核验与注册表写回。
+- [`PUBLIC_WEB_VERIFICATION.md`](PUBLIC_WEB_VERIFICATION.md)：每日采集和碰撞后优先核验登记来源的官方网站（通达信、同花顺、东方财富、新浪、开盘啦、开盘红等），以及第三方次级佐证的证据边界。
 - [`review_templates/candidate_review_template.json`](review_templates/candidate_review_template.json)：人工候选审阅决定模板；审阅台账按需生成，默认不创建空状态文件。
 - [`../../scripts/README.md`](../../scripts/README.md)：采集源顺序、限流、候选接口日轮和冗余退出/复验条件。
 

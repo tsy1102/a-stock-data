@@ -25,6 +25,7 @@
 
 ## 证据与记录
 
+- [`field_verification/PUBLIC_WEB_VERIFICATION.md`](field_verification/PUBLIC_WEB_VERIFICATION.md)：按真实来源优先核查通达信、同花顺、东方财富、新浪、开盘啦、开盘红等官方站点，记录网页证据及定案边界。
 - [`verify/`](verify/README.md)：按数据源整理的字段契约、样本和交叉核验资料。
 - [`field_verification/`](field_verification/README.md)：采集流程、破解方法和按日期归档的原始数据与分析报告。
 - [`field_verification/f118_ulist_source_semantics_plan.md`](field_verification/f118_ulist_source_semantics_plan.md)：ulist239 两条待确认路径的逐来源核验计划。

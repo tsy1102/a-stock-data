@@ -6,23 +6,23 @@
 
 | 区域 | 测试模块数 | 覆盖范围 | 详细清单 |
 |:---|---:|:---|:---|
-| `core/` | 19 | 核心门面、缓存、日历、类型契约、fallback、评分和技术指标 | [`core/README.md`](core/README.md) |
-| `data/` | 18 | ZHB、TDX/ELTDX、Eastmoney、KPL、网络、解禁单位、指数、EPS 预测缓存、财务日历和异步财报兜底 | [`data/README.md`](data/README.md) |
+| `core/` | 20 | 核心门面、缓存、日历、类型契约、fallback、评分和技术指标 | [`core/README.md`](core/README.md) |
+| `data/` | 21 | ZHB、TDX/ELTDX、Eastmoney、KPL、网络、解禁单位、指数、EPS 预测缓存、财务日历和异步财报兜底 | [`data/README.md`](data/README.md) |
 | `infra/` | 12 | 调度器、字段完整性/命名、依赖预检、dry-run 写入边界、F10、外部 API 与 GD | [`infra/README.md`](infra/README.md) |
-| `reports/` | 14 | 报告 Runner、流水线、策略、章节契约、财务精度、Markdown 输出、正文辅助逻辑、指数映射和快照失败处理 | [`reports/README.md`](reports/README.md) |
-| 根目录 | 47 | 碰撞/字段登记、采集探针、来源身份核验、来源语义质量、依赖适配、AxData 摘要与维护工具、网络和临时目录隔离 | 本文件下方列出 |
-| **合计** | **110** | 参数化用例展开前的测试模块数 | — |
+| `reports/` | 16 | 报告 Runner、流水线、策略、章节契约、财务精度、Markdown 输出、正文辅助逻辑、指数映射和快照失败处理 | [`reports/README.md`](reports/README.md) |
+| 根目录 | 53 | 碰撞/字段登记、采集探针、来源身份核验、来源语义质量、依赖适配、AxData 摘要与维护工具、网络和临时目录隔离 | 本文件下方列出 |
+| **合计** | **122** | 参数化用例展开前的测试模块数 | — |
 
 ## 最近完整执行
 
-2026-10-22（Python 3.12.10，`run_offline_checks.ps1`）：收集 1,260 项，离线执行 1,208 项，其中 1,207 通过、1 跳过；52 个 `real_network` 用例按默认策略排除，测试耗时 112.84 秒。真实网络测试未运行；语法 263 个文件、Mypy 233 个源文件、Black API 248 个文件且 0 格式差异；AxData 摘要、数据访问、字典同步、Canonical contract 与 registry parity 闸门均通过。四个跨进程限流/锁用例合计约 45.42 秒，保留其真实进程隔离和 OS 锁行为验证。
+2026-11-02（Python 3.12.10，`run_offline_checks.ps1`）：收集 1,374 项，离线执行 1,322 项，其中 1,321 通过、1 跳过；52 个 `real_network` 用例按默认策略排除，测试耗时 103.30 秒，另有 3 个子测试通过。真实网络用例由低频端点诊断器单独抽样；语法 281 个文件、Mypy 249 个源文件、Black API 264 个文件且 0 格式差异；AxData 摘要、数据访问、字典同步、Canonical contract 与 registry parity 闸门均通过。
 
 根目录测试：
 
 - `test_apply_collision_adjudications.py`、`test_collide.py`、`test_collision_dates.py`、`test_collision_topic_scripts.py`：碰撞候选、日期口径、专题脚本与人工定案。
 - `test_field_registry_api.py`、`test_registry_parity.py`、`test_gen_field_dict.py`、`test_reconcile_field_registry.py`、`test_reconcile_field_registry_quality.py`、`test_field_registry_semantic_quality.py`、`test_field_source_quality_audit.py`、`test_source_lineage_api.py`：字段登记、严格 parity、语义质量门、元数据审计、状态同步与来源谱系。
 - `test_refresh_field_registry_projection.py`、`test_field_evidence_coverage.py`：生成视图 parity 与每日证据覆盖。
-- `test_capture_field_probe.py`、`test_capture_catalog.py`、`test_capture_source_coverage.py`、`test_sina_raw_adapters.py`、`test_audit_field_completeness_inputs.py`：采集源路由与字段生命周期覆盖、采集目录契约、Sina 扩展适配、日期校验、状态/调用边界，以及全样本双向字段归档审计。
+- `test_capture_field_probe.py`、`test_capture_catalog.py`、`test_capture_source_coverage.py`、`test_capture_tdx_daily_scope.py`、`test_sina_raw_adapters.py`、`test_audit_field_completeness_inputs.py`、`test_audit_field_completeness_retention.py`、`test_audit_source_date_mapping.py`、`test_raw_capture_store.py`：采集源路由与字段生命周期覆盖、采集目录契约、Sina 扩展适配、日期校验、保留期/来源日期边界、原始样本读取及全样本双向字段归档审计。
 - `test_check_em_health.py`：东财单次低频探测的请求约束、风控族停止、响应结构摘要及跳过/失败分类。
 - `test_extract_registry_alignment.py`：逐源字段解析中的分组对齐、组合单位和证据优先级。
 - `test_dependency_adapter_compat.py`：Levistock 实际方法契约与 AxData 本地 ZHB ZIP 读取。
@@ -30,12 +30,13 @@
 - `test_axdata_daily_validation.py`、`test_axdata_crosswalk_summary.py`、`test_levistock_daily_probe.py`、`test_levistock_daily_validation.py`、`test_levistock_rate_limit.py`：AxData 摘要完整性与候选源每日核验、日期/数据阶段、同步/异步跨进程限流与 OS 锁崩溃释放。
 - `test_axdata_capture_identity.py`、`test_axdata_capture_policy.py`、`test_axdata_collision_suppression.py`：AxData 生产路由退出、三交易日复验、限流熔断与默认碰撞过滤。
 - `test_collision_research_state.py`：探索候选跨轮保存、幂等和历史继承。
-- `test_collision_candidate_reviews.py`、`test_collision_math.py`、`test_collision_state.py`：稳定候选身份、人工处置历史、批量重复归并、证据引用校验、数值方法和碰撞状态读写保护。
+- `test_collision_candidate_reviews.py`、`test_query_collision_report.py`、`test_collision_math.py`、`test_collision_state.py`：稳定候选身份、人工处置历史、完整性校验后的碰撞报告筛选/分页/紧凑导出、批量重复归并、证据引用校验、数值方法和碰撞状态读写保护。
 - `test_collision_auxiliary_evidence.py`：AxData 日轮验证摘要的交易日筛选、重复目录去重和无原始值输出；旧 FTShare 元数据只覆盖历史读取兼容性。
 - `test_field_name_candidates.py`：字母字段名线索按逐源完整路径关联，歧义路径排除且不提升状态。
 - `test_network_isolation.py`：离线网络边界与测试 SQLite 缓存隔离。
 - `test_degradation_contract.py`：多级数据源降级契约。
 - `test_project_temp.py`：项目临时目录默认位置与显式覆盖。
+- `test_sse_e_interaction.py`、`test_temporal_policy.py`：上交所时间格式解析与字段时效策略。
 - `test_maintenance_checks.py`：语法与 Black 检查跳过已删除路径，并对无效语法/格式差异返回失败状态。
 - `test_sc_ta_core.py`、`test_seat_db_audit_fix.py`、`test_symbol_norm.py`：技术指标、龙虎榜席位与代码归一化。
 - `test_v310_sources.py`：数据源兼容性、完整性与重试回归。

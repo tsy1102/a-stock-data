@@ -71,6 +71,7 @@ Fuyao REST 的 Key 读取顺序为官方变量 `HITHINK_FINANCE_API_KEY`、兼�
 | `collision_candidate_methods.py`、`collision_registry_context.py`、`collision_candidate_triage.py` | 碰撞候选计算、只读来源/registry 上下文与覆盖 triage；`collide.py` 保留运行编排和兼容名称。 |
 | `collision_candidate_ranking.py`、`collision_state.py`、`collision_reporting.py` | 候选排序、碰撞状态读写及报告序列化。 |
 | `collision_candidate_reviews.py` | 独立候选审阅台账；`review_collision_candidates.py` 默认预览，显式 `--apply` 才记录处置。 |
+| `query_collision_report.py` | 只读校验 schema 5 碰撞报告完整性，并按报告章节、来源、完整字段路径或候选 ID 分页导出 JSON/紧凑列式结果。 |
 | `collision_adjudication_validation.py`、`collision_adjudication_transformations.py` | 裁决输入验证与内存对象变换；裁决 CLI 和唯一原子写入仍在 `apply_collision_adjudications.py`。 |
 | `stock_common/md_render.py` | 五大报告共用的 Markdown 表格与文本转换。 |
 | `axdata_crosswalk_summary.py` | 从规范交叉表生成并校验轻量运行时队列摘要。 |

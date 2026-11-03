@@ -34,6 +34,17 @@
 
     先核对 JSON 的 `report_completeness`：状态必须为 `complete`，方法候选生成数、全量明细数、重复数和缺失数必须对平。`candidate_review` 单独列出机器候选完整性、身份校验、人工审阅覆盖率与待处理量；`report_completeness.status=complete` 不代表人工已审完。再逐章节检查 Markdown，并结构化遍历 JSON 中所有明细集合，尤其是完整的 `method_candidate_inventory`、L1/L4、目标诊断、公式候选、来源状态和告警。Markdown 的 Top-N 仅是导航摘要；不得只分析开头、前 N 条或摘要后就称“无候选/无成果”。
 
+    大报告先用只读查询器定位并分页，避免把整份 JSON 一次性放入模型上下文。先列章节，再按来源或完整字段路径筛选；按候选身份核对时使用原样完整的 `candidate_id`：
+
+        $report = 'docs\field_verification\20261101\20261101_collision_report.json'
+        python.exe scripts\query_collision_report.py --report $report --list-sections
+        python.exe scripts\query_collision_report.py --report $report `
+            --section method_candidate_inventory --source ftshare_rest --limit 25
+        python.exe scripts\query_collision_report.py --report $report `
+            --section method_candidate_inventory --field ftshare_rest.turnover_rate --limit 10 --format json
+
+    未传 `--section` 但指定筛选条件时，默认搜索 `method_candidate_inventory`、`actionable_L1`、`L1-C`、`L4` 和 `formula_candidates`，避免把摘要副本重复计入。每次输出都带原报告 SHA-256、完整性状态、匹配总数、选择集 SHA-256、页偏移和是否读完；分页时保持相同筛选条件，并按 `next_offset` 继续直到 `exhausted=true`。默认 `compact` 使用列定义、行数组和 `present_columns`，保留缺失键与显式 null 的区别；需直接读取对象时用 `--format json`。来源名忽略大小写且按完整来源名匹配，字段路径精确区分大小写。查询器拒绝旧 schema、保留起点前的报告、完整性不匹配或候选身份异常；它只读，不会把查询记录成已审阅，也不代替人工逐条检查和裁决。
+
     人工处置写入独立台账，不直接改注册表：从 [候选审阅模板](review_templates/candidate_review_template.json) 复制出一份决定 JSON，填入候选的 `candidate_id`、处置、审阅人、带时区的 `reviewed_at`、理由和证据引用。至少引用一份包含该候选的碰撞 JSON；工具会记录该文件的 SHA-256。先预览，再显式写入：
 
         python.exe scripts/review_collision_candidates.py --decision docs/field_verification/adjudications/candidate_review.json

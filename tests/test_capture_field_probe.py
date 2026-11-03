@@ -34,6 +34,38 @@ def test_startup_scope_label_shows_selected_sources_and_context_mode():
     assert capture_probe._startup_scope_label([], False) == "源范围: 默认源集合 | 市场上下文: 跳过"
 
 
+def test_failed_snapshot_cleanup_aborts_refresh(monkeypatch):
+    raw_path = "docs/field_verification/20261020/raw_push2.json"
+
+    def fail_remove(path):
+        raise PermissionError(f"locked: {path}")
+
+    monkeypatch.setattr(capture_probe.os, "remove", fail_remove)
+
+    with pytest.raises(OSError, match="aborting snapshot refresh"):
+        capture_probe._clear_existing_raw_files([raw_path], {raw_path})
+
+
+def test_snapshot_cleanup_ignores_file_already_removed(monkeypatch):
+    raw_path = "docs/field_verification/20261020/raw_push2.json"
+
+    def missing_file(_path):
+        raise FileNotFoundError(raw_path)
+
+    monkeypatch.setattr(capture_probe.os, "remove", missing_file)
+    capture_probe._clear_existing_raw_files([raw_path], {raw_path})
+
+
+def test_unusable_meta_cleanup_failure_aborts_refresh(monkeypatch):
+    def fail_remove(path):
+        raise PermissionError(f"locked: {path}")
+
+    monkeypatch.setattr(capture_probe.os, "remove", fail_remove)
+
+    with pytest.raises(OSError, match="aborting snapshot refresh"):
+        capture_probe._remove_unusable_meta("meta.json", ValueError("invalid metadata"))
+
+
 def test_market_sources_queries_latest_dragon_tiger_snapshot(monkeypatch):
     calls = []
 

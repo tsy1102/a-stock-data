@@ -89,6 +89,22 @@ _cache_logger = logging.getLogger("stock_cache")
 # （TTL 自然回收 / 下次写入覆盖）。版本嵌入缓存 key 前缀，旧 key 自动失效、无需手动清缓存。
 CACHE_CONTRACT_VERSION = "v1"
 
+# ZHB 对照策略单独版本化，避免策略升级时清空无关缓存类别。
+_ZHB_CROSS_VERIFY_CATEGORIES = frozenset(
+    {
+        "f10_fund_flow",
+        "f10_announcements",
+        "f10_reminders",
+        "f10_financial",
+        "f10_shareholder",
+        "f10_share_capital",
+        "f10_news",
+        "dragon_tiger",
+    }
+)
+_ZHB_CROSS_VERIFY_KEY_VERSION = "zhb-cross-v2"
+_ZHB_UNVERIFIED_CACHE_TTL_SECONDS = 300
+
 # V17.4.45: quote_batch v2 携带逐字段来源，避免把 val 的腾讯快照误标成 push2delay。
 QUOTE_BATCH_CACHE_CATEGORY = "quote_batch_v2"
 # V17.3.13: 腾讯批量【原始】快照分类——val 全市场 _tencent_batch_fallback 预热写入，mak 跨进程零网络复用
@@ -533,6 +549,8 @@ def _build_key(category: str, func_name: str, *args: Any, **kwargs: Any) -> str:
         parts.append("_".join(str(a) for a in args))
     if kwargs:
         parts.append("_".join(f"{k}={v}" for k, v in sorted(kwargs.items())))
+    if category in _ZHB_CROSS_VERIFY_CATEGORIES:
+        parts.append(_ZHB_CROSS_VERIFY_KEY_VERSION)
     raw = ":".join(parts)
     # key 过长时用 MD5 压缩
     if len(raw) > 200:
@@ -761,7 +779,9 @@ def _has_zero_price(value: Any) -> bool:
 # ═══════════════════════════════════════════════════════════
 
 
-def _cross_verify_with_zhb(code: str, http_value: Any, threshold_pct: float = 50.0) -> bool:
+def _cross_verify_with_zhb(
+    code: str, http_value: Any, threshold_pct: float = 50.0
+) -> Optional[bool]:
     """V15.2: HTTP 返回值与 ZHB dict 关键字段对比，偏离过大则拒绝。
 
     用途：防止"网络瞬断 → HTTP 返回异常值"被缓存。
@@ -773,9 +793,10 @@ def _cross_verify_with_zhb(code: str, http_value: Any, threshold_pct: float = 50
         threshold_pct: 偏离阈值（默认 50%），超出视为坏数据
 
     Returns:
-        bool: True=通过验证，False=偏离过大拒绝
+        True=未发现可拒绝的偏差；False=已确认偏差；None=ZHB 基准不可用。
+        非 dict payload 不适用此字段对照，按未发现偏差处理。
 
-    异常安全：任何 ZHB 读取异常都返回 True（不阻断缓存）
+    ZHB 缺失或读取失败时返回 None，由 set_cache 使用短 TTL 降级缓存。
     """
     if not code or not isinstance(http_value, dict):
         return True
@@ -784,7 +805,7 @@ def _cross_verify_with_zhb(code: str, http_value: Any, threshold_pct: float = 50
 
         zhb = get_zhb_single_stock_data(code)
         if not zhb:
-            return True  # 无 ZHB 数据时跳过验证
+            return None  # 无 ZHB 基准，不能声称已完成对照
         # 关键字段对比（HTTP vs ZHB）
         for field in ("pe_ttm", "pb", "price", "change_pct"):
             if field not in http_value or field not in zhb:
@@ -805,8 +826,11 @@ def _cross_verify_with_zhb(code: str, http_value: Any, threshold_pct: float = 50
                 except Exception:
                     pass
                 return False
-    except Exception:
-        return True  # 任何异常都通过验证
+    except Exception as exc:
+        _cache_logger.debug(
+            "ZHB cross-verification unavailable for %s: %s", code, type(exc).__name__
+        )
+        return None
     return True
 
 
@@ -859,33 +883,25 @@ def set_cache(
     # V8.9: 检测 price=0 / close=0 — TDX 坏数据特征，不缓存
     if _has_zero_price(value):
         return
-    # V15.2: F10 / f10_fund_flow / dragon_tiger 自动 ZHB 交叉验证
-    # 提取股票代码（args[0] 通常是 code）
-    if (
-        category
-        in (
-            "f10_fund_flow",
-            "f10_announcements",
-            "f10_reminders",
-            "f10_financial",
-            "f10_shareholder",
-            "f10_share_capital",
-            "f10_news",
-            "dragon_tiger",
-        )
-        and args
-    ):
+    cache_ttl = ttl
+    # V15.2 + V17.4: 仅在已确认偏差时拒绝写入；基准不可用时短 TTL 降级，
+    # 避免把“未能验证”当成“已通过”，同时避免同一报告运行内重复打上游。
+    if category in _ZHB_CROSS_VERIFY_CATEGORIES and args:
         code = args[0] if isinstance(args[0], str) else ""
-        if code and not _cross_verify_with_zhb(code, value):
-            return  # 偏离 ZHB 过大，拒绝缓存
+        if code:
+            cross_check = _cross_verify_with_zhb(code, value)
+            if cross_check is False:
+                return  # 已确认偏离 ZHB，拒绝缓存
+            if cross_check is None:
+                cache_ttl = min(ttl, _ZHB_UNVERIFIED_CACHE_TTL_SECONDS)
     key = _build_key(category, func_name, *args, **kwargs)
     now = time.time()
     # V9.0: trading_day 模式 — 过期时间设为下一个交易日 15:00
     # V16.2 修复: min(now+ttl, 交易日截止) —— 盘中 ttl 仍生效（如 stock_quote 30min），
     # 修复原实现 trading_day 覆盖 ttl 导致实时数据盘中冻结到收盘的问题
-    expires_at = _calc_trading_day_expiry() if trading_day else now + ttl
+    expires_at = _calc_trading_day_expiry() if trading_day else now + cache_ttl
     if trading_day:
-        expires_at = min(expires_at, now + ttl)
+        expires_at = min(expires_at, now + cache_ttl)
     try:
         with _db_lock:
             db = _get_db()

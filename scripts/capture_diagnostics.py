@@ -60,6 +60,37 @@ def _path_exists(data: Any, path: tuple) -> bool:
     return current is not None
 
 
+def _quote_records_as_of_date(source: str, data: Any) -> Optional[str]:
+    """Read a source date from each quote record's timestamp field when consistent."""
+    field_index = {"sina": 30, "tencent": 30}.get(source.lower())
+    if field_index is None or not isinstance(data, dict):
+        return None
+    stocks = data.get("stocks")
+    if not isinstance(stocks, dict) or not stocks:
+        return None
+
+    record_dates = set()
+    timestamp_format = "%Y-%m-%d" if source.lower() == "sina" else "%Y%m%d%H%M%S"
+    for record in stocks.values():
+        if not isinstance(record, dict):
+            return None
+        fields = record.get("fields")
+        if not isinstance(fields, list) or len(fields) <= field_index:
+            return None
+        timestamp = fields[field_index]
+        if not isinstance(timestamp, str) or not timestamp.strip():
+            return None
+        try:
+            record_date = datetime.strptime(timestamp.strip(), timestamp_format).date()
+        except ValueError:
+            return None
+        record_dates.add(record_date)
+
+    if len(record_dates) != 1:
+        return None
+    return next(iter(record_dates)).isoformat()
+
+
 def _source_as_of_date(source: str, data: Any) -> Optional[str]:
     """Return only an explicit source date; never substitute the folder target date."""
     if not isinstance(data, dict):
@@ -87,7 +118,7 @@ def _source_as_of_date(source: str, data: Any) -> Optional[str]:
                     if isinstance(value, (date, datetime))
                     else str(value)
                 )
-    return None
+    return _quote_records_as_of_date(source, data)
 
 
 def _assess_zhb_freshness(data: Any, target_date: str) -> Dict[str, Any]:

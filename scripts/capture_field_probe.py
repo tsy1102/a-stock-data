@@ -1345,6 +1345,38 @@ def build_collectors() -> Dict[str, Callable[..., Dict[str, Any]]]:
     }
 
 
+def _clear_existing_raw_files(existing_raws: List[str], clear_raw_paths: set[str]) -> None:
+    """Remove selected prior snapshots, stopping if a stale raw cannot be cleared."""
+    for path in existing_raws:
+        if path not in clear_raw_paths:
+            continue
+        try:
+            os.remove(path)
+        except FileNotFoundError:
+            continue
+        except OSError as exc:
+            raise OSError(
+                f"cannot clear prior capture file {path!r}; aborting snapshot refresh"
+            ) from exc
+
+
+def _remove_unusable_meta(meta_path: str, update_error: Exception) -> None:
+    """Remove metadata that could not be updated, or abort if stale state remains."""
+    try:
+        os.remove(meta_path)
+    except FileNotFoundError:
+        return
+    except OSError as cleanup_error:
+        raise OSError(
+            f"cannot clear unusable capture metadata {meta_path!r} after "
+            f"{update_error!r}; aborting snapshot refresh"
+        ) from cleanup_error
+    print(
+        f"  ⚠ 元数据更新失败，已清除旧 meta.json，后续将重建: {update_error}",
+        flush=True,
+    )
+
+
 def main() -> None:
     ap = argparse.ArgumentParser(description="字段验证采集")
     # V17.4.x: 默认数据日=最近交易日(而非运行日) —— 周末/法定节假日运行时自动回退上一交易日,
@@ -1525,12 +1557,7 @@ def main() -> None:
     if args.overwrite:
         # 仅清空本次将重采源(raw + meta 记录), 保留其他源采集物, 避免误删增量补采之外的数据
         _clear_raw = {os.path.join(out_dir, f"raw_{n}.json") for n in raw_clear_source_names}
-        for _p in _existing_raws:
-            if _p in _clear_raw:
-                try:
-                    os.remove(_p)
-                except Exception:
-                    pass
+        _clear_existing_raw_files(_existing_raws, _clear_raw)
         if os.path.isfile(meta_path):
             try:
                 _m = json.load(open(meta_path, encoding="utf-8"))
@@ -1538,11 +1565,8 @@ def main() -> None:
                     del _m["sources"][_n]
                 with open(meta_path, "w", encoding="utf-8") as _f:
                     json.dump(_m, _f, ensure_ascii=False, indent=1)
-            except Exception:
-                try:
-                    os.remove(meta_path)
-                except Exception:
-                    pass
+            except Exception as meta_error:
+                _remove_unusable_meta(meta_path, meta_error)
         _existing_raws = sorted(glob.glob(os.path.join(out_dir, "raw_*.json")))
     if not args.only and (
         _existing_raws or any(source in NON_RAW_SOURCE_STATUS for source in collectors)
@@ -1599,12 +1623,7 @@ def main() -> None:
                 flush=True,
             )
             _clear_raw = {os.path.join(out_dir, f"raw_{n}.json") for n in raw_clear_source_names}
-            for _p in _existing_raws:
-                if _p in _clear_raw:
-                    try:
-                        os.remove(_p)
-                    except Exception:
-                        pass
+            _clear_existing_raw_files(_existing_raws, _clear_raw)
             if os.path.isfile(meta_path):
                 try:
                     _m = json.load(open(meta_path, encoding="utf-8"))
@@ -1612,11 +1631,8 @@ def main() -> None:
                         del _m["sources"][_n]
                     with open(meta_path, "w", encoding="utf-8") as _f:
                         json.dump(_m, _f, ensure_ascii=False, indent=1)
-                except Exception:
-                    try:
-                        os.remove(meta_path)
-                    except Exception:
-                        pass
+                except Exception as meta_error:
+                    _remove_unusable_meta(meta_path, meta_error)
             # 清空后 fall through 进入采集
 
     axdata_identity_plan: dict[str, Any] = {"status": "not_requested", "endpoints": {}}

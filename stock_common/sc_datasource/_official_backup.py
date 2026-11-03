@@ -1,10 +1,13 @@
 from __future__ import annotations
+from collections import OrderedDict
 from datetime import datetime, timedelta
 import code
 import json
 import math
 import re
+import threading
 import time
+import warnings
 from stock_common.sc_network import _debug_log
 from stock_common.sc_utils import em_exchange_prefix
 
@@ -23,6 +26,10 @@ from io import BytesIO
 
 import requests
 import pandas as pd
+
+_OFFICIAL_MARGIN_CACHE_MAX_ITEMS = 16  # 8 fallback dates × 2 exchanges
+_OFFICIAL_MARGIN_CACHE_LOCK = threading.RLock()
+_OFFICIAL_MARGIN_CACHE: OrderedDict[tuple[str, str], pd.DataFrame] = OrderedDict()
 
 # ── Layer 12 官方源辅助函数（移植自上游 SKILL.md，保持数值语义一致）──
 
@@ -66,7 +73,14 @@ def _official_get(
 
 def _official_excel(response: requests.Response) -> pd.DataFrame:
     try:
-        frame = pd.read_excel(BytesIO(response.content), dtype=str)
+        with warnings.catch_warnings():
+            warnings.filterwarnings(
+                "ignore",
+                message=r"^Workbook contains no default style, apply openpyxl's default$",
+                category=UserWarning,
+                module=r"^openpyxl\.styles\.stylesheet$",
+            )
+            frame = pd.read_excel(BytesIO(response.content), dtype=str)
     except (ValueError, OSError) as exc:
         raise RuntimeError("官方源未返回可解析的 Excel；可能未发布或响应结构改变") from exc
     # 两种中证文件的表头空格略有差异，按完整列名去空白后匹配。
@@ -106,16 +120,7 @@ def _official_margin_code(value: Any, exchange: str) -> str:
     return code
 
 
-def margin_trading_backup(
-    trade_date: str, exchange: str, code: Optional[str] = None
-) -> pd.DataFrame:
-    """一次只取一个交易所。未发布抛错；完整源中筛不到 code 才返回空表。"""
-    trade_date = _official_date(trade_date)
-    exchange = str(exchange).upper()
-    if exchange not in ("SH", "SZ"):
-        raise ValueError("exchange 必须为 SH 或 SZ；本函数不覆盖北交所两融")
-    if code is not None:
-        code = _official_margin_code(code, exchange)
+def _fetch_margin_trading_snapshot(trade_date: str, exchange: str) -> pd.DataFrame:
     if exchange == "SH":
         url = "https://query.sse.com.cn/marketdata/tradedata/queryMargin.do"
         response = _official_get(
@@ -194,7 +199,32 @@ def margin_trading_backup(
     frame = _official_frame(
         rows, ["date", "code"], "sse" if exchange == "SH" else "szse", response.url
     )
-    return frame if code is None else frame.loc[frame.code == code].reset_index(drop=True)
+    return frame
+
+
+def margin_trading_backup(
+    trade_date: str, exchange: str, code: Optional[str] = None
+) -> pd.DataFrame:
+    """一次只取一个交易所。完整日快照进程内复用；未发布抛错。"""
+    trade_date = _official_date(trade_date)
+    exchange = str(exchange).upper()
+    if exchange not in ("SH", "SZ"):
+        raise ValueError("exchange 必须为 SH 或 SZ；本函数不覆盖北交所两融")
+    if code is not None:
+        code = _official_margin_code(code, exchange)
+
+    cache_key = (exchange, trade_date)
+    with _OFFICIAL_MARGIN_CACHE_LOCK:
+        frame = _OFFICIAL_MARGIN_CACHE.get(cache_key)
+        if frame is None:
+            frame = _fetch_margin_trading_snapshot(trade_date, exchange)
+            _OFFICIAL_MARGIN_CACHE[cache_key] = frame.copy(deep=True)
+            while len(_OFFICIAL_MARGIN_CACHE) > _OFFICIAL_MARGIN_CACHE_MAX_ITEMS:
+                _OFFICIAL_MARGIN_CACHE.popitem(last=False)
+        _OFFICIAL_MARGIN_CACHE.move_to_end(cache_key)
+        result = frame.copy(deep=True)
+
+    return result if code is None else result.loc[result.code == code].reset_index(drop=True)
 
 
 def bse_quote_backup(trade_date: str, code: Optional[str] = None) -> pd.DataFrame:

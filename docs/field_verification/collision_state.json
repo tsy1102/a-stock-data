@@ -8763,8 +8763,25 @@
         "tdx",
         "tencent"
       ],
+      "temporal_evidence": {
+        "alignment_status": "source_dates_confirmed",
+        "left": {
+          "temporal_class": "unclassified",
+          "date_status": "source_date_confirmed",
+          "date_origin_counts": {
+            "source_as_of": 60
+          }
+        },
+        "right": {
+          "temporal_class": "unclassified",
+          "date_status": "source_date_confirmed",
+          "date_origin_counts": {
+            "source_as_of": 60
+          }
+        }
+      },
       "hub_flag": false,
-      "last_seen": "20261031",
+      "last_seen": "20261102",
       "in_registry": true,
       "first_seen": "20261005",
       "status": "confirmed"
@@ -10318,8 +10335,25 @@
         "tdx",
         "tencent"
       ],
+      "temporal_evidence": {
+        "alignment_status": "source_dates_confirmed",
+        "left": {
+          "temporal_class": "unclassified",
+          "date_status": "source_date_confirmed",
+          "date_origin_counts": {
+            "source_as_of": 60
+          }
+        },
+        "right": {
+          "temporal_class": "unclassified",
+          "date_status": "source_date_confirmed",
+          "date_origin_counts": {
+            "source_as_of": 60
+          }
+        }
+      },
       "hub_flag": false,
-      "last_seen": "20261031",
+      "last_seen": "20261102",
       "in_registry": true,
       "first_seen": "20261008",
       "status": "confirmed"
@@ -22638,5 +22672,5 @@
     }
   },
   "legacy_state_version": 1,
-  "updated": "20261101"
+  "updated": "20261102"
 }

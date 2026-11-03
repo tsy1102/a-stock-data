@@ -1,0 +1,320 @@
+{
+  "schema_version": 1,
+  "created_at": "2026-11-02T17:05:33+08:00",
+  "basis": "consistent source quote timestamps at stocks.*.fields[30]",
+  "minimum_capture_date": "20261015",
+  "updated_source_count": 22,
+  "updated_meta_file_count": 11,
+  "meta_files": [
+    {
+      "folder": "20261015",
+      "meta_path": "docs\\field_verification\\20261015\\meta.json",
+      "meta_before_sha256": "90069ba1f4bd0004d5d59f0ced0f55d59f61dcb8f1bf144f629ffa3a9346a4ed",
+      "meta_after_sha256": "302f4d0b3a5eae310cfcb608408f1ffcf9799b028e34d3a5f5ba7b9b32239edc"
+    },
+    {
+      "folder": "20261016",
+      "meta_path": "docs\\field_verification\\20261016\\meta.json",
+      "meta_before_sha256": "1211678e282fd07965121f0bed86c7582a8915d94ccf7b982e394642ded97e4f",
+      "meta_after_sha256": "92ee60dd4b8bc73e1ffd38797094e9ad97f68cbd1fa6d388a52c45e1ccbd4c72"
+    },
+    {
+      "folder": "20261019",
+      "meta_path": "docs\\field_verification\\20261019\\meta.json",
+      "meta_before_sha256": "a2507c786ca5c78b0bbecb8a0dd7382ef269d433d8a6d235a6ee2701d0b5ebc2",
+      "meta_after_sha256": "bd199db0df28c4a906c7c147645e3a80b30873d6abc4292636bdcfda13529e75"
+    },
+    {
+      "folder": "20261020",
+      "meta_path": "docs\\field_verification\\20261020\\meta.json",
+      "meta_before_sha256": "11daabe85beecf11fbed8b08f4814f89ad176e92a03789394e5402bb94173c46",
+      "meta_after_sha256": "9a5be18a44773e3e0605c530744b5050789dea925e32a97d7e2118d68dd9d54c"
+    },
+    {
+      "folder": "20261021",
+      "meta_path": "docs\\field_verification\\20261021\\meta.json",
+      "meta_before_sha256": "93c7eb82000e89062111a00b7a6bcf599a707792e8507fe812f29fb3d2890eec",
+      "meta_after_sha256": "f434809c59e87b6de8fec7adf745c777dbd781cf094747fa1dc4df6f0a933741"
+    },
+    {
+      "folder": "20261023",
+      "meta_path": "docs\\field_verification\\20261023\\meta.json",
+      "meta_before_sha256": "cac2434cfd604ff7ecb1e327522fdbc6be8b3b2f455539b229c8dc4955727c6c",
+      "meta_after_sha256": "c2908c7e7d14c2e536da9407506f6ef90b87b4d6668c91b5ca3ebe7f47bf0df4"
+    },
+    {
+      "folder": "20261026",
+      "meta_path": "docs\\field_verification\\20261026\\meta.json",
+      "meta_before_sha256": "0aec50f82d947f1e053913d9c887a0555d494ef5da0e1465e1e95e5f339801ca",
+      "meta_after_sha256": "e4fe4adf0aa345de20208723ede69c373281dd712b96e2e338cafe14ca3a5cbd"
+    },
+    {
+      "folder": "20261028",
+      "meta_path": "docs\\field_verification\\20261028\\meta.json",
+      "meta_before_sha256": "d1336b7fcb741fe23131f1ca4a833b531733c7b9b431e7ae5c21a11bf361b1c3",
+      "meta_after_sha256": "02e51e631f93852b89d6f9e52d720bb063668a7eac96bd97afdca964547ef428"
+    },
+    {
+      "folder": "20261029",
+      "meta_path": "docs\\field_verification\\20261029\\meta.json",
+      "meta_before_sha256": "d281edcea76978c4de223e2c2f3e03b45c8a7c337844f6421e5629b8774c8c26",
+      "meta_after_sha256": "9c2b7d7c0ce71eb0448cf1c349348f4a472f8931091cec193e2691538abea719"
+    },
+    {
+      "folder": "20261030",
+      "meta_path": "docs\\field_verification\\20261030\\meta.json",
+      "meta_before_sha256": "d8a9966e8cf78b60465a3bf0fc5ba67fe336a2ee512c797cf83cc68e777e06d5",
+      "meta_after_sha256": "2411a3e5cabb3c9b608898e4dc8e6392367761862687988fe11a0701995392e5"
+    },
+    {
+      "folder": "20261102",
+      "meta_path": "docs\\field_verification\\20261102\\meta.json",
+      "meta_before_sha256": "2375eef039deb874718b216738e10eb856cb3601f184028098123603d346dcb7",
+      "meta_after_sha256": "950cb1e3881088d8763bde2a149778553dbfb0d898034a8c858175f962bd571c"
+    }
+  ],
+  "updates": [
+    {
+      "folder": "20261015",
+      "source": "sina",
+      "source_timestamp_field": "stocks.*.fields[30]",
+      "source_as_of_date": "2026-10-15",
+      "stock_records": 20,
+      "raw_path": "docs\\field_verification\\20261015\\raw_sina.json",
+      "raw_sha256": "389333a856118947fbef6f24db63c172987a076554406576c928ed0e771ef3a3",
+      "previous_entry_date": null,
+      "previous_map_date": null
+    },
+    {
+      "folder": "20261015",
+      "source": "tencent",
+      "source_timestamp_field": "stocks.*.fields[30]",
+      "source_as_of_date": "2026-10-15",
+      "stock_records": 20,
+      "raw_path": "docs\\field_verification\\20261015\\raw_tencent.json",
+      "raw_sha256": "a1d498d7e2af4d72d8081858b0909c0b10b71e34ddf9799d92d8d52b164b28fc",
+      "previous_entry_date": null,
+      "previous_map_date": null
+    },
+    {
+      "folder": "20261016",
+      "source": "sina",
+      "source_timestamp_field": "stocks.*.fields[30]",
+      "source_as_of_date": "2026-10-16",
+      "stock_records": 20,
+      "raw_path": "docs\\field_verification\\20261016\\raw_sina.json",
+      "raw_sha256": "0966635667074ceeb9fa10eed0efaf3c831ad15e06e3c8aed7322e5d12aa5d71",
+      "previous_entry_date": null,
+      "previous_map_date": null
+    },
+    {
+      "folder": "20261016",
+      "source": "tencent",
+      "source_timestamp_field": "stocks.*.fields[30]",
+      "source_as_of_date": "2026-10-16",
+      "stock_records": 20,
+      "raw_path": "docs\\field_verification\\20261016\\raw_tencent.json",
+      "raw_sha256": "fd858d57ab8d4abdf9cce142070741bc54f40c6a7ff1a5206d4aeb20fcff3d26",
+      "previous_entry_date": null,
+      "previous_map_date": null
+    },
+    {
+      "folder": "20261019",
+      "source": "sina",
+      "source_timestamp_field": "stocks.*.fields[30]",
+      "source_as_of_date": "2026-10-19",
+      "stock_records": 20,
+      "raw_path": "docs\\field_verification\\20261019\\raw_sina.json",
+      "raw_sha256": "ce87ccfd70c677e58a333276ab610a08b1c42ed830cf72644f731d50d37a6a21",
+      "previous_entry_date": null,
+      "previous_map_date": null
+    },
+    {
+      "folder": "20261019",
+      "source": "tencent",
+      "source_timestamp_field": "stocks.*.fields[30]",
+      "source_as_of_date": "2026-10-19",
+      "stock_records": 20,
+      "raw_path": "docs\\field_verification\\20261019\\raw_tencent.json",
+      "raw_sha256": "2c07e6525213f9773e20a003d6f042ef2052bec05a677cab3a7cfa9f0d4e23d7",
+      "previous_entry_date": null,
+      "previous_map_date": null
+    },
+    {
+      "folder": "20261020",
+      "source": "sina",
+      "source_timestamp_field": "stocks.*.fields[30]",
+      "source_as_of_date": "2026-10-20",
+      "stock_records": 20,
+      "raw_path": "docs\\field_verification\\20261020\\raw_sina.json",
+      "raw_sha256": "a55389da8d50c723c4b724cf4d80c1803799eb0ed1962d9ab1fe92f556658df2",
+      "previous_entry_date": null,
+      "previous_map_date": null
+    },
+    {
+      "folder": "20261020",
+      "source": "tencent",
+      "source_timestamp_field": "stocks.*.fields[30]",
+      "source_as_of_date": "2026-10-20",
+      "stock_records": 20,
+      "raw_path": "docs\\field_verification\\20261020\\raw_tencent.json",
+      "raw_sha256": "b4dccc9dba8c78a0df485c4997a6979cd6ff46778c5454ec0e272fb9d7cfc501",
+      "previous_entry_date": null,
+      "previous_map_date": null
+    },
+    {
+      "folder": "20261021",
+      "source": "sina",
+      "source_timestamp_field": "stocks.*.fields[30]",
+      "source_as_of_date": "2026-10-21",
+      "stock_records": 20,
+      "raw_path": "docs\\field_verification\\20261021\\raw_sina.json",
+      "raw_sha256": "de12ce2f0de87bdfc82fb8307aaa8cb5985aa9aa341b12f387904eedc2c871ad",
+      "previous_entry_date": null,
+      "previous_map_date": null
+    },
+    {
+      "folder": "20261021",
+      "source": "tencent",
+      "source_timestamp_field": "stocks.*.fields[30]",
+      "source_as_of_date": "2026-10-21",
+      "stock_records": 20,
+      "raw_path": "docs\\field_verification\\20261021\\raw_tencent.json",
+      "raw_sha256": "44b8d150d6fa80053a8ea68842b76c95cda551958097173e8c2e48e6b5337a46",
+      "previous_entry_date": null,
+      "previous_map_date": null
+    },
+    {
+      "folder": "20261023",
+      "source": "sina",
+      "source_timestamp_field": "stocks.*.fields[30]",
+      "source_as_of_date": "2026-10-23",
+      "stock_records": 20,
+      "raw_path": "docs\\field_verification\\20261023\\raw_sina.json",
+      "raw_sha256": "b475bfbed6f0e74146a28596e547123e9a22cac9187df8c1114d5baee99916ea",
+      "previous_entry_date": null,
+      "previous_map_date": null
+    },
+    {
+      "folder": "20261023",
+      "source": "tencent",
+      "source_timestamp_field": "stocks.*.fields[30]",
+      "source_as_of_date": "2026-10-23",
+      "stock_records": 20,
+      "raw_path": "docs\\field_verification\\20261023\\raw_tencent.json",
+      "raw_sha256": "45d502ace5a9465e980ddc26d81d5da471a79069d9007f44bf9746cb187591de",
+      "previous_entry_date": null,
+      "previous_map_date": null
+    },
+    {
+      "folder": "20261026",
+      "source": "sina",
+      "source_timestamp_field": "stocks.*.fields[30]",
+      "source_as_of_date": "2026-10-26",
+      "stock_records": 20,
+      "raw_path": "docs\\field_verification\\20261026\\raw_sina.json",
+      "raw_sha256": "a5e18bff21af30dc488ff54ceba2c003a7c0f7b1282b4b668244d7f157c36d76",
+      "previous_entry_date": null,
+      "previous_map_date": null
+    },
+    {
+      "folder": "20261026",
+      "source": "tencent",
+      "source_timestamp_field": "stocks.*.fields[30]",
+      "source_as_of_date": "2026-10-26",
+      "stock_records": 20,
+      "raw_path": "docs\\field_verification\\20261026\\raw_tencent.json",
+      "raw_sha256": "eda707b7f72a7734fa10e9c2be8620f4f54c2ffd61d6f3402b5b7b69cc57fcc9",
+      "previous_entry_date": null,
+      "previous_map_date": null
+    },
+    {
+      "folder": "20261028",
+      "source": "sina",
+      "source_timestamp_field": "stocks.*.fields[30]",
+      "source_as_of_date": "2026-10-28",
+      "stock_records": 20,
+      "raw_path": "docs\\field_verification\\20261028\\raw_sina.json",
+      "raw_sha256": "f16ac03d53598749e0088bd9c81c7560b13a3d63d1ffd884a287a0dc89a7350a",
+      "previous_entry_date": null,
+      "previous_map_date": null
+    },
+    {
+      "folder": "20261028",
+      "source": "tencent",
+      "source_timestamp_field": "stocks.*.fields[30]",
+      "source_as_of_date": "2026-10-28",
+      "stock_records": 20,
+      "raw_path": "docs\\field_verification\\20261028\\raw_tencent.json",
+      "raw_sha256": "bdb3716f90bab1ec3a30e340725e5917566e6b03c87ec8992ba664413bb9e752",
+      "previous_entry_date": null,
+      "previous_map_date": null
+    },
+    {
+      "folder": "20261029",
+      "source": "sina",
+      "source_timestamp_field": "stocks.*.fields[30]",
+      "source_as_of_date": "2026-10-29",
+      "stock_records": 20,
+      "raw_path": "docs\\field_verification\\20261029\\raw_sina.json",
+      "raw_sha256": "4d3af3f661b2ba5884a98729da0393e420a120a30bb30a62201eb5582099ffad",
+      "previous_entry_date": null,
+      "previous_map_date": null
+    },
+    {
+      "folder": "20261029",
+      "source": "tencent",
+      "source_timestamp_field": "stocks.*.fields[30]",
+      "source_as_of_date": "2026-10-29",
+      "stock_records": 20,
+      "raw_path": "docs\\field_verification\\20261029\\raw_tencent.json",
+      "raw_sha256": "06618e9b0f2138c809761891b76f0c842e24f0009723e923b57b96fbdb2ea80e",
+      "previous_entry_date": null,
+      "previous_map_date": null
+    },
+    {
+      "folder": "20261030",
+      "source": "sina",
+      "source_timestamp_field": "stocks.*.fields[30]",
+      "source_as_of_date": "2026-10-30",
+      "stock_records": 20,
+      "raw_path": "docs\\field_verification\\20261030\\raw_sina.json",
+      "raw_sha256": "30608da7c14028e3a36a5b2e95b56ae1a6bd955877f9f04ca11edbf78161dfe9",
+      "previous_entry_date": null,
+      "previous_map_date": null
+    },
+    {
+      "folder": "20261030",
+      "source": "tencent",
+      "source_timestamp_field": "stocks.*.fields[30]",
+      "source_as_of_date": "2026-10-30",
+      "stock_records": 20,
+      "raw_path": "docs\\field_verification\\20261030\\raw_tencent.json",
+      "raw_sha256": "33bf553f85bfd693a4b57a0bb984164f42e650a8130ba7d108663a3c8ab7a990",
+      "previous_entry_date": null,
+      "previous_map_date": null
+    },
+    {
+      "folder": "20261102",
+      "source": "sina",
+      "source_timestamp_field": "stocks.*.fields[30]",
+      "source_as_of_date": "2026-11-02",
+      "stock_records": 20,
+      "raw_path": "docs\\field_verification\\20261102\\raw_sina.json",
+      "raw_sha256": "657e860dc68fcc6b24b0b7d26bde8616946995ff195cb1829ef44820eb442c30",
+      "previous_entry_date": null,
+      "previous_map_date": null
+    },
+    {
+      "folder": "20261102",
+      "source": "tencent",
+      "source_timestamp_field": "stocks.*.fields[30]",
+      "source_as_of_date": "2026-11-02",
+      "stock_records": 20,
+      "raw_path": "docs\\field_verification\\20261102\\raw_tencent.json",
+      "raw_sha256": "21b882b75f0e6a5cd530878d16548f8e6509c039037ef7e605e23cefebde5ebf",
+      "previous_entry_date": null,
+      "previous_map_date": null
+    }
+  ]
+}

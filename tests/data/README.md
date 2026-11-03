@@ -3,7 +3,7 @@
 > 本目录归并**数据从哪来**的 pytest 用例, 覆盖 ZHB / TDX / 东财 / 网络传输 / 预取等底层数据源, 对应 `stock_common/sc_datasource/` 与 `core/tdx_client.py` / `core/zhb_client.py` / `stock_common/sc_network.py`。
 > 文件清单与逐文件定位见父目录 [`../README.md`](../README.md); 本文件仅作本层速查。
 
-## 文件与职责(18)
+## 文件与职责(21)
 
 | 文件 | 职责 |
 |:---|:---|
@@ -12,6 +12,7 @@
 | test_data_tdx_rate_limit.py | 腾讯批量回退在进程限流故障时 fail closed，不发出 HTTP 请求 |
 | test_data_eltdx_adapter.py | ELTDX 适配器返回结构与来源字段身份回归 |
 | test_data_eastmoney.py | 东财接口按域名健康度矩阵(全 real_network) |
+| test_data_eastmoney_f62.py | 东财 ulist239 f62 缺失值与有效零值语义 |
 | test_data_eps_forecast_cache.py | EPS 预测非空按日缓存与 DataFrame 返回结构 |
 | test_data_em_board_members.py | 东财 clist 板块成分字段与申万二级磁盘缓存回归 |
 | test_data_em_fund_flow_tiers.py | 东财资金流四档层级回归(V17.0.16) |
@@ -25,6 +26,8 @@
 | test_financials_calendar_fallback.py | 财报日历来源失败与日期回退 |
 | test_eastmoney_datacenter_contract.py | 东财数据中心 sync/async 请求、市场空过滤、分页和响应行契约 |
 | test_em_risk_rate_limit.py | Eastmoney 风险分组的进程级限速、全局时隙和跨进程串行化 |
+| test_data_limit_pool_reporting.py | 涨停池多源启用状态、来源日期对齐与汇总边界 |
+| test_source_rate_limits.py | 提供方分组限速、共享时隙及限流不可用时 fail closed |
 
 ## 运行
 

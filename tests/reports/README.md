@@ -3,7 +3,7 @@
 > 本目录归并**5 大报告生成脚本**(`get_sht/med/lng/mak/val_report.py`)的 pytest 用例, 覆盖 `BaseReportRunner` 基类契约 / 批量流水线骨架 / val 策略注册表 / 章节缺失检测 / 换手率语义。
 > 文件清单与逐文件定位见父目录 [`../README.md`](../README.md); 本文件仅作本层速查。
 
-## 文件与职责(14)
+## 文件与职责(16)
 
 | 文件 | 职责 |
 |:---|:---|
@@ -19,6 +19,8 @@
 | test_val_fast_kline.py | VAL TDX 快速 K 线样本不足与失败边界 |
 | test_val_report_content.py | VAL 报告措辞与异步估值计算线程边界 |
 | test_reports_financial_precision.py | 日期来源、52 周区间、PE 候选与 MAK 资金覆盖口径 |
+| test_mak_report_content.py | MAK 报告对未查询来源与共享冷却状态的说明 |
+| test_market_signals.py | 市场信号章节采用来源返回的 ETF 日期 |
 | test_report_markdown_output.py | 共享 Markdown 写入器的标题、表格、UTF-8 文件落盘契约 |
 | test_architecture_output_contracts.py | 五大生成器在禁网夹具下实际生成报告，核对标题、关键章节、日期、内容和输出路径 |
 

@@ -261,6 +261,90 @@ def test_build_key_long_arguments_keep_contract_version(monkeypatch):
     assert old_key != new_key
 
 
+def test_zhb_cross_verify_key_version_is_scoped_to_affected_categories():
+    import core.stock_cache as sc
+
+    for category in sc._ZHB_CROSS_VERIFY_CATEGORIES:
+        assert sc._build_key(category, "fetch", "600519").endswith(
+            f":{sc._ZHB_CROSS_VERIFY_KEY_VERSION}"
+        )
+    assert sc._build_key("basic", "fetch", "600519") == "v1:basic:fetch:600519"
+
+
+def test_zhb_cross_verify_key_does_not_reuse_legacy_cache(tmp_path, monkeypatch):
+    import core.stock_cache as sc
+
+    monkeypatch.setattr(sc, "_CACHE_DB", str(tmp_path / "stock_cache.db"))
+    monkeypatch.setattr(sc, "_db", None)
+    monkeypatch.setattr(sc, "_DISABLE_CACHE", False)
+    sc._l1_clear()
+
+    now = time.time()
+    legacy_key = f"{sc.CACHE_CONTRACT_VERSION}:f10_financial:fetch:600519"
+    with sc._db_lock:
+        db = sc._get_db()
+        db.execute(
+            "INSERT INTO cache_entries "
+            "(key, value, created_at, expires_at, hit_count, last_accessed, prev_value, verified) "
+            "VALUES (?, ?, ?, ?, 0, ?, NULL, 0)",
+            (legacy_key, b'{"old":true}', now, now + 3600, now),
+        )
+        db.commit()
+
+    assert sc.get_cache("f10_financial", "fetch", "600519") is None
+
+
+def test_cross_verify_with_zhb_returns_unknown_when_reference_read_fails(monkeypatch):
+    import stock_common
+    import core.stock_cache as sc
+
+    def fail_read(_code):
+        raise OSError("local ZHB snapshot unavailable")
+
+    monkeypatch.setattr(stock_common, "get_zhb_single_stock_data", fail_read)
+
+    assert sc._cross_verify_with_zhb("600519", {"pe_ttm": 10}) is None
+
+
+def test_cross_verify_with_zhb_distinguishes_missing_match_and_mismatch(monkeypatch):
+    import stock_common
+    import core.stock_cache as sc
+
+    monkeypatch.setattr(stock_common, "get_zhb_single_stock_data", lambda _code: {})
+    assert sc._cross_verify_with_zhb("600519", {"pe_ttm": 10}) is None
+
+    monkeypatch.setattr(
+        stock_common,
+        "get_zhb_single_stock_data",
+        lambda _code: {"pe_ttm": 10, "pb": 2},
+    )
+    assert sc._cross_verify_with_zhb("600519", {"pe_ttm": 10, "pb": 2}) is True
+    assert sc._cross_verify_with_zhb("600519", {"pe_ttm": 30, "pb": 2}) is False
+
+
+def test_set_cache_caps_ttl_when_zhb_reference_is_unavailable(tmp_path, monkeypatch):
+    import core.stock_cache as sc
+
+    monkeypatch.setattr(sc, "_CACHE_DB", str(tmp_path / "stock_cache.db"))
+    monkeypatch.setattr(sc, "_db", None)
+    monkeypatch.setattr(sc, "_DISABLE_CACHE", False)
+    monkeypatch.setattr(sc, "_cross_verify_with_zhb", lambda *_args: None)
+    monkeypatch.setattr(sc.time, "time", lambda: 1000.0)
+    sc._l1_clear()
+
+    sc.set_cache("f10_financial", "fetch", {"value": 1}, 86400, "600519")
+    key = sc._build_key("f10_financial", "fetch", "600519")
+    with sc._db_lock:
+        row = (
+            sc._get_db()
+            .execute("SELECT created_at, expires_at FROM cache_entries WHERE key=?", (key,))
+            .fetchone()
+        )
+
+    assert row == (1000.0, 1000.0 + sc._ZHB_UNVERIFIED_CACHE_TTL_SECONDS)
+    assert sc.get_cache("f10_financial", "fetch", "600519") == {"value": 1}
+
+
 def test_cache_key_category_supports_versioned_and_legacy_keys():
     import core.stock_cache as sc
 

@@ -1,54 +1,52 @@
 # 文档索引
 
-文档分为项目规则、字段登记、字段导航和实测证据。逐源字段身份、完整路径与状态以 `field_verification/field_registry.json.source_fields` 为准；`field_dict.md` 是生成的治理入口，历史原文单独归档供追溯。
+文档按职责维护单一权威入口。动态数值、当前运行状态和历史报告不构成现行规则；需要核实时回到代码、生成来源和当次产物。
 
-## 从这里开始
+## 项目与开发入口
 
-| 需要了解 | 入口 |
+| 需要了解 | 权威入口 |
 |---|---|
-| 当前项目约束与阅读路径 | [PROJECT_CONTEXT.md](PROJECT_CONTEXT.md) |
-| 模块、数据路由与架构约束 | [architecture.md](architecture.md)、[ARCHITECTURE_THEORY.md](ARCHITECTURE_THEORY.md) |
-| 已批准并分阶段实施的架构整改方案 | [PROJECT_ARCHITECTURE_REFINEMENT_PLAN.md](PROJECT_ARCHITECTURE_REFINEMENT_PLAN.md) |
-| 大型模块拆分结项导航 | [PROJECT_MODULE_REFINEMENT_PLAN.md](PROJECT_MODULE_REFINEMENT_PLAN.md) |
-| 核心模块依赖、状态所有权与数据契约图 | [PROJECT_MODULE_MAP.md](PROJECT_MODULE_MAP.md) |
-| 字段治理入口 | [field_dict.md](field_dict.md) |
-| 待破解字段与状态冲突 | [unknown_fields.md](unknown_fields.md) |
-| 已验证字段的缺失规范名/含义 | [field_metadata_gaps.md](field_metadata_gaps.md) |
-| 字段×源矩阵 | [field_matrix.md](field_matrix.md) |
-| 来源与 GitHub 仓库谱系 | [source_repository_map.md](source_repository_map.md) |
-| 重整前完整字段原文 | [field_source_reference.md](field_source_reference.md) |
-| 机器权威字段注册表 | [field_verification/field_registry.json](field_verification/field_registry.json) |
-| 字段字典迁移审计与运营闭环 | [FIELD_DICTIONARY_MIGRATION_AUDIT_20261005.md](FIELD_DICTIONARY_MIGRATION_AUDIT_20261005.md)、[FIELD_DICTIONARY_OPERATIONAL_CLOSURE_20261006.md](FIELD_DICTIONARY_OPERATIONAL_CLOSURE_20261006.md) |
-| 碰撞、上游契约和公式证据定案 | [field_verification/ADJUDICATION_WORKFLOW.md](field_verification/ADJUDICATION_WORKFLOW.md) |
-| 报告脚本的数据字段与 fallback | [script_data_dict.md](script_data_dict.md) |
-| 术语、版本决策和已知偏离 | [domain_glossary.md](domain_glossary.md)、[roadmap.md](roadmap.md)、[DEBT_LEDGER.md](DEBT_LEDGER.md) |
+| 项目任务路由 | [`PROJECT_CONTEXT.md`](PROJECT_CONTEXT.md) |
+| Agent 执行规约 | [`../AGENTS.md`](../AGENTS.md) |
+| 稳定术语定义 | [`domain_glossary.md`](domain_glossary.md)；不定义运行策略或字段口径 |
+| 架构原则、模块数据流和已知偏离 | [`ARCHITECTURE_THEORY.md`](ARCHITECTURE_THEORY.md)、[`architecture.md`](architecture.md)、[`DEBT_LEDGER.md`](DEBT_LEDGER.md) |
+| 报告脚本实际消费的字段与来源 | [`script_data_dict.md`](script_data_dict.md) |
+| 依赖版本和上游兼容判断 | [`UPSTREAM_COMPATIBILITY.md`](UPSTREAM_COMPATIBILITY.md)、[`source_repository_map.md`](source_repository_map.md) |
+| 测试运行方式与模块说明 | [`../tests/README.md`](../tests/README.md) |
 
-## 证据与记录
+## 字段采集、碰撞与裁决
 
-- [`field_verification/PUBLIC_WEB_VERIFICATION.md`](field_verification/PUBLIC_WEB_VERIFICATION.md)：按真实来源优先核查通达信、同花顺、东方财富、新浪、开盘啦、开盘红等官方站点，记录网页证据及定案边界。
-- [`verify/`](verify/README.md)：按数据源整理的字段契约、样本和交叉核验资料。
-- [`field_verification/`](field_verification/README.md)：采集流程、破解方法和按日期归档的原始数据与分析报告。
-- [`field_verification/f118_ulist_source_semantics_plan.md`](field_verification/f118_ulist_source_semantics_plan.md)：ulist239 两条待确认路径的逐来源核验计划。
-- [`session_notes/`](session_notes/README.md)：按日期保存的会话决策和待办。
-- [`PROJECT_AUDIT_20261015.md`](PROJECT_AUDIT_20261015.md)：本轮全仓审计范围、修复结果、验证和保留事项。
-- `PROJECT_AUDIT_REMEDIATION_*.md`、日期命名的核查文档：历史阶段记录；判断当前状态时以代码和当次验证结果为准。
-- [`field_verification/_upstream_SKILL_v310.md`](field_verification/_upstream_SKILL_v310.md)：上游项目公开 Skill 的历史快照，仅作来源核对资料，不是当前运行契约。
-- [`field_verification/field_registry.json.bak_round3`](field_verification/field_registry.json.bak_round3) 与 [`_reg_tmp_test.json`](field_verification/_reg_tmp_test.json)：2026-09-24 的旧注册表快照，不是当前权威状态；因含有未映射到现行逐源结构的历史记录而保留。
-
-## 常用查阅路径
-
-| 任务 | 顺序 |
+| 问题 | 权威入口 |
 |---|---|
-| 核实字段定义 | `field_dict.md` → `unknown_fields.md` / `field_registry.json` → 该字段引用的 `verify/` 附录 |
-| 破解未知字段 | `unknown_fields.md` → `field_verification/CRACKING_METHODOLOGY.md` → 对应日期采集与对撞报告 → `field_verification/ADJUDICATION_WORKFLOW.md` |
-| 核查来源独立性或上游实现 | `source_repository_map.md` → `field_verification/source_lineage.json` → 映射中的项目内证据 |
-| 修改报告脚本 | `script_data_dict.md` → 架构文档 → 相关代码和测试 |
-| 恢复项目上下文 | `PROJECT_CONTEXT.md` → 最新会话纪要；动态状态需现场核实 |
-| 提交前完整离线验收 | `scripts/run_offline_checks.ps1` → 核对 [`tests/README.md`](../tests/README.md) 中的实际结果 |
+| 日常采集、碰撞、完整报告审阅 | [`field_verification/DAILY_RUNBOOK.md`](field_verification/DAILY_RUNBOOK.md) |
+| 公开网页字段核验 | [`field_verification/PUBLIC_WEB_VERIFICATION.md`](field_verification/PUBLIC_WEB_VERIFICATION.md) |
+| 当前执行阈值与状态机 | `scripts/collision_rules.py`；[`COLLISION_RULES.md`](field_verification/COLLISION_RULES.md) 是生成镜像 |
+| 日期、样本资格与窗口 | `scripts/collision_dates.py`、[`field_verification/temporal_policy.json`](field_verification/temporal_policy.json) |
+| 字段身份和状态 | [`field_verification/field_registry.json`](field_verification/field_registry.json)；[`field_dict.md`](field_dict.md) 是生成导航 |
+| 待审字段 | [`unknown_fields.md`](unknown_fields.md)、[`field_metadata_gaps.md`](field_metadata_gaps.md) |
+| 候选生成与证据判断 | [`field_verification/CRACKING_METHODOLOGY.md`](field_verification/CRACKING_METHODOLOGY.md) |
+| 候选人工审阅、单源契约和注册表写回 | [`field_verification/ADJUDICATION_WORKFLOW.md`](field_verification/ADJUDICATION_WORKFLOW.md) |
+| 每日覆盖与来源日期边界 | [`field_verification/EVIDENCE_COVERAGE.md`](field_verification/EVIDENCE_COVERAGE.md) |
 
-## 维护约定
+## 证据和历史记录
 
-- 主字典只记录字段结论、来源和必要摘要；详细样本与推理放入对应证据文档，并从主字典链接。
-- 新增 `verify/` 附录时，同步登记到主字典附录索引；该目录结构由 [`verify/README.md`](verify/README.md) 维护。
-- 新增采集源或归档产物时，更新 [`field_verification/README.md`](field_verification/README.md)，不要在本索引重复列出每日文件清单。
-- 改变字段结构、单位或缓存语义时，按缓存文档升级相应 schema 版本。
+- [`field_verification/`](field_verification/README.md)：保留期内原始样本、来源元数据和裁决证据；具体数据边界见 AGENTS 与每日运行卡。
+- [`verify/`](verify/README.md)：上游契约、样本和交叉核验资料。
+- [`field_source_reference.md`](field_source_reference.md)：重整前字段原文，只读历史归档。
+- [`session_notes/`](session_notes/README.md)：仍影响项目决策的会话记录。
+- [`roadmap.md`](roadmap.md)：历史路线图的结项入口；当前待办不从旧版本计划恢复。
+- [`PROJECT_ARCHITECTURE_REFINEMENT_PLAN.md`](PROJECT_ARCHITECTURE_REFINEMENT_PLAN.md)：已结项的整改摘要。
+- [`PROJECT_MODULE_MAP.md`](PROJECT_MODULE_MAP.md)：2026-10-21 模块拆分快照，使用前须对照当前代码。
+- 日期命名的审计报告、旧 registry 快照及 `PROJECT_AUDIT_REMEDIATION_*.md` 均为历史记录，不是现行状态源。
+
+## 常用路径
+
+| 任务 | 阅读顺序 |
+|---|---|
+| 核实字段 | `field_dict.md` → `unknown_fields.md` / registry → 对应证据 |
+| 研究候选 | `DAILY_RUNBOOK.md` → `COLLISION_RULES.md` → 方法论相关章节 → 裁决工作流 |
+| 修改报告数据 | `script_data_dict.md` → 架构说明 → 对应代码和测试 |
+| 修改数据契约 | AGENTS 事实门 → registry/适配器 → 消费方和测试 → 生成视图/parity |
+| 完整离线验收 | `scripts/run_offline_checks.ps1`；实际结果以当次输出为准 |
+
+生成的字段视图只能由对应生成器更新；原始样本、主字典和裁决报告按各自保留/写回规则维护。

@@ -14,6 +14,7 @@
 
 ## 当前调查计划
 
+- 东财 push2 多主机字段差异：仅在用户明确安排真实联网核验后，以低频逐主机小样本比字段、数值和来源日期。先核验备用域；首次出现 403、429、封禁或熔断迹象即停止该风险组，不运行 `--all`。历史健康探测只代表当时可达，不证明字段等价或当前健康。
 - [`f118_ulist_source_semantics_plan.md`](f118_ulist_source_semantics_plan.md)：区分 push2 与 ulist239 的 `f107` / `f118` 逐源身份、含义和占位状态；计划未执行前不更新注册表。
 
 ## 归档格式
@@ -26,7 +27,7 @@ docs/field_verification/<目标数据日>/
 └── analysis.md（可选人工分析）
 ```
 
-目录名表示目标数据日，不一定是运行自然日。`meta.json` 保存实际运行时间、`capture_date/run_date`、`data_date`/日期域、市场阶段、来源状态和各自 `as_of_date`；ZHB 还记录包实际数据日。保留原始目录和日期以维持溯源，碰撞器会按来源数据日去重与择优，不要通过改名或删除目录来“修正”日期。
+目录名表示目标数据日，不一定是运行自然日。`meta.json` 保存实际运行时间、`capture_date/run_date`、`data_date`/日期域、市场阶段、来源状态和各自 `as_of_date`。保留期内目录按原名维护，不通过重命名目录来“修正”来源日期；可读数据范围以根目录 `AGENTS.md` 为准，ZHB 日期归属按每日运行卡和解析器契约核实。
 
 schema 5 碰撞 JSON 为候选保存稳定 `candidate_id`；人工处置单独进入 `collision_candidate_reviews.json`，不会自动写入主字典。每条决定须引用包含该候选的碰撞报告并保留 SHA-256；审阅覆盖率、未审数量和重复组关系见当次报告的 `candidate_review`。状态文件不存在时代表本轮均为 `unreviewed`，不是人工审阅完成。
 

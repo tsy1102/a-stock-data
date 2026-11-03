@@ -2,11 +2,11 @@
 
 > 适用于:Windows 桌面版 Agent(原生执行 PowerShell)
 > 适用范围:本仓库根目录及其全部子目录
-> **静态上下文（按任务分层读取）**：`docs/PROJECT_CONTEXT.md` §0 是任务路由索引；常规任务只读相关热区，字段破解不默认加载整份方法论文档或大体积 JSON。
-> 🔥热区：本文件 §5；🌤️温区：任务所需章节；🧊冷区：只在遇到具体候选/问题时按路径取证。日常采集与碰撞流程见 `docs/field_verification/DAILY_RUNBOOK.md`。
+> **静态上下文（按任务读取）**：`docs/PROJECT_CONTEXT.md` §0 是任务路由索引；常规任务只读对应权威文档和相关代码，字段破解不默认加载大体积 JSON。
+> 日常采集与碰撞流程见 `docs/field_verification/DAILY_RUNBOOK.md`。字段语义、运行阈值、架构原则和 Agent 执行规约各有单独真源，发生冲突时先核对代码、测试及用户当前要求。
 > 字段身份以 `field_registry.json` 的 `(source, 完整 code path)` 为准；先用生成的 `field_dict.md` / `unknown_fields.md` 导航，历史协议原文按需查 `field_source_reference.md`。
 > 字段样本保留起点为 20261015：此前 `raw_*.json`、日期化 ZHB 压缩包及解析缓存已清理，采集、碰撞与审计不得回补或读取更早日期；少数被裁决材料引用的报告与元数据保留。
-> 版本:v1.4（增加字段样本保留起点与旧样本读取限制）
+> 版本:v1.6（收敛架构、审查和排障规则；调查状态移至字段验证索引）
 
 ---
 
@@ -221,83 +221,43 @@ $OutputEncoding = [Console]::OutputEncoding
 
 ### 8.2 高风险文件清单(改前必查)
 
-> 术语口径以 `docs/domain_glossary.md`(领域词汇表)为准,命名/注释不得引入新歧义。
+> 通用术语以 `docs/domain_glossary.md` 为准；字段语义、来源路由和新鲜度不得由术语表推定。
 
 | 文件 | 改前必查项 |
 |---|---|
-| `sc_datasource.py` | ZHB 列索引映射、35 个未知字段、缓存 Key |
-| `tdx_client.py` | 0x0010 协议字段名、统一 TDX 适配器输出 key、限流间隔 |
-| `zhb_client.py` | 各解析器列映射、GBK/分隔符约定 |
-| `data_provider.py` | **字段路由与元数据真机制**（见下方注记）：交易时段/交易日历、`need_realtime_quote`、ZHB ABCD 字段新鲜度、逐字段来源与有效日期 |
-| `stock_common/__init__.py` | 导出是否与实际定义一致(2026-08-10 审计:`__all__` 241 项全部可访问,0 缺失;少数公共函数如 `get_em_quote_full` 未在 `__all__` 重导出,但调用方均直连子模块,无破坏) |
+| `stock_common/sc_datasource/` | 专项字段映射、缓存键和公开适配器；检查调用方与相关测试 |
+| `core/tdx_client.py` | 0x0010 协议字段名、统一 TDX 适配器输出 key、限流边界 |
+| `core/zhb_client.py` | 日期化缓存文件 `zhb_YYYYMMDD.zip` 的文件名是数据日期；检查包内日期冲突和解析器测试 |
+| `core/data_provider.py` | 字段路由、交易日历、新鲜度、来源优先级和逐字段有效日期；以实际调用路径为准 |
+| `stock_common/__init__.py` | 对外导出及调用兼容性；检查实际定义、消费者和测试 |
 | `docs/field_verification/field_registry.json` | 逐源状态以 `source_fields` 中 `(source, 完整 code path)` 为准；`docs/unknown_fields.md` 是生成队列，旧 ZHB/ulist 列索引见只读归档 `docs/field_source_reference.md` |
 
-> **⚠️ 注记（2026-08-30 校正）：`REQUIRES_REALTIME_HTTP` / `ZHB_SUFFICIENT` 不控制运行时路由**
+> `REQUIRES_REALTIME_HTTP` / `ZHB_SUFFICIENT` 从 `sc_schema.FIELD_SPECS` 派生，是测试契约元数据；不能将其误当作运行时路由开关或未使用死代码。修改路由时，沿 `get_canonical_stock_data()` 的实际调用链和测试核查，并将当前路由细节留在代码及架构说明中，不在本规约复制行号和易变阈值。
 >
-> 旧版本节曾把这两个集合列为 "改前必查项"，会误导——它们**不参与任何运行时分支决策**。现状：
-> - **定义**：`data_provider.py:180-260` 从 `sc_schema.FIELD_SPECS.is_real_time` 动态生成（单一权威源在 sc_schema）。
-> - **消费方**：仅 `tests/core/test_core_routing.py`（14 例）与 `test_core_schema.py` 通过
->   `is_realtime_http_field()` / `is_zhb_sufficient_field()` 查询——**业务代码零调用**（全仓 grep 证实）。
-> - **因此它们是"测试契约元数据"而非死代码**：删除会破坏 14 个回归用例，**禁止删除**。
-> - **真正决定走 ZHB 还是 HTTP 的机制**：
->   1. `_should_use_zhb_for_realtime()` 根据交易日历与 9:30 分界处理盘前、休市日、盘中和盘后。
->   2. `get_canonical_stock_data` 的 `need_realtime_quote` 综合强制实时、时段、ZHB 快照是否存在及 A 类行情字段是否过期。
->   3. `sc_datasource.zhb_field_safe(field)` 使用明确的 ZHB 包日期，按 A/B/C/D 交易日延迟过滤：A 实时 `=0`／B 准实时 `=1`／C 日频 `=3`／D 静态 `=90`。
->   4. `CanonicalStockData.quote_date` 与 `time_anchor` 依据价格字段的有效日期；日期未知则 `time_anchor="unknown"`。`collected_at` 是本机组装时间，不能作为上游有效日期。逐字段日期见 `field_as_of_dates`。
->   5. TDX 行情缓存日期使用 `latest_market_data_date()`，不能按自然日把周末/节假日当作有效行情日。
-> - 改路由行为时检查以上路径；改字段的"是否实时"分类请动 `sc_schema.FIELD_SPECS`（会同步测试契约集合）。
+> 日期化 ZHB 缓存的文件名日期优先于包内 `tdxstat.cfg` 日期；采集 JSON 的 `zhb_date` 是解析结果副本。通用无日期下载包的解析回退见 `core/zhb_client.py` 和 `tests/data/test_data_zhb.py`。
 
 ### 8.3 字段/签名变更时的连带检查
 
-若改动涉及 **dict key / 函数签名 / 返回结构** 变更,必须:
-- 找到并更新**所有**调用点(不允许只改定义)
-- 更新 `docs/field_verification/field_registry.json.source_fields` 中的逐源完整路径与证据；重跑 `gen_field_dict.py`、`gen_field_matrix.py` 并通过 parity。`docs/field_dict.md` 是生成入口，`field_source_reference.md` 是不可覆盖的历史归档。
-- 检查是否有缓存反序列化依赖旧 key
+若改动涉及外部可见的 dict key、函数签名或返回结构，必须：
+- 找到并更新该契约的所有调用点、消费者和测试。
+- 若变更的是字段来源身份/完整路径，更新 `field_registry.json.source_fields`，重跑字段视图生成器并通过 parity；其他契约变更更新其实际权威文档/Schema。
+- 检查缓存序列化、缓存键和事件锁是否受影响；仅在语义或缓存口径变化时升级相应版本。
 
-### 8.4 统一层与数据访问收口 (2026-09-03 新增)
+### 8.4 统一数据访问
 
-> **理论层权威文档: `docs/ARCHITECTURE_THEORY.md`(架构公理 A1–A8)**
-> **偏离台账: `docs/DEBT_LEDGER.md`**
-> 本节是操作速查;完整论证与"为什么"见上述两个文件。
+架构原则以 [`docs/ARCHITECTURE_THEORY.md`](docs/ARCHITECTURE_THEORY.md) 为准；模块与调用边界见 [`docs/architecture.md`](docs/architecture.md)。生产报告和采集脚本必须通过 Tier 1 或 Tier 2 公开适配器取数。原始客户端只允许在 `stock_common/` 与 `core/tdx_client.py` 内部使用。
 
-**统一层 = 两层网关**(不是一个大对象):
-
-| 层 | 入口 | 职责 |
-|---|---|---|
-| **Tier1 门面** | `core/data_provider.get_canonical_stock_data()` | `CanonicalStockData` 113 个属性（含 12 个 ELTDX 扩展属性）、源选择、fallback、单位归一化、逐字段来源和有效日期溯源 |
-| **Tier2 适配器** | `sc_datasource.get_*` / `sc_fuyao.get_fuyao_*` / `tdx_client.tdx_get_*` | 专精数据(CYQ / F10 / 涨停梯队 / 龙虎榜 / 行业L2 / 宏观流向 / 竞价),已含 @cached + 归一化 + 令牌桶限流 |
-| **原始客户端** | `_get_tdx_client()` / `sc_network.em_get` / `sc_fuyao._fuyao_raw` / 裸 requests·httpx | **仅允许出现在 `stock_common/` 与 `core/tdx_client.py` 内部** |
-
-**铁律(公理 A1)**:生产脚本(`main.py` / `get_*_report.py` / `sc_report_runner.py` / `core/*.py`)
-取数必须先经过 Tier1 或 Tier2 的**公开函数**,禁止直连原始客户端。
-
-> **⚠️ 不要把专精数据塞进 `CanonicalStockData`** —— 会造成 god-object,
-> 且让 fallback 一致性更难做(而这正是统一层要解决的原始问题)。
-> **Tier2 适配器本身就是统一层的"专精面"**,调用它不等于绕过统一层。
-
-**自动化闸门**(提交前必跑):
+适用的自动闸门：
 
 ```powershell
-python.exe scripts\verify_data_access.py     # 公理 A1: 数据访问收口(禁止生产脚本直连原始客户端)
-python.exe scripts\verify_sync_check.py      # 公理 A7: 字典 ↔ 代码 同步
-python.exe scripts\verify_canonical_contract.py  # Tier 1: 属性、日期、来源与缓存边界
+python.exe scripts/verify_data_access.py
+python.exe scripts/verify_sync_check.py
+python.exe scripts/verify_canonical_contract.py
 ```
 
-> 闸门已用 `tokenize` 剥离注释与字符串,故文档中引用违规符号的说明性注释不会误报。
-
-**🔴 禁止静默迁就(公理 A8,元公理)**:
-明知违反公理,却因"改动大 / 风险高"而不改、**也不记账** —— 这是最严重的违规,
-也是本仓库历史上多轮修改累积混乱的唯一成因。必须二选一:
-
-1. **按公理改**(哪怕改动面扩大);或
-2. **在 `docs/DEBT_LEDGER.md` 登记偏离** —— 写明**真实技术原因**(要动哪些消费方/测试、
-   缺什么验证手段)与偿还计划。禁止写"风险大""暂缓"这类无信息量的措辞。
-
-> 判断标准:债务台账的 OPEN 条目数应**单调下降**。
-> 显式债务是可偿还的,隐形债务是不可理解的。
+若当前设计原则不再适用，先修订原则及依赖闸门；只有确认仍适用而实现选择偏离时，才登记到 `docs/DEBT_LEDGER.md`。OPEN 条数是当前状态快照，新发现的问题不得为追求下降而隐去。
 
 ---
-
 ## 9. 验证循环 (Verification Loop)
 
 > 来源: ECC `verification-loop` skill 提炼,适配本仓库(纯 Python + PowerShell)。每次代码修改完成后、提交前运行。
@@ -313,9 +273,9 @@ python.exe scripts\verify_canonical_contract.py  # Tier 1: 属性、日期、来
 
 > 提交前必须运行完整离线验收。该入口通过 Black Python API 按 `pyproject.toml` 配置检查 Git 可见 Python 文件，避免 Windows 下 `black --check` 曾出现的长时间无输出；真实网络测试不会启动。局部回归可先运行单模块，但不能替代提交前完整验收。
 
-### 9.2 验证报告格式
+### 9.2 验证结果记录
 
-完成六阶段后,输出:
+按改动范围说明实际执行的检查与结果；有可靠基线且与改动相关时报告前后指标，不造指标。纯文档改动说明检查的链接/规则范围及行数变化。跨模块代码改动或用户要求完整审查时，使用以下结构：
 
 ```text
 VERIFICATION REPORT
@@ -326,7 +286,7 @@ VERIFICATION REPORT
 测试:     [PASS/FAIL] (X/Y passed)
 安全:     [PASS/FAIL] (X issues)
 Diff:     [X files changed]
-度量:     [Metric] (改动前后对比,见 11.1)
+度量:     [相关指标: 改前 → 改后；无可靠基线时说明原因]
 
 Overall:  [READY/NOT READY] for commit
 待修复:
@@ -365,20 +325,19 @@ Overall:  [READY/NOT READY] for commit
 - [ ] 无硬编码密钥/凭据(重点: `credentials.json` 不得进 git)
 - [ ] 无 SQL 注入(f-string 拼查询)
 - [ ] 无裸 `except` / 吞异常
-- [ ] 函数 < 50 行,嵌套 < 4 层
+- [ ] 关注函数复杂度；按可读性与复用边界决定是否拆分，不设硬性行数门槛
 - [ ] 公开函数有类型注解
 - [ ] 无可变默认参数 `def f(x=[])`
 - [ ] 共享状态有锁(参考 `sc_network._EM_LAST_CALL` / `_DOMAIN_LAST_TIME`)
-- [ ] 无 `print()`(应 `_debug_log` / `logging`)
+- [ ] 库代码用项目日志；命令行面向用户的输出允许使用 `print()`
 - [ ] 新增功能有对应测试
 
 **Spec 轴(实现意图)**:
 
 - [ ] 对照原始需求/用户指令,确认改动**确实实现了要求**(而非自创方案)
-- [ ] 对照 `docs/roadmap.md` 最近决策记录(ADR),确认口径/约定一致(如行业统一申万二级)
-- [ ] 对照 `docs/domain_glossary.md` 术语,确认命名/注释未引入新歧义
-- [ ] 涉及数据契约的改动,对照 `field_registry.json.source_fields`、`unknown_fields.md`、`field_source_reference.md` / `script_data_dict.md`
-- [ ] 涉及缓存,确认缓存版本号(§4)已按口径变更升级
+- [ ] 对照 `docs/ARCHITECTURE_THEORY.md`、`docs/domain_glossary.md` 与用户当前要求确认口径；历史版本计划不作为当前规格。
+- [ ] 涉及字段契约的改动,对照 `field_registry.json.source_fields`、生成的 `unknown_fields.md`、相关来源证据和 `script_data_dict.md`；`field_source_reference.md` 仅作历史协议参考
+- [ ] 涉及缓存,确认 key、TTL、日期边界与失效策略符合当前契约；只有缓存语义变化时才调整版本或类别
 
 ### 10.3 审批标准
 
@@ -388,61 +347,22 @@ Overall:  [READY/NOT READY] for commit
 
 ---
 
-## 11. 迭代度量与假设驱动调试 (Autoresearch 纪律)
+## 11. 排障与结果记录
 
-> 来源: uditgoenka/autoresearch v2.2 (github.com/uditgoenka/autoresearch, MIT) 提炼,源自 Karpathy's autoresearch。
-> 采纳范围:**仅方法论**(方案 A),不引入其命令/钩子/脚本——安装脚本为 bash 且与 1.1 节 Shell 规则冲突,
-> 其"commit before verify"与"未经用户要求不 commit"的仓库政策冲突,故不采纳。
+### 11.1 证据与度量
 
-### 11.1 迭代度量 (Iteration Metric) — 每次改动必须量化
+- 排查问题时先核对症状、数据流和相关契约；对不确定原因提出可证伪解释，并尽量一次只改变一个变量。
+- 实验不支持假设时，记录结论并检查下一个可能原因；无需机械地为每个问题创建最小复现。
+- 对性能、正确性或可靠性有明确基线的改动，报告相关改前/改后指标；不要为了满足格式制造指标。纯文档改动报告受影响范围及实际检查。
+- 已完成的行为变更写入 `CHANGELOG.md`，不在路线图或多个索引重复记录。
 
-**原则**: 一次改动必须绑定至少一个**可数的机械指标**,改动前后对比,不能只说"看起来更好"。
+### 11.2 修复验证
 
-| 场景 | 可选度量(取最容易量化的 1-2 个) |
-|---|---|
-| 代码修复 | 测试通过数 X/Y、耗时(如 78s)、失败数变化 |
-| 网络/限流 | 封禁次数、429 次数、平均响应延迟、成功率 |
-| 数据正确性 | 字段匹配条数(如分红 19 条)、错误报告数、偏差值(如 PE 18337420x→5.82x) |
-| 性能 | 总耗时(如 1000s→620s)、请求数、缓存命中率 |
-
-**执行要求**:
-
-- 改动完成后的验证报告(9.2)必须填 `度量` 行,格式 `指标: 改前 → 改后`
-- 无法量化时,写明理由(如"纯文档改动"),不得省略
-- roadmap 每次版本条目建议带度量(如"V16.2.12: 警告 17 条 → 0 条")
-
-### 11.2 假设驱动调试流程 (Hypothesis-Driven Debug)
-
-排查疑难 bug 时按以下顺序,**每个假设只做一次实验**,禁止盲目堆叠修法:
-
-1. **收集症状**: 报错原文、复现命令、现象(如"K线空但无报错")
-2. **最小化复现**: 缩小到最小输入/最小脚本(mattpocock `diagnosing-bugs` 提炼)——
-   去掉无关股票/字段/分支,确认在最小集上仍可复现;不可复现 → 说明症状与疑似面无关,先排查最小集差异
-3. **侦察**: 读相关代码路径 + 检查数据(如实测返回的原始值),先找"数据在哪一层失真"
-4. **提出假设**: 必须具体、可检验(如"push2 封禁是连接级而非请求级"),写成"若 X 则 Y"
-5. **单次实验**: 一次只验证一个假设(最小复现脚本/加日志/抓包),禁止同时改多处
-6. **判定**: 证实 → 修复;证伪 → 记录并排除,换下一个假设
-7. **记录**: 在回复中列出 假设/实验/结论 三行,证伪的同样记录(防重复踩坑)
-
-**硬约束**:
-
-- 假设未证实前**不得改业务代码**(可写临时复现脚本)
-- 每个假设耗时 > 15 分钟仍无结论 → 停止,汇报当前证据 + 剩余候选,不闷头继续
-- 与 1.7 节(同一错误重试 > 2 次停止)联动:修复失败回到"提出新假设"而非"再试一次"
+- 根据改动范围执行 `AGENTS.md` §9 中适用的检查，并在回复中说明证据、结果和未解决的限制。
+- 修复未解决问题时，回到症状和证据重新判断；遵守 §1.7 的同类错误重试限制，不因固定计时门槛提前放弃尚可推进的工作。
 
 ---
 
-## 12. 活跃待办(每次会话先检查)
+## 12. 活跃调查
 
-> 完成一项即删除对应条目;新会话开始时必须先看本节。
-
-### 12.1 ⏳ 东财 push2 多主机字段差异复核
-
-- 2026-08-12 的历史健康探测曾记录 6/6 主机或接口可用；之后确认“失败不重试 + 域级熔断”已修复重复请求导致二次封禁的问题。该历史结果不代表当前主机健康。
-- **待办**：在用户明确安排真实网络核验后，用低频、逐主机样本比较字段集合、数值、来源日期和响应状态；先验证备用域，再决定是否触达敏感 push2 主域。首个 403、429、封禁或熔断迹象即停止该风险族；不运行 `--all`。健康探测只证明端点可达，不代替字段等价性核验。
-
-### 12.2 ⏳ ulist239 `f107` / `f118` 来源路径语义待核
-
-- **逐路径现状**：`push2(stock/get)::f107` 与 `::f118` 已在主注册表标为 verified；`ulist239(np/get)::f107` 与 `::f118` 的含义、单位为空，状态为 `unverified` / `aggregate_status_scope_unresolved`。全局聚合状态来自 push2 证据，不能直接复制为 ulist239 的字段语义。
-- 生成队列仍列出两条 ulist239 待核记录；本轮未改注册表、主字典或采集路由。
-- **待办**：按 [`docs/field_verification/f118_ulist_source_semantics_plan.md`](docs/field_verification/f118_ulist_source_semantics_plan.md) 对照每个接口的原始样本、有效日期和公开契约；区分“字段身份映射”“字段语义”和“接口占位/空值”。只有证据满足裁决流程后，才更新逐源记录及生成视图。
+当前字段调查和待核来源以 [`docs/field_verification/README.md`](docs/field_verification/README.md) 的调查计划及其专项记录为准；不要在执行规约重复维护字段状态或证据摘要。

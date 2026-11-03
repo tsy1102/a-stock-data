@@ -8,7 +8,7 @@ import re
 import threading
 import time
 import warnings
-from stock_common.sc_network import _debug_log
+from stock_common.sc_network import _HTTP_SESSION, _debug_log, _source_rate_limit_wait
 from stock_common.sc_utils import em_exchange_prefix
 
 # stock_common/sc_datasource/_official_backup.py
@@ -61,7 +61,8 @@ def _official_number(value: Any, required: bool = False) -> Optional[float]:
 def _official_get(
     url: str, params: Optional[dict[str, Any]] = None, referer: Optional[str] = None
 ) -> requests.Response:
-    response = requests.get(
+    _source_rate_limit_wait(url)
+    response = _HTTP_SESSION.get(
         url,
         params=params,
         headers={"User-Agent": "Mozilla/5.0", "Referer": referer or url},
@@ -239,6 +240,7 @@ def bse_quote_backup(trade_date: str, code: Optional[str] = None) -> pd.DataFram
     raw_rows = []
     total = None
     with requests.Session() as session:
+        session.trust_env = False
         session.headers.update(
             {
                 "User-Agent": "Mozilla/5.0",
@@ -247,6 +249,7 @@ def bse_quote_backup(trade_date: str, code: Optional[str] = None) -> pd.DataFram
             }
         )
         # 官网有时设置匿名 Cookie 后 302 回自己；不跟随重定向，避免循环。
+        _source_rate_limit_wait(page_url)
         session.get(page_url, timeout=(10, 40), allow_redirects=False).raise_for_status()
         for page_number in range(100):
             form = {
@@ -257,9 +260,12 @@ def bse_quote_backup(trade_date: str, code: Optional[str] = None) -> pd.DataFram
                 "xxfcbj_en": "[2]",
                 "zqdm": code or "",
             }
+            _source_rate_limit_wait(url)
             response = session.post(url, data=form, timeout=(10, 40), allow_redirects=False)
             if 300 <= response.status_code < 400:
+                _source_rate_limit_wait(page_url)
                 session.get(page_url, timeout=(10, 40), allow_redirects=False).raise_for_status()
+                _source_rate_limit_wait(url)
                 response = session.post(url, data=form, timeout=(10, 40), allow_redirects=False)
             response.raise_for_status()
             if response.status_code != 200:
@@ -283,7 +289,6 @@ def bse_quote_backup(trade_date: str, code: Optional[str] = None) -> pd.DataFram
             raw_rows.extend(batch)
             if len(raw_rows) >= total:
                 break
-            time.sleep(0.2)
         if len(raw_rows) != total:
             raise RuntimeError("北交所分页不完整，不能标记全板成功")
     fields = {

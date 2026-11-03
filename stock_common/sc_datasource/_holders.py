@@ -14,6 +14,7 @@ import code
 import re
 import time
 from stock_common.sc_network import (
+    _HTTP_SESSION,
     UA,
     _async_quick_request,
     _debug_log,
@@ -769,21 +770,18 @@ def cninfo_irm(code: str, page_size: int = 30, page_num: int = 1) -> List[Dict[s
         问答列表，包含 question/answer/ask_time/answerer 字段
     """
     from datetime import datetime
-    import requests
 
     # 巨潮互动易无统一入口（交易所直连）；两步请求均按 CNINFO 来源组跨进程限速。
     try:
         from stock_common.sc_network import _source_rate_limit_wait
 
         _source_rate_limit_wait("https://irm.cninfo.com.cn/newircs/index/queryKeyboardInfo")
-        # V16.3 O14: 巨潮互动易强制直连（忽略系统代理——GD 外全部直连）
-        _no_proxy = {"http": None, "https": None}
-        r1 = requests.post(
+        # Shared session has trust_env=False; request-level None proxies do not override ALL_PROXY.
+        r1 = _HTTP_SESSION.post(
             "https://irm.cninfo.com.cn/newircs/index/queryKeyboardInfo",
             data={"keyWord": code},
             headers={"User-Agent": UA},
             timeout=10,
-            proxies=cast(Dict[str, str], _no_proxy),
         )
         d1 = r1.json().get("data") or []
         if not d1:
@@ -815,12 +813,11 @@ def cninfo_irm(code: str, page_size: int = 30, page_num: int = 1) -> List[Dict[s
             "endDay": "",
         }
         _source_rate_limit_wait("https://irm.cninfo.com.cn/newircs/company/question")
-        r2 = requests.post(
+        r2 = _HTTP_SESSION.post(
             "https://irm.cninfo.com.cn/newircs/company/question",
             params=params,
             headers={"User-Agent": UA},
             timeout=10,
-            proxies=cast(Dict[str, str], _no_proxy),
         )
         rows = r2.json().get("rows") or []
 

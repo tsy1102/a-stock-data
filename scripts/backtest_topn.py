@@ -99,7 +99,7 @@ def load_zhb_snapshot(day: str) -> Dict[str, Dict[str, Any]]:
         raise FileNotFoundError(f"ZHB 包不存在: {zip_path}")
     with open(zip_path, "rb") as f:
         data = f.read()
-    zhb = _parse_zhb_data(data)
+    zhb = _parse_zhb_data(data, filename=zip_path.name)
     if zhb is None:
         raise ValueError(f"ZHB 包解析失败: {zip_path}")
     # 合并 tdxstat + tdxstat2

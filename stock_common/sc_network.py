@@ -21,6 +21,7 @@ import math
 import threading
 import socket
 import logging
+import tempfile
 from typing import (
     Any,
     Callable,
@@ -335,42 +336,93 @@ _EM_BAN_COOLDOWN = 20 * 3600  # 20 小时
 # 任一进程检测到 push2 族封禁后仅自身停火，其余进程毫不知情继续狂轰 → 持续/反复触发东财 IP 级封禁。
 # 限流器本身已是跨进程文件锁协调，但封禁态未共享，是真正的"遗漏的限流"一环。
 _EM_BANNED_FILE = os.path.join(_em_lock_dir, "em_banned_state")
-_EM_BANNED_CACHE: Dict[str, Any] = {"ts": 0.0, "data": {}}  # 进程内缓存（5s TTL，避免每次请求读盘）
+_EM_BANNED_LOCK_FILE = _EM_BANNED_FILE + ".lock"
+_EM_BANNED_CACHE: Dict[str, Any] = {"ts": 0.0, "data": {}, "signature": None}
+_EM_BANNED_CACHE_LOCK = threading.RLock()
+_EM_BAN_STREAK_LOCK = threading.Lock()
+
+
+def _banned_file_signature() -> Optional[Tuple[int, int, int]]:
+    """Detect another process replacing the ban file without parsing it each time."""
+    try:
+        stat = os.stat(_EM_BANNED_FILE)
+    except FileNotFoundError:
+        return None
+    return stat.st_mtime_ns, stat.st_size, stat.st_ino
+
+
+def _read_banned_file_unlocked() -> Dict[str, float]:
+    """Read and validate the ban file while its process lock is held."""
+    try:
+        with open(_EM_BANNED_FILE, "r", encoding="utf-8") as stream:
+            raw = json.load(stream)
+    except FileNotFoundError:
+        return {}
+    if not isinstance(raw, dict):
+        raise ValueError("Eastmoney ban state root must be a JSON object")
+    data: Dict[str, float] = {}
+    for key, value in raw.items():
+        if type(key) is not str or type(value) not in (int, float):
+            raise ValueError("Eastmoney ban state contains an invalid entry")
+        until = float(value)
+        if not math.isfinite(until) or until <= 0:
+            raise ValueError("Eastmoney ban state contains an invalid expiry")
+        data[key] = until
+    return data
+
+
+def _write_banned_file_unlocked(data: Dict[str, float]) -> None:
+    """Atomically replace ban state; caller must hold the cross-process lock."""
+    temporary_path: Optional[str] = None
+    try:
+        with tempfile.NamedTemporaryFile(
+            mode="w",
+            encoding="utf-8",
+            prefix="em_banned_state.",
+            suffix=".tmp",
+            dir=os.path.dirname(_EM_BANNED_FILE),
+            delete=False,
+        ) as stream:
+            temporary_path = stream.name
+            json.dump(data, stream, ensure_ascii=True, separators=(",", ":"))
+            stream.flush()
+            os.fsync(stream.fileno())
+        os.replace(temporary_path, _EM_BANNED_FILE)
+        temporary_path = None
+    finally:
+        if temporary_path is not None:
+            try:
+                os.unlink(temporary_path)
+            except FileNotFoundError:
+                pass
 
 
 def _load_banned_file() -> Dict[str, float]:
-    """读取跨进程封禁态（带 5s 进程内缓存）。"""
+    """读取跨进程封禁态；缓存命中还要确认文件签名未变。"""
     _now = time.time()
-    cached_data = _EM_BANNED_CACHE.get("data")
-    if _now - _EM_BANNED_CACHE.get("ts", 0.0) < 5.0 and isinstance(cached_data, dict):
-        return {
-            str(key): float(value)
-            for key, value in cached_data.items()
-            if isinstance(value, (int, float))
-        }
-    _data: Dict[str, float] = {}
-    try:
-        if os.path.exists(_EM_BANNED_FILE):
-            with open(_EM_BANNED_FILE, "r", encoding="utf-8") as _f:
-                _raw = json.load(_f)
-                if isinstance(_raw, dict):
-                    _data = {k: float(v) for k, v in _raw.items() if isinstance(v, (int, float))}
-    except Exception as _e:
-        _debug_log(f"sc_network load banned file: {_e}")
-    _EM_BANNED_CACHE["ts"] = _now
-    _EM_BANNED_CACHE["data"] = _data
-    return _data
+    signature = _banned_file_signature()
+    with _EM_BANNED_CACHE_LOCK:
+        cached_data = _EM_BANNED_CACHE.get("data")
+        if (
+            _now - _EM_BANNED_CACHE.get("ts", 0.0) < 5.0
+            and _EM_BANNED_CACHE.get("signature") == signature
+            and isinstance(cached_data, dict)
+        ):
+            return dict(cached_data)
 
-
-def _save_banned_file(data: Dict[str, float]) -> None:
-    """持久化跨进程封禁态；同时刷新进程内缓存。"""
+    if not _file_lock_acquire(_EM_BANNED_LOCK_FILE, timeout=2.0):
+        raise TimeoutError("could not acquire Eastmoney ban-state lock")
     try:
-        with open(_EM_BANNED_FILE, "w", encoding="utf-8") as _f:
-            json.dump(data, _f)
-        _EM_BANNED_CACHE["ts"] = time.time()
-        _EM_BANNED_CACHE["data"] = data
-    except Exception as _e:
-        _debug_log(f"sc_network save banned file: {_e}")
+        data = _read_banned_file_unlocked()
+        signature = _banned_file_signature()
+    finally:
+        _file_lock_release(_EM_BANNED_LOCK_FILE)
+
+    with _EM_BANNED_CACHE_LOCK:
+        _EM_BANNED_CACHE["ts"] = _now
+        _EM_BANNED_CACHE["data"] = dict(data)
+        _EM_BANNED_CACHE["signature"] = signature
+    return data
 
 
 def _mark_em_banned(ft_domain: str) -> None:
@@ -381,11 +433,21 @@ def _mark_em_banned(ft_domain: str) -> None:
     """
     _until = time.time() + _EM_BAN_COOLDOWN
     _EM_BANNED_UNTIL[ft_domain] = _until
-    _EM_BAN_STREAK[ft_domain] = 0
+    with _EM_BAN_STREAK_LOCK:
+        _EM_BAN_STREAK[ft_domain] = 0
     try:
-        _data = _load_banned_file()
-        _data[ft_domain] = _until
-        _save_banned_file(_data)
+        if not _file_lock_acquire(_EM_BANNED_LOCK_FILE, timeout=3.0):
+            raise TimeoutError("could not acquire Eastmoney ban-state lock")
+        try:
+            data = _read_banned_file_unlocked()
+            data[ft_domain] = max(data.get(ft_domain, 0.0), _until)
+            _write_banned_file_unlocked(data)
+            with _EM_BANNED_CACHE_LOCK:
+                _EM_BANNED_CACHE["ts"] = time.time()
+                _EM_BANNED_CACHE["data"] = dict(data)
+                _EM_BANNED_CACHE["signature"] = _banned_file_signature()
+        finally:
+            _file_lock_release(_EM_BANNED_LOCK_FILE)
     except Exception as _e:
         _debug_log(f"sc_network mark banned: {_e}")
     try:
@@ -399,8 +461,10 @@ def _mark_em_banned(ft_domain: str) -> None:
 
 def _record_em_disconnect(ft_domain: str) -> None:
     """V16.2.8: 记录连接级断连（RemoteDisconnected 等），连续 N 次标记该风控面封禁。"""
-    _EM_BAN_STREAK[ft_domain] = _EM_BAN_STREAK.get(ft_domain, 0) + 1
-    if _EM_BAN_STREAK[ft_domain] >= _EM_BAN_THRESHOLD:
+    with _EM_BAN_STREAK_LOCK:
+        streak = _EM_BAN_STREAK.get(ft_domain, 0) + 1
+        _EM_BAN_STREAK[ft_domain] = streak
+    if streak >= _EM_BAN_THRESHOLD:
         _mark_em_banned(ft_domain)
 
 
@@ -416,13 +480,14 @@ def _em_is_banned(ft_domain: str) -> bool:
         else:
             return True
     # 跨进程：其他进程/脚本写入的封禁态
-    _data = _load_banned_file()
+    try:
+        _data = _load_banned_file()
+    except Exception as exc:
+        _debug_log(f"sc_network ban state unavailable; failing closed: {type(exc).__name__}")
+        return True
     _fu = _data.get(ft_domain, 0.0)
     if _fu > 0:
-        if time.time() >= _fu:
-            _data.pop(ft_domain, None)
-            _save_banned_file(_data)
-        else:
+        if time.time() < _fu:
             _EM_BANNED_UNTIL[ft_domain] = _fu  # 同步进内存，避免重复读盘
             return True
     return False
@@ -751,7 +816,8 @@ def em_get(
             _circuit_breaker._on_success()
         except Exception:
             pass
-        _EM_BAN_STREAK.pop(_ft_domain, None)
+        with _EM_BAN_STREAK_LOCK:
+            _EM_BAN_STREAK.pop(_ft_domain, None)
 
         return _response
     except Exception as _e:
@@ -838,6 +904,10 @@ def _source_rate_group(host: str) -> str:
         return "kpl"
     if host.endswith("aicubes.cn"):
         return "fuyao"
+    if host == "market.ft.tech" or host.endswith(".market.ft.tech"):
+        return "ftshare"
+    if host == "duanxianxia.com" or host.endswith(".duanxianxia.com"):
+        return "plate_rotation"
     return f"host:{host or 'unknown'}"
 
 
@@ -853,6 +923,10 @@ def _source_rate_limit_policy(domain_or_url: str) -> Tuple[str, float]:
     if group == "kpl":
         # sc_kpl documents and enforces a one-second interval across its private API hosts.
         return group, 1.0
+    if group == "ftshare":
+        return group, 2.0
+    if group == "plate_rotation":
+        return group, 0.6
 
     members = [candidate for candidate in _DOMAIN_LIMITS if _source_rate_group(candidate) == group]
     if not members:
@@ -1448,7 +1522,8 @@ def _do_request(
                 _reset_em_403(domain)
             if is_em and r.status_code < 400:
                 _ft_domain = _normalize_em_domain(domain)
-                _EM_BAN_STREAK.pop(_ft_domain, None)
+                with _EM_BAN_STREAK_LOCK:
+                    _EM_BAN_STREAK.pop(_ft_domain, None)
                 if _HAS_FAULT_TOLERANCE:
                     try:
                         get_domain_circuit_breaker(_ft_domain)._on_success()

@@ -30,6 +30,8 @@ _logger = logging.getLogger("sc_kpl")
 # Android UA 必须（非 Dalvik 返回 errcode=0 但 List=[]）
 _UA = "Dalvik/2.1.0 (Linux; U; Android 12; ALN-AL00 Build/W528JS)"
 _QUERY_INTERVAL = 1.0
+_DIRECT_PROXY_HANDLER = urllib.request.ProxyHandler({})
+_DIRECT_OPENER = urllib.request.build_opener(_DIRECT_PROXY_HANDLER)
 
 _HOSTS = {
     "hq": "https://apphq.longhuvip.com/w1/api/index.php",  # 实时
@@ -72,7 +74,7 @@ def _post(host: str, params: Dict[str, Any]) -> Dict[str, Any]:
         method="POST",
     )
     try:
-        with urllib.request.urlopen(req, timeout=15) as r:
+        with _DIRECT_OPENER.open(req, timeout=15) as r:
             payload = json.loads(r.read().decode("utf-8", errors="ignore"))
         if isinstance(payload, dict):
             return payload

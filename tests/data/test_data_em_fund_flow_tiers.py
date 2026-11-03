@@ -256,6 +256,14 @@ class TestFundFlowRequestFields(unittest.TestCase):
 class TestFundFlowRobustness(unittest.TestCase):
     """字段缺失/异常时不得抛错，且不得凭空造值。"""
 
+    def test_unknown_source_date_is_not_filled_from_local_clock(self):
+        r, _ = _call()
+        self.assertEqual(
+            r["data_date"],
+            "",
+            "stock/get 未提供来源日期时必须留空，不能使用本机当前日期冒充行情日期",
+        )
+
     def test_missing_optional_fields_yields_no_key(self):
         """缺 f149 时不应产生 fund_small_today 键（保持 None/缺席，勿填 0）。"""
         p = _payload()

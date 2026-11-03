@@ -41,6 +41,10 @@ FIELD_DICT = os.path.join(DOCS_DIR, "field_dict.md")
 VERIFY_DIR = os.path.join(DOCS_DIR, "verify")
 
 
+class PreflightInputError(RuntimeError):
+    """An authoritative source or documentation file could not be inspected."""
+
+
 def _load_section_map():
     """复用 audit_field_completeness.SECTION_MAP 作为单一真相源。"""
     try:
@@ -48,9 +52,8 @@ def _load_section_map():
         import audit_field_completeness as afc  # noqa: F401
 
         return list(afc.SECTION_MAP)
-    except Exception as _e:  # pragma: no cover
-        print(f"[WARN] 无法 import SECTION_MAP（{_e}），回退空表", file=sys.stderr)
-        return []
+    except Exception as exc:  # pragma: no cover
+        raise PreflightInputError(f"无法加载权威 SECTION_MAP: {exc}") from exc
 
 
 def _load_verify_mapping():
@@ -64,23 +67,31 @@ def _load_verify_mapping():
         import verify_sync_check as vsc  # noqa: F401
 
         return dict(vsc.get_source_mapping())
-    except Exception as _e:  # pragma: no cover
-        print(f"[WARN] 无法 import get_source_mapping（{_e}），回退空表", file=sys.stderr)
-        return {}
+    except Exception as exc:  # pragma: no cover
+        raise PreflightInputError(f"无法加载权威 verify 源映射: {exc}") from exc
 
 
 def _collect_docs_corpus():
     """返回 docs/ 下所有 .md 的全文列表（含主字典、归档目录、verify 分字典）。"""
+    if not os.path.isdir(DOCS_DIR):
+        raise PreflightInputError(f"docs 目录不存在或不可读: {DOCS_DIR}")
+
     corpus = []
-    for _root, _dirs, _files in os.walk(DOCS_DIR):
+
+    def _raise_walk_error(exc):
+        raise PreflightInputError(f"无法扫描 docs 目录 {exc.filename}: {exc}") from exc
+
+    for _root, _dirs, _files in os.walk(DOCS_DIR, onerror=_raise_walk_error):
+        _dirs.sort()
+        _files.sort()
         # 跳过原始采集数据目录（raw_*.json 等非 .md 不在此列；这里仅收 .md）
         for _f in _files:
             if _f.endswith(".md"):
                 _p = os.path.join(_root, _f)
                 try:
                     corpus.append((_p, io_open(_p)))
-                except Exception:
-                    pass
+                except (OSError, UnicodeError) as exc:
+                    raise PreflightInputError(f"无法读取 Markdown 文件 {_p}: {exc}") from exc
     return corpus
 
 
@@ -89,10 +100,10 @@ def io_open(path):
         return _fh.read()
 
 
-def _check_section_map(corpus_texts):
+def _check_section_map(corpus_texts, section_map=None):
     """检查 SECTION_MAP 每个子串是否能在 docs 全树解析到。返回违规列表。"""
     violations = []
-    sec_map = _load_section_map()
+    sec_map = _load_section_map() if section_map is None else section_map
     # SECTION_MAP anchors describe rendered text; Markdown code spans must not
     # make a source title such as ``TCP `GetFinanceInfo` `` look absent.
     joined = "\n".join(re.sub(r"`", "", text) for _, text in corpus_texts)
@@ -117,11 +128,11 @@ def _check_verify_links():
     return broken
 
 
-def _check_mapping_coverage():
+def _check_mapping_coverage(mapping=None):
     """检查 MAPPING 分字典存在且被主入口或已链接参考文档引用。"""
     missing = []
     orphan = []
-    mapping = _load_verify_mapping()
+    mapping = _load_verify_mapping() if mapping is None else mapping
     dict_text = io_open(FIELD_DICT) if os.path.exists(FIELD_DICT) else ""
     reference_path = os.path.join(DOCS_DIR, "field_source_reference.md")
     reference_text = ""
@@ -162,13 +173,35 @@ def main(argv=None):
     print("== 归档契约预检（archive_field_preflight）==")
     print(f"  docs 根: {DOCS_DIR}")
 
-    corpus = _collect_docs_corpus()
+    if not os.path.isdir(DOCS_DIR):
+        print(f"[FAIL] docs 目录不存在: {DOCS_DIR}", file=sys.stderr)
+        return 1
+    if not os.path.isfile(FIELD_DICT):
+        print(f"[FAIL] 主字典不存在: {FIELD_DICT}", file=sys.stderr)
+        return 1
+    if not os.path.isdir(VERIFY_DIR):
+        print(f"[FAIL] verify 目录不存在: {VERIFY_DIR}", file=sys.stderr)
+        return 1
+
+    try:
+        corpus = _collect_docs_corpus()
+        section_map = _load_section_map()
+        mapping = _load_verify_mapping()
+    except PreflightInputError as exc:
+        print(f"[FAIL] 预检权威输入不完整，不能判定通过: {exc}", file=sys.stderr)
+        return 1
     print(f"  扫描 .md 文件: {len(corpus)} 个")
 
     problems = []
 
     # 1) SECTION_MAP 解析域
-    sec_v = _check_section_map(corpus)
+    try:
+        sec_v = _check_section_map(corpus, section_map)
+        broken = _check_verify_links()
+        missing, orphan = _check_mapping_coverage(mapping)
+    except (OSError, UnicodeError, PreflightInputError) as exc:
+        print(f"[FAIL] 预检读取不完整，不能判定通过: {exc}", file=sys.stderr)
+        return 1
     if sec_v:
         print(f"\n[FAIL] SECTION_MAP 子串在主字典∪归档∪verify 全树未解析到 {len(sec_v)} 处：")
         for label, sub in sec_v:
@@ -178,7 +211,6 @@ def main(argv=None):
         print("\n[OK]   SECTION_MAP 全部子串均可在 docs 全树解析（无假 GAP 风险）")
 
     # 2) verify 断链
-    broken = _check_verify_links()
     if broken:
         print(f"\n[FAIL] 主字典引用了不存在的 verify 分字典 {len(broken)} 个：")
         for name in broken:
@@ -188,7 +220,6 @@ def main(argv=None):
         print("[OK]   主字典引用的 verify 分字典均存在（无断链）")
 
     # 3) MAPPING 覆盖
-    missing, orphan = _check_mapping_coverage()
     if missing:
         print(f"\n[FAIL] MAPPING 分字典缺失 {len(missing)} 个：")
         for src, fname in missing:

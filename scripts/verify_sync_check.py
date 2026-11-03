@@ -61,11 +61,13 @@ VERIFY_DIR = os.path.join(REPO_ROOT, "docs", "verify")
 # 缺失/不可用时回退到下方 MAPPING_HARDCODED（CI 闸门权威配置，须显式可审）。
 # 不静默吞错：registry 读取失败则退化为硬编码，闸门行为不变。
 _fra: Optional[ModuleType]
+_FRA_IMPORT_ERROR: Optional[Exception] = None
 try:
     sys.path.insert(0, SCRIPT_DIR)
     _fra = import_module("field_registry_api")
-except Exception:  # noqa: BLE001
+except Exception as exc:  # noqa: BLE001
     _fra = None
+    _FRA_IMPORT_ERROR = exc
 
 
 # ----------------------------------------------------------------------------
@@ -108,15 +110,26 @@ def get_source_mapping():
     返回 dict 保证包含所有 MAPPING_HARDCODED 条目（registry 仅覆盖已知项，不削减闸门）。
     """
     m = dict(MAPPING_HARDCODED)
-    if _fra is not None:
-        try:
-            reg = _fra.load_registry()
-            for s in reg.get("sources", []):
-                vf = s.get("verify_file")
-                if vf:
-                    m[s["name"]] = vf
-        except Exception:  # noqa: BLE001
-            pass
+    if _fra is None:
+        if _FRA_IMPORT_ERROR is not None:
+            print(
+                f"[WARN] field_registry_api unavailable; using audited fallback mapping: "
+                f"{type(_FRA_IMPORT_ERROR).__name__}",
+                file=sys.stderr,
+            )
+        return m
+    try:
+        reg = _fra.load_registry()
+        for s in reg.get("sources", []):
+            vf = s.get("verify_file")
+            if vf:
+                m[s["name"]] = vf
+    except Exception as exc:  # noqa: BLE001
+        print(
+            f"[WARN] field registry could not be loaded; using audited fallback mapping: "
+            f"{type(exc).__name__}",
+            file=sys.stderr,
+        )
     return m
 
 
@@ -382,6 +395,13 @@ def main():
 
     hard_failures = []
     warnings = []
+    if _fra is None and _FRA_IMPORT_ERROR is not None:
+        message = (
+            "field_registry_api unavailable; source mapping uses the audited hard-coded fallback: "
+            f"{type(_FRA_IMPORT_ERROR).__name__}"
+        )
+        warnings.append(message)
+        print(f"[WARN] {message}")
 
     # ---- 前置检查：文件存在性 ----
     if not os.path.isfile(FIELD_DICT):
@@ -448,8 +468,12 @@ def main():
                         f"映射漂移: 源 {name} registry={vf} 但硬编码基线={MAPPING_HARDCODED[name]}"
                         f"（建议统一为 registry 单一真相源）"
                     )
-        except Exception:  # noqa: BLE001
-            pass
+        except Exception as exc:  # noqa: BLE001
+            message = (
+                f"registry-vs-fallback mapping drift check could not run: {type(exc).__name__}"
+            )
+            warnings.append(message)
+            print(f"   ⚠ {message}")
 
     # ---- HARD 3: 映射一致性 ----
     print("[HARD] 3. 映射一致性（registry 优先 + 硬编码基线兜底 → 文件须存在且被引用）")
@@ -575,8 +599,9 @@ def main():
         if zhb_ok:
             print("   ✓ ZHB 镜像 zhb_verify.md 与主字典 §三 逐字段一致（完全覆盖、无越权）")
     except Exception as e:  # noqa: BLE001
-        warnings.append(f"ZHB 镜像覆盖检查跳过（gen_zhb_subdict 导入/解析失败: {e}）")
-        print(f"   ⚠ ZHB 镜像覆盖检查跳过: {e}")
+        msg = f"ZHB 镜像覆盖检查无法执行（gen_zhb_subdict 导入/解析失败: {e}）"
+        hard_failures.append(msg)
+        print(f"   ✗ {msg}")
 
     # ---- HARD 6: ulist239 列索引覆盖检查（历史来源参考 §12.3.2.3 ⇄ ulist_verify.md）----
     # 本检查强制镜像逐字段（fN 集合，精确集合相等）覆盖历史来源参考（239 字段含间隔，
@@ -613,8 +638,9 @@ def main():
                 f"（fN 集合 {len(main_ul)} 个完全覆盖、无越权）"
             )
     except Exception as e:  # noqa: BLE001
-        warnings.append(f"ulist239 镜像覆盖检查跳过（gen_ulist_subdict 导入/解析失败: {e}）")
-        print(f"   ⚠ ulist239 镜像覆盖检查跳过: {e}")
+        msg = f"ulist239 镜像覆盖检查无法执行（gen_ulist_subdict 导入/解析失败: {e}）"
+        hard_failures.append(msg)
+        print(f"   ✗ {msg}")
 
     # ---- WARN 5: 同步检查（best-effort，仅 --sync 时执行）----
     if not args.sync:

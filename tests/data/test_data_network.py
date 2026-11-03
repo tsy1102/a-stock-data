@@ -96,9 +96,13 @@ class TestEmBanCooldown(unittest.TestCase):
         self.sn = sn
         sn._EM_BAN_STREAK.clear()
         sn._EM_BANNED_UNTIL.clear()
+        sn._EM_BANNED_CACHE.update({"ts": 0.0, "data": {}, "signature": None})
         self._patchers = [
-            _mock.patch.object(sn, "_load_banned_file", return_value={}),
-            _mock.patch.object(sn, "_save_banned_file", return_value=None),
+            _mock.patch.object(sn, "_file_lock_acquire", return_value=True),
+            _mock.patch.object(sn, "_file_lock_release", return_value=None),
+            _mock.patch.object(sn, "_read_banned_file_unlocked", return_value={}),
+            _mock.patch.object(sn, "_write_banned_file_unlocked", return_value=None),
+            _mock.patch.object(sn, "_banned_file_signature", return_value=None),
         ]
         for _p in self._patchers:
             _p.start()
@@ -348,7 +352,7 @@ class TestRateLimitFailureStopsRequests(unittest.TestCase):
             _mock.patch.object(
                 sn, "_source_rate_limit_wait", side_effect=OSError("limiter state unavailable")
             ),
-            _mock.patch("requests.post") as request,
+            _mock.patch.object(sn._HTTP_SESSION, "post") as request,
         ):
             result = cninfo_irm("600000")
 

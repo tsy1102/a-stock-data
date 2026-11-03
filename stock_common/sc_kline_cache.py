@@ -30,7 +30,9 @@ from __future__ import annotations
 
 import os
 import pickle
+import re
 import sys
+import tempfile
 import threading
 import time
 from pathlib import Path
@@ -110,10 +112,87 @@ def _get_cache_dir() -> Path:
 
 _KLINE_CACHE_SCHEMA_VERSION = "v3"  # V17.4.65: 缓存封套增加交易日过期时间
 _CACHE_ENVELOPE_KEY = "__stock_cache_envelope__"
+_CACHE_PERIOD_RE = re.compile(r"[A-Za-z0-9_-]{1,16}\Z")
+_CACHE_CODE_RE = re.compile(r"[A-Za-z0-9.-]{1,32}\Z")
+
+
+def _validate_cache_period(period: str) -> None:
+    """Reject path separators, glob syntax, and non-ASCII cache namespaces."""
+    if type(period) is not str or _CACHE_PERIOD_RE.fullmatch(period) is None:
+        raise ValueError("cache period must contain 1-16 ASCII letters, digits, '_' or '-'")
+
+
+def _validate_cache_key(period: str, code: str, count: int) -> None:
+    _validate_cache_period(period)
+    if type(code) is not str or _CACHE_CODE_RE.fullmatch(code) is None:
+        raise ValueError("cache code must contain 1-32 ASCII letters, digits, '.' or '-'")
+    if type(count) is not int or count < 0:
+        raise ValueError("cache count must be a non-negative integer")
+
+
+def _is_safe_cache_value(value: Any) -> bool:
+    """Allow only primitive scalars and built-in dict/list/tuple containers."""
+    scalar_types = (type(None), bool, int, float, str, bytes)
+    pending = [value]
+    visited = set()
+    while pending:
+        item = pending.pop()
+        if type(item) in scalar_types:
+            continue
+        if type(item) in (list, tuple):
+            identity = id(item)
+            if identity in visited:
+                continue
+            visited.add(identity)
+            pending.extend(item)
+            continue
+        if type(item) is dict:
+            identity = id(item)
+            if identity in visited:
+                continue
+            visited.add(identity)
+            for key, nested_value in item.items():
+                if type(key) not in scalar_types:
+                    return False
+                pending.append(nested_value)
+            continue
+        return False
+    return True
+
+
+class _SafeCacheUnpickler(pickle.Unpickler):
+    """Read primitive cache payloads without importing or constructing classes."""
+
+    def find_class(self, module: str, name: str) -> Any:
+        raise pickle.UnpicklingError(f"global object is forbidden in cache: {module}.{name}")
+
+
+def _write_cache_entry(path: Path, data: Any) -> None:
+    """Atomically write with an exclusive, unpredictable temporary filename."""
+    temporary_path: Optional[Path] = None
+    try:
+        with tempfile.NamedTemporaryFile(
+            mode="wb",
+            prefix=f"{path.name}.",
+            suffix=".tmp",
+            dir=path.parent,
+            delete=False,
+        ) as cache_file:
+            temporary_path = Path(cache_file.name)
+            pickle.dump(_cache_envelope(data), cache_file, protocol=pickle.HIGHEST_PROTOCOL)
+        os.replace(temporary_path, path)
+        temporary_path = None
+    finally:
+        if temporary_path is not None:
+            try:
+                temporary_path.unlink()
+            except FileNotFoundError:
+                pass
 
 
 def _cache_path(period: str, code: str, count: int) -> Path:
     """生成缓存文件路径。V16.2: 键含 schema 版本，避免旧结构缓存被静默复用。"""
+    _validate_cache_key(period, code, count)
     return _get_cache_dir() / f"{period}_{code}_{count}_{_KLINE_CACHE_SCHEMA_VERSION}.pkl"
 
 
@@ -141,7 +220,7 @@ def _read_cache_envelope(path: Path) -> Optional[Tuple[Any, float]]:
     """读取新格式缓存封套；旧格式或损坏值一律视为缓存未命中。"""
     try:
         with open(path, "rb") as cache_file:
-            entry = pickle.load(cache_file)
+            entry = _SafeCacheUnpickler(cache_file).load()
     except Exception:
         return None
     if not isinstance(entry, dict) or entry.get(_CACHE_ENVELOPE_KEY) != _KLINE_CACHE_SCHEMA_VERSION:
@@ -252,6 +331,7 @@ def get_cached_kline(period: str, code: str, count: int) -> Optional[Tuple[list,
     Returns:
         (keys, rows) 元组，缓存不存在或已过期返回 None
     """
+    _validate_cache_key(period, code, count)
     with _cache_lock:
         try:
             p = _cache_path(period, code, count)
@@ -290,23 +370,14 @@ def set_cached_kline(period: str, code: str, count: int, data: Tuple[list, list]
         count: K 线根数
         data: (keys, rows) 元组
     """
-    if not _kline_is_non_empty(data):
-        _debug_log(f"sc_kline_cache: 跳过空 K线缓存 {period}:{code}:{count}（非空守卫）")
+    _validate_cache_key(period, code, count)
+    if not _kline_is_non_empty(data) or not _is_safe_cache_value(data):
+        _debug_log(f"sc_kline_cache: 跳过空或不支持的 K线缓存 {period}:{code}:{count}")
         return
     with _cache_lock:
         try:
             p = _cache_path(period, code, count)
-            # 临时名含 PID/线程号，避免多个进程同时写同一条目时抢用同一 .tmp 文件。
-            tmp = p.with_name(f"{p.name}.{os.getpid()}.{threading.get_ident()}.tmp")
-            with open(tmp, "wb") as f:
-                pickle.dump(_cache_envelope(data), f, protocol=pickle.HIGHEST_PROTOCOL)
-            try:
-                os.replace(tmp, p)
-            except OSError:
-                try:
-                    tmp.unlink()
-                except FileNotFoundError:
-                    pass
+            _write_cache_entry(p, data)
             # V14.3.1: 写入后检查总大小（异步线程友好，不阻塞主流程）
             # 仅在缓存大小可能接近上限时检查（每 100 次写入检查一次）
             enforce_size_limit()
@@ -320,7 +391,7 @@ def set_cached_kline(period: str, code: str, count: int, data: Tuple[list, list]
 
 
 def get_cached_blob(period: str, code: str, count: int) -> Optional[Any]:
-    """V17.0.15: 通用跨进程缓存读取——**任意可 pickle 对象**（如 CYQ 结果 dict）。
+    """V17.0.15: 通用跨进程缓存读取内建标量和容器（如 CYQ 结果 dict）。
 
     为什么单独开一对接口而不是直接复用 get_cached_kline：
       后者的签名与 docstring 都绑定 TDX K 线语义（返回 `Tuple[list, list]` 的
@@ -348,8 +419,9 @@ def get_cached_blob(period: str, code: str, count: int) -> Optional[Any]:
         count: 业务参数（CYQ = 换手窗口天数；K线 = 根数）
 
     Returns:
-        pickle 对象；缓存不存在 / 已过期 / 损坏 → None（调用方应回退到网络请求）
+        内建标量或容器；缓存不存在 / 已过期 / 损坏 → None（调用方应回退到网络请求）
     """
+    _validate_cache_key(period, code, count)
     with _cache_lock:
         try:
             p = _cache_path(period, code, count)
@@ -371,26 +443,18 @@ def get_cached_blob(period: str, code: str, count: int) -> Optional[Any]:
 
 
 def set_cached_blob(period: str, code: str, count: int, data: Any) -> None:
-    """V17.0.15: 通用跨进程缓存写入（配套 get_cached_blob，失败静默不阻塞主流程）。
+    """V17.0.15: 写入内建标量/容器（缓存失败静默，不阻塞主流程）。
 
     V17.0.25(2026-09-03): 写入前强制非空校验——空/失败结果不写盘（项目铁律"只缓存非空结果"）。
     """
-    if not _blob_is_non_empty(data):
-        _debug_log(f"sc_kline_cache: 跳过空 blob 缓存 {period}:{code}:{count}（非空守卫）")
+    _validate_cache_key(period, code, count)
+    if not _blob_is_non_empty(data) or not _is_safe_cache_value(data):
+        _debug_log(f"sc_kline_cache: 跳过空或不支持的 blob 缓存 {period}:{code}:{count}")
         return
     with _cache_lock:
         try:
             p = _cache_path(period, code, count)
-            tmp = p.with_name(f"{p.name}.{os.getpid()}.{threading.get_ident()}.tmp")
-            with open(tmp, "wb") as f:
-                pickle.dump(_cache_envelope(data), f, protocol=pickle.HIGHEST_PROTOCOL)
-            try:
-                os.replace(tmp, p)
-            except OSError:
-                try:
-                    tmp.unlink()
-                except FileNotFoundError:
-                    pass
+            _write_cache_entry(p, data)
             enforce_size_limit()
         except Exception:
             pass
@@ -405,6 +469,8 @@ def clear_kline_cache(period: Optional[str] = None) -> int:
     Returns:
         清理的文件数
     """
+    if period is not None:
+        _validate_cache_period(period)
     with _cache_lock:
         try:
             cache_dir = _get_cache_dir()

@@ -3,7 +3,7 @@
 > 本目录覆盖调度器、外部 API/Google Drive、字段工具、入口依赖预检与脚本写入边界等基础设施契约。
 > 文件清单与逐文件定位见父目录 [`../README.md`](../README.md); 本文件仅作本层速查。
 
-## 文件与职责(12)
+## 文件与职责(13)
 
 | 文件 | 职责 |
 |:---|:---|
@@ -19,6 +19,7 @@
 | test_archive_field_preflight.py | 采集归档目标路径和字段前置校验 |
 | test_lhb_trading_day_window.py | 龙虎榜窗口按有效交易日计算 |
 | test_update_calendar.py | 交易日历更新、日期解析与失败边界 |
+| test_verify_sync_check.py | 字典镜像解析失败必须阻断同步闸门 |
 
 ## 运行
 

@@ -8,6 +8,7 @@ from zoneinfo import ZoneInfo
 import pytest
 
 from stock_common import sc_ftshare
+from stock_common import sc_network
 
 
 class FakeResponse:
@@ -22,6 +23,11 @@ class FakeResponse:
 
     def close(self) -> None:
         self.closed = True
+
+
+@pytest.fixture(autouse=True)
+def _disable_shared_rate_limit_for_unit_tests(monkeypatch):
+    monkeypatch.setattr(sc_network, "_source_rate_limit_wait", lambda _url: None)
 
 
 def _quote_item(symbol: str = "600000.SH", day: str = "2026-10-20") -> dict:
@@ -64,7 +70,7 @@ def test_capture_normalizes_symbol_matches_effective_date_and_redacts_key(monkey
         calls.append((url, kwargs))
         return response
 
-    monkeypatch.setattr(sc_ftshare.requests, "get", fake_get)
+    monkeypatch.setattr(sc_network._HTTP_SESSION, "get", fake_get)
     secret = "test-ftshare-secret"
     result = sc_ftshare.get_a_share_quote_snapshot(
         ["600000"], data_date="2026-10-20", environ={"FTSHARE_API_KEY": secret}
@@ -86,13 +92,56 @@ def test_capture_normalizes_symbol_matches_effective_date_and_redacts_key(monkey
     assert secret not in json.dumps(result, ensure_ascii=False)
 
 
+def test_capture_reserves_shared_source_slot_before_direct_request(monkeypatch):
+    monkeypatch.setattr(sc_ftshare, "FTSHARE_MIN_REQUEST_INTERVAL_SECONDS", 0)
+    waits = []
+    calls = []
+    response = FakeResponse(_payload([_quote_item()]))
+    monkeypatch.setattr(sc_network, "_source_rate_limit_wait", waits.append)
+    monkeypatch.setattr(
+        sc_network._HTTP_SESSION,
+        "get",
+        lambda *args, **kwargs: calls.append((args, kwargs)) or response,
+    )
+
+    sc_ftshare.get_a_share_quote_snapshot(
+        ["600000"], data_date="2026-10-20", environ={"FTSHARE_API_KEY": "secret"}
+    )
+
+    assert waits == [sc_ftshare.FTSHARE_BASE_URL]
+    assert len(calls) == 1
+    assert sc_network._HTTP_SESSION.trust_env is False
+
+
+def test_capture_fails_closed_when_shared_source_limiter_is_unavailable(monkeypatch):
+    monkeypatch.setattr(sc_ftshare, "FTSHARE_MIN_REQUEST_INTERVAL_SECONDS", 0)
+
+    def fail_limiter(_url):
+        raise TimeoutError("source limiter unavailable")
+
+    monkeypatch.setattr(sc_network, "_source_rate_limit_wait", fail_limiter)
+    calls = []
+    monkeypatch.setattr(
+        sc_network._HTTP_SESSION,
+        "get",
+        lambda *args, **kwargs: calls.append((args, kwargs)),
+    )
+
+    with pytest.raises(TimeoutError, match="source limiter unavailable"):
+        sc_ftshare.get_a_share_quote_snapshot(
+            ["600000"], data_date="2026-10-20", environ={"FTSHARE_API_KEY": "secret"}
+        )
+
+    assert calls == []
+
+
 @pytest.mark.parametrize("status_code", [403, 429])
 def test_rate_limit_stops_without_retry_or_response_body(monkeypatch, status_code):
     monkeypatch.setattr(sc_ftshare, "FTSHARE_MIN_REQUEST_INTERVAL_SECONDS", 0)
     response = FakeResponse({"error": "sensitive body must not leak"}, status_code=status_code)
     calls = []
     monkeypatch.setattr(
-        sc_ftshare.requests, "get", lambda *args, **kwargs: calls.append(1) or response
+        sc_network._HTTP_SESSION, "get", lambda *args, **kwargs: calls.append(1) or response
     )
 
     with pytest.raises(sc_ftshare.FTShareRateLimitError) as exc:
@@ -110,7 +159,7 @@ def test_rate_limit_stops_without_retry_or_response_body(monkeypatch, status_cod
 def test_quote_date_mismatch_is_rejected_without_historical_substitution(monkeypatch):
     monkeypatch.setattr(sc_ftshare, "FTSHARE_MIN_REQUEST_INTERVAL_SECONDS", 0)
     response = FakeResponse(_payload([_quote_item(day="2026-10-19")]))
-    monkeypatch.setattr(sc_ftshare.requests, "get", lambda *args, **kwargs: response)
+    monkeypatch.setattr(sc_network._HTTP_SESSION, "get", lambda *args, **kwargs: response)
 
     with pytest.raises(
         sc_ftshare.FTShareRequestError, match="does not match requested effective date"
@@ -127,7 +176,7 @@ def test_invalid_quote_timestamp_is_skipped_without_type_error(monkeypatch, inva
     item = _quote_item()
     item["ts_millis"] = invalid_timestamp
     response = FakeResponse(_payload([item]))
-    monkeypatch.setattr(sc_ftshare.requests, "get", lambda *args, **kwargs: response)
+    monkeypatch.setattr(sc_network._HTTP_SESSION, "get", lambda *args, **kwargs: response)
 
     with pytest.raises(
         sc_ftshare.FTShareRequestError, match="does not match requested effective date"

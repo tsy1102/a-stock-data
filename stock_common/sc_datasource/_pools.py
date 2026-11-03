@@ -12,11 +12,13 @@ from datetime import datetime, timedelta
 import json
 import re
 from stock_common.sc_network import (
+    _HTTP_SESSION,
     UA,
     _debug_log,
     _em_wait_process_interval,
     _quick_request,
     requires_push2,
+    _source_rate_limit_wait,
 )
 from stock_common.sc_utils import _safe_float, is_limit_down
 from core.stock_cache import TTL, cached
@@ -51,6 +53,21 @@ def _parse_limit_pool(data: list) -> List[Dict[str, Any]]:
             }
         )
     return result
+
+
+def _parse_nonnegative_count(value: Any) -> Optional[int]:
+    """Parse an explicit count while preserving zero and rejecting missing/invalid values."""
+    if value is None or isinstance(value, bool):
+        return None
+    if isinstance(value, int):
+        return value if value >= 0 else None
+    if isinstance(value, float):
+        return int(value) if value >= 0 and value.is_integer() else None
+    if isinstance(value, str):
+        normalized = value.strip()
+        if normalized.isdecimal():
+            return int(normalized)
+    return None
 
 
 @cached(category="limit_pool", ttl_seconds=TTL["limit_pool"], trading_day=True)
@@ -294,7 +311,7 @@ def get_yesterday_limit_pool(
 
 
 @cached(
-    category="limit_pool_v3",
+    category="limit_pool_v4",
     ttl_seconds=TTL["limit_pool"],
     trading_day=True,
     valid_if=lambda r: bool(
@@ -337,7 +354,9 @@ def get_limit_pool_summary(date_str: str = "", allow_push2ex: bool = True) -> Di
         try:
             _multi = get_limit_pool_multi_source(date_str or None, allow_push2ex=allow_push2ex)
             _multi_total = _multi.get("total") if isinstance(_multi, dict) else None
-            if isinstance(_multi_total, int) and _multi_total > 0:
+            if type(_multi_total) is int and (
+                _multi_total > 0 or (_multi_total == 0 and _multi.get("cross_verified") is True)
+            ):
                 _zt_count_override = _multi_total
                 zt_source = "multi"
                 _debug_log(
@@ -372,8 +391,6 @@ def get_limit_pool_summary(date_str: str = "", allow_push2ex: bool = True) -> Di
     _dt_source = None
     if not dt:
         try:
-            from datetime import datetime as _dtm
-
             if _zt_date or date_str:
                 _target = (_zt_date or date_str).replace("-", "")
             else:
@@ -382,12 +399,11 @@ def get_limit_pool_summary(date_str: str = "", allow_push2ex: bool = True) -> Di
                 _target = get_last_trading_day().strftime("%Y%m%d")
             _target_date = _target[:4] + "-" + _target[4:6] + "-" + _target[6:]
             # KPL is independent of Eastmoney and returns same-day aggregate counts.
-            _kpl_rf = None
             if allow_push2ex:
                 try:
                     from stock_common.sc_datasource import _query_dt_pool_tc
 
-                    _dt_tc = _query_dt_pool_tc(_target)
+                    _dt_tc = _parse_nonnegative_count(_query_dt_pool_tc(_target))
                     if _dt_tc is not None:
                         _dt_fb = _dt_tc
                         _dt_source = "push2ex"
@@ -400,11 +416,11 @@ def get_limit_pool_summary(date_str: str = "", allow_push2ex: bool = True) -> Di
 
                     _candidate = get_kpl_broken_ratio()
                     if _candidate and _candidate.get("date") == _target_date:
-                        _kpl_rf = _candidate
-                        if _dt_fb is None:
-                            _dt_fb = int(_candidate.get("dt") or 0)
+                        _kpl_dt = _parse_nonnegative_count(_candidate.get("dt"))
+                        _zb_fb = _parse_nonnegative_count(_candidate.get("broken_num"))
+                        if _dt_fb is None and _kpl_dt is not None:
+                            _dt_fb = _kpl_dt
                             _dt_source = "kpl"
-                        _zb_fb = int(_candidate.get("broken_num") or 0)
                 except Exception as _e2:
                     _debug_log(f"get_limit_pool_summary kpl counts: {_e2}")
             # ZHB fallback: only count a snapshot when its own date matches target.
@@ -433,12 +449,8 @@ def get_limit_pool_summary(date_str: str = "", allow_push2ex: bool = True) -> Di
                         )
                 except Exception as _e3:
                     _debug_log(f"get_limit_pool_summary zhb dt fallback: {_e3}")
-            if _dt_fb is None and allow_push2ex:
-                _dt_fb = 0
         except Exception as _e:
             _debug_log(f"get_limit_pool_summary dt fallback: {_e}")
-            if allow_push2ex:
-                _dt_fb = 0
 
     # 按板块统计涨停分布。缺失行业字段不等于真实“其他行业”，单独标识以免伪造板块归属。
     sector_stats: Dict[str, int] = {}
@@ -638,7 +650,7 @@ def em_stock_monitor(only_active: bool = True) -> List[Dict[str, Any]]:
 
 
 @cached(
-    category="market_emotion_multi_v2",
+    category="market_emotion_multi_v3",
     ttl_seconds=TTL["market_emotion_multi"],
     trading_day=True,
     valid_if=lambda r: bool(
@@ -667,11 +679,11 @@ def get_limit_pool_multi_source(
 
     Returns:
         dict: {
-            "total": int,              # 涨停总数（多源一致值）
+            "total": Optional[int],    # 涨停总数；无来源给出计数时为 None
             "sources": {源: 数量},     # 各源实测值（None=源失败或未查询）
             "unqueried_sources": [],   # 因已有替代结果或策略禁止而未查询的来源
             "cross_verified": bool,    # ≥2 源一致
-            "max_ladder": int,         # 最高连板
+            "max_ladder": Optional[int],  # 最高连板；无有效来源数据时为 None
             "detail": dict,            # 复盘啦 StockList 全量等
         }
     """
@@ -685,16 +697,15 @@ def get_limit_pool_multi_source(
         "max_ladder": 0,
         "detail": {},
     }
+    max_ladder_known = False
 
     cls_n = None
     try:
         from stock_common import get_cls_market_emotion
 
-        emo = get_cls_market_emotion() or {}
-        try:
-            cls_n = int(emo.get("up_ratio_num") or 0)
-        except (ValueError, TypeError):
-            cls_n = None
+        emo = get_cls_market_emotion()
+        if isinstance(emo, dict):
+            cls_n = _parse_nonnegative_count(emo.get("up_ratio_num"))
     except Exception as _e:
         _debug_log(f"multi_source cls: {_e}")
     out["sources"]["cls"] = cls_n
@@ -704,15 +715,13 @@ def get_limit_pool_multi_source(
     try:
         from stock_common import get_kpl_market_sentiment
 
-        sent = get_kpl_market_sentiment() or {}
-        try:
-            kpl_n = int(sent.get("ztjs") or 0)
-        except (ValueError, TypeError):
-            kpl_n = None
-        try:
-            out["max_ladder"] = max(out["max_ladder"], int(sent.get("lbgd") or 0))
-        except (ValueError, TypeError):
-            pass
+        sent = get_kpl_market_sentiment()
+        if isinstance(sent, dict):
+            kpl_n = _parse_nonnegative_count(sent.get("ztjs"))
+            kpl_ladder = _parse_nonnegative_count(sent.get("lbgd"))
+            if kpl_ladder is not None:
+                max_ladder_known = True
+                out["max_ladder"] = max(out["max_ladder"], kpl_ladder)
     except Exception as _e:
         _debug_log(f"multi_source kpl: {_e}")
     out["sources"]["kpl"] = kpl_n
@@ -725,16 +734,18 @@ def get_limit_pool_multi_source(
         from stock_common.sc_network import _kph_wait_process_interval
 
         _kph_wait_process_interval()
-        z = get_zttt() or {}
-        sl = z.get("StockList") or []
-        fupan_list = sl
-        fupan_n = len(sl)
-        for r in sl:
-            if len(r) > 2:
-                try:
-                    out["max_ladder"] = max(out["max_ladder"], int(r[2]))
-                except (ValueError, TypeError):
-                    pass
+        z = get_zttt()
+        sl = z.get("StockList") if isinstance(z, dict) else None
+        if isinstance(sl, list):
+            fupan_list = sl
+            fupan_n = len(sl)
+            max_ladder_known = not sl
+        for r in fupan_list:
+            if isinstance(r, (list, tuple)) and len(r) > 2:
+                ladder = _parse_nonnegative_count(r[2])
+                if ladder is not None:
+                    max_ladder_known = True
+                    out["max_ladder"] = max(out["max_ladder"], ladder)
     except Exception as _e:
         _debug_log(f"multi_source fupan: {_e}")
     out["sources"]["fupan"] = fupan_n
@@ -764,7 +775,9 @@ def get_limit_pool_multi_source(
         else:
             out["total"] = max(vals)
     else:
-        out["total"] = 0
+        out["total"] = None
+    if not max_ladder_known:
+        out["max_ladder"] = None
 
     return out
 
@@ -862,11 +875,12 @@ def _kpl_post(
     controller: str,
     extra: Optional[Dict[str, Any]] = None,
 ) -> Optional[Union[Dict[str, Any], List[Any]]]:
-    """KPL 统一 POST（直接 requests.post——必须用 Dalvik UA，_quick_request 会覆盖导致空数据）。
-    自行限流 >=200ms。V17.0.7 字典 §12.21.5。"""
+    """KPL 统一 POST（必须用 Dalvik UA，_quick_request 会覆盖导致空数据）。
+    共享 KPL 来源限流器负责进程内外节流。V17.0.7 字典 §12.21.5。"""
     import time as _time
 
     global _KPL_LAST_CALL
+    _source_rate_limit_wait(url)
     el = _time.time() - _KPL_LAST_CALL
     if el < 0.2:
         _time.sleep(0.2 - el)
@@ -881,10 +895,10 @@ def _kpl_post(
     for k, v in params.items():
         body_parts.append(f"{k}={v}")
     body = "&".join(body_parts) + "&"
-    import requests as _req_mod
-
     try:
-        r = _req_mod.post(url, data=body.encode("utf-8"), headers=dict(_KPL_HEADERS), timeout=15)
+        r = _HTTP_SESSION.post(
+            url, data=body.encode("utf-8"), headers=dict(_KPL_HEADERS), timeout=15
+        )
         if r.status_code != 200:
             return None
         txt = r.text

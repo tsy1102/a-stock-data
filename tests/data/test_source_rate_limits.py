@@ -25,6 +25,8 @@ def _run_provider_gate_process(lock_path, state_path, start_event, result_queue)
         ("https://irm.cninfo.com.cn/api", "cninfo", 1 / 3),
         ("https://www.cninfo.com.cn/api", "cninfo", 1 / 3),
         ("https://apphwshhq.longhuvip.com/w1/api", "kpl", 1.0),
+        ("https://market.ft.tech/gateway", "ftshare", 2.0),
+        ("https://duanxianxia.com/api", "plate_rotation", 0.6),
         ("https://unknown.example/api", "host:unknown.example", 0.2),
     ],
 )
@@ -134,12 +136,32 @@ def test_kpl_post_fails_closed_when_shared_limiter_is_unavailable(monkeypatch):
     monkeypatch.setattr(sc_network, "_provider_interval_wait", fail_gate)
     requests = []
     monkeypatch.setattr(
-        sc_kpl.urllib.request,
-        "urlopen",
+        sc_kpl._DIRECT_OPENER,
+        "open",
         lambda *args, **kwargs: requests.append((args, kwargs)),
     )
 
     with pytest.raises(TimeoutError, match="source limiter unavailable"):
         sc_kpl._post("hq", {"a": "test"})
+
+    assert requests == []
+
+
+def test_pool_kpl_post_fails_closed_when_shared_limiter_is_unavailable(monkeypatch):
+    from stock_common.sc_datasource import _pools
+
+    def fail_gate(*_args, **_kwargs):
+        raise TimeoutError("source limiter unavailable")
+
+    monkeypatch.setattr(sc_network, "_provider_interval_wait", fail_gate)
+    requests = []
+    monkeypatch.setattr(
+        sc_network._HTTP_SESSION,
+        "post",
+        lambda *args, **kwargs: requests.append((args, kwargs)),
+    )
+
+    with pytest.raises(TimeoutError, match="source limiter unavailable"):
+        _pools._kpl_post("https://apphq.longhuvip.com/w1/api/index.php", "test", "HomeDingPan")
 
     assert requests == []

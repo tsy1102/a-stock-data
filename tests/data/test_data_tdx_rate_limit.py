@@ -9,7 +9,7 @@ def test_tencent_http_get_stops_before_network_when_source_limiter_fails(monkeyp
     monkeypatch.setattr(sc_network, "_provider_interval_wait", fail_rate_limit)
     requests = []
     monkeypatch.setattr(
-        tdx_client.requests,
+        sc_network._HTTP_SESSION,
         "get",
         lambda *args, **kwargs: requests.append((args, kwargs)),
     )

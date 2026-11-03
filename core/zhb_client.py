@@ -1815,25 +1815,66 @@ def _download_zhb_zip() -> Optional[bytes]:
 # ═══════════════════════════════════════
 
 
-def _parse_zhb_data(data: bytes) -> Optional[ZhbData]:
-    """解析 zhb.zip 二进制数据为 ZhbData 对象。"""
+def _zhb_filename_data_date(filename: Optional[str]) -> str:
+    """从缓存文件名 ``zhb_YYYYMMDD.zip`` 提取并校验数据日期。"""
+    if not filename:
+        return ""
+    basename = os.path.basename(filename)
+    if not basename.startswith("zhb_") or not basename.endswith(".zip"):
+        return ""
+    date_str = basename[4:-4]
+    if len(date_str) != 8 or not date_str.isascii() or not date_str.isdigit():
+        return ""
+    try:
+        datetime.strptime(date_str, "%Y%m%d")
+    except ValueError:
+        return ""
+    return date_str
+
+
+def _parse_zhb_data(data: bytes, *, filename: Optional[str] = None) -> Optional[ZhbData]:
+    """解析 ZHB 包；本地命名缓存以文件名日期作为数据日期。"""
     try:
         zhb = ZhbData()
         with zipfile.ZipFile(io.BytesIO(data)) as zf:
             for fname in zf.namelist():
                 zhb.raw_files[fname] = zf.read(fname)
 
-        # 从 tdxstat.cfg 提取数据日期
+        # 下载端返回的名称是通用 zhb.zip，首次缓存日期仍需从内容提取。
+        # 已缓存文件名 zhb_YYYYMMDD.zip 是稳定的数据日期锚，优先使用该日期。
+        source_date = ""
         stat_data = zhb.raw_files.get("tdxstat.cfg", b"")
         if stat_data:
             text = stat_data.decode("gbk", errors="ignore")
             first_line = text.splitlines()[0] if text.splitlines() else ""
             parts = first_line.split("|")
             if len(parts) >= 5:
-                zhb.date = parts[4].strip()
+                candidate_date = parts[4].strip()
+                if (
+                    len(candidate_date) == 8
+                    and candidate_date.isascii()
+                    and candidate_date.isdigit()
+                ):
+                    try:
+                        datetime.strptime(candidate_date, "%Y%m%d")
+                    except ValueError:
+                        pass
+                    else:
+                        source_date = candidate_date
 
+        filename_date = _zhb_filename_data_date(filename)
+        if filename_date:
+            zhb.date = filename_date
+            if source_date and source_date != filename_date:
+                _debug_log(
+                    f"zhb: filename date {filename_date} differs from tdxstat date "
+                    f"{source_date}; using filename date"
+                )
+        else:
+            zhb.date = source_date
         if not zhb.date:
-            zhb.date = date.today().strftime("%Y%m%d")
+            _debug_log("zhb: rejected package without a valid filename or tdxstat.cfg data date")
+            return None
 
         return zhb
     except Exception as e:
@@ -2002,9 +2043,8 @@ def get_zhb() -> Optional[ZhbData]:
         )
         if _cached:
             try:
-                _zhb_local = _parse_zhb_data(
-                    open(os.path.join(_ZHB_CACHE_DIR, _cached[0]), "rb").read()
-                )
+                cached_path = os.path.join(_ZHB_CACHE_DIR, _cached[0])
+                _zhb_local = _parse_zhb_data(open(cached_path, "rb").read(), filename=_cached[0])
                 if _zhb_local and not _zhb_needs_download(_zhb_local.date, _zhb_local):
                     with _zhb_cache_lock:
                         _zhb_memory_cache = _zhb_local
@@ -2055,7 +2095,7 @@ def get_zhb() -> Optional[ZhbData]:
             try:
                 with open(fpath, "rb") as f:
                     data = f.read()
-                zhb = _parse_zhb_data(data)
+                zhb = _parse_zhb_data(data, filename=fname)
                 if zhb:
                     _debug_log(f"zhb: using cached {fname}")
                     with _zhb_cache_lock:

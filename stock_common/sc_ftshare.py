@@ -157,9 +157,12 @@ def _fetch_page(
         "filter": filter_text,
     }
     try:
+        from stock_common.sc_network import _HTTP_SESSION, _source_rate_limit_wait
+
         with _REQUEST_LOCK:
+            _source_rate_limit_wait(FTSHARE_BASE_URL)
             _rate_limit_slot()
-            response = requests.get(
+            response = _HTTP_SESSION.get(
                 f"{FTSHARE_BASE_URL}{FTSHARE_QUOTE_PATH}",
                 headers={"FTSHARE_API_KEY": api_key, "Accept": "application/json"},
                 params=params,

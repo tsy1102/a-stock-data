@@ -1823,9 +1823,13 @@ async def generate_sector_report(output_path):
                     _multi.get("total"),
                     _multi.get("unqueried_sources", ()),
                 )
+                _multi_total = _multi.get("total")
+                _total_text = f"{_multi_total} 只" if _multi_total is not None else "未知"
+                _max_ladder = _multi.get("max_ladder")
+                _max_ladder_text = str(_max_ladder) if _max_ladder is not None else "未知"
                 L(
-                    f"  📊 涨停数来源对照: {_src_txt} → {_multi.get('total')} 只；"
-                    f"{_verified} | 最高连板 {_multi.get('max_ladder')}"
+                    f"  📊 涨停数来源对照: {_src_txt} → {_total_text}；"
+                    f"{_verified} | 最高连板 {_max_ladder_text}"
                 )
         except Exception as _e:
             _debug_log(f"mak multi_source error: {_e}")
@@ -2419,8 +2423,8 @@ async def generate_sector_report(output_path):
 
         for _ms in render_market_signals_section(today_str):
             L(_ms)
-    except Exception:
-        pass  # 吸收层信号任一源失败不应影响主报告生成(治理铁律: 不把失败伪装成空)
+    except Exception as _e:
+        L(f"  ⚠️ 市场信号附录渲染未完成（{type(_e).__name__}）。")
     from stock_common.md_render import render_md_report
 
     output = render_md_report(output_path, lines)

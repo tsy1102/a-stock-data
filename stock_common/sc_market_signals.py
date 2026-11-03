@@ -18,10 +18,11 @@
 
 from __future__ import annotations
 
+import logging
 import re
 import threading
 from datetime import date, datetime, timedelta
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Callable, Dict, List, Optional, Tuple
 
 
 # ---------------------------------------------------------------------------
@@ -404,20 +405,40 @@ def render_st_list_section(today_str: Optional[str] = None) -> List[str]:
 # ---------------------------------------------------------------------------
 # 组合: val/mak 市场级附录
 # ---------------------------------------------------------------------------
+def _render_market_source(
+    label: str,
+    renderer: Callable[[Optional[str]], List[str]],
+    today_str: Optional[str],
+) -> List[str]:
+    """Keep an unexpected renderer error local and visible in the report."""
+    try:
+        return renderer(today_str)
+    except Exception as exc:
+        logging.getLogger(__name__).warning(
+            "market signal renderer failed: %s", label, exc_info=True
+        )
+        return [
+            f"## 【{label}】",
+            "",
+            f"  ⚠️ {label}渲染失败，数据暂不可用（{type(exc).__name__}）。",
+        ]
+
+
 def render_market_signals_section(today_str: Optional[str] = None) -> List[str]:
     """val/mak 市场级附录: 6 源合一。每个源独立渲染, 互不影响。"""
     parts: List[str] = []
-    parts += render_ipo_calendar_section(today_str)
-    parts += ["", "---", ""]
-    parts += render_etf_shares_section(today_str)
-    parts += ["", "---", ""]
-    parts += render_sina_research_section(today_str)
-    parts += ["", "---", ""]
-    parts += render_cctv_news_section(today_str)
-    parts += ["", "---", ""]
-    parts += render_sse_e_interaction_section(today_str)
-    parts += ["", "---", ""]
-    parts += render_st_list_section(today_str)
+    sources = (
+        ("近期新股申购日历", render_ipo_calendar_section),
+        ("ETF 份额规模", render_etf_shares_section),
+        ("新浪研报", render_sina_research_section),
+        ("央视新闻联播", render_cctv_news_section),
+        ("上证 e 互动", render_sse_e_interaction_section),
+        ("ST 名单", render_st_list_section),
+    )
+    for index, (label, renderer) in enumerate(sources):
+        if index:
+            parts += ["", "---", ""]
+        parts += _render_market_source(label, renderer, today_str)
     return parts
 
 

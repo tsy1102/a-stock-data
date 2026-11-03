@@ -54,7 +54,7 @@
 
 - Python 最低版本 3.11；开发/测试推荐 Python 3.12。解释器由 `scripts/run_with_system_python.ps1` 选择。
 - 测试通过 `scripts/run_tests.ps1` 运行；真实网络测试只有显式选择时才运行。模块索引与最近全量结果见 [`tests/README.md`](../tests/README.md)。
-- 最新全量离线验收（2026-11-02，Python 3.12.10）：语法 281 个文件、Mypy 249 个源文件、Black API 264 个文件且 0 格式差异；AxData 摘要、数据访问、字典同步、Canonical contract 与 registry parity 全部通过。离线测试 1,313 项通过、1 项跳过，52 个真实网络用例排除，耗时 104.10 秒；本轮未运行真实网络。
+- 最新全量离线验收（2026-11-03，Python 3.12.10）：语法 285 个文件、Mypy 253 个源文件、Black API 268 个文件且 0 格式差异；AxData 摘要、数据访问、字典同步、Canonical contract 与 registry parity 全部通过。离线测试 1,365 项通过、1 项跳过，52 个真实网络用例排除，另有 8 个子测试通过，耗时 110.30 秒；本轮未运行真实网络。
 - 2026-10-23 Registry parity 复核完成：scope 删除 4 条不属于当前基线的 TDX 配对；原报告的 245 条额外路径中，235 条是未知字段队列中的未验证候选、8 条有人工定案证据、2 条是保留采集样本中的根键路径，分别由严格校验的分类清单处理。native parity、field_matrix parity 及分类校验通过；没有删除字段或放宽 parity 闸门。
 - 代码改动按 `AGENTS.md` §8 调查数据契约影响，再按 §9 验证。静态规则有专用闸门：`scripts/verify_data_access.py`（A1）和 `scripts/verify_sync_check.py`（A7）；字段视图用对应生成器与 `scripts/registry_parity.py` 检查。
 - 20261015 字段样本保留起点已执行：删除 971 个早期采集/K线/ZHB 文件，按文件字节估算释放 319.55 MiB。更早的采集 `raw_*.json`、日期化 `cache/zhb/*.zip` 与 `cache/zhb_parsed/*_YYYYMMDD_vN.bin` 已清理；默认采集、碰撞、完整性审计不回补或读取更早日期。引用旧证据的裁决报告和元数据仍保留；其他缓存与恢复材料按具体用途核查后再清理。

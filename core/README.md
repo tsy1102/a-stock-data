@@ -33,7 +33,7 @@ core/
 | gd_uploader.py | GD 上传(凭据在 仓库根/credentials/ 子目录) | init_gd / upload_stock_report_by_code |
 | stock_cache.py | `@cached` 装饰器 + SQLite 持久化缓存；按 TTL 和缓存键管理跨调用结果 | cached / TTL / make_valid_if; CLI: `python -m core.stock_cache stats` |
 | tdx_client.py | 通达信 TCP 客户端统一入口，封装板块、行情与连接管理 | tdx_get_security_bars / tdx_get_quote_full 等 |
-| zhb_client.py | ZHB 压缩包下载、解析与缓存（原包位于 `cache/zhb/`） | get_zhb / get_zhb_data_date 等 |
+| zhb_client.py | ZHB 压缩包下载、解析与缓存（原包位于 `cache/zhb/`；`zhb_YYYYMMDD.zip` 文件名日期即缓存包数据日） | get_zhb / get_zhb_data_date 等 |
 | zhb_sync.py | 每日同步调度 | main(); `python -m core.zhb_sync --once` |
 
 ## 设计约束

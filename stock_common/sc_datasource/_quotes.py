@@ -496,7 +496,7 @@ def _em_quote_full_impl(
             "industry": str,          # f127 行业名称
             "board": str,             # f128 地域板块名称
             "list_date": str,         # f189 上市日期
-            "data_date": str,         # 行情快照日期
+            "data_date": str,         # 来源明确提供的行情日期；接口未提供时为空
             # V17.0.7 财务 TTM 族（口径经 fuyao 官方报表终判）:
             "ocf_ttm": float,           # f103 经营活动现金流量净额 TTM (元)
             "revenue_ttm": float,       # f104 营业总收入 TTM (元)
@@ -822,7 +822,8 @@ def _em_quote_full_impl(
                 except (TypeError, ValueError):
                     pass
 
-        result["data_date"] = datetime.now().strftime("%Y-%m-%d")
+        # stock/get 没有返回行情日期字段；本机组装时间不能冒充来源有效日期。
+        result["data_date"] = ""
         return result
     except Exception as _e:
         _debug_log(f"sc_datasource get_em_quote_full ({code}): {_e}")

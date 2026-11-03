@@ -1791,8 +1791,8 @@ async def generate_report_async(session, code, output_path, ind_comp=None, hsgt=
             L(_ms)
         for _ms in render_stock_einteraction_section(code):
             L(_ms)
-    except Exception:
-        pass  # 吸收层信号任一源失败不应影响主报告生成
+    except Exception as _e:
+        L(f"  ⚠️ 个股研报/e 互动附录渲染未完成（{type(_e).__name__}）。")
     from stock_common.md_render import render_md_report
 
     output = render_md_report(output_path, lines)

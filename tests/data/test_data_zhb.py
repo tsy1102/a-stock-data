@@ -1,6 +1,10 @@
 from __future__ import annotations
+from io import BytesIO
+import zipfile
+
 import pytest
 import unittest
+import core.zhb_client as zhb_client
 from core.zhb_client import (
     get_zhb,
     invalidate_cache,
@@ -24,12 +28,76 @@ from core.zhb_client import (
     get_adr_stocks,
     get_convertible_bonds,
     get_delisted_stocks,
+    _parse_zhb_data,
 )
 from stock_common.sc_datasource import (
     get_zhb_industry_map,
     get_zhb_data_date,
     is_zhb_data_fresh,
 )  # V17.0 S1: 21 个 zhb 死转发已删, 测试同步清理
+
+
+def _make_zhb_zip(stat_line: str | None) -> bytes:
+    buffer = BytesIO()
+    with zipfile.ZipFile(buffer, "w") as archive:
+        if stat_line is not None:
+            archive.writestr("tdxstat.cfg", stat_line.encode("gbk"))
+    return buffer.getvalue()
+
+
+@pytest.mark.parametrize(
+    "stat_line",
+    [None, "a|b|c", "a|b|c|d|20261340", "a|b|c|d|２０２６１１０３"],
+)
+def test_zhb_parser_rejects_missing_or_invalid_date_without_filename(stat_line):
+    assert _parse_zhb_data(_make_zhb_zip(stat_line)) is None
+
+
+def test_zhb_parser_preserves_valid_source_date():
+    parsed = _parse_zhb_data(_make_zhb_zip("a|b|c|d|20261103"))
+
+    assert parsed is not None
+    assert parsed.date == "20261103"
+
+
+@pytest.mark.parametrize("stat_line", [None, "a|b|c|d|20261340"])
+def test_zhb_parser_uses_valid_cache_filename_date_when_content_date_is_missing_or_invalid(
+    stat_line,
+):
+    parsed = _parse_zhb_data(_make_zhb_zip(stat_line), filename="zhb_20261103.zip")
+
+    assert parsed is not None
+    assert parsed.date == "20261103"
+
+
+def test_zhb_parser_uses_cache_filename_date_over_conflicting_content_date():
+    parsed = _parse_zhb_data(_make_zhb_zip("a|b|c|d|20261102"), filename="zhb_20261103.zip")
+
+    assert parsed is not None
+    assert parsed.date == "20261103"
+
+
+@pytest.mark.parametrize("needs_download", [False, True])
+def test_get_zhb_uses_cache_filename_as_data_date(tmp_path, monkeypatch, needs_download):
+    cache_path = tmp_path / "zhb_20261103.zip"
+    cache_path.write_bytes(_make_zhb_zip(None))
+    monkeypatch.setattr(zhb_client, "_ZHB_CACHE_DIR", str(tmp_path))
+    monkeypatch.setattr(zhb_client, "_zhb_memory_cache", None)
+    monkeypatch.setattr(zhb_client, "_check_disk_space", lambda: True)
+    monkeypatch.setattr(
+        zhb_client,
+        "_zhb_needs_download",
+        lambda *_args, **_kwargs: needs_download,
+    )
+    if needs_download:
+        monkeypatch.setattr(zhb_client, "_acquire_file_lock", lambda **_kwargs: True)
+        monkeypatch.setattr(zhb_client, "_release_file_lock", lambda: None)
+        monkeypatch.setattr(zhb_client, "_download_zhb_zip", lambda: None)
+
+    zhb = get_zhb()
+
+    assert zhb is not None
+    assert zhb.date == "20261103"
 
 
 @pytest.mark.real_network

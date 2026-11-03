@@ -2,6 +2,7 @@ import json
 import multiprocessing
 import os
 import time
+from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
 import pytest
@@ -210,6 +211,62 @@ def test_em_403_streak_isolated_by_risk_group(monkeypatch):
     sc_network._reset_em_403("push2his.eastmoney.com")
 
     assert sc_network._CONSECUTIVE_403 == {"push2ex.eastmoney.com": 1}
+
+
+def test_corrupt_cross_process_ban_state_fails_closed(monkeypatch, tmp_path):
+    ban_file = tmp_path / "em_banned_state"
+    ban_file.write_text("{broken", encoding="utf-8")
+    monkeypatch.setattr(sc_network, "_EM_BANNED_FILE", str(ban_file))
+    monkeypatch.setattr(sc_network, "_EM_BANNED_LOCK_FILE", str(tmp_path / "em_banned.lock"))
+    monkeypatch.setattr(sc_network, "_EM_BANNED_CACHE", {"ts": 0.0, "data": {}})
+    monkeypatch.setattr(sc_network, "_EM_BANNED_UNTIL", {})
+
+    assert sc_network._em_is_banned("push2.eastmoney.com") is True
+
+
+def test_concurrent_cross_process_ban_updates_are_merged(monkeypatch, tmp_path):
+    ban_file = tmp_path / "em_banned_state"
+    monkeypatch.setattr(sc_network, "_EM_BANNED_FILE", str(ban_file))
+    monkeypatch.setattr(sc_network, "_EM_BANNED_LOCK_FILE", str(tmp_path / "em_banned.lock"))
+    monkeypatch.setattr(sc_network, "_EM_BANNED_CACHE", {"ts": 0.0, "data": {}, "signature": None})
+    monkeypatch.setattr(sc_network, "_EM_BANNED_UNTIL", {})
+    monkeypatch.setattr(sc_network, "_EM_BAN_STREAK", {})
+
+    with ThreadPoolExecutor(max_workers=2) as pool:
+        results = list(
+            pool.map(
+                sc_network._mark_em_banned,
+                ("push2.eastmoney.com", "push2ex.eastmoney.com"),
+            )
+        )
+
+    assert results == [None, None]
+    state = json.loads(ban_file.read_text(encoding="utf-8"))
+    assert set(state) == {"push2.eastmoney.com", "push2ex.eastmoney.com"}
+    assert not list(tmp_path.glob("*.tmp"))
+
+
+def test_ban_cache_does_not_pair_old_data_with_new_file_signature(monkeypatch, tmp_path):
+    ban_file = tmp_path / "em_banned_state"
+    lock_file = tmp_path / "em_banned.lock"
+    ban_file.write_text(json.dumps({"before": 100.0}), encoding="utf-8")
+    monkeypatch.setattr(sc_network, "_EM_BANNED_FILE", str(ban_file))
+    monkeypatch.setattr(sc_network, "_EM_BANNED_LOCK_FILE", str(lock_file))
+    monkeypatch.setattr(sc_network, "_EM_BANNED_CACHE", {"ts": 0.0, "data": {}, "signature": None})
+    original_release = sc_network._file_lock_release
+    replaced = False
+
+    def release_then_replace(path):
+        nonlocal replaced
+        original_release(path)
+        if path == str(lock_file) and not replaced:
+            replaced = True
+            ban_file.write_text(json.dumps({"after-write": 200.0}), encoding="utf-8")
+
+    monkeypatch.setattr(sc_network, "_file_lock_release", release_then_replace)
+
+    assert sc_network._load_banned_file() == {"before": 100.0}
+    assert sc_network._load_banned_file() == {"after-write": 200.0}
 
 
 def test_stock_changes_uses_limited_push2ex_transport_with_one_transient_retry(monkeypatch):

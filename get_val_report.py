@@ -3311,8 +3311,8 @@ async def run_discovery_async(output_path):
 
         for _ms in render_market_signals_section(today_str):
             L(_ms)
-    except Exception:
-        pass  # 吸收层信号任一源失败不应影响主报告生成(治理铁律: 不把失败伪装成空)
+    except Exception as _e:
+        L(f"  ⚠️ 市场信号附录渲染未完成（{type(_e).__name__}）。")
     from stock_common.md_render import render_md_report
 
     output = render_md_report(output_path, lines)

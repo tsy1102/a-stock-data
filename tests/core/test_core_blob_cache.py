@@ -11,7 +11,7 @@
   `set_cached_blob`（复用交易日过期 / LRU 500MB / 原子写 / 锁），CYQ 走这对接口。
 
 本文件验证**缓存层机制本身**（不依赖网络）：
-  1. 往返一致性（任意 pickle 对象）
+  1. 往返一致性（内建标量和容器）
   2. 命名空间隔离（CYQ 与 D 不串）
   3. TTL 过期失效
   4. 损坏文件 → None（不抛异常，调用方回退网络）
@@ -25,10 +25,24 @@ import os
 import pickle
 import sys
 import unittest
+from pathlib import Path
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from stock_common import sc_kline_cache as kc
+
+
+def _write_pickle_marker(marker_path: str) -> None:
+    """Test-only pickle reducer target; unsafe unpickling would create a marker."""
+    Path(marker_path).write_text("executed", encoding="utf-8")
+
+
+class _ExecutablePayload:
+    def __init__(self, marker_path: str) -> None:
+        self.marker_path = marker_path
+
+    def __reduce__(self):
+        return _write_pickle_marker, (self.marker_path,)
 
 
 class _TempBlobCache(unittest.TestCase):
@@ -187,6 +201,35 @@ class TestBlobRobustness(_TempBlobCache):
         p.write_bytes(b"\x00\x01not-a-pickle\xff")
         # 不得抛异常——调用方要能回退到网络请求
         self.assertIsNone(kc.get_cached_blob("CYQ", "601318", 240))
+
+    def test_global_reducer_payload_is_rejected_without_execution(self):
+        marker = Path(self.tmp_dir) / "pickle-executed.txt"
+        path = kc._cache_path("CYQ", "601318", 240)
+        malicious_entry = {
+            kc._CACHE_ENVELOPE_KEY: kc._KLINE_CACHE_SCHEMA_VERSION,
+            "expires_at": 4_000_000_000.0,
+            "payload": _ExecutablePayload(str(marker)),
+        }
+        path.write_bytes(pickle.dumps(malicious_entry, protocol=pickle.HIGHEST_PROTOCOL))
+
+        self.assertIsNone(kc.get_cached_blob("CYQ", "601318", 240))
+        self.assertFalse(marker.exists(), "cache reader must not invoke pickle globals")
+
+    def test_cache_keys_reject_path_and_glob_syntax(self):
+        invalid_keys = [
+            ("D", r"..\..\..\outside", 1),
+            ("D", "600519/../../outside", 1),
+            ("CYQ*", "600519", 240),
+            ("D", "600519", -1),
+            ("D", "600519", True),
+        ]
+        for key in invalid_keys:
+            with self.subTest(key=key), self.assertRaises(ValueError):
+                kc._cache_path(*key)
+
+    def test_clear_rejects_glob_in_namespace(self):
+        with self.assertRaises(ValueError):
+            kc.clear_kline_cache("CYQ*")
 
     def test_unpicklable_object_does_not_raise(self):
         """写入失败必须静默（缓存是优化，不能阻塞主流程）。"""

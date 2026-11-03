@@ -32,6 +32,8 @@ _UA = (
 )
 _BASE = "https://duanxianxia.com"
 _QUERY_INTERVAL = 0.6
+_DIRECT_PROXY_HANDLER = urllib.request.ProxyHandler({})
+_DIRECT_OPENER = urllib.request.build_opener(_DIRECT_PROXY_HANDLER)
 
 _last_request = 0.0
 # V16.4.1: 节流时间戳加锁(多线程并发下原间隔被打穿)
@@ -49,6 +51,9 @@ def _throttle() -> None:
 
 
 def _post(path: str, params: Dict[str, Any]) -> Dict[str, Any]:
+    from stock_common.sc_network import _source_rate_limit_wait
+
+    _source_rate_limit_wait(_BASE)
     _throttle()
     body = urllib.parse.urlencode(params, doseq=True).encode("utf-8")
     req = urllib.request.Request(
@@ -64,7 +69,7 @@ def _post(path: str, params: Dict[str, Any]) -> Dict[str, Any]:
         method="POST",
     )
     try:
-        with urllib.request.urlopen(req, timeout=15) as r:
+        with _DIRECT_OPENER.open(req, timeout=15) as r:
             payload = json.loads(r.read().decode("utf-8", errors="ignore"))
         if isinstance(payload, dict):
             return payload

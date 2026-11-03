@@ -44,6 +44,7 @@ from typing import Any, Dict, List, Optional, Tuple, cast
 import requests
 
 from stock_common import _safe_float, UA, _quick_request, _debug_log
+from stock_common.sc_network import _HTTP_SESSION
 from core.stock_cache import cached, make_valid_if, TTL  # V15.2 强化 + V15.5.7 TTL
 from core.config import TDX_MIN_INTERVAL, MAX_RETRY_COUNT, RETRY_DELAY_SECONDS
 
@@ -223,13 +224,12 @@ def _http_get(
         from stock_common.sc_network import _source_rate_limit_wait
 
         _source_rate_limit_wait(url)
-        # V9.3.1: 数据获取全部直连，不使用系统代理（代理仅用于GD上传）
-        return requests.get(
+        # Shared session has trust_env=False; requests-level None proxies alone still allow ALL_PROXY.
+        return _HTTP_SESSION.get(
             url,
             params=params,
             headers=headers or {"User-Agent": UA},
             timeout=timeout,
-            proxies=cast(Any, {"http": None, "https": None}),
         )
     except Exception as _e:
         _debug_log(f"tdx _tdx_http_get error ({url}): {_e}")

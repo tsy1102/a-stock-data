@@ -506,6 +506,39 @@ def test_l1_uses_informative_hit_rate_after_daily_sample_floor():
     assert result["n_informative_pairs"] == 15
 
 
+def test_display_rounding_is_separate_from_l1_precision_and_reported_as_a_screen():
+    left, right = _daily_fields(["20261019", "20261020", "20261021"], codes=20, ratio=1.001)
+    for info in (left, right):
+        info.update(type="num", is_constant=False, is_identifier=False)
+
+    collision = collide.collide_pair(left, right)
+    near_match = collide.rounding_near_match_candidate(
+        "tdx.turnover_rate", "sina.turnover_rate", left, right
+    )
+
+    assert collision is None or collision["level"] not in {"L1", "L1-U"}
+    assert near_match is not None
+    assert near_match["evidence_type"] == "rounding_near_match_screen"
+    assert near_match["status"] == "screening_only"
+    assert near_match["sample_count"] == 60
+    assert near_match["exact_hit_count"] == 0
+    assert near_match["rounded_hit_count"] == 60
+    assert near_match["qualifying_dates"] == ["T:20261019", "T:20261020", "T:20261021"]
+    assert not collide.is_close(100.0, 100.00001)
+    assert collide.is_close(100.0, 100.0 + math.ulp(100.0))
+    assert collide.is_close(100.0, 100.0 + 5e-10, strict=True)
+    assert not collide.is_close(100.0, 100.0 + 2e-9, strict=True)
+
+    constant = copy.deepcopy(left)
+    constant["is_constant"] = True
+    assert (
+        collide.rounding_near_match_candidate(
+            "tdx.turnover_rate", "sina.turnover_rate", constant, right
+        )
+        is None
+    )
+
+
 def test_below_daily_sample_floor_cannot_reach_l1():
     left, right = _daily_fields(["20260924", "20260928", "20260929"], codes=17)
 
@@ -690,10 +723,24 @@ def test_duplicate_runtime_alias_code_is_not_used_as_a_verified_anchor(monkeypat
     assert context["safe_to_run"] is True
     assert ("zhb", "shared") not in context["verified"]
     assert ("zhb", "shared") not in context["anchors"]
+    assert ("zhb", "shared") in context["verified_target_exclusions"]
     assert context["ambiguous_verified"] == 1
 
+    left_ids, right_ids = collide.select_collision_fields(
+        {"zhb.shared": {"is_identifier": False, "is_constant": False, "type": "num"}},
+        context["verified"] | context["verified_target_exclusions"],
+        context["disproved"],
+        context["anchors"],
+        exploratory=False,
+        contract_anchors=context["contract_anchors"],
+    )
+    assert "zhb.shared" not in left_ids
+    assert "zhb.shared" not in right_ids
 
-def test_verified_fields_with_unresolved_semantics_are_not_known_or_anchors(monkeypatch, tmp_path):
+
+def test_verified_fields_with_unresolved_semantics_exit_targets_but_not_anchors(
+    monkeypatch, tmp_path
+):
     registry_path = tmp_path / "registry.json"
     registry_path.write_text(
         json.dumps(
@@ -779,7 +826,29 @@ def test_verified_fields_with_unresolved_semantics_are_not_known_or_anchors(monk
     ):
         assert ("zhb", code) not in context["verified"]
         assert ("zhb", code) not in context["anchors"]
+        assert ("zhb", code) in context["verified_target_exclusions"]
     assert context["unresolved_verified_metadata"] == 5
+
+    target_exclusions = context["verified"] | context["verified_target_exclusions"]
+    store = {
+        f"zhb.{code}": {"is_identifier": False, "is_constant": False, "type": "num"}
+        for code in (
+            "missing",
+            "placeholder",
+            "meaning_conflict",
+            "unit_conflict",
+            "alignment_ambiguity",
+        )
+    }
+    left_ids, _right_ids = collide.select_collision_fields(
+        store,
+        target_exclusions,
+        context["disproved"],
+        context["anchors"],
+        exploratory=False,
+        contract_anchors=context["contract_anchors"],
+    )
+    assert left_ids == []
 
 
 def test_default_field_selection_uses_only_verified_independent_anchors():

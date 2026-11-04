@@ -30,6 +30,7 @@ DEFAULT_CANDIDATE_SECTIONS = (
     "L1-C",
     "L4",
     "formula_candidates",
+    "candidate_triage.approximate_matches",
 )
 MAX_PAGE_SIZE = 100
 _DATE_RE = re.compile(r"\d{8}")
@@ -329,7 +330,8 @@ def _validate_query_options(
 def _selected_sections(
     sections: Sequence[str] | None, queryable: dict[str, dict[str, Any]]
 ) -> list[str]:
-    selected = list(dict.fromkeys(sections or DEFAULT_CANDIDATE_SECTIONS))
+    defaults = [name for name in DEFAULT_CANDIDATE_SECTIONS if name in queryable]
+    selected = list(dict.fromkeys(sections if sections is not None else defaults))
     unknown = [name for name in selected if name not in queryable]
     if unknown:
         available = ", ".join(queryable)

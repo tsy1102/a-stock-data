@@ -1,5 +1,525 @@
 {
   "reviews": {
+    "cc1_049c12142c4964ad0efb1016d6f742aa9c4287a8d9280cefc97cab4bc5e90979": {
+      "current": {
+        "candidate_id": "cc1_049c12142c4964ad0efb1016d6f742aa9c4287a8d9280cefc97cab4bc5e90979",
+        "disposition": "needs_external_evidence",
+        "duplicate_of": null,
+        "event_id": "4c90cb11919e37ecf4c3daa2368c068d6add675f853987f8088111742b9bba8a",
+        "evidence_refs": [
+          {
+            "path": "20261104/20261104_collision_report.json",
+            "sha256": "adcf2c6db4b0eca52a2c20987db5b4af5a450b163be14fa38a623bc9e8489267"
+          },
+          {
+            "path": "adjudications/public_web/20261104_postcapture_public_web_research.md",
+            "sha256": "26a85846f90d37b51b0b4012168c5de1a6748e002921f3e8c7c697194a7ee94a"
+          },
+          {
+            "path": "https://finance.sina.com.cn/realstock/company/sz000007/nc.shtml",
+            "sha256": null
+          },
+          {
+            "path": "https://data.eastmoney.com/stockdata/000007.html",
+            "sha256": null
+          }
+        ],
+        "rationale": "140 组、20 只股票、7 个交易日呈现强尺度关系，但存在显著离群值且 920118 的逐股相关偏低。官方新浪行情页只呈现换手率标签和未解析模板，未证明新浪 MoneyFlow 响应路径、单位与项目字段的对应；FTShare 官方字段契约也未取得。保留为待外部证据候选，不建立字段映射。",
+        "reviewed_at": "2026-11-04T19:16:34+08:00",
+        "reviewer": "Codex"
+      },
+      "history": [
+        {
+          "candidate_id": "cc1_049c12142c4964ad0efb1016d6f742aa9c4287a8d9280cefc97cab4bc5e90979",
+          "disposition": "needs_external_evidence",
+          "duplicate_of": null,
+          "event_id": "4c90cb11919e37ecf4c3daa2368c068d6add675f853987f8088111742b9bba8a",
+          "evidence_refs": [
+            {
+              "path": "20261104/20261104_collision_report.json",
+              "sha256": "adcf2c6db4b0eca52a2c20987db5b4af5a450b163be14fa38a623bc9e8489267"
+            },
+            {
+              "path": "adjudications/public_web/20261104_postcapture_public_web_research.md",
+              "sha256": "26a85846f90d37b51b0b4012168c5de1a6748e002921f3e8c7c697194a7ee94a"
+            },
+            {
+              "path": "https://finance.sina.com.cn/realstock/company/sz000007/nc.shtml",
+              "sha256": null
+            },
+            {
+              "path": "https://data.eastmoney.com/stockdata/000007.html",
+              "sha256": null
+            }
+          ],
+          "rationale": "140 组、20 只股票、7 个交易日呈现强尺度关系，但存在显著离群值且 920118 的逐股相关偏低。官方新浪行情页只呈现换手率标签和未解析模板，未证明新浪 MoneyFlow 响应路径、单位与项目字段的对应；FTShare 官方字段契约也未取得。保留为待外部证据候选，不建立字段映射。",
+          "reviewed_at": "2026-11-04T19:16:34+08:00",
+          "reviewer": "Codex"
+        }
+      ],
+      "identity": {
+        "evidence": {
+          "evidence_sources": [
+            "ftshare_rest",
+            "sina_extended"
+          ],
+          "left": "sina_extended.turnover",
+          "methods": [
+            {
+              "leave_one_out_max": 0.9998,
+              "leave_one_out_min": 0.9996,
+              "leave_one_out_sign_stable": true,
+              "method": "robust_correlation",
+              "pearson": 0.9997,
+              "spearman": 0.9964
+            },
+            {
+              "formula": "right ≈ 0.00010010242 × left + 0.00040509893",
+              "method": "affine_formula",
+              "r_squared": 0.999351
+            },
+            {
+              "median_abs_pearson": 0.9996,
+              "method": "per_stock_time_series",
+              "sample_dates": [
+                "T:20261026",
+                "T:20261028",
+                "T:20261029",
+                "T:20261030",
+                "T:20261102",
+                "T:20261103",
+                "T:20261104"
+              ],
+              "sign_consistency": 1.0,
+              "stock_correlations": [
+                {
+                  "code": "000007",
+                  "dates": [
+                    "T:20261026",
+                    "T:20261028",
+                    "T:20261029",
+                    "T:20261030",
+                    "T:20261102",
+                    "T:20261103",
+                    "T:20261104"
+                  ],
+                  "pearson": 0.9992
+                },
+                {
+                  "code": "000011",
+                  "dates": [
+                    "T:20261026",
+                    "T:20261028",
+                    "T:20261029",
+                    "T:20261030",
+                    "T:20261102",
+                    "T:20261103",
+                    "T:20261104"
+                  ],
+                  "pearson": 0.9996
+                },
+                {
+                  "code": "000037",
+                  "dates": [
+                    "T:20261026",
+                    "T:20261028",
+                    "T:20261029",
+                    "T:20261030",
+                    "T:20261102",
+                    "T:20261103",
+                    "T:20261104"
+                  ],
+                  "pearson": 1.0
+                },
+                {
+                  "code": "000568",
+                  "dates": [
+                    "T:20261026",
+                    "T:20261028",
+                    "T:20261029",
+                    "T:20261030",
+                    "T:20261102",
+                    "T:20261103",
+                    "T:20261104"
+                  ],
+                  "pearson": 1.0
+                },
+                {
+                  "code": "000678",
+                  "dates": [
+                    "T:20261026",
+                    "T:20261028",
+                    "T:20261029",
+                    "T:20261030",
+                    "T:20261102",
+                    "T:20261103",
+                    "T:20261104"
+                  ],
+                  "pearson": 1.0
+                },
+                {
+                  "code": "002034",
+                  "dates": [
+                    "T:20261026",
+                    "T:20261028",
+                    "T:20261029",
+                    "T:20261030",
+                    "T:20261102",
+                    "T:20261103",
+                    "T:20261104"
+                  ],
+                  "pearson": 1.0
+                },
+                {
+                  "code": "002242",
+                  "dates": [
+                    "T:20261026",
+                    "T:20261028",
+                    "T:20261029",
+                    "T:20261030",
+                    "T:20261102",
+                    "T:20261103",
+                    "T:20261104"
+                  ],
+                  "pearson": 0.9948
+                },
+                {
+                  "code": "300031",
+                  "dates": [
+                    "T:20261026",
+                    "T:20261028",
+                    "T:20261029",
+                    "T:20261030",
+                    "T:20261102",
+                    "T:20261103",
+                    "T:20261104"
+                  ],
+                  "pearson": 1.0
+                },
+                {
+                  "code": "300788",
+                  "dates": [
+                    "T:20261026",
+                    "T:20261028",
+                    "T:20261029",
+                    "T:20261030",
+                    "T:20261102",
+                    "T:20261103",
+                    "T:20261104"
+                  ],
+                  "pearson": 1.0
+                },
+                {
+                  "code": "301190",
+                  "dates": [
+                    "T:20261026",
+                    "T:20261028",
+                    "T:20261029",
+                    "T:20261030",
+                    "T:20261102",
+                    "T:20261103",
+                    "T:20261104"
+                  ],
+                  "pearson": 0.9997
+                },
+                {
+                  "code": "600309",
+                  "dates": [
+                    "T:20261026",
+                    "T:20261028",
+                    "T:20261029",
+                    "T:20261030",
+                    "T:20261102",
+                    "T:20261103",
+                    "T:20261104"
+                  ],
+                  "pearson": 0.9989
+                },
+                {
+                  "code": "600519",
+                  "dates": [
+                    "T:20261026",
+                    "T:20261028",
+                    "T:20261029",
+                    "T:20261030",
+                    "T:20261102",
+                    "T:20261103",
+                    "T:20261104"
+                  ],
+                  "pearson": 0.9975
+                },
+                {
+                  "code": "600675",
+                  "dates": [
+                    "T:20261026",
+                    "T:20261028",
+                    "T:20261029",
+                    "T:20261030",
+                    "T:20261102",
+                    "T:20261103",
+                    "T:20261104"
+                  ],
+                  "pearson": 0.9996
+                },
+                {
+                  "code": "600825",
+                  "dates": [
+                    "T:20261026",
+                    "T:20261028",
+                    "T:20261029",
+                    "T:20261030",
+                    "T:20261102",
+                    "T:20261103",
+                    "T:20261104"
+                  ],
+                  "pearson": 0.9992
+                },
+                {
+                  "code": "601288",
+                  "dates": [
+                    "T:20261026",
+                    "T:20261028",
+                    "T:20261029",
+                    "T:20261030",
+                    "T:20261102",
+                    "T:20261103",
+                    "T:20261104"
+                  ],
+                  "pearson": 0.9958
+                },
+                {
+                  "code": "688327",
+                  "dates": [
+                    "T:20261026",
+                    "T:20261028",
+                    "T:20261029",
+                    "T:20261030",
+                    "T:20261102",
+                    "T:20261103",
+                    "T:20261104"
+                  ],
+                  "pearson": 0.9999
+                },
+                {
+                  "code": "688553",
+                  "dates": [
+                    "T:20261026",
+                    "T:20261028",
+                    "T:20261029",
+                    "T:20261030",
+                    "T:20261102",
+                    "T:20261103",
+                    "T:20261104"
+                  ],
+                  "pearson": 0.9998
+                },
+                {
+                  "code": "688589",
+                  "dates": [
+                    "T:20261026",
+                    "T:20261028",
+                    "T:20261029",
+                    "T:20261030",
+                    "T:20261102",
+                    "T:20261103",
+                    "T:20261104"
+                  ],
+                  "pearson": 0.9996
+                },
+                {
+                  "code": "920118",
+                  "dates": [
+                    "T:20261026",
+                    "T:20261028",
+                    "T:20261029",
+                    "T:20261030",
+                    "T:20261102",
+                    "T:20261103",
+                    "T:20261104"
+                  ],
+                  "pearson": 0.9302
+                },
+                {
+                  "code": "920508",
+                  "dates": [
+                    "T:20261026",
+                    "T:20261028",
+                    "T:20261029",
+                    "T:20261030",
+                    "T:20261102",
+                    "T:20261103",
+                    "T:20261104"
+                  ],
+                  "pearson": 1.0
+                }
+              ],
+              "stocks": 20
+            },
+            {
+              "method": "semantic_label",
+              "shared_tokens": [
+                "turnover"
+              ],
+              "token_jaccard": 0.5
+            }
+          ],
+          "right": "ftshare_rest.turnover_rate",
+          "sample_codes": [
+            "000007",
+            "000011",
+            "000037",
+            "000568",
+            "000678",
+            "002034",
+            "002242",
+            "300031",
+            "300788",
+            "301190",
+            "600309",
+            "600519",
+            "600675",
+            "600825",
+            "601288",
+            "688327",
+            "688553",
+            "688589",
+            "920118",
+            "920508"
+          ],
+          "sample_count": 140,
+          "sample_dates": [
+            "T:20261026",
+            "T:20261028",
+            "T:20261029",
+            "T:20261030",
+            "T:20261102",
+            "T:20261103",
+            "T:20261104"
+          ]
+        },
+        "kind": "method_pair",
+        "method_version": "collision-candidate-v2",
+        "schema_version": 1
+      }
+    },
+    "cc1_077c91deca48d1a3cb67060221e4804333bf92e89234e3a7a1a62ca684d92fc4": {
+      "current": {
+        "candidate_id": "cc1_077c91deca48d1a3cb67060221e4804333bf92e89234e3a7a1a62ca684d92fc4",
+        "disposition": "needs_external_evidence",
+        "duplicate_of": null,
+        "event_id": "2707df61dc08d7eb1889f4d32799288f0a4e228d0068ff0f6a1546b7720401b8",
+        "evidence_refs": [
+          {
+            "path": "20261104/20261104_collision_report.json",
+            "sha256": "adcf2c6db4b0eca52a2c20987db5b4af5a450b163be14fa38a623bc9e8489267"
+          },
+          {
+            "path": "adjudications/public_web/20261104_postcapture_public_web_research.md",
+            "sha256": "26a85846f90d37b51b0b4012168c5de1a6748e002921f3e8c7c697194a7ee94a"
+          },
+          {
+            "path": "https://data.eastmoney.com/stockdata/000007.html",
+            "sha256": null
+          }
+        ],
+        "rationale": "139 组、20 只股票、7 个数据日有近乎线性的数值关系，但拟合截距约 25.53 股。当前官方个股页面未呈现可与原始样本逐日对齐的精确股本值，单位、精度和有效日差异尚未解释。",
+        "reviewed_at": "2026-11-04T19:16:34+08:00",
+        "reviewer": "Codex"
+      },
+      "history": [
+        {
+          "candidate_id": "cc1_077c91deca48d1a3cb67060221e4804333bf92e89234e3a7a1a62ca684d92fc4",
+          "disposition": "needs_external_evidence",
+          "duplicate_of": null,
+          "event_id": "2707df61dc08d7eb1889f4d32799288f0a4e228d0068ff0f6a1546b7720401b8",
+          "evidence_refs": [
+            {
+              "path": "20261104/20261104_collision_report.json",
+              "sha256": "adcf2c6db4b0eca52a2c20987db5b4af5a450b163be14fa38a623bc9e8489267"
+            },
+            {
+              "path": "adjudications/public_web/20261104_postcapture_public_web_research.md",
+              "sha256": "26a85846f90d37b51b0b4012168c5de1a6748e002921f3e8c7c697194a7ee94a"
+            },
+            {
+              "path": "https://data.eastmoney.com/stockdata/000007.html",
+              "sha256": null
+            }
+          ],
+          "rationale": "139 组、20 只股票、7 个数据日有近乎线性的数值关系，但拟合截距约 25.53 股。当前官方个股页面未呈现可与原始样本逐日对齐的精确股本值，单位、精度和有效日差异尚未解释。",
+          "reviewed_at": "2026-11-04T19:16:34+08:00",
+          "reviewer": "Codex"
+        }
+      ],
+      "identity": {
+        "evidence": {
+          "evidence_sources": [
+            "axdata",
+            "ftshare_rest"
+          ],
+          "left": "axdata.data.float_shares",
+          "methods": [
+            {
+              "leave_one_out_max": 1.0,
+              "leave_one_out_min": 1.0,
+              "leave_one_out_sign_stable": true,
+              "method": "robust_correlation",
+              "pearson": 1.0,
+              "spearman": 1.0
+            },
+            {
+              "formula": "right ≈ 0.99999997 × left + 25.528585",
+              "method": "affine_formula",
+              "r_squared": 1.0
+            },
+            {
+              "method": "semantic_label",
+              "shared_tokens": [
+                "float",
+                "shares"
+              ],
+              "token_jaccard": 0.5
+            }
+          ],
+          "right": "ftshare_rest.float_a_shares",
+          "sample_codes": [
+            "000007",
+            "000011",
+            "000037",
+            "000568",
+            "000678",
+            "002034",
+            "002242",
+            "300031",
+            "300788",
+            "301190",
+            "600309",
+            "600519",
+            "600675",
+            "600825",
+            "601288",
+            "688327",
+            "688553",
+            "688589",
+            "920118",
+            "920508"
+          ],
+          "sample_count": 139,
+          "sample_dates": [
+            "T:20261026",
+            "T:20261028",
+            "T:20261029",
+            "T:20261030",
+            "T:20261102",
+            "T:20261103",
+            "T:20261104"
+          ]
+        },
+        "kind": "method_pair",
+        "method_version": "collision-candidate-v2",
+        "schema_version": 1
+      }
+    },
     "cc1_0a67093dccf73d905391fb25bccf0e5a8eb4fa02fa744b162827e17da3c771dd": {
       "current": {
         "candidate_id": "cc1_0a67093dccf73d905391fb25bccf0e5a8eb4fa02fa744b162827e17da3c771dd",
@@ -2605,6 +3125,343 @@
         "schema_version": 1
       }
     },
+    "cc1_7f4f1c3c5e8d9343389625b606d6f30c255b4278c91aa18a81e9e86d4b82bcba": {
+      "current": {
+        "candidate_id": "cc1_7f4f1c3c5e8d9343389625b606d6f30c255b4278c91aa18a81e9e86d4b82bcba",
+        "disposition": "needs_external_evidence",
+        "duplicate_of": null,
+        "event_id": "1d5147576059375e6ff3ca29cdfb325100d14d666097493734e007bb75c5eba1",
+        "evidence_refs": [
+          {
+            "path": "20261104/20261104_collision_report.json",
+            "sha256": "adcf2c6db4b0eca52a2c20987db5b4af5a450b163be14fa38a623bc9e8489267"
+          },
+          {
+            "path": "adjudications/public_web/20261104_postcapture_public_web_research.md",
+            "sha256": "26a85846f90d37b51b0b4012168c5de1a6748e002921f3e8c7c697194a7ee94a"
+          },
+          {
+            "path": "https://finance.sina.com.cn/realstock/company/sh600519/nc.shtml",
+            "sha256": null
+          },
+          {
+            "path": "https://data.eastmoney.com/stockdata/000007.html",
+            "sha256": null
+          }
+        ],
+        "rationale": "80 组、20 只股票、4 个数据日中有 73 组落入近似容差、没有精确命中，且残差随股票与日期变化。需要来源定义、估值口径及有效日期一致的外部证据；近似匹配不能单独确认 PE(TTM) 等价。",
+        "reviewed_at": "2026-11-04T19:16:34+08:00",
+        "reviewer": "Codex"
+      },
+      "history": [
+        {
+          "candidate_id": "cc1_7f4f1c3c5e8d9343389625b606d6f30c255b4278c91aa18a81e9e86d4b82bcba",
+          "disposition": "needs_external_evidence",
+          "duplicate_of": null,
+          "event_id": "1d5147576059375e6ff3ca29cdfb325100d14d666097493734e007bb75c5eba1",
+          "evidence_refs": [
+            {
+              "path": "20261104/20261104_collision_report.json",
+              "sha256": "adcf2c6db4b0eca52a2c20987db5b4af5a450b163be14fa38a623bc9e8489267"
+            },
+            {
+              "path": "adjudications/public_web/20261104_postcapture_public_web_research.md",
+              "sha256": "26a85846f90d37b51b0b4012168c5de1a6748e002921f3e8c7c697194a7ee94a"
+            },
+            {
+              "path": "https://finance.sina.com.cn/realstock/company/sh600519/nc.shtml",
+              "sha256": null
+            },
+            {
+              "path": "https://data.eastmoney.com/stockdata/000007.html",
+              "sha256": null
+            }
+          ],
+          "rationale": "80 组、20 只股票、4 个数据日中有 73 组落入近似容差、没有精确命中，且残差随股票与日期变化。需要来源定义、估值口径及有效日期一致的外部证据；近似匹配不能单独确认 PE(TTM) 等价。",
+          "reviewed_at": "2026-11-04T19:16:34+08:00",
+          "reviewer": "Codex"
+        }
+      ],
+      "identity": {
+        "evidence": {
+          "evidence_sources": [
+            "fuyao",
+            "zhb"
+          ],
+          "left": "fuyao.valuation.pe_ttm",
+          "methods": [
+            {
+              "leave_one_out_max": 0.9999,
+              "leave_one_out_min": 0.9948,
+              "leave_one_out_sign_stable": true,
+              "method": "robust_correlation",
+              "pearson": 0.9957,
+              "spearman": 0.998
+            },
+            {
+              "formula": "right ≈ 0.98094366 × left + -1.4358851",
+              "method": "affine_formula",
+              "r_squared": 0.991343
+            },
+            {
+              "median_abs_pearson": 1.0,
+              "method": "per_stock_time_series",
+              "sample_dates": [
+                "T:20261028",
+                "T:20261030",
+                "T:20261102",
+                "T:20261103"
+              ],
+              "sign_consistency": 1.0,
+              "stock_correlations": [
+                {
+                  "code": "000007",
+                  "dates": [
+                    "T:20261028",
+                    "T:20261030",
+                    "T:20261102",
+                    "T:20261103"
+                  ],
+                  "pearson": 1.0
+                },
+                {
+                  "code": "000011",
+                  "dates": [
+                    "T:20261028",
+                    "T:20261030",
+                    "T:20261102",
+                    "T:20261103"
+                  ],
+                  "pearson": 1.0
+                },
+                {
+                  "code": "000037",
+                  "dates": [
+                    "T:20261028",
+                    "T:20261030",
+                    "T:20261102",
+                    "T:20261103"
+                  ],
+                  "pearson": 1.0
+                },
+                {
+                  "code": "000568",
+                  "dates": [
+                    "T:20261028",
+                    "T:20261030",
+                    "T:20261102",
+                    "T:20261103"
+                  ],
+                  "pearson": 1.0
+                },
+                {
+                  "code": "000678",
+                  "dates": [
+                    "T:20261028",
+                    "T:20261030",
+                    "T:20261102",
+                    "T:20261103"
+                  ],
+                  "pearson": 0.9443
+                },
+                {
+                  "code": "002034",
+                  "dates": [
+                    "T:20261028",
+                    "T:20261030",
+                    "T:20261102",
+                    "T:20261103"
+                  ],
+                  "pearson": 0.9999
+                },
+                {
+                  "code": "002242",
+                  "dates": [
+                    "T:20261028",
+                    "T:20261030",
+                    "T:20261102",
+                    "T:20261103"
+                  ],
+                  "pearson": 1.0
+                },
+                {
+                  "code": "300031",
+                  "dates": [
+                    "T:20261028",
+                    "T:20261030",
+                    "T:20261102",
+                    "T:20261103"
+                  ],
+                  "pearson": 1.0
+                },
+                {
+                  "code": "300788",
+                  "dates": [
+                    "T:20261028",
+                    "T:20261030",
+                    "T:20261102",
+                    "T:20261103"
+                  ],
+                  "pearson": 1.0
+                },
+                {
+                  "code": "301190",
+                  "dates": [
+                    "T:20261028",
+                    "T:20261030",
+                    "T:20261102",
+                    "T:20261103"
+                  ],
+                  "pearson": 1.0
+                },
+                {
+                  "code": "600309",
+                  "dates": [
+                    "T:20261028",
+                    "T:20261030",
+                    "T:20261102",
+                    "T:20261103"
+                  ],
+                  "pearson": 1.0
+                },
+                {
+                  "code": "600519",
+                  "dates": [
+                    "T:20261028",
+                    "T:20261030",
+                    "T:20261102",
+                    "T:20261103"
+                  ],
+                  "pearson": 0.9947
+                },
+                {
+                  "code": "600675",
+                  "dates": [
+                    "T:20261028",
+                    "T:20261030",
+                    "T:20261102",
+                    "T:20261103"
+                  ],
+                  "pearson": 1.0
+                },
+                {
+                  "code": "600825",
+                  "dates": [
+                    "T:20261028",
+                    "T:20261030",
+                    "T:20261102",
+                    "T:20261103"
+                  ],
+                  "pearson": 1.0
+                },
+                {
+                  "code": "601288",
+                  "dates": [
+                    "T:20261028",
+                    "T:20261030",
+                    "T:20261102",
+                    "T:20261103"
+                  ],
+                  "pearson": 0.3975
+                },
+                {
+                  "code": "688327",
+                  "dates": [
+                    "T:20261028",
+                    "T:20261030",
+                    "T:20261102",
+                    "T:20261103"
+                  ],
+                  "pearson": 0.6665
+                },
+                {
+                  "code": "688553",
+                  "dates": [
+                    "T:20261028",
+                    "T:20261030",
+                    "T:20261102",
+                    "T:20261103"
+                  ],
+                  "pearson": 0.6923
+                },
+                {
+                  "code": "688589",
+                  "dates": [
+                    "T:20261028",
+                    "T:20261030",
+                    "T:20261102",
+                    "T:20261103"
+                  ],
+                  "pearson": 1.0
+                },
+                {
+                  "code": "920118",
+                  "dates": [
+                    "T:20261028",
+                    "T:20261030",
+                    "T:20261102",
+                    "T:20261103"
+                  ],
+                  "pearson": 0.9661
+                },
+                {
+                  "code": "920508",
+                  "dates": [
+                    "T:20261028",
+                    "T:20261030",
+                    "T:20261102",
+                    "T:20261103"
+                  ],
+                  "pearson": 0.5039
+                }
+              ],
+              "stocks": 20
+            },
+            {
+              "method": "semantic_label",
+              "shared_tokens": [
+                "pe",
+                "ttm"
+              ],
+              "token_jaccard": 0.6667
+            }
+          ],
+          "right": "zhb.full.pe_ttm",
+          "sample_codes": [
+            "000007",
+            "000011",
+            "000037",
+            "000568",
+            "000678",
+            "002034",
+            "002242",
+            "300031",
+            "300788",
+            "301190",
+            "600309",
+            "600519",
+            "600675",
+            "600825",
+            "601288",
+            "688327",
+            "688553",
+            "688589",
+            "920118",
+            "920508"
+          ],
+          "sample_count": 80,
+          "sample_dates": [
+            "T:20261028",
+            "T:20261030",
+            "T:20261102",
+            "T:20261103"
+          ]
+        },
+        "kind": "method_pair",
+        "method_version": "collision-candidate-v2",
+        "schema_version": 1
+      }
+    },
     "cc1_86c0f21648d39082cadf649b173b8f5508c45a0951431ac2cb2ea47522d11c7e": {
       "current": {
         "candidate_id": "cc1_86c0f21648d39082cadf649b173b8f5508c45a0951431ac2cb2ea47522d11c7e",
@@ -3645,6 +4502,113 @@
         },
         "kind": "formula_candidate",
         "method_version": "collision-candidate-v1",
+        "schema_version": 1
+      }
+    },
+    "cc1_b2b60741f0a85398f2b0ac9843abb22e61903d4d382eb99f067d0c0fbdb0c08b": {
+      "current": {
+        "candidate_id": "cc1_b2b60741f0a85398f2b0ac9843abb22e61903d4d382eb99f067d0c0fbdb0c08b",
+        "disposition": "insufficient_evidence",
+        "duplicate_of": null,
+        "event_id": "a9ecf367c03c9ed9def86d43e1c88d7082a6576aa613108268a0a67289ab2351",
+        "evidence_refs": [
+          {
+            "path": "20261104/20261104_collision_report.json",
+            "sha256": "adcf2c6db4b0eca52a2c20987db5b4af5a450b163be14fa38a623bc9e8489267"
+          },
+          {
+            "path": "adjudications/public_web/20261104_postcapture_public_web_research.md",
+            "sha256": "26a85846f90d37b51b0b4012168c5de1a6748e002921f3e8c7c697194a7ee94a"
+          },
+          {
+            "path": "https://quote.eastmoney.com/sz000007.html",
+            "sha256": null
+          },
+          {
+            "path": "https://quote.eastmoney.com/sh600519.html",
+            "sha256": null
+          }
+        ],
+        "rationale": "候选仅含 14 组值、2 只股票、7 个数据日。两只股票上的完美相关不足以排除个股特例；当前公开页面与接口材料也没有证明 event_dc.CHANGE 和 ftshare_rest.change 的原始字段定义相同。需要扩大跨股票覆盖并补充路径定义后再审。",
+        "reviewed_at": "2026-11-04T19:16:34+08:00",
+        "reviewer": "Codex"
+      },
+      "history": [
+        {
+          "candidate_id": "cc1_b2b60741f0a85398f2b0ac9843abb22e61903d4d382eb99f067d0c0fbdb0c08b",
+          "disposition": "insufficient_evidence",
+          "duplicate_of": null,
+          "event_id": "a9ecf367c03c9ed9def86d43e1c88d7082a6576aa613108268a0a67289ab2351",
+          "evidence_refs": [
+            {
+              "path": "20261104/20261104_collision_report.json",
+              "sha256": "adcf2c6db4b0eca52a2c20987db5b4af5a450b163be14fa38a623bc9e8489267"
+            },
+            {
+              "path": "adjudications/public_web/20261104_postcapture_public_web_research.md",
+              "sha256": "26a85846f90d37b51b0b4012168c5de1a6748e002921f3e8c7c697194a7ee94a"
+            },
+            {
+              "path": "https://quote.eastmoney.com/sz000007.html",
+              "sha256": null
+            },
+            {
+              "path": "https://quote.eastmoney.com/sh600519.html",
+              "sha256": null
+            }
+          ],
+          "rationale": "候选仅含 14 组值、2 只股票、7 个数据日。两只股票上的完美相关不足以排除个股特例；当前公开页面与接口材料也没有证明 event_dc.CHANGE 和 ftshare_rest.change 的原始字段定义相同。需要扩大跨股票覆盖并补充路径定义后再审。",
+          "reviewed_at": "2026-11-04T19:16:34+08:00",
+          "reviewer": "Codex"
+        }
+      ],
+      "identity": {
+        "evidence": {
+          "evidence_sources": [
+            "event_dc",
+            "ftshare_rest"
+          ],
+          "left": "event_dc.CHANGE",
+          "methods": [
+            {
+              "leave_one_out_max": 1.0,
+              "leave_one_out_min": 1.0,
+              "leave_one_out_sign_stable": true,
+              "method": "robust_correlation",
+              "pearson": 1.0,
+              "spearman": 1.0
+            },
+            {
+              "formula": "right ≈ 1 × left + 0",
+              "method": "affine_formula",
+              "r_squared": 1.0
+            },
+            {
+              "method": "semantic_label",
+              "shared_tokens": [
+                "change"
+              ],
+              "token_jaccard": 1.0
+            }
+          ],
+          "right": "ftshare_rest.change",
+          "sample_codes": [
+            "000007",
+            "000011"
+          ],
+          "sample_count": 14,
+          "sample_dates": [
+            "T:20261026",
+            "T:20261028",
+            "T:20261029",
+            "T:20261030",
+            "T:20261102",
+            "T:20261103",
+            "T:20261104"
+          ]
+        },
+        "kind": "method_pair",
+        "method_version": "collision-candidate-v2",
         "schema_version": 1
       }
     },
@@ -6152,5 +7116,5 @@
     }
   },
   "schema_version": 1,
-  "updated_at": "2026-11-04T12:59:45+08:00"
+  "updated_at": "2026-11-04T19:16:34+08:00"
 }

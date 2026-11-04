@@ -60,6 +60,17 @@ def test_known_same_level_field_sections_have_explicit_source_maps(monkeypatch):
     assert not {"adjust", "period"} & eltdx_tokens
 
 
+def test_tdx_quote_raw_capture_container_is_not_a_registry_field(monkeypatch):
+    monkeypatch.syspath_prepend("scripts")
+    afc = importlib.import_module("audit_field_completeness")
+    monkeypatch.setitem(afc.RAW_FIELD_KEYS, "TDX(双命名源)", {"quote_raw", "price"})
+    monkeypatch.setitem(afc.CANON_ALIASES, "TDX(双命名源)", set())
+
+    tokens = afc.reg_tokens_for_section("TDX(双命名源)", "")
+
+    assert tokens == {"price"}
+
+
 def test_levistock_legacy_identity_is_reclassified_without_promoting_archive_only_tokens(
     monkeypatch,
 ):

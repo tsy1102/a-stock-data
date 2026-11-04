@@ -688,7 +688,7 @@ _CANON_PREFIX_FOR_SRC = {
 # _leaf_keys intentionally preserves null/empty leaves, so exclude the known
 # wrapper names at the source-aware token boundary instead of weakening leaf extraction.
 _CAPTURE_CONTAINER_TOKENS = {
-    "TDX(双命名源)": {"finance_info", "quote_full"},
+    "TDX(双命名源)": {"finance_info", "quote_full", "quote_raw"},
     "同花顺-fuyao": {
         "auction_final",
         "balance_q",

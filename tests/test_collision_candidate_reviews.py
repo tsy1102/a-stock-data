@@ -48,6 +48,24 @@ def test_candidate_id_binds_source_method_and_sample_evidence_but_ignores_review
     assert reviews.candidate_id(candidate, "l1_candidate") != identifier
 
 
+def test_candidate_method_v2_changes_identity_without_rewriting_v1():
+    candidate = _candidate()
+    legacy_identity = reviews.candidate_identity_payload(
+        candidate, "method_pair", method_version="collision-candidate-v1"
+    )
+    current_identity = reviews.candidate_identity_payload(candidate, "method_pair")
+
+    assert current_identity["method_version"] == "collision-candidate-v2"
+    assert legacy_identity["method_version"] == "collision-candidate-v1"
+    assert reviews.candidate_id_from_payload(legacy_identity) != reviews.candidate_id_from_payload(
+        current_identity
+    )
+    with pytest.raises(ValueError, match="unsupported candidate method version"):
+        reviews.candidate_identity_payload(
+            candidate, "method_pair", method_version="collision-candidate-v999"
+        )
+
+
 def test_formula_candidate_identity_accepts_target_and_inputs_without_right_field():
     candidate = {
         "left": "tdx.quote.close",

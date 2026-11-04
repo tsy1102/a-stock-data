@@ -35,8 +35,8 @@ from typing import TextIO, TypedDict
 # ───────────────────────────────────────────────────────────────────────
 # 对撞四铁律（硬阈值，不可在脚本内随意下调）
 # ───────────────────────────────────────────────────────────────────────
-# 1. 精度对齐
-PRECISION = "|a−b| ≤ max(ulp_a, ulp_b)（舍入感知）；整数/枚举降级为严格 1e-9"
+# 1. 精度对齐。机器浮点误差使用 ULP；展示精度差异单独进入近似候选层。
+PRECISION = "非整数浮点误差 |a−b| ≤ max(ulp_a, ulp_b)；整数/枚举严格 1e-9；展示舍入不计 L1"
 # 2. 命中率分层
 HIT_RATE_L1 = 18  # 18/20 的门槛换算为信息配对命中率 ≥90% → L1 定案
 HIT_RATE_L4 = 8  # 8~17 → L4 候选（存疑）
@@ -50,6 +50,10 @@ RATIO_STEPS = (10, 100, 1000, 10000)  # 合法单位换算比集合
 MULTI_DAY_MIN = 3  # 至少 3 个独立采集日重复方可定案
 # 5. 相关性仅生成候选
 CORR_SPEARMAN_MIN = 0.6  # |Spearman| 阈值；且需 Pearson+Spearman 同号 + 留一法不翻号
+
+# 近似数值只用于独立研究候选，不进入 L1/L1-U 或注册表写入。
+ROUNDING_SCREEN_REL_TOL = 0.005
+ROUNDING_SCREEN_ABS_TOL = 0.01
 
 # 经逐字段审定的公开接口契约可提供语义锚；是否构成独立数据来源仍由来源血缘决定。
 CONTRACT_ANCHOR_RULES = [
@@ -234,6 +238,12 @@ def print_active_rules(stream: TextIO | None = None) -> TextIO:
     print(bar, file=out)
     print(f"1. 精度对齐 : {PRECISION}", file=out)
     print(
+        "近似值筛查 : "
+        f"|a−b|≤max({ROUNDING_SCREEN_ABS_TOL:g}, "
+        f"{ROUNDING_SCREEN_REL_TOL:.1%}×max(|a|,|b|))；仅研究层，不算 L1/L1-U",
+        file=out,
+    )
+    print(
         f"2. 命中率分层: 每采样日 ≥{HIT_RATE_L1}/20 且可解释 → L1 定案；"
         f"{HIT_RATE_L4}~{HIT_RATE_L1 - 1} → L4 候选（存疑）",
         file=out,
@@ -300,6 +310,14 @@ def emit_markdown(path: str | None = None) -> str:
     L.append(
         f"| 5 | 相关性 | 仅 Pearson+Spearman 同号且 |Spearman|≥{CORR_SPEARMAN_MIN} "
         f"且留一法不翻号 → 候选，绝不定案 |\n"
+    )
+    L.append("## 近似数值研究层（不改变 L1/L1-U）\n")
+    L.append(
+        f"- 近似筛查窗口：|a−b|≤max({ROUNDING_SCREEN_ABS_TOL:g}, "
+        f"{ROUNDING_SCREEN_REL_TOL:.1%}×max(|a|,|b|))；只生成网页/原始证据复核线索。"
+    )
+    L.append(
+        "- 近似命中不会计入精确命中率、L1/L1-U、已登记映射或字段注册表；单位换算按独立比值证据记录。\n"
     )
     L.append("## 二、定案状态机 L1~L4\n")
     L.append("| 层级 | 名称 | 升格来源 |")

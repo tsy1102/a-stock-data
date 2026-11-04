@@ -18,8 +18,9 @@ from pathlib import Path
 from typing import Any
 
 SCHEMA_VERSION = 1
-# Bump when candidate methods, normalization, or sample-qualification semantics change.
-METHOD_VERSION = "collision-candidate-v1"
+# Bump when candidate methods, normalization, precision, or sample qualification changes.
+METHOD_VERSION = "collision-candidate-v2"
+SUPPORTED_REPORT_METHOD_VERSIONS = frozenset({"collision-candidate-v1", METHOD_VERSION})
 DISPOSITIONS = frozenset(
     {
         "duplicate_grouped",
@@ -59,12 +60,19 @@ def _canonical_json(value: Any) -> str:
     )
 
 
-def candidate_identity_payload(candidate: dict[str, Any], kind: str) -> dict[str, Any]:
+def candidate_identity_payload(
+    candidate: dict[str, Any], kind: str, *, method_version: str = METHOD_VERSION
+) -> dict[str, Any]:
     """Bind an identity to the exact evidence, method version, and sample qualification."""
     if not isinstance(candidate, dict):
         raise TypeError("candidate must be an object")
     if not isinstance(kind, str) or not kind.strip():
         raise ValueError("candidate kind must be a non-empty string")
+    if (
+        not isinstance(method_version, str)
+        or method_version not in SUPPORTED_REPORT_METHOD_VERSIONS
+    ):
+        raise ValueError(f"unsupported candidate method version: {method_version}")
     left, right = candidate.get("left"), candidate.get("right")
     has_pair = isinstance(left, str) and bool(left) and isinstance(right, str) and bool(right)
     has_formula = (
@@ -84,7 +92,7 @@ def candidate_identity_payload(candidate: dict[str, Any], kind: str) -> dict[str
     _canonical_json(evidence)
     return {
         "schema_version": SCHEMA_VERSION,
-        "method_version": METHOD_VERSION,
+        "method_version": method_version,
         "kind": kind,
         "evidence": evidence,
     }
@@ -99,6 +107,19 @@ def candidate_id_from_payload(identity: dict[str, Any]) -> str:
 
 def candidate_id(candidate: dict[str, Any], kind: str) -> str:
     return candidate_id_from_payload(candidate_identity_payload(candidate, kind))
+
+
+def _report_method_version(report: dict[str, Any]) -> str:
+    summary = report.get("candidate_review")
+    if not isinstance(summary, dict):
+        return METHOD_VERSION
+    method_version = summary.get("method_version")
+    if (
+        not isinstance(method_version, str)
+        or method_version not in SUPPORTED_REPORT_METHOD_VERSIONS
+    ):
+        raise ValueError(f"unsupported report candidate method version: {method_version}")
+    return method_version
 
 
 def _candidate_scopes(report: dict[str, Any]) -> list[tuple[str, Any]]:
@@ -127,10 +148,11 @@ def _candidate_scopes(report: dict[str, Any]) -> list[tuple[str, Any]]:
 def candidate_ids_in_report(report: dict[str, Any]) -> dict[str, dict[str, Any]]:
     """Return candidate IDs and their reviewable identity payloads for a report."""
     result: dict[str, dict[str, Any]] = {}
+    method_version = _report_method_version(report)
     for kind, row in _candidate_scopes(report):
         if not isinstance(row, dict):
             raise ValueError(f"candidate section contains a non-object row: {kind}")
-        identity = candidate_identity_payload(row, kind)
+        identity = candidate_identity_payload(row, kind, method_version=method_version)
         identifier = candidate_id_from_payload(identity)
         stored_identifier = row.get("candidate_id")
         if stored_identifier is not None and stored_identifier != identifier:
@@ -542,6 +564,10 @@ def validate_report_summary(report: dict[str, Any]) -> dict[str, Any]:
     review = summary.get("human_review")
     if not isinstance(generation, dict) or not isinstance(review, dict):
         return {"status": "incomplete", "issues": ["candidate_review: summary_shape_invalid"]}
+    try:
+        method_version = _report_method_version(report)
+    except ValueError as exc:
+        return {"status": "incomplete", "issues": [f"candidate_review: {exc}"]}
 
     scopes = _candidate_scopes(report)
     identities: dict[str, dict[str, Any]] = {}
@@ -555,7 +581,7 @@ def validate_report_summary(report: dict[str, Any]) -> dict[str, Any]:
             invalid_identity_count += 1
             continue
         try:
-            identity = candidate_identity_payload(row, kind)
+            identity = candidate_identity_payload(row, kind, method_version=method_version)
             identifier = candidate_id_from_payload(identity)
         except (TypeError, ValueError):
             invalid_identity_count += 1

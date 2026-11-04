@@ -4,7 +4,7 @@
 
 ## 候选审阅状态（schema 5 起）
 
-schema 5 碰撞报告为完整方法候选、L1/L1-C、L4 和公式候选生成稳定 `candidate_id`；身份包含完整来源路径、方法/结果、日期与样本资格以及 `collision-candidate-v1` 方法版本。若候选算法、归一化或样本资格语义发生变化，必须提升 `scripts/collision_candidate_reviews.py` 中的 `METHOD_VERSION`，旧审阅不会附着到新身份。`docs/field_verification/collision_candidate_reviews.json` 是独立追加式人工审阅台账；机器候选完整率、身份校验和人工审阅进度分别统计。`unreviewed` 是默认派生状态，不是人工处置。
+schema 5 碰撞报告为完整方法候选、L1/L1-C、L4 和公式候选生成稳定 `candidate_id`；身份包含完整来源路径、方法/结果、日期与样本资格及其报告记录的候选方法版本。当前新报告使用 `collision-candidate-v2`：收紧 L1 精确匹配精度，并将展示舍入差异移到独立研究层。历史 `collision-candidate-v1` 报告仍按报告内记录的版本校验和查询；其旧审阅不会附着到 v2 新身份。若候选算法、归一化、精度或样本资格语义发生变化，必须提升 `scripts/collision_candidate_reviews.py` 中的 `METHOD_VERSION`。`docs/field_verification/collision_candidate_reviews.json` 是独立追加式人工审阅台账；机器候选完整率、身份校验和人工审阅进度分别统计。`unreviewed` 是默认派生状态，不是人工处置。
 
 复制 [`review_templates/candidate_review_template.json`](review_templates/candidate_review_template.json) 后填写决定，先预览，再显式应用：
 
@@ -68,6 +68,7 @@ python.exe scripts/review_collision_candidates.py --decision docs/field_verifica
 
 - 产品页面是外部佐证，不自动等同于数据提供方契约。只有上游正式接口/协议定义及项目适配器映射能精确解释来源路径时，才走“单源上游契约核验”；不能把网页展示名冒充为原始字段路径定义。
 - 页面值吻合可以支持已有碰撞候选或公式假设，但不会提高碰撞等级、增加独立来源数或单独创建 `mappings`。来源谱系未知时，网页数据也不作为独立来源锚。
+- `candidate_triage.approximate_matches` 仅用于独立研究线索排序；其宽容差近似命中不属于 L1/L1-U，也不会生成正式 `candidate_id` 或审阅台账项。只有另行满足现有碰撞、契约或公式裁决路径，并有可核对的单位、显示精度、日期及反例记录，才可进入注册表流程。
 - 如果提供方官网无法提供历史值或字段标签，再用新浪、同花顺等第三方页面作次级佐证；若它们本身就是注册表登记来源，则按对应来源逐路径核验。需要记录回退原因，不能把第三方显示口径冒充该字段提供方的官方定义。
 - 若来源谱系仍未确认，不得仅根据客户端仓库、SDK 名称或登录域名猜测实际数据提供方；将提供方身份缺口记为待核，并继续核实来源映射。
 - 每条证据要保存精确 HTTPS 链接、访问时间、页面标签和值、单位、有效日期/报告期、股票代码、原始来源日期、阶段、换算依据和不匹配样本。搜索摘要、论坛转载或仅一只股票/一天的吻合只能作为线索。

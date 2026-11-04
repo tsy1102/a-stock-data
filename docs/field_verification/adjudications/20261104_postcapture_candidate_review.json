@@ -1,0 +1,60 @@
+{
+  "schema_version": 1,
+  "decisions": [
+    {
+      "candidate_id": "cc1_049c12142c4964ad0efb1016d6f742aa9c4287a8d9280cefc97cab4bc5e90979",
+      "disposition": "needs_external_evidence",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-11-04T19:16:34+08:00",
+      "rationale": "140 组、20 只股票、7 个交易日呈现强尺度关系，但存在显著离群值且 920118 的逐股相关偏低。官方新浪行情页只呈现换手率标签和未解析模板，未证明新浪 MoneyFlow 响应路径、单位与项目字段的对应；FTShare 官方字段契约也未取得。保留为待外部证据候选，不建立字段映射。",
+      "evidence_refs": [
+        "20261104/20261104_collision_report.json",
+        "adjudications/public_web/20261104_postcapture_public_web_research.md",
+        "https://finance.sina.com.cn/realstock/company/sz000007/nc.shtml",
+        "https://data.eastmoney.com/stockdata/000007.html"
+      ],
+      "duplicate_of": null
+    },
+    {
+      "candidate_id": "cc1_7f4f1c3c5e8d9343389625b606d6f30c255b4278c91aa18a81e9e86d4b82bcba",
+      "disposition": "needs_external_evidence",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-11-04T19:16:34+08:00",
+      "rationale": "80 组、20 只股票、4 个数据日中有 73 组落入近似容差、没有精确命中，且残差随股票与日期变化。需要来源定义、估值口径及有效日期一致的外部证据；近似匹配不能单独确认 PE(TTM) 等价。",
+      "evidence_refs": [
+        "20261104/20261104_collision_report.json",
+        "adjudications/public_web/20261104_postcapture_public_web_research.md",
+        "https://finance.sina.com.cn/realstock/company/sh600519/nc.shtml",
+        "https://data.eastmoney.com/stockdata/000007.html"
+      ],
+      "duplicate_of": null
+    },
+    {
+      "candidate_id": "cc1_077c91deca48d1a3cb67060221e4804333bf92e89234e3a7a1a62ca684d92fc4",
+      "disposition": "needs_external_evidence",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-11-04T19:16:34+08:00",
+      "rationale": "139 组、20 只股票、7 个数据日有近乎线性的数值关系，但拟合截距约 25.53 股。当前官方个股页面未呈现可与原始样本逐日对齐的精确股本值，单位、精度和有效日差异尚未解释。",
+      "evidence_refs": [
+        "20261104/20261104_collision_report.json",
+        "adjudications/public_web/20261104_postcapture_public_web_research.md",
+        "https://data.eastmoney.com/stockdata/000007.html"
+      ],
+      "duplicate_of": null
+    },
+    {
+      "candidate_id": "cc1_b2b60741f0a85398f2b0ac9843abb22e61903d4d382eb99f067d0c0fbdb0c08b",
+      "disposition": "insufficient_evidence",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-11-04T19:16:34+08:00",
+      "rationale": "候选仅含 14 组值、2 只股票、7 个数据日。两只股票上的完美相关不足以排除个股特例；当前公开页面与接口材料也没有证明 event_dc.CHANGE 和 ftshare_rest.change 的原始字段定义相同。需要扩大跨股票覆盖并补充路径定义后再审。",
+      "evidence_refs": [
+        "20261104/20261104_collision_report.json",
+        "adjudications/public_web/20261104_postcapture_public_web_research.md",
+        "https://quote.eastmoney.com/sz000007.html",
+        "https://quote.eastmoney.com/sh600519.html"
+      ],
+      "duplicate_of": null
+    }
+  ]
+}

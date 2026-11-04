@@ -102,6 +102,59 @@ def test_list_sections_reports_integrity_counts_and_pending_review(tmp_path):
     assert sections["candidate_triage.targets"]["json_record_count"] == 1
 
 
+def test_approximate_matches_are_queryable_but_not_formal_review_candidates(tmp_path):
+    report = _report()
+    report["candidate_triage"]["approximate_matches"] = [
+        {
+            "left": "unknown.turnover_rate",
+            "right": "anchor.turnover_rate",
+            "evidence_type": "rounding_near_match_screen",
+            "status": "screening_only",
+            "near_hit_rate": 0.95,
+            "sample_count": 60,
+        }
+    ]
+    report["candidate_triage"]["summary"]["approximate_match_count"] = 1
+    report["report_completeness"] = collision_reporting.build_report_completeness(report)
+    report_path = _write_report(tmp_path, report)
+
+    sections = {row["name"]: row for row in list_report_sections(report_path)["sections"]}
+    result = query_collision_report(report_path, source="unknown", output_format="json")
+
+    assert sections["candidate_triage.approximate_matches"]["json_record_count"] == 1
+    assert [item["section"] for item in result["items"]] == ["candidate_triage.approximate_matches"]
+    assert result["items"][0]["record"]["status"] == "screening_only"
+    assert "candidate_id" not in result["items"][0]["record"]
+    assert result["candidate_review"]["pending_count"] == 2
+
+
+def test_v1_candidate_report_remains_queryable_after_method_v2_upgrade(tmp_path):
+    report = _report()
+    old_version = "collision-candidate-v1"
+    old_ids = {}
+    for row in report["method_candidate_inventory"]:
+        identity = collision_candidate_reviews.candidate_identity_payload(
+            row, "method_pair", method_version=old_version
+        )
+        identifier = collision_candidate_reviews.candidate_id_from_payload(identity)
+        row["candidate_id"] = identifier
+        row["review_disposition"] = "unreviewed"
+        old_ids[(row["left"], row["right"])] = identifier
+    report["candidate_review"]["method_version"] = old_version
+    report["report_completeness"] = collision_reporting.build_report_completeness(report)
+    report_path = _write_report(tmp_path, report)
+
+    result = query_collision_report(
+        report_path, sections=["method_candidate_inventory"], limit=2, output_format="json"
+    )
+
+    assert result["report_completeness"] == "complete"
+    assert {
+        (item["record"]["left"], item["record"]["right"]): item["record"]["candidate_id"]
+        for item in result["items"]
+    } == old_ids
+
+
 def test_filters_match_source_prefix_full_field_path_and_candidate_id(tmp_path):
     report_path = _write_report(tmp_path)
     report = json.loads(report_path.read_text(encoding="utf-8"))

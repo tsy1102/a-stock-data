@@ -48,6 +48,8 @@ MIN_DAILY_L1 = CR.MIN_DAILY_SAMPLES_L1 if RULES_OK else 18
 MIN_INFORMATIVE_DAILY_L1 = CR.MIN_INFORMATIVE_SAMPLES_L1 if RULES_OK else 5
 MIN_DAILY_L4 = CR.MIN_DAILY_SAMPLES_L4 if RULES_OK else 8
 MIN_CANDIDATE_PAIRS = 12  # 方法候选最少配对样本
+ROUNDING_SCREEN_REL_TOL = CR.ROUNDING_SCREEN_REL_TOL if RULES_OK else 0.005
+ROUNDING_SCREEN_ABS_TOL = CR.ROUNDING_SCREEN_ABS_TOL if RULES_OK else 0.01
 MAX_METHOD_CANDIDATES = 500
 MAX_TARGET_METHOD_CANDIDATES = 8
 MAX_FIELD_FRONTIER_CANDIDATES = 1
@@ -74,12 +76,135 @@ def to_num(v):
     return None
 
 
-def is_close(a: float, b: float) -> bool:
-    """舍入感知容差：相对 1e-6，绝对值兜底 1e-9。"""
+def is_close(a: float, b: float, *, strict: bool = False) -> bool:
+    """Match only machine precision; display rounding is screened separately."""
+    if not math.isfinite(a) or not math.isfinite(b):
+        return False
     if a == b:
         return True
-    denom = max(1.0, abs(a), abs(b))
-    return abs(a - b) <= 1e-6 * denom
+    if strict:
+        return abs(a - b) <= 1e-9
+    return abs(a - b) <= max(math.ulp(a), math.ulp(b))
+
+
+def _within_rounding_screen(a: float, b: float) -> bool:
+    if not math.isfinite(a) or not math.isfinite(b):
+        return False
+    if a == 0 or b == 0 or (a < 0) != (b < 0) or is_close(a, b):
+        return False
+    difference = abs(a - b)
+    scale = max(abs(a), abs(b))
+    return difference <= max(ROUNDING_SCREEN_ABS_TOL, ROUNDING_SCREEN_REL_TOL * scale)
+
+
+def rounding_near_match_candidate(
+    left_id: str, right_id: str, L: dict[str, Any], R: dict[str, Any]
+) -> dict[str, Any] | None:
+    """Return a research-only multi-day near-match summary, never an L1 result."""
+    if (
+        L.get("type") != "num"
+        or R.get("type") != "num"
+        or L.get("is_constant")
+        or R.get("is_constant")
+        or L.get("is_identifier")
+        or R.get("is_identifier")
+    ):
+        return None
+    common = sorted(set(L["vals"]) & set(R["vals"]), key=lambda item: (item[1], item[0]))
+    daily: defaultdict[str, dict[str, int]] = defaultdict(
+        lambda: {
+            "eligible_samples": 0,
+            "informative_samples": 0,
+            "exact_hits": 0,
+            "rounded_hits": 0,
+        }
+    )
+    deviations: list[dict[str, Any]] = []
+    for key in common:
+        if not (_eligible_for_l1(L, key) and _eligible_for_l1(R, key)):
+            continue
+        bucket = daily[key[1]]
+        bucket["eligible_samples"] += 1
+        left_raw, right_raw = L["vals"][key], R["vals"][key]
+        left_num, right_num = to_num(left_raw), to_num(right_raw)
+        if left_num is None or right_num is None:
+            continue
+        if not _informative_pair(left_raw, right_raw, left_num, right_num):
+            continue
+        bucket["informative_samples"] += 1
+        if is_close(left_num, right_num):
+            bucket["exact_hits"] += 1
+        elif _within_rounding_screen(left_num, right_num):
+            bucket["rounded_hits"] += 1
+            absolute_error = abs(left_num - right_num)
+            relative_error = absolute_error / max(abs(left_num), abs(right_num))
+            deviations.append(
+                {
+                    "code": key[0],
+                    "date": key[1],
+                    "left_value": left_num,
+                    "right_value": right_num,
+                    "absolute_error": absolute_error,
+                    "relative_error": relative_error,
+                }
+            )
+
+    eligible_days = {
+        day: counts
+        for day, counts in daily.items()
+        if counts["eligible_samples"] >= MIN_DAILY_L1
+        and counts["informative_samples"] >= MIN_INFORMATIVE_DAILY_L1
+    }
+    qualifying_days = {
+        day: counts
+        for day, counts in eligible_days.items()
+        if (counts["exact_hits"] + counts["rounded_hits"]) / counts["informative_samples"]
+        >= HIT_RATE_L1_RATIO
+    }
+    selected_total = sum(counts["informative_samples"] for counts in eligible_days.values())
+    selected_hits = sum(
+        counts["exact_hits"] + counts["rounded_hits"] for counts in eligible_days.values()
+    )
+    hit_rate = selected_hits / selected_total if selected_total else 0.0
+    if len(qualifying_days) < MULTI_DAY_MIN or hit_rate < HIT_RATE_L1_RATIO:
+        return None
+
+    deviations = [row for row in deviations if row["date"] in eligible_days]
+    if not deviations:
+        return None
+    deviations.sort(
+        key=lambda row: (row["relative_error"], row["absolute_error"], row["date"], row["code"])
+    )
+    return {
+        "left": left_id,
+        "right": right_id,
+        "evidence_type": "rounding_near_match_screen",
+        "status": "screening_only",
+        "tolerance": {
+            "relative": ROUNDING_SCREEN_REL_TOL,
+            "absolute": ROUNDING_SCREEN_ABS_TOL,
+            "rule": "absolute_error <= max(absolute, relative * max(abs(left), abs(right)))",
+        },
+        "sample_count": selected_total,
+        "exact_hit_count": sum(counts["exact_hits"] for counts in eligible_days.values()),
+        "rounded_hit_count": sum(counts["rounded_hits"] for counts in eligible_days.values()),
+        "near_hit_rate": round(hit_rate, 6),
+        "sample_dates": sorted(eligible_days),
+        "qualifying_dates": sorted(qualifying_days),
+        "daily_counts": {
+            day: {
+                **counts,
+                "near_hit_rate": round(
+                    (counts["exact_hits"] + counts["rounded_hits"]) / counts["informative_samples"],
+                    6,
+                ),
+            }
+            for day, counts in sorted(eligible_days.items())
+        },
+        "max_absolute_error": max(row["absolute_error"] for row in deviations),
+        "max_relative_error": max(row["relative_error"] for row in deviations),
+        "rounded_examples": deviations[:20],
+    }
 
 
 def cv(xs):
@@ -484,6 +609,8 @@ __all__ = [
     "MULTI_DAY_MIN",
     "RATIO_CV_MAX",
     "RATIO_STEPS_SIGNED",
+    "ROUNDING_SCREEN_ABS_TOL",
+    "ROUNDING_SCREEN_REL_TOL",
     "_eligible_for_l1",
     "_informative_pair",
     "_median",
@@ -494,5 +621,6 @@ __all__ = [
     "discriminating_sample_for_target",
     "formula_candidates_for_target",
     "is_close",
+    "rounding_near_match_candidate",
     "to_num",
 ]

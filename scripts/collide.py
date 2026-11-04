@@ -105,6 +105,7 @@ from scripts.collision_candidate_methods import (
     discriminating_sample_for_target,
     formula_candidates_for_target,
     is_close,
+    rounding_near_match_candidate,
     to_num,
 )
 from scripts import collision_auxiliary_evidence as CAE
@@ -234,7 +235,15 @@ def collide_pair(L, R, *, contract_anchor=False):
             if informative:
                 informative_l1[day_key][1] += 1
         if left_num is not None and right_num is not None:
-            matched = is_close(left_num, right_num)
+            matched = is_close(
+                left_num,
+                right_num,
+                strict=(
+                    L.get("type") == "enum"
+                    or R.get("type") == "enum"
+                    or (left_num.is_integer() and right_num.is_integer())
+                ),
+            )
             if matched:
                 exact_all[day_key][0] += 1
                 if l1_eligible:
@@ -839,11 +848,13 @@ def run(args):
         + "；未分类字段按来源日期严格门控"
     )
 
-    # 4) Candidate targets exclude verified and explicitly disproved identities.
+    # 4) Candidate targets exclude every registry-verified identity, even if its
+    # metadata is incomplete or its runtime source alias still needs disambiguation.
+    target_exclusions = verified | registry_context["verified_target_exclusions"]
     if registry_context["safe_to_run"]:
         left_ids, safe_right_ids = select_collision_fields(
             store,
-            verified,
+            target_exclusions,
             disproved,
             anchors,
             exploratory=False,
@@ -857,7 +868,7 @@ def run(args):
         # never be mistaken for a verified anchor.
         _, right_ids = select_collision_fields(
             store,
-            verified,
+            target_exclusions,
             disproved,
             anchors,
             exploratory=True,
@@ -870,7 +881,8 @@ def run(args):
         right_ids = []
     diagnostics.append(
         f"对撞模式：{'exploratory' if args.exploratory else 'verified_anchor_only'}；"
-        f"待破解字段={len(left_ids)}，verified 字段={len(verified)}，"
+        f"待破解字段={len(left_ids)}，verified 锚资格字段={len(verified)}，"
+        f"verified 目标排除身份={len(target_exclusions)}，"
         f"可用独立锚={len(anchors)}，官方契约字段={len(official_contract_verified)}，"
         f"L1-C 契约锚={len(contract_anchors)}，"
         f"right 字段={len(right_ids)}"
@@ -886,6 +898,7 @@ def run(args):
 
     # 5) 两两对撞
     raw_pairs = []  # (left, right, result)
+    approximate_match_evidence = []
     guardrail_hits = []  # 命中 REFUTED_CONCLUSIONS 被拦截的伪结论候选
     method_candidate_heap = []
     method_candidate_inventory = []
@@ -950,6 +963,23 @@ def run(args):
                 exploratory_pair_count += 1
             refuted = CR.match_refuted(li, ri) if RULES_OK else None
             if refuted is None:
+                if right_is_anchor and (
+                    res is None or res.get("statistical_level") not in {"L1", "L1-U"}
+                ):
+                    near_match = rounding_near_match_candidate(li, ri, L, R)
+                    if near_match is not None:
+                        near_match["anchor_basis"] = (
+                            "official_contract"
+                            if right_is_contract_anchor
+                            else "independent_source"
+                        )
+                        near_match["source_independence_confirmed"] = bool(
+                            right_is_independent_anchor
+                            and left_family is not None
+                            and right_family is not None
+                            and left_family != right_family
+                        )
+                        approximate_match_evidence.append(near_match)
                 method_candidate, candidate_reason = _method_candidate_for_pair(li, ri, L, R)
                 if candidate_reason.startswith("insufficient"):
                     pair_stats_by_left[li]["insufficient_numeric_samples"] += 1
@@ -1046,6 +1076,16 @@ def run(args):
         sample_by_left,
         anchor_family_counts_by_left,
     )
+    approximate_match_evidence.sort(
+        key=lambda row: (
+            -row["near_hit_rate"],
+            -row["rounded_hit_count"],
+            row["left"],
+            row["right"],
+        )
+    )
+    candidate_triage["approximate_matches"] = approximate_match_evidence
+    candidate_triage["summary"]["approximate_match_count"] = len(approximate_match_evidence)
     candidate_controls = _known_mapping_candidate_controls(store, known_maps)
     candidate_controls["negative_control"] = {
         "control": "candidate method signals against exact pairs listed in REFUTED_CONCLUSIONS",
@@ -1084,6 +1124,11 @@ def run(args):
             f"主动方法候选共 {method_candidate_count} 条；全局保留 {len(method_candidates)} 条，"
             f"另按目标字段补充 {len(method_candidate_frontier)} 条字段前沿候选；"
             "完整方法明细保存在 JSON `method_candidate_inventory`"
+        )
+    if approximate_match_evidence:
+        diagnostics.append(
+            f"近似数值筛查发现 {len(approximate_match_evidence)} 组多日高覆盖线索；"
+            "仅用于网页/来源证据复核，不计入 L1/L1-U 或自动定案"
         )
     if skipped_same_family:
         diagnostics.append(f"跳过同一来源家族字段对：{skipped_same_family}")

@@ -131,6 +131,7 @@ def load_registry_context(registry_path, source_lineage_loader, set_source_linea
     """Load verified identities, contract evidence, anchors, mappings and diagnostics."""
     context = {
         "verified": set(),
+        "verified_target_exclusions": set(),
         "disproved": set(),
         "anchors": set(),
         "contract_anchors": set(),
@@ -257,6 +258,17 @@ def load_registry_context(registry_path, source_lineage_loader, set_source_linea
             continue
         if field.get("status") != "verified":
             continue
+        ambiguous_aliases = set()
+        for alias in aliases:
+            runtime_identity = (alias, code)
+            context["verified_target_exclusions"].add(runtime_identity)
+            # ZHB folds historical source identities into one runtime namespace.
+            # Other aliases can intentionally retain retired/adapter registry rows;
+            # those must not invalidate an active source's verified anchor.
+            if alias == "zhb" and len(alias_identity_owners[runtime_identity]) > 1:
+                ambiguous_aliases.add(alias)
+        if ambiguous_aliases:
+            context["ambiguous_verified"] += 1
         metadata_issues = FRA.source_field_semantic_issues(field)
         if metadata_issues:
             context["unresolved_verified_metadata"] += 1
@@ -268,8 +280,7 @@ def load_registry_context(registry_path, source_lineage_loader, set_source_linea
             context["unmapped_verified"] += 1
             continue
         for alias in aliases:
-            if alias == "zhb" and len(alias_identity_owners[(alias, code)]) != 1:
-                context["ambiguous_verified"] += 1
+            if alias in ambiguous_aliases:
                 continue
             identity = (alias, code)
             context["verified"].add(identity)
@@ -348,7 +359,8 @@ def load_registry_context(registry_path, source_lineage_loader, set_source_linea
         )
     if context["ambiguous_verified"]:
         context["diagnostics"].append(
-            f"{context['ambiguous_verified']} 条 verified 源字段映射到重复运行时身份，未作为已知字段或锚"
+            f"{context['ambiguous_verified']} 条 verified 源字段映射到重复运行时身份；"
+            "相关运行时路径已退出破解目标，但身份消歧前不作锚"
         )
     if context["unresolved_verified_metadata"]:
         issue_labels = {
@@ -364,7 +376,7 @@ def load_registry_context(registry_path, source_lineage_loader, set_source_linea
         )
         context["diagnostics"].append(
             f"{context['unresolved_verified_metadata']} 条 verified 源字段元数据未达锚点条件"
-            f"（{issue_summary}），已重新纳入待破解目标且不作碰撞锚"
+            f"（{issue_summary}）；已退出破解目标，但保留在元数据补全队列且不作碰撞锚"
         )
     if not context["anchors"] and not context["contract_anchors"]:
         context["diagnostics"].append("没有可用的已确认独立锚；默认模式不会把未知字段互相定案")

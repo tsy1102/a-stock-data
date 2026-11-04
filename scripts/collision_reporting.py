@@ -266,6 +266,33 @@ def append_candidate_triage_report(
     if len(targets) > 50:
         lines.append(f"\n_此表显示优先级最高的 50 / 共 {len(targets)} 个目标；完整清单见 JSON。_\n")
 
+    approximate_matches = triage.get("approximate_matches", [])
+    lines.append(f"\n### 舍入近似数值线索（仅研究，不算 L1/L1-U；{len(approximate_matches)} 组）\n")
+    lines.append(
+        "近似窗口只用于提示复核：需核对双方原始单位、展示精度和来源口径；"
+        "不得把该命中率当作字段语义结论或注册表写回依据。完整明细在 JSON "
+        "`candidate_triage.approximate_matches`。\n"
+    )
+    if approximate_matches:
+        lines.append(
+            "| 左字段 | 右字段 | 近似命中率 | 精确/舍入命中 | 有效日期 | 最大误差（绝对/相对） |"
+        )
+        lines.append("|:--|:--|--:|:--|:--|:--|")
+        for item in approximate_matches[:50]:
+            lines.append(
+                f"| `{item.get('left')}` | `{item.get('right')}` | "
+                f"{item.get('near_hit_rate', 0):.2%} | "
+                f"{item.get('exact_hit_count', 0)}/{item.get('rounded_hit_count', 0)} | "
+                f"{', '.join(item.get('qualifying_dates', []))} | "
+                f"{item.get('max_absolute_error')} / {item.get('max_relative_error')} |"
+            )
+        if len(approximate_matches) > 50:
+            lines.append(
+                f"\n_显示前 50 / 共 {len(approximate_matches)} 组；按报告 SHA 和完整字段路径分页读取 JSON。_\n"
+            )
+    else:
+        lines.append("_本轮没有达到近似筛查门槛的关系。_\n")
+
     if frontier:
         lines.append(f"\n### 补足全局截断的字段候选（{len(frontier)}）\n")
         lines.append("| 未知字段 | 候选字段 | 方法 | 样本 | 日期 | 来源 |")
@@ -391,6 +418,12 @@ def build_report_completeness(report_data: dict[str, Any]) -> dict[str, Any]:
         ),
         "diagnostics": (report_data.get("diagnostics"), 100, "完整告警清单"),
     }
+    if "approximate_match_count" in triage_summary:
+        section_specs["candidate_triage.approximate_matches"] = (
+            triage.get("approximate_matches"),
+            50,
+            "独立舍入近似研究线索；不计入 L1/L1-U 或候选审阅状态",
+        )
 
     issues = []
     sections = {}
@@ -507,6 +540,33 @@ def build_report_completeness(report_data: dict[str, Any]) -> dict[str, Any]:
             target_candidate_count_sum += count
     if invalid_target_candidate_counts or target_candidate_count_sum != generated_count:
         issues.append("candidate_triage.targets: candidate_count_mismatch")
+
+    if "approximate_match_count" in triage_summary:
+        approximate_matches = triage.get("approximate_matches")
+        if not isinstance(approximate_matches, list):
+            approximate_matches = []
+            issues.append("candidate_triage.approximate_matches: missing_or_invalid_json_list")
+        expected_approximate_count = triage_summary.get("approximate_match_count")
+        if type(expected_approximate_count) is not int or expected_approximate_count != len(
+            approximate_matches
+        ):
+            issues.append("candidate_triage.approximate_matches: count_mismatch")
+        approximate_pairs = []
+        for row in approximate_matches:
+            if (
+                not isinstance(row, dict)
+                or not isinstance(row.get("left"), str)
+                or not row.get("left")
+                or not isinstance(row.get("right"), str)
+                or not row.get("right")
+                or row.get("evidence_type") != "rounding_near_match_screen"
+                or row.get("status") != "screening_only"
+            ):
+                issues.append("candidate_triage.approximate_matches: invalid_record")
+                continue
+            approximate_pairs.append((row["left"], row["right"]))
+        if len(approximate_pairs) != len(set(approximate_pairs)):
+            issues.append("candidate_triage.approximate_matches: duplicate_pair")
 
     candidate_review_validation = None
     if report_data.get("schema_version", 0) >= 5 or "candidate_review" in report_data:

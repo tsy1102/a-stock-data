@@ -2738,6 +2738,9 @@ async def run_discovery_async(output_path):
             _equity_mcap_count,
             _equity_quote_count,
         ) = _a_share_snapshot_quality_counts(all_stocks, set(_tencent_map) if is_bypass else ())
+        _equity_quote_response_count = _a_share_snapshot_quality_counts(
+            all_stocks, set(_tencent_map)
+        )[2]
         L(
             f"  ✅ data_provider A股样本: {_equity_count} 只；"
             f"市值覆盖率 {_equity_mcap_count}/{_equity_count} [{_fresh_tag}]"
@@ -2756,8 +2759,8 @@ async def run_discovery_async(output_path):
             )
         elif _tencent_map:
             L(
-                f"  📊 腾讯批量行情覆盖: {_equity_quote_count}/{_equity_count} 只 A 股；"
-                "源响应未提供逐股有效日期，报告不将其日期标为已确认"
+                f"  📊 腾讯批量行情返回: {_equity_quote_response_count}/{_equity_count} 只 A 股；"
+                f"逐股日期确认覆盖: 0/{_equity_count}，源响应未提供逐股有效日期"
             )
     ths_hot_list = ths_hot_reason(today_str)
     if not ths_hot_list:
@@ -2881,6 +2884,11 @@ async def run_discovery_async(output_path):
         f"  ✅ 全市场: {len(all_stocks)} | 热点池(同花顺强势): {len(hot_pool)} | "
         f"流动性Top5% K线扫描: {len(top_liquidity_pool)}/{len(_top_liquidity_candidates)}只候选"
     )
+    if len(top_liquidity_pool) < len(_top_liquidity_candidates):
+        L(
+            f"  ⚠️ 流动性Top5%策略仅核验成交额最高的前 {len(top_liquidity_pool)} 只；"
+            f"其余 {len(_top_liquidity_candidates) - len(top_liquidity_pool)} 只未扫描，不代表无符合标的。"
+        )
     L(
         f"  ⏱ 全市场数据加载完成 @ {datetime.now().strftime('%H.%M.%S')}（耗时 {time.time() - _load_t0:.1f}s）"
     )
@@ -3168,12 +3176,19 @@ async def run_discovery_async(output_path):
                         _stock_map[_item["code"]]["name"] = _nm
 
     L("\n" + "=" * 85)
+    _strategy_total_count = len(_names_full)
+    _strategy_timeout_count = sum(reason == "timeout" for reason in _strategy_failures.values())
+    _strategy_error_count = sum(reason != "timeout" for reason in _strategy_failures.values())
+    _strategy_completed_count = max(
+        0, _strategy_total_count - _strategy_timeout_count - _strategy_error_count
+    )
+    _completed_selection_count = sum(
+        len(all_selections.get(name, [])) for name in _names_full if name not in _strategy_failures
+    )
     L(
-        "  扫描结果汇总: "
-        + str(len(all_selections))
-        + "个策略共产出 "
-        + str(sum(len(v) for v in all_selections.values()))
-        + " 次选择"
+        f"  扫描结果汇总: {_strategy_total_count}个策略（完成 {_strategy_completed_count}，"
+        f"超时 {_strategy_timeout_count}，异常 {_strategy_error_count}）；"
+        f"完成策略共产出 {_completed_selection_count} 次选择"
     )
     L("---")
 

@@ -21,7 +21,7 @@ from __future__ import annotations
 import logging
 import re
 import threading
-from datetime import date, datetime, timedelta
+from datetime import date, datetime, time, timedelta
 from typing import Any, Callable, Dict, List, Optional, Tuple
 
 
@@ -80,13 +80,15 @@ def _backtrack_trading_days(n: int = 10) -> List[str]:
 # 1) 申购日历 · 资金抽水压力
 # ---------------------------------------------------------------------------
 def render_ipo_calendar_section(
-    today_str: Optional[str] = None, lookahead_days: int = 21
+    today_str: Optional[str] = None,
+    lookahead_days: int = 21,
+    now: Optional[datetime] = None,
 ) -> List[str]:
     """近期新股申购日历 → 资金分流/抽水压力监测。
 
-    抽水压力 = 未来 lookahead_days 日内申购新股数 + 预计募资合计(亿元, 已对撞订正)。
-    募资额字段(TOTAL_RAISE_FUNDS/PREDICT_RAISE_FUNDS)单位=亿元: 对撞确认
-    TOTAL_ISSUE_NUM(万股)*ISSUE_PRICE(元)/1e4 == TOTAL_RAISE_FUNDS(28点误差0)。
+    抽水压力 = 当前时点起 lookahead_days 日内仍待申购的新股数 + 预计募资合计(亿元)。
+    募资额字段(TOTAL_RAISE_FUNDS/PREDICT_RAISE_FUNDS)单位=亿元: 对撞确认；
+    缺失时可用 TOTAL_ISSUE_NUM(万股)*ISSUE_PRICE(元)/1e4 推算发行总额。
     数据来源: 东财 datacenter(reportName=RPTA_APP_IPOAPPLY, 已对撞校正)。
     """
     out: List[str] = ["## 【G. 近期新股申购日历 · 资金抽水压力监测】", ""]
@@ -103,15 +105,47 @@ def render_ipo_calendar_section(
         out.append("  （暂无申购日历数据）")
         return out
 
-    today = _parse_date(today_str) or datetime.now()
-    horizon = today + timedelta(days=lookahead_days)
+    report_now = now or datetime.now()
+    today = _parse_date(today_str)
+    if today is None:
+        report_date = report_now.date()
+        report_time = report_now.time()
+    else:
+        report_date = today.date()
+        if now is not None:
+            report_time = now.time() if now.date() == report_date else today.time()
+        elif today.time() != time.min:
+            report_time = today.time()
+        elif report_now.date() == report_date:
+            report_time = report_now.time()
+        else:
+            # 日期单独提供且不是本地今天时，不推测盘中时刻；按当天开盘前处理。
+            report_time = time.min
+    horizon = report_date + timedelta(days=lookahead_days)
 
     def _ad(r: Dict[str, Any]) -> Optional[datetime]:
         return _parse_date(r.get("APPLY_DATE"))
 
     def _rf(r: Dict[str, Any]) -> Optional[float]:
         # 募资额单位: 亿元(对撞确认, 见模块 docstring)
-        return _num(r.get("TOTAL_RAISE_FUNDS")) or _num(r.get("PREDICT_RAISE_FUNDS"))
+        reported = _num(r.get("TOTAL_RAISE_FUNDS"))
+        if reported is None:
+            reported = _num(r.get("PREDICT_RAISE_FUNDS"))
+        if reported is not None:
+            return reported
+        issue_shares_10k = _num(r.get("TOTAL_ISSUE_NUM"))
+        issue_price = _num(r.get("ISSUE_PRICE"))
+        if issue_shares_10k is not None and issue_shares_10k > 0 and issue_price is not None:
+            return issue_shares_10k * issue_price / 10_000
+        return None
+
+    def _is_upcoming(apply_date: datetime) -> bool:
+        apply_day = apply_date.date()
+        if apply_day > report_date:
+            return True
+        if apply_day < report_date:
+            return False
+        return report_time < time(15, 0)
 
     upcoming: List[Dict[str, Any]] = []
     recent: List[Dict[str, Any]] = []
@@ -120,9 +154,9 @@ def render_ipo_calendar_section(
         apply_date = _ad(row)
         if apply_date is None:
             continue
-        if apply_date >= today:
+        if _is_upcoming(apply_date):
             upcoming.append(row)
-            if apply_date <= horizon:
+            if apply_date.date() <= horizon:
                 in_horizon.append(row)
         else:
             recent.append(row)
@@ -134,7 +168,7 @@ def render_ipo_calendar_section(
             total_raise += raise_amount
 
     out.append(
-        f"  💧 **抽水压力(以申购只数计)**: 未来 {lookahead_days} 日内有 **{len(in_horizon)}** 只新股申购"
+        f"  💧 **抽水压力(以申购只数计)**: 当前时点起 {lookahead_days} 日内有 **{len(in_horizon)}** 只待申购新股"
         + (
             f"，预计募资约 **{total_raise:.1f} 亿元**（已定价/预测口径，待定价以预测值占位）"
             if total_raise > 0
@@ -155,22 +189,31 @@ def render_ipo_calendar_section(
         rf_s = f"{rf:.2f}" if rf is not None else "待定"
         mkt = r.get("TRADE_MARKET") or r.get("MARKET_TYPE_NEW") or ""
         apply_date = _ad(r)
-        state = "待申购" if apply_date is not None and apply_date >= today else "已申购"
+        if apply_date is None or apply_date.date() > report_date:
+            state = "待申购"
+        else:
+            state = "当日申购未截止"
         out.append(
             f"  | {ad} | {code} | {name} | {price if price is not None else '待定'} "
             f"| {rf_s} | {mkt} | {state} |"
         )
     if recent:
         out.append("")
-        out.append("  **近期已申购（参考）:**")
+        out.append("  **近期申购日已过（参考）:**")
         for r in recent[:5]:
+            apply_date = _ad(r)
             ad = (r.get("APPLY_DATE") or "")[:10]
             name = r.get("SECURITY_NAME_ABBR") or ""
-            out.append(f"  • {ad} {name}（已申购）")
+            state = (
+                "当日申购已截止"
+                if apply_date and apply_date.date() == report_date
+                else "申购日已过"
+            )
+            out.append(f"  • {ad} {name}（{state}）")
     out.append("")
     out.append(
         "  ⚠️ 抽水压力为定性监测指标：申购冻结资金会阶段性抽离二级市场流动性；"
-        "募资额为已定价口径，待定价新股以预测值占位，不构成投资建议。"
+        "募资额优先采用已披露口径；缺失时按发行数量和发行价推算，未定价且缺发行数量时显示待定；不构成投资建议。"
     )
     return out
 
@@ -281,7 +324,7 @@ def render_sina_research_section(today_str: Optional[str] = None) -> List[str]:
         out.append("  （暂无研报）")
         return out
     out.append(
-        f"  数据来源: 新浪财经研报（最新 {len(rows)} 条）｜仅展示标题与机构, 字段语义待对撞订正"
+        f"  数据来源: 新浪财经研报（返回 {len(rows)} 条，展示前 {min(len(rows), 15)} 条）｜仅展示标题与机构, 字段语义待对撞订正"
     )
     out.append("")
     for r in rows[:15]:
@@ -316,7 +359,7 @@ def render_cctv_news_section(today_str: Optional[str] = None) -> List[str]:
     if not rows:
         out.append("  （近日无《新闻联播》条目）")
         return out
-    out.append("  数据来源: 央视网《新闻联播》（最近有条目日）")
+    out.append("  数据来源: 央视网《新闻联播》（最近有条目日，最多展示前 12 条）")
     out.append("")
     for r in rows[:12]:
         d = (r.get("date") or "")[:10]
@@ -341,7 +384,9 @@ def render_sse_e_interaction_section(today_str: Optional[str] = None) -> List[st
     if not rows:
         out.append("  （暂无问答）")
         return out
-    out.append("  数据来源: 上证e互动（sns.sseinfo.com, 市场级最新已回答）")
+    out.append(
+        f"  数据来源: 上证e互动（sns.sseinfo.com, 市场级最新已回答；返回 {len(rows)} 条，展示前 {min(len(rows), 12)} 条）"
+    )
     out.append("")
     for r in rows[:12]:
         code = r.get("code") or ""
@@ -384,7 +429,7 @@ def render_st_list_section(today_str: Optional[str] = None) -> List[str]:
 
     c = Counter(r.get("market") for r in rows)
     out.append(
-        f"  数据来源: 东财风险警示板（沪深）+ 北交所全表按名筛 ｜ 共 {len(rows)} 只: "
+        f"  数据来源: 东财风险警示板（沪深）+ 北交所全表按名筛 ｜ 共 {len(rows)} 只，本节展示前 {min(len(rows), 30)} 只: "
         + ", ".join(f"{k} {v}" for k, v in c.items())
     )
     out.append("")

@@ -1771,6 +1771,8 @@ def tdx_get_market_stat() -> Optional[Dict[str, Any]]:
     基于 easy_tdx get_market_stat（通达信 880005/880001/880006 统计指数）。
     计数字段协议返回真实家数/10, easy_tdx 已 ×10 还原。失败返回 None
     （通达信统计指数非所有服务器提供）。
+    total_market_cap 统一返回人民币元。对照交易所公开总市值后，TDX 880001 客户端换算值
+    观测低一个数量级；在此边界按项目经验校准 ×10（非上游协议单位声明）。
     返回 dict: up_count/down_count/neutral_count/suspended_count/total_count/
                total_amount/total_volume/total_market_cap/limit_up_count/limit_down_count。
     60s 进程内缓存（全市场数据, 避免批量报告逐股重复打 TDX）。
@@ -1797,7 +1799,7 @@ def tdx_get_market_stat() -> Optional[Dict[str, Any]]:
             "total_count": int(_r.get("total_count", 0) or 0),
             "total_amount": float(_r.get("total_amount", 0) or 0),
             "total_volume": float(_r.get("total_volume", 0) or 0),
-            "total_market_cap": float(_r.get("total_market_cap", 0) or 0),
+            "total_market_cap": float(_r.get("total_market_cap", 0) or 0) * 10.0,
             "limit_up_count": int(_r.get("limit_up_count", 0) or 0),
             "limit_down_count": int(_r.get("limit_down_count", 0) or 0),
         }

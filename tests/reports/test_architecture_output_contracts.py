@@ -387,6 +387,8 @@ def test_report_generator_writes_utf8_markdown_offline(
         assert "停牌状态未过滤（ZHB快照不含可靠成交量/停牌标记）" in content
         assert "扫描超时（720秒），结果未完成" in content
         assert "空结果不代表没有符合标的" in content
+        assert "27个策略（完成 26，超时 1，异常 0）" in content
+        assert "完成策略共产出" in content
     assert content.strip()
     assert returned == content
     assert network_attempts == []

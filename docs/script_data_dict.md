@@ -176,7 +176,7 @@
 | C 板块-异动 | ZHB 旁路优先 `_build_sectors_from_zhb`、TDX 兜底(防 push2 风控) |
 | 异动公告 | **get_abnormal_announcements → get_strategic_announcements(keywords=["异常波动"], V17.0 下沉带缓存+TDX 兜底)** |
 
-### 5.2 get_val_report.py(21 策略全市场, 2151 行)
+### 5.2 get_val_report.py（当前 27 策略全市场；下表保留 V17.0 历史变更项）
 | 变化点 | V17.0 |
 |:---|:---|
 | 策略扫描 | asyncio 并发 3; ZHB 快照 O(1) 读(main_net_buy_amount 等) |

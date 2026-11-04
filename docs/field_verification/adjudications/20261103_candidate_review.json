@@ -1,0 +1,70 @@
+{
+  "schema_version": 1,
+  "decisions": [
+    {
+      "schema_version": 1,
+      "candidate_id": "cc1_cb00a9dc597ac474a419a91ccfc60f7176bac666114a589edd3d6a990a08edbc",
+      "disposition": "needs_external_evidence",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-11-04T11:35:23+08:00",
+      "rationale": "已复核完整报告及官方网页。FTShare 官方契约明确区分成交额 turnover 与换手率 turnover_rate；新浪样本实际位于 money_flow[0].turnover，11-03 的 600519 值为 56.8191。新浪行情页只显示 11-04 实时换手率，不能确认该原始路径的单位/语义或日期对齐。高相关及缩放公式仍是候选线索；保持 needs_external_evidence，不改主字典。",
+      "evidence_refs": [
+        "20261103/20261103_collision_report.json",
+        "adjudications/public_web/20261103_public_web_research.md"
+      ],
+      "duplicate_of": null
+    },
+    {
+      "schema_version": 1,
+      "candidate_id": "cc1_a9615e737990e7455925d9513f6180cf2da1e22f7cd971bde21ecec11dc2dbf4",
+      "disposition": "needs_external_evidence",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-11-04T11:35:23+08:00",
+      "rationale": "已复核完整报告及同花顺官方 F10 页面。茅台、泸州老窖、旺能环境页面展示动态/静态市盈率，未展示与样本日期可比的 PE_TTM 历史值；高相关不能证明 fuyao.valuation.pe_ttm 与 zhb.stat.pe_ttm 同义。保持 needs_external_evidence，不改主字典。",
+      "evidence_refs": [
+        "20261103/20261103_collision_report.json",
+        "adjudications/public_web/20261103_public_web_research.md"
+      ],
+      "duplicate_of": null
+    },
+    {
+      "schema_version": 1,
+      "candidate_id": "cc1_b3c02927febdca47d9938c53deed42d74be9111531318017d6f5d4b5238af09b",
+      "disposition": "needs_external_evidence",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-11-04T11:35:23+08:00",
+      "rationale": "已复核完整报告及同花顺官方 F10 页面。页面未展示与样本日期可比的 PE_TTM 历史值；本地样本中 zhb.stat.pe_ttm 与 zhb.full.pe_ttm 数值相同，目前不能区分两个 ZHB 路径，也未证明其结构等价。保持 needs_external_evidence，不合并、不改主字典。",
+      "evidence_refs": [
+        "20261103/20261103_collision_report.json",
+        "adjudications/public_web/20261103_public_web_research.md"
+      ],
+      "duplicate_of": null
+    },
+    {
+      "schema_version": 1,
+      "candidate_id": "cc1_ba48361b86358fee1de618818b4f901e51b9cb4318d6b93f31d6b67337c09bb5",
+      "disposition": "needs_external_evidence",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-11-04T11:35:23+08:00",
+      "rationale": "已复核完整报告、FTShare 官方契约及三只股票的同花顺 F10 页面。页面标签和舍入值支持宽泛的流通 A 股股数语义，但为季度资料，不能确认 11-03 精确值；AxData 样本含小数股，FTShare 契约为整数股，底层来源独立性也未确认。保持 needs_external_evidence，不改主字典。",
+      "evidence_refs": [
+        "20261103/20261103_collision_report.json",
+        "adjudications/public_web/20261103_public_web_research.md"
+      ],
+      "duplicate_of": null
+    },
+    {
+      "schema_version": 1,
+      "candidate_id": "cc1_c17cd377ca373e188be326e1e736696b1ced2672d9633c641732b4e6839d863f",
+      "disposition": "needs_external_evidence",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-11-04T11:35:23+08:00",
+      "rationale": "已复核完整报告及东方财富官方行情页。11-04 页面昨收 9.33 元与 raw_event_dc 的 11-03 LATELY_PRICE 对齐，但没有获得 11-02 收盘或 11-03 历史 CHANGE 页面值；日K图提示停留在 2026-09-29。实际原始路径是 ipo_calendar[*].CHANGE，本地样本仅覆盖两个代码，且 source_lineage.json 缺少 event_dc 到 datacenter 的别名。保持 needs_external_evidence，不改主字典。",
+      "evidence_refs": [
+        "20261103/20261103_collision_report.json",
+        "adjudications/public_web/20261103_public_web_research.md"
+      ],
+      "duplicate_of": null
+    }
+  ]
+}

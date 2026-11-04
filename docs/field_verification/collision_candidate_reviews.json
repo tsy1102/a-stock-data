@@ -2856,6 +2856,346 @@
         "schema_version": 1
       }
     },
+    "cc1_a9615e737990e7455925d9513f6180cf2da1e22f7cd971bde21ecec11dc2dbf4": {
+      "current": {
+        "candidate_id": "cc1_a9615e737990e7455925d9513f6180cf2da1e22f7cd971bde21ecec11dc2dbf4",
+        "disposition": "needs_external_evidence",
+        "duplicate_of": null,
+        "event_id": "e201d56ec65f63986d3f7e6dcddad9e134fabddd08ed11138976bbbb97e3c51e",
+        "evidence_refs": [
+          {
+            "path": "20261103/20261103_collision_report.json",
+            "sha256": "cfce542384db3d804438a5105c06ec37eb2cf2786ba73de699d6c22a5657ff3d"
+          },
+          {
+            "path": "adjudications/public_web/20261103_public_web_research.md",
+            "sha256": "d921aadd03c9bc744a0b4318878faca2164ff02c2cfbf0b7db2737aa8ec20344"
+          }
+        ],
+        "rationale": "已复核完整报告及同花顺官方 F10 页面。茅台、泸州老窖、旺能环境页面展示动态/静态市盈率，未展示与样本日期可比的 PE_TTM 历史值；高相关不能证明 fuyao.valuation.pe_ttm 与 zhb.stat.pe_ttm 同义。保持 needs_external_evidence，不改主字典。",
+        "reviewed_at": "2026-11-04T11:35:23+08:00",
+        "reviewer": "Codex"
+      },
+      "history": [
+        {
+          "candidate_id": "cc1_a9615e737990e7455925d9513f6180cf2da1e22f7cd971bde21ecec11dc2dbf4",
+          "disposition": "needs_external_evidence",
+          "duplicate_of": null,
+          "event_id": "ae54c2c5f328330bdde7779bc608d112e87915b9e0a2fdb240985955d6d48228",
+          "evidence_refs": [
+            {
+              "path": "20261103/20261103_collision_report.json",
+              "sha256": "d2782f50485f521cda34880965ecee550dc2af56efe481033ce42c323bc69c9d"
+            },
+            {
+              "path": "adjudications/public_web/20261103_public_web_research.md",
+              "sha256": "bf2a5cc54abaa929164e7ae79c3a2623ba7c2c133ffc7ead9f5a7fe44be90282"
+            }
+          ],
+          "rationale": "已审阅完整报告中的方法候选：fuyao.valuation.pe_ttm ↔ zhb.stat.pe_ttm，样本 80 对，数据日 T:20261023, T:20261028, T:20261030, T:20261102。该候选仍不是 actionable_L1/L1-U，且本轮非 Google 直连无法确认，未访问官方页面；需要官方定义、单位和日期对齐证据后再判断。仅记录为待外部证据，不作注册表或主字典裁决。",
+          "reviewed_at": "2026-11-03T22:13:50+08:00",
+          "reviewer": "Codex"
+        },
+        {
+          "candidate_id": "cc1_a9615e737990e7455925d9513f6180cf2da1e22f7cd971bde21ecec11dc2dbf4",
+          "disposition": "needs_external_evidence",
+          "duplicate_of": null,
+          "event_id": "e201d56ec65f63986d3f7e6dcddad9e134fabddd08ed11138976bbbb97e3c51e",
+          "evidence_refs": [
+            {
+              "path": "20261103/20261103_collision_report.json",
+              "sha256": "cfce542384db3d804438a5105c06ec37eb2cf2786ba73de699d6c22a5657ff3d"
+            },
+            {
+              "path": "adjudications/public_web/20261103_public_web_research.md",
+              "sha256": "d921aadd03c9bc744a0b4318878faca2164ff02c2cfbf0b7db2737aa8ec20344"
+            }
+          ],
+          "rationale": "已复核完整报告及同花顺官方 F10 页面。茅台、泸州老窖、旺能环境页面展示动态/静态市盈率，未展示与样本日期可比的 PE_TTM 历史值；高相关不能证明 fuyao.valuation.pe_ttm 与 zhb.stat.pe_ttm 同义。保持 needs_external_evidence，不改主字典。",
+          "reviewed_at": "2026-11-04T11:35:23+08:00",
+          "reviewer": "Codex"
+        }
+      ],
+      "identity": {
+        "evidence": {
+          "evidence_sources": [
+            "fuyao",
+            "zhb"
+          ],
+          "left": "fuyao.valuation.pe_ttm",
+          "methods": [
+            {
+              "leave_one_out_max": 0.9999,
+              "leave_one_out_min": 0.9947,
+              "leave_one_out_sign_stable": true,
+              "method": "robust_correlation",
+              "pearson": 0.9956,
+              "spearman": 0.9981
+            },
+            {
+              "formula": "right ≈ 0.98078168 × left + -1.4457777",
+              "method": "affine_formula",
+              "r_squared": 0.991283
+            },
+            {
+              "median_abs_pearson": 1.0,
+              "method": "per_stock_time_series",
+              "sample_dates": [
+                "T:20261023",
+                "T:20261028",
+                "T:20261030",
+                "T:20261102"
+              ],
+              "sign_consistency": 1.0,
+              "stock_correlations": [
+                {
+                  "code": "000007",
+                  "dates": [
+                    "T:20261023",
+                    "T:20261028",
+                    "T:20261030",
+                    "T:20261102"
+                  ],
+                  "pearson": 1.0
+                },
+                {
+                  "code": "000011",
+                  "dates": [
+                    "T:20261023",
+                    "T:20261028",
+                    "T:20261030",
+                    "T:20261102"
+                  ],
+                  "pearson": 1.0
+                },
+                {
+                  "code": "000037",
+                  "dates": [
+                    "T:20261023",
+                    "T:20261028",
+                    "T:20261030",
+                    "T:20261102"
+                  ],
+                  "pearson": 1.0
+                },
+                {
+                  "code": "000568",
+                  "dates": [
+                    "T:20261023",
+                    "T:20261028",
+                    "T:20261030",
+                    "T:20261102"
+                  ],
+                  "pearson": 1.0
+                },
+                {
+                  "code": "000678",
+                  "dates": [
+                    "T:20261023",
+                    "T:20261028",
+                    "T:20261030",
+                    "T:20261102"
+                  ],
+                  "pearson": 0.9639
+                },
+                {
+                  "code": "002034",
+                  "dates": [
+                    "T:20261023",
+                    "T:20261028",
+                    "T:20261030",
+                    "T:20261102"
+                  ],
+                  "pearson": 1.0
+                },
+                {
+                  "code": "002242",
+                  "dates": [
+                    "T:20261023",
+                    "T:20261028",
+                    "T:20261030",
+                    "T:20261102"
+                  ],
+                  "pearson": 1.0
+                },
+                {
+                  "code": "300031",
+                  "dates": [
+                    "T:20261023",
+                    "T:20261028",
+                    "T:20261030",
+                    "T:20261102"
+                  ],
+                  "pearson": 1.0
+                },
+                {
+                  "code": "300788",
+                  "dates": [
+                    "T:20261023",
+                    "T:20261028",
+                    "T:20261030",
+                    "T:20261102"
+                  ],
+                  "pearson": 1.0
+                },
+                {
+                  "code": "301190",
+                  "dates": [
+                    "T:20261023",
+                    "T:20261028",
+                    "T:20261030",
+                    "T:20261102"
+                  ],
+                  "pearson": 1.0
+                },
+                {
+                  "code": "600309",
+                  "dates": [
+                    "T:20261023",
+                    "T:20261028",
+                    "T:20261030",
+                    "T:20261102"
+                  ],
+                  "pearson": 1.0
+                },
+                {
+                  "code": "600519",
+                  "dates": [
+                    "T:20261023",
+                    "T:20261028",
+                    "T:20261030",
+                    "T:20261102"
+                  ],
+                  "pearson": 0.9915
+                },
+                {
+                  "code": "600675",
+                  "dates": [
+                    "T:20261023",
+                    "T:20261028",
+                    "T:20261030",
+                    "T:20261102"
+                  ],
+                  "pearson": 1.0
+                },
+                {
+                  "code": "600825",
+                  "dates": [
+                    "T:20261023",
+                    "T:20261028",
+                    "T:20261030",
+                    "T:20261102"
+                  ],
+                  "pearson": 1.0
+                },
+                {
+                  "code": "601288",
+                  "dates": [
+                    "T:20261023",
+                    "T:20261028",
+                    "T:20261030",
+                    "T:20261102"
+                  ],
+                  "pearson": 0.6331
+                },
+                {
+                  "code": "688327",
+                  "dates": [
+                    "T:20261023",
+                    "T:20261028",
+                    "T:20261030",
+                    "T:20261102"
+                  ],
+                  "pearson": 0.5701
+                },
+                {
+                  "code": "688553",
+                  "dates": [
+                    "T:20261023",
+                    "T:20261028",
+                    "T:20261030",
+                    "T:20261102"
+                  ],
+                  "pearson": 0.7297
+                },
+                {
+                  "code": "688589",
+                  "dates": [
+                    "T:20261023",
+                    "T:20261028",
+                    "T:20261030",
+                    "T:20261102"
+                  ],
+                  "pearson": 1.0
+                },
+                {
+                  "code": "920118",
+                  "dates": [
+                    "T:20261023",
+                    "T:20261028",
+                    "T:20261030",
+                    "T:20261102"
+                  ],
+                  "pearson": 0.7855
+                },
+                {
+                  "code": "920508",
+                  "dates": [
+                    "T:20261023",
+                    "T:20261028",
+                    "T:20261030",
+                    "T:20261102"
+                  ],
+                  "pearson": 0.5067
+                }
+              ],
+              "stocks": 20
+            },
+            {
+              "method": "semantic_label",
+              "shared_tokens": [
+                "pe",
+                "ttm"
+              ],
+              "token_jaccard": 0.5
+            }
+          ],
+          "right": "zhb.stat.pe_ttm",
+          "sample_codes": [
+            "000007",
+            "000011",
+            "000037",
+            "000568",
+            "000678",
+            "002034",
+            "002242",
+            "300031",
+            "300788",
+            "301190",
+            "600309",
+            "600519",
+            "600675",
+            "600825",
+            "601288",
+            "688327",
+            "688553",
+            "688589",
+            "920118",
+            "920508"
+          ],
+          "sample_count": 80,
+          "sample_dates": [
+            "T:20261023",
+            "T:20261028",
+            "T:20261030",
+            "T:20261102"
+          ]
+        },
+        "kind": "method_pair",
+        "method_version": "collision-candidate-v1",
+        "schema_version": 1
+      }
+    },
     "cc1_ad593b9f2d7a0749c09503285a67bb8c15feb12fde32f3347e7936d89415a282": {
       "current": {
         "candidate_id": "cc1_ad593b9f2d7a0749c09503285a67bb8c15feb12fde32f3347e7936d89415a282",
@@ -3308,6 +3648,569 @@
         "schema_version": 1
       }
     },
+    "cc1_b3c02927febdca47d9938c53deed42d74be9111531318017d6f5d4b5238af09b": {
+      "current": {
+        "candidate_id": "cc1_b3c02927febdca47d9938c53deed42d74be9111531318017d6f5d4b5238af09b",
+        "disposition": "needs_external_evidence",
+        "duplicate_of": null,
+        "event_id": "285d160a3b193b946ec368786799da2697aadf9622f8f9f4ad3bfdcb390161ff",
+        "evidence_refs": [
+          {
+            "path": "20261103/20261103_collision_report.json",
+            "sha256": "cfce542384db3d804438a5105c06ec37eb2cf2786ba73de699d6c22a5657ff3d"
+          },
+          {
+            "path": "adjudications/public_web/20261104_public_web_research.md",
+            "sha256": "613dc17ead7f95267ae830c3760bc978007a81ab2dd22df29b9fc1e6c4ba0f77"
+          },
+          {
+            "path": "https://market.ft.tech/gateway/doc/p/mdsj0xyo",
+            "sha256": null
+          },
+          {
+            "path": "https://basic.10jqka.com.cn/600519/",
+            "sha256": null
+          },
+          {
+            "path": "https://basic.10jqka.com.cn/000568/finance.html",
+            "sha256": null
+          }
+        ],
+        "rationale": "复核 2026-11-04 公开网页深挖记录。同花顺页面未提供与样本日期可比的 PE_TTM 历史值；动态/预测估值标签不能替代 TTM 口径。ZHB stat/full 两路径样本值相同只能说明当前样本不能区分路径，不能证明路径结构相同。保留 needs_external_evidence，不合并字段。",
+        "reviewed_at": "2026-11-04T12:59:45+08:00",
+        "reviewer": "Codex"
+      },
+      "history": [
+        {
+          "candidate_id": "cc1_b3c02927febdca47d9938c53deed42d74be9111531318017d6f5d4b5238af09b",
+          "disposition": "needs_external_evidence",
+          "duplicate_of": null,
+          "event_id": "26f3a90ee4659db627ab75620dba6a4140b3b4d8dcfb7ad3cf63e3c8aeae68fe",
+          "evidence_refs": [
+            {
+              "path": "20261103/20261103_collision_report.json",
+              "sha256": "d2782f50485f521cda34880965ecee550dc2af56efe481033ce42c323bc69c9d"
+            },
+            {
+              "path": "adjudications/public_web/20261103_public_web_research.md",
+              "sha256": "bf2a5cc54abaa929164e7ae79c3a2623ba7c2c133ffc7ead9f5a7fe44be90282"
+            }
+          ],
+          "rationale": "已审阅完整报告中的方法候选：fuyao.valuation.pe_ttm ↔ zhb.full.pe_ttm，样本 80 对，数据日 T:20261023, T:20261028, T:20261030, T:20261102。该候选仍不是 actionable_L1/L1-U，且本轮非 Google 直连无法确认，未访问官方页面；需要官方定义、单位和日期对齐证据后再判断。仅记录为待外部证据，不作注册表或主字典裁决。",
+          "reviewed_at": "2026-11-03T22:13:50+08:00",
+          "reviewer": "Codex"
+        },
+        {
+          "candidate_id": "cc1_b3c02927febdca47d9938c53deed42d74be9111531318017d6f5d4b5238af09b",
+          "disposition": "needs_external_evidence",
+          "duplicate_of": null,
+          "event_id": "78771a5dfd39fb33f0437029d61b023961ccc60e090b01dd4612b2c68ef2547b",
+          "evidence_refs": [
+            {
+              "path": "20261103/20261103_collision_report.json",
+              "sha256": "cfce542384db3d804438a5105c06ec37eb2cf2786ba73de699d6c22a5657ff3d"
+            },
+            {
+              "path": "adjudications/public_web/20261103_public_web_research.md",
+              "sha256": "d921aadd03c9bc744a0b4318878faca2164ff02c2cfbf0b7db2737aa8ec20344"
+            }
+          ],
+          "rationale": "已复核完整报告及同花顺官方 F10 页面。页面未展示与样本日期可比的 PE_TTM 历史值；本地样本中 zhb.stat.pe_ttm 与 zhb.full.pe_ttm 数值相同，目前不能区分两个 ZHB 路径，也未证明其结构等价。保持 needs_external_evidence，不合并、不改主字典。",
+          "reviewed_at": "2026-11-04T11:35:23+08:00",
+          "reviewer": "Codex"
+        },
+        {
+          "candidate_id": "cc1_b3c02927febdca47d9938c53deed42d74be9111531318017d6f5d4b5238af09b",
+          "disposition": "needs_external_evidence",
+          "duplicate_of": null,
+          "event_id": "285d160a3b193b946ec368786799da2697aadf9622f8f9f4ad3bfdcb390161ff",
+          "evidence_refs": [
+            {
+              "path": "20261103/20261103_collision_report.json",
+              "sha256": "cfce542384db3d804438a5105c06ec37eb2cf2786ba73de699d6c22a5657ff3d"
+            },
+            {
+              "path": "adjudications/public_web/20261104_public_web_research.md",
+              "sha256": "613dc17ead7f95267ae830c3760bc978007a81ab2dd22df29b9fc1e6c4ba0f77"
+            },
+            {
+              "path": "https://market.ft.tech/gateway/doc/p/mdsj0xyo",
+              "sha256": null
+            },
+            {
+              "path": "https://basic.10jqka.com.cn/600519/",
+              "sha256": null
+            },
+            {
+              "path": "https://basic.10jqka.com.cn/000568/finance.html",
+              "sha256": null
+            }
+          ],
+          "rationale": "复核 2026-11-04 公开网页深挖记录。同花顺页面未提供与样本日期可比的 PE_TTM 历史值；动态/预测估值标签不能替代 TTM 口径。ZHB stat/full 两路径样本值相同只能说明当前样本不能区分路径，不能证明路径结构相同。保留 needs_external_evidence，不合并字段。",
+          "reviewed_at": "2026-11-04T12:59:45+08:00",
+          "reviewer": "Codex"
+        }
+      ],
+      "identity": {
+        "evidence": {
+          "evidence_sources": [
+            "fuyao",
+            "zhb"
+          ],
+          "left": "fuyao.valuation.pe_ttm",
+          "methods": [
+            {
+              "leave_one_out_max": 0.9999,
+              "leave_one_out_min": 0.9947,
+              "leave_one_out_sign_stable": true,
+              "method": "robust_correlation",
+              "pearson": 0.9956,
+              "spearman": 0.9981
+            },
+            {
+              "formula": "right ≈ 0.98078168 × left + -1.4457777",
+              "method": "affine_formula",
+              "r_squared": 0.991283
+            },
+            {
+              "median_abs_pearson": 1.0,
+              "method": "per_stock_time_series",
+              "sample_dates": [
+                "T:20261023",
+                "T:20261028",
+                "T:20261030",
+                "T:20261102"
+              ],
+              "sign_consistency": 1.0,
+              "stock_correlations": [
+                {
+                  "code": "000007",
+                  "dates": [
+                    "T:20261023",
+                    "T:20261028",
+                    "T:20261030",
+                    "T:20261102"
+                  ],
+                  "pearson": 1.0
+                },
+                {
+                  "code": "000011",
+                  "dates": [
+                    "T:20261023",
+                    "T:20261028",
+                    "T:20261030",
+                    "T:20261102"
+                  ],
+                  "pearson": 1.0
+                },
+                {
+                  "code": "000037",
+                  "dates": [
+                    "T:20261023",
+                    "T:20261028",
+                    "T:20261030",
+                    "T:20261102"
+                  ],
+                  "pearson": 1.0
+                },
+                {
+                  "code": "000568",
+                  "dates": [
+                    "T:20261023",
+                    "T:20261028",
+                    "T:20261030",
+                    "T:20261102"
+                  ],
+                  "pearson": 1.0
+                },
+                {
+                  "code": "000678",
+                  "dates": [
+                    "T:20261023",
+                    "T:20261028",
+                    "T:20261030",
+                    "T:20261102"
+                  ],
+                  "pearson": 0.9639
+                },
+                {
+                  "code": "002034",
+                  "dates": [
+                    "T:20261023",
+                    "T:20261028",
+                    "T:20261030",
+                    "T:20261102"
+                  ],
+                  "pearson": 1.0
+                },
+                {
+                  "code": "002242",
+                  "dates": [
+                    "T:20261023",
+                    "T:20261028",
+                    "T:20261030",
+                    "T:20261102"
+                  ],
+                  "pearson": 1.0
+                },
+                {
+                  "code": "300031",
+                  "dates": [
+                    "T:20261023",
+                    "T:20261028",
+                    "T:20261030",
+                    "T:20261102"
+                  ],
+                  "pearson": 1.0
+                },
+                {
+                  "code": "300788",
+                  "dates": [
+                    "T:20261023",
+                    "T:20261028",
+                    "T:20261030",
+                    "T:20261102"
+                  ],
+                  "pearson": 1.0
+                },
+                {
+                  "code": "301190",
+                  "dates": [
+                    "T:20261023",
+                    "T:20261028",
+                    "T:20261030",
+                    "T:20261102"
+                  ],
+                  "pearson": 1.0
+                },
+                {
+                  "code": "600309",
+                  "dates": [
+                    "T:20261023",
+                    "T:20261028",
+                    "T:20261030",
+                    "T:20261102"
+                  ],
+                  "pearson": 1.0
+                },
+                {
+                  "code": "600519",
+                  "dates": [
+                    "T:20261023",
+                    "T:20261028",
+                    "T:20261030",
+                    "T:20261102"
+                  ],
+                  "pearson": 0.9915
+                },
+                {
+                  "code": "600675",
+                  "dates": [
+                    "T:20261023",
+                    "T:20261028",
+                    "T:20261030",
+                    "T:20261102"
+                  ],
+                  "pearson": 1.0
+                },
+                {
+                  "code": "600825",
+                  "dates": [
+                    "T:20261023",
+                    "T:20261028",
+                    "T:20261030",
+                    "T:20261102"
+                  ],
+                  "pearson": 1.0
+                },
+                {
+                  "code": "601288",
+                  "dates": [
+                    "T:20261023",
+                    "T:20261028",
+                    "T:20261030",
+                    "T:20261102"
+                  ],
+                  "pearson": 0.6331
+                },
+                {
+                  "code": "688327",
+                  "dates": [
+                    "T:20261023",
+                    "T:20261028",
+                    "T:20261030",
+                    "T:20261102"
+                  ],
+                  "pearson": 0.5701
+                },
+                {
+                  "code": "688553",
+                  "dates": [
+                    "T:20261023",
+                    "T:20261028",
+                    "T:20261030",
+                    "T:20261102"
+                  ],
+                  "pearson": 0.7297
+                },
+                {
+                  "code": "688589",
+                  "dates": [
+                    "T:20261023",
+                    "T:20261028",
+                    "T:20261030",
+                    "T:20261102"
+                  ],
+                  "pearson": 1.0
+                },
+                {
+                  "code": "920118",
+                  "dates": [
+                    "T:20261023",
+                    "T:20261028",
+                    "T:20261030",
+                    "T:20261102"
+                  ],
+                  "pearson": 0.7855
+                },
+                {
+                  "code": "920508",
+                  "dates": [
+                    "T:20261023",
+                    "T:20261028",
+                    "T:20261030",
+                    "T:20261102"
+                  ],
+                  "pearson": 0.5067
+                }
+              ],
+              "stocks": 20
+            },
+            {
+              "method": "semantic_label",
+              "shared_tokens": [
+                "pe",
+                "ttm"
+              ],
+              "token_jaccard": 0.6667
+            }
+          ],
+          "right": "zhb.full.pe_ttm",
+          "sample_codes": [
+            "000007",
+            "000011",
+            "000037",
+            "000568",
+            "000678",
+            "002034",
+            "002242",
+            "300031",
+            "300788",
+            "301190",
+            "600309",
+            "600519",
+            "600675",
+            "600825",
+            "601288",
+            "688327",
+            "688553",
+            "688589",
+            "920118",
+            "920508"
+          ],
+          "sample_count": 80,
+          "sample_dates": [
+            "T:20261023",
+            "T:20261028",
+            "T:20261030",
+            "T:20261102"
+          ]
+        },
+        "kind": "method_pair",
+        "method_version": "collision-candidate-v1",
+        "schema_version": 1
+      }
+    },
+    "cc1_ba48361b86358fee1de618818b4f901e51b9cb4318d6b93f31d6b67337c09bb5": {
+      "current": {
+        "candidate_id": "cc1_ba48361b86358fee1de618818b4f901e51b9cb4318d6b93f31d6b67337c09bb5",
+        "disposition": "needs_external_evidence",
+        "duplicate_of": null,
+        "event_id": "bddb7597bc709577116585c3131d422f001afa41928c8a727058fc33fb1ea9bc",
+        "evidence_refs": [
+          {
+            "path": "20261103/20261103_collision_report.json",
+            "sha256": "cfce542384db3d804438a5105c06ec37eb2cf2786ba73de699d6c22a5657ff3d"
+          },
+          {
+            "path": "adjudications/public_web/20261104_public_web_research.md",
+            "sha256": "613dc17ead7f95267ae830c3760bc978007a81ab2dd22df29b9fc1e6c4ba0f77"
+          },
+          {
+            "path": "https://market.ft.tech/gateway/doc/p/mdsj0xyo",
+            "sha256": null
+          },
+          {
+            "path": "https://basic.10jqka.com.cn/600519/",
+            "sha256": null
+          },
+          {
+            "path": "https://basic.10jqka.com.cn/000568/",
+            "sha256": null
+          },
+          {
+            "path": "https://basic.10jqka.com.cn/002034/",
+            "sha256": null
+          }
+        ],
+        "rationale": "复核 2026-11-04 公开网页深挖记录。同花顺股本页仅显示舍入后的季度股数，不能验证 2026-11-03 的精确值；AxData 样本含小数股，与 FTShare 契约整数股定义之间的差异及底层来源独立性均未解释。保留 needs_external_evidence。",
+        "reviewed_at": "2026-11-04T12:59:45+08:00",
+        "reviewer": "Codex"
+      },
+      "history": [
+        {
+          "candidate_id": "cc1_ba48361b86358fee1de618818b4f901e51b9cb4318d6b93f31d6b67337c09bb5",
+          "disposition": "needs_external_evidence",
+          "duplicate_of": null,
+          "event_id": "f6fa5ac0e63fa6260609125d3f6425d2dfec715d1ab3d44580cb6dcb340bc96e",
+          "evidence_refs": [
+            {
+              "path": "20261103/20261103_collision_report.json",
+              "sha256": "d2782f50485f521cda34880965ecee550dc2af56efe481033ce42c323bc69c9d"
+            },
+            {
+              "path": "adjudications/public_web/20261103_public_web_research.md",
+              "sha256": "bf2a5cc54abaa929164e7ae79c3a2623ba7c2c133ffc7ead9f5a7fe44be90282"
+            }
+          ],
+          "rationale": "已审阅完整报告中的方法候选：axdata.data.float_shares ↔ ftshare_rest.float_a_shares，样本 139 对，数据日 T:20261023, T:20261026, T:20261028, T:20261029, T:20261030, T:20261102, T:20261103。该候选仍不是 actionable_L1/L1-U，且本轮非 Google 直连无法确认，未访问官方页面；需要官方定义、单位和日期对齐证据后再判断。仅记录为待外部证据，不作注册表或主字典裁决。",
+          "reviewed_at": "2026-11-03T22:13:50+08:00",
+          "reviewer": "Codex"
+        },
+        {
+          "candidate_id": "cc1_ba48361b86358fee1de618818b4f901e51b9cb4318d6b93f31d6b67337c09bb5",
+          "disposition": "needs_external_evidence",
+          "duplicate_of": null,
+          "event_id": "3b6dce8aad4b42eeac769241e62d0e18de7f0d5f886fad709b7a8fd73672462d",
+          "evidence_refs": [
+            {
+              "path": "20261103/20261103_collision_report.json",
+              "sha256": "cfce542384db3d804438a5105c06ec37eb2cf2786ba73de699d6c22a5657ff3d"
+            },
+            {
+              "path": "adjudications/public_web/20261103_public_web_research.md",
+              "sha256": "d921aadd03c9bc744a0b4318878faca2164ff02c2cfbf0b7db2737aa8ec20344"
+            }
+          ],
+          "rationale": "已复核完整报告、FTShare 官方契约及三只股票的同花顺 F10 页面。页面标签和舍入值支持宽泛的流通 A 股股数语义，但为季度资料，不能确认 11-03 精确值；AxData 样本含小数股，FTShare 契约为整数股，底层来源独立性也未确认。保持 needs_external_evidence，不改主字典。",
+          "reviewed_at": "2026-11-04T11:35:23+08:00",
+          "reviewer": "Codex"
+        },
+        {
+          "candidate_id": "cc1_ba48361b86358fee1de618818b4f901e51b9cb4318d6b93f31d6b67337c09bb5",
+          "disposition": "needs_external_evidence",
+          "duplicate_of": null,
+          "event_id": "bddb7597bc709577116585c3131d422f001afa41928c8a727058fc33fb1ea9bc",
+          "evidence_refs": [
+            {
+              "path": "20261103/20261103_collision_report.json",
+              "sha256": "cfce542384db3d804438a5105c06ec37eb2cf2786ba73de699d6c22a5657ff3d"
+            },
+            {
+              "path": "adjudications/public_web/20261104_public_web_research.md",
+              "sha256": "613dc17ead7f95267ae830c3760bc978007a81ab2dd22df29b9fc1e6c4ba0f77"
+            },
+            {
+              "path": "https://market.ft.tech/gateway/doc/p/mdsj0xyo",
+              "sha256": null
+            },
+            {
+              "path": "https://basic.10jqka.com.cn/600519/",
+              "sha256": null
+            },
+            {
+              "path": "https://basic.10jqka.com.cn/000568/",
+              "sha256": null
+            },
+            {
+              "path": "https://basic.10jqka.com.cn/002034/",
+              "sha256": null
+            }
+          ],
+          "rationale": "复核 2026-11-04 公开网页深挖记录。同花顺股本页仅显示舍入后的季度股数，不能验证 2026-11-03 的精确值；AxData 样本含小数股，与 FTShare 契约整数股定义之间的差异及底层来源独立性均未解释。保留 needs_external_evidence。",
+          "reviewed_at": "2026-11-04T12:59:45+08:00",
+          "reviewer": "Codex"
+        }
+      ],
+      "identity": {
+        "evidence": {
+          "evidence_sources": [
+            "axdata",
+            "ftshare_rest"
+          ],
+          "left": "axdata.data.float_shares",
+          "methods": [
+            {
+              "leave_one_out_max": 1.0,
+              "leave_one_out_min": 1.0,
+              "leave_one_out_sign_stable": true,
+              "method": "robust_correlation",
+              "pearson": 1.0,
+              "spearman": 1.0
+            },
+            {
+              "formula": "right ≈ 0.99999997 × left + 25.450531",
+              "method": "affine_formula",
+              "r_squared": 1.0
+            },
+            {
+              "method": "semantic_label",
+              "shared_tokens": [
+                "float",
+                "shares"
+              ],
+              "token_jaccard": 0.5
+            }
+          ],
+          "right": "ftshare_rest.float_a_shares",
+          "sample_codes": [
+            "000007",
+            "000011",
+            "000037",
+            "000568",
+            "000678",
+            "002034",
+            "002242",
+            "300031",
+            "300788",
+            "301190",
+            "600309",
+            "600519",
+            "600675",
+            "600825",
+            "601288",
+            "688327",
+            "688553",
+            "688589",
+            "920118",
+            "920508"
+          ],
+          "sample_count": 139,
+          "sample_dates": [
+            "T:20261023",
+            "T:20261026",
+            "T:20261028",
+            "T:20261029",
+            "T:20261030",
+            "T:20261102",
+            "T:20261103"
+          ]
+        },
+        "kind": "method_pair",
+        "method_version": "collision-candidate-v1",
+        "schema_version": 1
+      }
+    },
     "cc1_be8a46848561c3da25b85f557549482dc575791b3e81ef9bae0315f5a5ef0c63": {
       "current": {
         "candidate_id": "cc1_be8a46848561c3da25b85f557549482dc575791b3e81ef9bae0315f5a5ef0c63",
@@ -3633,6 +4536,151 @@
         "schema_version": 1
       }
     },
+    "cc1_c17cd377ca373e188be326e1e736696b1ced2672d9633c641732b4e6839d863f": {
+      "current": {
+        "candidate_id": "cc1_c17cd377ca373e188be326e1e736696b1ced2672d9633c641732b4e6839d863f",
+        "disposition": "needs_external_evidence",
+        "duplicate_of": null,
+        "event_id": "4fdfe80472b73bb95632fcb06706fc4e0463a1e289bb8ca3151190a42163a865",
+        "evidence_refs": [
+          {
+            "path": "20261103/20261103_collision_report.json",
+            "sha256": "cfce542384db3d804438a5105c06ec37eb2cf2786ba73de699d6c22a5657ff3d"
+          },
+          {
+            "path": "adjudications/public_web/20261104_public_web_research.md",
+            "sha256": "613dc17ead7f95267ae830c3760bc978007a81ab2dd22df29b9fc1e6c4ba0f77"
+          },
+          {
+            "path": "https://quote.eastmoney.com/sz000007.html#fullScreenChart",
+            "sha256": null
+          },
+          {
+            "path": "https://data.eastmoney.com/stockdata/000007.html",
+            "sha256": null
+          }
+        ],
+        "rationale": "复核 2026-11-04 公开网页深挖记录。东方财富页面提供了 2026-11-04 实时行情和 11-03 昨收，但没有本地原始样本所需的 11-03 历史 CHANGE 与 11-02 收盘组合；原报告也仅覆盖两个代码，达不到区分样本要求。保留 needs_external_evidence，不能由页面当前值晋级。",
+        "reviewed_at": "2026-11-04T12:59:45+08:00",
+        "reviewer": "Codex"
+      },
+      "history": [
+        {
+          "candidate_id": "cc1_c17cd377ca373e188be326e1e736696b1ced2672d9633c641732b4e6839d863f",
+          "disposition": "needs_external_evidence",
+          "duplicate_of": null,
+          "event_id": "656090d38f82c84fc20027d411c7a4134263eca08e2d5a121a76c3094eccf740",
+          "evidence_refs": [
+            {
+              "path": "20261103/20261103_collision_report.json",
+              "sha256": "d2782f50485f521cda34880965ecee550dc2af56efe481033ce42c323bc69c9d"
+            },
+            {
+              "path": "adjudications/public_web/20261103_public_web_research.md",
+              "sha256": "bf2a5cc54abaa929164e7ae79c3a2623ba7c2c133ffc7ead9f5a7fe44be90282"
+            }
+          ],
+          "rationale": "已审阅完整报告中的方法候选：event_dc.CHANGE ↔ ftshare_rest.change，样本 14 对，数据日 T:20261023, T:20261026, T:20261028, T:20261029, T:20261030, T:20261102, T:20261103。该候选仍不是 actionable_L1/L1-U，且本轮非 Google 直连无法确认，未访问官方页面；需要官方定义、单位和日期对齐证据后再判断。仅记录为待外部证据，不作注册表或主字典裁决。",
+          "reviewed_at": "2026-11-03T22:13:50+08:00",
+          "reviewer": "Codex"
+        },
+        {
+          "candidate_id": "cc1_c17cd377ca373e188be326e1e736696b1ced2672d9633c641732b4e6839d863f",
+          "disposition": "needs_external_evidence",
+          "duplicate_of": null,
+          "event_id": "12606d9a26cb4b8405a2ae9ce235cb6519da8aed5908f70dd86add198c112266",
+          "evidence_refs": [
+            {
+              "path": "20261103/20261103_collision_report.json",
+              "sha256": "cfce542384db3d804438a5105c06ec37eb2cf2786ba73de699d6c22a5657ff3d"
+            },
+            {
+              "path": "adjudications/public_web/20261103_public_web_research.md",
+              "sha256": "d921aadd03c9bc744a0b4318878faca2164ff02c2cfbf0b7db2737aa8ec20344"
+            }
+          ],
+          "rationale": "已复核完整报告及东方财富官方行情页。11-04 页面昨收 9.33 元与 raw_event_dc 的 11-03 LATELY_PRICE 对齐，但没有获得 11-02 收盘或 11-03 历史 CHANGE 页面值；日K图提示停留在 2026-09-29。实际原始路径是 ipo_calendar[*].CHANGE，本地样本仅覆盖两个代码，且 source_lineage.json 缺少 event_dc 到 datacenter 的别名。保持 needs_external_evidence，不改主字典。",
+          "reviewed_at": "2026-11-04T11:35:23+08:00",
+          "reviewer": "Codex"
+        },
+        {
+          "candidate_id": "cc1_c17cd377ca373e188be326e1e736696b1ced2672d9633c641732b4e6839d863f",
+          "disposition": "needs_external_evidence",
+          "duplicate_of": null,
+          "event_id": "4fdfe80472b73bb95632fcb06706fc4e0463a1e289bb8ca3151190a42163a865",
+          "evidence_refs": [
+            {
+              "path": "20261103/20261103_collision_report.json",
+              "sha256": "cfce542384db3d804438a5105c06ec37eb2cf2786ba73de699d6c22a5657ff3d"
+            },
+            {
+              "path": "adjudications/public_web/20261104_public_web_research.md",
+              "sha256": "613dc17ead7f95267ae830c3760bc978007a81ab2dd22df29b9fc1e6c4ba0f77"
+            },
+            {
+              "path": "https://quote.eastmoney.com/sz000007.html#fullScreenChart",
+              "sha256": null
+            },
+            {
+              "path": "https://data.eastmoney.com/stockdata/000007.html",
+              "sha256": null
+            }
+          ],
+          "rationale": "复核 2026-11-04 公开网页深挖记录。东方财富页面提供了 2026-11-04 实时行情和 11-03 昨收，但没有本地原始样本所需的 11-03 历史 CHANGE 与 11-02 收盘组合；原报告也仅覆盖两个代码，达不到区分样本要求。保留 needs_external_evidence，不能由页面当前值晋级。",
+          "reviewed_at": "2026-11-04T12:59:45+08:00",
+          "reviewer": "Codex"
+        }
+      ],
+      "identity": {
+        "evidence": {
+          "evidence_sources": [
+            "event_dc",
+            "ftshare_rest"
+          ],
+          "left": "event_dc.CHANGE",
+          "methods": [
+            {
+              "leave_one_out_max": 1.0,
+              "leave_one_out_min": 1.0,
+              "leave_one_out_sign_stable": true,
+              "method": "robust_correlation",
+              "pearson": 1.0,
+              "spearman": 1.0
+            },
+            {
+              "formula": "right ≈ 1 × left + 0",
+              "method": "affine_formula",
+              "r_squared": 1.0
+            },
+            {
+              "method": "semantic_label",
+              "shared_tokens": [
+                "change"
+              ],
+              "token_jaccard": 1.0
+            }
+          ],
+          "right": "ftshare_rest.change",
+          "sample_codes": [
+            "000007",
+            "000011"
+          ],
+          "sample_count": 14,
+          "sample_dates": [
+            "T:20261023",
+            "T:20261026",
+            "T:20261028",
+            "T:20261029",
+            "T:20261030",
+            "T:20261102",
+            "T:20261103"
+          ]
+        },
+        "kind": "method_pair",
+        "method_version": "collision-candidate-v1",
+        "schema_version": 1
+      }
+    },
     "cc1_c339ca78644897840b1b93b3f35c9de0a14654264eb710b1e4324f116bcf7543": {
       "current": {
         "candidate_id": "cc1_c339ca78644897840b1b93b3f35c9de0a14654264eb710b1e4324f116bcf7543",
@@ -3902,6 +4950,446 @@
           "statistical_level": "L1"
         },
         "kind": "l1_contract_candidate",
+        "method_version": "collision-candidate-v1",
+        "schema_version": 1
+      }
+    },
+    "cc1_cb00a9dc597ac474a419a91ccfc60f7176bac666114a589edd3d6a990a08edbc": {
+      "current": {
+        "candidate_id": "cc1_cb00a9dc597ac474a419a91ccfc60f7176bac666114a589edd3d6a990a08edbc",
+        "disposition": "needs_external_evidence",
+        "duplicate_of": null,
+        "event_id": "febc01101cb2488153a2efdbb3bfac691910208055c7f0b050a7da28035f7830",
+        "evidence_refs": [
+          {
+            "path": "20261103/20261103_collision_report.json",
+            "sha256": "cfce542384db3d804438a5105c06ec37eb2cf2786ba73de699d6c22a5657ff3d"
+          },
+          {
+            "path": "adjudications/public_web/20261104_public_web_research.md",
+            "sha256": "613dc17ead7f95267ae830c3760bc978007a81ab2dd22df29b9fc1e6c4ba0f77"
+          },
+          {
+            "path": "https://finance.sina.com.cn/realstock/company/sh600519/nc.shtml",
+            "sha256": null
+          },
+          {
+            "path": "https://market.ft.tech/gateway/doc/p/mdsj0xyo",
+            "sha256": null
+          }
+        ],
+        "rationale": "复核 2026-11-04 公开网页深挖记录。页面没有给出与 2026-11-03 新浪 money_flow[0].turnover 样本同日可比的字段定义和值；FTShare 文档中的 turnover 是成交额，turnover_rate 才是换手率，不能据此确认新浪原始路径的语义、单位或跨源映射。保留 needs_external_evidence，待新浪该端点定义和日期对齐样本。",
+        "reviewed_at": "2026-11-04T12:59:45+08:00",
+        "reviewer": "Codex"
+      },
+      "history": [
+        {
+          "candidate_id": "cc1_cb00a9dc597ac474a419a91ccfc60f7176bac666114a589edd3d6a990a08edbc",
+          "disposition": "needs_external_evidence",
+          "duplicate_of": null,
+          "event_id": "2ff89bf18df373fe9fe647c61fbf3f14b086c21a9dac4b4e18c65085a55e3823",
+          "evidence_refs": [
+            {
+              "path": "20261103/20261103_collision_report.json",
+              "sha256": "d2782f50485f521cda34880965ecee550dc2af56efe481033ce42c323bc69c9d"
+            },
+            {
+              "path": "adjudications/public_web/20261103_public_web_research.md",
+              "sha256": "bf2a5cc54abaa929164e7ae79c3a2623ba7c2c133ffc7ead9f5a7fe44be90282"
+            }
+          ],
+          "rationale": "已审阅完整报告中的方法候选：sina_extended.turnover ↔ ftshare_rest.turnover_rate，样本 140 对，数据日 T:20261023, T:20261026, T:20261028, T:20261029, T:20261030, T:20261102, T:20261103。该候选仍不是 actionable_L1/L1-U，且本轮非 Google 直连无法确认，未访问官方页面；需要官方定义、单位和日期对齐证据后再判断。仅记录为待外部证据，不作注册表或主字典裁决。",
+          "reviewed_at": "2026-11-03T22:13:50+08:00",
+          "reviewer": "Codex"
+        },
+        {
+          "candidate_id": "cc1_cb00a9dc597ac474a419a91ccfc60f7176bac666114a589edd3d6a990a08edbc",
+          "disposition": "needs_external_evidence",
+          "duplicate_of": null,
+          "event_id": "9393b8668d40830c4ac0d813ff49db136da371cf62806a969b4b71d3fceb3159",
+          "evidence_refs": [
+            {
+              "path": "20261103/20261103_collision_report.json",
+              "sha256": "cfce542384db3d804438a5105c06ec37eb2cf2786ba73de699d6c22a5657ff3d"
+            },
+            {
+              "path": "adjudications/public_web/20261103_public_web_research.md",
+              "sha256": "d921aadd03c9bc744a0b4318878faca2164ff02c2cfbf0b7db2737aa8ec20344"
+            }
+          ],
+          "rationale": "已复核完整报告及官方网页。FTShare 官方契约明确区分成交额 turnover 与换手率 turnover_rate；新浪样本实际位于 money_flow[0].turnover，11-03 的 600519 值为 56.8191。新浪行情页只显示 11-04 实时换手率，不能确认该原始路径的单位/语义或日期对齐。高相关及缩放公式仍是候选线索；保持 needs_external_evidence，不改主字典。",
+          "reviewed_at": "2026-11-04T11:35:23+08:00",
+          "reviewer": "Codex"
+        },
+        {
+          "candidate_id": "cc1_cb00a9dc597ac474a419a91ccfc60f7176bac666114a589edd3d6a990a08edbc",
+          "disposition": "needs_external_evidence",
+          "duplicate_of": null,
+          "event_id": "febc01101cb2488153a2efdbb3bfac691910208055c7f0b050a7da28035f7830",
+          "evidence_refs": [
+            {
+              "path": "20261103/20261103_collision_report.json",
+              "sha256": "cfce542384db3d804438a5105c06ec37eb2cf2786ba73de699d6c22a5657ff3d"
+            },
+            {
+              "path": "adjudications/public_web/20261104_public_web_research.md",
+              "sha256": "613dc17ead7f95267ae830c3760bc978007a81ab2dd22df29b9fc1e6c4ba0f77"
+            },
+            {
+              "path": "https://finance.sina.com.cn/realstock/company/sh600519/nc.shtml",
+              "sha256": null
+            },
+            {
+              "path": "https://market.ft.tech/gateway/doc/p/mdsj0xyo",
+              "sha256": null
+            }
+          ],
+          "rationale": "复核 2026-11-04 公开网页深挖记录。页面没有给出与 2026-11-03 新浪 money_flow[0].turnover 样本同日可比的字段定义和值；FTShare 文档中的 turnover 是成交额，turnover_rate 才是换手率，不能据此确认新浪原始路径的语义、单位或跨源映射。保留 needs_external_evidence，待新浪该端点定义和日期对齐样本。",
+          "reviewed_at": "2026-11-04T12:59:45+08:00",
+          "reviewer": "Codex"
+        }
+      ],
+      "identity": {
+        "evidence": {
+          "evidence_sources": [
+            "ftshare_rest",
+            "sina_extended"
+          ],
+          "left": "sina_extended.turnover",
+          "methods": [
+            {
+              "leave_one_out_max": 0.9998,
+              "leave_one_out_min": 0.9996,
+              "leave_one_out_sign_stable": true,
+              "method": "robust_correlation",
+              "pearson": 0.9997,
+              "spearman": 0.9969
+            },
+            {
+              "formula": "right ≈ 0.00010020917 × left + 0.00040315949",
+              "method": "affine_formula",
+              "r_squared": 0.999332
+            },
+            {
+              "median_abs_pearson": 0.9999,
+              "method": "per_stock_time_series",
+              "sample_dates": [
+                "T:20261023",
+                "T:20261026",
+                "T:20261028",
+                "T:20261029",
+                "T:20261030",
+                "T:20261102",
+                "T:20261103"
+              ],
+              "sign_consistency": 1.0,
+              "stock_correlations": [
+                {
+                  "code": "000007",
+                  "dates": [
+                    "T:20261023",
+                    "T:20261026",
+                    "T:20261028",
+                    "T:20261029",
+                    "T:20261030",
+                    "T:20261102",
+                    "T:20261103"
+                  ],
+                  "pearson": 0.9996
+                },
+                {
+                  "code": "000011",
+                  "dates": [
+                    "T:20261023",
+                    "T:20261026",
+                    "T:20261028",
+                    "T:20261029",
+                    "T:20261030",
+                    "T:20261102",
+                    "T:20261103"
+                  ],
+                  "pearson": 0.9996
+                },
+                {
+                  "code": "000037",
+                  "dates": [
+                    "T:20261023",
+                    "T:20261026",
+                    "T:20261028",
+                    "T:20261029",
+                    "T:20261030",
+                    "T:20261102",
+                    "T:20261103"
+                  ],
+                  "pearson": 1.0
+                },
+                {
+                  "code": "000568",
+                  "dates": [
+                    "T:20261023",
+                    "T:20261026",
+                    "T:20261028",
+                    "T:20261029",
+                    "T:20261030",
+                    "T:20261102",
+                    "T:20261103"
+                  ],
+                  "pearson": 1.0
+                },
+                {
+                  "code": "000678",
+                  "dates": [
+                    "T:20261023",
+                    "T:20261026",
+                    "T:20261028",
+                    "T:20261029",
+                    "T:20261030",
+                    "T:20261102",
+                    "T:20261103"
+                  ],
+                  "pearson": 1.0
+                },
+                {
+                  "code": "002034",
+                  "dates": [
+                    "T:20261023",
+                    "T:20261026",
+                    "T:20261028",
+                    "T:20261029",
+                    "T:20261030",
+                    "T:20261102",
+                    "T:20261103"
+                  ],
+                  "pearson": 1.0
+                },
+                {
+                  "code": "002242",
+                  "dates": [
+                    "T:20261023",
+                    "T:20261026",
+                    "T:20261028",
+                    "T:20261029",
+                    "T:20261030",
+                    "T:20261102",
+                    "T:20261103"
+                  ],
+                  "pearson": 0.9947
+                },
+                {
+                  "code": "300031",
+                  "dates": [
+                    "T:20261023",
+                    "T:20261026",
+                    "T:20261028",
+                    "T:20261029",
+                    "T:20261030",
+                    "T:20261102",
+                    "T:20261103"
+                  ],
+                  "pearson": 0.9999
+                },
+                {
+                  "code": "300788",
+                  "dates": [
+                    "T:20261023",
+                    "T:20261026",
+                    "T:20261028",
+                    "T:20261029",
+                    "T:20261030",
+                    "T:20261102",
+                    "T:20261103"
+                  ],
+                  "pearson": 1.0
+                },
+                {
+                  "code": "301190",
+                  "dates": [
+                    "T:20261023",
+                    "T:20261026",
+                    "T:20261028",
+                    "T:20261029",
+                    "T:20261030",
+                    "T:20261102",
+                    "T:20261103"
+                  ],
+                  "pearson": 0.9998
+                },
+                {
+                  "code": "600309",
+                  "dates": [
+                    "T:20261023",
+                    "T:20261026",
+                    "T:20261028",
+                    "T:20261029",
+                    "T:20261030",
+                    "T:20261102",
+                    "T:20261103"
+                  ],
+                  "pearson": 1.0
+                },
+                {
+                  "code": "600519",
+                  "dates": [
+                    "T:20261023",
+                    "T:20261026",
+                    "T:20261028",
+                    "T:20261029",
+                    "T:20261030",
+                    "T:20261102",
+                    "T:20261103"
+                  ],
+                  "pearson": 0.9975
+                },
+                {
+                  "code": "600675",
+                  "dates": [
+                    "T:20261023",
+                    "T:20261026",
+                    "T:20261028",
+                    "T:20261029",
+                    "T:20261030",
+                    "T:20261102",
+                    "T:20261103"
+                  ],
+                  "pearson": 0.9998
+                },
+                {
+                  "code": "600825",
+                  "dates": [
+                    "T:20261023",
+                    "T:20261026",
+                    "T:20261028",
+                    "T:20261029",
+                    "T:20261030",
+                    "T:20261102",
+                    "T:20261103"
+                  ],
+                  "pearson": 0.9994
+                },
+                {
+                  "code": "601288",
+                  "dates": [
+                    "T:20261023",
+                    "T:20261026",
+                    "T:20261028",
+                    "T:20261029",
+                    "T:20261030",
+                    "T:20261102",
+                    "T:20261103"
+                  ],
+                  "pearson": 0.9987
+                },
+                {
+                  "code": "688327",
+                  "dates": [
+                    "T:20261023",
+                    "T:20261026",
+                    "T:20261028",
+                    "T:20261029",
+                    "T:20261030",
+                    "T:20261102",
+                    "T:20261103"
+                  ],
+                  "pearson": 0.9999
+                },
+                {
+                  "code": "688553",
+                  "dates": [
+                    "T:20261023",
+                    "T:20261026",
+                    "T:20261028",
+                    "T:20261029",
+                    "T:20261030",
+                    "T:20261102",
+                    "T:20261103"
+                  ],
+                  "pearson": 0.9997
+                },
+                {
+                  "code": "688589",
+                  "dates": [
+                    "T:20261023",
+                    "T:20261026",
+                    "T:20261028",
+                    "T:20261029",
+                    "T:20261030",
+                    "T:20261102",
+                    "T:20261103"
+                  ],
+                  "pearson": 1.0
+                },
+                {
+                  "code": "920118",
+                  "dates": [
+                    "T:20261023",
+                    "T:20261026",
+                    "T:20261028",
+                    "T:20261029",
+                    "T:20261030",
+                    "T:20261102",
+                    "T:20261103"
+                  ],
+                  "pearson": 0.9273
+                },
+                {
+                  "code": "920508",
+                  "dates": [
+                    "T:20261023",
+                    "T:20261026",
+                    "T:20261028",
+                    "T:20261029",
+                    "T:20261030",
+                    "T:20261102",
+                    "T:20261103"
+                  ],
+                  "pearson": 1.0
+                }
+              ],
+              "stocks": 20
+            },
+            {
+              "method": "semantic_label",
+              "shared_tokens": [
+                "turnover"
+              ],
+              "token_jaccard": 0.5
+            }
+          ],
+          "right": "ftshare_rest.turnover_rate",
+          "sample_codes": [
+            "000007",
+            "000011",
+            "000037",
+            "000568",
+            "000678",
+            "002034",
+            "002242",
+            "300031",
+            "300788",
+            "301190",
+            "600309",
+            "600519",
+            "600675",
+            "600825",
+            "601288",
+            "688327",
+            "688553",
+            "688589",
+            "920118",
+            "920508"
+          ],
+          "sample_count": 140,
+          "sample_dates": [
+            "T:20261023",
+            "T:20261026",
+            "T:20261028",
+            "T:20261029",
+            "T:20261030",
+            "T:20261102",
+            "T:20261103"
+          ]
+        },
+        "kind": "method_pair",
         "method_version": "collision-candidate-v1",
         "schema_version": 1
       }
@@ -4664,5 +6152,5 @@
     }
   },
   "schema_version": 1,
-  "updated_at": "2026-10-31T10:22:38+08:00"
+  "updated_at": "2026-11-04T12:59:45+08:00"
 }

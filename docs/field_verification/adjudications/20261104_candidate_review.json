@@ -1,0 +1,68 @@
+{
+  "schema_version": 1,
+  "decisions": [
+    {
+      "schema_version": 1,
+      "candidate_id": "cc1_cb00a9dc597ac474a419a91ccfc60f7176bac666114a589edd3d6a990a08edbc",
+      "disposition": "needs_external_evidence",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-11-04T12:59:45+08:00",
+      "rationale": "复核 2026-11-04 公开网页深挖记录。页面没有给出与 2026-11-03 新浪 money_flow[0].turnover 样本同日可比的字段定义和值；FTShare 文档中的 turnover 是成交额，turnover_rate 才是换手率，不能据此确认新浪原始路径的语义、单位或跨源映射。保留 needs_external_evidence，待新浪该端点定义和日期对齐样本。",
+      "evidence_refs": [
+        "20261103/20261103_collision_report.json",
+        "adjudications/public_web/20261104_public_web_research.md",
+        "https://finance.sina.com.cn/realstock/company/sh600519/nc.shtml",
+        "https://market.ft.tech/gateway/doc/p/mdsj0xyo"
+      ],
+      "duplicate_of": null
+    },
+    {
+      "schema_version": 1,
+      "candidate_id": "cc1_b3c02927febdca47d9938c53deed42d74be9111531318017d6f5d4b5238af09b",
+      "disposition": "needs_external_evidence",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-11-04T12:59:45+08:00",
+      "rationale": "复核 2026-11-04 公开网页深挖记录。同花顺页面未提供与样本日期可比的 PE_TTM 历史值；动态/预测估值标签不能替代 TTM 口径。ZHB stat/full 两路径样本值相同只能说明当前样本不能区分路径，不能证明路径结构相同。保留 needs_external_evidence，不合并字段。",
+      "evidence_refs": [
+        "20261103/20261103_collision_report.json",
+        "adjudications/public_web/20261104_public_web_research.md",
+        "https://market.ft.tech/gateway/doc/p/mdsj0xyo",
+        "https://basic.10jqka.com.cn/600519/",
+        "https://basic.10jqka.com.cn/000568/finance.html"
+      ],
+      "duplicate_of": null
+    },
+    {
+      "schema_version": 1,
+      "candidate_id": "cc1_ba48361b86358fee1de618818b4f901e51b9cb4318d6b93f31d6b67337c09bb5",
+      "disposition": "needs_external_evidence",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-11-04T12:59:45+08:00",
+      "rationale": "复核 2026-11-04 公开网页深挖记录。同花顺股本页仅显示舍入后的季度股数，不能验证 2026-11-03 的精确值；AxData 样本含小数股，与 FTShare 契约整数股定义之间的差异及底层来源独立性均未解释。保留 needs_external_evidence。",
+      "evidence_refs": [
+        "20261103/20261103_collision_report.json",
+        "adjudications/public_web/20261104_public_web_research.md",
+        "https://market.ft.tech/gateway/doc/p/mdsj0xyo",
+        "https://basic.10jqka.com.cn/600519/",
+        "https://basic.10jqka.com.cn/000568/",
+        "https://basic.10jqka.com.cn/002034/"
+      ],
+      "duplicate_of": null
+    },
+    {
+      "schema_version": 1,
+      "candidate_id": "cc1_c17cd377ca373e188be326e1e736696b1ced2672d9633c641732b4e6839d863f",
+      "disposition": "needs_external_evidence",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-11-04T12:59:45+08:00",
+      "rationale": "复核 2026-11-04 公开网页深挖记录。东方财富页面提供了 2026-11-04 实时行情和 11-03 昨收，但没有本地原始样本所需的 11-03 历史 CHANGE 与 11-02 收盘组合；原报告也仅覆盖两个代码，达不到区分样本要求。保留 needs_external_evidence，不能由页面当前值晋级。",
+      "evidence_refs": [
+        "20261103/20261103_collision_report.json",
+        "adjudications/public_web/20261104_public_web_research.md",
+        "https://quote.eastmoney.com/sz000007.html#fullScreenChart",
+        "https://data.eastmoney.com/stockdata/000007.html"
+      ],
+      "duplicate_of": null
+    }
+  ]
+}

@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": 2,
-    "updated": "2026-10-31",
+    "updated": "2026-11-05",
     "source_of_truth": "field_registry.json",
     "generated_by": "manual source-identity reconciliation; see source_identity_reclassifications.json",
     "note": "source_fields 是逐源完整路径权威记录；fields 是兼容聚合视图。Levistock 历史混合身份的 175 条结构化记录已按逐字段映射重分类。历史原文中额外解析到的 56 个 token 不在迁移前的结构化注册表中，继续保留在只读档案，不提升为当前字段记录。状态冲突与历史证据保存在 source_fields。source_field_addenda 只允许有 E3 文件证据且经 parity 校验的增补，不覆盖 field_source_reference.md 历史原文。",
@@ -19,13 +19,13 @@
       "official_contract": 31,
       "reference_status_conflict": 22,
       "reference_status_missing": 35,
-      "registry_status_only_single_source": 871,
+      "registry_status_only_single_source": 873,
       "resolved_by_multiday_independent_cross_source_l1": 2,
       "status_conflict": 59,
       "status_missing": 43,
-      "unverified": 1501,
-      "verified": 967,
-      "verified_by_empirical_addendum": 13,
+      "unverified": 1503,
+      "verified": 973,
+      "verified_by_empirical_addendum": 19,
       "verified_by_source_contract": 71
     }
   },
@@ -14869,7 +14869,8 @@
       "aggregation_status": "incomplete",
       "aggregation_issues": [
         "meaning_incomplete",
-        "source_statuses_differ"
+        "source_statuses_differ",
+        "unit_incomplete"
       ]
     },
     {
@@ -22351,21 +22352,47 @@
     },
     {
       "code": "industry_id",
-      "source": "开盘红(Levistock适配)",
+      "source": null,
       "sources": [
+        "开盘红",
         "开盘红(Levistock适配)"
       ],
-      "section": "12.10.4 开盘红复盘（get_zttt 涨停天梯 / get_pmsl 盘面梳理 / get_his_limit_resumption 历史涨停复盘）🆕",
-      "canonical": "industry_id / industry_zt",
-      "meaning": "行业 ID / 同行业涨停数",
+      "section": "",
+      "canonical": "",
+      "meaning": "",
       "unit": "",
+      "status_raw": "",
+      "status": "conflict",
+      "source_statuses": {
+        "开盘红": "verified",
+        "开盘红(Levistock适配)": "unverified"
+      },
+      "aggregation_status": "ambiguous",
+      "aggregation_issues": [
+        "canonical_differs",
+        "meaning_differs",
+        "source_statuses_differ"
+      ]
+    },
+    {
+      "code": "industry_limit_up_count",
+      "source": "开盘红",
+      "sources": [
+        "开盘红"
+      ],
+      "section": "AxData KPH 涨停历史字段逆向与 KPL 对照（2026-11-05，8 个交易日）",
+      "canonical": "",
+      "meaning": "同行业涨停数；与 KPL 原始 row[20] 有 320/370 组相同，日期及个股差异含 +15、-27，计数范围未确认",
+      "unit": "家",
       "status_raw": "",
       "status": "unverified",
       "source_statuses": {
-        "开盘红(Levistock适配)": "unverified"
+        "开盘红": "unverified"
       },
-      "aggregation_status": "consistent",
-      "aggregation_issues": []
+      "aggregation_status": "incomplete",
+      "aggregation_issues": [
+        "canonical_incomplete"
+      ]
     },
     {
       "code": "industry_raw",
@@ -23879,6 +23906,7 @@
       "sources": [
         "东财-push2ex",
         "市场源(market_sources)",
+        "开盘红",
         "开盘红(Levistock适配)"
       ],
       "section": "",
@@ -23890,6 +23918,7 @@
       "source_statuses": {
         "东财-push2ex": "unverified",
         "市场源(market_sources)": "verified",
+        "开盘红": "verified",
         "开盘红(Levistock适配)": "unverified"
       },
       "aggregation_status": "ambiguous",
@@ -23898,7 +23927,8 @@
         "canonical_incomplete",
         "meaning_differs",
         "meaning_incomplete",
-        "source_statuses_differ"
+        "source_statuses_differ",
+        "unit_incomplete"
       ]
     },
     {
@@ -24105,21 +24135,27 @@
     },
     {
       "code": "limit_tag",
-      "source": "开盘红(Levistock适配)",
+      "source": null,
       "sources": [
+        "开盘红",
         "开盘红(Levistock适配)"
       ],
-      "section": "12.10.4 开盘红复盘（get_zttt 涨停天梯 / get_pmsl 盘面梳理 / get_his_limit_resumption 历史涨停复盘）🆕",
-      "canonical": "limit_tag / limit_count",
-      "meaning": "待破解",
+      "section": "",
+      "canonical": "",
+      "meaning": "",
       "unit": "",
       "status_raw": "",
-      "status": "unverified",
+      "status": "conflict",
       "source_statuses": {
+        "开盘红": "verified",
         "开盘红(Levistock适配)": "unverified"
       },
-      "aggregation_status": "consistent",
-      "aggregation_issues": []
+      "aggregation_status": "ambiguous",
+      "aggregation_issues": [
+        "canonical_differs",
+        "meaning_differs",
+        "source_statuses_differ"
+      ]
     },
     {
       "code": "limit_time",
@@ -25555,22 +25591,26 @@
       "sources": [
         "FTShare REST",
         "Levistock历史未归属",
-        "东财-datacenter(英文键)"
+        "东财-datacenter(英文键)",
+        "开盘红"
       ],
       "section": "",
       "canonical": "",
       "meaning": "",
       "unit": "",
       "status_raw": "",
-      "status": "unverified",
+      "status": "conflict",
       "source_statuses": {
         "Levistock历史未归属": "unverified",
         "东财-datacenter(英文键)": "unverified",
+        "开盘红": "verified",
         "FTShare REST": "verified"
       },
-      "aggregation_status": "incomplete",
+      "aggregation_status": "ambiguous",
       "aggregation_issues": [
+        "canonical_differs",
         "canonical_incomplete",
+        "meaning_differs",
         "meaning_incomplete",
         "source_statuses_differ",
         "unit_incomplete"
@@ -27182,21 +27222,26 @@
     },
     {
       "code": "open_time",
-      "source": "开盘红(Levistock适配)",
+      "source": null,
       "sources": [
+        "开盘红",
         "开盘红(Levistock适配)"
       ],
-      "section": "12.10.4 开盘红复盘（get_zttt 涨停天梯 / get_pmsl 盘面梳理 / get_his_limit_resumption 历史涨停复盘）🆕",
-      "canonical": "limit_time / open_time",
-      "meaning": "待破解",
+      "section": "",
+      "canonical": "",
+      "meaning": "",
       "unit": "",
       "status_raw": "",
-      "status": "unverified",
+      "status": "conflict",
       "source_statuses": {
+        "开盘红": "unverified",
         "开盘红(Levistock适配)": "unverified"
       },
-      "aggregation_status": "consistent",
-      "aggregation_issues": []
+      "aggregation_status": "ambiguous",
+      "aggregation_issues": [
+        "canonical_incomplete",
+        "meaning_differs"
+      ]
     },
     {
       "code": "open_times",
@@ -30941,6 +30986,7 @@
       "sources": [
         "东财-热榜(em_hot)",
         "市场源(market_sources)",
+        "开盘红",
         "开盘红(Levistock适配)"
       ],
       "section": "",
@@ -30952,10 +30998,12 @@
       "source_statuses": {
         "东财-热榜(em_hot)": "verified",
         "市场源(market_sources)": "unverified",
+        "开盘红": "verified",
         "开盘红(Levistock适配)": "unverified"
       },
       "aggregation_status": "ambiguous",
       "aggregation_issues": [
+        "canonical_differs",
         "canonical_incomplete",
         "meaning_differs",
         "meaning_incomplete",
@@ -36090,21 +36138,26 @@
     },
     {
       "code": "themes",
-      "source": "开盘红(Levistock适配)",
+      "source": null,
       "sources": [
+        "开盘红",
         "开盘红(Levistock适配)"
       ],
-      "section": "12.10.4 开盘红复盘（get_zttt 涨停天梯 / get_pmsl 盘面梳理 / get_his_limit_resumption 历史涨停复盘）🆕",
+      "section": "",
       "canonical": "themes",
-      "meaning": "题材",
+      "meaning": "",
       "unit": "",
       "status_raw": "",
-      "status": "unverified",
+      "status": "conflict",
       "source_statuses": {
+        "开盘红": "verified",
         "开盘红(Levistock适配)": "unverified"
       },
-      "aggregation_status": "consistent",
-      "aggregation_issues": []
+      "aggregation_status": "ambiguous",
+      "aggregation_issues": [
+        "meaning_differs",
+        "source_statuses_differ"
+      ]
     },
     {
       "code": "theory",
@@ -40604,7 +40657,8 @@
       "TDX-0x0010/F10",
       "TDX-eltdx",
       "东财",
-      "开盘啦(kpl)"
+      "开盘啦(kpl)",
+      "开盘红"
     ],
     "amplitude_pct": [
       "AxData"
@@ -41614,7 +41668,8 @@
       "TDX-0x0010/F10"
     ],
     "main_inflow": [
-      "开盘啦(kpl)"
+      "开盘啦(kpl)",
+      "开盘红"
     ],
     "manage_fee": [
       "同花顺-fuyao"
@@ -41703,7 +41758,8 @@
       "TDX-0x0010/F10"
     ],
     "max_seal": [
-      "开盘啦(kpl)"
+      "开盘啦(kpl)",
+      "开盘红"
     ],
     "mediaName": [
       "东财"
@@ -43186,7 +43242,8 @@
       "开盘红"
     ],
     "turnover_real": [
-      "开盘啦(kpl)"
+      "开盘啦(kpl)",
+      "开盘红"
     ],
     "ulist_push2_align.md)": [
       "TDX-0x0010/F10"
@@ -45328,7 +45385,7 @@
         "source": "东财-push2",
         "code": "f86"
       },
-      "relation": "cross_number_diff_meaning",
+      "relation": "same_number_same_meaning",
       "evidence": "ulist_push2_align.md"
     },
     {
@@ -117953,7 +118010,7 @@
         "status": "verified",
         "status_raw": "✅",
         "canonical": "f124",
-        "meaning": "股东户数?",
+        "meaning": "",
         "unit": "",
         "section": "12.3.1.2 push2 × ulist/tencent 全量对撞再确认（2026-09-04，修复锚池）"
       }
@@ -129353,8 +129410,8 @@
       "identity": "东财-ulist239(np/get)::f124",
       "path": "f124",
       "canonical": "f124",
-      "meaning": "股东户数?",
-      "unit": "",
+      "meaning": "行情更新时间戳",
+      "unit": "Unix 秒",
       "section": "",
       "sections": [
         "12.3.2 板块/排行 `ulist.np/get`（本次联网新发现）",
@@ -129394,6 +129451,25 @@
           "unit": "",
           "status_raw": "✅",
           "status": "verified"
+        },
+        {
+          "section": "20261105 Ulist f124 timestamp metadata correction",
+          "canonical": "f124",
+          "meaning": "行情更新时间戳",
+          "unit": "Unix 秒",
+          "status_raw": "人工实证复核 2026-11-05",
+          "status": "verified",
+          "adjudication_id": "20261105-ulist-f124-timestamp",
+          "evidence_basis": "empirical_cross_endpoint_timestamp",
+          "evidence_file": "docs/field_verification/adjudications/20261105_ulist_f124_timestamp_correction.md",
+          "evidence_files": [
+            "docs/field_verification/20261102/raw_ulist239.json",
+            "docs/field_verification/20261102/raw_push2.json",
+            "docs/field_verification/20261103/raw_ulist239.json",
+            "docs/field_verification/20261103/raw_push2.json",
+            "docs/efinance_eastmoney_review_20261105.md"
+          ],
+          "rationale": "两日 40/40 条 Ulist f124 与同股 push2 stock/get f86 精确相等；Unix 秒转换为行情更新时间。第三方 efinance 映射仅作次级佐证。"
         }
       ],
       "attribute_conflicts": {},
@@ -129406,7 +129482,7 @@
         "status": "verified",
         "status_raw": "✅",
         "canonical": "f124",
-        "meaning": "股东户数?",
+        "meaning": "",
         "unit": "",
         "section": "12.3.1.2 push2 × ulist/tencent 全量对撞再确认（2026-09-04，修复锚池）"
       }
@@ -175611,7 +175687,7 @@
       "identity": "开盘红::limit_time",
       "path": "limit_time",
       "canonical": "limit_time",
-      "meaning": "涨停时间；与 KPL zt_time 两日逐值一致",
+      "meaning": "涨停时间；与 KPL zt_time 370 组、8 个交易日逐值一致",
       "unit": "Unix 秒",
       "section": "KPH 与 KPL 涨停明细核验（2026-09-29/30 双交易日）",
       "sections": [
@@ -175621,14 +175697,26 @@
       "status_resolution": "verified_by_empirical_addendum",
       "status_evidence": {
         "evidence_level": "E3",
-        "evidence_file": "docs/verify/kph_kpl_history_verify.md",
+        "evidence_file": "docs/field_verification/adjudications/20261105_axdata_field_reverse.md",
         "sample_trade_dates": [
-          "2026-09-29",
-          "2026-09-30"
+          "2026-10-16",
+          "2026-10-19",
+          "2026-10-21",
+          "2026-10-23",
+          "2026-10-28",
+          "2026-10-30",
+          "2026-11-02",
+          "2026-11-03"
         ],
         "overlap_counts": [
+          50,
+          40,
           45,
-          40
+          50,
+          50,
+          44,
+          50,
+          41
         ]
       },
       "reference_evidence": [],
@@ -175640,7 +175728,7 @@
       "identity": "开盘红::net_inflow",
       "path": "net_inflow",
       "canonical": "main_inflow",
-      "meaning": "主力净流入；与 KPL main_inflow 两日逐值一致",
+      "meaning": "主力净流入；与 KPL main_inflow 370 组、8 个交易日逐值一致",
       "unit": "元",
       "section": "KPH 与 KPL 涨停明细核验（2026-09-29/30 双交易日）",
       "sections": [
@@ -175650,14 +175738,26 @@
       "status_resolution": "verified_by_empirical_addendum",
       "status_evidence": {
         "evidence_level": "E3",
-        "evidence_file": "docs/verify/kph_kpl_history_verify.md",
+        "evidence_file": "docs/field_verification/adjudications/20261105_axdata_field_reverse.md",
         "sample_trade_dates": [
-          "2026-09-29",
-          "2026-09-30"
+          "2026-10-16",
+          "2026-10-19",
+          "2026-10-21",
+          "2026-10-23",
+          "2026-10-28",
+          "2026-10-30",
+          "2026-11-02",
+          "2026-11-03"
         ],
         "overlap_counts": [
+          50,
+          40,
           45,
-          40
+          50,
+          50,
+          44,
+          50,
+          41
         ]
       },
       "reference_evidence": [],
@@ -175669,7 +175769,7 @@
       "identity": "开盘红::seal_amount",
       "path": "seal_amount",
       "canonical": "seal_amount",
-      "meaning": "封单量；与 KPL seal_amount 三个交易日逐股逐值一致，计量单位未确认",
+      "meaning": "封单量；与 KPL seal_amount 370 组、8 个交易日逐值一致，计量单位未确认",
       "unit": "",
       "section": "KPH/KPL 封单映射纠错（2026-10-22，三交易日）",
       "sections": [
@@ -175679,16 +175779,26 @@
       "status_resolution": "verified_by_empirical_addendum",
       "status_evidence": {
         "evidence_level": "E3",
-        "evidence_file": "docs/field_verification/adjudications/20261022_kph_kpl_seal_mapping_correction.md",
+        "evidence_file": "docs/field_verification/adjudications/20261105_axdata_field_reverse.md",
         "sample_trade_dates": [
           "2026-10-16",
           "2026-10-19",
-          "2026-10-21"
+          "2026-10-21",
+          "2026-10-23",
+          "2026-10-28",
+          "2026-10-30",
+          "2026-11-02",
+          "2026-11-03"
         ],
         "overlap_counts": [
           50,
           40,
-          45
+          45,
+          50,
+          50,
+          44,
+          50,
+          41
         ]
       },
       "reference_evidence": [],
@@ -175700,7 +175810,7 @@
       "identity": "开盘红::seal_money",
       "path": "seal_money",
       "canonical": "max_seal",
-      "meaning": "封单金额；与 KPL max_seal（KPL 响应标签：最大封单）三个交易日逐股逐值一致",
+      "meaning": "封单金额；与 KPL max_seal 370 组、8 个交易日逐值一致",
       "unit": "元",
       "section": "KPH/KPL 封单映射纠错（2026-10-22，三交易日）",
       "sections": [
@@ -175710,16 +175820,26 @@
       "status_resolution": "verified_by_empirical_addendum",
       "status_evidence": {
         "evidence_level": "E3",
-        "evidence_file": "docs/field_verification/adjudications/20261022_kph_kpl_seal_mapping_correction.md",
+        "evidence_file": "docs/field_verification/adjudications/20261105_axdata_field_reverse.md",
         "sample_trade_dates": [
           "2026-10-16",
           "2026-10-19",
-          "2026-10-21"
+          "2026-10-21",
+          "2026-10-23",
+          "2026-10-28",
+          "2026-10-30",
+          "2026-11-02",
+          "2026-11-03"
         ],
         "overlap_counts": [
           50,
           40,
-          45
+          45,
+          50,
+          50,
+          44,
+          50,
+          41
         ]
       },
       "reference_evidence": [],
@@ -175731,7 +175851,7 @@
       "identity": "开盘红::turnover",
       "path": "turnover",
       "canonical": "amount",
-      "meaning": "成交额；与 KPL amount 两日逐值一致",
+      "meaning": "成交额；与 KPL amount 370 组、8 个交易日逐值一致",
       "unit": "元",
       "section": "KPH 与 KPL 涨停明细核验（2026-09-29/30 双交易日）",
       "sections": [
@@ -175741,14 +175861,26 @@
       "status_resolution": "verified_by_empirical_addendum",
       "status_evidence": {
         "evidence_level": "E3",
-        "evidence_file": "docs/verify/kph_kpl_history_verify.md",
+        "evidence_file": "docs/field_verification/adjudications/20261105_axdata_field_reverse.md",
         "sample_trade_dates": [
-          "2026-09-29",
-          "2026-09-30"
+          "2026-10-16",
+          "2026-10-19",
+          "2026-10-21",
+          "2026-10-23",
+          "2026-10-28",
+          "2026-10-30",
+          "2026-11-02",
+          "2026-11-03"
         ],
         "overlap_counts": [
+          50,
+          40,
           45,
-          40
+          50,
+          50,
+          44,
+          50,
+          41
         ]
       },
       "reference_evidence": [],
@@ -175760,7 +175892,7 @@
       "identity": "开盘红::turnover_rate",
       "path": "turnover_rate",
       "canonical": "turnover_real",
-      "meaning": "实际换手率；与 KPL turnover_real 两日逐值一致",
+      "meaning": "实际换手率；与 KPL turnover_real 370 组、8 个交易日逐值一致",
       "unit": "%",
       "section": "KPH 与 KPL 涨停明细核验（2026-09-29/30 双交易日）",
       "sections": [
@@ -175770,17 +175902,373 @@
       "status_resolution": "verified_by_empirical_addendum",
       "status_evidence": {
         "evidence_level": "E3",
-        "evidence_file": "docs/verify/kph_kpl_history_verify.md",
+        "evidence_file": "docs/field_verification/adjudications/20261105_axdata_field_reverse.md",
         "sample_trade_dates": [
-          "2026-09-29",
-          "2026-09-30"
+          "2026-10-16",
+          "2026-10-19",
+          "2026-10-21",
+          "2026-10-23",
+          "2026-10-28",
+          "2026-10-30",
+          "2026-11-02",
+          "2026-11-03"
         ],
         "overlap_counts": [
+          50,
+          40,
           45,
-          40
+          50,
+          50,
+          44,
+          50,
+          41
         ]
       },
       "reference_evidence": [],
+      "attribute_conflicts": {}
+    },
+    {
+      "source": "开盘红",
+      "code": "open_time",
+      "identity": "开盘红::open_time",
+      "path": "open_time",
+      "canonical": "",
+      "meaning": "开板时间；AxData 0.1.4 将原始 row[7] 映射为时间戳；370 组样本均为 0，暂无非零值核验",
+      "unit": "",
+      "section": "AxData KPH 涨停历史字段逆向与 KPL 对照（2026-11-05，8 个交易日）",
+      "sections": [
+        "AxData KPH 涨停历史字段逆向与 KPL 对照（2026-11-05，8 个交易日）"
+      ],
+      "status": "unverified",
+      "status_resolution": "registry_status_only_single_source",
+      "status_evidence": {
+        "reference_statuses": [],
+        "reference_status_raw": [],
+        "registry_aggregate_status": "unverified",
+        "registry_aggregate_sources": [
+          "开盘红"
+        ],
+        "values": [
+          "unverified"
+        ]
+      },
+      "reference_evidence": [
+        {
+          "section": "AxData KPH 涨停历史字段逆向与 KPL 对照（2026-11-05，8 个交易日）",
+          "canonical": "",
+          "meaning": "开板时间；AxData 0.1.4 将原始 row[7] 映射为时间戳；370 组样本均为 0，暂无非零值核验",
+          "unit": "",
+          "status_raw": "",
+          "status": "unverified"
+        }
+      ],
+      "registry_aggregate": {
+        "code": "open_time",
+        "sources": [
+          "开盘红"
+        ],
+        "status": "unverified",
+        "status_raw": "",
+        "canonical": "",
+        "meaning": "开板时间；AxData 0.1.4 将原始 row[7] 映射为时间戳；370 组样本均为 0，暂无非零值核验",
+        "unit": "",
+        "section": "AxData KPH 涨停历史字段逆向与 KPL 对照（2026-11-05，8 个交易日）"
+      },
+      "attribute_conflicts": {}
+    },
+    {
+      "source": "开盘红",
+      "code": "limit_tag",
+      "identity": "开盘红::limit_tag",
+      "path": "limit_tag",
+      "canonical": "limit_tag",
+      "meaning": "连板标签；与 KPL 原始 row[18] 可见的 33 条非空值 33/33 一致",
+      "unit": "",
+      "section": "AxData KPH 涨停历史字段逆向与 KPL 对照（2026-11-05，8 个交易日）",
+      "sections": [
+        "AxData KPH 涨停历史字段逆向与 KPL 对照（2026-11-05，8 个交易日）"
+      ],
+      "status": "verified",
+      "status_resolution": "verified_by_empirical_addendum",
+      "status_evidence": {
+        "evidence_level": "E3",
+        "evidence_file": "docs/field_verification/adjudications/20261105_axdata_field_reverse.md",
+        "sample_trade_dates": [
+          "2026-10-16",
+          "2026-10-19",
+          "2026-10-21",
+          "2026-10-23",
+          "2026-10-28",
+          "2026-10-30",
+          "2026-11-02",
+          "2026-11-03"
+        ],
+        "overlap_counts": [
+          50,
+          40,
+          45,
+          50,
+          50,
+          44,
+          50,
+          41
+        ]
+      },
+      "reference_evidence": [],
+      "attribute_conflicts": {}
+    },
+    {
+      "source": "开盘红",
+      "code": "limit_count",
+      "identity": "开盘红::limit_count",
+      "path": "limit_count",
+      "canonical": "limit_count",
+      "meaning": "连板数；从 KPL 原始 row[18] 的 N天M板解析 M，30 个可解析值 30/30 一致",
+      "unit": "板",
+      "section": "AxData KPH 涨停历史字段逆向与 KPL 对照（2026-11-05，8 个交易日）",
+      "sections": [
+        "AxData KPH 涨停历史字段逆向与 KPL 对照（2026-11-05，8 个交易日）"
+      ],
+      "status": "verified",
+      "status_resolution": "verified_by_empirical_addendum",
+      "status_evidence": {
+        "evidence_level": "E3",
+        "evidence_file": "docs/field_verification/adjudications/20261105_axdata_field_reverse.md",
+        "sample_trade_dates": [
+          "2026-10-16",
+          "2026-10-19",
+          "2026-10-21",
+          "2026-10-23",
+          "2026-10-28",
+          "2026-10-30",
+          "2026-11-02",
+          "2026-11-03"
+        ],
+        "overlap_counts": [
+          50,
+          40,
+          45,
+          50,
+          50,
+          44,
+          50,
+          41
+        ]
+      },
+      "reference_evidence": [],
+      "attribute_conflicts": {}
+    },
+    {
+      "source": "开盘红",
+      "code": "themes",
+      "identity": "开盘红::themes",
+      "path": "themes",
+      "canonical": "themes",
+      "meaning": "题材标签列表；与 KPL sector 完整列表 360/370 一致、至少一项重合 369/370；保留来源标签口径差异",
+      "unit": "",
+      "section": "AxData KPH 涨停历史字段逆向与 KPL 对照（2026-11-05，8 个交易日）",
+      "sections": [
+        "AxData KPH 涨停历史字段逆向与 KPL 对照（2026-11-05，8 个交易日）"
+      ],
+      "status": "verified",
+      "status_resolution": "verified_by_empirical_addendum",
+      "status_evidence": {
+        "evidence_level": "E3",
+        "evidence_file": "docs/field_verification/adjudications/20261105_axdata_field_reverse.md",
+        "sample_trade_dates": [
+          "2026-10-16",
+          "2026-10-19",
+          "2026-10-21",
+          "2026-10-23",
+          "2026-10-28",
+          "2026-10-30",
+          "2026-11-02",
+          "2026-11-03"
+        ],
+        "overlap_counts": [
+          50,
+          40,
+          45,
+          50,
+          50,
+          44,
+          50,
+          41
+        ]
+      },
+      "reference_evidence": [],
+      "attribute_conflicts": {}
+    },
+    {
+      "source": "开盘红",
+      "code": "reason",
+      "identity": "开盘红::reason",
+      "path": "reason",
+      "canonical": "limit_up_reason",
+      "meaning": "涨停原因；与 KPL reason 367/370 逐字一致，3 组文本差异保留来源原值",
+      "unit": "",
+      "section": "AxData KPH 涨停历史字段逆向与 KPL 对照（2026-11-05，8 个交易日）",
+      "sections": [
+        "AxData KPH 涨停历史字段逆向与 KPL 对照（2026-11-05，8 个交易日）"
+      ],
+      "status": "verified",
+      "status_resolution": "verified_by_empirical_addendum",
+      "status_evidence": {
+        "evidence_level": "E3",
+        "evidence_file": "docs/field_verification/adjudications/20261105_axdata_field_reverse.md",
+        "sample_trade_dates": [
+          "2026-10-16",
+          "2026-10-19",
+          "2026-10-21",
+          "2026-10-23",
+          "2026-10-28",
+          "2026-10-30",
+          "2026-11-02",
+          "2026-11-03"
+        ],
+        "overlap_counts": [
+          50,
+          40,
+          45,
+          50,
+          50,
+          44,
+          50,
+          41
+        ]
+      },
+      "reference_evidence": [],
+      "attribute_conflicts": {}
+    },
+    {
+      "source": "开盘红",
+      "code": "market_cap",
+      "identity": "开盘红::market_cap",
+      "path": "market_cap",
+      "canonical": "float_market_value",
+      "meaning": "流通市值；与 KPL 实际流通字段 369/370 逐值一致；1 组相差约 0.8025%，不按舍入等价处理",
+      "unit": "元",
+      "section": "AxData KPH 涨停历史字段逆向与 KPL 对照（2026-11-05，8 个交易日）",
+      "sections": [
+        "AxData KPH 涨停历史字段逆向与 KPL 对照（2026-11-05，8 个交易日）"
+      ],
+      "status": "verified",
+      "status_resolution": "verified_by_empirical_addendum",
+      "status_evidence": {
+        "evidence_level": "E3",
+        "evidence_file": "docs/field_verification/adjudications/20261105_axdata_field_reverse.md",
+        "sample_trade_dates": [
+          "2026-10-16",
+          "2026-10-19",
+          "2026-10-21",
+          "2026-10-23",
+          "2026-10-28",
+          "2026-10-30",
+          "2026-11-02",
+          "2026-11-03"
+        ],
+        "overlap_counts": [
+          50,
+          40,
+          45,
+          50,
+          50,
+          44,
+          50,
+          41
+        ]
+      },
+      "reference_evidence": [],
+      "attribute_conflicts": {}
+    },
+    {
+      "source": "开盘红",
+      "code": "industry_id",
+      "identity": "开盘红::industry_id",
+      "path": "industry_id",
+      "canonical": "industry_id",
+      "meaning": "行业分类 ID；与 KPL sector_code 367/370 逐值一致；3 组分类代码差异保留来源原值",
+      "unit": "",
+      "section": "AxData KPH 涨停历史字段逆向与 KPL 对照（2026-11-05，8 个交易日）",
+      "sections": [
+        "AxData KPH 涨停历史字段逆向与 KPL 对照（2026-11-05，8 个交易日）"
+      ],
+      "status": "verified",
+      "status_resolution": "verified_by_empirical_addendum",
+      "status_evidence": {
+        "evidence_level": "E3",
+        "evidence_file": "docs/field_verification/adjudications/20261105_axdata_field_reverse.md",
+        "sample_trade_dates": [
+          "2026-10-16",
+          "2026-10-19",
+          "2026-10-21",
+          "2026-10-23",
+          "2026-10-28",
+          "2026-10-30",
+          "2026-11-02",
+          "2026-11-03"
+        ],
+        "overlap_counts": [
+          50,
+          40,
+          45,
+          50,
+          50,
+          44,
+          50,
+          41
+        ]
+      },
+      "reference_evidence": [],
+      "attribute_conflicts": {}
+    },
+    {
+      "source": "开盘红",
+      "code": "industry_limit_up_count",
+      "identity": "开盘红::industry_limit_up_count",
+      "path": "industry_limit_up_count",
+      "canonical": "",
+      "meaning": "同行业涨停数；与 KPL 原始 row[20] 有 320/370 组相同，日期及个股差异含 +15、-27，计数范围未确认",
+      "unit": "家",
+      "section": "AxData KPH 涨停历史字段逆向与 KPL 对照（2026-11-05，8 个交易日）",
+      "sections": [
+        "AxData KPH 涨停历史字段逆向与 KPL 对照（2026-11-05，8 个交易日）"
+      ],
+      "status": "unverified",
+      "status_resolution": "registry_status_only_single_source",
+      "status_evidence": {
+        "reference_statuses": [],
+        "reference_status_raw": [],
+        "registry_aggregate_status": "unverified",
+        "registry_aggregate_sources": [
+          "开盘红"
+        ],
+        "values": [
+          "unverified"
+        ]
+      },
+      "reference_evidence": [
+        {
+          "section": "AxData KPH 涨停历史字段逆向与 KPL 对照（2026-11-05，8 个交易日）",
+          "canonical": "",
+          "meaning": "同行业涨停数；与 KPL 原始 row[20] 有 320/370 组相同，日期及个股差异含 +15、-27，计数范围未确认",
+          "unit": "家",
+          "status_raw": "",
+          "status": "unverified"
+        }
+      ],
+      "registry_aggregate": {
+        "code": "industry_limit_up_count",
+        "sources": [
+          "开盘红"
+        ],
+        "status": "unverified",
+        "status_raw": "",
+        "canonical": "",
+        "meaning": "同行业涨停数；与 KPL 原始 row[20] 有 320/370 组相同，日期及个股差异含 +15、-27，计数范围未确认",
+        "unit": "家",
+        "section": "AxData KPH 涨停历史字段逆向与 KPL 对照（2026-11-05，8 个交易日）"
+      },
       "attribute_conflicts": {}
     },
     {
@@ -188225,10 +188713,10 @@
       "source": "开盘红",
       "code": "limit_time",
       "canonical": "limit_time",
-      "meaning": "涨停时间；与 KPL zt_time 两日逐值一致",
+      "meaning": "涨停时间；与 KPL zt_time 370 组、8 个交易日逐值一致",
       "unit": "Unix 秒",
       "evidence_level": "E3",
-      "evidence_file": "docs/verify/kph_kpl_history_verify.md",
+      "evidence_file": "docs/field_verification/adjudications/20261105_axdata_field_reverse.md",
       "matrix_field": "limit_time",
       "matrix_source": "开盘红"
     },
@@ -188236,10 +188724,10 @@
       "source": "开盘红",
       "code": "seal_amount",
       "canonical": "seal_amount",
-      "meaning": "封单量；与 KPL seal_amount 三个交易日逐股逐值一致，计量单位未确认",
+      "meaning": "封单量；与 KPL seal_amount 370 组、8 个交易日逐值一致，计量单位未确认",
       "unit": "",
       "evidence_level": "E3",
-      "evidence_file": "docs/field_verification/adjudications/20261022_kph_kpl_seal_mapping_correction.md",
+      "evidence_file": "docs/field_verification/adjudications/20261105_axdata_field_reverse.md",
       "matrix_field": "seal_amount",
       "matrix_source": "开盘红"
     },
@@ -188247,44 +188735,44 @@
       "source": "开盘红",
       "code": "seal_money",
       "canonical": "max_seal",
-      "meaning": "封单金额；与 KPL max_seal（KPL 响应标签：最大封单）三个交易日逐股逐值一致",
+      "meaning": "封单金额；与 KPL max_seal 370 组、8 个交易日逐值一致",
       "unit": "元",
       "evidence_level": "E3",
-      "evidence_file": "docs/field_verification/adjudications/20261022_kph_kpl_seal_mapping_correction.md",
-      "matrix_field": "seal_money",
+      "evidence_file": "docs/field_verification/adjudications/20261105_axdata_field_reverse.md",
+      "matrix_field": "max_seal",
       "matrix_source": "开盘红"
     },
     {
       "source": "开盘红",
       "code": "net_inflow",
       "canonical": "main_inflow",
-      "meaning": "主力净流入；与 KPL main_inflow 两日逐值一致",
+      "meaning": "主力净流入；与 KPL main_inflow 370 组、8 个交易日逐值一致",
       "unit": "元",
       "evidence_level": "E3",
-      "evidence_file": "docs/verify/kph_kpl_history_verify.md",
-      "matrix_field": "net_inflow",
+      "evidence_file": "docs/field_verification/adjudications/20261105_axdata_field_reverse.md",
+      "matrix_field": "main_inflow",
       "matrix_source": "开盘红"
     },
     {
       "source": "开盘红",
       "code": "turnover",
       "canonical": "amount",
-      "meaning": "成交额；与 KPL amount 两日逐值一致",
+      "meaning": "成交额；与 KPL amount 370 组、8 个交易日逐值一致",
       "unit": "元",
       "evidence_level": "E3",
-      "evidence_file": "docs/verify/kph_kpl_history_verify.md",
-      "matrix_field": "turnover",
+      "evidence_file": "docs/field_verification/adjudications/20261105_axdata_field_reverse.md",
+      "matrix_field": "amount",
       "matrix_source": "开盘红"
     },
     {
       "source": "开盘红",
       "code": "turnover_rate",
       "canonical": "turnover_real",
-      "meaning": "实际换手率；与 KPL turnover_real 两日逐值一致",
+      "meaning": "实际换手率；与 KPL turnover_real 370 组、8 个交易日逐值一致",
       "unit": "%",
       "evidence_level": "E3",
-      "evidence_file": "docs/verify/kph_kpl_history_verify.md",
-      "matrix_field": "turnover_rate",
+      "evidence_file": "docs/field_verification/adjudications/20261105_axdata_field_reverse.md",
+      "matrix_field": "turnover_real",
       "matrix_source": "开盘红"
     },
     {
@@ -188352,6 +188840,72 @@
       "evidence_file": "docs/verify/kph_kpl_history_verify.md",
       "matrix_field": "turnover_real",
       "matrix_source": "开盘啦(kpl)"
+    },
+    {
+      "source": "开盘红",
+      "code": "limit_tag",
+      "canonical": "limit_tag",
+      "meaning": "连板标签；与 KPL 原始 row[18] 可见的 33 条非空值 33/33 一致",
+      "unit": "",
+      "evidence_level": "E3",
+      "evidence_file": "docs/field_verification/adjudications/20261105_axdata_field_reverse.md",
+      "matrix_field": "limit_tag",
+      "matrix_source": "开盘红"
+    },
+    {
+      "source": "开盘红",
+      "code": "limit_count",
+      "canonical": "limit_count",
+      "meaning": "连板数；从 KPL 原始 row[18] 的 N天M板解析 M，30 个可解析值 30/30 一致",
+      "unit": "板",
+      "evidence_level": "E3",
+      "evidence_file": "docs/field_verification/adjudications/20261105_axdata_field_reverse.md",
+      "matrix_field": "limit_count",
+      "matrix_source": "开盘红"
+    },
+    {
+      "source": "开盘红",
+      "code": "themes",
+      "canonical": "themes",
+      "meaning": "题材标签列表；与 KPL sector 完整列表 360/370 一致、至少一项重合 369/370；保留来源标签口径差异",
+      "unit": "",
+      "evidence_level": "E3",
+      "evidence_file": "docs/field_verification/adjudications/20261105_axdata_field_reverse.md",
+      "matrix_field": "themes",
+      "matrix_source": "开盘红"
+    },
+    {
+      "source": "开盘红",
+      "code": "reason",
+      "canonical": "limit_up_reason",
+      "meaning": "涨停原因；与 KPL reason 367/370 逐字一致，3 组文本差异保留来源原值",
+      "unit": "",
+      "evidence_level": "E3",
+      "evidence_file": "docs/field_verification/adjudications/20261105_axdata_field_reverse.md",
+      "matrix_field": "reason",
+      "matrix_source": "开盘红"
+    },
+    {
+      "source": "开盘红",
+      "code": "market_cap",
+      "canonical": "float_market_value",
+      "meaning": "流通市值；与 KPL 实际流通字段 369/370 逐值一致；1 组相差约 0.8025%，不按舍入等价处理",
+      "unit": "元",
+      "evidence_level": "E3",
+      "evidence_file": "docs/field_verification/adjudications/20261105_axdata_field_reverse.md",
+      "matrix_field": "market_cap",
+      "matrix_source": "开盘红"
+    },
+    {
+      "source": "开盘红",
+      "code": "industry_id",
+      "canonical": "industry_id",
+      "meaning": "行业分类 ID；与 KPL sector_code 367/370 逐值一致；3 组分类代码差异保留来源原值",
+      "unit": "",
+      "evidence_level": "E3",
+      "evidence_file": "docs/field_verification/adjudications/20261105_axdata_field_reverse.md",
+      "matrix_field": "industry_id",
+      "matrix_source": "开盘红"
     }
   ],
   "source_contract_addenda": [

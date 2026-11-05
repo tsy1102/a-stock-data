@@ -42,7 +42,29 @@ def test_metadata_gap_report_lists_only_verified_missing_descriptions():
     assert "source-a" in rendered and "verified.missing" in rendered
     assert "source-c" not in rendered
     assert "逐源状态仍保留原始登记" in rendered
-    assert "下表记录不会作为碰撞锚" in rendered
+    assert "退出破解目标" in rendered and "不会作为碰撞锚" in rendered
+
+
+def test_question_mark_verified_meaning_stays_in_metadata_review_not_cracking_targets():
+    registry = {
+        "source_fields": [
+            {
+                "source": "source-a",
+                "code": "f124",
+                "status": "verified",
+                "canonical": "f124",
+                "meaning": "股东户数?",
+                "unit": "",
+            }
+        ]
+    }
+
+    unknown = render_unknown_fields(registry)
+    metadata_gaps = render_field_metadata_gaps(registry)
+
+    assert "f124" not in unknown
+    assert "source-a" in metadata_gaps and "f124" in metadata_gaps
+    assert "含义为空/占位" in metadata_gaps
 
 
 def test_unknown_queue_separates_meaning_annotations_from_status_resolution():

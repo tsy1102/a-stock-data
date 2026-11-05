@@ -5,8 +5,8 @@
 > 碰撞候选须人工复核后使用 `apply_collision_adjudications.py` 同步状态；流程见 `field_verification/ADJUDICATION_WORKFLOW.md`。
 > 聚合层的同码异义与定义缺口见 [`field_aggregate_review.md`](field_aggregate_review.md)，不代表逐源记录状态冲突。
 
-> 注册字段路径 2552；日常来源路径 2408：unverified 1381、candidate 1、conflict 81、disproved 2；历史来源路径 144。
-> 另有 182 条虽标 verified、但含义/单位元数据未达到碰撞锚条件；这些记录会重新进入碰撞目标，详见 [字段元数据复核](field_metadata_gaps.md)。
+> 注册字段路径 2560；日常来源路径 2416：unverified 1383、candidate 1、conflict 81、disproved 2；历史来源路径 144。
+> 另有 182 条虽标 verified、但含义/单位元数据未达到碰撞锚条件；这些记录保留在元数据复核视图，不进入默认破解目标，详见 [字段元数据复核](field_metadata_gaps.md)。
 > 以下两组未验证字段统计是不同维度，不能相加：含义栏文本只表示存在文字，不代表语义正确；状态判定反映旧字典状态证据能否映射到逐源身份。
 
 ## 未验证字段的复核分层
@@ -16,7 +16,7 @@
 | 分类 | 数量 |
 |:--|--:|
 | 含义栏为空/占位 | 1197 |
-| 含义栏有文本（仍未验证） | 184 |
+| 含义栏有文本（仍未验证） | 186 |
 
 ### 历史状态证据的解析结果
 
@@ -26,7 +26,7 @@
 | `live_observed_not_documented` | 1 | 按注册表原始状态判定代码保留 |
 | `matched` | 59 | 历史逐源状态与聚合状态一致，但仍未定案 |
 | `reference_status_missing` | 35 | 按注册表原始状态判定代码保留 |
-| `registry_status_only_single_source` | 790 | 只有来源自身状态，历史聚合信息不足以进一步归属 |
+| `registry_status_only_single_source` | 792 | 只有来源自身状态，历史聚合信息不足以进一步归属 |
 | `status_missing` | 43 | 缺少可用的历史状态记录 |
 
 ## 一、状态冲突（禁止作为锚点，优先复核）（81）
@@ -121,7 +121,7 @@
 |:--|:--|:--|:--|:--|:--|:--|:--|
 | ZHB-tdxstat | `stat.unknown_2` | stat.unknown_2 | 贝塔系数(60日)·L2候选(列[2]已定BetaValue: ihelp.dat L63官方定义+慢变特征实证自相关0.91, 待真实指数基准复现升L1) | - | 含义栏有文本（仍未验证） | matched | 1.1 tdxstat.cfg 标准契约表（stat.*，20260918 对撞定案）🆕 |
 
-## 三、待破解字段（1381）
+## 三、待破解字段（1383）
 
 | 来源 | 完整 code path | 规范名 | 含义 | 单位 | 含义栏提示 | 状态判定 | 证据章节 |
 |:--|:--|:--|:--|:--|:--|:--|:--|
@@ -1389,6 +1389,8 @@
 | 开盘啦(kpl) | `yestRase` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
 | 开盘啦(kpl) | `yesterday_limit_up_avg_pcp` | — | — | — | 含义栏为空/占位 | registry_status_only_single_source | — |
 | 开盘啦(kpl) | `ztjs` | — | — | — | 含义栏为空/占位 | aggregate_status_scope_unresolved | — |
+| 开盘红 | `industry_limit_up_count` | — | 同行业涨停数；与 KPL 原始 row[20] 有 320/370 组相同，日期及个股差异含 +15、-27，计数范围未确认 | 家 | 含义栏有文本（仍未验证） | registry_status_only_single_source | AxData KPH 涨停历史字段逆向与 KPL 对照（2026-11-05，8 个交易日） |
+| 开盘红 | `open_time` | — | 开板时间；AxData 0.1.4 将原始 row[7] 映射为时间戳；370 组样本均为 0，暂无非零值核验 | — | 含义栏有文本（仍未验证） | registry_status_only_single_source | AxData KPH 涨停历史字段逆向与 KPL 对照（2026-11-05，8 个交易日） |
 | 开盘红(Levistock适配) | `avg_change` | avg_change | 待破解 | — | 含义栏为空/占位 | registry_status_only_single_source | 12.10.7 开盘红板块排行（sector_ranking_kph）补充字段 |
 | 开盘红(Levistock适配) | `buy_amount` | buy_amount / sell_amount | 待破解 | — | 含义栏为空/占位 | registry_status_only_single_source | 12.10.7 开盘红板块排行（sector_ranking_kph）补充字段 |
 | 开盘红(Levistock适配) | `dt` | zt / dt | 涨停 / 跌停总数 | — | 含义栏有文本（仍未验证） | aggregate_status_scope_unresolved | 12.10.3 开盘红市场情绪（market_emotion_kph，**含历史**）🆕 |

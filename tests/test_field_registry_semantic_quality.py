@@ -2,7 +2,7 @@ from scripts import field_registry_api as registry_api
 
 
 def test_blank_and_placeholder_meanings_are_unresolved():
-    for meaning in (None, "", " 待破解 ", "UNKNOWN"):
+    for meaning in (None, "", " 待破解 ", "UNKNOWN", "股东户数?", "含义待核？"):
         assert registry_api.source_field_semantic_issues({"meaning": meaning}) == [
             "meaning_missing"
         ]

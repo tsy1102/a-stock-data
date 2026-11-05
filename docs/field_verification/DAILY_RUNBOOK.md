@@ -28,11 +28,11 @@
 
        .\scripts\run_with_system_python.ps1 scripts\collide.py
 
-   默认分析最近 7 个不同有效交易日；新闻/公告另按自然日窗口处理。样本发现统一跳过 20261015 之前的目录，因此 `--window N` 与 `--all` 都只覆盖该保留起点之后的可用样本。碰撞是本地分析，不请求数据源。只有确需分析已归档的龙虎榜/人气榜上下文时才加 --include-context。
+    默认分析截至报告日最近 7 个日历确认的交易日；新闻/公告另按自然日窗口处理。窗口按交易日历定界，不按现存采集目录数倒推；某个交易日缺采集目录时会保留该日并报告缺口，不再用更早日期补位。来源数据日可能由后续采集目录提供，须结合来源级 `as_of_date` 和 `source_coverage` 核对。样本发现统一跳过 20261015 之前的目录，因此 `--window N` 与 `--all` 都只覆盖该保留起点之后的数据。碰撞是本地分析，不请求数据源。只有确需分析已归档的龙虎榜/人气榜上下文时才加 --include-context。
 
-6. **完整审阅报告，先过完整性闸门。** 检查窗口中的样本日期、来源日期、采集阶段、每日样本量、信息配对、来源独立性和告警；把 `actionable_L1` 与 `mapped_pair_revalidations` 分开。候选覆盖区逐个未知目标给出比较、覆盖、候选、来源失败、公式线索和复核股票。
+6. **完整审阅报告，先过完整性闸门。** 检查 `trading_window` 是否是日历上的最近 N 个交易日，并核对缺采集目录警告、窗口中的样本日期、来源日期、采集阶段、每日样本量、信息配对、来源独立性和告警；来源级日期可能由后续采集目录补到，不能只看目录名。把 `actionable_L1` 与 `mapped_pair_revalidations` 分开。候选覆盖区逐个未知目标给出比较、覆盖、候选、来源失败、公式线索和复核股票。
 
-    先核对 JSON 的 `report_completeness`：状态必须为 `complete`，方法候选生成数、全量明细数、重复数和缺失数必须对平。`candidate_review` 单独列出机器候选完整性、身份校验、人工审阅覆盖率与待处理量；`report_completeness.status=complete` 不代表人工已审完。再逐章节检查 Markdown，并结构化遍历 JSON 中所有明细集合，尤其是完整的 `method_candidate_inventory`、L1/L4、目标诊断、公式候选、来源状态、告警和独立的 `candidate_triage.approximate_matches`。近似命中只用于安排网页/原始样本复核，不计入 L1/L1-U、正式候选审阅量或注册表证据。Markdown 的 Top-N 仅是导航摘要；不得只分析开头、前 N 条或摘要后就称“无候选/无成果”。
+    先核对 JSON 的 `report_completeness`：状态必须为 `complete`，方法候选生成数、全量明细数、重复数和缺失数必须对平。`candidate_review` 单独列出机器候选完整性、身份校验、人工审阅覆盖率与待处理量；`report_completeness.status=complete` 只说明报告结构和候选明细对账完整，不代表人工已审完，也不代表交易日连续或所有来源采集成功；这些要以 `trading_window`、诊断和逐源 `source_coverage` 核查。再逐章节检查 Markdown，并结构化遍历 JSON 中所有明细集合，尤其是完整的 `method_candidate_inventory`、L1/L4、目标诊断、公式候选、来源状态、告警和独立的 `candidate_triage.approximate_matches`。近似命中只用于安排网页/原始样本复核，不计入 L1/L1-U、正式候选审阅量或注册表证据。Markdown 的 Top-N 仅是导航摘要；不得只分析开头、前 N 条或摘要后就称“无候选/无成果”。
 
     大报告先用只读查询器定位并分页，避免把整份 JSON 一次性放入模型上下文。先列章节，再按来源或完整字段路径筛选；按候选身份核对时使用原样完整的 `candidate_id`：
 

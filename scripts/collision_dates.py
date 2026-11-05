@@ -317,7 +317,12 @@ def select_folder_window(
     all_history: bool = False,
     excluded_trading_dates: set[str] | frozenset[str] = frozenset(),
 ) -> FolderWindow:
-    """Select N distinct trading sessions and N natural capture days."""
+    """Select the latest N expected trading sessions and N natural capture days.
+
+    The market window is derived from the exchange calendar, not from whichever
+    capture folders happen to exist. Missing capture dates stay visible instead
+    of being silently replaced by older sessions.
+    """
     all_folders = tuple(folders)
     warnings = [
         f"{folder.name}: 行情数据日 {folder.market_date:%Y%m%d} 晚于报告日，行情快照不纳入本轮"
@@ -347,16 +352,31 @@ def select_folder_window(
         event_start = min((folder.capture_date for folder in all_folders), default=report_date)
     else:
         n = max(1, int(window))
-        eligible_market = sorted(
-            {
-                folder.market_date
-                for folder in all_folders
-                if folder.market_date
-                and folder.market_date <= report_date
-                and not is_excluded(folder.market_date)
-            }
+        available_market_dates = {
+            folder.market_date
+            for folder in all_folders
+            if folder.market_date
+            and folder.market_date <= report_date
+            and not is_excluded(folder.market_date)
+        }
+        market_dates_descending: list[date] = []
+        cursor = report_date
+        while cursor >= MIN_CAPTURE_DATE and len(market_dates_descending) < n:
+            if not is_excluded(cursor) and is_trading_session(cursor):
+                market_dates_descending.append(cursor)
+            cursor -= timedelta(days=1)
+        market_dates = sorted(market_dates_descending)
+        if len(market_dates) < n:
+            warnings.append(
+                f"保留起点 {MIN_CAPTURE_DATE:%Y%m%d} 至报告日仅有 {len(market_dates)} 个"
+                f"可用交易日，少于请求的 {n} 日"
+            )
+        warnings.extend(
+            f"行情窗口交易日 {missing_date:%Y%m%d} 无对应采集目录；"
+            "不会用更早交易日补位，需结合其他采集目录的来源日期检查实际覆盖"
+            for missing_date in market_dates
+            if missing_date not in available_market_dates
         )
-        market_dates = eligible_market[-n:]
         event_start = report_date - timedelta(days=n - 1)
         market_names = frozenset(
             folder.name for folder in all_folders if folder.market_date in market_dates

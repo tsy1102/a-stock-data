@@ -9,6 +9,11 @@ from scripts.collision_dates import EVENT_SOURCES
 # 主字典 push2/ulist 最高登记到 f250, 故 range(1,251) 即全量。新增 f 编号时只需改此处。
 EM_FULL_FIELDS = ",".join(f"f{i}" for i in range(1, 251))
 
+# f297 is outside the registered f1-f250 capture range. Keep it Ulist-only:
+# efinance maps it to the latest trading date, so capture it as an investigation
+# field without treating that third-party mapping as a project field decision.
+EM_ULIST_RESEARCH_FIELDS = ("f297",)
+
 # A 方案(V17.2.5, 第九轮后落地): 字段体系(scheme)血缘标注。
 # 东方财富存在两套 f 编号体系, 同号≠同义(铁证 ulist.f62 == push2.f137 主力净):
 #   em.stock_get : push2 / em_fund_flow 走 stock/get 端点, 同一套 f 编号

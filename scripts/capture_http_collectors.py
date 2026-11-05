@@ -7,6 +7,8 @@ HTTP sessions, throttles, ban state, and retries remain in stock_common.
 from dataclasses import dataclass
 from typing import Any, Callable, Dict, Optional
 
+from scripts.capture_catalog import EM_ULIST_RESEARCH_FIELDS
+
 
 @dataclass(frozen=True)
 class CaptureHttpDependencies:
@@ -982,8 +984,9 @@ def collect_em_fund_flow(pool: list, deps: CaptureHttpDependencies) -> dict:
 
 
 def collect_ulist239(pool: list, deps: CaptureHttpDependencies) -> dict:
-    """东财 push2delay ulist.np 批量全字段(1 次请求 20 只,字典 §12.9 ulist 239 字段)。"""
+    """东财 push2delay ulist.np 批量字段采集；附带 f297 供数据日研究。"""
     EM_FULL_FIELDS = deps.em_full_fields
+    ulist_fields = ",".join((EM_FULL_FIELDS, *EM_ULIST_RESEARCH_FIELDS))
     _request_failure_summary = deps.request_failure_summary
     from stock_common import _quick_request
 
@@ -999,7 +1002,7 @@ def collect_ulist239(pool: list, deps: CaptureHttpDependencies) -> dict:
     try:
         r = _quick_request(
             "https://push2delay.eastmoney.com/api/qt/ulist.np/get",
-            params={"fltt": "2", "invt": "2", "secids": secids, "fields": EM_FULL_FIELDS},
+            params={"fltt": "2", "invt": "2", "secids": secids, "fields": ulist_fields},
             headers={"Referer": "https://quote.eastmoney.com/"},
             timeout=15,
             max_retries=1,

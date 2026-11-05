@@ -238,8 +238,11 @@ def get_kpl_limit_up_detail(
     """KPL 连板梯队（DailyLimitPerformance）——涨停股明细（涨停原因/封单/主力）。
 
     字典 §12.17：PidType=1 首板 / 2 二板 / 3 三板 / 4 四板 / 5 更高
-    info=[代码, 名称, 0, "", 涨停时间, 涨停原因, 封单, 最大封单, 主力净额,
-          主力买入, 主力卖出, 成交额, 板块, 实际流通, 实际换手, 1, 1, 振幅, "", 板块代码, 涨停数量]
+    当前归一化字段使用 row[0:2]、row[4:13]、row[14]、row[17]、row[19]；其余位置仅在
+    capture_raw=True 时保留于 raw_columns，不应按旧注释中的常量或字段猜测写入业务输出。
+    2026-10-31 的探索报告对 raw_columns.col_15 / col_21 / col_22 给出强跨源候选，
+    但开盘啦公开页面未说明 DailyLimitPerformance 的原始列号映射。合同核验前仍只保留原始值，
+    不作为字段注册表定案。见 docs/field_verification/adjudications/20261105_collection_cracking_audit.md。
     """
     p = _base()
     p.update(

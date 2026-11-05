@@ -17,3 +17,5 @@ def test_capture_catalog_keeps_eastmoney_field_schemes_distinct():
     assert capture_catalog.SOURCE_SCHEME["ulist239"] == "em.ulist_np"
     assert capture_catalog.EM_FULL_FIELDS.split(",")[0] == "f1"
     assert capture_catalog.EM_FULL_FIELDS.split(",")[-1] == "f250"
+    assert len(capture_catalog.EM_FULL_FIELDS.split(",")) == 250
+    assert capture_catalog.EM_ULIST_RESEARCH_FIELDS == ("f297",)

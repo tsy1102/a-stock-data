@@ -4,7 +4,7 @@
 > `aggregation_status` 只描述兼容聚合视图，不会改写逐源 `status`。疑似合并文本由分隔符启发式识别，仅供人工检查，不自动拆字段或定案。
 > 本文统计的定义缺口仅限列出的复核组；单来源或全空的定义缺口仍见 [元数据缺口](field_metadata_gaps.md) 与 [未知字段队列](unknown_fields.md)。
 
-> 聚合歧义 96 个 code；聚合定义不完整 243 个 code；疑似合并文本 239 条逐源记录。
+> 聚合歧义 101 个 code；聚合定义不完整 242 个 code；疑似合并文本 247 条逐源记录。
 
 ## 同码聚合存在差异或定义缺口
 
@@ -1072,12 +1072,12 @@
 
 ### `f124` — incomplete
 
-聚合问题：meaning_incomplete；source_statuses_differ；聚合状态：`unverified`。
+聚合问题：meaning_incomplete；source_statuses_differ；unit_incomplete；聚合状态：`unverified`。
 
 | 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
 |:--|:--|:--|:--|:--|
 | 东财-push2(stock/get) · `f124` | f124 | — | — | `unverified` |
-| 东财-ulist239(np/get) · `f124` | f124 | 股东户数? | — | `verified` |
+| 东财-ulist239(np/get) · `f124` | f124 | 行情更新时间戳 | Unix 秒 | `verified` |
 
 ### `f125` — incomplete
 
@@ -2434,6 +2434,15 @@
 | 东财-热榜(em_hot) · `hot_rank` | — | — | — | `unverified` |
 | 同花顺-fuyao · `hot_rank` | hot_rank | 同花顺人气排名，数值越小越靠前。 | — | `verified` |
 
+### `industry_id` — ambiguous
+
+聚合问题：canonical_differs；meaning_differs；source_statuses_differ；聚合状态：`conflict`。
+
+| 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
+|:--|:--|:--|:--|:--|
+| 开盘红 · `industry_id` | industry_id | 行业分类 ID；与 KPL sector_code 367/370 逐值一致；3 组分类代码差异保留来源原值 | — | `verified` |
+| 开盘红(Levistock适配) · `industry_id` | industry_id / industry_zt | 行业 ID / 同行业涨停数 | — | `unverified` |
+
 ### `ipo_date` — incomplete
 
 聚合问题：canonical_incomplete；meaning_incomplete；source_statuses_differ；聚合状态：`unverified`。
@@ -2516,12 +2525,13 @@
 
 ### `limit_count` — ambiguous
 
-聚合问题：canonical_differs；canonical_incomplete；meaning_differs；meaning_incomplete；source_statuses_differ；聚合状态：`conflict`。
+聚合问题：canonical_differs；canonical_incomplete；meaning_differs；meaning_incomplete；source_statuses_differ；unit_incomplete；聚合状态：`conflict`。
 
 | 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
 |:--|:--|:--|:--|:--|
 | 东财-push2ex · `limit_count` | — | — | — | `unverified` |
 | 市场源(market_sources) · `limit_count` | limit_count | 连板数 | — | `verified` |
+| 开盘红 · `limit_count` | limit_count | 连板数；从 KPL 原始 row[18] 的 N天M板解析 M，30 个可解析值 30/30 一致 | 板 | `verified` |
 | 开盘红(Levistock适配) · `limit_count` | limit_tag / limit_count | 待破解 | — | `unverified` |
 
 ### `limit_down` — incomplete
@@ -2542,6 +2552,15 @@
 | TDX(双命名源) · `limit_down_price` | — | — | — | `unverified` |
 | TDX-eltdx(适配层) · `limit_down_price` | limit_up_price / limit_down_price | 涨停价 / 跌停价 | — | `unverified` |
 
+### `limit_tag` — ambiguous
+
+聚合问题：canonical_differs；meaning_differs；source_statuses_differ；聚合状态：`conflict`。
+
+| 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
+|:--|:--|:--|:--|:--|
+| 开盘红 · `limit_tag` | limit_tag | 连板标签；与 KPL 原始 row[18] 可见的 33 条非空值 33/33 一致 | — | `verified` |
+| 开盘红(Levistock适配) · `limit_tag` | limit_tag / limit_count | 待破解 | — | `unverified` |
+
 ### `limit_time` — ambiguous
 
 聚合问题：canonical_differs；meaning_differs；source_statuses_differ；unit_incomplete；聚合状态：`conflict`。
@@ -2549,7 +2568,7 @@
 | 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
 |:--|:--|:--|:--|:--|
 | 市场源(market_sources) · `limit_time` | limit_time | 涨停时间 | — | `unverified` |
-| 开盘红 · `limit_time` | limit_time | 涨停时间；与 KPL zt_time 两日逐值一致 | Unix 秒 | `verified` |
+| 开盘红 · `limit_time` | limit_time | 涨停时间；与 KPL zt_time 370 组、8 个交易日逐值一致 | Unix 秒 | `verified` |
 | 开盘红(Levistock适配) · `limit_time` | limit_time / open_time | 待破解 | — | `unverified` |
 
 ### `limit_up` — incomplete
@@ -2722,14 +2741,15 @@
 | 同花顺-fuyao · `market` | dump/market-dumps/{daily-k,daily-k-10d,adjustment-factors}/download-url | — | — | `unverified` |
 | 市场源(market_sources) · `market` | market | 市场 | — | `verified` |
 
-### `market_cap` — incomplete
+### `market_cap` — ambiguous
 
-聚合问题：canonical_incomplete；meaning_incomplete；source_statuses_differ；unit_incomplete；聚合状态：`unverified`。
+聚合问题：canonical_differs；canonical_incomplete；meaning_differs；meaning_incomplete；source_statuses_differ；unit_incomplete；聚合状态：`conflict`。
 
 | 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
 |:--|:--|:--|:--|:--|
 | FTShare REST · `market_cap` | market_cap | 总市值 | 元 | `verified` |
 | 东财-datacenter(英文键) · `market_cap` | — | — | — | `unverified` |
+| 开盘红 · `market_cap` | float_market_value | 流通市值；与 KPL 实际流通字段 369/370 逐值一致；1 组相差约 0.8025%，不按舍入等价处理 | 元 | `verified` |
 
 ### `max_seal` — incomplete
 
@@ -2762,7 +2782,7 @@
 
 | 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
 |:--|:--|:--|:--|:--|
-| 开盘红 · `net_inflow` | main_inflow | 主力净流入；与 KPL main_inflow 两日逐值一致 | 元 | `verified` |
+| 开盘红 · `net_inflow` | main_inflow | 主力净流入；与 KPL main_inflow 370 组、8 个交易日逐值一致 | 元 | `verified` |
 | 开盘红(Levistock适配) · `net_inflow` | net_inflow / market_cap | 待破解 | — | `unverified` |
 
 ### `net_profit` — incomplete
@@ -2874,6 +2894,15 @@
 |:--|:--|:--|:--|:--|
 | TDX-eltdx(适配层) · `open_price` | open_price | — | — | `unverified` |
 | 同花顺-fuyao · `open_price` | — | — | — | `unverified` |
+
+### `open_time` — ambiguous
+
+聚合问题：canonical_incomplete；meaning_differs；聚合状态：`conflict`。
+
+| 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
+|:--|:--|:--|:--|:--|
+| 开盘红 · `open_time` | — | 开板时间；AxData 0.1.4 将原始 row[7] 映射为时间戳；370 组样本均为 0，暂无非零值核验 | — | `unverified` |
+| 开盘红(Levistock适配) · `open_time` | limit_time / open_time | 待破解 | — | `unverified` |
 
 ### `opendate` — consistent
 
@@ -3124,12 +3153,13 @@
 
 ### `reason` — ambiguous
 
-聚合问题：canonical_incomplete；meaning_differs；meaning_incomplete；source_statuses_differ；聚合状态：`conflict`。
+聚合问题：canonical_differs；canonical_incomplete；meaning_differs；meaning_incomplete；source_statuses_differ；聚合状态：`conflict`。
 
 | 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
 |:--|:--|:--|:--|:--|
 | 东财-热榜(em_hot) · `reason` | reason | 题材归因 | — | `verified` |
 | 市场源(market_sources) · `reason` | — | — | — | `unverified` |
+| 开盘红 · `reason` | limit_up_reason | 涨停原因；与 KPL reason 367/370 逐字一致，3 组文本差异保留来源原值 | — | `verified` |
 | 开盘红(Levistock适配) · `reason` | reason | 涨停原因 | — | `unverified` |
 
 ### `report_type` — consistent
@@ -3166,7 +3196,7 @@
 | TDX-eltdx(适配层) · `seal_amount` | seal_amount | — | — | `unverified` |
 | 市场源(market_sources) · `seal_amount` | — | — | — | `unverified` |
 | 开盘啦(kpl_limit_up_detail) · `seal_amount` | seal_amount | 封单量；与 KPH seal_amount 三个交易日逐股逐值一致，计量单位未确认 | — | `verified` |
-| 开盘红 · `seal_amount` | seal_amount | 封单量；与 KPL seal_amount 三个交易日逐股逐值一致，计量单位未确认 | — | `verified` |
+| 开盘红 · `seal_amount` | seal_amount | 封单量；与 KPL seal_amount 370 组、8 个交易日逐值一致，计量单位未确认 | — | `verified` |
 | 开盘红(Levistock适配) · `seal_amount` | seal_amount / seal_money | 待破解 | — | `unverified` |
 
 ### `seal_money` — ambiguous
@@ -3176,7 +3206,7 @@
 | 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
 |:--|:--|:--|:--|:--|
 | 同花顺-fuyao · `seal_money` | seal_money | 当前封单额，单位元。 | 元 | `verified` |
-| 开盘红 · `seal_money` | max_seal | 封单金额；与 KPL max_seal（KPL 响应标签：最大封单）三个交易日逐股逐值一致 | 元 | `verified` |
+| 开盘红 · `seal_money` | max_seal | 封单金额；与 KPL max_seal 370 组、8 个交易日逐值一致 | 元 | `verified` |
 | 开盘红(Levistock适配) · `seal_money` | seal_amount / seal_money | 待破解 | — | `unverified` |
 
 ### `shares` — incomplete
@@ -3258,6 +3288,15 @@
 | reports · `subjects` | subjects / subject_name | 主题分类 | — | `unverified` |
 | 财联社(cls) · `subjects` | subjects | 主题/题材标签列表 | — | `unverified` |
 
+### `themes` — ambiguous
+
+聚合问题：meaning_differs；source_statuses_differ；聚合状态：`conflict`。
+
+| 来源身份 | 规范名 | 含义 | 单位 | 逐源状态 |
+|:--|:--|:--|:--|:--|
+| 开盘红 · `themes` | themes | 题材标签列表；与 KPL sector 完整列表 360/370 一致、至少一项重合 369/370；保留来源标签口径差异 | — | `verified` |
+| 开盘红(Levistock适配) · `themes` | themes | 题材 | — | `unverified` |
+
 ### `time` — ambiguous
 
 聚合问题：canonical_differs；canonical_incomplete；meaning_differs；meaning_incomplete；source_statuses_differ；聚合状态：`conflict`。
@@ -3326,7 +3365,7 @@
 | FTShare REST · `turnover` | turnover | 成交额 | 元 | `verified` |
 | 同花顺-fuyao · `turnover` | — | — | — | `unverified` |
 | 开盘啦(kpl) · `turnover` | — | — | — | `unverified` |
-| 开盘红 · `turnover` | amount | 成交额；与 KPL amount 两日逐值一致 | 元 | `verified` |
+| 开盘红 · `turnover` | amount | 成交额；与 KPL amount 370 组、8 个交易日逐值一致 | 元 | `verified` |
 | 开盘红(Levistock适配) · `turnover` | turnover / turnover_rate | 成交额 / 换手率% | — | `unverified` |
 | 新浪(扩展API) · `turnover` | turnover | 换手率% | — | `conflict` |
 
@@ -3348,7 +3387,7 @@
 | FTShare REST · `turnover_rate` | turnover_rate | 换手率 | — | `verified` |
 | 东财-push2ex · `turnover_rate` | — | — | — | `unverified` |
 | 东财-热榜(em_hot) · `turnover_rate` | turnover_rate | 换手率% | — | `verified` |
-| 开盘红 · `turnover_rate` | turnover_real | 实际换手率；与 KPL turnover_real 两日逐值一致 | % | `verified` |
+| 开盘红 · `turnover_rate` | turnover_real | 实际换手率；与 KPL turnover_real 370 组、8 个交易日逐值一致 | % | `verified` |
 
 ### `turnover_real` — incomplete
 
@@ -3630,12 +3669,20 @@
 | 开盘啦(kpl_limit_up_detail) | `seal_amount` | seal_amount | 封单量；与 KPH seal_amount 三个交易日逐股逐值一致，计量单位未确认 | `verified` |
 | 开盘啦(kpl_limit_up_detail) | `turnover_real` | turnover_real | 实际换手率；与 KPH turnover_rate 两日逐值一致 | `verified` |
 | 开盘啦(kpl_limit_up_detail) | `zt_time` | limit_time | 涨停时间；与 KPH limit_time 两日逐值一致 | `verified` |
-| 开盘红 | `limit_time` | limit_time | 涨停时间；与 KPL zt_time 两日逐值一致 | `verified` |
-| 开盘红 | `net_inflow` | main_inflow | 主力净流入；与 KPL main_inflow 两日逐值一致 | `verified` |
-| 开盘红 | `seal_amount` | seal_amount | 封单量；与 KPL seal_amount 三个交易日逐股逐值一致，计量单位未确认 | `verified` |
-| 开盘红 | `seal_money` | max_seal | 封单金额；与 KPL max_seal（KPL 响应标签：最大封单）三个交易日逐股逐值一致 | `verified` |
-| 开盘红 | `turnover` | amount | 成交额；与 KPL amount 两日逐值一致 | `verified` |
-| 开盘红 | `turnover_rate` | turnover_real | 实际换手率；与 KPL turnover_real 两日逐值一致 | `verified` |
+| 开盘红 | `industry_id` | industry_id | 行业分类 ID；与 KPL sector_code 367/370 逐值一致；3 组分类代码差异保留来源原值 | `verified` |
+| 开盘红 | `industry_limit_up_count` | — | 同行业涨停数；与 KPL 原始 row[20] 有 320/370 组相同，日期及个股差异含 +15、-27，计数范围未确认 | `unverified` |
+| 开盘红 | `limit_count` | limit_count | 连板数；从 KPL 原始 row[18] 的 N天M板解析 M，30 个可解析值 30/30 一致 | `verified` |
+| 开盘红 | `limit_tag` | limit_tag | 连板标签；与 KPL 原始 row[18] 可见的 33 条非空值 33/33 一致 | `verified` |
+| 开盘红 | `limit_time` | limit_time | 涨停时间；与 KPL zt_time 370 组、8 个交易日逐值一致 | `verified` |
+| 开盘红 | `market_cap` | float_market_value | 流通市值；与 KPL 实际流通字段 369/370 逐值一致；1 组相差约 0.8025%，不按舍入等价处理 | `verified` |
+| 开盘红 | `net_inflow` | main_inflow | 主力净流入；与 KPL main_inflow 370 组、8 个交易日逐值一致 | `verified` |
+| 开盘红 | `open_time` | — | 开板时间；AxData 0.1.4 将原始 row[7] 映射为时间戳；370 组样本均为 0，暂无非零值核验 | `unverified` |
+| 开盘红 | `reason` | limit_up_reason | 涨停原因；与 KPL reason 367/370 逐字一致，3 组文本差异保留来源原值 | `verified` |
+| 开盘红 | `seal_amount` | seal_amount | 封单量；与 KPL seal_amount 370 组、8 个交易日逐值一致，计量单位未确认 | `verified` |
+| 开盘红 | `seal_money` | max_seal | 封单金额；与 KPL max_seal 370 组、8 个交易日逐值一致 | `verified` |
+| 开盘红 | `themes` | themes | 题材标签列表；与 KPL sector 完整列表 360/370 一致、至少一项重合 369/370；保留来源标签口径差异 | `verified` |
+| 开盘红 | `turnover` | amount | 成交额；与 KPL amount 370 组、8 个交易日逐值一致 | `verified` |
+| 开盘红 | `turnover_rate` | turnover_real | 实际换手率；与 KPL turnover_real 370 组、8 个交易日逐值一致 | `verified` |
 | 开盘红(Levistock适配) | `buy_amount` | buy_amount / sell_amount | 待破解 | `unverified` |
 | 开盘红(Levistock适配) | `dt` | zt / dt | 涨停 / 跌停总数 | `unverified` |
 | 开盘红(Levistock适配) | `fall_dist` | rise_dist / fall_dist | 待破解 | `unverified` |

@@ -152,7 +152,11 @@ def source_field_semantic_issues(record: dict) -> List[str]:
     """
     issues = set()
     meaning = str(record.get("meaning") or "").strip()
-    if not meaning or meaning.casefold() in UNRESOLVED_MEANING_MARKERS:
+    if (
+        not meaning
+        or meaning.casefold() in UNRESOLVED_MEANING_MARKERS
+        or meaning.endswith(("?", "？"))
+    ):
         issues.add("meaning_missing")
 
     conflicts = record.get("attribute_conflicts")

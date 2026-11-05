@@ -225,7 +225,7 @@ def render_unknown_fields(registry: dict[str, Any]) -> str:
         "> 聚合层的同码异义与定义缺口见 [`field_aggregate_review.md`](field_aggregate_review.md)，不代表逐源记录状态冲突。",
         "",
         f"> 注册字段路径 {len(records)}；日常来源路径 {len(active_records)}：unverified {counts['unverified']}、candidate {counts['candidate']}、conflict {counts['conflict']}、disproved {counts['disproved']}；历史来源路径 {len(historical_records)}。",
-        f"> 另有 {len(verified_quality_review)} 条虽标 verified、但含义/单位元数据未达到碰撞锚条件；这些记录会重新进入碰撞目标，详见 [字段元数据复核](field_metadata_gaps.md)。",
+        f"> 另有 {len(verified_quality_review)} 条虽标 verified、但含义/单位元数据未达到碰撞锚条件；这些记录保留在元数据复核视图，不进入默认破解目标，详见 [字段元数据复核](field_metadata_gaps.md)。",
         "> 以下两组未验证字段统计是不同维度，不能相加：含义栏文本只表示存在文字，不代表语义正确；状态判定反映旧字典状态证据能否映射到逐源身份。",
         "",
         "## 未验证字段的复核分层",

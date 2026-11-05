@@ -210,8 +210,8 @@ def test_repository_parity_classifies_all_nonbaseline_paths(capsys):
     assert registry_parity.main([]) == 0
 
     output = capsys.readouterr().out
-    assert "registry-core(1705/2317/345)" in output
-    assert "parity[unverified-candidates]: PASS 235" in output
+    assert "registry-core(1705/2323/348)" in output
+    assert "parity[unverified-candidates]: PASS 237" in output
     assert "parity[adjudication-addenda]: PASS 8" in output
     assert "parity[capture-path-addenda]: PASS 2" in output
     assert "parity[field_matrix]: PASS" in output

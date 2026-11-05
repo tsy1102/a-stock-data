@@ -127,6 +127,38 @@ def test_window_counts_distinct_sessions_and_separate_natural_capture_days(tmp_p
     assert {folder.name for folder in window.folders} == {"20260928", "20260929"}
 
 
+def test_window_does_not_backfill_a_missing_trading_session(tmp_path, monkeypatch):
+    for folder in ("20260925", "20260928"):
+        (tmp_path / folder).mkdir()
+    _write_capture(
+        tmp_path,
+        "20260930",
+        {"data_date": "20260930", "capture_date": "20260930", "market_phase": "closed"},
+        "push2",
+        {"as_of_date": "20260929", "stocks": {"600000": {"data": {"f1": 1}}}},
+    )
+    folders, _ = collision_dates.discover_capture_folders(str(tmp_path), _weekday)
+    monkeypatch.setattr(collision_dates, "is_trading_session", _weekday)
+
+    window = collision_dates.select_folder_window(folders, 3, date(2026, 9, 30))
+
+    assert window.trading_dates == ("20260928", "20260929", "20260930")
+    assert window.market_folders == frozenset({"20260928", "20260930"})
+    assert "20260925" not in window.market_folders
+    assert any("20260929" in warning and "无对应采集目录" in warning for warning in window.warnings)
+    snapshots, snapshot_warnings = collision_dates.select_snapshots(
+        window.folders,
+        allowed_trading_folders=window.market_folders,
+        allowed_event_folders=window.event_folders,
+        checker=_weekday,
+        allowed_trading_dates=frozenset(window.trading_dates),
+    )
+    assert [(snapshot.sample_date, snapshot.folder) for snapshot in snapshots] == [
+        (date(2026, 9, 29), "20260930")
+    ]
+    assert snapshot_warnings == []
+
+
 def test_event_window_can_use_later_capture_for_prior_natural_event(tmp_path):
     _write_capture(
         tmp_path,

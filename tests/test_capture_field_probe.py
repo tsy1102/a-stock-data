@@ -1063,6 +1063,9 @@ def test_ulist_reports_missing_pool_codes_and_limits_request_attempts(monkeypatc
     result = capture_probe.collect_ulist239([{"code": "600000"}, {"code": "000001"}])
 
     assert calls[0][1]["max_retries"] == 1
+    fields = calls[0][1]["params"]["fields"].split(",")
+    assert fields[:250] == [f"f{i}" for i in range(1, 251)]
+    assert fields[250:] == ["f297"]
     assert "missing" in result["stocks"]["000001"]["__error__"]
     ok, info = capture_probe.assess_result(result, expected_symbols=["600000", "000001"])
     assert ok is False

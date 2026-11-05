@@ -16,6 +16,9 @@
 
 - 东财 push2 多主机字段差异：仅在用户明确安排真实联网核验后，以低频逐主机小样本比字段、数值和来源日期。先核验备用域；首次出现 403、429、封禁或熔断迹象即停止该风险组，不运行 `--all`。历史健康探测只代表当时可达，不证明字段等价或当前健康。
 - [`f118_ulist_source_semantics_plan.md`](f118_ulist_source_semantics_plan.md)：区分 push2 与 ulist239 的 `f107` / `f118` 逐源身份、含义和占位状态；计划未执行前不更新注册表。
+- [`efinance_eastmoney_review_20261105.md`](../efinance_eastmoney_review_20261105.md)：对照 efinance 的 Ulist 字段映射与本项目端点；对 `600000` 的两个 Ulist 主机各做一次限流内实时请求，均 HTTP 200，五个字段一致，`f124` 两端 Unix 时间戳相差 30 秒，`f297` 均为 `20261105`。再核对 2026-11-02/03 的 Ulist 与 `stock/get::f86` 历史样本后，Ulist `f124` 已按完整来源路径纠正为“行情更新时间戳（Unix 秒）”，旧参考记录保留；`push2 stock/get::f124` 仍未验证。另一次 `push2delay` 请求返回 `None`，未重试，DNS/连接失败层尚不能区分。FlClash 主机 DNS 与 TUN 网络路径可用，但 Eastmoney 是否命中 `DIRECT` 规则未证实；未修改网络设置。`f297` 仅有单日单票证据，跨日口径仍待查，不接入报告日期或缓存键。
+- [`adjudications/20261105_axdata_field_reverse.md`](adjudications/20261105_axdata_field_reverse.md)：逆向登记 AxData 257 个接口的 3,343 个输出字段并与当前逐源字典比对；对项目实际调用的 KPH 历史涨停接口按 8 个交易日、370 组同股样本逐项核验，更新 6 条字段定案并保留 2 条待核字段。TDX 短线接口按 0.1.4 运行时代码追到 TDX/ZHB 输入及派生公式。
+- [`adjudications/20261105_collection_cracking_audit.md`](adjudications/20261105_collection_cracking_audit.md)：采集、日期归属、碰撞完整性、历史候选审阅与注册表写回闭环审计；记录并修复交易日窗口缺日时回填更早样本的问题；明确 KPL `col_15/21/22` 的历史候选仍未达到正式 API 路径契约门槛，不能按已验证字段处理。
 
 ## 归档格式
 

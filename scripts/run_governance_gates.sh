@@ -23,7 +23,21 @@ set -eu
 REPO_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$REPO_ROOT"
 
-PY="${PYTHON:-python3}"
+PY="${PYTHON:-}"
+if [ -z "$PY" ]; then
+  for _candidate in python3 python.exe python; do
+    if command -v "$_candidate" >/dev/null 2>&1 &&
+      "$_candidate" -c 'import sys' >/dev/null 2>&1; then
+      PY="$_candidate"
+      break
+    fi
+  done
+fi
+
+if [ -z "$PY" ]; then
+  echo "[governance-gates] Python interpreter unavailable; set PYTHON to a working interpreter." >&2
+  exit 127
+fi
 
 WITH_A7=0
 FORCE=0

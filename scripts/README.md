@@ -12,7 +12,7 @@ Windows 开发默认使用 PowerShell。`run_with_system_python.ps1` 校验并�
 .\scripts\run_tests.ps1 -Mode expression -Expression "test_cache"
 ```
 
-`run_with_system_python.bat` 和 `upload_reports_to_gd.bat` 是兼容包装器。`run_governance_gates.sh` 是供 POSIX shell 使用的本地门禁运行器；仓库没有版本化 CI 或 hook 安装配置，具体克隆是否在 `.git/hooks/pre-commit` 中调用它取决于本地设置。门禁只按暂存内容判断是否触发；相关路径若同时有未暂存或未跟踪文件，会拒绝检查，避免结果与提交快照不一致。
+`run_with_system_python.bat` 和 `upload_reports_to_gd.bat` 是兼容包装器。`run_governance_gates.sh` 是供 POSIX shell 使用的本地门禁运行器；未设置 `PYTHON` 时，它会依次探测 `python3`、`python.exe`、`python`，并跳过无法实际启动的命令。仓库没有版本化 CI 或 hook 安装配置，具体克隆是否在 `.git/hooks/pre-commit` 中调用它取决于本地设置。门禁只按暂存内容判断是否触发；相关路径若同时有未暂存或未跟踪文件，会拒绝检查，避免结果与提交快照不一致。
 
 提交前的完整离线验收统一运行 `.\scripts\run_offline_checks.ps1`：语法、全项目 MyPy、Black API 格式、AxData 摘要一致性、数据访问、字典同步、Canonical contract、registry parity 和离线测试都在同一入口执行，真实网络测试不会被启动。Black 检查读取 Git 可见的 Python 文件，使用 `pyproject.toml` 配置的 Python API，以避免 Windows 下 CLI 无输出挂起。
 
